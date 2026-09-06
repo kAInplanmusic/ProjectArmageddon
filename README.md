@@ -181,6 +181,10 @@ So bleibt das Kampfsystem konsistent, verständlich und deterministisch.
 ## Repository-Struktur
 
 ```text
+assets/
+  weapons/
+    icons/
+    source/
 src/
   client/
     index.js

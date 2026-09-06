@@ -584,10 +584,10 @@
       "internalName": "taschenmesser",
       "category": "melee",
       "icon": {
-        "file": "IMG_9049.heic",
+        "file": "IMG_9049.PNG",
         "assetId": "weapon_icon_014",
         "source": "PA Waffenlogos",
-        "format": "heic"
+        "format": "png"
       },
       "stats": {
         "baseDamage": 25,
