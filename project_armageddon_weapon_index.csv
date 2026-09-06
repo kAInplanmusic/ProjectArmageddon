@@ -1,0 +1,151 @@
+﻿id,index,displayName,internalName,category,icon,damageType,baseDamage,blastRadius,knockback,projectileSpeed,gravity,bounces,fuseTime,terrainDamage,fireDamage,iceDamage,poisonDamage,homing,piercing,aoe,specialEffect
+pa_001,1,Baseballschläger,baseballschlager,melee,IMG_9033.PNG,physical,25,0,82,0,0,0,0,0,0,0,0,0,0,False,bat_knockback
+pa_002,2,Feuerfaust,feuerfaust,melee,IMG_9034.PNG,fire,25,0,55,0,0,0,0,0,0,0,0,0,0,False,burn
+pa_003,3,Hakenklinge,hakenklinge,melee,IMG_9036.PNG,physical,25,0,45,0,0,0,0,0,0,0,0,0,0,False,hook_pull
+pa_004,4,Piratenhaken,piratenhaken,melee,IMG_9037.PNG,physical,25,0,40,0,0,0,0,0,0,0,0,0,0,False,hook_pull
+pa_005,5,Morgenstern,morgenstern,melee,IMG_9040.PNG,physical,25,0,70,0,0,0,0,0,0,0,0,0,0,False,heavy_impact
+pa_006,6,Schaufel,schaufel,melee,IMG_9041.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,dig
+pa_007,7,Tonfa,tonfa,melee,IMG_9042.PNG,physical,25,0,35,0,0,0,0,0,0,0,0,0,0,False,rapid_melee
+pa_008,8,Kriegshammer,kriegshammer,melee,IMG_9043.PNG,physical,25,0,65,0,0,0,0,0,0,0,0,0,0,False,stun
+pa_009,9,Eispickel,eispickel,melee,IMG_9044.PNG,ice,25,0,30,0,0,0,0,0,0,0,0,0,0,False,freeze
+pa_010,10,Kettensäge,kettensage,melee,IMG_9045.PNG,physical,25,0,35,0,0,0,0,0,0,0,0,0,0,False,multi_hit
+pa_011,11,Zwillingskatanas,zwillingskatanas,melee,IMG_9046.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_012,12,Katana,katana,melee,IMG_9047.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_013,13,Multifunktionsmesser,multifunktionsmesser,melee,IMG_9048.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_014,14,Taschenmesser,taschenmesser,melee,IMG_9049.heic,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_015,15,Runenschwert,runenschwert,melee,IMG_9050.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_016,16,Rapier,rapier,melee,IMG_9051.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_017,17,Kampfmesser,kampfmesser,melee,IMG_9052.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_018,18,Energieschwert,energieschwert,melee,IMG_9053.PNG,energy,25,0,45,0,0,0,0,0,0,0,0,0,1,False,energy_blade
+pa_019,19,Doppelaxt,doppelaxt,melee,IMG_9054.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_020,20,Kriegssense,kriegssense,melee,IMG_9055.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_021,21,Gebogene Klinge,gebogene_klinge,melee,IMG_9058.PNG,physical,25,0,30,0,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_022,22,Plasma-Blaster,plasma_blaster,ranged,IMG_9059.PNG,energy,25,0,30,70,0,0,0,0,0,0,0,0,0,False,plasma_bolt
+pa_023,23,Boxhandschuhe,boxhandschuhe,ranged,IMG_9060.PNG,physical,25,0,96,70,0,0,0,0,0,0,0,0,0,False,mega_knockback
+pa_024,24,Mittelfinger,mittelfinger,ranged,IMG_9061.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_025,25,Handtuch,handtuch,ranged,IMG_9062.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_026,26,Pneumatischer Bohrer,pneumatischer_bohrer,ranged,IMG_9063.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,drill
+pa_027,27,Fackel,fackel,ranged,IMG_9066.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_028,28,Kaktusbombe,kaktusbombe,ranged,IMG_9067.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,spike_blast
+pa_029,29,Pömpel,pompel,ranged,IMG_9068.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,sticky
+pa_030,30,Cyber-Bombe,cyber_bombe,ranged,IMG_9069.PNG,electric,25,0,30,70,0,0,0,0,0,0,0,0,0,False,emp_blast
+pa_031,31,Power Gauntlets,power_gauntlets,ranged,IMG_9070.PNG,energy,25,0,60,70,0,0,0,0,0,0,0,0,0,False,power_punch
+pa_032,32,Raketenrucksack,raketenrucksack,ranged,IMG_9071.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,flight
+pa_033,33,Magischer Kampfstock,magischer_kampfstock,ranged,IMG_9072.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_034,34,Magischer Geschosszauber,magischer_geschosszauber,ranged,IMG_9073.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_035,35,Explosiver Energieball,explosiver_energieball,ranged,IMG_9074.PNG,energy,25,0,30,70,0,0,0,0,0,0,0,0,0,False,energy_explosion
+pa_036,36,Raketenhandschuh,raketenhandschuh,ranged,IMG_9075.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_037,37,Raketenwerfer Mk I,raketenwerfer_mk_i,ranged,IMG_9077.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_038,38,Rakete,rakete,ranged,IMG_9078.PNG,explosive,25,0,30,70,62,0,0,0,0,0,0,0,0,False,rocket
+pa_039,39,Feldkanone / Mörser,feldkanone_morser,ranged,IMG_9079.PNG,explosive,25,0,30,70,78,0,0,0,0,0,0,0,0,False,mortar
+pa_040,40,Maschinenpistole,maschinenpistole,ranged,IMG_9081.PNG,physical,25,0,30,70,0,0,0,0,0,0,0,0,0,False,direct_hit
+pa_041,41,Raketenwerfer Mk II,raketenwerfer_mk_ii,heavy_ranged,IMG_9082.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_042,42,Feuerwerks-Salve,feuerwerks_salve,heavy_ranged,IMG_9083.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_043,43,Kampfgeschütz,kampfgeschutz,heavy_ranged,IMG_9085.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_044,44,Phönix-Angriff,phonix_angriff,heavy_ranged,IMG_9086.PNG,fire,25,0,30,70,65,0,0,0,0,0,0,35,0,False,phoenix_strike
+pa_045,45,Raketen-Salve,raketen_salve,heavy_ranged,IMG_9087.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_046,46,Splittergranate,splittergranate,heavy_ranged,IMG_9088.PNG,explosive,25,0,30,70,65,0,0,0,0,0,0,0,0,False,fragmentation
+pa_047,47,Handgranate,handgranate,heavy_ranged,IMG_9089.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_048,48,Bananengranate,bananengranate,heavy_ranged,IMG_9090.PNG,explosive,25,0,30,70,65,2,0,0,0,0,0,0,0,False,banana_split
+pa_049,49,Bumerang,bumerang,heavy_ranged,IMG_9091.PNG,physical,25,0,30,70,65,1,0,0,0,0,0,0,0,False,returning_projectile
+pa_050,50,Doppelkopf-Axt,doppelkopf_axt,heavy_ranged,IMG_9092.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_051,51,Wurfklingen,wurfklingen,heavy_ranged,IMG_9093.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_052,52,Molotowcocktail,molotowcocktail,heavy_ranged,IMG_9094.PNG,fire,25,0,30,70,65,0,0,0,0,0,0,0,0,False,fire_pool
+pa_053,53,Roboterbombe,roboterbombe,heavy_ranged,IMG_9095.PNG,explosive,25,0,30,70,65,0,0,0,0,0,0,0,0,False,delayed_bot
+pa_054,54,Schrotflinte,schrotflinte,heavy_ranged,IMG_9096.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,spread_shot
+pa_055,55,Scharfschützengewehr,scharfschutzengewehr,heavy_ranged,IMG_9097.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,1,False,precision
+pa_056,56,Maschinenpistole Mk II,maschinenpistole_mk_ii,heavy_ranged,IMG_9098.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,direct_hit
+pa_057,57,Revolver,revolver,heavy_ranged,IMG_9099.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,precision
+pa_058,58,Kampfbogen,kampfbogen,heavy_ranged,IMG_9100.PNG,physical,25,0,30,70,70,0,0,0,0,0,0,0,0,False,arrow
+pa_059,59,Armbrust,armbrust,heavy_ranged,IMG_9101.PNG,physical,25,0,30,70,72,0,0,0,0,0,0,0,1,False,heavy_arrow
+pa_060,60,Minigun,minigun,heavy_ranged,IMG_9102.PNG,physical,25,0,30,70,65,0,0,0,0,0,0,0,0,False,minigun
+pa_061,61,Feuerdämon,feuerdamon,elemental,IMG_9103.PNG,fire,25,0,0,70,0,0,0,0,0,0,0,0,0,False,fire_entity
+pa_062,62,Flammenwerfer,flammenwerfer,elemental,IMG_9104.PNG,fire,25,0,0,70,0,0,0,0,0,0,0,0,0,False,continuous_stream
+pa_063,63,Wasserblaster,wasserblaster,elemental,IMG_9105.PNG,water,25,0,0,70,0,0,0,0,0,0,0,0,0,False,water_push
+pa_064,64,Katapult,katapult,elemental,IMG_9106.PNG,physical,25,0,0,70,80,0,0,0,0,0,0,0,0,False,catapult
+pa_065,65,Meteoritenbrocken,meteoritenbrocken,elemental,IMG_9107.PNG,impact,25,0,0,70,92,0,0,0,0,0,0,0,0,False,meteor_impact
+pa_066,66,Artilleriegeschütz,artilleriegeschutz,elemental,IMG_9109.PNG,explosive,25,0,0,70,82,0,0,0,0,0,0,0,0,False,artillery
+pa_067,67,Säurekanone,saurekanone,elemental,IMG_9113.PNG,acid,25,0,0,70,0,0,0,0,0,0,0,0,0,False,acid_dot
+pa_068,68,Plasma-Gewehr,plasma_gewehr,elemental,IMG_9114.PNG,energy,25,0,0,70,0,0,0,0,0,0,0,0,1,False,plasma
+pa_069,69,Raketenkanone,raketenkanone,elemental,IMG_9115.PNG,explosive,25,0,0,70,65,0,0,0,0,0,0,0,0,False,launcher
+pa_070,70,Giftwolke,giftwolke,elemental,IMG_9121.PNG,poison,25,0,0,70,0,0,0,0,0,0,0,0,0,False,poison_cloud
+pa_071,71,Eisschlag,eisschlag,elemental,IMG_9122.PNG,ice,25,0,0,70,0,0,0,0,0,0,0,0,0,False,freeze
+pa_072,72,Feuerball,feuerball,elemental,IMG_9123.PNG,fire,25,0,0,70,0,0,0,0,0,0,0,0,0,False,fireball
+pa_073,73,Tentakelgift,tentakelgift,elemental,IMG_9124.PNG,poison,25,0,0,70,0,0,0,0,0,0,0,0,0,False,tentacle_zone
+pa_074,74,Verderbnis-Siegel,verderbnis_siegel,elemental,IMG_9125.PNG,dark,25,0,0,70,0,0,0,0,0,0,0,0,0,False,curse
+pa_075,75,Tornado,tornado,elemental,IMG_9130.PNG,wind,25,0,88,70,0,0,0,0,0,0,0,0,0,False,suction
+pa_076,76,Portalring,portalring,elemental,IMG_9131.PNG,spatial,25,0,0,70,0,0,0,0,0,0,0,0,0,False,portal
+pa_077,77,Schwarzes Loch,schwarzes_loch,elemental,IMG_9132.PNG,void,25,0,80,70,0,0,0,0,0,0,0,0,0,False,gravity_well
+pa_078,78,Voodoo-Puppe,voodoo_puppe,elemental,IMG_9133.PNG,dark,25,0,0,70,0,0,0,0,0,0,0,0,0,False,linked_damage
+pa_079,79,Kosmisches Portal,kosmisches_portal,elemental,IMG_9134.PNG,spatial,25,0,0,70,0,0,0,0,0,0,0,0,0,False,portal_field
+pa_080,80,Psionischer Tentakel,psionischer_tentakel,elemental,IMG_9135.PNG,psychic,25,0,60,70,0,0,0,0,0,0,0,0,0,False,mind_pull
+pa_081,81,Zauberbuch der Leere,zauberbuch_der_leere,magic,IMG_9136.PNG,void,25,0,0,0,0,0,0,0,0,0,0,0,0,False,void_spell
+pa_082,82,Goldene Zauberrolle,goldene_zauberrolle,magic,IMG_9137.PNG,arcane,25,0,0,0,0,0,0,0,0,0,0,0,0,False,magic_bolt
+pa_083,83,Goldene Hand,goldene_hand,magic,IMG_9138.PNG,arcane,25,0,70,0,0,0,0,0,0,0,0,0,0,False,magic_hand
+pa_084,84,Astraltrank,astraltrank,magic,IMG_9139.PNG,arcane,25,0,0,0,0,0,0,0,0,0,0,0,0,False,buff
+pa_085,85,Chaosmagier,chaosmagier,magic,IMG_9140.PNG,chaos,25,0,0,0,0,0,0,0,0,0,0,0,0,False,random_spell
+pa_086,86,Wirbelwind-Krieger,wirbelwind_krieger,magic,IMG_9150.PNG,wind,25,0,78,0,0,0,0,0,0,0,0,0,0,False,whirlwind
+pa_087,87,Dimensionssprung I,dimensionssprung_i,magic,IMG_9151.PNG,spatial,25,0,0,0,0,0,0,0,0,0,0,0,0,False,teleport
+pa_088,88,Dimensionssprung II,dimensionssprung_ii,magic,IMG_9152.PNG,spatial,25,0,0,0,0,0,0,0,0,0,0,0,0,False,teleport
+pa_089,89,Magischer Stiefel,magischer_stiefel,magic,IMG_9154.PNG,utility,25,0,0,0,0,0,0,0,0,0,0,0,0,False,mobility
+pa_090,90,Giftpilz,giftpilz,magic,IMG_9155.PNG,poison,25,0,0,0,0,0,0,0,0,0,0,0,0,False,poison_zone
+pa_091,91,Astralorb,astralorb,magic,IMG_9156.PNG,astral,25,0,0,0,0,0,0,0,0,0,0,0,0,False,astral_burst
+pa_092,92,Heilzauber,heilzauber,magic,IMG_9157.PNG,holy,25,0,0,0,0,0,0,0,0,0,0,0,0,False,heal
+pa_093,93,Engelssegen,engelssegen,magic,IMG_9323.PNG,holy,25,0,0,0,0,0,0,0,0,0,0,0,0,False,shield_heal
+pa_094,94,Heil-Injektion,heil_injektion,magic,IMG_9324.PNG,medical,25,0,0,0,0,0,0,0,0,0,0,0,0,False,instant_heal
+pa_095,95,Chaos-Elixier,chaos_elixier,magic,IMG_9325.PNG,chaos,25,0,0,0,0,0,0,0,0,0,0,0,0,False,random_buff
+pa_096,96,Mutationselixier,mutationselixier,magic,IMG_9326.PNG,chaos,25,0,0,0,0,0,0,0,0,0,0,0,0,False,mutation
+pa_097,97,Traumfänger,traumfanger,magic,IMG_9327.PNG,psychic,25,0,0,0,0,0,0,0,0,0,0,0,0,False,sleep
+pa_098,98,Lava-Elixier,lava_elixier,magic,IMG_9328.PNG,fire,25,0,0,0,0,0,0,0,0,0,0,0,0,False,lava
+pa_099,99,Zeit-Sanduhr,zeit_sanduhr,magic,IMG_9329.PNG,time,25,0,0,0,0,0,0,0,0,0,0,0,0,False,time_control
+pa_100,100,Würfel des Chaos,wurfel_des_chaos,magic,IMG_9330.PNG,chaos,25,0,0,0,0,0,0,0,0,0,0,0,0,False,random_effect
+pa_101,101,Eisschild,eisschild,magic,IMG_9331.PNG,ice,25,0,0,0,0,0,0,0,0,0,0,0,0,False,shield_freeze
+pa_102,102,Gedankensturm,gedankensturm,magic,IMG_9332.PNG,psychic,25,0,0,0,0,0,0,0,0,0,0,0,0,False,mind_aoe
+pa_103,103,Verderbnis-Kelch,verderbnis_kelch,magic,IMG_9333.PNG,dark,25,0,0,0,0,0,0,0,0,0,0,0,0,False,corruption
+pa_104,104,Quantengewehr,quantengewehr,magic,IMG_9334.PNG,energy,25,0,0,0,0,0,0,0,0,0,0,0,1,False,quantum_shot
+pa_105,105,Zauberrolle,zauberrolle,magic,IMG_9335.PNG,arcane,25,0,0,0,0,0,0,0,0,0,0,0,0,False,scroll_spell
+pa_106,106,Sonnenamulett,sonnenamulett,magic,IMG_9336.PNG,holy,25,0,0,0,0,0,0,0,0,0,0,0,0,False,solar
+pa_107,107,Allsehendes Auge,allsehendes_auge,magic,IMG_9337.PNG,utility,25,0,0,0,0,0,0,0,0,0,0,0,0,False,target_scan
+pa_108,108,Magische Peitsche,magische_peitsche,magic,IMG_9338.PNG,arcane,25,0,55,0,0,0,0,0,0,0,0,0,0,False,magic_whip
+pa_109,109,Weltenbaum,weltenbaum,magic,IMG_9339.PNG,nature,25,0,0,0,0,0,0,0,0,0,0,0,0,False,area_buff
+pa_110,110,Dimensionskugel,dimensionskugel,magic,IMG_9340.PNG,spatial,25,0,0,0,0,0,0,0,0,0,0,0,0,False,dimension_orb
+pa_111,111,Grappling Hook,grappling_hook,utility,IMG_9341.PNG,utility,0,0,0,0,0,0,0,0,0,0,0,0,0,False,grapple
+pa_112,112,Jetpack,jetpack,utility,IMG_9342.PNG,utility,0,0,0,0,0,0,0,0,0,0,0,0,0,False,flight
+pa_113,113,Bohrkanone,bohrkanone,utility,IMG_9343.PNG,physical,0,0,0,0,0,0,0,0,0,0,0,0,0,False,drill_cannon
+pa_114,114,Raketenrucksack Mk III,raketenrucksack_mk_iii,utility,IMG_9344.PNG,utility,0,0,0,0,0,0,0,0,0,0,0,0,0,False,flight
+pa_115,115,Wächterstatue,wachterstatue,utility,IMG_9345.PNG,defense,0,0,0,0,0,0,0,0,0,0,0,0,0,False,guardian
+pa_116,116,Blutritual,blutritual,utility,IMG_9346.PNG,dark,0,0,0,0,0,0,0,0,0,0,0,0,0,False,blood_ritual
+pa_117,117,Ananasbombe,ananasbombe,utility,IMG_9347.PNG,explosive,0,0,0,0,0,0,0,0,0,0,0,0,0,False,fragmentation
+pa_118,118,Feuerwesen,feuerwesen,utility,IMG_9353.PNG,fire,0,0,0,0,0,0,0,0,0,0,0,0,0,False,fire_minion
+pa_119,119,Munitionskiste,munitionskiste,utility,IMG_9358.PNG,utility,0,0,0,0,0,0,0,0,0,0,0,0,0,False,ammo_drop
+pa_120,120,Energiefaust,energiefaust,utility,IMG_9359.PNG,energy,0,0,78,0,0,0,0,0,0,0,0,0,0,False,energy_fist
+pa_121,121,Explosiver Punch,explosiver_punch,tech,IMG_9360.PNG,explosive,25,0,88,0,0,0,0,0,0,0,0,0,0,False,rocket_punch
+pa_122,122,Infinity Loop,infinity_loop,tech,IMG_9364.PNG,temporal,25,0,0,0,0,0,0,0,0,0,0,0,0,False,loop
+pa_123,123,Magnetkanone,magnetkanone,tech,IMG_9365.PNG,magnetic,25,0,95,0,0,0,0,0,0,0,0,0,0,False,magnetism
+pa_124,124,Auto-Turret,auto_turret,tech,IMG_9366.PNG,electric,25,0,0,0,0,0,0,0,0,0,0,0,0,False,auto_target
+pa_125,125,Versorgungscontainer,versorgungscontainer,tech,IMG_9368.PNG,utility,25,0,0,0,0,0,0,0,0,0,0,0,0,False,supply_drop
+pa_126,126,Bunker,bunker,tech,IMG_9369.PNG,defense,25,0,0,0,0,0,0,0,0,0,0,0,0,False,bunker
+pa_127,127,Teleport-Plattform,teleport_plattform,tech,IMG_9372.PNG,spatial,25,0,0,0,0,0,0,0,0,0,0,0,0,False,teleport_platform
+pa_128,128,Hologramm-Portal,hologramm_portal,tech,IMG_9373.PNG,spatial,25,0,0,0,0,0,0,0,0,0,0,0,0,False,hologram_portal
+pa_129,129,Tesla-Turm,tesla_turm,tech,IMG_9376.PNG,electric,25,0,0,0,0,0,0,0,0,0,0,0,0,False,chain_lightning
+pa_130,130,Tarnnetz,tarnnetz,tech,IMG_9377.PNG,utility,25,0,0,0,0,0,0,0,0,0,0,0,0,False,camouflage
+pa_131,131,Schlauchboot,schlauchboot,tech,IMG_9379.PNG,utility,25,0,0,0,0,0,0,0,0,0,0,0,0,False,water_mobility
+pa_132,132,Alte Dame,alte_dame,tech,IMG_9380.PNG,physical,25,0,82,0,0,0,0,0,0,0,0,0,0,False,old_lady_strike
+pa_133,133,Fliegendes Superschaf,fliegendes_superschaf,tech,IMG_9382.PNG,fire,25,0,0,0,0,0,0,0,0,0,0,70,0,False,guided_sheep
+pa_134,134,Luftangriff,luftangriff,tech,IMG_9383.PNG,explosive,25,0,0,0,0,0,0,0,0,0,0,0,0,False,air_strike
+pa_135,135,Meteorregen,meteorregen,tech,IMG_9384.PNG,impact,25,0,0,0,0,0,0,0,0,0,0,0,0,False,meteor_rain
+pa_136,136,Bohrkopfrakete,bohrkopfrakete,tech,IMG_9385.PNG,explosive,25,0,0,0,0,0,0,0,0,0,0,0,0,False,drill_rocket
+pa_137,137,Flammenklinge,flammenklinge,tech,IMG_9386.PNG,fire,25,0,55,0,0,0,0,0,0,0,0,0,0,False,flame_blade
+pa_138,138,Magischer Kriegshammer,magischer_kriegshammer,tech,IMG_9388.PNG,arcane,25,0,78,0,0,0,0,0,0,0,0,0,0,False,magic_hammer
+pa_139,139,Höllenkanone,hollenkanone,tech,IMG_9389.PNG,fire,25,0,0,0,0,0,0,0,0,0,0,0,0,False,hell_cannon
+pa_140,140,Quantenblaster,quantenblaster,tech,IMG_9390.PNG,energy,25,0,0,0,0,0,0,0,0,0,0,0,1,False,quantum_blast
+pa_141,141,Astralkrieger,astralkrieger,ultimate,IMG_9391.PNG,astral,25,0,0,70,0,0,0,0,0,0,0,0,0,False,summon_warrior
+pa_142,142,Void-Ritter,void_ritter,ultimate,IMG_9393.PNG,void,25,0,75,70,0,0,0,0,0,0,0,0,0,False,void_knight
+pa_143,143,Astralross,astralross,ultimate,IMG_9394.PNG,astral,25,0,70,70,0,0,0,0,0,0,0,0,0,False,summon_mount
+pa_144,144,Kosmische Wassermelone,kosmische_wassermelone,ultimate,IMG_9397.PNG,explosive,25,0,0,70,0,1,0,0,0,0,0,0,0,False,cosmic_banana
+pa_145,145,Erdspalter,erdspalter,ultimate,IMG_9398.PNG,impact,25,0,0,70,0,0,0,0,0,0,0,0,0,False,earth_splitter
+pa_146,146,Giftige Weltenflasche,giftige_weltenflasche,ultimate,IMG_9399.PNG,poison,25,0,0,70,0,0,0,0,0,0,0,0,0,False,world_poison
+pa_147,147,Welten-Drache,welten_drache,ultimate,IMG_9400.PNG,dragon,25,0,0,70,0,0,0,0,0,0,0,0,0,False,dragon_ultimate
+pa_148,148,Himmelswächter,himmelswachter,ultimate,IMG_9401.PNG,holy,25,0,0,70,0,0,0,0,0,0,0,0,0,False,guardian_ultimate
+pa_149,149,Goldene Reliktkugel,goldene_reliktkugel,ultimate,IMG_9402.PNG,arcane,25,0,0,70,0,0,0,0,0,0,0,0,0,False,relic_buff
+pa_150,150,Kosmischer Kern,kosmischer_kern,ultimate,IMG_9403.PNG,void,25,0,0,70,0,0,0,0,0,0,0,0,0,False,cosmic_ultimate
