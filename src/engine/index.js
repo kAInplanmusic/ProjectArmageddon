@@ -5,4 +5,7 @@ export * from './physics/ballistics.js';
 export * from './pooling/projectilePool.js';
 export * from './systems/physicsSystem.js';
 export * from './terrain/collisionMask.js';
+export * from './terrain/terrainEngine.js';
 export * from './terrain/terrainSync.js';
+export * from './weapons/projectArmageddonWorldAdapter.js';
+export * from './weapons/weaponEngine.js';
