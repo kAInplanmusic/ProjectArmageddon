@@ -1,0 +1,19 @@
+{
+  "name": "projectarmageddon",
+  "version": "0.1.0",
+  "description": "Deterministic 2D artillery tactics prototype for the browser.",
+  "type": "module",
+  "main": "src/server/index.js",
+  "scripts": {
+    "validate": "node --input-type=module -e \"await import('./src/shared/index.js'); await import('./src/engine/index.js'); await import('./src/server/index.js'); await import('./src/client/index.js'); console.log('ProjectArmageddon skeleton is valid.');\""
+  },
+  "keywords": [
+    "artillery",
+    "ecs",
+    "multiplayer",
+    "canvas",
+    "webgame"
+  ],
+  "author": "",
+  "license": "ISC"
+}
