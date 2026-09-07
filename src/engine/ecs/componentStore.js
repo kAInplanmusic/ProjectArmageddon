@@ -10,12 +10,7 @@ export const COMPONENT_FLAGS = Object.freeze({
   DAMAGE: 1 << 6,
   CLASS: 1 << 7
 });
-  POSITION: 1 << 0,
-  VELOCITY: 1 << 1,
-  BALLISTICS: 1 << 2,
-  ARTILLERY_STATS: 1 << 3,
-  ACTIVE: 1 << 4
-});
+
 
 export class ComponentStore {
   constructor(capacity = 1024) {
@@ -39,6 +34,28 @@ export class ComponentStore {
   activate(entityId) {
     this.signatures[entityId] |= COMPONENT_FLAGS.ACTIVE;
   }
+
+  // Additional gameplay component arrays
+  this.health = new Float32Array(capacity);
+  this.damage = new Float32Array(capacity);
+  this.classId = new Uint32Array(capacity);
+}
+
+  setHealth(entityId, hp) {
+    this.health[entityId] = hp;
+    this.signatures[entityId] |= COMPONENT_FLAGS.HEALTH;
+  }
+
+  setDamage(entityId, dmg) {
+    this.damage[entityId] = dmg;
+    this.signatures[entityId] |= COMPONENT_FLAGS.DAMAGE;
+  }
+
+  setClass(entityId, classId) {
+    this.classId[entityId] = classId;
+    this.signatures[entityId] |= COMPONENT_FLAGS.CLASS;
+  }
+
 
   deactivate(entityId) {
     this.signatures[entityId] = 0;

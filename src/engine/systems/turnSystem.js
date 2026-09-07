@@ -6,6 +6,11 @@ import { COMPONENT_FLAGS } from '../ecs/componentStore.js';
 
 export class TurnSystem {
   /**
+   * TurnSystem manages turn order and timing.
+   * @param {number} turnDurationSeconds – length of each turn in seconds.
+   * @param {Array<number>} playerEntityIds – entity IDs representing players.
+   */
+  /**
    * @param {number} turnDurationSeconds – length of a turn
    * @param {Array<number>} playerEntityIds – entity IDs representing players
    */
@@ -38,3 +43,14 @@ export class TurnSystem {
     }
   }
 }
+
+  /** Return the currently active player entity ID */
+  get currentPlayer() {
+    return this.players.length ? this.players[this.currentIndex] : null;
+  }
+
+  /** Return elapsed time for the current turn */
+  get elapsedTime() {
+    return this.elapsed;
+  }
+
