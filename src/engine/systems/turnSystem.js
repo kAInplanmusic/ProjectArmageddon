@@ -19,6 +19,19 @@ export class TurnSystem {
     this.players = playerEntityIds;
     this.currentIndex = 0;
     this.elapsed = 0;
+    /**
+     * Optional listener callback invoked when turn changes.
+     * Receives an object { currentPlayer, elapsed }.
+     */
+    this.turnChangeListener = null;
+  }
+
+  /**
+   * Register a listener for turn change events.
+   * @param {function} listener - Callback receiving { currentPlayer, elapsed }.
+   */
+  setTurnChangeListener(listener) {
+    this.turnChangeListener = listener;
   }
 
   /**
