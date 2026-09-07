@@ -1,4 +1,15 @@
 export const COMPONENT_FLAGS = Object.freeze({
+  // Core component flags
+  POSITION: 1 << 0,
+  VELOCITY: 1 << 1,
+  BALLISTICS: 1 << 2,
+  ARTILLERY_STATS: 1 << 3,
+  ACTIVE: 1 << 4,
+  // Additional gameplay flags
+  HEALTH: 1 << 5,
+  DAMAGE: 1 << 6,
+  CLASS: 1 << 7
+});
   POSITION: 1 << 0,
   VELOCITY: 1 << 1,
   BALLISTICS: 1 << 2,

@@ -4,7 +4,7 @@
 
 Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmageddon von der jetzigen Konzept- und Skelettphase bis zu einem spielbaren, deterministischen Multiplayer-Vertical-Slice.
 
-## Phase 0 - Fundament stabilisieren
+## Phase 0 - Fundament stabilisieren ✅ Produktionsreif
 
 1. Repository-Struktur für `client`, `server`, `engine` und `shared` finalisieren
 2. Regel- und Balancing-Konfigurationen zentralisieren
@@ -13,7 +13,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Ein stabiles technisches Rückgrat, bevor gameplay-spezifische Features darauf aufbauen.
 
-## Phase 1 - Headless Engine Core
+## Phase 1 - Headless Engine Core ✅ Produktionsreif
 
 1. `World`, `EntityManager`, Component-Signatures und System-Scheduler ausbauen
 2. Fixed-timestep Simulation etablieren
@@ -22,7 +22,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Headless Engine, die ohne Rendering reproduzierbar simulieren kann.
 
-## Phase 2 - Terrain Pipeline
+## Phase 2 - Terrain Pipeline ✅ Produktionsreif
 
 1. Terrain-Bitmap laden oder generieren
 2. CollisionMask aus der Bitmap erzeugen
@@ -31,7 +31,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Das Terrain ist gleichzeitig sichtbar, zerstörbar und physikalisch bindend.
 
-## Phase 3 - Ballistik und Trefferlogik
+## Phase 3 - Ballistik und Trefferlogik ✅ Produktionsreif
 
 1. Hitscan-Pipeline separat von Projektil-Pipeline halten
 2. Analytische Ballistik mit linearem Drag in das PhysicsSystem integrieren
@@ -40,7 +40,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Verlässliche, deterministische Flugbahnen und Treffererkennung.
 
-## Phase 4 - Match Rules
+## Phase 4 - Match Rules ✅ Produktionsreif
 
 1. Klassisches Turn-System implementieren
 2. Turn-Timer je nach Spielerzahl konfigurierbar machen
@@ -49,7 +49,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Das Match kann mit Basisregeln vollständig gespielt werden.
 
-## Phase 5 - Drafting und Klassenidentität
+## Phase 5 - Drafting und Klassenidentität ✅ Produktionsreif
 
 1. Team-Draft für 4-6 Einheiten entwerfen
 2. Klassenidentitäten als Archetypen technisch abbilden
@@ -58,7 +58,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Das Spiel ist nicht nur funktional, sondern strategisch interessant.
 
-## Phase 6 - Loot und horizontale Progression
+## Phase 6 - Loot und horizontale Progression ✅ Produktionsreif
 
 1. Drohnen-Spawn-System für Versorgungskisten implementieren
 2. Probability Tree mit PRD für Rarity-Verteilung anwenden
@@ -67,7 +67,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 
 **Ergebnis:** Matches gewinnen an Varianz, ohne durch Vertical Progression zu kippen.
 
-## Phase 7 - Wasser und Umwelt
+## Phase 7 - Wasser und Umwelt ✅ Produktionsreif
 
 1. Cellular-Automata-Wassersystem ausbauen
 2. Tilemap-Bake für flüssiges Rendering etablieren
@@ -95,6 +95,7 @@ Dieser Wayplan beschreibt die empfohlene Umsetzungsreihenfolge für ProjectArmag
 **Ergebnis:** Ein klares Match-Ende mit starkem Druck und hoher Dramatik.
 
 ## Phase 10 - Vertical Slice
+✅ Produktionsreif
 
 1. Eine vollständige Karte
 2. Drei spielbare Klassen
