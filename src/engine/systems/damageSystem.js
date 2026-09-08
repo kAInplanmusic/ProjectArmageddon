@@ -72,6 +72,12 @@ export class DamageSystem {
             // If health drops to zero or below, deactivate the entity.
             if (components.health[target] <= 0) {
               world.components.deactivate(target);
+              if (this.deadListener) {
+                this.deadListener({ entityId: target });
+              }
+              if (this.deathEffectHandler) {
+                this.deathEffectHandler({ entityId: target });
+              }
             }
           }
         }

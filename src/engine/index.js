@@ -6,3 +6,5 @@ export * from './pooling/projectilePool.js';
 export * from './systems/physicsSystem.js';
 export * from './terrain/collisionMask.js';
 export * from './terrain/terrainSync.js';
+export * from './weaponEngine/index.js';
+export * from './terrainEngine/index.js';
