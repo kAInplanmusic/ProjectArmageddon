@@ -2,6 +2,7 @@ import { World } from './ecs/world.js';
 import { TurnSystem } from './systems/turnSystem.js';
 import { DamageSystem } from './systems/damageSystem.js';
 import { applyClassModifiers } from './classes.js';
+import { initUI, updateTurnInfo, showEntityDeath } from '../client/ui.js';
 
 /**
  * Initialise the game world, register core systems and wire event listeners.
@@ -13,16 +14,20 @@ export function createGameWorld(players = [], turnDuration = 5) {
   const turnSystem = new TurnSystem(turnDuration, players);
   const damageSystem = new DamageSystem();
 
-  // Wire listeners – for now we simply log events. UI code can replace these.
+  // Initialise UI
+  initUI();
+
+  // Wire listeners – UI functions will be called.
   turnSystem.setTurnChangeListener(({ currentPlayer, elapsed }) => {
-    console.log('Turn changed – active player:', currentPlayer);
+    updateTurnInfo(currentPlayer, elapsed);
   });
 
   damageSystem.setDeadListener(({ entityId }) => {
-    console.log('Entity died:', entityId);
+    showEntityDeath(entityId);
   });
 
   damageSystem.setDeathEffectHandler(({ entityId }) => {
+    // For now just log – UI could display an effect.
     console.log('Spawn death effect for entity:', entityId);
   });
 
