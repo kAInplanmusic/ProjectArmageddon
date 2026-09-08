@@ -201,8 +201,7 @@ src/
     config/
     index.js
 README.md
-wayplan.md
-MASTERTODO.md
+todo.md
 package.json
 ```
 
