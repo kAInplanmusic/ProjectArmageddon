@@ -53,6 +53,11 @@ export class TurnSystem {
       world.components.activate(nextEntity);
 
       this.elapsed = 0;
+
+      // Notify listener about turn change
+      if (this.turnChangeListener) {
+        this.turnChangeListener({ currentPlayer: this.currentPlayer, elapsed: this.elapsed });
+      }
     }
   }
 }

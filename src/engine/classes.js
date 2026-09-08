@@ -25,3 +25,29 @@ export const CLASS_DEFINITIONS = Object.freeze({
     color: "#2196f3"
   }
 });
+
+/**
+ * Apply class modifiers to an entity's projectile components.
+ * Looks up the entity's class via `components.classId` and multiplies
+ * the corresponding component values (drag, mass, power) by the class
+ * modifiers defined in `CLASS_DEFINITIONS`.
+ *
+ * @param {number} entityId - The entity ID to modify.
+ * @param {object} components - The ComponentStore instance containing component arrays.
+ */
+export function applyClassModifiers(entityId, components) {
+  const classId = components.classId?.[entityId];
+  if (classId === undefined) return;
+  const def = CLASS_DEFINITIONS[classId];
+  if (!def) return;
+  if (components.drag?.[entityId] !== undefined) {
+    components.drag[entityId] *= def.dragMultiplier;
+  }
+  if (components.mass?.[entityId] !== undefined) {
+    components.mass[entityId] *= def.massMultiplier;
+  }
+  if (components.power?.[entityId] !== undefined) {
+    components.power[entityId] *= def.powerMultiplier;
+  }
+}
+

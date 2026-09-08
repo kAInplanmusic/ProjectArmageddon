@@ -3,6 +3,39 @@ import { COMPONENT_FLAGS } from '../ecs/componentStore.js';
 
 export class DamageSystem {
   /**
+   * DamageSystem – applies projectile‑terrain collisions and reduces health.
+   * It also notifies listeners when an entity dies.
+   */
+  constructor() {
+    /**
+     * Optional listener invoked when an entity's health reaches zero.
+     * Receives an object { entityId }.
+     */
+    this.deadListener = null;
+    /**
+     * Optional handler to spawn death effects (e.g., particles) when an entity dies.
+     * Receives an object { entityId }.
+     */
+    this.deathEffectHandler = null;
+  }
+
+  /**
+   * Register a listener for death events.
+   * @param {function} listener - Callback receiving { entityId }.
+   */
+  setDeadListener(listener) {
+    this.deadListener = listener;
+  }
+
+  /**
+   * Register a handler for spawning death effects.
+   * @param {function} handler - Callback receiving { entityId }.
+   */
+  setDeathEffectHandler(handler) {
+    this.deathEffectHandler = handler;
+  }
+
+  /**
    * Scan active projectiles and apply damage to any entity whose position
    * lands on a solid pixel of the CollisionMask.
    * @param {object} world - The World instance (has components and a collisionMask).
