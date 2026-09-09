@@ -5,7 +5,9 @@
   "type": "module",
   "main": "src/server/index.js",
   "scripts": {
-    "validate": "node --input-type=module -e \"await import('./src/shared/index.js'); await import('./src/engine/index.js'); await import('./src/server/index.js'); await import('./src/client/index.js'); console.log('ProjectArmageddon skeleton is valid.');\""
+    "validate": "node --input-type=module -e \"await import('./src/shared/index.js'); await import('./src/engine/index.js'); await import('./src/server/index.js'); await import('./src/client/index.js'); console.log('ProjectArmageddon skeleton is valid.');\"",
+    "test": "node --test tests/*.test.js --test-reporter=spec",
+    "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js"
   },
   "keywords": [
     "artillery",

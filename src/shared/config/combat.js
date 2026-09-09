@@ -1,14 +1,11 @@
-export const DAMAGE_ORDER = Object.freeze({
-  FLAT_FIRST: 'flat-first',
-  PERCENT_SECOND: 'percent-second'
+/**
+ * Kampf-Regel-Konfiguration für ProjectArmageddon.
+ *
+ * Definiert die Reihenfolge von Schadens- und Widerstand-Berechnungen.
+ */
+export const COMBAT_RULES = Object.freeze({
+  damageApplicationOrder: 'flat-then-percent',
+  resistanceCap: 0.75,
+  criticalMultiplier: 1.5,
+  blockThreshold: 0.3
 });
-
-export const WEAPON_TYPES = Object.freeze({
-  HITSCAN: 'hitscan',
-  PROJECTILE: 'projectile'
-});
-
-export function applyDamageModifiers(baseDamage, flatBonus = 0, percentBonus = 0) {
-  const afterFlat = baseDamage + flatBonus;
-  return afterFlat * (1 + percentBonus / 100);
-}

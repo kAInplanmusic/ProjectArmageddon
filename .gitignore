@@ -1,0 +1,9 @@
+# Build artifacts
+weapon_engine/weapon_engine_v1_0/dist/
+terrain_engine/terrain_build/weapon_engine_v1_0/dist/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.zip

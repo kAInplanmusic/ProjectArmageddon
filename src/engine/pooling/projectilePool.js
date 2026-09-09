@@ -1,23 +1,60 @@
-export class ProjectilePool {
-  constructor(world, initialSize = 128) {
-    this.world = world;
-    this.inactiveEntities = [];
+/**
+ * ECS-System: ProjectilePool
+ * Verwaltet Objekt-Pool für Projektile mit Inaktiv-Wiederverwendung.
+ */
 
-    for (let index = 0; index < initialSize; index += 1) {
-      const entityId = world.createEntity();
-      world.components.deactivate(entityId);
-      this.inactiveEntities.push(entityId);
+export class ProjectilePool {
+  #pool = [];
+  #active = new Set();
+  #maxSize;
+
+  constructor(maxSize = 1000) {
+    this.#maxSize = maxSize;
+  }
+
+  /**
+   * Holt oder erzeugt ein Projektil.
+   * @param {object} template - Basis-Daten für das Projektil
+   * @returns {object} Projektil-Instanz
+   */
+  acquire(template = {}) {
+    let projectile;
+    if (this.#pool.length > 0) {
+      projectile = this.#pool.pop();
+      Object.assign(projectile, template);
+    } else {
+      projectile = { id: this.#generateId(), ...template };
+    }
+    this.#active.add(projectile.id);
+    return projectile;
+  }
+
+  /**
+   * Gibt ein Projektil zurück in den Pool.
+   * @param {*} id - Projektil-ID
+   */
+  release(id) {
+    if (this.#active.has(id)) {
+      this.#active.delete(id);
+      const projectile = this.#pooled.get(id);
+      if (projectile) {
+        if (this.#pool.length < this.#maxSize) {
+          this.#pool.push(projectile);
+        }
+        this.#pooled.delete(id);
+      }
     }
   }
 
-  acquire() {
-    const entityId = this.inactiveEntities.pop() ?? this.world.createEntity();
-    this.world.components.activate(entityId);
-    return entityId;
+  #pooled = new Map();
+  #idCounter = 0;
+
+  #generateId() {
+    return ++this.#idCounter;
   }
 
-  release(entityId) {
-    this.world.components.deactivate(entityId);
-    this.inactiveEntities.push(entityId);
-  }
+  get activeCount() { return this.#active.size; }
+  get poolSize() { return this.#pool.length; }
 }
+
+export default ProjectilePool;

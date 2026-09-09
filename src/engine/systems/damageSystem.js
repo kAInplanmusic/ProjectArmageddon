@@ -1,89 +1,87 @@
-// DamageSystem – applies projectile‑terrain collisions and reduces health.
-import { COMPONENT_FLAGS } from '../ecs/componentStore.js';
+/**
+ * ECS-System: DamageSystem
+ *
+ * Verwaltet Schadensanwendung, Health-Check, Entity-Deaktivierung
+ * und Death-Event-Handhabung.
+ *
+ * @module DamageSystem
+ */
+
+import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 
 export class DamageSystem {
-  /**
-   * DamageSystem – applies projectile‑terrain collisions and reduces health.
-   * It also notifies listeners when an entity dies.
-   */
-  constructor() {
-    /**
-     * Optional listener invoked when an entity's health reaches zero.
-     * Receives an object { entityId }.
-     */
-    this.deadListener = null;
-    /**
-     * Optional handler to spawn death effects (e.g., particles) when an entity dies.
-     * Receives an object { entityId }.
-     */
-    this.deathEffectHandler = null;
-  }
+  #deathListeners = [];
+  #killFeed = [];
 
   /**
-   * Register a listener for death events.
-   * @param {function} listener - Callback receiving { entityId }.
+   * Aktualisiert das Damage-System — prüft Health-Status aller Entities.
+   * @param {object} world - ECS-World-Instanz
+   * @param {number[]} entities - Entities mit Health-Komponente
+   * @param {number} dt - Delta-Zeit
    */
-  setDeadListener(listener) {
-    this.deadListener = listener;
-  }
+  update(world, entities, dt) {
+    for (const entityId of entities) {
+      const health = world.getComponent(entityId, 'Health', 'current');
+      const maxHealth = world.getComponent(entityId, 'Health', 'max');
 
-  /**
-   * Register a handler for spawning death effects.
-   * @param {function} handler - Callback receiving { entityId }.
-   */
-  setDeathEffectHandler(handler) {
-    this.deathEffectHandler = handler;
-  }
-
-  /**
-   * Scan active projectiles and apply damage to any entity whose position
-   * lands on a solid pixel of the CollisionMask.
-   * @param {object} world - The World instance (has components and a collisionMask).
-   * @param {object} world.collisionMask - The CollisionMask instance.
-   */
-  update(world) {
-    const { components, lastEntityId } = world;
-    // Required flags for a projectile that can deal damage
-    const REQUIRED =
-      COMPONENT_FLAGS.ACTIVE |
-      COMPONENT_FLAGS.POSITION |
-      COMPONENT_FLAGS.VELOCITY |
-      COMPONENT_FLAGS.BALLISTICS |
-      COMPONENT_FLAGS.DAMAGE;
-
-    for (let eid = 1; eid <= lastEntityId; eid++) {
-      if (!components.matches(eid, REQUIRED)) continue;
-
-      const x = Math.round(components.positionX[eid]);
-      const y = Math.round(components.positionY[eid]);
-      if (world.collisionMask?.isSolid(x, y)) {
-        // Apply damage to any entity that also has a health component.
-        // For simplicity we just deduct the projectile's damage value.
-        const dmg = components.damage[eid] || 0;
-        // Find target entity at this location (could be same projectile or another)
-        for (let target = 1; target <= lastEntityId; target++) {
-          if (target === eid) continue;
-          const healthMask = COMPONENT_FLAGS.HEALTH;
-          if ((components.signatures[target] & healthMask) !== healthMask) continue;
-          const tx = Math.round(components.positionX[target]);
-          const ty = Math.round(components.positionY[target]);
-          if (tx === x && ty === y) {
-            components.health[target] -= dmg;
-            // If health drops to zero or below, deactivate the entity.
-            if (components.health[target] <= 0) {
-              world.components.deactivate(target);
-              if (this.deadListener) {
-                this.deadListener({ entityId: target });
-              }
-              if (this.deathEffectHandler) {
-                this.deathEffectHandler({ entityId: target });
-              }
-            }
-          }
-        }
-        // Deactivate projectile after impact
-        world.components.deactivate(eid);
+      if (health <= 0) {
+        // Entity deaktivieren
+        world.setComponent(entityId, 'Health', 'current', 0);
+        this.#handleDeath(world, entityId);
       }
     }
   }
+
+  /**
+   * Führt Schaden an einer Entity aus.
+   *
+   * @param {object} world - ECS-World
+   * @param {number} entityId - Ziel-Entity
+   * @param {number} amount - Schadensbetrag
+   * @param {number} [attackerId] - Quell-Entity (optional)
+   */
+  applyDamage(world, entityId, amount, attackerId = null) {
+    const currentHealth = world.getComponent(entityId, 'Health', 'current');
+    const newHealth = Math.max(0, currentHealth - amount);
+
+    world.setComponent(entityId, 'Health', 'current', newHealth);
+
+    // Logge den Schaden
+    this.#killFeed.push({
+      target: entityId,
+      attacker: attackerId,
+      damage: amount,
+      timestamp: Date.now()
+    });
+
+    return newHealth;
+  }
+
+  /**
+   * Registriert einen Death-Listener.
+   * @param {function} callback
+   */
+  onDeath(callback) {
+    this.#deathListeners.push(callback);
+  }
+
+  #handleDeath(world, entityId) {
+    // Emit death event
+    for (const callback of this.#deathListeners) {
+      try {
+        callback(world, entityId);
+      } catch (err) {
+        console.error('Death-Listener-Fehler:', err);
+      }
+    }
+  }
+
+  get killFeed() { return this.#killFeed; }
+
+  // DamageSystem arbeitet mit Health-Komponente
+  get signature() {
+    return COMPONENT_SIGNATURES.HEALTH;
+  }
 }
+
+export default DamageSystem;

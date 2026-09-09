@@ -1,3 +1,7 @@
+/**
+ * Match-Regel-Konfiguration für ProjectArmageddon.
+ * Enthält Timer, Sudden-Death-Parameter und Mahlstrom-Konfiguration.
+ */
 export const MATCH_RULES = Object.freeze({
   gameplayDimension: '2d',
   visualsDimension: '2.5d',
@@ -29,6 +33,5 @@ export function computeMaelstromDamage(roundNumber, rules = MATCH_RULES.suddenDe
   if (roundNumber < rules.roundBreakpoint) {
     return 0;
   }
-
   return rules.outOfZoneDamageBase * (rules.outOfZoneGrowthFactor ** (roundNumber - rules.roundBreakpoint));
 }

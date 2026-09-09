@@ -1,74 +1,117 @@
-// Simple Turn System – manages turn order and timer
-// Each turn lasts a configurable number of seconds. When time expires,
-// the turn index is advanced and the next player becomes active.
+/**
+ * ECS-System: Turn-Wystem
+ *
+ * Verwaltet die Turn-Reihenfolge, Turn-Dauer und Runden-Fortschritt.
+ * Change-Listener für UI-Updates.
+ *
+ * @module TurnSystem
+ */
 
-import { COMPONENT_FLAGS } from '../ecs/componentStore.js';
+import { MATCH_RULES } from '../../shared/config/match.js';
+import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 
 export class TurnSystem {
+  #world;
+  #currentPlayer = 0;
+  #elapsedTime = 0;
+  #turnDuration = 0;
+  #listeners = [];
+  #isTurnActive = false;
+  #playerCount = 0;
+
   /**
-   * TurnSystem manages turn order and timing.
-   * @param {number} turnDurationSeconds – length of each turn in seconds.
-   * @param {Array<number>} playerEntityIds – entity IDs representing players.
+   * @param {object} options
+   * @param {number} options.playerCount - Anzahl der Spieler (2-8)
+   * @param {number} options.turnDuration - Turn-Dauer in Millisekunden
    */
-  /**
-   * @param {number} turnDurationSeconds – length of a turn
-   * @param {Array<number>} playerEntityIds – entity IDs representing players
-   */
-  constructor(turnDurationSeconds = 5, playerEntityIds = []) {
-    this.turnDuration = turnDurationSeconds;
-    this.players = playerEntityIds;
-    this.currentIndex = 0;
-    this.elapsed = 0;
-    /**
-     * Optional listener callback invoked when turn changes.
-     * Receives an object { currentPlayer, elapsed }.
-     */
-    this.turnChangeListener = null;
+  constructor({ playerCount = 2, turnDuration = 30000 } = {}) {
+    this.#playerCount = playerCount;
+    this.#turnDuration = turnDuration;
+    this.#currentPlayer = 0;
+    this.#elapsedTime = 0;
+    this.#listeners = [];
   }
 
   /**
-   * Register a listener for turn change events.
-   * @param {function} listener - Callback receiving { currentPlayer, elapsed }.
+   * Aktualisiert das Turn-System.
+   * @param {object} world - ECS-World-Instanz
+   * @param {number[]} entities - Aktive Entities
+   * @param {number} dt - Delta-Zeit in ms
    */
-  setTurnChangeListener(listener) {
-    this.turnChangeListener = listener;
-  }
+  update(world, entities, dt) {
+    this.#world = world;
+    this.#elapsedTime += dt;
 
-  /**
-   * Called each fixed‑step to advance the timer.
-   * @param {object} world – the World instance (has components)
-   * @param {number} deltaSeconds – time step
-   */
-  update(world, deltaSeconds) {
-    if (this.players.length === 0) return;
-    this.elapsed += deltaSeconds;
-    if (this.elapsed >= this.turnDuration) {
-      // End current turn – deactivate current player
-      const currentEntity = this.players[this.currentIndex];
-      world.components.deactivate(currentEntity);
-
-      // Advance to next player
-      this.currentIndex = (this.currentIndex + 1) % this.players.length;
-      const nextEntity = this.players[this.currentIndex];
-      world.components.activate(nextEntity);
-
-      this.elapsed = 0;
-
-      // Notify listener about turn change
-      if (this.turnChangeListener) {
-        this.turnChangeListener({ currentPlayer: this.currentPlayer, elapsed: this.elapsed });
-      }
+    if (this.#elapsedTime >= this.#turnDuration) {
+      this.#endTurn();
     }
   }
+
+  /**
+   * Endet den aktuellen Turn und startet den nächsten.
+   */
+  #endTurn() {
+    const oldPlayer = this.#currentPlayer;
+    this.#currentPlayer = (this.#currentPlayer + 1) % this.#playerCount;
+    this.#elapsedTime = 0;
+    this.#isTurnActive = false;
+
+    this.#notifyListeners({
+      oldPlayer,
+      newPlayer: this.#currentPlayer,
+      event: 'turn_end'
+    });
+  }
+
+  /**
+   * Startet einen neuen Turn.
+   */
+  startTurn() {
+    this.#elapsedTime = 0;
+    this.#isTurnActive = true;
+
+    this.#notifyListeners({
+      player: this.#currentPlayer,
+      event: 'turn_start'
+    });
+  }
+
+  /**
+   * Registriert einen Change-Listener.
+   * @param {function} callback
+   */
+  addListener(callback) {
+    this.#listeners.push(callback);
+  }
+
+  #notifyListeners(event) {
+    for (const callback of this.#listeners) {
+      callback(event);
+    }
+  }
+
+  // Getter
+  get currentPlayer() { return this.#currentPlayer; }
+  get elapsedTime() { return this.#elapsedTime; }
+  get turnDuration() { return this.#turnDuration; }
+  get isTurnActive() { return this.#isTurnActive; }
+  get playerCount() { return this.#playerCount; }
+
+  // Signatur für Entity-Abfragen (dieses System braucht keine spezifischen Komponenten)
+  get signature() { return 0; }
 }
 
-  /** Return the currently active player entity ID */
-  get currentPlayer() {
-    return this.players.length ? this.players[this.currentIndex] : null;
-  }
+export default TurnSystem;
 
-  /** Return elapsed time for the current turn */
-  get elapsedTime() {
-    return this.elapsed;
+// Konfiguration für Turn-Timer basierend auf Spieleranzahl
+export function getTurnDurationForPlayerCount(playerCount) {
+  if (playerCount <= 2) {
+    return MATCH_RULES.turnTimers.duelSeconds.minimum * 1000;
   }
+  if (playerCount <= 4) {
+    return MATCH_RULES.turnTimers.fourPlayerSeconds.minimum * 1000;
+  }
+  return 15000; // 15 Sekunden für größere Teams
+}
 
+export { COMPONENT_SIGNATURES };

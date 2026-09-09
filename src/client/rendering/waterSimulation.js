@@ -1,58 +1,81 @@
+/**
+ * Wasser-Simulation für ProjectArmageddon.
+ * Float32-Grid-basierte einfache Spread-Simulation.
+ *
+ * @module waterSimulation
+ */
+
 export class WaterSimulation {
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-    this.levels = new Float32Array(width * height);
+  #grid;
+  #width;
+  #height;
+  #spreadFactor;
+  #settledRatio;
+
+  constructor(width, height, spreadFactor = 0.98, settledRatio = 0.95) {
+    this.#width = width;
+    this.#height = height;
+    this.#spreadFactor = spreadFactor;
+    this.#settledRatio = settledRatio;
+    this.#grid = new Float32Array(width * height);
   }
 
-  index(x, y) {
-    return y * this.width + x;
-  }
+  /**
+   * Führt einen Spread-Step aus.
+   * @param {number} dt - Delta-Zeit
+   */
+  step(dt = 1) {
+    const newGrid = new Float32Array(this.#width * this.#height);
 
-  step() {
-    const next = this.levels.slice();
+    for (let y = 0; y < this.#height; y++) {
+      for (let x = 0; x < this.#width; x++) {
+        const idx = y * this.#width + x;
+        let neighbors = 0;
+        let sum = this.#grid[idx];
 
-    for (let y = this.height - 2; y >= 0; y -= 1) {
-      for (let x = 0; x < this.width; x += 1) {
-        const currentIndex = this.index(x, y);
-        const belowIndex = this.index(x, y + 1);
+        // 4-Nachbarn
+        if (x > 0) { sum += this.#grid[idx - 1]; neighbors++; }
+        if (x < this.#width - 1) { sum += this.#grid[idx + 1]; neighbors++; }
+        if (y > 0) { sum += this.#grid[idx - this.#width]; neighbors++; }
+        if (y < this.#height - 1) { sum += this.#grid[idx + this.#width]; neighbors++; }
 
-        const current = next[currentIndex];
-        const below = next[belowIndex];
-
-        if (current > 0 && below < 1) {
-          const transfer = Math.min(current, 1 - below);
-          next[currentIndex] -= transfer;
-          next[belowIndex] += transfer;
-          continue;
-        }
-
-        if (current <= 0) {
-          continue;
-        }
-
-        if (x > 0) {
-          const leftIndex = this.index(x - 1, y);
-          const diff = (next[currentIndex] - next[leftIndex]) / 2;
-          if (diff > 0) {
-            const transfer = diff * 0.25;
-            next[currentIndex] -= transfer;
-            next[leftIndex] += transfer;
-          }
-        }
-
-        if (x < this.width - 1) {
-          const rightIndex = this.index(x + 1, y);
-          const diff = (next[currentIndex] - next[rightIndex]) / 2;
-          if (diff > 0) {
-            const transfer = diff * 0.25;
-            next[currentIndex] -= transfer;
-            next[rightIndex] += transfer;
-          }
-        }
+        // Druckausbau
+        newGrid[idx] = (sum / (neighbors + 1)) * this.#spreadFactor;
       }
     }
 
-    this.levels = next;
+    this.#grid = newGrid;
   }
+
+  /**
+   * Setzt den Wasserstand an einer Position.
+   * @param {number} x
+   * @param {number} y
+   * @param {number} level - Wasserstand (0-1)
+   */
+  setWaterLevel(x, y, level) {
+    const idx = Math.floor(y) * this.#width + Math.floor(x);
+    if (idx >= 0 && idx < this.#grid.length) {
+      this.#grid[idx] = Math.max(0, Math.min(1, level));
+    }
+  }
+
+  /**
+   * Holt den Wasserstand an einer Position.
+   * @param {number} x
+   * @param {number} y
+   * @returns {number}
+   */
+  getWaterLevel(x, y) {
+    const idx = Math.floor(y) * this.#width + Math.floor(x);
+    if (idx >= 0 && idx < this.#grid.length) {
+      return this.#grid[idx];
+    }
+    return 0;
+  }
+
+  get width() { return this.#width; }
+  get height() { return this.#height; }
 }
+
+export default WaterSimulation;

@@ -1,25 +1,34 @@
-export function initUI() {
-  const container = document.createElement('div');
-  container.id = 'game-ui';
-  container.style.position = 'absolute';
-  container.style.top = '0';
-  container.style.left = '0';
-  container.style.padding = '8px';
-  container.style.background = 'rgba(0,0,0,0.5)';
-  container.style.color = 'white';
-  const turnInfo = document.createElement('div');
-  turnInfo.id = 'turn-info';
-  container.appendChild(turnInfo);
-  document.body.appendChild(container);
+/**
+ * Client-UI Initialisierung.
+ * Grundgerüst: initUI, updateTurnInfo, showEntityDeath.
+ */
+
+export function initUI(world) {
+  const ui = {
+    turnDisplay: null,
+    healthDisplay: null,
+    ammoDisplay: null,
+    endScreen: null
+  };
+
+  // Canvas holen
+  const canvas = document.getElementById('game-canvas');
+  if (!canvas) {
+    console.warn('Kein Canvas mit id="game-canvas" gefunden');
+  }
+
+  return ui;
 }
 
-export function updateTurnInfo(currentPlayer, elapsed) {
-  const el = document.getElementById('turn-info');
-  if (el) {
-    el.textContent = `Current player: ${currentPlayer}, elapsed: ${elapsed.toFixed(2)}s`;
+export function updateTurnInfo(ui, currentPlayer, elapsedTime, turnDuration) {
+  if (ui.turnDisplay) {
+    const remaining = Math.max(0, turnDuration - elapsedTime);
+    const seconds = Math.floor(remaining / 1000);
+    ui.turnDisplay.textContent = `Spieler ${currentPlayer + 1} | ${seconds}s`;
   }
 }
 
-export function showEntityDeath(entityId) {
-  console.log('UI: Entity died', entityId);
+export function showEntityDeath(entityId, x, y) {
+  // Death-Effekt: Teilchen, Sound, etc.
+  console.log(`Entity ${entityId} gestorben bei (${x}, ${y})`);
 }

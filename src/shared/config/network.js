@@ -1,3 +1,6 @@
+/**
+ * Netzwerk-Regel-Konfiguration für ProjectArmageddon.
+ */
 export const NETWORK_RULES = Object.freeze({
   authoritativeServer: true,
   protocol: 'binary-websocket',
