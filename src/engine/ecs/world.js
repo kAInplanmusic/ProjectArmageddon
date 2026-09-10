@@ -135,6 +135,16 @@ export class World {
   }
 
   /**
+   * Prüft, ob eine Entity eine Komponente besitzt.
+   * @param {number} entityId
+   * @param {string} componentName
+   * @returns {boolean}
+   */
+  hasComponent(entityId, componentName) {
+    return this.#componentStore.hasComponent(entityId, componentName);
+  }
+
+  /**
    * Prüft, ob eine Entity aktiv ist.
    * @param {number} entityId
    * @returns {boolean}
@@ -220,10 +230,23 @@ export class World {
    * @returns {object}
    */
   serialize() {
+    const entities = this.#entityManager.getAllEntities();
+    const systems = {};
+    const turnSystem = this.#systemsByName.get('turn');
+    if (turnSystem) {
+      systems.turn = {
+        currentPlayer: turnSystem.currentPlayer,
+        elapsedTime: turnSystem.elapsedTime,
+        turnDuration: turnSystem.turnDuration,
+        isTurnActive: turnSystem.isTurnActive
+      };
+    }
     return {
       tickCount: this.#tickCount,
       elapsedTime: this.#elapsedTime,
-      fixedTimestep: this.#fixedTimestep
+      fixedTimestep: this.#fixedTimestep,
+      entities: this.#componentStore.serialize(entities),
+      systems
     };
   }
 

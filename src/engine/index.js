@@ -28,3 +28,5 @@ export { isWasmSupported } from './physics/ballisticsWasm.js';
 
 // Engine-Initialisierung
 export { createGameWorld } from './init.js';
+export { HeadlessRuntime } from './headless.js';
+export { terrainMaskFromBitmap, terrainMaskFromRows } from './terrain/terrainLoader.js';

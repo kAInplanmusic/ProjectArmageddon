@@ -6,6 +6,8 @@
  */
 
 export { createServerRuntime, createGameWorld, registerDefaultComponents, SYSTEM_PRIORITIES } from '../engine/init.js';
+export { HeadlessRuntime } from '../engine/headless.js';
+export { terrainMaskFromBitmap, terrainMaskFromRows } from '../engine/terrain/terrainLoader.js';
 export { World } from '../engine/ecs/world.js';
 export { ComponentStore, COMPONENT_SIGNATURES } from '../engine/ecs/componentStore.js';
 export { EntityManager } from '../engine/ecs/entityManager.js';

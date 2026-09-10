@@ -120,24 +120,42 @@ export function computeAimAngle(startX, startY, targetX, targetY, power, gravity
  * @returns {{hitX: number, hitY: number, hit: boolean}}
  */
 export function ccdRaycast(params, isSolid) {
+  if (typeof isSolid !== 'function') {
+    throw new TypeError('isSolid muss eine Funktion sein');
+  }
+
+  const startX = params.startX ?? 0;
+  const startY = params.startY ?? 0;
+  let previousX = startX;
+  let previousY = startY;
+  let collisionPoint = null;
+
   const result = computeTrajectory({
     ...params,
     onStep: (x, y) => {
-      return isSolid(x, y);
+      // Sample every pixel along the segment so fast projectiles cannot tunnel
+      // through a one-pixel terrain barrier between two simulation steps.
+      const distance = Math.max(Math.abs(x - previousX), Math.abs(y - previousY));
+      const samples = Math.max(1, Math.ceil(distance));
+      for (let i = 1; i <= samples; i++) {
+        const ratio = i / samples;
+        const sampleX = previousX + (x - previousX) * ratio;
+        const sampleY = previousY + (y - previousY) * ratio;
+        if (isSolid(sampleX, sampleY)) {
+          collisionPoint = { x: sampleX, y: sampleY };
+          return true;
+        }
+      }
+      previousX = x;
+      previousY = y;
+      return false;
     }
   });
 
-  if (result.hit) {
-    return {
-      hitX: result.hit.x,
-      hitY: result.hit.y,
-      hit: true
-    };
+  if (collisionPoint || result.hit) {
+    const point = collisionPoint || result.hit;
+    return { hitX: point.x, hitY: point.y, hit: true };
   }
 
-  return {
-    hitX: result.x,
-    hitY: result.y,
-    hit: false
-  };
+  return { hitX: result.x, hitY: result.y, hit: false };
 }

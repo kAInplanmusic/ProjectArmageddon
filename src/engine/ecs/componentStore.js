@@ -80,7 +80,7 @@ export class ComponentStore {
     for (let i = 0; i < fieldNames.length; i++) {
       const fieldName = fieldNames[i];
       const typeName = types[i];
-      if (!DataType[typeName.toUpperCase()] && typeName !== 'Boolean') {
+      if (typeName !== 'Boolean' && typeof globalThis[typeName] !== 'function') {
         throw new Error(`Unbekannter Datentyp: ${typeName}`);
       }
       const arrayType = typeName === 'Boolean' ? 'Uint8Array' : typeName;
@@ -275,6 +275,34 @@ export class ComponentStore {
       }
     }
     return count;
+  }
+
+  /**
+   * Erstellt einen stabil sortierten Snapshot aller aktiven Komponentendaten.
+   * Der Snapshot ist für Replays/Determinismus-Checks gedacht, nicht für den
+   * Hot-Path der Simulation.
+   * @param {number[]} entityIds
+   * @returns {object[]}
+   */
+  serialize(entityIds = this.#entitySignatures.keys()) {
+    const ids = [...entityIds].sort((a, b) => a - b);
+    return ids.map(entityId => {
+      const components = {};
+      const names = [...(this.#entityComponents.get(entityId) || [])].sort();
+      for (const name of names) {
+        const component = this.#components[name];
+        const values = {};
+        for (const fieldName of component.fieldNames) {
+          values[fieldName] = component.data[fieldName][entityId];
+        }
+        components[name] = values;
+      }
+      return {
+        id: entityId,
+        signature: this.#entitySignatures.get(entityId) || 0,
+        components
+      };
+    });
   }
 }
 

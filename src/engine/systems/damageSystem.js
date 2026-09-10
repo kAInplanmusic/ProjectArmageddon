@@ -12,6 +12,7 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 export class DamageSystem {
   #deathListeners = [];
   #killFeed = [];
+  #handledDeaths = new Set();
 
   /**
    * Aktualisiert das Damage-System — prüft Health-Status aller Entities.
@@ -25,9 +26,12 @@ export class DamageSystem {
       const maxHealth = world.getComponent(entityId, 'Health', 'max');
 
       if (health <= 0) {
-        // Entity deaktivieren
         world.setComponent(entityId, 'Health', 'current', 0);
-        this.#handleDeath(world, entityId);
+        if (!this.#handledDeaths.has(entityId)) {
+          this.#handledDeaths.add(entityId);
+          this.#handleDeath(world, entityId);
+          world.removeEntity(entityId);
+        }
       }
     }
   }
@@ -51,7 +55,8 @@ export class DamageSystem {
       target: entityId,
       attacker: attackerId,
       damage: amount,
-      timestamp: Date.now()
+      // Simulation time, not wall-clock time, keeps replays deterministic.
+      tick: world.tickCount
     });
 
     return newHealth;

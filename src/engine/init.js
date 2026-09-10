@@ -48,8 +48,8 @@ export function createClientRuntime() {
   };
 }
 
-export function createServerRuntime() {
-  const world = createGameWorld();
+export function createServerRuntime(options = {}) {
+  const world = createGameWorld(options);
   return {
     world,
     update: (dt) => world.update(dt),
