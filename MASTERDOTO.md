@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **117/117** |
-| Browser-E2E | `npm run test:e2e` | **12/12** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **122/122** |
+| Browser-E2E | `npm run test:e2e` | **26/26** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
@@ -81,6 +81,20 @@ durch Messungen oder fehlschlagende Tests aufgedeckt.
    Schleife, wodurch der Zustand unbestimmt wurde. Behoben durch Deaktivieren
    vor dem Start.
 
+10. **Tastatursteuerung griff auch in Formularfelder (Bedienfehler).**
+    Beide keydown-Handler (Spielsteuerung und Neustart) hingen global am Fenster
+    und prüften nicht, ob der Nutzer gerade tippt. Der Seed "2026" veränderte
+    den Winkel, die Leertaste begann eine Ladung, und ein "r" im Serverfeld
+    setzte das Match zurück. Behoben durch den gemeinsamen Helfer
+    `isTextEntry()` (`src/client/dom.js`), der in beiden Handlern greift.
+    Nachgewiesen per Gegenprobe: ohne die Sperre schlagen die E2E-Tests fehl.
+
+11. **Keine Fokusindikatoren und keine Fokusreihenfolge.**
+    Es gab kein `:focus-visible`-Styling; beim Tabben war nicht erkennbar,
+    welches Element aktiv ist. Ergänzt: Fokusring, Skip-Link zum Spielfeld,
+    fokussierbares Canvas mit Beschreibung und `[hidden]`-Ausblendung, damit
+    verborgene Overlays keine Fokusziele liefern.
+
 ## Umgesetzt
 
 ### Engine
@@ -128,6 +142,18 @@ durch Messungen oder fehlschlagende Tests aufgedeckt.
 - `npm run weapons:build` — Kataloggenerator mit dokumentierter Stufenableitung.
 - CI: Lint → Tests → Build → Performance-Budget, danach E2E.
 
+## Testabdeckung
+
+- **Unit/Integration (122):** PRNG und Seeds, Loot, Terrain, Wasser und
+  Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
+  Replay und Determinismus, Netcode und Delta-Encoding, Lobby und
+  Servervalidierung, Persistenz, Waffenkatalog und Icon-Zuordnung, Lasttest mit
+  8 Clients, DOM-Helfer.
+- **Browser-E2E (26):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+  Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
+  Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
+  Server, Tastatur- und Fokusverhalten.
+
 ## Einstufung der Waffen
 
 Die Quelldaten kennen nur `common`, `uncommon` und `rare`. `epic` und
@@ -145,7 +171,6 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [ ] Balance über die volle Kartenbreite messen (aktuell 90 px; schwere
       Artillerie wird dadurch unterschätzt).
 - [ ] Ertrinken und Wasserverdrängung im HUD anzeigen.
-- [ ] Windpfeil zusätzlich als Zahlenwert mit Einheit beschriften.
 
 ### P1 — Netcode
 - [ ] Client-seitige Prädiktion des eigenen Schusses mit Server-Rollback.
@@ -154,12 +179,13 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [ ] Snapshot-Kompression prüfen (Delta läuft, Quantisierung ist schon aktiv).
 
 ### P2 — Client & UX
-- [ ] Lobby-Browser im Menü (offene Lobbys listen und beitreten).
-- [ ] Kartenwahl im Menü (Presets existieren: hills, mountains, islands, caverns).
-- [ ] Latenz-Anzeige per Ping-Intervall statt nur bei manuellem Ping.
+- [x] Lobby-Browser im Menü (offene Lobbys listen und beitreten).
+- [x] Kartenwahl im Menü (Presets: hills, mountains, islands, caverns).
+- [x] Latenz-Anzeige per Ping-Intervall (2 s, mit Messung echter RTT).
+- [x] Tastatur-Fokusreihenfolge und Fokusindikatoren inkl. Skip-Link.
+- [x] Tastatursteuerung greift nicht mehr in Formularfelder ein.
 - [ ] Entwurfsphase (Draft) für 4–6 Einheiten pro Team.
-- [ ] Tastatur-Fokusreihenfolge und vollständige Fokusindikatoren.
-- [ ] Accessibility vertiefen: Screenreader-Tests, `prefers-reduced-motion`.
+- [ ] Accessibility vertiefen: Screenreader-Durchlauf, `prefers-reduced-motion`.
 - [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
 
 ### P3 — Betrieb

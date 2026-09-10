@@ -7,6 +7,8 @@
  *
  * @module input
  */
+import { isTextEntry } from './dom.js';
+
 export class InputController {
   #canvas;
   #handlers;
@@ -59,6 +61,10 @@ export class InputController {
 
     window.addEventListener('keydown', event => {
       if (event.repeat) return;
+      // Nicht die Spielfigur steuern, während der Nutzer in ein Textfeld tippt.
+      // Ohne diese Prüfung würde z. B. der Seed "2026" den Winkel verändern,
+      // die Leertaste feuern und "r" das Match neu starten.
+      if (isTextEntry(event.target)) return;
       this.#keys.add(event.key);
       this.#onKeyDown(event);
     });

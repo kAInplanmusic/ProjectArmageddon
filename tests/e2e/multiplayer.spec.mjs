@@ -190,3 +190,67 @@ test('Client verbindet sich nach Abbruch neu', async ({ browser }) => {
     await context.close();
   }
 });
+
+test('Latenz wird laufend gemessen', async ({ browser }) => {
+  const context = await browser.newContext();
+  try {
+    const page = await openClient(context, { name: 'Lena' });
+    await expect(page.locator('#hud-connection')).toContainText('online');
+
+    // Nach dem Verbinden muss die periodische Messung laufen. Ohne sie bliebe
+    // die HUD-Anzeige auf dem Startwert stehen.
+    await expect.poll(async () => page.evaluate(() => window.__PA__.getNetwork()?.pingActive ?? false), {
+      timeout: 10_000,
+    }).toBe(true);
+
+    const interval = await page.evaluate(() => window.__PA__.getNetwork().pingIntervalMs);
+    expect(interval).toBe(2000);
+
+    // Ein Ping muss auch tatsächlich beantwortet werden: die gemessene Latenz
+    // liegt über 0 und ist plausibel klein.
+    await expect.poll(async () => page.evaluate(() => window.__PA__.getNetwork().latencyMs), {
+      timeout: 15_000,
+    }).toBeGreaterThan(0);
+
+    const latency = await page.evaluate(() => window.__PA__.getNetwork().latencyMs);
+    expect(latency).toBeLessThan(2000);
+
+    // Die Anzeige im HUD muss den gemessenen Wert widerspiegeln.
+    await expect(page.locator('#hud-connection')).toContainText('ms');
+
+    // Nach dem Trennen darf kein Timer weiterlaufen (sonst Leck bei Reconnect).
+    await page.evaluate(() => window.__PA__.getNetwork().stopPing());
+    expect(await page.evaluate(() => window.__PA__.getNetwork().pingActive)).toBe(false);
+  } finally {
+    await context.close();
+  }
+});
+
+test('Ping-Intervall lehnt ungültige Werte ab', async ({ browser }) => {
+  const context = await browser.newContext();
+  try {
+    const page = await openClient(context, { name: 'Pia' });
+    await expect(page.locator('#hud-connection')).toContainText('online');
+
+    // Ein Intervall von 0 oder negativ würde setInterval zum Dauerfeuer machen.
+    const results = await page.evaluate(() => {
+      const client = window.__PA__.getNetwork();
+      const out = [];
+      for (const value of [0, -1, Number.NaN, 'x']) {
+        try {
+          client.startPing(value);
+          out.push({ value: String(value), threw: false });
+        } catch (error) {
+          out.push({ value: String(value), threw: true, message: error.message });
+        }
+      }
+      client.startPing(2000);
+      return out;
+    });
+
+    expect(results.every(entry => entry.threw)).toBe(true);
+    expect(await page.evaluate(() => window.__PA__.getNetwork().pingActive)).toBe(true);
+  } finally {
+    await context.close();
+  }
+});

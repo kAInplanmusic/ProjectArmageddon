@@ -49,6 +49,8 @@ export class NetworkClient {
   #joinsSent = 0;
   /** Letzter dekodierter Snapshot — Basis für das Delta-Encoding. */
   #lastDecoded = null;
+  #pingTimer = null;
+  #pingIntervalMs;
 
   constructor({ url, lobbyId, token = null, playerName = 'Spieler', seed = null, preset = 'hills', teams = 2, playersPerTeam = 2 } = {}) {
     this.#url = url;
@@ -286,7 +288,35 @@ export class NetworkClient {
     this.#socket.send(controlMessage(CONTROL.PING));
   }
 
+  /**
+   * Startet die regelmäßige Latenzmessung.
+   *
+   * Ohne Intervall wurde die Latenz nur bei einem manuellen Ping gemessen und
+   * blieb im HUD praktisch konstant. Das Intervall ist bewusst größer als die
+   * Snapshot-Rate, damit die Messung die Verbindung nicht zusätzlich belastet.
+   */
+  startPing(intervalMs = 2000) {
+    this.stopPing();
+    if (!Number.isFinite(intervalMs) || intervalMs <= 0) {
+      throw new TypeError('Ping-Intervall muss eine positive Zahl in Millisekunden sein');
+    }
+    this.#pingIntervalMs = intervalMs;
+    this.#pingTimer = setInterval(() => this.ping(), intervalMs);
+    // Erste Messung sofort, damit die Anzeige nicht zwei Sekunden leer bleibt.
+    this.ping();
+    return this;
+  }
+
+  stopPing() {
+    if (this.#pingTimer) clearInterval(this.#pingTimer);
+    this.#pingTimer = null;
+  }
+
+  get pingActive() { return this.#pingTimer !== null; }
+  get pingIntervalMs() { return this.#pingIntervalMs ?? null; }
+
   disconnect({ permanent = true } = {}) {
+    this.stopPing();
     this.#shouldReconnect = !permanent;
     if (this.#reconnectTimer) {
       clearTimeout(this.#reconnectTimer);

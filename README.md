@@ -45,9 +45,9 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (117 Tests) |
+| `npm test` | Unit- und Integrationstests (122 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
-| `npm run test:e2e` | Browser-E2E inkl. Multiplayer (12 Tests) |
+| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur (26 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
@@ -74,6 +74,15 @@ npm run replay -- play artifacts/lauf.json --verify
 `--verify` vergleicht Status, Runde, Tickzahl und den Zustandshash gegen die
 Aufzeichnung. Weicht etwas ab, endet der Befehl mit Exit-Code 1 — der Befehl ist
 damit als Determinismusprüfung in Skripten nutzbar.
+
+### Lobby-Browser
+
+Im Menü unter „Offene Lobbys anzeigen“ lassen sich laufende Lobbys vom Server
+auflisten. Voraussetzung ist eine eingetragene Server-URL — ohne sie wird lokal
+gespielt. Die Liste wird beim Aufklappen und über den Knopf „Lobbys laden“
+aktualisiert; ein Klick auf „Beitreten“ übernimmt nur die Lobby-ID ins Formular,
+gestartet wird weiterhin über „Match starten“. Wiederbeitritts-Token werden
+dabei nicht angezeigt.
 
 ### Balance messen
 

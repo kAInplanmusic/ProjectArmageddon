@@ -12,6 +12,7 @@
  *
  * @module main
  */
+import { isTextEntry } from './dom.js';
 import { MatchController, MAP_WIDTH, MAP_HEIGHT, TEAM_COLORS, WATER_SCALE } from '../engine/match.js';
 import { Renderer } from './renderer.js';
 import { InputController } from './input.js';
@@ -63,7 +64,20 @@ class Game {
       this.menuOverlay.hidden = false;
     });
 
+    // Lobby-Browser: manuell über den Button, zusätzlich automatisch beim
+    // Aufklappen. Sonst müsste der Nutzer erst laden, ohne zu wissen, dass es
+    // die Möglichkeit gibt.
+    const lobbyBrowser = document.getElementById('lobby-browser');
+    const refresh = () => this.refreshLobbies();
+    document.getElementById('lobby-refresh')?.addEventListener('click', refresh);
+    lobbyBrowser?.addEventListener('toggle', () => {
+      if (lobbyBrowser.open) refresh();
+    });
+
     window.addEventListener('keydown', event => {
+      // Der Neustart darf nicht ausgelöst werden, während in ein Formularfeld
+      // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
+      if (isTextEntry(event.target)) return;
       if (event.key === 'r' || event.key === 'R') {
         this.network?.disconnect();
         this.network = null;
@@ -96,6 +110,70 @@ class Game {
       return this.startOnline({ serverUrl, lobbyId, teams, playersPerTeam, preset, seed });
     }
     return this.startMatch({ teams, playersPerTeam, preset, seed });
+  }
+
+  /**
+   * Lädt die offenen Lobbys vom konfigurierten Server und zeigt sie im Menü an.
+   *
+   * Rein lesend: Es wird nichts am Serverzustand geändert. Ein Klick auf einen
+   * Eintrag übernimmt die Lobby-ID ins Formular, damit derselbe Startweg
+   * verwendet wird wie bei manueller Eingabe.
+   */
+  async refreshLobbies() {
+    const status = document.getElementById('lobby-status');
+    const list = document.getElementById('lobby-list');
+    const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
+    if (!list) return { ok: false, reason: 'keine Liste im DOM' };
+
+    if (!serverUrl) {
+      if (status) status.textContent = 'Dafür bitte eine Server-URL eintragen.';
+      list.replaceChildren();
+      return { ok: false, reason: 'kein Server konfiguriert' };
+    }
+
+    if (status) status.textContent = 'Lade …';
+    let lobbies = [];
+    try {
+      const response = await fetch(`${serverUrl.replace(/\/$/, '')}/api/lobby`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      lobbies = Array.isArray(payload.lobbies) ? payload.lobbies : [];
+    } catch (error) {
+      // Kein Absturz bei nicht erreichbarem Server: das Menü bleibt bedienbar.
+      if (status) status.textContent = `Server nicht erreichbar (${error.message})`;
+      list.replaceChildren();
+      return { ok: false, reason: error.message };
+    }
+
+    const offen = lobbies.filter(lobby => lobby.status === 'open');
+    if (offen.length === 0) {
+      if (status) status.textContent = 'Keine offene Lobby gefunden.';
+      list.replaceChildren();
+      return { ok: true, count: 0 };
+    }
+
+    if (status) status.textContent = `${offen.length} offene Lobby(s)`;
+    list.replaceChildren(...offen.map(lobby => {
+      const item = document.createElement('li');
+
+      const label = document.createElement('span');
+      const belegt = `${lobby.occupied ?? 0}/${lobby.capacity ?? '?'}`;
+      label.textContent = `${lobby.id} · ${lobby.preset ?? 'hills'} · ${belegt} Plätze`;
+
+      const join = document.createElement('button');
+      join.type = 'button';
+      join.textContent = lobby.occupied >= lobby.capacity ? 'Voll' : 'Beitreten';
+      join.disabled = lobby.occupied >= lobby.capacity;
+      join.addEventListener('click', () => {
+        const lobbyInput = document.getElementById('cfg-lobby');
+        if (lobbyInput) lobbyInput.value = lobby.id;
+        if (status) status.textContent = `Lobby ${lobby.id} ausgewählt — auf "Match starten" klicken.`;
+      });
+
+      item.append(label, join);
+      return item;
+    }));
+    return { ok: true, count: offen.length };
   }
 
   /** Lokales Match im Browser. */
@@ -190,6 +268,8 @@ class Game {
     client.on('game_event', message => this.#handleRemoteEvent(message));
 
     await client.connect();
+    // Laufende Latenzmessung, damit die HUD-Anzeige den echten Wert zeigt.
+    client.startPing(2000);
     if (!this.animationHandle) this.#loop(performance.now());
     return { ok: true, mode: 'online', lobbyId: targetLobby };
   }
@@ -526,6 +606,7 @@ class Game {
       getState: () => this.currentState(),
       startMatch: options => this.startMatch(options),
       startOnline: options => this.startOnline(options),
+      refreshLobbies: () => this.refreshLobbies(),
       fire: (angle, power) => {
         if (angle !== undefined) this.aim = { angle, power: power ?? this.aim.power };
         return this.fire();
