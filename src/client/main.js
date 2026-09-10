@@ -19,7 +19,8 @@ import { InputController } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { buildTerrainForSeed } from './terrainPreview.js';
-import { getWeapon } from '../shared/config/weapons.js';
+import { getWeapon, WEAPONS } from '../shared/config/weapons.js';
+import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
@@ -717,6 +718,15 @@ class Game {
       startMatch: options => this.startMatch(options),
       startOnline: options => this.startOnline(options),
       refreshLobbies: () => this.refreshLobbies(),
+      /**
+       * Waffenkatalog und Wirkungen für Tests und Automatisierung.
+       * Ohne diese Zugänge müssten E2E-Tests Module dynamisch nachladen, was im
+       * Browser an der Pfadauflösung scheitert.
+       */
+      weapons: () => WEAPONS,
+      getWeapon: id => getWeapon(id),
+      buildEffect: id => buildEffect(getWeapon(id)),
+      findWeaponByEffect: kind => WEAPONS.find(weapon => buildEffect(weapon)?.kind === kind) ?? null,
       fire: (angle, power) => {
         if (angle !== undefined) this.aim = { angle, power: power ?? this.aim.power };
         return this.fire();

@@ -267,7 +267,13 @@ export class MatchController {
 
     this.#turnElapsed += dt;
     this.#world.step();
-    this.#events.drain();
+    // KEIN `drain()` hier: das würde die Warteschlange leeren und die
+    // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
+    // kann. Der Client und der Server holen sie über `consumeEvents()`; die
+    // Push-API wird im Projekt nicht verwendet. Mit `drain()` gingen alle
+    // Ereignisse aus der Simulation verloren — Explosionen wurden nicht
+    // gezeichnet, Treffer nicht protokolliert und die Spezialeffekte nie
+    // gemeldet.
     this.#checkVictory();
 
     const projectilesActive = this.activeProjectileCount > 0;

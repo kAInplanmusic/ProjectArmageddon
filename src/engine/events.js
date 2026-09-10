@@ -7,10 +7,15 @@
  *
  * @module events
  */
+
+/** Obergrenze der Warteschlange, damit sie ohne Abnehmer nicht unbegrenzt wächst. */
+const MAX_QUEUE = 2000;
+
 export class EventBus {
   #handlers = new Map();
   #queue = [];
   #history = [];
+  #dropped = 0;
 
   on(type, handler) {
     if (typeof handler !== 'function') {
@@ -30,6 +35,19 @@ export class EventBus {
 
   emit(type, payload = {}) {
     this.#queue.push({ type, payload });
+    // Obergrenze: Die Warteschlange wird von `flush()` geleert, das der
+    // Konsument aufruft. Ruft niemand ab (Headless-Läufe ohne Ereignisauswertung),
+    // wüchse sie unbegrenzt. Die ältesten Einträge fallen dann heraus — dieselbe
+    // Politik wie beim Verlauf.
+    if (this.#queue.length > MAX_QUEUE) {
+      this.#queue.splice(0, this.#queue.length - MAX_QUEUE);
+      this.#dropped += 1;
+    }
+  }
+
+  /** Anzahl wegen der Obergrenze verworfener Ereignisse (Diagnose). */
+  get dropped() {
+    return this.#dropped;
   }
 
   /** Liefert alle gepufferten Ereignisse in Reihenfolge des Auftretens. */

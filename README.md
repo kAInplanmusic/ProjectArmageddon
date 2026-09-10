@@ -45,9 +45,9 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (168 Tests) |
+| `npm test` | Unit- und Integrationstests (175 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
-| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur (26 Tests) |
+| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (33 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |

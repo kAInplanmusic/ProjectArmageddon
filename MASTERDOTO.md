@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **168/168** |
-| Browser-E2E | `npm run test:e2e` | **26/26** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **175/175** |
+| Browser-E2E | `npm run test:e2e` | **33/33** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
@@ -129,6 +129,24 @@ durch Messungen oder fehlschlagende Tests aufgedeckt.
     Katalog beschrieben, aber nicht implementiert: Diese Waffen verbrauchten
     Munition und beendeten den Zug, ohne etwas zu bewirken.
 
+17. **`step()` leerte die Ereignis-Warteschlange — der Client sah nichts.**
+    Der teuerste stille Fehler dieses Projekts. `MatchController.step()` rief
+    `this.#events.drain()`, was die Warteschlange leert und die Ereignisse an die
+    Push-Handler verteilt. Client und Server holen sie aber über
+    `consumeEvents()` (Pull), und die Push-API wird im Projekt nirgends benutzt.
+    Folge: Jedes Ereignis, das während der Simulation entstand, war beim Abholen
+    bereits weg. Sichtbar wurde das als fehlende Explosionsgrafik im lokalen
+    Spiel und — nach Einbau der Spezialeffekte — als Protokollzeile, die es nie
+    geben konnte. Behoben durch Entfernen des `drain()`-Aufrufs; dazu eine
+    Obergrenze für die Warteschlange, weil sie nun nicht mehr automatisch geleert
+    wird. Nachgewiesen per Gegenprobe (drei Tests fallen ohne den Fix) und per
+    Pixelmessung am Einschlagpunkt (26 Partikel, Krater gesetzt).
+
+18. **Kein Test prüfte, ob der Konsument die Ereignisse tatsächlich sieht.**
+    Alle bestehenden Tests prüften den Match-Zustand, nicht den Ereignisstrom —
+    deshalb blieb Fehler 17 unbemerkt. `tests/events.test.js` modelliert jetzt den
+    echten Ablauf (feuern, einen Schritt ausführen, DANN lesen).
+
 Zusätzlich beim Bau der Betriebszähler aufgefallen und behoben: Der Zähler für
 abgelehnte Kommandos saß zunächst nur am Ende von `handleInput`. Die frühen
 Ablehnungen (falscher Platz, ungültiger Winkel, Tick außerhalb des Fensters)
@@ -198,25 +216,31 @@ zählt eine Hülle um die Methode jeden Ausgang.
 - `npm run perf` — Performance-Profil mit Budget-Gate.
 - `npm run replay` — Aufzeichnen, Abspielen, `--verify`.
 - `npm run icons` — Icon-Pipeline (Pillow, ohne ImageMagick).
+- `scripts/verify-explosion-render.mjs` — Pixelprüfung, dass Einschläge
+  tatsächlich gezeichnet werden (findet Fehler, die kein Unit-Test sieht).
 - `npm run weapons:build` — Kataloggenerator mit dokumentierter Stufenableitung.
 - CI: Lint → Tests → Build → Performance-Budget, danach E2E.
 
 ## Testabdeckung
 
-- **Unit/Integration (168):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (175):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
   Waffenkatalog und Icon-Zuordnung, Lasttest mit 8 Clients, DOM-Helfer sowie
   Neustart mit Persistenz (Lobby ohne Sitzung und gespieltes Match),
   Spezialeffekte (24 Tests über Registry, StatusStore, Wirkung im Spiel,
-  Zustandswirkungen und Determinismus).
+  Zustandswirkungen und Determinismus), Ereignisweitergabe an den Konsumenten
+  (7 Tests, inklusive Gegenprobe).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (26):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (33):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
-  Server, Tastatur- und Fokusverhalten.
+  Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
+  Heilung im Protokoll, Schildmarke, Einfrieren, Schaden über Zeit,
+  Selbstwirkung ohne Projektil, Lauffähigkeit nach allen Effekten,
+  Determinismus).
 
 ## Einstufung der Waffen
 
