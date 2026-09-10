@@ -32,6 +32,142 @@ export class Renderer {
     this.particles = [];
     this.waterFrame = 0;
     this.time = 0;
+    /** Transiente Effekte (Strahlen, Blitze) mit Lebensdauer in Frames. */
+    this.effects = [];
+  }
+
+  /**
+   * Fügt einen Hitscan-Strahl hinzu (Lebensdauer ~10 Frames).
+   * Rein visuell: hat keinen Einfluss auf die Simulation.
+   */
+  addBeam(fromX, fromY, toX, toY, { hit = false, color = '#ffe066' } = {}) {
+    this.effects.push({
+      kind: 'beam',
+      fromX, fromY, toX, toY,
+      hit,
+      color,
+      life: 1,
+      decay: 0.11,
+    });
+  }
+
+  /** Fügt einen Explosionsblitz an einer Stelle hinzu. */
+  addFlash(x, y, radius, { color = '#f4a261' } = {}) {
+    this.effects.push({ kind: 'flash', x, y, radius, color, life: 1, decay: 0.09 });
+  }
+
+  #updateEffects() {
+    for (const effect of this.effects) effect.life -= effect.decay;
+    this.effects = this.effects.filter(effect => effect.life > 0);
+  }
+
+  #drawEffects() {
+    for (const effect of this.effects) {
+      const alpha = Math.max(0, Math.min(1, effect.life));
+      if (effect.kind === 'beam') {
+        this.ctx.save();
+        // Kernstrahl
+        this.ctx.globalAlpha = alpha;
+        this.ctx.strokeStyle = effect.color;
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(effect.fromX, effect.fromY);
+        this.ctx.lineTo(effect.toX, effect.toY);
+        this.ctx.stroke();
+        // Weicher Glow darum
+        this.ctx.globalAlpha = alpha * 0.35;
+        this.ctx.lineWidth = 9;
+        this.ctx.stroke();
+        // Einschlagpunkt markieren
+        if (effect.hit) {
+          this.ctx.globalAlpha = alpha;
+          this.ctx.fillStyle = '#fff3c4';
+          this.ctx.beginPath();
+          this.ctx.arc(effect.toX, effect.toY, 4 + (1 - effect.life) * 6, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+        this.ctx.restore();
+      } else if (effect.kind === 'flash') {
+        const radius = effect.radius * (1 + (1 - effect.life) * 0.6);
+        const gradient = this.ctx.createRadialGradient(
+          effect.x, effect.y, 0,
+          effect.x, effect.y, Math.max(1, radius),
+        );
+        gradient.addColorStop(0, 'rgba(255, 243, 196, ' + alpha + ')');
+        gradient.addColorStop(0.45, 'rgba(244, 162, 97, ' + alpha * 0.7 + ')');
+        gradient.addColorStop(1, 'rgba(231, 111, 81, 0)');
+        this.ctx.save();
+        this.ctx.fillStyle = gradient;
+        this.ctx.beginPath();
+        this.ctx.arc(effect.x, effect.y, Math.max(1, radius), 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+    }
+  }
+
+  /**
+   * Windanzeige als Pfeil im Spielfeld.
+   * Länge und Farbe skalieren mit der Windstärke, die Richtung mit dem Vorzeichen.
+   */
+  #drawWindArrow(wind) {
+    const magnitude = Math.abs(wind ?? 0);
+    if (magnitude < 0.0005) return;
+
+    const maxWind = 0.05;
+    const strength = Math.min(1, magnitude / maxWind);
+    const cx = this.width / 2;
+    const cy = 46;
+    const halfLength = 20 + strength * 46;
+    const direction = wind > 0 ? 1 : -1;
+    const color = strength > 0.6 ? '#ef476f' : strength > 0.3 ? '#f4a261' : '#8ba0b4';
+
+    // Drei Pfeile, versetzt — liest sich als "Strömung".
+    this.ctx.save();
+    for (let i = -1; i <= 1; i++) {
+      const y = cy + i * 11;
+      const alpha = i === 0 ? 1 : 0.35;
+      const length = i === 0 ? halfLength : halfLength * 0.65;
+      const startX = cx - direction * length * 0.5;
+      const endX = cx + direction * length * 0.5;
+
+      this.ctx.globalAlpha = alpha;
+      this.ctx.strokeStyle = color;
+      this.ctx.lineWidth = i === 0 ? 3 : 2;
+      this.ctx.beginPath();
+      this.ctx.moveTo(startX, y);
+      this.ctx.lineTo(endX, y);
+      this.ctx.stroke();
+
+      // Pfeilspitze
+      this.ctx.beginPath();
+      this.ctx.moveTo(endX - direction * 9, y - 6);
+      this.ctx.lineTo(endX, y);
+      this.ctx.lineTo(endX - direction * 9, y + 6);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  /**
+   * Explosionsradius-Vorschau am Zielpunkt der Flugbahn.
+   * Zeigt, wie groß die Flächenwirkung der gewählten Waffe ist.
+   */
+  #drawBlastPreview(aimPreview, blastRadius) {
+    if (!aimPreview || aimPreview.length === 0 || !blastRadius || blastRadius <= 0) return;
+    const impact = aimPreview[aimPreview.length - 1];
+    if (!impact) return;
+
+    this.ctx.save();
+    this.ctx.setLineDash([5, 5]);
+    this.ctx.strokeStyle = 'rgba(244, 162, 97, 0.6)';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.arc(impact.x, impact.y, blastRadius, 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.fillStyle = 'rgba(244, 162, 97, 0.10)';
+    this.ctx.fill();
+    this.ctx.restore();
   }
 
   /**
@@ -326,8 +462,9 @@ export class Renderer {
    * @param {Array} [options.aimPreview]
    * @param {object} [options.aim]
    * @param {object} [options.water] - WaterField-Instanz des Matches
+   * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
-  render(state, { aimPreview = null, aim = null, water = null } = {}) {
+  render(state, { aimPreview = null, aim = null, water = null, blastRadius = 0 } = {}) {
     this.time += 1;
     this.#drawSky();
 
@@ -336,11 +473,15 @@ export class Renderer {
     }
 
     this.#drawWater(water);
+    this.#drawWindArrow(state.wind);
+    this.#drawBlastPreview(aimPreview, blastRadius);
     this.#drawCrates(state.crates ?? []);
     this.#drawMaelstrom(state.maelstrom);
     this.#drawAimPreview(aimPreview);
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawProjectiles(state.projectiles ?? []);
+    this.#drawEffects();
+    this.#updateEffects();
     this.updateParticles();
     this.#drawParticles();
   }

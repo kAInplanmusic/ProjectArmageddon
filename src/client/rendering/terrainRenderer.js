@@ -41,7 +41,7 @@ export class TerrainRenderer {
   /**
    * Rendert einen Krater.
    */
-  punchCrater(x, y, radius, color = '#000') {
+  punchCrater(x, y, radius) {
     if (!this.ctx) return;
 
     this.ctx.save();

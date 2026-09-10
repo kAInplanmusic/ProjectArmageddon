@@ -1,149 +1,182 @@
 # ProjectArmageddon — Master TODO / Codeaudit
 
-Stand: 2026-09-10 (nach Umsetzung des spielbaren Kerns)
+Stand: 2026-09-10 (zweiter Durchgang)
 Branch: `main`
 
 Diese Datei ist die **Single Source of Truth** für offene Arbeit. Alles, was hier
-als erledigt entfernt wurde, ist gegen den Code verifiziert — nicht gegen
-Commit-Messages oder Behauptungen früherer Agenten.
+als erledigt markiert ist, wurde durch Tests oder echte Läufe belegt — nicht durch
+Absichtserklärungen.
 
-## Verifikationsbasis
+## Verifikationsstand
 
-Aktuell automatisiert geprüft:
-
-| Suite | Umfang | Ergebnis |
+| Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| `npm test` (Unit + Integration) | 70 Tests | grün |
-| `npm run test:unit` | 36 Tests (PRNG, Seed, Loot) | grün |
-| `npm run test:e2e` (echter Browser) | 12 Tests | grün |
-| `npm run build` (Vite) | 140 kB / 30 kB gzip | grün |
-| `npm run smoke` (Headless-Match) | Match bis `gameover` | grün |
-| `npm run validate` | Modulimporte | grün |
+| Linting | `npm run lint` | grün, 0 Fehler |
+| Unit-/Integrationstests | `npm test` | **117/117** |
+| Browser-E2E | `npm run test:e2e` | **12/12** (System-Chrome) |
+| Build | `npm run build` | grün |
+| Validierung | `npm run validate` | grün |
+| Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
+| Balance | `npm run balance` | 113 von 150 Waffen wirken auf 90 px |
+| Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
+| Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
 
-Multiplayer ist mit **zwei echten Browserkontexten** gegen einen echten
-Serverprozess getestet (`tests/e2e/multiplayer.spec.mjs`), nicht simuliert.
+## In diesem Durchgang gefundene und behobene Fehler
 
-## Umgesetzt und verifiziert
+Alle folgenden Punkte waren echte Produktfehler, keine Testkosmetik. Sie wurden
+durch Messungen oder fehlschlagende Tests aufgedeckt.
 
-### Spielbarer Kern
-- `MatchController` verbindet Terrain, Wasser, ECS-Systeme, Runden-, Zug- und
-  Sieglogik zu einem vollständigen Match. Wird lokal im Browser **und**
-  headless auf dem Server identisch genutzt.
-- `ProjectileSystem`: Gravitation, Wind, Drag, Continuous Collision Detection,
-  Krater, Flächenschaden mit Distanzabfall, Knockback, Direktschaden ohne AoE.
-- `CharacterSystem`: Gravitation, Terrain-Kollision, Reibung, Landung,
-  Fallschaden, Wasserauftrieb.
-- `DamageSystem`: Flat-vor-Prozent-Reihenfolge, einmalige Death-Events,
-  Entity-Cleanup, deterministische Killfeed-Ticks (kein `Date.now()`).
-- `MaelstromSystem`: Zonenkontraktion ab Runde 15, Terrain-Abtrag, toxischer Regen.
-- `LootSystem` + `PlayerInventory`: deterministische Kisten aus dem Match-PRNG,
-  Pickup, Waffen-/Heil-/Falleninhalte, Reservewaffe mit ∞-Munition gegen Softlocks.
-- `WaterField`: Zelluläres Wasser mit vertikalem Vorrang und seitlichem
-  Ausgleich; Massendrift < 0,2 % über 200 Schritte.
-- `EventBus`: gepufferte, geordnete Ereignisse für Rendering/HUD/Netzwerk.
+1. **Hitscan-Waffen richteten keinen Schaden an (76 von 150 Waffen).**
+   Der Strahl begann exakt auf der Schützenposition. Das ist die Fußposition auf
+   dem Boden, und das Trefferfeld reicht `±PLAYER_HALF_HEIGHT` darum — der Strahl
+   endete deshalb sofort im eigenen Körper. Behoben durch einen Mündungspunkt auf
+   halber Körperhöhe (`#findMuzzle`) und Ausschluss des Schützen aus dem
+   Treffertest (`#playerAt(x, y, excludeId)`).
 
-### Determinismus
-- Mulberry32-PRNG, `MatchSeedManager` mit Offsets pro Subsystem.
-- Vollständige `World.serialize()`/`deserialize()` inkl. Entities, Komponenten,
-  Signaturen und Turn-State.
-- `MATCH_BASE`-Zufall für Wind; identische Seeds ergeben identische Match-Hashes
-  (im Browser-E2E verifiziert).
+2. **Projektile verschwanden im ersten Simulationsschritt (74 Waffen).**
+   Zwei Ursachen: Das Projektil entstand in der Bodenposition (im festen Terrain)
+   und die Zielliste enthielt den Schützen selbst, sodass das Geschoss mit seinem
+   Absender kollidierte. Behoben durch Mündungsversatz beim Erzeugen und
+   Ausschluss des Eigentümers in `ProjectileSystem.update`.
 
-### Terrain
-- `generateTerrain()` mit vier Presets (hügel/berge/inseln/höhlen),
-  seed-deterministisch, Ränder solide.
-- `CollisionMask` mit `shift >= 32`-Schutz, `fromBitmap`, `punchCrater`.
-- `terrainMaskFromRows` für lesbare ASCII-Karten.
+3. **Waffenkatalog: alle Waffen hatten denselben Schaden (25).**
+   Die Quelldatei führt zwei Feldfamilien. Die camelCase-Felder sind Platzhalter
+   (`baseDamage` konstant 25, `blastRadius`/`terrainDamage`/`fuseTime` und alle
+   Elementarschäden konstant 0, `projectileSpeed` konstant 70); die echten Werte
+   stehen in snake_case. Der Generator bevorzugte den jeweils ersten positiven
+   Wert und erwischte damit die Platzhalter. Behoben durch konsequente Priorität
+   auf snake_case mit camelCase als Rückfall. Ergebnis: Schaden 0–110 statt
+   konstant 25, 54 Waffen mit Flächenwirkung, 74 Projektile.
 
-### Multiplayer & Server
-- Autoritativer `GameServer` (HTTP + WebSocket) mit Tick-Schleife (60 Hz) und
-  entkoppelter Snapshot-Rate (20 Hz).
-- Binärprotokoll via `DataView` — läuft in Node **und** im Browser.
-- `LobbyManager`: Plätze, Kapazität, Reconnect-Token, Prune-Fenster.
-- `SnapshotHistory`: 200 ms Lag-Kompensation.
-- `BotController`: deterministischer Ersatz für unbesetzte Plätze.
-- Serverseitige `validateCommand()`: Spielerberechtigung, Winkel, Kraft,
-  Tick-Fenster, Waffen-Whitelist.
-- HTTP-API: `/healthz`, `/api/lobby`, `/api/lobby/:id`, `POST /api/lobby/create`.
-- CORS für Dev-Betrieb; statische Auslieferung des Builds für Single-Origin-Produktion.
+4. **Wasserphysik stapelte Wasser unbegrenzt und verlor bei Verdrängung Wasser.**
+   `WaterField.step()` lief von oben nach unten, wodurch die Kapazitätsprüfung
+   der Zelle darunter auf einem noch leeren Puffer lief — der Pegel erreichte
+   10,3 statt maximal 1,0. Die Verdrängung sättigte ohne Kapazitätsprüfung und
+   verlor dabei Menge. Beide behoben; die Massenerhaltung ist jetzt exakt und
+   wird getestet.
+
+5. **Matches konnten unbegrenzt laufen.**
+   `maxRounds` wurde nie erzwungen. Ein Match ohne tödliche Treffer lief über
+   20 000 Ticks und Runde 37 weiter. Behoben durch eine harte Rundengrenze im
+   `#onRoundStart`; bei Überschreitung gewinnt das Team mit der meisten
+   verbleibenden Gesundheit (deterministisch, kein Zufall).
+
+6. **Delta-Encoding verglich skalierte gegen unskalierte Werte.**
+   Der Encoder meldete dadurch jede Position als geändert, das Delta sparte
+   nichts. Behoben durch den gemeinsamen Helfer `toDeltaBase()`; der Vergleich
+   läuft jetzt auf den tatsächlich übertragenen Ganzzahlen.
+
+7. **Replay lief ohne Tickgrenze endlos.**
+   Ohne Eingaben endet ein Match nie; `playReplay` lief bis zum Notausstieg bei
+   2 Mio. Ticks. Behoben durch `recorder.finalize(totalTicks)` und eine
+   abgeleitete Standardgrenze.
+
+8. **Ein Waffen-Icon fehlte.**
+   `IMG_9049` war als Original vorhanden, aber nicht verarbeitet. Da ImageMagick
+   auf diesem System fehlt, wurde der Pipelineschritt portabel als
+   `scripts/create-weapon-icons.py` (Pillow) nachgebaut. Jetzt 150/150 Icons.
+
+9. **Race Condition in den E2E-Tests.**
+   Zwischen `startMatch` und dem Deaktivieren der Render-Schleife lief kurz die
+   Schleife, wodurch der Zustand unbestimmt wurde. Behoben durch Deaktivieren
+   vor dem Start.
+
+## Umgesetzt
+
+### Engine
+- Deterministischer Kern (PRNG, Seed-Verwaltung), ECS mit Typed-Arrays,
+  Headless-Runtime mit fester Zeitschrittweite.
+- `MatchController`: Terrain, Wasser, Systeme, Runden-, Zug- und Sieglogik,
+  Rundengrenze mit Sieger nach Restgesundheit.
+- Projektil- und Hitscan-Pfad mit korrektem Mündungspunkt; CCD-gesicherter
+  Flug ohne Tunneling; Krater, Flächenschaden mit Distanzabfall, Knockback.
+- Wasser: deterministischer Zellfluss mit Massenerhaltung, Verdrängung durch
+  Explosionen, Ertrinken untergetauchter Figuren.
+- Replay: Aufzeichnung als Seed + Eingabeliste, exakte Wiedergabe
+  (`stateHash`-identisch), Vorspulen bis zu einem Tick.
+
+### Multiplayer
+- Autoritativer Server mit HTTP-Lobby-API und WebSocket.
+- Binärprotokoll v2 mit `DataView` (läuft in Node **und** Browser),
+  Delta-Encoding pro Client plus periodischem Vollsnapshot als Resync.
+- Restzugzeit wird übertragen (vorher fror die Anzeige im Online-Modus ein).
+- Lobby-Verwaltung mit Reconnect-Token, 200 ms Lag-Kompensation, Bot-KI,
+  serverseitige Eingabevalidierung.
+- Lasttest: 8 gleichzeitige Clients über 4 Lobbys ohne Verbindungsverlust.
+
+### Persistenz
+- `PersistenceStore` schreibt atomar (temp + rename), übersteht beschädigte
+  Dateien und lehnt fremde Versionen ab.
+- Serverzustand wird als Replay-Kern gespeichert; nach einem Neustart werden
+  Matches durch erneutes Anwenden der Eingaben rekonstruiert.
 
 ### Client
-- Vite-Build, `index.html` mit HUD, Menü, Keymap, Endscreen.
-- Renderer: Terrain-Ebene (Offscreen), Wasser, Kisten, Spieler mit Lebensbalken,
-  Geschützrohr, gestrichelte Zielvorschau, Partikel, Mahlstrom-Zone.
-- Eingabe: Maus-Zielen, Aufladen per Klick/Leertaste, Winkel/Kraft-Tasten, Waffenwahl.
-- HUD: Runde, Wind, Zugzeit, Status, Netzstatus, Spielerliste, Waffenliste mit
-  Munition, Ereignisprotokoll.
-- Lokaler **und** Online-Modus; Snapshot-Interpolation; Reconnect mit Backoff;
-  Terrain-Rekonstruktion aus dem Server-Seed.
-- Debug-API `window.__PA__` für Tests und Automatisierung.
+- Vite-Build, HUD, Menü, Renderer (Terrain, Wasser, Figuren, Zielvorschau,
+  Partikel, Windpfeil, Mahlstrom-Zone).
+- Hitscan-Strahl und Explosionsblitz sichtbar; Explosionsradius-Vorschau am
+  Zielpunkt; Munitionsanzeige aktualisiert sich sofort nach dem Schuss.
+- Waffenliste mit Logos aus `assets/weapons/icons` und Farbcodierung nach
+  abgeleiteter Stufe.
+- Lokaler und Online-Modus mit Snapshot-Interpolation und Reconnect-Backoff.
 
-### Content
-- Waffenkatalog-Generator aus `project_armageddon_weapons_v1.json` (150 Waffen).
-  Wichtig: Die Quelle führt zwei Feldfamilien — die camelCase-Felder sind
-  0-Platzhalter, die echten Werte stehen in snake_case. Der Generator wählt den
-  ersten *positiven* Kandidaten und bricht ab, wenn der Katalog leer wäre.
+### Werkzeuge
+- `npm run lint` / `lint:fix` — ESLint, als CI-Gate nutzbar.
+- `npm run balance` — Balance-Bericht über alle 150 Waffen.
+- `npm run perf` — Performance-Profil mit Budget-Gate.
+- `npm run replay` — Aufzeichnen, Abspielen, `--verify`.
+- `npm run icons` — Icon-Pipeline (Pillow, ohne ImageMagick).
+- `npm run weapons:build` — Kataloggenerator mit dokumentierter Stufenableitung.
+- CI: Lint → Tests → Build → Performance-Budget, danach E2E.
 
-### Infrastruktur
-- `.gitignore` für `node_modules/`, `dist/`, `test-results/`, Coverage.
-- Playwright-Konfiguration nutzt den System-Chrome (`channel: 'chrome'`) und
-  startet den Dev-Server selbst.
+## Einstufung der Waffen
+
+Die Quelldaten kennen nur `common`, `uncommon` und `rare`. `epic` und
+`legendary` werden **nicht erfunden**, sondern deterministisch aus den
+Waffenwerten abgeleitet (`computePowerScore` in
+`scripts/build-weapon-catalog.mjs`, Schwellen in `POWER_TIERS`). Die Zuordnung
+ist eine reine Funktion der Statistik und wird getestet. Verteilung:
+common 70, uncommon 21, rare 41, epic 13, legendary 5.
 
 ## Offene Arbeit
 
-### P1 — Vertiefung Gameplay
-- [ ] Hitscan-Waffen visuell darstellen (Linie/Blitz statt reinem Sofortschaden).
-- [ ] Explosionsradius-Vorschau im HUD bei Waffenwechsel.
-- [ ] Windanzeige als Vektorpfeil im Spielfeld statt nur numerisch.
-- [ ] Wasser-Terrain-Kopplung: Krater soll Wasser nachfließen lassen.
-- [ ] Ertrinken und Verdrängung durch Explosionen.
-- [ ] Munitionsanzeige beim Waffenwechsel aktualisieren (aktuell erst nach Zugwechsel).
+### P1 — Gameplay-Vertiefung
+- [ ] Spezialmechaniken implementieren: Teleport, Buff, Flug, Schild, Turret,
+      Munitionskiste, Grappling Hook. 31 Waffen haben dadurch keine Wirkung.
+- [ ] Balance über die volle Kartenbreite messen (aktuell 90 px; schwere
+      Artillerie wird dadurch unterschätzt).
+- [ ] Ertrinken und Wasserverdrängung im HUD anzeigen.
+- [ ] Windpfeil zusätzlich als Zahlenwert mit Einheit beschriften.
 
-### P1 — Netcode-Härtung
-- [ ] Snapshot-Delta-Encoding statt Vollzustand pro Frame.
+### P1 — Netcode
 - [ ] Client-seitige Prädiktion des eigenen Schusses mit Server-Rollback.
-- [ ] Server-autoritative Zeitmessung: Zugzeit läuft aktuell nur clientseitig.
-- [ ] Sitzungs-Persistenz über Serverneustart.
-- [ ] Lasttest mit 8+ gleichzeitigen Clients und künstlicher Latenz.
-
-### P2 — Balance & Inhalt
-- [ ] Balancing-Durchlauf: 150 Waffen sind ungeprüft; TTK und Matchdauer messen.
-- [ ] Seltenheitsstufen `epic`/`legendary` im Katalog füllen (aktuell nur common/uncommon/rare).
-- [ ] Draft-Flow für 4–6 Einheiten pro Team.
-- [ ] Spielbare Beispielkarten aus ASCII/JSON im Menü wählbar.
-- [ ] Waffen-Icons aus `assets/weapons/icons/` im HUD einbinden.
+      Aktuell fühlt sich der eigene Schuss bei Latenz verzögert an.
+- [ ] Server-autoritative Zugzeit erzwingen (derzeit nur clientseitig sichtbar).
+- [ ] Snapshot-Kompression prüfen (Delta läuft, Quantisierung ist schon aktiv).
 
 ### P2 — Client & UX
 - [ ] Lobby-Browser im Menü (offene Lobbys listen und beitreten).
+- [ ] Kartenwahl im Menü (Presets existieren: hills, mountains, islands, caverns).
 - [ ] Latenz-Anzeige per Ping-Intervall statt nur bei manuellem Ping.
-- [ ] Tastatursteuerung vollständig (derzeit keine Fokus-Reihenfolge).
-- [ ] Accessibility: Kontraste, Fokusindikatoren, Screenreader-Labels.
-- [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Fallback.
+- [ ] Entwurfsphase (Draft) für 4–6 Einheiten pro Team.
+- [ ] Tastatur-Fokusreihenfolge und vollständige Fokusindikatoren.
+- [ ] Accessibility vertiefen: Screenreader-Tests, `prefers-reduced-motion`.
+- [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
 
-### P3 — Tooling & Release
-- [ ] CI-Workflow: `npm ci`, `npm test`, `npm run test:e2e`, `npm run build`.
-- [ ] Linting/Formatierung als reproduzierbares Script.
-- [ ] Replay-Tool: Seed loggen, Match tickweise aufzeichnen und abspielen.
-- [ ] Headless-5-Minuten-Lauf mit CPU-/Memory-Profil.
-- [ ] Asset-Pipeline-Tests für Waffen-Icon-Mapping.
-- [ ] README mit Install-, Dev-, Test-, Build- und Serveranleitung aktualisieren.
+### P3 — Betrieb
+- [ ] Lasttest mit künstlicher Latenz und Paketverlust.
+- [ ] Replay im Client abspielen (Server hat das Werkzeug bereits).
+- [ ] Fehlerzähler und strukturierte Logs im Server.
+- [ ] `dist/` als Artefakt in CI ablegen.
 
-## Bewusst dokumentierte Grenzen
+## Bekannte Grenzen (bewusst dokumentiert)
 
-- **Kein Audio** implementiert.
-- **Keine Prädiktion**: bei hoher Latenz fühlt sich der eigene Schuss verzögert an.
-- **Zugzeit ist clientseitig**: der Server erzwingt sie noch nicht.
-- **Kein Persistenz-Layer**: Lobbys leben nur im Serverprozess.
-- **150 Waffen sind unbalanciert** — die Werte stammen aus der Designdatei und
-  wurden nicht gegeneinander getestet.
-- **Snapshots sind Vollzustände**: bei sehr vielen Entities steigt die Bandbreite.
-
-## Qualitätsregeln (verbindlich)
-
-- Simulation bleibt strikt 2D und deterministisch.
-- Kein `Math.random()` im Simulationspfad.
-- Keine Client-Autorität für physikrelevante Aktionen.
-- Keine rotierende Runtime-Maskenkollision ohne Prebakes.
-- Canvas-Terrain und CollisionMask werden aus demselben Ereignisstrom geändert.
-- Keine Number-Bloat-Progression im Match.
-- Keine destruktiven Git-/Dateioperationen ohne Bestandsprüfung.
+- **Balance-Bericht bei 90 px.** Schwere Artillerie und Ultimate-Waffen sind für
+  große Entfernungen gebaut und erscheinen in der Messung als wirkungslos. Das
+  ist eine Grenze des Aufbaus, kein Urteil über die Waffe.
+- **Keine Client-Prädiktion.** Bei Latenz weicht der eigene Schuss sichtbar vom
+  Serverergebnis ab.
+- **Zugzeit wird clientseitig geführt.** Ein manipulierender Client könnte die
+  Anzeige verfälschen; die Simulation bleibt serverseitig autoritativ.
+- **Persistenz ist dateibasiert.** Für mehrere Serverinstanzen wäre ein
+  gemeinsamer Speicher nötig.
+- **Kein Audio.**

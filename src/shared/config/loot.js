@@ -5,7 +5,7 @@
  * laufen, der vom Server verteilt wird. KEIN Math.random() im Simulationspfad!
  */
 
-import { MatchSeedManager, SEED_OFFSETS } from '../seed.js';
+import { MatchSeedManager } from '../seed.js';
 
 export const LOOT_DROP_RULES = Object.freeze({
   cratesPerRoundStart: Object.freeze({

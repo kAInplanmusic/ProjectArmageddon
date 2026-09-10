@@ -53,6 +53,18 @@ export class LobbyManager {
     return this.#lobbies.get(id) ?? null;
   }
 
+  /**
+   * Setzt eine bereits aufgebaute Lobby unter ihrer ID ein (Wiederherstellung
+   * nach Serverneustart). Erwartet ein vollständiges Lobby-Objekt.
+   */
+  restoreWithId(lobby) {
+    if (!lobby || typeof lobby.id !== 'string') {
+      throw new TypeError('Lobby mit gültiger ID erwartet');
+    }
+    this.#lobbies.set(lobby.id, lobby);
+    return lobby;
+  }
+
   describe(id) {
     const lobby = this.get(id);
     if (!lobby) return null;

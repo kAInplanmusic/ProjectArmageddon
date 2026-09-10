@@ -40,7 +40,7 @@ export class TerrainSync {
    * @param {number} radius
    * @param {string} color - Farbe für den Krater
    */
-  punchCrater(ctx, x, y, radius, color = '#000') {
+  punchCrater(ctx, x, y, radius) {
     this.#collisionMask.punchCrater(x, y, radius);
 
     if (ctx) {

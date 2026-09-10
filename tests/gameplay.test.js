@@ -3,8 +3,7 @@ import test from 'node:test';
 import { MatchController, MAP_WIDTH, MAP_HEIGHT } from '../src/engine/match.js';
 import { generateTerrain, surfaceY, TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 import { WaterField } from '../src/engine/waterField.js';
-import { MaelstromSystem } from '../src/engine/systems/maelstromSystem.js';
-import { LootSystem, CRATE_TYPES, weaponIdFromIndex } from '../src/engine/systems/lootSystem.js';
+import { LootSystem, weaponIdFromIndex } from '../src/engine/systems/lootSystem.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES, applyClassModifiers, applyArchetypeModifiers } from '../src/shared/config/classes.js';
 import { MATCH_RULES, computeMaelstromDamage } from '../src/shared/config/match.js';
 import { WEAPONS, WEAPONS_BY_ID, getDefaultLoadout, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
@@ -238,7 +237,7 @@ test('Zielvorschau folgt derselben Physik wie das Projektil', () => {
   const projectileId = result.projectileId;
   assert.ok(projectileId !== null);
 
-  let impacts = [];
+  const impacts = [];
   match.events.on('projectile_impact', payload => impacts.push(payload));
   for (let i = 0; i < 400 && impacts.length === 0; i++) {
     match.step();

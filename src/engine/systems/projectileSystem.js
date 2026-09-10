@@ -14,7 +14,6 @@
  * @module ProjectileSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { ccdRaycast } from '../physics/ballistics.js';
 
 export const PROJECTILE_PRIORITY = 95;
 const PLAYER_HALF_WIDTH = 7;
@@ -33,19 +32,26 @@ export class ProjectileSystem {
     this.#baseDrag = baseDrag;
   }
 
-  update(world, entities, dt) {
+  update(world, entities, _dt) {
     const services = world.services ?? {};
     const terrain = services.terrain ?? null;
     const events = services.events ?? null;
     const match = services.match ?? { wind: 0, knockbackMultiplier: 1 };
 
-    const targets = this.#collectTargets(world);
+    const allTargets = this.#collectTargets(world);
 
     for (const entityId of entities) {
       if (!world.isActive(entityId)) continue;
 
       const alive = world.getComponent(entityId, 'Projectile', 'alive');
       if (alive === 0) continue;
+
+      // Der Absender darf sein eigenes Projektil nicht blockieren. Ohne diesen
+      // Ausschluss kollidiert das Geschoss im ersten Schritt mit dem Schützen
+      // selbst (das Projektil startet in dessen Trefferfeld) und verschwindet,
+      // bevor es das Ziel erreichen kann.
+      const owner = world.getComponent(entityId, 'Projectile', 'owner');
+      const targets = allTargets.filter(target => target.id !== owner);
 
       let vx = world.getComponent(entityId, 'Velocity', 'x') || 0;
       let vy = world.getComponent(entityId, 'Velocity', 'y') || 0;
@@ -161,6 +167,12 @@ export class ProjectileSystem {
       const radius = Math.max(2, Math.round(craterRadius));
       terrain.punchCrater(x, y, radius);
       if (events) events.emit('terrain_destroyed', { x, y, radius });
+    }
+
+    // Wasser verdrängen: Explosionen drücken das Wasser im Radius nach außen.
+    const water = services.water ?? null;
+    if (water && typeof water.displace === 'function' && craterRadius > 0) {
+      water.displace(x, y, craterRadius, 0.65);
     }
 
     if (damage > 0 && blastRadius <= 0 && hitTarget !== null && world.isActive(hitTarget)) {

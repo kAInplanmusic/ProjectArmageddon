@@ -3,7 +3,7 @@
  * Grundgerüst: initUI, updateTurnInfo, showEntityDeath.
  */
 
-export function initUI(world) {
+export function initUI(_world) {
   const ui = {
     turnDisplay: null,
     healthDisplay: null,

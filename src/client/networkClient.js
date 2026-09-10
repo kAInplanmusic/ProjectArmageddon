@@ -12,7 +12,6 @@ import {
   CONTROL,
   MESSAGE_TYPE,
   MAGIC,
-  PROTOCOL_VERSION,
   controlMessage,
   parseControlMessage,
   decodeSnapshot,
@@ -48,6 +47,8 @@ export class NetworkClient {
   #lastServerError = null;
   #connectCalls = 0;
   #joinsSent = 0;
+  /** Letzter dekodierter Snapshot — Basis für das Delta-Encoding. */
+  #lastDecoded = null;
 
   constructor({ url, lobbyId, token = null, playerName = 'Spieler', seed = null, preset = 'hills', teams = 2, playersPerTeam = 2 } = {}) {
     this.#url = url;
@@ -102,6 +103,11 @@ export class NetworkClient {
 
   get latestSnapshot() {
     return this.#snapshots[this.#snapshots.length - 1] ?? null;
+  }
+
+  /** Restzugzeit aus dem jüngsten Snapshot (0, wenn keine läuft). */
+  get turnRemainingMs() {
+    return this.latestSnapshot?.turnRemainingMs ?? 0;
   }
 
   /** Öffnet die Verbindung und führt den Handshake aus. */
@@ -174,8 +180,11 @@ export class NetworkClient {
         this.#emit('latency', this.#latencyMs);
         return;
       }
-      const snapshot = decodeSnapshot(data);
+      // `previous` übergeben, damit nicht übertragene Felder aus dem letzten
+      // Snapshot übernommen werden (Delta-Encoding).
+      const snapshot = decodeSnapshot(data, this.#lastDecoded?.previous ?? null);
       if (!snapshot) return;
+      this.#lastDecoded = snapshot;
       this.#snapshots.push(snapshot);
       if (this.#snapshots.length > 30) this.#snapshots.shift();
       this.#emit('snapshot', snapshot);

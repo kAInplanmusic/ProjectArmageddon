@@ -17,7 +17,7 @@ export class DamageSystem {
   #killFeed = [];
   #handledDeaths = new Set();
 
-  update(world, entities, dt) {
+  update(world, entities, _dt) {
     for (const entityId of entities) {
       if (!world.isActive(entityId)) continue;
       const health = world.getComponent(entityId, 'Health', 'current');

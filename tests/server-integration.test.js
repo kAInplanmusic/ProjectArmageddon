@@ -4,8 +4,7 @@ import { WebSocket } from 'ws';
 import { GameServer } from '../src/server/gameServer.js';
 import {
   CONTROL,
-  MAGIC,
-  MESSAGE_TYPE,
+  PROTOCOL_VERSION,
   controlMessage,
   parseControlMessage,
   decodeSnapshot,
@@ -100,6 +99,7 @@ test('HTTP-API liefert Health, Lobby-Liste und Lobby-Erstellung', { timeout: 20_
     const health = await (await fetch(`${url}/healthz`)).json();
     assert.equal(health.status, 'ok');
     assert.equal(health.lobbies, 0);
+    assert.equal(health.protocol, PROTOCOL_VERSION);
 
     const created = await createLobby(url, { preset: 'mountains' });
     assert.ok(created.lobby.id);
@@ -140,7 +140,7 @@ test('Zwei Clients verbinden sich, erhalten Snapshots und feuern', { timeout: 25
     await clientA.open();
     clientA.send(CONTROL.HELLO);
     const welcomeA = await clientA.waitFor(CONTROL.WELCOME);
-    assert.equal(welcomeA.protocol, 1);
+    assert.equal(welcomeA.protocol, PROTOCOL_VERSION);
 
     clientA.send(CONTROL.JOIN_LOBBY, {
       lobbyId: created.lobby.id,

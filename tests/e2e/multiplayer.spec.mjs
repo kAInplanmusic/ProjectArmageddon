@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { PROTOCOL_VERSION } from '../../src/shared/protocol.js';
 
 /**
  * Echte Multiplayer-E2E-Prüfung.
@@ -107,7 +108,7 @@ async function openClient(context, { lobbyId = null, name = 'Tester' } = {}) {
 test('Server meldet Bereitschaft über /healthz', async () => {
   const health = await (await fetch(`${SERVER_URL}/healthz`)).json();
   expect(health.status).toBe('ok');
-  expect(health.protocol).toBe(1);
+  expect(health.protocol).toBe(PROTOCOL_VERSION);
 });
 
 test('Zwei Browser spielen in derselben Lobby', async ({ browser }) => {

@@ -24,7 +24,7 @@ export class WaterSimulation {
    * Führt einen Spread-Step aus.
    * @param {number} dt - Delta-Zeit
    */
-  step(dt = 1) {
+  step(_dt = 1) {
     const newGrid = new Float32Array(this.#width * this.#height);
 
     for (let y = 0; y < this.#height; y++) {

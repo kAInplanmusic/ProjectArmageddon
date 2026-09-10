@@ -11,7 +11,7 @@ try {
   globalThis.describe = testModule.describe;
   globalThis.it = testModule.it;
   usingNodeTest = true;
-} catch (e) {
+} catch {
   suites = [];
   globalThis.describe = (name, fn) => {
     const suite = { name, tests: [] };

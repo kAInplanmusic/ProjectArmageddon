@@ -129,7 +129,9 @@
 
     .weapon-item {
       display: grid;
-      grid-template-columns: 1fr auto;
+      /* Spalte 1: Icon (nur vorhanden, wenn das Logo geladen wurde) */
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
       gap: 8px;
       font-size: 13px;
       padding: 4px 6px;
@@ -139,6 +141,24 @@
     }
 
     .weapon-item.is-active { border-left-color: var(--accent-2); background: rgba(76, 201, 240, 0.12); }
+
+    .weapon-item .weapon-icon {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      image-rendering: auto;
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+    }
+
+    /* Ohne Icon übernimmt der Name die verfügbare Breite. */
+    .weapon-item .weapon-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Stufenfarbe als dezenter Rand links, damit die Liste scanbar bleibt. */
+    .weapon-item[data-tier="uncommon"] { border-left-color: rgba(144, 190, 109, 0.55); }
+    .weapon-item[data-tier="rare"]     { border-left-color: rgba(76, 201, 240, 0.55); }
+    .weapon-item[data-tier="epic"]     { border-left-color: rgba(179, 136, 255, 0.6); }
+    .weapon-item[data-tier="legendary"]{ border-left-color: rgba(255, 183, 3, 0.75); }
+    .weapon-item.is-active { border-left-color: var(--accent-2); }
 
     #log-list { list-style: none; margin: 0; padding: 6px 10px; display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
 
@@ -232,7 +252,13 @@
 <body>
   <div id="app">
     <div id="stage">
-      <canvas id="game-canvas" width="1280" height="720" aria-label="Spielfeld"></canvas>
+      <canvas
+        id="game-canvas"
+        width="1280"
+        height="720"
+        tabindex="0"
+        aria-label="Spielfeld: rundenbasiertes Artillerie-Spiel. Mit den Pfeiltasten oder A und D den Winkel ändern, mit W und S die Kraft, mit der Leertaste feuern."
+      ></canvas>
 
       <section id="hud" aria-label="Spiel-HUD">
         <div id="hud-top">
@@ -269,6 +295,7 @@
         <div id="hud-aim" class="panel">
           <span>Winkel <span class="value" id="hud-angle">45°</span></span>
           <span>Kraft <span class="value" id="hud-power">55</span></span>
+          <span>Radius <span class="value" id="hud-blast">—</span></span>
           <span id="hud-active">—</span>
         </div>
 

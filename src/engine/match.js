@@ -7,11 +7,11 @@
  *
  * @module MatchController
  */
-import { createGameWorld, registerDefaultComponents, SYSTEM_PRIORITIES } from './init.js';
+import { createGameWorld, SYSTEM_PRIORITIES } from './init.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
 import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
-import { MatchSeedManager, SEED_OFFSETS } from '../shared/seed.js';
+import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
 import { ProjectileSystem } from './systems/projectileSystem.js';
@@ -39,6 +39,8 @@ const POWER_TO_SPEED = 0.14;
 const MAX_WIND = 0.05;
 const PLAYER_HALF_WIDTH = 7;
 const PLAYER_HALF_HEIGHT = 10;
+/** Wie weit entlang der Schussrichtung nach freiem Feld gesucht wird. */
+const MUZZLE_SEARCH_DISTANCE = 48;
 
 export class MatchController {
   #world;
@@ -137,6 +139,9 @@ export class MatchController {
       width: Math.floor(MAP_WIDTH / WATER_SCALE),
       height: Math.floor(MAP_HEIGHT / WATER_SCALE),
       isSolid: (x, y) => this.#terrain.isSolid(x * WATER_SCALE, y * WATER_SCALE),
+      // Brücke zwischen Rasterzellen und Weltpixeln, damit Physik und
+      // Charaktere den Wasserstand an einer Weltkoordinate abfragen können.
+      worldScale: WATER_SCALE,
     });
     // Becken bis zum Wasserspiegel fluten.
     const levelInGrid = Math.floor(waterLevel / WATER_SCALE);
@@ -276,13 +281,21 @@ export class MatchController {
     this.#lastShotBy = playerId;
 
     if (weapon.delivery === 'hitscan') {
-      const hit = this.#resolveHitscan(x, y, angle, power, weapon);
+      const hit = this.#resolveHitscan(x, y, angle, power, weapon, playerId);
       this.#events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
       return { ok: true, projectileId: null, hit };
     }
 
     const projectileId = this.#world.createEntity();
-    this.#world.addComponent(projectileId, 'Position', { x, y });
+
+    // Abschusspunkt aus dem Körper des Schützen herausschieben.
+    //
+    // `x, y` ist die Fußposition auf dem Boden und liegt damit IM festen
+    // Terrain. Ein Projektil, das dort entsteht, kollidiert im ersten
+    // Simulationsschritt mit dem Boden und verschwindet, ohne das Ziel je zu
+    // erreichen — Direktschaden war so unmöglich.
+    const spawn = this.#findMuzzle(x, y, Math.cos(angle), -Math.sin(angle), playerId) ?? { x, y };
+    this.#world.addComponent(projectileId, 'Position', { x: spawn.x, y: spawn.y });
     this.#world.addComponent(projectileId, 'Velocity', { x: vx, y: vy });
     this.#world.addComponent(projectileId, 'Projectile', {
       owner: playerId,
@@ -303,36 +316,79 @@ export class MatchController {
     return { ok: true, projectileId, hit: null };
   }
 
-  #resolveHitscan(originX, originY, angle, power, weapon) {
+  #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null) {
     const speed = power * POWER_TO_SPEED;
-    const maxSteps = Math.max(1, Math.round(weapon.maxRange / Math.max(1, speed)));
+    const maxSteps = Math.max(2, Math.round(weapon.maxRange / Math.max(1, speed)));
+    const dirX = Math.cos(angle);
+    // Der Winkel wird gegen die Bildschirmachse gemessen: 0 = rechts, π/2 = oben.
+    const dirY = -Math.sin(angle);
+
+    // Mündung bestimmen. Ein Start direkt auf der Schützenposition ist falsch:
+    // Der Schütze steht auf dem Boden, und sein eigenes Trefferfeld reicht
+    // ±PLAYER_HALF_HEIGHT um die Fußposition. Der Strahl würde deshalb sofort
+    // im eigenen Körper bzw. im Boden darunter enden und das eigentliche Ziel
+    // nie erreichen. Deshalb wird der Startpunkt entlang der Schussrichtung aus
+    // dem Körper herausgeschoben, bis freies Feld erreicht ist.
+    const start = this.#findMuzzle(originX, originY, dirX, dirY, shooterId);
+    if (start === null) {
+      // Kein freies Feld in Schussrichtung: die Waffe kann nicht abgefeuert werden.
+      return { hitX: originX, hitY: originY, hit: false, target: null, blocked: true };
+    }
 
     const result = ccdRaycast(
       {
-        startX: originX,
-        startY: originY,
-        velocityX: Math.cos(angle) * speed,
-        velocityY: -Math.sin(angle) * speed,
+        startX: start.x,
+        startY: start.y,
+        velocityX: dirX * speed,
+        velocityY: dirY * speed,
         drag: 1,
         gravity: 0,
         maxSteps,
       },
+      // Der Schütze selbst darf den Strahl nicht blockieren.
       (x, y) => {
         if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) return true;
-        return this.#playerAt(x, y) !== null;
+        const hitPlayer = this.#playerAt(x, y, shooterId);
+        return hitPlayer !== null;
       }
     );
 
-    const target = this.#playerAt(result.hitX, result.hitY);
-    if (target !== null && target !== this.#lastShotBy) {
-      this.#world.getSystem('damage')?.applyDamage(this.#world, target, weapon.damage, this.#lastShotBy);
+    const target = this.#playerAt(result.hitX, result.hitY, shooterId);
+    if (target !== null) {
+      this.#world.getSystem('damage')?.applyDamage(this.#world, target, weapon.damage, shooterId);
     }
 
     return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
   }
 
-  #playerAt(x, y) {
+  /**
+   * Sucht den Mündungspunkt: den ersten Punkt entlang der Schussrichtung, der
+   * weder in festem Terrain noch im Körper eines Spielers liegt.
+   *
+   * @returns {{x:number,y:number}|null}
+   */
+  #findMuzzle(originX, originY, dirX, dirY, shooterId = null) {
+    // Die Schützenposition ist die Fußposition auf dem Boden. Ein Strahl, der
+    // dort beginnt, liegt im festen Terrain und endet sofort. Deshalb startet
+    // die Suche auf halber Körperhöhe — dort ist die Figur tatsächlich "frei".
+    const bodyY = originY - PLAYER_HALF_HEIGHT / 2;
+    for (let distance = 0; distance <= MUZZLE_SEARCH_DISTANCE; distance += 2) {
+      const x = originX + dirX * distance;
+      const y = bodyY + dirY * distance;
+      if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) continue;
+      if (this.#playerAt(x, y, shooterId) !== null) continue;
+      return { x, y };
+    }
+    return null;
+  }
+
+  /**
+   * Spieler an einer Position.
+   * @param {number|null} [excludeId] - wird übersprungen (meist der Schütze)
+   */
+  #playerAt(x, y, excludeId = null) {
     for (const entry of this.#players) {
+      if (excludeId !== null && entry.entityId === excludeId) continue;
       if (!this.#world.isActive(entry.entityId)) continue;
       const px = this.#world.getComponent(entry.entityId, 'Position', 'x') || 0;
       const py = this.#world.getComponent(entry.entityId, 'Position', 'y') || 0;
@@ -417,12 +473,23 @@ export class MatchController {
       this.#round += 1;
       this.#world.services.match.round = this.#round;
       this.#onRoundStart();
+      // #onRoundStart kann das Match beendet haben (Rundengrenze). Dann darf
+      // kein weiterer Zug mehr eröffnet werden.
+      if (this.#status !== 'playing') return;
     }
 
     this.#beginTurn(nextIndex);
   }
 
   #onRoundStart() {
+    // Harte Rundengrenze: ohne sie kann ein Match mit vielen Fehlschüssen
+    // unbegrenzt laufen. Bei Überschreitung gewinnt das Team mit der meisten
+    // verbleibenden Gesundheit — deterministisch, kein Unentschieden-Fallback.
+    if (this.#round > this.maxRounds) {
+      this.#finishByAttrition();
+      return;
+    }
+
     if (this.#round >= MATCH_RULES.suddenDeath.roundBreakpoint) {
       if (!this.#maelstrom.isActive) this.#maelstrom.activate();
       this.#maelstrom.contract(this.#world);
@@ -436,6 +503,40 @@ export class MatchController {
     this.#world.services.match.currentStrength = this.#currentStrength;
     this.#spawnRoundLoot();
     this.#events.emit('round_start', { round: this.#round, wind });
+  }
+
+  /**
+   * Ends the match because the round limit is reached. Der Sieger ist das Team
+   * mit der höchsten Summe verbleibender Gesundheit; bei Gleichstand gewinnt
+   * das niedrigere Team-ID (stabil und damit deterministisch).
+   */
+  #finishByAttrition() {
+    const healthByTeam = new Map();
+    for (const entry of this.#players) {
+      const health = this.#world.isActive(entry.entityId)
+        ? (this.#world.getComponent(entry.entityId, 'Health', 'current') || 0)
+        : 0;
+      healthByTeam.set(entry.teamId, (healthByTeam.get(entry.teamId) ?? 0) + health);
+    }
+
+    let winner = null;
+    let best = -1;
+    for (const [teamId, health] of [...healthByTeam.entries()].sort((a, b) => a[0] - b[0])) {
+      if (health > best) {
+        best = health;
+        winner = teamId;
+      }
+    }
+
+    this.#status = 'gameover';
+    this.#winnerTeamId = winner;
+    this.#events.emit('match_over', {
+      winnerTeamId: winner,
+      rounds: this.#round,
+      ticks: this.#world.tickCount,
+      reason: 'round_limit',
+      healthByTeam: Object.fromEntries(healthByTeam),
+    });
   }
 
   #beginTurn(index) {
@@ -462,6 +563,7 @@ export class MatchController {
         winnerTeamId: this.#winnerTeamId,
         rounds: this.#round,
         ticks: this.#world.tickCount,
+        reason: 'elimination',
       });
     }
   }
@@ -619,6 +721,8 @@ export class MatchController {
   get winnerTeamId() { return this.#winnerTeamId; }
   get seedManager() { return this.#seedManager; }
   get maelstrom() { return this.#maelstrom; }
+  /** Aktuelle Zugzeit in Millisekunden (für Persistenz und Replay). */
+  get turnDurationMs() { return this.#turnDurationMs; }
 
   get activePlayerId() {
     const id = this.#turnOrder[this.#turnIndex];

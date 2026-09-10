@@ -10,7 +10,7 @@ import {
   SEED_OFFSETS,
   createMatchRng
 } from '../src/shared/seed.js';
-import { createRng, SeededRandom } from '../src/shared/prng.js';
+
 
 describe('MatchSeedManager', () => {
   it('sollte einen gültigen Match-Seed speichern', () => {

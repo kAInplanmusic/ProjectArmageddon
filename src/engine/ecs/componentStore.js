@@ -27,18 +27,6 @@ export const COMPONENT_SIGNATURES = Object.freeze({
   ACTIVE: 1 << 15      // 32768
 });
 
-// Datentyp-Enum für Komponentenregister
-const DataType = Object.freeze({
-  FLOAT32: 'Float32Array',
-  INT32: 'Int32Array',
-  UINT32: 'Uint32Array',
-  INT16: 'Int16Array',
-  UINT16: 'Uint16Array',
-  INT8: 'Int8Array',
-  UINT8: 'Uint8Array',
-  BOOLEAN: 'Uint8Array'
-});
-
 /**
  * ComponentStore — verwaltet Komponentendaten in TypedArrays.
  *
@@ -247,7 +235,7 @@ export class ComponentStore {
    * @param {number} entityId
    */
   removeEntity(entityId) {
-    for (const [name, comp] of Object.entries(this.#components)) {
+    for (const comp of Object.values(this.#components)) {
       if (comp.entities.has(entityId)) {
         for (const fieldName of comp.fieldNames) {
           comp.data[fieldName][entityId] = 0;
@@ -256,7 +244,6 @@ export class ComponentStore {
       }
     }
 
-    let sig = this.#entitySignatures.get(entityId) || 0;
     this.#entitySignatures.delete(entityId);
     this.#entityComponents.delete(entityId);
     this.#pool.push(entityId);

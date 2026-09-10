@@ -34,6 +34,16 @@ function toNumber(value) {
  * Waehlt den aussagekraeftigsten Wert aus mehreren Feldnamen.
  * Bevorzugt den ersten positiven Wert; sonst 0.
  */
+/**
+ * Waehlt den ersten positiven Wert aus mehreren Feldnamen.
+ *
+ * REIHENFOLGE IST ENTSCHEIDEND: In der Quelldatei sind die camelCase-Felder
+ * ueberwiegend Platzhalter — `blastRadius`, `terrainDamage`, `fuseTime` und alle
+ * Elementarschaeden stehen dort konstant auf 0, `baseDamage` konstant auf 25 und
+ * `projectileSpeed` konstant auf 70. Die echten, je Waffe verschiedenen Werte
+ * liegen in den snake_case-Feldern. Deshalb wird IMMER zuerst der snake_case-Name
+ * uebergeben und der camelCase-Name nur als Rueckfall verwendet.
+ */
 function pickPositive(stats, ...names) {
   for (const name of names) {
     const value = toNumber(stats[name]);
@@ -50,25 +60,91 @@ function pickString(stats, ...names) {
   return null;
 }
 
+/**
+ * Einstufung in fünf Stufen.
+ *
+ * Die Quelldaten kennen nur `common`, `uncommon` und `rare`. `epic` und
+ * `legendary` werden deshalb NICHT erfunden, sondern deterministisch aus den
+ * Waffenwerten abgeleitet: eine reine Funktion der Statistik, damit dieselbe
+ * Waffe immer dieselbe Stufe bekommt.
+ *
+ * Die Gewichtung spiegelt den tatsächlichen Kampfwert wider: Schaden und
+ * Flächenwirkung wiegen am schwersten, danach Terrain-Abbau, Rückstoß und
+ * Elementareffekte. Munition und Abklingzeit wirken als Begrenzung — eine
+ * stärkere Waffe mit sehr wenig Munition steigt dadurch nicht auf.
+ */
+export function computePowerScore(weapon) {
+  const elemental = (weapon.elemental?.fire ?? 0)
+    + (weapon.elemental?.ice ?? 0)
+    + (weapon.elemental?.poison ?? 0);
+
+  const rawScore =
+    weapon.damage * 1.0
+    + weapon.blastRadius * 0.85
+    + weapon.terrainDamage * 0.6
+    + weapon.knockback * 0.12
+    + (weapon.aoe ? 12 : 0)
+    + weapon.piercing * 6
+    + weapon.homing * 5
+    + weapon.bounces * 3
+    + elemental * 0.5;
+
+  // Verfügbarkeitsfaktor: viel Munition und keine Abklingzeit machen eine Waffe
+  // im Spiel wertvoller, sehr wenig Munition drückt den Wert.
+  const ammoFactor = weapon.maxAmmo <= 0 ? 1 : 1 + Math.min(0.25, (weapon.maxAmmo - 3) * 0.05);
+  const cooldownFactor = weapon.cooldown > 0 ? 0.9 : 1;
+  const losFactor = weapon.requiresLineOfSight ? 0.95 : 1;
+
+  return Number((rawScore * ammoFactor * cooldownFactor * losFactor).toFixed(2));
+}
+
+/** Schwellen der abgeleiteten Einstufung. Bewusst dokumentiert und testbar. */
+export const POWER_TIERS = Object.freeze([
+  Object.freeze({ tier: 'legendary', min: 190 }),
+  Object.freeze({ tier: 'epic', min: 130 }),
+  Object.freeze({ tier: 'rare', min: 80 }),
+  Object.freeze({ tier: 'uncommon', min: 45 }),
+  Object.freeze({ tier: 'common', min: 0 }),
+]);
+
+/** Ordnet einem Leistungswert die Stufe zu. */
+export function tierForScore(score) {
+  return (POWER_TIERS.find(entry => score >= entry.min) ?? POWER_TIERS[POWER_TIERS.length - 1]).tier;
+}
+
+/** Basis-URL für Waffen-Icons (Vite löst den Import-Pfad relativ zu diesem Modul auf). */
+export const WEAPON_ICON_BASE = '../../client/assets/icons';
+
+/** Icons liegen als `<Dateiname ohne Endung>_icon.png` vor. */
+export function iconPathFor(iconFile) {
+  if (!iconFile) return null;
+  const stem = String(iconFile).replace(/\.[^.]+$/, '');
+  return `${WEAPON_ICON_BASE}/${stem}_icon.png`;
+}
+
 const weapons = raw.weapons.map(entry => {
   const stats = entry.stats ?? {};
   const balance = entry.balance ?? {};
   const category = entry.category ?? 'projectile';
   const isMelee = category === 'melee';
 
-  const projectileSpeed = pickPositive(stats, 'projectileSpeed', 'projectile_speed');
-  const blastRadius = pickPositive(stats, 'blastRadius', 'blast_radius');
-  const terrainDamage = pickPositive(stats, 'terrainDamage', 'terrain_damage');
-  const baseDamage = pickPositive(stats, 'baseDamage', 'base_damage');
+  const projectileSpeed = pickPositive(stats, 'projectile_speed', 'projectileSpeed');
+  const blastRadius = pickPositive(stats, 'blast_radius', 'blastRadius');
+  const terrainDamage = pickPositive(stats, 'terrain_damage', 'terrainDamage');
+  const baseDamage = pickPositive(stats, 'base_damage', 'baseDamage');
 
-  return {
+  const sourceRarity = balance.rarity ?? 'common';
+
+  const weapon = {
     id: entry.id,
     index: toNumber(entry.index),
     displayName: entry.displayName ?? entry.internalName ?? entry.id,
     internalName: entry.internalName ?? entry.id,
     category,
     icon: entry.icon?.file ?? null,
-    rarity: balance.rarity ?? 'common',
+    rarity: sourceRarity,
+    /** Rarität aus den Quelldaten (nur common/uncommon/rare). */
+    sourceRarity,
     maxAmmo: Math.max(0, toNumber(balance.maxAmmo) || 1),
     cooldown: toNumber(balance.cooldown),
     requiresLineOfSight: Boolean(balance.requiresLineOfSight),
@@ -78,16 +154,17 @@ const weapons = raw.weapons.map(entry => {
     projectileSpeed,
     gravityScale: pickPositive(stats, 'gravity') || 1,
     bounces: pickPositive(stats, 'bounces'),
-    fuseTime: pickPositive(stats, 'fuseTime', 'fuse_time'),
+    fuseTime: pickPositive(stats, 'fuse_time', 'fuseTime'),
     terrainDamage,
     homing: pickPositive(stats, 'homing'),
     piercing: pickPositive(stats, 'piercing'),
+    // `aoe` ist in der Quelle konstant false — Flaechenwirkung ergibt sich aus dem Radius.
     aoe: toNumber(stats.aoe) > 0 || blastRadius > 0,
     damageType: pickString(stats, 'damage_type', 'damageType') ?? 'physical',
     elemental: {
-      fire: pickPositive(stats, 'fireDamage', 'fire_damage'),
-      ice: pickPositive(stats, 'iceDamage', 'ice_damage'),
-      poison: pickPositive(stats, 'poisonDamage', 'poison_damage'),
+      fire: pickPositive(stats, 'fire_damage', 'fireDamage'),
+      ice: pickPositive(stats, 'ice_damage', 'iceDamage'),
+      poison: pickPositive(stats, 'poison_damage', 'poisonDamage'),
     },
     special: pickString(stats, 'special') ?? entry.mechanic?.specialEffect ?? null,
     targeting: entry.mechanic?.targeting ?? null,
@@ -95,6 +172,13 @@ const weapons = raw.weapons.map(entry => {
     // Abgeleitete Feuerart: Hitscan ohne Flugzeit, Projektil mit Flugzeit.
     delivery: isMelee || projectileSpeed <= 0 ? 'hitscan' : 'projectile',
   };
+
+  // Abgeleitete Einstufung: erweitert die Quelle um epic/legendary, ohne Werte
+  // zu erfinden — reine Funktion der oben gemappten Statistiken.
+  weapon.powerScore = computePowerScore(weapon);
+  weapon.powerTier = tierForScore(weapon.powerScore);
+  weapon.iconPath = iconPathFor(weapon.icon);
+  return weapon;
 });
 
 // Konsistenzpruefung: Der Katalog darf nicht still leer sein.

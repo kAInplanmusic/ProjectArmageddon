@@ -91,7 +91,7 @@ export class MaelstromSystem {
    * Tick-Update: zieht die sichtbare Warnzone deterministisch nach.
    * Die eigentliche Kontraktion passiert einmal pro Runde in contract().
    */
-  update(world, entities, dt) {
+  update(world, _entities, _dt) {
     if (!this.#active) return;
     world.services?.match && (world.services.match.safeInset = this.#inset);
   }

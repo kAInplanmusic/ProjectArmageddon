@@ -106,7 +106,6 @@ export function computeAimAngle(startX, startY, targetX, targetY, power, gravity
   }
 
   const angle1 = Math.atan2(v2 + Math.sqrt(discriminant), gravity * dx);
-  const angle2 = Math.atan2(v2 - Math.sqrt(discriminant), gravity * dx);
 
   // Wähl die höhere Trajektorie (meistens besser für Artillerie)
   return { angle: angle1, valid: true };

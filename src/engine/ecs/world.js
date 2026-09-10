@@ -177,7 +177,7 @@ export class World {
    *
    * @param {number} [dt] - Delta-Zeit in ms (wird ignoriert, da Fixed-Timestep)
    */
-  step(dt = this.#fixedTimestep) {
+  step(_dt = this.#fixedTimestep) {
     for (const entry of this.#systems) {
       const { system, signature } = entry;
 

@@ -215,6 +215,13 @@ class Game {
   get onlineViewState() {
     const snapshot = this.network?.latestSnapshot;
     if (!snapshot) return null;
+
+    // Zugzeit kommt aus dem Snapshot. Die Gesamtdauer wird aus dem höchsten
+    // beobachteten Wert abgeleitet, damit sie ohne Zusatzfeld korrekt ist.
+    const remaining = snapshot.turnRemainingMs ?? 0;
+    if (remaining > (this.remoteTurnDurationMs ?? 0)) this.remoteTurnDurationMs = remaining;
+    const turnDurationMs = this.remoteTurnDurationMs || 30_000;
+
     const entities = (this.network.interpolatedEntities() ?? []).map((entity, index) => ({
       entityId: entity.entityId,
       teamId: entity.teamId,
@@ -239,8 +246,8 @@ class Game {
       maxRounds: 30,
       wind: snapshot.wind,
       tick: snapshot.tick,
-      turnElapsedMs: 0,
-      turnDurationMs: 30_000,
+      turnElapsedMs: Math.max(0, turnDurationMs - remaining),
+      turnDurationMs,
       activePlayerId: snapshot.activePlayerId,
       winnerTeamId: this.remoteWinner ?? null,
       maelstrom: { active: (snapshot.round ?? 0) >= 15, inset: this.remoteInset ?? 0 },
@@ -259,6 +266,14 @@ class Game {
         break;
       case 'explosion':
         this.renderer.spawnExplosionParticles(message.x, message.y, message.radius || 12);
+        this.renderer.addFlash(message.x, message.y, (message.radius || 12) * 1.4);
+        this.renderer.applyCrater(message.x, message.y, message.radius || 12);
+        break;
+      case 'hitscan':
+        this.#drawHitscanBeam(message);
+        break;
+      case 'projectile_impact':
+        this.renderer.addFlash(message.x, message.y, 14);
         break;
       case 'maelstrom_contract':
         this.remoteInset = message.inset;
@@ -354,6 +369,14 @@ class Game {
       switch (type) {
         case 'explosion':
           this.renderer.applyCrater(payload.x, payload.y, payload.radius || 12);
+          this.renderer.addFlash(payload.x, payload.y, (payload.radius || 12) * 1.4);
+          break;
+        case 'hitscan':
+          // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
+          this.#drawHitscanBeam(payload);
+          break;
+        case 'drowning':
+          this.hud.log('Eine Einheit ertrinkt', 'danger');
           break;
         case 'maelstrom_contract':
           this.renderer.applyContraction(payload.inset);
@@ -391,6 +414,23 @@ class Game {
           break;
       }
     }
+  }
+
+  /** Zeichnet den Strahl eines Hitscan-Schusses zwischen Schütze und Einschlag. */
+  #drawHitscanBeam(payload) {
+    // currentState() liefert den lokalen ODER den Online-Zustand, damit
+    // Soforttreffer in beiden Betriebsarten sichtbar sind.
+    const state = this.currentState();
+    if (!state) return;
+    const shooter = state.entities.find(entity => entity.entityId === payload.playerId);
+    if (!shooter) return;
+    this.renderer.addBeam(
+      shooter.x,
+      shooter.y,
+      payload.hitX,
+      payload.hitY,
+      { hit: Boolean(payload.hit) },
+    );
   }
 
   #afterWorldReady(bitmap, water) {
@@ -459,10 +499,16 @@ class Game {
       : null;
 
     this.waterFrame = (this.waterFrame + 1) % 4;
+
+    // Flächenwirkung der gewählten Waffe für die Radius-Vorschau.
+    const activeEntity = state.entities.find(entity => entity.entityId === playerId);
+    const activeWeapon = activeEntity?.activeWeaponId ? getWeapon(activeEntity.activeWeaponId) : null;
+
     this.renderer.render(state, {
       aimPreview,
       aim: this.aim,
       water: this.mode === 'local' ? (this.waterFrame === 0 ? this.match.water : null) : null,
+      blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.hud.update(state, { aim: this.aim, onWeaponSelect: index => this.selectWeapon(index) });
     if (this.mode === 'online') this.hud.setConnection?.(

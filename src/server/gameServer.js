@@ -24,17 +24,29 @@ import {
   controlMessage,
   parseControlMessage,
   encodeSnapshot,
+  toDeltaBase,
 } from '../shared/protocol.js';
 import { validateCommand } from '../shared/validation.js';
 import { MatchSeedManager } from '../shared/seed.js';
+import { ReplayRecorder } from '../engine/replay.js';
+import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
 
 export const SIMULATION_HZ = 60;
 export const SNAPSHOT_HZ = 20;
 const TICK_MS = 1000 / SIMULATION_HZ;
 const SNAPSHOT_INTERVAL_MS = 1000 / SNAPSHOT_HZ;
+/** Nach so vielen Snapshots geht wieder ein Vollsnapshot raus (Resync). */
+const FULL_SNAPSHOT_INTERVAL = SNAPSHOT_HZ * 2;
 
 class LobbySession {
-  constructor(lobby, { onEmpty } = {}) {
+  /**
+   * @param {object} lobby
+   * @param {object} [options]
+   * @param {function(string):void} [options.onEmpty]
+   * @param {object} [options.replayEntries] - aufgezeichnete Eingaben (Restore)
+   * @param {number} [options.replayTotalTicks] - Tickzahl beim Speichern
+   */
+  constructor(lobby, { onEmpty, replayEntries = null, replayTotalTicks = 0 } = {}) {
     this.lobby = lobby;
     this.match = new MatchController({
       seed: lobby.seed,
@@ -43,6 +55,22 @@ class LobbySession {
       preset: lobby.preset,
     });
     this.match.start();
+
+    /** Aufzeichnung für Persistenz und Replay. */
+    this.recorder = new ReplayRecorder({
+      seed: this.match.seedManager.baseSeed,
+      teams: lobby.teams,
+      playersPerTeam: lobby.playersPerTeam,
+      preset: lobby.preset,
+      maxRounds: this.match.maxRounds,
+      turnDurationMs: this.match.turnDurationMs,
+    });
+
+    // Wiederherstellung: Eingaben bis zum gespeicherten Tick erneut anwenden.
+    // Die Simulation ist deterministisch, deshalb entsteht exakt derselbe Zustand.
+    if (Array.isArray(replayEntries) && replayEntries.length > 0) {
+      this.#restoreFromReplay(replayEntries, replayTotalTicks);
+    }
 
     this.history = new SnapshotHistory();
     this.bot = new BotController({
@@ -53,11 +81,43 @@ class LobbySession {
     this.onEmpty = onEmpty;
     this.accumulator = 0;
     this.snapshotAccumulator = 0;
+    /** Letzter an jeden Client gesendeter Zustand (Basis für Delta-Encoding). */
+    this.previousByToken = new Map();
+    this.snapshotCounter = 0;
     this.lastTickAt = Date.now();
     this.timer = null;
     this.emptySince = null;
 
     this.#assignEntityIds();
+  }
+
+  /** Spielt gespeicherte Eingaben deterministisch nach. */
+  #restoreFromReplay(entries, totalTicks) {
+    const byTick = new Map();
+    for (const entry of entries) {
+      if (!byTick.has(entry.tick)) byTick.set(entry.tick, []);
+      byTick.get(entry.tick).push(entry);
+    }
+
+    const limit = Math.max(totalTicks, ...entries.map(entry => entry.tick)) + 1;
+    let guard = 0;
+    while (this.match.status === 'playing' && this.match.world.tickCount < limit && guard < limit + 10) {
+      const tick = this.match.world.tickCount;
+      for (const entry of byTick.get(tick) ?? []) {
+        this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
+      }
+      this.match.step();
+      this.match.consumeEvents();
+      guard += 1;
+    }
+    for (const entry of entries) this.recorder.recordInput(entry);
+    this.recorder.finalize(this.match.world.tickCount);
+  }
+
+  /** Momentaufnahme für die Persistenz. */
+  toPersisted() {
+    this.recorder.finalize(this.match.world.tickCount);
+    return { replay: this.recorder.toJSON(), tick: this.match.world.tickCount };
   }
 
   /** Ordnet Lobby-Plätze den tatsächlichen Spieler-Entities zu. */
@@ -148,6 +208,15 @@ class LobbySession {
     const shot = this.bot.chooseShot(match, activeId);
     if (!shot) return;
     const result = match.fire(activeId, shot.angle, shot.power);
+    // Bot-Züge ebenfalls aufzeichnen: sonst weicht ein Replay vom Match ab.
+    if (result.ok) {
+      this.recorder.recordInput({
+        tick: match.world.tickCount,
+        playerId: activeId,
+        angle: shot.angle,
+        power: shot.power,
+      });
+    }
     result.ok === false && this.match.endTurn();
   }
 
@@ -211,6 +280,15 @@ class LobbySession {
     }
 
     const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, command.input.weaponId);
+    if (result.ok) {
+      this.recorder.recordInput({
+        tick: currentTick,
+        playerId: seat.entityId,
+        angle: command.input.angle,
+        power: command.input.power,
+        weaponId: command.input.weaponId,
+      });
+    }
     return { ok: result.ok, errors: result.errors ?? [], interpolatedFrom: history?.tick ?? null };
   }
 
@@ -222,11 +300,29 @@ class LobbySession {
   }
 
   broadcastSnapshot() {
-    const buffer = encodeSnapshot(this.match.getState());
-    for (const socket of this.clients.values()) {
-      if (socket.readyState === 1) socket.send(buffer);
+    this.snapshotCounter += 1;
+    const state = this.match.getState();
+    const turnRemainingMs = Math.max(0, state.turnDurationMs - state.turnElapsedMs);
+
+    // Alle ~2 s (bei 20 Hz) ein Vollsnapshot, damit ein Client nach einem
+    // verlorenen Frame nicht dauerhaft mit falschen Werten weiterrechnet.
+    const forceFull = this.snapshotCounter % FULL_SNAPSHOT_INTERVAL === 0;
+
+    const sent = [];
+    for (const [token, socket] of this.clients.entries()) {
+      if (socket.readyState !== 1) continue;
+      const previous = forceFull ? null : (this.previousByToken.get(token) ?? null);
+      const buffer = encodeSnapshot(state, { turnRemainingMs, previous });
+      socket.send(buffer);
+      sent.push(buffer);
     }
-    return buffer;
+
+    // Zustand für den nächsten Vergleich fortschreiben. Der Helfer erzeugt
+    // exakt die Rohform, die der Encoder erwartet.
+    const nextPrevious = toDeltaBase(state);
+    for (const token of this.clients.keys()) this.previousByToken.set(token, nextPrevious);
+
+    return sent[0] ?? null;
   }
 
   #broadcastControl(type, payload) {
@@ -242,16 +338,95 @@ export class GameServer {
   #wsServer;
   #sessions = new Map();
   #lobbies;
+  #persistenceTimer = null;
 
-  constructor({ lobbyManager = new LobbyManager(), serveStatic = null } = {}) {
+  constructor({
+    lobbyManager = new LobbyManager(),
+    serveStatic = null,
+    persistence = null,
+    persistenceIntervalMs = 10_000,
+  } = {}) {
     this.#lobbies = lobbyManager;
     this.serveStatic = serveStatic ?? createDistHandler();
     /** Injizierbarer Logger; Standard ist die Konsole. */
     this.logger = console;
+    /** Optionale Persistenz: null deaktiviert das Speichern vollständig. */
+    this.persistence = persistence;
+    this.persistenceIntervalMs = persistenceIntervalMs;
+    this.#persistenceTimer = null;
 
     this.#httpServer = createHttpServer((request, response) => this.#handleHttp(request, response));
     this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
     this.#wsServer.on('connection', socket => this.#handleConnection(socket));
+  }
+
+  /** Momentaufnahme aller laufenden Lobbys. */
+  snapshotState() {
+    const lobbies = [];
+    for (const [lobbyId, session] of this.#sessions.entries()) {
+      const lobby = this.#lobbies.get(lobbyId);
+      if (!lobby) continue;
+      lobbies.push(serializeLobby(lobby, session));
+    }
+    return { lobbies };
+  }
+
+  /** Speichert den aktuellen Zustand (atomar). */
+  saveState() {
+    if (!this.persistence) return false;
+    return this.persistence.save(this.snapshotState());
+  }
+
+  /**
+   * Stellt gespeicherte Lobbys wieder her.
+   *
+   * Die Matches werden durch erneutes Anwenden der aufgezeichneten Eingaben
+   * rekonstruiert. Clients müssen sich mit ihrem Token neu verbinden; sie
+   * landen dann wieder auf demselben Platz und im selben Matchzustand.
+   *
+   * @returns {{restored: number, skipped: number}}
+   */
+  restoreState() {
+    if (!this.persistence) return { restored: 0, skipped: 0 };
+    const saved = this.persistence.load();
+    if (!saved?.lobbies?.length) return { restored: 0, skipped: 0 };
+
+    let restored = 0;
+    let skipped = 0;
+    for (const entry of saved.lobbies) {
+      try {
+        const { lobby } = restoreLobby(entry, {
+          lobbyManager: this.#lobbies,
+          createSession: (target, options) => {
+            const session = new LobbySession(target, {
+              onEmpty: id => this.#sessions.delete(id),
+              replayEntries: options.replayEntries,
+              replayTotalTicks: options.replayTotalTicks,
+            }).start();
+            this.#sessions.set(target.id, session);
+            return session;
+          },
+        });
+        if (lobby) restored += 1;
+      } catch (error) {
+        skipped += 1;
+        this.logger?.warn?.(`[restore] Lobby ${entry.id} übersprungen: ${error.message}`);
+      }
+    }
+    return { restored, skipped };
+  }
+
+  /** Startet das periodische Speichern. */
+  startPersistence() {
+    if (!this.persistence || this.#persistenceTimer) return this;
+    this.#persistenceTimer = setInterval(() => this.saveState(), this.persistenceIntervalMs);
+    if (typeof this.#persistenceTimer.unref === 'function') this.#persistenceTimer.unref();
+    return this;
+  }
+
+  stopPersistence() {
+    if (this.#persistenceTimer) clearInterval(this.#persistenceTimer);
+    this.#persistenceTimer = null;
   }
 
   get lobbyManager() {
@@ -467,6 +642,9 @@ export class GameServer {
   }
 
   async close() {
+    // Vor dem Herunterfahren sichern, damit ein Neustart das Match fortsetzen kann.
+    this.stopPersistence();
+    this.saveState();
     for (const session of this.#sessions.values()) session.stop();
     this.#sessions.clear();
     // Offene Sockets sofort beenden, sonst blockieren Keep-Alive-Verbindungen
@@ -547,9 +725,17 @@ export function createDistHandler(distDir = 'dist') {
 
 /** Startet einen eigenständigen Server (siehe npm run server). */
 export async function startServer(options = {}) {
-  const server = new GameServer(options);
+  // Persistenz standardmäßig aktiv; mit PA_PERSISTENCE=off abschaltbar.
+  const persistenceEnabled = options.persistence !== null
+    && process.env.PA_PERSISTENCE !== 'off';
+  const persistence = options.persistence
+    ?? (persistenceEnabled ? new PersistenceStore({ path: options.statePath ?? '.pa-state/lobbies.json' }) : null);
+
+  const server = new GameServer({ ...options, persistence });
+  const restored = server.restoreState();
+  server.startPersistence();
   const info = await server.listen(options.port ?? Number(process.env.PORT ?? 3000), options.host ?? '127.0.0.1');
-  return { server, ...info };
+  return { server, restored, ...info };
 }
 
 export default GameServer;

@@ -18,6 +18,9 @@ coverage/
 # Generierte Verifikationsartefakte (Screenshots)
 artifacts/
 
+# Server-Zustand (Lobby-Persistenz)
+.pa-state/
+
 # Editor / OS
 .vite/
 .DS_Store

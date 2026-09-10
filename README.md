@@ -45,15 +45,47 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (70 Tests) |
+| `npm test` | Unit- und Integrationstests (117 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E inkl. Multiplayer (12 Tests) |
+| `npm run test:all` | Tests und E2E hintereinander |
+| `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
+| `npm run perf` | Performance-Profil mit 60-Hz-Budget-Gate |
+| `npm run balance` | Balance-Bericht über alle 150 Waffen |
+| `npm run replay` | Replay aufzeichnen/abspielen (`record`, `play`, `info`) |
+| `npm run icons` | Waffen-Icons erzeugen (Pillow, ohne ImageMagick) |
 | `npm run validate` | Modulimporte prüfen |
 | `npm run weapons:build` | Waffenkatalog aus der Designdatei generieren |
 
 E2E-Browserwahl ist portabel: lokal wird der System-Chrome genutzt, auf CI das
 Playwright-Chromium. Erzwingen mit `PLAYWRIGHT_CHANNEL=chrome|bundled`.
+
+### Replay verwenden
+
+```bash
+# Ein Match aufzeichnen
+npm run replay -- record --seed=20260910 --rounds=8 --out=artifacts/lauf.json
+
+# Abspielen und die exakte Reproduzierbarkeit bestätigen
+npm run replay -- play artifacts/lauf.json --verify
+```
+
+`--verify` vergleicht Status, Runde, Tickzahl und den Zustandshash gegen die
+Aufzeichnung. Weicht etwas ab, endet der Befehl mit Exit-Code 1 — der Befehl ist
+damit als Determinismusprüfung in Skripten nutzbar.
+
+### Balance messen
+
+```bash
+npm run balance                      # alle Waffen
+npm run balance -- --tier=legendary  # nur eine Stufe
+npm run balance -- --json            # maschinenlesbar
+```
+
+Gemessen wird ein Einzelschuss pro frischem Match auf gleicher Höhe. Waffen ohne
+Wirkung sind überwiegend Utility- und Spezialwaffen, deren Effekt noch nicht
+implementiert ist — die Ausgabe dient damit zugleich als TODO-Liste.
 
 ## Architektur
 

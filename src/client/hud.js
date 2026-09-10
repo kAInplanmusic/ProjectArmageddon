@@ -10,7 +10,22 @@
 import { TEAM_COLORS } from '../engine/match.js';
 import { getWeapon } from '../shared/config/weapons.js';
 
-const LOG_LIMIT = 6;
+const LOG_LIMIT = 60;
+
+/**
+ * Farben der abgeleiteten Waffenstufen.
+ *
+ * Die Quelle kennt nur common/uncommon/rare; epic und legendary leitet der
+ * Katalog-Generator deterministisch aus den Waffenwerten ab (siehe
+ * scripts/build-weapon-catalog.mjs, POWER_TIERS).
+ */
+const TIER_COLORS = Object.freeze({
+  common: '#c8d3de',
+  uncommon: '#90be6d',
+  rare: '#4cc9f0',
+  epic: '#b388ff',
+  legendary: '#ffb703',
+});
 
 export class Hud {
   #elements;
@@ -29,6 +44,7 @@ export class Hud {
       weapons: documentRef.getElementById('weapon-list'),
       angle: documentRef.getElementById('hud-angle'),
       power: documentRef.getElementById('hud-power'),
+      blast: documentRef.getElementById('hud-blast'),
       active: documentRef.getElementById('hud-active'),
       log: documentRef.getElementById('log-list'),
       connection: documentRef.getElementById('hud-connection'),
@@ -91,6 +107,14 @@ export class Hud {
     }
     if (el.angle) el.angle.textContent = `${Math.round((((aim?.angle ?? active?.angle ?? 0)) * 180) / Math.PI)}°`;
     if (el.power) el.power.textContent = String(Math.round(aim?.power ?? active?.power ?? 0));
+
+    // Flächenwirkung der gewählten Waffe: hilft beim Einschätzen des Splash-Radius.
+    if (el.blast) {
+      const weapon = active?.activeWeaponId ? getWeapon(active.activeWeaponId) : null;
+      const radius = weapon?.blastRadius ?? 0;
+      el.blast.textContent = radius > 0 ? `⌀ ${Math.round(radius)}` : '— direkt —';
+      el.blast.style.color = radius > 0 ? '#f4a261' : '#8ba0b4';
+    }
   }
 
   #renderRoster(state) {
@@ -138,7 +162,10 @@ export class Hud {
 
     const active = state.entities.find(entity => entity.entityId === state.activePlayerId);
     const weapons = active?.inventory ?? [];
-    const signature = `${state.activePlayerId}:${weapons.join(',')}:${active?.activeWeaponId ?? ''}`;
+    // Munition gehört in die Signatur: sonst aktualisiert sich die Anzeige
+    // erst beim Zugwechsel statt direkt nach einem Schuss.
+    const ammoKey = weapons.map(id => `${id}=${active?.ammo?.[id] ?? 0}`).join(',');
+    const signature = `${state.activePlayerId}:${weapons.join(',')}:${active?.activeWeaponId ?? ''}:${ammoKey}`;
     if (this.#weaponSignature === signature) return;
     this.#weaponSignature = signature;
 
@@ -147,10 +174,29 @@ export class Hud {
       const item = document.createElement('li');
       item.className = 'weapon-item';
       item.dataset.weaponId = weaponId;
+      item.dataset.tier = weapon?.powerTier ?? 'common';
       if (weaponId === active?.activeWeaponId) item.classList.add('is-active');
 
+      // Waffen-Icon: das Logo aus assets/weapons/icons, vom Generator als Pfad
+      // hinterlegt. Fehlt die Datei, bleibt die Zeile ohne Bild nutzbar.
+      if (weapon?.iconPath) {
+        const image = document.createElement('img');
+        image.className = 'weapon-icon';
+        image.src = new URL(weapon.iconPath, import.meta.url).href;
+        image.alt = '';
+        image.width = 24;
+        image.height = 24;
+        image.loading = 'lazy';
+        // Ladefehler dürfen die Liste nicht stören.
+        image.addEventListener('error', () => image.remove());
+        item.append(image);
+      }
+
       const label = document.createElement('span');
+      label.className = 'weapon-name';
       label.textContent = `${index + 1}. ${weapon?.displayName ?? weaponId}`;
+      // Rarität als Farbe: die abgeleitete Stufe ist im Katalog dokumentiert.
+      label.style.color = TIER_COLORS[weapon?.powerTier] ?? TIER_COLORS.common;
 
       const meta = document.createElement('span');
       const ammo = active?.ammo?.[weaponId];
@@ -160,6 +206,14 @@ export class Hud {
       meta.style.color = '#8ba0b4';
 
       item.append(label, meta);
+      const radius = weapon?.blastRadius ?? 0;
+      item.title = [
+        weapon?.displayName ?? weaponId,
+        `Schaden ${weapon?.damage ?? 0}`,
+        radius > 0 ? `Radius ${Math.round(radius)}` : 'kein Flächenschaden',
+        `Stufe ${weapon?.powerTier ?? 'common'} (Wert ${weapon?.powerScore ?? 0})`,
+        weapon?.category ? `Kategorie ${weapon.category}` : null,
+      ].filter(Boolean).join(' · ');
       item.addEventListener('click', () => onWeaponSelect?.(index));
       return item;
     }));

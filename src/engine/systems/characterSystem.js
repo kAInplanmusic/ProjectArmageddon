@@ -20,6 +20,8 @@ export class CharacterSystem {
   #fallDamageThreshold;
   #fallDamageScale;
   #maxHorizontalSpeed;
+  #drownDamagePerSecond;
+  #submergedLevel;
 
   constructor({
     gravity = 0.42,
@@ -27,12 +29,16 @@ export class CharacterSystem {
     fallDamageThreshold = 11,
     fallDamageScale = 2.2,
     maxHorizontalSpeed = 6,
+    drownDamagePerSecond = 9,
+    submergedLevel = 0.72,
   } = {}) {
     this.#gravity = gravity;
     this.#groundFriction = groundFriction;
     this.#fallDamageThreshold = fallDamageThreshold;
     this.#fallDamageScale = fallDamageScale;
     this.#maxHorizontalSpeed = maxHorizontalSpeed;
+    this.#drownDamagePerSecond = drownDamagePerSecond;
+    this.#submergedLevel = submergedLevel;
   }
 
   update(world, entities, dt) {
@@ -50,7 +56,10 @@ export class CharacterSystem {
       let vx = world.getComponent(entityId, 'Velocity', 'x') || 0;
       let vy = world.getComponent(entityId, 'Velocity', 'y') || 0;
 
-      const waterLevel = water ? water.getLevel(Math.floor(x), Math.floor(y)) : 0;
+      // Wasserabfrage in Weltkoordinaten: das Feld rechnet intern in Zellen.
+      const waterLevel = water
+        ? (typeof water.levelAtWorld === 'function' ? water.levelAtWorld(x, y) : water.getLevel(Math.floor(x), Math.floor(y)))
+        : 0;
       const inWater = waterLevel > 0.35;
 
       vy += this.#gravity * (inWater ? 0.25 : 1);
@@ -115,12 +124,22 @@ export class CharacterSystem {
       if (inWater && events) {
         events.emit('entity_in_water', { entityId, level: waterLevel });
       }
+
+      // Ertrinken: tief untergetauchte Figuren verlieren kontinuierlich Leben.
+      if (waterLevel >= this.#submergedLevel && damageSystem) {
+        const damage = (this.#drownDamagePerSecond / 60) * (dt / (1000 / 60));
+        damageSystem.applyDamage(world, entityId, damage, null);
+        events?.emit('drowning', { entityId, level: waterLevel });
+      }
     }
   }
 
   #isSolid(terrain, x, y) {
     return terrain.isSolid(Math.floor(x), Math.floor(y));
   }
+
+  get drownDamagePerSecond() { return this.#drownDamagePerSecond; }
+  get submergedLevel() { return this.#submergedLevel; }
 
   #surfaceY(terrain, x, fromY) {
     let y = Math.floor(fromY);

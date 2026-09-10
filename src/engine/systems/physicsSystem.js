@@ -24,7 +24,7 @@ export class PhysicsSystem {
    * @param {number[]} entities
    * @param {number} dt
    */
-  update(world, entities, dt) {
+  update(world, entities, _dt) {
     for (const entityId of entities) {
       // Projektile und Spielfiguren haben eigene Systeme mit Terrain-Kollision.
       if (world.hasComponent(entityId, 'Projectile') || world.hasComponent(entityId, 'Health')) {
@@ -37,7 +37,7 @@ export class PhysicsSystem {
       let py = world.getComponent(entityId, 'Position', 'y') || 0;
 
       // Rotation (falls vorhanden)
-      let rotation = world.getComponent(entityId, 'Rotation', 'angle') || 0;
+      const rotation = world.getComponent(entityId, 'Rotation', 'angle') || 0;
 
       // Anwenden der Gravitation (wenn nicht vom Terrain/Hit affected)
       vy += this.#gravity;

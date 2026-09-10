@@ -6,12 +6,16 @@
 import { startServer } from '../src/server/gameServer.js';
 
 const port = Number(process.env.PORT ?? 3000);
-const { url, server } = await startServer({ port });
+const { url, server, restored } = await startServer({ port });
 
 console.log(`Project Armageddon Server läuft auf ${url}`);
 console.log(`  WebSocket : ${url.replace('http', 'ws')}/ws`);
 console.log(`  Health    : ${url}/healthz`);
 console.log(`  Lobby-API : POST ${url}/api/lobby/create`);
+if (restored && (restored.restored > 0 || restored.skipped > 0)) {
+  console.log(`  Wiederhergestellt: ${restored.restored} Lobby(s), ${restored.skipped} übersprungen`);
+}
+console.log(`  Persistenz: ${server.persistence ? server.persistence.path : 'aus'}`);
 
 const shutdown = async signal => {
   console.log(`\n${signal} empfangen — fahre herunter`);

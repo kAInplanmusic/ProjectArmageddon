@@ -8,6 +8,9 @@ import {
   PROTOCOL_VERSION,
   MAGIC,
   MESSAGE_TYPE,
+  DIRTY,
+  SNAPSHOT_FLAG,
+  toDeltaBase,
 } from '../src/shared/protocol.js';
 import { SnapshotHistory } from '../src/server/lagCompensation.js';
 import { LobbyManager, LOBBY_STATUS } from '../src/server/lobby.js';
@@ -194,4 +197,135 @@ test('Servervalidierung blockiert fremde, ungültige und veraltete Befehle', () 
   // Drift von 490 Ticks liegt ausserhalb des 400-Tick-Fensters.
   assert.equal(isTickInWindow(10, 500), false);
   assert.equal(isTickInWindow(10, 5000), false);
+});
+
+test('Protokoll v2 überträgt die Restzugzeit', () => {
+  const state = {
+    tick: 500,
+    round: 3,
+    wind: 0.01,
+    activePlayerId: 1,
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 10, y: 20, health: 100, isActiveTurn: true }],
+    projectiles: [],
+  };
+
+  const buffer = encodeSnapshot(state, { turnRemainingMs: 24_500 });
+  const decoded = decodeSnapshot(buffer);
+
+  assert.equal(PROTOCOL_VERSION, 2);
+  assert.ok(Math.abs(decoded.turnRemainingMs - 24_500) < 100, `Zugzeit: ${decoded.turnRemainingMs}`);
+  assert.equal(decoded.isFull, true, 'Ohne vorherigen Zustand muss es ein Vollsnapshot sein');
+  assert.equal(buffer[2], 2, 'Versionsbyte muss 2 sein');
+});
+
+test('Delta-Encoding markiert unveränderte Felder und überträgt sie nicht', () => {
+  const base = {
+    tick: 100,
+    round: 1,
+    wind: 0,
+    activePlayerId: 1,
+    entities: [
+      { entityId: 1, teamId: 0, alive: true, x: 100, y: 200, health: 90, isActiveTurn: true },
+      { entityId: 2, teamId: 1, alive: true, x: 300, y: 200, health: 100, isActiveTurn: false },
+    ],
+    projectiles: [],
+  };
+
+  // Vollsnapshot als Basis.
+  const full = decodeSnapshot(encodeSnapshot(base));
+  assert.equal(full.isFull, true);
+
+  // Zweiter Zustand: nur Spieler 1 hat sich bewegt.
+  const moved = {
+    ...base,
+    tick: 101,
+    entities: [
+      { ...base.entities[0], x: 105 },
+      { ...base.entities[1] },
+    ],
+  };
+  const deltaBuffer = encodeSnapshot(moved, { previous: full.previous });
+  const delta = decodeSnapshot(deltaBuffer, full.previous);
+
+  assert.equal(delta.isFull, false, 'Mit vorherigem Zustand muss es ein Delta sein');
+  assert.equal(delta.entities.length, 2);
+
+  // Spieler 1: Position geändert, Gesundheit unverändert.
+  assert.equal(delta.entities[0].x, 105);
+  assert.equal(delta.entities[0].health, 90);
+
+  // Spieler 2: unverändert → Werte stammen aus dem vorherigen Snapshot.
+  assert.equal(delta.entities[1].x, 300);
+  assert.equal(delta.entities[1].y, 200);
+  assert.equal(delta.entities[1].health, 100);
+  assert.equal(delta.entities[1].alive, true);
+
+  // Das Delta darf nie größer sein als der Vollsnapshot.
+  assert.ok(deltaBuffer.length <= encodeSnapshot(moved).length);
+});
+
+test('Delta ohne vorherigen Zustand liefert weiterhin korrekte Werte', () => {
+  const state = {
+    tick: 10,
+    round: 1,
+    wind: 0,
+    activePlayerId: 2,
+    entities: [
+      { entityId: 1, teamId: 0, alive: false, x: 0, y: 0, health: 0, isActiveTurn: false },
+      { entityId: 2, teamId: 1, alive: true, x: 640, y: 360, health: 55, isActiveTurn: true },
+    ],
+    projectiles: [],
+  };
+  // Delta-Basis über den offiziellen Helfer: enthält nur Spieler 1, Spieler 2
+  // ist dem Client unbekannt und muss vollständig ankommen.
+  const previous = toDeltaBase({
+    entities: [{ entityId: 1, x: 999, y: 999, health: 999, alive: true }],
+  });
+  assert.equal(previous.has(2), false, 'Spieler 2 darf nicht in der Basis sein');
+
+  // Ein Delta senden, obwohl der Client Spieler 2 noch nie gesehen hat: seine
+  // Werte müssen vollständig ankommen, nicht als 0.
+  const delta = decodeSnapshot(encodeSnapshot(state, { previous }), previous);
+  const player2 = delta.entities.find(entity => entity.entityId === 2);
+  assert.equal(player2.x, 640);
+  assert.equal(player2.y, 360);
+  assert.equal(player2.health, 55);
+  assert.equal(player2.alive, true);
+});
+
+test('Tod und Wiederbelebung werden im Delta korrekt markiert', () => {
+  const alive = {
+    tick: 1, round: 1, wind: 0, activePlayerId: 1,
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 50, y: 60, health: 10, isActiveTurn: true }],
+    projectiles: [],
+  };
+  const first = decodeSnapshot(encodeSnapshot(alive));
+
+  // Tod: alive kippt, Gesundheit auf 0.
+  const dead = {
+    ...alive, tick: 2,
+    entities: [{ ...alive.entities[0], alive: false, health: 0 }],
+  };
+  const delta = decodeSnapshot(encodeSnapshot(dead, { previous: first.previous }), first.previous);
+  assert.equal(delta.entities[0].alive, false);
+  assert.equal(delta.entities[0].health, 0);
+});
+
+test('dirty-Bits entsprechen den geänderten Feldern', () => {
+  const previous = toDeltaBase({
+    entities: [{ entityId: 1, x: 100, y: 200, health: 90, alive: true }],
+  });
+  const state = {
+    tick: 5, round: 1, wind: 0, activePlayerId: 1,
+    // Nur die Gesundheit ändert sich; Position und alive bleiben gleich.
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 100, y: 200, health: 42, isActiveTurn: true }],
+    projectiles: [],
+  };
+  const buffer = encodeSnapshot(state, { previous });
+  const dirty = buffer[22 + 11];
+
+  assert.equal(dirty & DIRTY.HEALTH, DIRTY.HEALTH, 'Gesundheitsbit muss gesetzt sein');
+  assert.equal(dirty & DIRTY.POSITION, 0, 'Positionsbit darf nicht gesetzt sein');
+  assert.equal(dirty & DIRTY.ALIVE, 0, 'Alive-Bit darf nicht gesetzt sein');
+  assert.equal(buffer[20] | (buffer[21] << 8) & SNAPSHOT_FLAG.FULL, 0, 'Kein Vollsnapshot-Flag');
 });

@@ -17,10 +17,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9033.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 28,
       "blastRadius": 0,
       "knockback": 82,
       "projectileSpeed": 0,
@@ -40,7 +41,10 @@ export const WEAPONS = Object.freeze(
       "special": "bat_knockback",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 46.9,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9033_icon.png"
     },
     {
       "id": "pa_002",
@@ -50,10 +54,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9034.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 34,
       "blastRadius": 0,
       "knockback": 55,
       "projectileSpeed": 0,
@@ -73,7 +78,10 @@ export const WEAPONS = Object.freeze(
       "special": "burn",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 54.56,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9034_icon.png"
     },
     {
       "id": "pa_003",
@@ -83,10 +91,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9036.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 30,
       "blastRadius": 0,
       "knockback": 45,
       "projectileSpeed": 0,
@@ -106,7 +115,10 @@ export const WEAPONS = Object.freeze(
       "special": "hook_pull",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 38.94,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9036_icon.png"
     },
     {
       "id": "pa_004",
@@ -116,10 +128,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9037.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 24,
       "blastRadius": 0,
       "knockback": 40,
       "projectileSpeed": 0,
@@ -139,7 +152,10 @@ export const WEAPONS = Object.freeze(
       "special": "hook_pull",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.68,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9037_icon.png"
     },
     {
       "id": "pa_005",
@@ -149,10 +165,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9040.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 0,
       "knockback": 70,
       "projectileSpeed": 0,
@@ -172,7 +189,10 @@ export const WEAPONS = Object.freeze(
       "special": "heavy_impact",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 67.32,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9040_icon.png"
     },
     {
       "id": "pa_006",
@@ -182,10 +202,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9041.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 20,
       "blastRadius": 0,
       "knockback": 30,
       "projectileSpeed": 0,
@@ -205,7 +226,10 @@ export const WEAPONS = Object.freeze(
       "special": "dig",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 49.06,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9041_icon.png"
     },
     {
       "id": "pa_007",
@@ -215,10 +239,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9042.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 22,
       "blastRadius": 0,
       "knockback": 35,
       "projectileSpeed": 0,
@@ -238,7 +263,10 @@ export const WEAPONS = Object.freeze(
       "special": "rapid_melee",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 28.82,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9042_icon.png"
     },
     {
       "id": "pa_008",
@@ -248,10 +276,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9043.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 45,
       "blastRadius": 0,
       "knockback": 65,
       "projectileSpeed": 0,
@@ -271,7 +300,10 @@ export const WEAPONS = Object.freeze(
       "special": "stun",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 71.28,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9043_icon.png"
     },
     {
       "id": "pa_009",
@@ -281,10 +313,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9044.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 30,
       "blastRadius": 0,
       "knockback": 30,
       "projectileSpeed": 0,
@@ -304,7 +337,10 @@ export const WEAPONS = Object.freeze(
       "special": "freeze",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 57.31,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9044_icon.png"
     },
     {
       "id": "pa_010",
@@ -314,10 +350,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9045.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 52,
       "blastRadius": 0,
       "knockback": 35,
       "projectileSpeed": 0,
@@ -337,7 +374,10 @@ export const WEAPONS = Object.freeze(
       "special": "multi_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 71.72,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9045_icon.png"
     },
     {
       "id": "pa_011",
@@ -347,6 +387,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9046.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -370,7 +411,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9046_icon.png"
     },
     {
       "id": "pa_012",
@@ -380,6 +424,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9047.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -403,7 +448,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9047_icon.png"
     },
     {
       "id": "pa_013",
@@ -413,6 +461,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9048.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -436,7 +485,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9048_icon.png"
     },
     {
       "id": "pa_014",
@@ -446,6 +498,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9049.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -469,7 +522,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9049_icon.png"
     },
     {
       "id": "pa_015",
@@ -479,6 +535,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9050.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -502,7 +559,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9050_icon.png"
     },
     {
       "id": "pa_016",
@@ -512,6 +572,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9051.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -535,7 +596,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9051_icon.png"
     },
     {
       "id": "pa_017",
@@ -545,6 +609,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9052.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -568,7 +633,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9052_icon.png"
     },
     {
       "id": "pa_018",
@@ -578,10 +646,11 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9053.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 0,
       "knockback": 45,
       "projectileSpeed": 0,
@@ -601,7 +670,10 @@ export const WEAPONS = Object.freeze(
       "special": "energy_blade",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 58.74,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9053_icon.png"
     },
     {
       "id": "pa_019",
@@ -611,6 +683,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9054.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -634,7 +707,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9054_icon.png"
     },
     {
       "id": "pa_020",
@@ -644,6 +720,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9055.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -667,7 +744,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9055_icon.png"
     },
     {
       "id": "pa_021",
@@ -677,6 +757,7 @@ export const WEAPONS = Object.freeze(
       "category": "melee",
       "icon": "IMG_9058.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -700,7 +781,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9058_icon.png"
     },
     {
       "id": "pa_022",
@@ -710,13 +794,14 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9059.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 34,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 88,
       "gravityScale": 1,
       "bounces": 0,
       "fuseTime": 0,
@@ -733,7 +818,10 @@ export const WEAPONS = Object.freeze(
       "special": "plasma_bolt",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 41.36,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9059_icon.png"
     },
     {
       "id": "pa_023",
@@ -743,10 +831,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9060.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 20,
       "blastRadius": 0,
       "knockback": 96,
       "projectileSpeed": 70,
@@ -766,7 +855,10 @@ export const WEAPONS = Object.freeze(
       "special": "mega_knockback",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 34.67,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9060_icon.png"
     },
     {
       "id": "pa_024",
@@ -776,6 +868,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9061.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -799,7 +892,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9061_icon.png"
     },
     {
       "id": "pa_025",
@@ -809,6 +905,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9062.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -832,7 +929,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9062_icon.png"
     },
     {
       "id": "pa_026",
@@ -842,10 +942,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9063.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 18,
       "blastRadius": 0,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -865,7 +966,10 @@ export const WEAPONS = Object.freeze(
       "special": "drill",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 76.56,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9063_icon.png"
     },
     {
       "id": "pa_027",
@@ -875,6 +979,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9066.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -898,7 +1003,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9066_icon.png"
     },
     {
       "id": "pa_028",
@@ -908,10 +1016,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9067.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 48,
       "blastRadius": 48,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -931,7 +1040,10 @@ export const WEAPONS = Object.freeze(
       "special": "spike_blast",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 121.44,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9067_icon.png"
     },
     {
       "id": "pa_029",
@@ -941,10 +1053,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9068.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 32,
       "blastRadius": 30,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -964,7 +1077,10 @@ export const WEAPONS = Object.freeze(
       "special": "sticky",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 80.41,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9068_icon.png"
     },
     {
       "id": "pa_030",
@@ -974,10 +1090,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9069.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 52,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -997,7 +1114,10 @@ export const WEAPONS = Object.freeze(
       "special": "emp_blast",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 111.98,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9069_icon.png"
     },
     {
       "id": "pa_031",
@@ -1007,10 +1127,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9070.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 48,
       "blastRadius": 0,
       "knockback": 60,
       "projectileSpeed": 70,
@@ -1030,7 +1151,10 @@ export const WEAPONS = Object.freeze(
       "special": "power_punch",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 60.72,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9070_icon.png"
     },
     {
       "id": "pa_032",
@@ -1040,6 +1164,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9071.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1063,7 +1188,10 @@ export const WEAPONS = Object.freeze(
       "special": "flight",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9071_icon.png"
     },
     {
       "id": "pa_033",
@@ -1073,6 +1201,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9072.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1096,7 +1225,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9072_icon.png"
     },
     {
       "id": "pa_034",
@@ -1106,6 +1238,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9073.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1129,7 +1262,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9073_icon.png"
     },
     {
       "id": "pa_035",
@@ -1139,10 +1275,11 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9074.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 54,
       "blastRadius": 34,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1162,7 +1299,10 @@ export const WEAPONS = Object.freeze(
       "special": "energy_explosion",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 108.35,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9074_icon.png"
     },
     {
       "id": "pa_036",
@@ -1172,6 +1312,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9075.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1195,7 +1336,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9075_icon.png"
     },
     {
       "id": "pa_037",
@@ -1205,6 +1349,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9077.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1228,7 +1373,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9077_icon.png"
     },
     {
       "id": "pa_038",
@@ -1238,13 +1386,14 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9078.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 50,
       "blastRadius": 38,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 76,
       "gravityScale": 62,
       "bounces": 0,
       "fuseTime": 0,
@@ -1261,7 +1410,10 @@ export const WEAPONS = Object.freeze(
       "special": "rocket",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 107.69,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9078_icon.png"
     },
     {
       "id": "pa_039",
@@ -1271,13 +1423,14 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9079.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 58,
       "blastRadius": 45,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 48,
       "gravityScale": 78,
       "bounces": 0,
       "fuseTime": 0,
@@ -1294,7 +1447,10 @@ export const WEAPONS = Object.freeze(
       "special": "mortar",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 123.03,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9079_icon.png"
     },
     {
       "id": "pa_040",
@@ -1304,6 +1460,7 @@ export const WEAPONS = Object.freeze(
       "category": "ranged",
       "icon": "IMG_9081.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1327,7 +1484,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.46,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9081_icon.png"
     },
     {
       "id": "pa_041",
@@ -1337,6 +1497,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9082.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1360,7 +1521,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9082_icon.png"
     },
     {
       "id": "pa_042",
@@ -1370,6 +1534,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9083.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1393,7 +1558,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9083_icon.png"
     },
     {
       "id": "pa_043",
@@ -1403,6 +1571,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9085.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1426,7 +1595,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9085_icon.png"
     },
     {
       "id": "pa_044",
@@ -1436,10 +1608,11 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9086.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 65,
       "blastRadius": 55,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1459,7 +1632,10 @@ export const WEAPONS = Object.freeze(
       "special": "phoenix_strike",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 319.85,
+      "powerTier": "legendary",
+      "iconPath": "../../client/assets/icons/IMG_9086_icon.png"
     },
     {
       "id": "pa_045",
@@ -1469,6 +1645,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9087.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1492,7 +1669,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9087_icon.png"
     },
     {
       "id": "pa_046",
@@ -1502,10 +1682,11 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9088.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 42,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1525,7 +1706,10 @@ export const WEAPONS = Object.freeze(
       "special": "fragmentation",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 93.3,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9088_icon.png"
     },
     {
       "id": "pa_047",
@@ -1535,6 +1719,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9089.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1558,7 +1743,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9089_icon.png"
     },
     {
       "id": "pa_048",
@@ -1568,10 +1756,11 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9090.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 46,
       "blastRadius": 40,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1591,7 +1780,10 @@ export const WEAPONS = Object.freeze(
       "special": "banana_split",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 101.6,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9090_icon.png"
     },
     {
       "id": "pa_049",
@@ -1601,13 +1793,14 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9091.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 30,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 72,
       "gravityScale": 65,
       "bounces": 1,
       "fuseTime": 0,
@@ -1624,7 +1817,10 @@ export const WEAPONS = Object.freeze(
       "special": "returning_projectile",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 36.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9091_icon.png"
     },
     {
       "id": "pa_050",
@@ -1634,6 +1830,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9092.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1657,7 +1854,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9092_icon.png"
     },
     {
       "id": "pa_051",
@@ -1667,6 +1867,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9093.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1690,7 +1891,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9093_icon.png"
     },
     {
       "id": "pa_052",
@@ -1700,10 +1904,11 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9094.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 36,
       "blastRadius": 42,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1723,7 +1928,10 @@ export const WEAPONS = Object.freeze(
       "special": "fire_pool",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 103.3,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9094_icon.png"
     },
     {
       "id": "pa_053",
@@ -1733,10 +1941,11 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9095.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 52,
       "blastRadius": 45,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1756,7 +1965,10 @@ export const WEAPONS = Object.freeze(
       "special": "delayed_bot",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 105.85,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9095_icon.png"
     },
     {
       "id": "pa_054",
@@ -1766,13 +1978,14 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9096.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 44,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 82,
       "gravityScale": 65,
       "bounces": 0,
       "fuseTime": 0,
@@ -1789,7 +2002,10 @@ export const WEAPONS = Object.freeze(
       "special": "spread_shot",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 47.6,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9096_icon.png"
     },
     {
       "id": "pa_055",
@@ -1799,13 +2015,14 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9097.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 65,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 98,
       "gravityScale": 65,
       "bounces": 0,
       "fuseTime": 0,
@@ -1822,7 +2039,10 @@ export const WEAPONS = Object.freeze(
       "special": "precision",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 74.6,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9097_icon.png"
     },
     {
       "id": "pa_056",
@@ -1832,6 +2052,7 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9098.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -1855,7 +2076,10 @@ export const WEAPONS = Object.freeze(
       "special": "direct_hit",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 28.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9098_icon.png"
     },
     {
       "id": "pa_057",
@@ -1865,13 +2089,14 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9099.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 38,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 92,
       "gravityScale": 65,
       "bounces": 0,
       "fuseTime": 0,
@@ -1888,7 +2113,10 @@ export const WEAPONS = Object.freeze(
       "special": "precision",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 41.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9099_icon.png"
     },
     {
       "id": "pa_058",
@@ -1898,13 +2126,14 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9100.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 75,
       "gravityScale": 70,
       "bounces": 0,
       "fuseTime": 0,
@@ -1921,7 +2150,10 @@ export const WEAPONS = Object.freeze(
       "special": "arrow",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 45.6,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9100_icon.png"
     },
     {
       "id": "pa_059",
@@ -1931,10 +2163,11 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9101.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 55,
       "blastRadius": 0,
       "knockback": 30,
       "projectileSpeed": 70,
@@ -1954,7 +2187,10 @@ export const WEAPONS = Object.freeze(
       "special": "heavy_arrow",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 64.6,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9101_icon.png"
     },
     {
       "id": "pa_060",
@@ -1964,13 +2200,14 @@ export const WEAPONS = Object.freeze(
       "category": "heavy_ranged",
       "icon": "IMG_9102.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 28,
       "blastRadius": 0,
       "knockback": 30,
-      "projectileSpeed": 70,
+      "projectileSpeed": 96,
       "gravityScale": 65,
       "bounces": 0,
       "fuseTime": 0,
@@ -1987,7 +2224,10 @@ export const WEAPONS = Object.freeze(
       "special": "minigun",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 31.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9102_icon.png"
     },
     {
       "id": "pa_061",
@@ -1997,10 +2237,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9103.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 58,
       "blastRadius": 44,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2020,7 +2261,10 @@ export const WEAPONS = Object.freeze(
       "special": "fire_entity",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 126.4,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9103_icon.png"
     },
     {
       "id": "pa_062",
@@ -2030,10 +2274,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9104.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 48,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2053,7 +2298,10 @@ export const WEAPONS = Object.freeze(
       "special": "continuous_stream",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 70.5,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9104_icon.png"
     },
     {
       "id": "pa_063",
@@ -2063,10 +2311,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9105.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 18,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2086,7 +2335,10 @@ export const WEAPONS = Object.freeze(
       "special": "water_push",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 43.2,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9105_icon.png"
     },
     {
       "id": "pa_064",
@@ -2096,10 +2348,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9106.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 68,
       "blastRadius": 48,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2119,7 +2372,10 @@ export const WEAPONS = Object.freeze(
       "special": "catapult",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 120.8,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9106_icon.png"
     },
     {
       "id": "pa_065",
@@ -2129,10 +2385,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9107.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 74,
       "blastRadius": 50,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2152,7 +2409,10 @@ export const WEAPONS = Object.freeze(
       "special": "meteor_impact",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 158.5,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9107_icon.png"
     },
     {
       "id": "pa_066",
@@ -2162,10 +2422,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9109.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 64,
       "blastRadius": 48,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2185,7 +2446,10 @@ export const WEAPONS = Object.freeze(
       "special": "artillery",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 116.8,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9109_icon.png"
     },
     {
       "id": "pa_067",
@@ -2195,10 +2459,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9113.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 35,
       "blastRadius": 38,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2218,7 +2483,10 @@ export const WEAPONS = Object.freeze(
       "special": "acid_dot",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 93.3,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9113_icon.png"
     },
     {
       "id": "pa_068",
@@ -2228,13 +2496,14 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9114.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 50,
       "blastRadius": 0,
       "knockback": 0,
-      "projectileSpeed": 70,
+      "projectileSpeed": 94,
       "gravityScale": 1,
       "bounces": 0,
       "fuseTime": 0,
@@ -2251,7 +2520,10 @@ export const WEAPONS = Object.freeze(
       "special": "plasma",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 56,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9114_icon.png"
     },
     {
       "id": "pa_069",
@@ -2261,10 +2533,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9115.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 46,
       "blastRadius": 40,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2284,7 +2557,10 @@ export const WEAPONS = Object.freeze(
       "special": "launcher",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 92,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9115_icon.png"
     },
     {
       "id": "pa_070",
@@ -2294,10 +2570,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9121.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 18,
       "blastRadius": 58,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2317,7 +2594,10 @@ export const WEAPONS = Object.freeze(
       "special": "poison_cloud",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 101.8,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9121_icon.png"
     },
     {
       "id": "pa_071",
@@ -2327,10 +2607,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9122.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 35,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2350,7 +2631,10 @@ export const WEAPONS = Object.freeze(
       "special": "freeze",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 108.75,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9122_icon.png"
     },
     {
       "id": "pa_072",
@@ -2360,10 +2644,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9123.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 48,
       "blastRadius": 34,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2383,7 +2668,10 @@ export const WEAPONS = Object.freeze(
       "special": "fireball",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 103.9,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9123_icon.png"
     },
     {
       "id": "pa_073",
@@ -2393,10 +2681,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9124.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 32,
       "blastRadius": 44,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2416,7 +2705,10 @@ export const WEAPONS = Object.freeze(
       "special": "tentacle_zone",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 108.9,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9124_icon.png"
     },
     {
       "id": "pa_074",
@@ -2426,10 +2718,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9125.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 28,
       "blastRadius": 46,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2449,7 +2742,10 @@ export const WEAPONS = Object.freeze(
       "special": "curse",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 89.1,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9125_icon.png"
     },
     {
       "id": "pa_075",
@@ -2459,10 +2755,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9130.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 18,
       "blastRadius": 60,
       "knockback": 88,
       "projectileSpeed": 70,
@@ -2482,7 +2779,10 @@ export const WEAPONS = Object.freeze(
       "special": "suction",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 91.56,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9130_icon.png"
     },
     {
       "id": "pa_076",
@@ -2492,6 +2792,7 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9131.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -2515,7 +2816,10 @@ export const WEAPONS = Object.freeze(
       "special": "portal",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9131_icon.png"
     },
     {
       "id": "pa_077",
@@ -2525,10 +2829,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9132.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 75,
       "blastRadius": 72,
       "knockback": 80,
       "projectileSpeed": 70,
@@ -2548,7 +2853,10 @@ export const WEAPONS = Object.freeze(
       "special": "gravity_well",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 157.8,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9132_icon.png"
     },
     {
       "id": "pa_078",
@@ -2558,10 +2866,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9133.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 45,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2581,7 +2890,10 @@ export const WEAPONS = Object.freeze(
       "special": "linked_damage",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 45,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9133_icon.png"
     },
     {
       "id": "pa_079",
@@ -2591,10 +2903,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9134.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 20,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -2614,7 +2927,10 @@ export const WEAPONS = Object.freeze(
       "special": "portal_field",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 20,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9134_icon.png"
     },
     {
       "id": "pa_080",
@@ -2624,10 +2940,11 @@ export const WEAPONS = Object.freeze(
       "category": "elemental",
       "icon": "IMG_9135.PNG",
       "rarity": "common",
+      "sourceRarity": "common",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 44,
       "blastRadius": 52,
       "knockback": 60,
       "projectileSpeed": 70,
@@ -2647,7 +2964,10 @@ export const WEAPONS = Object.freeze(
       "special": "mind_pull",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 107.4,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9135_icon.png"
     },
     {
       "id": "pa_081",
@@ -2657,10 +2977,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9136.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 55,
       "blastRadius": 48,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -2680,7 +3001,10 @@ export const WEAPONS = Object.freeze(
       "special": "void_spell",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 107.8,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9136_icon.png"
     },
     {
       "id": "pa_082",
@@ -2690,10 +3014,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9137.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 44,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 80,
@@ -2713,7 +3038,10 @@ export const WEAPONS = Object.freeze(
       "special": "magic_bolt",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 44,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9137_icon.png"
     },
     {
       "id": "pa_083",
@@ -2723,10 +3051,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9138.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 50,
       "blastRadius": 0,
       "knockback": 70,
       "projectileSpeed": 0,
@@ -2746,7 +3075,10 @@ export const WEAPONS = Object.freeze(
       "special": "magic_hand",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 58.4,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9138_icon.png"
     },
     {
       "id": "pa_084",
@@ -2756,6 +3088,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9139.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -2779,7 +3112,10 @@ export const WEAPONS = Object.freeze(
       "special": "buff",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9139_icon.png"
     },
     {
       "id": "pa_085",
@@ -2789,10 +3125,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9140.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 45,
       "blastRadius": 45,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -2812,7 +3149,10 @@ export const WEAPONS = Object.freeze(
       "special": "random_spell",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 95.25,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9140_icon.png"
     },
     {
       "id": "pa_086",
@@ -2822,10 +3162,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9150.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 42,
       "blastRadius": 46,
       "knockback": 78,
       "projectileSpeed": 0,
@@ -2845,7 +3186,10 @@ export const WEAPONS = Object.freeze(
       "special": "whirlwind",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 102.46,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9150_icon.png"
     },
     {
       "id": "pa_087",
@@ -2855,6 +3199,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9151.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -2878,7 +3223,10 @@ export const WEAPONS = Object.freeze(
       "special": "teleport",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9151_icon.png"
     },
     {
       "id": "pa_088",
@@ -2888,6 +3236,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9152.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -2911,7 +3260,10 @@ export const WEAPONS = Object.freeze(
       "special": "teleport",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9152_icon.png"
     },
     {
       "id": "pa_089",
@@ -2921,6 +3273,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9154.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -2944,7 +3297,10 @@ export const WEAPONS = Object.freeze(
       "special": "mobility",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9154_icon.png"
     },
     {
       "id": "pa_090",
@@ -2954,10 +3310,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9155.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 18,
       "blastRadius": 38,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -2977,7 +3334,10 @@ export const WEAPONS = Object.freeze(
       "special": "poison_zone",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 87.3,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9155_icon.png"
     },
     {
       "id": "pa_091",
@@ -2987,10 +3347,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9156.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 58,
       "blastRadius": 55,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -3010,7 +3371,10 @@ export const WEAPONS = Object.freeze(
       "special": "astral_burst",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 116.75,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9156_icon.png"
     },
     {
       "id": "pa_092",
@@ -3020,6 +3384,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9157.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3043,7 +3408,10 @@ export const WEAPONS = Object.freeze(
       "special": "heal",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9157_icon.png"
     },
     {
       "id": "pa_093",
@@ -3053,6 +3421,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9323.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3076,7 +3445,10 @@ export const WEAPONS = Object.freeze(
       "special": "shield_heal",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9323_icon.png"
     },
     {
       "id": "pa_094",
@@ -3086,6 +3458,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9324.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3109,7 +3482,10 @@ export const WEAPONS = Object.freeze(
       "special": "instant_heal",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9324_icon.png"
     },
     {
       "id": "pa_095",
@@ -3119,6 +3495,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9325.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3142,7 +3519,10 @@ export const WEAPONS = Object.freeze(
       "special": "random_buff",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9325_icon.png"
     },
     {
       "id": "pa_096",
@@ -3152,6 +3532,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9326.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3175,7 +3556,10 @@ export const WEAPONS = Object.freeze(
       "special": "mutation",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9326_icon.png"
     },
     {
       "id": "pa_097",
@@ -3185,6 +3569,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9327.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3208,7 +3593,10 @@ export const WEAPONS = Object.freeze(
       "special": "sleep",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9327_icon.png"
     },
     {
       "id": "pa_098",
@@ -3218,10 +3606,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9328.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 50,
       "blastRadius": 50,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -3241,7 +3630,10 @@ export const WEAPONS = Object.freeze(
       "special": "lava",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 127,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9328_icon.png"
     },
     {
       "id": "pa_099",
@@ -3251,6 +3643,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9329.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3274,7 +3667,10 @@ export const WEAPONS = Object.freeze(
       "special": "time_control",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9329_icon.png"
     },
     {
       "id": "pa_100",
@@ -3284,6 +3680,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9330.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3307,7 +3704,10 @@ export const WEAPONS = Object.freeze(
       "special": "random_effect",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9330_icon.png"
     },
     {
       "id": "pa_101",
@@ -3317,6 +3717,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9331.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3340,7 +3741,10 @@ export const WEAPONS = Object.freeze(
       "special": "shield_freeze",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9331_icon.png"
     },
     {
       "id": "pa_102",
@@ -3350,10 +3754,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9332.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 52,
       "blastRadius": 60,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -3373,7 +3778,10 @@ export const WEAPONS = Object.freeze(
       "special": "mind_aoe",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 115,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9332_icon.png"
     },
     {
       "id": "pa_103",
@@ -3383,10 +3791,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9333.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 30,
       "blastRadius": 48,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -3406,7 +3815,10 @@ export const WEAPONS = Object.freeze(
       "special": "corruption",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 97.8,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9333_icon.png"
     },
     {
       "id": "pa_104",
@@ -3416,10 +3828,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9334.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 62,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 98,
@@ -3439,7 +3852,10 @@ export const WEAPONS = Object.freeze(
       "special": "quantum_shot",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 68,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9334_icon.png"
     },
     {
       "id": "pa_105",
@@ -3449,10 +3865,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9335.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 48,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 82,
@@ -3472,7 +3889,10 @@ export const WEAPONS = Object.freeze(
       "special": "scroll_spell",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 48,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9335_icon.png"
     },
     {
       "id": "pa_106",
@@ -3482,10 +3902,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9336.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 38,
       "blastRadius": 40,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -3505,7 +3926,10 @@ export const WEAPONS = Object.freeze(
       "special": "solar",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 96.5,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9336_icon.png"
     },
     {
       "id": "pa_107",
@@ -3515,6 +3939,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9337.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3538,7 +3963,10 @@ export const WEAPONS = Object.freeze(
       "special": "target_scan",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9337_icon.png"
     },
     {
       "id": "pa_108",
@@ -3548,10 +3976,11 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9338.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 32,
       "blastRadius": 0,
       "knockback": 55,
       "projectileSpeed": 0,
@@ -3571,7 +4000,10 @@ export const WEAPONS = Object.freeze(
       "special": "magic_whip",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 38.6,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9338_icon.png"
     },
     {
       "id": "pa_109",
@@ -3581,6 +4013,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9339.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3604,7 +4037,10 @@ export const WEAPONS = Object.freeze(
       "special": "area_buff",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9339_icon.png"
     },
     {
       "id": "pa_110",
@@ -3614,6 +4050,7 @@ export const WEAPONS = Object.freeze(
       "category": "magic",
       "icon": "IMG_9340.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 3,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3637,7 +4074,10 @@ export const WEAPONS = Object.freeze(
       "special": "dimension_orb",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 25,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9340_icon.png"
     },
     {
       "id": "pa_111",
@@ -3647,6 +4087,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9341.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3670,7 +4111,10 @@ export const WEAPONS = Object.freeze(
       "special": "grapple",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 0,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9341_icon.png"
     },
     {
       "id": "pa_112",
@@ -3680,6 +4124,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9342.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3703,7 +4148,10 @@ export const WEAPONS = Object.freeze(
       "special": "flight",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 0,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9342_icon.png"
     },
     {
       "id": "pa_113",
@@ -3713,6 +4161,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9343.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3736,7 +4185,10 @@ export const WEAPONS = Object.freeze(
       "special": "drill_cannon",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 89.1,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9343_icon.png"
     },
     {
       "id": "pa_114",
@@ -3746,6 +4198,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9344.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3769,7 +4222,10 @@ export const WEAPONS = Object.freeze(
       "special": "flight",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 0,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9344_icon.png"
     },
     {
       "id": "pa_115",
@@ -3779,6 +4235,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9345.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3802,7 +4259,10 @@ export const WEAPONS = Object.freeze(
       "special": "guardian",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 30.8,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9345_icon.png"
     },
     {
       "id": "pa_116",
@@ -3812,6 +4272,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9346.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3835,7 +4296,10 @@ export const WEAPONS = Object.freeze(
       "special": "blood_ritual",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 138.88,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9346_icon.png"
     },
     {
       "id": "pa_117",
@@ -3845,6 +4309,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9347.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3868,7 +4333,10 @@ export const WEAPONS = Object.freeze(
       "special": "fragmentation",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 108.08,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9347_icon.png"
     },
     {
       "id": "pa_118",
@@ -3878,6 +4346,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9353.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3901,7 +4370,10 @@ export const WEAPONS = Object.freeze(
       "special": "fire_minion",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 131.67,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9353_icon.png"
     },
     {
       "id": "pa_119",
@@ -3911,6 +4383,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9358.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3934,7 +4407,10 @@ export const WEAPONS = Object.freeze(
       "special": "ammo_drop",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 0,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9358_icon.png"
     },
     {
       "id": "pa_120",
@@ -3944,6 +4420,7 @@ export const WEAPONS = Object.freeze(
       "category": "utility",
       "icon": "IMG_9359.PNG",
       "rarity": "uncommon",
+      "sourceRarity": "uncommon",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -3967,7 +4444,10 @@ export const WEAPONS = Object.freeze(
       "special": "energy_fist",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 70.8,
+      "powerTier": "uncommon",
+      "iconPath": "../../client/assets/icons/IMG_9359_icon.png"
     },
     {
       "id": "pa_121",
@@ -3977,10 +4457,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9360.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 58,
       "blastRadius": 35,
       "knockback": 88,
       "projectileSpeed": 0,
@@ -4000,7 +4481,10 @@ export const WEAPONS = Object.freeze(
       "special": "rocket_punch",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 121.34,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9360_icon.png"
     },
     {
       "id": "pa_122",
@@ -4010,6 +4494,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9364.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4033,7 +4518,10 @@ export const WEAPONS = Object.freeze(
       "special": "loop",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9364_icon.png"
     },
     {
       "id": "pa_123",
@@ -4043,10 +4531,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9365.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 40,
       "blastRadius": 45,
       "knockback": 95,
       "projectileSpeed": 0,
@@ -4066,7 +4555,10 @@ export const WEAPONS = Object.freeze(
       "special": "magnetism",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 111.82,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9365_icon.png"
     },
     {
       "id": "pa_124",
@@ -4076,10 +4568,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9366.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 38,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 100,
@@ -4099,7 +4592,10 @@ export const WEAPONS = Object.freeze(
       "special": "auto_target",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 41.8,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9366_icon.png"
     },
     {
       "id": "pa_125",
@@ -4109,6 +4605,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9368.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4132,7 +4629,10 @@ export const WEAPONS = Object.freeze(
       "special": "supply_drop",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9368_icon.png"
     },
     {
       "id": "pa_126",
@@ -4142,6 +4642,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9369.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4165,7 +4666,10 @@ export const WEAPONS = Object.freeze(
       "special": "bunker",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 40.7,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9369_icon.png"
     },
     {
       "id": "pa_127",
@@ -4175,6 +4679,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9372.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4198,7 +4703,10 @@ export const WEAPONS = Object.freeze(
       "special": "teleport_platform",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9372_icon.png"
     },
     {
       "id": "pa_128",
@@ -4208,6 +4716,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9373.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4231,7 +4740,10 @@ export const WEAPONS = Object.freeze(
       "special": "hologram_portal",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9373_icon.png"
     },
     {
       "id": "pa_129",
@@ -4241,10 +4753,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9376.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 48,
       "blastRadius": 52,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -4264,7 +4777,10 @@ export const WEAPONS = Object.freeze(
       "special": "chain_lightning",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 114.62,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9376_icon.png"
     },
     {
       "id": "pa_130",
@@ -4274,6 +4790,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9377.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4297,7 +4814,10 @@ export const WEAPONS = Object.freeze(
       "special": "camouflage",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9377_icon.png"
     },
     {
       "id": "pa_131",
@@ -4307,6 +4827,7 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9379.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4330,7 +4851,10 @@ export const WEAPONS = Object.freeze(
       "special": "water_mobility",
       "targeting": "self_or_area",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9379_icon.png"
     },
     {
       "id": "pa_132",
@@ -4340,10 +4864,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9380.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 55,
       "blastRadius": 30,
       "knockback": 82,
       "projectileSpeed": 0,
@@ -4363,7 +4888,10 @@ export const WEAPONS = Object.freeze(
       "special": "old_lady_strike",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 112.57,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9380_icon.png"
     },
     {
       "id": "pa_133",
@@ -4373,10 +4901,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9382.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 60,
       "blastRadius": 40,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -4396,7 +4925,10 @@ export const WEAPONS = Object.freeze(
       "special": "guided_sheep",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 515.35,
+      "powerTier": "legendary",
+      "iconPath": "../../client/assets/icons/IMG_9382_icon.png"
     },
     {
       "id": "pa_134",
@@ -4406,10 +4938,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9383.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 62,
       "blastRadius": 65,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -4429,7 +4962,10 @@ export const WEAPONS = Object.freeze(
       "special": "air_strike",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 142.18,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9383_icon.png"
     },
     {
       "id": "pa_135",
@@ -4439,10 +4975,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9384.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 68,
       "blastRadius": 55,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -4462,7 +4999,10 @@ export const WEAPONS = Object.freeze(
       "special": "meteor_rain",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 139.43,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9384_icon.png"
     },
     {
       "id": "pa_136",
@@ -4472,10 +5012,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9385.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 64,
       "blastRadius": 48,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -4495,7 +5036,10 @@ export const WEAPONS = Object.freeze(
       "special": "drill_rocket",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 171.38,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9385_icon.png"
     },
     {
       "id": "pa_137",
@@ -4505,10 +5049,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9386.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 55,
       "blastRadius": 0,
       "knockback": 55,
       "projectileSpeed": 0,
@@ -4528,7 +5073,10 @@ export const WEAPONS = Object.freeze(
       "special": "flame_blade",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 84.26,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9386_icon.png"
     },
     {
       "id": "pa_138",
@@ -4538,10 +5086,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9388.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 68,
       "blastRadius": 45,
       "knockback": 78,
       "projectileSpeed": 0,
@@ -4561,7 +5110,10 @@ export const WEAPONS = Object.freeze(
       "special": "magic_hammer",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 140.37,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9388_icon.png"
     },
     {
       "id": "pa_139",
@@ -4571,10 +5123,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9389.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 78,
       "blastRadius": 58,
       "knockback": 0,
       "projectileSpeed": 0,
@@ -4594,7 +5147,10 @@ export const WEAPONS = Object.freeze(
       "special": "hell_cannon",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "hitscan"
+      "delivery": "hitscan",
+      "powerScore": 179.63,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9389_icon.png"
     },
     {
       "id": "pa_140",
@@ -4604,10 +5160,11 @@ export const WEAPONS = Object.freeze(
       "category": "tech",
       "icon": "IMG_9390.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 72,
       "blastRadius": 0,
       "knockback": 0,
       "projectileSpeed": 100,
@@ -4627,7 +5184,10 @@ export const WEAPONS = Object.freeze(
       "special": "quantum_blast",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 85.8,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9390_icon.png"
     },
     {
       "id": "pa_141",
@@ -4637,10 +5197,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9391.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 70,
       "blastRadius": 55,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4660,7 +5221,10 @@ export const WEAPONS = Object.freeze(
       "special": "summon_warrior",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 141.63,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9391_icon.png"
     },
     {
       "id": "pa_142",
@@ -4670,10 +5234,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9393.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 82,
       "blastRadius": 0,
       "knockback": 75,
       "projectileSpeed": 70,
@@ -4693,7 +5258,10 @@ export const WEAPONS = Object.freeze(
       "special": "void_knight",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 100.1,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9393_icon.png"
     },
     {
       "id": "pa_143",
@@ -4703,10 +5271,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9394.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 65,
       "blastRadius": 0,
       "knockback": 70,
       "projectileSpeed": 70,
@@ -4726,7 +5295,10 @@ export const WEAPONS = Object.freeze(
       "special": "summon_mount",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 80.74,
+      "powerTier": "rare",
+      "iconPath": "../../client/assets/icons/IMG_9394_icon.png"
     },
     {
       "id": "pa_144",
@@ -4736,10 +5308,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9397.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 85,
       "blastRadius": 70,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4759,7 +5332,10 @@ export const WEAPONS = Object.freeze(
       "special": "cosmic_banana",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 175.45,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9397_icon.png"
     },
     {
       "id": "pa_145",
@@ -4769,10 +5345,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9398.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 95,
       "blastRadius": 75,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4792,7 +5369,10 @@ export const WEAPONS = Object.freeze(
       "special": "earth_splitter",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 250.53,
+      "powerTier": "legendary",
+      "iconPath": "../../client/assets/icons/IMG_9398_icon.png"
     },
     {
       "id": "pa_146",
@@ -4802,10 +5382,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9399.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 55,
       "blastRadius": 65,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4825,7 +5406,10 @@ export const WEAPONS = Object.freeze(
       "special": "world_poison",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 178.48,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9399_icon.png"
     },
     {
       "id": "pa_147",
@@ -4835,10 +5419,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9400.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 100,
       "blastRadius": 80,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4858,7 +5443,10 @@ export const WEAPONS = Object.freeze(
       "special": "dragon_ultimate",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 239.25,
+      "powerTier": "legendary",
+      "iconPath": "../../client/assets/icons/IMG_9400_icon.png"
     },
     {
       "id": "pa_148",
@@ -4868,10 +5456,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9401.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 70,
       "blastRadius": 60,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4891,7 +5480,10 @@ export const WEAPONS = Object.freeze(
       "special": "guardian_ultimate",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 146.3,
+      "powerTier": "epic",
+      "iconPath": "../../client/assets/icons/IMG_9401_icon.png"
     },
     {
       "id": "pa_149",
@@ -4901,6 +5493,7 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9402.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
@@ -4924,7 +5517,10 @@ export const WEAPONS = Object.freeze(
       "special": "relic_buff",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 27.5,
+      "powerTier": "common",
+      "iconPath": "../../client/assets/icons/IMG_9402_icon.png"
     },
     {
       "id": "pa_150",
@@ -4934,10 +5530,11 @@ export const WEAPONS = Object.freeze(
       "category": "ultimate",
       "icon": "IMG_9403.PNG",
       "rarity": "rare",
+      "sourceRarity": "rare",
       "maxAmmo": 5,
       "cooldown": 0,
       "requiresLineOfSight": false,
-      "damage": 25,
+      "damage": 110,
       "blastRadius": 90,
       "knockback": 0,
       "projectileSpeed": 70,
@@ -4957,7 +5554,10 @@ export const WEAPONS = Object.freeze(
       "special": "cosmic_ultimate",
       "targeting": "directional",
       "maxRange": 600,
-      "delivery": "projectile"
+      "delivery": "projectile",
+      "powerScore": 277.75,
+      "powerTier": "legendary",
+      "iconPath": "../../client/assets/icons/IMG_9403_icon.png"
     }
   ].map(Object.freeze)
 );

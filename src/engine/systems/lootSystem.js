@@ -88,7 +88,7 @@ export class LootSystem {
     return spawned;
   }
 
-  update(world, entities, dt) {
+  update(world, entities, _dt) {
     const services = world.services ?? {};
     const events = services.events ?? null;
     const inventory = services.inventory ?? null;
