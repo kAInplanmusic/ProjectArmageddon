@@ -1,0 +1,555 @@
+/**
+ * Autoritativer Spielserver (HTTP + WebSocket).
+ *
+ * Der Server besitzt die Simulation: Clients senden nur Wünsche, der Server
+ * validiert sie und verteilt kompakte Binär-Snapshots. Jede Lobby läuft mit
+ * fester Zeitschrittweite; die Tick-Schleife ist unabhängig von der
+ * Snapshot-Rate, damit Simulation und Netzwerk entkoppelt bleiben.
+ *
+ * @module gameServer
+ */
+import { createServer as createHttpServer } from 'node:http';
+import { readFileSync, statSync } from 'node:fs';
+import { extname, resolve } from 'node:path';
+import { WebSocketServer } from 'ws';
+import { MatchController } from '../engine/match.js';
+import { LobbyManager, LOBBY_STATUS } from './lobby.js';
+import { SnapshotHistory } from './lagCompensation.js';
+import { BotController } from './bot.js';
+import {
+  CONTROL,
+  MESSAGE_TYPE,
+  MAGIC,
+  PROTOCOL_VERSION,
+  controlMessage,
+  parseControlMessage,
+  encodeSnapshot,
+} from '../shared/protocol.js';
+import { validateCommand } from '../shared/validation.js';
+import { MatchSeedManager } from '../shared/seed.js';
+
+export const SIMULATION_HZ = 60;
+export const SNAPSHOT_HZ = 20;
+const TICK_MS = 1000 / SIMULATION_HZ;
+const SNAPSHOT_INTERVAL_MS = 1000 / SNAPSHOT_HZ;
+
+class LobbySession {
+  constructor(lobby, { onEmpty } = {}) {
+    this.lobby = lobby;
+    this.match = new MatchController({
+      seed: lobby.seed,
+      teams: lobby.teams,
+      playersPerTeam: lobby.playersPerTeam,
+      preset: lobby.preset,
+    });
+    this.match.start();
+
+    this.history = new SnapshotHistory();
+    this.bot = new BotController({
+      rng: new MatchSeedManager(this.match.seedManager.baseSeed).getSubRng('EFFECTS'),
+    });
+    this.clients = new Map();      // token -> WebSocket
+    this.byEntity = new Map();     // entityId -> token
+    this.onEmpty = onEmpty;
+    this.accumulator = 0;
+    this.snapshotAccumulator = 0;
+    this.lastTickAt = Date.now();
+    this.timer = null;
+    this.emptySince = null;
+
+    this.#assignEntityIds();
+  }
+
+  /** Ordnet Lobby-Plätze den tatsächlichen Spieler-Entities zu. */
+  #assignEntityIds() {
+    const players = this.match.players;
+    this.lobby.seats.forEach((seat, index) => {
+      seat.entityId = players[index]?.entityId ?? null;
+      if (seat.entityId !== null) this.byEntity.set(seat.entityId, seat.token);
+    });
+  }
+
+  /**
+   * Bindet neu hinzugekommene Plätze an ihre Spieler-Entity.
+   * Muss bei jedem Beitritt laufen: die Entity-IDs entstehen beim Start des
+   * Matchs, spätere Plätze haben anfangs keine Zuordnung.
+   */
+  syncSeats() {
+    this.#assignEntityIds();
+    return this;
+  }
+
+  start() {
+    this.timer = setInterval(() => this.tick(), TICK_MS);
+    if (typeof this.timer.unref === 'function') this.timer.unref();
+    return this;
+  }
+
+  stop() {
+    if (this.timer) clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  /** Ein Simulationsschritt samt Bot-Zügen. */
+  tick() {
+    const now = Date.now();
+    const elapsed = Math.min(250, now - this.lastTickAt);
+    this.lastTickAt = now;
+    this.accumulator += elapsed;
+
+    while (this.accumulator >= TICK_MS) {
+      this.accumulator -= TICK_MS;
+      if (this.match.status !== 'playing') break;
+      this.stepSimulation(1);
+    }
+
+    for (const event of this.match.consumeEvents()) {
+      this.#broadcastControl(event.type, { round: this.match.round, ...event.payload });
+    }
+
+    // Netzwerk ist von der Simulation entkoppelt: Snapshots gehen mit fester
+    // Rate raus, unabhängig davon, wie viele Ticks pro Aufruf liefen.
+    this.snapshotAccumulator += elapsed;
+    if (this.snapshotAccumulator >= SNAPSHOT_INTERVAL_MS) {
+      this.snapshotAccumulator = 0;
+      this.broadcastSnapshot();
+    }
+
+    this.match.status === 'gameover' && this.#finish();
+  }
+
+  /**
+   * Führt Simulationsschritte ohne Zeitbezug aus. Wird von der Tick-Schleife
+   * und von Tests/Replays genutzt, damit dieselbe Logik deterministisch
+   * vorgespult werden kann.
+   */
+  stepSimulation(ticks = 1) {
+    for (let i = 0; i < ticks; i++) {
+      if (this.match.status !== 'playing') break;
+      this.#runBotTurn();
+      this.match.step();
+      this.history.push(this.match.world.tickCount, this.match.getState());
+    }
+    if (this.match.status === 'gameover') this.#finish();
+    return this.match.getState();
+  }
+
+  #runBotTurn() {
+    const match = this.match;
+    if (match.status !== 'playing') return;
+    const activeId = match.activePlayerId;
+    if (activeId === null) return;
+
+    // Nur Entity-IDs ohne verbundenen Client werden vom Bot gesteuert.
+    const token = this.byEntity.get(activeId);
+    const seat = token ? this.lobby.seats.find(entry => entry.token === token) : null;
+    if (seat && seat.connected) return;
+
+    const shot = this.bot.chooseShot(match, activeId);
+    if (!shot) return;
+    const result = match.fire(activeId, shot.angle, shot.power);
+    result.ok === false && this.match.endTurn();
+  }
+
+  #finish() {
+    this.stop();
+    this.lobby && (this.lobby.status = LOBBY_STATUS.FINISHED);
+    this.#broadcastControl('match_over', {
+      winnerTeamId: this.match.winnerTeamId,
+      rounds: this.match.round,
+    });
+    this.onEmpty?.(this.lobby.id);
+  }
+
+  /** Fügt einen Client hinzu und schickt ihm den Startzustand. */
+  attach(token, socket) {
+    this.syncSeats();
+    this.clients.set(token, socket);
+    socket.send(controlMessage(CONTROL.LOBBY_STATE, {
+      lobby: this.lobby.id,
+      status: this.lobby.status,
+      seed: this.match.seedManager.baseSeed,
+      preset: this.lobby.preset,
+      entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
+      snapshot: this.match.getState(),
+    }));
+  }
+
+  detach(token) {
+    this.clients.delete(token);
+    if (this.clients.size === 0) this.emptySince = Date.now();
+  }
+
+  /** Verarbeitet einen Feuerbefehl mit vollständiger Validierung. */
+  handleInput(token, message) {
+    const seat = this.lobby.seats.find(entry => entry.token === token);
+    if (!seat || seat.entityId === null) {
+      return { ok: false, errors: ['Kein Spielerplatz'] };
+    }
+
+    const currentTick = this.match.world.tickCount;
+    const history = this.history.get(message.tick ?? currentTick);
+    const command = validateCommand(
+      {
+        playerId: seat.entityId,
+        angle: message.angle,
+        power: message.power,
+        weaponId: message.weaponId ?? null,
+        tick: currentTick,
+        type: 'fire',
+      },
+      {
+        currentTick,
+        activePlayerId: this.match.activePlayerId,
+        knownPlayerIds: this.match.players.map(player => player.entityId),
+      }
+    );
+
+    if (!command.valid) return { ok: false, errors: command.errors };
+    if (message.tick !== undefined && !this.history.isWithinWindow(message.tick, currentTick)) {
+      return { ok: false, errors: ['Tick liegt ausserhalb des Lag-Kompensationsfensters'] };
+    }
+
+    const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, command.input.weaponId);
+    return { ok: result.ok, errors: result.errors ?? [], interpolatedFrom: history?.tick ?? null };
+  }
+
+  handleWeaponSelect(token, weaponId) {
+    const seat = this.lobby.seats.find(entry => entry.token === token);
+    if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
+    const ok = this.match.inventory.selectWeapon(seat.entityId, weaponId);
+    return { ok, errors: ok ? [] : ['Waffe nicht verfügbar'] };
+  }
+
+  broadcastSnapshot() {
+    const buffer = encodeSnapshot(this.match.getState());
+    for (const socket of this.clients.values()) {
+      if (socket.readyState === 1) socket.send(buffer);
+    }
+    return buffer;
+  }
+
+  #broadcastControl(type, payload) {
+    const message = controlMessage(type, payload);
+    for (const socket of this.clients.values()) {
+      if (socket.readyState === 1) socket.send(message);
+    }
+  }
+}
+
+export class GameServer {
+  #httpServer;
+  #wsServer;
+  #sessions = new Map();
+  #lobbies;
+
+  constructor({ lobbyManager = new LobbyManager(), serveStatic = null } = {}) {
+    this.#lobbies = lobbyManager;
+    this.serveStatic = serveStatic ?? createDistHandler();
+    /** Injizierbarer Logger; Standard ist die Konsole. */
+    this.logger = console;
+
+    this.#httpServer = createHttpServer((request, response) => this.#handleHttp(request, response));
+    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
+    this.#wsServer.on('connection', socket => this.#handleConnection(socket));
+  }
+
+  get lobbyManager() {
+    return this.#lobbies;
+  }
+
+  get sessionCount() {
+    return this.#sessions.size;
+  }
+
+  getSession(lobbyId) {
+    return this.#sessions.get(lobbyId) ?? null;
+  }
+
+  async #handleHttp(request, response) {
+    const url = new URL(request.url, 'http://localhost');
+
+    // Der Client kann von einem anderen Origin laufen (Dev-Server, CDN).
+    // Ohne diese Header blockiert der Browser die Lobby-API.
+    response.setHeader('Access-Control-Allow-Origin', request.headers.origin ?? '*');
+    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    response.setHeader('Access-Control-Allow-Headers', 'content-type');
+    response.setHeader('Vary', 'Origin');
+
+    if (request.method === 'OPTIONS') {
+      response.writeHead(204);
+      return response.end();
+    }
+
+    if (request.method === 'GET' && url.pathname === '/healthz') {
+      return this.#json(response, 200, {
+        status: 'ok',
+        lobbies: this.#lobbies.size,
+        sessions: this.#sessions.size,
+        protocol: PROTOCOL_VERSION,
+      });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/lobby') {
+      return this.#json(response, 200, { lobbies: this.#lobbies.list() });
+    }
+
+    const lobbyMatch = url.pathname.match(/^\/api\/lobby\/([A-Za-z0-9-]+)$/);
+    if (request.method === 'GET' && lobbyMatch) {
+      const lobby = this.#lobbies.describe(lobbyMatch[1]);
+      if (!lobby) return this.#json(response, 404, { error: 'Lobby nicht gefunden' });
+      return this.#json(response, 200, { lobby });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/lobby/create') {
+      const body = await this.#readBody(request);
+      try {
+        const created = this.#lobbies.create({
+          teams: Number(body.teams ?? 2),
+          playersPerTeam: Number(body.playersPerTeam ?? 2),
+          preset: body.preset ?? 'hills',
+          seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
+          hostName: body.name ?? 'Host',
+        });
+        return this.#json(response, 201, created);
+      } catch (error) {
+        return this.#json(response, 400, { error: error.message });
+      }
+    }
+
+    if (this.serveStatic) {
+      const handled = this.serveStatic(request, response, url);
+      if (handled) return;
+    }
+
+    this.#json(response, 404, { error: 'Nicht gefunden' });
+  }
+
+  #readBody(request) {
+    return new Promise(resolve => {
+      let raw = '';
+      request.on('data', chunk => {
+        raw += chunk;
+        if (raw.length > 8192) raw = raw.slice(0, 8192);
+      });
+      request.on('end', () => {
+        try {
+          resolve(raw ? JSON.parse(raw) : {});
+        } catch {
+          resolve({});
+        }
+      });
+      request.on('error', () => resolve({}));
+    });
+  }
+
+  #json(response, status, payload) {
+    const body = JSON.stringify(payload);
+    response.writeHead(status, {
+      'content-type': 'application/json; charset=utf-8',
+      'content-length': Buffer.byteLength(body),
+    });
+    response.end(body);
+  }
+
+  #handleConnection(socket) {
+    let context = { lobbyId: null, token: null };
+
+    socket.on('message', (raw, isBinary) => {
+      if (isBinary) return; // Client -> Server ist ausschliesslich JSON-Kontrolle.
+
+      const message = parseControlMessage(raw);
+      if (!message) {
+        socket.send(controlMessage(CONTROL.ERROR, { error: 'Ungültige Nachricht' }));
+        return;
+      }
+
+      try {
+        switch (message.t) {
+          case CONTROL.HELLO:
+            socket.send(controlMessage(CONTROL.WELCOME, {
+              protocol: PROTOCOL_VERSION,
+              message: 'Verbunden',
+            }));
+            break;
+
+          case CONTROL.JOIN_LOBBY: {
+            const lobbyId = message.lobbyId;
+            const lobby = this.#lobbies.get(lobbyId);
+            if (!lobby) throw new Error('Lobby nicht gefunden');
+            this.logger?.info?.(
+              `[join] lobby=${lobbyId} seats=${lobby.seats.length}/${lobby.capacity} token=${message.token ? 'ja' : 'nein'}`
+            );
+            const seat = this.#lobbies.join(lobbyId, { name: message.name ?? 'Spieler', token: message.token ?? null });
+            context = { lobbyId, token: seat.token };
+            let session = this.#sessions.get(lobbyId);
+            if (!session) {
+              session = new LobbySession(lobby, { onEmpty: id => this.#sessions.delete(id) }).start();
+              this.#sessions.set(lobbyId, session);
+            }
+            session.attach(seat.token, socket);
+            // Die Live-Sitzung hat dem Platz gerade eine Entity-ID zugewiesen.
+            // Der Rückgabewert von join() ist eine Kopie und daher veraltet.
+            const liveSeat = lobby.seats.find(entry => entry.token === seat.token);
+            socket.send(controlMessage(CONTROL.WELCOME, {
+              protocol: PROTOCOL_VERSION,
+              lobbyId,
+              seed: session.match.seedManager.baseSeed,
+              preset: lobby.preset,
+              token: seat.token,
+              seatIndex: seat.seatIndex,
+              entityId: liveSeat?.entityId ?? seat.entityId,
+              resumed: seat.resumed,
+            }));
+            break;
+          }
+
+          case CONTROL.START_MATCH: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            this.#lobbies.markRunning(context.lobbyId);
+            session.broadcastSnapshot();
+            break;
+          }
+
+          case CONTROL.INPUT: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = session.handleInput(context.token, message);
+            if (!result.ok) {
+              socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            }
+            break;
+          }
+
+          case CONTROL.SELECT_WEAPON: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = session.handleWeaponSelect(context.token, message.weaponId);
+            if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            break;
+          }
+
+          case CONTROL.PING:
+            socket.send(Buffer.from([MAGIC[0], MAGIC[1], PROTOCOL_VERSION, MESSAGE_TYPE.PONG]));
+            break;
+
+          default:
+            socket.send(controlMessage(CONTROL.ERROR, { error: `Unbekannter Nachrichtentyp: ${message.t}` }));
+        }
+      } catch (error) {
+        this.logger?.error?.(`[ws] Join/Kommando fehlgeschlagen: ${error.message}`);
+        socket.send(controlMessage(CONTROL.ERROR, { error: error.message }));
+      }
+    });
+
+    socket.on('close', () => {
+      if (!context.lobbyId || !context.token) return;
+      const session = this.#sessions.get(context.lobbyId);
+      session?.detach(context.token);
+      this.#lobbies.disconnect(context.lobbyId, context.token);
+      const lobby = this.#lobbies.get(context.lobbyId);
+      if (lobby && lobby.seats.every(seat => !seat.connected)) {
+        session?.stop();
+      }
+    });
+  }
+
+  /** Startet den Server auf dem angegebenen Port. */
+  listen(port = 3000, host = '127.0.0.1') {
+    return new Promise((resolve, reject) => {
+      this.#httpServer.once('error', reject);
+      this.#httpServer.listen(port, host, () => {
+        const address = this.#httpServer.address();
+        resolve({ port: address.port, host: address.address, url: `http://${host}:${address.port}` });
+      });
+    });
+  }
+
+  async close() {
+    for (const session of this.#sessions.values()) session.stop();
+    this.#sessions.clear();
+    // Offene Sockets sofort beenden, sonst blockieren Keep-Alive-Verbindungen
+    // (fetch) und laufende WebSockets den Close-Handshake.
+    for (const socket of this.#wsServer.clients) socket.terminate();
+    const withTimeout = promise => Promise.race([
+      promise,
+      new Promise(resolve => setTimeout(resolve, 2000)),
+    ]);
+    await withTimeout(new Promise(resolve => this.#wsServer.close(() => resolve())));
+    this.#httpServer.closeIdleConnections?.();
+    this.#httpServer.closeAllConnections?.();
+    await withTimeout(new Promise(resolve => this.#httpServer.close(() => resolve())));
+  }
+}
+
+export { LobbySession };
+
+/**
+ * Liefert den gebauten Client aus `dist/` aus.
+ *
+ * Damit läuft die Produktion single-origin: Der Server bedient Spiel und
+ * WebSocket-Endpunkt unter derselben Herkunft. Existiert kein Build, wird
+ * nichts ausgeliefert und der Aufrufer antwortet mit 404.
+ *
+ * @param {string} [distDir='dist']
+ * @returns {function(object, object, URL): boolean}
+ */
+export function createDistHandler(distDir = 'dist') {
+  const root = resolve(process.cwd(), distDir);
+  const MIME = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.mjs': 'text/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.map': 'application/json; charset=utf-8',
+  };
+
+  return (request, response, url) => {
+    if (request.method !== 'GET' && request.method !== 'HEAD') return false;
+
+    const relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    const candidate = resolve(root, relative === '' ? 'index.html' : relative);
+
+    // Pfadausbruch verhindern.
+    if (!candidate.startsWith(root)) return false;
+
+    let filePath = candidate;
+    try {
+      if (!statSync(filePath).isFile()) return false;
+    } catch {
+      // SPA-Fallback: unbekannte Pfade ohne Endung erhalten index.html.
+      if (relative.includes('.')) return false;
+      filePath = resolve(root, 'index.html');
+      try {
+        if (!statSync(filePath).isFile()) return false;
+      } catch {
+        return false;
+      }
+    }
+
+    const body = readFileSync(filePath);
+    response.writeHead(200, {
+      'content-type': MIME[extname(filePath)] ?? 'application/octet-stream',
+      'content-length': body.length,
+      'cache-control': 'no-cache',
+    });
+    if (request.method === 'HEAD') return response.end(), true;
+    response.end(body);
+    return true;
+  };
+}
+
+/** Startet einen eigenständigen Server (siehe npm run server). */
+export async function startServer(options = {}) {
+  const server = new GameServer(options);
+  const info = await server.listen(options.port ?? Number(process.env.PORT ?? 3000), options.host ?? '127.0.0.1');
+  return { server, ...info };
+}
+
+export default GameServer;

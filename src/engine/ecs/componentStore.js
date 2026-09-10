@@ -278,6 +278,24 @@ export class ComponentStore {
   }
 
   /**
+   * Leert alle Entity-Daten, behaelt aber die Komponenten-Registrierungen.
+   * Wird vor deserialize() verwendet.
+   */
+  clear() {
+    for (const component of Object.values(this.#components)) {
+      for (const fieldName of component.fieldNames) {
+        component.data[fieldName].fill(0);
+      }
+      component.entities.clear();
+    }
+    this.#entitySignatures.clear();
+    this.#entityComponents.clear();
+    this.#pool = [];
+    this.#nextId = 1;
+    return this;
+  }
+
+  /**
    * Erstellt einen stabil sortierten Snapshot aller aktiven Komponentendaten.
    * Der Snapshot ist für Replays/Determinismus-Checks gedacht, nicht für den
    * Hot-Path der Simulation.
@@ -303,6 +321,21 @@ export class ComponentStore {
         components
       };
     });
+  }
+
+  /**
+   * Stellt einen Snapshot aus serialize() wieder her.
+   * Erwartet eine zuvor geleerte Welt (siehe World.deserialize).
+   * @param {object[]} snapshot
+   */
+  deserialize(snapshot = []) {
+    for (const entry of snapshot) {
+      if (!entry || typeof entry.id !== 'number') continue;
+      for (const [name, values] of Object.entries(entry.components ?? {})) {
+        this.addComponent(entry.id, name, values);
+      }
+    }
+    return this;
   }
 }
 

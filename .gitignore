@@ -1,9 +1,25 @@
 # Build artifacts
 weapon_engine/weapon_engine_v1_0/dist/
 terrain_engine/terrain_build/weapon_engine_v1_0/dist/
+dist/
 
 # Dependencies
 node_modules/
 
 # Generated files
 *.zip
+
+# Test / coverage artifacts
+test-results/
+playwright-report/
+blob-report/
+coverage/
+
+# Generierte Verifikationsartefakte (Screenshots)
+artifacts/
+
+# Editor / OS
+.vite/
+.DS_Store
+*.log
+npm-debug.log*

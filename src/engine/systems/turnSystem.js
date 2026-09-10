@@ -1,8 +1,13 @@
 /**
- * ECS-System: Turn-Wystem
+ * ECS-System: TurnSystem
  *
  * Verwaltet die Turn-Reihenfolge, Turn-Dauer und Runden-Fortschritt.
  * Change-Listener für UI-Updates.
+ *
+ * Mit `autoAdvance: false` übernimmt ein MatchController die Zugsteuerung
+ * (Überspringen toter Spieler, Rundenwechsel) und nutzt dieses System nur noch
+ * als Countdown. Der Standard bleibt autark, damit bestehende Aufrufer
+ * unverändert funktionieren.
  *
  * @module TurnSystem
  */
@@ -18,18 +23,22 @@ export class TurnSystem {
   #listeners = [];
   #isTurnActive = false;
   #playerCount = 0;
+  #autoAdvance;
+  #turnIndex = 0;
 
   /**
    * @param {object} options
    * @param {number} options.playerCount - Anzahl der Spieler (2-8)
    * @param {number} options.turnDuration - Turn-Dauer in Millisekunden
+   * @param {boolean} [options.autoAdvance=true] - Automatisch weiterschalten
    */
-  constructor({ playerCount = 2, turnDuration = 30000 } = {}) {
+  constructor({ playerCount = 2, turnDuration = 30000, autoAdvance = true } = {}) {
     this.#playerCount = playerCount;
     this.#turnDuration = turnDuration;
     this.#currentPlayer = 0;
     this.#elapsedTime = 0;
     this.#listeners = [];
+    this.#autoAdvance = autoAdvance;
   }
 
   /**
@@ -42,7 +51,7 @@ export class TurnSystem {
     this.#world = world;
     this.#elapsedTime += dt;
 
-    if (this.#elapsedTime >= this.#turnDuration) {
+    if (this.#elapsedTime >= this.#turnDuration && this.#autoAdvance) {
       this.#endTurn();
     }
   }
@@ -76,12 +85,38 @@ export class TurnSystem {
     });
   }
 
+  /** Setzt den aktiven Spielerindex (Controller-gesteuert). */
+  setCurrentPlayer(index) {
+    if (!Number.isInteger(index) || index < 0) {
+      throw new TypeError('Spielerindex muss eine nichtnegative Ganzzahl sein');
+    }
+    this.#currentPlayer = index;
+    this.#turnIndex = index;
+    this.#elapsedTime = 0;
+  }
+
+  /** Setzt den Countdown zurück (Controller-gesteuert). */
+  resetTimer(duration = null) {
+    this.#elapsedTime = 0;
+    if (duration !== null) this.#turnDuration = duration;
+  }
+
+  /** Verbleibende Zeit im aktuellen Turn in Millisekunden. */
+  get remainingTime() {
+    return Math.max(0, this.#turnDuration - this.#elapsedTime);
+  }
+
   /**
    * Registriert einen Change-Listener.
    * @param {function} callback
    */
   addListener(callback) {
     this.#listeners.push(callback);
+  }
+
+  removeListener(callback) {
+    const index = this.#listeners.indexOf(callback);
+    if (index >= 0) this.#listeners.splice(index, 1);
   }
 
   #notifyListeners(event) {
@@ -96,6 +131,7 @@ export class TurnSystem {
   get turnDuration() { return this.#turnDuration; }
   get isTurnActive() { return this.#isTurnActive; }
   get playerCount() { return this.#playerCount; }
+  get autoAdvance() { return this.#autoAdvance; }
 
   // Signatur für Entity-Abfragen (dieses System braucht keine spezifischen Komponenten)
   get signature() { return 0; }

@@ -101,6 +101,23 @@ export class EntityManager {
     }
     return result;
   }
+
+  /**
+   * Stellt eine gespeicherte Entity-Menge wieder her (Replay/Restore).
+   * @param {number[]} ids
+   */
+  restore(ids = []) {
+    this.#entityActive.clear();
+    this.#entityComponents.clear();
+    this.#freeIds = [];
+    let maxId = 0;
+    for (const id of [...ids].sort((a, b) => a - b)) {
+      this.#entityActive.set(id, true);
+      this.#entityComponents.set(id, new Set());
+      if (id > maxId) maxId = id;
+    }
+    this.#nextId = maxId + 1;
+  }
 }
 
 export default EntityManager;

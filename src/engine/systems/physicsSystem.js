@@ -26,6 +26,11 @@ export class PhysicsSystem {
    */
   update(world, entities, dt) {
     for (const entityId of entities) {
+      // Projektile und Spielfiguren haben eigene Systeme mit Terrain-Kollision.
+      if (world.hasComponent(entityId, 'Projectile') || world.hasComponent(entityId, 'Health')) {
+        continue;
+      }
+
       let vx = world.getComponent(entityId, 'Velocity', 'x') || 0;
       let vy = world.getComponent(entityId, 'Velocity', 'y') || 0;
       let px = world.getComponent(entityId, 'Position', 'x') || 0;

@@ -257,6 +257,21 @@ export class World {
   deserialize(state) {
     this.#tickCount = state.tickCount || 0;
     this.#elapsedTime = state.elapsedTime || 0;
+
+    const entities = state.entities ?? [];
+    this.#entityManager.restore(entities.map(entry => entry.id));
+    this.#componentStore.clear();
+    this.#componentStore.deserialize(entities);
+
+    const turnSystem = this.#systemsByName.get('turn');
+    if (turnSystem && state.systems?.turn) {
+      turnSystem.setCurrentPlayer(state.systems.turn.currentPlayer ?? 0);
+      if (typeof state.systems.turn.turnDuration === 'number') {
+        turnSystem.resetTimer(state.systems.turn.turnDuration);
+      }
+      if (state.systems.turn.isTurnActive) turnSystem.startTurn();
+    }
+    return this;
   }
 
   get tickCount() {

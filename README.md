@@ -1,238 +1,184 @@
 # ProjectArmageddon
 
-ProjectArmageddon ist ein rundenbasiertes 2D-Artillerie-Spiel für den Browser im Geiste von Worms und Frontschweine. Das Gameplay läuft strikt in 2D, während die Präsentation optional einen 2.5D-Look nutzen darf. Das Projekt setzt auf vollständig zerstörbares Terrain, harte Systemregeln für Determinismus im Multiplayer und ein datenorientiertes ECS für hohe Performance im Web.
+Rundenbasiertes 2D-Artillerie-Taktikspiel für den Browser im Geiste von Worms und Frontschweine. Das Gameplay läuft strikt in 2D, während die Präsentation optional einen 2.5D-Look nutzen darf. Das Projekt setzt auf vollständig zerstörbares Terrain, harte Determinismus-Regeln für Multiplayer und ein datenorientiertes ECS für hohe Performance im Web.
 
-## Produktvision
-
-- **Genre:** Turn-based 2D artillery tactics
-- **Plattform:** Web-App
-- **Rendering:** HTML5 Canvas
-- **Simulation:** Deterministische 2D-Physik
-- **Multiplayer:** Authoritative Node.js server via binary WebSockets
-- **Core fantasy:** Zerstörbares Terrain, präzise Ballistik, asymmetrisches Drafting, chaotisches Endgame
-
-## Leitprinzipien
-
-1. **Gameplay und Physik bleiben 2D.**
-2. **Optik darf 2.5D sein, aber nie die Simulationsregeln verändern.**
-3. **Der Server ist die Source of Truth.**
-4. **Alle performancekritischen Systeme sind datenorientiert aufgebaut.**
-5. **Terrain-Rendering und CollisionMask müssen immer synchron bleiben.**
-6. **Balancing entsteht über Counterplay, Sidegrades und Rollenfantasien, nicht über Number Bloat.**
-
-## Gameplay- und Systemregeln
-
-### Klassenkern
-
-Das Kernsystem basiert auf drei asymmetrischen Archetypen, aus denen Teams mit 4-6 Einheiten gedraftet werden:
-
-- **Brawler / Tank**
-  - +30% Nahkampf
-  - +50% Knockback
-  - -20% Fallschaden
-  - +20% HP
-  - -30% Fernkampf
-  - -30% Magie
-- **Artillerist**
-  - +30% Fernkampf
-  - +20% CounterDamage
-  - +10% Fallschaden
-  - -30% Magie
-  - -10% bis -20% Nahkampf
-- **Okkultist / Glaskanone**
-  - +30% Magie / Spezialwaffen
-  - +30% Statuseffekt-Effizienz
-  - +10% Fallschaden
-  - -30% Nahkampf
-  - -30% Fernkampf
-  - -20% HP
-
-### Counterplay und Drafting
-
-- Klassen-Schwächen müssen im Draft gezielt ausnutzbar sein.
-- Mono-Class-Teams dürfen nie universell dominant sein.
-- Offene Karten laden Artillerie ein, aber übercommitment auf Artilleristen muss Brawler-Counterplay erlauben.
-
-### Spieler-Psychologie
-
-- **Artillerist:** Mastery & Strategy
-- **Brawler:** Action & Destruction
-- **Okkultist:** Immersion & Creativity
-
-### Waffenmodell
-
-- **Hitscan-Waffen:** sofortiger Treffer, keine Flugzeit
-- **Ballistische Projektile:** reagieren auf Wind, Gravitation und Drag; sie erfordern Vorhalten
-
-### Match Flow
-
-- Klassisches Worms-Zugsystem
-- Richtwerte für Zugzeiten:
-  - **1v1:** 30-60 Sekunden
-  - **4 Spieler:** 20-40 Sekunden
-
-### Mahlstrom / Sudden Death
-
-- Startet als Hard-Limit für die Matchdauer
-- Ab **Runde 15** beginnt die Kontraktion
-- Toxischer Regen verursacht **15% Max-HP-Verlust pro Zug**
-- Die tödliche Zone schrumpft von außen zur Mitte
-- Knockback aller Waffen steigt im Endgame um **100%**
-- Terrain wird pro Runde um **32px von außen nach innen** entfernt
-- Schaden außerhalb der Safe Zone skaliert exponentiell
-
-### Loot und Sidegrades
-
-- Rundestart-Drops per Drohne:
-  - 10% keine Kiste
-  - 85% eine Kiste
-  - 5% zwei Kisten
-- Kisteninhalte:
-  - 55% Waffen
-  - 30% Heilung / Rüstung
-  - 10% leer
-  - 5% Sprengfalle
-- Seltenheiten:
-  - Standard
-  - Verbessert
-  - Premium
-  - Episch
-- Extrem seltene Gamechanger tauchen nur in 5-10% aller Spiele auf.
-- Progression im Match erfolgt über **Sidegrades**, nicht über rohe Stat-Inflation.
-- Loot-RNG nutzt **Probability Tree + PRD**, damit Fehlschläge die Chance auf bessere Folgedrops erhöhen.
-
-## Engine-Architektur
-
-### ECS
-
-- Entitäten sind nur numerische IDs.
-- Komponenten sind reine Datencontainer ohne Methoden.
-- Systeme sind isoliert und zustandslos.
-- Komponenten werden per **BigArray-per-ComponentType** in TypedArrays gespeichert.
-
-### Komponentenbeispiele
-
-- `PositionComponent`: `x`, `y`
-- `VelocityComponent`: `vx`, `vy`
-- `BallisticsComponent`: `dragCoefficient`, `mass`
-- `ArtilleryStats`: `angle`, `power`, `spread`
-
-### Object Pooling
-
-- Projektil-Entitäten werden nicht gelöscht.
-- Inaktive Projektile werden im Pool markiert und wiederverwendet.
-
-## Terrain, Rendering und Kollision
-
-### Destruktives Terrain
-
-- Sichtbare Terrain-Zerstörung erfolgt via Canvas `globalCompositeOperation = 'destination-out'`.
-- Explosionen radieren Krater direkt aus der Terrain-Bitmap.
-
-### CollisionMask
-
-- Physikalisches Terrain liegt in komprimierten `Uint32Array`-Bitmasken.
-- 32 horizontale Pixel werden in ein 32-Bit-Integer gepackt.
-- Nach jeder visuellen Terrain-Zerstörung muss die CollisionMask synchronisiert werden.
-- Betroffene Bits werden mit bitweisem `AND NOT` genullt.
-
-### Kollisionspipeline
-
-1. **Broad Phase:** AABB-Selektion
-2. **Narrow Phase:** pixelgenaue Bitmasken-Prüfung
-
-### Constraints
-
-- Runtime-Kollision ist für unrotierte, unskalierte Objekte ausgelegt.
-- Rotierte oder skalierte Formen benötigen vorab berechnete Masken.
-- JavaScript-Bitshifts mit `>= 32` müssen explizit abgefangen werden.
-
-## Ballistik und Physik
-
-- Projektile nutzen analytische Ballistik mit linearem Luftwiderstand.
-- Das unterstützt deterministische Trajektorienvorhersagen für KI und Netcode.
-- Schnelle Projektile verwenden Continuous Collision Detection per Raycast gegen die CollisionMask.
-
-## Wasser- und Umweltlogik
-
-- Wasser wird per Cellular Automata simuliert.
-- Vertikaler Fluss priorisiert Fallbewegung.
-- Horizontaler Fluss gleicht Druckdifferenzen aus.
-- Rendering erfolgt via Tilemap-Bake, um CPU-Kosten niedrig zu halten.
-
-## Networking
-
-- Node.js authoritative server
-- Headless ECS-Simulation auf dem Server
-- Server validiert Winkel, Kraft und ähnliche Inputs
-- Binär kodierte WebSocket-Pakete
-- Identischer Zufalls-Seed für deterministische Prozesse
-- 200ms State-History für Lag Compensation
-
-## Schadensberechnung
-
-Die Reihenfolge der Modifikatoren ist verbindlich:
-
-1. **Flat Modifiers**
-2. **Percentage Modifiers**
-
-So bleibt das Kampfsystem konsistent, verständlich und deterministisch.
-
-## Repository-Struktur
-
-```text
-assets/
-  weapons/
-    icons/
-    source/
-src/
-  client/
-    index.js
-    rendering/
-  engine/
-    ecs/
-    physics/
-    pooling/
-    systems/
-    terrain/
-  server/
-    index.js
-  shared/
-    config/
-    index.js
-README.md
-todo.md
-package.json
-```
-
-## Status dieses Repositories
-
-Dieses Repository enthält aktuell:
-
-- die initiale Produkt- und Technikdokumentation
-- ein erstes Engine-/Client-/Server-Skelett
-- zentrale Konfigurationsdateien für Regeln und Architektur
-
-## Nächste Schritte
-
-1. Basale Laufzeit für ECS-World und Match-Loop vervollständigen
-2. Terrain-Import, CollisionMask-Generierung und Canvas-Destruktion verbinden
-3. Server-Loop und binäres Protokoll konkretisieren
-4. Drafting, Match-Flow und Maelstrom-System implementieren
-5. Wasser-CA, Loot-PRD und Damage-Pipeline produktionsreif machen
-
-## Entwicklung
-
-### Voraussetzungen
-
-- Node.js 20+
-- npm 10+
-
-### Befehle
+## Schnellstart
 
 ```bash
 npm install
-npm run validate
+npm run dev          # Spiel lokal im Browser: http://127.0.0.1:5173
 ```
 
-`validate` lädt das Skeleton und prüft die wichtigsten Module auf grundlegende Korrektheit.
+Lokales Match: Teams und Karte im Menü wählen, "Match starten".
+
+### Online-Multiplayer
+
+```bash
+npm run server       # Autoritativer Server auf http://127.0.0.1:3000
+```
+
+Danach im Menü unter **Server** `http://127.0.0.1:3000` eintragen und starten. Der erste Client erstellt die Lobby, weitere Spieler geben die angezeigte **Lobby-ID** ein und treten bei. Nicht besetzte Plätze übernimmt die Bot-KI.
+
+### Produktion (Single-Origin)
+
+```bash
+npm run build        # baut dist/
+npm run server       # liefert dist/ UND /ws unter derselben Herkunft
+```
+
+## Steuerung
+
+| Eingabe | Wirkung |
+|---|---|
+| Maus bewegen | Winkel zielen |
+| Klick oder Leertaste | Schuss (Aufladen für mehr Kraft) |
+| `A` / `D` | Winkel feinjustieren |
+| `W` / `S` | Kraft ändern |
+| `1`–`9` | Waffe wählen |
+| `R` | Zurück zum Menü |
+
+## Befehle
+
+| Befehl | Zweck |
+|---|---|
+| `npm run dev` | Vite-Dev-Server mit Hot Reload |
+| `npm run build` | Production-Build nach `dist/` |
+| `npm run preview` | Gebauten Client vorschauen |
+| `npm run server` | Autoritativer HTTP/WebSocket-Server |
+| `npm test` | Unit- und Integrationstests (70 Tests) |
+| `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
+| `npm run test:e2e` | Browser-E2E inkl. Multiplayer (12 Tests) |
+| `npm run smoke` | Headless-Match bis Spielende |
+| `npm run validate` | Modulimporte prüfen |
+| `npm run weapons:build` | Waffenkatalog aus der Designdatei generieren |
+
+E2E-Browserwahl ist portabel: lokal wird der System-Chrome genutzt, auf CI das
+Playwright-Chromium. Erzwingen mit `PLAYWRIGHT_CHANNEL=chrome|bundled`.
+
+## Architektur
+
+```text
+index.html                  Browser-Shell mit HUD, Menü, Endscreen
+vite.config.mjs             Build-/Dev-Konfiguration
+playwright.config.mjs       E2E-Konfiguration
+src/
+  client/
+    main.js                 Einstieg: lokaler + Online-Modus, Game-Loop, Debug-API
+    renderer.js             Canvas-Rendering (Terrain, Wasser, Figuren, Vorschau)
+    input.js                Maus-/Tastatureingabe
+    hud.js                  DOM-HUD (Runde, Wind, Zugzeit, Listen, Protokoll)
+    networkClient.js        WebSocket-Client, Interpolation, Reconnect
+    terrainPreview.js       Terrain-Rekonstruktion aus dem Server-Seed
+  engine/
+    match.js                MatchController: verbindet alle Systeme
+    headless.js             Rendering-freie Runtime
+    events.js               gepufferter Event-Bus
+    waterField.js           zelluläres Wasser
+    inventory.js            Waffen und Munition
+    ecs/                    World, ComponentStore (TypedArrays), EntityManager
+    systems/                Turn, Damage, Projektile, Figuren, Maelstrom, Loot
+    physics/                analytische Ballistik, CCD-Raycast
+    terrain/                CollisionMask (Bitmasken), Loader, Canvas-Sync
+  server/
+    gameServer.js           autoritativer HTTP/WebSocket-Server
+    lobby.js                Lobby- und Platzverwaltung
+    lagCompensation.js      200-ms-Snapshot-Verlauf
+    bot.js                  deterministische Bot-KI
+  shared/
+    config/                 Regel-Configs, Waffenkatalog (generiert)
+    prng.js, seed.js        deterministischer Zufall
+    protocol.js             portables Binärprotokoll (DataView)
+    validation.js           serverseitige Input-Validierung
+    terrainGen.js           seed-deterministische Kartengenerierung
+tests/
+  *.test.js                 Unit- und Integrationstests (node:test)
+  e2e/                      Playwright-Tests (Browser + Multiplayer)
+scripts/
+  server.mjs                Serverstart
+  smoke-match.mjs           Headless-Match
+  verify-render.mjs         Pixel-Verifikation der Darstellung
+```
+
+## Determinismus
+
+Alle Simulationszufälle stammen aus einem Match-Seed:
+
+- **PRNG:** Mulberry32, 32-Bit-Integer-Arithmetik, in Node und Browser identisch.
+- **Seed-Verteilung:** `MatchSeedManager` gibt jedem Subsystem (Loot, Terrain,
+  Waffen, Effekte) einen eigenen Offset-Stream, damit Systeme nicht korrelieren.
+- **Keine Wanduhrzeit im Simulationspfad:** Killfeed und Effekte nutzen
+  Simulationsticks, kein `Date.now()`.
+- **Snapshots:** `World.serialize()` enthält Entities, Komponenten, Signaturen
+  und Turn-State und lässt sich vollständig wiederherstellen.
+
+Damit ist ein Match aus `(seed, Eingabefolge)` reproduzierbar — im Browser-E2E
+wird geprüft, dass gleiche Seeds identische Zustandshashes erzeugen.
+
+## Multiplayer-Protokoll
+
+- Steuernachrichten: JSON (selten, lesbar, versioniert).
+- Snapshots: Binär, festes Layout, ~20 Hz (Simulation läuft mit 60 Hz).
+- `DataView` statt Node-Buffer → dasselbe Modul läuft im Browser und auf dem Server.
+- Server ist autoritativ: Clients senden Wünsche, der Server validiert
+  Spielerberechtigung, Winkel, Kraft, Tick-Fenster und Waffen-Whitelist.
+- Lag-Kompensation über einen 200-ms-Snapshot-Verlauf.
+- Reconnect per Sitzungs-Token innerhalb eines Fensters von 30 s.
+
+## Spielregeln
+
+### Klassen
+
+| Klasse | Drag | Masse | Kraft | Tempo | Leben |
+|---|---|---|---|---|---|
+| Scout | 0.9 | 0.8 | 0.7 | 1.2 | 0.8 |
+| Heavy | 1.1 | 1.2 | 1.0 | 0.8 | 1.3 |
+| Artillery | 0.8 | 0.9 | 1.3 | 0.7 | 0.9 |
+
+Dazu drei Archetypen (Brawler, Artillerist, Okkultist) mit eigenen Prozent-Modifikatoren.
+
+### Mahlstrom / Sudden Death
+
+Ab Runde 15 zieht sich die sichere Zone zusammen: Terrain wird pro Runde um
+32 px von außen abgetragen, außerhalb der Zone wirkt toxischer Regen
+(15 % Max-HP pro Zug) und der Knockback aller Waffen steigt um 100 %.
+
+### Schadensreihenfolge
+
+Verbindlich: **erst Flat-, dann Prozent-Modifikatoren.**
+
+### Loot
+
+Kisten werden pro Rundenstart per Drohne abgeworfen (10 % keine, 85 % eine,
+5 % zwei). Inhalte: 55 % Waffen, 30 % Heilung, 10 % leer, 5 % Sprengfalle.
+Die Verteilung nutzt PRD, damit Fehlschläge die Chance auf bessere Folgedrops
+erhöhen. Jeder Spieler führt zusätzlich eine Reservewaffe mit unbegrenzter
+Munition, damit kein Match durch leere Magazine stehenbleibt.
+
+## Terrain
+
+- Zeichenbasiert: `#` oder `1` = solide, alles andere = Luft.
+- Physik liegt in `Uint32Array`-Bitmasken (32 Pixel pro Wort).
+- Krater werden über `punchCrater` in Bitmaske **und** Canvas-Ebene gestrichen —
+  beide werden aus demselben Ereignisstrom geändert und können nicht divergieren.
+- Vier Presets: Hügel, Berge, Inseln, Höhlen.
+
+## Qualitätsregeln
+
+- Gameplay und Physik bleiben 2D.
+- Kein `Math.random()` im Simulationspfad.
+- Keine Client-Autorität bei physikrelevanten Aktionen.
+- Keine rotierte/skalierte Runtime-Maskenkollision ohne Prebakes.
+- Keine unsynchronisierte Divergenz zwischen Canvas-Terrain und CollisionMask.
+- Keine Number-Bloat-Progression im Match.
+
+## Status
+
+Spielbarer Kern mit lokalem und Online-Multiplayer, Bot-KI, Loot, Wasser,
+Mahlstrom und zerstörbarem Terrain. Verifiziert durch 70 Unit-/Integrationstests,
+12 Browser-E2E-Tests (inkl. zwei echte Clients in einer Lobby) und den
+Production-Build.
+
+Offene Arbeit und bewusst dokumentierte Grenzen stehen in
+[`MASTERDOTO.md`](./MASTERDOTO.md) — dort ist vermerkt, was noch fehlt
+(kein Audio, keine Client-Prädiktion, Zugzeit noch nicht serverseitig erzwungen,
+Waffenwerte unbalanciert, keine Persistenz).
