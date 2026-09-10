@@ -57,6 +57,20 @@ export class DamageSystem {
     let finalDamage = Math.max(0, amount - flatResistance);
     finalDamage = finalDamage * (1 - percentResistance);
 
+    // Schild und Rüstung liegen außerhalb des ECS (siehe specials.js). Der Match
+    // installiert dafür einen Modifikator in den World-Services, damit Schild
+    // auch bei Flächenschaden greift — dort wird der Schaden nicht über die
+    // Waffe, sondern über den Radius verteilt.
+    const modifier = world.services?.damageModifier;
+    let absorbedByShield = 0;
+    if (typeof modifier === 'function' && finalDamage > 0) {
+      const adjusted = modifier(entityId, finalDamage);
+      if (adjusted && Number.isFinite(adjusted.amount)) {
+        absorbedByShield = Math.max(0, finalDamage - adjusted.amount);
+        finalDamage = Math.max(0, adjusted.amount);
+      }
+    }
+
     const currentHealth = world.getComponent(entityId, 'Health', 'current');
     const newHealth = Math.max(0, Math.round((currentHealth - finalDamage) * 1000) / 1000);
 
@@ -66,6 +80,7 @@ export class DamageSystem {
       target: entityId,
       attacker: attackerId,
       damage: finalDamage,
+      absorbedByShield,
       tick: world.tickCount,
     });
     if (this.#killFeed.length > 200) this.#killFeed.shift();
@@ -74,6 +89,7 @@ export class DamageSystem {
       entityId,
       attackerId,
       amount: finalDamage,
+      absorbedByShield,
       remaining: newHealth,
     });
 

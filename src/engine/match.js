@@ -20,6 +20,13 @@ import { CharacterSystem } from './systems/characterSystem.js';
 import { MaelstromSystem } from './systems/maelstromSystem.js';
 import { LootSystem } from './systems/lootSystem.js';
 import { PlayerInventory } from './inventory.js';
+import {
+  StatusStore,
+  buildEffect,
+  SELF_TARGET_KINDS,
+  EFFECT_KIND,
+  RANDOM_EFFECT_POOL,
+} from './specials.js';
 import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
@@ -41,6 +48,10 @@ const PLAYER_HALF_WIDTH = 7;
 const PLAYER_HALF_HEIGHT = 10;
 /** Wie weit entlang der Schussrichtung nach freiem Feld gesucht wird. */
 const MUZZLE_SEARCH_DISTANCE = 48;
+/** Mindestwerte für Zufallswaffen, damit auch schwache Waffen spürbar wirken. */
+const SPECIAL_HEAL_MIN = 35;
+const SPECIAL_SHIELD_MIN = 40;
+const RANDOM_MOVE_DISTANCE = 60;
 
 export class MatchController {
   #world;
@@ -50,6 +61,17 @@ export class MatchController {
   #bitmap;
   #water;
   #inventory = new PlayerInventory();
+  /**
+   * Laufende Zustände (Schild, Einfrieren, Schaden über Zeit, Buffs).
+   * Liegt bewusst außerhalb des ECS — konsistent zum Inventar.
+   */
+  #statuses = new StatusStore();
+  /**
+   * Waffe je abgefeuertem Projektil, damit beim Einschlag die Wirkung der
+   * richtigen Waffe angewendet werden kann. Das Projektil selbst kennt nur den
+   * Index der Waffe, nicht ihre ID.
+   */
+  #shotsInFlight = new Map();
   #maelstrom;
   #loot;
   #players = [];
@@ -128,6 +150,22 @@ export class MatchController {
     });
     this.#bitmap = bitmap;
     this.#terrain = CollisionMask.fromBitmap(bitmap, MAP_WIDTH, MAP_HEIGHT);
+    // Schild und Rüstung greifen im DamageSystem, damit sie auch bei
+    // Flächenschaden wirken — dort verteilt der Radius den Schaden, nicht die
+    // Waffe. Der Modifikator ist die einzige Brücke dorthin.
+    this.#world.services.damageModifier = (entityId, amount) => {
+      const armor = this.#statuses.armorOf(entityId);
+      const afterArmor = amount * (1 - armor);
+      const { absorbed, rest } = this.#statuses.absorbWithShield(entityId, afterArmor);
+      if (absorbed > 0) {
+        this.#events.emit('shield_absorbed', { playerId: entityId, absorbed });
+      }
+      return { amount: rest };
+    };
+
+    // Wirkungen beim Einschlag eines Projektils.
+    this.#world.services.onProjectileImpact = payload => this.#handleProjectileImpact(payload);
+
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
     this.#waterBaseY = waterLevel;
@@ -280,6 +318,20 @@ export class MatchController {
     this.#hasFired = true;
     this.#lastShotBy = playerId;
 
+    // Wirkungen, die auf den Schützen selbst gehen (Heilung, Schild, Sprung,
+    // Munition, Aufklärung), werden sofort ausgelöst. Es wird bewusst KEIN
+    // Geschoss erzeugt: ein Projektil, das nur dazu dient, den eigenen Effekt
+    // auszulösen, wäre im Spiel irreführend.
+    const special = buildEffect(weapon);
+    if (special && SELF_TARGET_KINDS.has(special.kind)) {
+      const outcome = this.#applySelfEffect(special, playerId, weapon);
+      this.#events.emit('special_effect', {
+        playerId, weaponId: weapon.id, kind: special.kind, ...outcome,
+      });
+      this.endTurn();
+      return { ok: true, projectileId: null, hit: null, special: { kind: special.kind, ...outcome } };
+    }
+
     if (weapon.delivery === 'hitscan') {
       const hit = this.#resolveHitscan(x, y, angle, power, weapon, playerId);
       this.#events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
@@ -300,7 +352,8 @@ export class MatchController {
     this.#world.addComponent(projectileId, 'Projectile', {
       owner: playerId,
       weaponId: weapon.index,
-      damage: weapon.damage * classDef.power,
+      // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
+      damage: weapon.damage * classDef.power * this.#statuses.damageMultiplier(playerId),
       blastRadius: weapon.blastRadius || 24,
       knockback: weapon.knockback,
       drag: 0.995,
@@ -311,6 +364,8 @@ export class MatchController {
       lifetime: Math.max(60, Math.round(weapon.maxRange / 8)),
       alive: 1,
     });
+
+    this.#shotsInFlight.set(projectileId, weapon.id);
 
     this.#events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
     return { ok: true, projectileId, hit: null };
@@ -355,10 +410,302 @@ export class MatchController {
 
     const target = this.#playerAt(result.hitX, result.hitY, shooterId);
     if (target !== null) {
-      this.#world.getSystem('damage')?.applyDamage(this.#world, target, weapon.damage, shooterId);
+      const damage = weapon.damage * this.#statuses.damageMultiplier(shooterId);
+      this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId);
+
+      // Wirkung über den Schaden hinaus (Einfrieren, Schaden über Zeit).
+      const effect = buildEffect(weapon);
+      if (effect && !SELF_TARGET_KINDS.has(effect.kind)) {
+        this.#applyTargetEffect(effect, target, shooterId);
+      }
     }
 
     return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
+  }
+
+  /**
+   * Wendet eine Wirkung auf den Schützen an.
+   *
+   * @param {object} effect - aus buildEffect()
+   * @param {number} playerId
+   * @param {object} weapon
+   * @returns {object} Beschreibung des tatsächlichen Ergebnisses
+   */
+  #applySelfEffect(effect, playerId, weapon) {
+    switch (effect.kind) {
+      case EFFECT_KIND.HEAL: {
+        const health = this.#world.getComponent(playerId, 'Health', 'current') ?? 0;
+        const max = this.#world.getComponent(playerId, 'Health', 'max') ?? 0;
+        // Heilung wird begrenzt: das Schild zählt mit, sonst wäre Heilung bei
+        // vollem Schild wirkungslos verpufft.
+        const headroom = Math.max(0, max - health);
+        const healed = Math.min(effect.amount, headroom);
+        if (healed > 0) this.#world.setComponent(playerId, 'Health', 'current', health + healed);
+        return { healed, amount: effect.amount };
+      }
+
+      case EFFECT_KIND.SHIELD: {
+        const shield = this.#statuses.addShield(playerId, effect.amount);
+        return { shield, amount: effect.amount };
+      }
+
+      case EFFECT_KIND.DAMAGE_BOOST: {
+        const multiplier = this.#statuses.addBoost(playerId, effect.multiplier, 2);
+        return { multiplier };
+      }
+
+      case EFFECT_KIND.ARMOR: {
+        const reduction = this.#statuses.addArmor(playerId, effect.reduction);
+        return { reduction };
+      }
+
+      case EFFECT_KIND.AMMO: {
+        const restored = this.#restoreAmmo(playerId, effect.amount);
+        return { restored };
+      }
+
+      case EFFECT_KIND.MOVE: {
+        const moved = this.#shiftPlayer(playerId, effect.distance);
+        return { moved };
+      }
+
+      case EFFECT_KIND.REVEAL: {
+        const turns = this.#statuses.reveal(playerId, effect.turns);
+        return { revealedTurns: turns };
+      }
+
+      case EFFECT_KIND.RANDOM: {
+        // Auswahl über den Match-Zufallsgenerator: bei gleichem Seed dieselbe
+        // Wirkung. Bewusst NICHT Math.random — sonst wäre ein Replay nicht mehr
+        // reproduzierbar.
+        const pool = effect.pool?.length ? effect.pool : RANDOM_EFFECT_POOL;
+        const gewaehlt = pool[this.#rng.nextIntBelow(pool.length)];
+        const unterEffekt = this.#buildSubEffect(gewaehlt, weapon);
+        const outcome = this.#applySelfEffect(unterEffekt, playerId, weapon);
+        return { randomKind: gewaehlt, ...outcome };
+      }
+
+      default:
+        return { ignored: effect.kind, weaponId: weapon?.id ?? null };
+    }
+  }
+
+  /**
+   * Baut den konkreten Effekt für eine gewählte Wirkungsart.
+   * Nötig für Zufallswaffen, deren Ziel erst beim Auslösen feststeht.
+   */
+  #buildSubEffect(kind, weapon) {
+    const schaden = weapon?.damage ?? 0;
+    switch (kind) {
+      case EFFECT_KIND.HEAL:
+        return { kind, amount: Math.max(SPECIAL_HEAL_MIN, Math.round(schaden * 1.2)) };
+      case EFFECT_KIND.SHIELD:
+        return { kind, amount: Math.max(SPECIAL_SHIELD_MIN, Math.round(schaden * 1.1)) };
+      case EFFECT_KIND.DAMAGE_BOOST:
+        return { kind, multiplier: 1.5 };
+      case EFFECT_KIND.ARMOR:
+        return { kind, reduction: 0.3 };
+      case EFFECT_KIND.AMMO:
+        return { kind, amount: 3 };
+      case EFFECT_KIND.MOVE:
+        return { kind, distance: RANDOM_MOVE_DISTANCE };
+      default:
+        return { kind: EFFECT_KIND.HEAL, amount: SPECIAL_HEAL_MIN };
+    }
+  }
+
+  /**
+   * Füllt Munition der Waffen eines Spielers auf.
+   *
+   * Es wird von der ERSTEN Waffe an aufgefüllt, deren Vorrat nicht unbegrenzt
+   * ist. Dadurch ist das Ergebnis deterministisch und unabhängig von der
+   * Reihenfolge im Inventar.
+   *
+   * @returns {number} tatsächlich aufgefüllte Ladungen
+   */
+  #restoreAmmo(playerId, amount) {
+    const weapons = this.#inventory.getWeapons(playerId);
+    let remaining = Math.max(0, Math.floor(amount));
+    let restored = 0;
+
+    for (const weaponId of weapons) {
+      if (remaining <= 0) break;
+      const weapon = getWeapon(weaponId);
+      if (!weapon) continue;
+      const current = this.#inventory.getAmmo(playerId, weaponId);
+      if (!Number.isFinite(current)) continue; // unbegrenzt: nichts aufzufüllen
+
+      const capacity = Math.max(1, weapon.maxAmmo || 1);
+      const fehlt = Math.max(0, capacity - current);
+      const give = Math.min(remaining, fehlt);
+      if (give <= 0) continue;
+
+      this.#inventory.grantAmmo(playerId, weaponId, give);
+      remaining -= give;
+      restored += give;
+    }
+    return restored;
+  }
+
+  /**
+   * Versetzt einen Spieler entlang der Geländeoberfläche.
+   *
+   * Für Sprung- und Teleportwaffen. Die Bewegung ist bewusst auf einen
+   * Geländepunkt begrenzt: ein Teleport in festes Terrain oder aus der Karte
+   * heraus wäre ein Fehler, kein Feature.
+   *
+   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
+   */
+  #shiftPlayer(playerId, distance) {
+    const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
+    const startY = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
+
+    // In der aktuellen Blickrichtung nach vorne, sofern das Ziel frei ist;
+    // sonst ein Stück zurück. Beides wird auf dem Gelände verankert.
+    const candidates = [startX + distance, startX - distance];
+    for (const targetX of candidates) {
+      if (targetX < PLAYER_HALF_WIDTH || targetX > MAP_WIDTH - PLAYER_HALF_WIDTH) continue;
+      const surface = this.surfaceYAt(Math.round(targetX));
+      if (surface < 0) continue;
+      // Kein Platz für eine stehende Figur (z. B. Wand): nächster Kandidat.
+      if (this.#terrain.isSolid(Math.floor(targetX), Math.floor(surface - PLAYER_HALF_HEIGHT))) continue;
+
+      this.#world.setComponent(playerId, 'Position', 'x', targetX);
+      this.#world.setComponent(playerId, 'Position', 'y', surface);
+      this.#world.setComponent(playerId, 'Velocity', 'x', 0);
+      this.#world.setComponent(playerId, 'Velocity', 'y', 0);
+      return { dx: targetX - startX, dy: surface - startY };
+    }
+    return { dx: 0, dy: 0 };
+  }
+
+  /**
+   * Wendet eine Wirkung auf ein getroffenes Ziel an (Einfrieren, Schaden über Zeit).
+   * Wirkt nur auf Gegner — eigene Einheiten bleiben verschont.
+   */
+  #applyTargetEffect(effect, targetId, attackerId) {
+    const ziel = this.#players.find(entry => entry.entityId === targetId);
+    const schuetze = this.#players.find(entry => entry.entityId === attackerId);
+    if (!ziel || !this.#world.isActive(targetId)) return null;
+    if (schuetze && ziel.teamId === schuetze.teamId) return null;
+
+    switch (effect.kind) {
+      case EFFECT_KIND.FREEZE: {
+        const turns = this.#statuses.freeze(targetId, effect.turns);
+        this.#events.emit('frozen', { playerId: targetId, turns, by: attackerId });
+        return { kind: effect.kind, turns };
+      }
+
+      case EFFECT_KIND.PULL: {
+        // Das Ziel wird in Richtung des Schützen versetzt, auf festem Gelände
+        // verankert. Wirkt nur, wenn es sich tatsächlich bewegt hat — sonst
+        // wäre die Wirkung bei einer Wand dazwischen eine stille Nullnummer.
+        const versetzt = this.#pullToward(targetId, attackerId, effect.distance);
+        if (versetzt.dx === 0 && versetzt.dy === 0) return null;
+        this.#events.emit('pulled', { playerId: targetId, by: attackerId, ...versetzt });
+        return { kind: effect.kind, ...versetzt };
+      }
+
+      case EFFECT_KIND.DAMAGE_OVER_TIME: {
+        this.#statuses.addDot(targetId, effect);
+        this.#events.emit('dot_applied', {
+          playerId: targetId,
+          element: effect.element,
+          damagePerTurn: effect.damagePerTurn,
+          turns: effect.turns,
+          by: attackerId,
+        });
+        return { kind: effect.kind, ...effect };
+      }
+
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Versetzt ein Ziel in Richtung eines Angreifers.
+   *
+   * Die Bewegung ist auf ein Stück pro Anwendung begrenzt und wird auf der
+   * Geländeoberfläche verankert: ein Ziehen durch massives Terrain wäre ein
+   * Fehler, kein Effekt. Der Schütze selbst bewegt sich nicht.
+   *
+   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
+   */
+  #pullToward(targetId, attackerId, distance) {
+    const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
+    const zielY = this.#world.getComponent(targetId, 'Position', 'y') ?? 0;
+    const schuetzeX = this.#world.getComponent(attackerId, 'Position', 'x') ?? 0;
+
+    const richtung = Math.sign(schuetzeX - zielX);
+    if (richtung === 0) return { dx: 0, dy: 0 };
+
+    // In kleinen Schritten prüfen, damit das Ziel nicht durch eine Wand springt.
+    const schritt = 10;
+    let erreicht = 0;
+    for (let d = schritt; d <= distance; d += schritt) {
+      const kandidatX = zielX + richtung * d;
+      if (kandidatX < PLAYER_HALF_WIDTH || kandidatX > MAP_WIDTH - PLAYER_HALF_WIDTH) break;
+      const surface = this.surfaceYAt(Math.round(kandidatX));
+      if (surface < 0) break;
+      if (this.#terrain.isSolid(Math.floor(kandidatX), Math.floor(surface - PLAYER_HALF_HEIGHT))) break;
+      erreicht = d;
+    }
+
+    if (erreicht === 0) return { dx: 0, dy: 0 };
+
+    const neueX = zielX + richtung * erreicht;
+    const neueY = this.surfaceYAt(Math.round(neueX));
+    this.#world.setComponent(targetId, 'Position', 'x', neueX);
+    this.#world.setComponent(targetId, 'Position', 'y', neueY);
+    this.#world.setComponent(targetId, 'Velocity', 'x', 0);
+    this.#world.setComponent(targetId, 'Velocity', 'y', 0);
+    return { dx: neueX - zielX, dy: neueY - zielY };
+  }
+
+  /**
+   * Wendet Wirkungen auf alle Gegner in einem Radius an.
+   * Für Waffen mit Flächenwirkung: Giftwolken und Feuerflächen treffen jeden
+   * im Umkreis, nicht nur das direkt getroffene Ziel.
+   */
+  #applyAreaEffect(effect, x, y, radius, attackerId) {
+    const angewendet = [];
+    for (const entry of this.#players) {
+      if (!this.#world.isActive(entry.entityId)) continue;
+      if (entry.entityId === attackerId) continue;
+      const px = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
+      const py = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
+      const distSq = (px - x) ** 2 + (py - y) ** 2;
+      if (distSq > radius * radius) continue;
+      const outcome = this.#applyTargetEffect(effect, entry.entityId, attackerId);
+      if (outcome) angewendet.push({ playerId: entry.entityId, ...outcome });
+    }
+    return angewendet;
+  }
+
+  /**
+   * Wirkung eines eingeschlagenen Projektils.
+   *
+   * Die Zuordnung Projektil → Waffe wird hier verbraucht und wieder entfernt,
+   * damit die Map nicht über die Matchdauer wächst.
+   */
+  #handleProjectileImpact({ projectileId, owner, x, y, target, blastRadius }) {
+    const weaponId = this.#shotsInFlight.get(projectileId);
+    this.#shotsInFlight.delete(projectileId);
+    if (!weaponId) return;
+
+    const weapon = getWeapon(weaponId);
+    const effect = buildEffect(weapon);
+    if (!effect || SELF_TARGET_KINDS.has(effect.kind)) return;
+
+    if (target !== null && target !== undefined) {
+      this.#applyTargetEffect(effect, target, owner);
+    }
+    // Bei Flächenwirkung zusätzlich alle Gegner im Radius treffen — eine
+    // Giftwolke wirkt nicht nur auf den direkt getroffenen Gegner.
+    if (blastRadius > 0) {
+      this.#applyAreaEffect(effect, x, y, blastRadius, owner);
+    }
   }
 
   /**
@@ -542,6 +889,30 @@ export class MatchController {
   #beginTurn(index) {
     const entityId = this.#turnOrder[index];
     if (!this.#world.isActive(entityId)) return;
+
+    // Zustände dieses Zuges abrechnen: Schaden über Zeit wirkt, Dauern klingen ab.
+    // Die Abrechnung gehört an den ZUGbeginn, nicht in step(): sonst hinge der
+    // Schaden an der Tickrate statt an den Zügen und wäre bei anderer Zugzeit
+    // ein anderer.
+    const turnState = this.#statuses.advanceTurn(entityId);
+
+    if (turnState.damage > 0 && this.#world.isActive(entityId)) {
+      this.#world.getSystem('damage')?.applyDamage(this.#world, entityId, turnState.damage, null);
+      this.#events.emit('dot_tick', {
+        playerId: entityId,
+        damage: turnState.damage,
+        elements: turnState.elements,
+      });
+    }
+
+    // Eingefroren: der Spieler setzt diesen Zug aus. `advanceTurn` hat die
+    // Dauer bereits heruntergezählt, deshalb endet die Wirkung von selbst.
+    if (turnState.frozeThisTurn && this.#world.isActive(entityId) && this.#status === 'playing') {
+      this.#events.emit('turn_skipped', { playerId: entityId, reason: 'frozen' });
+      this.endTurn();
+      return;
+    }
+
     this.#world.getSystem('turn')?.startTurn();
     if (this.#maelstrom.isActive) this.#maelstrom.applyToxicRain(this.#world);
     this.#events.emit('turn_start', { playerId: entityId, round: this.#round, wind: this.#wind });
@@ -659,6 +1030,11 @@ export class MatchController {
       turnDurationMs: this.#turnDurationMs,
       activePlayerId: this.activePlayerId,
       winnerTeamId: this.#winnerTeamId,
+      /**
+       * Laufende Zustände je Spieler-ID (Schild, Einfrieren, Schaden über Zeit,
+       * Schadensbonus). Für die Anzeige und für Tests.
+       */
+      statuses: this.#statuses.snapshot(),
       maelstrom: {
         active: this.#maelstrom?.isActive ?? false,
         inset: this.#maelstrom?.inset ?? 0,
@@ -714,6 +1090,8 @@ export class MatchController {
   get water() { return this.#water; }
   get events() { return this.#events; }
   get inventory() { return this.#inventory; }
+  /** Laufende Zustände der Spieler (Schild, Einfrieren, Schaden über Zeit). */
+  get statuses() { return this.#statuses; }
   get players() { return [...this.#players]; }
   get status() { return this.#status; }
   get round() { return this.#round; }

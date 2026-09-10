@@ -61,6 +61,61 @@ function pickString(stats, ...names) {
 }
 
 /**
+ * Ermittelt den Schaden und woher er stammt.
+ *
+ * Die Quelldatei enthält das Feld `base_damage` nur für 124 der 150 Waffen.
+ * Fehlt es, bleibt nur der camelCase-Platzhalter `baseDamage` mit dem konstanten
+ * Wert 25 — ein Design-Wert ist das nicht. Statt ihn stillschweigend zu
+ * übernehmen, wird die Herkunft mitgeführt, damit erkennbar bleibt, welche
+ * Waffen echte Designdaten haben und welche einen Ersatzwert tragen.
+ *
+ * @returns {{damage:number, damageSource:'source'|'placeholder'|'none'}}
+ */
+export function resolveDamage(stats) {
+  const fromSource = toNumber(stats.base_damage);
+  if (fromSource > 0) return { damage: fromSource, damageSource: 'source' };
+
+  const fromCamel = toNumber(stats.baseDamage);
+  if (fromCamel > 0) {
+    // Nur vorhanden, wenn `base_damage` fehlt: das ist der Platzhalter.
+    return { damage: fromCamel, damageSource: 'placeholder' };
+  }
+  return { damage: 0, damageSource: 'none' };
+}
+
+/**
+ * Referenzwert der `gravity`-Skala in den Quelldaten.
+ *
+ * Die Quelle nennt für 26 Waffen einen Wert zwischen 62 und 92, wovon 19 exakt
+ * 65 haben — 65 ist damit der Bezugswert, 62/70/…/92 sind Abweichungen davon in
+ * Prozent. Alle übrigen Waffen führen das Feld gar nicht.
+ *
+ * WICHTIG: Der Wert ist KEIN Multiplikator. Ihn direkt als `gravityScale` zu
+ * verwenden setzte die Fallbeschleunigung auf das 65-fache (20,8 statt 0,32
+ * px/Tick²); das Geschoss schlug im nächsten Tick auf dem Boden auf und die
+ * Waffe war wirkungslos. Deshalb wird auf den Bezugswert normalisiert.
+ */
+export const GRAVITY_REFERENCE = 65;
+
+/**
+ * Wandelt den `gravity`-Wert der Quelle in einen Multiplikator um.
+ *
+ * Unbestimmt (fehlend oder 0) → 1.0, also die normale Fallbeschleunigung der
+ * Engine. Angegeben → Verhältnis zum Bezugswert, hier 0.95 bis 1.42.
+ *
+ * @param {object} stats - Rohstatistik einer Waffe
+ * @returns {number} Multiplikator für DEFAULT_PROJECTILE_GRAVITY
+ */
+export function gravityScaleFor(stats) {
+  const raw = pickPositive(stats, 'gravity', 'gravity_scale');
+  if (raw <= 0) return 1;
+  const scale = raw / GRAVITY_REFERENCE;
+  // Sicherheitsgrenzen: ein fehlerhafter Quelldatensatz darf die Simulation
+  // nicht unspielbar machen.
+  return Number(Math.min(3, Math.max(0.2, scale)).toFixed(4));
+}
+
+/**
  * Einstufung in fünf Stufen.
  *
  * Die Quelldaten kennen nur `common`, `uncommon` und `rare`. `epic` und
@@ -131,7 +186,7 @@ const weapons = raw.weapons.map(entry => {
   const projectileSpeed = pickPositive(stats, 'projectile_speed', 'projectileSpeed');
   const blastRadius = pickPositive(stats, 'blast_radius', 'blastRadius');
   const terrainDamage = pickPositive(stats, 'terrain_damage', 'terrainDamage');
-  const baseDamage = pickPositive(stats, 'base_damage', 'baseDamage');
+  const { damage, damageSource } = resolveDamage(stats);
 
   const sourceRarity = balance.rarity ?? 'common';
 
@@ -148,11 +203,14 @@ const weapons = raw.weapons.map(entry => {
     maxAmmo: Math.max(0, toNumber(balance.maxAmmo) || 1),
     cooldown: toNumber(balance.cooldown),
     requiresLineOfSight: Boolean(balance.requiresLineOfSight),
-    damage: baseDamage,
+    damage,
+    /** Herkunft des Schadenswerts: echte Designdaten oder Ersatzwert. */
+    damageSource,
     blastRadius,
     knockback: pickPositive(stats, 'knockback'),
     projectileSpeed,
-    gravityScale: pickPositive(stats, 'gravity') || 1,
+    // Normalisiert aus der 0-100-Skala der Quelle, NICHT als Multiplikator.
+    gravityScale: gravityScaleFor(stats),
     bounces: pickPositive(stats, 'bounces'),
     fuseTime: pickPositive(stats, 'fuse_time', 'fuseTime'),
     terrainDamage,

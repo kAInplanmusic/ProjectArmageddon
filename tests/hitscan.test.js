@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
+import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 
 /**
  * Regressionstest für Hitscan-Waffen.
@@ -105,9 +106,18 @@ test('Alle Hitscan-Waffen verursachen auf freier Linie Schaden', () => {
   const hitscan = WEAPONS.filter(weapon => weapon.delivery === 'hitscan');
   assert.ok(hitscan.length > 50, `Es muss viele Hitscan-Waffen geben: ${hitscan.length}`);
 
-  // Nur Waffen mit deklariertem Schaden betrachten — Utility-Waffen ohne
-  // Schadenswert dürfen nichts abziehen.
-  const withDamage = hitscan.filter(weapon => weapon.damage > 0);
+  // Nur Waffen betrachten, die auf Schaden ausgelegt sind. Zwei Gruppen fallen
+  // bewusst heraus:
+  //  - Utility-Waffen ohne Schadenswert,
+  //  - Waffen mit einer Wirkung auf den Schützen selbst (Portal, Jetpack,
+  //    Heilung): sie lösen ihren Effekt aus und verschießen absichtlich nichts.
+  const withDamage = hitscan.filter(weapon => {
+    if (weapon.damage <= 0) return false;
+    const effect = buildEffect(weapon);
+    return !(effect && SELF_TARGET_KINDS.has(effect.kind));
+  });
+  assert.ok(withDamage.length > 30, `Zu wenige schadende Hitscan-Waffen: ${withDamage.length}`);
+
   const sample = withDamage.filter((_, index) => index % 15 === 0);
 
   for (const weapon of sample) {
@@ -118,6 +128,46 @@ test('Alle Hitscan-Waffen verursachen auf freier Linie Schaden', () => {
       result.damage > 0,
       `${weapon.id} (${weapon.displayName}) verursachte keinen Schaden: `
       + `blockiert=${result.blocked}, getroffen=${result.hitTarget}`,
+    );
+  }
+});
+
+test('Selbstwirkende Waffen verschießen nichts und richten keinen Schaden an', () => {
+  // Gegenprobe zum Test darüber: Diese Waffen wirken auf den Schützen, nicht
+  // auf ein Ziel. Sie dürfen deshalb kein Geschoss erzeugen und keinem Gegner
+  // Schaden zufügen — sonst wäre der Effekt ein versteckter Angriff.
+  const selbst = WEAPONS.filter(weapon => {
+    const effect = buildEffect(weapon);
+    return effect && SELF_TARGET_KINDS.has(effect.kind);
+  });
+  assert.ok(selbst.length >= 20, `Es muss viele Selbstwirkungs-Waffen geben: ${selbst.length}`);
+
+  const probe = selbst.filter((_, index) => index % 8 === 0);
+  for (const weapon of probe) {
+    const match = new MatchController({
+      seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000,
+    });
+    match.start();
+
+    const schuetze = match.activePlayerId;
+    const ziel = match.players.find(player => player.entityId !== schuetze).entityId;
+    match.world.setComponent(ziel, 'Health', 'max', 500);
+    match.world.setComponent(ziel, 'Health', 'current', 500);
+    match.world.setComponent(schuetze, 'Health', 'current', 100);
+
+    match.inventory.register(schuetze, [weapon.id]);
+    const healthVorher = match.world.getComponent(ziel, 'Health', 'current');
+
+    const result = match.fire(schuetze, 0, 50, weapon.id);
+    assert.equal(result.ok, true, `${weapon.id}: Schuss abgelehnt`);
+    assert.equal(result.projectileId, null, `${weapon.id} darf kein Geschoss erzeugen`);
+
+    // Etwas Spielzeit, damit ein eventuelles Geschoss einschlagen würde.
+    for (let i = 0; i < 30; i++) { match.step(); match.consumeEvents(); }
+
+    assert.equal(
+      match.world.getComponent(ziel, 'Health', 'current'), healthVorher,
+      `${weapon.id} (${weapon.displayName}) hat einem Gegner Schaden zugefügt`,
     );
   }
 });

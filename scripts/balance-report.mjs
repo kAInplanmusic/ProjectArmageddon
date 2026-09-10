@@ -23,6 +23,7 @@
  */
 import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
+import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 
 function parseArgs(argv) {
   const args = {};
@@ -173,7 +174,6 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
   const terrainAfter = match.terrain.remainingSolidCount?.() ?? null;
   const dead = !match.world.isActive(target.entityId);
 
-  const events = [];
   return {
     fired: result.ok,
     errors: result.errors ?? [],
@@ -184,7 +184,11 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
     terrainRemoved: terrainBefore !== null && terrainAfter !== null
       ? Math.max(0, terrainBefore - terrainAfter)
       : null,
-    events,
+    // Wirkungen auf den Schützen selbst werden hier gemessen, nicht als
+    // Schaden am Ziel: eine Heilwaffe richtet keinen Schaden an und darf
+    // deshalb nicht als "wirkungslos" gelten.
+    selfEffect: result.special ?? null,
+    firedProjectile: result.projectileId !== null && result.projectileId !== undefined,
   };
 }
 
@@ -236,6 +240,9 @@ function measureWeapon(weapon, index) {
 
   const fired = runs.filter(run => run.fired);
   const damage = runs.reduce((sum, run) => sum + run.damage, 0) / runs.length;
+  const effect = buildEffect(weapon);
+  const istSelbstwirkung = effect !== null && SELF_TARGET_KINDS.has(effect.kind);
+  const selbstGewirkt = runs.filter(run => run.selfEffect !== null).length;
   const kills = runs.filter(run => run.killed).length;
   const terrainRemoved = runs
     .map(run => run.terrainRemoved)
@@ -254,6 +261,11 @@ function measureWeapon(weapon, index) {
     terrainDamage: weapon.terrainDamage,
     maxAmmo: weapon.maxAmmo,
     powerScore: weapon.powerScore,
+    special: weapon.special ?? null,
+    specialKind: effect?.kind ?? null,
+    istSelbstwirkung,
+    istPlatzhalter: weapon.damageSource !== 'source',
+    selbstGewirkt,
     testWinkel: weapon.__bestAngle ?? 0,
     testDistanz: dist,
     versuche: runs.length,
@@ -287,8 +299,17 @@ for (const { weapon, index } of pool) {
   if (row) results.push(row);
 }
 
+// Drei Gruppen, die nicht verwechselt werden dürfen:
+//  - Schaden: richtet am Ziel Schaden an (die eigentliche Vergleichsgröße).
+//  - Selbstwirkung: wirkt auf den Schützen (Heilung, Sprung, Munition). Kein
+//    Schaden am Ziel ist hier KORREKT, nicht ein Mangel.
+//  - ohne Wirkung: weder Schaden noch Selbstwirkung — das ist die echte Liste
+//    der offenen Arbeit.
 const wirksam = results.filter(row => row.schaden > 0);
-const unwirksam = results.filter(row => row.schaden <= 0);
+const selbstwirkung = results.filter(row => row.schaden <= 0 && row.istSelbstwirkung);
+const selbstGewirkt = selbstwirkung.filter(row => row.selbstGewirkt > 0);
+const selbstOhneWirkung = selbstwirkung.filter(row => row.selbstGewirkt === 0);
+const unwirksam = results.filter(row => row.schaden <= 0 && !row.istSelbstwirkung);
 const blockiert = results.filter(row => row.blockiert === row.versuche);
 const sortImpact = (a, b) => (b.schaden - a.schaden) || (a.shotsToKill ?? 999) - (b.shotsToKill ?? 999);
 
@@ -303,6 +324,9 @@ const report = {
   zusammenfassung: {
     wirksam: wirksam.length,
     unwirksam: unwirksam.length,
+    selbstwirkung: selbstwirkung.length,
+    selbstGewirkt: selbstGewirkt.length,
+    selbstOhneWirkung: selbstOhneWirkung.length,
     immerBlockiert: blockiert.length,
     oSchadenProSchuss: wirksam.length > 0
       ? Number((wirksam.reduce((sum, row) => sum + row.schaden, 0) / wirksam.length).toFixed(1))
@@ -316,6 +340,7 @@ const report = {
   staerkste: [...results].sort(sortImpact).slice(0, topCount),
   schwaechste: [...results].sort((a, b) => (a.schaden - b.schaden) || (b.versuche - a.versuche)).slice(0, worstCount),
   unwirksameIds: unwirksam.map(row => row.id),
+  selbstOhneWirkungIds: selbstOhneWirkung.map(row => row.id),
 };
 
 if (asJson) {
@@ -326,7 +351,18 @@ if (asJson) {
   console.log(`  Aufbau        : Karte ${preset}, Entfernung ${distance} px, gleiche Höhe, volle Kraft`);
   console.log(`  Proben        : ${samples} Schüsse je Waffe, Ziel mit ${targetHealth} HP`);
   console.log(`  Umfang        : ${report.konfiguration.waffen} Waffen (${report.konfiguration.auswahl})`);
-  console.log(`  Wirksam       : ${z.wirksam} | ohne Wirkung: ${z.unwirksam} | immer blockiert: ${z.immerBlockiert}`);
+  console.log(`  Schaden am Ziel: ${z.wirksam} Waffen`);
+  console.log(`  Selbstwirkung  : ${z.selbstwirkung} Waffen (${z.selbstGewirkt} wirken nachweislich, ${z.selbstOhneWirkung} nicht)`);
+  console.log(`  Ohne jede Wirkung: ${z.unwirksam} | immer blockiert: ${z.immerBlockiert}`);
+
+  if (z.selbstwirkung > 0) {
+    console.log('\n  Selbstwirkende Waffen (wirken auf den Schützen, kein Schaden am Ziel):');
+    for (const row of selbstwirkung.slice(0, 30)) {
+      const status = row.selbstGewirkt > 0 ? 'wirkt' : 'WIRKT NICHT';
+      console.log(`    ${status.padEnd(11)} ${row.specialKind.padEnd(15)} ${row.tier.padEnd(9)} ${row.name}`);
+    }
+  }
+
   console.log(`  Ø Schaden/Schuss (nur wirksame): ${z.oSchadenProSchuss}`);
   console.log(`  Median Shots-to-Kill: ${z.shotsToKillMedian ?? 'nicht erreichbar'}`);
 
@@ -340,6 +376,12 @@ if (asJson) {
   console.log('\n  Schwächste Waffen:');
   for (const row of report.schwaechste) console.log(fmt(row));
 
+  // Waffen ohne echten Designwert sind ein Datenmangel, kein Implementierungsmangel.
+  const platzhalter = results.filter(row => row.istPlatzhalter);
+  if (platzhalter.length > 0) {
+    console.log(`\n  Mit Ersatz-Schadenswert (kein Designwert in der Quelldatei): ${platzhalter.length}`);
+  }
+
   if (z.unwirksam > 0) {
     console.log(`\n  Ohne Wirkung (${z.unwirksam}):`);
     const byCategory = {};
@@ -350,12 +392,13 @@ if (asJson) {
     for (const [category, names] of Object.entries(byCategory)) {
       console.log(`    ${category.padEnd(13)} (${names.length}): ${names.slice(0, 6).join(', ')}${names.length > 6 ? ', …' : ''}`);
     }
-    console.log('  Zwei Ursachen sind zu unterscheiden:');
-    console.log('   a) Utility-, Tech- und Ultimate-Waffen (Teleport, Buff, Flug, Schild,');
-    console.log('      Turret): ihr Effekt ist noch nicht implementiert. Diese Liste ist');
-    console.log('      damit zugleich die TODO-Übersicht für Spezialmechaniken.');
-    console.log('   b) Schwere Artillerie (heavy_ranged, elemental): für große Distanzen');
+    console.log('  Drei Ursachen sind zu unterscheiden:');
+    console.log('   a) Schwere Artillerie (heavy_ranged, elemental): für große Distanzen');
     console.log('      gebaut und bei der Messdistanz von ' + distance + ' px nicht treffsicher.');
     console.log('      Das ist eine Grenze des Messaufbaus, kein Urteil über die Waffe.');
+    console.log('   b) Platzhalter ohne Designwert: die Quelldatei nennt für diese Waffe');
+    console.log('      keinen Schadenswert (siehe Liste oben). Ein Datenmangel, kein Codefehler.');
+    console.log('   c) Einzelne Mechaniken, die noch fehlen (aufgestelltes Geschütz,');
+    console.log('      Wasserschub). Diese kurze Liste ist die eigentliche TODO-Übersicht.');
   }
 }

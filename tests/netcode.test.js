@@ -212,10 +212,10 @@ test('Protokoll v2 überträgt die Restzugzeit', () => {
   const buffer = encodeSnapshot(state, { turnRemainingMs: 24_500 });
   const decoded = decodeSnapshot(buffer);
 
-  assert.equal(PROTOCOL_VERSION, 2);
+  assert.equal(PROTOCOL_VERSION, 3);
   assert.ok(Math.abs(decoded.turnRemainingMs - 24_500) < 100, `Zugzeit: ${decoded.turnRemainingMs}`);
   assert.equal(decoded.isFull, true, 'Ohne vorherigen Zustand muss es ein Vollsnapshot sein');
-  assert.equal(buffer[2], 2, 'Versionsbyte muss 2 sein');
+  assert.equal(buffer[2], PROTOCOL_VERSION, `Versionsbyte muss ${PROTOCOL_VERSION} sein`);
 });
 
 test('Delta-Encoding markiert unveränderte Felder und überträgt sie nicht', () => {
@@ -328,4 +328,104 @@ test('dirty-Bits entsprechen den geänderten Feldern', () => {
   assert.equal(dirty & DIRTY.POSITION, 0, 'Positionsbit darf nicht gesetzt sein');
   assert.equal(dirty & DIRTY.ALIVE, 0, 'Alive-Bit darf nicht gesetzt sein');
   assert.equal(buffer[20] | (buffer[21] << 8) & SNAPSHOT_FLAG.FULL, 0, 'Kein Vollsnapshot-Flag');
+});
+
+
+test('Protokoll v3 überträgt Schild und Einfrierdauer', () => {
+  const state = {
+    tick: 900, round: 4, wind: 0.02, activePlayerId: 1,
+    entities: [
+      { entityId: 1, teamId: 0, alive: true, x: 10, y: 20, health: 80, shield: 42, frozenTurns: 2 },
+      { entityId: 2, teamId: 1, alive: true, x: 30, y: 40, health: 50, shield: 0, frozenTurns: 0 },
+    ],
+    projectiles: [],
+  };
+
+  const decoded = decodeSnapshot(encodeSnapshot(state));
+
+  assert.equal(decoded.entities[0].shield, 42);
+  assert.equal(decoded.entities[0].frozenTurns, 2);
+  assert.equal(decoded.entities[1].shield, 0);
+  assert.equal(decoded.entities[1].frozenTurns, 0);
+});
+
+test('Zustände überleben das Delta-Encoding, wenn sie sich ändern', () => {
+  const basis = {
+    tick: 1, round: 1, wind: 0, activePlayerId: 1,
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 10, y: 20, health: 100, shield: 0, frozenTurns: 0 }],
+    projectiles: [],
+  };
+  const erst = decodeSnapshot(encodeSnapshot(basis));
+
+  // Nur der Zustand ändert sich, Position und Gesundheit bleiben gleich.
+  const geaendert = {
+    ...basis, tick: 2,
+    entities: [{ ...basis.entities[0], shield: 25, frozenTurns: 1 }],
+  };
+  const deltaBuffer = encodeSnapshot(geaendert, { previous: erst.previous });
+  const delta = decodeSnapshot(deltaBuffer, erst.previous);
+
+  assert.equal(delta.isFull, false, 'Es muss ein Delta sein');
+  assert.equal(delta.entities[0].shield, 25, 'Der neue Schild muss ankommen');
+  assert.equal(delta.entities[0].frozenTurns, 1, 'Die Einfrierdauer muss ankommen');
+  assert.equal(delta.entities[0].health, 100, 'Gesundheit aus dem vorherigen Zustand');
+
+  // Das Statusbit muss gesetzt sein, die anderen nicht.
+  const dirty = deltaBuffer[22 + 11];
+  assert.equal(dirty & DIRTY.STATUS, DIRTY.STATUS, 'Statusbit muss gesetzt sein');
+  assert.equal(dirty & DIRTY.POSITION, 0, 'Positionsbit darf nicht gesetzt sein');
+});
+
+test('Unveränderte Zustände werden im Delta nicht als geändert gemeldet', () => {
+  const basis = {
+    tick: 1, round: 1, wind: 0, activePlayerId: 1,
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 10, y: 20, health: 100, shield: 30, frozenTurns: 2 }],
+    projectiles: [],
+  };
+  const erst = decodeSnapshot(encodeSnapshot(basis));
+  const gleich = { ...basis, tick: 2 };
+
+  const deltaBuffer = encodeSnapshot(gleich, { previous: erst.previous });
+  const dirty = deltaBuffer[22 + 11];
+  assert.equal(dirty & DIRTY.STATUS, 0, 'Ohne Änderung darf das Statusbit nicht gesetzt sein');
+
+  // Der Client behält die Werte aus dem vorherigen Zustand.
+  const delta = decodeSnapshot(deltaBuffer, erst.previous);
+  assert.equal(delta.entities[0].shield, 30);
+  assert.equal(delta.entities[0].frozenTurns, 2);
+});
+
+test('Zustandswerte werden auf das Drahtformat begrenzt', () => {
+  const state = {
+    tick: 1, round: 1, wind: 0, activePlayerId: 1,
+    // Absurd hohe Werte dürfen das Ein-Byte-Feld nicht sprengen.
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 0, y: 0, health: 100, shield: 9999, frozenTurns: 400 }],
+    projectiles: [],
+  };
+  const decoded = decodeSnapshot(encodeSnapshot(state));
+  assert.equal(decoded.entities[0].shield, 255, 'Schild wird auf ein Byte begrenzt');
+  assert.equal(decoded.entities[0].frozenTurns, 255, 'Einfrierdauer wird auf ein Byte begrenzt');
+
+  // Negative Werte werden zu 0, nicht zu einem Überlauf.
+  const negativ = {
+    ...state,
+    entities: [{ ...state.entities[0], shield: -50, frozenTurns: -3 }],
+  };
+  const decodedNegativ = decodeSnapshot(encodeSnapshot(negativ));
+  assert.equal(decodedNegativ.entities[0].shield, 0);
+  assert.equal(decodedNegativ.entities[0].frozenTurns, 0);
+});
+
+test('toDeltaBase führt Zustände in der Drahtform', () => {
+  const base = toDeltaBase({
+    entities: [{ entityId: 1, x: 10, y: 20, health: 100, alive: true, shield: 12, frozenTurns: 1 }],
+  });
+  const eintrag = base.get(1);
+  assert.equal(eintrag.shieldRaw, 12);
+  assert.equal(eintrag.frozenRaw, 1);
+
+  // Fehlende Zustände müssen als 0 gelten, nicht als undefined.
+  const ohne = toDeltaBase({ entities: [{ entityId: 2, x: 0, y: 0, health: 1, alive: true }] });
+  assert.equal(ohne.get(2).shieldRaw, 0);
+  assert.equal(ohne.get(2).frozenRaw, 0);
 });

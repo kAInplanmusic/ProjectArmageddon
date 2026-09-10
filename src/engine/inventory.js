@@ -97,6 +97,32 @@ export class PlayerInventory {
     return true;
   }
 
+  /**
+   * Füllt Munition einer bereits vorhandenen Waffe auf, begrenzt auf deren
+   * Kapazität. Wird von Nachschub-Waffen benutzt.
+   *
+   * Anders als `grantWeapon` fügt es KEINE neue Waffe hinzu und überschreitet
+   * nie `maxAmmo` — sonst könnte eine Nachschubwaffe Munition ins Unbegrenzte
+   * stapeln.
+   *
+   * @returns {number} tatsächlich aufgefüllte Ladungen
+   */
+  grantAmmo(playerId, weaponId, amount = 1) {
+    const weapon = WEAPONS_BY_ID[weaponId];
+    const entry = this.#players.get(playerId);
+    if (!weapon || !entry || !entry.ammo.has(weaponId)) return 0;
+
+    const capacity = Math.max(1, weapon.maxAmmo || 1);
+    const current = entry.ammo.get(weaponId);
+    // Unbegrenzte Waffen haben nichts aufzufüllen.
+    if (!Number.isFinite(current)) return 0;
+
+    const give = Math.min(Math.max(0, Math.floor(amount)), Math.max(0, capacity - current));
+    if (give <= 0) return 0;
+    entry.ammo.set(weaponId, current + give);
+    return give;
+  }
+
   /** Verbraucht eine Einheit Munition. */
   consume(playerId, weaponId, amount = 1) {
     const entry = this.#players.get(playerId);

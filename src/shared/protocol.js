@@ -17,10 +17,11 @@
  *   [17]     Projektilanzahl
  *   [18..19] Restzugzeit in 100 ms (Uint16, 0 = keine laufende Zugzeit)
  *   [20..21] Flags (Uint16, Bit 0 = Vollsnapshot statt Delta)
- *   ab [22]  je Spieler 12 Byte:
+ *   ab [22]  je Spieler 14 Byte:
  *     id Uint16, team Uint8, alive Uint8,
  *     x Int16 (0.25 px), y Int16 (0.25 px), health Int16 (0.1 HP),
- *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY)
+ *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY),
+ *     shield Uint8, frozenTurns Uint8
  *   danach je Projektil 6 Byte: id Uint16, x Int16, y Int16 (0.25 px)
  *
  * Delta-Encoding: Im `dirty`-Byte markiert der Server, welche Felder sich seit
@@ -31,7 +32,7 @@
  * @module protocol
  */
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -57,12 +58,17 @@ export const CONTROL = Object.freeze({
 export const COORD_SCALE = 4;      // 0.25 px Auflösung
 export const HEALTH_SCALE = 10;    // 0.1 HP Auflösung
 export const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
+export const SHIELD_SCALE = 1;      // Schild in ganzen Punkten
+/** Obergrenze für Einfrierdauer im Drahtformat (ein Byte). */
+export const MAX_WIRE_FREEZE_TURNS = 255;
 
 /** Bitfeld im dirty-Byte: welche Felder eines Spielers sich geändert haben. */
 export const DIRTY = Object.freeze({
   POSITION: 1 << 0,
   HEALTH: 1 << 1,
   ALIVE: 1 << 2,
+  /** Schild und Einfrierdauer (Protokoll v3). */
+  STATUS: 1 << 3,
 });
 
 /** Bitfeld in den Snapshot-Flags. */
@@ -70,7 +76,7 @@ export const SNAPSHOT_FLAG = Object.freeze({
   FULL: 1 << 0,
 });
 
-const PLAYER_STRIDE = 12;
+const PLAYER_STRIDE = 14;
 const PROJECTILE_STRIDE = 6;
 const HEADER_SIZE = 22;
 
@@ -143,8 +149,14 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     const yRaw = clampInt16((player.y ?? 0) * COORD_SCALE);
     const healthRaw = clampInt16((player.health ?? 0) * HEALTH_SCALE);
     const alive = Boolean(player.alive);
+    // Zustände ganzzahlig: Schild in Punkten, Einfrierdauer in Zügen.
+    const shieldRaw = Math.max(0, Math.min(255, Math.round(player.shield ?? 0)));
+    const frozenRaw = Math.max(0, Math.min(
+      MAX_WIRE_FREEZE_TURNS,
+      Math.round(player.frozenTurns ?? 0),
+    ));
 
-    let dirty = DIRTY.POSITION | DIRTY.HEALTH | DIRTY.ALIVE;
+    let dirty = DIRTY.POSITION | DIRTY.HEALTH | DIRTY.ALIVE | DIRTY.STATUS;
     if (isDelta) {
       const before = previous.get(player.entityId);
       if (before) {
@@ -152,6 +164,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
         if (before.xRaw !== xRaw || before.yRaw !== yRaw) dirty |= DIRTY.POSITION;
         if (before.healthRaw !== healthRaw) dirty |= DIRTY.HEALTH;
         if (before.alive !== alive) dirty |= DIRTY.ALIVE;
+        if (before.shieldRaw !== shieldRaw || before.frozenRaw !== frozenRaw) dirty |= DIRTY.STATUS;
       }
     }
 
@@ -163,6 +176,8 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     view.setInt16(offset + 8, healthRaw, true);
     view.setUint8(offset + 10, player.entityId === state.activePlayerId ? 1 : 0);
     view.setUint8(offset + 11, dirty);
+    view.setUint8(offset + 12, shieldRaw);
+    view.setUint8(offset + 13, frozenRaw);
     offset += PLAYER_STRIDE;
   }
 
@@ -213,6 +228,8 @@ export function decodeSnapshot(input, previous = null) {
     const xRaw = view.getInt16(offset + 4, true);
     const yRaw = view.getInt16(offset + 6, true);
     const healthRaw = view.getInt16(offset + 8, true);
+    const shieldRaw = view.getUint8(offset + 12);
+    const frozenRaw = view.getUint8(offset + 13);
 
     const before = carry?.get(entityId);
     entities.push({
@@ -223,12 +240,16 @@ export function decodeSnapshot(input, previous = null) {
       y: ((dirty & DIRTY.POSITION) !== 0 || !before ? yRaw : before.yRaw) / COORD_SCALE,
       health: ((dirty & DIRTY.HEALTH) !== 0 || !before ? healthRaw : before.healthRaw) / HEALTH_SCALE,
       isActiveTurn: view.getUint8(offset + 10) === 1,
+      shield: (dirty & DIRTY.STATUS) !== 0 || !before ? shieldRaw : before.shieldRaw,
+      frozenTurns: (dirty & DIRTY.STATUS) !== 0 || !before ? frozenRaw : before.frozenRaw,
     });
     nextPrevious.set(entityId, {
       xRaw: (dirty & DIRTY.POSITION) !== 0 || !before ? xRaw : before.xRaw,
       yRaw: (dirty & DIRTY.POSITION) !== 0 || !before ? yRaw : before.yRaw,
       healthRaw: (dirty & DIRTY.HEALTH) !== 0 || !before ? healthRaw : before.healthRaw,
       alive: (dirty & DIRTY.ALIVE) !== 0 || !before ? aliveRaw : before.alive,
+      shieldRaw: (dirty & DIRTY.STATUS) !== 0 || !before ? shieldRaw : before.shieldRaw,
+      frozenRaw: (dirty & DIRTY.STATUS) !== 0 || !before ? frozenRaw : before.frozenRaw,
     });
     offset += PLAYER_STRIDE;
   }
@@ -272,7 +293,8 @@ export function controlMessage(type, payload = {}) {
  * Encoder jede Position als "geändert" meldet und das Delta nichts spart.
  *
  * @param {object} state - MatchController.getState()
- * @returns {Map<number, {xRaw:number,yRaw:number,healthRaw:number,alive:boolean}>}
+ * @returns {Map<number, object>} Rohwerte je Entity-ID (Position, Gesundheit,
+ *   Leben, Schild, Einfrierdauer)
  */
 export function toDeltaBase(state) {
   const base = new Map();
@@ -282,6 +304,11 @@ export function toDeltaBase(state) {
       yRaw: clampInt16((entity.y ?? 0) * COORD_SCALE),
       healthRaw: clampInt16((entity.health ?? 0) * HEALTH_SCALE),
       alive: Boolean(entity.alive),
+      shieldRaw: Math.max(0, Math.min(255, Math.round(entity.shield ?? 0))),
+      frozenRaw: Math.max(0, Math.min(
+        MAX_WIRE_FREEZE_TURNS,
+        Math.round(entity.frozenTurns ?? 0),
+      )),
     });
   }
   return base;

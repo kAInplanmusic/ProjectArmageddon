@@ -45,7 +45,7 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (131 Tests) |
+| `npm test` | Unit- und Integrationstests (168 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur (26 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -165,6 +165,31 @@ Alle Simulationszufälle stammen aus einem Match-Seed:
 
 Damit ist ein Match aus `(seed, Eingabefolge)` reproduzierbar — im Browser-E2E
 wird geprüft, dass gleiche Seeds identische Zustandshashes erzeugen.
+
+## Spezialeffekte
+
+Neben Schaden und Flächenwirkung kennen die Waffen Wirkungen, die in
+`src/engine/specials.js` beschrieben sind:
+
+| Wirkung | Beispielwaffen | Verhalten |
+|---|---|---|
+| Heilung | Heil-Injektion, Engelssegen | Stellt Gesundheit wieder her, nie über das Maximum |
+| Schild | Engelssegen, Wächterstatue | Fängt Schaden ab, bevor Gesundheit sinkt |
+| Schadensbonus | Astraltrank, Reliktsplitter | Erhöht den eigenen Schaden für zwei Züge |
+| Rüstung | Bunker, Tarnnetz | Reduziert eingehenden Schaden |
+| Einfrieren | Frostwaffe, Schlafzauber | Das Ziel setzt einen Zug aus |
+| Schaden über Zeit | Flammenwerfer, Giftwolke | Wirkt bei jedem Zugbeginn, für drei Züge |
+| Munitionsnachschub | Munitionskiste, Versorgungscontainer | Füllt Ladungen auf, bis zur Kapazität |
+| Bewegung | Jetpack, Teleport, Portalring | Versetzt die Figur auf festes Gelände |
+| Heranziehen | Enterhaken | Zieht einen Gegner zum Schützen |
+
+Selbstwirkende Waffen verschießen bewusst kein Geschoss: Sie lösen ihren Effekt
+aus und beenden den Zug. Wirkungsdauern zählen in **Zügen**, nicht in Sekunden —
+dadurch bleiben Replays unabhängig von der Zugzeit reproduzierbar. Der Zufall
+für die Zufallswaffe stammt aus dem Match-Seed, nicht aus `Math.random()`.
+
+Im HUD erscheinen laufende Zustände als Marken in der Spielerliste
+(🛡 Schild, ❄ eingefroren, ☠ Schaden über Zeit, ↑ erhöhter Schaden).
 
 ## Multiplayer-Protokoll
 

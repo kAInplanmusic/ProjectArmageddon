@@ -12,12 +12,12 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **131/131** |
+| Unit-/Integrationstests | `npm test` | **168/168** |
 | Browser-E2E | `npm run test:e2e` | **26/26** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
-| Balance | `npm run balance` | 113 von 150 Waffen wirken auf 90 px |
+| Balance | `npm run balance` | 105 Waffen mit Schaden, 35 Selbstwirkungs-Waffen (alle wirksam), 10 ohne Wirkung |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
 
@@ -108,6 +108,27 @@ durch Messungen oder fehlschlagende Tests aufgedeckt.
     gespieltes Match von einer leeren Lobby nicht zu unterscheiden und kam ohne
     Sitzung zurück. Behoben durch `finalize()` in `serializeLobby`.
 
+14. **Die Gravitation der Quelldaten wurde als Multiplikator übernommen.**
+    Die Quelldatei nennt für 26 Waffen einen `gravity`-Wert zwischen 62 und 92,
+    wovon 19 exakt 65 haben — 65 ist der Bezugswert der Skala. Der Generator
+    setzte ihn direkt als `gravityScale` ein, was die Fallbeschleunigung auf das
+    65-fache hob (20,8 statt 0,32 px/Tick²). Das Geschoss schlug im nächsten Tick
+    auf dem Boden auf; die Waffe war wirkungslos. Behoben durch Normalisierung auf
+    den Bezugswert (`gravityScaleFor`, Bereich 0,95–1,42). Wirkung: 23 Waffen
+    wurden auf einen Schlag funktionsfähig.
+
+15. **52 Waffen trugen einen Platzhalter-Schadenswert als echten Wert.**
+    Die Quelldatei enthält `base_damage` nur für 124 Waffen. Wo es fehlt, blieb
+    nur der camelCase-Platzhalter mit dem konstanten Wert 25. Er wurde still
+    übernommen und war damit von einem Designwert nicht zu unterscheiden. Jetzt
+    wird die Herkunft mitgeführt (`damageSource`: `source`, `placeholder`,
+    `none`) — 94 Waffen mit echtem Wert, 52 mit Platzhalter, 4 ohne Wert.
+
+16. **25 Nutzwaffen hatten keine Wirkung.**
+    Teleport, Jetfallschirm, Heilung, Schild und Munitionsnachschub waren im
+    Katalog beschrieben, aber nicht implementiert: Diese Waffen verbrauchten
+    Munition und beendeten den Zug, ohne etwas zu bewirken.
+
 Zusätzlich beim Bau der Betriebszähler aufgefallen und behoben: Der Zähler für
 abgelehnte Kommandos saß zunächst nur am Ende von `handleInput`. Die frühen
 Ablehnungen (falscher Platz, ungültiger Winkel, Tick außerhalb des Fensters)
@@ -152,6 +173,25 @@ zählt eine Hülle um die Methode jeden Ausgang.
   abgeleiteter Stufe.
 - Lokaler und Online-Modus mit Snapshot-Interpolation und Reconnect-Backoff.
 
+### Spezialeffekte
+- Datengetriebenes System (`src/engine/specials.js`): 60 Katalognamen werden auf
+  9 normalisierte Wirkungen abgebildet (Heilung, Schild, Schadensbonus, Rüstung,
+  Einfrieren, Schaden über Zeit, Munition, Bewegung, Heranziehen). Unbekannte
+  Namen bleiben ohne Wirkung, statt einen Fehler zu werfen.
+- Selbstwirkende Waffen lösen ihren Effekt beim Abfeuern aus und verschießen
+  bewusst kein Geschoss — ein Projektil, das nur den eigenen Effekt auslöst,
+  wäre im Spiel irreführend.
+- Zieleffekte (Einfrieren, Schaden über Zeit, Heranziehen) wirken nur auf
+  Gegner; bei Flächenwirkung auf alle Gegner im Radius.
+- **Dauern zählen in Zügen, nicht in Millisekunden** — deterministisch,
+  unabhängig von der Zugzeit und in Replays stabil.
+- Der „Würfel des Chaos" wählt seine Wirkung über den Match-Zufallsgenerator,
+  nicht über `Math.random()`: Bei gleichem Seed dieselbe Folge, per Test belegt.
+- Schild und Rüstung greifen im DamageSystem über einen Modifikator, damit sie
+  auch bei Flächenschaden wirken — dort verteilt der Radius den Schaden.
+- Protokoll v3 überträgt Schild und Einfrierdauer (2 Byte je Spieler), damit die
+  Anzeige auch im Online-Modus stimmt.
+
 ### Werkzeuge
 - `npm run lint` / `lint:fix` — ESLint, als CI-Gate nutzbar.
 - `npm run balance` — Balance-Bericht über alle 150 Waffen.
@@ -163,12 +203,16 @@ zählt eine Hülle um die Methode jeden Ausgang.
 
 ## Testabdeckung
 
-- **Unit/Integration (131):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (168):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
   Waffenkatalog und Icon-Zuordnung, Lasttest mit 8 Clients, DOM-Helfer sowie
-  Neustart mit Persistenz (Lobby ohne Sitzung und gespieltes Match).
+  Neustart mit Persistenz (Lobby ohne Sitzung und gespieltes Match),
+  Spezialeffekte (24 Tests über Registry, StatusStore, Wirkung im Spiel,
+  Zustandswirkungen und Determinismus).
+
+Details zu den Spezialeffekten: `src/engine/specials.js`.
 - **Browser-E2E (26):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
@@ -186,10 +230,15 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 ## Offene Arbeit
 
 ### P1 — Gameplay-Vertiefung
-- [ ] Spezialmechaniken implementieren: Teleport, Buff, Flug, Schild, Turret,
-      Munitionskiste, Grappling Hook. 31 Waffen haben dadurch keine Wirkung.
+- [x] Spezialmechaniken implementiert: Heilung, Schild, Schadensbonus, Rüstung,
+      Einfrieren, Schaden über Zeit, Munitionsnachschub, Bewegung, Heranziehen.
+      35 Waffen wirken dadurch nachweislich (per Test belegt). Offen bleiben
+      einzelne Mechaniken: aufgestelltes Geschütz (Auto-Turret), Wasserschub
+      (Wasserblaster).
 - [ ] Balance über die volle Kartenbreite messen (aktuell 90 px; schwere
       Artillerie wird dadurch unterschätzt).
+- [x] Zustände im HUD: Schild, Einfrieren, Schaden über Zeit und Schadensbonus
+      erscheinen als Marken in der Spielerliste, mit Erläuterung beim Überfahren.
 - [ ] Ertrinken und Wasserverdrängung im HUD anzeigen.
 
 ### P1 — Netcode

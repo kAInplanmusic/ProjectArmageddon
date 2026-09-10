@@ -3,7 +3,15 @@ import test from 'node:test';
 import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
-import { computePowerScore, tierForScore, POWER_TIERS } from '../scripts/build-weapon-catalog.mjs';
+import {
+  computePowerScore,
+  tierForScore,
+  POWER_TIERS,
+  gravityScaleFor,
+  resolveDamage,
+  GRAVITY_REFERENCE,
+} from '../scripts/build-weapon-catalog.mjs';
+import { DEFAULT_PROJECTILE_GRAVITY } from '../src/engine/systems/projectileSystem.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const SOURCE_ICONS = join(ROOT, 'assets/weapons/icons');
@@ -191,4 +199,107 @@ test('Quelldaten-Felder sind korrekt priorisiert (snake_case vor camelCase)', ()
     catalogWeapon.damage, sample.stats.base_damage,
     `${sample.id}: Katalogschaden weicht vom Quelldatenwert ab`,
   );
+});
+
+
+// ---------------------------------------------------------------- Gravitation
+
+test('Gravitation wird normalisiert, nicht als Multiplikator übernommen', () => {
+  // Der teuerste Datenfehler dieses Projekts: Die Quelldatei nennt für 26 Waffen
+  // einen `gravity`-Wert zwischen 62 und 92. Wird er direkt als Multiplikator
+  // verwendet, steigt die Fallbeschleunigung auf das 65-fache (20,8 statt 0,32
+  // px/Tick²) — das Geschoss schlägt im nächsten Tick auf dem Boden auf und die
+  // Waffe ist wirkungslos. Genau das traf 19 der schweren Waffen.
+  const grenze = DEFAULT_PROJECTILE_GRAVITY * 3;
+
+  for (const weapon of WEAPONS) {
+    const effektiv = DEFAULT_PROJECTILE_GRAVITY * weapon.gravityScale;
+    assert.ok(
+      effektiv <= grenze,
+      `${weapon.id} (${weapon.displayName}): Fallbeschleunigung ${effektiv.toFixed(2)} `
+      + `überschreitet das Dreifache der Engine-Gravitation`,
+    );
+    assert.ok(effektiv > 0, `${weapon.id}: Fallbeschleunigung muss positiv sein`);
+  }
+
+  // Die Werte müssen im plausiblen Bereich liegen, nicht bei 1 festgenagelt sein.
+  // Hinweis zur Anzahl: Von den 26 Waffen mit `gravity`-Feld haben 19 exakt den
+  // Bezugswert 65 und ergeben deshalb genau 1,0 — abweichend sind nur die
+  // übrigen 7. Eine größere Zahl wäre hier eine falsche Erwartung.
+  const abweichend = WEAPONS.filter(weapon => weapon.gravityScale !== 1);
+  assert.ok(abweichend.length >= 5,
+    `Es muss Waffen mit abweichender Gravitation geben: ${abweichend.length}`);
+  const werte = abweichend.map(w => w.gravityScale).sort((a, b) => a - b);
+  assert.ok(werte[0] >= 0.9, `Kleinster Wert zu klein: ${werte[0]}`);
+  assert.ok(werte[werte.length - 1] <= 1.5, `Größter Wert zu groß: ${werte[werte.length - 1]}`);
+  // Beide Richtungen müssen vorkommen, sonst wäre die Normalisierung verschoben.
+  assert.ok(werte.some(w => w < 1), 'Es muss leichtere Waffen geben (< 1)');
+  assert.ok(werte.some(w => w > 1), 'Es muss schwerere Waffen geben (> 1)');
+});
+
+test('gravityScaleFor rechnet korrekt und sichert gegen Ausreißer ab', () => {
+  // Der Bezugswert ist der Modalwert der Quelldaten.
+  assert.equal(GRAVITY_REFERENCE, 65);
+  assert.equal(gravityScaleFor({ gravity: 65 }), 1, 'Der Bezugswert ergibt genau 1');
+  assert.equal(gravityScaleFor({}), 1, 'Unbestimmt ergibt 1 (normale Gravitation)');
+  assert.equal(gravityScaleFor({ gravity: 0 }), 1, 'Null gilt als unbestimmt');
+  assert.equal(gravityScaleFor({ gravity: -5 }), 1, 'Negative Werte gelten als unbestimmt');
+
+  // Abweichungen werden proportional abgebildet.
+  assert.ok(Math.abs(gravityScaleFor({ gravity: 130 }) - 2) < 1e-6);
+  assert.ok(gravityScaleFor({ gravity: 92 }) > 1, 'Schwerere Waffe fällt stärker');
+  assert.ok(gravityScaleFor({ gravity: 62 }) < 1, 'Leichtere Waffe fällt schwächer');
+
+  // Fehlerhafte Quelldaten dürfen die Simulation nicht unspielbar machen.
+  assert.ok(gravityScaleFor({ gravity: 100000 }) <= 3, 'Obergrenze greift');
+  assert.ok(gravityScaleFor({ gravity: 1 }) >= 0.2, 'Untergrenze greift');
+});
+
+// -------------------------------------------------------------- Schadenswerte
+
+test('Die Herkunft des Schadenswerts ist nachvollziehbar', () => {
+  // 52 Waffen haben in der Quelldatei keinen `base_damage` und tragen deshalb
+  // den Platzhalter aus camelCase. Das ist ein Datenmangel — er darf nicht als
+  // Designdaten erscheinen.
+  const nachHerkunft = { source: 0, placeholder: 0, none: 0 };
+  for (const weapon of WEAPONS) {
+    assert.ok(
+      ['source', 'placeholder', 'none'].includes(weapon.damageSource),
+      `${weapon.id}: unbekannte Herkunft ${weapon.damageSource}`,
+    );
+    nachHerkunft[weapon.damageSource] += 1;
+  }
+
+  assert.equal(nachHerkunft.source + nachHerkunft.placeholder + nachHerkunft.none, WEAPONS.length);
+  assert.ok(nachHerkunft.source > 80, `Zu wenige Waffen mit echtem Designwert: ${nachHerkunft.source}`);
+  assert.ok(nachHerkunft.placeholder > 0, 'Der Platzhalter kommt tatsächlich vor');
+  assert.ok(nachHerkunft.none > 0, 'Es gibt Utility-Waffen ganz ohne Schadenswert');
+});
+
+test('resolveDamage bevorzugt den Quelldatenwert vor dem Platzhalter', () => {
+  // Echter Wert vorhanden: er gewinnt, auch wenn der Platzhalter abweicht.
+  assert.deepEqual(resolveDamage({ baseDamage: 25, base_damage: 42 }), {
+    damage: 42, damageSource: 'source',
+  });
+  // Nur der Platzhalter: wird übernommen, aber als solcher gekennzeichnet.
+  assert.deepEqual(resolveDamage({ baseDamage: 25 }), {
+    damage: 25, damageSource: 'placeholder',
+  });
+  // Kein Wert: keine Wirkung.
+  assert.deepEqual(resolveDamage({}), { damage: 0, damageSource: 'none' });
+  assert.deepEqual(resolveDamage({ baseDamage: 0 }), { damage: 0, damageSource: 'none' });
+});
+
+test('Der Katalog markiert den Platzhalter, ohne ihn zu verstecken', () => {
+  // Eine Stichprobe: eine Waffe ohne Quelldatenwert muss den Platzhalter tragen.
+  const ohneDesignwert = WEAPONS.find(weapon => weapon.damageSource === 'placeholder');
+  assert.ok(ohneDesignwert, 'Es muss mindestens eine Waffe mit Platzhalter geben');
+  assert.equal(ohneDesignwert.damage, 25, 'Der Platzhalterwert ist 25');
+  assert.equal(ohneDesignwert.damageSource, 'placeholder',
+    'Er muss als Platzhalter gekennzeichnet sein');
+
+  // Und keine Waffe darf einen Schaden ohne Schadenswert tragen.
+  const widerspruch = WEAPONS.filter(w => w.damage > 0 && w.damageSource === 'none');
+  assert.deepEqual(widerspruch.map(w => w.id), [],
+    'Schaden ohne Herkunft wäre ein Widerspruch');
 });

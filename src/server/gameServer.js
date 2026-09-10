@@ -323,7 +323,19 @@ class LobbySession {
 
   broadcastSnapshot() {
     this.snapshotCounter += 1;
-    const state = this.match.getState();
+    const rohZustand = this.match.getState();
+    // Zustände liegen getrennt nach Spieler-ID vor; das Drahtformat führt sie
+    // je Spieler. Deshalb hier zusammenführen — sonst müsste der Client zwei
+    // getrennte Strukturen synchron halten.
+    const statuses = rohZustand.statuses ?? {};
+    const state = {
+      ...rohZustand,
+      entities: rohZustand.entities.map(entity => ({
+        ...entity,
+        shield: statuses[entity.entityId]?.shield ?? 0,
+        frozenTurns: statuses[entity.entityId]?.frozenTurns ?? 0,
+      })),
+    };
     const turnRemainingMs = Math.max(0, state.turnDurationMs - state.turnElapsedMs);
 
     // Alle ~2 s (bei 20 Hz) ein Vollsnapshot, damit ein Client nach einem

@@ -121,8 +121,21 @@ export class Hud {
     const list = this.#elements.roster;
     if (!list) return;
 
+    // Zustände (Schild, Einfrieren, Schaden über Zeit) gehören in die Signatur:
+    // sonst bliebe die Anzeige stehen, obwohl sich der Zustand geändert hat.
+    const zustandsText = entity => {
+      const zustand = state.statuses?.[entity.entityId];
+      if (!zustand) return '';
+      const teile = [];
+      if (zustand.shield > 0) teile.push(`S${Math.round(zustand.shield)}`);
+      if (zustand.frozenTurns > 0) teile.push(`❄${zustand.frozenTurns}`);
+      if (zustand.dots?.length > 0) teile.push(`☠${zustand.dots.length}`);
+      if (zustand.boostMultiplier > 1) teile.push('↑');
+      return teile.join(' ');
+    };
+
     const signature = state.entities
-      .map(entity => `${entity.entityId}:${entity.alive ? 1 : 0}:${Math.round(entity.health)}:${entity.entityId === state.activePlayerId ? 1 : 0}`)
+      .map(entity => `${entity.entityId}:${entity.alive ? 1 : 0}:${Math.round(entity.health)}:${entity.entityId === state.activePlayerId ? 1 : 0}:${zustandsText(entity)}`)
       .join('|');
     if (this.#rosterSignature === signature) return;
     this.#rosterSignature = signature;
@@ -147,11 +160,35 @@ export class Hud {
       fill.style.background = ratio > 0.6 ? '#90be6d' : ratio > 0.3 ? '#fbbf24' : '#ef476f';
       track.append(fill);
 
+      // Laufende Zustände als kompakte Marken: Schild, Einfrieren, Schaden über
+      // Zeit, Schadensbonus. Ohne sie wäre nicht erkennbar, warum eine Figur
+      // aussetzt oder weniger Schaden nimmt.
+      const zustand = state.statuses?.[entity.entityId];
+      const marken = [];
+      if (zustand?.shield > 0) marken.push({ text: `🛡 ${Math.round(zustand.shield)}`, color: '#4cc9f0' });
+      if (zustand?.frozenTurns > 0) marken.push({ text: `❄ ${zustand.frozenTurns}`, color: '#7fd8ff' });
+      if (zustand?.dots?.length > 0) marken.push({ text: `☠ ${zustand.dots.length}`, color: '#90be6d' });
+      if (zustand?.boostMultiplier > 1) marken.push({ text: '↑', color: '#ffb703' });
+
       const hp = document.createElement('span');
       hp.textContent = String(Math.max(0, Math.round(entity.health)));
       hp.style.fontVariantNumeric = 'tabular-nums';
 
       item.append(name, track, hp);
+
+      for (const marke of marken) {
+        const badge = document.createElement('span');
+        badge.className = 'status-badge';
+        badge.textContent = marke.text;
+        badge.style.color = marke.color;
+        badge.title = zustand?.frozenTurns > 0 && marke.text.startsWith('❄')
+          ? `Eingefroren: setzt ${zustand.frozenTurns} Zug/Züge aus`
+          : marke.text.startsWith('🛡') ? 'Schild: fängt Schaden ab, bevor Gesundheit sinkt'
+            : marke.text.startsWith('☠') ? 'Schaden über Zeit: wirkt bei jedem Zugbeginn'
+              : 'Erhöhter Schaden';
+        item.append(badge);
+      }
+
       return item;
     }));
   }

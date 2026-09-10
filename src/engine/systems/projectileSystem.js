@@ -75,10 +75,23 @@ export class ProjectileSystem {
       const hit = this.#raycast(terrain, targets, startX, startY, nextX, nextY);
 
       if (hit) {
+        const owner = world.getComponent(entityId, 'Projectile', 'owner');
+        const blastRadius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
         this.#explode(world, entityId, hit.x, hit.y, world.getComponent(entityId, 'Projectile', 'bounces'), hit.target);
         if (events) {
           events.emit('projectile_impact', { entityId, x: hit.x, y: hit.y, target: hit.target ?? null });
         }
+        // Hook für Wirkungen, die über Schaden hinausgehen (Einfrieren,
+        // Schaden über Zeit). Der Match kennt die Waffe zum Projektil; das
+        // Projektil selbst trägt nur deren Index.
+        services.onProjectileImpact?.({
+          projectileId: entityId,
+          owner,
+          x: hit.x,
+          y: hit.y,
+          target: hit.target ?? null,
+          blastRadius,
+        });
         continue;
       }
 

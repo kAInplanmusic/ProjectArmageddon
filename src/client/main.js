@@ -302,6 +302,20 @@ class Game {
     if (remaining > (this.remoteTurnDurationMs ?? 0)) this.remoteTurnDurationMs = remaining;
     const turnDurationMs = this.remoteTurnDurationMs || 30_000;
 
+    // Zustände kommen je Spieler mit dem Snapshot (Protokoll v3) und werden in
+    // den Ansichtszustand übernommen, damit die Anzeige sie darstellen kann.
+    const statuses = {};
+    for (const entity of snapshot.entities ?? []) {
+      if ((entity.shield ?? 0) > 0 || (entity.frozenTurns ?? 0) > 0) {
+        statuses[entity.entityId] = {
+          shield: entity.shield ?? 0,
+          frozenTurns: entity.frozenTurns ?? 0,
+          dots: [],
+          boostMultiplier: 1,
+        };
+      }
+    }
+
     const entities = (this.network.interpolatedEntities() ?? []).map((entity, index) => ({
       entityId: entity.entityId,
       teamId: entity.teamId,
@@ -330,6 +344,7 @@ class Game {
       turnDurationMs,
       activePlayerId: snapshot.activePlayerId,
       winnerTeamId: this.remoteWinner ?? null,
+      statuses,
       maelstrom: { active: (snapshot.round ?? 0) >= 15, inset: this.remoteInset ?? 0 },
       entities,
       projectiles: snapshot.projectiles ?? [],
@@ -354,6 +369,30 @@ class Game {
         break;
       case 'projectile_impact':
         this.renderer.addFlash(message.x, message.y, 14);
+        break;
+      // Wirkungen und Zustände kommen im Online-Modus als Serverereignisse.
+      // Sie werden über dieselben Helfer gemeldet wie lokal, damit die
+      // Meldungen in beiden Betriebsarten gleich lauten.
+      case 'special_effect':
+        this.#logSpecialEffect(message);
+        break;
+      case 'frozen':
+        this.hud.log(`${this.#nameOf(message.playerId)} ist eingefroren (${message.turns} Zug/Züge)`, 'accent');
+        break;
+      case 'turn_skipped':
+        this.hud.log(`${this.#nameOf(message.playerId)} setzt aus — eingefroren`, 'danger');
+        break;
+      case 'dot_tick':
+        this.hud.log(`${this.#nameOf(message.playerId)} erleidet ${Math.round(message.damage)} Schaden (${(message.elements ?? []).join(', ')})`, 'danger');
+        break;
+      case 'shield_absorbed':
+        this.hud.log(`Schild fängt ${Math.round(message.absorbed)} Schaden ab`, 'good');
+        break;
+      case 'pulled':
+        this.hud.log(`${this.#nameOf(message.playerId)} wurde herangezogen`, 'accent');
+        break;
+      case 'heal':
+        this.hud.log(`+${Math.round(message.amount)} Heilung`, 'good');
         break;
       case 'maelstrom_contract':
         this.remoteInset = message.inset;
@@ -455,6 +494,33 @@ class Game {
           // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
           this.#drawHitscanBeam(payload);
           break;
+        case 'special_effect':
+          // Wirkungen auf den Schützen: Heilung, Schild, Sprung, Munition.
+          this.#logSpecialEffect(payload);
+          break;
+        case 'frozen':
+          this.hud.log(`${this.#nameOf(payload.playerId)} ist eingefroren (${payload.turns} Zug/Züge)`, 'accent');
+          break;
+        case 'turn_skipped':
+          this.hud.log(`${this.#nameOf(payload.playerId)} setzt aus — eingefroren`, 'danger');
+          break;
+        case 'dot_tick':
+          this.hud.log(`${this.#nameOf(payload.playerId)} erleidet ${Math.round(payload.damage)} Schaden (${payload.elements.join(', ')})`, 'danger');
+          break;
+        case 'shield_absorbed': {
+          // Sichtbar am Ort der Figur, nicht am Ursprung: ein Blitz bei (0,0)
+          // hätte mit der Figur nichts zu tun.
+          const geschuetzt = this.currentState()?.entities?.find(e => e.entityId === payload.playerId);
+          if (geschuetzt) this.renderer.addFlash(geschuetzt.x, geschuetzt.y, 16, { color: '#4cc9f0' });
+          this.hud.log(`Schild fängt ${Math.round(payload.absorbed)} Schaden ab`, 'good');
+          break;
+        }
+        case 'pulled':
+          this.hud.log(`${this.#nameOf(payload.playerId)} wurde herangezogen`, 'accent');
+          break;
+        case 'heal':
+          this.hud.log(`+${Math.round(payload.amount)} Heilung für ${this.#nameOf(payload.entityId)}`, 'good');
+          break;
         case 'drowning':
           this.hud.log('Eine Einheit ertrinkt', 'danger');
           break;
@@ -493,6 +559,50 @@ class Game {
         default:
           break;
       }
+    }
+  }
+
+  /** Name einer Spielfigur für Log-Meldungen. */
+  #nameOf(playerId) {
+    const state = this.currentState();
+    const entity = state?.entities?.find(e => e.entityId === playerId);
+    return entity?.label ?? `Einheit ${playerId}`;
+  }
+
+  /** Meldet eine Wirkung auf den Schützen im Protokoll. */
+  #logSpecialEffect(payload) {
+    const name = this.#nameOf(payload.playerId);
+    switch (payload.kind) {
+      case 'heal':
+        this.hud.log(payload.healed > 0
+          ? `${name} heilt ${Math.round(payload.healed)} Lebenspunkte`
+          : `${name} ist bereits vollständig geheilt`, payload.healed > 0 ? 'good' : 'neutral');
+        break;
+      case 'shield':
+        this.hud.log(`${name} erhält ${Math.round(payload.shield)} Schild`, 'accent');
+        break;
+      case 'damage_boost':
+        this.hud.log(`${name} macht ×${payload.multiplier} Schaden`, 'accent');
+        break;
+      case 'armor':
+        this.hud.log(`${name} nimmt ${Math.round(payload.reduction * 100)} % weniger Schaden`, 'accent');
+        break;
+      case 'ammo':
+        this.hud.log(payload.restored > 0
+          ? `${name} füllt ${payload.restored} Ladungen nach`
+          : `${name} hat nichts nachzufüllen`, payload.restored > 0 ? 'good' : 'neutral');
+        break;
+      case 'move':
+        this.hud.log(`${name} versetzt sich um ${Math.round(Math.hypot(payload.moved?.dx ?? 0, payload.moved?.dy ?? 0))} px`, 'accent');
+        break;
+      case 'reveal':
+        this.hud.log(`${name} ist für ${payload.revealedTurns} Züge aufgedeckt`, 'accent');
+        break;
+      case 'random':
+        this.hud.log(`${name}: Zufallswirkung ${payload.randomKind}`, 'accent');
+        break;
+      default:
+        this.hud.log(`${name} nutzt eine Wirkung (${payload.kind})`);
     }
   }
 
