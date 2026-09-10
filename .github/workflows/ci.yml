@@ -31,6 +31,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Das Build-Ergebnis wird abgelegt, damit es ohne lokalen Build
+      # heruntergeladen und ausgeliefert werden kann.
+      - name: Build-Artefakt ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
+
       # Das Performance-Gate misst, ob das 60-Hz-Budget eingehalten wird.
       # Es schlägt fehl, wenn mehr als 5 % der Ticks über 16,7 ms liegen.
       - name: Performance-Budget

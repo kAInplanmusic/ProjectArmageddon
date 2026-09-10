@@ -95,6 +95,13 @@ export class PersistenceStore {
  * @returns {object}
  */
 export function serializeLobby(lobby, session) {
+  // Aufzeichnung vor dem Auslesen abschließen. Ohne das bleibt `totalTicks`
+  // bei 0, und ein gespieltes Match wäre von einer leeren Lobby nicht zu
+  // unterscheiden — es käme dann ohne Sitzung zurück. `finalize` arbeitet mit
+  // Math.max, ist also bei mehrfachem Aufruf unschädlich.
+  const ticks = session?.match?.world?.tickCount ?? 0;
+  session?.recorder?.finalize?.(ticks);
+
   return {
     id: lobby.id,
     teams: lobby.teams,
@@ -119,14 +126,19 @@ export function serializeLobby(lobby, session) {
 
 /**
  * Stellt eine Lobby aus einem gespeicherten Datensatz wieder her.
+ *
  * Die Sitzplätze gelten als getrennt — Clients müssen sich per Token neu
  * verbinden, werden dann aber demselben Match zugeordnet.
+ *
+ * Eine Sitzung (mit Match) wird nur erzeugt, wenn ein Replay-Kern vorliegt.
+ * Eine Lobby, in der noch nie jemand gespielt hat, hat keinen und wird rein als
+ * Lobby wiederhergestellt; beim ersten Beitritt entsteht die Sitzung dann neu.
  *
  * @param {object} saved
  * @param {object} deps
  * @param {object} deps.lobbyManager
  * @param {function(object):object} deps.createSession - erzeugt eine LobbySession
- * @returns {{lobby: object, session: object}}
+ * @returns {{lobby: object, session: object|null}}
  */
 export function restoreLobby(saved, { lobbyManager, createSession }) {
   const lobby = lobbyManager.create({
@@ -146,14 +158,29 @@ export function restoreLobby(saved, { lobbyManager, createSession }) {
     lobbyManager.restoreWithId(internal);
   }
 
-  const session = createSession(lobbyManager.get(saved.id) ?? internal, {
-    skipStart: false,
-    replayEntries: saved.replay?.entries ?? [],
-    replayTotalTicks: saved.replay?.totalTicks ?? 0,
-  });
+  const zielLobby = lobbyManager.get(saved.id) ?? internal;
+
+  // Ohne Replay-Kern gibt es kein Match fortsetzen: Die Lobby bleibt leer und
+  // bekommt ihre Sitzung beim ersten Beitritt.
+  const hatReplay = Boolean(saved.replay)
+    && (saved.replay.entries?.length > 0 || (saved.replay.totalTicks ?? 0) > 0);
+
+  const session = hatReplay
+    ? createSession(zielLobby, {
+      skipStart: false,
+      replayEntries: saved.replay.entries ?? [],
+      replayTotalTicks: saved.replay.totalTicks ?? 0,
+    })
+    : null;
 
   // Sitzplätze mit ihren alten Tokens wiederherstellen, damit Reconnect greift.
   const target = lobbyManager.get(saved.id);
+  if (target) {
+    // Der gespeicherte Status muss erhalten bleiben: `create()` legt die Lobby
+    // immer als offen an, auch wenn sie beim Speichern bereits lief.
+    if (saved.status) target.status = saved.status;
+    if (saved.createdAt) target.createdAt = saved.createdAt;
+  }
   if (target && Array.isArray(saved.seats)) {
     target.seats = saved.seats.map((seat, index) => ({
       seatIndex: index,

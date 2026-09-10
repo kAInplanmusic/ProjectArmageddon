@@ -45,7 +45,7 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (122 Tests) |
+| `npm test` | Unit- und Integrationstests (131 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur (26 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -74,6 +74,17 @@ npm run replay -- play artifacts/lauf.json --verify
 `--verify` vergleicht Status, Runde, Tickzahl und den Zustandshash gegen die
 Aufzeichnung. Weicht etwas ab, endet der Befehl mit Exit-Code 1 — der Befehl ist
 damit als Determinismusprüfung in Skripten nutzbar.
+
+### Zustandsabfrage
+
+`GET /healthz` liefert neben Status und Protokollversion auch Betriebszähler
+(Verbindungen, Trennungen, gesendete Snapshots, angenommene und abgelehnte
+Kommandos, Fehler, Lobby-Erstellungen, Uptime) sowie einen `healthy`-Schalter,
+der verwaiste Sitzungen meldet:
+
+```bash
+curl -s http://127.0.0.1:3000/healthz | python3 -m json.tool
+```
 
 ### Lobby-Browser
 

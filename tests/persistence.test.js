@@ -117,6 +117,13 @@ test('Wiederherstellung rekonstruiert Lobby und Platz-Token', () => {
 
   const match = new MatchController({ seed: 777, teams: 2, playersPerTeam: 1, preset: 'mountains' });
   match.start();
+  // Ein paar Ticks simulieren, damit ein echter Replay-Kern entsteht. Ein Match
+  // ohne jede Spielzeit wird bewusst OHNE Sitzung wiederhergestellt (siehe
+  // tests/persistence-restart.test.js) — hier soll der andere Fall geprüft werden.
+  for (let i = 0; i < 5; i++) {
+    match.step();
+    match.consumeEvents();
+  }
   const recorder = new ReplayRecorder({ seed: 777, teams: 2, playersPerTeam: 1, preset: 'mountains' });
   recorder.finalize(match.world.tickCount);
   const saved = serializeLobby(source.get(original.id), { recorder, match });

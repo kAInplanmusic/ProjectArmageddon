@@ -174,6 +174,16 @@ export class LobbyManager {
     return this.#lobbies.delete(lobbyId);
   }
 
+  /**
+   * Alle Lobbys als Rohobjekte (nicht die beschreibende Ansicht).
+   *
+   * Nötig für die Persistenz: `list()` liefert nur die nach außen sichtbaren
+   * Felder, während zum Speichern auch Sitze und Token gebraucht werden.
+   */
+  all() {
+    return [...this.#lobbies.values()];
+  }
+
   get size() {
     return this.#lobbies.size;
   }

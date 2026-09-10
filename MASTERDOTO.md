@@ -12,7 +12,7 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **122/122** |
+| Unit-/Integrationstests | `npm test` | **131/131** |
 | Browser-E2E | `npm run test:e2e` | **26/26** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -89,11 +89,30 @@ durch Messungen oder fehlschlagende Tests aufgedeckt.
     `isTextEntry()` (`src/client/dom.js`), der in beiden Handlern greift.
     Nachgewiesen per Gegenprobe: ohne die Sperre schlagen die E2E-Tests fehl.
 
-11. **Keine Fokusindikatoren und keine Fokusreihenfolge.**
+11. **Fokusindikatoren und Tastaturbedienung fehlten.**
     Es gab kein `:focus-visible`-Styling; beim Tabben war nicht erkennbar,
     welches Element aktiv ist. Ergänzt: Fokusring, Skip-Link zum Spielfeld,
     fokussierbares Canvas mit Beschreibung und `[hidden]`-Ausblendung, damit
     verborgene Overlays keine Fokusziele liefern.
+
+12. **Frisch angelegte Lobbys überlebten keinen Neustart.**
+    Der Zustandsdump lief nur über die laufenden Sitzungen. Eine Lobby, der noch
+    niemand beigetreten war, hat aber keine Sitzung — sie wurde in der
+    Lobby-Liste angezeigt, war nach einem Neustart jedoch verschwunden. Behoben,
+    indem über den Lobby-Manager gelaufen wird; Lobbys ohne Replay-Kern werden
+    als Lobby wiederhergestellt und erhalten ihre Sitzung beim ersten Beitritt.
+    Abgesichert in `tests/persistence-restart.test.js`.
+
+13. **`totalTicks` blieb beim Speichern auf 0.**
+    Die Aufzeichnung wurde vor dem Auslesen nicht abgeschlossen. Dadurch war ein
+    gespieltes Match von einer leeren Lobby nicht zu unterscheiden und kam ohne
+    Sitzung zurück. Behoben durch `finalize()` in `serializeLobby`.
+
+Zusätzlich beim Bau der Betriebszähler aufgefallen und behoben: Der Zähler für
+abgelehnte Kommandos saß zunächst nur am Ende von `handleInput`. Die frühen
+Ablehnungen (falscher Platz, ungültiger Winkel, Tick außerhalb des Fensters)
+blieben dadurch ungezählt, was einen falschen Eindruck erzeugt hätte. Jetzt
+zählt eine Hülle um die Methode jeden Ausgang.
 
 ## Umgesetzt
 
@@ -144,11 +163,12 @@ durch Messungen oder fehlschlagende Tests aufgedeckt.
 
 ## Testabdeckung
 
-- **Unit/Integration (122):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (131):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
-  Replay und Determinismus, Netcode und Delta-Encoding, Lobby und
-  Servervalidierung, Persistenz, Waffenkatalog und Icon-Zuordnung, Lasttest mit
-  8 Clients, DOM-Helfer.
+  Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
+  Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
+  Waffenkatalog und Icon-Zuordnung, Lasttest mit 8 Clients, DOM-Helfer sowie
+  Neustart mit Persistenz (Lobby ohne Sitzung und gespieltes Match).
 - **Browser-E2E (26):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
@@ -173,9 +193,12 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [ ] Ertrinken und Wasserverdrängung im HUD anzeigen.
 
 ### P1 — Netcode
+- [x] Server-autoritative Zugzeit. Geprüft: Der Zug wechselt nach Ablauf der
+      Zugzeit auch ohne Schuss (sechs Wechsel ohne einen einzigen Schuss);
+      abgesichert in `tests/turn.test.js`. Der frühere TODO-Eintrag war falsch —
+      die Zeitmessung lief bereits serverseitig.
 - [ ] Client-seitige Prädiktion des eigenen Schusses mit Server-Rollback.
       Aktuell fühlt sich der eigene Schuss bei Latenz verzögert an.
-- [ ] Server-autoritative Zugzeit erzwingen (derzeit nur clientseitig sichtbar).
 - [ ] Snapshot-Kompression prüfen (Delta läuft, Quantisierung ist schon aktiv).
 
 ### P2 — Client & UX
@@ -189,10 +212,15 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
 
 ### P3 — Betrieb
+- [x] Betriebszähler und erweiterte Zustandsabfrage. `/healthz` liefert
+      Verbindungen, Trennungen, gesendete Snapshots, angenommene und abgelehnte
+      Kommandos, Fehler, Lobby-Erstellungen, Uptime sowie einen
+      `healthy`-Schalter für verwaiste Sitzungen. Abgesichert in
+      `tests/metrics.test.js`.
+- [x] `dist/` wird in der CI als Artefakt abgelegt (14 Tage Aufbewahrung).
 - [ ] Lasttest mit künstlicher Latenz und Paketverlust.
 - [ ] Replay im Client abspielen (Server hat das Werkzeug bereits).
-- [ ] Fehlerzähler und strukturierte Logs im Server.
-- [ ] `dist/` als Artefakt in CI ablegen.
+- [ ] Strukturierte Logs (JSON) statt Freitext im Server.
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 

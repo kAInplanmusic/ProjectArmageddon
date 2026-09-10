@@ -45,9 +45,14 @@ class LobbySession {
    * @param {function(string):void} [options.onEmpty]
    * @param {object} [options.replayEntries] - aufgezeichnete Eingaben (Restore)
    * @param {number} [options.replayTotalTicks] - Tickzahl beim Speichern
+   * @param {object} [options.metrics] - Betriebszähler des Servers (optional)
    */
-  constructor(lobby, { onEmpty, replayEntries = null, replayTotalTicks = 0 } = {}) {
+  constructor(lobby, { onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null } = {}) {
     this.lobby = lobby;
+    // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
+    // nur eine Referenz, damit sie Ereignisse mitzählen kann, ohne sie zu
+    // besitzen. Ohne Referenz unterbleibt die Zählung stillschweigend.
+    this.metrics = metrics;
     this.match = new MatchController({
       seed: lobby.seed,
       teams: lobby.teams,
@@ -250,7 +255,24 @@ class LobbySession {
   }
 
   /** Verarbeitet einen Feuerbefehl mit vollständiger Validierung. */
+  /**
+   * Nimmt ein Spielerkommando entgegen und zählt das Ergebnis.
+   *
+   * Eigene Hülle, damit ALLE Ablehnungspfade gezählt werden. Zuvor stand der
+   * Zähler nur am Ende, wodurch frühe Ablehnungen (falscher Platz, ungültiger
+   * Winkel, Tick außerhalb des Fensters) ungezählt blieben — der Zähler hätte
+   * ein falsches Bild ergeben.
+   */
   handleInput(token, message) {
+    const result = this.#handleInput(token, message);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  #handleInput(token, message) {
     const seat = this.lobby.seats.find(entry => entry.token === token);
     if (!seat || seat.entityId === null) {
       return { ok: false, errors: ['Kein Spielerplatz'] };
@@ -314,6 +336,7 @@ class LobbySession {
       const previous = forceFull ? null : (this.previousByToken.get(token) ?? null);
       const buffer = encodeSnapshot(state, { turnRemainingMs, previous });
       socket.send(buffer);
+      if (this.metrics) this.metrics.snapshotsSent += 1;
       sent.push(buffer);
     }
 
@@ -350,6 +373,23 @@ export class GameServer {
     this.serveStatic = serveStatic ?? createDistHandler();
     /** Injizierbarer Logger; Standard ist die Konsole. */
     this.logger = console;
+    /**
+     * Betriebszähler für die Zustandsabfrage.
+     *
+     * Bewusst schlank: nur Zähler, keine Zeitreihen. Zweck ist, im Betrieb
+     * schnell zu sehen, ob Verbindungen abbrechen oder Kommandos abgelehnt
+     * werden — ohne dafür Logs durchsuchen zu müssen.
+     */
+    this.metrics = {
+      startedAt: Date.now(),
+      connections: 0,
+      disconnections: 0,
+      snapshotsSent: 0,
+      commandsAccepted: 0,
+      commandsRejected: 0,
+      lobbiesCreated: 0,
+      errors: 0,
+    };
     /** Optionale Persistenz: null deaktiviert das Speichern vollständig. */
     this.persistence = persistence;
     this.persistenceIntervalMs = persistenceIntervalMs;
@@ -357,16 +397,25 @@ export class GameServer {
 
     this.#httpServer = createHttpServer((request, response) => this.#handleHttp(request, response));
     this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
-    this.#wsServer.on('connection', socket => this.#handleConnection(socket));
+    this.#wsServer.on('connection', socket => {
+      this.metrics.connections += 1;
+      socket.once('close', () => { this.metrics.disconnections += 1; });
+      this.#handleConnection(socket);
+    });
   }
 
-  /** Momentaufnahme aller laufenden Lobbys. */
+  /**
+   * Momentaufnahme ALLER Lobbys.
+   *
+   * Bewusst über den Lobby-Manager und nicht über die Sitzungen: Eine frisch
+   * angelegte Lobby hat noch keine Sitzung (die entsteht erst beim Beitritt).
+   * Würde nur über die Sitzungen gelaufen, verschwände genau diese Lobby bei
+   * einem Neustart — obwohl sie in der Lobby-Liste angezeigt wird.
+   */
   snapshotState() {
     const lobbies = [];
-    for (const [lobbyId, session] of this.#sessions.entries()) {
-      const lobby = this.#lobbies.get(lobbyId);
-      if (!lobby) continue;
-      lobbies.push(serializeLobby(lobby, session));
+    for (const lobby of this.#lobbies.all()) {
+      lobbies.push(serializeLobby(lobby, this.#sessions.get(lobby.id) ?? null));
     }
     return { lobbies };
   }
@@ -402,6 +451,7 @@ export class GameServer {
               onEmpty: id => this.#sessions.delete(id),
               replayEntries: options.replayEntries,
               replayTotalTicks: options.replayTotalTicks,
+              metrics: this.metrics,
             }).start();
             this.#sessions.set(target.id, session);
             return session;
@@ -457,11 +507,24 @@ export class GameServer {
     }
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
+      const uptimeMs = Date.now() - this.metrics.startedAt;
+      // Sitzungen sind nur dann ein Problem, wenn sie ohne offene Lobby
+      // weiterlaufen — das deutet auf einen Aufräumfehler hin.
+      const verwaisteSitzungen = [...this.#sessions.keys()]
+        .filter(lobbyId => !this.#lobbies.get(lobbyId)).length;
+
       return this.#json(response, 200, {
         status: 'ok',
         lobbies: this.#lobbies.size,
         sessions: this.#sessions.size,
         protocol: PROTOCOL_VERSION,
+        uptimeMs,
+        metrics: {
+          ...this.metrics,
+          uptimeMs,
+        },
+        healthy: verwaisteSitzungen === 0,
+        orphanedSessions: verwaisteSitzungen,
       });
     }
 
@@ -479,6 +542,7 @@ export class GameServer {
     if (request.method === 'POST' && url.pathname === '/api/lobby/create') {
       const body = await this.#readBody(request);
       try {
+        this.metrics.lobbiesCreated += 1;
         const created = this.#lobbies.create({
           teams: Number(body.teams ?? 2),
           playersPerTeam: Number(body.playersPerTeam ?? 2),
@@ -559,7 +623,7 @@ export class GameServer {
             context = { lobbyId, token: seat.token };
             let session = this.#sessions.get(lobbyId);
             if (!session) {
-              session = new LobbySession(lobby, { onEmpty: id => this.#sessions.delete(id) }).start();
+              session = new LobbySession(lobby, { onEmpty: id => this.#sessions.delete(id), metrics: this.metrics }).start();
               this.#sessions.set(lobbyId, session);
             }
             session.attach(seat.token, socket);
@@ -613,6 +677,7 @@ export class GameServer {
             socket.send(controlMessage(CONTROL.ERROR, { error: `Unbekannter Nachrichtentyp: ${message.t}` }));
         }
       } catch (error) {
+        this.metrics.errors += 1;
         this.logger?.error?.(`[ws] Join/Kommando fehlgeschlagen: ${error.message}`);
         socket.send(controlMessage(CONTROL.ERROR, { error: error.message }));
       }
