@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { WeaponEngine, WeaponDatabase, WorldAdapter, Vec2, TerrainCell, EntitySnapshot, DamagePacket, StatusEffect, EngineEvent } from '../weapon_engine_v1_0';
+import fs from 'node:fs';
+const db=JSON.parse(fs.readFileSync('../project_armageddon_weapons_v1.json','utf8')) as WeaponDatabase;
+const engine=new WeaponEngine(db);
+assert.equal(engine.getWeapon('pa_001').stats.baseDamage,28);
+assert.equal(engine.getWeapon('pa_150').stats.baseDamage,110);
+assert.equal(engine.getWeapon('pa_150').stats.blastRadius,90);
+const entities:EntitySnapshot[]=[{id:'A',position:{x:0,y:0},velocity:{x:0,y:0},alive:true,radius:6},{id:'B',position:{x:100,y:0},velocity:{x:0,y:0},alive:true,radius:6}];
+const cells:TerrainCell[]=[]; const events:EngineEvent[]=[]; const damage:DamagePacket[]=[]; const statuses:StatusEffect[]=[]; const impulses:Vec2[]=[];
+const world:WorldAdapter={gravity:980,getEntities:()=>entities,raycastTerrain:()=>null,queryTerrainCircle:()=>cells,applyTerrainDamage:(c,a)=>c.hp=Math.max(0,c.hp-a),applyEntityDamage:(_id,p)=>damage.push(p),applyImpulse:(_id,i)=>impulses.push(i),addStatus:(_id,s)=>statuses.push(s),moveEntity:()=>{},emit:e=>events.push(e)};
+engine.setAmmo('A','pa_150',2); const fired=engine.fire(world,'A','pa_150',{x:0,y:0},{x:1,y:0}); assert.equal(fired.length,1); assert.equal(engine.getAmmo('A','pa_150'),1);
+const up=engine.update(world,0.1); assert.ok(up.length>=0);
+console.log('Project Armageddon Weapon Engine v1.0 smoke test: PASS');

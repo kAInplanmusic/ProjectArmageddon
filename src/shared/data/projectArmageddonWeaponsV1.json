@@ -1,0 +1,6641 @@
+{
+  "project": "Project Armageddon",
+  "system": "Weapon & Weapon-Icon System",
+  "version": "1.0.0",
+  "iconCount": 150,
+  "designRule": "One stable weapon ID per icon; display names can change without changing IDs or assets.",
+  "damageScale": "0-100 baseline; values above 100 are reserved for ultimate/exceptional effects.",
+  "weapons": [
+    {
+      "id": "pa_001",
+      "index": 1,
+      "displayName": "Baseballschläger",
+      "internalName": "baseballschlager",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9033.PNG",
+        "assetId": "weapon_icon_001",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 82,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 28,
+        "terrain_damage": 8,
+        "special": "bat_knockback"
+      },
+      "mechanic": {
+        "specialEffect": "bat_knockback",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_002",
+      "index": 2,
+      "displayName": "Feuerfaust",
+      "internalName": "feuerfaust",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9034.PNG",
+        "assetId": "weapon_icon_002",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 55,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 34,
+        "fire_damage": 18,
+        "special": "burn"
+      },
+      "mechanic": {
+        "specialEffect": "burn",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_003",
+      "index": 3,
+      "displayName": "Hakenklinge",
+      "internalName": "hakenklinge",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9036.PNG",
+        "assetId": "weapon_icon_003",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 45,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 30,
+        "special": "hook_pull"
+      },
+      "mechanic": {
+        "specialEffect": "hook_pull",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_004",
+      "index": 4,
+      "displayName": "Piratenhaken",
+      "internalName": "piratenhaken",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9037.PNG",
+        "assetId": "weapon_icon_004",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 40,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 24,
+        "special": "hook_pull"
+      },
+      "mechanic": {
+        "specialEffect": "hook_pull",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_005",
+      "index": 5,
+      "displayName": "Morgenstern",
+      "internalName": "morgenstern",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9040.PNG",
+        "assetId": "weapon_icon_005",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 70,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 42,
+        "terrain_damage": 18,
+        "special": "heavy_impact"
+      },
+      "mechanic": {
+        "specialEffect": "heavy_impact",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_006",
+      "index": 6,
+      "displayName": "Schaufel",
+      "internalName": "schaufel",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9041.PNG",
+        "assetId": "weapon_icon_006",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 20,
+        "terrain_damage": 35,
+        "special": "dig"
+      },
+      "mechanic": {
+        "specialEffect": "dig",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_007",
+      "index": 7,
+      "displayName": "Tonfa",
+      "internalName": "tonfa",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9042.PNG",
+        "assetId": "weapon_icon_007",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 35,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 22,
+        "special": "rapid_melee"
+      },
+      "mechanic": {
+        "specialEffect": "rapid_melee",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_008",
+      "index": 8,
+      "displayName": "Kriegshammer",
+      "internalName": "kriegshammer",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9043.PNG",
+        "assetId": "weapon_icon_008",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 65,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 45,
+        "terrain_damage": 20,
+        "special": "stun"
+      },
+      "mechanic": {
+        "specialEffect": "stun",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_009",
+      "index": 9,
+      "displayName": "Eispickel",
+      "internalName": "eispickel",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9044.PNG",
+        "assetId": "weapon_icon_009",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "ice",
+        "base_damage": 30,
+        "ice_damage": 25,
+        "terrain_damage": 10,
+        "special": "freeze"
+      },
+      "mechanic": {
+        "specialEffect": "freeze",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_010",
+      "index": 10,
+      "displayName": "Kettensäge",
+      "internalName": "kettensage",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9045.PNG",
+        "assetId": "weapon_icon_010",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 35,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 52,
+        "terrain_damage": 15,
+        "special": "multi_hit"
+      },
+      "mechanic": {
+        "specialEffect": "multi_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_011",
+      "index": 11,
+      "displayName": "Zwillingskatanas",
+      "internalName": "zwillingskatanas",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9046.PNG",
+        "assetId": "weapon_icon_011",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_012",
+      "index": 12,
+      "displayName": "Katana",
+      "internalName": "katana",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9047.PNG",
+        "assetId": "weapon_icon_012",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_013",
+      "index": 13,
+      "displayName": "Multifunktionsmesser",
+      "internalName": "multifunktionsmesser",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9048.PNG",
+        "assetId": "weapon_icon_013",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_014",
+      "index": 14,
+      "displayName": "Taschenmesser",
+      "internalName": "taschenmesser",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9049.heic",
+        "assetId": "weapon_icon_014",
+        "source": "PA Waffenlogos",
+        "format": "heic"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_015",
+      "index": 15,
+      "displayName": "Runenschwert",
+      "internalName": "runenschwert",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9050.PNG",
+        "assetId": "weapon_icon_015",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_016",
+      "index": 16,
+      "displayName": "Rapier",
+      "internalName": "rapier",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9051.PNG",
+        "assetId": "weapon_icon_016",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_017",
+      "index": 17,
+      "displayName": "Kampfmesser",
+      "internalName": "kampfmesser",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9052.PNG",
+        "assetId": "weapon_icon_017",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_018",
+      "index": 18,
+      "displayName": "Energieschwert",
+      "internalName": "energieschwert",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9053.PNG",
+        "assetId": "weapon_icon_018",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 45,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 1,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 42,
+        "special": "energy_blade"
+      },
+      "mechanic": {
+        "specialEffect": "energy_blade",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_019",
+      "index": 19,
+      "displayName": "Doppelaxt",
+      "internalName": "doppelaxt",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9054.PNG",
+        "assetId": "weapon_icon_019",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_020",
+      "index": 20,
+      "displayName": "Kriegssense",
+      "internalName": "kriegssense",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9055.PNG",
+        "assetId": "weapon_icon_020",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_021",
+      "index": 21,
+      "displayName": "Gebogene Klinge",
+      "internalName": "gebogene_klinge",
+      "category": "melee",
+      "icon": {
+        "file": "IMG_9058.PNG",
+        "assetId": "weapon_icon_021",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_022",
+      "index": 22,
+      "displayName": "Plasma-Blaster",
+      "internalName": "plasma_blaster",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9059.PNG",
+        "assetId": "weapon_icon_022",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 34,
+        "projectile_speed": 88,
+        "special": "plasma_bolt"
+      },
+      "mechanic": {
+        "specialEffect": "plasma_bolt",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_023",
+      "index": 23,
+      "displayName": "Boxhandschuhe",
+      "internalName": "boxhandschuhe",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9060.PNG",
+        "assetId": "weapon_icon_023",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 96,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 20,
+        "special": "mega_knockback"
+      },
+      "mechanic": {
+        "specialEffect": "mega_knockback",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_024",
+      "index": 24,
+      "displayName": "Mittelfinger",
+      "internalName": "mittelfinger",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9061.PNG",
+        "assetId": "weapon_icon_024",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_025",
+      "index": 25,
+      "displayName": "Handtuch",
+      "internalName": "handtuch",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9062.PNG",
+        "assetId": "weapon_icon_025",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_026",
+      "index": 26,
+      "displayName": "Pneumatischer Bohrer",
+      "internalName": "pneumatischer_bohrer",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9063.PNG",
+        "assetId": "weapon_icon_026",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 18,
+        "terrain_damage": 80,
+        "special": "drill"
+      },
+      "mechanic": {
+        "specialEffect": "drill",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_027",
+      "index": 27,
+      "displayName": "Fackel",
+      "internalName": "fackel",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9066.PNG",
+        "assetId": "weapon_icon_027",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_028",
+      "index": 28,
+      "displayName": "Kaktusbombe",
+      "internalName": "kaktusbombe",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9067.PNG",
+        "assetId": "weapon_icon_028",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 48,
+        "poison_damage": 12,
+        "blast_radius": 48,
+        "fuse_time": 1.8,
+        "special": "spike_blast"
+      },
+      "mechanic": {
+        "specialEffect": "spike_blast",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_029",
+      "index": 29,
+      "displayName": "Pömpel",
+      "internalName": "pompel",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9068.PNG",
+        "assetId": "weapon_icon_029",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 32,
+        "blast_radius": 30,
+        "special": "sticky"
+      },
+      "mechanic": {
+        "specialEffect": "sticky",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_030",
+      "index": 30,
+      "displayName": "Cyber-Bombe",
+      "internalName": "cyber_bombe",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9069.PNG",
+        "assetId": "weapon_icon_030",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "electric",
+        "base_damage": 42,
+        "blast_radius": 52,
+        "special": "emp_blast"
+      },
+      "mechanic": {
+        "specialEffect": "emp_blast",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_031",
+      "index": 31,
+      "displayName": "Power Gauntlets",
+      "internalName": "power_gauntlets",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9070.PNG",
+        "assetId": "weapon_icon_031",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 60,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 48,
+        "special": "power_punch"
+      },
+      "mechanic": {
+        "specialEffect": "power_punch",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_032",
+      "index": 32,
+      "displayName": "Raketenrucksack",
+      "internalName": "raketenrucksack",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9071.PNG",
+        "assetId": "weapon_icon_032",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 0,
+        "special": "flight"
+      },
+      "mechanic": {
+        "specialEffect": "flight",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_033",
+      "index": 33,
+      "displayName": "Magischer Kampfstock",
+      "internalName": "magischer_kampfstock",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9072.PNG",
+        "assetId": "weapon_icon_033",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_034",
+      "index": 34,
+      "displayName": "Magischer Geschosszauber",
+      "internalName": "magischer_geschosszauber",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9073.PNG",
+        "assetId": "weapon_icon_034",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_035",
+      "index": 35,
+      "displayName": "Explosiver Energieball",
+      "internalName": "explosiver_energieball",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9074.PNG",
+        "assetId": "weapon_icon_035",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 54,
+        "blast_radius": 34,
+        "special": "energy_explosion"
+      },
+      "mechanic": {
+        "specialEffect": "energy_explosion",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_036",
+      "index": 36,
+      "displayName": "Raketenhandschuh",
+      "internalName": "raketenhandschuh",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9075.PNG",
+        "assetId": "weapon_icon_036",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_037",
+      "index": 37,
+      "displayName": "Raketenwerfer Mk I",
+      "internalName": "raketenwerfer_mk_i",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9077.PNG",
+        "assetId": "weapon_icon_037",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_038",
+      "index": 38,
+      "displayName": "Rakete",
+      "internalName": "rakete",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9078.PNG",
+        "assetId": "weapon_icon_038",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 62,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 50,
+        "blast_radius": 38,
+        "projectile_speed": 76,
+        "special": "rocket"
+      },
+      "mechanic": {
+        "specialEffect": "rocket",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_039",
+      "index": 39,
+      "displayName": "Feldkanone / Mörser",
+      "internalName": "feldkanone_morser",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9079.PNG",
+        "assetId": "weapon_icon_039",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 78,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 58,
+        "blast_radius": 45,
+        "projectile_speed": 48,
+        "special": "mortar"
+      },
+      "mechanic": {
+        "specialEffect": "mortar",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_040",
+      "index": 40,
+      "displayName": "Maschinenpistole",
+      "internalName": "maschinenpistole",
+      "category": "ranged",
+      "icon": {
+        "file": "IMG_9081.PNG",
+        "assetId": "weapon_icon_040",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_041",
+      "index": 41,
+      "displayName": "Raketenwerfer Mk II",
+      "internalName": "raketenwerfer_mk_ii",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9082.PNG",
+        "assetId": "weapon_icon_041",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_042",
+      "index": 42,
+      "displayName": "Feuerwerks-Salve",
+      "internalName": "feuerwerks_salve",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9083.PNG",
+        "assetId": "weapon_icon_042",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_043",
+      "index": 43,
+      "displayName": "Kampfgeschütz",
+      "internalName": "kampfgeschutz",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9085.PNG",
+        "assetId": "weapon_icon_043",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_044",
+      "index": 44,
+      "displayName": "Phönix-Angriff",
+      "internalName": "phonix_angriff",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9086.PNG",
+        "assetId": "weapon_icon_044",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 35,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 65,
+        "fire_damage": 35,
+        "blast_radius": 55,
+        "special": "phoenix_strike"
+      },
+      "mechanic": {
+        "specialEffect": "phoenix_strike",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_045",
+      "index": 45,
+      "displayName": "Raketen-Salve",
+      "internalName": "raketen_salve",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9087.PNG",
+        "assetId": "weapon_icon_045",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_046",
+      "index": 46,
+      "displayName": "Splittergranate",
+      "internalName": "splittergranate",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9088.PNG",
+        "assetId": "weapon_icon_046",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 42,
+        "blast_radius": 42,
+        "special": "fragmentation"
+      },
+      "mechanic": {
+        "specialEffect": "fragmentation",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_047",
+      "index": 47,
+      "displayName": "Handgranate",
+      "internalName": "handgranate",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9089.PNG",
+        "assetId": "weapon_icon_047",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_048",
+      "index": 48,
+      "displayName": "Bananengranate",
+      "internalName": "bananengranate",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9090.PNG",
+        "assetId": "weapon_icon_048",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 2,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 46,
+        "blast_radius": 40,
+        "special": "banana_split"
+      },
+      "mechanic": {
+        "specialEffect": "banana_split",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_049",
+      "index": 49,
+      "displayName": "Bumerang",
+      "internalName": "bumerang",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9091.PNG",
+        "assetId": "weapon_icon_049",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 1,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 30,
+        "projectile_speed": 72,
+        "special": "returning_projectile"
+      },
+      "mechanic": {
+        "specialEffect": "returning_projectile",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_050",
+      "index": 50,
+      "displayName": "Doppelkopf-Axt",
+      "internalName": "doppelkopf_axt",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9092.PNG",
+        "assetId": "weapon_icon_050",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_051",
+      "index": 51,
+      "displayName": "Wurfklingen",
+      "internalName": "wurfklingen",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9093.PNG",
+        "assetId": "weapon_icon_051",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_052",
+      "index": 52,
+      "displayName": "Molotowcocktail",
+      "internalName": "molotowcocktail",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9094.PNG",
+        "assetId": "weapon_icon_052",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 36,
+        "fire_damage": 32,
+        "blast_radius": 42,
+        "special": "fire_pool"
+      },
+      "mechanic": {
+        "specialEffect": "fire_pool",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_053",
+      "index": 53,
+      "displayName": "Roboterbombe",
+      "internalName": "roboterbombe",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9095.PNG",
+        "assetId": "weapon_icon_053",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 52,
+        "blast_radius": 45,
+        "special": "delayed_bot"
+      },
+      "mechanic": {
+        "specialEffect": "delayed_bot",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_054",
+      "index": 54,
+      "displayName": "Schrotflinte",
+      "internalName": "schrotflinte",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9096.PNG",
+        "assetId": "weapon_icon_054",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 44,
+        "projectile_speed": 82,
+        "special": "spread_shot"
+      },
+      "mechanic": {
+        "specialEffect": "spread_shot",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_055",
+      "index": 55,
+      "displayName": "Scharfschützengewehr",
+      "internalName": "scharfschutzengewehr",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9097.PNG",
+        "assetId": "weapon_icon_055",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 1,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 65,
+        "projectile_speed": 98,
+        "special": "precision"
+      },
+      "mechanic": {
+        "specialEffect": "precision",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_056",
+      "index": 56,
+      "displayName": "Maschinenpistole Mk II",
+      "internalName": "maschinenpistole_mk_ii",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9098.PNG",
+        "assetId": "weapon_icon_056",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false
+      },
+      "mechanic": {
+        "specialEffect": "direct_hit",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_057",
+      "index": 57,
+      "displayName": "Revolver",
+      "internalName": "revolver",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9099.PNG",
+        "assetId": "weapon_icon_057",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 38,
+        "projectile_speed": 92,
+        "special": "precision"
+      },
+      "mechanic": {
+        "specialEffect": "precision",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_058",
+      "index": 58,
+      "displayName": "Kampfbogen",
+      "internalName": "kampfbogen",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9100.PNG",
+        "assetId": "weapon_icon_058",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 70,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 42,
+        "projectile_speed": 75,
+        "special": "arrow"
+      },
+      "mechanic": {
+        "specialEffect": "arrow",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_059",
+      "index": 59,
+      "displayName": "Armbrust",
+      "internalName": "armbrust",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9101.PNG",
+        "assetId": "weapon_icon_059",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 72,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 1,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 55,
+        "projectile_speed": 70,
+        "special": "heavy_arrow"
+      },
+      "mechanic": {
+        "specialEffect": "heavy_arrow",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_060",
+      "index": 60,
+      "displayName": "Minigun",
+      "internalName": "minigun",
+      "category": "heavy_ranged",
+      "icon": {
+        "file": "IMG_9102.PNG",
+        "assetId": "weapon_icon_060",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 30,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 28,
+        "projectile_speed": 96,
+        "special": "minigun"
+      },
+      "mechanic": {
+        "specialEffect": "minigun",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_061",
+      "index": 61,
+      "displayName": "Feuerdämon",
+      "internalName": "feuerdamon",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9103.PNG",
+        "assetId": "weapon_icon_061",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 58,
+        "fire_damage": 38,
+        "blast_radius": 44,
+        "special": "fire_entity"
+      },
+      "mechanic": {
+        "specialEffect": "fire_entity",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_062",
+      "index": 62,
+      "displayName": "Flammenwerfer",
+      "internalName": "flammenwerfer",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9104.PNG",
+        "assetId": "weapon_icon_062",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 48,
+        "fire_damage": 45,
+        "special": "continuous_stream"
+      },
+      "mechanic": {
+        "specialEffect": "continuous_stream",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_063",
+      "index": 63,
+      "displayName": "Wasserblaster",
+      "internalName": "wasserblaster",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9105.PNG",
+        "assetId": "weapon_icon_063",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "water",
+        "base_damage": 18,
+        "terrain_damage": 42,
+        "special": "water_push"
+      },
+      "mechanic": {
+        "specialEffect": "water_push",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_064",
+      "index": 64,
+      "displayName": "Katapult",
+      "internalName": "katapult",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9106.PNG",
+        "assetId": "weapon_icon_064",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 80,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 68,
+        "blast_radius": 48,
+        "special": "catapult"
+      },
+      "mechanic": {
+        "specialEffect": "catapult",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_065",
+      "index": 65,
+      "displayName": "Meteoritenbrocken",
+      "internalName": "meteoritenbrocken",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9107.PNG",
+        "assetId": "weapon_icon_065",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 92,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "impact",
+        "base_damage": 74,
+        "blast_radius": 50,
+        "terrain_damage": 50,
+        "special": "meteor_impact"
+      },
+      "mechanic": {
+        "specialEffect": "meteor_impact",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_066",
+      "index": 66,
+      "displayName": "Artilleriegeschütz",
+      "internalName": "artilleriegeschutz",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9109.PNG",
+        "assetId": "weapon_icon_066",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 82,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 64,
+        "blast_radius": 48,
+        "special": "artillery"
+      },
+      "mechanic": {
+        "specialEffect": "artillery",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_067",
+      "index": 67,
+      "displayName": "Säurekanone",
+      "internalName": "saurekanone",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9113.PNG",
+        "assetId": "weapon_icon_067",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "acid",
+        "base_damage": 35,
+        "poison_damage": 28,
+        "blast_radius": 38,
+        "special": "acid_dot"
+      },
+      "mechanic": {
+        "specialEffect": "acid_dot",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_068",
+      "index": 68,
+      "displayName": "Plasma-Gewehr",
+      "internalName": "plasma_gewehr",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9114.PNG",
+        "assetId": "weapon_icon_068",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 1,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 50,
+        "projectile_speed": 94,
+        "special": "plasma"
+      },
+      "mechanic": {
+        "specialEffect": "plasma",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_069",
+      "index": 69,
+      "displayName": "Raketenkanone",
+      "internalName": "raketenkanone",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9115.PNG",
+        "assetId": "weapon_icon_069",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 65,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 46,
+        "blast_radius": 40,
+        "special": "launcher"
+      },
+      "mechanic": {
+        "specialEffect": "launcher",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_070",
+      "index": 70,
+      "displayName": "Giftwolke",
+      "internalName": "giftwolke",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9121.PNG",
+        "assetId": "weapon_icon_070",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "poison",
+        "base_damage": 18,
+        "poison_damage": 45,
+        "blast_radius": 58,
+        "special": "poison_cloud"
+      },
+      "mechanic": {
+        "specialEffect": "poison_cloud",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_071",
+      "index": 71,
+      "displayName": "Eisschlag",
+      "internalName": "eisschlag",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9122.PNG",
+        "assetId": "weapon_icon_071",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "ice",
+        "base_damage": 42,
+        "ice_damage": 50,
+        "blast_radius": 35,
+        "special": "freeze"
+      },
+      "mechanic": {
+        "specialEffect": "freeze",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_072",
+      "index": 72,
+      "displayName": "Feuerball",
+      "internalName": "feuerball",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9123.PNG",
+        "assetId": "weapon_icon_072",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 48,
+        "fire_damage": 30,
+        "blast_radius": 34,
+        "special": "fireball"
+      },
+      "mechanic": {
+        "specialEffect": "fireball",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_073",
+      "index": 73,
+      "displayName": "Tentakelgift",
+      "internalName": "tentakelgift",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9124.PNG",
+        "assetId": "weapon_icon_073",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "poison",
+        "base_damage": 32,
+        "poison_damage": 55,
+        "blast_radius": 44,
+        "special": "tentacle_zone"
+      },
+      "mechanic": {
+        "specialEffect": "tentacle_zone",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_074",
+      "index": 74,
+      "displayName": "Verderbnis-Siegel",
+      "internalName": "verderbnis_siegel",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9125.PNG",
+        "assetId": "weapon_icon_074",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "dark",
+        "base_damage": 28,
+        "poison_damage": 20,
+        "blast_radius": 46,
+        "special": "curse"
+      },
+      "mechanic": {
+        "specialEffect": "curse",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_075",
+      "index": 75,
+      "displayName": "Tornado",
+      "internalName": "tornado",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9130.PNG",
+        "assetId": "weapon_icon_075",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 88,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "wind",
+        "base_damage": 18,
+        "blast_radius": 60,
+        "special": "suction"
+      },
+      "mechanic": {
+        "specialEffect": "suction",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_076",
+      "index": 76,
+      "displayName": "Portalring",
+      "internalName": "portalring",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9131.PNG",
+        "assetId": "weapon_icon_076",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 0,
+        "special": "portal"
+      },
+      "mechanic": {
+        "specialEffect": "portal",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_077",
+      "index": 77,
+      "displayName": "Schwarzes Loch",
+      "internalName": "schwarzes_loch",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9132.PNG",
+        "assetId": "weapon_icon_077",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 80,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "void",
+        "base_damage": 75,
+        "blast_radius": 72,
+        "special": "gravity_well"
+      },
+      "mechanic": {
+        "specialEffect": "gravity_well",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_078",
+      "index": 78,
+      "displayName": "Voodoo-Puppe",
+      "internalName": "voodoo_puppe",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9133.PNG",
+        "assetId": "weapon_icon_078",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "dark",
+        "base_damage": 45,
+        "special": "linked_damage"
+      },
+      "mechanic": {
+        "specialEffect": "linked_damage",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_079",
+      "index": 79,
+      "displayName": "Kosmisches Portal",
+      "internalName": "kosmisches_portal",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9134.PNG",
+        "assetId": "weapon_icon_079",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 20,
+        "special": "portal_field"
+      },
+      "mechanic": {
+        "specialEffect": "portal_field",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_080",
+      "index": 80,
+      "displayName": "Psionischer Tentakel",
+      "internalName": "psionischer_tentakel",
+      "category": "elemental",
+      "icon": {
+        "file": "IMG_9135.PNG",
+        "assetId": "weapon_icon_080",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 60,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "psychic",
+        "base_damage": 44,
+        "blast_radius": 52,
+        "special": "mind_pull"
+      },
+      "mechanic": {
+        "specialEffect": "mind_pull",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "common",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_081",
+      "index": 81,
+      "displayName": "Zauberbuch der Leere",
+      "internalName": "zauberbuch_der_leere",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9136.PNG",
+        "assetId": "weapon_icon_081",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "void",
+        "base_damage": 55,
+        "blast_radius": 48,
+        "special": "void_spell"
+      },
+      "mechanic": {
+        "specialEffect": "void_spell",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_082",
+      "index": 82,
+      "displayName": "Goldene Zauberrolle",
+      "internalName": "goldene_zauberrolle",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9137.PNG",
+        "assetId": "weapon_icon_082",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 44,
+        "projectile_speed": 80,
+        "special": "magic_bolt"
+      },
+      "mechanic": {
+        "specialEffect": "magic_bolt",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_083",
+      "index": 83,
+      "displayName": "Goldene Hand",
+      "internalName": "goldene_hand",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9138.PNG",
+        "assetId": "weapon_icon_083",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 70,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 50,
+        "special": "magic_hand"
+      },
+      "mechanic": {
+        "specialEffect": "magic_hand",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_084",
+      "index": 84,
+      "displayName": "Astraltrank",
+      "internalName": "astraltrank",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9139.PNG",
+        "assetId": "weapon_icon_084",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 0,
+        "special": "buff"
+      },
+      "mechanic": {
+        "specialEffect": "buff",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_085",
+      "index": 85,
+      "displayName": "Chaosmagier",
+      "internalName": "chaosmagier",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9140.PNG",
+        "assetId": "weapon_icon_085",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "chaos",
+        "base_damage": 45,
+        "blast_radius": 45,
+        "special": "random_spell"
+      },
+      "mechanic": {
+        "specialEffect": "random_spell",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_086",
+      "index": 86,
+      "displayName": "Wirbelwind-Krieger",
+      "internalName": "wirbelwind_krieger",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9150.PNG",
+        "assetId": "weapon_icon_086",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 78,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "wind",
+        "base_damage": 42,
+        "blast_radius": 46,
+        "special": "whirlwind"
+      },
+      "mechanic": {
+        "specialEffect": "whirlwind",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_087",
+      "index": 87,
+      "displayName": "Dimensionssprung I",
+      "internalName": "dimensionssprung_i",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9151.PNG",
+        "assetId": "weapon_icon_087",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 0,
+        "special": "teleport"
+      },
+      "mechanic": {
+        "specialEffect": "teleport",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_088",
+      "index": 88,
+      "displayName": "Dimensionssprung II",
+      "internalName": "dimensionssprung_ii",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9152.PNG",
+        "assetId": "weapon_icon_088",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 0,
+        "special": "teleport"
+      },
+      "mechanic": {
+        "specialEffect": "teleport",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_089",
+      "index": 89,
+      "displayName": "Magischer Stiefel",
+      "internalName": "magischer_stiefel",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9154.PNG",
+        "assetId": "weapon_icon_089",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "mobility"
+      },
+      "mechanic": {
+        "specialEffect": "mobility",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_090",
+      "index": 90,
+      "displayName": "Giftpilz",
+      "internalName": "giftpilz",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9155.PNG",
+        "assetId": "weapon_icon_090",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "poison",
+        "base_damage": 18,
+        "poison_damage": 50,
+        "blast_radius": 38,
+        "special": "poison_zone"
+      },
+      "mechanic": {
+        "specialEffect": "poison_zone",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_091",
+      "index": 91,
+      "displayName": "Astralorb",
+      "internalName": "astralorb",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9156.PNG",
+        "assetId": "weapon_icon_091",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "astral",
+        "base_damage": 58,
+        "blast_radius": 55,
+        "special": "astral_burst"
+      },
+      "mechanic": {
+        "specialEffect": "astral_burst",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_092",
+      "index": 92,
+      "displayName": "Heilzauber",
+      "internalName": "heilzauber",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9157.PNG",
+        "assetId": "weapon_icon_092",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "holy",
+        "base_damage": 0,
+        "special": "heal"
+      },
+      "mechanic": {
+        "specialEffect": "heal",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_093",
+      "index": 93,
+      "displayName": "Engelssegen",
+      "internalName": "engelssegen",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9323.PNG",
+        "assetId": "weapon_icon_093",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "holy",
+        "base_damage": 0,
+        "special": "shield_heal"
+      },
+      "mechanic": {
+        "specialEffect": "shield_heal",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_094",
+      "index": 94,
+      "displayName": "Heil-Injektion",
+      "internalName": "heil_injektion",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9324.PNG",
+        "assetId": "weapon_icon_094",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "medical",
+        "base_damage": 0,
+        "special": "instant_heal"
+      },
+      "mechanic": {
+        "specialEffect": "instant_heal",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_095",
+      "index": 95,
+      "displayName": "Chaos-Elixier",
+      "internalName": "chaos_elixier",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9325.PNG",
+        "assetId": "weapon_icon_095",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "chaos",
+        "base_damage": 0,
+        "special": "random_buff"
+      },
+      "mechanic": {
+        "specialEffect": "random_buff",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_096",
+      "index": 96,
+      "displayName": "Mutationselixier",
+      "internalName": "mutationselixier",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9326.PNG",
+        "assetId": "weapon_icon_096",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "chaos",
+        "base_damage": 0,
+        "special": "mutation"
+      },
+      "mechanic": {
+        "specialEffect": "mutation",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_097",
+      "index": 97,
+      "displayName": "Traumfänger",
+      "internalName": "traumfanger",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9327.PNG",
+        "assetId": "weapon_icon_097",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "psychic",
+        "base_damage": 0,
+        "special": "sleep"
+      },
+      "mechanic": {
+        "specialEffect": "sleep",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_098",
+      "index": 98,
+      "displayName": "Lava-Elixier",
+      "internalName": "lava_elixier",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9328.PNG",
+        "assetId": "weapon_icon_098",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 50,
+        "fire_damage": 45,
+        "blast_radius": 50,
+        "special": "lava"
+      },
+      "mechanic": {
+        "specialEffect": "lava",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_099",
+      "index": 99,
+      "displayName": "Zeit-Sanduhr",
+      "internalName": "zeit_sanduhr",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9329.PNG",
+        "assetId": "weapon_icon_099",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "time",
+        "base_damage": 0,
+        "special": "time_control"
+      },
+      "mechanic": {
+        "specialEffect": "time_control",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_100",
+      "index": 100,
+      "displayName": "Würfel des Chaos",
+      "internalName": "wurfel_des_chaos",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9330.PNG",
+        "assetId": "weapon_icon_100",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "chaos",
+        "base_damage": 0,
+        "special": "random_effect"
+      },
+      "mechanic": {
+        "specialEffect": "random_effect",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_101",
+      "index": 101,
+      "displayName": "Eisschild",
+      "internalName": "eisschild",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9331.PNG",
+        "assetId": "weapon_icon_101",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "ice",
+        "base_damage": 0,
+        "special": "shield_freeze"
+      },
+      "mechanic": {
+        "specialEffect": "shield_freeze",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_102",
+      "index": 102,
+      "displayName": "Gedankensturm",
+      "internalName": "gedankensturm",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9332.PNG",
+        "assetId": "weapon_icon_102",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "psychic",
+        "base_damage": 52,
+        "blast_radius": 60,
+        "special": "mind_aoe"
+      },
+      "mechanic": {
+        "specialEffect": "mind_aoe",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_103",
+      "index": 103,
+      "displayName": "Verderbnis-Kelch",
+      "internalName": "verderbnis_kelch",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9333.PNG",
+        "assetId": "weapon_icon_103",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "dark",
+        "base_damage": 30,
+        "poison_damage": 30,
+        "blast_radius": 48,
+        "special": "corruption"
+      },
+      "mechanic": {
+        "specialEffect": "corruption",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_104",
+      "index": 104,
+      "displayName": "Quantengewehr",
+      "internalName": "quantengewehr",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9334.PNG",
+        "assetId": "weapon_icon_104",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 1,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 62,
+        "projectile_speed": 98,
+        "special": "quantum_shot"
+      },
+      "mechanic": {
+        "specialEffect": "quantum_shot",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_105",
+      "index": 105,
+      "displayName": "Zauberrolle",
+      "internalName": "zauberrolle",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9335.PNG",
+        "assetId": "weapon_icon_105",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 48,
+        "projectile_speed": 82,
+        "special": "scroll_spell"
+      },
+      "mechanic": {
+        "specialEffect": "scroll_spell",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_106",
+      "index": 106,
+      "displayName": "Sonnenamulett",
+      "internalName": "sonnenamulett",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9336.PNG",
+        "assetId": "weapon_icon_106",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "holy",
+        "base_damage": 38,
+        "fire_damage": 25,
+        "blast_radius": 40,
+        "special": "solar"
+      },
+      "mechanic": {
+        "specialEffect": "solar",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_107",
+      "index": 107,
+      "displayName": "Allsehendes Auge",
+      "internalName": "allsehendes_auge",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9337.PNG",
+        "assetId": "weapon_icon_107",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "target_scan"
+      },
+      "mechanic": {
+        "specialEffect": "target_scan",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_108",
+      "index": 108,
+      "displayName": "Magische Peitsche",
+      "internalName": "magische_peitsche",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9338.PNG",
+        "assetId": "weapon_icon_108",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 55,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 32,
+        "special": "magic_whip"
+      },
+      "mechanic": {
+        "specialEffect": "magic_whip",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_109",
+      "index": 109,
+      "displayName": "Weltenbaum",
+      "internalName": "weltenbaum",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9339.PNG",
+        "assetId": "weapon_icon_109",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "nature",
+        "base_damage": 0,
+        "special": "area_buff"
+      },
+      "mechanic": {
+        "specialEffect": "area_buff",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_110",
+      "index": 110,
+      "displayName": "Dimensionskugel",
+      "internalName": "dimensionskugel",
+      "category": "magic",
+      "icon": {
+        "file": "IMG_9340.PNG",
+        "assetId": "weapon_icon_110",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 0,
+        "special": "dimension_orb"
+      },
+      "mechanic": {
+        "specialEffect": "dimension_orb",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 3,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_111",
+      "index": 111,
+      "displayName": "Grappling Hook",
+      "internalName": "grappling_hook",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9341.PNG",
+        "assetId": "weapon_icon_111",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "grapple"
+      },
+      "mechanic": {
+        "specialEffect": "grapple",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_112",
+      "index": 112,
+      "displayName": "Jetpack",
+      "internalName": "jetpack",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9342.PNG",
+        "assetId": "weapon_icon_112",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "flight"
+      },
+      "mechanic": {
+        "specialEffect": "flight",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_113",
+      "index": 113,
+      "displayName": "Bohrkanone",
+      "internalName": "bohrkanone",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9343.PNG",
+        "assetId": "weapon_icon_113",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 30,
+        "terrain_damage": 85,
+        "special": "drill_cannon"
+      },
+      "mechanic": {
+        "specialEffect": "drill_cannon",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_114",
+      "index": 114,
+      "displayName": "Raketenrucksack Mk III",
+      "internalName": "raketenrucksack_mk_iii",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9344.PNG",
+        "assetId": "weapon_icon_114",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "flight"
+      },
+      "mechanic": {
+        "specialEffect": "flight",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_115",
+      "index": 115,
+      "displayName": "Wächterstatue",
+      "internalName": "wachterstatue",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9345.PNG",
+        "assetId": "weapon_icon_115",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "defense",
+        "base_damage": 28,
+        "special": "guardian"
+      },
+      "mechanic": {
+        "specialEffect": "guardian",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_116",
+      "index": 116,
+      "displayName": "Blutritual",
+      "internalName": "blutritual",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9346.PNG",
+        "assetId": "weapon_icon_116",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "dark",
+        "base_damage": 50,
+        "poison_damage": 35,
+        "blast_radius": 55,
+        "special": "blood_ritual"
+      },
+      "mechanic": {
+        "specialEffect": "blood_ritual",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_117",
+      "index": 117,
+      "displayName": "Ananasbombe",
+      "internalName": "ananasbombe",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9347.PNG",
+        "assetId": "weapon_icon_117",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 48,
+        "blast_radius": 45,
+        "special": "fragmentation"
+      },
+      "mechanic": {
+        "specialEffect": "fragmentation",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_118",
+      "index": 118,
+      "displayName": "Feuerwesen",
+      "internalName": "feuerwesen",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9353.PNG",
+        "assetId": "weapon_icon_118",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 52,
+        "fire_damage": 40,
+        "blast_radius": 42,
+        "special": "fire_minion"
+      },
+      "mechanic": {
+        "specialEffect": "fire_minion",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_119",
+      "index": 119,
+      "displayName": "Munitionskiste",
+      "internalName": "munitionskiste",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9358.PNG",
+        "assetId": "weapon_icon_119",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "ammo_drop"
+      },
+      "mechanic": {
+        "specialEffect": "ammo_drop",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_120",
+      "index": 120,
+      "displayName": "Energiefaust",
+      "internalName": "energiefaust",
+      "category": "utility",
+      "icon": {
+        "file": "IMG_9359.PNG",
+        "assetId": "weapon_icon_120",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 0,
+        "blastRadius": 0,
+        "knockback": 78,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 55,
+        "special": "energy_fist"
+      },
+      "mechanic": {
+        "specialEffect": "energy_fist",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "uncommon",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_121",
+      "index": 121,
+      "displayName": "Explosiver Punch",
+      "internalName": "explosiver_punch",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9360.PNG",
+        "assetId": "weapon_icon_121",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 88,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 58,
+        "blast_radius": 35,
+        "special": "rocket_punch"
+      },
+      "mechanic": {
+        "specialEffect": "rocket_punch",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_122",
+      "index": 122,
+      "displayName": "Infinity Loop",
+      "internalName": "infinity_loop",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9364.PNG",
+        "assetId": "weapon_icon_122",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "temporal",
+        "base_damage": 0,
+        "special": "loop"
+      },
+      "mechanic": {
+        "specialEffect": "loop",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_123",
+      "index": 123,
+      "displayName": "Magnetkanone",
+      "internalName": "magnetkanone",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9365.PNG",
+        "assetId": "weapon_icon_123",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 95,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "magnetic",
+        "base_damage": 40,
+        "blast_radius": 45,
+        "special": "magnetism"
+      },
+      "mechanic": {
+        "specialEffect": "magnetism",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_124",
+      "index": 124,
+      "displayName": "Auto-Turret",
+      "internalName": "auto_turret",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9366.PNG",
+        "assetId": "weapon_icon_124",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "electric",
+        "base_damage": 38,
+        "projectile_speed": 100,
+        "special": "auto_target"
+      },
+      "mechanic": {
+        "specialEffect": "auto_target",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_125",
+      "index": 125,
+      "displayName": "Versorgungscontainer",
+      "internalName": "versorgungscontainer",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9368.PNG",
+        "assetId": "weapon_icon_125",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "supply_drop"
+      },
+      "mechanic": {
+        "specialEffect": "supply_drop",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_126",
+      "index": 126,
+      "displayName": "Bunker",
+      "internalName": "bunker",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9369.PNG",
+        "assetId": "weapon_icon_126",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "defense",
+        "base_damage": 0,
+        "terrain_damage": 20,
+        "special": "bunker"
+      },
+      "mechanic": {
+        "specialEffect": "bunker",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_127",
+      "index": 127,
+      "displayName": "Teleport-Plattform",
+      "internalName": "teleport_plattform",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9372.PNG",
+        "assetId": "weapon_icon_127",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 0,
+        "special": "teleport_platform"
+      },
+      "mechanic": {
+        "specialEffect": "teleport_platform",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_128",
+      "index": 128,
+      "displayName": "Hologramm-Portal",
+      "internalName": "hologramm_portal",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9373.PNG",
+        "assetId": "weapon_icon_128",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "spatial",
+        "base_damage": 0,
+        "special": "hologram_portal"
+      },
+      "mechanic": {
+        "specialEffect": "hologram_portal",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_129",
+      "index": 129,
+      "displayName": "Tesla-Turm",
+      "internalName": "tesla_turm",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9376.PNG",
+        "assetId": "weapon_icon_129",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "electric",
+        "base_damage": 48,
+        "blast_radius": 52,
+        "special": "chain_lightning"
+      },
+      "mechanic": {
+        "specialEffect": "chain_lightning",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_130",
+      "index": 130,
+      "displayName": "Tarnnetz",
+      "internalName": "tarnnetz",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9377.PNG",
+        "assetId": "weapon_icon_130",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "camouflage"
+      },
+      "mechanic": {
+        "specialEffect": "camouflage",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_131",
+      "index": 131,
+      "displayName": "Schlauchboot",
+      "internalName": "schlauchboot",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9379.PNG",
+        "assetId": "weapon_icon_131",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "utility",
+        "base_damage": 0,
+        "special": "water_mobility"
+      },
+      "mechanic": {
+        "specialEffect": "water_mobility",
+        "targeting": "self_or_area",
+        "movement": "none",
+        "destructibleTerrain": false
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_132",
+      "index": 132,
+      "displayName": "Alte Dame",
+      "internalName": "alte_dame",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9380.PNG",
+        "assetId": "weapon_icon_132",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 82,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "physical",
+        "base_damage": 55,
+        "blast_radius": 30,
+        "special": "old_lady_strike"
+      },
+      "mechanic": {
+        "specialEffect": "old_lady_strike",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_133",
+      "index": 133,
+      "displayName": "Fliegendes Superschaf",
+      "internalName": "fliegendes_superschaf",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9382.PNG",
+        "assetId": "weapon_icon_133",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 70,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 60,
+        "fire_damage": 25,
+        "blast_radius": 40,
+        "special": "guided_sheep"
+      },
+      "mechanic": {
+        "specialEffect": "guided_sheep",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_134",
+      "index": 134,
+      "displayName": "Luftangriff",
+      "internalName": "luftangriff",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9383.PNG",
+        "assetId": "weapon_icon_134",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 62,
+        "blast_radius": 65,
+        "special": "air_strike"
+      },
+      "mechanic": {
+        "specialEffect": "air_strike",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_135",
+      "index": 135,
+      "displayName": "Meteorregen",
+      "internalName": "meteorregen",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9384.PNG",
+        "assetId": "weapon_icon_135",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "impact",
+        "base_damage": 68,
+        "blast_radius": 55,
+        "special": "meteor_rain"
+      },
+      "mechanic": {
+        "specialEffect": "meteor_rain",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_136",
+      "index": 136,
+      "displayName": "Bohrkopfrakete",
+      "internalName": "bohrkopfrakete",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9385.PNG",
+        "assetId": "weapon_icon_136",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 64,
+        "blast_radius": 48,
+        "terrain_damage": 65,
+        "special": "drill_rocket"
+      },
+      "mechanic": {
+        "specialEffect": "drill_rocket",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_137",
+      "index": 137,
+      "displayName": "Flammenklinge",
+      "internalName": "flammenklinge",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9386.PNG",
+        "assetId": "weapon_icon_137",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 55,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 55,
+        "fire_damage": 30,
+        "special": "flame_blade"
+      },
+      "mechanic": {
+        "specialEffect": "flame_blade",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_138",
+      "index": 138,
+      "displayName": "Magischer Kriegshammer",
+      "internalName": "magischer_kriegshammer",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9388.PNG",
+        "assetId": "weapon_icon_138",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 78,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 68,
+        "blast_radius": 45,
+        "special": "magic_hammer"
+      },
+      "mechanic": {
+        "specialEffect": "magic_hammer",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_139",
+      "index": 139,
+      "displayName": "Höllenkanone",
+      "internalName": "hollenkanone",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9389.PNG",
+        "assetId": "weapon_icon_139",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "fire",
+        "base_damage": 78,
+        "fire_damage": 48,
+        "blast_radius": 58,
+        "special": "hell_cannon"
+      },
+      "mechanic": {
+        "specialEffect": "hell_cannon",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_140",
+      "index": 140,
+      "displayName": "Quantenblaster",
+      "internalName": "quantenblaster",
+      "category": "tech",
+      "icon": {
+        "file": "IMG_9390.PNG",
+        "assetId": "weapon_icon_140",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 0,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 1,
+        "aoe": false,
+        "damage_type": "energy",
+        "base_damage": 72,
+        "projectile_speed": 100,
+        "special": "quantum_blast"
+      },
+      "mechanic": {
+        "specialEffect": "quantum_blast",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_141",
+      "index": 141,
+      "displayName": "Astralkrieger",
+      "internalName": "astralkrieger",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9391.PNG",
+        "assetId": "weapon_icon_141",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "astral",
+        "base_damage": 70,
+        "blast_radius": 55,
+        "special": "summon_warrior"
+      },
+      "mechanic": {
+        "specialEffect": "summon_warrior",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_142",
+      "index": 142,
+      "displayName": "Void-Ritter",
+      "internalName": "void_ritter",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9393.PNG",
+        "assetId": "weapon_icon_142",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 75,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "void",
+        "base_damage": 82,
+        "special": "void_knight"
+      },
+      "mechanic": {
+        "specialEffect": "void_knight",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_143",
+      "index": 143,
+      "displayName": "Astralross",
+      "internalName": "astralross",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9394.PNG",
+        "assetId": "weapon_icon_143",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 70,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "astral",
+        "base_damage": 65,
+        "special": "summon_mount"
+      },
+      "mechanic": {
+        "specialEffect": "summon_mount",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_144",
+      "index": 144,
+      "displayName": "Kosmische Wassermelone",
+      "internalName": "kosmische_wassermelone",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9397.PNG",
+        "assetId": "weapon_icon_144",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 1,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "explosive",
+        "base_damage": 85,
+        "blast_radius": 70,
+        "special": "cosmic_banana"
+      },
+      "mechanic": {
+        "specialEffect": "cosmic_banana",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_145",
+      "index": 145,
+      "displayName": "Erdspalter",
+      "internalName": "erdspalter",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9398.PNG",
+        "assetId": "weapon_icon_145",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "impact",
+        "base_damage": 95,
+        "blast_radius": 75,
+        "terrain_damage": 95,
+        "special": "earth_splitter"
+      },
+      "mechanic": {
+        "specialEffect": "earth_splitter",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_146",
+      "index": 146,
+      "displayName": "Giftige Weltenflasche",
+      "internalName": "giftige_weltenflasche",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9399.PNG",
+        "assetId": "weapon_icon_146",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "poison",
+        "base_damage": 55,
+        "poison_damage": 80,
+        "blast_radius": 65,
+        "special": "world_poison"
+      },
+      "mechanic": {
+        "specialEffect": "world_poison",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_147",
+      "index": 147,
+      "displayName": "Welten-Drache",
+      "internalName": "welten_drache",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9400.PNG",
+        "assetId": "weapon_icon_147",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "dragon",
+        "base_damage": 100,
+        "fire_damage": 75,
+        "blast_radius": 80,
+        "special": "dragon_ultimate"
+      },
+      "mechanic": {
+        "specialEffect": "dragon_ultimate",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_148",
+      "index": 148,
+      "displayName": "Himmelswächter",
+      "internalName": "himmelswachter",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9401.PNG",
+        "assetId": "weapon_icon_148",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "holy",
+        "base_damage": 70,
+        "blast_radius": 60,
+        "special": "guardian_ultimate"
+      },
+      "mechanic": {
+        "specialEffect": "guardian_ultimate",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_149",
+      "index": 149,
+      "displayName": "Goldene Reliktkugel",
+      "internalName": "goldene_reliktkugel",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9402.PNG",
+        "assetId": "weapon_icon_149",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "arcane",
+        "base_damage": 0,
+        "special": "relic_buff"
+      },
+      "mechanic": {
+        "specialEffect": "relic_buff",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    },
+    {
+      "id": "pa_150",
+      "index": 150,
+      "displayName": "Kosmischer Kern",
+      "internalName": "kosmischer_kern",
+      "category": "ultimate",
+      "icon": {
+        "file": "IMG_9403.PNG",
+        "assetId": "weapon_icon_150",
+        "source": "PA Waffenlogos",
+        "format": "png"
+      },
+      "stats": {
+        "baseDamage": 25,
+        "blastRadius": 0,
+        "knockback": 0,
+        "projectileSpeed": 70,
+        "gravity": 0,
+        "bounces": 0,
+        "fuseTime": 0,
+        "terrainDamage": 0,
+        "fireDamage": 0,
+        "iceDamage": 0,
+        "poisonDamage": 0,
+        "homing": 0,
+        "piercing": 0,
+        "aoe": false,
+        "damage_type": "void",
+        "base_damage": 110,
+        "blast_radius": 90,
+        "terrain_damage": 90,
+        "special": "cosmic_ultimate"
+      },
+      "mechanic": {
+        "specialEffect": "cosmic_ultimate",
+        "targeting": "directional",
+        "movement": "none",
+        "destructibleTerrain": true
+      },
+      "balance": {
+        "rarity": "rare",
+        "maxAmmo": 5,
+        "cooldown": 0,
+        "requiresLineOfSight": false
+      }
+    }
+  ]
+}
