@@ -18,6 +18,7 @@
     "smoke": "node scripts/smoke-match.mjs",
     "perf": "node scripts/perf-profile.mjs",
     "balance": "node scripts/balance-report.mjs",
+    "balance:sweep": "node scripts/balance-report.mjs --sweep",
     "replay": "node scripts/replay.mjs",
     "icons": "python3 scripts/create-weapon-icons.py",
     "weapons:build": "node scripts/build-weapon-catalog.mjs"

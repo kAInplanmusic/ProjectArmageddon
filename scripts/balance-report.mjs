@@ -19,6 +19,7 @@
  * Aufruf:
  *   node scripts/balance-report.mjs [--top=N] [--worst=N] [--json] [--tier=NAME]
  *                                   [--only=pa_001] [--preset=NAME] [--distance=N]
+ *                                   [--distances=90,426,800] [--sweep]
  *                                   [--samples=N]
  */
 import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
@@ -47,20 +48,65 @@ const preset = args.preset ?? 'hills';
 const asJson = Boolean(args.json);
 const tierFilter = args.tier ?? null;
 const only = args.only ?? null;
+/** Nur für `--distance=N`: ein einzelner Wert. Sonst siehe `messdistanzen`. */
 const distance = num(args.distance, 90);
 
 /**
- * Messdistanz.
+ * Die zu messenden Entfernungen.
  *
- * Bewusst für ALLE Waffen gleich: nur so sind die Werte untereinander
- * vergleichbar. Der Preis ist, dass schwere Artillerie hier zu kurz angesetzt
- * wird — sie ist für große Entfernungen gebaut und überschießt ein Ziel auf
- * kurze Distanz. Solche Waffen erscheinen im Bericht als wirkungslos; das ist
- * eine Grenze der Messung, kein Urteil über die Waffe. Für eine Bewertung über
- * die volle Kartenbreite müsste der Aufbau erweitert werden (siehe MASTERDOTO).
+ * Ohne Angabe wird auf der Entfernung gemessen, auf der das Spiel tatsächlich
+ * startet (aus dem Match abgelesen, typisch ~426 px bei 1280 px Kartenbreite).
+ *
+ * Fund (belegt): Vorher stand hier fest 90 px. Das ist die Entfernung, die ein
+ * Nahkampfangriff braucht, nicht die des Spiels — die Startfiguren stehen 426 px
+ * auseinander. Für jeden Spieler war die Messung damit unrealistisch; für
+ * schwere Artillerie war sie systematisch falsch: Sie ist für große Entfernungen
+ * gebaut und überschießt ein 90 px entferntes Ziel oder schlägt davor ein, und
+ * erschien deshalb im Bericht als wirkungslos. Der Bericht hat also Waffen
+ * schlechtgeredet, weil er sie an der falschen Stelle gemessen hat.
+ *
+ * Spiegelbildlich gilt dasselbe für Nahkampf: Ein Baseballschläger ist auf
+ * 426 px wirkungslos — korrekt, aber als Vergleichswert nutzlos. Deshalb misst
+ * `--sweep` über die ganze Kartenbreite, und bewertet wird die beste Entfernung.
+ *
+ * `testDistanz` im Bericht ist immer die TATSÄCHLICH gemessene Entfernung, nicht
+ * die angefragte: `findClearLineAdaptive` verkürzt bei hügeligem Gelände, und
+ * eine stillschweigend verkürzte Messung würde die Aussage „beste Entfernung"
+ * verfälschen.
+ *
+ * Reihenfolge der Vorrangigkeit:
+ *   1. --distances=90,426,800  (ausdrücklich genannt)
+ *   2. --sweep                 (voreingestellter Satz über die Kartenbreite)
+ *   3. --distance=N            (eine einzelne)
+ *   4. Startentfernung des Spiels, aus einem Probelauf abgelesen
  */
-function distanceFor() {
-  return distance;
+function messdistanzen(startEntfernung) {
+  if (typeof args.distances === 'string') {
+    const werte = args.distances.split(',').map(teil => Number(teil.trim()))
+      .filter(wert => Number.isFinite(wert) && wert > 0);
+    if (werte.length > 0) return [...new Set(werte)].sort((a, b) => a - b);
+  }
+  if (args.sweep) {
+    // Nahkampf bis fast über die ganze Karte, aufsteigend.
+    return [90, 200, 320, 426, 550, 700, 850].filter(wert => wert <= MAP_WIDTH - 120);
+  }
+  if (args.distance !== undefined) return [distance];
+  return [startEntfernung];
+}
+
+/**
+ * Die Entfernung, auf der das Spiel wirklich beginnt.
+ *
+ * Aus einem echten Match abgelesen statt geraten: Die Startfiguren stehen je
+ * nach Kartenbreite und Spielerzahl unterschiedlich weit auseinander.
+ */
+function startEntfernung(presetName, teams = 2, playersPerTeam = 1) {
+  const probe = new MatchController({ seed: 4242, teams, playersPerTeam, preset: presetName });
+  probe.start();
+  const figuren = probe.getState().entities;
+  if (figuren.length < 2) return 90;
+  const xs = figuren.map(figur => figur.x);
+  return Math.round(Math.max(...xs) - Math.min(...xs)) || 90;
 }
 const samples = Math.max(1, num(args.samples, 3));
 const targetHealth = 200;
@@ -177,6 +223,10 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
   return {
     fired: result.ok,
     errors: result.errors ?? [],
+    // Die TATSÄCHLICH gemessene Entfernung. `findClearLineAdaptive` verkürzt bei
+    // hügeligem Gelände stillschweigend — ohne diesen Wert würde eine 800-px-
+    // Messung, die in Wahrheit bei 400 px stattfand, als 800-px-Messung gelten.
+    distanz: line.distance,
     damage: result.ok && targetAliveBefore ? Math.max(0, healthBefore - healthAfter) : 0,
     killed: dead,
     blocked: Boolean(result.hit?.blocked),
@@ -202,11 +252,16 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
  */
 const TEST_ANGLES = [0, 0.06, 0.12, 0.2, 0.3, 0.45];
 
-/** Messung über mehrere Schüsse; für Projektile mit Winkelsuche. */
-function measureWeapon(weapon, index) {
+/**
+ * Eine Waffe auf EINER Entfernung messen.
+ *
+ * `dist` ist die angefragte Entfernung; gemessen wird die, die
+ * `findClearLineAdaptive` tatsächlich findet. Beide werden zurückgegeben, damit
+ * eine verkürzte Messung nicht als lange Messung durchgeht.
+ */
+function measureAtDistance(weapon, index, dist) {
   const runs = [];
-
-  const dist = distanceFor(weapon.category);
+  let gemesseneDistanz = dist;
 
   if (weapon.delivery === 'hitscan') {
     // Hitscan wirkt sofort, der Winkel ist unkritisch.
@@ -238,6 +293,10 @@ function measureWeapon(weapon, index) {
 
   if (runs.length === 0) return null;
 
+  // Die tatsächlich gemessene Entfernung übernehmen (siehe fireOnce): Sie kann
+  // von der angefragten abweichen, wenn das Gelände keine freie Linie hergibt.
+  gemesseneDistanz = runs[0].distanz ?? dist;
+
   const fired = runs.filter(run => run.fired);
   const damage = runs.reduce((sum, run) => sum + run.damage, 0) / runs.length;
   const effect = buildEffect(weapon);
@@ -267,7 +326,8 @@ function measureWeapon(weapon, index) {
     istPlatzhalter: weapon.damageSource !== 'source',
     selbstGewirkt,
     testWinkel: weapon.__bestAngle ?? 0,
-    testDistanz: dist,
+    testDistanz: gemesseneDistanz,
+    angefragteDistanz: dist,
     versuche: runs.length,
     ausloesbar: fired.length,
     blockiert: blocked,
@@ -278,6 +338,89 @@ function measureWeapon(weapon, index) {
     terrainAbgetragen: terrainRemoved.length > 0
       ? Number((terrainRemoved.reduce((sum, value) => sum + value, 0) / terrainRemoved.length).toFixed(1))
       : null,
+  };
+}
+
+/**
+ * Eine Waffe über alle Messdistanzen bewerten.
+ *
+ * Bewertet wird die BESTE Entfernung: Jede Waffe ist für eine Entfernung gebaut,
+ * und eine Nahkampfwaffe auf 850 px zu messen ist so unfair wie schwere
+ * Artillerie auf 90 px. Zusätzlich bleibt der Wert auf der Startentfernung des
+ * Spiels erhalten (`schadenAufStartdistanz`), weil DAS die Zahl ist, die ein
+ * Spieler im ersten Zug erlebt.
+ *
+ * Als „beste" gilt die Entfernung mit dem höchsten Schaden; bei Gleichstand die
+ * kürzere (näher am Spielgeschehen). Ohne Schaden zählt, ob die Waffe überhaupt
+ * wirkte — sonst gälte eine blockierte Waffe als gleichwertig.
+ */
+function measureWeapon(weapon, index, distanzen, startDist) {
+  const proDistanz = [];
+  for (const dist of distanzen) {
+    const row = measureAtDistance(weapon, index, dist);
+    if (row) proDistanz.push(row);
+  }
+  if (proDistanz.length === 0) return null;
+
+  const rang = row => [
+    row.schaden > 0 ? 1 : 0,
+    row.schaden,
+    row.selbstGewirkt,
+    row.toedlich,
+    row.terrainAbgetragen ?? 0,
+    // Kürzere Entfernung gewinnt bei Gleichstand.
+    -(row.testDistanz ?? 0),
+  ];
+  const besser = (a, b) => {
+    const links = rang(a); const rechts = rang(b);
+    for (let i = 0; i < links.length; i += 1) {
+      if (links[i] !== rechts[i]) return links[i] > rechts[i] ? a : b;
+    }
+    return a;
+  };
+
+  const beste = proDistanz.reduce((a, b) => besser(a, b));
+  const aufStart = proDistanz.find(row => row.angefragteDistanz === startDist) ?? null;
+
+  /*
+   * Die REICHWEITE ist die aussagekräftige Zahl, nicht die Stelle des höchsten
+   * Schadens.
+   *
+   * Grund: Auf kurze Entfernung trifft jede Waffe — ohne Flugzeit kann nichts
+   * danebengehen. Gemessen als „wo ist der Schaden am höchsten" gewinnt deshalb
+   * fast immer die kürzeste Entfernung, und das sagt nichts über die Waffe aus,
+   * sondern über die Physik. Für die Frage „gibt es eine Rollenverteilung über
+   * die Entfernung?" zählt, WIE WEIT eine Waffe überhaupt wirkt: Ein
+   * Baseballschläger wirkt nur im Nahbereich, eine Feldkanone auch auf 700 px.
+   */
+  const wirksameDistanzen = proDistanz
+    .filter(row => row.schaden > 0 || row.selbstGewirkt > 0)
+    .map(row => row.testDistanz)
+    .sort((a, b) => a - b);
+
+  return {
+    ...beste,
+    bestehtAus: proDistanz.map(row => ({
+      angefragt: row.angefragteDistanz,
+      gemessen: row.testDistanz,
+      schaden: row.schaden,
+      toedlich: row.toedlich,
+      selbstGewirkt: row.selbstGewirkt,
+    })),
+    distanzenGemessen: proDistanz.length,
+    schadenAufStartdistanz: aufStart ? aufStart.schaden : null,
+    wirksameDistanzen,
+    // Größte Entfernung, auf der die Waffe noch wirkt — ihre Reichweite.
+    reichweite: wirksameDistanzen.length > 0
+      ? wirksameDistanzen[wirksameDistanzen.length - 1]
+      : 0,
+    // Kleinste Entfernung, auf der sie wirkt (0 = wirkt nirgends).
+    mindestentfernung: wirksameDistanzen[0] ?? null,
+    /** Nur im Nahbereich wirksam (bis 200 px). */
+    istNahkampf: wirksameDistanzen.length > 0
+      && wirksameDistanzen[wirksameDistanzen.length - 1] <= 200,
+    /** Wirkt auch auf großer Entfernung (ab 550 px). */
+    istLangstrecke: wirksameDistanzen.some(dist => dist >= 550),
   };
 }
 
@@ -293,9 +436,12 @@ if (pool.length === 0) {
   process.exit(2);
 }
 
+const startDist = startEntfernung(preset);
+const distanzen = messdistanzen(startDist);
+
 const results = [];
 for (const { weapon, index } of pool) {
-  const row = measureWeapon(weapon, index);
+  const row = measureWeapon(weapon, index, distanzen, startDist);
   if (row) results.push(row);
 }
 
@@ -316,7 +462,8 @@ const sortImpact = (a, b) => (b.schaden - a.schaden) || (a.shotsToKill ?? 999) -
 const report = {
   konfiguration: {
     preset,
-    entfernung: distance,
+    startentfernung: startDist,
+    messdistanzen: distanzen,
     probenProWaffe: samples,
     waffen: results.length,
     auswahl: only ?? tierFilter ?? 'alle',
@@ -341,6 +488,45 @@ const report = {
   schwaechste: [...results].sort((a, b) => (a.schaden - b.schaden) || (b.versuche - a.versuche)).slice(0, worstCount),
   unwirksameIds: unwirksam.map(row => row.id),
   selbstOhneWirkungIds: selbstOhneWirkung.map(row => row.id),
+  /**
+   * Verteilung der besten Entfernung: Zeigt, ob Waffen überhaupt für
+   * unterschiedliche Entfernungen gebaut sind — oder ob alle bei derselben
+   * Entfernung am besten sind, was auf eine fehlende Rollenverteilung hindeutet.
+   */
+  besteEntfernung: (() => {
+    const zaehler = new Map();
+    for (const row of results) {
+      const schluessel = row.testDistanz;
+      if (!zaehler.has(schluessel)) zaehler.set(schluessel, []);
+      zaehler.get(schluessel).push(row.id);
+    }
+    return [...zaehler.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([dist, ids]) => ({ distanz: dist, anzahl: ids.length, ids }));
+  })(),
+  /**
+   * Verteilung der REICHWEITE — die aussagekräftige Verteilung.
+   *
+   * Sie beantwortet die Frage, ob der Waffenkatalog eine Rollenverteilung über
+   * die Entfernung hat: Wirken die Waffen alle nur im Nahbereich, gibt es keine
+   * Fernkampfrolle — die Entfernung ist dann keine taktische Größe.
+   */
+  reichweite: (() => {
+    const zaehler = new Map();
+    for (const row of results) {
+      const schluessel = row.reichweite;
+      if (!zaehler.has(schluessel)) zaehler.set(schluessel, []);
+      zaehler.get(schluessel).push(row.id);
+    }
+    return [...zaehler.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([dist, ids]) => ({ reichweite: dist, anzahl: ids.length, ids }));
+  })(),
+  rollen: {
+    nurNahbereich: results.filter(row => row.istNahkampf).length,
+    auchLangstrecke: results.filter(row => row.istLangstrecke).length,
+  },
+  langstreckenIds: results.filter(row => row.istLangstrecke).map(row => row.id),
 };
 
 if (asJson) {
@@ -348,7 +534,9 @@ if (asJson) {
 } else {
   const z = report.zusammenfassung;
   console.log('Balance-Bericht (headless, ein Schuss pro frischem Match)');
-  console.log(`  Aufbau        : Karte ${preset}, Entfernung ${distance} px, gleiche Höhe, volle Kraft`);
+  console.log(`  Aufbau        : Karte ${preset}, gleiche Höhe, volle Kraft`);
+  console.log(`  Startentfernung: ${startDist} px (so weit stehen die Figuren beim Matchstart wirklich auseinander)`);
+  console.log(`  Messdistanzen : ${distanzen.join(', ')} px  (bewertet wird die beste)`);
   console.log(`  Proben        : ${samples} Schüsse je Waffe, Ziel mit ${targetHealth} HP`);
   console.log(`  Umfang        : ${report.konfiguration.waffen} Waffen (${report.konfiguration.auswahl})`);
   console.log(`  Schaden am Ziel: ${z.wirksam} Waffen`);
@@ -366,8 +554,32 @@ if (asJson) {
   console.log(`  Ø Schaden/Schuss (nur wirksame): ${z.oSchadenProSchuss}`);
   console.log(`  Median Shots-to-Kill: ${z.shotsToKillMedian ?? 'nicht erreichbar'}`);
 
+  /*
+   * Die Verteilung der besten Entfernung ist die eigentlich interessante Zahl:
+   * Sie zeigt, ob Waffen wirklich für unterschiedliche Entfernungen gebaut sind.
+   * Liegen alle bei derselben Entfernung, gibt es keine Rollenverteilung — die
+   * Waffen unterscheiden sich dann nur in der Stärke, nicht im Einsatz.
+   */
+  console.log('\n  Beste Entfernung (wo jede Waffe am stärksten ist):');
+  for (const gruppe of report.besteEntfernung) {
+    console.log(`    ${String(gruppe.distanz).padStart(4)} px : ${String(gruppe.anzahl).padStart(3)} Waffen`);
+  }
+  console.log('    (Auf kurze Entfernung trifft jede Waffe — diese Verteilung sagt');
+  console.log('     deshalb mehr über die Physik als über die Waffen.)');
+
+  /*
+   * Die Reichweite ist die Zahl mit Aussagekraft: Sie zeigt, ob es überhaupt
+   * Fernkampfrollen gibt oder ob alles nur im Nahbereich wirkt.
+   */
+  console.log('\n  Reichweite (größte Entfernung, auf der die Waffe noch wirkt):');
+  for (const gruppe of report.reichweite) {
+    console.log(`    ${String(gruppe.reichweite).padStart(4)} px : ${String(gruppe.anzahl).padStart(3)} Waffen`);
+  }
+  console.log(`    Nur Nahbereich (bis 200 px): ${report.rollen.nurNahbereich}`);
+  console.log(`    Auch Langstrecke (ab 550 px): ${report.rollen.auchLangstrecke}`);
+
   const fmt = row => `    ${String(row.schaden).padStart(6)} Schaden | STK ${String(row.shotsToKill ?? '-').padStart(2)}`
-    + ` | ${row.versuche} Proben | ${row.toedlich} tödlich | Terrain ${row.terrainAbgetragen ?? '-'}`
+    + ` | auf ${String(row.testDistanz).padStart(4)} px | ${row.toedlich} tödlich | Terrain ${row.terrainAbgetragen ?? '-'}`
     + ` | ${row.tier.padEnd(9)} | ${row.name}`;
 
   console.log('\n  Stärkste Waffen:');
@@ -393,9 +605,11 @@ if (asJson) {
       console.log(`    ${category.padEnd(13)} (${names.length}): ${names.slice(0, 6).join(', ')}${names.length > 6 ? ', …' : ''}`);
     }
     console.log('  Drei Ursachen sind zu unterscheiden:');
-    console.log('   a) Schwere Artillerie (heavy_ranged, elemental): für große Distanzen');
-    console.log('      gebaut und bei der Messdistanz von ' + distance + ' px nicht treffsicher.');
-    console.log('      Das ist eine Grenze des Messaufbaus, kein Urteil über die Waffe.');
+    console.log('   a) Auf keiner der Messdistanzen (' + distanzen.join(', ') + ' px) wirksam.');
+    console.log('      Vorher stand hier, schwere Artillerie erscheine nur wegen der kurzen');
+    console.log('      Messdistanz als wirkungslos. Das ist mit der Messung über die');
+    console.log('      Kartenbreite widerlegt: Eine Waffe, die hier auftaucht, wirkt auch auf');
+    console.log('      ihrer besten Entfernung nicht — sie hat ein Problem, nicht der Aufbau.');
     console.log('   b) Platzhalter ohne Designwert: die Quelldatei nennt für diese Waffe');
     console.log('      keinen Schadenswert (siehe Liste oben). Ein Datenmangel, kein Codefehler.');
     console.log('   c) Einzelne Mechaniken, die noch fehlen (aufgestelltes Geschütz,');
