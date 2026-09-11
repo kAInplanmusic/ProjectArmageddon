@@ -267,7 +267,14 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
     // openClient verbindet und startet das Match bereits.
     const page = await openClient(context, { name: 'Tester' });
 
-    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(4, { timeout: 20_000 });
+    /*
+     * Fünf Zeilen: vier Klassenwaffen aus dem Startloadout plus die Reservewaffe
+     * mit unbegrenzter Munition (`FALLBACK_WEAPON_ID`, siehe `loadouts.js`).
+     * Vorher waren es vier, weil die Reserve zufällig selbst im neutralen
+     * Loadout lag und beim Anlegen nicht doppelt genommen wurde — daran hing
+     * also ein Test. Die Reserve ist jetzt bei jeder Klasse dieselbe.
+     */
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
 
     // Gruppenköpfe der Unterkategorien müssen erscheinen (höchstens vier).
     const gruppen = page.locator('#weapon-list .weapon-group');
@@ -281,7 +288,7 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
     // Jede Zeile trägt Namen, Munition und ein geladenes Icon.
     const zeilen = page.locator('#weapon-list .weapon-item');
     const anzahl = await zeilen.count();
-    expect(anzahl).toBe(4);
+    expect(anzahl).toBe(5);
     for (let i = 0; i < anzahl; i++) {
       const zeile = zeilen.nth(i);
       await expect(zeile.locator('.weapon-name')).not.toBeEmpty();
@@ -305,7 +312,8 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
   const context = await browser.newContext();
   try {
     const page = await openClient(context, { name: 'Tester' });
-    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(4, { timeout: 20_000 });
+    // Vier Klassenwaffen plus Reserve (siehe Test „Waffenliste ist online gefüllt").
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
 
     // Bei fremdem Zug darf kein Wechsel gesendet werden, und die Meldung muss
     // im Protokoll erscheinen statt stillschweigend zu scheitern.

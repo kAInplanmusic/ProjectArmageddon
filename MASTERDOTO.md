@@ -20,11 +20,11 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **369/369** |
-| Browser-E2E | `npm run test:e2e` | **60/60** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **409/409** |
+| Browser-E2E | `npm run test:e2e` | **66/66** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
-| Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
+| Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
 | Balance | `npm run balance` | 105 Waffen mit Schaden, 35 Selbstwirkungs-Waffen (alle wirksam), 10 ohne Wirkung |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
@@ -161,6 +161,116 @@ Ablehnungen (falscher Platz, ungültiger Winkel, Tick außerhalb des Fensters)
 blieben dadurch ungezählt, was einen falschen Eindruck erzeugt hätte. Jetzt
 zählt eine Hülle um die Methode jeden Ausgang.
 
+## Fortsetzung 2026-09-11 — Klassen, Wasser und zwei schwere Fehler
+
+Dieser Durchgang begann mit den offenen Punkten aus der Bestandsprüfung. Er hat
+zwei Fehler aufgedeckt, die es in sich haben: einen, der jeden Kisten- Abwurf
+unbrauchbar machte, und einen, der ein Match **nie enden ließ**.
+
+### Behobene Fehler
+
+26. **Gelandete Kisten sanken durch das Gelände.**
+    Die generische Physik (`PhysicsSystem`, Signatur `POSITION | VELOCITY`) zog
+    **jede** Kiste nach unten — eine Kiste hat weder Projektil- noch
+    Gesundheitskomponente und fiel deshalb durch das Raster der Ausnahmen. Eine
+    gelandete Kiste bekam erneut Schwerkraft und verschwand: bei 720 px
+    Kartenhöhe stand sie nach 480 Schritten auf **y ≈ 10 558**. Betroffen waren
+    alle Kisten — der abgeworfene Vorrat und die Rundenkisten.
+    Zweite Folge: Die Dämpfung „über Wasser nicht untergehen" in `#stepCrate`
+    (dort wird `vy` auf 0,4 begrenzt) wurde im nächsten Schritt überschrieben —
+    die Kiste sank gerade dort, wo sie schwimmen sollte.
+    Behoben mit `if (world.hasComponent(entityId, 'Crate')) continue;`.
+    Nachgewiesen: gelandete Kiste bleibt liegen, verlässt die Karte nicht.
+
+27. **Ein Match endete nie durch Ausschaltung (wiederverwendete Entity-IDs).**
+    Der schwerste Fund bisher. Das ECS vergibt die IDs entfernter Entities neu.
+    Starb eine Figur, erbte eine neu erzeugte Kiste oder ein Geschoss ihren
+    Platz — und damit ihre ID. Die Siegprüfung fragte aber
+    `world.isActive(entry.entityId)` und hielt die gefallene Figur deshalb für
+    lebendig, weil unter derselben ID wieder etwas lag.
+    Nachgestellt (Seed 5150): **alle vier Figuren gefallen, Status weiterhin
+    „playing", Runde 8** — das Match lief bis zur Rundengrenze (30) weiter.
+    Mitzählig: Die Anzeige meldete tote Figuren als lebendig mit 0 Leben, die
+    Auszählung nach Restgesundheit schrieb einem Toten seine Gesundheit wieder
+    zu, und Zugfolge wie Kommandoprüfung konnten einen Gefallenen für aktiv
+    halten.
+    Behoben, indem der Lebensstatus an den **Spieler** wandert (`entry.alive`,
+    gesetzt beim Erzeugen, gelöscht über einen Todeslistener des DamageSystem).
+    `isPlayerAlive()` ist seither die einzige Auskunft über den Lebensstatus;
+    `isActive` bleibt nur dort, wo es um den ECS-Platz selbst geht (Kisten,
+    Projektile). Abgesichert in `tests/victory-elimination.test.js` (5 Tests,
+    inklusive der Falle mit der wiederverwendeten ID).
+    **Der Fehler war latent:** Ob eine ID vor der Siegprüfung wiederverwendet
+    wurde, hing am Timing der Kisten. Er wurde erst sichtbar, als die
+    klassenabhängigen Startloadouts das Kampfgeschehen verschoben.
+
+28. **Die Wasseranzeige warf beim Zeichnen einen Fehler.**
+    In `hud.js` stand `wasserLabel(...)` statt `waterLabel(...)`. Die
+    Unit-Tests konnten das nicht sehen — der Fehler liegt im DOM-Pfad und fiel
+    erst im Browser auf (`ReferenceError`). Gefunden vom neuen E2E-Test, der die
+    Marke wirklich sucht.
+
+29. **Das Ertrinken überschwemmte das Ereignisprotokoll.**
+    Das CharacterSystem meldet `drowning` in **jedem Simulationsschritt**,
+    solange die Figur unter Wasser ist — bis zu 60 Meldungen je Sekunde. Das
+    Protokoll fasst 60 Zeilen; es wäre davon vollständig verdrängt worden. Der
+    Client meldet jetzt den **Übergang** (einmal beim Eintauchen, einmal beim
+    Auftauchen) und nennt die Figur beim Namen. Gemessen: 60 Schritte unter
+    Wasser → eine Meldung je Figur statt 60.
+
+30. **Zwei Tests hingen an einem Zufall des Katalogs.**
+    Der Online-Test erwartete vier Waffenzeilen. Die Reservewaffe mit
+    unbegrenzter Munition (`FALLBACK_WEAPON_ID`) war aber zufällig selbst die
+    erste Flächenwaffe des neutralen Loadouts und wurde beim Anlegen nicht
+    doppelt genommen. Mit den Klassen-Loadouts entfiel diese Kopplung: Es sind
+    jetzt korrekt fünf Zeilen (vier Klassenwaffen plus Reserve). Beide Tests
+    nennen die Zahl samt Begründung.
+
+### Klassen-Profil: eine Regel, eine Stelle
+
+Der offene Punkt „Klassen- und Archetyp-Modifier existieren doppelt" ist
+erledigt — und beim Zusammenführen kamen zwei weitere Befunde heraus.
+
+- `applyClassModifiers` / `applyArchetypeModifiers` sind **entfallen**. Sie
+  wurden nirgends aufgerufen und beschrieben eine *andere* Rechnung als die, die
+  lief (sie überschrieben `power` mit `angle` und kannten den
+  Archetyp-Schadensfaktor nicht). Die einzige Verrechnung ist jetzt
+  `combatProfile()` in `src/shared/config/classes.js`.
+- **Neu gefunden (a): Klasse und Archetyp sind im Match fest gekoppelt.** Beide
+  werden über `index % 3` zugeteilt: scout tritt nur als brawler auf, heavy nur
+  als artillerist, artillery nur als occultist. Von neun Kombinationen der
+  Tabellen sind drei erreichbar. Bewusst **nicht** nebenbei geändert — das ist
+  eine Balance-Entscheidung.
+- **Neu gefunden (b): Der Bezugswert `ARCHETYPE_DAMAGE_BASE = 1,2` gehört zu
+  keinem Archetyp** (1,1 / 1,4 / 1,6). Der „neutrale" Fall ist damit nirgends
+  erreichbar; jeder Archetyp schießt entweder langsamer oder schneller als
+  normal. Wert unverändert übernommen und als Fund dokumentiert.
+- Die Tabellen führen Dimensionen, die der Motor **nicht liest** (`drag`,
+  `mass`, Klassentempo, Archetyptempo, `archetype.damage` als Schaden). Sie
+  stehen jetzt ausdrücklich unter `profil.inert` und sind getestet — eine
+  stille Lüge wäre schlimmer als eine benannte Lücke.
+
+### Klassenabhängige Startloadouts
+
+Bis hierher startete jede Klasse mit `getDefaultLoadout(4)`, also mit exakt
+denselben vier Waffen; die Klasse veränderte nur Werte, nicht die Mittel.
+
+- Neu: `src/shared/config/loadouts.js`. Gleiche **Rollenstruktur** für jede
+  Klasse — Fläche, Direktschuss, Strahl-/Nahkampf, Kür —, aber andere Waffen
+  je Klasse. Nur die Kür unterscheidet sich inhaltlich: Scout ein
+  Bewegungsmittel, Heavy ein Flächenelement, Artillerie eine weittragende
+  Schusswaffe.
+- **Startwaffen nur `common`/`uncommon`/`rare`.** Episch und legendär bleiben
+  Loot. Ohne diese Grenze hätte der Heavy die stärkste Waffe des Katalogs (110
+  Schaden, 90 Radius) im ersten Zug — die Loot-Kisten wären entwertet, bevor
+  das Match beginnt.
+- Vollständig deterministisch (reine Sortierungen über Katalogfelder, bei
+  Gleichstand entscheidet der Katalogindex). Es wird keine Waffe erfunden.
+- Abgesichert in `tests/class-loadout.test.js` (12 Tests): Rollenstruktur,
+  Unterschiede zwischen den Klassen, Stufengrenze mit Gegenprobe,
+  Determinismus, Rückfall für unbekannte Klassen, Deckung der Bewegungsliste
+  mit dem Wirkungskatalog.
+
 ## Umgesetzt
 
 ### Engine
@@ -216,7 +326,8 @@ zählt eine Hülle um die Methode jeden Ausgang.
 - Schild und Rüstung greifen im DamageSystem über einen Modifikator, damit sie
   auch bei Flächenschaden wirken — dort verteilt der Radius den Schaden.
 - Protokoll v3 überträgt Schild und Einfrierdauer (2 Byte je Spieler), damit die
-  Anzeige auch im Online-Modus stimmt.
+  Anzeige auch im Online-Modus stimmt. **v4** ergänzt den Wasserstand (1 Byte)
+  für Ertrinken und Verdrängung — siehe unten.
 
 
 ## Bestandsprüfung der 150 Waffen
@@ -227,9 +338,9 @@ Vollständige Durchsicht am 2026-09-11. Ergebnis je Frage:
 |---|---|
 | Richtig benannt? | Ja. 150 eindeutige Anzeigenamen, 150 eindeutige interne Namen, keine Platzhalter. Serienkennungen waren uneinheitlich (siehe Fehler 19). |
 | Seltenheit vorhanden? | Ja, alle 150. Quelldaten führen drei Stufen (80/40/30); abgeleitet gibt es fünf (70/21/41/13/5). |
-| Für Drafting/Abwurf quantifiziert? | `powerScore` (0–515) und `powerTier` vorhanden; Loot gewichtet seither nach der Stufe. **Offen:** `cooldown` ist bei allen 150 konstant 0 und damit als Dimension ungenutzt. Eine Abwurf-Mechanik (Waffe ablegen/weitergeben) existiert nicht. |
+| Für Drafting/Abwurf quantifiziert? | `powerScore` (0–515) und `powerTier` vorhanden; Loot gewichtet nach der Stufe. `cooldown` ist **hergeleitet** (Werte 0–3, siehe `deriveCooldown`) und wirkt: Schuss abgelehnt, Nachladeanzeige in der Liste. Eine Abwurf-Mechanik existiert (Q, Kiste fliegt, siehe 26). |
 | Sinnvolle Spritesheets und Icons? | Icons: 150/150 vorhanden, keine Duplikate, keine Waisen, keine defekten Dateien — **aber im Browser nie geladen** (Fehler 20). Spritesheets: keine; die Darstellung ist prozedural (Canvas). |
-| Schussart, Schaden, Reichweite, Explosion vorhanden? | Schussart: 76 Hitscan / 74 Projektil. Schaden: alle 150, 52 davon Platzhalter. Explosion: 54 Waffen mit Radius, 22 verschiedene Werte. **Reichweite: `maxRange` ist bei allen 150 konstant 600** und damit als Unterscheidung wertlos. |
+| Schussart, Schaden, Reichweite, Explosion vorhanden? | Schussart: 76 Hitscan / 74 Projektil. Schaden: alle 150, 52 davon abgeleitet (`damageSource`). Explosion: 54 Waffen mit Radius, 22 verschiedene Werte. Reichweite: `maxRange` ist **hergeleitet** aus Feuerart, Kategorie und Geschoss — 61 verschiedene Werte von 110 bis 1062 px (siehe `deriveMaxRange`). |
 | Sinnvolle Namen? | Ja (siehe oben). |
 | Waffenmenü sinnvoll? | Jetzt ja: vier Gruppen, nur Waffen des aktiven Spielers, Munition je Waffe, Anzeigenummern deckungsgleich mit den Zifferntasten. Online war die Liste zuvor immer leer (Fehler 21). |
 | Alle Icons verknüpft? | Ja, seit Fehler 20 behoben. |
@@ -280,14 +391,18 @@ Vollständige Durchsicht am 2026-09-11. Ergebnis je Frage:
 
 ### Offene Punkte aus der Durchsicht
 
-- `maxRange` ist bei allen 150 Waffen 600. Damit ist die Reichweite keine
-  Eigenschaft, obwohl sie die Projektil-Lebensdauer steuert. Die Quelldaten
-  enthalten keine Reichweite; sie ließe sich aus Geschwindigkeit und Gravitation
-  herleiten.
-- `cooldown` ist bei allen 150 konstant 0. Als Drafting-Dimension ungenutzt.
-- Alle Spieler starten mit demselben Loadout (`getDefaultLoadout(4)`), unabhängig
-  von der Klasse. Eine klassenabhängige Startauswahl fehlt.
-- Eine Abwurf-Mechanik (Waffe liegen lassen oder weitergeben) existiert nicht.
+Alle vier Punkte sind inzwischen erledigt. Sie standen hier, weil die
+Bestandsprüfung sie als offen führte — der Stand war bereits überholt, was die
+Abstände zwischen Prüfung und Eintrag zeigt:
+
+- ~~`maxRange` ist bei allen 150 Waffen 600.~~ Falsch. Die Reichweite wird im
+  Generator hergeleitet (`deriveMaxRange`), 61 verschiedene Werte.
+- ~~`cooldown` ist bei allen 150 konstant 0.~~ Falsch. Der Generator leitet ihn
+  her (`deriveCooldown`), vier Werte 0–3, und der Motor erzwingt ihn.
+- ~~Alle Spieler starten mit demselben Loadout.~~ Erledigt: klassenabhängige
+  Startloadouts, siehe „Klassenabhängige Startloadouts".
+- ~~Eine Abwurf-Mechanik existiert nicht.~~ Erledigt: `Q` wirft die aktive Waffe
+  ab, sie fliegt und landet aufhebbar (siehe 26).
 
 ### Werkzeuge
 - `npm run lint` / `lint:fix` — ESLint, als CI-Gate nutzbar.
@@ -302,7 +417,7 @@ Vollständige Durchsicht am 2026-09-11. Ergebnis je Frage:
 
 ## Testabdeckung
 
-- **Unit/Integration (175):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (409):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -312,14 +427,24 @@ Vollständige Durchsicht am 2026-09-11. Ergebnis je Frage:
   Zustandswirkungen und Determinismus), Ereignisweitergabe an den Konsumenten
   (7 Tests, inklusive Gegenprobe).
 
+  Neu in diesem Durchgang: **Kampfprofil** (7 Tests, `class-profile.test.js`),
+  **Klassen-Loadouts** (12 Tests, `class-loadout.test.js`), **Wasser im HUD**
+  (13 Tests, `water-hud.test.js` — Zustände, Ertrinken, Verdrängung,
+  Drahtkodierung, Delta), **Sieg durch Ausschaltung** (5 Tests,
+  `victory-elimination.test.js`), **Bewegung reduzieren** (2 Tests in
+  `dom.test.js`).
+
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (33):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (66):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
   Heilung im Protokoll, Schildmarke, Einfrieren, Schaden über Zeit,
   Selbstwirkung ohne Projektil, Lauffähigkeit nach allen Effekten,
-  Determinismus).
+  Determinismus). Neu: **Wasser im HUD** (4 Tests, `water-hud.spec.mjs` —
+  Marke mit Prozent, „nass" gegen „untergetaucht", Meldung nur beim Übergang,
+  Verschwinden der Marke) und **Bewegung reduzieren** (2 Tests in
+  `accessibility.spec.mjs`, mit Gegenprobe ohne die Einstellung).
 
 ## Einstufung der Waffen
 
@@ -342,7 +467,12 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       Artillerie wird dadurch unterschätzt).
 - [x] Zustände im HUD: Schild, Einfrieren, Schaden über Zeit und Schadensbonus
       erscheinen als Marken in der Spielerliste, mit Erläuterung beim Überfahren.
-- [ ] Ertrinken und Wasserverdrängung im HUD anzeigen.
+- [x] Ertrinken und Wasserverdrängung im HUD anzeigen. Wasserstand je Spieler
+      (Protokoll v4, ein Byte), Marke am Spielernamen mit Zustand und Prozent
+      („nass 50 %" / „untergetaucht 80 %"), Erläuterung beim Überfahren,
+      Protokollmeldung beim Übergang. Schwellen stehen einmal in
+      `src/shared/config/water.js` und gelten für Motor und Anzeige gleich
+      (`tests/water-hud.test.js`, `tests/e2e/water-hud.spec.mjs`).
 
 ### P1 — Netcode
 - [x] Server-autoritative Zugzeit. Geprüft: Der Zug wechselt nach Ablauf der
@@ -360,7 +490,12 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [x] Tastatur-Fokusreihenfolge und Fokusindikatoren inkl. Skip-Link.
 - [x] Tastatursteuerung greift nicht mehr in Formularfelder ein.
 - [ ] Entwurfsphase (Draft) für 4–6 Einheiten pro Team.
-- [ ] Accessibility vertiefen: Screenreader-Durchlauf, `prefers-reduced-motion`.
+- [x] `prefers-reduced-motion` befolgt: CSS-Animationen und -Übergänge entfallen
+      vollständig (nicht verkürzt), Explosionspartikel werden nicht erzeugt, der
+      Explosionsblitz bleibt. Die Einstellung wird je Bild neu gelesen, greift
+      also ohne Neuladen (`tests/dom.test.js`, in `accessibility.spec.mjs` mit
+      Gegenprobe).
+- [ ] Accessibility vertiefen: Screenreader-Durchlauf.
 - [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
 
 ### P3 — Betrieb
@@ -471,21 +606,18 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 - [ ] **Karten-Authoring über die Presets hinaus.** Es gibt vier Presets
       (`hills`, `mountains`, `islands`, `caverns`). Gewünscht waren zusätzlich
       offene, vertikale, wasserreiche und nahkampflastige Karten.
-- [ ] **`prefers-reduced-motion`.** Geprüft: kein einziges Vorkommen. Gehört zur
-      Barrierefreiheit, siehe P2.
+- [x] **`prefers-reduced-motion`.** Erledigt, siehe P2 — CSS und Canvas.
 - [ ] **Release-Härtung.** Anti-Cheat-Audit und Browser-Profiling. (Lasttest und
       Barrierefreiheit stehen schon unter P2/P3.)
 
 ### Dabei aufgefallen, nicht behoben
 
-- [ ] **Klassen- und Archetyp-Modifier existieren doppelt.** Die Helferfunktionen
-      `applyClassModifiers` und `applyArchetypeModifiers` in
-      `src/shared/config/classes.js` werden **nirgends aufgerufen**; sie werden nur
-      über die Balken re-exportiert. Die tatsächliche Verrechnung passiert inline in
-      `src/engine/match.js` (Zeile 316: `BASE_HEALTH * classDef.health *
-      archetype.health`). Zwei Orte für dieselbe Regel heißt: Wer die Balance
-      ändert, muss beide finden. Bewusst nicht in diesem Durchgang angetastet —
-      daran hängt das Balancing aller Klassen.
+- [x] **Klassen- und Archetyp-Modifier existierten doppelt.** Erledigt: Die
+      Helferfunktionen sind entfallen, die einzige Verrechnung ist
+      `combatProfile()` in `src/shared/config/classes.js`. Dabei kamen zwei
+      weitere Befunde heraus (feste Kopplung von Klasse und Archetyp, Bezugswert
+      1,2 gehört zu keinem Archetyp) — siehe „Klassen-Profil: eine Regel, eine
+      Stelle".
 
 - [x] **Archetypen wirken im Spiel.** Der frühere Eintrag „nur Config, nicht
       Gameplay" ist damit erledigt: `match.js` setzt Leben und Werte je Archetyp
@@ -502,5 +634,19 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
   gemeinsamer Speicher nötig.
 - **Erfolge, Profile und Konten existieren nicht.** Alle Kennzahlen werden
   derzeit nirgends dauerhaft erfasst.
+
+- **Klasse und Archetyp sind im Match fest gekoppelt.** Beide werden über
+  `index % 3` zugeteilt, es sind also nur drei der neun Kombinationen
+  erreichbar (scout/brawler, heavy/artillerist, artillery/occultist). Die
+  Tabellen führen neun. Das ist ein offener Balance-Punkt, kein Fehler —
+  `combatProfile()` kann alle neun, das Spiel erzeugt nur drei.
+- **Fünf Dimensionen der Klassentabellen sind wirksamkeitslos.** `drag`, `mass`,
+  Klassentempo, Archetyptempo und `archetype.damage` als Schaden liest der
+  Motor nicht; sie stehen in `profil.inert` und sind getestet. Sie zu verdrahten
+  ist eine Balance-Entscheidung. Besonders benannt: `archetype.damage` wirkt
+  heute als **Tempo**faktor (der Okkultist schießt am schnellsten), obwohl der
+  Name Schaden verspricht.
+- **Der Bezugswert 1,2 der Archetyp-Abschussgeschwindigkeit gehört zu keinem
+  Archetyp** (1,1 / 1,4 / 1,6). Normaltempo ist damit nicht erreichbar.
 
 - **Kein Audio.**
