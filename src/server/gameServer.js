@@ -14,6 +14,7 @@ import { extname, resolve } from 'node:path';
 import { WebSocketServer } from 'ws';
 import { MatchController } from '../engine/match.js';
 import { LobbyManager, LOBBY_STATUS } from './lobby.js';
+import { createLogger } from './logger.js';
 import { SnapshotHistory } from './lagCompensation.js';
 import { BotController } from './bot.js';
 import {
@@ -44,6 +45,9 @@ const UNLIMITED_AMMO = 'unbegrenzt';
 const FULL_SNAPSHOT_INTERVAL = SNAPSHOT_HZ * 2;
 
 class LobbySession {
+  /** Wurde das Match-Ende schon gemeldet? Siehe #finish. */
+  #finished = false;
+
   /**
    * @param {object} lobby
    * @param {object} [options]
@@ -51,13 +55,21 @@ class LobbySession {
    * @param {object} [options.replayEntries] - aufgezeichnete Eingaben (Restore)
    * @param {number} [options.replayTotalTicks] - Tickzahl beim Speichern
    * @param {object} [options.metrics] - Betriebszähler des Servers (optional)
+   * @param {object} [options.logger] - strukturierter Logger (optional)
    */
-  constructor(lobby, { onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null } = {}) {
+  constructor(lobby, {
+    onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
+  } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
     // nur eine Referenz, damit sie Ereignisse mitzählen kann, ohne sie zu
     // besitzen. Ohne Referenz unterbleibt die Zählung stillschweigend.
     this.metrics = metrics;
+    /**
+     * Logger mit der Lobby-ID als Feld — dadurch enthalten alle Zeilen dieser
+     * Sitzung die Zuordnung, ohne sie bei jedem Aufruf zu wiederholen.
+     */
+    this.logger = logger ? logger.child({ lobbyId: lobby.id }) : null;
     this.match = new MatchController({
       seed: lobby.seed,
       teams: lobby.teams,
@@ -234,8 +246,30 @@ class LobbySession {
   }
 
   #finish() {
+    /*
+     * Nur EINMAL melden.
+     *
+     * Fund (belegt): `tick()` und `stepSimulation()` prüfen beide auf
+     * `status === 'gameover'` und rufen beide `#finish()` auf. Da `tick()` den
+     * Simulationsschritt aufruft, trafen im selben Durchgang beide zu — das
+     * Match-Ende wurde also doppelt gemeldet. Im Log stand jede Zeile zweimal
+     * (`match_over` mit derselben Lobby-ID), `match_over` ging zweimal an die
+     * Clients, `onEmpty` lief zweimal und der Lobby-Status wurde zweimal gesetzt.
+     *
+     * Aufgefallen ist es erst durch das strukturierte Log: Vorher war es eine
+     * Freitextzeile unter vielen, und doppelte Zeilen sehen dort nach Rauschen
+     * aus. Genau dafür sind auswertbare Logs da.
+     */
+    if (this.#finished) return;
+    this.#finished = true;
     this.stop();
     this.lobby && (this.lobby.status = LOBBY_STATUS.FINISHED);
+    this.logger?.info('match_over', 'Match entschieden', {
+      winnerTeamId: this.match.winnerTeamId,
+      rounds: this.match.round,
+      ticks: this.match.world.tickCount,
+      reason: this.match.winnerTeamId === null ? 'unentschieden' : 'ausscheidung',
+    });
     this.#broadcastControl('match_over', {
       winnerTeamId: this.match.winnerTeamId,
       rounds: this.match.round,
@@ -450,11 +484,21 @@ export class GameServer {
     serveStatic = null,
     persistence = null,
     persistenceIntervalMs = 10_000,
+    logger = null,
   } = {}) {
     this.#lobbies = lobbyManager;
     this.serveStatic = serveStatic ?? createDistHandler();
-    /** Injizierbarer Logger; Standard ist die Konsole. */
-    this.logger = console;
+    /**
+     * Injizierbarer Logger.
+     *
+     * Standard ist der strukturierte Logger (eine JSON-Zeile je Ereignis, siehe
+     * `logger.js`). Tests übergeben einen Sammel-Logger; wer Freitext mag, setzt
+     * LOG_FORMAT=pretty.
+     */
+    this.logger = logger ?? createLogger({
+      level: process.env.LOG_LEVEL ?? 'info',
+      format: process.env.LOG_FORMAT === 'pretty' ? 'pretty' : 'json',
+    });
     /**
      * Betriebszähler für die Zustandsabfrage.
      *
@@ -481,7 +525,17 @@ export class GameServer {
     this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
     this.#wsServer.on('connection', socket => {
       this.metrics.connections += 1;
-      socket.once('close', () => { this.metrics.disconnections += 1; });
+      // debug: im Betrieb ist jeder Verbindungsaufbau Rauschen, bei der Fehlersuche
+      // ist die Reihenfolge von Verbinden und Trennen aber entscheidend.
+      this.logger.debug('client_connected', 'WebSocket-Verbindung geöffnet', {
+        connections: this.metrics.connections,
+      });
+      socket.once('close', () => {
+        this.metrics.disconnections += 1;
+        this.logger.debug('client_disconnected', 'WebSocket-Verbindung geschlossen', {
+          disconnections: this.metrics.disconnections,
+        });
+      });
       this.#handleConnection(socket);
     });
   }
@@ -497,6 +551,23 @@ export class GameServer {
   snapshotState() {
     const lobbies = [];
     for (const lobby of this.#lobbies.all()) {
+      /*
+       * Entschiedene Lobbys werden NICHT gespeichert.
+       *
+       * Fund (belegt): Gespeichert wurde jede Lobby, auch die längst
+       * entschiedene. Beim nächsten Start wurden sie alle wiederhergestellt —
+       * jede mit einem MatchController und einem Replay-Kern, also mit
+       * Geländegenerierung und erneutem Anwenden der Eingaben. In der
+       * Entwicklungsdatei standen so **258 Lobbys, alle mit Status „finished"**,
+       * und jeder Serverstart baute 258 fertige Matches neu auf, nur um sie
+       * sofort wieder zu beenden.
+       *
+       * Ein entschiedenes Match hat nichts fortzusetzen. Es wegzulassen hält die
+       * Datei klein und den Start schnell — und es räumt die Altlast beim
+       * nächsten Speichern von selbst auf, weil nur noch die aktuellen Lobbys
+       * geschrieben werden.
+       */
+      if (lobby.status === LOBBY_STATUS.FINISHED) continue;
       lobbies.push(serializeLobby(lobby, this.#sessions.get(lobby.id) ?? null));
     }
     return { lobbies };
@@ -524,7 +595,19 @@ export class GameServer {
 
     let restored = 0;
     let skipped = 0;
+    let veraltetFinished = 0;
     for (const entry of saved.lobbies) {
+      /*
+       * Alte Dateien können entschiedene Lobbys enthalten — vor der Korrektur in
+       * `snapshotState` wurden sie mitgespeichert. Sie werden übersprungen statt
+       * wiederhergestellt: Ein entschiedenes Match hat keinen fortzusetzenden
+       * Zustand, und das Wiederherstellen kostet Geländegenerierung und das
+       * erneute Anwenden aller Eingaben.
+       */
+      if (entry.status === LOBBY_STATUS.FINISHED) {
+        veraltetFinished += 1;
+        continue;
+      }
       try {
         const { lobby } = restoreLobby(entry, {
           lobbyManager: this.#lobbies,
@@ -534,6 +617,7 @@ export class GameServer {
               replayEntries: options.replayEntries,
               replayTotalTicks: options.replayTotalTicks,
               metrics: this.metrics,
+              logger: this.logger,
             }).start();
             this.#sessions.set(target.id, session);
             return session;
@@ -542,10 +626,18 @@ export class GameServer {
         if (lobby) restored += 1;
       } catch (error) {
         skipped += 1;
-        this.logger?.warn?.(`[restore] Lobby ${entry.id} übersprungen: ${error.message}`);
+        this.logger.warn('lobby_restore_skipped', 'Lobby konnte nicht wiederhergestellt werden', {
+          lobbyId: entry.id, error,
+        });
       }
     }
-    return { restored, skipped };
+    if (veraltetFinished > 0) {
+      this.logger.info('lobby_restore_skipped_finished', 'Entschiedene Lobbys aus der Sicherung übersprungen', {
+        count: veraltetFinished,
+        hinweis: 'Sie werden beim nächsten Speichern aus der Datei entfernt',
+      });
+    }
+    return { restored, skipped, skippedFinished: veraltetFinished };
   }
 
   /** Startet das periodische Speichern. */
@@ -633,8 +725,21 @@ export class GameServer {
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',
         });
+        this.logger.info('lobby_created', 'Lobby angelegt', {
+          lobbyId: created.lobby.id,
+          teams: created.lobby.teams,
+          playersPerTeam: created.lobby.playersPerTeam,
+          preset: created.lobby.preset,
+          orientation: created.lobby.orientation,
+          seed: created.lobby.seed,
+        });
         return this.#json(response, 201, created);
       } catch (error) {
+        this.logger.warn('lobby_create_failed', 'Lobby konnte nicht angelegt werden', {
+          error,
+          teams: body.teams,
+          playersPerTeam: body.playersPerTeam,
+        });
         return this.#json(response, 400, { error: error.message });
       }
     }
@@ -699,14 +804,22 @@ export class GameServer {
             const lobbyId = message.lobbyId;
             const lobby = this.#lobbies.get(lobbyId);
             if (!lobby) throw new Error('Lobby nicht gefunden');
-            this.logger?.info?.(
-              `[join] lobby=${lobbyId} seats=${lobby.seats.length}/${lobby.capacity} token=${message.token ? 'ja' : 'nein'}`
-            );
+            this.logger.info('lobby_join', 'Spieler tritt einer Lobby bei', {
+              lobbyId,
+              seats: lobby.seats.length,
+              capacity: lobby.capacity,
+              // Nur DASS ein Token mitkam, nicht der Token selbst.
+              hasToken: Boolean(message.token),
+            });
             const seat = this.#lobbies.join(lobbyId, { name: message.name ?? 'Spieler', token: message.token ?? null });
             context = { lobbyId, token: seat.token };
             let session = this.#sessions.get(lobbyId);
             if (!session) {
-              session = new LobbySession(lobby, { onEmpty: id => this.#sessions.delete(id), metrics: this.metrics }).start();
+              session = new LobbySession(lobby, {
+                onEmpty: id => this.#sessions.delete(id),
+                metrics: this.metrics,
+                logger: this.logger,
+              }).start();
               this.#sessions.set(lobbyId, session);
             }
             session.attach(seat.token, socket);
@@ -787,7 +900,13 @@ export class GameServer {
         }
       } catch (error) {
         this.metrics.errors += 1;
-        this.logger?.error?.(`[ws] Join/Kommando fehlgeschlagen: ${error.message}`);
+        this.logger.error('ws_command_failed', 'Kommando über WebSocket fehlgeschlagen', {
+          lobbyId: context.lobbyId,
+          // Der Token wird NICHT mitgeschrieben (der Logger redigiert ihn ohnehin,
+          // aber ein Feld dafür anzulegen wäre die falsche Gewohnheit).
+          messageType: parseControlMessage(raw)?.t ?? null,
+          error,
+        });
         socket.send(controlMessage(CONTROL.ERROR, { error: error.message }));
       }
     });
@@ -810,6 +929,12 @@ export class GameServer {
       this.#httpServer.once('error', reject);
       this.#httpServer.listen(port, host, () => {
         const address = this.#httpServer.address();
+        this.logger.info('server_listening', 'Server nimmt Verbindungen an', {
+          port: address.port,
+          host: address.address,
+          protocol: PROTOCOL_VERSION,
+          persistence: Boolean(this.persistence),
+        });
         resolve({ port: address.port, host: address.address, url: `http://${host}:${address.port}` });
       });
     });

@@ -95,8 +95,21 @@ export class LobbyManager {
     };
   }
 
-  list() {
-    return [...this.#lobbies.keys()].map(id => this.describe(id));
+  /**
+   * Lobbys für die Auswahlliste im Menü.
+   *
+   * Entschiedene Lobbys werden ausgelassen: Sie lassen sich nicht mehr
+   * betreten (`join` lehnt bei status !== OPEN ab), und ihre Anzeige wäre eine
+   * Sackgasse. In der Entwicklungsdatei sammelten sich 258 davon an und
+   * verdeckten die spielbaren Einträge vollständig.
+   *
+   * @param {object} [optionen]
+   * @param {boolean} [optionen.mitBeendeten=false] - auch entschiedene zeigen
+   */
+  list({ mitBeendeten = false } = {}) {
+    return [...this.#lobbies.values()]
+      .filter(lobby => mitBeendeten || lobby.status !== LOBBY_STATUS.FINISHED)
+      .map(lobby => this.describe(lobby.id));
   }
 
   /** Belegt einen freien Platz. Ohne lobbyId wird eine neue Lobby erstellt. */
