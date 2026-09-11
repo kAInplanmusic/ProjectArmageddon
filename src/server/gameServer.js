@@ -754,6 +754,32 @@ export class GameServer {
 
           case CONTROL.PING:
             socket.send(Buffer.from([MAGIC[0], MAGIC[1], PROTOCOL_VERSION, MESSAGE_TYPE.PONG]));
+            /*
+             * Ist das Match längst entschieden, dem Client das erneut mitteilen.
+             *
+             * Fund (belegt): Nach dem Ende ruft die Sitzung `stop()` auf und
+             * sendet keine Snapshots mehr; die einzige Nachricht über das Ende
+             * ist ein einmaliges `match_over`. Verpasst ein Client sie — etwa
+             * weil sein Socket im Moment der Aussendung nicht offen war
+             * (`broadcastSnapshot` überspringt solche Clients still) —, sitzt er
+             * dauerhaft auf einem laufenden Spiel fest: Der Zustand steht auf
+             * „playing", es kommt nichts mehr, und die Anzeige behauptet
+             * weiter, es laufe.
+             *
+             * Der Client fragt ohnehin alle zwei Sekunden per PING nach. Diese
+             * Antwort ist der natürliche Ort für die Wiederholung: kein neuer
+             * Nachrichtentyp, kein neues Feld im Drahtformat, und die
+             * Wiederholung ist folgenlos, weil der Client sie erkennt.
+             */
+            if (context.lobbyId) {
+              const fertigeSitzung = this.#sessions.get(context.lobbyId);
+              if (fertigeSitzung?.match?.status === 'gameover') {
+                socket.send(controlMessage('match_over', {
+                  winnerTeamId: fertigeSitzung.match.winnerTeamId,
+                  rounds: fertigeSitzung.match.round,
+                }));
+              }
+            }
             break;
 
           default:

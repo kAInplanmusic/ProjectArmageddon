@@ -286,3 +286,201 @@ test('Unbesetzte Plätze werden von Bots gesteuert und das Match endet', { timeo
     await server.close();
   }
 });
+
+// --------------------------------------- Ende mitteilen (Wiederholung/Rejoin)
+
+/**
+ * Ein entschiedenes Match muss auch einem Client mitgeteilt werden, der die
+ * einmalige `match_over`-Nachricht verpasst hat.
+ *
+ * Hintergrund: Nach dem Ende ruft die Sitzung `stop()` auf und sendet keine
+ * Snapshots mehr. Die einzige Nachricht über das Ende ist ein einmaliges
+ * `match_over` aus `#finish()`. Verpasst ein Client sie — etwa weil sein Socket
+ * im Moment der Aussendung nicht offen war; `broadcastSnapshot` überspringt
+ * solche Clients still —, sitzt er dauerhaft auf einem laufenden Spiel fest:
+ * Der Ansichtszustand steht auf „playing", es kommt nichts mehr, und die Anzeige
+ * behauptet weiter, es laufe.
+ *
+ * Diese Datei sichert die beiden Wege ab, auf denen der Client es dennoch
+ * erfährt. Der Client selbst ist in `src/client/main.js` entsprechend
+ * angepasst.
+ */
+
+/** Spielt ein Match mit Bots deterministisch bis zum Ende durch. */
+async function matchZuEndeSpielen(session) {
+  session.stop();
+  session.match.setTurnDuration(250);
+  let schritte = 0;
+  while (session.match.status === 'playing' && schritte < 20_000) {
+    session.stepSimulation(1);
+    schritte += 1;
+  }
+  assert.equal(session.match.status, 'gameover', 'Match muss enden');
+}
+
+test('Auf PING kommt das Match-Ende erneut, wenn es entschieden ist', { timeout: 60_000 }, async () => {
+  const { server, url, port } = await startTestServer();
+  const wsUrl = `ws://127.0.0.1:${port}/ws`;
+  const client = new TestClient(wsUrl);
+
+  try {
+    const created = await createLobby(url, { teams: 2, playersPerTeam: 1, seed: 99 });
+    await client.open();
+    client.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
+    await client.waitFor(CONTROL.WELCOME);
+
+    const session = server.getSession(created.lobby.id);
+    await matchZuEndeSpielen(session);
+
+    // Zählen statt warten: Das erste match_over kann bereits in der Warteschlange
+    // liegen. Geprüft wird, dass auf die Anfrage ein WEITERES kommt.
+    const zaehle = () => client.controls.filter(m => m.t === 'match_over').length;
+    const vorher = zaehle();
+
+    client.send(CONTROL.PING);
+
+    const frist = Date.now() + 5000;
+    while (Date.now() < frist && zaehle() <= vorher) {
+      await new Promise(r => setTimeout(r, 25));
+    }
+
+    assert.ok(zaehle() > vorher,
+      'Auf eine PING-Anfrage muss match_over erneut kommen, solange das Match entschieden ist');
+
+    const letzte = client.controls.filter(m => m.t === 'match_over').at(-1);
+    assert.equal(letzte.winnerTeamId, session.match.winnerTeamId,
+      'Die Wiederholung muss denselben Sieger nennen');
+  } finally {
+    client.close();
+    await server.close();
+  }
+});
+
+test('Ohne entschiedenes Match wiederholt PING nichts', { timeout: 30_000 }, async () => {
+  // Gegenprobe: Ohne sie wäre der Test oben auch dann grün, wenn der Server
+  // match_over bei JEDER Anfrage schicken würde — dann wäre es kein Beleg für
+  // die gezielte Wiederholung, sondern für Dauerfeuer.
+  const { server, url, port } = await startTestServer();
+  const wsUrl = `ws://127.0.0.1:${port}/ws`;
+  const client = new TestClient(wsUrl);
+
+  try {
+    const created = await createLobby(url, { teams: 2, playersPerTeam: 1, seed: 7 });
+    await client.open();
+    client.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
+    await client.waitFor(CONTROL.WELCOME);
+
+    const session = server.getSession(created.lobby.id);
+    session.stop();
+    session.match.setTurnDuration(30_000);
+    assert.equal(session.match.status, 'playing');
+
+    for (let i = 0; i < 3; i += 1) client.send(CONTROL.PING);
+    await new Promise(r => setTimeout(r, 400));
+
+    assert.equal(client.controls.filter(m => m.t === 'match_over').length, 0,
+      'Solange das Match läuft, darf PING kein match_over auslösen');
+  } finally {
+    client.close();
+    await server.close();
+  }
+});
+
+test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { timeout: 60_000 }, async () => {
+  /*
+   * Festgehaltenes Verhalten, das eine falsche Annahme korrigiert hat:
+   *
+   * Erwartet war, dass ein Wiederverbinder den entschiedenen Zustand bekommt
+   * (Status „gameover"), damit die Anzeige das Ende zeigt. Gemessen wurde das
+   * Gegenteil: Beim Match-Ende ruft die Sitzung `#finish()` auf, und das
+   * löscht sie aus der Sitzungsverwaltung (`onEmpty`). Der spätere Beitritt
+   * findet also KEINE Sitzung mehr vor und legt eine NEUE an (`JOIN_LOBBY`
+   * erzeugt eine `LobbySession`). Deren Match beginnt bei null und steht auf
+   * „playing".
+   *
+   * Der Reconnect ist damit faktisch eine Revanche: Es fließen wieder
+   * Snapshots, und der Client zeigt ein neues Match statt eines Endstands. Ein
+   * „für immer veraltetes Brett" gibt es auf diesem Weg nicht.
+   *
+   * Zwei Eigentümlichkeiten hält der Test ausdrücklich fest, weil sie
+   * überraschen:
+   *  - Der Lobby-Status bleibt „finished", während in ihr ein neues Match
+   *    läuft.
+   *  - Ein FREMDER Client (ohne Token) kommt nicht mehr hinein, obwohl dort
+   *    wieder gespielt wird.
+   */
+  const { server, url, port } = await startTestServer();
+  const wsUrl = `ws://127.0.0.1:${port}/ws`;
+  const client = new TestClient(wsUrl);
+
+  try {
+    const created = await createLobby(url, { teams: 2, playersPerTeam: 1, seed: 99 });
+    await client.open();
+    client.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
+    await client.waitFor(CONTROL.WELCOME);
+    // Den eigenen Platz mitschneiden — damit die Wiederverbindung unten gegen
+    // einen echten Wert geprüft werden kann und nicht gegen `undefined`.
+    const erstesLobbyState = await client.waitFor(CONTROL.LOBBY_STATE);
+    assert.ok(erstesLobbyState.entityId !== null && erstesLobbyState.entityId !== undefined,
+      'Der erste Beitritt muss eine Entity-ID erhalten');
+
+    const session = server.getSession(created.lobby.id);
+    await matchZuEndeSpielen(session);
+    assert.equal(session.match.status, 'gameover');
+
+    // Das Ende hat die Sitzung entfernt.
+    assert.ok(!server.getSession(created.lobby.id),
+      'Nach dem Ende muss die Sitzung aus der Verwaltung verschwunden sein');
+
+    // Wieder verbinden — mit demselben Token.
+    const erneut = new TestClient(wsUrl);
+    try {
+      await erneut.open();
+      erneut.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
+      const zustand = await erneut.waitFor(CONTROL.LOBBY_STATE);
+
+      // Der Platz ist derselbe (Wiederverbindung, kein neuer Spieler) …
+      assert.equal(zustand.entityId, erstesLobbyState.entityId,
+        'Die Wiederverbindung muss denselben Platz zurückgeben');
+
+      // … aber das Match beginnt von vorn.
+      assert.equal(zustand.snapshot?.status, 'playing',
+        'Der Wiederverbinder bekommt ein NEUES Match, nicht den Endstand');
+      assert.equal(zustand.snapshot?.round, 1, 'Das neue Match startet in Runde 1');
+      assert.ok(zustand.seed !== undefined, 'Der Seed für den Terrainaufbau muss mitkommen');
+
+      /*
+       * Der Lobby-Status steht dagegen auf „beendet", während in ihr wieder
+       * gespielt wird. Das ist widersprüchlich — wer die Lobby-Liste liest,
+       * sieht sie als erledigt —, aber es ist der Ist-Zustand, und ein Test
+       * soll ihn festhalten statt eine Wunschvorstellung.
+       */
+      assert.equal(zustand.status, 'finished',
+        'Der Lobby-Status bleibt auf „beendet", obwohl ein neues Match läuft');
+
+      // Und es laufen wieder Snapshots.
+      const frist = Date.now() + 10_000;
+      while (Date.now() < frist && erneut.snapshots.length === 0) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      assert.ok(erneut.snapshots.length > 0,
+        'Nach dem Wiederverbinden müssen wieder Snapshots fließen');
+    } finally {
+      erneut.close();
+    }
+
+    // Und ein fremder Client kommt nicht mehr hinein.
+    const fremd = new TestClient(wsUrl);
+    try {
+      await fremd.open();
+      fremd.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Fremd' });
+      const fehler = await fremd.waitFor(CONTROL.ERROR);
+      assert.match(fehler.error, /nimmt keine Spieler mehr auf/);
+    } finally {
+      fremd.close();
+    }
+  } finally {
+    client.close();
+    await server.close();
+  }
+});

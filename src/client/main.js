@@ -385,6 +385,17 @@ class Game {
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
         this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
       }
+      /*
+       * Der mitgesendete `snapshot` wird hier bewusst NICHT ausgewertet.
+       *
+       * Zwischenzeitlich stand hier eine Prüfung auf `snapshot.status ===
+       * 'gameover'`, um einem Wiederverbinder das entschiedene Match zu zeigen.
+       * Sie war toter Code: Die Sitzung wird beim Match-Ende gelöscht
+       * (`#finish` → `onEmpty`), ein späterer Beitritt erzeugt deshalb eine
+       * NEUE Sitzung, und deren Zustand steht auf „playing". Der Reconnect
+       * startet faktisch ein neues Match — geprüft in
+       * `tests/server-integration.test.js`.
+       */
     });
     client.on('state', state => {
       if (state === CONNECTION_STATE.RECONNECTING) this.hud.log('Verbindung verloren — versuche Wiederverbindung', 'danger');
@@ -811,7 +822,13 @@ class Game {
           if (payload.affected?.length) this.hud.log('Toxischer Regen trifft die Zone', 'danger');
           break;
         case 'match_over':
-          this.hud.log('Match beendet', 'accent');
+          /*
+           * Nur beim ERSTEN Mal protokollieren. Der Server wiederholt die
+           * Nachricht auf jede PING-Anfrage, solange das Match entschieden ist
+           * (siehe PING-Zweig im Server) — sonst stünde alle zwei Sekunden
+           * dieselbe Zeile im Protokoll und verdrängte alles andere.
+           */
+          if (this.remoteStatus !== 'gameover') this.hud.log('Match beendet', 'accent');
           break;
         default:
           break;
