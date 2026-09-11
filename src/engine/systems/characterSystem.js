@@ -144,10 +144,33 @@ export class CharacterSystem {
   get drownDamagePerSecond() { return this.#drownDamagePerSecond; }
   get submergedLevel() { return this.#submergedLevel; }
 
+  /**
+   * Oberfläche unter einer Position, die im Festkörper steckt.
+   *
+   * Von `fromY` aus nach OBEN, solange dort Festkörper ist; die erste freie
+   * Zeile darunter ist die Oberfläche.
+   *
+   * Fund (belegt): Die Schleife lief in die FALSCHE Richtung — sie ging nach
+   * oben, solange `(x, y−1)` NICHT solide war. In einer Spalte, die über dem
+   * Boden nur Luft enthält, lief sie damit bis an den oberen Kartenrand durch und
+   * lieferte 1. Die Landung setzte die Figur dann auf
+   * `1 − HALF_HEIGHT = −9`, was die Begrenzung auf `HALF_HEIGHT` (10) anhob —
+   * die Figur stand plötzlich am oberen Spielfeldrand und fiel 340 px tief.
+   *
+   * Gemessen: Bei `open`/Seed 4242 sprang Figur 1 bei Tick 27 von y = 360 auf
+   * y = 10, ebenso Figur 2. Der Sturz verursachte Fallschaden; auf allen Karten
+   * und Seeds starben Figuren so im Stehen, ohne dass jemand geschossen hatte
+   * (9–21 Fallschadensereignisse je Partie, Schaden 110–211).
+   *
+   * @param {object} terrain
+   * @param {number} x
+   * @param {number} fromY - eine Position IM Festkörper
+   * @returns {number} y der Oberfläche (erste solide Zeile)
+   */
   #surfaceY(terrain, x, fromY) {
     let y = Math.floor(fromY);
-    while (y > 0 && !this.#isSolid(terrain, x, y - 1)) y--;
-    return y;
+    while (y > 0 && this.#isSolid(terrain, x, y)) y--;
+    return y + 1;
   }
 
   get gravity() { return this.#gravity; }

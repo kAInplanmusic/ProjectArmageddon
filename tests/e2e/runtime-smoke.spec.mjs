@@ -114,20 +114,48 @@ test('Match läuft deterministisch bis zum Spielende', async ({ page }) => {
 
   const finalState = await page.evaluate(() => {
     const api = window.__PA__;
+
+    /*
+     * ERST einige Schüsse, dann das Ende herbeiführen.
+     *
+     * Fund (belegt): Der Test schoss mit `Math.PI / 4` (45°) und 60–90 Kraft und
+     * wartete auf das Spielende. Gemessen trifft das kaum — höchstens 9 Schaden
+     * bei 100 Leben, und eine Runde erlaubt einen Schuss je Spieler. Ein Ende
+     * durch Ausschaltung war damit rechnerisch unmöglich.
+     *
+     * Dass der Test früher grün war, lag an einem Fehler in der Landung: Die
+     * Figuren wurden auf den oberen Kartenrand gesetzt und stürzten 340 px tief;
+     * der Fallschaden tötete sie im Stehen. Nach der Korrektur von
+     * `CharacterSystem#surfaceY` endete das Match nicht mehr und der Test fiel
+     * um — zu Recht, denn er prüfte den Fehler, nicht das Spielende.
+     *
+     * Das Spielende wird deshalb ausdrücklich herbeigeführt, über den
+     * Schadensweg des Motors. Geprüft wird weiterhin, was der Titel sagt: dass
+     * ein Match bis zum Ende läuft, der Endbildschirm erscheint und der Sieger
+     * benannt wird.
+     */
     let guard = 0;
-    while (api.getState().status === 'playing' && guard < 4000) {
+    while (api.getState().status === 'playing' && guard < 400) {
       const state = api.getState();
-      if (state.turnElapsedMs < 20) {
-        api.fire(Math.PI / 4, 60 + (guard % 30));
-      }
+      if (state.turnElapsedMs < 20) api.fire(Math.PI / 4, 60 + (guard % 30));
       api.advance(1);
       guard++;
     }
+    // Team 1 ausschalten — danach muss das Match enden.
+    const match = api.game.match;
+    const schaden = match.world.getSystem('damage');
+    for (const spieler of match.players.filter(p => p.teamId === 1)) {
+      schaden.applyDamage(match.world, spieler.entityId, 10_000, null);
+    }
+    for (let i = 0; i < 200 && api.getState().status === 'playing'; i += 1) api.advance(1);
+
     return api.getState();
   });
 
   expect(finalState.status).toBe('gameover');
   expect(finalState.winnerTeamId).not.toBeNull();
+  // Der Sieger ist das andere Team — nicht das ausgeschaltete.
+  expect(finalState.winnerTeamId).toBe(0);
   await expect(page.locator('#end-overlay')).toBeVisible();
   await expect(page.locator('#winner-text')).toContainText('gewinnt');
 });

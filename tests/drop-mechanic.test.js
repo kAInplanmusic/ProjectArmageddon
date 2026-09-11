@@ -168,9 +168,35 @@ test('Die abgeworfene Waffe LANDET außerhalb des Aufhebe-Radius', () => {
 });
 
 test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
+  /*
+   * Geprüft wird die LANDUNG, und zwar über das `crate_landed`-Ereignis — nicht
+   * über die Position der Entity danach.
+   *
+   * Fund (belegt): Die Prüfung las `Position` der Kiste, nachdem sie gelandet
+   * war. Eine gelandete Kiste wird aber aufgenommen, sobald eine Figur sie
+   * berührt (`crate_pickup` → `world.removeEntity`), und ihre Entity-ID wird
+   * sofort neu vergeben. Gemessen: Kiste 8 landete bei Spieler 3, wurde
+   * aufgenommen, und dieselbe ID 8 trug danach die Kiste von Spieler 4 — die
+   * Prüfung las also eine fremde oder gar keine Position (`x=0, y=0`,
+   * „Kein Boden unter der Kiste bei x=0").
+   *
+   * Das fiel erst auf, nachdem der Landungsfehler behoben war
+   * (`CharacterSystem#surfaceY`): Vorher standen die Figuren am oberen
+   * Kartenrand, die Kisten landeten weit weg von ihnen und blieben liegen.
+   *
+   * Die Landeposition im Ereignis ist die verbindliche Angabe — sie steht fest,
+   * bevor irgendetwas die Kiste aufheben kann.
+   *
+   * Ebenso bewusst NICHT geprüft wird die gespeicherte Position der Kiste
+   * (`Crate.crateX`) nach der Landung: Auch diese Abfrage traf dieselbe
+   * ID-Wiederverwendung. Zuerst lieferte sie 327,49 statt der erwarteten Lage —
+   * die ID trug inzwischen eine andere Kiste. Beides gehört zum selben Fund:
+   * Eine Kiste ist nach der Landung keine verlässliche Adresse mehr.
+   */
   const match = new MatchController({ seed: 313, teams: 2, playersPerTeam: 2, turnDurationMs: 100_000 });
   match.start();
 
+  let geprueft = 0;
   for (const spieler of match.players.map(p => p.entityId)) {
     if (!match.world.isActive(spieler)) continue;
     const waffe = WEAPONS.find(w => w.damage > 0 && w.maxAmmo > 1 && !match.inventory.has(spieler, w.id));
@@ -180,22 +206,29 @@ test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
     const ergebnis = match.dropWeapon(spieler, waffe.id);
     assert.equal(ergebnis.ok, true, `Abwurf für ${spieler} abgelehnt`);
 
-    // Fliegen lassen, bis sie liegt.
+    // Fliegen lassen, bis sie liegt — die Landung selbst abwarten.
+    let landung = null;
     for (let i = 0; i < 600; i++) {
       match.step();
-      if (match.consumeEvents().some(e => e.type === 'crate_landed' && e.payload.crateId === ergebnis.crateId)) break;
+      landung = match.consumeEvents()
+        .find(e => e.type === 'crate_landed' && e.payload.crateId === ergebnis.crateId);
+      if (landung) break;
     }
+    assert.ok(landung, `Kiste ${ergebnis.crateId} ist in 600 Schritten nicht gelandet`);
 
-    const x = match.world.getComponent(ergebnis.crateId, 'Position', 'x');
-    const y = match.world.getComponent(ergebnis.crateId, 'Position', 'y');
+    const { x, y } = landung.payload;
     assert.ok(x >= 0 && x <= MAP_WIDTH, `Kiste außerhalb der Karte: x=${x}`);
 
     // Liegt sie auf festem Grund?
     const boden = match.surfaceYAt(Math.round(x));
-    assert.ok(boden > 0, `Kein Boden unter der Kiste bei x=${x}`);
-    assert.ok(Math.abs(y - boden) < 3,
-      `Kiste schwebt oder steckt: y=${y}, Boden=${boden}`);
+    assert.ok(boden > 0, `Kein Boden unter der Kiste bei x=${Math.round(x)}`);
+    assert.equal(y, boden,
+      `Kiste liegt nicht auf dem Boden: y=${y}, Boden=${boden}`);
+
+    geprueft += 1;
   }
+
+  assert.ok(geprueft > 0, 'Der Testaufbau hat keine Kiste abgeworfen');
 });
 
 test('Die Munition reist mit der abgeworfenen Waffe', () => {

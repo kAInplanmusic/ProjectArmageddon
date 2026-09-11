@@ -27,14 +27,44 @@ import { MatchController } from '../src/engine/match.js';
  * wiederverwendbaren Platz im ECS. Diese Datei hält das fest.
  */
 
-/** Spielt ein Match, indem jede Runde geschossen wird. Gibt den Endzustand. */
-function matchMitDauerfeuer({ seed, teams = 2, playersPerTeam = 2, maxTicks = 4000 }) {
+/**
+ * Spielt ein Match bis zur Ausschaltung eines Teams. Gibt den Endzustand.
+ *
+ * ## Warum hier NICHT mehr geschossen wird
+ *
+ * Der Helfer hieß früher `matchMitDauerfeuer` und schoss je Runde mit
+ * `Math.PI / 4` (45°) und 60–90 Kraft. Gemessen trifft das kaum: Der beste
+ * Treffer machte **9 Schaden bei 100 Leben** — und eine Runde erlaubt EINEN
+ * Schuss je Spieler, bei höchstens 30 Runden. Eine Ausschaltung war damit
+ * rechnerisch unmöglich.
+ *
+ * Grün war der Test nur, weil ein Fehler in der Landung mithalf: Die Figuren
+ * wurden auf den oberen Kartenrand gesetzt (y = 10) und stürzten 340 px tief;
+ * der Fallschaden tötete sie im Stehen — gemessen 9–21 Ereignisse je Partie mit
+ * 110–211 Schaden. Nachdem dieser Fehler behoben war (`CharacterSystem#surfaceY`
+ * lief in die falsche Richtung), konnte das Match nicht mehr enden und der Test
+ * fiel um. Das war richtig: Er prüfte nicht die Ausschaltung, sondern den Fehler.
+ *
+ * Ausgeschaltet wird deshalb AUSDRÜCKLICH über den Schadensweg des Motors. Damit
+ * prüft der Test, was der Dateiname sagt — dass ein Match durch Ausschaltung
+ * endet und nicht erst an der Rundengrenze.
+ *
+ * @param {object} optionen
+ * @param {number} [optionen.ausgeschaltetesTeam] - welches Team fallen soll
+ */
+function matchMitAusschaltung({
+  seed, teams = 2, playersPerTeam = 2, maxTicks = 4000, ausgeschaltetesTeam = 0,
+} = {}) {
   const match = new MatchController({ seed, teams, playersPerTeam });
   match.start();
+
+  const schaden = match.world.getSystem('damage');
+  for (const spieler of match.players.filter(p => p.teamId === ausgeschaltetesTeam)) {
+    schaden.applyDamage(match.world, spieler.entityId, 10_000, null);
+  }
+
   let ticks = 0;
   while (match.getState().status === 'playing' && ticks < maxTicks) {
-    const state = match.getState();
-    if (state.turnElapsedMs < 20) match.fire(state.activePlayerId, Math.PI / 4, 60 + (ticks % 30));
     match.step();
     match.consumeEvents();
     ticks += 1;
@@ -44,16 +74,23 @@ function matchMitDauerfeuer({ seed, teams = 2, playersPerTeam = 2, maxTicks = 40
 
 test('Ein Match endet durch Ausschaltung, nicht erst an der Rundengrenze', () => {
   // Der Seed, mit dem der Fehler reproduzierbar auftrat.
-  const { match, ticks } = matchMitDauerfeuer({ seed: 5150 });
+  const { match, ticks } = matchMitAusschaltung({ seed: 5150 });
   const state = match.getState();
 
   assert.equal(state.status, 'gameover', 'Das Match läuft nach 4000 Schritten noch');
   assert.notEqual(state.winnerTeamId, null, 'Kein Sieger ermittelt');
   assert.ok(ticks < 4000, `Erst nach ${ticks} Schritten beendet`);
+
+  // DER Kern des Titels: Es endet VOR der Rundengrenze. Ohne diese Prüfung
+  // könnte das Match auch einfach die Runden aufgebraucht haben.
+  assert.ok(state.round < state.maxRounds,
+    `Durch die Rundengrenze beendet (Runde ${state.round} von ${state.maxRounds}) — nicht durch Ausschaltung`);
+  // Und der Sieger ist das andere Team.
+  assert.notEqual(state.winnerTeamId, 0);
 });
 
 test('Eine gefallene Figur wird nicht als lebendig gemeldet', () => {
-  const { match } = matchMitDauerfeuer({ seed: 5150 });
+  const { match } = matchMitAusschaltung({ seed: 5150 });
   const state = match.getState();
 
   for (const entity of state.entities) {
