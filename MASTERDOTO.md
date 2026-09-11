@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **414/414** |
-| Browser-E2E | `npm run test:e2e` | **81/81** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **418/418** |
+| Browser-E2E | `npm run test:e2e` | **82/82** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -395,6 +395,48 @@ Bewusste Entscheidung, im Test festgehalten: **Runde, Wind und Zugzeit sind
 KEINE Live-Regionen.** Sie ändern sich im Sekundentakt; ein Screenreader würde
 pausenlos reden und jede echte Meldung übertönen.
 
+### Nachgemessen statt vermutet: die Tab-Reihenfolge
+
+Beim Abschluss der Barrierefreiheit stand die Vermutung im Raum, die Waffenliste
+sei mit je einem Tab-Stopp pro Zeile zu langsam zu durchlaufen und brauche eine
+Navigationsleiste („roving tabindex"). **Die Messung widerlegt das:** Im Match
+gibt es genau **8 Tab-Stopps** — 1 Sprunglink, 2 Spielfeld, dann die fünf
+Waffenzeilen. Das Spielfeld ist der ZWEITE Stopp, also mit einem Tastendruck
+erreichbar. Bei höchstens sieben Waffen (sechs plus Reserve) bleibt das
+überschaubar; die zusätzliche Mechanik wäre Aufwand ohne Nutzen und würde die
+Zahl der Tab-Stopps nur von unten begrenzen, nicht senken.
+
+Festgehalten, damit die Frage nicht erneut aufgeworfen wird. Kommt eine
+größere Auswahl hinzu (Loot mit vielen Waffen, Entwurfsphase), ist sie neu zu
+stellen — dann mit einer Messung, nicht aus dem Gefühl.
+
+### Behobener Fehler
+
+39. **Die Waffennummern standen nicht mehr in aufsteigender Reihenfolge
+    (selbst eingebaut).** Sichtbar als „1, 2, 3, 5, 4" — die Nummer 5 stand ÜBER
+    der 4.
+    Ursache: Nummerierung und Gliederung liefen auseinander. Die Nummer kommt
+    aus `orderInventoryBySubcategory`, der Platz in der Liste aus einer zweiten
+    Sortierung nach Unterkategorie. Solange beide dieselbe Ordnung ergaben, fiel
+    das nicht auf. Mit Fehler 31 („Reserve ans Ende") wanderte die Reservewaffe
+    in der Nummerierung nach hinten, in der Gliederung blieb sie unter
+    „Schusswaffen" — die beiden Ordnungen liefen auseinander.
+    Behoben, indem die Gliederung aus DERSELBEN Reihenfolge entsteht: Die
+    Gruppen werden beim Durchlaufen der Anzeigeordnung gebildet, stehen also in
+    der Reihenfolge ihres ersten Auftretens, und die Nummern steigen lückenlos.
+    Die Reserve bekommt über `displayGroupFor` eine eigene Gruppe („Reserve
+    (unbegrenzt)") — sie ist keine Spielweise, sondern eine Ausnahme.
+    `WEAPON_SUBCATEGORIES` bleibt bei vier Einträgen: Die beschreiben weiterhin
+    die Kategorien-Zuordnung des Katalogs und werden getestet.
+    Abgesichert in `tests/drop-mechanic.test.js` (Ordnung lückenlos, Reserve
+    zuletzt, Gruppen-Zuordnung) und in zwei E2E-Tests: aufsteigende Nummern in
+    der Liste **und** „Taste N wählt die mit N beschriftete Waffe" für jede
+    Position. Genau dieser Vergleich hätte den Fehler gefunden.
+
+    **Der Fehler steckte in einem Bereich, den die bisherigen Tests nicht
+    abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
+    Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
+
 ## Umgesetzt
 
 ### Engine
@@ -541,7 +583,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (414):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (418):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -559,7 +601,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (81):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (82):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
