@@ -552,7 +552,17 @@ class Game {
       maelstrom: { active: (snapshot.round ?? 0) >= 15, inset: this.remoteInset ?? 0 },
       entities,
       projectiles: snapshot.projectiles ?? [],
-      crates: [],
+      /*
+       * Kisten aus dem Snapshot (Protokoll v5).
+       *
+       * Fund (belegt): Hier stand fest `crates: []`. Im lokalen Match wurden
+       * Kisten gezeichnet, online nie — gemessen mit zwei Browsern an einem
+       * echten Server: beide sahen 0 Kisten, obwohl der Server sie führte. Die
+       * Lücke lag an ZWEI Stellen: Der Client setzte die Liste leer, und der
+       * Snapshot übertrug Kisten überhaupt nicht (`encodeSnapshot` kannte nur
+       * Figuren und Projektile).
+       */
+      crates: snapshot.crates ?? [],
       terrainWidth: this.remoteTerrain?.width ?? this.renderer.width,
       terrainHeight: this.remoteTerrain?.height ?? this.renderer.height,
     };

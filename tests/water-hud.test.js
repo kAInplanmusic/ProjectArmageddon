@@ -19,6 +19,7 @@ import {
   toDeltaBase,
   DIRTY,
   PROTOCOL_VERSION,
+  HEADER_SIZE,
 } from '../src/shared/protocol.js';
 
 /**
@@ -280,7 +281,9 @@ function zustandMitWasser(level, { health = 90, x = 100, y = 200 } = {}) {
 }
 
 test('Der Wasserstand überlebt die Kodierung (Protokoll v4)', () => {
-  assert.equal(PROTOCOL_VERSION, 4);
+  // Der Wasserstand kam mit v4. Mindestversion statt fester Zahl — sonst bricht
+  // der Test bei jeder weiteren Protokollerweiterung, ohne etwas zu sagen.
+  assert.ok(PROTOCOL_VERSION >= 4, `Protokollversion ${PROTOCOL_VERSION}`);
   assert.ok(DIRTY.WATER > 0);
 
   for (const level of [0, 0.1, WET_LEVEL, 0.5, DROWN_LEVEL, 0.99, 1]) {
@@ -303,13 +306,13 @@ test('Unverändertes Wasser wird im Delta nicht erneut übertragen', () => {
   assert.ok(Math.abs(gleich.entities[0].waterLevel - 0.5) <= 1 / 255);
 
   const deltaBytes = encodeSnapshot(zustandMitWasser(0.5), { previous: basis });
-  const dirtyByte = deltaBytes[22 + 11];
+  const dirtyByte = deltaBytes[HEADER_SIZE + 11];
   assert.equal(dirtyByte & DIRTY.WATER, 0, 'Wasser wurde als geändert gemeldet, obwohl gleich');
   assert.equal(dirtyByte, 0, 'Das Delta spart nichts, obwohl sich nichts geändert hat');
 
   // Neuer Pegel: Wasser-Bit gesetzt, Wert kommt an.
   const neu = encodeSnapshot(zustandMitWasser(0.9), { previous: basis });
-  assert.equal(neu[22 + 11] & DIRTY.WATER, DIRTY.WATER);
+  assert.equal(neu[HEADER_SIZE + 11] & DIRTY.WATER, DIRTY.WATER);
   const decoded = decodeSnapshot(neu, basis);
   assert.ok(Math.abs(decoded.entities[0].waterLevel - 0.9) <= 1 / 255);
 });

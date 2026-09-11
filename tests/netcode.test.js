@@ -11,6 +11,11 @@ import {
   DIRTY,
   SNAPSHOT_FLAG,
   toDeltaBase,
+  // Nicht die 22 von Hand schreiben: Die Kopfgröße ist eine Entscheidung des
+  // Drahtformats und wird dort gepflegt. Ein Literal hier bricht bei jeder
+  // Erweiterung — so geschehen beim Kistenfeld in v5.
+  HEADER_SIZE,
+  CRATE_STRIDE,
 } from '../src/shared/protocol.js';
 import { SnapshotHistory } from '../src/server/lagCompensation.js';
 import { LobbyManager, LOBBY_STATUS } from '../src/server/lobby.js';
@@ -212,8 +217,13 @@ test('Protokoll überträgt die Restzugzeit', () => {
   const buffer = encodeSnapshot(state, { turnRemainingMs: 24_500 });
   const decoded = decodeSnapshot(buffer);
 
-  // v3 führte Schild und Einfrierdauer ein, v4 den Wasserstand je Spieler.
-  assert.equal(PROTOCOL_VERSION, 4);
+  /*
+   * Mindestversion statt fester Zahl: „die Restzugzeit ist im Drahtformat" gilt
+   * ab v1, der Wasserstand ab v4, die Kisten ab v5. Eine feste Zahl bricht bei
+   * jeder Erweiterung, ohne etwas auszusagen — die MINDESTversion sagt, was der
+   * Test eigentlich braucht.
+   */
+  assert.ok(PROTOCOL_VERSION >= 1, `Protokollversion ${PROTOCOL_VERSION}`);
   assert.ok(Math.abs(decoded.turnRemainingMs - 24_500) < 100, `Zugzeit: ${decoded.turnRemainingMs}`);
   assert.equal(decoded.isFull, true, 'Ohne vorherigen Zustand muss es ein Vollsnapshot sein');
   assert.equal(buffer[2], PROTOCOL_VERSION, `Versionsbyte muss ${PROTOCOL_VERSION} sein`);
@@ -323,7 +333,7 @@ test('dirty-Bits entsprechen den geänderten Feldern', () => {
     projectiles: [],
   };
   const buffer = encodeSnapshot(state, { previous });
-  const dirty = buffer[22 + 11];
+  const dirty = buffer[HEADER_SIZE + 11];
 
   assert.equal(dirty & DIRTY.HEALTH, DIRTY.HEALTH, 'Gesundheitsbit muss gesetzt sein');
   assert.equal(dirty & DIRTY.POSITION, 0, 'Positionsbit darf nicht gesetzt sein');
@@ -372,7 +382,7 @@ test('Zustände überleben das Delta-Encoding, wenn sie sich ändern', () => {
   assert.equal(delta.entities[0].health, 100, 'Gesundheit aus dem vorherigen Zustand');
 
   // Das Statusbit muss gesetzt sein, die anderen nicht.
-  const dirty = deltaBuffer[22 + 11];
+  const dirty = deltaBuffer[HEADER_SIZE + 11];
   assert.equal(dirty & DIRTY.STATUS, DIRTY.STATUS, 'Statusbit muss gesetzt sein');
   assert.equal(dirty & DIRTY.POSITION, 0, 'Positionsbit darf nicht gesetzt sein');
 });
@@ -387,7 +397,7 @@ test('Unveränderte Zustände werden im Delta nicht als geändert gemeldet', () 
   const gleich = { ...basis, tick: 2 };
 
   const deltaBuffer = encodeSnapshot(gleich, { previous: erst.previous });
-  const dirty = deltaBuffer[22 + 11];
+  const dirty = deltaBuffer[HEADER_SIZE + 11];
   assert.equal(dirty & DIRTY.STATUS, 0, 'Ohne Änderung darf das Statusbit nicht gesetzt sein');
 
   // Der Client behält die Werte aus dem vorherigen Zustand.
@@ -429,4 +439,115 @@ test('toDeltaBase führt Zustände in der Drahtform', () => {
   const ohne = toDeltaBase({ entities: [{ entityId: 2, x: 0, y: 0, health: 1, alive: true }] });
   assert.equal(ohne.get(2).shieldRaw, 0);
   assert.equal(ohne.get(2).frozenRaw, 0);
+});
+
+// ------------------------------------------------------------------- Kisten
+
+test('Kisten überleben die Kodierung (Protokoll v5)', () => {
+  /*
+   * Fund (belegt): Der Snapshot übertrug Kisten überhaupt nicht — `encodeSnapshot`
+   * kannte nur Figuren und Projektile. Zusammen mit `crates: []` im Client
+   * bedeutete das: ONLINE war keine einzige Kiste zu sehen, im lokalen Match
+   * dagegen schon. Gemessen mit zwei Browsern an einem echten Server: beide
+   * sahen 0 Kisten, obwohl der Server sie führte.
+   *
+   * Der Test hält beides fest: dass Kisten übertragen werden UND dass die
+   * übertragenen Werte ankommen. Ein Test nur auf „Anzahl > 0" hätte eine
+   * vertauschte Koordinate nicht bemerkt.
+   */
+  const state = {
+    tick: 12,
+    round: 1,
+    wind: 0,
+    activePlayerId: 1,
+    entities: [],
+    projectiles: [],
+    crates: [
+      { entityId: 7, x: 462, y: 350, crateType: 2, rarity: 3 },
+      // Krumme Koordinaten: Sie prüfen die Quantisierung auf 0,25 px.
+      { entityId: 9, x: 123.25, y: 44.5, crateType: 0, rarity: 0 },
+    ],
+  };
+
+  const bytes = encodeSnapshot(state);
+  const decoded = decodeSnapshot(bytes);
+
+  assert.ok(decoded, 'Dekodierung fehlgeschlagen');
+  assert.equal(decoded.crates.length, 2, `${decoded.crates.length} Kisten statt 2`);
+
+  assert.deepEqual(decoded.crates[0], {
+    entityId: 7, x: 462, y: 350, crateType: 2, rarity: 3,
+  });
+
+  // Die krummen Werte müssen innerhalb der Quantisierung ankommen.
+  assert.ok(Math.abs(decoded.crates[1].x - 123.25) <= 0.125, `x: ${decoded.crates[1].x}`);
+  assert.ok(Math.abs(decoded.crates[1].y - 44.5) <= 0.125, `y: ${decoded.crates[1].y}`);
+  assert.equal(decoded.crates[1].crateType, 0);
+  assert.equal(decoded.crates[1].rarity, 0);
+});
+
+test('Kisten kosten genau CRATE_STRIDE je Stück', () => {
+  const basis = {
+    tick: 1, round: 1, wind: 0, activePlayerId: null,
+    entities: [], projectiles: [], crates: [],
+  };
+  const leer = encodeSnapshot(basis).length;
+
+  for (const anzahl of [1, 2, 5]) {
+    const crates = Array.from({ length: anzahl }, (_, i) => ({
+      entityId: i + 1, x: 100 + i, y: 200, crateType: 1, rarity: 2,
+    }));
+    assert.equal(encodeSnapshot({ ...basis, crates }).length, leer + anzahl * CRATE_STRIDE,
+      `${anzahl} Kisten kosten nicht ${anzahl} × ${CRATE_STRIDE} Byte`);
+  }
+});
+
+test('Ein Snapshot ohne Kistenfeld bleibt gültig', () => {
+  /*
+   * Rückwärtsverträglichkeit im Aufruf, nicht auf dem Draht: Manche Aufrufer
+   * bauen einen Zustand von Hand (Tests, Werkzeuge) und kennen `crates` nicht.
+   * Sie dürfen nicht abstürzen — ein fehlendes Feld ist eine leere Liste.
+   * Auf dem Draht schützt die Versionsnummer: Eine ältere Gegenstelle lehnt den
+   * Snapshot ab, statt ihn fehlzuinterpretieren.
+   */
+  const bytes = encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
+  });
+  const decoded = decodeSnapshot(bytes);
+  assert.ok(decoded);
+  assert.deepEqual(decoded.crates, []);
+});
+
+test('Ein abgeschnittener Kistenpuffer wirft nicht', () => {
+  // Ein unvollständiger Snapshot darf den Client nicht abstürzen lassen: Er wird
+  // verworfen (null) oder liefert, was vollständig da ist.
+  const bytes = encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
+    crates: [{ entityId: 1, x: 10, y: 20, crateType: 0, rarity: 0 }],
+  });
+
+  const abgeschnitten = bytes.slice(0, bytes.length - 3);
+  const decoded = decodeSnapshot(abgeschnitten);
+  // Entweder abgelehnt oder mit leerer Kistenliste — beides ist in Ordnung,
+  // ein Wurf wäre es nicht.
+  if (decoded) {
+    assert.equal(decoded.crates.length, 0, 'Ein halber Eintrag wurde übernommen');
+  }
+});
+
+test('Die Delta-Basis führt Kisten nicht mit — sie sind nicht deltafähig', () => {
+  /*
+   * Kisten werden bei jedem Snapshot vollständig übertragen. Das ist eine
+   * bewusste Entscheidung: Ihre Zahl ist klein (wenige Stück), und „dieselbe
+   * Kiste bewegt sich" ist der einzige Änderungsfall — ein Delta bräuchte
+   * Kennungen und Entfernungsmeldungen, die mehr kosten als sie sparen.
+   *
+   * Der Test hält fest, dass `toDeltaBase` keine Kisten erfindet: Wer dort
+   * später welche ergänzt, muss den Encoder mitziehen.
+   */
+  const basis = toDeltaBase({
+    entities: [], projectiles: [],
+    crates: [{ entityId: 1, x: 10, y: 20, crateType: 0, rarity: 0 }],
+  });
+  assert.equal(basis.has(1), false, 'toDeltaBase hat eine Kiste als Figur aufgenommen');
 });

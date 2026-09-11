@@ -42,7 +42,15 @@
 // ein zweiter Satz Zahlen hier wäre die nächste doppelte Regel.
 import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
 
-export const PROTOCOL_VERSION = 4;
+/**
+ * Version des Drahtformats.
+ *
+ * 5: Kisten werden übertragen (Kampffeld-Loot). Vorher fehlten sie im Snapshot,
+ *    weshalb ONLINE keine Kiste zu sehen war — im lokalen Match dagegen schon.
+ *    Eine ältere Gegenstelle lehnt den Snapshot ab, statt ihn falsch zu lesen;
+ *    genau dafür gibt es diese Zahl.
+ */
+export const PROTOCOL_VERSION = 5;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -103,7 +111,23 @@ export const SNAPSHOT_FLAG = Object.freeze({
  */
 export const PLAYER_STRIDE = 15;
 export const PROJECTILE_STRIDE = 6;
-export const HEADER_SIZE = 22;
+/**
+ * Kiste im Snapshot: Kennung (2), x (2), y (2), Art (1), Seltenheit (1).
+ *
+ * `inFlight` fehlt bewusst: Es steuert die Landephysik auf dem SERVER und hat
+ * für die Anzeige keine Bedeutung — die Kiste wird an ihrer Position gezeichnet,
+ * ob sie fällt oder liegt.
+ */
+export const CRATE_STRIDE = 8;
+/**
+ * Kopf des Snapshots.
+ *
+ * 22 → 23 mit Protokoll v5: Die Kistenzahl brauchte ein eigenes Feld. Sie in die
+ * freien Bits der Flags zu packen wäre platzsparender gewesen, aber der Kopf ist
+ * die Stelle, an der man nachliest, was übertragen wird — zwei Zahlen in einem
+ * Feld machen das schwerer. Ein Byte ist hier gut angelegt.
+ */
+export const HEADER_SIZE = 23;
 
 function clampInt16(value) {
   const rounded = Math.round(value);
@@ -147,7 +171,11 @@ function toDataView(input) {
 export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } = {}) {
   const players = state.entities ?? [];
   const projectiles = state.projectiles ?? [];
-  const size = HEADER_SIZE + players.length * PLAYER_STRIDE + projectiles.length * PROJECTILE_STRIDE;
+  const crates = state.crates ?? [];
+  const size = HEADER_SIZE
+    + players.length * PLAYER_STRIDE
+    + projectiles.length * PROJECTILE_STRIDE
+    + crates.length * CRATE_STRIDE;
   const bytes = new Uint8Array(size);
   const view = new DataView(bytes.buffer);
 
@@ -165,6 +193,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
   bytes[17] = Math.min(255, projectiles.length);
   view.setUint16(18, clampUint16(turnRemainingMs / TURN_MS_SCALE), true);
   view.setUint16(20, isDelta ? 0 : SNAPSHOT_FLAG.FULL, true);
+  bytes[22] = Math.min(255, crates.length);
 
   let offset = HEADER_SIZE;
   for (const player of players) {
@@ -218,6 +247,15 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     offset += PROJECTILE_STRIDE;
   }
 
+  for (const crate of crates) {
+    view.setUint16(offset, (crate.entityId ?? 0) & 0xffff, true);
+    view.setInt16(offset + 2, clampInt16((crate.x ?? 0) * COORD_SCALE), true);
+    view.setInt16(offset + 4, clampInt16((crate.y ?? 0) * COORD_SCALE), true);
+    view.setUint8(offset + 6, (crate.crateType ?? 0) & 0xff);
+    view.setUint8(offset + 7, (crate.rarity ?? 0) & 0xff);
+    offset += CRATE_STRIDE;
+  }
+
   return bytes;
 }
 
@@ -241,6 +279,9 @@ export function decodeSnapshot(input, previous = null) {
   const activePlayerId = view.getUint16(14, true) || null;
   const playerCount = view.getUint8(16);
   const projectileCount = view.getUint8(17);
+  // Kistenzahl — ab Protokoll v5. Ältere Snapshots kommen hier nicht an: Die
+  // Versionsprüfung oben lehnt sie ab, statt sie fehlzuinterpretieren.
+  const crateCount = view.getUint8(22);
   const turnRemainingMs = view.getUint16(18, true) * TURN_MS_SCALE;
   const flags = view.getUint16(20, true);
   const isFull = (flags & SNAPSHOT_FLAG.FULL) !== 0;
@@ -300,6 +341,27 @@ export function decodeSnapshot(input, previous = null) {
     offset += PROJECTILE_STRIDE;
   }
 
+  /*
+   * Kisten stehen NACH den Projektilen — die Reihenfolge muss zu encodeSnapshot
+   * passen. Sie werden im Zustand ausdrücklich mitgeführt, weil sie sonst online
+   * unsichtbar wären: `onlineViewState` im Client konnte sie nicht erfinden.
+   */
+  const crates = [];
+  for (let i = 0; i < crateCount; i++) {
+    // Ein abgeschnittener Puffer beendet die Schleife, statt zu werfen: Ein
+    // halber Snapshot ist besser als ein Absturz, und die Prüfung darüber
+    // erkennt ihn ohnehin.
+    if (offset + CRATE_STRIDE > view.byteLength) break;
+    crates.push({
+      entityId: view.getUint16(offset, true),
+      x: view.getInt16(offset + 2, true) / COORD_SCALE,
+      y: view.getInt16(offset + 4, true) / COORD_SCALE,
+      crateType: view.getUint8(offset + 6),
+      rarity: view.getUint8(offset + 7),
+    });
+    offset += CRATE_STRIDE;
+  }
+
   return {
     version: PROTOCOL_VERSION,
     isFull,
@@ -310,6 +372,7 @@ export function decodeSnapshot(input, previous = null) {
     activePlayerId,
     entities,
     projectiles,
+    crates,
     previous: nextPrevious,
   };
 }

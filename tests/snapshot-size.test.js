@@ -7,6 +7,7 @@ import {
   HEADER_SIZE,
   PLAYER_STRIDE,
   PROJECTILE_STRIDE,
+  CRATE_STRIDE,
 } from '../src/shared/protocol.js';
 // Die Senderate gehört dem Server (er sendet), nicht dem Drahtformat.
 import { SNAPSHOT_HZ } from '../src/server/gameServer.js';
@@ -65,7 +66,8 @@ test('Die Snapshot-Größe ist die Summe ihrer Teile', () => {
 
   const erwartet = HEADER_SIZE
     + state.entities.length * PLAYER_STRIDE
-    + state.projectiles.length * PROJECTILE_STRIDE;
+    + state.projectiles.length * PROJECTILE_STRIDE
+    + (state.crates ?? []).length * CRATE_STRIDE;
   assert.equal(encodeSnapshot(state).length, erwartet);
 
   // Und mit Projektilen stimmt sie auch.
@@ -75,7 +77,8 @@ test('Die Snapshot-Größe ist die Summe ihrer Teile', () => {
   assert.equal(
     encodeSnapshot(mitProjektil).length,
     HEADER_SIZE + mitProjektil.entities.length * PLAYER_STRIDE
-      + mitProjektil.projectiles.length * PROJECTILE_STRIDE,
+      + mitProjektil.projectiles.length * PROJECTILE_STRIDE
+      + (mitProjektil.crates ?? []).length * CRATE_STRIDE,
   );
 });
 
@@ -149,9 +152,13 @@ test('Quantisierung ist aktiv: Koordinaten kosten zwei Byte, nicht vier', () => 
   match.start();
   const state = match.getState();
 
-  const zweiFiguren = HEADER_SIZE + 2 * PLAYER_STRIDE;
-  // Zwei Figuren, kein Projektil: exakt die Stride-Summe. Wären Koordinaten
-  // Float32, käme hier mehr heraus.
+  // Zwei Figuren, kein Projektil: exakt die Stride-Summe, plus die Startkiste,
+  // die zum Matchbeginn ausgelost wird. Wären Koordinaten Float32, käme hier
+  // deutlich mehr heraus.
+  const zweiFiguren = HEADER_SIZE + 2 * PLAYER_STRIDE
+    + (state.crates ?? []).length * CRATE_STRIDE;
+  assert.ok((state.crates ?? []).length > 0,
+    'Der Testaufbau braucht die Startkiste — sonst prüft er die Kistenbreite nicht mit');
   assert.equal(encodeSnapshot(state).length, zweiFiguren);
 
   // Und die Stride passt zu den erwarteten Feldern: 2+2 (x,y) + 2 (health)

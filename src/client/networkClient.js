@@ -47,6 +47,9 @@ export class NetworkClient {
   #lastServerError = null;
   #connectCalls = 0;
   #joinsSent = 0;
+  /** Empfangene Snapshots insgesamt bzw. davon Vollsnapshots. */
+  #snapshotsReceived = 0;
+  #fullSnapshots = 0;
   /** Letzter dekodierter Snapshot — Basis für das Delta-Encoding. */
   #lastDecoded = null;
   #pingTimer = null;
@@ -93,9 +96,24 @@ export class NetworkClient {
   get latencyMs() { return this.#latencyMs; }
   get messageLog() { return [...this.#messageLog]; }
   get lastServerError() { return this.#lastServerError; }
-  /** Diagnose: wie oft connect() aufgerufen und JOIN gesendet wurde. */
+  /**
+   * Diagnose: Verbindungsaufbau und Snapshots.
+   *
+   * `fullSnapshots` zählt die empfangenen Vollsnapshots. Ein Zähler und kein
+   * Momentwert, weil der Vollsnapshot nur rund 50 ms lang der jüngste ist (der
+   * Server sendet alle 2 s einen, dazwischen alle 50 ms ein Delta). Wer
+   * `latestSnapshot.isFull` abfragt, muss diesen Moment zufällig treffen — ein
+   * Test darauf ist ein Wettrennen. Der Zähler ist deterministisch, und für die
+   * Diagnose („holt mich der Vollsnapshot zurück?") ist er ohnehin das, was man
+   * wissen will.
+   */
   get stats() {
-    return { connectCalls: this.#connectCalls, joinsSent: this.#joinsSent };
+    return {
+      connectCalls: this.#connectCalls,
+      joinsSent: this.#joinsSent,
+      snapshotsReceived: this.#snapshotsReceived,
+      fullSnapshots: this.#fullSnapshots,
+    };
   }
   get isConnected() { return this.#state === CONNECTION_STATE.CONNECTED; }
   get isMyTurn() {
@@ -189,6 +207,8 @@ export class NetworkClient {
       this.#lastDecoded = snapshot;
       this.#snapshots.push(snapshot);
       if (this.#snapshots.length > 30) this.#snapshots.shift();
+      this.#snapshotsReceived += 1;
+      if (snapshot.isFull) this.#fullSnapshots += 1;
       this.#emit('snapshot', snapshot);
       return;
     }

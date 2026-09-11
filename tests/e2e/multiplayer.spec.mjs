@@ -169,6 +169,116 @@ test('Zwei Browser spielen in derselben Lobby', async ({ browser }) => {
   }
 });
 
+test('BEIDE Clients sehen die Loot-Kisten', async ({ browser }) => {
+  /*
+   * Fund (belegt): Kisten waren online unsichtbar. Der Client setzte in
+   * `onlineViewState` fest `crates: []`, und `encodeSnapshot` übertrug Kisten
+   * überhaupt nicht — es kannte nur Figuren und Projektile. Im LOKALEN Match
+   * wurden Kisten dagegen gezeichnet.
+   *
+   * Gemessen mit zwei Browsern an einem echten Server, vor der Korrektur:
+   *   PROBE A {"kisten":0,...}   PROBE B {"kisten":0,...}
+   * obwohl der Server eine Startkiste führte.
+   *
+   * Dieser Test läuft über echtes Netzwerk (binärer Snapshot, Protokoll v5) —
+   * ein Unit-Test auf encode/decode allein hätte die Client-Seite nicht geprüft,
+   * und beide Stellen waren falsch.
+   */
+  const contextA = await browser.newContext();
+  const contextB = await browser.newContext();
+
+  try {
+    const pageA = await openClient(contextA, { name: 'Anna' });
+    const lobbyId = await pageA.evaluate(() => window.__PA__.game.lobbyId);
+    const pageB = await openClient(contextB, { lobbyId, name: 'Bert' });
+
+    // Die Startkiste entsteht mit der ersten Runde; auf sie warten.
+    for (const [name, page] of [['A', pageA], ['B', pageB]]) {
+      await expect.poll(
+        async () => page.evaluate(() => (window.__PA__.getState()?.crates ?? []).length),
+        { timeout: 20_000, message: `Client ${name} sieht keine Kiste` },
+      ).toBeGreaterThan(0);
+    }
+
+    // Und beide sehen DIESELBE Kiste an DERSELBEN Stelle — sonst wäre die
+    // Anzeige zwar gefüllt, aber falsch.
+    const kistenA = await pageA.evaluate(() => window.__PA__.getState().crates);
+    const kistenB = await pageB.evaluate(() => window.__PA__.getState().crates);
+
+    expect(kistenA.length).toBe(kistenB.length);
+    expect(kistenA[0].entityId).toBe(kistenB[0].entityId);
+    expect(Math.abs(kistenA[0].x - kistenB[0].x)).toBeLessThan(1);
+    expect(Math.abs(kistenA[0].y - kistenB[0].y)).toBeLessThan(1);
+
+    // Die Art der Kiste muss ebenfalls ankommen — sonst würde jede Kiste
+    // gleich aussehen (Farbe und Symbol hängen daran).
+    expect(kistenA[0]).toHaveProperty('crateType');
+    expect(typeof kistenA[0].crateType).toBe('number');
+    expect(kistenA[0]).toHaveProperty('rarity');
+  } finally {
+    await contextA.close();
+    await contextB.close();
+  }
+});
+
+test('Die Kistenangabe flackert nicht und bleibt bei beiden Clients gleich', async ({ browser }) => {
+  /*
+   * Gegenprobe zur Übertragung. Eine Kiste, die in einem Snapshot fehlt und im
+   * nächsten wieder da ist, wäre ein Anzeigefehler: Kisten sind im Delta NICHT
+   * enthalten, sie werden also bei jedem Snapshot vollständig mitgeschickt —
+   * ein Flackern könnte nur aus einem kaputten Encoder oder Decoder kommen.
+   *
+   * Geprüft wird bewusst NICHT das Aufheben: Welche Kiste wann aufgenommen wird,
+   * entscheidet der SERVER, und der Test kann ihn nicht dazu zwingen (der
+   * Debug-Zugang schreibt keine Serverpositionen). Eine Prüfung, die auf ein
+   * zufälliges Spielereignis wartet, wäre unzuverlässig — statt dessen wird die
+   * Stabilität über viele Snapshots geprüft, und das ist ehrlich prüfbar.
+   */
+  const contextA = await browser.newContext();
+  const contextB = await browser.newContext();
+
+  try {
+    const pageA = await openClient(contextA, { name: 'Anna' });
+    const lobbyId = await pageA.evaluate(() => window.__PA__.game.lobbyId);
+    const pageB = await openClient(contextB, { lobbyId, name: 'Bert' });
+
+    await expect.poll(
+      async () => (await pageA.evaluate(() => window.__PA__.getState().crates)).length,
+      { timeout: 20_000, message: 'Keine Kiste übertragen' },
+    ).toBeGreaterThan(0);
+
+    // Über ~40 Snapshots beobachten (mehrere Sekunden bei 20 Hz).
+    const beobachtung = await pageA.evaluate(async () => {
+      const api = window.__PA__;
+      const gesehen = [];
+      const ende = Date.now() + 3000;
+      while (Date.now() < ende) {
+        gesehen.push((api.getState()?.crates ?? []).map(c => c.entityId).join(','));
+        await new Promise(r => setTimeout(r, 75));
+      }
+      return {
+        proben: gesehen.length,
+        verschieden: [...new Set(gesehen)],
+      };
+    });
+
+    expect(beobachtung.proben).toBeGreaterThan(10);
+    // Die Startkiste darf nicht zwischenzeitlich verschwinden — sie wird erst
+    // entfernt, wenn jemand sie aufhebt, und das passiert hier nicht.
+    expect(beobachtung.verschieden.length, `Die Kistenliste wechselte zwischen ${beobachtung.verschieden.join(' / ')}`)
+      .toBe(1);
+
+    // Und derselbe Stand bei beiden Clients.
+    const aJetzt = await pageA.evaluate(() => window.__PA__.getState().crates.map(c => c.entityId));
+    const bJetzt = await pageB.evaluate(() => window.__PA__.getState().crates.map(c => c.entityId));
+    expect(aJetzt).toEqual(bJetzt);
+    expect(aJetzt.length).toBeGreaterThan(0);
+  } finally {
+    await contextA.close();
+    await contextB.close();
+  }
+});
+
 test('Client verbindet sich nach Abbruch neu', async ({ browser }) => {
   const context = await browser.newContext();
   try {

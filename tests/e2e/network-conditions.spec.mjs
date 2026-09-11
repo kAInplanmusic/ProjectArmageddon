@@ -219,6 +219,16 @@ function netzZustand(page) {
       round: snapshot?.round ?? null,
       entityCount: snapshot?.entities?.length ?? 0,
       latencyMs: netz?.latencyMs ?? null,
+      /*
+       * Zähler statt Momentwert: `latestSnapshot.isFull` ist nur rund 50 ms lang
+       * wahr (der Server sendet alle 2 s einen Vollsnapshot, dazwischen alle
+       * 50 ms ein Delta). Eine Prüfung darauf trifft diesen Moment zufällig —
+       * sie ist ein Wettrennen und war in der Praxis auch eines: Der Test fiel
+       * um, sobald sich das Timing um ein Byte verschob (Kistenfeld in v5).
+       * Der Zähler ist deterministisch.
+       */
+      fullSnapshots: netz?.stats?.fullSnapshots ?? null,
+      snapshotsReceived: netz?.stats?.snapshotsReceived ?? null,
       connectionText: document.getElementById('hud-connection')?.textContent ?? null,
       // Der Ansichtszustand verrät, ob das Ende angekommen ist.
       viewStatus: window.__PA__.getState()?.status ?? null,
@@ -331,9 +341,17 @@ test('Bei Paketverlust bleibt die Verbindung, und der Zustand läuft weiter', as
    * innerhalb weniger Sekunden ein Vollsnapshot eintrifft (der Server sendet
    * ihn alle 2 s).
    */
+  /*
+   * Auf einen VOLLSNAPSHOT warten — über den Zähler, nicht über den Momentwert.
+   *
+   * `waitForFunction` mit `polling: 100` prüfte `latestSnapshot.isFull`. Der
+   * Vollsnapshot ist aber nur rund 50 ms lang der jüngste (alle 2 s einer, sonst
+   * alle 50 ms Deltas). Bei 100 ms Abtastung wurde er zufällig getroffen — je
+   * nach Timing des Rechners. Der Zähler kann nicht verpasst werden.
+   */
   await page.waitForFunction(
-    () => window.__PA__.getNetwork()?.latestSnapshot?.isFull === true,
-    null,
+    vorher => (window.__PA__.getNetwork()?.stats?.fullSnapshots ?? 0) > vorher,
+    vorher.fullSnapshots ?? 0,
     { timeout: 10_000, polling: 100 },
   );
 
@@ -415,7 +433,11 @@ test('Nach einem Aussetzer holt der Vollsnapshot den Client zurück', async ({ p
    */
   await expect.poll(async () => {
     const z = await netzZustand(page);
-    const laeuftWeiter = z.isFull === true && z.tick > eingefroren.tick;
+    // Der Vollsnapshot wird über den ZÄHLER festgestellt, nicht über den
+    // Momentwert (siehe netzZustand): Er ist nur ~50 ms lang der jüngste, eine
+    // Abfrage darauf wäre ein Wettrennen.
+    const laeuftWeiter = z.fullSnapshots > (eingefroren.fullSnapshots ?? 0)
+      && z.tick > eingefroren.tick;
     const endeAngekommen = z.viewStatus === 'gameover' && z.endOverlaySichtbar;
     return laeuftWeiter || endeAngekommen;
   }, {
