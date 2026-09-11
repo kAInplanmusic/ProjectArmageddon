@@ -296,3 +296,57 @@ test('Nach dem Abwerfen ist wieder Platz', async ({ page }) => {
   expect(ergebnis.danachVoll).toBe(false);
   expect(ergebnis.anzahl).toBeLessThan(6);
 });
+
+test('Die Waffennummern steigen, und Taste N trifft die Nummer N', async ({ page }) => {
+  /*
+   * Fund (belegt): Nummerierung und Gliederung der Liste liefen auseinander.
+   * Die Nummer kam aus der Anzeigeordnung (Reservewaffe zuletzt), der Platz in
+   * der Liste aus einer zweiten Sortierung nach Unterkategorie. Die Reservewaffe
+   * stand dadurch als Nummer 5 ÜBER der Nummer 4 — sichtbar falsch, und die
+   * Zifferntasten folgten den Nummern, nicht der Liste.
+   *
+   * Beides wird hier geprüft: die aufsteigende Reihenfolge im DOM und die
+   * Übereinstimmung von Taste und Beschriftung.
+   */
+  await boot(page, { seed: 4242 });
+
+  const nummern = await page.evaluate(() =>
+    [...document.querySelectorAll('#weapon-list .weapon-item')]
+      .map(el => Number((el.getAttribute('aria-label') ?? '').split('.')[0])));
+  expect(nummern.length).toBeGreaterThan(1);
+  expect(nummern).toEqual(nummern.map((_, i) => i + 1));
+
+  // Die Reservewaffe ist die letzte — sie ist nicht abwerfbar und gehört ans Ende.
+  const letzte = await page.evaluate(() => {
+    const zeilen = [...document.querySelectorAll('#weapon-list .weapon-item')];
+    const el = zeilen[zeilen.length - 1];
+    return { weaponId: el.dataset.weaponId, label: el.getAttribute('aria-label') };
+  });
+
+  /*
+   * Jede Zifferntaste muss die Waffe wählen, die mit dieser Nummer beschriftet
+   * ist. Geprüft wird über alle Positionen, nicht nur eine — genau der Vergleich
+   * „Taste gegen Beschriftung" hätte den Fehler gefunden.
+   */
+  for (let position = 1; position <= nummern.length; position += 1) {
+    const gewaehlt = await page.evaluate(async (n) => {
+      const api = window.__PA__;
+      document.body.focus();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: String(n), bubbles: true }));
+      await new Promise(fertig => requestAnimationFrame(fertig));
+      const match = api.getMatch();
+      return match.inventory.getActiveWeaponId(match.activePlayerId);
+    }, position);
+
+    const beschriftung = await page.evaluate((n) => {
+      const zeilen = [...document.querySelectorAll('#weapon-list .weapon-item')];
+      const el = zeilen[n - 1];
+      return { weaponId: el.dataset.weaponId, label: el.getAttribute('aria-label') };
+    }, position);
+
+    expect(gewaehlt, `Taste ${position} wählte eine andere Waffe als beschriftet`).toBe(beschriftung.weaponId);
+  }
+
+  // Und die letzte Position ist weiterhin die Reservewaffe.
+  expect(letzte.label).toMatch(/^\d+\.\s+\S/);
+});

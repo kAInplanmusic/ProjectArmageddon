@@ -8,7 +8,13 @@
  * @module hud
  */
 import { TEAM_COLORS } from '../engine/match.js';
-import { getWeapon, WEAPON_SUBCATEGORIES, iconUrlFor, orderInventoryBySubcategory } from '../shared/config/weapons.js';
+import {
+  getWeapon,
+  iconUrlFor,
+  orderInventoryBySubcategory,
+  displayGroupFor,
+  displayGroupLabel,
+} from '../shared/config/weapons.js';
 import { WATER_STATE, waterStateFor, waterLabel, DROWN_LEVEL } from '../shared/config/water.js';
 
 const LOG_LIMIT = 60;
@@ -262,22 +268,43 @@ export class Hud {
      */
     const fokussierteWaffe = document.activeElement?.dataset?.weaponId ?? null;
 
-    // Nach den vier Gruppen gliedern, in fester Reihenfolge. Innerhalb einer
-    // Gruppe bleibt die Reihenfolge des Inventars erhalten, und der laufende
-    // Index bleibt der Gesamtindex — das Klicken und die Zifferntasten arbeiten
-    // deshalb unverändert.
-    // Eine Ordnung für Anzeige UND Eingabe. Die angezeigte Nummer ist die
-    // Position in dieser Reihenfolge; die Zifferntasten treffen dieselbe Waffe.
+    /*
+     * Eine Ordnung für Anzeige UND Eingabe. Die angezeigte Nummer ist die
+     * Position in dieser Reihenfolge; die Zifferntasten treffen dieselbe Waffe.
+     */
     const reihenfolge = orderInventoryBySubcategory(weapons);
     const positionVon = new Map(reihenfolge.map((inventarIndex, position) => [inventarIndex, position]));
 
-    const gruppen = WEAPON_SUBCATEGORIES.map(gruppe => ({
-      id: gruppe.id,
-      label: gruppe.label,
-      eintraege: reihenfolge
-        .map(index => ({ weaponId: weapons[index], index, weapon: getWeapon(weapons[index]) }))
-        .filter(eintrag => (eintrag.weapon?.subcategory ?? 'special') === gruppe.id),
-    })).filter(gruppe => gruppe.eintraege.length > 0);
+    /*
+     * Die Gruppen entstehen aus DIESER Reihenfolge — nicht aus einer zweiten
+     * Sortierung nach Unterkategorie.
+     *
+     * Fund (belegt): Vorher lief die Gliederung über die feste Liste der
+     * Unterkategorien, die Nummerierung aber über `orderInventoryBySubcategory`.
+     * Solange beide dieselbe Ordnung ergaben, fiel das nicht auf. Seit die
+     * Reservewaffe in der Sortierung ans Ende wandert (sie ist nicht abwerfbar,
+     * siehe `orderInventoryBySubcategory`), fiel sie in der Gliederung weiter
+     * unter „Schusswaffen" — und die Nummern standen nicht mehr aufsteigend:
+     * 1, 2, 3, 5, 4. Ein Leser sieht die 5 über der 4.
+     *
+     * Dadurch, dass die Gruppen beim Durchlaufen der Reihenfolge entstehen,
+     * gilt: Die Gruppen stehen in der Reihenfolge ihres ersten Auftretens, und
+     * die Nummern steigen lückenlos von oben nach unten. Die Reserve bekommt
+     * über `displayGroupFor` eine eigene Gruppe, weil sie keine Spielweise ist.
+     */
+    const gruppen = [];
+    const gruppeVon = new Map();
+    for (const index of reihenfolge) {
+      const weaponId = weapons[index];
+      const id = displayGroupFor(weaponId);
+      let gruppe = gruppeVon.get(id);
+      if (!gruppe) {
+        gruppe = { id, label: displayGroupLabel(id), eintraege: [] };
+        gruppeVon.set(id, gruppe);
+        gruppen.push(gruppe);
+      }
+      gruppe.eintraege.push({ weaponId, index, weapon: getWeapon(weaponId) });
+    }
 
     const kinder = [];
     for (const gruppe of gruppen) {

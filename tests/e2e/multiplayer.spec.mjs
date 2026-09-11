@@ -300,15 +300,35 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
       aktiv: document.querySelectorAll('#weapon-list .weapon-item.is-active').length,
       gruppen: [...document.querySelectorAll('#weapon-list .weapon-group')]
         .map(gruppe => gruppe.textContent.trim()),
+      nummern: [...document.querySelectorAll('#weapon-list .weapon-item')]
+        .map(el => Number((el.getAttribute('aria-label') ?? '').split('.')[0])),
     }));
 
     expect(liste.zeilen).toBe(5);
     // Genau eine Waffe ist als aktiv markiert.
     expect(liste.aktiv).toBe(1);
-    // Gruppenköpfe der Unterkategorien (höchstens vier), mit gefüllter Beschriftung.
+    /*
+     * Gruppenköpfe mit gefüllter Beschriftung.
+     *
+     * Höchstens FÜNF — vier Unterkategorien plus die Reserve-Gruppe. Die
+     * Reservewaffe ist keine Spielweise, sondern eine Ausnahme (unbegrenzte
+     * Munition, nicht abwerfbar), und sie steht in der Liste zuletzt. Ohne
+     * eigene Gruppe fiele sie unter ihre Unterkategorie und die angezeigten
+     * Nummern liefen aus der Reihe (1, 2, 3, 5, 4).
+     */
     expect(liste.gruppen.length).toBeGreaterThan(0);
-    expect(liste.gruppen.length).toBeLessThanOrEqual(4);
+    expect(liste.gruppen.length).toBeLessThanOrEqual(5);
     for (const text of liste.gruppen) expect(text.length).toBeGreaterThan(3);
+
+    /*
+     * Und die eigentliche Zusicherung: Die Nummern steigen von oben nach unten.
+     * Das ist die Invariante, die der Spieler sieht — und die brach, als
+     * Nummerierung und Gliederung auseinanderliefen. Eine reine Obergrenze für
+     * die Gruppenzahl hätte das nicht bemerkt.
+     */
+    expect(liste.nummern).toEqual(
+      Array.from({ length: liste.nummern.length }, (_, i) => i + 1),
+    );
   } finally {
     await context.close();
   }

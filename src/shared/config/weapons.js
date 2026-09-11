@@ -6720,13 +6720,50 @@ export function orderInventoryBySubcategory(weaponIds) {
      * sind hier deshalb verboten — sie beenden den String.
      */
     .sort((a, b) => {
-      const reserveA = a.weaponId === FALLBACK_WEAPON_ID ? 1 : 0;
-      const reserveB = b.weaponId === FALLBACK_WEAPON_ID ? 1 : 0;
+      // Ueber das gemeinsame Praedikat, nicht ueber einen zweiten Vergleich:
+      // Sortierung und Gruppierung muessen dieselbe Auffassung davon haben,
+      // was die Reserve ist.
+      const reserveA = isReserveWeapon(a.weaponId) ? 1 : 0;
+      const reserveB = isReserveWeapon(b.weaponId) ? 1 : 0;
       return reserveA - reserveB
         || rang(a.weaponId) - rang(b.weaponId)
         || a.index - b.index;
     })
     .map(eintrag => eintrag.index);
+}
+
+/**
+ * Gruppe einer Waffe in der ANZEIGE.
+ *
+ * Anders als subcategoryFor (das die acht Kategorien der Quelldatei auf vier
+ * Spielweisen abbildet) beruecksichtigt diese Funktion die Sonderstellung der
+ * Reservewaffe: Sie bekommt eine eigene Gruppe. Sie ist keine Spielweise, sondern
+ * eine Ausnahme — unbegrenzte Munition, nicht abwerfbar —, und sie steht in der
+ * Liste zuletzt. Ohne eigene Gruppe fiele sie unter ihre Unterkategorie
+ * ("Schusswaffen") und die angezeigten Nummern liefen aus der Reihe: 1, 2, 3, 5,
+ * 4, weil die Nummer aus der Sortierung kommt (Reserve zuletzt) und der Platz
+ * aus der Gruppierung.
+ *
+ * Die vier Eintraege in WEAPON_SUBCATEGORIES bleiben unberuehrt: Sie
+ * beschreiben weiterhin die Kategorien-Zuordnung des Katalogs, und ein Test
+ * haelt fest, dass es genau vier sind. Diese Funktion ergaenzt die Anzeige um
+ * eine fuenfte Gruppe, die keine Kategorie ist.
+ *
+ * Achtung: Dieser Rumpf liegt im Generator in einem Template-String. Backticks
+ * und Dollar-Klammern sind hier verboten — sie beenden den String.
+ *
+ * @param {string} weaponId
+ * @returns {string} Gruppen-Kennung fuer die Waffenliste
+ */
+export function displayGroupFor(weaponId) {
+  if (isReserveWeapon(weaponId)) return 'reserve';
+  return getWeapon(weaponId)?.subcategory ?? 'special';
+}
+
+/** Beschriftung einer Anzeigegruppe (auch der Reserve-Gruppe). */
+export function displayGroupLabel(groupId) {
+  if (groupId === 'reserve') return 'Reserve (unbegrenzt)';
+  return subcategoryLabel(groupId);
 }
 
 export function getWeapon(id) {
@@ -6743,6 +6780,26 @@ export function getWeaponsByRarity(rarity) {
 
 /** Waffe mit unbegrenzter Munition — verhindert Softlocks bei leerem Inventar. */
 export const FALLBACK_WEAPON_ID = "pa_028";
+
+/**
+ * Ist das die Reservewaffe (unbegrenzte Munition, nicht abwerfbar)?
+ *
+ * EINE Stelle für diese Frage. Sie wird an zwei Orten gebraucht, die
+ * zusammengehoeren muessen:
+ *  - in der Sortierung der Anzeige (sie steht immer zuletzt), und
+ *  - in der Gruppierung der Waffenliste (sie bekommt eine eigene Gruppe).
+ *
+ * Fund (belegt): Die beiden Orte liefen auseinander. Die Sortierung schob die
+ * Reserve ans Ende, die Gruppierung stufte sie weiter nach ihrer Unterkategorie
+ * ein ("Schusswaffen") — dadurch standen die angezeigten Nummern nicht mehr in
+ * aufsteigender Reihenfolge: 1, 2, 3, 5, 4. Ein Leser sieht die 5 ueber der 4.
+ *
+ * @param {string} weaponId
+ * @returns {boolean}
+ */
+export function isReserveWeapon(weaponId) {
+  return weaponId === FALLBACK_WEAPON_ID;
+}
 
 /**
  * Standardlastout: bewusst gemischt, damit ein Match von Beginn an

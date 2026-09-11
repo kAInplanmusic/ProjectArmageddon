@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController, MAP_WIDTH, CLASS_IDS } from '../src/engine/match.js';
-import { WEAPONS, FALLBACK_WEAPON_ID, orderInventoryBySubcategory } from '../src/shared/config/weapons.js';
+import {
+  WEAPONS,
+  FALLBACK_WEAPON_ID,
+  orderInventoryBySubcategory,
+  displayGroupFor,
+  displayGroupLabel,
+} from '../src/shared/config/weapons.js';
 import { PlayerInventory, MAX_WEAPONS } from '../src/engine/inventory.js';
 import { CRATE_TYPES } from '../src/engine/systems/lootSystem.js';
 
@@ -448,5 +454,109 @@ test('Der Abwurf über die Anzeigeposition trifft eine abwerfbare Waffe', () => 
     assert.equal(ergebnis.ok, true,
       `${klasse}: Die erste Anzeigeposition ließ sich nicht abwerfen: ${ergebnis.errors?.join(', ')}`);
     assert.ok(ergebnis.ammo !== undefined, `${klasse}: Kein Munitionsstand gemeldet`);
+  }
+});
+
+// -------------------------------------- Anzeigeordnung und Zifferntasten
+
+test('Die angezeigten Nummern steigen von oben nach unten', () => {
+  /*
+   * Fund (belegt): Nummerierung und Gliederung liefen auseinander. Die Nummer
+   * kommt aus `orderInventoryBySubcategory` (Reservewaffe zuletzt), der Platz in
+   * der Liste aus einer zweiten Sortierung nach Unterkategorie. Die Reservewaffe
+   * landete dadurch als Nummer 5 mitten in der Liste — unter der Nummer 4. Ein
+   * Leser sieht „1, 2, 3, 5, 4".
+   *
+   * Geprüft wird die Ordnung deshalb direkt: Die Waffenzeilen müssen in der
+   * Reihenfolge stehen, die ihre Nummern behaupten.
+   */
+  for (const teams of [2, 3]) {
+    const match = new MatchController({ seed: 4242, teams, playersPerTeam: 3 });
+    match.start();
+
+    for (const spieler of match.players) {
+      const klasse = CLASS_IDS[spieler.classId];
+      const inventar = match.inventory.getWeapons(spieler.entityId);
+      const reihenfolge = orderInventoryBySubcategory(inventar);
+
+      // Die Reihenfolge ist die Anzeigeordnung; die Nummer ist die Position darin.
+      const nummern = reihenfolge.map((inventarIndex, position) => ({
+        position: position + 1,
+        weaponId: inventar[inventarIndex],
+      }));
+
+      for (const eintrag of nummern) {
+        assert.equal(typeof eintrag.weaponId, 'string',
+          `${klasse}: Leerer Eintrag an Position ${eintrag.position}`);
+      }
+
+      // Die Positionen sind lückenlos 1..n — nichts doppelt, nichts fehlt.
+      assert.deepEqual(
+        nummern.map(e => e.position),
+        Array.from({ length: nummern.length }, (_, i) => i + 1),
+        `${klasse}: Die Anzeigenummern sind nicht lückenlos`,
+      );
+
+      // Und jede Waffe kommt genau einmal vor.
+      assert.equal(new Set(nummern.map(e => e.weaponId)).size, nummern.length,
+        `${klasse}: Eine Waffe steht doppelt in der Anzeigeordnung`);
+    }
+  }
+});
+
+test('Die Reservewaffe steht in der Anzeigeordnung ganz hinten', () => {
+  // Zusammen mit dem Test darüber ergibt das die Aussage: Sie ist die LETZTE
+  // Nummer, und weil die Anzeige der Reihenfolge folgt, steht sie auch unten.
+  const match = new MatchController({ seed: 4242, teams: 3, playersPerTeam: 3 });
+  match.start();
+
+  for (const spieler of match.players) {
+    const klasse = CLASS_IDS[spieler.classId];
+    const inventar = match.inventory.getWeapons(spieler.entityId);
+    const reihenfolge = orderInventoryBySubcategory(inventar);
+    const letzte = inventar[reihenfolge[reihenfolge.length - 1]];
+
+    assert.equal(letzte, FALLBACK_WEAPON_ID,
+      `${klasse}: Die letzte Anzeigeposition ist nicht die Reservewaffe`);
+  }
+});
+
+test('Jede Waffe hat eine Anzeigegruppe, die Reserve eine eigene', () => {
+  // Die Reserve ist keine Spielweise: Sie bekommt eine eigene Gruppe, sonst
+  // fällt sie unter ihre Unterkategorie und die Nummern laufen aus der Reihe.
+  assert.equal(displayGroupFor(FALLBACK_WEAPON_ID), 'reserve');
+
+  const gruppen = new Set();
+  for (const waffe of WEAPONS) {
+    const id = displayGroupFor(waffe.id);
+    assert.equal(typeof id, 'string');
+    assert.ok(id.length > 0, `${waffe.id}: leere Gruppenkennung`);
+    // Eine echte Waffe darf NICHT in der Reserve-Gruppe landen.
+    if (waffe.id !== FALLBACK_WEAPON_ID) {
+      assert.notEqual(id, 'reserve', `${waffe.id} wurde als Reserve eingeordnet`);
+      assert.equal(id, waffe.subcategory, `${waffe.id}: Gruppe weicht von der Unterkategorie ab`);
+    }
+    gruppen.add(id);
+  }
+
+  // Die vier Unterkategorien plus die Reserve-Gruppe.
+  assert.deepEqual([...gruppen].sort(), ['elemental', 'guns', 'melee', 'reserve', 'special']);
+  assert.equal(displayGroupLabel('reserve'), 'Reserve (unbegrenzt)');
+  // Und die bestehenden Beschriftungen bleiben unverändert.
+  assert.equal(displayGroupLabel('melee'), 'Nahkampf');
+  assert.equal(displayGroupLabel('guns'), 'Schusswaffen');
+});
+
+test('Die Anzeigeordnung ist für alle Klassen deterministisch', () => {
+  for (const seed of [1, 4242, 99]) {
+    const match = new MatchController({ seed, teams: 3, playersPerTeam: 3 });
+    match.start();
+    for (const spieler of match.players) {
+      const inventar = match.inventory.getWeapons(spieler.entityId);
+      assert.deepEqual(
+        orderInventoryBySubcategory(inventar),
+        orderInventoryBySubcategory(inventar),
+      );
+    }
   }
 });
