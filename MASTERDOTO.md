@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **457/457** |
-| Browser-E2E | `npm run test:e2e` | **89/89** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **466/466** |
+| Browser-E2E | `npm run test:e2e` | **94/94** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -437,6 +437,75 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Vier neue Geländeformen
+
+Es gab vier Geländeformen (`hills`, `mountains`, `islands`, `caverns`). Gewünscht
+waren zusätzlich offene, vertikale, wasserreiche und nahkampflastige Karten —
+hinzugekommen sind:
+
+| Kennung | Name | Eigenart (gemessen) |
+|---|---|---|
+| `open` | Offene Weite | Höhenvarianz 7 (flach); 41 % freie weite Sichtlinien gegen 15–17 % bei `hills` |
+| `spires` | Felsspitzen | Höhenvarianz 191 (steil, mehr als das Doppelte von `mountains`) |
+| `flooded` | Flut | nur 22 % Land — die wasserreichste Form |
+| `warren` | Gewirr | 47 Geländesprünge je Kartenbreite (gegen 0 bei `hills`) |
+
+Die Werte sind nicht frei gewählt, sondern an Kennzahlen ausgerichtet und danach
+justiert. Alle acht Formen sind im Menü wählbar.
+
+### Behobener Fehler
+
+44. **Startfiguren konnten untergetaucht beginnen — das Match war entschieden,
+    bevor der erste Zug lief.** Die Startposition war schlicht
+    `spacing × (index + 1)` und wurde nicht auf Wasser geprüft. Gemessen bei
+    `flooded`: **81 von 480 Figuren (40 Seeds × 12) starteten untergetaucht**
+    (Wasserstand ≥ 0,72) und ertranken sofort.
+
+    Bei den vier ursprünglichen Formen fiel das nie auf, weil dort der
+    Wasserspiegel tief genug liegt — die Startposition war also nur zufällig
+    sicher, nicht geprüft. Behoben mit `#drySpawnX`: Sucht abwechselnd rechts und
+    links vom Wunschpunkt eine Stelle mit festem Boden unterhalb von `WET_LEVEL`.
+    Die Suchreihenfolge ist fest (rechts vor links, kleine vor großen
+    Abständen), damit die Platzierung bei gleichem Seed dieselbe bleibt — der
+    Determinismus hängt daran.
+
+    Vorher 81 von 3840, nachher **0 von 3840** — und keine Figur startet auch
+    nur nass.
+
+### Zwei Irrtümer, korrigiert statt festgeschrieben
+
+**„Offene Weite ist die offenste Form."** Falsch: `spires` erreicht 43 % freie
+weite Sichtlinien, `open` 41 %. Steiles Gelände verkürzt Sichtlinien nicht — wer
+auf einem Gipfel steht, sieht weit, und dieses Maß belohnt hohe Positionen.
+`spires` ist nicht eng, sondern steil. Der Test wurde entsprechend korrigiert und
+prüft jetzt zusätzlich, dass die beiden Formen über ihre EIGENE Eigenschaft
+definiert sind (Höhe bzw. Unebenheit).
+
+**„Ohne Leitbiom fällt die Kulisse auf den Gesamtkatalog zurück."** Ebenfalls
+falsch formuliert: Der Weg über ein BILD (`pickBackdrop`) wird nur bei
+ausdrücklicher Wahl im Menü beschritten. Vorgabe ist die GENERATIVE Szene, und
+die fällt ohne Leitbiom auf `forest` zurück. Aufgefallen beim Schreiben eines
+E2E-Tests, der `backdrop().key` prüfte und `null` bekam — ein korrekt
+gezeichnetes Spiel, das der Test für eine leere Darstellung hielt. Die
+Debug-Abfrage liefert jetzt beide Wege, damit die Unterscheidung nicht wieder
+verlorengeht.
+
+### OFFEN: eigene Kulissen für die vier neuen Formen
+
+Das Projekt verlangt: Jede Geländeform hat ein **eigenes** Leitbiom, und dessen
+`mapPreset` ist genau diese Form (`tests/backdrops.test.js`). Ein Leitbiom ist
+eine Kulissengruppe mit **eigenen Bildern** — und diese Bilder gibt es für die
+vier neuen Formen nicht. „Flut" läuft deshalb mit der `forest`-Szene, sieht also
+aus wie ein Wald.
+
+Das ist eine **Inhaltsfrage** (welche Szene zeigt „Offene Weite", welche
+„Gewirr"?) und wurde nicht eigenmächtig entschieden. Die Lücke ist namentlich in
+zwei Tests festgehalten (`OHNE_LEITBIOM` in `tests/backdrops.test.js`,
+`OHNE_KULISSEN` in `tests/terrain-presets.test.js`): Wer eines der vier Formen
+eine vorhandene Biomgruppe zuordnet, bricht die Regel und den Test; wer sie
+hinzufügt, wird erinnert, die Liste zu leeren. So bleibt die Lücke sichtbar statt
+vergessen — und keine Form ist als „fertig" geführt, die es nicht ist.
+
 ## Zustandsübertragung: geprüft, nicht komprimiert
 
 Der offene Punkt lautete „Snapshot-Kompression prüfen (Delta läuft, Quantisierung
@@ -790,7 +859,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (457):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (466):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -808,13 +877,16 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (89):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (94):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
   Heilung im Protokoll, Schildmarke, Einfrieren, Schaden über Zeit,
   Selbstwirkung ohne Projektil, Lauffähigkeit nach allen Effekten,
-  Determinismus). Neu: **Verbindung unter Störung** (5 Tests,
+  Determinismus). Neu: **Geländeformen** (5 Tests, `terrain-presets.spec.mjs` —
+  jede Form in der Auswahl, Start über das Menü mit jeder Form und trockenem
+  Grund, Darstellung ohne Fehler, gemessene Unterschiede im Browser),
+  **Verbindung unter Störung** (5 Tests,
   `network-conditions.spec.mjs` — Latenz, Paketverlust, Aussetzer, Gegenprobe)
   und **Screenreader-Durchlauf** (11 Tests, `screenreader.spec.mjs` — Namen im
   Accessibility-Baum, Live-Region des Protokolls, Zugwechsel-Ansage,
@@ -1007,9 +1079,16 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       reinen Zuwächsen ausstattet. Geprüft: kein Treffer für `sidegrade`.
 - [ ] **Counterplay und Map-Synergie.** Keine Regeln zur Teamzusammenstellung und
       keine Tests dafür. Geprüft: kein Treffer für `counterplay`/`synergie`.
-- [ ] **Karten-Authoring über die Presets hinaus.** Es gibt vier Presets
-      (`hills`, `mountains`, `islands`, `caverns`). Gewünscht waren zusätzlich
-      offene, vertikale, wasserreiche und nahkampflastige Karten.
+- [x] **Karten-Authoring über die Presets hinaus.** Vier Formen kamen hinzu:
+      `open` (Offene Weite), `spires` (Felsspitzen), `flooded` (Flut), `warren`
+      (Gewirr) — im Menü wählbar, in ihren Kennzahlen belegt, alle spielbar.
+      Dabei ein Fehler gefunden und behoben: Die Startpositionen wurden nicht
+      auf Wasser geprüft, ein Match konnte beginnen, wenn beide Figuren bereits
+      untergetaucht waren (Fehler 44).
+      **OFFEN: die Kulissen.** Eigenen Geländeformen fehlen eigene Kulissen
+      (Bilder) — „Flut" sieht derzeit aus wie ein Wald. Das ist eine
+      Inhaltsfrage (welche Szene?) und in zwei Tests namentlich festgehalten.
+      Siehe „Vier neue Geländeformen".
 - [x] **`prefers-reduced-motion`.** Erledigt, siehe P2 — CSS und Canvas.
 - [ ] **Release-Härtung.** Anti-Cheat-Audit und Browser-Profiling. (Lasttest und
       Barrierefreiheit stehen schon unter P2/P3.)
