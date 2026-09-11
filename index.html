@@ -459,6 +459,23 @@
     .roster-list li { display: flex; gap: 0.6rem; padding: 0.45rem 0; border-top: 1px solid #232f3d; }
     .roster-list img { width: 56px; height: 56px; flex: 0 0 56px; object-fit: contain; }
     .roster-list .r-text { font-size: 0.82rem; line-height: 1.35; }
+
+    /*
+     * Kennzahlen (Profil und Partie).
+     *
+     * Als beschreibungsliste aus zwei Spalten: Bezeichnung links, Wert rechts.
+     * Eine schlichte zweispaltige Anordnung liest sich schneller als Fließtext
+     * und bleibt auch mit langen Werten („Lieblingswaffe: pa_063 (12×)") lesbar.
+     */
+    .profil-werte { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.8rem; margin: 0.6rem 0; font-size: 0.85rem; }
+    .profil-zeile { display: contents; }
+    .profil-name { color: #8ba0b4; }
+    .profil-wert { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .match-tabelle { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+    .match-tabelle th { text-align: left; color: #8ba0b4; font-weight: 600; padding: 0.25rem 0.4rem; border-bottom: 1px solid #232f3d; }
+    .match-tabelle td { padding: 0.25rem 0.4rem; border-top: 1px solid #1b2531; }
+    .match-tabelle th:not(:first-child), .match-tabelle td:not(:first-child) { text-align: right; }
     .roster-list .r-name { color: #e8eef6; font-weight: 600; }
     .roster-list .r-role { color: #7f93a8; font-size: 0.75rem; }
     .roster-list .r-waffe { color: #d9b44a; }
@@ -675,6 +692,22 @@
             <progress id="replay-progress" max="1000" value="0" aria-label="Fortschritt der Wiedergabe"></progress>
             <p id="replay-status" class="muted" role="status" aria-live="polite">Keine Aufzeichnung geladen.</p>
           </details>
+          <!--
+            Spielerprofil.
+
+            Die Zahlen stehen im lokalen Speicher des Browsers, nicht auf einem
+            Server: Es gibt (noch) keine Konten. Der Zurücksetzen-Knopf gehört
+            dazu — ohne ihn wäre die Angabe unerreichbar und damit eine
+            Sackgasse.
+          -->
+          <details id="profil-browser">
+            <summary>Mein Profil</summary>
+            <div id="profil-werte" class="profil-werte" aria-label="Eigene Kennzahlen"></div>
+            <p id="profil-hinweis" class="muted"></p>
+            <div class="field-row">
+              <button id="profil-reset" type="button" class="secondary">Zahlen zurücksetzen</button>
+            </div>
+          </details>
           <div class="keymap">
             <span><b>Maus</b> Zielen</span>
             <span><b>Klick / Leertaste</b> Feuern</span>
@@ -691,6 +724,14 @@
           <h1>Match <span class="accent">beendet</span></h1>
           <p id="winner-text">—</p>
           <p id="end-summary">—</p>
+          <!--
+            Kennzahlen der eben gespielten Partie. Bewusst hier UND im Profil:
+            Das Profil summiert alle Partien, hier steht, was in DIESER geleistet
+            wurde — sonst wüsste man nach einer Partie nicht, was man darin
+            geschafft hat.
+          -->
+          <div id="match-kennzahlen" class="profil-werte" aria-label="Kennzahlen dieser Partie"></div>
+          <table id="match-tabelle" class="match-tabelle" aria-label="Beitrag aller Spieler"></table>
           <button id="rematch-button" type="button">Revanche</button>
         </div>
       </section>

@@ -821,6 +821,20 @@ export class MatchController {
     this.#hasFired = true;
     this.#lastShotBy = playerId;
 
+    /*
+     * Jeder abgegebene Schuss wird gemeldet — an EINER Stelle, vor der
+     * Verzweigung nach Anflugart.
+     *
+     * Fund (belegt): Für Projektile gab es `projectile_spawn`, für Treffer
+     * `hitscan`/`projectile_impact` — aber nichts für einen Schuss, der weder
+     * trifft noch ein Projektil erzeugt. Die Trefferquote (`Treffer / Schüsse`)
+     * ließ sich damit nicht rechnen: Der Nenner fehlte, und für Hitscan-Waffen
+     * wäre er grundsätzlich 0 gewesen.
+     *
+     * Die drei Wege (Selbstwirkung, Hitscan, Projektil) melden alle hier.
+     */
+    this.#events.emit('shot', { playerId, weaponId: weapon.id, angle, power });
+
     // Wirkungen, die auf den Schützen selbst gehen (Heilung, Schild, Sprung,
     // Munition, Aufklärung), werden sofort ausgelöst. Es wird bewusst KEIN
     // Geschoss erzeugt: ein Projektil, das nur dazu dient, den eigenen Effekt

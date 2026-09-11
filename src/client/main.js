@@ -29,6 +29,10 @@ import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { ReplayPlayer } from '../engine/replay.js';
+import { MatchStats, PlayerProfile, beschreibe } from '../shared/stats.js';
+
+/** Schlüssel des Profils im lokalen Speicher des Browsers. */
+const PROFIL_SCHLUESSEL = 'pa-profil-v1';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -68,6 +72,21 @@ class Game {
     /** Wiedergabegeschwindigkeit: 1 = Echtzeit. */
     this.replaySpeed = 1;
 
+    /**
+     * Kennzahlen des laufenden Matches und das fortgeschriebene Profil.
+     *
+     * Die Zahlen entstehen aus den EREIGNISSEN des Matches, nicht aus einer
+     * zweiten Buchführung — so können sie nicht von dem abweichen, was
+     * tatsächlich geschehen ist. Das Profil liegt im lokalen Speicher des
+     * Browsers: Es gibt (noch) keine Konten, also bleibt es auf diesem Rechner.
+     */
+    this.stats = null;
+    /** Wurde das laufende Match schon ins Profil verbucht? */
+    this.verbucht = false;
+    /** Die eigene Figur (für Kennzahlen und Sieg/Niederlage). */
+    this.eigenerSpielerId = null;
+    this.profil = this.#ladeProfil();
+
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
       onAim: (angle, power) => { this.aim = { angle, power }; },
@@ -106,6 +125,14 @@ class Game {
     });
 
     this.#wireReplay();
+
+    // Profil: Anzeige füllen und den Zurücksetzen-Knopf verdrahten. Ohne den
+    // Knopf wären die Zahlen im Browser unerreichbar — eine Sackgasse.
+    document.getElementById('profil-reset')?.addEventListener('click', () => {
+      this.profilZuruecksetzen();
+      this.hud.log('Profil zurückgesetzt', 'neutral');
+    });
+    this.#zeigeProfil();
 
     window.addEventListener('keydown', event => {
       // Der Neustart darf nicht ausgelöst werden, während in ein Formularfeld
@@ -270,6 +297,9 @@ class Game {
       this.renderer.setScenery(this.match.scenery);
     }
     this.#afterWorldReady(this.match.bitmap, this.match.water);
+    // Erfassung für dieses Match beginnen (Kennzahlen aus den Ereignissen).
+    this.verbucht = false;
+    this.#starteErfassung();
 
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
@@ -744,6 +774,9 @@ class Game {
     this.match.step();
     const events = this.match.consumeEvents();
     this.lastEvents = events;
+    // Kennzahlen aus DENSELBEN Ereignissen, die auch das Protokoll speist —
+    // keine zweite Buchführung, die abweichen könnte.
+    this.stats?.feedAll(events);
     this.#handleEvents(events);
     if (before === 'playing' && this.match.status === 'gameover') {
       this.#showEndScreen(this.match.winnerTeamId);
@@ -1127,6 +1160,89 @@ class Game {
       ? `Online-Match — Lobby ${this.network?.lobbyId ?? '-'}, ${this.network?.latencyMs ?? 0} ms`
       : `${this.match.round} Runden, ${this.match.world.tickCount} Simulationsticks, Seed ${this.match.seedManager.baseSeed}`;
     this.endOverlay.hidden = false;
+
+    /*
+     * Kennzahlen verbuchen und anzeigen.
+     *
+     * Erst hier, nicht im `step()`: Ein Match kann auf mehrere Wege enden, und
+     * `#verbucheMatch` verbucht nur einmal (`verbucht`-Merker). Sonst zählte ein
+     * mehrfach ausgelöster Endbildschirm dieselbe Partie doppelt.
+     */
+    this.#verbucheMatch();
+    this.#zeigeMatchKennzahlen();
+  }
+
+  /**
+   * Zeigt die Kennzahlen der gerade beendeten Partie im Endbildschirm.
+   *
+   * Bewusst mit den Zahlen der PARTIE: Das Gesamtprofil steht im Menü, hier geht
+   * es um das eben Gespielte — sonst wüsste man nach einer Partie nicht, was man
+   * darin geleistet hat.
+   */
+  #zeigeMatchKennzahlen() {
+    const ziel = document.getElementById('match-kennzahlen');
+    if (!ziel || !this.stats) return;
+    const zusammenfassung = this.stats.zusammenfassung(this.eigenerSpielerId);
+    const figuren = zusammenfassung.figuren;
+    const eigener = zusammenfassung.eigener;
+
+    const zeilen = [];
+    if (eigener) {
+      zeilen.push(['Dein Schaden', String(eigener.schaden)]);
+      zeilen.push(['Deine Schüsse', `${eigener.schuesse} (${eigener.treffer} Treffer)`]);
+      if (eigener.trefferquote !== null) {
+        zeilen.push(['Trefferquote', `${Math.round(eigener.trefferquote * 100)} %`]);
+      }
+      zeilen.push(['Deine Züge', String(eigener.zuege)]);
+      if (eigener.lieblingswaffe) zeilen.push(['Meistgenutzt', eigener.lieblingswaffe.waffeId]);
+    }
+    zeilen.push(['Runden', String(zusammenfassung.runden)]);
+    zeilen.push(['Spielzeit', `${Math.round(zusammenfassung.dauerSekunden)} s`]);
+    zeilen.push(['Schaden gesamt', String(zusammenfassung.schadenGesamt)]);
+
+    ziel.replaceChildren(...zeilen.map(([bezeichnung, wert]) => {
+      const zeile = document.createElement('div');
+      zeile.className = 'profil-zeile';
+      const name = document.createElement('span');
+      name.className = 'profil-name';
+      name.textContent = `${bezeichnung}:`;
+      const wertEl = document.createElement('span');
+      wertEl.className = 'profil-wert';
+      wertEl.textContent = wert;
+      zeile.append(name, wertEl);
+      return zeile;
+    }));
+
+    // Die Tabelle aller Spieler steht daneben — sie zeigt, wer was beigetragen hat.
+    const tabelle = document.getElementById('match-tabelle');
+    if (tabelle) {
+      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer'];
+      const zeilenAlle = figuren.map(f => [
+        `P${f.playerId}${f.playerId === this.eigenerSpielerId ? ' (du)' : ''}`,
+        String(f.schaden),
+        String(f.schuesse),
+        f.trefferquote === null ? '—' : `${Math.round(f.trefferquote * 100)} %`,
+      ]);
+      const thead = document.createElement('thead');
+      const kopfZeile = document.createElement('tr');
+      kopfZeile.append(...kopf.map(t => {
+        const th = document.createElement('th');
+        th.textContent = t;
+        return th;
+      }));
+      thead.append(kopfZeile);
+      const tbody = document.createElement('tbody');
+      tbody.append(...zeilenAlle.map(werte => {
+        const tr = document.createElement('tr');
+        tr.append(...werte.map(w => {
+          const td = document.createElement('td');
+          td.textContent = w;
+          return td;
+        }));
+        return tr;
+      }));
+      tabelle.replaceChildren(thead, tbody);
+    }
   }
 
   #loop(timestamp) {
@@ -1428,7 +1544,140 @@ class Game {
     if (el) el.textContent = text;
   }
 
-   #exposeDebugApi() {
+   // ------------------------------------------------------ Spielerkennzahlen
+
+  /**
+   * Lädt das Profil aus dem lokalen Speicher des Browsers.
+   *
+   * Bewusst fehlertolerant: Ein beschädigter oder fremd geschriebener Eintrag
+   * darf das Spiel nicht blockieren. Ein Profil ist Beiwerk — wenn es unlesbar
+   * ist, beginnt man eben neu. Ein Fehler wird gemeldet, nicht verschwiegen.
+   */
+  #ladeProfil() {
+    try {
+      const roh = globalThis.localStorage?.getItem(PROFIL_SCHLUESSEL);
+      if (!roh) return new PlayerProfile();
+      return PlayerProfile.fromJSON(JSON.parse(roh));
+    } catch (error) {
+      this.hud?.log(`Profil konnte nicht geladen werden: ${error.message}`, 'danger');
+      return new PlayerProfile();
+    }
+  }
+
+  /** Schreibt das Profil in den lokalen Speicher. */
+  #speichereProfil() {
+    try {
+      globalThis.localStorage?.setItem(PROFIL_SCHLUESSEL, JSON.stringify(this.profil.toJSON()));
+      return true;
+    } catch (error) {
+      // Voller oder gesperrter Speicher (Privatmodus): Das Spiel läuft weiter,
+      // die Kennzahlen dieser Sitzung sind dann eben nicht dauerhaft.
+      this.hud?.log(`Profil konnte nicht gespeichert werden: ${error.message}`, 'danger');
+      return false;
+    }
+  }
+
+  /** Beginnt die Erfassung für ein neues Match. */
+  #starteErfassung() {
+    const teams = new Map(this.match.getState().entities.map(e => [e.entityId, e.teamId]));
+    this.stats = new MatchStats({ teams });
+    // Die eigene Figur: das ist der Spieler, dessen Kennzahlen ins Profil gehen.
+    this.eigenerSpielerId = this.match.activePlayerId;
+    return this.stats;
+  }
+
+  /**
+   * Verbucht ein beendetes Match ins Profil.
+   *
+   * Wird nur EINMAL je Match aufgerufen — `stats.entschieden` verhindert eine
+   * zweite Verbuchung, falls der Endbildschirm mehrfach ausgelöst wird.
+   */
+  #verbucheMatch() {
+    if (!this.stats || this.verbucht) return false;
+    const zusammenfassung = this.stats.zusammenfassung(this.eigenerSpielerId);
+    if (!zusammenfassung.entschieden) return false;
+
+    this.profil.merge(zusammenfassung);
+
+    /*
+     * Die in dieser Partie benutzten Waffen ins Gesamtprofil übernehmen.
+     *
+     * „Lieblingswaffe" soll über alle Partien gelten, nicht nur über die letzte.
+     * Die Fraktion bleibt offen: Es gibt keine Charakterwahl, also gibt es auch
+     * keine Fraktion zu verbuchen (siehe MASTERDOTO).
+     */
+    const eigener = zusammenfassung.eigener;
+    if (eigener) {
+      const eigenerEintrag = this.stats.spieler.get(this.eigenerSpielerId);
+      if (eigenerEintrag) this.profil.benutzeWaffen(eigenerEintrag.waffen);
+    }
+
+    this.verbucht = true;
+    this.#speichereProfil();
+    this.#zeigeProfil();
+    return true;
+  }
+
+  /** Aktualisiert die Profilanzeige im Menü. */
+  #zeigeProfil() {
+    const ziel = document.getElementById('profil-werte');
+    if (!ziel) return;
+    const text = beschreibe(this.profil);
+    const zeilen = [
+      ['Partien', text.partien],
+      ['Bilanz', text.bilanz],
+      ['Siegquote', text.siegquote],
+      ['Serie', text.serie],
+      ['Beste Serie', text.besteSerie],
+      ['Schüsse', text.schuesse],
+      ['Trefferquote', text.trefferquote],
+      ['Schaden gesamt', text.schaden],
+      ['Schaden', text.schadenProMinute],
+      ['Spielzeit', text.spielzeit],
+      ['Lieblingswaffe', text.lieblingswaffe],
+      ['Lieblingsnation', text.lieblingsfraktion],
+    ];
+    ziel.replaceChildren(...zeilen.map(([bezeichnung, wert]) => {
+      const zeile = document.createElement('div');
+      zeile.className = 'profil-zeile';
+      const dt = document.createElement('span');
+      dt.className = 'profil-name';
+      dt.textContent = `${bezeichnung}:`;
+      const dd = document.createElement('span');
+      dd.className = 'profil-wert';
+      dd.textContent = wert;
+      zeile.append(dt, dd);
+      return zeile;
+    }));
+
+    // Ein Hinweis auf die fehlende Fraktionsangabe: Eine leere Zeile ohne
+    // Begründung sähe nach einem Fehler aus.
+    const hinweis = document.getElementById('profil-hinweis');
+    if (hinweis) {
+      hinweis.textContent = this.profil.lieblingsfraktion
+        ? ''
+        : 'Die Lieblingsnation braucht eine Charakterwahl — die gibt es noch nicht.';
+    }
+  }
+
+  /**
+   * Setzt das Profil zurück.
+   *
+   * Nötig, weil die Zahlen im Browser liegen und ein Spieler sie sonst nicht mehr
+   * loswird — und ein unerreichbarer Zurücksetzen-Knopf wäre eine Sackgasse.
+   */
+  profilZuruecksetzen() {
+    this.profil = new PlayerProfile();
+    try {
+      globalThis.localStorage?.removeItem(PROFIL_SCHLUESSEL);
+    } catch (error) {
+      this.hud?.log(`Profil konnte nicht gelöscht werden: ${error.message}`, 'danger');
+    }
+    this.#zeigeProfil();
+    return this.profil;
+  }
+
+  #exposeDebugApi() {
     window.__PA__ = {
       game: this,
       getMode: () => this.mode,
@@ -1449,6 +1698,14 @@ class Game {
       replayAction: (aktion, wert) => this.replayAction(aktion, wert),
       /** Replay: an eine Stelle springen (Tick). */
       replaySeek: tick => this.replaySeek(tick),
+      /** Spielerprofil (Kennzahlen über alle Partien). */
+      profil: () => this.profil.toJSON(),
+      /** Kennzahlen der laufenden Partie (oder null). */
+      matchKennzahlen: () => (this.stats
+        ? this.stats.zusammenfassung(this.eigenerSpielerId)
+        : null),
+      /** Profil zurücksetzen (für Tests und den Menü-Knopf). */
+      profilZuruecksetzen: () => this.profilZuruecksetzen(),
       getMatch: () => this.match,
       getNetwork: () => this.network,
       getState: () => this.currentState(),
