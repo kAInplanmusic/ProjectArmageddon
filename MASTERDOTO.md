@@ -20,12 +20,12 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **418/418** |
+| Unit-/Integrationstests | `npm test` | **438/438** |
 | Browser-E2E | `npm run test:e2e` | **82/82** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
-| Balance | `npm run balance` | 114 Waffen mit Schaden am Ziel, 35 Selbstwirkungs-Waffen (alle wirksam), 1 ohne jede Wirkung |
+| Balance | `npm run balance` | Auf Startentfernung 426 px: 115 Waffen mit Schaden am Ziel, 35 Selbstwirkungs-Waffen (alle wirksam), **0 ohne jede Wirkung**. Über sieben Entfernungen (`npm run balance:sweep`): 30 Waffen nur Nahbereich, 89 auch ab 550 px |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
 
@@ -437,6 +437,69 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Balance-Messung über die Kartenbreite
+
+Das Messwerkzeug des Berichts war falsch eingestellt und hat dadurch Waffen
+schlechtgeredet: Es hat auf festen **90 px** geschossen, während das Spiel bei
+**426 px** startet. 90 px ist die Entfernung für einen Nahkampfangriff, nicht
+die des Spiels. Die Zahl stand nirgends gegen die Wirklichkeit geprüft — bis
+die Messung gegen den echten Matchstart gestellt wurde.
+
+Behoben:
+
+- Ohne Angabe wird jetzt auf der **Startentfernung des Spiels** gemessen, aus
+  einem echten Match abgelesen (nicht geraten).
+- `--sweep` (`npm run balance:sweep`) misst auf sieben Entfernungen von 90 bis
+  850 px. Bewertet wird die beste — jede Waffe ist für eine Entfernung gebaut,
+  und einen Baseballschläger auf 850 px zu messen ist so unfair wie schwere
+  Artillerie auf 90 px.
+- `testDistanz` ist immer die **tatsächlich** gemessene Entfernung. Bei
+  hügeligem Gelände verkürzt die Liniensuche stillschweigend; ohne diesen Wert
+  ginge eine 800-px-Messung, die in Wahrheit bei 400 px stattfand, als
+  800-px-Messung durch. `angefragteDistanz` bleibt daneben stehen.
+- Getestet wird das Werkzeug selbst (`tests/balance-report.test.js`, 5 Tests):
+  Messdistanz gleich Startentfernung, Durchlauf deckt die Kartenbreite ab,
+  gemeldete Entfernung ist eine wirklich gemessene (nie verlängert), Nahkampf
+  reicht weniger weit als Artillerie, Rollenverteilung vollständig.
+
+### Ergebnis (Karte hills, 150 Waffen, sieben Entfernungen)
+
+| Größe | Wert |
+|---|---|
+| Waffen mit Schaden am Ziel | 115 |
+| Selbstwirkende Waffen (wirken nachweislich) | 35 |
+| **Waffen ohne jede Wirkung** | **0** |
+| Ø Schaden je Schuss (nur wirksame) | 31,9 |
+| Median Shots-to-Kill | 7 |
+| Nur Nahbereich (bis 200 px) | 30 |
+| Auch Langstrecke (ab 550 px) | 89 |
+
+Reichweite (größte Entfernung, auf der die Waffe noch wirkt): 24 Waffen enden
+bei 90 px, dann eine breite Streuung über 200–800 px, und 37 Waffen wirken noch
+auf 850 px.
+
+**Zwei Annahmen sind damit widerlegt:**
+
+1. *„Schwere Artillerie erscheint nur wegen der kurzen Messdistanz als
+   wirkungslos."* Beim kurzen Aufbau war genau **eine** Waffe ohne Wirkung. Nach
+   der Messung über die Kartenbreite: keine. Der Effekt war also klein — was
+   gestimmt hat, war die **Reihenfolge**: Waffen wie Artilleriegeschütz und
+   Feldkanone stehen jetzt mit 97 bzw. 81 Schaden oben, weil sie auf 200 px
+   gemessen werden, wo sie treffen.
+2. *„Die meisten Waffen sind Nahkampf."* Von 150 Waffen enden nur 30 im
+   Nahbereich; 89 wirken auch ab 550 px. Der Katalog hat eine echte
+   Rollenverteilung über die Entfernung.
+
+**Was die Verteilung „beste Entfernung" NICHT aussagt:** 128 von 150 Waffen
+sind bei 90 px am stärksten. Das ist Physik, nicht Design — auf kurze Entfernung
+trifft jede Waffe, weil nichts danebengehen kann. Für die Frage nach der
+Rollenverteilung ist deshalb die **Reichweite** die aussagekräftige Größe, nicht
+die Stelle des höchsten Schadens. Beides steht im Bericht, mit Hinweis.
+
+**Offen, aber jetzt beziffert:** 52 Waffen haben keinen Designwert in der
+Quelldatei und rechnen mit einem Ersatz-Schadenswert (`istPlatzhalter`). Das ist
+ein Datenmangel, kein Codefehler — und ohne Zahl war er nicht greifbar.
+
 ## Umgesetzt
 
 ### Engine
@@ -572,7 +635,9 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ### Werkzeuge
 - `npm run lint` / `lint:fix` — ESLint, als CI-Gate nutzbar.
-- `npm run balance` — Balance-Bericht über alle 150 Waffen.
+- `npm run balance` — Balance-Bericht über alle 150 Waffen (auf der
+  Startentfernung des Spiels). `npm run balance:sweep` misst zusätzlich über
+  sieben Entfernungen von 90 bis 850 px.
 - `npm run perf` — Performance-Profil mit Budget-Gate.
 - `npm run replay` — Aufzeichnen, Abspielen, `--verify`.
 - `npm run icons` — Icon-Pipeline (Pillow, ohne ImageMagick).
@@ -583,7 +648,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (418):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (438):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -634,8 +699,11 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       35 Waffen wirken dadurch nachweislich (per Test belegt). Offen bleiben
       einzelne Mechaniken: aufgestelltes Geschütz (Auto-Turret), Wasserschub
       (Wasserblaster).
-- [ ] Balance über die volle Kartenbreite messen (aktuell 90 px; schwere
-      Artillerie wird dadurch unterschätzt).
+- [x] Balance über die volle Kartenbreite messen. Der Bericht misst jetzt auf
+      der Startentfernung des Spiels (aus einem echten Match abgelesen: 426 px
+      bei 1280 px Kartenbreite) statt auf festen 90 px, und mit `--sweep`
+      (`npm run balance:sweep`) auf sieben Entfernungen von 90 bis 850 px.
+      Siehe „Balance-Messung über die Kartenbreite".
 - [x] Zustände im HUD: Schild, Einfrieren, Schaden über Zeit und Schadensbonus
       erscheinen als Marken in der Spielerliste, mit Erläuterung beim Überfahren.
 - [x] Ertrinken und Wasserverdrängung im HUD anzeigen. Wasserstand je Spieler
