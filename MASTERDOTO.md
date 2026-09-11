@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **481/481** |
-| Browser-E2E | `npm run test:e2e` | **102/102** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **486/486** |
+| Browser-E2E | `npm run test:e2e` | **104/104** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -436,6 +436,65 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     **Der Fehler steckte in einem Bereich, den die bisherigen Tests nicht
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
+
+## Kisten im Netzwerk
+
+**Online war kein Loot zu sehen.** Im lokalen Match wurden die Loot-Kisten
+gezeichnet, im Online-Match nie. Gemessen mit zwei Browsern an einem echten
+Server, vor der Korrektur:
+
+```
+PROBE A {"status":"playing","kisten":0,...}
+PROBE B {"status":"playing","kisten":0,...}
+```
+
+obwohl der Server eine Startkiste führte.
+
+**46. Zwei Stellen waren falsch — und nur zusammen ergaben sie den Fehler.**
+
+1. `onlineViewState` im Client setzte fest `crates: []`. Die Liste konnte gar
+   nicht gefüllt werden.
+2. `encodeSnapshot` übertrug Kisten überhaupt nicht — es kannte nur Figuren und
+   Projektile. Auch `decodeSnapshot` las nichts davon.
+
+Ein Test auf nur einer der beiden Seiten hätte die Lücke nicht gefunden: Der
+Encoder war für sich „in Ordnung" (er übertrug, was er kannte), und der Client
+war für sich „in Ordnung" (er zeigte, was er bekam).
+
+Behoben mit Protokoll **v5**: Der Kopf wächst von 22 auf 23 Byte (Kistenzahl in
+Byte 22), je Kiste 8 Byte (Kennung, x, y, Art, Seltenheit). `inFlight` geht
+bewusst nicht mit — es steuert die Landephysik auf dem Server und hat für die
+Anzeige keine Bedeutung.
+
+Kisten sind **nicht deltafähig**: Sie gehen bei jedem Snapshot vollständig mit.
+Ihre Zahl ist klein, und „dieselbe Kiste bewegt sich" ist der einzige
+Änderungsfall; ein Delta bräuchte Kennungen und Entfernungsmeldungen, die mehr
+kosten als sie sparen. Ein Test hält fest, dass `toDeltaBase` keine Kisten
+erfindet.
+
+### Ein Testfehler, der wie ein Produktfehler aussah
+
+Nach der Änderung fiel `network-conditions` „Nach einem Aussetzer holt der
+Vollsnapshot den Client zurück" um — reproduzierbar. Mit zurückgenommenen
+Änderungen (`git stash`) war er grün, also sah es nach einer Regression aus.
+
+War es nicht. Der Test prüfte `latestSnapshot.isFull === true`, aber der
+Vollsnapshot ist nur rund **50 ms** lang der jüngste (der Server sendet alle 2 s
+einen, dazwischen alle 50 ms ein Delta). Bei 100 ms Abtastung wird dieser Moment
+**zufällig** getroffen. Gemessen: 2 von 69 Proben. Dass der Test vorher grün war,
+war Glück — ein zusätzliches Byte im Kopf hat das Timing verschoben.
+
+Behoben mit einem Zähler (`NetworkClient#stats.fullSnapshots`). Der kann nicht
+verpasst werden, und für die Diagnose („holt mich der Vollsnapshot zurück?") ist
+er ohnehin das, was man wissen will. **Die Laufzeit des Tests sank von 56 s auf
+21 s** — der Beleg, dass vorher gewartet wurde.
+
+### Literale durch Konstanten ersetzt
+
+Drei Tests schrieben die Kopfgröße als `22` und die Protokollversion als `4` fest
+und brachen mit der Erweiterung, ohne etwas auszusagen. Sie nutzen jetzt
+`HEADER_SIZE` bzw. eine **Mindestversion** („der Wasserstand kam mit v4") — das
+sagt, was der Test braucht, und bricht nicht bei jeder Erweiterung.
 
 ## Spielerkennzahlen
 
@@ -965,7 +1024,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (481):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (486):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -983,7 +1042,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (102):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (104):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
