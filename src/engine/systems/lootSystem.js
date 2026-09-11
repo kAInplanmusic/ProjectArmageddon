@@ -80,6 +80,8 @@ export class LootSystem {
         rarity: rarityId,
         weaponId: weapon ? weapon.index : 0,
         picked: 0,
+        // 0 bedeutet "kein Vorrat hinterlegt" — beim Aufheben gilt das volle Magazin.
+        ammo: 0,
       });
       spawned.push(entityId);
     }
@@ -113,8 +115,24 @@ export class LootSystem {
         const py = world.getComponent(playerId, 'Position', 'y') || 0;
         if (Math.hypot(px - crateX, py - crateY) > PICKUP_RADIUS) continue;
 
+        // Ist der Vorrat voll und enthält die Kiste eine Waffe, wird sie NICHT
+        // aufgenommen. Stattdessen meldet ein Ereignis den Grund — der Spieler
+        // muss erst abwerfen. Automatisches Überschreiben wäre ein Datenverlust
+        // ohne Rückfrage.
+        if (crateType === CRATE_TYPES.weapon
+          && inventory?.isFull?.(playerId)
+          && !inventory.has(playerId, weaponIdFromIndex(weaponIndex))) {
+          events?.emit('crate_pickup_blocked', {
+            crateId, playerId,
+            weaponId: weaponIdFromIndex(weaponIndex),
+            reason: 'voll',
+          });
+          // Nicht als aufgenommen markieren: die Kiste bleibt liegen.
+          break;
+        }
+
         world.setComponent(crateId, 'Crate', 'picked', 1);
-        const reward = this.#applyPickup(world, playerId, crateType, weaponIndex, damageSystem, inventory);
+        const reward = this.#applyPickup(world, playerId, crateType, weaponIndex, damageSystem, inventory, crateId);
         events?.emit('crate_pickup', { crateId, playerId, crateType, reward });
         world.removeEntity(crateId);
         break;
@@ -122,12 +140,18 @@ export class LootSystem {
     }
   }
 
-  #applyPickup(world, playerId, crateType, weaponIndex, damageSystem, inventory) {
+  #applyPickup(world, playerId, crateType, weaponIndex, damageSystem, inventory, crateId) {
     switch (crateType) {
       case CRATE_TYPES.weapon: {
         const weaponId = weaponIdFromIndex(weaponIndex);
-        if (weaponId && inventory) inventory.grantWeapon(playerId, weaponId);
-        return { kind: 'weapon', weaponId };
+        // Munition aus der Kiste übernehmen, falls gesetzt (abgeworfene Waffe).
+        // Eine Kiste aus dem Rundenablauf hat hier 0 und vergibt ein volles Magazin.
+        const kistenMunition = world.getComponent(crateId, 'Crate', 'ammo') || 0;
+        if (weaponId && inventory) {
+          const uebergeben = kistenMunition !== 0 ? { ammo: kistenMunition } : {};
+          inventory.grantWeapon(playerId, weaponId, uebergeben);
+        }
+        return { kind: 'weapon', weaponId, ammo: kistenMunition };
       }
       case CRATE_TYPES.sustain: {
         const amount = 25;

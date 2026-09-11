@@ -253,6 +253,140 @@ const SPECIAL_WITHOUT_DAMAGE = new Set([
   'relic_buff', 'random_buff', 'time_control', 'camouflage',
 ]);
 
+/**
+ * Bezugsgeschwindigkeit der Quelldaten.
+ *
+ * `projectile_speed` liegt zwischen 48 und 100, der Modalwert ist 70. Die 70 ist
+ * damit die normale Geschwindigkeit; alles andere skaliert darum herum. Wichtig:
+ * Das Feld war bis hierher TOT — der Motor hat es nie gelesen und jedes Geschoss
+ * flog gleich schnell. Eine `Minigun` und ein `Mörser` waren dadurch technisch
+ * identisch im Flug.
+ */
+export const REFERENCE_PROJECTILE_SPEED = 70;
+
+/** Geschwindigkeitsfaktor aus den Quelldaten (1 = Normaltempo). */
+export function speedFactorFor(weapon) {
+  const roh = weapon.projectileSpeed;
+  if (!Number.isFinite(roh) || roh <= 0) return 1;
+  // Begrenzt, damit ein Ausreißer in den Quelldaten die Bahn nicht unspielbar macht.
+  return Number(Math.min(1.6, Math.max(0.6, roh / REFERENCE_PROJECTILE_SPEED)).toFixed(4));
+}
+
+/** Referenzwerte der Simulation — dieselben Größen wie im Motor. */
+const SIM_POWER = 100;
+const SIM_POWER_TO_SPEED = 0.14;
+const SIM_GRAVITY = 0.32;
+const SIM_DRAG = 0.995;
+
+/**
+ * Reichweite eines Projektils durch Simulation der Flugbahn.
+ *
+ * Warum simulieren statt formeln: Mit Luftwiderstand (0.995 je Tick) gibt es
+ * keine geschlossene Lösung, und die tatsächliche Bahn hängt von Geschwindigkeit,
+ * Gravitation und Widerstand zusammen ab. Die Simulation ist deterministisch und
+ * liefert genau die Strecke, die der Motor später auch fliegt.
+ *
+ * Gemessen wird der weiteste Abschuss (45°) auf ebener Fläche, Rückkehrhöhe =
+ * Starthöhe.
+ *
+ * @returns {number} Reichweite in Pixeln
+ */
+export function simulateProjectileReach(weapon) {
+  const v0 = SIM_POWER * SIM_POWER_TO_SPEED * speedFactorFor(weapon);
+  const gravity = SIM_GRAVITY * (weapon.gravityScale || 1);
+  const winkel = Math.PI / 4;
+
+  let x = 0;
+  let y = 0;
+  let vx = Math.cos(winkel) * v0;
+  let vy = -Math.sin(winkel) * v0;
+
+  let weiteste = 0;
+  // 1500 Schritte = 25 s Flugzeit: deutlich mehr als jede reale Bahn.
+  for (let schritt = 0; schritt < 1500; schritt++) {
+    vy += gravity;
+    vx *= SIM_DRAG;
+    vy *= SIM_DRAG;
+    x += vx;
+    y += vy;
+    if (y >= 0 && vy > 0) {
+      // Zurück auf Starthöhe: die horizontale Strecke ist die Reichweite.
+      weiteste = Math.max(weiteste, x);
+      break;
+    }
+    weiteste = Math.max(weiteste, x);
+  }
+  return weiteste;
+}
+
+/**
+ * Basisreichweite von Soforttreffern je Kategorie.
+ *
+ * Ein Hitscan hat keine Flugzeit — seine Reichweite ist eine
+ * Designentscheidung, keine Physik. Die Werte spiegeln die Rolle: ein
+ * Nahkampfangriff reicht eine Figur weit, ein schweres Geschütz über die halbe
+ * Karte.
+ */
+export const HITSCAN_RANGE_BY_CATEGORY = Object.freeze({
+  melee: 130,
+  ranged: 520,
+  heavy_ranged: 820,
+  elemental: 560,
+  magic: 520,
+  tech: 600,
+  utility: 420,
+  ultimate: 900,
+});
+
+const MIN_RANGE = 110;
+const MAX_RANGE = 1400;
+
+/**
+ * Reichweite einer Waffe.
+ *
+ * Projektile: aus der simulierten Flugbahn, mit 12 % Sicherheitszuschlag, damit
+ * ein Geschoss nicht mitten im Flug verschwindet (die Lebensdauer leitet sich
+ * daraus ab).
+ * Hitscan: Kategoriebasis, skaliert mit dem Schaden — eine 110-Schaden-Waffe
+ * reicht weiter als eine mit 20.
+ */
+export function deriveMaxRange(weapon) {
+  let reichweite;
+
+  if (weapon.delivery === 'projectile') {
+    reichweite = simulateProjectileReach(weapon) * 1.12;
+  } else {
+    const basis = HITSCAN_RANGE_BY_CATEGORY[weapon.category] ?? 520;
+    // Schaden als Maß für die Rolle (0.6 bis 2.0).
+    const kraft = Math.min(2, Math.max(0.6, weapon.damage / 45));
+    reichweite = basis * kraft;
+  }
+
+  return Math.round(Math.min(MAX_RANGE, Math.max(MIN_RANGE, reichweite)));
+}
+
+/**
+ * Nachladezeit in ZÜGEN (nicht Millisekunden — damit ist sie deterministisch und
+ * unabhängig von der Zugzeit, wie die Wirkungsdauern).
+ *
+ * Bemessungsgrundlage ist die "Last" der Waffe: Schaden, Flächenwirkung und ein
+ * knapper Munitionsvorrat. Ein schweres Geschütz braucht eine Pause, eine
+ * Maschinenpistole nicht.
+ *
+ * Warum in Zügen und nicht in Sekunden: Der Zug ist die Zeiteinheit des Spiels.
+ * Eine Pause von 1,4 Sekunden hinge an der konfigurierten Zugdauer; "eine Runde
+ * aussetzen" ist für den Spieler nachvollziehbar und in Replays stabil.
+ */
+export function deriveCooldown(weapon) {
+  const last = weapon.damage * (1 + weapon.blastRadius / 60)
+    + (weapon.maxAmmo <= 3 ? 20 : 0);
+
+  if (last < 40) return 0;
+  if (last < 75) return 1;
+  if (last < 120) return 2;
+  return 3;
+}
+
 const weapons = raw.weapons.map(entry => {
   const stats = entry.stats ?? {};
   const balance = entry.balance ?? {};
@@ -279,7 +413,12 @@ const weapons = raw.weapons.map(entry => {
     /** Rarität aus den Quelldaten (nur common/uncommon/rare). */
     sourceRarity,
     maxAmmo: Math.max(0, toNumber(balance.maxAmmo) || 1),
-    cooldown: toNumber(balance.cooldown),
+    /**
+     * Nachladezeit in Zügen, hergeleitet aus der Last der Waffe.
+     * Die Quelldatei führt `cooldown`, aber konstant 0 — siehe deriveCooldown().
+     * Das Feld bleibt als Herkunftsnachweis erhalten.
+     */
+    cooldownSource: toNumber(balance.cooldown),
     requiresLineOfSight: Boolean(balance.requiresLineOfSight),
     damage,
     /** Herkunft des Schadenswerts: echte Designdaten oder Ersatzwert. */
@@ -304,10 +443,17 @@ const weapons = raw.weapons.map(entry => {
     },
     special: pickString(stats, 'special') ?? entry.mechanic?.specialEffect ?? null,
     targeting: entry.mechanic?.targeting ?? null,
-    maxRange: pickPositive(stats, 'maxRange') || 600,
     // Abgeleitete Feuerart: Hitscan ohne Flugzeit, Projektil mit Flugzeit.
+    // Muss VOR maxRange stehen: die Reichweite hängt von der Feuerart ab.
     delivery: isMelee || projectileSpeed <= 0 ? 'hitscan' : 'projectile',
   };
+
+  // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam.
+  weapon.speedFactor = speedFactorFor(weapon);
+  // Reichweite: physikalisch hergeleitet, nicht der Konstantwert 600 für alle.
+  weapon.maxRange = deriveMaxRange(weapon);
+  // Nachladezeit in Zügen: die Quelle führt das Feld, aber konstant 0.
+  weapon.cooldown = deriveCooldown(weapon);
 
   // Abgeleitete Einstufung: erweitert die Quelle um epic/legendary, ohne Werte
   // zu erfinden — reine Funktion der oben gemappten Statistiken.
@@ -337,6 +483,27 @@ const file = `/**
  *
  * @module weapons
  */
+
+/**
+ * Bezugsgeschwindigkeit der Quelldaten (Modalwert). 1.0 bedeutet Normaltempo.
+ */
+export const REFERENCE_PROJECTILE_SPEED = ${REFERENCE_PROJECTILE_SPEED};
+
+/** Geschwindigkeitsfaktor einer Waffe aus den Quelldaten. */
+export function speedFactorFor(weapon) {
+  const roh = weapon.projectileSpeed;
+  if (!Number.isFinite(roh) || roh <= 0) return 1;
+  return Number(Math.min(1.6, Math.max(0.6, roh / REFERENCE_PROJECTILE_SPEED)).toFixed(4));
+}
+
+/**
+ * Laenge des Strahls bzw. Lebensdauer-Basis fuer Projektile, in Pixeln.
+ * Projektile: simulierte Flugbahn mit Sicherheitszuschlag.
+ * Hitscan: Kategoriebasis, skaliert mit dem Schaden.
+ */
+export const HITSCAN_RANGE_BY_CATEGORY = Object.freeze(
+  ${JSON.stringify(HITSCAN_RANGE_BY_CATEGORY)}
+);
 
 export const WEAPON_CATALOG_VERSION = ${JSON.stringify(raw.version ?? '1.0.0')};
 

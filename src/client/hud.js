@@ -202,7 +202,10 @@ export class Hud {
     // Munition gehört in die Signatur: sonst aktualisiert sich die Anzeige
     // erst beim Zugwechsel statt direkt nach einem Schuss.
     const ammoKey = weapons.map(id => `${id}=${active?.ammo?.[id] ?? 0}`).join(',');
-    const signature = `${state.activePlayerId}:${weapons.join(',')}:${active?.activeWeaponId ?? ''}:${ammoKey}`;
+    // Nachladezeiten gehören in die Signatur: sonst bliebe die Anzeige stehen,
+    // obwohl eine Waffe wieder bereit ist.
+    const cdKey = weapons.map(id => `${id}=${active?.cooldowns?.[id] ?? 0}`).join(',');
+    const signature = `${state.activePlayerId}:${weapons.join(',')}:${active?.activeWeaponId ?? ''}:${ammoKey}:${cdKey}`;
     if (this.#weaponSignature === signature) return;
     this.#weaponSignature = signature;
 
@@ -272,18 +275,34 @@ export class Hud {
 
     const meta = document.createElement('span');
     const ammo = active?.ammo?.[weaponId];
+    const restCooldown = active?.cooldowns?.[weaponId] ?? 0;
     meta.textContent = ammo === 'unbegrenzt'
       ? `${weapon?.damage ?? 0} DMG · ∞`
       : `${weapon?.damage ?? 0} DMG · ${ammo ?? 0}`;
     meta.style.color = '#8ba0b4';
 
     item.append(label, meta);
+
+    // Nachladezeit sichtbar machen: ohne sie wäre unklar, warum ein Schuss
+    // abgelehnt wird. Die Zeile wird zusätzlich abgeblendet.
+    if (restCooldown > 0) {
+      const cd = document.createElement('span');
+      cd.className = 'weapon-cooldown';
+      cd.textContent = `⏳ ${restCooldown}`;
+      cd.title = `Lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`;
+      item.append(cd);
+      item.classList.add('is-cooling');
+      item.dataset.cooldown = String(restCooldown);
+    }
+
     const radius = weapon?.blastRadius ?? 0;
     item.title = [
       weapon?.displayName ?? weaponId,
       `Schaden ${weapon?.damage ?? 0}`,
       radius > 0 ? `Radius ${Math.round(radius)}` : 'kein Flächenschaden',
       `Stufe ${weapon?.powerTier ?? 'common'} (Wert ${weapon?.powerScore ?? 0})`,
+      `Reichweite ${weapon?.maxRange ?? 0} px`,
+      (weapon?.cooldown ?? 0) > 0 ? `Nachladen ${weapon.cooldown} Zug/Züge` : 'kein Nachladen',
       weapon?.category ? `Kategorie ${weapon.category}` : null,
     ].filter(Boolean).join(' · ');
     item.addEventListener('click', () => onWeaponSelect?.(index));

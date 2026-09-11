@@ -31,6 +31,7 @@ import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 import { getWeapon, getDefaultLoadout } from '../shared/config/weapons.js';
+import { CRATE_TYPES, RARITY_IDS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
 
 export const MAP_WIDTH = 1280;
@@ -72,6 +73,15 @@ export class MatchController {
    * Index der Waffe, nicht ihre ID.
    */
   #shotsInFlight = new Map();
+  /**
+   * Nachladezeiten je Spieler und Waffe, in ZÜGEN.
+   * Schlüssel `${playerId}:${weaponId}` → verbleibende Züge.
+   *
+   * Warum in Zügen: Der Zug ist die Zeiteinheit des Spiels. Eine Pause in
+   * Sekunden hinge an der konfigurierten Zugdauer; „eine Runde aussetzen" ist
+   * für den Spieler nachvollziehbar und in Replays stabil.
+   */
+  #cooldowns = new Map();
   #maelstrom;
   #loot;
   #players = [];
@@ -311,13 +321,24 @@ export class MatchController {
     const resolvedWeaponId = weaponId ?? this.#inventory.getActiveWeaponId(playerId);
     const weapon = resolvedWeaponId ? getWeapon(resolvedWeaponId) : null;
     if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewaehlt'] };
+    // Nachladezeit prüfen, BEVOR Munition verbraucht wird — sonst kostet ein
+    // abgelehnter Schuss eine Ladung.
+    const restCooldown = this.cooldownFor(playerId, weapon.id);
+    if (restCooldown > 0) {
+      return {
+        ok: false,
+        errors: [`${weapon.displayName} lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`],
+        cooldown: restCooldown,
+      };
+    }
+
     if (!this.#inventory.consume(playerId, weapon.id, 1)) {
       return { ok: false, errors: ['Keine Munition'] };
     }
 
     const player = this.#players.find(entry => entry.entityId === playerId);
     const classDef = CLASS_DEFINITIONS[CLASS_IDS[player?.classId ?? 0]];
-    const { x, y, vx, vy } = this.#launchVector(playerId, angle, power);
+    const { x, y, vx, vy } = this.#launchVector(playerId, angle, power, weapon);
 
     this.#world.setComponent(playerId, 'Weapon', 'angle', angle);
     this.#world.setComponent(playerId, 'Weapon', 'power', power);
@@ -334,6 +355,7 @@ export class MatchController {
       this.#events.emit('special_effect', {
         playerId, weaponId: weapon.id, kind: special.kind, ...outcome,
       });
+      this.#applyCooldown(playerId, weapon);
       this.endTurn();
       return { ok: true, projectileId: null, hit: null, special: { kind: special.kind, ...outcome } };
     }
@@ -341,6 +363,7 @@ export class MatchController {
     if (weapon.delivery === 'hitscan') {
       const hit = this.#resolveHitscan(x, y, angle, power, weapon, playerId);
       this.#events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
+      this.#applyCooldown(playerId, weapon);
       return { ok: true, projectileId: null, hit };
     }
 
@@ -367,13 +390,19 @@ export class MatchController {
       windFactor: 1,
       terrainDamage: weapon.terrainDamage,
       bounces: weapon.bounces,
-      lifetime: Math.max(60, Math.round(weapon.maxRange / 8)),
+      // Lebensdauer aus der eigenen Reichweite und der TATSÄCHLICHEN
+      // Anfangsgeschwindigkeit: sonst verfällt ein schnelles Geschoss mitten im
+      // Flug oder ein langsames bleibt unnötig lange bestehen.
+      lifetime: Math.max(30, Math.round(
+        weapon.maxRange / Math.max(1, Math.hypot(vx, vy)),
+      ) * 1.5),
       alive: 1,
     });
 
     this.#shotsInFlight.set(projectileId, weapon.id);
 
     this.#events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
+    this.#applyCooldown(playerId, weapon);
     return { ok: true, projectileId, hit: null };
   }
 
@@ -427,6 +456,160 @@ export class MatchController {
     }
 
     return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
+  }
+
+  /**
+   * Wirft eine Waffe ab und legt sie als aufhebbare Kiste in der Nähe ab.
+   *
+   * Die Mechanik unterstützt den Spielablauf an der Stelle, an der er sonst
+   * stockt: Ist der Waffenvorrat voll, muss man sich von etwas trennen, um etwas
+   * Neues zu nehmen.
+   *
+   * Entscheidungen:
+   *  - Die Landestelle wird ZUFÄLLIG gewählt, aber geprüft: innerhalb der Karte,
+   *    auf festem Boden und AUSSERHALB des Aufhebe-Radius. Sonst würde der
+   *    Werfer seine eigene Waffe im nächsten Schritt wieder einsammeln und die
+   *    Handlung wäre wirkungslos.
+   *  - Der Zufall kommt aus dem Match-Generator, ist also reproduzierbar.
+   *  - Die verbleibende Munition reist mit: Abwerfen und Aufheben darf kein
+   *    Munitionstrick sein.
+   *  - Die Reservewaffe ist geschützt (siehe Inventar).
+   *
+   * @param {number} playerId
+   * @param {string} weaponId
+   * @returns {{ok:boolean, crateId?:number, x?:number, y?:number, ammo?:number, errors?:string[]}}
+   */
+  dropWeapon(playerId, weaponId) {
+    const errors = [];
+    if (this.#status !== 'playing') errors.push('Match läuft nicht');
+    if (!this.#world.isActive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
+    if (errors.length > 0) return { ok: false, errors };
+
+    const weapon = getWeapon(weaponId);
+    if (!weapon) return { ok: false, errors: ['Unbekannte Waffe'] };
+
+    const entfernt = this.#inventory.removeWeapon(playerId, weaponId);
+    if (!entfernt.ok) return { ok: false, errors: [entfernt.reason] };
+
+    // Landestelle suchen. Begrenzte Versuche: bei zu engem Gelände wird die
+    // Waffe an der eigenen Position abgelegt, statt das Abwerfen zu verweigern —
+    // sonst ließe sich eine Waffe in einer Grube nie loswerden.
+    const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
+    const startY = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
+    const platz = this.#findDropSpot(startX, startY) ?? { x: startX, y: startY };
+
+    const crateId = this.#world.createEntity();
+    this.#world.addComponent(crateId, 'Position', { x: platz.x, y: platz.y });
+    this.#world.addComponent(crateId, 'Velocity', { x: 0, y: 0 });
+    this.#world.addComponent(crateId, 'Crate', {
+      crateType: CRATE_TYPES.weapon,
+      crateX: platz.x,
+      crateY: platz.y,
+      rarity: Math.max(0, RARITY_IDS.indexOf(weapon.rarity)),
+      weaponId: weapon.index,
+      picked: 0,
+      ammo: entfernt.ammo,
+    });
+
+    // Eine abgeworfene Waffe ist keine Nachladezeit mehr wert: die Pause gehört
+    // zur Waffe, und die liegt jetzt am Boden.
+    this.#cooldowns.delete(`${playerId}:${weaponId}`);
+
+    this.#events.emit('weapon_dropped', {
+      playerId, weaponId, crateId, x: platz.x, y: platz.y, ammo: entfernt.ammo,
+    });
+
+    return { ok: true, crateId, x: platz.x, y: platz.y, ammo: entfernt.ammo };
+  }
+
+  /**
+   * Sucht eine zufällige, gültige Landestelle für eine abgeworfene Waffe.
+   *
+   * Bedingungen: innerhalb der Karte, mindestens `DROP_MIN_DISTANCE` und
+   * höchstens `DROP_MAX_DISTANCE` entfernt, und der Punkt muss über festem
+   * Boden liegen. Gibt `null` zurück, wenn kein Platz gefunden wurde.
+   *
+   * @returns {{x:number, y:number}|null}
+   */
+  #findDropSpot(originX, originY) {
+    const MIN = 26;   // weiter als der Aufhebe-Radius (18), sonst sofort wieder auf
+    const MAX = 96;
+
+    for (let versuch = 0; versuch < 24; versuch++) {
+      const winkel = this.#rng.nextFloat(0, Math.PI * 2);
+      const abstand = this.#rng.nextFloat(MIN, MAX);
+      const x = originX + Math.cos(winkel) * abstand;
+
+      if (x < PLAYER_HALF_WIDTH + 4 || x > MAP_WIDTH - PLAYER_HALF_WIDTH - 4) continue;
+
+      const boden = this.surfaceYAt(Math.round(x));
+      if (boden < 0) continue;
+
+      // Über dem Boden muss LUFT sein, damit die Kiste sichtbar und aufhebbar
+      // liegen bleibt. Die Bedingung ist bewusst positiv formuliert: „Platz für
+      // eine stehende Figur“ — also darf der Punkt über der Oberfläche NICHT
+      // fest sein. (Die invertierte Fassung verlangte festes Gelände in der Luft
+      // und lehnte damit jede Stelle ab.)
+      if (this.#terrain.isSolid(Math.floor(x), Math.floor(boden - PLAYER_HALF_HEIGHT))) continue;
+      if (Math.abs(boden - originY) > 260) continue;
+
+      // Nicht auf einem anderen Spieler ablegen.
+      const besetzt = this.#players.some(entry => {
+        if (!this.#world.isActive(entry.entityId)) return false;
+        const px = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
+        return Math.abs(px - x) < 14;
+      });
+      if (besetzt) continue;
+
+      return { x, y: boden };
+    }
+    return null;
+  }
+
+  /**
+   * Räumt alle Nachladezeiten eines Spielers.
+   * Nötig beim Ausscheiden: sonst blieben Einträge für einen Spieler stehen,
+   * der nicht mehr am Match teilnimmt.
+   */
+  clearCooldowns(playerId) {
+    const prefix = `${playerId}:`;
+    for (const key of [...this.#cooldowns.keys()]) {
+      if (key.startsWith(prefix)) this.#cooldowns.delete(key);
+    }
+  }
+
+  /** Verbleibende Nachladezeit einer Waffe in Zügen (0 = einsatzbereit). */
+  cooldownFor(playerId, weaponId) {
+    return this.#cooldowns.get(`${playerId}:${weaponId}`) ?? 0;
+  }
+
+  /**
+   * Setzt die Nachladezeit einer Waffe.
+   * Wird nach jedem erfolgreichen Schuss aufgerufen, auch bei Selbstwirkungen —
+   * sonst ließe sich eine Heilwaffe durchgehend benutzen.
+   */
+  #applyCooldown(playerId, weapon) {
+    const turns = Math.max(0, Math.floor(weapon?.cooldown ?? 0));
+    if (turns <= 0) return 0;
+    this.#cooldowns.set(`${playerId}:${weapon.id}`, turns);
+    this.#events.emit('weapon_cooldown', {
+      playerId, weaponId: weapon.id, turns,
+    });
+    return turns;
+  }
+
+  /**
+   * Zählt die Nachladezeiten eines Spielers um einen Zug herunter.
+   * Gehört an den ZUGbeginn: der Spieler überspringt seine Pause, wenn er
+   * wieder an der Reihe ist.
+   */
+  #tickCooldowns(playerId) {
+    const prefix = `${playerId}:`;
+    for (const [key, rest] of this.#cooldowns.entries()) {
+      if (!key.startsWith(prefix)) continue;
+      if (rest <= 1) this.#cooldowns.delete(key);
+      else this.#cooldowns.set(key, rest - 1);
+    }
   }
 
   /**
@@ -757,14 +940,19 @@ export class MatchController {
    * Wird von fire() und aimPreview() gemeinsam genutzt, damit Vorschau und
    * tatsaechlicher Schuss identisch rechnen.
    */
-  #launchVector(playerId, angle, power) {
+  #launchVector(playerId, angle, power, weapon = null) {
     const player = this.#players.find(entry => entry.entityId === playerId);
     const classDef = CLASS_DEFINITIONS[CLASS_IDS[player?.classId ?? 0]];
     const archetype = CLASS_ARCHETYPES[ARCHETYPE_IDS[player?.archetypeId ?? 0]];
 
     const x = this.#world.getComponent(playerId, 'Position', 'x') || 0;
     const y = this.#world.getComponent(playerId, 'Position', 'y') || 0;
-    const speed = power * POWER_TO_SPEED * classDef.power * (archetype.damage / 1.2);
+    // Der Geschwindigkeitsfaktor der Waffe wirkt jetzt tatsächlich. Vorher flog
+    // jedes Geschoss gleich schnell, obwohl die Quelldaten 14 verschiedene
+    // Geschwindigkeiten (48-100) nennen — eine Minigun war im Flug nicht von
+    // einem Mörser zu unterscheiden.
+    const weaponFactor = weapon?.speedFactor ?? 1;
+    const speed = power * POWER_TO_SPEED * classDef.power * (archetype.damage / 1.2) * weaponFactor;
 
     return { x, y, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };
   }
@@ -776,9 +964,12 @@ export class MatchController {
    *
    * @returns {{x:number,y:number}[]}
    */
-  aimPreview(playerId, angle, power, steps = 180) {
+  aimPreview(playerId, angle, power, steps = 180, weapon = null) {
     if (!this.#world.isActive(playerId)) return [];
-    const launch = this.#launchVector(playerId, angle, power);
+    // Die Vorschau muss dieselbe Geschwindigkeit nutzen wie der echte Schuss,
+    // sonst zeigt sie eine Bahn, die die Waffe nicht fliegt.
+    const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
+    const launch = this.#launchVector(playerId, angle, power, waffe);
     const wind = this.#world.services.match.wind ?? 0;
 
     let x = launch.x;
@@ -902,6 +1093,11 @@ export class MatchController {
     // ein anderer.
     const turnState = this.#statuses.advanceTurn(entityId);
 
+    // Nachladezeiten dieses Spielers um einen Zug herunterzählen. Bewusst VOR
+    // der Einfrier-Prüfung: eine Pause soll auch dann ablaufen, wenn der Spieler
+    // seinen Zug aussetzt.
+    this.#tickCooldowns(entityId);
+
     if (turnState.damage > 0 && this.#world.isActive(entityId)) {
       this.#world.getSystem('damage')?.applyDamage(this.#world, entityId, turnState.damage, null);
       this.#events.emit('dot_tick', {
@@ -990,6 +1186,12 @@ export class MatchController {
         power: alive ? this.#world.getComponent(entry.entityId, 'Weapon', 'power') : 0,
         activeWeaponId: this.#inventory.getActiveWeaponId(entry.entityId),
         inventory: this.#inventory.getWeapons(entry.entityId),
+        /** Verbleibende Nachladezeit je Waffe in Zügen (nur belegte Waffen). */
+        cooldowns: Object.fromEntries(
+          this.#inventory.getWeapons(entry.entityId)
+            .map(weaponId => [weaponId, this.cooldownFor(entry.entityId, weaponId)])
+            .filter(([, rest]) => rest > 0),
+        ),
         ammo: Object.fromEntries(
           this.#inventory.getWeapons(entry.entityId).map(weaponId => {
             const amount = this.#inventory.getAmmo(entry.entityId, weaponId);

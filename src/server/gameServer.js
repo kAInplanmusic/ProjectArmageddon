@@ -353,9 +353,18 @@ class LobbySession {
         // Munition an, die es nicht gibt.
         ammo[weaponId] = Number.isFinite(amount) ? amount : UNLIMITED_AMMO;
       }
+      // Nachladezeiten gehören mit in die Bestandsnachricht: sie sind je Waffe
+      // verschieden und ändern sich pro Zug, also nichts für den binären
+      // Snapshot (variable Länge).
+      const cooldowns = {};
+      for (const weaponId of entry.weapons) {
+        const rest = this.match.cooldownFor(seat.entityId, weaponId);
+        if (rest > 0) cooldowns[weaponId] = rest;
+      }
       table[seat.entityId] = {
         inventory: [...entry.weapons],
         ammo,
+        cooldowns,
         activeWeaponId: entry.activeWeaponId ?? null,
       };
     }

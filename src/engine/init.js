@@ -38,6 +38,13 @@ export function registerDefaultComponents(componentStore) {
     rarity: 'Int32Array',
     weaponId: 'Int32Array',
     picked: 'Int32Array',
+    /**
+     * Munition einer abgeworfenen Waffe (-1 = unbegrenzt, 0 = nicht gesetzt).
+     * Nur so bleibt beim Aufheben der Vorrat erhalten: eine frisch geworfene
+     * Waffe darf nicht mit vollem Magazin zurückkommen, sonst wäre Abwerfen und
+     * Aufheben ein Munitionstrick.
+     */
+    ammo: 'Int32Array',
   }, COMPONENT_SIGNATURES.CRATE);
   componentStore.registerComponent('Team', { teamId: 'Int32Array' }, COMPONENT_SIGNATURES.TEAM);
   componentStore.registerComponent('Rotation', { angle: 'Float32Array' }, COMPONENT_SIGNATURES.ROTATION);

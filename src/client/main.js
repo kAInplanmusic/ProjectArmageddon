@@ -47,6 +47,8 @@ class Game {
       onAim: (angle, power) => { this.aim = { angle, power }; },
       onFire: () => this.fire(),
       onWeaponSelect: index => this.selectWeapon(index),
+      // Aktive Waffe abwerfen (Q).
+      onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()),
     });
 
     this.#bindMenu();
@@ -199,6 +201,41 @@ class Game {
    * Online-Match: optional wird die Lobby per HTTP erzeugt, danach verbindet
    * sich der Client per WebSocket. Der Server bleibt die Source of Truth.
    */
+  /**
+   * Wirft die Waffe an einer Anzeigeposition ab.
+   *
+   * Der Abwurf ist die Antwort auf einen vollen Vorrat: statt eine Waffe zu
+   * verlieren, entscheidet der Spieler bewusst, welche er ablegt. Die Waffe
+   * bleibt als Kiste liegen und ist für alle aufhebbar.
+   *
+   * @param {number} anzeigePosition - Position wie in der Liste (0-basiert)
+   */
+  dropWeapon(anzeigePosition) {
+    if (!this.match || this.mode !== 'local') {
+      this.hud.log('Abwerfen ist nur im lokalen Match möglich', 'neutral');
+      return null;
+    }
+    const index = this.#inventoryIndexAt(anzeigePosition);
+    if (index === null) return null;
+
+    const playerId = this.match.activePlayerId;
+    if (playerId === null) return null;
+    const weaponId = this.match.inventory.getWeapons(playerId)[index];
+    if (!weaponId) return null;
+
+    const ergebnis = this.match.dropWeapon(playerId, weaponId);
+    if (!ergebnis.ok) {
+      this.hud.log(`Abwerfen nicht möglich: ${ergebnis.errors?.join(', ')}`, 'danger');
+      return ergebnis;
+    }
+    const name = getWeapon(weaponId)?.displayName ?? weaponId;
+    const vorrat = ergebnis.ammo < 0 ? '∞' : ergebnis.ammo;
+    this.hud.log(`${name} abgeworfen (${vorrat} Munition liegt bereit)`, 'accent');
+    // Die Liste muss sofort nachziehen.
+    this.hud.update(this.currentState(), { aim: this.aim, onWeaponSelect: i => this.selectWeapon(i), onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()) });
+    return ergebnis;
+  }
+
   async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler' } = {}) {
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
@@ -341,6 +378,7 @@ class Game {
       activeWeaponId: this.remoteLoadouts?.[entity.entityId]?.activeWeaponId ?? null,
       inventory: this.remoteLoadouts?.[entity.entityId]?.inventory ?? [],
       ammo: this.remoteLoadouts?.[entity.entityId]?.ammo ?? {},
+      cooldowns: this.remoteLoadouts?.[entity.entityId]?.cooldowns ?? {},
     }));
 
     return {
@@ -428,6 +466,30 @@ class Game {
   }
 
   /**
+   * Anzeigeposition der gerade gewählten Waffe.
+   *
+   * Nötig für das Abwerfen per Taste: die Liste gliedert nach Gruppen um, der
+   * Inventarindex der aktiven Waffe ist deshalb nicht ihre Position in der
+   * Anzeige. Ohne diese Übersetzung träfe das Abwerfen die falsche Waffe.
+   */
+  #activeDisplayPosition() {
+    const weapons = this.#weaponIdsForActivePlayer();
+    const aktiv = this.mode === 'online'
+      ? this.onlineViewState?.entities
+        ?.find(e => e.entityId === this.onlineViewState.activePlayerId)?.activeWeaponId
+      : this.match?.activePlayerId === null || !this.match
+        ? null
+        : this.match.inventory.getActiveWeaponId(this.match.activePlayerId);
+    if (aktiv === undefined || aktiv === null) return 0;
+
+    const reihenfolge = orderInventoryBySubcategory(weapons);
+    const inventarIndex = weapons.indexOf(aktiv);
+    if (inventarIndex < 0) return 0;
+    const position = reihenfolge.indexOf(inventarIndex);
+    return position >= 0 ? position : 0;
+  }
+
+  /**
    * Inventar-Index zu einer Anzeigeposition.
    *
    * Liest die Waffen des aktiven Spielers, ordnet sie wie die Liste
@@ -482,6 +544,8 @@ class Game {
       const active = view?.entities.find(entity => entity.entityId === view.activePlayerId);
       const weaponId = active?.inventory?.[index];
       if (weaponId) {
+        // Eine nachladende Waffe lässt sich wählen, aber nicht abfeuern — der
+        // Server lehnt den Schuss ab. Die Anzeige sagt warum.
         this.network?.selectWeapon(weaponId);
         // Rückmeldung wie im lokalen Spiel: ohne sie bliebe unklar, ob die Wahl
         // angekommen ist. Der Server bestätigt die Auswahl über den Bestand.
@@ -580,6 +644,10 @@ class Game {
         }
         case 'pulled':
           this.hud.log(`${this.#nameOf(payload.playerId)} wurde herangezogen`, 'accent');
+          break;
+        case 'crate_pickup_blocked':
+          // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
+          this.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
           break;
         case 'heal':
           this.hud.log(`+${Math.round(payload.amount)} Heilung für ${this.#nameOf(payload.entityId)}`, 'good');
@@ -782,6 +850,8 @@ class Game {
       refreshLobbies: () => this.refreshLobbies(),
       /** Waffe wählen wie über die Liste (Index im Inventar). */
       selectWeapon: index => this.selectWeapon(index),
+      /** Waffe abwerfen (Position wie in der Liste). */
+      dropWeapon: index => this.dropWeapon(index),
       /**
        * Waffenkatalog und Wirkungen für Tests und Automatisierung.
        * Ohne diese Zugänge müssten E2E-Tests Module dynamisch nachladen, was im

@@ -10,6 +10,15 @@
 import { getWeapon, WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FALLBACK_WEAPON_ID } from '../shared/config/weapons.js';
 
+/**
+ * Obergrenze gleichzeitig geführter Waffen.
+ *
+ * Sie ist der Anlass für die Abwurfmechanik: Ohne Grenze würde man einfach alles
+ * behalten und nie abwägen. Sechs Waffen sind genug für Abwechslung und knapp
+ * genug, dass eine Entscheidung nötig wird.
+ */
+export const MAX_WEAPONS = 6;
+
 export class PlayerInventory {
   #players = new Map();
 
@@ -30,18 +39,26 @@ export class PlayerInventory {
     } else {
       ammo.set(FALLBACK_WEAPON_ID, Infinity);
     }
+    // Als aktive Waffe die erste ABWERFBARE wählen, nicht die Reserve.
+    // Die Reserve hat unbegrenzte Munition und lässt sich nicht abwerfen; stünde
+    // sie am Anfang aktiv, schlüge der erste Abwurfversuch mit einer Meldung
+    // fehl, die für den Spieler keinen Sinn ergibt. Sie bleibt verfügbar und
+    // rückt nur dann nach, wenn sonst nichts mehr da ist.
+    const waehlbar = [...ammo.keys()].filter(id => !unlimited.has(id));
+    const aktiv = waehlbar[0] ?? [...ammo.keys()][0] ?? null;
+    // Die gewählte Waffe nach vorne, damit die Reihenfolge zur Anzeige passt.
+    const reihenfolge = aktiv === null
+      ? [...ammo.keys()]
+      : [aktiv, ...[...ammo.keys()].filter(id => id !== aktiv)];
+
     this.#players.set(playerId, {
-      weapons: [...ammo.keys()],
+      weapons: reihenfolge,
       ammo,
-      activeWeaponId: [...ammo.keys()][0] ?? null,
+      activeWeaponId: aktiv,
       credits: 0,
       unlimited,
     });
     return this.#players.get(playerId);
-  }
-
-  has(playerId) {
-    return this.#players.has(playerId);
   }
 
   get(playerId) {
@@ -80,17 +97,22 @@ export class PlayerInventory {
   }
 
   /** Fuegt eine Waffe hinzu bzw. fuellt Munition nach. */
-  grantWeapon(playerId, weaponId) {
+  grantWeapon(playerId, weaponId, { ammo = null } = {}) {
     const weapon = WEAPONS_BY_ID[weaponId];
     if (!weapon) return false;
     const entry = this.#players.get(playerId);
     if (!entry) return false;
 
-    const refill = Math.max(1, weapon.maxAmmo || 1);
+    // `ammo` erlaubt das Aufheben einer abgeworfenen Waffe mit genau dem Vorrat,
+    // den sie beim Abwerfen hatte. Ohne Angabe gilt das volle Magazin.
+    const menge = ammo === null || ammo === undefined
+      ? Math.max(1, weapon.maxAmmo || 1)
+      : (ammo < 0 ? Infinity : Math.max(0, ammo));
+
     if (entry.ammo.has(weaponId)) {
-      entry.ammo.set(weaponId, entry.ammo.get(weaponId) + refill);
+      entry.ammo.set(weaponId, entry.ammo.get(weaponId) + (Number.isFinite(menge) ? menge : 0));
     } else {
-      entry.ammo.set(weaponId, refill);
+      entry.ammo.set(weaponId, menge);
       entry.weapons.push(weaponId);
     }
     entry.activeWeaponId ??= weaponId;
@@ -121,6 +143,68 @@ export class PlayerInventory {
     if (give <= 0) return 0;
     entry.ammo.set(weaponId, current + give);
     return give;
+  }
+
+  /**
+   * Führt der Spieler diese Waffe schon?
+   * Zwei Formen: ohne Waffe prüft die Anmeldung, mit Waffe den Bestand.
+   */
+  has(playerId, weaponId) {
+    if (weaponId === undefined) return this.#players.has(playerId);
+    return this.#players.get(playerId)?.ammo.has(weaponId) ?? false;
+  }
+
+  /** Anzahl geführter Waffen, einschließlich der Reserve. */
+  count(playerId) {
+    return this.#players.get(playerId)?.weapons.length ?? 0;
+  }
+
+  /**
+   * Anzahl ABWERFBARER Waffen.
+   *
+   * Die Reservewaffe ist ausgenommen: Sie lässt sich nicht abwerfen und darf
+   * deshalb auch keinen Platz verbrauchen — sonst könnte ein Spieler am Limit
+   * festsitzen, ohne etwas ablegen zu können.
+   */
+  droppableCount(playerId) {
+    const entry = this.#players.get(playerId);
+    if (!entry) return 0;
+    return entry.weapons.filter(id => !entry.unlimited.has(id)).length;
+  }
+
+  /**
+   * Ist der Vorrat an abwerfbaren Waffen voll?
+   * Die Reserve zählt nicht mit (siehe droppableCount).
+   */
+  isFull(playerId) {
+    return this.droppableCount(playerId) >= MAX_WEAPONS;
+  }
+
+  /**
+   * Entfernt eine Waffe samt Munition und meldet den verbleibenden Vorrat.
+   *
+   * Die Reservewaffe (`FALLBACK_WEAPON_ID`) ist geschützt: Ohne sie bliebe ein
+   * Match stehen, sobald alle Ladungen verbraucht sind. Ein Abwerfen der
+   * Reserve wird deshalb abgelehnt statt still zugelassen.
+   *
+   * @returns {{ok:boolean, ammo:number, reason?:string}}
+   */
+  removeWeapon(playerId, weaponId) {
+    const entry = this.#players.get(playerId);
+    if (!entry) return { ok: false, ammo: 0, reason: 'Spieler unbekannt' };
+    if (!entry.ammo.has(weaponId)) return { ok: false, ammo: 0, reason: 'Waffe nicht geführt' };
+    if (entry.unlimited.has(weaponId)) {
+      return { ok: false, ammo: 0, reason: 'Reservewaffe lässt sich nicht abwerfen' };
+    }
+
+    const rest = entry.ammo.get(weaponId);
+    entry.ammo.delete(weaponId);
+    entry.weapons = entry.weapons.filter(id => id !== weaponId);
+    // Die aktive Waffe darf nicht ins Leere zeigen.
+    if (entry.activeWeaponId === weaponId) {
+      entry.activeWeaponId = entry.weapons[0] ?? null;
+    }
+    return { ok: true, ammo: Number.isFinite(rest) ? rest : -1 };
   }
 
   /** Verbraucht eine Einheit Munition. */

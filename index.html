@@ -142,6 +142,15 @@
 
     .weapon-item.is-active { border-left-color: var(--accent-2); background: rgba(76, 201, 240, 0.12); }
 
+    /* Nachladezeit in der Waffenliste */
+    .weapon-item.is-cooling { opacity: 0.55; cursor: not-allowed; }
+    .weapon-item .weapon-cooldown {
+      font-size: 11px;
+      color: #fbbf24;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
     /* Gruppenkopf der Waffenliste (vier Unterkategorien) */
     #weapon-list .weapon-group {
       font-size: 11px;

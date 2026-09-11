@@ -103,6 +103,12 @@ export class InputController {
     }
     if (/^[1-9]$/.test(key)) {
       this.#handlers.onWeaponSelect?.(Number(key) - 1);
+      return;
+    }
+    // Q wirft die gerade gewählte Waffe ab. Bewusst eine eigene Taste: Abwerfen
+    // ist eine Entscheidung, kein Nebenprodukt einer anderen Handlung.
+    if (key === 'q' || key === 'Q') {
+      this.#handlers.onWeaponDrop?.();
     }
   }
 
