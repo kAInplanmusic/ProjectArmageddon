@@ -25,6 +25,8 @@ import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
+import { factionsWithSprites, spriteCount } from './roster.js';
+import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -1159,6 +1161,127 @@ class Game {
 }
 
 const game = new Game();
+// Kader-Ansicht einmalig aufbauen.
+buildRosterView();
+// ------------------------------------------------------------------ Kaderansicht
+
+/**
+ * Baut die Kader-Ansicht im Menü auf.
+ *
+ * Neun Fraktionen als Reiter, darunter die neun Charaktere der gewählten Fraktion
+ * mit Bild, Kampfweise, Superwaffe, Biografie und Stärken/Schwächen.
+ *
+ * Die Bilder kommen aus `roster.js`. Fehlt eines, erscheint an seiner Stelle ein
+ * Platzhalter statt eines stillen Ausfalls — bei 81 Dateien bliebe ein fehlendes
+ * sonst unbemerkt.
+ */
+export function buildRosterView() {
+  const reiter = document.getElementById('roster-tabs');
+  const liste = document.getElementById('roster-list');
+  const info = document.getElementById('roster-info');
+  if (!reiter || !liste || !info) return;
+
+  const fraktionen = factionsWithSprites();
+  if (fraktionen.length === 0) {
+    info.textContent = 'Kein Kader geladen.';
+    return;
+  }
+
+  const fehlend = fraktionen.flatMap(f => f.characters).filter(c => !c.url).length;
+  if (fehlend > 0) {
+    // Sichtbar machen statt stillschweigend hinnehmen.
+    console.warn(`Kader: ${fehlend} Bilder fehlen (${spriteCount()} geladen)`);
+  }
+
+  let gewaehlt = fraktionen[0].id;
+  let gezeichnet = false;
+
+  // Erst beim Öffnen zeichnen: Sonst hinge der Kader mit neun Bildern an jedem
+  // Seitenaufruf, obwohl das Feld zugeklappt ist.
+  const behaelter = document.getElementById('roster-browser');
+  if (behaelter) behaelter.addEventListener('toggle', () => {
+    if (behaelter.open && !gezeichnet) zeichnen();
+  });
+
+  const zeichnen = () => {
+    const fraktion = fraktionen.find(f => f.id === gewaehlt) ?? fraktionen[0];
+
+    info.replaceChildren();
+    const kopf = document.createElement('div');
+    const stark = document.createElement('b');
+    stark.textContent = fraktion.name;
+    kopf.append(stark, document.createTextNode(` — ${fraktion.motto}`));
+    const beschreibung = document.createElement('div');
+    beschreibung.textContent = fraktion.description;
+    info.append(kopf, beschreibung);
+
+    liste.replaceChildren(...fraktion.characters.map(c => {
+      const li = document.createElement('li');
+
+      if (c.url) {
+        const bild = document.createElement('img');
+        bild.src = c.url;
+        bild.alt = c.name;
+        li.append(bild);
+      } else {
+        const ersatz = document.createElement('div');
+        ersatz.className = 'r-bild-fehlt';
+        ersatz.textContent = '?';
+        ersatz.title = 'Bild fehlt';
+        li.append(ersatz);
+      }
+
+      const text = document.createElement('div');
+      text.className = 'r-text';
+
+      const name = document.createElement('div');
+      const starkName = document.createElement('span');
+      starkName.className = 'r-name';
+      starkName.textContent = c.name;
+      const klein = document.createElement('span');
+      klein.className = 'r-role';
+      klein.textContent = ` ${COMBAT_ROLES[c.role]?.label ?? c.role} · ${classOf(c)}`;
+      name.append(starkName, klein);
+
+      const waffe = document.createElement('div');
+      waffe.className = 'r-waffe';
+      waffe.textContent = `${c.superWeapon.name}: ${c.superWeapon.description}`;
+
+      const bio = document.createElement('div');
+      bio.className = 'r-bio';
+      bio.textContent = c.bio;
+
+      const profil = document.createElement('div');
+      profil.className = 'r-prof';
+      profil.textContent = `+ ${c.strengths.join(' · ')}  |  − ${c.weaknesses.join(' · ')}`;
+
+      text.append(name, waffe, bio, profil);
+      li.append(text);
+      return li;
+    }));
+
+    for (const knopf of reiter.querySelectorAll('button')) {
+      knopf.setAttribute('aria-selected', String(knopf.dataset.fraktion === gewaehlt));
+    }
+    gezeichnet = true;
+  };
+
+  for (const fraktion of fraktionen) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.textContent = fraktion.name;
+    knopf.dataset.fraktion = fraktion.id;
+    knopf.setAttribute('role', 'tab');
+    knopf.addEventListener('click', () => {
+      gewaehlt = fraktion.id;
+      zeichnen();
+    });
+    reiter.append(knopf);
+  }
+
+  if (behaelter?.open) zeichnen();
+}
+
 // Kulissenauswahl füllen, sobald das DOM steht. Der Katalog ist die einzige
 // Quelle; die Liste im HTML bleibt bewusst leer.
 if (typeof document !== 'undefined') {

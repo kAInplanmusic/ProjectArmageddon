@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **343/343** |
-| Browser-E2E | `npm run test:e2e` | **56/56** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **364/364** |
+| Browser-E2E | `npm run test:e2e` | **60/60** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
@@ -423,9 +423,12 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [ ] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
       Schüsse gesamt, Spielzeit, Gesamtschaden, Schaden pro Minute, Trefferquote,
       Siege, Serie.
-- [ ] **Charaktere.** Der Nutzer liefert die Daten nach: 9 Fraktionen × 3 Klassen
-      × 3 individuelle Charaktere, je mit Kurzinfo und einer exklusiven Waffe, die
-      NUR dieser Charakter besitzt und die nur als legendärer Drop erscheint.
+- [x] **Charaktere.** 9 Fraktionen x 3 Kampfweisen x 3 Charaktere = 81. Namen,
+      Biografien, Superwaffen und Staerken/Schwaechen-Profile stehen in
+      src/shared/config/factions.js; die Bilder wurden mit
+      scripts/extract_factions.py aus den Fraktionsboegen geschnitten.
+      OFFEN: Die exklusive Waffe je Charakter, die NUR als legendaerer Drop
+      erscheint — die Superwaffe oben ist die Ultimate-Faehigkeit, nicht der Drop.
       Bestand heute: drei Klassen und drei Archetypen mit je drei Zahlen, sonst
       nichts. Struktur wird vorbereitet, Inhalte folgen.
 

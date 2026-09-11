@@ -59,6 +59,45 @@ sind die einzige Quelle. Neue Bilder laufen über:
 `python3 scripts/fetch-backdrops.py <manifest.json>` (Zuschnitt auf 1280×720,
 JPEG, Ablage unter `src/client/assets/backdrops/`).
 
+## Fraktionen und Charaktere
+
+Neun Fraktionen zu je neun Charakteren — **81 insgesamt**. Die Inhalte stehen in
+`src/shared/config/factions.js`, die Bilder in `src/client/assets/characters/`.
+
+| Datei | Zweck |
+|---|---|
+| `assets/fraktionen/team 1..9.png` | Quellbögen (3×3, Zeile = Klasse) |
+| `scripts/extract_factions.py` | schneidet die 81 Figuren frei |
+| `scripts/namen.py` | Positions- und Namensliste der Bögen |
+| `src/shared/config/factions.js` | Katalog: Namen, Biografien, Waffen, Profile |
+| `src/client/roster.js` | lädt die Bilder, ordnet sie dem Katalog zu |
+
+```bash
+python3 scripts/extract_factions.py      # 81 PNG neu erzeugen
+```
+
+Im Menü unter **„Kader ansehen"**: neun Reiter, je Fraktion die neun Charaktere
+mit Bild, Kampfweise, Superwaffe, Biografie und Stärken/Schwächen.
+
+**Aufbau der Bögen.** Die Zeile bestimmt die Kampfweise (Schwert = Nahkampf,
+Bogen = Fernkampf, Stab = Magie), der Platz innerhalb der Zeile die Spielklasse
+(0 = heavy, 1 = scout, 2 = artillery). Die Dateien heißen `<zeile><spalte>_<name>.png`.
+
+**Freibstellung.** Der Hintergrund der Bögen ist ein *gemaltes* Schachbrett, kein
+Alphakanal. Die Kanten zwischen den Feldern bilden ein ein bis zwei Pixel dünnes
+Netz über die ganze Kachel; dadurch hingen Figur und Namenszeile als eine
+Komponente zusammen. Verfahren: Hintergrund über **ganze Schachfelder** bestimmen
+(so verschwindet das Netz mit), dann die größte Zusammenhangskomponente nehmen und
+zusätzlich alles ab 4 % ihrer Fläche, was sich mit ihr überschneidet — das sind
+schwebende Kugeln und Begleiter, nicht die Buchstaben des Namens. Ein dünner
+Zellrahmen wird vorher weggeschnitten.
+
+**Bekannter Inhaltsfehler.** Die Bögen 8 und 9 benennen je eine Figur
+„Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
+gegen schweren Rahmen mit Kanonenarm). Die Namen wurden unverändert übernommen —
+ein Umbenennen wäre ein Eingriff in den Inhalt. Erfasst in `NAMING_CONFLICTS`,
+geprüft durch einen Test.
+
 ## Günther
 
 Ein frei laufender Kleinspitz. Er ist kein Gegner: Er gehört keinem Team, läuft
@@ -130,7 +169,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (343 Tests) |
+| `npm test` | Unit- und Integrationstests (364 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (35 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
