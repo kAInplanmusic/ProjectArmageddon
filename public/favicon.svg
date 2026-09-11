@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Project Armageddon">
+  <!--
+    Tab-Icon. Klein gehalten, damit es auch bei 16x16 lesbar bleibt:
+    dunkler Grund, Geschossbahn als Bogen, Einschlag als Aufblitzen.
+
+    Kein Bitmap: Eine SVG-Datei ist ein paar hundert Byte, skaliert verlustfrei
+    und braucht keine zweite Auflösung fuer HiDPI.
+  -->
+  <rect width="64" height="64" rx="12" fill="#0d1b2a"/>
+  <path d="M8 50 C 22 46, 34 28, 52 14" stroke="#f4a261" stroke-width="5"
+        fill="none" stroke-linecap="round" stroke-dasharray="9 7" opacity="0.85"/>
+  <circle cx="52" cy="14" r="9" fill="#ffd166"/>
+  <circle cx="52" cy="14" r="4" fill="#e76f51"/>
+  <rect x="6" y="48" width="20" height="9" rx="3" fill="#4cc9f0"/>
+  <path d="M30 56 L 62 56" stroke="#1b3a4b" stroke-width="4" stroke-linecap="round"/>
+</svg>

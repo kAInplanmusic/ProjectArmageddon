@@ -34,6 +34,8 @@ export class Hud {
   #selectedWeaponIndex = 0;
   #rosterSignature = '';
   #weaponSignature = '';
+  /** Zuletzt angesagter aktiver Spieler — für die Zugwechsel-Meldung. */
+  #lastActiveId = null;
 
   constructor(documentRef = document) {
     this.#elements = {
@@ -105,6 +107,22 @@ export class Hud {
     if (el.active) {
       el.active.textContent = active ? `${active.label} am Zug` : '—';
       el.active.style.color = active ? TEAM_COLORS[active.teamId % TEAM_COLORS.length] : '#8ba0b4';
+    }
+    /*
+     * Zugwechsel ins Protokoll schreiben.
+     *
+     * Das Protokoll ist die Live-Region des HUD (`role="log"`), und für einen
+     * Screenreader ist die wichtigste Frage im Spiel: Wer ist jetzt dran? Ohne
+     * diese Zeile bliebe der Zugwechsel stumm — `#hud-active` wird nur sichtbar
+     * geändert, und es absichtlich NICHT zur Live-Region gemacht: Dann kämen
+     * zwei Ansagen für dasselbe Ereignis.
+     *
+     * Protokolliert wird nur der WECHSEL, nicht jeder Frame — `update()` läuft
+     * mit der Bildrate.
+     */
+    if (active && active.entityId !== this.#lastActiveId) {
+      this.log(`${active.label} ist am Zug`, 'accent');
+      this.#lastActiveId = active.entityId;
     }
     if (el.angle) el.angle.textContent = `${Math.round((((aim?.angle ?? active?.angle ?? 0)) * 180) / Math.PI)}°`;
     if (el.power) el.power.textContent = String(Math.round(aim?.power ?? active?.power ?? 0));
@@ -231,6 +249,19 @@ export class Hud {
     if (this.#weaponSignature === signature) return;
     this.#weaponSignature = signature;
 
+    /*
+     * Fokus merken, bevor die Liste neu aufgebaut wird.
+     *
+     * Fund (belegt): `replaceChildren` entfernt alle alten Knoten. Liegt der
+     * Fokus auf einer Waffenzeile — was seit der Tastaturbedienung möglich ist —,
+     * wandert er mit dem entfernten Knoten auf `<body>`. Und die Liste wird bei
+     * JEDER Änderung neu gebaut: nach einem Schuss (Munition), nach dem
+     * Waffenwechsel, beim Zugwechsel. Ein Tastaturnutzer verlor den Fokus also
+     * genau in dem Moment, in dem er etwas ausgewählt hatte, und musste sich von
+     * vorn durch die Seite tabben.
+     */
+    const fokussierteWaffe = document.activeElement?.dataset?.weaponId ?? null;
+
     // Nach den vier Gruppen gliedern, in fester Reihenfolge. Innerhalb einer
     // Gruppe bleibt die Reihenfolge des Inventars erhalten, und der laufende
     // Index bleibt der Gesamtindex — das Klicken und die Zifferntasten arbeiten
@@ -262,6 +293,11 @@ export class Hud {
     }
 
     list.replaceChildren(...kinder);
+
+    // Fokus zurückholen — auf dieselbe Waffe, nicht auf dieselbe Position.
+    if (fokussierteWaffe) {
+      list.querySelector(`.weapon-item[data-weapon-id="${fokussierteWaffe}"]`)?.focus();
+    }
   }
 
   /** Baut eine Zeile der Waffenliste. */
@@ -270,7 +306,27 @@ export class Hud {
     item.className = 'weapon-item';
     item.dataset.weaponId = weaponId;
     item.dataset.tier = weapon?.powerTier ?? 'common';
-    if (weaponId === active?.activeWeaponId) item.classList.add('is-active');
+    const istAktiv = weaponId === active?.activeWeaponId;
+    if (istAktiv) item.classList.add('is-active');
+
+    /*
+     * Bedienbar und benannt — auch ohne Maus.
+     *
+     * Die Zeilen waren reine `<li>` mit Klick-Listener: Für Maus und
+     * Zifferntasten hat das gereicht, für Tastatur und Screenreader nicht. In
+     * der Baumansicht des Browsers standen sie als gewöhnliche Listeneinträge,
+     * ohne Rolle und ohne Fokus — wer nicht klicken kann, kam an die
+     * Waffenauswahl gar nicht heran.
+     *
+     * `role="button"` plus `tabindex` macht sie erreichbar; `aria-label` nennt
+     * Anzeigenummer, Name, Schaden und Munition, weil die sichtbare Zeile aus
+     * mehreren Spans besteht und vorgelesen sonst „1. Schaufel 20 DMG · 5"
+     * ohne Zusammenhang ergäbe. `aria-current` markiert die gewählte Waffe.
+     */
+    item.setAttribute('role', 'button');
+    item.tabIndex = 0;
+    item.setAttribute('aria-label', `${anzeigeNummer ?? index + 1}. ${weapon?.displayName ?? weaponId}`);
+    if (istAktiv) item.setAttribute('aria-current', 'true');
 
     // Waffen-Icon: das Logo aus assets/weapons/icons, vom Generator als Pfad
     // hinterlegt. Fehlt die Datei, bleibt die Zeile ohne Bild nutzbar.
@@ -328,6 +384,20 @@ export class Hud {
       weapon?.category ? `Kategorie ${weapon.category}` : null,
     ].filter(Boolean).join(' · ');
     item.addEventListener('click', () => onWeaponSelect?.(index));
+    /*
+     * Eingabe und Leertaste wählen die Waffe.
+     *
+     * `stopPropagation` ist hier kein Detail, sondern nötig: Die Leertaste
+     * feuert im Spiel (der Eingabe-Controller hängt global am Fenster). Ohne
+     * die Sperre würde ein Tastendruck auf einer fokussierten Waffenzeile
+     * gleichzeitig auswählen UND schießen.
+     */
+    item.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+      event.preventDefault();
+      event.stopPropagation();
+      onWeaponSelect?.(index);
+    });
     return item;
   }
 
@@ -339,15 +409,29 @@ export class Hud {
     const list = this.#elements.log;
     if (!list) return;
 
-    list.replaceChildren(...this.#logEntries.map(entry => {
-      const item = document.createElement('li');
-      item.textContent = entry.message;
-      item.style.color = entry.tone === 'danger' ? '#ef476f'
-        : entry.tone === 'good' ? '#90be6d'
-        : entry.tone === 'accent' ? '#f4a261'
-        : '#8ba0b4';
-      return item;
-    }));
+    /*
+     * Nur die NEUE Zeile einfügen — die Liste nicht neu aufbauen.
+     *
+     * Das Protokoll ist die Live-Region des HUD (`role="log"`, siehe
+     * index.html). Ein `replaceChildren` über alle Zeilen würde bei jeder
+     * Meldung 60 Knoten neu erzeugen; ein Screenreader liest die Region dann
+     * als Ganzes vor — bei jeder einzelnen Meldung. Deshalb: vorn einfügen und
+     * hinten abschneiden. Der Screenreader bekommt genau einen neuen Knoten zu
+     * sehen (`aria-relevant="additions"`).
+     */
+    list.prepend(this.#logItem(message, tone));
+    while (list.children.length > LOG_LIMIT) list.lastElementChild.remove();
+  }
+
+  /** Baut eine Protokollzeile. */
+  #logItem(message, tone) {
+    const item = document.createElement('li');
+    item.textContent = message;
+    item.style.color = tone === 'danger' ? '#ef476f'
+      : tone === 'good' ? '#90be6d'
+      : tone === 'accent' ? '#f4a261'
+      : '#8ba0b4';
+    return item;
   }
 
   clearLog() {

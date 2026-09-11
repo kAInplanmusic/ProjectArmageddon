@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Project Armageddon — rundenbasiertes 2D-Artillerie-Taktikspiel mit zerstörbarem Terrain." />
+  <!--
+    Tab-Icon. Ohne diesen Verweis fragt der Browser /favicon.ico an und bekommt
+    einen 404 — bei jedem Besuch. Die Datei liegt in public/, damit Vite sie im
+    Build mitkopiert.
+  -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <title>Project Armageddon</title>
   <style>
     :root {
@@ -529,7 +535,29 @@
         </div>
 
         <div id="hud-log" class="panel">
-          <ul id="log-list" aria-label="Ereignisprotokoll"></ul>
+          <!--
+            Live-Region des Spiels.
+
+            Das Spiel läuft auf einem Canvas — der gesamte Spielzustand ist für
+            einen Screenreader unsichtbar. Dieses Protokoll ist deshalb der
+            einzige laufende Bericht: Zugwechsel, Treffer, Ertrinken, Runden.
+
+            `aria-relevant="additions"` ist wichtig: Beim Aufräumen wird die
+            älteste Zeile ENTFERNT, und ohne diese Angabe meldet ein Screenreader
+            auch Entfernungen. `role="log"` ist die passende Rolle für einen
+            fortlaufenden Bericht (implizit `aria-live="polite"`), sie sagt
+            zugleich, dass die Reihenfolge zählt.
+
+            Die Zeilen werden in `Hud#log` einzeln eingefügt und NICHT neu
+            aufgebaut — sonst läse der Screenreader bei jeder Meldung die ganze
+            Liste vor.
+
+            Bewusst KEINE Live-Region sind Runde, Wind und Zugzeit: Sie ändern
+            sich im Sekundentakt. Ein Screenreader würde pausenlos reden und
+            alles andere übertönen. Wer sie wissen will, liest sie im HUD.
+          -->
+          <ul id="log-list" aria-label="Ereignisprotokoll" role="log"
+              aria-live="polite" aria-relevant="additions"></ul>
         </div>
       </section>
 
