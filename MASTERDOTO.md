@@ -21,7 +21,7 @@ Absichtserklärungen.
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
 | Unit-/Integrationstests | `npm test` | **445/445** |
-| Browser-E2E | `npm run test:e2e` | **82/82** (System-Chrome) |
+| Browser-E2E | `npm run test:e2e` | **89/89** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -437,6 +437,55 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Replay im Client
+
+Eine Aufzeichnung enthält nur die EINGABEN (Seed und Schüsse), nicht den
+Verlauf — darum ist sie wenige Kilobyte groß statt Megabytes, und darum lässt
+sich jede Stelle anspringen. Die Wiedergabe rechnet das Match neu.
+
+Neu: `ReplayPlayer` in `src/engine/replay.js` — schrittweise steuerbar
+(`step`, `stepMany`, `seek`, `reset`), mit Fortschritt und Endekennzeichen.
+`playReplay` (Werkzeugkette, `replay --verify`) läuft jetzt darüber, damit es nur
+EINE Umsetzung der Eingabegruppierung gibt: Wiedergabe im Client und Prüfung in
+der Werkzeugkette müssen sich gleich verhalten, sonst zeigt der Client etwas
+anderes als das, was `--verify` bestätigt.
+
+Im Menü unter „Replay ansehen": Aufzeichnung laden, abspielen/pausieren, Tempo
+0,25×–4×, ± 1 s, an jede Stelle springen, Fortschrittsbalken und Statuszeile
+(Live-Region). Eingaben sind während der Wiedergabe gesperrt — wer zusieht,
+spielt nicht; ohne die Sperre würde ein Tastendruck die nachgespielte Rechnung
+verändern.
+
+### Behobener Fehler
+
+43. **Nach einem Rücksprung zeigte die Anzeige den veralteten Zustand
+    (selbst eingebaut).** `ReplayPlayer.seek` baut beim Rückspringen den
+    MatchController NEU (`reset`), die Anzeige hielt aber weiter das alte
+    Objekt. Gemessen: `replay().tick` meldete korrekt 120, der gezeichnete
+    Zustandshash stammte vom ENDE des Matches. Der Fehler war stumm — die
+    Anzeige sah nur falsch aus, ohne dass etwas geworfen wurde.
+    Behoben mit `#syncReplayMatch()` nach jedem `reset`/`seek`.
+
+    Gefunden hat das der **Hash-Vergleich** im Test: Die Wiedergabe muss nach
+    vollständiger Durchführung denselben Zustandshash liefern wie die
+    Aufzeichnung. Ohne ihn hätte der Test nur geprüft, dass irgendetwas
+    gezeichnet wird.
+
+Der Weg dorthin war aufschlussreich: In Node (ohne Anzeige) war der Player
+**vollkommen deterministisch** — drei verschiedene Sprungwege ergaben denselben
+Hash. Erst der Vergleich mit dem Browser zeigte, dass der Unterschied nicht im
+Player lag, sondern in der Anzeige. Die Messung in der Umgebung ohne Anzeige hat
+den Suchraum halbiert.
+
+Abgesichert in `tests/e2e/replay.spec.mjs` (7 Tests): Laden und schrittweises
+Ansehen, Zustand entspricht der Aufzeichnung (Hash-Vergleich), Springen vorwärts
+und rückwärts deterministisch, Abspielen/Pause/Neustart, Ende ist endgültig,
+Eingaben gesperrt, Aufzeichnung bleibt klein.
+
+Nebenbei behoben: Im Wiedergabemodus wurde das Wasser nicht gezeichnet (die
+Prüfung ließ nur `local` zu) — bei einem Wasserschub-Replay wäre die Wirkung
+unsichtbar geblieben.
+
 ## Wasserschub und zwei Fehler in der Verschiebung
 
 Der Wasserblaster (`pa_063`, `special: "water_push"`) hatte als einzige der
@@ -723,7 +772,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (82):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (89):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
@@ -818,8 +867,13 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       Aussetzer mit Erholung über den Vollsnapshot. Dazu drei
       Server-Integrationstests für die Ende-Mitteilung.
       Siehe „Verbindung unter erschwerten Bedingungen".
-- [ ] Replay im Client abspielen (Server hat das Werkzeug bereits).
-- [ ] Strukturierte Logs (JSON) statt Freitext im Server.
+- [x] Replay im Client abspielen. Eigene Wiedergabe im Menü („Replay ansehen"):
+      Aufzeichnung laden, abspielen/pausieren, Tempo 0,25×–4×, ± 1 s, an jede
+      Stelle springen, Fortschrittsanzeige. Siehe „Replay im Client".
+- [x] Strukturierte Logs (JSON) statt Freitext im Server. Eine JSON-Zeile je
+      Ereignis mit festem Schema (`ts`, `level`, `event`, `msg` + Felder),
+      Redigierung verdächtiger Feldnamen, `LOG_LEVEL` und `LOG_FORMAT=pretty`.
+      Siehe „Strukturierte Logs" — dabei fielen drei Fehler auf.
 
 ---
 
