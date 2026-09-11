@@ -404,7 +404,11 @@ export class Renderer {
         this.ctx.textAlign = 'center';
         this.ctx.font = 'bold 11px system-ui, sans-serif';
         this.ctx.fillStyle = rest <= 1 ? '#ef476f' : '#fbbf24';
-        this.ctx.fillText(`${rest.toFixed(1)}s`, projectile.x, projectile.y - 13);
+        // Symbol vor der Zahl: eine nackte Zahl über einem Geschoss wäre nicht
+        // als Zünder zu erkennen. Bei unter einer Sekunde wird sie zusätzlich
+        // als „gleich" gekennzeichnet.
+        this.ctx.fillText(rest <= 1 ? `! ${rest.toFixed(1)}s` : `◷ ${rest.toFixed(1)}s`,
+          projectile.x, projectile.y - 13);
 
         // Fortschrittsring: schließt sich, je näher die Zündung kommt.
         const anteil = Math.min(1, rest / 5);
