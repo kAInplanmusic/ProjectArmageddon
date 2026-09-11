@@ -8,7 +8,7 @@
  * @module hud
  */
 import { TEAM_COLORS } from '../engine/match.js';
-import { getWeapon } from '../shared/config/weapons.js';
+import { getWeapon, WEAPON_SUBCATEGORIES, iconUrlFor, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 
 const LOG_LIMIT = 60;
 
@@ -206,54 +206,88 @@ export class Hud {
     if (this.#weaponSignature === signature) return;
     this.#weaponSignature = signature;
 
-    list.replaceChildren(...weapons.map((weaponId, index) => {
-      const weapon = getWeapon(weaponId);
-      const item = document.createElement('li');
-      item.className = 'weapon-item';
-      item.dataset.weaponId = weaponId;
-      item.dataset.tier = weapon?.powerTier ?? 'common';
-      if (weaponId === active?.activeWeaponId) item.classList.add('is-active');
+    // Nach den vier Gruppen gliedern, in fester Reihenfolge. Innerhalb einer
+    // Gruppe bleibt die Reihenfolge des Inventars erhalten, und der laufende
+    // Index bleibt der Gesamtindex — das Klicken und die Zifferntasten arbeiten
+    // deshalb unverändert.
+    // Eine Ordnung für Anzeige UND Eingabe. Die angezeigte Nummer ist die
+    // Position in dieser Reihenfolge; die Zifferntasten treffen dieselbe Waffe.
+    const reihenfolge = orderInventoryBySubcategory(weapons);
+    const positionVon = new Map(reihenfolge.map((inventarIndex, position) => [inventarIndex, position]));
 
-      // Waffen-Icon: das Logo aus assets/weapons/icons, vom Generator als Pfad
-      // hinterlegt. Fehlt die Datei, bleibt die Zeile ohne Bild nutzbar.
-      if (weapon?.iconPath) {
-        const image = document.createElement('img');
-        image.className = 'weapon-icon';
-        image.src = new URL(weapon.iconPath, import.meta.url).href;
-        image.alt = '';
-        image.width = 24;
-        image.height = 24;
-        image.loading = 'lazy';
-        // Ladefehler dürfen die Liste nicht stören.
-        image.addEventListener('error', () => image.remove());
-        item.append(image);
-      }
+    const gruppen = WEAPON_SUBCATEGORIES.map(gruppe => ({
+      id: gruppe.id,
+      label: gruppe.label,
+      eintraege: reihenfolge
+        .map(index => ({ weaponId: weapons[index], index, weapon: getWeapon(weapons[index]) }))
+        .filter(eintrag => (eintrag.weapon?.subcategory ?? 'special') === gruppe.id),
+    })).filter(gruppe => gruppe.eintraege.length > 0);
 
-      const label = document.createElement('span');
-      label.className = 'weapon-name';
-      label.textContent = `${index + 1}. ${weapon?.displayName ?? weaponId}`;
-      // Rarität als Farbe: die abgeleitete Stufe ist im Katalog dokumentiert.
-      label.style.color = TIER_COLORS[weapon?.powerTier] ?? TIER_COLORS.common;
+    const kinder = [];
+    for (const gruppe of gruppen) {
+      const kopf = document.createElement('li');
+      kopf.className = 'weapon-group';
+      kopf.dataset.subcategory = gruppe.id;
+      kopf.textContent = `${gruppe.label} (${gruppe.eintraege.length})`;
+      kinder.push(kopf);
+      kinder.push(...gruppe.eintraege.map(eintrag => this.#buildWeaponItem({
+        ...eintrag,
+        anzeigeNummer: positionVon.get(eintrag.index) + 1,
+      }, active, onWeaponSelect)));
+    }
 
-      const meta = document.createElement('span');
-      const ammo = active?.ammo?.[weaponId];
-      meta.textContent = ammo === 'unbegrenzt'
-        ? `${weapon?.damage ?? 0} DMG · ∞`
-        : `${weapon?.damage ?? 0} DMG · ${ammo ?? 0}`;
-      meta.style.color = '#8ba0b4';
+    list.replaceChildren(...kinder);
+  }
 
-      item.append(label, meta);
-      const radius = weapon?.blastRadius ?? 0;
-      item.title = [
-        weapon?.displayName ?? weaponId,
-        `Schaden ${weapon?.damage ?? 0}`,
-        radius > 0 ? `Radius ${Math.round(radius)}` : 'kein Flächenschaden',
-        `Stufe ${weapon?.powerTier ?? 'common'} (Wert ${weapon?.powerScore ?? 0})`,
-        weapon?.category ? `Kategorie ${weapon.category}` : null,
-      ].filter(Boolean).join(' · ');
-      item.addEventListener('click', () => onWeaponSelect?.(index));
-      return item;
-    }));
+  /** Baut eine Zeile der Waffenliste. */
+  #buildWeaponItem({ weaponId, index, weapon, anzeigeNummer }, active, onWeaponSelect) {
+    const item = document.createElement('li');
+    item.className = 'weapon-item';
+    item.dataset.weaponId = weaponId;
+    item.dataset.tier = weapon?.powerTier ?? 'common';
+    if (weaponId === active?.activeWeaponId) item.classList.add('is-active');
+
+    // Waffen-Icon: das Logo aus assets/weapons/icons, vom Generator als Pfad
+    // hinterlegt. Fehlt die Datei, bleibt die Zeile ohne Bild nutzbar.
+    const iconUrl = iconUrlFor(weapon);
+    if (iconUrl) {
+      const image = document.createElement('img');
+      image.className = 'weapon-icon';
+      // Auflösung über den Katalog: der Pfad ist relativ zu weapons.js.
+      image.src = iconUrl;
+      image.alt = '';
+      image.width = 24;
+      image.height = 24;
+      image.loading = 'lazy';
+      // Ladefehler dürfen die Liste nicht stören.
+      image.addEventListener('error', () => image.remove());
+      item.append(image);
+    }
+
+    const label = document.createElement('span');
+    label.className = 'weapon-name';
+    label.textContent = `${anzeigeNummer ?? index + 1}. ${weapon?.displayName ?? weaponId}`;
+    // Rarität als Farbe: die abgeleitete Stufe ist im Katalog dokumentiert.
+    label.style.color = TIER_COLORS[weapon?.powerTier] ?? TIER_COLORS.common;
+
+    const meta = document.createElement('span');
+    const ammo = active?.ammo?.[weaponId];
+    meta.textContent = ammo === 'unbegrenzt'
+      ? `${weapon?.damage ?? 0} DMG · ∞`
+      : `${weapon?.damage ?? 0} DMG · ${ammo ?? 0}`;
+    meta.style.color = '#8ba0b4';
+
+    item.append(label, meta);
+    const radius = weapon?.blastRadius ?? 0;
+    item.title = [
+      weapon?.displayName ?? weaponId,
+      `Schaden ${weapon?.damage ?? 0}`,
+      radius > 0 ? `Radius ${Math.round(radius)}` : 'kein Flächenschaden',
+      `Stufe ${weapon?.powerTier ?? 'common'} (Wert ${weapon?.powerScore ?? 0})`,
+      weapon?.category ? `Kategorie ${weapon.category}` : null,
+    ].filter(Boolean).join(' · ');
+    item.addEventListener('click', () => onWeaponSelect?.(index));
+    return item;
   }
 
   /** Fügt eine Zeile zum Ereignisprotokoll hinzu. */

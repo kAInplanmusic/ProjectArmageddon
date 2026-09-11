@@ -19,7 +19,7 @@ import { InputController } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { buildTerrainForSeed } from './terrainPreview.js';
-import { getWeapon, WEAPONS } from '../shared/config/weapons.js';
+import { getWeapon, WEAPONS, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 
@@ -267,6 +267,12 @@ class Game {
       this.hud.log(`Server: ${text}`, 'danger');
     });
     client.on('game_event', message => this.#handleRemoteEvent(message));
+    // Bestände kommen wegen ihrer variablen Länge nicht im binären Snapshot,
+    // sondern als eigene Nachricht bei Änderung.
+    // Der Ansichtszustand wird jeden Frame neu gebaut; die Bestände werden dort
+    // gelesen. Ein zusätzlicher Anstoß ist nicht nötig.
+    this.remoteLoadouts = {};
+    client.on('loadouts', table => { this.remoteLoadouts = table; });
 
     await client.connect();
     // Laufende Latenzmessung, damit die HUD-Anzeige den echten Wert zeigt.
@@ -330,9 +336,11 @@ class Game {
       maxHealth: 100,
       angle: entity.entityId === snapshot.activePlayerId ? this.aim.angle : Math.PI / 4,
       power: this.aim.power,
-      activeWeaponId: null,
-      inventory: [],
-      ammo: {},
+      // Bestände aus der Loadout-Nachricht: der binäre Snapshot führt sie nicht.
+      // Ohne diese Zuordnung blieb die Waffenliste im Online-Modus leer.
+      activeWeaponId: this.remoteLoadouts?.[entity.entityId]?.activeWeaponId ?? null,
+      inventory: this.remoteLoadouts?.[entity.entityId]?.inventory ?? [],
+      ammo: this.remoteLoadouts?.[entity.entityId]?.ammo ?? {},
     }));
 
     return {
@@ -419,12 +427,66 @@ class Game {
     }
   }
 
-  selectWeapon(index) {
+  /**
+   * Inventar-Index zu einer Anzeigeposition.
+   *
+   * Liest die Waffen des aktiven Spielers, ordnet sie wie die Liste
+   * (`orderInventoryBySubcategory`) und gibt den Inventar-Index an dieser
+   * Position zurück. Ohne diese Übersetzung träfen die Zifferntasten bei
+   * gegliederter Liste die falsche Waffe.
+   *
+   * @returns {number|null} Inventar-Index oder null
+   */
+  #inventoryIndexAt(anzeigePosition) {
+    const position = Number(anzeigePosition);
+    if (!Number.isInteger(position) || position < 0 || position > 8) return null;
+
+    const reihenfolge = orderInventoryBySubcategory(this.#weaponIdsForActivePlayer());
+    return position < reihenfolge.length ? reihenfolge[position] : null;
+  }
+
+  /** Waffen des aktiven Spielers, je nach Betriebsart. */
+  #weaponIdsForActivePlayer() {
     if (this.mode === 'online') {
       const view = this.onlineViewState;
       const active = view?.entities.find(entity => entity.entityId === view.activePlayerId);
+      return active?.inventory ?? [];
+    }
+    if (!this.match || this.match.activePlayerId === null) return [];
+    return this.match.inventory.getWeapons(this.match.activePlayerId);
+  }
+
+  /**
+   * Wählt eine Waffe anhand ihrer ANGEZEIGTEN Nummer (1-basiert übergeben als
+   * 0-basierte Position).
+   *
+   * Die Liste ist nach den vier Gruppen gegliedert, die Nummern folgen der
+   * Anzeige — nicht der Inventarreihenfolge. Diese Methode übersetzt deshalb
+   * Position → Inventar-Index über dieselbe Ordnungsfunktion, die die Liste
+   * verwendet.
+   */
+  selectWeapon(anzeigePosition) {
+    const inventarIndex = this.#inventoryIndexAt(anzeigePosition);
+    if (inventarIndex === null) return;
+    const index = inventarIndex;
+
+    if (this.mode === 'online') {
+      // Nur die eigene Waffe wählen und nur am eigenen Zug: sonst schickte der
+      // Client eine Waffe, die dem aktiven Spieler gar nicht gehört, und der
+      // Server lehnte sie ab.
+      if (!this.network?.isMyTurn) {
+        this.hud.log('Nur am eigenen Zug kann die Waffe gewechselt werden', 'neutral');
+        return;
+      }
+      const view = this.onlineViewState;
+      const active = view?.entities.find(entity => entity.entityId === view.activePlayerId);
       const weaponId = active?.inventory?.[index];
-      if (weaponId) this.network?.selectWeapon(weaponId);
+      if (weaponId) {
+        this.network?.selectWeapon(weaponId);
+        // Rückmeldung wie im lokalen Spiel: ohne sie bliebe unklar, ob die Wahl
+        // angekommen ist. Der Server bestätigt die Auswahl über den Bestand.
+        this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+      }
       return;
     }
     if (!this.match) return;
@@ -718,6 +780,8 @@ class Game {
       startMatch: options => this.startMatch(options),
       startOnline: options => this.startOnline(options),
       refreshLobbies: () => this.refreshLobbies(),
+      /** Waffe wählen wie über die Liste (Index im Inventar). */
+      selectWeapon: index => this.selectWeapon(index),
       /**
        * Waffenkatalog und Wirkungen für Tests und Automatisierung.
        * Ohne diese Zugänge müssten E2E-Tests Module dynamisch nachladen, was im

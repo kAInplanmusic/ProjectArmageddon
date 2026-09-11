@@ -254,3 +254,73 @@ test('Ping-Intervall lehnt ungültige Werte ab', async ({ browser }) => {
     await context.close();
   }
 });
+
+
+test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) => {
+  // Vorher war `inventory` im Online-Ansichtszustand fest auf [] gesetzt, dazu
+  // `ammo: {}` und `activeWeaponId: null`. Folge: Im Mehrspielermodus war die
+  // Waffenliste dauerhaft leer und es ließ sich keine Waffe wählen. Der binäre
+  // Snapshot führt Bestände nicht (variable Länge), sie kommen als eigene
+  // Nachricht — dieser Test sichert, dass sie ankommt und ankommt.
+  const context = await browser.newContext();
+  try {
+    // openClient verbindet und startet das Match bereits.
+    const page = await openClient(context, { name: 'Tester' });
+
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(4, { timeout: 20_000 });
+
+    // Gruppenköpfe der Unterkategorien müssen erscheinen (höchstens vier).
+    const gruppen = page.locator('#weapon-list .weapon-group');
+    await expect(gruppen).not.toHaveCount(0);
+    const texte = await gruppen.allTextContents();
+    expect(texte.length).toBeGreaterThan(0);
+    expect(texte.length).toBeLessThanOrEqual(4);
+    // Die Beschriftungen müssen gefüllt sein, nicht nur vorhanden.
+    for (const text of texte) expect(text.trim().length).toBeGreaterThan(3);
+
+    // Jede Zeile trägt Namen, Munition und ein geladenes Icon.
+    const zeilen = page.locator('#weapon-list .weapon-item');
+    const anzahl = await zeilen.count();
+    expect(anzahl).toBe(4);
+    for (let i = 0; i < anzahl; i++) {
+      const zeile = zeilen.nth(i);
+      await expect(zeile.locator('.weapon-name')).not.toBeEmpty();
+      await expect(zeile).toContainText('DMG');
+
+      // Icons sind verknüpft: das Bild muss wirklich geladen sein.
+      const bild = zeile.locator('img.weapon-icon');
+      await expect(bild).toHaveCount(1, { timeout: 10_000 });
+      const geladen = await bild.evaluate(el => el.complete && el.naturalWidth > 0);
+      expect(geladen, `Icon in Zeile ${i} wurde nicht geladen`).toBe(true);
+    }
+
+    // Genau eine Waffe ist als aktiv markiert.
+    await expect(page.locator('#weapon-list .weapon-item.is-active')).toHaveCount(1);
+  } finally {
+    await context.close();
+  }
+});
+
+test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) => {
+  const context = await browser.newContext();
+  try {
+    const page = await openClient(context, { name: 'Tester' });
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(4, { timeout: 20_000 });
+
+    // Bei fremdem Zug darf kein Wechsel gesendet werden, und die Meldung muss
+    // im Protokoll erscheinen statt stillschweigend zu scheitern.
+    const meinZug = await page.evaluate(() => window.__PA__.getNetwork()?.isMyTurn ?? null);
+    expect(typeof meinZug).toBe('boolean');
+
+    if (meinZug === false) {
+      await page.evaluate(() => window.__PA__.selectWeapon(1));
+      await expect(page.locator('#log-list')).toContainText('eigenen Zug');
+    } else {
+      // Eigener Zug: der Wechsel muss ankommen und den Serverzustand ändern.
+      await page.evaluate(() => window.__PA__.selectWeapon(1));
+      await expect(page.locator('#log-list')).toContainText(/Waffe/, { timeout: 10_000 });
+    }
+  } finally {
+    await context.close();
+  }
+});

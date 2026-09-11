@@ -45,9 +45,9 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (175 Tests) |
+| `npm test` | Unit- und Integrationstests (196 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
-| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (33 Tests) |
+| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (35 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
@@ -165,6 +165,37 @@ Alle Simulationszufälle stammen aus einem Match-Seed:
 
 Damit ist ein Match aus `(seed, Eingabefolge)` reproduzierbar — im Browser-E2E
 wird geprüft, dass gleiche Seeds identische Zustandshashes erzeugen.
+
+## Waffenkatalog
+
+150 Waffen, aufgebaut aus `project_armageddon_weapons_v1.json`. Der Katalog ist
+**generiert** (`npm run weapons:build` → `src/shared/config/weapons.js`) und wird
+nicht von Hand gepflegt.
+
+| Eigenschaft | Stand |
+|---|---|
+| Anzeigename, interner Name, ID, Index | eindeutig, keine Platzhalter |
+| Schussart | 76 Hitscan, 74 Projektil |
+| Schaden | alle 150; die Herkunft ist je Waffe vermerkt (`damageSource`) |
+| Flächenwirkung | 54 Waffen, 22 verschiedene Radien |
+| Seltenheit | fünf Stufen (`powerTier`), nach Stärke abgeleitet |
+| Erreichbarkeit über Kisten | alle 150 |
+| Icons | 150/150 verknüpft und im Browser geladen |
+
+**Vier Gruppen in der Waffenauswahl** (`WEAPON_SUBCATEGORIES`): Nahkampf (21),
+Schusswaffen (39), Elementar & Magie (50), Technik & Nutzen (40). Die Liste zeigt
+nur die Waffen des Spielers, der am Zug ist, jeweils mit Munition. Die
+angezeigten Nummern entsprechen den Zifferntasten.
+
+**Wichtige Unterscheidung:** Die Quelldatei führt zwei Feldfamilien. Die
+snake_case-Felder (`base_damage`, `blast_radius`, …) tragen die echten
+Designdaten, die camelCase-Felder sind überwiegend 0-Platzhalter. Der Generator
+bevorzugt je Feld den ersten positiven Wert und kennzeichnet einen
+Ersatz-Schadenswert als `damageSource: "placeholder"`.
+
+**Nicht differenziert** (bewusst so dokumentiert, nicht versteckt): `maxRange`
+ist bei allen Waffen 600, `cooldown` bei allen 0. Spritesheets gibt es nicht, die
+Darstellung ist prozedural; Bilder existieren nur als Waffen-Icons.
 
 ## Spezialeffekte
 

@@ -53,6 +53,14 @@ export const CONTROL = Object.freeze({
   RESUME: 'resume',
   ERROR: 'error',
   PING: 'ping',
+  /**
+   * Waffenbestand je Spieler (Waffen, Munition, aktive Waffe).
+   *
+   * Wird nur bei Änderung gesendet. Nötig, weil der binäre Snapshot die
+   * Bestände nicht führt: variable Längen je Spieler würden das Delta-Format
+   * sprengen. Ohne diese Nachricht blieb die Waffenliste im Online-Modus leer.
+   */
+  LOADOUTS: 'loadouts',
 });
 
 export const COORD_SCALE = 4;      // 0.25 px Auflösung

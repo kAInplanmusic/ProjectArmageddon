@@ -35,6 +35,11 @@ export const SIMULATION_HZ = 60;
 export const SNAPSHOT_HZ = 20;
 const TICK_MS = 1000 / SIMULATION_HZ;
 const SNAPSHOT_INTERVAL_MS = 1000 / SNAPSHOT_HZ;
+/**
+ * Vermerk für unbegrenzte Munition. Muss mit `getState()` im MatchController
+ * übereinstimmen — der Client prüft auf genau diesen Text.
+ */
+const UNLIMITED_AMMO = 'unbegrenzt';
 /** Nach so vielen Snapshots geht wieder ein Vollsnapshot raus (Resync). */
 const FULL_SNAPSHOT_INTERVAL = SNAPSHOT_HZ * 2;
 
@@ -89,6 +94,8 @@ class LobbySession {
     /** Letzter an jeden Client gesendeter Zustand (Basis für Delta-Encoding). */
     this.previousByToken = new Map();
     this.snapshotCounter = 0;
+    /** Signatur der zuletzt gesendeten Waffenbestände (null = noch nie). */
+    this.loadoutSignature = null;
     this.lastTickAt = Date.now();
     this.timer = null;
     this.emptySince = null;
@@ -239,6 +246,9 @@ class LobbySession {
   attach(token, socket) {
     this.syncSeats();
     this.clients.set(token, socket);
+    // Ein neu verbundener Client braucht die Bestände sofort, nicht erst beim
+    // nächsten Wechsel.
+    this.syncLoadouts(true);
     socket.send(controlMessage(CONTROL.LOBBY_STATE, {
       lobby: this.lobby.id,
       status: this.lobby.status,
@@ -321,7 +331,56 @@ class LobbySession {
     return { ok, errors: ok ? [] : ['Waffe nicht verfügbar'] };
   }
 
+  /**
+   * Bestände je Spieler: Waffen, Munition, aktive Waffe.
+   *
+   * Der binäre Snapshot führt nur Position, Gesundheit und Zustände — Bestände
+   * sind je Spieler unterschiedlich lang und würden das feste Delta-Format
+   * sprengen. Sie gehen deshalb als eigene Nachricht raus, und nur wenn sich
+   * etwas geändert hat: Ein Schuss kostet Munition, eine Kiste bringt eine Waffe.
+   */
+  #loadoutTable() {
+    const table = {};
+    for (const seat of this.lobby.seats) {
+      if (seat.entityId === null) continue;
+      const entry = this.match.inventory.get(seat.entityId);
+      if (!entry) continue;
+      const ammo = {};
+      for (const weaponId of entry.weapons) {
+        const amount = this.match.inventory.getAmmo(seat.entityId, weaponId);
+        // Gleiche Darstellung wie im Match-Zustand: unbegrenzte Waffen tragen
+        // den Vermerk, nicht eine Zahl. Sonst zeigte der Client online eine
+        // Munition an, die es nicht gibt.
+        ammo[weaponId] = Number.isFinite(amount) ? amount : UNLIMITED_AMMO;
+      }
+      table[seat.entityId] = {
+        inventory: [...entry.weapons],
+        ammo,
+        activeWeaponId: entry.activeWeaponId ?? null,
+      };
+    }
+    return table;
+  }
+
+  /**
+   * Sendet die Bestände, sofern sie sich seit dem letzten Mal geändert haben.
+   * Wird bei jedem Snapshot geprüft — damit sind Munitionsverbrauch und
+   * Kistenfunde ohne Instrumentierung jeder einzelnen Stelle abgedeckt.
+   */
+  syncLoadouts(force = false) {
+    const table = this.#loadoutTable();
+    const signature = JSON.stringify(table);
+    if (!force && signature === this.loadoutSignature) return false;
+    this.loadoutSignature = signature;
+    this.#broadcastControl(CONTROL.LOADOUTS, { loadouts: table });
+    return true;
+  }
+
   broadcastSnapshot() {
+    // Bestände zuerst prüfen: ändert sich etwas, geht die Nachricht raus, bevor
+    // die Positionen folgen — so zeigt die Anzeige den passenden Munitionsstand.
+    this.syncLoadouts();
+
     this.snapshotCounter += 1;
     const rohZustand = this.match.getState();
     // Zustände liegen getrennt nach Spieler-ID vor; das Drahtformat führt sie

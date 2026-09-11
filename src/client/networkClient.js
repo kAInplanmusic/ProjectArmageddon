@@ -228,6 +228,13 @@ export class NetworkClient {
         break;
       }
 
+      case CONTROL.LOADOUTS:
+        // Waffenbestände je Spieler. Eigener Fall statt Durchreichen an
+        // 'game_event', weil sie den Ansichtszustand ergänzen und nicht als
+        // Spielereignis protokolliert werden sollen.
+        this.#emit('loadouts', message.loadouts ?? {});
+        break;
+
       case CONTROL.ERROR:
         this.#lastServerError = message.errors?.[0] ?? message.error ?? 'Unbekannter Serverfehler';
         this.#emit('server_error', message);

@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **175/175** |
-| Browser-E2E | `npm run test:e2e` | **33/33** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **196/196** |
+| Browser-E2E | `npm run test:e2e` | **35/35** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
@@ -209,6 +209,77 @@ zählt eine Hülle um die Methode jeden Ausgang.
   auch bei Flächenschaden wirken — dort verteilt der Radius den Schaden.
 - Protokoll v3 überträgt Schild und Einfrierdauer (2 Byte je Spieler), damit die
   Anzeige auch im Online-Modus stimmt.
+
+
+## Bestandsprüfung der 150 Waffen
+
+Vollständige Durchsicht am 2026-09-11. Ergebnis je Frage:
+
+| Frage | Befund |
+|---|---|
+| Richtig benannt? | Ja. 150 eindeutige Anzeigenamen, 150 eindeutige interne Namen, keine Platzhalter. Serienkennungen waren uneinheitlich (siehe Fehler 19). |
+| Seltenheit vorhanden? | Ja, alle 150. Quelldaten führen drei Stufen (80/40/30); abgeleitet gibt es fünf (70/21/41/13/5). |
+| Für Drafting/Abwurf quantifiziert? | `powerScore` (0–515) und `powerTier` vorhanden; Loot gewichtet seither nach der Stufe. **Offen:** `cooldown` ist bei allen 150 konstant 0 und damit als Dimension ungenutzt. Eine Abwurf-Mechanik (Waffe ablegen/weitergeben) existiert nicht. |
+| Sinnvolle Spritesheets und Icons? | Icons: 150/150 vorhanden, keine Duplikate, keine Waisen, keine defekten Dateien — **aber im Browser nie geladen** (Fehler 20). Spritesheets: keine; die Darstellung ist prozedural (Canvas). |
+| Schussart, Schaden, Reichweite, Explosion vorhanden? | Schussart: 76 Hitscan / 74 Projektil. Schaden: alle 150, 52 davon Platzhalter. Explosion: 54 Waffen mit Radius, 22 verschiedene Werte. **Reichweite: `maxRange` ist bei allen 150 konstant 600** und damit als Unterscheidung wertlos. |
+| Sinnvolle Namen? | Ja (siehe oben). |
+| Waffenmenü sinnvoll? | Jetzt ja: vier Gruppen, nur Waffen des aktiven Spielers, Munition je Waffe, Anzeigenummern deckungsgleich mit den Zifferntasten. Online war die Liste zuvor immer leer (Fehler 21). |
+| Alle Icons verknüpft? | Ja, seit Fehler 20 behoben. |
+
+### Gefundene und behobene Fehler
+
+19. **Serienkennungen waren uneinheitlich.** `Raketenrucksack` stand ohne Kennung neben
+    `Raketenrucksack Mk III` (ohne Mk I/II), `Maschinenpistole` neben
+    `Maschinenpistole Mk II` (ohne Mk I). Vereinheitlicht im Generator
+    (`NAME_SERIES_FIXES`): `Raketenrucksack` → `Mk I`, `Mk III` → `Mk II`,
+    `Maschinenpistole` → `Mk I`. IDs und Icons unberührt.
+
+20. **Waffen-Icons wurden im Browser nie geladen.** Der gespeicherte `iconPath`
+    ist relativ zu `src/shared/config/weapons.js`; der Client löste ihn gegen
+    sein eigenes Modul auf (`src/client/hud.js`) — eine Ebene zu tief, das Ziel
+    existierte nicht. Der stille `error`-Handler entfernte das Bild daraufhin
+    lautlos, deshalb blieb der Fehler unsichtbar: In der Liste fehlten die Icons,
+    ohne dass ein Fehler auftrat. Behoben durch `iconUrlFor()` im Katalog, das
+    gegen die eigene Datei auflöst. Abgesichert durch einen E2E-Test, der prüft,
+    dass jedes Bild wirklich geladen ist (`naturalWidth > 0`).
+
+21. **Die Waffenliste war im Online-Modus immer leer.** Der Ansichtszustand für
+    den Mehrspielermodus setzte `inventory: []`, `ammo: {}` und
+    `activeWeaponId: null` fest. Der binäre Snapshot führt Bestände nicht
+    (variable Länge je Spieler), und es gab keinen Ersatzweg. Folge: Im
+    Mehrspielermodus ließ sich keine Waffe sehen oder wählen. Behoben durch eine
+    eigene Nachricht `CONTROL.LOADOUTS`, die nur bei Änderung gesendet wird
+    (Munitionsverbrauch, Kistenfund, Waffenwechsel).
+
+22. **Vier Utility-Waffen waren nie zu bekommen.** `pickWeaponForRarity` filterte
+    auf `damage > 0`. Betroffen waren genau die Waffen ohne Schadenswert:
+    Grappling Hook, Jetpack, Raketenrucksack Mk III, Munitionskiste. Behoben:
+    Der Filter lässt jetzt alles zu, was Schaden **oder** eine Wirkung hat.
+
+23. **Acht Prozent des Loot-Gewichts liefen ins Leere.** Die Ziehung gewichtete
+    nach `rarity` (drei Stufen), während die Gewichtstabelle fünf Stufen kennt —
+    `epic` und `legendary` hatten keine Waffe und wurden nie gezogen. Zugleich
+    färbte die Anzeige nach `powerTier`. Beide nutzen jetzt dieselbe Stufe.
+
+24. **Es gab keine Unterkategorien.** Die Waffenliste war eine flache Aufzählung.
+    Jetzt vier Gruppen (Nahkampf, Schusswaffen, Elementar & Magie, Technik &
+    Nutzen), die die acht Kategorien lückenlos abdecken. Anzeigenummern und
+    Zifferntasten nutzen dieselbe Ordnung (`orderInventoryBySubcategory`) —
+    vorher wären sie bei gegliederter Liste auseinandergelaufen.
+
+25. **Waffenwechsel im Onlinemodus gab keine Rückmeldung** und war auch bei
+    fremdem Zug möglich. Jetzt nur am eigenen Zug, mit Meldung im Protokoll.
+
+### Offene Punkte aus der Durchsicht
+
+- `maxRange` ist bei allen 150 Waffen 600. Damit ist die Reichweite keine
+  Eigenschaft, obwohl sie die Projektil-Lebensdauer steuert. Die Quelldaten
+  enthalten keine Reichweite; sie ließe sich aus Geschwindigkeit und Gravitation
+  herleiten.
+- `cooldown` ist bei allen 150 konstant 0. Als Drafting-Dimension ungenutzt.
+- Alle Spieler starten mit demselben Loadout (`getDefaultLoadout(4)`), unabhängig
+  von der Klasse. Eine klassenabhängige Startauswahl fehlt.
+- Eine Abwurf-Mechanik (Waffe liegen lassen oder weitergeben) existiert nicht.
 
 ### Werkzeuge
 - `npm run lint` / `lint:fix` — ESLint, als CI-Gate nutzbar.

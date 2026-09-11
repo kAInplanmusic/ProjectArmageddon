@@ -71,6 +71,51 @@ function pickString(stats, ...names) {
  *
  * @returns {{damage:number, damageSource:'source'|'placeholder'|'none'}}
  */
+/**
+ * Namensserien: Varianten desselben Geräts tragen eine fortlaufende Kennung.
+ *
+ * Die Quelldatei ist hier uneinheitlich: `Raketenwerfer Mk I`/`Mk II` und
+ * `Dimensionssprung I`/`II` sind sauber, `Raketenrucksack` hat aber keinen
+ * Zusatz, obwohl ein `Mk III` daneben steht, und `Maschinenpistole` stand neben
+ * `Maschinenpistole Mk II` ohne Kennung. Die Kennungen werden deshalb beim Bau
+ * vereinheitlicht — IDs und Icons bleiben unberührt (siehe designRule der
+ * Quelldatei: Anzeigenamen dürfen sich ändern).
+ */
+export const NAME_SERIES_FIXES = Object.freeze({
+  // Nur zwei Varianten vorhanden: „Mk III“ versprach eine dritte, die es nicht gibt.
+  'Raketenrucksack Mk III': 'Raketenrucksack Mk II',
+  // Erste Variante ohne Kennung, während eine zweite eine trägt.
+  'Maschinenpistole': 'Maschinenpistole Mk I',
+  // Der Basisname gehört zur ersten Variante.
+  'Raketenrucksack': 'Raketenrucksack Mk I',
+});
+
+/** Anzeigename mit vereinheitlichter Serienkennung. */
+export function normalizeDisplayName(name) {
+  return NAME_SERIES_FIXES[name] ?? name;
+}
+
+/**
+ * Die vier Gruppen der Waffenauswahl.
+ *
+ * Acht Kategorien der Quelldatei werden auf vier Gruppen abgebildet. Das ist die
+ * Gliederung, die der Spieler sieht: mehr als vier Gruppen sind am Rand des
+ * Spielfelds nicht mehr erfassbar, und mehrere Kategorien teilen sich eine
+ * Spielweise (Technik, Nutzen und Ultimatives sind alle Sonderwerkzeuge).
+ */
+export const WEAPON_SUBCATEGORIES = Object.freeze([
+  { id: 'melee', label: 'Nahkampf', categories: ['melee'] },
+  { id: 'guns', label: 'Schusswaffen', categories: ['ranged', 'heavy_ranged'] },
+  { id: 'elemental', label: 'Elementar & Magie', categories: ['elemental', 'magic'] },
+  { id: 'special', label: 'Technik & Nutzen', categories: ['tech', 'utility', 'ultimate'] },
+]);
+
+/** Gruppe einer Kategorie (oder null, wenn unbekannt). */
+export function subcategoryFor(category) {
+  const treffer = WEAPON_SUBCATEGORIES.find(gruppe => gruppe.categories.includes(category));
+  return treffer?.id ?? null;
+}
+
 export function resolveDamage(stats) {
   const fromSource = toNumber(stats.base_damage);
   if (fromSource > 0) return { damage: fromSource, damageSource: 'source' };
@@ -171,11 +216,42 @@ export function tierForScore(score) {
 export const WEAPON_ICON_BASE = '../../client/assets/icons';
 
 /** Icons liegen als `<Dateiname ohne Endung>_icon.png` vor. */
+/**
+ * Absoluter URL zum Waffen-Icon.
+ *
+ * Der gespeicherte `iconPath` ist relativ zu DIESER Datei
+ * (src/shared/config/), nicht zu der Datei, die ihn benutzt. Wird er im Client
+ * gegen das aufrufende Modul aufgeloest, zeigt er ins Leere — genau das war der
+ * Fall: Der Client liegt eine Ebene tiefer, die Icons waren dadurch nie
+ * geladen. Die Aufloesung gehoert deshalb hierher, wo der Pfad entsteht.
+ */
+export function iconUrlFor(weapon) {
+  if (!weapon || !weapon.iconPath) return null;
+  return new URL(weapon.iconPath, import.meta.url).href;
+}
+
 export function iconPathFor(iconFile) {
   if (!iconFile) return null;
   const stem = String(iconFile).replace(/\.[^.]+$/, '');
   return `${WEAPON_ICON_BASE}/${stem}_icon.png`;
 }
+
+/**
+ * Hat diese Waffe eine Wirkung über Schaden und Fläche hinaus?
+ *
+ * Eigene Prüfung mit der Liste aus `src/engine/specials.js`: Der Generator darf
+ * nicht von der Laufzeit abhängen (Build-Reihenfolge), braucht aber dieselbe
+ * Aussage, um zu entscheiden, ob eine Waffe überhaupt erspielbar ist.
+ */
+const SPECIAL_WITHOUT_DAMAGE = new Set([
+  'flight', 'mobility', 'water_mobility', 'grapple', 'teleport', 'portal',
+  'portal_field', 'hologram_portal', 'teleport_platform', 'dimension_orb',
+  'dimensionssprung', 'hook_pull', 'ammo_drop', 'supply_drop', 'loop',
+  'target_scan', 'random_effect', 'random_spell', 'scroll_spell', 'mutation',
+  'heal', 'instant_heal', 'guardian', 'blood_ritual', 'shield_heal',
+  'shield_freeze', 'guardian_ultimate', 'bunker', 'buff', 'area_buff',
+  'relic_buff', 'random_buff', 'time_control', 'camouflage',
+]);
 
 const weapons = raw.weapons.map(entry => {
   const stats = entry.stats ?? {};
@@ -193,9 +269,11 @@ const weapons = raw.weapons.map(entry => {
   const weapon = {
     id: entry.id,
     index: toNumber(entry.index),
-    displayName: entry.displayName ?? entry.internalName ?? entry.id,
+    displayName: normalizeDisplayName(entry.displayName ?? entry.internalName ?? entry.id),
     internalName: entry.internalName ?? entry.id,
     category,
+    /** Gruppe der Waffenauswahl (vier Gruppen, siehe WEAPON_SUBCATEGORIES). */
+    subcategory: subcategoryFor(category),
     icon: entry.icon?.file ?? null,
     rarity: sourceRarity,
     /** Rarität aus den Quelldaten (nur common/uncommon/rare). */
@@ -272,6 +350,80 @@ export const WEAPONS_BY_ID = Object.freeze(
 
 export const WEAPON_RARITIES = Object.freeze(['common', 'uncommon', 'rare', 'epic', 'legendary']);
 
+/**
+ * Die vier Gruppen der Waffenauswahl. Reihenfolge ist die Anzeigereihenfolge.
+ * Jede Kategorie der Quelldatei gehört zu höchstens einer Gruppe.
+ */
+export const WEAPON_SUBCATEGORIES = Object.freeze(
+  ${JSON.stringify(WEAPON_SUBCATEGORIES)}
+);
+
+/**
+ * Wirkungen, die eine Waffe auch OHNE Schadenswert spielbar machen.
+ * Muss mit dem Wirkungskatalog in src/engine/specials.js uebereinstimmen;
+ * ein Test prueft die Deckung.
+ */
+export const SPECIAL_WITHOUT_DAMAGE = Object.freeze(
+  ${JSON.stringify([...SPECIAL_WITHOUT_DAMAGE])}
+);
+
+/** Hat diese Waffe eine Wirkung ueber Schaden und Flaeche hinaus? */
+export function hasSpecialEffect(weapon) {
+  return weapon.damage > 0 || SPECIAL_WITHOUT_DAMAGE.includes(weapon.special);
+}
+
+/** Gruppe einer Kategorie (oder null). */
+export function subcategoryFor(category) {
+  const treffer = WEAPON_SUBCATEGORIES.find(gruppe => gruppe.categories.includes(category));
+  return treffer?.id ?? null;
+}
+
+/** Beschriftung einer Gruppe. */
+export function subcategoryLabel(subcategoryId) {
+  return WEAPON_SUBCATEGORIES.find(gruppe => gruppe.id === subcategoryId)?.label ?? subcategoryId;
+}
+
+/** Waffen einer Gruppe in Katalogreihenfolge. */
+export function getWeaponsBySubcategory(subcategoryId) {
+  return WEAPONS.filter(weapon => weapon.subcategory === subcategoryId);
+}
+
+/**
+ * Absoluter URL zum Waffen-Icon (aufgeloest gegen diese Datei).
+ * Der gespeicherte Pfad ist relativ zu src/shared/config/, nicht zum Aufrufer.
+ */
+export function iconUrlFor(weapon) {
+  if (!weapon || !weapon.iconPath) return null;
+  return new URL(weapon.iconPath, import.meta.url).href;
+}
+
+/**
+ * Inventar-Indizes in Anzeigereihenfolge.
+ *
+ * Die Waffenliste gliedert nach den vier Gruppen; die Zifferntasten müssen
+ * dieselbe Reihenfolge treffen wie die angezeigten Nummern. Deshalb gibt es
+ * genau EINE Ordnungsfunktion, die Liste und Tastatur gemeinsam nutzen — sonst
+ * liefen Anzeige und Eingabe auseinander.
+ *
+ * Innerhalb einer Gruppe bleibt die Reihenfolge des Inventars erhalten.
+ *
+ * @param {string[]} weaponIds - Waffen des Inventars in Inventarreihenfolge
+ * @returns {number[]} Inventar-Indizes, nach Gruppe sortiert
+ */
+export function orderInventoryBySubcategory(weaponIds) {
+  const rang = weaponId => {
+    const kategorie = getWeapon(weaponId)?.category;
+    const stelle = WEAPON_SUBCATEGORIES.findIndex(gruppe => gruppe.categories.includes(kategorie));
+    // Unbekannte Kategorien ans Ende, statt sie zu verlieren.
+    return stelle < 0 ? WEAPON_SUBCATEGORIES.length : stelle;
+  };
+
+  return weaponIds
+    .map((weaponId, index) => ({ weaponId, index }))
+    .sort((a, b) => rang(a.weaponId) - rang(b.weaponId) || a.index - b.index)
+    .map(eintrag => eintrag.index);
+}
+
 export function getWeapon(id) {
   return WEAPONS_BY_ID[id] ?? null;
 }
@@ -321,12 +473,24 @@ export function pickWeaponForRarity(rng, weights = { common: 55, uncommon: 25, r
   if (!rng || typeof rng.next !== 'function') {
     throw new TypeError('pickWeaponForRarity benoetigt einen RNG mit next()');
   }
-  const pool = WEAPONS.filter(weapon => (weights[weapon.rarity] ?? 0) > 0 && weapon.damage > 0);
-  const total = pool.reduce((sum, weapon) => sum + (weights[weapon.rarity] ?? 0), 0);
+
+  // Gewichtet wird nach der ABGELEITETEN Stufe (powerTier, fuenf Stufen), nicht
+  // nach der Quell-Raritaet (rarity, drei Stufen). Grund: Die Stufe ist es, die
+  // der Spieler als Farbe sieht, und nur sie kennt epic/legendary. Vorher
+  // liefen 8 Prozent des Gewichts ins Leere, weil keine Waffe diese Raritaeten
+  // trug.
+  //
+  // Utility-Waffen ohne Schaden sind ausdruecklich enthalten: Sie sind spielbar
+  // und wirken (Sprung, Nachschub, Schild), waren aber vorher nie zu bekommen,
+  // weil der Filter damage > 0 sie ausschloss.
+  const spielbar = weapon => hasSpecialEffect(weapon);
+  const gewicht = weapon => weights[weapon.powerTier] ?? weights[weapon.rarity] ?? 0;
+  const pool = WEAPONS.filter(weapon => gewicht(weapon) > 0 && spielbar(weapon));
+  const total = pool.reduce((sum, weapon) => sum + gewicht(weapon), 0);
   if (total <= 0) return WEAPONS[0];
   let threshold = rng.next() * total;
   for (const weapon of pool) {
-    threshold -= weights[weapon.rarity] ?? 0;
+    threshold -= gewicht(weapon);
     if (threshold <= 0) return weapon;
   }
   return pool[pool.length - 1];
