@@ -109,6 +109,16 @@ export class InputController {
     // ist eine Entscheidung, kein Nebenprodukt einer anderen Handlung.
     if (key === 'q' || key === 'Q') {
       this.#handlers.onWeaponDrop?.();
+      return;
+    }
+    // Leertaste springt. Mit A/D wird die Richtung mitgegeben, damit man über
+    // Kanten kommt. Der zweite Druck in der Luft ist der Doppelsprung.
+    if (key === ' ' || key === 'Spacebar' || key === 'Enter' || key.startsWith('Arrow')) return;
+    if (event.code === 'Space') {
+      const seitlich = this.#keys.has('a') || this.#keys.has('A') || this.#keys.has('ArrowLeft')
+        ? -1
+        : (this.#keys.has('d') || this.#keys.has('D') || this.#keys.has('ArrowRight') ? 1 : 0);
+      this.#handlers.onJump?.(seitlich);
     }
   }
 

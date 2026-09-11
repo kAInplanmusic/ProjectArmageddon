@@ -261,19 +261,23 @@ test('Die Herkunft des Schadenswerts ist nachvollziehbar', () => {
   // 52 Waffen haben in der Quelldatei keinen `base_damage` und tragen deshalb
   // den Platzhalter aus camelCase. Das ist ein Datenmangel — er darf nicht als
   // Designdaten erscheinen.
-  const nachHerkunft = { source: 0, placeholder: 0, none: 0 };
+  // Die Herkunft hat drei Stufen: echter Designwert, aus der Kategorie
+  // abgeleiteter Wert, und gar kein Schaden (reine Nutzwaffe).
+  const nachHerkunft = { source: 0, derived: 0, none: 0 };
   for (const weapon of WEAPONS) {
     assert.ok(
-      ['source', 'placeholder', 'none'].includes(weapon.damageSource),
+      ['source', 'derived', 'none'].includes(weapon.damageSource),
       `${weapon.id}: unbekannte Herkunft ${weapon.damageSource}`,
     );
     nachHerkunft[weapon.damageSource] += 1;
   }
 
-  assert.equal(nachHerkunft.source + nachHerkunft.placeholder + nachHerkunft.none, WEAPONS.length);
+  assert.equal(nachHerkunft.source + nachHerkunft.derived + nachHerkunft.none, WEAPONS.length);
   assert.ok(nachHerkunft.source > 80, `Zu wenige Waffen mit echtem Designwert: ${nachHerkunft.source}`);
-  assert.ok(nachHerkunft.placeholder > 0, 'Der Platzhalter kommt tatsächlich vor');
-  assert.ok(nachHerkunft.none > 0, 'Es gibt Utility-Waffen ganz ohne Schadenswert');
+  // 48 Waffen hatten in der Quelldatei keinen Designwert und bekamen einen
+  // abgeleiteten — vorher trugen sie alle den Einheitswert 25.
+  assert.ok(nachHerkunft.derived >= 40, `Zu wenige abgeleitete Werte: ${nachHerkunft.derived}`);
+  assert.ok(nachHerkunft.none > 0, 'Es gibt Nutzwaffen ganz ohne Schadenswert');
 });
 
 test('resolveDamage bevorzugt den Quelldatenwert vor dem Platzhalter', () => {
@@ -290,16 +294,19 @@ test('resolveDamage bevorzugt den Quelldatenwert vor dem Platzhalter', () => {
   assert.deepEqual(resolveDamage({ baseDamage: 0 }), { damage: 0, damageSource: 'none' });
 });
 
-test('Der Katalog markiert den Platzhalter, ohne ihn zu verstecken', () => {
-  // Eine Stichprobe: eine Waffe ohne Quelldatenwert muss den Platzhalter tragen.
-  const ohneDesignwert = WEAPONS.find(weapon => weapon.damageSource === 'placeholder');
-  assert.ok(ohneDesignwert, 'Es muss mindestens eine Waffe mit Platzhalter geben');
-  assert.equal(ohneDesignwert.damage, 25, 'Der Platzhalterwert ist 25');
-  assert.equal(ohneDesignwert.damageSource, 'placeholder',
-    'Er muss als Platzhalter gekennzeichnet sein');
+test('Der Katalog kennzeichnet abgeleitete Werte, statt sie zu verstecken', () => {
+  // Waffen ohne Designwert tragen einen aus der Kategorie abgeleiteten Schaden.
+  // Vorher war es ein Einheitswert von 25 für alle — der ließ sich nicht von
+  // einem Designwert unterscheiden.
+  const abgeleitet = WEAPONS.filter(weapon => weapon.damageSource === 'derived');
+  assert.ok(abgeleitet.length >= 40, `Zu wenige abgeleitete Werte: ${abgeleitet.length}`);
 
-  // Und keine Waffe darf einen Schaden ohne Schadenswert tragen.
+  // Und keine Waffe darf einen Schaden ohne Herkunft tragen.
   const widerspruch = WEAPONS.filter(w => w.damage > 0 && w.damageSource === 'none');
   assert.deepEqual(widerspruch.map(w => w.id), [],
     'Schaden ohne Herkunft wäre ein Widerspruch');
+
+  // Umgekehrt: „none" heißt auch wirklich kein Schaden.
+  const ohneSchaden = WEAPONS.filter(w => w.damageSource === 'none' && w.damage > 0);
+  assert.deepEqual(ohneSchaden.map(w => w.id), []);
 });

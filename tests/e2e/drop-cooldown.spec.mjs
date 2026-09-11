@@ -66,7 +66,7 @@ test('Abwerfen per Taste legt eine Kiste ab und entfernt die Waffe', async ({ pa
   expect(nachher.gefuehrt).toContain(nachher.aktiv);
 });
 
-test('Die abgeworfene Waffe liegt in der Nähe und ist aufhebbar', async ({ page }) => {
+test('Die abgeworfene Waffe fliegt und landet aufhebbar', async ({ page }) => {
   await boot(page, { seed: 313 });
 
   const ergebnis = await page.evaluate(() => {
@@ -74,26 +74,51 @@ test('Die abgeworfene Waffe liegt in der Nähe und ist aufhebbar', async ({ page
     const match = api.getMatch();
     const spieler = match.activePlayerId;
 
-    const waffeId = match.inventory.getActiveWeaponId(spieler);
     const px = match.world.getComponent(spieler, 'Position', 'x');
     const py = match.world.getComponent(spieler, 'Position', 'y');
 
     const abwurf = api.game.dropWeapon(0);
-    const kiste = (api.getState().crates ?? []).find(k => k.entityId === abwurf?.crateId);
+    if (!abwurf?.ok) return { ok: false, fehler: abwurf?.errors };
+
+    // Der Wurf muss eine Geschwindigkeit haben — sonst wäre es ein Ablegen.
+    const startFliegend = match.world.getComponent(abwurf.crateId, 'Crate', 'inFlight');
+
+    // Fliegen lassen.
+    let gelandet = false;
+    for (let i = 0; i < 200; i++) {
+      api.advance(1);
+      if (!match.world.isActive(abwurf.crateId)) break;
+      if (match.world.getComponent(abwurf.crateId, 'Crate', 'inFlight') === 0) { gelandet = true; break; }
+    }
+
+    const lx = match.world.getComponent(abwurf.crateId, 'Position', 'x');
+    const ly = match.world.getComponent(abwurf.crateId, 'Position', 'y');
+    const boden = match.surfaceYAt(Math.round(lx));
+    const wasser = match.water?.levelAtWorld ? match.water.levelAtWorld(lx, ly) : 0;
+
     return {
-      ok: abwurf?.ok,
-      waffeId,
-      crateId: abwurf?.crateId ?? null,
-      abstand: Math.hypot((abwurf?.x ?? 0) - px, (abwurf?.y ?? 0) - py),
-      kisteImZustand: Boolean(kiste),
+      ok: true,
+      vx: abwurf.vx, vy: abwurf.vy,
+      startFliegend,
+      gelandet,
+      abstand: Math.hypot(lx - px, ly - py),
+      aufBoden: Math.abs(ly - boden) < 3,
+      imWasser: wasser > 0.35,
+      kisteImZustand: (api.getState().crates ?? []).some(k => k.entityId === abwurf.crateId),
     };
   });
 
   expect(ergebnis.ok).toBe(true);
-  expect(ergebnis.kisteImZustand).toBe(true);
-  // Außerhalb des Aufhebe-Radius (18 px), sonst sofortiges Wiederaufheben.
+  // Der Wurf hat eine Geschwindigkeit und startet als fliegend.
+  expect(Math.abs(ergebnis.vx)).toBeGreaterThan(0.3);
+  expect(ergebnis.vy).toBeLessThan(-2);
+  expect(ergebnis.startFliegend).toBe(1);
+  // Nach dem Flug liegt sie auf festem Boden, außerhalb des Aufhebe-Radius.
+  expect(ergebnis.gelandet).toBe(true);
+  expect(ergebnis.aufBoden).toBe(true);
+  expect(ergebnis.imWasser).toBe(false);
   expect(ergebnis.abstand).toBeGreaterThan(18);
-  expect(ergebnis.abstand).toBeLessThan(110);
+  expect(ergebnis.kisteImZustand).toBe(true);
 });
 
 test('Aufheben einer Abwurfkiste stellt den Munitionsvorrat her', async ({ page }) => {
@@ -104,7 +129,6 @@ test('Aufheben einer Abwurfkiste stellt den Munitionsvorrat her', async ({ page 
     const match = api.getMatch();
     const spieler = match.activePlayerId;
 
-    // Eine abwerfbare Waffe mit begrenzter Munition wählen.
     const waffeId = match.inventory.getWeapons(spieler)
       .find(id => Number.isFinite(match.inventory.getAmmo(spieler, id)));
     if (!waffeId) return { uebersprungen: true };
@@ -116,17 +140,23 @@ test('Aufheben einer Abwurfkiste stellt den Munitionsvorrat her', async ({ page 
     const abwurf = match.dropWeapon(spieler, waffeId);
     const kisteMunition = match.world.getComponent(abwurf.crateId, 'Crate', 'ammo');
 
-    // Die Kiste an den FUSS des Spielers legen und einen Schritt simulieren.
-    // Bewusst so herum: den Spieler zur Kiste zu versetzen kämpft gegen die
-    // Physik, die ihn im selben Schritt wieder auf den Boden setzt — die
-    // Aufnahme käme dann nie zustande, obwohl sie im Spiel funktioniert.
+    // Landen lassen.
+    for (let i = 0; i < 200; i++) {
+      api.advance(1);
+      if (match.world.getComponent(abwurf.crateId, 'Crate', 'inFlight') === 0) break;
+    }
+
+    // Die Kiste an den Fuß des Spielers legen — so entsteht der Kontakt, den das
+    // LootSystem zum Aufheben braucht. Bewusst die KISTE bewegen: den Spieler zu
+    // versetzen kämpft gegen die Physik, die ihn im selben Schritt auf den Boden
+    // zurücksetzt.
     const px = match.world.getComponent(spieler, 'Position', 'x');
     const py = match.world.getComponent(spieler, 'Position', 'y');
     match.world.setComponent(abwurf.crateId, 'Position', 'x', px);
     match.world.setComponent(abwurf.crateId, 'Position', 'y', py);
     match.world.setComponent(abwurf.crateId, 'Crate', 'crateX', px);
     match.world.setComponent(abwurf.crateId, 'Crate', 'crateY', py);
-    match.step();
+    api.advance(1);
 
     return {
       uebersprungen: false,

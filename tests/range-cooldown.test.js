@@ -61,7 +61,17 @@ test('Die Geschwindigkeit aus den Quelldaten ist nicht mehr tot', () => {
 test('Schnellere Waffen fliegen im Spiel tatsächlich weiter pro Tick', () => {
   // Wirkungsprüfung, nicht nur Datenprüfung: zwei Waffen mit unterschiedlichem
   // Geschwindigkeitsfaktor müssen unterschiedliche Anfangsgeschwindigkeit haben.
-  const kandidaten = WEAPONS.filter(w => w.delivery === 'projectile' && w.damage > 0);
+  // Nur Geschosswaffen mit normalem Abschuss: Selbstwirkungswaffen (Flug,
+  // Teleport) verschießen nichts, und Luftangriffe starten nicht beim Schützen —
+  // sie fallen mit eigener Geschwindigkeit herab und sind deshalb kein Maß für
+  // den Geschwindigkeitsfaktor.
+  const kandidaten = WEAPONS
+    .filter(w => w.delivery === 'projectile' && w.damage > 0 && w.strikeStyle === 'self')
+    .filter(w => {
+      const effect = buildEffect(w);
+      return !(effect && SELF_TARGET_KINDS.has(effect.kind));
+    });
+  assert.ok(kandidaten.length > 20, `Zu wenige Geschosswaffen: ${kandidaten.length}`);
   const schnell = kandidaten.reduce((a, b) => (b.speedFactor > a.speedFactor ? b : a));
   const langsam = kandidaten.reduce((a, b) => (b.speedFactor < a.speedFactor ? b : a));
   assert.ok(schnell.speedFactor > langsam.speedFactor, 'Testannahme: verschiedene Faktoren');

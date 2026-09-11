@@ -45,6 +45,13 @@ export function registerDefaultComponents(componentStore) {
      * Aufheben ein Munitionstrick.
      */
     ammo: 'Int32Array',
+    /**
+     * 1 = die Kiste fliegt noch (geschleudert), 0 = sie liegt.
+     * Während des Flugs bewegt sie der Simulationsschritt (siehe #stepCrate).
+     */
+    inFlight: 'Int32Array',
+    /** Verbleibende Flugzeit in Ticks. Die Kiste landet erst danach. */
+    flightTicks: 'Int32Array',
   }, COMPONENT_SIGNATURES.CRATE);
   componentStore.registerComponent('Team', { teamId: 'Int32Array' }, COMPONENT_SIGNATURES.TEAM);
   componentStore.registerComponent('Rotation', { angle: 'Float32Array' }, COMPONENT_SIGNATURES.ROTATION);
@@ -60,6 +67,11 @@ export function registerDefaultComponents(componentStore) {
     windFactor: 'Float32Array',
     terrainDamage: 'Float32Array',
     bounces: 'Int32Array',
+    /**
+     * Verbleibende Zünder-Ticks (0 = Aufprallwaffe).
+     * Eine Granate wirkt nicht beim Aufprall, sondern nach Ablauf des Zünders.
+     */
+    fuseTicks: 'Int32Array',
     lifetime: 'Int32Array',
     alive: 'Int32Array',
   }, COMPONENT_SIGNATURES.PROJECTILE);

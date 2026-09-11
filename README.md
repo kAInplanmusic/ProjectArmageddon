@@ -37,6 +37,27 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `1`–`9` | Waffe wählen |
 | `R` | Zurück zum Menü |
 
+## Steuerung
+
+| Taste | Wirkung |
+|---|---|
+| `Maus` | Zielen (Winkel und Kraft am Zeiger) |
+| `A` / `D` | Winkel feinjustieren |
+| `W` / `S` | Kraft erhöhen / senken |
+| `1`-`9` | Waffe wählen (Nummern wie in der Liste) |
+| `Q` | Aktive Waffe abwerfen |
+| `Leertaste` | Springen (mit `A`/`D` seitlich; in der Luft Doppelsprung) |
+| `Enter` | Feuern |
+
+**Sprung:** Je Zug sind zwei Sprünge möglich — einer vom Boden, einer in der
+Luft. Der Sprung beendet den Zug nicht, damit der Doppelsprung auslösbar bleibt.
+Ein Sturz aus großer Höhe richtet Fallschaden an.
+
+**Abwurf:** Der Vorrat fasst sechs abwerfbare Waffen. Ist er voll, wird eine
+Waffenkiste nicht aufgenommen; stattdessen muss zuerst abgeworfen werden. Die
+abgeworfene Waffe wird **geschleudert** (0,75 s Flugzeit, windbeeinflusst) und
+landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist mit.
+
 ## Befehle
 
 | Befehl | Zweck |
@@ -45,7 +66,7 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (196 Tests) |
+| `npm test` | Unit- und Integrationstests (259 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (35 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -179,6 +200,9 @@ nicht von Hand gepflegt.
 | Schaden | alle 150; die Herkunft ist je Waffe vermerkt (`damageSource`) |
 | Flächenwirkung | 54 Waffen, 22 verschiedene Radien |
 | Seltenheit | fünf Stufen (`powerTier`), nach Stärke abgeleitet |
+| Schadensherkunft | 94 echte Designwerte, 48 aus der Kategorie abgeleitet, 4 ohne Schaden |
+| Zünder | 18 Waffen mit 1-5 s, sichtbar als Countdown über dem Geschoss |
+| Anflugart | Luftangriffe von oben, Artillerie von der Seite |
 | Erreichbarkeit über Kisten | alle 150 |
 | Icons | 150/150 verknüpft und im Browser geladen |
 

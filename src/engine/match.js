@@ -45,6 +45,23 @@ export const TEAM_COLORS = Object.freeze(['#4cc9f0', '#f4a261', '#90be6d', '#e07
 const BASE_HEALTH = 100;
 const POWER_TO_SPEED = 0.14;
 const MAX_WIND = 0.05;
+/** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
+const CRATE_GRAVITY = 0.30;
+/**
+ * Mindest-Flugzeit eines Wurfs in Ticks (0,75 s bei 60 Hz).
+ * Die Kiste landet erst danach — auch wenn sie vorher aufsetzen würde.
+ */
+const CRATE_FLIGHT_TICKS = 45;
+
+/** Absprunggeschwindigkeit (px pro Tick), negativ = nach oben. */
+const JUMP_IMPULSE = 9.2;
+/**
+ * Der zweite Sprung ist schwächer als der erste: sonst wäre er kein Zusatz,
+ * sondern ein Ersatz mit doppelter Höhe.
+ */
+const DOUBLE_JUMP_FACTOR = 0.8;
+/** Seitliche Zugabe beim Sprung, damit man auch über Kanten kommt. */
+const JUMP_SIDE_IMPULSE = 2.4;
 const PLAYER_HALF_WIDTH = 7;
 const PLAYER_HALF_HEIGHT = 10;
 /** Wie weit entlang der Schussrichtung nach freiem Feld gesucht wird. */
@@ -82,6 +99,14 @@ export class MatchController {
    * für den Spieler nachvollziehbar und in Replays stabil.
    */
   #cooldowns = new Map();
+  /**
+   * Verbrauchte Sprünge je Spieler.
+   * Wird beim Landen zurückgesetzt: Ein Doppelsprung steht nur EINMAL je
+   * Flugphase zur Verfügung — sonst könnte man sich beliebig hochschaukeln.
+   */
+  #jumpsUsed = new Map();
+  /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
+  #airborne = new Map();
   #maelstrom;
   #loot;
   #players = [];
@@ -276,7 +301,13 @@ export class MatchController {
     if (this.#status !== 'playing') return this.getState();
 
     this.#turnElapsed += dt;
+    // Fliegende Kisten bewegen sich VOR dem Physikschritt: sie sollen im selben
+    // Tick landen, in dem sie den Boden berühren.
+    this.#stepFlyingCrates();
     this.#world.step();
+    // Nach dem Physikschritt prüfen, wer gelandet ist — davon hängt ab, ob ein
+    // Doppelsprung wieder zur Verfügung steht.
+    this.#updateGroundedState();
     // KEIN `drain()` hier: das würde die Warteschlange leeren und die
     // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
     // kann. Der Client und der Server holen sie über `consumeEvents()`; die
@@ -291,6 +322,161 @@ export class MatchController {
       this.endTurn();
     }
     return this.getState();
+  }
+
+  /**
+   * Steht die Figur auf festem Grund?
+   *
+   * Geprüft wird ein Punkt knapp UNTER den Füßen. Ohne diese Aussage gäbe es
+   * keinen Unterschied zwischen „steht" und „fällt", und ein Sprung aus der Luft
+   * wäre ein zweiter Absprung mitten im Flug.
+   */
+  isGrounded(playerId) {
+    if (!this.#world.isActive(playerId)) return false;
+    const x = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
+    const y = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
+    const vy = this.#world.getComponent(playerId, 'Velocity', 'y') ?? 0;
+    // Aufwärtsbewegung heißt: nicht am Boden, egal was darunter liegt.
+    if (vy < -0.5) return false;
+    // `y` ist die FUSSPOSITION. Der tiefste Punkt des Körpers liegt
+    // PLAYER_HALF_HEIGHT darunter, und genau dort entscheidet die Landung. Ein
+    // Prüfpunkt knapp unter den Füßen (y+2) liegt noch in der Luft: das Terrain
+    // beginnt erst eine halbe Körperhöhe unter der Fußlinie, weil die Figur auf
+    // seiner Oberkante steht.
+    const tiefster = Math.floor(y + PLAYER_HALF_HEIGHT - 1);
+    return this.#terrain.isSolid(Math.floor(x), tiefster);
+  }
+
+  /** Verbleibende Sprünge in dieser Flugphase (0, 1 oder 2). */
+  jumpsLeft(playerId) {
+    return Math.max(0, 2 - (this.#jumpsUsed.get(playerId) ?? 0));
+  }
+
+  /**
+   * Springt — als Aktion des Zuges.
+   *
+   * Der Sprung ist eine echte Physik: er setzt einen senkrechten Impuls, die
+   * Figur fliegt danach unter Schwerkraft und landet. Fallschaden greift wie bei
+   * jedem Sturz, ein zu hoher Sprung kann also schaden.
+   *
+   * Der Sprung beendet den Zug NICHT, aber je Zug sind nur zwei möglich (einer
+   * vom Boden, einer in der Luft). Die Begrenzung ist nötig, weil ein Sprung die
+   * Position ändert — in einem Artillerie-Spiel die kostbarste Größe — und
+   * unbegrenztes Springen jede Deckung entwerten würde.
+   *
+   * Der zweite Sprung (Doppelsprung) geht nur EINMAL je Flugphase und ist
+   * schwächer. Beim Landen wird zurückgesetzt.
+   *
+   * @param {number} playerId
+   * @param {number} [horizontal] - seitliche Richtung: -1, 0 oder 1
+   * @returns {{ok:boolean, jumpsLeft?:number, impulse?:number, errors?:string[]}}
+   */
+  jump(playerId, horizontal = 0) {
+    const errors = [];
+    if (this.#status !== 'playing') errors.push('Match läuft nicht');
+    if (playerId !== this.activePlayerId) errors.push('Nur der aktive Spieler kann springen');
+    if (!this.#world.isActive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
+    if (errors.length > 0) return { ok: false, errors };
+
+    const grounded = this.isGrounded(playerId);
+    const verbraucht = this.#jumpsUsed.get(playerId) ?? 0;
+
+    // Der erste Sprung geht nur vom Boden, der zweite nur in der Luft.
+    // Der Zähler wird ausschließlich beim Zugbeginn zurückgesetzt — ein Reset
+    // beim Landen würde erlauben, innerhalb eines Zuges beliebig oft zu
+    // springen, zu landen und wieder zu springen.
+    if (!grounded && verbraucht === 0) {
+      return { ok: false, errors: ['In der Luft ist kein erster Sprung möglich'] };
+    }
+    if (verbraucht >= 2) {
+      return { ok: false, errors: ['Keine Sprünge mehr in diesem Zug'] };
+    }
+
+    const istDoppel = !grounded;
+    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1);
+    const richtung = Math.max(-1, Math.min(1, Number(horizontal) || 0));
+
+    this.#world.setComponent(playerId, 'Velocity', 'y', -impuls);
+    if (richtung !== 0) {
+      const vxAlt = this.#world.getComponent(playerId, 'Velocity', 'x') ?? 0;
+      this.#world.setComponent(playerId, 'Velocity', 'x', vxAlt + richtung * JUMP_SIDE_IMPULSE);
+    }
+
+    this.#jumpsUsed.set(playerId, verbraucht + 1);
+    const rest = 2 - (verbraucht + 1);
+
+    this.#events.emit('jumped', {
+      playerId, double: istDoppel, impulse: impuls, jumpsLeft: rest,
+    });
+
+    // Der Sprung beendet den Zug NICHT.
+    //
+    // Grund: Ein Doppelsprung setzt voraus, dass der Spieler während seines
+    // eigenen Flugs noch am Zug ist. Beendete der erste Sprung den Zug, wäre der
+    // zweite nie auslösbar — die Mechanik hätte sich selbst ausgeschlossen.
+    // Begrenzt wird stattdessen über die Zahl der Sprünge je Zug.
+    return { ok: true, jumpsLeft: rest, impulse: impuls, double: istDoppel };
+  }
+
+  /**
+   * Meldet, wenn eine Figur den Boden berührt.
+   *
+   * Setzt die Sprünge NICHT zurück — das geschieht beim Zugbeginn. Hier geht es
+   * nur um das Ereignis, damit die Anzeige „gelandet" melden kann.
+   */
+  #updateGroundedState() {
+    for (const entry of this.#players) {
+      if (!this.#world.isActive(entry.entityId)) continue;
+      const warInDerLuft = this.#airborne.get(entry.entityId) === 1;
+      const stehtJetzt = this.isGrounded(entry.entityId);
+      if (warInDerLuft && stehtJetzt) {
+        this.#events.emit('landed', { playerId: entry.entityId });
+      }
+      this.#airborne.set(entry.entityId, stehtJetzt ? 0 : 1);
+    }
+  }
+
+  /**
+   * Startpunkt und Geschwindigkeit für eine Anflugart.
+   *
+   * Für `self` gibt die Methode `null` zurück — dann gilt der normale Weg.
+   *
+   * `sky`: Das Geschoss entsteht oberhalb des Zielpunkts und fällt herab. Der
+   *   Zielpunkt wird aus der normalen Zielung bestimmt (Winkel und Kraft), nicht
+   *   aus der Schützenposition: ein Luftangriff soll dort einschlagen, wohin der
+   *   Schütze zielt.
+   * `flank`: Das Geschoss kommt von der Seite, entgegen der Schussrichtung, und
+   *   fliegt waagerecht auf den Zielpunkt zu.
+   *
+   * In beiden Fällen liegt der Startpunkt AUSSERHALB der Sehweite, damit der
+   * Angriff sichtbar „hereinfliegt" statt vor dem Spieler zu erscheinen.
+   *
+   * @returns {{spawn:{x:number,y:number}, vx:number, vy:number}|null}
+   */
+  #resolveStrike(weapon, x, y, angle, power) {
+    const style = weapon?.strikeStyle ?? 'self';
+    if (style === 'self') return null;
+
+    // Zielpunkt über die normale Bahn bestimmen.
+    const bahn = this.#resolveHitscan(x, y, angle, power, weapon, null);
+    const zielX = Number.isFinite(bahn.hitX) ? bahn.hitX : x;
+    const zielY = Number.isFinite(bahn.hitY) ? bahn.hitY : y;
+
+    if (style === 'sky') {
+      const hoehe = 320;
+      const fall = 14;
+      return { spawn: { x: zielX, y: Math.max(0, zielY - hoehe) }, vx: 0, vy: fall };
+    }
+
+    // `flank`: von der Seite, aus der Richtung, aus der „geschossen" wird.
+    const richtung = Math.cos(angle) >= 0 ? -1 : 1;
+    const weite = 420;
+    const tempo = 12;
+    return {
+      spawn: { x: zielX + richtung * weite, y: Math.max(0, zielY - 60) },
+      vx: -richtung * tempo,
+      vy: 2,
+    };
   }
 
   /**
@@ -367,6 +553,11 @@ export class MatchController {
       return { ok: true, projectileId: null, hit };
     }
 
+    // Anflugart: Ein Luftangriff kommt von oben auf den Zielpunkt, schwere
+    // Artillerie von der Seite. Beides wird hier in Startpunkt und
+    // Geschwindigkeit übersetzt — der Zielpunkt bleibt der der normalen Zielung.
+    const strike = this.#resolveStrike(weapon, x, y, angle, power);
+
     const projectileId = this.#world.createEntity();
 
     // Abschusspunkt aus dem Körper des Schützen herausschieben.
@@ -375,9 +566,14 @@ export class MatchController {
     // Terrain. Ein Projektil, das dort entsteht, kollidiert im ersten
     // Simulationsschritt mit dem Boden und verschwindet, ohne das Ziel je zu
     // erreichen — Direktschaden war so unmöglich.
-    const spawn = this.#findMuzzle(x, y, Math.cos(angle), -Math.sin(angle), playerId) ?? { x, y };
+    const spawn = strike
+      ? strike.spawn
+      : (this.#findMuzzle(x, y, Math.cos(angle), -Math.sin(angle), playerId) ?? { x, y });
     this.#world.addComponent(projectileId, 'Position', { x: spawn.x, y: spawn.y });
-    this.#world.addComponent(projectileId, 'Velocity', { x: vx, y: vy });
+    this.#world.addComponent(projectileId, 'Velocity', {
+      x: strike ? strike.vx : vx,
+      y: strike ? strike.vy : vy,
+    });
     this.#world.addComponent(projectileId, 'Projectile', {
       owner: playerId,
       weaponId: weapon.index,
@@ -395,7 +591,12 @@ export class MatchController {
       // Flug oder ein langsames bleibt unnötig lange bestehen.
       lifetime: Math.max(30, Math.round(
         weapon.maxRange / Math.max(1, Math.hypot(vx, vy)),
-      ) * 1.5),
+      ) * 1.5, this.#fuseTicksFor(weapon) + 30),
+      /**
+       * Zünder in Ticks (0 = Aufprallwaffe). Eine Granate explodiert nicht beim
+       * Aufprall, sondern nach Ablauf — sie bleibt liegen und zündet.
+       */
+      fuseTicks: this.#fuseTicksFor(weapon),
       alive: 1,
     });
 
@@ -491,24 +692,27 @@ export class MatchController {
     const entfernt = this.#inventory.removeWeapon(playerId, weaponId);
     if (!entfernt.ok) return { ok: false, errors: [entfernt.reason] };
 
-    // Landestelle suchen. Begrenzte Versuche: bei zu engem Gelände wird die
-    // Waffe an der eigenen Position abgelegt, statt das Abwerfen zu verweigern —
-    // sonst ließe sich eine Waffe in einer Grube nie loswerden.
+    // Die Kiste wird GESCHLEUDERT, nicht abgelegt: sie fliegt mit zufälliger
+    // Anfangsgeschwindigkeit heraus, unterliegt Schwerkraft und Wind und landet
+    // nach einer Flugzeit. Landung im Wasser ist ausgeschlossen (siehe
+    // #stepCrate) — das ist die einzige harte Regel.
     const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
     const startY = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
-    const platz = this.#findDropSpot(startX, startY) ?? { x: startX, y: startY };
+    const wurf = this.#rollDropThrow();
 
     const crateId = this.#world.createEntity();
-    this.#world.addComponent(crateId, 'Position', { x: platz.x, y: platz.y });
-    this.#world.addComponent(crateId, 'Velocity', { x: 0, y: 0 });
+    this.#world.addComponent(crateId, 'Position', { x: startX, y: startY - 14 });
+    this.#world.addComponent(crateId, 'Velocity', { x: wurf.vx, y: wurf.vy });
     this.#world.addComponent(crateId, 'Crate', {
       crateType: CRATE_TYPES.weapon,
-      crateX: platz.x,
-      crateY: platz.y,
+      crateX: startX,
+      crateY: startY - 14,
       rarity: Math.max(0, RARITY_IDS.indexOf(weapon.rarity)),
       weaponId: weapon.index,
       picked: 0,
       ammo: entfernt.ammo,
+      inFlight: 1,
+      flightTicks: CRATE_FLIGHT_TICKS,
     });
 
     // Eine abgeworfene Waffe ist keine Nachladezeit mehr wert: die Pause gehört
@@ -516,10 +720,18 @@ export class MatchController {
     this.#cooldowns.delete(`${playerId}:${weaponId}`);
 
     this.#events.emit('weapon_dropped', {
-      playerId, weaponId, crateId, x: platz.x, y: platz.y, ammo: entfernt.ammo,
+      playerId, weaponId, crateId,
+      x: startX, y: startY - 14,
+      vx: wurf.vx, vy: wurf.vy,
+      ammo: entfernt.ammo,
     });
 
-    return { ok: true, crateId, x: platz.x, y: platz.y, ammo: entfernt.ammo };
+    // x/y sind hier der ABWURFPUNKT. Die Landestelle steht erst nach dem Flug
+    // fest und ist danach über die Kiste im Zustand abfragbar.
+    return {
+      ok: true, crateId, x: startX, y: startY - 14,
+      vx: wurf.vx, vy: wurf.vy, ammo: entfernt.ammo,
+    };
   }
 
   /**
@@ -531,39 +743,123 @@ export class MatchController {
    *
    * @returns {{x:number, y:number}|null}
    */
-  #findDropSpot(originX, originY) {
-    const MIN = 26;   // weiter als der Aufhebe-Radius (18), sonst sofort wieder auf
-    const MAX = 96;
+  /**
+   * Schleudert eine abgeworfene Waffe fort.
+   *
+   * Bewusst physikalisch statt „geprüft danebenlegen": Die Waffe fliegt mit
+   * einer zufälligen Anfangsgeschwindigkeit heraus, unterliegt der Schwerkraft,
+   * wird vom Wind getrieben und landet erst nach einer Flugzeit. Das wirkt wie
+   * ein Wurf und nicht wie ein Ablegen.
+   *
+   * Die EINZIGE harte Regel: Die Kiste darf nicht im Wasser landen. Wasser
+   * würde sie unerreichbar machen bzw. die Waffe versinken lassen — das wäre
+   * ein Verlust ohne Gegenwert. Trifft sie auf Wasser, fliegt sie weiter, bis
+   * sie festen Boden erreicht.
+   *
+   * @returns {{vx:number, vy:number}} Anfangsgeschwindigkeit für die Kiste
+   */
+  #rollDropThrow() {
+    const richtung = this.#rng.nextBoolean() ? -1 : 1;
+    return {
+      // Kräftig nach oben und zur Seite. Die Werte zielen auf eine Flugzeit von
+      // etwa einer halben bis anderthalb Sekunden: kurz genug, um den Zug nicht
+      // aufzuhalten, lang genug, um den Wurf als Wurf zu erkennen.
+      vx: richtung * this.#rng.nextFloat(1.2, 2.8),
+      vy: -this.#rng.nextFloat(9, 14),
+    };
+  }
 
-    for (let versuch = 0; versuch < 24; versuch++) {
-      const winkel = this.#rng.nextFloat(0, Math.PI * 2);
-      const abstand = this.#rng.nextFloat(MIN, MAX);
-      const x = originX + Math.cos(winkel) * abstand;
+  /**
+   * Bewegt eine fliegende Kiste einen Schritt weiter.
+   *
+   * Läuft im Simulationsschritt (siehe #stepFlyingCrates) und nutzt dieselben
+   * Kräfte wie ein Geschoss: Schwerkraft, Luftwiderstand, Wind. Der Unterschied
+   * ist der Aufprall: Eine Kiste bleibt liegen statt zu explodieren, und sie
+   * darf nicht ins Wasser geraten.
+   *
+   * @returns {boolean} true, wenn die Kiste gelandet ist
+   */
+  #stepCrate(crateId) {
+    const world = this.#world;
+    if (!world.isActive(crateId)) return false;
+    // Nur fliegende Kisten bewegen sich (fliegend = Flag gesetzt).
+    if (world.getComponent(crateId, 'Crate', 'inFlight') !== 1) return false;
 
-      if (x < PLAYER_HALF_WIDTH + 4 || x > MAP_WIDTH - PLAYER_HALF_WIDTH - 4) continue;
+    const x = world.getComponent(crateId, 'Position', 'x') ?? 0;
+    const y = world.getComponent(crateId, 'Position', 'y') ?? 0;
+    let vx = world.getComponent(crateId, 'Velocity', 'x') ?? 0;
+    let vy = world.getComponent(crateId, 'Velocity', 'y') ?? 0;
 
-      const boden = this.surfaceYAt(Math.round(x));
-      if (boden < 0) continue;
+    const wind = this.#world.services.match?.wind ?? 0;
+    // Restliche Flugzeit. Die Kiste landet erst, wenn sie abgelaufen ist —
+    // eine abgeworfene Waffe soll sichtbar fliegen und nicht im nächsten Hügel
+    // hängen bleiben.
+    let restFlug = world.getComponent(crateId, 'Crate', 'flightTicks') ?? 0;
+    if (restFlug > 0) restFlug -= 1;
+    world.setComponent(crateId, 'Crate', 'flightTicks', restFlug);
+    const flugVorbei = restFlug <= 0;
 
-      // Über dem Boden muss LUFT sein, damit die Kiste sichtbar und aufhebbar
-      // liegen bleibt. Die Bedingung ist bewusst positiv formuliert: „Platz für
-      // eine stehende Figur“ — also darf der Punkt über der Oberfläche NICHT
-      // fest sein. (Die invertierte Fassung verlangte festes Gelände in der Luft
-      // und lehnte damit jede Stelle ab.)
-      if (this.#terrain.isSolid(Math.floor(x), Math.floor(boden - PLAYER_HALF_HEIGHT))) continue;
-      if (Math.abs(boden - originY) > 260) continue;
+    // Eigene Fallbeschleunigung für Kisten: schwächer als bei Geschossen, damit
+    // der Wurf sichtbar dauert. Ein Geschoss soll schnell ans Ziel, eine
+    // abgeworfene Waffe soll fliegen.
+    vy += CRATE_GRAVITY;
+    vx += wind * 0.8;
+    vx *= DEFAULT_PROJECTILE_DRAG;
+    vy *= DEFAULT_PROJECTILE_DRAG;
 
-      // Nicht auf einem anderen Spieler ablegen.
-      const besetzt = this.#players.some(entry => {
-        if (!this.#world.isActive(entry.entityId)) return false;
-        const px = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
-        return Math.abs(px - x) < 14;
+    const nextX = x + vx;
+    const nextY = y + vy;
+
+    // Aus der Karte geflogen: zurück an den Rand holen.
+    const begrenztX = Math.min(MAP_WIDTH - 12, Math.max(12, nextX));
+
+    const boden = this.surfaceYAt(Math.round(begrenztX));
+
+    // Wasser an der Landestelle? Dann NICHT landen, sondern weiterfliegen.
+    // Das ist die einzige harte Regel des Abwurfs.
+    const wasser = this.#water
+      ? (typeof this.#water.levelAtWorld === 'function'
+        ? this.#water.levelAtWorld(begrenztX, Math.max(0, boden))
+        : this.#water.getLevel(Math.floor(begrenztX), Math.floor(boden)))
+      : 0;
+    const ueberWasser = wasser > 0.35;
+
+    // Gelände getroffen und trockener Boden: landen — aber erst nach Ablauf der
+    // Mindestflugzeit.
+    if (flugVorbei && boden > 0 && nextY >= boden && !ueberWasser) {
+      world.setComponent(crateId, 'Position', 'x', begrenztX);
+      world.setComponent(crateId, 'Position', 'y', boden);
+      world.setComponent(crateId, 'Velocity', 'x', 0);
+      world.setComponent(crateId, 'Velocity', 'y', 0);
+      world.setComponent(crateId, 'Crate', 'crateX', begrenztX);
+      world.setComponent(crateId, 'Crate', 'crateY', boden);
+      world.setComponent(crateId, 'Crate', 'inFlight', 0);
+      this.#events.emit('crate_landed', {
+        crateId, x: begrenztX, y: boden, flightTicks: CRATE_FLIGHT_TICKS,
       });
-      if (besetzt) continue;
-
-      return { x, y: boden };
+      return true;
     }
-    return null;
+
+    // Sonst weiterfliegen. Über Wasser wird die Sinkgeschwindigkeit gedämpft,
+    // damit die Kiste nicht untergeht, sondern weitergetragen wird.
+    if (ueberWasser && nextY >= boden) vy = Math.min(vy, 0.4);
+
+    world.setComponent(crateId, 'Position', 'x', begrenztX);
+    world.setComponent(crateId, 'Position', 'y', Math.max(0, nextY));
+    world.setComponent(crateId, 'Velocity', 'x', vx);
+    world.setComponent(crateId, 'Velocity', 'y', vy);
+    world.setComponent(crateId, 'Crate', 'crateX', begrenztX);
+    world.setComponent(crateId, 'Crate', 'crateY', Math.max(0, nextY));
+    return false;
+  }
+
+  /** Bewegt alle fliegenden Kisten. Läuft vor dem Physikschritt. */
+  #stepFlyingCrates() {
+    for (const crateId of this.#world.getEntitiesBySignature(
+      COMPONENT_SIGNATURES.CRATE | COMPONENT_SIGNATURES.VELOCITY,
+    )) {
+      this.#stepCrate(crateId);
+    }
   }
 
   /**
@@ -576,6 +872,23 @@ export class MatchController {
     for (const key of [...this.#cooldowns.keys()]) {
       if (key.startsWith(prefix)) this.#cooldowns.delete(key);
     }
+  }
+
+  /**
+   * Zünderdauer einer Waffe in Simulationsschritten.
+   * Die Waffe nennt Sekunden; die Simulation rechnet in Ticks zu 60 Hz.
+   */
+  #fuseTicksFor(weapon) {
+    const sekunden = weapon?.fuseTime ?? 0;
+    if (!(sekunden > 0)) return 0;
+    return Math.max(1, Math.round(sekunden * 60));
+  }
+
+  /** Verbleibender Zünder eines Projektils in Sekunden (0 = kein Zünder). */
+  fuseSecondsLeft(projectileId) {
+    if (!this.#world.isActive(projectileId)) return 0;
+    const ticks = this.#world.getComponent(projectileId, 'Projectile', 'fuseTicks') ?? 0;
+    return ticks > 0 ? Math.round((ticks / 60) * 10) / 10 : 0;
   }
 
   /** Verbleibende Nachladezeit einer Waffe in Zügen (0 = einsatzbereit). */
@@ -1098,6 +1411,12 @@ export class MatchController {
     // seinen Zug aussetzt.
     this.#tickCooldowns(entityId);
 
+    // Sprünge zu Beginn des Zuges zurücksetzen. Damit stehen je Zug höchstens
+    // zwei zur Verfügung — ein Bodensprung und ein Doppelsprung. Ein Reset beim
+    // LANDEN wäre nicht ausreichend: man könnte innerhalb eines Zuges beliebig
+    // oft springen, landen und wieder springen.
+    this.#jumpsUsed.set(entityId, 0);
+
     if (turnState.damage > 0 && this.#world.isActive(entityId)) {
       this.#world.getSystem('damage')?.applyDamage(this.#world, entityId, turnState.damage, null);
       this.#events.emit('dot_tick', {
@@ -1206,11 +1525,16 @@ export class MatchController {
       COMPONENT_SIGNATURES.POSITION | COMPONENT_SIGNATURES.PROJECTILE
     )) {
       if (!this.#world.isActive(id)) continue;
+      const fuseTicks = this.#world.getComponent(id, 'Projectile', 'fuseTicks') || 0;
       projectiles.push({
         entityId: id,
         x: this.#world.getComponent(id, 'Position', 'x'),
         y: this.#world.getComponent(id, 'Position', 'y'),
         owner: this.#world.getComponent(id, 'Projectile', 'owner'),
+        // Zünder in Sekunden, damit die Anzeige den Countdown zeigen kann.
+        // Bewusst in Sekunden und nicht in Ticks: die Anzeige soll die Zeit
+        // zeigen, die der Spieler auch wahrnimmt.
+        fuseSeconds: fuseTicks > 0 ? Math.round((fuseTicks / 60) * 10) / 10 : 0,
       });
     }
 

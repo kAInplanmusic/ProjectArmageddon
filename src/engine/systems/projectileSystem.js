@@ -72,7 +72,44 @@ export class ProjectileSystem {
       const nextX = startX + vx;
       const nextY = startY + vy;
 
+      // Zünder: Eine Granate wirkt nicht beim Aufprall, sondern nach Ablauf.
+      // Sie prallt ab bzw. bleibt liegen und zündet dann.
+      let fuseTicks = world.getComponent(entityId, 'Projectile', 'fuseTicks') || 0;
+      if (fuseTicks > 0) {
+        fuseTicks -= 1;
+        world.setComponent(entityId, 'Projectile', 'fuseTicks', fuseTicks);
+
+        if (fuseTicks <= 0) {
+          // Zünder abgelaufen: jetzt wirkt die Ladung — an der aktuellen Stelle.
+          const blastRadius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
+          const owner = world.getComponent(entityId, 'Projectile', 'owner');
+          this.#explode(world, entityId, nextX, nextY, 0, null);
+          if (events) {
+            events.emit('fuse_expired', { entityId, x: nextX, y: nextY, owner });
+          }
+          services.onProjectileImpact?.({
+            projectileId: entityId, owner, x: nextX, y: nextY,
+            target: null, blastRadius,
+          });
+          continue;
+        }
+      }
+
       const hit = this.#raycast(terrain, targets, startX, startY, nextX, nextY);
+
+      if (hit && fuseTicks > 0) {
+        // Zünderwaffe: Der Aufprall stoppt sie, zündet sie aber nicht. Sie
+        // bleibt an der Auftreffstelle liegen und läuft dort ab — so wirkt eine
+        // Granate wie eine Granate und nicht wie eine Patrone.
+        world.setComponent(entityId, 'Position', 'x', hit.x);
+        world.setComponent(entityId, 'Position', 'y', hit.y);
+        world.setComponent(entityId, 'Velocity', 'x', 0);
+        world.setComponent(entityId, 'Velocity', 'y', 0);
+        if (events) {
+          events.emit('fuse_armed', { entityId, x: hit.x, y: hit.y });
+        }
+        continue;
+      }
 
       if (hit) {
         const owner = world.getComponent(entityId, 'Projectile', 'owner');

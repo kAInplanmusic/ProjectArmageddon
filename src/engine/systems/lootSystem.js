@@ -82,6 +82,9 @@ export class LootSystem {
         picked: 0,
         // 0 bedeutet "kein Vorrat hinterlegt" — beim Aufheben gilt das volle Magazin.
         ammo: 0,
+        // Rundenkisten liegen bereits; nur abgeworfene Waffen fliegen.
+        inFlight: 0,
+        flightTicks: 0,
       });
       spawned.push(entityId);
     }
@@ -99,6 +102,9 @@ export class LootSystem {
     for (const crateId of entities) {
       if (!world.isActive(crateId)) continue;
       if (world.getComponent(crateId, 'Crate', 'picked') === 1) continue;
+      // Eine fliegende Kiste lässt sich nicht aufheben — sie ist noch in der
+      // Luft. Sonst könnte man sie im Vorbeifliegen aufschnappen.
+      if (world.getComponent(crateId, 'Crate', 'inFlight') === 1) continue;
 
       const crateX = world.getComponent(crateId, 'Position', 'x') || 0;
       const crateY = world.getComponent(crateId, 'Position', 'y') || 0;

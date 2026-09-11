@@ -394,6 +394,27 @@ export class Renderer {
       this.ctx.beginPath();
       this.ctx.arc(projectile.x, projectile.y, 8, 0, Math.PI * 2);
       this.ctx.fill();
+
+      // Zünder-Countdown: Ohne die Zahl wäre nicht erkennbar, wie lange eine
+      // Granate noch liegt. Der Ring zeigt zusätzlich den Fortschritt, damit
+      // die verbleibende Zeit auch ohne Lesen erfassbar ist.
+      const rest = projectile.fuseSeconds ?? 0;
+      if (rest > 0) {
+        this.ctx.save();
+        this.ctx.textAlign = 'center';
+        this.ctx.font = 'bold 11px system-ui, sans-serif';
+        this.ctx.fillStyle = rest <= 1 ? '#ef476f' : '#fbbf24';
+        this.ctx.fillText(`${rest.toFixed(1)}s`, projectile.x, projectile.y - 13);
+
+        // Fortschrittsring: schließt sich, je näher die Zündung kommt.
+        const anteil = Math.min(1, rest / 5);
+        this.ctx.strokeStyle = rest <= 1 ? 'rgba(239,71,111,0.9)' : 'rgba(251,191,36,0.75)';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(projectile.x, projectile.y, 11, -Math.PI / 2, -Math.PI / 2 + anteil * Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
     }
   }
 

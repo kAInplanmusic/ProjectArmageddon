@@ -49,6 +49,8 @@ class Game {
       onWeaponSelect: index => this.selectWeapon(index),
       // Aktive Waffe abwerfen (Q).
       onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()),
+      // Springen (Leertaste), mit A/D als Richtung.
+      onJump: seitlich => this.jump(seitlich),
     });
 
     this.#bindMenu();
@@ -202,6 +204,30 @@ class Game {
    * sich der Client per WebSocket. Der Server bleibt die Source of Truth.
    */
   /**
+   * Springt mit der Figur am Zug.
+   *
+   * Der Sprung ist eine echte Physik (siehe `MatchController.jump`): Er setzt
+   * einen Impuls, die Figur fliegt und landet. Der zweite Druck in der Luft ist
+   * der Doppelsprung — je Zug sind zwei Sprünge möglich.
+   *
+   * @param {number} [seitlich] - -1 links, 0 gerade, 1 rechts
+   */
+  jump(seitlich = 0) {
+    if (!this.match || this.mode !== 'local') return null;
+    const playerId = this.match.activePlayerId;
+    if (playerId === null) return null;
+
+    const ergebnis = this.match.jump(playerId, seitlich);
+    if (!ergebnis.ok) {
+      // Kein Grund zur Beunruhigung: eine Meldung genügt.
+      this.hud.log(ergebnis.errors.join(', '), 'neutral');
+      return ergebnis;
+    }
+    this.hud.log(ergebnis.double ? 'Doppelsprung' : 'Sprung', 'accent');
+    return ergebnis;
+  }
+
+  /**
    * Wirft die Waffe an einer Anzeigeposition ab.
    *
    * Der Abwurf ist die Antwort auf einen vollen Vorrat: statt eine Waffe zu
@@ -232,7 +258,7 @@ class Game {
     const vorrat = ergebnis.ammo < 0 ? '∞' : ergebnis.ammo;
     this.hud.log(`${name} abgeworfen (${vorrat} Munition liegt bereit)`, 'accent');
     // Die Liste muss sofort nachziehen.
-    this.hud.update(this.currentState(), { aim: this.aim, onWeaponSelect: i => this.selectWeapon(i), onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()) });
+    this.hud.update(this.currentState(), { aim: this.aim, onWeaponSelect: i => this.selectWeapon(i), onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()), onJump: seitlich => this.jump(seitlich) });
     return ergebnis;
   }
 
@@ -645,6 +671,15 @@ class Game {
         case 'pulled':
           this.hud.log(`${this.#nameOf(payload.playerId)} wurde herangezogen`, 'accent');
           break;
+        case 'jumped':
+          this.hud.log(`${this.#nameOf(payload.playerId)} springt${payload.double ? ' (Doppelsprung)' : ''}`, 'accent');
+          break;
+        case 'landed':
+          this.hud.log(`${this.#nameOf(payload.playerId)} ist gelandet`);
+          break;
+        case 'crate_landed':
+          this.hud.log('Abgeworfene Waffe gelandet', 'neutral');
+          break;
         case 'crate_pickup_blocked':
           // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
           this.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
@@ -852,6 +887,12 @@ class Game {
       selectWeapon: index => this.selectWeapon(index),
       /** Waffe abwerfen (Position wie in der Liste). */
       dropWeapon: index => this.dropWeapon(index),
+      /** Springen (seitlich: -1, 0, 1). */
+      jump: seitlich => this.jump(seitlich ?? 0),
+      /** Steht die Figur am Zug auf festem Grund? */
+      isGrounded: () => this.match ? this.match.isGrounded(this.match.activePlayerId) : false,
+      /** Verbleibende Sprünge des Spielers am Zug. */
+      jumpsLeft: () => this.match ? this.match.jumpsLeft(this.match.activePlayerId) : 0,
       /**
        * Waffenkatalog und Wirkungen für Tests und Automatisierung.
        * Ohne diese Zugänge müssten E2E-Tests Module dynamisch nachladen, was im

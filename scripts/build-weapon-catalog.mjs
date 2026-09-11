@@ -35,6 +35,42 @@ function toNumber(value) {
  * Bevorzugt den ersten positiven Wert; sonst 0.
  */
 /**
+ * Schadenswert für Waffen, die in der Quelldatei KEINEN Designwert haben.
+ *
+ * 52 der 150 Waffen tragen nur den camelCase-Platzhalter mit dem konstanten Wert
+ * 25. Ein Einheitswert für ein Drittel aller Waffen ist kein Balancing: ein
+ * „Morgenstern" und ein „Astraltrank" richteten denselben Schaden an.
+ *
+ * Deshalb wird der Wert hier aus der Kategorie abgeleitet. Die Kategorie ist die
+ * belastbare Angabe der Quelldatei (acht Gruppen), und sie beschreibt die Rolle:
+ * ein Nahkampfangriff wirkt anders als ein schweres Geschütz. Dazu kommt eine
+ * deterministische Streuung aus dem Index, damit nicht alle Waffen einer Gruppe
+ * denselben Wert tragen — ohne Zufall, also in Replays stabil.
+ *
+ * Die Werte liegen bewusst über dem bisherigen Platzhalter: 25 war die Untergrenze
+ * eines Ersatzwerts, nicht ein Designziel.
+ */
+export const DAMAGE_BY_CATEGORY = Object.freeze({
+  melee: 30,
+  ranged: 26,
+  heavy_ranged: 52,
+  elemental: 36,
+  magic: 34,
+  tech: 30,
+  utility: 16,
+  ultimate: 68,
+});
+
+/** Abgeleiteter Schaden für eine Waffe ohne Designwert. */
+export function derivePlaceholderDamage(weapon) {
+  const basis = DAMAGE_BY_CATEGORY[weapon.category] ?? 30;
+  const index = toNumber(weapon.index);
+  // 11 Stufen zwischen 0.82 und 1.18 — deterministisch aus dem Index.
+  const streuung = 0.82 + ((index * 7) % 11) * 0.036;
+  return Math.max(1, Math.round(basis * streuung));
+}
+
+/**
  * Waehlt den ersten positiven Wert aus mehreren Feldnamen.
  *
  * REIHENFOLGE IST ENTSCHEIDEND: In der Quelldatei sind die camelCase-Felder
@@ -72,27 +108,159 @@ function pickString(stats, ...names) {
  * @returns {{damage:number, damageSource:'source'|'placeholder'|'none'}}
  */
 /**
- * Namensserien: Varianten desselben Geräts tragen eine fortlaufende Kennung.
+ * Vier Waffenpaare, die faktisch dieselbe Waffe waren.
  *
- * Die Quelldatei ist hier uneinheitlich: `Raketenwerfer Mk I`/`Mk II` und
- * `Dimensionssprung I`/`II` sind sauber, `Raketenrucksack` hat aber keinen
- * Zusatz, obwohl ein `Mk III` daneben steht, und `Maschinenpistole` stand neben
- * `Maschinenpistole Mk II` ohne Kennung. Die Kennungen werden deshalb beim Bau
- * vereinheitlicht — IDs und Icons bleiben unberührt (siehe designRule der
- * Quelldatei: Anzeigenamen dürfen sich ändern).
+ * Ausgangslage: `Raketenwerfer Mk I` und `Mk II` hatten beide 25 Schaden und
+ * 70 Geschwindigkeit — der „höhere" Mk hatte nur WENIGER Munition. Bei
+ * `Maschinenpistole` verhielt es sich genauso. `Raketenrucksack` und `Mk III`
+ * waren beide reine Fluggeräte, wobei es gar kein Mk I/II gab. Und
+ * `Dimensionssprung I`/`II` waren in ALLEN Werten identisch.
+ *
+ * Eine Kennung, die keinen Unterschied bezeichnet, ist irreführend. Diese acht
+ * Waffen bekommen deshalb eine eigene Identität mit einem echten Zielkonflikt:
+ * jede Paarung ist stark in einer Sache und schwach in der anderen. Es gibt
+ * keinen „höheren" Mk mehr, weil beide Varianten ihre Berechtigung haben.
+ *
+ * IDs, Indizes und Icons bleiben unberührt — die Quelldatei erlaubt ausdrücklich,
+ * Anzeigenamen zu ändern, ohne IDs oder Assets anzutasten.
  */
-export const NAME_SERIES_FIXES = Object.freeze({
-  // Nur zwei Varianten vorhanden: „Mk III“ versprach eine dritte, die es nicht gibt.
-  'Raketenrucksack Mk III': 'Raketenrucksack Mk II',
-  // Erste Variante ohne Kennung, während eine zweite eine trägt.
-  'Maschinenpistole': 'Maschinenpistole Mk I',
-  // Der Basisname gehört zur ersten Variante.
-  'Raketenrucksack': 'Raketenrucksack Mk I',
+export const WEAPON_IDENTITIES = Object.freeze({
+  // Paar 1: schwerer Einzeltreffer gegen schnelle Salve.
+  pa_037: {
+    displayName: 'Raketenwerfer',
+    concept: 'Eine Ladung, große Wirkung',
+    overrides: { damage: 62, blastRadius: 46, projectileSpeed: 62, maxAmmo: 3, knockback: 30, terrainDamage: 55 },
+  },
+  pa_041: {
+    displayName: 'Salvengeber',
+    concept: 'Schnelles kleines Kaliber, viele Schüsse',
+    overrides: { damage: 22, blastRadius: 16, projectileSpeed: 92, maxAmmo: 6, knockback: 8, terrainDamage: 18 },
+  },
+
+  // Paar 2: Dauerfeuer auf kurze Distanz gegen Einzelschuss auf weite.
+  pa_040: {
+    displayName: 'Maschinenpistole',
+    concept: 'Dauerfeuer, kurz und schnell',
+    overrides: { damage: 14, blastRadius: 0, projectileSpeed: 90, maxAmmo: 8, knockback: 0, terrainDamage: 4 },
+  },
+  pa_056: {
+    displayName: 'Präzisionsgewehr',
+    concept: 'Ein Schuss, weit und hart',
+    overrides: { damage: 55, blastRadius: 0, projectileSpeed: 100, maxAmmo: 2, knockback: 12, terrainDamage: 20 },
+  },
+
+  // Paar 3: kurzer Satz gegen weiter Gleitflug.
+  pa_032: {
+    displayName: 'Raketenrucksack',
+    concept: 'Kurzer, häufiger Satz',
+    // Reines Fluggerät: kein Schaden. Ohne diese Angabe hätte die Waffe den
+    // abgeleiteten Kategoriewert bekommen — ein Fluggerät, das Schaden anrichtet,
+    // wäre ein Widerspruch zur eigenen Beschreibung.
+    overrides: { damage: 0, effectMagnitude: 64, maxAmmo: 6, cooldownTurns: 0 },
+  },
+  pa_114: {
+    displayName: 'Gleitschirm',
+    concept: 'Weiter, aber mit Pause',
+    overrides: { damage: 0, effectMagnitude: 150, maxAmmo: 3, cooldownTurns: 2 },
+  },
+
+  // Paar 4: billiger Blitz gegen teurer weiter Riss.
+  pa_087: {
+    displayName: 'Dimensionssprung',
+    concept: 'Kurzer, häufiger Blitz',
+    // Häufig nutzbar: viel Munition, keine Pause. Das ist die Gegenleistung für
+    // die geringe Weite.
+    overrides: { damage: 0, effectMagnitude: 72, maxAmmo: 5, cooldownTurns: 0 },
+  },
+  pa_088: {
+    displayName: 'Dimensionsriss',
+    concept: 'Weiter Riss mit Nachladezeit',
+    // Dafür weit und teuer: wenig Munition, eine Pause.
+    overrides: { damage: 0, effectMagnitude: 165, maxAmmo: 2, cooldownTurns: 2 },
+  },
 });
 
-/** Anzeigename mit vereinheitlichter Serienkennung. */
-export function normalizeDisplayName(name) {
-  return NAME_SERIES_FIXES[name] ?? name;
+/** Identität einer Waffe (oder null). */
+export function identityFor(weaponId) {
+  return WEAPON_IDENTITIES[weaponId] ?? null;
+}
+
+/**
+ * Anzeigename einer Waffe.
+ *
+ * Waffen mit eigener Identität tragen ihren neuen Namen; alle übrigen den
+ * Namen aus der Quelldatei. Die Vereinheitlichung der Serienkennungen entfällt,
+ * weil die betroffenen Paare jetzt eigenständige Namen haben.
+ */
+export function normalizeDisplayName(name, weaponId = null) {
+  const identity = weaponId ? identityFor(weaponId) : null;
+  return identity?.displayName ?? name;
+}
+
+/**
+ * Zünder: Waffen, die nicht beim Aufprall, sondern nach einer Verzögerung
+ * wirken.
+ *
+ * Die Quelldatei führt `fuse_time` nur bei EINER Waffe (Kaktusbombe, 1,8 s);
+ * bei den übrigen 149 steht der Platzhalter 0. Damit sind Granaten faktisch
+ * Aufprallwaffen — der Name verspricht aber etwas anderes.
+ *
+ * Erkannt werden sie an ihrem Wirkungsnamen und am Anzeigenamen. Die Dauer wird
+ * NICHT gewürfelt, sondern aus der Wucht abgeleitet: eine stärkere Ladung hat
+ * einen längeren Zünder, damit man ihr ausweichen kann. Das ist die einzige
+ * sinnvolle Staffelung — ein kurzer Zünder an einer starken Bombe wäre kein
+ * Spiel, sondern ein Zufallstreffer.
+ */
+export const FUSE_SPECIALS = Object.freeze(new Set([
+  'fragmentation', 'sticky', 'delayed_bot', 'banana_split', 'spike_blast',
+  'energy_explosion', 'cosmic_banana', 'fire_pool', 'poison_cloud',
+  'poison_zone', 'tentacle_zone', 'lava', 'meteor_impact', 'meteor_rain',
+  'shell', 'hell_cannon',
+]));
+
+/**
+ * Anflugarten nach Wirkungsnamen.
+ * `sky`: von oben herab (Luftangriff, Mörser, Meteor).
+ * `flank`: von der Seite in Zielrichtung (schwere Artillerie, Kanone).
+ */
+export const STRIKE_FROM_SKY = Object.freeze(new Set([
+  'air_strike', 'mortar', 'meteor_impact', 'meteor_rain', 'artillery',
+]));
+export const STRIKE_FROM_FLANK = Object.freeze(new Set([
+  'hell_cannon', 'railgun', 'sniper', 'drill_cannon',
+]));
+
+/** Anflugart einer Waffe ('self' | 'sky' | 'flank'). */
+export function strikeStyleFor(weapon) {
+  if (STRIKE_FROM_SKY.has(weapon.special)) return 'sky';
+  if (STRIKE_FROM_FLANK.has(weapon.special)) return 'flank';
+  return 'self';
+}
+
+/** Zündnamen, die im Anzeigenamen erkennbar sind (Rückfall). */
+const FUSE_NAME_HINTS = ['granate', 'bombe', 'mine', 'spreng', 'eimer', 'molotow'];
+
+/** Hat diese Waffe einen Zünder? */
+export function hasFuse(weapon) {
+  if (FUSE_SPECIALS.has(weapon.special)) return true;
+  const name = (weapon.displayName ?? '').toLowerCase();
+  return FUSE_NAME_HINTS.some(hinweis => name.includes(hinweis));
+}
+
+/**
+ * Zünderdauer in Sekunden.
+ * Stufen 1–5, abgeleitet aus dem Schaden: stärkere Ladung, längerer Zünder.
+ *
+ * @returns {number} 0 = kein Zünder (Aufprallwaffe)
+ */
+export function deriveFuseTime(weapon) {
+  if (!hasFuse(weapon)) return 0;
+  const dmg = weapon.damage ?? 0;
+  if (dmg < 25) return 1;
+  if (dmg < 40) return 2;
+  if (dmg < 55) return 3;
+  if (dmg < 75) return 4;
+  return 5;
 }
 
 /**
@@ -403,7 +571,7 @@ const weapons = raw.weapons.map(entry => {
   const weapon = {
     id: entry.id,
     index: toNumber(entry.index),
-    displayName: normalizeDisplayName(entry.displayName ?? entry.internalName ?? entry.id),
+    displayName: normalizeDisplayName(entry.displayName ?? entry.internalName ?? entry.id, entry.id),
     internalName: entry.internalName ?? entry.id,
     category,
     /** Gruppe der Waffenauswahl (vier Gruppen, siehe WEAPON_SUBCATEGORIES). */
@@ -442,18 +610,69 @@ const weapons = raw.weapons.map(entry => {
       poison: pickPositive(stats, 'poison_damage', 'poisonDamage'),
     },
     special: pickString(stats, 'special') ?? entry.mechanic?.specialEffect ?? null,
+    /**
+     * Anflugart. Bestimmt, von wo der Angriff kommt:
+     *  - `self`  : vom Schützen (Normalfall)
+     *  - `sky`   : von oben auf den Zielpunkt (Luftangriff, Mörser)
+     *  - `flank` : von der Seite in Zielrichtung (schwere Artillerie)
+     *
+     * Nötig, weil ein „Luftangriff", der wie ein Gewehrschuss aus der Hand des
+     * Schützen kommt, dem Namen widerspricht. Die Zielrichtung bleibt die
+     * normale Zielung — die Anflugart bestimmt nur, woher das Geschoss kommt.
+     */
+    strikeStyle: 'self',
     targeting: entry.mechanic?.targeting ?? null,
     // Abgeleitete Feuerart: Hitscan ohne Flugzeit, Projektil mit Flugzeit.
     // Muss VOR maxRange stehen: die Reichweite hängt von der Feuerart ab.
     delivery: isMelee || projectileSpeed <= 0 ? 'hitscan' : 'projectile',
   };
 
+  // Eigene Identität: Die acht Waffen der vier Dubletten-Paare bekommen
+  // unterschiedliche Werte, damit sie sich wirklich unterscheiden. Das geschieht
+  // VOR allen Ableitungen, weil Reichweite, Geschwindigkeit und Nachladezeit
+  // daraus folgen.
+  const identity = identityFor(entry.id);
+  if (identity) {
+    Object.assign(weapon, identity.overrides);
+    weapon.concept = identity.concept;
+    // Ein eigener Schadenswert ist kein Ersatzwert mehr.
+    if (identity.overrides.damage !== undefined) {
+      // 0 ist kein Schadenswert, sondern „richtet keinen Schaden an".
+      weapon.damageSource = identity.overrides.damage > 0 ? 'source' : 'none';
+    }
+    weapon.displayName = identity.displayName;
+  }
+
+  // Anflugart aus dem Wirkungsnamen ableiten.
+  if (STRIKE_FROM_SKY.has(weapon.special)) weapon.strikeStyle = 'sky';
+  else if (STRIKE_FROM_FLANK.has(weapon.special)) weapon.strikeStyle = 'flank';
+
+  // Zünder für Granaten und Abwurfwaffen: Die Quelldatei hat hier nur bei einer
+  // Waffe einen echten Wert, alle übrigen tragen 0. Die Dauer folgt der Wucht.
+  if (!identity || identity.overrides.fuseTime === undefined) {
+    weapon.fuseTime = deriveFuseTime(weapon);
+  }
+
+  // Wirkungsstärke für Verschiebungen (Sprung, Teleport). Ohne eigene Angabe
+  // gilt der Standard aus dem Wirkungssystem.
+  weapon.effectMagnitude = weapon.effectMagnitude ?? null;
+
+  // Waffen ohne Designwert bekommen einen aus der Kategorie abgeleiteten
+  // Schaden. Das geschieht VOR den Ableitungen, weil Reichweite und Nachladezeit
+  // vom Schaden abhängen.
+  if (weapon.damageSource === 'placeholder') {
+    weapon.damage = derivePlaceholderDamage(weapon);
+    weapon.damageSource = 'derived';
+  }
+
   // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam.
   weapon.speedFactor = speedFactorFor(weapon);
   // Reichweite: physikalisch hergeleitet, nicht der Konstantwert 600 für alle.
   weapon.maxRange = deriveMaxRange(weapon);
-  // Nachladezeit in Zügen: die Quelle führt das Feld, aber konstant 0.
-  weapon.cooldown = deriveCooldown(weapon);
+  // Nachladezeit in Zügen. Eine eigene Vorgabe hat Vorrang: manche Waffen
+  // brauchen eine Pause, die sich nicht aus Schaden und Radius ergibt
+  // (Gleitschirm, Dimensionsriss).
+  weapon.cooldown = identity?.overrides.cooldownTurns ?? deriveCooldown(weapon);
 
   // Abgeleitete Einstufung: erweitert die Quelle um epic/legendary, ohne Werte
   // zu erfinden — reine Funktion der oben gemappten Statistiken.
@@ -521,6 +740,47 @@ export const WEAPON_RARITIES = Object.freeze(['common', 'uncommon', 'rare', 'epi
  * Die vier Gruppen der Waffenauswahl. Reihenfolge ist die Anzeigereihenfolge.
  * Jede Kategorie der Quelldatei gehört zu höchstens einer Gruppe.
  */
+/**
+ * Waffen mit eigener Identität: die vier früheren Dubletten-Paare.
+ * Je Eintrag ein Anzeigename, das Konzept und der Grund für die Abgrenzung.
+ */
+export const WEAPON_IDENTITIES = Object.freeze(
+  ${JSON.stringify(WEAPON_IDENTITIES, null, 2).split('\n').join('\n  ')}
+);
+
+/** Identität einer Waffe (oder null). */
+export function identityFor(weaponId) {
+  return WEAPON_IDENTITIES[weaponId] ?? null;
+}
+
+/** Anflugarten: von oben bzw. von der Seite. */
+export const STRIKE_FROM_SKY = Object.freeze(${JSON.stringify([...STRIKE_FROM_SKY])});
+export const STRIKE_FROM_FLANK = Object.freeze(${JSON.stringify([...STRIKE_FROM_FLANK])});
+
+/**
+ * Anflugart einer Waffe ('self' | 'sky' | 'flank').
+ * Ein Luftangriff kommt von oben auf den Zielpunkt, schwere Artillerie von der
+ * Seite — nicht aus der Hand des Schützen.
+ */
+export function strikeStyleFor(weapon) {
+  if (STRIKE_FROM_SKY.includes(weapon.special)) return 'sky';
+  if (STRIKE_FROM_FLANK.includes(weapon.special)) return 'flank';
+  return 'self';
+}
+
+/** Schadenswert je Kategorie für Waffen ohne Designwert. */
+export const DAMAGE_BY_CATEGORY = Object.freeze(${JSON.stringify(DAMAGE_BY_CATEGORY)});
+
+/** Wirkungsnamen, die einen Zünder tragen. */
+export const FUSE_SPECIALS = Object.freeze(${JSON.stringify([...FUSE_SPECIALS])});
+
+/** Hat diese Waffe einen Zünder? */
+export function hasFuse(weapon) {
+  if (FUSE_SPECIALS.includes(weapon.special)) return true;
+  const name = String(weapon.displayName ?? '').toLowerCase();
+  return ['granate', 'bombe', 'mine', 'spreng', 'eimer', 'molotow'].some(h => name.includes(h));
+}
+
 export const WEAPON_SUBCATEGORIES = Object.freeze(
   ${JSON.stringify(WEAPON_SUBCATEGORIES)}
 );

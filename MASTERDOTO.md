@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **196/196** |
-| Browser-E2E | `npm run test:e2e` | **35/35** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **259/259** |
+| Browser-E2E | `npm run test:e2e` | **41/41** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
@@ -366,6 +366,84 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [ ] Replay im Client abspielen (Server hat das Werkzeug bereits).
 - [ ] Strukturierte Logs (JSON) statt Freitext im Server.
 
+---
+
+## Auftrag vom 2026-09-11 — offene Punkte aus der Spielerdurchsicht
+
+Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
+
+### A. Waffen-Identität
+- [x] **Mk-Dubletten zu eigenständigen Waffen umgebaut.** Vier Paare sind faktisch
+      dieselbe Waffe, der „höhere" Mk ist dabei schwächer (weniger Munition) oder
+      identisch:
+      - `Raketenwerfer Mk I` / `Mk II` — beide 25 Schaden, 70 Speed
+      - `Maschinenpistole` / `Mk II` — beide 25 Schaden, 70 Speed
+      - `Raketenrucksack` / `Mk III` — beide Flug, kein Mk I/II vorhanden
+      - `Dimensionssprung I` / `II` — in allen Werten identisch
+      Vorschlag: eigenständige Konzepte mit echtem Zielkonflikt statt
+      Scheinsteigerung. IDs und Icons bleiben erhalten.
+- [x] **Platzhalter-Schadenswerte aufgewertet.** 52 Waffen tragen den konstanten
+      Ersatzwert 25 (`damageSource: "placeholder"`). Diese sollen aus Kategorie,
+      Stufe und Rolle abgeleitet echte, unterschiedliche Werte bekommen — die
+      Quelldatei liefert für sie keinen Designwert.
+
+### B. Waffen-Mechanik
+- [x] **Zünder (fuseTime) für passende Waffentypen.** Aktuell ist `fuseTime` bei
+      149 von 150 Waffen 0 (nur die Kaktusbombe hat 1,8 s). Granaten, Minen und
+      Abwurfwaffen sollen Zünder von 1–5 Sekunden erhalten, sichtbar als
+      Countdown.
+- [x] **Zielrichtungsauswahl (Anflugart).** Waffen wie Luftangriff und Artillerie sollen eine
+      wählbare Anflugrichtung oder einen Zielbereich bekommen, statt nur „nach
+      vorne" zu wirken.
+- [x] **Super-Schuss geklärt:** ultimative Fähigkeit eines Charakters, kommt mit den Charakterdaten. Der Befund war: Kraft 100 ist die
+      Obergrenze, löst aber nichts aus — kein Sonderfeld, kein Extra-Effekt.
+      Der Nutzer hat den Begriff als „Typo" bezeichnet; Bedeutung vor Umsetzung
+      bestätigen lassen.
+
+### C. Abwurf und Vorrat
+- [x] Abwurfmechanik: Vorrat auf 6 begrenzt, `Q` wirft ab, Kiste bleibt liegen,
+      Munition reist mit, Reserve geschützt (`tests/drop-mechanic.test.js`).
+- [x] **Abwurf zufällig und physikalisch.** Die Kiste soll nicht
+      geprüft danebenfallen, sondern herausgeschleudert werden, eine Flugzeit
+      haben und vom Wind beeinflusst werden. Einzige harte Regel: sie darf NICHT
+      im Wasser landen.
+
+### D. Bewegung
+- [x] **Sprung als echte Physik.** Es gibt derzeit keine `jump`-API; die einzige
+      Fortbewegung ist ein horizontaler Versatz von 60 px über den Spezialeffekt
+      `MOVE`. Fallschaden ist bereits implementiert und wartet auf Nutzung.
+- [x] **Doppelsprung** (zweiter Impuls, einmal je Zug).
+- [x] Bodenerkennung (`isGrounded`) („steht auf festem Grund") als Voraussetzung für Sprünge.
+
+### E. Erfolge, Profile, Soziales
+- [ ] **100 Erfolge von leicht bis sehr schwer.** Je Erfolg: kurzer Text,
+      eigenes Icon, Belohnung, und eine Übersicht der eigenen Erfolge mit
+      Hinweis, wie die feindlichen zu holen sind.
+- [ ] **Erfolgs-Emblem am Spielernamen** (wie eine Visitenkarte).
+- [ ] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
+      Schüsse gesamt, Spielzeit, Gesamtschaden, Schaden pro Minute, Trefferquote,
+      Siege, Serie.
+- [ ] **Charaktere.** Der Nutzer liefert die Daten nach: 9 Fraktionen × 3 Klassen
+      × 3 individuelle Charaktere, je mit Kurzinfo und einer exklusiven Waffe, die
+      NUR dieser Charakter besitzt und die nur als legendärer Drop erscheint.
+      Bestand heute: drei Klassen und drei Archetypen mit je drei Zahlen, sonst
+      nichts. Struktur wird vorbereitet, Inhalte folgen.
+
+### F. Darstellung
+- [ ] **Landschaftsgeneration per KI.** Gewünscht ist KI-generierte Kulisse.
+      Vorgesehen: vorab erzeugte Bilder je Karte (nicht zur Laufzeit), damit
+      Determinismus und Offline-Betrieb erhalten bleiben.
+- [ ] Terrain, Wasser und Effekte optisch aufwerten (prozedural: Textur,
+      Kantenlicht, Farbtiefe, Partikel).
+
+### G. Betrieb und Backend
+- [ ] **Deployment-Konzept.** Prüfen, ob ein dauerhaft laufender Backendserver
+      (Hetzner oder RunPod) sinnvoller ist als reines Peer-für-Peer: der Server
+      rechnet autoritativ, hält Profile und Erfolge und liefert die Kulissen.
+- [ ] Konten und Anmeldung (Profile müssen zuordenbar sein).
+- [ ] Auswertung: Wo lohnt KI im Betrieb (Kulissen vorab, Bot-Gegner,
+      Auswertung der Partien)?
+
 ## Bekannte Grenzen (bewusst dokumentiert)
 
 - **Balance-Bericht bei 90 px.** Schwere Artillerie und Ultimate-Waffen sind für
@@ -373,8 +451,11 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
   ist eine Grenze des Aufbaus, kein Urteil über die Waffe.
 - **Keine Client-Prädiktion.** Bei Latenz weicht der eigene Schuss sichtbar vom
   Serverergebnis ab.
-- **Zugzeit wird clientseitig geführt.** Ein manipulierender Client könnte die
-  Anzeige verfälschen; die Simulation bleibt serverseitig autoritativ.
 - **Persistenz ist dateibasiert.** Für mehrere Serverinstanzen wäre ein
   gemeinsamer Speicher nötig.
+- **Keine Bodenerkennung.** Es gibt keine Aussage „diese Figur steht auf festem
+  Grund"; Sprünge brauchen sie als Grundlage.
+- **Erfolge, Profile und Konten existieren nicht.** Alle Kennzahlen werden
+  derzeit nirgends dauerhaft erfasst.
+
 - **Kein Audio.**

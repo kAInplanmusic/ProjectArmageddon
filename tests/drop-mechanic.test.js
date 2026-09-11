@@ -113,17 +113,24 @@ test('Abwerfen legt eine aufhebbare Kiste in der Nähe ab', () => {
   // Die Waffe darf nicht mehr geführt werden.
   assert.equal(match.inventory.getWeapons(spieler).includes(waffe.id), false);
 
-  // Abstand: nicht direkt auf dem Werfer, aber in der Nähe.
-  const abstand = Math.hypot(ergebnis.x - xVorher, ergebnis.y - yVorher);
-  assert.ok(abstand > 0, 'Die Kiste darf nicht exakt auf dem Werfer liegen');
-  assert.ok(abstand <= 110, `Die Kiste liegt zu weit weg: ${abstand.toFixed(0)} px`);
+  // Die Kiste wird GESCHLEUDERT: sie startet beim Werfer, aber mit einer
+  // Geschwindigkeit nach oben und zur Seite. Ohne diese Prüfung wäre ein
+  // Ablegen an Ort und Stelle unbemerkt möglich.
+  assert.ok(Math.abs(ergebnis.vx) > 0.3, `Kein seitlicher Wurf: vx=${ergebnis.vx}`);
+  assert.ok(ergebnis.vy < -2, `Kein Wurf nach oben: vy=${ergebnis.vy}`);
+  assert.equal(xVorher !== null && yVorher !== null, true);
+  assert.equal(match.world.getComponent(ergebnis.crateId, 'Crate', 'inFlight'), 1,
+    'Die Kiste muss als fliegend markiert sein');
 });
 
-test('Die abgeworfene Waffe liegt außerhalb des Aufhebe-Radius', () => {
-  // Sonst würde der Werfer seine eigene Waffe im nächsten Schritt wieder
-  // einsammeln und die Handlung wäre wirkungslos.
-  const match = new MatchController({ seed: 99, teams: 2, playersPerTeam: 1, turnDurationMs: 100_000 });
+test('Die abgeworfene Waffe LANDET außerhalb des Aufhebe-Radius', () => {
+  // Geprüft wird die Landestelle, nicht der Abwurfpunkt: Die Kiste wird
+  // geschleudert, liegt also erst nach dem Flug. Wäre sie zu nah am Werfer,
+  // würde er seine eigene Waffe sofort wieder einsammeln — die Handlung wäre
+  // wirkungslos.
+  const match = new MatchController({ seed: 99, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
   match.start();
+  match.consumeEvents();
   const spieler = match.activePlayerId;
 
   const waffe = WEAPONS.find(w => w.damage > 0 && w.maxAmmo > 1);
@@ -134,10 +141,24 @@ test('Die abgeworfene Waffe liegt außerhalb des Aufhebe-Radius', () => {
   const ergebnis = match.dropWeapon(spieler, waffe.id);
   assert.equal(ergebnis.ok, true);
 
-  const abstand = Math.hypot(ergebnis.x - px, ergebnis.y - py);
+  // Landen lassen.
+  let gelandet = false;
+  for (let i = 0; i < 600; i++) {
+    match.step();
+    if (match.consumeEvents().some(e => e.type === 'crate_landed' && e.payload.crateId === ergebnis.crateId)) {
+      gelandet = true;
+      break;
+    }
+  }
+  assert.equal(gelandet, true, 'Die Kiste muss landen');
+
+  const lx = match.world.getComponent(ergebnis.crateId, 'Position', 'x');
+  const ly = match.world.getComponent(ergebnis.crateId, 'Position', 'y');
+  const abstand = Math.hypot(lx - px, ly - py);
+
   // Der Aufhebe-Radius im LootSystem beträgt 18 px.
   assert.ok(abstand > 18,
-    `Die Kiste liegt im Aufhebe-Radius (${abstand.toFixed(1)} px) — sofortiges Wiederaufheben`);
+    `Die Kiste landet im Aufhebe-Radius (${abstand.toFixed(1)} px) — sofortiges Wiederaufheben`);
 });
 
 test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
@@ -152,15 +173,22 @@ test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
 
     const ergebnis = match.dropWeapon(spieler, waffe.id);
     assert.equal(ergebnis.ok, true, `Abwurf für ${spieler} abgelehnt`);
-    match.consumeEvents();
 
-    assert.ok(ergebnis.x >= 0 && ergebnis.x <= MAP_WIDTH,
-      `Kiste außerhalb der Karte: x=${ergebnis.x}`);
-    // Steht die Kiste auf festem Grund?
-    const boden = match.surfaceYAt(Math.round(ergebnis.x));
-    assert.ok(boden > 0, `Kein Boden unter der Kiste bei x=${ergebnis.x}`);
-    assert.ok(Math.abs(ergebnis.y - boden) < 2,
-      `Kiste schwebt oder steckt: y=${ergebnis.y}, Boden=${boden}`);
+    // Fliegen lassen, bis sie liegt.
+    for (let i = 0; i < 600; i++) {
+      match.step();
+      if (match.consumeEvents().some(e => e.type === 'crate_landed' && e.payload.crateId === ergebnis.crateId)) break;
+    }
+
+    const x = match.world.getComponent(ergebnis.crateId, 'Position', 'x');
+    const y = match.world.getComponent(ergebnis.crateId, 'Position', 'y');
+    assert.ok(x >= 0 && x <= MAP_WIDTH, `Kiste außerhalb der Karte: x=${x}`);
+
+    // Liegt sie auf festem Grund?
+    const boden = match.surfaceYAt(Math.round(x));
+    assert.ok(boden > 0, `Kein Boden unter der Kiste bei x=${x}`);
+    assert.ok(Math.abs(y - boden) < 3,
+      `Kiste schwebt oder steckt: y=${y}, Boden=${boden}`);
   }
 });
 
