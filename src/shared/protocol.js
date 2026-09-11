@@ -5,7 +5,7 @@
  *  - Steuernachrichten laufen als JSON-Textframes (lesbar, selten, versioniert).
  *  - Snapshots laufen als Binärframes (häufig, kompakt, festes Layout).
  *
- * Binärlayout Snapshot v2 (Little Endian):
+ * Binärlayout Snapshot v4 (Little Endian):
  *   [0..1]   Magic 'P','A'
  *   [2]      Protokollversion
  *   [3]      Nachrichtentyp
@@ -17,12 +17,18 @@
  *   [17]     Projektilanzahl
  *   [18..19] Restzugzeit in 100 ms (Uint16, 0 = keine laufende Zugzeit)
  *   [20..21] Flags (Uint16, Bit 0 = Vollsnapshot statt Delta)
- *   ab [22]  je Spieler 14 Byte:
+ *   ab [22]  je Spieler 15 Byte:
  *     id Uint16, team Uint8, alive Uint8,
  *     x Int16 (0.25 px), y Int16 (0.25 px), health Int16 (0.1 HP),
  *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY),
- *     shield Uint8, frozenTurns Uint8
+ *     shield Uint8, frozenTurns Uint8, waterLevel Uint8 (Wasserstand 0..255)
  *   danach je Projektil 6 Byte: id Uint16, x Int16, y Int16 (0.25 px)
+ *
+ * v3 → v4: Wasserstand je Spieler. Die Anzeige konnte bisher weder „nass" noch
+ * „ertrinkt" darstellen — die Schwellen kannte nur das CharacterSystem, und
+ * übertragen wurde nichts davon. Ein Byte genügt: 0 = trocken, 255 = Zelle voll.
+ * Die Zustandsgrenzen liegen in `src/shared/config/water.js` und gelten damit
+ * für Server, Client und Simulation gleich.
  *
  * Delta-Encoding: Im `dirty`-Byte markiert der Server, welche Felder sich seit
  * dem letzten an diesen Client gesendeten Snapshot geändert haben. Der Client
@@ -32,7 +38,11 @@
  * @module protocol
  */
 
-export const PROTOCOL_VERSION = 3;
+// Wasserstand: Quantisierung und Grenzen kommen aus der gemeinsamen Config —
+// ein zweiter Satz Zahlen hier wäre die nächste doppelte Regel.
+import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
+
+export const PROTOCOL_VERSION = 4;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -69,7 +79,6 @@ export const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
 export const SHIELD_SCALE = 1;      // Schild in ganzen Punkten
 /** Obergrenze für Einfrierdauer im Drahtformat (ein Byte). */
 export const MAX_WIRE_FREEZE_TURNS = 255;
-
 /** Bitfeld im dirty-Byte: welche Felder eines Spielers sich geändert haben. */
 export const DIRTY = Object.freeze({
   POSITION: 1 << 0,
@@ -77,6 +86,8 @@ export const DIRTY = Object.freeze({
   ALIVE: 1 << 2,
   /** Schild und Einfrierdauer (Protokoll v3). */
   STATUS: 1 << 3,
+  /** Wasserstand (Protokoll v4). */
+  WATER: 1 << 4,
 });
 
 /** Bitfeld in den Snapshot-Flags. */
@@ -84,7 +95,7 @@ export const SNAPSHOT_FLAG = Object.freeze({
   FULL: 1 << 0,
 });
 
-const PLAYER_STRIDE = 14;
+const PLAYER_STRIDE = 15;
 const PROJECTILE_STRIDE = 6;
 const HEADER_SIZE = 22;
 
@@ -163,8 +174,11 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
       MAX_WIRE_FREEZE_TURNS,
       Math.round(player.frozenTurns ?? 0),
     ));
+    // Wasserstand ganzzahlig — wie alle Drahtwerte, damit der Delta-Vergleich
+    // auf genau den übertragenen Zahlen läuft.
+    const waterRaw = toWireWaterLevel(player.waterLevel ?? 0);
 
-    let dirty = DIRTY.POSITION | DIRTY.HEALTH | DIRTY.ALIVE | DIRTY.STATUS;
+    let dirty = DIRTY.POSITION | DIRTY.HEALTH | DIRTY.ALIVE | DIRTY.STATUS | DIRTY.WATER;
     if (isDelta) {
       const before = previous.get(player.entityId);
       if (before) {
@@ -173,6 +187,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
         if (before.healthRaw !== healthRaw) dirty |= DIRTY.HEALTH;
         if (before.alive !== alive) dirty |= DIRTY.ALIVE;
         if (before.shieldRaw !== shieldRaw || before.frozenRaw !== frozenRaw) dirty |= DIRTY.STATUS;
+        if (before.waterRaw !== waterRaw) dirty |= DIRTY.WATER;
       }
     }
 
@@ -186,6 +201,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     view.setUint8(offset + 11, dirty);
     view.setUint8(offset + 12, shieldRaw);
     view.setUint8(offset + 13, frozenRaw);
+    view.setUint8(offset + 14, waterRaw);
     offset += PLAYER_STRIDE;
   }
 
@@ -238,6 +254,7 @@ export function decodeSnapshot(input, previous = null) {
     const healthRaw = view.getInt16(offset + 8, true);
     const shieldRaw = view.getUint8(offset + 12);
     const frozenRaw = view.getUint8(offset + 13);
+    const waterRaw = view.getUint8(offset + 14);
 
     const before = carry?.get(entityId);
     entities.push({
@@ -250,6 +267,9 @@ export function decodeSnapshot(input, previous = null) {
       isActiveTurn: view.getUint8(offset + 10) === 1,
       shield: (dirty & DIRTY.STATUS) !== 0 || !before ? shieldRaw : before.shieldRaw,
       frozenTurns: (dirty & DIRTY.STATUS) !== 0 || !before ? frozenRaw : before.frozenRaw,
+      waterLevel: fromWireWaterLevel(
+        (dirty & DIRTY.WATER) !== 0 || !before ? waterRaw : before.waterRaw,
+      ),
     });
     nextPrevious.set(entityId, {
       xRaw: (dirty & DIRTY.POSITION) !== 0 || !before ? xRaw : before.xRaw,
@@ -258,6 +278,7 @@ export function decodeSnapshot(input, previous = null) {
       alive: (dirty & DIRTY.ALIVE) !== 0 || !before ? aliveRaw : before.alive,
       shieldRaw: (dirty & DIRTY.STATUS) !== 0 || !before ? shieldRaw : before.shieldRaw,
       frozenRaw: (dirty & DIRTY.STATUS) !== 0 || !before ? frozenRaw : before.frozenRaw,
+      waterRaw: (dirty & DIRTY.WATER) !== 0 || !before ? waterRaw : before.waterRaw,
     });
     offset += PLAYER_STRIDE;
   }
@@ -302,7 +323,7 @@ export function controlMessage(type, payload = {}) {
  *
  * @param {object} state - MatchController.getState()
  * @returns {Map<number, object>} Rohwerte je Entity-ID (Position, Gesundheit,
- *   Leben, Schild, Einfrierdauer)
+ *   Leben, Schild, Einfrierdauer, Wasserstand)
  */
 export function toDeltaBase(state) {
   const base = new Map();
@@ -317,6 +338,7 @@ export function toDeltaBase(state) {
         MAX_WIRE_FREEZE_TURNS,
         Math.round(entity.frozenTurns ?? 0),
       )),
+      waterRaw: toWireWaterLevel(entity.waterLevel ?? 0),
     });
   }
   return base;

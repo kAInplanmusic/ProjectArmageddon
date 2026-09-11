@@ -30,6 +30,26 @@ export class PhysicsSystem {
       if (world.hasComponent(entityId, 'Projectile') || world.hasComponent(entityId, 'Health')) {
         continue;
       }
+      /*
+       * Kisten ebenfalls überspringen — sie haben ihr eigenes Flugmodell.
+       *
+       * Fund (belegt): Ohne diese Zeile zog die generische Physik JEDE Kiste
+       * nach unten, weil sie weder Projektil noch Gesundheitskomponente hat.
+       * Eine gelandete Kiste bekam damit erneut Schwerkraft, sank durch das
+       * Gelände und war nach wenigen Sekunden unerreichbar: bei 720 px
+       * Kartenhöhe stand sie nach 480 Schritten auf y ≈ 10 558 — auf trockenem
+       * Boden, also unabhängig vom Wasser. Betroffen war jede Kiste: der
+       * abgeworfene Vorrat und die Rundenkisten.
+       *
+       * Zweite Folge: Die Dämpfung „über Wasser nicht untergehen" in
+       * `MatchController#stepCrate` (vy wird dort auf 0,4 begrenzt) wurde im
+       * nächsten Schritt von dieser Physik überschrieben — die Kiste sank also
+       * gerade dort, wo sie schwimmen sollte.
+       *
+       * Der Flug selbst bleibt unberührt: `#stepFlyingCrates` läuft vor dem
+       * Physikschritt und rechnet Schwerkraft, Luftwiderstand und Wind selbst.
+       */
+      if (world.hasComponent(entityId, 'Crate')) continue;
 
       let vx = world.getComponent(entityId, 'Velocity', 'x') || 0;
       let vy = world.getComponent(entityId, 'Velocity', 'y') || 0;

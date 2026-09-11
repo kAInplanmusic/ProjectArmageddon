@@ -199,7 +199,7 @@ test('Servervalidierung blockiert fremde, ungültige und veraltete Befehle', () 
   assert.equal(isTickInWindow(10, 5000), false);
 });
 
-test('Protokoll v2 überträgt die Restzugzeit', () => {
+test('Protokoll überträgt die Restzugzeit', () => {
   const state = {
     tick: 500,
     round: 3,
@@ -212,7 +212,8 @@ test('Protokoll v2 überträgt die Restzugzeit', () => {
   const buffer = encodeSnapshot(state, { turnRemainingMs: 24_500 });
   const decoded = decodeSnapshot(buffer);
 
-  assert.equal(PROTOCOL_VERSION, 3);
+  // v3 führte Schild und Einfrierdauer ein, v4 den Wasserstand je Spieler.
+  assert.equal(PROTOCOL_VERSION, 4);
   assert.ok(Math.abs(decoded.turnRemainingMs - 24_500) < 100, `Zugzeit: ${decoded.turnRemainingMs}`);
   assert.equal(decoded.isFull, true, 'Ohne vorherigen Zustand muss es ein Vollsnapshot sein');
   assert.equal(buffer[2], PROTOCOL_VERSION, `Versionsbyte muss ${PROTOCOL_VERSION} sein`);

@@ -27,6 +27,7 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
+import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -46,6 +47,12 @@ class Game {
     this.aim = { angle: Math.PI / 4, power: 55 };
     this.waterFrame = 0;
     this.lastEvents = [];
+    /**
+     * Letzter bekannter Wasserzustand je Figur — für die Meldungen im Protokoll.
+     * Der Zustand selbst steht im Match-State (und kommt im Online-Modus mit dem
+     * Snapshot); hier wird nur der ÜBERGANG erkannt.
+     */
+    this.waterStates = new Map();
 
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
@@ -460,6 +467,10 @@ class Game {
       y: entity.y,
       health: entity.health,
       maxHealth: 100,
+      // Wasserstand kommt je Spieler mit dem Snapshot (Protokoll v4) und geht
+      // unverändert in den Ansichtszustand — dieselbe Anzeige wie im lokalen
+      // Modus, ohne zweiten Rechenweg.
+      waterLevel: entity.waterLevel ?? 0,
       angle: entity.entityId === snapshot.activePlayerId ? this.aim.angle : Math.PI / 4,
       power: this.aim.power,
       // Bestände aus der Loadout-Nachricht: der binäre Snapshot führt sie nicht.
@@ -762,8 +773,13 @@ class Game {
         case 'heal':
           this.hud.log(`+${Math.round(payload.amount)} Heilung für ${this.#nameOf(payload.entityId)}`, 'good');
           break;
+        // 'drowning' wird NICHT hier protokolliert: Das CharacterSystem meldet
+        // es bei JEDEM Simulationsschritt, solange die Figur unter Wasser ist —
+        // das sind bis zu 60 Meldungen je Sekunde, die das Protokoll
+        // überschwemmen. Die Meldung entsteht stattdessen beim ÜBERGANG in
+        // #trackWater und nennt die Figur beim Namen. Das `break` bleibt
+        // zwingend: ohne es würde das Ereignis in den nächsten Fall rutschen.
         case 'drowning':
-          this.hud.log('Eine Einheit ertrinkt', 'danger');
           break;
         case 'maelstrom_contract':
           this.renderer.applyContraction(payload.inset);
@@ -808,6 +824,38 @@ class Game {
     const state = this.currentState();
     const entity = state?.entities?.find(e => e.entityId === playerId);
     return entity?.label ?? `Einheit ${playerId}`;
+  }
+
+  /**
+   * Verfolgt den Wasserzustand jeder Figur und meldet nur die ÜBERGÄNGE.
+   *
+   * Warum nicht über die Ereignisse: `entity_in_water` und `drowning` feuern in
+   * jedem Simulationsschritt, solange die Bedingung gilt. Eine Meldung je
+   * Sekunde wäre schon zu viel, 60 sind es tatsächlich. Der Zustand steht
+   * ohnehin im Match-State — und im Online-Modus kommt er mit dem Snapshot,
+   * sodass dieselbe Anzeige ohne zweiten Weg funktioniert.
+   *
+   * Der Vergleich läuft auf dem ZUSTAND, nicht auf dem Rohwert: Der Füllstand
+   * schwankt bei jedem Schritt um Rundungsbeträge, ein Vergleich der Zahlen
+   * würde dauern melden.
+   */
+  #trackWater(state) {
+    if (!state?.entities) return;
+    for (const entity of state.entities) {
+      const jetzt = entity.alive ? waterStateFor(entity.waterLevel) : WATER_STATE.DRY;
+      const vorher = this.waterStates.get(entity.entityId) ?? WATER_STATE.DRY;
+      if (jetzt === vorher) continue;
+      this.waterStates.set(entity.entityId, jetzt);
+
+      const prozent = Math.round((entity.waterLevel ?? 0) * 100);
+      if (jetzt === WATER_STATE.SUBMERGED) {
+        this.hud.log(`${entity.label} ertrinkt (${prozent} % unter Wasser)`, 'danger');
+      } else if (jetzt === WATER_STATE.WET && vorher === WATER_STATE.DRY) {
+        this.hud.log(`${entity.label} steht im Wasser (${prozent} %)`, 'neutral');
+      } else if (vorher === WATER_STATE.SUBMERGED) {
+        this.hud.log(`${entity.label} ist wieder über Wasser`, 'good');
+      }
+    }
   }
 
   /** Meldet eine Wirkung auf den Schützen im Protokoll. */
@@ -1083,6 +1131,7 @@ class Game {
       water: this.mode === 'local' ? (this.waterFrame === 0 ? this.match.water : null) : null,
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
+    this.#trackWater(state);
     this.hud.update(state, { aim: this.aim, onWeaponSelect: index => this.selectWeapon(index) });
     if (this.mode === 'online') this.hud.setConnection?.(
       this.network?.state ?? CONNECTION_STATE.IDLE,
@@ -1155,6 +1204,16 @@ class Game {
         return this.match.getState();
       },
       events: () => this.lastEvents,
+      /** Wasserstand an einer Weltposition (0..1) — für Tests und Diagnose. */
+      waterLevelAt: (x, y) => this.match?.waterLevelAt(x, y) ?? 0,
+      /** Wasserstand setzen (Weltposition); true, wenn die Zelle auf der Karte lag. */
+      setWaterLevelAt: (x, y, level) => this.match?.setWaterLevelAt(x, y, level) ?? false,
+      /** Wasserstand des Spielers am Zug. */
+      activeWaterLevel: () => {
+        const state = this.currentState();
+        const aktiv = state?.entities?.find(entity => entity.entityId === state.activePlayerId);
+        return aktiv?.waterLevel ?? 0;
+      },
       constants: { MAP_WIDTH, MAP_HEIGHT, WATER_SCALE, FIXED_TIMESTEP },
     };
   }

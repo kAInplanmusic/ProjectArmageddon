@@ -9,6 +9,9 @@
  * @module CharacterSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
+// Schwellen für „nass" und „ertrinkt" kommen aus der gemeinsamen Wasser-Config,
+// damit die Anzeige dieselben Werte benutzt wie die Simulation.
+import { WET_LEVEL, DROWN_LEVEL } from '../../shared/config/water.js';
 
 export const CHARACTER_PRIORITY = 85;
 const HALF_WIDTH = 7;
@@ -30,7 +33,7 @@ export class CharacterSystem {
     fallDamageScale = 2.2,
     maxHorizontalSpeed = 6,
     drownDamagePerSecond = 9,
-    submergedLevel = 0.72,
+    submergedLevel = DROWN_LEVEL,
   } = {}) {
     this.#gravity = gravity;
     this.#groundFriction = groundFriction;
@@ -60,7 +63,7 @@ export class CharacterSystem {
       const waterLevel = water
         ? (typeof water.levelAtWorld === 'function' ? water.levelAtWorld(x, y) : water.getLevel(Math.floor(x), Math.floor(y)))
         : 0;
-      const inWater = waterLevel > 0.35;
+      const inWater = waterLevel > WET_LEVEL;
 
       vy += this.#gravity * (inWater ? 0.25 : 1);
       if (inWater) {

@@ -9,6 +9,7 @@
  */
 import { TEAM_COLORS } from '../engine/match.js';
 import { getWeapon, WEAPON_SUBCATEGORIES, iconUrlFor, orderInventoryBySubcategory } from '../shared/config/weapons.js';
+import { WATER_STATE, waterStateFor, waterLabel, DROWN_LEVEL } from '../shared/config/water.js';
 
 const LOG_LIMIT = 60;
 
@@ -125,12 +126,18 @@ export class Hud {
     // sonst bliebe die Anzeige stehen, obwohl sich der Zustand geändert hat.
     const zustandsText = entity => {
       const zustand = state.statuses?.[entity.entityId];
-      if (!zustand) return '';
       const teile = [];
-      if (zustand.shield > 0) teile.push(`S${Math.round(zustand.shield)}`);
-      if (zustand.frozenTurns > 0) teile.push(`❄${zustand.frozenTurns}`);
-      if (zustand.dots?.length > 0) teile.push(`☠${zustand.dots.length}`);
-      if (zustand.boostMultiplier > 1) teile.push('↑');
+      if (zustand) {
+        if (zustand.shield > 0) teile.push(`S${Math.round(zustand.shield)}`);
+        if (zustand.frozenTurns > 0) teile.push(`❄${zustand.frozenTurns}`);
+        if (zustand.dots?.length > 0) teile.push(`☠${zustand.dots.length}`);
+        if (zustand.boostMultiplier > 1) teile.push('↑');
+      }
+      // Wasser gehört in dieselbe Signatur: Steigt der Pegel durch Verdrängung,
+      // muss die Marke erscheinen, ohne dass sich Leben oder Position ändern.
+      if (waterStateFor(entity.waterLevel) !== WATER_STATE.DRY) {
+        teile.push(`W${Math.round((entity.waterLevel ?? 0) * 100)}`);
+      }
       return teile.join(' ');
     };
 
@@ -170,6 +177,21 @@ export class Hud {
       if (zustand?.dots?.length > 0) marken.push({ text: `☠ ${zustand.dots.length}`, color: '#90be6d' });
       if (zustand?.boostMultiplier > 1) marken.push({ text: '↑', color: '#ffb703' });
 
+      // Wasser: Der Füllstand ist eine Zahl zwischen 0 und 1 und für den Spieler
+      // bedeutungslos — deshalb Prozent und Zustandswort. „nass" bremst nur,
+      // „untergetaucht" kostet Leben; die Farbe macht den Unterschied sichtbar.
+      const wasserzustand = waterStateFor(entity.waterLevel);
+      if (wasserzustand !== WATER_STATE.DRY) {
+        const untergetaucht = wasserzustand === WATER_STATE.SUBMERGED;
+        marken.push({
+          text: `${untergetaucht ? '🌊' : '💧'} ${waterLabel(entity.waterLevel)}`,
+          color: untergetaucht ? '#ef476f' : '#4cc9f0',
+          title: untergetaucht
+            ? `Untergetaucht (${Math.round((entity.waterLevel ?? 0) * 100)} % Füllstand) — verliert Leben, bis die Figur aus dem Wasser kommt. Ertrinken ab ${Math.round(DROWN_LEVEL * 100)} %.`
+            : `Im Wasser (${Math.round((entity.waterLevel ?? 0) * 100)} % Füllstand) — Bewegung gebremst, noch kein Ertrinken. Ertrinken ab ${Math.round(DROWN_LEVEL * 100)} %.`,
+        });
+      }
+
       const hp = document.createElement('span');
       hp.textContent = String(Math.max(0, Math.round(entity.health)));
       hp.style.fontVariantNumeric = 'tabular-nums';
@@ -181,11 +203,11 @@ export class Hud {
         badge.className = 'status-badge';
         badge.textContent = marke.text;
         badge.style.color = marke.color;
-        badge.title = zustand?.frozenTurns > 0 && marke.text.startsWith('❄')
+        badge.title = marke.title ?? (zustand?.frozenTurns > 0 && marke.text.startsWith('❄')
           ? `Eingefroren: setzt ${zustand.frozenTurns} Zug/Züge aus`
           : marke.text.startsWith('🛡') ? 'Schild: fängt Schaden ab, bevor Gesundheit sinkt'
             : marke.text.startsWith('☠') ? 'Schaden über Zeit: wirkt bei jedem Zugbeginn'
-              : 'Erhöhter Schaden';
+              : 'Erhöhter Schaden');
         item.append(badge);
       }
 
