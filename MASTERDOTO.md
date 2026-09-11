@@ -1,18 +1,26 @@
 # ProjectArmageddon — Master TODO / Codeaudit
 
-Stand: 2026-09-10 (zweiter Durchgang)
+Stand: 2026-09-11
 Branch: `main`
 
 Diese Datei ist die **Single Source of Truth** für offene Arbeit. Alles, was hier
 als erledigt markiert ist, wurde durch Tests oder echte Läufe belegt — nicht durch
 Absichtserklärungen.
 
+> **Zusammengeführt am 2026-09-11.** Die frühere `todo.md` beanspruchte denselben
+> Rang und war zuletzt am 2026-09-08 gegen `main` @ `0615d59` geprüft — seither
+> waren über 30 Commits dazwischen. Sie führte als offen, was längst läuft: PRNG
+> und Seed-Verwaltung, WebSocket-Server, Lobby, Bot, Lag Compensation,
+> Zugzeit-Steuerung, Wind, Hitscan-Pfad, Fallschaden, Wasser, Mahlstrom. Sie wurde
+> gelöscht; ihre noch offenen Punkte stehen unten unter
+> **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
+
 ## Verifikationsstand
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **364/364** |
+| Unit-/Integrationstests | `npm test` | **369/369** |
 | Browser-E2E | `npm run test:e2e` | **60/60** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -427,15 +435,16 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Biografien, Superwaffen und Staerken/Schwaechen-Profile stehen in
       src/shared/config/factions.js; die Bilder wurden mit
       scripts/extract_factions.py aus den Fraktionsboegen geschnitten.
-      OFFEN: Die exklusive Waffe je Charakter, die NUR als legendaerer Drop
-      erscheint — die Superwaffe oben ist die Ultimate-Faehigkeit, nicht der Drop.
-      Bestand heute: drei Klassen und drei Archetypen mit je drei Zahlen, sonst
-      nichts. Struktur wird vorbereitet, Inhalte folgen.
+      OFFEN: die exklusive Waffe je Charakter, die NUR als legendaerer Drop
+      erscheint. Die Superwaffe im Katalog ist die Ultimate-Faehigkeit des
+      Charakters, NICHT dieser Drop — das sind zwei verschiedene Dinge.
 
 ### F. Darstellung
-- [x] **Landschaftsgeneration per KI.** 60 Kulissen (12 Biome a 5 Varianten) erzeugt und eingebaut. Der Prompt steht im Katalog; die Erzeugung ist einmalig vorab, nicht zur Laufzeit.
-      Vorgesehen: vorab erzeugte Bilder je Karte (nicht zur Laufzeit), damit
-      Determinismus und Offline-Betrieb erhalten bleiben.
+- [x] **Landschaftsgeneration per KI.** 60 Kulissen (12 Biome a 5 Varianten) als
+      Bilder vorab erzeugt und eingebaut, dazu ein generativer Baukasten aus Himmel,
+      Wasser, Ambiente und Landmarken, der sich jeder Kartengroesse anpasst. Der
+      Prompt steht im Katalog; nichts davon entsteht zur Laufzeit — Determinismus
+      und Offline-Betrieb bleiben erhalten.
 - [ ] Terrain, Wasser und Effekte optisch aufwerten (prozedural: Textur,
       Kantenlicht, Farbtiefe, Partikel).
 
@@ -447,6 +456,41 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [ ] Auswertung: Wo lohnt KI im Betrieb (Kulissen vorab, Bot-Gegner,
       Auswertung der Partien)?
 
+## Übernommen aus der alten `todo.md`
+
+Die alte Datei wurde gelöscht. Ihre Punkte waren fast alle erledigt (siehe Kopf),
+die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
+
+- [ ] **Onboarding.** Kein Tutorial, keine Klassenübersicht, keine Erklärung von
+      Loot und Sidegrades. Geprüft: kein Treffer für `tutorial`/`onboarding` in
+      `src/` und `index.html`.
+- [ ] **Sidegrades.** Kein System gefunden, das Klassen mit Trade-offs statt mit
+      reinen Zuwächsen ausstattet. Geprüft: kein Treffer für `sidegrade`.
+- [ ] **Counterplay und Map-Synergie.** Keine Regeln zur Teamzusammenstellung und
+      keine Tests dafür. Geprüft: kein Treffer für `counterplay`/`synergie`.
+- [ ] **Karten-Authoring über die Presets hinaus.** Es gibt vier Presets
+      (`hills`, `mountains`, `islands`, `caverns`). Gewünscht waren zusätzlich
+      offene, vertikale, wasserreiche und nahkampflastige Karten.
+- [ ] **`prefers-reduced-motion`.** Geprüft: kein einziges Vorkommen. Gehört zur
+      Barrierefreiheit, siehe P2.
+- [ ] **Release-Härtung.** Anti-Cheat-Audit und Browser-Profiling. (Lasttest und
+      Barrierefreiheit stehen schon unter P2/P3.)
+
+### Dabei aufgefallen, nicht behoben
+
+- [ ] **Klassen- und Archetyp-Modifier existieren doppelt.** Die Helferfunktionen
+      `applyClassModifiers` und `applyArchetypeModifiers` in
+      `src/shared/config/classes.js` werden **nirgends aufgerufen**; sie werden nur
+      über die Balken re-exportiert. Die tatsächliche Verrechnung passiert inline in
+      `src/engine/match.js` (Zeile 316: `BASE_HEALTH * classDef.health *
+      archetype.health`). Zwei Orte für dieselbe Regel heißt: Wer die Balance
+      ändert, muss beide finden. Bewusst nicht in diesem Durchgang angetastet —
+      daran hängt das Balancing aller Klassen.
+
+- [x] **Archetypen wirken im Spiel.** Der frühere Eintrag „nur Config, nicht
+      Gameplay" ist damit erledigt: `match.js` setzt Leben und Werte je Archetyp
+      tatsächlich ein.
+
 ## Bekannte Grenzen (bewusst dokumentiert)
 
 - **Balance-Bericht bei 90 px.** Schwere Artillerie und Ultimate-Waffen sind für
@@ -456,8 +500,6 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
   Serverergebnis ab.
 - **Persistenz ist dateibasiert.** Für mehrere Serverinstanzen wäre ein
   gemeinsamer Speicher nötig.
-- **Keine Bodenerkennung.** Es gibt keine Aussage „diese Figur steht auf festem
-  Grund"; Sprünge brauchen sie als Grundlage.
 - **Erfolge, Profile und Konten existieren nicht.** Alle Kennzahlen werden
   derzeit nirgends dauerhaft erfasst.
 
