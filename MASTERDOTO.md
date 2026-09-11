@@ -25,7 +25,7 @@ Absichtserklärungen.
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
-| Balance | `npm run balance` | 105 Waffen mit Schaden, 35 Selbstwirkungs-Waffen (alle wirksam), 10 ohne Wirkung |
+| Balance | `npm run balance` | 114 Waffen mit Schaden am Ziel, 35 Selbstwirkungs-Waffen (alle wirksam), 1 ohne jede Wirkung |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
 
