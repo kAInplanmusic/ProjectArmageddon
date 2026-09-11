@@ -108,6 +108,7 @@ export function serializeLobby(lobby, session) {
     playersPerTeam: lobby.playersPerTeam,
     capacity: lobby.capacity,
     preset: lobby.preset,
+    orientation: lobby.orientation ?? 'landscape',
     seed: lobby.seed,
     status: lobby.status,
     createdAt: lobby.createdAt,
@@ -145,6 +146,7 @@ export function restoreLobby(saved, { lobbyManager, createSession }) {
     teams: saved.teams,
     playersPerTeam: saved.playersPerTeam,
     preset: saved.preset,
+    orientation: saved.orientation ?? 'landscape',
     seed: saved.seed,
     hostName: saved.seats?.[0]?.name ?? 'Host',
   }).lobby;

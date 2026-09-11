@@ -41,9 +41,16 @@
 
     #stage {
       position: relative;
+      /* Querformat (16:9) als Vorgabe. */
       width: min(100vw, 177.78vh);
       height: min(56.25vw, 100vh);
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Hochformat (9:16): dieselbe Fläche, getauschte Seiten. */
+    #stage.portrait {
+      width: min(100vw, 56.25vh);
+      height: min(177.78vw, 100vh);
     }
 
     #game-canvas {
@@ -431,7 +438,14 @@
                    gefüllt. Die erste Auswahl „automatisch" überlässt die Wahl dem
                    Seed; damit bleibt ein Match reproduzierbar. -->
               <select id="cfg-backdrop">
-                <option value="">automatisch</option>
+                <option value="generativ" selected>generativ (empfohlen)</option>
+                <option value="">automatisch (Bild)</option>
+              </select>
+            </label>
+            <label>Ausrichtung
+              <select id="cfg-orientation">
+                <option value="landscape" selected>Querformat</option>
+                <option value="portrait">Hochformat</option>
               </select>
             </label>
             <label>Seed (leer = zufällig)

@@ -8,6 +8,7 @@
  * @module LobbyManager
  */
 import { randomUUID } from 'node:crypto';
+import { ORIENTATIONS } from '../engine/match.js';
 
 export const LOBBY_STATUS = Object.freeze({
   OPEN: 'open',
@@ -25,11 +26,12 @@ export class LobbyManager {
     this.#reconnectWindowMs = reconnectWindowMs;
   }
 
-  create({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, hostName = 'Host' } = {}) {
+  create({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, hostName = 'Host', orientation = 'landscape' } = {}) {
     if (teams < 2 || teams > 4) throw new Error('teams muss zwischen 2 und 4 liegen');
     if (playersPerTeam < 1 || playersPerTeam > 3) throw new Error('playersPerTeam muss zwischen 1 und 3 liegen');
     const capacity = teams * playersPerTeam;
     if (capacity > MAX_LOBBY_PLAYERS) throw new Error(`Kapazität überschreitet ${MAX_LOBBY_PLAYERS} Spieler`);
+    if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);
 
     const id = randomUUID().slice(0, 8);
     const lobby = {
@@ -38,6 +40,9 @@ export class LobbyManager {
       playersPerTeam,
       capacity,
       preset,
+      // Ausrichtung gehört zur Lobby: sie bestimmt die Kartengröße und muss für
+      // alle Teilnehmer dieselbe sein.
+      orientation,
       seed,
       status: LOBBY_STATUS.OPEN,
       createdAt: Date.now(),
@@ -74,6 +79,7 @@ export class LobbyManager {
       playersPerTeam: lobby.playersPerTeam,
       capacity: lobby.capacity,
       preset: lobby.preset,
+      orientation: lobby.orientation,
       status: lobby.status,
       // Belegt = reservierte Plätze. Die Entity-ID existiert erst, wenn ein
       // Match gestartet und die Welt erzeugt wurde.

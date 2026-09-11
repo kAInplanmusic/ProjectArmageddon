@@ -23,6 +23,7 @@ import { getWeapon, WEAPONS, orderInventoryBySubcategory } from '../shared/confi
 import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
+import { pickScenery } from '../shared/config/scenery.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -109,15 +110,16 @@ class Game {
     const preset = document.getElementById('cfg-preset')?.value ?? 'hills';
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
+    const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
     const rawSeed = document.getElementById('cfg-seed')?.value?.trim();
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
     const lobbyId = document.getElementById('cfg-lobby')?.value?.trim() ?? '';
 
     if (serverUrl) {
-      return this.startOnline({ serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey });
+      return this.startOnline({ serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey, orientation });
     }
-    return this.startMatch({ teams, playersPerTeam, preset, seed, backdropKey });
+    return this.startMatch({ teams, playersPerTeam, preset, seed, backdropKey, orientation });
   }
 
   /**
@@ -197,7 +199,9 @@ class Game {
     if (!auswahl) return 0;
 
     // Erste Option bleibt „automatisch" (leerer Wert).
-    auswahl.replaceChildren(auswahl.options[0]);
+    // Die ersten beiden Einträge (generativ, automatisches Bild) bleiben.
+    const feste = Array.from(auswahl.options).filter(o => o.value === 'generativ' || o.value === '');
+    auswahl.replaceChildren(...feste);
     let anzahl = 0;
     for (const biome of BACKDROP_BIOMES) {
       const gruppe = document.createElement('optgroup');
@@ -214,12 +218,12 @@ class Game {
     return anzahl;
   }
 
-  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '' } = {}) {
+  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '', orientation = 'landscape' } = {}) {
     this.network?.disconnect();
     this.network = null;
     this.mode = 'local';
 
-    this.match = new MatchController({ seed, teams, playersPerTeam, preset });
+    this.match = new MatchController({ seed, teams, playersPerTeam, preset, orientation });
     this.match.start();
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
     // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische
@@ -228,7 +232,17 @@ class Game {
     // Der Seed stammt aus dem Match, damit ein Replay dieselbe Karte zeigt wie
     // das aufgezeichnete Spiel.
     this.gewaehlteKulisse = backdropKey;
-    this.#applyBackdrop(this.match.seedManager.baseSeed, preset, backdropKey);
+    // Zeichenfläche auf die Kartengröße bringen (Hoch- oder Querformat).
+    this.#applyOrientation(this.match.orientation, this.match.width, this.match.height);
+    // Vorgabe ist die GENERATIVE Kulisse: sie passt sich jeder Kartengröße an,
+    // ein Bild nicht. Wer ausdrücklich ein Bild wählt, bekommt das Bild — sonst
+    // wäre die Auswahl im Menü wirkungslos.
+    if (backdropKey && backdropKey !== 'generativ') {
+      this.renderer.setScenery(null);
+      this.#applyBackdrop(this.match.seedManager.baseSeed, preset, backdropKey);
+    } else {
+      this.renderer.setScenery(this.match.scenery);
+    }
     this.#afterWorldReady(this.match.bitmap, this.match.water);
 
     this.menuOverlay.hidden = true;
@@ -302,7 +316,7 @@ class Game {
     return ergebnis;
   }
 
-  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '' } = {}) {
+  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '', orientation = 'landscape' } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
@@ -320,7 +334,7 @@ class Game {
         const response = await fetch(new URL('/api/lobby/create', serverUrl), {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ teams, playersPerTeam, preset, seed }),
+          body: JSON.stringify({ teams, playersPerTeam, preset, seed, orientation }),
         });
         if (!response.ok) throw new Error(`Lobby konnte nicht erstellt werden (${response.status})`);
         const created = await response.json();
@@ -354,12 +368,12 @@ class Game {
     client.on('joined', payload => {
       this.hud.log(`Lobby ${client.lobbyId} — Platz ${payload.seatIndex + 1}`, 'accent');
       if (payload.seed !== null && payload.seed !== undefined) {
-        this.#buildRemoteTerrain(payload.seed, preset);
+        this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
       }
     });
     client.on('lobby_state', payload => {
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
-        this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset);
+        this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
       }
     });
     client.on('state', state => {
@@ -385,14 +399,15 @@ class Game {
     return { ok: true, mode: 'online', lobbyId: targetLobby };
   }
 
-  #buildRemoteTerrain(seed, preset) {
-    const terrain = buildTerrainForSeed(seed, preset);
+  #buildRemoteTerrain(seed, preset, orientation = 'landscape') {
+    const terrain = buildTerrainForSeed(seed, preset, orientation);
     this.remoteTerrain = terrain;
-    // Kulisse zuerst — sie liefert die Bodenfarbe für die Geländeschicht.
-    // Auch im Online-Match gehört eine Kulisse zur Karte: der Server liefert nur
-    // den Seed, die Kulisse wird daraus auf beiden Seiten gleich bestimmt.
-    this.#applyBackdrop(seed, preset);
-    this.renderer.buildTerrainLayer(terrain.bitmap, MAP_WIDTH, MAP_HEIGHT);
+    // Fläche und Kulisse zuerst — die Kulisse liefert die Bodenfarbe für die
+    // Geländeschicht. Der Server schickt nur Seed und Ausrichtung; beides ergibt
+    // auf beiden Seiten dieselbe Karte.
+    this.#applyOrientation(orientation, terrain.width, terrain.height);
+    this.setSceneryFromSeed(seed, preset);
+    this.renderer.buildTerrainLayer(terrain.bitmap, terrain.width, terrain.height);
     this.renderer.particles = [];
     this.hud.log(`Terrain aus Seed ${seed} rekonstruiert`, 'neutral');
   }
@@ -467,8 +482,8 @@ class Game {
       entities,
       projectiles: snapshot.projectiles ?? [],
       crates: [],
-      terrainWidth: MAP_WIDTH,
-      terrainHeight: MAP_HEIGHT,
+      terrainWidth: this.remoteTerrain?.width ?? this.renderer.width,
+      terrainHeight: this.remoteTerrain?.height ?? this.renderer.height,
     };
   }
 
@@ -842,6 +857,34 @@ class Game {
    * aufgezeichneten Spielgeschehen trennen — ein Replay zeigte eine andere
    * Landschaft als das Original.
    */
+  /**
+   * Setzt Bühnenklasse und Zeichenfläche auf die Kartenausrichtung.
+   *
+   * Die Bühne bekommt eine Klasse, weil die Seitenverhältnisse in CSS stehen und
+   * nicht in JavaScript — Schrift und Bedienelemente skalieren dort mit.
+   */
+  #applyOrientation(orientation, breite, hoehe) {
+    const stage = document.getElementById('stage');
+    if (stage) {
+      stage.classList.toggle('portrait', orientation === 'portrait');
+      stage.classList.toggle('landscape', orientation !== 'portrait');
+    }
+    this.renderer.resize(breite, hoehe);
+  }
+
+  /**
+   * Baut die generative Kulisse aus Seed und Geländeform.
+   *
+   * Öffentlich, weil der Online-Weg sie nach dem Verbindungsaufbau braucht: der
+   * Server liefert nur Seed und Ausrichtung, die Kulisse entsteht daraus auf
+   * beiden Seiten gleich.
+   */
+  setSceneryFromSeed(seed, preset) {
+    const kulisse = pickScenery(seed, preset);
+    this.renderer.setScenery(kulisse);
+    return kulisse;
+  }
+
   #applyBackdrop(seed, preset, gewaehlt = null) {
     // Ohne ausdrücklichen Wert gilt die im Menü getroffene Wahl. Nötig, weil der
     // Online-Weg das Gelände erst nach dem Verbindungsaufbau aufbaut und die Wahl
@@ -869,7 +912,7 @@ class Game {
   }
 
   #afterWorldReady(bitmap, water) {
-    this.renderer.buildTerrainLayer(bitmap, MAP_WIDTH, MAP_HEIGHT);
+    this.renderer.buildTerrainLayer(bitmap, this.match.width, this.match.height);
     this.renderer.particles = [];
     this.hud.clearLog();
     this.accumulator = 0;

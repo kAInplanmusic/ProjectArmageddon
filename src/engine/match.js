@@ -31,11 +31,34 @@ import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 import { getWeapon, getDefaultLoadout } from '../shared/config/weapons.js';
+import { pickScenery } from '../shared/config/scenery.js';
 import { CRATE_TYPES, RARITY_IDS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
 
-export const MAP_WIDTH = 1280;
-export const MAP_HEIGHT = 720;
+/**
+ * Kartenmaße je Ausrichtung.
+ *
+ * Querformat (16:9) und Hochformat (9:16) haben dieselbe Fläche, nur getauscht.
+ * Gleiche Fläche ist Absicht: Die Reichweiten, Sprunghöhen und Wurfweiten der
+ * Waffen sind in Kartenpixeln angegeben. Eine deutlich kleinere Hochkantkarte
+ * hätte alle Waffen zu weit reichen lassen, eine größere zu kurz.
+ */
+export const MAP_SIZES = Object.freeze({
+  landscape: Object.freeze({ width: 1280, height: 720 }),
+  portrait: Object.freeze({ width: 720, height: 1280 }),
+});
+
+/** Ausrichtungen der Karte. */
+export const ORIENTATIONS = Object.freeze(['landscape', 'portrait']);
+
+/** Querformat als Vorgabe — die Konstanten bleiben für Altcode erhalten. */
+export const MAP_WIDTH = MAP_SIZES.landscape.width;
+export const MAP_HEIGHT = MAP_SIZES.landscape.height;
+
+/** Maße einer Ausrichtung (mit Rückfall auf Querformat). */
+export function mapSizeFor(orientation) {
+  return MAP_SIZES[orientation] ?? MAP_SIZES.landscape;
+}
 export const WATER_SCALE = 4;
 
 export const CLASS_IDS = Object.freeze(['scout', 'heavy', 'artillery']);
@@ -132,6 +155,7 @@ export class MatchController {
     preset = 'hills',
     maxRounds = 30,
     turnDurationMs = null,
+    orientation = 'landscape',
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -141,6 +165,22 @@ export class MatchController {
       ?? MATCH_RULES.turnTimers.duelSeconds.minimum * 1000;
     this.maxRounds = maxRounds;
     this.preset = preset;
+
+    // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
+    // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
+    const masse = mapSizeFor(orientation);
+    this.orientation = MAP_SIZES[orientation] ? orientation : 'landscape';
+    this.width = masse.width;
+    this.height = masse.height;
+
+    /**
+     * Generative Kulisse (Himmel, Wasser, Ambiente, Landmarken).
+     *
+     * Aus demselben Seed abgeleitet wie das Gelände, also reproduzierbar: ein
+     * Replay zeigt dieselbe Landschaft. Der Server muss die Kulisse deshalb NICHT
+     * mitsenden — jeder Client baut sie aus dem Seed selbst.
+     */
+    this.scenery = pickScenery(this.#seedManager.baseSeed, preset);
 
     this.#world = createGameWorld({ playerCount: Math.max(2, teams * playersPerTeam) });
     this.teams = teams;
@@ -179,12 +219,12 @@ export class MatchController {
     const terrainRng = this.#seedManager.getSubRng('TERRAIN');
     const { bitmap, waterLevel } = generateTerrain({
       rng: terrainRng,
-      width: MAP_WIDTH,
-      height: MAP_HEIGHT,
+      width: this.width,
+      height: this.height,
       preset: this.preset,
     });
     this.#bitmap = bitmap;
-    this.#terrain = CollisionMask.fromBitmap(bitmap, MAP_WIDTH, MAP_HEIGHT);
+    this.#terrain = CollisionMask.fromBitmap(bitmap, this.width, this.height);
     // Schild und Rüstung greifen im DamageSystem, damit sie auch bei
     // Flächenschaden wirken — dort verteilt der Radius den Schaden, nicht die
     // Waffe. Der Modifikator ist die einzige Brücke dorthin.
@@ -207,10 +247,10 @@ export class MatchController {
   }
 
   #buildWater() {
-    const waterLevel = this.#waterBaseY ?? Math.floor(MAP_HEIGHT * 0.84);
+    const waterLevel = this.#waterBaseY ?? Math.floor(this.height * 0.84);
     this.#water = new WaterField({
-      width: Math.floor(MAP_WIDTH / WATER_SCALE),
-      height: Math.floor(MAP_HEIGHT / WATER_SCALE),
+      width: Math.floor(this.width / WATER_SCALE),
+      height: Math.floor(this.height / WATER_SCALE),
       isSolid: (x, y) => this.#terrain.isSolid(x * WATER_SCALE, y * WATER_SCALE),
       // Brücke zwischen Rasterzellen und Weltpixeln, damit Physik und
       // Charaktere den Wasserstand an einer Weltkoordinate abfragen können.
@@ -242,7 +282,7 @@ export class MatchController {
 
   #spawnPlayers() {
     const total = this.teams * this.playersPerTeam;
-    const spacing = MAP_WIDTH / (total + 1);
+    const spacing = this.width / (total + 1);
     const loadout = getDefaultLoadout(4);
 
     for (let index = 0; index < total; index++) {
@@ -252,7 +292,7 @@ export class MatchController {
 
       const x = Math.round(spacing * (index + 1));
       const groundY = this.surfaceYAt(x);
-      const y = (groundY > 0 ? groundY : MAP_HEIGHT * 0.4) - PLAYER_HALF_HEIGHT - 2;
+      const y = (groundY > 0 ? groundY : this.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
 
       const entityId = this.#world.createEntity();
       const classDef = CLASS_DEFINITIONS[CLASS_IDS[classId]];
@@ -285,8 +325,8 @@ export class MatchController {
     try {
       this.#loot.spawnRoundCrates(this.#world, {
         rng: this.#seedManager.getSubRng('LOOT'),
-        width: MAP_WIDTH,
-        height: MAP_HEIGHT,
+        width: this.width,
+        height: this.height,
         surfaceYFor: x => this.surfaceYAt(x),
       });
     } catch (error) {
@@ -811,7 +851,7 @@ export class MatchController {
     const nextY = y + vy;
 
     // Aus der Karte geflogen: zurück an den Rand holen.
-    const begrenztX = Math.min(MAP_WIDTH - 12, Math.max(12, nextX));
+    const begrenztX = Math.min(this.width - 12, Math.max(12, nextX));
 
     const boden = this.surfaceYAt(Math.round(begrenztX));
 
@@ -1066,7 +1106,7 @@ export class MatchController {
     // sonst ein Stück zurück. Beides wird auf dem Gelände verankert.
     const candidates = [startX + distance, startX - distance];
     for (const targetX of candidates) {
-      if (targetX < PLAYER_HALF_WIDTH || targetX > MAP_WIDTH - PLAYER_HALF_WIDTH) continue;
+      if (targetX < PLAYER_HALF_WIDTH || targetX > this.width - PLAYER_HALF_WIDTH) continue;
       const surface = this.surfaceYAt(Math.round(targetX));
       if (surface < 0) continue;
       // Kein Platz für eine stehende Figur (z. B. Wand): nächster Kandidat.
@@ -1147,7 +1187,7 @@ export class MatchController {
     let erreicht = 0;
     for (let d = schritt; d <= distance; d += schritt) {
       const kandidatX = zielX + richtung * d;
-      if (kandidatX < PLAYER_HALF_WIDTH || kandidatX > MAP_WIDTH - PLAYER_HALF_WIDTH) break;
+      if (kandidatX < PLAYER_HALF_WIDTH || kandidatX > this.width - PLAYER_HALF_WIDTH) break;
       const surface = this.surfaceYAt(Math.round(kandidatX));
       if (surface < 0) break;
       if (this.#terrain.isSolid(Math.floor(kandidatX), Math.floor(surface - PLAYER_HALF_HEIGHT))) break;
@@ -1300,7 +1340,7 @@ export class MatchController {
       y += vy;
 
       if (step % 3 === 0) points.push({ x, y });
-      if (x < 0 || x > MAP_WIDTH || y > MAP_HEIGHT || y < 0) break;
+      if (x < 0 || x > this.width || y > this.height || y < 0) break;
       if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) {
         points.push({ x, y });
         break;
@@ -1463,7 +1503,7 @@ export class MatchController {
   // -------------------------------------------------------------- Zugriff
 
   surfaceYAt(x) {
-    const groundY = findSurfaceY(this.#bitmap, MAP_WIDTH, MAP_HEIGHT, x);
+    const groundY = findSurfaceY(this.#bitmap, this.width, this.height, x);
     return groundY < 0 ? -1 : groundY;
   }
 
@@ -1574,8 +1614,17 @@ export class MatchController {
       entities,
       projectiles,
       crates,
-      terrainWidth: MAP_WIDTH,
-      terrainHeight: MAP_HEIGHT,
+      terrainWidth: this.width,
+      terrainHeight: this.height,
+      orientation: this.orientation,
+      // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
+      // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
+      // und den Tests.
+      scenery: {
+        biomeId: this.scenery.biomeId,
+        skyId: this.scenery.skyId,
+        waterId: this.scenery.waterId,
+      },
     };
   }
 

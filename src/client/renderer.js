@@ -11,6 +11,12 @@
 import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
+import {
+  drawSky as drawGenerativeSky,
+  drawAmbient,
+  drawLandmarks,
+  drawWaterSurface,
+} from './sceneryPainter.js';
 
 /**
  * Kulissen-URLs, von Vite aufgelöst.
@@ -72,6 +78,53 @@ export class Renderer {
      * Eiskulisse also grünes Gras auf Packeis. Der Boden gehört zur Szene.
      */
     this.palette = DEFAULT_TERRAIN_PALETTE;
+    /** Generative Kulisse; hat Vorrang vor einem Hintergrundbild. */
+    this.scenery = null;
+  }
+
+  /**
+   * Setzt die generative Kulisse (Himmel, Wasser, Ambiente, Landmarken).
+   *
+   * Sie hat Vorrang vor einem Hintergrundbild: Die generative Kulisse passt sich
+   * jeder Kartengröße an, ein Bild nicht. Ist eine Kulisse gesetzt, wird der
+   * Boden aus ihr eingefärbt.
+   *
+   * @param {object|null} scenery - aus `pickScenery()`
+   */
+  setScenery(scenery) {
+    this.scenery = scenery ?? null;
+    if (scenery?.ground) {
+      this.palette = { surface: scenery.ground.surface, deep: scenery.ground.deep };
+    }
+    // Ist eine generative Kulisse gesetzt, wird kein Bild mehr gezeichnet.
+    if (scenery) {
+      this.backdrop = null;
+      this.backdropKey = null;
+      this.backdropReady = false;
+      this.backdropImage = null;
+    }
+  }
+
+  /**
+   * Setzt die Zeichenfläche auf eine neue Größe.
+   *
+   * Nötig für Hochkant-Karten: Die Fläche ist nicht mehr fest 1280x720. Die
+   * Wasser-Ebene hängt an derselben Größe und wird mitgezogen.
+   *
+   * @returns {boolean} true, wenn sich die Größe geändert hat
+   */
+  resize(breite, hoehe) {
+    if (!(breite > 0) || !(hoehe > 0)) return false;
+    if (this.width === breite && this.height === hoehe) return false;
+    this.width = breite;
+    this.height = hoehe;
+    this.canvas.width = breite;
+    this.canvas.height = hoehe;
+    this.waterLayer.width = Math.ceil(breite / WATER_SCALE);
+    this.waterLayer.height = Math.ceil(hoehe / WATER_SCALE);
+    // Die Geländeschicht ist auf die alte Größe gebaut und muss neu entstehen.
+    this.terrainLayer = null;
+    return true;
   }
 
   /**
@@ -368,6 +421,16 @@ export class Renderer {
   }
 
   #drawSky() {
+    // Generative Kulisse hat Vorrang: sie passt sich jeder Kartengröße an.
+    if (this.scenery) {
+      drawGenerativeSky(this.ctx, this.width, this.height, this.scenery, this.time);
+      drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, false);
+      // Die Horizontlinie liegt knapp über der Geländekante. Ein Horizont in der
+      // Bildmitte würde vom Gelände verdeckt und die Landmarke verschwände.
+      drawLandmarks(this.ctx, this.width, this.height, this.scenery, this.height * 0.47);
+      return;
+    }
+
     // Kulisse, sobald geladen. Sie liegt HINTER dem Terrain: der Boden wird
     // danach darübergezeichnet und verdeckt die untere Bildhälfte.
     if (this.backdropReady && this.backdropImage) {
@@ -406,6 +469,22 @@ export class Renderer {
     }
   }
 
+  /**
+   * Farbe des Wassers an einer Stelle.
+   * Ohne Kulisse bleibt es beim bisherigen Blau.
+   */
+  #wasserFarbe(tiefe) {
+    const art = this.scenery?.water;
+    if (!art) return [42, 122, 176];
+    const flach = art.shallow;
+    const tief = art.body;
+    return [
+      Math.round(flach[0] + (tief[0] - flach[0]) * tiefe),
+      Math.round(flach[1] + (tief[1] - flach[1]) * tiefe),
+      Math.round(flach[2] + (tief[2] - flach[2]) * tiefe),
+    ];
+  }
+
   #drawWater(water) {
     if (!water) return;
     this.waterCtx.clearRect(0, 0, this.waterLayer.width, this.waterLayer.height);
@@ -417,10 +496,15 @@ export class Renderer {
       const level = levels[i];
       if (level <= 0.02) continue;
       const index = i * 4;
-      data[index] = 42;
-      data[index + 1] = 122;
-      data[index + 2] = 176;
-      data[index + 3] = Math.round(Math.min(0.72, level) * 210);
+      // Wasserfarbe aus der Kulisse: Meer, Lava, Schlamm und Gift sind
+      // unterschiedliche Stoffe und dürfen nicht gleich blau sein. Gemischt wird
+      // nach Tiefe — flache Stellen heller, tiefe dunkler.
+      const tiefe = Math.min(1, level);
+      const farbe = this.#wasserFarbe(tiefe);
+      data[index] = farbe[0];
+      data[index + 1] = farbe[1];
+      data[index + 2] = farbe[2];
+      data[index + 3] = Math.round(Math.min(0.72, level) * 210 * (this.scenery?.water?.alpha ?? 1));
     }
     this.waterCtx.putImageData(image, 0, 0);
 
@@ -428,6 +512,12 @@ export class Renderer {
     this.ctx.globalAlpha = 0.88;
     this.ctx.drawImage(this.waterLayer, 0, 0, this.width, this.height);
     this.ctx.restore();
+
+    // Struktur der Wasserart NACH der Fläche: Kruste, Wellen, Blasen und Sterne
+    // liegen auf dem Wasser, nicht darunter.
+    if (this.scenery) {
+      drawWaterSurface(this.ctx, this.width, this.height, this.scenery, this.time);
+    }
   }
 
   #drawCrates(crates) {
@@ -630,6 +720,12 @@ export class Renderer {
     this.#updateEffects();
     this.updateParticles();
     this.#drawParticles();
+
+    // Regen, Schnee, Funken und Glühwürmchen liegen VOR dem Geschehen: sie
+    // ziehen zwischen Kamera und Figuren.
+    if (this.scenery) {
+      drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, true);
+    }
   }
 }
 

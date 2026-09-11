@@ -63,6 +63,7 @@ class LobbySession {
       teams: lobby.teams,
       playersPerTeam: lobby.playersPerTeam,
       preset: lobby.preset,
+      orientation: lobby.orientation ?? 'landscape',
     });
     this.match.start();
 
@@ -254,6 +255,7 @@ class LobbySession {
       status: this.lobby.status,
       seed: this.match.seedManager.baseSeed,
       preset: this.lobby.preset,
+      orientation: this.lobby.orientation ?? 'landscape',
       entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
       snapshot: this.match.getState(),
     }));
@@ -627,6 +629,7 @@ export class GameServer {
           teams: Number(body.teams ?? 2),
           playersPerTeam: Number(body.playersPerTeam ?? 2),
           preset: body.preset ?? 'hills',
+          orientation: body.orientation ?? 'landscape',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',
         });
