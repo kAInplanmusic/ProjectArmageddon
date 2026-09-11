@@ -24,6 +24,7 @@ import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { pickScenery } from '../shared/config/scenery.js';
+import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -731,6 +732,18 @@ class Game {
         case 'pulled':
           this.hud.log(`${this.#nameOf(payload.playerId)} wurde herangezogen`, 'accent');
           break;
+        case 'guenther_wheel':
+          this.showGuentherWheel(payload);
+          break;
+        case 'guenther_pee':
+          this.hud.log(`Günther pinkelt ${this.#nameOf(payload.playerId)} an (−${payload.amount})`, 'neutral');
+          break;
+        case 'guenther_poop':
+          this.hud.log('Günther hat ein Häufchen gemacht', 'neutral');
+          break;
+        case 'guenther_poop_hit':
+          this.hud.log(`${this.#nameOf(payload.playerId)} ist in ein Häufchen getreten`, 'danger');
+          break;
         case 'jumped':
           this.hud.log(`${this.#nameOf(payload.playerId)} springt${payload.double ? ' (Doppelsprung)' : ''}`, 'accent');
           break;
@@ -857,6 +870,86 @@ class Game {
    * aufgezeichneten Spielgeschehen trennen — ein Replay zeigte eine andere
    * Landschaft als das Original.
    */
+  /**
+   * Zeigt das Glücksrad und dreht auf den bereits feststehenden Ausgang zu.
+   *
+   * Der Ausgang kommt aus der Simulation. Die Anzeige würfelt NICHT selbst: Sonst
+   * könnten zwei Clients verschiedene Ergebnisse zeigen, und ein Bearbeiter der
+   * Seite könnte sich den besten Ausgang aussuchen.
+   *
+   * @param {object} payload - Ereignis aus dem Match (outcome, label, detail, ...)
+   */
+  showGuentherWheel(payload) {
+    const overlay = document.getElementById('guenther-wheel');
+    const canvas = document.getElementById('wheel-canvas');
+    const ergebnis = document.getElementById('wheel-result');
+    const detail = document.getElementById('wheel-detail');
+    const panel = overlay?.querySelector('.wheel-panel');
+    if (!overlay || !canvas) return;
+
+    const index = Math.max(0, GUENTHER_WHEEL.findIndex(o => o.id === payload.outcome));
+    const istHeimdall = payload.outcome === 'heimdall';
+
+    overlay.hidden = false;
+    if (panel) panel.classList.toggle('heimdall', istHeimdall);
+    if (ergebnis) ergebnis.textContent = istHeimdall ? '⚡ Das Gjallarhorn erklingt …' : '';
+    if (detail) detail.textContent = '';
+
+    // Heimdall bekommt die volle Animation: Blitze und Bifröst über dem Feld.
+    if (istHeimdall) this.renderer.addHeimdall(this.match?.seedManager?.baseSeed ?? 0);
+
+    const ctx = canvas.getContext('2d');
+    const mitte = canvas.width / 2;
+    const radius = mitte - 12;
+    const segment = (Math.PI * 2) / GUENTHER_WHEEL.length;
+    const farben = ['#f4a261', '#90be6d', '#4cc9f0', '#ef476f', '#9d4edd'];
+
+    const zeichne = versatz => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < GUENTHER_WHEEL.length; i++) {
+        const start = i * segment + versatz - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(mitte, mitte);
+        ctx.arc(mitte, mitte, radius, start, start + segment);
+        ctx.closePath();
+        ctx.fillStyle = farben[i % farben.length];
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = 'rgba(12,9,6,0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    };
+
+    // Drehen: schnell anlaufen, ausrollen, dann auf dem Ausgang stehen bleiben.
+    const ziel = -index * segment - segment / 2;
+    const umdrehungen = Math.PI * 2 * 3;
+    const dauer = istHeimdall ? 2600 : 1800;
+    const start = performance.now();
+
+    const schritt = jetzt => {
+      const t = Math.min(1, (jetzt - start) / dauer);
+      // Ausrollen: schnell los, langsam ankommen.
+      const e = 1 - (1 - t) ** 3;
+      zeichne(-umdrehungen * e + ziel * e);
+
+      if (t < 1) {
+        requestAnimationFrame(schritt);
+        return;
+      }
+      if (ergebnis) ergebnis.textContent = payload.label ?? payload.outcome;
+      if (detail) detail.textContent = payload.detail ?? '';
+      this.hud.log(`Günther: ${payload.label ?? payload.outcome}`, istHeimdall ? 'accent' : 'neutral');
+    };
+    requestAnimationFrame(schritt);
+
+    // Nach genügend Zeit wieder ausblenden; bei Heimdall später, damit die
+    // Verwandlung sichtbar bleibt.
+    clearTimeout(this.guentherTimer);
+    this.guentherTimer = setTimeout(() => { overlay.hidden = true; }, istHeimdall ? 6000 : 3200);
+  }
+
   /**
    * Setzt Bühnenklasse und Zeichenfläche auf die Kartenausrichtung.
    *
@@ -1009,6 +1102,12 @@ class Game {
       selectWeapon: index => this.selectWeapon(index),
       /** Waffe abwerfen (Position wie in der Liste). */
       dropWeapon: index => this.dropWeapon(index),
+      /** Günther-Zustand (aktiv, Position, Haufen, Plan). */
+      guenther: () => this.match?.getState()?.guenther ?? null,
+      /** Alle Rad-Ausgänge (für Tests und Anzeige). */
+      guentherWheelOutcomes: () => GUENTHER_WHEEL.map(o => ({ id: o.id, label: o.label, detail: o.detail })),
+      /** Zeigt das Glücksrad mit einem vorgegebenen Ausgang (für Tests). */
+      showGuentherWheel: payload => this.showGuentherWheel(payload),
       /** Aktuelle Kulisse (Schlüssel und Datei). */
       backdrop: () => ({
         key: this.renderer.backdropKey,

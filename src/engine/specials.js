@@ -288,6 +288,9 @@ export class StatusStore {
         boostMultiplier: 1,
         boostTurns: 0,
         frozenTurns: 0,
+        /** Verlangsamung: Faktor auf Sprung und Bewegung, 1 = normal. */
+        slowFactor: 1,
+        slowTurns: 0,
         dots: [],
         revealedTurns: 0,
       };
@@ -367,6 +370,27 @@ export class StatusStore {
     return entry.dots.length;
   }
 
+  /**
+   * Verlangsamt einen Spieler für eine Anzahl Züge.
+   *
+   * Wirkt auf Sprungkraft und Bewegung. Wird der Wert erneut gesetzt, gilt der
+   * STÄRKERE Faktor — sonst könnte eine schwache Verlangsamung eine starke
+   * überschreiben.
+   */
+  addSlow(playerId, factor, turns = 3) {
+    const entry = this.#entryFor(playerId);
+    const begrenzt = Math.max(0.1, Math.min(1, factor));
+    entry.slowFactor = Math.min(entry.slowFactor, begrenzt);
+    entry.slowTurns = Math.max(entry.slowTurns, Math.min(SPECIAL_DEFAULTS.maxTurns, turns));
+    return { factor: entry.slowFactor, turns: entry.slowTurns };
+  }
+
+  /** Verlangsamungsfaktor eines Spielers (1 = nicht verlangsamt). */
+  slowOf(playerId) {
+    const entry = this.#entryFor(playerId);
+    return entry.slowTurns > 0 ? entry.slowFactor : 1;
+  }
+
   /** Deckt einen Spieler für eine Anzahl Züge auf. */
   reveal(playerId, turns = SPECIAL_DEFAULTS.revealTurns) {
     const entry = this.#entryFor(playerId);
@@ -412,6 +436,11 @@ export class StatusStore {
     }
     if (entry.revealedTurns > 0) entry.revealedTurns -= 1;
 
+    if (entry.slowTurns > 0) {
+      entry.slowTurns -= 1;
+      if (entry.slowTurns === 0) entry.slowFactor = 1;
+    }
+
     let damage = 0;
     const elements = [];
     const remaining = [];
@@ -446,6 +475,8 @@ export class StatusStore {
         boostMultiplier: Number(entry.boostMultiplier.toFixed(3)),
         boostTurns: entry.boostTurns,
         frozenTurns: entry.frozenTurns,
+        slowFactor: Number(entry.slowFactor.toFixed(3)),
+        slowTurns: entry.slowTurns,
         revealedTurns: entry.revealedTurns,
         dots: entry.dots.map(dot => ({ ...dot })),
       };

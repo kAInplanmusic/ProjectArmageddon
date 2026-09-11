@@ -12,16 +12,22 @@ import { test, expect } from '@playwright/test';
  * gegenüber dem einfarbigen Verlauf, den sie ersetzt.
  */
 
-/** Startet ein lokales Match und wartet auf die fertig geladene Kulisse. */
-async function startMitKulisse(page, { seed = 4242, preset = 'islands' } = {}) {
+/**
+ * Startet ein lokales Match mit einem KULISSENBILD und wartet auf dessen Laden.
+ *
+ * Die Vorgabe ist inzwischen die generative Kulisse; ein Bild entsteht nur noch
+ * auf ausdrückliche Wahl. Diese Tests prüfen den Bildweg und müssen ihn deshalb
+ * benennen.
+ */
+async function startMitKulisse(page, { seed = 4242, preset = 'islands', backdropKey = 'maritime/calm_day' } = {}) {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.evaluate(({ s, p }) => {
+  await page.evaluate(({ s, p, key }) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: s, teams: 2, playersPerTeam: 2, preset: p });
+    api.startMatch({ seed: s, teams: 2, playersPerTeam: 2, preset: p, backdropKey: key });
     api.setAutoLoop(false);
-  }, { s: seed, p: preset });
+  }, { s: seed, p: preset, key: backdropKey });
   await page.waitForFunction(
     () => window.__PA__.game.renderer.backdropReady === true,
     null,
@@ -69,7 +75,7 @@ test('Die Kulisse wird tatsächlich gezeichnet', async ({ page }) => {
 });
 
 test('Die Kulisse passt zum gewählten Gelände', async ({ page }) => {
-  await startMitKulisse(page, { preset: 'caverns', seed: 777 });
+  await startMitKulisse(page, { preset: 'caverns', seed: 777, backdropKey: 'caverns/crystal' });
 
   const info = await page.evaluate(() => {
     const renderer = window.__PA__.game.renderer;
@@ -84,11 +90,15 @@ test('Gleicher Seed zeigt dieselbe Kulisse', async ({ page }) => {
   await startMitKulisse(page, { seed: 31337 });
   const erste = await page.evaluate(() => window.__PA__.game.renderer.backdropKey);
 
-  // Neues Match mit demselben Seed.
+  // Neues Match mit demselben Seed UND demselben Kulissenschlüssel: Ohne den
+  // Schlüssel griffe die generative Kulisse und der Vergleich wäre wertlos.
   await page.evaluate(() => {
     const api = window.__PA__;
     api.setAutoLoop(false);
-    api.startMatch({ seed: 31337, teams: 2, playersPerTeam: 1, preset: 'islands' });
+    api.startMatch({
+      seed: 31337, teams: 2, playersPerTeam: 1, preset: 'islands',
+      backdropKey: 'maritime/calm_day',
+    });
     api.setAutoLoop(false);
   });
   await page.waitForFunction(
@@ -129,7 +139,7 @@ test('Ohne Kulisse bleibt das Spiel spielbar', async ({ page }) => {
 test('Die Spielfiguren bleiben vor heller Kulisse erkennbar', async ({ page }) => {
   // Eine Schnee- oder Wüstenkulisse ist hell. Ohne die Abdunkelung nach unten
   // wären Figuren und Anzeigen dort kaum zu sehen.
-  await startMitKulisse(page, { preset: 'mountains', seed: 11 });
+  await startMitKulisse(page, { preset: 'mountains', seed: 11, backdropKey: 'alpine/winter_snow' });
 
   const stand = await page.evaluate(() => {
     const api = window.__PA__;
@@ -244,12 +254,53 @@ test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
     return {
       optionen: auswahl.querySelectorAll('option').length,
       gruppen: auswahl.querySelectorAll('optgroup').length,
-      ersteLeer: auswahl.options[0].value === '',
+      generativZuerst: auswahl.options[0].value,
     };
   });
 
-  // 60 Kulissen plus die Option „automatisch".
-  expect(stand.optionen).toBe(61);
+  // 60 Kulissenbilder plus „generativ" und „automatisch".
+  expect(stand.optionen).toBe(62);
   expect(stand.gruppen).toBe(12);
-  expect(stand.ersteLeer).toBe(true);
+  expect(stand.generativZuerst).toBe('generativ');
+});
+
+test('Ohne Wahl ist die generative Kulisse aktiv', async ({ page }) => {
+  // Die generative Kulisse ist die Vorgabe: Sie passt sich jeder Kartengröße an,
+  // ein Bild nicht.
+  await page.goto('http://127.0.0.1:5173/');
+  await page.waitForFunction(() => Boolean(window.__PA__));
+  await page.evaluate(() => {
+    const api = window.__PA__;
+    api.setAutoLoop(false);
+    api.startMatch({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills' });
+    api.setAutoLoop(false);
+  });
+
+  const stand = await page.evaluate(() => {
+    const r = window.__PA__.game.renderer;
+    return {
+      hatKulisse: Boolean(r.scenery),
+      himmel: r.scenery?.skyId,
+      wasser: r.scenery?.waterId,
+      keinBild: r.backdropReady !== true,
+    };
+  });
+
+  expect(stand.hatKulisse).toBe(true);
+  expect(typeof stand.himmel).toBe('string');
+  expect(typeof stand.wasser).toBe('string');
+  expect(stand.keinBild).toBe(true);
+});
+
+test('Ein gewähltes Bild schlägt die generative Kulisse', async ({ page }) => {
+  await startMitKulisse(page, { seed: 4242, backdropKey: 'noir/rainy_street' });
+
+  const stand = await page.evaluate(() => {
+    const r = window.__PA__.game.renderer;
+    return { datei: r.backdrop?.file, bildBereit: r.backdropReady, hatKulisse: Boolean(r.scenery) };
+  });
+  expect(stand.datei).toBe('noir_rainy_street.jpg');
+  expect(stand.bildBereit).toBe(true);
+  // Bei einem Bild darf keine generative Kulisse dazwischenfunken.
+  expect(stand.hatKulisse).toBe(false);
 });

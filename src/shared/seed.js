@@ -23,6 +23,11 @@ export const SEED_OFFSETS = Object.freeze({
   TERRAIN: 2_000_000,
   WEAPONS: 3_000_000,
   EFFECTS: 4_000_000,
+  /**
+   * Günther — eigener Zweig, damit seine Würfe (Auftritte, Pinkeln, Kacken,
+   * Glücksrad) die übrigen Zufallsströme nicht verschieben.
+   */
+  GUENTHER: 5_000_000,
 });
 
 /**

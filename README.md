@@ -59,6 +59,37 @@ sind die einzige Quelle. Neue Bilder laufen über:
 `python3 scripts/fetch-backdrops.py <manifest.json>` (Zuschnitt auf 1280×720,
 JPEG, Ablage unter `src/client/assets/backdrops/`).
 
+## Günther
+
+Ein frei laufender Kleinspitz. Er ist kein Gegner: Er gehört keinem Team, läuft
+über die Karte, pinkelt Spieler an und hinterlässt Häufchen. Bei Berührung öffnet
+sich ein Glücksrad.
+
+| Was | Wirkung |
+|---|---|
+| **Anpinkeln** | Schaden, mit jedem weiteren Mal auf denselben Spieler geringer (9 → 0,72× je Treffer, Untergrenze 1) |
+| **Häufchen** | Wer hineingerät: 3 Runden Schaden (4/Zug) und verlangsamte Bewegung (Faktor 0,55) |
+| **Berührung** | Glücksrad mit fünf Ausgängen (siehe unten) |
+
+Er erscheint im Mittel **zweimal pro Spiel** — die Zahl wird aber gewürfelt
+(Poisson), nicht gesetzt: In etwa 15 % der Spiele kommt er gar nicht, in 18 %
+dreimal. Je Auftritt bleibt er drei Runden und läuft auf den nächsten Spieler zu.
+
+**Das Glücksrad** wird in der Simulation gedreht, nicht im Browser: Sonst könnten
+zwei Clients verschiedene Ergebnisse zeigen. Die Anzeige dreht nur noch auf den
+feststehenden Ausgang zu.
+
+| Ausgang | Anteil | Wirkung |
+|---|---|---|
+| Du gehst mit Günther Gassi | 30 % | eine Runde aussetzen |
+| Du fütterst Günther | 25 % | aussetzen + eine Waffe niederer Seltenheit |
+| Du spielst mit Günther | 22 % | aussetzen, dafür +50 bis +100 Leben |
+| Günther greift dich an | 18 % | 1–99 Schaden |
+| **Günther wird Heimdall** | **5 %** | legendäre Waffe, Blitze, Gjallarhorn und Bifröst über dem Feld |
+
+Die Berührung zählt nur beim **eigenen Laufen** — wer stillsteht, berührt nichts.
+Nach einem Rad bleibt Günther vier Sekunden unbeteiligt, sonst ginge es dauernd auf.
+
 ## Steuerung
 
 | Eingabe | Wirkung |
@@ -99,7 +130,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (285 Tests) |
+| `npm test` | Unit- und Integrationstests (343 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (35 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |

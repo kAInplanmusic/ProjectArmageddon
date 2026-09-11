@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **285/285** |
-| Browser-E2E | `npm run test:e2e` | **49/49** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **343/343** |
+| Browser-E2E | `npm run test:e2e` | **56/56** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |

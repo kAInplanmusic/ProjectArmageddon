@@ -32,6 +32,8 @@ import { MATCH_RULES } from '../shared/config/match.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 import { getWeapon, getDefaultLoadout } from '../shared/config/weapons.js';
 import { pickScenery } from '../shared/config/scenery.js';
+import { GuentherSystem } from './systems/guentherSystem.js';
+import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
 
@@ -128,6 +130,8 @@ export class MatchController {
    * Flugphase zur Verfügung — sonst könnte man sich beliebig hochschaukeln.
    */
   #jumpsUsed = new Map();
+  /** Günther — der frei laufende NPC. */
+  #guenther = null;
   /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
   #airborne = new Map();
   #maelstrom;
@@ -181,6 +185,18 @@ export class MatchController {
      * mitsenden — jeder Client baut sie aus dem Seed selbst.
      */
     this.scenery = pickScenery(this.#seedManager.baseSeed, preset);
+
+    /**
+     * Günther: eigener Teilgenerator, damit seine Würfe unabhängig von anderen
+     * Systemen sind. Ein zusätzlicher Zug an derselben Quelle würde sonst alle
+     * nachfolgenden Zufallswerte verschieben.
+     */
+    this.#guenther = new GuentherSystem({
+      rng: this.#seedManager.getSubRng('GUENTHER'),
+      maxRounds: this.maxRounds,
+      width: this.width,
+      height: this.height,
+    });
 
     this.#world = createGameWorld({ playerCount: Math.max(2, teams * playersPerTeam) });
     this.teams = teams;
@@ -348,6 +364,10 @@ export class MatchController {
     // Nach dem Physikschritt prüfen, wer gelandet ist — davon hängt ab, ob ein
     // Doppelsprung wieder zur Verfügung steht.
     this.#updateGroundedState();
+
+    // Günther bewegt sich nach der Physik: Er läuft auf der Oberfläche, die
+    // sich in diesem Schritt geändert haben kann.
+    this.#stepGuenther();
     // KEIN `drain()` hier: das würde die Warteschlange leeren und die
     // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
     // kann. Der Client und der Server holen sie über `consumeEvents()`; die
@@ -433,7 +453,10 @@ export class MatchController {
     }
 
     const istDoppel = !grounded;
-    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1);
+    // Verlangsamung wirkt auf den Absprung: Wer in einen Kackhaufen getreten ist,
+    // kommt schlechter vom Boden weg.
+    const langsam = this.#statuses.slowOf(playerId);
+    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1) * langsam;
     const richtung = Math.max(-1, Math.min(1, Number(horizontal) || 0));
 
     this.#world.setComponent(playerId, 'Velocity', 'y', -impuls);
@@ -456,6 +479,41 @@ export class MatchController {
     // zweite nie auslösbar — die Mechanik hätte sich selbst ausgeschlossen.
     // Begrenzt wird stattdessen über die Zahl der Sprünge je Zug.
     return { ok: true, jumpsLeft: rest, impulse: impuls, double: istDoppel };
+  }
+
+  /**
+   * Bewegt Günther einen Schritt und wendet seine Wirkungen an.
+   *
+   * Läuft NACH dem Physikschritt: Er folgt der Geländeoberfläche, und die kann
+   * sich in diesem Schritt geändert haben (Einschlag, Mahlstrom).
+   */
+  #stepGuenther() {
+    if (!this.#guenther) return;
+    this.#guenther.setRunde(this.#round);
+
+    const spielerIds = this.#players
+      .filter(p => this.#world.isActive(p.entityId))
+      .map(p => p.entityId);
+
+    this.#guenther.update(this.#world, {
+      aktiverSpieler: this.#turnOrder?.length ? this.activePlayerId : null,
+      spielerIds,
+      surfaceYAt: x => this.surfaceYAt(x),
+      schaden: (spielerId, betrag) => {
+        this.#world.getSystem('damage')?.applyDamage(this.#world, spielerId, betrag, null);
+      },
+      haufenGetroffen: (spielerId) => {
+        // Drei Runden Schaden und langsamere Fortbewegung.
+        this.#statuses.addDot(spielerId, {
+          damagePerTurn: GUENTHER_POOP.damagePerTurn,
+          turns: GUENTHER_POOP.turns,
+          element: 'poop',
+        });
+        this.#statuses.addSlow(spielerId, GUENTHER_POOP.slowFactor, GUENTHER_POOP.turns);
+      },
+      radAufloesen: spielerId => this.#resolveGuentherWheel(spielerId),
+      melde: (typ, daten) => this.#events.emit(typ, daten),
+    });
   }
 
   /**
@@ -490,6 +548,94 @@ export class MatchController {
    *
    * In beiden Fällen liegt der Startpunkt AUSSERHALB der Sehweite, damit der
    * Angriff sichtbar „hereinfliegt" statt vor dem Spieler zu erscheinen.
+   *
+  /**
+   * Löst einen Ausgang des Glücksrads aus.
+   *
+   * Ausgewürfelt wird im GuentherSystem, angewendet hier: Das Rad braucht Zugriff
+   * auf Inventar, Zustände und Schaden — alles Dinge, die der NPC nicht kennt.
+   *
+   * @returns {{outcome:string, label:string, detail:string, effect:string}}
+   */
+  #resolveGuentherWheel(playerId) {
+    const ausgang = this.#guenther.wuerfleAusgang();
+    const wirkung = ausgang.effect;
+    const ergebnis = {
+      outcome: ausgang.id,
+      label: ausgang.label,
+      detail: ausgang.detail,
+      effect: wirkung.kind,
+      amount: 0,
+      weaponId: null,
+      weaponName: null,
+    };
+
+    switch (wirkung.kind) {
+      case 'skip':
+        // Aussetzen: eine Runde nicht handeln können.
+        this.#statuses.freeze(playerId, wirkung.turns);
+        break;
+
+      case 'skipAndWeapon': {
+        this.#statuses.freeze(playerId, wirkung.turns);
+        const waffe = this.#guenther.waehleWaffe(LOW_RARITY_WEIGHTS);
+        if (waffe) {
+          if (!this.#inventory.has(playerId, waffe.id)) {
+            this.#inventory.grantWeapon(playerId, waffe.id);
+          } else {
+            // Schon im Besitz: Munition nachfüllen statt einer wirkungslosen Gabe.
+            this.#inventory.refill(playerId, waffe.id, 3);
+          }
+          ergebnis.weaponId = waffe.id;
+          ergebnis.weaponName = waffe.displayName;
+        }
+        break;
+      }
+
+      case 'skipAndHeal': {
+        this.#statuses.freeze(playerId, wirkung.turns);
+        const betrag = Math.round(this.#guenther.zieheBereich(wirkung.heal));
+        const system = this.#world.getSystem('damage');
+        const geheilt = system?.heal?.(this.#world, playerId, betrag);
+        ergebnis.amount = typeof geheilt === 'number' ? geheilt : betrag;
+        break;
+      }
+
+      case 'damage': {
+        const betrag = Math.round(this.#guenther.zieheBereich(wirkung.range));
+        // Als Schaden OHNE Verursacher: Günther gehört keinem Team, ein Abschuss
+        // durch ihn darf nicht als Treffer eines Spielers zählen.
+        this.#world.getSystem('damage')?.applyDamage(this.#world, playerId, betrag, null);
+        ergebnis.amount = betrag;
+        break;
+      }
+
+      case 'legendaryWeapon': {
+        const waffe = this.#guenther.waehleWaffe(LEGENDARY_WEIGHTS);
+        if (waffe) {
+          if (!this.#inventory.has(playerId, waffe.id)) {
+            this.#inventory.grantWeapon(playerId, waffe.id);
+          } else {
+            this.#inventory.refill(playerId, waffe.id, 99);
+          }
+          ergebnis.weaponId = waffe.id;
+          ergebnis.weaponName = waffe.displayName;
+        }
+        break;
+      }
+
+      default:
+        break;
+    }
+
+    return ergebnis;
+  }
+
+  /**
+   * Startpunkt und Geschwindigkeit für eine Anflugart.
+   *
+   * Für `self` gibt die Methode `null` zurück — dann gilt der normale Weg.
+   * `sky`: von oben auf den Zielpunkt. `flank`: von der Seite in Zielrichtung.
    *
    * @returns {{spawn:{x:number,y:number}, vx:number, vy:number}|null}
    */
@@ -1617,6 +1763,7 @@ export class MatchController {
       terrainWidth: this.width,
       terrainHeight: this.height,
       orientation: this.orientation,
+      guenther: this.#guenther ? this.#guenther.snapshot() : null,
       // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
       // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
       // und den Tests.

@@ -518,7 +518,17 @@ export function getBackdrop(biomeId, variantId) {
   const biome = BACKDROP_BIOMES.find(b => b.id === biomeId);
   if (!biome) return null;
   const variant = biome.variants.find(v => v.id === variantId);
-  return variant ? { ...variant, biomeId: biome.id, biomeLabel: biome.label, key: `${biome.id}/${variant.id}` } : null;
+  if (!variant) return null;
+  // `mapPreset` gehört mit ins Ergebnis: Daran erkennt der Aufrufer, zu welchem
+  // Gelände die Kulisse passt. `pickBackdrop` liefert es ebenfalls — sonst hätten
+  // die beiden Wege unterschiedliche Formen.
+  return {
+    ...variant,
+    biomeId: biome.id,
+    biomeLabel: biome.label,
+    mapPreset: biome.mapPreset,
+    key: `${biome.id}/${variant.id}`,
+  };
 }
 
 /** Alle Kulissen, die zu einer Karte passen. */

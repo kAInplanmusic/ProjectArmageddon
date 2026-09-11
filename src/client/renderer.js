@@ -11,6 +11,7 @@
 import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
+import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import {
   drawSky as drawGenerativeSky,
   drawAmbient,
@@ -653,6 +654,183 @@ export class Renderer {
     this.ctx.stroke();
   }
 
+  /**
+   * Zeichnet Günther als Kleinspitz.
+   *
+   * Prozedural statt als Bild: Der Hund ist klein, bewegt sich und muss zu
+   * jeder Kulisse passen. Ein Bild hätte eine feste Größe, einen festen
+   * Blickwinkel und einen Hintergrund, der zu neun Wasser- und zehn Himmelarten
+   * nicht passt.
+   *
+   * @param {object|null} guenther - Zustand aus `getState().guenther`
+   */
+  #drawGuenther(guenther) {
+    if (!guenther?.aktiv) return;
+    const { coat, coatDark, belly, nose, height, length } = GUENTHER_IDENTITY;
+    const richtung = guenther.richtung >= 0 ? 1 : -1;
+    const x = guenther.x - length / 2;
+    const y = guenther.y;
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.scale(richtung, 1);
+
+      const h = height;
+      const l = length;
+
+      // Schatten
+      this.ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      this.ctx.beginPath();
+      this.ctx.ellipse(l * 0.5, 1, l * 0.55, 4, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Beine (vier kurze Striche)
+      this.ctx.strokeStyle = `rgb(${coatDark.join(',')})`;
+      this.ctx.lineWidth = 3;
+      const lauf = Math.sin(this.time * 0.22) * 2;
+      for (const [ox, phase] of [[l * 0.2, 1], [l * 0.32, -1], [l * 0.68, 1], [l * 0.8, -1]]) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(ox, -h * 0.42);
+        this.ctx.lineTo(ox + phase * lauf * 0.6, 0);
+        this.ctx.stroke();
+      }
+
+      // Körper
+      this.ctx.fillStyle = `rgb(${coat.join(',')})`;
+      this.ctx.beginPath();
+      this.ctx.ellipse(l * 0.5, -h * 0.62, l * 0.42, h * 0.34, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Brust (heller Bauch)
+      this.ctx.fillStyle = `rgb(${belly.join(',')})`;
+      this.ctx.beginPath();
+      this.ctx.ellipse(l * 0.5, -h * 0.44, l * 0.3, h * 0.18, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Kopf
+      this.ctx.fillStyle = `rgb(${coat.join(',')})`;
+      this.ctx.beginPath();
+      this.ctx.arc(l * 0.86, -h * 0.86, h * 0.3, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Schnauze
+      this.ctx.fillStyle = `rgb(${coatDark.join(',')})`;
+      this.ctx.beginPath();
+      this.ctx.ellipse(l * 1.02, -h * 0.8, h * 0.16, h * 0.11, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Nase
+      this.ctx.fillStyle = `rgb(${nose.join(',')})`;
+      this.ctx.beginPath();
+      this.ctx.arc(l * 1.12, -h * 0.8, 1.8, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Spitze Ohren — das Kennzeichen eines Kleinspitzes.
+      this.ctx.fillStyle = `rgb(${coatDark.join(',')})`;
+      for (const ohr of [-0.12, 0.12]) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(l * (0.8 + ohr), -h * 1.02);
+        this.ctx.lineTo(l * (0.82 + ohr), -h * 1.3);
+        this.ctx.lineTo(l * (0.92 + ohr), -h * 1.04);
+        this.ctx.closePath();
+        this.ctx.fill();
+      }
+
+      // Auge
+      this.ctx.fillStyle = '#2b2622';
+      this.ctx.beginPath();
+      this.ctx.arc(l * 0.9, -h * 0.9, 1.5, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Schwanz: geringelt, wie beim Spitz, und wedelt.
+      this.ctx.strokeStyle = `rgb(${coat.join(',')})`;
+      this.ctx.lineWidth = 4;
+      const wedeln = Math.sin(this.time * 0.3) * 4;
+      this.ctx.beginPath();
+      this.ctx.moveTo(l * 0.1, -h * 0.72);
+      this.ctx.quadraticCurveTo(-l * 0.14, -h * 1.0 + wedeln, l * 0.04, -h * 1.2 + wedeln);
+      this.ctx.stroke();
+
+    this.ctx.restore();
+  }
+
+  /**
+   * Zeichnet Kackhaufen.
+   *
+   * Bewusst unaufdringlich: Sie sind ein Hindernis, kein Blickfang. Ein dünner
+   * Rand hebt sie vom Boden ab, damit sie auf Sand und Schnee sichtbar bleiben.
+   */
+  #drawPoopPiles(haufen) {
+    if (!haufen?.length) return;
+    for (const pile of haufen) {
+      this.ctx.save();
+      this.ctx.translate(pile.x, pile.y);
+      this.ctx.fillStyle = 'rgba(74, 56, 34, 0.95)';
+      this.ctx.strokeStyle = 'rgba(30, 22, 14, 0.8)';
+      this.ctx.lineWidth = 1;
+      // Drei sich verjüngende Hügel ergeben den Haufen.
+      for (const [dx, w, h] of [[0, 9, 4], [-4, 6, 2.6], [4, 6, 2.6]]) {
+        this.ctx.beginPath();
+        this.ctx.ellipse(dx, -h * 0.5, w, h, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+  }
+
+  /**
+   * Bifröst und Blitze — die Verwandlung zu Heimdall.
+   *
+   * Rein visuell und zeitlich begrenzt. Wird vom Client über `addHeimdall()`
+   * ausgelöst, wenn das Ereignis eintrifft.
+   */
+  #drawHeimdall() {
+    const effekt = this.effects.find(e => e.kind === 'heimdall');
+    if (!effekt) return;
+
+    const fortschritt = 1 - effekt.life;
+    const staerke = Math.sin(fortschritt * Math.PI);
+
+    this.ctx.save();
+    // Regenbogenbrücke: sieben Streifen, die sich über das Feld legen.
+    const farben = ['#e63946', '#f77f00', '#fcbf49', '#a7c957', '#4cc9f0', '#4361ee', '#9d4edd'];
+    const hoehe = this.height * 0.5;
+    for (let i = 0; i < farben.length; i++) {
+      this.ctx.globalAlpha = 0.28 * staerke;
+      this.ctx.fillStyle = farben[i];
+      const y = this.height * 0.34 + i * (hoehe / farben.length) * 0.5;
+      this.ctx.fillRect(0, y, this.width, (hoehe / farben.length) * 0.5);
+    }
+
+    // Blitze
+    this.ctx.globalAlpha = staerke;
+    this.ctx.strokeStyle = 'rgba(240,248,255,0.95)';
+    this.ctx.lineWidth = 3;
+    for (let b = 0; b < 5; b += 1) {
+      const startX = (effekt.seed * 37 + b * 233) % this.width;
+      this.ctx.beginPath();
+      this.ctx.moveTo(startX, 0);
+      let lx = startX;
+      for (let seg = 1; seg <= 6; seg += 1) {
+        lx += Math.sin(seg * 2.1 + b) * 26;
+        this.ctx.lineTo(lx, (seg / 6) * this.height * 0.6);
+      }
+      this.ctx.stroke();
+    }
+
+    // Aufhellung
+    this.ctx.globalAlpha = 0.35 * staerke;
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.fillRect(0, 0, this.width, this.height);
+    this.ctx.restore();
+  }
+
+  /** Löst die Heimdall-Animation aus (Blitze, Bifröst, Gjallarhorn). */
+  addHeimdall(seed = 0) {
+    this.effects.push({ kind: 'heimdall', life: 1, decay: 0.006, seed });
+  }
+
   #drawParticles() {
     for (const particle of this.particles) {
       this.ctx.globalAlpha = Math.max(0, particle.life);
@@ -711,12 +889,16 @@ export class Renderer {
     this.#drawWater(water);
     this.#drawWindArrow(state.wind);
     this.#drawBlastPreview(aimPreview, blastRadius);
+    // Kackhaufen liegen auf dem Boden, Günther darüber.
+    this.#drawPoopPiles(state.guenther?.haufen ?? []);
     this.#drawCrates(state.crates ?? []);
     this.#drawMaelstrom(state.maelstrom);
     this.#drawAimPreview(aimPreview);
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
+    this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? []);
     this.#drawEffects();
+    this.#drawHeimdall();
     this.#updateEffects();
     this.updateParticles();
     this.#drawParticles();
