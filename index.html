@@ -70,6 +70,29 @@
       to { opacity: 1; }
     }
 
+    /*
+     * Barrierefreiheit: „Bewegung reduzieren".
+     *
+     * Die Systemeinstellung gilt für Menschen, denen Animationen, Flackern und
+     * Zoom Beschwerden bereiten (Schwindel, Migräne, Vestibularstörungen). Hier
+     * werden deshalb alle Übergänge und Animationen abgeschaltet — nicht
+     * verkürzt: Ein 1-ms-Übergang ist immer noch ein Übergang. Die Bedienung
+     * bleibt vollständig, es entfällt nur die Bewegung.
+     *
+     * Im Canvas (Renderer) gilt dieselbe Einstellung: Explosionspartikel
+     * entfallen, der Explosionsblitz bleibt.
+     */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.001ms !important;
+        transition-delay: 0ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
     .wheel-panel {
       background: linear-gradient(160deg, rgba(24, 18, 12, 0.98), rgba(12, 9, 6, 0.98));
       border: 2px solid #f4a261;

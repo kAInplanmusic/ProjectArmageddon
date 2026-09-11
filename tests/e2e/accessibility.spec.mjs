@@ -178,3 +178,74 @@ test('Versteckte Overlays nehmen keinen Fokus', async ({ page }) => {
   });
   expect(startButtonErreichbar).toBe(false);
 });
+
+// ------------------------------------------------------- Bewegung reduzieren
+
+/**
+ * `prefers-reduced-motion` — die Systemeinstellung für Menschen, denen
+ * Animationen, Flackern und Zoom Beschwerden bereiten (Schwindel, Migräne,
+ * Vestibularstörungen).
+ *
+ * Geprüft wird beides: dass die Einstellung wirkt — und dass ohne sie alles
+ * beim Alten bleibt. Ohne die Gegenprobe wäre der Test auch dann grün, wenn die
+ * Explosionsgrafik überhaupt nicht mehr liefe.
+ */
+
+/** Startet ein Match und lässt eine Explosion auslösen. */
+async function matchMitExplosion(page) {
+  await page.evaluate(() => {
+    window.__PA__.setAutoLoop(false);
+    window.__PA__.startMatch({ seed: 9091, teams: 2, playersPerTeam: 1, preset: 'hills' });
+    window.__PA__.setAutoLoop(false);
+    window.__PA__.advance(1);
+  });
+  return page.evaluate(() => {
+    const api = window.__PA__;
+    // Eine Waffe mit Flächenwirkung feuern und bis zum Einschlag vorspulen.
+    const spieler = api.activePlayerId();
+    const waffe = api.weapons().find(w => w.damage > 0 && w.blastRadius > 0 && w.delivery === 'projectile');
+    api.selectWeapon(api.getMatch().inventory.getWeapons(spieler).indexOf(waffe.id));
+    api.fire(Math.PI / 3, 60);
+    for (let i = 0; i < 400; i += 1) api.advance(1);
+    return {
+      waffe: waffe.displayName,
+      partikel: api.game.renderer.particles.length,
+    };
+  });
+}
+
+test('Bei „Bewegung reduzieren" entfallen die Explosionspartikel', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+
+  // Die Einstellung muss im Browser ankommen.
+  const erkannt = await page.evaluate(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  expect(erkannt).toBe(true);
+
+  const ergebnis = await matchMitExplosion(page);
+  expect(ergebnis.waffe).toBeTruthy();
+  expect(ergebnis.partikel).toBe(0);
+
+  // Und die CSS-Übergänge sind abgeschaltet, nicht nur verkürzt.
+  const dauer = await page.evaluate(() => {
+    const fill = document.querySelector('.hp-fill');
+    return fill ? getComputedStyle(fill).transitionDuration : null;
+  });
+  expect(dauer).not.toBeNull();
+  expect(parseFloat(dauer)).toBeLessThan(0.01);
+});
+
+test('Ohne die Einstellung gibt es weiterhin Partikel', async ({ page }) => {
+  // Gegenprobe: Ohne sie wäre der Test oben auch dann grün, wenn die
+  // Explosionsgrafik gar nicht mehr funktionierte.
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const ergebnis = await matchMitExplosion(page);
+  expect(ergebnis.partikel).toBeGreaterThan(0);
+
+  const dauer = await page.evaluate(() => {
+    const fill = document.querySelector('.hp-fill');
+    return fill ? getComputedStyle(fill).transitionDuration : null;
+  });
+  expect(parseFloat(dauer)).toBeGreaterThan(0);
+});

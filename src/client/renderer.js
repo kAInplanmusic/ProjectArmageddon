@@ -12,6 +12,7 @@ import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
+import { prefersReducedMotion } from './dom.js';
 import {
   drawSky as drawGenerativeSky,
   drawAmbient,
@@ -56,6 +57,15 @@ export class Renderer {
     this.waterLayer.height = Math.ceil(this.height / WATER_SCALE);
     this.waterCtx = this.waterLayer.getContext('2d');
     this.particles = [];
+    /**
+     * Zugänglichkeit: Bei „Bewegung reduzieren" entfallen die Partikel.
+     *
+     * Sie sind der einzige Effekt, der sich im Bild bewegt (Explosionssplitter).
+     * Für Menschen mit Vestibularstörungen ist genau das unangenehm. Der Wert
+     * wird bei jeder Abfrage gelesen, damit eine Änderung der Systemeinstellung
+     * ohne Neuladen greift.
+     */
+    this.reducedMotion = prefersReducedMotion();
     this.waterFrame = 0;
     this.time = 0;
     /** Transiente Effekte (Strahlen, Blitze) mit Lebensdauer in Frames. */
@@ -396,6 +406,10 @@ export class Renderer {
   }
 
   spawnExplosionParticles(x, y, radius) {
+    // Zugänglichkeit: Wer Bewegung reduziert haben will, bekommt keinen
+    // Partikelregen. Die Explosion bleibt sichtbar — als Blitz (siehe
+    // `#drawEffects`) —, nur die Bewegung entfällt.
+    if (this.reducedMotion) return;
     const count = Math.min(26, 8 + Math.round(radius / 2));
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2;
@@ -879,6 +893,9 @@ export class Renderer {
    * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
   render(state, { aimPreview = null, aim = null, water = null, blastRadius = 0 } = {}) {
+    // Zugänglichkeit je Bild neu abfragen: Ändert der Nutzer die
+    // Systemeinstellung, greift sie ohne Neuladen.
+    this.reducedMotion = prefersReducedMotion();
     this.time += 1;
     this.#drawSky();
 

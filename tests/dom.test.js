@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isTextEntry } from '../src/client/dom.js';
+import { isTextEntry, prefersReducedMotion, REDUCED_MOTION_QUERY } from '../src/client/dom.js';
 
 /**
  * Der Helfer entscheidet, ob eine Taste ins Spiel oder in ein Formularfeld
@@ -60,4 +60,41 @@ test('isContentEditable gewinnt gegen den Tag-Namen', () => {
   // Ein bearbeitbares DIV verhält sich wie ein Textfeld.
   assert.equal(isTextEntry(fakeElement('DIV', { isContentEditable: true })), true);
   assert.equal(isTextEntry(fakeElement('DIV', { isContentEditable: false })), false);
+});
+
+// ------------------------------------------------------- Bewegung reduzieren
+
+/**
+ * „Bewegung reduzieren" ist eine Systemeinstellung für Menschen, denen
+ * Animationen Beschwerden bereiten (Schwindel, Migräne, Vestibularstörungen).
+ * Der Helfer muss sie lesen — und darf das Spiel nicht aufhalten, wenn die
+ * Umgebung die Abfrage nicht kennt.
+ */
+
+/** Baut ein Fenster-Ersatzobjekt, das auf `query` mit `matches` antwortet. */
+function fakeWindow({ matches = false, wirft = false, ohneMatchMedia = false } = {}) {
+  if (ohneMatchMedia) return {};
+  return {
+    matchMedia(query) {
+      if (wirft) throw new Error('matchMedia kaputt');
+      assert.equal(query, REDUCED_MOTION_QUERY, 'Die falsche Abfrage wurde gestellt');
+      return { matches };
+    },
+  };
+}
+
+test('Die Systemeinstellung wird gelesen', () => {
+  assert.equal(prefersReducedMotion(fakeWindow({ matches: true })), true);
+  assert.equal(prefersReducedMotion(fakeWindow({ matches: false })), false);
+  assert.equal(REDUCED_MOTION_QUERY, '(prefers-reduced-motion: reduce)');
+});
+
+test('Fehlende oder fehlerhafte Umgebung gilt als „nicht reduziert"', () => {
+  // Der Standardfall: Wer nichts eingestellt hat, bekommt die volle Darstellung.
+  // Ein Fehler hier darf das Spiel nicht aufhalten.
+  assert.equal(prefersReducedMotion(fakeWindow({ ohneMatchMedia: true })), false);
+  assert.equal(prefersReducedMotion(fakeWindow({ wirft: true })), false);
+  assert.equal(prefersReducedMotion(null), false);
+  assert.equal(prefersReducedMotion(undefined), false);
+  assert.equal(prefersReducedMotion({}), false);
 });

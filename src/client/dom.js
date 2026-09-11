@@ -36,4 +36,33 @@ export function isTextEntry(target) {
   return target.isContentEditable === true;
 }
 
-export default { isTextEntry };
+/** Die Abfrage, auf die sich `prefersReducedMotion` stützt. */
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
+/**
+ * Will der Nutzer Bewegung reduzieren?
+ *
+ * Betriebssysteme bieten eine Einstellung für Menschen, denen Bewegung,
+ * Flackern und Zoomen Beschwerden bereitet (Schwindel, Migräne, Vestibular-
+ * störungen). Diese Einstellung ist keine Höflichkeit, sondern eine
+ * Zugänglichkeitsanforderung — und sie wird hier tatsächlich befolgt:
+ * Explosionspartikel entfallen, CSS-Animationen laufen nicht.
+ *
+ * Bewusst defensiv: Fehlt `matchMedia` (alte Umgebung, Test-Attrappe), gilt
+ * `false` — der Standardfall. Ein Fehler hier darf das Spiel nicht aufhalten.
+ *
+ * @param {object} [win] - Fensterobjekt (für Tests ersetzbar)
+ * @returns {boolean}
+ */
+export function prefersReducedMotion(win = globalThis) {
+  try {
+    if (!win || typeof win.matchMedia !== 'function') return false;
+    return win.matchMedia(REDUCED_MOTION_QUERY).matches === true;
+  } catch {
+    return false;
+  }
+}
+
+export { REDUCED_MOTION_QUERY };
+
+export default { isTextEntry, prefersReducedMotion, REDUCED_MOTION_QUERY };
