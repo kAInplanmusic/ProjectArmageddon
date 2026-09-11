@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **466/466** |
-| Browser-E2E | `npm run test:e2e` | **94/94** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **481/481** |
+| Browser-E2E | `npm run test:e2e` | **102/102** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -436,6 +436,112 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     **Der Fehler steckte in einem Bereich, den die bisherigen Tests nicht
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
+
+## Spielerkennzahlen
+
+Schüsse, Treffer, Trefferquote, Schaden, Züge, Runden und Spielzeit je Partie;
+darüber ein Profil mit Bilanz, Serie, Siegquote, Lieblingswaffe und Spielzeit.
+Angezeigt im Endbildschirm (die Partie) und im Menü (alle Partien).
+
+Die Zahlen kommen aus den **Ereignissen** des Matches (`shot`, `damage`,
+`turn_start`, `match_over`), nicht aus einer zweiten Buchführung — so gibt es jede
+Zahl nur einmal und sie kann nicht von dem abweichen, was geschehen ist.
+
+### Ein fehlendes Ereignis
+
+Für Projektile gab es `projectile_spawn`, für Treffer `hitscan` und
+`projectile_impact` — aber **nichts für einen Schuss, der weder trifft noch ein
+Projektil erzeugt**. Die Trefferquote (`Treffer / Schüsse`) hatte damit keinen
+Nenner, und für Hitscan-Waffen wäre er grundsätzlich 0 gewesen. Das Ereignis
+`shot` entsteht jetzt an einer Stelle in `fire()`, vor der Verzweigung nach
+Anflugart; alle drei Wege melden es. Ein Test hält fest, dass jeder erfolgreiche
+Schuss genau ein Ereignis ergibt.
+
+### Offen benannte Näherungen
+
+- **„Treffer" ist genähert.** Ein Schuss gilt als Treffer, wenn danach Schaden an
+  einem Gegner ankommt. Bei Flächenwaffen kann das mehrere treffen — gezählt wird
+  trotzdem **ein** Treffer (der Schuss hat getroffen, nicht drei), sonst wäre die
+  Quote über 100 %. Ein Zeitfenster von 240 Takten verhindert, dass späterer
+  Schaden einem alten Schuss zugerechnet wird.
+- Schaden ohne Verursacher (Sturz, Ertrinken, Günther) und Schaden am eigenen Team
+  zählen nicht.
+- Die Spielzeit kommt aus den **Takten** des Matches, nicht aus der Uhr des
+  Rechners.
+
+### Wo das Profil liegt
+
+Im lokalen Speicher des Browsers (`localStorage`), nicht auf einem Server — es
+gibt keine Konten. Das ist eine Zwischenlösung, und sie ist der Grund, warum ein
+**Zurücksetzen-Knopf** dazugehört: Ohne ihn wäre die Angabe unerreichbar. Ein
+beschädigter Eintrag blockiert das Spiel nicht.
+
+Der Sieg ist während einer laufenden Partie `null`, nicht `false` — eine laufende
+Partie darf nicht als Niederlage zählen.
+
+### OFFEN: die Lieblingsnation ist nicht füllbar
+
+Das Feld existiert, die Zeile zeigt aber „—" und nennt den Grund im Menü: Es gibt
+keine Charakterwahl, und der Match vergibt keine Fraktion. Bewusst nicht erfunden —
+welche Fraktion ein Spieler spielt, ist eine Inhaltsfrage und hängt an der noch
+fehlenden Auswahl.
+
+## Landung: ein Fehler, der Matches von selbst entschied
+
+Figuren sprangen mitten im Match von ihrer Position an den **oberen Kartenrand**
+und stürzten 340 px tief. Auf allen Karten und Seeds starben sie dadurch im
+Stehen, ohne dass jemand geschossen hatte.
+
+**45. Die Oberflächensuche lief in die falsche Richtung.** `CharacterSystem#surfaceY`
+soll die Oberfläche unter einer Position finden, die im Festkörper steckt: von
+dort nach oben, solange Festkörper ist. Die Schleife ging aber nach oben, solange
+`(x, y−1)` **nicht** solide war — in einer Spalte, die über dem Boden nur Luft
+enthält, lief sie bis zum oberen Rand durch und lieferte 1. Die Landung setzte die
+Figur auf `1 − HALF_HEIGHT`, was die Begrenzung auf `HALF_HEIGHT` anhob.
+
+Spur einer Figur (`open`, Seed 4242):
+
+```
+tick 26 | y 360.3 | vy 2.10   ← läuft normal
+tick 27 | y  10.0 | vy 0.00   ← SPRUNG an den oberen Rand
+```
+
+Fallschaden je Partie, vorher → nachher:
+
+| Karte | Seed | vorher | nachher |
+|---|---|---|---|
+| `open` | 4242 | 14 × / 186 Schaden | 0 |
+| `open` | 7 | 9 × / 123 | 0 |
+| `hills` | 4242 | 14 × / 172 | 0 |
+| `hills` | 7 | 15 × / 211 | 0 |
+| `mountains` | 4242 | 21 × / 188 | 0 |
+| `mountains` | 7 | 11 × / 110 | 0 |
+
+### Drei Tests, die in Wahrheit den Fehler prüften
+
+Der Fehler war in den Tests unsichtbar, weil er sie **grün machte**:
+
+1. **`victory-elimination` „Ein Match endet durch Ausschaltung"** — der Helfer
+   schoss je Runde mit 45° und 60–90 Kraft. Gemessen trifft das kaum: höchstens
+   **9 Schaden bei 100 Leben**, bei einem Schuss je Spieler und Runde und höchstens
+   30 Runden. Eine Ausschaltung war rechnerisch unmöglich. Grün war der Test nur,
+   weil der Fallschaden die Figuren tötete.
+2. **`runtime-smoke` „Match läuft deterministisch bis zum Spielende"** — derselbe
+   Aufbau, dieselbe Abhängigkeit.
+3. **`drop-mechanic` „Die Kiste landet auf festem Boden"** — der Test las die
+   Position der Kiste **nach** der Landung. Eine gelandete Kiste wird aber
+   aufgenommen, sobald eine Figur sie berührt (`crate_pickup` → `removeEntity`),
+   und ihre Entity-ID wird sofort neu vergeben. Gemessen: Kiste 8 landete, wurde
+   aufgenommen, und dieselbe ID 8 trug danach eine andere Kiste — der Test las
+   `x=0, y=0`. Vorher fiel das nicht auf, weil die Figuren am Kartenrand standen
+   und die Kisten weit weg von ihnen landeten.
+
+Alle drei wurden so umgebaut, dass sie **von** dem Fehler unabhängig sind statt
+ihn zu brauchen: Das Match-Ende wird ausdrücklich herbeigeführt (über den
+Schadensweg des Motors), und die Kiste wird an der Landeposition aus dem
+`crate_landed`-Ereignis geprüft — die steht fest, bevor etwas sie aufheben kann.
+Keine Zusicherung wurde abgeschwächt; zwei wurden sogar verschärft (das Match muss
+**vor** der Rundengrenze enden, und der Sieger muss das andere Team sein).
 
 ## Vier neue Geländeformen
 
@@ -859,7 +965,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (466):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (481):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -877,7 +983,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (94):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (102):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
@@ -1039,9 +1145,12 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       eigenes Icon, Belohnung, und eine Übersicht der eigenen Erfolge mit
       Hinweis, wie die feindlichen zu holen sind.
 - [ ] **Erfolgs-Emblem am Spielernamen** (wie eine Visitenkarte).
-- [ ] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
+- [x] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
       Schüsse gesamt, Spielzeit, Gesamtschaden, Schaden pro Minute, Trefferquote,
-      Siege, Serie.
+      Siege, Serie. **ERFASSEN und ANZEIGEN erledigt** — siehe
+      „Spielerkennzahlen". Offen bleibt allein die **Lieblingsnation**: Sie
+      braucht eine Charakterwahl, die es nicht gibt, und der Match vergibt keine
+      Fraktion. Die Zeile bleibt auf „—" und nennt den Grund im Menü.
 - [x] **Charaktere.** 9 Fraktionen x 3 Kampfweisen x 3 Charaktere = 81. Namen,
       Biografien, Superwaffen und Staerken/Schwaechen-Profile stehen in
       src/shared/config/factions.js; die Bilder wurden mit
