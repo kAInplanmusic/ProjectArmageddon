@@ -42,6 +42,17 @@ export const EFFECT_KIND = Object.freeze({
    */
   PULL: 'pull',
   /**
+   * Wasserschub: stößt das ZIEL vom Schützen weg und hebt den Wasserstand an
+   * seiner Position.
+   *
+   * Anders als PULL (heranziehen) wirkt das nach außen, und anders als reiner
+   * Schaden greift es in das Wasserfeld ein: Das Ziel wird nass bis
+   * „untergetaucht" und gerät in die Ertrinkgefahr, die das CharacterSystem
+   * ohnehin berechnet. Die Waffe braucht dafür keine eigene Physik — sie
+   * benutzt dasselbe Feld wie Fluten und Wasserverdrängung.
+   */
+  WATER_PUSH: 'water_push',
+  /**
    * Wirkung, die eine der aufgeführten Wirkungen zufällig auswählt. Der Zufall
    * kommt aus dem Match-Zufallsgenerator, ist also reproduzierbar — „zufällig"
    * heißt hier: bei gleichem Seed dieselbe Wahl, nicht unvorhersehbar.
@@ -80,6 +91,17 @@ export const SPECIAL_DEFAULTS = Object.freeze({
   shieldAmount: 40,
   boostMultiplier: 1.5,
   armorReduction: 0.3,
+  /** Wie weit ein Wasserschub das Ziel nach außen versetzt (px). */
+  waterPushDistance: 120,
+  /**
+   * Untergrenze für den angehobenen Wasserstand (0..1).
+   *
+   * Muss über WET_LEVEL (0,35) liegen, sonst wäre das Ziel nur „nass" und die
+   * Waffe hätte sichtbar keine Folge. Ein Test hält das fest.
+   */
+  waterPushRaise: 0.4,
+  /** Obergrenze: Auch das stärkste Geschütz flutet nicht sofort vollständig. */
+  maxWaterPushRaise: 0.6,
   freezeTurns: 1,
   dotDamagePerTurn: 8,
   dotTurns: 3,
@@ -159,6 +181,8 @@ export const SPECIAL_EFFECTS = Object.freeze({
   sleep: { kind: EFFECT_KIND.FREEZE },
   stun: { kind: EFFECT_KIND.FREEZE },
   // Schaden über Zeit
+  // Wasserschub: versetzt das Ziel nach außen und hebt den Wasserstand.
+  water_push: { kind: EFFECT_KIND.WATER_PUSH },
   burn: { kind: EFFECT_KIND.DAMAGE_OVER_TIME, element: 'fire' },
   fire_pool: { kind: EFFECT_KIND.DAMAGE_OVER_TIME, element: 'fire' },
   lava: { kind: EFFECT_KIND.DAMAGE_OVER_TIME, element: 'fire' },
@@ -254,6 +278,23 @@ export function buildEffect(weapon) {
     case EFFECT_KIND.PULL:
       // Nahkampf-Enterhaken ziehen kürzer als ein Sprung weit ist.
       return { kind: base.kind, distance: SPECIAL_DEFAULTS.pullDistance };
+
+    case EFFECT_KIND.WATER_PUSH:
+      /*
+       * Der angehobene Wasserstand wächst mit dem Schaden der Waffe, bleibt aber
+       * begrenzt. Hergeleitet statt erfunden: Die Untergrenze stellt sicher, dass
+       * die Wirkung über WET_LEVEL liegt (sonst wäre das Ziel nur „nass"), die
+       * Obergrenze verhindert, dass eine einzelne Waffe sofort vollständig
+       * flutet.
+       */
+      return {
+        kind: base.kind,
+        distance: SPECIAL_DEFAULTS.waterPushDistance,
+        raise: Math.min(
+          SPECIAL_DEFAULTS.maxWaterPushRaise,
+          Math.max(SPECIAL_DEFAULTS.waterPushRaise, (weapon.damage || 0) / 100),
+        ),
+      };
 
     case EFFECT_KIND.REVEAL:
       return { kind: base.kind, turns: SPECIAL_DEFAULTS.revealTurns };

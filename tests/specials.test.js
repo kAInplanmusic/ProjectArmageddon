@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
-import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
+import { WEAPONS, WEAPONS_BY_ID, getWeapon } from '../src/shared/config/weapons.js';
+import { WET_LEVEL, DROWN_LEVEL } from '../src/shared/config/water.js';
 import {
   StatusStore,
   SPECIAL_EFFECTS,
@@ -588,4 +589,247 @@ test('Eine Wirkung wird nur einmal angewendet und beendet den Zug', () => {
   // Ein zweiter Schuss im selben Zug ist nicht möglich.
   const zweiter = match.fire(vorher, 0, 50, nachschub.id);
   assert.equal(zweiter.ok, false, 'Kein zweiter Schuss im selben Zug');
+});
+
+// ------------------------------------------------------------- Wasserschub
+
+/**
+ * Hilfsmittel: einen direkten Treffer erzwingen.
+ *
+ * Gesucht wird eine freie Schusslinie (wie im Balance-Bericht), beide Figuren
+ * werden auf gleiche Höhe gesetzt. Nur so trifft das Projektil direkt — bei
+ * schräger Bahn landet es vorher im Hang, und die Wirkung greift nie.
+ */
+async function direkterTreffer({ damage = 500, distanz = 90 } = {}) {
+  const { MAP_WIDTH } = await import('../src/engine/match.js');
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  match.start();
+
+  const schuetze = match.activePlayerId;
+  const ziel = match.getState().entities.find(e => e.entityId !== schuetze).entityId;
+
+  let linie = null;
+  for (let sx = 40; sx + distanz <= MAP_WIDTH - 40 && !linie; sx += 4) {
+    const groundY = Math.max(0, match.surfaceYAt(sx));
+    if (groundY < 0) continue;
+    const lineY = groundY - 5;
+    let frei = true;
+    for (let o = 0; o <= distanz; o += 2) {
+      const s = match.surfaceYAt(sx + o);
+      if (s < 0 || s <= lineY) { frei = false; break; }
+    }
+    if (frei) linie = { shooterX: sx, groundY };
+  }
+  assert.ok(linie, 'Keine freie Schusslinie gefunden');
+
+  match.world.setComponent(schuetze, 'Position', 'x', linie.shooterX);
+  match.world.setComponent(schuetze, 'Position', 'y', linie.groundY - 10);
+  match.world.setComponent(ziel, 'Position', 'x', linie.shooterX + distanz);
+  match.world.setComponent(ziel, 'Position', 'y', linie.groundY - 10);
+  match.world.setComponent(ziel, 'Health', 'max', damage);
+  match.world.setComponent(ziel, 'Health', 'current', damage);
+
+  return { match, schuetze, ziel, linie };
+}
+
+/** Feuert und sammelt alle Ereignisse bis zum Stillstand. */
+function feuernUndSammeln(match, schuetze, winkel, waffe) {
+  match.inventory.register(schuetze, [waffe]);
+  match.inventory.selectWeapon(schuetze, waffe);
+  match.fire(schuetze, winkel, 100, waffe);
+
+  const events = [];
+  let schutz = 0;
+  while (match.activeProjectileCount > 0 && schutz < 900) {
+    match.step();
+    events.push(...match.consumeEvents());
+    schutz += 1;
+  }
+  for (let i = 0; i < 10; i += 1) { match.step(); events.push(...match.consumeEvents()); }
+  return events;
+}
+
+test('Wasserschub: macht nass, ertränkt aber nicht mit einem Schuss', async () => {
+  /*
+   * Wirkung des Wasserblasters (`water_push`, vorher ohne Implementierung).
+   *
+   * Geprüft wird über die Ereignisse statt über den Zustand viele Schritte
+   * später: Die Figur rutscht nach dem Einschlag aus dem gefluteten Bereich
+   * (gemessen: nach 10 Schritten steht sie woanders), und ein Zustandstest
+   * würde dann „kein Wasser" melden, obwohl die Wirkung stattgefunden hat.
+   *
+   * Die Grenze zwischen „nass" und „ertrinkt" ist hier absichtlich scharf
+   * geprüft. Während der Entwicklung meldete der erste Anlauf ein Ertrinken —
+   * das kam aber nur daher, dass der Effekt ZWEIMAL angewendet wurde (0,4 + 0,4
+   * = 0,8). Nach der Korrektur bleibt ein Schuss bei 0,4: nass, aber nicht
+   * tödlich. Ein Wasserblaster mit 18 Schaden soll nicht sofort ertränken.
+   */
+  const { match, schuetze, ziel } = await direkterTreffer();
+  const events = feuernUndSammeln(match, schuetze, 0.03, 'pa_063');
+
+  const pushes = events.filter(e => e.type === 'water_pushed');
+  assert.ok(pushes.length > 0, 'Der Wasserschub hat nicht gewirkt');
+
+  const wirkung = pushes[0].payload;
+  assert.equal(wirkung.playerId, ziel);
+  assert.equal(wirkung.by, schuetze);
+  assert.ok(wirkung.cellsFlooded > 0, 'Es wurde keine Zelle geflutet');
+
+  // Nass: über der Nässe-Schwelle.
+  assert.ok(wirkung.waterAfter > WET_LEVEL,
+    `Wasserstand ${wirkung.waterAfter} liegt nicht über WET_LEVEL (${WET_LEVEL})`);
+  // Aber nicht ertrunken: unter der Ertrink-Schwelle.
+  assert.ok(wirkung.waterAfter < DROWN_LEVEL,
+    `Ein einzelner Schuss hebt den Stand auf ${wirkung.waterAfter} — über DROWN_LEVEL (${DROWN_LEVEL})`);
+
+  assert.ok(events.some(e => e.type === 'entity_in_water'),
+    'Die Figur gilt nicht als im Wasser');
+  assert.ok(!events.some(e => e.type === 'drowning'),
+    'Ein einzelner Schuss hat die Figur ertränkt');
+});
+
+test('Zweimal geflutet ertrinkt die Figur', async () => {
+  /*
+   * Die zweite Hälfte der Aussage: Der Wasserschub ist additiv (siehe
+   * `floodArea`), und ab DROWN_LEVEL greift die Ertrinkgefahr des
+   * CharacterSystems. Damit ist die Kette vollständig belegt:
+   * Waffe -> Wasserstand -> Ertrinken.
+   */
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  match.start();
+  const ziel = match.getState().entities[0].entityId;
+
+  match.world.setComponent(ziel, 'Position', 'x', 600);
+  match.world.setComponent(ziel, 'Position', 'y', match.surfaceYAt(600) - 10);
+  match.step();
+
+  const x = match.world.getComponent(ziel, 'Position', 'x');
+  const y = match.world.getComponent(ziel, 'Position', 'y');
+
+  // Stand knapp über der Ertrink-Schwelle setzen und einen Schritt laufen lassen.
+  match.floodArea(x, y, DROWN_LEVEL + 0.05);
+  match.step();
+  const events = match.consumeEvents();
+
+  assert.ok(match.waterLevelAt(x, y) >= DROWN_LEVEL, 'Der Stand liegt nicht über DROWN_LEVEL');
+  assert.ok(events.some(e => e.type === 'drowning'),
+    'Über DROWN_LEVEL muss das Ertrinken ausgelöst werden');
+});
+
+test('Wasserschub: die Wirkung wird nicht doppelt angewendet', async () => {
+  /*
+   * Fund (belegt): Bei Waffen mit Flächenwirkung bekam das direkt getroffene Ziel
+   * den Effekt ZWEIMAL — einmal direkt aus dem Einschlag, einmal über die
+   * Fläche, die das Ziel einschließt. Am Wasserschub gemessen: `waterAfter` stieg
+   * in einem Einschlag erst auf 0,4 und dann auf 0,8. Dieselbe Verdopplung traf
+   * Einfrierdauer, Heranziehen und Schaden über Zeit.
+   *
+   * Der Wasserblaster hat einen kleinen Radius (24 px), aber einen Effekt, dessen
+   * Verdopplung sofort messbar ist — deshalb steht der Nachweis hier.
+   */
+  const { match, schuetze } = await direkterTreffer();
+  const events = feuernUndSammeln(match, schuetze, 0.03, 'pa_063');
+
+  const pushes = events.filter(e => e.type === 'water_pushed');
+  assert.equal(pushes.length, 1,
+    `Der Effekt wurde ${pushes.length}× angewendet (erwartet: genau 1×)`);
+
+  // Der angehobene Stand entspricht genau einer Anwendung.
+  const erwartet = buildEffect(getWeapon('pa_063')).raise;
+  assert.ok(Math.abs(pushes[0].payload.waterAfter - erwartet) < 1e-6,
+    `Wasserstand ${pushes[0].payload.waterAfter} statt ${erwartet} — mehrfach angewendet?`);
+});
+
+test('Wasserschub: schiebt nicht auf eine Klippe', async () => {
+  /*
+   * Fund (belegt): Die Verschiebung verankert das Ziel auf der Geländeoberfläche
+   * der neuen Stelle. Stand dort ein Hügel, wurde das Ziel katapultiert statt
+   * geschoben — gemessen: 120 px seitwärts und 115 px nach oben in EINEM Schritt,
+   * mitten auf einen Berggipfel.
+   */
+  const { match, schuetze, ziel } = await direkterTreffer();
+  const yVorher = match.world.getComponent(ziel, 'Position', 'y');
+  const events = feuernUndSammeln(match, schuetze, 0.03, 'pa_063');
+  const pushes = events.filter(e => e.type === 'water_pushed');
+  for (const push of pushes) {
+    assert.ok(Math.abs(push.payload.dy) <= 16,
+      `Verschiebung um ${push.payload.dy.toFixed(1)} px in der Höhe — das ist ein Sprung, kein Schub`);
+  }
+
+  // Und die Figur steht nicht plötzlich auf einem Berg.
+  const yJetzt = match.world.getComponent(ziel, 'Position', 'y');
+  assert.ok(Math.abs(yJetzt - yVorher) < 60,
+    `Die Figur wurde ${(yVorher - yJetzt).toFixed(0)} px nach oben versetzt`);
+});
+
+test('Heranziehen springt ebenfalls nicht auf eine Klippe', async () => {
+  /*
+   * Die Höhenbegrenzung gilt für BEIDE Verschiebungen — Ziehen und Schub nutzen
+   * dieselbe Schrittsuche. Vorher konnte auch ein Enterhaken das Ziel auf den
+   * nächsten Hügel setzen.
+   */
+  const { match, schuetze, ziel, linie } = await direkterTreffer();
+  // Ziel auf die andere Seite setzen, damit ein Ziehen wirkt.
+  match.world.setComponent(ziel, 'Position', 'x', linie.shooterX + 90);
+  match.world.setComponent(ziel, 'Position', 'y', linie.groundY - 10);
+
+  const yVorher = match.world.getComponent(ziel, 'Position', 'y');
+  const events = feuernUndSammeln(match, schuetze, 0.03, 'pa_063');
+
+  for (const pull of events.filter(e => e.type === 'pulled')) {
+    assert.ok(Math.abs(pull.payload.dy) <= 16,
+      `Heranziehen um ${pull.payload.dy.toFixed(1)} px in der Höhe`);
+  }
+  assert.ok(Math.abs(match.world.getComponent(ziel, 'Position', 'y') - yVorher) < 60);
+});
+
+test('floodArea deckt Zentrum und Fuß ab', async () => {
+  /*
+   * Fund (belegt): Eine EINZELNE geflutete Zelle wirkt für die Anzeige nicht. Das
+   * Wasserfeld hat 4-px-Zellen, der Zustand einer Figur liest die MITTE, die
+   * Figur steht aber auf `Boden - HALF_HEIGHT` (10 px). Beides liegt in
+   * verschiedenen Zellen — gemessen: `waterLevelAt(600, 420)` = 0,5, aber
+   * `state.waterLevel` = 0.
+   */
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  match.start();
+  const ziel = match.getState().entities[0].entityId;
+
+  match.world.setComponent(ziel, 'Position', 'x', 600);
+  match.world.setComponent(ziel, 'Position', 'y', match.surfaceYAt(600) - 10);
+  match.step();
+
+  const x = match.world.getComponent(ziel, 'Position', 'x');
+  const y = match.world.getComponent(ziel, 'Position', 'y');
+
+  // Eine einzelne Zelle genügt NICHT.
+  match.setWaterLevelAt(x, y + 10, 0.5);
+  match.step();
+  const einzeln = match.getState().entities.find(e => e.entityId === ziel).waterLevel;
+
+  // Ein Bereich schon.
+  const erg = match.floodArea(x, y, 0.45);
+  assert.ok(erg.zellen > 0, 'Es wurde keine Zelle geflutet');
+  const bereich = match.getState().entities.find(e => e.entityId === ziel).waterLevel;
+
+  assert.ok(bereich > einzeln,
+    `floodArea wirkt nicht besser als eine Zelle (${bereich} vs. ${einzeln})`);
+  assert.equal(bereich, 0.45);
+});
+
+test('floodArea senkt einen vorhandenen Füllstand nie', async () => {
+  // Mehrfaches Treffen macht die Stelle tiefer, ein Schuss in trockenes Gelände
+  // hebt sie auf das Niveau der Waffe — aber nie darunter.
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  match.start();
+  const y = match.surfaceYAt(600);
+
+  match.floodArea(600, y, 0.6);
+  const tief = match.waterLevelAt(600, y);
+  assert.ok(tief >= 0.6, `Nach dem ersten Fluten nur ${tief}`);
+
+  // Ein schwächerer Schub darf nicht absenken.
+  match.floodArea(600, y, 0.4);
+  assert.ok(match.waterLevelAt(600, y) >= tief,
+    'Ein schwächerer Schub hat den Wasserstand gesenkt');
 });

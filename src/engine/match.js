@@ -93,6 +93,16 @@ const DOUBLE_JUMP_FACTOR = 0.8;
 const JUMP_SIDE_IMPULSE = 2.4;
 const PLAYER_HALF_WIDTH = 7;
 const PLAYER_HALF_HEIGHT = 10;
+/**
+ * Größter Höhenunterschied, den eine Verschiebung (Ziehen oder Schub)
+ * überwinden darf.
+ *
+ * Ohne Grenze setzte die Verankerung auf der Geländeoberfläche das Ziel auf den
+ * nächsten Hügel — ein Ziehen oder Schub wurde dadurch zum Teleport auf eine
+ * Klippe. 16 px entsprechen etwa eineinhalb Figurenhöhen: ein Absatz, den man
+ * hinaufgestoßen werden kann, aber keine Wand.
+ */
+const MAX_SHIFT_SLOPE = 16;
 /** Wie weit entlang der Schussrichtung nach freiem Feld gesucht wird. */
 const MUZZLE_SEARCH_DISTANCE = 48;
 /** Mindestwerte für Zufallswaffen, damit auch schwache Waffen spürbar wirken. */
@@ -1339,6 +1349,58 @@ export class MatchController {
         return { kind: effect.kind, ...effect };
       }
 
+      case EFFECT_KIND.WATER_PUSH: {
+        /*
+         * Wasserschub: erst wegstoßen, dann fluten.
+         *
+         * Die Reihenfolge ist wesentlich. Der Wasserstand wird an der NEUEN
+         * Position angehoben — würde zuerst geflutet, läge das Wasser auf der
+         * alten Zelle und das Ziel stünde daneben im Trockenen. Die Waffe würde
+         * dann sichtbar nichts bewirken.
+         *
+         * Der Wasserstand wird auf den vorhandenen Wert AUFgesetzt, nicht
+         * gesetzt: Ein Schuss in eine schon geflutete Mulde macht sie tiefer,
+         * statt sie auf den Wert der Waffe zurückzusetzen.
+         */
+        const versetzt = this.#pushAway(targetId, attackerId, effect.distance);
+
+        const neueX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
+        const neueY = this.#world.getComponent(targetId, 'Position', 'y') ?? 0;
+        const vorher = this.waterLevelAt(neueX, neueY);
+        const nachher = clampWaterLevel(vorher + effect.raise);
+        /*
+         * Einen BEREICH fluten, nicht eine Zelle — sonst meldet der Zustand der
+         * Figur weiter 0, weil sie mit ihrem Zentrum zehn Pixel über der
+         * gefluteten Bodenzelle steht (siehe `floodArea`).
+         */
+        const geflutet = this.floodArea(neueX, neueY, nachher);
+
+        /*
+         * Wenn weder Bewegung noch Flutung stattfand, ist die Wirkung eine
+         * stille Nullnummer (z. B. Wand hinter dem Ziel und bereits geflutete
+         * Zelle). Dann `null` zurückgeben — der Aufrufer zählt die Wirkung sonst
+         * als Erfolg, obwohl nichts geschehen ist.
+         */
+        const bewegt = versetzt.dx !== 0 || versetzt.dy !== 0;
+        if (!bewegt && geflutet.zellen === 0) return null;
+
+        this.#events.emit('water_pushed', {
+          playerId: targetId,
+          by: attackerId,
+          dx: versetzt.dx,
+          dy: versetzt.dy,
+          waterBefore: vorher,
+          waterAfter: nachher,
+          cellsFlooded: geflutet.zellen,
+        });
+        return {
+          kind: effect.kind,
+          ...versetzt,
+          waterBefore: vorher,
+          waterAfter: nachher,
+        };
+      }
+
       default:
         return null;
     }
@@ -1355,10 +1417,35 @@ export class MatchController {
    */
   #pullToward(targetId, attackerId, distance) {
     const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
-    const zielY = this.#world.getComponent(targetId, 'Position', 'y') ?? 0;
     const schuetzeX = this.#world.getComponent(attackerId, 'Position', 'x') ?? 0;
+    return this.#shiftToward(targetId, Math.sign(schuetzeX - zielX), distance);
+  }
 
-    const richtung = Math.sign(schuetzeX - zielX);
+  /**
+   * Versetzt ein Ziel vom Angreifer WEG — der Gegenpol zu `#pullToward`.
+   *
+   * Beide benutzen dieselbe Schrittsuche: Die Verschiebung wird in Zehn-Pixel-
+   * Schritten geprüft und darf nicht durch massives Gelände führen. Ein Ziel
+   * durch eine Wand zu schieben wäre ein Fehler, kein Effekt.
+   *
+   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
+   */
+  #pushAway(targetId, attackerId, distance) {
+    const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
+    const schuetzeX = this.#world.getComponent(attackerId, 'Position', 'x') ?? 0;
+    return this.#shiftToward(targetId, Math.sign(zielX - schuetzeX), distance);
+  }
+
+  /**
+   * Verschiebt ein Ziel waagerecht um `distance`, verankert auf der
+   * Geländeoberfläche.
+   *
+   * @param {number} richtung - -1 oder 1; 0 bedeutet keine Bewegung
+   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
+   */
+  #shiftToward(targetId, richtung, distance) {
+    const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
+    const zielY = this.#world.getComponent(targetId, 'Position', 'y') ?? 0;
     if (richtung === 0) return { dx: 0, dy: 0 };
 
     // In kleinen Schritten prüfen, damit das Ziel nicht durch eine Wand springt.
@@ -1369,6 +1456,21 @@ export class MatchController {
       if (kandidatX < PLAYER_HALF_WIDTH || kandidatX > this.width - PLAYER_HALF_WIDTH) break;
       const surface = this.surfaceYAt(Math.round(kandidatX));
       if (surface < 0) break;
+      /*
+       * Kein Sprung auf eine Klippe.
+       *
+       * Fund (belegt): Die Verschiebung verankert das Ziel auf der
+       * Geländeoberfläche der neuen Stelle. Stand dort ein Hügel, wurde das Ziel
+       * katapultiert statt geschoben — gemessen: 120 px seitwärts und **115 px
+       * nach oben** in einem Schritt, mitten auf einen Berggipfel. Ein Erdstoß,
+       * der jemanden auf eine Klippe setzt, ist kein Effekt, sondern ein Fehler.
+       *
+       * Der Höhenunterschied wird deshalb begrenzt: Die Verschiebung endet, wo
+       * der Boden mehr als `MAX_SCHUB_STEIGUNG` über der Fußposition liegt.
+       * Bezugspunkt ist die FUSSPOSITION (`zielY + PLAYER_HALF_HEIGHT`), weil
+       * dort der Bodenkontakt stattfindet.
+       */
+      if (Math.abs(surface - (zielY + PLAYER_HALF_HEIGHT)) > MAX_SHIFT_SLOPE) break;
       if (this.#terrain.isSolid(Math.floor(kandidatX), Math.floor(surface - PLAYER_HALF_HEIGHT))) break;
       erreicht = d;
     }
@@ -1389,11 +1491,24 @@ export class MatchController {
    * Für Waffen mit Flächenwirkung: Giftwolken und Feuerflächen treffen jeden
    * im Umkreis, nicht nur das direkt getroffene Ziel.
    */
-  #applyAreaEffect(effect, x, y, radius, attackerId) {
+  #applyAreaEffect(effect, x, y, radius, attackerId, { ueberspringe = null } = {}) {
     const angewendet = [];
     for (const entry of this.#players) {
       if (!entry.alive) continue;
       if (entry.entityId === attackerId) continue;
+      /*
+       * Das direkt getroffene Ziel NICHT noch einmal.
+       *
+       * Fund (belegt): Bei einer Waffe mit Flächenwirkung läuft der Effekt
+       * zweimal über das direkt getroffene Ziel — einmal direkt aus dem
+       * Projekteinschlag, einmal über die Fläche, die ja auch das Ziel einschließt.
+       * Gemessen am Wasserschub: `waterAfter` stieg in einem Einschlag erst auf
+       * 0,4 und dann auf 0,8; dieselbe Verdopplung trifft Einfrierdauer
+       * (doppelt so lange), Heranziehen (doppelte Distanz) und Schaden über Zeit
+       * (doppelte Stapel). Bei Flächenwaffen mit großem Radius fiel das auf, bei
+       * den meisten Waffen (Radius 0) nicht.
+       */
+      if (ueberspringe !== null && entry.entityId === ueberspringe) continue;
       const px = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
       const py = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
       const distSq = (px - x) ** 2 + (py - y) ** 2;
@@ -1423,9 +1538,10 @@ export class MatchController {
       this.#applyTargetEffect(effect, target, owner);
     }
     // Bei Flächenwirkung zusätzlich alle Gegner im Radius treffen — eine
-    // Giftwolke wirkt nicht nur auf den direkt getroffenen Gegner.
+    // Giftwolke wirkt nicht nur auf den direkt getroffenen Gegner. Das direkt
+    // getroffene Ziel ist ausgenommen: es hat den Effekt oben schon bekommen.
     if (blastRadius > 0) {
-      this.#applyAreaEffect(effect, x, y, blastRadius, owner);
+      this.#applyAreaEffect(effect, x, y, blastRadius, owner, { ueberspringe: target });
     }
   }
 
@@ -1740,6 +1856,56 @@ export class MatchController {
     if (zelle.y < 0 || zelle.y >= this.#water.height) return false;
     this.#water.setLevel(zelle.x, zelle.y, clampWaterLevel(level));
     return true;
+  }
+
+  /**
+   * Flutet einen kleinen Bereich um einen Punkt.
+   *
+   * ## Warum nicht eine einzelne Zelle
+   *
+   * Fund (belegt): Ein Wasserschub, der genau eine Zelle flutet, wirkt für die
+   * Anzeige NICHT. Das Wasserfeld ist ein Raster aus 4 px großen Zellen
+   * (WATER_SCALE), und zwei Dinge fallen auseinander:
+   *
+   *   - Der Zustand einer Figur liest `waterLevelAt(figur.x, figur.y)` — die
+   *     MITTE der Figur.
+   *   - Die Figur steht auf `Boden - HALF_HEIGHT` (10 px), ihr Fuß also zehn
+   *     Pixel unter der abgefragten Stelle.
+   *
+   * Bei 4-px-Zellen liegen Zentrum und Fuß in verschiedenen Zellen. Wird nur die
+   * Bodenzelle geflutet, meldet der Zustand weiter 0 — und die Ertrinkgefahr im
+   * CharacterSystem greift nie. Gemessen: `waterLevelAt(600, 420)` = 0,5,
+   * `state.waterLevel` = 0.
+   *
+   * Deshalb wird ein Bereich geflutet, der Zentrum UND Fuß abdeckt. Der Bereich
+   * ist bewusst klein (Standard: 16 × 20 px): Es soll ein Wasserloch entstehen,
+   * kein See.
+   *
+   * Der vorhandene Füllstand wird nie verringert — mehrfaches Treffen macht die
+   * Stelle tiefer, ein Schuss in trockenes Gelände hebt sie auf das Niveau der
+   * Waffe.
+   *
+   * @param {number} worldX
+   * @param {number} worldY - Bezugspunkt (Mitte der Figur)
+   * @param {number} level - Ziel-Füllstand
+   * @param {object} [optionen]
+   * @returns {{zellen:number, hoechster:number}} geflutete Zellen und Höchststand
+   */
+  floodArea(worldX, worldY, level, { radiusX = 8, radiusY = 10 } = {}) {
+    if (!this.#water) return { zellen: 0, hoechster: 0 };
+    let zellen = 0;
+    let hoechster = 0;
+    for (let dx = -radiusX; dx <= radiusX; dx += WATER_SCALE) {
+      for (let dy = -radiusY; dy <= radiusY; dy += WATER_SCALE) {
+        const x = worldX + dx;
+        const y = worldY + dy;
+        const vorher = this.waterLevelAt(x, y);
+        const ziel = clampWaterLevel(Math.max(vorher, level));
+        if (ziel > vorher && this.setWaterLevelAt(x, y, ziel)) zellen += 1;
+        if (ziel > hoechster) hoechster = ziel;
+      }
+    }
+    return { zellen, hoechster };
   }
 
   /**
