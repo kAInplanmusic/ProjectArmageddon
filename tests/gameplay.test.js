@@ -4,7 +4,7 @@ import { MatchController, MAP_WIDTH, MAP_HEIGHT } from '../src/engine/match.js';
 import { generateTerrain, surfaceY, TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 import { WaterField } from '../src/engine/waterField.js';
 import { LootSystem, weaponIdFromIndex } from '../src/engine/systems/lootSystem.js';
-import { CLASS_DEFINITIONS, CLASS_ARCHETYPES, applyClassModifiers, applyArchetypeModifiers } from '../src/shared/config/classes.js';
+import { CLASS_DEFINITIONS, CLASS_ARCHETYPES, combatProfile } from '../src/shared/config/classes.js';
 import { MATCH_RULES, computeMaelstromDamage } from '../src/shared/config/match.js';
 import { WEAPONS, WEAPONS_BY_ID, getDefaultLoadout, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
 import { SeededRandom } from '../src/shared/prng.js';
@@ -153,22 +153,35 @@ test('Loot spawnt Kisten deterministisch und Pickup wirkt', () => {
 
 // -------------------------------------------------------- Klassen & Waffen
 
-test('Klassen- und Archetypenmodifikatoren skalieren nachvollziehbar', () => {
-  const base = { angle: 1, power: 100, speed: 10 };
-  const heavy = applyClassModifiers(base, 'heavy');
-  const artillery = applyClassModifiers(base, 'artillery');
+/**
+ * Dieser Test prüfte früher `applyClassModifiers` / `applyArchetypeModifiers` —
+ * zwei Helfer, die **nirgends aufgerufen** wurden. Er war damit grün, während
+ * das Spiel eine andere Rechnung benutzte. Genau deshalb fiel nicht auf, dass
+ * die Funktionen toter Code waren. Geprüft wird jetzt das Profil, das der Motor
+ * tatsächlich liest.
+ */
+test('Das Kampfprofil skaliert Klasse und Archetyp nachvollziehbar', () => {
+  const heavy = combatProfile('heavy', 'brawler');
+  const artillery = combatProfile('artillery', 'brawler');
 
-  assert.equal(heavy.power, Math.round(100 * CLASS_DEFINITIONS.heavy.power));
-  assert.equal(artillery.power, Math.round(100 * CLASS_DEFINITIONS.artillery.power));
-  assert.ok(artillery.power > heavy.power, 'Artillerie muss stärker schießen');
+  assert.equal(heavy.damageMultiplier, CLASS_DEFINITIONS.heavy.power);
+  assert.equal(artillery.damageMultiplier, CLASS_DEFINITIONS.artillery.power);
+  assert.ok(artillery.damageMultiplier > heavy.damageMultiplier,
+    'Artillerie muss stärker schießen');
 
-  const brawler = applyArchetypeModifiers({ health: 100, damage: 100, speed: 100 }, 'brawler');
-  const occultist = applyArchetypeModifiers({ health: 100, damage: 100, speed: 100 }, 'occultist');
-  assert.equal(brawler.health, Math.round(100 * CLASS_ARCHETYPES.brawler.health));
-  assert.ok(occultist.damage > brawler.damage);
+  // Leben ist das Produkt BEIDER Tabellen.
+  assert.equal(heavy.healthMultiplier, CLASS_DEFINITIONS.heavy.health * CLASS_ARCHETYPES.brawler.health);
+  const occultist = combatProfile('heavy', 'occultist');
+  assert.ok(occultist.healthMultiplier < heavy.healthMultiplier,
+    'Ein Okkultist muss zerbrechlicher sein als ein Brawler');
 
-  // Unbekannte Klasse bleibt wertgleich (kein stiller Default-Buff).
-  assert.deepEqual(applyClassModifiers(base, 'unknown'), base);
+  // Unbekannte Kennungen fallen auf den Rückfallwert, ohne still zu buffen.
+  const unbekannt = combatProfile('unknown', 'unknown');
+  assert.equal(unbekannt.classId, 'scout');
+  assert.equal(unbekannt.archetypeId, 'brawler');
+  assert.equal(unbekannt.onFallback, true);
+  assert.equal(unbekannt.healthMultiplier,
+    CLASS_DEFINITIONS.scout.health * CLASS_ARCHETYPES.brawler.health);
 });
 
 test('Waffenkatalog ist konsistent und spielbar', () => {

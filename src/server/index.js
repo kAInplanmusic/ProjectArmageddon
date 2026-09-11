@@ -50,7 +50,7 @@ export { MATCH_RULES, computeMaelstromDamage } from '../shared/config/match.js';
 export { NETWORK_RULES } from '../shared/config/network.js';
 export { COMBAT_RULES } from '../shared/config/combat.js';
 export { LOOT_DROP_RULES, createPseudoRandomDropState, getRareChanceWithPrd, weightedRarity, rollCrateCount, rollCrateContents, rollGamechanger, createLootSeedManager, getLootRng } from '../shared/config/loot.js';
-export { CLASS_DEFINITIONS, CLASS_ARCHETYPES, applyClassModifiers, applyArchetypeModifiers } from '../shared/config/classes.js';
+export { CLASS_DEFINITIONS, CLASS_ARCHETYPES, CLASS_IDS, ARCHETYPE_IDS, combatProfile, allCombatProfiles } from '../shared/config/classes.js';
 export { WEAPONS, WEAPONS_BY_ID, getWeapon, getDefaultLoadout, FALLBACK_WEAPON_ID } from '../shared/config/weapons.js';
 export { generateTerrain, TERRAIN_PRESETS } from '../shared/terrainGen.js';
 

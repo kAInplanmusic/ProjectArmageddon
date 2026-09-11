@@ -29,9 +29,11 @@ import {
 } from './specials.js';
 import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
-import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
-import { getWeapon, getDefaultLoadout } from '../shared/config/weapons.js';
+import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
+import { getWeapon } from '../shared/config/weapons.js';
+import { getClassLoadout } from '../shared/config/loadouts.js';
 import { pickScenery } from '../shared/config/scenery.js';
+import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS } from './systems/lootSystem.js';
@@ -63,8 +65,10 @@ export function mapSizeFor(orientation) {
 }
 export const WATER_SCALE = 4;
 
-export const CLASS_IDS = Object.freeze(['scout', 'heavy', 'artillery']);
-export const ARCHETYPE_IDS = Object.freeze(['brawler', 'artillerist', 'occultist']);
+// Die Namenslisten stammen aus der Klassen-Konfiguration und werden hier nur
+// weitergegeben — sonst gäbe es neben der Verrechnung auch noch zwei Quellen
+// für die Reihenfolge der Klassen.
+export { CLASS_IDS, ARCHETYPE_IDS };
 export const TEAM_COLORS = Object.freeze(['#4cc9f0', '#f4a261', '#90be6d', '#e07a5f']);
 
 const BASE_HEALTH = 100;
@@ -289,6 +293,25 @@ export class MatchController {
   #registerSystems() {
     this.#maelstrom = new MaelstromSystem({ rng: this.#seedManager.getSubRng('EFFECTS') });
     this.#loot = new LootSystem({ rng: this.#seedManager.getSubRng('LOOT') });
+    /*
+     * Todesmeldung mitschreiben — statt `isActive` zu befragen.
+     *
+     * Fund (belegt): Das ECS vergibt die IDs entfernter Entities neu. Eine
+     * gefallene Spielfigur bekam deshalb wieder eine „aktive" ID, sobald eine
+     * Kiste oder ein Geschoss den Platz erbte. `world.isActive(spielerId)` war
+     * danach wahr — obwohl dort längst eine Kiste lag. Folgen:
+     *   - `#checkVictory` hielt ein ausgelöschtes Team für lebendig und das
+     *     Match endete nie durch Ausschaltung (es lief bis zur Rundengrenze),
+     *   - die Anzeige meldete eine gefallene Figur als lebendig mit 0 Leben,
+     *   - Zugfolge und Kommandoprüfung konnten einen Toten für aktiv halten.
+     *
+     * Der Lebensstatus gehört deshalb an den Spieler, nicht an einen
+     * wiederverwendbaren Platz im ECS.
+     */
+    this.#world.getSystem('damage')?.onDeath?.((world, entityId) => {
+      const eintrag = this.#players.find(p => p.entityId === entityId);
+      if (eintrag) eintrag.alive = false;
+    });
     this.#world.registerSystem('projectile', new ProjectileSystem(), SYSTEM_PRIORITIES.PROJECTILE);
     this.#world.registerSystem('character', new CharacterSystem(), SYSTEM_PRIORITIES.CHARACTER);
     this.#world.registerSystem('maelstrom', this.#maelstrom, SYSTEM_PRIORITIES.MAELSTROM);
@@ -299,7 +322,10 @@ export class MatchController {
   #spawnPlayers() {
     const total = this.teams * this.playersPerTeam;
     const spacing = this.width / (total + 1);
-    const loadout = getDefaultLoadout(4);
+    // Ein Startloadout je Klasse, nicht je Spieler: Die Auswahl hängt allein an
+    // der Klasse. Vorher startete jede Klasse mit demselben neutralen Loadout —
+    // die Klasse veränderte nur Werte, nicht die Mittel.
+    const loadouts = new Map(CLASS_IDS.map(id => [id, getClassLoadout(id)]));
 
     for (let index = 0; index < total; index++) {
       const teamId = index % this.teams;
@@ -311,9 +337,10 @@ export class MatchController {
       const y = (groundY > 0 ? groundY : this.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
 
       const entityId = this.#world.createEntity();
-      const classDef = CLASS_DEFINITIONS[CLASS_IDS[classId]];
-      const archetype = CLASS_ARCHETYPES[ARCHETYPE_IDS[archetypeId]];
-      const maxHealth = Math.round(BASE_HEALTH * classDef.health * archetype.health);
+      // Leben kommt aus dem gemeinsamen Kampfprofil (classes.js) — nicht aus
+      // einer zweiten, hier nachgebauten Multiplikation.
+      const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId]);
+      const maxHealth = Math.round(BASE_HEALTH * profile.healthMultiplier);
 
       this.#world.addComponent(entityId, 'Position', { x, y });
       this.#world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
@@ -324,7 +351,7 @@ export class MatchController {
       this.#world.addComponent(entityId, 'Input', { angle: 0, power: 0 });
       this.#world.addComponent(entityId, 'Rotation', { angle: 0 });
 
-      this.#inventory.register(entityId, loadout);
+      this.#inventory.register(entityId, loadouts.get(CLASS_IDS[classId]) ?? loadouts.get(CLASS_IDS[0]));
 
       this.#players.push({
         entityId,
@@ -332,6 +359,14 @@ export class MatchController {
         classId,
         archetypeId,
         label: `P${index + 1}`,
+        /**
+         * Lebensstatus des SPIELERS.
+         *
+         * Bewusst hier geführt und nicht über `world.isActive(entityId)`
+         * ermittelt: Das ECS vergibt IDs gefallener Entities neu (siehe
+         * `#registerSystems`), und dann liegt unter derselben ID eine Kiste.
+         */
+        alive: true,
       });
       this.#turnOrder.push(entityId);
     }
@@ -392,7 +427,7 @@ export class MatchController {
    * wäre ein zweiter Absprung mitten im Flug.
    */
   isGrounded(playerId) {
-    if (!this.#world.isActive(playerId)) return false;
+    if (!this.isPlayerAlive(playerId)) return false;
     const x = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
     const y = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
     const vy = this.#world.getComponent(playerId, 'Velocity', 'y') ?? 0;
@@ -435,7 +470,7 @@ export class MatchController {
     const errors = [];
     if (this.#status !== 'playing') errors.push('Match läuft nicht');
     if (playerId !== this.activePlayerId) errors.push('Nur der aktive Spieler kann springen');
-    if (!this.#world.isActive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
+    if (!this.isPlayerAlive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
     if (errors.length > 0) return { ok: false, errors };
 
     const grounded = this.isGrounded(playerId);
@@ -492,7 +527,7 @@ export class MatchController {
     this.#guenther.setRunde(this.#round);
 
     const spielerIds = this.#players
-      .filter(p => this.#world.isActive(p.entityId))
+      .filter(p => p.alive)
       .map(p => p.entityId);
 
     this.#guenther.update(this.#world, {
@@ -524,7 +559,7 @@ export class MatchController {
    */
   #updateGroundedState() {
     for (const entry of this.#players) {
-      if (!this.#world.isActive(entry.entityId)) continue;
+      if (!entry.alive) continue;
       const warInDerLuft = this.#airborne.get(entry.entityId) === 1;
       const stehtJetzt = this.isGrounded(entry.entityId);
       if (warInDerLuft && stehtJetzt) {
@@ -686,7 +721,7 @@ export class MatchController {
     if (!command.valid) return { ok: false, errors: command.errors };
     if (errors.length > 0) return { ok: false, errors };
 
-    if (!this.#world.isActive(playerId)) {
+    if (!this.isPlayerAlive(playerId)) {
       return { ok: false, errors: ['Spieler ist nicht mehr aktiv'] };
     }
 
@@ -709,7 +744,9 @@ export class MatchController {
     }
 
     const player = this.#players.find(entry => entry.entityId === playerId);
-    const classDef = CLASS_DEFINITIONS[CLASS_IDS[player?.classId ?? 0]];
+    const profile = combatProfile(
+      CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+    );
     const { x, y, vx, vy } = this.#launchVector(playerId, angle, power, weapon);
 
     this.#world.setComponent(playerId, 'Weapon', 'angle', angle);
@@ -764,7 +801,7 @@ export class MatchController {
       owner: playerId,
       weaponId: weapon.index,
       // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
-      damage: weapon.damage * classDef.power * this.#statuses.damageMultiplier(playerId),
+      damage: weapon.damage * profile.damageMultiplier * this.#statuses.damageMultiplier(playerId),
       blastRadius: weapon.blastRadius || 24,
       knockback: weapon.knockback,
       drag: 0.995,
@@ -869,7 +906,7 @@ export class MatchController {
   dropWeapon(playerId, weaponId) {
     const errors = [];
     if (this.#status !== 'playing') errors.push('Match läuft nicht');
-    if (!this.#world.isActive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
+    if (!this.isPlayerAlive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
     if (errors.length > 0) return { ok: false, errors };
 
     const weapon = getWeapon(weaponId);
@@ -1003,12 +1040,8 @@ export class MatchController {
 
     // Wasser an der Landestelle? Dann NICHT landen, sondern weiterfliegen.
     // Das ist die einzige harte Regel des Abwurfs.
-    const wasser = this.#water
-      ? (typeof this.#water.levelAtWorld === 'function'
-        ? this.#water.levelAtWorld(begrenztX, Math.max(0, boden))
-        : this.#water.getLevel(Math.floor(begrenztX), Math.floor(boden)))
-      : 0;
-    const ueberWasser = wasser > 0.35;
+    const wasser = this.waterLevelAt(begrenztX, Math.max(0, boden));
+    const ueberWasser = wasser > WET_LEVEL;
 
     // Gelände getroffen und trockener Boden: landen — aber erst nach Ablauf der
     // Mindestflugzeit.
@@ -1274,7 +1307,7 @@ export class MatchController {
   #applyTargetEffect(effect, targetId, attackerId) {
     const ziel = this.#players.find(entry => entry.entityId === targetId);
     const schuetze = this.#players.find(entry => entry.entityId === attackerId);
-    if (!ziel || !this.#world.isActive(targetId)) return null;
+    if (!ziel || !this.isPlayerAlive(targetId)) return null;
     if (schuetze && ziel.teamId === schuetze.teamId) return null;
 
     switch (effect.kind) {
@@ -1359,7 +1392,7 @@ export class MatchController {
   #applyAreaEffect(effect, x, y, radius, attackerId) {
     const angewendet = [];
     for (const entry of this.#players) {
-      if (!this.#world.isActive(entry.entityId)) continue;
+      if (!entry.alive) continue;
       if (entry.entityId === attackerId) continue;
       const px = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
       const py = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
@@ -1424,7 +1457,7 @@ export class MatchController {
   #playerAt(x, y, excludeId = null) {
     for (const entry of this.#players) {
       if (excludeId !== null && entry.entityId === excludeId) continue;
-      if (!this.#world.isActive(entry.entityId)) continue;
+      if (!entry.alive) continue;
       const px = this.#world.getComponent(entry.entityId, 'Position', 'x') || 0;
       const py = this.#world.getComponent(entry.entityId, 'Position', 'y') || 0;
       if (Math.abs(x - px) <= PLAYER_HALF_WIDTH && Math.abs(y - py) <= PLAYER_HALF_HEIGHT) {
@@ -1441,8 +1474,10 @@ export class MatchController {
    */
   #launchVector(playerId, angle, power, weapon = null) {
     const player = this.#players.find(entry => entry.entityId === playerId);
-    const classDef = CLASS_DEFINITIONS[CLASS_IDS[player?.classId ?? 0]];
-    const archetype = CLASS_ARCHETYPES[ARCHETYPE_IDS[player?.archetypeId ?? 0]];
+    // Klasse und Archetyp kommen zusammen aus dem gemeinsamen Kampfprofil.
+    const profile = combatProfile(
+      CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+    );
 
     const x = this.#world.getComponent(playerId, 'Position', 'x') || 0;
     const y = this.#world.getComponent(playerId, 'Position', 'y') || 0;
@@ -1451,7 +1486,7 @@ export class MatchController {
     // Geschwindigkeiten (48-100) nennen — eine Minigun war im Flug nicht von
     // einem Mörser zu unterscheiden.
     const weaponFactor = weapon?.speedFactor ?? 1;
-    const speed = power * POWER_TO_SPEED * classDef.power * (archetype.damage / 1.2) * weaponFactor;
+    const speed = power * POWER_TO_SPEED * profile.launchSpeedMultiplier * weaponFactor;
 
     return { x, y, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };
   }
@@ -1464,7 +1499,7 @@ export class MatchController {
    * @returns {{x:number,y:number}[]}
    */
   aimPreview(playerId, angle, power, steps = 180, weapon = null) {
-    if (!this.#world.isActive(playerId)) return [];
+    if (!this.isPlayerAlive(playerId)) return [];
     // Die Vorschau muss dieselbe Geschwindigkeit nutzen wie der echte Schuss,
     // sonst zeigt sie eine Bahn, die die Waffe nicht fliegt.
     const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
@@ -1504,7 +1539,7 @@ export class MatchController {
     let nextIndex = this.#turnIndex;
     for (let attempt = 0; attempt < this.#turnOrder.length; attempt++) {
       nextIndex = (nextIndex + 1) % this.#turnOrder.length;
-      if (this.#world.isActive(this.#turnOrder[nextIndex])) break;
+      if (this.isPlayerAlive(this.#turnOrder[nextIndex])) break;
     }
 
     const wrapped = nextIndex <= this.#turnIndex;
@@ -1556,9 +1591,13 @@ export class MatchController {
   #finishByAttrition() {
     const healthByTeam = new Map();
     for (const entry of this.#players) {
-      const health = this.#world.isActive(entry.entityId)
+      const health = entry.alive
         ? (this.#world.getComponent(entry.entityId, 'Health', 'current') || 0)
         : 0;
+      // Ein Gefallener trägt nichts bei. Vorher entschied hier `isActive` —
+      // und damit eine möglicherweise wiederverwendete ID (siehe
+      // `#registerSystems`): Eine Kiste auf dem Platz des Toten hätte ihm
+      // dessen Restgesundheit wieder zugeschrieben.
       healthByTeam.set(entry.teamId, (healthByTeam.get(entry.teamId) ?? 0) + health);
     }
 
@@ -1584,7 +1623,8 @@ export class MatchController {
 
   #beginTurn(index) {
     const entityId = this.#turnOrder[index];
-    if (!this.#world.isActive(entityId)) return;
+    // Lebensstatus des Spielers, nicht der ECS-Platz (siehe #checkVictory).
+    if (!this.isPlayerAlive(entityId)) return;
 
     // Zustände dieses Zuges abrechnen: Schaden über Zeit wirkt, Dauern klingen ab.
     // Die Abrechnung gehört an den ZUGbeginn, nicht in step(): sonst hinge der
@@ -1603,7 +1643,7 @@ export class MatchController {
     // oft springen, landen und wieder springen.
     this.#jumpsUsed.set(entityId, 0);
 
-    if (turnState.damage > 0 && this.#world.isActive(entityId)) {
+    if (turnState.damage > 0 && this.isPlayerAlive(entityId)) {
       this.#world.getSystem('damage')?.applyDamage(this.#world, entityId, turnState.damage, null);
       this.#events.emit('dot_tick', {
         playerId: entityId,
@@ -1614,7 +1654,7 @@ export class MatchController {
 
     // Eingefroren: der Spieler setzt diesen Zug aus. `advanceTurn` hat die
     // Dauer bereits heruntergezählt, deshalb endet die Wirkung von selbst.
-    if (turnState.frozeThisTurn && this.#world.isActive(entityId) && this.#status === 'playing') {
+    if (turnState.frozeThisTurn && this.isPlayerAlive(entityId) && this.#status === 'playing') {
       this.#events.emit('turn_skipped', { playerId: entityId, reason: 'frozen' });
       this.endTurn();
       return;
@@ -1632,7 +1672,17 @@ export class MatchController {
   #checkVictory() {
     const aliveTeams = new Set();
     for (const entry of this.#players) {
-      if (this.#world.isActive(entry.entityId)) aliveTeams.add(entry.teamId);
+      /*
+       * Der Lebensstatus des SPIELERS entscheidet, nicht `isActive`.
+       *
+       * Fund (belegt): Das ECS vergibt die IDs gefallener Entities neu. Starb
+       * eine Figur und erbte eine Kiste ihre ID, meldete `isActive` sie als
+       * lebendig — das ausgelöschte Team galt damit weiter als vorhanden und die
+       * Runde endete nie durch Ausschaltung. Nachgestellt: vier gefallene
+       * Figuren, Status weiterhin „playing", Runde 8 (siehe
+       * tests/victory-elimination.test.js).
+       */
+      if (entry.alive) aliveTeams.add(entry.teamId);
     }
     if (aliveTeams.size <= 1) {
       this.#status = 'gameover';
@@ -1651,6 +1701,62 @@ export class MatchController {
   surfaceYAt(x) {
     const groundY = findSurfaceY(this.#bitmap, this.width, this.height, x);
     return groundY < 0 ? -1 : groundY;
+  }
+
+  /**
+   * Füllstand des Wassers an einer Weltposition (0..1).
+   *
+   * Die Abfrage stand vorher an zwei Stellen inline (Abwurf und Figurenphysik)
+   * — mit unterschiedlichen Ersatzwegen, falls das Feld die Methode nicht
+   * anbietet. Hier gebündelt, damit die Anzeige denselben Wert sieht wie die
+   * Simulation.
+   */
+  waterLevelAt(worldX, worldY) {
+    if (!this.#water) return 0;
+    const x = Math.max(0, Math.min(this.width - 1, worldX ?? 0));
+    const y = Math.max(0, Math.min(this.height - 1, worldY ?? 0));
+    const roh = typeof this.#water.levelAtWorld === 'function'
+      ? this.#water.levelAtWorld(x, y)
+      : this.#water.getLevel(Math.floor(x), Math.floor(y));
+    return clampWaterLevel(roh);
+  }
+
+  /**
+   * Setzt den Wasserstand an einer Weltposition (Gegenstück zu `waterLevelAt`).
+   *
+   * Gedacht für Tests, Kulissenbau und Diagnose: Wassertiefe ist sonst nur über
+   * das interne Raster erreichbar, was jede Prüfung an die Rasterrechnung
+   * koppelt. Die Zelle wird begrenzt, außerhalb der Karte passiert nichts.
+   *
+   * @returns {boolean} true, wenn der Wert gesetzt wurde
+   */
+  setWaterLevelAt(worldX, worldY, level) {
+    if (!this.#water) return false;
+    const zelle = typeof this.#water.toGrid === 'function'
+      ? this.#water.toGrid(worldX, worldY)
+      : { x: Math.floor(worldX / WATER_SCALE), y: Math.floor(worldY / WATER_SCALE) };
+    if (!Number.isFinite(zelle.x) || !Number.isFinite(zelle.y)) return false;
+    if (zelle.x < 0 || zelle.x >= this.#water.width) return false;
+    if (zelle.y < 0 || zelle.y >= this.#water.height) return false;
+    this.#water.setLevel(zelle.x, zelle.y, clampWaterLevel(level));
+    return true;
+  }
+
+  /** Der Spielereintrag zu einer Entity-ID, oder null. */
+  playerEntry(playerId) {
+    return this.#players.find(entry => entry.entityId === playerId) ?? null;
+  }
+
+  /**
+   * Lebt dieser SPIELER noch?
+   *
+   * Nicht `world.isActive` benutzen: Das ECS vergibt die IDs gefallener
+   * Entities neu, und dann liegt unter derselben ID eine Kiste (siehe
+   * `#registerSystems`). Diese Methode ist die einzige verlässliche Auskunft
+   * über den Lebensstatus einer Figur.
+   */
+  isPlayerAlive(playerId) {
+    return this.playerEntry(playerId)?.alive === true;
   }
 
   /** Setzt die Zugzeit neu (Spielvarianten, Tests, Turniermodus). */
@@ -1675,7 +1781,16 @@ export class MatchController {
 
   getState() {
     const entities = this.#players.map(entry => {
-      const alive = this.#world.isActive(entry.entityId);
+      /*
+       * `alive` ist der Lebensstatus des SPIELERS, nicht die Belegung des
+       * ECS-Platzes.
+       *
+       * Fund (belegt): Beides fiel auseinander, weil das ECS die IDs
+       * gefallener Entities neu vergibt. Die Anzeige meldete eine tote Figur
+       * dann als lebendig mit 0 Leben — und zeichnete sie weiter, weil die
+       * Position einer Kiste gelesen wurde, die inzwischen dieselbe ID trug.
+       */
+      const alive = entry.alive;
       return {
         entityId: entry.entityId,
         teamId: entry.teamId,
@@ -1685,6 +1800,20 @@ export class MatchController {
         alive,
         x: alive ? this.#world.getComponent(entry.entityId, 'Position', 'x') : 0,
         y: alive ? this.#world.getComponent(entry.entityId, 'Position', 'y') : 0,
+        /**
+         * Füllstand des Wassers an der Position der Figur (0..1).
+         *
+         * Ohne diesen Wert konnte die Anzeige weder „nass" noch „ertrinkt"
+         * zeigen: Die Schwellen kannte nur das CharacterSystem, und übertragen
+         * wurde nichts davon. Der Wert wird gerundet, damit Anzeige und
+         * Drahtformat (ein Byte) dieselbe Zahl sehen.
+         */
+        waterLevel: alive
+          ? Math.round(this.waterLevelAt(
+            this.#world.getComponent(entry.entityId, 'Position', 'x'),
+            this.#world.getComponent(entry.entityId, 'Position', 'y'),
+          ) * 1000) / 1000
+          : 0,
         health: alive ? this.#world.getComponent(entry.entityId, 'Health', 'current') : 0,
         maxHealth: alive ? this.#world.getComponent(entry.entityId, 'Health', 'max') : 0,
         angle: alive ? this.#world.getComponent(entry.entityId, 'Weapon', 'angle') : 0,
