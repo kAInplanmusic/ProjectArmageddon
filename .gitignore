@@ -9,6 +9,10 @@ node_modules/
 # Generated files
 *.zip
 
+# Python: Bytecode aus den Hilfsskripten
+__pycache__/
+*.pyc
+
 # Test / coverage artifacts
 test-results/
 playwright-report/
