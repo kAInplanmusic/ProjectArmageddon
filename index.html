@@ -426,6 +426,14 @@
                 <option value="caverns">Höhlen</option>
               </select>
             </label>
+            <label>Kulisse
+              <!-- Wird beim Start aus dem Katalog in src/shared/config/backdrops.js
+                   gefüllt. Die erste Auswahl „automatisch" überlässt die Wahl dem
+                   Seed; damit bleibt ein Match reproduzierbar. -->
+              <select id="cfg-backdrop">
+                <option value="">automatisch</option>
+              </select>
+            </label>
             <label>Seed (leer = zufällig)
               <input id="cfg-seed" type="text" inputmode="numeric" placeholder="z. B. 20260910" />
             </label>

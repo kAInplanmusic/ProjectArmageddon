@@ -12,8 +12,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **259/259** |
-| Browser-E2E | `npm run test:e2e` | **41/41** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **285/285** |
+| Browser-E2E | `npm run test:e2e` | **49/49** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 18 000 Ticks, 0 über 16,7 ms, ~195× Echtzeit |
@@ -430,7 +430,7 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       nichts. Struktur wird vorbereitet, Inhalte folgen.
 
 ### F. Darstellung
-- [ ] **Landschaftsgeneration per KI.** Gewünscht ist KI-generierte Kulisse.
+- [x] **Landschaftsgeneration per KI.** 60 Kulissen (12 Biome a 5 Varianten) erzeugt und eingebaut. Der Prompt steht im Katalog; die Erzeugung ist einmalig vorab, nicht zur Laufzeit.
       Vorgesehen: vorab erzeugte Bilder je Karte (nicht zur Laufzeit), damit
       Determinismus und Offline-Betrieb erhalten bleiben.
 - [ ] Terrain, Wasser und Effekte optisch aufwerten (prozedural: Textur,

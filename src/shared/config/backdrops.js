@@ -1,0 +1,690 @@
+/**
+ * Kulissen (Hintergrundbilder) für die Kampfkarte.
+ *
+ * Aufbau: Zwölf Biome, je fünf Varianten. Die Variante bestimmt die Stimmung,
+ * nicht das Gelände — „Maritim" gibt es als ruhige See, als Sturm, als Polarmeer,
+ * als Kriegshafen und als asiatische Karstküste. Das Gelände selbst bleibt
+ * prozedural und zerstörbar; die Kulisse liegt dahinter.
+ *
+ * Jede Kulisse trägt ihren Erzeugungs-Prompt mit. Das ist bewusst so: Der Prompt
+ * ist die einzige Beschreibung, wie das Bild entstanden ist, und gehört damit zur
+ * Sache. Zur Laufzeit wird er nicht gelesen.
+ *
+ * COMPOSITION: Das Terrain wird ÜBER die Kulisse gezeichnet und bedeckt die
+ * untere Hälfte. Interessante Einzelheiten (Landmarken) müssen deshalb in der
+ * oberen Bildhälfte liegen. Der gemeinsame Zusatz `COMPOSITION_SUFFIX` sorgt
+ * dafür bei jeder Erzeugung.
+ *
+ * @module backdrops
+ */
+
+/**
+ * Technischer Zusatz für jede Erzeugung.
+ *
+ * `horizon low` ist der wichtigste Teil: Die prozedurale Geländelinie liegt bei
+ * etwa 53 % der Bildhöhe. Ein Horizont in der Bildmitte würde von ihr verdeckt
+ * und die Kulisse wirkte abgeschnitten.
+ */
+export const COMPOSITION_SUFFIX = [
+  'Wide panoramic establishing shot as a painted backdrop for a 2D artillery game.',
+  'Horizon low in frame, the sky and distant landmarks occupy the upper two thirds.',
+  'Highly detailed, dramatic atmospheric lighting, strong sense of depth.',
+  'No text, no letters, no watermark, no signature, no user interface, no frame.',
+].join(' ');
+
+/** Höhe des Geländes im Verhältnis zur Bildhöhe (für Komposition und Tests). */
+export const TERRAIN_COVERAGE = 0.47;
+
+/**
+ * Die Biome mit ihren Varianten.
+ *
+ * `file` ist der Dateiname unter `src/client/assets/backdrops/`.
+ */
+export const BACKDROP_BIOMES = Object.freeze([
+  {
+    id: 'maritime',
+    label: 'Maritim & Meer',
+    mapPreset: 'islands',
+    variants: [
+      {
+        id: 'calm_day',
+        label: 'Ruhige See',
+        file: 'maritime_calm_day.jpg',
+        prompt: 'A calm northern sea on a clear summer day. A weathered stone lighthouse with red-white stripes stands on a rocky headland in the left third, gulls wheeling around its top. Wooden fishing boats with patched sails rest in a small harbour below. Distant grey-blue headlands fade into haze. Soft afternoon light, gentle swell, high cirrus clouds.',
+      },
+      {
+        id: 'storm_night',
+        label: 'Sturm bei Nacht',
+        file: 'maritime_storm_night.jpg',
+        prompt: 'A violent storm over open ocean at night. Towering black waves with white foam crests, sheets of rain driven sideways. A listed sailing ship with torn sails struggles in the middle distance, tilted hard. The lighthouse beam cuts through the downpour from a jagged cliff on the right. Lightning splits the sky, illuminating towering cumulonimbus.',
+      },
+      {
+        id: 'arctic_ice',
+        label: 'Polarmeer',
+        file: 'maritime_arctic_ice.jpg',
+        prompt: 'An arctic sea locked in pack ice under a low pale sun. Enormous tabular icebergs with turquoise shadowed faces, pressure ridges of broken floes. A research vessel frozen into the ice sits mid-distance, its hull crusted white. Low sun grazing the horizon with a cold halo, faint aurora beginning above, light blue and rose palette.',
+      },
+      {
+        id: 'war_harbor',
+        label: 'Kriegshafen',
+        file: 'maritime_war_harbor.jpg',
+        prompt: 'A naval harbour in wartime at dusk. Grey battleships with tall masts and camouflage dazzle moored along concrete quays, black smoke columns rising from a burning vessel in the background. Massive dock cranes, barrage balloons floating on cables above the harbour, searchlight beams sweeping a smoke-hazed sky. Ash particles, muted steel and ember colours.',
+      },
+      {
+        id: 'asian_karst',
+        label: 'Asiatische Karstküste',
+        file: 'maritime_asian_karst.jpg',
+        prompt: 'A misty karst archipelago in the style of Ha Long Bay at dawn. Steep limestone pillars covered in green vegetation rise from calm emerald water, layered in atmospheric mist. Traditional wooden junk boats with battened sails and red lanterns drift between the islands. Soft glowing fog, pastel peach and jade palette, silhouetted birds.',
+      },
+    ],
+  },
+
+  {
+    id: 'island',
+    label: 'Südseeinsel & Karibik',
+    mapPreset: 'islands',
+    variants: [
+      {
+        id: 'caribbean_day',
+        label: 'Karibischer Tag',
+        file: 'island_caribbean_day.jpg',
+        prompt: 'A Caribbean island on a brilliant day. A crescent beach of white sand curves around a turquoise lagoon, coral reef visible as dark patches beneath the surface. Coconut palms lean over the water, a wooden sloop with a white sail anchored offshore. Fluffy trade-wind clouds, deep blue sky, bright saturated colours.',
+      },
+      {
+        id: 'sunset_golden',
+        label: 'Goldener Sonnenuntergang',
+        file: 'island_sunset_golden.jpg',
+        prompt: 'A tropical island at sunset. Palm trees silhouetted against a blazing sky of orange, magenta and deep violet, the sun a red disc touching a calm sea. A long weathered wooden pier extends into the water, its planks glowing. A few anchored boats rocked flat and dark. Reflected light path on the water, dramatic cloud bands.',
+      },
+      {
+        id: 'volcano',
+        label: 'Vulkanausbruch',
+        file: 'island_volcano.jpg',
+        prompt: 'A volcanic island erupting at dusk. A cone mountain in the centre of the frame spews an immense ash plume lit orange from within, lava fountains along the flank, glowing lava rivers reaching the sea in bursts of steam. Palm forest on the lower slopes partially scorched. Dramatic red and black sky, falling ash.',
+      },
+      {
+        id: 'typhoon',
+        label: 'Taifun',
+        file: 'island_typhoon.jpg',
+        prompt: 'A tropical island under a typhoon. Enormous dark storm walls with a green-black tint, palms bent almost horizontal under wind, fronds torn away. Massive waves breaking white over a low reef, spray filling the air. A small tin-roofed settlement huddling in the middle distance. Oppressive slate and greenish light.',
+      },
+      {
+        id: 'polynesian_night',
+        label: 'Polynesische Nacht',
+        file: 'island_polynesian_night.jpg',
+        prompt: 'A Polynesian lagoon village at night. Traditional outrigger canoes drawn up on a dark beach, a long thatched meeting house on stilts over the water, lit tiki torches along a path. The Milky Way arches brilliantly overhead, its reflection broken on gentle lagoon ripples. Warm torch glow against cool blue starlight.',
+      },
+    ],
+  },
+
+  {
+    id: 'alpine',
+    label: 'Gebirge & Alpin',
+    mapPreset: 'mountains',
+    variants: [
+      {
+        id: 'summer_meadow',
+        label: 'Alpensommer',
+        file: 'alpine_summer_meadow.jpg',
+        prompt: 'An alpine summer valley. Snow-capped granite peaks in the background catching bright sun, a green meadow slope in the middle distance with wooden chalets and hay racks, a cable car line rising toward a ridge. Scattered conifers, a clear mountain stream. Vivid blue sky with small crisp cumulus clouds.',
+      },
+      {
+        id: 'winter_snow',
+        label: 'Hochwinter',
+        file: 'alpine_winter_snow.jpg',
+        prompt: 'High alpine winter. Deep snow covering everything, jagged white peaks under a pale sun. A ski slope with lift pylons cuts down the right side, an avalanche of powder snow tumbling down a distant face with a dust cloud. Frozen lake in the valley floor, snow-laden spruce. Cold blue shadows, brilliant white highlights.',
+      },
+      {
+        id: 'himalaya_monastery',
+        label: 'Himalaya-Kloster',
+        file: 'alpine_himalaya_monastery.jpg',
+        prompt: 'A Himalayan monastery clinging to a cliff face at high altitude. Whitewashed walls with red and gold trim, prayer flags strung across the gorge on long lines, stupas with painted eyes. Immense snow peaks behind, the highest clouds below the summits. Thin cold air, high contrast, ochre and ice-blue palette.',
+      },
+      {
+        id: 'war_ruins',
+        label: 'Kriegsruinen',
+        file: 'alpine_war_ruins.jpg',
+        prompt: 'A bombed mountain village in a high valley. Ruined stone houses with collapsed roofs and exposed beams, blackened walls, a shattered church tower still standing in the centre. Smoke drifting across the slopes, a burnt-out vehicle on the road. Grey overcast light, ash in the air, desaturated palette with ember accents.',
+      },
+      {
+        id: 'moonlit_peaks',
+        label: 'Mondnacht',
+        file: 'alpine_moonlit_peaks.jpg',
+        prompt: 'Jagged mountain peaks under an enormous full moon. A still black mountain lake in the middle distance mirrors the moon and the ridgeline perfectly. Sharp silhouettes of rock and snow, moonlight rimming the edges of the peaks. Deep indigo sky with brilliant stars, cold silver and slate palette, long shadows.',
+      },
+    ],
+  },
+
+  {
+    id: 'forest',
+    label: 'Wald & Wiese',
+    mapPreset: 'hills',
+    variants: [
+      {
+        id: 'summer_meadow',
+        label: 'Sommerwiese',
+        file: 'forest_summer_meadow.jpg',
+        prompt: 'A summer wildflower meadow at the edge of a deciduous forest. Rolling grass with red poppies and yellow cornflowers, haystacks drying in the middle distance, a weathered wooden barn and fence on the right. Tall oaks and beeches behind, sunlit green. Deep blue sky, warm light, butterflies.',
+      },
+      {
+        id: 'autumn_forest',
+        label: 'Herbstwald',
+        file: 'forest_autumn_forest.jpg',
+        prompt: 'A golden autumn birch forest in light mist. Straight white trunks with brilliant yellow and amber canopies, a leaf-covered path winding through. A stag standing in the middle distance, mushrooms and ferns along the ground. Soft diffused morning light with visible sun rays through the mist, warm and cool contrast.',
+      },
+      {
+        id: 'winter_forest',
+        label: 'Winterwald',
+        file: 'forest_winter_forest.jpg',
+        prompt: 'A snow-laden conifer forest in deep winter. Heavy white snow bending spruce branches, a half-frozen stream cutting through the middle, animal tracks crossing a clearing. Pale low sun casting long blue shadows across the snow, faint mist between the trunks, quiet monochrome with pale gold light.',
+      },
+      {
+        id: 'fog_night',
+        label: 'Nebel bei Nacht',
+        file: 'forest_fog_night.jpg',
+        prompt: 'A dense fogbound forest at night. Bare black branches emerging from thick grey vapour, a single warm lantern glow deep in the middle distance providing the only light source. Almost monochrome, heavy atmosphere, high contrast silhouettes, unsettling and quiet.',
+      },
+      {
+        id: 'fantasy_glade',
+        label: 'Verzauberte Lichtung',
+        file: 'forest_fantasy_glade.jpg',
+        prompt: 'An enchanted forest clearing. A colossal ancient tree with roots like buttresses dominates the centre, bioluminescent mushrooms and glowing blue flowers light the forest floor, fireflies drifting between twisted trunks. Shafts of pale green light through the canopy, deep purples and cyan glow, dreamlike and magical.',
+      },
+    ],
+  },
+
+  {
+    id: 'urban',
+    label: 'Stadt & Industrie',
+    mapPreset: 'hills',
+    variants: [
+      {
+        id: 'modern_day',
+        label: 'Moderne Stadt',
+        file: 'urban_modern_day.jpg',
+        prompt: 'A modern city skyline on a clear day. Glass and steel towers of varied heights with reflective facades, a green park with mature trees in the middle distance, a river with bridges crossing the centre. Clean modern architecture, sharp shadows, bright blue sky with light haze at the horizon.',
+      },
+      {
+        id: 'neon_night',
+        label: 'Neonnacht',
+        file: 'urban_neon_night.jpg',
+        prompt: 'A futuristic city street at night in heavy rain. Towering buildings covered in neon signage and holographic advertisements in magenta, cyan and amber, rain-slick asphalt reflecting every light source, elevated transit lines overhead, steam venting from the street. Dense, moody, saturated neon against deep blue-black.',
+      },
+      {
+        id: 'industrial_ruins',
+        label: 'Industrieruine',
+        file: 'urban_industrial_ruins.jpg',
+        prompt: 'An abandoned steelworks. Rusted blast furnaces, skeletal conveyor gantries, rows of brick chimneys against a pale overcast sky, one chimney still trailing thin smoke. Corroded pipes and rail sidings, weeds breaking through concrete. Desaturated rust, ochre and grey palette, melancholic industrial decay.',
+      },
+      {
+        id: 'war_torn',
+        label: 'Kriegsstadt',
+        file: 'urban_war_torn.jpg',
+        prompt: 'A bombed city district. Gutted apartment blocks with exposed floors and dangling reinforcement, mountains of rubble and twisted metal in the streets, smoke columns rising across the skyline. A burnt-out tank hull frame right of centre. Grey ash haze, fire glow in the distance, desaturated with orange embers.',
+      },
+      {
+        id: 'indian_monsoon',
+        label: 'Indische Monsunstadt',
+        file: 'urban_indian_monsoon.jpg',
+        prompt: 'An Indian city under monsoon skies. Densely packed colourful buildings with painted facades and rooftop water tanks, an ornate temple with carved gopuram towers, bazaar awnings and hanging wires across the street. Towering dark monsoon clouds with a shaft of sunlight breaking through, wet reflective streets, saturated ochre, teal and crimson.',
+      },
+    ],
+  },
+
+  {
+    id: 'cosmos',
+    label: 'Universum & Galaxie',
+    mapPreset: 'mountains',
+    variants: [
+      {
+        id: 'nebula',
+        label: 'Nebel',
+        file: 'cosmos_nebula.jpg',
+        prompt: 'A vast colourful nebula in deep space. Billowing clouds of magenta, teal and deep violet gas lit from within, dense star clusters embedded in the dust, a distant spiral galaxy visible as a small smudge in the upper right. Layers of depth from foreground dust lanes to distant starfields, awe-inspiring scale.',
+      },
+      {
+        id: 'ringed_planet',
+        label: 'Ringplanet',
+        file: 'cosmos_ringed_planet.jpg',
+        prompt: 'A colossal ringed gas giant seen from the surface of its moon. The planet occupies the upper left, banded in amber and cream, its rings slicing diagonally across the frame casting a shadow on the cloud tops. Jagged icy moon terrain in the foreground, a small distant sun, sharp hard shadows and black sky.',
+      },
+      {
+        id: 'space_station',
+        label: 'Raumstation',
+        file: 'cosmos_space_station.jpg',
+        prompt: 'A large orbital space station above Earth. Truss structures with long solar panel arrays, a rotating ring section, docking modules with lit windows glowing. Earth fills the lower background with a curved horizon, cloud swirls and a thin bright atmosphere line. Deep black space above, hard sunlight and deep shadow.',
+      },
+      {
+        id: 'black_hole',
+        label: 'Schwarzes Loch',
+        file: 'cosmos_black_hole.jpg',
+        prompt: 'A supermassive black hole with a brilliant accretion disk. The disk of superheated orange-white matter wraps around the event horizon, light bent into a halo above and below by gravitational lensing. A thin photon ring, relativistic jets firing vertically. Utter black core, extreme contrast, distant stars distorted.',
+      },
+      {
+        id: 'alien_world',
+        label: 'Fremde Welt',
+        file: 'cosmos_alien_world.jpg',
+        prompt: 'An alien planet surface with two suns. Towering crystal spires of translucent violet mineral rising from a rust-red plain, strange spiral plants, a low horizon with a huge pale gas giant rising. Two suns casting twin shadows, one warm and one cold, dusty atmosphere, unfamiliar and vast.',
+      },
+    ],
+  },
+
+  {
+    id: 'abstract',
+    label: 'Abstrakt & Verrückt',
+    mapPreset: 'caverns',
+    variants: [
+      {
+        id: 'geometric',
+        label: 'Geometrisch',
+        file: 'abstract_geometric.jpg',
+        prompt: 'A bold geometric abstract composition. Flat overlapping triangles, circles and hard-edged bars in strong primaries with black outlines, arranged in a dynamic diagonal rhythm. Bauhaus-inspired, perfectly flat colour fields, no gradients, crisp edges, poster-like clarity.',
+      },
+      {
+        id: 'psychedelic',
+        label: 'Psychedelisch',
+        file: 'abstract_psychedelic.jpg',
+        prompt: 'A swirling psychedelic vortex. Concentric melting waves of fluorescent pink, acid green, orange and electric blue twisting around a centre, forms dissolving into each other, faint eye motifs emerging from the pattern. Dense, hypnotic, hand-painted 1960s poster style with heavy colour saturation.',
+      },
+      {
+        id: 'vaporwave',
+        label: 'Vaporwave',
+        file: 'abstract_vaporwave.jpg',
+        prompt: 'A vaporwave scene. A glowing wireframe grid receding to a vanishing point on the horizon, black silhouettes of classical statues and palm trees against a gradient sky of pink, lilac and cyan. A large pale sun disc with horizontal scan lines, retro digital aesthetic, glossy and synthetic.',
+      },
+      {
+        id: 'fractal',
+        label: 'Fraktal',
+        file: 'abstract_fractal.jpg',
+        prompt: 'A complex fractal structure filling the frame. Recursive self-similar spirals and filigree branching forms in iridescent copper, teal and violet, glowing at the edges with luminous detail at every scale. Deep metallic depth, mathematically intricate, dark background making the structure stand out.',
+      },
+      {
+        id: 'surreal',
+        label: 'Surreal',
+        file: 'abstract_surreal.jpg',
+        prompt: 'A surreal dreamscape. An inverted landscape where the ground hangs above and a calm sea fills the sky, giant everyday objects floating weightless — a chair, a clock with no hands, a staircase leading nowhere. Perfectly sharp realistic rendering of impossible geometry, cool clear light, unsettling stillness.',
+      },
+    ],
+  },
+
+  {
+    id: 'caverns',
+    label: 'Höhlenwelten',
+    mapPreset: 'caverns',
+    variants: [
+      {
+        id: 'limestone',
+        label: 'Tropfsteinhöhle',
+        file: 'caverns_limestone.jpg',
+        prompt: 'A vast limestone cavern. Immense stalactites hanging from a dark ceiling, matching stalagmites rising from the floor, a clear underground river winding through the middle distance. A single shaft of daylight breaks through a ceiling fissure, illuminating mist and the river surface. Damp ochre and grey stone, dramatic single light source.',
+      },
+      {
+        id: 'crystal',
+        label: 'Kristallhöhle',
+        file: 'caverns_crystal.jpg',
+        prompt: 'A cavern filled with giant translucent crystals. Enormous angled selenite beams up to many metres tall growing from floor and walls, glowing faintly from within, refracting light into rainbow caustics across the chamber. Cold blue-white luminescence, glassy reflections, otherworldly and silent.',
+      },
+      {
+        id: 'lava_tube',
+        label: 'Lavaröhre',
+        file: 'caverns_lava_tube.jpg',
+        prompt: 'A volcanic lava tube. A river of molten orange lava flowing along the floor, obsidian black walls with glowing orange cracks, stalactites of cooled basalt overhead. Embers rising and drifting in the heat haze, the rock surface glowing dull red near the flow. Extreme contrast between black rock and incandescent lava.',
+      },
+      {
+        id: 'ice_cave',
+        label: 'Eishöhle',
+        file: 'caverns_ice_cave.jpg',
+        prompt: 'A blue ice cave beneath a glacier. Sculpted translucent ice walls in deep sapphire and cyan, a frozen waterfall descending mid-frame, smooth meltwater-carved channels. Daylight filtering through the ice roof, glowing turquoise from within. Clean, cold, glassy surfaces with fine frost detail.',
+      },
+      {
+        id: 'underwater',
+        label: 'Unterwasserhöhle',
+        file: 'caverns_underwater.jpg',
+        prompt: 'A flooded underwater cave. Crystal-clear water filling the chamber, sunlight beams penetrating from a distant opening and fanning through the water, stalactites submerged and draped in sediment. Diver-scale immensity, pale sand floor, teal and aquamarine light with suspended particles catching the rays.',
+      },
+    ],
+  },
+
+  {
+    id: 'fantasy',
+    label: 'Fantasy',
+    mapPreset: 'mountains',
+    variants: [
+      {
+        id: 'elven_city',
+        label: 'Elfenstadt',
+        file: 'fantasy_elven_city.jpg',
+        prompt: 'An elven city built into a colossal forest. Slender white towers and curved bridges woven between enormous tree trunks high above the ground, waterfalls spilling from platforms into a misty gorge below. Lanterns suspended on chains, delicate filigree architecture. Golden light through green canopy, ethereal and ancient.',
+      },
+      {
+        id: 'dragon_peak',
+        label: 'Drachenberg',
+        file: 'fantasy_dragon_peak.jpg',
+        prompt: 'A dragon circling a mountain fortress. A vast scaled dragon with spread wings silhouetted against a burning sky, wheeling around a snow-capped peak crowned by a ruined stone citadel. Long tail trailing, wings casting a shadow across the rock face. Dramatic backlight, ash and ember atmosphere, epic scale.',
+      },
+      {
+        id: 'castle_siege',
+        label: 'Belagerung',
+        file: 'fantasy_castle_siege.jpg',
+        prompt: 'A fantasy castle under siege. A towering multi-towered stone castle with flying banners on a rocky outcrop, trebuchets and siege towers on the plain before it, burning tents and smoke. Volleys of flaming projectiles arcing through the sky, ladders against the walls. Dusk, orange firelight against cold grey stone.',
+      },
+      {
+        id: 'dark_swamp',
+        label: 'Dunkler Sumpf',
+        file: 'fantasy_dark_swamp.jpg',
+        prompt: 'A cursed swamp at twilight. Dead twisted trees rising from black stagnant water, hanging moss and fog, faint sickly green witch-lights hovering above the surface. A ruined wooden causeway half sunk, bones of a large creature in the shallows. Oppressive purple-green gloom, still and menacing.',
+      },
+      {
+        id: 'crystal_magic',
+        label: 'Kristallmagie',
+        file: 'fantasy_crystal_magic.jpg',
+        prompt: 'A floating island held aloft by magic. A chunk of rock with waterfalls pouring off its underside, topped by a ring of glowing rune stones and a luminous crystal core. An aurora of green and violet light twisting above, smaller shattered islands drifting nearby. Arcane glow, vast sky below, magical and weightless.',
+      },
+    ],
+  },
+
+  {
+    id: 'hyperreal',
+    label: 'Hyperrealismus',
+    mapPreset: 'mountains',
+    variants: [
+      {
+        id: 'golden_valley',
+        label: 'Goldenes Tal',
+        file: 'hyperreal_golden_valley.jpg',
+        prompt: 'A photorealistic river valley at golden hour. Precise detail in every element: individual trees on the slopes, gravel bars in the braided river, warm sunlight raking across the landscape creating long shadows, atmospheric haze layering the distance. Natural colours, high dynamic range, professional landscape photography.',
+      },
+      {
+        id: 'desert_caravan',
+        label: 'Wüste',
+        file: 'hyperreal_desert_caravan.jpg',
+        prompt: 'Photorealistic desert dunes at midday. Fine wind-ripple texture on the sand surfaces, sharp curving dune crests with razor edges, a line of camels and figures crossing a distant ridge as small silhouettes. Heat shimmer near the ground, deep blue cloudless sky, extreme clarity and natural colour.',
+      },
+      {
+        id: 'polar_station',
+        label: 'Polstation',
+        file: 'hyperreal_polar_station.jpg',
+        prompt: 'Photorealistic polar research station. A cluster of orange modular buildings on stilts above wind-scoured snow, antenna masts and fuel drums, tracked vehicles parked nearby. Immense ice sheet extending to a distant mountain range under clear low sun. Sharp cold light, blue snow shadows, documentary realism.',
+      },
+      {
+        id: 'jungle_river',
+        label: 'Dschungelfluss',
+        file: 'hyperreal_jungle_river.jpg',
+        prompt: 'A photorealistic rainforest river. Dense multi-layered canopy with individual leaves and epiphytes visible, a brown river winding below, morning mist rising in ribbons between the trees. Sun breaking through in shafts, rich saturated greens, humid atmosphere, wildlife-scale detail.',
+      },
+      {
+        id: 'coastal_cliffs',
+        label: 'Steilküste',
+        file: 'hyperreal_coastal_cliffs.jpg',
+        prompt: 'A photorealistic coastline with sheer cliffs. Layered sedimentary rock faces with visible strata, surf breaking white against the base, a stone lighthouse on the headland, seabirds on the ledges. Overcast breaking to sun, wet rock glistening, natural muted palette, sharp realistic texture.',
+      },
+    ],
+  },
+
+  {
+    id: 'western',
+    label: 'Cowboy & Western',
+    mapPreset: 'hills',
+    variants: [
+      {
+        id: 'desert_town',
+        label: 'Wüstenstadt',
+        file: 'western_desert_town.jpg',
+        prompt: 'A dusty western frontier town at midday. A single wide main street of packed dirt lined with wooden false-front saloons and a general store, hitching rails and water troughs, saguaro cacti and scrub. Red sandstone mesas rising in the distance, heat haze, bleached timber and ochre dust palette.',
+      },
+      {
+        id: 'sunset_duel',
+        label: 'Duell im Sonnenuntergang',
+        file: 'western_sunset_duel.jpg',
+        prompt: 'A western street at sunset. Two lone figures in long coats and hats standing apart in the middle of a wide dusty street, both silhouetted black against a blazing orange and red sky. Wooden buildings dark on either side, dust hanging in the air, long shadows stretching toward the viewer.',
+      },
+      {
+        id: 'campfire_night',
+        label: 'Lagerfeuer',
+        file: 'western_campfire_night.jpg',
+        prompt: 'A prairie camp at night. A covered wagon circle with canvas tops, horses picketed nearby, a bright campfire in the centre with figures seated as silhouettes. The Milky Way blazing overhead, grass moving in the wind. Warm firelight pool against cold blue starlight, vast and lonely.',
+      },
+      {
+        id: 'winter_frontier',
+        label: 'Wintergrenze',
+        file: 'western_winter_frontier.jpg',
+        prompt: 'A snowbound frontier town. Wooden buildings with snow-laden roofs along a frozen street, icicles hanging from eaves, a frozen river with an ice-skimmed surface beside the town. Bare cottonwoods, smoke from chimneys standing straight in still cold air. Muted white and grey with warm window lights.',
+      },
+      {
+        id: 'native_prairie',
+        label: 'Prärie',
+        file: 'western_native_prairie.jpg',
+        prompt: 'A Native American encampment on the open prairie. Conical tipis painted with geometric designs arranged in a circle, horses grazing, a herd of bison crossing the distant plain. Rolling grass to the horizon under a vast dramatic sky with towering cumulus. Warm earth tones, golden late light.',
+      },
+    ],
+  },
+
+  {
+    id: 'noir',
+    label: 'Film Noir & Cinematisch',
+    mapPreset: 'hills',
+    variants: [
+      {
+        id: 'rainy_street',
+        label: 'Regennasse Straße',
+        file: 'noir_rainy_street.jpg',
+        prompt: 'A rain-soaked city street at night in classic film noir. Black and white, deep shadows and wet asphalt reflecting a single glowing neon sign, fire escapes and brick facades, a lone streetlamp halo in the mist, puddles catching light. Hard chiaroscuro contrast, low-key lighting, heavy atmosphere.',
+      },
+      {
+        id: 'harbor_docks',
+        label: 'Hafenkai',
+        file: 'noir_harbor_docks.jpg',
+        prompt: 'Foggy harbour docks at night in film noir style. Black and white, a moored freighter looming as a dark mass with a single lit porthole, skeletal cargo cranes silhouetted, mooring bollards and coiled rope in the foreground, thick fog swallowing the background. Extreme contrast, pools of lamp light, ominous.',
+      },
+      {
+        id: 'smoky_bar',
+        label: 'Verrauchte Bar',
+        file: 'noir_smoky_bar.jpg',
+        prompt: 'A smoky bar interior seen through a window at night, film noir style. Black and white, venetian blind slats casting hard striped shadows across the scene, cigarette smoke curling in a beam of light, blurred figures and bottles behind. High contrast, voyeuristic framing, deep shadow.',
+      },
+      {
+        id: 'wet_road_chase',
+        label: 'Verfolgung',
+        file: 'noir_wet_road_chase.jpg',
+        prompt: 'A car chase on a wet mountain road at night, film noir style. Black and white, twin headlight beams cutting through dense fog from a pursuing vehicle, wet tarmac reflecting light, guardrail and dark pine silhouettes, steep low camera angle. Motion tension, stark contrast, rain streaks.',
+      },
+      {
+        id: 'rooftop_silhouette',
+        label: 'Dachsilhouette',
+        file: 'noir_rooftop_silhouette.jpg',
+        prompt: 'A lone figure in a trench coat and fedora standing at the edge of a rooftop, film noir style. Black and white, seen from behind and below as a hard silhouette against a city skyline of lit windows and water towers, wind lifting the coat. Low-key lighting, dramatic negative space, brooding and cinematic.',
+      },
+    ],
+  },
+]);
+
+/** Alle Varianten als flache Liste. */
+export const ALL_BACKDROPS = Object.freeze(
+  BACKDROP_BIOMES.flatMap(biome => biome.variants.map(variant => ({
+    biomeId: biome.id,
+    biomeLabel: biome.label,
+    mapPreset: biome.mapPreset,
+    id: variant.id,
+    label: variant.label,
+    file: variant.file,
+    prompt: variant.prompt,
+    /** Eindeutiger Schlüssel: „biome/variante". */
+    key: `${biome.id}/${variant.id}`,
+  }))),
+);
+
+/** Findet eine Kulisse über ihren Schlüssel. */
+export function getBackdrop(biomeId, variantId) {
+  const biome = BACKDROP_BIOMES.find(b => b.id === biomeId);
+  if (!biome) return null;
+  const variant = biome.variants.find(v => v.id === variantId);
+  return variant ? { ...variant, biomeId: biome.id, biomeLabel: biome.label, key: `${biome.id}/${variant.id}` } : null;
+}
+
+/** Alle Kulissen, die zu einer Karte passen. */
+export function backdropsForPreset(preset) {
+  return ALL_BACKDROPS.filter(backdrop => backdrop.mapPreset === preset);
+}
+
+/**
+ * Wählt eine Kulisse deterministisch aus einem Zahlenwert (z. B. dem Match-Seed).
+ *
+ * Deterministisch heißt: gleicher Seed ergibt dieselbe Kulisse. Das ist nötig,
+ * damit ein Replay dieselbe Karte zeigt — eine Kulisse, die sich bei jedem
+ * Abspielen ändert, würde das Bild vom aufgezeichneten Geschehen trennen.
+ *
+ * @param {number} seed
+ * @param {string} [preset] - auf diese Karte passende Kulissen bevorzugen
+ * @returns {object} Kulisse (nie null)
+ */
+export function pickBackdrop(seed, preset = null) {
+  // Bevorzugt die Varianten des LEITBIOMS. Sonst käme bei „Hügel" zufällig eine
+  // Noir-Stadt oder ein Western-Nest über grünem Gras heraus.
+  const leitbiom = preset ? PRIMARY_BIOME_BY_PRESET[preset] : null;
+  const biome = leitbiom ? BACKDROP_BIOMES.find(b => b.id === leitbiom) : null;
+  // `mapPreset` gehört mit ins Ergebnis: daran erkennt der Aufrufer, zu welchem
+  // Gelände die Kulisse passt.
+  const auswahl = biome
+    ? biome.variants.map(v => ({
+      ...v,
+      biomeId: biome.id,
+      biomeLabel: biome.label,
+      mapPreset: biome.mapPreset,
+      key: `${biome.id}/${v.id}`,
+    }))
+    : (preset ? backdropsForPreset(preset) : []);
+  const pool = auswahl.length > 0 ? auswahl : ALL_BACKDROPS;
+  const index = Math.abs(Math.floor(Number(seed) || 0)) % pool.length;
+  return pool[index];
+}
+
+/**
+ * Bodenfarben je Kulisse: [Oberfläche, Tiefe].
+ *
+ * Warum je Kulisse und nicht einmal global: Das Gelände wird prozedural
+ * gezeichnet und war bisher immer grün. Über einer Eiskulisse ergab das grünes
+ * Gras auf Packeis, über einer Lavaröhre grünes Gras auf Basalt. Der Boden
+ * gehört zur Szene — eine einzige Farbe kann nicht zu sechzig Kulissen passen.
+ *
+ * Die Werte sind auf die jeweilige Kulisse abgestimmt: Eis und Schnee hell, Lava
+ * und Basalt dunkel, Wüste sandig, Noir entsättigt.
+ */
+export const TERRAIN_PALETTES = Object.freeze({
+  // Maritim
+  'maritime/calm_day': { surface: [110, 140, 120], deep: [45, 62, 60] },
+  'maritime/storm_night': { surface: [70, 85, 95], deep: [28, 38, 48] },
+  'maritime/arctic_ice': { surface: [226, 238, 246], deep: [148, 176, 196] },
+  'maritime/war_harbor': { surface: [95, 98, 100], deep: [42, 46, 50] },
+  'maritime/asian_karst': { surface: [128, 150, 110], deep: [52, 72, 58] },
+
+  // Inseln
+  'island/caribbean_day': { surface: [232, 214, 168], deep: [150, 130, 96] },
+  'island/sunset_golden': { surface: [214, 180, 140], deep: [120, 92, 80] },
+  'island/volcano': { surface: [68, 58, 56], deep: [28, 22, 24] },
+  'island/typhoon': { surface: [96, 110, 96], deep: [40, 50, 46] },
+  'island/polynesian_night': { surface: [120, 110, 90], deep: [46, 42, 40] },
+
+  // Gebirge
+  'alpine/summer_meadow': { surface: [110, 148, 96], deep: [44, 62, 44] },
+  'alpine/winter_snow': { surface: [230, 240, 248], deep: [158, 180, 200] },
+  'alpine/himalaya_monastery': { surface: [176, 164, 142], deep: [96, 88, 80] },
+  'alpine/war_ruins': { surface: [126, 120, 110], deep: [56, 52, 48] },
+  'alpine/moonlit_peaks': { surface: [150, 158, 175], deep: [60, 68, 86] },
+
+  // Wald
+  'forest/summer_meadow': { surface: [104, 146, 86], deep: [42, 60, 40] },
+  'forest/autumn_forest': { surface: [168, 132, 72], deep: [72, 54, 36] },
+  'forest/winter_forest': { surface: [222, 232, 240], deep: [146, 168, 186] },
+  'forest/fog_night': { surface: [86, 92, 96], deep: [36, 40, 46] },
+  'forest/fantasy_glade': { surface: [88, 140, 116], deep: [30, 52, 58] },
+
+  // Stadt
+  'urban/modern_day': { surface: [120, 124, 128], deep: [54, 58, 62] },
+  'urban/neon_night': { surface: [70, 62, 96], deep: [26, 22, 42] },
+  'urban/industrial_ruins': { surface: [128, 112, 92], deep: [56, 48, 40] },
+  'urban/war_torn': { surface: [110, 104, 98], deep: [46, 42, 40] },
+  'urban/indian_monsoon': { surface: [136, 118, 92], deep: [56, 50, 44] },
+
+  // Universum
+  'cosmos/nebula': { surface: [96, 78, 124], deep: [32, 24, 52] },
+  'cosmos/ringed_planet': { surface: [150, 132, 104], deep: [62, 54, 48] },
+  'cosmos/space_station': { surface: [128, 132, 140], deep: [52, 56, 66] },
+  'cosmos/black_hole': { surface: [72, 64, 72], deep: [24, 20, 26] },
+  'cosmos/alien_world': { surface: [150, 96, 80], deep: [62, 38, 34] },
+
+  // Abstrakt
+  'abstract/geometric': { surface: [200, 196, 188], deep: [96, 92, 88] },
+  'abstract/psychedelic': { surface: [160, 72, 140], deep: [52, 24, 60] },
+  'abstract/vaporwave': { surface: [120, 96, 150], deep: [42, 32, 64] },
+  'abstract/fractal': { surface: [148, 112, 84], deep: [52, 40, 44] },
+  'abstract/surreal': { surface: [140, 136, 128], deep: [62, 60, 58] },
+
+  // Höhlen
+  'caverns/limestone': { surface: [138, 124, 102], deep: [58, 52, 46] },
+  'caverns/crystal': { surface: [126, 152, 168], deep: [44, 62, 80] },
+  'caverns/lava_tube': { surface: [60, 50, 48], deep: [24, 20, 20] },
+  'caverns/ice_cave': { surface: [176, 206, 220], deep: [96, 134, 160] },
+  'caverns/underwater': { surface: [110, 146, 152], deep: [42, 66, 76] },
+
+  // Fantasy
+  'fantasy/elven_city': { surface: [104, 142, 104], deep: [40, 58, 48] },
+  'fantasy/dragon_peak': { surface: [120, 116, 124], deep: [48, 46, 54] },
+  'fantasy/castle_siege': { surface: [116, 110, 104], deep: [50, 46, 44] },
+  'fantasy/dark_swamp': { surface: [78, 84, 66], deep: [32, 36, 30] },
+  'fantasy/crystal_magic': { surface: [124, 120, 164], deep: [48, 44, 78] },
+
+  // Hyperrealismus
+  'hyperreal/golden_valley': { surface: [126, 140, 98], deep: [52, 60, 44] },
+  'hyperreal/desert_caravan': { surface: [216, 190, 144], deep: [140, 116, 80] },
+  'hyperreal/polar_station': { surface: [226, 236, 244], deep: [152, 176, 198] },
+  'hyperreal/jungle_river': { surface: [88, 124, 72], deep: [34, 50, 32] },
+  'hyperreal/coastal_cliffs': { surface: [128, 124, 112], deep: [54, 52, 48] },
+
+  // Western
+  'western/desert_town': { surface: [200, 170, 124], deep: [124, 100, 68] },
+  'western/sunset_duel': { surface: [190, 152, 116], deep: [96, 72, 56] },
+  'western/campfire_night': { surface: [112, 104, 84], deep: [42, 38, 32] },
+  'western/winter_frontier': { surface: [214, 224, 232], deep: [142, 160, 176] },
+  'western/native_prairie': { surface: [156, 148, 96], deep: [66, 62, 44] },
+
+  // Noir
+  'noir/rainy_street': { surface: [74, 76, 80], deep: [30, 32, 36] },
+  'noir/harbor_docks': { surface: [68, 70, 74], deep: [26, 28, 32] },
+  'noir/smoky_bar': { surface: [80, 78, 76], deep: [32, 30, 30] },
+  'noir/wet_road_chase': { surface: [70, 72, 78], deep: [28, 30, 34] },
+  'noir/rooftop_silhouette': { surface: [72, 74, 80], deep: [28, 30, 36] },
+});
+
+/** Bodenfarben, wenn keine Kulisse gesetzt ist (der bisherige grüne Boden). */
+export const DEFAULT_TERRAIN_PALETTE = Object.freeze({
+  surface: [96, 138, 92],
+  deep: [38, 54, 46],
+});
+
+/**
+ * Bodenfarben einer Kulisse.
+ * @returns {{surface:number[], depth?:number[], deep:number[]}}
+ */
+export function paletteFor(backdrop) {
+  if (!backdrop?.key) return DEFAULT_TERRAIN_PALETTE;
+  return TERRAIN_PALETTES[backdrop.key] ?? DEFAULT_TERRAIN_PALETTE;
+}
+
+/**
+ * Leitbiom je Geländeform.
+ *
+ * Mehrere Biome teilen sich eine Geländeform (hills gilt für Wald, Stadt,
+ * Western und Noir). Ohne Leitbiom würde die Standardkulisse zufällig aus allen
+ * gewählt — eine Noir-Stadt über grünen Hügeln, wie es tatsächlich vorkam.
+ *
+ * Die Wahl des Spielers bleibt davon unberührt: alle sechzig Kulissen sind
+ * erreichbar, nur die VORGABE ist eindeutig.
+ */
+export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
+  islands: 'maritime',
+  mountains: 'alpine',
+  hills: 'forest',
+  caverns: 'caverns',
+});
+
+export default BACKDROP_BIOMES;

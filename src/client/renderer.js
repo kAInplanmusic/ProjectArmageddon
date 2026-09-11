@@ -10,11 +10,30 @@
  */
 import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
+import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
+
+/**
+ * Kulissen-URLs, von Vite aufgelöst.
+ *
+ * `import.meta.glob` statt eines selbstgebauten Pfades: Vite vergibt im Build
+ * einen Hash-Namen und legt die Datei unter `/assets/` ab. Ein hart notierter
+ * Pfad wie `assets/backdrops/maritime_calm_day.jpg` würde im Build ins Leere
+ * zeigen — genau der Fehler, an dem die Waffen-Icons schon einmal scheiterten.
+ *
+ * Der Pfad ist RELATIV ZU DIESER DATEI (`./assets/...`, nicht `../assets/...`):
+ * `../` führte von `src/client/` nach `src/` und damit an den Bildern vorbei. Das
+ * Glob-Muster liefert dann stillschweigend eine leere Liste — kein Fehler, nur
+ * ein leerer Hintergrund. Der Selbsttest in `tests/backdrops.test.js` prüft die
+ * Anzahl deshalb gegen die Dateien auf der Platte.
+ */
+const BACKDROP_URLS = import.meta.glob('./assets/backdrops/*.jpg', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
 
 const SKY_TOP = '#0d1b2a';
 const SKY_BOTTOM = '#1b3a4b';
-const TERRAIN_SURFACE = [96, 138, 92];
-const TERRAIN_DEEP = [38, 54, 46];
 const CRATE_COLORS = ['#dcdcdc', '#4cc9f0', '#a855f7', '#fbbf24'];
 const RARITY_COLORS = ['#e8eef5', '#4cc9f0', '#a855f7', '#fbbf24'];
 
@@ -34,6 +53,80 @@ export class Renderer {
     this.time = 0;
     /** Transiente Effekte (Strahlen, Blitze) mit Lebensdauer in Frames. */
     this.effects = [];
+
+    /**
+     * Geladene Kulisse (Hintergrundbild) oder null.
+     * Solange sie nicht geladen ist, wird der Farbverlauf gezeichnet — ein
+     * leerer Bildschirm während des Ladens wäre ein Rückschritt gegenueber dem
+     * bisherigen Zustand.
+     */
+    this.backdrop = null;
+    /** Schlüssel der aktuellen Kulisse (verhindert doppeltes Laden). */
+    this.backdropKey = null;
+    /** true, sobald das Bild gezeichnet werden kann. */
+    this.backdropReady = false;
+    /**
+     * Bodenfarben der aktuellen Kulisse.
+     *
+     * Das Gelände wird prozedural gezeichnet und war immer grün — über einer
+     * Eiskulisse also grünes Gras auf Packeis. Der Boden gehört zur Szene.
+     */
+    this.palette = DEFAULT_TERRAIN_PALETTE;
+  }
+
+  /**
+   * Setzt die Kulisse für die aktuelle Karte.
+   *
+   * Das Laden ist asynchron; bis dahin bleibt der Farbverlauf stehen. Ein
+   * gescheitertes Laden wird gemeldet und nicht verschwiegen: eine stumm
+   * fehlende Kulisse wäre nicht von einer absichtlich leeren zu unterscheiden.
+   *
+   * @param {{key:string, file:string, label:string}|null} backdrop
+   * @param {{onError?:(fehler:Error)=>void}} [optionen]
+   */
+  setBackdrop(backdrop, { onError } = {}) {
+    if (!backdrop?.file) {
+      this.backdrop = null;
+      this.backdropKey = null;
+      this.backdropReady = false;
+      this.palette = DEFAULT_TERRAIN_PALETTE;
+      return;
+    }
+    if (backdrop.key === this.backdropKey) return;
+
+    this.backdropKey = backdrop.key;
+    // Der Schlüssel muss dem des Glob-Musters entsprechen: `./assets/backdrops/...`
+    // — nicht `../`, und nicht nur der Dateiname. Bei einem abweichenden
+    // Schlüssel bleibt die Liste leer und es wird still kein Bild geladen.
+    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.file}`];
+    if (!url) {
+      // Fehlt die Datei, ist der Katalog und die Ablage auseinandergelaufen.
+      // Der Farbverlauf bleibt stehen, damit das Spiel spielbar bleibt.
+      this.backdrop = null;
+      this.backdropReady = false;
+      const fehler = new Error(`Kulisse nicht gefunden: ${backdrop.file}`);
+      onError?.(fehler);
+      return;
+    }
+
+    this.backdrop = backdrop;
+    this.backdropReady = false;
+    // Die Bodenfarbe gilt sofort, nicht erst nach dem Laden des Bildes: sonst
+    // zeigte der Boden kurz die vorige Farbe.
+    this.palette = paletteFor(backdrop);
+    const bild = new Image();
+    bild.decoding = 'async';
+    bild.onload = () => {
+      // Nur übernehmen, wenn inzwischen keine andere Kulisse gesetzt wurde.
+      if (this.backdropKey !== backdrop.key) return;
+      this.backdropImage = bild;
+      this.backdropReady = true;
+    };
+    bild.onerror = () => {
+      this.backdropReady = false;
+      onError?.(new Error(`Kulisse lädt nicht: ${backdrop.file}`));
+    };
+    bild.src = url;
   }
 
   /**
@@ -197,9 +290,11 @@ export class Renderer {
       for (let y = surface; y < height; y++) {
         const index = (y * width + x) * 4;
         const depth = Math.min(1, (y - surface) / 160);
-        data[index] = Math.round(TERRAIN_SURFACE[0] + (TERRAIN_DEEP[0] - TERRAIN_SURFACE[0]) * depth);
-        data[index + 1] = Math.round(TERRAIN_SURFACE[1] + (TERRAIN_DEEP[1] - TERRAIN_SURFACE[1]) * depth);
-        data[index + 2] = Math.round(TERRAIN_SURFACE[2] + (TERRAIN_DEEP[2] - TERRAIN_SURFACE[2]) * depth);
+        const oben = this.palette.surface;
+        const unten = this.palette.deep;
+        data[index] = Math.round(oben[0] + (unten[0] - oben[0]) * depth);
+        data[index + 1] = Math.round(oben[1] + (unten[1] - oben[1]) * depth);
+        data[index + 2] = Math.round(oben[2] + (unten[2] - oben[2]) * depth);
         data[index + 3] = 255;
       }
     }
@@ -207,7 +302,10 @@ export class Renderer {
     ctx.putImageData(image, 0, 0);
     // Oberflächenkante hervorheben.
     ctx.globalCompositeOperation = 'source-atop';
-    ctx.fillStyle = 'rgba(180, 220, 150, 0.22)';
+    // Kantenlicht aus der eigenen Bodenfarbe: ein festes Grün hätte auf Eis,
+    // Sand oder Basalt einen Farbstich ergeben.
+    const [kr, kg, kb] = this.palette.surface;
+    ctx.fillStyle = `rgba(${Math.min(255, kr + 70)}, ${Math.min(255, kg + 70)}, ${Math.min(255, kb + 60)}, 0.22)`;
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
         if (!bitmap[y * width + x]) continue;
@@ -270,6 +368,29 @@ export class Renderer {
   }
 
   #drawSky() {
+    // Kulisse, sobald geladen. Sie liegt HINTER dem Terrain: der Boden wird
+    // danach darübergezeichnet und verdeckt die untere Bildhälfte.
+    if (this.backdropReady && this.backdropImage) {
+      this.ctx.drawImage(this.backdropImage, 0, 0, this.width, this.height);
+
+      /**
+       * Abdunkelung nach unten.
+       *
+       * Ohne sie verschwinden Figuren, Lebensbalken und Munitionsanzeige vor
+       * hellen Kulissen (Schnee, Wüste, Sonnenuntergang) — das Spiel wäre dort
+       * spielbar, aber nicht lesbar. Der Verlauf ist unten am stärksten, weil
+       * dort die Figuren stehen, und oben fast durchsichtig, damit die Kulisse
+       * sichtbar bleibt.
+       */
+      const daempfung = this.ctx.createLinearGradient(0, this.height * 0.35, 0, this.height);
+      daempfung.addColorStop(0, 'rgba(8,14,24,0)');
+      daempfung.addColorStop(0.55, 'rgba(8,14,24,0.28)');
+      daempfung.addColorStop(1, 'rgba(8,14,24,0.55)');
+      this.ctx.fillStyle = daempfung;
+      this.ctx.fillRect(0, 0, this.width, this.height);
+      return;
+    }
+
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
     gradient.addColorStop(0, SKY_TOP);
     gradient.addColorStop(1, SKY_BOTTOM);

@@ -22,6 +22,7 @@ import { buildTerrainForSeed } from './terrainPreview.js';
 import { getWeapon, WEAPONS, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
+import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -106,15 +107,17 @@ class Game {
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
     const playersPerTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
     const preset = document.getElementById('cfg-preset')?.value ?? 'hills';
+    // Gewählte Kulisse (leer = automatisch aus dem Seed).
+    const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     const rawSeed = document.getElementById('cfg-seed')?.value?.trim();
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
     const lobbyId = document.getElementById('cfg-lobby')?.value?.trim() ?? '';
 
     if (serverUrl) {
-      return this.startOnline({ serverUrl, lobbyId, teams, playersPerTeam, preset, seed });
+      return this.startOnline({ serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey });
     }
-    return this.startMatch({ teams, playersPerTeam, preset, seed });
+    return this.startMatch({ teams, playersPerTeam, preset, seed, backdropKey });
   }
 
   /**
@@ -182,13 +185,50 @@ class Game {
   }
 
   /** Lokales Match im Browser. */
-  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined } = {}) {
+  /**
+   * Füllt die Kulissenauswahl im Menü aus dem Katalog.
+   *
+   * Die Liste wird aus `BACKDROP_BIOMES` erzeugt und nicht im HTML gepflegt: bei
+   * sechzig Einträgen wäre jede Änderung am Katalog sonst eine zweite, von Hand
+   * nachzuziehende Liste — und die beiden würden auseinanderlaufen.
+   */
+  fillBackdropOptions() {
+    const auswahl = document.getElementById('cfg-backdrop');
+    if (!auswahl) return 0;
+
+    // Erste Option bleibt „automatisch" (leerer Wert).
+    auswahl.replaceChildren(auswahl.options[0]);
+    let anzahl = 0;
+    for (const biome of BACKDROP_BIOMES) {
+      const gruppe = document.createElement('optgroup');
+      gruppe.label = biome.label;
+      for (const variante of biome.variants) {
+        const option = document.createElement('option');
+        option.value = `${biome.id}/${variante.id}`;
+        option.textContent = variante.label;
+        gruppe.append(option);
+        anzahl += 1;
+      }
+      auswahl.append(gruppe);
+    }
+    return anzahl;
+  }
+
+  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '' } = {}) {
     this.network?.disconnect();
     this.network = null;
     this.mode = 'local';
 
     this.match = new MatchController({ seed, teams, playersPerTeam, preset });
     this.match.start();
+    // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
+    // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische
+    // Karte noch die Bodenfarbe der vorigen Kulisse.
+    //
+    // Der Seed stammt aus dem Match, damit ein Replay dieselbe Karte zeigt wie
+    // das aufgezeichnete Spiel.
+    this.gewaehlteKulisse = backdropKey;
+    this.#applyBackdrop(this.match.seedManager.baseSeed, preset, backdropKey);
     this.#afterWorldReady(this.match.bitmap, this.match.water);
 
     this.menuOverlay.hidden = true;
@@ -262,7 +302,8 @@ class Game {
     return ergebnis;
   }
 
-  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler' } = {}) {
+  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '' } = {}) {
+    this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
     this.hud.clearLog();
@@ -347,6 +388,10 @@ class Game {
   #buildRemoteTerrain(seed, preset) {
     const terrain = buildTerrainForSeed(seed, preset);
     this.remoteTerrain = terrain;
+    // Kulisse zuerst — sie liefert die Bodenfarbe für die Geländeschicht.
+    // Auch im Online-Match gehört eine Kulisse zur Karte: der Server liefert nur
+    // den Seed, die Kulisse wird daraus auf beiden Seiten gleich bestimmt.
+    this.#applyBackdrop(seed, preset);
     this.renderer.buildTerrainLayer(terrain.bitmap, MAP_WIDTH, MAP_HEIGHT);
     this.renderer.particles = [];
     this.hud.log(`Terrain aus Seed ${seed} rekonstruiert`, 'neutral');
@@ -789,6 +834,40 @@ class Game {
     );
   }
 
+  /**
+   * Wählt die Kulisse für eine Karte und setzt sie im Renderer.
+   *
+   * Die Wahl ist deterministisch: gleicher Seed und gleiches Gelände ergeben
+   * dieselbe Kulisse. Eine zufällige Kulisse je Anzeige würde das Bild vom
+   * aufgezeichneten Spielgeschehen trennen — ein Replay zeigte eine andere
+   * Landschaft als das Original.
+   */
+  #applyBackdrop(seed, preset, gewaehlt = null) {
+    // Ohne ausdrücklichen Wert gilt die im Menü getroffene Wahl. Nötig, weil der
+    // Online-Weg das Gelände erst nach dem Verbindungsaufbau aufbaut und die Wahl
+    // sonst verloren ginge.
+    const auswahl = gewaehlt ?? this.gewaehlteKulisse ?? '';
+    // Eine ausdrückliche Wahl des Spielers schlägt die Ableitung aus dem Seed.
+    // Sonst könnte man die Kulisse im Menü wählen und bekäme trotzdem eine andere.
+    let kulisse = null;
+    if (auswahl) {
+      const [biomId, variantenId] = String(auswahl).split('/');
+      kulisse = getBackdrop(biomId, variantenId);
+      if (!kulisse) this.hud.log(`Kulisse „${auswahl}" unbekannt — nehme automatisch`, 'neutral');
+    }
+    if (!kulisse) kulisse = pickBackdrop(seed, preset);
+    if (!kulisse) {
+      this.renderer.setBackdrop(null);
+      return null;
+    }
+    this.renderer.setBackdrop(kulisse, {
+      // Ein Ladefehler wird gemeldet statt verschwiegen: eine stumm fehlende
+      // Kulisse wäre nicht von einer absichtlich leeren zu unterscheiden.
+      onError: fehler => this.hud.log(`Kulisse: ${fehler.message}`, 'danger'),
+    });
+    return kulisse;
+  }
+
   #afterWorldReady(bitmap, water) {
     this.renderer.buildTerrainLayer(bitmap, MAP_WIDTH, MAP_HEIGHT);
     this.renderer.particles = [];
@@ -887,6 +966,15 @@ class Game {
       selectWeapon: index => this.selectWeapon(index),
       /** Waffe abwerfen (Position wie in der Liste). */
       dropWeapon: index => this.dropWeapon(index),
+      /** Aktuelle Kulisse (Schlüssel und Datei). */
+      backdrop: () => ({
+        key: this.renderer.backdropKey,
+        file: this.renderer.backdrop?.file ?? null,
+        preset: this.renderer.backdrop?.mapPreset ?? null,
+        palette: this.renderer.palette,
+      }),
+      /** Kulissenauswahl im Menü befüllen (für Tests). */
+      fillBackdropOptions: () => this.fillBackdropOptions(),
       /** Springen (seitlich: -1, 0, 1). */
       jump: seitlich => this.jump(seitlich ?? 0),
       /** Steht die Figur am Zug auf festem Grund? */
@@ -929,4 +1017,14 @@ class Game {
 }
 
 const game = new Game();
+// Kulissenauswahl füllen, sobald das DOM steht. Der Katalog ist die einzige
+// Quelle; die Liste im HTML bleibt bewusst leer.
+if (typeof document !== 'undefined') {
+  const fuelle = () => game.fillBackdropOptions();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fuelle, { once: true });
+  } else {
+    fuelle();
+  }
+}
 export default game;

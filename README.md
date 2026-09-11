@@ -26,6 +26,39 @@ npm run build        # baut dist/
 npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 ```
 
+## Kulissen
+
+Sechzig KI-erzeugte Hintergrundbilder aus zwölf Biomen mit je fünf Varianten.
+Die Kulisse liegt hinter dem prozeduralen Gelände und bestimmt dessen Bodenfarbe.
+
+| Biom | Varianten |
+|---|---|
+| Maritim & Meer | Ruhige See, Sturm bei Nacht, Polarmeer, Kriegshafen, asiatische Karstküste |
+| Südsee & Karibik | Karibischer Tag, Sonnenuntergang, Vulkanausbruch, Taifun, polynesische Nacht |
+| Gebirge & Alpin | Alpensommer, Hochwinter, Himalaya-Kloster, Kriegsruinen, Mondnacht |
+| Wald & Wiese | Sommerwiese, Herbstwald, Winterwald, Nebelnacht, verzauberte Lichtung |
+| Stadt & Industrie | Moderne Stadt, Neonnacht, Industrieruine, Kriegsstadt, Monsunstadt |
+| Universum | Nebel, Ringplanet, Raumstation, Schwarzes Loch, fremde Welt |
+| Abstrakt | Geometrisch, psychedelisch, Vaporwave, Fraktal, surreal |
+| Höhlenwelten | Tropfstein, Kristall, Lavaröhre, Eishöhle, Unterwasserhöhle |
+| Fantasy | Elfenstadt, Drachenberg, Belagerung, dunkler Sumpf, Kristallmagie |
+| Hyperrealismus | Goldenes Tal, Wüste, Polstation, Dschungelfluss, Steilküste |
+| Cowboy & Western | Wüstenstadt, Duell im Sonnenuntergang, Lagerfeuer, Wintergrenze, Prärie |
+| Film Noir | Regennasse Straße, Hafenkai, verrauchte Bar, Verfolgung, Dachsilhouette |
+
+**Auswahl:** Im Menü unter „Kulisse" (nach Biom gruppiert). „automatisch" überlässt
+die Wahl dem Seed — damit bleibt ein Match reproduzierbar, und ein Replay zeigt
+dieselbe Landschaft. Ohne Wahl bekommt jede Geländeform ihr Leitbiom (Inseln →
+Maritim, Berge → Alpin, Hügel → Wald, Höhlen → Höhlenwelten).
+
+**Bodenfarbe:** Jede Kulisse bringt ihre eigene Bodenfarbe mit. Vorher war der
+Boden immer grün — über Packeis, Basalt und Sand gleichermaßen.
+
+**Erzeugen:** Die Prompts stehen im Katalog (`src/shared/config/backdrops.js`) und
+sind die einzige Quelle. Neue Bilder laufen über:
+`python3 scripts/fetch-backdrops.py <manifest.json>` (Zuschnitt auf 1280×720,
+JPEG, Ablage unter `src/client/assets/backdrops/`).
+
 ## Steuerung
 
 | Eingabe | Wirkung |
@@ -66,7 +99,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (259 Tests) |
+| `npm test` | Unit- und Integrationstests (285 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
 | `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (35 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
