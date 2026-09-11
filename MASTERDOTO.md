@@ -20,7 +20,7 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **445/445** |
+| Unit-/Integrationstests | `npm test` | **457/457** |
 | Browser-E2E | `npm run test:e2e` | **89/89** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -437,6 +437,42 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Zustandsübertragung: geprüft, nicht komprimiert
+
+Der offene Punkt lautete „Snapshot-Kompression prüfen (Delta läuft, Quantisierung
+ist schon aktiv)". Die Prüfung hat zwei Dinge ergeben — die erste ist eine
+Korrektur der Annahme, die zweite eine Zahl.
+
+**1. Das Delta-Encoding spart KEINE Bytes.** Die Größe eines Zustandstakts ist
+`HEADER + Figuren × 15 + Projektile × 6`, unabhängig davon, wie viele Felder sich
+geändert haben. Gemessen: Ein Vollsnapshot und ein Delta-Snapshot mit acht
+Figuren sind **beide exakt 142 Byte** — Unterschied 0. Die Dirty-Bits sind ein
+SIGNAL an den Client („was ist neu"), keine Kompression. Wer „Delta" liest und
+Einsparung annimmt, irrt; die Annahme stand genau so im offenen Punkt.
+
+**2. Kompression wäre eine Lösung ohne Problem.** Gemessen über den
+Spielverlauf:
+
+| Figuren | Ø Snapshot | Höchstfall | Übertragung bei 20 Hz |
+|---|---|---|---|
+| 2 | 53 B | 58 B | 1,0 kB/s |
+| 8 | 143 B | 148 B | 2,8 kB/s |
+| **12 (Maximum)** | **203 B** | **208 B** | **4,0 kB/s** |
+
+Vier Kilobyte je Sekunde im Höchstfall und pro Client. Eine variable Stride
+würde Bytes sparen, aber das Drahtformat deutlich komplizierter machen (variable
+Länge, neue Fehlerquellen beim Lesen) — für weniger als ein Bild pro Sekunde.
+Entschieden: **nicht komprimieren.**
+
+`SNAPSHOT_HZ`, `PLAYER_STRIDE`, `PROJECTILE_STRIDE` und `HEADER_SIZE` sind jetzt
+exportiert und in `tests/snapshot-size.test.js` (5 Tests) mit einem **Budget**
+belegt: Ein Snapshot darf höchstens 320 Byte groß sein, die Übertragung höchstens
+6 kB/s. Wächst die Größe unerwartet (neues Feld ohne Bedacht), schlägt der Test
+an und die Entscheidung wird neu verhandelt. Weitere Tests halten fest, dass das
+Delta gleich groß bleibt, das Wachstum linear ist (kein überlineares
+Mitschleppen von Verlauf, Inventar oder Protokoll) und die Quantisierung aktiv
+ist.
+
 ## Replay im Client
 
 Eine Aufzeichnung enthält nur die EINGABEN (Seed und Schüsse), nicht den
@@ -754,7 +790,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (445):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (457):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -828,7 +864,9 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       die Zeitmessung lief bereits serverseitig.
 - [ ] Client-seitige Prädiktion des eigenen Schusses mit Server-Rollback.
       Aktuell fühlt sich der eigene Schuss bei Latenz verzögert an.
-- [ ] Snapshot-Kompression prüfen (Delta läuft, Quantisierung ist schon aktiv).
+- [x] Snapshot-Kompression geprüft — **nicht nötig**, und das Delta spart keine
+      Bytes. Gemessen: 4,0 kB/s bei zwölf Figuren und 20 Hz (Höchstfall).
+      Siehe „Zustandsübertragung: geprüft, nicht komprimiert".
 
 ### P2 — Client & UX
 - [x] Lobby-Browser im Menü (offene Lobbys listen und beitreten).
