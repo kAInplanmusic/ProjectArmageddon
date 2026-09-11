@@ -20,7 +20,7 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **438/438** |
+| Unit-/Integrationstests | `npm test` | **445/445** |
 | Browser-E2E | `npm run test:e2e` | **82/82** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -437,6 +437,63 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Wasserschub und zwei Fehler in der Verschiebung
+
+Der Wasserblaster (`pa_063`, `special: "water_push"`) hatte als einzige der
+genannten Mechaniken **keinen Eintrag im Wirkungskatalog** — er fiel durch, weil
+`effectFor('water_push')` `null` lieferte. Statt eines neuen Nachrichtentyps
+oder Protokolls benutzt er das vorhandene Wasserfeld: Das ist dieselbe Größe, die
+schon Ertrinken und Wasserverdrängung speist.
+
+Umgesetzt:
+
+- `EFFECT_KIND.WATER_PUSH` in `src/engine/specials.js`, Wirkung auf das ZIEL
+  (nicht in `SELF_TARGET_KINDS`), Zahlen aus dem Schaden der Waffe hergeleitet
+  statt erfunden: `raise` = Schaden/100, begrenzt auf 0,4…0,6.
+- `#pushAway` in `match.js` — der Gegenpol zum vorhandenen `#pullToward`; beide
+  benutzen jetzt dieselbe Schrittsuche `#shiftToward`.
+- Neues Ereignis `water_pushed` mit `dx`, `dy`, `waterBefore`, `waterAfter` und
+  `cellsFlooded`.
+
+### Drei Funde auf dem Weg dorthin
+
+40. **Eine einzelne geflutete Zelle wirkt für die Anzeige nicht.** Das
+    Wasserfeld hat 4 px große Zellen, der Zustand einer Figur liest die
+    MITTE, die Figur steht aber auf `Boden − HALF_HEIGHT` (10 px) — das sind
+    verschiedene Zellen. Gemessen: `waterLevelAt(600, 420)` = **0,5**, aber
+    `state.waterLevel` = **0**. Die Ertrinkgefahr griff nie. Behoben mit
+    `floodArea`, das einen kleinen Bereich (16 × 20 px) um die Figur flutet —
+    klein genug, dass ein Wasserloch entsteht und kein See.
+
+41. **Eine Waffe mit Flächenwirkung wendete ihren Effekt ZWEIMAL auf das direkt
+    getroffene Ziel an.** Erst direkt aus dem Einschlag, dann noch einmal über
+    die Fläche, die das Ziel einschließt. Am Wasserschub gemessen: `waterAfter`
+    stieg in einem Einschlag erst auf 0,4 und dann auf 0,8. Dieselbe Verdopplung
+    traf Einfrierdauer (doppelt so lange), Heranziehen (doppelte Distanz) und
+    Schaden über Zeit (doppelte Stapel). Bei den meisten Waffen fiel es nicht
+    auf, weil ihr Radius 0 ist — bei Flächenwaffen schon.
+    *Nebenwirkung: Der erste Testlauf meldete „Ertrinken ausgelöst", und das war
+    nur dem Fehler zu verdanken (0,4 + 0,4 = 0,8 > DROWN_LEVEL). Nach der
+    Korrektur macht ein Schuss nass (0,4), aber ertränkt nicht.*
+
+42. **Eine Verschiebung setzte das Ziel auf die nächste Klippe.** `#shiftToward`
+    verankert das Ziel auf der Geländeoberfläche der neuen Stelle; stand dort ein
+    Hügel, wurde es katapultiert statt geschoben — gemessen: 120 px seitwärts und
+    **115 px nach oben in einem Schritt**, mitten auf einen Berggipfel. Behoben
+    mit einer Höhenbegrenzung (`MAX_SHIFT_SLOPE` = 16 px, gemessen an der
+    Fußposition). Die Grenze gilt für BEIDE Verschiebungen — auch ein Enterhaken
+    (`PULL`) konnte das Ziel vorher auf einen Berg setzen.
+
+Abgesichert in `tests/specials.test.js` (6 neue Tests): nass aber nicht
+ertränkend beim ersten Schuss, Ertrinken über `DROWN_LEVEL`, Wirkung genau
+EINMAL, kein Sprung in der Höhe (Schub und Ziehen), `floodArea` deckt Zentrum
+und Fuß ab, `floodArea` senkt nie einen vorhandenen Füllstand.
+
+**Offen bleibt:** das aufgestellte Geschütz (`Auto-Turret`, `special:
+"auto_target"`). Es braucht ein eigenes Entity mit eigener Lebensdauer und
+Trefferlogik und damit einen neuen Nachrichtentyp im Protokoll — das ist eine
+Design-Entscheidung, kein Nachziehen einer Lücke.
+
 ## Balance-Messung über die Kartenbreite
 
 Das Messwerkzeug des Berichts war falsch eingestellt und hat dadurch Waffen
@@ -648,7 +705,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (438):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (445):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -699,6 +756,8 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       35 Waffen wirken dadurch nachweislich (per Test belegt). Offen bleiben
       einzelne Mechaniken: aufgestelltes Geschütz (Auto-Turret), Wasserschub
       (Wasserblaster).
+      **Wasserschub ist umgesetzt** (siehe „Wasserschub und zwei Fehler in der
+      Verschiebung"). Offen bleibt nur noch das aufgestellte Geschütz.
 - [x] Balance über die volle Kartenbreite messen. Der Bericht misst jetzt auf
       der Startentfernung des Spiels (aus einem echten Match abgelesen: 426 px
       bei 1280 px Kartenbreite) statt auf festen 90 px, und mit `--sweep`
