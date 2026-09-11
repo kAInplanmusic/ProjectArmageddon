@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **409/409** |
-| Browser-E2E | `npm run test:e2e` | **66/66** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **414/414** |
+| Browser-E2E | `npm run test:e2e` | **81/81** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -271,6 +271,130 @@ denselben vier Waffen; die Klasse veränderte nur Werte, nicht die Mittel.
   Determinismus, Rückfall für unbekannte Klassen, Deckung der Bewegungsliste
   mit dem Wirkungskatalog.
 
+## Fortsetzung 2026-09-11 (2) — Netzwerk unter Störung, Screenreader
+
+### Behobene Fehler
+
+31. **Die Reservewaffe stand bei „heavy" auf Anzeigeposition 1.**
+    Beim Nachlaufen der Gates aufgefallen. Die Reservewaffe
+    (`FALLBACK_WEAPON_ID`, unbegrenzte Munition) ist die einzige, die sich nicht
+    abwerfen lässt. Ihre Stellung in der Liste ergab sich allein aus ihrer
+    Kategorie — und die ist `guns`. Bei `heavy` stand sie damit auf
+    Anzeigeposition 1 (scout 4, artillery 3): Der erste Listeneintrag war nicht
+    abwerfbar, und die Zifferntaste „1" wählte sie. `PlayerInventory` hält
+    dieselbe Regel für die AKTIVE Waffe längst ein („Als aktive Waffe die erste
+    ABWERFBARE wählen, nicht die Reserve") — jetzt gilt sie auch für die
+    Reihenfolge der Anzeige. Geändert wurde der **Generator**, nicht der
+    Katalog.
+
+32. **Verpasste ein Client das `match_over`, blieb er dauerhaft im laufenden
+    Spiel.** Nach dem Ende ruft die Sitzung `stop()` auf und sendet keine
+    Snapshots mehr; die einzige Nachricht über das Ende ist ein einmaliges
+    `match_over`. Verpasst ein Client sie — etwa weil sein Socket im Moment der
+    Aussendung nicht offen war; `broadcastSnapshot` überspringt solche Clients
+    still —, kommt nie wieder etwas außer PONGs. Nachgestellt mit einem
+    mehrsekündigen Aussetzer: Status „playing", Zugzeit lief, Tick stand still.
+    Behoben, indem der Server die Nachricht auf jede PING-Anfrage wiederholt,
+    solange das Match entschieden ist. Kein neuer Nachrichtentyp, kein neues
+    Feld im Drahtformat.
+
+33. **Der Screenreader bekam vom Spiel nichts mit.** Das Spiel läuft auf einem
+    Canvas; der gesamte Spielzustand ist damit unsichtbar. Das Ereignisprotokoll
+    trug aber keine Live-Region, und `turn_start` wurde gar nicht protokolliert.
+    Behoben: `role="log"` + `aria-live="polite"` + `aria-relevant="additions"`
+    auf `#log-list`, und der Zugwechsel wird gemeldet. **Dabei war ein Detail
+    entscheidend:** `Hud#log` baute die Liste bei jeder Meldung mit
+    `replaceChildren` komplett neu — in einer Live-Region hätte ein Screenreader
+    damit bei JEDER Meldung alle 60 Zeilen vorgelesen. Jetzt wird genau eine
+    Zeile eingefügt und die älteste entfernt.
+
+34. **Die Waffenliste war ohne Maus nicht erreichbar.** Die Zeilen waren reine
+    `<li>` mit Klick-Listener: kein Fokus, keine Rolle, kein Name. Im
+    Accessibility-Baum standen sie als gewöhnliche Listeneinträge — wer nicht
+    klicken kann, kam an die Waffenauswahl nicht heran (die Zifferntasten halfen
+    nur, wenn man sie kennt). Jetzt `role="button"`, `tabindex`, benannter Text
+    mit Anzeigenummer und Name, `aria-current` für die gewählte Waffe, und
+    Eingabe/Leertaste wählen. Das `stopPropagation` dabei ist kein Detail: Die
+    Leertaste feuert im Spiel, ohne Sperre würde ein Tastendruck auswählen UND
+    schießen.
+
+35. **Ein fokussierter Waffeneintrag verlor den Fokus beim Neuaufbau.**
+    Die Liste wird bei jeder Änderung neu gebaut (nach einem Schuss, nach dem
+    Waffenwechsel, beim Zugwechsel). `replaceChildren` entfernt die alten
+    Knoten — der Fokus fiel auf `<body>`. Wer mit der Tastatur eine Waffe
+    gewählt hatte, verlor den Fokus genau in diesem Moment und musste sich von
+    vorn durch die Seite tabben. Behoben: Der fokussierte Waffenschlüssel wird
+    vor dem Neuaufbau gemerkt und danach auf dieselbe Waffe zurückgeholt.
+
+36. **Jeder Seitenaufruf erzeugte einen 404.** Es gab kein Favicon und keinen
+    `<link rel="icon">`, also fragte der Browser `/favicon.ico` an und bekam
+    nichts. Aufgefallen, weil ein neuer E2E-Test Seitenfehler sammelt. Behoben
+    mit `public/favicon.svg` (Vite kopiert `public/` in den Build) und dem
+    Verweis im Kopf von `index.html` — das Spiel hat damit auch ein Tab-Symbol.
+
+37. **Die Waffenliste im Onlinemodus sprengte ihr Test-Budget.** Bis zu 15
+    Playwright-Aufrufe mit je eigenem Timeout (Icon-Prüfung bis 10 s je Zeile),
+    und der Server spielt das Match in Echtzeit weiter: Ist es zu Ende,
+    verschwindet der aktive Spieler und die Liste kollabiert auf 0 Zeilen. Der
+    Fehlschlag sah nach kaputtem Produkt aus, war aber ein zu schwerfälliger
+    Test. Jetzt wird einmal auf „gefüllt und alle Icons dekodiert" gewartet und
+    die Liste in einem Zug gelesen: 2,0 s statt >60 s, E2E-Lauf 2,6 statt
+    4,3 min.
+
+38. **Der Glücksrad-Test rannte gegen den Ausblend-Timer.** Das Rad blendet sich
+    nach 3,2 s selbst aus, der Text erscheint erst am Ende der Drehung (1,8 s) —
+    ein Fenster von 1,4 s, gegen das Playwright unter Last verliert. Erst nach
+    dem vollen Suite-Lauf zu sehen, in Einzelausführung nie. Der Zustand wird
+    jetzt synchron gelesen und auf den Text INNERHALB der Seite gewartet.
+
+### Verbindung unter erschwerten Bedingungen
+
+Neu: `tests/e2e/network-conditions.spec.mjs` (5 Tests). `page.routeWebSocket`
+hängt sich zwischen Seite und Server; vom Server zur Seite werden Nachrichten
+verzögert oder verworfen, die Gegenrichtung bleibt unangetastet.
+
+- **120 ms Latenz** auf allen Nachrichten (auch dem PONG — sonst wäre die
+  Latenzmessung eine Selbstbestätigung): Verbindung bleibt, Snapshots fließen,
+  die gemessene Latenz ist ≥ 100 ms, das HUD zeigt sie, und der aktive Spieler
+  kann feuern.
+- **Jeder dritte Snapshot verworfen:** Die Verbindung bleibt, der Tick läuft
+  weiter, und es kommt ein Vollsnapshot nach — der Beleg, dass die
+  Wiederherstellung greift.
+- **Mehrsekündiger Aussetzer:** Hier zeigte sich Fehler 32. Geprüft wird, was in
+  beiden Ausgängen gelten muss: Der Client darf nicht still auf einem laufenden
+  Spiel sitzen bleiben — entweder läuft der Zustand weiter (Vollsnapshot) oder
+  das Ende kommt an (Wiederholung).
+- **Gegenprobe zum Störer selbst:** Steuerungsnachrichten müssen durchlaufen.
+  Sonst wäre der Verlusttest grün, weil der Client gar nicht erst verbunden wäre.
+
+Wichtig zur Einordnung: Über WebSocket/TCP gibt es **keinen** echten
+Paketverlust — TCP wiederholt verlorene Segmente. Der Test bildet deshalb keinen
+Produktionsfall ab, sondern belegt die **Wiederherstellung** (Vollsnapshot alle
+2 s), die bei Aussetzern, Reconnects und Serverneustarts greift. Die Tests
+prüfen jeweils mit, dass die Störung gewirkt hat; ein Verlusttest, der nichts
+verworfen hat, wäre eine leere Behauptung.
+
+Dazu drei Tests in `tests/server-integration.test.js`: die Wiederholung des
+Endes auf PING, die Gegenprobe (kein `match_over`, solange das Match läuft) und
+das Verhalten beim Wiederverbinden (siehe „Bekannte Grenzen").
+
+### Screenreader-Durchlauf
+
+Neu: `tests/e2e/screenreader.spec.mjs` (11 Tests). Geprüft wird gegen den
+**echten Accessibility-Baum des Browsers** (CDP,
+`Accessibility.getFullAXTree`), nicht gegen Attribute im Markup — der
+Unterschied ist wesentlich, weil ein `aria-label` an einem Element, das der
+Browser aus dem Baum wirft, niemandem nützt.
+
+Was bereits gut war und jetzt festgehalten ist: kein bedienbares Element ohne
+Namen (Menü und Match), benannte Listen, beschriebenes Spielfeld, Sprunglink.
+
+Was fehlte und behoben ist: Fehler 33, 34 und 35.
+
+Bewusste Entscheidung, im Test festgehalten: **Runde, Wind und Zugzeit sind
+KEINE Live-Regionen.** Sie ändern sich im Sekundentakt; ein Screenreader würde
+pausenlos reden und jede echte Meldung übertönen.
+
 ## Umgesetzt
 
 ### Engine
@@ -417,7 +541,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (409):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (414):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -435,13 +559,18 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (66):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (81):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
   Heilung im Protokoll, Schildmarke, Einfrieren, Schaden über Zeit,
   Selbstwirkung ohne Projektil, Lauffähigkeit nach allen Effekten,
-  Determinismus). Neu: **Wasser im HUD** (4 Tests, `water-hud.spec.mjs` —
+  Determinismus). Neu: **Verbindung unter Störung** (5 Tests,
+  `network-conditions.spec.mjs` — Latenz, Paketverlust, Aussetzer, Gegenprobe)
+  und **Screenreader-Durchlauf** (11 Tests, `screenreader.spec.mjs` — Namen im
+  Accessibility-Baum, Live-Region des Protokolls, Zugwechsel-Ansage,
+  bedienbare Waffenliste, Fokus über den Neuaufbau) sowie **Wasser im HUD**
+  (4 Tests, `water-hud.spec.mjs` —
   Marke mit Prozent, „nass" gegen „untergetaucht", Meldung nur beim Übergang,
   Verschwinden der Marke) und **Bewegung reduzieren** (2 Tests in
   `accessibility.spec.mjs`, mit Gegenprobe ohne die Einstellung).
@@ -495,7 +624,13 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       Explosionsblitz bleibt. Die Einstellung wird je Bild neu gelesen, greift
       also ohne Neuladen (`tests/dom.test.js`, in `accessibility.spec.mjs` mit
       Gegenprobe).
-- [ ] Accessibility vertiefen: Screenreader-Durchlauf.
+- [x] Screenreader-Durchlauf. Gegen den echten Accessibility-Baum des Browsers
+      geprüft (CDP, `Accessibility.getFullAXTree`), nicht gegen Attribute im
+      Markup. Behoben: Das Ereignisprotokoll ist jetzt die Live-Region des
+      Spiels (`role="log"`, `aria-live="polite"`, `aria-relevant="additions"`),
+      der Zugwechsel wird angesagt, die Waffenliste ist ohne Maus bedienbar
+      (Knopf-Rolle, Fokus, Beschriftung, Eingabe/Leertaste) und behält den
+      Fokus über den Neuaufbau der Liste. Siehe „Screenreader-Durchlauf".
 - [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
 
 ### P3 — Betrieb
@@ -505,7 +640,15 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       `healthy`-Schalter für verwaiste Sitzungen. Abgesichert in
       `tests/metrics.test.js`.
 - [x] `dist/` wird in der CI als Artefakt abgelegt (14 Tage Aufbewahrung).
-- [ ] Lasttest mit künstlicher Latenz und Paketverlust.
+- [x] Lasttest mit künstlicher Latenz und Paketverlust. `page.routeWebSocket`
+      hängt sich zwischen Seite und Server und verzögert bzw. verwirft
+      Nachrichten; alle Störungen zählen mit und werden geprüft (eine Störung,
+      die nichts gestört hat, wäre eine leere Behauptung). Abgedeckt:
+      120 ms Latenz (Verbindung bleibt, die Latenzmessung ist ehrlich, das Spiel
+      bleibt bedienbar), jeder dritte Snapshot verworfen, mehrsekündiger
+      Aussetzer mit Erholung über den Vollsnapshot. Dazu drei
+      Server-Integrationstests für die Ende-Mitteilung.
+      Siehe „Verbindung unter erschwerten Bedingungen".
 - [ ] Replay im Client abspielen (Server hat das Werkzeug bereits).
 - [ ] Strukturierte Logs (JSON) statt Freitext im Server.
 
@@ -648,5 +791,19 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
   Name Schaden verspricht.
 - **Der Bezugswert 1,2 der Archetyp-Abschussgeschwindigkeit gehört zu keinem
   Archetyp** (1,1 / 1,4 / 1,6). Normaltempo ist damit nicht erreichbar.
+
+- **Ein Wiederverbinden auf ein entschiedenes Match startet ein NEUES Match.**
+  Beim Ende löscht die Sitzung sich selbst (`#finish` → `onEmpty`), ein späterer
+  Beitritt findet keine Sitzung mehr und legt eine neue an — das Match beginnt
+  bei Runde 1. Für den Client ist das eher angenehm (es fließen wieder
+  Snapshots, kein „für immer veraltetes Brett"), aber zwei Dinge überraschen und
+  sind in `tests/server-integration.test.js` festgehalten: Der **Lobby-Status
+  bleibt „finished"**, während in ihr wieder gespielt wird, und ein **fremder
+  Client kommt nicht mehr hinein**, obwohl dort gespielt wird. Ein „Rematch" ist
+  das also nur für die, die schon drin waren.
+- **Verpasste `match_over` wird nur auf die PING-Anfrage wiederholt.** Das
+  schließt die Lücke (Fehler 32), kostet aber bis zu zwei Sekunden, bis der
+  Client es erfährt. Ein eigenes Zeitintervall wäre schneller, würde aber ohne
+  Not Nachrichten erzeugen, solange sich niemand meldet.
 
 - **Kein Audio.**
