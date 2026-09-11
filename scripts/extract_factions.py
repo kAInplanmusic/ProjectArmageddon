@@ -85,59 +85,17 @@ def hintergrund_toene(bild: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 def hintergrundmaske(bild: np.ndarray, ton1: np.ndarray, ton2: np.ndarray,
                      toleranz: float = TOLERANZ) -> np.ndarray:
-    """true, wo der Pixel dem Hintergrund zuzurechnen ist.
+    """true, wo der Pixel einem der beiden Schachbretttöne entspricht.
 
-    Die weichen Kanten des Schachbretts werden NICHT über die Toleranz entfernt,
-    sondern über `aeusserer_hintergrund`: Sie hängen mit dem Rand zusammen und
-    fallen dort weg. Eine große Toleranz würde stattdessen helle Fell- und
-    Rüstungsteile ausstanzen.
+    Die Toleranz bleibt bewusst knapp: Höhere Werte verschlucken helle Stellen der
+    Figuren (silberne Rüstung, weißes Fell). Die weichen Kanten ZWISCHEN den Feldern
+    werden nicht hier behandelt, sondern in `hintergrund_ueber_zellen` — dort fallen
+    ganze Felder weg, und damit verschwindet das Kantennetz mit.
     """
     a = bild.astype(float)
     d1 = np.abs(a - ton1).sum(axis=2)
     d2 = np.abs(a - ton2).sum(axis=2)
     return np.minimum(d1, d2) < toleranz
-
-
-def aeusserer_hintergrund(eng: np.ndarray, weit: np.ndarray) -> np.ndarray:
-    """Nur der Hintergrund, der vom Kachelrand aus erreichbar ist.
-
-    Zwei Masken, und das ist der Kern:
-
-    `weit` (großzügige Toleranz) enthält auch die weichgezeichneten Kanten des
-    Schachbretts. Über sie wird geflutet, denn sonst wären die einzelnen
-    Schachfelder durch die Kanten voneinander ISOLIERT — nur der Randring wäre
-    erreichbar, und die Schachbretter im Inneren gälten als Figur (bei manchen
-    Bögen 69 % der Kachel).
-
-    `eng` (Toleranz 30) bestimmt, was am Ende tatsächlich freigestellt wird. Eine
-    große Toleranz würde helle Fell- und Rüstungsteile ausstanzen; Stellen
-    innerhalb der Figur sind über `weit` nicht mit dem Rand verbunden und bleiben
-    deshalb erhalten.
-    """
-    hoehe, breite = weit.shape
-    erreichbar = np.zeros_like(weit, dtype=bool)
-    stapel: list[tuple[int, int]] = []
-
-    for x in range(breite):
-        for y in (0, hoehe - 1):
-            if weit[y, x] and not erreichbar[y, x]:
-                erreichbar[y, x] = True
-                stapel.append((y, x))
-    for y in range(hoehe):
-        for x in (0, breite - 1):
-            if weit[y, x] and not erreichbar[y, x]:
-                erreichbar[y, x] = True
-                stapel.append((y, x))
-
-    while stapel:
-        y, x = stapel.pop()
-        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < hoehe and 0 <= nx < breite \
-                    and weit[ny, nx] and not erreichbar[ny, nx]:
-                erreichbar[ny, nx] = True
-                stapel.append((ny, nx))
-    return eng & erreichbar
 
 
 def periode_ermitteln(kern: np.ndarray, ton1: np.ndarray) -> int:
@@ -185,34 +143,6 @@ def hintergrund_ueber_zellen(kern: np.ndarray, ton1: np.ndarray, ton2: np.ndarra
             else:
                 maske[y0:y1, x0:x1] = feld
     return maske
-
-
-def oeffnen(maske: np.ndarray, runden: int = 1) -> np.ndarray:
-    """Morphologisches Öffnen (Erosion, dann Dilatation) mit 3x3-Kern.
-
-    Nötig gegen das NETZ: Die weichgezeichneten Kanten des Schachbretts liegen
-    zwischen den beiden Hintergrundtönen und gelten deshalb als Inhalt. Dieses
-    Netz ist nur ein bis zwei Pixel breit und durchzieht die ganze Kachel — Figur
-    und Namenszeile hängen dadurch als EINE Komponente zusammen, und der
-    Zuschnitt umfasste stets die ganze Kachel.
-
-    Das Öffnen entfernt dünne Strukturen und lässt kompakte Flächen stehen. Die
-    Dilatation gibt der Figur ihren Rand zurück.
-    """
-    kern = [(dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1)]
-
-    def verschieben(m: np.ndarray, dy: int, dx: int) -> np.ndarray:
-        # Mit False auffüllen statt zu rotieren: Ein Umlauf würde gegenüber-
-        # liegende Ränder verbinden und den Rand zu Inhalt machen.
-        return np.pad(m, 1, constant_values=False)[1 + dy:1 + dy + m.shape[0],
-                                                  1 + dx:1 + dx + m.shape[1]]
-
-    m = maske
-    for _ in range(runden):
-        m = np.logical_and.reduce([verschieben(m, dy, dx) for dy, dx in kern])
-    for _ in range(runden):
-        m = np.logical_or.reduce([verschieben(m, dy, dx) for dy, dx in kern])
-    return m
 
 
 def komponenten(maske: np.ndarray) -> list[tuple[int, tuple[int, int, int, int]]]:
