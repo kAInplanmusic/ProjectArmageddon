@@ -77,37 +77,69 @@ test('Günther wird gezeichnet, wenn er aktiv ist', async ({ page }) => {
   expect(stand.pixel).toBeGreaterThan(4000);
 });
 
+/**
+ * Zeigt das Rad und liest seinen Zustand — OHNE gegen den Ausblend-Timer zu rennen.
+ *
+ * Warum nicht `toBeVisible()`: Das Rad blendet sich selbst aus (3,2 s; bei
+ * Heimdall 6 s), und der Text erscheint erst am Ende der Drehung (1,8 s bzw.
+ * 2,6 s). Für den Text bleibt damit ein Fenster von 1,4 s. Playwrights
+ * Abfrageintervall braucht unter Last länger — der Test war deshalb flakig
+ * (erst nach dem vollen Suite-Lauf, nicht in Einzelausführung).
+ *
+ * `hidden` wird deshalb SYNCHRON gelesen, direkt nach dem Aufruf, und auf den
+ * Text wird INNERHALB der Seite gewartet — ohne Abfrage-Overhead.
+ */
+async function radZeigen(page, payload, { warteAufText = true } = {}) {
+  return page.evaluate(async ({ p, warten }) => {
+    window.__PA__.showGuentherWheel(p);
+    const overlay = document.getElementById('guenther-wheel');
+    const ergebnisEl = document.getElementById('wheel-result');
+    // Synchron gelesen: Das Rad ist sofort sichtbar, die Drehung läuft danach.
+    const sichtbar = overlay.hidden === false;
+
+    if (warten) {
+      const ende = Date.now() + 2500;
+      while (Date.now() < ende && (ergebnisEl.textContent ?? '') === '') {
+        await new Promise(fertig => requestAnimationFrame(fertig));
+      }
+    }
+    return {
+      sichtbar,
+      nochSichtbar: overlay.hidden === false,
+      ergebnis: ergebnisEl.textContent ?? '',
+      detail: document.getElementById('wheel-detail')?.textContent ?? '',
+      panel: overlay.querySelector('.wheel-panel')?.className ?? '',
+    };
+  }, { p: payload, warten: warteAufText });
+}
+
 test('Das Glücksrad erscheint und zeigt den Ausgang', async ({ page }) => {
   await startMitGuenther(page);
 
-  await page.evaluate(() => {
-    window.__PA__.showGuentherWheel({
-      outcome: 'gassi',
-      label: 'Du gehst mit Günther Gassi',
-      detail: 'Günther muss dringend raus. Du setzt eine Runde aus.',
-    });
+  const rad = await radZeigen(page, {
+    outcome: 'gassi',
+    label: 'Du gehst mit Günther Gassi',
+    detail: 'Günther muss dringend raus. Du setzt eine Runde aus.',
   });
 
-  const overlay = page.locator('#guenther-wheel');
-  await expect(overlay).toBeVisible();
-  await expect(page.locator('#wheel-result')).toHaveText('Du gehst mit Günther Gassi', { timeout: 5000 });
-  await expect(page.locator('#wheel-detail')).toContainText('setzt eine Runde aus');
+  expect(rad.sichtbar, 'Das Rad muss sofort sichtbar sein').toBe(true);
+  expect(rad.ergebnis).toBe('Du gehst mit Günther Gassi');
+  expect(rad.detail).toContain('setzt eine Runde aus');
 });
 
 test('Heimdall wird hervorgehoben und löst die Animation aus', async ({ page }) => {
   await startMitGuenther(page);
 
-  await page.evaluate(() => {
-    window.__PA__.showGuentherWheel({
-      outcome: 'heimdall',
-      label: 'Günther verwandelt sich in Heimdall',
-      detail: 'Das Gjallarhorn erklingt.',
-      weaponName: 'Dimensionsriss',
-    });
-  });
+  const rad = await radZeigen(page, {
+    outcome: 'heimdall',
+    label: 'Günther verwandelt sich in Heimdall',
+    detail: 'Das Gjallarhorn erklingt.',
+    weaponName: 'Dimensionsriss',
+  }, { warteAufText: false });
 
-  // Eigene Gestaltung für den seltenen Ausgang.
-  await expect(page.locator('#guenther-wheel .wheel-panel')).toHaveClass(/heimdall/, { timeout: 5000 });
+  // Eigene Gestaltung für den seltenen Ausgang — steht sofort fest.
+  expect(rad.sichtbar).toBe(true);
+  expect(rad.panel).toContain('heimdall');
 
   // Und die Animation liegt im Renderer.
   const hatAnimation = await page.evaluate(() => {
@@ -123,10 +155,13 @@ test('Heimdall wird hervorgehoben und löst die Animation aus', async ({ page })
 test('Das Rad verschwindet nach kurzer Zeit wieder', async ({ page }) => {
   await startMitGuenther(page);
 
-  await page.evaluate(() => {
-    window.__PA__.showGuentherWheel({ outcome: 'angriff', label: 'Günther greift dich an', detail: 'Au.' });
-  });
-  await expect(page.locator('#guenther-wheel')).toBeVisible();
+  const rad = await radZeigen(page, {
+    outcome: 'angriff',
+    label: 'Günther greift dich an',
+    detail: 'Au.',
+  }, { warteAufText: false });
+  expect(rad.sichtbar, 'Das Rad muss zuerst sichtbar sein').toBe(true);
+
   // Nach dem Ausblenden darf es den Blick nicht mehr verdecken.
   await expect(page.locator('#guenther-wheel')).toBeHidden({ timeout: 8000 });
 });

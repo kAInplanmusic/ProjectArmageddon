@@ -1742,11 +1742,6 @@ export class MatchController {
     return true;
   }
 
-  /** Der Spielereintrag zu einer Entity-ID, oder null. */
-  playerEntry(playerId) {
-    return this.#players.find(entry => entry.entityId === playerId) ?? null;
-  }
-
   /**
    * Lebt dieser SPIELER noch?
    *
@@ -1756,7 +1751,7 @@ export class MatchController {
    * über den Lebensstatus einer Figur.
    */
   isPlayerAlive(playerId) {
-    return this.playerEntry(playerId)?.alive === true;
+    return this.#players.find(entry => entry.entityId === playerId)?.alive === true;
   }
 
   /** Setzt die Zugzeit neu (Spielvarianten, Tests, Turniermodus). */

@@ -268,41 +268,47 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
     const page = await openClient(context, { name: 'Tester' });
 
     /*
+     * Die Liste wird EINMAL gelesen, nachdem sie gefüllt und alle Icons dekodiert
+     * sind.
+     *
+     * Warum nicht Zeile für Zeile mit eigenen Erwartungen: Das waren bis zu 15
+     * Playwright-Aufrufe mit je eigenem Timeout (die Icon-Prüfung allein bis zu
+     * 10 s je Zeile). Zusammen mit dem Umstand, dass der Server das Match in
+     * Echtzeit weiterspielt — endet es, ist der aktive Spieler weg und die Liste
+     * kollabiert auf 0 Zeilen —, sprengte das das 60-s-Budget des Tests. Der
+     * Fehlschlag sah dann nach einem kaputten Produkt aus, war aber ein zu
+     * schwerfälliger Test.
+     *
      * Fünf Zeilen: vier Klassenwaffen aus dem Startloadout plus die Reservewaffe
-     * mit unbegrenzter Munition (`FALLBACK_WEAPON_ID`, siehe `loadouts.js`).
-     * Vorher waren es vier, weil die Reserve zufällig selbst im neutralen
-     * Loadout lag und beim Anlegen nicht doppelt genommen wurde — daran hing
-     * also ein Test. Die Reserve ist jetzt bei jeder Klasse dieselbe.
+     * mit unbegrenzter Munition (FALLBACK_WEAPON_ID, siehe loadouts.js). Vorher
+     * waren es vier, weil die Reserve zufällig selbst im neutralen Loadout lag
+     * und beim Anlegen nicht doppelt genommen wurde — daran hing also ein Test.
      */
-    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
+    await page.waitForFunction(() => {
+      const zeilen = [...document.querySelectorAll('#weapon-list .weapon-item')];
+      if (zeilen.length === 0) return false;
+      return zeilen.every(zeile => {
+        const bild = zeile.querySelector('img.weapon-icon');
+        return (zeile.querySelector('.weapon-name')?.textContent ?? '').trim().length > 0
+          && (zeile.textContent ?? '').includes('DMG')
+          && bild !== null && bild.complete && bild.naturalWidth > 0;
+      });
+    }, null, { timeout: 25_000 });
 
-    // Gruppenköpfe der Unterkategorien müssen erscheinen (höchstens vier).
-    const gruppen = page.locator('#weapon-list .weapon-group');
-    await expect(gruppen).not.toHaveCount(0);
-    const texte = await gruppen.allTextContents();
-    expect(texte.length).toBeGreaterThan(0);
-    expect(texte.length).toBeLessThanOrEqual(4);
-    // Die Beschriftungen müssen gefüllt sein, nicht nur vorhanden.
-    for (const text of texte) expect(text.trim().length).toBeGreaterThan(3);
+    const liste = await page.evaluate(() => ({
+      zeilen: document.querySelectorAll('#weapon-list .weapon-item').length,
+      aktiv: document.querySelectorAll('#weapon-list .weapon-item.is-active').length,
+      gruppen: [...document.querySelectorAll('#weapon-list .weapon-group')]
+        .map(gruppe => gruppe.textContent.trim()),
+    }));
 
-    // Jede Zeile trägt Namen, Munition und ein geladenes Icon.
-    const zeilen = page.locator('#weapon-list .weapon-item');
-    const anzahl = await zeilen.count();
-    expect(anzahl).toBe(5);
-    for (let i = 0; i < anzahl; i++) {
-      const zeile = zeilen.nth(i);
-      await expect(zeile.locator('.weapon-name')).not.toBeEmpty();
-      await expect(zeile).toContainText('DMG');
-
-      // Icons sind verknüpft: das Bild muss wirklich geladen sein.
-      const bild = zeile.locator('img.weapon-icon');
-      await expect(bild).toHaveCount(1, { timeout: 10_000 });
-      const geladen = await bild.evaluate(el => el.complete && el.naturalWidth > 0);
-      expect(geladen, `Icon in Zeile ${i} wurde nicht geladen`).toBe(true);
-    }
-
+    expect(liste.zeilen).toBe(5);
     // Genau eine Waffe ist als aktiv markiert.
-    await expect(page.locator('#weapon-list .weapon-item.is-active')).toHaveCount(1);
+    expect(liste.aktiv).toBe(1);
+    // Gruppenköpfe der Unterkategorien (höchstens vier), mit gefüllter Beschriftung.
+    expect(liste.gruppen.length).toBeGreaterThan(0);
+    expect(liste.gruppen.length).toBeLessThanOrEqual(4);
+    for (const text of liste.gruppen) expect(text.length).toBeGreaterThan(3);
   } finally {
     await context.close();
   }

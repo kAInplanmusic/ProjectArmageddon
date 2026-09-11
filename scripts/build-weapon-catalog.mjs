@@ -833,6 +833,7 @@ export function iconUrlFor(weapon) {
  * liefen Anzeige und Eingabe auseinander.
  *
  * Innerhalb einer Gruppe bleibt die Reihenfolge des Inventars erhalten.
+ * Die Reservewaffe steht IMMER zuletzt (siehe unten).
  *
  * @param {string[]} weaponIds - Waffen des Inventars in Inventarreihenfolge
  * @returns {number[]} Inventar-Indizes, nach Gruppe sortiert
@@ -847,7 +848,30 @@ export function orderInventoryBySubcategory(weaponIds) {
 
   return weaponIds
     .map((weaponId, index) => ({ weaponId, index }))
-    .sort((a, b) => rang(a.weaponId) - rang(b.weaponId) || a.index - b.index)
+    /*
+     * Die Reservewaffe steht immer zuletzt — vor jeder Gruppierung.
+     *
+     * Sie ist die einzige Waffe, die sich nicht abwerfen lässt (siehe
+     * PlayerInventory.removeWeapon). Ihre Stellung ergab sich bisher allein aus
+     * ihrer Kategorie, und die ist guns: Bei der Klasse heavy stand sie damit
+     * auf Anzeigeposition 1 (scout 4, artillery 3). Folge: Der erste
+     * Listeneintrag war nicht abwerfbar, und die Zifferntaste 1 wählte sie.
+     *
+     * PlayerInventory hält dieselbe Regel für die AKTIVE Waffe bereits ein
+     * („Als aktive Waffe die erste ABWERFBARE wählen, nicht die Reserve"). Hier
+     * gilt sie jetzt auch für die Reihenfolge der Anzeige.
+     *
+     * Achtung: Dieser Rumpf wird als Quelltext in den Katalog geschrieben und
+     * liegt im Generator in einem Template-String. Backticks und Dollar-Klammern
+     * sind hier deshalb verboten — sie beenden den String.
+     */
+    .sort((a, b) => {
+      const reserveA = a.weaponId === FALLBACK_WEAPON_ID ? 1 : 0;
+      const reserveB = b.weaponId === FALLBACK_WEAPON_ID ? 1 : 0;
+      return reserveA - reserveB
+        || rang(a.weaponId) - rang(b.weaponId)
+        || a.index - b.index;
+    })
     .map(eintrag => eintrag.index);
 }
 

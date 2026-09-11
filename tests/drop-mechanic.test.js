@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { MatchController, MAP_WIDTH } from '../src/engine/match.js';
-import { WEAPONS, FALLBACK_WEAPON_ID } from '../src/shared/config/weapons.js';
+import { MatchController, MAP_WIDTH, CLASS_IDS } from '../src/engine/match.js';
+import { WEAPONS, FALLBACK_WEAPON_ID, orderInventoryBySubcategory } from '../src/shared/config/weapons.js';
 import { PlayerInventory, MAX_WEAPONS } from '../src/engine/inventory.js';
 import { CRATE_TYPES } from '../src/engine/systems/lootSystem.js';
 
@@ -383,4 +383,70 @@ test('Nach einem Abwurf ist wieder Platz für eine neue Waffe', () => {
   assert.equal(abwurf.ok, true, `Abwurf abgelehnt: ${abwurf.errors?.join(', ')}`);
 
   assert.equal(match.inventory.isFull(spieler), false, 'Nach dem Abwurf muss Platz sein');
+});
+
+// ------------------------------------------------- Reserve und Anzeigereihenfolge
+
+test('Die Reservewaffe steht in der Anzeige zuletzt — bei jeder Klasse', () => {
+  /*
+   * Fund (belegt): Die Reservewaffe ist die einzige, die sich nicht abwerfen
+   * lässt. Ihre Stellung in der Anzeige ergab sich allein aus ihrer Kategorie
+   * (`guns`) und war damit ein Nebeneffekt: Bei der Klasse `heavy` stand sie auf
+   * Anzeigeposition 1, bei scout auf 4, bei artillery auf 3.
+   *
+   * Folge in `heavy`: Der erste Listeneintrag war nicht abwerfbar, und die
+   * Zifferntaste „1" wählte die Reserve — genau der Bedienfehler, den
+   * `PlayerInventory` für die aktive Waffe bereits ausschließt.
+   *
+   * Deshalb jetzt die Regel: Reserve immer zuletzt, bei JEDER Klasse.
+   */
+  for (const teams of [2, 3]) {
+    const match = new MatchController({ seed: 4242, teams, playersPerTeam: 3 });
+    match.start();
+    const gesehen = new Set();
+
+    for (const spieler of match.players) {
+      const klasse = CLASS_IDS[spieler.classId];
+      const inventar = match.inventory.getWeapons(spieler.entityId);
+      const reihenfolge = orderInventoryBySubcategory(inventar);
+
+      assert.ok(inventar.includes(FALLBACK_WEAPON_ID),
+        `${klasse}: Keine Reservewaffe im Inventar`);
+
+      const position = reihenfolge.indexOf(inventar.indexOf(FALLBACK_WEAPON_ID));
+      assert.equal(position, reihenfolge.length - 1,
+        `${klasse}: Reserve steht auf Anzeigeposition ${position + 1} von ${reihenfolge.length}`);
+      gesehen.add(klasse);
+
+      // Und die wichtigere Aussage: Die erste Zeile IST abwerfbar.
+      const ersteWahl = inventar[reihenfolge[0]];
+      assert.notEqual(ersteWahl, FALLBACK_WEAPON_ID,
+        `${klasse}: Die erste Waffe der Liste ist die un-abwerfbare Reserve`);
+      assert.equal(match.inventory.isUnlimited(spieler.entityId, ersteWahl), false,
+        `${klasse}: Die erste Waffe der Liste ist unbegrenzt — sie muss abwerfbar sein`);
+    }
+
+    assert.equal(gesehen.size, 3, 'Es müssen alle drei Klassen geprüft werden');
+  }
+});
+
+test('Der Abwurf über die Anzeigeposition trifft eine abwerfbare Waffe', () => {
+  // Der Weg, den die Zifferntasten und die Q-Taste nehmen: Anzeigeposition →
+  // Inventarindex → Waffe. Er darf nie auf der Reserve landen.
+  // `heavy` ist der kritische Fall (Reserve stand dort auf Position 1), geprüft
+  // wird er für alle Klassen — je Klasse ein frisches Match, damit der Abwurf
+  // sauber bleibt.
+  for (const klasse of CLASS_IDS) {
+    const frisch = new MatchController({ seed: 4242, teams: 3, playersPerTeam: 1 });
+    frisch.start();
+    const spieler = frisch.players.find(p => CLASS_IDS[p.classId] === klasse);
+    const inventar = frisch.inventory.getWeapons(spieler.entityId);
+    const reihenfolge = orderInventoryBySubcategory(inventar);
+    const waffe = inventar[reihenfolge[0]];
+
+    const ergebnis = frisch.dropWeapon(spieler.entityId, waffe);
+    assert.equal(ergebnis.ok, true,
+      `${klasse}: Die erste Anzeigeposition ließ sich nicht abwerfen: ${ergebnis.errors?.join(', ')}`);
+    assert.ok(ergebnis.ammo !== undefined, `${klasse}: Kein Munitionsstand gemeldet`);
+  }
 });

@@ -59,7 +59,7 @@
  * Waffenreihenfolge im Katalog.
  */
 
-import { WEAPONS, WEAPON_SUBCATEGORIES, getDefaultLoadout } from './weapons.js';
+import { WEAPONS, getDefaultLoadout } from './weapons.js';
 
 /** Rollen eines Klassen-Loadouts, in fester Reihenfolge. */
 export const LOADOUT_ROLES = Object.freeze(['flaeche', 'direkt', 'hitscan', 'kuer']);
@@ -247,16 +247,6 @@ export function getClassLoadoutDetail(klasse, count = 4) {
  */
 export function getClassLoadout(klasse, count = 4) {
   return getClassLoadoutDetail(klasse, count).map(eintrag => eintrag.weaponId);
-}
-
-/**
- * Alle Unterkategorien, in denen überhaupt Startwaffen liegen.
- * Nützlich für Anzeige und Tests.
- */
-export function startSubcategories() {
-  return WEAPON_SUBCATEGORIES
-    .map(gruppe => gruppe.id)
-    .filter(id => WEAPONS.some(w => w.subcategory === id && startwaffe(w)));
 }
 
 export default { getClassLoadout, getClassLoadoutDetail, LOADOUT_ROLES, START_TIERS };
