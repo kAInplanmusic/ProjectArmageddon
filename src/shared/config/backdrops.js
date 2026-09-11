@@ -695,6 +695,10 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   mountains: 'alpine',
   hills: 'forest',
   caverns: 'caverns',
+  // Die vier später hinzugekommenen Geländeformen (`open`, `spires`, `flooded`,
+  // `warren`) fehlen hier absichtlich — ihnen fehlen noch eigene Kulissen. Die
+  // Begründung steht bei der gleichen Tabelle in `scenery.js`, die Lücke ist in
+  // `tests/backdrops.test.js` festgehalten.
 });
 
 export default BACKDROP_BIOMES;

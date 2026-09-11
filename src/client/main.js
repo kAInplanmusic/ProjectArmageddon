@@ -1465,12 +1465,30 @@ class Game {
       guentherWheelOutcomes: () => GUENTHER_WHEEL.map(o => ({ id: o.id, label: o.label, detail: o.detail })),
       /** Zeigt das Glücksrad mit einem vorgegebenen Ausgang (für Tests). */
       showGuentherWheel: payload => this.showGuentherWheel(payload),
-      /** Aktuelle Kulisse (Schlüssel und Datei). */
+      /**
+       * Aktuelle Darstellungsgrundlage.
+       *
+       * Es gibt zwei Wege, und sie schließen einander aus:
+       *  - `bild`: eine gewählte Bildkulisse (`backdropKey`), oder
+       *  - `szene`: die GENERATIVE Kulisse (`scenery`), die Vorgabe.
+       *
+       * Beide zusammen abzufragen ist nötig, weil `backdropKey` bei der
+       * generativen Kulisse absichtlich `null` bleibt — wer nur ihn prüft, hält
+       * ein korrekt gezeichnetes Spiel für eine leere Darstellung. (Genau das
+       * ist beim Schreiben des Geländeform-Tests passiert.)
+       */
       backdrop: () => ({
         key: this.renderer.backdropKey,
         file: this.renderer.backdrop?.file ?? null,
         preset: this.renderer.backdrop?.mapPreset ?? null,
         palette: this.renderer.palette,
+        /** Generative Szene: Biomgruppe, Himmel, Wasser, Ambiente. */
+        szene: this.renderer.scenery ? {
+          biom: this.renderer.scenery.biomeId ?? null,
+          // `sky` und `water` sind Objekte mit eigener Kennung.
+          himmel: this.renderer.scenery.sky?.id ?? null,
+          wasser: this.renderer.scenery.water?.id ?? null,
+        } : null,
       }),
       /** Kulissenauswahl im Menü befüllen (für Tests). */
       fillBackdropOptions: () => this.fillBackdropOptions(),

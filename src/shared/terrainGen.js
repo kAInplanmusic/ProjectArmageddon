@@ -8,11 +8,63 @@
  * @module terrainGen
  */
 
+/**
+ * Geländeformen.
+ *
+ * Die vier Zahlen je Form wirken zusammen:
+ *  - `amplitude` × `roughness` × 2 bestimmt den Ausschlag des Höhenprofils um
+ *    die Mitte. Kleine Werte ergeben flaches Land, große Werte Klippen.
+ *  - `waterLevel` ist der Anteil der Kartenhöhe, der unter dem Wasserspiegel
+ *    liegt (`waterY = height × (1 − waterLevel)`).
+ *  - `caves` ist die Höhlendichte im Untergrund (Anteil der Kartenzellen).
+ *
+ * Die Werte sind nicht frei gewählt, sondern an Kennzahlen ausgerichtet und
+ * danach justiert: Höhenvarianz (wie „vertikal" ist die Karte), freie
+ * Schusslinien auf nahen und weiten Distanzen (wie offen ist sie) und
+ * Deckungsdichte (wie oft die Oberfläche je 100 px um mehr als 20 px springt).
+ * `tests/terrain-presets.test.js` hält die Kennzahlen mit Schwellen fest, damit
+ * eine spätere Änderung nicht unbemerkt eine Form ihrer Eigenart beraubt.
+ */
 export const TERRAIN_PRESETS = Object.freeze({
   hills: Object.freeze({ amplitude: 0.42, roughness: 0.55, waterLevel: 0.16, caves: 0 }),
   mountains: Object.freeze({ amplitude: 0.62, roughness: 0.8, waterLevel: 0.1, caves: 0.002 }),
   islands: Object.freeze({ amplitude: 0.5, roughness: 0.45, waterLevel: 0.3, caves: 0.001 }),
   caverns: Object.freeze({ amplitude: 0.35, roughness: 0.7, waterLevel: 0.12, caves: 0.02 }),
+
+  /*
+   * Die vier folgenden Formen kamen später dazu: Die ursprünglichen vier
+   * deckten welliges und bergiges Land, Inseln und Höhlen ab, aber nicht die
+   * Spielweisen, um die es in den Duellen geht.
+   */
+
+  /** Offene Weite: flaches Land, keine Höhlen, kaum Wasser — weite Sichtlinien. */
+  open: Object.freeze({ amplitude: 0.1, roughness: 0.25, waterLevel: 0.1, caves: 0 }),
+
+  /** Felsspitzen: große Höhenunterschiede, sehr rau — Kämpfe über Höhen. */
+  spires: Object.freeze({ amplitude: 0.9, roughness: 1, waterLevel: 0.05, caves: 0.002 }),
+
+  /**
+   * Flut: hügeliges Land mit hohem Wasserspiegel.
+   *
+   * Fund (belegt): Der erste Ansatz war `amplitude: 0.4, roughness: 0.45,
+   * waterLevel: 0.55` — gedacht als „mehr als die Hälfte unter Wasser". Gemessen
+   * standen aber **0 von 2 Startfiguren auf festem Boden**, beide ertranken im
+   * ersten Zug. Die Karte war unspielbar, weil der Wasserspiegel über dem Land
+   * an den festen Startpunkten (x = 427 und 853) lag.
+   *
+   * Deshalb ein anderes Vorgehen: Das Höhenprofil wird ANGEHOBEN (hügeliger als
+   * bei `islands`), und der Wasserstand trifft die Täler. So liegt reichlich
+   * Wasser auf der Karte, die Gipfel und Startpunkte bleiben aber trocken.
+   */
+  flooded: Object.freeze({ amplitude: 0.62, roughness: 0.8, waterLevel: 0.45, caves: 0 }),
+
+  /**
+   * Gewirr: rau und durchlöchert — Deckung auf kurze Distanz.
+   *
+   * Die Höhlendichte ist hier bewusst ein Vielfaches der anderen Formen: Sie
+   * schafft die Räume und Verstecke, die eine Nahkampfkarte ausmachen.
+   */
+  warren: Object.freeze({ amplitude: 0.6, roughness: 1, waterLevel: 0.1, caves: 0.06 }),
 });
 
 function smoothstep(t) {

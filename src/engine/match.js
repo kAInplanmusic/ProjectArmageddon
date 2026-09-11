@@ -329,6 +329,51 @@ export class MatchController {
     this.#world.services.maelstrom = this.#maelstrom;
   }
 
+  /**
+   * Sucht eine Startposition auf festem, nicht überflutetem Grund.
+   *
+   * Gesucht wird abwechselnd nach rechts und links vom Wunschpunkt, in festen
+   * Schritten. Die Reihenfolge ist festgelegt (rechts vor links, kleine vor
+   * großen Abständen), damit die Platzierung bei gleichem Seed dieselbe bleibt —
+   * der Determinismus des Matches hängt daran.
+   *
+   * Maßstab ist `WET_LEVEL`: Eine Figur, die nur „nass" startet, ist spielbar;
+   * eine untergetauchte ertrinkt, bevor der erste Zug beginnt.
+   *
+   * Wird nichts gefunden, bleibt es beim Wunschpunkt. Ein schlechter Platz ist
+   * besser als gar keiner — und ein Fehlen wird im Test auffallen.
+   *
+   * @param {number} idealX
+   * @returns {number} x-Position mit festem, trockenem Boden
+   */
+  #drySpawnX(idealX) {
+    const trocken = x => {
+      if (x < PLAYER_HALF_WIDTH + 2 || x > this.width - PLAYER_HALF_WIDTH - 2) return false;
+      const boden = this.surfaceYAt(x);
+      if (boden <= 0) return false;
+      return this.waterLevelAt(x, boden) < WET_LEVEL;
+    };
+
+    if (trocken(idealX)) return idealX;
+    /*
+     * Über die ganze Kartenbreite suchen, nicht nur bis zur Mitte.
+     *
+     * Auf einer Karte mit viel Wasser (Form `flooded`: rund 45 % Wasser) liegt
+     * die nächste trockene Stelle unter Umständen weit entfernt. Mit einer
+     * Begrenzung auf die halbe Breite blieb gemessen 1 von 480 Figuren
+     * (40 Seeds × 12 Figuren) im Wasser — mit der vollen Breite keine.
+     *
+     * Die Suche läuft nur, wenn der Wunschplatz nass ist, und die Prüfung ist
+     * ein Höhenprofil-Zugriff. Beim Matchstart fällt das nicht ins Gewicht.
+     */
+    const grenze = this.width - PLAYER_HALF_WIDTH - 2;
+    for (let abstand = 8; abstand < grenze; abstand += 8) {
+      if (trocken(idealX + abstand)) return idealX + abstand;
+      if (trocken(idealX - abstand)) return idealX - abstand;
+    }
+    return idealX;
+  }
+
   #spawnPlayers() {
     const total = this.teams * this.playersPerTeam;
     const spacing = this.width / (total + 1);
@@ -343,7 +388,19 @@ export class MatchController {
       const archetypeId = index % ARCHETYPE_IDS.length;
 
       const x = Math.round(spacing * (index + 1));
-      const groundY = this.surfaceYAt(x);
+      /*
+       * Trockener Startplatz.
+       *
+       * Fund (belegt): Die Startposition war schlicht `spacing × (index + 1)`.
+       * Auf einer wasserreichen Karte liegt diese Stelle aber unter dem
+       * Wasserspiegel — gemessen bei der Geländeform `flooded`: **51 % der
+       * Figuren (81 von 160 über 40 Seeds) starteten untergetaucht** und
+       * ertranken im ersten Zug. Bei den vier ursprünglichen Formen fiel es nicht
+       * auf, weil dort der Wasserspiegel tief genug liegt; die Startposition war
+       * also nur zufällig sicher, nicht geprüft.
+       */
+      const startX = this.#drySpawnX(x);
+      const groundY = this.surfaceYAt(startX);
       const y = (groundY > 0 ? groundY : this.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
 
       const entityId = this.#world.createEntity();

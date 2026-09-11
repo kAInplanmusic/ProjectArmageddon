@@ -351,6 +351,27 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   mountains: 'alpine',
   hills: 'forest',
   caverns: 'caverns',
+  /*
+   * Die vier später hinzugekommenen Geländeformen (`open`, `spires`, `flooded`,
+   * `warren`) stehen hier ABSICHTLICH NICHT.
+   *
+   * Die Regel des Projekts lautet: Jede Geländeform hat ein eigenes Leitbiom,
+   * und dessen `mapPreset` ist genau diese Form (siehe
+   * `tests/backdrops.test.js`). Ein Leitbiom ist damit eine Kulissengruppe mit
+   * eigenen Bildern — und eigene Bilder sind eine Inhaltsfrage, keine
+   * Einstellung: Welche Szene zeigt „Offene Weite", welche „Gewirr"?
+   *
+   * Für die vier Formen fehlen diese Kulissen. Sie laufen bis dahin mit einer
+   * beliebigen Szene: `pickScenery` fällt ohne Leitbiom auf `forest` zurück (oben
+   * in dieser Datei). Spielbar und vollständig gezeichnet, aber ohne passende
+   * Kulisse — eine „Flut" sieht derzeit aus wie ein Wald. Die Lücke ist in
+   * `tests/terrain-presets.test.js` und in `tests/backdrops.test.js` namentlich
+   * festgehalten, damit sie sichtbar bleibt und nicht als erledigt gilt.
+   *
+   * (Der Weg über ein BILD — `pickBackdrop` — ist hier nicht betroffen: Er wird
+   * nur bei ausdrücklicher Wahl im Menü beschritten; Vorgabe ist die generative
+   * Szene.)
+   */
 });
 
 // ------------------------------------------------------------------ Erzeugung
