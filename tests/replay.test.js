@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
-import { ReplayRecorder, playReplay, REPLAY_FORMAT_VERSION } from '../src/engine/replay.js';
+import { ReplayRecorder, ReplayPlayer, playReplay, REPLAY_FORMAT_VERSION } from '../src/engine/replay.js';
 
 /**
  * Führt ein Match mit skriptgesteuerten Eingaben aus und zeichnet sie auf.
@@ -229,4 +229,156 @@ test('Rundengrenze kürt das Team mit mehr verbleibender Gesundheit', () => {
 
   assert.equal(match.status, 'gameover');
   assert.equal(match.winnerTeamId, 0, 'Das gesündere Team muss gewinnen');
+});
+
+// -------------------------------------------------------- Schrittweise Wiedergabe
+
+/**
+ * Eine kurze Aufzeichnung für die Wiedergabetests.
+ * Bewusst klein: 2 Teams, 1 Spieler je Team, wenige Runden.
+ */
+function kurzesReplay() {
+  const match = new MatchController({ seed: 777, teams: 2, playersPerTeam: 1, turnDurationMs: 600, maxRounds: 3 });
+  match.start();
+  const recorder = new ReplayRecorder({
+    seed: 777, teams: 2, playersPerTeam: 1, preset: 'hills',
+    maxRounds: match.maxRounds, turnDurationMs: match.turnDurationMs,
+  });
+
+  let schuesse = 0;
+  let schutz = 0;
+  while (match.status === 'playing' && schutz < 12_000) {
+    const state = match.getState();
+    if (state.activePlayerId !== null && state.turnElapsedMs < 20) {
+      const angle = Math.PI / 4 + (schuesse % 5) * 0.07;
+      const power = 60 + (schuesse % 4) * 9;
+      if (match.fire(state.activePlayerId, angle, power).ok) {
+        recorder.recordInput({ tick: match.world.tickCount, playerId: state.activePlayerId, angle, power });
+        schuesse += 1;
+      }
+    }
+    match.step();
+    match.consumeEvents();
+    schutz += 1;
+  }
+  recorder.finalize(match.world.tickCount);
+  return { live: match, recorder, schuesse };
+}
+
+test('ReplayPlayer liefert dasselbe Ergebnis wie playReplay', () => {
+  /*
+   * Der wichtigste Test dieser Erweiterung. Die Wiedergabe im Client wurde auf
+   * eine eigene Klasse umgestellt; `playReplay` läuft jetzt darüber. Beide müssen
+   * dieselbe Endlage ergeben — sonst zeigt die Anzeige etwas anderes, als
+   * `replay --verify` prüft, und die Prüfung wäre wertlos.
+   */
+  const { recorder } = kurzesReplay();
+  const dokument = recorder.toJSON ? recorder.toJSON() : recorder;
+
+  const einmal = playReplay(dokument);
+  const spieler = new ReplayPlayer(dokument);
+  while (spieler.step());
+
+  assert.equal(spieler.match.status, einmal.match.status);
+  assert.equal(spieler.match.round, einmal.match.round);
+  assert.equal(spieler.match.world.tickCount, einmal.match.world.tickCount);
+  assert.equal(spieler.match.stateHash(), einmal.match.stateHash(),
+    'Der Zustandshash weicht ab — Wiedergabe und Durchlauf spielen nicht dasselbe');
+  assert.equal(spieler.appliedInputs, einmal.appliedInputs);
+});
+
+test('Schrittweise Wiedergabe entspricht der Aufzeichnung', () => {
+  // Der Player muss genau so weit kommen wie das aufgezeichnete Match.
+  const { live, recorder } = kurzesReplay();
+  const spieler = new ReplayPlayer(recorder);
+  const schritte = spieler.stepMany(1_000_000);
+
+  assert.equal(spieler.tick, live.world.tickCount,
+    `Wiedergabe endet bei Tick ${spieler.tick}, aufgezeichnet bis ${live.world.tickCount}`);
+  assert.equal(spieler.match.stateHash(), live.stateHash());
+  assert.ok(schritte > 0);
+});
+
+test('Der Player meldet Ende und Fortschritt', () => {
+  const { recorder } = kurzesReplay();
+  const spieler = new ReplayPlayer(recorder);
+
+  assert.equal(spieler.finished, false, 'Ein frischer Player ist nicht am Ende');
+  assert.equal(spieler.progress, 0);
+
+  // Bis kurz vor Schluss spulen.
+  spieler.seek(Math.max(0, spieler.totalTicks - 1));
+  assert.ok(spieler.progress > 0.9, `Fortschritt ${spieler.progress} zu klein`);
+  assert.equal(spieler.finished, false);
+
+  // Und über das Ende hinaus.
+  spieler.stepMany(10);
+  assert.equal(spieler.finished, true);
+  assert.equal(spieler.progress, 1);
+  // Weitere Schritte tun nichts und melden das.
+  assert.equal(spieler.step(), false);
+});
+
+test('seek springt vorwärts und rückwärts reproduzierbar', () => {
+  /*
+   * Ein Replay hat keinen Zwischenzustand zum Wiederherstellen: `seek` baut neu
+   * auf und spult. Der Test hält fest, dass das Ergebnis an derselben Stelle
+   * identisch ist — einmal vorwärts gesprungen, einmal rückwärts.
+   */
+  const { recorder } = kurzesReplay();
+
+  const vorwaerts = new ReplayPlayer(recorder);
+  // Ziel relativ zur Gesamtlänge: Die Aufzeichnung ist kurz, ein fester Wert
+  // könnte jenseits ihres Endes liegen und der Testaufbau wäre hinfällig.
+  const ziel = Math.max(1, Math.floor(vorwaerts.totalTicks / 3));
+  vorwaerts.seek(ziel);
+  const hashVorwaerts = vorwaerts.match.stateHash();
+  const tickVorwaerts = vorwaerts.tick;
+
+  const rueckwaerts = new ReplayPlayer(recorder);
+  rueckwaerts.seek(Math.min(ziel + 20, rueckwaerts.totalTicks));
+  assert.ok(rueckwaerts.tick > ziel, 'Testaufbau: erst über das Ziel hinaus');
+  rueckwaerts.seek(ziel);
+
+  assert.equal(rueckwaerts.tick, tickVorwaerts);
+  assert.equal(rueckwaerts.match.stateHash(), hashVorwaerts,
+    'Der Zustand nach seek hängt davon ab, woher man kommt');
+});
+
+test('stepMany achtet die Obergrenze und tut nichts darüber hinaus', () => {
+  const { recorder } = kurzesReplay();
+  const spieler = new ReplayPlayer(recorder);
+
+  const getan = spieler.stepMany(spieler.totalTicks);
+  assert.ok(getan <= spieler.totalTicks);
+  assert.equal(spieler.finished, true);
+  // Ein zweiter Aufruf hat nichts mehr zu tun.
+  assert.equal(spieler.stepMany(100), 0);
+});
+
+test('reset setzt auf den Anfang zurück', () => {
+  const { recorder } = kurzesReplay();
+  const spieler = new ReplayPlayer(recorder);
+  const hashStart = spieler.match.stateHash();
+
+  spieler.stepMany(50);
+  assert.notEqual(spieler.tick, 0);
+
+  spieler.reset();
+  assert.equal(spieler.tick, 0);
+  assert.equal(spieler.match.stateHash(), hashStart);
+  assert.equal(spieler.appliedInputs, 0);
+  assert.deepEqual(spieler.rejected, []);
+});
+
+test('Die Wiedergabe endet nicht vorzeitig, wenn das Match noch läuft', () => {
+  /*
+   * Fund-Absicherung: `totalTicks` kommt aus der Aufzeichnung. Wäre es 0 (nicht
+   * abgeschlossene Aufzeichnung), liefe die Wiedergabe sofort zu Ende — oder,
+   * mit `Number.MAX_SAFE_INTEGER`, endlos. Beides ist hier ausgeschlossen.
+   */
+  const { recorder } = kurzesReplay();
+  const spieler = new ReplayPlayer(recorder);
+  assert.ok(spieler.totalTicks > 0, 'totalTicks darf nicht 0 sein');
+  assert.ok(spieler.totalTicks < 1_000_000, `totalTicks unplausibel hoch: ${spieler.totalTicks}`);
 });

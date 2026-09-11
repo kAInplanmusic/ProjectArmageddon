@@ -28,6 +28,7 @@ import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
+import { ReplayPlayer } from '../engine/replay.js';
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -53,6 +54,19 @@ class Game {
      * Snapshot); hier wird nur der ÜBERGANG erkannt.
      */
     this.waterStates = new Map();
+
+    /**
+     * Wiedergabe einer Aufzeichnung.
+     *
+     * Eine Aufzeichnung enthält nur die EINGABEN (Seed und Schüsse), nicht den
+     * Verlauf. Beim Abspielen wird das Match neu gerechnet — deshalb ist eine
+     * Aufzeichnung wenige Kilobyte groß, und deshalb lässt sich jede Stelle
+     * anspringen.
+     */
+    this.replayPlayer = null;
+    this.replayPlaying = false;
+    /** Wiedergabegeschwindigkeit: 1 = Echtzeit. */
+    this.replaySpeed = 1;
 
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
@@ -90,6 +104,8 @@ class Game {
     lobbyBrowser?.addEventListener('toggle', () => {
       if (lobbyBrowser.open) refresh();
     });
+
+    this.#wireReplay();
 
     window.addEventListener('keydown', event => {
       // Der Neustart darf nicht ausgelöst werden, während in ein Formularfeld
@@ -696,6 +712,19 @@ class Game {
       return { ok: true, projectileId: null, hit: null };
     }
 
+    /*
+     * Im Replay wird nicht gespielt.
+     *
+     * Ohne diese Sperre würde ein Tastendruck die NACHGESPIELTE Rechnung
+     * verändern: Der Zustand wäre danach weder das Replay noch ein eigenes
+     * Match, und ein Vergleich mit `replay --verify` wäre wertlos. Wer zusieht,
+     * spielt nicht.
+     */
+    if (this.mode === 'replay') {
+      this.hud.log('Im Replay kann nicht gespielt werden — erst „Abspielen" beenden', 'danger');
+      return { ok: false, errors: ['Replay läuft'] };
+    }
+
     const playerId = this.match.activePlayerId;
     if (playerId === null) return { ok: false, errors: ['Kein aktiver Spieler'] };
 
@@ -1121,6 +1150,28 @@ class Game {
       }
     }
 
+    /*
+     * Wiedergabe einer Aufzeichnung.
+     *
+     * Eigener Zweig statt `step()`: Dort wird die lokale Simulation
+     * weitergerechnet, hier aber ein aufgezeichnetes Match nachgespielt. Die
+     * Schrittweite wird durch das Tempo geteilt — bei 2× vergehen pro Tick nur
+     * halb so viele Millisekunden, es laufen also doppelt so viele Takte je
+     * Sekunde.
+     */
+    if (this.mode === 'replay' && this.replayPlayer && this.replayPlaying) {
+      while (this.accumulator >= FIXED_TIMESTEP && steps < MAX_STEPS_PER_FRAME) {
+        if (!this.replayPlayer.step()) {
+          this.replayPlaying = false;
+          break;
+        }
+        this.accumulator -= FIXED_TIMESTEP / Math.max(0.25, this.replaySpeed);
+        steps++;
+      }
+      this.#afterReplayStep();
+      this.#setReplayStatus();
+    }
+
     this.#render();
   }
 
@@ -1145,7 +1196,7 @@ class Game {
     this.renderer.render(state, {
       aimPreview,
       aim: this.aim,
-      water: this.mode === 'local' ? (this.waterFrame === 0 ? this.match.water : null) : null,
+      water: this.mode === 'online' ? null : (this.waterFrame === 0 ? this.match.water : null),
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.#trackWater(state);
@@ -1156,10 +1207,248 @@ class Game {
     );
   }
 
-  #exposeDebugApi() {
+  // ---------------------------------------------------------------- Replay
+
+  /**
+   * Verdrahtet die Replay-Steuerung im Menü.
+   *
+   * Die Dateiauswahl liest die Aufzeichnung im Browser (FileReader) — es wird
+   * nichts hochgeladen. Eine Aufzeichnung enthält nur Seed und Eingaben, also
+   * wenige Kilobyte.
+   */
+  #wireReplay() {
+    const datei = document.getElementById('replay-file');
+    datei?.addEventListener('change', async () => {
+      const gewaehlt = datei.files?.[0];
+      if (!gewaehlt) return;
+      try {
+        const text = await gewaehlt.text();
+        this.loadReplayDocument(JSON.parse(text));
+        this.#setReplayStatus(`Geladen: ${gewaehlt.name}`);
+      } catch (error) {
+        this.#setReplayStatus(`Konnte die Aufzeichnung nicht lesen: ${error.message}`);
+        this.hud.log(`Replay nicht lesbar: ${error.message}`, 'danger');
+      }
+    });
+
+    document.getElementById('replay-toggle')?.addEventListener('click', () => this.replayAction('toggle'));
+    document.getElementById('replay-restart')?.addEventListener('click', () => this.replayAction('restart'));
+    document.getElementById('replay-back')?.addEventListener('click', () => this.replayAction('step', -60));
+    document.getElementById('replay-forward')?.addEventListener('click', () => this.replayAction('step', 60));
+
+    const tempo = document.getElementById('replay-speed');
+    tempo?.addEventListener('input', () => {
+      this.replaySpeed = Number(tempo.value) || 1;
+      const anzeige = document.getElementById('replay-speed-value');
+      if (anzeige) anzeige.textContent = `${this.replaySpeed}×`;
+      this.#setReplayStatus();
+    });
+
+    /*
+     * Der Stellenregler springt. Das Neuberechnen kostet Rechenzeit, deshalb
+     * passiert es erst beim Loslassen (`change`) und nicht bei jeder Bewegung
+     * (`input`) — sonst würde beim Ziehen hundertmal neu gespult.
+     */
+    document.getElementById('replay-seek')?.addEventListener('change', () => {
+      if (!this.replayPlayer) return;
+      const anteil = Number(document.getElementById('replay-seek').value) / 1000;
+      this.replaySeek(Math.round(anteil * this.replayPlayer.totalTicks));
+    });
+  }
+
+  /**
+   * Lädt eine Aufzeichnung und zeigt sie an.
+   *
+   * Die Wiedergabe ersetzt das laufende Match: `this.match` zeigt danach auf die
+   * Rechnung des Players, damit Zeichnen und HUD unverändert funktionieren.
+   * Eingaben sind gesperrt, solange wiedergegeben wird (siehe `fire`).
+   *
+   * @param {object} dokument - Aufzeichnung (Format aus `npm run replay -- record`)
+   * @returns {boolean} true, wenn geladen
+   */
+  loadReplayDocument(dokument) {
+    try {
+      this.replayPlayer = new ReplayPlayer(dokument);
+    } catch (error) {
+      this.replayPlayer = null;
+      this.#setReplayStatus(`Ungültige Aufzeichnung: ${error.message}`);
+      return false;
+    }
+
+    this.enterReplay();
+    this.#setReplayStatus();
+    return true;
+  }
+
+  /** Schaltet in den Wiedergabemodus und setzt die Anzeige auf den Anfang. */
+  enterReplay() {
+    if (!this.replayPlayer) return this;
+    this.network?.disconnect();
+    this.network = null;
+    this.mode = 'replay';
+    this.match = this.replayPlayer.match;
+    this.replayPlaying = false;
+    this.accumulator = 0;
+    this.lastFrameTime = 0;
+    this.menuOverlay.hidden = true;
+    this.endOverlay.hidden = true;
+    this.hud.clearLog();
+    /*
+     * Die Anzeige braucht Gelände und Wasser des nachgespielten Matches. Ohne
+     * `#afterWorldReady` bliebe die Spielfläche leer — die Wiedergabe wäre
+     * unsichtbar, und die Schleife liefe ohne Bild.
+     */
+    this.#afterWorldReady(this.match.bitmap, this.match.water);
+    this.running = true;
+    if (!this.animationHandle) this.#loop(performance.now());
+    this.hud.log(
+      `Replay geladen — ${this.replayPlayer.totalTicks} Takte, `
+      + `${this.replayPlayer.appliedInputs} aufgezeichnete Eingaben`,
+      'accent',
+    );
+    return this;
+  }
+
+  /**
+   * Steuert die Wiedergabe.
+   * @param {string} aktion - 'play' | 'pause' | 'toggle' | 'restart' | 'step'
+   * @param {number} [wert] - bei 'step': Takte (negativ = zurück)
+   */
+  replayAction(aktion, wert) {
+    if (!this.replayPlayer) return false;
+    switch (aktion) {
+      case 'play':
+        // Am Ende neu beginnen, sonst passierte nichts.
+        if (this.replayPlayer.finished) this.replayPlayer.reset();
+        this.#syncReplayMatch();
+        this.replayPlaying = true;
+        break;
+      case 'pause':
+        this.replayPlaying = false;
+        break;
+      case 'toggle':
+        return this.replayAction(this.replayPlaying ? 'pause' : 'play');
+      case 'restart':
+        this.replayPlayer.reset();
+        this.#syncReplayMatch();
+        this.replayPlaying = false;
+        this.hud.clearLog();
+        break;
+      case 'step': {
+        this.replayPlaying = false;
+        const takte = Number(wert) || 1;
+        if (takte < 0) this.replaySeek(this.replayPlayer.tick + takte);
+        else this.replayPlayer.stepMany(takte);
+        this.#afterReplayStep();
+        break;
+      }
+      default:
+        return false;
+    }
+    this.#setReplayStatus();
+    return true;
+  }
+
+  /** Springt an eine Stelle der Aufzeichnung. */
+  replaySeek(tick) {
+    if (!this.replayPlayer) return 0;
+    const erreicht = this.replayPlayer.seek(tick);
+    this.#syncReplayMatch();
+    this.#afterReplayStep();
+    this.#setReplayStatus();
+    return erreicht;
+  }
+
+  /**
+   * Zeigt die Anzeige auf das Match des Players.
+   *
+   * Fund (belegt): `ReplayPlayer.reset()` — aufgerufen beim Rückspringen und
+   * beim Neustart — baut den MatchController NEU. Die Anzeige hielt aber weiter
+   * das alte Objekt: Nach einem Rücksprung meldete `replay().tick` korrekt 120,
+   * während der gezeichnete Zustand vom Ende des Matches stammte (gemessen:
+   * Tick 120, aber Hash des Endzustands). Ohne den Hash-Vergleich im Test wäre
+   * das nie aufgefallen — die Anzeige sah nur falsch aus, ohne Fehler zu werfen.
+   */
+  #syncReplayMatch() {
+    if (this.replayPlayer) this.match = this.replayPlayer.match;
+  }
+
+  /** Verarbeitet die Ereignisse des letzten Wiedergabeschritts. */
+  #afterReplayStep() {
+    if (!this.replayPlayer) return;
+    this.lastEvents = this.replayPlayer.lastEvents;
+    this.#handleEvents(this.lastEvents);
+  }
+
+  /**
+   * Aktualisiert Fortschritt, Regler und Knöpfe.
+   *
+   * Der Stellenregler wird nur gesetzt, wenn der Nutzer ihn NICHT gerade hält —
+   * sonst würde die Wiedergabe ihn unter dem Finger wegziehen.
+   */
+  #setReplayStatus(zusatz = null) {
+    const bereit = Boolean(this.replayPlayer);
+    const knopf = document.getElementById('replay-toggle');
+    if (knopf) {
+      knopf.disabled = !bereit;
+      knopf.textContent = this.replayPlaying ? 'Pause' : 'Abspielen';
+    }
+    for (const id of ['replay-restart', 'replay-back', 'replay-forward']) {
+      const el = document.getElementById(id);
+      if (el) el.disabled = !bereit;
+    }
+
+    const regler = document.getElementById('replay-seek');
+    if (regler) {
+      regler.disabled = !bereit;
+      if (bereit && document.activeElement !== regler) {
+        regler.value = String(Math.round(this.replayPlayer.progress * 1000));
+      }
+    }
+    const balken = document.getElementById('replay-progress');
+    if (balken) balken.value = bereit ? Math.round(this.replayPlayer.progress * 1000) : 0;
+
+    if (!zusatz) {
+      if (!bereit) this.#setReplayText('Keine Aufzeichnung geladen.');
+      else {
+        const s = this.replayPlayer;
+        this.#setReplayText(
+          `Takt ${s.tick} / ${s.totalTicks} · ${Math.round(s.progress * 100)} % · `
+          + `${this.replayPlaying ? 'läuft' : 'angehalten'}${s.finished ? ' · Ende' : ''}`
+          + ` · Tempo ${this.replaySpeed}×`,
+        );
+      }
+    } else {
+      this.#setReplayText(zusatz);
+    }
+  }
+
+  #setReplayText(text) {
+    const el = document.getElementById('replay-status');
+    if (el) el.textContent = text;
+  }
+
+   #exposeDebugApi() {
     window.__PA__ = {
       game: this,
       getMode: () => this.mode,
+      /** Replay: Zustand der Wiedergabe (oder null). */
+      replay: () => (this.replayPlayer ? {
+        tick: this.replayPlayer.tick,
+        totalTicks: this.replayPlayer.totalTicks,
+        progress: this.replayPlayer.progress,
+        playing: this.replayPlaying,
+        speed: this.replaySpeed,
+        finished: this.replayPlayer.finished,
+        appliedInputs: this.replayPlayer.appliedInputs,
+        rejected: this.replayPlayer.rejected.length,
+      } : null),
+      /** Replay: eine Aufzeichnung als Objekt laden (für Tests). */
+      loadReplay: dokument => this.loadReplayDocument(dokument),
+      /** Replay: steuern — 'play' | 'pause' | 'toggle' | 'restart' | 'step'. */
+      replayAction: (aktion, wert) => this.replayAction(aktion, wert),
+      /** Replay: an eine Stelle springen (Tick). */
+      replaySeek: tick => this.replaySeek(tick),
       getMatch: () => this.match,
       getNetwork: () => this.network,
       getState: () => this.currentState(),

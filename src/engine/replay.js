@@ -163,61 +163,162 @@ export class ReplayRecorder {
  * @returns {{match: object, appliedInputs: number, ticks: number, rejected: object[]}}
  */
 export function playReplay(replay, { untilTick = null, onTick = null, onEvent = null } = {}) {
-  const recorder = replay instanceof ReplayRecorder ? replay : ReplayRecorder.fromJSON(replay);
-  const config = recorder.config;
+  /*
+   * Einmal-Variante des ReplayPlayers: spult bis zum Ende durch.
+   *
+   * Die Gruppierung der Eingaben und der Aufbau des Matches liegen im
+   * ReplayPlayer, damit es nur EINE Umsetzung gibt — die schrittweise Wiedergabe
+   * im Client und das Durchlaufen in der Werkzeugkette müssen sich gleich
+   * verhalten, sonst zeigt der Client etwas anderes als `replay --verify` prüft.
+   */
+  const spieler = new ReplayPlayer(replay, { untilTick });
+  while (spieler.step()) {
+    if (onEvent) for (const event of spieler.lastEvents) onEvent(event);
+    if (onTick) onTick(spieler.tick - 1, spieler.match);
+  }
+  return {
+    match: spieler.match,
+    appliedInputs: spieler.appliedInputs,
+    ticks: spieler.tick,
+    rejected: spieler.rejected,
+  };
+}
 
-  const match = new MatchController({
-    seed: recorder.seed,
-    teams: config.teams,
-    playersPerTeam: config.playersPerTeam,
-    preset: config.preset,
-    maxRounds: config.maxRounds,
-    ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
-  });
-  match.start();
-
-  // Eingaben nach Tick gruppieren, Reihenfolge innerhalb eines Ticks erhalten.
-  const byTick = new Map();
-  for (const entry of recorder.entries) {
-    if (!byTick.has(entry.tick)) byTick.set(entry.tick, []);
-    byTick.get(entry.tick).push(entry);
+/**
+ * Schrittweise Wiedergabe einer Aufzeichnung.
+ *
+ * `playReplay` spult in einem Zug durch — für die Auswertung richtig, für eine
+ * Anzeige unbrauchbar: Dort muss der Zustand zwischen zwei Bildern sichtbar
+ * sein, und der Betrachter will pausieren, springen und das Tempo ändern können.
+ *
+ * Der Player hält deshalb einen eigenen MatchController und wendet je Aufruf von
+ * `step()` genau einen Simulationstakt an — dieselben Schritte, dieselbe
+ * Reihenfolge, dieselbe Determinismus-Zusage. `seek` baut den Zustand neu auf und
+ * spult bis zur Zielstelle; ein Replay ist von vorn reproduzierbar, einen
+ * Zwischenzustand gibt es nicht.
+ */
+export class ReplayPlayer {
+  /**
+   * @param {object|ReplayRecorder} replay
+   * @param {object} [optionen]
+   * @param {number|null} [optionen.untilTick] - früher aufhören
+   * @param {number} [optionen.speed=1] - Wiedergabegeschwindigkeit (1 = Echtzeit)
+   */
+  constructor(replay, { untilTick = null, speed = 1 } = {}) {
+    this.recorder = replay instanceof ReplayRecorder ? replay : ReplayRecorder.fromJSON(replay);
+    this.speed = speed;
+    this.untilTick = untilTick;
+    this.reset();
   }
 
-  // Standardgrenze aus der Aufzeichnung ableiten. Number.MAX_SAFE_INTEGER wäre
-  // falsch: ohne Eingaben endet das Match nie und das Replay liefe endlos.
-  const lastRecordedTick = recorder.entries.reduce((max, entry) => Math.max(max, entry.tick), 0);
-  const lastTick = untilTick === null
-    ? (recorder.totalTicks > 0 ? recorder.totalTicks : lastRecordedTick + 1)
-    : untilTick;
+  /** Setzt die Wiedergabe an den Anfang zurück. */
+  reset() {
+    const config = this.recorder.config;
+    this.match = new MatchController({
+      seed: this.recorder.seed,
+      teams: config.teams,
+      playersPerTeam: config.playersPerTeam,
+      preset: config.preset,
+      maxRounds: config.maxRounds,
+      ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
+    });
+    this.match.start();
 
-  let appliedInputs = 0;
-  const rejected = [];
-  let ticks = 0;
-
-  while (match.world.tickCount < lastTick && match.status === 'playing') {
-    const tick = match.world.tickCount;
-
-    for (const entry of byTick.get(tick) ?? []) {
-      const result = match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
-      if (result.ok) {
-        appliedInputs += 1;
-      } else {
-        rejected.push({ tick, entry, errors: result.errors });
-      }
+    // Eingaben nach Tick gruppieren, Reihenfolge innerhalb eines Ticks erhalten.
+    this.byTick = new Map();
+    for (const entry of this.recorder.entries) {
+      if (!this.byTick.has(entry.tick)) this.byTick.set(entry.tick, []);
+      this.byTick.get(entry.tick).push(entry);
     }
 
-    match.step();
-    ticks += 1;
+    /*
+     * Endtick aus der Aufzeichnung ableiten. Ohne Eingaben endet das Match nie,
+     * ein Replay mit `Number.MAX_SAFE_INTEGER` liefe endlos — deshalb die
+     * aufgezeichnete Gesamtzahl, sonst der letzte Eingabetick plus eins.
+     */
+    const letzterEingabeTick = this.recorder.entries
+      .reduce((max, entry) => Math.max(max, entry.tick), 0);
+    this.totalTicks = this.untilTick ?? (this.recorder.totalTicks > 0
+      ? this.recorder.totalTicks
+      : letzterEingabeTick + 1);
 
-    const events = match.consumeEvents();
-    if (onEvent) for (const event of events) onEvent(event);
-    if (onTick) onTick(tick, match);
-
-    // Sicherheitsnetz gegen eine Endlosschleife bei fehlerhaften Replays.
-    if (ticks > 200_000) break;
+    this.tick = 0;
+    this.appliedInputs = 0;
+    this.rejected = [];
+    /** Ereignisse des letzten Schritts. */
+    this.lastEvents = [];
+    return this;
   }
 
-  return { match, appliedInputs, ticks, rejected };
+  /** Ist die Wiedergabe am Ende (oder das Match entschieden)? */
+  get finished() {
+    return this.match.status !== 'playing' || this.tick >= this.totalTicks;
+  }
+
+  /** Fortschritt 0..1. */
+  get progress() {
+    if (this.totalTicks <= 0) return 1;
+    return Math.min(1, this.tick / this.totalTicks);
+  }
+
+  /**
+   * Wendet einen Simulationstakt an.
+   * @returns {boolean} false, wenn nichts mehr zu tun ist
+   */
+  step() {
+    if (this.finished) {
+      this.lastEvents = [];
+      return false;
+    }
+
+    const tick = this.match.world.tickCount;
+    for (const entry of this.byTick.get(tick) ?? []) {
+      const result = this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
+      if (result.ok) this.appliedInputs += 1;
+      else this.rejected.push({ tick, entry, errors: result.errors });
+    }
+
+    this.match.step();
+    this.tick = this.match.world.tickCount;
+    this.lastEvents = this.match.consumeEvents();
+    return true;
+  }
+
+  /**
+   * Wendet mehrere Takte an (für die Wiedergabe in Echtzeit).
+   * @param {number} anzahl
+   * @returns {number} tatsächlich angewendete Takte
+   */
+  stepMany(anzahl) {
+    let getan = 0;
+    for (let i = 0; i < anzahl; i += 1) {
+      if (!this.step()) break;
+      getan += 1;
+    }
+    return getan;
+  }
+
+  /**
+   * Springt an eine Stelle.
+   *
+   * Es gibt keinen Zwischenzustand zum Wiederherstellen: Das Match wird neu
+   * aufgebaut und bis zur Zielstelle gespult. Das kostet Rechenzeit, ist aber die
+   * einzige Variante, die deterministisch bleibt.
+   *
+   * @param {number} zielTick
+   * @returns {number} tatsächlich erreichter Tick
+   */
+  seek(zielTick) {
+    const ziel = Math.max(0, Math.min(this.totalTicks, Math.floor(zielTick)));
+    if (ziel < this.tick) this.reset();
+    while (this.tick < ziel && this.step());
+    return this.tick;
+  }
+
+  /** Zustand für die Anzeige (entspricht dem, was der Client sonst zeichnet). */
+  getState() {
+    return this.match.getState();
+  }
 }
 
 export default ReplayRecorder;

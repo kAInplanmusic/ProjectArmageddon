@@ -635,6 +635,42 @@
             <div id="roster-info" class="roster-info"></div>
             <ul id="roster-list" class="roster-list" aria-label="Charaktere der Fraktion"></ul>
           </details>
+          <!--
+            Replay wiedergeben.
+
+            Aufzeichnungen entstehen mit `npm run replay -- record` und enthalten
+            NUR die Eingaben (Seed, Schüsse), nicht den Spielverlauf: Das Match
+            wird beim Abspielen neu gerechnet. Deshalb ist eine Aufzeichnung
+            wenige Kilobyte groß statt Megabytes — und deshalb lässt sich hier
+            jede Stelle anspringen.
+
+            Die Wiedergabe ersetzt die laufende Simulation: Wer zusieht, spielt
+            nicht. Eingaben sind währenddessen gesperrt.
+          -->
+          <details id="replay-browser">
+            <summary>Replay ansehen</summary>
+            <div class="field-row">
+              <label for="replay-file">Aufzeichnung (<code>.json</code>)</label>
+              <input id="replay-file" type="file" accept="application/json,.json" />
+            </div>
+            <div class="field-row">
+              <button id="replay-toggle" type="button" class="secondary" disabled>Abspielen</button>
+              <button id="replay-restart" type="button" class="secondary" disabled>Von vorn</button>
+              <button id="replay-back" type="button" class="secondary" disabled>− 1 s</button>
+              <button id="replay-forward" type="button" class="secondary" disabled>+ 1 s</button>
+            </div>
+            <div class="field-row">
+              <label for="replay-speed">Tempo</label>
+              <input id="replay-speed" type="range" min="0.25" max="4" step="0.25" value="1" />
+              <span id="replay-speed-value" class="muted">1×</span>
+            </div>
+            <div class="field-row">
+              <label for="replay-seek">Stelle</label>
+              <input id="replay-seek" type="range" min="0" max="1000" step="1" value="0" disabled />
+            </div>
+            <progress id="replay-progress" max="1000" value="0" aria-label="Fortschritt der Wiedergabe"></progress>
+            <p id="replay-status" class="muted" role="status" aria-live="polite">Keine Aufzeichnung geladen.</p>
+          </details>
           <div class="keymap">
             <span><b>Maus</b> Zielen</span>
             <span><b>Klick / Leertaste</b> Feuern</span>
