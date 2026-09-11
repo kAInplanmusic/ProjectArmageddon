@@ -95,9 +95,15 @@ export const SNAPSHOT_FLAG = Object.freeze({
   FULL: 1 << 0,
 });
 
-const PLAYER_STRIDE = 15;
-const PROJECTILE_STRIDE = 6;
-const HEADER_SIZE = 22;
+/*
+ * Diese drei sind exportiert, weil Tests die Übertragungsgröße prüfen
+ * (`tests/snapshot-size.test.js`): Die Größe eines Zustandstakts ist eine
+ * bewusste Entscheidung, keine Zufallszahl — und sie soll nicht unbemerkt
+ * wachsen.
+ */
+export const PLAYER_STRIDE = 15;
+export const PROJECTILE_STRIDE = 6;
+export const HEADER_SIZE = 22;
 
 function clampInt16(value) {
   const rounded = Math.round(value);
