@@ -496,6 +496,55 @@ export const BACKDROP_BIOMES = Object.freeze([
       },
     ],
   },
+  {
+    /*
+     * Sintflut — das Leitbiom der Geländeform `flooded`.
+     *
+     * Warum ein EIGENES Biom und nicht ein vorhandenes: Das Projekt verlangt,
+     * dass jede Geländeform ein eigenes Leitbiom hat, dessen `mapPreset` genau
+     * diese Form ist (siehe `tests/backdrops.test.js`). „Flut" lief bis hierher
+     * mit der `forest`-Szene — die Karte sah aus wie ein Wald.
+     *
+     * Vier Varianten, alle unter Wasser, aber in verschiedenen Weltgegenden:
+     * Stadt, Tropen, Wald, Dammbruch. So bleibt „Flut" erkennbar, ohne dass zwei
+     * Partien gleich aussehen.
+     */
+    id: 'deluge',
+    label: 'Sintflut & Überschwemmung',
+    mapPreset: 'flooded',
+    variants: [
+      {
+        id: 'rooftops',
+        label: 'Versunkene Stadt',
+        file: 'deluge_rooftops.jpg',
+        prompt: 'Drowned metropolis after the flood. Only the upper storeys and rooftops of a modern city break the surface of still brown-green water: air conditioners, stairwells, a satellite dish, a rooftop garden gone wild. A church tower leans in the left third, its clock face warped. Debris — planks, oil drums, a yellow lifeboat — drifts between the buildings. Overcast sky, flat grey light, unnaturally still water. Muted greens and rust.',
+      },
+      {
+        id: 'monsoon',
+        label: 'Monsun',
+        file: 'deluge_monsoon.jpg',
+        prompt: 'Torrential monsoon flood in a tropical river delta. Brown water has swallowed whole villages: bamboo stilt houses stand knee-deep, their tin roofs glinting wet. Palms bend in driving rain, a water buffalo swims in the middle distance. Sheets of rain, low grey monsoon clouds, distant hills shrouded in mist. Ochre water, deep green vegetation, silver rain.',
+      },
+      {
+        id: 'drowned_forest',
+        label: 'Ertränkter Wald',
+        file: 'deluge_drowned_forest.jpg',
+        prompt: 'A flooded forest in late autumn. Slow brown water stands between the trunks of old oaks, mirrors every branch. Dead leaves float in red-orange drifts across the surface, a submerged stone bridge visible just below the waterline. Mist rises off the water at dawn, sun low and pale through the trunks. Melancholy, still, ochre and slate palette.',
+      },
+      {
+        id: 'rice_terraces',
+        label: 'Reisterrassen',
+        file: 'deluge_rice_terraces.jpg',
+        prompt: 'Flooded rice terraces at dawn after a long rain. Curved terraces of standing water step up a hillside, each one mirroring the pale sky, low stone bunds dividing them. A lone water buffalo stands on a dry ridge in the middle distance, mist settling in the valley below. Emerald green shoots, silver water, soft blue-grey morning light.',
+      },
+      {
+        id: 'dam_break',
+        label: 'Dammbruch',
+        file: 'deluge_dam_break.jpg',
+        prompt: 'A ruptured dam in the evening. A broken concrete wall in the left third, water still pouring through the gap in a white roaring curve, a ruined spillway, twisted girders. Below, a valley half-submerged, power pylons standing in the flood. Warning-red light from a setting sun, spray haze, dramatic and desolate.',
+      },
+    ],
+  },
 ]);
 
 /** Alle Varianten als flache Liste. */
@@ -586,6 +635,27 @@ export const TERRAIN_PALETTES = Object.freeze({
   'maritime/arctic_ice': { surface: [226, 238, 246], deep: [148, 176, 196] },
   'maritime/war_harbor': { surface: [95, 98, 100], deep: [42, 46, 50] },
   'maritime/asian_karst': { surface: [128, 150, 110], deep: [52, 72, 58] },
+
+  // Sintflut — Schlamm statt Gras: Die Bodenfarbe muss zum Hochwasser passen,
+  // sonst stünde grünes Gras in der Flut.
+  /*
+   * Die Bodenfarben sind an einer SICHTprüfung im laufenden Spiel nachgezogen.
+   * Der erste Anlauf war zu bunt: Über der Flut wirkte der Boden wie ein
+   * Platzhalter. Gemessen am Bild: „Reisterrassen" hatte ein fast grelles Grün
+   * über schlammigem Wasser, „Monsun" ein zu helles Sandbraun, und „Ertränkter
+   * Wald" war zu blass für den warmen Sonnenuntergang.
+   *
+   * Alle fünf liegen jetzt nahe beieinander: gedämpft, schlammig, dunkel. Das
+   * ist für eine Überschwemmung richtig — Schlamm ist nicht farbig.
+   */
+  'deluge/rooftops': { surface: [96, 104, 92], deep: [42, 50, 46] },
+  'deluge/monsoon': { surface: [106, 92, 68], deep: [50, 42, 30] },
+  'deluge/drowned_forest': { surface: [100, 88, 70], deep: [48, 42, 34] },
+  'deluge/rice_terraces': { surface: [88, 94, 72], deep: [42, 48, 36] },
+  // Beim Dammbruch war der Kontrast zwischen Boden und rotem Wasser zu gering —
+  // gemessen in der Sichtprüfung. Der Boden ist dort etwas heller, weil die
+  // Szene ohnehin dunkel ist und die Oberfläche erkennbar bleiben muss.
+  'deluge/dam_break': { surface: [116, 112, 106], deep: [52, 50, 48] },
 
   // Inseln
   'island/caribbean_day': { surface: [232, 214, 168], deep: [150, 130, 96] },
@@ -695,7 +765,9 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   mountains: 'alpine',
   hills: 'forest',
   caverns: 'caverns',
-  // Die vier später hinzugekommenen Geländeformen (`open`, `spires`, `flooded`,
+  // `flooded` hat sein Leitbiom bekommen (Sintflut).
+  flooded: 'deluge',
+  // Die drei übrigen später hinzugekommenen Geländeformen (`open`, `spires`,
   // `warren`) fehlen hier absichtlich — ihnen fehlen noch eigene Kulissen. Die
   // Begründung steht bei der gleichen Tabelle in `scenery.js`, die Lücke ist in
   // `tests/backdrops.test.js` festgehalten.

@@ -32,24 +32,50 @@ const BILD_DIR = path.join(ROOT, 'src', 'client', 'assets', 'backdrops');
 
 // ------------------------------------------------------------------ Katalog
 
-test('Der Katalog hat zwölf Biome mit je fünf Varianten', () => {
-  assert.equal(BACKDROP_BIOMES.length, 12, 'Es müssen zwölf Biome sein');
+test('Jedes Biom hat fünf Varianten', () => {
+  /*
+   * Die Zusage ist „fünf Varianten je Biom", nicht eine Gesamtzahl. Die
+   * Gesamtzahl wird deshalb ABGELEITET: Eine feste 60 brach, sobald ein Biom
+   * hinzukam, ohne etwas über die Regel zu sagen — dieselbe Falle wie bei einer
+   * fest verdrahteten Kopfgröße im Protokoll.
+   *
+   * Die UNTERGRENZE bleibt stehen (zwölf Biome), denn das war die Zusage.
+   */
+  assert.ok(BACKDROP_BIOMES.length >= 12,
+    `Nur ${BACKDROP_BIOMES.length} Biome — die zwölf geforderten Themen sind die Untergrenze`);
+
   for (const biome of BACKDROP_BIOMES) {
     assert.equal(biome.variants.length, 5,
       `${biome.id}: ${biome.variants.length} Varianten statt fünf`);
     assert.ok(biome.label?.length > 2, `${biome.id}: Beschriftung fehlt`);
+    assert.ok(biome.mapPreset, `${biome.id}: kein Gelände zugeordnet`);
   }
-  assert.equal(ALL_BACKDROPS.length, 60, 'Insgesamt 60 Kulissen');
+
+  assert.equal(ALL_BACKDROPS.length, BACKDROP_BIOMES.length * 5,
+    'Die Gesamtzahl muss Biome × 5 sein');
 });
 
 test('Die Biome entsprechen den gewünschten Themen', () => {
-  // Die Themen stammen aus der Anforderung; ein Umbenennen wäre ein inhaltlicher
-  // Eingriff und soll auffallen.
+  /*
+   * Die zwölf Themen stammen aus der Anforderung; ein Umbenennen wäre ein
+   * inhaltlicher Eingriff und soll auffallen.
+   *
+   * Weitere Biome sind zulässig und stehen DAHINTER: Sie kamen mit neuen
+   * Geländeformen dazu (`deluge` für `flooded`), weil jede Geländeform ein
+   * eigenes Leitbiom braucht. Die Reihenfolge der zwölf muss dabei stabil
+   * bleiben, damit die Auswahlliste sich nicht umsortiert.
+   */
   const gewuenscht = [
     'maritime', 'island', 'alpine', 'forest', 'urban', 'cosmos',
     'abstract', 'caverns', 'fantasy', 'hyperreal', 'western', 'noir',
   ];
-  assert.deepEqual(BACKDROP_BIOMES.map(b => b.id), gewuenscht);
+  const vorhanden = BACKDROP_BIOMES.map(b => b.id);
+
+  for (const id of gewuenscht) {
+    assert.ok(vorhanden.includes(id), `Das geforderte Biom „${id}" fehlt`);
+  }
+  assert.deepEqual(vorhanden.slice(0, gewuenscht.length), gewuenscht,
+    'Die Reihenfolge der zwölf geforderten Biome hat sich geändert');
 });
 
 test('Schlüssel und Dateinamen sind eindeutig', () => {
@@ -423,9 +449,12 @@ test('Helle Kulissen bekommen hellen, dunkle dunklen Boden', () => {
  * Kommt eine Form hinzu, muss sie hier eingetragen werden; bekommt eine Form
  * ihre Kulissen, muss sie hier entfernt werden.
  */
-const OHNE_LEITBIOM = ['open', 'spires', 'flooded', 'warren'];
+const OHNE_LEITBIOM = ['open', 'spires', 'warren'];
 
 test('Nur Geländeformen ohne eigene Kulissen haben kein Leitbiom', () => {
+  // `flooded` ist hier bewusst NICHT mehr: Es hat sein Leitbiom `deluge`.
+  // Wer eine Form von dieser Liste nimmt, muss ihre Kulissen mitliefern — sonst
+  // fällt sie auf `forest` zurück und die Karte sieht aus wie ein Wald.
   for (const preset of Object.keys(TERRAIN_PRESETS)) {
     const leitbiom = PRIMARY_BIOME_BY_PRESET[preset];
     if (OHNE_LEITBIOM.includes(preset)) {
@@ -473,5 +502,8 @@ test('Alle sechzig Kulissen sind auswählbar', () => {
       erreichbar.add(gefunden.key);
     }
   }
-  assert.equal(erreichbar.size, 60);
+  // Abgeleitet, nicht fest: Jede Kulisse im Katalog muss über die ausdrückliche
+  // Wahl erreichbar sein. Eine feste 60 hätte beim nächsten Biom nichts gesagt.
+  assert.equal(erreichbar.size, ALL_BACKDROPS.length);
+  assert.ok(erreichbar.size >= 60, `Nur ${erreichbar.size} Kulissen erreichbar`);
 });

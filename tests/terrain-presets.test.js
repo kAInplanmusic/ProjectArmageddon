@@ -252,7 +252,8 @@ test('Die vier neuen Formen sind noch OHNE eigene Kulissen — bewusst', () => {
    * einem der vier Formen ein Biom gibt, das schon vergeben ist, oder eine
    * fünfte Form ohne Kulissen hinzukommt.
    */
-  const OHNE_KULISSEN = ['open', 'spires', 'flooded', 'warren'];
+  // `flooded` ist erledigt (Biom `deluge`, vier eigene Kulissen).
+  const OHNE_KULISSEN = ['open', 'spires', 'warren'];
 
   for (const preset of Object.keys(TERRAIN_PRESETS)) {
     if (OHNE_KULISSEN.includes(preset)) {
@@ -274,7 +275,7 @@ test('Die vier neuen Formen sind noch OHNE eigene Kulissen — bewusst', () => {
 
   // Und die Lücke ist namentlich vollständig: Wer eine Form hinzufügt, muss sie
   // hier eintragen — sonst fällt der Test darüber (fehlende Biomgruppe).
-  assert.equal(OHNE_KULISSEN.length, 4,
+  assert.equal(OHNE_KULISSEN.length, 3,
     'Die Liste der Formen ohne Kulissen hat sich geändert — bitte prüfen, ob das Absicht war');
 });
 

@@ -253,6 +253,28 @@ export const SCENERY_BIOMES = Object.freeze({
     ambient: ['clouds_few', 'birds'],
     ground: { surface: [232, 214, 168], deep: [150, 130, 96] },
   },
+  /*
+   * Sintflut — Leitbiom der Geländeform `flooded`.
+   *
+   * Der generative Weg (Vorgabe im Menü) braucht die Werte hier, nicht nur in
+   * den Kulissen: Ohne Eintrag fiele `pickScenery` auf `forest` zurück und eine
+   * Flut sähe aus wie ein Wald. Genau das war der Zustand vorher.
+   *
+   * Die Listen sind auf Hochwasser abgestimmt: bedeckter Himmel, Sturm, Nebel;
+   * Schlamm- und Flachwasser statt Meer; Ruinen und überflutete Waldkanten als
+   * Landmarken; schwerer Regen als Ambiente. Kein `clear_day`, kein `birds` —
+   * eine Sintflut bei Sonnenschein wäre eine andere Karte.
+   */
+  deluge: {
+    label: 'Sintflut & Überschwemmung',
+    mapPreset: 'flooded',
+    sky: ['overcast', 'thunderstorm', 'fog', 'dusk'],
+    water: ['swamp_sludge', 'shallow_lake'],
+    landmarks: ['ruins', 'forest_line', 'cliff', 'city_skyline'],
+    ambient: ['clouds_heavy', 'clouds_storm', 'rain', 'fog_banks'],
+    // Abgestimmt auf die Kulissen-Paletten: Schlamm ist gedämpft, nicht farbig.
+    ground: { surface: [98, 98, 84], deep: [46, 50, 44] },
+  },
   alpine: {
     label: 'Gebirge & Alpin',
     mapPreset: 'mountains',
@@ -351,8 +373,10 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   mountains: 'alpine',
   hills: 'forest',
   caverns: 'caverns',
+  // `flooded` hat sein Leitbiom bekommen (Sintflut).
+  flooded: 'deluge',
   /*
-   * Die vier später hinzugekommenen Geländeformen (`open`, `spires`, `flooded`,
+   * Die drei übrigen später hinzugekommenen Geländeformen (`open`, `spires`,
    * `warren`) stehen hier ABSICHTLICH NICHT.
    *
    * Die Regel des Projekts lautet: Jede Geländeform hat ein eigenes Leitbiom,
@@ -361,12 +385,15 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
    * eigenen Bildern — und eigene Bilder sind eine Inhaltsfrage, keine
    * Einstellung: Welche Szene zeigt „Offene Weite", welche „Gewirr"?
    *
-   * Für die vier Formen fehlen diese Kulissen. Sie laufen bis dahin mit einer
+   * Für die drei Formen fehlen diese Kulissen. Sie laufen bis dahin mit einer
    * beliebigen Szene: `pickScenery` fällt ohne Leitbiom auf `forest` zurück (oben
    * in dieser Datei). Spielbar und vollständig gezeichnet, aber ohne passende
-   * Kulisse — eine „Flut" sieht derzeit aus wie ein Wald. Die Lücke ist in
-   * `tests/terrain-presets.test.js` und in `tests/backdrops.test.js` namentlich
-   * festgehalten, damit sie sichtbar bleibt und nicht als erledigt gilt.
+   * Kulisse. Die Lücke ist in `tests/terrain-presets.test.js` und in
+   * `tests/backdrops.test.js` namentlich festgehalten, damit sie sichtbar bleibt
+   * und nicht als erledigt gilt.
+   *
+   * `flooded` ist erledigt: Es hat das Biom `deluge` mit vier eigenen Kulissen
+   * (versunkene Stadt, Monsun, ertränkter Wald, Dammbruch).
    *
    * (Der Weg über ein BILD — `pickBackdrop` — ist hier nicht betroffen: Er wird
    * nur bei ausdrücklicher Wahl im Menü beschritten; Vorgabe ist die generative

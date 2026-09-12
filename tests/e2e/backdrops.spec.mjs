@@ -258,10 +258,25 @@ test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
     };
   });
 
-  // 60 Kulissenbilder plus „generativ" und „automatisch".
-  expect(stand.optionen).toBe(62);
-  expect(stand.gruppen).toBe(12);
+  /*
+   * Abgeleitet statt fest: Jede Kulisse im Katalog muss als Option erscheinen,
+   * plus „generativ" und „automatisch". Eine feste 62 brach, sobald ein Biom
+   * hinzukam (`deluge` für die Geländeform `flooded`), ohne etwas über die
+   * Vollständigkeit zu sagen — geprüft werden soll, dass NICHTS FEHLT.
+   */
+  const katalog = await page.evaluate(async () => {
+    const modul = await import('/src/shared/config/backdrops.js');
+    return {
+      kulissen: modul.ALL_BACKDROPS.length,
+      biome: modul.BACKDROP_BIOMES.length,
+    };
+  });
+
+  expect(stand.optionen, 'Es fehlen Kulissen in der Auswahl').toBe(katalog.kulissen + 2);
+  expect(stand.gruppen, 'Es fehlen Biomgruppen in der Auswahl').toBe(katalog.biome);
   expect(stand.generativZuerst).toBe('generativ');
+  // Die Untergrenze aus der ursprünglichen Zusage bleibt stehen.
+  expect(katalog.kulissen).toBeGreaterThanOrEqual(60);
 });
 
 test('Ohne Wahl ist die generative Kulisse aktiv', async ({ page }) => {
