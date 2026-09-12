@@ -30,9 +30,17 @@ import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { ReplayPlayer } from '../engine/replay.js';
 import { MatchStats, PlayerProfile, beschreibe } from '../shared/stats.js';
+import {
+  kennzahlen as erfolgsKennzahlen,
+  neueErfolge as neueErfolgeFuer,
+  uebersicht as erfolgsUebersicht,
+} from '../shared/achievements.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
 const PROFIL_SCHLUESSEL = 'pa-profil-v1';
+
+/** Reihenfolge der Schwierigkeitsstufen in der Erfolgsübersicht (leicht zuerst). */
+const TIER_REIHENFOLGE = ['leicht', 'mittel', 'schwer', 'sehr schwer'];
 
 const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
@@ -83,6 +91,8 @@ class Game {
     this.stats = null;
     /** Wurde das laufende Match schon ins Profil verbucht? */
     this.verbucht = false;
+    /** Erfolge, die in dieser Partie neu freigeschaltet wurden. */
+    this.neueErfolge = [];
     /** Die eigene Figur (für Kennzahlen und Sieg/Niederlage). */
     this.eigenerSpielerId = null;
     this.profil = this.#ladeProfil();
@@ -133,6 +143,7 @@ class Game {
       this.hud.log('Profil zurückgesetzt', 'neutral');
     });
     this.#zeigeProfil();
+    this.#zeigeErfolge();
 
     window.addEventListener('keydown', event => {
       // Der Neustart darf nicht ausgelöst werden, während in ein Formularfeld
@@ -1180,6 +1191,12 @@ class Game {
      */
     this.#verbucheMatch();
     this.#zeigeMatchKennzahlen();
+
+    // Neu freigeschaltete Erfolge melden — im Protokoll, damit sie ohne das
+    // Menü sichtbar sind. Ein Erfolg, den niemand bemerkt, ist keiner.
+    for (const e of this.neueErfolge ?? []) {
+      this.hud.log(`Erfolg: ${e.title}`, 'accent');
+    }
   }
 
   /**
@@ -1623,8 +1640,27 @@ class Game {
     }
 
     this.verbucht = true;
+
+    /*
+     * Erfolge auswerten und verbuchen.
+     *
+     * Erst HIER, nach `merge` — die Kennzahlen enthalten Partien, Siege und
+     * Schaden des Profils, und die sind erst nach dem Verbuchen aktuell. Wer die
+     * Erfolge vorher auswertete, verpasste jeden Erfolg, der genau durch diese
+     * Partie fällig wurde.
+     */
+    const erreichtVorher = this.profil.erfolge;
+    const werte = erfolgsKennzahlen(
+      this.stats.zusammenfassung(this.eigenerSpielerId),
+      this.profil.toJSON(),
+    );
+    const frisch = neueErfolgeFuer(werte, erreichtVorher);
+    this.profil.verbucheErfolge(frisch.map(e => e.id));
+    this.neueErfolge = frisch;
+
     this.#speichereProfil();
     this.#zeigeProfil();
+    this.#zeigeErfolge();
     return true;
   }
 
@@ -1671,19 +1707,126 @@ class Game {
   }
 
   /**
-   * Setzt das Profil zurück.
+   * Zeigt die Erfolgsübersicht im Menü.
+   *
+   * Aufbau je Erfolg: Symbol, Titel, Stufe, Stand/Ziel und der HINWEIS, wie er
+   * zu holen ist. Der Hinweis steht bewusst auch bei erreichten Erfolgen —
+   * sonst sähe die Liste bei jedem erreichten Eintrag anders aus, und man
+   * verliert die Erinnerung, wofür er war.
+   *
+   * Muster sind gekennzeichnet. Solange der Katalog Platzhalter enthält, darf die
+   * Anzeige nicht den Eindruck eines fertigen Katalogs erwecken.
+   */
+  #zeigeErfolge() {
+    const zaehler = document.getElementById('erfolge-zaehler');
+    if (!zaehler) return;
+
+    const partei = this.stats ? this.stats.zusammenfassung(this.eigenerSpielerId) : null;
+    const werte = erfolgsKennzahlen(partei, this.profil.toJSON());
+    const u = erfolgsUebersicht(werte, this.profil.erfolge);
+
+    zaehler.textContent = `${u.erreicht} von ${u.gesamt} erreicht`
+      + (u.musterAnzahl > 0
+        ? ` — davon ${u.musterAnzahl} Muster (die Inhalte fehlen noch)`
+        : '');
+
+    // Die zuletzt freigeschalteten zuerst: Das ist die Neuigkeit.
+    const frisch = new Set((this.neueErfolge ?? []).map(e => e.id));
+
+    const ziel = document.getElementById('erfolge-liste');
+    if (!ziel) return;
+
+    const zeilen = [];
+    for (const gruppe of u.gruppen) {
+      const kopf = document.createElement('div');
+      kopf.className = 'erfolg-gruppe';
+      kopf.textContent = `${gruppe.label} — ${gruppe.erreicht} von ${gruppe.gesamt}`;
+      zeilen.push(kopf);
+
+      // Erreichte zuerst innerhalb der Gruppe.
+      const sortiert = [...gruppe.eintraege].sort((a, b) =>
+        (b.erreicht - a.erreicht) || (TIER_REIHENFOLGE.indexOf(a.tier) - TIER_REIHENFOLGE.indexOf(b.tier)));
+
+      for (const e of sortiert) {
+        const zeile = document.createElement('div');
+        zeile.className = `erfolg${e.erreicht ? ' erreicht' : ''}${frisch.has(e.id) ? ' frisch' : ''}`;
+        zeile.dataset.erfolgId = e.id;
+        zeile.dataset.tier = e.tier;
+
+        const symbol = document.createElement('span');
+        symbol.className = 'erfolg-symbol';
+        // Kein Bild vorhanden: Die Kennung steht als Kürzel, damit die Anzeige
+        // nicht so tut, als gäbe es Symbole. `aria-hidden`, weil der Titel folgt.
+        symbol.textContent = e.erreicht ? '★' : '☆';
+        symbol.setAttribute('aria-hidden', 'true');
+
+        const text = document.createElement('span');
+        text.className = 'erfolg-text';
+
+        const titel = document.createElement('b');
+        titel.textContent = e.title;
+        if (e.muster) {
+          const marke = document.createElement('i');
+          marke.className = 'erfolg-muster';
+          marke.textContent = 'Muster';
+          titel.append(' ', marke);
+        }
+
+        const stufe = document.createElement('span');
+        stufe.className = `erfolg-stufe stufe-${e.tier.replace(/\s+/g, '-')}`;
+        stufe.textContent = e.tier;
+
+        const beschreibung = document.createElement('span');
+        beschreibung.className = 'erfolg-hinweis';
+        beschreibung.textContent = e.hint;
+
+        const stand = document.createElement('span');
+        stand.className = 'erfolg-stand';
+        // Prozent statt „800 / 1000", wenn das Ziel eine Quote ist — sonst
+        // stünde dort „0,42 / 0,5".
+        stand.textContent = e.erreicht
+          ? 'erreicht'
+          : (e.ziel > 0 && e.ziel <= 1
+            ? `${Math.round(e.fortschritt * 100)} %`
+            : `${Math.round(e.stand)} / ${Math.round(e.ziel)}`);
+
+        text.append(titel, ' ', stufe, document.createElement('br'), beschreibung);
+        zeile.append(symbol, text, stand);
+        zeilen.push(zeile);
+      }
+    }
+    ziel.replaceChildren(...zeilen);
+  }
+
+  /**
+   * Setzt die Zahlen zurück — die Erfolge bleiben.
    *
    * Nötig, weil die Zahlen im Browser liegen und ein Spieler sie sonst nicht mehr
-   * loswird — und ein unerreichbarer Zurücksetzen-Knopf wäre eine Sackgasse.
+   * loswird; ein unerreichbarer Zurücksetzen-Knopf wäre eine Sackgasse.
+   *
+   * Der Knopf heißt „Zahlen zurücksetzen", und genau das tut er. Die ERFOLGE
+   * bleiben: Sie sind verdient, keine Kennzahl. Sie mitzunehmen wäre eine
+   * Überraschung (niemand erwartet, beim Nullen seiner Statistik seine Abzeichen
+   * zu verlieren), und der Name des Knopfes deckt es nicht.
+   *
+   * Folgerichtig bleiben sie auch nach einem Neuladen: Die Erfolge werden
+   * gespeichert, die Zahlen auf 0.
    */
   profilZuruecksetzen() {
-    this.profil = new PlayerProfile();
+    const vorher = this.profil;
+    this.profil = new PlayerProfile({
+      name: vorher.name,
+      // Verdiente Erfolge behalten.
+      erfolge: [...vorher.erfolge],
+    });
+    this.neueErfolge = [];
     try {
-      globalThis.localStorage?.removeItem(PROFIL_SCHLUESSEL);
+      globalThis.localStorage?.setItem(PROFIL_SCHLUESSEL, JSON.stringify(this.profil.toJSON()));
     } catch (error) {
-      this.hud?.log(`Profil konnte nicht gelöscht werden: ${error.message}`, 'danger');
+      this.hud?.log(`Profil konnte nicht zurückgesetzt werden: ${error.message}`, 'danger');
     }
     this.#zeigeProfil();
+    this.#zeigeErfolge();
     return this.profil;
   }
 
@@ -1714,8 +1857,25 @@ class Game {
       matchKennzahlen: () => (this.stats
         ? this.stats.zusammenfassung(this.eigenerSpielerId)
         : null),
-      /** Profil zurücksetzen (für Tests und den Menü-Knopf). */
-      profilZuruecksetzen: () => this.profilZuruecksetzen(),
+      /**
+       * Profil zurücksetzen (für Tests und den Menü-Knopf).
+       *
+       * Gibt schlichtes JSON zurück, nicht das PlayerProfile: Darin sind
+       * `erfolge` und `waffen` Mengen bzw. Karten, und die kommen über die
+       * Serialisierung nach außen als `{}` an — ein Test läse `undefined`.
+       */
+      profilZuruecksetzen: () => {
+        this.profilZuruecksetzen();
+        return this.profil.toJSON();
+      },
+      /** Erfolgsübersicht mit Fortschritt und Hinweisen. */
+      erfolge: () => {
+        const partei = this.stats ? this.stats.zusammenfassung(this.eigenerSpielerId) : null;
+        return erfolgsUebersicht(
+          erfolgsKennzahlen(partei, this.profil.toJSON()),
+          this.profil.erfolge,
+        );
+      },
       getMatch: () => this.match,
       getNetwork: () => this.network,
       getState: () => this.currentState(),

@@ -476,6 +476,26 @@
     .match-tabelle th { text-align: left; color: #8ba0b4; font-weight: 600; padding: 0.25rem 0.4rem; border-bottom: 1px solid #232f3d; }
     .match-tabelle td { padding: 0.25rem 0.4rem; border-top: 1px solid #1b2531; }
     .match-tabelle th:not(:first-child), .match-tabelle td:not(:first-child) { text-align: right; }
+
+    /*
+     * Erfolgsübersicht.
+     * Erreichte Einträge stehen farbig, offene gedämpft — der Unterschied muss
+     * ohne Lesen erkennbar sein, weil die Liste lang wird.
+     */
+    .erfolge-liste { max-height: 24rem; overflow-y: auto; margin-top: 0.4rem; }
+    .erfolg-gruppe { margin: 0.6rem 0 0.2rem; color: #d9b44a; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .erfolg { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.3rem 0; border-top: 1px solid #1b2531; font-size: 0.82rem; opacity: 0.62; }
+    .erfolg.erreicht { opacity: 1; }
+    .erfolg.frisch { background: #1d2a1f; }
+    .erfolg-symbol { flex: 0 0 1rem; color: #d9b44a; }
+    .erfolg-text { flex: 1 1 auto; }
+    .erfolg-hinweis { color: #8ba0b4; font-size: 0.78rem; }
+    .erfolg-stand { flex: 0 0 auto; color: #8ba0b4; font-variant-numeric: tabular-nums; }
+    .erfolg.erreicht .erfolg-stand { color: #7fd18a; }
+    .erfolg-stufe { font-size: 0.72rem; color: #7f93a8; }
+    .stufe-sehr-schwer { color: #d98a8a; }
+    .stufe-schwer { color: #d9b44a; }
+    .erfolg-muster { font-size: 0.7rem; color: #d98a8a; font-style: normal; }
     .roster-list .r-name { color: #e8eef6; font-weight: 600; }
     .roster-list .r-role { color: #7f93a8; font-size: 0.75rem; }
     .roster-list .r-waffe { color: #d9b44a; }
@@ -700,6 +720,16 @@
             dazu — ohne ihn wäre die Angabe unerreichbar und damit eine
             Sackgasse.
           -->
+          <!--
+            Erfolge.
+            Der Zähler nennt ausdrücklich, wie viele Einträge Muster sind: Ein
+            Katalog aus Platzhaltern darf nicht wie ein fertiger aussehen.
+          -->
+          <details id="erfolge-browser">
+            <summary>Erfolge</summary>
+            <p id="erfolge-zaehler" class="muted" role="status" aria-live="polite"></p>
+            <div id="erfolge-liste" class="erfolge-liste" aria-label="Erfolgsübersicht"></div>
+          </details>
           <details id="profil-browser">
             <summary>Mein Profil</summary>
             <div id="profil-werte" class="profil-werte" aria-label="Eigene Kennzahlen"></div>

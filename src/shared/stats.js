@@ -275,6 +275,15 @@ export class PlayerProfile {
     this.waffen = new Map(Object.entries(felder.waffen ?? {}));
     /** Fraktion → Partien. */
     this.fraktionen = new Map(Object.entries(felder.fraktionen ?? {}));
+    /**
+     * Kennungen der erreichten Erfolge.
+     *
+     * Als Menge, nicht als Liste: Gefragt wird beim Auswerten nur „ist er
+     * erreicht?", und ein doppelt eingetragener Erfolg soll nicht zweimal zählen.
+     * Ein bereits erreichter Erfolg wird NICHT wieder entfernt (siehe
+     * `achievements.js`): Ein Erfolg, der sich zurücknimmt, wäre keiner.
+     */
+    this.erfolge = new Set(Array.isArray(felder.erfolge) ? felder.erfolge : []);
   }
 
   /**
@@ -308,6 +317,22 @@ export class PlayerProfile {
     if (this.serie > this.serieRekord) this.serieRekord = this.serie;
 
     return this;
+  }
+
+  /**
+   * Trägt erreichte Erfolge ein.
+   *
+   * @param {Iterable<string>} kennungen
+   * @returns {string[]} die NEU hinzugekommenen (für die Meldung)
+   */
+  verbucheErfolge(kennungen) {
+    const neu = [];
+    for (const id of kennungen ?? []) {
+      if (typeof id !== 'string' || this.erfolge.has(id)) continue;
+      this.erfolge.add(id);
+      neu.push(id);
+    }
+    return neu;
   }
 
   /** Verbucht die Fraktion einer Partie (für die Lieblingsnation). */
@@ -377,6 +402,9 @@ export class PlayerProfile {
       spielzeitSekunden: Math.round(this.spielzeitSekunden),
       waffen: Object.fromEntries(this.waffen),
       fraktionen: Object.fromEntries(this.fraktionen),
+      // Sortiert, damit die gespeicherte Datei bei gleichem Inhalt gleich
+      // aussieht (sonst hinge die Reihenfolge an der Einfügung).
+      erfolge: [...this.erfolge].sort(),
     };
   }
 
