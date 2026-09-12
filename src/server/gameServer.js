@@ -27,7 +27,7 @@ import {
   encodeSnapshot,
   toDeltaBase,
 } from '../shared/protocol.js';
-import { validateCommand } from '../shared/validation.js';
+import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { ReplayRecorder } from '../engine/replay.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
@@ -784,6 +784,35 @@ export class GameServer {
 
     socket.on('message', (raw, isBinary) => {
       if (isBinary) return; // Client -> Server ist ausschliesslich JSON-Kontrolle.
+
+      /*
+       * Nutzlastgrenze VOR dem Parsen.
+       *
+       * Fund (belegt): `INPUT_LIMITS.maxPayloadBytes` war definiert, aber
+       * nirgends verwendet — `parseControlMessage` rief `JSON.parse` auf
+       * beliebig große Eingaben auf. Gemessen: Eine Nachricht mit 1 MB Füllsel
+       * wurde angenommen und geparst.
+       *
+       * Die Prüfung steht hier und nicht im gemeinsamen Parser, weil sie nur für
+       * die Richtung CLIENT → SERVER gilt: Die Waffenbestände aller Spieler gehen
+       * als EINE Nachricht an den Client und dürfen größer sein.
+       *
+       * Geprüft wird die BYTES, nicht die Zeichen: Ein Byte kann im JSON als
+       * Escape-Sequenz stehen (`\u00e4`), und `raw.length` wäre dann zu klein.
+       */
+      const nutzlastBytes = typeof raw === 'string'
+        ? Buffer.byteLength(raw, 'utf8')
+        : (raw?.byteLength ?? 0);
+      if (nutzlastBytes > INPUT_LIMITS.maxPayloadBytes) {
+        this.logger.warn('payload_rejected', 'Nachricht über der Nutzlastgrenze abgewiesen', {
+          bytes: nutzlastBytes,
+          limit: INPUT_LIMITS.maxPayloadBytes,
+        });
+        socket.send(controlMessage(CONTROL.ERROR, {
+          error: `Nachricht zu groß (${nutzlastBytes} Byte, erlaubt ${INPUT_LIMITS.maxPayloadBytes})`,
+        }));
+        return;
+      }
 
       const message = parseControlMessage(raw);
       if (!message) {
