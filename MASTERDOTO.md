@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **494/494** |
-| Browser-E2E | `npm run test:e2e` | **104/104** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **507/507** |
+| Browser-E2E | `npm run test:e2e` | **112/112** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -436,6 +436,77 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     **Der Fehler steckte in einem Bereich, den die bisherigen Tests nicht
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
+
+## Erfolge: Mechanik und Inhalte
+
+Die Mechanik steht, die Inhalte fehlen — **absichtlich**. 100 Erfolge mit Namen,
+Texten, Symbolen und Belohnungen sind eine Gestaltungsentscheidung, keine
+technische Ableitung. Was im Katalog steht, sind 12 **Muster** (`muster: true`),
+damit die Mechanik prüfbar ist; im Menü sind sie als „Muster" gekennzeichnet,
+damit ein Platzhalterkatalog nicht wie ein fertiger aussieht.
+
+### Wie ein Erfolg aufgebaut ist
+
+```
+{ id, tier, category, title, text, hint, icon, reward, condition }
+   ↑     ↑        ↑                                       ↑
+   stabil Mechanik                              nur das ist Mechanik
+              (leicht … sehr schwer, 6 Gruppen)
+```
+
+`condition` ist eine Bedingung über **flachen Kennzahlen**:
+
+```
+{ kind: 'mindestens', kennzahl: 'schaden', wert: 500 }
+```
+
+Die Kennzahlen kommen aus **zwei** Quellen und werden zu einem Objekt
+zusammengeführt:
+
+| Quelle | Beispiele |
+|---|---|
+| die Partie | `schuesse_partie`, `schaden_partie`, `sieg_partie`, `trefferquote_partie` |
+| das Profil | `partien`, `siege`, `serie_rekord`, `schaden`, `trefferquote`, `schaden_pro_minute`, `verschiedene_waffen` |
+
+Damit braucht die Auswertung **keine Kenntnis des Motors** — sie liest Zahlen.
+Ein neuer Erfolg ist eine Zeile in der Tabelle, kein Code; ein ausgetauschter
+Katalog lässt die Auswertung unverändert. Genau so ist es geprüft.
+
+### Vier Entscheidungen, die nicht selbstverständlich sind
+
+1. **Fortschritt statt nur erreicht/nicht erreicht.** Ein Erfolg bei 800 von 1000
+   zeigt 80 %. Ohne das wäre die Übersicht eine Liste von „nein".
+2. **`mindestbasis` verhindert einen zu frühen Erfolg.** Eine Trefferquote von
+   50 % ist mit 1 von 2 Schüssen erreicht und sagt nichts. Mit einer Mindestbasis
+   muss zuerst eine Mindestzahl Schüsse zusammenkommen; der Fortschritt zeigt
+   dann diese erste Hürde (3 von 20), nicht die Quote.
+3. **Ein einmal erreichter Erfolg verschwindet nicht.** `serie_rekord` fällt nie,
+   aber eine Bedingung über die *aktuelle* Serie könnte wieder darunter fallen.
+   Ein Erfolg, der sich zurücknimmt, wäre keiner.
+4. **Der Zurücksetzen-Knopf nimmt die Erfolge nicht mit.** Er heißt „Zahlen
+   zurücksetzen" und tut genau das. Erfolge sind verdient, keine Kennzahl.
+   (Beim Schreiben des Tests fiel auf, dass die erste Fassung sie mitnahm.)
+
+### Zwei Fehler in der eigenen Anzeige
+
+- `profilZuruecksetzen` gab das `PlayerProfile` zurück. Darin sind `erfolge` eine
+  **Menge** und `waffen` eine **Karte** — nach der Serialisierung kommt `{}` an,
+  und ein Test las `undefined`. Die Debug-Schnittstelle gibt jetzt schlichtes JSON.
+- Der Zurücksetzen-Pfad **löschte** den Speichereintrag, statt den neuen Stand zu
+  schreiben. Mit „Erfolge bleiben" wäre das ein Datenverlust geworden.
+
+### OFFEN
+
+- **Die 100 Erfolge**: Namen, Texte, Hinweise, Symbole, Belohnungen.
+- **Die Symbole als Bilder.** Es gibt keine Bilddateien; die Anzeige verwendet
+  ★/☆ und tut nicht so, als gäbe es welche. Ein Symbol je Erfolg gehört zur
+  Inhaltslieferung.
+- **Die „feindlichen" Erfolge.** Die Anforderung nennt eine Übersicht mit dem
+  Hinweis, wie die *feindlichen* zu holen sind. Die Mechanik kann das (jeder
+  Erfolg trägt einen Hinweis), aber ob Erfolge an Fraktionen gebunden werden und
+  wie die Gegenseite sie sieht, ist eine Designfrage.
+- **Belohnungen.** Das Feld ist vorhanden und überall `null`. Was ein Erfolg
+  gibt (Waffe, Titel, Emblem, nichts) ist eine Balance- und Designfrage.
 
 ## Anti-Cheat: was der Server nicht glaubt
 
@@ -1102,7 +1173,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (494):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (507):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -1120,7 +1191,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (104):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (112):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
@@ -1278,9 +1349,12 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [x] Bodenerkennung (`isGrounded`) („steht auf festem Grund") als Voraussetzung für Sprünge.
 
 ### E. Erfolge, Profile, Soziales
-- [ ] **100 Erfolge von leicht bis sehr schwer.** Je Erfolg: kurzer Text,
-      eigenes Icon, Belohnung, und eine Übersicht der eigenen Erfolge mit
-      Hinweis, wie die feindlichen zu holen sind.
+- [x] **Erfolgs-MECHANIK.** Definition als Datentabelle, Auswertung über flache
+      Kennzahlen (Partie + Profil), Fortschritt 0..100 %, Persistenz im Profil,
+      Übersicht im Menü mit Stand und Hinweis. Siehe „Erfolge: Mechanik und
+      Inhalte". **OFFEN: die Inhalte** — die 100 Erfolge (Namen, Texte, Symbole,
+      Belohnungen) und die Icons sind Gestaltung und wurden nicht erfunden; im
+      Katalog stehen 12 MUSTER (`muster: true`), im Menü als Muster gekennzeichnet.
 - [ ] **Erfolgs-Emblem am Spielernamen** (wie eine Visitenkarte).
 - [x] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
       Schüsse gesamt, Spielzeit, Gesamtschaden, Schaden pro Minute, Trefferquote,
