@@ -437,6 +437,90 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Kulissen für alle acht Formen
+
+Jede Geländeform hat jetzt ein **eigenes Leitbiom mit fünf eigenen Bildern**. Vorher
+liefen die vier später hinzugekommenen Formen mit dem `forest`-Rückfall — eine
+„Flut" sah aus wie ein Wald.
+
+| Form | Biom | Kulissen |
+|---|---|---|
+| `islands` | `maritime` | (ursprünglich) |
+| `mountains` | `alpine` | (ursprünglich) |
+| `hills` | `forest` | (ursprünglich) |
+| `caverns` | `caverns` | (ursprünglich) |
+| `flooded` | `deluge` | Versunkene Stadt, Monsun, Ertränkter Wald, Reisterrassen, Dammbruch |
+| `open` | `open` | Weizenfelder, Heide, Salzpfanne, Polder, Präriesturm |
+| `spires` | `spires` | Karsttürme, Dolomiten, Basaltsäulen, Felspfeiler, Eisnadeln |
+| `warren` | `warren` | Schlucht, Stadtruinen, Höhlengänge, Bambusdickicht, Schützengräben |
+
+**Die Kulissen sind nach der FORM gewählt, nicht nach Geschmack** — das ist die
+Begründung jeder Auswahl:
+
+- `open` ist die **flachste** Form (Höhenvarianz 16). Also weite Horizonte, viel
+  Himmel, sanfte Landmarken (`hill_soft`, `dunes`, `mesa`) — **kein** Gipfel im
+  Hintergrund, der der Flachheit widerspräche.
+- `spires` ist die **steilste** (213, mehr als das Dreifache von `hills`). Also
+  senkrechte Formen: Karsttürme, Dolomitenwände, Basaltsäulen, Hoodos, Eisnadeln —
+  **kein** `hill_soft`.
+- `warren` ist die **zerklüftetste** (47 Geländesprünge je Breite, gedacht für den
+  Nahkampf). Also **enge** Orte: Schlucht, Ruinen, Höhlen, Dickicht, Gräben — keine
+  offene Landschaft.
+- `flooded` ist **wasserreich** (22 % Land). Also Hochwasser in vier Weltgegenden.
+
+Zusätzlich zum Bildkatalog steht je Biom ein Eintrag in `SCENERY_BIOMES` — das ist
+der Weg, der im Menü **Vorgabe** ist (generative Szene). Ohne ihn fällt
+`pickScenery` weiter auf `forest` zurück, und die Karte sähe trotz vorhandener
+Bilder wie ein Wald aus. Die Listen sind auf die Form abgestimmt: Die Flut bekommt
+bedeckten Himmel und Sturm (kein `clear_day`, keine Vögel), die Steilwand bekommt
+`crystal_spires` und `ice_peaks`, das Gewirr bekommt Regen und Nebel.
+
+### Die Bodenfarben sind nach Sichtprüfungen nachgezogen
+
+Alle 20 neuen Kulissen wurden **im laufenden Spiel** begutachtet, nicht nur im
+Katalog. Zwei Runden waren nötig:
+
+1. **Flut:** „Reisterrassen" hatte ein fast grelles Grün über schlammigem Wasser,
+   „Monsun" ein zu helles Sandbraun, „Ertränkter Wald" war zu blass. Alle fünf
+   liegen jetzt gedämpft und schlammig nahe beieinander — Schlamm ist nicht farbig.
+2. **Gewirr:** Die Szenen sind detailreich, und ein zu heller Boden **stach davor
+   hervor** statt davor zu liegen (`Schlucht` und `Bambusdickicht`, letzteres am
+   stärksten). Beide sind dunkler und in der Farbfamilie ihres Bildes: rostbraun
+   über rotem Canyon, **erdig-braun** über grünem Bambus — bewusst nicht grün, denn
+   ein grüner Boden würde mit den Halmen verschmelzen und die Oberfläche wäre nicht
+   mehr zu erkennen. Erkennbarkeit geht vor Farbnähe.
+
+Beim Dammbruch war der Kontrast zwischen Boden und rotem Wasser zu gering; dort ist
+der Boden etwas heller, weil die Oberfläche sichtbar bleiben muss.
+
+### Zwei Testfehler, die dabei herauskamen
+
+**Feste Zahlen statt der Regel.** Drei Tests prüften „12 Biome, 60 Kulissen" und
+brachen mit dem neuen Biom — ohne etwas über die Regel zu sagen. Sie leiten die
+Zahl jetzt ab (`Biome × 5`, Kataloglänge) und behalten nur die Untergrenze als
+Zusage. Dieselbe Lehre wie bei `HEADER_SIZE` im Protokoll.
+
+**Ein Test, der den zufälligen Seed maß.** Der Browser-Test „Vier Formen
+unterscheiden sich messbar" startete über den Menüknopf und ließ das Seed-Feld
+leer — `startMatch` zog damit einen **zufälligen** Seed. Jeder `messen()`-Aufruf
+erzeugte eine andere Karte. Gemessen über vier Läufe:
+
+```
+spires:  124, 182, 197, 221      ← vier Läufe, vier Karten
+open:     15,4 / 15,7 / 15,7     ← zufällig stabil, weil sehr flach
+```
+
+Der Test war ein Wettrennen um 26 Punkte. Mit festem Seed (`SEED = 4242`) sind die
+Werte **deterministisch** — drei Läufe hintereinander identisch:
+
+```
+open 15,6 | hills 61,5 | spires 212,8 | flooded 242,6
+```
+
+Verglichen wird jetzt der **Abstand** (`spires` mehr als doppelt so steil wie
+`hills`, `open` weniger als halb so steil), nicht eine Zahl aus einer anderen
+Umgebung — der Abstand gilt in jeder Auflösung.
+
 ## Flut hat eigene Kulissen
 
 Die Geländeform `flooded` sah bisher aus wie ein **Wald**: Sie hatte kein eigenes
@@ -881,18 +965,23 @@ eine Kulissengruppe mit **eigenen Bildern**.
 **`flooded` ist erledigt** — es hat das Biom `deluge` mit fünf eigenen Bildern,
 siehe „Flut hat eigene Kulissen".
 
-**`open`, `spires` und `warren` fehlen noch.** Sie laufen mit dem
-`forest`-Rückfall, und das ist in zwei Tests namentlich festgehalten
-(`OHNE_LEITBIOM` in `tests/backdrops.test.js`, `OHNE_KULISSEN` in
-`tests/terrain-presets.test.js`): Wer eine der Formen einer vorhandenen
-Biomgruppe zuordnet, bricht die Projektregel und den Test; wer Kulissen
-hinzufügt, wird erinnert, die Liste zu kürzen. So bleibt die Lücke sichtbar statt
-vergessen — und keine Form ist als „fertig" geführt, die es nicht ist.
+**Alle vier sind erledigt.** Jede Geländeform hat jetzt ein eigenes Leitbiom mit
+fünf eigenen Bildern:
 
-Die Liste ist damit von vier auf drei geschrumpft, und der Weg für die übrigen
-ist vorgezeichnet: Biom anlegen, Bilder erzeugen, Paletten abstimmen, Leitbiom
-eintragen, Listen kürzen. Der Aufwand je Form liegt bei rund einer Stunde,
-überwiegend Bildabstimmung.
+| Form | Biom | Kulissen |
+|---|---|---|
+| `flooded` | `deluge` | Versunkene Stadt, Monsun, Ertränkter Wald, Reisterrassen, Dammbruch |
+| `open` | `open` | Weizenfelder, Heide, Salzpfanne, Polder, Präriesturm |
+| `spires` | `spires` | Karsttürme, Dolomiten, Basaltsäulen, Felspfeiler, Eisnadeln |
+| `warren` | `warren` | Schlucht, Stadtruinen, Höhlengänge, Bambusdickicht, Schützengräben |
+
+Die Listen `OHNE_LEITBIOM` und `OHNE_KULISSEN` sind **leer** und bleiben als
+Prüfstelle stehen: Eine neue Geländeform ohne Kulissen trägt sich dort ein, und
+der Test hält die Lücke dann namentlich fest, statt sie stillschweigend
+durchzulassen. Die Zuordnung der Biome zu ihren Formen ist eine Zusage — die
+Kulissen sind bewusst nach der FORM gewählt (die flachste Form bekommt weite
+Ebenen, die steilste bekommt senkrechte Felsformen, die zerklüftetste bekommt
+enge Orte), nicht nach Geschmack.
 
 ## Zustandsübertragung: geprüft, nicht komprimiert
 
@@ -1479,10 +1568,8 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       Dabei ein Fehler gefunden und behoben: Die Startpositionen wurden nicht
       auf Wasser geprüft, ein Match konnte beginnen, wenn beide Figuren bereits
       untergetaucht waren (Fehler 44).
-      **OFFEN: drei Kulissen.** `flooded` hat sein eigenes Biom `deluge` mit fünf
-      Kulissen (siehe „Flut hat eigene Kulissen"). Für `open`, `spires` und
-      `warren` fehlen sie noch; sie laufen mit dem `forest`-Rückfall, und das ist
-      in zwei Tests namentlich festgehalten.
+            **Alle Kulissen sind da:** Jede der acht Geländeformen hat ein eigenes
+      Leitbiom mit fünf eigenen Bildern (siehe „Kulissen für alle acht Formen").
 - [x] **`prefers-reduced-motion`.** Erledigt, siehe P2 — CSS und Canvas.
 - [x] **Anti-Cheat-Audit.** Durchgeführt, siehe „Anti-Cheat: was der Server nicht
       glaubt". Zwei Lücken gefunden und geschlossen: nicht-numerische Werte wurden
