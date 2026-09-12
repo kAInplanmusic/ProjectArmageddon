@@ -81,11 +81,29 @@ export class ReplayRecorder {
     if (!Number.isInteger(tick) || tick < 0) {
       throw new TypeError('tick muss eine nichtnegative Ganzzahl sein');
     }
+    /*
+     * Winkel und Kraft werden UNVERÄNDERT aufgezeichnet — nicht gerundet.
+     *
+     * Fund (belegt): Hier stand `Math.round(angle * 1e6) / 1e6`. Das spart ein
+     * paar Zeichen in der Datei, kostet aber die Genauigkeit: Die Wiedergabe
+     * schoss mit 1.145398 statt 1.1453981633974482 — ein Unterschied von
+     * 1,6 × 10⁻⁷ rad.
+     *
+     * Bei einer Wurfparabel wächst ein solcher Unterschied an: Gemessen wich die
+     * Explosion nach rund 200 Takten um 1,2 × 10⁻⁴ px ab (`893.99380811` gegen
+     * `893.99393033`), und der Zustandshash ging auseinander — die Wiedergabe war
+     * ab Takt 471 nicht mehr identisch zum Original.
+     *
+     * Das widerspricht dem Zweck einer Aufzeichnung: Sie soll das Match EXAKT
+     * reproduzieren, sonst taugt sie nicht als Beweismittel (Determinismus,
+     * Fehlersuche, Anti-Cheat). Die Datei wird dadurch wenige Prozent größer —
+     * das ist der Genauigkeit angemessen.
+     */
     this.#entries.push({
       tick,
       playerId,
-      angle: Math.round(angle * 1e6) / 1e6,
-      power: Math.round(power * 1e6) / 1e6,
+      angle,
+      power,
       weaponId: weaponId ?? null,
     });
     return this;
@@ -243,6 +261,14 @@ export class ReplayPlayer {
       : letzterEingabeTick + 1);
 
     this.tick = 0;
+    /**
+     * Takt der zuletzt angewendeten Eingaben.
+     *
+     * Verhindert, dass `step()` die Eingaben eines Takts mehrfach anwendet: Nach
+     * dem Match-Ende wird `step()` weiter aufgerufen (die Anzeige fragt weiter
+     * nach Bildern), und ohne diesen Merker würde der letzte Takt wiederholt.
+     */
+    this.letzterEingabeTakt = -1;
     this.appliedInputs = 0;
     this.rejected = [];
     /** Ereignisse des letzten Schritts. */
@@ -250,9 +276,28 @@ export class ReplayPlayer {
     return this;
   }
 
-  /** Ist die Wiedergabe am Ende (oder das Match entschieden)? */
+  /**
+   * Ist die Wiedergabe am Ende?
+   *
+   * Fund (belegt): Hier stand
+   *     `this.match.status !== 'playing' || this.tick >= this.totalTicks`
+   * Damit galt die Wiedergabe am LETZTEN Takt als fertig — und der Aufrufer
+   * (`playReplay` und die Anzeige) prüft `finished` VOR `step()`. Eine Eingabe,
+   * die genau auf den letzten Takt aufgezeichnet wurde, wurde deshalb nie
+   * angewendet. Gemessen: 35 statt 36 angewendete Eingaben, letzte auf Tick 1205
+   * bei `totalTicks` 1205.
+   *
+   * Jetzt gilt: Am letzten Takt ist erst Schluss, wenn die Eingaben dieses Takts
+   * angewendet sind. `letzterEingabeTakt` verhindert dabei, dass sie mehrfach
+   * angewendet werden.
+   */
   get finished() {
-    return this.match.status !== 'playing' || this.tick >= this.totalTicks;
+    if (this.match.status !== 'playing') return true;
+    if (this.tick < this.totalTicks) return false;
+    // Am letzten Takt: offene Eingaben halten die Wiedergabe am Leben.
+    const offen = this.tick > this.letzterEingabeTakt
+      && (this.byTick.get(this.tick)?.length ?? 0) > 0;
+    return !offen;
   }
 
   /** Fortschritt 0..1. */
@@ -266,16 +311,39 @@ export class ReplayPlayer {
    * @returns {boolean} false, wenn nichts mehr zu tun ist
    */
   step() {
+    const tick = this.match.world.tickCount;
+
+    /*
+     * Eingaben dieses Takts ZUERST anwenden — auch im letzten Takt.
+     *
+     * Fund (belegt): Hier stand die Prüfung `if (this.finished) return false;`
+     * VOR dem Anwenden. `finished` ist wahr, sobald `tick >= totalTicks` — eine
+     * Eingabe, die genau auf dem letzten Takt aufgezeichnet wurde, wurde damit
+     * nie angewendet.
+     *
+     * Gemessen (Seed 4242): Die letzte Aufzeichnung lag auf Tick 1205, und
+     * `totalTicks` war ebenfalls 1205. Die Wiedergabe meldete 35 statt 36
+     * angewendete Eingaben und einen ABWEICHENDEN Zustandshash — sie war also
+     * nicht exakt. Der Fehler war latent: Er tritt nur auf, wenn ein Schuss
+     * genau im letzten Takt fällt, und das hing bisher am Timing.
+     *
+     * `#letzterEingabeTakt` stellt sicher, dass jeder Takt nur EINMAL bearbeitet
+     * wird. Ohne den Merker würden die Eingaben des letzten Takts bei jedem
+     * weiteren Aufruf erneut angewendet — `step()` wird nach dem Ende
+     * weiterhin aufgerufen (die Anzeige fragt weiter nach Bildern).
+     */
+    if (tick > this.letzterEingabeTakt) {
+      this.letzterEingabeTakt = tick;
+      for (const entry of this.byTick.get(tick) ?? []) {
+        const result = this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
+        if (result.ok) this.appliedInputs += 1;
+        else this.rejected.push({ tick, entry, errors: result.errors });
+      }
+    }
+
     if (this.finished) {
       this.lastEvents = [];
       return false;
-    }
-
-    const tick = this.match.world.tickCount;
-    for (const entry of this.byTick.get(tick) ?? []) {
-      const result = this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
-      if (result.ok) this.appliedInputs += 1;
-      else this.rejected.push({ tick, entry, errors: result.errors });
     }
 
     this.match.step();

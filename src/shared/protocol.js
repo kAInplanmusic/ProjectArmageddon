@@ -23,6 +23,8 @@
  *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY),
  *     shield Uint8, frozenTurns Uint8, waterLevel Uint8 (Wasserstand 0..255)
  *   danach je Projektil 6 Byte: id Uint16, x Int16, y Int16 (0.25 px)
+ *   [22]     Kistenanzahl, danach je Kiste 8 Byte (ab v5)
+ *   [23]     Geschützanzahl, danach je Geschütz 8 Byte: id, x, y, Team, Restrunden (ab v6)
  *
  * v3 → v4: Wasserstand je Spieler. Die Anzeige konnte bisher weder „nass" noch
  * „ertrinkt" darstellen — die Schwellen kannte nur das CharacterSystem, und
@@ -47,10 +49,14 @@ import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
  *
  * 5: Kisten werden übertragen (Kampffeld-Loot). Vorher fehlten sie im Snapshot,
  *    weshalb ONLINE keine Kiste zu sehen war — im lokalen Match dagegen schon.
+ * 6: Aufgestellte Geschütze werden übertragen. Sie sind ein SPIELZUSTAND (der
+ *    Gegner muss wissen, wo eines steht und wie lange es noch feuert), kein
+ *    Beiwerk — ohne Übertragung wäre der Auto-Turret online unsichtbar und damit
+ *    ein unsichtbarer Angreifer.
  *    Eine ältere Gegenstelle lehnt den Snapshot ab, statt ihn falsch zu lesen;
  *    genau dafür gibt es diese Zahl.
  */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -120,14 +126,23 @@ export const PROJECTILE_STRIDE = 6;
  */
 export const CRATE_STRIDE = 8;
 /**
+ * Geschütz im Snapshot: Kennung (2), x (2), y (2), Team (1), Restrunden (1).
+ *
+ * Der Schaden geht NICHT mit: Er ist eine Eigenschaft der aufstellenden Waffe
+ * und für die Anzeige ohne Bedeutung — dort zählt, WO das Geschütz steht und wie
+ * lange es noch feuert.
+ */
+export const TURRET_STRIDE = 8;
+/**
  * Kopf des Snapshots.
  *
- * 22 → 23 mit Protokoll v5: Die Kistenzahl brauchte ein eigenes Feld. Sie in die
- * freien Bits der Flags zu packen wäre platzsparender gewesen, aber der Kopf ist
- * die Stelle, an der man nachliest, was übertragen wird — zwei Zahlen in einem
- * Feld machen das schwerer. Ein Byte ist hier gut angelegt.
+ * 22 → 23 mit Protokoll v5: Die Kistenzahl brauchte ein eigenes Feld.
+ * 23 → 24 mit Protokoll v6: dazu die Geschützzahl. Beide Zahlen in die freien
+ * Bits der Flags zu packen wäre platzsparender gewesen, aber der Kopf ist die
+ * Stelle, an der man nachliest, was übertragen wird — zwei Zahlen in einem Feld
+ * machen das schwerer. Ein Byte je Art ist hier gut angelegt.
  */
-export const HEADER_SIZE = 23;
+export const HEADER_SIZE = 24;
 
 function clampInt16(value) {
   const rounded = Math.round(value);
@@ -172,10 +187,12 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
   const players = state.entities ?? [];
   const projectiles = state.projectiles ?? [];
   const crates = state.crates ?? [];
+  const turrets = state.turrets ?? [];
   const size = HEADER_SIZE
     + players.length * PLAYER_STRIDE
     + projectiles.length * PROJECTILE_STRIDE
-    + crates.length * CRATE_STRIDE;
+    + crates.length * CRATE_STRIDE
+    + turrets.length * TURRET_STRIDE;
   const bytes = new Uint8Array(size);
   const view = new DataView(bytes.buffer);
 
@@ -194,6 +211,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
   view.setUint16(18, clampUint16(turnRemainingMs / TURN_MS_SCALE), true);
   view.setUint16(20, isDelta ? 0 : SNAPSHOT_FLAG.FULL, true);
   bytes[22] = Math.min(255, crates.length);
+  bytes[23] = Math.min(255, turrets.length);
 
   let offset = HEADER_SIZE;
   for (const player of players) {
@@ -256,6 +274,15 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     offset += CRATE_STRIDE;
   }
 
+  for (const turret of turrets) {
+    view.setUint16(offset, (turret.entityId ?? 0) & 0xffff, true);
+    view.setInt16(offset + 2, clampInt16((turret.x ?? 0) * COORD_SCALE), true);
+    view.setInt16(offset + 4, clampInt16((turret.y ?? 0) * COORD_SCALE), true);
+    view.setUint8(offset + 6, (turret.teamId ?? 0) & 0xff);
+    view.setUint8(offset + 7, Math.max(0, Math.min(255, Math.round(turret.roundsLeft ?? 0))));
+    offset += TURRET_STRIDE;
+  }
+
   return bytes;
 }
 
@@ -282,6 +309,8 @@ export function decodeSnapshot(input, previous = null) {
   // Kistenzahl — ab Protokoll v5. Ältere Snapshots kommen hier nicht an: Die
   // Versionsprüfung oben lehnt sie ab, statt sie fehlzuinterpretieren.
   const crateCount = view.getUint8(22);
+  // Geschützzahl — ab Protokoll v6.
+  const turretCount = view.getUint8(23);
   const turnRemainingMs = view.getUint16(18, true) * TURN_MS_SCALE;
   const flags = view.getUint16(20, true);
   const isFull = (flags & SNAPSHOT_FLAG.FULL) !== 0;
@@ -362,6 +391,24 @@ export function decodeSnapshot(input, previous = null) {
     offset += CRATE_STRIDE;
   }
 
+  /*
+   * Geschütze stehen NACH den Kisten — die Reihenfolge muss zu encodeSnapshot
+   * passen. Sie sind ein Spielzustand: Ohne sie wäre ein aufgestelltes Geschütz
+   * online unsichtbar, und sein Besitzer hätte einen unsichtbaren Angreifer.
+   */
+  const turrets = [];
+  for (let i = 0; i < turretCount; i++) {
+    if (offset + TURRET_STRIDE > view.byteLength) break;
+    turrets.push({
+      entityId: view.getUint16(offset, true),
+      x: view.getInt16(offset + 2, true) / COORD_SCALE,
+      y: view.getInt16(offset + 4, true) / COORD_SCALE,
+      teamId: view.getUint8(offset + 6),
+      roundsLeft: view.getUint8(offset + 7),
+    });
+    offset += TURRET_STRIDE;
+  }
+
   return {
     version: PROTOCOL_VERSION,
     isFull,
@@ -373,6 +420,7 @@ export function decodeSnapshot(input, previous = null) {
     entities,
     projectiles,
     crates,
+    turrets,
     previous: nextPrevious,
   };
 }

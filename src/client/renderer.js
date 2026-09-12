@@ -535,6 +535,53 @@ export class Renderer {
     }
   }
 
+  /**
+   * Zeichnet aufgestellte Geschütze.
+   *
+   * Ein Geschütz ist kein Kästchen: Es soll sofort von einer Kiste zu
+   * unterscheiden sein, weil beide auf dem Boden liegen. Form und Farbe des
+   * Teams sind deshalb eigenständig — ein Sockel mit Rohr, das in die Richtung
+   * des Ziele zeigt (abgeleitet aus dem Team: Team 0 schießt nach rechts).
+   *
+   * Die Restrunden stehen als kleine Punkte über dem Sockel: Wer ein Geschütz
+   * sieht, soll einschätzen können, wie lange es noch feuert.
+   */
+  #drawTurrets(turrets) {
+    for (const turret of turrets) {
+      const farbe = TEAM_COLORS[(turret.teamId ?? 0) % TEAM_COLORS.length];
+      this.ctx.save();
+      this.ctx.translate(turret.x, turret.y);
+
+      // Sockel
+      this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      this.ctx.fillRect(-8, -4, 17, 12);
+      this.ctx.fillStyle = '#2b3540';
+      this.ctx.fillRect(-9, -5, 17, 12);
+      this.ctx.strokeStyle = farbe;
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(-9, -5, 17, 12);
+
+      // Rohr in Schussrichtung (Team 0 nach rechts, Team 1 nach links).
+      const richtung = (turret.teamId ?? 0) % 2 === 0 ? 1 : -1;
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, -2);
+      this.ctx.lineTo(richtung * 11, -9);
+      this.ctx.lineWidth = 3;
+      this.ctx.strokeStyle = farbe;
+      this.ctx.stroke();
+
+      // Restrunden als Punkte.
+      const runden = Math.max(0, Math.min(5, Math.round(turret.roundsLeft ?? 0)));
+      this.ctx.fillStyle = farbe;
+      for (let i = 0; i < runden; i += 1) {
+        this.ctx.beginPath();
+        this.ctx.arc(-6 + i * 4, -12, 1.5, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+      this.ctx.restore();
+    }
+  }
+
   #drawCrates(crates) {
     for (const crate of crates) {
       const color = RARITY_COLORS[crate.rarity] ?? CRATE_COLORS[0];
@@ -909,6 +956,11 @@ export class Renderer {
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);
     this.#drawCrates(state.crates ?? []);
+    /*
+     * Geschütze VOR den Kisten zeichnen: Lägen beide übereinander, wäre die
+     * Kiste (die man aufheben kann) wichtiger als das Geschütz.
+     */
+    this.#drawTurrets(state.turrets ?? []);
     this.#drawMaelstrom(state.maelstrom);
     this.#drawAimPreview(aimPreview);
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);

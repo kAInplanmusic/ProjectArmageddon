@@ -382,3 +382,83 @@ test('Die Wiedergabe endet nicht vorzeitig, wenn das Match noch läuft', () => {
   assert.ok(spieler.totalTicks > 0, 'totalTicks darf nicht 0 sein');
   assert.ok(spieler.totalTicks < 1_000_000, `totalTicks unplausibel hoch: ${spieler.totalTicks}`);
 });
+
+// ------------------------------------------------- Grenzfälle der Aufzeichnung
+
+test('Eine Eingabe im LETZTEN Takt geht nicht verloren', () => {
+  /*
+   * Fund (belegt): `ReplayPlayer.finished` galt am letzten Takt als wahr
+   * (`tick >= totalTicks`), und die Aufrufer prüfen `finished` VOR `step()`.
+   * Eine Eingabe, die genau auf diesen Takt aufgezeichnet wurde, wurde deshalb
+   * nie angewendet — sie ging stillschweigend verloren.
+   *
+   * Gemessen (Seed 4242): letzte Eingabe auf Tick 1205, `totalTicks` 1205 →
+   * 35 statt 36 angewendete Eingaben und ein abweichender Zustandshash.
+   *
+   * Der Test stellt den Fall direkt her: EINE Eingabe auf dem letzten Takt.
+   */
+  const recorder = new ReplayRecorder({
+    seed: 99, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 60_000,
+  });
+  const match = new MatchController({
+    seed: 99, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 60_000,
+  });
+  match.start();
+
+  const spieler = match.activePlayerId;
+  match.fire(spieler, Math.PI / 4, 60);
+  recorder.recordInput({ tick: match.world.tickCount, playerId: spieler, angle: Math.PI / 4, power: 60 });
+
+  // Genau EIN Takt danach ist Schluss.
+  match.step();
+  match.consumeEvents();
+  recorder.finalize(match.world.tickCount);
+
+  const letzterTakt = match.world.tickCount;
+  assert.equal(recorder.totalTicks, letzterTakt, 'Testaufbau: Eingabe muss auf dem letzten Takt liegen');
+
+  const { appliedInputs, rejected } = playReplay(recorder);
+  assert.equal(rejected.length, 0, `Eingabe abgelehnt: ${JSON.stringify(rejected)}`);
+  assert.equal(appliedInputs, 1, 'Die Eingabe im letzten Takt wurde nicht angewendet');
+});
+
+test('Die Aufzeichnung rundet Winkel und Kraft NICHT', () => {
+  /*
+   * Fund (belegt): `recordInput` rundete auf sechs Stellen
+   * (`Math.round(angle * 1e6) / 1e6`). Die Wiedergabe schoss damit mit
+   * 1.145398 statt 1.1453981633974482 — ein Unterschied von 1,6 × 10⁻⁷ rad.
+   *
+   * Bei einer Wurfparabel wächst das an: Gemessen wich die Explosion nach rund
+   * 200 Takten um 1,2 × 10⁻⁴ px ab, und der Zustandshash ging auseinander. Eine
+   * Aufzeichnung, die das Match nicht exakt reproduziert, taugt nicht als
+   * Beweismittel (Determinismus, Fehlersuche, Anti-Cheat).
+   */
+  const recorder = new ReplayRecorder({ seed: 1, teams: 2, playersPerTeam: 1 });
+  const krumm = Math.PI / 4 + 0.06 * 3;   // eine Zahl mit vielen Stellen
+  const kraft = 55 + 0.123456789;
+
+  recorder.recordInput({ tick: 0, playerId: 1, angle: krumm, power: kraft });
+
+  const gespeichert = recorder.entries[0];
+  assert.equal(gespeichert.angle, krumm, 'Der Winkel wurde gerundet');
+  assert.equal(gespeichert.power, kraft, 'Die Kraft wurde gerundet');
+
+  // Und über die Serialisierung: Auch JSON darf nichts verlieren.
+  const wieder = ReplayRecorder.fromJSON(JSON.parse(JSON.stringify(recorder.toJSON())));
+  assert.equal(wieder.entries[0].angle, krumm, 'Der Winkel überlebt das Speichern nicht');
+  assert.equal(wieder.entries[0].power, kraft, 'Die Kraft überlebt das Speichern nicht');
+});
+
+test('Die Wiedergabe trifft den Originalzustand exakt', () => {
+  /*
+   * Der Kern: Nach allen Korrekturen muss der Zustandshash am Ende übereinstimmen.
+   * Vorher nicht — einmal wegen der Rundung, einmal wegen der verlorenen Eingabe
+   * im letzten Takt.
+   */
+  const live = runRecordedMatch({ seed: 4242 });
+  const { match: replayed, appliedInputs } = playReplay(live.recorder);
+
+  assert.equal(appliedInputs, live.shots, 'Nicht jede Eingabe wurde angewendet');
+  assert.equal(replayed.stateHash(), live.match.stateHash(),
+    'Der Zustandshash weicht ab — die Wiedergabe ist nicht exakt');
+});

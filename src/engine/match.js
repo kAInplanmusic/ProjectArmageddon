@@ -73,6 +73,39 @@ export const TEAM_COLORS = Object.freeze(['#4cc9f0', '#f4a261', '#90be6d', '#e07
 
 const BASE_HEALTH = 100;
 const POWER_TO_SPEED = 0.14;
+/*
+ * Geschütze.
+ *
+ * Das Geschütz ist keine eigene Waffe im Katalog, sondern ein Geschoss mit
+ * eigenen Werten. Dafür braucht es einen Platzhalter, der die Flugeigenschaften
+ * liefert: Das Geschoss fliegt wie ein kleines, schnelles Wurfgeschoss.
+ *
+ * `TURRET_POWERS`/`TURRET_ELEVATIONS` sind die Winkelsuche (siehe
+ * `#turretShot`). Beide Listen sind FEST — kein Zufall, damit ein Replay
+ * dieselben Schüsse ergibt.
+ */
+const TURRET_WEAPON_ID = '__geschuetz';
+const TURRET_WEAPON = Object.freeze({
+  index: -1,
+  displayName: 'Geschütz',
+  damage: 0,          // Der Schaden kommt aus dem Geschütz-Eintrag.
+  blastRadius: 18,
+  knockback: 0,
+  gravityScale: 1,
+  speedFactor: 1,
+  terrainDamage: 6,
+  maxRange: 800,
+});
+/** Antriebskräfte, die die Suche durchprobiert. */
+const TURRET_POWERS = Object.freeze([40, 55, 70, 85, 100]);
+/** Erhöhungswinkel (0 = flach, 1 = 45°), feste Reihenfolge. */
+const TURRET_ELEVATIONS = Object.freeze([0.05, 0.15, 0.3, 0.5, 0.785, 1.0]);
+/** Schritte je Bahnberechnung. Reicht für die halbe Kartenbreite. */
+const TURRET_PATH_STEPS = 900;
+/** Größter Abstand, bei dem noch geschossen wird (halbe Figurenbreite). */
+const TURRET_MAX_MISS = 22;
+/** Schwerkraft der Geschosse — derselbe Wert wie im ProjectileSystem. */
+const GRAVITY = 0.32;
 const MAX_WIND = 0.05;
 /** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
 const CRATE_GRAVITY = 0.30;
@@ -150,6 +183,18 @@ export class MatchController {
   #airborne = new Map();
   #maelstrom;
   #loot;
+  /**
+   * Aufgestellte Geschütze.
+   *
+   * Bewusst KEINE ECS-Entities: Ein Geschütz bewegt sich nicht, hat keine
+   * Gesundheit und wird nicht von Explosionen getroffen — es braucht von einem
+   * ECS-Objekt nur eine Position. Als schlichter Eintrag bleibt es außerdem
+   * außerhalb der Entity-ID-Wiederverwendung, die in diesem Projekt schon
+   * mehrfach Fehler verursacht hat (siehe `#registerSystems`).
+   *
+   * entityId → { ownerId, teamId, x, y, damage, range, roundsLeft }
+   */
+  #turrets = new Map();
   #players = [];
   #turnOrder = [];
   #turnIndex = 0;
@@ -792,6 +837,27 @@ export class MatchController {
       return { ok: false, errors: ['Spieler ist nicht mehr aktiv'] };
     }
 
+    /*
+     * EIN Schuss je Zug.
+     *
+     * Fund (belegt): Diese Prüfung fehlte. Der Zug endet erst, wenn das Geschoss
+     * verflogen ist (`#hasFired && !projectilesActive` in `step()`). Solange ein
+     * Schuss noch flog, konnte derselbe Spieler ERNEUT feuern — und mit dem
+     * nächsten Takt noch einmal.
+     *
+     * Gemessen im Aufzeichnungslauf (Seed 4242): Spieler 3 feuerte bei Takt 452
+     * und 453, ohne dass dazwischen ein `turn_end` lag. Zwei Schüsse in einem
+     * Zug, jeder mit voller Munition abgezogen.
+     *
+     * Im Mehrspieler wäre das ein Cheat: Ein Client muss nur schnell genug
+     * nachlegen, bevor sein erster Schuss landet. Die bestehende Prüfung
+     * („Spieler ist nicht am Zug") greift erst NACH dem Zugwechsel und deckt
+     * dieses Zeitfenster nicht ab.
+     */
+    if (this.#hasFired) {
+      return { ok: false, errors: ['In diesem Zug wurde bereits geschossen'] };
+    }
+
     const resolvedWeaponId = weaponId ?? this.#inventory.getActiveWeaponId(playerId);
     const weapon = resolvedWeaponId ? getWeapon(resolvedWeaponId) : null;
     if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewaehlt'] };
@@ -909,6 +975,270 @@ export class MatchController {
     this.#events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
     this.#applyCooldown(playerId, weapon);
     return { ok: true, projectileId, hit: null };
+  }
+
+  // ------------------------------------------------------------- Geschütze
+
+  /**
+   * Stellt ein Geschütz am Standort des Spielers auf.
+   *
+   * Gesucht wird ein freier Platz in der Nähe: direkt unter der Figur, sonst
+   * wenige Pixel daneben. Der Boden wird abgefragt, damit das Geschütz nicht im
+   * Gestein steht.
+   *
+   * @returns {object|null} der Eintrag oder null, wenn kein Platz frei ist
+   */
+  #deployTurret(playerId, effect) {
+    const spieler = this.#players.find(entry => entry.entityId === playerId);
+    if (!spieler?.alive) return null;
+
+    const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
+    // Abwechselnd rechts und links suchen — feste Reihenfolge, damit die
+    // Platzwahl bei gleichem Seed dieselbe bleibt (Determinismus).
+    const kandidaten = [startX];
+    for (let abstand = 12; abstand <= 60; abstand += 12) {
+      kandidaten.push(startX + abstand, startX - abstand);
+    }
+
+    let platz = null;
+    for (const x of kandidaten) {
+      const gerundet = Math.round(x);
+      if (gerundet < PLAYER_HALF_WIDTH || gerundet > this.width - PLAYER_HALF_WIDTH) continue;
+      const boden = this.surfaceYAt(gerundet);
+      // Festes Gelände über dem Wasser: Ein Geschütz im Hochwasser wäre weg.
+      if (boden <= 0 || this.waterLevelAt(gerundet, boden) >= WET_LEVEL) continue;
+      platz = { x: gerundet, y: boden - 6 };
+      break;
+    }
+    if (!platz) return null;
+
+    const entityId = this.#nextTurretId();
+    const eintrag = {
+      entityId,
+      ownerId: playerId,
+      teamId: spieler.teamId,
+      x: platz.x,
+      y: platz.y,
+      damage: Math.max(1, Math.round(effect.damage ?? 10)),
+      range: Math.max(60, Math.round(effect.range ?? 300)),
+      roundsLeft: Math.max(1, Math.round(effect.turns ?? 3)),
+    };
+    this.#turrets.set(entityId, eintrag);
+    this.#events.emit('turret_deployed', {
+      turretId: entityId, ownerId: playerId, teamId: spieler.teamId,
+      x: eintrag.x, y: eintrag.y, damage: eintrag.damage, range: eintrag.range,
+      rounds: eintrag.roundsLeft,
+    });
+    return eintrag;
+  }
+
+  /**
+   * Vergibt die nächste Geschützkennung.
+   *
+   * Eigener Zähler, NICHT `world.createEntity()`: Die Kennungen der Geschütze
+   * müssen von den Entity-IDs getrennt bleiben. Sonst könnte ein Geschütz die
+   * Kennung einer gefallenen Figur tragen — genau die Falle, die in diesem
+   * Projekt schon zwei Fehler verursacht hat.
+   */
+  #nextTurretId() {
+    let hoechste = 0;
+    for (const id of this.#turrets.keys()) if (id > hoechste) hoechste = id;
+    return hoechste + 1;
+  }
+
+  /**
+   * Lässt alle Geschütze einmal feuern — je Runde einmal.
+   *
+   * Ziel ist der NÄCHSTE lebende Gegner innerhalb der Reichweite. Ohne Ziel in
+   * Reichweite wird nicht geschossen (kein Blindfeuer).
+   *
+   * Läuft am Rundenanfang, nach `round_start`. Das ist bewusst NICHT der
+   * Zugbeginn: Ein Geschütz, das an den Zug eines bestimmten Spielers gebunden
+   * wäre, träfe je nach Zugreihenfolge unterschiedlich oft.
+   */
+  #fireTurrets() {
+    if (this.#turrets.size === 0) return;
+
+    for (const turret of [...this.#turrets.values()]) {
+      turret.roundsLeft -= 1;
+      if (turret.roundsLeft <= 0) {
+        this.#turrets.delete(turret.entityId);
+        this.#events.emit('turret_expired', { turretId: turret.entityId, x: turret.x, y: turret.y });
+        continue;
+      }
+
+      const ziel = this.#nearestEnemyOf(turret);
+      if (!ziel) continue;
+
+      const schuss = this.#turretShot(turret, ziel);
+      if (!schuss) continue;
+
+      this.#spawnTurretProjectile(turret, schuss, ziel);
+    }
+  }
+
+  /** Nächster lebender Gegner eines Geschützes innerhalb seiner Reichweite. */
+  #nearestEnemyOf(turret) {
+    let bestes = null;
+    let besteDistanz = Infinity;
+    for (const entry of this.#players) {
+      if (!entry.alive || entry.teamId === turret.teamId) continue;
+      const x = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
+      const y = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
+      const distanz = Math.hypot(x - turret.x, y - turret.y);
+      if (distanz > turret.range) continue;
+      // Bei Gleichstand entscheidet die kleinere Kennung — deterministisch.
+      if (distanz < besteDistanz || (distanz === besteDistanz && entry.entityId < (bestes?.entityId ?? Infinity))) {
+        besteDistanz = distanz;
+        bestes = { entityId: entry.entityId, x, y, distanz };
+      }
+    }
+    return bestes;
+  }
+
+  /**
+   * Sucht Winkel und Kraft für ein Geschütz.
+   *
+   * ## Warum gesucht und nicht gerechnet
+   *
+   * Die Bahn hängt an Schwerkraft, Luftwiderstand, Wind und Eigengewicht der
+   * Waffe (`gravityScale`). Eine geschlossene Lösung gäbe es nur für die reine
+   * Wurfparabel — sie würde bei Wind und gezogenen Waffen danebenliegen.
+   *
+   * Deshalb wird die ECHTE Bahn verschossen: Für eine Reihe von Winkeln wird die
+   * Flugbahn schrittweise nachgerechnet und der Winkel gewählt, dessen Bahn dem
+   * Ziel am nächsten kommt. Das nutzt dieselbe Rechnung wie das Spiel — eine
+   * zweite Formel könnte von ihr abweichen.
+   *
+   * Die Winkelliste ist fest (kein Zufall), damit das Ergebnis bei gleichem Seed
+   * dasselbe bleibt.
+   *
+   * @returns {{angle: number, power: number}|null}
+   */
+  #turretShot(turret, ziel) {
+    const waffe = TURRET_WEAPON;
+    // Nur die Waagerechte entscheidet die Richtung — die Höhe steckt in der
+    // Winkelsuche (die Bahn wird für jeden Winkel wirklich durchgerechnet).
+    const dx = ziel.x - turret.x;
+
+    // Grundrichtung: nach links oder rechts. Der Winkel wird gegen die
+    // Bildschirmachse gemessen (0 = rechts, π/2 = oben).
+    const basis = dx >= 0 ? 0 : Math.PI;
+    const richtung = dx >= 0 ? 1 : -1;
+
+    let bestes = null;
+    let bestesDelta = Infinity;
+
+    for (const kraft of TURRET_POWERS) {
+      for (const steigung of TURRET_ELEVATIONS) {
+        const winkel = basis + richtung * steigung;
+        const bahn = this.#simulateTurretPath(turret, winkel, kraft, waffe);
+        if (bahn.length === 0) continue;
+
+        // Kürzester Abstand der Bahn zum Ziel — nicht „letzter Punkt": Ein
+        // Schuss, der das Ziel im Vorbeiflug streift, ist ein Treffer.
+        let naehe = Infinity;
+        for (const punkt of bahn) {
+          const d = Math.hypot(punkt.x - ziel.x, punkt.y - ziel.y);
+          if (d < naehe) naehe = d;
+        }
+        // Kraft bevorzugen, die nicht volle Leistung braucht: Bei gleicher
+        // Näherung ist der flachere Schuss schneller am Ziel.
+        const bewertet = naehe + kraft * 0.002;
+        if (bewertet < bestesDelta) {
+          bestesDelta = bewertet;
+          bestes = { angle: winkel, power: kraft, naehe };
+        }
+      }
+    }
+
+    if (!bestes) return null;
+    // Kein Blindfeuer: Liegt die beste Bahn weiter als die halbe Zielbreite
+    // entfernt, wird nicht geschossen.
+    if (bestes.naehe > TURRET_MAX_MISS) return null;
+    return bestes;
+  }
+
+  /** Rechnet eine Flugbahn schrittweise nach — wie das echte Geschoss. */
+  #simulateTurretPath(turret, winkel, kraft, waffe) {
+    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1);
+    let x = turret.x;
+    let y = turret.y;
+    let vx = Math.cos(winkel) * speed;
+    let vy = -Math.sin(winkel) * speed;
+    const gravitation = GRAVITY * (waffe.gravityScale ?? 1);
+    const wind = this.#world.services.match?.currentStrength ?? 0;
+
+    const bahn = [];
+    for (let schritt = 0; schritt < TURRET_PATH_STEPS; schritt++) {
+      vy += gravitation;
+      vx += wind * 0.02;
+      vx *= 0.995;
+      x += vx;
+      y += vy;
+      if (x < 0 || x > this.width || y > this.height) break;
+      if (this.surfaceYAt(Math.round(x)) > 0 && y >= this.surfaceYAt(Math.round(x))) {
+        bahn.push({ x, y });
+        break;
+      }
+      bahn.push({ x, y });
+    }
+    return bahn;
+  }
+
+  /** Erzeugt das Geschoss eines Geschützes. */
+  #spawnTurretProjectile(turret, schuss, ziel = null) {
+    const waffe = TURRET_WEAPON;
+    const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1);
+    const vx = Math.cos(schuss.angle) * speed;
+    const vy = -Math.sin(schuss.angle) * speed;
+
+    const entityId = this.#world.createEntity();
+    this.#world.addComponent(entityId, 'Position', { x: turret.x, y: turret.y });
+    this.#world.addComponent(entityId, 'Velocity', { x: vx, y: vy });
+    this.#world.addComponent(entityId, 'Projectile', {
+      // Verursacher ist der EIGENTÜMER des Geschützes: Ein Abschuss durch das
+      // eigene Geschütz soll ihm zugerechnet werden (Kennzahlen, Sieg).
+      owner: turret.ownerId,
+      weaponId: waffe.index,
+      damage: turret.damage,
+      blastRadius: waffe.blastRadius || 18,
+      knockback: waffe.knockback ?? 0,
+      drag: 0.995,
+      gravityScale: waffe.gravityScale ?? 1,
+      windFactor: 1,
+      terrainDamage: waffe.terrainDamage ?? 0,
+      bounces: 0,
+      lifetime: Math.max(30, Math.round(turret.range / Math.max(1, speed)) * 2),
+      fuseTicks: 0,
+      alive: 1,
+    });
+
+    this.#shotsInFlight.set(entityId, TURRET_WEAPON_ID);
+
+    /*
+     * Ein Geschützgeschoss meldet sich wie jedes andere ankommende Geschoss.
+     *
+     * Fund (belegt): Anfangs feuerte das Geschütz nur `turret_fired`. Gemessen
+     * fehlte damit das `projectile_spawn` zu einem Geschützschuss — wer dieses
+     * Ereignis auswertet (Effekte, Ton, Protokoll), hätte das Geschoss nicht
+     * gesehen, obwohl es fliegt. `playerId` bleibt der EIGENTÜMER: Das Geschoss
+     * gehört ihm, auch wenn er in dieser Runde nicht geschossen hat.
+     *
+     * Bewusst KEIN `shot`-Ereignis: Das zählt die Schüsse eines Spielers, und der
+     * Eigentümer hat in dieser Runde nicht geschossen. Sein Geschütz hat es. Ein
+     * zusätzliches `shot` würde seine Trefferquote verfälschen.
+     */
+    this.#events.emit('projectile_spawn', {
+      playerId: turret.ownerId, projectileId: entityId, weaponId: TURRET_WEAPON_ID,
+      x: turret.x, y: turret.y, vx, vy,
+    });
+
+    this.#events.emit('turret_fired', {
+      turretId: turret.entityId, projectileId: entityId, ownerId: turret.ownerId,
+      targetId: ziel?.entityId ?? null,
+      x: turret.x, y: turret.y, angle: schuss.angle, power: schuss.power,
+    });
   }
 
   #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null) {
@@ -1269,6 +1599,15 @@ export class MatchController {
       case EFFECT_KIND.MOVE: {
         const moved = this.#shiftPlayer(playerId, effect.distance);
         return { moved };
+      }
+
+      case EFFECT_KIND.TURRET: {
+        const turret = this.#deployTurret(playerId, effect);
+        // Ohne freien Platz in der Nähe wird nicht aufgestellt — ein Geschütz im
+        // Fels wäre unsichtbar und nutzlos. Der Aufrufer meldet das.
+        return turret
+          ? { turretId: turret.entityId, x: turret.x, y: turret.y, rounds: turret.roundsLeft }
+          : { turretId: null, reason: 'kein Platz für ein Geschütz' };
       }
 
       case EFFECT_KIND.REVEAL: {
@@ -1768,6 +2107,15 @@ export class MatchController {
     this.#world.services.match.currentStrength = this.#currentStrength;
     this.#spawnRoundLoot();
     this.#events.emit('round_start', { round: this.#round, wind });
+    /*
+     * Geschütze feuern am Rundenanfang — nach `round_start`, damit die Anzeige
+     * den Rundenwechsel vor den Schüssen sieht.
+     *
+     * Einmal je Runde und nicht je Zug: Sonst träfe ein Geschütz je nach
+     * Zugreihenfolge unterschiedlich oft, und mit vier Spielern viermal so oft
+     * wie mit zwei.
+     */
+    this.#fireTurrets();
   }
 
   /**
@@ -2121,6 +2469,22 @@ export class MatchController {
       entities,
       projectiles,
       crates,
+      /*
+       * Aufgestellte Geschütze.
+       *
+       * Sie stehen im Zustand, damit die Anzeige sie zeigen kann — und damit
+       * Tests sie prüfen können, ohne in private Felder zu greifen.
+       */
+      turrets: [...this.#turrets.values()].map(t => ({
+        entityId: t.entityId,
+        teamId: t.teamId,
+        ownerId: t.ownerId,
+        x: t.x,
+        y: t.y,
+        damage: t.damage,
+        range: t.range,
+        roundsLeft: t.roundsLeft,
+      })),
       terrainWidth: this.width,
       terrainHeight: this.height,
       orientation: this.orientation,

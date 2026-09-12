@@ -42,6 +42,14 @@ export const EFFECT_KIND = Object.freeze({
    */
   PULL: 'pull',
   /**
+   * Geschütz aufstellen: setzt ein eigenes Ziel auf dem Boden ab, das in den
+   * folgenden Runden von selbst auf den nächsten Gegner feuert.
+   *
+   * Gehört zu den Selbstwirkungen (`SELF_TARGET_KINDS`) — aufgestellt wird am
+   * eigenen Standort, es wird kein Projektil verschossen.
+   */
+  TURRET: 'turret',
+  /**
    * Wasserschub: stößt das ZIEL vom Schützen weg und hebt den Wasserstand an
    * seiner Position.
    *
@@ -83,12 +91,26 @@ export const SELF_TARGET_KINDS = Object.freeze(new Set([
   EFFECT_KIND.MOVE,
   EFFECT_KIND.REVEAL,
   EFFECT_KIND.RANDOM,
+  // Das Geschütz wird am EIGENEN Standort aufgestellt — kein Projektil.
+  EFFECT_KIND.TURRET,
 ]));
 
 /** Standardwerte, wenn eine Waffe keine eigenen Zahlen mitbringt. */
 export const SPECIAL_DEFAULTS = Object.freeze({
   healAmount: 35,
   shieldAmount: 40,
+  /**
+   * Geschütz: Wirkungsdauer in Runden, Reichweite, Schaden.
+   *
+   * Die Zahlen sind technische Vorgaben, keine ausbalancierten Werte: Sie leiten
+   * sich aus der Waffe ab (`pa_124`: 38 Schaden, `maxRange` 1062) und sind so
+   * gesetzt, dass die Waffe nicht stärker wirkt als ein direkter Treffer pro
+   * Runde. Wer sie ändert, ändert das Kräfteverhältnis — das ist eine
+   * Balance-Entscheidung, keine Einstellung.
+   */
+  turretTurns: 3,
+  turretRange: 0.75,
+  turretDamage: 0.6,
   boostMultiplier: 1.5,
   armorReduction: 0.3,
   /** Wie weit ein Wasserschub das Ziel nach außen versetzt (px). */
@@ -180,6 +202,8 @@ export const SPECIAL_EFFECTS = Object.freeze({
   shield_freeze_target: { kind: EFFECT_KIND.FREEZE },
   sleep: { kind: EFFECT_KIND.FREEZE },
   stun: { kind: EFFECT_KIND.FREEZE },
+  // Geschütz aufstellen: feuert in den Folgerunden selbst.
+  auto_target: { kind: EFFECT_KIND.TURRET },
   // Schaden über Zeit
   // Wasserschub: versetzt das Ziel nach außen und hebt den Wasserstand.
   water_push: { kind: EFFECT_KIND.WATER_PUSH },
@@ -243,6 +267,21 @@ export function buildEffect(weapon) {
       return {
         kind: base.kind,
         amount: Math.max(SPECIAL_DEFAULTS.shieldAmount, Math.round((weapon.damage || 0) * 1.1)),
+      };
+
+    case EFFECT_KIND.TURRET:
+      /*
+       * Das Geschütz erbt seine Zahlen von der Waffe, die es aufstellt.
+       *
+       * Bewusst aus den Waffendaten abgeleitet statt frei gesetzt: Ein Geschütz,
+       * das so viel Schaden macht wie ein Volltreffer, wäre ein zweiter Schuss
+       * gratis in jeder Runde. Der Faktor 0,6 hält es darunter.
+       */
+      return {
+        kind: base.kind,
+        damage: Math.max(1, Math.round((weapon.damage || 0) * SPECIAL_DEFAULTS.turretDamage)),
+        range: Math.round((weapon.maxRange || 420) * SPECIAL_DEFAULTS.turretRange),
+        turns: SPECIAL_DEFAULTS.turretTurns,
       };
 
     case EFFECT_KIND.DAMAGE_BOOST:

@@ -574,6 +574,12 @@ class Game {
        * Figuren und Projektile).
        */
       crates: snapshot.crates ?? [],
+      /*
+       * Geschütze aus dem Snapshot (Protokoll v6). Sie sind ein Spielzustand:
+       * Ohne sie wäre ein aufgestelltes Geschütz online unsichtbar, und sein
+       * Besitzer hätte einen unsichtbaren Angreifer.
+       */
+      turrets: snapshot.turrets ?? [],
       terrainWidth: this.remoteTerrain?.width ?? this.renderer.width,
       terrainHeight: this.remoteTerrain?.height ?? this.renderer.height,
     };
@@ -594,6 +600,19 @@ class Game {
         break;
       case 'projectile_impact':
         this.renderer.addFlash(message.x, message.y, 14);
+        break;
+      // Geschütze: Aufstellen, Feuern, Ablaufen.
+      case 'turret_deployed':
+        this.hud.log(
+          `Geschütz aufgestellt — ${message.rounds} Runden, ${message.damage} Schaden`,
+          'accent',
+        );
+        break;
+      case 'turret_fired':
+        this.hud.log('Das Geschütz feuert', 'neutral');
+        break;
+      case 'turret_expired':
+        this.hud.log('Geschütz abgelaufen', 'neutral');
         break;
       // Wirkungen und Zustände kommen im Online-Modus als Serverereignisse.
       // Sie werden über dieselben Helfer gemeldet wie lokal, damit die
@@ -814,6 +833,28 @@ class Game {
         case 'hitscan':
           // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
           this.#drawHitscanBeam(payload);
+          break;
+        /*
+         * Geschütze.
+         *
+         * Fund (belegt): Diese Fälle fehlten hier. Sie waren nur im
+         * ONLINE-Zweig (`#handleRemoteEvent`) ergänzt worden, und im lokalen
+         * Match blieb das Aufstellen damit stumm — gemessen stand im Protokoll
+         * nur „Schuss abgegeben (60 Kraft)". Ein Geschütz, dessen Aufstellen
+         * niemand gemeldet bekommt, ist für den Spieler nicht vorhanden.
+         */
+        case 'turret_deployed':
+          this.hud.log(
+            `Geschütz aufgestellt — ${payload.rounds} Runden, ${payload.damage} Schaden`,
+            'accent',
+          );
+          this.renderer.addFlash(payload.x, payload.y, 18, { color: '#d9b44a' });
+          break;
+        case 'turret_fired':
+          this.renderer.addFlash(payload.x, payload.y, 12, { color: '#d9b44a' });
+          break;
+        case 'turret_expired':
+          this.hud.log('Geschütz abgelaufen', 'neutral');
           break;
         case 'special_effect':
           // Wirkungen auf den Schützen: Heilung, Schild, Sprung, Munition.

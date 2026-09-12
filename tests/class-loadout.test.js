@@ -212,16 +212,40 @@ test('Das echte Match benutzt die Klassen-Loadouts', () => {
 });
 
 test('Ein Match mit einer Klasse läuft über viele Züge ohne Munitionsnot', () => {
-  // Das Loadout darf nicht so knapp sein, dass ein Match stehenbleibt. Die
-  // Reservewaffe sichert das ab — hier wird geprüft, dass der Schuss trotzdem
-  // über die Startwaffen gelingt.
+  /*
+   * Das Loadout darf nicht so knapp sein, dass ein Match stehenbleibt. Die
+   * Reservewaffe sichert das ab — hier wird geprüft, dass der Schuss trotzdem
+   * über die Startwaffen gelingt.
+   *
+   * Fund (belegt): Der Test schoss achtmal und machte dazwischen je EINEN
+   * Schritt (`match.step(60)` verschiebt die Zuguhr um 60 ms, es sind nicht 60
+   * Schritte). Der Zug war damit nie vorbei — der Test bestand nur, weil
+   * MEHRERE Schüsse je Zug möglich waren. Das war ein Fehler im Motor (siehe
+   * `fire()`: „In diesem Zug wurde bereits geschossen"), den er damit
+   * stillschweigend vorausgesetzt hat.
+   *
+   * Jetzt wird der Zug zu Ende gespielt: bis der Zug wechselt oder das Match
+   * endet. Erst dann ist der nächste Schuss ein regulärer Schuss des nächsten
+   * Spielers.
+   */
   const match = new MatchController({ seed: 12, teams: 2, playersPerTeam: 1, maxRounds: 5 });
   match.start();
 
   for (let schuss = 0; schuss < 8; schuss++) {
+    if (match.status !== 'playing') break;
     const aktiver = match.getState().activePlayerId;
     const ergebnis = match.fire(aktiver, Math.PI / 4, 50);
     assert.ok(ergebnis.ok, `Schuss ${schuss + 1} abgelehnt: ${ergebnis.errors?.join(', ')}`);
-    match.step(60);
+
+    // Den Zug ausspielen: bis der Zug wechselt oder das Match endet.
+    let schutz = 0;
+    while (match.status === 'playing'
+      && match.getState().activePlayerId === aktiver
+      && schutz < 5_000) {
+      match.step();
+      match.consumeEvents();
+      schutz += 1;
+    }
+    assert.ok(schutz < 5_000, `Zug ${schuss + 1} endete nach 5000 Schritten nicht`);
   }
 });

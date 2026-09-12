@@ -16,6 +16,7 @@ import {
   // Erweiterung — so geschehen beim Kistenfeld in v5.
   HEADER_SIZE,
   CRATE_STRIDE,
+  TURRET_STRIDE,
 } from '../src/shared/protocol.js';
 import { SnapshotHistory } from '../src/server/lagCompensation.js';
 import { LobbyManager, LOBBY_STATUS } from '../src/server/lobby.js';
@@ -550,4 +551,86 @@ test('Die Delta-Basis führt Kisten nicht mit — sie sind nicht deltafähig', (
     crates: [{ entityId: 1, x: 10, y: 20, crateType: 0, rarity: 0 }],
   });
   assert.equal(basis.has(1), false, 'toDeltaBase hat eine Kiste als Figur aufgenommen');
+});
+
+test('Geschütze überleben die Kodierung (Protokoll v6)', () => {
+  /*
+   * Geschütze sind ein SPIELZUSTAND, kein Beiwerk: Der Gegner muss wissen, wo
+   * eines steht und wie lange es noch feuert — sonst wäre der Auto-Turret online
+   * ein unsichtbarer Angreifer.
+   *
+   * Vorher übertrug der Snapshot sie nicht (nur Figuren, Projektile und Kisten),
+   * und die Anzeige konnte sie nicht erfinden.
+   */
+  const state = {
+    tick: 40,
+    round: 2,
+    wind: 0,
+    activePlayerId: 1,
+    entities: [],
+    projectiles: [],
+    crates: [],
+    turrets: [
+      { entityId: 1, x: 256, y: 343, teamId: 0, roundsLeft: 3 },
+      // Krumme Koordinaten: prüfen die Quantisierung auf 0,25 px.
+      { entityId: 2, x: 813.5, y: 199.25, teamId: 1, roundsLeft: 1 },
+    ],
+  };
+
+  const decoded = decodeSnapshot(encodeSnapshot(state));
+  assert.ok(decoded, 'Dekodierung fehlgeschlagen');
+  assert.equal(decoded.turrets.length, 2, `${decoded.turrets.length} Geschütze statt 2`);
+
+  assert.deepEqual(decoded.turrets[0], {
+    entityId: 1, x: 256, y: 343, teamId: 0, roundsLeft: 3,
+  });
+  assert.ok(Math.abs(decoded.turrets[1].x - 813.5) <= 0.125, `x: ${decoded.turrets[1].x}`);
+  assert.ok(Math.abs(decoded.turrets[1].y - 199.25) <= 0.125, `y: ${decoded.turrets[1].y}`);
+  assert.equal(decoded.turrets[1].teamId, 1);
+  assert.equal(decoded.turrets[1].roundsLeft, 1);
+});
+
+test('Geschütze kosten genau TURRET_STRIDE je Stück', () => {
+  const basis = {
+    tick: 1, round: 1, wind: 0, activePlayerId: null,
+    entities: [], projectiles: [], crates: [], turrets: [],
+  };
+  const leer = encodeSnapshot(basis).length;
+
+  for (const anzahl of [1, 3, 6]) {
+    const turrets = Array.from({ length: anzahl }, (_, i) => ({
+      entityId: i + 1, x: 100 + i * 10, y: 200, teamId: i % 2, roundsLeft: 2,
+    }));
+    assert.equal(encodeSnapshot({ ...basis, turrets }).length, leer + anzahl * TURRET_STRIDE,
+      `${anzahl} Geschütze kosten nicht ${anzahl} × ${TURRET_STRIDE} Byte`);
+  }
+});
+
+test('Ein abgeschnittener Geschützpuffer wirft nicht', () => {
+  const bytes = encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
+    crates: [], turrets: [{ entityId: 1, x: 10, y: 20, teamId: 0, roundsLeft: 2 }],
+  });
+  const decoded = decodeSnapshot(bytes.slice(0, bytes.length - 3));
+  if (decoded) assert.equal(decoded.turrets.length, 0, 'Ein halber Eintrag wurde übernommen');
+});
+
+test('Ohne Geschützfeld bleibt der Snapshot gültig', () => {
+  // Manche Aufrufer bauen einen Zustand von Hand und kennen `turrets` nicht.
+  const decoded = decodeSnapshot(encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
+  }));
+  assert.ok(decoded);
+  assert.deepEqual(decoded.turrets, []);
+});
+
+test('Die Delta-Basis führt Geschütze nicht mit — sie sind nicht deltafähig', () => {
+  // Wie bei den Kisten: Die Zahl ist klein, und „dasselbe Geschütz verliert eine
+  // Runde" ist der einzige Änderungsfall. Ein Delta bräuchte Kennungen und
+  // Entfernungsmeldungen, die mehr kosten als sie sparen.
+  const basis = toDeltaBase({
+    entities: [], projectiles: [], crates: [],
+    turrets: [{ entityId: 1, x: 10, y: 20, teamId: 0, roundsLeft: 2 }],
+  });
+  assert.equal(basis.has(1), false, 'toDeltaBase hat ein Geschütz als Figur aufgenommen');
 });
