@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **507/507** |
-| Browser-E2E | `npm run test:e2e` | **113/113** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **525/525** |
+| Browser-E2E | `npm run test:e2e` | **118/118** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -436,6 +436,139 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     **Der Fehler steckte in einem Bereich, den die bisherigen Tests nicht
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
+
+## Auto-Turret: die letzte fehlende Waffe
+
+`pa_124` stand im Katalog mit `special: 'auto_target'`, aber `SPECIAL_EFFECTS`
+kannte den Namen nicht. `buildEffect` lieferte `null` — gemessen, nicht vermutet:
+
+```
+buildEffect(WEAPONS_BY_ID.pa_124)  →  null
+```
+
+Die Waffe fiel damit in den gewöhnlichen Schusspfad: ein Projektil, das nichts
+weiter tut. Der Auto-Turret existierte nur als Katalogeintrag.
+
+### Die Mechanik
+
+Ein Geschütz wird am **eigenen Standort** aufgestellt — deshalb ist es eine
+SELBSTWIRKUNG (`SELF_TARGET_KINDS`), kein Projektil. Es feuert in den Folgerunden
+von selbst auf den **nächsten lebenden Gegner in Reichweite** und läuft nach drei
+Runden ab.
+
+```
+Wirkung (abgeleitet aus der Waffe):  damage 23 | range 797 | turns 3
+```
+
+Die Zahlen kommen **aus der Waffe**, nicht aus freier Wahl: `damage × 0,6` und
+`maxRange × 0,75`. Ein Geschütz, das so viel Schaden macht wie ein Volltreffer,
+wäre ein zweiter Schuss gratis in jeder Runde. `turns` ist eine
+Balance-Entscheidung und als solche im Code benannt.
+
+**Feuern am RUNDENANFANG, nicht am Zugbeginn.** Ein Geschütz, das an den Zug eines
+bestimmten Spielers gebunden wäre, träfe je nach Zugreihenfolge unterschiedlich
+oft — mit vier Spielern viermal so oft wie mit zwei.
+
+### Warum die Winkelsuche die Bahn wirklich rechnet
+
+Die Bahn hängt an Schwerkraft, Luftwiderstand, Wind und `gravityScale` der Waffe.
+Eine geschlossene Lösung gäbe es nur für die reine Wurfparabel — bei Wind und
+gezogenen Waffen läge sie daneben. Deshalb wird für feste Winkel/Kraft-Paare die
+**echte Bahn** schrittweise nachgerechnet und der Winkel gewählt, dessen Bahn dem
+Ziel am nächsten kommt. Beide Listen sind **fest** (kein Zufall), damit ein Replay
+dieselben Schüsse ergibt.
+
+Kein Blindfeuer: Liegt die beste Bahn weiter als 22 px vom Ziel, wird nicht
+geschossen.
+
+### Kein ECS-Objekt — mit Absicht
+
+Ein Geschütz bewegt sich nicht, hat keine Gesundheit und wird nicht von
+Explosionen getroffen: Es braucht von einem ECS-Objekt nur eine Position. Als
+schlichter Eintrag mit **eigenem Kennungszähler** bleibt es außerdem außerhalb der
+Entity-ID-Wiederverwendung — der Falle, die in diesem Projekt schon zwei Fehler
+verursacht hat (Kisten, Landung).
+
+### Fünf Fehler, die der Turret aufgedeckt hat
+
+**1. Ein zweiter Schuss im selben Zug war möglich — ein Cheat.**
+Der Zug endet erst, wenn das Geschoss verflogen ist
+(`#hasFired && !projectilesActive`). Solange ein Schuss flog, konnte derselbe
+Spieler **erneut** feuern. Gemessen im Aufzeichnungslauf: Spieler 3 schoss bei
+Takt 452 **und** 453, ohne Zugwechsel dazwischen. Im Mehrspieler wäre das ein
+Exploit: Ein Client muss nur schnell genug nachlegen, bevor sein erster Schuss
+landet. Die Prüfung „Spieler ist nicht am Zug" greift erst NACH dem Zugwechsel
+und deckte dieses Fenster nicht ab. Jetzt lehnt `fire()` mit „In diesem Zug wurde
+bereits geschossen" ab.
+
+Der Test `class-loadout.test.js` („läuft über viele Züge ohne Munitionsnot")
+**verließ sich auf diesen Fehler**: Er schoss achtmal mit je EINEM Schritt
+dazwischen — der Zug war nie vorbei. Er bestand nur, weil Mehrfachschüsse möglich
+waren. Umgebaut: Der Zug wird jetzt ausgespielt, bis er wechselt.
+
+**2. Die Aufzeichnung rundete Winkel und Kraft.**
+`recordInput` speicherte `Math.round(angle * 1e6) / 1e6`. Die Wiedergabe schoss
+mit `1.145398` statt `1.1453981633974482` — ein Unterschied von 1,6 × 10⁻⁷ rad.
+Bei einer Wurfparabel wächst das an: Gemessen wich die Explosion nach rund 200
+Takten um 1,2 × 10⁻⁴ px ab (`893.99380811` gegen `893.99393033`), und der
+Zustandshash ging **ab Takt 471** auseinander. Eine Aufzeichnung, die das Match
+nicht exakt reproduziert, taugt nicht als Beweismittel. Jetzt wird unverändert
+gespeichert; die Datei wird wenige Prozent größer.
+
+**3. Eine Eingabe im LETZTEN Takt ging verloren.**
+`ReplayPlayer.finished` galt am letzten Takt als wahr (`tick >= totalTicks`), und
+die Aufrufer prüfen `finished` **vor** `step()`. Eine Eingabe, die genau auf
+diesen Takt aufgezeichnet wurde, wurde nie angewendet. Gemessen (Seed 4242):
+letzte Eingabe auf Tick 1205 bei `totalTicks` 1205 → 35 statt 36 angewendete
+Eingaben. Behoben mit einem Merker je Takt (`letzterEingabeTakt`), damit die
+Eingaben des letzten Takts **einmal** angewendet werden — `step()` wird nach dem
+Ende weiter aufgerufen (die Anzeige fragt weiter nach Bildern).
+
+Fehler 2 und 3 zusammen waren der Grund, warum `replay.test.js` nach dem Einbau
+des Turrets umfiel. Die erste Messung war irreführend: Der Test lief auf dem Stand
+davor grün, die Fehler also **latent** — sie traten nur auf, wenn ein Schuss genau
+im letzten Takt fiel, und das hing am Timing.
+
+**4. Ein Geschoss ohne Meldung.**
+Das Geschütz feuerte nur `turret_fired`. Gemessen fehlte das `projectile_spawn` zu
+seinem Geschoss — wer dieses Ereignis auswertet (Effekte, Ton, Protokoll), hätte
+das Geschoss nicht gesehen, obwohl es fliegt. Jetzt meldet es sich wie jedes
+andere. Bewusst **kein** `shot`-Ereignis: Das zählt die Schüsse eines Spielers,
+und der Eigentümer hat in dieser Runde nicht geschossen — ein zusätzliches `shot`
+würde seine Trefferquote verfälschen.
+
+**5. Die Meldung fehlte im LOKALEN Match.**
+Die Fälle für `turret_deployed`/`turret_fired`/`turret_expired` waren nur im
+**Online-Zweig** (`#handleRemoteEvent`) verdrahtet. Im lokalen Match blieb das
+Aufstellen stumm — gemessen stand im Protokoll nur „Schuss abgegeben (60 Kraft)".
+Ein Geschütz, dessen Aufstellen niemand gemeldet bekommt, ist für den Spieler
+nicht vorhanden. Jetzt in beiden Zweigen. (Derselbe Fehlertyp wie bei den Kisten:
+zwei Wege, nur einer verdrahtet.)
+
+### Übertragung (Protokoll v6)
+
+Geschütze sind ein **Spielzustand**, kein Beiwerk: Der Gegner muss wissen, wo eines
+steht und wie lange es noch feuert — sonst wäre der Auto-Turret online ein
+unsichtbarer Angreifer.
+
+```
+Kopf 23 → 24 Byte  ([23] = Geschützzahl)
+je Geschütz 8 Byte: id Uint16, x/y Int16 (0,25 px), Team Uint8, Restrunden Uint8
+```
+
+Der **Schaden geht nicht mit**: Er ist eine Eigenschaft der aufstellenden Waffe
+und für die Anzeige ohne Bedeutung — dort zählt, WO das Geschütz steht und wie
+lange es feuert. Kein Delta (wie bei den Kisten): Der einzige Änderungsfall ist
+„dasselbe Geschütz verliert eine Runde", und ein Delta bräuchte Kennungen und
+Entfernungsmeldungen, die mehr kosten als sie sparen.
+
+### Anzeige
+
+Eigene Form, nicht als Kiste: Sockel mit Rohr in Schussrichtung (aus dem Team
+abgeleitet) plus kleine Punkte für die Restrunden. Beides ist im laufenden Spiel
+begutachtet — das Geschütz ist von den Figuren unterscheidbar, und die Punkte sind
+lesbar. Gezeichnet wird es VOR den Kisten: Lägen beide übereinander, ist die Kiste
+(aufhebbar) wichtiger.
 
 ## Kulissen für alle acht Formen
 
@@ -1354,7 +1487,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (113):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (118):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
