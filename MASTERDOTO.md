@@ -21,7 +21,7 @@ Absichtserklärungen.
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
 | Unit-/Integrationstests | `npm test` | **507/507** |
-| Browser-E2E | `npm run test:e2e` | **112/112** (System-Chrome) |
+| Browser-E2E | `npm run test:e2e` | **113/113** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -437,13 +437,80 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
 
+## Flut hat eigene Kulissen
+
+Die Geländeform `flooded` sah bisher aus wie ein **Wald**: Sie hatte kein eigenes
+Leitbiom, `pickScenery` fiel auf `forest` zurück. Jetzt hat sie das Biom `deluge`
+mit **fünf eigenen Kulissenbildern** — und die sind nicht nur eingetragen, sondern
+im laufenden Spiel begutachtet und nachgezogen.
+
+| Variante | Szene |
+|---|---|
+| `rooftops` | Versunkene Stadt — nur Dachgeschosse und Dächer über dem Wasser |
+| `monsoon` | Monsun — braune Flut in einem Delta, Hütten knietief |
+| `drowned_forest` | Ertränkter Wald — Stämme im Wasser, Laub auf der Oberfläche |
+| `rice_terraces` | Reisterrassen — gestufte Wasserflächen im Morgenlicht |
+| `dam_break` | Dammbruch — gebrochene Staumauer, überflutetes Tal |
+
+Dazu: neues Biom in `scenery.js` (bedeckter Himmel, Sturm, Nebel; Schlamm- und
+Flachwasser; Ruinen und Waldkanten als Landmarken — **kein** `clear_day` und
+**keine** Vögel, eine Sintflut bei Sonnenschein wäre eine andere Karte), fünf
+Einträge in `TERRAIN_PALETTES`, das Leitbiom in beiden Tabellen.
+
+### Die Bodenfarben sind nach einer Sichtprüfung nachgezogen
+
+Der erste Anlauf war zu bunt. Im Spiel begutachtet: „Reisterrassen" hatte ein
+fast grelles Grün über schlammigem Wasser, „Monsun" ein zu helles Sandbraun, und
+„Ertränkter Wald" war zu blass für den Sonnenuntergang. Alle fünf liegen jetzt
+nahe beieinander — gedämpft, schlammig, dunkel. Schlamm ist nicht farbig.
+
+Beim Dammbruch war der Kontrast zwischen Boden und rotem Wasser anschließend zu
+gering; dort ist der Boden etwas heller, weil die Oberfläche erkennbar bleiben
+muss.
+
+### Zwei Testfehler, die dabei herauskamen
+
+**Feste Zahlen statt der Regel.** Drei Tests prüften „12 Biome, 60 Kulissen" und
+brachen mit dem neuen Biom — ohne etwas über die Regel zu sagen. Sie leiten die
+Zahl jetzt ab (`Biome × 5`, Anzahl der Katalogeinträge) und behalten nur die
+Untergrenze als Zusage. Dieselbe Lehre wie bei `HEADER_SIZE` im Protokoll.
+
+**Ein Test, der den zufälligen Seed maß.** Der Browser-Test „Vier Formen
+unterscheiden sich messbar" startete über den Menüknopf — und ließ das Seed-Feld
+leer, also zog `startMatch` einen **zufälligen** Seed. Jeder `messen()`-Aufruf
+erzeugte damit eine andere Karte. Gemessen über vier Läufe:
+
+```
+spires:  124, 182, 197, 221      ← vier Läufe, vier Karten
+open:     15,4 / 15,7 / 15,7     ← zufällig stabil, weil sehr flach
+```
+
+Der Test war ein Wettrennen um 26 Punkte und fiel um, sobald der zufällige Seed
+gerade eine flachere `spires`-Karte ergab. Mit festem Seed (`SEED = 4242`) sind
+die Werte **deterministisch** — drei Läufe hintereinander identisch:
+
+```
+open 15,6 | hills 61,5 | spires 212,8 | flooded 242,6
+```
+
+Verglichen wird jetzt der Abstand (`spires` mehr als doppelt so steil wie
+`hills`, `open` weniger als halb so steil), nicht eine Zahl aus einer anderen
+Umgebung — der Abstand gilt in jeder Auflösung.
+
 ## Erfolge: Mechanik und Inhalte
 
-Die Mechanik steht, die Inhalte fehlen — **absichtlich**. 100 Erfolge mit Namen,
-Texten, Symbolen und Belohnungen sind eine Gestaltungsentscheidung, keine
-technische Ableitung. Was im Katalog steht, sind 12 **Muster** (`muster: true`),
-damit die Mechanik prüfbar ist; im Menü sind sie als „Muster" gekennzeichnet,
-damit ein Platzhalterkatalog nicht wie ein fertiger aussieht.
+Die Mechanik steht, die Inhalte fehlen — **absichtlich**. Was im Katalog steht,
+sind 12 **Muster** (`muster: true`), damit die Mechanik prüfbar ist; im Menü sind
+sie als „Muster" gekennzeichnet, damit ein Platzhalterkatalog nicht wie ein
+fertiger aussieht.
+
+**Die 12 Muster sind als Beispiele bestätigt** (Entscheidung des Auftraggebers) —
+sie bleiben stehen, bis ein vollständiger Katalog kommt, und der Katalog wird
+später an genau dieser Stelle ergänzt.
+
+**Die Erfolge sind allgemein** (ebenfalls entschieden): kein Fraktionsbezug, kein
+Charakterbezug, eine einzige Liste für alle. Damit ist auch die Frage nach
+getrennten Erfolgen je Seite beantwortet — es gibt sie nicht.
 
 ### Wie ein Erfolg aufgebaut ist
 
@@ -501,10 +568,11 @@ Katalog lässt die Auswertung unverändert. Genau so ist es geprüft.
 - **Die Symbole als Bilder.** Es gibt keine Bilddateien; die Anzeige verwendet
   ★/☆ und tut nicht so, als gäbe es welche. Ein Symbol je Erfolg gehört zur
   Inhaltslieferung.
-- **Die „feindlichen" Erfolge.** Die Anforderung nennt eine Übersicht mit dem
-  Hinweis, wie die *feindlichen* zu holen sind. Die Mechanik kann das (jeder
-  Erfolg trägt einen Hinweis), aber ob Erfolge an Fraktionen gebunden werden und
-  wie die Gegenseite sie sieht, ist eine Designfrage.
+- **Erfolge sind ALLGEMEIN — entschieden.** Sie hängen nicht an Fraktionen und
+  nicht an Charakteren. Jeder Erfolg gilt für jeden Spieler gleichermaßen, und
+  die Übersicht zeigt alle. Damit entfällt die Frage nach „feindlichen" Erfolgen:
+  Es gibt keine zwei getrennten Listen. Die Mechanik trägt jeden Erfolg mit
+  eigenem Hinweis — das genügt.
 - **Belohnungen.** Das Feld ist vorhanden und überall `null`. Was ein Erfolg
   gibt (Waffe, Titel, Emblem, nichts) ist eine Balance- und Designfrage.
 
@@ -804,21 +872,27 @@ gezeichnetes Spiel, das der Test für eine leere Darstellung hielt. Die
 Debug-Abfrage liefert jetzt beide Wege, damit die Unterscheidung nicht wieder
 verlorengeht.
 
-### OFFEN: eigene Kulissen für die vier neuen Formen
+### TEILWEISE ERLEDIGT: Kulissen für die neuen Formen
 
 Das Projekt verlangt: Jede Geländeform hat ein **eigenes** Leitbiom, und dessen
 `mapPreset` ist genau diese Form (`tests/backdrops.test.js`). Ein Leitbiom ist
-eine Kulissengruppe mit **eigenen Bildern** — und diese Bilder gibt es für die
-vier neuen Formen nicht. „Flut" läuft deshalb mit der `forest`-Szene, sieht also
-aus wie ein Wald.
+eine Kulissengruppe mit **eigenen Bildern**.
 
-Das ist eine **Inhaltsfrage** (welche Szene zeigt „Offene Weite", welche
-„Gewirr"?) und wurde nicht eigenmächtig entschieden. Die Lücke ist namentlich in
-zwei Tests festgehalten (`OHNE_LEITBIOM` in `tests/backdrops.test.js`,
-`OHNE_KULISSEN` in `tests/terrain-presets.test.js`): Wer eines der vier Formen
-eine vorhandene Biomgruppe zuordnet, bricht die Regel und den Test; wer sie
-hinzufügt, wird erinnert, die Liste zu leeren. So bleibt die Lücke sichtbar statt
+**`flooded` ist erledigt** — es hat das Biom `deluge` mit fünf eigenen Bildern,
+siehe „Flut hat eigene Kulissen".
+
+**`open`, `spires` und `warren` fehlen noch.** Sie laufen mit dem
+`forest`-Rückfall, und das ist in zwei Tests namentlich festgehalten
+(`OHNE_LEITBIOM` in `tests/backdrops.test.js`, `OHNE_KULISSEN` in
+`tests/terrain-presets.test.js`): Wer eine der Formen einer vorhandenen
+Biomgruppe zuordnet, bricht die Projektregel und den Test; wer Kulissen
+hinzufügt, wird erinnert, die Liste zu kürzen. So bleibt die Lücke sichtbar statt
 vergessen — und keine Form ist als „fertig" geführt, die es nicht ist.
+
+Die Liste ist damit von vier auf drei geschrumpft, und der Weg für die übrigen
+ist vorgezeichnet: Biom anlegen, Bilder erzeugen, Paletten abstimmen, Leitbiom
+eintragen, Listen kürzen. Der Aufwand je Form liegt bei rund einer Stunde,
+überwiegend Bildabstimmung.
 
 ## Zustandsübertragung: geprüft, nicht komprimiert
 
@@ -1191,7 +1265,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
   `dom.test.js`).
 
 Details zu den Spezialeffekten: `src/engine/specials.js`.
-- **Browser-E2E (112):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
+- **Browser-E2E (113):** Laufzeit-Smoke (Menü, Matchstart, HUD, Zielvorschau,
   Schuss, Spielende, Determinismus, Terrainzerstörung), Multiplayer mit zwei
   Browsern und Reconnect, Latenzmessung, Lobby-Browser gegen einen echten
   Server, Tastatur- und Fokusverhalten, Spezialeffekte im Browser (7 Tests:
@@ -1405,10 +1479,10 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       Dabei ein Fehler gefunden und behoben: Die Startpositionen wurden nicht
       auf Wasser geprüft, ein Match konnte beginnen, wenn beide Figuren bereits
       untergetaucht waren (Fehler 44).
-      **OFFEN: die Kulissen.** Eigenen Geländeformen fehlen eigene Kulissen
-      (Bilder) — „Flut" sieht derzeit aus wie ein Wald. Das ist eine
-      Inhaltsfrage (welche Szene?) und in zwei Tests namentlich festgehalten.
-      Siehe „Vier neue Geländeformen".
+      **OFFEN: drei Kulissen.** `flooded` hat sein eigenes Biom `deluge` mit fünf
+      Kulissen (siehe „Flut hat eigene Kulissen"). Für `open`, `spires` und
+      `warren` fehlen sie noch; sie laufen mit dem `forest`-Rückfall, und das ist
+      in zwei Tests namentlich festgehalten.
 - [x] **`prefers-reduced-motion`.** Erledigt, siehe P2 — CSS und Canvas.
 - [x] **Anti-Cheat-Audit.** Durchgeführt, siehe „Anti-Cheat: was der Server nicht
       glaubt". Zwei Lücken gefunden und geschlossen: nicht-numerische Werte wurden
