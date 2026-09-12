@@ -837,6 +837,20 @@ export class MatchController {
       return { ok: false, errors: ['Spieler ist nicht mehr aktiv'] };
     }
 
+    const resolvedWeaponId = weaponId ?? this.#inventory.getActiveWeaponId(playerId);
+    const weapon = resolvedWeaponId ? getWeapon(resolvedWeaponId) : null;
+    if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewaehlt'] };
+    // Nachladezeit prüfen, BEVOR Munition verbraucht wird — sonst kostet ein
+    // abgelehnter Schuss eine Ladung.
+    const restCooldown = this.cooldownFor(playerId, weapon.id);
+    if (restCooldown > 0) {
+      return {
+        ok: false,
+        errors: [`${weapon.displayName} lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`],
+        cooldown: restCooldown,
+      };
+    }
+
     /*
      * EIN Schuss je Zug.
      *
@@ -853,23 +867,19 @@ export class MatchController {
      * nachlegen, bevor sein erster Schuss landet. Die bestehende Prüfung
      * („Spieler ist nicht am Zug") greift erst NACH dem Zugwechsel und deckt
      * dieses Zeitfenster nicht ab.
+     *
+     * REIHENFOLGE: Diese Prüfung steht NACH Nachladezeit und Munition, nicht
+     * davor. Fund (belegt): Zuerst stand sie ganz oben, und damit verdeckte sie
+     * die genauere Begründung — der Test „Nachladezeit erscheint in der
+     * Waffenliste und blockiert den Schuss" (Seed 4711) feuert zweimal im selben
+     * Zug und erwartete „lädt nach", bekam aber „In diesem Zug wurde bereits
+     * geschossen". Beide Aussagen sind wahr; die Waffe ist die nützlichere
+     * Auskunft, weil sie dem Spieler sagt, WAS ihn hindert.
+     *
+     * Blockiert wird in beiden Fällen — es geht nur um die Begründung.
      */
     if (this.#hasFired) {
       return { ok: false, errors: ['In diesem Zug wurde bereits geschossen'] };
-    }
-
-    const resolvedWeaponId = weaponId ?? this.#inventory.getActiveWeaponId(playerId);
-    const weapon = resolvedWeaponId ? getWeapon(resolvedWeaponId) : null;
-    if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewaehlt'] };
-    // Nachladezeit prüfen, BEVOR Munition verbraucht wird — sonst kostet ein
-    // abgelehnter Schuss eine Ladung.
-    const restCooldown = this.cooldownFor(playerId, weapon.id);
-    if (restCooldown > 0) {
-      return {
-        ok: false,
-        errors: [`${weapon.displayName} lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`],
-        cooldown: restCooldown,
-      };
     }
 
     if (!this.#inventory.consume(playerId, weapon.id, 1)) {

@@ -4,6 +4,7 @@ import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
 import { EFFECT_KIND, SELF_TARGET_KINDS, buildEffect } from '../src/engine/specials.js';
+import { getWeapon } from '../src/shared/config/weapons.js';
 
 /**
  * Auto-Turret (`pa_124`, `special: 'auto_target'`).
@@ -305,4 +306,51 @@ test('Das Geschütz ist deterministisch — gleicher Seed, gleiche Schüsse', ()
   assert.deepEqual(a.schuesse, b.schuesse, 'Die Geschützschüsse sind nicht reproduzierbar');
   assert.equal(a.hash, b.hash, 'Der Zustandshash weicht bei gleichem Seed ab');
   assert.deepEqual(a.turretX, b.turretX, 'Das Geschütz steht bei gleichem Seed woanders');
+});
+
+test('Die Ablehnung nennt den genaueren Grund: Nachladezeit vor Zug-Sperre', () => {
+  /*
+   * Fund (belegt): Die Prüfung „ein Schuss je Zug" stand zuerst GANZ OBEN in
+   * `fire()` und verdeckte damit die genauere Begründung. Der E2E-Test
+   * „Nachladezeit erscheint in der Waffenliste und blockiert den Schuss" (Seed
+   * 4711) feuert zweimal im selben Zug und erwartete „lädt nach", bekam aber „In
+   * diesem Zug wurde bereits geschossen".
+   *
+   * Beide Aussagen sind wahr. Die Waffe ist die nützlichere Auskunft, weil sie
+   * dem Spieler sagt, WAS ihn hindert. Blockiert wird in beiden Fällen.
+   */
+  const match = new MatchController({ seed: 4711, teams: 2, playersPerTeam: 2, turnDurationMs: 60_000 });
+  match.start();
+  const spieler = match.activePlayerId;
+
+  // Eine Waffe mit Nachladezeit suchen.
+  const waffeId = match.inventory.getWeapons(spieler).find(id => getWeapon(id)?.cooldown > 0);
+  assert.ok(waffeId, 'Testaufbau: keine Waffe mit Nachladezeit gefunden');
+
+  const erster = match.fire(spieler, 0.5, 50, waffeId);
+  assert.equal(erster.ok, true, `Erster Schuss abgelehnt: ${erster.errors?.join(', ')}`);
+
+  const zweiter = match.fire(spieler, 0.5, 50, waffeId);
+  assert.equal(zweiter.ok, false, 'Zweiter Schuss wurde angenommen');
+  assert.match(zweiter.errors.join(' '), /lädt nach/i,
+    `Es wurde der Zug-Grund genannt statt der Waffe: ${zweiter.errors?.join(', ')}`);
+});
+
+test('Mit einer kühlen Waffe nennt die Ablehnung die Zug-Sperre', () => {
+  /*
+   * Die Gegenprobe: Ohne Nachladezeit und mit Munition muss die Ablehnung den
+   * ZUG nennen. Sonst wäre der Exploit zwar zu, aber die Begründung falsch.
+   */
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, turnDurationMs: 60_000 });
+  match.start();
+  const spieler = match.activePlayerId;
+
+  const waffeId = match.inventory.getWeapons(spieler).find(id => (getWeapon(id)?.cooldown ?? 0) === 0);
+  assert.ok(waffeId, 'Testaufbau: keine Waffe ohne Nachladezeit gefunden');
+
+  assert.equal(match.fire(spieler, 0.5, 50, waffeId).ok, true);
+  const zweiter = match.fire(spieler, 0.5, 50, waffeId);
+  assert.equal(zweiter.ok, false);
+  assert.match(zweiter.errors.join(' '), /bereits geschossen/i,
+    `Falsche Begründung: ${zweiter.errors?.join(', ')}`);
 });

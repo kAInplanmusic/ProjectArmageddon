@@ -20,7 +20,7 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **525/525** |
+| Unit-/Integrationstests | `npm test` | **527/527** |
 | Browser-E2E | `npm run test:e2e` | **118/118** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -569,6 +569,21 @@ abgeleitet) plus kleine Punkte für die Restrunden. Beides ist im laufenden Spie
 begutachtet — das Geschütz ist von den Figuren unterscheidbar, und die Punkte sind
 lesbar. Gezeichnet wird es VOR den Kisten: Lägen beide übereinander, ist die Kiste
 (aufhebbar) wichtiger.
+
+### Sechster Fund: die Reihenfolge der Prüfungen verdeckte die Begründung
+
+Die Zug-Sperre stand zuerst GANZ OBEN in `fire()` — und verdeckte damit die
+genauere Auskunft. Der E2E-Test „Nachladezeit erscheint in der Waffenliste und
+blockiert den Schuss" (Seed 4711) feuert zweimal im selben Zug und erwartete
+„lädt nach", bekam aber „In diesem Zug wurde bereits geschossen". Gemessen im
+Volllauf: 117 statt 118 grün, genau dieser eine Test.
+
+Beide Aussagen sind wahr. Die Waffe ist die nützlichere Auskunft, weil sie dem
+Spieler sagt, WAS ihn hindert — die Zug-Sperre sagt nur, dass gerade nicht
+geschossen wird. Die Prüfung steht jetzt NACH Nachladezeit und Munition.
+**Blockiert wird in beiden Fällen**; es geht nur darum, welche Begründung der
+Spieler liest. Zwei Tests halten beide Fälle fest (Nachladezeit nennt die Waffe,
+kühle Waffe nennt den Zug).
 
 ## Kulissen für alle acht Formen
 
