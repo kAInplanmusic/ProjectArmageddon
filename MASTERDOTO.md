@@ -20,7 +20,7 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **486/486** |
+| Unit-/Integrationstests | `npm test` | **494/494** |
 | Browser-E2E | `npm run test:e2e` | **104/104** (System-Chrome) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -436,6 +436,84 @@ stellen — dann mit einer Messung, nicht aus dem Gefühl.
     **Der Fehler steckte in einem Bereich, den die bisherigen Tests nicht
     abdeckten:** Sie prüften, DASS Zifferntasten funktionieren und dass die
     Reserve geschützt ist — nicht, ob die sichtbare Nummer zum Platz passt.
+
+## Anti-Cheat: was der Server nicht glaubt
+
+Der Angriffspunkt ist die Steuerleitung. Alles, was der Client schickt, ist eine
+Behauptung — der Server entscheidet. Geprüft gegen einen **echten** Server über
+echte WebSockets (`tests/anti-cheat.test.js`, 8 Tests): Eine Attrappe würde nur
+die Annahmen des Tests bestätigen.
+
+### Was hält
+
+| Angriff | Ergebnis |
+|---|---|
+| `playerId` des Gegners in der INPUT-Nachricht | abgelehnt — der Server nimmt die Kennung aus dem **Token** |
+| `playerId` = 0, 9999, -1, `"1"` | abgelehnt |
+| Schuss mit nicht besessener Waffe | abgelehnt („Keine Munition") |
+| Auswahl einer nicht besessenen Waffe | abgelehnt **mit Begründung** (keine stille Ablehnung) |
+| Tick weit in der Vergangenheit/Zukunft | abgelehnt (Lag-Kompensationsfenster) |
+| Kaputtes JSON, unbekannte Typen, 200-fach verschachtelt | abgelehnt, der Server sendet weiter |
+| Mehrfachschuss im selben Zug | abgelehnt („Spieler ist nicht am Zug") |
+
+Die wichtigste Zeile ist die erste: Wäre sie nicht so, könnte jeder für jeden
+schießen — beliebig oft, ohne Zugzwang. Der Server ruft die Prüfung mit
+`seat.entityId` aus dem Token auf und sieht die `playerId` der Nachricht gar
+nicht an.
+
+### 47. Nicht-numerische Werte wurden zu gültigen Zahlen
+
+`normalizeInput` wandelte mit `Number(...)` um. Gemessen (mit `validateCommand`)
+wurden dadurch **alle** diese Werte akzeptiert:
+
+| Eingabe | wurde zu |
+|---|---|
+| `{angle: null}` | `angle = 0` |
+| `{power: null}` | `power = 0` |
+| `{angle: '1.5'}` | `angle = 1.5` |
+| `{angle: true}` | `angle = 1` |
+| `{angle: []}` | `angle = 0` |
+
+Ein Vorteil war damit nicht zu erlangen — die Werte liegen im erlaubten Bereich.
+Das Problem ist ein anderes: Das Drahtformat sagt „Zahl", und eine kaputte
+Nachricht wurde zu einem **echten Schuss** statt zu einer Ablehnung. Genau den
+Fall soll eine Validierung abfangen.
+
+Behoben: Winkel und Kraft müssen vom Typ `number` sein, sonst `NaN` und damit
+abgelehnt.
+
+### 48. Die Nutzlastgrenze war toter Code
+
+`INPUT_LIMITS.maxPayloadBytes` (512 Byte) war definiert und wurde **nirgends
+verwendet** — `grep -rn maxPayloadBytes src/` fand nur die Definition.
+`parseControlMessage` rief `JSON.parse` auf beliebig große Eingaben auf.
+Gemessen: Eine Nachricht mit **1 MB** Füllsel wurde angenommen und geparst.
+
+Behoben im Server **vor** dem Parsen. Bewusst nicht im gemeinsamen Parser: Die
+Grenze gilt nur für die Richtung Client → Server — die Waffenbestände aller
+Spieler gehen als **eine** Nachricht an den Client und dürfen größer sein.
+Gezählt werden Bytes, nicht Zeichen (ein Umlaut zählt im UTF-8 als zwei).
+
+### Ein Testaufbau, der korrektes Verhalten bemängelt hätte
+
+Der erste Anlauf des Mehrfachschuss-Tests sendete zehn Schüsse in einer Lobby mit
+**einem** verbundenen Spieler. Gemessen kamen **5 durch** — und das war kein
+Fehler: Der zweite Platz gehört einem Bot, der sofort feuert und den Zug
+zurückgibt. Das Spiel war wirklich wieder an der Reihe. Der Test hätte also eine
+korrekte Zugordnung als Fehler gemeldet.
+
+Der Test besetzt jetzt **beide** Plätze mit verbundenen Clients. Nach dem Schuss
+von A ist B am Zug, und B tut nichts — damit bleibt der Zug stehen.
+
+Zwei weitere Testfehler kamen dabei heraus:
+
+- `CONTROL.WEAPON_SELECT` gibt es nicht; richtig ist `SELECT_WEAPON`. Mit dem
+  falschen Namen war `t` undefined, und der Server antwortete „Ungültige
+  Nachricht" — die Prüfung sah aus, als würde eine fremde Waffe stillschweigend
+  akzeptiert.
+- Der Test wählte den angreifenden Client anhand eines Snapshots, der noch
+  `activePlayerId: null` tragen konnte (vor dem Matchstart). Dafür gibt es jetzt
+  `warteAufSnapshot`.
 
 ## Kisten im Netzwerk
 
@@ -1024,7 +1102,7 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 
 ## Testabdeckung
 
-- **Unit/Integration (486):** PRNG und Seeds, Loot, Terrain, Wasser und
+- **Unit/Integration (494):** PRNG und Seeds, Loot, Terrain, Wasser und
   Ertrinken, Ballistik und Tunneling, Munition, Matchregeln, Rundengrenze,
   Zugzeit und Zugwechsel, Replay und Determinismus, Netcode und
   Delta-Encoding, Lobby und Servervalidierung, Persistenz, Betriebszähler,
@@ -1258,8 +1336,14 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       Inhaltsfrage (welche Szene?) und in zwei Tests namentlich festgehalten.
       Siehe „Vier neue Geländeformen".
 - [x] **`prefers-reduced-motion`.** Erledigt, siehe P2 — CSS und Canvas.
-- [ ] **Release-Härtung.** Anti-Cheat-Audit und Browser-Profiling. (Lasttest und
-      Barrierefreiheit stehen schon unter P2/P3.)
+- [x] **Anti-Cheat-Audit.** Durchgeführt, siehe „Anti-Cheat: was der Server nicht
+      glaubt". Zwei Lücken gefunden und geschlossen: nicht-numerische Werte wurden
+      zu gültigen Zahlen umgewandelt (`Number(null) === 0`), und die
+      Nutzlastgrenze war toter Code (1 MB wurden angenommen). Bestätigt hat sich
+      die Kernregel: Die `playerId` des Clients wird ignoriert, der Token
+      entscheidet.
+- [ ] **Browser-Profiling.** Steht noch aus. (Lasttest und Barrierefreiheit sind
+      unter P2/P3 erledigt.)
 
 ### Dabei aufgefallen, nicht behoben
 
