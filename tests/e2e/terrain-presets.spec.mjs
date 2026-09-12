@@ -155,80 +155,95 @@ test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', asy
   expect(fehler, `Seitenfehler: ${fehler.join(' | ')}`).toEqual([]);
 });
 
-test('Flut nutzt seine EIGENE Szene — die anderen drei noch nicht', async ({ page }) => {
+test('Jede der vier neuen Formen nutzt ihre EIGENE Szene', async ({ page }) => {
   /*
-   * `flooded` hat sein Leitbiom `deluge` bekommen (fünf eigene Kulissen: versunkene
-   * Stadt, Monsun, ertränkter Wald, Reisterrassen, Dammbruch). Die anderen drei
-   * neuen Formen warten noch.
+   * Alle vier hatten zunächst KEINE eigene Szene und fielen auf `forest` zurück —
+   * eine „Flut" sah aus wie ein Wald. Inzwischen hat jede ihr Leitbiom:
    *
-   * Der Test hält BEIDES fest: dass Flut eine eigene Szene hat (erledigt), und
-   * dass die drei übrigen noch auf `forest` zurückfallen (offen). Sobald eine
-   * davon Kulissen bekommt, schlägt der Test an und wird angepasst — die Lücke
-   * bleibt damit sichtbar statt vergessen.
+   *   flooded → deluge   (versunkene Stadt, Monsun, ertränkter Wald,
+   *                       Reisterrassen, Dammbruch)
+   *   open    → open     (Weizenfelder, Heide, Salzpfanne, Polder, Präriesturm)
+   *   spires  → spires   (Karsttürme, Dolomiten, Basaltsäulen, Felspfeiler,
+   *                       Eisnadeln)
+   *   warren  → warren   (Schlucht, Stadtruinen, Höhlengänge, Bambusdickicht,
+   *                       Schützengräben)
+   *
+   * Geprüft wird, dass die ZUORDNUNG ankommt — nicht nur, dass irgendein Biom
+   * gesetzt ist. Der Rückfall `forest` wäre die stille Rückkehr des Fehlers.
    */
-  const starte = async form => {
+  const ZUORDNUNG = {
+    flooded: 'deluge',
+    open: 'open',
+    spires: 'spires',
+    warren: 'warren',
+  };
+
+  for (const [form, erwartet] of Object.entries(ZUORDNUNG)) {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
     await page.locator('#cfg-preset').selectOption(form);
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay')).toBeHidden();
-    return page.evaluate(() => window.__PA__.backdrop());
-  };
 
-  // Flut: eigene Szene, und sie ist nicht der Rückfall.
-  const flut = await starte('flooded');
-  expect(flut.szene?.biom, 'Flut nutzt nicht das eigene Biom').toBe('deluge');
-  expect(flut.szene.himmel, 'Die Flut-Szene hat keinen Himmel').toBeTruthy();
-  expect(flut.szene.wasser, 'Die Flut-Szene hat kein Wasser').toBeTruthy();
-  // Und es ist die generative Szene (Vorgabe), keine Bildkulisse.
-  expect(flut.key).toBeNull();
-
-  // Die drei übrigen: noch der dokumentierte Rückfall.
-  for (const form of ['open', 'spires', 'warren']) {
-    const kulisse = await starte(form);
-    expect(kulisse.szene?.biom,
-      `${form} hat jetzt eine eigene Szene — dann bitte diesen Test anpassen`).toBe('forest');
+    const kulisse = await page.evaluate(() => window.__PA__.backdrop());
+    expect(kulisse.szene?.biom, `${form} nutzt nicht sein eigenes Biom`)
+      .toBe(erwartet);
+    expect(kulisse.szene.biom, `${form} fällt auf den Wald-Rückfall zurück`)
+      .not.toBe('forest');
+    expect(kulisse.szene.himmel, `${form}: Szene ohne Himmel`).toBeTruthy();
+    expect(kulisse.szene.wasser, `${form}: Szene ohne Wasser`).toBeTruthy();
+    // Und es ist die generative Szene (Vorgabe), keine Bildkulisse.
+    expect(kulisse.key).toBeNull();
   }
 });
 
-test('Flut hat im Menü eigene Kulissenbilder zur Auswahl', async ({ page }) => {
+test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page }) => {
   /*
    * Eine Geländeform mit eigenem Biom ist nur dann fertig, wenn die Kulissen auch
-   * WÄHLBAR sind: Der Spieler soll nicht nur die Vorgabe der Flut sehen, sondern
-   * zwischen ihren Varianten wählen können. Geprüft wird gegen das echte Markup —
-   * ein Biom im Katalog ohne Menüeintrag wäre eine unsichtbare Kulisse.
+   * WÄHLBAR sind: Der Spieler soll nicht nur die Vorgabe sehen, sondern zwischen
+   * den Varianten wählen können. Geprüft wird gegen das echte Markup — ein Biom
+   * im Katalog ohne Menüeintrag wäre eine unsichtbare Kulisse.
+   *
+   * Der Dateiname muss zum Schlüssel passen (`<biom>_<variante>.jpg`); die
+   * Übereinstimmung ist auch eine Zusage der Projektstruktur und wird vom
+   * Unit-Test „Schlüssel und Dateinamen sind eindeutig" verlangt.
    */
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
   const stand = await page.evaluate(async () => {
     const modul = await import('/src/shared/config/backdrops.js');
-    const biom = modul.BACKDROP_BIOMES.find(b => b.id === 'deluge');
     const auswahl = document.getElementById('cfg-backdrop');
     const optionen = [...auswahl.querySelectorAll('option')].map(o => o.value);
     const gruppen = [...auswahl.querySelectorAll('optgroup')].map(g => g.label);
     return {
-      varianten: (biom?.variants ?? []).map(v => `${biom.id}/${v.id}`),
-      labels: (biom?.variants ?? []).map(v => v.label),
-      bilder: (biom?.variants ?? []).map(v => v.file),
       optionen,
       gruppen,
-      biomLabel: biom?.label ?? null,
-      hatDateienGeladen: (biom?.variants ?? []).length,
+      biome: ['deluge', 'open', 'spires', 'warren'].map(id => {
+        const b = modul.BACKDROP_BIOMES.find(x => x.id === id);
+        return {
+          id,
+          label: b?.label ?? null,
+          varianten: (b?.variants ?? []).map(v => `${id}/${v.id}`),
+          bilder: (b?.variants ?? []).map(v => v.file),
+        };
+      }),
     };
   });
 
-  expect(stand.varianten.length, 'Das Flut-Biom hat keine fünf Varianten').toBe(5);
-  for (const key of stand.varianten) {
-    expect(stand.optionen, `Die Kulisse „${key}" fehlt in der Auswahl`).toContain(key);
+  for (const biom of stand.biome) {
+    expect(biom.label, `Biom „${biom.id}" fehlt im Katalog`).toBeTruthy();
+    expect(biom.varianten.length, `Biom „${biom.id}" hat keine fünf Varianten`).toBe(5);
+    expect(stand.gruppen, `Die Biomgruppe „${biom.label}" fehlt im Menü`).toContain(biom.label);
+    for (const key of biom.varianten) {
+      expect(stand.optionen, `Die Kulisse „${key}" fehlt in der Auswahl`).toContain(key);
+    }
+    for (const datei of biom.bilder) {
+      expect(datei, `${biom.id}: Variante ohne passenden Dateinamen`)
+        .toMatch(new RegExp(`^${biom.id}_[a-z_]*\\.jpg$`));
+    }
   }
-  expect(stand.gruppen, 'Die Biomgruppe „Sintflut" fehlt im Menü').toContain(stand.biomLabel);
-  // Jede Variante nennt eine Bilddatei — und sie liegt im Projektformat vor.
-  for (const datei of stand.bilder) {
-    expect(datei, 'Eine Variante hat keine Bilddatei').toMatch(/^deluge_[a-z_]*\.jpg$/);
-  }
-  expect(stand.hatDateienGeladen).toBe(5);
 });
 
 test('Vier Formen unterscheiden sich auch im Browser messbar', async ({ page }) => {

@@ -236,24 +236,27 @@ test('Felsspitzen sind steil, nicht eng — und Gewirr ist uneben, nicht offen',
     'Felsspitzen und Gewirr sind in der Unebenheit praktisch gleich');
 });
 
-test('Die vier neuen Formen sind noch OHNE eigene Kulissen — bewusst', () => {
+test('Alle Geländeformen haben eigene Kulissen — oder stehen namentlich hier', () => {
   /*
    * Das Projekt verlangt: Jede Geländeform hat ein EIGENES Leitbiom, und dessen
    * `mapPreset` ist genau diese Form (Regel in `tests/backdrops.test.js`). Ein
    * Leitbiom ist damit eine Kulissengruppe mit eigenen Bildern.
    *
-   * Für die vier neuen Formen gibt es diese Bilder nicht. Sie zu erfinden wäre
-   * eine Inhaltsentscheidung (welche Szene zeigt „Offene Weite", welche
-   * „Gewirr"?) — und ein vorhandenes Biom wiederzuverwenden verbietet die Regel.
+   * Alle acht Formen haben inzwischen eigene Kulissen: `flooded` → `deluge`,
+   * `open` → `open` (Weite), `spires` → `spires` (Felsen), `warren` → `warren`
+   * (Gewirr). Die Liste der Formen OHNE Kulissen ist deshalb leer.
    *
-   * Deshalb: keine Zuordnung, und diese Lücke hier NAMENTLICH festgehalten.
-   * Damit gilt beides — die neuen Formen sind spielbar, und die fehlende
-   * Zuordnung ist sichtbar statt vergessen. Der Test schlägt an, sobald jemand
-   * einem der vier Formen ein Biom gibt, das schon vergeben ist, oder eine
-   * fünfte Form ohne Kulissen hinzukommt.
+   * Sie bleibt als Prüfstelle stehen: Eine neue Geländeform ohne Kulissen trägt
+   * sich hier ein, und der Test hält die Lücke dann namentlich fest, statt sie
+   * stillschweigend durchzulassen. Ein vorhandenes Biom wiederzuverwenden
+   * verbietet die Projektregel.
    */
-  // `flooded` ist erledigt (Biom `deluge`, vier eigene Kulissen).
-  const OHNE_KULISSEN = ['open', 'spires', 'warren'];
+  /*
+   * LEER — alle acht Formen haben eigene Kulissen. Die Liste bleibt als
+   * Prüfstelle: Eine neue Form ohne Kulissen trägt sich hier ein, und der Test
+   * hält die Lücke dann namentlich fest.
+   */
+  const OHNE_KULISSEN = [];
 
   for (const preset of Object.keys(TERRAIN_PRESETS)) {
     if (OHNE_KULISSEN.includes(preset)) {
@@ -275,8 +278,8 @@ test('Die vier neuen Formen sind noch OHNE eigene Kulissen — bewusst', () => {
 
   // Und die Lücke ist namentlich vollständig: Wer eine Form hinzufügt, muss sie
   // hier eintragen — sonst fällt der Test darüber (fehlende Biomgruppe).
-  assert.equal(OHNE_KULISSEN.length, 3,
-    'Die Liste der Formen ohne Kulissen hat sich geändert — bitte prüfen, ob das Absicht war');
+  assert.equal(OHNE_KULISSEN.length, 0,
+    'Es gibt wieder Formen ohne Kulissen — das ist eine bewusste Entscheidung und gehört begründet');
 });
 
 test('Das Gelände bleibt deterministisch — auch mit der neuen Startplatzsuche', () => {

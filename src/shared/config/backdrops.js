@@ -545,6 +545,144 @@ export const BACKDROP_BIOMES = Object.freeze([
       },
     ],
   },
+  {
+    /*
+     * Weite — das Leitbiom der Geländeform `open`.
+     *
+     * Die Form ist die FLACHSTE im Katalog (Höhenvarianz rund 16 gegen 62 bei
+     * `hills`). Die Kulissen müssen das tragen: weiter Horizont, wenig im Weg,
+     * viel Himmel. Wer auf einer offenen Karte steht, soll das Gefühl haben,
+     * weitschießen zu können.
+     *
+     * Deshalb heißen die Varianten hier „Ebenen" und nicht „Hügel": Ein Hügel im
+     * Bild würde der flachen Form widersprechen.
+     */
+    id: 'open',
+    label: 'Weite & Ebene',
+    mapPreset: 'open',
+    variants: [
+      {
+        id: 'wheat_plains',
+        label: 'Weizenfelder',
+        file: 'open_wheat_plains.jpg',
+        prompt: 'An endless wheat plain at golden hour. Ripe wheat stretches to a flat horizon, combed into waves by the wind, a single weathered farmstead with a windmill far in the left third. A lone dirt track cuts through the crop toward the horizon. Immense pale sky with towering cumulus, warm ochre and gold, immense sense of emptiness and distance.',
+      },
+      {
+        id: 'heath_moor',
+        label: 'Heide',
+        file: 'open_heath_moor.jpg',
+        prompt: 'Rolling purple heather moorland under a huge weather sky. Low rounded hills covered in blooming heather, a narrow peat path winding between them, a lone standing stone on a ridge in the left third. Fast-moving broken clouds casting wide shadows across the land. Muted violet, rust and slate, cool northern light, vast and quiet.',
+      },
+      {
+        id: 'salt_flats',
+        label: 'Salzpfanne',
+        file: 'open_salt_flats.jpg',
+        prompt: 'A vast white salt flat under a bleached sky. Cracked hexagonal salt polygons stretch to distant blue mountains that float on a shimmering mirage, thin water film mirroring the sky in patches. A single survey marker post stands in the left third. Blinding high-key light, faint heat haze, pale white and turquoise, enormous emptiness.',
+      },
+      {
+        id: 'polder',
+        label: 'Polder',
+        file: 'open_polder.jpg',
+        prompt: 'A flat reclaimed polder landscape under a wide Dutch sky. Perfectly straight drainage ditches lined with poplars divide green pastures, a brick windmill stands in the left third, cattle graze in the middle distance. Enormous cloudscape with a low horizon, clear cool light, saturated green and grey-blue, orderly and open.',
+      },
+      {
+        id: 'prairie_storm',
+        label: 'Präriesturm',
+        file: 'open_prairie_storm.jpg',
+        prompt: 'A prairie ahead of an approaching supercell thunderstorm. Flat grassland stretching to the horizon, a barbed wire fence line running left to right in the foreground, a distant line of cottonwoods in the left third bending in the wind. A vast dark shelf cloud with a greenish base occupies the upper half, first lightning flickering. Yellow-green grass, bruised purple sky, ominous scale.',
+      },
+    ],
+  },
+  {
+    /*
+     * Felsen — das Leitbiom der Geländeform `spires`.
+     *
+     * Die Form ist die STEILSTE im Katalog (Höhenvarianz rund 213, mehr als das
+     * Dreifache von `hills`). Die Kulissen müssen hohe, senkrechte Formen zeigen —
+     * eine flache Ebene im Hintergrund würde die Steilheit der Karte Lügen
+     * strafen.
+     */
+    id: 'spires',
+    label: 'Hochgebirge & Karst',
+    mapPreset: 'spires',
+    variants: [
+      {
+        id: 'karst_peaks',
+        label: 'Karsttürme',
+        file: 'spires_karst_peaks.jpg',
+        prompt: 'Towering karst limestone peaks rising from a misty river valley. Steep vertical rock towers covered in dark green vegetation stand like teeth, their tops lost in low cloud, a narrow river winding between them in the left third. Layered mist separating the ridges, pale grey and jade palette, immense vertical scale, Chinese ink-painting mood.',
+      },
+      {
+        id: 'dolomites',
+        label: 'Dolomiten',
+        file: 'spires_dolomites.jpg',
+        prompt: 'Pale limestone towers of a dolomite massif at alpenglow. Sheer vertical rock walls with horizontal banding rise from a scree slope, deep shadowed gullies between them, a narrow ledge path visible high on the left tower. The peaks catch the last warm orange light while the valleys below are already cold blue. Sparse pines on the lower slopes, crystal clear alpine air, immense vertical scale.',
+      },
+      {
+        id: 'basalt_columns',
+        label: 'Basaltsäulen',
+        file: 'spires_basalt_columns.jpg',
+        prompt: 'Geometric basalt columns rising from a black volcanic shore. Hundreds of hexagonal pillars of dark grey stone stand in stepped formation like a broken organ, some fractured into blocks at their base, sea spray at their feet. Cold overcast light, wet rock gleaming, deep greys and near-black with a pale horizon, stark and monumental.',
+      },
+      {
+        id: 'desert_hoodoos',
+        label: 'Felspfeiler',
+        file: 'spires_desert_hoodoos.jpg',
+        prompt: 'Desert hoodoos and rock spires at sunset. Tall thin sandstone pillars with caprocks stand like a crowd of petrified figures across a red gravel plain, deep shadow slots between them, a dry wash crossing the foreground. Long shadows raking right to left, the sky burning orange above a deep violet horizon, sculpted wind-carved rock, monumental and still.',
+      },
+      {
+        id: 'ice_spires',
+        label: 'Eisnadeln',
+        file: 'spires_ice_spires.jpg',
+        prompt: 'Blue ice spires of a crevassed glacier under a low polar sun. Jagged towers and blades of translucent blue ice rise in ranks above a frozen plain, deep crevasses cutting between them, wind-sculpted snow ridges in the foreground. Low sun grazing the horizon with a cold halo, ice glowing turquoise from within, pale blue and white with no warmth.',
+      },
+    ],
+  },
+  {
+    /*
+     * Gewirr — das Leitbiom der Geländeform `warren`.
+     *
+     * Die Form ist die ZERKLÜFTETSTE im Katalog (47 Geländesprünge je
+     * Bildschirmbreite gegen 0 bei `hills`). Sie ist für den Nahkampf gedacht:
+     * enge Sichtlinien, viel Deckung. Die Kulissen zeigen deshalb ENGE Orte —
+     * Schlucht, Ruinen, Höhlen, Dickicht, Gräben —, nicht offene Landschaften.
+     */
+    id: 'warren',
+    label: 'Gewirr & Enge',
+    mapPreset: 'warren',
+    variants: [
+      {
+        id: 'slot_canyon',
+        label: 'Schlucht',
+        file: 'warren_slot_canyon.jpg',
+        prompt: 'A narrow slot canyon opening into a wider gorge. Glowing orange sandstone walls curve and twist overhead, sculpted into smooth waves by flash floods, a thin strip of sky far above, a dry sandy floor with driftwood. Light bouncing off the walls in warm reflected glow, deep shadow niches, narrow and enclosing.',
+      },
+      {
+        id: 'ruin_labyrinth',
+        label: 'Stadtruinen',
+        file: 'warren_ruin_labyrinth.jpg',
+        prompt: 'Overgrown ruins of a bombed city district. Collapsed brick facades and broken walls form narrow crooked alleys, rubble and twisted rebar in the gaps, vines and young birches reclaiming the shell of a church in the left third. Overcast light, warm brick against cold grey concrete, claustrophobic and maze-like.',
+      },
+      {
+        id: 'cave_network',
+        label: 'Höhlengänge',
+        file: 'warren_cave_network.jpg',
+        prompt: 'A vast limestone cave chamber with side passages. Thick stalactites and columns crowd the ceiling, several dark galleries branch off behind them, a shallow turquoise pool on the floor reflects the rock. A single shaft of daylight falls from a hole above onto a flowstone terrace in the left third. Cold blue-green in the shadows, warm ochre where the light lands, mysterious depth.',
+      },
+      {
+        id: 'bamboo_thicket',
+        label: 'Bambusdickicht',
+        file: 'warren_bamboo_thicket.jpg',
+        prompt: 'A dense bamboo thicket with a narrow trodden path. Thousands of slender green culms rise vertically and close together, cutting the light into stripes, a thin winding trail leads into the depth in the left third. Soft green filtered light, hazy depth, leaves rattling overhead, dense and enclosing.',
+      },
+      {
+        id: 'trench_lines',
+        label: 'Schützengräben',
+        file: 'warren_trench_lines.jpg',
+        prompt: 'A labyrinth of world war one trench lines in a churned field. Deep zigzagging trenches with sandbag parapets, duckboards and barbed wire entanglements cross each other in every direction, shattered tree stumps and flooded shell craters between them. Overcast dawn light, grey-brown mud, mist in the hollows, desolate and maze-like.',
+      },
+    ],
+  },
 ]);
 
 /** Alle Varianten als flache Liste. */
@@ -657,6 +795,49 @@ export const TERRAIN_PALETTES = Object.freeze({
   // Szene ohnehin dunkel ist und die Oberfläche erkennbar bleiben muss.
   'deluge/dam_break': { surface: [116, 112, 106], deep: [52, 50, 48] },
 
+  /*
+   * Weite — die Form ist flach, der Boden soll es auch sein: helle, trockene
+   * Töne ohne grelle Sättigung. Ausnahme ist die Salzpfanne: Sie ist eine
+   * Weißfläche, dort wäre ein dunkler Boden falsch.
+   */
+  'open/wheat_plains': { surface: [150, 128, 76], deep: [76, 64, 40] },
+  'open/heath_moor': { surface: [112, 96, 106], deep: [56, 48, 54] },
+  'open/salt_flats': { surface: [210, 206, 196], deep: [138, 136, 130] },
+  'open/polder': { surface: [94, 122, 78], deep: [48, 62, 40] },
+  'open/prairie_storm': { surface: [114, 116, 68], deep: [58, 58, 36] },
+
+  /*
+   * Felsen — Gestein, nicht Erde: Die fünf Szenen reichen von Kalkweiß über
+   * Basaltschwarz bis Eisblau. Jeder Boden nimmt die Farbe SEINES Bildes auf;
+   * ein einziger Grauton für alle fünf wäre über den Dolomiten falsch und über
+   * den Basaltsäulen auch.
+   */
+  'spires/karst_peaks': { surface: [98, 112, 94], deep: [46, 54, 48] },
+  'spires/dolomites': { surface: [166, 158, 146], deep: [84, 80, 74] },
+  'spires/basalt_columns': { surface: [74, 76, 80], deep: [34, 36, 38] },
+  'spires/desert_hoodoos': { surface: [152, 106, 74], deep: [78, 54, 38] },
+  'spires/ice_spires': { surface: [200, 220, 234], deep: [122, 144, 164] },
+
+  /*
+   * Gewirr — enge Orte, gedämpftes Licht.
+   *
+   * Die Sichtprüfung im laufenden Spiel zeigte hier ein Problem, das bei den
+   * offenen Formen nicht auftrat: Die Szenen sind DETAILREICH, und ein zu heller
+   * Boden stach vor ihnen hervor statt davor zu liegen („Schlucht" und
+   * „Bambusdickicht" wurden als unpassend benannt, „Bambus" am stärksten).
+   *
+   * Beide sind deshalb dunkler und in der Farbfamilie IHRES Bildes:
+   * rostbraun über rotem Canyon, erdig-braun über grünem Bambus. Bewusst NICHT
+   * grün für den Bambus — ein grüner Boden würde mit den Halmen verschmelzen und
+   * die Oberfläche wäre nicht mehr zu erkennen. Die Erkennbarkeit ist wichtiger
+   * als die Farbnähe: Der Boden muss vor dem unruhigen Hintergrund ablesbar sein.
+   */
+  'warren/slot_canyon': { surface: [104, 68, 46], deep: [52, 34, 24] },
+  'warren/ruin_labyrinth': { surface: [104, 88, 78], deep: [50, 42, 36] },
+  'warren/cave_network': { surface: [84, 96, 94], deep: [38, 46, 44] },
+  'warren/bamboo_thicket': { surface: [88, 76, 54], deep: [42, 36, 26] },
+  'warren/trench_lines': { surface: [96, 88, 70], deep: [46, 42, 32] },
+
   // Inseln
   'island/caribbean_day': { surface: [232, 214, 168], deep: [150, 130, 96] },
   'island/sunset_golden': { surface: [214, 180, 140], deep: [120, 92, 80] },
@@ -765,12 +946,12 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   mountains: 'alpine',
   hills: 'forest',
   caverns: 'caverns',
-  // `flooded` hat sein Leitbiom bekommen (Sintflut).
+  // Die später hinzugekommenen Geländeformen. Jede hat jetzt ein EIGENES
+  // Leitbiom mit eigenen Bildern — die Projektregel gilt damit für alle acht.
   flooded: 'deluge',
-  // Die drei übrigen später hinzugekommenen Geländeformen (`open`, `spires`,
-  // `warren`) fehlen hier absichtlich — ihnen fehlen noch eigene Kulissen. Die
-  // Begründung steht bei der gleichen Tabelle in `scenery.js`, die Lücke ist in
-  // `tests/backdrops.test.js` festgehalten.
+  open: 'open',
+  spires: 'spires',
+  warren: 'warren',
 });
 
 export default BACKDROP_BIOMES;

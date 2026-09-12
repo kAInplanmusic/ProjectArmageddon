@@ -275,6 +275,55 @@ export const SCENERY_BIOMES = Object.freeze({
     // Abgestimmt auf die Kulissen-Paletten: Schlamm ist gedämpft, nicht farbig.
     ground: { surface: [98, 98, 84], deep: [46, 50, 44] },
   },
+  /*
+   * Weite — Leitbiom der Geländeform `open` (die flachste Form, Höhenvarianz
+   * rund 16). Der generative Weg braucht die Werte hier; ohne Eintrag fiele er
+   * auf `forest` zurück und die offene Karte bekäme Waldränder.
+   *
+   * Deshalb: viel Himmel (klar und bedeckt, auch Dämmerung), nur sanfte
+   * Landmarken (`hill_soft`, `forest_line`, `dunes`, `mesa`, `none`) — keine
+   * Gipfel, die der Flachheit widersprechen. Vögel erlaubt: Eine Ebene ist kein
+   * unwirtlicher Ort.
+   */
+  open: {
+    label: 'Weite & Ebene',
+    mapPreset: 'open',
+    sky: ['clear_day', 'overcast', 'dusk', 'fog'],
+    water: ['shallow_lake'],
+    landmarks: ['hill_soft', 'forest_line', 'dunes', 'mesa', 'none'],
+    ambient: ['clouds_few', 'clouds_heavy', 'birds'],
+    ground: { surface: [134, 120, 92], deep: [68, 62, 46] },
+  },
+  /*
+   * Felsen — Leitbiom der Geländeform `spires` (die steilste Form, Höhenvarianz
+   * rund 213). Hohe senkrechte Landmarken: `crystal_spires`, `mountain_ridge`,
+   * `ice_peaks`, `cliff`. Kein `hill_soft` — ein sanfter Hügel im Hintergrund
+   * einer Steilwandkarte wäre ein Widerspruch.
+   */
+  spires: {
+    label: 'Hochgebirge & Karst',
+    mapPreset: 'spires',
+    sky: ['clear_day', 'overcast', 'dusk', 'aurora', 'fog'],
+    water: ['shallow_lake'],
+    landmarks: ['crystal_spires', 'mountain_ridge', 'ice_peaks', 'cliff'],
+    ambient: ['clouds_few', 'clouds_heavy', 'snow', 'fog_banks'],
+    ground: { surface: [142, 138, 130], deep: [72, 70, 68] },
+  },
+  /*
+   * Gewirr — Leitbiom der Geländeform `warren` (47 Geländesprünge je Breite,
+   * gedacht für den Nahkampf). Enge, deckungsreiche Szenen: Ruinen, Felswände,
+   * Waldkanten. Regen und Nebel statt klarer Sicht — die Karte soll sich eng
+   * anfühlen, auch wenn das Gelände prozedural entsteht.
+   */
+  warren: {
+    label: 'Gewirr & Enge',
+    mapPreset: 'warren',
+    sky: ['overcast', 'fog', 'dusk', 'smog'],
+    water: ['shallow_lake', 'swamp_sludge'],
+    landmarks: ['ruins', 'cliff', 'forest_line', 'rock_arch', 'none'],
+    ambient: ['clouds_heavy', 'fog_banks', 'rain'],
+    ground: { surface: [112, 100, 84], deep: [54, 48, 40] },
+  },
   alpine: {
     label: 'Gebirge & Alpin',
     mapPreset: 'mountains',
@@ -373,32 +422,16 @@ export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   mountains: 'alpine',
   hills: 'forest',
   caverns: 'caverns',
-  // `flooded` hat sein Leitbiom bekommen (Sintflut).
-  flooded: 'deluge',
   /*
-   * Die drei übrigen später hinzugekommenen Geländeformen (`open`, `spires`,
-   * `warren`) stehen hier ABSICHTLICH NICHT.
-   *
-   * Die Regel des Projekts lautet: Jede Geländeform hat ein eigenes Leitbiom,
-   * und dessen `mapPreset` ist genau diese Form (siehe
-   * `tests/backdrops.test.js`). Ein Leitbiom ist damit eine Kulissengruppe mit
-   * eigenen Bildern — und eigene Bilder sind eine Inhaltsfrage, keine
-   * Einstellung: Welche Szene zeigt „Offene Weite", welche „Gewirr"?
-   *
-   * Für die drei Formen fehlen diese Kulissen. Sie laufen bis dahin mit einer
-   * beliebigen Szene: `pickScenery` fällt ohne Leitbiom auf `forest` zurück (oben
-   * in dieser Datei). Spielbar und vollständig gezeichnet, aber ohne passende
-   * Kulisse. Die Lücke ist in `tests/terrain-presets.test.js` und in
-   * `tests/backdrops.test.js` namentlich festgehalten, damit sie sichtbar bleibt
-   * und nicht als erledigt gilt.
-   *
-   * `flooded` ist erledigt: Es hat das Biom `deluge` mit vier eigenen Kulissen
-   * (versunkene Stadt, Monsun, ertränkter Wald, Dammbruch).
-   *
-   * (Der Weg über ein BILD — `pickBackdrop` — ist hier nicht betroffen: Er wird
-   * nur bei ausdrücklicher Wahl im Menü beschritten; Vorgabe ist die generative
-   * Szene.)
+   * Die später hinzugekommenen Geländeformen. Jede hat jetzt ein EIGENES
+   * Leitbiom mit eigenen Bildern — die Projektregel „jede Geländeform hat genau
+   * ein eigenes Leitbiom, dessen `mapPreset` diese Form ist" gilt damit für alle
+   * acht Formen. Ein Test hält das fest (`tests/backdrops.test.js`).
    */
+  flooded: 'deluge',
+  open: 'open',
+  spires: 'spires',
+  warren: 'warren',
 });
 
 // ------------------------------------------------------------------ Erzeugung

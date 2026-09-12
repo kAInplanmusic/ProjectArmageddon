@@ -439,22 +439,19 @@ test('Helle Kulissen bekommen hellen, dunkle dunklen Boden', () => {
 // ------------------------------------------------------------------ Vorauswahl
 
 /**
- * Geländeformen, denen noch eine eigene Kulissengruppe fehlt.
+ * Geländeformen ohne eigene Kulissengruppe.
  *
- * Sie sind im Motor fertig und spielbar, laufen aber mit einer beliebigen
- * Kulisse. Die Lücke ist hier NAMENTLICH festgehalten: Ein Test, der sie
- * stillschweigend übergeht, würde sie vergessen lassen — und einer, der sie
- * verbietet, würde die Formen blockieren, bis jemand Bilder malt.
+ * Die Liste ist LEER — alle acht Formen haben ein eigenes Leitbiom mit eigenen
+ * Bildern. Sie bleibt als Prüfstelle stehen: Eine neue Geländeform, die ohne
+ * Kulissen hinzukommt, muss sich hier eintragen, und der Test darüber hält sie
+ * dann namentlich fest, statt sie stillschweigend durchzulassen.
  *
- * Kommt eine Form hinzu, muss sie hier eingetragen werden; bekommt eine Form
- * ihre Kulissen, muss sie hier entfernt werden.
+ * Ohne Leitbiom fällt `pickScenery` auf `forest` zurück — eine „Flut" sähe aus
+ * wie ein Wald. Genau dieser Zustand ist damit für alle Formen behoben.
  */
-const OHNE_LEITBIOM = ['open', 'spires', 'warren'];
+const OHNE_LEITBIOM = [];
 
-test('Nur Geländeformen ohne eigene Kulissen haben kein Leitbiom', () => {
-  // `flooded` ist hier bewusst NICHT mehr: Es hat sein Leitbiom `deluge`.
-  // Wer eine Form von dieser Liste nimmt, muss ihre Kulissen mitliefern — sonst
-  // fällt sie auf `forest` zurück und die Karte sieht aus wie ein Wald.
+test('Jede Geländeform hat ein eigenes Leitbiom', () => {
   for (const preset of Object.keys(TERRAIN_PRESETS)) {
     const leitbiom = PRIMARY_BIOME_BY_PRESET[preset];
     if (OHNE_LEITBIOM.includes(preset)) {
