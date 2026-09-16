@@ -1803,8 +1803,51 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       Nutzlastgrenze war toter Code (1 MB wurden angenommen). Bestätigt hat sich
       die Kernregel: Die `playerId` des Clients wird ignoriert, der Token
       entscheidet.
-- [ ] **Browser-Profiling.** Steht noch aus. (Lasttest und Barrierefreiheit sind
-      unter P2/P3 erledigt.)
+- [x] **Browser-Profiling.** Durchgeführt (`tests/e2e/profiling.spec.mjs`,
+      `npm run perf:browser`). Gemessen im echten Chrome auf dem Referenzrechner
+      (ASUS-Laptop, **Intel HD Graphics 3000 von 2011**, 8 Kerne, 1440×900).
+
+      **Der wichtigste Befund ist methodisch:** Die Bildzeit wird hier von der
+      RASTERUNG bestimmt, nicht vom Spiel. Drei Messungen belegen das:
+
+      | Messung | Ergebnis |
+      |---|---|
+      | Isolierte JS-Zeit von `renderer.render()` | **0,18–0,56 ms** je Bild |
+      | Bildtakt mit SwiftShader (Software) | 62–72 ms (≈16 fps) |
+      | Bildtakt mit der echten GPU (`--use-angle=gl`) | Mittel 21,2 ms, **p50 16,7 ms**, 47,2 fps |
+
+      Der Unterschied zwischen 16 und 47 fps liegt allein im Compositing der
+      1280×720-Fläche; der JavaScript-Code ist in beiden Fällen unter einer
+      Millisekunde. Die Wasser-Ebene kostet rund 2 ms (gemessen bei 30 %
+      Wasserfläche auf `islands`) — sie ist nicht die Ursache der Bildzeit.
+
+      Zahlen je Geländeform (je 300 Bilder, mit Explosionen und Partikeln;
+      gleicher Lauf, ohne parallele Last):
+
+      | Form | Wasseranteil | SwiftShader | GPU | Bemerkung |
+      |---|---|---|---|---|
+      | `mountains` | 10 % | 28,3 ms / 35 fps | **21,2 ms / 47,2 fps**, p50 16,7 | im Budget |
+      | `islands` | 29,9 % | 66,4 ms / 15 fps | **26,0 ms / 38,5 fps**, p50 33,3 | über Budget, aber bedienbar |
+
+      **Was das NICHT heißt:** dass das Spiel zu langsam wäre. Eine Prüfung auf
+      60 fps auf dieser Maschine wäre eine Prüfung der iGPU von 2011. Der Test
+      prüft deshalb, was eine Aussage über das Spiel ist — flüssige Bedienung
+      (> 20 fps), kein hängendes Bild (< 500 ms), plausible Werte, keine
+      Seitenfehler — und schreibt die absoluten Zahlen als Annotation in den
+      Report. Ein Test, der auf aktueller Hardware grün und hier rot wäre, ohne
+      dass sich am Spiel etwas ändert, wäre wertlos.
+
+      **`islands` bleibt ein offener Optimierungspunkt**: Es ist auch mit GPU
+      langsamer als `mountains` (26,0 gegen 21,2 ms Mittel, p50 33,3 gegen 16,7).
+      Die Ursache liegt nicht in der Wasser-Ebene selbst (rund 2 ms), sondern in
+      der größeren Zahl zu compositeierender Ebenen. Eine Prüfung auf einem
+      Rechner mit aktueller GPU wäre der nächste Schritt — hier nicht möglich,
+      weil keine zur Verfügung steht.
+
+      Der Terrain-Neuaufbau (Bodenfläche, 1280×720) liegt bei **20–32 ms** über
+      fünf Läufe und ist damit der teuerste reine CPU-Schritt; er läuft bei
+      Kartenaufbau und Resize, nicht je Bild. Siehe „Optionale WebGPU-Pipeline"
+      für den optionalen GPU-Weg dazu.
 
 ### Dabei aufgefallen, nicht behoben
 
