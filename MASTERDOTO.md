@@ -1879,6 +1879,25 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
   erreichbar (scout/brawler, heavy/artillerist, artillery/occultist). Die
   Tabellen führen neun. Das ist ein offener Balance-Punkt, kein Fehler —
   `combatProfile()` kann alle neun, das Spiel erzeugt nur drei.
+
+  **Gemessen** (`node`, `MatchController` mit 6 Figuren, Seed 4242): Die
+  tatsächlich vergebenen Kombinationen sind genau die drei genannten. Was dabei
+  unerreichbar bleibt, sind gerade die EXTREME der Tabellen:
+
+  | erreichbar | Tempo-Faktor | unerreichbar | Tempo-Faktor |
+  |---|---|---|---|
+  | scout/brawler | 0,6417 | scout/occultist | 0,9333 |
+  | heavy/artillerist | 1,1667 | heavy/brawler | 0,9167 |
+  | artillery/occultist | 1,7333 | heavy/occultist | 1,3333 |
+  | | | artillery/brawler | 1,1917 |
+  | | | artillery/artillerist | 1,5167 |
+  | | | scout/artillerist | 0,8167 |
+
+  Die Spannweite der Tabellen reicht von 0,64 bis 1,73 (Faktor 2,7), das Spiel
+  nutzt davon drei Punkte. Wer die Kopplung löst, ändert damit die Balance
+  messbar — siehe den Entwurf in
+  `docs/entwurf-onboarding-sidegrades-counterplay.md`, der sie im Menü
+  ausdrücklich BENENNEN will, statt sie zu verschweigen.
 - **Fünf Dimensionen der Klassentabellen sind wirksamkeitslos.** `drag`, `mass`,
   Klassentempo, Archetyptempo und `archetype.damage` als Schaden liest der
   Motor nicht; sie stehen in `profil.inert` und sind getestet. Sie zu verdrahten

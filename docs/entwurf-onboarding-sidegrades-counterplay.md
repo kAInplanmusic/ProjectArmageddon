@@ -269,7 +269,6 @@ oder 0 Tempo) erzeugt. Die Grenze ist eine Konstante in `sidegrades.js`, kein
 verstecktes `Math.max` an der Aufrufstelle.
 
 ### B.5 Verworfen: Sidegrades als Match-interne Loot-Gegenstände
-
 **Vorschlag:** Eine Loot-Kiste liefert ein Sidegrade, das **während** des Matches das
 Profil verändert (z. B. „+20 % Schaden für diese Runde").
 
@@ -286,6 +285,17 @@ Profil verändert (z. B. „+20 % Schaden für diese Runde").
   Kistenzahl zu koppeln würde die Anzahl der `LOOT`-Züge verändern und damit **alle
   nachfolgenden Kisten** in bestehenden Replays verschieben — ein Bruch der
   Reproduzierbarkeit für Altdaten.
+
+  **Nachgemessen** (Seed 4242, je fünf Züge aus dem `LOOT`-Stream, mit und ohne
+  eine eingeschobene Ziehung):
+
+  ```
+  ohne Zusatzziehung: 0.352705, 0.448522, 0.140174, 0.973870, 0.975849
+  mit  Zusatzziehung: 0.448522, 0.140174, 0.973870, 0.975849, 0.670139
+  ```
+
+  Der gesamte Stream wandert um eine Position — nicht nur der eine Wert. Die
+  Begründung ist damit belegt und nicht bloß plausibel.
 - Der Match-interne Trade-off existiert bereits und ist gut: **Waffe wählen und
   abwerfen** (`MAX_WEAPONS`, `inventory.js`). Das Sidegrade soll diese Entscheidung
   ergänzen, nicht verdoppeln.
