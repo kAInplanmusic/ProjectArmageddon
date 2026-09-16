@@ -1877,21 +1877,34 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 
-- **`import` des Waffen-Generators SCHREIBT den Katalog neu.** Der Schreibvorgang
-  in `scripts/build-weapon-catalog.mjs` steht auf der obersten Ebene und läuft
-  damit auch beim Import — nicht nur beim Aufruf als Programm. Nachgemessen:
-  `node -e "import('./scripts/build-weapon-catalog.mjs')"` ändert die mtime von
-  `src/shared/config/weapons.js`. Drei Tests importieren aus dieser Datei und
-  lösen den Schreibvorgang mit aus.
-  **Unkritisch**, weil der Generator deterministisch ist: Bei gleicher Eingabe
-  entstehen dieselben Bytes, `git status` bleibt in jedem gemessenen Lauf sauber.
-  **Schwachstelle** in einem schreibgeschützten Checkout oder CI mit
-  read-only-Mount: Dort bricht der Import ab, und der Fehler sieht nach einem
-  Testproblem aus.
-  Ein `import.meta.main`-Guard wäre der Fix — **bewusst nicht eingebaut**: Sitzt
-  er falsch, schreibt `npm run weapons:build` nicht mehr und der Katalog veraltet
-  STILL. Das wäre der größere Schaden. Die Änderung ist eine Betreiber-
-  Entscheidung.
+- **`import` des Waffen-Generators war ein Schreibvorgang — behoben.**
+  Der Schreibvorgang in `scripts/build-weapon-catalog.mjs` stand auf der
+  obersten Ebene und lief damit auch beim Import. Nachgemessen: `node -e
+  "import('./scripts/build-weapon-catalog.mjs')"` änderte die mtime von
+  `src/shared/config/weapons.js`; drei Testdateien importieren aus diesem Modul
+  und lösten das mit aus (im Vite-Log als drei `page reload`-Zeilen sichtbar).
+  **Unkritisch war es, weil der Generator deterministisch ist** — dieselben
+  Bytes, `git status` blieb sauber. **Die Schwäche** zeigte sich in einem
+  schreibgeschützten Checkout: Dort brach der Import ab, und der Fehler sah nach
+  einem Testproblem aus.
+
+  Der Schreibvorgang hängt jetzt an `import.meta.main`, und zwar **fail-safe**:
+  `import.meta.main !== false`. Ein blosses `if (import.meta.main)` würde auf
+  Node < 22.13 (`undefined`) NIE schreiben — `npm run weapons:build` liefe ohne
+  Fehler durch und der Katalog veraltete still. Bei `undefined` wird deshalb
+  geschrieben wie zuvor.
+
+  Abgesichert in `tests/weapon-builder-guard.test.js` — mit echten
+  Node-Prozessen, in BEIDE Richtungen: Der Import schreibt nicht UND der
+  Programmaufruf schreibt weiterhin. Der zweite Fall ist der wichtigere: Ein
+  still nicht mehr erneuerter Katalog würde von keinem bestehenden Test bemerkt,
+  weil alle den vorhandenen Katalog lesen.
+
+  **Nebenbefund:** Der Generator und der Katalog führen verschiedene
+  Funktionssätze. Der Generator exportiert die ABLEITUNGSFUNKTIONEN
+  (`deriveMaxRange`, `deriveCooldown`, `simulateProjectileReach`), die
+  Laufzeit-Helfer (`getWeapon`, `orderInventoryBySubcategory`) stehen im
+  ERZEUGTEN Katalog — der Generator schreibt sie als Text.
 - **Balance-Bericht bei 90 px.** Schwere Artillerie und Ultimate-Waffen sind für
   große Entfernungen gebaut und erscheinen in der Messung als wirkungslos. Das
   ist eine Grenze des Aufbaus, kein Urteil über die Waffe.

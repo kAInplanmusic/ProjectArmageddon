@@ -14,34 +14,31 @@
  *
  * Aufruf: node scripts/build-weapon-catalog.mjs
  *
- * NEBENEFFEKT BEIM IMPORT (bekannt, bewusst so belassen)
- * -----------------------------------------------------
- * Diese Datei enthaelt ZWEI Dinge: die Generator-Logik und die exportierten
- * Helfer (`getWeapon`, `hasFuse`, `orderInventoryBySubcategory`, ...). Der
- * Schreibvorgang steht auf der obersten Ebene (Zeile ~1008) und laeuft damit
- * AUCH bei einem reinen `import` — nicht nur beim Aufruf als Programm.
+ * NEBENEFFEKT BEIM IMPORT — BEHOBEN
+ * ---------------------------------
+ * Diese Datei enthaelt ZWEI Dinge: die Generator-Logik (die eine Ausgabedatei
+ * schreibt) und die exportierten Ableitungsfunktionen (`deriveMaxRange`,
+ * `deriveCooldown`, `simulateProjectileReach`, ...). Der Schreibvorgang stand
+ * frueher auf der obersten Ebene und lief damit AUCH bei einem reinen `import`.
  *
- * Nachgemessen: `node -e "import('./scripts/build-weapon-catalog.mjs')"`
- * schreibt `src/shared/config/weapons.js` neu (mtime aendert sich). Die Tests
- * `tests/range-cooldown.test.js`, `tests/weapon-identity.test.js` und
- * `tests/assets.test.js` importieren aus dieser Datei und loesen den Schreib-
- * vorgang damit mit aus.
+ * Nachgemessen war das an der mtime von `src/shared/config/weapons.js`
+ * sichtbar. Die Tests `tests/range-cooldown.test.js`,
+ * `tests/weapon-identity.test.js` und `tests/assets.test.js` importieren aus
+ * dieser Datei und loesten den Schreibvorgang mit aus — im Vite-Log als drei
+ * `page reload`-Zeilen zu sehen.
  *
- * WARUM DAS UNKRITISCH IST: Der Generator ist deterministisch. Er schreibt bei
- * gleicher Eingabe dieselben Bytes, `git status` bleibt deshalb sauber — in
- * jedem gemessenen Lauf. Es entsteht kein falscher Katalog und keine
- * Testabhaengigkeit von der Reihenfolge.
+ * Unkritisch war es, weil der Generator DETERMINISTISCH ist (dieselben Bytes,
+ * `git status` blieb sauber). Die Schwaechen: Ein `import` soll nichts
+ * veraendern, und in einem schreibgeschuetzten Checkout brach er ab — mit einem
+ * Fehler, der nach einem Testproblem aussah.
  *
- * WARUM ES TROTZDEM EINE SCHWAECHE IST: Ein `import` soll nichts veraendern.
- * Wer diese Datei aus einem Kontext laedt, der nicht schreiben darf (schreib-
- * geschuetzter Checkout, CI mit read-only-Mount), bekommt einen Fehler, der
- * nach einem Testproblem aussieht und keines ist.
+ * Der Schreibvorgang haengt jetzt an `import.meta.main` (siehe unten, fail-safe
+ * gebaut) und ist in `tests/weapon-builder-guard.test.js` in BEIDE Richtungen
+ * abgesichert: Import schreibt nicht, Programmaufruf schreibt weiterhin.
  *
- * Der naheliegende Fix waere ein `import.meta.main`-Guard um den Schreib-
- * vorgang. Er wurde BEWUSST NICHT eingebaut: Sitzt der Guard falsch, schreibt
- * `npm run weapons:build` nicht mehr, und der Katalog veraltet STILL — ein
- * groesserer Schaden als der jetzige Zustand. Die Aenderung ist eine
- * Entscheidung des Betreibers, nicht eine Nebenbei-Korrektur.
+ * Die Laufzeit-Helfer (`getWeapon`, `orderInventoryBySubcategory`, `hasFuse`)
+ * sind KEINE Exporte dieser Datei — sie stehen im ERZEUGTEN Katalog
+ * (`src/shared/config/weapons.js`) und werden hier nur als Text erzeugt.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -1034,7 +1031,44 @@ export function pickWeaponForRarity(rng, weights = { common: 55, uncommon: 25, r
 }
 `;
 
-mkdirSync(dirname(targetPath), { recursive: true });
-writeFileSync(targetPath, file, 'utf8');
-console.log(`Weapon-Katalog geschrieben: ${targetPath}`);
-console.log(`  Waffen: ${weapons.length} | Projektile: ${projectileCount} | mit Flaechenwirkung: ${areaCount} | mit Schaden: ${damagingCount}`);
+/*
+ * Der Schreibvorgang laeuft NUR, wenn diese Datei als Programm aufgerufen wird.
+ *
+ * Vorher stand er auf der obersten Ebene und lief damit auch bei einem reinen
+ * `import` — drei Tests importieren aus dieser Datei nur Helfer und haben den
+ * Katalog jedes Mal neu geschrieben. Unkritisch (der Generator ist
+ * deterministisch, `git status` blieb sauber), aber ein `import` soll nichts
+ * veraendern: In einem schreibgeschuetzten Checkout brach er ab, und der Fehler
+ * sah nach einem Testproblem aus.
+ *
+ * DIE PRUEFUNG IST FAIL-SAFE GEBAUT — und das ist der wichtige Teil:
+ *
+ *   `import.meta.main` gibt es erst ab Node 22.13. Auf aelteren Versionen waere
+ *   es `undefined`. Ein Guard der Form `if (import.meta.main)` wuerde dort NIE
+ *   schreiben — `npm run weapons:build` liefe ohne Fehler durch und der Katalog
+ *   veraltete STILL. Genau dieses Risiko war der Grund, den Guard nicht
+ *   nebenbei einzubauen.
+ *
+ *   Deshalb wird NUR bei einem ausdruecklichen `false` uebersprungen. Ist der
+ *   Wert `undefined` (alte Node-Version), wird geschrieben wie bisher — der
+ *   Generator verhaelt sich dann exakt wie vor der Aenderung. Ein vergessener
+ *   Katalog ist der schlimmere Fehler, ein ueberfluessiger Schreibvorgang der
+ *   harmlosere.
+ *
+ * Die Alternative ohne `import.meta.main` waere ein Vergleich von
+ * `process.argv[1]` mit `fileURLToPath(import.meta.url)`. Sie ist hier NICHT
+ * noetig, weil `import.meta.main` vorliegt; der Vergleich waere auf
+ * Windows-Pfaden und bei Symlinks fehleranfaelliger.
+ */
+const alsProgrammAufgerufen = import.meta.main !== false;
+
+if (alsProgrammAufgerufen) {
+  mkdirSync(dirname(targetPath), { recursive: true });
+  writeFileSync(targetPath, file, 'utf8');
+  console.log(`Weapon-Katalog geschrieben: ${targetPath}`);
+  console.log(`  Waffen: ${weapons.length} | Projektile: ${projectileCount} | mit Flaechenwirkung: ${areaCount} | mit Schaden: ${damagingCount}`);
+} else {
+  // Beim Import wird NICHTS geschrieben. Die Meldung bleibt trotzdem: Ein
+  // stiller Import waere nicht von einem vergessenen Aufruf zu unterscheiden.
+  console.log('Weapon-Katalog nicht geschrieben (Modul importiert, nicht als Programm aufgerufen)');
+}
