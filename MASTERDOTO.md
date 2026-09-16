@@ -1877,6 +1877,21 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 
+- **`import` des Waffen-Generators SCHREIBT den Katalog neu.** Der Schreibvorgang
+  in `scripts/build-weapon-catalog.mjs` steht auf der obersten Ebene und läuft
+  damit auch beim Import — nicht nur beim Aufruf als Programm. Nachgemessen:
+  `node -e "import('./scripts/build-weapon-catalog.mjs')"` ändert die mtime von
+  `src/shared/config/weapons.js`. Drei Tests importieren aus dieser Datei und
+  lösen den Schreibvorgang mit aus.
+  **Unkritisch**, weil der Generator deterministisch ist: Bei gleicher Eingabe
+  entstehen dieselben Bytes, `git status` bleibt in jedem gemessenen Lauf sauber.
+  **Schwachstelle** in einem schreibgeschützten Checkout oder CI mit
+  read-only-Mount: Dort bricht der Import ab, und der Fehler sieht nach einem
+  Testproblem aus.
+  Ein `import.meta.main`-Guard wäre der Fix — **bewusst nicht eingebaut**: Sitzt
+  er falsch, schreibt `npm run weapons:build` nicht mehr und der Katalog veraltet
+  STILL. Das wäre der größere Schaden. Die Änderung ist eine Betreiber-
+  Entscheidung.
 - **Balance-Bericht bei 90 px.** Schwere Artillerie und Ultimate-Waffen sind für
   große Entfernungen gebaut und erscheinen in der Messung als wirkungslos. Das
   ist eine Grenze des Aufbaus, kein Urteil über die Waffe.

@@ -13,6 +13,35 @@
  * Feld der erste *positive* Kandidat gewaehlt statt blind der erste.
  *
  * Aufruf: node scripts/build-weapon-catalog.mjs
+ *
+ * NEBENEFFEKT BEIM IMPORT (bekannt, bewusst so belassen)
+ * -----------------------------------------------------
+ * Diese Datei enthaelt ZWEI Dinge: die Generator-Logik und die exportierten
+ * Helfer (`getWeapon`, `hasFuse`, `orderInventoryBySubcategory`, ...). Der
+ * Schreibvorgang steht auf der obersten Ebene (Zeile ~1008) und laeuft damit
+ * AUCH bei einem reinen `import` — nicht nur beim Aufruf als Programm.
+ *
+ * Nachgemessen: `node -e "import('./scripts/build-weapon-catalog.mjs')"`
+ * schreibt `src/shared/config/weapons.js` neu (mtime aendert sich). Die Tests
+ * `tests/range-cooldown.test.js`, `tests/weapon-identity.test.js` und
+ * `tests/assets.test.js` importieren aus dieser Datei und loesen den Schreib-
+ * vorgang damit mit aus.
+ *
+ * WARUM DAS UNKRITISCH IST: Der Generator ist deterministisch. Er schreibt bei
+ * gleicher Eingabe dieselben Bytes, `git status` bleibt deshalb sauber — in
+ * jedem gemessenen Lauf. Es entsteht kein falscher Katalog und keine
+ * Testabhaengigkeit von der Reihenfolge.
+ *
+ * WARUM ES TROTZDEM EINE SCHWAECHE IST: Ein `import` soll nichts veraendern.
+ * Wer diese Datei aus einem Kontext laedt, der nicht schreiben darf (schreib-
+ * geschuetzter Checkout, CI mit read-only-Mount), bekommt einen Fehler, der
+ * nach einem Testproblem aussieht und keines ist.
+ *
+ * Der naheliegende Fix waere ein `import.meta.main`-Guard um den Schreib-
+ * vorgang. Er wurde BEWUSST NICHT eingebaut: Sitzt der Guard falsch, schreibt
+ * `npm run weapons:build` nicht mehr, und der Katalog veraltet STILL — ein
+ * groesserer Schaden als der jetzige Zustand. Die Aenderung ist eine
+ * Entscheidung des Betreibers, nicht eine Nebenbei-Korrektur.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
