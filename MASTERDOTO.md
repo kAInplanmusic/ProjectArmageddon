@@ -20,8 +20,8 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **527/527** |
-| Browser-E2E | `npm run test:e2e` | **118/118** (System-Chrome) |
+| Unit-/Integrationstests | `npm test` | **569/569** |
+| Browser-E2E | `npm run test:e2e` | **129/129** (System-Chrome; 1 bewusst übersprungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
@@ -1454,6 +1454,41 @@ Vollständige Durchsicht am 2026-09-11. Ergebnis je Frage:
 25. **Waffenwechsel im Onlinemodus gab keine Rückmeldung** und war auch bei
     fremdem Zug möglich. Jetzt nur am eigenen Zug, mit Meldung im Protokoll.
 
+26. **Die Schussvorhersage deckte drei zusammenhängende Fehler auf.** Keiner war
+    beim Schreiben der Vorhersage geplant; jeder fiel durch eine Messung auf.
+
+    a) **Klasse und Archetyp wurden NIE übertragen.** Der Client musste sie
+       erraten — `CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1`, also
+       abwechselnd je Listenposition, unabhängig davon, welche Figur der Spieler
+       führt. Im Spiel fiel das nicht auf, weil nur Position und Gesundheit
+       übertragen wurden. Mit der Vorhersage wurde es sichtbar: Der
+       Geschwindigkeitsfaktor folgt der Klasse — gemessen Scout 0,6417 gegen
+       Artillery 1,1917. Eine geratene Klasse verschob die angezeigte Flugbahn um
+       bis zu einem Drittel. Beide Werte gehen jetzt über die
+       Bestandsnachricht (nicht über den binären Snapshot: dessen festes Layout
+       müsste zwei Bytes je Spieler für Werte aufgeben, die sich nie während
+       eines Matches ändern).
+
+    b) **`classId` ist ein INDEX, `CLASS_IDS` enthält NAMEN.** Der Motor
+       konvertiert durchgehend (`CLASS_IDS[classId]`); wer den Index
+       unkonvertiert an `combatProfile` gibt, bekommt keinen Fehler und keinen
+       leeren Wert, sondern STILL für jede Klasse dasselbe Rückfallprofil
+       (`CLASS_DEFINITIONS[0]` findet nichts, also greift der Standard). Die
+       Klassen wären damit wirkungslos, ohne dass irgendetwas auffällt.
+
+    c) **`Enter` feuerte nicht.** In `input.js` stand es in der Aufzählung der
+       ignorierten Tasten (`if (... || key === 'Enter' || ...) return;`) und
+       wurde damit stumm verworfen — während das README „`Enter` | Feuern"
+       dokumentierte. Kein einziger E2E-Test hat die Taste je geprüft; die
+       Steuerungstabelle war eine Behauptung. Aufgefallen ist es, weil der
+       Vorhersage-Test ohne Maus feuern musste (ein Klick verändert den Winkel
+       mit). Enter schießt jetzt sofort mit der eingestellten Kraft; die
+       Leertaste lädt weiterhin auf.
+
+    **Dazu eine Diagnose-Lücke:** `__PA__.terrainPath()` meldete ohne GPU-Gerät
+    `null` statt `cpu` — sie schwieg also im Normalfall. Eine Diagnose, die nur
+    im Ausnahmefall spricht, ist keine.
+
 ### Offene Punkte aus der Durchsicht
 
 Alle vier Punkte sind inzwischen erledigt. Sie standen hier, weil die
@@ -1604,7 +1639,30 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       der Zugwechsel wird angesagt, die Waffenliste ist ohne Maus bedienbar
       (Knopf-Rolle, Fokus, Beschriftung, Eingabe/Leertaste) und behält den
       Fokus über den Neuaufbau der Liste. Siehe „Screenreader-Durchlauf".
-- [ ] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
+- [x] Optionale WebGPU-Pipeline mit Canvas-2D-Rückfall.
+      Erledigt als **Boden-Bäckerei** (`src/client/terrainBaker.js`): Der
+      Rechenkern für die Bodenfläche (je Spalte Oberfläche suchen, dann jedes
+      Pixel darunter einfärben — bei 1280×720 rund 900 000 Pixel) liegt jetzt
+      als reine Funktion vor und kann wahlweise auf der GPU laufen. Der
+      Canvas-2D-Weg bleibt der **geprüfte Hauptpfad**.
+      **Was hier NICHT behauptet wird:** dass der Shader auf echter Hardware
+      läuft. Gemessen in dieser Umgebung: `navigator.gpu` ist im System-Chrome
+      VORHANDEN, `requestAdapter()` liefert aber `null` — auch mit
+      `--enable-unsafe-swiftshader` (headless, keine GPU). Der GPU-Weg ist
+      deshalb ungetestet und ausdrücklich als solcher gekennzeichnet.
+      **Was stattdessen geprüft wird** (`tests/terrain-baker.test.js`, 20 Tests):
+      dass die FORMEL beide Wege speist (dieselbe Funktion, dieselbe Konstante
+      `DEPTH_REACH_PX`), dass der CPU-Weg exakt die Pixel des Rechenkerns
+      erzeugt, dass die Erkennung bis zum GERÄT prüft statt nur auf
+      `'gpu' in navigator`, und dass ein fehlendes oder werfendes Gerät sauber
+      auf die CPU zurückfällt. Da die Erkennung bis zum Gerät geht, wäre die
+      naheliegende Prüfung hier fehlgeschlagen — sie hätte „verfügbar" gemeldet.
+      **Aufgefallen und behoben:** Die Diagnose (`__PA__.terrainPath()`) meldete
+      ohne Gerät `null` statt „cpu" — sie schwieg also im Normalfall. Jetzt nennt
+      sie immer den benutzten Weg und den Grund.
+      Die Wahl steht im Menü unter „Bodenberechnung" (Vorgabe: CPU). Ohne Wahl
+      wird kein Gerät angefordert; im Protokoll steht, ob die Option gegriffen
+      hat. E2E: `tests/e2e/prediction-gpu.spec.mjs`.
 
 ### P3 — Betrieb
 - [x] Betriebszähler und erweiterte Zustandsabfrage. `/healthz` liefert

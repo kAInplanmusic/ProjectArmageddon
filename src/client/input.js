@@ -85,6 +85,26 @@ export class InputController {
       this.#beginCharge();
       return;
     }
+    /*
+     * Enter feuert — sofort, ohne Aufladen.
+     *
+     * Fund (belegt): Enter stand in der Aufzählung der „ignorierten" Tasten
+     * (`if (... || key === 'Enter' || ...) return;`) und wurde damit STUMM
+     * verworfen. Das README dokumentierte aber „`Enter` | Feuern", und kein
+     * Test hat es je geprüft — die Steuerungstabelle war also eine Behauptung.
+     *
+     * Aufgefallen ist es erst, als die Schussvorhersage einen Test brauchte,
+     * der ohne Maus feuert (ein Klick würde den Winkel mitverändern).
+     *
+     * Die Leertaste lädt auf (Klick-Verhalten), Enter schießt mit der
+     * eingestellten Kraft — damit gibt es beide Wege, und keiner ist eine
+     * Attrappe.
+     */
+    if (key === 'Enter') {
+      event.preventDefault();
+      this.#handlers.onFire?.();
+      return;
+    }
     if (key === 'a' || key === 'A' || key === 'ArrowLeft') {
       this.setAngle(this.#aim.angle + 0.012);
       return;
@@ -113,7 +133,11 @@ export class InputController {
     }
     // Leertaste springt. Mit A/D wird die Richtung mitgegeben, damit man über
     // Kanten kommt. Der zweite Druck in der Luft ist der Doppelsprung.
-    if (key === ' ' || key === 'Spacebar' || key === 'Enter' || key.startsWith('Arrow')) return;
+    //
+    // Hier stehen nur noch Tasten, die BEWUSST nichts tun sollen: Die
+    // Pfeiltasten sind oben bereits für Winkel und Kraft vergeben, und ein
+    // Sprung auf einer Pfeiltaste hätte zwei Bedeutungen.
+    if (key === 'Spacebar' || key.startsWith('Arrow')) return;
     if (event.code === 'Space') {
       const seitlich = this.#keys.has('a') || this.#keys.has('A') || this.#keys.has('ArrowLeft')
         ? -1

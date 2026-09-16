@@ -13,6 +13,7 @@ import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { prefersReducedMotion } from './dom.js';
+import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
 import {
   drawSky as drawGenerativeSky,
   drawAmbient,
@@ -91,6 +92,59 @@ export class Renderer {
     this.palette = DEFAULT_TERRAIN_PALETTE;
     /** Generative Kulisse; hat Vorrang vor einem Hintergrundbild. */
     this.scenery = null;
+
+    /*
+     * WebGPU: Gerät, wenn vorhanden — sonst `null`.
+     *
+     * Die Erkennung läuft asynchron (`enableGpu()`), weil `requestAdapter` ein
+     * Promise ist. Bis dahin arbeitet der Renderer auf der CPU; es gibt also
+     * keinen Moment ohne Darstellung. Ein fehlendes Gerät ist KEIN Fehler: Es
+     * ist der Regelfall in Umgebungen ohne GPU (headless, ältere Browser), und
+     * dieser Weg ist der geprüfte Hauptpfad.
+     */
+    this.gpuDevice = null;
+    this.gpuAttempted = false;
+    /** Beim letzten Backen benutzter Weg ('gpu' | 'cpu') — für Diagnose/Tests. */
+    this.gpuTerrainPath = null;
+    this.gpuTerrainReason = null;
+    /** Zuletzt gebackene Karte (für die GPU-Nachbesserung). */
+    this.terrainSource = null;
+  }
+
+  /**
+   * Fordert ein WebGPU-Gerät an und backt die aktuelle Karte damit neu.
+   *
+   * Bewusst OPTIONAL: Wer die GPU nicht will oder hat, ruft sie nicht auf. Wird
+   * sie nicht aufgerufen, bleibt `gpuDevice` null und alles läuft wie zuvor auf
+   * der CPU — es gibt keinen Zwang und keine Warnung.
+   *
+   * @returns {Promise<{available:boolean, reason:string}>}
+   */
+  async enableGpu() {
+    if (this.gpuAttempted) {
+      return { available: Boolean(this.gpuDevice), reason: this.gpuTerrainReason ?? 'bereits versucht' };
+    }
+    this.gpuAttempted = true;
+
+    const erkennung = await detectWebGpu();
+    this.gpuTerrainReason = erkennung.reason;
+    if (!erkennung.available) {
+      return { available: false, reason: erkennung.reason };
+    }
+
+    this.gpuDevice = erkennung.device;
+    // Die bereits gebackene Karte noch einmal rechnen — sonst bliebe sie bis
+    // zum nächsten Kartenaufbau auf der CPU.
+    const quelle = this.terrainSource;
+    if (quelle) await this.#applyGpuTerrain(quelle.width, quelle.height, quelle.bitmap);
+    return { available: true, reason: 'bereit' };
+  }
+
+  /** Gibt das GPU-Gerät frei (Betriebsartwechsel, Matchende). */
+  disableGpu() {
+    this.gpuDevice = null;
+    this.gpuTerrainPath = null;
+    this.gpuAttempted = false;
   }
 
   /**
@@ -135,6 +189,9 @@ export class Renderer {
     this.waterLayer.height = Math.ceil(hoehe / WATER_SCALE);
     // Die Geländeschicht ist auf die alte Größe gebaut und muss neu entstehen.
     this.terrainLayer = null;
+    // Auch die GPU-Nachbesserung braucht die neue Größe; ohne das Aufräumen
+    // könnte ein spät eintreffendes GPU-Ergebnis die alte Ebene einsetzen.
+    this.terrainSource = null;
     return true;
   }
 
@@ -329,6 +386,18 @@ export class Renderer {
 
   /**
    * Baut die Terrain-Ebene aus dem Terrain-Bitmap auf.
+   *
+   * Der Rechenkern liegt in `terrainBaker.js` — dort ist er als reine Funktion
+   * prüfbar und kann wahlweise auf der GPU laufen. Diese Methode bleibt als
+   * SYNCHRONE Schnittstelle erhalten, weil der Renderer sie an mehreren Stellen
+   * ohne `await` aufruft (Kartenaufbau, Resize, Online-Rekonstruktion) und ein
+   * Umbau auf asynchron dort nichts gewönne: Der GPU-Weg ist beim ersten Bild
+   * ohnehin noch nicht bereit.
+   *
+   * Ist ein Gerät vorhanden, wird der GPU-Weg angestoßen und die Ebene danach
+   * ausgetauscht (`#applyGpuTerrain`). Bis dahin steht das CPU-Ergebnis —also
+   * nie ein leeres Bild.
+   *
    * @param {Uint8Array} bitmap
    * @param {number} width
    * @param {number} height
@@ -338,50 +407,68 @@ export class Renderer {
     layer.width = width;
     layer.height = height;
     const ctx = layer.getContext('2d');
-    const image = ctx.createImageData(width, height);
-    const data = image.data;
 
-    for (let x = 0; x < width; x++) {
-      let surface = -1;
-      for (let y = 0; y < height; y++) {
-        if (bitmap[y * width + x]) {
-          surface = y;
-          break;
-        }
-      }
-      if (surface < 0) continue;
+    const { layer: gebaut } = bakeTerrainLayerCpu({
+      layer, ctx, bitmap, width, height, palette: this.palette,
+    });
+    this.terrainLayer = gebaut;
+    /** Zuletzt gebackene Karte — der GPU-Weg braucht Bitmap und Maße erneut. */
+    this.terrainSource = { bitmap, width, height };
+    /*
+     * Der benutzte Weg wird IMMER vermerkt, auch wenn gar kein Gerät da ist.
+     *
+     * Fund (belegt): Zuerst stand hier nur die Zuweisung im GPU-Zweig. Wer ohne
+     * Gerät nach dem Weg fragte, bekam `null` — also keine Auskunft, obwohl die
+     * CPU eindeutig der benutzte Weg war. Eine Diagnose, die im Normalfall
+     * schweigt, ist keine.
+     */
+    this.gpuTerrainPath = 'cpu';
+    if (!this.gpuTerrainReason) this.gpuTerrainReason = 'WebGPU nicht angefordert';
 
-      for (let y = surface; y < height; y++) {
-        const index = (y * width + x) * 4;
-        const depth = Math.min(1, (y - surface) / 160);
-        const oben = this.palette.surface;
-        const unten = this.palette.deep;
-        data[index] = Math.round(oben[0] + (unten[0] - oben[0]) * depth);
-        data[index + 1] = Math.round(oben[1] + (unten[1] - oben[1]) * depth);
-        data[index + 2] = Math.round(oben[2] + (unten[2] - oben[2]) * depth);
-        data[index + 3] = 255;
-      }
+    // GPU-Nachbesserung anstoßen, falls ein Gerät bereitsteht. Sie ist NICHT
+    // Voraussetzung für die Anzeige: Ohne Gerät, ohne Browser-Unterstützung
+    // oder bei einem Fehler bleibt es beim CPU-Ergebnis.
+    if (this.gpuDevice) this.#applyGpuTerrain(width, height, bitmap);
+
+    return gebaut;
+  }
+
+  /**
+   * Backt die Terrain-Ebene auf der GPU und tauscht sie ein.
+   *
+   * Bewusst asynchron und fehlertolerant: Ein GPU-Fehler darf das Spiel nicht
+   * anhalten. Schlägt der Weg fehl, bleibt die CPU-Ebene stehen — der Spieler
+   * sieht keinen Unterschied außer der Rechenzeit.
+   */
+  async #applyGpuTerrain(width, height, bitmap) {
+    try {
+      const { layer, path, reason } = await bakeTerrainLayer({
+        bitmap,
+        width,
+        height,
+        palette: this.palette,
+        device: this.gpuDevice,
+        createCanvas: (w, h) => {
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          return c;
+        },
+      });
+      /*
+       * Nur übernehmen, wenn die Karte noch dieselbe ist: Ein Resize während
+       * des Backens hätte sonst eine veraltete Ebene eingesetzt — das Terrain
+       * wäre um die neue Größe versetzt.
+       */
+      const quelle = this.terrainSource;
+      if(quelle && (quelle.width !== width || quelle.height !== height || quelle.bitmap !== bitmap)) return;
+      if (path === 'gpu') this.terrainLayer = layer;
+      this.gpuTerrainPath = path;
+      this.gpuTerrainReason = reason;
+    } catch (error) {
+      this.gpuTerrainPath = 'cpu';
+      this.gpuTerrainReason = `GPU-Weg nicht möglich: ${error.message}`;
     }
-
-    ctx.putImageData(image, 0, 0);
-    // Oberflächenkante hervorheben.
-    ctx.globalCompositeOperation = 'source-atop';
-    // Kantenlicht aus der eigenen Bodenfarbe: ein festes Grün hätte auf Eis,
-    // Sand oder Basalt einen Farbstich ergeben.
-    const [kr, kg, kb] = this.palette.surface;
-    ctx.fillStyle = `rgba(${Math.min(255, kr + 70)}, ${Math.min(255, kg + 70)}, ${Math.min(255, kb + 60)}, 0.22)`;
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        if (!bitmap[y * width + x]) continue;
-        if (y > 0 && bitmap[(y - 1) * width + x]) continue;
-        ctx.fillRect(x, y, 1, 2);
-        break;
-      }
-    }
-    ctx.globalCompositeOperation = 'source-over';
-
-    this.terrainLayer = layer;
-    return layer;
   }
 
   /** Stanzt einen Krater in die sichtbare Terrain-Ebene. */

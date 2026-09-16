@@ -185,6 +185,9 @@ class Game {
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
+    // Bodenberechnung: 'auto' versucht WebGPU, alles andere bleibt auf der CPU.
+    const gpuWahl = document.getElementById('cfg-gpu')?.value ?? 'off';
+    this.#waehleBodenpfad(gpuWahl);
     const rawSeed = document.getElementById('cfg-seed')?.value?.trim();
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
@@ -258,6 +261,31 @@ class Game {
       return item;
     }));
     return { ok: true, count: offen.length };
+  }
+
+  /**
+   * Wählt den Rechenweg für den Boden anhand der Menüwahl.
+   *
+   * „auto" ist eine Absichtserklärung, keine Garantie: Ist kein WebGPU
+   * vorhanden, bleibt es beim CPU-Weg und der Grund steht im Protokoll. Ein
+   * stiller Rückfall wäre nicht von „hat funktioniert" zu unterscheiden — und
+   * genau diese Verwechslung soll vermieden werden.
+   *
+   * Das Ergebnis wird gemeldet, nicht verschwiegen: Wer die Option wählt, soll
+   * erfahren, ob sie gegriffen hat.
+   */
+  async #waehleBodenpfad(wahl) {
+    if (wahl !== 'auto') {
+      this.renderer.disableGpu();
+      return { available: false, reason: 'CPU gewählt' };
+    }
+    const ergebnis = await this.renderer.enableGpu();
+    if (ergebnis.available) {
+      this.hud.log('Bodenberechnung: WebGPU', 'good');
+    } else {
+      this.hud.log(`Bodenberechnung: CPU (${ergebnis.reason})`, 'neutral');
+    }
+    return ergebnis;
   }
 
   /** Lokales Match im Browser. */
@@ -2020,6 +2048,34 @@ class Game {
     window.__PA__ = {
       game: this,
       getMode: () => this.mode,
+      /**
+       * Rechenweg des Bodens (Diagnose und Tests).
+       *
+       * Meldet, WELCHER Weg zuletzt benutzt wurde und WARUM. Ohne diese
+       * Auskunft wäre „WebGPU ist an" eine Behauptung — der Rückfall auf die
+       * CPU sieht im Bild identisch aus.
+       */
+      terrainPath: () => ({
+        device: Boolean(this.renderer.gpuDevice),
+        path: this.renderer.gpuTerrainPath,
+        reason: this.renderer.gpuTerrainReason,
+        attempted: this.renderer.gpuAttempted,
+      }),
+      /** Fordert WebGPU an (wie die Menüwahl „automatisch"). */
+      enableGpu: () => this.renderer.enableGpu(),
+      /** Laufende Schussvorhersage (Diagnose und Tests). */
+      prediction: () => ({
+        active: this.shotPredictor.active,
+        stats: this.shotPredictor.stats,
+        pending: this.shotPredictor.pending
+          ? {
+            playerId: this.shotPredictor.pending.playerId,
+            weaponId: this.shotPredictor.pending.weaponId,
+            points: this.shotPredictor.pending.trajectory?.points?.length ?? 0,
+            impact: this.shotPredictor.pending.trajectory?.impact ?? null,
+          }
+          : null,
+      }),
       /** Replay: Zustand der Wiedergabe (oder null). */
       replay: () => (this.replayPlayer ? {
         tick: this.replayPlayer.tick,

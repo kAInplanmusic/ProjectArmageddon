@@ -169,9 +169,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (364 Tests) |
+| `npm test` | Unit- und Integrationstests (569 Tests) |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
-| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (35 Tests) |
+| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (129 Tests) |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
@@ -241,6 +241,8 @@ src/
   client/
     main.js                 Einstieg: lokaler + Online-Modus, Game-Loop, Debug-API
     renderer.js             Canvas-Rendering (Terrain, Wasser, Figuren, Vorschau)
+    terrainBaker.js         Bodenfläche: reiner Rechenkern + optionaler WebGPU-Weg
+    shotPrediction.js       Vorhersage des eigenen Schusses (Online) mit Rollback
     input.js                Maus-/Tastatureingabe
     hud.js                  DOM-HUD (Runde, Wind, Zugzeit, Listen, Protokoll)
     networkClient.js        WebSocket-Client, Interpolation, Reconnect
@@ -358,6 +360,13 @@ Im HUD erscheinen laufende Zustände als Marken in der Spielerliste
   Spielerberechtigung, Winkel, Kraft, Tick-Fenster und Waffen-Whitelist.
 - Lag-Kompensation über einen 200-ms-Snapshot-Verlauf.
 - Reconnect per Sitzungs-Token innerhalb eines Fensters von 30 s.
+- **Vorhersage des eigenen Schusses:** Der Client rechnet die Bahn beim Feuern
+  sofort und zeichnet sie, bevor die Serverantwort eintrifft; die Antwort löst
+  sie auf oder verwirft sie. Die Vorhersage ist rein anzeigend — sie ändert
+  keinen Zustand, sendet nichts und erteilt keine Autorität. Sie rechnet mit
+  denselben Konstanten wie `MatchController.aimPreview`; ein Test verlangt
+  Übereinstimmung auf 1 px. Klasse, Archetyp und Waffe kommen dafür aus der
+  Bestandsnachricht (nicht geraten — siehe `MASTERDOTO.md`).
 
 ## Spielregeln
 
