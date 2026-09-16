@@ -695,6 +695,46 @@ export class Renderer {
     }
   }
 
+  /**
+   * Zeichnet die vorhergesagte Bahn des eigenen Schusses.
+   *
+   * Getrennt von `#drawAimPreview`, weil es eine andere Aussage ist: Die
+   * Zielhilfe zeigt, wohin ein Schuss bei der AKTUELLEN Zielung ginge; die
+   * Vorhersage zeigt, wohin der bereits ABGESCHICKTE Schuss geht, während die
+   * Serverbestätigung noch aussteht. Beides gleich zu zeichnen hieße, zwei
+   * Zustände zu einem zu verschmelzen.
+   *
+   * Anders als die Zielhilfe wird der Einschlagpunkt gefüllt markiert: Die Bahn
+   * ist bereits unterwegs, sie ist keine Möglichkeit mehr.
+   *
+   * @param {{points:{x:number,y:number}[], impact:{x:number,y:number}|null}|null} bahn
+   */
+  #drawPrediction(bahn) {
+    const points = bahn?.points;
+    if (!points || points.length < 2) return;
+
+    this.ctx.save();
+    this.ctx.setLineDash([]);
+    // Voller Strich gegen die gestrichelte Zielhilfe: zwei Wege, zwei Muster.
+    this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.85)';
+    this.ctx.lineWidth = 2.5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(points[0].x, points[0].y);
+    for (const point of points) this.ctx.lineTo(point.x, point.y);
+    this.ctx.stroke();
+
+    if (bahn.impact) {
+      this.ctx.fillStyle = 'rgba(76, 201, 240, 0.9)';
+      this.ctx.beginPath();
+      this.ctx.arc(bahn.impact.x, bahn.impact.y, 5, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+      this.ctx.lineWidth = 1.5;
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
   #drawAimPreview(points) {
     if (!points || points.length < 2) return;
     this.ctx.save();
@@ -939,7 +979,7 @@ export class Renderer {
    * @param {object} [options.water] - WaterField-Instanz des Matches
    * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
-  render(state, { aimPreview = null, aim = null, water = null, blastRadius = 0 } = {}) {
+  render(state, { aimPreview = null, prediction = null, aim = null, water = null, blastRadius = 0 } = {}) {
     // Zugänglichkeit je Bild neu abfragen: Ändert der Nutzer die
     // Systemeinstellung, greift sie ohne Neuladen.
     this.reducedMotion = prefersReducedMotion();
@@ -963,6 +1003,15 @@ export class Renderer {
     this.#drawTurrets(state.turrets ?? []);
     this.#drawMaelstrom(state.maelstrom);
     this.#drawAimPreview(aimPreview);
+    /*
+     * Die Schussvorhersage liegt VOR der Zielhilfe und in eigener Farbe.
+     *
+     * Reihenfolge: Sie ist das jüngere Ereignis (ein Schuss ist gerade raus) und
+     * darf nicht von der Zielhilfe überdeckt werden. Farbe: Die Zielhilfe ist
+     * orange („so könntest du zielen"), die Vorhersage türkis („so fliegt er").
+     * Zwei gleiche Kurven in derselben Farbe wären nicht zu unterscheiden.
+     */
+    this.#drawPrediction(prediction);
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? []);

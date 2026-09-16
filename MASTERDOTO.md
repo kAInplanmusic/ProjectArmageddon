@@ -1559,8 +1559,28 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
       Zugzeit auch ohne Schuss (sechs Wechsel ohne einen einzigen Schuss);
       abgesichert in `tests/turn.test.js`. Der frühere TODO-Eintrag war falsch —
       die Zeitmessung lief bereits serverseitig.
-- [ ] Client-seitige Prädiktion des eigenen Schusses mit Server-Rollback.
-      Aktuell fühlt sich der eigene Schuss bei Latenz verzögert an.
+- [x] Client-seitige Prädiktion des eigenen Schusses mit Server-Rollback.
+      Erledigt: `src/client/shotPrediction.js` rechnet die Bahn des abgeschickten
+      Schusses sofort und zeichnet sie, bevor die Serverantwort eintrifft; die
+      Antwort löst sie auf (`resolve`) oder verwirft sie (`discard`), und ohne
+      Antwort läuft sie nach 1 s aus. Die Rechnung nutzt DIESELBEN Konstanten und
+      dieselbe Schleife wie `MatchController.aimPreview` — ein Test stellt beide
+      Bahnen gegen den echten MatchController und verlangt Übereinstimmung auf
+      1 px (`tests/shot-prediction.test.js`).
+      **Ein Fehler kam dabei ans Licht:** Der Client kannte Klasse und Archetyp
+      gar nicht und RIET sie aus dem Listenindex
+      (`CLASS_IDS[index % length] === 'scout' ? 0 : 1`). Im Spiel fiel das nicht
+      auf, weil nur Position und Gesundheit übertragen wurden; mit der Vorhersage
+      wurde es sichtbar, denn der Geschwindigkeitsfaktor folgt der Klasse
+      (Scout 0,64 gegen Artillery 1,19 gemessen). Beides geht jetzt über die
+      Bestandsnachricht (`classId`/`archetypeId` je Spieler), abgesichert in
+      `tests/server-integration.test.js`.
+      **Dabei aufgefallen und festgehalten:** `classId` ist im Motor ein INDEX,
+      in `CLASS_IDS` steht der NAME. Wer den Index unkonvertiert an
+      `combatProfile` gibt, bekommt keinen Fehler, sondern still das
+      Rückfallprofil — für jede Klasse denselben Wert. Ein eigener Test
+      (`Unkonvertierte Indizes liefern unterschiedliche Faktoren je Klasse`)
+      hält das fest.
 - [x] Snapshot-Kompression geprüft — **nicht nötig**, und das Delta spart keine
       Bytes. Gemessen: 4,0 kB/s bei zwölf Figuren und 20 Hz (Höchstfall).
       Siehe „Zustandsübertragung: geprüft, nicht komprimiert".

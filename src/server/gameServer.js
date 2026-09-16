@@ -397,11 +397,30 @@ class LobbySession {
         const rest = this.match.cooldownFor(seat.entityId, weaponId);
         if (rest > 0) cooldowns[weaponId] = rest;
       }
+      /*
+       * Klasse und Archetyp gehören in die Bestandsnachricht.
+       *
+       * Fund (belegt): Sie wurden NIRGENDS übertragen. Der Client riet sie aus
+       * dem Listenindex (`CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1`)
+       * — bei zwei Klassen also abwechselnd, unabhängig davon, wer tatsächlich
+       * welche Figur führt. Folge: Die Winkelvorschau und (mit der
+       * Schussvorhersage) die angezeigte Flugbahn rechneten mit einem fremden
+       * Geschwindigkeitsfaktor — eine Artillery-Figur zeigte die Bahn eines
+       * Scouts.
+       *
+       * Nicht in den binären Snapshot: Der hat ein festes Layout je Spieler
+       * (PLAYER_STRIDE). Zwei zusätzliche Bytes änderten das Drahtformat für
+       * alle — für Werte, die sich nie während eines Matches ändern. Die
+       * Bestandsnachricht geht ohnehin nur bei Änderung raus.
+       */
+      const spieler = this.match.players.find(entry => entry.entityId === seat.entityId);
       table[seat.entityId] = {
         inventory: [...entry.weapons],
         ammo,
         cooldowns,
         activeWeaponId: entry.activeWeaponId ?? null,
+        classId: spieler?.classId ?? null,
+        archetypeId: spieler?.archetypeId ?? null,
       };
     }
     return table;

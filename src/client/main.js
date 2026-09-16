@@ -29,6 +29,7 @@ import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { ReplayPlayer } from '../engine/replay.js';
+import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile, beschreibe } from '../shared/stats.js';
 import {
   kennzahlen as erfolgsKennzahlen,
@@ -66,6 +67,15 @@ class Game {
      * Snapshot); hier wird nur der ÜBERGANG erkannt.
      */
     this.waterStates = new Map();
+
+    /**
+     * Vorhersage des eigenen Schusses (Online-Modus).
+     *
+     * Der eigene Schuss wird sofort gezeichnet, statt auf die Serverantwort zu
+     * warten; ein Modul, kein Zustand des Matches. Siehe `shotPrediction.js` —
+     * die Vorhersage ist rein anzeigend und verändert nichts.
+     */
+    this.shotPredictor = new ShotPredictor({ timeoutMs: 1000 });
 
     /**
      * Wiedergabe einer Aufzeichnung.
@@ -460,6 +470,10 @@ class Game {
     });
     client.on('server_error', message => {
       const text = message.errors?.[0] ?? message.error ?? 'Serverfehler';
+      // Der Server hat den Schuss abgelehnt (kein Zug, Nachladezeit, keine
+      // Munition): Die Vorhersage ist damit widerlegt und MUSS weg — sonst
+      // zeigte die Anzeige eine Bahn für einen Schuss, den es nie gab.
+      this.shotPredictor.discard(text);
       this.hud.log(`Server: ${text}`, 'danger');
     });
     client.on('game_event', message => this.#handleRemoteEvent(message));
@@ -527,8 +541,25 @@ class Game {
     const entities = (this.network.interpolatedEntities() ?? []).map((entity, index) => ({
       entityId: entity.entityId,
       teamId: entity.teamId,
-      classId: CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1,
-      archetypeId: ARCHETYPE_IDS[index % ARCHETYPE_IDS.length] === 'brawler' ? 0 : 1,
+      /*
+       * Klasse und Archetyp kommen aus der Bestandsnachricht (LOADOUTS).
+       *
+       * Fund (belegt): Hier stand ein GERATENER Wert —
+       * `CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1` —, also
+       * abwechselnd je Listenposition, unabhängig davon, welche Figur der
+       * Spieler tatsächlich führt. Im Spiel fiel das nicht auf, weil nur
+       * Positionen und Gesundheit gezeichnet wurden. Mit der Schussvorhersage
+       * wurde es sichtbar: Der Geschwindigkeitsfaktor folgt der Klasse
+       * (Artillery 1,3 gegen Scout 0,7), und eine geratene Klasse zeigte damit
+       * eine um ein Drittel falsche Bahn.
+       *
+       * Der Rückfall bleibt der Index — aber nur, wenn die Nachricht noch nicht
+       * eingetroffen ist (direkt nach dem Beitritt).
+       */
+      classId: this.remoteLoadouts?.[entity.entityId]?.classId
+        ?? (CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1),
+      archetypeId: this.remoteLoadouts?.[entity.entityId]?.archetypeId
+        ?? (ARCHETYPE_IDS[index % ARCHETYPE_IDS.length] === 'brawler' ? 0 : 1),
       label: `P${index + 1}`,
       alive: entity.alive,
       x: entity.x,
@@ -596,7 +627,32 @@ class Game {
         this.renderer.applyCrater(message.x, message.y, message.radius || 12);
         break;
       case 'hitscan':
+        /*
+         * ROLLBACK: Der Server bestätigt den Schuss. Ab hier zeichnet der echte
+         * Strahl — die Vorhersage wird aufgelöst und verschwindet. Ohne diesen
+         * Schritt stünde die geschätzte Bahn neben der echten, und der Spieler
+         * sähe zwei Kurven für einen Schuss.
+         *
+         * Der Einschlagpunkt des Servers ist zugleich die Messlatte: Weicht er
+         * vom vorhergesagten ab, war das Terrain inzwischen anders (der Client
+         * hat denselben Krater noch nicht verarbeitet).
+         */
+        this.shotPredictor.resolve({
+          impact: Number.isFinite(message.hitX) && Number.isFinite(message.hitY)
+            ? { x: message.hitX, y: message.hitY }
+            : null,
+        });
         this.#drawHitscanBeam(message);
+        break;
+      case 'projectile_spawn':
+        // Der Server hat das Geschoss erzeugt: die Vorhersage hat ihre Aufgabe
+        // erfüllt und wird von der echten Flugbahn abgelöst.
+        this.shotPredictor.resolve();
+        break;
+      case 'shot':
+        // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
+        // zeichnen, aber die Vorhersage ist damit erledigt.
+        this.shotPredictor.resolve();
         break;
       case 'projectile_impact':
         this.renderer.addFlash(message.x, message.y, 14);
@@ -778,6 +834,11 @@ class Game {
         return { ok: false, errors: ['Nicht am Zug'] };
       }
       this.network.sendInput(this.aim.angle, power);
+      // Vorhersage SOFORT anlegen: Die Bahn wird gezeichnet, bevor die
+      // Serverantwort eintrifft. Sie ist rein anzeigend (siehe
+      // `shotPrediction.js`) — der Server entscheidet weiterhin über Gültigkeit
+      // und Wirkung.
+      this.#startShotPrediction(this.aim.angle, power);
       this.hud.log(`Schuss gesendet (${Math.round(power)} Kraft)`, 'accent');
       return { ok: true, projectileId: null, hit: null };
     }
@@ -1034,6 +1095,80 @@ class Game {
       default:
         this.hud.log(`${name} nutzt eine Wirkung (${payload.kind})`);
     }
+  }
+
+  /**
+   * Legt die Vorhersage für den eigenen Schuss an.
+   *
+   * Der Client kennt alles, was die Bahn bestimmt: die eigene Position aus dem
+   * Zustand, Klasse und Archetyp aus der Bestandsnachricht, den Waffenfaktor aus
+   * dem Katalog und das Terrain aus dem rekonstruierten Bitmap. Damit rechnet er
+   * mit DENSELBEN Zahlen und derselben Schleife wie der Server — die
+   * Vorhersage ist deshalb keine Schätzung, sondern die Bahn, die der Server
+   * gleich bestätigen wird.
+   *
+   * Sie läuft NUR im Online-Modus: Lokal ist der Schuss ohnehin sofort da, eine
+   * zweite Anzeige wäre eine Doppelung.
+   */
+  #startShotPrediction(angle, power) {
+    if (this.mode !== 'online') return;
+
+    const zustand = this.onlineViewState;
+    const playerId = zustand?.activePlayerId ?? null;
+    if (playerId === null) return;
+    const eigene = zustand.entities.find(entity => entity.entityId === playerId);
+    if (!eigene) return;
+
+    const waffe = eigene.activeWeaponId ? getWeapon(eigene.activeWeaponId) : null;
+
+    /*
+     * Selbstwirkende Waffen verschießen kein Geschoss (Heilung, Schild,
+     * Teleport). Eine Bahn dafür zu zeichnen wäre schlicht falsch — sie zeigen
+     * eine Flugkurve, die es nicht gibt. Der Server meldet die Wirkung als
+     * `special_effect`; die Anzeige folgt dort.
+     */
+    if (waffe && waffe.delivery !== 'projectile' && waffe.delivery !== 'hitscan') return;
+
+    const faktor = launchSpeedMultiplier({
+      classId: eigene.classId,
+      archetypeId: eigene.archetypeId,
+      weapon: waffe,
+    });
+
+    // Terrainprüfung, sofern die Karte rekonstruiert ist. Ohne sie endet die
+    // Bahn an der Kartengrenze — sichtbar besser als gar keine Vorhersage.
+    const terrain = this.remoteTerrain;
+    const breite = terrain?.width ?? this.renderer.width;
+    const hoehe = terrain?.height ?? this.renderer.height;
+    const isSolid = terrain?.bitmap
+      ? (x, y) => (
+        x >= 0 && y >= 0 && x < terrain.width && y < terrain.height
+          ? Boolean(terrain.bitmap[y * terrain.width + x])
+          : false
+      )
+      : null;
+
+    const trajectory = predictTrajectory({
+      x: eigene.x,
+      y: eigene.y,
+      angle,
+      power,
+      speedMultiplier: faktor,
+      gravityScale: waffe?.gravityScale ?? 1,
+      wind: zustand.wind ?? 0,
+      width: breite,
+      height: hoehe,
+      isSolid,
+    });
+
+    this.shotPredictor.begin({
+      playerId,
+      angle,
+      power,
+      weaponId: eigene.activeWeaponId ?? null,
+      tick: zustand.tick ?? null,
+      trajectory,
+    });
   }
 
   /** Zeichnet den Strahl eines Hitscan-Schusses zwischen Schütze und Einschlag. */
@@ -1373,12 +1508,22 @@ class Game {
 
     this.waterFrame = (this.waterFrame + 1) % 4;
 
+    /*
+     * Die laufende Schussvorhersage wird ZUSÄTZLICH als Aim-Vorschau
+     * gezeichnet, aber in eigener Farbe: Sie ist eine andere Aussage als die
+     * Zielhilfe („so fliegt der abgegebene Schuss") und darf mit ihr nicht
+     * verwechselt werden. Der Renderer trennt beide Wege.
+     */
+    this.shotPredictor.expire();
+    const prediction = this.mode === 'online' ? this.shotPredictor.pending?.trajectory ?? null : null;
+
     // Flächenwirkung der gewählten Waffe für die Radius-Vorschau.
     const activeEntity = state.entities.find(entity => entity.entityId === playerId);
     const activeWeapon = activeEntity?.activeWeaponId ? getWeapon(activeEntity.activeWeaponId) : null;
 
     this.renderer.render(state, {
       aimPreview,
+      prediction,
       aim: this.aim,
       water: this.mode === 'online' ? null : (this.waterFrame === 0 ? this.match.water : null),
       blastRadius: activeWeapon?.blastRadius ?? 0,

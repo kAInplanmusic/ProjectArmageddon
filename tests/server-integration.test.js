@@ -484,3 +484,94 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
     await server.close();
   }
 });
+
+test('Die Bestandsnachricht führt Klasse und Archetyp je Spieler', { timeout: 20_000 }, async () => {
+  /*
+   * Fund (belegt): Klasse und Archetyp wurden NIRGENDS übertragen.
+   *
+   * Der Client riet sie aus dem Listenindex
+   * (`CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1`). Im Spiel fiel
+   * das nicht auf, weil nur Position und Gesundheit gezeichnet wurden. Mit der
+   * Schussvorhersage wurde es sichtbar: Der Geschwindigkeitsfaktor folgt der
+   * Klasse (Artillery 1,3 gegen Scout 0,7) — eine geratene Klasse zeigte damit
+   * eine um ein Drittel falsche Flugbahn.
+   *
+   * Geprüft wird deshalb am ECHTEN Server, dass die Zuordnung ankommt und zu
+   * den Figuren des Matches passt. Ein Test gegen eine nachgebaute Tabelle
+   * hätte die Lücke nicht gefunden.
+   */
+  const { server, url } = await startTestServer();
+  const created = await createLobby(url, { teams: 2, playersPerTeam: 1 });
+  const wsUrl = url.replace(/^http/, 'ws') + '/ws';
+  const client = new TestClient(wsUrl);
+
+  try {
+    await client.open();
+    client.send(CONTROL.JOIN_LOBBY, {
+      lobbyId: created.lobby.id,
+      name: 'Prüfer',
+      token: created.player?.token,
+    });
+
+    const loadouts = await client.waitFor(CONTROL.LOADOUTS);
+    assert.ok(loadouts.loadouts, 'Bestandsnachricht ohne Inhalt');
+
+    const eintraege = Object.entries(loadouts.loadouts);
+    /*
+     * Nur besetzte Plätze haben eine Entity — ein noch nicht beigetretener
+     * Platz existiert im Match nicht. Deshalb wird hier NICHT auf die
+     * Lobby-Kapazität geprüft, sondern auf mindestens einen Eintrag: Wer
+     * beigetreten ist, muss seine Klasse erfahren.
+     */
+    assert.ok(eintraege.length >= 1,
+      `Mindestens eine Figur erwartet, ${eintraege.length} Einträge erhalten`);
+
+    for (const [entityId, eintrag] of eintraege) {
+      // Beide Felder MÜSSEN vorhanden sein. `undefined` (Feld fehlt) ist etwas
+      // anderes als `null` (Feld vorhanden, aber ohne Zuordnung) — der Client
+      // braucht das Feld, um überhaupt rechnen zu können.
+      assert.ok('classId' in eintrag,
+        `Figur ${entityId}: classId fehlt in der Bestandsnachricht`);
+      assert.ok('archetypeId' in eintrag,
+        `Figur ${entityId}: archetypeId fehlt in der Bestandsnachricht`);
+      /*
+       * Der Typ ist ein INDEX (Zahl), kein Name.
+       *
+       * `MatchController` führt `index % CLASS_IDS.length`; die Zuordnung zum
+       * Namen geschieht mit `CLASS_IDS[classId]`. Eine Prüfung auf eine
+       * Zeichenkette war deshalb falsch — sie hat den tatsächlichen Vertrag
+       * des Motors beschrieben, nicht den erwünschten.
+       */
+      assert.ok(eintrag.classId === null || Number.isInteger(eintrag.classId),
+        `Figur ${entityId}: classId ist kein Index, sondern ${JSON.stringify(eintrag.classId)}`);
+      assert.ok(eintrag.archetypeId === null || Number.isInteger(eintrag.archetypeId),
+        `Figur ${entityId}: archetypeId ist kein Index, sondern ${JSON.stringify(eintrag.archetypeId)}`);
+    }
+
+    /*
+     * Die Zuordnung muss zum Match passen — nicht bloß vorhanden sein.
+     *
+     * Der Server hält dieselbe Sitzung; über die Lobby lässt sich die
+     * Gegenprobe ziehen: Die Werte müssen den Klassen/Archetypen entsprechen,
+     * die der MatchController seinen Figuren gegeben hat.
+     */
+    const session = [...server.sessions?.() ?? []][0] ?? null;
+    if (session) {
+      for (const [entityId, eintrag] of eintraege) {
+        const figur = session.match.players.find(p => String(p.entityId) === entityId);
+        if (!figur) continue;
+        assert.equal(eintrag.classId, figur.classId,
+          `Figur ${entityId}: übertragene Klasse weicht vom Match ab`);
+        assert.equal(eintrag.archetypeId, figur.archetypeId,
+          `Figur ${entityId}: übertragener Archetyp weicht vom Match ab`);
+      }
+    }
+
+    // Und mindestens eine Zuordnung ist gesetzt (nicht alles null).
+    assert.ok(eintraege.some(([, e]) => e.classId !== null),
+      'Keine einzige Klasse übertragen — der Client müsste wieder raten');
+  } finally {
+    client.close();
+    await server.close();
+  }
+});
