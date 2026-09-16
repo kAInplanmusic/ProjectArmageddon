@@ -461,6 +461,47 @@
     .roster-list .r-text { font-size: 0.82rem; line-height: 1.35; }
 
     /*
+     * Hilfe-Ansicht (Klassen, Loot, Gelände).
+     *
+     * Aufbau wie die Kader-Ansicht: Reiter oben, Inhalt darunter. Die Inhalte
+     * werden abgeleitet (buildHilfeView), hier steht nur die Darstellung.
+     */
+    #hilfe-browser { margin: 0.6rem 0 0.2rem; }
+    #hilfe-tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.6rem 0; }
+    #hilfe-tabs button {
+      padding: 0.25rem 0.5rem; font-size: 0.8rem; cursor: pointer;
+      border: 1px solid #3a4a5f; border-radius: 4px; background: #1b2430; color: #cfd8e3;
+    }
+    #hilfe-tabs button[aria-selected="true"] { background: #2d6cdf; border-color: #2d6cdf; color: #fff; }
+    .hilfe-inhalt { font-size: 0.84rem; line-height: 1.4; max-height: 30rem; overflow-y: auto; padding-right: 0.3rem; }
+    .hilfe-inhalt h3 { font-size: 0.95rem; margin: 0.9rem 0 0.3rem; color: #e8eef6; }
+    .hilfe-inhalt h4 { font-size: 0.86rem; margin: 0.4rem 0 0.2rem; color: #e8eef6; }
+    .hilfe-inhalt .h-einleitung { color: #9fb0c4; margin: 0 0 0.6rem; }
+    .hilfe-inhalt .h-erklaerung { color: #9fb0c4; margin: 0.2rem 0 0.5rem; }
+    .hilfe-inhalt .h-kennzahl { color: #7d8ea3; font-size: 0.78rem; margin: 0.2rem 0 0; }
+    /* Kartenraster: Die Klassen stehen nebeneinander, die Geländeformen ebenso. */
+    .h-karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem; }
+    .h-karte { border: 1px solid #2a3646; border-radius: 5px; padding: 0.5rem 0.6rem; background: #141c26; }
+    .h-liste { list-style: none; margin: 0.2rem 0 0; padding: 0; }
+    .h-liste li { padding: 0.15rem 0; border-top: 1px solid #232f3d; }
+    .h-liste li:first-child { border-top: none; }
+    /* Wertbalken: Anteil am Gruppenmaximum, Zahl steht daneben. */
+    .h-wert { display: grid; grid-template-columns: 4.5rem 1fr 2.6rem; align-items: center; gap: 0.4rem; margin: 0.2rem 0; }
+    .h-wert-label { color: #8ba0b4; font-size: 0.78rem; }
+    .h-wert-spur { background: #232f3d; height: 0.5rem; border-radius: 3px; overflow: hidden; display: block; }
+    .h-wert-fuellung { display: block; height: 100%; background: #2d6cdf; }
+    .h-wert-zahl { text-align: right; font-variant-numeric: tabular-nums; color: #cfd8e3; font-size: 0.78rem; }
+    /*
+     * Hinweise sind bewusst abgesetzt: Sie beschreiben Grenzen (wirkungslose
+     * Werte, die Kopplung von Klasse und Archetyp). Als normale Zeile wären sie
+     * von einem Spielwert nicht zu unterscheiden.
+     */
+    .h-hinweis { margin-top: 0.8rem; padding: 0.45rem 0.6rem; border-left: 3px solid #7d8ea3; background: #1a222c; color: #9fb0c4; font-size: 0.8rem; }
+    .h-hinweis p { margin: 0.2rem 0; }
+    .h-seltenheiten li { display: flex; align-items: center; gap: 0.4rem; }
+    .h-farbe { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 2px; flex: 0 0 0.7rem; }
+
+    /*
      * Kennzahlen (Profil und Partie).
      *
      * Als beschreibungsliste aus zwei Spalten: Bezeichnung links, Wert rechts.
@@ -686,6 +727,21 @@
             <div id="roster-tabs" role="tablist" aria-label="Fraktionen"></div>
             <div id="roster-info" class="roster-info"></div>
             <ul id="roster-list" class="roster-list" aria-label="Charaktere der Fraktion"></ul>
+          </details>
+          <!--
+            Hilfe: Klassen, Loot und Gelände erklärt.
+
+            Die Inhalte stehen NICHT hier, sondern werden beim Aufklappen aus den
+            Konfigurationsmodulen abgeleitet (`buildHilfeView` in main.js). Grund:
+            Ein Zahlenwert im Markup wäre eine zweite Quelle neben der Config und
+            müsste bei jeder Balance-Änderung mitwandern. Die erklärenden Sätze
+            stehen als `erklaerung`-Felder bei ihren Werten (classes.js,
+            terrainGen.js).
+          -->
+          <details id="hilfe-browser">
+            <summary>Hilfe — Klassen, Loot und Gelände</summary>
+            <div id="hilfe-tabs" role="tablist" aria-label="Hilfethemen"></div>
+            <div id="hilfe-inhalt" class="hilfe-inhalt"></div>
           </details>
           <!--
             Replay wiedergeben.

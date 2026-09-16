@@ -84,9 +84,25 @@ Je Klasse eine Karte mit:
 - **Die Archetypen** als Zeile darunter (`CLASS_ARCHETYPES`): Brawler / Artillerist /
   Okkultist mit ihrer Wirkung (Leben-Faktor, Tempo-Faktor).
 - **Das Startaufgebot** aus `getClassLoadoutDetail(classId)` — mit `roleLabel` und
-  `reason`. Dieses Feld existiert bereits und wird **heute nirgends angezeigt**; die
-  Übersicht ist der erste Konsument. Damit wird aus totem Code ein Nutzen, ohne dass
-  eine Zeile Logik dazukommt.
+  der konkreten Waffe. Dieses Feld existiert bereits und wird **heute nirgends
+  angezeigt**; die Übersicht ist der erste Konsument.
+
+  **Korrektur zum ersten Entwurf (Umsetzung, belegt):** Der Entwurf nannte auch
+  `reason` als Textgewinn („Felder, die im Menü nirgends angezeigt werden"). Das
+  ist FALSCH. Nachgemessen ist `reason` ein maschinell zusammengesetzter Satz
+  (`loadouts.js:221-223`):
+
+  ```
+  "Rolle Flächenwirkung — Wahl der Klasse scout"
+  "Bewegungsmittel — Kür der Klasse scout"
+  ```
+
+  Er wiederholt lediglich `roleLabel` und den Klassennamen. Ihn anzuzeigen ergäbe
+  doppelten Text („Flächenwirkung: Rolle Flächenwirkung — Wahl der Klasse
+  scout"). Die Anzeige nutzt deshalb **Rolle + Waffe**; `reason` bleibt
+  ungenutzt. Ein Test in `tests/onboarding-hilfe.test.js` hält das fest und
+  schlägt fehl, sobald `reason` eines Tages eine echte Begründung wird — dann ist
+  die Anzeige umzustellen.
 - **Ein Warnhinweis auf die bekannte Kopplung**: Im laufenden Match sind nur drei der
   neun Kombinationen erreichbar (`index % 3`, siehe `match.js:432-433` und
   „Bekannte Grenzen"). Die Übersicht zeigt neun Kombinationen, das Spiel erzeugt drei —
@@ -151,8 +167,20 @@ DOM-Aufbau strikt über `document.createElement` (das Projekt nutzt kein
   `tests/class-profile.test.js` / `tests/class-loadout.test.js` geprüft werden —
   „es gibt keinen Sidegrade/Power-Wert, der im Client hartkodiert ist".
 
-**Ergebnis A: umsetzbar, regelkonform.** Aufwandsschwerpunkt liegt im Formulieren der
-`erklaerung`-Felder, nicht im Code.
+**Ergebnis A: umgesetzt.** Der Aufwandsschwerpunkt lag im Formulieren der
+`erklaerung`-Felder, nicht im Code. Stand der Umsetzung:
+
+- `erklaerung`-Felder ergänzt: `classes.js` (3 Klassen, 3 Archetypen),
+  `terrainGen.js` (8 Formen).
+- `uebersichtFuerHilfe()` in `classes.js` — die einzige Stelle, die Prosa und
+  Werte zusammenführt. Der Client rendert nur.
+- `buildHilfeView()` in `main.js` + Bereich `details#hilfe-browser` in
+  `index.html` (drei Reiter: Klassen, Loot, Karte).
+- Abgesichert: `tests/onboarding-hilfe.test.js` (10 Tests, ohne Browser) und
+  `tests/e2e/hilfe.spec.mjs` (9 Tests im Browser, prüfen die Anzeige gegen die
+  Configs).
+- **Ein Befund wurde beim Umsetzen korrigiert** (siehe A.2, „Korrektur zum ersten
+  Entwurf"): `reason` ist keine Begründung, sondern ein zusammengesetzter Satz.
 
 ---
 

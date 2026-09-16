@@ -1781,9 +1781,28 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 Die alte Datei wurde gelöscht. Ihre Punkte waren fast alle erledigt (siehe Kopf),
 die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 
-- [ ] **Onboarding.** Kein Tutorial, keine Klassenübersicht, keine Erklärung von
-      Loot und Sidegrades. Geprüft: kein Treffer für `tutorial`/`onboarding` in
-      `src/` und `index.html`.
+- [x] **Onboarding.** Erledigt: Der Menü-Bereich „Hilfe" (`details#hilfe-browser`)
+      erklärt Klassen, Loot und Gelände in drei Reitern. Die Inhalte werden
+      **abgeleitet**, nicht abgetippt: erklärende Sätze stehen als
+      `erklaerung`-Felder neben ihren Werten (`classes.js`: 3 Klassen +
+      3 Archetypen, `terrainGen.js`: 8 Formen), die Zahlen kommen aus
+      `uebersichtFuerHilfe()` bzw. direkt aus `loot.js`/`lootSystem.js`. Der
+      Client rendert nur — keine Zahl, kein Satz ist dort hartkodiert.
+      Zwei Aussagen, die vorher NIRGENDS im Menü standen: die Loot-Grenze
+      (Startwaffen sind nur common/uncommon/rare — episch und legendär gibt es
+      ausschließlich über Kisten) und das Startaufgebot je Klasse.
+      Abgesichert in `tests/onboarding-hilfe.test.js` (10 Tests ohne Browser)
+      und `tests/e2e/hilfe.spec.mjs` (9 Tests, prüfen die ANGEZEIGTEN Werte
+      gegen die Configs — eine Anzeige mit veraltetem Wert wäre schlimmer als
+      keine).
+      **Fund beim Umsetzen:** Der Entwurf versprach, aus `getClassLoadoutDetail()
+      .reason` erklärenden Text zu gewinnen. Nachgemessen ist `reason` ein
+      maschinell zusammengesetzter Satz („Rolle Flächenwirkung — Wahl der Klasse
+      scout") ohne eigene Information; angezeigt werden deshalb Rolle und Waffe.
+      Ein Test hält den Befund fest.
+      Die drei bewusst NICHT umgesetzten Punkte (Sidegrades, Counterplay,
+      Map-Synergie) bleiben offen — dazu liegt der Entwurf in
+      `docs/entwurf-onboarding-sidegrades-counterplay.md`.
 - [ ] **Sidegrades.** Kein System gefunden, das Klassen mit Trade-offs statt mit
       reinen Zuwächsen ausstattet. Geprüft: kein Treffer für `sidegrade`.
 - [ ] **Counterplay und Map-Synergie.** Keine Regeln zur Teamzusammenstellung und

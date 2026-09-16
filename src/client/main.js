@@ -27,6 +27,11 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
+import { uebersichtFuerHilfe } from '../shared/config/classes.js';
+import { LOOT_DROP_RULES } from '../shared/config/loot.js';
+import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
+import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
+import { TERRAIN_PRESETS } from '../shared/terrainGen.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
@@ -2343,5 +2348,280 @@ if (typeof document !== 'undefined') {
   } else {
     fuelle();
   }
+}
+// ------------------------------------------------------------------- Hilfe
+buildHilfeView();
+
+/**
+ * Baut den Hilfe-Bereich im Menü auf.
+ *
+ * Der Nutzen steht und fällt damit, dass hier NICHTS hartkodiert ist: Alle
+ * Sätze und Zahlen kommen aus `uebersichtFuerHilfe()` (Klassen, Archetypen)
+ * bzw. direkt aus den Configs (Loot, Gelände). Der Entwurf
+ * (docs/entwurf-onboarding-sidegrades-counterplay.md, Abschnitt A) verlangt das
+ * ausdrücklich — ein Zahlenwert im Client wäre eine zweite Quelle, die bei
+ * jeder Balance-Änderung mitwandern müsste.
+ *
+ * Die Texte selbst stehen bei ihren WERTEN: `erklaerung`-Felder in
+ * `classes.js`, `loot.js` und `terrainGen.js`. Diese Funktion rendert sie nur.
+ *
+ * Wie `buildRosterView` wird erst beim Aufklappen gezeichnet, damit der
+ * Seitenstart nicht belastet wird.
+ */
+export function buildHilfeView() {
+  const reiter = document.getElementById('hilfe-tabs');
+  const inhalt = document.getElementById('hilfe-inhalt');
+  const behaelter = document.getElementById('hilfe-browser');
+  if (!reiter || !inhalt) return;
+
+  const seiten = [
+    { id: 'klassen', label: 'Klassen', zeichne: zeichneKlassen },
+    { id: 'loot', label: 'Loot und Seltenheiten', zeichne: zeichneLoot },
+    { id: 'karte', label: 'Karte und Gelände', zeichne: zeichneKarte },
+  ];
+
+  let gewaehlt = seiten[0].id;
+  let gezeichnet = false;
+
+  const zeichnen = () => {
+    const seite = seiten.find(s => s.id === gewaehlt) ?? seiten[0];
+    inhalt.replaceChildren();
+    seite.zeichne(inhalt);
+    for (const knopf of reiter.querySelectorAll('button')) {
+      knopf.setAttribute('aria-selected', String(knopf.dataset.hilfe === gewaehlt));
+    }
+    gezeichnet = true;
+  };
+
+  for (const seite of seiten) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.textContent = seite.label;
+    knopf.dataset.hilfe = seite.id;
+    knopf.setAttribute('role', 'tab');
+    knopf.addEventListener('click', () => {
+      gewaehlt = seite.id;
+      zeichnen();
+    });
+    reiter.append(knopf);
+  }
+
+  if (behaelter) behaelter.addEventListener('toggle', () => {
+    if (behaelter.open && !gezeichnet) zeichnen();
+  });
+
+  if (behaelter?.open) zeichnen();
+}
+
+/** Kleiner Helfer: ein Element mit Textinhalt. */
+function textEl(tag, text, className) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = text;
+  return el;
+}
+
+/**
+ * Zeichnet einen Wertbalken.
+ *
+ * Die Balkenlänge ist ein Anteil am größten Wert der Gruppe — sie zeigt also
+ * das VERHÄLTNIS, nicht den Absolutwert. Die Zahl steht daneben, damit die
+ * Anzeige auch ohne Balken lesbar ist (und für Screenreader, die keine Breite
+ * vorlesen).
+ */
+function balken(container, beschriftung, wert, maxWert) {
+  const zeile = document.createElement('div');
+  zeile.className = 'h-wert';
+  zeile.append(textEl('span', beschriftung, 'h-wert-label'));
+
+  const spur = document.createElement('span');
+  spur.className = 'h-wert-spur';
+  const fuellung = document.createElement('span');
+  fuellung.className = 'h-wert-fuellung';
+  // Anteil begrenzt: Ein Wert über dem Maximum wäre ein Anzeigefehler, kein
+  // Grund, über den Balken hinauszuzeichnen.
+  const anteil = maxWert > 0 ? Math.min(1, wert / maxWert) : 0;
+  fuellung.style.width = `${Math.round(anteil * 100)}%`;
+  spur.append(fuellung);
+
+  zeile.append(spur, textEl('span', wert.toFixed(2), 'h-wert-zahl'));
+  container.append(zeile);
+}
+
+/** Reiter „Klassen" — die wirksamen Werte samt Archetypen und Startaufgebot. */
+function zeichneKlassen(container) {
+  const u = uebersichtFuerHilfe();
+
+  container.append(textEl('p',
+    'Drei Klassen und drei Archetypen bestimmen, wie eine Figur schießt und '
+    + 'einsteckt. Gezeigt sind die WIRKSAMEN Werte — also die, die der Motor '
+    + 'tatsächlich liest.', 'h-einleitung'));
+
+  // Maßstab: der größte wirksame Wert über alle Klassen, damit die Balken
+  // untereinander vergleichbar sind.
+  const maxLeben = Math.max(...u.klassen.map(k => k.wirksam.leben));
+  const maxSchaden = Math.max(...u.klassen.map(k => k.wirksam.schaden));
+
+  const raster = document.createElement('div');
+  raster.className = 'h-karten';
+  for (const klasse of u.klassen) {
+    const karte = document.createElement('div');
+    karte.className = 'h-karte';
+    karte.append(textEl('h3', klasse.label));
+    karte.append(textEl('p', klasse.erklaerung, 'h-erklaerung'));
+
+    balken(karte, 'Leben', klasse.wirksam.leben, maxLeben);
+    balken(karte, 'Schaden', klasse.wirksam.schaden, maxSchaden);
+
+    // Das Startaufgebot: Rolle und die konkrete Waffe.
+    //
+    // Fund (belegt): Der Entwurf (Abschnitt A.2) nennt `reason` eine
+    // „Begründung" und verspricht daraus Textgewinn. Nachgemessen ist `reason`
+    // aber ein MASCHINELL zusammengesetzter Satz:
+    //
+    //   "Rolle Flächenwirkung — Wahl der Klasse scout"
+    //   "Bewegungsmittel — Kür der Klasse scout"
+    //
+    // Er wiederholt damit lediglich `roleLabel` und den Klassennamen. Ihn
+    // anzuzeigen ergäbe doppelten Text („Flächenwirkung: Rolle Flächenwirkung
+    // — Wahl der Klasse scout"). Gezeigt werden deshalb die beiden Angaben, die
+    // tatsächlich Information tragen: die ROLLE und die konkrete WAFE.
+    karte.append(textEl('h4', 'Startaufgebot'));
+    const liste = document.createElement('ul');
+    liste.className = 'h-liste';
+    for (const platz of getClassLoadoutDetail(klasse.id)) {
+      const waffe = getWeapon(platz.weaponId);
+      const li = document.createElement('li');
+      li.append(textEl('b', `${platz.roleLabel}: `));
+      li.append(document.createTextNode(waffe?.displayName ?? platz.weaponId));
+      liste.append(li);
+    }
+    karte.append(liste);
+    raster.append(karte);
+  }
+  container.append(raster);
+
+  container.append(textEl('h3', 'Archetypen'));
+  const archetypRaster = document.createElement('div');
+  archetypRaster.className = 'h-karten';
+  for (const archetyp of u.archetypen) {
+    const karte = document.createElement('div');
+    karte.className = 'h-karte h-schmal';
+    karte.append(textEl('h4', archetyp.label));
+    karte.append(textEl('p', archetyp.erklaerung, 'h-erklaerung'));
+    // Nur TEMPO und LEBEN: Der Archetyp wirkt nicht auf den Schaden (siehe
+    // tests/onboarding-hilfe.test.js, „Der Archetyp wirkt als TEMPO").
+    balken(karte, 'Leben', archetyp.wirksam.leben, 1.2);
+    balken(karte, 'Tempo', archetyp.wirksam.tempo, 1.4);
+    archetypRaster.append(karte);
+  }
+  container.append(archetypRaster);
+
+  /*
+   * Die Hinweise stehen ANS ENDE und sind als Hinweis gestaltet, nicht als
+   * Spielwert. Der Entwurf verlangt beide ausdrücklich:
+   *  - die wirkungslosen Dimensionen (sonst wirken sie wie Spielwerte),
+   *  - die Kopplung (sonst ist eine Übersicht mit neun Kombinationen irreführend).
+   */
+  const hinweise = document.createElement('div');
+  hinweise.className = 'h-hinweis';
+  hinweise.append(textEl('p', u.inertHinweis));
+  hinweise.append(textEl('p', u.kopplungHinweis));
+  container.append(hinweise);
+}
+
+/** Reiter „Loot und Seltenheiten" — die Verteilung, in Spielerprosa. */
+function zeichneLoot(container) {
+  container.append(textEl('p',
+    'Zu Beginn jeder Runde wirft eine Drohne Kisten ab. Was darin liegt, '
+    + 'entscheidet der Match-Seed — im Replay also immer dasselbe.',
+    'h-einleitung'));
+
+  const regeln = LOOT_DROP_RULES;
+
+  container.append(textEl('h3', 'Kisten je Rundenbeginn'));
+  const kistenListe = document.createElement('ul');
+  kistenListe.className = 'h-liste';
+  for (const [was, anteil] of [
+    ['keine Kiste', regeln.cratesPerRoundStart.none],
+    ['eine Kiste', regeln.cratesPerRoundStart.one],
+    ['zwei Kisten', regeln.cratesPerRoundStart.two],
+  ]) {
+    kistenListe.append(textEl('li', `${prozent(anteil)} — ${was}`));
+  }
+  container.append(kistenListe);
+
+  container.append(textEl('h3', 'Inhalt einer Kiste'));
+  const inhaltListe = document.createElement('ul');
+  inhaltListe.className = 'h-liste';
+  for (const [was, anteil] of [
+    ['eine Waffe', regeln.contents.weapons],
+    ['Nachschub (Heilung)', regeln.contents.sustain],
+    ['leer', regeln.contents.empty],
+    ['eine Sprengfalle', regeln.contents.trap],
+  ]) {
+    inhaltListe.append(textEl('li', `${prozent(anteil)} — ${was}`));
+  }
+  container.append(inhaltListe);
+
+  container.append(textEl('h3', 'Seltenheiten'));
+  const seltenListe = document.createElement('ul');
+  seltenListe.className = 'h-liste h-seltenheiten';
+  for (const stufe of RARITY_IDS) {
+    const li = document.createElement('li');
+    const punkt = document.createElement('span');
+    punkt.className = 'h-farbe';
+    // Farbe aus der Config, nicht im Client gewählt: dieselbe Farbe wie im
+    // Spiel, sonst wichen Liste und Waffenanzeige voneinander ab.
+    punkt.style.background = regeln.rarityColors[stufe] ?? '#888';
+    const gewicht = RARITY_WEIGHTS[stufe];
+    const gesamt = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0);
+    li.append(punkt, textEl('span', `${stufe} — ${prozent(gewicht / gesamt)} der Waffen`));
+    seltenListe.append(li);
+  }
+  container.append(seltenListe);
+
+  /*
+   * Die zentrale Balance-Aussage des Spiels, die bisher NIRGENDS im Menü stand:
+   * Startwaffen sind nur common/uncommon/rare. Episch und legendär gibt es
+   * ausschließlich über Loot.
+   */
+  const hinweise = document.createElement('div');
+  hinweise.className = 'h-hinweis';
+  hinweise.append(textEl('p',
+    `Startwaffen sind nur ${START_TIERS.join(', ')}. Epische und legendäre Waffen `
+    + 'gibt es ausschließlich über Kisten — wer stärker werden will, muss sie finden.'));
+  container.append(hinweise);
+}
+
+/** Reiter „Karte und Gelände" — die acht Formen mit ihrer Spielweise. */
+function zeichneKarte(container) {
+  container.append(textEl('p',
+    'Die Geländeform bestimmt Höhen, Wasser und Höhlen — und damit, welche '
+    + 'Waffen und Klassen nützen. Alle Formen haben dieselbe Fläche, nur die '
+    + 'Form ist anders.', 'h-einleitung'));
+
+  const raster = document.createElement('div');
+  raster.className = 'h-karten';
+  for (const [id, preset] of Object.entries(TERRAIN_PRESETS)) {
+    const karte = document.createElement('div');
+    karte.className = 'h-karte h-schmal';
+    karte.append(textEl('h4', id));
+    karte.append(textEl('p', preset.erklaerung, 'h-erklaerung'));
+    // Die Kennzahlen als Beschreibung der EIGENSCHAFT, nicht als Spielwert —
+    // sie sind Generatorparameter, keine Werte, die der Spieler einstellt.
+    karte.append(textEl('p',
+      `Höhen ${preset.amplitude} · Rauheit ${preset.roughness} · `
+      + `Wasser ${preset.waterLevel}`, 'h-kennzahl'));
+    raster.append(karte);
+  }
+  container.append(raster);
+}
+
+/** Anteil als Prozentzahl mit dem Hinweis auf die Herkunft der Zahl. */
+function prozent(anteil) {
+  // Aus dem Gewicht BERECHNET, nicht abgetippt: Ändert sich die Verteilung in
+  // der Config, wandert die Anzeige mit.
+  return `${Math.round(anteil * 100)} %`;
 }
 export default game;

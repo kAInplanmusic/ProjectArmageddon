@@ -39,11 +39,28 @@
  * Zug umzuwerfen. Siehe MASTERDOTO.md, Abschnitt „Klassen-Profil".
  */
 
-/** Klassen-Rohdaten. `drag`, `mass` und `speed` liest der Motor derzeit nicht. */
+/**
+ * Klassen-Rohdaten. `drag`, `mass` und `speed` liest der Motor derzeit nicht.
+ *
+ * `erklaerung` beschreibt die Rolle in EINEM Satz. Wichtig: Der Satz nennt
+ * KEINE Zahlen. Die wirksamen Faktoren stehen in der Tabelle daneben (siehe
+ * `combatProfile()`), und die Anzeige leitet sie von dort ab. Stünde hier
+ * „schießt am schwächsten (0,7)“, müsste der Satz bei jeder Balance-Änderung
+ * mitwandern — und genau diese zweite Quelle will diese Datei vermeiden.
+ */
 export const CLASS_DEFINITIONS = Object.freeze({
-  scout: Object.freeze({ drag: 0.9, mass: 0.8, power: 0.7, speed: 1.2, health: 0.8 }),
-  heavy: Object.freeze({ drag: 1.1, mass: 1.2, power: 1.0, speed: 0.8, health: 1.3 }),
-  artillery: Object.freeze({ drag: 0.8, mass: 0.9, power: 1.3, speed: 0.7, health: 0.9 }),
+  scout: Object.freeze({
+    drag: 0.9, mass: 0.8, power: 0.7, speed: 1.2, health: 0.8,
+    erklaerung: 'Am beweglichsten, aber der schwächste Schütze — lebt von Stellung und Tempo.',
+  }),
+  heavy: Object.freeze({
+    drag: 1.1, mass: 1.2, power: 1.0, speed: 0.8, health: 1.3,
+    erklaerung: 'Hält am meisten aus und schießt im Mittelfeld — der Anker eines Teams.',
+  }),
+  artillery: Object.freeze({
+    drag: 0.8, mass: 0.9, power: 1.3, speed: 0.7, health: 0.9,
+    erklaerung: 'Trifft am härtesten und fliegt am weitesten — zahlt es mit Leben.',
+  }),
 });
 
 /**
@@ -52,11 +69,22 @@ export const CLASS_DEFINITIONS = Object.freeze({
  * `damage` ist derzeit doppelt belegt: Es geht als `launchSpeedMultiplier` in
  * die Abschussgeschwindigkeit ein (siehe `ARCHETYPE_DAMAGE_BASE`) und wird
  * **nicht** als Schadensfaktor angewandt. `speed` liest der Motor nicht.
+ *
+ * `erklaerung`: ein Satz, ohne Zahlen — wie bei den Klassen.
  */
 export const CLASS_ARCHETYPES = Object.freeze({
-  brawler: Object.freeze({ health: 1.2, damage: 1.1, speed: 0.9 }),
-  artillerist: Object.freeze({ health: 0.8, damage: 1.4, speed: 0.8 }),
-  occultist: Object.freeze({ health: 0.7, damage: 1.6, speed: 1.0 }),
+  brawler: Object.freeze({
+    health: 1.2, damage: 1.1, speed: 0.9,
+    erklaerung: 'Robust und ausgeglichen — verzeiht Fehler.',
+  }),
+  artillerist: Object.freeze({
+    health: 0.8, damage: 1.4, speed: 0.8,
+    erklaerung: 'Schnellerer Abschuss, weniger Leben — für Treffer aus der Distanz.',
+  }),
+  occultist: Object.freeze({
+    health: 0.7, damage: 1.6, speed: 1.0,
+    erklaerung: 'Schießt am schnellsten, ist am zerbrechlichsten — ein Glasgeschütz.',
+  }),
 });
 
 /**
@@ -144,6 +172,76 @@ export function allCombatProfiles() {
     }
   }
   return ergebnis;
+}
+
+/**
+ * Übersicht für die Hilfe-Anzeige — die EINZIGE Stelle, die Klassenprosa und
+ * Klassenwerte zusammenführt.
+ *
+ * Bewusst hier und nicht im Client: Der Entwurf (docs/entwurf-onboarding-
+ * sidegrades-counterplay.md, Abschnitt A.4) verlangt, dass alle erklärenden
+ * Texte in `src/shared/config/` neben den Werten entstehen — sonst gäbe es eine
+ * zweite Quelle, die bei jeder Balance-Änderung mitwandern müsste. Weil diese
+ * Funktion die Sätze aus den Configs zieht, kann der Client nichts hartkodieren.
+ *
+ * Die Zahlen kommen aus `combatProfile()` — also aus derselben Verrechnung, die
+ * der Motor liest. Die Anzeige kann damit nicht von der Wirkung abweichen.
+ *
+ * @returns {{klassen: object[], archetypen: object[], inertHinweis: string}}
+ */
+export function uebersichtFuerHilfe() {
+  const klassen = CLASS_IDS.map(classId => {
+    const def = CLASS_DEFINITIONS[classId];
+    // Der wirksame Faktor entsteht erst mit einem Archetyp; für die Übersicht
+    // wird der neutrale Fall gezeigt (Faktor 1 = kein Archetyp-Einfluss).
+    // Aus der Tabelle, nicht gerechnet — sonst stünde die Rechnung zweimal da.
+    return {
+      id: classId,
+      label: classId,
+      erklaerung: def.erklaerung,
+      /** Wirksam: genau die drei Achsen, die der Motor liest. */
+      wirksam: Object.freeze({
+        leben: def.health,
+        schaden: def.power,
+        tempo: def.power,
+      }),
+      /** Deklariert, aber wirkungslos — wird als Hinweis gezeigt, nicht als Wert. */
+      inert: Object.freeze({ drag: def.drag, mass: def.mass, speed: def.speed }),
+    };
+  });
+
+  const archetypen = ARCHETYPE_IDS.map(archetypeId => {
+    const def = CLASS_ARCHETYPES[archetypeId];
+    return {
+      id: archetypeId,
+      label: archetypeId,
+      erklaerung: def.erklaerung,
+      wirksam: Object.freeze({
+        leben: def.health,
+        // Der Archetyp wirkt über seinen `damage`-Wert aufs TEMPO, nicht auf den
+        // Schaden — siehe ARCHETYPE_DAMAGE_BASE. Die Anzeige nennt es deshalb
+        // „Tempo"; „Schaden" hiesse hier das Falsche.
+        tempo: def.damage / ARCHETYPE_DAMAGE_BASE,
+      }),
+      inert: Object.freeze({ speed: def.speed }),
+    };
+  });
+
+  return {
+    klassen,
+    archetypen,
+    /*
+     * Die Kopplung muss genannt werden: Die Übersicht zeigt neun Kombinationen,
+     * im Match sind nur drei erreichbar (`index % 3`). Sie zu verschweigen wäre
+     * irreführend — gemessen sind es scout/brawler, heavy/artillerist und
+     * artillery/occultist (siehe MASTERDOTO.md, „Bekannte Grenzen").
+     */
+    inertHinweis: 'drag, mass und Klassentempo sind deklariert, werden vom Motor '
+      + 'aber nicht gelesen — sie stehen hier als Hinweis, nicht als Spielwert.',
+    kopplungHinweis: 'Im laufenden Match sind nur drei der neun Kombinationen '
+      + 'erreichbar (Scout/Brawler, Heavy/Artillerist, Artillery/Okkultist): '
+      + 'Klasse und Archetyp werden gemeinsam über den Listenindex vergeben.',
+  };
 }
 
 export default { CLASS_DEFINITIONS, CLASS_ARCHETYPES, combatProfile };

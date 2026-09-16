@@ -25,11 +25,33 @@
  * `tests/terrain-presets.test.js` hält die Kennzahlen mit Schwellen fest, damit
  * eine spätere Änderung nicht unbemerkt eine Form ihrer Eigenart beraubt.
  */
+/**
+ * Geländeformen.
+ *
+ * `erklaerung` ist aus dem früheren Kommentar je Form entstanden — dieselbe
+ * Aussage, jetzt als Feld statt als Kommentar. Grund (Entwurf A.4): Die
+ * Hilfe-Anzeige leitet ihre Texte aus den Configs ab und darf nichts
+ * hartkodieren. Ein Kommentar kann sie nicht lesen, ein Feld schon.
+ *
+ * Die Zahlen bleiben unberührt; `erklaerung` beschreibt die Spielweise.
+ */
 export const TERRAIN_PRESETS = Object.freeze({
-  hills: Object.freeze({ amplitude: 0.42, roughness: 0.55, waterLevel: 0.16, caves: 0 }),
-  mountains: Object.freeze({ amplitude: 0.62, roughness: 0.8, waterLevel: 0.1, caves: 0.002 }),
-  islands: Object.freeze({ amplitude: 0.5, roughness: 0.45, waterLevel: 0.3, caves: 0.001 }),
-  caverns: Object.freeze({ amplitude: 0.35, roughness: 0.7, waterLevel: 0.12, caves: 0.02 }),
+  hills: Object.freeze({
+    amplitude: 0.42, roughness: 0.55, waterLevel: 0.16, caves: 0,
+    erklaerung: 'Welliges Land mit flachen Tälern — das ausgewogene Standardgelände.',
+  }),
+  mountains: Object.freeze({
+    amplitude: 0.62, roughness: 0.8, waterLevel: 0.1, caves: 0.002,
+    erklaerung: 'Hohe Grate und tiefe Täler — Schüsse über den Berg, wenig Sichtlinie.',
+  }),
+  islands: Object.freeze({
+    amplitude: 0.5, roughness: 0.45, waterLevel: 0.3, caves: 0.001,
+    erklaerung: 'Landstücke in offenem Wasser — Stellungen wechseln heisst springen.',
+  }),
+  caverns: Object.freeze({
+    amplitude: 0.35, roughness: 0.7, waterLevel: 0.12, caves: 0.02,
+    erklaerung: 'Höhlen im Fels — Deckung von oben, Kämpfe auf kurze Distanz.',
+  }),
 
   /*
    * Die vier folgenden Formen kamen später dazu: Die ursprünglichen vier
@@ -37,13 +59,17 @@ export const TERRAIN_PRESETS = Object.freeze({
    * Spielweisen, um die es in den Duellen geht.
    */
 
-  /** Offene Weite: flaches Land, keine Höhlen, kaum Wasser — weite Sichtlinien. */
-  open: Object.freeze({ amplitude: 0.1, roughness: 0.25, waterLevel: 0.1, caves: 0 }),
+  open: Object.freeze({
+    amplitude: 0.1, roughness: 0.25, waterLevel: 0.1, caves: 0,
+    erklaerung: 'Flaches, offenes Land — weite Sichtlinien, nichts zum Verstecken.',
+  }),
 
-  /** Felsspitzen: große Höhenunterschiede, sehr rau — Kämpfe über Höhen. */
-  spires: Object.freeze({ amplitude: 0.9, roughness: 1, waterLevel: 0.05, caves: 0.002 }),
+  spires: Object.freeze({
+    amplitude: 0.9, roughness: 1, waterLevel: 0.05, caves: 0.002,
+    erklaerung: 'Felsspitzen mit großen Höhenunterschieden — Kämpfe über Höhen.',
+  }),
 
-  /**
+  /*
    * Flut: hügeliges Land mit hohem Wasserspiegel.
    *
    * Fund (belegt): Der erste Ansatz war `amplitude: 0.4, roughness: 0.45,
@@ -56,7 +82,10 @@ export const TERRAIN_PRESETS = Object.freeze({
    * bei `islands`), und der Wasserstand trifft die Täler. So liegt reichlich
    * Wasser auf der Karte, die Gipfel und Startpunkte bleiben aber trocken.
    */
-  flooded: Object.freeze({ amplitude: 0.62, roughness: 0.8, waterLevel: 0.45, caves: 0 }),
+  flooded: Object.freeze({
+    amplitude: 0.62, roughness: 0.8, waterLevel: 0.45, caves: 0,
+    erklaerung: 'Hügel in hohem Wasser — die Gipfel sind trocken, die Täler nicht.',
+  }),
 
   /**
    * Gewirr: rau und durchlöchert — Deckung auf kurze Distanz.
@@ -64,7 +93,10 @@ export const TERRAIN_PRESETS = Object.freeze({
    * Die Höhlendichte ist hier bewusst ein Vielfaches der anderen Formen: Sie
    * schafft die Räume und Verstecke, die eine Nahkampfkarte ausmachen.
    */
-  warren: Object.freeze({ amplitude: 0.6, roughness: 1, waterLevel: 0.1, caves: 0.06 }),
+  warren: Object.freeze({
+    amplitude: 0.6, roughness: 1, waterLevel: 0.1, caves: 0.06,
+    erklaerung: 'Rau und durchlöchert — Deckung auf kurze Distanz.',
+  }),
 });
 
 function smoothstep(t) {
