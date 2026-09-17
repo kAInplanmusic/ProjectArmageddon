@@ -13,6 +13,7 @@
     "balance:classes": "node scripts/class-balance.mjs",
     "check:fuses": "node scripts/check-fuses.mjs",
     "check:range": "node scripts/check-range.mjs",
+    "check:achievements": "node scripts/check-achievements.mjs",
     "test": "node --test tests/*.test.js --test-reporter=spec",
     "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js",
     "test:e2e": "playwright test",

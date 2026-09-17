@@ -2252,9 +2252,35 @@ beschrieben.
       6 von 8 Partien bei oder nach Runde 15 — der Spannungsbogen kommt, oft war
       die Partie aber schon entschieden. *Hebel:* Breakpoint 15 → 8.
 
-- [ ] **Erfolge sind Platzhalter.** Alle 11 tragen `muster: true`. Die
-      Belohnungsschleife belohnt Musterfortschritt, nicht Spielinhalte.
-      *Infrastruktur steht komplett* — es fehlen die Inhalte (Content).
+- [ ] **Erfolge: Inhalte fehlen, aber die Schwellen sind jetzt geprüft.**
+      Alle 11 Erfolge tragen `muster: true`. Die **Mechanik ist vollständig** —
+      der Modulkopf sagt ausdrücklich: „Ein neuer Erfolg ist eine neue Zeile in
+      der Tabelle, kein Code." Namen, Texte und Symbole sind eine
+      Gestaltungsentscheidung (Content).
+
+      *Neu: `npm run check:achievements`* — es spielt echte Partien und prüft die
+      Schwellen gegen die gemessenen Werte.
+
+      *Gemessen (3 Seeds, volle Partien):*
+
+      | | Wert |
+      |---|---|
+      | Runden je Partie | 24 |
+      | Schüsse je Partie | 23 |
+      | Treffer je Partie | 7 (32 %) |
+      | Schaden je Partie | 149 |
+      | Dauer je Partie | ~12 min |
+
+      *Ergebnis der Prüfung:* 9 von 11 Mustern sind erreichbar oder in
+      Reichweite. **Eines ist praktisch unerreichbar:**
+
+      > **„200 Schaden je Minute"** — verlangt 200, erreicht werden **13**
+      > (6 % des Ziels). Bei 12 Minuten Partiedauer und 149 Schaden ergibt das
+      > 12 Schaden je Minute; das Ziel verlangt das 17-Fache.
+
+      *Offen — Content-Entscheidung:* Entweder die Schwelle senken (auf ~20 je
+      Minute, dann ist sie knapp erreichbar) oder den Text ändern. Die
+      Infrastruktur steht; es ist eine Tabellenzeile.
 
 - [x] **Klassen-/Archetypzahlen in der Auswahl — umgesetzt.**
       Vorher zeigte die Auswahl nur die nackten Kennungen („scout", „brawler"),
