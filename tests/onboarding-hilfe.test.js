@@ -136,10 +136,14 @@ test('Die Kopplung von Klasse und Archetyp wird genannt', () => {
 
 test('Die wirkungslosen Werte sind als solche gekennzeichnet', () => {
   /*
-   * drag, mass und Klassentempo liest der Motor nicht. Sie als Spielwerte mit
-   * Balken zu zeigen wäre eine stille Lüge — der Entwurf lässt sie höchstens als
-   * Hinweis zu. Hier wird geprüft, dass sie GETRENNT von den wirksamen Werten
-   * geführt werden, damit die Anzeige sie unterscheiden kann.
+   * `drag` und `mass` liest der Motor nicht. Sie als Spielwerte mit Balken zu
+   * zeigen wäre eine stille Lüge — der Entwurf lässt sie höchstens als Hinweis
+   * zu. Hier wird geprüft, dass sie GETRENNT von den wirksamen Werten geführt
+   * werden, damit die Anzeige sie unterscheiden kann.
+   *
+   * `speed` stand früher ebenfalls hier. Seit es auf den Absprung wirkt (der
+   * Scout springt höher), gehört es zu den WIRKSAMEN Werten — dass es nicht
+   * mehr unter `inert` steht, prüft `tests/counterplay.test.js`.
    */
   const u = uebersichtFuerHilfe();
   for (const eintrag of u.klassen) {
@@ -150,6 +154,9 @@ test('Die wirkungslosen Werte sind als solche gekennzeichnet', () => {
       assert.equal(eintrag.wirksam[schluessel], undefined,
         `${eintrag.id}: "${schluessel}" steht unter wirksam, ist aber wirkungslos`);
     }
+    // Die Beweglichkeit dagegen MUSS unter den wirksamen Werten stehen.
+    assert.equal(typeof eintrag.wirksam.beweglichkeit, 'number',
+      `${eintrag.id}: die Beweglichkeit fehlt unter den wirksamen Werten`);
   }
 });
 

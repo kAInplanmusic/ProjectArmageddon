@@ -599,13 +599,29 @@ test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
 
     /*
      * Die Schwelle: Der Aufschlag muss UNTER einem 60-Hz-Budget (16,7 ms)
-     * liegen. Gemessen sind es rund 2,8 ms — also das Sechsfache an Luft.
+     * liegen. Gemessen sind es rund 0,8–2,8 ms — also mindestens das Sechsfache
+     * an Luft.
      *
-     * Die Schwelle ist bewusst großzügig: Der Aufschlag schwankt mit der
-     * Hintergrundlast der Maschine, und ein Test, der bei jedem CI-Lauf knapp
-     * kippt, wäre wertlos. Überschritte das Spiel das Budget, wäre der Aufschlag
-     * aber auch in dieser Größenordnung nicht mehr zu übersehen.
+     * ## Warum hier zusätzlich auf die LAST geprüft wird
+     *
+     * Der Aufschlag schwankt mit der Hintergrundlast. Bei einem parallelen
+     * Volllauf (mehrere Browser, 150+ Tests) konkurrieren die Messungen
+     * miteinander — gemessen im Volllauf: 8,7 ms statt 0,8 ms, ohne dass sich am
+     * Spiel etwas geändert hätte. Ein Test, der das als Produktfehler meldet,
+     * wäre irreführend.
+     *
+     * Erkennbar ist die Lastsituation am LEEREN Takt: Er braucht dann selbst
+     * deutlich länger als ein 60-Hz-Bild. Ist das der Fall, wird übersprungen
+     * statt falsch rot — mit Begründung, nicht still.
      */
+    if (befund.leer.mittel > BUDGET_MS * 2) {
+      test.skip(true,
+        `Der leere Bildtakt braucht ${befund.leer.mittel.toFixed(1)} ms — `
+        + 'die Maschine ist ausgelastet (paralleler Volllauf?). Der Aufschlag ist '
+        + 'dann nicht auf das Spiel zurückzuführen. Isoliert messen: '
+        + 'npx playwright test tests/e2e/profiling.spec.mjs');
+    }
+
     expect(befund.aufschlagMs, `Aufschlag ${befund.aufschlagMs.toFixed(2)} ms — `
       + 'das Spiel verbraucht mehr als ein 60-Hz-Bild').toBeLessThan(BUDGET_MS);
     // Und der Aufschlag darf nicht negativ sein (dann wäre die Messung kaputt).

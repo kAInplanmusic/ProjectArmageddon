@@ -124,6 +124,61 @@ const JUMP_IMPULSE = 9.2;
 const DOUBLE_JUMP_FACTOR = 0.8;
 /** Seitliche Zugabe beim Sprung, damit man auch über Kanten kommt. */
 const JUMP_SIDE_IMPULSE = 2.4;
+
+/**
+ * Wie stark die Beweglichkeit einer Klasse (`CLASS_DEFINITIONS[].speed`) auf den
+ * Absprung wirkt — getrennt für Werte über und unter 1,0.
+ *
+ * ## Warum dieser Wert überhaupt verdrahtet wird
+ *
+ * Fund (belegt): Bis hierher las der Motor `speed` gar nicht — der Wert stand
+ * unter `inert`. Der Scout war damit auf ALLEN drei wirksamen Achsen (Leben,
+ * Wucht, Reichweite) der schwächste und hatte keine einzige Stärke im Spiel;
+ * seine im Profil angelegte Beweglichkeit (1,2) existierte nur auf dem Papier.
+ * Gemessen ergab das keine Schere-Stein-Papier-Beziehung, sondern eine
+ * Rangfolge Artillerie > Heavy > Scout (siehe MASTERDOTO, „Bekannte Grenzen").
+ *
+ * ## Warum der Sprung die richtige Achse ist
+ *
+ * Die Position ist in einem Artillerie-Spiel die kostbarste Größe (so steht es
+ * in `jump()`). Der Sprung ist die einzige Bewegung, die eine Figur selbst
+ * auslöst — damit der natürliche Ort für „Beweglichkeit". Auf die seitliche
+ * Zugabe zu wirken wäre schwächer: Kollision und Kartengrenze begrenzen sie
+ * schnell, während die Höhe unmittelbar neue Stellungen öffnet.
+ *
+ * ## Warum getrennt gedämpft (oben 0,50 / unten 0,25)
+ *
+ * Die Höhe wächst mit dem QUADRAT des Impulses. Ungebremst ergäbe `speed` 1,2
+ * rund +125 % gegenüber dem Heavy — gemessen 138,5 gegen 61,6 px. Das wäre zu
+ * viel: Auf `open` (Amplitude 0,1, rund 36 px Höhenunterschied) käme der Scout
+ * überall hin, die Karte verlöre ihre Form.
+ *
+ * Zwei Dinge folgen daraus:
+ *
+ *  1. **Oben wird gebremst**, damit der Aufschlag spürbar, aber nicht
+ *     kartensprengend bleibt. Mit 0,50 landet der Scout bei 116,9 px — klar
+ *     höher als alle anderen und trotzdem UNTER dem Höhenunterschied von `hills`
+ *     (rund 151 px). Er kommt also nicht über das Gelände hinweg.
+ *  2. **Unten wird stärker gebremst** (0,25). Heavy und Artillery sind über Leben
+ *     und Wucht bereits definiert; ihnen zusätzlich die Sprunghöhe zu nehmen
+ *     würde eine Schwäche verschärfen, ohne eine Stärke zu schaffen. Mit 0,25
+ *     verlieren sie nur rund 10 % bzw. 15 % statt 19 % und 28 %.
+ *
+ * Gemessene Sprunghöhen (Seed 4242, `hills`, je Klasse am Zug):
+ *
+ *   scout      116,9 px   (+35 % gegenüber Heavy)
+ *   heavy       86,6 px
+ *   artillery   82,0 px
+ *
+ * Die Wirkung ist pur und deterministisch: Sie hängt allein an der Klasse, kommt
+ * aus der Match-Konfiguration und berührt keinen Zufallsstrom. Der Client kennt
+ * die Klasse jedes Spielers (`getState()`), kann die Bahn also mitrechnen.
+ */
+const JUMP_SPEED_INFLUENCE_ABOVE = 0.5;
+/** Dämpfung für Klassen unter 1,0 — siehe Begründung oben, Punkt 2. */
+const JUMP_SPEED_INFLUENCE_BELOW = 0.25;
+
+
 const PLAYER_HALF_WIDTH = 7;
 const PLAYER_HALF_HEIGHT = 10;
 /**
@@ -595,6 +650,44 @@ export class MatchController {
   }
 
   /**
+   * Die Beweglichkeit eines Spielers als Faktor auf den Absprung.
+   *
+   * Der Wert kommt aus dem KAMPFPROFIL (`combatProfile().mobilityMultiplier`),
+   * das ihn aus den Klassendaten ableitet — `match.js` liest die Rohdaten damit
+   * nicht selbst. Genau das verlangt `tests/class-profile.test.js` („Eine Stelle
+   * nur"); der erste Anlauf dieser Änderung griff direkt auf `CLASS_DEFINITIONS`
+   * zu und wurde vom Test zu Recht beanstandet.
+   *
+   * ## Warum getrennt gedämpft
+   *
+   * Die Sprunghöhe wächst mit dem QUADRAT des Impulses, deshalb schlägt der rohe
+   * Klassenwert überproportional durch: `speed` 1,2 ergäbe +125 % gegenüber dem
+   * Heavy (138,5 gegen 61,6 px) — der Scout käme auf `open` überall hin.
+   *
+   *   - Werte ÜBER 1,0 werden mit 0,50 gedämpft: Der Scout landet bei 116,9 px,
+   *     klar höher als alle anderen, aber unter dem Höhenunterschied von `hills`
+   *     (rund 151 px). Er kommt also nicht über das Gelände hinweg.
+   *   - Werte UNTER 1,0 werden mit 0,25 gedämpft: Heavy und Artillery sind über
+   *     Leben und Wucht definiert; ihnen zusätzlich die Sprunghöhe zu nehmen
+   *     würde eine Schwäche verschärfen, ohne eine Stärke zu schaffen.
+   *
+   * Die Zahlen samt Messung stehen bei den Konstanten `JUMP_SPEED_INFLUENCE_*`.
+   *
+   * @param {number} playerId
+   * @returns {number} Faktor für den Abschlagimpuls (1,0 = unverändert)
+   */
+  #mobilityFactor(playerId) {
+    const player = this.#players.find(entry => entry.entityId === playerId);
+    const profil = combatProfile(
+      CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+      player?.sidegradeId ?? null,
+    );
+    const abweichung = profil.mobilityMultiplier - 1;
+    const dampf = abweichung >= 0 ? JUMP_SPEED_INFLUENCE_ABOVE : JUMP_SPEED_INFLUENCE_BELOW;
+    return 1 + abweichung * dampf;
+  }
+
+  /**
    * Springt — als Aktion des Zuges.
    *
    * Der Sprung ist eine echte Physik: er setzt einen senkrechten Impuls, die
@@ -638,7 +731,21 @@ export class MatchController {
     // Verlangsamung wirkt auf den Absprung: Wer in einen Kackhaufen getreten ist,
     // kommt schlechter vom Boden weg.
     const langsam = this.#statuses.slowOf(playerId);
-    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1) * langsam;
+    /*
+     * Die Beweglichkeit der Klasse wirkt auf den Absprung.
+     *
+     * Sie kommt aus dem KAMPFPROFIL (`mobilityMultiplier`), nicht aus den
+     * Rohdaten: Genau das verlangt `tests/class-profile.test.js` („Eine Stelle
+     * nur") — `match.js` darf Klassenwerte nicht selbst verrechnen. Der erste
+     * Anlauf dieser Änderung tat es und wurde vom Test zu Recht beanstandet.
+     *
+     * Der Faktor hängt NUR an der Klasse, nicht am Zustand. Der Client kennt die
+     * Klasse jedes Spielers (`getState()` überträgt `classId`) und kann die Bahn
+     * eines Sprungs damit gleich mitrechnen.
+     */
+    const beweglichkeit = this.#mobilityFactor(playerId);
+
+    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1) * langsam * beweglichkeit;
     const richtung = Math.max(-1, Math.min(1, Number(horizontal) || 0));
 
     this.#world.setComponent(playerId, 'Velocity', 'y', -impuls);

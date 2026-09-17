@@ -515,13 +515,23 @@ diese Tabellen ordnen Charaktere Platz und Kampfweise zu, aber keine KLASSEN
 einander. Die Beziehung wird deshalb aus `combatProfile()` abgeleitet (Leben,
 Wucht, Reichweite), weil das die Werte sind, die der Motor tatsächlich liest.
 
-**Zweiter Befund — größer als dieser Punkt:** Der Entwurf beschrieb eine
-Schere-Stein-Papier-Beziehung. Gemessen ist es eine **Rangfolge**: Der Scout ist
-auf allen drei wirksamen Achsen der Schwächste und hat gegen niemanden einen
-Vorteil. Ursache ist der unter `inert` stehende `speed`-Wert 1.2 — seine
-Beweglichkeit existiert nur auf dem Papier. Die Anzeige erfindet deshalb keine
-Gegenseite; `starkGegen` bleibt `null` und die Hilfe spricht es aus. Siehe
-MASTERDOTO.md, „Bekannte Grenzen".
+**Zweiter Befund — größer als dieser Punkt, inzwischen BEHOBEN:** Der Entwurf
+beschrieb eine Schere-Stein-Papier-Beziehung. Gemessen war es eine
+**Rangfolge**: Der Scout war auf allen drei wirksamen Achsen der Schwächste,
+weil sein `speed`-Wert (1.2) unter `inert` stand — seine Beweglichkeit existierte
+nur auf dem Papier.
+
+**Die Behebung** (auf Entscheidung des Auftraggebers): `speed` wirkt jetzt auf
+den Absprung (`match.js`, `#mobilityFactor`, getrennt gedämpft). Gemessen
+springt der Scout 116,9 px gegen 86,6 px (Heavy) und 82,0 px (Artillery) — unter
+der hills-Amplitude von rund 151 px, die Karte bleibt also intakt. Die
+Beweglichkeit steht als `mobilityMultiplier` im Kampfprofil und wird in der
+Counterplay-Anzeige als eigene Achse mitgezählt. Siehe MASTERDOTO.md,
+„Bekannte Grenzen", und `tests/mobility.test.js`.
+
+Der Scout hat damit eine **Stärke**, aber weiterhin keinen **Netto-Vorteil**
+(er verliert auf drei Achsen). `starkGegen` bleibt für ihn `null` — die Anzeige
+erfindet nichts dazu und verschweigt die neue Stärke auch nicht.
 
 **Die verworfene Variante B bleibt verworfen** — die Begründung (Balance-
 Messungen ohne Kartentrennung, 24 statt 3 zu prüfende Kombinationen, kein

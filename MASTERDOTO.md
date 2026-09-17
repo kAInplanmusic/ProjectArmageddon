@@ -1837,27 +1837,19 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
         Counterplay-Zeile je Charakter im Kader, eigener Hilfe-Reiter.
       - Abgesichert in `tests/counterplay.test.js` (9) und
         `tests/e2e/counterplay.spec.mjs` (5).
-      **FUND (belegt) — und er ist größer als diese Anzeige:** Der Entwurf nahm
-      eine Schere-Stein-Papier-Beziehung an. Gemessen ist es eine **Rangfolge**.
-      Verglichen mit dem neutralen Archetyp:
-
-      | Klasse | Leben | Wucht | Reichweite |
-      |---|---|---|---|
-      | scout | 0,96 | 0,70 | 0,64 |
-      | heavy | 1,56 | 1,00 | 0,92 |
-      | artillery | 1,08 | 1,30 | 1,19 |
-
-      Der **Scout ist auf allen drei wirksamen Achsen der Schwächste** und hat
-      gegen NIEMANDEN einen Vorteil; die Artillerie ist auf zwei von drei die
-      Stärkste. Ursache: Der Scout ist als beweglichster Charakter angelegt
-      (`speed: 1.2`, höchster Wert der Tabelle), aber `speed` steht unter `inert`
-      — der Motor liest es nicht. **Seine Stärke existiert nur auf dem Papier.**
-      Die Anzeige erfindet deshalb keine Gegenseite: `starkGegen` bleibt `null`
-      und die Hilfe sagt es ausdrücklich. Ein Test (`counterplay.test.js`,
-      „Der Scout hat keine wirksame Stärke") schlägt fehl, sobald `speed`
-      verdrahtet wird — der Befund soll nicht still verschwinden.
-      **Das Verdrahten von `speed` ist eine BALANCE-Entscheidung und bleibt
-      offen** (siehe „Bekannte Grenzen").
+      **FUND (belegt) — und er war größer als diese Anzeige:** Der Entwurf nahm
+      eine Schere-Stein-Papier-Beziehung an. Gemessen war es eine **Rangfolge**,
+      weil der Scout auf allen drei wirksamen Achsen der Schwächste war.
+      Ursache: Seine Beweglichkeit (`speed: 1.2`) stand unter `inert`.
+      **Dieser Befund ist inzwischen BEHOBEN** — `speed` wirkt jetzt auf den
+      Absprung, der Scout springt höher als die anderen Klassen. Die Behebung
+      samt Messwerten steht unter „Bekannte Grenzen".
+      Die Anzeige zählt die Beweglichkeit als eigene Achse mit. Der Scout hat
+      damit eine **Stärke**, aber weiterhin keinen **Netto-Vorteil** (er verliert
+      auf drei Achsen) — `starkGegen` bleibt für ihn `null`, und die Hilfe sagt
+      das ausdrücklich. Ein Test hält diese Unterscheidung fest.
+      Abgesichert in `tests/counterplay.test.js` (10), `tests/mobility.test.js`
+      (5) und `tests/e2e/counterplay.spec.mjs` (5).
 - [x] **Karten-Authoring über die Presets hinaus.** Vier Formen kamen hinzu:
       `open` (Offene Weite), `spires` (Felsspitzen), `flooded` (Flut), `warren`
       (Gewirr) — im Menü wählbar, in ihren Kennzahlen belegt, alle spielbar.
@@ -1947,26 +1939,48 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 
-- **Der Scout hat keine wirksame Stärke.** Gemessen über die drei Achsen, die
-  der Motor liest (`combatProfile()` mit neutralem Archetyp):
+- **Der Scout hatte keine wirksame Stärke — BEHOBEN.**
 
-  | Klasse | Leben | Wucht | Reichweite |
-  |---|---|---|---|
-  | scout | 0,96 | 0,70 | 0,64 |
-  | heavy | 1,56 | 1,00 | 0,92 |
-  | artillery | 1,08 | 1,30 | 1,19 |
+  *Der Befund:* Gemessen über die Achsen, die der Motor liest, war der Scout auf
+  allen dreien der schwächste. Seine im Profil angelegte Beweglichkeit
+  (`speed: 1.2`, der höchste Wert der Tabelle) stand unter `inert` und wurde
+  nicht gelesen — eine Stärke auf dem Papier, keine im Spiel. Folge: Es entstand
+  keine Schere-Stein-Papier-Beziehung, sondern eine Rangfolge.
 
-  Der Scout ist auf **allen drei Achsen der Schwächste**. Seine im Profil
-  angelegte Beweglichkeit (`speed: 1.2`, der höchste Wert der Tabelle) steht
-  unter `inert` und wird nicht gelesen — sie ist damit eine Stärke auf dem
-  Papier, keine im Spiel. Folge: Es entsteht **keine** Schere-Stein-Papier-
-  Beziehung, sondern eine Rangfolge (Artillerie > Heavy > Scout).
-  Das Verdrahten von `speed` ist eine Balance-Entscheidung und wurde bewusst
-  **nicht** nebenbei getroffen: Sie würde das Klassen-Balancing in einem Zug
-  umwerfen und alle bestehenden Balance-Messungen verschieben.
-  Die Counterplay-Anzeige erfindet deshalb keine Gegenseite für den Scout;
-  `tests/counterplay.test.js` hält den Befund fest und schlägt fehl, sobald sich
-  die Werte ändern.
+  | Klasse | Leben | Wucht | Reichweite | Bewegung |
+  |---|---|---|---|---|
+  | scout | 0,96 | 0,70 | 0,64 | **1,20** |
+  | heavy | 1,56 | 1,00 | 0,92 | 0,80 |
+  | artillery | 1,08 | 1,30 | 1,19 | 0,70 |
+
+  *Die Behebung:* `speed` wirkt jetzt auf den **Absprung**
+  (`match.js`, `#mobilityFactor`). Der Sprung ist die einzige Bewegung, die eine
+  Figur selbst auslöst, und die Position ist in einem Artillerie-Spiel die
+  kostbarste Größe. Die Wirkung ist **getrennt gedämpft** (oben 0,50 / unten
+  0,25), weil die Sprunghöhe mit dem Quadrat des Impulses wächst: Ohne Dämpfung
+  ergäbe `speed` 1,2 rund +125 % gegenüber dem Heavy.
+
+  Gemessen im Match (`tests/mobility.test.js`, Seed 4242, `hills`):
+
+  | Klasse | Sprunghöhe |
+  |---|---|
+  | scout | **116,9 px** (+35 % gegenüber Heavy) |
+  | heavy | 86,6 px |
+  | artillery | 82,0 px |
+
+  Der Scout bleibt damit **unter** dem Höhenunterschied von `hills` (rund 151 px)
+  — er kommt nicht über das Gelände hinweg. Heavy und Artillery verlieren nur
+  rund 10 % bzw. 15 %, weil ihre Schwäche nicht zusätzlich verschärft werden
+  soll.
+
+  Die Beweglichkeit steht jetzt als `mobilityMultiplier` im **Kampfprofil**
+  (`classes.js`), nicht in den Rohdaten: `match.js` darf Klassenwerte nicht
+  selbst verrechnen (`tests/class-profile.test.js`, „Eine Stelle nur" — der
+  erste Anlauf verstieß dagegen und wurde vom Test beanstandet).
+  Die Counterplay-Anzeige zählt die Achse mit und zeigt sie als Balken.
+  Der Scout hat damit eine **Stärke** — aber weiterhin keinen **Netto-Vorteil**
+  (er verliert auf drei Achsen), weshalb `starkGegen` für ihn `null` bleibt.
+  Diese Unterscheidung ist Absicht und wird getestet.
 
 - **`import` des Waffen-Generators war ein Schreibvorgang — behoben.**
   Der Schreibvorgang in `scripts/build-weapon-catalog.mjs` stand auf der

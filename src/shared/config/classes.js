@@ -175,6 +175,21 @@ export function combatProfile(classId, archetypeId, sidegradeId = null) {
     /** Abschussgeschwindigkeit: Klasse × Archetyp-Tempo × Sidegrade. */
     launchSpeedMultiplier: basisTempo * (side?.launchSpeedMultiplier ?? 1),
 
+    /**
+     * Beweglichkeit: der Klassenwert, den der Motor auf den Absprung anwendet.
+     *
+     * Er steht hier und nicht in der Tabelle `inert`, weil er seit dem
+     * Verdrahten tatsächlich wirkt: Der Scout springt höher als Heavy und
+     * Artillery. Vorher existierte seine Beweglichkeit nur auf dem Papier — er
+     * war damit auf jeder wirksamen Achse der schwächste (siehe MASTERDOTO,
+     * „Bekannte Grenzen").
+     *
+     * Bewusst NICHT über den Archetyp skaliert: Die Beweglichkeit ist eine
+     * Eigenschaft der KLASSE. Ein Archetyp-Einfluss wäre eine zweite
+     * Balance-Achse, die niemand angefordert hat.
+     */
+    mobilityMultiplier: classDef.speed,
+
     /** Wurde eine unbekannte Kennung ersetzt? Nützlich für Diagnosen. */
     onFallback: fallbackKlasse || fallbackArchetyp,
 
@@ -228,14 +243,24 @@ export function uebersichtFuerHilfe() {
       id: classId,
       label: classId,
       erklaerung: def.erklaerung,
-      /** Wirksam: genau die drei Achsen, die der Motor liest. */
+      /** Wirksam: genau die Achsen, die der Motor liest. */
       wirksam: Object.freeze({
         leben: def.health,
         schaden: def.power,
         tempo: def.power,
+        /*
+         * `speed` wirkt seit dem Verdrahten auf den Absprung (siehe
+         * JUMP_SPEED_INFLUENCE_ABOVE in match.js): Der Scout springt höher als
+         * die anderen. Er steht deshalb NICHT mehr unter `inert`.
+         *
+         * Die Anzeige nennt ihn „Beweglichkeit", nicht „Tempo": `power` heißt in
+         * der Tabelle tempo, aber gemeint ist die Schussgeschwindigkeit — die
+         * beiden zu verwechseln wäre irreführend.
+         */
+        beweglichkeit: def.speed,
       }),
       /** Deklariert, aber wirkungslos — wird als Hinweis gezeigt, nicht als Wert. */
-      inert: Object.freeze({ drag: def.drag, mass: def.mass, speed: def.speed }),
+      inert: Object.freeze({ drag: def.drag, mass: def.mass }),
     };
   });
 
@@ -265,8 +290,8 @@ export function uebersichtFuerHilfe() {
      * irreführend — gemessen sind es scout/brawler, heavy/artillerist und
      * artillery/occultist (siehe MASTERDOTO.md, „Bekannte Grenzen").
      */
-    inertHinweis: 'drag, mass und Klassentempo sind deklariert, werden vom Motor '
-      + 'aber nicht gelesen — sie stehen hier als Hinweis, nicht als Spielwert.',
+    inertHinweis: 'drag und mass sind deklariert, werden vom Motor aber nicht '
+      + 'gelesen — sie stehen hier als Hinweis, nicht als Spielwert.',
     kopplungHinweis: 'Im laufenden Match sind nur drei der neun Kombinationen '
       + 'erreichbar (Scout/Brawler, Heavy/Artillerist, Artillery/Okkultist): '
       + 'Klasse und Archetyp werden gemeinsam über den Listenindex vergeben.',
@@ -331,6 +356,18 @@ export function classCounterplay() {
     { id: 'leben', wert: p => p.healthMultiplier, vorteil: 'hält mehr aus' },
     { id: 'wucht', wert: p => p.damageMultiplier, vorteil: 'trifft härter' },
     { id: 'reichweite', wert: p => p.launchSpeedMultiplier, vorteil: 'schießt weiter' },
+    /*
+     * Die Beweglichkeit zählt seit dem Verdrahten mit: Der Scout springt höher
+     * als Heavy und Artillery (`mobilityMultiplier` wirkt im Absprung, siehe
+     * JUMP_SPEED_INFLUENCE_ABOVE in match.js). Vorher stand der Wert unter
+     * `inert` — ohne diese Achse hätte der Scout eine Stärke, die die Anzeige
+     * verschweigt.
+     *
+     * Bewusst mit vollem Gewicht und nicht gedämpft: Die Dämpfung regelt, wie
+     * STARK die Wirkung im Spiel ist, nicht ob sie existiert. Für die Frage
+     * „wer ist worin überlegen" zählt die Richtung.
+     */
+    { id: 'beweglichkeit', wert: p => p.mobilityMultiplier, vorteil: 'springt höher' },
   ];
 
   const ergebnis = {};
@@ -380,6 +417,10 @@ export function classCounterplay() {
         leben: eigene.healthMultiplier,
         wucht: eigene.damageMultiplier,
         reichweite: eigene.launchSpeedMultiplier,
+        // Die Beweglichkeit gehört dazu: Sie ist seit dem Verdrahten wirksam
+        // (der Scout springt höher) und muss in der Anzeige sichtbar sein —
+        // sonst hätte er eine Stärke, die die Übersicht verschweigt.
+        beweglichkeit: eigene.mobilityMultiplier,
       }),
     });
   }

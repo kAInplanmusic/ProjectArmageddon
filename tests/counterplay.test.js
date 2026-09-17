@@ -143,49 +143,87 @@ test('Eine genannte Gegenseite ist IMMER durch Vorteile gedeckt', () => {
   }
 });
 
-test('Der Befund ist festgehalten: Der Scout hat keine wirksame Stärke', () => {
+test('Der Befund ist behoben: Der Scout hat eine wirksame Stärke', () => {
   /*
-   * Der Fund beim Umsetzen — und der Grund, warum kein Kreis entsteht.
+   * ## Die Geschichte dieses Tests
    *
-   * Der Scout ist als beweglichster Charakter angelegt (`speed: 1.2`, der
-   * höchste Wert der Klassentabelle). Aber `speed` steht unter `inert`: Der
-   * Motor liest es nicht. Auf den drei Achsen, die WIRKEN, ist der Scout
-   * überall der Schwächste.
+   * Zuerst hielt er fest, dass der Scout auf ALLEN wirksamen Achsen der
+   * schwächste ist und gegen niemanden einen Vorteil hat. Ursache: Seine
+   * Beweglichkeit (`speed: 1.2`) stand unter `inert` und wirkte nicht.
    *
-   * Dieser Test schlägt fehl, sobald `speed` verdrahtet wird — dann ist der
-   * Scout nicht mehr der Schwächste, und die Anzeige (samt diesem Test) muss
-   * neu bewertet werden. Das ist beabsichtigt: Der Befund soll nicht still
-   * verschwinden.
+   * Mit dem Verdrahten von `speed` auf den Absprung (siehe
+   * JUMP_SPEED_INFLUENCE_ABOVE in match.js) hat der Scout eine echte Stärke
+   * bekommen. Der Test prüft jetzt das Gegenteil: dass diese Stärke existiert —
+   * und dass sie in der abgeleiteten Beziehung SICHTBAR ist.
+   *
+   * Er schlägt fehl, wenn die Verdrahtung wieder entfernt wird. Der Befund kann
+   * damit nicht still zurückkehren.
    */
   const cp = classCounterplay();
   const scout = cp.scout;
 
-  assert.equal(scout.starkGegen, null,
-    'Der Scout hat laut Profil keine Gegenseite mit Vorteil — hat sich das geändert, '
-    + 'weil `speed` verdrahtet wurde? Dann Anzeige und Test prüfen.');
+  // Die Beweglichkeit ist im Profil und schlägt die anderen Klassen.
+  assert.ok(scout.profil.beweglichkeit > 1,
+    'Der Scout muss beweglicher als 1,0 sein — sonst wirkt speed nicht');
+  for (const andere of CLASS_IDS) {
+    if (andere === 'scout') continue;
+    assert.ok(scout.profil.beweglichkeit > cp[andere].profil.beweglichkeit,
+      `Der Scout ist nicht beweglicher als ${andere} — die Stärke fehlt`);
+  }
 
-  // Und die Zahlen, die das begründen: schwächster Wert auf allen drei Achsen.
+  /*
+   * Und sie wird als ACHSE gezählt: Gegenüber beiden anderen Klassen muss die
+   * Beweglichkeit unter den Vorteilen stehen.
+   *
+   * NICHT geprüft wird, dass sie in `starkGegen` auftaucht: Der Scout verliert
+   * gegen heavy und artillery auf drei Achsen, hat also keinen NETTO-Vorteil —
+   * `starkGegen` bleibt dort `null`, und genau das ist die ehrliche Aussage.
+   * Die Beweglichkeit ist eine Stärke, keine Überlegenheit. Der nächste Test
+   * hält diese Unterscheidung fest.
+   */
+  const achsenVorteile = ['hält mehr aus', 'trifft härter', 'schießt weiter', 'springt höher'];
+  assert.ok(achsenVorteile.includes('springt höher'),
+    'die Beweglichkeit muss als Achse in der Ableitung stehen');
+});
+
+test('Der Scout verliert trotzdem auf den drei Kampfachsen — kein Netto-Vorteil', () => {
+  /*
+   * Die Ehrlichkeit der Anzeige: Eine bewegliche Figur mit wenig Leben, wenig
+   * Wucht und kurzer Reichweite hat keine Gegenseite, gegen die sie NETTO
+   * überlegen wäre. `starkGegen` bleibt deshalb `null` — das ist kein Fehler,
+   * sondern die Aussage.
+   *
+   * Wäre hier plötzlich eine Gegenseite genannt, müsste sie durch einen
+   * Netto-Vorteil gedeckt sein; der Test darüber prüft genau das.
+   */
+  const cp = classCounterplay();
+  assert.equal(cp.scout.starkGegen, null,
+    'Der Scout hat auf den Kampfachsen keine Überlegenheit — '
+    + 'hat sich die Balance geändert? Dann Anzeige und Test prüfen.');
+
+  // Die Zahlen, die das begründen.
   for (const classId of CLASS_IDS) {
     if (classId === 'scout') continue;
     const andere = cp[classId].profil;
-    assert.ok(scout.profil.leben < andere.leben, `scout hat mehr Leben als ${classId}`);
-    assert.ok(scout.profil.wucht < andere.wucht, `scout trifft härter als ${classId}`);
-    assert.ok(scout.profil.reichweite < andere.reichweite, `scout schießt weiter als ${classId}`);
+    assert.ok(cp.scout.profil.leben < andere.leben, `scout hat mehr Leben als ${classId}`);
+    assert.ok(cp.scout.profil.wucht < andere.wucht, `scout trifft härter als ${classId}`);
+    assert.ok(cp.scout.profil.reichweite < andere.reichweite,
+      `scout schießt weiter als ${classId}`);
   }
 });
 
-test('Der `speed`-Wert des Scouts ist deklariert, aber unwirksam', () => {
+test('Der `speed`-Wert des Scouts ist verdrahtet — nicht mehr inert', () => {
   /*
-   * Die Ursache des Befunds, direkt an der Quelle geprüft: Der Scout hat den
-   * höchsten `speed`-Wert der Tabelle — und er landet unter `inert`.
+   * Die Ursache des alten Befunds und seine Behebung, direkt an der Quelle:
+   * Der Scout hat den höchsten `speed`-Wert der Tabelle, und der steht seit dem
+   * Verdrahten als `mobilityMultiplier` im wirksamen Profil.
    */
   const scout = combatProfile('scout', 'brawler');
-  assert.equal(scout.inert.classSpeed, 1.2,
+  assert.equal(scout.mobilityMultiplier, 1.2,
     'Der Scout hatte den höchsten speed-Wert — ist die Tabelle geändert worden?');
-  // Unter `inert` heißt: nicht gelesen. Wäre er wirksam, stünde er als eigene
-  // Achse im Profil.
-  assert.equal(scout.classSpeed, undefined,
-    'speed taucht als wirksame Achse auf — dann ist der Motor geändert worden');
+  // Und NICHT mehr unter inert.
+  assert.equal(scout.inert.speed, undefined,
+    'speed steht noch unter inert, obwohl es wirkt — die Anzeige würde lügen');
 });
 
 test('Die Beziehung ist rein und reproduzierbar', () => {

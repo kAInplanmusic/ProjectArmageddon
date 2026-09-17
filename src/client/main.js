@@ -2643,6 +2643,12 @@ function zeichneKlassen(container) {
 
     balken(karte, 'Leben', klasse.wirksam.leben, maxLeben);
     balken(karte, 'Schaden', klasse.wirksam.schaden, maxSchaden);
+    /*
+     * Die Beweglichkeit wirkt auf den Absprung: Der Scout springt höher als die
+     * anderen Klassen. Sie steht deshalb hier als Wert und nicht mehr im
+     * Hinweis auf wirkungslose Dimensionen.
+     */
+    balken(karte, 'Beweglichk.', klasse.wirksam.beweglichkeit, 1.2);
 
     // Das Startaufgebot: Rolle und die konkrete Waffe.
     //
@@ -2761,9 +2767,10 @@ function zeichneSidegrades(container) {
 /** Reiter „Counterplay" — welche Klasse gegen welche stark ist, und warum. */
 function zeichneCounterplay(container) {
   container.append(textEl('p',
-    'Welche Klasse gegen welche stark ist, folgt aus ihren Werten: Leben, Wucht '
-    + 'und Reichweite. Es gibt keinen versteckten Bonus — die Tabelle zeigt, '
-    + 'worauf die Werte hinauslaufen, und die Wahl entscheidet.', 'h-einleitung'));
+    'Welche Klasse gegen welche stark ist, folgt aus ihren Werten: Leben, Wucht, '
+    + 'Reichweite und Beweglichkeit. Es gibt keinen versteckten Bonus — die '
+    + 'Tabelle zeigt, worauf die Werte hinauslaufen, und die Wahl entscheidet.',
+    'h-einleitung'));
 
   const beziehungen = classCounterplay();
 
@@ -2781,6 +2788,8 @@ function zeichneCounterplay(container) {
     balken(karte, 'Leben', e.profil.leben, 1.6);
     balken(karte, 'Wucht', e.profil.wucht, 1.3);
     balken(karte, 'Reichweite', e.profil.reichweite, 1.2);
+    // Die Beweglichkeit wirkt auf den Absprung — der Scout springt höher.
+    balken(karte, 'Beweglichk.', e.profil.beweglichkeit, 1.2);
 
     const liste = document.createElement('ul');
     liste.className = 'h-liste';
@@ -2808,8 +2817,9 @@ function zeichneCounterplay(container) {
     'Fehlt eine Zeile „stark gegen", hat diese Klasse auf keiner wirksamen Achse '
     + 'einen Vorteil — sie ist dann durchgehend die schwächere Wahl.'));
   hinweise.append(textEl('p',
-    'Die Beweglichkeit (Tempo der Figur) steht in den Klassendaten, wird vom '
-    + 'Motor aber nicht gelesen und zählt deshalb hier nicht mit.'));
+    'Die Beweglichkeit wirkt auf den Absprung: Wer beweglicher ist, springt höher '
+    + 'und erreicht Stellungen, die anderen verschlossen bleiben. Sie zählt '
+    + 'deshalb als eigene Achse mit.'));
   container.append(hinweise);
 
   container.append(textEl('h3', 'Welche Karte begünstigt wen'));

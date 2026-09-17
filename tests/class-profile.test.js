@@ -175,7 +175,20 @@ test('Nicht wirksame Modifikatoren sind ausdrücklich als unwirksam gekennzeichn
 // --------------------------------------------------------- Eine Stelle nur
 
 test('src/engine/match.js multipliziert Klasse und Archetyp nicht mehr selbst', () => {
-  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'engine', 'match.js'), 'utf8');
+  const roh = fs.readFileSync(path.join(ROOT, 'src', 'engine', 'match.js'), 'utf8');
+
+  /*
+   * Kommentare zuerst entfernen: Der Code ERKLÄRT an mehreren Stellen, warum er
+   * die Rohdaten NICHT liest, und nennt sie dabei beim Namen (etwa bei der
+   * Beweglichkeit: „nicht direkt auf CLASS_DEFINITIONS zugreifen"). Ohne diesen
+   * Schritt würde die Begründung als Verstoß gelesen — derselbe Fehler wie beim
+   * Test der toten Klassen-Helfer, wo er schon einmal auftrat.
+   */
+  const quelle = roh
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter(zeile => !zeile.trim().startsWith('//'))
+    .join('\n');
 
   assert.ok(!/CLASS_DEFINITIONS|CLASS_ARCHETYPES/.test(quelle),
     'match.js liest die Rohdaten direkt. Klasse und Archetyp gehören ausschließlich '
