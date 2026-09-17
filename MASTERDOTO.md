@@ -20,14 +20,30 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **569/569** |
-| Browser-E2E | `npm run test:e2e` | **129/129** (System-Chrome; 1 bewusst übersprungen) |
+| Unit-/Integrationstests | `npm test` | **666/666** |
+| Browser-E2E | `npm run test:e2e` | **164/164** (System-Chrome; 2 bewusst übersprungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
-| Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~162× Echtzeit |
-| Balance | `npm run balance` | Auf Startentfernung 426 px: 115 Waffen mit Schaden am Ziel, 35 Selbstwirkungs-Waffen (alle wirksam), **0 ohne jede Wirkung**. Über sieben Entfernungen (`npm run balance:sweep`): 30 Waffen nur Nahbereich, 89 auch ab 550 px |
+| Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~195× Echtzeit |
+| Balance | `npm run balance` | Auf Startentfernung 426 px: 113 Waffen mit Schaden am Ziel, 36 Selbstwirkungs-Waffen (alle wirksam), **1 ohne Wirkung** |
+| Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13**; die eine wirkungslose Waffe ist der „Explosive Energieball" (Zünder, siehe Bekannte Grenzen) |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
+| Determinismus | manuell, 3000 Ticks | Seed 4242 → `bc9695fa` reproduzierbar, Seed 9999 → `c0531097` |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
+
+## Audit 2026-09-17 — vier unabhängige Sichten
+
+Auf Auftrag ein **tiefes Audit** in vier Teilen. Die Berichte stehen in `docs/`:
+
+| Teil | Bericht | Art |
+|---|---|---|
+| Selbst-Audit (Agent) | `docs/audit-selbst.md` | Code, Architektur, Determinismus, Testabdeckung |
+| Fremd-Audit | `docs/audit-code.md` | unabhängiger Code-Audit durch Subagent |
+| User-Flow + Spaßfaktor | `docs/audit-userflow.md` | Ablauf, Bedienbarkeit, Spielspaß |
+| Black-Box-Test | `docs/audit-blackbox.md` | Spiel als blinder Tester bedient |
+
+Die daraus abgeleiteten offenen Punkte stehen unter **„Offene Punkte aus dem
+Audit"** weiter unten.
 
 ## In diesem Durchgang gefundene und behobene Fehler
 
@@ -1958,6 +1974,97 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 - [x] **Archetypen wirken im Spiel.** Der frühere Eintrag „nur Config, nicht
       Gameplay" ist damit erledigt: `match.js` setzt Leben und Werte je Archetyp
       tatsächlich ein.
+
+## Offene Punkte aus dem Audit
+
+Abgeleitet aus den vier Audit-Berichten (`docs/audit-*.md`). Nach Schweregrad,
+nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
+
+### Behebbar ohne Design-Entscheidung
+
+- [ ] **974 Zeilen toter Code entfernen.** `src/engine/terrain/terrainEngine.js`
+      (494), `src/engine/weapons/weaponEngine.js` (480),
+      `src/engine/terrainEngine/index.js` (Stub),
+      `src/engine/weaponEngine/index.js` (Stub),
+      `src/engine/weapons/projectArmageddonWorldAdapter.js` (175). **Kein
+      Importeur** — weder im Produktivpfad noch in Tests, auch nicht über
+      `src/engine/index.js` (`grep -c 'TerrainEngine'` ergibt 0).
+      Beleg: `docs/audit-selbst.md`, Befund 1.
+      *Vor dem Löschen prüfen:* ob ein externes Werkzeug sie lädt (die beiden
+      `index.js` sind als „Wrapper für externes Paket" kommentiert).
+
+- [x] **`wurfAbgeleitet` entfernt — 0 Leser.** Vom Agenten selbst im Zug
+      „Nahkampf wirft" eingeführt und nie benutzt (21 Einträge im Katalog).
+      Fünf weitere Verdachtsfelder wurden in der Einzelprüfung **entlastet**:
+      `aoe`, `sourceRarity`, `requiresLineOfSight` und `effectMagnitude` werden
+      im Generator gelesen, `cooldownSource` ist als Herkunftsnachweis
+      kommentiert.
+      Beleg: `docs/audit-selbst.md`, Befund 2.
+
+- [ ] **`targeting` widerspricht der Wirkung bei 11 Waffen — Dokumentation, nicht
+      Code.** Die Quelldatei führt `targeting` für alle 150 Waffen
+      (`directional` 125×, `self_or_area` 25×), aber sie verschlagwortet auch
+      Heilzauber, Eisschild und Auto-Turret als `directional`, obwohl diese
+      nachweislich auf den **Schützen** wirken. Bei 139 von 150 stimmt das Feld
+      mit der abgeleiteten Wirkung überein.
+      *Der Motor leitet korrekt ab* (`SELF_TARGET_KINDS`), das Feld ist unscharf
+      — es wird deshalb **nicht** verdrahtet; es würde 11 Waffen falsch steuern
+      (Heilzauber als Angriff).
+      *Offen:* Ob die Quelldatei nachgeschärft wird, ist eine Daten-Entscheidung.
+      Ein Test hält den Widerspruch fest, damit er nicht in Vergessenheit gerät.
+      Beleg: `docs/audit-selbst.md`, Befund 2.
+
+- [x] **`sourceRarity` ist Doppelspur zu `rarity` — kein Befund.** Der Verdacht
+      kam aus einer Zählung über `src/` allein. Die Nachprüfung zeigt: Beide
+      werden genutzt und sind bei allen 150 Waffen identisch, aber sie haben
+      verschiedene Herkunft (Quelldatei vs. abgeleitet) und `sourceRarity` wird
+      für die Ausgabe des Balance-Berichts gebraucht. Kein Handlungsbedarf.
+
+- [x] **Testabdeckung für `sceneryPainter.js` (599 Zeilen) — geschlossen.**
+      Neun Tests in `tests/scenery-painter.test.js`: alle Kulissen aus
+      `pickScenery()` zeichnen ohne Absturz, `save`/`restore` sind ausgeglichen
+      (kein Zustandsleck), `drawWaterSurface` schweigt ohne Wasserart, der
+      Zeichner ist rein, Randgrößen 1×1 bis 3840×2160.
+      *Drei weitere Verdachtsfälle wurden entlastet:* `protocol.js` ist über
+      zehn Testdateien gedeckt, `terrainEngine.js` und `weaponEngine.js` sind
+      toter Code (Befund 1).
+      Beleg: `docs/audit-selbst.md`, Befund 3.
+
+- [ ] **`renderer.js` (1119 Zeilen) ist in `node --test` nicht ladbar — Testweg
+      nötig.** Es nutzt `import.meta.glob` (Vite-spezifisch, `renderer.js:38`);
+      ein `import` scheitert mit `TypeError: ...glob is not a function`. Das ist
+      der Grund, warum bisher kein Unit-Test existierte — kein Versäumnis.
+      *Teilweise gedeckt:* Partikellogik und `prefers-reduced-motion` über
+      `tests/e2e/accessibility.spec.mjs:212`.
+      *Zwei Wege:* (a) Vite-basierter Testläufer (Vitest) einführen, (b) die
+      testbare Logik in eigene Module ziehen — wie bei `terrainBaker.js` und
+      `shotPrediction.js` bereits geschehen. (b) passt zur bestehenden
+      Architektur und wird empfohlen.
+      Beleg: `docs/audit-selbst.md`, Befund 3.
+
+- [ ] **Der Balance-Bericht nennt „Datenmangel" als Ursache, wo Mechanik
+      fehlte.** Die Ursachenschätzung um „Wirkung fehlt trotz Werten" ergänzen.
+      Beleg: `docs/audit-selbst.md`, Befund 5.
+
+### Design-Entscheidung nötig (nicht eigenmächtig)
+
+- [ ] **Zünder-Waffen: Zünder länger als die Flugzeit.** Bei allen 18
+      Zünder-Waffen zündet die Ladung erst nach der Landung. Für Granaten
+      gewollt, für „Explosiver Energieball", „Meteoritenbrocken", „Meteorregen"
+      und „Höllenkanone" vermutlich falsch. Eine Unterscheidung nach Namen wäre
+      Namensdeutung. Beleg: `MASTERDOTO.md`, „Bekannte Grenzen".
+
+- [ ] **`maxRange` gilt bei neutralem Klassenprofil.** Gemessener Faktor im
+      Match: 0,37 (Plasma-Blaster 850 → 317 px). Betrifft alle 150 Waffen.
+      Beleg: `MASTERDOTO.md`, „Bekannte Grenzen".
+
+- [ ] **Balance der entkoppelten Klasse/Archetyp-Kombinationen ungemessen.**
+      Die Wahl ist möglich, aber für die neuen Kombinationen gibt es keine
+      Vergleichszahlen aus `npm run balance`.
+
+### Aus den Subagenten-Audits
+
+*(wird ergänzt, sobald die drei Berichte eintreffen)*
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 

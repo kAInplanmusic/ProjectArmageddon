@@ -853,7 +853,6 @@ const weapons = raw.weapons.map(entry => {
      * sie weiterhin nicht als Projektil behandeln.
      */
     weapon.delivery = 'projectile';
-    weapon.wurfAbgeleitet = true;
   }
 
   // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam. Steht
