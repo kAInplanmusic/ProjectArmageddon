@@ -132,23 +132,23 @@ export class ReplayRecorder {
     return this;
   }
 
-  /**
-   * Erzeugt ein Replay aus einem laufenden Match: Seed + Konfiguration werden
-   * vom Match übernommen, die Eingaben müssen separat erfasst worden sein.
-   */
-  static forMatch(match, { entries = [], rounds = [] } = {}) {
-    const recorder = new ReplayRecorder({
-      seed: match.seedManager.baseSeed,
-      teams: match.teams,
-      playersPerTeam: match.playersPerTeam,
-      preset: match.preset,
-      maxRounds: match.maxRounds,
-      turnDurationMs: match.turnDurationMs,
-    });
-    for (const entry of entries) recorder.recordInput(entry);
-    for (const round of rounds) recorder.recordRound(round.round, round.tick);
-    return recorder;
-  }
+  /*
+ * Hier stand `static forMatch(match, { entries, rounds })`.
+ *
+ * FUND (belegt, Code-Audit): Die Methode hatte **null Aufrufer** — und sie war
+ * unvollständig: Sie kopierte `seed`, `teams`, `playersPerTeam`, `preset`,
+ * `maxRounds` und `turnDurationMs` in den Replay-Kopf, aber NICHT `sidegrades`
+ * und `loadouts`. Genau diese beiden Felder gehören laut dem Kopf-Kommentar
+ * oben dazu, „sonst spielte die Wiedergabe ein anderes Match" (`:40-42`).
+ *
+ * Sie ist deshalb entfernt statt repariert: Der Server baut seinen Recorder
+ * direkt (`gameServer.js:92`) und übergibt die vollständige Konfiguration. Eine
+ * zweite, unvollständige Abkürzung wäre eine Falle — sie sieht wie der bequeme
+ * Weg aus und reproduziert ein anderes Match.
+ *
+ * Ein Test hält fest, dass die Kopf-Felder vollständig sind
+ * (`tests/replay-head.test.js`).
+ */
 
   toJSON() {
     return {

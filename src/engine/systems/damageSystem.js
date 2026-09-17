@@ -10,7 +10,17 @@
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import { COMBAT_RULES } from '../../shared/config/combat.js';
 
-export const DAMAGE_PRIORITY = 80;
+/*
+ * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
+ *
+ * FUND (belegt, Code-Audit): Hier stand `export const DAMAGE_PRIORITY = ...`
+ * — eine zweite Liste derselben Reihenfolge mit NULL Lesern. Wer sie änderte,
+ * änderte nichts: Der Motor liest `SYSTEM_PRIORITIES.DAMAGE`. Genau das
+ * war die Falle („eine Regel, eine Stelle").
+ *
+ * Die Konstante ist entfernt; die Reihenfolge wird nur noch an EINER Stelle
+ * gepflegt. Ein Test hält das fest (`tests/system-priority.test.js`).
+ */
 
 export class DamageSystem {
   #deathListeners = [];

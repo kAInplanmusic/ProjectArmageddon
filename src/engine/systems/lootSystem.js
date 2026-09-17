@@ -11,7 +11,17 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import { weightedRarity, rollCrateCount, rollCrateContents } from '../../shared/config/loot.js';
 import { pickWeaponForRarity, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
-export const LOOT_PRIORITY = 70;
+/*
+ * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
+ *
+ * FUND (belegt, Code-Audit): Hier stand `export const LOOT_PRIORITY = ...`
+ * — eine zweite Liste derselben Reihenfolge mit NULL Lesern. Wer sie änderte,
+ * änderte nichts: Der Motor liest `SYSTEM_PRIORITIES.LOOT`. Genau das
+ * war die Falle („eine Regel, eine Stelle").
+ *
+ * Die Konstante ist entfernt; die Reihenfolge wird nur noch an EINER Stelle
+ * gepflegt. Ein Test hält das fest (`tests/system-priority.test.js`).
+ */
 const PICKUP_RADIUS = 18;
 
 export const CRATE_TYPES = Object.freeze({ weapon: 0, sustain: 1, empty: 2, trap: 3 });

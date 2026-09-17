@@ -10,7 +10,17 @@
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import { MATCH_RULES } from '../../shared/config/match.js';
 
-export const MAELSTROM_PRIORITY = 75;
+/*
+ * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
+ *
+ * FUND (belegt, Code-Audit): Hier stand `export const MAELSTROM_PRIORITY = ...`
+ * — eine zweite Liste derselben Reihenfolge mit NULL Lesern. Wer sie änderte,
+ * änderte nichts: Der Motor liest `SYSTEM_PRIORITIES.MAELSTROM`. Genau das
+ * war die Falle („eine Regel, eine Stelle").
+ *
+ * Die Konstante ist entfernt; die Reihenfolge wird nur noch an EINER Stelle
+ * gepflegt. Ein Test hält das fest (`tests/system-priority.test.js`).
+ */
 
 export class MaelstromSystem {
   #inset = 0;

@@ -15,7 +15,17 @@
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 
-export const PROJECTILE_PRIORITY = 95;
+/*
+ * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
+ *
+ * FUND (belegt, Code-Audit): Hier stand `export const PROJECTILE_PRIORITY = ...`
+ * — eine zweite Liste derselben Reihenfolge mit NULL Lesern. Wer sie änderte,
+ * änderte nichts: Der Motor liest `SYSTEM_PRIORITIES.PROJECTILE`. Genau das
+ * war die Falle („eine Regel, eine Stelle").
+ *
+ * Die Konstante ist entfernt; die Reihenfolge wird nur noch an EINER Stelle
+ * gepflegt. Ein Test hält das fest (`tests/system-priority.test.js`).
+ */
 const PLAYER_HALF_WIDTH = 7;
 const PLAYER_HALF_HEIGHT = 10;
 

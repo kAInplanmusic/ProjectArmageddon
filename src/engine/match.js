@@ -72,7 +72,14 @@ export { CLASS_IDS, ARCHETYPE_IDS };
 export const TEAM_COLORS = Object.freeze(['#4cc9f0', '#f4a261', '#90be6d', '#e07a5f']);
 
 const BASE_HEALTH = 100;
-const POWER_TO_SPEED = 0.14;
+/*
+ * Kraft in Geschwindigkeit (px/Tick je Krafteinheit).
+ *
+ * Exportiert, damit Tests und der Geschütz-Pfad aus DERSELBEN Quelle lesen —
+ * die Doppelregel zweier abgeschriebener Zahlen war die Ursache des
+ * Ballistik-Fehlers (`#simulateTurretPath`, Befund im Code-Audit).
+ */
+export const POWER_TO_SPEED = 0.14;
 /*
  * Geschütze.
  *
@@ -1369,7 +1376,35 @@ export class MatchController {
     return bestes;
   }
 
-  /** Rechnet eine Flugbahn schrittweise nach — wie das echte Geschoss. */
+  /**
+   * Rechnet eine Flugbahn schrittweise nach — mit der Physik des echten
+   * Geschosses.
+   *
+   * FUND (belegt, Code-Audit): Hier stand ein NACHBAU der Ballistik, der in
+   * zwei Punkten von `ProjectileSystem` abwich — und zwar unbemerkt, weil der
+   * Kommentar „wie das echte Geschoss" Übereinstimmung behauptete:
+   *
+   *   1. `vx += wind * 0.02` mit `wind = currentStrength`. `currentStrength`
+   *      ist aber `wind * 10` (siehe `#rollWind`), also wirkte effektiv
+   *      `wind * 0,2` — das FÜNFFACHE zu wenig gegen `match.wind * 1,0` im
+   *      `ProjectileSystem`.
+   *   2. `vy` wurde NICHT gedraggt, `vx` schon. Das echte Geschoss draggt
+   *      BEIDE Achsen (`vx *= drag; vy *= drag`).
+   *
+   * Gemessene Abweichung der Zielweite (Kraft 100, 45°):
+   *   Wind  0      +14,6 px   (allein durch den fehlenden vy-Drag)
+   *   Wind  0,025  −16,9 px
+   *   Wind  0,05   −48,4 px
+   *   Wind −0,05   +77,7 px
+   *
+   * Wirkung: `#aimTurret` wählt mit dieser Bahn den Schusswinkel, der ein Ziel
+   * treffen soll. Bei bis zu 78 px Fehler schießt das Geschütz daneben — und
+   * zwar systematisch nach einer falschen Regel, nicht zufällig.
+   *
+   * Die Behebung ist bewusst KEINE neue Formel, sondern die Übernahme der
+   * geltenden: dieselben Konstanten (`GRAVITY`, `DRAG`), dieselbe Wind-Quelle
+   * (`match.wind`, NICHT `currentStrength`) und beide Achsen gedraggt.
+   */
   #simulateTurretPath(turret, winkel, kraft, waffe) {
     const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1);
     let x = turret.x;
@@ -1377,13 +1412,25 @@ export class MatchController {
     let vx = Math.cos(winkel) * speed;
     let vy = -Math.sin(winkel) * speed;
     const gravitation = GRAVITY * (waffe.gravityScale ?? 1);
-    const wind = this.#world.services.match?.currentStrength ?? 0;
+
+    /*
+     * Die Wind-Quelle ist `wind` — die Größe, die auch das `ProjectileSystem`
+     * liest (`match.wind`). Der frühere Zugriff auf `currentStrength` war der
+     * eigentliche Fehler: Dort war der Wind schon mit 10 multipliziert.
+     */
+    const wind = this.#wind;
+
+    // Der Drag kommt aus DERSELBEN Konstante wie beim echten Geschoss —
+    // `DEFAULT_PROJECTILE_DRAG` ist oben importiert. Eine eigene Zahl wäre
+    // genau die Doppelregel, die zu diesem Fehler geführt hat.
+    const drag = DEFAULT_PROJECTILE_DRAG;
 
     const bahn = [];
     for (let schritt = 0; schritt < TURRET_PATH_STEPS; schritt++) {
       vy += gravitation;
-      vx += wind * 0.02;
-      vx *= 0.995;
+      vx += wind;
+      vx *= drag;
+      vy *= drag;
       x += vx;
       y += vy;
       if (x < 0 || x > this.width || y > this.height) break;
@@ -2759,17 +2806,113 @@ export class MatchController {
     };
   }
 
-  /** Deterministischer Vergleichshash fuer Replay-Checks. */
+  /**
+   * Ein Hash über den spielrelevanten Zustand — das Beweismittel für
+   * Determinismus.
+   *
+   * ## Warum der Hash vollständig sein MUSS
+   *
+   * Er ist das Werkzeug, mit dem Replay-Reproduzierbarkeit belegt wird: Zwei
+   * Läufe mit demselben Seed müssen denselben Hash ergeben, und eine
+   * Abweichung muss ihn ändern. Lässt er Zustand aus, belegt er weniger, als
+   * er behauptet — eine Divergenz bliebe unbemerkt.
+   *
+   * ## Der Befund, der zu dieser Fassung führte
+   *
+   * Ein Code-Audit stellte fest: Die frühere Fassung hashte nur `round`, `tick`,
+   * `wind`, `activePlayerId`, Position/Leben der Figuren und die Position der
+   * Geschosse. **Gemessen und belegt:**
+   *
+   *   A activeWeaponId: pa_041 | inventory: [5 Waffen]
+   *   B activeWeaponId: pa_101 | inventory: [3 andere]
+   *   Hash A: 5c9a556d
+   *   Hash B: 5c9a556d   ← identisch, obwohl die Ausrüstung völlig anders ist
+   *
+   * Ein Replay, in dem eine Figur eine andere Waffe trägt oder eingefroren ist,
+   * hätte also „gleich" gemeldet.
+   *
+   * ## Was jetzt aufgenommen wird
+   *
+   * Ausrüstung und Munition je Figur, die Zustände (Schild, eingefroren), die
+   * Geschütze, der Mahlstrom und seine Verengung, die Kisten, der Sieger und
+   * die verstrichene Zugzeit.
+   *
+   * ## Warum gerundet wird
+   *
+   * Positionen und Leben gehen gerundet ein: Der Hash soll eine DIVERGENZ
+   * anzeigen, nicht die letzte Nachkommastelle einer Fließkommarechnung. Zwei
+   * Läufe, die sich um 1e-12 unterscheiden, sind reproduzierbar; zwei, die um
+   * 1 px abweichen, nicht.
+   */
   stateHash() {
     const state = this.getState();
+
+    /*
+     * Die Figuren möglichst vollständig: Ausrüstung und Munition gehören dazu,
+     * weil sie das Ergebnis des Matches verändern (eine andere Waffe trifft
+     * anders).
+     */
+    const entities = state.entities.map(e => [
+      e.entityId,
+      e.alive,
+      Math.round(e.x),
+      Math.round(e.y),
+      Math.round(e.health),
+      e.activeWeaponId ?? null,
+      // Die Waffenliste als Zeichenkette, damit die Reihenfolge zählt.
+      Array.isArray(e.inventory) ? e.inventory.join('|') : (e.inventory ?? null),
+      // Munition je Waffe, ebenfalls reihenfolgestabil.
+      e.ammo && typeof e.ammo === 'object'
+        ? Object.keys(e.ammo).sort().map(k => `${k}:${e.ammo[k]}`).join('|')
+        : (e.ammo ?? null),
+      // Laufende Abklingzeiten beeinflussen, wann wieder gefeuert werden darf.
+      e.cooldowns && typeof e.cooldowns === 'object'
+        ? Object.keys(e.cooldowns).sort().map(k => `${k}:${e.cooldowns[k]}`).join('|')
+        : (e.cooldowns ?? null),
+    ]);
+
+    /*
+     * Zustände (Schild, eingefroren, brennend …). Die Schlüssel werden SORTIERT,
+     * damit die Hash-Bildung nicht von der Einfügereihenfolge abhängt — eine
+     * nicht-deterministische Iteration wäre hier ein Fehler in genau dem
+     * Werkzeug, das Determinismus belegen soll.
+     */
+    const zustaende = state.statuses && typeof state.statuses === 'object'
+      ? Object.keys(state.statuses).sort().map(k => [k, JSON.stringify(state.statuses[k])])
+      : null;
+
     const payload = JSON.stringify({
       round: state.round,
       tick: state.tick,
       wind: state.wind,
       activePlayerId: state.activePlayerId,
-      entities: state.entities.map(e => [e.entityId, e.alive, Math.round(e.x), Math.round(e.y), Math.round(e.health)]),
+      winnerTeamId: state.winnerTeamId ?? null,
+      turnElapsedMs: Math.round(state.turnElapsedMs ?? 0),
+      entities,
       projectiles: state.projectiles.map(p => [p.entityId, Math.round(p.x), Math.round(p.y)]),
+      statuses: zustaende,
+      turrets: (state.turrets ?? []).map(t => [t.entityId ?? null, Math.round(t.x), Math.round(t.y), t.rounds ?? null]),
+      maelstrom: state.maelstrom
+        ? [Boolean(state.maelstrom.active), Math.round((state.maelstrom.inset ?? 0) * 1000)]
+        : null,
+      /*
+       * Kisten: ALLE Felder, die den Inhalt beschreiben.
+       *
+       * FUND (belegt, im Test): Hier stand `c.weaponId` — ein Feld, das es bei
+       * Kisten nicht gibt (`{entityId, x, y, crateType, rarity}`). Der Wert war
+       * damit immer `null`, und eine Kiste mit anderem Inhalt blieb im Hash
+       * unsichtbar. Ein Test hat es aufgedeckt.
+       */
+      crates: (state.crates ?? []).map(c => [
+        c.entityId ?? null,
+        Math.round(c.x),
+        Math.round(c.y),
+        c.crateType ?? null,
+        c.rarity ?? null,
+        c.weaponId ?? null,
+      ]),
     });
+
     let hash = 2166136261;
     for (let i = 0; i < payload.length; i++) {
       hash ^= payload.charCodeAt(i);
