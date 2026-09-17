@@ -2166,6 +2166,85 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
       gleich und ist ein **grober Indikator**, kein Balancenachweis. Sie zeigt
       Ausreißer, nicht Feinheiten.
 
+### Aus dem Fremd-Audit (Code) — siehe `docs/audit-code.md`
+
+Alle vier Befunde wurden nachgeprüft und **behoben**. Zwei waren ernster als
+beschrieben.
+
+- [x] **Geschütz-Zielberechnung rechnete mit dem falschen Wind — BEHOBEN.**
+      `#simulateTurretPath` nutzte `currentStrength` (also `wind × 10`) mit
+      Faktor 0,02 → effektiv `wind × 0,2` gegen `wind × 1,0` im echten Geschoss.
+      Zusätzlich fehlte der Drag auf `vy`.
+      *Gemessene Zielabweichung:* bei Windstille +14,6 px, bei Wind 0,05
+      −48,4 px, bei −0,05 **+77,7 px**. Nach der Korrektur: **0,00 px** über
+      alle Windwerte.
+      *Wirkung:* Das Geschütz wählt mit dieser Bahn seinen Schusswinkel — es
+      schoss bei starkem Wind systematisch daneben.
+      Abgesichert: `tests/turret-ballistics.test.js` (7 Tests).
+
+- [x] **Zustandshash deckte nur einen Teil des Zustands ab — BEHOBEN.**
+      Gemessen: Zwei Matches mit völlig verschiedener Ausrüstung ergaben
+      **denselben** Hash (`5c9a556d`). Der Hash ist das Beweismittel für
+      Determinismus — ein Replay mit anderer Waffe hätte „gleich" gemeldet.
+      Behoben: Ausrüstung, Munition, Abklingzeiten, Zustände, Geschütze,
+      Mahlstrom, Kisten und Sieger gehen jetzt ein.
+      *Dabei einen weiteren Fehler gefunden:* Der Kisten-Eintrag las
+      `c.weaponId` — ein Feld, das es bei Kisten nicht gibt.
+      Abgesichert: `tests/state-hash.test.js` (10 Tests).
+
+- [x] **Fünf tote Prioritätskonstanten — BEHOBEN.** `CHARACTER_PRIORITY`,
+      `DAMAGE_PRIORITY`, `LOOT_PRIORITY`, `MAELSTROM_PRIORITY`,
+      `PROJECTILE_PRIORITY` — je 0 Leser. Wer sie änderte, änderte **nichts**.
+      Abgesichert: `tests/system-priority.test.js` (5 Tests).
+
+- [x] **`ReplayRecorder.forMatch()` entfernt.** Null Aufrufer, und sie kopierte
+      `sidegrades`/`loadouts` nicht in den Kopf.
+      Abgesichert: `tests/replay-head.test.js` (8 Tests).
+
+- [ ] **Doppelte Raritäts-Gewichtstabelle.** `lootSystem.js:19`
+      (`RARITY_WEIGHTS`) und als Default-Parameter in der **generierten**
+      `weapons.js`. Heute identisch, morgen nicht. *Datenentscheidung:* Der
+      Default steht im Generator-Template — er gehört entfernt oder zwingend
+      übergeben.
+
+### Aus dem Fremd-Audit (User-Flow/Spaßfaktor) — siehe `docs/audit-userflow.md`
+
+- [ ] **Kisten sind praktisch unerreichbar.** Aufheberadius **18 px**
+      (`lootSystem.js:15,122`) bei Karten von 1280 px Breite. Kisten liegen auf
+      `groundY - 14`. Ohne Wurf-/Greifmechanik ist der Loot-Strang Kosmetik.
+      *Vorschlag:* Aufheben als Zugaktion mit Reichweite (60–100 px) oder
+      Springen auf die Kiste.
+
+- [ ] **Matchdauer 5,7–11,0 min** (8 Seeds gemessen: 31–60 Züge, 29–51
+      Schüsse). Für einen Prototyp mit 4 Figuren zu lang; keine Partie endete
+      vor Runde 15 durch Ausschaltung — der Mahlstrom ist der Regelweg, nicht
+      die Ausnahme. *Hebel:* Startgesundheit senken oder Rundengrenze 30 → ~12.
+
+- [ ] **`maximum`-Werte der Zugzeiten sind toter Konfigurationscode.**
+      `match.js` deklariert `duelSeconds.maximum: 60` und
+      `fourPlayerSeconds.maximum: 40`, aber der Motor liest **nur**
+      `.minimum` (gemessen: `grep -rn '\.maximum' src/` findet keinen Leser).
+      *Entweder* nutzen oder entfernen.
+
+- [ ] **Mahlstrom greift zu spät** (`roundBreakpoint = 15`). Gemessen endeten
+      6 von 8 Partien bei oder nach Runde 15 — der Spannungsbogen kommt, oft war
+      die Partie aber schon entschieden. *Hebel:* Breakpoint 15 → 8.
+
+- [ ] **Erfolge sind Platzhalter.** Alle 11 tragen `muster: true`. Die
+      Belohnungsschleife belohnt Musterfortschritt, nicht Spielinhalte.
+      *Infrastruktur steht komplett* — es fehlen die Inhalte (Content).
+
+- [ ] **Klassen-/Archetypzahlen fehlen in der Anzeige.** Lebensspanne Faktor
+      **0,56 bis 1,56** — ein großer Unterschied, aber im Menü stehen nur Namen.
+      Die Werte liegen in `combatProfile()` bereit; es ist reine Anzeigearbeit.
+
+- [ ] **Abbruch nur über verstecktes `R`** — wirkt global und ohne Rückfrage,
+      auch mitten im Match. *Vorschlag:* Abbruchknopf im HUD mit Bestätigung.
+
+- [ ] **Seed ist standardmäßig leer** („leer = zufällig", `index.html:729`) —
+      das Match ist damit nicht reproduzierbar, obwohl Determinismus das
+      Kernversprechen ist. *Vorschlag:* Vorgabewert eintragen.
+
 ### Aus dem Black-Box-Audit (Teilbericht, Agent lief in die Iterationsgrenze)
 
 Der Agent hat als blinder Tester das Spiel über Playwright bedient. Er kam
