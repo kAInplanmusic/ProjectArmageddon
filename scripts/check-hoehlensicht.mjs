@@ -29,7 +29,7 @@ const HOEHE = 720;
 const PALETTE = { surface: [86, 148, 74], deep: [34, 66, 32] };
 
 /** Zählt die durchsichtigen Pixel innerhalb der Erdmasse. */
-function durchsichtigeLoecher(daten, breite, hoehe) {
+function durchsichtigeLoecher(daten) {
   let loecher = 0;
   for (let i = 3; i < daten.length; i += 4) {
     if (daten[i] === 0) loecher += 1;
@@ -91,7 +91,7 @@ for (const [schluessel, def] of Object.entries(KARTENTYPEN)) {
   }
   const hohlraum = unterOberflaeche === 0 ? 0 : leer / unterOberflaeche;
 
-  const durchsichtig = durchsichtigeLoecher(daten, BREITE, HOEHE);
+  const durchsichtig = durchsichtigeLoecher(daten);
   const innen = tiefeLoecher(daten, rows, BREITE, HOEHE);
 
   console.log(

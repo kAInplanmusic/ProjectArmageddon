@@ -740,28 +740,20 @@
               </select>
             </label>
             <!--
-              Der Kartentyp des neuen Generators.
+              Hinweis zur Karte: Sie wird NICHT eingestellt.
 
-              Die Auswahl „Form" darüber steuert den ALTEN Generator (ein
-              1D-Höhenfeld). Dieser hier schaltet auf den neuen um — eine
-              2D-Maske mit Höhlen, Überhängen und schwebenden Inseln, die ein
-              Höhenfeld nicht darstellen kann.
+              Der Generator zieht seinen Charakter aus dem Seed — Landanteil,
+              Höhlung, Steilheit, Wasser, Zerklüftung. Es gibt bewusst keine
+              Auswahl: Wer die Karte wählen könnte, kennt sie nach zehn Partien
+              und spielt gegen eine Kulisse statt gegen das Gelände.
 
-              Bewusst getrennt statt ersetzt: Der alte Weg bleibt wählbar, und
-              die Umstellung lässt sich im Spiel vergleichen statt sie zu
-              glauben.
+              Der einzige Hebel ist der SEED — und der ist keine Formung,
+              sondern eine Wiederholung: Derselbe Seed ergibt dieselbe Karte.
             -->
-            <label>Kartentyp (neu)
-              <select id="cfg-kartentyp">
-                <option value="" selected>— wie bisher —</option>
-                <option value="huegel">Hügel</option>
-                <option value="berge">Berge</option>
-                <option value="inseln">Inseln</option>
-                <option value="hoehlen">Höhlen</option>
-                <option value="schwebe">Schwebende Inseln</option>
-                <option value="kavernen">Kavernen</option>
-              </select>
-            </label>
+            <p class="field-hint">
+              Die Karte entsteht aus dem Seed — Form, Höhlen und Wasser werden
+              gezogen, nicht gewählt. Zwei Seeds, zwei Welten.
+            </p>
             <label>Spieler pro Team
               <select id="cfg-players">
                 <option value="1">1</option>

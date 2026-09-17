@@ -12,6 +12,7 @@ import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
 import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
 import { erzeugeKarte } from '../shared/terrainGen2.js';
+import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
@@ -570,7 +571,22 @@ export class MatchController {
     let bitmap;
     let waterLevel;
 
-    if (this.kartentyp) {
+    if (this.kartentyp === 'autonom') {
+      /*
+       * Der autonome Generator: Er zieht seinen Charakter aus dem Seed — kein
+       * Typ, keine Schablone. Was dabei entsteht, steht in `charakter` und
+       * `kennzahlen` und ist damit nachprüfbar.
+       */
+      const k = erzeugeAutonomeKarte({
+        rng: terrainRng,
+        width: this.width,
+        height: this.height,
+      });
+      bitmap = k.bitmap;
+      waterLevel = k.wasserY;
+      this.kartencharakter = k.charakter;
+      this.kartenkennzahlen = k.kennzahlen;
+    } else if (this.kartentyp) {
       const k = erzeugeKarte({
         rng: terrainRng,
         width: this.width,

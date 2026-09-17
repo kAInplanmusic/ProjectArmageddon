@@ -290,8 +290,14 @@ class Game {
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
     const playersPerTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
     const preset = document.getElementById('cfg-preset')?.value ?? 'hills';
-    // Leer = der bewährte 1D-Generator. Gesetzt = die 2D-Maske mit Höhlen.
-    const kartentyp = document.getElementById('cfg-kartentyp')?.value || null;
+    /*
+     * „autonom" lässt den Generator selbst entscheiden.
+     *
+     * Der Typ ist keine Einstellung mehr: Der Generator zieht seinen Charakter
+     * aus dem Seed. Wer die Karte wählen könnte, kennt sie nach zehn Partien
+     * und spielt gegen eine Kulisse statt gegen das Gelände.
+     */
+    const kartentyp = 'autonom';
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
