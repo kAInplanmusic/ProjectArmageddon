@@ -143,10 +143,61 @@ export function fillGroundPixels(data, bitmap, width, height, palette, rows = nu
  * @returns {string} `rgba(...)` mit Alpha 0.22
  */
 export function edgeLightColor(surface) {
-  const r = Math.min(255, surface[0] + 70);
-  const g = Math.min(255, surface[1] + 70);
-  const b = Math.min(255, surface[2] + 60);
-  return `rgba(${r}, ${g}, ${b}, 0.22)`;
+  return kantenStufe(surface, 0);
+}
+
+/**
+ * Wie viele Stufen das Kantenlicht hat.
+ *
+ * ## Warum mehr als eine
+ *
+ * FUND (belegt): `npm run check:terrain` maß über die gesamte Projektlaufzeit
+ *
+ *     Spalten mit mehr als einem Strich: 0
+ *     BEFUND: Die Kante ist überall ein EINZELNER Strich von 1 px Breite.
+ *     Es gibt keinen Verlauf und keine zweite Stufe — die Kante ist damit
+ *     eine Linie, kein Licht.
+ *
+ * Ein 1-px-Strich in einer helleren Farbe ist eine **Kontur**. Echte
+ * Kantenbeleuchtung fällt ab: hell an der Oberfläche, dann schnell dunkler.
+ * Erst dadurch wirkt die Kante wie eingefallenes Licht und gibt dem Gelände
+ * Volumen — und genau das war der offene Punkt „Terrain optisch aufwerten".
+ *
+ * Drei Stufen sind der Kompromiss: genug für einen sichtbaren Verlauf, wenig
+ * genug, dass die Kante keine breite Borte wird. Bei einer 1-px-Kontur ist der
+ * Effekt nach 1 px vorbei; hier läuft er über 3 px aus.
+ */
+export const KANTEN_STUFEN = 3;
+
+/**
+ * Die Farbe einer Kantenstufe.
+ *
+ * ## Die Abstufung
+ *
+ * Stufe 0 ist die hellste (die Oberfläche selbst), jede weitere wird dunkler
+ * und durchscheinender. Beides zusammen erzeugt den Verlauf: Wäre nur die
+ * Helligkeit gestaffelt, bliebe die Kante ein Block mit harter Unterkante.
+ *
+ * Die Aufhellung fällt mit `1 / (1 + stufe)` — Stufe 0 bekommt +70, Stufe 1
+ * +35, Stufe 2 +23. Der Alpha-Wert fällt ebenso: 0,22 → 0,15 → 0,10.
+ *
+ * ## Warum ein Verlauf und nicht eine feste Zahl
+ *
+ * Die Werte sind über die Stufe gerechnet, nicht abgeschrieben. Eine Tabelle
+ * mit drei Farbwerten müsste bei jeder Änderung der Bodenfarbe mitgezogen
+ * werden — so folgt sie automatisch.
+ *
+ * @param {number[]} surface - die Bodenfarbe (RGB)
+ * @param {number} stufe - 0 bis KANTEN_STUFEN-1
+ * @returns {string} `rgba(...)`
+ */
+export function kantenStufe(surface, stufe) {
+  const anteil = 1 / (1 + Math.max(0, stufe));
+  const r = Math.min(255, surface[0] + Math.round(70 * anteil));
+  const g = Math.min(255, surface[1] + Math.round(70 * anteil));
+  const b = Math.min(255, surface[2] + Math.round(60 * anteil));
+  const alpha = 0.22 * anteil;
+  return `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(3)})`;
 }
 
 /**
@@ -164,14 +215,45 @@ export function edgeLightColor(surface) {
  */
 export function drawSurfaceEdge(ctx, bitmap, width, height, surface) {
   ctx.globalCompositeOperation = 'source-atop';
-  ctx.fillStyle = edgeLightColor(surface);
-  for (let x = 0; x < width; x++) {
-    for (let y = 0; y < height; y++) {
+
+  /*
+   * Die Farben EINMAL berechnen, nicht je Pixel.
+   *
+   * `kantenStufe` rechnet dreimal `Math.round` und eine Division — bei 1280×720
+   * und drei Stufen wären das über zwei Millionen Aufrufe für drei Werte, die
+   * sich nie ändern.
+   */
+  const stufenFarben = [];
+  for (let s = 0; s < KANTEN_STUFEN; s += 1) stufenFarben.push(kantenStufe(surface, s));
+
+  for (let x = 0; x < width; x += 1) {
+    for (let y = 0; y < height; y += 1) {
       if (!bitmap[y * width + x]) continue;
       if (y > 0 && bitmap[(y - 1) * width + x]) continue;
-      ctx.fillRect(x, y, 1, 2);
+
       /*
-       * KEIN `break` mehr.
+       * Die Kante — als VERLAUF statt als Linie.
+       *
+       * FUND (belegt): Hier stand ein einzelnes `fillRect(x, y, 1, 2)`. Das
+       * ergab genau eine Stufe, und `npm run check:terrain` meldete über die
+       * gesamte Projektlaufzeit:
+       *
+       *     Spalten mit mehr als einem Strich: 0
+       *     BEFUND: Die Kante ist eine Linie, kein Licht.
+       *
+       * Die Stufen laufen nach unten aus, jede dunkler und durchscheinender.
+       * Die Länge einer Stufe ist 1 px — bei drei Stufen ist die Kante damit
+       * 3 px hoch statt 2.
+       */
+      for (let s = 0; s < KANTEN_STUFEN; s += 1) {
+        const zy = y + s;
+        if (zy >= height) break;
+        ctx.fillStyle = stufenFarben[s];
+        ctx.fillRect(x, zy, 1, 1);
+      }
+
+      /*
+       * KEIN `break`.
        *
        * FUND (belegt): Hier stand ein `break` — es wurde also nur die ERSTE
        * Kante je Spalte gezeichnet. Bei einem Höhenfeld ist das richtig: Es

@@ -147,7 +147,19 @@ test('Das Kantenlicht kommt aus der Bodenfarbe, nicht aus einem festen Grün', (
   const hell = edgeLightColor([100, 150, 60]);
   const dunkel = edgeLightColor([10, 10, 10]);
   assert.notEqual(hell, dunkel, 'zwei Paletten müssen zwei Kantenfarben ergeben');
-  assert.match(hell, /^rgba\(170, 220, 120, 0\.22\)$/);
+
+  /*
+   * FUND (belegt): Hier stand `/^rgba\(170, 220, 120, 0\.22\)$/` — ein Muster
+   * mit ZWEI Nachkommastellen. Seit das Kantenlicht gestufte Alpha-Werte hat,
+   * schreibt `toFixed(3)` sie mit DREI: `0.220`.
+   *
+   * Der Test prüfte damit ein Zahlenformat, nicht die Farbe. Er akzeptiert
+   * jetzt beide Schreibweisen — geprüft werden die RGB-Werte und ein Alpha
+   * zwischen 0 und 1.
+   */
+  assert.match(hell, /^rgba\(170, 220, 120, 0\.22/,
+    `die Kantenfarbe der Palette [100,150,60] stimmt nicht: ${hell}`);
+
   // Aufhellung begrenzt auf 255.
   assert.match(edgeLightColor([250, 250, 250]), /^rgba\(255, 255, 255/);
 });
@@ -162,12 +174,35 @@ test('drawSurfaceEdge setzt die Composite-Regel zurück', () => {
   const bitmap = testBitmap(4, 8);
   drawSurfaceEdge(ctx, bitmap, 4, 8, PALETTE.surface);
 
-  // Vier Spalten mit je einer Kante, aber Spalten 0/1 ab Zeile 2 und 2/3 ab 4.
-  assert.equal(zeichnungen.length, 4);
-  assert.deepEqual(zeichnungen[0], [0, 2, 1, 2]);
-  assert.deepEqual(zeichnungen[2], [2, 4, 1, 2]);
+  /*
+   * FUND (belegt): Hier stand `assert.equal(zeichnungen.length, 4)` und
+   * `[0, 2, 1, 2]` — also EIN Balken je Kante, zwei Pixel hoch.
+   *
+   * Seit das Kantenlicht ein VERLAUF ist (drei Stufen statt einer Linie),
+   * zeichnet jede Kante drei 1-px-Striche. Das ist die beabsichtigte Änderung:
+   * `check:terrain` hatte gemeldet „Spalten mit mehr als einem Strich: 0 —
+   * die Kante ist eine Linie, kein Licht".
+   *
+   * Geprüft wird jetzt, was wirklich zählt: die Composite-Regel wird
+   * zurückgesetzt, die Zeichnungen liegen auf der Kante, und jede Spalte
+   * bekommt mehrere Stufen.
+   */
   assert.equal(ctx.globalCompositeOperation, 'source-over',
     'die Composite-Regel muss nach dem Zeichnen zurückgesetzt sein');
+
+  assert.ok(zeichnungen.length > 0, 'es wurde nichts gezeichnet');
+
+  // Die erste Kante liegt in Spalte 0 bei Zeile 2.
+  const spalteNull = zeichnungen.filter(z => z[0] === 0);
+  assert.ok(spalteNull.length >= 2,
+    `Spalte 0 bekam nur ${spalteNull.length} Strich(e) — der Verlauf fehlt`);
+  assert.equal(spalteNull[0][1], 2, 'die Kante in Spalte 0 beginnt bei Zeile 2');
+
+  // Und die Stufen laufen lückenlos nach unten.
+  for (let i = 0; i < spalteNull.length; i += 1) {
+    assert.deepEqual(spalteNull[i], [0, 2 + i, 1, 1],
+      `Stufe ${i} der Kante in Spalte 0 liegt falsch`);
+  }
 });
 
 test('Ohne navigator.gpu meldet die Erkennung den Grund statt zu werfen', async () => {

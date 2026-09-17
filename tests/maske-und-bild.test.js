@@ -26,7 +26,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fillGroundPixels, surfaceRows, drawSurfaceEdge } from '../src/client/terrainBaker.js';
+import {
+  fillGroundPixels, surfaceRows, drawSurfaceEdge, KANTEN_STUFEN,
+} from '../src/client/terrainBaker.js';
 import { erzeugeKarte } from '../src/shared/terrainGen2.js';
 import { SeededRandom } from '../src/shared/prng.js';
 
@@ -202,9 +204,28 @@ test('Jede Kante bekommt einen Lichtsaum, nicht nur die oberste', () => {
 
   drawSurfaceEdge(fakeCtx, bitmap, width, height, [100, 150, 60]);
 
-  const anStellen = striche.map(s => s.y).sort((a, b) => a - b);
+  /*
+   * FUND (belegt): Hier stand `deepEqual(anStellen, [1, 3, 6])` — drei Striche,
+   * einer je Kante. Seit das Kantenlicht ein VERLAUF ist, zeichnet jede Kante
+   * `KANTEN_STUFEN` Striche nach unten.
+   *
+   * Geprüft wird deshalb nicht mehr „drei Striche", sondern das, was der Test
+   * eigentlich sicherstellen soll: **Jede der drei Kanten wird beleuchtet** —
+   * nicht nur die oberste. Die Kanten liegen bei y=1, y=3 und y=6.
+   */
+  const kantenY = [1, 3, 6];
+  for (const y of kantenY) {
+    assert.ok(striche.some(s => s.y === y),
+      `Die Kante bei y=${y} wurde nicht beleuchtet — nur die oberste Kante je `
+      + 'Spalte zu zeichnen war der frühere Fehler');
+  }
 
-  assert.deepEqual(anStellen, [1, 3, 6],
-    `Es wurden ${anStellen.length} Kanten beleuchtet (y=${anStellen.join(', ')}) — `
-    + 'erwartet werden drei (Oberfläche, Kammerdecke, Kammerboden)');
+  /*
+   * Und jede Kante bekommt mehrere Stufen — sonst wäre es wieder eine Linie.
+   */
+  for (const y of kantenY) {
+    const stufen = striche.filter(s => s.y >= y && s.y < y + KANTEN_STUFEN);
+    assert.ok(stufen.length >= 2,
+      `Die Kante bei y=${y} bekam nur ${stufen.length} Strich(e) — der Verlauf fehlt`);
+  }
 });

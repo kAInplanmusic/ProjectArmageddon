@@ -1,6 +1,6 @@
 # ProjectArmageddon — Master TODO / Codeaudit
 
-Stand: 2026-09-11
+Stand: 2026-09-17
 Branch: `main`
 
 Diese Datei ist die **Single Source of Truth** für offene Arbeit. Alles, was hier
@@ -20,8 +20,9 @@ Absichtserklärungen.
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **666/666** |
-| Browser-E2E | `npm run test:e2e` | **164/164** (System-Chrome; 2 bewusst übersprungen) |
+| Unit-/Integrationstests | `npm test` | **930/930** |
+| Browser-E2E | `npm run test:e2e` | **160/160** (System-Chrome, 25,4 min; 1 übersprungen) |
+| Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~195× Echtzeit |
@@ -1647,13 +1648,25 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [x] Latenz-Anzeige per Ping-Intervall (2 s, mit Messung echter RTT).
 - [x] Tastatur-Fokusreihenfolge und Fokusindikatoren inkl. Skip-Link.
 - [x] Tastatursteuerung greift nicht mehr in Formularfelder ein.
-- [ ] **Entwurfsphase (Draft) — setzt eine Spielgröße voraus, die es nicht
-      gibt. Entscheidung offen.**
+- [ ] **Entwurfsphase (Draft) — die Voraussetzung ist jetzt da, die
+      Entscheidung bleibt offen.**
 
-      *Geprüft:* Die Aufgabe nennt **4–6 Einheiten pro Team**. Der Server lässt
-      heute **1 bis 3** zu (`server/lobby.js`: `playersPerTeam > 3` → Fehler),
-      und die Konfiguration führt die Teamgröße gar nicht mehr (sie wurde als
-      totes Feld entfernt).
+      *Nachtrag 2026-09-17:* Der Einwand, der diesen Punkt blockierte, ist
+      **erledigt**. Der Server erlaubt jetzt **1 bis 6** Einheiten je Team
+      (`MAX_PLAYERS_PER_TEAM = 6` in `server/lobby.js`; früher 3), und bis zu
+      **8 Teams** (`MAX_TEAMS`). Die Begründung der alten Sperre war nirgends
+      belegt und widersprach `MAX_LOBBY_PLAYERS = 12`.
+
+      Damit gibt es die Spielgröße, die ein Draft braucht: **Krieg = 8 Spieler
+      × 5 Einheiten = 40 Figuren**. Der Motor trägt sie — gemessen
+      (`npm run measure:figures`): 40 Figuren kosten **0,312 ms je Tick = 1,9 %
+      eines Kerns**. Eine frühere Hochrechnung von 115 % war um Faktor 60 falsch.
+
+      *Offen bleibt die Entscheidung selbst:* Ob ein Draft (abwechselnd wählen
+      und verbieten) zum Spiel passt. Das ist eine Produktwahl, keine Rechnung.
+
+      *Historisch (die ursprüngliche Begründung):* Die Aufgabe nennt **4–6
+      Einheiten pro Team**. Der Server ließ damals **1 bis 3** zu.
 
       Ein Draft — abwechselnd wählen und verbieten — ist eine Mechanik für
       **viele** Einheiten: Bei vier Spielern mit je einer Einheit gibt es nichts
@@ -2011,8 +2024,41 @@ Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
       der Zustandshash die Gruppe enthalten, und der Replay-Recorder die
       Eingaben je Gruppe ordnen. **Die größte Einzeländerung am Motor bisher.**
 
-      *Entscheidung nötig:* Welches Modell — je Spieler (77 min) oder je Team
-      (39 min)? Und: Soll die Zugzeit im Kriegsmodus kürzer sein?
+      ## ENTSCHIEDEN (2026-09-17, Vorgabe des Auftraggebers)
+
+      Das Modell ist **„jede Einheit einzeln"** — das klassische Schema:
+
+          S1 E1, S2 E1, S3 E1, S4 E1, S1 E2, S2 E2, S3 E2, S4 E2, dann Runde 2
+
+      Also: **erst alle Spieler mit ihrer ersten Einheit, dann alle mit ihrer
+      zweiten.** Ein Spieler zieht mehrfach je Runde, aber nie zweimal
+      hintereinander — zwischen seinen Einheiten liegen die Züge aller anderen.
+
+      **Die Zugzeit bleibt das Maximum.** Kein Zug wird abgekürzt, weil ein
+      anderer wartet. Eine kürzere Zugzeit im Kriegsmodus ist damit **nicht**
+      nötig.
+
+      **Und die Rechnung über die Partiedauer war falsch gedacht.** Sie ging von
+      vollständig abgewickelten Runden aus. Tatsächlich sterben Einheiten im
+      Verlauf — mit Glück sind nach dem ersten Schuss ein oder zwei Figuren im
+      Wasser. Die 6,4 Stunden sind damit eine Obergrenze, kein Erwartungswert.
+
+      *Geprüft:* Der Motor macht es **bereits genau so**. Gemessen mit
+      `npm run check:erreichbarkeit` an vier Spielern mit je zwei Einheiten:
+
+          Zug 1: Team 0    Zug 5: Team 0
+          Zug 2: Team 1    Zug 6: Team 1
+          Zug 3: Team 2    Zug 7: Team 2
+          Zug 4: Team 3    Zug 8: Team 3
+
+      Die Regel war nur nirgends festgehalten — sie hätte bei der nächsten
+      Änderung kippen können. Jetzt steht sie in `tests/zugreihenfolge.test.js`
+      mit sechs Tests fest, darunter die Kernprüfung: *Die zweite Einheit folgt
+      nach allen ersten Einheiten.*
+
+      **Offen bleibt allein die Umsetzung der mehreren Einheiten je Spieler.**
+      Der Motor kennt heute eine Figur je Spieler; „Einheiten" als Konzept gibt
+      es noch nicht.
 
 **Auftrag (2026-09-17):** Das Browser-Spiel soll auf gemieteten Instanzen laufen
 (RunPod GPU / Hetzner CPU, sekundengenau abgerechnet), in Full-HD bis 4K, mit
@@ -2089,9 +2135,37 @@ Mehrkomponentenkarten.
       Teamgrenze und Kapazität statt einer festen Zahl — er hätte die
       Verschiebung sonst blockiert (und hat sie tatsächlich bemerkt, wie sein
       eigener Kommentar es ankündigte).
-- [ ] **Große Karten: gemessen, zwei Wege — Entscheidung nötig.**
+- [x] **Große Karten: erledigt — Weg A, aber ohne die Designdatei anzufassen.**
 
-      *Neu: `npm run check:map`.* Die Kartengröße ist **keine** Anzeigefrage.
+      **Entschieden und umgesetzt (2026-09-17).** Statt 150 Werte in der
+      Designdatei zu ändern (die gehört dem Auftraggeber und würde ohnehin nur
+      EINE Kartengröße stimmig machen), skaliert der Motor die Umrechnung:
+      `src/shared/reichweite.js`, Faktor `√(Kartenbreite / 1920)`.
+
+      Warum die Wurzel: Die Wurfweite wächst mit dem **Quadrat** der
+      Geschwindigkeit (`x = v²/g`). Ohne die Wurzel würde eine 4K-Karte die
+      Waffen viermal so stark machen.
+
+      Gemessen mit `npm run check:reichweite`:
+
+      | Karte | Faktor | Reserve **vorher** | Reserve **nachher** |
+      |---|---|---|---|
+      | 1280 | 0,82 | 1,91× | 1,28× |
+      | 1920 | 1,00 | 1,28× | 1,28× (Bezug, unverändert) |
+      | 2560 | 1,15 | 0,96× | 1,28× |
+      | 3840 | 1,41 | 0,64× | 1,28× |
+      | 5120 | 1,63 | **0,48×** | 1,28× |
+
+      Vorher sank die Reserve mit der Kartengröße — auf 5120 px erreichte die
+      stärkste Waffe den **nächsten Gegner** nicht mehr. Jetzt liegt sie auf
+      jeder Größe gleich hoch, und die Spreizung der Waffen bleibt erhalten
+      (eine Wurfwaffe wird nicht zum Geschoss).
+
+      Die **Kamera** ist ebenfalls erledigt (`src/client/camera.js`, siehe
+      „Kamera und Weltklassen").
+
+      *Historisch (vor der Behebung): `npm run check:map`.* Die Kartengröße ist
+      **keine** Anzeigefrage.
       Der Kommentar in `match.js` nennt den Grund bereits: „Die Reichweiten …
       sind in Kartenpixeln angegeben. Eine … größere [Karte hätte] alle Waffen
       zu kurz [reachen lassen]." Die Messung bestätigt das:
@@ -2122,9 +2196,55 @@ Mehrkomponentenkarten.
       *Unabhängig davon:* Große Karten brauchen eine **Kamera** (Ausschnitt
       statt Vollansicht), sonst würden die Figuren auf einem Full-HD-Schirm auf
       ein Drittel verkleinert. Das ist eine eigene Aufgabe.
-- [ ] **Sound.** Bestand nicht geprüft.
-- [ ] **Mehrkomponenten-Karten.** Heute 1D-Terrain (zerstörbar). Höhlen, Böden,
-      Etagen fehlen. *Größte Einzelarbeit des Umbaus.*
+- [x] **Sound — prozedural, ohne Dateien.**
+
+      **Umgesetzt (2026-09-17).** `src/client/sound.js` erzeugt drei Klänge aus
+      geprüften Rezepten (MDN-Codebeispiele unter **CC0-1.0**):
+
+      | Klang | Aufbau |
+      |---|---|
+      | `explosion` | Rauschen → fallender Tiefpass → Hüllkurve, dazu Sub-Bass |
+      | `schuss` | harte Transiente (Hochpass) + kurzer Körper |
+      | `treffer` | Bandpass, **kein** Sub-Bass — bestätigt nur, füllt nicht |
+
+      Braunes Rauschen statt weißem (tieflastig, klingt fetter), der Puffer
+      wird **einmal** gebaut und geteilt.
+
+      `src/client/soundMixer.js` hält Puffer, AudioContext und einen Limiter
+      (`DynamicsCompressor`), damit acht Spieler mit gleichzeitigen Einschlägen
+      die Ausgabe nicht übersteuern. Drei Zusagen: Aus heißt aus (kein Context),
+      fehlendes Audio ist **kein** Fehler (Server ohne Ausgabegerät bleibt
+      stumm), der Context wird einmal geöffnet.
+
+      Browser starten einen AudioContext **gesperrt** — der Mischer wird beim
+      ersten Tastendruck freigegeben.
+
+      Im Browser gemessen (nicht behauptet): 8 Schüsse, 5 Explosionen.
+      Tests: `tests/sound.test.js` (10), `tests/sound-mixer.test.js` (8) — sie
+      prüfen die Struktur und die **Aufräumpflicht** (jeder gestartete Knoten
+      wird gestoppt, sonst sammeln sich bei Dauerfeuer hunderte Oszillatoren).
+
+- [x] **Mehrkomponenten-Karten — die 2D-Maske steht.**
+
+      **Umgesetzt (2026-09-17).** `src/shared/terrainGen3.js` erzeugt eine
+      **2D-Maske** statt eines 1D-Höhenfelds. Möglich war das ohne Motorumbau,
+      weil die Kollision schon 2D war (`CollisionMask.isSolid(x, y)`) — nur der
+      Generator war es nicht.
+
+      Was jetzt möglich ist, gemessen mit `npm run measure:generator`:
+
+      | Typ | Höhlen | Überhänge |
+      |---|---|---|
+      | altes 1D-Höhenfeld | 31 % | **0** (kann es nicht) |
+      | autonome 2D-Maske | bis 22 % | bis **1082 px** |
+
+      **Der Generator ist autonom:** Der Seed entscheidet alles — Form, Höhlen,
+      Wasser, Biom. Es gibt **kein** Auswahlfeld und keinen Regler; ein Test
+      prüft ausdrücklich, dass ein übergebener Typ **ignoriert** wird. Die
+      Begründung steht im Menü: „Zwei Seeds, zwei Welten."
+
+      Offen bleibt der **Ausbau**: Böden mit eigener Physik (Eis = rutschig,
+      Gummi = federnd) und Etagen. Die Maske trägt sie, gebaut sind sie nicht.
 
 ## Übernommen aus der alten `todo.md`
 
@@ -2533,9 +2653,13 @@ beschrieben.
 
 ### Aus dem Fremd-Audit (User-Flow/Spaßfaktor) — siehe `docs/audit-userflow.md`
 
-- [ ] **Kisten sind praktisch unerreichbar — Zahlen liegen vor, Entscheidung
-      offen.** Aufheberadius **18 px** (`lootSystem.js:25`) bei Karten von
-      1280 px Breite.
+- [x] **Kisten waren praktisch unerreichbar — BEHOBEN (Radien 18 → 110 px).**
+
+      *Nachtrag 2026-09-17:* Der Eintrag stand noch als offen, obwohl die
+      Behebung darunter dokumentiert ist. Der Punkt ist **erledigt**.
+
+      Aufheberadius **18 px** (`lootSystem.js:25`) bei Karten von 1280 px Breite
+      war der Ausgangsbefund.
 
       *Neu: `npm run check:crates`* — es misst für mehrere Radien, wie oft eine
       Figur in Reichweite kommt. Ergebnis über 6 Partien:
