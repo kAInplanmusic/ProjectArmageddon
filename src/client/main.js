@@ -15,6 +15,7 @@
 import { isTextEntry } from './dom.js';
 import { MatchController, MAP_WIDTH, MAP_HEIGHT, TEAM_COLORS, WATER_SCALE } from '../engine/match.js';
 import { Renderer } from './renderer.js';
+import { Camera } from './camera.js';
 import { InputController } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
@@ -68,6 +69,23 @@ class Game {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
+
+    /*
+     * Die Kamera zeigt einen Ausschnitt der Karte.
+     *
+     * Ohne sie wäre die Karte immer genau so groß wie das Fenster — auf einem
+     * 4K-Fernseher sähe man die ganze Karte auf einmal, und eine größere Karte
+     * bedeutete nur kleinere Figuren. Mit Kamera bleibt die Figur gleich groß
+     * und die Welt wächst darüber hinaus.
+     *
+     * Sie folgt dem AKTIVEN Spieler: Wer am Zug ist, soll im Blick sein — auch
+     * dann, wenn ein Replay läuft oder jemand anderes am Zug ist. Das ist
+     * dieselbe Regel wie beim Zugwechsel, nur für die Anzeige.
+     *
+     * Die Maße werden beim Match-Start gesetzt (`#setzeKameraGroesse`); vorher
+     * gibt es nichts zu zeigen.
+     */
+    this.kamera = null;
     this.hud = new Hud(document);
     this.match = null;          // lokale Simulation
     this.network = null;        // Online-Verbindung
@@ -1745,6 +1763,42 @@ class Game {
       stage.classList.toggle('landscape', orientation !== 'portrait');
     }
     this.renderer.resize(breite, hoehe);
+    this.#setzeKameraGroesse(breite, hoehe);
+  }
+
+  /**
+   * Erzeugt oder aktualisiert die Kamera für die Kartenmaße.
+   *
+   * ## Zwei Fälle
+   *
+   * Beim ersten Match entsteht die Kamera. Wechselt später die Kartengröße
+   * (anderes Preset, andere Spielerzahl), werden nur die Maße neu gesetzt — die
+   * Zoom-Einstellung des Spielers bleibt dann erhalten.
+   *
+   * ## Warum die Schirmgröße gebraucht wird
+   *
+   * Der Standardzoom passt die Karte in den Bildschirm ein. Ohne die
+   * tatsächliche Fenstergröße könnte er das nicht rechnen, und auf einem
+   * großen Fernseher wäre die Figur so klein wie auf dem Laptop.
+   */
+  #setzeKameraGroesse(kartenBreite, kartenHoehe) {
+    const schirmBreite = this.canvas?.width ?? this.canvas?.clientWidth ?? 0;
+    const schirmHoehe = this.canvas?.height ?? this.canvas?.clientHeight ?? 0;
+    if (!(schirmBreite > 0) || !(schirmHoehe > 0)) return;
+
+    if (!this.kamera) {
+      this.kamera = new Camera({
+        mapBreite: kartenBreite,
+        mapHoehe: kartenHoehe,
+        schirmBreite,
+        schirmHoehe,
+      });
+      this.renderer.setKamera(this.kamera);
+      return;
+    }
+
+    this.kamera.setzeKarte(kartenBreite, kartenHoehe);
+    this.kamera.setzeSchirm(schirmBreite, schirmHoehe);
   }
 
   /**
@@ -1983,6 +2037,26 @@ class Game {
     // Flächenwirkung der gewählten Waffe für die Radius-Vorschau.
     const activeEntity = state.entities.find(entity => entity.entityId === playerId);
     const activeWeapon = activeEntity?.activeWeaponId ? getWeapon(activeEntity.activeWeaponId) : null;
+
+    /*
+     * Kamera auf den aktiven Spieler richten — und in dieser Ansicht auch
+     * bleiben, während ein Geschoss fliegt.
+     *
+     * FUND (belegt): Ohne Kamera war die Karte genau so groß wie das Fenster.
+     * Die Folge auf einem großen Bildschirm: Man sah alles auf einmal, und
+     * eine größere Karte bedeutete nur kleinere Figuren.
+     *
+     * Die Ausrichtung geschieht VOR dem Zeichnen, damit die Verschiebung im
+     * selben Bild gilt. Sie ändert nichts am Zustand — ein Replay bleibt
+     * reproduzierbar, egal wohin die Kamera zeigt.
+     */
+    if (this.kamera) {
+      const fokus = state.entities.find(e => e.entityId === state.activePlayerId)
+        ?? state.entities.find(e => e.alive);
+      if (fokus) this.kamera.zieleAuf(fokus.x, fokus.y);
+      // Ein Schritt Näherung je Bild: weiches Nachziehen statt harter Schnitte.
+      this.kamera.schritt();
+    }
 
     this.renderer.render(state, {
       aimPreview,

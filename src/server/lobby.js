@@ -8,7 +8,7 @@
  * @module LobbyManager
  */
 import { randomUUID } from 'node:crypto';
-import { ORIENTATIONS } from '../engine/match.js';
+import { ORIENTATIONS, TEAM_COLORS } from '../engine/match.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 
@@ -43,7 +43,20 @@ export class LobbyManager {
     teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined,
     hostName = 'Host', orientation = 'landscape', sidegrades = null, loadouts = null,
   } = {}) {
-    if (teams < 2 || teams > 4) throw new Error('teams muss zwischen 2 und 4 liegen');
+    /*
+     * Grenzen der Teamzahl.
+     *
+     * FUND (belegt, Skalierungsplanung): Hier stand **4** — so viele wie es
+     * Teamfarben gab. Die Matcharten nennen bis zu 8 Spieler; in 2 Teams mit je
+     * 3 Einheiten sind das 6 Figuren, die untergebracht werden müssen.
+     *
+     * Beide Grenzen richten sich jetzt an derselben Quelle aus: `TEAM_COLORS`.
+     * Wer mehr Teams erlaubt, als Farben da sind, bricht die Anzeige — die
+     * Zuordnung ist `TEAM_COLORS[teamId]`.
+     */
+    if (teams < 2 || teams > TEAM_COLORS.length) {
+      throw new Error(`teams muss zwischen 2 und ${TEAM_COLORS.length} liegen`);
+    }
     /*
      * Grenzen der Lobby.
      *

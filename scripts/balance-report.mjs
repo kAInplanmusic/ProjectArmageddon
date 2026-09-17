@@ -90,15 +90,48 @@ function messdistanzen(startEntfernung) {
     /*
      * Nahkampf bis fast über die ganze Karte, aufsteigend.
      *
-     * Die erste Stufe war 90 px — für WURFWAFFEN zu grob: Gemessen fliegen sie
-     * 35–71 px weit (Baseballschläger 35, Katana 71). Auf 90 px können sie
-     * nicht treffen, und der Bericht meldete sie deshalb als „ohne Wirkung",
-     * obwohl sie wirken — nur eben näher.
+     * ## Warum die Stufen aus der Kartenbreite KOMMEN und nicht in einer Liste stehen
      *
-     * 40 px nimmt die Wurfklasse mit, ohne die Messung zu verwässern: Ein
-     * Geschoss, das auf 90 px trifft, trifft auch auf 40.
+     * FUND (belegt): Hier stand eine feste Liste
+     * `[40, 90, 200, 320, 426, 550, 700, 850]`. Sie war auf die damalige
+     * Kartenbreite von 1280 px geeicht. Als die Vorgabekarte auf 2560 px wuchs
+     * (Größenstufe „mittel"), fehlte die Startentfernung (854 px) im Durchlauf —
+     * der Bericht hätte also einen Bereich gemessen, in dem gar nicht gekämpft
+     * wird, und die interessanten weiten Distanzen ausgelassen.
+     *
+     * Jetzt leiten sich die Stufen aus der Kartenbreite ab. Die Liste wächst
+     * damit automatisch mit der Karte — dieselbe Haltung wie beim Aufheberadius
+     * und der Startgesundheit: EINE Quelle, keine abgeschriebene Zahl.
+     *
+     * ## Warum 40 px die unterste Stufe ist
+     *
+     * Die erste Stufe war 90 px — für WURFWAFFEN zu grob: Gemessen fliegen sie
+     * 35–71 px weit (Baseballschläger 35, Katana 71). Auf 90 px können sie nicht
+     * treffen, und der Bericht meldete sie deshalb als „ohne Wirkung", obwohl
+     * sie wirken — nur eben näher.
+     *
+     * ## Warum in gleichmäßigen Schritten
+     *
+     * Die alten Stufen waren unregelmäßig (200 → 320 → 426), ein Überbleibsel
+     * aus mehreren Anläufen. Ein gleichmäßiger Durchlauf lässt sich leichter
+     * lesen und mit einer anderen Kartenbreite vergleichen.
      */
-    return [40, 90, 200, 320, 426, 550, 700, 850].filter(wert => wert <= MAP_WIDTH - 120);
+    const obergrenze = MAP_WIDTH - 120;
+    const stufen = [];
+    // 40 px als feinste Stufe, danach in gleichmäßigen Schritten bis knapp
+    // unter die Kartenbreite.
+    const SCHRITTE = 8;
+    for (let i = 0; i < SCHRITTE; i += 1) {
+      const wert = Math.round(40 + ((obergrenze - 40) * i) / (SCHRITTE - 1));
+      stufen.push(wert);
+    }
+    // Die Startentfernung muss dabei sein — sonst fehlt der Vergleich zur
+    // Wirklichkeit, und zwar unabhängig davon, wie breit die Karte ist.
+    if (!stufen.includes(startEntfernung)) {
+      stufen.push(startEntfernung);
+      stufen.sort((a, b) => a - b);
+    }
+    return [...new Set(stufen)];
   }
   if (args.distance !== undefined) return [distance];
   return [startEntfernung];

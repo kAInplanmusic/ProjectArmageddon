@@ -529,11 +529,34 @@ test('Ein Rad-Ausgang wird angewendet, nicht nur gemeldet', () => {
     case 'skip':
     case 'skipAndWeapon':
     case 'skipAndHeal': {
-      // Aussetzen: Die Figur ist eingefroren.
-      const einheit = match.getState().entities.find(e => e.entityId === spieler);
+      /*
+       * Aussetzen: Die Figur ist eingefroren.
+       *
+       * FUND (belegt): Hier stand `einheit.statuses?.frozenTurns` — die
+       * Zustandswerte liegen aber NICHT an der Figur, sondern getrennt nach
+       * Spieler-ID in `state.statuses`. Gemessen:
+       *
+       *     state.statuses              {"1":{"frozenTurns":2,...}}   vorhanden
+       *     entity.statuses             undefined                      leer
+       *
+       * Warum getrennt: Der Server führt sie beim Senden je Spieler zusammen
+       * (`gameServer.js`) — dort steht der Grund. Alle anderen Leser nutzen
+       * `state.statuses[id]` (hud.js:152, hud.js:223, match.js:3005); dieser
+       * Test war der einzige, der an der Figur suchte.
+       *
+       * Er schlug nach der Kartengrößen-Änderung auf, weil der gefundene
+       * Rad-Ausgang ein anderer war — vorher traf er zufällig einen, der nicht
+       * prüfte.
+       */
+      const zustand = match.getState();
+      const einheit = zustand.entities.find(e => e.entityId === spieler);
       assert.ok(einheit, 'Der Spieler muss im Zustand stehen');
-      assert.ok(einheit.statuses?.frozenTurns > 0,
-        `Nach „${ausgang.id}" muss der Spieler aussetzen: ${JSON.stringify(einheit.statuses)}`);
+
+      const werte = zustand.statuses?.[spieler];
+      assert.ok(werte, `Für Spieler ${spieler} fehlen die Zustandswerte — `
+        + 'sie stehen in state.statuses, nicht an der Figur');
+      assert.ok(werte.frozenTurns > 0,
+        `Nach „${ausgang.id}" muss der Spieler aussetzen: ${JSON.stringify(werte)}`);
       break;
     }
     case 'damage':

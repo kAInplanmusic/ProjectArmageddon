@@ -1057,14 +1057,47 @@ export class Renderer {
     // Systemeinstellung, greift sie ohne Neuladen.
     this.reducedMotion = prefersReducedMotion();
     this.time += 1;
+
+    /*
+     * Die Kamera trennt zwei Schichten.
+     *
+     * FUND (belegt): Bis hierher zeichnete `render()` alles 1:1 — die Karte war
+     * genau so groß wie das Fenster. Auf einem 4K-Fernseher sah man deshalb die
+     * ganze Karte, und eine GRÖSSERE Karte hätte nur kleinere Figuren bedeutet.
+     *
+     * Jetzt gilt: Der Himmel und die Bildschirm-Anzeigen füllen das Fenster,
+     * alles andere liegt in Kartenkoordinaten und wird verschoben.
+     *
+     * ## Warum eine Transformation und nicht 266 Einzeländerungen
+     *
+     * Der Renderer hat 266 Zeichenaufrufe in 13 Weltfunktionen. Jeden einzeln
+     * zu verschieben wäre invasiv und fehleranfällig. `setTransform` verschiebt
+     * den Canvas selbst — die Aufrufe bleiben, es kommt eine Klammer herum.
+     *
+     * ## Die Reihenfolge ist wichtig
+     *
+     * Himmel ZUERST und ohne Transformation: Er füllt das Fenster. Danach die
+     * Klammer mit den Weltfunktionen, danach die Bildschirm-Anzeigen (Windpfeil,
+     * Mahlstrom) wieder ohne.
+     */
     this.#drawSky();
 
+    if (this.kamera) {
+      const t = this.kamera.transformation();
+      this.ctx.save();
+      this.ctx.setTransform(t.skalierung, 0, 0, t.skalierung, t.versatzX, t.versatzY);
+    }
+
     if (this.terrainLayer) {
+      /*
+       * Die Geländeschicht wird in Kartenkoordinaten gezeichnet (0, 0) — unter
+       * der Transformation landet sie an der richtigen Stelle. Ohne Kamera
+       * liegt sie wie bisher bei (0, 0) des Fensters.
+       */
       this.ctx.drawImage(this.terrainLayer, 0, 0);
     }
 
     this.#drawWater(water);
-    this.#drawWindArrow(state.wind);
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);
@@ -1074,7 +1107,6 @@ export class Renderer {
      * Kiste (die man aufheben kann) wichtiger als das Geschütz.
      */
     this.#drawTurrets(state.turrets ?? []);
-    this.#drawMaelstrom(state.maelstrom);
     this.#drawAimPreview(aimPreview);
     /*
      * Die Schussvorhersage liegt VOR der Zielhilfe und in eigener Farbe.
@@ -1092,13 +1124,34 @@ export class Renderer {
     this.#drawHeimdall();
     this.#updateEffects();
     this.updateParticles();
-    this.#drawParticles();
+
+    /*
+     * Die Klammer schließt VOR den Bildschirm-Anzeigen: Ab hier gilt wieder die
+     * Fenstergröße. Ohne das würde der Windpfeil mit der Kamera wandern — er
+     * zeigt eine Richtung, keine Kartenstelle.
+     */
+    if (this.kamera) this.ctx.restore();
+
+    // Der Mahlstrom ist ein Bildschirm-Effekt (er legt sich über alles).
+    this.#drawMaelstrom(state.maelstrom);
+    this.#drawWindArrow(state.wind);
 
     // Regen, Schnee, Funken und Glühwürmchen liegen VOR dem Geschehen: sie
     // ziehen zwischen Kamera und Figuren.
     if (this.scenery) {
       drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, true);
     }
+  }
+
+  /**
+   * Setzt die Kamera (oder entfernt sie mit `null`).
+   *
+   * Ohne Kamera verhält sich der Renderer wie zuvor — das ist wichtig, damit
+   * bestehende Tests und der Replay-Modus unverändert laufen.
+   */
+  setKamera(kamera) {
+    this.kamera = kamera ?? null;
+    return this;
   }
 }
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { MatchController, MAP_SIZES, ORIENTATIONS, mapSizeFor, MAP_WIDTH, MAP_HEIGHT } from '../src/engine/match.js';
+import { MatchController, MAP_SIZES, ORIENTATIONS, MAP_WIDTH } from '../src/engine/match.js';
 import { buildTerrainForSeed } from '../src/client/terrainPreview.js';
 import { WaterField } from '../src/engine/waterField.js';
 import {
@@ -223,37 +223,29 @@ test('Ein erzwungenes Biom wird übernommen', () => {
 
 // ------------------------------------------------------------------ Hochkant
 
-test('Beide Ausrichtungen haben dieselbe Fläche', () => {
-  // Gleiche Fläche ist Absicht: Reichweiten und Sprunghöhen sind in
-  // Kartenpixeln angegeben und sollen in beiden Ausrichtungen gleich wirken.
-  const quer = MAP_SIZES.landscape;
-  const hoch = MAP_SIZES.portrait;
-  assert.equal(quer.width * quer.height, hoch.width * hoch.height,
-    'Ungleiche Fläche würde die Waffenbalance verschieben');
-  assert.ok(hoch.height > hoch.width, 'Hochformat muss höher als breit sein');
-  assert.equal(hoch.width, quer.height);
-  assert.equal(hoch.height, quer.width);
-});
-
-test('mapSizeFor liefert bekannte Maße und fällt zurück', () => {
-  assert.deepEqual(mapSizeFor('portrait'), MAP_SIZES.portrait);
-  assert.deepEqual(mapSizeFor('landscape'), MAP_SIZES.landscape);
-  assert.deepEqual(mapSizeFor('schraeg'), MAP_SIZES.landscape);
-  assert.deepEqual(mapSizeFor(undefined), MAP_SIZES.landscape);
-});
-
-test('Die alten Konstanten sind unverändert Querformat', () => {
-  // Der Server und viele Tests nutzen sie weiterhin.
-  assert.equal(MAP_WIDTH, MAP_SIZES.landscape.width);
-  assert.equal(MAP_HEIGHT, MAP_SIZES.landscape.height);
-});
+/*
+ * Die Tests zu Kartengrößen und Ausrichtungen sind nach `tests/map-sizes.test.js`
+ * gezogen.
+ *
+ * FUND (belegt): Hier standen vier Tests, die `MAP_SIZES.landscape` als EINE
+ * Größe annahmen (`MAP_SIZES.landscape.width`). Seit es vier Größenstufen gibt
+ * (klein bis Krieg), ist `landscape` eine TABELLE von Stufen — die alten Tests
+ * brachen, weil sie die Struktur festhielten, nicht die Eigenschaft.
+ *
+ * Der wichtige Test („gleiche Fläche zwischen den Ausrichtungen") lebt weiter,
+ * jetzt je Stufe geprüft.
+ */
 
 test('Ein Match im Hochformat hat die getauschten Maße', () => {
-  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, orientation: 'portrait' });
+  const match = new MatchController({
+    seed: 4242, teams: 2, playersPerTeam: 2, orientation: 'portrait',
+  });
   match.start();
+
   assert.equal(match.orientation, 'portrait');
-  assert.equal(match.width, MAP_SIZES.portrait.width);
-  assert.equal(match.height, MAP_SIZES.portrait.height);
+  // Die Vorgabestufe ist „mittel".
+  assert.equal(match.width, MAP_SIZES.portrait.mittel.width);
+  assert.equal(match.height, MAP_SIZES.portrait.mittel.height);
   assert.equal(match.bitmap.length, match.width * match.height,
     'Das Bitmap muss die neue Größe haben');
   assert.equal(match.getState().orientation, 'portrait');
@@ -304,8 +296,9 @@ test('Ein Hochformat-Match ist spielbar', () => {
   }
   assert.equal(match.status, 'playing', 'Das Match muss laufen');
   const zustand = match.getState();
-  assert.equal(zustand.terrainWidth, MAP_SIZES.portrait.width);
-  assert.equal(zustand.terrainHeight, MAP_SIZES.portrait.height);
+  // Die Vorgabestufe ist „mittel" (siehe tests/map-sizes.test.js).
+  assert.equal(zustand.terrainWidth, MAP_SIZES.portrait.mittel.width);
+  assert.equal(zustand.terrainHeight, MAP_SIZES.portrait.mittel.height);
 });
 
 test('Das Gelände wird in beiden Ausrichtungen aus demselben Seed gebaut', () => {

@@ -219,10 +219,27 @@ test('Eine Zündergranate richtet ihren Schaden erst bei der Zündung an', () =>
 
   const granate = WEAPONS.find(w => w.fuseTime > 0 && w.blastRadius > 0 && w.damage > 0);
   match.inventory.register(spieler, [granate.id]);
-  // Ziel in die Nähe bringen, damit die Explosion trifft.
+
+  /*
+   * Ziel in die Nähe bringen, damit die Explosion trifft.
+   *
+   * FUND (belegt): Hier wurde nur die X-Position verschoben, Y blieb stehen.
+   * Solange die Karte 1280 px breit war, landete das Ziel dabei zufällig auf
+   * dem Boden. Seit die Vorgabekarte 2560 px breit ist, liegt dort eine andere
+   * Geländehöhe — das Ziel schwebte 166 px über dem Grund (gemessen) und wurde
+   * nicht getroffen. Der Test schlug fehl, obwohl der Zünder korrekt arbeitete.
+   *
+   * Jetzt wird die Position AUS DEM GELÄNDE abgeleitet: `surfaceYAt` gibt die
+   * Bodenhöhe an der Stelle, und die Figur steht auf Kopfhöhe darüber — genau
+   * wie beim Aufstellen (`groundY - 12`). Damit ist der Test unabhängig von der
+   * Kartengröße.
+   */
+  const spielerX = match.world.getComponent(spieler, 'Position', 'x') ?? 0;
+  const zielX = spielerX + 40;
   match.world.setComponent(ziel, 'Health', 'current', 500);
-  match.world.setComponent(ziel, 'Position', 'x',
-    (match.world.getComponent(spieler, 'Position', 'x') ?? 0) + 40);
+  match.world.setComponent(ziel, 'Health', 'max', 500);
+  match.world.setComponent(ziel, 'Position', 'x', zielX);
+  match.world.setComponent(ziel, 'Position', 'y', match.surfaceYAt(zielX) - 12);
 
   const hpVorher = match.world.getComponent(ziel, 'Health', 'current');
   match.fire(spieler, Math.PI / 2, 60, granate.id);

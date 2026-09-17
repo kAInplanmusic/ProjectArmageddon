@@ -20,6 +20,8 @@
     "check:time": "node scripts/check-match-time.mjs",
     "check:terrain": "node scripts/check-terrain-look.mjs",
     "check:map": "node scripts/check-map-scale.mjs",
+    "check:camera": "node scripts/check-camera.mjs",
+    "check:sizes": "node scripts/check-match-sizes.mjs",
     "test": "node --test tests/*.test.js --test-reporter=spec",
     "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js",
     "test:e2e": "playwright test",

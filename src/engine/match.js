@@ -47,21 +47,96 @@ import { ccdRaycast } from './physics/ballistics.js';
  * Waffen sind in Kartenpixeln angegeben. Eine deutlich kleinere Hochkantkarte
  * hätte alle Waffen zu weit reichen lassen, eine größere zu kurz.
  */
+/*
+ * Die Kartengrößen.
+ *
+ * ## Warum es mehrere gibt
+ *
+ * Die Größe bestimmt, wie viel WELT es gibt — und damit, wie viel man sich
+ * bewegen muss. Das ist eine Spielgefühls-Entscheidung, die an der Spielerzahl
+ * hängt: Ein Duell auf einer Kriegskarte wäre ein Wettlauf, ein Achterspiel auf
+ * einer Duellkarte ein Gedränge.
+ *
+ *     Duell          1280 ×  720     die ganze Karte auf dem Schirm
+ *     Kleines Match  2560 × 1440     4× die Fläche
+ *     Großes Match   3840 × 2160     9×
+ *     Krieg          5120 × 2880    16×
+ *
+ * ## Warum Vielfache von 1280
+ *
+ * Die Reichweiten der Waffen sind in Kartenpixeln angegeben (110 bis 1062 px).
+ * Auf 1280 px erreicht die mittlere Waffe 40 % der Karte — das ist der
+ * Maßstab, auf den die Waffen abgestimmt sind. Vielfache davon halten dieses
+ * Verhältnis wenigstens grob: Auf der Kriegskarte erreicht dieselbe Waffe
+ * 10 %, man muss also weiter laufen.
+ *
+ * Wer das Verhältnis erhalten will, muss die Reichweiten skalieren
+ * (`scripts/check-map-scale.mjs` zeigt, was das kostet).
+ *
+ * ## Die Grenze
+ *
+ * Das Drahtformat überträgt Koordinaten als Int16 mit Faktor 4 — die größte
+ * darstellbare Koordinate ist 8192 px. Die Kriegskarte mit 5120 px liegt mit
+ * 63 % darunter; 8K wäre das Äußerste (`scripts/check-camera.mjs`).
+ *
+ * ## Die Fläche bleibt NICHT gleich
+ *
+ * Ein früherer Kommentar hier begründete gleiche Flächen: „Eine deutlich
+ * kleinere Hochkantkarte hätte alle Waffen zu weit reichen lassen." Das gilt
+ * weiterhin für die ORIENTIERUNG — Quer- und Hochformat derselben Größe haben
+ * dieselbe Fläche. Zwischen den Größenstufen ist die Fläche aber bewusst
+ * unterschiedlich: Das ist der Sinn der Stufen.
+ */
 export const MAP_SIZES = Object.freeze({
-  landscape: Object.freeze({ width: 1280, height: 720 }),
-  portrait: Object.freeze({ width: 720, height: 1280 }),
+  /* Querformat: 16:9, wie ein Fernseher. */
+  landscape: Object.freeze({
+    klein: Object.freeze({ width: 1280, height: 720 }),
+    mittel: Object.freeze({ width: 2560, height: 1440 }),
+    gross: Object.freeze({ width: 3840, height: 2160 }),
+    krieg: Object.freeze({ width: 5120, height: 2880 }),
+  }),
+  /* Hochformat: dieselbe Fläche wie die jeweilige Querformatstufe, getauscht. */
+  portrait: Object.freeze({
+    klein: Object.freeze({ width: 720, height: 1280 }),
+    mittel: Object.freeze({ width: 1440, height: 2560 }),
+    gross: Object.freeze({ width: 2160, height: 3840 }),
+    krieg: Object.freeze({ width: 2880, height: 5120 }),
+  }),
 });
+
+/** Die Namen der Größenstufen, klein nach groß. */
+export const MAP_GROESSEN = Object.freeze(['klein', 'mittel', 'gross', 'krieg']);
+
+/** Die Stufe, die einer Spielerzahl zugeordnet ist. */
+export function mapGroesseFuerSpieler(spieler) {
+  if (spieler <= 2) return 'klein';
+  if (spieler <= 8) return 'mittel';
+  if (spieler <= 12) return 'gross';
+  return 'krieg';
+}
 
 /** Ausrichtungen der Karte. */
 export const ORIENTATIONS = Object.freeze(['landscape', 'portrait']);
 
-/** Querformat als Vorgabe — die Konstanten bleiben für Altcode erhalten. */
-export const MAP_WIDTH = MAP_SIZES.landscape.width;
-export const MAP_HEIGHT = MAP_SIZES.landscape.height;
+/**
+ * Querformat als Vorgabe — die Konstanten bleiben für Altcode erhalten.
+ *
+ * Sie zeigen auf die MITTLERE Stufe, weil das die Vorgabe der Lobby ist
+ * (2 Teams × 2 Spieler = 4 Spieler).
+ */
+export const MAP_WIDTH = MAP_SIZES.landscape.mittel.width;
+export const MAP_HEIGHT = MAP_SIZES.landscape.mittel.height;
 
-/** Maße einer Ausrichtung (mit Rückfall auf Querformat). */
-export function mapSizeFor(orientation) {
-  return MAP_SIZES[orientation] ?? MAP_SIZES.landscape;
+/**
+ * Maße einer Ausrichtung und Größe.
+ *
+ * Tolerant wie die übrige Konfiguration: Eine unbekannte Größe fällt auf die
+ * Vorgabe zurück, statt zu werfen — eine Einstellung aus einer älteren Fassung
+ * soll spielbar bleiben.
+ */
+export function mapSizeFor(orientation, groesse = 'mittel') {
+  const seite = MAP_SIZES[orientation] ?? MAP_SIZES.landscape;
+  return seite[groesse] ?? seite.mittel;
 }
 export const WATER_SCALE = 4;
 
@@ -69,7 +144,37 @@ export const WATER_SCALE = 4;
 // weitergegeben — sonst gäbe es neben der Verrechnung auch noch zwei Quellen
 // für die Reihenfolge der Klassen.
 export { CLASS_IDS, ARCHETYPE_IDS };
-export const TEAM_COLORS = Object.freeze(['#4cc9f0', '#f4a261', '#90be6d', '#e07a5f']);
+/*
+ * Teamfarben.
+ *
+ * FUND (belegt, Skalierungsplanung): Hier standen **vier** Farben — so viele
+ * wie Teams (`lobby.js`: `teams` 2 bis 4). Die Matcharten nennen aber bis zu
+ * **8 Spieler**; je nach Aufteilung sind das mehr Teams, als Farben da sind.
+ * Ein Team ohne eigene Farbe wäre auf der Karte nicht von einem anderen zu
+ * unterscheiden — und die Zuordnung `TEAM_COLORS[teamId]` liefe ins Leere.
+ *
+ * Acht Farben, paarweise deutlich unterscheidbar (hell/dunkel gemischt, damit
+ * sie auch bei Farbfehlsichtigkeit auseinanderfallen):
+ *
+ *   1 türkis   5 magenta
+ *   2 orange   6 grün
+ *   3 rot      7 blau
+ *   4 violett  8 sand
+ *
+ * Die Zuordnung bleibt `TEAM_COLORS[teamId]` — wer mehr Teams als Farben
+ * erlaubt, bricht die Anzeige. Die Lobby prüft die Grenze (`teams` 2 bis 4);
+ * sie wird mit den Matcharten angehoben.
+ */
+export const TEAM_COLORS = Object.freeze([
+  '#4cc9f0', // 1 türkis
+  '#f4a261', // 2 orange
+  '#e63946', // 3 rot
+  '#9d4edd', // 4 violett
+  '#f72585', // 5 magenta
+  '#90be6d', // 6 grün
+  '#4d7cfe', // 7 blau
+  '#e9c46a', // 8 sand
+]);
 
 /*
  * Grundgesundheit vor dem Klassenfaktor.
@@ -112,8 +217,39 @@ const TURRET_WEAPON = Object.freeze({
   terrainDamage: 6,
   maxRange: 800,
 });
-/** Antriebskräfte, die die Suche durchprobiert. */
-const TURRET_POWERS = Object.freeze([40, 55, 70, 85, 100]);
+/**
+ * Antriebskräfte, die die Suche durchprobiert.
+ *
+ * ## Warum die Liste so fein ist
+ *
+ * FUND (belegt): Hier standen fünf Werte — `[40, 55, 70, 85, 100]`. Ihre
+ * erreichbaren Weiten (ohne Luftwiderstand) sind:
+ *
+ *     Kraft  40  →  143 px
+ *     Kraft  55  →  270 px     Lücke 127 px
+ *     Kraft  70  →  437 px     Lücke 167 px
+ *     Kraft  85  →  644 px     Lücke 207 px
+ *     Kraft 100  →  891 px     Lücke 247 px
+ *
+ * Zwischen zwei Stufen lag also bis zu **247 px** — fast ein Fünftel der alten
+ * Karte. Solange die Karte 1280 px breit war, fiel das kaum auf: Die Gegner
+ * standen rund 600 px entfernt, und Kraft 85 traf.
+ *
+ * Seit die Vorgabekarte 2560 px breit ist, stehen sie bei ~513 px — genau in
+ * der Lücke zwischen 437 und 644. Gemessen feuerte das Geschütz deshalb nur
+ * **einmal in vier Runden**, obwohl ein Ziel durchgehend in Reichweite war
+ * (`tests/turret.test.js`).
+ *
+ * ## Die feinere Staffelung
+ *
+ * 15 Stufen statt 5. Die Lücke sinkt damit auf rund 60 px — kleiner als eine
+ * Figur (14 px breit) mal dem Trefferfenster. Die Suche kostet mehr Rechnung
+ * (15 × 6 = 90 Bahnen statt 30), aber sie läuft **je Runde einmal**, nicht je
+ * Takt.
+ */
+const TURRET_POWERS = Object.freeze([
+  40, 46, 52, 58, 64, 70, 76, 82, 88, 94, 100, 106, 112, 118, 124,
+]);
 /** Erhöhungswinkel (0 = flach, 1 = 45°), feste Reihenfolge. */
 const TURRET_ELEVATIONS = Object.freeze([0.05, 0.15, 0.3, 0.5, 0.785, 1.0]);
 /** Schritte je Bahnberechnung. Reicht für die halbe Kartenbreite. */
