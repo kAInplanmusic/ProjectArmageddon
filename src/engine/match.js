@@ -38,6 +38,7 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shar
 import { getWeapon } from '../shared/config/weapons.js';
 import { getClassLoadout } from '../shared/config/loadouts.js';
 import { pickScenery } from '../shared/config/scenery.js';
+import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
 import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
@@ -515,7 +516,19 @@ export class MatchController {
      * Replay zeigt dieselbe Landschaft. Der Server muss die Kulisse deshalb NICHT
      * mitsenden — jeder Client baut sie aus dem Seed selbst.
      */
+    /*
+     * Die Szene — hier nur die GRUNDLAGE.
+     *
+     * FUND (belegt): Die Szene hing am Gelände-Preset. Beim autonomen Generator
+     * ist `preset` gleich null, weil der Charakter es ersetzt hat — gemessen
+     * hatten drei völlig verschiedene Karten dieselbe Bodenfarbe [104,146,86].
+     *
+     * Der Charakter steht im Konstruktor aber noch NICHT fest: `#buildTerrain`
+     * läuft erst in `start()`. Deshalb wird die Szene dort neu gezogen — mit
+     * dem Biom aus dem Charakter (siehe `#waehleSzeneAusCharakter`).
+     */
     this.scenery = pickScenery(this.#seedManager.baseSeed, preset);
+    this.biomId = this.scenery.biomeId;
 
     /**
      * Günther: eigener Teilgenerator, damit seine Würfe unabhängig von anderen
@@ -551,6 +564,14 @@ export class MatchController {
   /** Erzeugt Terrain, Wasser und Spieler und startet das Match. */
   start() {
     this.#buildTerrain();
+    /*
+     * Jetzt steht der Charakter fest — die Szene wird danach neu gezogen.
+     *
+     * Die Reihenfolge ist der Punkt: Im Konstruktor gibt es noch kein Gelände,
+     * also auch keinen Charakter. Erst hier ist bekannt, ob die Karte eine
+     * Küste, eine Kaverne oder ein Gebirge ist — und welche Szene dazu gehört.
+     */
+    this.#waehleSzeneAusCharakter();
     this.#buildWater();
     this.#registerSystems();
     this.#spawnPlayers();
@@ -660,6 +681,34 @@ export class MatchController {
         figuren: figuren.length,
       });
     }
+  }
+
+  /**
+   * Zieht die Szene neu — mit dem Biom, das zum Charakter der Karte passt.
+   *
+   * ## Warum das nicht im Konstruktor geht
+   *
+   * FUND (belegt, eigener Fehler): Der erste Anlauf setzte die Szene im
+   * Konstruktor und las `this.kartencharakter` — ein Feld, das zu diesem
+   * Zeitpunkt noch nicht existiert. `#buildTerrain` läuft erst in `start()`.
+   * Gemessen wurden deshalb **24 von 24 Karten** zum Wald: Das Biom fiel
+   * immer auf die Vorgabe zurück.
+   *
+   * ## Die Regel
+   *
+   * Das Biom kommt aus dem Charakter (Wasser → Überschwemmung, Höhlung →
+   * Kavernen, Inseligkeit → Inseln, Steilheit → Gebirge, sonst Wald). Der
+   * Seed wählt nur noch die Variante innerhalb dieses Bioms — dieselbe
+   * Aufteilung wie bei der Kulissenwahl, nur mit dem Charakter als Quelle
+   * statt dem Gelände-Preset.
+   */
+  #waehleSzeneAusCharakter() {
+    if (!this.kartencharakter) return null;
+
+    const biomId = biomeKennungFuerCharakter(this.kartencharakter);
+    this.biomId = biomId;
+    this.scenery = pickScenery(this.#seedManager.baseSeed, this.preset, biomId);
+    return this.scenery;
   }
 
   #buildTerrain() {

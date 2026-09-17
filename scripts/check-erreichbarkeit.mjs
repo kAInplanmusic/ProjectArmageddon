@@ -44,9 +44,6 @@ for (let i = 0; i < PARTIEN; i += 1) {
   m.start();
   m.consumeEvents();
 
-  const zustand = m.getState();
-  const figuren = zustand.entities.map(e => ({ x: e.x, y: e.y }));
-
   // Die Flächen der Karte zählen
   const bitmap = m.bitmap ?? null;
   let anzahl = 0;

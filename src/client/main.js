@@ -24,6 +24,7 @@ import { getWeapon, WEAPONS, orderInventoryBySubcategory } from '../shared/confi
 import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
+import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { PROFIL_SCHLUESSEL, ablageHinweis, geraeteKennung } from '../shared/identity.js';
@@ -1861,6 +1862,24 @@ class Game {
       const [biomId, variantenId] = String(auswahl).split('/');
       kulisse = getBackdrop(biomId, variantenId);
       if (!kulisse) this.hud.log(`Kulisse „${auswahl}" unbekannt — nehme automatisch`, 'neutral');
+    }
+    /*
+     * Ohne Wahl des Spielers entscheidet der CHARAKTER der Karte.
+     *
+     * FUND (belegt): Bisher kam die Kulisse aus `pickBackdrop(seed, preset)` —
+     * der Seed wählte also nur die Variante innerhalb der Geländeformen, die
+     * das Preset zuließ. Mit dem autonomen Generator gibt es kein Preset mehr:
+     * Der Charakter sagt, was für eine Karte es ist (Küste, Höhle, Gebirge),
+     * und daraus folgt das Biom.
+     *
+     * Das ist der Unterschied zwischen „zufälligem Aussehen" und „stimmiger
+     * Szene": Eine durchlöcherte Kaverne mit grünem Gras darauf wäre nicht
+     * hässlich, sondern falsch.
+     */
+    if (!kulisse && this.match?.kartencharakter) {
+      const biomId = biomFuerCharakter(this.match.kartencharakter);
+      const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
+      kulisse = kulisseFuerBiom({ seed, biome: biom });
     }
     if (!kulisse) kulisse = pickBackdrop(seed, preset);
     if (!kulisse) {
