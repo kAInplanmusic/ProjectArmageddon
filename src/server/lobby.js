@@ -20,6 +20,17 @@ export const LOBBY_STATUS = Object.freeze({
 
 export const MAX_LOBBY_PLAYERS = 12;
 
+/**
+ * Wie viele Spieler ein einzelnes Team haben darf.
+ *
+ * Die wirksame Grenze ist die SUMME (`MAX_LOBBY_PLAYERS`); dieser Wert begrenzt
+ * nur, wie ungleich die Verteilung sein darf. Beide müssen zusammenpassen —
+ * vorher taten sie es nicht (3 je Team, aber 12 in der Summe).
+ *
+ * Gemessen: Der Motor trägt 12 Figuren ohne Einschränkung.
+ */
+export const MAX_PLAYERS_PER_TEAM = 6;
+
 export class LobbyManager {
   #lobbies = new Map();
   #reconnectWindowMs;
@@ -33,7 +44,40 @@ export class LobbyManager {
     hostName = 'Host', orientation = 'landscape', sidegrades = null, loadouts = null,
   } = {}) {
     if (teams < 2 || teams > 4) throw new Error('teams muss zwischen 2 und 4 liegen');
-    if (playersPerTeam < 1 || playersPerTeam > 3) throw new Error('playersPerTeam muss zwischen 1 und 3 liegen');
+    /*
+     * Grenzen der Lobby.
+     *
+     * `teams`: 2 bis 4. Die Untergrenze ist sachlich (ein Duell braucht zwei
+     * Seiten), die Obergrenze kommt aus der Anzeige: Die Teamfarben sind eine
+     * feste Liste (`TEAM_COLORS`, 4 Einträge).
+     *
+     * `playersPerTeam`: 1 bis 6.
+     *
+     * FUND (belegt): Hier stand eine Grenze von **3**, ohne Begründung im Code
+     * — an keiner Stelle stand, warum. Die Messung zeigt, dass sie nicht nötig
+     * war:
+     *
+     *     Konfiguration   Figuren   Leben min/max   läuft
+     *     2 × 4 = 8             8        63 / 104      OK
+     *     2 × 5 = 10           10        63 / 104      OK
+     *     4 × 3 = 12           12        63 / 104      OK
+     *     2 × 6 = 12           12        63 / 104      OK
+     *
+     * Der Motor trägt 12 Figuren ohne Einschränkung: Alle werden gesetzt, alle
+     * Teams stehen, die Klassen- und Archetypverteilung greift je Platz
+     * (`resolveLoadout` indiziert zyklisch und kennt keine Obergrenze).
+     *
+     * Die alte Grenze 3 war zudem NIE die wirksame: `MAX_LOBBY_PLAYERS` lag
+     * bereits bei 12, also erlaubte die Lobby in der Summe mehr, als sie je
+     * Team zuließ. Die beiden Zahlen widersprachen sich.
+     *
+     * Gesetzt wird 6 je Team — damit ist `2 Teams × 6 = 12` erreichbar (das
+     * größte Match, das die Kapazität hergibt) und `4 Teams × 3 = 12`
+     * ebenfalls. Die Summe bleibt die Grenze.
+     */
+    if (playersPerTeam < 1 || playersPerTeam > MAX_PLAYERS_PER_TEAM) {
+      throw new Error(`playersPerTeam muss zwischen 1 und ${MAX_PLAYERS_PER_TEAM} liegen`);
+    }
     const capacity = teams * playersPerTeam;
     if (capacity > MAX_LOBBY_PLAYERS) throw new Error(`Kapazität überschreitet ${MAX_LOBBY_PLAYERS} Spieler`);
     if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);

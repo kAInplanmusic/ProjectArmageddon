@@ -96,17 +96,49 @@ test('`teamSize` steht NICHT mehr in der Konfiguration', () => {
     + 'keinen Leser. Wer eine Teamgrenze braucht: `server/lobby.js` prüft sie.');
 });
 
-test('Die Lobby-Grenze ist die geltende und bleibt es', () => {
+test('Die Lobby-Grenze und die Kapazität widersprechen sich nicht', () => {
   /*
-   * Damit der Widerspruch nicht in anderer Form zurückkommt: Die Grenze steht
-   * in der Lobby-Validierung. Geprüft wird, dass sie dort noch existiert — und
-   * dass sie der Dokumentation entspricht.
+   * Damit der Widerspruch nicht in anderer Form zurückkommt: Die alte Fassung
+   * erlaubte **3 je Team**, aber **12 in der Summe** — zwei Zahlen, die
+   * einander widersprachen, und die kleinere war die wirksame.
+   *
+   * Geprüft wird jetzt die BEZIEHUNG statt eines festen Werts: Die Grenze je
+   * Team darf die Gesamtkapazität nur dann unterschreiten, wenn wenigstens ein
+   * Team sie ausschöpfen kann. Sonst ist sie wieder eine Zahl, die niemand
+   * erreicht.
+   *
+   * FUND (belegt): Die Grenze wurde von 3 auf 6 verschoben, nachdem gemessen
+   * war, dass der Motor 12 Figuren trägt. Der Test hat die Verschiebung
+   * bemerkt und verlangt — wie in seinem eigenen Kommentar angekündigt — dass
+   * er mitzieht.
    */
   const text = fs.readFileSync(path.join(ROOT, 'src', 'server', 'lobby.js'), 'utf8');
-  assert.match(text, /playersPerTeam\s*<\s*1\s*\|\|\s*playersPerTeam\s*>\s*3/,
-    'Die Lobby-Validierung für playersPerTeam (1–3) fehlt oder wurde geändert. '
-    + 'Falls die Grenze bewusst verschoben wurde: Dieser Test und der Kommentar '
-    + 'in shared/config/match.js müssen mitziehen.');
+
+  assert.match(text, /playersPerTeam\s*>\s*MAX_PLAYERS_PER_TEAM/,
+    'Die Lobby-Validierung für playersPerTeam fehlt oder prüft nicht mehr '
+    + 'gegen MAX_PLAYERS_PER_TEAM');
+
+  // Die beiden Konstanten müssen zusammenpassen.
+  const jeTeam = /export const MAX_PLAYERS_PER_TEAM = (\d+)/.exec(text);
+  const gesamt = /export const MAX_LOBBY_PLAYERS = (\d+)/.exec(text);
+  assert.ok(jeTeam && gesamt, 'MAX_PLAYERS_PER_TEAM oder MAX_LOBBY_PLAYERS fehlt');
+
+  const proTeam = Number(jeTeam[1]);
+  const kapazitaet = Number(gesamt[1]);
+
+  assert.ok(proTeam <= kapazitaet,
+    `Je Team sind ${proTeam} erlaubt, die Gesamtkapazität ist aber nur `
+    + `${kapazitaet} — die Grenze je Team wäre nie erreichbar`);
+
+  /*
+   * Wenigstens ein Team muss die Grenze ausschöpfen können: Bei zwei Teams
+   * muss 2 × proTeam die Kapazität erreichen oder überschreiten.
+   */
+  assert.ok(proTeam * 2 >= kapazitaet,
+    `Bei zwei Teams ergäben ${proTeam} × 2 = ${proTeam * 2} Spieler, die `
+    + `Kapazität liegt bei ${kapazitaet} — die Grenze je Team ist dann nicht `
+    + 'die wirksame, sondern die Summe. Das ist erlaubt, aber dann muss der '
+    + 'Kommentar es sagen.');
 });
 
 test('Kein Feld der Konfiguration ist ungenutzt', () => {

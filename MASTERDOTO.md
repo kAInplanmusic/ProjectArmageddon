@@ -1952,9 +1952,32 @@ Mehrkomponentenkarten.
       **Strides** (15 B je Figur, 59 % bei 8 Spielern), nicht im Delta-Flag —
       etwa `waterLevel` und `frozenTurns` nur bei Bedarf senden. *Nötig ist es
       bei den gemessenen Werten nicht.*
-- [ ] **Teamgröße über 3 öffnen.** Die Sperre steht in `server/lobby.js`
-      (`playersPerTeam > 3` → Fehler). Ohne sie gibt es keine 6er- und
-      8er-Matches. *Ändert das Spielgefühl — Entscheidung nötig.*
+- [x] **Teamgröße geöffnet — 1 bis 6 je Team, bis 12 Spieler gesamt.**
+
+      *Befund:* Die Grenze von **3** stand ohne Begründung im Code, und sie
+      widersprach der eigenen Kapazität: `MAX_LOBBY_PLAYERS` lag bereits bei
+      **12**, die Grenze je Team bei 3 — die kleinere war die wirksame.
+
+      *Gemessen:* Der Motor trägt 12 Figuren ohne Einschränkung.
+
+      | Konfiguration | Figuren | läuft |
+      |---|---|---|
+      | 2 × 4 = 8 | 8 | OK |
+      | 2 × 5 = 10 | 10 | OK |
+      | 4 × 3 = 12 | 12 | OK |
+      | 2 × 6 = 12 | 12 | OK |
+
+      *Umgesetzt:* `MAX_PLAYERS_PER_TEAM = 6` als benannte Konstante, die
+      Lobby prüft dagegen, und das Menü bietet 1–6 an (vorher 1–3).
+
+      *Abgesichert:* `tests/e2e/grosse-teams.spec.mjs` (5 Tests) — 2×6 und 4×3
+      starten wirklich, zeigen **12 Figuren** in der Übersicht, das
+      Loadout baut **12 Klasse-Felder** auf, und ein 8-Spieler-Match läuft.
+
+      *Kein Widerspruch mehr:* Der Test prüft jetzt die **Beziehung** zwischen
+      Teamgrenze und Kapazität statt einer festen Zahl — er hätte die
+      Verschiebung sonst blockiert (und hat sie tatsächlich bemerkt, wie sein
+      eigener Kommentar es ankündigte).
 - [ ] **4K in `MAP_SIZES` eintragen.** Die Tabelle nimmt jede Größe; die Kamera
       muss mitskalieren (sonst werden die Figuren kleiner). *Gestaltung.*
 - [ ] **Sound.** Bestand nicht geprüft.
