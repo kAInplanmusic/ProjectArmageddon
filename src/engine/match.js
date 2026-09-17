@@ -16,6 +16,7 @@ import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
 } from '../shared/erreichbarkeit.js';
+import { reichweitenFaktor } from '../shared/reichweite.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
@@ -200,6 +201,29 @@ export const BASE_HEALTH = 100;
  * Ballistik-Fehlers (`#simulateTurretPath`, Befund im Code-Audit).
  */
 export const POWER_TO_SPEED = 0.14;
+
+/**
+ * Der Reichweitenfaktor dieser Karte.
+ *
+ * ## Warum er gebraucht wird
+ *
+ * FUND (belegt, gemessen mit `npm run check:reichweite`): Die Wurfweite ist
+ * **konstant 613 px** — unabhängig von der Kartengröße. Auf einer 1280er Karte
+ * reichte das mit fast doppelter Reserve; auf 5120 px erreicht die stärkste
+ * Waffe **nicht mehr** den nächsten Gegner.
+ *
+ * Die Waffen sind für kleine Karten gebaut. Statt 150 Designwerte zu ändern
+ * (die Datei gehört dem Auftraggeber und wird nicht ohne Auftrag angefasst),
+ * skaliert der Motor die Umrechnung: Alle Waffen wachsen gleichmäßig, ihre
+ * Spreizung bleibt erhalten.
+ *
+ * Bei 1920 px ist der Faktor genau 1,0 — dort ändert sich nichts.
+ *
+ * Die Formel steht in `src/shared/reichweite.js` samt Herleitung.
+ */
+export function reichweiteFuer(kartenbreite) {
+  return reichweitenFaktor(kartenbreite);
+}
 
 /**
  * Die höchste Kraft, die ein Schuss haben kann.
@@ -419,6 +443,14 @@ export class MatchController {
    * entityId → { ownerId, teamId, x, y, damage, range, roundsLeft }
    */
   #turrets = new Map();
+  /**
+   * Der Reichweitenfaktor dieser Karte.
+   *
+   * Er wird beim Aufbau des Geländes gesetzt, weil er von der Kartenbreite
+   * abhängt. Bei 1920 px ist er genau 1,0 — dort ändert sich nichts.
+   */
+  #reichweite = 1;
+
   #players = [];
   #turnOrder = [];
   #turnIndex = 0;
@@ -653,7 +685,7 @@ export class MatchController {
       powerToSpeed: POWER_TO_SPEED,
       maxPower: HOHECHSTE_KRAFT,
       gravity: DEFAULT_PROJECTILE_GRAVITY,
-    });
+    }) * this.#reichweite;
 
     const urteil = pruefeErreichbarkeit({
       bitmap: this.#bitmap, width: this.width, height: this.height, figuren, wurfweite,
@@ -712,6 +744,15 @@ export class MatchController {
   }
 
   #buildTerrain() {
+    /*
+     * Der Reichweitenfaktor folgt der Kartenbreite.
+     *
+     * Er steht hier, weil `width` erst beim Geländebau endgültig feststeht.
+     * Bei 1920 px ist der Faktor 1,0; kleinere Karten werden gedämpft, größere
+     * verstärkt — siehe `src/shared/reichweite.js` für die Herleitung.
+     */
+    this.#reichweite = reichweitenFaktor(this.width);
+
     const terrainRng = this.#seedManager.getSubRng('TERRAIN');
 
     /*
@@ -1803,7 +1844,7 @@ export class MatchController {
    * (`match.wind`, NICHT `currentStrength`) und beide Achsen gedraggt.
    */
   #simulateTurretPath(turret, winkel, kraft, waffe) {
-    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1);
+    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * this.#reichweite;
     let x = turret.x;
     let y = turret.y;
     let vx = Math.cos(winkel) * speed;
@@ -1843,7 +1884,7 @@ export class MatchController {
   /** Erzeugt das Geschoss eines Geschützes. */
   #spawnTurretProjectile(turret, schuss, ziel = null) {
     const waffe = TURRET_WEAPON;
-    const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1);
+    const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * this.#reichweite;
     const vx = Math.cos(schuss.angle) * speed;
     const vy = -Math.sin(schuss.angle) * speed;
 

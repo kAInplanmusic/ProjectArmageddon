@@ -26,6 +26,7 @@
     "measure:figures": "node scripts/measure-figures.mjs",
     "measure:generator": "node scripts/measure-generator.mjs",
     "check:biome": "node scripts/check-biome.mjs",
+    "check:reichweite": "node scripts/check-waffenreichweite.mjs",
     "check:autonom": "node scripts/check-autonom.mjs",
     "check:erreichbarkeit": "node scripts/check-erreichbarkeit.mjs",
     "test": "node --test tests/*.test.js --test-reporter=spec",
