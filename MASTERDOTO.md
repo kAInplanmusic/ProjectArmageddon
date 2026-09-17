@@ -1901,6 +1901,67 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       (`docs/betrieb.md`, Abschnitt 5). Ohne gespeicherte Partiedaten gibt es
       nichts auszuwerten — dieselbe Entscheidung wie bei den Konten.
 
+### I. Recherche: Kartengenerator, NPCs, Sound (2026-09-17)
+
+Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
+`docs/recherche/`. Alle Quellen mit URL, alle Lizenzen an der Quelle geprüft.
+
+**`docs/recherche/kartengenerierung.md` (24 kB)**
+
+- **KERNBEFUND:** Fast alle guten Artillerie-Generatoren arbeiten
+  **2D-pixelbasiert**, nicht als 1D-Höhenfeld. Ein 1D-Feld kann per Definition
+  **keine Höhlen, Tunnel, Überhänge und schwebenden Inseln** — genau das, was
+  gewünscht ist.
+  → **Aber:** Unsere Kollision ist **schon 2D**
+  (`CollisionMask.fromBitmap` + `isSolid(x, y)`). Nur der **Generator** erzeugt
+  ein 1D-Feld daraus. Höhlen und Überhänge sind damit **ohne Motorumbau
+  möglich** — es muss anders generiert werden, nicht anders kollidiert.
+- **Hedgewars-Perlin-Formel** (vollständig im Bericht):
+  `r = ((abs(inoise(di,dj)) + y*4) mod 65536 - (height-y)*8) div 256`
+  mit `rCutoff` als Detailregler und **Rand-Fade** (`margin = 200`) für den
+  Taper-Effekt, den Worms-Fans suchen.
+- **TerrainVer** (github.com/juliango202/TerrainVer): Worms-Terrain in **JS,
+  MIT-Lizenz**, ESM — direkt kompatibel. ⚠️ Demo-Domain ist Casino-Spam
+  geworden; kein npm-Paket, als Code-Vorlage lesen.
+- **Lizenzwarnung:** Hedgewars-Code ist **GPLv2** — Algorithmen neu schreiben,
+  nicht kopieren.
+- **Minimalpfad (~4–5 Tage)** für den größten Effekt: 2D-Maske + simplex-noise +
+  Hedgewars-Perlin + Kanteneffekte → Inseln mit Taper, Höhlen, Tunnels, bessere
+  Optik. Alles seed-deterministisch und MIT-lizenziert.
+
+**`docs/recherche/npc-ki.md` (37 kB, mit lauffähigem Referenzcode)**
+
+- **Der Hedgewars-Trick:** Nicht den Winkel suchen, sondern die **Flugzeit
+  raten** und daraus die Geschwindigkeit berechnen:
+  `Vx = -wind*t*0.5 + dx/t`, `Vy = g*t*0.5 - dy/t`. Kein Solver nötig.
+- **Portier-Warnung (der Agent ist selbst hineingelaufen):** Die Konstanten sind
+  in Hedgewars-Einheiten kalibriert und **nicht übertragbar** (bei ihm: −92°,
+  700 px daneben). Struktur portieren, nicht Zahlen.
+- **Verifiziert** (`node docs/recherche/npc-ki-referenz.mjs`, selbst ausgeführt):
+  Solver → **0,000 px** Restfehler, Aufschlag **0,0000 px** nach Feinjustage
+  (289 Simulationen).
+- **Tick-Diskretisierung:** 1 Tick = 15 px horizontal → Genauigkeitsplateau bei
+  **9,8 px**, das kein Solver überwindet. Nur Sub-Tick-Interpolation hilft.
+- **Menschlichkeitsskala gemessen** (500 Schüsse je Stufe):
+  Stufe 0,2 → 51,8 px Streuung, Stufe 1,0 → 9,8 px.
+- **Architektur-Empfehlung:** Pro Waffe eine Testfunktion mit Fähigkeits-Flags
+  (wie Hedgewars). *„Günther kann nur Waffen nutzen, für die es einen Test
+  gibt"* — ein bewusster Scope-Deckel.
+- **Fähigkeits-Gating statt nur Genauigkeit:** Niedriges Level = schlechteres
+  Zielen UND kleinere Aktionsmenge. Wirkt menschlicher als reine Streuung.
+
+**`docs/recherche/sound-und-juice.md` (31 kB)**
+
+- **Prozeduraler Sound** (Empfehlung): Explosion = Rauschen → Tiefpass →
+  exponentieller Ausklang. **Braunes Rauschen** klingt fetter als weißes.
+  MDN-Codebeispiele sind **CC0** — frei übernehmbar.
+- **Sauberste Sample-Quelle: Kenney.nl** (CC0, keine Attribution).
+- **Lizenzfallen (geprüft):** CC-BY verlangt Namensnennung, CC-BY-SA ist
+  „ansteckend", Freesound ist Lizenz-Roulette. **Filter auf CC0.**
+- ⚠️ **Sonniss-GDC-Bundle:** gratis und professionell, aber **KI-Training
+  ausdrücklich verboten** — Randnotiz, weil dieses Projekt mit KI-Unterstützung
+  entsteht.
+
 ### H. Umstrukturierung zum Server-Spiel
 
 **Matcharten (Auftrag, 2026-09-17):**
