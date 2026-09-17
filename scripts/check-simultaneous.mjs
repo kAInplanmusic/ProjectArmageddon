@@ -130,7 +130,7 @@ console.log('  einer Partie von mehreren Stunden eine von unter einer.');
 console.log('');
 console.log('DIE MODELLE IM EINZELNEN');
 console.log('');
-for (const [id, m] of Object.entries(MODELLE)) {
+for (const m of Object.values(MODELLE)) {
   console.log(`  ${m.name}`);
   console.log(`    ${m.beschreibung}`);
   console.log(`    Eingriff: ${m.eingriff}`);

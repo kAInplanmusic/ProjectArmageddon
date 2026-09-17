@@ -1057,8 +1057,21 @@ export class MatchController {
           if (!this.#inventory.has(playerId, waffe.id)) {
             this.#inventory.grantWeapon(playerId, waffe.id);
           } else {
-            // Schon im Besitz: Munition nachfüllen statt einer wirkungslosen Gabe.
-            this.#inventory.refill(playerId, waffe.id, 3);
+            /*
+             * Schon im Besitz: Munition nachfüllen statt einer wirkungslosen
+             * Gabe.
+             *
+             * FUND (belegt): Hier stand `this.#inventory.refill(...)` — diese
+             * Methode gibt es nicht. Die richtige heißt `grantAmmo`. Der Aufruf
+             * lief nur, wenn der Spieler die Waffe SCHON hatte — also im
+             * Zweifelsfall: Günthers „Füttern" hat in diesem Fall nichts getan,
+             * und zwar still.
+             *
+             * Gefunden wurde es, weil ein Test `refill is not a function`
+             * meldete — nachdem eine Änderung an Günthers Beweidung den
+             * betroffenen Zweig häufiger erreichte.
+             */
+            this.#inventory.grantAmmo(playerId, waffe.id, 3);
           }
           ergebnis.weaponId = waffe.id;
           ergebnis.weaponName = waffe.displayName;
@@ -1090,7 +1103,8 @@ export class MatchController {
           if (!this.#inventory.has(playerId, waffe.id)) {
             this.#inventory.grantWeapon(playerId, waffe.id);
           } else {
-            this.#inventory.refill(playerId, waffe.id, 99);
+            // Wie oben: `refill` existiert nicht — `grantAmmo` ist gemeint.
+            this.#inventory.grantAmmo(playerId, waffe.id, 99);
           }
           ergebnis.weaponId = waffe.id;
           ergebnis.weaponName = waffe.displayName;

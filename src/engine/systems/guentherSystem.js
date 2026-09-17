@@ -19,6 +19,7 @@ import {
   GUENTHER_IDENTITY,
   GUENTHER_SPAWN,
   GUENTHER_MOVEMENT,
+  guentherBewegung,
   GUENTHER_PEE,
   GUENTHER_POOP,
   GUENTHER_CONTACT,
@@ -196,7 +197,15 @@ export class GuentherSystem {
 
     // Ein Ziel in der Nähe hat Vorrang: Er läuft darauf zu. Ein Hund, dem man
     // ausweicht, pinkelt nicht — die Mechanik braucht diese Annäherung.
-    const ziel = this.#naechsterSpieler(world, kontext.spielerIds ?? [], GUENTHER_MOVEMENT.seekRange);
+    /*
+     * Die Suchreichweite hängt an der KARTENBREITE (siehe `guentherBewegung`).
+     *
+     * FUND (belegt): Mit dem festen Wert 320 px fand Günther auf einer 5120er
+     * Karte praktisch nie einen Spieler — gemessen kam in acht Partien keine
+     * einzige Begegnung zustande.
+     */
+    const bewegung = guentherBewegung(this.width);
+    const ziel = this.#naechsterSpieler(world, kontext.spielerIds ?? [], bewegung.seekRange);
     if (ziel !== null) {
       const zielX = world.getComponent(ziel, 'Position', 'x') ?? this.#position.x;
       this.#richtung = zielX >= this.#position.x ? 1 : -1;
@@ -208,8 +217,8 @@ export class GuentherSystem {
     } else {
       // Laufen: Richtung halten, an den Rändern umdrehen.
       const tempo = ziel !== null
-        ? GUENTHER_MOVEMENT.speed * GUENTHER_MOVEMENT.seekSpeed
-        : GUENTHER_MOVEMENT.speed;
+        ? bewegung.speed * GUENTHER_MOVEMENT.seekSpeed
+        : bewegung.speed;
       this.#position.x += this.#richtung * tempo;
       if (this.#position.x < GUENTHER_SPAWN.edgeMargin) {
         this.#position.x = GUENTHER_SPAWN.edgeMargin;
@@ -220,7 +229,21 @@ export class GuentherSystem {
       }
       // Gelegentlich stehen bleiben und die Richtung wechseln — aber nicht,
       // während er ein Ziel verfolgt.
-      if (ziel === null && this.#rng.nextBoolean(GUENTHER_MOVEMENT.turnChance)) {
+      /*
+       * Die Umkehrwahrscheinlichkeit leitet sich aus der KARTENBREITE ab.
+       *
+       * FUND (belegt): Mit der festen Rate 0,004 je Tick drehte Günther alle
+       * 250 Ticks um — rund 450 px, unabhängig von der Karte. Auf einer 5120er
+       * Karte sind das 9 % der Breite: Er pendelt am Rand, statt zu wandern.
+       *
+       * Jetzt gilt: dieselbe STRECKE je Umkehrung wie auf der Referenzkarte,
+       * umgerechnet auf das Tempo dieser Karte.
+       */
+      const umkehrStrecke = GUENTHER_MOVEMENT.turnStreckeAnteil * this.width;
+      const umkehrChance = umkehrStrecke > 0
+        ? Math.min(1, bewegung.speed / umkehrStrecke)
+        : 0;
+      if (ziel === null && this.#rng.nextBoolean(umkehrChance)) {
         this.#richtung *= -1;
         this.#pausenTicks = this.#rng.nextInt(
           GUENTHER_MOVEMENT.pauseTicks[0], GUENTHER_MOVEMENT.pauseTicks[1],

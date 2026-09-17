@@ -48,27 +48,105 @@ export const GUENTHER_SPAWN = Object.freeze({
   edgeMargin: 40,
 });
 
-/** Laufverhalten. */
+/**
+ * Reichweiten, die mit der KARTENGRÖSSE wachsen.
+ *
+ * ## Der Befund, der dazu führte
+ *
+ * Günther läuft mit **fester** Geschwindigkeit (0,9 px/Tick) und sucht Spieler
+ * nur im `seekRange`. Ein Auftritt dauert drei Runden. Die Strecke, die er
+ * dabei zurücklegt, ist damit **konstant** — gemessen:
+ *
+ *     Karte      Breite   Strecke je Auftritt   Anteil der Karte
+ *     klein        1280              1296 px             101 %
+ *     mittel       2560              1296 px              51 %
+ *     gross        3840              1296 px              34 %
+ *     krieg        5120              1296 px              25 %
+ *
+ * Auf der alten Karte (1280 px) durchquerte er sie vollständig — er war eine
+ * echte Begegnung. Auf der Kriegskarte kommt er nicht einmal ein Viertel weit:
+ * Er bleibt am Rand, und in einer Messung über acht Partien kam **keine einzige
+ * Begegnung** zustande.
+ *
+ * ## Die Lösung: Anteile statt fester Werte
+ *
+ * Alle Reichweiten sind jetzt **Anteile der Kartenbreite**. Bei 1280 px ergeben
+ * sie dieselben Werte wie vorher — auf größeren Karten wachsen sie mit.
+ *
+ * Der Bezug ist `GUENTHER_REFERENZ_BREITE`, die Kartenbreite, auf die die
+ * ursprünglichen Werte abgestimmt waren. Das ist dieselbe Haltung wie bei den
+ * Waffenreichweiten — nur dass Günther sich anpasst, statt zu kurz zu reichen.
+ */
+export const GUENTHER_REFERENZ_BREITE = 1280;
+
+/**
+ * Laufverhalten.
+ *
+ * Die Werte sind Anteile der Kartenbreite (siehe oben) und werden über
+ * `guentherBewegung(kartenBreite)` in Pixel umgerechnet.
+ */
 export const GUENTHER_MOVEMENT = Object.freeze({
-  /** Gehgeschwindigkeit in Pixeln pro Tick (60 Ticks = 1 s). */
-  speed: 0.9,
-  /** Wahrscheinlichkeit je Tick, die Richtung zu wechseln. */
-  turnChance: 0.004,
+  /**
+   * Gehgeschwindigkeit als Anteil der Kartenbreite je Tick.
+   *
+   * 0,9 px bei 1280er Breite = 0,9 / 1280 = 0,000703. Auf der Kriegskarte
+   * (5120 px) ergibt das 3,6 px/Tick — er läuft dort viermal so schnell, weil
+   * die Karte viermal so weit ist.
+   */
+  speedAnteil: 0.9 / 1280,
+  /**
+   * Mittlere Strecke zwischen zwei zufälligen Richtungswechseln, als Anteil
+   * der Kartenbreite.
+   *
+   * FUND (belegt): Hier stand eine feste Wahrscheinlichkeit von 0,004 je Tick —
+   * das ist eine Umkehr alle 250 Ticks. Bei Günthers Tempo sind das rund
+   * **450 px**, unabhängig von der Karte:
+   *
+   *     Karte    Breite   Strecke zwischen Umkehrungen   Anteil
+   *     klein      1280                        450 px     35 %
+   *     mittel     2560                        450 px     18 %
+   *     krieg      5120                        450 px      9 %
+   *
+   * Auf der kleinen Karte kam er damit weit — auf der großen pendelt er am
+   * Rand und trifft niemanden. Gemessen in acht Partien: keine Begegnung.
+   *
+   * Jetzt ist es ein Anteil: 450 px bei 1280er Breite ist dieselbe Strecke,
+   * aber auf jeder Kartengröße derselbe ANTEIL.
+   */
+  turnStreckeAnteil: 450 / 1280,
   /** Pause vor einem Richtungswechsel in Ticks. */
   pauseTicks: [24, 90],
   /** Wie weit er dem Gefälle folgt (er läuft AUF der Oberfläche). */
   surfaceFollow: 1,
   /**
-   * Ab dieser Entfernung läuft er auf den nächsten Spieler ZU.
+   * Ab welcher Entfernung er auf den nächsten Spieler ZU läuft — als Anteil.
    *
    * Ohne das läuft er nur geradeaus und trifft nie jemanden: Ein Hund, der
-   * ausgewichen wird, pinkelt nicht. Er sucht die Nähe — das ist der Grund, warum
-   * die Mechanik überhaupt greift.
+   * ausgewichen wird, pinkelt nicht. Er sucht die Nähe — das ist der Grund,
+   * warum die Mechanik überhaupt greift.
+   *
+   * 320 px bei 1280er Breite = ein Viertel der Karte.
    */
-  seekRange: 320,
+  seekRangeAnteil: 320 / 1280,
   /** Anteil der Geschwindigkeit, mit der er einem Ziel folgt. */
   seekSpeed: 1.25,
 });
+
+/**
+ * Rechnet Günthers Bewegungswerte für eine Kartenbreite aus.
+ *
+ * @param {number} kartenBreite
+ * @returns {{speed:number, seekRange:number}} Pixelwerte
+ */
+export function guentherBewegung(kartenBreite) {
+  const breite = Number.isFinite(kartenBreite) && kartenBreite > 0
+    ? kartenBreite
+    : GUENTHER_REFERENZ_BREITE;
+  return {
+    speed: GUENTHER_MOVEMENT.speedAnteil * breite,
+    seekRange: GUENTHER_MOVEMENT.seekRangeAnteil * breite,
+  };
+}
 
 /**
  * Anpinkeln.
