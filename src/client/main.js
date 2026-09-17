@@ -41,6 +41,7 @@ import {
   kennzahlen as erfolgsKennzahlen,
   neueErfolge as neueErfolgeFuer,
   uebersicht as erfolgsUebersicht,
+  emblem,
 } from '../shared/achievements.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
@@ -761,9 +762,30 @@ class Game {
     this.hud.log(`Terrain aus Seed ${seed} rekonstruiert`, 'neutral');
   }
 
-  /** Lokalen Zustand für Renderer und HUD bereitstellen. */
+  /**
+   * Der Zustand, den die Anzeige liest.
+   *
+   * Hier wird das ERFOLGS-EMBLEM angehängt — zentral und nicht an jeder
+   * HUD-Aufrufstelle. Gründe:
+   *
+   *  - Es gilt für den EIGENEN Spieler, denn nur dessen Profil liegt vor. Ein
+   *    fremdes Emblem wäre geraten, und ein geratener Erfolg ist schlimmer als
+   *    keiner.
+   *  - Es gilt in BEIDEN Modi (lokal und online) — die Aufrufstelle wäre sonst
+   *    zweimal zu pflegen, und einer der beiden fiele irgendwann aus.
+   *
+   * Die Ableitung selbst liegt in `emblem()` (`shared/achievements.js`); hier
+   * wird nur das Ergebnis mitgegeben. Es enthält keine Gestaltung — nur Anzahl,
+   * Rang und den Hinweis, dass heute alle Erfolge Muster sind.
+   */
   currentState() {
-    return this.mode === 'online' ? this.onlineViewState : this.match?.getState() ?? null;
+    const roh = this.mode === 'online' ? this.onlineViewState : this.match?.getState() ?? null;
+    if (!roh) return roh;
+    return {
+      ...roh,
+      eigenerSpielerId: this.eigenerSpielerId,
+      emblem: emblem(this.profil?.erfolge ?? null),
+    };
   }
 
   get currentViewState() {

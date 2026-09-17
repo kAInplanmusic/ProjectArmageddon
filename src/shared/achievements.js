@@ -391,6 +391,73 @@ export function neueErfolge(werte, bereitsErreicht = null) {
   return werteAus(werte, vorher).filter(e => e.erreicht && !vorher.has(e.id));
 }
 
+/**
+ * Verdichtet die erreichten Erfolge zu einem EMBLEM für den Spielernamen.
+ *
+ * ## Was das ist — und was es ausdrücklich NICHT tut
+ *
+ * Es wird **kein Symbol erfunden und kein Text gedichtet.** Das Emblem ist eine
+ * reine Verdichtung vorhandener Daten: Es zählt die erreichten Erfolge und nennt
+ * den höchsten erreichten Rang (`tier`). Beides steht bereits in der Tabelle.
+ *
+ * Das ist die Antwort auf den offenen Punkt „Erfolgs-Emblem am Spielernamen"
+ * in MASTERDOTO.md — dort steht zu Recht, dass **Namen, Texte und Symbole eine
+ * Gestaltungsentscheidung des Auftraggebers** sind. Deshalb liefert diese
+ * Funktion keinen Namen und kein Bild, sondern Zahlen und den Rang-Schlüssel:
+ * Die Darstellung entscheidet, wer sie gestaltet.
+ *
+ * ## Warum der Rang und nicht die Zahl allein
+ *
+ * Ein Spieler mit zwei „leichten" Erfolgen und einer mit zwei „sehr schweren"
+ * haben dieselbe Anzahl, aber nicht denselben Stand. Der Rang macht den
+ * Unterschied sichtbar, ohne eine Gewichtung zu erfinden — `TIERS` ist bereits
+ * eine geordnete Liste, ihre Position ist die Ordnung.
+ *
+ * @param {Iterable<string>|null} erreichteIds - Kennungen der erreichten Erfolge
+ * @returns {Readonly<{
+ *   anzahl: number,
+ *   gesamt: number,
+ *   rang: string|null,
+ *   rangIndex: number,
+ *   anteil: number,
+ *   nurMuster: boolean
+ * }>}
+ *   `rang` ist `null`, solange nichts erreicht ist — dann zeigt die Anzeige
+ *   besser nichts als einen leeren Rang. `nurMuster` sagt, dass alle erreichten
+ *   Erfolge Muster sind (die Inhalte also noch fehlen); die Anzeige kann das
+ *   kenntlich machen, statt es zu verschweigen.
+ */
+export function emblem(erreichteIds = null) {
+  const erreicht = new Set(erreichteIds ?? []);
+  const treffer = ACHIEVEMENTS.filter(e => erreicht.has(e.id));
+
+  /*
+   * Der höchste Rang: `TIERS` ist von leicht nach sehr schwer geordnet, die
+   * Position ist damit die Ordnung. Bei gleichem Rang entscheidet die Anzahl
+   * nicht — der Rang ist die Aussage.
+   */
+  let rangIndex = -1;
+  for (const e of treffer) {
+    const index = TIERS.indexOf(e.tier);
+    if (index > rangIndex) rangIndex = index;
+  }
+
+  return Object.freeze({
+    anzahl: treffer.length,
+    gesamt: ACHIEVEMENTS.length,
+    rang: rangIndex >= 0 ? TIERS[rangIndex] : null,
+    rangIndex,
+    /** Anteil der erreichten an allen — für einen Fortschrittsbalken. */
+    anteil: ACHIEVEMENTS.length > 0 ? treffer.length / ACHIEVEMENTS.length : 0,
+    /*
+     * Ob ALLE erreichten Erfolge Muster sind. Die Inhalte der 100 Erfolge
+     * fehlen noch (siehe Dateikopf); ein Emblem aus reinen Mustern darf nicht
+     * wie eine echte Auszeichnung aussehen.
+     */
+    nurMuster: treffer.length > 0 && treffer.every(e => e.muster === true),
+  });
+}
+
 /** Übersicht: erreichte und offene, gruppiert nach Kategorie. */
 export function uebersicht(werte, bereitsErreicht = null) {
   const alle = werteAus(werte, bereitsErreicht);
@@ -425,4 +492,4 @@ export function uebersicht(werte, bereitsErreicht = null) {
   };
 }
 
-export default { ACHIEVEMENTS, werteAus, neueErfolge, uebersicht, kennzahlen };
+export default { ACHIEVEMENTS, werteAus, neueErfolge, uebersicht, kennzahlen, emblem };

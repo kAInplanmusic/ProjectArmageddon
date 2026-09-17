@@ -467,6 +467,26 @@
     .roster-list .r-cp { margin-top: 0.2rem; color: #7d8ea3; font-size: 0.78rem; }
 
     /*
+     * Erfolgs-Emblem am Spielernamen in der Spielerliste.
+     *
+     * Klein und zurückhaltend: Es ist eine Auszeichnung, kein Messwert. Die
+     * Farbe kommt aus dem RANG (`data-tier`), damit die Anzeige den Rang
+     * unterscheidet, ohne dass der Client eine Farbe erfindet — die Zuordnung
+     * steht hier, wie beim übrigen CSS.
+     */
+    .roster-emblem {
+      display: inline-block; margin-left: 0.35rem; padding: 0 0.3rem;
+      font-size: 0.7rem; line-height: 1.3; border-radius: 3px;
+      border: 1px solid currentColor; opacity: 0.85;
+      font-variant-numeric: tabular-nums;
+    }
+    /* Die Ränge sind geordnet (leicht → sehr schwer); die Farbe macht das sichtbar. */
+    .roster-emblem[data-tier="leicht"] { color: #8ba0b4; }
+    .roster-emblem[data-tier="mittel"] { color: #90be6d; }
+    .roster-emblem[data-tier="schwer"] { color: #f4a261; }
+    .roster-emblem[data-tier="sehr schwer"] { color: #ef476f; }
+
+    /*
      * Hilfe-Ansicht (Klassen, Loot, Gelände).
      *
      * Aufbau wie die Kader-Ansicht: Reiter oben, Inhalt darunter. Die Inhalte

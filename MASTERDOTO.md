@@ -1749,7 +1749,24 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Inhalte". **OFFEN: die Inhalte** — die 100 Erfolge (Namen, Texte, Symbole,
       Belohnungen) und die Icons sind Gestaltung und wurden nicht erfunden; im
       Katalog stehen 12 MUSTER (`muster: true`), im Menü als Muster gekennzeichnet.
-- [ ] **Erfolgs-Emblem am Spielernamen** (wie eine Visitenkarte).
+- [x] **Erfolgs-Emblem am Spielernamen.** Erledigt als **Ableitung ohne
+      Gestaltung**: `emblem()` in `src/shared/achievements.js` verdichtet die
+      erreichten Erfolge zu Anzahl, Rang (höchster `tier`) und Fortschrittsanteil
+      — **kein Symbol, kein Name, kein Text wird erfunden.** Die MASTERDOTO
+      nennt genau das als Grund, warum der Punkt offen blieb („Namen, Texte und
+      Symbole sind eine Gestaltungsentscheidung des Auftraggebers"); die
+      Ableitung liefert deshalb nur Daten, die Darstellung (Farbe je Rang)
+      steht im Stylesheet an einer Stelle.
+      Angezeigt im HUD in der Spielerliste, **nur am EIGENEN Spieler**: Nur
+      dessen Profil liegt vor, ein fremdes Emblem wäre geraten.
+      Kein Emblem, solange nichts erreicht ist (`rang: null`) — ein leerer
+      Platzhalter wäre irreführend. Ein Tooltip nennt Anzahl, Rang und den
+      Hinweis, dass die heutigen Erfolge Muster sind.
+      Abgesichert in `tests/emblem.test.js` (8) und
+      `tests/e2e/emblem.spec.mjs` (5).
+      **Offen bleibt die Gestaltung:** Die 100 Erfolge sind weiterhin Muster
+      (`muster: true`, im Menü gekennzeichnet). Namen, Texte und Symbole sind
+      deine Entscheidung; die Mechanik nimmt sie auf, ohne Code-Änderung.
 - [x] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
       Schüsse gesamt, Spielzeit, Gesamtschaden, Schaden pro Minute, Trefferquote,
       Siege, Serie. **ERFASSEN und ANZEIGEN erledigt** — siehe

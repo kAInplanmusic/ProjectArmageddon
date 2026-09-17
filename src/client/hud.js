@@ -182,6 +182,32 @@ export class Hud {
       name.textContent = entity.label;
       name.style.color = TEAM_COLORS[entity.teamId % TEAM_COLORS.length];
 
+      /*
+       * Erfolgs-Emblem neben dem Namen — aus vorhandenen Daten abgeleitet.
+       *
+       * `state.emblem` wird vom Client mitgegeben (siehe `currentState()`): Es
+       * gilt für den EIGENEN Spieler, denn nur dessen Profil liegt vor. Ein
+       * fremdes Emblem wäre geraten — und ein geratener Erfolg ist schlimmer als
+       * keiner.
+       *
+       * Kein Emblem, solange nichts erreicht ist (`rang === null`): Ein leerer
+       * Platzhalter wäre irreführend.
+       */
+      const emblemElement = document.createElement('span');
+      if (entity.entityId === state.eigenerSpielerId && state.emblem?.rang) {
+        emblemElement.className = 'roster-emblem';
+        emblemElement.dataset.tier = state.emblem.rang;
+        /*
+         * Der Text nennt Anzahl und Rang — beides aus der Ableitung, nichts
+         * gedichtet. Die FLÄCHENFÜLLUNG des Rangs (Farbe, Umriss) ist Gestaltung
+         * und steht im CSS; hier steht nur die Aussage.
+         */
+        emblemElement.textContent = `${state.emblem.anzahl}/${state.emblem.gesamt}`;
+        emblemElement.title = `Erfolge: ${state.emblem.anzahl} von ${state.emblem.gesamt}, `
+          + `höchster Rang: ${state.emblem.rang}`
+          + (state.emblem.nurMuster ? ' (nur Muster — die Inhalte fehlen noch)' : '');
+      }
+
       const track = document.createElement('span');
       track.className = 'hp-track';
       const fill = document.createElement('span');
@@ -220,7 +246,9 @@ export class Hud {
       hp.textContent = String(Math.max(0, Math.round(entity.health)));
       hp.style.fontVariantNumeric = 'tabular-nums';
 
-      item.append(name, track, hp);
+      // Das Emblem steht ZWISCHEN Name und Lebensbalken: Es gehört zum Namen,
+      // nicht zu den Zustandsmarken (die hinter dem Balken stehen).
+      item.append(name, emblemElement, track, hp);
 
       for (const marke of marken) {
         const badge = document.createElement('span');
