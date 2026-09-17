@@ -1142,6 +1142,24 @@ class Game {
         this.remoteWinner = message.winnerTeamId ?? null;
         this.#showEndScreen(message.winnerTeamId ?? null);
         break;
+      /*
+       * Die Karte hat eine Figur auf einer unerreichbaren Fläche.
+       *
+       * Das ist kein Fehler im Ablauf — die Partie läuft weiter —, aber der
+       * betroffene Spieler soll es WISSEN. Ohne diesen Eintrag säße er auf
+       * einer Insel und wartete darauf, dass etwas passiert, ohne zu ahnen,
+       * dass niemand ihn erreichen kann.
+       *
+       * Die Meldung ist bewusst nüchtern: Sie nennt den Zustand, nicht eine
+       * Schuldzuweisung. Es ist eine Eigenschaft der gezogenen Karte.
+       */
+      case 'karte_unerreichbar':
+        this.hud.log(
+          `Die Karte hat eine abgeschnittene Fläche (${message.grund}) — `
+          + 'eine Einheit ist von dort aus nicht erreichbar',
+          'warn',
+        );
+        break;
       default:
         break;
     }

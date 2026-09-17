@@ -13,6 +13,7 @@ import { CollisionMask } from './terrain/collisionMask.js';
 import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
 import { erzeugeKarte } from '../shared/terrainGen2.js';
 import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
+import { pruefeErreichbarkeit, maxWurfweite } from '../shared/erreichbarkeit.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
@@ -196,6 +197,17 @@ export const BASE_HEALTH = 100;
  * Ballistik-Fehlers (`#simulateTurretPath`, Befund im Code-Audit).
  */
 export const POWER_TO_SPEED = 0.14;
+
+/**
+ * Die höchste Kraft, die ein Schuss haben kann.
+ *
+ * FUND (belegt): Diese Zahl stand an drei Stellen verstreut — im Client als
+ * `Math.min(100, Math.max(8, …))`, im Turm und im Testaufbau. Für die
+ * Erreichbarkeitsprüfung wird sie als Konstante gebraucht, damit die
+ * berechnete Wurfweite zur echten Sim-Physik passt und nicht zu einer
+ * abgeschriebenen Zahl.
+ */
+export const HOHECHSTE_KRAFT = 100;
 /*
  * Geschütze.
  *
@@ -540,12 +552,97 @@ export class MatchController {
     this.#buildWater();
     this.#registerSystems();
     this.#spawnPlayers();
+    this.#pruefeErreichbarkeit();
     this.#world.services.match.wind = this.#rollWind();
     this.#wind = this.#world.services.match.wind;
     this.#spawnRoundLoot();
     this.#status = 'playing';
     this.#beginTurn(0);
     return this;
+  }
+
+  /**
+   * Prüft, ob jede Figur erreichbar steht.
+   *
+   * ## Warum diese Prüfung im Match und nicht im Generator
+   *
+   * Der Generator kennt die Karte, aber nicht die **Standpositionen** der
+   * Figuren — die entstehen erst beim Aufstellen (`#spawnPlayers`). Eine
+   * Erreichbarkeitsprüfung ohne Figuren wäre eine Prüfung der Karte, nicht des
+   * Spiels: Zwei Karten mit denselben Flächen können spielbar oder unspielbar
+   * sein, je nachdem, wo die Figuren landen.
+   *
+   * ## Warum sie NICHT neu würfelt
+   *
+   * Die Prüfung meldet nur. Ein Neuwurf an dieser Stelle würde die
+   * Determinismus-Kette brechen: Der Generator hat seinen Seed bereits
+   * aufgebraucht, und ein zweiter Versuch müsste denselben Zufall erneut
+   * anfassen — auf Server und Client getrennt, mit der Gefahr, dass beide
+   * verschiedene Ergebnisse bekommen.
+   *
+   * Stattdessen geht das Ergebnis in den Zustand: Ein Werkzeug oder eine
+   * spätere Auswertung kann darauf zugreifen, und ein Spieler, der auf einer
+   * unerreichbaren Insel sitzt, lässt sich damit identifizieren.
+   */
+  /**
+   * Die Terrain-Maske — für Werkzeuge, die sie prüfen wollen.
+   *
+   * Öffentlich, weil eine Erreichbarkeits- oder Höhlenanalyse von außen
+   * dieselbe Maske braucht, die der Motor nutzt. Eine Kopie wäre eine zweite
+   * Wahrheit.
+   *
+   * @returns {Uint8Array}
+   */
+  get bitmap() { return this.#bitmap; }
+
+  #pruefeErreichbarkeit() {
+    if (this.kartentyp !== 'autonom') return;
+
+    /*
+     * Die Standpositionen holen.
+     *
+     * FUND (belegt, eigener Fehler): Ein erster Anlauf rief
+     * `getComponent(id, 'Position')` ohne Feldnamen — das wirft
+     * `Cannot read properties of undefined`. Die Komponente wird im ECS
+     * **feldweise** abgefragt (`getComponent(id, 'Position', 'x')`), so wie es
+     * an allen anderen Stellen im Modul geschieht.
+     */
+    const figuren = [];
+    for (const eintrag of this.#players) {
+      if (!eintrag.alive) continue;
+      const x = this.#world.getComponent(eintrag.entityId, 'Position', 'x');
+      const y = this.#world.getComponent(eintrag.entityId, 'Position', 'y');
+      if (typeof x !== 'number' || typeof y !== 'number') continue;
+      figuren.push({ x, y });
+    }
+    if (figuren.length < 2) return;
+
+    /*
+     * Die größte Wurfweite — aus den Werten, die der Motor wirklich nutzt.
+     *
+     * Geholt statt gesetzt: `POWER_TO_SPEED` (die Umrechnung Kraft →
+     * Geschwindigkeit) und `DEFAULT_PROJECTILE_GRAVITY` (die Schwerkraft des
+     * Projektilsystems). Die Höchstkraft ist 100 — sie steht im Client
+     * (`Math.min(100, ...)` in `main.js`) und im Turm. Ein fest eingetragener
+     * Wert hier würde bei einer Änderung still falsch.
+     */
+    const wurfweite = maxWurfweite({
+      powerToSpeed: POWER_TO_SPEED,
+      maxPower: HOHECHSTE_KRAFT,
+      gravity: DEFAULT_PROJECTILE_GRAVITY,
+    });
+
+    const urteil = pruefeErreichbarkeit({
+      bitmap: this.#bitmap, width: this.width, height: this.height, figuren, wurfweite,
+    });
+
+    this.erreichbarkeit = { ok: urteil.ok, grund: urteil.grund, wurfweite };
+    if (!urteil.ok) {
+      this.#events.emit('karte_unerreichbar', {
+        grund: urteil.grund,
+        figuren: figuren.length,
+      });
+    }
   }
 
   #buildTerrain() {
