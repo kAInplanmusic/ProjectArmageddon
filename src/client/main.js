@@ -25,6 +25,7 @@ import { buildEffect } from '../engine/specials.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
+import { SoundMixer } from './soundMixer.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { PROFIL_SCHLUESSEL, ablageHinweis, geraeteKennung } from '../shared/identity.js';
@@ -88,6 +89,14 @@ class Game {
      */
     this.kamera = null;
     this.hud = new Hud(document);
+    /*
+     * Der Klangmischer.
+     *
+     * Er erzeugt alle Klänge selbst — es gibt keine Audiodateien. Im
+     * Serverbetrieb (RunPod, Hetzner) gibt es kein Ausgabegerät; dort bleibt er
+     * stumm, ohne zu scheitern.
+     */
+    this.sound = new SoundMixer();
     this.match = null;          // lokale Simulation
     this.network = null;        // Online-Verbindung
     this.mode = 'local';
@@ -204,6 +213,18 @@ class Game {
     this.#zeigeErfolge();
 
     window.addEventListener('keydown', event => {
+      /*
+       * Die Klangfreigabe.
+       *
+       * Browser starten einen AudioContext GESPERRT, bis der Nutzer mit der
+       * Seite interagiert hat. Ohne diese Zeile bliebe jeder Klang stumm — ohne
+       * Fehlermeldung, was die Suche unnötig schwer macht.
+       *
+       * Ein Tastendruck ist eine solche Interaktion. Sie steht bewusst VOR der
+       * Formularprüfung: Auch wer in ein Textfeld tippt, hat interagiert.
+       */
+      void this.sound?.starte();
+
       // Der Neustart darf nicht ausgelöst werden, während in ein Formularfeld
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
       if (isTextEntry(event.target)) return;
@@ -1338,10 +1359,40 @@ class Game {
         case 'explosion':
           this.renderer.applyCrater(payload.x, payload.y, payload.radius || 12);
           this.renderer.addFlash(payload.x, payload.y, (payload.radius || 12) * 1.4);
+          /*
+           * Der Klang zum Einschlag.
+           *
+           * Der Mischer entscheidet selbst, ob er etwas tut — ist der Klang
+           * abgeschaltet oder gibt es kein Ausgabegerät, ist der Aufruf ein
+           * No-Op. Deshalb steht hier keine Bedingung: Die Regel liegt an
+           * EINER Stelle (im Mischer), nicht an jedem Aufrufort.
+           */
+          this.sound?.verarbeite({ type: 'explosion', radius: payload.radius || 12 });
           break;
         case 'hitscan':
           // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
           this.#drawHitscanBeam(payload);
+          this.sound?.verarbeite({ type: 'shot' });
+          /*
+           * Ein Treffer klingt anders als ein Fehlschuss.
+           *
+           * Das Ereignis trägt `hit` (ob getroffen wurde) und `target`. Nur
+           * wenn wirklich jemand getroffen wurde, gibt es den kurzen
+           * Bestätigungsklang — sonst würde jeder Schuss ins Leere quittiert.
+           */
+          if (payload.hit && payload.target) {
+            this.sound?.verarbeite({ type: 'damage' });
+          }
+          break;
+        case 'shot':
+          /*
+           * Der Abschuss hat einen Klang — aber keinen eigenen Zeichencode.
+           *
+           * Der Fall steht hier, weil die Klangregel an EINER Stelle liegen
+           * soll: Der Mischer entscheidet, ob gespielt wird (eingeschaltet?
+           * Ausgabegerät da?), der Aufrufort kennt nur das Ereignis.
+           */
+          this.sound?.verarbeite({ type: 'shot' });
           break;
         /*
          * Beute-Fehler.
