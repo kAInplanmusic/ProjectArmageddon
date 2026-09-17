@@ -91,7 +91,31 @@ export function biomFuerCharakter(charakter) {
   if (!charakter) return 'forest';
 
   if (charakter.wasser >= 0.27) return 'deluge';
-  if (charakter.hoehlung >= 0.26) return 'caverns';
+  /*
+   * ## Die Schwelle — zweimal korrigiert, beide Male gemessen
+   *
+   * FUND (belegt): Hier stand **0,26** — ein Wert, den die Höhlungs-Achse nie
+   * erreicht (sie endet bei 0,22). Folge: `caverns` kam in 400 Zügen **nicht
+   * ein einziges Mal** vor. Ein Test deckte das auf.
+   *
+   * Der erste Korrekturversuch setzte 0,17 — und schoss über das Ziel hinaus:
+   * Gemessen wurden **28 %** aller Karten zu Höhlen, und `caverns` war damit
+   * das HÄUFIGSTE Biom, nicht `forest`. Ein zweiter Test fing das ab.
+   *
+   * Die Verteilung der Achse, gemessen über 3000 Züge:
+   *
+   *     q50 0,118   q70 0,180   q75 0,188   q80 0,195   q95 0,215
+   *
+   * Und der daraus folgende `caverns`-Anteil:
+   *
+   *     Schwelle 0,17 → 28,1 %     (zu viel)
+   *     Schwelle 0,19 → 18,5 %     ← gewählt
+   *     Schwelle 0,20 → 12,1 %
+   *
+   * 0,19 liegt beim 75. Perzentil: Ein Viertel aller Karten wird zu Höhlen,
+   * und `forest` bleibt mit rund 40 % der Normalfall.
+   */
+  if (charakter.hoehlung >= 0.19) return 'caverns';
   if (charakter.inseligkeit >= 0.40) return 'island';
   if (charakter.steilheit >= 0.48) return 'alpine';
   return 'forest';

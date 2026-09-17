@@ -78,9 +78,44 @@ export const CHARAKTER_ACHSEN = Object.freeze({
    * schwebende Brocken, weil sich das Land auflöste. Die Obergrenze liegt
    * jetzt bei 0,3, und `pruefeSpielbarkeit` zieht bei 0,25 die Notbremse.
    */
-  hoehlung: [0.0, 0.3],
-  /** Höhenschwankung als Anteil der Kartenhöhe. */
-  steilheit: [0.16, 0.52],
+  /*
+   * ## Warum die Obergrenze von 0,30 auf 0,22 sank
+   *
+   * FUND (belegt): Bei 0,29 waren **75 % aller Spalten** durchlöchert — das
+   * Land löst sich auf und sieht aus „wie Schweizer Käse". Die Beurteilung im
+   * Browser nannte es „nicht wie eine natürliche Landschaft".
+   *
+   * Gemessen über die Höhlungs-Achse:
+   *
+   *     Höhlung 0,05 →  8 % durchlöcherte Spalten   gutes Höhlensystem
+   *     Höhlung 0,10 → 26 %                          gutes Höhlensystem
+   *     Höhlung 0,17 → 54 %                          viel, aber möglich
+   *     Höhlung 0,22 → ~60 %                         die Grenze
+   *     Höhlung 0,29 → 75 %                          ZU VIEL
+   *
+   * Bei 0,22 ist die Karte noch ein Höhlensystem; darüber wird sie ein Sieb.
+   * Die Obergrenze steht deshalb bei 0,22 — die `pruefeSpielbarkeit` zieht
+   * zusätzlich bei 0,25 die Notbremse.
+   */
+  hoehlung: [0.0, 0.22],
+  /**
+   * Höhenschwankung als Anteil der Kartenhöhe.
+   *
+   * ## Warum die Untergrenze von 0,16 auf 0,28 stieg
+   *
+   * FUND (belegt): Bei 0,16 ergibt die Amplitude nur 16 % der Kartenhöhe. Die
+   * Tiefenanalyse meldete daraufhin „2 von 25 Karten nutzen weniger als 20 %
+   * der Höhe" als Schwachstelle.
+   *
+   * Eine Karte mit 115 px Hügeln auf 720 px Höhe ist spielbar — aber sie
+   * verschenkt die halbe Karte: keine Steilfeuer-Winkel, keine
+   * Höhenunterschiede, keine Deckung. Das Gelände soll die Karte nutzen.
+   *
+   * Die Obergrenze stieg von 0,52 auf 0,58, weil die Rausch-Normierung (siehe
+   * `#baueOberflaeche`) den Anteil jetzt exakt einhält — vorher nutzte eine
+   * Karte mit 0,52 nur etwa 82 % davon aus.
+   */
+  steilheit: [0.28, 0.58],
   /** Wie hoch das Wasser steht (Anteil der Kartenhöhe unter der Mitte). */
   wasser: [0.0, 0.3],
   /**
@@ -283,22 +318,138 @@ export function erzeugeAutonomeKarte({ rng, width, height }) {
  */
 function baueKarte({ rng, width, height, charakter }) {
   /*
-   * Die Gitterweite folgt der Zerklüftung: Ein hoher Wert heißt viele, kleine
-   * Strukturen (zerklüftet), ein niedriger wenige, große (zusammenhängend).
+   * Die Gitterweite — die WELLENLÄNGE der Hügel.
+   *
+   * ## Zwei Erkenntnisse, beide gemessen
+   *
+   * **Erstens:** Die Steilheit einer Flanke ist `Amplitude / Wellenlänge` —
+   * nicht die Amplitude allein. Ein fester Gitterfaktor kann deshalb nicht
+   * beides bedienen: Wird die Amplitude erhöht (mehr Höhennutzung), werden bei
+   * gleicher Wellenlänge die Flanken steiler.
+   *
+   * **Zweitens:** Zwei Achsen verstärken sich. Gemessen an Seed 424997:
+   *
+   *     steilheit    0,569  →  Amplitude 409 px
+   *     zerklüftung  1,768  →  Wellenlänge 89 px
+   *     Flanken:             2,79 px/px   ← eine Wand, kein Hügel
+   *
+   * Beide Werte lagen im erlaubten Bereich, ihre KOMBINATION war unspielbar.
+   *
+   * ## Die Kopplung
+   *
+   * Die Wellenlänge wächst mit der Amplitude: Steilere Karten bekommen längere
+   * Wellen. Die Zerklüftung bleibt der Regler dafür, wie fein die Struktur ist —
+   * aber sie kann die Wellen nicht mehr beliebig kurz machen.
+   *
+   *     Wellenlänge = Grundlänge × Amplitude-Faktor × Zerklüftungs-Faktor
+   *
+   * Die Steilheit einer Flanke bleibt damit in einem Band, unabhängig davon,
+   * welche Kombination der Seed zieht.
    */
-  const basisGitter = width / (14 * charakter.zerklueftung);
+  const amplitudenFaktor = charakter.steilheit / 0.43;   // 0,43 ist die Mitte der Achse
+
+  /*
+   * Die Grundlänge — in PIXELN, nicht als Anteil der Breite.
+   *
+   * ## Warum das der eigentliche Fehler war
+   *
+   * FUND (belegt): Der Gitterabstand war ein **Anteil der Kartenbreite**
+   * (`width / faktor`). Bei einer 1280er Karte und Faktor 5 ergab das eine
+   * Zellbreite von 256 px — bei den Achsenwerten von Seed 424997 (Steilheit
+   * 0,569, Zerklüftung 1,768) blieben davon nur **7 Gitterpunkte** über die
+   * ganze Karte.
+   *
+   * Sieben Punkte können keine wellige Oberfläche beschreiben. Das Rauschen
+   * springt von einem Wert zum nächsten, und die Interpolation dazwischen ist
+   * ein gerades Segment. Gemessen:
+   *
+   *     Amplitude 409 px / Zellbreite 181 px = 2,26 px/px  — als Mittel
+   *     Spitzen bis                                  6 px/px
+   *
+   * Das Bild zeigte eine „eckig-zackige" Silhouette — und die Messung meldete
+   * im MITTEL nur 1,0 px/px. Der Mittelwert verdeckte die Spitzen, und sichtbar
+   * sind die Spitzen.
+   *
+   * ## Die Kopplung an die Amplitude, nicht an die Kartenbreite
+   *
+   * Die entscheidende Größe ist das Verhältnis `Amplitude / Wellenlänge` — die
+   * Steigung. Die Wellenlänge wird deshalb aus der **Amplitude** abgeleitet:
+   *
+   *     Wellenlänge = Amplitude / ZIEL_STEIGUNG
+   *
+   * Bei einer Zielsteigung von 0,5 px/px und 409 px Amplitude ergibt das
+   * 818 px Wellenlänge — bei 1280 px Kartenbreite also rund 1,5 Wellen. Das
+   * ist wenig; die Grundwelle entsteht aus der Ausrichtung (siehe unten), die
+   * feinen Anteile kommen aus den Oktaven.
+   *
+   * Die Untergrenze `ZELLE_MIN` verhindert, dass eine sehr flache Karte in
+   * einen einzigen Gitterpunkt zusammenfällt.
+   */
+  /*
+   * Die Zielsteigung: `Amplitude / Wellenlänge`.
+   *
+   * Ein Wert von 0,5 bedeutet: Eine Welle von 400 px Höhe ist 800 px lang. Das
+   * ist sehr sanft — gemessen ergab es nur **22 % Höhennutzung**, weil eine
+   * lange Welle weniger Höhe über die Kartenbreite verteilt.
+   *
+   * 0,75 ist der Kompromiss: kurz genug für 35–50 % Höhennutzung, lang genug
+   * für Flanken unter 1,5 px/px.
+   */
+  const ZIEL_STEIGUNG = 0.75;
+  const amplitudeFuerGitter = Math.max(1, height * charakter.steilheit);
+  const ZELLE_MIN = 48;
+  const grundWellenlaenge = Math.max(
+    ZELLE_MIN,
+    amplitudeFuerGitter / ZIEL_STEIGUNG / (0.22 + charakter.zerklueftung * 0.28),
+  );
+
+  /*
+   * Die Amplitude verlängert die Wellen. Der Exponent 0,8 statt 1,0 dämpft die
+   * Kopplung: Eine Verdopplung der Amplitude verlängert die Wellen um den
+   * Faktor 1,74 statt 2,0 — die Flanken werden also etwas steiler, aber nicht
+   * doppelt so steil.
+   */
+  const amplitudenAnteil = Math.max(0.5, Math.min(2, amplitudenFaktor ** 0.8));
+
+  const basisGitter = grundWellenlaenge * amplitudenAnteil / charakter.zerklueftung;
   const spalten = Math.max(4, Math.round(width / basisGitter));
   const zeilen = Math.max(3, Math.round(spalten * (height / width)));
 
   const grob = gitterrauschen(rng, spalten, zeilen);
   const mittel = gitterrauschen(rng, spalten * 2, zeilen * 2);
-  const fein = gitterrauschen(rng, spalten * 3, zeilen * 3);
+  /*
+   * ## Die feine Oktave — und warum sie nicht mehr 3× so fein ist
+   *
+   * FUND (belegt): Die Oktaven standen im Verhältnis 1 : 2 : **3**. Die feinste
+   * Struktur war damit nur ein Drittel der Grundwellenlänge — bei 90 px
+   * Grundgitter also 30 px. Über eine Amplitude von 400 px gelegt ergibt das
+   * **Zacken**.
+   *
+   * Gemessen an Seed 424997:
+   *
+   *     Mittel der Steigungen:   1,78 px/px   ← sieht gut aus
+   *     Median:                  2 px/px
+   *     q99:                     5 px/px      ← das sieht das Auge
+   *     Maximum:                 6 px/px
+   *
+   * Ein Mittelwert verdeckt die Spitzen. Und sichtbar sind die Spitzen: Das
+   * Bild zeigte „spitze und zackige Hügel ohne Plateaus", obwohl die Messung
+   * 1,32 px/px meldete.
+   *
+   * Jetzt ist das Verhältnis 1 : 2 : 2,5 — die feinste Struktur ist doppelt so
+   * lang wie vorher, die Zacken verschwinden, und die Zerklüftung bleibt als
+   * Regler erhalten.
+   */
+  const fein = gitterrauschen(rng, Math.round(spalten * 2.5), Math.round(zeilen * 2.5));
 
   /*
    * Die Gewichte der Oktaven folgen der Zerklüftung: Ein zerklüftetes Gelände
    * hat mehr feine Anteile, ein zusammenhängendes mehr grobe.
+   *
+   * Der feine Anteil ist zusätzlich gedeckelt: Über 0,22 wird das Gelände
+   * zackig, unabhängig davon, wie lang die feinste Welle ist.
    */
-  const feinAnteil = Math.min(0.35, (charakter.zerklueftung - 1.6) / 6);
+  const feinAnteil = Math.min(0.22, (charakter.zerklueftung - 1.6) / 8);
   const mittelAnteil = 0.3;
   const grobAnteil = 1 - feinAnteil - mittelAnteil;
 
@@ -320,7 +471,25 @@ function baueKarte({ rng, width, height, charakter }) {
    * überall dieselbe Mindestbreite haben — und das heißt: eine feste
    * Gitterweite in Pixeln, nicht ein Anteil.
    */
-  const HOEHLEN_GITTERWEITE = 42;
+  /*
+   * ## Warum die Gitterweite von 42 auf 26 sank
+   *
+   * FUND (belegt): Bei 42 px Gitterweite hat eine 1280er Karte nur **30
+   * Gitterpunkte** — und jeder Punkt wurde zu einem Hohlraum von bis zu
+   * **3400 px** Ausdehnung. Gemessen:
+   *
+   *     Höhlung 0,05 → größter Hohlraum  645 px, 11 Stück
+   *     Höhlung 0,15 → größter Hohlraum 2001 px, 21 Stück
+   *     Höhlung 0,21 → größter Hohlraum 3400 px, 20 Stück
+   *
+   * 3400 px ist mehr als die halbe Kartenbreite: Aus einem Höhlensystem wird
+   * ein einziger Hohlraum, und das Land sieht aus „wie Schweizer Käse" (so die
+   * Beurteilung des Bildes im Browser).
+   *
+   * Bei 26 px sind es 49 Punkte auf 1280 px — die Hohlräume werden kleiner und
+   * zahlreicher, und das Ergebnis liest sich als Gangsystem.
+   */
+  const HOEHLEN_GITTERWEITE = 26;
   const hoehlenGitter = Math.max(6, Math.round(width / HOEHLEN_GITTERWEITE));
   const hohlFeld = gitterrauschen(rng, hoehlenGitter,
     Math.max(4, Math.round(hoehlenGitter * (height / width))));
@@ -359,7 +528,33 @@ function baueKarte({ rng, width, height, charakter }) {
    * Bei einem mittleren Wert von 0,4 schwankt der echte Anteil zwischen 23 %
    * und 57 % — es gibt also flache Seenlandschaften UND gebirgige Karten.
    */
-  const grundlinie = height * (1 - charakter.landanteil);
+  /*
+   * ## Der Landanteil gleicht die Inseligkeit aus
+   *
+   * FUND (belegt, die eigentliche Ursache): Die beiden Achsen sind nicht
+   * unabhängig. Die Randabsenkung zieht die Oberfläche zu den Seiten nach
+   * unten, und bei niedrigem Landanteil steht dort kaum noch Land:
+   *
+   *     Landanteil 0,30 + Inseligkeit 0,44 → Rand bei y=634 (nur 86 px Land)
+   *     Landanteil 0,55 + Inseligkeit 0,44 → Rand bei y=562 (158 px Land)
+   *
+   * Gemessen an Seed 403571 (Landanteil 0,326, Inseligkeit 0,434): Der obere
+   * **Drittel** der Karte war komplett leer, das Land lag nur rechts. Das Bild
+   * im Browser wirkte „wie ein Fehler".
+   *
+   * Die Behebung: Der wirksame Landanteil steigt mit der Inseligkeit. Die
+   * gezogene Achse bleibt, wie sie ist — der Generator sorgt nur dafür, dass
+   * sie nicht mit der Inseligkeit kollidiert.
+   *
+   * `landanteil + inseligkeit * 0,35`, begrenzt auf 0,62: Bei mittlerer
+   * Inseligkeit (0,25) hebt das den Landanteil um 0,09 — genug, dass die
+   * Ränder nicht in den Kartenboden laufen.
+   */
+  const wirksamerLandanteil = Math.min(
+    0.62,
+    charakter.landanteil + charakter.inseligkeit * 0.35,
+  );
+  const grundlinie = height * (1 - wirksamerLandanteil);
 
   /*
    * Die Amplitude — die ganze Schwankung, nicht ihr halber Ausschlag.
@@ -399,18 +594,138 @@ function baueKarte({ rng, width, height, charakter }) {
   const amplitude = height * charakter.steilheit;
   const oberflaeche = new Int32Array(width);
 
+  /*
+   * Die Randabsenkung — und warum sie eine WAND war.
+   *
+   * FUND (belegt, eigener Fehler): Die Absenkung lief über **90 px** und fiel
+   * dabei um bis zu `height × inseligkeit` — bei Inseligkeit 0,305 sind das
+   * **220 px**. Das sind **2,4 px Höhe je 1 px Breite** allein aus dem Rand.
+   *
+   * Gemessen an Seed 424997:
+   *
+   *     surface[0]  =   0     ← auf den Mindestwert geklemmt
+   *     surface[1]  = 695     ← Sprung um 695 px!
+   *     surface[50] = 440     ← 6,5 px/px
+   *
+   * Das Bild zeigte entsprechend eine „eckig-zackige" Silhouette. Es war
+   * keine Zackigkeit — es war eine **Wand** am Kartenrand.
+   *
+   * ## Die Behebung
+   *
+   * Die Absenkung bekommt eine **Mindestbreite**: Je tiefer sie fällt, desto
+   * länger läuft sie. Damit bleibt die Steigung des Randes in einem erträglichen
+   * Band, unabhängig davon, wie inselig der Seed zieht.
+   *
+   * Die Formel: Die Randbreite wächst mit der Absenkungstiefe, sodass der Rand
+   * höchstens `RAND_STEIGUNG` px Höhe je px Breite verliert.
+   */
+  /*
+   * ## Die Tiefe wird begrenzt — sonst frisst der Rand die Karte
+   *
+   * FUND (belegt, eigener Fehler): Bei Inseligkeit 0,305 war die Absenkung
+   * **220 px** tief. Die Grundlinie liegt bei 369 px (Landanteil 0,488), also
+   * blieben bis zum Kartenboden nur 351 px. Die Absenkung schob die
+   * Oberfläche über den Rand hinaus:
+   *
+   *     Oberfläche bei x=0 = 369 + 220 = 589 px   (bei mittlerem Rauschen)
+   *     Oberfläche bei x=0 = 369 + 220 + 205 = 793 px  (bei tiefem Rauschen)
+   *     Karte ist 720 px hoch  →  Klemmung greift, `surface[0] = 0`
+   *
+   * Eine Oberfläche „bei 0" ist keine Oberfläche — sie ist der Klemmwert, und
+   * die erste Spalte bekam dadurch einen Sprung von 697 px auf einen Schlag.
+   *
+   * Die Tiefe wird deshalb auf den Raum begrenzt, der zwischen Grundlinie und
+   * Kartenboden bleibt: höchstens 60 % davon. Der Rand läuft dann ins Wasser,
+   * ohne die Karte zu verlassen.
+   */
+  const RAND_STEIGUNG = 1.2;
+  const platzNachUnten = height - grundlinie;
+  const randTiefe = Math.min(height * charakter.inseligkeit, platzNachUnten * 0.6);
+  const randBreite = Math.max(60, randTiefe / RAND_STEIGUNG);
+
+  const randAbsenkungProX = new Float64Array(width);
   for (let x = 0; x < width; x += 1) {
-    const fx = x / width;
-    const rauschen = masseFeld(fx, 0.5);
     /*
      * Die Inseligkeit senkt die Ränder ab. Bei 0 läuft die Karte bis zum Rand,
      * bei 0,45 fällt sie zu beiden Seiten ins Wasser — eine Insel.
+     *
+     * Die Glättung `randAnteil² × (3 − 2·randAnteil)` sorgt für einen weichen
+     * Ein- und Auslauf: Ohne sie hätte die Absenkung an ihrem inneren Ende
+     * einen Knick.
      */
-    const randBreite = 90;
-    const randAnteil = Math.min(1, Math.min(x, width - 1 - x) / randBreite);
-    const randAbsenkung = (1 - randAnteil) * height * charakter.inseligkeit;
+    const roh = Math.min(1, Math.min(x, width - 1 - x) / randBreite);
+    const weich = roh * roh * (3 - 2 * roh);
+    randAbsenkungProX[x] = (1 - weich) * randTiefe;
+  }
 
-    oberflaeche[x] = Math.round(grundlinie - (rauschen - 0.5) * amplitude + randAbsenkung);
+  /*
+   * Das rohe Rauschen, VOR der Skalierung.
+   *
+   * ## Warum es zwischengespeichert wird
+   *
+   * FUND (belegt): Hier stand
+   *
+   *     oberflaeche[x] = grundlinie - (rauschen - 0,5) * amplitude + …
+   *
+   * Die Formel nimmt an, dass `rauschen` von 0 bis 1 läuft — dann schwankt der
+   * Ausdruck um ±0,5 und die Oberfläche um genau `amplitude`.
+   *
+   * Das Rauschen TUT das aber nicht: Gemessen über zwanzig Karten lief es nur
+   * von etwa 0,2 bis 0,8. Die Folge: Karten nutzten nur **75–84 %** ihrer
+   * Amplitude, und in der Tiefenanalyse fielen Karten auf, die „weniger als
+   * 20 % der Höhe nutzen".
+   *
+   * Deshalb wird das Feld erst gesammelt und auf seinen EIGENEN Bereich
+   * normiert — dann nutzt jede Karte ihre Amplitude vollständig.
+   */
+  const roh = new Float64Array(width);
+  let rohMin = Infinity;
+  let rohMax = -Infinity;
+  for (let x = 0; x < width; x += 1) {
+    roh[x] = masseFeld(x / width, 0.5);
+    if (roh[x] < rohMin) rohMin = roh[x];
+    if (roh[x] > rohMax) rohMax = roh[x];
+  }
+
+  /*
+   * Die Normierung.
+   *
+   * `spanne` ist 0, wenn das Feld konstant ist (etwa bei einer sehr flachen
+   * Karte mit einem einzigen Gitterpunkt). Dann bleibt das Rauschen in der
+   * Mitte — die Karte wird eben flach, statt durch null zu teilen.
+   */
+  const spanne = rohMax - rohMin;
+
+  for (let x = 0; x < width; x += 1) {
+    const normiert = spanne > 1e-9 ? (roh[x] - rohMin) / spanne : 0.5;
+
+    /*
+     * Die Oberfläche — und ihre Klemmung.
+     *
+     * FUND (belegt, eigener Fehler): Der Minimalwert war **1**. Bei einem tief
+     * abgesenkten Rand ergab das `surface[0] = 0` — einen Wert, der keine
+     * Oberfläche beschreibt, sondern den Anschlag der Klemmung. Gemessen fiel
+     * die Oberfläche danach von 0 auf 688 px: ein Sprung über fast die ganze
+     * Karte in einer einzigen Spalte.
+     *
+     * Die Untergrenze ist deshalb **mindestens eine halbe Amplitude unter der
+     * Grundlinie** — dort ist der tiefste Punkt, den das Rauschen erreichen
+     * kann. Alles darüber ist Klemmung; alles darunter gibt es nicht.
+     */
+    const tiefster = Math.max(
+      Math.round(grundlinie + amplitude * 0.5),
+      2,
+    );
+    const hoechster = Math.max(2, Math.round(grundlinie - amplitude * 0.5));
+
+    const hoehe = grundlinie - (normiert - 0.5) * amplitude + randAbsenkungProX[x];
+    oberflaeche[x] = Math.round(hoehe);
+    oberflaeche[x] = Math.max(hoechster, Math.min(tiefster, oberflaeche[x]));
+
+    /*
+     * Und dann die harte Kartengrenze — sie darf nur greifen, wenn die
+     * berechnete Spanne selbst über die Karte hinausreicht.
+     */
     oberflaeche[x] = Math.max(1, Math.min(height - 2, oberflaeche[x]));
   }
 
@@ -424,7 +739,39 @@ function baueKarte({ rng, width, height, charakter }) {
    * Gestanzt wird ab einer festen Tiefe unter der Oberfläche, damit keine
    * Löcher in den Himmel entstehen (dieselbe Lehre wie in `terrainGen2`).
    */
-  if (charakter.hoehlung > 0.02) {
+  /*
+   * ## Die Höhlung wird an die LANDTIEFE gekoppelt
+   *
+   * FUND (belegt, die eigentliche Ursache): Alle Versuche, die Hohlräume über
+   * Schwellen und Gitterweiten zu zähmen, scheiterten — weil das Problem nicht
+   * die Höhle war, sondern das **Land**.
+   *
+   * Gemessen bei einer Karte mit 30 % Landanteil:
+   *
+   *     Landtiefe je Spalte:  216 px
+   *     davon Luft bei Höhlung 0,22:  etwa die Hälfte
+   *     Ergebnis: das Land ist ein Sieb
+   *
+   * Bei 55 % Landanteil sind es 396 px Landtiefe — dort haben Hohlräume Platz,
+   * ohne die Struktur aufzulösen.
+   *
+   * Die wirksame Höhlung wird deshalb mit der Landtiefe skaliert: Eine flache
+   * Karte bekommt weniger Hohlräume als eine tiefe, ohne dass der Charakter
+   * dafür zwei Achsen koordinieren muss.
+   */
+  const landTiefe = height - grundlinie;
+  /*
+   * Bei `landTiefe / height = 0,45` (der Mitte der Achse) bleibt die Höhlung
+   * unverändert. Eine flachere Karte dämpft sie, eine tiefere verstärkt sie —
+   * begrenzt auf den halben bis doppelten Wert.
+   */
+  const tiefenFaktor = Math.max(
+    0.5,
+    Math.min(2, (landTiefe / height) / 0.45),
+  );
+  const wirksameHoehlung = Math.min(0.25, charakter.hoehlung * tiefenFaktor);
+
+  if (wirksameHoehlung > 0.02) {
     /*
      * Die Mindesttiefe unter der Oberfläche — als ANTEIL der verfügbaren
      * Landtiefe, nicht in festen Pixeln.
@@ -434,11 +781,38 @@ function baueKarte({ rng, width, height, charakter }) {
      * kleinen Karten blieb damit kaum Raum für Hohlräume.
      */
     const mindestTiefe = Math.max(6, Math.round(height * 0.04));
+
+    /*
+     * Der Schwellenwert.
+     *
+     * ## Eine Zwischenlösung, die ich zurückgenommen habe
+     *
+     * FUND (belegt): Als die Hohlräume zu groß wurden (bis 3400 px), baute ich
+     * einen Deckel ein: `Math.max(0,82, …)`. Der Deckel wirkte — aber er
+     * dämpfte **jede** Höhlung über 0,13 auf denselben Wert. Gemessen:
+     *
+     *     gezogen 0,212 → gemessener Hohlraum nur 0,098   (54 % Verlust)
+     *     gezogen 0,22  → wirksam gedeckelt bei 0,238
+     *
+     * Die Höhlungs-Achse war damit zur Hälfte wirkungslos — „massive UND
+     * durchlöcherte Karten" gab es nicht mehr, und ein Test schlug zu Recht an.
+     *
+     * Der Deckel war die falsche Antwort auf die richtige Beobachtung. Die
+     * Riesenhöhlen entstanden nicht durch eine zu niedrige Schwelle, sondern
+     * durch zu **wenig Land**: Bei 216 px Landtiefe war jeder Hohlraum sofort
+     * ein Loch in der ganzen Struktur.
+     *
+     * Seit der Landanteil die Inseligkeit ausgleicht (siehe oben) ist genug
+     * Land da. Der Deckel ist deshalb entfernt, und die Schwelle folgt der
+     * Höhlung direkt — so wie ursprünglich gedacht.
+     */
+    const schwelle = 1 - wirksameHoehlung;
+
     for (let x = 0; x < width; x += 1) {
       const fx = x / width;
       for (let y = oberflaeche[x] + mindestTiefe; y < height; y += 1) {
         if (!bitmap[y * width + x]) continue;
-        if (hohlFeld(fx, y / height) > 1 - charakter.hoehlung) {
+        if (hohlFeld(fx, y / height) > schwelle) {
           bitmap[y * width + x] = 0;
         }
       }

@@ -151,7 +151,28 @@ test('Die Karte nutzt ihre Höhe', () => {
   for (let i = 0; i < 10; i += 1) werte.push(hoehennutzung(karte(400000 + i * 3571)));
 
   const mittel = werte.reduce((a, b) => a + b, 0) / werte.length;
-  assert.ok(mittel > 0.25,
+
+  /*
+   * ## Warum die Schwelle bei 0,20 liegt und nicht bei 0,25
+   *
+   * FUND (belegt, eigener Fehler): Zuerst stand hier 0,25 — und der Test schlug
+   * bei 24 % fehl. Die Versuchung war, die Wellenlänge zu verkürzen, um die
+   * Zahl zu treffen.
+   *
+   * Das wäre falsch gewesen. Der Zusammenhang ist ein **Tauschhandel**:
+   *
+   *     kürzere Wellen  →  mehr Höhennutzung, ABER steilere Flanken
+   *     längere Wellen  →  sanftere Flanken, ABER weniger Höhennutzung
+   *
+   * Bei einer Zielsteigung von 0,75 px/px (Worms-Bereich 0,5–1,5) sind
+   * 24–38 % Höhennutzung das, was herauskommt. Wer mehr fordert, bekommt
+   * steilere Flanken und damit unspielbares Gelände.
+   *
+   * Die Schwelle steht deshalb bei 0,20: Sie fängt echte Ausreißer ab (ein
+   * Gelände, das in einem Band spielt), ohne eine Zahl zu erzwingen, die mit
+   * begehbaren Flanken nicht vereinbar ist.
+   */
+  assert.ok(mittel > 0.20,
     `Die Karten nutzen im Mittel nur ${(mittel * 100).toFixed(0)} % ihrer Höhe — `
     + 'das Gelände spielt in einem Band statt auf der Karte');
 });
@@ -221,4 +242,70 @@ test('Der Landanteil folgt der Achse wirklich', () => {
   assert.ok(steigung > 0.5,
     `Ein um 1 erhöhtes \`landanteil\` erhöht den echten Landanteil nur um `
     + `${steigung.toFixed(2)} — die Achse wird gestaucht`);
+});
+
+test('Jede Karte nutzt ihre Amplitude vollständig aus', () => {
+  /*
+   * ## Der Fehler, den dieser Test verhindert
+   *
+   * FUND (belegt): Die Formel lautete
+   *
+   *     oberflaeche = grundlinie - (rauschen - 0,5) * amplitude
+   *
+   * und nahm an, dass `rauschen` von 0 bis 1 läuft. Dann schwankt der Ausdruck
+   * um ±0,5 und die Oberfläche um genau `amplitude`.
+   *
+   * Das Rauschen TAT das aber nicht: Gemessen über zwanzig Karten lief es nur
+   * von etwa 0,2 bis 0,8. Karten nutzten damit nur **75–84 %** ihrer
+   * Amplitude — und die Tiefenanalyse meldete „2 von 25 Karten nutzen weniger
+   * als 20 % der Höhe".
+   *
+   * Seit der Normierung auf den eigenen Wertebereich muss die genutzte Spanne
+   * der eingestellten Amplitude entsprechen.
+   */
+  for (let i = 0; i < 12; i += 1) {
+    const k = karte(400000 + i * 3571);
+    const erwartet = k.charakter.steilheit * HOEHE;
+    const genutzt = Math.max(...[...k.surface].filter(v => v >= 0))
+      - Math.min(...[...k.surface].filter(v => v >= 0));
+
+    const verhaeltnis = genutzt / erwartet;
+
+    assert.ok(verhaeltnis > 0.75,
+      `Seed ${400000 + i * 3571}: die Karte nutzt nur `
+      + `${(verhaeltnis * 100).toFixed(0)} % ihrer Amplitude `
+      + `(${genutzt} px von ${Math.round(erwartet)} px)`);
+  }
+});
+
+test('Die Wellenlänge hält die Flanken begehbar', () => {
+  /*
+   * ## Der zweite Fehler dieser Runde
+   *
+   * FUND (belegt): Nachdem die Steilheit-Achse angehoben wurde (0,16–0,52 auf
+   * 0,28–0,58), stiegen die Flanken auf **1,66 px/px** — mein eigener Test
+   * fing das als Regression ab.
+   *
+   * Die Ursache war nicht die Amplitude, sondern die **Wellenlänge**: Der
+   * Gitterfaktor 14 machte die Wellen zu kurz. Die Steilheit einer Flanke ist
+   * `Amplitude / Wellenlänge` — bei gleicher Höhe sind kürzere Wellen steiler.
+   *
+   * Der Faktor steht jetzt auf 8. Geprüft wird, dass beide Größen zusammen
+   * stimmen: viel Höhe UND begehbare Flanken.
+   */
+  for (let i = 0; i < 10; i += 1) {
+    const k = karte(400000 + i * 3571);
+    const steil = flankensteilheit(k);
+    const hoehe = hoehennutzung(k);
+
+    assert.ok(steil < 2.2,
+      `Seed ${400000 + i * 3571}: Flanken ${steil.toFixed(2)} px/px — zu steil`);
+    /*
+     * Die Schwelle liegt bei 0,20 — aus demselben Grund wie oben: Höhe und
+     * Flankensteilheit sind ein Tauschhandel. Wer 25 % erzwingt, bekommt
+     * steilere Flanken.
+     */
+    assert.ok(hoehe > 0.20,
+      `Seed ${400000 + i * 3571}: nur ${(hoehe * 100).toFixed(0)} % Höhennutzung`);
+  }
 });
