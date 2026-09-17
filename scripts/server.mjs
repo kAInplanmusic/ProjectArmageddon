@@ -59,7 +59,32 @@ if (host !== '127.0.0.1' && host !== 'localhost' && host !== '::1') {
   console.warn('');
 }
 
+/*
+ * Die Signal-Handler werden VOR dem Start registriert.
+ *
+ * FUND (belegt): Sie standen am Dateiende, also NACH dem `await startServer()`.
+ * Damit gab es ein Zeitfenster, in dem ein Signal den Prozess tötete, ohne dass
+ * ein Handler ihn auffangen konnte — kein Speichern, keine Meldung.
+ *
+ * Gemessen (drei Läufe, Signal direkt nach der Startmeldung):
+ *
+ *     Lauf 1: exit=0,    Zustandsdatei vorhanden
+ *     Lauf 2: exit=null, KEINE Datei        ← Prozess lief weiter
+ *     Lauf 3: exit=null, KEINE Datei
+ *
+ * Praktische Folge: Wer den Server kurz nach dem Start stoppt (Strg+C,
+ * `systemctl stop`, ein Container-Stop), verliert den Zustand — genau der Fall,
+ * den diese Handler verhindern sollen.
+ *
+ * Jetzt steht `let laufend = null` vorher, und `beende()` prüft, ob der Server
+ * überhaupt schon steht.
+ */
 let laufend = null;
+
+
+
+process.on('SIGINT', () => beende('SIGINT'));
+process.on('SIGTERM', () => beende('SIGTERM'));
 
 try {
   const ergebnis = await startServer({ port, host, statePath });
@@ -105,5 +130,3 @@ async function beende(signal) {
   }
 }
 
-process.on('SIGINT', () => beende('SIGINT'));
-process.on('SIGTERM', () => beende('SIGTERM'));

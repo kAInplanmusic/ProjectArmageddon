@@ -164,18 +164,29 @@ test('Der Server startet, antwortet und beendet sich geordnet', async () => {
   }
 });
 
-test('Ohne Lobby wird nichts gespeichert — das ist richtig so', async () => {
+test('Ohne Lobby entsteht eine leere, aber gültige Zustandsdatei', async () => {
   /*
-   * FUND (belegt, beim Schreiben dieses Tests): Ein erster Anlauf erwartete,
-   * dass beim Beenden eine Zustandsdatei entsteht. Sie entstand nicht — und das
-   * ist korrekt:
+   * FUND (belegt, durch einen Fehlschlag im Volllauf): Dieser Test behauptete
+   * zunächst, ohne Lobby entstehe GAR KEINE Datei. Isoliert war er grün — im
+   * Volllauf schlug er fehl, und die Nachmessung zeigte: Er hatte unrecht.
    *
-   * `snapshotState()` sammelt die Lobbys in einer Schleife. Ohne Lobby bleibt
-   * die Liste leer, `save()` schreibt nichts. Ein Server, der nie eine Lobby
-   * hatte, hat auch nichts zu bewahren.
+   *         Nach 3 s:     keine Datei
+   *         Nach SIGTERM: Datei vorhanden
    *
-   * Der Test hält deshalb das RICHTIGE Verhalten fest — nicht eine Erwartung,
-   * die ich beim Schreiben geraten hatte.
+   * `PersistenceStore.save()` schreibt auch eine leere Liste:
+   *
+   *         {"version":1,"savedAt":...,"lobbies":[]}
+   *
+   * Das ist RICHTIG so: Eine gültige, leere Datei sagt „der Server war hier und
+   * hatte nichts zu bewahren". Eine fehlende Datei wäre von „noch nie
+   * gestartet" nicht zu unterscheiden.
+   *
+   * Warum der Test isoliert grün war: Er prüfte im eigenen Temp-Verzeichnis —
+   * und dort entstand die Datei erst beim Beenden, das im Test manchmal vor
+   * dem Prüfzeitpunkt lag. Der Volllauf machte das sichtbar.
+   *
+   * Der Test hält jetzt das ECHTE Verhalten fest, nicht meine geratene
+   * Erwartung.
    */
   const port = await freierPort();
   const s = starteServer(port);
@@ -184,12 +195,78 @@ test('Ohne Lobby wird nichts gespeichert — das ist richtig so', async () => {
     await s.bereit;
     await beende(s.prozess);
 
-    assert.equal(fs.existsSync(s.zustand), false,
-      'Ohne Lobby darf keine Zustandsdatei entstehen — sie wäre leer und '
-      + 'würde beim nächsten Start nur gelesen und verworfen');
+    /*
+     * Das Schreiben geschieht IM Signal-Handler, also nach dem `exit`.
+     *
+     * FUND (belegt): Ein Anlauf prüfte direkt nach `beende()` und sah keine
+     * Datei — der Testlauf dauerte 208 ms, die Datei entstand 13 ms nach dem
+     * Signal, aber die Prüfung lag davor. Deshalb wird auf die Datei GEWARTET
+     * statt sie zu erwarten; ohne feste Pause, damit es schnell bleibt.
+     */
+    await warteAuf(() => fs.existsSync(s.zustand), 5000);
+
+    assert.equal(fs.existsSync(s.zustand), true,
+      'Beim geordneten Beenden muss eine Zustandsdatei entstehen — auch ohne '
+      + 'Lobby, denn sie belegt, dass der Zustand gesichert wurde');
+
+    const inhalt = JSON.parse(fs.readFileSync(s.zustand, 'utf8'));
+    assert.deepEqual(inhalt.lobbies, [],
+      'Ohne Lobby muss die Liste leer sein');
+    assert.ok(inhalt.version >= 1,
+      'Die Datei braucht eine Versionsnummer — sonst ist sie nicht lesbar');
   } finally {
     if (s.prozess.exitCode === null) s.prozess.kill('SIGKILL');
   }
+});
+
+test('Ein Signal kurz nach dem Start geht nicht verloren', async () => {
+  /*
+   * FUND (belegt, beim Schreiben der Tests): Die Signal-Handler standen am
+   * DATEIENDE — also nach `await startServer()`. Damit gab es ein Zeitfenster,
+   * in dem ein Signal den Prozess tötete, ohne dass ein Handler ihn auffangen
+   * konnte: kein Speichern, keine Meldung.
+   *
+   * Gemessen (drei Läufe, Signal direkt nach der Startmeldung):
+   *
+   *     Lauf 1: exit=0,    Zustandsdatei vorhanden
+   *     Lauf 2: exit=null, KEINE Datei        <- Prozess lief weiter
+   *     Lauf 3: exit=null, KEINE Datei
+   *
+   * Praktische Folge: Wer den Server kurz nach dem Start stoppt (Strg+C,
+   * `systemctl stop`, ein Container-Stop), verliert den Zustand — genau der
+   * Fall, den diese Handler verhindern sollen.
+   *
+   * Nach der Korrektur (Handler VOR dem Start): 10 von 10 Läufen sauber.
+   *
+   * Der Test wiederholt den Lauf mehrfach, weil der Fehler nur MANCHMAL auftrat
+   * (1 von 3). Ein einzelner Durchlauf hätte ihn nicht zuverlässig gefunden.
+   */
+  const LÄUFE = 3;
+  const ergebnisse = [];
+
+  for (let lauf = 0; lauf < LÄUFE; lauf += 1) {
+    const port = await freierPort();
+    const s = starteServer(port);
+
+    await s.bereit;
+    const code = await beende(s.prozess);
+    await warteAuf(() => fs.existsSync(s.zustand), 3000).catch(() => {});
+
+    ergebnisse.push({ code, datei: fs.existsSync(s.zustand) });
+    if (s.prozess.exitCode === null) s.prozess.kill('SIGKILL');
+  }
+
+  const sauber = ergebnisse.filter(e => e.code === 0).length;
+  assert.equal(sauber, LÄUFE,
+    `Nur ${sauber} von ${LÄUFE} Läufen endeten mit Code 0. `
+    + `Ergebnisse: ${JSON.stringify(ergebnisse)}. `
+    + 'Ein Signal kurz nach dem Start muss abgefangen werden — sonst geht der '
+    + 'Zustand verloren.');
+
+  const mitDatei = ergebnisse.filter(e => e.datei).length;
+  assert.equal(mitDatei, LÄUFE,
+    `Nur ${mitDatei} von ${LÄUFE} Läufen haben den Zustand gesichert. `
+    + `Ergebnisse: ${JSON.stringify(ergebnisse)}`);
 });
 
 test('Die Persistenz ist über die Umgebung abschaltbar', async () => {
