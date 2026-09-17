@@ -1901,6 +1901,50 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       (`docs/betrieb.md`, Abschnitt 5). Ohne gespeicherte Partiedaten gibt es
       nichts auszuwerten — dieselbe Entscheidung wie bei den Konten.
 
+### H. Umstrukturierung zum Server-Spiel
+
+**Auftrag (2026-09-17):** Das Browser-Spiel soll auf gemieteten Instanzen laufen
+(RunPod GPU / Hetzner CPU, sekundengenau abgerechnet), in Full-HD bis 4K, mit
+2–8 Spielern, großen Karten, 150 Waffen, KI-NPCs, zerstörbaren
+Mehrkomponentenkarten.
+
+**Zahlen liegen vor** (`docs/skalierung.md`, `docs/testgrenzen.md`):
+
+| Szenario | Spieler | Karte | Rechenlast | Netz je Sek. |
+|---|---|---|---|---|
+| Duell | 2 | 1280×720 | 5,8 % Kern | ~0 MB |
+| Kleines Match | 4 | 1920×1080 | 11,5 % Kern | ~0 MB |
+| Großes Match | 6 | 2560×1440 | 17,3 % Kern | ~1 MB |
+| Krieg | 8 | 3840×2160 | 23,1 % Kern | ~2 MB |
+| Krieg + Mehrkomponenten | 8 | 3840×2160 | 36,9 % Kern | ~2 MB |
+
+- [x] **Rechenlast gemessen.** `npm run measure:load`, `npm run plan:scale`.
+      **Befund:** Die Simulation ist *kein* Engpass — ein 8-Spieler-Match kostet
+      23 % eines Kerns. Ein CX32 für ~7 €/Monat trägt einen echten Betrieb.
+- [x] **Engpass identifiziert: das NETZ, nicht die CPU.** Ein Snapshot geht 20×
+      je Sekunde an jeden Spieler; bei 8 Spielern sind das 160 Sendungen je
+      Sekunde. Ein 100-Mbit-Anschluss trägt nur 5 Krieg-Matches, ein Kern trägt
+      rechnerisch 3 — der Anschluss ist der begrenzende Teil.
+- [x] **GPU-Frage beantwortet.** Die Simulation braucht keine GPU. RunPod lohnt
+      als **Werkzeug** (Kulissen vorab erzeugen: wenige Cent), nicht als
+      Betriebsmittel.
+- [x] **Testgrenzen benannt.** `docs/testgrenzen.md` — fünf Grenzen, die
+      Rangfolge und was keine Technik löst.
+- [x] **Rauchtest gebaut.** `npm run smoke:fast` — 24 s statt 9,4 min
+      (23× schneller). Prüft Verkabelung, Lint, Kern-Tests und den Server-Start
+      inklusive Zustandssicherung. Er hat sofort 5 Lint-Fehler gefunden.
+- [ ] **Delta-Snapshots.** Der größte Einzelgewinn: nur Änderungen statt
+      Vollzustand senden. Senkt die Netzlast um Faktor 5–20. *Technisch, keine
+      Design-Entscheidung — kann sofort begonnen werden.*
+- [ ] **Teamgröße über 3 öffnen.** Die Sperre steht in `server/lobby.js`
+      (`playersPerTeam > 3` → Fehler). Ohne sie gibt es keine 6er- und
+      8er-Matches. *Ändert das Spielgefühl — Entscheidung nötig.*
+- [ ] **4K in `MAP_SIZES` eintragen.** Die Tabelle nimmt jede Größe; die Kamera
+      muss mitskalieren (sonst werden die Figuren kleiner). *Gestaltung.*
+- [ ] **Sound.** Bestand nicht geprüft.
+- [ ] **Mehrkomponenten-Karten.** Heute 1D-Terrain (zerstörbar). Höhlen, Böden,
+      Etagen fehlen. *Größte Einzelarbeit des Umbaus.*
+
 ## Übernommen aus der alten `todo.md`
 
 Die alte Datei wurde gelöscht. Ihre Punkte waren fast alle erledigt (siehe Kopf),
