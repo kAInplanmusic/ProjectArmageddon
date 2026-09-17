@@ -1125,7 +1125,26 @@ export class MatchController {
       weaponId: weapon.index,
       // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
       damage: weapon.damage * profile.damageMultiplier * this.#statuses.damageMultiplier(playerId),
-      blastRadius: weapon.blastRadius || 24,
+      /*
+       * Der Mindestradius ist ein TREFFERFENSTER, keine Explosion.
+       *
+       * FUND (belegt): Hier stand `weapon.blastRadius || 24` — ein pauschaler
+       * Fallback von 24 px für JEDE Waffe ohne Flächenwirkung (60 Projektile).
+       * Für ein Geschoss, das aus der Mündung heraus beschleunigt, ist das ein
+       * sinnvolles Trefferfenster.
+       *
+       * Für eine WURFWAFFE ist es falsch: Sie wird direkt am Körper abgeworfen
+       * und bleibt durch ihre niedrige Geschwindigkeit (Faktor 0,3–0,6) mehrere
+       * Ticks in diesem Radius. Gemessen: Der Baseballschläger verursachte am
+       * SCHÜTZEN 104 Schaden bei jedem Winkel und am Ziel 0 — er traf sich
+       * selbst, statt zu fliegen.
+       *
+       * Wurfwaffen bekommen deshalb KEIN Trefferfenster: Sie treffen direkt
+       * (der Besitzer ist vom Treffer ausgeschlossen, siehe projectileSystem)
+       * oder gar nicht. Ihr Krater entsteht über `terrainDamage`.
+       */
+      blastRadius: weapon.blastRadius
+        || (weapon.category === 'melee' ? 0 : 24),
       knockback: weapon.knockback,
       drag: 0.995,
       gravityScale: weapon.gravityScale || 1,
@@ -1141,6 +1160,21 @@ export class MatchController {
       /**
        * Zünder in Ticks (0 = Aufprallwaffe). Eine Granate explodiert nicht beim
        * Aufprall, sondern nach Ablauf — sie bleibt liegen und zündet.
+       *
+       * FUND (offen, gemessen): Bei ALLEN 18 Zünder-Waffen ist der Zünder länger
+       * als die Flugzeit. Ein Projektil fliegt bei voller Kraft rund 1 Sekunde
+       * (Ticks bis zum Aufprall, bei 60 Hz), die Zünder stehen auf 1 bis 5
+       * Sekunden. Jede dieser Waffen zündet damit erst NACH der Landung.
+       *
+       * Für Granaten ist das gewollt. Für „Explosiver Energieball",
+       * „Meteoritenbrocken", „Meteorregen" und „Höllenkanone" verspricht der
+       * Name einen Einschlag statt einer Liegezeit — dort ist es vermutlich
+       * falsch. Belegt: Der Energieball ist nach der Wurf-Behebung die EINZIGE
+       * Waffe, die `npm run balance:sweep` noch als „ohne Wirkung" meldet.
+       *
+       * Bewusst NICHT automatisch korrigiert: Eine Unterscheidung nach Namen
+       * wäre Namensdeutung. Das ist eine Design-Entscheidung, siehe
+       * MASTERDOTO.md, „Bekannte Grenzen".
        */
       fuseTicks: this.#fuseTicksFor(weapon),
       alive: 1,
@@ -2138,9 +2172,29 @@ export class MatchController {
    * @returns {{x:number,y:number}|null}
    */
   #findMuzzle(originX, originY, dirX, dirY, shooterId = null) {
-    // Die Schützenposition ist die Fußposition auf dem Boden. Ein Strahl, der
-    // dort beginnt, liegt im festen Terrain und endet sofort. Deshalb startet
-    // die Suche auf halber Körperhöhe — dort ist die Figur tatsächlich "frei".
+    /*
+     * Der Abschuss beginnt in der Körpermitte.
+     *
+     * `originY` ist die KOPFposition des Schützen: Beim Aufstellen setzt
+     * `#spawnPlayers` sie auf `surfaceY - PLAYER_HALF_HEIGHT - 2`, der Körper
+     * reicht also von `originY` bis `originY + 20`.
+     *
+     * ## Was hier zwischendurch stand — und warum es falsch war
+     *
+     * Im Zug „Nahkampfwaffen werfen" stand hier kurz `originY - PLAYER_HALF_HEIGHT`
+     * mit der Begründung, ein flacher Wurf grübe sich sonst ein. Das war ein
+     * Fehlschluss aus einer Messung auf einer Steigung: Der Baseballschläger
+     * schlug nach 6 px ein, weil der HANG vor ihm anstieg, nicht weil der
+     * Abschuss zu tief lag.
+     *
+     * `originY - PLAYER_HALF_HEIGHT` setzt den Start 10 px ÜBER den Kopf. Folge:
+     * Jeder Schuss fliegt weitere Strecken — gemessen traf der Wasserblaster
+     * (`pa_063`) auf 90 px nicht mehr, sein Einschlag wanderte von 310 auf 484
+     * (`tests/specials.test.js`, „Wasserschub").
+     *
+     * Die Körpermitte ist die richtige Stelle: Sie liegt innerhalb der Figur
+     * (5 px unter der Kopfposition) und damit frei vom Boden.
+     */
     const bodyY = originY - PLAYER_HALF_HEIGHT / 2;
     for (let distance = 0; distance <= MUZZLE_SEARCH_DISTANCE; distance += 2) {
       const x = originX + dirX * distance;

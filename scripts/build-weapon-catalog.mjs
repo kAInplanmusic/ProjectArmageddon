@@ -458,12 +458,131 @@ const SPECIAL_WITHOUT_DAMAGE = new Set([
  */
 export const REFERENCE_PROJECTILE_SPEED = 70;
 
+/**
+ * Nahkampfwaffen flugfähig machen — als WURF.
+ *
+ * ## Der Befund
+ *
+ * Gemessen mit `npm run balance`: **21 der 150 Waffen haben Schadenswerte
+ * (20–52), aber keine Wirkung.** Alle sind `category: 'melee'`. Der Grund steht
+ * in den Daten:
+ *
+ *   projectileSpeed = 0   -> es fliegt nichts
+ *   blastRadius     = 0   -> es explodiert nichts
+ *
+ * Der Motor kennt `melee` nicht — es gibt keine Nahkampfmechanik. Die Waffe ist
+ * ausrüstbar und abfeuerbar, aber es geschieht nichts. Der Balance-Bericht
+ * nannte das „Datenmangel"; das ist ungenau: Die Schadenswerte SIND vorhanden,
+ * es fehlt die Mechanik.
+ *
+ * ## Warum Wurf und nicht Nahkampf-Zone
+ *
+ * Drei Wege waren denkbar (Wurf, aufgestellte Zone, Einträge streichen). Gewählt
+ * ist der WURF, weil er den bestehenden Spielrahmen nicht umbaut:
+ *
+ *  - Der Motor hat bereits einen Projektilpfad; hier werden nur dessen
+ *    Eingangswerte gesetzt. Keine neue Systemart, kein neuer Zustand.
+ *  - Das Spielgefühl bleibt Artillerie: zielen, Kraft dosieren, Flugbahn lesen.
+ *  - Eine „aufgestellte Zone" hätte neben dem Geschütz eine ZWEITE stationäre
+ *    Mechanik geschaffen — zwei Dinge, die dasselbe tun, sind eine schlechtere
+ *    Antwort als eines, das beides kann.
+ *
+ * ## Was der Wurf NICHT ist
+ *
+ * Kein Fernkampf: Die Reichweite bleibt bewusst kurz. Ein Katana, das über die
+ * halbe Karte fliegt, wäre keine Nahkampfwaffe mehr, sondern ein besserer
+ * Speer — und die Waffe hieße weiter Klinge. Die Physik sagt „geworfen", der
+ * Name sagt „geschlagen"; die Reichweite hält den Widerspruch klein.
+ *
+ * ## Verhältnis zur tatsächlichen Wurfweite im Match
+ *
+ * `simulateProjectileReach` rechnet mit NEUTRALEM Klassenprofil (Faktor 1,0) und
+ * einer Bahn, die auf Zielhöhe endet. Im Match gilt beides nicht:
+ *
+ *   - `launchSpeedMultiplier` der Klasse dämpft die Startgeschwindigkeit
+ *     (scout/brawler: 0,642),
+ *   - der Abschuss beginnt auf Kopfhöhe und fällt damit ~10 px tiefer.
+ *
+ * Gemessen (Karte `open`, volle Kraft, bester Winkel):
+ *
+ *   Plasma-Blaster (Fernkampf)  maxRange 850  ->  tatsächlich 317 px (Faktor 0,37)
+ *   Baseballschläger (Wurf)     maxRange 110  ->  tatsächlich  30 px (Faktor 0,28)
+ *
+ * Der Faktor ~0,37 gilt für ALLE Waffen, nicht nur für Würfe — er ist eine
+ * Eigenschaft der Simulation, nicht der Wurf-Ableitung. `maxRange` beschreibt
+ * damit die Reichweite bei neutralem Profil (die Obergrenze), nicht die im
+ * Spiel erreichbare. Das ist als **Bekannte Grenze** in MASTERDOTO.md
+ * festgehalten; die Zahl hier stillschweigend zu korrigieren wäre eine
+ * Balance-Änderung an allen 150 Waffen.
+ *
+ * @param {object} weapon - Roheintrag mit `category`, `knockback`, `damage`
+ * @returns {{projectileSpeed: number, gravityScale: number, bounces: number}}
+ *   Werte, die den Wurf beschreiben. `bounces: 1` — eine geworfene Klinge
+ *   springt einmal ab, öfter wäre sie ein Ball.
+ */
+export function meleeThrowFor(weapon) {
+  /*
+   * Die Wurfgeschwindigkeit kommt aus dem KNOCKBACK, nicht aus einem neuen
+   * erfundenen Wert: `knockback` ist der einzige vorhandene Ausdruck dafür, wie
+   * viel WUCHT in der Waffe steckt (30 bis 82 in den Daten). Eine schwere Waffe
+   * wird langsamer geworfen — deshalb ist der Wurf DECKEND, nicht steigernd.
+   *
+   * 56 ist die Mitte des tatsächlichen Knockback-Bereichs (30..82), sie
+   * bildet also den Normalfall ab, ohne einen Wert zu erfinden: Der Faktor ist 1
+   * für eine durchschnittliche Waffe.
+   */
+  const KB_MITTE = 56;
+  const KB_SPANNE = 26; // halbe Breite des Bereichs (56-30 = 26, 82-56 = 26)
+  const wucht = Number.isFinite(weapon?.knockback) ? weapon.knockback : KB_MITTE;
+  const faktor = 1 - ((wucht - KB_MITTE) / KB_SPANNE) * 0.2;
+
+  return {
+    // 34 von 70: deutlich langsamer als ein Geschoss — es ist eine Wurfwaffe.
+    projectileSpeed: Number((34 * Math.min(1.2, Math.max(0.8, faktor))).toFixed(4)),
+    // Etwas stärkere Krümmung: Handwaffen werden flacher geworfen als ein
+    // Mörser, aber sie sollen sichtbar fallen — sonst wirkt es wie ein Schuss.
+    gravityScale: 1.15,
+    bounces: 1,
+  };
+}
+
+/**
+ * Ist dieser Eintrag eine Nahkampfwaffe ohne Wirkung?
+ *
+ * Die Bedingung ist bewusst ENG: `category: 'melee'` UND kein Projektil UND
+ * keine Explosion. Ein melee-Eintrag, der später einen eigenen
+ * `projectileSpeed` bekommt, wird NICHT überschrieben — die Daten haben dann
+ * Vorrang vor der Ableitung.
+ */
+export function brauchtWurf(weapon) {
+  return weapon?.category === 'melee'
+    && !(Number.isFinite(weapon.projectileSpeed) && weapon.projectileSpeed > 0)
+    && !(Number.isFinite(weapon.blastRadius) && weapon.blastRadius > 0);
+}
+
 /** Geschwindigkeitsfaktor aus den Quelldaten (1 = Normaltempo). */
 export function speedFactorFor(weapon) {
   const roh = weapon.projectileSpeed;
   if (!Number.isFinite(roh) || roh <= 0) return 1;
-  // Begrenzt, damit ein Ausreißer in den Quelldaten die Bahn nicht unspielbar macht.
-  return Number(Math.min(1.6, Math.max(0.6, roh / REFERENCE_PROJECTILE_SPEED)).toFixed(4));
+  /*
+   * Die Untergrenze hängt von der ART der Waffe ab.
+   *
+   * Für Geschosse gilt 0,6: Ein Ausreißer in den Quelldaten darf die Bahn nicht
+   * unspielbar machen, und ein langsameres Geschoss als 0,6 wäre kaum noch
+   * steuerbar.
+   *
+   * Für WÜRFE gilt 0,3: Eine geworfene Waffe ist absichtlich deutlich langsamer
+   * (Wurfgeschwindigkeit 27–41 gegen 70 bei Geschossen). Mit der 0,6-Grenze
+   * wurden ALLE Würfe auf denselben Faktor geklemmt — gemessen ergaben der
+   * Baseballschläger (27,2) und die Schaufel (40,8) identische Werte, und die
+   * Differenzierung über `knockback` ging verloren.
+   *
+   * Die Grenze wird NICHT global gesenkt: Das würde die Bahnkurven aller
+   * Geschosse verändern — eine Balance-Änderung an 129 Waffen, um 21 zu retten.
+   * Belegt mit `tests/melee-throw.test.js`.
+   */
+  const untergrenze = weapon.category === 'melee' ? 0.3 : 0.6;
+  return Number(Math.min(1.6, Math.max(untergrenze, roh / REFERENCE_PROJECTILE_SPEED)).toFixed(4));
 }
 
 /** Referenzwerte der Simulation — dieselben Größen wie im Motor. */
@@ -532,7 +651,15 @@ export const HITSCAN_RANGE_BY_CATEGORY = Object.freeze({
   ultimate: 900,
 });
 
-const MIN_RANGE = 110;
+/**
+ * Untere Grenze der Reichweite.
+ *
+ * Sie ist keine Physik, sondern eine Spielbarkeitsgrenze: Ein Wurf, der
+ * rechnerisch 82 px weit fliegt, bekäme 110 — darunter träfe man nie etwas.
+ * Deshalb exportiert, damit Tests den Fall von einer echten Abweichung
+ * unterscheiden können (siehe `tests/range-cooldown.test.js`).
+ */
+export const MIN_RANGE = 110;
 const MAX_RANGE = 1400;
 
 /**
@@ -585,7 +712,6 @@ const weapons = raw.weapons.map(entry => {
   const stats = entry.stats ?? {};
   const balance = entry.balance ?? {};
   const category = entry.category ?? 'projectile';
-  const isMelee = category === 'melee';
 
   const projectileSpeed = pickPositive(stats, 'projectile_speed', 'projectileSpeed');
   const blastRadius = pickPositive(stats, 'blast_radius', 'blastRadius');
@@ -650,7 +776,17 @@ const weapons = raw.weapons.map(entry => {
     targeting: entry.mechanic?.targeting ?? null,
     // Abgeleitete Feuerart: Hitscan ohne Flugzeit, Projektil mit Flugzeit.
     // Muss VOR maxRange stehen: die Reichweite hängt von der Feuerart ab.
-    delivery: isMelee || projectileSpeed <= 0 ? 'hitscan' : 'projectile',
+    //
+    // FUND (belegt): Hier stand `isMelee || projectileSpeed <= 0 ? 'hitscan'`.
+    // Die Nahkampfwaffen wurden damit als HITSCAN eingestuft — sie hatten eine
+    // `maxRange`, aber keinen Flug und keine Wirkung am Ziel. Zusammen mit
+    // `projectileSpeed: 0` und `blastRadius: 0` machte das 21 Waffen komplett
+    // wirkungslos (`npm run balance`: „Ohne jede Wirkung: 59").
+    //
+    // `isMelee` ist deshalb ENTFERNT: Eine Nahkampfwaffe ist eine Wurfwaffe und
+    // fliegt (siehe `meleeThrowFor()` weiter unten, das `delivery` mitzieht).
+    // Ein Hitscan bleibt, wer keinen Flugweg hat UND kein Nahkampf ist.
+    delivery: projectileSpeed <= 0 ? 'hitscan' : 'projectile',
   };
 
   // Eigene Identität: Die acht Waffen der vier Dubletten-Paare bekommen
@@ -691,8 +827,39 @@ const weapons = raw.weapons.map(entry => {
     weapon.damageSource = 'derived';
   }
 
-  // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam.
+  /*
+   * Nahkampfwaffen ohne Wirkung werden flugfähig — als WURF.
+   *
+   * FUND (belegt, `npm run balance`): 21 Waffen der Kategorie `melee` haben
+   * Schadenswerte (20–52), aber `projectileSpeed: 0` UND `blastRadius: 0`. Der
+   * Motor kennt keine Nahkampfmechanik: Die Waffe ist ausrüstbar und abfeuerbar,
+   * aber es geschieht nichts. Siehe `meleeThrowFor()`.
+   *
+   * Die Reihenfolge ist WESENTLICH: Der Wurf muss VOR `speedFactorFor` stehen,
+   * weil der Faktor aus `projectileSpeed` gebildet wird. Stand er danach,
+   * bekam die Waffe `speedFactor: 1` (Normaltempo, weil `projectileSpeed` noch
+   * 0 war) und flog mit 70 statt mit 27 — gemessen: der Baseballschläger galt
+   * als 850 px weit statt als 110. Ein Test hält das fest
+   * (`tests/melee-throw.test.js`, „Wurf vor dem Geschwindigkeitsfaktor").
+   *
+   * Und VOR `deriveMaxRange`, damit die Reichweite den tatsächlichen Wurf
+   * beschreibt und nicht eine Bahn, die es nicht gibt.
+   */
+  if (brauchtWurf(weapon)) {
+    Object.assign(weapon, meleeThrowFor(weapon));
+    /*
+     * Der Zustellweg muss mitziehen: Ohne das bliebe die Waffe als `instant`
+     * oder `support` eingestuft, obwohl sie jetzt fliegt — und der Motor würde
+     * sie weiterhin nicht als Projektil behandeln.
+     */
+    weapon.delivery = 'projectile';
+    weapon.wurfAbgeleitet = true;
+  }
+
+  // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam. Steht
+  // NACH der Wurf-Ableitung, damit auch der Wurf seinen Faktor bekommt.
   weapon.speedFactor = speedFactorFor(weapon);
+
   // Reichweite: physikalisch hergeleitet, nicht der Konstantwert 600 für alle.
   weapon.maxRange = deriveMaxRange(weapon);
   // Nachladezeit in Zügen. Eine eigene Vorgabe hat Vorrang: manche Waffen
@@ -735,11 +902,7 @@ const file = `/**
 export const REFERENCE_PROJECTILE_SPEED = ${REFERENCE_PROJECTILE_SPEED};
 
 /** Geschwindigkeitsfaktor einer Waffe aus den Quelldaten. */
-export function speedFactorFor(weapon) {
-  const roh = weapon.projectileSpeed;
-  if (!Number.isFinite(roh) || roh <= 0) return 1;
-  return Number(Math.min(1.6, Math.max(0.6, roh / REFERENCE_PROJECTILE_SPEED)).toFixed(4));
-}
+export ${speedFactorFor.toString().trim()}
 
 /**
  * Laenge des Strahls bzw. Lebensdauer-Basis fuer Projektile, in Pixeln.

@@ -1961,6 +1961,79 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 
+- **Nahkampfwaffen waren wirkungslos — BEHOBEN (58 von 59 Waffen).**
+
+  *Der Befund:* `npm run balance` meldete **59 der 150 Waffen „ohne jede
+  Wirkung"**. Die größte Gruppe waren alle **21 Nahkampfwaffen**: Sie hatten
+  Schadenswerte (20–52), aber `projectileSpeed: 0` und `blastRadius: 0`. Der
+  Motor kennt keine Nahkampfmechanik — die Waffe war ausrüstbar und abfeuerbar,
+  aber es geschah nichts.
+
+  *Die Ursache war ein Codefehler, kein Datenmangel:* Der Generator stufte sie
+  als `hitscan` ein (`isMelee || projectileSpeed <= 0`). Ein Hitscan ohne
+  Flugweg trifft nichts.
+
+  *Die Behebung:* Nahkampf wirkt als **WURF** (`meleeThrowFor`). Die Wurfstärke
+  kommt aus dem `knockback` (der einzige vorhandene Ausdruck für Wucht) und ist
+  **deckend** — eine schwere Waffe fliegt kürzer. Gewählt wurde der Wurf, weil
+  er den bestehenden Projektilpfad nutzt: keine neue Systemart, kein zweites
+  stationäres Element neben dem Geschütz.
+
+  *Vier zusammenhängende Fehler kamen dabei zum Vorschein:*
+
+  | | Fehler | Wirkung |
+  |---|---|---|
+  | 1 | `isMelee` in der `delivery`-Ableitung | 21 Waffen als Hitscan eingestuft |
+  | 2 | Wurf-Ableitung stand HINTER `speedFactorFor` | `speedFactor: 1` — Wurf flog mit 70 statt 27; galt als „850 px weit" |
+  | 3 | `speedFactorFor` existierte ZWEIMAL (Generator + eingebettet im Katalog) | eine Korrektur traf nur eine Kopie |
+  | 4 | `blastRadius \|\| 24` gab jeder Waffe ein 24-px-Trefferfenster | der Wurf traf den WERFER (104 Schaden am Schützen, 0 am Ziel) |
+
+  *Wirkung, gemessen mit `npm run balance:sweep`:*
+
+  | | vorher | nachher |
+  |---|---|---|
+  | Ohne jede Wirkung | 59 Waffen | **1 Waffe** |
+  | Schaden am Ziel | 55 Waffen | **113 Waffen** |
+  | Median Shots-to-Kill | 67 | **13** |
+
+  Die eine verbleibende Waffe ist „Explosiver Energieball" — siehe die
+  Zünder-Grenze unten.
+
+  *Belegt durch:* `tests/melee-throw.test.js` (11, Ableitung),
+  `tests/melee-throw-match.test.js` (5, Wirkung im Match inkl. Gegenprobe, dass
+  sich der Werfer nicht selbst trifft).
+
+- **Die Zünder ALLER 18 Zünder-Waffen sind länger als die Flugzeit.**
+
+  Gemessen: Die Flugzeit eines Projektils beträgt bei voller Kraft rund
+  **1 Sekunde**, die Zünder stehen auf **1 bis 5 Sekunden**. Jede Zünder-Waffe
+  zündet damit erst **nach** der Landung.
+
+  Für Granaten ist das gewollt — sie sollen liegen bleiben und dann zünden. Für
+  „Explosiver Energieball", „Meteoritenbrocken", „Meteorregen" und
+  „Höllenkanone" ist es vermutlich falsch: Diese Namen versprechen einen
+  Einschlag, nicht eine Liegezeit. Ein einzelner Test deckt es auf: Nur der
+  Energieball bleibt dadurch als einzige Waffe „ohne Wirkung".
+
+  **Offen — das ist eine Design-Entscheidung.** Eine automatische Unterscheidung
+  nach Namen wäre Namensdeutung und wurde bewusst nicht gebaut.
+
+- **`maxRange` beschreibt die Reichweite bei NEUTRALEM Klassenprofil.**
+
+  `simulateProjectileReach` rechnet mit `launchSpeedMultiplier = 1,0`. Im Match
+  dämpft die Klasse (scout/brawler: 0,642), und der Abschuss beginnt 5 px unter
+  der Kopfposition. Gemessen (Karte `open`, volle Kraft, bester Winkel):
+
+  | Waffe | `maxRange` | tatsächlich | Faktor |
+  |---|---|---|---|
+  | Plasma-Blaster (Fernkampf) | 850 | 317 | 0,37 |
+  | Baseballschläger (Wurf) | 110 | 30 | 0,28 |
+
+  Der Faktor gilt für **alle 150 Waffen**, nicht nur für Würfe. `maxRange` ist
+  damit die Obergrenze, nicht die im Spiel erreichbare Reichweite. Die Zahl
+  stillschweigend zu korrigieren wäre eine Balance-Änderung an allen Waffen —
+  bewusst unterlassen und hier festgehalten.
+
 - **Die Kopplung von Klasse und Archetyp ist aufgehoben — offen bleibt die
   Balance.**
 

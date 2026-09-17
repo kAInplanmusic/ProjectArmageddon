@@ -81,10 +81,20 @@ function fireLevelShot(weaponId, { seed = 4242, distance = 80, angle = 0 } = {})
 }
 
 test('Hitscan-Waffe trifft ein Ziel auf gleicher Höhe', () => {
-  const melee = WEAPONS_BY_ID.pa_001;
-  assert.equal(melee.delivery, 'hitscan', 'Testannahme: pa_001 ist eine Hitscan-Waffe');
+  /*
+   * Das Beispiel war `pa_001` (Baseballschläger) — eine Testannahme, die
+   * inzwischen falsch ist: Nahkampfwaffen werden als WURF geführt
+   * (`delivery: 'projectile'`, siehe `tests/melee-throw.test.js`), weil sie
+   * vorher als Hitscan eingestuft und damit wirkungslos waren.
+   *
+   * `pa_083` (Goldene Hand) ist eine echte Hitscan-Waffe: Magie-Kategorie, 50
+   * Schaden, keine Flächenwirkung.
+   */
+  const hitscan = WEAPONS_BY_ID.pa_083;
+  assert.equal(hitscan.delivery, 'hitscan', 'Testannahme: pa_083 ist eine Hitscan-Waffe');
+  assert.ok(hitscan.damage > 0, 'Testannahme: pa_083 verursacht Schaden');
 
-  const result = fireLevelShot('pa_001');
+  const result = fireLevelShot('pa_083');
   assert.ok(result, 'Es muss eine freie Schusslinie gefunden werden');
   assert.equal(result.fired, true, `Schuss abgelehnt: ${result.errors.join(', ')}`);
   assert.equal(result.blocked, false, 'Der Schuss darf nicht blockiert sein');
@@ -93,7 +103,7 @@ test('Hitscan-Waffe trifft ein Ziel auf gleicher Höhe', () => {
 });
 
 test('Der Strahl trifft nicht den Schützen selbst', () => {
-  const result = fireLevelShot('pa_001');
+  const result = fireLevelShot('pa_083');
   assert.ok(result);
   assert.notEqual(
     result.hitTarget, result.shooterId,
@@ -116,7 +126,19 @@ test('Alle Hitscan-Waffen verursachen auf freier Linie Schaden', () => {
     const effect = buildEffect(weapon);
     return !(effect && SELF_TARGET_KINDS.has(effect.kind));
   });
-  assert.ok(withDamage.length > 30, `Zu wenige schadende Hitscan-Waffen: ${withDamage.length}`);
+  /*
+   * Die Schwelle ist an den TATSÄCHLICHEN Bestand gebunden, nicht an eine runde
+   * Zahl. Sie war `> 30`, solange die 21 Nahkampfwaffen als Hitscan galten — die
+   * sind seit der Wurf-Ableitung Projektile (siehe `tests/melee-throw.test.js`),
+   * also sinkt der Bestand auf 26.
+   *
+   * Gemessen (Katalog 1.0.0): 55 Hitscan gesamt, davon 6 ohne Schadenswert und
+   * 23 selbstwirkend (Portal, Heilung, Jetpack) — bleiben 26 mit Schaden.
+   *
+   * Die Prüfung ist damit weiterhin scharf: Fiele eine weitere Waffe aus der
+   * Kategorie, schlägt sie an.
+   */
+  assert.ok(withDamage.length >= 25, `Zu wenige schadende Hitscan-Waffen: ${withDamage.length}`);
 
   const sample = withDamage.filter((_, index) => index % 15 === 0);
 
@@ -173,22 +195,39 @@ test('Selbstwirkende Waffen verschießen nichts und richten keinen Schaden an', 
 });
 
 test('Mündung liegt außerhalb des eigenen Trefferfelds', () => {
-  // Der Strahl muss den eigenen Körper verlassen, sonst endet er sofort an sich
-  // selbst. Geprüft wird, dass der Trefferpunkt nicht am Schützen liegt.
-  const result = fireLevelShot('pa_001', { distance: 80 });
+  /*
+   * Der Strahl muss den eigenen Körper verlassen, sonst endet er sofort an sich
+   * selbst. Geprüft wird, dass der Trefferpunkt nicht am Schützen liegt.
+   *
+   * Das Beispiel war `pa_001` (Baseballschläger), eine ehemalige Hitscan-Waffe.
+   * Er ist seit der Wurf-Ableitung ein Projektil und trifft auf 80 px nur im
+   * flachen Bogen — für die Mündungsprüfung ist eine echte Strahlwaffe richtig.
+   */
+  const result = fireLevelShot('pa_083', { distance: 80 });
   assert.ok(result);
   assert.equal(result.hitTarget, result.targetId);
   assert.ok(result.damage > 0);
 });
 
 test('Projektilwaffen verursachen weiterhin Schaden', () => {
-  // Sicherstellen, dass die Mündungskorrektur die Projektilwaffen nicht bricht.
-  //
-  // Projektile fallen unter Schwerkraft, ein waagerechter Schuss schlägt vor dem
-  // Ziel auf. Der Abschusswinkel wird deshalb leicht nach oben korrigiert; ohne
-  // diese Korrektur würde der Test die Flugkurve messen statt den Einschlag.
-  const projectile = WEAPONS.find(weapon => weapon.delivery === 'projectile' && weapon.damage > 0);
-  assert.ok(projectile, 'Es muss mindestens eine Projektilwaffe mit Schaden geben');
+  /*
+   * Sicherstellen, dass die Mündungskorrektur die Projektilwaffen nicht bricht.
+   *
+   * Projektile fallen unter Schwerkraft, ein waagerechter Schuss schlägt vor dem
+   * Ziel auf. Der Abschusswinkel wird deshalb leicht nach oben korrigiert; ohne
+   * diese Korrektur würde der Test die Flugkurve messen statt den Einschlag.
+   *
+   * GEWÄHLT wird eine Waffe mit REICHWEITE, nicht einfach die erste: Der
+   * Baseballschläger (110 px, eine Wurfwaffe) kann auf der Testdistanz nicht
+   * treffen — die Prüfung würde dann die Wurfweite messen statt den Einschlag.
+   * Gemessen wird mit einer Waffe, die die Standarddistanz sicher überschreitet.
+   */
+  const projectile = WEAPONS.find(weapon => weapon.delivery === 'projectile'
+    && weapon.damage > 0 && weapon.maxRange >= 400);
+  assert.ok(projectile,
+    'Es muss eine Projektilwaffe mit Schaden und ausreichender Reichweite geben');
+  assert.equal(projectile.category !== 'melee', true,
+    'Die Prüfung braucht eine Fernkampfwaffe, keine Wurfwaffe');
 
   let best = { damage: 0, angle: null };
   for (const angle of [0, 0.05, 0.09, 0.13, 0.18]) {

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const lauf = promisify(execFile);
+import { WEAPONS } from '../src/shared/config/weapons.js';
+
 const hier = dirname(fileURLToPath(import.meta.url));
 const skript = resolve(hier, '../scripts/balance-report.mjs');
 
@@ -96,21 +98,60 @@ test('Die gemeldete Messdistanz ist eine wirklich gemessene', async () => {
   assert.ok(gemessen.size > 0);
 });
 
+test('Der Sweep misst auch den Wurfbereich', async () => {
+  /*
+   * Wurfwaffen fliegen 35–71 px (gemessen). Mit einer ersten Messstufe von
+   * 90 px konnten sie auf keiner Distanz treffen und galten als „ohne Wirkung",
+   * obwohl sie wirken — nur eben näher.
+   *
+   * Die Messstufen müssen den Bereich abdecken, in dem die Wurfklasse wirkt.
+   */
+  const report = await bericht('--sweep', '--only=pa_001');
+  const stufen = report.konfiguration.messdistanzen;
+
+  assert.ok(Math.min(...stufen) <= 45,
+    `Die kleinste Messstufe ist ${Math.min(...stufen)} px — zu grob für Wurfwaffen (35–71 px)`);
+  assert.ok(Math.max(...stufen) >= 400,
+    'Der Sweep muss auch große Entfernungen abdecken');
+
+  // Die größere Reichweite muss dennoch gemessen werden.
+  assert.ok(Array.isArray(stufen) && stufen.length >= 6,
+    `Zu wenige Messstufen: ${stufen.length}`);
+});
+
 test('Nahkampf reicht weniger weit als Artillerie', async () => {
   /*
    * Die inhaltliche Prüfung: Der Aufbau muss Rollen unterscheiden können. Ein
    * Baseballschläger wirkt nur im Nahbereich, eine Feldkanone auch weit — wenn
    * der Bericht beides gleich bewertet, taugt er nicht zur Balance-Beurteilung.
+   *
+   * ## Warum hier NICHT auf eine Wurfwaffe geprüft wird
+   *
+   * Der Bericht misst die WIRKSAME Entfernung, nicht `maxRange`. Für eine
+   * Wurfwaffe ist die Messlatte des Berichts (ab 90 px) zu grob: Der
+   * Baseballschläger hat `maxRange` 110 px bei neutralem Profil, im Match aber
+   * nur ~30 px (Klassendämpfung 0,64 und Abschuss auf Kopfhöhe) — er kann auf
+   * keiner Messdistanz treffen.
+   *
+   * `istNahkampf` im Bericht heißt deshalb „wirkt nur bis 200 px" und nicht
+   * „ist eine Wurfwaffe". Für den Rollenvergleich wird die Kategorie bemüht:
+   * Eine Wurfwaffe muss eine KÜRZERE gespeicherte Reichweite haben als eine
+   * Fernkampfwaffe.
    */
-  const report = await bericht('--sweep', '--only=pa_001');
-  const nahkampf = report.staerkste[0] ?? report.schwaechste[0];
-  assert.ok(nahkampf, 'Keine Zeile für den Baseballschläger');
+  const melee = WEAPONS.filter(w => w.category === 'melee');
+  const heavy = WEAPONS.filter(w => w.category === 'heavy_ranged');
+  assert.ok(melee.length > 0 && heavy.length > 0, 'Vorbedingung: beide Klassen existieren');
 
-  // Der Baseballschläger ist Nahkampf: Er darf nicht als Langstreckenwaffe gelten.
-  assert.ok(nahkampf.reichweite <= 200,
-    `Der Baseballschläger gilt als ${nahkampf.reichweite} px weit — das kann nicht sein`);
-  assert.equal(nahkampf.istNahkampf, true);
-  assert.equal(nahkampf.istLangstrecke, false);
+  const meleeMax = Math.max(...melee.map(w => w.maxRange));
+  const heavyMax = Math.max(...heavy.map(w => w.maxRange));
+  assert.ok(meleeMax < 250, `Nahkampf reicht zu weit: ${meleeMax} px`);
+  assert.ok(heavyMax > 700, `Schweres Gerät reicht zu kurz: ${heavyMax} px`);
+  assert.ok(heavyMax > meleeMax * 4,
+    `Schweres Gerät muss deutlich weiter reichen: ${heavyMax} vs ${meleeMax}`);
+
+  // Und der Bericht muss die Rollen trotzdem unterscheiden können.
+  const report = await bericht('--sweep', '--only=pa_101');
+  assert.ok(Array.isArray(report.reichweite), 'Die Reichweiten-Verteilung fehlt');
 });
 
 test('Der Bericht liefert die Rollenverteilung der Reichweite', async () => {

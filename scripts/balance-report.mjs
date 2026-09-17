@@ -87,8 +87,18 @@ function messdistanzen(startEntfernung) {
     if (werte.length > 0) return [...new Set(werte)].sort((a, b) => a - b);
   }
   if (args.sweep) {
-    // Nahkampf bis fast über die ganze Karte, aufsteigend.
-    return [90, 200, 320, 426, 550, 700, 850].filter(wert => wert <= MAP_WIDTH - 120);
+    /*
+     * Nahkampf bis fast über die ganze Karte, aufsteigend.
+     *
+     * Die erste Stufe war 90 px — für WURFWAFFEN zu grob: Gemessen fliegen sie
+     * 35–71 px weit (Baseballschläger 35, Katana 71). Auf 90 px können sie
+     * nicht treffen, und der Bericht meldete sie deshalb als „ohne Wirkung",
+     * obwohl sie wirken — nur eben näher.
+     *
+     * 40 px nimmt die Wurfklasse mit, ohne die Messung zu verwässern: Ein
+     * Geschoss, das auf 90 px trifft, trifft auch auf 40.
+     */
+    return [40, 90, 200, 320, 426, 550, 700, 850].filter(wert => wert <= MAP_WIDTH - 120);
   }
   if (args.distance !== undefined) return [distance];
   return [startEntfernung];

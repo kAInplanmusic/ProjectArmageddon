@@ -12,6 +12,7 @@ import {
   simulateProjectileReach,
   deriveMaxRange,
   deriveCooldown,
+  MIN_RANGE,
 } from '../scripts/build-weapon-catalog.mjs';
 
 /**
@@ -26,11 +27,25 @@ import {
 // ------------------------------------------------------------- Geschwindigkeit
 
 test('Jede Waffe hat einen Geschwindigkeitsfaktor im erlaubten Bereich', () => {
+  /*
+   * Die UNTERGRENZE hängt von der Art der Waffe ab:
+   *
+   *   0,6 für Geschosse — ein langsameres Geschoss wäre kaum steuerbar
+   *   0,3 für WÜRFE     — eine geworfene Waffe ist absichtlich viel langsamer
+   *
+   * Warum das nötig war: Mit der einheitlichen 0,6-Grenze wurden ALLE 21
+   * Nahkampfwaffen auf denselben Faktor geklemmt (ihre Wurfgeschwindigkeit liegt
+   * bei 27–41, also unter 0,6 · 70 = 42). Gemessen ergaben der Baseballschläger
+   * (27,2) und die Schaufel (40,8) identische Werte — die Differenzierung über
+   * `knockback` ging verloren.
+   */
   for (const weapon of WEAPONS) {
     assert.ok(Number.isFinite(weapon.speedFactor),
       `${weapon.id}: kein Geschwindigkeitsfaktor`);
-    assert.ok(weapon.speedFactor >= 0.6 && weapon.speedFactor <= 1.6,
-      `${weapon.id}: Faktor außerhalb der Grenzen: ${weapon.speedFactor}`);
+    const untergrenze = weapon.category === 'melee' ? 0.3 : 0.6;
+    assert.ok(weapon.speedFactor >= untergrenze && weapon.speedFactor <= 1.6,
+      `${weapon.id} (${weapon.category}): Faktor ${weapon.speedFactor} außerhalb `
+      + `der Grenzen ${untergrenze}..1.6`);
   }
 
   // Der Bezugswert ergibt genau Normaltempo.
@@ -40,7 +55,12 @@ test('Jede Waffe hat einen Geschwindigkeitsfaktor im erlaubten Bereich', () => {
   assert.equal(speedFactorFor({}), 1);
   // Ausreißer werden begrenzt, statt die Bahn unspielbar zu machen.
   assert.equal(speedFactorFor({ projectileSpeed: 100000 }), 1.6);
+  // Ein Geschoss wird bei 0,6 geklemmt …
   assert.equal(speedFactorFor({ projectileSpeed: 1 }), 0.6);
+  assert.equal(speedFactorFor({ projectileSpeed: 1, category: 'ranged' }), 0.6);
+  // … ein Wurf erst bei 0,3, sonst fiele die ganze Wurfklasse unter den Tisch.
+  assert.equal(speedFactorFor({ projectileSpeed: 1, category: 'melee' }), 0.3);
+  assert.equal(speedFactorFor({ projectileSpeed: 27.2, category: 'melee' }), 0.3886);
 });
 
 test('Die Geschwindigkeit aus den Quelldaten ist nicht mehr tot', () => {
@@ -146,11 +166,29 @@ test('Die Reichweite von Projektilen folgt ihrer Physik', () => {
     const simuliert = simulateProjectileReach(weapon);
     assert.ok(weapon.maxRange >= simuliert,
       `${weapon.id}: gespeicherte Reichweite ${weapon.maxRange} liegt unter der simulierten ${simuliert.toFixed(0)}`);
+
+    /*
+     * Die Obergrenze des Zuschlags gilt nur, wenn die Simulation über der
+     * Mindestreichweite liegt.
+     *
+     * `deriveMaxRange` begrenzt nach unten mit `MIN_RANGE`: Ein Wurf, der
+     * rechnerisch 82 px weit fliegt, bekommt 110 px, weil darunter keine Waffe
+     * mehr spielbar wäre (man träfe nie etwas). Der Zuschlag sieht dann groß
+     * aus, ist aber keine Abweichung von der Physik, sondern die
+     * Spielbarkeitsgrenze. Gemessen beim Baseballschläger: simuliert 73,
+     * gespeichert 110 — Verhältnis 1,51.
+     */
+    if (simuliert * 1.3 < MIN_RANGE) {
+      assert.equal(weapon.maxRange, MIN_RANGE,
+        `${weapon.id}: die Simulation (${simuliert.toFixed(0)}) liegt unter der `
+        + `Mindestreichweite — die Waffe muss genau ${MIN_RANGE} bekommen`);
+      continue;
+    }
+
     assert.ok(weapon.maxRange <= simuliert * 1.3,
       `${weapon.id}: zu viel Zuschlag: ${weapon.maxRange} vs ${simuliert.toFixed(0)}`);
   }
 });
-
 test('Hitscan-Reichweiten folgen der Kategorie und dem Schaden', () => {
   for (const weapon of WEAPONS.filter(w => w.delivery === 'hitscan')) {
     const basis = HITSCAN_RANGE_BY_CATEGORY[weapon.category];
