@@ -888,6 +888,24 @@ if (areaCount === 0) {
 const body = JSON.stringify(weapons, null, 2);
 const indented = body.split('\n').map((line, i) => (i === 0 ? line : `  ${line}`)).join('\n');
 
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * AB HIER BEGINNT EIN TEMPLATE-LITERAL — der Text des erzeugten Katalogs.
+ *
+ * FUND (belegt, beim Einbau der Raritaets-Gewichte): Alles bis zum schliessenden
+ * Backtick bei Zeile ~1217 ist STRINGINHALT, kein Code. Wer hier editiert,
+ * aendert die VORLAGE fuer `src/shared/config/weapons.js`.
+ *
+ * Die Falle: Ein Backtick im Text schliesst das Literal vorzeitig. Der Rest
+ * wird dann als Code geparst, und der Parser meldet einen Fehler an einer
+ * STELLE, DIE NICHT DIE URSACHE IST — die Fehlermeldung zeigt auf die Zeile,
+ * an der er haengenbleibt, nicht auf den Backtick.
+ *
+ * Genau das ist passiert: Ein Backtick in einem neuen Kommentar machte die
+ * Datei unparsbar, und die Suche kostete mehrere Anlaeufe, weil die
+ * Fehlermeldung auf eine harmlose Zeile zeigte. Deshalb dieser Hinweis.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 const file = `/**
  * AUTO-GENERIERT von scripts/build-weapon-catalog.mjs — nicht manuell editieren.
  * Quelle: project_armageddon_weapons_v1.json (${raw.weapons.length} Waffen).
@@ -1165,9 +1183,37 @@ export function getDefaultLoadout(count = 4) {
   return chosen.map(weapon => weapon.id);
 }
 
-export function pickWeaponForRarity(rng, weights = { common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 }) {
+/**
+ * Waehlt Waffen nach gewichteter Raritaetsstufe.
+ *
+ * FUND (belegt, Code-Audit): Hier stand ein Default-Parameter
+ * "weights = { common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 }" —
+ * eine ZWEITE Kopie der Gewichte, die in engine/systems/lootSystem.js als
+ * RARITY_WEIGHTS gefuehrt werden. Beide waren zum Zeitpunkt des Audits
+ * identisch; ein Aufrufer, der den Parameter weglaesst, haette aber die alte
+ * Zahl benutzt, waehrend die Konstante geaendert wurde — unbemerkt.
+ *
+ * Der Default ist deshalb ENTFERNT: Die Gewichte muessen uebergeben werden.
+ * Damit gibt es nur eine Quelle, und ein Fehlen faellt sofort auf.
+ *
+ * ACHTUNG beim Editieren: Dieser Bereich liegt INNERHALB eines Template-
+ * Literals (ab Zeile 891). Ein Backtick im Text wuerde es vorzeitig schliessen
+ * und die Datei unparsbar machen — das ist beim Einbau dieses Kommentars
+ * passiert und hat die Ursache zunaechst verschleiert.
+ *
+ * @param {object} rng - Zufallsquelle mit next()
+ * @param {object} weights - Gewichte je Raritaetsstufe (PFLICHT)
+ */
+export function pickWeaponForRarity(rng, weights) {
   if (!rng || typeof rng.next !== 'function') {
     throw new TypeError('pickWeaponForRarity benoetigt einen RNG mit next()');
+  }
+  if (!weights || typeof weights !== 'object' || Object.keys(weights).length === 0) {
+    throw new TypeError(
+      'pickWeaponForRarity benoetigt Gewichte. Die eine Quelle ist '
+      + 'RARITY_WEIGHTS in engine/systems/lootSystem.js — ein Default hier '
+      + 'waere eine zweite, still auseinanderlaufende Kopie.',
+    );
   }
 
   // Gewichtet wird nach der ABGELEITETEN Stufe (powerTier, fuenf Stufen), nicht

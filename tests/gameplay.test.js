@@ -3,7 +3,7 @@ import test from 'node:test';
 import { MatchController, MAP_WIDTH, MAP_HEIGHT } from '../src/engine/match.js';
 import { generateTerrain, surfaceY, TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 import { WaterField } from '../src/engine/waterField.js';
-import { LootSystem, weaponIdFromIndex } from '../src/engine/systems/lootSystem.js';
+import { LootSystem, weaponIdFromIndex, RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES, combatProfile } from '../src/shared/config/classes.js';
 import { MATCH_RULES, computeMaelstromDamage } from '../src/shared/config/match.js';
 import { WEAPONS, WEAPONS_BY_ID, getDefaultLoadout, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
@@ -206,7 +206,18 @@ test('Waffenkatalog ist konsistent und spielbar', () => {
   // Das Loadout muss mindestens eine Waffe mit Flächenwirkung enthalten.
   assert.ok(loadout.some(id => WEAPONS_BY_ID[id].blastRadius > 0), 'Loadout ohne Flächenwaffe');
 
-  const weapon = pickWeaponForRarity(new SeededRandom(5));
+  /*
+   * Die Gewichte werden ÜBERGEBEN — seit dem Audit gibt es keinen Default mehr.
+   *
+   * FUND (belegt, Code-Audit): Der Generator führte die Gewichte zweimal: als
+   * `RARITY_WEIGHTS` in `engine/systems/lootSystem.js` UND als Default-Parameter
+   * in der erzeugten `weapons.js`. Wer die Konstante änderte, ließ Aufrufer
+   * ohne Argument auf der alten Zahl zurück — unbemerkt.
+   *
+   * Der Default ist entfernt; ein fehlender Parameter wirft jetzt. Die eine
+   * Quelle ist `RARITY_WEIGHTS`.
+   */
+  const weapon = pickWeaponForRarity(new SeededRandom(5), RARITY_WEIGHTS);
   assert.ok(weapon && weapon.damage > 0);
 });
 

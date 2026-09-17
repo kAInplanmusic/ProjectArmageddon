@@ -308,7 +308,7 @@ export class MatchController {
       : new MatchSeedManager(seed);
     this.#rng = this.#seedManager.getSubRng('MATCH_BASE');
     this.#turnDurationMs = turnDurationMs
-      ?? MATCH_RULES.turnTimers.duelSeconds.minimum * 1000;
+      ?? MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
     this.maxRounds = maxRounds;
     this.preset = preset;
     /** Sidegrades je Spielerplatz — als Kopie, damit ein Aufrufer sie nicht

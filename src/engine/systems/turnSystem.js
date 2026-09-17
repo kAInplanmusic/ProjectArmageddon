@@ -139,13 +139,25 @@ export class TurnSystem {
 
 export default TurnSystem;
 
-// Konfiguration für Turn-Timer basierend auf Spieleranzahl
+/**
+ * Zugdauer nach Spielerzahl.
+ *
+ * FUND (belegt, User-Flow-Audit): Die Konfiguration führte je Zeit ein
+ * `minimum` und ein `maximum` — gelesen wurde nur das `minimum`. Die
+ * Obergrenzen sind entfernt (siehe `shared/config/match.js`); die Felder heißen
+ * jetzt schlicht `seconds`.
+ *
+ * Der dritte Zweig (>4 Spieler) steht bewusst als Zahl hier: Die Konfiguration
+ * kennt nur zwei Stufen, und 15 Sekunden für große Teams sind eine eigene
+ * Entscheidung — sie als dritte Stufe zu führen wäre ehrlicher, ist aber eine
+ * Design-Frage.
+ */
 export function getTurnDurationForPlayerCount(playerCount) {
   if (playerCount <= 2) {
-    return MATCH_RULES.turnTimers.duelSeconds.minimum * 1000;
+    return MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
   }
   if (playerCount <= 4) {
-    return MATCH_RULES.turnTimers.fourPlayerSeconds.minimum * 1000;
+    return MATCH_RULES.turnTimers.fourPlayerSeconds.seconds * 1000;
   }
   return 15000; // 15 Sekunden für größere Teams
 }

@@ -6844,9 +6844,37 @@ export function getDefaultLoadout(count = 4) {
   return chosen.map(weapon => weapon.id);
 }
 
-export function pickWeaponForRarity(rng, weights = { common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 }) {
+/**
+ * Waehlt Waffen nach gewichteter Raritaetsstufe.
+ *
+ * FUND (belegt, Code-Audit): Hier stand ein Default-Parameter
+ * "weights = { common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 }" —
+ * eine ZWEITE Kopie der Gewichte, die in engine/systems/lootSystem.js als
+ * RARITY_WEIGHTS gefuehrt werden. Beide waren zum Zeitpunkt des Audits
+ * identisch; ein Aufrufer, der den Parameter weglaesst, haette aber die alte
+ * Zahl benutzt, waehrend die Konstante geaendert wurde — unbemerkt.
+ *
+ * Der Default ist deshalb ENTFERNT: Die Gewichte muessen uebergeben werden.
+ * Damit gibt es nur eine Quelle, und ein Fehlen faellt sofort auf.
+ *
+ * ACHTUNG beim Editieren: Dieser Bereich liegt INNERHALB eines Template-
+ * Literals (ab Zeile 891). Ein Backtick im Text wuerde es vorzeitig schliessen
+ * und die Datei unparsbar machen — das ist beim Einbau dieses Kommentars
+ * passiert und hat die Ursache zunaechst verschleiert.
+ *
+ * @param {object} rng - Zufallsquelle mit next()
+ * @param {object} weights - Gewichte je Raritaetsstufe (PFLICHT)
+ */
+export function pickWeaponForRarity(rng, weights) {
   if (!rng || typeof rng.next !== 'function') {
     throw new TypeError('pickWeaponForRarity benoetigt einen RNG mit next()');
+  }
+  if (!weights || typeof weights !== 'object' || Object.keys(weights).length === 0) {
+    throw new TypeError(
+      'pickWeaponForRarity benoetigt Gewichte. Die eine Quelle ist '
+      + 'RARITY_WEIGHTS in engine/systems/lootSystem.js — ein Default hier '
+      + 'waere eine zweite, still auseinanderlaufende Kopie.',
+    );
   }
 
   // Gewichtet wird nach der ABGELEITETEN Stufe (powerTier, fuenf Stufen), nicht

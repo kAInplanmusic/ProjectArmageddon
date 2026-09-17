@@ -2201,11 +2201,23 @@ beschrieben.
       `sidegrades`/`loadouts` nicht in den Kopf.
       Abgesichert: `tests/replay-head.test.js` (8 Tests).
 
-- [ ] **Doppelte Raritäts-Gewichtstabelle.** `lootSystem.js:19`
-      (`RARITY_WEIGHTS`) und als Default-Parameter in der **generierten**
-      `weapons.js`. Heute identisch, morgen nicht. *Datenentscheidung:* Der
-      Default steht im Generator-Template — er gehört entfernt oder zwingend
-      übergeben.
+- [x] **Raritäts-Gewichte: eine Quelle statt zwei.**
+      `RARITY_WEIGHTS` (`lootSystem.js`) und der Default in der generierten
+      `weapons.js` waren zwei Kopien derselben Zahlen.
+
+      Behoben: Der Default ist im **Generator** entfernt; die Funktion **wirft**
+      jetzt ohne Gewichte. Damit kann kein Aufrufer mehr stillschweigend auf
+      einer zweiten, veralteten Zahl sitzen.
+      *Abgesichert:* `tests/rarity-weights.test.js` (7 Tests).
+
+      *Dabei eine Falle gefunden und dokumentiert:* Der Generator bettet den
+      Katalog in ein **Template-Literal** ein (ab `const file = \`). Ein
+      Backtick in einem neuen Kommentar schließt es vorzeitig — und der
+      Parser meldet dann einen Fehler an einer **anderen** Stelle als der
+      Ursache. Das kostete mehrere Suchanlaeufe. Der Bereich ist jetzt im
+      Generator mit einem Warnhinweis gekennzeichnet, und
+      `tests/generator-syntax.test.js` (5 Tests) prüft mechanisch, dass die
+      Backticks ausgeglichen sind und beide Dateien parsbar bleiben.
 
 ### Aus dem Fremd-Audit (User-Flow/Spaßfaktor) — siehe `docs/audit-userflow.md`
 
@@ -2220,11 +2232,21 @@ beschrieben.
       vor Runde 15 durch Ausschaltung — der Mahlstrom ist der Regelweg, nicht
       die Ausnahme. *Hebel:* Startgesundheit senken oder Rundengrenze 30 → ~12.
 
-- [ ] **`maximum`-Werte der Zugzeiten sind toter Konfigurationscode.**
-      `match.js` deklariert `duelSeconds.maximum: 60` und
-      `fourPlayerSeconds.maximum: 40`, aber der Motor liest **nur**
-      `.minimum` (gemessen: `grep -rn '\.maximum' src/` findet keinen Leser).
-      *Entweder* nutzen oder entfernen.
+- [x] **`maximum`-Werte entfernt — dazu ein Widerspruch aufgedeckt.**
+      `MATCH_RULES` führte `duelSeconds.maximum: 60`,
+      `fourPlayerSeconds.maximum: 40` (je 0 Leser) und
+      `teamSize: {minimum: 4, maximum: 6}`.
+
+      *Der `teamSize`-Fall war der ernsteste:* Er widersprach der geltenden
+      Regel — `server/lobby.js:36` lässt `playersPerTeam` nur zwischen **1 und 3**
+      zu. Die Konfiguration versprach 4–6. Wer dort nachschlug, bekam eine
+      falsche Antwort.
+
+      Behoben: Obergrenzen und `teamSize` entfernt; die Zugzeit-Felder heißen
+      jetzt `seconds` (nur eine Zahl, keine Scheinstruktur).
+      *Abgesichert:* `tests/match-rules.test.js` (6 Tests) — prüft auch, dass
+      **kein** Konfigurationsfeld ohne Leser bleibt (Ausnahme: die beiden
+      Dimensionsangaben, die ausdrücklich Beschreibung sind).
 
 - [ ] **Mahlstrom greift zu spät** (`roundBreakpoint = 15`). Gemessen endeten
       6 von 8 Partien bei oder nach Runde 15 — der Spannungsbogen kommt, oft war
