@@ -117,6 +117,42 @@ export function maxWurfweite({ powerToSpeed, maxPower, gravity, windReserve = 1.
 }
 
 /**
+ * Der Abstand zum nächsten Gegner für jede Figur.
+ *
+ * ## Warum diese Zahl und nicht „Abstand der äußersten Figuren"
+ *
+ * FUND (belegt, eigener Denkfehler): Eine erste Fassung verglich die Wurfweite
+ * mit dem Abstand der **äußersten** Figuren — auf einer 2560er Karte 1536 px —
+ * und schloss daraus, die Waffen reichten zu kurz.
+ *
+ * Das war falsch gedacht. Figur 1 muss nicht Figur 4 erreichen, sondern **den
+ * nächsten Gegner**. Das ist rund die halbe Strecke. Gemessen:
+ *
+ *     Figur bei x=512:  nächster Gegner 513 px = 0,73× Wurfweite
+ *     Figur bei x=1536: nächster Gegner 545 px = 0,77× Wurfweite
+ *
+ * Dazu kommt: Die Figuren sterben im Verlauf, die Aufstellung rückt nach — und
+ * wer am Zug ist, schlägt auf den nächsten Gegner, nicht auf den weitesten.
+ *
+ * @param {{x:number,y:number,teamId:number}[]} figuren
+ * @returns {number[]} Abstand je Figur, `Infinity` ohne Gegner
+ */
+export function abstandZumNaechstenGegner(figuren) {
+  return figuren.map((eigene, i) => {
+    let naechster = Infinity;
+    for (let j = 0; j < figuren.length; j += 1) {
+      if (i === j) continue;
+      if (figuren[j].teamId === eigene.teamId) continue;
+      const dx = figuren[j].x - eigene.x;
+      const dy = figuren[j].y - eigene.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < naechster) naechster = d;
+    }
+    return naechster;
+  });
+}
+
+/**
  * Prüft, ob alle Flächen mit Figuren erreichbar sind.
  *
  * ## Die Regel
@@ -188,10 +224,27 @@ export function pruefeErreichbarkeit({ bitmap, width, height, figuren, wurfweite
     const eigene = zugehoerig[i];
     if (eigene === haupt || eigene === -1) continue;
 
-    // Ist die Fläche der Figur von irgendeiner anderen aus in Wurfweite?
+    /*
+     * Erreichbar ist die Fläche, wenn ein GEGNER sie erreichen kann — der
+     * nächste genügt.
+     *
+     * FUND (belegt, eigener Denkfehler): Ein erster Anlauf verglich die
+     * Wurfweite mit dem Abstand der ÄUSSERSTEN Figuren und hielt die Karten
+     * für zu groß. Richtig ist der Abstand zum NÄCHSTEN Gegner: Wer am Zug
+     * ist, zielt auf den nächsten, nicht auf den weitesten.
+     *
+     * Ein Gegner muss es sein — eine verbündete Figur auf derselben Fläche
+     * hilft nicht. Und die Gegenrichtung zählt nicht: Es genügt, wenn die
+     * andere Seite herüberschießen kann, denn beschossen zu werden heißt,
+     * am Spiel teilzunehmen.
+     */
     let erreichbar = false;
     for (let j = 0; j < figuren.length; j += 1) {
       if (i === j) continue;
+
+      // Nur Gegner zählen — und nur solche auf der Hauptfläche, von der aus
+      // gespielt wird.
+      if (figuren[j].teamId === figuren[i].teamId) continue;
       if (zugehoerig[j] !== haupt) continue;
 
       const dx = figuren[i].x - figuren[j].x;

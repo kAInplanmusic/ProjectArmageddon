@@ -113,7 +113,7 @@ test('Figuren auf derselben Fläche sind erreichbar', () => {
   ]);
   const urteil = pruefeErreichbarkeit({
     bitmap, width, height,
-    figuren: [{ x: 1, y: 1 }, { x: 6, y: 1 }],
+    figuren: [{ x: 1, y: 1, teamId: 0 }, { x: 6, y: 1, teamId: 1 }],
     wurfweite: 50,
   });
   assert.equal(urteil.ok, true, `unerwartet: ${urteil.grund}`);
@@ -132,8 +132,18 @@ test('Eine Insel in Schussweite ist erreichbar', () => {
   ]);
   const urteil = pruefeErreichbarkeit({
     bitmap, width, height,
-    // Zwei Figuren links, eine rechts — die Lücke ist 3 px breit.
-    figuren: [{ x: 1, y: 1 }, { x: 3, y: 1 }, { x: 12, y: 1 }],
+    /*
+     * Zwei Figuren links auf Team 0, eine rechts auf Team 1.
+     *
+     * Die Team-Angabe ist nötig, seit die Prüfung nur GEGNER zählt: Eine
+     * verbündete Figur auf derselben Fläche hilft nicht, und ohne Team-Angabe
+     * hätte die Prüfung gar keinen Gegner gefunden.
+     */
+    figuren: [
+      { x: 1, y: 1, teamId: 0 },
+      { x: 3, y: 1, teamId: 0 },
+      { x: 12, y: 1, teamId: 1 },
+    ],
     wurfweite: 50,
   });
   assert.equal(urteil.ok, true,
@@ -155,7 +165,7 @@ test('Eine Insel außer Schussweite ist unerreichbar', () => {
 
   const urteil = pruefeErreichbarkeit({
     bitmap, width: breite, height: hoehe,
-    figuren: [{ x: 5, y: 1 }, { x: 260, y: 1 }],
+    figuren: [{ x: 5, y: 1, teamId: 0 }, { x: 260, y: 1, teamId: 1 }],
     wurfweite: 50,
   });
 
@@ -212,14 +222,31 @@ test('Die Wurfweite wird aus den Motorwerten gerechnet', () => {
   assert.ok(weit > 600,
     `Die Wurfweite (${Math.round(weit)} px) ist unrealistisch klein`);
 
+  /*
+   * ## Die Schranke, die hier stand, war ein Denkfehler
+   *
+   * FUND (belegt, eigener Fehler): Zuerst stand hier `weit > 3000` — die
+   * Erwartung, eine Waffe müsse eine 2560er Karte überqueren. Daraus wurde
+   * dann der „Fund", die Figuren stünden 2,18× weiter auseinander als die
+   * Waffe reicht.
+   *
+   * Das war falsch gedacht. Gemessen mit den echten Standpositionen:
+   *
+   *     Figur bei x=512:  nächster Gegner 513 px = 0,73× Wurfweite
+   *     Figur bei x=1536: nächster Gegner 545 px = 0,77× Wurfweite
+   *
+   * Figur 1 muss nicht Figur 4 erreichen, sondern den NÄCHSTEN Gegner. Dazu
+   * sterben die Figuren im Verlauf, und wer am Zug ist, zielt auf den
+   * nächsten — nicht auf den weitesten.
+   *
+   * Die richtige Schranke bezieht sich auf den halben Aufstellungsabstand:
+   * Bei vier gleichmäßig verteilten Figuren liegt der nächste Gegner bei rund
+   * einem Viertel der Kartenbreite.
+   */
   const KARTENBREITE_MITTEL = 2560;
-  const figurAbstand = (KARTENBREITE_MITTEL / 4) * 3;
-  assert.ok(weit < figurAbstand,
-    'Die Wurfweite übersteigt den Figurenabstand — dann greift die '
-    + 'Erreichbarkeitsprüfung nicht mehr, und der dokumentierte Mangel wäre behoben');
+  const naechsterGegner = KARTENBREITE_MITTEL / 4;
 
-  /* Und der Mangel wird BENANNT, nicht verschwiegen. */
-  assert.ok(weit / KARTENBREITE_MITTEL < 0.4,
-    `Eine Waffe reicht ${(weit / KARTENBREITE_MITTEL * 100).toFixed(0)} % der Karte — `
-    + 'erwartet wird unter 40 % (der dokumentierte Mangel)');
+  assert.ok(weit > naechsterGegner,
+    `Die Wurfweite (${Math.round(weit)} px) reicht nicht an den nächsten `
+    + `Gegner (${naechsterGegner} px) — die Figuren könnten nicht schießen`);
 });

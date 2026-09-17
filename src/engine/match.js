@@ -13,7 +13,9 @@ import { CollisionMask } from './terrain/collisionMask.js';
 import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
 import { erzeugeKarte } from '../shared/terrainGen2.js';
 import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
-import { pruefeErreichbarkeit, maxWurfweite } from '../shared/erreichbarkeit.js';
+import {
+  pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
+} from '../shared/erreichbarkeit.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
@@ -613,7 +615,7 @@ export class MatchController {
       const x = this.#world.getComponent(eintrag.entityId, 'Position', 'x');
       const y = this.#world.getComponent(eintrag.entityId, 'Position', 'y');
       if (typeof x !== 'number' || typeof y !== 'number') continue;
-      figuren.push({ x, y });
+      figuren.push({ x, y, teamId: eintrag.teamId });
     }
     if (figuren.length < 2) return;
 
@@ -636,7 +638,22 @@ export class MatchController {
       bitmap: this.#bitmap, width: this.width, height: this.height, figuren, wurfweite,
     });
 
-    this.erreichbarkeit = { ok: urteil.ok, grund: urteil.grund, wurfweite };
+    /*
+     * Die Abstände zum nächsten Gegner gehen mit in den Zustand.
+     *
+     * Sie sind die Zahl, die über Spielbarkeit entscheidet — nicht der Abstand
+     * der äußersten Figuren. Wer am Zug ist, schlägt auf den NÄCHSTEN Gegner;
+     * ob der in Reichweite liegt, ist die Frage.
+     */
+    const abstaende = abstandZumNaechstenGegner(figuren);
+    const weiteste = abstaende.filter(d => Number.isFinite(d));
+
+    this.erreichbarkeit = {
+      ok: urteil.ok,
+      grund: urteil.grund,
+      wurfweite,
+      naechsterGegner: weiteste.length > 0 ? Math.max(...weiteste) : null,
+    };
     if (!urteil.ok) {
       this.#events.emit('karte_unerreichbar', {
         grund: urteil.grund,

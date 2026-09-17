@@ -96,6 +96,37 @@ if (probleme.length > 0) {
   console.log('');
 }
 
+/*
+ * Die Zugzeit bleibt das Maximum — und die Zugreihenfolge ist die des
+ * klassischen Spiels.
+ *
+ * Beides gehört hierher, weil es die Erreichbarkeit relativiert: Wer nicht
+ * schießen kann, ist nicht verloren — er kann sich bewegen. Und weil die
+ * Reihenfolge jedem Spieler einen festen Platz gibt, weiß jeder, wann er
+ * wieder dran ist.
+ */
+const einePartie = new MatchController({
+  seed: 200000, teams: 4, playersPerTeam: 2, kartentyp: 'autonom',
+  turnDurationMs: 2000, maxRounds: 2,
+});
+einePartie.start();
+einePartie.consumeEvents();
+
+console.log('DIE ZUGREIHENFOLGE (4 Spieler, 2 Einheiten je Spieler)');
+console.log('');
+console.log('  Zug   Figur   Team   Runde');
+for (let i = 0; i < 8; i += 1) {
+  const s = einePartie.getState();
+  const e = s.entities.find(x => x.entityId === s.activePlayerId);
+  console.log(`  ${String(i + 1).padStart(3)}   ${String(s.activePlayerId).padStart(5)}   `
+    + `${String(e?.teamId ?? '?').padStart(4)}   ${s.round}`);
+  einePartie.endTurn();
+}
+console.log('');
+console.log('  Erst alle Spieler mit ihrer ersten Einheit, dann alle mit der zweiten:');
+console.log('  S1 E1, S2 E1, S3 E1, S4 E1, S1 E2, S2 E2, S3 E2, S4 E2 — dann Runde 2.');
+
+console.log('');
 console.log('WAS DAS BEDEUTET');
 console.log('');
 
