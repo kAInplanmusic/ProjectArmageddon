@@ -2006,17 +2006,18 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
       kommentiert.
       Beleg: `docs/audit-selbst.md`, Befund 2.
 
-- [ ] **`targeting` widerspricht der Wirkung bei 11 Waffen — Dokumentation, nicht
-      Code.** Die Quelldatei führt `targeting` für alle 150 Waffen
-      (`directional` 125×, `self_or_area` 25×), aber sie verschlagwortet auch
-      Heilzauber, Eisschild und Auto-Turret als `directional`, obwohl diese
-      nachweislich auf den **Schützen** wirken. Bei 139 von 150 stimmt das Feld
-      mit der abgeleiteten Wirkung überein.
-      *Der Motor leitet korrekt ab* (`SELF_TARGET_KINDS`), das Feld ist unscharf
-      — es wird deshalb **nicht** verdrahtet; es würde 11 Waffen falsch steuern
-      (Heilzauber als Angriff).
-      *Offen:* Ob die Quelldatei nachgeschärft wird, ist eine Daten-Entscheidung.
-      Ein Test hält den Widerspruch fest, damit er nicht in Vergessenheit gerät.
+- [x] **`targeting`: Widerspruch dokumentiert und prüfbar gemacht.**
+      Die Designdatei nennt 11 Waffen `directional`, die nachweislich auf den
+      **Schützen** wirken (Heilzauber, Eisschild, Auto-Turret …). Bei 139 von
+      150 stimmt das Feld.
+      *Nicht geändert:* `project_armageddon_weapons_v1.json` ist die
+      handgepflegte **Designdatei** — dort ohne Auftrag Werte zu ändern wäre
+      derselbe Fehler wie eine Balance-Änderung nebenbei.
+      *Stattdessen:* `npm run check:targeting` meldet den Widerspruch mit einer
+      **fertigen Korrekturtabelle** (ID, Name, special, Wirkung, Vorschlag), und
+      `tests/weapon-targeting.test.js` hält ihn fest.
+      *Der Motor leitet korrekt ab* (`SELF_TARGET_KINDS`); das Feld zu
+      verdrahten würde 11 Waffen falsch steuern (Heilzauber als Angriff).
       Beleg: `docs/audit-selbst.md`, Befund 2.
 
 - [x] **`sourceRarity` ist Doppelspur zu `rarity` — kein Befund.** Der Verdacht
@@ -2079,9 +2080,37 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
       Match: 0,37 (Plasma-Blaster 850 → 317 px). Betrifft alle 150 Waffen.
       Beleg: `MASTERDOTO.md`, „Bekannte Grenzen".
 
-- [ ] **Balance der entkoppelten Klasse/Archetyp-Kombinationen ungemessen.**
-      Die Wahl ist möglich, aber für die neuen Kombinationen gibt es keine
-      Vergleichszahlen aus `npm run balance`.
+- [x] **Balance der Klasse/Archetyp-Kombinationen ist jetzt gemessen.**
+      Neues Werkzeug `npm run balance:classes` — es listet alle **neun**
+      Kombinationen mit ihren vier wirksamen Achsen (Leben, Wucht, Tempo,
+      Beweglichkeit) und ordnet sie nach einer Summe.
+
+      *Ergebnis:*
+
+      | Kombination | Leben | Wucht | Tempo | Bewegl. | Summe |
+      |---|---|---|---|---|---|
+      | artillery/occultist | 0,63 | 1,30 | 1,73 | 0,70 | **4,36** |
+      | heavy/brawler | 1,56 | 1,00 | 0,92 | 0,80 | 4,28 |
+      | artillery/artillerist | 0,72 | 1,30 | 1,52 | 0,70 | 4,24 |
+      | heavy/artillerist | 1,04 | 1,00 | 1,17 | 0,80 | 4,01 |
+      | scout/brawler | 0,96 | 0,70 | 0,64 | 1,20 | 3,50 |
+      | scout/occultist | 0,56 | 0,70 | 0,93 | 1,20 | 3,39 |
+      | scout/artillerist | 0,64 | 0,70 | 0,82 | 1,20 | **3,36** |
+
+      *Spannweite:* 3,36 bis 4,36 (Faktor 1,30).
+
+      **BEFUND: Der Scout liegt mit ALLEN drei Archetypen durchgehend zurück**
+      (Mittel 3,42 gegen 4,29 beim Artillery — 26 % Abstand). Das ist mehr als
+      eine schwache Kombination: Es ist die Klasse selbst.
+
+      *Offen — Design-Entscheidung:* Ob der Scout angehoben wird (mehr Wucht?)
+      oder seine Rolle geschärft (Beweglichkeit stärker gewichten, etwa über
+      die Sprunghöhe) hängt vom Spielgefühl ab. Die Zahlen liegen vor; die
+      Entscheidung nicht.
+
+      *Einschränkung, die im Werkzeug steht:* Die Summe wiegt alle vier Achsen
+      gleich und ist ein **grober Indikator**, kein Balancenachweis. Sie zeigt
+      Ausreißer, nicht Feinheiten.
 
 ### Aus dem Black-Box-Audit (Teilbericht, Agent lief in die Iterationsgrenze)
 
