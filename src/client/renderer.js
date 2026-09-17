@@ -13,6 +13,10 @@ import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { prefersReducedMotion } from './dom.js';
+import {
+  erzeugePartikel, schreitePartikelFort,
+  erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
+} from './effects.js';
 import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
 import {
   drawSky as drawGenerativeSky,
@@ -254,25 +258,18 @@ export class Renderer {
    * Fügt einen Hitscan-Strahl hinzu (Lebensdauer ~10 Frames).
    * Rein visuell: hat keinen Einfluss auf die Simulation.
    */
-  addBeam(fromX, fromY, toX, toY, { hit = false, color = '#ffe066' } = {}) {
-    this.effects.push({
-      kind: 'beam',
-      fromX, fromY, toX, toY,
-      hit,
-      color,
-      life: 1,
-      decay: 0.11,
-    });
+  addBeam(fromX, fromY, toX, toY, optionen = {}) {
+    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, optionen));
   }
 
   /** Fügt einen Explosionsblitz an einer Stelle hinzu. */
-  addFlash(x, y, radius, { color = '#f4a261' } = {}) {
-    this.effects.push({ kind: 'flash', x, y, radius, color, life: 1, decay: 0.09 });
+  addFlash(x, y, radius, optionen = {}) {
+    this.effects.push(erzeugeBlitz(x, y, radius, optionen));
   }
 
   #updateEffects() {
-    for (const effect of this.effects) effect.life -= effect.decay;
-    this.effects = this.effects.filter(effect => effect.life > 0);
+    // Die Alterung liegt in `effects.js` — dort ist sie ohne Canvas prüfbar.
+    this.effects = schreiteEffekteFort(this.effects);
   }
 
   #drawEffects() {
@@ -492,34 +489,23 @@ export class Renderer {
     ctx.clearRect(this.width - inset, 0, inset, this.height);
   }
 
+  /**
+   * Erzeugt die Splitterwolke einer Explosion.
+   *
+   * Die Logik liegt in `effects.js` und ist dort ohne Canvas geprüft; hier
+   * wird nur der Zustand des Renderers geführt.
+   *
+   * Zugänglichkeit: Wer Bewegung reduziert haben will, bekommt keinen
+   * Partikelregen. Die Explosion bleibt sichtbar — als Blitz (siehe
+   * `#drawEffects`) —, nur die Bewegung entfällt.
+   */
   spawnExplosionParticles(x, y, radius) {
-    // Zugänglichkeit: Wer Bewegung reduziert haben will, bekommt keinen
-    // Partikelregen. Die Explosion bleibt sichtbar — als Blitz (siehe
-    // `#drawEffects`) —, nur die Bewegung entfällt.
     if (this.reducedMotion) return;
-    const count = Math.min(26, 8 + Math.round(radius / 2));
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * Math.PI * 2;
-      const speed = 1 + (i % 5) * 0.6;
-      this.particles.push({
-        x, y,
-        vx: Math.cos(a) * speed,
-        vy: Math.sin(a) * speed - 0.6,
-        life: 1,
-        radius: 2 + (i % 3),
-        color: i % 3 === 0 ? '#f4a261' : i % 3 === 1 ? '#ffd166' : '#e76f51',
-      });
-    }
+    this.particles.push(...erzeugePartikel(x, y, radius));
   }
 
   updateParticles() {
-    for (const particle of this.particles) {
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-      particle.vy += 0.18;
-      particle.life -= 0.035;
-    }
-    this.particles = this.particles.filter(p => p.life > 0);
+    this.particles = schreitePartikelFort(this.particles);
   }
 
   #drawSky() {

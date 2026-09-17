@@ -1982,16 +1982,21 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
 
 ### Behebbar ohne Design-Entscheidung
 
-- [ ] **974 Zeilen toter Code entfernen.** `src/engine/terrain/terrainEngine.js`
-      (494), `src/engine/weapons/weaponEngine.js` (480),
-      `src/engine/terrainEngine/index.js` (Stub),
-      `src/engine/weaponEngine/index.js` (Stub),
-      `src/engine/weapons/projectArmageddonWorldAdapter.js` (175). **Kein
-      Importeur** — weder im Produktivpfad noch in Tests, auch nicht über
-      `src/engine/index.js` (`grep -c 'TerrainEngine'` ergibt 0).
+- [x] **974 Zeilen toter Code entfernt.** Fünf Dateien gelöscht:
+      `engine/terrain/terrainEngine.js` (494), `engine/weapons/weaponEngine.js`
+      (480), `engine/terrainEngine/index.js` (Stub),
+      `engine/weaponEngine/index.js` (Stub),
+      `engine/weapons/projectArmageddonWorldAdapter.js` (175).
+      *Vorher geprüft:* keine statischen Importe, keine dynamischen Importe,
+      keine Referenz in der Bau-Konfiguration — und beide Engines hatten einen
+      **lebenden Ersatz im Produktivpfad** (`terrain/collisionMask.js` für
+      Gelände, `shared/config/weapons.js` für Waffen).
+      *Belegt:* Nach dem Löschen blieben `npm test` (685/685) und
+      `npm run validate` grün — ohne eine einzige Anpassung.
+      *Abgesichert:* `tests/no-dead-code.test.js` prüft jetzt systematisch, dass
+      **jede** Datei unter `src/engine/` einen Importeur hat. Ein künftiger
+      verwaister Baustein fällt sofort auf.
       Beleg: `docs/audit-selbst.md`, Befund 1.
-      *Vor dem Löschen prüfen:* ob ein externes Werkzeug sie lädt (die beiden
-      `index.js` sind als „Wrapper für externes Paket" kommentiert).
 
 - [x] **`wurfAbgeleitet` entfernt — 0 Leser.** Vom Agenten selbst im Zug
       „Nahkampf wirft" eingeführt und nie benutzt (21 Einträge im Katalog).
@@ -2030,16 +2035,22 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
       toter Code (Befund 1).
       Beleg: `docs/audit-selbst.md`, Befund 3.
 
-- [ ] **`renderer.js` (1119 Zeilen) ist in `node --test` nicht ladbar — Testweg
-      nötig.** Es nutzt `import.meta.glob` (Vite-spezifisch, `renderer.js:38`);
-      ein `import` scheitert mit `TypeError: ...glob is not a function`. Das ist
-      der Grund, warum bisher kein Unit-Test existierte — kein Versäumnis.
-      *Teilweise gedeckt:* Partikellogik und `prefers-reduced-motion` über
-      `tests/e2e/accessibility.spec.mjs:212`.
-      *Zwei Wege:* (a) Vite-basierter Testläufer (Vitest) einführen, (b) die
-      testbare Logik in eigene Module ziehen — wie bei `terrainBaker.js` und
-      `shotPrediction.js` bereits geschehen. (b) passt zur bestehenden
-      Architektur und wird empfohlen.
+- [x] **`renderer.js`: testbare Logik in ein eigenes Modul gezogen.**
+      Der Renderer ist in `node --test` nicht ladbar (`import.meta.glob`,
+      Vite-spezifisch). Gewählt wurde Weg (b) aus dem Audit: die Zustandslogik
+      nach `src/client/effects.js` — Partikelentstehung, Alterung, Aufräumen,
+      Strahlen und Blitze. Der Renderer führt nur noch den Zustand.
+      *Warum nicht Weg (a) (Vitest):* Das Herausziehen folgt dem Muster, das
+      das Projekt schon zweimal nutzt (`terrainBaker.js`, `shotPrediction.js`),
+      und macht die Logik ohne neuen Testläufer prüfbar.
+      *Dabei einen echten Fehler gefunden:* `radius ?? 0` fängt `NaN` nicht ab —
+      eine Explosion mit `NaN`-Radius ergab eine **leere** Partikelwolke, ohne
+      dass jemand einen Fehler sah. Der alte Renderer hatte denselben Fehler;
+      er ist in `effects.js` behoben.
+      *Abgesichert:* `tests/effects.test.js` (15 Tests) — Verteilung,
+      Deckelung, Alterung, Aufräumen, Reinheit, Determinismus, Randfälle.
+      *Im Browser gegengeprüft:* 16/16 grün in `accessibility` und `profiling`
+      nach dem Umbau.
       Beleg: `docs/audit-selbst.md`, Befund 3.
 
 - [x] **Balance-Bericht: Ursachenschätzung korrigiert.** Der Bericht nannte
