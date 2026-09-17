@@ -26,7 +26,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fillGroundPixels, surfaceRows } from '../src/client/terrainBaker.js';
+import { fillGroundPixels, surfaceRows, drawSurfaceEdge } from '../src/client/terrainBaker.js';
 import { erzeugeKarte } from '../src/shared/terrainGen2.js';
 import { SeededRandom } from '../src/shared/prng.js';
 
@@ -162,4 +162,49 @@ test('Die Tiefenfarbe bleibt unter einem Hohlraum erhalten', () => {
 
   // Und der Hohlraum selbst bleibt leer.
   assert.equal(daten[20 * 4 + 3], 0, 'der Hohlraum muss durchsichtig bleiben');
+});
+
+test('Jede Kante bekommt einen Lichtsaum, nicht nur die oberste', () => {
+  /*
+   * FUND (belegt): `drawSurfaceEdge` hatte ein `break` in der inneren
+   * Schleife — es wurde nur die ERSTE Kante je Spalte beleuchtet. Bei einem
+   * Höhenfeld ist das richtig; bei einer Maske mit Höhlen blieben Decke und
+   * Boden jeder Kammer unbeleuchtet.
+   *
+   * Im Browser war das der Unterschied zwischen „Höhle" und „Loch im Papier":
+   * Die Geländeoberfläche hatte einen Lichtsaum, die Höhlenkanten nicht.
+   */
+  const width = 1;
+  const height = 9;
+
+  /*
+   * Eine Spalte mit DREI Kanten: Geländeoberfläche, Kammerdecke, Kammerboden.
+   *
+   *     y=0  Luft
+   *     y=1  Land   <- Kante 1 (Oberfläche)
+   *     y=2  Luft
+   *     y=3  Land   <- Kante 2 (Kammerdecke)
+   *     y=4  Land
+   *     y=5  Luft
+   *     y=6  Land   <- Kante 3 (Kammerboden)
+   *     y=7  Land
+   *     y=8  Land
+   */
+  const bitmap = new Uint8Array([0, 1, 0, 1, 1, 0, 1, 1, 1]);
+
+  // Ein Aufzeichner statt eines echten Canvas — geprüft wird, WO gezeichnet wurde.
+  const striche = [];
+  const fakeCtx = {
+    globalCompositeOperation: 'source-over',
+    fillStyle: '',
+    fillRect(x, y, w, h) { striche.push({ x, y, w, h }); },
+  };
+
+  drawSurfaceEdge(fakeCtx, bitmap, width, height, [100, 150, 60]);
+
+  const anStellen = striche.map(s => s.y).sort((a, b) => a - b);
+
+  assert.deepEqual(anStellen, [1, 3, 6],
+    `Es wurden ${anStellen.length} Kanten beleuchtet (y=${anStellen.join(', ')}) — `
+    + 'erwartet werden drei (Oberfläche, Kammerdecke, Kammerboden)');
 });

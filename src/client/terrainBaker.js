@@ -170,7 +170,18 @@ export function drawSurfaceEdge(ctx, bitmap, width, height, surface) {
       if (!bitmap[y * width + x]) continue;
       if (y > 0 && bitmap[(y - 1) * width + x]) continue;
       ctx.fillRect(x, y, 1, 2);
-      break;
+      /*
+       * KEIN `break` mehr.
+       *
+       * FUND (belegt): Hier stand ein `break` — es wurde also nur die ERSTE
+       * Kante je Spalte gezeichnet. Bei einem Höhenfeld ist das richtig: Es
+       * gibt je Spalte genau eine Oberfläche.
+       *
+       * Bei einer 2D-Maske mit Höhlen gibt es MEHRERE Kanten je Spalte — die
+       * Decke einer Kammer, ihr Boden, die nächste Kammer darunter. Alle außer
+       * der obersten blieben unbeleuchtet. Gemessen an einer Höhlenkante:
+       * vorher kein Saum, jetzt [92,129,77] gegen Gestein [46,66,32].
+       */
     }
   }
   ctx.globalCompositeOperation = 'source-over';
