@@ -14,6 +14,8 @@
     "check:fuses": "node scripts/check-fuses.mjs",
     "check:range": "node scripts/check-range.mjs",
     "check:achievements": "node scripts/check-achievements.mjs",
+    "check:crates": "node scripts/check-crates.mjs",
+    "check:maelstrom": "node scripts/check-maelstrom.mjs",
     "test": "node --test tests/*.test.js --test-reporter=spec",
     "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js",
     "test:e2e": "playwright test",

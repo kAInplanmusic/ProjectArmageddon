@@ -2221,11 +2221,28 @@ beschrieben.
 
 ### Aus dem Fremd-Audit (User-Flow/Spaßfaktor) — siehe `docs/audit-userflow.md`
 
-- [ ] **Kisten sind praktisch unerreichbar.** Aufheberadius **18 px**
-      (`lootSystem.js:15,122`) bei Karten von 1280 px Breite. Kisten liegen auf
-      `groundY - 14`. Ohne Wurf-/Greifmechanik ist der Loot-Strang Kosmetik.
-      *Vorschlag:* Aufheben als Zugaktion mit Reichweite (60–100 px) oder
-      Springen auf die Kiste.
+- [ ] **Kisten sind praktisch unerreichbar — Zahlen liegen vor, Entscheidung
+      offen.** Aufheberadius **18 px** (`lootSystem.js:25`) bei Karten von
+      1280 px Breite.
+
+      *Neu: `npm run check:crates`* — es misst für mehrere Radien, wie oft eine
+      Figur in Reichweite kommt. Ergebnis über 6 Partien:
+
+      | Radius | Partien mit Berührung | Berührungen gesamt |
+      |---|---|---|
+      | **18 px (heute)** | **1 von 6** | **1** |
+      | 40 px | 6 von 6 | 757 |
+      | 70 px | 6 von 6 | 1.913 |
+      | 110 px | 6 von 6 | 3.957 |
+
+      **Der Sprung von 18 auf 40 px entscheidet über alles** — von „1 von 6" auf
+      „6 von 6". Der heutige Wert liegt *unterhalb* des Sprungbogens: Eine Figur
+      ist 14 px breit, ein Sprung trägt sie weiter. In einer Messung fehlte
+      **1 px** (Seed 1137: kleinster Abstand 19 px).
+
+      *Offen — Spielgefühls-Entscheidung:* Der Radius bestimmt, ob eine Kiste
+      eine Belohnung für Zufall, eine erreichbare Wahl oder ein Automatismus
+      ist. Die Zahlen zeigen, was jeder Wert bewirkt; gewählt ist noch keiner.
 
 - [ ] **Matchdauer 5,7–11,0 min** (8 Seeds gemessen: 31–60 Züge, 29–51
       Schüsse). Für einen Prototyp mit 4 Figuren zu lang; keine Partie endete
@@ -2248,9 +2265,27 @@ beschrieben.
       **kein** Konfigurationsfeld ohne Leser bleibt (Ausnahme: die beiden
       Dimensionsangaben, die ausdrücklich Beschreibung sind).
 
-- [ ] **Mahlstrom greift zu spät** (`roundBreakpoint = 15`). Gemessen endeten
-      6 von 8 Partien bei oder nach Runde 15 — der Spannungsbogen kommt, oft war
-      die Partie aber schon entschieden. *Hebel:* Breakpoint 15 → 8.
+- [ ] **Mahlstrom greift zu spät — Zahlen liegen vor, Entscheidung offen.**
+      Breakpoint heute **Runde 15**.
+
+      *Neu: `npm run check:maelstrom`* — es spielt Partien und protokolliert die
+      Endrunden. Ergebnis über 6 Partien: **Keine einzige endete vor Runde 15.**
+      Der Mahlstrom ist damit kein Endspiel-Beschleuniger, sondern der Regelweg:
+      Er greift, wenn die Partie ohnehin zu Ende geht (Ø 11 Runden unter Sturm).
+
+      *Was die Breakpoints bedeuteten:*
+
+      | Breakpoint | greift nach | verbleibende Runden (Ø) |
+      |---|---|---|
+      | 4 | Runde 4 | 22,0 |
+      | 8 | Runde 8 | 18,0 |
+      | 10 | Runde 10 | 16,0 |
+      | **15 (heute)** | Runde 15 | 11,0 |
+
+      *Offen — Spielgefühls-Entscheidung:* Ein später Breakpoint räumt auf, ein
+      früher (8–10) macht die Verengung zum **Spielziel** — beide Seiten müssen
+      sich bewegen und können den Gegner hineinwerfen. Das verkürzt die Partie
+      und ändert das Spielgefühl.
 
 - [ ] **Erfolge: Inhalte fehlen, aber die Schwellen sind jetzt geprüft.**
       Alle 11 Erfolge tragen `muster: true`. Die **Mechanik ist vollständig** —
