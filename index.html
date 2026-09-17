@@ -199,6 +199,25 @@
      * für die Tastaturbedienung, Zeiger für die Maus, und eine deutliche Reaktion
      * beim Überfahren.
      */
+    /*
+     * Ein Hinweis unter einem Feld. Kleiner und gedämpft, damit er erklärt und
+     * nicht mit der Beschriftung konkurriert.
+     */
+    .field-hint {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      line-height: 1.35;
+      color: var(--muted);
+      /*
+       * `label` setzt `text-transform: uppercase` für die Beschriftung. Ein
+       * ganzer Satz in Großbuchstaben wäre schwer zu lesen — der Hinweis hebt
+       * das für sich auf.
+       */
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
     #hud-abort {
       font: inherit;
       color: inherit;
@@ -766,8 +785,25 @@
                 <option value="portrait">Hochformat</option>
               </select>
             </label>
-            <label>Seed (leer = zufällig)
-              <input id="cfg-seed" type="text" inputmode="numeric" placeholder="z. B. 20260910" />
+            <!--
+              Der Seed bestimmt die Karte. Leer bedeutet: zufällig gezogen.
+
+              Der gezogene Wert steht nach dem Start im Ereignisprotokoll
+              („Lokales Match — Seed 4242"), ist also ablesbar und zum
+              Nachspielen geeignet. Das Feld bleibt trotzdem standardmäßig leer:
+              Ein fest eingetragener Wert würde bei jedem Start dieselbe Karte
+              erzeugen — für ein Spiel, das man öfter beginnt, wäre das eine
+              schlechtere Vorgabe als eine neue Karte je Runde.
+
+              Der Hilfetext nennt beide Seiten, damit die Wahl eine ist.
+            -->
+            <label>Seed
+              <input id="cfg-seed" type="text" inputmode="numeric"
+                     placeholder="leer = neue Karte" />
+              <small class="field-hint">
+                Gleicher Seed = gleiche Karte und gleicher Verlauf. Der gezogene
+                Wert steht nach dem Start im Protokoll.
+              </small>
             </label>
             <!--
               WebGPU ist eine WAHL, keine Vorgabe. Der CPU-Weg ist der geprüfte
