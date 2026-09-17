@@ -1903,6 +1903,56 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 
 ### H. Umstrukturierung zum Server-Spiel
 
+**Matcharten (Auftrag, 2026-09-17):**
+
+| Matchart | Spieler | Einheiten je Spieler | Figuren |
+|---|---|---|---|
+| klein | 2–4 | 3 | 6–12 |
+| groß | 4 | 4 | 16 |
+| Krieg | 6–8 | 5 | 30–40 |
+
+- [x] **Kamera gebaut** (`src/client/camera.js`, 12 Tests). Der Bildschirm zeigt
+      einen **Ausschnitt** statt der ganzen Karte. Im Browser belegt: Bei Zoom 1
+      scrollt sie über eine 2560er Karte (sichtbar 1920 px); auf einem 4K-Fenster
+      ist die Figur so groß wie auf Full HD. Der Einbau in den Renderer ist
+      **eine Klammer** (`ctx.setTransform`) um 13 Weltfunktionen — alle 266
+      Zeichenaufrufe blieben unverändert.
+- [x] **Vier Kartengrößen** (`klein` 1280×720 bis `krieg` 5120×2880, je in beiden
+      Ausrichtungen mit gleicher Fläche). Das Drahtformat trägt bis 8192 px.
+- [x] **Acht Teamfarben** statt vier. Die Lobby prüft die Teamzahl jetzt gegen
+      `TEAM_COLORS.length` — vorher standen dort zwei Zahlen, die einander
+      widersprachen.
+- [x] **Rechenlast gemessen statt hochgerechnet.** 40 Figuren kosten **1,9 %**
+      eines Kerns. Meine frühere lineare Hochrechnung („115 %") lag um **Faktor
+      60** daneben — ein großer Teil der Arbeit je Tick hängt nicht an den
+      Figuren. *Ohne Nachmessen wäre die Instanz um eine Größenordnung zu groß
+      geplant worden.*
+- [x] **Matcharten berechnet** (`npm run check:sizes`).
+- [x] **Determinismus bei 40 Figuren geprüft** (`tests/viele-figuren.test.js`):
+      gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene Hashes.
+- [ ] **Gleichzeitige Züge — die Sperre für den Kriegsmodus.**
+
+      *Gemessen* (`npm run check:simultaneous`), Partiedauer bei 29 Runden:
+
+      | Matchart | jede Einheit einzeln | je Spieler ein Zug | je Team ein Zug |
+      |---|---|---|---|
+      | klein (4×3) | 116 min | 39 min | 19 min |
+      | groß (4×4) | **2,6 h** | 39 min | 19 min |
+      | Krieg (8×5) | **6,4 h** | 77 min | 39 min |
+
+      Die Zugzeit gilt **je Zug**. Zieht jede Einheit einzeln, wird der
+      Kriegsmodus eine Partie von über sechs Stunden.
+
+      *Der Eingriff:* `endTurn()` zählt heute einen Spieler weiter
+      (`nextIndex = (nextIndex + 1) % turnOrder.length`). Für „je Spieler" müsste
+      die Runde in **Gruppen** laufen — und das berührt die
+      Determinismus-Grundlage: Die Ausführungsreihenfolge muss festgelegt sein,
+      der Zustandshash die Gruppe enthalten, und der Replay-Recorder die
+      Eingaben je Gruppe ordnen. **Die größte Einzeländerung am Motor bisher.**
+
+      *Entscheidung nötig:* Welches Modell — je Spieler (77 min) oder je Team
+      (39 min)? Und: Soll die Zugzeit im Kriegsmodus kürzer sein?
+
 **Auftrag (2026-09-17):** Das Browser-Spiel soll auf gemieteten Instanzen laufen
 (RunPod GPU / Hetzner CPU, sekundengenau abgerechnet), in Full-HD bis 4K, mit
 2–8 Spielern, großen Karten, 150 Waffen, KI-NPCs, zerstörbaren
