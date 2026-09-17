@@ -1803,8 +1803,30 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Wasser, Ambiente und Landmarken, der sich jeder Kartengroesse anpasst. Der
       Prompt steht im Katalog; nichts davon entsteht zur Laufzeit — Determinismus
       und Offline-Betrieb bleiben erhalten.
-- [ ] Terrain, Wasser und Effekte optisch aufwerten (prozedural: Textur,
-      Kantenlicht, Farbtiefe, Partikel).
+- [ ] **Terrain optisch aufwerten — Bestand gemessen, Entscheidung offen.**
+      *Neu: `npm run check:terrain`* — es misst die Bodenfarben, das Kantenlicht
+      und die Tiefenwirkung, ohne Browser.
+
+      *Sichtprüfung im Browser (Screenshot) und Messung zusammen:*
+
+      | Eigenschaft | Befund |
+      |---|---|
+      | Körnung/Textur | **vorhanden** — die Fläche ist nicht einfarbig |
+      | Tiefenwirkung | **stark** — Δ Helligkeit oben→unten 40 (Basalt) bis 130 (Schnee) |
+      | Farbabstufung | **vorhanden** — hell auf Kuppen, dunkel in Tälern |
+      | Kantenlicht | **schwach** — wirksam Δ 4 (Sand) bis 15 (Basalt) |
+      | Kantenbreite | **1 px, eine Stufe** — kein Verlauf |
+
+      *Der eine echte Spielraum:* Das Kantenlicht trägt Alpha 0,22 auf einen
+      Unterschied von 15–27 — wirksam bleiben 3–6 Stufen. Bei 8 Bit je Kanal ist
+      das die Grenze der Wahrnehmbarkeit, und zwar **abhängig vom Boden**: Auf
+      Sand und Schnee verschwindet es, auf Basalt ist es deutlich. Dazu ist die
+      Kante überall ein **einzelner** Strich von 1 px — ein Licht, das Tiefe
+      erzeugt, hätte zwei bis drei Stufen mit abnehmender Helligkeit.
+
+      *Offen — Gestaltungsentscheidung:* Wie stark die Oberfläche hervortreten
+      soll, ist Geschmack. Die Messung zeigt, dass der Boden bereits Volumen
+      hat; nur die Kante ist am unteren Rand der Sichtbarkeit.
 
 ### G. Betrieb und Backend
 - [x] **Deployment-Konzept.** Erledigt - siehe `docs/betrieb.md` und die
