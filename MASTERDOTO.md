@@ -1810,7 +1810,32 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [x] **Deployment-Konzept.** Erledigt - siehe `docs/betrieb.md` und die
       ausfuehrliche Fassung unter "Offene Punkte aus dem Audit". Der Server ist
       jetzt startbar (`npm run server`); das Startskript fehlte vorher.
-- [ ] Konten und Anmeldung (Profile müssen zuordenbar sein).
+- [ ] **Konten und Anmeldung — Trennstelle gezogen, Entscheidung offen.**
+      *Befund:* Profil, Erfolge und Statistik liegen im **Browser**
+      (`localStorage`). Ein anderer Rechner, ein anderer Browser oder ein
+      gelöschter Cache bedeutet den Verlust aller Erfolge — der Spieler erfuhr
+      es erst, wenn es zu spät war.
+
+      *Neu: `src/shared/identity.js`* zieht die Trennstelle. Alles, was über
+      „wer spielt" und „wo liegt sein Profil" zu entscheiden ist, steht an EINER
+      Stelle. Der Ablageschlüssel war vorher eine lokale Konstante im Client
+      (jetzt importiert, mit Test auf Eindeutigkeit).
+
+      *Drei vorgesehene Ablageorte:* `lokal` (heute), `server-geraet`,
+      `server-konto`. Der aktive steht als `AKTUELLER_ABLAGEORT` an einer Stelle.
+
+      *Kein Personenbezug, bewusst:* Die Geräte-Kennung ist eine zufällige
+      Zeichenkette aus `crypto.getRandomValues` — kein Zeitstempel, keine
+      Browserkennung, keine Adresse. Sie sagt nur „dieser Browser war schon
+      einmal hier". Ein Test verbietet ausdrücklich den Personenbezug.
+
+      *Der Spieler wird informiert:* Das Menü nennt jetzt, dass der Fortschritt
+      im Browser liegt und was ein Browserwechsel bedeutet.
+
+      *Offen — Produkt- und Datenschutzentscheidung:* Ob und wie Konten
+      eingeführt werden (welche Daten, wer sieht sie, wie lange bleiben sie).
+      Die Infrastruktur steht; die Entscheidung ist nicht gefallen und wird hier
+      nicht vorweggenommen.
 - [ ] Auswertung: Wo lohnt KI im Betrieb (Kulissen vorab, Bot-Gegner,
       Auswertung der Partien)?
 

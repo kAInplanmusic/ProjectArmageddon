@@ -25,6 +25,7 @@ import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
+import { PROFIL_SCHLUESSEL, ablageHinweis, geraeteKennung } from '../shared/identity.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import {
@@ -47,7 +48,15 @@ import {
 } from '../shared/achievements.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
-const PROFIL_SCHLUESSEL = 'pa-profil-v1';
+/*
+ * Der Ablageschlüssel kommt jetzt aus `shared/identity.js`.
+ *
+ * FUND (belegt, Audit): Er stand hier als lokale Konstante — und die Frage
+ * „wo liegt der Fortschritt?" war damit im Client verstreut. Die Trennstelle
+ * für die noch offene Konten-Entscheidung liegt in `identity.js`; ein Test
+ * hält fest, dass es nur EINE Definition gibt.
+ */
+
 
 /** Reihenfolge der Schwierigkeitsstufen in der Erfolgsübersicht (leicht zuerst). */
 const TIER_REIHENFOLGE = ['leicht', 'mittel', 'schwer', 'sehr schwer'];
@@ -2234,10 +2243,28 @@ class Game {
     }
   }
 
-  /** Schreibt das Profil in den lokalen Speicher. */
+  /**
+   * Schreibt das Profil in den lokalen Speicher.
+   *
+   * ## Wo das Profil liegt
+   *
+   * Hier — im Browser des Spielers. Das ist der heutige Ablageort
+   * (`identity.js`, `AKTUELLER_ABLAGEORT`). Die Entscheidung über Konten ist
+   * offen; sie zu treffen heißt, `identity.js` zu ändern und die Ladefunktion
+   * hier auf den Server zu richten. Der Schlüssel und der Hinweistext stehen
+   * dort bereits.
+   *
+   * ## Die Geräte-Kennung
+   *
+   * Sie wird beim Speichern mitgeschrieben. Sie ist **kein Konto**: eine
+   * zufällige Zeichenkette ohne Bezug zu einer Person. Sie erlaubt nur, denselben
+   * Browser wiederzuerkennen — die Grundlage dafür, Fortschritt später einem
+   * Server zuzuordnen, ohne jemanden zu identifizieren.
+   */
   #speichereProfil() {
     try {
-      globalThis.localStorage?.setItem(PROFIL_SCHLUESSEL, JSON.stringify(this.profil.toJSON()));
+      const nutzlast = { ...this.profil.toJSON(), geraet: geraeteKennung() };
+      globalThis.localStorage?.setItem(PROFIL_SCHLUESSEL, JSON.stringify(nutzlast));
       return true;
     } catch (error) {
       // Voller oder gesperrter Speicher (Privatmodus): Das Spiel läuft weiter,
@@ -2343,9 +2370,21 @@ class Game {
     // Begründung sähe nach einem Fehler aus.
     const hinweis = document.getElementById('profil-hinweis');
     if (hinweis) {
-      hinweis.textContent = this.profil.lieblingsfraktion
-        ? ''
-        : 'Die Lieblingsnation braucht eine Charakterwahl — die gibt es noch nicht.';
+      /*
+       * Zwei Dinge stehen hier: warum die Lieblingsnation leer ist, und WO der
+       * Fortschritt liegt.
+       *
+       * Der zweite Teil kam mit dem Audit: Profil und Erfolge liegen im Browser
+       * (`identity.js`, `AKTUELLER_ABLAGEORT`). Ohne Hinweis erfährt der Spieler
+       * erst beim Browserwechsel, dass alles weg ist — dann ist es zu spät.
+       */
+      const teile = [];
+      if (!this.profil.lieblingsfraktion) {
+        teile.push('Die Lieblingsnation braucht eine Charakterwahl — die gibt es noch nicht.');
+      }
+      const ablage = ablageHinweis();
+      if (ablage.hinweis) teile.push(ablage.hinweis);
+      hinweis.textContent = teile.join(' ');
     }
   }
 
