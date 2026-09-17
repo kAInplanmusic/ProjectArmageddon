@@ -557,6 +557,29 @@ export class GameServer {
 
     this.#httpServer = createHttpServer((request, response) => this.#handleHttp(request, response));
     this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
+    /*
+     * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
+     * `error`-Ereignisse mit.
+     *
+     * FUND (belegt, beim Bau von `scripts/server.mjs`): Ohne diesen Zuhörer
+     * wirft Node den Fehler als UNBEHANDELTE Ausnahme und beendet den Prozess
+     * mit einem Stapelauszug. `listen()` rejected zwar ebenfalls — aber die
+     * Ausnahme kommt zuerst und reißt den Prozess ab, bevor `await` greifen
+     * kann.
+     *
+     * Praktische Folge: Ein belegter Port (der häufigste Startfehler überhaupt)
+     * meldete sich als roher Auszug mit `EADDRINUSE` statt als Satz, der sagt,
+     * was zu tun ist.
+     *
+     * Der Zuhörer leitet den Fehler an den Logger weiter; `listen()` rejected
+     * weiterhin, damit der Aufrufer ihn als Startfehler behandeln kann.
+     */
+    this.#wsServer.on('error', fehler => {
+      this.logger.error('websocket_error', 'WebSocket-Server meldet einen Fehler', {
+        code: fehler?.code ?? null,
+        message: fehler?.message ?? String(fehler),
+      });
+    });
     this.#wsServer.on('connection', socket => {
       this.metrics.connections += 1;
       // debug: im Betrieb ist jeder Verbindungsaufbau Rauschen, bei der Fehlersuche

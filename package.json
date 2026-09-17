@@ -25,6 +25,7 @@
     "perf:browser": "node scripts/browser-perf.mjs",
     "balance": "node scripts/balance-report.mjs",
     "balance:sweep": "node scripts/balance-report.mjs --sweep",
+    "server": "node scripts/server.mjs",
     "replay": "node scripts/replay.mjs",
     "icons": "python3 scripts/create-weapon-icons.py",
     "weapons:build": "node scripts/build-weapon-catalog.mjs"
