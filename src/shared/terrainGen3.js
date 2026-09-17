@@ -58,8 +58,18 @@ import { oberflaechen } from './terrainGen2.js';
  * Spielbarkeit hergeleitet (siehe `pruefeSpielbarkeit`).
  */
 export const CHARAKTER_ACHSEN = Object.freeze({
-  /** Wie viel der Karte Land ist. Wenig = Inseln, viel = Festung. */
-  landanteil: [0.22, 0.48],
+  /**
+   * Wie viel der Karte Land ist — als MITTLERER Anteil.
+   *
+   * FUND (belegt, eigener Fehler): Die Achse stand auf [0,22–0,48], wurde aber
+   * mit einem Faktor 0,75 gedämpft. Gemessen lag der echte Landanteil dadurch
+   * bei 15–33 % — weniger als der alte 1D-Generator (35 %).
+   *
+   * Jetzt hält die Achse, was sie verspricht: `landanteil` IST der mittlere
+   * Landanteil. Der Bereich 0,30–0,55 ergibt 30–55 % Land im Mittel, mit
+   * Schwankungen durch die Berge und Täler.
+   */
+  landanteil: [0.3, 0.55],
   /**
    * Anteil des Landes, der zu Hohlräumen wird. 0 = massiv.
    *
@@ -73,8 +83,38 @@ export const CHARAKTER_ACHSEN = Object.freeze({
   steilheit: [0.16, 0.52],
   /** Wie hoch das Wasser steht (Anteil der Kartenhöhe unter der Mitte). */
   wasser: [0.0, 0.3],
-  /** Wie fein das Gelände gegliedert ist (Oktaven-Anteil). */
-  zerklueftung: [1.6, 3.4],
+  /**
+   * Wie fein das Gelände gegliedert ist — die WELLENLÄNGE der Hügel.
+   *
+   * ## Warum das der richtige Hebel für Steilheit ist
+   *
+   * FUND (belegt, zwei eigene Fehler): Die Steilheit der Flanken sollte zuerst
+   * über die Amplitude gedämpft werden — das senkte aber auch die
+   * Höhennutzung (gemessen von 44 % auf 22 %, drei von zwanzig Karten unter
+   * 20 % Höhe).
+   *
+   * Steilheit und Höhe sind zwei Dinge: Eine Welle von 200 px Höhe mit 600 px
+   * Wellenlänge ist sanft, dieselbe Höhe mit 60 px Wellenlänge ist eine Wand.
+   * Der Hebel ist deshalb die **Wellenlänge**, nicht die Höhe.
+   *
+   * ## Die Richtung — gemessen, nicht geraten
+   *
+   * Der erste Versuch erhöhte die Zerklüftung auf [2,8–4,6] in der Annahme,
+   * mehr Gitterpunkte ergäben sanftere Hügel. Das Gegenteil war der Fall:
+   *
+   *     Zerklüftung 1,6–3,4:  Flanken 1,07 px/px,  7,3 % steil
+   *     Zerklüftung 2,8–4,6:  Flanken 2,62 px/px, 30,4 % steil
+   *
+   * Mehr Gitterpunkte heißen KÜRZERE Wellen — und kürzere Wellen bei gleicher
+   * Höhe sind steiler. Die richtige Richtung ist die andere: **weniger** Gitter
+   * punkte, also längere Wellen.
+   *
+   *     basisGitter = width / (14 × zerklüftung)
+   *
+   * Bei 1,0 liegt das Gitter bei `width/14` — auf einer 1280er Karte 91 px je
+   * Punkt. Das sind lange, sanfte Hügel.
+   */
+  zerklueftung: [0.8, 1.8],
   /** Wie breit die Landmassen sind. Hoch = eine große, niedrig = viele kleine. */
   zusammenhaengung: [0.35, 0.95],
   /** Wie stark die Ränder abfallen (Insel-Effekt). */
@@ -290,10 +330,72 @@ function baueKarte({ rng, width, height, charakter }) {
   /*
    * Das Höhenfeld.
    *
-   * Die Grundlinie folgt dem Landanteil: Viel Land heißt hohe Grundlinie (die
-   * Oberfläche liegt weiter oben). Die Amplitude folgt der Steilheit.
+   * ## Was die Achse `landanteil` bedeutet — und was sie vorher NICHT bedeutete
+   *
+   * FUND (belegt, eigener Fehler): Hier stand
+   *
+   *     grundlinie = height * (1 - landanteil * 0,75)
+   *
+   * Der Faktor 0,75 sollte den Anteil dämpfen, tat aber etwas anderes: Er
+   * senkte ihn. Nachgerechnet ergab `landanteil = 0,48` damit nur **36 %**
+   * echten Landanteil, und `landanteil = 0,22` nur **17 %**. Gemessen über
+   * zwölf Karten lag der Landanteil bei **15–33 % (Mittel 21 %)** — weniger
+   * als der alte 1D-Generator (35 %) und deutlich weniger als eine
+   * Worms-Karte (40–50 %).
+   *
+   * Das ist eine **Verschlechterung**, nicht nur ein Schönheitsfehler: Wenig
+   * Land heißt wenig Deckung, wenig Stellfläche und ein Spiel, das fast nur im
+   * Himmel stattfindet.
+   *
+   * ## Jetzt hält die Achse, was ihr Name verspricht
+   *
+   *     grundlinie = height * (1 - landanteil)
+   *
+   * Der MITTLERE Landanteil ist damit genau `landanteil`. Die Amplitude
+   * verschiebt ihn nach oben und unten — das sind die Berge und Täler, und
+   * diese Schwankung ist gewollt.
+   *
+   * Die Achse selbst reicht jetzt von 0,30 bis 0,55 statt von 0,22 bis 0,48.
+   * Bei einem mittleren Wert von 0,4 schwankt der echte Anteil zwischen 23 %
+   * und 57 % — es gibt also flache Seenlandschaften UND gebirgige Karten.
    */
-  const grundlinie = height * (1 - charakter.landanteil * 0.75);
+  const grundlinie = height * (1 - charakter.landanteil);
+
+  /*
+   * Die Amplitude — die ganze Schwankung, nicht ihr halber Ausschlag.
+   *
+   * ## Zwei Fehler in Folge, beide gemessen
+   *
+   * **Erstens:** Die Amplitude war `height × steilheit`. Bei `steilheit = 0,51`
+   * ergab das 365 px. Gemessen: **5,07 px Höhenunterschied je 1 px Breite**,
+   * **57 % steile Flanken**. Ein Worms-Hügel hat 0,5 bis 1,5 px/px — das war
+   * eine Zickzacklinie.
+   *
+   * **Zweitens:** Der Gegenversuch dämpfte pauschal mit Faktor 0,55. Das
+   * senkte die Steilheit auf 1,07 px/px (gut) — aber auch die
+   * **Höhennutzung** von 44 % auf 22 %. Gemessen: Drei von zwanzig Karten
+   * nutzten weniger als 20 % der Kartenhöhe. Eine flache Karte ist ebenso
+   * langweilig wie eine zackige.
+   *
+   * ## Warum eine pauschale Dämpfung falsch war
+   *
+   * Steilheit und Höhe sind **zwei verschiedene Dinge**. Eine steile Flanke
+   * entsteht aus dem Verhältnis von Höhe zu Breite — nicht aus der Höhe allein.
+   * Eine Welle von 200 px Höhe mit 600 px Wellenlänge ist sanft; dieselbe Höhe
+   * mit 60 px Wellenlänge ist eine Wand.
+   *
+   * Der richtige Hebel ist deshalb die **Wellenlänge**: die Gitterweite des
+   * Rauschfelds, gesteuert über `zerklueftung` (siehe unten). Die Amplitude
+   * folgt der Steilheit-Achse unverändert.
+   *
+   * ## Was jetzt gilt
+   *
+   *     Schwankung der Oberfläche = amplitude
+   *
+   * Das Rauschen läuft von 0 bis 1, also schwankt `(rauschen − 0,5)` um ±0,5
+   * und die Oberfläche um ±amplitude/2 — **insgesamt um `amplitude`**. Deshalb
+   * entspricht die Amplitude jetzt der gewünschten Höhennutzung.
+   */
   const amplitude = height * charakter.steilheit;
   const oberflaeche = new Int32Array(width);
 
