@@ -2282,10 +2282,34 @@ beschrieben.
       steht und erst fallen muss. Beides ist korrigiert — der Aufbau springt
       jetzt 22-mal je Partie.
 
-- [ ] **Matchdauer 5,7–11,0 min** (8 Seeds gemessen: 31–60 Züge, 29–51
-      Schüsse). Für einen Prototyp mit 4 Figuren zu lang; keine Partie endete
-      vor Runde 15 durch Ausschaltung — der Mahlstrom ist der Regelweg, nicht
-      die Ausnahme. *Hebel:* Startgesundheit senken oder Rundengrenze 30 → ~12.
+- [ ] **Matchdauer: gemessen, der Hebel wirkt aber schwach.**
+      *Neu: `npm run check:time`* — es spielt Partien mit verschiedenen
+      Startgesundheiten und zeigt die Wirkung, BEVOR sie gemacht wird.
+
+      *Ergebnis (3 Partien je Wert, Zugzeit 20 s):*
+
+      | Basis | Leben | Runden | Züge | Dauer | Ausschaltung |
+      |---|---|---|---|---|---|
+      | **100 (heute)** | 96 | 19,7 | 40,3 | **13,4 min** | 3/3 |
+      | 80 | 77 | 17,3 | 34,0 | 11,3 min | 3/3 |
+      | 70 | 67 | 17,7 | 33,7 | 11,2 min | 3/3 |
+      | 60 | 58 | 17,7 | 33,7 | 11,2 min | 3/3 |
+
+      **Zwei Befunde:**
+
+      1. **Unter 70 passiert nichts mehr.** Die Partie wird nicht kürzer — der
+         Engpass liegt nicht an der Gesundheit, sondern an der **Trefferquote
+         (32 %)**. Weniger Leben hilft nur, solange Treffer überhaupt landen.
+      2. **Der Mahlstrom hat die Dauer erhöht, nicht gesenkt** (vorher
+         5,7–11,0 min). Das klingt verkehrt, ist aber eine Verbesserung: Vorher
+         endeten die Partien durch die **Rundengrenze** (Abbruch bei Runde 30),
+         jetzt durch echte **Ausschaltung**. Die Partie läuft aus, statt
+         abgeschnitten zu werden — sie ist damit länger, aber verdient.
+
+      *Offen — Entscheidung:* Ob 13 min zu lang sind, hängt davon ab, wie lange
+      ein Spieler sitzen will. Die Zahlen liegen vor; die wirksameren Hebel
+      wären eine höhere Trefferquote (schwerer zu treffen wäre hier falsch) oder
+      eine kürzere Zugzeit.
 
 - [x] **`maximum`-Werte entfernt — dazu ein Widerspruch aufgedeckt.**
       `MATCH_RULES` führte `duelSeconds.maximum: 60`,

@@ -71,7 +71,16 @@ export const WATER_SCALE = 4;
 export { CLASS_IDS, ARCHETYPE_IDS };
 export const TEAM_COLORS = Object.freeze(['#4cc9f0', '#f4a261', '#90be6d', '#e07a5f']);
 
-const BASE_HEALTH = 100;
+/*
+ * Grundgesundheit vor dem Klassenfaktor.
+ *
+ * Exportiert und über den Konstruktor einstellbar, damit Messwerkzeuge die
+ * Wirkung einer Änderung prüfen können, BEVOR sie gemacht wird
+ * (`scripts/check-match-time.mjs`) — dieselbe Regel wie bei `PICKUP_RADIUS`.
+ * Die wirksame Gesundheit ist dieser Wert mal `healthMultiplier` der Klasse
+ * (0,56 bis 1,56).
+ */
+export const BASE_HEALTH = 100;
 /*
  * Kraft in Geschwindigkeit (px/Tick je Krafteinheit).
  *
@@ -282,6 +291,14 @@ export class MatchController {
     turnDurationMs = null,
     orientation = 'landscape',
     /**
+     * Grundgesundheit vor dem Klassenfaktor. Teil der KONFIGURATION, wie
+     * `preset` — sie steht vor dem Start fest und ändert sich nicht.
+     *
+     * Vorhanden, damit Messwerkzeuge die Wirkung einer Änderung prüfen können,
+     * ohne den Quelltext zu verstellen. Ein Replay trägt sie im Kopf.
+     */
+    baseHealth = BASE_HEALTH,
+    /**
      * Sidegrades je Spielerplatz: `['kompakt', null, 'gepanzert']` — Index =
      * Spielerindex wie bei der Platzvergabe (`#spawnPlayers`).
      *
@@ -310,6 +327,8 @@ export class MatchController {
     this.#turnDurationMs = turnDurationMs
       ?? MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
     this.maxRounds = maxRounds;
+    /** Grundgesundheit (siehe Konstruktor-Option) — mal Klassenfaktor. */
+    this.baseHealth = baseHealth;
     this.preset = preset;
     /** Sidegrades je Spielerplatz — als Kopie, damit ein Aufrufer sie nicht
      *  nachträglich unter uns verändern kann. */
@@ -561,7 +580,7 @@ export class MatchController {
       // Leben kommt aus dem gemeinsamen Kampfprofil (classes.js) — nicht aus
       // einer zweiten, hier nachgebauten Multiplikation.
       const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId);
-      const maxHealth = Math.round(BASE_HEALTH * profile.healthMultiplier);
+      const maxHealth = Math.round(this.baseHealth * profile.healthMultiplier);
 
       this.#world.addComponent(entityId, 'Position', { x, y });
       this.#world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
