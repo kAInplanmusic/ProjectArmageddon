@@ -193,6 +193,31 @@
       text-align: center;
     }
 
+    /*
+     * Der Abbruchknopf sieht aus wie eine Statuskachel — er ist aber bedienbar.
+     * Deshalb echte Button-Eigenschaften statt der Panel-Optik: sichtbarer Fokus
+     * für die Tastaturbedienung, Zeiger für die Maus, und eine deutliche Reaktion
+     * beim Überfahren.
+     */
+    #hud-abort {
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      border: 1px solid var(--panel-edge);
+      background: var(--panel);
+      border-radius: 8px;
+      transition: border-color 120ms ease, color 120ms ease;
+      /*
+       * `#hud` hat `pointer-events: none`, damit die Klickfläche des Spielfelds
+       * frei bleibt. Der Knopf muss das für sich aufheben — sonst wäre er
+       * sichtbar, aber nicht bedienbar. Genau dieser Fall hat schon einmal
+       * zugeschlagen (die Waffenzeilen brauchen es ebenfalls, Zeile ~266).
+       */
+      pointer-events: auto;
+    }
+    #hud-abort:hover { border-color: var(--danger); color: var(--danger); }
+    #hud-abort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
     .stat .label {
       display: block;
       font-size: 10px;
@@ -621,6 +646,21 @@
             <span class="label">Netz</span>
             <span class="value" id="hud-connection">offline</span>
           </div>
+          <!--
+            Abbruch im HUD.
+
+            FUND (belegt, User-Flow-Audit): Bis hier gab es nur die Taste R —
+            sie wirkt global, beendet das Match SOFORT und ohne Rückfrage. Wer
+            sie versehentlich trifft, verliert die Partie; und wer sie sucht,
+            findet sie nur in der Tastaturliste im Menü.
+
+            Der Knopf macht den Weg sichtbar. Er fragt nach: Ein begonnenes
+            Match soll nicht durch einen Fehlgriff enden.
+          -->
+          <button type="button" id="hud-abort" class="stat panel" hidden title="Match verlassen (R)">
+            <span class="label">Match</span>
+            <span class="value">verlassen</span>
+          </button>
         </div>
 
         <div id="hud-left" class="panel">

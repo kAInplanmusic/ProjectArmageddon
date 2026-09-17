@@ -132,6 +132,17 @@ class Game {
   #bindMenu() {
     this.menuOverlay = document.getElementById('menu-overlay');
     this.endOverlay = document.getElementById('end-overlay');
+    /*
+     * Der Abbruchknopf im HUD — sichtbar nur während eines Matches.
+     *
+     * `#zeigeAbbruch(false)` steht hier zusätzlich zum `hidden`-Attribut im
+     * HTML: Das Attribut verhindert ein Aufblitzen beim Laden (es wirkt, bevor
+     * JavaScript läuft), der Aufruf setzt den Zustand explizit. Ein Test hält
+     * beides fest — beim ersten Anlauf fehlte die eine Hälfte, und der Knopf
+     * stand im Menü.
+     */
+    this.abortButton = document.getElementById('hud-abort');
+    this.#zeigeAbbruch(false);
     this.winnerText = document.getElementById('winner-text');
     this.endSummary = document.getElementById('end-summary');
 
@@ -167,14 +178,75 @@ class Game {
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
       if (isTextEntry(event.target)) return;
       if (event.key === 'r' || event.key === 'R') {
-        this.network?.disconnect();
-        this.network = null;
-        this.match = null;
-        this.mode = 'local';
-        this.endOverlay.hidden = true;
-        this.menuOverlay.hidden = false;
+        this.abortMatch();
       }
     });
+
+    /*
+     * Der Abbruchknopf im HUD.
+     *
+     * FUND (belegt, User-Flow-Audit): Bis hier gab es nur die Taste R. Sie
+     * wirkt global und beendet das Match SOFORT — wer sie versehentlich
+     * trifft, verliert die Partie. Ein sichtbarer Weg existierte nicht: nur
+     * ein Eintrag in der Tastaturliste des Menüs.
+     */
+    this.abortButton?.addEventListener('click', () => this.abortMatch());
+  }
+
+  /**
+   * Verlässt das laufende Match und kehrt ins Menü zurück.
+   *
+   * Beide Wege (Taste `R` und der HUD-Knopf) laufen hier zusammen — es gibt
+   * nur EINE Umsetzung. Der Unterschied liegt allein in der Rückfrage: Ein
+   * Tastendruck kann ein Fehlgriff sein, ein Klick auf einen beschrifteten
+   * Knopf ist eine Absicht. Deshalb fragt nur der Knopf nach.
+   *
+   * @param {{frage?: boolean}} [optionen] - `frage: true` verlangt eine
+   *   Bestätigung, bevor abgebrochen wird.
+   * @returns {boolean} true, wenn abgebrochen wurde
+   */
+  abortMatch({ frage = true } = {}) {
+    // Kein Match, nichts abzubrechen — der Knopf ist dann auch unsichtbar.
+    const laeuft = Boolean(this.match) || this.mode === 'online';
+    if (!laeuft) return false;
+
+    if (frage && typeof globalThis.confirm === 'function') {
+      // Der Text nennt die Folge beim Namen: Das Match geht verloren.
+      const sicher = globalThis.confirm(
+        'Match verlassen? Der Spielstand geht verloren.',
+      );
+      if (!sicher) return false;
+    }
+
+    this.#verlasseMatch();
+    return true;
+  }
+
+  /** Räumt den Match-Zustand auf und zeigt das Menü. */
+  #verlasseMatch() {
+    // Vor dem Abräumen: den Knopf verschwinden lassen, sonst bliebe er im
+    // Menü stehen, wo es nichts abzubrechen gibt.
+    this.network?.disconnect();
+    this.network = null;
+    this.match = null;
+    this.mode = 'local';
+    this.endOverlay.hidden = true;
+    this.menuOverlay.hidden = false;
+    this.#zeigeAbbruch(false);
+  }
+
+  /**
+   * Blendet den Abbruchknopf ein oder aus.
+   *
+   * Zentral, weil es drei Startwege gibt (lokal, online, Replay-Wiedergabe) und
+   * zwei Enden (Match vorbei, Abbruch). Eine Anzeige, die an drei Stellen
+   * getrennt gepflegt wird, läuft irgendwann auseinander — genau das war die
+   * Ursache mehrerer Befunde in diesem Projekt.
+   *
+   * @param {boolean} sichtbar
+   */
+  #zeigeAbbruch(sichtbar) {
+    if (this.abortButton) this.abortButton.hidden = !sichtbar;
   }
 
   #origin() {
@@ -573,6 +645,7 @@ class Game {
 
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
+    this.#zeigeAbbruch(true);
     this.running = true;
     this.hud.log(`Lokales Match — Seed ${this.match.seedManager.baseSeed}`, 'accent');
     if (!this.animationHandle) this.#loop(performance.now());
@@ -1701,6 +1774,13 @@ class Game {
   #showEndScreen(winnerTeamId) {
     if (this.endOverlay.hidden === false) return;
     this.running = false;
+    /*
+     * Der Abbruch verschwindet mit dem Match.
+     *
+     * Der Knopf heißt „Match verlassen" — im Endbildschirm gibt es kein Match
+     * mehr zu verlassen. Der Rückweg ins Menü steht dort als eigener Knopf.
+     */
+    this.#zeigeAbbruch(false);
     this.winnerText.textContent = winnerTeamId === null || winnerTeamId === undefined
       ? 'Unentschieden — niemand überlebt'
       : `Team ${winnerTeamId + 1} gewinnt`;
@@ -1975,6 +2055,9 @@ class Game {
     this.lastFrameTime = 0;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
+    // Im Wiedergabemodus gibt es keinen Abbruch: Er hat eigene Knöpfe, und ein
+    // „Match verlassen" wäre dort irreführend — es läuft kein Match.
+    this.#zeigeAbbruch(false);
     this.hud.clearLog();
     /*
      * Die Anzeige braucht Gelände und Wasser des nachgespielten Matches. Ohne
