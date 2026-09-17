@@ -115,9 +115,23 @@ test('Mahlstrom kontrahiert Terrain und verursacht toxischen Regen', () => {
 });
 
 test('Mahlstrom-Schadensformel wächst exponentiell', () => {
-  assert.equal(computeMaelstromDamage(14), 0);
-  assert.equal(computeMaelstromDamage(15), MATCH_RULES.suddenDeath.outOfZoneDamageBase);
-  assert.ok(computeMaelstromDamage(17) > computeMaelstromDamage(16));
+  /*
+   * Die Runden kommen aus der KONFIGURATION, nicht als feste Zahlen.
+   *
+   * FUND (belegt): Hier standen `computeMaelstromDamage(14)` und `(15)` — die
+   * Zahlen 14 und 15 sind der Breakpoint minus eins und der Breakpoint selbst.
+   * Als der Breakpoint von 15 auf 8 gesenkt wurde, schlugen diese Zeilen fehl,
+   * obwohl die FORMEL unverändert richtig war. Ein Test, der eine
+   * Konfigurationsgröße fest verdrahtet, bremst genau die Änderung, für die er
+   * gedacht ist.
+   */
+  const bp = MATCH_RULES.suddenDeath.roundBreakpoint;
+  assert.equal(computeMaelstromDamage(bp - 1), 0,
+    `In Runde ${bp - 1} (vor dem Breakpoint) darf kein Schaden entstehen`);
+  assert.equal(computeMaelstromDamage(bp), MATCH_RULES.suddenDeath.outOfZoneDamageBase,
+    `In Runde ${bp} (der Breakpoint) gilt der Grundschaden`);
+  assert.ok(computeMaelstromDamage(bp + 2) > computeMaelstromDamage(bp + 1),
+    'der Schaden muss von Runde zu Runde wachsen');
 });
 
 // -------------------------------------------------------------------- Loot

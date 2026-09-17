@@ -3,6 +3,7 @@ import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { WEAPONS, WEAPONS_BY_ID, getWeapon } from '../src/shared/config/weapons.js';
 import { WET_LEVEL, DROWN_LEVEL } from '../src/shared/config/water.js';
+import { MATCH_RULES } from '../src/shared/config/match.js';
 import {
   StatusStore,
   SPECIAL_EFFECTS,
@@ -452,19 +453,51 @@ test('Schaden über Zeit kann nicht unbegrenzt andauern', () => {
   match.world.setComponent(aktiver, 'Health', 'max', 5000);
   match.statuses.addDot(aktiver, { damagePerTurn: 1, turns: SPECIAL_DEFAULTS.maxTurns, element: 'poison' });
 
-  // Deutlich mehr Züge als die Dauer.
-  let guard = 0;
-  while (guard < 40) {
+  /*
+   * FUND (belegt): Dieser Test lief 40 Züge und prüfte danach, dass kein
+   * Schaden mehr entsteht. Als der Mahlstrom-Breakpoint von 15 auf 8 gesenkt
+   * wurde, verursachte der STURM ab Runde 8 eigenen Schaden — und der Test
+   * schlug fehl, obwohl der GIFT-Effekt korrekt ausgelaufen war
+   * (gemessen: nach 5 Zügen 0 Dots, danach 750 LP Verlust vom Sturm).
+   *
+   * Der Test misst jetzt genau so viele Züge, wie der Effekt dauert — plus
+   * einen, um den Ablauf zu belegen. Damit misst er NUR den Effekt und nicht
+   * zusätzlich den Sturm.
+   */
+  /*
+   * Die Dauer in ZÜGEN ist nicht `maxTurns`, sondern `maxTurns × Spielerzahl`.
+   *
+   * FUND (belegt, gemessen): `maxTurns` zählt RUNDEN — der Effekt verliert eine
+   * Stufe je Runde. Eine Runde hat bei 2 Spielern aber 2 Züge. `maxTurns: 5`
+   * bedeutet also 10 Züge, nicht 5.
+   *
+   * Gemessen: Schaden in Zug 3, 5, 7, 9 — und nach Zug 10 ist der Effekt weg.
+   */
+  const spielerzahl = match.getState().entities.filter(e => e.alive).length;
+  const dauerInZuegen = SPECIAL_DEFAULTS.maxTurns * spielerzahl;
+
+  for (let zug = 0; zug < dauerInZuegen; zug += 1) {
+    assert.ok(match.statuses.dotCount(aktiver) > 0,
+      `In Zug ${zug + 1} von ${dauerInZuegen} muss der Effekt noch wirken`);
     match.endTurn();
-    guard += 1;
   }
 
   assert.equal(match.statuses.dotCount(aktiver), 0, 'Der Effekt muss abgelaufen sein');
   const abgelaufen = match.world.getComponent(aktiver, 'Health', 'current');
-  match.endTurn();
+
+  /*
+   * EIN weiterer Zug ohne Sturm-Einfluss. `endTurn` bis zur Rundengrenze würde
+   * den Mahlstrom wecken — geprüft wird deshalb nur der nächste Zug, und die
+   * Bedingung wird ausdrücklich genannt.
+   */
+  const runde = match.getState().round;
+  assert.ok(runde < MATCH_RULES.suddenDeath.roundBreakpoint,
+    `Testannahme: Runde ${runde} liegt vor dem Breakpoint `
+    + `(${MATCH_RULES.suddenDeath.roundBreakpoint}) — sonst misst der Test den Sturm mit`);
+
   match.endTurn();
   assert.equal(match.world.getComponent(aktiver, 'Health', 'current'), abgelaufen,
-    'Nach dem Ablauf darf kein Schaden mehr entstehen');
+    'Nach dem Ablauf darf der Effekt keinen weiteren Schaden verursachen');
 });
 
 test('Zufallswaffe wählt reproduzierbar aus dem Match-Seed', () => {

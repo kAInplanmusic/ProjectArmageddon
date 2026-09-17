@@ -37,7 +37,42 @@ export const MATCH_RULES = Object.freeze({
     fourPlayerSeconds: Object.freeze({ seconds: 20 }),
   }),
   suddenDeath: Object.freeze({
-    roundBreakpoint: 15,
+    /*
+     * Ab welcher Runde der Mahlstrom greift.
+     *
+     * ## Warum 8 (vorher 15)
+     *
+     * FUND (belegt, User-Flow-Audit): Bei 15 endete **keine** der gemessenen
+     * Partien vor dem Breakpoint — der Sturm griff also erst, wenn die Partie
+     * ohnehin zu Ende ging. Er räumte auf, statt zu eskalieren; als
+     * Spannungsbogen war er wirkungslos.
+     *
+     * Gemessen mit `npm run check:maelstrom` (6 Partien, Ø 24 Runden):
+     *
+     *     Breakpoint   greift nach   verbleibende Runden (Ø)
+     *            4       Runde 4             22,0
+     *            8       Runde 8             18,0
+     *           10      Runde 10             16,0
+     *           15      Runde 15             11,0   (vorher)
+     *
+     * ## Warum 8 und nicht 4
+     *
+     * Der Breakpoint bestimmt, was das Endspiel IST:
+     *
+     *   - **spät (15):** Der Sturm räumt auf, was entschieden ist. Er kostet
+     *     keine Entscheidung und erzeugt keine Spannung.
+     *   - **früh (8):** Die Verengung wird zum **Spielziel** — beide Seiten
+     *     müssen sich bewegen, verlieren Gelände und können den Gegner
+     *     hineinwerfen.
+     *   - **sehr früh (4):** Die Partie wird zur reinen Fluchtbewegung. Das
+     *     Gelände ist dann Nebensache, und die regulären Waffen (Bogenwurf,
+     *     Geländeverformung) verlieren an Gewicht.
+     *
+     * Acht Runden geben dem Spieler Zeit, die Karte zu lesen und eine Position
+     * zu beziehen — und lassen danach 18 Runden unter Sturm, in denen die
+     * Verengung wirkt. Das ist die Mitte zwischen „zu spät" und „verdrängt".
+     */
+    roundBreakpoint: 8,
     toxicRainMaxHpPercentPerTurn: 15,
     knockbackPercentBonus: 100,
     terrainContractionPixelsPerRound: 32,

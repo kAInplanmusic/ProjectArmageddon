@@ -30,6 +30,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -39,9 +40,38 @@ const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
 const SKRIPT = path.join(ROOT, 'scripts', 'server.mjs');
 
-/** Ein freier Port. Hoch genug, um nicht mit Diensten zu kollidieren. */
-let naechsterPort = 38_000 + Math.floor(Math.random() * 300);
-const freierPort = () => (naechsterPort += 1);
+/*
+ * Ein freier Port.
+ *
+ * FUND (belegt, im Volllauf): Der erste Anlauf nahm einen festen Bereich
+ * (38_000 + Zufall). Im Volllauf schlug ein Test EINMAL fehl — allein lief er
+ * dreimal grün. Ursache: `node --test` führt Dateien parallel aus, und ein
+ * anderer Test kann denselben Port belegen.
+ *
+ * Jetzt wird der Port NICHT geraten, sondern vom Betriebssystem erfragt: Ein
+ * kurz gebundener Socket auf Port 0 liefert eine garantiert freie Nummer.
+ * Zwischen Freigabe und Nutzung bleibt theoretisch eine Lücke — sie ist
+ * praktisch vernachlässigbar, und der Fehlerfall wird sauber gemeldet statt
+ * still zu scheitern.
+ */
+async function freierPort() {
+  /*
+   * Die Port-Nummer gibt es erst im `listening`-Ereignis.
+   *
+   * FUND (belegt): Ein erster Anlauf las `probe.address()` direkt nach
+   * `listen()` — das ist `null`. Der Test übergab `PORT=null` an den
+   * Serverprozess, der daraufhin auf dem Standardport startete und nie die
+   * erwartete Meldung schrieb. Die Folge war ein Hänger, kein Fehler.
+   */
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
 
 /**
  * Startet den Server als echten Prozess und wartet auf die Startmeldung.
@@ -113,7 +143,7 @@ test('Der Server startet, antwortet und beendet sich geordnet', async () => {
    * startet aber nicht antwortet (oder sich nicht beenden lässt), wäre in
    * Betrieb schlimmer als einer, der gar nicht startet.
    */
-  const port = freierPort();
+  const port = await freierPort();
   const s = starteServer(port);
 
   try {
@@ -147,7 +177,7 @@ test('Ohne Lobby wird nichts gespeichert — das ist richtig so', async () => {
    * Der Test hält deshalb das RICHTIGE Verhalten fest — nicht eine Erwartung,
    * die ich beim Schreiben geraten hatte.
    */
-  const port = freierPort();
+  const port = await freierPort();
   const s = starteServer(port);
 
   try {
@@ -168,7 +198,7 @@ test('Die Persistenz ist über die Umgebung abschaltbar', async () => {
    * Wegwerf-Instanzen ist das der Unterschied zwischen „schreibt in mein
    * Projektverzeichnis" und „fasst nichts an".
    */
-  const port = freierPort();
+  const port = await freierPort();
   const s = starteServer(port, { PA_PERSISTENCE: 'off' });
 
   try {
@@ -201,7 +231,7 @@ test('Ein belegter Port meldet sich verständlich, nicht als Stapelauszug', asyn
    * Geprüft wird: Exit-Code 1 (kein Absturz mit Signal), ein Satz mit dem Port
    * und ein konkreter Hinweis.
    */
-  const port = freierPort();
+  const port = await freierPort();
   const erster = starteServer(port);
 
   try {

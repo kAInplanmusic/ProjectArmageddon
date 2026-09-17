@@ -2265,9 +2265,22 @@ beschrieben.
       ist 14 px breit, ein Sprung trägt sie weiter. In einer Messung fehlte
       **1 px** (Seed 1137: kleinster Abstand 19 px).
 
-      *Offen — Spielgefühls-Entscheidung:* Der Radius bestimmt, ob eine Kiste
-      eine Belohnung für Zufall, eine erreichbare Wahl oder ein Automatismus
-      ist. Die Zahlen zeigen, was jeder Wert bewirkt; gewählt ist noch keiner.
+      **Umgesetzt: 110 px.** Die Messung zeigt eine **Schwelle** zwischen 70 und
+      110 px — darunter kommt praktisch nie eine Berührung zustande, darüber in
+      jeder Partie. Der kleinste gemessene Abstand lag bei **71 px**: die
+      natürliche Distanz, die ein Sprungbogen überbrückt.
+
+      *Belegt:* Eine Partie mit freiem Platz hebt jetzt **13 Kisten** auf; das
+      Inventar füllt sich. Vorher war das praktisch unmöglich.
+      *Abgesichert:* `tests/kisten-erreichbar.test.js` (5 Tests) — darunter, dass
+      eine Kiste wirklich aufgenommen wird und dass volle Vorräte gemeldet
+      werden statt still zu schlucken.
+
+      *Zwei eigene Messfehler, die dabei auffielen (im Werkzeug dokumentiert):*
+      Der erste Aufbau bewegte die Figuren kaum (drei Sprünge je Partie), und
+      `jump()` wurde von der Physik abgelehnt, weil eine Figur auf Kopfhöhe
+      steht und erst fallen muss. Beides ist korrigiert — der Aufbau springt
+      jetzt 22-mal je Partie.
 
 - [ ] **Matchdauer 5,7–11,0 min** (8 Seeds gemessen: 31–60 Züge, 29–51
       Schüsse). Für einen Prototyp mit 4 Figuren zu lang; keine Partie endete
@@ -2307,10 +2320,18 @@ beschrieben.
       | 10 | Runde 10 | 16,0 |
       | **15 (heute)** | Runde 15 | 11,0 |
 
-      *Offen — Spielgefühls-Entscheidung:* Ein später Breakpoint räumt auf, ein
-      früher (8–10) macht die Verengung zum **Spielziel** — beide Seiten müssen
-      sich bewegen und können den Gegner hineinwerfen. Das verkürzt die Partie
-      und ändert das Spielgefühl.
+      **Umgesetzt: Runde 8** (vorher 15). Bei 15 endete **keine** der gemessenen
+      Partien vor dem Breakpoint — der Sturm räumte auf, statt zu eskalieren.
+      Mit 8 greift er, solange die Partie noch offen ist, und lässt 18 Runden
+      unter Sturm.
+
+      *Warum nicht 4:* Dann würde die Partie zur reinen Fluchtbewegung; das
+      Gelände wäre Nebensache und die regulären Waffen verlören an Gewicht.
+      Acht Runden geben Zeit, die Karte zu lesen und eine Position zu beziehen.
+
+      *Abgesichert:* `tests/gameplay.test.js` prüft die Schadensformel jetzt
+      gegen den **konfigurierten** Breakpoint statt gegen die festen Zahlen
+      14/15 — die schlugen bei der Änderung fehl, obwohl die Formel richtig war.
 
 - [ ] **Erfolge: Inhalte fehlen, aber die Schwellen sind jetzt geprüft.**
       Alle 11 Erfolge tragen `muster: true`. Die **Mechanik ist vollständig** —
