@@ -39,6 +39,8 @@
  * Zug umzuwerfen. Siehe MASTERDOTO.md, Abschnitt „Klassen-Profil".
  */
 
+import { sidegradeModifiers } from './sidegrades.js';
+
 /**
  * Klassen-Rohdaten. `drag`, `mass` und `speed` liest der Motor derzeit nicht.
  *
@@ -108,17 +110,29 @@ export const CLASS_IDS = Object.freeze(Object.keys(CLASS_DEFINITIONS));
 export const ARCHETYPE_IDS = Object.freeze(Object.keys(CLASS_ARCHETYPES));
 
 /**
- * Wirksames Kampfprofil aus Klasse und Archetyp — die einzige Stelle, an der
- * beide Tabellen verrechnet werden.
+ * Wirksames Kampfprofil aus Klasse, Archetyp und optionalem Sidegrade — die
+ * einzige Stelle, an der diese Tabellen verrechnet werden.
  *
  * Alle Faktoren sind multiplikativ und auf die Grundwerte des Motors bezogen
  * (`BASE_HEALTH` = 100, `POWER_TO_SPEED` = 0,14 in `src/engine/match.js`).
  *
+ * Die Verkettung läuft in FESTER Reihenfolge: Klasse × Archetyp, danach das
+ * Sidegrade. Ein einziger Ausdruck, kein Zwischenschritt an einer Aufrufstelle —
+ * damit bleibt es bei „eine Regel, eine Stelle" und die Rechnung ist pur
+ * (dieselben Eingaben ergeben auf jedem Rechner dieselben Faktoren). Das ist die
+ * Voraussetzung dafür, dass ein Replay reproduzierbar bleibt.
+ *
  * @param {string} classId - z. B. `"scout"` (unbekannt → `scout`)
  * @param {string} archetypeId - z. B. `"brawler"` (unbekannt → `brawler`)
+ * @param {string|null} [sidegradeId] - Kennung aus `SIDEGRADE_IDS`. Eine
+ *   UNBEKANNTE Kennung ist tolerierbar und wirkt wie „kein Sidegrade": Sie setzt
+ *   `onFallback` NICHT — anders als eine unbekannte Klasse. Grund: Ein Replay aus
+ *   einer älteren Fassung oder eine Konfiguration mit Tippfehler soll spielbar
+ *   bleiben, und das Fehlen eines Sidegrades ist kein Fehler.
  * @returns {Readonly<{
  *   classId: string,
  *   archetypeId: string,
+ *   sidegradeId: string|null,
  *   healthMultiplier: number,
  *   damageMultiplier: number,
  *   launchSpeedMultiplier: number,
@@ -126,7 +140,7 @@ export const ARCHETYPE_IDS = Object.freeze(Object.keys(CLASS_ARCHETYPES));
  *   inert: Readonly<object>
  * }>}
  */
-export function combatProfile(classId, archetypeId) {
+export function combatProfile(classId, archetypeId, sidegradeId = null) {
   const fallbackKlasse = !CLASS_DEFINITIONS[classId];
   const fallbackArchetyp = !CLASS_ARCHETYPES[archetypeId];
   const classDef = CLASS_DEFINITIONS[classId] ?? CLASS_DEFINITIONS[FALLBACK_CLASS_ID];
@@ -134,17 +148,32 @@ export function combatProfile(classId, archetypeId) {
   const gewaehltClassId = fallbackKlasse ? FALLBACK_CLASS_ID : classId;
   const gewaehltArchetypeId = fallbackArchetyp ? FALLBACK_ARCHETYPE_ID : archetypeId;
 
+  // Basis aus Klasse und Archetyp (wie bisher), danach das Sidegrade.
+  const basisLeben = classDef.health * archetype.health;
+  const basisSchaden = classDef.power;
+  const basisTempo = classDef.power * (archetype.damage / ARCHETYPE_DAMAGE_BASE);
+
+  /*
+   * Sidegrade: unbekannte Kennung → `null` (kein Sidegrade), KEIN Rückfall auf
+   * ein Standard-Sidegrade. Ein erfundener Ersatz wäre eine stille
+   * Balance-Änderung; „kein Sidegrade" ist die neutrale und ehrliche Antwort.
+   */
+  const side = sidegradeModifiers(sidegradeId);
+  const gewaehltSidegradeId = side ? sidegradeId : null;
+
   return Object.freeze({
     classId: gewaehltClassId,
     archetypeId: gewaehltArchetypeId,
+    /** Das WIRKSAME Sidegrade — `null`, wenn keines gesetzt oder unbekannt. */
+    sidegradeId: gewaehltSidegradeId,
 
     // --- wirksam: diese drei liest der Motor ---
-    /** Leben: Klasse × Archetyp. */
-    healthMultiplier: classDef.health * archetype.health,
-    /** Schaden: nur die Klasse skaliert ihn. */
-    damageMultiplier: classDef.power,
-    /** Abschussgeschwindigkeit: Klasse × normalisierter Archetyp-Schadenswert. */
-    launchSpeedMultiplier: classDef.power * (archetype.damage / ARCHETYPE_DAMAGE_BASE),
+    /** Leben: Klasse × Archetyp × Sidegrade. */
+    healthMultiplier: basisLeben * (side?.healthMultiplier ?? 1),
+    /** Schaden: Klasse × Sidegrade (der Archetyp skaliert ihn nicht). */
+    damageMultiplier: basisSchaden * (side?.damageMultiplier ?? 1),
+    /** Abschussgeschwindigkeit: Klasse × Archetyp-Tempo × Sidegrade. */
+    launchSpeedMultiplier: basisTempo * (side?.launchSpeedMultiplier ?? 1),
 
     /** Wurde eine unbekannte Kennung ersetzt? Nützlich für Diagnosen. */
     onFallback: fallbackKlasse || fallbackArchetyp,

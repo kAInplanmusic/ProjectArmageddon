@@ -462,3 +462,126 @@ test('Die Wiedergabe trifft den Originalzustand exakt', () => {
   assert.equal(replayed.stateHash(), live.match.stateHash(),
     'Der Zustandshash weicht ab — die Wiedergabe ist nicht exakt');
 });
+
+// ---------------------------------------------------------------- Sidegrades
+
+/** Führt ein Match MIT Sidegrades aus und zeichnet es auf. */
+function runRecordedMatchMitSidegrades(sidegrades) {
+  const seed = 31337;
+  const match = new MatchController({
+    seed, teams: 2, playersPerTeam: 2, turnDurationMs: 3000, maxRounds: 6, sidegrades,
+  });
+  match.start();
+
+  const recorder = new ReplayRecorder({
+    seed, teams: 2, playersPerTeam: 2, preset: 'hills',
+    maxRounds: match.maxRounds, turnDurationMs: match.turnDurationMs, sidegrades,
+  });
+
+  const hashes = [];
+  let shots = 0;
+  let guard = 0;
+  const tickBudget = 30_000;
+
+  // Aufbau wie im bestehenden Helfer dieser Datei: Über `getState()` den aktiven
+  // Spieler holen und über `match.fire()` schießen. Ein eigener Takt-Pfad war
+  // der Fehler im ersten Anlauf (falsches Feld für den Takt).
+  while (match.status === 'playing' && guard < tickBudget) {
+    const state = match.getState();
+    const active = state.activePlayerId;
+
+    if (active !== null && state.turnElapsedMs < 20) {
+      const angle = Math.PI / 4 + (shots % 7) * 0.06;
+      const power = 55 + (shots % 5) * 8;
+      const result = match.fire(active, angle, power);
+      if (result.ok) {
+        recorder.recordInput({
+          tick: match.world.tickCount,
+          playerId: active,
+          angle,
+          power,
+        });
+        shots += 1;
+      }
+    }
+
+    match.step();
+    match.consumeEvents();
+    guard += 1;
+    if (guard % 200 === 0) hashes.push(match.stateHash());
+  }
+
+  recorder.finalize(match.world.tickCount);
+  return { match, recorder, shots, hashes };
+}
+
+test('Ein Replay mit Sidegrades reproduziert das Match exakt', () => {
+  /*
+   * Die kritische Prüfung aus dem Entwurf (B.4): Die Sidegrade-Rechnung ist pur
+   * und zustandslos, deshalb darf sie die Reproduzierbarkeit nicht brechen —
+   * auch nicht über einen langen Verlauf mit vielen Schüssen.
+   */
+  const sidegrades = ['kompakt', 'gepanzert', 'praezision', 'schwerlast'];
+  const live = runRecordedMatchMitSidegrades(sidegrades);
+  const { match: replayed, appliedInputs } = playReplay(live.recorder);
+
+  assert.equal(appliedInputs, live.shots, 'Nicht jede Eingabe angewendet');
+  assert.equal(replayed.stateHash(), live.match.stateHash(),
+    'Mit Sidegrades weicht der Zustandshash ab — die Wiedergabe ist nicht exakt');
+});
+
+test('Im Replay-Kopf stehen die Sidegrades', () => {
+  // Ohne sie im Kopf spielte die Wiedergabe ein anderes Match.
+  const sidegrades = ['kompakt', null, 'gepanzert', null];
+  const live = runRecordedMatchMitSidegrades(sidegrades);
+  const kopf = live.recorder.toJSON();
+
+  assert.ok(Array.isArray(kopf.config.sidegrades), 'sidegrades fehlen im Kopf');
+  assert.deepEqual(kopf.config.sidegrades, sidegrades);
+});
+
+test('Ohne Sidegrades steht KEIN Feld im Replay-Kopf', () => {
+  /*
+   * Kein Rauschen in jeder Aufzeichnung: Ein Match ohne Sidegrades bekommt kein
+   * Feld — sonst unterschieden sich alte und neue Aufzeichnungen ohne Grund.
+   */
+  const live = runRecordedMatch({ seed: 4242 });
+  const kopf = live.recorder.toJSON();
+  assert.equal(kopf.config.sidegrades, undefined,
+    'ohne Sidegrades darf kein Feld im Kopf stehen');
+});
+
+test('Ein ALTES Replay ohne Sidegrade-Feld läuft unverändert', () => {
+  /*
+   * DIE Abwärtskompatibilität: Aufzeichnungen aus der Zeit vor den Sidegrades
+   * haben das Feld nicht. Sie müssen denselben Verlauf ergeben wie ein Match,
+   * das ausdrücklich OHNE Sidegrades gebaut wurde — sonst wären alle
+   * vorhandenen Aufzeichnungen unbrauchbar geworden.
+   */
+  const live = runRecordedMatch({ seed: 4242 });
+
+  // Das Feld entfernen, wie es in einer alten Aufzeichnung fehlte.
+  const alt = JSON.parse(JSON.stringify(live.recorder.toJSON()));
+  assert.equal(alt.config.sidegrades, undefined, 'Vorbedingung: Feld fehlt');
+
+  const ausAlt = playReplay(ReplayRecorder.fromJSON(alt));
+  const ausNeu = playReplay(ReplayRecorder.fromJSON(live.recorder.toJSON()));
+
+  assert.equal(ausAlt.match.stateHash(), ausNeu.match.stateHash(),
+    'ein Replay ohne Sidegrade-Feld muss identisch verlaufen');
+  assert.equal(ausAlt.match.stateHash(), live.match.stateHash(),
+    'ein Replay ohne Sidegrade-Feld muss zum Original passen');
+});
+
+test('Ein Sidegrade im Kopf verändert den Verlauf nachweislich', () => {
+  /*
+   * Die Gegenprobe: Wenn das Feld keine Wirkung hätte, wären die Tests oben
+   * wertlos — sie bewiesen dann nur, dass zweimal dasselbe passiert. Ein Replay
+   * MIT Sidegrade muss sich vom gleichen Match OHNE unterscheiden.
+   */
+  const ohne = runRecordedMatchMitSidegrades(null);
+  const mit = runRecordedMatchMitSidegrades(['gepanzert', null, null, null]);
+
+  assert.notEqual(mit.match.stateHash(), ohne.match.stateHash(),
+    'ein Sidegrade muss den Matchverlauf verändern — sonst wirkt es nicht');
+});

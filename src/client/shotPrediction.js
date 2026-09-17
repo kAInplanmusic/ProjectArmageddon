@@ -147,10 +147,16 @@ export function predictTrajectory({
  * @param {number|null} [optionen.classId]
  * @param {number|null} [optionen.archetypeId]
  * @param {object|null} [optionen.weapon] - Waffeneintrag aus dem Katalog
+ * @param {string|null} [optionen.sidegradeId] - Kennung des Sidegrades. Muss
+ *   mitgegeben werden, sobald der Spieler einen gewählt hat: Das Sidegrade
+ *   verändert die Abschussgeschwindigkeit, und ohne es zeigte die Vorhersage
+ *   eine Bahn, die der Server anders rechnet.
  * @returns {number} Faktor, mit dem `power * PREDICTION_POWER_TO_SPEED`
  *   multipliziert wird
  */
-export function launchSpeedMultiplier({ classId = null, archetypeId = null, weapon = null } = {}) {
+export function launchSpeedMultiplier({
+  classId = null, archetypeId = null, weapon = null, sidegradeId = null,
+} = {}) {
   /*
    * `classId`/`archetypeId` sind INDIZES, keine Namen.
    *
@@ -174,7 +180,9 @@ export function launchSpeedMultiplier({ classId = null, archetypeId = null, weap
    */
   const klasse = typeof classId === 'number' ? CLASS_IDS[classId] : classId;
   const archetyp = typeof archetypeId === 'number' ? ARCHETYPE_IDS[archetypeId] : archetypeId;
-  const profil = combatProfile(klasse, archetyp);
+  // Der Sidegrade geht in dieselbe Verrechnung — nicht als eigene Multiplikation
+  // hier, sonst stünde die Regel an zwei Stellen.
+  const profil = combatProfile(klasse, archetyp, sidegradeId);
   return profil.launchSpeedMultiplier * (weapon?.speedFactor ?? 1);
 }
 

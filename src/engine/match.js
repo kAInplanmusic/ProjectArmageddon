@@ -219,6 +219,19 @@ export class MatchController {
     maxRounds = 30,
     turnDurationMs = null,
     orientation = 'landscape',
+    /**
+     * Sidegrades je Spielerplatz: `['kompakt', null, 'gepanzert']` — Index =
+     * Spielerindex wie bei der Platzvergabe (`#spawnPlayers`).
+     *
+     * Bewusst Teil der KONFIGURATION und nicht des Matchverlaufs: Die Wahl
+     * geschieht vor dem Start und ändert sich nicht. Damit ist sie dieselbe
+     * Kategorie wie `preset` oder `maxRounds` — kein Zufall, kein eigener
+     * Seed-Strom. Ein Replay trägt sie im Kopf und bleibt reproduzierbar.
+     *
+     * Eine unbekannte Kennung ist tolerierbar und wirkt wie „kein Sidegrade"
+     * (siehe `combatProfile`); sie wirft nicht.
+     */
+    sidegrades = null,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -228,6 +241,9 @@ export class MatchController {
       ?? MATCH_RULES.turnTimers.duelSeconds.minimum * 1000;
     this.maxRounds = maxRounds;
     this.preset = preset;
+    /** Sidegrades je Spielerplatz — als Kopie, damit ein Aufrufer sie nicht
+     *  nachträglich unter uns verändern kann. */
+    this.sidegrades = Array.isArray(sidegrades) ? [...sidegrades] : [];
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -449,9 +465,17 @@ export class MatchController {
       const y = (groundY > 0 ? groundY : this.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
 
       const entityId = this.#world.createEntity();
+      /*
+       * Der Sidegrade dieses Platzes — aus der Konfiguration, nicht gewürfelt.
+       *
+       * Er wird VOR dem Kampfprofil aufgelöst, weil auch das LEBEN davon
+       * abhängt (`combatProfile().healthMultiplier`). Ohne diese Reihenfolge
+       * hätte eine Figur mit Zusatzpanzerung das Leben ohne die Panzerung.
+       */
+      const sidegradeId = this.sidegrades[index] ?? null;
       // Leben kommt aus dem gemeinsamen Kampfprofil (classes.js) — nicht aus
       // einer zweiten, hier nachgebauten Multiplikation.
-      const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId]);
+      const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId);
       const maxHealth = Math.round(BASE_HEALTH * profile.healthMultiplier);
 
       this.#world.addComponent(entityId, 'Position', { x, y });
@@ -470,6 +494,17 @@ export class MatchController {
         teamId,
         classId,
         archetypeId,
+        /**
+         * Die Sidegrade-Kennung des Platzes — `null`, wenn keine gewählt wurde
+         * oder die Kennung unbekannt ist.
+         *
+         * Sie steht am SPIELER, weil die drei Lesestellen des Kampfprofils
+         * (`fire`, `#launchVector`, `#applyDamage`-Pfad) über `player?.classId`
+         * gehen. Ein Sidegrade an einer vierten Stelle zu führen hieße, die
+         * Verrechnung zu duplizieren — genau die Doppelregel, die classes.js
+         * beseitigt hat.
+         */
+        sidegradeId: profile.sidegradeId,
         label: `P${index + 1}`,
         /**
          * Lebensstatus des SPIELERS.
@@ -889,6 +924,7 @@ export class MatchController {
     const player = this.#players.find(entry => entry.entityId === playerId);
     const profile = combatProfile(
       CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+      player?.sidegradeId ?? null,
     );
     const { x, y, vx, vy } = this.#launchVector(playerId, angle, power, weapon);
 
@@ -2010,9 +2046,11 @@ export class MatchController {
    */
   #launchVector(playerId, angle, power, weapon = null) {
     const player = this.#players.find(entry => entry.entityId === playerId);
-    // Klasse und Archetyp kommen zusammen aus dem gemeinsamen Kampfprofil.
+    // Klasse, Archetyp und Sidegrade kommen zusammen aus dem gemeinsamen
+    // Kampfprofil.
     const profile = combatProfile(
       CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+      player?.sidegradeId ?? null,
     );
 
     const x = this.#world.getComponent(playerId, 'Position', 'x') || 0;
@@ -2386,6 +2424,15 @@ export class MatchController {
         teamId: entry.teamId,
         classId: entry.classId,
         archetypeId: entry.archetypeId,
+        /**
+         * Der Sidegrade des Spielers (oder null).
+         *
+         * Er gehört in den Zustand, weil die Anzeige ihn braucht: Ohne ihn
+         * müsste der Client raten, mit welchem Profil eine Figur rechnet — und
+         * die Winkelvorschau zeigte eine Bahn, die der Server anders rechnet.
+         * `classId`/`archetypeId` stehen aus demselben Grund hier.
+         */
+        sidegradeId: entry.sidegradeId ?? null,
         label: entry.label,
         alive,
         x: alive ? this.#world.getComponent(entry.entityId, 'Position', 'x') : 0,

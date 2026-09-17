@@ -28,6 +28,7 @@ import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { uebersichtFuerHilfe } from '../shared/config/classes.js';
+import { sidegradesForClass } from '../shared/config/sidegrades.js';
 import { LOOT_DROP_RULES } from '../shared/config/loot.js';
 import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
@@ -197,11 +198,91 @@ class Game {
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
     const lobbyId = document.getElementById('cfg-lobby')?.value?.trim() ?? '';
+    const sidegrades = this.#sidegradesAusMenue(teams * playersPerTeam);
 
     if (serverUrl) {
-      return this.startOnline({ serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey, orientation });
+      return this.startOnline({
+        serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey, orientation, sidegrades,
+      });
     }
-    return this.startMatch({ teams, playersPerTeam, preset, seed, backdropKey, orientation });
+    return this.startMatch({
+      teams, playersPerTeam, preset, seed, backdropKey, orientation, sidegrades,
+    });
+  }
+
+  /**
+   * Liest die Sidegrade-Wahl aus dem Menü und bildet daraus die Liste je
+   * Spielerplatz.
+   *
+   * Warum je KLASSE und nicht je Platz: Das Menü kennt die Spielerplätze nicht —
+   * Klasse und Archetyp werden beim Start über den Listenindex vergeben
+   * (`index % 3`, siehe MASTERDOTO „Bekannte Grenzen"). Der Spieler kann also
+   * nicht sagen „Platz 3 bekommt Zusatzpanzerung", weil er nicht weiß, welche
+   * Klasse Platz 3 hat. Er wählt je Klasse — und die Platzliste entsteht daraus
+   * nach derselben Regel, die der Motor anwendet.
+   *
+   * @param {number} plaetze - Anzahl Spielerplätze (teams × playersPerTeam)
+   * @returns {(string|null)[]} Kennung je Platz
+   */
+  #sidegradesAusMenue(plaetze) {
+    // Die Klassen folgen der Vergaberegel des Motors: Platz i bekommt
+    // CLASS_IDS[i % 3].
+    const liste = [];
+    for (let i = 0; i < plaetze; i += 1) {
+      const klasse = CLASS_IDS[i % CLASS_IDS.length];
+      const feld = document.getElementById(`cfg-sidegrade-${klasse}`);
+      const wert = feld?.value ?? '';
+      // Leerer Wert = kein Sidegrade. Eine unbekannte Kennung ist im Menü nicht
+      // wählbar, weil die Optionen aus den Configs stammen.
+      liste.push(wert === '' ? null : wert);
+    }
+    return liste;
+  }
+
+  /**
+   * Füllt die Sidegrade-Auswahl im Menü — je Klasse ein Feld.
+   *
+   * Die Optionen kommen aus `sidegradesForClass()`, also aus der Config. Im
+   * Client steht keine Liste: Käme ein Sidegrade dazu, müsste sonst an zwei
+   * Stellen gepflegt werden.
+   */
+  fillSidegradeOptions() {
+    const behaelter = document.getElementById('sidegrade-felder');
+    if (!behaelter) return;
+    behaelter.replaceChildren();
+
+    for (const klasse of CLASS_IDS) {
+      const angebot = sidegradesForClass(klasse);
+
+      const zeile = document.createElement('div');
+      zeile.className = 'field-row';
+
+      const label = document.createElement('label');
+      label.setAttribute('for', `cfg-sidegrade-${klasse}`);
+      label.textContent = klasse;
+      zeile.append(label);
+
+      const auswahl = document.createElement('select');
+      auswahl.id = `cfg-sidegrade-${klasse}`;
+      // Erster Eintrag: kein Sidegrade. Das ist der neutrale Zustand und muss
+      // immer wählbar bleiben — sonst wäre ein Match ohne Sidegrade unmöglich.
+      const keine = document.createElement('option');
+      keine.value = '';
+      keine.textContent = 'ohne Sidegrade';
+      auswahl.append(keine);
+
+      for (const eintrag of angebot) {
+        const option = document.createElement('option');
+        option.value = eintrag.id;
+        // Die Erklärung steht im Text: Das Menü hat keine Tooltip-Fläche, und
+        // eine eigene Beschreibungszeile je Feld wäre mehr Aufwand als Nutzen.
+        option.textContent = `${eintrag.label} — ${eintrag.erklaerung}`;
+        auswahl.append(option);
+      }
+
+      zeile.append(auswahl);
+      behaelter.append(zeile);
+    }
   }
 
   /**
@@ -325,12 +406,17 @@ class Game {
     return anzahl;
   }
 
-  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '', orientation = 'landscape' } = {}) {
+  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '', orientation = 'landscape', sidegrades = null } = {}) {
     this.network?.disconnect();
     this.network = null;
     this.mode = 'local';
 
-    this.match = new MatchController({ seed, teams, playersPerTeam, preset, orientation });
+    // Sidegrades gehören in die Match-Konfiguration — sie verändern das
+    // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
+    // nach dem Start.
+    this.match = new MatchController({
+      seed, teams, playersPerTeam, preset, orientation, sidegrades,
+    });
     this.match.start();
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
     // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische
@@ -426,7 +512,7 @@ class Game {
     return ergebnis;
   }
 
-  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '', orientation = 'landscape' } = {}) {
+  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '', orientation = 'landscape', sidegrades = null } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
@@ -444,7 +530,12 @@ class Game {
         const response = await fetch(new URL('/api/lobby/create', serverUrl), {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ teams, playersPerTeam, preset, seed, orientation }),
+          // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
+          // validiert sie und rechnet autoritativ.
+          body: JSON.stringify({
+            teams, playersPerTeam, preset, seed, orientation,
+            ...(Array.isArray(sidegrades) && sidegrades.some(s => s !== null) ? { sidegrades } : {}),
+          }),
         });
         if (!response.ok) throw new Error(`Lobby konnte nicht erstellt werden (${response.status})`);
         const created = await response.json();
@@ -1166,6 +1257,9 @@ class Game {
       classId: eigene.classId,
       archetypeId: eigene.archetypeId,
       weapon: waffe,
+      // Ohne den Sidegrade zeigte die Vorhersage eine Bahn, die der Server
+      // anders rechnet — er geht in dieselbe combatProfile-Verrechnung ein.
+      sidegradeId: eigene.sidegradeId ?? null,
     });
 
     // Terrainprüfung, sofern die Karte rekonstruiert ist. Ohne sie endet die
@@ -2342,7 +2436,11 @@ export function buildRosterView() {
 // Kulissenauswahl füllen, sobald das DOM steht. Der Katalog ist die einzige
 // Quelle; die Liste im HTML bleibt bewusst leer.
 if (typeof document !== 'undefined') {
-  const fuelle = () => game.fillBackdropOptions();
+  const fuelle = () => {
+    game.fillBackdropOptions();
+    // Sidegrade-Felder aus der Config füllen — im Markup steht keine Option.
+    game.fillSidegradeOptions();
+  };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fuelle, { once: true });
   } else {
@@ -2376,6 +2474,7 @@ export function buildHilfeView() {
 
   const seiten = [
     { id: 'klassen', label: 'Klassen', zeichne: zeichneKlassen },
+    { id: 'sidegrades', label: 'Sidegrades', zeichne: zeichneSidegrades },
     { id: 'loot', label: 'Loot und Seltenheiten', zeichne: zeichneLoot },
     { id: 'karte', label: 'Karte und Gelände', zeichne: zeichneKarte },
   ];
@@ -2527,6 +2626,63 @@ function zeichneKlassen(container) {
   hinweise.className = 'h-hinweis';
   hinweise.append(textEl('p', u.inertHinweis));
   hinweise.append(textEl('p', u.kopplungHinweis));
+  container.append(hinweise);
+}
+
+/** Reiter „Sidegrades" — was ein Sidegrade ist und welche es gibt. */
+function zeichneSidegrades(container) {
+  container.append(textEl('p',
+    'Ein Sidegrade verstärkt eine Eigenschaft und schwächt eine andere. Es gilt '
+    + 'für alle Figuren der Klasse und wird vor dem Match festgelegt — im '
+    + 'laufenden Spiel lässt es sich nicht wechseln.', 'h-einleitung'));
+
+  container.append(textEl('p',
+    'Die Faktoren sind multiplikativ auf das Klassenprofil: 1,00 ist unverändert, '
+    + 'über 1 verstärkt, unter 1 abgeschwächt.', 'h-erklaerung'));
+
+  for (const klasse of CLASS_IDS) {
+    container.append(textEl('h3', klasse));
+    const raster = document.createElement('div');
+    raster.className = 'h-karten';
+
+    for (const eintrag of sidegradesForClass(klasse)) {
+      const karte = document.createElement('div');
+      karte.className = 'h-karte h-schmal';
+      karte.append(textEl('h4', eintrag.label));
+      karte.append(textEl('p', eintrag.erklaerung, 'h-erklaerung'));
+
+      /*
+       * Die Faktoren als Zahlentabelle, nicht als Balken: Bei einem Sidegrade
+       * ist die RICHTUNG die Aussage (über oder unter 1), und dafür ist eine
+       * Zahl neben der Achse lesbarer als ein Balken, dessen Maßstab erst
+       * erklärt werden müsste.
+       */
+      const liste = document.createElement('ul');
+      liste.className = 'h-liste';
+      const achsen = [
+        ['Leben', 'healthMultiplier'],
+        ['Schaden', 'damageMultiplier'],
+        ['Tempo', 'launchSpeedMultiplier'],
+      ];
+      for (const [beschriftung, schluessel] of achsen) {
+        const wert = eintrag.modifiers[schluessel];
+        const vorzeichen = wert > 1 ? '+' : (wert < 1 ? '−' : '·');
+        liste.append(textEl('li',
+          `${vorzeichen} ${beschriftung}: ${wert.toFixed(2)}`));
+      }
+      karte.append(liste);
+      raster.append(karte);
+    }
+    container.append(raster);
+  }
+
+  const hinweise = document.createElement('div');
+  hinweise.className = 'h-hinweis';
+  hinweise.append(textEl('p',
+    'Nur Leben, Schaden und Tempo sind wirksam — der Motor liest diese drei. '
+    + 'Ein Sidegrade kann sie nach oben oder unten verschieben, aber nicht '
+    + 'darüber hinaus: Jede Achse hat eine Untergrenze, damit keine '
+    + 'spielunfähige Figur entsteht.'));
   container.append(hinweise);
 }
 

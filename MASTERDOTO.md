@@ -1803,8 +1803,25 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       Die drei bewusst NICHT umgesetzten Punkte (Sidegrades, Counterplay,
       Map-Synergie) bleiben offen — dazu liegt der Entwurf in
       `docs/entwurf-onboarding-sidegrades-counterplay.md`.
-- [ ] **Sidegrades.** Kein System gefunden, das Klassen mit Trade-offs statt mit
-      reinen Zuwächsen ausstattet. Geprüft: kein Treffer für `sidegrade`.
+- [x] **Sidegrades.** Erledigt als datenorientiertes Trade-off-System auf dem
+      Kampfprofil. Neue Datei `src/shared/config/sidegrades.js`: vier Einträge
+      (`kompakt`, `schwerlast`, `gepanzert`, `praezision`), je mit mindestens
+      einem Faktor > 1 UND einem < 1 — das ist die Trade-off-Bedingung und wird
+      per Test erzwungen. Die Verrechnung sitzt in `combatProfile()` als
+      **optionaler dritter Parameter** (Klasse × Archetyp × Sidegrade in fester
+      Reihenfolge): eine Regel, eine Stelle. Der Client rendert nur; die
+      Auswahl im Menü ist **je Klasse** (nicht je Platz, weil das Menü die
+      Platzvergabe `index % 3` nicht kennt) und wird aus der Config gefüllt.
+      Determinismus belegt: kein `Math.random()`, kein neuer Seed-Strom, die
+      Wahl ist Match-Konfiguration wie `preset`. Der Replay-Kopf trägt die
+      Sidegrades — eine alte Aufzeichnung OHNE das Feld läuft unverändert
+      (per Test nachgewiesen, siehe `tests/replay.test.js`).
+      **Fund beim Umsetzen:** Die Kennung stand zunächst nicht am Spieler-Objekt,
+      obwohl die Verrechnung stimmte — das LEBEN war korrekt, `sidegradeId` aber
+      `null`. Die Anzeige hätte raten müssen. `tests/sidegrades-match.test.js`
+      hält den Weg ins Spiel jetzt fest.
+      Abgesichert in `tests/sidegrades.test.js` (14), `tests/sidegrades-match.test.js`
+      (8), `tests/replay.test.js` (+5) und `tests/e2e/sidegrades.spec.mjs` (5).
 - [ ] **Counterplay und Map-Synergie.** Keine Regeln zur Teamzusammenstellung und
       keine Tests dafür. Geprüft: kein Treffer für `counterplay`/`synergie`.
 - [x] **Karten-Authoring über die Presets hinaus.** Vier Formen kamen hinzu:

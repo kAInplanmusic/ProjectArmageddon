@@ -351,8 +351,30 @@ Profil verändert (z. B. „+20 % Schaden für diese Runde").
 - Determinismus: gewährleistet (B.4), inkl. Abwärtskompatibilität.
 - Eine Regel, eine Stelle: gewährleistet (`combatProfile()`).
 
-**Ergebnis B: umsetzbar, regelkonform.** Der Match-interne Zufalls-Sidegrade verstößt
-gegen Regel 4 und 5 und wird ausdrücklich verworfen.
+**Ergebnis B: umgesetzt.** Die Implementierung folgt dem Entwurf; vier Punkte
+sind beim Umsetzen dazugekommen und hier festgehalten:
+
+- `src/shared/config/sidegrades.js` — vier Einträge, `SIDEGRADE_IDS`,
+  `SIDEGRADE_BY_CLASS` (je Klasse zwei Angebote), `SIDEGRADE_FLOOR` (Untergrenze
+  je Achse) und `sidegradesForClass()` für die Anzeige.
+- `combatProfile(classId, archetypeId, sidegradeId = null)` — die einzige
+  Verrechnungsstelle. **Vierte Lesestelle gefunden:** Der Entwurf nannte drei
+  Lesestellen in `match.js`; dazu kommt `src/client/shotPrediction.js`. Sie
+  musste mitgezogen werden, sonst hätte die Schussvorhersage eine Bahn gezeigt,
+  die der Server anders rechnet — genau der Fehler, der dort schon einmal war.
+- `MatchController({ sidegrades })` — Liste je Spielerplatz, am Spieler-Objekt
+  geführt (`player.sidegradeId`) und im `getState()` übertragen, damit die
+  Anzeige nicht raten muss.
+- Lobby/Server: Validierung in `lobby.js` (unbekannte Kennung → `null`, tolerant),
+  Durchreichen in `gameServer.js`, Sidegrades im Replay-Kopf.
+- Auswahl im Menü **je Klasse** statt je Platz: Das Menü kennt die
+  Platzvergabe (`index % 3`) nicht; die Feldwerte werden nach der Regel des
+  Motors auf Plätze abgebildet.
+
+**Fund beim Umsetzen:** Die Kennung fehlte zunächst am Spieler-Objekt — das
+LEBEN stimmte trotzdem, weil `#spawnPlayers` das Profil korrekt bildete. Ein
+Test, der nur `combatProfile()` prüft, hätte das nicht bemerkt;
+`tests/sidegrades-match.test.js` prüft den Weg ins Spiel.
 
 ---
 

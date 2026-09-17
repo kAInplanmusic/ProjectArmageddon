@@ -37,13 +37,26 @@ export class ReplayRecorder {
    * @param {string} [options.preset]
    * @param {number} [options.maxRounds]
    * @param {number} [options.turnDurationMs]
+   * @param {string[]} [options.sidegrades] - Sidegrade je Spielerplatz. Gehört in
+   *   den Kopf, weil er den Verlauf beeinflusst: Ohne ihn spielte die Wiedergabe
+   *   ein anderes Match als die Aufzeichnung.
    */
-  constructor({ seed, teams = 2, playersPerTeam = 2, preset = 'hills', maxRounds = 30, turnDurationMs = null } = {}) {
+  constructor({
+    seed, teams = 2, playersPerTeam = 2, preset = 'hills',
+    maxRounds = 30, turnDurationMs = null, sidegrades = null,
+  } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
     }
     this.#seed = seed;
-    this.#config = { teams, playersPerTeam, preset, maxRounds, turnDurationMs };
+    // `sidegrades` nur aufnehmen, wenn wirklich welche gesetzt sind. Ein leeres
+    // Feld in jedem Kopf wäre Rauschen und machte alte und neue Aufzeichnungen
+    // unnötig verschieden.
+    const hatSidegrades = Array.isArray(sidegrades) && sidegrades.some(s => s !== null && s !== undefined);
+    this.#config = {
+      teams, playersPerTeam, preset, maxRounds, turnDurationMs,
+      ...(hatSidegrades ? { sidegrades: [...sidegrades] } : {}),
+    };
     this.#startedAt = Date.now();
   }
 
@@ -239,6 +252,15 @@ export class ReplayPlayer {
       preset: config.preset,
       maxRounds: config.maxRounds,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
+      /*
+       * Sidegrades aus dem Kopf — oder keine.
+       *
+       * ABWÄRTSKOMPATIBILITÄT: Eine Aufzeichnung aus einer älteren Fassung hat
+       * das Feld nicht. `null` bedeutet dann „keine Sidegrades" — und weil das
+       * auch vorher der Zustand war, spielt eine alte Aufzeichnung exakt wie
+       * bisher. Ohne diese Vorsicht wären alle vorhandenen Replays unbrauchbar.
+       */
+      ...(Array.isArray(config.sidegrades) ? { sidegrades: config.sidegrades } : {}),
     });
     this.match.start();
 

@@ -76,6 +76,13 @@ class LobbySession {
       playersPerTeam: lobby.playersPerTeam,
       preset: lobby.preset,
       orientation: lobby.orientation ?? 'landscape',
+      /*
+       * Sidegrades aus der Lobby-Konfiguration. Die Wahl kommt vom Ersteller
+       * (`POST /api/lobby/create`) und ist Teil der Match-Konfiguration —
+       * derselbe Weg wie `preset`. Der Server validiert sie in `lobby.js`
+       * gegen `SIDEGRADE_IDS`; was hier ankommt, ist bereits geprüft.
+       */
+      sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
     });
     this.match.start();
 
@@ -87,6 +94,9 @@ class LobbySession {
       preset: lobby.preset,
       maxRounds: this.match.maxRounds,
       turnDurationMs: this.match.turnDurationMs,
+      // Ohne diesen Eintrag spielte eine Wiedergabe ein Match OHNE Sidegrades
+      // und liefe ab dem ersten Schuss auseinander.
+      sidegrades: this.match.sidegrades,
     });
 
     // Wiederherstellung: Eingaben bis zum gespeicherten Tick erneut anwenden.
@@ -743,6 +753,9 @@ export class GameServer {
           orientation: body.orientation ?? 'landscape',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',
+          // Der Manager prüft jede Kennung und setzt Unbekanntes auf null —
+          // eine ungültige Angabe darf das Anlegen nicht verhindern.
+          sidegrades: Array.isArray(body.sidegrades) ? body.sidegrades : null,
         });
         this.logger.info('lobby_created', 'Lobby angelegt', {
           lobbyId: created.lobby.id,
@@ -751,6 +764,8 @@ export class GameServer {
           preset: created.lobby.preset,
           orientation: created.lobby.orientation,
           seed: created.lobby.seed,
+          // Nur die gesetzten, damit das Log nicht mit null-Werten zugestellt wird.
+          sidegrades: created.lobby.sidegrades?.filter(Boolean) ?? [],
         });
         return this.#json(response, 201, created);
       } catch (error) {

@@ -33,12 +33,14 @@ test.describe('Hilfe-Bereich', () => {
     await oeffneHilfe(page);
 
     const reiter = page.locator('#hilfe-tabs button');
-    // Drei Themen: Klassen, Loot, Karte. Aus der Anzeige gelesen, nicht aus dem
-    // Code — ein Test gegen die eigene Konstante würde nichts belegen.
-    await expect(reiter).toHaveCount(3);
+    // Vier Themen: Klassen, Sidegrades, Loot, Karte. Aus der Anzeige gelesen,
+    // nicht aus dem Code — ein Test gegen die eigene Konstante würde nichts
+    // belegen.
+    await expect(reiter).toHaveCount(4);
     await expect(reiter.nth(0)).toHaveText(/Klassen/);
-    await expect(reiter.nth(1)).toHaveText(/Loot/);
-    await expect(reiter.nth(2)).toHaveText(/Karte/);
+    await expect(reiter.nth(1)).toHaveText(/Sidegrades/);
+    await expect(reiter.nth(2)).toHaveText(/Loot/);
+    await expect(reiter.nth(3)).toHaveText(/Karte/);
 
     // Der erste Reiter ist ausgewählt (aria-selected, wie in der Kader-Ansicht).
     await expect(reiter.nth(0)).toHaveAttribute('aria-selected', 'true');
@@ -154,9 +156,48 @@ test.describe('Hilfe-Bereich', () => {
     expect(text).toMatch(/drag/);
   });
 
-  test('Der Loot-Reiter zeigt die Verteilung und die Loot-Grenze', async ({ page }) => {
+  test('Der Sidegrade-Reiter zeigt je Klasse die Angebote aus der Config', async ({ page }) => {
+    /*
+     * Die Hilfe muss die Sidegrades erklären — sie sind Teil des Onboardings.
+     * Geprüft wird gegen die Config, damit eine Änderung an den Sidegrades nicht
+     * unbemerkt an der Anzeige vorbeigeht.
+     */
     await oeffneHilfe(page);
     await page.locator('#hilfe-tabs button').nth(1).click();
+
+    const erwartet = await page.evaluate(async () => {
+      const m = await import('/src/shared/config/sidegrades.js');
+      const c = await import('/src/shared/config/classes.js');
+      return c.CLASS_IDS.map(klasse => ({
+        klasse,
+        labels: m.sidegradesForClass(klasse).map(e => e.label),
+      }));
+    });
+
+    const inhalt = page.locator('#hilfe-inhalt');
+    for (const { klasse, labels } of erwartet) {
+      await expect(inhalt.getByRole('heading', { name: klasse, exact: true })).toBeVisible();
+      for (const label of labels) {
+        /*
+         * `.first()` ist nötig, weil dasselbe Sidegrade bei MEHREREN Klassen
+         * angeboten werden darf (`praezision` steht bei scout und artillery).
+         * Playwright zählt sonst im Strict-Mode zwei Treffer als Fehler — das
+         * wäre ein Fehlschlag über ein richtiges Verhalten.
+         */
+        await expect(inhalt.getByText(label, { exact: true }).first()).toBeVisible();
+      }
+    }
+
+    // Die Richtung muss erkennbar sein: Ein Trade-off hat Vor- UND Nachteile.
+    const text = await inhalt.evaluate(el => el.textContent);
+    expect(text).toMatch(/\+.*Leben|−.*Leben/);
+    expect(text).toMatch(/Untergrenze/);
+  });
+
+  test('Der Loot-Reiter zeigt die Verteilung und die Loot-Grenze', async ({ page }) => {
+    await oeffneHilfe(page);
+    // Index 2 = Loot (0 Klassen, 1 Sidegrades, 2 Loot, 3 Karte).
+    await page.locator('#hilfe-tabs button').nth(2).click();
 
     const inhalt = page.locator('#hilfe-inhalt');
     await expect(inhalt.getByText(/Kisten je Rundenbeginn/)).toBeVisible();
@@ -182,7 +223,8 @@ test.describe('Hilfe-Bereich', () => {
 
   test('Der Karten-Reiter zeigt alle acht Geländeformen', async ({ page }) => {
     await oeffneHilfe(page);
-    await page.locator('#hilfe-tabs button').nth(2).click();
+    // Index 3 = Karte.
+    await page.locator('#hilfe-tabs button').nth(3).click();
 
     const erwartet = await page.evaluate(async () => {
       const m = await import('/src/shared/terrainGen.js');
@@ -213,12 +255,20 @@ test.describe('Hilfe-Bereich', () => {
     expect(klassen).toMatch(/Leben/);
     expect(klassen).toMatch(/Schaden/);
 
+    // 1 = Sidegrades
     await page.locator('#hilfe-tabs button').nth(1).click();
+    const sidegrades = await lies();
+    expect(sidegrades).not.toBe(klassen);
+    expect(sidegrades).toMatch(/Kompakter Verschluss|Zusatzpanzerung/);
+
+    // 2 = Loot
+    await page.locator('#hilfe-tabs button').nth(2).click();
     const loot = await lies();
-    expect(loot).not.toBe(klassen);
+    expect(loot).not.toBe(sidegrades);
     expect(loot).toMatch(/Seltenheiten/);
 
-    await page.locator('#hilfe-tabs button').nth(2).click();
+    // 3 = Karte
+    await page.locator('#hilfe-tabs button').nth(3).click();
     const karte = await lies();
     expect(karte).not.toBe(loot);
     expect(karte).toMatch(/Geländeform|Höhen/);

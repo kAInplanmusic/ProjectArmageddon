@@ -744,6 +744,22 @@
             <div id="hilfe-inhalt" class="hilfe-inhalt"></div>
           </details>
           <!--
+            Sidegrades: Trade-offs auf dem Kampfprofil, eines je KLASSE.
+
+            Die Auswahl ist je Klasse und nicht je Spielerplatz, weil das Menü
+            die Platzvergabe nicht kennt: Klasse und Archetyp vergibt der Motor
+            über den Listenindex. Die Felder werden von `fillSidegradeOptions()`
+            aus der Config gefüllt — im Markup steht bewusst keine Option.
+          -->
+          <details id="sidegrade-auswahl">
+            <summary>Sidegrades — Trade-offs je Klasse</summary>
+            <p class="field-hint">
+              Ein Sidegrade verstärkt eine Eigenschaft und schwächt eine andere.
+              Es gilt für alle Figuren der jeweiligen Klasse.
+            </p>
+            <div id="sidegrade-felder"></div>
+          </details>
+          <!--
             Replay wiedergeben.
 
             Aufzeichnungen entstehen mit `npm run replay -- record` und enthalten

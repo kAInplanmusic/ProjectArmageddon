@@ -9,6 +9,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { ORIENTATIONS } from '../engine/match.js';
+import { isKnownSidegrade } from '../shared/config/sidegrades.js';
 
 export const LOBBY_STATUS = Object.freeze({
   OPEN: 'open',
@@ -26,12 +27,34 @@ export class LobbyManager {
     this.#reconnectWindowMs = reconnectWindowMs;
   }
 
-  create({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, hostName = 'Host', orientation = 'landscape' } = {}) {
+  create({
+    teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined,
+    hostName = 'Host', orientation = 'landscape', sidegrades = null,
+  } = {}) {
     if (teams < 2 || teams > 4) throw new Error('teams muss zwischen 2 und 4 liegen');
     if (playersPerTeam < 1 || playersPerTeam > 3) throw new Error('playersPerTeam muss zwischen 1 und 3 liegen');
     const capacity = teams * playersPerTeam;
     if (capacity > MAX_LOBBY_PLAYERS) throw new Error(`Kapazität überschreitet ${MAX_LOBBY_PLAYERS} Spieler`);
     if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);
+
+    /*
+     * Sidegrades prüfen — aber TOLERANT.
+     *
+     * Eine unbekannte Kennung wird auf `null` gesetzt, nicht abgelehnt: Sie
+     * wirkt dann wie „kein Sidegrade", genau wie in `combatProfile()`. Der
+     * Grund ist derselbe — ein Tippfehler oder eine Kennung aus einer älteren
+     * Fassung darf ein Match nicht verhindern, und ein fehlendes Sidegrade ist
+     * kein Fehler.
+     *
+     * Anders als bei `orientation`, wo ein falscher Wert abgelehnt wird: Dort
+     * wäre ein stiller Ersatz eine andere KARTE als bestellt, also ein sichtbar
+     * anderes Spiel. Beim Sidegrade ist der neutrale Zustand unschädlich.
+     */
+    const geprüfteSidegrades = Array.isArray(sidegrades)
+      ? sidegrades
+        .slice(0, capacity)
+        .map(s => (isKnownSidegrade(s) ? s : null))
+      : null;
 
     const id = randomUUID().slice(0, 8);
     const lobby = {
@@ -43,6 +66,8 @@ export class LobbyManager {
       // Ausrichtung gehört zur Lobby: sie bestimmt die Kartengröße und muss für
       // alle Teilnehmer dieselbe sein.
       orientation,
+      // Sidegrades je Spielerplatz — Teil der Match-Konfiguration wie `preset`.
+      sidegrades: geprüfteSidegrades,
       seed,
       status: LOBBY_STATUS.OPEN,
       createdAt: Date.now(),
@@ -80,6 +105,9 @@ export class LobbyManager {
       capacity: lobby.capacity,
       preset: lobby.preset,
       orientation: lobby.orientation,
+      // Die Sidegrades gehören in die Beschreibung: Ohne sie sähe der Client
+      // nicht, mit welchem Profil die Figuren antreten.
+      sidegrades: Array.isArray(lobby.sidegrades) ? [...lobby.sidegrades] : null,
       status: lobby.status,
       // Belegt = reservierte Plätze. Die Entity-ID existiert erst, wenn ein
       // Match gestartet und die Welt erzeugt wurde.
