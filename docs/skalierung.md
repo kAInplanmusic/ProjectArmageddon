@@ -33,13 +33,18 @@ Modell (offen benannt, damit widerlegbar):
 - Snapshot-Größe — **linear mit Figuren und Kisten**
 - Zerstörbare Mehrkomponenten — **Faktor 1,6** auf Kollision
 
-| Szenario | Spieler | Karte | Tick | % Kern | Snapshot | Netz je Sek. |
-|---|---|---|---|---|---|---|
-| Duell | 2 | 1280×720 | 0,96 ms | 5,8 % | 3 KB | 0 MB |
-| Kleines Match | 4 | 1920×1080 | 1,92 ms | 11,5 % | 5 KB | ~0 MB |
-| Großes Match | 6 | 2560×1440 | 2,88 ms | 17,3 % | 8 KB | ~1 MB |
-| Krieg | 8 | 3840×2160 | 3,84 ms | 23,1 % | 12 KB | ~2 MB |
-| Krieg 4K | 8 | 3840×2160 | 6,15 ms | 36,9 % | 13 KB | ~2 MB |
+| Szenario | Spieler | Karte | Tick | % Kern |
+|---|---|---|---|---|
+| Duell | 2 | 1280×720 | 0,96 ms | 5,8 % |
+| Kleines Match | 4 | 1920×1080 | 1,92 ms | 11,5 % |
+| Großes Match | 6 | 2560×1440 | 2,88 ms | 17,3 % |
+| Krieg | 8 | 3840×2160 | 3,84 ms | 23,1 % |
+| Krieg 4K | 8 | 3840×2160 | 6,15 ms | 36,9 % |
+
+> **Korrektur (2026-09-17):** Hier standen zunächst geschätzte Netzwerte
+> (bis „2 MB/s je Match"). Nachgemessen mit `npm run measure:network` sind es
+> **38 KB/s** für ein 8-Spieler-Match — **Faktor 100 weniger**. Die Schätzung
+> war falsch; die Tabelle führt die gemessene Zahl jetzt weiter unten.
 
 **Was daran überrascht:** Die Karte wächst um Faktor 9 (720p → 4K), die
 Rechenlast aber nur um Faktor 6,4. Der Grund: Die Simulation läuft über
@@ -48,25 +53,50 @@ Rechenlast aber nur um Faktor 6,4. Der Grund: Die Simulation läuft über
 
 ---
 
-## 3. Der echte Engpass
+## 3. Die Netzlast — gemessen, nicht geschätzt
 
-| Szenario | Matches je CPU-Kern | Matches je 100 Mbit |
+Gemessen am **Drahtformat** (`npm run measure:network`):
+
+| Konfiguration | Snapshot (Ø) | Spitze | je Spieler/s |
+|---|---|---|---|
+| 2 Spieler | 95 B | 166 B | 1,9 KB |
+| 4 Spieler | 141 B | 234 B | 2,8 KB |
+| 6 Spieler | 179 B | 246 B | 3,5 KB |
+| **8 Spieler** | **202 B** | **246 B** | **4,8 KB** |
+
+Ein Snapshot geht 20× je Sekunde an jeden Spieler. Für 8 Spieler ergibt das
+**38 KB/s** — nicht 2 MB/s, wie zuvor geschätzt.
+
+> **Ein 100-Mbit-Anschluss trägt 325 solcher Matches gleichzeitig.** Das Netz
+> ist damit kein Engpass.
+
+### Zwei Befunde, die dabei auffielen
+
+**1. Das Delta-Encoding spart nichts.** Es ist umgesetzt
+(`encodeSnapshot(state, { previous })`), aber die Nachrichtengröße ist **fest**:
+
+```javascript
+const size = HEADER_SIZE + players.length * PLAYER_STRIDE + ...;
+const bytes = new Uint8Array(size);   // immer gleich groß
+```
+
+Das Delta setzt nur ein `dirty`-Byte je Spieler — die Felder werden trotzdem
+vollständig geschrieben. Und `dirty` wird im Client **nicht gelesen** (geprüft).
+Der vorher als „größter Einzelgewinn" bezeichnete Hebel existiert nicht.
+
+**2. Wo wirklich Spielraum wäre:** Die Aufteilung eines 4-Spieler-Snapshots ist
+
+| Teil | Bytes | Anteil |
 |---|---|---|
-| Duell | 22 | 117 |
-| Kleines Match | 11 | 29 |
-| Großes Match | 7 | 12 |
-| Krieg | 5 | 6 |
-| Krieg 4K | 3 | **5** |
+| Kopf | 24 | 14 % |
+| Spieler | 60 | 36 % |
+| Projektile | 62 | 37 % |
+| Kisten | 18 | 11 % |
+| Geschütze | 5 | 3 % |
 
-> **Die Netzlast ist der Engpass, nicht die Rechenlast.**
-
-Ein Snapshot geht **20× je Sekunde an jeden Spieler**. Bei 8 Spielern sind das
-160 Sendungen je Sekunde — und jede trägt den Zustand aller Figuren und Kisten.
-
-**Das ist der wichtigste Hebel**, und er ist billiger als jede größere Maschine:
-Ein **Delta-Snapshot** (nur Änderungen statt Vollzustand) würde die Netzlast um
-den Faktor 5 bis 20 senken. Die Rechenlast eines Deltas ist vernachlässigbar,
-weil der Server den vorherigen Zustand ohnehin kennt.
+Wer sparen will, muss die **Strides** ändern (etwa `waterLevel` und
+`frozenTurns` nur bei Bedarf senden), nicht das Delta-Flag. **Nötig ist es bei
+den gemessenen Werten aber nicht.**
 
 ---
 
@@ -98,12 +128,15 @@ GPU ist damit ein **Werkzeug**, kein Betriebsmittel.
 | Kleiner Betrieb (≤ 10 Matches) | CX32 (4 vCPU, 8 GB) | ~7 €/Monat |
 | Größerer Betrieb (≤ 50 Matches) | CX42 (8 vCPU, 16 GB) | ~16 €/Monat |
 
-Die Rechnung: Ein CX32 trägt rechnerisch ~44 kleine Matches (4 Kerne × 11) oder
-**28 (4 Kerne × 7 große)**. Begrenzt wird er vom Netz — bei 1 GBit Anschluss
-trägt er 120 kleine oder 120 Krieg-Matches netzseitig.
+Die Rechnung mit den **gemessenen** Werten: Ein CX32 hat 4 Kerne. Ein
+8-Spieler-Match braucht 23 % eines Kerns — das sind **17 Matches je Kern**, also
+**68 gleichzeitige Matches** auf der Maschine.
 
-**Also: Ein CX32 für 7 €/Monat trägt einen echten Betrieb.** Die Netzlast
-begrenzt bei 1 GBit nicht.
+Das Netz begrenzt dabei nicht: 68 Matches × 38 KB/s ergeben **2,6 MB/s** — ein
+Zehntel eines 100-Mbit-Anschlusses.
+
+**Also: Ein CX32 für 7 €/Monat trägt rund 68 gleichzeitige 8-Spieler-Matches.**
+Das ist weit mehr, als ein Start braucht.
 
 ---
 
@@ -145,22 +178,23 @@ Spielbetrieb hängt — Kulissen erzeugen, Tests über Nacht, Messreihen.
 
 ## 7. Was zu tun ist — in der Reihenfolge, die die Messung nahelegt
 
-**Zuerst, weil es den Engpass löst (billig):**
+**Zuerst, weil es deine Ziele freischaltet (mittel):**
 
-1. **Delta-Snapshots.** Der Netz-Engpass verschwindet um Faktor 5–20, die
-   Rechenlast steigt kaum. Ein Server für 7 € trägt dann einen echten Betrieb.
-
-**Dann, weil es deine Ziele freischaltet (mittel):**
-
-2. **Teamgröße über 3 öffnen.** Die Sperre steht in `lobby.js`. Ohne sie gibt
+1. **Teamgröße über 3 öffnen.** Die Sperre steht in `lobby.js`. Ohne sie gibt
    es keine 6er- und 8er-Matches.
-3. **4K in `MAP_SIZES` eintragen.** Die Tabelle nimmt jede Größe; die Kamera
+2. **4K in `MAP_SIZES` eintragen.** Die Tabelle nimmt jede Größe; die Kamera
    muss mitskalieren.
+3. **Konten und TLS** (`docs/betrieb.md`) — ohne sie ist der Server offen.
 
 **Danach, weil es Gestaltung ist (deine Entscheidung):**
 
 4. Sound, Detailtiefe, Mehrkomponenten-Karten — jede davon ist eine eigene
    Größe. Die Rechenlast trägt sie alle (Faktor 1,6 im Modell ist eingerechnet).
+
+**Nicht nötig, entgegen der ersten Einschätzung:**
+
+- Delta-Snapshots — sie existieren, sparen aber nichts (siehe Abschnitt 3).
+- Eine größere Maschine — weder CPU noch Netz sind der Engpass.
 
 ---
 

@@ -1933,9 +1933,25 @@ Mehrkomponentenkarten.
 - [x] **Rauchtest gebaut.** `npm run smoke:fast` — 24 s statt 9,4 min
       (23× schneller). Prüft Verkabelung, Lint, Kern-Tests und den Server-Start
       inklusive Zustandssicherung. Er hat sofort 5 Lint-Fehler gefunden.
-- [ ] **Delta-Snapshots.** Der größte Einzelgewinn: nur Änderungen statt
-      Vollzustand senden. Senkt die Netzlast um Faktor 5–20. *Technisch, keine
-      Design-Entscheidung — kann sofort begonnen werden.*
+- [x] **Netzlast gemessen — die frühere Annahme war falsch.**
+      *Neu: `npm run measure:network`.* Zwei Befunde:
+
+      1. **Das Delta-Encoding spart NICHTS.** Es ist umgesetzt
+         (`encodeSnapshot(state, {previous})`), aber die Nachrichtengröße ist
+         **fest** (`HEADER_SIZE + n × STRIDE`). Das Delta setzt nur ein
+         `dirty`-Byte — und das liest der Client nicht (geprüft). Der als
+         „größter Einzelgewinn" bezeichnete Hebel existiert nicht.
+      2. **Die Netzlast ist um Faktor 100 kleiner als geschätzt.** Ein
+         8-Spieler-Match erzeugt **38 KB/s** (nicht 2 MB/s). Ein 100-Mbit-
+         Anschluss trägt **325** solcher Matches.
+
+      *Damit ist ein CX32 (~7 €/Monat) ausreichend für ~68 gleichzeitige
+      8-Spieler-Matches.* Weder CPU noch Netz sind der Engpass.
+
+      *Falls die Spielerzahl weiter steigt:* Der Spielraum läge in den
+      **Strides** (15 B je Figur, 59 % bei 8 Spielern), nicht im Delta-Flag —
+      etwa `waterLevel` und `frozenTurns` nur bei Bedarf senden. *Nötig ist es
+      bei den gemessenen Werten nicht.*
 - [ ] **Teamgröße über 3 öffnen.** Die Sperre steht in `server/lobby.js`
       (`playersPerTeam > 3` → Fehler). Ohne sie gibt es keine 6er- und
       8er-Matches. *Ändert das Spielgefühl — Entscheidung nötig.*
