@@ -1647,7 +1647,30 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [x] Latenz-Anzeige per Ping-Intervall (2 s, mit Messung echter RTT).
 - [x] Tastatur-Fokusreihenfolge und Fokusindikatoren inkl. Skip-Link.
 - [x] Tastatursteuerung greift nicht mehr in Formularfelder ein.
-- [ ] Entwurfsphase (Draft) für 4–6 Einheiten pro Team.
+- [ ] **Entwurfsphase (Draft) — setzt eine Spielgröße voraus, die es nicht
+      gibt. Entscheidung offen.**
+
+      *Geprüft:* Die Aufgabe nennt **4–6 Einheiten pro Team**. Der Server lässt
+      heute **1 bis 3** zu (`server/lobby.js`: `playersPerTeam > 3` → Fehler),
+      und die Konfiguration führt die Teamgröße gar nicht mehr (sie wurde als
+      totes Feld entfernt).
+
+      Ein Draft — abwechselnd wählen und verbieten — ist eine Mechanik für
+      **viele** Einheiten: Bei vier Spielern mit je einer Einheit gibt es nichts
+      zu verteilen, weil jede Klasse mehrfach vorkommen darf und der Spieler im
+      Menü bereits frei wählt (`resolveLoadout` je Platz).
+
+      *Was fehlt, damit die Aufgabe sinnvoll wird:* eine Erhöhung der
+      Teamgröße — und damit eine Änderung am Spielkern (mehr Figuren, längere
+      Züge, größere Karten). Das ist eine **Produktentscheidung**, keine
+      Feature-Lücke.
+
+      *Wenn sie getroffen wird*, ist der Aufwand klein: Die Platzvergabe ist
+      bereits eine reine Funktion (`resolveLoadout(index, wahl)`), an der eine
+      Draft-Reihenfolge ansetzen kann, ohne den Motor zu berühren.
+
+      *Aufgeschoben, nicht vergessen:* Ohne die Produktentscheidung wäre ein
+      Draft-System Code für einen Fall, den niemand spielt.
 - [x] `prefers-reduced-motion` befolgt: CSS-Animationen und -Übergänge entfallen
       vollständig (nicht verkürzt), Explosionspartikel werden nicht erzeugt, der
       Explosionsblitz bleibt. Die Einstellung wird je Bild neu gelesen, greift
@@ -1858,8 +1881,25 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       eingeführt werden (welche Daten, wer sieht sie, wie lange bleiben sie).
       Die Infrastruktur steht; die Entscheidung ist nicht gefallen und wird hier
       nicht vorweggenommen.
-- [ ] Auswertung: Wo lohnt KI im Betrieb (Kulissen vorab, Bot-Gegner,
-      Auswertung der Partien)?
+- [x] **Auswertung: Wo lohnt KI im Betrieb? — beantwortet in
+      `docs/ki-im-betrieb.md`.**
+
+      *Die Antwort:* KI lohnt an **einer** Stelle — beim **Schwierigkeitsgrad
+      von Bots**. Bei Kulissen ist sie schon gelaufen (60 Bilder vorab, richtig
+      aufgehoben, weil nichts zur Laufzeit entsteht und der Determinismus
+      erhalten bleibt). Für die **Auswertung** reichen die vorhandenen
+      Werkzeuge: Sie rechnen nach, statt zu schätzen.
+
+      *Warum Bots keine KI brauchen:* Die Simulation ist deterministisch — die
+      Flugbahn lässt sich **exakt vorausberechnen**. Ein Bot ist damit eine
+      **Suche** (Winkel und Kraft finden, bis die Bahn trifft), kein Modell.
+      Und ein perfekt rechnender Bot wäre unschlagbar; die eigentliche Frage ist,
+      wie stark er daneben zielen DARF. Das ist Gestaltung.
+
+      *Was der Auswertung fehlt, sind keine Modelle, sondern DATEN:* Der Server
+      hält Kennzahlen im Speicher und verliert sie beim Neustart
+      (`docs/betrieb.md`, Abschnitt 5). Ohne gespeicherte Partiedaten gibt es
+      nichts auszuwerten — dieselbe Entscheidung wie bei den Konten.
 
 ## Übernommen aus der alten `todo.md`
 
