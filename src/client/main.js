@@ -936,6 +936,19 @@ class Game {
       case 'projectile_impact':
         this.renderer.addFlash(message.x, message.y, 14);
         break;
+      // Dieselben zwei Fälle wie lokal — ein Spieler soll dasselbe sehen,
+      // egal in welchem Modus er spielt.
+      case 'loot_error':
+        this.hud.log(`Beute konnte nicht verteilt werden: ${message.message}`, 'danger');
+        break;
+      case 'fuse_armed':
+        this.hud.log('Eine Granate liegt und tickt …', 'neutral');
+        this.renderer.addFlash(message.x, message.y, 10, { color: '#ffd166' });
+        break;
+      case 'fuse_expired':
+        this.hud.log('Eine Granate ist liegen geblieben und gezündet', 'accent');
+        this.renderer.addFlash(message.x, message.y, 22, { color: '#f4a261' });
+        break;
       // Geschütze: Aufstellen, Feuern, Ablaufen.
       case 'turret_deployed':
         this.hud.log(
@@ -1173,6 +1186,65 @@ class Game {
         case 'hitscan':
           // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
           this.#drawHitscanBeam(payload);
+          break;
+        /*
+         * Beute-Fehler.
+         *
+         * FUND (belegt, Ereignis-Abdeckungstest): `loot_error` wurde von der
+         * Engine gesendet, aber von KEINEM Client-Zweig behandelt — der Fehler
+         * verschwand spurlos. Wer nichts davon erfährt, sucht den Fehler bei
+         * sich: „Warum kommt keine Kiste?"
+         *
+         * Der Zustand ist selten (er tritt nur auf, wenn die Beuteverteilung
+         * scheitert), aber genau deshalb ist eine Meldung wichtig: Ein Fehler,
+         * der nie passiert, braucht keine; einer, der selten passiert, braucht
+         * eine, sonst ist er beim ersten Mal ein Rätsel.
+         */
+        case 'loot_error':
+          this.hud.log(`Beute konnte nicht verteilt werden: ${payload.message}`, 'danger');
+          break;
+        /*
+         * Eine liegende Granate ist gezündet.
+         *
+         * FUND (belegt): Ebenfalls stumm. Der Krater erschien zwar über
+         * `explosion`, aber der Spieler erfuhr nicht, DASS eine zuvor geworfene
+         * Granate gezündet hat. Das ist gerade bei den Zünder-Waffen wichtig
+         * (siehe MASTERDOTO, „Bekannte Grenzen": dort ist der Zünder länger als
+         * die Flugzeit — die Ladung zündet also mit Verzögerung am Boden).
+         */
+        case 'fuse_armed':
+          /*
+           * Eine Granate ist liegen geblieben und tickt jetzt.
+           *
+           * Die VORSTUFE zu `fuse_expired`: Der Spieler soll wissen, dass dort
+           * etwas liegt — sonst überrascht ihn die Explosion zwei Sekunden
+           * später an einer Stelle, an der er nichts erwartet.
+           */
+          this.hud.log('Eine Granate liegt und tickt …', 'neutral');
+          this.renderer.addFlash(payload.x, payload.y, 10, { color: '#ffd166' });
+          break;
+        case 'fuse_expired':
+          this.hud.log('Eine Granate ist liegen geblieben und gezündet', 'accent');
+          this.renderer.addFlash(payload.x, payload.y, 22, { color: '#f4a261' });
+          break;
+        /*
+         * Einschlag eines Projektils.
+         *
+         * FUND (belegt, Black-Box-Audit): Dieser Fall FEHLTE hier. Er war nur
+         * im ONLINE-Zweig (`#handleRemoteEvent`) ergänzt — im lokalen Match
+         * blieb der Einschlag damit ohne Blitz, und im Protokoll stand nur
+         * „ist gelandet". Wer lokal spielt (der Standardfall), sah also nicht,
+         * WO sein Schuss eingeschlagen ist.
+         *
+         * Der Krater kommt aus `explosion` (oben) — der Blitz hier markiert den
+         * Moment des Aufpralls. Beides gehört zusammen: der Krater ist das
+         * Ergebnis, der Blitz der Einschlag.
+         *
+         * Gemessen: Die Engine sendet das Ereignis
+         * (`projectileSystem.js:119`), der lokale Zweig ignorierte es.
+         */
+        case 'projectile_impact':
+          this.renderer.addFlash(payload.x, payload.y, 14);
           break;
         /*
          * Geschütze.

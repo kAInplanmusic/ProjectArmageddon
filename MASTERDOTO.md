@@ -2072,9 +2072,53 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
       Die Wahl ist möglich, aber für die neuen Kombinationen gibt es keine
       Vergleichszahlen aus `npm run balance`.
 
-### Aus den Subagenten-Audits
+### Aus dem Black-Box-Audit (Teilbericht, Agent lief in die Iterationsgrenze)
 
-*(wird ergänzt, sobald die drei Berichte eintreffen)*
+Der Agent hat als blinder Tester das Spiel über Playwright bedient. Er kam
+nicht dazu, seinen Bericht nach `docs/audit-blackbox.md` zu schreiben — die
+belegbaren Befunde aus seinem Live-Protokoll sind hier festgehalten und **vom
+Agenten nachgeprüft** (zwei erwiesen sich als Fehlalarm):
+
+- [x] **`projectile_impact` fehlte im lokalen Zweig — BEHOBEN.** Die Engine
+      sendet den Einschlag (`projectileSystem.js:119`), der lokale
+      Ereignisbehandler (`#handleEvents`) behandelte ihn **nicht** — nur der
+      Online-Zweig tat es. Folge: Wer lokal spielte (der Standardfall), sah
+      keinen Einschlagblitz, und im Protokoll stand nur „ist gelandet".
+      Behoben; beide Zweige erzeugen jetzt denselben Blitz.
+      Beleg: `tests/event-coverage.test.js`.
+
+- [x] **13 Engine-Ereignisse waren vollständig stumm — BEHOBEN.** Ein neuer
+      Test vergleicht automatisch, welche Ereignisse die Engine sendet und
+      welcher Client-Zweig sie behandelt. Ergebnis der ersten Messung: 13
+      Ereignisse behandelte **kein** Zweig.
+      Neu angebunden (mit Wirkung im Spiel): `fuse_armed` („Eine Granate liegt
+      und tickt …"), `fuse_expired` („… und gezündet"), `loot_error` (Fehler
+      wird gemeldet statt verschluckt).
+      Die übrigen zehn sind **bewusst stumm** und einzeln begründet — die
+      Darstellung läuft dort über ein anderes Element (Lebensbalken,
+      Zustandsmarke, Rundenanzeige) oder das Ereignis dient der Steuerung.
+      Beleg: `tests/event-coverage.test.js`, Test 4.
+
+- [x] **Fehlalarm: „Die Kernsteuerung ist wirkungslos" — widerlegt.** Der
+      Agent meldete, Pfeiltasten und A/D/W/S änderten nur die Anzeige, nie die
+      Simulation. Nachgeprüft mit echtem Messaufbau: `match.fire(playerId,
+      angle, power)` setzt `entity.angle` auf den übergebenen Wert (1,000 rad),
+      und das Projektil fliegt in genau diesem Winkel (gemessen 0,982 rad nach
+      Abzug der Schwerkraft im ersten Schritt).
+      *Ursache der Fehlbeobachtung:* Seine Testläufe wurden durch eine
+      gleichzeitige Änderung an `src/shared/config/weapons.js` gestört — Vite
+      lud die Seite per HMR mitten im Lauf neu (im Protokoll als
+      „FRAME NAVIGATED" sichtbar). Der Agent hat das selbst erkannt.
+
+- [x] **Fehlalarm: „Das Protokoll zeigt nur ‚ist gelandet'" — eingeordnet.**
+      Das stimmte für den Einschlag (`projectile_impact`, siehe oben). Die
+      übrigen Meldungen sind vorhanden: Das Protokoll kennt über 30
+      Ereignistypen (Springen, Einfrieren, Heilung, Schild, Günther, Geschütze,
+      Kisten, Mahlstrom). Die Beobachtung war ein Ausschnitt, kein Befund.
+
+**Was noch aussteht:** Der Agent erreichte seine Iterationsgrenze, bevor er
+seinen Bericht schrieb. Die übrigen zwei Audits (Code, User-Flow/Spaßfaktor)
+laufen noch; ihre Ergebnisse kommen in einem eigenen Durchgang.
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 
