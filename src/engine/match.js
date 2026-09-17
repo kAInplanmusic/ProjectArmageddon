@@ -29,7 +29,7 @@ import {
 } from './specials.js';
 import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
+import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { getClassLoadout } from '../shared/config/loadouts.js';
 import { pickScenery } from '../shared/config/scenery.js';
@@ -287,6 +287,14 @@ export class MatchController {
      * (siehe `combatProfile`); sie wirft nicht.
      */
     sidegrades = null,
+    /**
+     * Klasse und Archetyp je Spielerplatz — `[{classId:'scout',archetypeId:'occultist'}, …]`.
+     *
+     * Ohne Angabe greift die alte Regel (`index % 3` für beide Werte), damit ein
+     * Match ohne diese Option exakt wie bisher verläuft. Siehe `resolveLoadout()`
+     * in classes.js für die Begründung, warum die Kopplung aufgehoben wurde.
+     */
+    loadouts = null,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -299,6 +307,8 @@ export class MatchController {
     /** Sidegrades je Spielerplatz — als Kopie, damit ein Aufrufer sie nicht
      *  nachträglich unter uns verändern kann. */
     this.sidegrades = Array.isArray(sidegrades) ? [...sidegrades] : [];
+    /** Loadout-Wahl je Spielerplatz — Kopie, wie bei den Sidegrades. */
+    this.loadouts = Array.isArray(loadouts) ? [...loadouts] : [];
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -500,8 +510,21 @@ export class MatchController {
 
     for (let index = 0; index < total; index++) {
       const teamId = index % this.teams;
-      const classId = index % CLASS_IDS.length;
-      const archetypeId = index % ARCHETYPE_IDS.length;
+      /*
+       * Klasse und Archetyp — aus der Konfiguration, sonst nach der alten Regel.
+       *
+       * FUND (belegt): Vorher standen hier `index % 3` für BEIDE Werte, also
+       * dieselbe Zahl. Damit waren nur die drei Diagonalen erreichbar
+       * (scout/brawler, heavy/artillerist, artillery/occultist) — die extremsten
+       * Profile der Tabelle wurden nie erzeugt. Die Auflösung liegt jetzt in
+       * `resolveLoadout()` (classes.js) und nimmt eine Wahl entgegen.
+       *
+       * Ohne Wahl greift die alte Regel: Ein Match ohne `loadouts` verläuft
+       * exakt wie bisher, ebenso ein Replay aus einer älteren Fassung.
+       */
+      const wahl = resolveLoadout(index, this.loadouts[index] ?? null);
+      const classId = CLASS_IDS.indexOf(wahl.classId);
+      const archetypeId = ARCHETYPE_IDS.indexOf(wahl.archetypeId);
 
       const x = Math.round(spacing * (index + 1));
       /*

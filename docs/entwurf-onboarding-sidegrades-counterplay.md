@@ -586,7 +586,7 @@ verworfen**, statt eine Regel zu brechen, die das Projekt mit Tests festhält.
 ## 4. Was ausdrücklich NICHT in diesem Entwurf steht
 
 - Kein Produktivcode, keine Dateiänderung außer diesem Dokument.
-- Keine Balance-Änderung an den bestehenden Tabellen (`ARCHETYPE_DAMAGE_BASE = 1.2`,
+- Keine Balance-Änderung an den bestehenden Tabellen (`ARCHETYPE_LAUNCH_BASE = 1.2`,
   unwirksame `inert`-Dimensionen, Kopplung `index % 3`). Diese offenen Punkte bleiben
   offen und sind hier nur als **Anzeige-Hinweise** berücksichtigt.
 - Kein neuer Seed-Offset. `SEED_OFFSETS` bleibt unverändert; der Entwurf braucht keinen,

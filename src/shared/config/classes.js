@@ -33,10 +33,12 @@
  * ist er als unwirksam gekennzeichnet und getestet, statt versteckt zu sein.
  *
  * Das Verdrahten der unwirksamen Dimensionen ist eine **Balance-Entscheidung**
- * und wird bewusst nicht nebenbei erledigt: `archetype.damage` wirkt heute als
- * Tempo-Faktor (occultist schießt am schnellsten), obwohl der Name Schaden
- * verspricht. Beides zugleich zu ändern hieße, das Klassen-Balancing in einem
- * Zug umzuwerfen. Siehe MASTERDOTO.md, Abschnitt „Klassen-Profil".
+ * und wird bewusst nicht nebenbei erledigt. **Erledigt ist die Umbenennung:**
+ * Das Feld heißt jetzt `launch` statt `damage`, weil es als Tempo-Faktor wirkt
+ * (occultist schießt am schnellsten). Name und Wirkung sind damit deckungsgleich.
+ * **Offen bleibt der Bezugswert** `ARCHETYPE_LAUNCH_BASE` — ihn zu ändern
+ * verschiebt alle Abschussgeschwindigkeiten. Siehe MASTERDOTO.md,
+ * „Bekannte Grenzen".
  */
 
 import { sidegradeModifiers } from './sidegrades.js';
@@ -68,39 +70,67 @@ export const CLASS_DEFINITIONS = Object.freeze({
 /**
  * Archetyp-Rohdaten.
  *
- * `damage` ist derzeit doppelt belegt: Es geht als `launchSpeedMultiplier` in
- * die Abschussgeschwindigkeit ein (siehe `ARCHETYPE_DAMAGE_BASE`) und wird
- * **nicht** als Schadensfaktor angewandt. `speed` liest der Motor nicht.
+ * ## Der Feldname ist `launch` — nicht `damage`
+ *
+ * **Fund (belegt):** Das Feld hieß früher `damage` und versprach damit Schaden.
+ * Der Motor liest es aber als **Abschussgeschwindigkeit**: `launch` geht über
+ * `ARCHETYPE_LAUNCH_BASE` in `combatProfile().launchSpeedMultiplier` ein und
+ * wird NICHT als Schadensfaktor angewandt. Ein Wert namens `damage`, der das
+ * Tempo verändert, ist eine Falle — die Umbenennung macht Name und Wirkung
+ * deckungsgleich, ohne einen einzigen Faktor zu verändern.
+ *
+ * Zwei Tests halten das fest: einer prüft, dass der Archetyp den SCHADEN nicht
+ * verändert, einer, dass er das TEMPO verändert (siehe
+ * `tests/counterplay.test.js` und `tests/class-profile.test.js`).
+ *
+ * ## Warum `ARCHETYPE_LAUNCH_BASE` noch 1,2 ist — und was das bedeutet
+ *
+ * Der Bezugswert, auf den `launch` normalisiert wird, ist **1,2**. Das ist der
+ * Wert KEINES Archetyps (brawler 1,1 / artillerist 1,4 / occultist 1,6) — kein
+ * Archetyp schießt also mit unverändertem Tempo, und der „Normalfall" ist
+ * nirgends erreichbar. Der Wert stammt aus der Zeit, als die Zahl direkt in
+ * `match.js` stand, und wurde beim Zusammenführen bewusst unverändert
+ * übernommen.
+ *
+ * Ihn zu ändern wäre eine **Balance-Änderung**, keine Aufräumarbeit: Alle
+ * Abschussgeschwindigkeiten verschöben sich. Das ist eine Entscheidung des
+ * Auftraggebers und steht offen — siehe MASTERDOTO.md, „Bekannte Grenzen".
+ * Ein Test hält den aktuellen Wert fest, damit er nicht still verrutscht.
  *
  * `erklaerung`: ein Satz, ohne Zahlen — wie bei den Klassen.
  */
 export const CLASS_ARCHETYPES = Object.freeze({
   brawler: Object.freeze({
-    health: 1.2, damage: 1.1, speed: 0.9,
+    health: 1.2, launch: 1.1, speed: 0.9,
     erklaerung: 'Robust und ausgeglichen — verzeiht Fehler.',
   }),
   artillerist: Object.freeze({
-    health: 0.8, damage: 1.4, speed: 0.8,
+    health: 0.8, launch: 1.4, speed: 0.8,
     erklaerung: 'Schnellerer Abschuss, weniger Leben — für Treffer aus der Distanz.',
   }),
   occultist: Object.freeze({
-    health: 0.7, damage: 1.6, speed: 1.0,
+    health: 0.7, launch: 1.6, speed: 1.0,
     erklaerung: 'Schießt am schnellsten, ist am zerbrechlichsten — ein Glasgeschütz.',
   }),
 });
 
 /**
- * Bezugswert, auf den `archetype.damage` für die Abschussgeschwindigkeit
+ * Bezugswert, auf den `archetype.launch` für die Abschussgeschwindigkeit
  * normalisiert wird.
  *
- * **Fund:** 1,2 ist der Wert KEINES Archetyps — brawler 1,1, artillerist 1,4,
- * occultist 1,6. Kein Archetyp schießt also mit unverändertem Tempo, und der
- * „Normalfall" ist nirgends erreichbar. Der Wert stammt aus der Zeit, als die
- * Zahl direkt in `match.js` stand (`archetype.damage / 1.2`), und wurde beim
- * Zusammenführen bewusst unverändert übernommen: Ihn zu korrigieren ist eine
- * Balance-Änderung, keine Aufräumarbeit. Siehe MASTERDOTO.md, „Klassen-Profil".
+ * **Fund (offen):** 1,2 ist der Wert KEINES Archetyps — brawler 1,1,
+ * artillerist 1,4, occultist 1,6. Kein Archetyp schießt also mit unverändertem
+ * Tempo, und der „Normalfall" ist nirgends erreichbar. Der Wert stammt aus der
+ * Zeit, als die Zahl direkt in `match.js` stand, und wurde beim Zusammenführen
+ * bewusst unverändert übernommen.
+ *
+ * Ihn zu ändern wäre eine **Balance-Änderung**: Alle Abschussgeschwindigkeiten
+ * verschöben sich (bei Normalisierung auf brawler 1,1 etwa um 8 %). Das ist
+ * eine Entscheidung des Auftraggebers. Siehe MASTERDOTO.md, „Bekannte Grenzen".
+ * `tests/class-profile.test.js` hält den aktuellen Wert fest, damit er nicht
+ * still verrutscht.
  */
-export const ARCHETYPE_DAMAGE_BASE = 1.2;
+export const ARCHETYPE_LAUNCH_BASE = 1.2;
 
 /** Rückfallwerte, falls eine unbekannte Kennung übergeben wird. */
 export const FALLBACK_CLASS_ID = 'scout';
@@ -108,6 +138,59 @@ export const FALLBACK_ARCHETYPE_ID = 'brawler';
 
 export const CLASS_IDS = Object.freeze(Object.keys(CLASS_DEFINITIONS));
 export const ARCHETYPE_IDS = Object.freeze(Object.keys(CLASS_ARCHETYPES));
+
+/**
+ * Löst Klasse und Archetyp für einen Spielerplatz auf.
+ *
+ * ## Was hier vorher war (der Befund)
+ *
+ * Die Zuteilung war `classId = index % 3` und `archetypeId = index % 3` — mit
+ * DEMSELBEN Index. Dadurch waren nur die drei Diagonalen erreichbar:
+ *
+ *   Platz 0 → scout/brawler
+ *   Platz 1 → heavy/artillerist
+ *   Platz 2 → artillery/occultist
+ *   Platz 3 → scout/brawler   (wieder von vorn)
+ *
+ * Gemessen (Seed 4242, `combatProfile` mit neutralem Archetyp) fehlten damit
+ * gerade die extremsten Profile: `artillery/artillerist` (Tempo 1,52) und
+ * `heavy/brawler` (Tempo 0,92) wurden nie erzeugt. Die Spannweite der Tabelle
+ * reicht von 0,64 bis 1,73 — genutzt wurden drei Punkte daraus.
+ *
+ * ## Was jetzt gilt
+ *
+ * Eine WAHl aus der Match-Konfiguration hat Vorrang; ohne Wahl greift die alte
+ * Regel. Damit ist die Änderung abwärtskompatibel: Ein Match ohne `loadout`
+ * verläuft exakt wie bisher, und ein Replay aus einer älteren Fassung ebenfalls.
+ *
+ * Die Wahl ist — wie `sidegradeId` — Teil der Konfiguration, kein Zufall: Sie
+ * kommt vom Server bzw. aus dem Menü und ändert keinen Seed-Strom.
+ *
+ * @param {number} index - Spielerplatz (0-basiert, wie in `#spawnPlayers`)
+ * @param {{classId?: string, archetypeId?: string}|null} [wahl] - Aus der Konfiguration
+ * @returns {{classId: string, archetypeId: string, gewaehlt: boolean}}
+ *   `gewaehlt` ist `false`, wenn die alte Regel gegriffen hat — nützlich für
+ *   Diagnosen und Tests.
+ */
+export function resolveLoadout(index, wahl = null) {
+  const platzKlasse = CLASS_IDS[index % CLASS_IDS.length];
+  const platzArchetyp = ARCHETYPE_IDS[index % ARCHETYPE_IDS.length];
+
+  /*
+   * Eine unbekannte Kennung in der Wahl wird TOLERANT behandelt: Sie fällt auf
+   * den Platzwert zurück, statt einen Fehler zu werfen. Dieselbe Haltung wie bei
+   * `sidegradeId` — eine Konfiguration aus einer älteren Fassung soll spielbar
+   * bleiben.
+   */
+  const gewaehlteKlasse = CLASS_DEFINITIONS[wahl?.classId] ? wahl.classId : null;
+  const gewaehlterArchetyp = CLASS_ARCHETYPES[wahl?.archetypeId] ? wahl.archetypeId : null;
+
+  return Object.freeze({
+    classId: gewaehlteKlasse ?? platzKlasse,
+    archetypeId: gewaehlterArchetyp ?? platzArchetyp,
+    gewaehlt: gewaehlteKlasse !== null || gewaehlterArchetyp !== null,
+  });
+}
 
 /**
  * Wirksames Kampfprofil aus Klasse, Archetyp und optionalem Sidegrade — die
@@ -151,7 +234,7 @@ export function combatProfile(classId, archetypeId, sidegradeId = null) {
   // Basis aus Klasse und Archetyp (wie bisher), danach das Sidegrade.
   const basisLeben = classDef.health * archetype.health;
   const basisSchaden = classDef.power;
-  const basisTempo = classDef.power * (archetype.damage / ARCHETYPE_DAMAGE_BASE);
+  const basisTempo = classDef.power * (archetype.launch / ARCHETYPE_LAUNCH_BASE);
 
   /*
    * Sidegrade: unbekannte Kennung → `null` (kein Sidegrade), KEIN Rückfall auf
@@ -202,7 +285,7 @@ export function combatProfile(classId, archetypeId, sidegradeId = null) {
       mass: classDef.mass,
       classSpeed: classDef.speed,
       archetypeSpeed: archetype.speed,
-      archetypeDamageAsDamage: archetype.damage,
+      archetypeLaunchAsDamage: archetype.launch,
     }),
   });
 }
@@ -272,10 +355,11 @@ export function uebersichtFuerHilfe() {
       erklaerung: def.erklaerung,
       wirksam: Object.freeze({
         leben: def.health,
-        // Der Archetyp wirkt über seinen `damage`-Wert aufs TEMPO, nicht auf den
-        // Schaden — siehe ARCHETYPE_DAMAGE_BASE. Die Anzeige nennt es deshalb
-        // „Tempo"; „Schaden" hiesse hier das Falsche.
-        tempo: def.damage / ARCHETYPE_DAMAGE_BASE,
+        // Der Archetyp wirkt über seinen `launch`-Wert aufs TEMPO, nicht auf den
+        // Schaden — siehe ARCHETYPE_LAUNCH_BASE. Die Anzeige nennt es deshalb
+        // „Tempo"; „Schaden" hiesse hier das Falsche. Der Feldname sagt seit der
+        // Umbenennung dasselbe wie die Wirkung.
+        tempo: def.launch / ARCHETYPE_LAUNCH_BASE,
       }),
       inert: Object.freeze({ speed: def.speed }),
     };
@@ -292,9 +376,11 @@ export function uebersichtFuerHilfe() {
      */
     inertHinweis: 'drag und mass sind deklariert, werden vom Motor aber nicht '
       + 'gelesen — sie stehen hier als Hinweis, nicht als Spielwert.',
-    kopplungHinweis: 'Im laufenden Match sind nur drei der neun Kombinationen '
-      + 'erreichbar (Scout/Brawler, Heavy/Artillerist, Artillery/Okkultist): '
-      + 'Klasse und Archetyp werden gemeinsam über den Listenindex vergeben.',
+    kopplungHinweis: 'Standardmäßig sind im laufenden Match nur drei der neun '
+      + 'Kombinationen erreichbar (Scout/Brawler, Heavy/Artillerist, '
+      + 'Artillery/Okkultist): Klasse und Archetyp werden gemeinsam über den '
+      + 'Listenindex vergeben. Über die Match-Konfiguration lässt sich jede '
+      + 'Kombination wählen.',
   };
 }
 
@@ -326,7 +412,7 @@ export function uebersichtFuerHilfe() {
  * als beweglichster Charakter angelegt (`speed: 1.2`, der höchste Wert der
  * Tabelle) — aber `speed` steht unter `inert` und wird vom Motor NICHT gelesen.
  * Seine Stärke existiert nur auf dem Papier. Siehe MASTERDOTO.md,
- * „Klassen-Profil", wo `archetype.damage` als Tempo-Faktor denselben Punkt
+ * „Klassen-Profil", wo `archetype.launch` als Tempo-Faktor denselben Punkt
  * berührt.
  *
  * ## Diese Funktion erfindet deshalb NICHTS dazu

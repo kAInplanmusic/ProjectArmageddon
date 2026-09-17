@@ -239,16 +239,21 @@ erledigt — und beim Zusammenführen kamen zwei weitere Befunde heraus.
 - **Neu gefunden (a): Klasse und Archetyp sind im Match fest gekoppelt.** Beide
   werden über `index % 3` zugeteilt: scout tritt nur als brawler auf, heavy nur
   als artillerist, artillery nur als occultist. Von neun Kombinationen der
-  Tabellen sind drei erreichbar. Bewusst **nicht** nebenbei geändert — das ist
-  eine Balance-Entscheidung.
-- **Neu gefunden (b): Der Bezugswert `ARCHETYPE_DAMAGE_BASE = 1,2` gehört zu
-  keinem Archetyp** (1,1 / 1,4 / 1,6). Der „neutrale" Fall ist damit nirgends
-  erreichbar; jeder Archetyp schießt entweder langsamer oder schneller als
-  normal. Wert unverändert übernommen und als Fund dokumentiert.
+  Tabellen sind drei erreichbar. **BEHOBEN** — siehe „Bekannte Grenzen": Die
+  Zuteilung liegt jetzt in `resolveLoadout()` und nimmt eine Wahl aus der
+  Match-Konfiguration entgegen; ohne Wahl greift die alte Regel.
+- **Der Bezugswert `ARCHETYPE_LAUNCH_BASE = 1,2` gehört zu keinem Archetyp**
+  (1,1 / 1,4 / 1,6). Der „neutrale" Fall ist damit nirgends erreichbar; jeder
+  Archetyp schießt entweder langsamer oder schneller als normal. Wert
+  unverändert übernommen — ihn zu ändern ist eine Balance-Änderung und steht
+  offen (siehe „Bekannte Grenzen").
+- **Behoben: Das Feld `archetype.damage` hieß falsch.** Es wirkt als
+  Tempofaktor, nicht als Schaden. Es heißt jetzt `launch` — Name und Wirkung
+  sind deckungsgleich, ohne dass sich ein Faktor ändert.
 - Die Tabellen führen Dimensionen, die der Motor **nicht liest** (`drag`,
-  `mass`, Klassentempo, Archetyptempo, `archetype.damage` als Schaden). Sie
-  stehen jetzt ausdrücklich unter `profil.inert` und sind getestet — eine
-  stille Lüge wäre schlimmer als eine benannte Lücke.
+  `mass`, Klassentempo, Archetyptempo). Sie stehen ausdrücklich unter
+  `profil.inert` und sind getestet — eine stille Lüge wäre schlimmer als eine
+  benannte Lücke.
 
 ### Klassenabhängige Startloadouts
 
@@ -1939,6 +1944,51 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
 
 ## Bekannte Grenzen (bewusst dokumentiert)
 
+- **Die Kopplung von Klasse und Archetyp ist aufgehoben — offen bleibt die
+  Balance.**
+
+  *Der Befund:* Beide wurden über DENSELBEN Index zugeteilt (`index % 3`), sodass
+  nur drei der neun Kombinationen erreichbar waren — gerade die extremsten
+  Profile fehlten:
+
+  | | erreichbar vorher | Tempo |
+  |---|---|---|
+  | scout/brawler | ja | 0,64 |
+  | heavy/artillerist | ja | 1,17 |
+  | artillery/occultist | ja | 1,73 |
+  | artillery/artillerist | **nein** | 1,52 |
+  | heavy/brawler | **nein** | 0,92 |
+  | scout/occultist | **nein** | 0,93 |
+
+  Die Tabellen spannen 0,64 bis 1,73 (Faktor 2,7); genutzt wurden drei Punkte
+  daraus.
+
+  *Die Behebung:* `resolveLoadout(index, wahl)` in `classes.js` lässt eine Wahl
+  aus der **Match-Konfiguration** zu (`MatchController({ loadouts })`). Ohne
+  Wahl greift die alte Regel — ein Match ohne die Option verläuft exakt wie
+  bisher, ebenso ein Replay aus einer älteren Fassung. Wie bei den Sidegrades
+  ist die Wahl Konfiguration, kein Zufall: Sie berührt keinen Seed-Strom.
+
+  *Was offen bleibt:* **Welche Kombinationen sinnvoll sind, ist eine
+  Balance-Frage.** Die Entkopplung macht sie möglich, sie bewertet sie nicht.
+  Die Balance-Messungen (`npm run balance`) wurden für die drei alten
+  Kombinationen erhoben; für die neuen gibt es noch keine Vergleichszahlen.
+
+- **Der Bezugswert `ARCHETYPE_LAUNCH_BASE = 1,2` gehört zu keinem Archetyp.**
+  Die Archetypen haben 1,1 (brawler), 1,4 (artillerist), 1,6 (occultist) — kein
+  Archetyp schießt also mit unverändertem Tempo, der „Normalfall" ist nirgends
+  erreichbar. Eine Normalisierung auf brawler (1,1) würde alle
+  Abschussgeschwindigkeiten um rund 8 % verschieben. Das ist eine
+  Balance-Entscheidung und bewusst **nicht** nebenbei getroffen;
+  `tests/class-profile.test.js` hält den aktuellen Wert fest.
+
+- **Die Klasse/Archetyp-Kopplung als Anzeige-Hinweis.** Die Hilfe nennt die
+  Kopplung weiterhin als Hinweis („Im laufenden Match sind nur drei der neun
+  Kombinationen erreichbar"). Das gilt für den Standardfall ohne Wahl — wer die
+  Konfiguration nutzt, kann alle neun erreichen. Der Hinweis ist damit nicht
+  falsch, aber unvollständig; er wird beim nächsten Anzeige-Durchgang
+  präzisiert.
+
 - **Der Scout hatte keine wirksame Stärke — BEHOBEN.**
 
   *Der Befund:* Gemessen über die Achsen, die der Motor liest, war der Scout auf
@@ -2044,14 +2094,18 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
   messbar — siehe den Entwurf in
   `docs/entwurf-onboarding-sidegrades-counterplay.md`, der sie im Menü
   ausdrücklich BENENNEN will, statt sie zu verschweigen.
-- **Fünf Dimensionen der Klassentabellen sind wirksamkeitslos.** `drag`, `mass`,
-  Klassentempo, Archetyptempo und `archetype.damage` als Schaden liest der
-  Motor nicht; sie stehen in `profil.inert` und sind getestet. Sie zu verdrahten
-  ist eine Balance-Entscheidung. Besonders benannt: `archetype.damage` wirkt
-  heute als **Tempo**faktor (der Okkultist schießt am schnellsten), obwohl der
-  Name Schaden verspricht.
+- **Vier Dimensionen der Klassentabellen sind wirksamkeitslos.** `drag`, `mass`,
+  Klassentempo und Archetyptempo liest der Motor nicht; sie stehen in
+  `profil.inert` und sind getestet. Sie zu verdrahten ist eine
+  Balance-Entscheidung.
+  **Behoben:** `archetype.damage` stand hier ebenfalls — der Name versprach
+  Schaden, der Wert wirkte aber aufs **Tempo** (der Okkultist schießt am
+  schnellsten). Das Feld heißt jetzt `launch`; die Umbenennung ändert keinen
+  Faktor, nur die Bezeichnung. `speed` ist inzwischen verdrahtet (Absprung,
+  siehe „Bekannte Grenzen").
 - **Der Bezugswert 1,2 der Archetyp-Abschussgeschwindigkeit gehört zu keinem
-  Archetyp** (1,1 / 1,4 / 1,6). Normaltempo ist damit nicht erreichbar.
+  Archetyp** (1,1 / 1,4 / 1,6). Normaltempo ist damit nicht erreichbar — offen,
+  siehe „Bekannte Grenzen".
 
 - **Ein Wiederverbinden auf ein entschiedenes Match startet ein NEUES Match.**
   Beim Ende löscht die Sitzung sich selbst (`#finish` → `onEmpty`), ein späterer

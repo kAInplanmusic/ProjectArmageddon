@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, ReplayPlayer, playReplay, REPLAY_FORMAT_VERSION } from '../src/engine/replay.js';
+import { CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
 
 /**
  * Führt ein Match mit skriptgesteuerten Eingaben aus und zeichnet sie auf.
@@ -584,4 +585,117 @@ test('Ein Sidegrade im Kopf verändert den Verlauf nachweislich', () => {
 
   assert.notEqual(mit.match.stateHash(), ohne.match.stateHash(),
     'ein Sidegrade muss den Matchverlauf verändern — sonst wirkt es nicht');
+});
+
+// ------------------------------------------------------- Klassenwahl (loadouts)
+
+/** Führt ein Match MIT Klassenwahl aus und zeichnet es auf. */
+function runRecordedMatchMitLoadouts(loadouts) {
+  const seed = 5150;
+  const match = new MatchController({
+    seed, teams: 2, playersPerTeam: 2, turnDurationMs: 3000, maxRounds: 6, loadouts,
+  });
+  match.start();
+
+  const recorder = new ReplayRecorder({
+    seed, teams: 2, playersPerTeam: 2, preset: 'hills',
+    maxRounds: match.maxRounds, turnDurationMs: match.turnDurationMs, loadouts,
+  });
+
+  let shots = 0;
+  let guard = 0;
+  while (match.status === 'playing' && guard < 30_000) {
+    const state = match.getState();
+    const active = state.activePlayerId;
+    if (active !== null && state.turnElapsedMs < 20) {
+      const angle = Math.PI / 4 + (shots % 5) * 0.07;
+      const power = 56 + (shots % 4) * 9;
+      const result = match.fire(active, angle, power);
+      if (result.ok) {
+        recorder.recordInput({ tick: match.world.tickCount, playerId: active, angle, power });
+        shots += 1;
+      }
+    }
+    match.step();
+    match.consumeEvents();
+    guard += 1;
+  }
+  recorder.finalize(match.world.tickCount);
+  return { match, recorder, shots };
+}
+
+test('Ein Replay mit Klassenwahl reproduziert das Match exakt', () => {
+  /*
+   * Die Wahl bestimmt die PROFILE der Figuren (Leben, Tempo). Fehlte sie in der
+   * Wiedergabe, spielte diese die Standardzuteilung — ein anderes Match.
+   */
+  const loadouts = [
+    { classId: 'artillery', archetypeId: 'artillerist' },
+    { classId: 'heavy', archetypeId: 'brawler' },
+    { classId: 'scout', archetypeId: 'occultist' },
+    null,
+  ];
+  const live = runRecordedMatchMitLoadouts(loadouts);
+  const { match: replayed, appliedInputs } = playReplay(live.recorder);
+
+  assert.equal(appliedInputs, live.shots, 'nicht jede Eingabe angewendet');
+  assert.equal(replayed.stateHash(), live.match.stateHash(),
+    'mit Klassenwahl weicht der Zustandshash ab — die Wiedergabe ist nicht exakt');
+});
+
+test('Im Replay-Kopf steht die Klassenwahl', () => {
+  // Ohne sie im Kopf spielte die Wiedergabe andere Profile.
+  const loadouts = [{ classId: 'artillery', archetypeId: 'artillerist' }, null, null, null];
+  const live = runRecordedMatchMitLoadouts(loadouts);
+  const kopf = live.recorder.toJSON();
+
+  assert.ok(Array.isArray(kopf.config.loadouts), 'loadouts fehlen im Kopf');
+  assert.deepEqual(kopf.config.loadouts, loadouts);
+});
+
+test('Ohne Klassenwahl steht KEIN Feld im Replay-Kopf', () => {
+  // Kein Rauschen: Ein Match ohne Wahl bekommt kein Feld, damit alte und neue
+  // Aufzeichnungen nicht ohne Grund verschieden sind.
+  const live = runRecordedMatchMitLoadouts(null);
+  const kopf = live.recorder.toJSON();
+  assert.equal(kopf.config.loadouts, undefined,
+    'ohne Wahl darf kein loadouts-Feld im Kopf stehen');
+});
+
+test('Ein ALTES Replay ohne Klassenwahl läuft unverändert', () => {
+  /*
+   * DIE Abwärtskompatibilität für die Klassenwahl. Aufzeichnungen aus der Zeit
+   * davor haben das Feld nicht — sie müssen exakt wie bisher verlaufen, sonst
+   * wären alle vorhandenen Aufzeichnungen unbrauchbar.
+   */
+  const live = runRecordedMatchMitLoadouts(null);
+
+  const alt = JSON.parse(JSON.stringify(live.recorder.toJSON()));
+  assert.equal(alt.config.loadouts, undefined, 'Vorbedingung: Feld fehlt');
+
+  const ausAlt = playReplay(ReplayRecorder.fromJSON(alt));
+  assert.equal(ausAlt.match.stateHash(), live.match.stateHash(),
+    'ein Replay ohne loadouts-Feld muss zum Original passen');
+});
+
+test('Die Klassenwahl verändert den Verlauf nachweislich', () => {
+  /*
+   * Die Gegenprobe: Ohne sie bewiesen die Tests oben nur, dass zweimal dasselbe
+   * passiert. Eine entkoppelte Kombination (artillery/artillerist) muss ein
+   * anderes Match ergeben als die Standardzuteilung.
+   */
+  const ohne = runRecordedMatchMitLoadouts(null);
+  const mit = runRecordedMatchMitLoadouts([
+    { classId: 'artillery', archetypeId: 'artillerist' },
+    { classId: 'heavy', archetypeId: 'brawler' },
+    { classId: 'scout', archetypeId: 'occultist' },
+    null,
+  ]);
+
+  assert.notEqual(mit.match.stateHash(), ohne.match.stateHash(),
+    'die Klassenwahl muss den Matchverlauf verändern — sonst wirkt sie nicht');
+
+  // Und die Klassen müssen im Match tatsächlich gesetzt sein.
+  assert.equal(CLASS_IDS[mit.match.players[0].classId], 'artillery');
+  assert.equal(ARCHETYPE_IDS[mit.match.players[0].archetypeId], 'artillerist');
 });

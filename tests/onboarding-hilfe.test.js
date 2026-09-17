@@ -79,7 +79,7 @@ test('Die wirksamen Zahlen stammen aus den Configs, nicht aus einer zweiten Quel
 
 test('Der Archetyp wirkt als TEMPO, nicht als Schaden — und die Anzeige nennt es so', () => {
   /*
-   * Fund aus dem Codeaudit: `archetype.damage` geht als
+   * Fund aus dem Codeaudit: `archetype.launch` (früher `damage`) geht als
    * `launchSpeedMultiplier` in die Abschussgeschwindigkeit ein und wird NICHT
    * als Schadensfaktor angewandt. Eine Übersicht, die ihn unter „Schaden"
    * aufführte, wäre glatt falsch — und niemand würde es bemerken.

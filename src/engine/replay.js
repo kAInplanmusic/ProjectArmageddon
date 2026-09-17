@@ -43,7 +43,7 @@ export class ReplayRecorder {
    */
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
-    maxRounds = 30, turnDurationMs = null, sidegrades = null,
+    maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -53,9 +53,13 @@ export class ReplayRecorder {
     // Feld in jedem Kopf wäre Rauschen und machte alte und neue Aufzeichnungen
     // unnötig verschieden.
     const hatSidegrades = Array.isArray(sidegrades) && sidegrades.some(s => s !== null && s !== undefined);
+    const hatLoadouts = Array.isArray(loadouts) && loadouts.some(l => l !== null && l !== undefined);
     this.#config = {
       teams, playersPerTeam, preset, maxRounds, turnDurationMs,
       ...(hatSidegrades ? { sidegrades: [...sidegrades] } : {}),
+      // Nur aufnehmen, wenn wirklich etwas gewählt wurde — sonst wären alte und
+      // neue Aufzeichnungen ohne Grund verschieden.
+      ...(hatLoadouts ? { loadouts: loadouts.map(l => (l ? { ...l } : null)) } : {}),
     };
     this.#startedAt = Date.now();
   }
@@ -261,6 +265,14 @@ export class ReplayPlayer {
        * bisher. Ohne diese Vorsicht wären alle vorhandenen Replays unbrauchbar.
        */
       ...(Array.isArray(config.sidegrades) ? { sidegrades: config.sidegrades } : {}),
+      /*
+       * Klassenwahl aus dem Kopf — oder keine.
+       *
+       * ABWÄRTSKOMPATIBILITÄT: Eine ältere Aufzeichnung hat das Feld nicht.
+       * Ohne die Wahl greift die Standardzuteilung — und weil das auch vorher
+       * der Zustand war, spielt eine alte Aufzeichnung exakt wie bisher.
+       */
+      ...(Array.isArray(config.loadouts) ? { loadouts: config.loadouts } : {}),
     });
     this.match.start();
 

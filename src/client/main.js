@@ -27,7 +27,7 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
-import { uebersichtFuerHilfe, classCounterplay } from '../shared/config/classes.js';
+import { uebersichtFuerHilfe, classCounterplay, resolveLoadout } from '../shared/config/classes.js';
 import { sidegradesForClass } from '../shared/config/sidegrades.js';
 import { LOOT_DROP_RULES } from '../shared/config/loot.js';
 import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
@@ -199,14 +199,16 @@ class Game {
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
     const lobbyId = document.getElementById('cfg-lobby')?.value?.trim() ?? '';
     const sidegrades = this.#sidegradesAusMenue(teams * playersPerTeam);
+    const loadouts = this.#loadoutsAusMenue(teams * playersPerTeam);
 
     if (serverUrl) {
       return this.startOnline({
-        serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey, orientation, sidegrades,
+        serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey,
+        orientation, sidegrades, loadouts,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, seed, backdropKey, orientation, sidegrades,
+      teams, playersPerTeam, preset, seed, backdropKey, orientation, sidegrades, loadouts,
     });
   }
 
@@ -275,6 +277,95 @@ class Game {
 
     auswahl.addEventListener('change', aktualisiere);
     aktualisiere();
+  }
+
+  /**
+   * Füllt die Loadout-Auswahl im Menü — je Spielerplatz zwei Felder.
+   *
+   * ## Warum je PLATZ und nicht je Klasse (anders als die Sidegrades)
+   *
+   * Bei den Sidegrades wählt man je Klasse, weil der Sidegrade an der Klasse
+   * hängt. Hier ist es umgekehrt: Die Wahl BESTIMMT die Klasse des Platzes. Der
+   * Spieler muss also den Platz adressieren — und die Zahl der Plätze steht mit
+   * „Teams" und „Spieler pro Team" im Menü.
+   *
+   * ## Die Vorgabe ist „automatisch"
+   *
+   * Der erste Eintrag je Feld ist leer und bedeutet: die alte Regel
+   * (`index % 3`). Damit ist die Änderung im Menü neutral — wer nichts wählt,
+   * bekommt genau das Spiel von vorher.
+   */
+  fillLoadoutOptions() {
+    const behaelter = document.getElementById('loadout-felder');
+    if (!behaelter) return;
+
+    const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
+    const proTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
+    const plaetze = teams * proTeam;
+
+    behaelter.replaceChildren();
+
+    for (let i = 0; i < plaetze; i += 1) {
+      const zeile = document.createElement('div');
+      zeile.className = 'field-row';
+
+      const label = document.createElement('label');
+      label.setAttribute('for', `cfg-loadout-klasse-${i}`);
+      /*
+       * Der Platz wird mit Team und Klassen-Vorgabe benannt, damit man sieht,
+       * was man ändert. Die Vorgabe stammt aus derselben Regel wie der Motor —
+       * eine eigene Rechnung hier würde bei einer Änderung auseinanderlaufen.
+       */
+      const vorgabe = resolveLoadout(i);
+      label.textContent = `Platz ${i + 1} (${vorgabe.classId}/${vorgabe.archetypeId})`;
+      zeile.append(label);
+
+      for (const [art, werte, feld] of [
+        ['Klasse', CLASS_IDS, 'klasse'],
+        ['Archetyp', ARCHETYPE_IDS, 'archetyp'],
+      ]) {
+        const auswahl = document.createElement('select');
+        auswahl.id = `cfg-loadout-${feld}-${i}`;
+        // Leer = automatisch (alte Regel).
+        const auto = document.createElement('option');
+        auto.value = '';
+        auto.textContent = `${art}: automatisch`;
+        auswahl.append(auto);
+        for (const wert of werte) {
+          const option = document.createElement('option');
+          option.value = wert;
+          option.textContent = wert;
+          auswahl.append(option);
+        }
+        zeile.append(auswahl);
+      }
+
+      behaelter.append(zeile);
+    }
+  }
+
+  /**
+   * Liest die Loadout-Wahl aus dem Menü.
+   *
+   * @param {number} plaetze
+   * @returns {(object|null)[]} Wahl je Platz — `null`, wenn nichts gewählt wurde
+   */
+  #loadoutsAusMenue(plaetze) {
+    const liste = [];
+    for (let i = 0; i < plaetze; i += 1) {
+      const klasse = document.getElementById(`cfg-loadout-klasse-${i}`)?.value ?? '';
+      const archetyp = document.getElementById(`cfg-loadout-archetyp-${i}`)?.value ?? '';
+      if (klasse === '' && archetyp === '') {
+        liste.push(null);
+        continue;
+      }
+      // Nur die gesetzten Felder übergeben — der Rest fällt auf den Platzwert.
+      liste.push({
+        ...(klasse ? { classId: klasse } : {}),
+        ...(archetyp ? { archetypeId: archetyp } : {}),
+      });
+    }
+    return liste;
   }
 
   /**
@@ -444,7 +535,7 @@ class Game {
     return anzahl;
   }
 
-  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '', orientation = 'landscape', sidegrades = null } = {}) {
+  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '', orientation = 'landscape', sidegrades = null, loadouts = null } = {}) {
     this.network?.disconnect();
     this.network = null;
     this.mode = 'local';
@@ -453,7 +544,7 @@ class Game {
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
     // nach dem Start.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, orientation, sidegrades,
+      seed, teams, playersPerTeam, preset, orientation, sidegrades, loadouts,
     });
     this.match.start();
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
@@ -550,7 +641,7 @@ class Game {
     return ergebnis;
   }
 
-  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '', orientation = 'landscape', sidegrades = null } = {}) {
+  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '', orientation = 'landscape', sidegrades = null, loadouts = null } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
@@ -573,6 +664,10 @@ class Game {
           body: JSON.stringify({
             teams, playersPerTeam, preset, seed, orientation,
             ...(Array.isArray(sidegrades) && sidegrades.some(s => s !== null) ? { sidegrades } : {}),
+            // Nur mitschicken, wenn wirklich etwas gewählt wurde — sonst bliebe
+            // die Anfrage größer als nötig und die alte Regel wäre nicht mehr
+            // erkennbar.
+            ...(Array.isArray(loadouts) && loadouts.some(l => l !== null) ? { loadouts } : {}),
           }),
         });
         if (!response.ok) throw new Error(`Lobby konnte nicht erstellt werden (${response.status})`);
@@ -2509,8 +2604,19 @@ if (typeof document !== 'undefined') {
     game.fillBackdropOptions();
     // Sidegrade-Felder aus der Config füllen — im Markup steht keine Option.
     game.fillSidegradeOptions();
+    // Loadout-Auswahl je Spielerplatz (Klasse und Archetyp entkoppelt).
+    game.fillLoadoutOptions();
     // Karten-Synergie anzeigen (reine Anzeige, kein Bonus im Motor).
     game.fillTerrainAffinity();
+
+    /*
+     * Die Loadout-Felder richten sich nach „Teams" und „Spieler pro Team" —
+     * nach deren Änderung muss die Liste neu aufgebaut werden, sonst stünden
+     * dort Felder für Plätze, die es nicht mehr gibt (oder es fehlten welche).
+     */
+    for (const id of ['cfg-teams', 'cfg-players']) {
+      document.getElementById(id)?.addEventListener('change', () => game.fillLoadoutOptions());
+    }
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fuelle, { once: true });

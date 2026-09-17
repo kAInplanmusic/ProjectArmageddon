@@ -10,6 +10,7 @@
 import { randomUUID } from 'node:crypto';
 import { ORIENTATIONS } from '../engine/match.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
+import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 
 export const LOBBY_STATUS = Object.freeze({
   OPEN: 'open',
@@ -29,7 +30,7 @@ export class LobbyManager {
 
   create({
     teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined,
-    hostName = 'Host', orientation = 'landscape', sidegrades = null,
+    hostName = 'Host', orientation = 'landscape', sidegrades = null, loadouts = null,
   } = {}) {
     if (teams < 2 || teams > 4) throw new Error('teams muss zwischen 2 und 4 liegen');
     if (playersPerTeam < 1 || playersPerTeam > 3) throw new Error('playersPerTeam muss zwischen 1 und 3 liegen');
@@ -56,6 +57,27 @@ export class LobbyManager {
         .map(s => (isKnownSidegrade(s) ? s : null))
       : null;
 
+    /*
+     * Loadouts: Klasse und Archetyp je Platz — ebenfalls TOLERANT geprüft.
+     *
+     * Unbekannte Kennungen werden auf `null` gesetzt (dann gilt der Platzwert),
+     * statt die Lobby abzulehnen. Dieselbe Haltung wie bei den Sidegrades: Eine
+     * Konfiguration mit Tippfehler soll spielbar bleiben, und ein fehlender
+     * Eintrag ist kein Fehler.
+     */
+    const geprüfteLoadouts = Array.isArray(loadouts)
+      ? loadouts.slice(0, capacity).map(eintrag => {
+        if (!eintrag || typeof eintrag !== 'object') return null;
+        const klasse = CLASS_DEFINITIONS[eintrag.classId] ? eintrag.classId : null;
+        const archetyp = CLASS_ARCHETYPES[eintrag.archetypeId] ? eintrag.archetypeId : null;
+        if (!klasse && !archetyp) return null;
+        return {
+          ...(klasse ? { classId: klasse } : {}),
+          ...(archetyp ? { archetypeId: archetyp } : {}),
+        };
+      })
+      : null;
+
     const id = randomUUID().slice(0, 8);
     const lobby = {
       id,
@@ -68,6 +90,8 @@ export class LobbyManager {
       orientation,
       // Sidegrades je Spielerplatz — Teil der Match-Konfiguration wie `preset`.
       sidegrades: geprüfteSidegrades,
+      // Klassenwahl je Spielerplatz — ebenfalls Konfiguration, kein Zufall.
+      loadouts: geprüfteLoadouts,
       seed,
       status: LOBBY_STATUS.OPEN,
       createdAt: Date.now(),
@@ -108,6 +132,7 @@ export class LobbyManager {
       // Die Sidegrades gehören in die Beschreibung: Ohne sie sähe der Client
       // nicht, mit welchem Profil die Figuren antreten.
       sidegrades: Array.isArray(lobby.sidegrades) ? [...lobby.sidegrades] : null,
+      loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts.map(l => (l ? { ...l } : null)) : null,
       status: lobby.status,
       // Belegt = reservierte Plätze. Die Entity-ID existiert erst, wenn ein
       // Match gestartet und die Welt erzeugt wurde.

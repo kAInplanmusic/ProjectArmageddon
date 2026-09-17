@@ -88,7 +88,17 @@ test.describe('Counterplay-Anzeige', () => {
 
     const text = await page.locator('#hilfe-inhalt').evaluate(el => el.textContent);
     expect(text).toMatch(/kein Bonus|ändert keine Werte/);
-    expect(text).toMatch(/nicht gelesen/);
+
+    /*
+     * Und die Gegenprobe zu den WERTEN: Die Beweglichkeit wird seit dem
+     * Verdrahten gelesen (Absprung) — die Anzeige darf nicht mehr behaupten,
+     * sie sei wirkungslos. Der frühere Test suchte hier „nicht gelesen", weil
+     * das damals stimmte; mit der Behebung ist genau diese Aussage falsch
+     * geworden.
+     */
+    expect(text).toMatch(/wirkt auf den Absprung/);
+    expect(text, 'die Anzeige behauptet noch, die Beweglichkeit werde nicht gelesen')
+      .not.toMatch(/Beweglichkeit.*nicht gelesen/);
   });
 
   test('Der Kader zeigt je Charakter die Counterplay-Zeile', async ({ page }) => {

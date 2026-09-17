@@ -83,6 +83,8 @@ class LobbySession {
        * gegen `SIDEGRADE_IDS`; was hier ankommt, ist bereits geprüft.
        */
       sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
+      // Klassenwahl je Platz — wie die Sidegrades Teil der Konfiguration.
+      loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
     });
     this.match.start();
 
@@ -97,6 +99,9 @@ class LobbySession {
       // Ohne diesen Eintrag spielte eine Wiedergabe ein Match OHNE Sidegrades
       // und liefe ab dem ersten Schuss auseinander.
       sidegrades: this.match.sidegrades,
+      // Dasselbe gilt für die Klassenwahl: Ohne sie im Kopf spielte die
+      // Wiedergabe die Standardzuteilung statt der gewählten Profile.
+      loadouts: this.match.loadouts,
     });
 
     // Wiederherstellung: Eingaben bis zum gespeicherten Tick erneut anwenden.
@@ -756,6 +761,7 @@ export class GameServer {
           // Der Manager prüft jede Kennung und setzt Unbekanntes auf null —
           // eine ungültige Angabe darf das Anlegen nicht verhindern.
           sidegrades: Array.isArray(body.sidegrades) ? body.sidegrades : null,
+          loadouts: Array.isArray(body.loadouts) ? body.loadouts : null,
         });
         this.logger.info('lobby_created', 'Lobby angelegt', {
           lobbyId: created.lobby.id,

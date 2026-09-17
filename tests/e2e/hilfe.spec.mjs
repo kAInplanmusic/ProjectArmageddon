@@ -115,7 +115,7 @@ test.describe('Hilfe-Bereich', () => {
 
   test('Die Archetypen zeigen TEMPO, nicht Schaden', async ({ page }) => {
     /*
-     * Fund aus dem Codeaudit: `archetype.damage` geht als Tempo-Faktor in die
+     * Fund aus dem Codeaudit: `archetype.launch` (früher `damage`) geht als Tempo-Faktor in die
      * Abschussgeschwindigkeit ein und wird NICHT als Schaden angewandt. Eine
      * Übersicht mit der Zeile „Schaden" beim Archetyp wäre glatt falsch.
      *

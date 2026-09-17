@@ -10,7 +10,7 @@ import {
   CLASS_ARCHETYPES,
   CLASS_IDS,
   ARCHETYPE_IDS,
-  ARCHETYPE_DAMAGE_BASE,
+  ARCHETYPE_LAUNCH_BASE,
   combatProfile,
   allCombatProfiles,
 } from '../src/shared/config/classes.js';
@@ -78,18 +78,22 @@ test('Das Profil entsteht aus den Rohdaten, nicht aus einer zweiten Formel', () 
       assert.equal(profil.healthMultiplier, klasse.health * archetyp.health);
       assert.equal(profil.damageMultiplier, klasse.power);
       assert.equal(profil.launchSpeedMultiplier,
-        klasse.power * (archetyp.damage / ARCHETYPE_DAMAGE_BASE));
+        klasse.power * (archetyp.launch / ARCHETYPE_LAUNCH_BASE));
       assert.equal(profil.onFallback, false);
     }
   }
 
-  // Fund: Der Bezugswert 1,2 gehört zu KEINEM Archetyp (1,1 / 1,4 / 1,6).
+  // Fund (offen): Der Bezugswert 1,2 gehört zu KEINEM Archetyp (1,1 / 1,4 / 1,6).
   // Damit ist der neutrale Fall nicht erreichbar — jeder Archetyp schießt
   // entweder langsamer oder schneller als „normal". Festgehalten, nicht
   // stillschweigend korrigiert: das wäre eine Balance-Änderung.
-  assert.equal(ARCHETYPE_DAMAGE_BASE, 1.2);
+  //
+  // Der Test hält den Wert damit auch als Entscheidung des Auftraggebers fest:
+  // Ändert ihn jemand, schlägt dieser Test fehl und die Balance-Messungen
+  // müssen neu bewertet werden.
+  assert.equal(ARCHETYPE_LAUNCH_BASE, 1.2);
   for (const archetypeId of ARCHETYPE_IDS) {
-    assert.notEqual(CLASS_ARCHETYPES[archetypeId].damage, ARCHETYPE_DAMAGE_BASE,
+    assert.notEqual(CLASS_ARCHETYPES[archetypeId].launch, ARCHETYPE_LAUNCH_BASE,
       `${archetypeId} hat den Bezugswert — die Annahme im Code stimmt nicht mehr`);
   }
 });
@@ -158,13 +162,13 @@ test('Nicht wirksame Modifikatoren sind ausdrücklich als unwirksam gekennzeichn
   // Diese Schlüssel sind festgenagelt: Wer eine davon verdrahtet, MUSS diesen
   // Test anfassen — und damit die Balance-Entscheidung sichtbar machen.
   assert.deepEqual(Object.keys(profil.inert).sort(),
-    ['archetypeDamageAsDamage', 'archetypeSpeed', 'classSpeed', 'drag', 'mass']);
+    ['archetypeLaunchAsDamage', 'archetypeSpeed', 'classSpeed', 'drag', 'mass']);
 
   assert.equal(profil.inert.drag, CLASS_DEFINITIONS.heavy.drag);
   assert.equal(profil.inert.mass, CLASS_DEFINITIONS.heavy.mass);
   assert.equal(profil.inert.classSpeed, CLASS_DEFINITIONS.heavy.speed);
   assert.equal(profil.inert.archetypeSpeed, CLASS_ARCHETYPES.occultist.speed);
-  assert.equal(profil.inert.archetypeDamageAsDamage, CLASS_ARCHETYPES.occultist.damage);
+  assert.equal(profil.inert.archetypeLaunchAsDamage, CLASS_ARCHETYPES.occultist.launch);
 
   // Das Profil selbst führt keine dieser Dimensionen als wirksam.
   assert.equal(profil.drag, undefined);

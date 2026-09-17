@@ -760,6 +760,26 @@
             <div id="hilfe-inhalt" class="hilfe-inhalt"></div>
           </details>
           <!--
+            Klassenwahl je Spielerplatz.
+
+            Standardmäßig vergibt der Motor Klasse und Archetyp über denselben
+            Listenindex — dadurch sind nur drei der neun Kombinationen
+            erreichbar. Mit dieser Auswahl lässt sich jede Kombination wählen.
+
+            Die Felder werden von `fillLoadoutOptions()` aus den Configs gefüllt;
+            im Markup steht bewusst keine Option. Die Vorgabe ist „automatisch"
+            (die alte Regel), damit wer nichts wählt genau das Spiel von vorher
+            bekommt.
+          -->
+          <details id="loadout-auswahl">
+            <summary>Klassen je Platz — Kombination frei wählen</summary>
+            <p class="field-hint">
+              Ohne Wahl gilt die Standardzuteilung. Die Felder bauen sich nach
+              „Teams" und „Spieler pro Team" neu auf.
+            </p>
+            <div id="loadout-felder"></div>
+          </details>
+          <!--
             Sidegrades: Trade-offs auf dem Kampfprofil, eines je KLASSE.
 
             Die Auswahl ist je Klasse und nicht je Spielerplatz, weil das Menü
