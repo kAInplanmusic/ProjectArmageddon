@@ -14,6 +14,7 @@
     "check:fuses": "node scripts/check-fuses.mjs",
     "check:range": "node scripts/check-range.mjs",
     "check:achievements": "node scripts/check-achievements.mjs",
+    "achievements:vorlage": "node scripts/achievement-vorlage.mjs --katalog",
     "check:crates": "node scripts/check-crates.mjs",
     "check:maelstrom": "node scripts/check-maelstrom.mjs",
     "check:time": "node scripts/check-match-time.mjs",

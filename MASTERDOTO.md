@@ -2387,6 +2387,21 @@ beschrieben.
       Minute, dann ist sie knapp erreichbar) oder den Text ändern. Die
       Infrastruktur steht; es ist eine Tabellenzeile.
 
+      **Neu: `npm run achievements:vorlage`** — sie legt die Entscheidung als
+      Tabelle vor. Je Eintrag stehen die fertigen Teile (Stufe, Gruppe,
+      Bedingung, Text, Hinweis, alle geprüft) neben dem, was zu entscheiden ist:
+
+      > **ZU ENTSCHEIDEN → Name · Symbol · Belohnung**
+
+      Dazu die gemessenen Vergleichszahlen, damit Schwellen begründbar sind
+      (Runden 24 · Schüsse 23 · Treffer 7 · Schaden 149 je Partie) und die
+      genaue Anleitung: `title` setzen, `icon` setzen, `reward` setzen,
+      `muster: true` entfernen. **Kein Code** — die Auswertung, die Übersicht
+      und die Fortschrittsbalken bleiben unverändert.
+
+      Die Namen, Symbole und Belohnungen erfinde ich nicht: Der Modulkopf nennt
+      sie ausdrücklich eine Gestaltungsentscheidung des Auftraggebers.
+
 - [x] **Klassen-/Archetypzahlen in der Auswahl — umgesetzt.**
       Vorher zeigte die Auswahl nur die nackten Kennungen („scout", „brawler"),
       obwohl das wirksame Leben je Klasse um Faktor 0,56 bis 1,56 schwankt.
