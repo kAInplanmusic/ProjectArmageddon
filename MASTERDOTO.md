@@ -2256,9 +2256,23 @@ beschrieben.
       Belohnungsschleife belohnt Musterfortschritt, nicht Spielinhalte.
       *Infrastruktur steht komplett* — es fehlen die Inhalte (Content).
 
-- [ ] **Klassen-/Archetypzahlen fehlen in der Anzeige.** Lebensspanne Faktor
-      **0,56 bis 1,56** — ein großer Unterschied, aber im Menü stehen nur Namen.
-      Die Werte liegen in `combatProfile()` bereit; es ist reine Anzeigearbeit.
+- [x] **Klassen-/Archetypzahlen in der Auswahl — umgesetzt.**
+      Vorher zeigte die Auswahl nur die nackten Kennungen („scout", „brawler"),
+      obwohl das wirksame Leben je Klasse um Faktor 0,56 bis 1,56 schwankt.
+
+      Neu: Jede Option nennt ihre Wirkung — Klasse: „Leben 0,96 · Schaden 0,70",
+      Archetyp: „Tempo 0,64". Die Zahlen kommen aus `combatProfile()`, der
+      Quelle, die der Motor liest; eine eigene Liste wäre eine zweite Regel.
+
+      *Beim Archetyp steht das TEMPO, nicht der Schaden:* Er wirkt über
+      `launchSpeedMultiplier` auf die Flugbahn. Das Feld hieß früher irreführend
+      `damage` und wurde in `launch` umbenannt.
+
+      *Abgesichert:* `tests/e2e/klassenwerte.spec.mjs` (6 Tests) — prüft, dass
+      jede Option einen Wert nennt UND dass der genannte Wert mit dem
+      übereinstimmt, den `combatProfile()` liefert. Die zweite Prüfung ist die
+      wichtigere: Eine Anzeige, die etwas anderes behauptet als die Simulation,
+      wäre schlimmer als keine.
 
 - [ ] **Abbruch nur über verstecktes `R`** — wirkt global und ohne Rückfrage,
       auch mitten im Match. *Vorschlag:* Abbruchknopf im HUD mit Bestätigung.

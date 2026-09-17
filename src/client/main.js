@@ -27,7 +27,9 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
-import { uebersichtFuerHilfe, classCounterplay, resolveLoadout } from '../shared/config/classes.js';
+import {
+  uebersichtFuerHilfe, classCounterplay, resolveLoadout, combatProfile,
+} from '../shared/config/classes.js';
 import { sidegradesForClass } from '../shared/config/sidegrades.js';
 import { LOOT_DROP_RULES } from '../shared/config/loot.js';
 import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
@@ -407,7 +409,25 @@ class Game {
         for (const wert of werte) {
           const option = document.createElement('option');
           option.value = wert;
-          option.textContent = wert;
+          /*
+           * Die Auswahl nennt die WIRKSAMEN Werte, nicht nur den Namen.
+           *
+           * FUND (belegt, User-Flow-Audit): Hier stand `option.textContent = wert`
+           * — also nur „scout", „heavy", „artillery". Das wirksame Leben
+           * unterscheidet sich aber um Faktor 0,56 bis 1,56; die Wahl war damit
+           * eine Entscheidung ohne Grundlage.
+           *
+           * Die Zahlen kommen aus `combatProfile()` — derselben Quelle, die der
+           * Motor liest. Eine eigene Rechnung hier würde bei einer Änderung
+           * auseinanderlaufen (genau die Doppelregel, die dieses Projekt an
+           * mehreren Stellen behoben hat).
+           *
+           * Bei Archetypen zeigt der Wert das TEMPO statt des Schadens: Der
+           * Archetyp wirkt über `launchSpeedMultiplier` auf die Flugbahn, nicht
+           * über den Schaden (`damage` hieß früher irreführend so und wurde in
+           * `launch` umbenannt).
+           */
+          option.textContent = `${wert} ${beschreibeWert(art, wert)}`;
           auswahl.append(option);
         }
         zeile.append(auswahl);
@@ -2903,6 +2923,48 @@ function balken(container, beschriftung, wert, maxWert) {
 }
 
 /** Reiter „Klassen" — die wirksamen Werte samt Archetypen und Startaufgebot. */
+/**
+ * Beschreibt einen Klassen- oder Archetypwert für die Auswahlliste.
+ *
+ * ## Warum das nötig war
+ *
+ * Ein User-Flow-Audit stellte fest: Die Auswahlfelder im Menü zeigten nur die
+ * nackten Kennungen („scout", „brawler"). Der wirksame Unterschied ist aber
+ * gross — das Leben schwankt je Klasse um Faktor 0,56 bis 1,56. Wer wählt,
+ * ohne die Folge zu kennen, wählt nicht.
+ *
+ * ## Woher die Zahlen kommen
+ *
+ * Aus `combatProfile()` — der Quelle, die der Motor liest. Eine eigene Rechnung
+ * hier wäre eine zweite Regel, die bei einer Balance-Änderung auseinanderliefe.
+ *
+ * ## Was je Achse gezeigt wird
+ *
+ * - **Klasse:** das wirksame Leben und den wirksamen Schaden. Beides sind
+ *   Multiplikatoren auf den Grundwert.
+ * - **Archetyp:** das wirksame TEMPO (Absprung- und Fluggeschwindigkeit). Der
+ *   Archetyp wirkt nicht auf den Schaden — das Feld hieß früher irreführend
+ *   `damage` und wurde in `launch` umbenannt.
+ *
+ * @param {'Klasse'|'Archetyp'} art
+ * @param {string} wert - Kennung, z. B. 'scout'
+ * @returns {string} Kurztext wie „Leben 0,96 · Schaden 0,70" oder „Tempo 0,64"
+ */
+function beschreibeWert(art, wert) {
+  // Der jeweils andere Teil bleibt auf dem Rückfallwert — die Zahlen sind
+  // Eigenschaften des EINZELNEN Parameters, nicht der Kombination.
+  const profil = art === 'Klasse'
+    ? combatProfile(wert, ARCHETYPE_IDS[0])
+    : combatProfile(CLASS_IDS[0], wert);
+
+  const zahl = n => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : '—');
+
+  if (art === 'Klasse') {
+    return `Leben ${zahl(profil.healthMultiplier)} · Schaden ${zahl(profil.damageMultiplier)}`;
+  }
+  return `Tempo ${zahl(profil.launchSpeedMultiplier)}`;
+}
+
 function zeichneKlassen(container) {
   const u = uebersichtFuerHilfe();
 
