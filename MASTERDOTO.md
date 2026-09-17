@@ -1807,9 +1807,9 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Kantenlicht, Farbtiefe, Partikel).
 
 ### G. Betrieb und Backend
-- [ ] **Deployment-Konzept.** Prüfen, ob ein dauerhaft laufender Backendserver
-      (Hetzner oder RunPod) sinnvoller ist als reines Peer-für-Peer: der Server
-      rechnet autoritativ, hält Profile und Erfolge und liefert die Kulissen.
+- [x] **Deployment-Konzept.** Erledigt - siehe `docs/betrieb.md` und die
+      ausfuehrliche Fassung unter "Offene Punkte aus dem Audit". Der Server ist
+      jetzt startbar (`npm run server`); das Startskript fehlte vorher.
 - [ ] Konten und Anmeldung (Profile müssen zuordenbar sein).
 - [ ] Auswertung: Wo lohnt KI im Betrieb (Kulissen vorab, Bot-Gegner,
       Auswertung der Partien)?
@@ -2300,12 +2300,18 @@ beschrieben.
       wichtigere: Eine Anzeige, die etwas anderes behauptet als die Simulation,
       wäre schlimmer als keine.
 
-- [ ] **Abbruch nur über verstecktes `R`** — wirkt global und ohne Rückfrage,
-      auch mitten im Match. *Vorschlag:* Abbruchknopf im HUD mit Bestätigung.
+- [x] **Abbruchknopf im HUD.** Erledigt - Knopf "Match verlassen" mit
+      Rueckfrage, per Tastatur erreichbar, nur im Match sichtbar.
 
-- [ ] **Seed ist standardmäßig leer** („leer = zufällig", `index.html:729`) —
-      das Match ist damit nicht reproduzierbar, obwohl Determinismus das
-      Kernversprechen ist. *Vorschlag:* Vorgabewert eintragen.
+- [x] **Seed-Feld erklaert sich selbst.** Es nennt jetzt beide Seiten
+      ("Gleicher Seed = gleiche Karte"; der gezogene Wert steht im Protokoll).
+      Das Verhalten blieb bewusst unveraendert: leer = neue Karte, weil ein
+      fester Vorgabewert bei jedem Start dieselbe Karte erzeugte.
+      **Erledigt:** Das Feld erklaert sich jetzt (Hinweis nennt beide Seiten;
+      der gezogene Wert steht im Protokoll). Das Verhalten blieb unveraendert:
+      leer = neue Karte, weil ein fester Vorgabewert bei jedem Start dieselbe
+      Karte erzeugte. Siehe die ausfuehrliche Fassung unter "Offene Punkte aus
+      dem Audit".
 
 ### Aus dem Black-Box-Audit (Teilbericht, Agent lief in die Iterationsgrenze)
 
