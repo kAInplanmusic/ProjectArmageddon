@@ -1822,8 +1822,42 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       hält den Weg ins Spiel jetzt fest.
       Abgesichert in `tests/sidegrades.test.js` (14), `tests/sidegrades-match.test.js`
       (8), `tests/replay.test.js` (+5) und `tests/e2e/sidegrades.spec.mjs` (5).
-- [ ] **Counterplay und Map-Synergie.** Keine Regeln zur Teamzusammenstellung und
-      keine Tests dafür. Geprüft: kein Treffer für `counterplay`/`synergie`.
+- [x] **Counterplay und Map-Synergie.** Erledigt als **sichtbare Beziehung ohne
+      Multiplikator** — der Entwurf (C.1) wählt diesen Weg bewusst: Counterplay
+      findet durch die WAHL statt (Klasse, Sidegrade, Karte), nicht durch eine
+      unsichtbare Rechnung. Ein Schadensbonus „Klasse X gegen Y" wäre Number-
+      Bloat und für den Spieler nicht erklärbar.
+      - `TERRAIN_AFFINITY` in `terrainGen.js`: je Geländeform die begünstigte
+        Klasse, **reine Anzeige**. Ein Test hält fest, dass der Motor sie NICHT
+        liest.
+      - `classCounterplay()` in `classes.js`: leitet „stark gegen / schwach
+        gegen" aus den drei **wirksamen** Achsen ab (Leben, Wucht, Reichweite) —
+        keine zweite Tabelle.
+      - Anzeige: Menü-Zeile unter der Kartenwahl (wandert beim Wechsel mit),
+        Counterplay-Zeile je Charakter im Kader, eigener Hilfe-Reiter.
+      - Abgesichert in `tests/counterplay.test.js` (9) und
+        `tests/e2e/counterplay.spec.mjs` (5).
+      **FUND (belegt) — und er ist größer als diese Anzeige:** Der Entwurf nahm
+      eine Schere-Stein-Papier-Beziehung an. Gemessen ist es eine **Rangfolge**.
+      Verglichen mit dem neutralen Archetyp:
+
+      | Klasse | Leben | Wucht | Reichweite |
+      |---|---|---|---|
+      | scout | 0,96 | 0,70 | 0,64 |
+      | heavy | 1,56 | 1,00 | 0,92 |
+      | artillery | 1,08 | 1,30 | 1,19 |
+
+      Der **Scout ist auf allen drei wirksamen Achsen der Schwächste** und hat
+      gegen NIEMANDEN einen Vorteil; die Artillerie ist auf zwei von drei die
+      Stärkste. Ursache: Der Scout ist als beweglichster Charakter angelegt
+      (`speed: 1.2`, höchster Wert der Tabelle), aber `speed` steht unter `inert`
+      — der Motor liest es nicht. **Seine Stärke existiert nur auf dem Papier.**
+      Die Anzeige erfindet deshalb keine Gegenseite: `starkGegen` bleibt `null`
+      und die Hilfe sagt es ausdrücklich. Ein Test (`counterplay.test.js`,
+      „Der Scout hat keine wirksame Stärke") schlägt fehl, sobald `speed`
+      verdrahtet wird — der Befund soll nicht still verschwinden.
+      **Das Verdrahten von `speed` ist eine BALANCE-Entscheidung und bleibt
+      offen** (siehe „Bekannte Grenzen").
 - [x] **Karten-Authoring über die Presets hinaus.** Vier Formen kamen hinzu:
       `open` (Offene Weite), `spires` (Felsspitzen), `flooded` (Flut), `warren`
       (Gewirr) — im Menü wählbar, in ihren Kennzahlen belegt, alle spielbar.
@@ -1912,6 +1946,27 @@ die folgenden waren es nicht — jeder wurde einzeln gegen den Code geprüft:
       tatsächlich ein.
 
 ## Bekannte Grenzen (bewusst dokumentiert)
+
+- **Der Scout hat keine wirksame Stärke.** Gemessen über die drei Achsen, die
+  der Motor liest (`combatProfile()` mit neutralem Archetyp):
+
+  | Klasse | Leben | Wucht | Reichweite |
+  |---|---|---|---|
+  | scout | 0,96 | 0,70 | 0,64 |
+  | heavy | 1,56 | 1,00 | 0,92 |
+  | artillery | 1,08 | 1,30 | 1,19 |
+
+  Der Scout ist auf **allen drei Achsen der Schwächste**. Seine im Profil
+  angelegte Beweglichkeit (`speed: 1.2`, der höchste Wert der Tabelle) steht
+  unter `inert` und wird nicht gelesen — sie ist damit eine Stärke auf dem
+  Papier, keine im Spiel. Folge: Es entsteht **keine** Schere-Stein-Papier-
+  Beziehung, sondern eine Rangfolge (Artillerie > Heavy > Scout).
+  Das Verdrahten von `speed` ist eine Balance-Entscheidung und wurde bewusst
+  **nicht** nebenbei getroffen: Sie würde das Klassen-Balancing in einem Zug
+  umwerfen und alle bestehenden Balance-Messungen verschieben.
+  Die Counterplay-Anzeige erfindet deshalb keine Gegenseite für den Scout;
+  `tests/counterplay.test.js` hält den Befund fest und schlägt fehl, sobald sich
+  die Werte ändern.
 
 - **`import` des Waffen-Generators war ein Schreibvorgang — behoben.**
   Der Schreibvorgang in `scripts/build-weapon-catalog.mjs` stand auf der

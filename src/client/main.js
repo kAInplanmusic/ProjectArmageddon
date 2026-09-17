@@ -27,12 +27,12 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
-import { uebersichtFuerHilfe } from '../shared/config/classes.js';
+import { uebersichtFuerHilfe, classCounterplay } from '../shared/config/classes.js';
 import { sidegradesForClass } from '../shared/config/sidegrades.js';
 import { LOOT_DROP_RULES } from '../shared/config/loot.js';
 import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
-import { TERRAIN_PRESETS } from '../shared/terrainGen.js';
+import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../shared/terrainGen.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
@@ -237,6 +237,44 @@ class Game {
       liste.push(wert === '' ? null : wert);
     }
     return liste;
+  }
+
+  /**
+   * Zeigt zur gewählten Karte, welche Klasse hier ihre Stärke ausspielen kann.
+   *
+   * ## Das ist ANZEIGE, kein Bonus
+   *
+   * Es gibt keinen Multiplikator im Motor. Die Zeile sagt nur, worauf die Karte
+   * hinausläuft — der Spieler entscheidet danach. Counterplay durch WAHL statt
+   * durch eine unsichtbare Rechnung, die den erlebten Schaden unerklärbar
+   * machen würde (siehe Entwurf C.1/C.4).
+   *
+   * ## Warum eine eigene Methode
+   *
+   * Der Text muss beim WECHSEL der Karte aktualisiert werden, nicht nur einmal
+   * beim Aufbau. Ohne Listener stünde dort dauerhaft die Zuordnung der ersten
+   * Option — eine Anzeige, die nicht zur Auswahl passt.
+   */
+  fillTerrainAffinity() {
+    const auswahl = document.getElementById('cfg-preset');
+    const ziel = document.getElementById('cfg-preset-synergie');
+    if (!auswahl || !ziel) return;
+
+    const aktualisiere = () => {
+      const form = auswahl.value;
+      const affinitaet = TERRAIN_AFFINITY[form];
+      const karte = TERRAIN_PRESETS[form];
+      if (!affinitaet || !karte) {
+        ziel.textContent = '';
+        return;
+      }
+      // Der Text nennt die Klasse und den Grund — beides aus der Config.
+      ziel.textContent = `${karte.erklaerung} Begünstigt: ${affinitaet.favorisiert} — `
+        + affinitaet.begruendung;
+    };
+
+    auswahl.addEventListener('change', aktualisiere);
+    aktualisiere();
   }
 
   /**
@@ -2407,6 +2445,37 @@ export function buildRosterView() {
       profil.textContent = `+ ${c.strengths.join(' · ')}  |  − ${c.weaknesses.join(' · ')}`;
 
       text.append(name, waffe, bio, profil);
+
+      /*
+       * Counterplay-Zeile: gegen welche Klasse dieser Charakter stark und gegen
+       * welche schwach ist.
+       *
+       * Die Aussage stammt aus `classCounterplay()` und damit aus denselben
+       * Zahlen, die der Motor liest — nicht aus einer zweiten Tabelle. Gibt es
+       * keine Gegenseite mit Vorteil, sagt die Zeile das ausdrücklich (der Scout
+       * hat heute keine): Eine erfundene Zuordnung wäre eine Anzeige, die eine
+       * Balance behauptet, die es nicht gibt.
+       */
+      const klasseDesCharakters = classOf(c);
+      const beziehung = classCounterplay()[klasseDesCharakters];
+      if (beziehung) {
+        const cpHinweis = document.createElement('div');
+        cpHinweis.className = 'r-cp';
+        const teile = [];
+        if (beziehung.starkGegen) {
+          teile.push(`stark gegen ${beziehung.starkGegen.classId} `
+            + `(${beziehung.starkGegen.wegen.join(', ')})`);
+        }
+        if (beziehung.schwachGegen) {
+          teile.push(`schwach gegen ${beziehung.schwachGegen.classId} `
+            + `(${beziehung.schwachGegen.wegen.join(', ')})`);
+        }
+        cpHinweis.textContent = teile.length > 0
+          ? teile.join('  |  ')
+          : 'keine Klasse mit Vorteil — auf keiner wirksamen Achse überlegen';
+        text.append(cpHinweis);
+      }
+
       li.append(text);
       return li;
     }));
@@ -2440,6 +2509,8 @@ if (typeof document !== 'undefined') {
     game.fillBackdropOptions();
     // Sidegrade-Felder aus der Config füllen — im Markup steht keine Option.
     game.fillSidegradeOptions();
+    // Karten-Synergie anzeigen (reine Anzeige, kein Bonus im Motor).
+    game.fillTerrainAffinity();
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fuelle, { once: true });
@@ -2475,6 +2546,7 @@ export function buildHilfeView() {
   const seiten = [
     { id: 'klassen', label: 'Klassen', zeichne: zeichneKlassen },
     { id: 'sidegrades', label: 'Sidegrades', zeichne: zeichneSidegrades },
+    { id: 'counterplay', label: 'Counterplay', zeichne: zeichneCounterplay },
     { id: 'loot', label: 'Loot und Seltenheiten', zeichne: zeichneLoot },
     { id: 'karte', label: 'Karte und Gelände', zeichne: zeichneKarte },
   ];
@@ -2684,6 +2756,76 @@ function zeichneSidegrades(container) {
     + 'darüber hinaus: Jede Achse hat eine Untergrenze, damit keine '
     + 'spielunfähige Figur entsteht.'));
   container.append(hinweise);
+}
+
+/** Reiter „Counterplay" — welche Klasse gegen welche stark ist, und warum. */
+function zeichneCounterplay(container) {
+  container.append(textEl('p',
+    'Welche Klasse gegen welche stark ist, folgt aus ihren Werten: Leben, Wucht '
+    + 'und Reichweite. Es gibt keinen versteckten Bonus — die Tabelle zeigt, '
+    + 'worauf die Werte hinauslaufen, und die Wahl entscheidet.', 'h-einleitung'));
+
+  const beziehungen = classCounterplay();
+
+  const raster = document.createElement('div');
+  raster.className = 'h-karten';
+  for (const klasse of CLASS_IDS) {
+    const e = beziehungen[klasse];
+    if (!e) continue;
+
+    const karte = document.createElement('div');
+    karte.className = 'h-karte';
+    karte.append(textEl('h3', klasse));
+
+    // Die Werte zuerst: Sie begründen alles Folgende.
+    balken(karte, 'Leben', e.profil.leben, 1.6);
+    balken(karte, 'Wucht', e.profil.wucht, 1.3);
+    balken(karte, 'Reichweite', e.profil.reichweite, 1.2);
+
+    const liste = document.createElement('ul');
+    liste.className = 'h-liste';
+    if (e.starkGegen) {
+      liste.append(textEl('li',
+        `stark gegen ${e.starkGegen.classId} — ${e.starkGegen.wegen.join(', ')}`));
+    }
+    if (e.schwachGegen) {
+      liste.append(textEl('li',
+        `schwach gegen ${e.schwachGegen.classId} — ${e.schwachGegen.wegen.join(', ')}`));
+    }
+    karte.append(liste);
+    raster.append(karte);
+  }
+  container.append(raster);
+
+  /*
+   * Der Hinweis ist wichtiger als die Tabelle: Er erklärt, warum hier Lücken
+   * stehen. Der Scout hat auf keiner wirksamen Achse einen Vorteil — das
+   * auszusprechen ist ehrlicher als eine Gegenseite zu erfinden.
+   */
+  const hinweise = document.createElement('div');
+  hinweise.className = 'h-hinweis';
+  hinweise.append(textEl('p',
+    'Fehlt eine Zeile „stark gegen", hat diese Klasse auf keiner wirksamen Achse '
+    + 'einen Vorteil — sie ist dann durchgehend die schwächere Wahl.'));
+  hinweise.append(textEl('p',
+    'Die Beweglichkeit (Tempo der Figur) steht in den Klassendaten, wird vom '
+    + 'Motor aber nicht gelesen und zählt deshalb hier nicht mit.'));
+  container.append(hinweise);
+
+  container.append(textEl('h3', 'Welche Karte begünstigt wen'));
+  const kartenListe = document.createElement('ul');
+  kartenListe.className = 'h-liste';
+  for (const [form, eintrag] of Object.entries(TERRAIN_AFFINITY)) {
+    kartenListe.append(textEl('li', `${form}: ${eintrag.favorisiert} — ${eintrag.begruendung}`));
+  }
+  container.append(kartenListe);
+
+  const kartenHinweis = document.createElement('div');
+  kartenHinweis.className = 'h-hinweis';
+  kartenHinweis.append(textEl('p',
+    'Die Kartengunst ist eine Empfehlung, kein Bonus: Sie ändert keine Werte. '
+    + 'Wer die begünstigte Klasse wählt, spielt ihre Stärke aus — mehr nicht.'));
+  container.append(kartenHinweis);
 }
 
 /** Reiter „Loot und Seltenheiten" — die Verteilung, in Spielerprosa. */

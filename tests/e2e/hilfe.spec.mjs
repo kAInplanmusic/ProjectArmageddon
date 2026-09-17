@@ -33,14 +33,15 @@ test.describe('Hilfe-Bereich', () => {
     await oeffneHilfe(page);
 
     const reiter = page.locator('#hilfe-tabs button');
-    // Vier Themen: Klassen, Sidegrades, Loot, Karte. Aus der Anzeige gelesen,
-    // nicht aus dem Code — ein Test gegen die eigene Konstante würde nichts
-    // belegen.
-    await expect(reiter).toHaveCount(4);
+    // Fünf Themen: Klassen, Sidegrades, Counterplay, Loot, Karte. Aus der
+    // Anzeige gelesen, nicht aus dem Code — ein Test gegen die eigene Konstante
+    // würde nichts belegen.
+    await expect(reiter).toHaveCount(5);
     await expect(reiter.nth(0)).toHaveText(/Klassen/);
     await expect(reiter.nth(1)).toHaveText(/Sidegrades/);
-    await expect(reiter.nth(2)).toHaveText(/Loot/);
-    await expect(reiter.nth(3)).toHaveText(/Karte/);
+    await expect(reiter.nth(2)).toHaveText(/Counterplay/);
+    await expect(reiter.nth(3)).toHaveText(/Loot/);
+    await expect(reiter.nth(4)).toHaveText(/Karte/);
 
     // Der erste Reiter ist ausgewählt (aria-selected, wie in der Kader-Ansicht).
     await expect(reiter.nth(0)).toHaveAttribute('aria-selected', 'true');
@@ -196,8 +197,8 @@ test.describe('Hilfe-Bereich', () => {
 
   test('Der Loot-Reiter zeigt die Verteilung und die Loot-Grenze', async ({ page }) => {
     await oeffneHilfe(page);
-    // Index 2 = Loot (0 Klassen, 1 Sidegrades, 2 Loot, 3 Karte).
-    await page.locator('#hilfe-tabs button').nth(2).click();
+    // Index 3 = Loot (0 Klassen, 1 Sidegrades, 2 Counterplay, 3 Loot, 4 Karte).
+    await page.locator('#hilfe-tabs button').nth(3).click();
 
     const inhalt = page.locator('#hilfe-inhalt');
     await expect(inhalt.getByText(/Kisten je Rundenbeginn/)).toBeVisible();
@@ -223,8 +224,8 @@ test.describe('Hilfe-Bereich', () => {
 
   test('Der Karten-Reiter zeigt alle acht Geländeformen', async ({ page }) => {
     await oeffneHilfe(page);
-    // Index 3 = Karte.
-    await page.locator('#hilfe-tabs button').nth(3).click();
+    // Index 4 = Karte.
+    await page.locator('#hilfe-tabs button').nth(4).click();
 
     const erwartet = await page.evaluate(async () => {
       const m = await import('/src/shared/terrainGen.js');
@@ -261,14 +262,20 @@ test.describe('Hilfe-Bereich', () => {
     expect(sidegrades).not.toBe(klassen);
     expect(sidegrades).toMatch(/Kompakter Verschluss|Zusatzpanzerung/);
 
-    // 2 = Loot
+    // 2 = Counterplay
     await page.locator('#hilfe-tabs button').nth(2).click();
+    const counterplay = await lies();
+    expect(counterplay).not.toBe(sidegrades);
+    expect(counterplay).toMatch(/Welche Karte begünstigt wen/);
+
+    // 3 = Loot
+    await page.locator('#hilfe-tabs button').nth(3).click();
     const loot = await lies();
-    expect(loot).not.toBe(sidegrades);
+    expect(loot).not.toBe(counterplay);
     expect(loot).toMatch(/Seltenheiten/);
 
-    // 3 = Karte
-    await page.locator('#hilfe-tabs button').nth(3).click();
+    // 4 = Karte
+    await page.locator('#hilfe-tabs button').nth(4).click();
     const karte = await lies();
     expect(karte).not.toBe(loot);
     expect(karte).toMatch(/Geländeform|Höhen/);

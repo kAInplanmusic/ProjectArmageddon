@@ -273,4 +273,117 @@ export function uebersichtFuerHilfe() {
   };
 }
 
+/**
+ * Die Gegenseite, gegen die eine Klasse ihre Stärke ausspielen kann — aus den
+ * ZAHLEN abgeleitet, nicht aus einer erfundenen Erzählung.
+ *
+ * ## Was hier abgeleitet wird — und woraus
+ *
+ * Verglichen werden die drei Achsen, die der Motor TATSÄCHLICH liest
+ * (`combatProfile()`): Leben, Wucht (Schaden), Reichweite (Tempo). Eine Klasse
+ * ist gegen eine andere stark, wenn sie sie auf mehr Achsen übertrifft als
+ * unterliegt.
+ *
+ * ## Fund (belegt): Es ist KEIN Kreis, sondern eine Rangfolge
+ *
+ * Der Entwurf ging von einer Schere-Stein-Papier-Beziehung aus. Nachgemessen
+ * ist das nicht so — verglichen mit dem neutralen Archetyp (`brawler`):
+ *
+ *   scout      Leben 0,960 | Wucht 0,700 | Reichweite 0,642
+ *   heavy      Leben 1,560 | Wucht 1,000 | Reichweite 0,917
+ *   artillery  Leben 1,080 | Wucht 1,300 | Reichweite 1,192
+ *
+ * Daraus folgt: **scout ist auf JEDER der drei Achsen der schwächste** und hat
+ * gegen niemanden einen Vorteil. artillery schlägt heavy auf zwei von drei
+ * Achsen, heavy schlägt artillery nur beim Leben.
+ *
+ * Der Grund ist strukturell und wiegt schwerer als diese Anzeige: Der Scout ist
+ * als beweglichster Charakter angelegt (`speed: 1.2`, der höchste Wert der
+ * Tabelle) — aber `speed` steht unter `inert` und wird vom Motor NICHT gelesen.
+ * Seine Stärke existiert nur auf dem Papier. Siehe MASTERDOTO.md,
+ * „Klassen-Profil", wo `archetype.damage` als Tempo-Faktor denselben Punkt
+ * berührt.
+ *
+ * ## Diese Funktion erfindet deshalb NICHTS dazu
+ *
+ * Sie liefert `starkGegen: null`, wenn keine Gegenseite übrig bleibt. Eine
+ * erfundene Zuordnung wäre eine Anzeige, die eine Balance behauptet, die es
+ * nicht gibt — genau die stille Lüge, die das Projekt vermeidet. Eine
+ * Balance-Änderung (etwa das Verdrahten von `speed`) ist eine eigene
+ * Entscheidung und wird hier bewusst nicht nebenbei vorgenommen.
+ *
+ * @returns {Readonly<object>} Je Klasse die stärkere und die schwächere
+ *   Gegenseite — oder `null`, wenn es keine gibt
+ */
+export function classCounterplay() {
+  /*
+   * Referenzprofile mit demselben Archetyp für alle: So wird nur der
+   * KLASSEN-Anteil verglichen und der Archetyp verfälscht das Ergebnis nicht.
+   * `brawler` ist dafür der neutrale Fall (er verändert den Schaden nicht).
+   */
+  const profile = {};
+  for (const classId of CLASS_IDS) {
+    profile[classId] = combatProfile(classId, 'brawler');
+  }
+
+  /** Die Achsen, die der Motor liest — mit dem Text für die Anzeige. */
+  const achsen = [
+    { id: 'leben', wert: p => p.healthMultiplier, vorteil: 'hält mehr aus' },
+    { id: 'wucht', wert: p => p.damageMultiplier, vorteil: 'trifft härter' },
+    { id: 'reichweite', wert: p => p.launchSpeedMultiplier, vorteil: 'schießt weiter' },
+  ];
+
+  const ergebnis = {};
+  for (const classId of CLASS_IDS) {
+    const eigene = profile[classId];
+
+    const bewertet = CLASS_IDS
+      .filter(andere => andere !== classId)
+      .map(andere => {
+        const fremde = profile[andere];
+        const vorteile = achsen.filter(a => a.wert(eigene) > a.wert(fremde));
+        const nachteile = achsen.filter(a => a.wert(eigene) < a.wert(fremde));
+        return { classId: andere, vorteile, nachteile, saldo: vorteile.length - nachteile.length };
+      });
+
+    /*
+     * Nur eine Gegenseite mit POSITIVEM Saldo ist „stark gegen". Bei Saldo 0
+     * oder darunter gibt es keine — dann bleibt das Feld `null`, statt einen
+     * Gegner zu nennen, den die Zahlen nicht stützen.
+     *
+     * `sort` ist stabil, deshalb ist bei gleichem Saldo die Reihenfolge aus
+     * CLASS_IDS maßgeblich — das Ergebnis ist reproduzierbar.
+     */
+    const kandidatenStark = bewertet.filter(e => e.saldo > 0).sort((a, b) => b.saldo - a.saldo);
+    const kandidatenSchwach = bewertet.filter(e => e.saldo < 0).sort((a, b) => a.saldo - b.saldo);
+
+    const stark = kandidatenStark[0] ?? null;
+    const schwach = kandidatenSchwach[0] ?? null;
+
+    ergebnis[classId] = Object.freeze({
+      classId,
+      starkGegen: stark
+        ? Object.freeze({
+          classId: stark.classId,
+          /** Die Achsen, die den Ausschlag geben — prüfbar, nicht nur ein Urteil. */
+          wegen: Object.freeze(stark.vorteile.map(a => a.vorteil)),
+        })
+        : null,
+      schwachGegen: schwach
+        ? Object.freeze({
+          classId: schwach.classId,
+          wegen: Object.freeze(schwach.nachteile.map(a => a.vorteil)),
+        })
+        : null,
+      /** Alle wirksamen Werte, damit die Anzeige nichts nachrechnen muss. */
+      profil: Object.freeze({
+        leben: eigene.healthMultiplier,
+        wucht: eigene.damageMultiplier,
+        reichweite: eigene.launchSpeedMultiplier,
+      }),
+    });
+  }
+  return Object.freeze(ergebnis);
+}
+
 export default { CLASS_DEFINITIONS, CLASS_ARCHETYPES, combatProfile };

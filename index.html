@@ -459,6 +459,12 @@
     .roster-list li { display: flex; gap: 0.6rem; padding: 0.45rem 0; border-top: 1px solid #232f3d; }
     .roster-list img { width: 56px; height: 56px; flex: 0 0 56px; object-fit: contain; }
     .roster-list .r-text { font-size: 0.82rem; line-height: 1.35; }
+    /*
+     * Counterplay-Zeile im Kader — abgesetzt vom übrigen Text, weil sie eine
+     * ABGELEITETE Aussage ist (aus den Klassenwerten) und nicht zur Biografie
+     * des Charakters gehört.
+     */
+    .roster-list .r-cp { margin-top: 0.2rem; color: #7d8ea3; font-size: 0.78rem; }
 
     /*
      * Hilfe-Ansicht (Klassen, Loot, Gelände).
@@ -675,6 +681,16 @@
                 <option value="warren">Gewirr</option>
               </select>
             </label>
+            <!--
+              Karten-Synergie: nennt die Klasse, die auf der gewählten Form ihre
+              Stärke ausspielen kann. Wird von `zeigeKartenSynergie()` gefüllt.
+
+              Das ist ANZEIGE, kein Bonus: Es gibt keinen Multiplikator im Motor.
+              Der Spieler lernt die Synergie durch die WAHL der Karte — nicht
+              durch eine unsichtbare Rechnung. Siehe docs/entwurf-onboarding-
+              sidegrades-counterplay.md, C.4.
+            -->
+            <p id="cfg-preset-synergie" class="field-hint" aria-live="polite"></p>
             <label>Kulisse
               <!-- Wird beim Start aus dem Katalog in src/shared/config/backdrops.js
                    gefüllt. Die erste Auswahl „automatisch" überlässt die Wahl dem

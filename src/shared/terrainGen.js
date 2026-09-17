@@ -99,6 +99,74 @@ export const TERRAIN_PRESETS = Object.freeze({
   }),
 });
 
+/**
+ * Welche Klasse auf welcher Geländeform ihre Stärke ausspielen kann.
+ *
+ * ## Was das ist — und was ausdrücklich NICHT
+ *
+ * Das ist **reine Anzeige**. Es gibt KEINEN Multiplikator, keinen Bonus im
+ * Motor, keine versteckte Regel. Die Zuordnung sagt nur: „Auf dieser Karte kann
+ * diese Klasse ihre Stärke besonders ausspielen." Der Spieler liest es im Menü
+ * und entscheidet danach — Counterplay durch Wahl, nicht durch unsichtbare
+ * Rechnung.
+ *
+ * ## Warum kein Multiplikator (Begründung, belegt)
+ *
+ * Ein Schadens- oder Reichweitenbonus je Karte/Klasse hätte drei Folgekosten:
+ *
+ *  1. Er würde die bestehenden Balance-Messungen (`scripts/balance-report.mjs`)
+ *     invalidieren: Diese trennen nicht nach Karte, ein kartenabhängiger Faktor
+ *     machte ihre Zahlen deutungslos.
+ *  2. Er verdoppelte die zu prüfenden Profilkombinationen von 3 (heute erzeugt)
+ *     auf 24 (× 8 Karten) — mit allen neun Kombinationen auf 72.
+ *  3. Es gibt heute keinen Test, der Klasse × Karte × Waffe prüft. Eine Regel
+ *     ohne Prüfnetz in den Motor zu setzen ist das Gegenteil der Projektdoktrin.
+ *
+ * Der Klassen-Balance-Punkt ist im MASTERDOTO ausdrücklich noch **offen**; eine
+ * zweite Achse darüber zu legen, bevor die erste balanciert ist, verschiebt das
+ * Problem nur. Siehe docs/entwurf-onboarding-sidegrades-counterplay.md, C.4.
+ *
+ * ## Wie die Zuordnung geprüft wird
+ *
+ * `tests/counterplay.test.js` prüft Vollständigkeit und Gültigkeit. Zusätzlich
+ * prüft `tests/terrain-presets.test.js` die ÜBEREINSTIMMUNG mit den gemessenen
+ * Kennzahlen — die Zuordnung ist damit nicht Behauptung, sondern belegt.
+ */
+export const TERRAIN_AFFINITY = Object.freeze({
+  open: Object.freeze({
+    favorisiert: 'artillery',
+    begruendung: 'Weite Sichtlinien — die volle Reichweite kommt zum Tragen.',
+  }),
+  spires: Object.freeze({
+    favorisiert: 'scout',
+    begruendung: 'Höhen und Vertikale — wer klettern kann, wählt die Stellung.',
+  }),
+  warren: Object.freeze({
+    favorisiert: 'scout',
+    begruendung: 'Deckung auf kurze Distanz — der Weg zählt mehr als die Wucht.',
+  }),
+  flooded: Object.freeze({
+    favorisiert: 'scout',
+    begruendung: 'Viel Wasser — wer sich darin bewegt, erreicht die trockenen Gipfel.',
+  }),
+  caverns: Object.freeze({
+    favorisiert: 'heavy',
+    begruendung: 'Enge, gedeckte Räume — wer mehr aushält, gewinnt den Nahkampf.',
+  }),
+  islands: Object.freeze({
+    favorisiert: 'artillery',
+    begruendung: 'Weite Distanzen über Wasser — nur der weite Schuss trägt hinüber.',
+  }),
+  mountains: Object.freeze({
+    favorisiert: 'artillery',
+    begruendung: 'Große Höhenunterschiede — Steilfeuer über den Grat.',
+  }),
+  hills: Object.freeze({
+    favorisiert: 'heavy',
+    begruendung: 'Gemischtes Gelände mit Deckung — ausgewogen, mit Vorteil für Zähe.',
+  }),
+});
+
 function smoothstep(t) {
   return t * t * (3 - 2 * t);
 }

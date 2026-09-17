@@ -498,10 +498,34 @@ Projektil-Reichweite, `spires` begünstigt Steilfeuer.
   Design-Entscheidung — und der Auftrag ist, den Balance-Punkt nicht nebenbei zu
   erledigen. `classes.js` formuliert genau diese Regel für den Archetyp-Schaden.
 
-**Ergebnis C: umsetzbar als Anzeige- und Wahlregel; die motorrelevante Variante wird
-zugunsten sauberer Messbarkeit verworfen.** Der Counterplay-Gedanke wird also dort
-verwirklicht, wo er ohne Regelbruch wirkt: in der **Wahl** von Klasse, Sidegrade und
-Karte.
+**Ergebnis C: umgesetzt — mit einem Befund, der den Entwurf an einer Stelle
+korrigiert.**
+
+Umgesetzt:
+- `TERRAIN_AFFINITY` in `terrainGen.js` — reine Anzeige, je Form die begünstigte
+  Klasse. Ein Test hält fest, dass der Motor sie nicht liest.
+- `classCounterplay()` in `classes.js` — leitet die Beziehung aus den wirksamen
+  Achsen ab.
+- Anzeige: Zeile unter der Kartenwahl (wandert beim Wechsel mit), Counterplay-
+  Zeile im Kader, eigener Hilfe-Reiter.
+
+**Korrektur am Entwurf (belegt):** C.2 nahm an, die Zuordnung ergebe sich
+„rechnerisch aus `SLOT_CLASSES` und `COMBAT_ROLES`". Das ist nicht der Fall —
+diese Tabellen ordnen Charaktere Platz und Kampfweise zu, aber keine KLASSEN
+einander. Die Beziehung wird deshalb aus `combatProfile()` abgeleitet (Leben,
+Wucht, Reichweite), weil das die Werte sind, die der Motor tatsächlich liest.
+
+**Zweiter Befund — größer als dieser Punkt:** Der Entwurf beschrieb eine
+Schere-Stein-Papier-Beziehung. Gemessen ist es eine **Rangfolge**: Der Scout ist
+auf allen drei wirksamen Achsen der Schwächste und hat gegen niemanden einen
+Vorteil. Ursache ist der unter `inert` stehende `speed`-Wert 1.2 — seine
+Beweglichkeit existiert nur auf dem Papier. Die Anzeige erfindet deshalb keine
+Gegenseite; `starkGegen` bleibt `null` und die Hilfe spricht es aus. Siehe
+MASTERDOTO.md, „Bekannte Grenzen".
+
+**Die verworfene Variante B bleibt verworfen** — die Begründung (Balance-
+Messungen ohne Kartentrennung, 24 statt 3 zu prüfende Kombinationen, kein
+Testnetz) ist beim Umsetzen bestätigt worden.
 
 ### C.5 Tests (neu)
 
