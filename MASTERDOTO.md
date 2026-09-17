@@ -2070,15 +2070,69 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
 
 ### Design-Entscheidung nötig (nicht eigenmächtig)
 
-- [ ] **Zünder-Waffen: Zünder länger als die Flugzeit.** Bei allen 18
-      Zünder-Waffen zündet die Ladung erst nach der Landung. Für Granaten
-      gewollt, für „Explosiver Energieball", „Meteoritenbrocken", „Meteorregen"
-      und „Höllenkanone" vermutlich falsch. Eine Unterscheidung nach Namen wäre
-      Namensdeutung. Beleg: `MASTERDOTO.md`, „Bekannte Grenzen".
+- [x] **Zünder-Waffen: Befund gemessen, Entscheidungsvorlage steht.**
+      Neues Werkzeug `npm run check:fuses` — es simuliert die Flugzeit mit
+      denselben Konstanten wie der Motor und stellt sie dem Zünder gegenüber.
 
-- [ ] **`maxRange` gilt bei neutralem Klassenprofil.** Gemessener Faktor im
-      Match: 0,37 (Plasma-Blaster 850 → 317 px). Betrifft alle 150 Waffen.
-      Beleg: `MASTERDOTO.md`, „Bekannte Grenzen".
+      *Ergebnis:* **Alle 18** Zünder-Waffen zünden nach der Landung, **12 davon
+      deutlich** (Faktor > 3):
+
+      | Waffe | Zünder | Flugzeit | Faktor |
+      |---|---|---|---|
+      | Meteoritenbrocken | 4 s | 0,66 s | **6,1×** |
+      | Höllenkanone | 5 s | 0,93 s | 5,4× |
+      | Kosmische Wassermelone | 5 s | 0,93 s | 5,4× |
+      | Meteorregen | 4 s | 0,93 s | 4,3× |
+      | … 8 weitere bei 3,2× | | | |
+      | Giftwolke, Giftpilz | 1 s | 0,93 s | 1,1× (knapp) |
+
+      *Offen — Design-Entscheidung:* Für eine **Granate** ist der Zünder richtig
+      (sie soll liegen bleiben und dann zünden — taktisch). Für eine
+      **Einschlagwaffe** ist er falsch; „Meteoritenbrocken" verspricht einen
+      Einschlag, keine Liegezeit.
+
+      *Der Lösungsweg steht im Werkzeug:* **Nicht** nach Namen unterscheiden
+      (ein Skript, das „granate" sucht, ordnet irgendwann eine Waffe falsch ein —
+      und der Fehler sähe plausibel aus). Stattdessen in der Designdatei je
+      Waffe `mechanic.fuseIntent: "timed" | "impact"` setzen; der Generator
+      leitet `fuseTime` daraus ab. Dann ist die Absicht **dokumentiert** statt
+      erschlossen.
+      Beleg: `MASTERDOTO.md`, „Bekannte Grenzen"; Werkzeug `scripts/check-fuses.mjs`.
+
+- [x] **`maxRange`: Faktor gemessen und über alle Kategorien bestätigt.**
+      Neues Werkzeug `npm run check:range` — es misst in echten Matches auf
+      flacher Karte über sechs Winkel und stellt die Weite der gespeicherten
+      `maxRange` gegenüber.
+
+      *Ergebnis (Stichprobe je Kategorie):*
+
+      | Waffe | Kategorie | maxRange | gemessen | Faktor |
+      |---|---|---|---|---|
+      | Baseballschläger | melee | 110 | 35 | 0,32 |
+      | Plasma-Blaster | ranged | 850 | 320 | 0,38 |
+      | Salvengeber | heavy_ranged | 919 | 349 | 0,38 |
+      | Feuerdämon | elemental | 565 | 210 | 0,37 |
+      | Goldene Zauberrolle | magic | 719 | 272 | 0,38 |
+      | Quantenblaster | tech | 1062 | 403 | 0,38 |
+      | Astralkrieger | ultimate | 565 | 210 | 0,37 |
+
+      **Mittel 0,37, Bereich 0,32–0,38** — kein Ausreißer, ein systematischer
+      Faktor.
+
+      *Ursache (belegt):* `simulateProjectileReach` rechnet mit
+      `launchSpeedMultiplier = 1,0` (neutrales Klassenprofil). Im Match dämpft
+      die Klasse, und der Abschuss beginnt knapp unter der Kopfposition.
+
+      *Warum es kein Fehler ist:* `maxRange` beschreibt die Obergrenze bei
+      neutralem Profil — eine Eigenschaft der **Waffe**, nicht des Schützen.
+
+      *Offen — Balance-Entscheidung:* Eine Korrektur würde alle 150 Waffen neu
+      bewerten; die Vergleichszahlen des Balance-Berichts wären mit einem Schlag
+      anders. **Empfehlung des Werkzeugs:** Den Wert lassen (er ist konsistent
+      und dokumentiert), aber in der **Anzeige** klarstellen, dass es die
+      Reichweite bei neutralem Profil ist — sonst verspricht die Waffenliste
+      mehr, als das Spiel hält.
+      Beleg: `MASTERDOTO.md`, „Bekannte Grenzen"; Werkzeug `scripts/check-range.mjs`.
 
 - [x] **Balance der Klasse/Archetyp-Kombinationen ist jetzt gemessen.**
       Neues Werkzeug `npm run balance:classes` — es listet alle **neun**
