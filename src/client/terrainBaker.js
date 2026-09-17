@@ -101,7 +101,25 @@ export function fillGroundPixels(data, bitmap, width, height, palette, rows = nu
     const start = surfaceRowsArr[x];
     if (start < 0) continue;
 
+    /*
+     * Die Tiefe zählt ab der Oberfläche, gemalt wird aber nur, wo die Maske
+     * fest ist.
+     *
+     * FUND (belegt): Hier lief die Schleife von der Oberfläche bis zum
+     * Kartenboden und malte JEDES Pixel — die Bitmap wurde nie gefragt. Bei
+     * einem Höhenfeld fiel das nicht auf (unter der Oberfläche ist alles fest).
+     * Bei einer 2D-Maske mit Höhlen malte es die Hohlräume zu: Im Browser war
+     * von den Kavernen nichts zu sehen, obwohl die Kollision sie hatte —
+     * nachgewiesen mit `isSolid` an fünf Spalten.
+     *
+     * Jetzt wird je Pixel geprüft. Die Tiefe für die Farbabstufung zählt
+     * weiterhin ab der Oberfläche, damit die Hohlräume nicht plötzlich hell
+     * erscheinen: Ein Loch in 300 px Tiefe soll so dunkel bleiben wie das Land
+     * um es herum.
+     */
     for (let y = start; y < height; y++) {
+      if (!bitmap[y * width + x]) continue;
+
       const index = (y * width + x) * 4;
       const depth = Math.min(1, (y - start) / DEPTH_REACH_PX);
       data[index] = Math.round(oben[0] + (unten[0] - oben[0]) * depth);
@@ -272,6 +290,23 @@ export function bakeTerrainLayerCpu({ layer, ctx, bitmap, width, height, palette
 export const GROUND_SHADER_WGSL = `
 @group(0) @binding(0) var surfaceTex: texture_2d<u32>;
 @group(0) @binding(1) var outTex: texture_storage_2d<rgba8unorm, write>;
+/*
+ * Die Maske als Textur — EIN Bit je Pixel, gepackt in Uint32 (32 px je Wort).
+ *
+ * FUND (belegt): Der Shader kannte nur die Oberflächenzeile und malte darunter
+ * alles. Bei einem Höhenfeld stimmt das; bei einer 2D-Maske mit Höhlen malte er
+ * die Hohlräume zu. Der CPU-Weg hatte dieselbe Lücke; beide sind jetzt
+ * behoben, und der Pixelvergleich im Test hält sie zusammen.
+ */
+@group(0) @binding(3) var maskTex: texture_2d<u32>;
+/** Breite in Wörtern (je 32 Pixel) — als Parameter, damit der Shader rechnen kann. */
+struct Maske {
+  wordsPerRow: u32,
+  pad0: u32,
+  pad1: u32,
+  pad2: u32,
+};
+@group(0) @binding(4) var<uniform> maske: Maske;
 
 struct Params {
   width: u32,
@@ -292,6 +327,15 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
   let surfaceRow = textureLoad(surfaceTex, vec2<i32>(i32(id.x), 0), 0).r;
   if (surfaceRow == 4294967295u || id.y < surfaceRow) {
+    textureStore(outTex, vec2<i32>(i32(id.x), i32(id.y)), vec4<f32>(0.0, 0.0, 0.0, 0.0));
+    return;
+  }
+
+  // Ist dieses Pixel wirklich fest? Ein Hohlraum bleibt durchsichtig.
+  let wortIndex = id.x / 32u;
+  let bitIndex = id.x % 32u;
+  let wort = textureLoad(maskTex, vec2<i32>(i32(wortIndex), i32(id.y)), 0).r;
+  if (((wort >> bitIndex) & 1u) == 0u) {
     textureStore(outTex, vec2<i32>(i32(id.x), i32(id.y)), vec4<f32>(0.0, 0.0, 0.0, 0.0));
     return;
   }
@@ -360,6 +404,40 @@ export async function renderGroundOnGpu({ device, bitmap, width, height, palette
   });
   device.queue.writeBuffer(paramsBuffer, 0, params);
 
+  /*
+   * Die Maske als gepackte Bits: Ein Uint32 trägt 32 Pixel.
+   *
+   * Das ist dieselbe Packung, die `CollisionMask` intern nutzt — bewusst, damit
+   * beide Seiten dieselbe Reihenfolge haben und ein Vergleich möglich bleibt.
+   */
+  const wordsPerRow = Math.ceil(width / 32);
+  const maskData = new Uint32Array(wordsPerRow * height);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (bitmap[y * width + x]) {
+        maskData[y * wordsPerRow + (x >> 5)] |= (1 << (x & 31));
+      }
+    }
+  }
+
+  const maskTexture = device.createTexture({
+    size: [wordsPerRow, height],
+    format: 'r32uint',
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  device.queue.writeTexture(
+    { texture: maskTexture },
+    maskData,
+    { bytesPerRow: wordsPerRow * 4 },
+    [wordsPerRow, height],
+  );
+
+  const maskeBuffer = device.createBuffer({
+    size: 16,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  device.queue.writeBuffer(maskeBuffer, 0, new Uint32Array([wordsPerRow, 0, 0, 0]));
+
   const module = device.createShaderModule({ code: GROUND_SHADER_WGSL });
   const pipeline = device.createComputePipeline({
     layout: 'auto',
@@ -372,6 +450,8 @@ export async function renderGroundOnGpu({ device, bitmap, width, height, palette
       { binding: 0, resource: surfaceTexture.createView() },
       { binding: 1, resource: outTexture.createView() },
       { binding: 2, resource: { buffer: paramsBuffer } },
+      { binding: 3, resource: maskTexture.createView() },
+      { binding: 4, resource: { buffer: maskeBuffer } },
     ],
   });
 

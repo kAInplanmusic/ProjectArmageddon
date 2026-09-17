@@ -75,6 +75,9 @@ class LobbySession {
       teams: lobby.teams,
       playersPerTeam: lobby.playersPerTeam,
       preset: lobby.preset,
+      // Der Kartentyp des neuen Generators — wie `preset` Teil der Konfiguration,
+      // damit alle Teilnehmer dieselbe Karte bekommen.
+      kartentyp: lobby.kartentyp ?? null,
       orientation: lobby.orientation ?? 'landscape',
       /*
        * Sidegrades aus der Lobby-Konfiguration. Die Wahl kommt vom Ersteller
@@ -94,6 +97,7 @@ class LobbySession {
       teams: lobby.teams,
       playersPerTeam: lobby.playersPerTeam,
       preset: lobby.preset,
+      kartentyp: lobby.kartentyp ?? null,
       maxRounds: this.match.maxRounds,
       turnDurationMs: this.match.turnDurationMs,
       // Ohne diesen Eintrag spielte eine Wiedergabe ein Match OHNE Sidegrades
@@ -304,6 +308,7 @@ class LobbySession {
       status: this.lobby.status,
       seed: this.match.seedManager.baseSeed,
       preset: this.lobby.preset,
+      kartentyp: this.lobby.kartentyp ?? null,
       orientation: this.lobby.orientation ?? 'landscape',
       entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
       snapshot: this.match.getState(),
@@ -778,6 +783,8 @@ export class GameServer {
           teams: Number(body.teams ?? 2),
           playersPerTeam: Number(body.playersPerTeam ?? 2),
           preset: body.preset ?? 'hills',
+          // Leerstring und fehlend sind gleichbedeutend: „der bewährte Generator".
+          kartentyp: body.kartentyp || null,
           orientation: body.orientation ?? 'landscape',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',
@@ -791,6 +798,7 @@ export class GameServer {
           teams: created.lobby.teams,
           playersPerTeam: created.lobby.playersPerTeam,
           preset: created.lobby.preset,
+          kartentyp: created.lobby.kartentyp,
           orientation: created.lobby.orientation,
           seed: created.lobby.seed,
           // Nur die gesetzten, damit das Log nicht mit null-Werten zugestellt wird.

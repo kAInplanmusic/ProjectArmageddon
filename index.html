@@ -739,6 +739,29 @@
                 <option value="4">4 Teams</option>
               </select>
             </label>
+            <!--
+              Der Kartentyp des neuen Generators.
+
+              Die Auswahl „Form" darüber steuert den ALTEN Generator (ein
+              1D-Höhenfeld). Dieser hier schaltet auf den neuen um — eine
+              2D-Maske mit Höhlen, Überhängen und schwebenden Inseln, die ein
+              Höhenfeld nicht darstellen kann.
+
+              Bewusst getrennt statt ersetzt: Der alte Weg bleibt wählbar, und
+              die Umstellung lässt sich im Spiel vergleichen statt sie zu
+              glauben.
+            -->
+            <label>Kartentyp (neu)
+              <select id="cfg-kartentyp">
+                <option value="" selected>— wie bisher —</option>
+                <option value="huegel">Hügel</option>
+                <option value="berge">Berge</option>
+                <option value="inseln">Inseln</option>
+                <option value="hoehlen">Höhlen</option>
+                <option value="schwebe">Schwebende Inseln</option>
+                <option value="kavernen">Kavernen</option>
+              </select>
+            </label>
             <label>Spieler pro Team
               <select id="cfg-players">
                 <option value="1">1</option>

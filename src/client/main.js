@@ -290,6 +290,8 @@ class Game {
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
     const playersPerTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
     const preset = document.getElementById('cfg-preset')?.value ?? 'hills';
+    // Leer = der bewährte 1D-Generator. Gesetzt = die 2D-Maske mit Höhlen.
+    const kartentyp = document.getElementById('cfg-kartentyp')?.value || null;
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
@@ -305,12 +307,12 @@ class Game {
 
     if (serverUrl) {
       return this.startOnline({
-        serverUrl, lobbyId, teams, playersPerTeam, preset, seed, backdropKey,
+        serverUrl, lobbyId, teams, playersPerTeam, preset, kartentyp, seed, backdropKey,
         orientation, sidegrades, loadouts,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, seed, backdropKey, orientation, sidegrades, loadouts,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts,
     });
   }
 
@@ -655,7 +657,11 @@ class Game {
     return anzahl;
   }
 
-  startMatch({ teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, backdropKey = '', orientation = 'landscape', sidegrades = null, loadouts = null } = {}) {
+  startMatch({
+    teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
+    seed = undefined, backdropKey = '', orientation = 'landscape',
+    sidegrades = null, loadouts = null,
+  } = {}) {
     this.network?.disconnect();
     this.network = null;
     this.mode = 'local';
@@ -664,7 +670,7 @@ class Game {
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
     // nach dem Start.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, orientation, sidegrades, loadouts,
+      seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts,
     });
     this.match.start();
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
@@ -762,7 +768,11 @@ class Game {
     return ergebnis;
   }
 
-  async startOnline({ serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined, name = 'Spieler', backdropKey = '', orientation = 'landscape', sidegrades = null, loadouts = null } = {}) {
+  async startOnline({
+    serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills',
+    kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
+    orientation = 'landscape', sidegrades = null, loadouts = null,
+  } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;
@@ -783,7 +793,7 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, playersPerTeam, preset, seed, orientation,
+            teams, playersPerTeam, preset, kartentyp, seed, orientation,
             ...(Array.isArray(sidegrades) && sidegrades.some(s => s !== null) ? { sidegrades } : {}),
             // Nur mitschicken, wenn wirklich etwas gewählt wurde — sonst bliebe
             // die Anfrage größer als nötig und die alte Regel wäre nicht mehr
@@ -813,6 +823,7 @@ class Game {
       playerName: name,
       seed: resolvedSeed,
       preset,
+      kartentyp,
       teams,
       playersPerTeam,
     });

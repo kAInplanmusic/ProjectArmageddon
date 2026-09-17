@@ -11,6 +11,7 @@ import { createGameWorld, SYSTEM_PRIORITIES } from './init.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
 import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
+import { erzeugeKarte } from '../shared/terrainGen2.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
@@ -423,6 +424,18 @@ export class MatchController {
     teams = 2,
     playersPerTeam = 1,
     preset = 'hills',
+    /*
+     * Der Kartentyp des NEUEN Generators (`terrainGen2`).
+     *
+     * Ohne Angabe bleibt es beim bewährten 1D-Höhenfeld (`preset`). Ist ein
+     * Typ gesetzt, baut `erzeugeKarte` eine 2D-Maske — mit Höhlen, Überhängen
+     * und schwebenden Inseln, die ein Höhenfeld nicht darstellen kann.
+     *
+     * Das ist ein Konstruktor-Parameter und keine Konstante, damit Werkzeuge
+     * beide Wege vergleichen können, ohne Code zu ändern (dieselbe Haltung wie
+     * bei `baseHealth`).
+     */
+    kartentyp = null,
     maxRounds = 30,
     turnDurationMs = null,
     orientation = 'landscape',
@@ -466,6 +479,7 @@ export class MatchController {
     /** Grundgesundheit (siehe Konstruktor-Option) — mal Klassenfaktor. */
     this.baseHealth = baseHealth;
     this.preset = preset;
+    this.kartentyp = kartentyp;
     /** Sidegrades je Spielerplatz — als Kopie, damit ein Aufrufer sie nicht
      *  nachträglich unter uns verändern kann. */
     this.sidegrades = Array.isArray(sidegrades) ? [...sidegrades] : [];
@@ -535,12 +549,47 @@ export class MatchController {
 
   #buildTerrain() {
     const terrainRng = this.#seedManager.getSubRng('TERRAIN');
-    const { bitmap, waterLevel } = generateTerrain({
-      rng: terrainRng,
-      width: this.width,
-      height: this.height,
-      preset: this.preset,
-    });
+
+    /*
+     * Zwei Generatoren, ein Schalter.
+     *
+     * Der alte (`generateTerrain`) erzeugt ein **1D-Höhenfeld**: je Spalte
+     * genau eine Oberfläche, alles darunter massiv. Damit sind Höhlen, Tunnel,
+     * Überhänge und schwebende Inseln nicht darstellbar — das ist eine
+     * Eigenschaft des Verfahrens, nicht ein Mangel des Codes.
+     *
+     * Der neue (`erzeugeKarte`) erzeugt eine **2D-Maske** und kann all das.
+     * Möglich ist das ohne Motorumbau, weil die Kollision ohnehin 2D ist
+     * (`CollisionMask.fromBitmap` mit `isSolid(x, y)`) — nur der Generator
+     * schrieb bisher ein Höhenfeld hinein.
+     *
+     * Der Umschalter steht auf dem KARTENTYP: Ist einer gesetzt, baut der neue
+     * Generator die Karte. Ohne Angabe bleibt es beim bewährten Verhalten —
+     * ein unbekannter Aufrufer soll nicht plötzlich anderes Gelände bekommen.
+     */
+    let bitmap;
+    let waterLevel;
+
+    if (this.kartentyp) {
+      const k = erzeugeKarte({
+        rng: terrainRng,
+        width: this.width,
+        height: this.height,
+        typ: this.kartentyp,
+      });
+      bitmap = k.bitmap;
+      waterLevel = k.wasserY;
+    } else {
+      const alt = generateTerrain({
+        rng: terrainRng,
+        width: this.width,
+        height: this.height,
+        preset: this.preset,
+      });
+      bitmap = alt.bitmap;
+      waterLevel = alt.waterLevel;
+    }
+
     this.#bitmap = bitmap;
     this.#terrain = CollisionMask.fromBitmap(bitmap, this.width, this.height);
     // Schild und Rüstung greifen im DamageSystem, damit sie auch bei

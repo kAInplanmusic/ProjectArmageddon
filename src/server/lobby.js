@@ -40,7 +40,7 @@ export class LobbyManager {
   }
 
   create({
-    teams = 2, playersPerTeam = 2, preset = 'hills', seed = undefined,
+    teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null, seed = undefined,
     hostName = 'Host', orientation = 'landscape', sidegrades = null, loadouts = null,
   } = {}) {
     /*
@@ -142,6 +142,15 @@ export class LobbyManager {
       playersPerTeam,
       capacity,
       preset,
+      /*
+       * Der Kartentyp des neuen Generators (`terrainGen2`).
+       *
+       * Wie `preset` gehört er zur Lobby-Konfiguration: Der Server baut das
+       * Gelände autoritativ, damit alle Teilnehmer dieselbe Karte sehen. Ein
+       * unbekannter Wert fällt im Generator auf die Vorgabe zurück — der
+       * Server muss ihn deshalb nicht gegen eine Liste prüfen.
+       */
+      kartentyp,
       // Ausrichtung gehört zur Lobby: sie bestimmt die Kartengröße und muss für
       // alle Teilnehmer dieselbe sein.
       orientation,

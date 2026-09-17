@@ -109,10 +109,19 @@ test('Die Oberfläche trägt exakt die Oberflächenfarbe', () => {
 });
 
 test('Die Tiefenfarbe wird nach DEPTH_REACH_PX erreicht', () => {
+  /*
+   * FUND (belegt): Dieser Test legte nur EIN solides Pixel an (`bitmap[0] = 1`)
+   * und erwartete trotzdem, dass die ganze Spalte gefüllt wird. Das ging durch,
+   * solange der Baker die Bitmap nicht fragte — er malte von der Oberfläche bis
+   * zum Boden, egal was in der Maske stand.
+   *
+   * Genau das war der Fehler, der die Höhlen unsichtbar machte. Jetzt prüft der
+   * Baker jedes Pixel, und der Test muss eine SPALTE AUS LAND beschreiben statt
+   * eines einzelnen Pixels.
+   */
   const breite = 1;
   const hoehe = DEPTH_REACH_PX + 10;
-  const bitmap = new Uint8Array(breite * hoehe);
-  bitmap[0] = 1; // Oberfläche bei Zeile 0
+  const bitmap = new Uint8Array(breite * hoehe).fill(1); // eine Spalte voll Land
   const data = new Uint8ClampedArray(breite * hoehe * 4);
   fillGroundPixels(data, bitmap, breite, hoehe, PALETTE);
 
@@ -297,4 +306,60 @@ test('Die Bäckerei ist deterministisch: zweimal dasselbe Bitmap ergibt dieselbe
     return [...data];
   });
   assert.deepEqual(ergebnisse[0], ergebnisse[1]);
+});
+
+test('Hohlräume bleiben durchsichtig — die Maske wird wirklich gefragt', () => {
+  /*
+   * DIE Prüfung für den Fund, der die Höhlen unsichtbar machte.
+   *
+   * Der Baker malte früher von der Oberfläche bis zum Kartenboden und fragte
+   * die Maske nie. Bei einem Höhenfeld stimmt das; bei einer 2D-Maske mit
+   * Höhlen malte es die Hohlräume zu. Im Browser war von den Kavernen deshalb
+   * nichts zu sehen, obwohl die Kollision sie hatte.
+   *
+   * Hier wird eine Spalte mit Land-Luft-Land beschrieben: Nur die festen Pixel
+   * dürfen Farbe bekommen.
+   */
+  const breite = 1;
+  const hoehe = 6;
+  const bitmap = new Uint8Array([
+    1, 1, // Land
+    0, 0, // Hohlraum
+    1, 1, // Land
+  ]);
+  const data = new Uint8ClampedArray(breite * hoehe * 4);
+  fillGroundPixels(data, bitmap, breite, hoehe, PALETTE);
+
+  const alphaBei = (y) => data[y * 4 + 3];
+
+  assert.equal(alphaBei(0), 255, 'Land bei y=0 muss gefüllt sein');
+  assert.equal(alphaBei(1), 255, 'Land bei y=1 muss gefüllt sein');
+  assert.equal(alphaBei(2), 0, 'der Hohlraum bei y=2 muss durchsichtig bleiben');
+  assert.equal(alphaBei(3), 0, 'der Hohlraum bei y=3 muss durchsichtig bleiben');
+  assert.equal(alphaBei(4), 255, 'Land unter dem Hohlraum muss gefüllt sein');
+  assert.equal(alphaBei(5), 255, 'das unterste Land muss gefüllt sein');
+});
+
+test('Die Tiefenfarbe zählt ab der Oberfläche, auch unter einem Hohlraum', () => {
+  /*
+   * Damit ein Loch in 300 px Tiefe nicht plötzlich hell erscheint: Die
+   * Farbabstufung richtet sich weiterhin nach dem Abstand zur OBERFLÄCHE, nicht
+   * nach dem Abstand zum letzten festen Pixel.
+   */
+  const breite = 1;
+  const hoehe = DEPTH_REACH_PX + 10;
+  const bitmap = new Uint8Array(breite * hoehe).fill(1);
+  // Ein einzelner Hohlraum weit unten.
+  bitmap[DEPTH_REACH_PX] = 0;
+
+  const data = new Uint8ClampedArray(breite * hoehe * 4);
+  fillGroundPixels(data, bitmap, breite, hoehe, PALETTE);
+
+  // Direkt über dem Hohlraum: tiefe Farbe.
+  const ueber = data[(DEPTH_REACH_PX - 1) * 4];
+  // Direkt darunter: ebenfalls tiefe Farbe (nicht wieder hell).
+  const unter = data[(DEPTH_REACH_PX + 1) * 4];
+
+  assert.equal(unter, ueber,
+    'unter dem Hohlraum muss dieselbe Tiefenfarbe stehen wie darüber');
 });
