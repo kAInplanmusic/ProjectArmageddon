@@ -1978,8 +1978,39 @@ Mehrkomponentenkarten.
       Teamgrenze und Kapazität statt einer festen Zahl — er hätte die
       Verschiebung sonst blockiert (und hat sie tatsächlich bemerkt, wie sein
       eigener Kommentar es ankündigte).
-- [ ] **4K in `MAP_SIZES` eintragen.** Die Tabelle nimmt jede Größe; die Kamera
-      muss mitskalieren (sonst werden die Figuren kleiner). *Gestaltung.*
+- [ ] **Große Karten: gemessen, zwei Wege — Entscheidung nötig.**
+
+      *Neu: `npm run check:map`.* Die Kartengröße ist **keine** Anzeigefrage.
+      Der Kommentar in `match.js` nennt den Grund bereits: „Die Reichweiten …
+      sind in Kartenpixeln angegeben. Eine … größere [Karte hätte] alle Waffen
+      zu kurz [reachen lassen]." Die Messung bestätigt das:
+
+      | Karte | Breite | Anteil der Karte, den die **mittlere** Waffe erreicht |
+      |---|---|---|
+      | heute (720p) | 1280 px | **40 %** |
+      | Full HD | 1920 px | 26 % |
+      | 4K | 3840 px | **13 %** |
+
+      Eine Waffe, die ein Fünftel der Karte erreicht, ist kein
+      Artillerie-Geschütz mehr. Die weiteste Waffe (1062 px) käme auf 28 % —
+      sie könnte nicht einmal die halbe Karte beschießen.
+
+      **Die zwei Wege:**
+
+      - **A) Reichweiten mitskalieren** (Faktor 3 bei 4K): 150 Werte in der
+        Designdatei. Die Partie fühlt sich gleich an, nur mit mehr Platz.
+        *Nachteil:* Alle Balance-Messungen gelten neu.
+      - **B) Reichweiten lassen, Fläche gewinnen:** Die Karte wird ein
+        Schachbrett — man muss sich bewegen, um in Schussweite zu kommen.
+        *Nachteil:* Bei 20 s Zugzeit könnte das zu knapp sein.
+
+      **Was nicht geht:** die Karte vergrößern und die Waffen vergessen. Dann
+      reichen alle 150 zu kurz, und es sieht nicht nach einem Fehler aus,
+      sondern nach einem sehr langsamen Spiel.
+
+      *Unabhängig davon:* Große Karten brauchen eine **Kamera** (Ausschnitt
+      statt Vollansicht), sonst würden die Figuren auf einem Full-HD-Schirm auf
+      ein Drittel verkleinert. Das ist eine eigene Aufgabe.
 - [ ] **Sound.** Bestand nicht geprüft.
 - [ ] **Mehrkomponenten-Karten.** Heute 1D-Terrain (zerstörbar). Höhlen, Böden,
       Etagen fehlen. *Größte Einzelarbeit des Umbaus.*
