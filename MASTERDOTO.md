@@ -2042,8 +2042,18 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
       Architektur und wird empfohlen.
       Beleg: `docs/audit-selbst.md`, Befund 3.
 
-- [ ] **Der Balance-Bericht nennt „Datenmangel" als Ursache, wo Mechanik
-      fehlte.** Die Ursachenschätzung um „Wirkung fehlt trotz Werten" ergänzen.
+- [x] **Balance-Bericht: Ursachenschätzung korrigiert.** Der Bericht nannte
+      pauschal „Platzhalter ohne Designwert — ein Datenmangel, kein Codefehler".
+      Das war bei den 21 Nahkampfwaffen schlicht falsch: Sie hatten
+      Schadenswerte (20–52), es fehlte die **Mechanik**. Der Bericht schickte
+      den Leser in die falsche Richtung.
+      Jetzt wird je Waffe die Herkunft des Katalogwerts geprüft
+      (`damageSource === 'source'` oder nicht) und danach getrennt gemeldet:
+      „Ohne Designwert" gegen „Wirkung fehlt trotz Designwert". Bei der zweiten
+      Gruppe nennt er die Zustellart und weist auf den Zünder als mögliche
+      Ursache hin.
+      *Gemessen nach der Korrektur:* 1 Waffe ohne Wirkung, davon 0 ohne
+      Designwert und 1 mit (Explosiver Energieball).
       Beleg: `docs/audit-selbst.md`, Befund 5.
 
 ### Design-Entscheidung nötig (nicht eigenmächtig)

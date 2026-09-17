@@ -598,7 +598,8 @@ if (asJson) {
   console.log('\n  Schwächste Waffen:');
   for (const row of report.schwaechste) console.log(fmt(row));
 
-  // Waffen ohne echten Designwert sind ein Datenmangel, kein Implementierungsmangel.
+  // Waffen ohne Designwert in der Quelldatei — getrennt von solchen, die einen
+  // Wert haben, aber trotzdem nicht wirken (siehe Ursachenschätzung unten).
   const platzhalter = results.filter(row => row.istPlatzhalter);
   if (platzhalter.length > 0) {
     console.log(`\n  Mit Ersatz-Schadenswert (kein Designwert in der Quelldatei): ${platzhalter.length}`);
@@ -614,15 +615,55 @@ if (asJson) {
     for (const [category, names] of Object.entries(byCategory)) {
       console.log(`    ${category.padEnd(13)} (${names.length}): ${names.slice(0, 6).join(', ')}${names.length > 6 ? ', …' : ''}`);
     }
-    console.log('  Drei Ursachen sind zu unterscheiden:');
-    console.log('   a) Auf keiner der Messdistanzen (' + distanzen.join(', ') + ' px) wirksam.');
-    console.log('      Vorher stand hier, schwere Artillerie erscheine nur wegen der kurzen');
-    console.log('      Messdistanz als wirkungslos. Das ist mit der Messung über die');
-    console.log('      Kartenbreite widerlegt: Eine Waffe, die hier auftaucht, wirkt auch auf');
-    console.log('      ihrer besten Entfernung nicht — sie hat ein Problem, nicht der Aufbau.');
-    console.log('   b) Platzhalter ohne Designwert: die Quelldatei nennt für diese Waffe');
-    console.log('      keinen Schadenswert (siehe Liste oben). Ein Datenmangel, kein Codefehler.');
-    console.log('   c) Einzelne Mechaniken, die noch fehlen (aufgestelltes Geschütz,');
-    console.log('      Wasserschub). Diese kurze Liste ist die eigentliche TODO-Übersicht.');
+    /*
+     * Die Ursachenschätzung nennt jetzt eine PRÜFBARE Unterscheidung.
+     *
+     * FUND (belegt): Vorher stand hier eine pauschale Liste von drei Ursachen
+     * mit dem Hinweis „Platzhalter ohne Designwert ... ein Datenmangel, kein
+     * Codefehler". Das war bei einer ganzen Gruppe schlicht falsch: Die 21
+     * Nahkampfwaffen hatten Schadenswerte (20–52), aber keine Wirkung — es
+     * fehlte die MECHANIK (sie waren als Hitscan eingestuft), nicht die Daten.
+     * Der Bericht schickte den Leser damit in die falsche Richtung.
+     *
+     * Jetzt wird je Waffe die Herkunft des Katalogwerts geprüft:
+     *   damageSource !== 'source' -> Datenmangel (Ersatzwert im Katalog)
+     *   damageSource === 'source' -> Wirkung fehlt trotz Designwert (Mechanik)
+     */
+    /*
+     * Die Unterscheidung nutzt `istPlatzhalter` — die Herkunft des
+     * KATALOGWERTS (`damageSource !== 'source'`) —, nicht den gemessenen
+     * Schaden. Der gemessene ist bei jeder wirkungslosen Waffe 0 und würde
+     * hier nichts unterscheiden.
+     */
+    const ohneDesignwert = unwirksam.filter(row => row.istPlatzhalter);
+    const mitDesignwert = unwirksam.filter(row => !row.istPlatzhalter);
+
+    if (ohneDesignwert.length > 0) {
+      console.log(`\n  a) Ohne Designwert in der Quelldatei (${ohneDesignwert.length} Waffen):`);
+      console.log(`     ${ohneDesignwert.slice(0, 8).map(r => r.name).join(', ')}`
+        + `${ohneDesignwert.length > 8 ? ', …' : ''}`);
+      console.log('     Die Quelldatei nennt keinen Schadenswert; der Katalog führt einen');
+      console.log('     Ersatzwert. Ein Datenmangel, kein Codefehler.');
+    }
+
+    if (mitDesignwert.length > 0) {
+      console.log(`\n  b) Wirkung fehlt TROTZ Designwert (${mitDesignwert.length} Waffen):`);
+      console.log(`     ${mitDesignwert.slice(0, 8).map(r => r.name).join(', ')}`
+        + `${mitDesignwert.length > 8 ? ', …' : ''}`);
+      console.log('     Hier liegt es NICHT an den Daten — der Wert ist da. Zu prüfen ist');
+      console.log('     die Mechanik: Flugweg, Zustellart, Zünder oder Messdistanz.');
+      console.log('     Zustellart dieser Waffen:');
+      const nachZustellung = {};
+      for (const row of mitDesignwert) {
+        nachZustellung[row.delivery ?? 'unbekannt'] =
+          (nachZustellung[row.delivery ?? 'unbekannt'] ?? 0) + 1;
+      }
+      for (const [art, n] of Object.entries(nachZustellung)) {
+        console.log(`       ${art}: ${n}`);
+      }
+      console.log('     Hinweis: Ein ZÜNDER, der länger ist als die Flugzeit, lässt eine');
+      console.log('     Waffe die Messdistanz überfliegen und erst danach zünden. Das ist');
+      console.log('     eine Design-Frage (Granaten sollen liegen bleiben), kein Fehler.');
+    }
   }
 }
