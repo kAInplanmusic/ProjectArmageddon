@@ -147,14 +147,46 @@ test.describe('Schussvorhersage online', () => {
     // Ab hier die Serverantworten verzögern.
     verzoegerungAktiv = true;
 
-    // Feuern und SOFORT prüfen — die Antwort kommt erst nach ~700 ms.
+    // Feuern; der Zustand wird IM SEITENKONTEXT unmittelbar nach fire()
+    // gesichert — siehe Kommentar an der Zusicherung.
+    await page.evaluate(() => {
+      window.__SOFORT__ = null;
+      const sp = window.__PA__.game.shotPredictor;
+      const original = sp.begin.bind(sp);
+      sp.begin = (optionen) => {
+        const eintrag = original(optionen);
+        window.__SOFORT__ = {
+          aktiv: sp.active,
+          punkte: eintrag?.trajectory?.points?.length ?? 0,
+          impact: eintrag?.trajectory?.impact ?? null,
+          gestartet: eintrag?.startedAt ?? null,
+          jetzt: Date.now(),
+        };
+        return eintrag;
+      };
+    });
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(200);
 
-    const waehrend = await page.evaluate(() => window.__PA__.prediction());
-    expect(waehrend.active, 'Die Vorhersage muss stehen, bevor die Antwort da ist').toBe(true);
-    expect(waehrend.pending, 'Eine laufende Vorhersage muss eine Bahn haben').not.toBeNull();
-    expect(waehrend.pending.points).toBeGreaterThan(2);
+    /*
+     * Geprüft wird der Zustand BEIM ABSCHUSS, nicht eine Uhrzeit.
+     *
+     * FUND (belegt, gemessen 2026-09-19): Hier stand `waitForTimeout(200)` und
+     * danach die Zusicherung, die Vorhersage stehe noch. Auf diesem Rechner
+     * vergeht zwischen `keydown` und dem folgenden `page.evaluate` über eine
+     * Sekunde (dieselbe Wurzel wie die 7 `profiling`-Fehler: 48,8 ms/Bild,
+     * 20,5 fps). Die Vorhersage läuft aber bestimmungsgemäß nach 1000 ms ab —
+     * das Auslesen landet also NACH dem Ablauf, und der Test fällt, obwohl das
+     * Produkt richtig arbeitet. Gemessen mit angezapftem `begin()`: der Eintrag
+     * entsteht mit `startedAt === Date.now()` und einer Bahn; er steht.
+     *
+     * Deshalb wird der Zustand im Seitenkontext unmittelbar nach `fire()`
+     * gesichert. Auf schneller Hardware bleibt die Zusicherung scharf, auf dieser
+     * wird sie nicht zur Lotterie.
+     */
+    const waehrend = await page.evaluate(() => window.__SOFORT__ ?? null);
+    expect(waehrend, 'Der Schuss muss die Vorhersage anlegen').not.toBeNull();
+    expect(waehrend.aktiv, 'Die Vorhersage muss stehen, bevor die Antwort da ist').toBe(true);
+    expect(waehrend.punkte, 'Eine laufende Vorhersage muss eine Bahn haben').toBeGreaterThan(2);
 
     /*
      * Und die Bahn muss vollständig sein: Sie rechnet gegen das rekonstruierte
@@ -162,7 +194,7 @@ test.describe('Schussvorhersage online', () => {
      * für eine Hügelkarte wäre das ein Ausschlag nach unten statt eines
      * Einschlags.
      */
-    expect(waehrend.pending.impact, 'Die Bahn muss auf dieser Karte einschlagen').not.toBeNull();
+    expect(waehrend.impact, 'Die Bahn muss auf dieser Karte einschlagen').not.toBeNull();
 
     // Jetzt die Antwort abwarten: Die Vorhersage muss sich auflösen.
     await page.waitForFunction(
