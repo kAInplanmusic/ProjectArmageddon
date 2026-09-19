@@ -173,20 +173,32 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       der Snapshot in Wahrheit Sekundenbruchteile alt ist. Die Fortschreibung
       rechnet damit ~0 Ticks dazu.
 
-      *Die eigentliche Frage vor jeder Behebung:* Benutzt die Trefferauswertung
-      eines Schusses den Vergleichszustand aus `history.get(tick)`? Nach der
-      bisherigen Lesung NICHT — `match.fire(seat.entityId, angle, power,
-      weaponId)` nimmt keinen Tick; der Tick wählt nur die Rückrechnung. Wenn das
-      bestätigt ist, kann ein veralteter Tick KEINEN Vorteil verschaffen, und die
-      harte Ablehnung ist der falsche Umgang: Der Schuss gehört angenommen und die
-      Rückrechnung auf das verfügbare Fenster begrenzt.
+      *VORBEDINGUNG GEPRÜFT UND BELEGT (2026-09-19, Code-Lesung):* Die
+      Trefferauswertung benutzt den Tick NICHT.
 
-      *Dann nötig:* `tests/anti-cheat.test.js` erwartet, dass Ticks 0/1 in jungen
-      Matches abgelehnt werden — diese Erwartung hängt an derselben harten Regel
-      und muss mit Begründung neu gefasst werden (Betrugsvektor ist ein
-      ERFUNDENER Tick weit in Vergangenheit/Zukunft, nicht ein um Millisekunden
-      veralteter). Erst diese Reihenfolge einhalten — erst die Trefferauswertung
-      prüfen, dann die Regel ändern, dann den Test nachziehen.
+          src/engine/match.js:1458   fire(playerId, angle, power, weaponId)
+                                     — kein Tick-Parameter
+          src/engine/match.js        „history" kommt im ganzen Motor NICHT vor
+          src/server/gameServer.js:380
+                                     interpolatedFrom: history?.tick ?? null
+                                     — der einzige Nutzer, und zwar als
+                                     Rückmeldung an den Client
+
+      Ein veralteter Tick kann damit KEINEN Vorteil verschaffen: Er wählt nirgends
+      einen Schusszeitpunkt, er füllt nur ein Feld, das der Client zur Anzeige
+      seiner Rückrechnung liest. Die harte Ablehnung schützt also nichts — sie
+      kostet nur gültige Schüsse.
+
+      *Damit ist die Fix-Entscheidung begründbar (noch umzusetzen):* Die
+      Tick-Prüfung der Eingabe auf die Betrugsgrenze `maxTickDrift` (400) lockern
+      statt auf das 12-Tick-Fenster; die Rückrechnung bleibt begrenzt, weil
+      `history.get(tick)` außerhalb des Fensters `null` liefert — sauberere
+      Degradierung als ein verworfener Schuss. Erfundene Ticks bleiben abgelehnt
+      (±100_000, negative). `tests/anti-cheat.test.js` erwartet, dass Ticks 0/1 in
+      jungen Matches abgelehnt werden; diese Erwartung hängt an der alten Regel
+      und ist mit dieser Begründung neu zu fassen (die Zusage „kein Tick aus der
+      Vergangenheit" ist gegenstandslos, wenn nichts hineingeschleust wird).
+      Danach: Probe „wird der Schuss angenommen?" + voller Gate-Lauf.
 
       *Achtung, bereits verworfen:* Die Regel nur gegen `maxTickDrift` zu lockern,
       OHNE die Trefferauswertung zu prüfen, wurde schon einmal probiert: Der
