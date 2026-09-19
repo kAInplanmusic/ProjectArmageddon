@@ -153,6 +153,40 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
       Befund steht im Kommentar über ihnen.
 
+- [ ] **Tickrate des Servers gegen die Wanduhr messen (offen, 2026-09-19).**
+
+      FUND (belegt, gemessen): Im freilaufenden Online-Match wurde ein GÜLTIGER
+      Schuss vom Server verworfen (`status: ["discarded"]`). Die Messung dazu:
+
+          neuester Snapshot-Tick beim Schuss:     231
+          neuester Snapshot-Tick 1,5 s später:    391
+
+      Über 160 Ticks in 1,5 s — mehr als 100 Ticks je Sekunde. Zwei Erklärungen
+      sind möglich, und beide treffen dasselbe Fenster: (a) die Server-Simulation
+      läuft schneller als 60 Hz, oder (b) die Seite verarbeitet die Snapshots so
+      langsam, dass sie dauerhaft Sekunden zurückliegt (dieselbe Wurzel wie die
+      profiling-Fehler). Beides untergräbt die Annahme „ein Tick = 1/60 Sekunde",
+      auf der das Lag-Kompensationsfenster von 12 Ticks (nominell 200 ms) beruht:
+      bei 107 Hz sind die 12 Ticks in Wahrheit ~112 ms.
+
+      *Nächste Messung:* Die Server-Tickrate direkt gegen die Wanduhr stellen
+      (server-seitig zweimal den Tick lesen, bekannte Zeitdifferenz), NICHT über
+      den Umweg des Clients — sonst lässt sich (a) nicht von (b) trennen.
+
+      *Zwischenstand im Client (ehrlich eingeordnet):* `referenzTick` in
+      `networkClient.js` schreibt den Tick um die seit dem Snapshot-Empfang
+      vergangene Zeit fort (7 Unit-Tests, konservativ, nie in die Zukunft). Das
+      ist NICHT die Behebung — gemessen blieb der Schuss `discarded`. Der
+      Kommentar dort sagt das ausdrücklich.
+
+- [x] **Nebenbefund nachgezogen (2026-09-19):** Der Unit-Test „Alle Formen sind
+      im Menü wählbar" (`tests/terrain-presets.test.js`) prüfte noch die beim
+      `#cfg-preset`-Umbau entfernte Menü-Auswahl und war dadurch rot — damals
+      hatte ich Lint und E2E laufen lassen, aber nicht die Unit-Suite. Entfernt,
+      mit Begründung im Kommentar. `npm test` war dadurch 961/962, jetzt wieder
+      vollständig grün. Lehre: Bei Menü-/Markup-Änderungen gehört `npm test` mit
+      in die Prüfung, nicht nur Lint und E2E.
+
 - [x] **`prediction-online:102` BEHOBEN (2026-09-19) — der Test maß die Uhrzeit
       statt den Zustand (vorbestehend).**
 

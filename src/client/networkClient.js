@@ -27,6 +27,74 @@ export const CONNECTION_STATE = Object.freeze({
 
 const MAX_BACKOFF_MS = 8000;
 
+/** Simulations-Ticks je Sekunde (Simulation läuft mit 60 Hz, Snapshots mit 20 Hz). */
+export const TICKS_PER_SECOND = 60;
+
+/** Dauer eines Simulations-Ticks in Millisekunden. */
+export const TICK_MS = 1000 / TICKS_PER_SECOND;
+
+/**
+ * Der Tick, auf den sich eine Eingabe bezieht.
+ *
+ * ## Warum fortgeschrieben und nicht roh
+ *
+ * FUND (belegt, gemessen 2026-09-19): Gesendet wurde der Tick des zuletzt
+ * EMPFANGENEN Snapshots. Zwischen Empfang und Verarbeitung vergeht auf einem
+ * langsamen Rechner viel Zeit — gemessen: Client-Tick 235 gegen Server-Tick 269,
+ * also 34 Ticks (≈570 ms) Rückstand bei einem Lag-Kompensationsfenster von 12
+ * Ticks (200 ms). Der Server ließ den Schuss daraufhin fallen („Tick liegt
+ * ausserhalb des Lag-Kompensationsfensters"), und ein GÜLTIGER Schuss verpuffte.
+ * Je langsamer die Maschine, desto sicherer trifft es den Spieler.
+ *
+ * Deshalb wird der Tick um die seit dem Empfang vergangene Zeit fortgeschrieben.
+ * Das ist bewusst KONSERVATIV: Die Empfangszeit liegt immer NACH dem Moment, in
+ * dem der Server den Snapshot erzeugt hat (Netzweg + Verarbeitung). Die
+ * Schätzung liegt damit nie in der Zukunft — sie holt nur den eigenen Rückstand
+ * auf, sie eilt dem Server nicht voraus.
+ *
+ * ## Grenze der Behebung (gemessen 2026-09-19)
+ *
+ * Die Fortschreibung ALLEIN genügt nicht: Im freilaufenden Online-Match blieb
+ * der Schuss trotzdem `discarded`. Die Messung zeigt warum — der neueste
+ * Snapshot trug beim Schuss Tick 231, 1,5 s später trug er 391. Das sind über
+ * 160 Ticks in 1,5 s, also mehr als 100 Ticks je Sekunde. Entweder läuft die
+ * Server-Simulation schneller als 60 Hz, oder die Seite verarbeitet die
+ * Snapshots so langsam, dass sie dauerhaft Sekunden zurückliegt. Beides
+ * untergräbt die Annahme, dass ein Tick 1/60 Sekunde ist — und genau darauf
+ * beruht das Fenster von 12 Ticks. Der nächste Schritt ist deshalb NICHT hier,
+ * sondern eine Messung der Server-Tickrate gegen die Wanduhr.
+ *
+ * Die Fortschreibung bleibt: Sie ist geprüft (7 Unit-Tests), konservativ und
+ * bewegt den Tick in jedem Fall auf die Wahrheit zu. Als „die Behebung" darf sie
+ * aber nicht gelesen werden.
+ *
+ * @param {{snapshotTick?:number, empfangenAt?:number, jetzt?:number, maxVorsprungTicks?:number}} [optionen]
+ * @returns {number} Tick für die Eingabe (0, wenn kein Snapshot vorliegt)
+ */
+export function referenzTick({
+  snapshotTick,
+  empfangenAt,
+  jetzt = Date.now(),
+  maxVorsprungTicks = 120,
+} = {}) {
+  if (!Number.isFinite(snapshotTick)) return 0;
+  // Negativ kann die Spanne nicht werden; eine verstellte Uhr soll die Eingabe
+  // nicht in die Vergangenheit ziehen.
+  const vergangen = Number.isFinite(empfangenAt) && empfangenAt > 0
+    ? Math.max(0, jetzt - empfangenAt)
+    : 0;
+  // Der Deckel ist eine Notbremse, keine Regel: Er greift erst nach ~2 s ohne
+  // Snapshot (Verbindungsabbruch), wo ein weit vorausgerechneter Tick ohnehin
+  // unglaubwürdig wäre.
+  //
+  // Gerechnet wird ganzzahlig (`ms * 60 / 1000`) und nicht als Division durch
+  // `TICK_MS`: `2000 / (1000/60)` ergibt 119,99998 und damit 119 statt 120 Ticks.
+  // An der Fenstergrenze entscheidet genau diese eine Tick-Nummer darüber, ob
+  // der Server den Schuss annimmt.
+  const vorsprung = Math.min(maxVorsprungTicks, Math.floor((vergangen * TICKS_PER_SECOND) / 1000));
+  return snapshotTick + vorsprung;
+}
+
 export class NetworkClient {
   #url;
   #socket = null;
@@ -49,6 +117,8 @@ export class NetworkClient {
   #joinsSent = 0;
   /** Empfangene Snapshots insgesamt bzw. davon Vollsnapshots. */
   #snapshotsReceived = 0;
+  /** Empfangszeitpunkt des jüngsten Snapshots (für `referenzTick`). */
+  #letzterSnapshotAt = 0;
   #fullSnapshots = 0;
   /** Letzter dekodierter Snapshot — Basis für das Delta-Encoding. */
   #lastDecoded = null;
@@ -208,6 +278,8 @@ export class NetworkClient {
       this.#snapshots.push(snapshot);
       if (this.#snapshots.length > 30) this.#snapshots.shift();
       this.#snapshotsReceived += 1;
+      // Zeitpunkt merken: Der Tick einer Eingabe wird daraus fortgeschrieben.
+      this.#letzterSnapshotAt = Date.now();
       if (snapshot.isFull) this.#fullSnapshots += 1;
       this.#emit('snapshot', snapshot);
       return;
@@ -298,7 +370,15 @@ export class NetworkClient {
       angle,
       power,
       weaponId,
-      tick: snapshot?.tick ?? 0,
+      // Nicht der rohe Snapshot-Tick, sondern der fortgeschriebene: siehe
+      // `referenzTick` oben. Ein zu alter Tick lässt der Server als
+      // „ausserhalb des Lag-Kompensationsfensters" fallen, und dann verpufft ein
+      // gueltiger Schuss.
+      tick: referenzTick({
+        snapshotTick: snapshot?.tick,
+        empfangenAt: this.#letzterSnapshotAt,
+        jetzt: Date.now(),
+      }),
     }));
     return true;
   }

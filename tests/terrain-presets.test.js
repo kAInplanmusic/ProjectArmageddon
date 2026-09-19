@@ -304,17 +304,17 @@ test('Das Gelände bleibt deterministisch — auch mit der neuen Startplatzsuche
   }
 });
 
-test('Alle Formen sind im Menü wählbar', async () => {
-  /*
-   * Eine Geländeform, die es im Motor gibt, aber nicht in der Auswahl, ist für
-   * den Spieler nicht vorhanden. Geprüft wird gegen das Markup — die Liste dort
-   * ist die einzige Stelle, an der die Auswahl entsteht.
-   */
-  const { readFileSync } = await import('node:fs');
-  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-
-  for (const preset of Object.keys(TERRAIN_PRESETS)) {
-    assert.ok(html.includes(`<option value="${preset}"`),
-      `Die Geländeform „${preset}" fehlt in der Kartenwahl (index.html)`);
-  }
-});
+/*
+ * ENTFERNT (2026-09-19): Hier stand der Test „Alle Formen sind im Menü wählbar".
+ *
+ * Er prüfte, dass jede Geländeform aus `TERRAIN_PRESETS` als `<option>` in
+ * `index.html` steht. Die Menü-Auswahl für die Karte ist entfernt, weil sie die
+ * Karte nicht beeinflusste (der autonome Generator entscheidet aus dem Seed;
+ * gemessen erzeugten alle acht Formen dieselbe Karte). Ein Test, der eine
+ * Auswahl verlangt, die es nicht mehr gibt, hält eine Zusage am Leben, die
+ * zurückgenommen wurde.
+ *
+ * Der KATALOG der Formen wird weiter geprüft — in den Tests dieses Files, die
+ * `TERRAIN_PRESETS` direkt gegen den Motor stellen. Die Formen gibt es also
+ * nach wie vor; sie sind nur keine Spielerentscheidung mehr.
+ */
