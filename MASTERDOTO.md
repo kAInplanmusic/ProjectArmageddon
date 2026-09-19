@@ -157,41 +157,45 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
 
       *Stand 2026-09-19: in zwei Ursachen zerlegt, beide gemessen.*
 
-      **(1) Der Schuss kommt zu spät an — der TEST verzögert die falsche
+      **(1) Der Schuss kommt zu spät an — der TEST verzögerte die falsche
       Richtung.** `prediction-online.spec.mjs` will laut Kommentar „die
-      EINGEHENDEN Ereignisse (Textframes vom Server)" verzögern. Der Code hängt
-      sich aber an `ws.onMessage` — das sind die Nachrichten VOM CLIENT ZUM
-      SERVER. Verzögert wird damit der SCHUSS selbst, und zwar um 700 ms; die
-      Tick-Nummer im Eingabesatz ist dann ~42 Ticks alt, das
-      Lag-Kompensationsfenster erlaubt 12 (200 ms). Der Server lehnt ab — genau
-      das Verhalten, das der Anti-Cheat-Schutz verlangt.
+      EINGEHENDEN Ereignisse (Textframes vom Server)" verzögern. Der Code hing
+      aber an `ws.onMessage` — das sind die Nachrichten VOM CLIENT ZUM SERVER.
+      Verzögert wurde damit der SCHUSS selbst, und zwar um 700 ms; die
+      Tick-Nummer im Eingabesatz war dann ~42 Ticks alt, das
+      Lag-Kompensationsfenster erlaubt 12 (200 ms).
 
-      *Konsequenz:* Der Test kann in dieser Fassung nicht grün werden, gleich
-      welche Produktänderung man vornimmt. Zu verzögern ist `server.onMessage`
-      (Antwortrichtung), nicht `ws.onMessage`.
+      *Behoben (2026-09-19):* Die Verzögerung liegt jetzt auf `server.onMessage`
+      (Antwortrichtung), `ws.onMessage` reicht unverzögert durch. Das entfernt
+      eine Störung, die der Test sich selbst gebaut hatte — **löst den Fehler
+      aber NICHT** (gemessen: gleiche Zusicherung, gleicher Fehler).
 
-      **(2) Eine abgelehnte Eingabe verwirft die Vorhersage stumm.** Gemessen
-      mit schnellem Server (Probe `zz-probe-ursache`, inzwischen gelöscht):
-      `{predictions: 1, confirmed: 0, discarded: 1, timedOut: 0}` — der Schuss
-      wurde als Eingabe abgeschickt, `begin()` lief also, und die Ablehnung des
-      Servers erreichte den Client innerhalb von 200 ms. Vorher gemessen
-      (mit verzögerter Antwort): `timedOut: 1`. Beides sind Folgen von (1): der
-      Client zeigt die Bahn, der Server nimmt den Schuss nicht an, die Anzeige
-      verschwindet — für den Spieler ununterscheidbar von einem Fehler.
+      **(2) Der Verwerfer ist `server_error` — und der ist es im Test NICHT.**
+      `main.js:873` verwirft die Vorhersage bei `server_error` (Textframe). In
+      der freilaufenden Probe (ohne Proxy, ohne Verzögerung) kam genau das an:
 
-      *Offen:* Warum stand die Vorhersage im verzögerten Lauf nach 200 ms NICHT
-      (`predictions` dort möglicherweise 0 statt 1)? Die Probe mit schnellem
-      Server zeigt 1 — der Unterschied liegt im Testaufbau, nicht im Produkt.
+          nach Enter + 200 ms: {predictions:1, discarded:1, timedOut:0}
 
-      *Verworfen:* Die naheliegende Behebung — den Tick nur noch gegen die
-      Betrugsgrenze `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen —
-      wurde gebaut, gemessen und zurückgenommen: sie machte
-      `tests/anti-cheat.test.js` rot (Ticks 0/1 gelten in jungen Matches als
-      innerhalb der Grenze) UND der E2E-Test blieb rot. Merken: `match.fire()`
-      benutzt den Tick überhaupt nicht — er wählt nur den Vergleichszustand für
-      die Rückrechnung. Ein veralteter Tick kann also nicht als Betrug dienen;
-      die Ablehnung hängt trotzdem am Anti-Cheat-Test und ist nicht einfach zu
-      streichen.
+      Die Vorhersage wurde also ANGELEGT (`begin()` lief, keine
+      Abbruchbedingung griff) und dann vom `server_error` verworfen. Im Test sind
+      Textframes verzögert — dort kann `server_error` nach 200 ms nicht
+      angekommen sein. Trotzdem ist `active` dort `false`, also muss `begin()`
+      selbst ausbleiben (`predictions: 0`).
+
+      **(3) Die freilaufende Probe zeigt: der Server lehnt den Schuss ab.**
+      Warum, ist offen — `match.fire()` benutzt den Tick NICHT; die Ablehnung
+      kommt aus der Tick-Fenster-Prüfung der Eingabe (`validateCommand` /
+      `history.isWithinWindow`).
+
+      *Nächste Messung (genau eine):* dieselbe Probe MIT installiertem
+      `routeWebSocket`-Proxy und verzögerten Textframes, und dann `predictions`
+      plus `isMyTurn` plus das Ergebnis von `fire()` auslesen. Das trennt „der
+      Tastendruck feuert nicht" von „`fire()` bricht vor der Vorhersage ab".
+
+      *Verworfen (nicht wieder bauen):* den Tick nur noch gegen die Betrugsgrenze
+      `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen. Gebaut, gemessen,
+      zurückgenommen: `tests/anti-cheat.test.js` wurde rot (Ticks 0/1 gelten in
+      jungen Matches als innerhalb der Grenze) und der E2E-Test blieb rot.
 
 ## Audit 2026-09-17 — vier unabhängige Sichten
 

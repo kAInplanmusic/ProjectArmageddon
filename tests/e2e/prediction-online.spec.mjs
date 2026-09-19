@@ -111,18 +111,34 @@ test.describe('Schussvorhersage online', () => {
     let verzoegerungAktiv = false;
     await page.routeWebSocket(/\/ws/, ws => {
       const server = ws.connectToServer();
-      ws.onMessage(message => {
-        if (!verzoegerungAktiv) { server.send(message); return; }
+
+      // Client -> Server: unverzögert durchreichen. Hier darf NICHT verzögert
+      // werden (siehe unten).
+      ws.onMessage(message => server.send(message));
+
+      /*
+       * Server -> Client: DAS ist die Richtung, die verzögert wird.
+       *
+       * FUND (belegt, gemessen 2026-09-19): Vorher hing die Verzögerung an
+       * `ws.onMessage` — also am Weg Client→Server. Verzögert wurde damit der
+       * SCHUSS selbst: Der Server bekam ihn 700 ms später, die Tick-Nummer im
+       * Eingabesatz war dann ~42 Ticks alt und lag außerhalb des
+       * Lag-Kompensationsfensters (12 Ticks = 200 ms). Der Server wies den
+       * Schuss ab — genau so, wie es der Anti-Cheat-Schutz verlangt — und die
+       * Vorhersage war nach 200 ms nicht mehr da. Der Test konnte in dieser
+       * Fassung nicht grün werden, gleich welche Produktänderung man vornimmt.
+       */
+      server.onMessage(message => {
+        if (!verzoegerungAktiv) { ws.send(message); return; }
         // Textframes sind Steuernachrichten (JSON), Binärframes Snapshots.
         const istText = typeof message === 'string'
           || (message instanceof ArrayBuffer ? false : message?.constructor?.name?.includes?.('String'));
         if (istText && !String(message).includes('"pong"')) {
-          setTimeout(() => server.send(message), 700);
+          setTimeout(() => ws.send(message), 700);
           return;
         }
-        server.send(message);
+        ws.send(message);
       });
-      server.onMessage(message => ws.send(message));
     });
 
     const fehler = await starteOnlineMatch(page);
