@@ -153,33 +153,53 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
       Befund steht im Kommentar über ihnen.
 
-- [ ] **Grund der Schuss-Ablehnung messen — der Tick ist es NICHT (offen, 2026-09-19).**
+- [ ] **Schuss-Ablehnung: Grund gemessen — jetzt Fix-Entscheidung (offen, 2026-09-19).**
 
-      *Gemessen (belegt, `zz-probe-rate`, gelöscht):* Tick UND Uhrzeit im selben
-      Rückruf im Seitenkontext gelesen, damit ein Hänger die Rate nicht verfälscht:
+      *Gemessen (`zz-probe-grund`, gelöscht):*
 
-          Proben: 120 → 154 → 199 → 244 → 291 → 336 (Tick)
-          dTick 216 über 3828 ms  =  56,4 Ticks/s   (Snapshots: 57)
+          vorher:  Tick 169, isMyTurn=true, 45 Snapshots
+          Fehler:  [{"t":"error","errors":["Tick liegt ausserhalb des Lag-Kompensationsfensters"]}]
+          status:  ["discarded"]
+          danach:  Tick 326 nach 2902 ms  →  54,1 Ticks/s
 
-      Der Server läuft also mit ~56 Hz gegen die Wanduhr. Die frühere Zahl „über
-      100 Ticks/s" war ein Artefakt des eigenen Aufbaus: Ein `waitForTimeout(1500)`
-      plus Auslesedauer dauerte real ~2,8 s (die Proben sollten 500 ms auseinander
-      liegen, lagen aber 761 ms). 160 Ticks in 2,8 s sind 57 Hz — beide Messungen
-      stimmen mit einem korrekt getakteten Server überein. **Hypothese (a)
-      (Simulation zu schnell) ist damit widerlegt.**
+      Damit ist beides belegt: Der Server taktet korrekt (~54–56 Hz gegen die
+      Wanduhr, siehe vorige Messung), und die Ablehnung kommt TATSÄCHLICH aus der
+      Tick-Fenster-Prüfung.
 
-      *Offen:* Warum der Schuss `discarded` wird. In diesem Aufbau wurde der
-      Fehlertext NICHT gelesen; die Meldung „Tick liegt ausserhalb des
-      Lag-Kompensationsfensters" stammt aus einem FRÜHEREN Aufbau und ist für den
-      heutigen Fall nicht belegt. Der Verwerfer ist `server_error`
-      (`main.js:873`), und der Server schickt dafür mehrere mögliche Gründe
-      (kein Zug, Nachladezeit, keine Munition, Tick-Fenster).
+      *Warum die Client-Fortschreibung zu kurz greift:* `#letzterSnapshotAt` wird
+      gesetzt, wenn der JS-Handler den Snapshot verarbeitet — nicht, wenn die
+      Bytes ankommen. Nach einem Hänger verarbeitet die Seite die aufgestauten
+      Snapshots in einem Schwung; die Empfangszeit ist dann „gerade eben", obwohl
+      der Snapshot in Wahrheit Sekundenbruchteile alt ist. Die Fortschreibung
+      rechnet damit ~0 Ticks dazu.
 
-      *Nächste Messung:* Den Fehlertext abgreifen — im Seitenkontext an
-      `client.on('server_error')` hängen (oder die HUD-Zeile lesen) und ihn
-      zusammen mit dem Schuss protokollieren. Erst danach ist eine Behebung
-      begründbar; bis dahin bleibt `referenzTick` als geprüfte, konservative
-      Verbesserung stehen, ohne als Behebung zu gelten.
+      *Die eigentliche Frage vor jeder Behebung:* Benutzt die Trefferauswertung
+      eines Schusses den Vergleichszustand aus `history.get(tick)`? Nach der
+      bisherigen Lesung NICHT — `match.fire(seat.entityId, angle, power,
+      weaponId)` nimmt keinen Tick; der Tick wählt nur die Rückrechnung. Wenn das
+      bestätigt ist, kann ein veralteter Tick KEINEN Vorteil verschaffen, und die
+      harte Ablehnung ist der falsche Umgang: Der Schuss gehört angenommen und die
+      Rückrechnung auf das verfügbare Fenster begrenzt.
+
+      *Dann nötig:* `tests/anti-cheat.test.js` erwartet, dass Ticks 0/1 in jungen
+      Matches abgelehnt werden — diese Erwartung hängt an derselben harten Regel
+      und muss mit Begründung neu gefasst werden (Betrugsvektor ist ein
+      ERFUNDENER Tick weit in Vergangenheit/Zukunft, nicht ein um Millisekunden
+      veralteter). Erst diese Reihenfolge einhalten — erst die Trefferauswertung
+      prüfen, dann die Regel ändern, dann den Test nachziehen.
+
+      *Achtung, bereits verworfen:* Die Regel nur gegen `maxTickDrift` zu lockern,
+      OHNE die Trefferauswertung zu prüfen, wurde schon einmal probiert: Der
+      Anti-Cheat-Test wurde rot und der E2E-Test blieb rot (dessen Ursache war
+      allerdings eine andere — die Testuhrzeit, inzwischen behoben).
+
+
+      *Zur Einordnung, vorher gemessen (belegt, `zz-probe-rate`, gelöscht):* Tick
+      und Uhrzeit im SELBEN Rückruf im Seitenkontext — der Server taktet mit
+      ~56 Hz gegen die Wanduhr (216 Ticks über 3828 ms, 57 Snapshots). Die
+      Hypothese „Simulation läuft zu schnell" ist damit widerlegt; die frühere
+      Zahl „über 100 Ticks/s" war ein Artefakt des eigenen Aufbaus
+      (`waitForTimeout(1500)` plus Auslesedauer dauerte real ~2,8 s).
 
 - [x] **Nebenbefund nachgezogen (2026-09-19):** Der Unit-Test „Alle Formen sind
       im Menü wählbar" (`tests/terrain-presets.test.js`) prüfte noch die beim
