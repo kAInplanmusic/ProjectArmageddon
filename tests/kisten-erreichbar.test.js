@@ -100,24 +100,81 @@ test('Der Aufheberadius liegt über der Sprungdistanz', () => {
 
 test('Eine Kiste wird tatsächlich aufgenommen', () => {
   /*
-   * DIE Prüfung: Der Loot-Strang WIRKT. Vor der Korrektur kam in einer ganzen
-   * Partie praktisch nie eine Berührung zustande.
+   * DIE Prüfung: Der Loot-Strang WIRKT.
+   *
+   * FUND (belegt, 2026-09-19): Vorher ließ dieser Test alle Figuren bis zum
+   * Partieende springen und HOFFTE auf eine Aufnahme. Seit die Wurfweite des
+   * Abwurfs aus der Zieldistanz gerechnet wird (Landestelle AUSSERHALB des
+   * Aufhebe-Radius, wie der Mechaniktext des Abwurfs es verlangt), liegt die
+   * abgeworfene Kiste weiter weg — die Zufalls-Hüpferei erreicht sie nicht mehr.
+   * Der Fall wird deshalb GEZIELT aufgebaut: Figur neben die Kiste stellen,
+   * Schritte laufen, Ereignis prüfen. Das misst dieselbe Zusage, ohne Zufall.
    */
-  const { match, id } = matchMitPlatz();
-  const vorher = match.getState().entities.find(e => e.entityId === id).inventory.length;
+  const { match, id } = matchMitPlatz(1000);
 
-  const ereignisse = springeUndSammle(match);
+  const kisten = match.getState().crates;
+  assert.ok(kisten.length > 0, 'der Abwurf muss eine Kiste erzeugt haben');
+  const kiste = kisten[0];
 
-  const aufnahmen = ereignisse.filter(e => e.type === 'crate_pickup');
-  assert.ok(aufnahmen.length > 0,
-    'In einer ganzen Partie wurde keine einzige Kiste aufgenommen — der '
-    + 'Loot-Strang ist damit wirkungslos. Prüfe den Aufheberadius '
-    + '(`npm run check:crates`).');
+  // Die Engine kennt keine Marsch-Eingabe (nur `jump`) — die Figur wird
+  // deshalb direkt an die Kiste gestellt.
+  match.world.setComponent(id, 'Position', 'x', kiste.x);
+  match.world.setComponent(id, 'Position', 'y', kiste.y);
+  match.consumeEvents();
 
-  // Und der Vorrat ist danach wieder voll (er wurde vorher geleert).
-  const nachher = match.getState().entities.find(e => e.entityId === id).inventory.length;
-  assert.ok(nachher > vorher,
-    `Das Inventar muss wachsen: ${vorher} → ${nachher}`);
+  let aufgenommen = false;
+  for (let i = 0; i < 5 && !aufgenommen; i += 1) {
+    match.step();
+    aufgenommen = match.consumeEvents().some(e => e.type === 'crate_pickup');
+  }
+
+  assert.ok(aufgenommen,
+    'Die Kiste in Reichweite wurde nicht aufgenommen — der Loot-Strang ist '
+    + 'damit wirkungslos. Prüfe den Aufheberadius (`npm run check:crates`).');
+  assert.equal(match.world.isActive(kiste.entityId), false,
+    'die aufgenommene Kiste muss aus der Welt verschwinden');
+});
+
+test('Die abgeworfene Waffe landet AUSSERHALB des Aufheberadius', () => {
+  /*
+   * Die harte Regel des Abwurfs (siehe `#rollDropThrow`): Die Landestelle muss
+   * außerhalb des Aufhebe-Radius liegen — sonst sammelt der Werfer seine eigene
+   * Waffe im nächsten Schritt wieder ein, und der Abwurf ist wirkungslos.
+   *
+   * FUND (belegt, gemessen 2026-09-19): Die alte Wurfgeschwindigkeit
+   * (1,2–2,8 px/Tick) ergab 48–113 px — gemessen 74 px gegen `PICKUP_RADIUS`
+   * von 110 px: `crate_landed` und `crate_pickup` fielen in denselben Takt.
+   */
+  const zuNah = [];
+
+  for (const seed of [1000, 1001, 1002, 2000, 313, 4711, 4242, 9001]) {
+    const match = new MatchController({
+      seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 60_000,
+    });
+    match.start();
+    const id = match.getState().entities[0].entityId;
+    const spieler = match.getState().entities[0];
+    match.consumeEvents();
+
+    const wurf = match.dropWeapon(id, spieler.inventory[1]);
+    assert.ok(wurf.ok, `Abwurf abgelehnt: ${wurf.errors}`);
+
+    let gelandet = null;
+    for (let schritt = 0; schritt < 200 && gelandet === null; schritt += 1) {
+      match.step();
+      const einschlag = match.consumeEvents().find(e => e.type === 'crate_landed');
+      if (einschlag) gelandet = einschlag;
+    }
+
+    assert.ok(gelandet, `Seed ${seed}: die Kiste ist nie gelandet`);
+    const abstand = Math.hypot(gelandet.x - spieler.x, gelandet.y - spieler.y);
+    if (abstand <= PICKUP_RADIUS) {
+      zuNah.push(`Seed ${seed}: ${abstand.toFixed(0)} px (Grenze ${PICKUP_RADIUS} px)`);
+    }
+  }
+
+  assert.equal(zuNah.length, 0,
+    `Die Kiste landet im Aufheberadius:\n  ${zuNah.join('\n  ')}`);
 });
 
 test('Ohne Platz wird die Aufnahme abgelehnt und gemeldet', () => {

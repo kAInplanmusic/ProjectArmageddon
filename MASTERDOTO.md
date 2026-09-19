@@ -91,6 +91,64 @@ Nachweis: 6 Läufe hintereinander, 30/30 Tests grün (vorher 3 von 6 Läufen rot
 Schritten lesen (erst auflösen, dann auswerten) — die Anzeige baut im
 Animationsbild neu auf.
 
+### Die vorbestehenden E2E-Fehler: diagnostiziert und fünf davon behoben (2026-09-19)
+
+Ein Diagnose-Lauf hat die neun reproduzierbaren Fehler (ohne die sieben
+`profiling`-Hardware-Fälle) gegen Code und Messung geprüft. Befund: **es waren
+nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
+
+**Behobene Produktfehler:**
+
+| Fehler | Befund (gemessen) | Behebung |
+|---|---|---|
+| Geschütz feuert nie (`turret:142`) | Reichweite 797 px, Gegnerabstand 854 px auf der Vorgabekarte 2560 → `#nearestEnemyOf` verwarf jedes Ziel, sechs Runden ohne `turret_fired`. Die Geschossgeschwindigkeit wurde skaliert, die Reichweite nicht | `range: … * weitenFaktor(this.width)` |
+| Figuren starten untergetaucht (`terrain-presets:48`) | `#drySpawnX` prüfte nur den FUSSPUNKT; bei flachem Wasser stand der Körper unter Wasser — über den Menüweg 19 von 60 Seeds | Körperpunkt wird mitgeprüft |
+| Abwurfkiste sofort wieder aufgenommen (`drop-cooldown:69`) | Wurf 74 px gegen `PICKUP_RADIUS = 110` → `crate_landed` und `crate_pickup` im selben Takt; der Abwurf war wirkungslos | Wurfweite wird aus der ZIELDISTANZ gerechnet (1,4–3 × Radius) |
+| `#profil-reset` mit der Maus nicht erreichbar (`profil:231`) | `html, body { overflow: hidden }`, `.overlay` ohne Überlauf, Karte höher als 900 px → Klick neun Sekunden nicht „actionable" | `.overlay-card { max-height; overflow-y: auto }` |
+
+**Behobene Testfehler:**
+
+- `runtime-smoke:48` schrieb die Kartengröße `1280×720` fest; die Vorgabe ist
+  `MAP_SIZES.landscape.mittel` (2560×1440). Der Test liest die Größe jetzt aus
+  der Konfiguration.
+- `multiplayer:224` zählte Proben nach WANDUHR (3 s / 75 ms) und verlangte
+  `> 10` — auf diesem Rechner (Software-Rasterung, ~20 fps) kamen 7 zusammen.
+  Jetzt wird gesammelt, bis 12 Proben da sind (Frist 15 s).
+- `tests/kisten-erreichbar.test.js` hoffte auf eine zufällige Aufnahme; der Fall
+  wird jetzt gezielt aufgebaut, und ein neuer Test hält die Zusage fest:
+  *Die abgeworfene Waffe landet AUSSERHALB des Aufheberadius* (8 Seeds).
+
+**Nachweis:** `turret.spec.mjs` 5/5, `drop-cooldown.spec.mjs` 7/7,
+`profil.spec.mjs` 8/8, `runtime-smoke.spec.mjs` 10/10, `multiplayer:224` grün,
+`terrain-presets:48` grün.
+
+- [ ] **`#cfg-preset` bewirkt nichts — Produktentscheidung.**
+
+      FUND (belegt, gemessen 2026-09-19): Das Menü übergibt
+      `kartentyp: 'autonom'` (`main.js:323`); der autonome Generator bestimmt die
+      Karte aus dem Seed. Die Auswahl „Geländeform" beeinflusst das Ergebnis
+      damit GAR NICHT — gemessen erzeugen hills, open, spires und flooded über
+      den Menüweg dieselbe Karte (`hash 6bc9aa96`, `landAnteil 0,524`). Zwei
+      E2E-Tests halten die alte Zusage fest und sind deshalb bis zur Entscheidung
+      als `test.fixme` markiert (mit vollem Befund im Kommentar).
+
+      *Zu entscheiden:* Entweder die Form wieder durchreichen (dann gilt die alte
+      Zuordnung incl. Leitbiom) oder das Feld aus dem Menü entfernen und die
+      Tests auf den Charakter bzw. auf verschiedene Seeds umschreiben.
+
+- [ ] **`prediction-online:102` — der Server lehnt den Schuss ab (vorbestehend).**
+
+      FUND (belegt, gemessen 2026-09-19): Der Test fällt auch auf dem
+      UNVERÄNDERTEN Stand. Ohne Netzdrosselung gemessen: Die Vorhersage wird
+      angelegt und sofort verworfen — `stats {predictions:1, confirmed:0,
+      discarded:1}`, einziger Pfad zu `discarded` ist `server_error`. Die Waffe
+      war geeignet (`pa_041`, `delivery:'projectile'`), Terrain rekonstruiert,
+      `isMyTurn:true`.
+
+      *Offene Messung:* Warum lehnt der Server ab? Dafür braucht es das
+      Server-Log bzw. `shotPredictor.history` bei einem Lauf. Danach ist zu
+      entscheiden, ob es ein Client- oder Serverfehler ist.
+
 ## Audit 2026-09-17 — vier unabhängige Sichten
 
 Auf Auftrag ein **tiefes Audit** in vier Teilen. Die Berichte stehen in `docs/`:

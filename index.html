@@ -436,6 +436,18 @@
       display: grid;
       gap: 16px;
       text-align: left;
+      /*
+       * Die Karte muss in ein Fenster passen, das kleiner ist als ihr Inhalt.
+       *
+       * FUND (belegt, gemessen 2026-09-19): `html, body { overflow: hidden }`
+       * (Zeile 37) und `.overlay` ohne eigenen Überlauf. Die Menükarte ist
+       * inzwischen höher als 900 px; `#profil-reset` saß darunter und war mit
+       * der MAUS NICHT erreichbar — im E2E wurde der Klick über neun Sekunden
+       * nicht „actionable", und der Test lief in die Zeitüberschreitung. Mit
+       * Tastatur fand man den Knopf noch, mit der Maus nicht.
+       */
+      max-height: calc(100% - 2rem);
+      overflow-y: auto;
     }
 
     h1 {

@@ -59,6 +59,15 @@ test('Mit jeder Geländeform lässt sich über das Menü ein Match starten', asy
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
 
     await page.locator('#cfg-preset').selectOption(form);
+    /*
+     * Fester Seed. Ohne ihn zieht der Start eine ZUFÄLLIGE Karte, und dieser
+     * Test wäre eine Lotterie — gemessen (2026-09-19) starteten über den
+     * Menüweg bei 19 von 60 Seeds Figuren im Wasser, weil die Startplatzierung
+     * nur den Fußpunkt prüfte. Die Ursache ist behoben (Körperpunkt wird jetzt
+     * mitgeprüft); der feste Seed stellt sicher, dass der Test den Zustand
+     * prüft, den er behauptet.
+     */
+    await page.locator('#cfg-seed').fill(String(SEED));
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay'), `Menü blieb offen bei ${form}`).toBeHidden();
 
@@ -155,7 +164,29 @@ test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', asy
   expect(fehler, `Seitenfehler: ${fehler.join(' | ')}`).toEqual([]);
 });
 
-test('Jede der vier neuen Formen nutzt ihre EIGENE Szene', async ({ page }) => {
+/*
+ * OFFEN (befund vom 2026-09-19, wartet auf eine Produktentscheidung):
+ *
+ * Dieser Test erwartet, dass jede Geländeform ihr eigenes Leitbiom zeigt
+ * (`flooded → deluge` …). Das war die Regel, als das PRESET die Karte baute.
+ * Seit der autonome Generator die Vorgabe ist — `main.js` übergibt
+ * `kartentyp: 'autonom'`, und die MASTERDOTO hält ausdrücklich fest, dass es
+ * „kein Auswahlfeld" geben soll und ein Test beweist, dass ein übergebener Typ
+ * IGNORIERT wird — kommt das Biom aus dem CHARAKTER der Karte
+ * (`match.js #waehleSzeneAusCharakter`, `kartencharakter`). Über den Menüweg
+ * zeigten deshalb gemessen ALLE vier Formen dieselbe Kulisse (`alpine`).
+ *
+ * Die Zuordnung selbst ist unverändert; sie hängt nur an einer anderen Größe.
+ * Solange die Menü-Auswahl `#cfg-preset` die Karte gar nicht mehr beeinflusst,
+ * kann dieser Test nicht sinnvoll grün werden — er prüft eine Zusage, die die
+ * Anzeige nicht mehr gibt.
+ *
+ * ZU ENTSCHEIDEN: Entweder `#cfg-preset` wieder durchreichen (dann gilt die
+ * alte Zuordnung und dieser Test gilt wieder) oder das Feld aus dem Menü
+ * entfernen und den Test auf den Charakter umschreiben. Beides ist eine
+ * Produktentscheidung, keine Reparatur.
+ */
+test.fixme('Jede der vier neuen Formen nutzt ihre EIGENE Szene', async ({ page }) => {
   /*
    * Alle vier hatten zunächst KEINE eigene Szene und fielen auf `forest` zurück —
    * eine „Flut" sah aus wie ein Wald. Inzwischen hat jede ihr Leitbiom:
@@ -246,7 +277,20 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
   }
 });
 
-test('Vier Formen unterscheiden sich auch im Browser messbar', async ({ page }) => {
+/*
+ * OFFEN (derselbe Befund wie oben, 2026-09-19): Dieser Test vergleicht die
+ * Geländekennzahlen der vier FORMEN und erwartet messbare Unterschiede. Über
+ * den Menüweg erzeugen alle vier Formen dieselbe Karte — gemessen identische
+ * Werte (`hash 6bc9aa96`, Prüfsumme 241449400, `landAnteil 0,524`), weil
+ * `main.js:323` `kartentyp: 'autonom'` übergibt und der Seed die Karte
+ * bestimmt. Die Varianzwerte waren deshalb bitgleich (beide 225,92865438575646).
+ *
+ * ZU ENTSCHEIDEN mit `#cfg-preset` (siehe oben). Danach: entweder die vier
+ * Formen über den Motor starten (dann greift die alte Messung), oder den Test
+ * auf VERSCHIEDENE SEEDS umschreiben — die Karten unterscheiden sich dann
+ * nachweislich, und der Test bliebe eine echte Gegenprobe.
+ */
+test.fixme('Vier Formen unterscheiden sich auch im Browser messbar', async ({ page }) => {
   /*
    * Gegenprobe zur Unit-Messung: Die Erzeugung im Browser muss dieselben
    * Unterschiede zeigen wie in Node. Wäre das anders, liefe die Anzeige mit

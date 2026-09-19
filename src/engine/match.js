@@ -43,7 +43,7 @@ import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwa
 import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
-import { CRATE_TYPES, RARITY_IDS } from './systems/lootSystem.js';
+import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
 import { POWER_TO_SPEED, simulateFlight } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
@@ -923,7 +923,19 @@ export class MatchController {
       if (x < PLAYER_HALF_WIDTH + 2 || x > this.width - PLAYER_HALF_WIDTH - 2) return false;
       const boden = this.surfaceYAt(x);
       if (boden <= 0) return false;
-      return this.waterLevelAt(x, boden) < WET_LEVEL;
+      if (this.waterLevelAt(x, boden) >= WET_LEVEL) return false;
+      /*
+       * Der KÖRPER steht höher als die Füße.
+       *
+       * FUND (belegt, gemessen 2026-09-19): Geprüft wurde nur der Fußpunkt. Bei
+       * flachem Wasser meldet er „trocken", während der Körper bis zur Schulter
+       * unter Wasser steht — die Figur startete untergetaucht (gemessen über den
+       * Menüweg: 19 von 60 Seeds mit `waterLevel = 1`; über den API-Weg ohne
+       * `kartentyp` kein einziger Fall). Beispiel Seed 5, Figur 0: Wasser am
+       * Fußpunkt 0, am Körper 1.
+       */
+      const kopf = boden - PLAYER_HALF_HEIGHT - 2;
+      return this.waterLevelAt(x, kopf) < WET_LEVEL;
     };
 
     if (trocken(idealX)) return idealX;
@@ -1690,7 +1702,18 @@ export class MatchController {
       x: platz.x,
       y: platz.y,
       damage: Math.max(1, Math.round(effect.damage ?? 10)),
-      range: Math.max(60, Math.round(effect.range ?? 300)),
+      /*
+       * Die Reichweite des Geschützes folgt der KARTE.
+       *
+       * FUND (belegt, gemessen 2026-09-19): Hier stand `effect.range ?? 300`
+       * ohne Kartenfaktor. Auf der Vorgabekarte (2560 px) reichte das Geschütz
+       * damit 797 px weit, während der nächste Gegner 854 px entfernt stand —
+       * `#nearestEnemyOf` verwarf jedes Ziel, und `npm run test:e2e` sah über
+       * sechs Runden KEIN einziges `turret_fired` (der Unit-Test war grün, weil
+       * er vier Spieler aufstellt: Abstand 513 px). Die Geschossgeschwindigkeit
+       * des Geschützes wurde die ganze Zeit skaliert — nur die Reichweite nicht.
+       */
+      range: Math.max(60, Math.round((effect.range ?? 300) * weitenFaktor(this.width))),
       roundsLeft: Math.max(1, Math.round(effect.turns ?? 3)),
     };
     this.#turrets.set(entityId, eintrag);
@@ -2117,11 +2140,37 @@ export class MatchController {
    */
   #rollDropThrow() {
     const richtung = this.#rng.nextBoolean() ? -1 : 1;
+    /*
+     * Die Weite wird aus der ZIELDISTANZ gerechnet, nicht geschätzt.
+     *
+     * FUND (belegt, gemessen 2026-09-19): Hier stand `vx: richtung * rng(1,2 … 2,8)`.
+     * Über die Flugzeit (`CRATE_FLIGHT_TICKS`) und den Luftwiderstand ergibt das
+     * 48–113 px — gemessen 74 px. Damit landete die Kiste INNERHALB des
+     * Aufhebe-Radius (`PICKUP_RADIUS = 110` in `systems/lootSystem.js`), wurde im
+     * SELBEN Takt wieder aufgenommen und verschwand: `crate_landed` und
+     * `crate_pickup` fielen zusammen, der Abwurf war wirkungslos.
+     *
+     * Der Mechaniktext verlangt ausdrücklich das Gegenteil: die Landestelle muss
+     * AUSSERHALB des Aufhebe-Radius liegen, sonst sammelt der Werfer seine eigene
+     * Waffe im nächsten Schritt wieder ein.
+     *
+     * Gerechnet wird die nötige Anfangsgeschwindigkeit für die gezogene
+     * Zieldistanz: Die zurückgelegte Strecke ist `vx0 × Σ drag^i` über die
+     * Flugticks (der Wind kommt als kleine Zugabe hinzu und wird nicht
+     * eingerechnet — er darf die Landestelle nur nach außen verschieben).
+     */
+    const zielWeite = this.#rng.nextFloat(PICKUP_RADIUS * 1.4, PICKUP_RADIUS * 3);
+    let abklingen = 0;
+    let faktor = 1;
+    for (let tick = 0; tick < CRATE_FLIGHT_TICKS; tick += 1) {
+      faktor *= DEFAULT_PROJECTILE_DRAG;
+      abklingen += faktor;
+    }
     return {
       // Kräftig nach oben und zur Seite. Die Werte zielen auf eine Flugzeit von
       // etwa einer halben bis anderthalb Sekunden: kurz genug, um den Zug nicht
       // aufzuhalten, lang genug, um den Wurf als Wurf zu erkennen.
-      vx: richtung * this.#rng.nextFloat(1.2, 2.8),
+      vx: richtung * (zielWeite / Math.max(1, abklingen)),
       vy: -this.#rng.nextFloat(9, 14),
     };
   }

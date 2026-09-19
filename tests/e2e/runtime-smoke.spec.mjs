@@ -57,8 +57,20 @@ test('Matchstart erzeugt Spieler, Terrain und Kisten', async ({ page }) => {
   expect(state.entities.every(entity => entity.health > 0)).toBe(true);
   // Teams wechseln sich ab: Team 0 und Team 1 müssen beide vertreten sein.
   expect(new Set(state.entities.map(e => e.teamId)).size).toBe(2);
-  expect(state.terrainWidth).toBe(1280);
-  expect(state.terrainHeight).toBe(720);
+  /*
+   * Die Kartengröße kommt aus der KONFIGURATION, nicht aus einer Abschrift.
+   *
+   * FUND (belegt, 2026-09-19): Hier stand `toBe(1280)` / `toBe(720)`. Die
+   * Vorgabe ist inzwischen `MAP_SIZES.landscape.mittel` (2560×1440) — der Test
+   * meldete „Fehler", wo nur die Vorgabe weitergerückt war, und band die
+   * Kartengröße an eine Zahl von gestern.
+   */
+  const erwarteteMasse = await page.evaluate(async () => {
+    const modul = await import('/src/engine/match.js');
+    return modul.MAP_SIZES.landscape.mittel;
+  });
+  expect(state.terrainWidth).toBe(erwarteteMasse.width);
+  expect(state.terrainHeight).toBe(erwarteteMasse.height);
   expect(errors).toEqual([]);
 });
 

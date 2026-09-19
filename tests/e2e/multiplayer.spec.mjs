@@ -247,12 +247,21 @@ test('Die Kistenangabe flackert nicht und bleibt bei beiden Clients gleich', asy
       { timeout: 20_000, message: 'Keine Kiste übertragen' },
     ).toBeGreaterThan(0);
 
-    // Über ~40 Snapshots beobachten (mehrere Sekunden bei 20 Hz).
+    /*
+     * Beobachten, bis GENUG Proben da sind — nicht bis die Wanduhr abgelaufen
+     * ist.
+     *
+     * FUND (belegt, gemessen 2026-09-19): Hier lief die Schleife 3000 ms mit
+     * 75 ms Pause und verlangte danach `proben > 10`. Auf diesem Rechner
+     * rastert der Browser in Software (~20 fps); es kamen 7 Proben zusammen, und
+     * der Test meldete einen Produktfehler, wo er die MASCHINE maß. Jetzt wird
+     * bis zu 15 s gesammelt, bis 12 Proben vorliegen.
+     */
     const beobachtung = await pageA.evaluate(async () => {
       const api = window.__PA__;
       const gesehen = [];
-      const ende = Date.now() + 3000;
-      while (Date.now() < ende) {
+      const ende = Date.now() + 15_000;
+      while (gesehen.length < 12 && Date.now() < ende) {
         gesehen.push((api.getState()?.crates ?? []).map(c => c.entityId).join(','));
         await new Promise(r => setTimeout(r, 75));
       }
@@ -262,7 +271,7 @@ test('Die Kistenangabe flackert nicht und bleibt bei beiden Clients gleich', asy
       };
     });
 
-    expect(beobachtung.proben).toBeGreaterThan(10);
+    expect(beobachtung.proben).toBeGreaterThanOrEqual(12);
     // Die Startkiste darf nicht zwischenzeitlich verschwinden — sie wird erst
     // entfernt, wenn jemand sie aufhebt, und das passiert hier nicht.
     expect(beobachtung.verschieden.length, `Die Kistenliste wechselte zwischen ${beobachtung.verschieden.join(' / ')}`)
