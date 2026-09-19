@@ -226,9 +226,29 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       Beide erzeugen einen Eintrag in `#verlauf`, und genau deshalb steht
       `verlauf: 1` schon beim ersten Auslesen. Nicht geraten: welcher von beiden.
 
-      *Nächste Messung (genau eine, entscheidet es):* den STATUS des Eintrags
-      lesen (`shotPredictor.history[0].status` — `superseded` ⇒ (a), `timeout` ⇒
-      (b)) und `begin()`/`#abschluss` mitzählen. Kein weiterer Aufbau nötig.
+      *Gemessen, Eintragsstatus (`zz-probe-fokus`, gelöscht):*
+
+          SOFORT (≈20 ms nach Enter): status: ["timeout"], verlauf: 1, aktiv: false
+          +50/+200/+1200 ms: unverändert
+
+      **(b) ist damit belegt, (a) ausgeschlossen** — der Eintrag ist ein TIMEOUT,
+      also lief `expire()`; ein zweiter `begin()` hätte `superseded` erzeugt.
+
+      *Der Widerspruch steht jetzt scharf:* `expire()` schließt erst bei
+      `Date.now() - startedAt >= 1000` (`shotPrediction.js:270`), im Aufbau ist
+      `timeoutMs` nachweislich 1000 (`main.js:124`; die einzige weitere
+      Konstruktion gibt es nicht), eine Uhr wird in keinem E2E-Aufbau gesetzt
+      (geprüft: kein `clock`/`setSystemTime` in `playwright.config.mjs` und den
+      Specs) — trotzdem liegt der Timeout bereits ~20 ms nach dem Schuss vor.
+      `startedAt` des Eintrags ist NICHT abrufbar: `history` speichert es nicht
+      (gemessen: `startedAgo: [null]`). Also muss `begin()` beim Abschuss ein
+      `startedAt` ~1 s in der Vergangenheit gesetzt haben — oder die Uhr der
+      Seite springt. Nicht geraten: welches von beidem.
+
+      *Nächste Messung (genau eine, letzter Schritt):* `begin()` anzapfen und in
+      EINEM `evaluate` `startedAt` des laufenden Eintrags gegen `Date.now()`
+      stellen. Das entscheidet Uhr vs. `startedAt` und damit, ob der Fehler im
+      Produkt oder im Aufbau sitzt.
 
       *Verworfen (nicht wieder bauen):* den Tick nur noch gegen die Betrugsgrenze
       `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen. Gebaut, gemessen,
