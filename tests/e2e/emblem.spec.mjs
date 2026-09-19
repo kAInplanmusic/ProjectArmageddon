@@ -104,13 +104,42 @@ test.describe('Erfolgs-Emblem', () => {
     await setzeProfil(page, { partien: 10, siege: 5, erfolge: ids });
     await starteMatch(page);
 
-    const emblem = page.locator('#roster .roster-emblem');
-    await expect(emblem).toHaveAttribute('data-tier', 'mittel');
+    /*
+     * FUND (belegt, gemessen 2026-09-19 mit drei Wegwerf-Proben) — der Fehler
+     * lag im TEST, nicht in der Anzeige:
+     *
+     * Die Spielerliste wird im Animationsbild NEU AUFGEBAUT. `locator.evaluate`
+     * löst den Knoten in ZWEI Schritten auf: erst suchen, dann die Funktion
+     * aufrufen. Fällt der Neuaufbau dazwischen, liest die Funktion einen
+     * ABGEHÄNGTEN Knoten — `getComputedStyle` liefert dann einen LEEREN String
+     * und `getClientRects()` nichts. Der Test schlug dadurch in etwa der Hälfte
+     * der Läufe fehl, obwohl die Anzeige korrekt war (Probe: 16 Seitenladungen,
+     * immer `tier='mittel'`, Farbe `rgb(144, 190, 109)`, `display: block`).
+     *
+     * Deshalb wird hier INNERHALB der Seite gelesen (`page.evaluate` mit
+     * `document.querySelector`), und es wird auf den gültigen Zustand GEWARTET.
+     * Ein Suchen-und-Aufrufen über zwei Schritte gibt es nicht mehr.
+     */
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#roster .roster-emblem');
+      return Boolean(el && el.getClientRects().length > 0);
+    }, null, { timeout: 10_000 });
 
-    // Eine Farbe ist gesetzt (der konkrete Wert ist Gestaltung und wird hier
-    // nicht festgenagelt — nur, dass überhaupt eine wirkt).
-    const farbe = await emblem.evaluate(el => getComputedStyle(el).color);
-    expect(farbe).toMatch(/^rgb/);
+    const befund = await page.evaluate(() => {
+      const el = document.querySelector('#roster .roster-emblem');
+      if (!el) return null;
+      return {
+        tier: el.getAttribute('data-tier'),
+        farbe: getComputedStyle(el).color,
+        sichtbar: el.getClientRects().length > 0,
+      };
+    });
+
+    expect(befund?.tier).toBe('mittel');
+    expect(befund?.sichtbar).toBe(true);
+    // Der konkrete Wert ist Gestaltung und wird hier nicht festgenagelt —
+    // nur, dass überhaupt eine Farbe wirkt.
+    expect(befund?.farbe).toMatch(/^rgb/);
   });
 
   test('Ein unbekannter Erfolg verfälscht das Emblem nicht', async ({ page }) => {

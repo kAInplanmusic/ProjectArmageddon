@@ -67,6 +67,30 @@ Kistenangabe, `prediction-online`, `profil` Zurücksetzen, sieben `profiling`,
   im Menü bzw. Erwartungen an die Kartenbreite), **nicht** als Folge des
   Bot-Umbaus.
 
+### Ein E2E-Fehler, der im TEST lag (2026-09-19) — und wie er belegt wurde
+
+Nach dem Reichweiten-Umbau fiel `tests/e2e/emblem.spec.mjs` („Der Rang färbt das
+Abzeichen") in etwa der Hälfte der Läufe um, während er auf dem unveränderten
+Stand grün war. Drei Wegwerf-Proben zeigten, dass die Anzeige fehlerfrei war
+(16 Seitenladungen: immer `tier='mittel'`, Farbe `rgb(144, 190, 109)`,
+`display: block`, `getClientRects()` = 1) — der Fehler lag im Test:
+
+`locator.evaluate` löst einen Knoten in ZWEI Schritten auf (suchen, dann
+aufrufen). Die Spielerliste wird im Animationsbild NEU AUFGEBAUT; fiel der
+Aufbau dazwischen, las die Funktion einen ABGEHÄNGTEN Knoten, und
+`getComputedStyle` liefert dann einen leeren String. Je schneller das Spiel
+läuft, desto wahrscheinlicher trifft es — deshalb kippte es genau mit dieser
+Änderung.
+
+Behoben, indem der Test INNERHALB der Seite liest (`page.evaluate` mit
+`document.querySelector`, ein Schritt) und auf den gültigen Zustand wartet
+(`waitForFunction`). Zusicherungen unverändert: Rang, sichtbar, Farbe.
+Nachweis: 6 Läufe hintereinander, 30/30 Tests grün (vorher 3 von 6 Läufen rot).
+
+**Merkregel:** In diesem Spiel darf ein Test einen HUD-Knoten nie in zwei
+Schritten lesen (erst auflösen, dann auswerten) — die Anzeige baut im
+Animationsbild neu auf.
+
 ## Audit 2026-09-17 — vier unabhängige Sichten
 
 Auf Auftrag ein **tiefes Audit** in vier Teilen. Die Berichte stehen in `docs/`:
@@ -161,32 +185,88 @@ und die verbleibenden Kopien des Schritts in `#simulateTurretPath` (durch einen
 Strukturtest festgehalten), `#stepCrate` (eigene Kasten-Konstanten) und
 `physics/ballistics.js` (Hitscan-Strahl ohne Gravitation).
 
-- [ ] **Reichweite: drei Stellen, drei Auffassungen — Balance-Entscheidung.**
+- [x] **Reichweite: eine Auffassung für Spieler, Geschütz und Prüfung — umgesetzt
+      (2026-09-19).**
 
-      FUND (belegt, eigene Messung mit den echten Modulen, 2026-09-18): Der
-      Faktor aus `src/shared/reichweite.js` (`f = √(Breite/1920)`) wird an drei
-      Stellen unterschiedlich angewandt:
+      FUND (belegt, gemessen mit den echten Modulen): Der Faktor aus
+      `src/shared/reichweite.js` wurde an drei Stellen VERSCHIEDEN angewandt.
+      Die Reserve gegen den nächsten Gegner (Abstand B/4) je Auffassung:
 
-      | Stelle | Wirkung auf die Wurfweite | bei 5120 px |
+      | Breite | B/4 | A: gar nicht | B: „mittel" (v × √f) | **C: wie Geschütz (v × f)** |
+      |---|---|---|---|---|
+      | 1280 | 320 | 613 px (1,91×) | 500 px (1,56×) | 408 px (1,28×) |
+      | 1920 | 480 | 613 px (1,28×) | 613 px (1,28×) | 613 px (1,28×) |
+      | 2560 | 640 | 613 px (**0,96×**) | 707 px (1,11×) | 817 px (1,28×) |
+      | 3840 | 960 | 613 px (**0,64×**) | 866 px (**0,90×**) | 1225 px (1,28×) |
+      | 5120 | 1280 | 613 px (**0,48×**) | 1000 px (**0,78×**) | 1633 px (1,28×) |
+
+      **Umgesetzt ist C** — die mittlere Zeile der damaligen Aufstellung („wie
+      das Geschütz"): die Wurfweite wächst linear mit der Kartenbreite, die
+      Reserve bleibt auf jeder Größe **1,28×**. Die rechnerisch „mittlere"
+      Variante B (v × √f) wurde verworfen, weil sie auf 3840/5120 px den
+      nächsten Gegner unerreichbar lässt — genau der Mangel, für den das Modul
+      gebaut ist. Entscheidend: `scripts/check-waffenreichweite.mjs` hatte diese
+      Rechnung samt Begründung („der Faktor gehört in die GESCHWINDIGKEIT, sonst
+      wirkt er nur linear — 1,28× auf 1920, aber 0,78× auf 5120") bereits
+      dokumentiert; der Spielerschuss und die Client-Vorhersage folgten ihr nur
+      nicht.
+
+      *Umgesetzt:* `geschwindigkeitsFaktor(B)` (für Geschwindigkeiten) und
+      `weitenFaktor(B)` (für Weiten) in `src/shared/reichweite.js`; Spielerschuss,
+      Geschütz-Vorschau, Geschoss, Bot und Client-Vorhersage rechnen mit dem
+      GESCHWINDIGKEITS-Faktor, die Erreichbarkeitsprüfung mit dem WEITEN-Faktor.
+      Das Feld `#reichweite` in `MatchController` ist entfernt — es trug genau
+      diesen Namen und wurde dreierlei gelesen.
+
+      *Abgesichert:* `tests/reichweite-konsistenz.test.js` (4 Tests) — darunter
+      eine Prüfung AM ECHTEN MOTOR (die Geschwindigkeit des frisch erzeugten
+      Geschosses gegen die gerechnete Erwartung) und ein Strukturtest, der
+      festhält, dass es bei einer Quelle bleibt.
+
+- [x] **Hitscan-Waffen skalieren jetzt mit der Karte (2026-09-19).**
+
+      FUND (belegt, beim Umbau der Reichweite aufgefallen): `#resolveHitscan`
+      leitete die Strahllänge aus `weapon.maxRange` ab — in Pixeln, ohne
+      Kartenfaktor. Bei den ballistischen Waffen wächst die Weite seit heute mit
+      der Breite, bei den Hitscan-Waffen blieb sie auf einer 5120er Karte bei
+      ihrem Katalogwert; 76 Waffen fielen damit gegen 74 ab.
+
+      *Umgesetzt (Vorgabe des Auftraggebers „Strahl mitskalieren"):* Die
+      Strahllänge rechnet mit dem WEITENfaktor der Karte
+      (`weapon.maxRange * weitenFaktor(this.width)`).
+
+      *Abgesichert:* `tests/reichweite-konsistenz.test.js` (Strukturtest auf die
+      Rechenzeile — der Strahl ist nur mit Terrain im Weg messbar, die Aussage
+      hängt aber an einer Zeile).
+
+- [ ] **Die Lebensdauer beschneidet kurze Waffen — jetzt kartenUNabhängig, aber
+      bestehen bleibt eine Balance-Frage.**
+
+      FUND (belegt, gemessen 2026-09-19): `projectileLifetime` rechnete
+      `maxRange / v * 1,5`; die zurücklegbare Strecke ist damit `maxRange * 1,5`
+      — ein Katalogwert OHNE Kartenfaktor. Über 150 Waffen × 3 Klassen × 5
+      Kartengrößen (1425 Kombinationen), Verhältnis Deckel/Weite:
+
+      | Schwelle | vorher | nachher |
       |---|---|---|
-      | Spielerschuss (`#launchVector`) | **gar nicht** — Weite bleibt konstant | 613 px |
-      | Geschütz (`#simulateTurretPath`, `#spawnTurretProjectile`) | auf die Geschwindigkeit → Weite × f² | 1634 px |
-      | Erreichbarkeits-Check (`match.js`, `pruefeErreichbarkeit`) | auf die Weite → × f | 1001 px |
+      | < 1,00 | 569 | 465 |
+      | < 0,90 | 482 | 45 |
+      | < 0,50 | 189 | **0** |
+      | kleinster Wert | 0,27 | 0,72 |
 
-      Die Dokumentation in `reichweite.js` nennt die Formel
-      `v = Kraft × POWER_TO_SPEED × speedFactor × reichweitenFaktor` — der
-      Spielerschuss folgt ihr **nicht**. Folge: Auf einer 3840er Karte nimmt die
-      Prüfung **doppelt** so viel Reichweite an, auf einer 5120er **2,67-fach**;
-      die Startpositionen liegen laut Messung 512 px auseinander, während ein
-      Schuss bei Kraft 100 tatsächlich 352–400 px weit kommt (pa_041, scout,
-      45°) — deshalb hat nur etwa jeder zweite Schuss überhaupt ein erreichbares
-      Ziel.
+      *Behoben:* `maxRange` skaliert in der Rechnung mit (`weitenFaktor`). Die
+      Beschneidung ist damit für eine Waffe+Klasse auf JEDER Kartengröße gleich
+      (vorher wurde sie mit der Karte schlimmer: 0,27 auf 5120 px) — der Deckel
+      skaliert mit, die Skalierung wirkt nicht mehr nur auf dem Papier.
 
-      *Offen — Entscheidung des Auftraggebers:* Den Faktor im Spielerschuss
-      anwenden (dann reichen Waffen auf großen Karten entsprechend weiter, und
-      die Prüfung stimmt wieder) **oder** ihn aus Geschütz und Prüfung
-      entfernen (Weite bleibt überall konstant). Beides ist eine
-      Balance-Änderung, keine Reparatur — deshalb hier und nicht im Code.
+      *Offen — Balance:* Für 465 Kombinationen liegt der Deckel weiterhin unter
+      der Wurfweite (kleinster Wert 0,72, also 28 % Verlust). Das sind Waffen,
+      deren `maxRange` klein gegenüber ihrer Wurfweite ist (Granaten und
+      ähnliche). Der Deckel ist damit eine Eigenschaft der Waffe, nicht der
+      Karte. Ob das so gewollt ist (kurze Zündschnur als Design) oder ob
+      `maxRange` für diese Waffen zu klein ist, ist eine Balance-Entscheidung.
+
+
 
 ## In diesem Durchgang gefundene und behobene Fehler
 
