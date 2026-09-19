@@ -23,8 +23,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  reichweitenFaktor, wurfweite, reichtZumNaechstenGegner,
-  BEZUGS_KARTENBREITE, FAKTOR_MIN, FAKTOR_MAX,
+  reichweitenFaktor, geschwindigkeitsFaktor, wurfweite,
+  reichtZumNaechstenGegner, BEZUGS_KARTENBREITE, FAKTOR_MIN, FAKTOR_MAX,
 } from '../src/shared/reichweite.js';
 import { POWER_TO_SPEED, HOHECHSTE_KRAFT, reichweiteFuer } from '../src/engine/match.js';
 import { DEFAULT_PROJECTILE_GRAVITY } from '../src/engine/systems/projectileSystem.js';
@@ -38,7 +38,13 @@ function weiteAuf(kartenbreite, speedFactor = 1) {
     kraft: HOHECHSTE_KRAFT,
     schwerkraft: G,
     speedFactor,
-    reichweite: reichweitenFaktor(kartenbreite),
+    /*
+     * Der GESCHWINDIGKEITS-Faktor — nicht der Weitenfaktor. Der Parameter hieß
+     * hier früher `reichweite` und trug damit denselben Namen wie die Skalierung
+     * selbst; seit 2026-09-19 heißen die beiden Dinge verschieden:
+     * `geschwindigkeitsFaktor` (für v, also f) und `weitenFaktor` (für x, f²).
+     */
+    geschwindigkeitsFaktor: geschwindigkeitsFaktor(kartenbreite),
   });
 }
 

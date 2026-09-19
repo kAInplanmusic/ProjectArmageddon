@@ -75,6 +75,8 @@ function geschossSpur({ seed = 4242, angle = 0.9, power = 60 } = {}) {
     archetypeId: spieler.archetypeId,
     sidegradeId: spieler.sidegradeId,
     weapon: waffe,
+    // Die Kartenbreite gehört in dieselbe Rechnung wie im Motor (2026-09-19).
+    kartenbreite: match.width,
   });
 
   const schuss = match.fire(playerId, angle, power, waffe.id);

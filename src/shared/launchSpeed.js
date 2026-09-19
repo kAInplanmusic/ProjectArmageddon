@@ -27,9 +27,21 @@
  */
 
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from './config/classes.js';
+import { geschwindigkeitsFaktor } from './reichweite.js';
 
 /**
- * Geschwindigkeitsfaktor eines Schusses aus Klasse, Archetyp und Waffe.
+ * Geschwindigkeitsfaktor eines Schusses aus Klasse, Archetyp, Waffe — und der
+ * Karte.
+ *
+ * ## Warum die Karte hier hineingehört (FUND 2026-09-19)
+ *
+ * Der Kartenfaktor stand zuletzt NEBEN dieser Funktion an jeder Aufrufstelle:
+ * im Motor, im Bot und in der Client-Vorhersage. Genau so entstand der Fehler,
+ * den `tests/reichweite-konsistenz.test.js` jetzt festhält — der Spielerschuss
+ * vergaß ihn, das Geschütz nicht, und beide hielten sich für richtig.
+ *
+ * Wer die Kartenbreite kennt, gibt sie hier mit. Dann gibt es nur EINEN Weg zu
+ * einer Abschussgeschwindigkeit, und Vergessen ist keine Option mehr.
  *
  * @param {object} optionen
  * @param {number|string|null} [optionen.classId] - Index ODER Name
@@ -38,17 +50,23 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from './config/classes.js';
  * @param {string|null} [optionen.sidegradeId] - Kennung des Sidegrades; muss
  *   mitgegeben werden, sobald einer gewählt ist, sonst fliegt die Rechnung mit
  *   dem Standardprofil
+ * @param {number|null} [optionen.kartenbreite] - Breite der Karte in Pixeln.
+ *   Fehlt sie, wird OHNE Kartenskalierung gerechnet (Faktor 1) — das ist nur
+ *   für Rechnungen richtig, die keine Karte kennen.
  * @returns {number} Faktor, mit dem `power * POWER_TO_SPEED` multipliziert wird
  */
 export function launchSpeedMultiplier({
-  classId = null, archetypeId = null, weapon = null, sidegradeId = null,
+  classId = null, archetypeId = null, weapon = null, sidegradeId = null, kartenbreite = null,
 } = {}) {
   const klasse = typeof classId === 'number' ? CLASS_IDS[classId] : classId;
   const archetyp = typeof archetypeId === 'number' ? ARCHETYPE_IDS[archetypeId] : archetypeId;
   // Der Sidegrade geht in dieselbe Verrechnung — nicht als eigene Multiplikation
   // hier, sonst stünde die Regel an zwei Stellen.
   const profil = combatProfile(klasse, archetyp, sidegradeId);
-  return profil.launchSpeedMultiplier * (weapon?.speedFactor ?? 1);
+  const karte = Number.isFinite(kartenbreite) && kartenbreite > 0
+    ? geschwindigkeitsFaktor(kartenbreite)
+    : 1;
+  return profil.launchSpeedMultiplier * (weapon?.speedFactor ?? 1) * karte;
 }
 
 export default launchSpeedMultiplier;

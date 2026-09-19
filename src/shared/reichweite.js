@@ -125,24 +125,88 @@ export function reichweitenFaktor(kartenbreite, {
 }
 
 /**
+ * Der Faktor für die GESCHWINDIGKEIT — die eine Zahl, die die Karte vorgibt.
+ *
+ * ## Warum Geschwindigkeit und nicht Weite
+ *
+ * Die Wurfweite wächst mit dem QUADRAT der Geschwindigkeit (`x = v²/g`). Der
+ * Faktor gehört deshalb in die GESCHWINDIGKEIT, bevor quadriert wird. Wer ihn
+ * stattdessen auf die WEITE legt, wirkt nur linear — und die Reserve gegen den
+ * nächsten Gegner sinkt mit der Kartengröße: gemessen 1,28× auf 1920 px, aber
+ * nur 0,78× auf 5120 px. Genau diesen Fehler dokumentiert
+ * `scripts/check-waffenreichweite.mjs` an sich selbst; die Rechnung dort ist
+ * seitdem die Vorlage für alle.
+ *
+ *     Geschwindigkeitsfaktor  g = reichweitenFaktor(B)   → multipliziert v
+ *     Weitenfaktor            g²                        → multipliziert x
+ *
+ * ## Die eine Auffassung (FUND 2026-09-19, Vorgabe des Auftraggebers)
+ *
+ * Der Faktor wurde an drei Stellen VERSCHIEDEN angewandt:
+ *
+ *     Spielerschuss (#launchVector)            gar nicht        613 px (konstant)
+ *     Geschütz (#simulateTurretPath, …)        auf v  →  Weite × f²  1633 px
+ *     Erreichbarkeits-Check (pruefeErreich…)   auf Weite → × f       1001 px
+ *
+ * (Werte bei 5120 px Kartenbreite; die Reserve gegen den nächsten Gegner wäre
+ * damit 0,48× / 1,28× / 0,78×.) Die Vorgabe ist die MITTLERE Auffassung aus
+ * jener Aufstellung — also die Zeile des Geschützes: **die Weite wächst linear
+ * mit der Kartenbreite**, die Reserve bleibt auf jeder Kartengröße gleich.
+ * Deshalb rechnen jetzt ALLE Stellen mit diesen beiden Funktionen.
+ *
+ * Die rechnerisch „mittlere" Variante (Geschwindigkeit × √f, Weite ∝ √B) wurde
+ * verworfen: Sie lässt den nächsten Gegner auf 3840 px (0,90×) und 5120 px
+ * (0,78×) unerreichbar — genau der Mangel, für den dieses Modul existiert.
+ *
+ * @param {number} kartenbreite
+ * @param {object} [optionen] - wie bei `reichweitenFaktor`
+ * @returns {number} Faktor für die Abschussgeschwindigkeit
+ */
+export function geschwindigkeitsFaktor(kartenbreite, optionen = {}) {
+  return reichweitenFaktor(kartenbreite, optionen);
+}
+
+/**
+ * Der Faktor für die WURFWEITE.
+ *
+ * Das Quadrat des Geschwindigkeitsfaktors — `x = v²/g`. Wer eine WEITE skaliert
+ * (die Erreichbarkeitsprüfung), multipliziert damit; wer eine GESCHWINDIGKEIT
+ * skaliert, nimmt `geschwindigkeitsFaktor`.
+ *
+ * @param {number} kartenbreite
+ * @param {object} [optionen] - wie bei `reichweitenFaktor`
+ * @returns {number} Faktor für eine Wurfweite
+ */
+export function weitenFaktor(kartenbreite, optionen = {}) {
+  const f = reichweitenFaktor(kartenbreite, optionen);
+  return f * f;
+}
+
+/**
  * Die Wurfweite bei 45 Grad — in Kartenpixeln.
  *
  * ## Herleitung
  *
  * `x = v²·sin(2α)/g`. Bei 45° ist `sin(2α) = 1`, das ist die größte Weite.
  *
- *     v = Kraft × POWER_TO_SPEED × speedFactor × reichweitenFaktor
+ * v = Kraft × POWER_TO_SPEED × speedFactor × geschwindigkeitsFaktor
  *
  * @param {object} werte
  * @param {number} werte.powerToSpeed
  * @param {number} werte.kraft
  * @param {number} werte.schwerkraft
  * @param {number} [werte.speedFactor]
- * @param {number} [werte.reichweite] - aus `reichweitenFaktor`
+ * @param {number} [werte.geschwindigkeitsFaktor] - aus `geschwindigkeitsFaktor`
+ *   (das ist `reichweitenFaktor`, also f). ACHTUNG: Der Parameter hieß früher
+ *   `reichweite`; die Funktion multipliziert ihn in die GESCHWINDIGKEIT, die
+ *   Weite wächst damit quadratisch. Wer eine WEITE fertig skalieren will, nimmt
+ *   `weitenFaktor` (f²).
  * @returns {number} Pixel
  */
-export function wurfweite({ powerToSpeed, kraft, schwerkraft, speedFactor = 1, reichweite = 1 }) {
-  const v = kraft * powerToSpeed * speedFactor * reichweite;
+export function wurfweite({
+  powerToSpeed, kraft, schwerkraft, speedFactor = 1, geschwindigkeitsFaktor = 1,
+}) {
+  const v = kraft * powerToSpeed * speedFactor * geschwindigkeitsFaktor;
   return (v * v) / schwerkraft;
 }
 

@@ -1687,15 +1687,6 @@ class Game {
      */
     if (waffe && waffe.delivery !== 'projectile' && waffe.delivery !== 'hitscan') return;
 
-    const faktor = launchSpeedMultiplier({
-      classId: eigene.classId,
-      archetypeId: eigene.archetypeId,
-      weapon: waffe,
-      // Ohne den Sidegrade zeigte die Vorhersage eine Bahn, die der Server
-      // anders rechnet — er geht in dieselbe combatProfile-Verrechnung ein.
-      sidegradeId: eigene.sidegradeId ?? null,
-    });
-
     // Terrainprüfung, sofern die Karte rekonstruiert ist. Ohne sie endet die
     // Bahn an der Kartengrenze — sichtbar besser als gar keine Vorhersage.
     const terrain = this.remoteTerrain;
@@ -1708,6 +1699,26 @@ class Game {
           : false
       )
       : null;
+
+    /*
+     * FUND (belegt, E2E): Diese Rechnung stand VOR der Zeile, die `breite`
+     * definiert — sie lag damit in der Temporal Dead Zone: `Cannot access
+     * 'breite' before initialization`. Die Online-Vorhersage brach ab, sobald
+     * ein Spieler schoss. Gefunden hat das der E2E-Lauf (`multiplayer`,
+     * `network-conditions`), nicht die Unit-Tests: `src/client/main.js` ist nur
+     * im Browser ausführbar. Deshalb steht die Terrain- und Kartenbreiten-
+     * Bestimmung jetzt DARÜBER.
+     */
+    const faktor = launchSpeedMultiplier({
+      classId: eigene.classId,
+      archetypeId: eigene.archetypeId,
+      weapon: waffe,
+      // Ohne den Sidegrade zeigte die Vorhersage eine Bahn, die der Server
+      // anders rechnet — er geht in dieselbe combatProfile-Verrechnung ein.
+      sidegradeId: eigene.sidegradeId ?? null,
+      // Die Kartenbreite gehört in dieselbe Rechnung wie im Motor.
+      kartenbreite: breite,
+    });
 
     const trajectory = predictTrajectory({
       x: eigene.x,

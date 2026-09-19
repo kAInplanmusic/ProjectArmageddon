@@ -316,6 +316,7 @@ class AimSolver {
       archetypeId: spieler?.archetypeId ?? 0,
       sidegradeId: spieler?.sidegradeId ?? null,
       weapon: this.#waffe,
+      kartenbreite: match.width,
     });
     this.#gravityScale = this.#waffe?.gravityScale || 1;
     this.#wind = wind;

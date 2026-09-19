@@ -16,7 +16,7 @@ import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
 } from '../shared/erreichbarkeit.js';
-import { reichweitenFaktor } from '../shared/reichweite.js';
+import { reichweitenFaktor, geschwindigkeitsFaktor, weitenFaktor } from '../shared/reichweite.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
@@ -452,13 +452,19 @@ export class MatchController {
    * entityId → { ownerId, teamId, x, y, damage, range, roundsLeft }
    */
   #turrets = new Map();
-  /**
-   * Der Reichweitenfaktor dieser Karte.
+  /*
+   * Hier stand ein Feld `#reichweite` (der Weitenfaktor dieser Karte).
    *
-   * Er wird beim Aufbau des Geländes gesetzt, weil er von der Kartenbreite
-   * abhängt. Bei 1920 px ist er genau 1,0 — dort ändert sich nichts.
+   * FUND (belegt, 2026-09-19): Es trug denselben Namen wie die Skalierung
+   * selbst und wurde an drei Stellen mit drei Bedeutungen gelesen — im
+   * Spielerschuss gar nicht, im Geschütz als GESCHWINDIGKEITS-Faktor (Weite ×
+   * f²) und in der Erreichbarkeitsprüfung als WEITEN-Faktor (× f). Wer eine
+   * Karte umstellt, musste alle drei finden.
+   *
+   * Das Feld ist entfernt. Es gibt jetzt genau zwei benannte Funktionen in
+   * `src/shared/reichweite.js` — `geschwindigkeitsFaktor` (für v) und
+   * `weitenFaktor` (für x) — und jede Lesestelle ruft die passende auf.
    */
-  #reichweite = 1;
 
   #players = [];
   #turnOrder = [];
@@ -694,7 +700,7 @@ export class MatchController {
       powerToSpeed: POWER_TO_SPEED,
       maxPower: HOHECHSTE_KRAFT,
       gravity: DEFAULT_PROJECTILE_GRAVITY,
-    }) * this.#reichweite;
+    }) * weitenFaktor(this.width);
 
     const urteil = pruefeErreichbarkeit({
       bitmap: this.#bitmap, width: this.width, height: this.height, figuren, wurfweite,
@@ -754,13 +760,13 @@ export class MatchController {
 
   #buildTerrain() {
     /*
-     * Der Reichweitenfaktor folgt der Kartenbreite.
+     * Die Reichweitenskalierung braucht kein Feld mehr.
      *
-     * Er steht hier, weil `width` erst beim Geländebau endgültig feststeht.
-     * Bei 1920 px ist der Faktor 1,0; kleinere Karten werden gedämpft, größere
-     * verstärkt — siehe `src/shared/reichweite.js` für die Herleitung.
+     * Sie war hier einmal gespeichert (`this.#reichweite`), weil `width` erst
+     * beim Geländebau feststeht. Seit 2026-09-19 fragen die Lesestellen die
+     * Funktionen direkt mit `this.width` — eine Quelle, kein Zwischenspeicher,
+     * der veralten kann. Siehe `src/shared/reichweite.js` für die Herleitung.
      */
-    this.#reichweite = reichweitenFaktor(this.width);
 
     const terrainRng = this.#seedManager.getSubRng('TERRAIN');
 
@@ -1853,7 +1859,7 @@ export class MatchController {
    * (`match.wind`, NICHT `currentStrength`) und beide Achsen gedraggt.
    */
   #simulateTurretPath(turret, winkel, kraft, waffe) {
-    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * this.#reichweite;
+    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);
     let x = turret.x;
     let y = turret.y;
     let vx = Math.cos(winkel) * speed;
@@ -1893,7 +1899,7 @@ export class MatchController {
   /** Erzeugt das Geschoss eines Geschützes. */
   #spawnTurretProjectile(turret, schuss, ziel = null) {
     const waffe = TURRET_WEAPON;
-    const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * this.#reichweite;
+    const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);
     const vx = Math.cos(schuss.angle) * speed;
     const vy = -Math.sin(schuss.angle) * speed;
 
@@ -1947,7 +1953,20 @@ export class MatchController {
 
   #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null) {
     const speed = power * POWER_TO_SPEED;
-    const maxSteps = Math.max(2, Math.round(weapon.maxRange / Math.max(1, speed)));
+    /*
+     * Die Strahllänge folgt der KARTE.
+     *
+     * FUND (belegt 2026-09-19): Hier stand `weapon.maxRange` in Pixeln, ohne
+     * Kartenfaktor. Die ballistischen Waffen wachsen seit der Reichweiten-
+     * korrektur mit der Kartenbreite (Reserve 1,28× auf jeder Größe), die
+     * Hitscan-Waffen blieben bei ihrem Katalogwert — auf einer 5120er Karte
+     * fielen damit 76 Waffen gegen 74 ab. Vorgabe: der Strahl skaliert mit.
+     *
+     * Gerechnet wird mit dem WEITENfaktor (`weitenFaktor`), weil `maxRange`
+     * eine WEITE ist — nicht mit dem Geschwindigkeitsfaktor.
+     */
+    const strahlweite = weapon.maxRange * weitenFaktor(this.width);
+    const maxSteps = Math.max(2, Math.round(strahlweite / Math.max(1, speed)));
     const dirX = Math.cos(angle);
     // Der Winkel wird gegen die Bildschirmachse gemessen: 0 = rechts, π/2 = oben.
     const dirY = -Math.sin(angle);
@@ -2751,9 +2770,18 @@ export class MatchController {
      * Lebensdauer aus der eigenen Reichweite und der TATSÄCHLICHEN
      * Anfangsgeschwindigkeit: sonst verfällt ein schnelles Geschoss mitten im
      * Flug oder ein langsames bleibt unnötig lange bestehen.
+     *
+     * UND aus der KARTE (FUND belegt, gemessen 2026-09-19): Der Deckel lautet
+     * `maxRange * 1,5` — mit einem kartenunabhängigen Katalogwert. Seit die
+     * ballistische Weite mit der Kartenbreite wächst, schneidet er sie ab:
+     * gemessen über 150 Waffen × 3 Klassen greift er bei **96 von 285**
+     * Kombinationen, am stärksten bei Artillerie auf 2560 px (Weite 2367 px
+     * gegen Deckel 1593 px — es fehlen 774 px). Deshalb skaliert `maxRange`
+     * hier mit dem WEITENfaktor der Karte.
      */
+    const reichweite = waffe.maxRange * weitenFaktor(this.width);
     return Math.max(30, Math.round(
-      waffe.maxRange / Math.max(1, Math.hypot(vx, vy)),
+      reichweite / Math.max(1, Math.hypot(vx, vy)),
     ) * 1.5, this.#fuseTicksFor(waffe) + 30);
   }
 
@@ -2782,6 +2810,8 @@ export class MatchController {
       archetypeId: player?.archetypeId ?? 0,
       sidegradeId: player?.sidegradeId ?? null,
       weapon,
+      // Die Karte gehört in DIESE Rechnung — sonst vergisst sie eine Aufrufstelle.
+      kartenbreite: this.width,
     });
 
     return { x, y, speed, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };

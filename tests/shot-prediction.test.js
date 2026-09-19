@@ -117,6 +117,8 @@ test('Die Vorhersage trifft dieselbe Bahn wie die Vorschau des MatchControllers'
     classId: spielerKlasse.classId,
     archetypeId: spielerKlasse.archetypeId,
     weapon: aktiveWaffe,
+    // Ohne die Kartenbreite rechnet die Vorhersage gegen den Motor (2026-09-19).
+    kartenbreite: match.width,
   });
 
   const vorhersage = predictTrajectory({

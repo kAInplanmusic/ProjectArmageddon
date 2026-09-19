@@ -68,6 +68,9 @@ function unabhaengigerSchuss(match, spielerId, angle, power) {
     archetypeId: spieler.archetypeId,
     sidegradeId: spieler.sidegradeId,
     weapon: waffe,
+    /* Die Kartenbreite gehört dazu — sonst rechnet dieser Nachbau gegen den
+     * Motor statt mit ihm (FUND 2026-09-19: genau daran ist er gescheitert). */
+    kartenbreite: match.width,
   });
   const muendung = match.launchOrigin(spielerId, angle);
   let x = muendung.x;
