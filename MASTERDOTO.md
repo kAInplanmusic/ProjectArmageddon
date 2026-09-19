@@ -187,10 +187,30 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       kommt aus der Tick-Fenster-Prüfung der Eingabe (`validateCommand` /
       `history.isWithinWindow`).
 
-      *Nächste Messung (genau eine):* dieselbe Probe MIT installiertem
-      `routeWebSocket`-Proxy und verzögerten Textframes, und dann `predictions`
-      plus `isMyTurn` plus das Ergebnis von `fire()` auslesen. Das trennt „der
-      Tastendruck feuert nicht" von „`fire()` bricht vor der Vorhersage ab".
+      *Gemessen mit dem Proxy-Aufbau (Probe `zz-probe-proxy`, gelöscht):*
+
+          nach Enter + 200 ms:  {predictions:1, discarded:0, timedOut:1}, active=false, isMyTurn=true
+          danach fire() direkt:  fire() = {ok:true}, active=TRUE, Bahn mit 14 Punkten,
+                                Einschlag (717,4 | 756,9)
+          nach weiteren 1200 ms: {predictions:2, timedOut:2}
+
+      `predictions` ist `#verlauf.length`, zählt also ABGESCHLOSSENE Vorhersagen
+      (`shotPrediction.js:193`). Der direkte `fire()`-Aufruf beweist damit zweierlei:
+      Die Vorhersage wird ANGELEGT und bleibt STEHEN (14 Punkte, Einschlag) — der
+      Pfad ist gesund, auch mit installiertem Proxy.
+
+      *Widerspruch, der noch aufzulösen ist:* Eine Vorhersage kann nach 200 ms
+      nicht `timedOut` sein — `expire()` räumt erst nach `timeoutMs = 1000` auf
+      (`main.js:124`, `shotPrediction.js:270`). Der abgeschlossene Timeout stammt
+      deshalb wahrscheinlich NICHT vom Enter-Druck dieses Durchlaufs, sondern von
+      einer früheren Vorhersage; und der Enter-Druck hat in diesem Aufbau
+      möglicherweise gar nicht gefeuert (Fokus?). Das ist offen und wird nicht
+      geraten.
+
+      *Nächste Messung (genau eine):* Im Proxy-Aufbau unmittelbar VOR und NACH dem
+      Enter-Druck `active`/`pending` lesen (nicht `stats`), dazu ob der Fokus auf
+      dem Canvas liegt und was `keydown` erreicht. Das trennt „Enter feuert
+      nicht" von „Enter feuert, aber die Bahn verschwindet".
 
       *Verworfen (nicht wieder bauen):* den Tick nur noch gegen die Betrugsgrenze
       `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen. Gebaut, gemessen,
