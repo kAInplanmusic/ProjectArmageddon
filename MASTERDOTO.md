@@ -153,31 +153,33 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
       Befund steht im Kommentar über ihnen.
 
-- [ ] **Tickrate des Servers gegen die Wanduhr messen (offen, 2026-09-19).**
+- [ ] **Grund der Schuss-Ablehnung messen — der Tick ist es NICHT (offen, 2026-09-19).**
 
-      FUND (belegt, gemessen): Im freilaufenden Online-Match wurde ein GÜLTIGER
-      Schuss vom Server verworfen (`status: ["discarded"]`). Die Messung dazu:
+      *Gemessen (belegt, `zz-probe-rate`, gelöscht):* Tick UND Uhrzeit im selben
+      Rückruf im Seitenkontext gelesen, damit ein Hänger die Rate nicht verfälscht:
 
-          neuester Snapshot-Tick beim Schuss:     231
-          neuester Snapshot-Tick 1,5 s später:    391
+          Proben: 120 → 154 → 199 → 244 → 291 → 336 (Tick)
+          dTick 216 über 3828 ms  =  56,4 Ticks/s   (Snapshots: 57)
 
-      Über 160 Ticks in 1,5 s — mehr als 100 Ticks je Sekunde. Zwei Erklärungen
-      sind möglich, und beide treffen dasselbe Fenster: (a) die Server-Simulation
-      läuft schneller als 60 Hz, oder (b) die Seite verarbeitet die Snapshots so
-      langsam, dass sie dauerhaft Sekunden zurückliegt (dieselbe Wurzel wie die
-      profiling-Fehler). Beides untergräbt die Annahme „ein Tick = 1/60 Sekunde",
-      auf der das Lag-Kompensationsfenster von 12 Ticks (nominell 200 ms) beruht:
-      bei 107 Hz sind die 12 Ticks in Wahrheit ~112 ms.
+      Der Server läuft also mit ~56 Hz gegen die Wanduhr. Die frühere Zahl „über
+      100 Ticks/s" war ein Artefakt des eigenen Aufbaus: Ein `waitForTimeout(1500)`
+      plus Auslesedauer dauerte real ~2,8 s (die Proben sollten 500 ms auseinander
+      liegen, lagen aber 761 ms). 160 Ticks in 2,8 s sind 57 Hz — beide Messungen
+      stimmen mit einem korrekt getakteten Server überein. **Hypothese (a)
+      (Simulation zu schnell) ist damit widerlegt.**
 
-      *Nächste Messung:* Die Server-Tickrate direkt gegen die Wanduhr stellen
-      (server-seitig zweimal den Tick lesen, bekannte Zeitdifferenz), NICHT über
-      den Umweg des Clients — sonst lässt sich (a) nicht von (b) trennen.
+      *Offen:* Warum der Schuss `discarded` wird. In diesem Aufbau wurde der
+      Fehlertext NICHT gelesen; die Meldung „Tick liegt ausserhalb des
+      Lag-Kompensationsfensters" stammt aus einem FRÜHEREN Aufbau und ist für den
+      heutigen Fall nicht belegt. Der Verwerfer ist `server_error`
+      (`main.js:873`), und der Server schickt dafür mehrere mögliche Gründe
+      (kein Zug, Nachladezeit, keine Munition, Tick-Fenster).
 
-      *Zwischenstand im Client (ehrlich eingeordnet):* `referenzTick` in
-      `networkClient.js` schreibt den Tick um die seit dem Snapshot-Empfang
-      vergangene Zeit fort (7 Unit-Tests, konservativ, nie in die Zukunft). Das
-      ist NICHT die Behebung — gemessen blieb der Schuss `discarded`. Der
-      Kommentar dort sagt das ausdrücklich.
+      *Nächste Messung:* Den Fehlertext abgreifen — im Seitenkontext an
+      `client.on('server_error')` hängen (oder die HUD-Zeile lesen) und ihn
+      zusammen mit dem Schuss protokollieren. Erst danach ist eine Behebung
+      begründbar; bis dahin bleibt `referenzTick` als geprüfte, konservative
+      Verbesserung stehen, ohne als Behebung zu gelten.
 
 - [x] **Nebenbefund nachgezogen (2026-09-19):** Der Unit-Test „Alle Formen sind
       im Menü wählbar" (`tests/terrain-presets.test.js`) prüfte noch die beim
