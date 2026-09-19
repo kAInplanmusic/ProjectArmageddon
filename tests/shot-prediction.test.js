@@ -23,6 +23,7 @@ import {
   MAX_PREDICTION_STEPS,
 } from '../src/client/shotPrediction.js';
 import { MatchController } from '../src/engine/match.js';
+import { POWER_TO_SPEED } from '../src/shared/ballistics.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 import { DEFAULT_PROJECTILE_GRAVITY, DEFAULT_PROJECTILE_DRAG } from '../src/engine/systems/projectileSystem.js';
@@ -31,19 +32,46 @@ const hier = dirname(fileURLToPath(import.meta.url));
 const WURZEL = resolve(hier, '..');
 
 test('Die Konstanten der Vorhersage stimmen mit der Simulation überein', () => {
-  // Schwerkraft und Luftwiderstand kommen aus dem ProjectileSystem. Wichen sie
-  // ab, zeigte die Vorhersage eine Bahn, die die Waffe nicht fliegt.
+  /*
+   * Schwerkraft, Luftwiderstand und Kraft→Geschwindigkeit kommen aus EINER
+   * Quelle: `src/shared/ballistics.js`. Vorhersage, Motor, Zielvorschau und
+   * Bot-KI lesen dieselben Zahlen. Wichen sie ab, zeigte die Vorhersage eine
+   * Bahn, die die Waffe nicht fliegt.
+   */
   assert.equal(PREDICTION_GRAVITY, DEFAULT_PROJECTILE_GRAVITY);
   assert.equal(PREDICTION_DRAG, DEFAULT_PROJECTILE_DRAG);
+  assert.equal(PREDICTION_POWER_TO_SPEED, POWER_TO_SPEED);
 
-  // POWER_TO_SPEED ist im MatchController eine private Konstante. Statt sie zu
-  // exportieren (und damit die Kapselung aufzugeben), liest der Test den Wert
-  // aus der Quelldatei. Ein Auseinanderlaufen fällt so auf, ohne dass beide
-  // Seiten dieselbe Variable teilen müssen.
-  const quelle = readFileSync(resolve(WURZEL, 'src/engine/match.js'), 'utf8');
-  const treffer = quelle.match(/const POWER_TO_SPEED = ([\d.]+);/);
-  assert.ok(treffer, 'POWER_TO_SPEED steht nicht mehr in match.js — Test anpassen');
+  /*
+   * Und die Quelle ist wirklich EINE.
+   *
+   * FUND (belegt): Vorher stand die Zahl `0.14` zweimal da — in `match.js` und
+   * als Abschrift in `shotPrediction.js`. Der Test las sie per Textsuche aus
+   * `match.js` und hätte gemerkt, wenn eine der beiden wandert; hätte man aber
+   * BEIDE gleichzeitig verschoben, hätte er zugestimmt. Diese Fassung prüft
+   * deshalb die Zahl dort, wo sie definiert ist, und verbietet sie überall
+   * sonst.
+   */
+  const quelle = readFileSync(resolve(WURZEL, 'src/shared/ballistics.js'), 'utf8');
+  const treffer = quelle.match(/export const POWER_TO_SPEED = ([\d.]+);/);
+  assert.ok(treffer, 'POWER_TO_SPEED steht nicht mehr in src/shared/ballistics.js');
   assert.equal(PREDICTION_POWER_TO_SPEED, Number(treffer[1]));
+
+  for (const datei of [
+    'src/shared/ballistics.js',   // die eine legitime Stelle
+    'src/engine/match.js',
+    'src/engine/systems/projectileSystem.js',
+    'src/client/shotPrediction.js',
+  ]) {
+    const text = readFileSync(resolve(WURZEL, datei), 'utf8');
+    if (datei !== 'src/shared/ballistics.js') {
+      // Keine zweite ZAHL in den Weiterleitungen.
+      assert.doesNotMatch(text, /(POWER_TO_SPEED|PROJECTILE_DRAG|PROJECTILE_GRAVITY)\s*=\s*0\.\d/,
+        `${datei} führt eine eigene Zahl — sie muss aus src/shared/ballistics.js kommen`);
+      assert.match(text, /shared\/ballistics\.js/,
+        `${datei} muss die gemeinsame Ballistik laden`);
+    }
+  }
 });
 
 test('Eine flache Bahn ohne Terrain läuft nicht ins Unendliche', () => {

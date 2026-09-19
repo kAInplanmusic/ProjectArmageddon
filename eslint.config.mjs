@@ -44,6 +44,16 @@ export default [
       'no-unreachable': 'error',
       'no-dupe-keys': 'error',
       'no-dupe-args': 'error',
+      /*
+       * Doppelte Klassenmember sind toter Code.
+       *
+       * FUND (belegt, 2026-09-18): `MatchController#projectileLifetime` stand
+       * wortgleich ZWEIMAL untereinander, `get bitmap()` ebenso. In JavaScript
+       * gewinnt die letzte Fassung — die erste las niemand, und wer die Regel
+       * dort geändert hätte, hätte nichts bewirkt. Aufgefallen ist das erst mit
+       * dieser Regel; `npm run lint` war vorher grün.
+       */
+      'no-dupe-class-members': 'error',
       'no-fallthrough': 'error',
       eqeqeq: ['error', 'smart'],
       'prefer-const': ['error', { destructuring: 'all' }],

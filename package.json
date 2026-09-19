@@ -29,6 +29,7 @@
     "check:reichweite": "node scripts/check-waffenreichweite.mjs",
     "check:autonom": "node scripts/check-autonom.mjs",
     "check:erreichbarkeit": "node scripts/check-erreichbarkeit.mjs",
+    "check:bots": "node scripts/check-bots.mjs",
     "test": "node --test tests/*.test.js --test-reporter=spec",
     "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js",
     "test:e2e": "playwright test",

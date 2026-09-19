@@ -45,6 +45,8 @@ import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
+import { POWER_TO_SPEED, simulateFlight } from '../shared/ballistics.js';
+import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 
 /**
  * Kartenmaße je Ausrichtung.
@@ -196,11 +198,18 @@ export const BASE_HEALTH = 100;
 /*
  * Kraft in Geschwindigkeit (px/Tick je Krafteinheit).
  *
- * Exportiert, damit Tests und der Geschütz-Pfad aus DERSELBEN Quelle lesen —
- * die Doppelregel zweier abgeschriebener Zahlen war die Ursache des
- * Ballistik-Fehlers (`#simulateTurretPath`, Befund im Code-Audit).
+ * Die ZAHL steht in `src/shared/ballistics.js` — dort, wo auch Schwerkraft,
+ * Luftwiderstand und der Integrationsschritt liegen. Motor, Zielvorschau,
+ * clientseitige Vorhersage und Bot-KI lesen dieselbe Konstante.
+ *
+ * FUND (belegt): Zuvor stand die Zahl hier UND als Abschrift in
+ * `shotPrediction.js` (dort als `PREDICTION_POWER_TO_SPEED`). Der Test, der
+ * beide verglich, las sie per Textsuche aus dieser Datei — er hätte gemerkt,
+ * wenn eine der beiden wanderte, aber nicht, wenn beide gleichzeitig
+ * verschoben wurden. Jetzt gibt es nur noch eine Zahl; der Test prüft
+ * zusätzlich, dass hier keine zweite entsteht.
  */
-export const POWER_TO_SPEED = 0.14;
+export { POWER_TO_SPEED };
 
 /**
  * Der Reichweitenfaktor dieser Karte.
@@ -1596,12 +1605,12 @@ export class MatchController {
       windFactor: 1,
       terrainDamage: weapon.terrainDamage,
       bounces: weapon.bounces,
-      // Lebensdauer aus der eigenen Reichweite und der TATSÄCHLICHEN
-      // Anfangsgeschwindigkeit: sonst verfällt ein schnelles Geschoss mitten im
-      // Flug oder ein langsames bleibt unnötig lange bestehen.
-      lifetime: Math.max(30, Math.round(
-        weapon.maxRange / Math.max(1, Math.hypot(vx, vy)),
-      ) * 1.5, this.#fuseTicksFor(weapon) + 30),
+      /*
+       * Die Lebensdauer kommt aus EINER Quelle (`projectileLifetime`) — die KI
+       * liest sie von dort und plant deshalb keine Schüsse mehr, deren Geschoss
+       * mitten im Flug verfällt.
+       */
+      lifetime: this.projectileLifetime(playerId, angle, power, weapon),
       /**
        * Zünder in Ticks (0 = Aufprallwaffe). Eine Granate explodiert nicht beim
        * Aufprall, sondern nach Ablauf — sie bleibt liegen und zündet.
@@ -2709,35 +2718,84 @@ export class MatchController {
   }
 
   /**
+   * Wie viele Ticks ein Geschoss dieses Schusses lebt.
+   *
+   * ## Warum das eine eigene, öffentliche Methode ist
+   *
+   * FUND (belegt, gemessen): Die Lebensdauer des Geschosses begrenzt die
+   * Flugzeit — und die Zielberechnung wusste davon nichts. Der Bot plante Bögen
+   * mit 83 Ticks Flugzeit für ein Geschoss, das nach 72 Ticks verfällt
+   * (`projectile_expired` mitten im Flug, gemessen an Seed 1000, Zug 3). Der
+   * Schuss verschwand vor dem Ziel, und die Rechnung sah trotzdem „Treffer".
+   *
+   * Die Rechnung steht in `fire()` — und NUR dort. `fire()` ruft diese Methode
+   * auf, statt sie ein zweites Mal auszuschreiben.
+   *
+   * FUND (belegt, ESLint): Diese Methode stand hier ZWEIMAL wortgleich
+   * untereinander. In JavaScript gewinnt die letzte Fassung, die erste war
+   * damit toter Code — und ein Leser hätte an der falschen Stelle geändert.
+   * Aufgefallen ist es erst, als `no-dupe-class-members` in die
+   * Linting-Konfiguration aufgenommen wurde.
+   *
+   * @param {number} playerId
+   * @param {number} angle
+   * @param {number} power
+   * @param {object|null} [weapon]
+   * @returns {number} Ticks
+   */
+  projectileLifetime(playerId, angle, power, weapon = null) {
+    const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
+    if (!waffe) return 30;
+    const { vx, vy } = this.#launchVector(playerId, angle, power, waffe);
+    /*
+     * Lebensdauer aus der eigenen Reichweite und der TATSÄCHLICHEN
+     * Anfangsgeschwindigkeit: sonst verfällt ein schnelles Geschoss mitten im
+     * Flug oder ein langsames bleibt unnötig lange bestehen.
+     */
+    return Math.max(30, Math.round(
+      waffe.maxRange / Math.max(1, Math.hypot(vx, vy)),
+    ) * 1.5, this.#fuseTicksFor(waffe) + 30);
+  }
+
+  /**
    * Abschussvektor inklusive Klassen- und Archetypenmodifikatoren.
    * Wird von fire() und aimPreview() gemeinsam genutzt, damit Vorschau und
    * tatsaechlicher Schuss identisch rechnen.
    */
   #launchVector(playerId, angle, power, weapon = null) {
     const player = this.#players.find(entry => entry.entityId === playerId);
-    // Klasse, Archetyp und Sidegrade kommen zusammen aus dem gemeinsamen
-    // Kampfprofil.
-    const profile = combatProfile(
-      CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
-      player?.sidegradeId ?? null,
-    );
-
     const x = this.#world.getComponent(playerId, 'Position', 'x') || 0;
     const y = this.#world.getComponent(playerId, 'Position', 'y') || 0;
-    // Der Geschwindigkeitsfaktor der Waffe wirkt jetzt tatsächlich. Vorher flog
-    // jedes Geschoss gleich schnell, obwohl die Quelldaten 14 verschiedene
-    // Geschwindigkeiten (48-100) nennen — eine Minigun war im Flug nicht von
-    // einem Mörser zu unterscheiden.
-    const weaponFactor = weapon?.speedFactor ?? 1;
-    const speed = power * POWER_TO_SPEED * profile.launchSpeedMultiplier * weaponFactor;
+    /*
+     * Klasse, Archetyp, Sidegrade und Waffenfaktor kommen aus EINER Quelle:
+     * `launchSpeedMultiplier` (`src/shared/launchSpeed.js`).
+     *
+     * FUND (belegt): Hier stand dieselbe Multiplikation ausgeschrieben —
+     * `profile.launchSpeedMultiplier * weaponFactor`. Sie war korrekt, aber
+     * sie war die ZWEITE Fassung derselben Regel neben `shotPrediction.js`.
+     * Der Geschwindigkeitsfaktor der Waffe wirkte dadurch an zwei Stellen
+     * (14 Waffengeschwindigkeiten, siehe Kommentar unten) — und die Bot-KI
+     * hätte die dritte gebraucht.
+     */
+    const speed = power * POWER_TO_SPEED * launchSpeedMultiplier({
+      classId: player?.classId ?? 0,
+      archetypeId: player?.archetypeId ?? 0,
+      sidegradeId: player?.sidegradeId ?? null,
+      weapon,
+    });
 
-    return { x, y, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };
+    return { x, y, speed, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };
   }
 
   /**
    * Zielvorschau: simuliert die Flugbahn mit exakt derselben Physik wie das
    * ProjectileSystem (Gravitation, Wind, Drag) und bricht beim ersten
    * Terraintreffer ab.
+   *
+   * Die Schleife ist NICHT hier nachgebaut, sondern `simulateFlight` aus
+   * `src/shared/ballistics.js` — dieselbe Funktion, die die clientseitige
+   * Vorhersage und die Bot-KI benutzen. Eine eigene Kopie war der Ursprung des
+   * Ballistik-Fehlers im Geschütz-Pfad (siehe `tests/turret-ballistics.test.js`).
    *
    * @returns {{x:number,y:number}[]}
    */
@@ -2747,30 +2805,54 @@ export class MatchController {
     // sonst zeigt sie eine Bahn, die die Waffe nicht fliegt.
     const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
     const launch = this.#launchVector(playerId, angle, power, waffe);
-    const wind = this.#world.services.match.wind ?? 0;
 
-    let x = launch.x;
-    let y = launch.y;
-    let vx = launch.vx;
-    let vy = launch.vy;
-    const points = [];
+    const bahn = simulateFlight({
+      x: launch.x,
+      y: launch.y,
+      angle,
+      power,
+      speed: launch.speed,
+      // Der Schwerkraftfaktor der Waffe gehört dazu: 28 der 150 Waffen fliegen
+      // mit einem anderen Faktor, und ohne ihn zeigte die Vorschau dort eine
+      // Bahn, die das Projektil nicht fliegt.
+      gravityScale: waffe?.gravityScale ?? 1,
+      wind: this.#world.services.match.wind ?? 0,
+      steps,
+      sampleEvery: 3,
+      /*
+       * Ohne Startpunkt: `aimPreview` liefert seit jeher die Punkte NACH dem
+       * ersten Schritt, und Aufrufer lesen `punkte[0]` als ersten Schritt
+       * (`tests/sidegrades-match.test.js`, `tests/shot-prediction.test.js`
+       * vergleicht den letzten Punkt mit dem Einschlag).
+       */
+      includeStart: false,
+      isSolid: (x, y) => this.#terrain.isSolid(x, y),
+      bounds: { minX: 0, maxX: this.width, minY: 0, maxY: this.height },
+    });
+    return bahn.points;
+  }
 
-    for (let step = 0; step < steps; step++) {
-      vy += DEFAULT_PROJECTILE_GRAVITY;
-      vx += wind;
-      vx *= DEFAULT_PROJECTILE_DRAG;
-      vy *= DEFAULT_PROJECTILE_DRAG;
-      x += vx;
-      y += vy;
-
-      if (step % 3 === 0) points.push({ x, y });
-      if (x < 0 || x > this.width || y > this.height || y < 0) break;
-      if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) {
-        points.push({ x, y });
-        break;
-      }
-    }
-    return points;
+  /**
+   * Der Punkt, an dem ein Schuss WIRKLICH beginnt — die Mündung.
+   *
+   * `fire()` schiebt den Abschusspunkt aus dem Körper des Schützen heraus
+   * (`#findMuzzle`): Ein Projektil, das in der Fußposition entsteht, kollidiert
+   * im ersten Schritt mit dem Boden. Wer den Schuss vorausberechnen will
+   * (Bot-KI, Vorhersage, Waffenprüfung), muss denselben Punkt nehmen — sonst
+   * rechnet er ab einer anderen Stelle und trifft daneben, obwohl die Rechnung
+   * stimmt.
+   *
+   * Die Mündung hängt vom WINKEL ab (sie wird entlang der Schussrichtung
+   * gesucht), deshalb ist der Winkel Parameter und nicht die Richtung.
+   *
+   * @returns {{x:number,y:number}} Mündung; fällt auf die Schützenposition
+   *   zurück, wenn in Schussrichtung kein freies Feld liegt (dann lehnt
+   *   `fire()` den Schuss ohnehin ab)
+   */
+  launchOrigin(playerId, angle) {
+    const x = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
+    const y = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
+    return this.#findMuzzle(x, y, Math.cos(angle), -Math.sin(angle), playerId) ?? { x, y };
   }
 
   endTurn() {
@@ -3361,7 +3443,12 @@ export class MatchController {
 
   get world() { return this.#world; }
   get terrain() { return this.#terrain; }
-  get bitmap() { return this.#bitmap; }
+  /*
+   * `get bitmap()` stand hier ein ZWEITES Mal (wortgleich, 1000 Zeilen nach der
+   * ersten Fassung). In JavaScript gewinnt die letzte — die erste war toter
+   * Code. Der Zugriff bleibt über die dokumentierte Fassung oben erhalten;
+   * aufgefallen ist die Dopplung erst durch `no-dupe-class-members`.
+   */
   get water() { return this.#water; }
   get events() { return this.#events; }
   get inventory() { return this.#inventory; }

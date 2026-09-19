@@ -24,12 +24,12 @@
  *
  * Rechenweg
  * ---------
- * Dieselben Konstanten und dieselbe Schleife wie `MatchController.aimPreview`
- * bzw. das `ProjectileSystem`: Schwerkraft, Wind, Luftwiderstand, Abbruch beim
- * ersten festen Pixel. Beide Seiten rechnen mit denselben Zahlen; würde hier
- * ein eigener Satz stehen, zeigte die Vorhersage eine Bahn, die die Waffe nicht
- * fliegt — genau der Fehler, den die Waffenwerte schon einmal hatten
- * (`gravityScale` in Abschnitt 14 des Codeaudits).
+ * Der Abschussweg (Konstanten, Integrationsschritt, Streckenabtastung) steht in
+ * `src/shared/ballistics.js` — DERSELBEN Quelle, aus der auch der Motor
+ * (`ProjectileSystem`), die Zielvorschau des MatchControllers und die Bot-KI
+ * lesen. Eine eigene Kopie der Schleife wäre genau der Fehler, den die
+ * Waffenwerte schon einmal hatten (`gravityScale` in Abschnitt 14 des
+ * Codeaudits): Die Vorhersage zeigte dann eine Bahn, die die Waffe nicht fliegt.
  *
  * Bewusste Grenzen
  * ----------------
@@ -42,18 +42,28 @@
  * @module shotPrediction
  */
 
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
+import {
+  POWER_TO_SPEED,
+  PROJECTILE_DRAG,
+  PROJECTILE_GRAVITY,
+  simulateFlight,
+} from '../shared/ballistics.js';
 
-/** Schwerkraft der Geschosse — identisch zu `ProjectileSystem`. */
-export const PREDICTION_GRAVITY = 0.32;
-/** Luftwiderstand je Tick — identisch zu `ProjectileSystem`. */
-export const PREDICTION_DRAG = 0.995;
-/**
- * Kraft → Geschwindigkeit. Identisch zu `POWER_TO_SPEED` im MatchController.
- * Der Faktor ist dort eine private Konstante; hier steht er als geteilter
- * Export, und ein Test vergleicht beide Werte gegen die Quelldatei.
+/*
+ * Die Vorhersage liest ihre Konstanten aus der gemeinsamen Ballistik. Sie
+ * bleiben hier als Namen erhalten, weil sie die öffentliche Schnittstelle
+ * dieses Moduls sind (und weil `tests/shot-prediction.test.js` sie gegen die
+ * Motorwerte stellt). Keiner dieser Namen trägt eine eigene ZAHL.
  */
-export const PREDICTION_POWER_TO_SPEED = 0.14;
+/** Schwerkraft der Geschosse — identisch zu `ProjectileSystem`. */
+export const PREDICTION_GRAVITY = PROJECTILE_GRAVITY;
+/** Luftwiderstand je Tick — identisch zu `ProjectileSystem`. */
+export const PREDICTION_DRAG = PROJECTILE_DRAG;
+/**
+ * Kraft → Geschwindigkeit. Identisch zu `POWER_TO_SPEED` im MatchController —
+ * beide lesen dieselbe Konstante aus `src/shared/ballistics.js`.
+ */
+export const PREDICTION_POWER_TO_SPEED = POWER_TO_SPEED;
 /** Größte Zahl an Schritten, die eine Vorhersage rechnet (5 s bei 60 Hz). */
 export const MAX_PREDICTION_STEPS = 300;
 
@@ -101,90 +111,41 @@ export function predictTrajectory({
     return { points: [], impact: null, steps: 0, truncated: false };
   }
   const schritte = Math.max(1, Math.min(MAX_PREDICTION_STEPS, Math.round(steps)));
-  const abstand = Math.max(1, Math.round(sampleEvery));
 
-  const speed = power * PREDICTION_POWER_TO_SPEED * speedMultiplier;
-  let vx = Math.cos(angle) * speed;
-  let vy = -Math.sin(angle) * speed;
-  let px = x;
-  let py = y;
-  const points = [{ x: px, y: py }];
+  const bahn = simulateFlight({
+    x,
+    y,
+    angle,
+    power,
+    speedMultiplier,
+    gravityScale,
+    wind,
+    steps: schritte,
+    sampleEvery,
+    isSolid,
+    /*
+     * Die Kartenränder werden ZUERST geprüft (wie bisher): Außerhalb der Karte
+     * gibt es kein Terrain mehr, und eine Bahn, die aus dem Bild läuft, soll
+     * dort enden. Deshalb endet sie oben (`minY: 0`) wie unten.
+     */
+    bounds: { minX: 0, maxX: width, minY: 0, maxY: height },
+  });
 
-  for (let step = 0; step < schritte; step++) {
-    vy += PREDICTION_GRAVITY * gravityScale;
-    vx += wind;
-    vx *= PREDICTION_DRAG;
-    vy *= PREDICTION_DRAG;
-    px += vx;
-    py += vy;
-
-    if (step % abstand === 0) points.push({ x: px, y: py });
-
-    // Kartenränder zuerst: außerhalb der Karte gibt es kein Terrain mehr, und
-    // eine Bahn, die aus dem Bild läuft, soll dort enden.
-    if (px < 0 || px > width || py > height || py < 0) {
-      points.push({ x: px, y: py });
-      return { points, impact: { x: px, y: py }, steps: step + 1, truncated: false };
-    }
-    if (typeof isSolid === 'function' && isSolid(Math.floor(px), Math.floor(py))) {
-      points.push({ x: px, y: py });
-      return { points, impact: { x: px, y: py }, steps: step + 1, truncated: false };
-    }
-  }
-
-  return { points, impact: null, steps: schritte, truncated: true };
+  return {
+    points: bahn.points,
+    impact: bahn.impact,
+    steps: bahn.steps,
+    truncated: bahn.terminatedBy === 'steps',
+  };
 }
 
-/**
- * Geschwindigkeitsfaktor eines Schusses aus Klasse, Archetyp und Waffe.
- *
- * Dieselbe Verrechnung wie `MatchController.#launchVector`. Sie steht hier
- * getrennt, damit die Vorhersage sie nutzen kann, ohne den MatchController zu
- * besitzen — im Online-Modus gibt es keinen lokalen Match, aus dem man sie
- * ziehen könnte.
- *
- * @param {object} optionen
- * @param {number|null} [optionen.classId]
- * @param {number|null} [optionen.archetypeId]
- * @param {object|null} [optionen.weapon] - Waffeneintrag aus dem Katalog
- * @param {string|null} [optionen.sidegradeId] - Kennung des Sidegrades. Muss
- *   mitgegeben werden, sobald der Spieler einen gewählt hat: Das Sidegrade
- *   verändert die Abschussgeschwindigkeit, und ohne es zeigte die Vorhersage
- *   eine Bahn, die der Server anders rechnet.
- * @returns {number} Faktor, mit dem `power * PREDICTION_POWER_TO_SPEED`
- *   multipliziert wird
+/*
+ * Der Geschwindigkeitsfaktor stand früher hier. Er ist nach
+ * `src/shared/launchSpeed.js` gewandert, weil ihn die Bot-KI (Server) und der
+ * Motor ebenso brauchen. Der Name bleibt hier exportiert, damit die
+ * öffentliche Schnittstelle dieses Moduls unverändert ist.
  */
-export function launchSpeedMultiplier({
-  classId = null, archetypeId = null, weapon = null, sidegradeId = null,
-} = {}) {
-  /*
-   * `classId`/`archetypeId` sind INDIZES, keine Namen.
-   *
-   * Fund (belegt): `MatchController` speichert `index % CLASS_IDS.length`, und
-   * `CLASS_IDS` ist die Liste der NAMEN (`['scout','heavy','artillery']`). Im
-   * Motor wird deshalb durchgehend konvertiert (`CLASS_IDS[classId]`), bevor
-   * `combatProfile` aufgerufen wird.
-   *
-   * Wer den Index unkonvertiert weitergibt, bekommt kein Ergebnis, sondern
-   * STILL den Rückfall: `combatProfile(0, 0)` sucht `CLASS_DEFINITIONS[0]`,
-   * findet nichts (die Schlüssel heißen 'scout', 'heavy', 'artillery') und
-   * liefert für JEDE Klasse dasselbe Profil. Gemessen: Faktor 0,6417 für
-   * Index 0, 1 und 2 — die Klassen waren damit wirkungslos.
-   *
-   * Genau dieser Fehler steckte im ersten Anlauf dieses Moduls. Er ist
-   * unsichtbar, weil kein Wert fehlt und nichts wirft — nur die Zahlen sind
-   * für alle gleich.
-   *
-   * Deshalb wird hier anhand des TYPS entschieden, nicht anhand eines
-   * Bereichs: eine Zahl ist ein Index, eine Zeichenkette ist bereits ein Name.
-   */
-  const klasse = typeof classId === 'number' ? CLASS_IDS[classId] : classId;
-  const archetyp = typeof archetypeId === 'number' ? ARCHETYPE_IDS[archetypeId] : archetypeId;
-  // Der Sidegrade geht in dieselbe Verrechnung — nicht als eigene Multiplikation
-  // hier, sonst stünde die Regel an zwei Stellen.
-  const profil = combatProfile(klasse, archetyp, sidegradeId);
-  return profil.launchSpeedMultiplier * (weapon?.speedFactor ?? 1);
-}
+export { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 
 /**
  * Verwaltet die Vorhersagen des eigenen Schusses.

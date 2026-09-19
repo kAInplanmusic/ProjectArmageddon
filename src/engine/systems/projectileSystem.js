@@ -14,6 +14,12 @@
  * @module ProjectileSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
+import {
+  PROJECTILE_DRAG,
+  PROJECTILE_GRAVITY,
+  integrateStep,
+  raycastSegment,
+} from '../../shared/ballistics.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -26,12 +32,19 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
  * Die Konstante ist entfernt; die Reihenfolge wird nur noch an EINER Stelle
  * gepflegt. Ein Test hält das fest (`tests/system-priority.test.js`).
  */
-const PLAYER_HALF_WIDTH = 7;
-const PLAYER_HALF_HEIGHT = 10;
+export const PLAYER_HALF_WIDTH = 7;
+export const PLAYER_HALF_HEIGHT = 10;
 
-/** Von Projektilen und Zielvorschau gemeinsam genutzte Physik-Konstanten. */
-export const DEFAULT_PROJECTILE_GRAVITY = 0.32;
-export const DEFAULT_PROJECTILE_DRAG = 0.995;
+/**
+ * Von Projektilen und Zielvorschau gemeinsam genutzte Physik-Konstanten.
+ *
+ * Die ZAHL steht in `src/shared/ballistics.js` — dieselbe Quelle, aus der die
+ * clientseitige Vorhersage, die Zielvorschau des MatchControllers und die
+ * Bot-KI lesen. Diese Namen bleiben exportiert, weil Tests und die
+ * Reichweitenrechnung sie führen.
+ */
+export const DEFAULT_PROJECTILE_GRAVITY = PROJECTILE_GRAVITY;
+export const DEFAULT_PROJECTILE_DRAG = PROJECTILE_DRAG;
 
 export class ProjectileSystem {
   #gravity;
@@ -73,11 +86,25 @@ export class ProjectileSystem {
       const windFactor = world.getComponent(entityId, 'Projectile', 'windFactor');
       let lifetime = world.getComponent(entityId, 'Projectile', 'lifetime');
 
-      // Kräfte
-      vy += this.#gravity * (gravityScale || 1);
-      vx += (match.wind || 0) * (windFactor === 0 ? 1 : windFactor);
-      vx *= drag;
-      vy *= drag;
+      /*
+       * Kräfte — der EINE Integrationsschritt aus `src/shared/ballistics.js`.
+       *
+       * Reihenfolge und Vorzeichen stehen dort, nicht hier. Wer den Motor
+       * schneller machen oder „nur kurz" anpassen will: Jede Änderung hier
+       * verschiebt auch die Bahn, die die Zielvorschau und die Bot-KI
+       * vorhersagen — die beiden lesen dieselbe Funktion.
+       */
+      const naechsteGeschwindigkeit = integrateStep({
+        vx,
+        vy,
+        gravity: this.#gravity,
+        gravityScale,
+        wind: match.wind || 0,
+        windFactor,
+        drag,
+      });
+      vx = naechsteGeschwindigkeit.vx;
+      vy = naechsteGeschwindigkeit.vy;
 
       const nextX = startX + vx;
       const nextY = startY + vy;
@@ -170,38 +197,29 @@ export class ProjectileSystem {
 
   /**
    * Prueft die Strecke in Teilschritten gegen Terrain und Spieler-AABBs.
+   *
+   * Die Abtastung selbst steht in `raycastSegment` (`src/shared/ballistics.js`)
+   * und wird von der Vorhersage (Client), der Zielvorschau und der Bot-KI
+   * mitbenutzt: Ein Geschoss, das „durch eine Wand tunnelt", tut das sonst in
+   * der Vorhersage anders als im Motor.
+   *
    * @returns {{x:number,y:number,target:number|null}|null}
    */
   #raycast(terrain, targets, startX, startY, endX, endY) {
-    const distance = Math.max(Math.abs(endX - startX), Math.abs(endY - startY));
-    const steps = Math.max(1, Math.ceil(distance));
-    let previousX = startX;
-    let previousY = startY;
-
-    for (let i = 1; i <= steps; i++) {
-      const t = i / steps;
-      const x = startX + (endX - startX) * t;
-      const y = startY + (endY - startY) * t;
-
-      for (const target of targets) {
-        if (Math.abs(x - target.x) <= PLAYER_HALF_WIDTH && Math.abs(y - target.y) <= PLAYER_HALF_HEIGHT) {
-          return { x, y, target: target.id };
+    const treffer = raycastSegment(startX, startY, endX, endY, {
+      isSolid: terrain ? (x, y) => terrain.isSolid(x, y) : null,
+      hitTest: (x, y) => {
+        for (const target of targets) {
+          if (Math.abs(x - target.x) <= PLAYER_HALF_WIDTH && Math.abs(y - target.y) <= PLAYER_HALF_HEIGHT) {
+            return target.id;
+          }
         }
-      }
+        return null;
+      },
+    });
 
-      if (terrain && terrain.isSolid(Math.floor(x), Math.floor(y))) {
-        return { x, y, target: null };
-      }
-
-      previousX = x;
-      previousY = y;
-    }
-
-    // Segmentfallback fuer den unwahrscheinlichen Fall eines Sprungs.
-    if (terrain && terrain.isSolid(Math.floor(endX), Math.floor(endY))) {
-      return { x: previousX, y: previousY, target: null };
-    }
-    return null;
+    if (!treffer) return null;
+    return { x: treffer.x, y: treffer.y, target: treffer.hit ?? null };
   }
 
   #explode(world, entityId, x, y, bounces, hitTarget = null) {
