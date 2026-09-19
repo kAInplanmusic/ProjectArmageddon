@@ -153,40 +153,45 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
       Befund steht im Kommentar über ihnen.
 
-- [ ] **`prediction-online:102` — der Server lehnt den Schuss ab (vorbestehend).**
+- [ ] **`prediction-online:102` — der SERVER lehnt den Schuss ab (vorbestehend).**
 
-      *Diagnostiziert am 2026-09-19, noch nicht behoben — zwei Ursachen, beide
-      gemessen:*
+      *Stand 2026-09-19: in zwei Ursachen zerlegt, beide gemessen.*
 
-      **(1) Der Server weist den Schuss ab:** `Tick liegt ausserhalb des
-      Lag-Kompensationsfensters`. Gemessen mit einer Wegwerf-Probe im echten
-      Online-Match (Serverlog): **Client-Tick 235, Server-Tick 269,
-      `windowTicks: 12`** — der Client liegt 34 Ticks (≈570 ms) zurück. Ursache:
-      Der Client schickt den Tick des zuletzt VERARBEITETEN Snapshots
-      (`networkClient.sendInput`), und auf diesem Rechner verarbeitet der Browser
-      die Zustandsnachrichten langsamer als sie eintreffen (20 Hz Snapshots,
-      ~20 fps Anzeige).
+      **(1) Der Schuss kommt zu spät an — der TEST verzögert die falsche
+      Richtung.** `prediction-online.spec.mjs` will laut Kommentar „die
+      EINGEHENDEN Ereignisse (Textframes vom Server)" verzögern. Der Code hängt
+      sich aber an `ws.onMessage` — das sind die Nachrichten VOM CLIENT ZUM
+      SERVER. Verzögert wird damit der SCHUSS selbst, und zwar um 700 ms; die
+      Tick-Nummer im Eingabesatz ist dann ~42 Ticks alt, das
+      Lag-Kompensationsfenster erlaubt 12 (200 ms). Der Server lehnt ab — genau
+      das Verhalten, das der Anti-Cheat-Schutz verlangt.
 
-      *Wichtig für die Behebung:* `match.fire()` benutzt den Tick NICHT — er
-      wählt nur den Vergleichszustand für die Rückrechnung (`history.get`) und
-      erscheint als `interpolatedFrom`. Ein veralteter Tick kann also gar nicht
-      dazu dienen, „auf einem alten Zustand zu schießen"; er kostet nur die
-      Rückrechnung. Trotzdem ist die Ablehnung NICHT einfach zu streichen: Ein
-      Versuch, nur noch gegen die Betrugsgrenze (`maxTickDrift`) zu prüfen, ließ
-      `tests/anti-cheat.test.js` rot werden (Ticks 0/1 gelten in jungen Matches
-      als innerhalb der Grenze) — und der E2E-Test blieb trotzdem rot. Der
-      Versuch ist zurückgenommen; der Stand ist unverändert.
+      *Konsequenz:* Der Test kann in dieser Fassung nicht grün werden, gleich
+      welche Produktänderung man vornimmt. Zu verzögern ist `server.onMessage`
+      (Antwortrichtung), nicht `ws.onMessage`.
 
-      **(2) Die Vorhersage wird nicht aufgelöst:** Im Lauf mit akzeptiertem Tick
-      stand die Statistik auf `{predictions:1, confirmed:0, discarded:0,
-      timedOut:1}` — nicht `discarded` (Serverfehler), sondern **`timedOut`**.
-      Die Vorhersage wartet also auf eine Bestätigung, die nie kommt. Das ist
-      eine ZWEITE, unabhängige Ursache im Bestätigungspfad und braucht eine
-      eigene Sitzung.
+      **(2) Eine abgelehnte Eingabe verwirft die Vorhersage stumm.** Gemessen
+      mit schnellem Server (Probe `zz-probe-ursache`, inzwischen gelöscht):
+      `{predictions: 1, confirmed: 0, discarded: 1, timedOut: 0}` — der Schuss
+      wurde als Eingabe abgeschickt, `begin()` lief also, und die Ablehnung des
+      Servers erreichte den Client innerhalb von 200 ms. Vorher gemessen
+      (mit verzögerter Antwort): `timedOut: 1`. Beides sind Folgen von (1): der
+      Client zeigt die Bahn, der Server nimmt den Schuss nicht an, die Anzeige
+      verschwindet — für den Spieler ununterscheidbar von einem Fehler.
 
-      *Nächste Messung:* Was der Client als Bestätigung erwartet
-      (`shotPrediction.reconcile`) und welche Ereignisse der Server dafür sendet —
-      gemessen im gleichen Wegwerf-Aufbau.
+      *Offen:* Warum stand die Vorhersage im verzögerten Lauf nach 200 ms NICHT
+      (`predictions` dort möglicherweise 0 statt 1)? Die Probe mit schnellem
+      Server zeigt 1 — der Unterschied liegt im Testaufbau, nicht im Produkt.
+
+      *Verworfen:* Die naheliegende Behebung — den Tick nur noch gegen die
+      Betrugsgrenze `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen —
+      wurde gebaut, gemessen und zurückgenommen: sie machte
+      `tests/anti-cheat.test.js` rot (Ticks 0/1 gelten in jungen Matches als
+      innerhalb der Grenze) UND der E2E-Test blieb rot. Merken: `match.fire()`
+      benutzt den Tick überhaupt nicht — er wählt nur den Vergleichszustand für
+      die Rückrechnung. Ein veralteter Tick kann also nicht als Betrug dienen;
+      die Ablehnung hängt trotzdem am Anti-Cheat-Test und ist nicht einfach zu
+      streichen.
 
 ## Audit 2026-09-17 — vier unabhängige Sichten
 
