@@ -138,16 +138,38 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
 
 - [ ] **`prediction-online:102` — der Server lehnt den Schuss ab (vorbestehend).**
 
-      FUND (belegt, gemessen 2026-09-19): Der Test fällt auch auf dem
-      UNVERÄNDERTEN Stand. Ohne Netzdrosselung gemessen: Die Vorhersage wird
-      angelegt und sofort verworfen — `stats {predictions:1, confirmed:0,
-      discarded:1}`, einziger Pfad zu `discarded` ist `server_error`. Die Waffe
-      war geeignet (`pa_041`, `delivery:'projectile'`), Terrain rekonstruiert,
-      `isMyTurn:true`.
+      *Diagnostiziert am 2026-09-19, noch nicht behoben — zwei Ursachen, beide
+      gemessen:*
 
-      *Offene Messung:* Warum lehnt der Server ab? Dafür braucht es das
-      Server-Log bzw. `shotPredictor.history` bei einem Lauf. Danach ist zu
-      entscheiden, ob es ein Client- oder Serverfehler ist.
+      **(1) Der Server weist den Schuss ab:** `Tick liegt ausserhalb des
+      Lag-Kompensationsfensters`. Gemessen mit einer Wegwerf-Probe im echten
+      Online-Match (Serverlog): **Client-Tick 235, Server-Tick 269,
+      `windowTicks: 12`** — der Client liegt 34 Ticks (≈570 ms) zurück. Ursache:
+      Der Client schickt den Tick des zuletzt VERARBEITETEN Snapshots
+      (`networkClient.sendInput`), und auf diesem Rechner verarbeitet der Browser
+      die Zustandsnachrichten langsamer als sie eintreffen (20 Hz Snapshots,
+      ~20 fps Anzeige).
+
+      *Wichtig für die Behebung:* `match.fire()` benutzt den Tick NICHT — er
+      wählt nur den Vergleichszustand für die Rückrechnung (`history.get`) und
+      erscheint als `interpolatedFrom`. Ein veralteter Tick kann also gar nicht
+      dazu dienen, „auf einem alten Zustand zu schießen"; er kostet nur die
+      Rückrechnung. Trotzdem ist die Ablehnung NICHT einfach zu streichen: Ein
+      Versuch, nur noch gegen die Betrugsgrenze (`maxTickDrift`) zu prüfen, ließ
+      `tests/anti-cheat.test.js` rot werden (Ticks 0/1 gelten in jungen Matches
+      als innerhalb der Grenze) — und der E2E-Test blieb trotzdem rot. Der
+      Versuch ist zurückgenommen; der Stand ist unverändert.
+
+      **(2) Die Vorhersage wird nicht aufgelöst:** Im Lauf mit akzeptiertem Tick
+      stand die Statistik auf `{predictions:1, confirmed:0, discarded:0,
+      timedOut:1}` — nicht `discarded` (Serverfehler), sondern **`timedOut`**.
+      Die Vorhersage wartet also auf eine Bestätigung, die nie kommt. Das ist
+      eine ZWEITE, unabhängige Ursache im Bestätigungspfad und braucht eine
+      eigene Sitzung.
+
+      *Nächste Messung:* Was der Client als Bestätigung erwartet
+      (`shotPrediction.reconcile`) und welche Ereignisse der Server dafür sendet —
+      gemessen im gleichen Wegwerf-Aufbau.
 
 ## Audit 2026-09-17 — vier unabhängige Sichten
 
