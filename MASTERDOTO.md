@@ -153,7 +153,8 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
       Befund steht im Kommentar über ihnen.
 
-- [ ] **`prediction-online:102` — der SERVER lehnt den Schuss ab (vorbestehend).**
+- [x] **`prediction-online:102` BEHOBEN (2026-09-19) — der Test maß die Uhrzeit
+      statt den Zustand (vorbestehend).**
 
       *Stand 2026-09-19: in zwei Ursachen zerlegt, beide gemessen.*
 
@@ -247,11 +248,16 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       das Auslesen erst nach ~1 s, ist die Vorhersage BESTIMMUNGSGEMÄSS schon
       abgelaufen. Kein Produktfehler.
 
-      *Konsequenz für den Test (noch nicht umgesetzt):* Nicht die Uhrzeit
-      vorschreiben, sondern auf den Zustand warten — z. B. die Vorhersage
-      unmittelbar nach dem Schuss im selben Zug lesen oder auf `active === true`
-      mit kurzem Polling warten, statt 200 ms anzunehmen. Auf schneller Hardware
-      bliebe der Test damit scharf, auf dieser wird er nicht zur Lotterie.
+      *BEHOBEN (2026-09-19).* Der Test prüft den Zustand jetzt BEIM ABSCHUSS: Der
+      Seitenkontext zapft `begin()` an und sichert `aktiv`, Bahnpunkte und
+      Einschlag unmittelbar nach `fire()` — statt 200 ms zu warten und zu hoffen,
+      dass das Auslesen schnell genug landet. Die Zusicherung bleibt scharf, hängt
+      aber nicht mehr an der Reaktionszeit der Maschine.
+
+      *Verifiziert:* **4 Läufe, 4× grün** (jeweils 2 passed, 1 skipped — der
+      `test.fixme` bleibt). Lint 0 Fehler. Der Test ist damit von „seit Wochen rot"
+      auf grün, ohne dass am Produkt etwas geändert wurde: Der Produktcode war die
+      ganze Zeit richtig.
 
       *Verworfen (nicht wieder bauen):* den Tick nur noch gegen die Betrugsgrenze
       `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen. Gebaut, gemessen,
