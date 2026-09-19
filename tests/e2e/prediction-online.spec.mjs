@@ -70,7 +70,6 @@ async function starteOnlineMatch(page) {
   });
 
   await page.goto('/');
-  await page.selectOption('#cfg-preset', 'hills');
   await page.fill('#cfg-seed', '20260916');
   await page.fill('#cfg-server', SERVER_URL);
   await page.click('#start-button');

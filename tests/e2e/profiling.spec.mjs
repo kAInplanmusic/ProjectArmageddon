@@ -72,7 +72,11 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
    * Sekunden echter Spielzeit.
    */
   if (still) await page.evaluate(() => window.__PA__.setAutoLoop(false));
-  await page.locator('#cfg-preset').selectOption(form);
+  /*
+   * `form` wird NICHT mehr gewählt: Das Menü kennt keine Kartenform mehr
+   * (2026-09-19 entfernt — der autonome Generator entscheidet aus dem Seed).
+   * Der Parameter bleibt, damit die Aufrufer ihren Aufbau behalten.
+   */
   await page.locator('#cfg-seed').fill(String(SEED));
   await page.getByRole('button', { name: 'Match starten' }).click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
@@ -313,10 +317,11 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
  * @returns {{leer:object, mitSpiel:object, aufschlagMs:number, messbar:boolean,
  *   grund:string}}
  */
-async function messeAufschlag(page, { form = 'islands', bilder = 120 } = {}) {
+async function messeAufschlag(page, { bilder = 120 } = {}) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.locator('#cfg-preset').selectOption(form);
+  // Keine Kartenform mehr wählbar (2026-09-19): der Generator entscheidet aus
+  // dem Seed. Die Messung gilt damit für die Karte dieses Seeds.
   await page.locator('#cfg-seed').fill(String(SEED));
   await page.getByRole('button', { name: 'Match starten' }).click();
   await expect(page.locator('#menu-overlay')).toBeHidden();

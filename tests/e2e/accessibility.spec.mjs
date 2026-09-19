@@ -134,7 +134,7 @@ test('Fokussierte Elemente sind sichtbar hervorgehoben', async ({ page }) => {
 
 test('Alle Formularfelder sind per Tab erreichbar', async ({ page }) => {
   const erwarteteReihenfolge = [
-    'cfg-teams', 'cfg-players', 'cfg-preset', 'cfg-seed',
+    'cfg-teams', 'cfg-players', 'cfg-seed',
     'cfg-server', 'cfg-lobby', 'start-button',
   ];
 

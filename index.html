@@ -778,28 +778,6 @@
             </label>
           </div>
           <div class="field-row">
-            <label>Karte
-              <select id="cfg-preset">
-                <option value="hills" selected>Hügel</option>
-                <option value="mountains">Berge</option>
-                <option value="islands">Inseln</option>
-                <option value="caverns">Höhlen</option>
-                <option value="open">Offene Weite</option>
-                <option value="spires">Felsspitzen</option>
-                <option value="flooded">Flut</option>
-                <option value="warren">Gewirr</option>
-              </select>
-            </label>
-            <!--
-              Karten-Synergie: nennt die Klasse, die auf der gewählten Form ihre
-              Stärke ausspielen kann. Wird von `zeigeKartenSynergie()` gefüllt.
-
-              Das ist ANZEIGE, kein Bonus: Es gibt keinen Multiplikator im Motor.
-              Der Spieler lernt die Synergie durch die WAHL der Karte — nicht
-              durch eine unsichtbare Rechnung. Siehe docs/entwurf-onboarding-
-              sidegrades-counterplay.md, C.4.
-            -->
-            <p id="cfg-preset-synergie" class="field-hint" aria-live="polite"></p>
             <label>Kulisse
               <!-- Wird beim Start aus dem Katalog in src/shared/config/backdrops.js
                    gefüllt. Die erste Auswahl „automatisch" überlässt die Wahl dem

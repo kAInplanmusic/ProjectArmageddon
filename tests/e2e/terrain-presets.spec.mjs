@@ -25,49 +25,39 @@ const FORMEN = ['hills', 'mountains', 'islands', 'caverns', 'open', 'spires', 'f
  */
 const SEED = 4242;
 
-test('Jede Geländeform steht in der Kartenauswahl', async ({ page }) => {
-  await page.goto('/');
-  await page.waitForFunction(() => Boolean(window.__PA__));
+/*
+ * ENTFERNT (2026-09-19): Der Test „Jede Geländeform steht in der Kartenauswahl"
+ * prüfte die Menü-Auswahl `#cfg-preset`. Die Auswahl ist entfernt, weil sie die
+ * Karte nicht beeinflusste (der autonome Generator entscheidet aus dem Seed).
+ * Der Katalog der Formen (`TERRAIN_PRESETS`) wird in `tests/terrain-presets.test.js`
+ * geprüft — dort, wo er hingehört.
+ */
 
-  const werte = await page.locator('#cfg-preset option').evaluateAll(
-    optionen => optionen.map(o => o.value),
-  );
-
-  for (const form of FORMEN) {
-    expect(werte, `Die Geländeform „${form}" fehlt in der Auswahl`).toContain(form);
-  }
-  // Und jede Option hat eine lesbare Beschriftung.
-  const beschriftungen = await page.locator('#cfg-preset option').evaluateAll(
-    optionen => optionen.map(o => (o.textContent ?? '').trim()),
-  );
-  for (const [index, text] of beschriftungen.entries()) {
-    expect(text.length, `Option ${werte[index]} hat keine Beschriftung`).toBeGreaterThan(2);
-  }
-});
-
-test('Mit jeder Geländeform lässt sich über das Menü ein Match starten', async ({ page }) => {
+test('Mit festem Seed lässt sich über das Menü ein Match starten', { timeout: 180_000 }, async ({ page }) => {
   /*
    * Der vollständige Spielerpfad. Geprüft wird nicht nur, dass das Match läuft,
-   * sondern auch dass alle Figuren auf trockenem Grund stehen — das ist die
-   * Eigenschaft, die bei `flooded` fehlte.
+   * sondern auch dass alle Figuren auf TROCKENEM Grund stehen.
+   *
+   * Der Seed wandert über die acht Formen, weil die Form keine Karte mehr
+   * auswählt (2026-09-19 entfernt): Acht Läufe mit acht Seeds prüfen damit acht
+   * verschiedene Karten — mehr als vorher, wo alle acht Läufe dieselbe ergaben.
    */
-  for (const form of FORMEN) {
+  for (const [index, form] of FORMEN.entries()) {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     // Die automatische Schleife vor dem Start abschalten, damit der Test nicht
     // von der Zahl der gelaufenen Ticks abhängt.
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
 
-    await page.locator('#cfg-preset').selectOption(form);
     /*
-     * Fester Seed. Ohne ihn zieht der Start eine ZUFÄLLIGE Karte, und dieser
-     * Test wäre eine Lotterie — gemessen (2026-09-19) starteten über den
-     * Menüweg bei 19 von 60 Seeds Figuren im Wasser, weil die Startplatzierung
-     * nur den Fußpunkt prüfte. Die Ursache ist behoben (Körperpunkt wird jetzt
-     * mitgeprüft); der feste Seed stellt sicher, dass der Test den Zustand
-     * prüft, den er behauptet.
+     * Fester Seed je Durchlauf. Ohne ihn zieht der Start eine ZUFÄLLIGE Karte,
+     * und dieser Test wäre eine Lotterie — gemessen (2026-09-19) starteten über
+     * den Menüweg bei 19 von 60 Seeds Figuren im Wasser, weil die
+     * Startplatzierung nur den Fußpunkt prüfte. Die Ursache ist behoben
+     * (Körperpunkt wird jetzt mitgeprüft); der feste Seed stellt sicher, dass
+     * der Test den Zustand prüft, den er behauptet.
      */
-    await page.locator('#cfg-seed').fill(String(SEED));
+    await page.locator('#cfg-seed').fill(String(SEED + index));
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay'), `Menü blieb offen bei ${form}`).toBeHidden();
 
@@ -121,7 +111,7 @@ test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', asy
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
 
-  await page.locator('#cfg-preset').selectOption('flooded');
+  await page.locator('#cfg-seed').fill(String(SEED));
   await page.getByRole('button', { name: 'Match starten' }).click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
 
@@ -213,7 +203,9 @@ test.fixme('Jede der vier neuen Formen nutzt ihre EIGENE Szene', async ({ page }
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
-    await page.locator('#cfg-preset').selectOption(form);
+    // Keine Kartenform mehr wählbar (2026-09-19): Der Generator entscheidet aus
+    // dem Seed. Diese Fassung wartet auf ihre Neufassung (Kulisse folgt dem
+    // Charakter der Karte) — der Befund steht im Kommentar über dem Test.
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay')).toBeHidden();
 
@@ -297,11 +289,13 @@ test.fixme('Vier Formen unterscheiden sich auch im Browser messbar', async ({ pa
    * einem anderen Gelände als die Simulation — und der Determinismus zwischen
    * Client und Server wäre hinfällig.
    */
-  const messen = async form => {
+  /* Die Form wird nicht mehr übergeben: Sie wählt keine Karte mehr (2026-09-19). */
+  const messen = async _form => {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
-    await page.locator('#cfg-preset').selectOption(form);
+    // Keine Kartenform mehr wählbar (2026-09-19): Der Generator entscheidet aus
+    // dem Seed. Die Neufassung dieses Tests vergleicht deshalb SEEDS.
     /*
      * SEED FESTSCHREIBEN — sonst vergleicht der Test verschiedene Karten.
      *

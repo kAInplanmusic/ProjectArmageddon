@@ -122,19 +122,36 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
 `profil.spec.mjs` 8/8, `runtime-smoke.spec.mjs` 10/10, `multiplayer:224` grün,
 `terrain-presets:48` grün.
 
-- [ ] **`#cfg-preset` bewirkt nichts — Produktentscheidung.**
+- [x] **`#cfg-preset` entfernt — das Feld bewirkte nichts (2026-09-19).**
 
-      FUND (belegt, gemessen 2026-09-19): Das Menü übergibt
-      `kartentyp: 'autonom'` (`main.js:323`); der autonome Generator bestimmt die
-      Karte aus dem Seed. Die Auswahl „Geländeform" beeinflusst das Ergebnis
-      damit GAR NICHT — gemessen erzeugen hills, open, spires und flooded über
-      den Menüweg dieselbe Karte (`hash 6bc9aa96`, `landAnteil 0,524`). Zwei
-      E2E-Tests halten die alte Zusage fest und sind deshalb bis zur Entscheidung
-      als `test.fixme` markiert (mit vollem Befund im Kommentar).
+      FUND (belegt, gemessen): Das Menü übergab `kartentyp: 'autonom'`; der
+      Generator bestimmt die Karte aus dem Seed. Die Auswahl „Karte"
+      beeinflusste das Ergebnis GAR NICHT — hills, open, spires und flooded
+      erzeugten über den Menüweg dieselbe Karte (`hash 6bc9aa96`,
+      `landAnteil 0,524`).
 
-      *Zu entscheiden:* Entweder die Form wieder durchreichen (dann gilt die alte
-      Zuordnung incl. Leitbiom) oder das Feld aus dem Menü entfernen und die
-      Tests auf den Charakter bzw. auf verschiedene Seeds umschreiben.
+      *Entschieden (Auftraggeber):* **entfernen.** Der Generator ist autonom, der
+      Seed entscheidet — die MASTERDOTO hält selbst fest, dass es „kein
+      Auswahlfeld" geben soll und ein Test beweist, dass ein übergebener Typ
+      ignoriert wird. Ein Bedienelement, das nichts bewirkt, ist irreführender
+      als keines. Durchreichen wäre der zweite Weg gewesen und hätte die
+      dokumentierte Autonomie zurückgenommen.
+
+      *Umgesetzt:* Die Auswahl samt der Zeile „Karten-Synergie"
+      (`#cfg-preset-synergie`) ist aus dem Menü entfernt, ebenso
+      `fillTerrainAffinity()` im Client. `TERRAIN_AFFINITY` bleibt — sie steht
+      weiter im Counterplay-Reiter der Hilfe als Nachschlagewerk.
+      Der Start prüft keinen Kartentyp mehr (`preset: 'hills'` ist nur der
+      Rückfallwert für Werkzeuge).
+
+      *Tests nachgezogen:* `terrain-presets` (die Auswahl-Prüfung ist entfallen;
+      der Start-Test läuft jetzt über acht SEEDS — acht verschiedene Karten statt
+      achtmal derselbe), `counterplay` (der Test zur Synergie-Zeile ist entfallen,
+      mit Begründung), `accessibility` (Feldliste), `prediction-gpu`,
+      `prediction-online`, `profiling` (wählen keine Form mehr). Die zwei
+      Kulissen-Tests bleiben vorerst `test.fixme` und warten auf ihre Neufassung
+      (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
+      Befund steht im Kommentar über ihnen.
 
 - [ ] **`prediction-online:102` — der Server lehnt den Schuss ab (vorbestehend).**
 

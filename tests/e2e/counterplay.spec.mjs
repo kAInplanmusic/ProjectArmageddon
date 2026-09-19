@@ -7,30 +7,17 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Counterplay-Anzeige', () => {
-  test('Die Kartenwahl zeigt die begünstigte Klasse', async ({ page }) => {
-    /*
-     * Die Zeile muss beim WECHSEL mitwandern. Bliebe sie beim ersten Wert
-     * stehen, wäre sie eine Anzeige, die nicht zur Auswahl passt — und der
-     * Spieler würde nach einer falschen Empfehlung entscheiden.
-     */
-    await page.goto('/');
-
-    const hinweis = page.locator('#cfg-preset-synergie');
-    await expect(hinweis).toBeVisible();
-
-    const erwartet = await page.evaluate(async () => {
-      const m = await import('/src/shared/terrainGen.js');
-      return Object.entries(m.TERRAIN_AFFINITY).map(([form, e]) => ({
-        form, favorisiert: e.favorisiert,
-      }));
-    });
-
-    for (const { form, favorisiert } of erwartet) {
-      await page.selectOption('#cfg-preset', form);
-      const text = await hinweis.innerText();
-      expect(text, `${form}: die begünstigte Klasse fehlt`).toContain(favorisiert);
-    }
-  });
+  /*
+   * ENTFERNT (2026-09-19): Hier stand der Test „Die Kartenwahl zeigt die
+   * begünstigte Klasse". Er prüfte die Zeile `#cfg-preset-synergie` unter der
+   * Menü-Auswahl „Karte" — und die ist entfernt, weil sie die Karte gar nicht
+   * beeinflusste (der autonome Generator entscheidet aus dem Seed; gemessen
+   * erzeugten alle acht Formen dieselbe Karte).
+   *
+   * Die Tabelle `TERRAIN_AFFINITY` lebt weiter und wird im nächsten Test über
+   * den Counterplay-Reiter der HILFE geprüft — dort steht die
+   * Gelände-Klassen-Zuordnung als Nachschlagewerk, ohne eine Wahl zu behaupten.
+   */
 
   test('Der Counterplay-Reiter erklärt die Klassen und die Karten', async ({ page }) => {
     await page.goto('/');

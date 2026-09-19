@@ -311,14 +311,25 @@ class Game {
   startFromMenu() {
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
     const playersPerTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
-    const preset = document.getElementById('cfg-preset')?.value ?? 'hills';
     /*
-     * „autonom" lässt den Generator selbst entscheiden.
+     * Der Kartentyp ist keine Einstellung mehr.
      *
-     * Der Typ ist keine Einstellung mehr: Der Generator zieht seinen Charakter
-     * aus dem Seed. Wer die Karte wählen könnte, kennt sie nach zehn Partien
-     * und spielt gegen eine Kulisse statt gegen das Gelände.
+     * FUND (belegt, gemessen 2026-09-19): Das Menü hatte eine Auswahl
+     * „Karte" (`#cfg-preset`, acht Formen). Sie bewirkte NICHTS: `kartentyp:
+     * 'autonom'` lässt den Generator entscheiden, und gemessen erzeugten hills,
+     * open, spires und flooded dieselbe Karte (`hash 6bc9aa96`, `landAnteil
+     * 0,524`). Ein Bedienelement, das nichts bewirkt, ist irreführender als
+     * keines — die Auswahl und die Anzeige, die daran hing, sind entfernt.
+     *
+     * „autonom" lässt den Generator selbst entscheiden: Der Typ ist keine
+     * Einstellung, der Generator zieht seinen Charakter aus dem Seed. Wer die
+     * Karte wählen könnte, kennt sie nach zehn Partien und spielt gegen eine
+     * Kulisse statt gegen das Gelände.
+     *
+     * `preset` bleibt als neutraler Rückfallwert stehen — der Motor braucht ihn
+     * für Wege, die keine autonome Karte bauen (Werkzeuge, Tests).
      */
+    const preset = 'hills';
     const kartentyp = 'autonom';
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
@@ -373,43 +384,17 @@ class Game {
     return liste;
   }
 
-  /**
-   * Zeigt zur gewählten Karte, welche Klasse hier ihre Stärke ausspielen kann.
+  /*
+   * ENTFERNT (2026-09-19): `fillTerrainAffinity()` samt `#cfg-preset-synergie`.
    *
-   * ## Das ist ANZEIGE, kein Bonus
+   * Die Methode zeigte zur gewählten KARTENFORM, welche Klasse dort ihre Stärke
+   * ausspielt. Beides hing an der Menü-Auswahl „Karte", die die Karte gar nicht
+   * beeinflusste (der Generator entscheidet aus dem Seed) — eine Synergie-Anzeige
+   * für eine Wahl, die es nicht gibt, wäre irreführend.
    *
-   * Es gibt keinen Multiplikator im Motor. Die Zeile sagt nur, worauf die Karte
-   * hinausläuft — der Spieler entscheidet danach. Counterplay durch WAHL statt
-   * durch eine unsichtbare Rechnung, die den erlebten Schaden unerklärbar
-   * machen würde (siehe Entwurf C.1/C.4).
-   *
-   * ## Warum eine eigene Methode
-   *
-   * Der Text muss beim WECHSEL der Karte aktualisiert werden, nicht nur einmal
-   * beim Aufbau. Ohne Listener stünde dort dauerhaft die Zuordnung der ersten
-   * Option — eine Anzeige, die nicht zur Auswahl passt.
+   * `TERRAIN_AFFINITY` bleibt: Die Tabelle steht weiter in der Hilfe
+   * (`hilfeInhalt`) und beschreibt die Geländeformen des Generators.
    */
-  fillTerrainAffinity() {
-    const auswahl = document.getElementById('cfg-preset');
-    const ziel = document.getElementById('cfg-preset-synergie');
-    if (!auswahl || !ziel) return;
-
-    const aktualisiere = () => {
-      const form = auswahl.value;
-      const affinitaet = TERRAIN_AFFINITY[form];
-      const karte = TERRAIN_PRESETS[form];
-      if (!affinitaet || !karte) {
-        ziel.textContent = '';
-        return;
-      }
-      // Der Text nennt die Klasse und den Grund — beides aus der Config.
-      ziel.textContent = `${karte.erklaerung} Begünstigt: ${affinitaet.favorisiert} — `
-        + affinitaet.begruendung;
-    };
-
-    auswahl.addEventListener('change', aktualisiere);
-    aktualisiere();
-  }
 
   /**
    * Füllt die Loadout-Auswahl im Menü — je Spielerplatz zwei Felder.
@@ -3032,8 +3017,6 @@ if (typeof document !== 'undefined') {
     game.fillSidegradeOptions();
     // Loadout-Auswahl je Spielerplatz (Klasse und Archetyp entkoppelt).
     game.fillLoadoutOptions();
-    // Karten-Synergie anzeigen (reine Anzeige, kein Bonus im Motor).
-    game.fillTerrainAffinity();
 
     /*
      * Die Loadout-Felder richten sich nach „Teams" und „Spieler pro Team" —

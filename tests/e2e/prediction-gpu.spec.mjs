@@ -18,8 +18,7 @@ import { test, expect } from '@playwright/test';
 /** Startet ein lokales Match mit festem Seed. */
 async function starteLokalesMatch(page, seed = '20260916') {
   await page.goto('/');
-  await page.selectOption('#cfg-preset', 'hills');
-  await page.fill('#cfg-seed', seed);
+  await page.fill('#cfg-seed', String(seed));
   await page.click('#start-button');
   await page.waitForFunction(() => window.__PA__?.game?.match !== null, null, { timeout: 15_000 });
   // Ein paar Bilder laufen lassen, damit Terrain und Kulisse stehen.
