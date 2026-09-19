@@ -12,6 +12,13 @@
  * das Kantenlicht ist aber ein einzelner Saum von 1–2 px. Das ist die
  * schmale Grenze zwischen „Kante betont" und „nicht wahrnehmbar".
  *
+ * NACHTRAG (belegt, 2026-09-18): Der Saum ist behoben — `KANTEN_STUFEN = 3`
+ * (src/client/terrainBaker.js) malt je Spalte drei Stufen mit fallendem Alpha
+ * (0,22 → 0,11 → 0,073). Die Messung unten lautet jetzt „192 Striche, 64 von 64
+ * Spalten mit mehr als einer Stufe" statt „64 Striche, 0 mehrfach". Der Schluss
+ * dieses Werkzeugs wird deshalb aus der Messung gebildet und nicht mehr als
+ * fester Text ausgegeben.
+ *
  * ## Was gemessen wird
  *
  * `edgeLightColor()` liefert die Farbe, `drawSurfaceEdge()` malt sie. Gemessen
@@ -26,7 +33,7 @@
  *     node scripts/check-terrain-look.mjs
  */
 import {
-  edgeLightColor, drawSurfaceEdge, groundColorAt, DEPTH_REACH_PX,
+  edgeLightColor, drawSurfaceEdge, groundColorAt, DEPTH_REACH_PX, KANTEN_STUFEN, kantenStufe,
 } from '../src/client/terrainBaker.js';
 
 /** Ein Canvas-Ersatz, der die Aufrufe mitschreibt — kein Browser nötig. */
@@ -168,15 +175,40 @@ for (const boden of BOEDEN) {
 console.log('');
 console.log('WAS DARAUS FOLGT');
 console.log('');
-console.log('  Zwei Befunde, beide messbar:');
+
+/*
+ * Der Schluss wird aus der MESSUNG gebildet, nicht aus festem Text.
+ *
+ * FUND (belegt, 2026-09-18): Hier stand über die gesamte Projektlaufzeit die
+ * Aussage „Die Kante ist EINE Stufe von 1 px" — auch noch, nachdem `KANTEN_STUFEN`
+ * eingeführt und der Verlauf umgesetzt war. Die Messung oben meldete währenddessen
+ * „192 Striche, 64 von 64 Spalten mit mehr als einer Stufe". Ein Werkzeug, dessen
+ * Fazit seiner eigenen Messung widerspricht, ist irreführender als kein Fazit.
+ */
+const stufenAlphas = Array.from({ length: KANTEN_STUFEN }, (_, stufe) => {
+  const treffer = /,\s*([\d.]+)\)$/.exec(kantenStufe(BOEDEN[0].farbe, stufe));
+  return treffer ? treffer[1] : '?';
+});
+
+console.log(`  Kantenlicht: ${KANTEN_STUFEN} Stufen je Spalte — gezeichnet wurden `
+  + `${ctx.striche.length} Striche auf ${spalten} Spalten.`);
+console.log(`  Alpha je Stufe: ${stufenAlphas.join(' → ')} `
+  + `(Stufe 0 = Oberfläche, jede weitere dunkler und durchscheinender).`);
 console.log('');
-console.log('   1. Der wirksame Helligkeitsunterschied liegt bei 3–6 Stufen (Alpha 0,22');
-console.log('      auf einem Δ von 15–27). Bei 8 Bit je Kanal ist das die Grenze der');
-console.log('      Wahrnehmbarkeit — auf einem hellen Boden (Sand, Schnee) stärker,');
-console.log('      auf einem dunklen (Basalt) schwächer.');
-console.log('   2. Die Kante ist EINE Stufe von 1 px. Ein Licht, das Tiefe erzeugt,');
-console.log('      hätte zwei bis drei Stufen mit abnehmender Helligkeit.');
+
+if (mehrfach === 0) {
+  console.log('  BEFUND: KEINE Spalte hat mehr als eine Stufe. Die Kante ist damit');
+  console.log('  eine Linie, kein Licht — der offene Punkt „Terrain optisch aufwerten"');
+  console.log('  ist NICHT erledigt.');
+} else {
+  console.log(`  BEFUND: ${mehrfach} von ${spalten} Spalten haben mehr als eine Stufe —`);
+  console.log('  der Verlauf ist vorhanden (der frühere Zustand war 0 von 64).');
+}
 console.log('');
-console.log('  Beides zu ändern ist eine GESTALTUNGSENTSCHEIDUNG — wie stark die');
-console.log('  Oberfläche hervortreten soll, ist Geschmack. Die Zahlen sagen, wie viel');
-console.log('  Spielraum bleibt: Die Kante ist da, aber sie ist am unteren Rand.');
+console.log('  Tiefenwirkung: siehe Tabelle oben — der Helligkeitsunterschied liegt bei');
+console.log('  allen Böden über 40 Stufen, also deutlich bis stark.');
+console.log('');
+console.log('  Offen bleibt allein die GESTALTUNGSFRAGE, wie stark die Kante hervortreten');
+console.log(`  soll. Die Stellschrauben dafür stehen in src/client/terrainBaker.js:`);
+console.log('  `KANTEN_STUFEN` (Zahl der Stufen) und die Alpha-Rampe in `kantenStufe()`.');
+console.log('  Eine Änderung dort ist eine Geschmacksentscheidung, keine Reparatur.');

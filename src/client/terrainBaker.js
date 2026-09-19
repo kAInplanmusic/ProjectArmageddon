@@ -179,7 +179,13 @@ export const KANTEN_STUFEN = 3;
  * Helligkeit gestaffelt, bliebe die Kante ein Block mit harter Unterkante.
  *
  * Die Aufhellung fällt mit `1 / (1 + stufe)` — Stufe 0 bekommt +70, Stufe 1
- * +35, Stufe 2 +23. Der Alpha-Wert fällt ebenso: 0,22 → 0,15 → 0,10.
+ * +35, Stufe 2 +23. Der Alpha-Wert fällt ebenso: 0,22 → 0,11 → 0,073.
+ *
+ * FUND (belegt, 2026-09-18): Hier stand „0,22 → 0,15 → 0,10". Die Rechnung
+ * `0.22 * (1 / (1 + stufe))` ergibt aber **0,22 · 0,11 · 0,0733** — gemessen mit
+ * `npm run check:terrain` (Ausgabe „Alpha je Stufe"). Die abgeschriebene Reihe
+ * beschrieb eine Abstufung, die der Code nie erzeugt hat; wer die Zahlen
+ * brauchte, bekam falsche.
  *
  * ## Warum ein Verlauf und nicht eine feste Zahl
  *

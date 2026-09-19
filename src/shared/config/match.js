@@ -7,12 +7,16 @@ export const MATCH_RULES = Object.freeze({
    * Maße des Spiels.
    *
    * FUND (belegt, Code-Audit): Hier stand `teamSize: {minimum: 4, maximum: 6}`
-   * — mit NULL Lesestellen (gemessen). Die geltende Regel steht in
-   * `server/lobby.js:36`: `playersPerTeam` muss zwischen 1 und 3 liegen.
+   * — mit NULL Lesestellen (gemessen). Zur Zeit des Audits ließ
+   * `server/lobby.js` nur **1 bis 3** Spieler je Team zu; die Konfiguration
+   * versprach 4–6 und widersprach damit der durchgesetzten Regel.
    *
-   * Die beiden Angaben WIDERSPRECHEN sich: Die Konfiguration verspricht 4–6
-   * Spieler je Team, der Server lehnt alles über 3 ab. Wer hier nachschlägt,
-   * bekommt eine falsche Antwort.
+   * NACHTRAG (belegt, 2026-09-18): Die Teamgrenze liegt inzwischen bei
+   * `MAX_PLAYERS_PER_TEAM = 6` (`src/server/lobby.js:32`) — die frühere 3 war
+   * unbegründet und widersprach `MAX_LOBBY_PLAYERS = 12`. Die geltende Grenze
+   * steht weiterhin NUR dort, wo sie durchgesetzt wird; `teamSize` bleibt
+   * entfernt, weil es keine Lesestelle hatte. `tests/match-rules.test.js` hält
+   * fest, dass Konfiguration und Lobby nicht wieder auseinanderlaufen.
    *
    * Die Felder sind entfernt, weil sie meine Erwartung nicht steuern. Die
    * geltende Grenze steht dort, wo sie durchgesetzt wird (Lobby-Validierung) —

@@ -6,16 +6,17 @@
  * Ein Code- und ein User-Flow-Audit fanden **fünf tote Konfigurationsfelder** in
  * `MATCH_RULES` (gemessen: null Lesestellen):
  *
- *   - `teamSize: {minimum: 4, maximum: 6}` — und die geltende Regel steht in
- *     `server/lobby.js:36`: `playersPerTeam` zwischen **1 und 3**.
+ *   - `teamSize: {minimum: 4, maximum: 6}` — zur Zeit des Audits ließ
+ *     `server/lobby.js` nur **1 bis 3** Spieler je Team zu (die Grenze liegt
+ *     heute bei `MAX_PLAYERS_PER_TEAM = 6`, siehe Test unten).
  *   - `turnTimers.duelSeconds.maximum: 60` und
  *     `turnTimers.fourPlayerSeconds.maximum: 40` — der Motor liest nur
  *     `.minimum`.
  *   - `gameplayDimension` / `visualsDimension` — ohne Lesestelle.
  *
- * **Der `teamSize`-Fall ist der ernsteste:** Die Konfiguration verspricht 4–6
- * Spieler je Team, der Server lehnt alles über 3 ab. Wer dort nachschlägt,
- * bekommt eine **falsche** Antwort.
+ * **Der `teamSize`-Fall ist der ernsteste:** Die Konfiguration versprach 4–6
+ * Spieler je Team, der Server lehnte alles über 3 ab. Wer dort nachschlug,
+ * bekam eine **falsche** Antwort.
  *
  * ## Was hier geprüft wird
  *

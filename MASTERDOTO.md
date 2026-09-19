@@ -17,20 +17,55 @@ Absichtserklärungen.
 
 ## Verifikationsstand
 
+*Stand 2026-09-19, gemessen nach dem Bot-Umbau (vorherige Zahlen in Klammern).*
+
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Linting | `npm run lint` | grün, 0 Fehler |
-| Unit-/Integrationstests | `npm test` | **930/930** |
-| Browser-E2E | `npm run test:e2e` | **160/160** (System-Chrome, 25,4 min; 1 übersprungen) |
+| Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
+| Unit-/Integrationstests | `npm test` | **947/947** grün in 306 s (vorher 930/930) |
+| Browser-E2E | `npm run test:e2e` | **165/182 grün, 16 rot, 1 übersprungen** (22,2 min) — siehe Befund unten |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
-| Build | `npm run build` | grün |
+| Build | `npm run build` | grün (1,8 s) |
 | Validierung | `npm run validate` | grün |
-| Performance | `npm run perf` | 0 Ticks über 16,7 ms, ~195× Echtzeit |
+| Performance | `npm run perf` | 0 Ticks über 16,7 ms, 182,7× Echtzeit, p99 0,28 ms |
 | Balance | `npm run balance` | Auf Startentfernung 426 px: 113 Waffen mit Schaden am Ziel, 36 Selbstwirkungs-Waffen (alle wirksam), **1 ohne Wirkung** |
 | Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13**; die eine wirkungslose Waffe ist der „Explosive Energieball" (Zünder, siehe Bekannte Grenzen) |
-| Replay | `npm run replay -- record` + `play --verify` | Zustandshash identisch |
+| Replay | `npm run replay -- record` + `play --verify` | Zustandshash `808ac5eb` identisch, „exakt reproduzierbar" |
 | Determinismus | manuell, 3000 Ticks | Seed 4242 → `bc9695fa` reproduzierbar, Seed 9999 → `c0531097` |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
+| **Bot-Treffsicherheit** | `npm run check:bots` | 1017 Schüsse über 6 Seeds × 5 Skill-Stufen; in Reichweite **79,5 %** Treffer (Skill 1,0), kontrollierte Lage 32/32 = 100 %, Planfehler 6,23 px |
+
+### Befund zur E2E-Batterie (2026-09-19): die 16 roten Tests sind VORBESTEHEND
+
+Die frühere Angabe „160/160" gilt auf diesem Rechner **nicht** mehr. Gemessen
+und gegengeprüft: Die Batterie hat 16 reproduzierbare Ausfälle, und ein
+**A/B-Vergleich gegen den unveränderten Stand** zeigt, dass sie nichts mit der
+laufenden Arbeit zu tun haben.
+
+*Vorgehen:* `git worktree add /tmp/pa-baseline HEAD` (Stand `9cb5fe5`, also VOR
+dem Bot-Umbau), dort dieselben acht Testdateien gefahren.
+
+| | neuer Stand | Baseline `9cb5fe5` |
+|---|---|---|
+| Ausfälle in denselben Dateien | **16** | **16** |
+| nur im neuen Stand rot | — | — |
+| nur in der Baseline rot | — | — |
+
+Die Fehlerlisten sind **elementweise identisch** (`drop-cooldown`, `multiplayer`
+Kistenangabe, `prediction-online`, `profil` Zurücksetzen, sieben `profiling`,
+`runtime-smoke` Matchstart, drei `terrain-presets`, `turret` Anzeige).
+
+*Ursachen, soweit messbar:*
+
+- **`profiling` (7 Ausfälle): die Hardware dieses Rechners.** Die Ausgabe nennt
+  es selbst: 300 Bilder, Mittel **48,8 ms** (Faktor 2,93 über dem 16,7-ms-Budget),
+  20,5 fps, Terrain-Neuaufbau 2435 ms für 2560×1440 auf dem CPU-Weg. Das sind
+  Budget-Prüfungen, die eine echte GPU voraussetzen; hier rastert der Browser in
+  Software.
+- **Die übrigen neun** sind ebenfalls auf dem unveränderten Stand rot. Sie
+  werden als eigene Aufgabe geführt (Verdacht: Reihenfolge-/Zustandsabhängigkeit
+  im Menü bzw. Erwartungen an die Kartenbreite), **nicht** als Folge des
+  Bot-Umbaus.
 
 ## Audit 2026-09-17 — vier unabhängige Sichten
 
@@ -45,6 +80,113 @@ Auf Auftrag ein **tiefes Audit** in vier Teilen. Die Berichte stehen in `docs/`:
 
 Die daraus abgeleiteten offenen Punkte stehen unter **„Offene Punkte aus dem
 Audit"** weiter unten.
+
+## Fortsetzung 2026-09-18 — drei Widersprüche zwischen Doku und Code, Bots in Arbeit
+
+*Ausgangslage:* Der Auftrag steht im Kopf von `scripts/measure-npc.mjs`:
+„Günther und die NPCs müssen richtig gut werden." Günther ist umgesetzt und
+verifiziert; der Jagd-Bot des Servers (`src/server/bot.js`) war dagegen noch die
+grobe `atan2`-Näherung mit Zufallsstreuung. Bevor daran gearbeitet wird, wurden
+drei Stellen geprüft, an denen Doku und Code auseinanderliefen — alle drei sind
+belegt, nicht vermutet:
+
+1. **`npm run check:terrain` widersprach seiner eigenen Messung.** Das Werkzeug
+   meldete „192 Striche, 64 von 64 Spalten mit mehr als einer Stufe" und zog
+   darunter per festem Text den Schluss „Die Kante ist EINE Stufe von 1 px".
+   Behoben: Der Schluss wird jetzt aus der Messung gebildet (Stufenzahl aus
+   `KANTEN_STUFEN`, Alpha-Reihe aus `kantenStufe()`). Ein Werkzeug, dessen Fazit
+   der eigenen Messung widerspricht, ist irreführender als kein Fazit.
+2. **Die Alpha-Reihe in `src/client/terrainBaker.js` war abgeschrieben und
+   falsch.** Im Kommentar stand „0,22 → 0,15 → 0,10"; die Rechnung
+   `0.22 * (1 / (1 + stufe))` ergibt **0,22 · 0,11 · 0,073**. Korrigiert, mit der
+   Messung als Belegquelle. (Die Aufhellung +70/+35/+23 war korrekt.)
+3. **Der Kommentar in `src/shared/config/match.js` nannte eine überholte
+   Teamgrenze:** „`playersPerTeam` muss zwischen 1 und 3 liegen"
+   (`server/lobby.js:36`). Geltend ist `MAX_PLAYERS_PER_TEAM = 6`
+   (`src/server/lobby.js:32`); `tests/match-rules.test.js` prüft die Beziehung
+   schon gegen die Konstante. Kommentar und Testkopf richtiggestellt.
+
+*In Arbeit (Auftrag an einen Subagenten, Prüfung durch den Auftraggeber):* Der
+Server-Bot wird nach dem verifizierten Rezept in `docs/recherche/npc-ki.md`
+neu gebaut — **eine** gemeinsame Ballistik-Implementierung für Client-Vorhersage
+und Bot (Recherche-Punkt 1), Zielsuche per Vorwärtssimulation mit interpolierter
+Nullstelle (Punkte 3+4) statt Näherungsformel, Menschlichkeit über Gauss-Streuung,
+Exponent 1.5 und ~3 % Aussetzer (Punkte 5+6), dazu ein Messwerkzeug
+`scripts/check-bots.mjs`. Der Unterpunkt „Terrain" in `### F. Darstellung` und
+„Mahlstrom" unter den Audit-Punkten sind mit diesem Datum geschlossen.
+
+### Der Bot ist umgebaut — mit Messung, nicht mit Behauptung
+
+*Umgesetzt:* `src/shared/ballistics.js` (EIN Integrationsschritt, EIN Strahl, EINE
+Vorwärtssimulation), `src/shared/launchSpeed.js` (EINE Abschussgeschwindigkeit),
+`src/server/bot.js` neu (Grobraster → Vorwärtssimulation gegen echtes Terrain und
+Trefferfelder → Verfeinerung durch 12 Halbierungen → Softmax-Zielwahl,
+Box-Muller-Streuung, Exponent 1.5, 3 % Aussetzer), `scripts/check-bots.mjs` als
+Messwerkzeug. Vier Leser teilen jetzt den Schritt: Motor, `aimPreview`,
+Client-Vorhersage, Bot.
+
+*Gemessen (`npm run check:bots`, 6 Seeds × 5 Skill-Stufen, 1017 Schüsse):*
+
+| Skill | Trefferquote (alle Schüsse) | nur erreichbare Ziele | mittlerer Fehlabstand |
+|---|---|---|---|
+| 1,00 | 42,7 % | **79,5 %** | 23,5 px |
+| 0,70 | 23,9 % | 40,2 % | 173,8 px |
+| 0,55 | 23,0 % | 44,9 % | 166,2 px |
+| 0,40 | 16,8 % | 32,6 % | 181,3 px |
+| 0,20 | 11,8 % | 23,4 % | 197,5 px |
+
+Kontrollierte Lage (Ziel in Reichweite gesetzt, Skill 1,00): **32/32 = 100 %**,
+mittlerer Planfehler 6,23 px. Die Solver-Genauigkeit selbst liegt bei **0,000 px**
+(`tests/bot-ai.test.js` rechnet mit einer unabhängigen Schleife nach); Motor und
+Client-Vorhersage weichen über 15 Schritte um **5,2 · 10⁻⁵ px** voneinander ab
+(Float32-Speicherung, nicht Physik).
+
+*Zwei eigene Fehler, die die Messung aufgedeckt hat:* (1) Die **Lebensdauer des
+Geschosses** war nicht Teil der Simulation — der Bot plante Bögen für ein
+Geschoss, das vorher verfiel (`projectile_expired`, Seed 1000, Zug 3). Nach dem
+Einbau stieg die Trefferquote erreichbarer Ziele von 44,9 % auf 79,5 %.
+(2) Ziel war der **Mittelpunkt** der Figur statt der Rand des Trefferfelds;
+Figuren schwingen ±4 px je Zug, Randtreffer brachen (A/B 40/40 gegen 39/40).
+
+*Zwei Duplikate, die ESLint gefunden hat:* `MatchController#projectileLifetime`
+stand wortgleich ZWEIMAL untereinander, `get bitmap()` ebenso — in JavaScript
+gewinnt die letzte Fassung, die erste war toter Code. Entfernt, und
+`no-dupe-class-members` ist jetzt in `eslint.config.mjs` gesetzt, damit es nicht
+wiederkommt (`npm run lint` war vorher grün).
+
+*Abgrenzung, ausdrücklich NICHT umgesetzt:* Waffengating nach Skill (wäre eine
+zweite Balance-Regel), Vermeidung von Kollateralschaden durch Explosionen um
+eigene Figuren, Sonderbehandlung der sieben Luftangriffs-Waffen (`strikeStyle`),
+und die verbleibenden Kopien des Schritts in `#simulateTurretPath` (durch einen
+Strukturtest festgehalten), `#stepCrate` (eigene Kasten-Konstanten) und
+`physics/ballistics.js` (Hitscan-Strahl ohne Gravitation).
+
+- [ ] **Reichweite: drei Stellen, drei Auffassungen — Balance-Entscheidung.**
+
+      FUND (belegt, eigene Messung mit den echten Modulen, 2026-09-18): Der
+      Faktor aus `src/shared/reichweite.js` (`f = √(Breite/1920)`) wird an drei
+      Stellen unterschiedlich angewandt:
+
+      | Stelle | Wirkung auf die Wurfweite | bei 5120 px |
+      |---|---|---|
+      | Spielerschuss (`#launchVector`) | **gar nicht** — Weite bleibt konstant | 613 px |
+      | Geschütz (`#simulateTurretPath`, `#spawnTurretProjectile`) | auf die Geschwindigkeit → Weite × f² | 1634 px |
+      | Erreichbarkeits-Check (`match.js`, `pruefeErreichbarkeit`) | auf die Weite → × f | 1001 px |
+
+      Die Dokumentation in `reichweite.js` nennt die Formel
+      `v = Kraft × POWER_TO_SPEED × speedFactor × reichweitenFaktor` — der
+      Spielerschuss folgt ihr **nicht**. Folge: Auf einer 3840er Karte nimmt die
+      Prüfung **doppelt** so viel Reichweite an, auf einer 5120er **2,67-fach**;
+      die Startpositionen liegen laut Messung 512 px auseinander, während ein
+      Schuss bei Kraft 100 tatsächlich 352–400 px weit kommt (pa_041, scout,
+      45°) — deshalb hat nur etwa jeder zweite Schuss überhaupt ein erreichbares
+      Ziel.
+
+      *Offen — Entscheidung des Auftraggebers:* Den Faktor im Spielerschuss
+      anwenden (dann reichen Waffen auf großen Karten entsprechend weiter, und
+      die Prüfung stimmt wieder) **oder** ihn aus Geschütz und Prüfung
+      entfernen (Weite bleibt überall konstant). Beides ist eine
+      Balance-Änderung, keine Reparatur — deshalb hier und nicht im Code.
 
 ## In diesem Durchgang gefundene und behobene Fehler
 
@@ -1839,9 +1981,20 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Wasser, Ambiente und Landmarken, der sich jeder Kartengroesse anpasst. Der
       Prompt steht im Katalog; nichts davon entsteht zur Laufzeit — Determinismus
       und Offline-Betrieb bleiben erhalten.
-- [ ] **Terrain optisch aufwerten — Bestand gemessen, Entscheidung offen.**
-      *Neu: `npm run check:terrain`* — es misst die Bodenfarben, das Kantenlicht
-      und die Tiefenwirkung, ohne Browser.
+- [x] **Terrain optisch aufgewertet — gemessen und geschlossen (2026-09-18).**
+      *Der eine echte Spielraum war das Kantenlicht.* Er ist umgesetzt und belegt:
+      `KANTEN_STUFEN = 3` in `src/client/terrainBaker.js` malt je Spalte drei
+      Stufen mit fallendem Alpha (0,22 → 0,11 → 0,073), sodass die Kante ein
+      Verlauf ist statt einer Linie. `npm run check:terrain` meldet jetzt „192
+      Striche, 64 von 64 Spalten mit mehr als einer Stufe" (vorher 64 Striche,
+      0 mehrfach) und bildet seinen Schluss aus dieser Messung.
+      *Abgesichert:* `tests/kantenlicht.test.js` (mehrere Stufen, nach unten
+      dunkler, oberste Stufe = `edgeLightColor`).
+      *Was offen bleibt:* nur noch die Geschmacksfrage, wie stark die Kante
+      hervortreten soll — Stellschrauben `KANTEN_STUFEN` und die Alpha-Rampe in
+      `kantenStufe()`. Das ist keine Reparatur mehr, sondern Abstimmung.
+      *Werkzeug:* `npm run check:terrain` misst Bodenfarben, Kantenlicht und
+      Tiefenwirkung ohne Browser — und bildet sein Fazit aus der Messung.
 
       *Sichtprüfung im Browser (Screenshot) und Messung zusammen:*
 
@@ -2738,8 +2891,9 @@ beschrieben.
       **kein** Konfigurationsfeld ohne Leser bleibt (Ausnahme: die beiden
       Dimensionsangaben, die ausdrücklich Beschreibung sind).
 
-- [ ] **Mahlstrom greift zu spät — Zahlen liegen vor, Entscheidung offen.**
-      Breakpoint heute **Runde 15**.
+- [x] **Mahlstrom greift in Runde 8 — umgesetzt und belegt (2026-09-18).**
+      Breakpoint **vorher Runde 15 — jetzt Runde 8**
+      (`MATCH_RULES.suddenDeath.roundBreakpoint`, `src/shared/config/match.js`).
 
       *Neu: `npm run check:maelstrom`* — es spielt Partien und protokolliert die
       Endrunden. Ergebnis über 6 Partien: **Keine einzige endete vor Runde 15.**
