@@ -226,29 +226,32 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       Beide erzeugen einen Eintrag in `#verlauf`, und genau deshalb steht
       `verlauf: 1` schon beim ersten Auslesen. Nicht geraten: welcher von beiden.
 
-      *Gemessen, Eintragsstatus (`zz-probe-fokus`, gelöscht):*
+      *AUFGELÖST (2026-09-19, `zz-probe-startat`, gelöscht).* `begin()` wurde
+      angezapft und im SELBEN `evaluate` gelesen, direkt nach `fire()`:
 
-          SOFORT (≈20 ms nach Enter): status: ["timeout"], verlauf: 1, aktiv: false
-          +50/+200/+1200 ms: unverändert
+          {ok:true}, aktiv=TRUE, verlauf=0, status=[],
+          begin(): startedAt === Date.now()   (differenz: 0)
+          nach 1000 ms: aktiv=false, status=["timeout"]
 
-      **(b) ist damit belegt, (a) ausgeschlossen** — der Eintrag ist ein TIMEOUT,
-      also lief `expire()`; ein zweiter `begin()` hätte `superseded` erzeugt.
+      Damit ist der Widerspruch weg: `startedAt` ist KORREKT, die Uhr springt
+      nicht, und die Vorhersage STEHT nach dem Schuss — sie läuft nach genau
+      1000 ms ab, wie entworfen (Punkt 3 der Klasse). Der „Timeout nach 20 ms" hat
+      nie existiert; die früheren „SOFORT"-Auslesen lagen real ~1 s nach dem
+      Tastendruck.
 
-      *Der Widerspruch steht jetzt scharf:* `expire()` schließt erst bei
-      `Date.now() - startedAt >= 1000` (`shotPrediction.js:270`), im Aufbau ist
-      `timeoutMs` nachweislich 1000 (`main.js:124`; die einzige weitere
-      Konstruktion gibt es nicht), eine Uhr wird in keinem E2E-Aufbau gesetzt
-      (geprüft: kein `clock`/`setSystemTime` in `playwright.config.mjs` und den
-      Specs) — trotzdem liegt der Timeout bereits ~20 ms nach dem Schuss vor.
-      `startedAt` des Eintrags ist NICHT abrufbar: `history` speichert es nicht
-      (gemessen: `startedAgo: [null]`). Also muss `begin()` beim Abschuss ein
-      `startedAt` ~1 s in der Vergangenheit gesetzt haben — oder die Uhr der
-      Seite springt. Nicht geraten: welches von beidem.
+      *Der Befund ist damit über die Maschine:* Zwischen `keydown` und dem
+      folgenden `page.evaluate` vergeht in diesem Aufbau über eine Sekunde — die
+      Seite hängt (dieselbe Wurzel wie die 7 `profiling`-Fehler: 48,8 ms/Bild,
+      20,5 fps). Die Zusicherung des Tests — „die Vorhersage muss stehen, bevor
+      die Antwort da ist", geprüft bei +200 ms — wird dadurch unhaltbar: landet
+      das Auslesen erst nach ~1 s, ist die Vorhersage BESTIMMUNGSGEMÄSS schon
+      abgelaufen. Kein Produktfehler.
 
-      *Nächste Messung (genau eine, letzter Schritt):* `begin()` anzapfen und in
-      EINEM `evaluate` `startedAt` des laufenden Eintrags gegen `Date.now()`
-      stellen. Das entscheidet Uhr vs. `startedAt` und damit, ob der Fehler im
-      Produkt oder im Aufbau sitzt.
+      *Konsequenz für den Test (noch nicht umgesetzt):* Nicht die Uhrzeit
+      vorschreiben, sondern auf den Zustand warten — z. B. die Vorhersage
+      unmittelbar nach dem Schuss im selben Zug lesen oder auf `active === true`
+      mit kurzem Polling warten, statt 200 ms anzunehmen. Auf schneller Hardware
+      bliebe der Test damit scharf, auf dieser wird er nicht zur Lotterie.
 
       *Verworfen (nicht wieder bauen):* den Tick nur noch gegen die Betrugsgrenze
       `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen. Gebaut, gemessen,
