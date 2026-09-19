@@ -207,10 +207,28 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       möglicherweise gar nicht gefeuert (Fokus?). Das ist offen und wird nicht
       geraten.
 
-      *Nächste Messung (genau eine):* Im Proxy-Aufbau unmittelbar VOR und NACH dem
-      Enter-Druck `active`/`pending` lesen (nicht `stats`), dazu ob der Fokus auf
-      dem Canvas liegt und was `keydown` erreicht. Das trennt „Enter feuert
-      nicht" von „Enter feuert, aber die Bahn verschwindet".
+      *Gemessen mit `fire()`-Mitschnitt und Enter-Zähler (Probe `zz-probe-fokus`,
+      gelöscht, Proxy-Aufbau):*
+
+          VOR     {aktiv:false, pendingPunkte:null, verlauf:0, enterDowns:0, fireCalls:0}
+          SOFORT  {aktiv:false, pendingPunkte:null, verlauf:1, enterDowns:1, fireCalls:1}
+          +50/+200/+1200 ms: unverändert
+
+      Damit ist belegt: Der Enter-Druck erreicht die Seite (`enterDowns: 1`), ruft
+      `fire()` GENAU EINMAL (`fireCalls: 1`) — und die Vorhersage ist unmittelbar
+      danach ABGESCHLOSSEN (`verlauf: 1`), ohne je zu stehen (`aktiv: false`,
+      `pending: null`). Der Abbruch passiert also SYNCHRON zwischen `begin()` und
+      dem Auslesen; ein Serverereignis kann es in diesem Moment nicht sein.
+
+      *Zwei Mechanismen sind damit möglich, und nur einer kann es sein:*
+      (a) ein ZWEITER `begin()` — er schließt die erste als `superseded`; oder
+      (b) `expire()` mit einem `startedAt`, das ~1 s in der Vergangenheit liegt.
+      Beide erzeugen einen Eintrag in `#verlauf`, und genau deshalb steht
+      `verlauf: 1` schon beim ersten Auslesen. Nicht geraten: welcher von beiden.
+
+      *Nächste Messung (genau eine, entscheidet es):* den STATUS des Eintrags
+      lesen (`shotPredictor.history[0].status` — `superseded` ⇒ (a), `timeout` ⇒
+      (b)) und `begin()`/`#abschluss` mitzählen. Kein weiterer Aufbau nötig.
 
       *Verworfen (nicht wieder bauen):* den Tick nur noch gegen die Betrugsgrenze
       `maxTickDrift` statt gegen das 12-Tick-Fenster zu prüfen. Gebaut, gemessen,
