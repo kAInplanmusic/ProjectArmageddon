@@ -15,7 +15,7 @@ vom 2026-09-17 und waren seither überholt).
 | Quellcode | 35.955 Zeilen (30.255) |
 | Tests | 32.684 Zeilen (26.546) |
 | Unit-Tests | 974 (93 Dateien) — vorher 795 in 72 Dateien |
-| E2E-Tests | 184 (28 Dateien) — 182 grün, 1 rot, 1 übersprungen; vorher 172 in 27 Dateien |
+| E2E-Tests | 184 (28 Dateien) — 183 grün, 0 rot, 1 übersprungen; vorher 172 in 27 Dateien |
 | Werkzeuge | 37 Skripte (22) |
 | Unit-Laufzeit | **4,7 min** (22 s) |
 | E2E-Laufzeit | **22,5 min** (9,4 min) |
@@ -29,12 +29,16 @@ Partien spielen (`balance`, `balance:sweep`, `check:bots`-Nachfolger,
 `measure:*`-Aufrufe in Tests) — sie rechnen, statt zu prüfen. Wer schnell prüfen
 will, fährt `npm run test:unit` (PRNG/Seed/Loot) oder `npm run smoke:fast`.
 
-**Der eine rote E2E-Test ist einer, der eine GPU verlangt:** „Bildzeiten auf dem
-echten Grafikpfad" startet den Browser mit `--use-angle=gl` und fordert mehr als
-20 fps — gemessen **17,2 fps**, Bodenweg `cpu`. Auf diesem Rechner rastert der
-Browser in Software (51,2 ms je Bild, Terrain-Neuaufbau 2531 ms für 2560×1440).
-Die übrigen Bildzeit-Tests MESSEN auf dem Softwarepfad und prüfen ihn
-maßstabsgerecht; sie laufen deshalb auch hier.
+**Die Bildzeit-Prüfung läuft auf der echten GPU — die Flagge war die Ursache.**
+Gemessen mit `--use-gl=angle --use-angle=gl`: `ANGLE (Intel, Mesa Intel HD
+Graphics 3000 (SNB GT2), OpenGL 3.3)`, **13,6 ms je Mio. Pixel** auf der
+2560×1440-Leinwand (21,3 fps kopflos, 29,3 fps mit Fenster). Ohne die Flags
+schaltet Chrome auf **SwiftShader** um: 48,2 ms je Mio. Pixel, 5,6 fps —
+Faktor 3,5. Geprüft wird deshalb der Aufwand JE MILLION PIXEL (Grenze 30 ms)
+statt eines fps-Festwerts, der für eine viermal kleinere Karte galt.
+
+Der einzige übersprungene Test ist der Aufschlag-Test: Er überspringt sich mit
+Begründung, wenn Untergrund UND Differenz beide auffällig sind.
 
 **Was daran lange falsch war (gefunden 2026-09-20):** Von den 7 roten Tests
 lagen fünf im 60-s-Timeout (sie MESSEN 300 Bilder — `test.slow()` behoben), zwei
