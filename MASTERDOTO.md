@@ -142,6 +142,25 @@ alles andere hier (messen, ändern, gegenprüfen), keinen Anhang.
 | `src/engine/match.js` | 3.567 | 73 | 2.399 (67 %) | `fire()` 211 [1458–1668], `getState()` 149 [3248–3396], `spawnPlayers()` 96, `applyTargetEffect()` 91, `buildTerrain()` 89, `resolveGuentherWheel()` 87, `stateHash()` 76 |
 | `src/client/main.js` | 3.698 | 84 | 2.641 (71 %) | `handleEvents()` 229 [1463–1691], `exposeDebugApi()` 166, `startOnline()` 165, `handleRemoteEvent()` 142, `bindMenu()` 100, `zeigeErfolge()` 80 |
 
+### Stand: Schritte 1 und 2 sind GEBAUT (2026-09-20)
+
+| Schritt | Ergebnis | Beleg |
+|---|---|---|
+| 1 · `client/debugApi.js` | **erledigt.** `window.__PA__` liegt in einer eigenen Datei (189 Zeilen), die Klasse behält einen 5-zeiligen Delegator. `main.js`: **3.698 → 3.539 Zeilen**. Nebenbei entstand `shared/zeit.js` (`FIXED_TIMESTEP`), weil ihn jetzt zwei Dateien brauchen | `runtime-smoke` **10/10** — JEDE Prüfung dieser Datei liest den Zustand über `window.__PA__`; lint 0 |
+| 2 · `engine/stateSnapshot.js` | **erledigt.** `stateHash()` ist eine reine Funktion über den Ansichtszustand (103 Zeilen). `match.js`: **3.567 → 3.498 Zeilen** | `npm test` **983/983** — darunter die Determinismus- und Replay-Prüfungen, die genau diesen Hash vergleichen |
+
+**Ein Fehler, der fast durchgerutscht wäre (Schritt 1):** Beim Ersetzen von `this.`
+blieb `game: this,` stehen — das Muster suchte `this` MIT Punkt. In einem Modul ist
+`this` undefiniert, `window.__PA__.game` wurde `undefined`, und ZWEI
+E2E-Prüfungen fielen um („Cannot read properties of undefined (reading 'match')").
+Gefunden hat es `runtime-smoke`, **nicht** der Linter: Ein Linter prüft Syntax und
+Namen, nicht ob eine Schnittstelle noch das liefert, was ihre Aufrufer erwarten.
+Das ist das Argument für den Belegweg, der hier von Anfang an aufgeschrieben war.
+
+**Was `getState()` angeht** (der zweite Teil von Schritt 2): Es hat **38** private
+Zugriffe und braucht deshalb einen Kontext-Parameter — ein eigener, größerer
+Schritt. Die Messung steht oben in der Tabelle (149 Zeilen).
+
 *Die Reihenfolge ist nach RISIKO geordnet, nicht nach Zeilen — zuerst das, was am
 wenigsten Mitspieler hat:*
 
