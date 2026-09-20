@@ -81,7 +81,7 @@ in Klammern).*
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
-| Unit-/Integrationstests | `npm test` | **971/971** grün in ~324 s (vorher 947/947) — der eine rote Test des Durchgangs war `emblem.test.js` (Muster-Wächter) und ist nachgezogen |
+| Unit-/Integrationstests | `npm test` | **971/971** grün (zwei Läufe: 324 s und 256 s; vorher 947/947) — der eine rote Test des Durchgangs war `emblem.test.js` (Muster-Wächter) und ist nachgezogen |
 | Browser-E2E | `npm run test:e2e` | **nicht als Batterie gefahren** — die 16 vorbestehenden Ausfälle dieses Rechners (siehe Befund unten) sind unverändert. Gefahren und grün: `runtime-smoke` (10/10), `terrain-presets` (5/5), `profil` (9/9) |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
