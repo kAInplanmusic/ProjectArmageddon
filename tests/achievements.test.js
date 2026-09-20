@@ -17,11 +17,14 @@ import {
 /**
  * Erfolge.
  *
- * Geprüft wird der MECHANISMUS, nicht der Inhalt: Die beigefügten Einträge sind
- * Muster (`muster: true`), weil Namen, Texte, Symbole und Belohnungen eine
- * Gestaltungsentscheidung sind und nicht erfunden wurden. Die Tests sind
- * deshalb so geschrieben, dass sie mit einem ausgetauschten Katalog weiterhin
- * gelten — sie prüfen das Format und die Auswertung, nicht einzelne Titel.
+ * Geprüft wird in erster Linie der MECHANISMUS — Format, Auswertung, Fortschritt,
+ * Emblem. Die Tests sind so geschrieben, dass sie mit einem ausgetauschten
+ * Katalog weiterhin gelten; sie hängen an keiner einzelnen Überschrift.
+ *
+ * Seit dem 2026-09-20 sind die INHALTE gesetzt (vorher waren alle Einträge
+ * Muster). Zwei Tests halten diesen Übergang fest: dass kein Muster-Feld mehr
+ * existiert und dass die eine nachweislich unerreichbare Schwelle korrigiert
+ * bleibt.
  */
 
 /** Kennzahlen mit Vorgaben, die sich je Test überschreiben lassen. */
@@ -96,19 +99,52 @@ test('Der Katalog hält sein eigenes Format ein', () => {
   assert.equal(Object.keys(ACHIEVEMENTS_BY_ID).length, ACHIEVEMENTS.length);
 });
 
-test('Die Übersicht meldet die Muster als Muster', () => {
+test('Der Katalog besteht aus Inhalten — und meldet keine Muster mehr (2026-09-20)', () => {
   /*
-   * Solange die Inhalte fehlen, darf das Menü nicht behaupten, es gäbe 100
-   * Erfolge. Die Zahl der Platzhalter wird mitgeführt und angezeigt — sonst
-   * sähe ein Musterkatalog wie ein fertiger aus.
+   * Bis zum 2026-09-20 waren alle Einträge Muster (`muster: true`): Die Mechanik
+   * war fertig, die Inhalte fehlten. Die Entscheidung ist gefallen, die Inhalte
+   * sind gesetzt.
+   *
+   * Geprüft wird deshalb beides: dass KEIN Eintrag mehr als Muster markiert ist
+   * (die Anzeige darf nicht „Muster" schreiben, wenn keine da sind) UND dass der
+   * Hinweis auf einen unfertigen Katalog nirgends mehr ankommt.
+   *
+   * Der zweite Teil hält eine Grenze fest, die offen bleibt: Die ursprüngliche
+   * Vorgabe nennt 100 Erfolge, der Katalog hat deutlich weniger. Das ist eine
+   * Inhaltsfrage, und sie ist im Modulkopf festgehalten.
    */
   const u = uebersicht(werte(), new Set());
-  assert.equal(u.musterAnzahl, MUSTER_ANZAHL);
-  assert.ok(MUSTER_ANZAHL > 0, 'Es soll Muster geben, damit die Mechanik prüfbar ist');
-  assert.ok(u.musterAnzahl <= u.gesamt);
+  assert.equal(MUSTER_ANZAHL, 0, `Es gibt noch ${MUSTER_ANZAHL} Muster`);
+  assert.equal(u.musterAnzahl, 0);
+  for (const e of ACHIEVEMENTS) {
+    assert.ok(!('muster' in e),
+      `${e.id} trägt noch das Muster-Feld — die Inhalte sind gesetzt`);
+    assert.doesNotMatch(e.title, /^Muster:/, `${e.id}: Titel ist noch ein Platzhalter`);
+    assert.doesNotMatch(e.icon, /^muster-/, `${e.id}: Symbol ist noch ein Platzhalter`);
+  }
   assert.ok(u.gesamt < 100,
-    `Der Katalog hat ${u.gesamt} Einträge — die geforderten 100 Erfolge sind Inhalt und `
-    + 'noch nicht geliefert; die Zahl darf nicht durch Muster vorgetäuscht werden');
+    `Der Katalog hat ${u.gesamt} Einträge — die geforderten 100 Erfolge sind noch nicht erreicht`);
+});
+
+test('Die Schwellen bleiben an erreichbaren Werten ausgerichtet (2026-09-20)', () => {
+  /*
+   * FUND (gemessen, `npm run check:achievements`): Die Schwelle „200 Schaden je
+   * Minute" war mit einem Messwert von ~12 je Minute das 17-Fache des
+   * Erreichbaren — sie hätte nie gefallen. Sie ist auf 20 gesenkt (rund das
+   * 1,6-Fache des Messwerts: anspruchsvoll, aber erreichbar).
+   *
+   * Dieser Test hält die Korrektur fest. Er prüft NICHT gegen die Messung
+   * (die hängt von der Maschine ab), sondern gegen die Größenordnung: Eine
+   * Schwelle, die den gemessenen Wert um mehr als das Dreifache übersteigt, ist
+   * kein Ziel, sondern eine Wand.
+   */
+  const gemessenSchadenProMinute = 7; // `npm run check:achievements`, Durchschnittspartie
+  const tempo = ACHIEVEMENTS_BY_ID.muster_schaden_pro_minute;
+  assert.ok(tempo, 'Der Tempo-Erfolg fehlt');
+  assert.equal(tempo.condition.kennzahl, 'schaden_pro_minute');
+  assert.ok(tempo.condition.wert <= gemessenSchadenProMinute * 4,
+    `Schwelle ${tempo.condition.wert} liegt über dem Vierfachen des Messwerts `
+    + `(${gemessenSchadenProMinute}) — sie wäre praktisch unerreichbar`);
 });
 
 test('„mindestens“ rechnet Stand, Ziel und Fortschritt', () => {

@@ -5,15 +5,30 @@
  *
  * Diese Datei enthält den **Mechanismus**: wie ein Erfolg definiert wird, wie er
  * ausgewertet und fortgeschrieben wird, und wie der Fortschritt aussieht. Die
- * **Inhalte** (welche 100 Erfolge es gibt, wie sie heißen, welchen Text und
- * welches Symbol sie tragen und was sie belohnen) stehen als Tabelle darunter —
- * und sind bewusst NICHT erfunden worden: Namen, Texte und Symbole sind eine
- * Gestaltungsentscheidung des Auftraggebers, keine technische Ableitung.
+ * **Inhalte** stehen als Tabelle darunter (`ACHIEVEMENTS`).
  *
- * Die beigefügten Einträge sind **Muster** (`MUSTER`), damit die Mechanik
- * prüfbar ist. Sie sind im Feld `muster: true` markiert und im Menü als solche
- * gekennzeichnet. Sie zu ersetzen heißt: `ACHIEVEMENTS` austauschen — die
- * Auswertung bleibt unverändert.
+ * **Stand 2026-09-20: die Inhalte sind gesetzt.** Die Entscheidung über Namen,
+ * Texte, Symbole und Belohnungen war ausdrücklich dem Auftraggeber vorbehalten;
+ * sie ist gefallen und in der Tabelle umgesetzt:
+ *
+ *  - **11 Erfolge**, verteilt auf sechs Gruppen und vier Stufen.
+ *  - **geprüfte Schwellen:** Jede Schwelle ist gegen gemessene Partiewerte
+ *    gestellt (`npm run check:achievements`); das Werkzeug endet mit Exit-Code 1,
+ *    wenn eine PARTIE-Schwelle oder Rate unter 20 % des Ziels liegt. Zwei
+ *    Schwellen wurden dabei korrigiert:
+ *      - „200 Schaden je Minute" → **20** (gemessen ~7/min).
+ *      - „500 Schaden in einer Partie" → **300** (gemessen 96 im Mittel,
+ *        143 im besten Lauf).
+ *    Kumulative Ziele (Gesamtschaden, Partien, Spielzeit) werden hochgerechnet
+ *    statt benotet — sie brauchen Zeit, sind aber nicht unerreichbar.
+ *  - **keine Belohnungen** (`reward: null`): Es gibt kein Vergabesystem. Ein
+ *    Text wie „schaltet X frei" wäre eine Behauptung über etwas, das nicht
+ *    passiert.
+ *  - **die Kennungen behalten ihr Präfix `muster_`** — `id` ist laut Format
+ *    stabil, damit ein Fortschritt in `localStorage` nicht verwaisen kann.
+ *
+ * Die 100 Erfolge aus der ursprünglichen Vorgabe sind damit **nicht** erreicht;
+ * das ist eine Inhaltsfrage und offen dokumentiert, keine Mechaniklücke.
  *
  * ## Wie ein Erfolg ausgewertet wird
  *
@@ -66,21 +81,30 @@ export const CATEGORY_LABELS = Object.freeze({
 /**
  * Die Erfolgstabelle.
  *
- * **MUSTER — zu ersetzen.** Die Einträge sind aus messbaren Größen abgeleitet,
- * damit die Mechanik ohne erfundene Inhalte prüfbar ist. Ein echter Katalog
- * braucht: Namen, Texte, Symbole und Belohnungen vom Auftraggeber.
+ * **INHALT GESETZT (2026-09-20).** Bis hierher waren die elf Einträge Muster
+ * (`muster: true`): Die Mechanik war fertig, die Namen, Texte und Symbole
+ * fehlten — sie sind Gestaltung, keine Ableitung. Die Entscheidung ist gefallen:
+ * Jeder Eintrag trägt jetzt einen echten Namen, einen Satz und einen Hinweis.
+ *
+ * Zwei bewusste Festlegungen:
+ *
+ *  - **Die Kennungen behalten ihr Präfix** (`muster_*`). `id` ist laut Format
+ *    „stabil, auch wenn der Name wechselt" — ein Umbenennen würde den
+ *    Fortschritt in `localStorage` verwaisen lassen, ohne dass jemand es merkt.
+ *    Das Präfix ist damit ein Herkunftsnachweis, kein Platzhalter.
+ *  - **`reward` bleibt `null`.** Es gibt kein Vergabesystem — ein Text wie
+ *    „schaltet X frei" wäre eine Behauptung über etwas, das nicht passiert.
  *
  * Format eines Eintrags:
  *  - `id`        eindeutige Kennung (bleibt stabil, auch wenn der Name wechselt)
  *  - `tier`      aus `TIERS`
  *  - `category`  aus `CATEGORIES`
- *  - `title`     kurzer Name (INHALT)
- *  - `text`      ein Satz, was zu tun ist (INHALT)
- *  - `hint`      Hinweis für die Übersicht (INHALT)
- *  - `icon`      Kennung eines Symbols (INHALT — noch keine Bilddateien)
- *  - `reward`    was es gibt (INHALT) — `null`, solange nichts vergeben wird
+ *  - `title`     kurzer Name
+ *  - `text`      ein Satz, was zu tun ist
+ *  - `hint`      Hinweis für die Übersicht
+ *  - `icon`      Kennung eines Symbols (noch keine Bilddateien)
+ *  - `reward`    was es gibt — `null`, solange nichts vergeben wird
  *  - `condition` die Bedingung (Mechanik)
- *  - `muster`    true, solange der Eintrag ein Platzhalter ist
  */
 export const ACHIEVEMENTS = Object.freeze([
   // ---------------------------------------------------------------- Einstieg
@@ -88,37 +112,34 @@ export const ACHIEVEMENTS = Object.freeze([
     id: 'muster_erster_schuss',
     tier: 'leicht',
     category: CATEGORIES.EINSTIEG,
-    title: 'Muster: Erster Schuss',
+    title: 'Erster Schuss',
     text: 'Gib in einer Partie mindestens einen Schuss ab.',
     hint: 'Einen Schuss abgeben — das passiert in der ersten Runde von selbst.',
-    icon: 'muster-schuss',
+    icon: 'schuss',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'schuesse_partie', wert: 1 },
-    muster: true,
   },
   {
     id: 'muster_erste_partie',
     tier: 'leicht',
     category: CATEGORIES.EINSTIEG,
-    title: 'Muster: Erste Partie',
+    title: 'Erste Partie',
     text: 'Beende eine Partie.',
     hint: 'Eine Partie zu Ende spielen — gewinnen ist nicht nötig.',
-    icon: 'muster-partie',
+    icon: 'partie',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'partien', wert: 1 },
-    muster: true,
   },
   {
     id: 'muster_zehn_partien',
     tier: 'mittel',
     category: CATEGORIES.EINSTIEG,
-    title: 'Muster: Zehn Partien',
+    title: 'Zehn Partien',
     text: 'Beende zehn Partien.',
     hint: 'Zehn Partien spielen, egal mit welchem Ausgang.',
-    icon: 'muster-partien-zehn',
+    icon: 'partien-zehn',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'partien', wert: 10 },
-    muster: true,
   },
 
   // ------------------------------------------------------------------ Kampf
@@ -126,49 +147,45 @@ export const ACHIEVEMENTS = Object.freeze([
     id: 'muster_schaden_500',
     tier: 'mittel',
     category: CATEGORIES.KAMPF,
-    title: 'Muster: 500 Schaden',
-    text: 'Verursache in einer Partie 500 Schaden.',
+    title: '300 Schaden in einer Partie',
+    text: 'Verursache in einer Partie 300 Schaden.',
     hint: 'Viel Schaden in EINER Partie — mehrere Treffer mit Flächenwaffen.',
-    icon: 'muster-schaden',
+    icon: 'schaden',
     reward: null,
-    condition: { kind: 'mindestens', kennzahl: 'schaden_partie', wert: 500 },
-    muster: true,
+    condition: { kind: 'mindestens', kennzahl: 'schaden_partie', wert: 300 },
   },
   {
     id: 'muster_schaden_5000',
     tier: 'sehr schwer',
     category: CATEGORIES.KAMPF,
-    title: 'Muster: 5000 Schaden gesamt',
+    title: '5000 Schaden gesamt',
     text: 'Verursache über alle Partien 5000 Schaden.',
     hint: 'Über viele Partien ansammeln.',
-    icon: 'muster-schaden-viel',
+    icon: 'schaden-gesamt',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'schaden', wert: 5000 },
-    muster: true,
   },
   {
     id: 'muster_siege_10',
     tier: 'schwer',
     category: CATEGORIES.KAMPF,
-    title: 'Muster: Zehn Siege',
+    title: 'Zehn Siege',
     text: 'Gewinne zehn Partien.',
     hint: 'Zehn Partien gewinnen.',
-    icon: 'muster-siege',
+    icon: 'siege',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'siege', wert: 10 },
-    muster: true,
   },
   {
     id: 'muster_serie_3',
     tier: 'schwer',
     category: CATEGORIES.KAMPF,
-    title: 'Muster: Drei Siege in Folge',
+    title: 'Drei Siege in Folge',
     text: 'Gewinne drei Partien hintereinander.',
     hint: 'Drei Siege ohne Niederlage dazwischen — die Serie steht im Profil.',
-    icon: 'muster-serie',
+    icon: 'serie',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'serie_rekord', wert: 3 },
-    muster: true,
   },
 
   // ------------------------------------------------------------- Präzision
@@ -176,13 +193,12 @@ export const ACHIEVEMENTS = Object.freeze([
     id: 'muster_trefferquote_50',
     tier: 'schwer',
     category: CATEGORIES.PRAEZISION,
-    title: 'Muster: Trefferquote 50 %',
+    title: 'Trefferquote 50 %',
     text: 'Erreiche über alle Partien eine Trefferquote von 50 %.',
     hint: 'Braucht viele Schüsse: Die Quote rechnet über ALLE Partien.',
-    icon: 'muster-quote',
+    icon: 'trefferquote',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'trefferquote', wert: 0.5, mindestbasis: { kennzahl: 'schuesse', wert: 20 } },
-    muster: true,
   },
 
   // ------------------------------------------------------------- Überleben
@@ -190,13 +206,12 @@ export const ACHIEVEMENTS = Object.freeze([
     id: 'muster_spielzeit_1h',
     tier: 'mittel',
     category: CATEGORIES.UEBERLEBEN,
-    title: 'Muster: Eine Stunde Spielzeit',
+    title: 'Eine Stunde Spielzeit',
     text: 'Verbringe eine Stunde im Match.',
     hint: 'Summiert sich über alle Partien.',
-    icon: 'muster-zeit',
+    icon: 'spielzeit',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'spielzeit_sekunden', wert: 3600 },
-    muster: true,
   },
 
   // ------------------------------------------------------------- Sammlung
@@ -204,13 +219,12 @@ export const ACHIEVEMENTS = Object.freeze([
     id: 'muster_waffen_3',
     tier: 'mittel',
     category: CATEGORIES.SAMMLUNG,
-    title: 'Muster: Drei Waffen benutzt',
+    title: 'Drei Waffen benutzt',
     text: 'Schieße mit drei verschiedenen Waffen.',
     hint: 'Verschiedene Waffen aus Kisten aufheben und benutzen.',
-    icon: 'muster-waffen',
+    icon: 'waffen',
     reward: null,
     condition: { kind: 'mindestens', kennzahl: 'verschiedene_waffen', wert: 3 },
-    muster: true,
   },
 
   // ------------------------------------------------------------------ Team
@@ -218,13 +232,12 @@ export const ACHIEVEMENTS = Object.freeze([
     id: 'muster_schaden_pro_minute',
     tier: 'schwer',
     category: CATEGORIES.TEAM,
-    title: 'Muster: 200 Schaden je Minute',
-    text: 'Erreiche 200 Schaden je Minute über alle Partien.',
+    title: 'Zwanzig Schaden je Minute',
+    text: 'Erreiche 20 Schaden je Minute über alle Partien.',
     hint: 'Tempo zählt: kurze Partien mit viel Schaden heben den Wert.',
-    icon: 'muster-tempo',
+    icon: 'tempo',
     reward: null,
-    condition: { kind: 'mindestens', kennzahl: 'schaden_pro_minute', wert: 200, mindestbasis: { kennzahl: 'schuesse', wert: 20 } },
-    muster: true,
+    condition: { kind: 'mindestens', kennzahl: 'schaden_pro_minute', wert: 20, mindestbasis: { kennzahl: 'schuesse', wert: 20 } },
   },
 ]);
 

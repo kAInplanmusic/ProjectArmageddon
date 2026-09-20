@@ -345,6 +345,23 @@ class LobbySession {
     }
 
     const currentTick = this.match.world.tickCount;
+    /*
+     * Der Tick des Clients geht in die Prüfung — aber gegen die BETRUGSGRENZE
+     * (`maxTickDrift` = 400), nicht gegen das 12-Tick-Kompensationsfenster.
+     *
+     * FUND (belegt, 2026-09-19): Die harte 12-Tick-Prüfung
+     * (`this.history.isWithinWindow`) hat gültige Schüsse verworfen, sobald der
+     * Client länger als 200 ms brauchte — auf langsamer Hardware (48,8 ms/Bild)
+     * der Regelfall. Sie schützte dabei nichts: `MatchController.fire` nimmt
+     * KEINEN Tick entgegen, der Treffer wird immer gegen den AKTUELLEN Zustand
+     * gerechnet. Der Tick füllt nur `interpolatedFrom` in der Antwort — eine
+     * Anzeige-Rückmeldung.
+     *
+     * Die Rückrechnung bleibt begrenzt: `history.get()` liefert außerhalb des
+     * Kompensationsfensters `null`. Das ist die sauberere Degradierung als ein
+     * verworfener Schuss. Erfundene Ticks (negativ, ±100 000) bleiben abgelehnt,
+     * weil `isTickInWindow` gegen `maxTickDrift` prüft.
+     */
     const history = this.history.get(message.tick ?? currentTick);
     const command = validateCommand(
       {
@@ -352,7 +369,7 @@ class LobbySession {
         angle: message.angle,
         power: message.power,
         weaponId: message.weaponId ?? null,
-        tick: currentTick,
+        tick: message.tick ?? currentTick,
         type: 'fire',
       },
       {
@@ -363,9 +380,6 @@ class LobbySession {
     );
 
     if (!command.valid) return { ok: false, errors: command.errors };
-    if (message.tick !== undefined && !this.history.isWithinWindow(message.tick, currentTick)) {
-      return { ok: false, errors: ['Tick liegt ausserhalb des Lag-Kompensationsfensters'] };
-    }
 
     const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, command.input.weaponId);
     if (result.ok) {

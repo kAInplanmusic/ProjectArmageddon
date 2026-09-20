@@ -1200,6 +1200,7 @@
         "special": "spike_blast"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "spike_blast",
         "targeting": "directional",
         "movement": "none",
@@ -1245,6 +1246,7 @@
         "special": "sticky"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "sticky",
         "targeting": "directional",
         "movement": "none",
@@ -1290,6 +1292,7 @@
         "special": "emp_blast"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "emp_blast",
         "targeting": "directional",
         "movement": "none",
@@ -1505,6 +1508,7 @@
         "special": "energy_explosion"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "energy_explosion",
         "targeting": "directional",
         "movement": "none",
@@ -1975,6 +1979,7 @@
         "special": "fragmentation"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "fragmentation",
         "targeting": "directional",
         "movement": "none",
@@ -2016,6 +2021,7 @@
         "aoe": false
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "direct_hit",
         "targeting": "directional",
         "movement": "none",
@@ -2061,6 +2067,7 @@
         "special": "banana_split"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "banana_split",
         "targeting": "directional",
         "movement": "none",
@@ -2234,6 +2241,7 @@
         "special": "fire_pool"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "fire_pool",
         "targeting": "directional",
         "movement": "none",
@@ -2279,6 +2287,7 @@
         "special": "delayed_bot"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "delayed_bot",
         "targeting": "directional",
         "movement": "none",
@@ -2817,6 +2826,7 @@
         "special": "meteor_impact"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "meteor_impact",
         "targeting": "directional",
         "movement": "none",
@@ -3044,6 +3054,7 @@
         "special": "poison_cloud"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "poison_cloud",
         "targeting": "directional",
         "movement": "none",
@@ -3182,6 +3193,7 @@
         "special": "tentacle_zone"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "tentacle_zone",
         "targeting": "directional",
         "movement": "none",
@@ -3941,6 +3953,7 @@
         "special": "poison_zone"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "poison_zone",
         "targeting": "directional",
         "movement": "none",
@@ -4296,6 +4309,7 @@
         "special": "lava"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "lava",
         "targeting": "directional",
         "movement": "none",
@@ -5143,6 +5157,7 @@
         "special": "fragmentation"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "fragmentation",
         "targeting": "directional",
         "movement": "none",
@@ -5947,6 +5962,7 @@
         "special": "meteor_rain"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "meteor_rain",
         "targeting": "directional",
         "movement": "none",
@@ -6129,6 +6145,7 @@
         "special": "hell_cannon"
       },
       "mechanic": {
+        "fuseIntent": "impact",
         "specialEffect": "hell_cannon",
         "targeting": "directional",
         "movement": "none",
@@ -6352,6 +6369,7 @@
         "special": "cosmic_banana"
       },
       "mechanic": {
+        "fuseIntent": "timed",
         "specialEffect": "cosmic_banana",
         "targeting": "directional",
         "movement": "none",

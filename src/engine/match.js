@@ -1633,20 +1633,17 @@ export class MatchController {
        * Zünder in Ticks (0 = Aufprallwaffe). Eine Granate explodiert nicht beim
        * Aufprall, sondern nach Ablauf — sie bleibt liegen und zündet.
        *
-       * FUND (offen, gemessen): Bei ALLEN 18 Zünder-Waffen ist der Zünder länger
-       * als die Flugzeit. Ein Projektil fliegt bei voller Kraft rund 1 Sekunde
-       * (Ticks bis zum Aufprall, bei 60 Hz), die Zünder stehen auf 1 bis 5
-       * Sekunden. Jede dieser Waffen zündet damit erst NACH der Landung.
+       * ENTSCHIEDEN (2026-09-20): Die Absicht steht als `mechanic.fuseIntent` in
+       * der Designdatei, der Generator leitet `fuseTime` daraus ab
+       * (`npm run weapons:build`). `impact` → 0 (beim Aufprall), `timed` → die
+       * gestufte Dauer. Vorher wurde die Absicht aus dem NAMEN erschlossen;
+       * dadurch zündete jede Zünderwaffe erst nach der Landung, und der
+       * „Explosive Energieball" war die einzige Waffe ohne Wirkung.
        *
-       * Für Granaten ist das gewollt. Für „Explosiver Energieball",
-       * „Meteoritenbrocken", „Meteorregen" und „Höllenkanone" verspricht der
-       * Name einen Einschlag statt einer Liegezeit — dort ist es vermutlich
-       * falsch. Belegt: Der Energieball ist nach der Wurf-Behebung die EINZIGE
-       * Waffe, die `npm run balance:sweep` noch als „ohne Wirkung" meldet.
-       *
-       * Bewusst NICHT automatisch korrigiert: Eine Unterscheidung nach Namen
-       * wäre Namensdeutung. Das ist eine Design-Entscheidung, siehe
-       * MASTERDOTO.md, „Bekannte Grenzen".
+       * Geprüft wird die Zusage von `npm run check:fuses`: `impact` verlangt
+       * Zünder 0, `timed` verlangt Zünder > Flugzeit, ein Hitscan darf gar
+       * keinen Zünder tragen (er erzeugt kein Geschoss, das liegen bleiben
+       * könnte). Ein Verstoß endet dort mit Exit-Code 1.
        */
       fuseTicks: this.#fuseTicksFor(weapon),
       alive: 1,

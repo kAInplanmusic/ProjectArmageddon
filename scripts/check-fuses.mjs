@@ -1,25 +1,31 @@
 #!/usr/bin/env node
 /**
- * Prüft die Zünder-Zeiten gegen die tatsächliche Flugzeit.
+ * Prüft die Zünder-Zeiten gegen die tatsächliche Flugzeit UND gegen die Absicht
+ * aus der Designdatei.
  *
- * ## Der Befund
+ * ## Der Befund (2026-09-19)
  *
- * Ein Audit stellte fest: Bei **allen 18 Zünder-Waffen** ist der Zünder länger
- * als die Flugzeit des Projektils. Jede zündet damit erst **nach** der Landung.
+ * Ein Audit stellte fest: Bei **allen 18 Zünder-Waffen** war der Zünder länger
+ * als die Flugzeit des Projektils. Jede zündete damit erst **nach** der Landung.
  *
  * Für eine Handgranate ist das gewollt — sie soll liegen bleiben und dann
  * zünden. Für „Meteoritenbrocken" (Zünder 4 s bei 0,66 s Flug = **Faktor 6**)
- * oder „Höllenkanone" (5 s) ist es vermutlich falsch: Diese Namen versprechen
- * einen Einschlag, keine Liegezeit.
+ * oder „Höllenkanone" (5 s) war es falsch: Diese Namen versprechen einen
+ * Einschlag, keine Liegezeit. Der „Explosive Energieball" war dadurch die
+ * einzige Waffe, die `npm run balance:sweep` als „ohne Wirkung" meldete.
  *
- * ## Warum dieses Werkzeug MELDET statt korrigiert
+ * ## Die Entscheidung ist gefallen — und steht in der Designdatei (2026-09-20)
  *
- * Die Unterscheidung „Granate" gegen „Einschlagwaffe" ist **Namensdeutung**.
- * Ein Skript, das nach Wörtern wie „granate" sucht, würde irgendwann eine Waffe
- * falsch einordnen — und der Fehler wäre unsichtbar, weil er plausibel aussieht.
+ * Die Unterscheidung „Granate" gegen „Einschlagwaffe" nach NAMEN zu treffen wäre
+ * Namensdeutung. Deshalb hält jetzt `mechanic.fuseIntent` in
+ * `project_armageddon_weapons_v1.json` die Absicht je Waffe fest
+ * (`"timed"` | `"impact"`), und der Generator leitet `fuseTime` daraus ab.
  *
- * Deshalb liefert das Werkzeug die Zahlen und die Entscheidungsfrage, nicht die
- * Antwort.
+ * Dieses Werkzeug MELDET nicht mehr eine offene Frage, sondern PRÜFT die
+ * Zusage: `impact` verlangt Zünder 0, `timed` verlangt Zünder > Flugzeit, ein
+ * Hitscan darf gar keinen Zünder tragen. Ein Verstoß endet mit Exit-Code 1 —
+ * damit ist der Widerspruch zwischen Designdatei und Katalog ein Fehler und
+ * keine Fußnote.
  *
  * ## Aufruf
  *
@@ -72,6 +78,7 @@ const zeilen = WEAPONS
       id: w.id,
       name: w.displayName,
       kategorie: w.category,
+      absicht: w.fuseIntent ?? '(keine)',
       zuenderSek: w.fuseTime,
       flugSek,
       verhaeltnis: w.fuseTime / flugSek,
@@ -96,41 +103,51 @@ for (const z of zeilen) {
 }
 
 const nachLandung = zeilen.filter(z => z.verhaeltnis > 1);
-const knapp = zeilen.filter(z => z.verhaeltnis > 1 && z.verhaeltnis <= 1.5);
-const deutlich = zeilen.filter(z => z.verhaeltnis > 3);
+const impact = WEAPONS.filter(w => w.fuseIntent === 'impact').length;
+const timed = WEAPONS.filter(w => w.fuseIntent === 'timed').length;
 
-console.log('');
-console.log(`Waffen mit Zünder: ${zeilen.length}`);
-console.log(`  zünden NACH der Landung: ${nachLandung.length}`);
-console.log(`  davon deutlich (>3×):    ${deutlich.length}`);
-
-if (deutlich.length > 0) {
-  console.log('');
-  console.log('DIE DEUTLICHSTEN FÄLLE (Zünder mehr als dreimal so lang wie der Flug):');
-  for (const z of deutlich) {
-    console.log(`  ${z.name.padEnd(24)} ${z.zuenderSek} s bei ${z.flugSek.toFixed(2)} s Flug`);
+/*
+ * Verstöße gegen die ABSICHT (`mechanic.fuseIntent` in der Designdatei).
+ *
+ * Der Zünder ist nicht mehr erschlossen, sondern festgehalten — damit ist er
+ * prüfbar geworden. Geprüft wird:
+ *   - `impact` verlangt Zünder 0 (sonst wäre die Waffe eine Liegezeit-Waffe).
+ *   - `timed` verlangt einen Zünder (sonst wirkt sie beim Aufprall).
+ *   - `timed` verlangt Zünder > FLUGZEIT: Eine Granate, die im Flug zündet,
+ *     bleibt nicht liegen und ist keine Granate mehr.
+ *   - Ein HITSCAN darf keinen Zünder tragen: Er erzeugt kein Geschoss, das
+ *     liegen bleiben könnte — der Wert wäre reine Anzeige.
+ */
+const verstoesse = [];
+for (const w of WEAPONS) {
+  const zuender = w.fuseTime ?? 0;
+  if (w.fuseIntent === 'impact' && zuender !== 0) {
+    verstoesse.push(`${w.displayName}: Absicht 'impact', aber Zünder ${zuender} s`);
+  }
+  if (w.fuseIntent === 'timed' && !(zuender > 0)) {
+    verstoesse.push(`${w.displayName}: Absicht 'timed', aber kein Zünder`);
+  }
+  if (w.delivery === 'hitscan' && zuender > 0) {
+    verstoesse.push(`${w.displayName}: Hitscan mit Zünder ${zuender} s (wirkungslos)`);
+  }
+}
+for (const z of zeilen) {
+  if (z.absicht === 'timed' && z.verhaeltnis <= 1) {
+    verstoesse.push(`${z.name}: Zünder (${z.zuenderSek} s) kürzer als der Flug (${z.flugSek.toFixed(2)} s)`);
   }
 }
 
 console.log('');
-console.log('DIE ENTSCHEIDUNG, DIE HIER NÖTIG IST:');
-console.log('');
-console.log('  Ein Zünder ist für eine GRANATE richtig: Sie soll liegen bleiben und');
-console.log('  nach einer Weile zünden — das ist eine taktische Waffe (der Gegner muss');
-console.log('  weggehen).');
-console.log('');
-console.log('  Für eine EINSCHLAGWAFFE ist er falsch: Sie soll beim Aufprall wirken.');
-console.log('  Ein Name wie „Meteoritenbrocken" oder „Höllenkanone" verspricht einen');
-console.log('  Einschlag, keine Liegezeit.');
-console.log('');
-console.log('  WAS NICHT GEHT: Die Unterscheidung nach Namen zu treffen. Ein Skript,');
-console.log('  das nach „granate" sucht, ordnet irgendwann eine Waffe falsch ein —');
-console.log('  und der Fehler sähe plausibel aus.');
-console.log('');
-console.log('  WAS GEHT: In der Designdatei je Waffe ein Feld setzen, das die Absicht');
-console.log('  festhält (z. B. `mechanic.fuseIntent: "timed" | "impact"`), und der');
-console.log('  Generator setzt `fuseTime` entsprechend auf 0 (Aufprall) oder lässt sie');
-console.log('  stehen. Dann ist die Absicht DOKUMENTIERT statt erschlossen.');
-console.log('');
-console.log(`  Bei den ${knapp.length} knappen Fällen (Faktor 1,0–1,5) fällt die Entscheidung`);
-console.log('  leichter: Dort genügt meist eine kleine Kürzung des Zünders.');
+console.log(`Waffen mit Zünder: ${zeilen.length}`);
+console.log(`  zünden NACH der Landung: ${nachLandung.length}`);
+console.log(`Absicht aus der Designdatei: timed ${timed} | impact ${impact}`);
+console.log(`Verstöße gegen die Absicht: ${verstoesse.length}`);
+for (const v of verstoesse) console.log(`  - ${v}`);
+
+if (verstoesse.length > 0) {
+  console.log('');
+  console.log('FEHLER: Die Designdatei sagt etwas anderes als der Katalog. Entweder');
+  console.log('`mechanic.fuseIntent` korrigieren oder `npm run weapons:build` neu laufen');
+  console.log('lassen — ein stiller Widerspruch wäre hier der schlimmere Zustand.');
+  process.exitCode = 1;
+}

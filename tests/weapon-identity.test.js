@@ -144,15 +144,53 @@ test('Reine Flug- und Teleportgeräte richten keinen Schaden an', () => {
 
 // ------------------------------------------------------------- Zünder
 
-test('Zünder sind auf die passenden Waffen beschränkt und gestuft 1–5', () => {
+test('Zünder folgen der ABSICHT aus der Designdatei, nicht dem Namen (2026-09-20)', () => {
+  /*
+   * FUND (belegt, gemessen 2026-09-19): Die Zündabsicht wurde aus Wirkungsname
+   * und Anzeigename ERschlossen (`hasFuse`). Dadurch zündete ALLE 18
+   * Zünder-Waffen erst NACH der Landung — auch „Meteoritenbrocken" (6×) und
+   * „Höllenkanone" (5×). Der „Explosive Energieball" war deshalb die einzige
+   * Waffe, die `npm run balance:sweep` als „ohne Wirkung" meldete.
+   *
+   * Jetzt hält `mechanic.fuseIntent` in der Designdatei die Absicht fest:
+   *   'timed'  → Zünder (liegen bleiben, dann zünden) — eine Granate.
+   *   'impact' → Zünder 0 (beim Aufprall) — ein Einschlag.
+   * Geprüft wird die Zusage je Angabe, nicht eine Waffenzahl.
+   */
+  for (const w of WEAPONS) {
+    if (w.fuseIntent === 'impact') {
+      assert.equal(w.fuseTime, 0,
+        `${w.displayName}: Absicht 'impact' verlangt Zünder 0, gefunden ${w.fuseTime}`);
+      assert.equal(hasFuse(w), false,
+        `${w.displayName}: Absicht 'impact' darf nicht als Zünderwaffe gelten`);
+    } else if (w.fuseIntent === 'timed') {
+      assert.ok(w.fuseTime > 0,
+        `${w.displayName}: Absicht 'timed' verlangt einen Zünder > 0`);
+      assert.equal(hasFuse(w), true,
+        `${w.displayName}: Absicht 'timed' muss als Zünderwaffe gelten`);
+    }
+  }
+
   const mitZuender = WEAPONS.filter(w => w.fuseTime > 0);
-  assert.ok(mitZuender.length >= 12, `Zu wenige Waffen mit Zünder: ${mitZuender.length}`);
+  assert.ok(mitZuender.length >= 11, `Zu wenige Waffen mit Zünder: ${mitZuender.length}`);
 
   const stufen = new Set(mitZuender.map(w => w.fuseTime));
   assert.ok(stufen.size >= 4, `Zu wenige Zünderstufen: ${[...stufen].join(', ')}`);
   for (const s of stufen) {
     assert.ok(Number.isInteger(s) && s >= 1 && s <= 5,
       `Zünderdauer außerhalb 1–5 s: ${s}`);
+  }
+
+  /*
+   * Ein Zünder ohne Flug ist wirkungslos: Ein Hitscan erzeugt kein Geschoss, das
+   * liegen bleiben könnte. Vorher trugen fünf Hitscan-Waffen einen Zünder, der
+   * nur in der Anzeige existierte — das Werkzeug `check:fuses` rechnete ihnen
+   * sogar eine Flugzeit aus, die es nicht gibt.
+   */
+  for (const w of WEAPONS) {
+    if (w.delivery === 'hitscan') {
+      assert.equal(w.fuseTime, 0, `${w.displayName} ist Hitscan und darf keinen Zünder tragen`);
+    }
   }
 
   // Aufprallwaffen dürfen keinen Zünder haben.
@@ -208,6 +246,53 @@ test('Eine Zündergranate explodiert nach Ablauf, nicht beim Aufprall', () => {
   // Und zwar ungefähr nach der Zünderdauer.
   assert.ok(Math.abs(explodiertTick - ticks) <= 5,
     `Zündung bei Tick ${explodiertTick}, erwartet ~${ticks}`);
+});
+
+test('Eine Aufprallwaffe (fuseIntent impact) wirkt beim Einschlag, nicht nach einer Liegezeit', () => {
+  /*
+   * Gegenprobe zum vorigen Test — und der Beleg für die Entscheidung vom
+   * 2026-09-20: `mechanic.fuseIntent: 'impact'` in der Designdatei setzt
+   * `fuseTime: 0`, der Generator führt das durch (`npm run weapons:build`).
+   *
+   * Vorher zündeten ALLE Zünderwaffen erst nach der Landung, auch
+   * „Meteoritenbrocken" und „Explosiver Energieball" — bei gemessener Flugzeit
+   * von 0,9 s und 3 s Zünder lag die Wirkung 3,2× nach dem Einschlag.
+   */
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+  match.start();
+  match.consumeEvents();
+  const spieler = match.activePlayerId;
+
+  const aufpraller = WEAPONS.find(w => w.fuseIntent === 'impact'
+    && w.delivery === 'projectile' && w.damage > 0);
+  assert.ok(aufpraller, 'Es muss eine Aufprallwaffe mit Projektil geben');
+  assert.equal(aufpraller.fuseTime, 0,
+    `${aufpraller.displayName}: Absicht 'impact' verlangt Zünder 0`);
+  match.inventory.register(spieler, [aufpraller.id]);
+
+  const schuss = match.fire(spieler, Math.PI / 2, 60, aufpraller.id);
+  assert.equal(schuss.ok, true, `Schuss abgelehnt: ${schuss.errors?.join(', ')}`);
+
+  const pid = schuss.projectileId;
+  assert.equal(match.world.getComponent(pid, 'Projectile', 'fuseTicks'), 0,
+    'Eine Aufprallwaffe darf keinen Zünder tragen');
+
+  let einschlagTick = -1;
+  let liegeTick = -1;
+  let zuenderTick = -1;
+  for (let i = 0; i < 600; i++) {
+    match.step();
+    for (const e of match.consumeEvents()) {
+      if (e.type === 'projectile_impact' && einschlagTick < 0) einschlagTick = i;
+      if (e.type === 'fuse_armed' && liegeTick < 0) liegeTick = i;
+      if (e.type === 'fuse_expired' && zuenderTick < 0) zuenderTick = i;
+    }
+    if (einschlagTick >= 0) break;
+  }
+
+  assert.ok(einschlagTick >= 0, 'Der Einschlag (projectile_impact) muss gemeldet werden');
+  assert.equal(liegeTick, -1, 'Eine Aufprallwaffe darf nicht liegen bleiben (fuse_armed)');
+  assert.equal(zuenderTick, -1, 'Eine Aufprallwaffe darf keinen Zünder ablaufen lassen');
 });
 
 test('Eine Zündergranate richtet ihren Schaden erst bei der Zündung an', () => {

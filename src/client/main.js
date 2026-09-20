@@ -920,7 +920,7 @@ class Game {
    *
    * Die Ableitung selbst liegt in `emblem()` (`shared/achievements.js`); hier
    * wird nur das Ergebnis mitgegeben. Es enthält keine Gestaltung — nur Anzahl,
-   * Rang und den Hinweis, dass heute alle Erfolge Muster sind.
+   * Rang und den Hinweis, ob ein Erfolg noch ein Platzhalter ist.
    */
   currentState() {
     const roh = this.mode === 'online' ? this.onlineViewState : this.match?.getState() ?? null;
@@ -2571,7 +2571,9 @@ class Game {
    * sonst sähe die Liste bei jedem erreichten Eintrag anders aus, und man
    * verliert die Erinnerung, wofür er war.
    *
-   * Muster sind gekennzeichnet. Solange der Katalog Platzhalter enthält, darf die
+   * Muster-WACHHUND: Die Inhalte sind seit 2026-09-20 gesetzt, `musterAnzahl`
+   * ist also 0 und der Zähler schweigt dazu. Die Kennzeichnung bleibt trotzdem
+   * stehen — würde ein künftiger Katalog wieder Platzhalter enthalten, darf die
    * Anzeige nicht den Eindruck eines fertigen Katalogs erwecken.
    */
   #zeigeErfolge() {

@@ -266,8 +266,16 @@ export function strikeStyleFor(weapon) {
 /** Zündnamen, die im Anzeigenamen erkennbar sind (Rückfall). */
 const FUSE_NAME_HINTS = ['granate', 'bombe', 'mine', 'spreng', 'eimer', 'molotow'];
 
-/** Hat diese Waffe einen Zünder? */
+/**
+ * Hat diese Waffe einen Zünder?
+ *
+ * Die ANGABE AUS DER DESIGNDATEI schlägt jede Erschließung: `impact` heißt
+ * „kein Zünder", `timed` heißt „Zünder". Nur wenn die Absicht fehlt (ältere
+ * Designdatei), greifen Wirkungsname und Namenshinweis wie zuvor.
+ */
 export function hasFuse(weapon) {
+  if (weapon.fuseIntent === 'impact') return false;
+  if (weapon.fuseIntent === 'timed') return true;
   if (FUSE_SPECIALS.has(weapon.special)) return true;
   const name = (weapon.displayName ?? '').toLowerCase();
   return FUSE_NAME_HINTS.some(hinweis => name.includes(hinweis));
@@ -774,6 +782,13 @@ const weapons = raw.weapons.map(entry => {
      */
     strikeStyle: 'self',
     targeting: entry.mechanic?.targeting ?? null,
+    /*
+     * Absicht des Zünders, aus der Designdatei — NICHT erschlossen:
+     *   `timed`  : die Ladung bleibt liegen und zündet nach Ablauf (Granate).
+     *   `impact` : die Ladung wirkt beim Aufprall (Zünder = 0).
+     *   `null`   : ältere Designdatei ohne Angabe — es gilt die alte Ableitung.
+     */
+    fuseIntent: entry.mechanic?.fuseIntent ?? null,
     // Abgeleitete Feuerart: Hitscan ohne Flugzeit, Projektil mit Flugzeit.
     // Muss VOR maxRange stehen: die Reichweite hängt von der Feuerart ab.
     //
@@ -809,9 +824,24 @@ const weapons = raw.weapons.map(entry => {
   if (STRIKE_FROM_SKY.has(weapon.special)) weapon.strikeStyle = 'sky';
   else if (STRIKE_FROM_FLANK.has(weapon.special)) weapon.strikeStyle = 'flank';
 
-  // Zünder für Granaten und Abwurfwaffen: Die Quelldatei hat hier nur bei einer
-  // Waffe einen echten Wert, alle übrigen tragen 0. Die Dauer folgt der Wucht.
-  if (!identity || identity.overrides.fuseTime === undefined) {
+  /*
+   * Zünder: Die Designdatei hält die ABSICHT fest (`mechanic.fuseIntent`).
+   *
+   * FUND (belegt, gemessen 2026-09-19): Vorher wurde die Zündabsicht aus dem
+   * Wirkungsnamen und dem Anzeigenamen ERschlossen (`hasFuse`). Das traf zwar
+   * die Granaten, machte aber jede Einschlagwaffe zur Liegezeit-Waffe: Bei
+   * ALLEN 18 Zünder-Waffen war der Zünder länger als die Flugzeit
+   * (`npm run check:fuses`), „Meteoritenbrocken" etwa 6×. Der „Explosive
+   * Energieball" war dadurch nach der Wurf-Behebung die EINZIGE Waffe, die
+   * `npm run balance:sweep` noch als „ohne Wirkung" meldete.
+   *
+   * `impact` setzt den Zünder auf 0 — die Waffe wirkt beim Aufprall. `timed`
+   * lässt die aus der Wucht abgeleitete Dauer stehen. Fehlt die Angabe (ältere
+   * Designdatei), gilt die alte Ableitung unverändert.
+   */
+  if (weapon.fuseIntent === 'impact') {
+    weapon.fuseTime = 0;
+  } else if (!identity || identity.overrides.fuseTime === undefined) {
     weapon.fuseTime = deriveFuseTime(weapon);
   }
 
@@ -980,8 +1010,16 @@ export const DAMAGE_BY_CATEGORY = Object.freeze(${JSON.stringify(DAMAGE_BY_CATEG
 /** Wirkungsnamen, die einen Zünder tragen. */
 export const FUSE_SPECIALS = Object.freeze(${JSON.stringify([...FUSE_SPECIALS])});
 
-/** Hat diese Waffe einen Zünder? */
+/**
+ * Hat diese Waffe einen Zünder?
+ *
+ * Die Absicht aus der Designdatei schlägt die Erschließung: 'impact' heißt
+ * „kein Zünder" (die Waffe wirkt beim Aufprall), 'timed' heißt „Zünder". Nur
+ * ohne Angabe greifen Wirkungsname und Namenshinweis.
+ */
 export function hasFuse(weapon) {
+  if (weapon?.fuseIntent === 'impact') return false;
+  if (weapon?.fuseIntent === 'timed') return true;
   if (FUSE_SPECIALS.includes(weapon.special)) return true;
   const name = String(weapon.displayName ?? '').toLowerCase();
   return ['granate', 'bombe', 'mine', 'spreng', 'eimer', 'molotow'].some(h => name.includes(h));

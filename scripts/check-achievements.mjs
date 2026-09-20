@@ -4,16 +4,20 @@
  *
  * ## Warum dieses Werkzeug existiert
  *
- * Die Erfolge in `shared/achievements.js` sind **Muster** (`muster: true`). Der
- * Modulkopf sagt ausdrücklich: Namen, Texte und Symbole sind eine
- * Gestaltungsentscheidung des Auftraggebers und wurden bewusst nicht erfunden.
+ * Ein Erfolg ist nur so gut wie seine Schwelle. Ein Erfolg „5000 Schaden in
+ * einer Partie" wäre bei ~150 Schaden je Partie schlicht nicht zu holen — er
+ * stünde für immer bei wenigen Prozent.
  *
- * Bevor diese Entscheidung fällt, muss aber eine technische Frage beantwortet
- * sein: **Sind die Schwellen erreichbar?** Ein Erfolg „5000 Schaden in einer
- * Partie" wäre bei ~50 Schüssen je Partie schlicht nicht zu holen — er stünde
- * für immer bei wenigen Prozent.
+ * Dieses Werkzeug rechnet jede Schwelle gegen gemessene Partiewerte und endet
+ * mit **Exit-Code 1**, wenn ein Erfolg „KAUM ERREICHBAR" ist (unter 20 % des
+ * Ziels). Damit ist die Frage nicht mehr nur eine Information: Dieselbe Zahl
+ * kann nicht unbemerkt wieder in die Tabelle geraten.
  *
- * Dieses Werkzeug rechnet die Schwellen gegen gemessene Partiewerte.
+ * Der Anlass ist belegt: Der Tempo-Erfolg stand auf **200 Schaden je Minute**,
+ * gemessen wurden **~12** — 6 % des Ziels. Die Schwelle ist auf 20 gesenkt.
+ *
+ * „streng" (20–50 % des Ziels) ist ausdrücklich erlaubt: Erfolge sollen
+ * unterschiedlich schwer sein.
  *
  * ## Woher die Vergleichszahlen kommen
  *
@@ -174,26 +178,63 @@ const profil = {
 };
 const k = kennzahlen(beispiel, profil);
 
-console.log(`Muster-Prüfung gegen eine Durchschnittspartie und ${PARTIEN} Partien Historie:`);
+console.log(`Erfolgs-Prüfung gegen eine Durchschnittspartie und ${PARTIEN} Partien Historie:`);
 console.log('');
 console.log(`${'Erfolg'.padEnd(32)}${'Kennzahl'.padEnd(24)}${'Ziel'.padStart(9)}${'Ist'.padStart(10)}  Urteil`);
 console.log('-'.repeat(100));
+
+/**
+ * Kennzahlen, die EINE Partie beschreiben (oder eine Rate).
+ *
+ * Nur für sie ist „kaum erreichbar" ein Fehler: Sie werden in JEDER Partie neu
+ * gemessen. Kumulative Kennzahlen (Gesamtschaden, Partien, Spielzeit) wachsen
+ * dagegen mit der Historie — eine kurze angenommene Historie macht sie nicht
+ * unerreichbar, sondern nur langwierig. Sie werden deshalb hochgerechnet statt
+ * benotet.
+ */
+const PARTIE_KENNZAHLEN = new Set([
+  'schuesse_partie', 'treffer_partie', 'schaden_partie', 'zuege_partie',
+  'trefferquote_partie', 'runden', 'dauer_sekunden', 'schaden_gesamt_partie',
+  'trefferquote', 'siegquote', 'schaden_pro_minute',
+]);
+
+/** Was je Partie dazukommt — Grundlage der Hochrechnung kumulativer Ziele. */
+const PRO_PARTIE = Object.freeze({
+  partien: 1,
+  // Angenommene Siegquote wie in der Historie (PARTIEN Partien, die Hälfte Siege).
+  siege: 0.5,
+  schuesse: mittel('schuesse'),
+  treffer: mittel('treffer'),
+  schaden: mittel('schaden'),
+  spielzeit_sekunden: mittel('runden') * 30,
+});
 
 const zeilen = [];
 for (const a of ACHIEVEMENTS) {
   const bed = a.condition;
   const ist = k[bed.kennzahl];
-  const titel = a.title.replace(/^Muster:\s*/, '');
+  const titel = a.title;
+  const kumulativ = !PARTIE_KENNZAHLEN.has(bed.kennzahl);
 
   if (ist === undefined) {
-    zeilen.push({ titel, kz: bed.kennzahl, ziel: bed.wert, ist: '—', urteil: 'KENNZAHL FEHLT' });
+    zeilen.push({ titel, kz: bed.kennzahl, ziel: bed.wert, ist: '—', urteil: 'KENNZAHL FEHLT', kumulativ });
     continue;
   }
   const anteil = bed.wert > 0 ? ist / bed.wert : 0;
-  const urteil = anteil >= 1 ? 'erreicht'
-    : anteil >= 0.5 ? 'in Reichweite'
+
+  let urteil;
+  if (ist >= bed.wert) {
+    urteil = 'erreicht';
+  } else if (kumulativ) {
+    const proPartie = PRO_PARTIE[bed.kennzahl];
+    urteil = proPartie > 0
+      ? `offen (~${Math.ceil((bed.wert - ist) / proPartie)} Partien)`
+      : 'offen';
+  } else {
+    urteil = anteil >= 0.5 ? 'in Reichweite'
       : anteil >= 0.2 ? 'streng'
         : 'KAUM ERREICHBAR';
+  }
   zeilen.push({
     titel,
     kz: bed.kennzahl,
@@ -201,6 +242,7 @@ for (const a of ACHIEVEMENTS) {
     ist: typeof ist === 'number' ? (ist < 10 ? ist.toFixed(2) : Math.round(ist)) : String(ist),
     urteil,
     anteil,
+    kumulativ,
   });
 }
 
@@ -211,26 +253,38 @@ for (const z of zeilen) {
   );
 }
 
+/*
+ * „streng" ist erlaubt — Erfolge SOLLEN unterschiedlich schwer sein. Ein
+ * „KAUM ERREICHBAR" (unter 20 % des Ziels) ist dagegen ein Fehler in der Tabelle:
+ * Der Erfolg fällt praktisch nie. Genau so stand es bis zum 2026-09-20 beim
+ * Tempo-Erfolg (200 gefordert, ~7 erreicht = 3 %). Der Lauf endet deshalb mit
+ * Exit-Code 1, damit dieselbe Zahl nicht wieder unbemerkt in die Tabelle kommt.
+ *
+ * Geprüft werden nur PARTIE- und RATEN-Kennzahlen — siehe PARTIE_KENNZAHLEN.
+ */
 const kaum = zeilen.filter(z => z.urteil === 'KAUM ERREICHBAR' || z.urteil === 'KENNZAHL FEHLT');
 console.log('');
 if (kaum.length > 0) {
-  console.log(`BEFUND: ${kaum.length} Muster sind kaum erreichbar:`);
+  console.log(`FEHLER: ${kaum.length} Erfolge sind kaum erreichbar:`);
   for (const z of kaum) {
     const prozent = z.anteil !== undefined ? ` (${(z.anteil * 100).toFixed(0)} % des Ziels)` : '';
     console.log(`  ${z.titel}: ${z.kz} >= ${z.ziel}, erreicht ${z.ist}${prozent}`);
   }
   console.log('');
-  console.log('  Erfolge SOLLEN unterschiedlich schwer sein — das ist kein Fehler. Die');
-  console.log('  Zahl ist eine Information für die Entscheidung: Ein Muster, das nie');
-  console.log('  fällt, motiviert nicht.');
+  console.log('  Ein Erfolg, der nie fällt, motiviert nicht. Schwelle senken oder Text');
+  console.log('  ändern — die Vergleichszahlen stehen oben.');
+  process.exitCode = 1;
 } else {
-  console.log('Alle Muster sind erreichbar oder in Reichweite.');
+  console.log('Alle Partie-Schwellen und Raten sind erreichbar oder in Reichweite.');
+  const offen = zeilen.filter(z => z.urteil.startsWith('offen'));
+  if (offen.length > 0) {
+    console.log(`Kumulative Ziele brauchen Zeit (${offen.length}) — das ist gewollt.`);
+  }
 }
 
 console.log('');
-console.log('HINWEIS ZUR ENTSCHEIDUNG');
-console.log('  Diese Prüfung beantwortet NUR die Frage der Erreichbarkeit. Namen, Texte');
-console.log('  und Symbole sind eine Gestaltungsentscheidung des Auftraggebers — der');
-console.log('  Modulkopf sagt das ausdrücklich. Zum Ersetzen genügt es, die Tabelle');
-console.log('  `ACHIEVEMENTS` auszutauschen: `muster: true` entfernen und die Texte');
-console.log('  setzen. Die Auswertung bleibt unverändert — es ist kein Code zu schreiben.');
+console.log('EINORDNUNG');
+console.log('  Die Inhalte sind seit dem 2026-09-20 gesetzt; diese Prüfung schützt die');
+console.log('  SCHWELLEN, nicht die Texte. Der Katalog umfasst 11 Erfolge — die');
+console.log('  ursprüngliche Vorgabe nennt 100. Das ist eine Inhaltsfrage und im');
+console.log('  Modulkopf von `src/shared/achievements.js` festgehalten.');

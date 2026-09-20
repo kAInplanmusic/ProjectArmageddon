@@ -338,11 +338,19 @@ test('Der Client kann nicht mit absurden Werten schießen', { timeout: 25_000 },
   }
 });
 
-test('Der Client kann keinen Tick aus der Vergangenheit einschleusen', { timeout: 25_000 }, async () => {
+test('Der Client kann keinen ERFUNDENEN Tick einschleusen', { timeout: 25_000 }, async () => {
   /*
-   * Die Lag-Kompensation erlaubt einen Tick innerhalb eines Fensters. Ein Client
-   * könnte einen weit zurückliegenden Tick senden, um auf einem alten Zustand
-   * zu schießen („ich war schon dran"). Der Server muss das begrenzen.
+   * Ein Client könnte einen Tick weit außerhalb jedes plausiblen Bereichs
+   * senden — weit in der Vergangenheit, weit in der Zukunft oder negativ. Der
+   * Server begrenzt das auf `maxTickDrift` (400 Ticks, `validation.js`).
+   *
+   * ABGEGRENZT (2026-09-20): Die frühere Fassung verlangte zusätzlich, dass die
+   * Ticks 0 und 1 in einem jungen Match abgelehnt werden. Diese Zusage hing am
+   * 12-Tick-Kompensationsfenster und ist gegenstandslos: Der Tick wird
+   * NIRGENDS zur Trefferauswertung benutzt (`MatchController.fire` nimmt keinen
+   * Tick entgegen), er füllt nur `interpolatedFrom` in der Antwort. Ein Tick aus
+   * der jüngsten Vergangenheit ist kein Betrug, sondern ein später Client — der
+   * Test „Ein veralteter, aber plausibler Tick …" hält das Gegenteil fest.
    */
   const { server, url } = await starteServer();
   try {
@@ -352,17 +360,75 @@ test('Der Client kann keinen Tick aus der Vergangenheit einschleusen', { timeout
     const snap = a.snapshots[a.snapshots.length - 1];
     const aktiver = snap.activePlayerId;
     const aktiv = aktiver === entityA ? a : b;
+    void entityB;
 
     aktiv.drainErrors();
-    // Weit außerhalb des Fensters (maxTickDrift = 400 laut validation.js).
-    for (const tick of [0, 1, snap.tick - 100_000, snap.tick + 100_000, -1]) {
+    // Alle drei liegen weiter als `maxTickDrift` (400) vom Jetzt entfernt.
+    for (const tick of [snap.tick - 100_000, snap.tick + 100_000, -1]) {
       aktiv.sendRaw(JSON.stringify({ t: CONTROL.INPUT, angle: 1, power: 70, tick }));
     }
 
     const fehler = await aktiv.sammleFehler(900);
-    assert.ok(fehler.length >= 5,
-      `Nur ${fehler.length} von 5 Befehlen mit unzulässigem Tick wurden abgelehnt`);
-    void entityB;
+    assert.ok(fehler.length >= 3,
+      `Nur ${fehler.length} von 3 Befehlen mit erfundenem Tick wurden abgelehnt`);
+  } finally {
+    await server.close();
+  }
+});
+
+test('Ein veralteter, aber plausibler Tick wird angenommen — nur die Rückrechnung entfällt', { timeout: 25_000 }, async () => {
+  /*
+   * KERN DER LOCKERUNG (2026-09-20). Ein Client, der länger als 200 ms braucht,
+   * sendet einen Tick, der AUSSERHALB des 12-Tick-Kompensationsfensters, aber
+   * INNERHALB der Betrugsgrenze (400) liegt. Genau das ist auf langsamer
+   * Hardware der Regelfall (gemessen: 34 Ticks Rückstand bei 48,8 ms/Bild) —
+   * und genau dieser Schuss wurde vorher verworfen, obwohl `fire()` den Tick
+   * gar nicht liest.
+   *
+   * Geprüft wird beides:
+   *   1. Der Schuss wird ANGENOMMEN (kein Verpuffen eines gültigen Schusses).
+   *   2. Die Rückrechnung ist ehrlich `null` — der Server hat keinen Zustand so
+   *      weit zurück. Die Degradierung ist sichtbar, nicht geraten.
+   *
+   * Der Aufruf geht über die SITZUNG, nicht über den Draht: Nur so ist
+   * `interpolatedFrom` direkt prüfbar (die Drahtantwort trägt es nicht).
+   */
+  const { server, url } = await starteServer();
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { lobbyId, a } = await zweiSpieler(wsUrl, url);
+
+    // Auf einen Snapshot warten, dessen Tick weit genug ist, dass „veraltet"
+    // (30 Ticks zurück) sicher AUSSERHALB der 12 Ticks liegt.
+    let snap = null;
+    const ende = Date.now() + 8000;
+    while (Date.now() < ende) {
+      const s = a.snapshots[a.snapshots.length - 1];
+      if (s && s.activePlayerId !== null && s.tick > 60) { snap = s; break; }
+      await new Promise(r => setTimeout(r, 25));
+    }
+    assert.ok(snap, 'Kein Snapshot mit aktivem Spieler und Tick > 60');
+
+    const session = server.getSession(lobbyId);
+    assert.ok(session, 'Keine Sitzung zur Lobby');
+    const seat = session.lobby.seats.find(entry => entry.entityId === snap.activePlayerId);
+    assert.ok(seat, 'Kein Sitz zum aktiven Spieler');
+
+    // Zuerst die Gegenprobe: ein erfundener Tick in der Zukunft bleibt abgelehnt.
+    const erfunden = session.handleInput(seat.token, {
+      angle: 1, power: 70, tick: session.match.world.tickCount + 100_000,
+    });
+    assert.equal(erfunden.ok, false, 'Ein erfundener Tick in der Zukunft wurde angenommen');
+
+    // 30 Ticks (≈0,5 s) alt: älter als das Kompensationsfenster, jünger als die
+    // Betrugsgrenze.
+    const ergebnis = session.handleInput(seat.token, {
+      angle: 1, power: 70, tick: snap.tick - 30,
+    });
+    assert.equal(ergebnis.ok, true,
+      `Gültiger Schuss mit veraltetem Tick verworfen: ${JSON.stringify(ergebnis.errors)}`);
+    assert.equal(ergebnis.interpolatedFrom, null,
+      'Außerhalb des Fensters darf die Rückrechnung KEINEN Zustand liefern');
   } finally {
     await server.close();
   }
