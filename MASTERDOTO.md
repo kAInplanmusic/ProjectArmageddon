@@ -15,21 +15,82 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Durchgang 2026-09-20 — die offenen Punkte entschieden und umgesetzt
+
+Auftrag: „alle offenen Punkte fertig machen". Die Regel dieser Datei gilt weiter —
+erledigt ist nur, was durch Test oder Messung belegt ist. Wo eine
+Produkt-, Balance- oder Content-Entscheidung nötig war, ist sie **getroffen und
+begründet**; sie steht jeweils am Eintrag. **Offene Häkchen: 0.**
+
+| Punkt | Entscheidung | Beleg |
+|---|---|---|
+| Schuss-Ablehnung / Tick-Fenster | Tick wird gegen die BETRUGSGRENZE `maxTickDrift` (400) geprüft, nicht gegen das 12-Tick-Fenster | `tests/anti-cheat.test.js`: erfundene Ticks abgelehnt, veralteter plausibler Tick angenommen |
+| Lebensdauer-Deckel | Der Deckel bleibt (Design-Obergrenze); das Geschoss detoniert an ihm statt lautlos zu verschwinden | `tests/reichweite-konsistenz.test.js` |
+| Zünder-Absicht | `mechanic.fuseIntent` in der Designdatei; `impact` → Zünder 0, `timed` → gestufte Dauer | `npm run check:fuses`: 0 Verstöße; 2 neue Tests |
+| Konten und Anmeldung | KEINE Serverkonten; Fortschritt als Datei sichern/laden | 6 Unit-Tests (`tests/identity.test.js`), 1 E2E |
+| Entwurfsphase (Draft) | KEIN Draft (nichts zu verteilen, Klasse ist je Platz frei wählbar) | Begründung am Eintrag |
+| Gleichzeitige Züge | KEINE; das Modell „jede Einheit einzeln" ist umgesetzt und belegt | `tests/zugreihenfolge.test.js` |
+| Matchdauer | 100 Leben bleiben; die Dauer hängt an der Zugzeit, nicht an der Gesundheit | `npm run check:time` nennt die Entscheidung |
+| Erfolge | Inhalte gesetzt; zwei nachweislich unerreichbare Schwellen korrigiert | `npm run check:achievements` Exit 0 |
+| Zwei `test.fixme`-Kulissen-Tests | Umgeschrieben (Kartencharakter bzw. Seed-Determinismus) — keine `fixme` mehr | `terrain-presets.spec.mjs` 5/5 |
+
+### Zwei zusätzliche Funde (nicht geplant, beim Durchgang aufgefallen)
+
+**1. Der Sprung hatte KEINEN Auslöser.** In `src/client/input.js` stand ein
+Sprung-Zweig auf `event.code === 'Space'` — er war NIE erreichbar, weil die
+Leertaste weiter oben das Aufladen beginnt und zurückkehrt. Alle bestehenden
+Tests riefen `__PA__.jump()` auf, also die DEBUG-API statt der Spielereingabe;
+ein solcher Test kann einen fehlenden Auslöser nicht bemerken. README und Hilfe
+nannten derweil „Leertaste: Springen", während die Leertaste auflädt.
+
+*Entschieden:* Die Leertaste bleibt das Aufladen (durch E2E festgehalten:
+`prediction-gpu.spec.mjs`), Enter feuert sofort — der Sprung bekommt eine eigene
+Taste: **Shift** (mit A/D seitlich). Der tote Zweig ist entfernt, README und
+Hilfetafel nennen die Taste, und `tests/e2e/runtime-smoke.spec.mjs` prüft den Weg
+über die TASTATUR (nicht über die Debug-API).
+
+**2. Die Dokumentation war an mehreren Stellen überholt.** Korrigiert wurden:
+`README.md` führte „Steuerung" ZWEIMAL mit widersprechenden Tabellen (Klick/
+Leertaste feuert gegen Leertaste springt); die Waffenkennzahlen stimmten nicht
+mehr (76 Hitscan/74 Projektil → 95/55, 18 Zünderwaffen → 11, 54 Flächenwaffen →
+56, Schadensherkunft 94/48/4 → 98/45/7); „`maxRange` ist bei allen Waffen 600,
+`cooldown` bei allen 0" stimmte seit der Reichweiten- und Nachlade-Ableitung
+nicht mehr (63 bzw. 4 verschiedene Werte). Der Status-Absatz behauptete „kein
+Audio, keine Client-Prädiktion, Zugzeit nicht erzwungen, keine Persistenz" —
+alles läuft längst.
+
+**Verifikation dieses Durchgangs:** `npm run lint` 0 Fehler · `npm test`
+**971/971 grün** · `runtime-smoke.spec.mjs` 10/10 · `terrain-presets.spec.mjs` 5/5 ·
+`profil.spec.mjs` 9/9 · `check:fuses` 0 Verstöße · `check:achievements` Exit 0 ·
+`npm run build` grün.
+Die **E2E-Batterie als Ganzes** wurde nicht gefahren — die 16 vorbestehenden
+Ausfälle dieses Rechners (siehe unten) sind davon unberührt und wären keine
+Aussage über diesen Durchgang.
+
+**Bewusst NICHT gemacht:** dass ein Mensch ONLINE mehrere Plätze besitzt („Krieg:
+2 Menschen mit je 5 Einheiten"). Das ist die einzige verbliebene Lücke aus dem
+Modell „jede Einheit einzeln" — und sie ist eine Änderung an Lobby, Protokoll UND
+Client zugleich, kein Häkchen. Die Grenze steht bei `MAX_PLAYERS_PER_TEAM`
+(`src/server/lobby.js`) und am Eintrag „Gleichzeitige Züge".
+
 ## Verifikationsstand
 
-*Stand 2026-09-19, gemessen nach dem Bot-Umbau (vorherige Zahlen in Klammern).*
+*Stand 2026-09-20, gemessen nach dem Durchgang „offene Punkte" (vorherige Zahlen
+in Klammern).*
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
-| Unit-/Integrationstests | `npm test` | **947/947** grün in 306 s (vorher 930/930) |
-| Browser-E2E | `npm run test:e2e` | **165/182 grün, 16 rot, 1 übersprungen** (22,2 min) — siehe Befund unten |
+| Unit-/Integrationstests | `npm test` | **971/971** grün in ~324 s (vorher 947/947) — der eine rote Test des Durchgangs war `emblem.test.js` (Muster-Wächter) und ist nachgezogen |
+| Browser-E2E | `npm run test:e2e` | **nicht als Batterie gefahren** — die 16 vorbestehenden Ausfälle dieses Rechners (siehe Befund unten) sind unverändert. Gefahren und grün: `runtime-smoke` (10/10), `terrain-presets` (5/5), `profil` (9/9) |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
-| Build | `npm run build` | grün (1,8 s) |
+| Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, 182,7× Echtzeit, p99 0,28 ms |
-| Balance | `npm run balance` | Auf Startentfernung 426 px: 113 Waffen mit Schaden am Ziel, 36 Selbstwirkungs-Waffen (alle wirksam), **1 ohne Wirkung** |
-| Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13**; die eine wirkungslose Waffe ist der „Explosive Energieball" (Zünder, siehe Bekannte Grenzen) |
+| Balance | `npm run balance` | Auf der STARTENTFERNUNG des Spiels (854 px, Vorgabekarte 2560): 72 Waffen mit Schaden am Ziel, 36 Selbstwirkungs-Waffen (alle wirksam), **42 ohne Wirkung** — überwiegend Waffen, deren Reichweite auf 854 px nicht trägt (Nahkampf). Die frühere Zahl „1 ohne Wirkung" galt bei 426 px; die Messdistanz hat sich mit der Kartengröße geändert |
+| Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13** (unverändert) |
+| Zünder-Absicht | `npm run check:fuses` | **0 Verstöße**; 11 Waffen `timed`, 7 `impact` (vorher 18 — fünf Hitscan-Waffen trugen einen wirkungslosen Zünder, sieben sind Aufprallwaffen) |
+| Erfolgs-Schwellen | `npm run check:achievements` | Exit 0 — alle Partie-Schwellen und Raten erreichbar oder in Reichweite |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash `808ac5eb` identisch, „exakt reproduzierbar" |
 | Determinismus | manuell, 3000 Ticks | Seed 4242 → `bc9695fa` reproduzierbar, Seed 9999 → `c0531097` |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
@@ -153,7 +214,21 @@ nicht nur veraltete Tests — vier echte Produktfehler** standen dahinter.
       (Kulisse folgt dem Charakter der Karte bzw. Vergleich über Seeds) — der
       Befund steht im Kommentar über ihnen.
 
-- [ ] **Schuss-Ablehnung: Grund gemessen — jetzt Fix-Entscheidung (offen, 2026-09-19).**
+- [x] **Schuss-Ablehnung — ENTSCHIEDEN und umgesetzt (2026-09-20):
+      Tick gegen die BETRUGSGRENZE, nicht gegen das Kompensationsfenster.**
+
+      *Umgesetzt:* Der Server reicht den Client-Tick in `validateCommand`
+      (Grenze `maxTickDrift` = 400); die harte `history.isWithinWindow`-Prüfung
+      (12 Ticks) ist entfernt. Die Rückrechnung bleibt begrenzt (`history.get()`
+      liefert außerhalb `null`).
+
+      *Belegt:* `MatchController.fire` nimmt keinen Tick entgegen — die alte
+      Prüfung schützte nichts und verwarf gültige Schüsse (gemessen 34 Ticks
+      Rückstand bei 48,8 ms/Bild). `tests/anti-cheat.test.js` ist neu gefasst:
+      erfundene Ticks bleiben abgelehnt, ein veralteter plausibler Tick wird
+      angenommen. Details im Abschnitt „Durchgang 2026-09-20".
+
+      *Historisch (die Herleitung, Stand vor der Entscheidung):*
 
       *Gemessen (`zz-probe-grund`, gelöscht):*
 
@@ -480,8 +555,18 @@ Strukturtest festgehalten), `#stepCrate` (eigene Kasten-Konstanten) und
       Rechenzeile — der Strahl ist nur mit Terrain im Weg messbar, die Aussage
       hängt aber an einer Zeile).
 
-- [ ] **Die Lebensdauer beschneidet kurze Waffen — jetzt kartenUNabhängig, aber
-      bestehen bleibt eine Balance-Frage.**
+- [x] **Die Lebensdauer beschneidet kurze Waffen — ENTSCHIEDEN (2026-09-20):
+      der Deckel bleibt (Design-Obergrenze), das Geschoss detoniert.**
+
+      *Umgesetzt:* In `projectileSystem` detoniert ein Geschoss, das den Deckel
+      IM FLUG erreicht (Krater, Flächenschaden, Wasserverdrängung,
+      Explosionsereignis) — statt lautlos zu verschwinden. Verlässt es die
+      Karte, wird es weiterhin still entfernt.
+
+      *Beleg:* `tests/reichweite-konsistenz.test.js` („Ein Geschoss am
+      Lebensdauer-Deckel detoniert — es verschwindet nicht lautlos").
+
+      *Historisch (die Herleitung, Stand vor der Entscheidung):*
 
       FUND (belegt, gemessen 2026-09-19): `projectileLifetime` rechnete
       `maxRange / v * 1,5`; die zurücklegbare Strecke ist damit `maxRange * 1,5`
@@ -2111,8 +2196,16 @@ common 70, uncommon 21, rare 41, epic 13, legendary 5.
 - [x] Latenz-Anzeige per Ping-Intervall (2 s, mit Messung echter RTT).
 - [x] Tastatur-Fokusreihenfolge und Fokusindikatoren inkl. Skip-Link.
 - [x] Tastatursteuerung greift nicht mehr in Formularfelder ein.
-- [ ] **Entwurfsphase (Draft) — die Voraussetzung ist jetzt da, die
-      Entscheidung bleibt offen.**
+- [x] **Entwurfsphase (Draft) — ENTSCHIEDEN (2026-09-20): es gibt KEINEN Draft.**
+
+      *Begründung:* Ein Draft verteilt KNAPPE Einheiten. Heute besitzt ein Mensch
+      EINE Figur (online) bzw. spielt lokal alle Figuren der Reihe nach — es gibt
+      nichts zu verteilen, weil die Klasse je Platz frei wählbar ist
+      (`resolveLoadout`). Ein Draft-System wäre Code für einen Fall, den niemand
+      spielt. Wird die Einheitenzahl je Mensch erhöht (siehe „Gleichzeitige
+      Züge"), ist der Andockpunkt `resolveLoadout` unverändert vorhanden.
+
+      *Historisch (die Herleitung, Stand vor der Entscheidung):*
 
       *Nachtrag 2026-09-17:* Der Einwand, der diesen Punkt blockierte, ist
       **erledigt**. Der Server erlaubt jetzt **1 bis 6** Einheiten je Team
@@ -2342,7 +2435,26 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [x] **Deployment-Konzept.** Erledigt - siehe `docs/betrieb.md` und die
       ausfuehrliche Fassung unter "Offene Punkte aus dem Audit". Der Server ist
       jetzt startbar (`npm run server`); das Startskript fehlte vorher.
-- [ ] **Konten und Anmeldung — Trennstelle gezogen, Entscheidung offen.**
+- [x] **Konten und Anmeldung — ENTSCHIEDEN und umgesetzt (2026-09-20):
+      KEINE Serverkonten, dafür eine Sicherung als DATEI.**
+
+      *Begründung:* Der reale Schaden war „ein gelöschter Cache bedeutet den
+      Verlust aller Erfolge", nicht „ich will ein Konto". Eine Datei löst genau
+      diesen Schaden, ohne personenbezogene Daten, ohne Anmeldung und ohne
+      Speicherfrist, die jemand festlegen und überwachen müsste.
+
+      *Umgesetzt:* `src/shared/identity.js` trägt die Sicherung
+      (`erstelleSicherung`, `sicherungAlsText`, `pruefeSicherung`,
+      `sicherungAusText`); der Client hat „Fortschritt sichern" und
+      „Sicherung laden" samt verstecktem Dateifeld. Die Geräte-Kennung ist NICHT
+      Teil der Datei. Die Prüfung ist bewusst NICHT tolerant und übernimmt nur
+      bekannte Felder; eine ungültige Datei wird GANZ abgelehnt (kein halb
+      geladenes Profil). Geladene Erfolge werden vereinigt, nie abgenommen.
+      `ABLAGEORTE.SERVER_KONTO` bleibt unbenutzt.
+
+      *Belege:* 6 Unit-Tests in `tests/identity.test.js`, 1 E2E in
+      `tests/e2e/profil.spec.mjs` (Profil füllen, sichern, leeren, laden;
+      Fremddatei wird abgelehnt).
       *Befund:* Profil, Erfolge und Statistik liegen im **Browser**
       (`localStorage`). Ein anderer Rechner, ein anderer Browser oder ein
       gelöschter Cache bedeutet den Verlust aller Erfolge — der Spieler erfuhr
@@ -2478,7 +2590,21 @@ Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
 - [x] **Matcharten berechnet** (`npm run check:sizes`).
 - [x] **Determinismus bei 40 Figuren geprüft** (`tests/viele-figuren.test.js`):
       gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene Hashes.
-- [ ] **Gleichzeitige Züge — die Sperre für den Kriegsmodus.**
+- [x] **Gleichzeitige Züge — ENTSCHIEDEN und belegt (2026-09-20): KEINE
+      gleichzeitigen Züge; das Modell „jede Einheit einzeln" läuft bereits.**
+
+      *Belegt:* `tests/zugreihenfolge.test.js` hält fest, dass erst alle ersten
+      Einheiten ziehen, dann alle zweiten (`S1E1, S2E1, …, S1E2`) — nie zweimal
+      derselbe Spieler hintereinander. Lokal (Hot-Seat) spielt der Mensch ALLE
+      Figuren, also auch mehrere Einheiten je Seite; online besitzt ein Mensch
+      eine Figur, freie Plätze übernimmt die Bot-KI. Der Stand steht als
+      Kommentar bei `MAX_PLAYERS_PER_TEAM` (`src/server/lobby.js`).
+
+      *Bewusst nicht gebaut:* dass ein Mensch ONLINE mehrere Plätze besitzt
+      („Krieg: 2 Menschen mit je 5 Einheiten"). Das bräuchte Token → mehrere
+      Plätze, `WELCOME` mit Entity-Listen und eine Anzeige für „welche meiner
+      Figuren ist am Zug" — Lobby, Protokoll und Client zugleich. Die Grenze
+      ist dokumentiert, nicht vergessen.
 
       *Gemessen* (`npm run check:simultaneous`), Partiedauer bei 29 Runden:
 
@@ -3167,7 +3293,17 @@ beschrieben.
       steht und erst fallen muss. Beides ist korrigiert — der Aufbau springt
       jetzt 22-mal je Partie.
 
-- [ ] **Matchdauer: gemessen, der Hebel wirkt aber schwach.**
+- [x] **Matchdauer — ENTSCHIEDEN (2026-09-20): 100 Leben bleiben, keine Zahl
+      geändert.**
+
+      *Begründung aus der Messung:* Unter 70 Leben ändert sich fast nichts — der
+      Engpass ist die Trefferquote (~32 %), nicht die Gesundheit. Die Dauer
+      hängt an der ZUGZEIT (Dauer = Züge × Zugzeit; 40 × 20 s ≈ 13 min). Eine
+      stillschweigende Kürzung der Zugzeit nähme genau das Zielen, das das Spiel
+      trägt — das ist eine Spielgefühls-Entscheidung, keine Regeländerung nebenbei.
+      13 min liegen im Genre-Rahmen; die früheren 5,7–11,0 min endeten durch die
+      RUNDENGRENZE (Abbruch), nicht durch Ausschaltung. `npm run check:time`
+      nennt die Entscheidung jetzt selbst am Ende seiner Ausgabe.
       *Neu: `npm run check:time`* — es spielt Partien mit verschiedenen
       Startgesundheiten und zeigt die Wirkung, BEVOR sie gemacht wird.
 
@@ -3243,7 +3379,24 @@ beschrieben.
       gegen den **konfigurierten** Breakpoint statt gegen die festen Zahlen
       14/15 — die schlugen bei der Änderung fehl, obwohl die Formel richtig war.
 
-- [ ] **Erfolge: Inhalte fehlen, aber die Schwellen sind jetzt geprüft.**
+- [x] **Erfolge — ENTSCHIEDEN und umgesetzt (2026-09-20): Inhalte gesetzt,
+      zwei Schwellen korrigiert.**
+
+      *Umgesetzt:* Alle elf Einträge tragen echten Namen, Text und Symbol; das
+      Muster-Feld ist entfernt, die Anzeige meldet keine Muster mehr. Die
+      Kennungen behalten ihr Präfix `muster_` — `id` bleibt stabil, damit ein
+      gespeicherter Fortschritt nicht verwaisen kann. Belohnungen bleiben `null`:
+      Es gibt kein Vergabesystem, ein Text wäre eine Behauptung.
+
+      *Korrigierte Schwellen (gemessen):* „200 Schaden je Minute" → **20**
+      (gemessen ~7); „500 Schaden in einer Partie" → **300** (gemessen 96 im
+      Mittel, 143 im besten Lauf). `npm run check:achievements` unterscheidet
+      jetzt Partie-Schwellen (bewertet, Exit 1 unter 20 % des Ziels) von
+      kumulativen Zielen (hochgerechnet). `scripts/achievement-vorlage.mjs` ist
+      entfernt — das Werkzeug bereitete eine Entscheidung vor, die gefallen ist.
+
+      *Belege:* `tests/achievements.test.js` (Format, Muster-Wächter,
+      Schwellen-Wächter), `npm run check:achievements` Exit 0.
       Alle 11 Erfolge tragen `muster: true`. Die **Mechanik ist vollständig** —
       der Modulkopf sagt ausdrücklich: „Ein neuer Erfolg ist eine neue Zeile in
       der Tabelle, kein Code." Namen, Texte und Symbole sind eine

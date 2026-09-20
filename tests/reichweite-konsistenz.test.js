@@ -318,3 +318,76 @@ test('Jede Lesestelle benutzt die benannte Funktion', () => {
       + 'gehört nicht in eine Geschwindigkeit');
   }
 });
+
+test('Ein Geschoss am Lebensdauer-Deckel detoniert — es verschwindet nicht lautlos', () => {
+  /*
+   * FUND (belegt, MASTERDOTO „Die Lebensdauer beschneidet kurze Waffen"): Der
+   * Deckel (`maxRange × 1,5`, siehe `projectileLifetime`) liegt für 465 von 1425
+   * Kombinationen UNTER der tatsächlichen Wurfweite. Ein Geschoss verfällt dann
+   * mitten im Flug.
+   *
+   * Vorher geschah das ohne jede Wirkung: Das Geschoss war einfach weg. Gemessen
+   * an Seed 1000, Zug 3, lebte ein Schuss 72 Ticks, obwohl er 83 gebraucht hätte
+   * — und die Rechnung sah trotzdem „Treffer".
+   *
+   * Geprüft wird deshalb: Am Deckel gibt es eine EXPLOSION (mit Krater und
+   * Flächenwirkung), nicht nur ein Entfernen. Der Deckel selbst bleibt bestehen —
+   * er ist die dokumentierte Obergrenze, keine zu behebende Zahl.
+   */
+  const match = new MatchController({
+    seed: 4242, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000,
+  });
+  match.start();
+  match.consumeEvents();
+  const spieler = match.activePlayerId;
+
+  const waffe = WEAPONS
+    .filter(w => w.delivery === 'projectile' && w.fuseTime === 0 && w.damage > 0)
+    .sort((a, b) => b.blastRadius - a.blastRadius)[0];
+  assert.ok(waffe, 'Es muss eine Projektilwaffe ohne Zünder geben');
+  assert.ok(waffe.blastRadius > 0, 'für die Wirkungsprüfung braucht es Flächenwirkung');
+  match.inventory.register(spieler, [waffe.id]);
+
+  /*
+   * Das Ziel steht NEBEN dem Schützen. Grund: Der Deckel greift nach wenigen
+   * Ticks, und die Explosion liegt dann direkt über dem Schützen. Gemessen wird
+   * deshalb, ob die Explosion AM DECKEL Schaden anrichtet — das ist die Wirkung,
+   * die vorher fehlte (das Geschoss verschwand lautlos).
+   */
+  const ziel = match.players.find(p => p.entityId !== spieler).entityId;
+  const spielerX = match.world.getComponent(spieler, 'Position', 'x') ?? 0;
+  const zielX = spielerX + 20;
+  match.world.setComponent(ziel, 'Health', 'current', 500);
+  match.world.setComponent(ziel, 'Health', 'max', 500);
+  match.world.setComponent(ziel, 'Position', 'x', zielX);
+  match.world.setComponent(ziel, 'Position', 'y', match.surfaceYAt(zielX) - 12);
+  const hpVorher = match.world.getComponent(ziel, 'Health', 'current');
+
+  // Senkrecht nach oben: Das Geschoss bleibt in der Luft, damit der Deckel
+  // sicher greift und nicht vorher der Boden.
+  const schuss = match.fire(spieler, Math.PI / 2, 100, waffe.id);
+  assert.equal(schuss.ok, true, `Schuss abgelehnt: ${schuss.errors?.join(', ')}`);
+  const pid = schuss.projectileId;
+
+  // Den Deckel künstlich kurz setzen: Das Geschoss ist noch im Flug.
+  match.world.setComponent(pid, 'Projectile', 'lifetime', 2);
+
+  const ereignisse = [];
+  for (let i = 0; i < 20; i++) {
+    match.step();
+    for (const e of match.consumeEvents()) ereignisse.push(e.type);
+  }
+
+  assert.equal(match.world.isActive(pid), false, 'das Geschoss muss am Deckel enden');
+  assert.ok(ereignisse.includes('projectile_expired'),
+    `der Deckel muss greifen: ${[...new Set(ereignisse)].join(', ')}`);
+  assert.ok(ereignisse.includes('explosion'),
+    'am Deckel fehlt die Explosion — das Geschoss verschwand lautlos');
+  assert.ok(!ereignisse.includes('projectile_impact'),
+    'in der Luft gibt es keinen Einschlag — nur das Ende am Deckel');
+
+  const hpNachher = match.world.getComponent(ziel, 'Health', 'current');
+  assert.ok(hpNachher < hpVorher,
+    `die Explosion am Deckel muss wirken (${waffe.displayName}): `
+    + `Leben ${hpVorher} → ${hpNachher}`);
+});

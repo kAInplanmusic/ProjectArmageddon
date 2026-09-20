@@ -28,6 +28,24 @@ export const MAX_LOBBY_PLAYERS = 12;
  * vorher taten sie es nicht (3 je Team, aber 12 in der Summe).
  *
  * Gemessen: Der Motor trägt 12 Figuren ohne Einschränkung.
+ *
+ * ## Wer steuert welche Figur (Entscheidung 2026-09-20)
+ *
+ * **Ein Platz = eine Figur.** Lokal ist das ein Hot-Seat: Der Mensch am Gerät
+ * spielt JEDE Figur der Reihe nach (es gibt keine Bots im Client), also auch
+ * mehrere Einheiten je Seite. Online besitzt ein Mensch **einen** Platz; die
+ * nicht besetzten Plätze übernimmt die Bot-KI.
+ *
+ * Der Zug läuft dabei immer „jede Einheit einzeln" (S1E1, S2E1, …, S1E2 — nie
+ * zweimal derselbe Spieler hintereinander). Das klassische Modell ist damit
+ * umgesetzt und durch `tests/zugreihenfolge.test.js` festgehalten; es ist NICHT
+ * das gleichzeitige Ziehen (siehe MASTERDOTO, „Gleichzeitige Züge").
+ *
+ * **Bewusst nicht gebaut:** dass ein Mensch online MEHRERE Plätze besitzt
+ * („Krieg: 2 Menschen mit je 5 Einheiten"). Dafür müsste ein Token auf mehrere
+ * Plätze zeigen, `WELCOME` eine Liste von Entity-IDs tragen und der Client
+ * „welche meiner Figuren ist am Zug?" beantworten — eine Änderung an Lobby,
+ * Protokoll und Anzeige zugleich. Die Grenze ist dokumentiert, nicht vergessen.
  */
 export const MAX_PLAYERS_PER_TEAM = 6;
 

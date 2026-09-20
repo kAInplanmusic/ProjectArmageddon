@@ -229,3 +229,45 @@ test('Terrain wird durch Einschläge zerstört', async ({ page }) => {
 
   expect(cratered.after).toBe(true);
 });
+
+test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-API', async ({ page }) => {
+  /*
+   * FUND (belegt, 2026-09-20): Der Sprung hatte KEINEN Auslöser. Der Code hatte
+   * einen Zweig auf `event.code === 'Space'`, der nie lief — die Leertaste
+   * beginnt weiter oben das Aufladen und kehrt zurück. Alle bestehenden Tests
+   * riefen `__PA__.jump()` auf, also die Debug-API statt der Spielereingabe; ein
+   * solcher Test konnte den fehlenden Auslöser nicht bemerken. README und Hilfe
+   * nannten derweil „Leertaste: Springen", während die Leertaste auflädt.
+   *
+   * Geprüft wird deshalb über die TASTATUR: Shift drücken → die Figur springt.
+   * Beide Zusicherungen zusammen sind nötig: `jumpsLeft` sinkt SOFORT (der
+   * Sprung wurde ausgelöst), die Höhe ändert sich erst mit den Ticks (es ist
+   * wirklich Physik).
+   */
+  await bootMatch(page, { seed: 4242 });
+
+  // Ein paar Ticks, damit die Figur sicher auf dem Boden steht.
+  const vorher = await page.evaluate(() => {
+    window.__PA__.advance(10);
+    const s = window.__PA__.getState();
+    return {
+      jumps: window.__PA__.jumpsLeft(),
+      y: s.entities.find(e => e.entityId === s.activePlayerId).y,
+    };
+  });
+  expect(vorher.jumps, 'Die Figur steht nicht auf dem Boden').toBeGreaterThan(0);
+
+  await page.keyboard.press('Shift');
+
+  const nachTaste = await page.evaluate(() => window.__PA__.jumpsLeft());
+  expect(nachTaste, 'Shift hat den Sprung nicht ausgelöst')
+    .toBe(vorher.jumps - 1);
+
+  const nachTicks = await page.evaluate(() => {
+    window.__PA__.advance(8);
+    const s = window.__PA__.getState();
+    return s.entities.find(e => e.entityId === s.activePlayerId).y;
+  });
+  expect(nachTicks, `Die Figur hat sich nicht nach oben bewegt (${vorher.y} → ${nachTicks})`)
+    .toBeLessThan(vorher.y);
+});

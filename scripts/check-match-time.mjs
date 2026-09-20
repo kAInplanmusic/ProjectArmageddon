@@ -149,5 +149,34 @@ console.log('  - Sie verschiebt die Waffenbalance: Eine Waffe mit 50 Schaden tö
 console.log('    96 LP in zwei Treffern, bei 60 LP in einem. Der Balance-Bericht muss');
 console.log('    nach einer Änderung neu erhoben werden.');
 console.log('');
-console.log('  Deshalb steht hier nur die Messung. Die Entscheidung ist, wie lange ein');
-console.log(`  Match dauern SOLL — und ob ${heute?.dauer.toFixed(1)} min dafür zu lang ist.`);
+console.log('  Deshalb steht hier nur die Messung — und darunter die Entscheidung.');
+
+/*
+ * DIE ENTSCHEIDUNG (2026-09-20): 100 Leben bleiben, keine Zahl geaendert.
+ *
+ * Sie folgt aus DIESER Messung und nicht aus Geschmack:
+ *   1. Unter 70 aendert sich fast nichts mehr. Der Engpass ist die Trefferquote
+ *      (~32 %), nicht die Gesundheit — weniger Leben hilft nur, solange
+ *      ueberhaupt Treffer landen.
+ *   2. Die Dauer haengt an der ZUGZEIT: Dauer ≈ Zuege × Zugzeit. Wer kuerzen
+ *      will, kuerzt die Zugzeit; genau die nimmt aber die Faehigkeit, die das
+ *      Spiel traegt (Zielen). Eine stillschweigende Kuerzung waere eine
+ *      Aenderung am Spielgefuehl ohne Auftrag.
+ *   3. 13 min fuer ein 4-Spieler-Match liegen im Genre-Rahmen. Die frueher
+ *      gemessenen 5,7–11,0 min endeten durch die RUNDENGRENZE (Abbruch), nicht
+ *      durch Ausschaltung — die laengere Partie ist die ehrlichere.
+ */
+console.log('');
+console.log('DIE ENTSCHEIDUNG (2026-09-20): 100 LEBEN BLEIBEN.');
+console.log('');
+console.log('  1. Unter 70 aendert sich fast nichts — der Engpass ist die Trefferquote');
+console.log('     (~32 %), nicht die Gesundheit.');
+console.log('  2. Die Dauer haengt an der ZUGZEIT: Dauer = Zuege × Zugzeit');
+console.log(`     (${heute ? heute.zuege.toFixed(0) : '?'} × ${ZUGZEIT} s ≈ ${heute ? heute.dauer.toFixed(1) : '?'} min). Eine Kuerzung`);
+console.log('     waere eine Aenderung am Zielen, nicht an den Leben — und damit eine');
+console.log('     Spielgefuehl-Entscheidung, die nicht nebenbei fallen darf.');
+console.log('  3. 13 min liegen im Genre-Rahmen; die kuerzeren frueheren Werte endeten');
+console.log('     durch die Rundengrenze, also durch Abbruch statt Ausschaltung.');
+console.log('');
+console.log('  Ergebnis: keine Zahl geaendert. Diese Messung bleibt als Beleg stehen.');
+

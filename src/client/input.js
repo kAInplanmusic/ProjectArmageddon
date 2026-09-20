@@ -131,14 +131,25 @@ export class InputController {
       this.#handlers.onWeaponDrop?.();
       return;
     }
-    // Leertaste springt. Mit A/D wird die Richtung mitgegeben, damit man über
-    // Kanten kommt. Der zweite Druck in der Luft ist der Doppelsprung.
-    //
-    // Hier stehen nur noch Tasten, die BEWUSST nichts tun sollen: Die
-    // Pfeiltasten sind oben bereits für Winkel und Kraft vergeben, und ein
-    // Sprung auf einer Pfeiltaste hätte zwei Bedeutungen.
-    if (key === 'Spacebar' || key.startsWith('Arrow')) return;
-    if (event.code === 'Space') {
+    /*
+     * Springen liegt auf SHIFT — nicht auf der Leertaste.
+     *
+     * FUND (belegt, 2026-09-20): Hier stand ein Sprung auf
+     * `event.code === 'Space'`. Er war NIE erreichbar: Die Leertaste beginnt
+     * weiter oben das Aufladen und kehrt zurück. Damit hatte der Sprung GAR
+     * KEINEN Auslöser — er war nur über die Debug-API (`__PA__.jump`) erreichbar,
+     * während README und Hilfe ihn als Spielereingabe nannten. Ein Test, der
+     * `__PA__.jump()` aufrief, konnte das nie bemerken.
+     *
+     * Die Leertaste bleibt das Aufladen (festgehalten von
+     * `prediction-gpu.spec.mjs`, „Die Leertaste lädt weiterhin auf …"), Enter
+     * feuert sofort. Für den Sprung bleibt damit eine eigene Taste: SHIFT.
+     *
+     * Mit A/D wird die Richtung mitgegeben, damit man über Kanten kommt; der
+     * zweite Druck in der Luft ist der Doppelsprung. Die Pfeiltasten sind oben
+     * schon für Winkel und Kraft vergeben und tun hier bewusst nichts.
+     */
+    if (key === 'Shift') {
       const seitlich = this.#keys.has('a') || this.#keys.has('A') || this.#keys.has('ArrowLeft')
         ? -1
         : (this.#keys.has('d') || this.#keys.has('D') || this.#keys.has('ArrowRight') ? 1 : 0);

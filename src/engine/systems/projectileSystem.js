@@ -178,7 +178,39 @@ export class ProjectileSystem {
       world.setComponent(entityId, 'Projectile', 'lifetime', lifetime);
 
       const outOfBounds = nextX < -64 || nextX > (terrain?.width ?? 4096) + 64 || nextY > (terrain?.height ?? 4096) + 64;
-      if (lifetime <= 0 || outOfBounds) {
+      /*
+       * Der Lebensdauer-Deckel (`projectileLifetime`, `maxRange × 1,5` je Karte)
+       * ist eine DESIGN-Obergrenze. Er darf aber nicht als LAUTLOSES
+       * VERSCHWINDEN wirken.
+       *
+       * FUND (belegt, MASTERDOTO „Die Lebensdauer beschneidet kurze Waffen"):
+       * Für 465 von 1425 Kombinationen (Waffe × Klasse × Kartengröße) liegt der
+       * Deckel UNTER der tatsächlichen Wurfweite — das Geschoss verfällt dann
+       * mitten im Flug. Vorher geschah das ohne jede Wirkung; gemessen an Seed
+       * 1000, Zug 3, verschwand ein Schuss nach 72 Ticks, obwohl er 83 gebraucht
+       * hätte, und die Rechnung sah trotzdem „Treffer".
+       *
+       * Deshalb detoniert das Geschoss am Deckel: Krater, Flächenschaden,
+       * Wasserverdrängung und Explosionsereignis — dieselbe Wirkung wie beim
+       * Einschlag. Die Obergrenze bleibt damit bestehen, wird aber SICHTBAR.
+       *
+       * Verlässt das Geschoss dagegen die Karte, wird es weiterhin still
+       * entfernt: Dort gibt es nichts mehr zu treffen, und eine Explosion am
+       * Rand wäre eine Wirkung ohne Ort.
+       */
+      if (lifetime <= 0 && !outOfBounds) {
+        const eigentuemer = world.getComponent(entityId, 'Projectile', 'owner');
+        const radius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
+        this.#explode(world, entityId, nextX, nextY, 0, null);
+        if (events) events.emit('projectile_expired', { entityId, x: nextX, y: nextY });
+        services.onProjectileImpact?.({
+          projectileId: entityId, owner: eigentuemer, x: nextX, y: nextY,
+          target: null, blastRadius: radius,
+        });
+        continue;
+      }
+
+      if (outOfBounds) {
         world.setComponent(entityId, 'Projectile', 'alive', 0);
         world.removeEntity(entityId);
         if (events) events.emit('projectile_expired', { entityId, x: nextX, y: nextY });

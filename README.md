@@ -131,26 +131,21 @@ Nach einem Rad bleibt Günther vier Sekunden unbeteiligt, sonst ginge es dauernd
 
 ## Steuerung
 
-| Eingabe | Wirkung |
-|---|---|
-| Maus bewegen | Winkel zielen |
-| Klick oder Leertaste | Schuss (Aufladen für mehr Kraft) |
-| `A` / `D` | Winkel feinjustieren |
-| `W` / `S` | Kraft ändern |
-| `1`–`9` | Waffe wählen |
-| `R` | Zurück zum Menü |
-
-## Steuerung
+Die zweite Tabelle ersetzt die erste: Diese Datei führte „Steuerung" zweimal und
+widersprach sich dabei (Klick/Leertaste feuert gegen Leertaste springt). Gültig
+ist die folgende.
 
 | Taste | Wirkung |
 |---|---|
 | `Maus` | Zielen (Winkel und Kraft am Zeiger) |
+| `Klick` / `Leertaste` | Aufladen und beim Loslassen feuern (halten = mehr Kraft) |
+| `Enter` | Sofort feuern (mit der eingestellten Kraft) |
+| `Shift` | Springen (mit `A`/`D` seitlich; in der Luft Doppelsprung) |
 | `A` / `D` | Winkel feinjustieren |
 | `W` / `S` | Kraft erhöhen / senken |
-| `1`-`9` | Waffe wählen (Nummern wie in der Liste) |
+| `1`–`9` | Waffe wählen (Nummern wie in der Liste) |
 | `Q` | Aktive Waffe abwerfen |
-| `Leertaste` | Springen (mit `A`/`D` seitlich; in der Luft Doppelsprung) |
-| `Enter` | Feuern |
+| `R` | Zurück zum Menü |
 
 **Sprung:** Je Zug sind zwei Sprünge möglich — einer vom Boden, einer in der
 Luft. Der Sprung beendet den Zug nicht, damit der Doppelsprung auslösbar bleibt.
@@ -169,9 +164,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (569 Tests) |
-| `npm run test:unit` | Nur PRNG/Seed/Loot (36 Tests) |
-| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (129 Tests) |
+| `npm test` | Unit- und Integrationstests (93 Dateien, siehe MASTERDOTO für die aktuelle Zahl) |
+| `npm run test:unit` | Nur PRNG/Seed/Loot |
+| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (28 Spezifikationen) |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
@@ -301,13 +296,15 @@ nicht von Hand gepflegt.
 | Eigenschaft | Stand |
 |---|---|
 | Anzeigename, interner Name, ID, Index | eindeutig, keine Platzhalter |
-| Schussart | 76 Hitscan, 74 Projektil |
-| Schaden | alle 150; die Herkunft ist je Waffe vermerkt (`damageSource`) |
-| Flächenwirkung | 54 Waffen, 22 verschiedene Radien |
+| Schussart | 95 Projektil, 55 Hitscan |
+| Schaden | 143 von 150; 7 richten keinen an (Selbstwirkung/Nutzen) |
+| Flächenwirkung | 56 Waffen, 22 verschiedene Radien |
 | Seltenheit | fünf Stufen (`powerTier`), nach Stärke abgeleitet |
-| Schadensherkunft | 94 echte Designwerte, 48 aus der Kategorie abgeleitet, 4 ohne Schaden |
-| Zünder | 18 Waffen mit 1-5 s, sichtbar als Countdown über dem Geschoss |
-| Anflugart | Luftangriffe von oben, Artillerie von der Seite |
+| Schadensherkunft | 98 echte Designwerte, 45 aus der Kategorie abgeleitet, 7 ohne Schaden |
+| Zünder | 11 Waffen mit 1–5 s (`fuseIntent: timed`); 7 wirken beim Aufprall (`impact`) |
+| Reichweite | 63 verschiedene `maxRange` (110–1062 px), mit der Kartenbreite skaliert |
+| Nachladezeit | 0–3 Züge, abgeleitet aus der Last (`cooldownSource` nennt die Herkunft) |
+| Anflugart | 5 von oben, 2 von der Seite, 143 vom Schützen |
 | Erreichbarkeit über Kisten | alle 150 |
 | Icons | 150/150 verknüpft und im Browser geladen |
 
@@ -322,8 +319,18 @@ Designdaten, die camelCase-Felder sind überwiegend 0-Platzhalter. Der Generator
 bevorzugt je Feld den ersten positiven Wert und kennzeichnet einen
 Ersatz-Schadenswert als `damageSource: "placeholder"`.
 
-**Nicht differenziert** (bewusst so dokumentiert, nicht versteckt): `maxRange`
-ist bei allen Waffen 600, `cooldown` bei allen 0. Spritesheets gibt es nicht, die
+**Zünder-Absicht statt Namensdeutung:** Ob eine Waffe liegen bleibt und dann
+zündet (`timed`) oder beim Aufprall wirkt (`impact`), steht als
+`mechanic.fuseIntent` in der Designdatei. Der Generator leitet `fuseTime` daraus
+ab, `npm run check:fuses` prüft die Zusage (impact ⇒ 0 s, timed ⇒ länger als der
+Flug, kein Zünder an einer Hitscan-Waffe — dort gäbe es kein Geschoss, das liegen
+bleiben könnte). Vorher wurde die Absicht aus dem Namen erschlossen; dadurch
+zündete jede Zünderwaffe erst nach der Landung.
+
+**Nachgemessen, nicht behauptet:** `maxRange` und `cooldown` sind NICHT mehr für
+alle Waffen gleich (63 bzw. 4 verschiedene Werte). Frühere Fassungen dieses
+README behaupteten das Gegenteil — damals stimmte es, inzwischen leitet der
+Generator beide aus der Designdatei ab. Spritesheets gibt es weiterhin nicht, die
 Darstellung ist prozedural; Bilder existieren nur als Waffen-Icons.
 
 ## Spezialeffekte
@@ -418,11 +425,22 @@ Munition, damit kein Match durch leere Magazine stehenbleibt.
 ## Status
 
 Spielbarer Kern mit lokalem und Online-Multiplayer, Bot-KI, Loot, Wasser,
-Mahlstrom und zerstörbarem Terrain. Verifiziert durch 70 Unit-/Integrationstests,
-12 Browser-E2E-Tests (inkl. zwei echte Clients in einer Lobby) und den
-Production-Build.
+Mahlstrom und zerstörbarem Terrain. Verifiziert durch die Unit-/Integrationstests,
+den Browser-E2E (siehe [`MASTERDOTO.md`](./MASTERDOTO.md) für die aktuellen
+Zahlen) und den Production-Build.
+
+Was der Status **nicht** mehr behauptet, weil es inzwischen läuft: Audio
+(prozedural erzeugt, `src/client/sound.js` + `soundMixer.js`), Client-Prädiktion
+des eigenen Schusses (`shotPrediction.js`), serverseitig erzwungene Zugzeit,
+Lobby-Persistenz über einen Neustart und strukturierte Server-Logs.
+
+**Fortschritt mitnehmen:** Profil, Erfolge und Statistik liegen im Browser
+(`localStorage`) — es gibt bewusst **keine Konten**. Damit ein Browserwechsel
+nicht stillschweigend alles löscht, hat das Profil „Fortschritt sichern" und
+„Sicherung laden" (JSON-Datei; ohne Geräte-Kennung, ohne Personenbezug).
 
 Offene Arbeit und bewusst dokumentierte Grenzen stehen in
-[`MASTERDOTO.md`](./MASTERDOTO.md) — dort ist vermerkt, was noch fehlt
-(kein Audio, keine Client-Prädiktion, Zugzeit noch nicht serverseitig erzwungen,
-Waffenwerte unbalanciert, keine Persistenz).
+[`MASTERDOTO.md`](./MASTERDOTO.md). Stand 2026-09-20 sind dort **keine Häkchen
+mehr offen**; verbliebene Grenzen sind ausdrücklich benannt (u. a. kein
+Online-Mehrplatz je Mensch, Waffenwerte nicht fein ausbalanciert, 11 statt 100
+Erfolge, Zünder- und `maxRange`-Auslegung dokumentiert statt geändert).

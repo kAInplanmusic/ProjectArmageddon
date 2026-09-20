@@ -15,15 +15,22 @@
  *  2. Der Rang ist der HÖCHSTE erreichte — nicht der erste, nicht der häufigste.
  *  3. Ohne Erfolge gibt es kein Emblem (`rang: null`) statt eines leeren.
  *  4. Unbekannte Kennungen zählen nicht mit.
- *  5. `nurMuster` sagt die Wahrheit (heute sind alle 11 Erfolge Muster).
+ *  5. `nurMuster` ist der Wächter für einen künftigen Platzhalter-Katalog (seit
+ *     2026-09-20 sind die Inhalte gesetzt, er ist also immer `false`).
  *  6. Die Ableitung ist rein — zweimal aufgerufen dasselbe.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   emblem, ACHIEVEMENTS, TIERS, ACHIEVEMENTS_BY_ID,
 } from '../src/shared/achievements.js';
+
+const HIER = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.join(HIER, '..');
 
 /** Sammelt die Kennungen aller Erfolge eines Rangs. */
 function idsMitTier(tier) {
@@ -115,28 +122,33 @@ test('Unbekannte Kennungen zählen nicht mit', () => {
   assert.equal(e.rang, ACHIEVEMENTS_BY_ID[echt].tier);
 });
 
-test('`nurMuster` sagt die Wahrheit über die Inhalte', () => {
+test('`nurMuster` ist der Wächter für einen künftigen Platzhalter-Katalog', () => {
   /*
-   * Die Inhalte der Erfolge fehlen noch (siehe Dateikopf von achievements.js):
-   * Alle Einträge sind Muster. Ein Emblem daraus darf nicht wie eine echte
-   * Auszeichnung aussehen — die Anzeige soll das kenntlich machen können.
+   * Bis zum 2026-09-20 trugen ALLE Einträge `muster: true`; `nurMuster` war also
+   * wahr und die Anzeige schrieb „Muster". Jetzt sind die Inhalte gesetzt: kein
+   * Eintrag trägt das Feld mehr, `nurMuster` ist immer `false`.
    *
-   * Dieser Test schlägt fehl, sobald echte Inhalte dazukommen (dann ist
-   * `nurMuster` für gemischte Fälle `false`) — und die Anzeige kann darauf
-   * umgestellt werden.
+   * Der Zweig bleibt trotzdem stehen — als Wächter, falls wieder Platzhalter in
+   * den Katalog kommen. Geprüft wird deshalb zweierlei:
+   *   1. Mit dem ECHTEN Katalog schlägt er nicht an (die Anzeige darf „Muster"
+   *      nicht mehr behaupten).
+   *   2. Er LIEST die Markierung noch. Das ist ein STRUKTURTEST (wie bei der
+   *      Reichweitenskalierung): Ein nachgebauter Katalog würde die echte Zeile
+   *      nicht absichern — und genau die kann brechen.
    */
-  const musterIds = ACHIEVEMENTS.filter(e => e.muster === true).map(e => e.id);
-  const echteIds = ACHIEVEMENTS.filter(e => e.muster !== true).map(e => e.id);
+  assert.deepEqual(ACHIEVEMENTS.filter(e => e.muster === true).map(e => e.id), [],
+    'die Inhalte sind gesetzt — kein Eintrag darf noch ein Muster sein');
 
-  const nurMuster = emblem(musterIds);
-  assert.equal(nurMuster.nurMuster, true,
-    'ein Emblem aus lauter Mustern muss sich als solches erkennen lassen');
+  const alle = emblem(ACHIEVEMENTS.map(e => e.id));
+  assert.equal(alle.nurMuster, false, 'ein Emblem aus echten Inhalten ist kein Muster-Emblem');
+  assert.equal(alle.anzahl, ACHIEVEMENTS.length);
+  assert.equal(emblem([]).nurMuster, false);
+  assert.equal(emblem(null).nurMuster, false);
 
-  if (echteIds.length > 0) {
-    const gemischt = emblem([...musterIds, ...echteIds]);
-    assert.equal(gemischt.nurMuster, false,
-      'mit echten Inhalten ist es kein Muster-Emblem mehr');
-  }
+  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'shared', 'achievements.js'), 'utf8');
+  assert.match(quelle, /nurMuster: treffer\.length > 0 && treffer\.every\(e => e\.muster === true\)/,
+    'der Muster-Wächter liest die Markierung nicht mehr — ein künftiger '
+    + 'Platzhalter-Katalog bliebe unerkannt, und die Anzeige behauptete „fertig"');
 });
 
 test('Die Ableitung ist rein — zweimal aufgerufen dasselbe', () => {
