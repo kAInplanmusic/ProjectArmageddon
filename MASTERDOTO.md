@@ -111,7 +111,12 @@ alles läuft längst.
 Wendigkeitsgrenze, Determinismus) · `tests/matrix.test.js` 5/5 · `npm test` **983/983** grün (vorher 974; +9: vier Wirkungs-Tests, fünf Matrix-Wächter).
 
 **Verifikation dieses Durchgangs (dritter Stand, nach dem Entfernen der Bot-KI):**
-`npm run lint` 0 Fehler · `npm test` **983/983 grün** · **Browser-E2E: 183 grün, 0 rot, 1 übersprungen** (die Profiling-Spezifikation 7/7 auf der echten GPU; 22,5 min) — der eine rote ist
+`npm run lint` 0 Fehler · `npm test` **983/983 grün** · **Browser-E2E: 183 grün, 0 rot, 1 übersprungen — in EINEM Lauf gemessen (25,2 min)**.
+Die Profiling-Spezifikation läuft 7/7 auf der echten GPU dieses Rechners
+(`ANGLE (Intel, Mesa Intel HD Graphics 3000)`); der eine übersprungene Test ist
+der Aufschlag-Test, der sich mit Begründung überspringt, wenn Untergrund UND
+Differenz beide auffällig sind. Gefahren NACH der Zerlegung der Schritte 1 und 2
+— die Batterie ist damit auch deren Beleg über alle 28 Spezifikationen. — der eine rote ist
 „Bildzeiten auf dem echten Grafikpfad" und verlangt eine GPU, die dieser
 Rechner nicht hat (gemessen 17,2 fps gegen die geforderten 20; der Bodenweg
 ist `cpu`). Alle übrigen, auch die sieben zuvor roten Bildzeit-Tests, laufen.
@@ -196,7 +201,7 @@ in Klammern).*
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
 | Unit-/Integrationstests | `npm test` | **983/983** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
-| Browser-E2E | `npm run test:e2e` | **183 grün / 0 rot / 1 übersprungen** (vorher 165/16/1). Die Profiling-Spezifikation läuft **7/7** — auf der echten GPU dieses Rechners. Die Online-Spezifikationen brauchen jetzt einen zweiten Menschen |
+| Browser-E2E | `npm run test:e2e` | **183 grün / 0 rot / 1 übersprungen in 25,2 min** (vorher 165/16/1). Die Profiling-Spezifikation läuft **7/7** — auf der echten GPU dieses Rechners. Die Online-Spezifikationen brauchen jetzt einen zweiten Menschen |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
