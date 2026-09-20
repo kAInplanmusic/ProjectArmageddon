@@ -13,21 +13,22 @@
  * @module main
  */
 import { isTextEntry } from './dom.js';
-import { MatchController, MAP_WIDTH, MAP_HEIGHT, TEAM_COLORS, WATER_SCALE } from '../engine/match.js';
+import { MatchController, TEAM_COLORS } from '../engine/match.js';
 import { Renderer } from './renderer.js';
 import { Camera } from './camera.js';
 import { InputController } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { buildTerrainForSeed } from './terrainPreview.js';
-import { getWeapon, WEAPONS, orderInventoryBySubcategory } from '../shared/config/weapons.js';
-import { buildEffect } from '../engine/specials.js';
+import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { SoundMixer } from './soundMixer.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
+import { exposeDebugApi } from './debugApi.js';
+import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import {
   PROFIL_SCHLUESSEL,
   ablageHinweis,
@@ -70,7 +71,6 @@ import {
 /** Reihenfolge der Schwierigkeitsstufen in der Erfolgsübersicht (leicht zuerst). */
 const TIER_REIHENFOLGE = ['leicht', 'mittel', 'schwer', 'sehr schwer'];
 
-const FIXED_TIMESTEP = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 8;
 
 class Game {
@@ -2892,171 +2892,11 @@ class Game {
     return { ok: true, fehler: null };
   }
 
+  /**
+   * Delegiert an `client/debugApi.js` — dort steht, warum sie ausgezogen ist.
+   */
   #exposeDebugApi() {
-    window.__PA__ = {
-      game: this,
-      getMode: () => this.mode,
-      /**
-       * Rechenweg des Bodens (Diagnose und Tests).
-       *
-       * Meldet, WELCHER Weg zuletzt benutzt wurde und WARUM. Ohne diese
-       * Auskunft wäre „WebGPU ist an" eine Behauptung — der Rückfall auf die
-       * CPU sieht im Bild identisch aus.
-       */
-      terrainPath: () => ({
-        device: Boolean(this.renderer.gpuDevice),
-        path: this.renderer.gpuTerrainPath,
-        reason: this.renderer.gpuTerrainReason,
-        attempted: this.renderer.gpuAttempted,
-      }),
-      /** Fordert WebGPU an (wie die Menüwahl „automatisch"). */
-      enableGpu: () => this.renderer.enableGpu(),
-      /** Laufende Schussvorhersage (Diagnose und Tests). */
-      prediction: () => ({
-        active: this.shotPredictor.active,
-        stats: this.shotPredictor.stats,
-        pending: this.shotPredictor.pending
-          ? {
-            playerId: this.shotPredictor.pending.playerId,
-            weaponId: this.shotPredictor.pending.weaponId,
-            points: this.shotPredictor.pending.trajectory?.points?.length ?? 0,
-            impact: this.shotPredictor.pending.trajectory?.impact ?? null,
-          }
-          : null,
-      }),
-      /** Replay: Zustand der Wiedergabe (oder null). */
-      replay: () => (this.replayPlayer ? {
-        tick: this.replayPlayer.tick,
-        totalTicks: this.replayPlayer.totalTicks,
-        progress: this.replayPlayer.progress,
-        playing: this.replayPlaying,
-        speed: this.replaySpeed,
-        finished: this.replayPlayer.finished,
-        appliedInputs: this.replayPlayer.appliedInputs,
-        rejected: this.replayPlayer.rejected.length,
-      } : null),
-      /** Replay: eine Aufzeichnung als Objekt laden (für Tests). */
-      loadReplay: dokument => this.loadReplayDocument(dokument),
-      /** Replay: steuern — 'play' | 'pause' | 'toggle' | 'restart' | 'step'. */
-      replayAction: (aktion, wert) => this.replayAction(aktion, wert),
-      /** Replay: an eine Stelle springen (Tick). */
-      replaySeek: tick => this.replaySeek(tick),
-      /** Spielerprofil (Kennzahlen über alle Partien). */
-      profil: () => this.profil.toJSON(),
-      /** Kennzahlen der laufenden Partie (oder null). */
-      matchKennzahlen: () => (this.stats
-        ? this.stats.zusammenfassung(this.eigeneSpielerIds)
-        : null),
-      /**
-       * Profil zurücksetzen (für Tests und den Menü-Knopf).
-       *
-       * Gibt schlichtes JSON zurück, nicht das PlayerProfile: Darin sind
-       * `erfolge` und `waffen` Mengen bzw. Karten, und die kommen über die
-       * Serialisierung nach außen als `{}` an — ein Test läse `undefined`.
-       */
-      profilZuruecksetzen: () => {
-        this.profilZuruecksetzen();
-        return this.profil.toJSON();
-      },
-      /** Erfolgsübersicht mit Fortschritt und Hinweisen. */
-      erfolge: () => {
-        const partei = this.stats ? this.stats.zusammenfassung(this.eigeneSpielerIds) : null;
-        return erfolgsUebersicht(
-          erfolgsKennzahlen(partei, this.profil.toJSON()),
-          this.profil.erfolge,
-        );
-      },
-      getMatch: () => this.match,
-      getNetwork: () => this.network,
-      getState: () => this.currentState(),
-      startMatch: options => this.startMatch(options),
-      startOnline: options => this.startOnline(options),
-      refreshLobbies: () => this.refreshLobbies(),
-      /** Waffe wählen wie über die Liste (Index im Inventar). */
-      selectWeapon: index => this.selectWeapon(index),
-      /** Waffe abwerfen (Position wie in der Liste). */
-      dropWeapon: index => this.dropWeapon(index),
-      /** Günther-Zustand (aktiv, Position, Haufen, Plan). */
-      guenther: () => this.match?.getState()?.guenther ?? null,
-      /** Alle Rad-Ausgänge (für Tests und Anzeige). */
-      guentherWheelOutcomes: () => GUENTHER_WHEEL.map(o => ({ id: o.id, label: o.label, detail: o.detail })),
-      /** Zeigt das Glücksrad mit einem vorgegebenen Ausgang (für Tests). */
-      showGuentherWheel: payload => this.showGuentherWheel(payload),
-      /**
-       * Aktuelle Darstellungsgrundlage.
-       *
-       * Es gibt zwei Wege, und sie schließen einander aus:
-       *  - `bild`: eine gewählte Bildkulisse (`backdropKey`), oder
-       *  - `szene`: die GENERATIVE Kulisse (`scenery`), die Vorgabe.
-       *
-       * Beide zusammen abzufragen ist nötig, weil `backdropKey` bei der
-       * generativen Kulisse absichtlich `null` bleibt — wer nur ihn prüft, hält
-       * ein korrekt gezeichnetes Spiel für eine leere Darstellung. (Genau das
-       * ist beim Schreiben des Geländeform-Tests passiert.)
-       */
-      backdrop: () => ({
-        key: this.renderer.backdropKey,
-        file: this.renderer.backdrop?.file ?? null,
-        preset: this.renderer.backdrop?.mapPreset ?? null,
-        palette: this.renderer.palette,
-        /** Generative Szene: Biomgruppe, Himmel, Wasser, Ambiente. */
-        szene: this.renderer.scenery ? {
-          biom: this.renderer.scenery.biomeId ?? null,
-          // `sky` und `water` sind Objekte mit eigener Kennung.
-          himmel: this.renderer.scenery.sky?.id ?? null,
-          wasser: this.renderer.scenery.water?.id ?? null,
-        } : null,
-      }),
-      /** Kulissenauswahl im Menü befüllen (für Tests). */
-      fillBackdropOptions: () => this.fillBackdropOptions(),
-      /** Springen (seitlich: -1, 0, 1). */
-      jump: seitlich => this.jump(seitlich ?? 0),
-      /** Steht die Figur am Zug auf festem Grund? */
-      isGrounded: () => this.match ? this.match.isGrounded(this.match.activePlayerId) : false,
-      /** Verbleibende Sprünge des Spielers am Zug. */
-      jumpsLeft: () => this.match ? this.match.jumpsLeft(this.match.activePlayerId) : 0,
-      /**
-       * Waffenkatalog und Wirkungen für Tests und Automatisierung.
-       * Ohne diese Zugänge müssten E2E-Tests Module dynamisch nachladen, was im
-       * Browser an der Pfadauflösung scheitert.
-       */
-      weapons: () => WEAPONS,
-      getWeapon: id => getWeapon(id),
-      buildEffect: id => buildEffect(getWeapon(id)),
-      findWeaponByEffect: kind => WEAPONS.find(weapon => buildEffect(weapon)?.kind === kind) ?? null,
-      fire: (angle, power) => {
-        if (angle !== undefined) this.aim = { angle, power: power ?? this.aim.power };
-        return this.fire();
-      },
-      aimPreview: (angle, power) => this.match?.aimPreview(this.match.activePlayerId, angle, power) ?? [],
-      setAutoLoop: flag => {
-        this.autoLoop = Boolean(flag);
-        return this.autoLoop;
-      },
-      stateHash: () => this.match?.stateHash() ?? null,
-      activePlayerId: () => this.currentState()?.activePlayerId ?? null,
-      players: () => this.match?.players ?? [],
-      advance: ticks => {
-        if (this.mode !== 'local' || !this.match) return this.currentState();
-        for (let i = 0; i < ticks; i++) {
-          this.step();
-          if (this.match.status !== 'playing') break;
-        }
-        return this.match.getState();
-      },
-      events: () => this.lastEvents,
-      /** Wasserstand an einer Weltposition (0..1) — für Tests und Diagnose. */
-      waterLevelAt: (x, y) => this.match?.waterLevelAt(x, y) ?? 0,
-      /** Wasserstand setzen (Weltposition); true, wenn die Zelle auf der Karte lag. */
-      setWaterLevelAt: (x, y, level) => this.match?.setWaterLevelAt(x, y, level) ?? false,
-      /** Wasserstand des Spielers am Zug. */
-      activeWaterLevel: () => {
-        const state = this.currentState();
-        const aktiv = state?.entities?.find(entity => entity.entityId === state.activePlayerId);
-        return aktiv?.waterLevel ?? 0;
-      },
-      constants: { MAP_WIDTH, MAP_HEIGHT, WATER_SCALE, FIXED_TIMESTEP },
-    };
+    exposeDebugApi(this);
   }
 }
 
