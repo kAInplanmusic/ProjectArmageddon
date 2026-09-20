@@ -15,7 +15,7 @@ vom 2026-09-17 und waren seither überholt).
 | Quellcode | 35.955 Zeilen (30.255) |
 | Tests | 32.684 Zeilen (26.546) |
 | Unit-Tests | 974 (93 Dateien) — vorher 795 in 72 Dateien |
-| E2E-Tests | 184 (28 Dateien) — 176 grün, 7 rot, 1 übersprungen; vorher 172 in 27 Dateien |
+| E2E-Tests | 184 (28 Dateien) — 182 grün, 1 rot, 1 übersprungen; vorher 172 in 27 Dateien |
 | Werkzeuge | 37 Skripte (22) |
 | Unit-Laufzeit | **4,7 min** (22 s) |
 | E2E-Laufzeit | **22,5 min** (9,4 min) |
@@ -29,11 +29,24 @@ Partien spielen (`balance`, `balance:sweep`, `check:bots`-Nachfolger,
 `measure:*`-Aufrufe in Tests) — sie rechnen, statt zu prüfen. Wer schnell prüfen
 will, fährt `npm run test:unit` (PRNG/Seed/Loot) oder `npm run smoke:fast`.
 
-**Die sieben roten E2E-Tests sind EINE Datei und EINE Ursache:** `profiling.spec.mjs`
-misst Bildzeiten gegen ein 16,7-ms-Budget. Auf diesem Rechner rastert der Browser
-in Software: **51,2 ms je Bild (Faktor 3,07)**, 19,5 fps, Terrain-Neuaufbau
-2718 ms für 2560×1440. Das ist die Maschine. Ein Lauf auf einer echten GPU ist
-die einzige offene Prüfung.
+**Der eine rote E2E-Test ist einer, der eine GPU verlangt:** „Bildzeiten auf dem
+echten Grafikpfad" startet den Browser mit `--use-angle=gl` und fordert mehr als
+20 fps — gemessen **17,2 fps**, Bodenweg `cpu`. Auf diesem Rechner rastert der
+Browser in Software (51,2 ms je Bild, Terrain-Neuaufbau 2531 ms für 2560×1440).
+Die übrigen Bildzeit-Tests MESSEN auf dem Softwarepfad und prüfen ihn
+maßstabsgerecht; sie laufen deshalb auch hier.
+
+**Was daran lange falsch war (gefunden 2026-09-20):** Von den 7 roten Tests
+lagen fünf im 60-s-Timeout (sie MESSEN 300 Bilder — `test.slow()` behoben), zwei
+in **veralteten Budgets**: Sie verglichen gegen 1280×720 und 500/1000 ms, während
+die Karte inzwischen 2560×1440 misst. Ein absolutes Budget ohne die Fläche wird
+bei jeder Kartenvergrößerung stillschweigend falsch. Geprüft wird jetzt der
+Aufwand **je Pixel** (Bezugswert gemessen 0,74 µs, Grenze 3,0 µs).
+
+**Ein Nebenfund zum Produkt:** Der Terrain-Aufbau kostet auf dem CPU-Weg rund
+2,5–2,7 s für 2560×1440 (0,7 µs je Pixel, linear in der Fläche) und läuft EINMAL
+je Kartenaufbau — nicht bei jedem Krater. Der GPU-Weg bessert danach nach; ohne
+GPU-Gerät sieht der Spieler den Boden erst nach diesen Sekunden.
 
 **Online-Tests brauchen ZWEI Menschen.** Es gibt keine Bot-KI; unbesetzte Teams
 übernimmt niemand, und ein Match startet erst, wenn jedes Team einen verbundenen

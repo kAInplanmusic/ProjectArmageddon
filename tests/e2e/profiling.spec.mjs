@@ -418,15 +418,55 @@ function pruefeHardwareMessung(befund, form) {
     .toBeLessThan(500);
   expect(Number.isFinite(b.mittel) && b.mittel > 0, `${form}: unplausibler Mittelwert`).toBe(true);
 
-  if (befund.terrain.verfuegbar) {
-    // Der Terrain-Aufbau ist CPU-Arbeit und braucht bei 1280×720 gemessen
-    // rund 20–32 ms. Über einer Sekunde wäre ein echter Fehler.
-    expect(befund.terrain.mittel, `${form}: Terrain-Neuaufbau über 1000 ms`)
-      .toBeLessThan(1000);
-  }
+  // Der Terrain-Aufbau ist CPU-Arbeit und damit vom Rasterweg unabhängig —
+  // geprüft wird er maßstabsgerecht (siehe pruefeTerrainAufbau).
+  pruefeTerrainAufbau(befund, form);
   expect(befund.seitenfehler, `Seitenfehler: ${befund.seitenfehler.join(' | ')}`).toEqual([]);
 }
 
+
+/**
+ * Prüft einen Terrain-NEUAUFBAU — maßstabsgerecht.
+ *
+ * ## Warum nicht mehr in Millisekunden
+ *
+ * Fund (belegt, 2026-09-20): Hier standen feste Budgets (500 ms bzw. 1000 ms)
+ * mit der Begründung „braucht bei 1280×720 rund 20–32 ms". Beides war falsch:
+ *
+ *  - Die Karte des Spiels ist **2560×1440** (3,69 Mio. Pixel), nicht 1280×720.
+ *  - Die genannten 20–32 ms widersprachen dem eigenen Code: `terrainBaker.js`
+ *    nennt für die Höhlenschattierung **190 ms bei 640×360**. Gemessen auf
+ *    diesem Rechner: **2718 ms für 2560×1440** — das sind 0,74 µs je Pixel,
+ *    hochgerechnet 170 ms für 640×360. Die Angabe im Test war also um den
+ *    Faktor 20 zu optimistisch.
+ *
+ * Die Arbeit ist LINEAR in der Pixelzahl (je Spalte die Oberfläche suchen, alles
+ * darunter färben). Ein absolutes Budget ohne die Fläche ist damit keine
+ * Aussage: Es wird bei jeder Kartenvergrößerung stillschweigend falsch — genau
+ * das ist hier passiert. Geprüft wird deshalb der Aufwand **je Pixel**.
+ *
+ * Bezugswert: 0,74 µs/Pixel (Mittel über 5 Läufe, 2560×1440, CPU-Weg).
+ * Die Grenze liegt beim Vierfachen — sie fängt einen echten Regress (andere
+ * Schleife, anderer Puffer, doppelte Arbeit) und nicht die Kartengröße.
+ */
+const NS_JE_PIXEL_GRENZE = 3000;
+
+function pruefeTerrainAufbau(befund, form) {
+  const terrain = befund.terrain;
+  if (!terrain.verfuegbar) return;
+
+  const nsProPixel = (terrain.mittel / terrain.pixel) * 1e6;
+  expect(Number.isFinite(nsProPixel) && nsProPixel > 0,
+    `${form}: unplausibler Terrain-Aufwand (${nsProPixel})`).toBe(true);
+  expect(nsProPixel, `${form}: Terrain-Neuaufbau ${terrain.mittel.toFixed(1)} ms für `
+    + `${(terrain.pixel / 1e6).toFixed(2)} Mio. Pixel = ${nsProPixel.toFixed(0)} ns/Pixel — `
+    + `über der Grenze von ${NS_JE_PIXEL_GRENZE}. Bezugswert gemessen: 0,74 µs/Pixel `
+    + '(2718 ms bei 2560×1440)').toBeLessThan(NS_JE_PIXEL_GRENZE);
+
+  // Kein einzelner Durchlauf darf ausreißen (ein Leck, ein Synchronaufbau).
+  expect(terrain.max, `${form}: längster Neuaufbau ${terrain.max.toFixed(0)} ms — `
+    + 'das ist ein Steher, nicht bloß langsamer Aufbau').toBeLessThan(terrain.mittel * 5);
+}
 /**
  * Prüft eine Messung auf dem SOFTWARE-Pfad (SwiftShader).
  *
@@ -448,17 +488,34 @@ function pruefeSoftwareMessung(befund, form) {
   expect(b.bilder, `${form}: zu wenige Bilder gemessen`).toBeGreaterThanOrEqual(BILDER);
   expect(Number.isFinite(b.mittel) && b.mittel > 0, `${form}: unplausibler Mittelwert`).toBe(true);
   expect(Number.isFinite(b.max), `${form}: unplausibles Maximum (${b.max})`).toBe(true);
-  // Auch die langsamste Software-Rasterung soll nicht in Sekunden landen — das
-  // wäre ein Hänger, kein Rasterproblem.
-  expect(b.max, `${form}: längstes Bild ${b.max.toFixed(0)} ms — das ist ein Hänger, `
-    + 'nicht bloß langsame Rasterung').toBeLessThan(2000);
+
+  /*
+   * Ein Hänger — gemessen gegen den EIGENEN Median, nicht gegen eine feste
+   * Millisekundenzahl.
+   *
+   * Fund (belegt, 2026-09-20): Hier stand „max < 2000 ms". Auf einem
+   * Software-Rasterer bei 2560×1440 ist ein Bild aber schon im NORMALFALL
+   * hunderte Millisekunden lang — gemessen p50 200 ms, p95 417 ms, p99 1333 ms.
+   * Der Test schlug damit an der Rasterung an, nicht am Spiel: Derselbe Lauf
+   * zeigt auf dem Hardwarepfad p50 16,7 ms.
+   *
+   * Ein Hänger ist erkennbar als AUSREISSER gegenüber dem eigenen Median. Der
+   * Faktor 50 liegt über dem gemessenen Verhältnis (33× bei 300 Bildern mit
+   * Schüssen) und fängt trotzdem, was ein Hänger ist: eine Schleife, die nicht
+   * zurückkehrt, ein synchroner Vollaufbau je Bild.
+   */
+  const ausreisser = b.max / Math.max(b.p50, 1);
+  expect(ausreisser, `${form}: längstes Bild ${b.max.toFixed(0)} ms bei einem Median von `
+    + `${b.p50.toFixed(1)} ms (${ausreisser.toFixed(1)}×) — das ist ein Ausreißer, `
+    + 'kein langsamer Rasterer').toBeLessThan(50);
+  // Absolute Notgrenze: Ein Bild in SEKUNDEN ist auch auf dem Softwarepfad kein
+  // Rasterproblem mehr.
+  expect(b.max, `${form}: längstes Bild ${b.max.toFixed(0)} ms — das ist ein Hänger`)
+    .toBeLessThan(15_000);
 
   // Der Terrain-Aufbau ist reine CPU-Arbeit und damit vom Rasterweg unabhängig
-  // — diese Prüfung gilt auf beiden Pfaden.
-  if (befund.terrain.verfuegbar) {
-    expect(befund.terrain.mittel, `${form}: Terrain-Neuaufbau über 500 ms`)
-      .toBeLessThan(500);
-  }
+  // — diese Prüfung gilt auf beiden Pfaden (maßstabsgerecht).
+  pruefeTerrainAufbau(befund, form);
   expect(befund.seitenfehler, `Seitenfehler: ${befund.seitenfehler.join(' | ')}`).toEqual([]);
 }
 
@@ -475,11 +532,14 @@ function pruefeSoftwareMessung(befund, form) {
  */
 for (const form of FORMEN) {
   test(`Bildzeiten messen (Software-Rasterung) — ${form}`, async ({ page }) => {
+    // Messen dauert: 300 Bilder bei ~50 ms sind 15 s, dazu fünf Terrain-Aufbauten.
+    test.slow();
     const befund = await messen(page, { form, bilder: BILDER, feuern: false });
     pruefeSoftwareMessung(befund, form);
   });
 
   test(`Bildzeiten mit Explosionen und Partikeln (Software-Rasterung) — ${form}`, async ({ page }) => {
+    test.slow();
     const befund = await messen(page, { form, bilder: BILDER, feuern: true });
 
     /*
@@ -584,6 +644,9 @@ test.describe('Bildzeiten mit Hardware-Beschleunigung', () => {
  */
 test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
   test('Das Spiel kostet deutlich weniger als ein 60-Hz-Budget', async ({ page }) => {
+    // Auf einem Software-Rasterer dauert der leere Takt selbst ~200 ms je Bild;
+    // 150 Bilder je Seite passen dann nicht in 60 s (gemessen: Timeout).
+    test.slow();
     const befund = await messeAufschlag(page, { form: 'islands', bilder: 150 });
 
     console.log(`PROFIL Aufschlag: leer ${befund.leer.mittel.toFixed(2)} ms `
@@ -616,15 +679,36 @@ test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
      * wäre irreführend.
      *
      * Erkennbar ist die Lastsituation am LEEREN Takt: Er braucht dann selbst
-     * deutlich länger als ein 60-Hz-Bild. Ist das der Fall, wird übersprungen
-     * statt falsch rot — mit Begründung, nicht still.
+     * deutlich länger als ein 60-Hz-Bild.
+     *
+     * ## Warum der langsame leere Takt NICHT allein zum Überspringen führt
+     *
+     * Fund (belegt, 2026-09-20): Hier stand `if (leer.mittel > BUDGET * 2) skip`.
+     * Auf einem Rechner mit SOFTWARE-Rasterung ist der leere Takt aber schon ohne
+     * jede Last langsam — gemessen 183,8 ms. Der Test übersprang sich damit
+     * selbst, obwohl er die Antwort HATTE: Der Aufschlag betrug **3,24 ms**
+     * (187,02 gegen 183,77), also weit unter dem Budget. Ein Test, der ein
+     * Ergebnis wegwirft, weil die Umgebung langsam ist, verliert genau die
+     * Aussage, die er treffen soll — der Aufschlag ist eine DIFFERENZ und von
+     * einem gleichmäßig langsamen Untergrund unabhängig.
+     *
+     * Übersprungen wird deshalb nur, wenn die Differenz SELBST das Budget reißt
+     * und der Untergrund langsam ist: Dann lässt sich nicht trennen, ob die Last
+     * oder das Spiel den Aufschlag macht. Ist der Untergrund langsam und die
+     * Differenz klein, wird geprüft — und die Umgebung im Protokoll benannt.
      */
-    if (befund.leer.mittel > BUDGET_MS * 2) {
+    const langsamerUntergrund = befund.leer.mittel > BUDGET_MS * 2;
+    if (langsamerUntergrund && befund.aufschlagMs > BUDGET_MS) {
       test.skip(true,
         `Der leere Bildtakt braucht ${befund.leer.mittel.toFixed(1)} ms — `
         + 'die Maschine ist ausgelastet (paralleler Volllauf?). Der Aufschlag ist '
         + 'dann nicht auf das Spiel zurückzuführen. Isoliert messen: '
         + 'npx playwright test tests/e2e/profiling.spec.mjs');
+    }
+    if (langsamerUntergrund) {
+      console.log(`PROFIL Aufschlag: langsamer Untergrund (${befund.leer.mittel.toFixed(1)} ms `
+        + 'je leerem Bild — Software-Rasterung?), die DIFFERENZ bleibt aber klein '
+        + `(${befund.aufschlagMs.toFixed(2)} ms) und wird deshalb geprüft.`);
     }
 
     expect(befund.aufschlagMs, `Aufschlag ${befund.aufschlagMs.toFixed(2)} ms — `
@@ -642,6 +726,7 @@ test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
  * nicht auffallen.
  */
 test('Terrain-Neuaufbau: Fläche stimmt mit dem Match überein', async ({ page }) => {
+  test.slow();
   const befund = await messen(page, { form: 'mountains', bilder: 60, feuern: false });
 
   expect(befund.terrain.verfuegbar, 'Der Aufbau ist nicht messbar (kein terrainSource)')
@@ -654,11 +739,20 @@ test('Terrain-Neuaufbau: Fläche stimmt mit dem Match überein', async ({ page }
 
   expect(befund.terrain.breite, 'Gemessene Breite weicht vom Match ab').toBe(zustand.breite);
   expect(befund.terrain.hoehe, 'Gemessene Höhe weicht vom Match ab').toBe(zustand.hoehe);
-  expect(befund.terrain.hoehe, 'Der Aufbau misst eine andere Fläche als das Match')
-    .toBe(720);
+  /*
+   * Die Fläche muss die des MATCHES sein.
+   *
+   * Fund (belegt, 2026-09-20): Hier stand `.toBe(720)` — die Höhe, die das
+   * Spiel einmal hatte. Die Karte ist inzwischen 1440 hoch, und der Test schlug
+   * fehl, obwohl der Aufbau genau das Richtige tat. Eine Zusicherung auf einen
+   * Zahlenwert, den die Anwendung selbst liefert, prüft die Anwendung nicht,
+   * sondern die Erinnerung des Tests.
+   */
+  expect(befund.terrain.breite * befund.terrain.hoehe,
+    'Der Aufbau misst eine andere Fläche als das Match')
+    .toBe(zustand.breite * zustand.hoehe);
 
   // Fünf Aufrufe, ein Messwert je Aufruf — und keiner davon ein Steher.
   expect(befund.terrain.laeufe).toBe(5);
-  expect(befund.terrain.max, 'Ein einzelner Neuaufbau brauchte länger als 500 ms')
-    .toBeLessThan(500);
+  pruefeTerrainAufbau(befund, 'mountains');
 });

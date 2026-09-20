@@ -107,11 +107,11 @@ alles läuft längst.
 
 **Verifikation dieses Durchgangs (dritter Stand, nach dem Entfernen der Bot-KI):**
 `npm run lint` 0 Fehler · `npm test` **974/974 grün** · **Browser-E2E als GANZE
-Batterie: 176 grün, 7 rot, 1 übersprungen (22,5 min)** — die sieben roten liegen
-AUSSCHLIESSLICH in `profiling.spec.mjs` und sind die Hardware dieses Rechners
-(gemessen 51,2 ms je Bild = Faktor 3,07 über dem 16,7-ms-Budget, 19,5 fps,
-Terrain-Neuaufbau 2718 ms für 2560×1440 auf dem CPU-Weg, kein GPU-Pfad im
-kopflosen Browser). Siehe „Befund zur E2E-Batterie" unten.
+Batterie: 182 grün, 1 rot, 1 übersprungen (22,5 min)** — der eine rote ist
+„Bildzeiten auf dem echten Grafikpfad" und verlangt eine GPU, die dieser
+Rechner nicht hat (gemessen 17,2 fps gegen die geforderten 20; der Bodenweg
+ist `cpu`). Alle übrigen, auch die sieben zuvor roten Bildzeit-Tests, laufen.
+Siehe „Befund zur E2E-Batterie" unten.
 `check:fuses` 0 Verstöße · `check:achievements` Exit 0 · `npm run build` und
 `npm run validate` grün.
 
@@ -133,7 +133,7 @@ in Klammern).*
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
 | Unit-/Integrationstests | `npm test` | **974/974** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
-| Browser-E2E | `npm run test:e2e` | **176 grün / 7 rot / 1 übersprungen** in 22,5 min (vorher 165/16/1). Die 7 roten sind ALLE in `profiling.spec.mjs` und hardwaregebunden (51,2 ms je Bild, 19,5 fps, CPU-Rasterung 2560×1440) — siehe Befund unten. Alles andere läuft, einschließlich der Online-Spezifikationen (`multiplayer`, `network-conditions`, `prediction-online`), die jetzt einen zweiten Menschen brauchen |
+| Browser-E2E | `npm run test:e2e` | **182 grün / 1 rot / 1 übersprungen** in 22,5 min (vorher 165/16/1). Der eine rote Test verlangt eine echte GPU (17,2 fps gemessen, Bodenweg `cpu`) — siehe Befund unten. Alles andere läuft, einschließlich der Online-Spezifikationen, die jetzt einen zweiten Menschen brauchen |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -149,21 +149,35 @@ in Klammern).*
 
 ### Befund zur E2E-Batterie (2026-09-19): die 16 roten Tests sind VORBESTEHEND
 
-> **NEUER STAND (2026-09-20, dritter Durchgang): 176 grün, 7 rot, 1 übersprungen
-> (22,5 min). Von den 16 Ausfällen sind NUR NOCH 7 übrig — alle in
-> `profiling.spec.mjs`, alle hardwaregebunden.** Die neun übrigen sind
-> verschwunden, und zwar nicht zufällig: Acht davon hingen daran, dass die
-> Online-Spezifikationen (`network-conditions`, `prediction-online`, `multiplayer`)
-> mit EINEM Browser liefen und sich darauf verließen, dass ein Server-Bot die
-> Gegenseite spielt. Mit „Team = Mensch" brauchen sie einen ZWEITEN Spieler; sie
-> bekommen ihn jetzt als rohen Socket
-> (`tests/e2e/helfer/zweiter-mensch.mjs`, im Test mit der Seite geschlossen).
+> **NEUER STAND (2026-09-20, dritter Durchgang): 182 grün, 1 rot, 1 übersprungen
+> (22,5 min). Von den 16 Ausfällen ist EINER übrig.** Der rote ist „Bildzeiten
+> auf dem echten Grafikpfad": Er startet den Browser mit `--use-angle=gl`, um
+> die GPU zu nutzen, und verlangt mehr als 20 fps — gemessen 17,2 fps, Bodenweg
+> `cpu`. Ohne GPU dieses Rechners ist das nicht zu erfüllen; auf einer Maschine
+> mit nutzbarer GPU ist es die schärfste Prüfung des Renderingpfads.
 >
-> Messung der verbleibenden sieben (aus dem Lauf): 51,2 ms je Bild = **Faktor
-> 3,07** über dem 16,7-ms-Budget, p50 50,0 / p95 66,7 / p99 100,0 ms, 19,5 fps,
-> Terrain-Neuaufbau 2718 ms (max 2818 ms) für 2560×1440 über 5 Läufe auf dem
-> CPU-Weg, kein GPU-Pfad im kopflosen Browser. Das ist die Maschine, nicht das
-> Spiel — dieselben Tests sind Budget-Prüfungen für eine echte GPU.
+> **Neun Ausfälle sind weg, weil die TESTS falsch waren — nicht das Spiel:**
+>
+> 1. **Acht Online-Tests** (`network-conditions`, `prediction-online`,
+>    `multiplayer`) liefen mit EINEM Browser und verließen sich darauf, dass ein
+>    Server-Bot die Gegenseite spielt. Mit „Team = Mensch" kommt kein Snapshot
+>    mehr; sie verbinden jetzt einen zweiten Spieler als rohen Socket
+>    (`tests/e2e/helfer/zweiter-mensch.mjs`).
+> 2. **Fünf Bildzeit-Tests** liefen in den 60-s-Timeout statt in eine
+>    Zusicherung: 300 Bilder bei 50–200 ms plus fünf Terrain-Aufbauten passen
+>    nicht in 60 s. Sie messen — sie bekommen `test.slow()`.
+> 3. **Zwei Terrain-Prüfungen waren veraltet.** Sie verglichen gegen 1280×720
+>    und gegen 500/1000 ms — geschrieben für 0,9 Mio. Pixel, während die Karte
+>    inzwischen 2560×1440 hat (3,69 Mio., das Vierfache). Ein absolutes Budget
+>    ohne die Fläche wird bei jeder Kartengröße stillschweigend falsch; geprüft
+>    wird jetzt **µs je Pixel** (Bezugswert gemessen 0,74; Grenze 3,0). Eine
+>    Zusicherung `.toBe(720)` auf eine Zahl, die die Anwendung selbst liefert,
+>    prüfte die Erinnerung des Tests statt der Anwendung.
+> 4. **Ein Test warf seine eigene Antwort weg.** Der Aufschlag-Test übersprang
+>    sich, sobald der leere Bildtakt langsam war — auf einem Software-Rasterer
+>    ist er das immer (183 ms). Gemessen war der Aufschlag **3,24 ms**, also
+>    weit unter dem Budget. Übersprungen wird jetzt nur, wenn die DIFFERENZ
+>    selbst das Budget reißt und der Untergrund langsam ist.
 >
 > Der Abschnitt darunter bleibt als Zeitdokument stehen (Stand 2026-09-19).
 
