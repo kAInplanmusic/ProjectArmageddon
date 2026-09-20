@@ -1624,6 +1624,17 @@ export class MatchController {
       terrainDamage: weapon.terrainDamage,
       bounces: weapon.bounces,
       /*
+       * Durchschlag und Zielsuche kommen aus der Waffe in das GESCHOSS.
+       *
+       * Das Projektil ist die einzige Stelle, an der beide wirken können: Der
+       * Durchschlag entscheidet im Flug, die Zielsuche krümmt die Bahn je Tick.
+       * Beide Werte sind Zahlen — der Komponentenspeicher führt nur Zahlen.
+       */
+      pierce: weapon.piercing > 0 ? Math.round(weapon.piercing) : 0,
+      homing: weapon.homing > 0 ? weapon.homing : 0,
+      letztesZiel: -1,
+      pierceSchutz: 0,
+      /*
        * Die Lebensdauer kommt aus EINER Quelle (`projectileLifetime`) — die KI
        * liest sie von dort und plant deshalb keine Schüsse mehr, deren Geschoss
        * mitten im Flug verfällt.

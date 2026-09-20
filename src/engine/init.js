@@ -74,6 +74,25 @@ export function registerDefaultComponents(componentStore) {
     fuseTicks: 'Int32Array',
     lifetime: 'Int32Array',
     alive: 'Int32Array',
+    /**
+     * Durchschlag: wie viele FIGUREN das Geschoss durchschlägt, bevor es wirkt.
+     * 0 = es bleibt am ersten Treffer stehen (der Normalfall).
+     *
+     * FUND (belegt, 2026-09-20): Sechs Waffen tragen `piercing: 1` in der
+     * Designdatei — „Scharfschützengewehr", „Armbrust", „Plasma-Gewehr" —, aber
+     * kein Stück Motorlas das Feld. Ein Durchschuss war eine Zusage ohne Wirkung.
+     */
+    pierce: 'Int32Array',
+    /** Zielsuche 0..100 (0 = keine). Begrenzt die Wendigkeit JE Tick. */
+    homing: 'Float32Array',
+    /**
+     * Zuletzt durchschlagene Figur. Ein Geschoss verlässt ein Trefferfeld
+     * (14×20 px) in einem Schritt, aber der Strahl des nächsten Ticks beginnt
+     * AUF dem Feld — ohne diesen Vermerk träfe dieselbe Figur mehrfach.
+     */
+    letztesZiel: 'Int32Array',
+    /** Verbleibende Ticks, in denen `letztesZiel` nicht wieder trifft. */
+    pierceSchutz: 'Int32Array',
   }, COMPONENT_SIGNATURES.PROJECTILE);
 }
 

@@ -885,12 +885,47 @@ const weapons = raw.weapons.map(entry => {
     weapon.delivery = 'projectile';
   }
 
+  /*
+   * ZIELSUCHE BRAUCHT FLUG (`homing` ⇒ Projektil).
+   *
+   * FUND (belegt, 2026-09-20): Das „Fliegende Superschaf" (pa_133) hat in der
+   * Designdatei `homing: 70` — und `projectileSpeed: 0`. Daraus wurde
+   * `delivery: 'hitscan'`, und ein Hitscan hat keinen Flugweg: Die Zielsuche
+   * konnte nie wirken. Ein zielsuchendes Geschoss, das nicht fliegt, ist ein
+   * Widerspruch in den Daten.
+   *
+   * Die Regel lautet deshalb: Wer zielt, fliegt. Fehlt die Geschwindigkeit, wird
+   * sie gesetzt — 40 liegt im unteren Drittel der Geschossgeschwindigkeiten
+   * (27–100) und lässt der Wendigkeit sichtbar Zeit, ohne die Waffe zu einem
+   * Laser zu machen. Das geschieht VOR `speedFactor` und `maxRange`, damit
+   * Reichweite und Bahn den Flug beschreiben, den es jetzt gibt.
+   */
+  if (weapon.homing > 0 && weapon.delivery !== 'projectile') {
+    weapon.delivery = 'projectile';
+    if (!(Number.isFinite(weapon.projectileSpeed) && weapon.projectileSpeed > 0)) {
+      weapon.projectileSpeed = 40;
+    }
+  }
+
   // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam. Steht
   // NACH der Wurf-Ableitung, damit auch der Wurf seinen Faktor bekommt.
   weapon.speedFactor = speedFactorFor(weapon);
 
   // Reichweite: physikalisch hergeleitet, nicht der Konstantwert 600 für alle.
   weapon.maxRange = deriveMaxRange(weapon);
+  /*
+   * `aoe` ist KEIN eigenes Feld, sondern die Aussage „wirkt flächig" — und die
+   * trifft genau dann zu, wenn ein Radius da ist.
+   *
+   * FUND (belegt, 2026-09-20): `aoe` wurde dort gesetzt, wo das Literal gebaut
+   * wird — VOR den Identitäts-Overrides. Die Overrides heben bei zwei Waffen
+   * (pa_037 Raketenwerfer, pa_041 Salvengeber) den Radius von 0 auf 46 bzw. 16;
+   * `aoe` blieb dabei auf `false` stehen und widersprach dem eigenen Radius. Eine
+   * zweite Quelle für dieselbe Aussage läuft immer auseinander — deshalb gibt es
+   * sie nicht mehr. `npm run check:effects` hält die Gleichheit fest.
+   */
+  weapon.aoe = weapon.blastRadius > 0;
+
   // Nachladezeit in Zügen. Eine eigene Vorgabe hat Vorrang: manche Waffen
   // brauchen eine Pause, die sich nicht aus Schaden und Radius ergibt
   // (Gleitschirm, Dimensionsriss).

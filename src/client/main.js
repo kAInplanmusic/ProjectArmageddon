@@ -1192,6 +1192,16 @@ class Game {
       case 'projectile_impact':
         this.renderer.addFlash(message.x, message.y, 14);
         break;
+      /*
+       * Durchschlag: Der Einschlag blitzt, aber das Geschoss FLIEGT WEITER.
+       *
+       * Die Rückmeldung ist wichtig, weil die Wirkung sonst unsichtbar bliebe:
+       * Ein Durchschuss sieht aus wie ein Schuss, der sein Ziel verfehlt hat —
+       * erst der Blitz am Opfer zeigt, dass er getroffen hat und weiterlief.
+       */
+      case 'projectile_pierced':
+        this.renderer.addFlash(message.x, message.y, 10, { color: '#ffd166' });
+        break;
       // Dieselben zwei Fälle wie lokal — ein Spieler soll dasselbe sehen,
       // egal in welchem Modus er spielt.
       case 'loot_error':
@@ -1549,6 +1559,10 @@ class Game {
          */
         case 'projectile_impact':
           this.renderer.addFlash(payload.x, payload.y, 14);
+          break;
+        // Durchschlag (siehe der lokale Zweig): Blitz, Flug geht weiter.
+        case 'projectile_pierced':
+          this.renderer.addFlash(payload.x, payload.y, 10, { color: '#ffd166' });
           break;
         /*
          * Geschütze.

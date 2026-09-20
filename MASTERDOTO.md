@@ -105,8 +105,13 @@ nicht mehr (63 bzw. 4 verschiedene Werte). Der Status-Absatz behauptete „kein
 Audio, keine Client-Prädiktion, Zugzeit nicht erzwungen, keine Persistenz" —
 alles läuft längst.
 
+**Verifikation des vierten Durchgangs (Wirkfelder + Wirkungs-Matrix):**
+`npm run check:effects` 0 Verstöße · `npm run matrix:check` aktuell ·
+`tests/waffen-wirkung.test.js` 4/4 (Durchschlag, Gegenprobe, Zielsuche mit
+Wendigkeitsgrenze, Determinismus) · `tests/matrix.test.js` 5/5 · `npm test` **983/983** grün (vorher 974; +9: vier Wirkungs-Tests, fünf Matrix-Wächter).
+
 **Verifikation dieses Durchgangs (dritter Stand, nach dem Entfernen der Bot-KI):**
-`npm run lint` 0 Fehler · `npm test` **974/974 grün** · **Browser-E2E als GANZE
+`npm run lint` 0 Fehler · `npm test` **983/983 grün** · **Browser-E2E als GANZE
 Batterie: 182 grün, 1 rot, 1 übersprungen (22,5 min)** — der eine rote ist
 „Bildzeiten auf dem echten Grafikpfad" und verlangt eine GPU, die dieser
 Rechner nicht hat (gemessen 17,2 fps gegen die geforderten 20; der Bodenweg
@@ -132,7 +137,7 @@ in Klammern).*
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
-| Unit-/Integrationstests | `npm test` | **974/974** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
+| Unit-/Integrationstests | `npm test` | **983/983** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
 | Browser-E2E | `npm run test:e2e` | **182 grün / 1 rot / 1 übersprungen** in 22,5 min (vorher 165/16/1). Der eine rote Test verlangt eine echte GPU (17,2 fps gemessen, Bodenweg `cpu`) — siehe Befund unten. Alles andere läuft, einschließlich der Online-Spezifikationen, die jetzt einen zweiten Menschen brauchen |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
@@ -140,6 +145,9 @@ in Klammern).*
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, 182,7× Echtzeit, p99 0,28 ms |
 | Balance | `npm run balance` | Auf der STARTENTFERNUNG des Spiels (854 px, Vorgabekarte 2560): 72 Waffen mit Schaden am Ziel, 36 Selbstwirkungs-Waffen (alle wirksam), **42 ohne Wirkung** — überwiegend Waffen, deren Reichweite auf 854 px nicht trägt (Nahkampf). Die frühere Zahl „1 ohne Wirkung" galt bei 426 px; die Messdistanz hat sich mit der Kartengröße geändert |
 | Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13** (unverändert) |
+| **Wirkfelder** | `npm run check:effects` | **0 Verstöße.** Zuvor hatten **8 Waffen Wirkungen ohne Motor**: 6 mit `piercing`, 2 mit `homing` — kein Stück Code las die Felder. Jetzt schlagen sie durch bzw. fliegen zielsuchend, `aoe` wird aus dem Radius abgeleitet |
+| **Wirkungs-Übersicht** | `npm run matrix` / `npm run matrix:check` | `docs/matrix-terrain-waffen-wirkung.md`: 150 Waffen mit Kraterradius und -fläche, 6 Zerstörungsgrade (46–28.353 px²), 8 Terrain-Arten mit gemessenem Festanteil, Wasserlinie und leerem Innenraum |
+| GPU-Pfad | `npm run test:e2e` (profiling) | Auf diesem Rechner **17,2 fps** bei 2560×1440 (Intel HD 3000, Bodenweg `cpu`) gegen ein Budget von 20 fps. Die GPU ist vorhanden (`glxinfo`: „Accelerated: yes", 1536 MB) — das Budget stammt aus der Zeit der 1280×720-Karte und ist an die Kartengröße zu binden |
 | Zünder-Absicht | `npm run check:fuses` | **0 Verstöße**; 11 Waffen `timed`, 7 `impact` (vorher 18 — fünf Hitscan-Waffen trugen einen wirkungslosen Zünder, sieben sind Aufprallwaffen) |
 | Erfolgs-Schwellen | `npm run check:achievements` | Exit 0 — alle Partie-Schwellen und Raten erreichbar oder in Reichweite |
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash `808ac5eb` identisch, „exakt reproduzierbar" |

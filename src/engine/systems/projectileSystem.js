@@ -46,6 +46,21 @@ export const PLAYER_HALF_HEIGHT = 10;
 export const DEFAULT_PROJECTILE_GRAVITY = PROJECTILE_GRAVITY;
 export const DEFAULT_PROJECTILE_DRAG = PROJECTILE_DRAG;
 
+/**
+ * Wendigkeit je Tick und je Punkt Zielsuche (Bogenmaß).
+ *
+ * `homing` steht in den Daten von 0 bis 100. Mit 0,0003 sind das bei 70 Punkten
+ * 0,021 rad je Tick — bei 60 Ticks je Sekunde rund 72°/s. Über einen Flug von 60
+ * Ticks sind das bis zu 72° Korrektur: genug, um einen Schuss auf ein bewegtes
+ * Ziel zu BIEgen, zu wenig, um kehrtzumachen. Der Wert ist bewusst eine benannte
+ * Konstante statt einer Zahl im Code — die Zielsuche ist eine
+ * Balance-Entscheidung und muss als solche auffindbar sein.
+ */
+export const HOMING_TURN_PER_TICK = 0.0003;
+
+/** Wie lange ein durchschlagenes Ziel nicht wieder getroffen wird (Ticks). */
+export const PIERCE_SCHUTZ_TICKS = 4;
+
 export class ProjectileSystem {
   #gravity;
   #baseDrag;
@@ -74,12 +89,68 @@ export class ProjectileSystem {
       // selbst (das Projektil startet in dessen Trefferfeld) und verschwindet,
       // bevor es das Ziel erreichen kann.
       const owner = world.getComponent(entityId, 'Projectile', 'owner');
-      const targets = allTargets.filter(target => target.id !== owner);
+      let targets = allTargets.filter(target => target.id !== owner);
 
       let vx = world.getComponent(entityId, 'Velocity', 'x') || 0;
       let vy = world.getComponent(entityId, 'Velocity', 'y') || 0;
       const startX = world.getComponent(entityId, 'Position', 'x') || 0;
       const startY = world.getComponent(entityId, 'Position', 'y') || 0;
+
+      /*
+       * DURCHSCHLAG-SCHUTZ.
+       *
+       * Ein durchschlagenes Ziel wird für ein paar Ticks aus den Trefferzielen
+       * genommen. Ohne das träfe dasselbe Geschoss dieselbe Figur in jedem
+       * weiteren Tick erneut: Der Strahl des nächsten Schritts beginnt genau auf
+       * dem Trefferfeld, das es gerade verlassen hat.
+       */
+      const schutz = world.getComponent(entityId, 'Projectile', 'pierceSchutz') || 0;
+      if (schutz > 0) {
+        const zuletzt = world.getComponent(entityId, 'Projectile', 'letztesZiel');
+        targets = targets.filter(target => target.id !== zuletzt);
+        world.setComponent(entityId, 'Projectile', 'pierceSchutz', schutz - 1);
+      }
+
+      /*
+       * ZIELSUCHE (`homing`).
+       *
+       * Die Bahn wird je Tick um HÖCHSTENS `homing × HOMING_TURN_PER_TICK`
+       * gedreht — das Tempo bleibt, nur die Richtung ändert sich. Gesucht wird
+       * das NÄCHSTE lebende Ziel; der Schütze selbst ist bereits ausgeschlossen.
+       *
+       * Bewusst NUR die Richtung: Eine Zielsuche, die auch beschleunigt, würde
+       * die Reichweitenrechnung unterlaufen, mit der die Zielvorschau arbeitet.
+       */
+      const homing = world.getComponent(entityId, 'Projectile', 'homing') || 0;
+      if (homing > 0 && targets.length > 0) {
+        let bester = null;
+        let besteDistanz = Infinity;
+        for (const ziel of targets) {
+          const distanz = Math.hypot(ziel.x - startX, ziel.y - startY);
+          if (distanz < besteDistanz) {
+            besteDistanz = distanz;
+            bester = ziel;
+          }
+        }
+        if (bester) {
+          const wunsch = Math.atan2(bester.y - startY, bester.x - startX);
+          const jetzt = Math.atan2(vy, vx);
+          let differenz = wunsch - jetzt;
+          // Auf [-π, π] normieren, sonst dreht das Geschoss den weiten Weg.
+          while (differenz > Math.PI) differenz -= 2 * Math.PI;
+          while (differenz < -Math.PI) differenz += 2 * Math.PI;
+          const grenze = homing * HOMING_TURN_PER_TICK;
+          const schritt = Math.max(-grenze, Math.min(grenze, differenz));
+          const tempo = Math.hypot(vx, vy);
+          if (tempo > 0) {
+            const neuerWinkel = jetzt + schritt;
+            vx = Math.cos(neuerWinkel) * tempo;
+            vy = Math.sin(neuerWinkel) * tempo;
+            world.setComponent(entityId, 'Velocity', 'x', vx);
+            world.setComponent(entityId, 'Velocity', 'y', vy);
+          }
+        }
+      }
 
       const drag = world.getComponent(entityId, 'Projectile', 'drag') || this.#baseDrag;
       const gravityScale = world.getComponent(entityId, 'Projectile', 'gravityScale');
@@ -150,6 +221,46 @@ export class ProjectileSystem {
 
       if (hit) {
         const owner = world.getComponent(entityId, 'Projectile', 'owner');
+
+        /*
+         * DURCHSCHLAG (`piercing`).
+         *
+         * Trifft das Geschoss eine FIGUR und hat es noch Durchschläge frei, wirkt
+         * der VOLLE Schaden an dieser Figur — und der Flug geht weiter (kein
+         * Krater, keine Flächenwirkung, kein Verschwinden). Trifft es TERRAIN,
+         * gilt der Durchschlag nicht: Eine Wand hält auch ein Gewehr auf, sonst
+         * schösse es durch Berge.
+         */
+        const pierceFrei = world.getComponent(entityId, 'Projectile', 'pierce') || 0;
+        if (pierceFrei > 0 && hit.target !== null && world.isActive(hit.target)) {
+          const trefferSchaden = world.getComponent(entityId, 'Projectile', 'damage') || 0;
+          if (trefferSchaden > 0) {
+            world.getSystem('damage')?.applyDamage(world, hit.target, trefferSchaden, owner);
+          }
+          world.setComponent(entityId, 'Projectile', 'pierce', pierceFrei - 1);
+          world.setComponent(entityId, 'Projectile', 'letztesZiel', hit.target);
+          world.setComponent(entityId, 'Projectile', 'pierceSchutz', PIERCE_SCHUTZ_TICKS);
+          /*
+           * Und das Geschoss setzt seinen Weg HINTER der Figur fort.
+           *
+           * FUND (belegt, 2026-09-20, im Test aufgefallen): Ohne diesen Satz blieb
+           * es IM Trefferfeld stehen — ein langsames Geschoss macht 5–6 px je
+           * Tick, das Feld ist 14×20 px. Nach Ablauf des Schutzes traf es
+           * dieselbe Figur erneut, und der Test maß den DOPPELTEN Schaden (58,8
+           * statt 29,4). „Durchgeschlagen" heißt: auf der anderen Seite weiter.
+           */
+          const tempo = Math.hypot(vx, vy) || 1;
+          const durch = PLAYER_HALF_WIDTH + PLAYER_HALF_HEIGHT + 2;
+          world.setComponent(entityId, 'Position', 'x', hit.x + (vx / tempo) * durch);
+          world.setComponent(entityId, 'Position', 'y', hit.y + (vy / tempo) * durch);
+          if (events) {
+            events.emit('projectile_pierced', {
+              entityId, x: hit.x, y: hit.y, target: hit.target, verbleibend: pierceFrei - 1,
+            });
+          }
+          continue;
+        }
+
         const blastRadius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
         this.#explode(world, entityId, hit.x, hit.y, world.getComponent(entityId, 'Projectile', 'bounces'), hit.target);
         if (events) {
