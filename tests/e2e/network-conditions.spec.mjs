@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { MESSAGE_TYPE } from '../../src/shared/protocol.js';
+import { zweiterMensch } from './helfer/zweiter-mensch.mjs';
 
 /**
  * Verbindung unter erschwerten Bedingungen: Latenz und Paketverlust.
@@ -203,6 +204,22 @@ async function openClient(page, { name = 'Tester', lobbyId = null } = {}) {
     () => page.evaluate(() => window.__PA__.getNetwork()?.state ?? null),
     { timeout: 25_000, message: 'Client muss "connected" erreichen' },
   ).toBe('connected');
+
+  /*
+   * DER ZWEITE MENSCH. Ohne ihn läuft nichts: Es gibt keine Bot-KI, und die
+   * Lobby startet erst, wenn jedes Team einen verbundenen Menschen hat. Vorher
+   * übernahm ein Server-Bot die Gegenseite — dieser Test prüfte damit den
+   * Snapshot-Fluss in einem Match, an dem nur ein Mensch beteiligt war.
+   *
+   * Der Socket wird mit der Seite geschlossen: Jeder Test bekommt eine eigene
+   * `page`, also räumt Playwright ihn am Testende mit ab.
+   */
+  const zweiter = await zweiterMensch({
+    port: SERVER_PORT,
+    lobbyId: await page.evaluate(() => window.__PA__.game.lobbyId),
+    name: 'Gegenseite',
+  });
+  page.once('close', () => zweiter.close());
 
   return fehler;
 }

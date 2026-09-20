@@ -106,14 +106,14 @@ Audio, keine Client-Prädiktion, Zugzeit nicht erzwungen, keine Persistenz" —
 alles läuft längst.
 
 **Verifikation dieses Durchgangs (dritter Stand, nach dem Entfernen der Bot-KI):**
-`npm run lint` 0 Fehler · `npm test` **974/974 grün** · E2E: `runtime-smoke` 10/10 ·
-`terrain-presets` 5/5 · `profil` 9/9 · `grosse-teams` 6/6 · `loadout-choice` 5/5 ·
-`multiplayer` **10/10** (zwei Browser UND der neue Test „drei Einheiten", beide
-brauchen jetzt einen zweiten Menschen) · `check:fuses` 0 Verstöße ·
-`check:achievements` Exit 0 · `npm run build` und `npm run validate` grün.
-Die **E2E-Batterie als Ganzes** wurde nicht gefahren — die 16 vorbestehenden
-Ausfälle dieses Rechners (siehe unten) sind davon unberührt und wären keine
-Aussage über diesen Durchgang.
+`npm run lint` 0 Fehler · `npm test` **974/974 grün** · **Browser-E2E als GANZE
+Batterie: 176 grün, 7 rot, 1 übersprungen (22,5 min)** — die sieben roten liegen
+AUSSCHLIESSLICH in `profiling.spec.mjs` und sind die Hardware dieses Rechners
+(gemessen 51,2 ms je Bild = Faktor 3,07 über dem 16,7-ms-Budget, 19,5 fps,
+Terrain-Neuaufbau 2718 ms für 2560×1440 auf dem CPU-Weg, kein GPU-Pfad im
+kopflosen Browser). Siehe „Befund zur E2E-Batterie" unten.
+`check:fuses` 0 Verstöße · `check:achievements` Exit 0 · `npm run build` und
+`npm run validate` grün.
 
 **Berichtigt am 2026-09-20 (zweiter Durchgang):** Die erste Fassung dieses
 Absatzes erklärte „ein Mensch besitzt online eine Figur" zur dokumentierten
@@ -133,7 +133,7 @@ in Klammern).*
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
 | Unit-/Integrationstests | `npm test` | **974/974** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
-| Browser-E2E | `npm run test:e2e` | **nicht als Batterie gefahren** — die 16 vorbestehenden Ausfälle dieses Rechners (siehe Befund unten) sind unverändert. Gefahren und grün: `runtime-smoke` (10/10), `terrain-presets` (5/5), `profil` (9/9), `grosse-teams` (6/6), `loadout-choice` (5/5), `multiplayer` (10/10) |
+| Browser-E2E | `npm run test:e2e` | **176 grün / 7 rot / 1 übersprungen** in 22,5 min (vorher 165/16/1). Die 7 roten sind ALLE in `profiling.spec.mjs` und hardwaregebunden (51,2 ms je Bild, 19,5 fps, CPU-Rasterung 2560×1440) — siehe Befund unten. Alles andere läuft, einschließlich der Online-Spezifikationen (`multiplayer`, `network-conditions`, `prediction-online`), die jetzt einen zweiten Menschen brauchen |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -148,6 +148,24 @@ in Klammern).*
 | ~~Bot-Treffsicherheit~~ | ~~`npm run check:bots`~~ | **ENTFALLEN (2026-09-20).** Es gibt keine Bot-KI; Werkzeug, Bot und Test sind entfernt (siehe „KEINE BOT-KI" unten) |
 
 ### Befund zur E2E-Batterie (2026-09-19): die 16 roten Tests sind VORBESTEHEND
+
+> **NEUER STAND (2026-09-20, dritter Durchgang): 176 grün, 7 rot, 1 übersprungen
+> (22,5 min). Von den 16 Ausfällen sind NUR NOCH 7 übrig — alle in
+> `profiling.spec.mjs`, alle hardwaregebunden.** Die neun übrigen sind
+> verschwunden, und zwar nicht zufällig: Acht davon hingen daran, dass die
+> Online-Spezifikationen (`network-conditions`, `prediction-online`, `multiplayer`)
+> mit EINEM Browser liefen und sich darauf verließen, dass ein Server-Bot die
+> Gegenseite spielt. Mit „Team = Mensch" brauchen sie einen ZWEITEN Spieler; sie
+> bekommen ihn jetzt als rohen Socket
+> (`tests/e2e/helfer/zweiter-mensch.mjs`, im Test mit der Seite geschlossen).
+>
+> Messung der verbleibenden sieben (aus dem Lauf): 51,2 ms je Bild = **Faktor
+> 3,07** über dem 16,7-ms-Budget, p50 50,0 / p95 66,7 / p99 100,0 ms, 19,5 fps,
+> Terrain-Neuaufbau 2718 ms (max 2818 ms) für 2560×1440 über 5 Läufe auf dem
+> CPU-Weg, kein GPU-Pfad im kopflosen Browser. Das ist die Maschine, nicht das
+> Spiel — dieselben Tests sind Budget-Prüfungen für eine echte GPU.
+>
+> Der Abschnitt darunter bleibt als Zeitdokument stehen (Stand 2026-09-19).
 
 Die frühere Angabe „160/160" gilt auf diesem Rechner **nicht** mehr. Gemessen
 und gegengeprüft: Die Batterie hat 16 reproduzierbare Ausfälle, und ein

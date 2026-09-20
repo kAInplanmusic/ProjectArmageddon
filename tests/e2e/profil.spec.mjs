@@ -17,11 +17,11 @@ import { test, expect } from '@playwright/test';
 /**
  * Spielt ein Match bis zum Ende.
  *
- * Wichtig: Es muss GESCHOSSEN werden. Im lokalen Match gibt es keine Bots (den
- * `BotController` gibt es nur im Server), also würden ohne Schüsse weder Treffer
- * noch Schaden entstehen — und das Profil bliebe leer. Genau das hat der erste
- * Testlauf gezeigt: `schadenGesamt` war 0, das Match endete allein durch das
- * Rundenlimit.
+ * Wichtig: Es muss GESCHOSSEN werden. Es gibt keine Bot-KI — weder im Client
+ * noch im Server —, also würden ohne Schüsse weder Treffer noch Schaden
+ * entstehen, und das Profil bliebe leer. Genau das hat der erste Testlauf
+ * gezeigt: `schadenGesamt` war 0, das Match endete allein durch das Rundenlimit.
+ * (Früher sprang hier ein Server-Bot ein; der ist am 2026-09-20 entfallen.)
  *
  * ## Zwei Messungen, die den Aufbau bestimmen
  *

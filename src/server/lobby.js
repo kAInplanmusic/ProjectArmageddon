@@ -101,33 +101,29 @@ export class LobbyManager {
     /*
      * Grenzen der Lobby.
      *
-     * `teams`: 2 bis 4. Die Untergrenze ist sachlich (ein Duell braucht zwei
+     * `teams`: 2 bis 8. Die Untergrenze ist sachlich (ein Duell braucht zwei
      * Seiten), die Obergrenze kommt aus der Anzeige: Die Teamfarben sind eine
-     * feste Liste (`TEAM_COLORS`, 4 Einträge).
+     * feste Liste (`TEAM_COLORS`, 8 Einträge) — und daraus ergibt sich zugleich
+     * die Zahl der MENSCHEN, denn ein Mensch führt ein Team.
      *
-     * `playersPerTeam`: 1 bis 6.
+     * `playersPerTeam`: 1 bis 6 — die Zahl der EINHEITEN je Spieler.
      *
-     * FUND (belegt): Hier stand eine Grenze von **3**, ohne Begründung im Code
-     * — an keiner Stelle stand, warum. Die Messung zeigt, dass sie nicht nötig
-     * war:
+     * FUND (belegt, 2026-09-18): Hier stand eine Grenze von **3**, ohne
+     * Begründung im Code. Die Messung zeigte, dass sie nicht nötig war:
      *
      *     Konfiguration   Figuren   Leben min/max   läuft
      *     2 × 4 = 8             8        63 / 104      OK
      *     2 × 5 = 10           10        63 / 104      OK
-     *     4 × 3 = 12           12        63 / 104      OK
      *     2 × 6 = 12           12        63 / 104      OK
      *
-     * Der Motor trägt 12 Figuren ohne Einschränkung: Alle werden gesetzt, alle
-     * Teams stehen, die Klassen- und Archetypverteilung greift je Platz
-     * (`resolveLoadout` indiziert zyklisch und kennt keine Obergrenze).
-     *
-     * Die alte Grenze 3 war zudem NIE die wirksame: `MAX_LOBBY_PLAYERS` lag
-     * bereits bei 12, also erlaubte die Lobby in der Summe mehr, als sie je
+     * Die alte Grenze 3 war zudem NIE die wirksame: Die Summengrenze lag
+     * bereits darüber, also erlaubte die Lobby in der Summe mehr, als sie je
      * Team zuließ. Die beiden Zahlen widersprachen sich.
      *
-     * Gesetzt wird 6 je Team — damit ist `2 Teams × 6 = 12` erreichbar (das
-     * größte Match, das die Kapazität hergibt) und `4 Teams × 3 = 12`
-     * ebenfalls. Die Summe bleibt die Grenze.
+     * NACHTRAG (2026-09-20): Die wirksame Grenze ist jetzt die FIGURENZAHL
+     * (`MAX_LOBBY_FIGURES`, 40 — der Kriegsmodus nennt 8 Spieler × 5 Einheiten).
+     * Eine eigene Grenze für „Plätze" gibt es nicht mehr; Menschen sind genau
+     * so viele wie Teams.
      */
     /*
      * EINHEITEN JE SPIELER — der Modus der Matcharten (2026-09-20).

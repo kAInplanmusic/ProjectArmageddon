@@ -19,6 +19,7 @@ import { test, expect } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { zweiterMensch } from './helfer/zweiter-mensch.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
@@ -59,8 +60,11 @@ test.afterAll(async () => {
 /**
  * Startet ein Online-Match in einem einzelnen Kontext.
  *
- * `playersPerTeam: 1` und nur ein Client: Die übrigen Plätze übernimmt der Bot,
- * der Test bleibt damit deterministisch und schnell.
+ * `playersPerTeam: 1` und EIN Browser — dazu der zweite Mensch als roher Socket.
+ * Ohne ihn gäbe es kein Match: **Es gibt keine Bot-KI**, und die Lobby startet
+ * erst, wenn jedes Team einen verbundenen Menschen hat. Bis zum 2026-09-20
+ * übernahm ein Server-Bot die Gegenseite; dieser Helfer trat an seine Stelle,
+ * damit der Test deterministisch und schnell bleibt.
  */
 async function starteOnlineMatch(page) {
   const fehler = [];
@@ -79,6 +83,14 @@ async function starteOnlineMatch(page) {
     null,
     { timeout: 20_000 },
   );
+
+  const zweiter = await zweiterMensch({
+    port: SERVER_PORT,
+    lobbyId: await page.evaluate(() => window.__PA__.game.lobbyId),
+    name: 'Gegenseite',
+  });
+  page.once('close', () => zweiter.close());
+
   // Auf Snapshots warten: ohne sie gibt es kein Terrain und keine Bestände.
   await page.waitForFunction(
     () => (window.__PA__.game.network.stats.snapshotsReceived ?? 0) > 3,

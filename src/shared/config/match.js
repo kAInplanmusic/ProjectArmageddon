@@ -12,11 +12,17 @@ export const MATCH_RULES = Object.freeze({
    * versprach 4–6 und widersprach damit der durchgesetzten Regel.
    *
    * NACHTRAG (belegt, 2026-09-18): Die Teamgrenze liegt inzwischen bei
-   * `MAX_PLAYERS_PER_TEAM = 6` (`src/server/lobby.js:32`) — die frühere 3 war
-   * unbegründet und widersprach `MAX_LOBBY_PLAYERS = 12`. Die geltende Grenze
-   * steht weiterhin NUR dort, wo sie durchgesetzt wird; `teamSize` bleibt
-   * entfernt, weil es keine Lesestelle hatte. `tests/match-rules.test.js` hält
-   * fest, dass Konfiguration und Lobby nicht wieder auseinanderlaufen.
+   * `MAX_PLAYERS_PER_TEAM = 6` (`src/server/lobby.js`) — die frühere 3 war
+   * unbegründet. Die geltende Grenze steht weiterhin NUR dort, wo sie
+   * durchgesetzt wird; `teamSize` bleibt entfernt, weil es keine Lesestelle
+   * hatte. `tests/match-rules.test.js` hält fest, dass Konfiguration und Lobby
+   * nicht wieder auseinanderlaufen.
+   *
+   * NACHTRAG 2 (2026-09-20): Seit die Matcharten umgesetzt sind, ist
+   * `MAX_PLAYERS_PER_TEAM` die Zahl der EINHEITEN je Spieler (3/4/5), und die
+   * wirksame Obergrenze einer Lobby heißt `MAX_LOBBY_FIGURES` (40). Die alte
+   * `MAX_LOBBY_PLAYERS = 12` ist entfallen — sie zählte Plätze in einem Modus
+   * („ein Platz je Beitritt"), den es nicht mehr gibt.
    *
    * Die Felder sind entfernt, weil sie meine Erwartung nicht steuern. Die
    * geltende Grenze steht dort, wo sie durchgesetzt wird (Lobby-Validierung) —

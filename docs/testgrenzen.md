@@ -3,7 +3,8 @@
 Eine ehrliche Bestandsaufnahme. Du hast vermutet, dass wir bald an Grenzen
 stoßen — **das tun wir, aber nicht dort, wo man es erwartet.**
 
-**Stand:** 2026-09-17. Zahlen nachmessbar.
+**Stand:** 2026-09-20 (Zahlen nachgemessen; die früheren Werte in Klammern sind
+vom 2026-09-17 und waren seither überholt).
 
 ---
 
@@ -11,17 +12,35 @@ stoßen — **das tun wir, aber nicht dort, wo man es erwartet.**
 
 | | Wert |
 |---|---|
-| Quellcode | 30.255 Zeilen |
-| Tests | 26.546 Zeilen |
-| Unit-Tests | 795 (72 Dateien) |
-| E2E-Tests | 172 (27 Dateien) |
-| Werkzeuge | 22 Skripte |
-| Unit-Laufzeit | **22 s** |
-| E2E-Laufzeit | **9,4 min** |
+| Quellcode | 35.955 Zeilen (30.255) |
+| Tests | 32.684 Zeilen (26.546) |
+| Unit-Tests | 974 (93 Dateien) — vorher 795 in 72 Dateien |
+| E2E-Tests | 184 (28 Dateien) — 176 grün, 7 rot, 1 übersprungen; vorher 172 in 27 Dateien |
+| Werkzeuge | 37 Skripte (22) |
+| Unit-Laufzeit | **4,7 min** (22 s) |
+| E2E-Laufzeit | **22,5 min** (9,4 min) |
 
-Das Verhältnis Test- zu Quellcode liegt bei **0,88** — für ein Projekt dieser
-Größe ist das hoch. Die Unit-Suite läuft in 22 Sekunden, ist also **kein**
-Problem.
+Das Verhältnis Test- zu Quellcode liegt bei **0,91** — für ein Projekt dieser
+Größe ist das hoch.
+
+**Die Unit-Laufzeit ist von 22 s auf 4,7 min gewachsen.** Das ist kein Problem
+der Testmenge allein: Der größte Einzelposten sind die Mess-Tests, die echte
+Partien spielen (`balance`, `balance:sweep`, `check:bots`-Nachfolger,
+`measure:*`-Aufrufe in Tests) — sie rechnen, statt zu prüfen. Wer schnell prüfen
+will, fährt `npm run test:unit` (PRNG/Seed/Loot) oder `npm run smoke:fast`.
+
+**Die sieben roten E2E-Tests sind EINE Datei und EINE Ursache:** `profiling.spec.mjs`
+misst Bildzeiten gegen ein 16,7-ms-Budget. Auf diesem Rechner rastert der Browser
+in Software: **51,2 ms je Bild (Faktor 3,07)**, 19,5 fps, Terrain-Neuaufbau
+2718 ms für 2560×1440. Das ist die Maschine. Ein Lauf auf einer echten GPU ist
+die einzige offene Prüfung.
+
+**Online-Tests brauchen ZWEI Menschen.** Es gibt keine Bot-KI; unbesetzte Teams
+übernimmt niemand, und ein Match startet erst, wenn jedes Team einen verbundenen
+Menschen hat. Die Online-Spezifikationen (`multiplayer`, `network-conditions`,
+`prediction-online`) verbinden deshalb einen zweiten Spieler als rohen Socket
+(`tests/e2e/helfer/zweiter-mensch.mjs`). Vorher sprang dort ein Server-Bot ein —
+neun der damals roten Tests hingen an dieser Annahme.
 
 ---
 
