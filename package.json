@@ -36,6 +36,7 @@
     "test:e2e": "playwright test",
     "test:all": "npm run test && npm run test:e2e",
     "lint": "eslint .",
+    "checks": "node scripts/checks.mjs",
     "lint:fix": "eslint . --fix",
     "smoke": "node scripts/smoke-match.mjs",
     "smoke:fast": "node scripts/smoke-fast.mjs",
@@ -49,7 +50,8 @@
     "server": "node scripts/server.mjs",
     "replay": "node scripts/replay.mjs",
     "icons": "python3 scripts/create-weapon-icons.py",
-    "weapons:build": "node scripts/build-weapon-catalog.mjs"
+    "weapons:build": "node scripts/build-weapon-catalog.mjs",
+    "checks:schnell": "node scripts/checks.mjs --schnell"
   },
   "keywords": [
     "artillery",
@@ -68,5 +70,8 @@
   },
   "dependencies": {
     "ws": "^8.21.3"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

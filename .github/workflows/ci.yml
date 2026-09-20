@@ -25,6 +25,17 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # AUDIT-BEFUND (2026-09-20): Die 19 Prüfwerkzeuge (check:fuses,
+      # check:effects, matrix:check, check:achievements, check:time …) liefen in
+      # dieser Pipeline NICHT. Sie haben eigene Exit-Codes und sind damit Gates —
+      # aber ein Gate, das niemand aufruft, ist eine Empfehlung. Genau so konnten
+      # eine veraltete Wirkungs-Übersicht und acht Waffen mit Wirkungen ohne Motor
+      # unbemerkt bleiben.
+      #
+      # Laufzeit aller Gates: ~30 s.
+      - name: Prüfwerkzeuge (alle Gates)
+        run: npm run checks
+
       - name: Katalog und Tests
         run: npm test
 

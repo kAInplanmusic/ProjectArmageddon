@@ -670,7 +670,15 @@ test.describe('Bildzeiten mit Hardware-Beschleunigung', () => {
       });
       console.log(`PROFIL hardware gpu=${gpu}`);
       expect(gpu, 'Kein WebGL-Renderer meldbar').not.toBeNull();
-      if (String(gpu).toLowerCase().includes('swiftshader')) {
+      /*
+       * AUDIT-BEFUND (2026-09-20): Erkannt wurde nur „swiftshader". Auf einem
+       * Rechner ohne GPU meldet ANGLE aber je nach Treiber auch „llvmpipe",
+       * „Mesa OffScreen" oder schlicht „Software" — dann liefe der Test in eine
+       * Produktaussage über die UMGEBUNG. Die Erkennung prüft deshalb alle
+       * bekannten Software-Rasterer.
+       */
+      const softwareRasterer = /swiftshader|llvmpipe|softpipe|software|offscreen/i.test(String(gpu));
+      if (softwareRasterer) {
         // Kein stiller Durchlauf: Ohne GPU wäre die Messung wertlos, aber ein
         // Fehlschlag wäre wiederum keine Produktaussage. Deshalb ausdrücklich
         // überspringen MIT Begründung.
