@@ -13,6 +13,7 @@
     "balance:classes": "node scripts/class-balance.mjs",
     "check:fuses": "node scripts/check-fuses.mjs",
     "check:effects": "node scripts/check-effects.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
     "matrix": "node scripts/build-matrix.mjs",
     "matrix:check": "node scripts/build-matrix.mjs --check",
     "check:range": "node scripts/check-range.mjs",

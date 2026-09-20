@@ -167,7 +167,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run matrix` | Erzeugt `docs/matrix-terrain-waffen-wirkung.md` — Wirkung jeder der 150 Waffen, Zerstörungsgrad, Terrain-Arten |
 | `npm run matrix:check` | Prüft, ob diese Übersicht noch zum Katalog passt |
 | `npm run check:effects` | Prüft, ob jedes Wirkfeld des Katalogs im Motor ankommt |
-| `npm test` | Unit- und Integrationstests: **974 Tests in 93 Dateien**, ~4,7 min |
+| `npm test` | Unit- und Integrationstests: **983 Tests in 95 Dateien**, ~4,7 min |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |
