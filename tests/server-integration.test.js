@@ -306,7 +306,13 @@ test('Unbesetzte Plätze werden von Bots gesteuert und das Match endet', { timeo
  * angepasst.
  */
 
-/** Spielt ein Match mit Bots deterministisch bis zum Ende durch. */
+/**
+ * Spielt ein Match deterministisch bis zum Ende durch — OHNE Bots.
+ *
+ * Es gibt keine Bot-KI, also schießt hier NIEMAND. Das Match endet über die
+ * RUNDENGRENZE; die Zugzeit wird auf 250 ms gesetzt, damit die Züge schnell
+ * ablaufen. Genau deshalb ist der Helfer so kurz — er braucht keine Schüsse.
+ */
 async function matchZuEndeSpielen(session) {
   session.stop();
   session.match.setTurnDuration(250);
@@ -398,20 +404,21 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
    * erzeugt eine `LobbySession`). Deren Match beginnt bei null und steht auf
    * „playing".
    *
-   * Der Reconnect ist damit faktisch eine Revanche: Es fließen wieder
-   * Snapshots, und der Client zeigt ein neues Match statt eines Endstands. Ein
-   * „für immer veraltetes Brett" gibt es auf diesem Weg nicht.
+   * Der Reconnect ist damit faktisch eine Revanche — aber erst, wenn die Lobby
+   * WIEDER VOLLSTÄNDIG ist. Seit dem 2026-09-20 gibt es keine Bot-KI: Für ein
+   * leeres Team springt niemand ein, also läuft die Simulation erst, wenn jedes
+   * Team einen verbundenen Menschen hat. Genau das prüft dieser Test in beiden
+   * Richtungen — mit EINEM Wiederverbinder passiert nichts, mit BEIDEN läuft es.
    *
-   * Zwei Eigentümlichkeiten hält der Test ausdrücklich fest, weil sie
-   * überraschen:
-   *  - Der Lobby-Status bleibt „finished", während in ihr ein neues Match
-   *    läuft.
+   * Zwei Eigentümlichkeiten hält er ausdrücklich fest, weil sie überraschen:
+   *  - Der Lobby-Status bleibt „finished", während in ihr ein neues Match läuft.
    *  - Ein FREMDER Client (ohne Token) kommt nicht mehr hinein, obwohl dort
    *    wieder gespielt wird.
    */
   const { server, url, port } = await startTestServer();
   const wsUrl = `ws://127.0.0.1:${port}/ws`;
   const client = new TestClient(wsUrl);
+  const zweiterClient = new TestClient(wsUrl);
 
   try {
     const created = await createLobby(url, { teams: 2, playersPerTeam: 1, seed: 99 });
@@ -424,6 +431,14 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
     assert.ok(erstesLobbyState.entityId !== null && erstesLobbyState.entityId !== undefined,
       'Der erste Beitritt muss eine Entity-ID erhalten');
 
+    // Der ZWEITE Mensch — ohne ihn ist die Lobby nicht vollständig und es läuft
+    // nichts (es gibt keine Bot-KI, die einspringen könnte).
+    await zweiterClient.open();
+    zweiterClient.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Zweiter' });
+    const zweiterWillkommen = await zweiterClient.waitFor(CONTROL.WELCOME);
+    assert.ok(zweiterWillkommen.token, 'Der zweite Mensch braucht ein Token');
+    await zweiterClient.waitFor(CONTROL.LOBBY_STATE);
+
     const session = server.getSession(created.lobby.id);
     await matchZuEndeSpielen(session);
     assert.equal(session.match.status, 'gameover');
@@ -431,6 +446,14 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
     // Das Ende hat die Sitzung entfernt.
     assert.ok(!server.getSession(created.lobby.id),
       'Nach dem Ende muss die Sitzung aus der Verwaltung verschwunden sein');
+
+    /*
+     * Der ZWEITE Mensch geht. Damit ist die Lobby wieder unvollständig — und
+     * genau das ist gleich die Probe: Ein Team ohne verbundenen Menschen darf
+     * kein Match am Laufen halten (es gibt keine Bot-KI, die einspringt).
+     */
+    zweiterClient.close();
+    await new Promise(r => setTimeout(r, 300));
 
     // Wieder verbinden — mit demselben Token.
     const erneut = new TestClient(wsUrl);
@@ -450,21 +473,45 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
       assert.ok(zustand.seed !== undefined, 'Der Seed für den Terrainaufbau muss mitkommen');
 
       /*
-       * Der Lobby-Status steht dagegen auf „beendet", während in ihr wieder
-       * gespielt wird. Das ist widersprüchlich — wer die Lobby-Liste liest,
-       * sieht sie als erledigt —, aber es ist der Ist-Zustand, und ein Test
-       * soll ihn festhalten statt eine Wunschvorstellung.
+       * Der Lobby-Status steht dagegen auf „beendet". Wer die Lobby-Liste liest,
+       * sieht sie als erledigt — das ist der Ist-Zustand, und ein Test soll ihn
+       * festhalten statt eine Wunschvorstellung.
        */
       assert.equal(zustand.status, 'finished',
-        'Der Lobby-Status bleibt auf „beendet", obwohl ein neues Match läuft');
+        'Der Lobby-Status bleibt auf „beendet"');
 
-      // Und es laufen wieder Snapshots.
-      const frist = Date.now() + 10_000;
-      while (Date.now() < frist && erneut.snapshots.length === 0) {
-        await new Promise(r => setTimeout(r, 50));
+      /*
+       * Und jetzt der Kern der Sache: Das NEUE Match LÄUFT NICHT.
+       *
+       * Ein Mensch ist zurück, das zweite Team ist leer — und für leere Teams
+       * springt niemand ein. Es gibt keine Bot-KI, also läuft die Simulation
+       * erst, wenn beide Teams besetzt sind. Vorher tickte hier sofort ein
+       * Match, in dem der Server-Bot die Gegenseite schoss.
+       */
+      await new Promise(r => setTimeout(r, 1500));
+      assert.equal(erneut.snapshots.length, 0,
+        'Ohne zweiten Menschen darf kein Match laufen — es gibt keine Bot-KI');
+
+      // Mit dem zweiten Menschen läuft es. Er kommt über sein TOKEN zurück —
+      // ein FREMDER käme nicht mehr hinein (siehe unten).
+      const zweiterZurueck = new TestClient(wsUrl);
+      try {
+        await zweiterZurueck.open();
+        zweiterZurueck.send(CONTROL.JOIN_LOBBY, {
+          lobbyId: created.lobby.id,
+          token: zweiterWillkommen.token,
+        });
+        await zweiterZurueck.waitFor(CONTROL.WELCOME);
+
+        const frist = Date.now() + 10_000;
+        while (Date.now() < frist && erneut.snapshots.length === 0) {
+          await new Promise(r => setTimeout(r, 50));
+        }
+        assert.ok(erneut.snapshots.length > 0,
+          'Mit zwei Menschen müssen wieder Snapshots fließen');
+      } finally {
+        zweiterZurueck.close();
       }
-      assert.ok(erneut.snapshots.length > 0,
-        'Nach dem Wiederverbinden müssen wieder Snapshots fließen');
     } finally {
       erneut.close();
     }
@@ -481,6 +528,7 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
     }
   } finally {
     client.close();
+    zweiterClient.close();
     await server.close();
   }
 });

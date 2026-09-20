@@ -304,8 +304,15 @@ test('Jede Lesestelle benutzt die benannte Funktion', () => {
   assert.match(motor, /maxWurfweite\({[\s\S]*?}\) \* weitenFaktor\(this\.width\)/,
     'die Erreichbarkeitsprüfung muss mit dem WEITENfaktor rechnen');
 
+  /*
+   * Und die Stellen, die eine Richtung FÜR EINE FIGUR bilden, geben die
+   * Kartenbreite an die gemeinsame Regel mit.
+   *
+   * Hier stand `src/server/bot.js` — der Server-Bot ist am 2026-09-20 entfallen
+   * („Es gibt keine Bot-KI, Teams sind Menschen"). Übrig bleibt der Client, der
+   * die Vorschau und die Schussvorhersage rechnet.
+   */
   const erwarteteBreite = {
-    'src/server/bot.js': /launchSpeedMultiplier\({[\s\S]*?kartenbreite: match\.width[\s\S]*?}\)/,
     'src/client/main.js': /launchSpeedMultiplier\({[\s\S]*?kartenbreite: breite[\s\S]*?}\)/,
   };
   for (const [datei, muster] of Object.entries(erwarteteBreite)) {

@@ -20,10 +20,8 @@ import {
 } from '../src/shared/protocol.js';
 import { SnapshotHistory } from '../src/server/lagCompensation.js';
 import { LobbyManager, LOBBY_STATUS } from '../src/server/lobby.js';
-import { BotController } from '../src/server/bot.js';
 import { MatchController } from '../src/engine/match.js';
 import { validateCommand, isTickInWindow } from '../src/shared/validation.js';
-import { SeededRandom } from '../src/shared/prng.js';
 
 test('Snapshot-Protokoll kodiert und dekodiert verlustarm', () => {
   const state = {
@@ -104,57 +102,78 @@ test('Lag-Kompensation hält nur das konfigurierte Fenster', () => {
   assert.equal(history.isWithinWindow(70, 59), false);
 });
 
-test('Lobby verwaltet Plätze, Kapazität und Wiederverbindung', () => {
+test('Lobby verwaltet Teams, Kapazität und Wiederverbindung', () => {
+  /*
+   * Ein Beitritt = ein TEAM (seit dem 2026-09-20). `playersPerTeam` ist die Zahl
+   * der EINHEITEN je Mensch, nicht die Zahl der Plätze: Bei 2 Teams × 2
+   * Einheiten sind es 4 Figuren und 2 Menschen.
+   */
   const lobbies = new LobbyManager();
   const { lobby, player } = lobbies.create({ teams: 2, playersPerTeam: 2, preset: 'islands', hostName: 'Anna' });
 
-  assert.equal(lobby.capacity, 4);
-  assert.equal(lobby.occupied, 1);
+  assert.equal(lobby.capacity, 4, 'vier Figuren');
+  assert.equal(lobby.seatsTotal, 2, 'zwei Menschen passen hinein');
+  assert.equal(lobby.occupied, 1, 'ein Mensch ist da — nicht zwei Plätze');
   assert.equal(lobby.connected, 1);
+  assert.equal(lobby.seatsOccupied, 2, 'er führt zwei Einheiten');
   assert.equal(lobby.preset, 'islands');
   assert.equal(player.resumed, false);
   assert.ok(player.token);
+  assert.equal(player.seats.length, 2);
 
   const second = lobbies.join(lobby.id, { name: 'Ben' });
   assert.equal(lobbies.describe(lobby.id).occupied, 2);
-  assert.equal(second.seatIndex, 1);
-  assert.equal(lobbies.describe(lobby.id).seats[1].teamId, 1);
+  assert.equal(second.seatIndex, 2, 'der zweite Mensch beginnt nach den zwei Plätzen des ersten');
+  assert.equal(second.teamId, 1);
+  assert.equal(lobbies.describe(lobby.id).seats[2].teamId, 1);
 
-  // Wiederverbindung mit Token belegt keinen neuen Platz.
+  // Wiederverbindung mit Token belegt kein neues Team.
   const resumed = lobbies.join(lobby.id, { token: player.token });
   assert.equal(resumed.resumed, true);
   assert.equal(lobbies.describe(lobby.id).occupied, 2);
 
-  lobbies.join(lobby.id, { name: 'Cara' });
-  lobbies.join(lobby.id, { name: 'Dan' });
-  assert.throws(() => lobbies.join(lobby.id, { name: 'Eve' }), /voll/);
+  // Mehr Menschen als Teams gibt es nicht.
+  assert.throws(() => lobbies.join(lobby.id, { name: 'Cara' }), /Teams sind besetzt/);
+
+  // Vollständig ist die Lobby erst, wenn jedes Team einen VERBUNDENEN Menschen hat.
+  assert.equal(lobbies.alleTeamsBesetzt(lobby.id), true);
 
   // Disconnect + Reconnect-Fenster
   lobbies.disconnect(lobby.id, second.token);
-  assert.equal(lobbies.describe(lobby.id).seats[1].connected, false);
-  assert.equal(lobbies.describe(lobby.id).connected, 3);
+  assert.equal(lobbies.describe(lobby.id).seats[2].connected, false);
+  assert.equal(lobbies.describe(lobby.id).connected, 1);
+  assert.equal(lobbies.alleTeamsBesetzt(lobby.id), false,
+    'ein getrennter Mensch macht die Lobby unvollständig');
   assert.equal(lobbies.pruneDisconnected(Date.now()).length, 0);
-  assert.equal(lobbies.pruneDisconnected(Date.now() + 60_000).length, 1);
+  assert.equal(lobbies.pruneDisconnected(Date.now() + 60_000).length, 1,
+    'ein Eintrag je Mensch, nicht je Platz');
+  assert.equal(lobbies.alleTeamsBesetzt(lobby.id), false, 'das Team ist jetzt frei');
 
   lobbies.markRunning(lobby.id);
   assert.equal(lobbies.get(lobby.id).status, LOBBY_STATUS.RUNNING);
   assert.throws(() => lobbies.join(lobby.id, { name: 'Eve' }), /auf/);
 });
 
-test('Lag-Kompensation und Bot-Auswahl funktionieren im Match', () => {
+test('Lag-Kompensation trägt einen Menschenschuss im Match', () => {
+  /*
+   * Hier stand ein Test, der den Server-Bot einen Schuss wählen ließ. Den Bot
+   * gibt es nicht mehr (Vorgabe: keine Bot-KI, Teams führen nur Menschen) — der
+   * Test prüft jetzt die verbliebene Zusage: Ein Schuss eines MENSCHEN läuft
+   * durch die Lag-Kompensation und wird angenommen.
+   */
   const match = new MatchController({ seed: 1234, teams: 2, playersPerTeam: 2 });
   match.start();
 
-  const bot = new BotController({ rng: new SeededRandom(42), skill: 0.7 });
+  const history = new SnapshotHistory();
   const active = match.activePlayerId;
-  const shot = bot.chooseShot(match, active);
+  const angle = Math.PI / 4;
+  const power = 62;
 
-  assert.ok(shot);
-  assert.ok(shot.angle >= 0 && shot.angle <= Math.PI);
-  assert.ok(shot.power >= 20 && shot.power <= 100);
+  history.push(match.world.tickCount, match.getState());
+  const result = match.fire(active, angle, power);
 
-  const result = match.fire(active, shot.angle, shot.power);
   assert.equal(result.ok, true);
+  assert.ok(history.get(match.world.tickCount) !== null, 'der Zustand liegt im Fenster');
 });
 
 test('Servervalidierung blockiert fremde, ungültige und veraltete Befehle', () => {

@@ -19,23 +19,16 @@ export const LOBBY_STATUS = Object.freeze({
 });
 
 /**
- * Wie viele BEITRETENDE eine Lobby fasst — die alte Grenze.
- *
- * Sie gilt im Modus „ein Platz je Beitritt" (ohne `unitsPerPlayer`): Dort ist
- * ein Beitritt ein Platz. Im Modus der Matcharten (ein Mensch je Team) begrenzt
- * sie nicht mehr die Figuren, sondern nur die Zahl der Menschen — und die ist
- * ohnehin durch `teams` begrenzt.
- */
-export const MAX_LOBBY_PLAYERS = 12;
-
-/**
  * Wie viele FIGUREN eine Lobby fassen darf.
  *
  * Die Matcharten nennen im Kriegsmodus **8 Spieler × 5 Einheiten = 40 Figuren**.
  * Der Motor trägt sie (gemessen: 40 Figuren kosten 0,312 ms je Tick = 1,9 %
- * eines Kerns, `npm run measure:figures`). Diese Grenze ist damit die wirksame;
- * `MAX_LOBBY_PLAYERS` gilt nur noch für den alten Modus mit einem Platz je
- * Beitritt.
+ * eines Kerns, `npm run measure:figures`).
+ *
+ * Eine zweite Grenze für die Zahl der MENSCHEN gibt es nicht mehr: Ein Beitritt
+ * belegt ein ganzes Team, und Teams gibt es 2 bis 8 (`TEAM_COLORS`). Die alte
+ * Konstante `MAX_LOBBY_PLAYERS = 12` zählte Plätze im Modus „ein Platz je
+ * Beitritt" — den gibt es nicht, seit ein Mensch ein Team führt.
  */
 export const MAX_LOBBY_FIGURES = 40;
 
@@ -55,13 +48,17 @@ export const MAX_LOBBY_FIGURES = 40;
  * **Ein Mensch steuert ein TEAM, nicht eine Figur.** Die Matcharten kennen
  * keinen Modus mit einer Einheit je Spieler; sie nennen 3, 4 bzw. 5 Einheiten je
  * Spieler (klein 2–4 × 3, groß 4 × 4, Krieg 6–8 × 5 = bis 40 Figuren). Mit
- * `unitsPerPlayer` (siehe `create`) besetzt ein Beitritt deshalb ein ganzes
- * Team; freie Teams übernimmt die Bot-KI.
+ * `unitsPerPlayer` (siehe `create`) besetzt ein Beitritt deshalb ein ganzes Team.
+ *
+ * **Es gibt KEINE Bot-KI.** Teams werden ausschließlich von Menschen gespielt;
+ * ein unbesetztes Team ist kein Bot-Team, sondern ein unbesetztes Team, und das
+ * Match startet erst, wenn alle Teams besetzt sind (`alleTeamsBesetzt`). Die
+ * SPEZIELLEN NPCs (Günther, Geschütze) sind davon unberührt: Sie stecken im
+ * Motor, laufen deterministisch mit und besetzen kein Team.
  *
  * Lokal ist es ein Hot-Seat: Der Mensch am Gerät spielt JEDE Figur der Reihe
- * nach (es gibt keine Bots im Client) — also auch die gegnerischen, weil ein
- * zweiter Mensch am selben Gerät fehlt. Für die Kennzahlen zählt sein EIGENES
- * Team (Team 0).
+ * nach — also auch die gegnerischen, weil ein zweiter Mensch am selben Gerät
+ * fehlt. Für die Kennzahlen zählt sein EIGENES Team (Team 0).
  *
  * Der Zug läuft dabei immer „jede Einheit einzeln" (S1E1, S2E1, S1E2 — nie
  * zweimal dieselbe Seite hintereinander). Das klassische Modell ist damit
@@ -135,55 +132,48 @@ export class LobbyManager {
     /*
      * EINHEITEN JE SPIELER — der Modus der Matcharten (2026-09-20).
      *
-     * FUND (belegt): Bis hierher nahm JEDER Beitritt GENAU EINEN Platz ein. Ein
-     * Mensch steuerte damit eine EINZIGE Figur — einen Modus mit einer Einheit je
-     * Spieler gibt es in den Matcharten aber gar nicht. Sie nennen 3, 4 bzw. 5
-     * Einheiten JE SPIELER:
+     * Die Matcharten nennen 3, 4 bzw. 5 Einheiten JE SPIELER:
      *
      *     klein   2–4 Spieler × 3 Einheiten =  6–12 Figuren
      *     groß      4 Spieler × 4 Einheiten = 16    Figuren
      *     Krieg   6–8 Spieler × 5 Einheiten = 30–40 Figuren
      *
-     * Mit `unitsPerPlayer` (3/4/5) besetzt ein Beitritt ein GANZES TEAM: Der
-     * Mensch steuert ALLE `unitsPerPlayer` Figuren einer Seite; freie Teams
-     * übernimmt die Bot-KI. Die Zugreihenfolge bleibt „jede Einheit einzeln"
-     * (S1E1, S2E1, S1E2 …) — der Motor erzeugt die Figuren bereits so
-     * (`#spawnPlayers`: `teamId = index % teams`).
+     * **Ein Beitritt = ein TEAM.** Der Mensch steuert ALLE `unitsPerPlayer`
+     * Figuren einer Seite. Einen Modus mit einer Einheit je Spieler gibt es
+     * nicht, und ein freies Team wird NICHT von einer KI übernommen: Das Match
+     * startet erst, wenn alle Teams besetzt sind (`alleTeamsBesetzt`).
      *
-     * OHNE diese Angabe bleibt die alte Aufteilung erhalten (ein Platz je
-     * Beitritt). Werkzeuge und Tests setzen sie weiterhin, und ein Match ohne die
-     * Option verläuft exakt wie bisher.
+     * `playersPerTeam` bleibt als gleichbedeutende Angabe erlaubt (der Motor
+     * nennt die Zahl so, und Werkzeuge setzen sie); beide zusammen müssen
+     * übereinstimmen.
      */
-    const jeSpieler = unitsPerPlayer === null ? null : Math.trunc(Number(unitsPerPlayer));
-    if (jeSpieler !== null && (!Number.isFinite(jeSpieler) || jeSpieler < 1
-      || jeSpieler > MAX_PLAYERS_PER_TEAM)) {
-      throw new Error(`unitsPerPlayer muss zwischen 1 und ${MAX_PLAYERS_PER_TEAM} liegen`);
+    const jeSpieler = Math.trunc(Number(unitsPerPlayer ?? playersPerTeam ?? 2));
+    if (!Number.isFinite(jeSpieler) || jeSpieler < 1 || jeSpieler > MAX_PLAYERS_PER_TEAM) {
+      throw new Error(
+        `unitsPerPlayer muss zwischen 1 und ${MAX_PLAYERS_PER_TEAM} liegen (war ${jeSpieler})`,
+      );
     }
-    if (playersPerTeam !== null && jeSpieler !== null && playersPerTeam !== jeSpieler) {
+    if (playersPerTeam !== null && jeSpieler !== Math.trunc(Number(playersPerTeam))) {
       throw new Error(
         `playersPerTeam (${playersPerTeam}) und unitsPerPlayer (${jeSpieler}) widersprechen sich`,
       );
     }
     // Figuren je Team: die eine Zahl, die der Motor braucht.
-    const figurenProTeam = jeSpieler ?? playersPerTeam ?? 2;
-    if (figurenProTeam < 1 || figurenProTeam > MAX_PLAYERS_PER_TEAM) {
-      throw new Error(`playersPerTeam muss zwischen 1 und ${MAX_PLAYERS_PER_TEAM} liegen`);
-    }
+    const figurenProTeam = jeSpieler;
     const capacity = teams * figurenProTeam;
     /*
-     * Zwei Grenzen, zwei Bedeutungen.
+     * Die wirksame Grenze ist die FIGURENZAHL.
      *
-     * `MAX_LOBBY_PLAYERS` (12) begrenzt die BEITRETENDEN — im alten Modus, wo ein
-     * Beitritt einen Platz belegt, ist das dasselbe wie die Platzzahl.
-     * `MAX_LOBBY_FIGURES` (40) begrenzt die FIGUREN: Der Kriegsmodus nennt
-     * 8 Spieler × 5 Einheiten = 40, und der Motor trägt sie (gemessen: 1,9 % eines
-     * Kerns, `npm run measure:figures`).
+     * `MAX_LOBBY_FIGURES` (40): Der Kriegsmodus nennt 8 Spieler × 5 Einheiten =
+     * 40, und der Motor trägt sie (gemessen: 1,9 % eines Kerns,
+     * `npm run measure:figures`).
+     *
+     * Die Zahl der MENSCHEN ist durch `teams` begrenzt (ein Mensch je Team, 2–8)
+     * — dafür braucht es keine eigene Konstante mehr: Ein Beitritt belegt ein
+     * Team, und mehr Teams als `teams` gibt es nicht.
      */
     if (capacity > MAX_LOBBY_FIGURES) {
       throw new Error(`Kapazität überschreitet ${MAX_LOBBY_FIGURES} Figuren`);
-    }
-    if (jeSpieler === null && capacity > MAX_LOBBY_PLAYERS) {
-      throw new Error(`Kapazität überschreitet ${MAX_LOBBY_PLAYERS} Spieler`);
     }
     if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);
 
@@ -290,16 +280,17 @@ export class LobbyManager {
     const lobby = this.get(id);
     if (!lobby) return null;
     /*
-     * „Belegt" zählt BEITRETENDE, nicht Plätze.
+     * „Belegt" zählt MENSCHEN, nicht Plätze.
      *
-     * Im Modus der Matcharten belegt ein Mensch ein ganzes Team — drei Plätze,
-     * aber EIN Spieler. Die alte Zählung (`seats.length`) hätte bei zwei Teams mit
-     * je drei Einheiten „2 von 2 belegt" gemeldet, obwohl erst ein Mensch da war.
-     * Ohne `unitsPerPlayer` bleibt es bei einem Platz je Beitritt, also bei der
-     * alten Zahl.
+     * Ein Mensch belegt ein ganzes Team — bei drei Einheiten sind das drei
+     * Plätze, aber EIN Spieler. Die alte Zählung (`seats.length`) hätte „3 von
+     * 2" gemeldet, obwohl erst ein Mensch da ist.
+     *
+     * `seatsTotal` ist deshalb die Zahl der TEAMS: So viele Menschen passen
+     * hinein. `capacity` bleibt die Zahl der Figuren.
      */
     const beitritte = new Set(lobby.seats.map(seat => seat.token));
-    const plaetze = lobby.unitsPerPlayer !== null ? lobby.teams : lobby.capacity;
+    const plaetze = lobby.teams;
     return {
       id: lobby.id,
       teams: lobby.teams,
@@ -351,18 +342,17 @@ export class LobbyManager {
   }
 
   /**
-   * Belegt Plätze.
+   * Belegt ein TEAM.
    *
-   * Zwei Aufteilungen, je nach Lobby-Konfiguration:
+   * **Ein Beitritt = ein Team.** Ein Mensch führt alle `unitsPerPlayer` Figuren
+   * einer Seite; einen Modus mit einer Einheit je Spieler gibt es nicht (siehe
+   * die Matcharten). Freie Teams werden NICHT von einer KI übernommen — das
+   * Match startet erst, wenn alle Teams von Menschen besetzt sind
+   * (`alleTeamsBesetzt`).
    *
-   *  - **`unitsPerPlayer = null`** (alt): Ein Beitritt belegt EINEN Platz.
-   *  - **`unitsPerPlayer = n`** (Matcharten): Ein Beitritt belegt ein GANZES
-   *    TEAM — `n` Figuren. Die freien Teams übernimmt die Bot-KI. Ein Mensch
-   *    zieht damit mehrfach je Runde, aber nie zweimal hintereinander.
-   *
-   * Der Rückgabewert trägt immer `seats` (alle Plätze dieses Beitritts) und
-   * `entityIds` (alle Figuren; erst nach dem Matchstart gefüllt): Bei einem
-   * Team sind das mehrere, und wer nur `entityId` liest, sähe eine einzige.
+   * Der Rückgabewert trägt `seats` (alle Plätze dieses Beitrags) und `entityIds`
+   * (alle Figuren; erst nach dem Matchstart gefüllt): Bei einem Team sind das
+   * mehrere, und wer nur `entityId` liest, sähe eine einzige.
    */
   join(lobbyId, { name = 'Spieler', token = null } = {}) {
     const lobby = this.get(lobbyId);
@@ -382,62 +372,61 @@ export class LobbyManager {
 
     if (lobby.status !== LOBBY_STATUS.OPEN) throw new Error('Lobby nimmt keine Spieler mehr auf');
 
-    if (lobby.unitsPerPlayer !== null) {
-      // Modus der Matcharten: ein freies TEAM je Beitritt.
-      const belegteTeams = new Set(lobby.seats.map(seat => seat.teamId));
-      let teamId = -1;
-      for (let t = 0; t < lobby.teams; t += 1) {
-        if (!belegteTeams.has(t)) { teamId = t; break; }
-      }
-      if (teamId < 0) {
-        throw new Error(`Alle ${lobby.teams} Teams sind besetzt — kein Platz frei`);
-      }
-
-      const neuerToken = randomUUID();
-      const seats = [];
-      for (let unitIndex = 0; unitIndex < lobby.unitsPerPlayer; unitIndex += 1) {
-        seats.push({
-          // Figur-Slot des Motors: `#spawnPlayers` setzt `teamId = index % teams`.
-          figureIndex: unitIndex * lobby.teams + teamId,
-          seatIndex: lobby.seats.length + seats.length,
-          playerIndex: teamId,
-          teamId,
-          unitIndex,
-          name,
-          token: neuerToken,
-          connected: true,
-          disconnectedAt: null,
-          entityId: null,
-        });
-      }
-      lobby.seats.push(...seats);
-      return this.#antwort(lobby, seats[0], seats, { resumed: false });
+    const belegteTeams = new Set(lobby.seats.map(seat => seat.teamId));
+    let teamId = -1;
+    for (let t = 0; t < lobby.teams; t += 1) {
+      if (!belegteTeams.has(t)) { teamId = t; break; }
+    }
+    if (teamId < 0) {
+      throw new Error(`Alle ${lobby.teams} Teams sind besetzt — kein Platz frei`);
     }
 
-    // Alte Aufteilung: ein Platz je Beitritt, in Reihenfolge der Slots.
-    if (lobby.seats.length >= lobby.capacity) {
-      throw new Error(`Lobby ist voll (${lobby.seats.length}/${lobby.capacity} Plätze belegt)`);
+    const neuerToken = randomUUID();
+    const seats = [];
+    for (let unitIndex = 0; unitIndex < lobby.playersPerTeam; unitIndex += 1) {
+      seats.push({
+        // Figur-Slot des Motors: `#spawnPlayers` setzt `teamId = index % teams`.
+        figureIndex: unitIndex * lobby.teams + teamId,
+        seatIndex: lobby.seats.length + seats.length,
+        playerIndex: teamId,
+        teamId,
+        unitIndex,
+        name,
+        token: neuerToken,
+        connected: true,
+        disconnectedAt: null,
+        entityId: null,
+      });
     }
-
-    const seatIndex = lobby.seats.length;
-    const seat = {
-      seatIndex,
-      // Ohne `unitsPerPlayer` ist der Platz sein eigener Figur-Slot.
-      figureIndex: seatIndex,
-      playerIndex: seatIndex,
-      teamId: seatIndex % lobby.teams,
-      unitIndex: Math.floor(seatIndex / lobby.teams),
-      name,
-      token: randomUUID(),
-      connected: true,
-      disconnectedAt: null,
-      entityId: null,
-    };
-    lobby.seats.push(seat);
-    return this.#antwort(lobby, seat, [seat], { resumed: false });
+    lobby.seats.push(...seats);
+    return this.#antwort(lobby, seats[0], seats, { resumed: false });
   }
 
-  /** Einheitliche Antwort für beide Aufteilungen. */
+  /**
+   * Ist die Lobby vollständig? — Jedes Team hat einen VERBUNDENEN Menschen.
+   *
+   * DAS ist die Startbedingung. Ohne sie müsste eine KI einspringen, und die
+   * gibt es nicht: Ein unbesetztes Team ist kein Bot-Team, sondern ein
+   * unbesetztes Team.
+   *
+   * „Verbunden" gehört zur Bedingung, nicht nur „beansprucht": Nach einem
+   * Serverneustart stehen die Teams in der Sicherung, aber ihre Menschen sind
+   * erst wieder da, wenn sie sich verbinden. Vorher loszulaufen hieße, gegen
+   * leere Plätze zu spielen.
+   */
+  alleTeamsBesetzt(lobbyId) {
+    const lobby = typeof lobbyId === 'string' ? this.get(lobbyId) : lobbyId;
+    if (!lobby) return false;
+    const belegt = new Set(
+      lobby.seats.filter(seat => seat.token !== null && seat.connected).map(seat => seat.teamId),
+    );
+    for (let t = 0; t < lobby.teams; t += 1) {
+      if (!belegt.has(t)) return false;
+    }
+    return true;
+  }
+
+  /** Antwort auf einen Beitritt: alle Plätze und Figuren dieses Menschen. */
   #antwort(lobby, seat, seats, { resumed }) {
     return {
       ...seat,
@@ -452,10 +441,14 @@ export class LobbyManager {
   /**
    * Markiert einen BEITRITT als getrennt und startet das Reconnect-Fenster.
    *
-   * Alle Plätze desselben Tokens: Im Modus der Matcharten besitzt ein Mensch ein
-   * ganzes Team. Nur den ersten Platz zu trennen hieße, dass seine übrigen
-   * Figuren als „verbunden" gelten — und damit vom Bot NICHT übernommen würden.
-   * Der Mensch wäre weg, seine Einheiten stünden still.
+   * Alle Plätze desselben Tokens: Ein Mensch führt ein ganzes Team. Nur den
+   * ersten Platz zu trennen wäre falsch — die übrigen Figuren gälten als
+   * „verbunden" und der Mensch wäre halb da.
+   *
+   * Für seine Züge springt NIEMAND ein: Es gibt keine Bot-KI. Bis er
+   * wiederkommt, läuft sein Zug über die Zugzeit ab. Nach dem Reconnect-Fenster
+   * verfällt sein Team (`pruneDisconnected`) und die Lobby nimmt wieder einen
+   * Menschen auf.
    */
   disconnect(lobbyId, token) {
     const lobby = this.get(lobbyId);
@@ -477,8 +470,8 @@ export class LobbyManager {
        * Ein ganzes TEAM verfällt zusammen.
        *
        * Sonst bliebe nach dem Fenster eine halbe Mannschaft übrig: Zwei von drei
-       * Einheiten fielen weg, die dritte stünde als „verbunden" da und würde vom
-       * Bot nicht übernommen.
+       * Einheiten fielen weg, die dritte stünde als „verbunden" da. Und das Team
+       * wäre für einen neuen Menschen nicht mehr frei.
        */
       const abgelaufen = new Set();
       for (const seat of lobby.seats) {

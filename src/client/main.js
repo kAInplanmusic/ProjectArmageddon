@@ -937,6 +937,23 @@ class Game {
         this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
       }
       /*
+       * Wartet die Lobby noch auf Menschen?
+       *
+       * Es gibt keine Bot-KI: Ein unbesetztes Team bleibt leer, und die
+       * Simulation läuft erst, wenn JEDES Team einen verbundenen Menschen hat.
+       * Ohne diesen Hinweis sähe der Spieler ein Standbild ohne Erklärung —
+       * der Server sendet in dieser Zeit keine Snapshots.
+       */
+      if (payload.laeuft === false) {
+        const besetzt = payload.besetzteTeams ?? 0;
+        const teams = payload.teams ?? teams;
+        this.hud.log(
+          `Warte auf Mitspieler: ${besetzt}/${teams} Teams besetzt — `
+          + 'es gibt keine Bot-KI, jedes Team braucht einen Menschen.',
+          'accent',
+        );
+      }
+      /*
        * Der mitgesendete `snapshot` wird hier bewusst NICHT ausgewertet.
        *
        * Zwischenzeitlich stand hier eine Prüfung auf `snapshot.status ===
@@ -951,6 +968,19 @@ class Game {
     client.on('state', state => {
       if (state === CONNECTION_STATE.RECONNECTING) this.hud.log('Verbindung verloren — versuche Wiederverbindung', 'danger');
       if (state === CONNECTION_STATE.CONNECTED) this.hud.log('Verbunden', 'good');
+      /*
+       * Den Verbindungszustand SOFORT ins HUD schreiben, nicht erst im
+       * Zeichenbild.
+       *
+       * Fund (belegt, 2026-09-20): Die Anzeige wurde nur im Renderpfad gesetzt
+       * (`#renderFrame`), und der kehrt ohne Zustand früh zurück. Solange die
+       * Lobby auf Mitspieler wartet, gibt es keine Snapshots — die Anzeige stand
+       * deshalb auf „offline", obwohl die Verbindung stand. Genau so hat es ein
+       * E2E-Test gemeldet.
+       */
+      if (this.mode === 'online') {
+        this.hud.setConnection?.(state, this.network?.latencyMs ?? 0);
+      }
     });
     client.on('server_error', message => {
       const text = message.errors?.[0] ?? message.error ?? 'Serverfehler';

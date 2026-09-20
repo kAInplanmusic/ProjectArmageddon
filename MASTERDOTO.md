@@ -35,7 +35,52 @@ begründet**; sie steht jeweils am Eintrag. **Offene Häkchen: 0.**
 | Erfolge | Inhalte gesetzt; zwei nachweislich unerreichbare Schwellen korrigiert | `npm run check:achievements` Exit 0 |
 | Zwei `test.fixme`-Kulissen-Tests | Umgeschrieben (Kartencharakter bzw. Seed-Determinismus) — keine `fixme` mehr | `terrain-presets.spec.mjs` 5/5 |
 
-### Zwei zusätzliche Funde (nicht geplant, beim Durchgang aufgefallen)
+### KEINE BOT-KI (Vorgabe des Auftraggebers, 2026-09-20)
+
+**Es gibt keine Bot-KI. Teams werden ausschließlich von MENSCHEN gespielt.** Ein
+freies Team ist kein Bot-Team, sondern ein freies Team. Daneben gibt es
+**spezielle NPCs** — Günther und die Geschütze —, und die bleiben: Sie stecken im
+Motor (`guentherSystem.js`, Geschütztürme), laufen deterministisch mit und
+besetzen KEIN Team.
+
+**Was entfernt ist** (vorher stand hier ein Server-Bot, der jede Figur ohne
+verbundenen Client selbst schoss):
+
+| Entfernt | Warum |
+|---|---|
+| `src/server/bot.js` (`BotController`) | Er spielte die Züge unbesetzter Teams. Genau das darf es nicht geben; damit hatte er keinen Leser mehr |
+| `#runBotTurn` in der Sitzung | Der Server führt nur die SIMULATION; wer zieht, entscheidet der Mensch |
+| `scripts/check-bots.mjs` + `npm run check:bots` | Maß den Bot, den es nicht mehr gibt |
+| `tests/bot-ai.test.js` | Dasselbe |
+| Export `BotController` (`src/server/index.js`) | Kein Leser |
+| `MAX_LOBBY_PLAYERS = 12` | Zählte Plätze im Modus „ein Platz je Beitritt" — den gibt es nicht |
+
+**Was stattdessen gilt:** Ein Beitritt belegt ein ganzes TEAM, und das Match
+startet erst, wenn JEDES Team einen VERBUNDENEN Menschen hat
+(`LobbyManager.alleTeamsBesetzt`). Der Server meldet das dem Client („Warte auf
+Mitspieler: x/y Teams besetzt"), und die Simulation läuft bis dahin nicht — sonst
+zöge jemand ins Leere.
+
+**Abbruch:** Verliert ein Mensch die Verbindung, zieht für ihn NIEMAND. Sein Zug
+läuft über die Zugzeit ab. Nach dem Reconnect-Fenster verfällt sein Team und die
+Lobby nimmt wieder einen Menschen auf. Das ist die ehrliche Folge eines Spiels
+ohne KI-Vertretung.
+
+**Belege:** `tests/einheiten-je-spieler.test.js` (Beitritt = Team, `alleTeamsBesetzt`),
+`tests/netcode.test.js` (Teams statt Plätze), `tests/server-integration.test.js`
+(„Der Reconnect auf ein entschiedenes Match…": ohne zweiten Menschen läuft NICHTS,
+mit ihm läuft es), `tests/e2e/multiplayer.spec.mjs` (zwei Browser, keine Bots).
+
+### Drei zusätzliche Funde (nicht geplant, beim Durchgang aufgefallen)
+
+**0. Die Verbindungsanzeige stand auf „offline", während sie stand.** Sie wurde
+nur im Renderpfad gesetzt (`#renderFrame`), und der kehrt ohne Zustand früh
+zurück. Seit die Lobby auf Mitspieler wartet, gibt es vor dem Start keine
+Snapshots — die Anzeige behauptete also „offline", obwohl die Verbindung stand.
+Behoben: Der Zustandswechsel schreibt die Anzeige sofort
+(`client.on('state')`). Gefunden hat es der E2E-Test „Zwei Browser spielen in
+derselben Lobby" — ein Beleg dafür, dass ein Test, der nur den Endzustand prüft,
+einen falschen Zwischenzustand nicht sieht.
 
 **1. Der Sprung hatte KEINEN Auslöser.** In `src/client/input.js` stand ein
 Sprung-Zweig auf `event.code === 'Space'` — er war NIE erreichbar, weil die
@@ -60,10 +105,11 @@ nicht mehr (63 bzw. 4 verschiedene Werte). Der Status-Absatz behauptete „kein
 Audio, keine Client-Prädiktion, Zugzeit nicht erzwungen, keine Persistenz" —
 alles läuft längst.
 
-**Verifikation dieses Durchgangs:** `npm run lint` 0 Fehler · `npm test`
-**981/981 grün** · E2E: `runtime-smoke` 10/10 · `terrain-presets` 5/5 ·
-`profil` 9/9 · `grosse-teams` 6/6 · `loadout-choice` 5/5 · `multiplayer` 10/10
-(inkl. des neuen Online-Tests „drei Einheiten") · `check:fuses` 0 Verstöße ·
+**Verifikation dieses Durchgangs (dritter Stand, nach dem Entfernen der Bot-KI):**
+`npm run lint` 0 Fehler · `npm test` **974/974 grün** · E2E: `runtime-smoke` 10/10 ·
+`terrain-presets` 5/5 · `profil` 9/9 · `grosse-teams` 6/6 · `loadout-choice` 5/5 ·
+`multiplayer` **10/10** (zwei Browser UND der neue Test „drei Einheiten", beide
+brauchen jetzt einen zweiten Menschen) · `check:fuses` 0 Verstöße ·
 `check:achievements` Exit 0 · `npm run build` und `npm run validate` grün.
 Die **E2E-Batterie als Ganzes** wurde nicht gefahren — die 16 vorbestehenden
 Ausfälle dieses Rechners (siehe unten) sind davon unberührt und wären keine
@@ -86,7 +132,7 @@ in Klammern).*
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
-| Unit-/Integrationstests | `npm test` | **981/981** grün (Läufe: 324 s, 256 s und 367 s; vorher 947/947) — die roten Tests der beiden Durchgänge waren `emblem.test.js` (Muster-Wächter) und `match-rules.test.js` (Lobby-Grenzen) und sind nachgezogen |
+| Unit-/Integrationstests | `npm test` | **974/974** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
 | Browser-E2E | `npm run test:e2e` | **nicht als Batterie gefahren** — die 16 vorbestehenden Ausfälle dieses Rechners (siehe Befund unten) sind unverändert. Gefahren und grün: `runtime-smoke` (10/10), `terrain-presets` (5/5), `profil` (9/9), `grosse-teams` (6/6), `loadout-choice` (5/5), `multiplayer` (10/10) |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
@@ -99,7 +145,7 @@ in Klammern).*
 | Replay | `npm run replay -- record` + `play --verify` | Zustandshash `808ac5eb` identisch, „exakt reproduzierbar" |
 | Determinismus | manuell, 3000 Ticks | Seed 4242 → `bc9695fa` reproduzierbar, Seed 9999 → `c0531097` |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
-| **Bot-Treffsicherheit** | `npm run check:bots` | 1017 Schüsse über 6 Seeds × 5 Skill-Stufen; in Reichweite **79,5 %** Treffer (Skill 1,0), kontrollierte Lage 32/32 = 100 %, Planfehler 6,23 px |
+| ~~Bot-Treffsicherheit~~ | ~~`npm run check:bots`~~ | **ENTFALLEN (2026-09-20).** Es gibt keine Bot-KI; Werkzeug, Bot und Test sind entfernt (siehe „KEINE BOT-KI" unten) |
 
 ### Befund zur E2E-Batterie (2026-09-19): die 16 roten Tests sind VORBESTEHEND
 
@@ -426,7 +472,13 @@ Auf Auftrag ein **tiefes Audit** in vier Teilen. Die Berichte stehen in `docs/`:
 Die daraus abgeleiteten offenen Punkte stehen unter **„Offene Punkte aus dem
 Audit"** weiter unten.
 
-## Fortsetzung 2026-09-18 — drei Widersprüche zwischen Doku und Code, Bots in Arbeit
+## Fortsetzung 2026-09-18 — drei Widersprüche zwischen Doku und Code
+
+> **ÜBERHOLT (2026-09-20):** Dieser Abschnitt beschreibt den Bau eines
+> SERVER-BOTS, der Züge für unbesetzte Teams schoss. Er ist **entfernt** — es
+> gibt keine Bot-KI (Vorgabe des Auftraggebers). Der Abschnitt bleibt als
+> Zeitdokument stehen; was er beschreibt, gilt nicht mehr. Siehe „KEINE BOT-KI"
+> im Abschnitt „Durchgang 2026-09-20".
 
 *Ausgangslage:* Der Auftrag steht im Kopf von `scripts/measure-npc.mjs`:
 „Günther und die NPCs müssen richtig gut werden." Günther ist umgesetzt und
@@ -1930,8 +1982,9 @@ ein Datenmangel, kein Codefehler — und ohne Zahl war er nicht greifbar.
 - Binärprotokoll v2 mit `DataView` (läuft in Node **und** Browser),
   Delta-Encoding pro Client plus periodischem Vollsnapshot als Resync.
 - Restzugzeit wird übertragen (vorher fror die Anzeige im Online-Modus ein).
-- Lobby-Verwaltung mit Reconnect-Token, 200 ms Lag-Kompensation, Bot-KI,
-  serverseitige Eingabevalidierung.
+- Lobby-Verwaltung mit Reconnect-Token, 200 ms Lag-Kompensation,
+  serverseitige Eingabevalidierung. **Keine Bot-KI** — Teams führen Menschen,
+  ein Team ohne verbundenen Menschen lässt das Match nicht starten.
 - Lasttest: 8 gleichzeitige Clients über 4 Lobbys ohne Verbindungsverlust.
 
 ### Persistenz
@@ -2494,7 +2547,9 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       erhalten bleibt). Für die **Auswertung** reichen die vorhandenen
       Werkzeuge: Sie rechnen nach, statt zu schätzen.
 
-      *Warum Bots keine KI brauchen:* Die Simulation ist deterministisch — die
+      *~~Warum Bots keine KI brauchen~~ (gegenstandslos seit 2026-09-20: es gibt
+      keine Bots mehr; die Überlegung bleibt als Begründung für die NPCs stehen,
+      die deterministisch im Motor laufen):* Die Simulation ist deterministisch — die
       Flugbahn lässt sich **exakt vorausberechnen**. Ein Bot ist damit eine
       **Suche** (Winkel und Kraft finden, bis die Bahn trifft), kein Modell.
       Und ein perfekt rechnender Bot wäre unschlagbar; die eigentliche Frage ist,
@@ -2602,9 +2657,10 @@ Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
       Einheiten ziehen, dann alle zweiten (`S1E1, S2E1, …, S1E2`) — nie zweimal
       derselbe Spieler hintereinander. Lokal (Hot-Seat) spielt der Mensch JEDE
       Figur der Reihe nach; online führt ein Mensch ein ganzes TEAM
-      (`unitsPerPlayer`, siehe „Einheiten je Spieler"), freie Teams übernimmt die
-      Bot-KI. Der Stand steht als Kommentar bei `MAX_PLAYERS_PER_TEAM`
-      (`src/server/lobby.js`).
+      (`unitsPerPlayer`, siehe „Einheiten je Spieler"). **Freie Teams übernimmt
+      NIEMAND**: Es gibt keine Bot-KI, das Match startet erst, wenn jedes Team
+      einen verbundenen Menschen hat (`alleTeamsBesetzt`). Der Stand steht als
+      Kommentar bei `MAX_PLAYERS_PER_TEAM` (`src/server/lobby.js`).
 
       *Berichtigt (2026-09-20):* Hier stand, ein Mensch besitze online „eine
       Figur" und mehrere Plätze je Mensch seien „bewusst nicht gebaut". Das
@@ -2680,7 +2736,7 @@ Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
       | Stelle | Änderung |
       |---|---|
       | `LobbyManager.create` | Neue Option `unitsPerPlayer` (1…6). Sie SETZT die Figuren je Team; ohne sie bleibt die alte Aufteilung (ein Platz je Beitritt) für Werkzeuge, Tests und ältere Replays |
-      | `LobbyManager.join` | Mit `unitsPerPlayer` besetzt ein Beitritt ein GANZES TEAM: `unitsPerPlayer` Plätze, EIN Token. Freie Teams übernimmt die Bot-KI |
+      | `LobbyManager.join` | Ein Beitritt besetzt ein GANZES TEAM — `unitsPerPlayer` Plätze, EIN Token. **Keine Bot-KI**: Ein freies Team bleibt leer, das Match startet erst, wenn alle Teams besetzt sind (`alleTeamsBesetzt`) |
       | `seat.figureIndex` | Jeder Platz kennt seinen SLOT im Motor (`unitIndex × teams + teamId`). Die Zuordnung war vorher die Array-Position — bei drei Plätzen hintereinander hätte ein Mensch die Figuren fremder Teams bekommen |
       | `LobbySession.#platzFuer` | Eingaben und Waffenwahl gehen an die AKTIVE eigene Figur. Vorher an die erste — die zweite und dritte Einheit wären unspielbar gewesen |
       | `WELCOME` / `LOBBY_STATE` | Nennen `entityIds` (alle eigenen Figuren). `entityId` bleibt die erste |

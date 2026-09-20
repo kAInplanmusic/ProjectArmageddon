@@ -16,7 +16,10 @@ import { MatchController } from '../engine/match.js';
 import { LobbyManager, LOBBY_STATUS } from './lobby.js';
 import { createLogger } from './logger.js';
 import { SnapshotHistory } from './lagCompensation.js';
-import { BotController } from './bot.js';
+/*
+ * KEIN Bot-Import. Es gibt keine Bot-KI: Teams werden nur von Menschen
+ * gespielt. Die speziellen NPCs (Günther, Geschütze) stecken im Motor.
+ */
 import {
   CONTROL,
   MESSAGE_TYPE,
@@ -28,7 +31,6 @@ import {
   toDeltaBase,
 } from '../shared/protocol.js';
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
-import { MatchSeedManager } from '../shared/seed.js';
 import { ReplayRecorder } from '../engine/replay.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
 
@@ -115,9 +117,7 @@ class LobbySession {
     }
 
     this.history = new SnapshotHistory();
-    this.bot = new BotController({
-      rng: new MatchSeedManager(this.match.seedManager.baseSeed).getSubRng('EFFECTS'),
-    });
+    // Kein Bot. Die Sitzung führt nur die Simulation; Züge kommen von Menschen.
     this.clients = new Map();      // token -> WebSocket
     this.byEntity = new Map();     // entityId -> token
     this.onEmpty = onEmpty;
@@ -210,7 +210,17 @@ class LobbySession {
     this.timer = null;
   }
 
-  /** Ein Simulationsschritt samt Bot-Zügen. */
+  /**
+   * Läuft die Simulation schon?
+   *
+   * Der Unterschied ist wichtig, seit es keine Bot-KI gibt: Die Sitzung entsteht
+   * beim ersten Beitritt (damit Plätze und Figuren zugeordnet werden können),
+   * aber sie tickt erst, wenn alle Teams von Menschen besetzt sind. Sonst liefe
+   * ein Match, in dem auf der einen Seite niemand ist.
+   */
+  get laeuft() { return this.timer !== null; }
+
+  /** Ein Simulationsschritt — ohne Bot. Wer zieht, entscheidet der Mensch. */
   tick() {
     const now = Date.now();
     const elapsed = Math.min(250, now - this.lastTickAt);
@@ -246,7 +256,12 @@ class LobbySession {
   stepSimulation(ticks = 1) {
     for (let i = 0; i < ticks; i++) {
       if (this.match.status !== 'playing') break;
-      this.#runBotTurn();
+      /*
+       * Keine Bot-Züge: Der Server führt AUSSCHLIESSLICH die Simulation. Wer
+       * zieht, entscheidet der Mensch am Client (oder, im Replay, die
+       * aufgezeichnete Eingabe). Siehe `#runBotTurn` weiter unten — dort steht,
+       * warum das so ist.
+       */
       this.match.step();
       this.history.push(this.match.world.tickCount, this.match.getState());
     }
@@ -254,31 +269,24 @@ class LobbySession {
     return this.match.getState();
   }
 
-  #runBotTurn() {
-    const match = this.match;
-    if (match.status !== 'playing') return;
-    const activeId = match.activePlayerId;
-    if (activeId === null) return;
-
-    // Nur Entity-IDs ohne verbundenen Client werden vom Bot gesteuert.
-    const token = this.byEntity.get(activeId);
-    const seat = token ? this.lobby.seats.find(entry => entry.token === token) : null;
-    if (seat && seat.connected) return;
-
-    const shot = this.bot.chooseShot(match, activeId);
-    if (!shot) return;
-    const result = match.fire(activeId, shot.angle, shot.power);
-    // Bot-Züge ebenfalls aufzeichnen: sonst weicht ein Replay vom Match ab.
-    if (result.ok) {
-      this.recorder.recordInput({
-        tick: match.world.tickCount,
-        playerId: activeId,
-        angle: shot.angle,
-        power: shot.power,
-      });
-    }
-    result.ok === false && this.match.endTurn();
-  }
+  /*
+   * HIER STAND `#runBotTurn()` — ein Server-Bot, der jeden Zug einer Figur ohne
+   * verbundenen Client selbst schoss.
+   *
+   * ENTFERNT (2026-09-20, Vorgabe des Auftraggebers): **Es gibt keine Bot-KI.**
+   * Teams werden ausschließlich von Menschen gespielt. Ein unbesetztes Team ist
+   * kein Bot-Team, sondern ein unbesetztes Team — die Lobby startet erst, wenn
+   * alle Teams besetzt sind (`#alleTeamsBesetzt`).
+   *
+   * Die SPEZIELLEN NPCs bleiben davon unberührt: Sie stecken im Motor
+   * (`src/engine/systems/guentherSystem.js` und Geschütze), laufen deterministisch
+   * mit der Simulation und besetzen kein Team. Sie sind keine Spieler.
+   *
+   * Was das für einen Abbruch bedeutet: Verliert ein Mensch die Verbindung,
+   * zieht für ihn NIEMAND. Sein Zug läuft über die Zugzeit ab. Das ist die
+   * ehrliche Folge eines Spiels ohne KI-Vertretung — und besser als eine
+   * Vertretung, die es laut Vorgabe nicht geben darf.
+   */
 
   #finish() {
     /*
@@ -331,6 +339,20 @@ class LobbySession {
       entityIds: this.lobby.seats
         .filter(seat => seat.token === token && seat.entityId !== null)
         .map(seat => seat.entityId),
+      /*
+       * Ist das Match schon im Gang, oder wartet die Lobby auf Menschen?
+       *
+       * Ohne diese Angabe sähe der Client nur „Status: playing" und einen
+       * Standbild-Zustand — er wüsste nicht, dass er auf Mitspieler wartet.
+       * Es gibt keine Bot-KI: Bis jedes Team einen verbundenen Menschen hat,
+       * läuft nichts.
+       */
+      laeuft: this.laeuft,
+      teams: this.lobby.teams,
+      besetzteTeams: new Set(
+        this.lobby.seats.filter(seat => seat.token !== null && seat.connected).map(seat => seat.teamId),
+      ).size,
+      unitsPerPlayer: this.lobby.playersPerTeam,
       snapshot: this.match.getState(),
     }));
   }
@@ -727,13 +749,22 @@ export class GameServer {
         const { lobby } = restoreLobby(entry, {
           lobbyManager: this.#lobbies,
           createSession: (target, options) => {
+            /*
+             * Wiederhergestellte Sitzung — sie LÄUFT noch nicht.
+             *
+             * Die Teams stehen in der Sicherung, ihre Menschen sind aber erst
+             * wieder da, wenn sie sich verbinden (`alleTeamsBesetzt` verlangt
+             * einen verbundenen Menschen je Team). Vorher zu starten hieße,
+             * gegen leere Plätze zu spielen — und für leere Plätze springt
+             * niemand ein: Es gibt keine Bot-KI.
+             */
             const session = new LobbySession(target, {
               onEmpty: id => this.#sessions.delete(id),
               replayEntries: options.replayEntries,
               replayTotalTicks: options.replayTotalTicks,
               metrics: this.metrics,
               logger: this.logger,
-            }).start();
+            });
             this.#sessions.set(target.id, session);
             return session;
           },
@@ -983,14 +1014,38 @@ export class GameServer {
             context = { lobbyId, token: seat.token };
             let session = this.#sessions.get(lobbyId);
             if (!session) {
+              /*
+               * Die Sitzung entsteht beim ersten Beitritt — aber sie LÄUFT erst,
+               * wenn alle Teams von Menschen besetzt sind.
+               *
+               * Vorher lief sie sofort, und der Server-Bot spielte die freien
+               * Teams. Das war falsch: **Es gibt keine Bot-KI.** Teams werden
+               * ausschließlich von Menschen gespielt; ein unbesetztes Team ist
+               * kein Bot-Team. Bis der letzte Mensch da ist, wartet die Lobby —
+               * die Simulation läuft nicht, damit niemand ins Leere zieht.
+               */
               session = new LobbySession(lobby, {
                 onEmpty: id => this.#sessions.delete(id),
                 metrics: this.metrics,
                 logger: this.logger,
-              }).start();
+              });
               this.#sessions.set(lobbyId, session);
             }
             session.attach(seat.token, socket);
+            if (!session.laeuft && this.#lobbies.alleTeamsBesetzt(lobbyId)) {
+              session.start();
+              this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
+                lobbyId,
+                teams: lobby.teams,
+                unitsPerPlayer: lobby.playersPerTeam,
+              });
+            } else if (!session.laeuft) {
+              this.logger.info('lobby_waiting', 'Warte auf weitere Spieler', {
+                lobbyId,
+                teams: lobby.teams,
+                besetzt: new Set(lobby.seats.map(entry => entry.teamId)).size,
+              });
+            }
             // Die Live-Sitzung hat den Plätzen gerade Entity-IDs zugewiesen.
             // Der Rückgabewert von join() ist eine Kopie und daher veraltet —
             // gelesen wird aus `lobby.seats`.
@@ -1022,7 +1077,21 @@ export class GameServer {
           case CONTROL.START_MATCH: {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
+            /*
+             * Starten darf man erst, wenn ALLE Teams besetzt sind.
+             *
+             * Ohne diese Prüfung ließe sich ein Match starten, in dem auf der
+             * gegnerischen Seite niemand ist. Vorher füllte der Bot solche Teams
+             * — es gibt aber keine Bot-KI.
+             */
+            if (!this.#lobbies.alleTeamsBesetzt(context.lobbyId)) {
+              socket.send(controlMessage(CONTROL.ERROR, {
+                errors: ['Warte auf Mitspieler: Jedes Team braucht einen Menschen.'],
+              }));
+              break;
+            }
             this.#lobbies.markRunning(context.lobbyId);
+            if (!session.laeuft) session.start();
             session.broadcastSnapshot();
             break;
           }

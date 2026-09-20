@@ -103,27 +103,29 @@ test('Die Lobby-Grenzen und die Figurenzahl widersprechen sich nicht', () => {
    * erlaubte **3 je Team**, aber **12 in der Summe** — zwei Zahlen, die
    * einander widersprachen, und die kleinere war die wirksame.
    *
-   * Seit dem Modus der Matcharten gibt es DREI Grenzen, die zusammenpassen
-   * müssen:
+   * Es gibt jetzt genau ZWEI Grenzen, und sie messen Verschiedenes:
    *
-   *  - `MAX_PLAYERS_PER_TEAM` (6)  — Einheiten je Spieler,
-   *  - `MAX_LOBBY_PLAYERS`   (12)  — Beitretende im ALTEN Modus (ein Platz je
-   *    Beitritt),
-   *  - `MAX_LOBBY_FIGURES`   (40)  — Figuren, die wirksame Grenze im Modus der
-   *    Matcharten (Krieg: 8 Spieler × 5 Einheiten).
+   *  - `MAX_PLAYERS_PER_TEAM` (6) — Einheiten je Spieler (also Figuren je Team),
+   *  - `MAX_LOBBY_FIGURES`   (40) — Figuren je Lobby.
+   *
+   * Die Zahl der MENSCHEN braucht keine eigene Konstante: Ein Beitritt belegt ein
+   * ganzes Team, und Teams gibt es 2 bis 8 (`TEAM_COLORS`).
    *
    * Geprüft wird die BEZIEHUNG, nicht ein fester Wert: Die größte Matchart muss
-   * hineinpassen, und die Grenze je Team muss innerhalb der Figurengrenze
-   * erreichbar sein. Sonst ist sie wieder eine Zahl, die niemand erreicht.
+   * hineinpassen. Sonst ist die Grenze wieder eine Zahl, die niemand erreicht.
    */
   const text = fs.readFileSync(path.join(ROOT, 'src', 'server', 'lobby.js'), 'utf8');
 
   assert.match(text, /jeSpieler\s*>\s*MAX_PLAYERS_PER_TEAM/,
     'Die Lobby-Validierung für unitsPerPlayer fehlt oder prüft nicht mehr '
     + 'gegen MAX_PLAYERS_PER_TEAM');
-  assert.match(text, /figurenProTeam\s*>\s*MAX_PLAYERS_PER_TEAM/,
-    'Die Lobby-Validierung für die Figuren je Team fehlt oder prüft nicht mehr '
-    + 'gegen MAX_PLAYERS_PER_TEAM');
+  assert.match(text, /capacity\s*>\s*MAX_LOBBY_FIGURES/,
+    'Die Lobby-Validierung der Kapazität fehlt oder prüft nicht mehr gegen '
+    + 'MAX_LOBBY_FIGURES');
+  // Die Konstante gibt es nicht mehr — nur noch als Hinweis im Kommentar.
+  assert.ok(!/export const MAX_LOBBY_PLAYERS/.test(text),
+    'MAX_LOBBY_PLAYERS ist als Konstante zurück. Sie zählte Plätze im Modus '
+    + '„ein Platz je Beitritt" — den gibt es nicht, seit ein Mensch ein Team führt.');
 
   const zahl = (name) => {
     const treffer = new RegExp(`export const ${name} = (\\d+)`).exec(text);
@@ -131,15 +133,7 @@ test('Die Lobby-Grenzen und die Figurenzahl widersprechen sich nicht', () => {
     return Number(treffer[1]);
   };
   const jeTeam = zahl('MAX_PLAYERS_PER_TEAM');
-  const beitritte = zahl('MAX_LOBBY_PLAYERS');
   const figuren = zahl('MAX_LOBBY_FIGURES');
-
-  // Der alte Modus: Ein Platz je Beitritt, und bei zwei Teams muss die Grenze je
-  // Team die Summe ausschöpfen können.
-  assert.ok(jeTeam * 2 >= beitritte,
-    `Bei zwei Teams ergäben ${jeTeam} × 2 = ${jeTeam * 2} Plätze, die Kapazität `
-    + `liegt bei ${beitritte} — die Grenze je Team ist dann nicht die wirksame, `
-    + 'sondern die Summe. Das ist erlaubt, aber dann muss der Kommentar es sagen.');
 
   /*
    * Das KRIEGSMATCH muss hineinpassen: 8 Spieler (Teams) mit je 5 Einheiten.
@@ -155,11 +149,16 @@ test('Die Lobby-Grenzen und die Figurenzahl widersprechen sich nicht', () => {
     `Der Kriegsmodus umfasst ${KRIEG_TEAMS} × ${KRIEG_EINHEITEN} = `
     + `${KRIEG_TEAMS * KRIEG_EINHEITEN} Figuren, die Grenze liegt bei ${figuren}`);
 
-  // Und die Figurengrenze muss über der Figurenzahl des ALTEN Höchstfalls
-  // liegen, sonst wäre der Altmodus stillschweigend geschrumpft.
-  assert.ok(figuren >= beitritte,
-    `Figuren (${figuren}) dürfen nicht unter der alten Platzzahl (${beitritte}) `
-    + 'liegen — sonst schrumpfte der Altmodus');
+  /*
+   * Und die Teamzahl muss den Kriegsmodus tragen: 8 Spieler brauchen 8 Teams.
+   * Die Obergrenze kommt aus den Teamfarben (`TEAM_COLORS`).
+   */
+  const teamFarben = /export const TEAM_COLORS = Object\.freeze\(\[([\s\S]*?)\]\)/
+    .exec(fs.readFileSync(path.join(ROOT, 'src', 'engine', 'match.js'), 'utf8'));
+  assert.ok(teamFarben, 'TEAM_COLORS nicht gefunden');
+  const farben = (teamFarben[1].match(/#[0-9a-f]{6}/gi) ?? []).length;
+  assert.ok(farben >= KRIEG_TEAMS,
+    `Es gibt ${farben} Teamfarben, der Kriegsmodus braucht ${KRIEG_TEAMS}`);
 });
 
 test('Kein Feld der Konfiguration ist ungenutzt', () => {

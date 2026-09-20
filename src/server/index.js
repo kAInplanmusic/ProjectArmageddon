@@ -28,9 +28,12 @@ export { computeTrajectory, ccdRaycast } from '../engine/physics/ballistics.js';
 
 // Multiplayer
 export { GameServer, LobbySession, startServer, SIMULATION_HZ, SNAPSHOT_HZ } from './gameServer.js';
-export { LobbyManager, LOBBY_STATUS, MAX_LOBBY_PLAYERS } from './lobby.js';
+export { LobbyManager, LOBBY_STATUS, MAX_LOBBY_FIGURES } from './lobby.js';
 export { SnapshotHistory, DEFAULT_HISTORY_MS } from './lagCompensation.js';
-export { BotController } from './bot.js';
+/*
+ * Kein `BotController`-Export: Es gibt keine Bot-KI. Teams werden nur von
+ * Menschen gespielt; die speziellen NPCs (Günther, Geschütze) liegen im Motor.
+ */
 
 // Netzwerkprotokoll & Validierung
 export {

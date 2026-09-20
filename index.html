@@ -746,8 +746,10 @@
           <div class="field-row">
             <label>Teams
               <!-- Ein Team = ein Mensch. Die Zahl der Teams ist damit die Zahl
-                   der Mitspielenden; freie Teams übernimmt die Bot-KI.
-                   Obergrenze: die Zahl der Teamfarben (8), siehe TEAM_COLORS. -->
+                   der Mitspielenden. EINE BOT-KI GIBT ES NICHT: Ein freies Team
+                   bleibt leer, und das Match startet erst, wenn jedes Team
+                   einen Menschen hat. Lokal spielt man sie der Reihe nach
+                   (Hot-Seat). Obergrenze: die Teamfarben (8), siehe TEAM_COLORS. -->
               <select id="cfg-teams">
                 <option value="2" selected>2 Teams</option>
                 <option value="3">3 Teams</option>

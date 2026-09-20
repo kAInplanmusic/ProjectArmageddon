@@ -94,32 +94,34 @@ test('Die Beschreibung zählt MENSCHEN, nicht Plätze', () => {
   assert.equal(zwei.seatsOccupied, 6);
 });
 
-test('Ohne unitsPerPlayer bleibt die alte Aufteilung erhalten', () => {
+test('Ein Beitritt belegt IMMER ein ganzes Team — auch ohne unitsPerPlayer', () => {
   /*
-   * Werkzeuge, Tests und Replays aus älteren Fassungen setzen `playersPerTeam`
-   * ohne `unitsPerPlayer`. Dort muss ein Beitritt weiterhin EINEN Platz belegen —
-   * sonst änderte sich jedes bestehende Match stillschweigend.
+   * `playersPerTeam` ist die gleichbedeutende Angabe (der Motor nennt die Zahl
+   * so). Auch damit gilt: Ein Mensch führt ein Team. Es gibt keinen Modus, in
+   * dem ein Beitritt nur einen Platz belegt — genau den hatte der Server
+   * vorher, und er widersprach den Matcharten.
    */
   const manager = new LobbyManager();
   const { lobby } = manager.create({ teams: 2, playersPerTeam: 2 });
 
-  assert.equal(lobby.unitsPerPlayer, null);
-  assert.equal(lobby.capacity, 4);
+  assert.equal(lobby.capacity, 4, 'zwei Teams × zwei Einheiten');
+  assert.equal(lobby.seatsTotal, 2, 'zwei Menschen passen hinein');
 
-  // `create` belegt den Platz des Gastgebers — der ist der zweite Beitritt.
-  const zweiter = manager.join(lobby.id, { name: 'A' });
-  assert.equal(zweiter.seats.length, 1);
-  assert.equal(zweiter.seatIndex, 1);
-  assert.equal(zweiter.figureIndex, 1);
+  // Der Gastgeber führt Team 0 mit zwei Einheiten.
+  assert.equal(manager.describe(lobby.id).occupied, 1);
+  assert.equal(manager.describe(lobby.id).seatsOccupied, 2);
 
-  manager.join(lobby.id, { name: 'B' });
-  const vierter = manager.join(lobby.id, { name: 'D' });
-  assert.equal(vierter.seatIndex, 3);
-  assert.throws(() => manager.join(lobby.id, { name: 'E' }), /Lobby ist voll/);
+  const zweiter = manager.join(lobby.id, { name: 'B' });
+  assert.equal(zweiter.seats.length, 2, 'der zweite Mensch bekommt das zweite Team');
+  assert.equal(zweiter.teamId, 1);
+  assert.deepEqual(zweiter.seats.map(s => s.figureIndex), [1, 3]);
 
-  // Und die Beschreibung zählt hier Plätze, weil ein Platz ein Mensch ist.
-  assert.equal(manager.describe(lobby.id).occupied, 4);
-  assert.equal(manager.describe(lobby.id).seatsTotal, 4);
+  // Mehr Menschen als Teams gibt es nicht.
+  assert.throws(() => manager.join(lobby.id, { name: 'C' }), /Teams sind besetzt/);
+
+  assert.equal(manager.describe(lobby.id).occupied, 2);
+  assert.equal(manager.describe(lobby.id).seatsTotal, 2);
+  assert.equal(manager.alleTeamsBesetzt(lobby.id), true);
 });
 
 test('Die Grenzen der Matcharten werden geprüft', () => {

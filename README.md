@@ -17,7 +17,7 @@ Lokales Match: Teams und Karte im Menü wählen, "Match starten".
 npm run server       # Autoritativer Server auf http://127.0.0.1:3000
 ```
 
-Danach im Menü unter **Server** `http://127.0.0.1:3000` eintragen und starten. Der erste Client erstellt die Lobby, weitere Spieler geben die angezeigte **Lobby-ID** ein und treten bei. Nicht besetzte Plätze übernimmt die Bot-KI.
+Danach im Menü unter **Server** `http://127.0.0.1:3000` eintragen und starten. Der erste Client erstellt die Lobby, weitere Spieler geben die angezeigte **Lobby-ID** ein und treten bei. Ein freies Team bleibt leer: **Es gibt keine Bot-KI** — das Match startet erst, wenn jedes Team einen verbundenen Menschen hat (siehe „Matcharten“).
 
 ### Produktion (Single-Origin)
 
@@ -227,8 +227,9 @@ Matchart:
 | Krieg | 6–8 | 5 | 30–40 |
 
 Wer ein Match startet, besetzt also ein GANZES Team: Alle Einheiten dieses Teams
-gehören ihm, die freien Teams übernimmt die Bot-KI. Die Zugordnung bleibt „jede
-Einheit einzeln" (S1E1, S2E1, S1E2 …) — nie zweimal dieselbe Seite
+gehören ihm. **Es gibt keine Bot-KI**: Ein unbesetztes Team bleibt leer, und die
+Simulation läuft erst, wenn jedes Team einen verbundenen Menschen hat. Die
+Zugordnung bleibt „jede Einheit einzeln" (S1E1, S2E1, S1E2 …) — nie zweimal dieselbe Seite
 hintereinander, und die Zugzeit gilt je Zug.
 
 Einen Modus mit **einer** Einheit je Spieler gibt es nicht: Bis 2026-09-20 nahm
@@ -278,7 +279,6 @@ src/
     gameServer.js           autoritativer HTTP/WebSocket-Server
     lobby.js                Lobby- und Platzverwaltung
     lagCompensation.js      200-ms-Snapshot-Verlauf
-    bot.js                  deterministische Bot-KI
   shared/
     config/                 Regel-Configs, Waffenkatalog (generiert)
     prng.js, seed.js        deterministischer Zufall
@@ -446,7 +446,8 @@ Munition, damit kein Match durch leere Magazine stehenbleibt.
 
 ## Status
 
-Spielbarer Kern mit lokalem und Online-Multiplayer, Bot-KI, Loot, Wasser,
+Spielbarer Kern mit lokalem und Online-Multiplayer, SPEZIELLEN NPCs (Günther,
+Geschütze), Loot, Wasser,
 Mahlstrom und zerstörbarem Terrain. Verifiziert durch die Unit-/Integrationstests,
 den Browser-E2E (siehe [`MASTERDOTO.md`](./MASTERDOTO.md) für die aktuellen
 Zahlen) und den Production-Build.

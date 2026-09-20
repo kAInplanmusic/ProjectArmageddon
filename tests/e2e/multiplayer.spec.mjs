@@ -2,7 +2,10 @@ import { test, expect } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { PROTOCOL_VERSION } from '../../src/shared/protocol.js';
+import { WebSocket } from 'ws';
+import {
+  PROTOCOL_VERSION, CONTROL, controlMessage, parseControlMessage,
+} from '../../src/shared/protocol.js';
 
 /**
  * Echte Multiplayer-E2E-Prüfung.
@@ -50,6 +53,39 @@ test.afterAll(async () => {
     serverProcess = null;
   }
 });
+
+/**
+ * Ein ZWEITER MENSCH als roher Socket — kein Browser nötig.
+ *
+ * **Warum es diesen Helfer gibt:** Es gibt keine Bot-KI. Ein Team ohne
+ * verbundenen Menschen lässt das Match nicht starten, also brauchen alle Tests,
+ * die einen laufenden Online-Zustand prüfen, einen zweiten Spieler. Ein ganzer
+ * Browserkontext wäre dafür nur teurer — es genügt ein Socket, der beitritt.
+ */
+async function zweiterMensch(lobbyId, { name = 'Zweiter' } = {}) {
+  const socket = new WebSocket(`ws://127.0.0.1:${SERVER_PORT}/ws`);
+  await new Promise((aufloesen, ablehnen) => {
+    socket.once('open', aufloesen);
+    socket.once('error', ablehnen);
+  });
+
+  const wartenAuf = (typ, fristMs = 15_000) => new Promise((aufloesen, ablehnen) => {
+    const frist = setTimeout(() => ablehnen(new Error(`Timeout beim Warten auf ${typ}`)), fristMs);
+    const beiNachricht = roh => {
+      const nachricht = parseControlMessage(roh);
+      if (nachricht?.t !== typ) return;
+      clearTimeout(frist);
+      socket.off('message', beiNachricht);
+      aufloesen(nachricht);
+    };
+    socket.on('message', beiNachricht);
+  });
+
+  const willkommen = wartenAuf(CONTROL.WELCOME);
+  socket.send(controlMessage(CONTROL.JOIN_LOBBY, { lobbyId, name }));
+  await willkommen;
+  return socket;
+}
 
 /**
  * Verbindet einen Browserclient und wartet, bis die Verbindung steht.
@@ -382,9 +418,13 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
   // Snapshot führt Bestände nicht (variable Länge), sie kommen als eigene
   // Nachricht — dieser Test sichert, dass sie ankommt und ankommt.
   const context = await browser.newContext();
+  let zweiter = null;
   try {
-    // openClient verbindet und startet das Match bereits.
+    // openClient verbindet; das Match läuft erst mit dem ZWEITEN Menschen.
     const page = await openClient(context, { name: 'Tester' });
+    zweiter = await zweiterMensch(
+      await page.evaluate(() => window.__PA__.game.lobbyId),
+    );
 
     /*
      * Die Liste wird EINMAL gelesen, nachdem sie gefüllt und alle Icons dekodiert
@@ -449,14 +489,20 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
       Array.from({ length: liste.nummern.length }, (_, i) => i + 1),
     );
   } finally {
+    zweiter?.close();
     await context.close();
   }
 });
 
 test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) => {
   const context = await browser.newContext();
+  let zweiter = null;
   try {
     const page = await openClient(context, { name: 'Tester' });
+    // Es gibt keine Bot-KI: Ohne zweiten Menschen läuft kein Match.
+    zweiter = await zweiterMensch(
+      await page.evaluate(() => window.__PA__.game.lobbyId),
+    );
     // Vier Klassenwaffen plus Reserve (siehe Test „Waffenliste ist online gefüllt").
     await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
 
@@ -474,6 +520,7 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
       await expect(page.locator('#log-list')).toContainText(/Waffe/, { timeout: 10_000 });
     }
   } finally {
+    zweiter?.close();
     await context.close();
   }
 });
@@ -486,8 +533,13 @@ test('Online führt ein Mensch ein ganzes Team — drei Einheiten', async ({ bro
    * Figur, und `WELCOME` nannte genau eine `entityId`. Mit `unitsPerPlayer = 3`
    * besetzt der Beitritt ein ganzes Team — und der Client muss ALLE drei Figuren
    * als seine kennen, sonst hielte er sich für einen Zuschauer.
+   *
+   * Für den laufenden Zustand braucht es einen zweiten Menschen (keine Bot-KI):
+   * `getState()` ist online der empfangene Snapshot, und Snapshots gibt es erst,
+   * wenn jedes Team besetzt ist.
    */
   const context = await browser.newContext();
+  let zweiter = null;
   try {
     const page = await context.newPage();
     await page.goto('/');
@@ -502,6 +554,12 @@ test('Online führt ein Mensch ein ganzes Team — drei Einheiten', async ({ bro
       async () => page.evaluate(() => window.__PA__.getNetwork()?.state ?? null),
       { timeout: 20_000, message: 'Client muss sich verbinden' },
     ).toBe('connected');
+
+    // Der zweite Mensch: 2 Teams × 3 Einheiten = 6 Figuren, 2 Menschen.
+    zweiter = await zweiterMensch(
+      await page.evaluate(() => window.__PA__.game.lobbyId),
+      { name: 'Gegenseite' },
+    );
 
     // Sechs Figuren: 2 Teams × 3 Einheiten.
     await expect.poll(
@@ -528,6 +586,7 @@ test('Online führt ein Mensch ein ganzes Team — drei Einheiten', async ({ bro
     // Die Anzeige nennt die Zahl der Einheiten, damit sie nicht überrascht.
     await expect(page.locator('#log-list')).toContainText('3 Einheiten', { timeout: 10_000 });
   } finally {
+    zweiter?.close();
     await context.close();
   }
 });

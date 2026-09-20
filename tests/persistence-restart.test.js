@@ -135,12 +135,20 @@ test('Ein laufendes Match wird mit Sitzung wiederhergestellt', { timeout: 60_000
     });
     const lobbyId = created.lobby.id;
 
-    // Beitreten und feuern, damit ein Replay-Kern entsteht.
+    // Beitreten — BEIDE Menschen, sonst läuft nichts (es gibt keine Bot-KI).
     const client = openSocket(ersteInstanz.port);
     await client.opened;
     client.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'Spieler', token: created.player.token });
     const welcome = await client.waitFor(CONTROL.WELCOME);
     assert.ok(welcome.entityId > 0);
+
+    // Der zweite Mensch besetzt das zweite Team. Erst damit startet die
+    // Simulation und zeichnet Ticks auf — genau das soll die Sicherung tragen.
+    const zweiter = openSocket(ersteInstanz.port);
+    await zweiter.opened;
+    zweiter.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'Zweiter' });
+    await zweiter.waitFor(CONTROL.WELCOME);
+    await zweiter.waitFor(CONTROL.LOBBY_STATE);
 
     // Etwas Spielzeit vergehen lassen, damit Ticks aufgezeichnet werden.
     await new Promise(r => setTimeout(r, 1200));
@@ -152,6 +160,7 @@ test('Ein laufendes Match wird mit Sitzung wiederhergestellt', { timeout: 60_000
     await ersteInstanz.server.close();
     ersteInstanz = null;
     client.close();
+    zweiter.close();
 
     // --- Wiederherstellen: jetzt MIT Sitzung ---
     zweiteInstanz = await startServer({ port: 0, statePath, persistenceIntervalMs: 60_000 });

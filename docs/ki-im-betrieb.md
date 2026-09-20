@@ -1,5 +1,13 @@
 # KI im Betrieb — wo sie lohnt und wo nicht
 
+> **ÜBERHOLT in einem Punkt (2026-09-20):** Dieses Dokument nennt als einzige
+> Stelle, an der KI lohnen würde, den **Schwierigkeitsgrad von Bots**. Es gibt
+> aber **keine Bot-KI**: Teams werden ausschließlich von Menschen gespielt, und
+> unbesetzte Teams bleiben leer (das Match startet erst, wenn jedes Team einen
+> verbundenen Menschen hat). Der Server-Bot ist entfernt. Die Überlegung zur
+> **Vorausberechnung** bleibt richtig und gilt weiter für die **speziellen NPCs**
+> (Günther, Geschütze), die deterministisch im Motor laufen.
+
 Der Punkt „Auswertung: Wo lohnt KI im Betrieb?" ist eine **offene Frage**, keine
 Aufgabe. Dieses Dokument beantwortet sie mit dem, was im Projekt **gemessen** ist
 — und benennt, was eine Entscheidung bleibt.
