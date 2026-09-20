@@ -164,9 +164,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run build` | Production-Build nach `dist/` |
 | `npm run preview` | Gebauten Client vorschauen |
 | `npm run server` | Autoritativer HTTP/WebSocket-Server |
-| `npm test` | Unit- und Integrationstests (93 Dateien, siehe MASTERDOTO für die aktuelle Zahl) |
-| `npm run test:unit` | Nur PRNG/Seed/Loot |
-| `npm run test:e2e` | Browser-E2E: Laufzeit, Multiplayer, Lobby, Tastatur, Effekte (28 Spezifikationen) |
+| `npm test` | Unit- und Integrationstests: **974 Tests in 93 Dateien**, ~4,7 min |
+| `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
+| `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
