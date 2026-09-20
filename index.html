@@ -745,10 +745,17 @@
           </p>
           <div class="field-row">
             <label>Teams
+              <!-- Ein Team = ein Mensch. Die Zahl der Teams ist damit die Zahl
+                   der Mitspielenden; freie Teams übernimmt die Bot-KI.
+                   Obergrenze: die Zahl der Teamfarben (8), siehe TEAM_COLORS. -->
               <select id="cfg-teams">
                 <option value="2" selected>2 Teams</option>
                 <option value="3">3 Teams</option>
                 <option value="4">4 Teams</option>
+                <option value="5">5 Teams</option>
+                <option value="6">6 Teams</option>
+                <option value="7">7 Teams</option>
+                <option value="8">8 Teams</option>
               </select>
             </label>
             <!--
@@ -766,14 +773,15 @@
               Die Karte entsteht aus dem Seed — Form, Höhlen und Wasser werden
               gezogen, nicht gewählt. Zwei Seeds, zwei Welten.
             </p>
-            <label>Spieler pro Team
+            <label>Einheiten je Spieler
+              <!-- Ein Mensch führt ein ganzes TEAM — es gibt keinen Modus mit
+                   einer Einheit je Spieler. Die Zahlen stammen aus den
+                   Matcharten: klein 3, groß 4, Krieg 5 (siehe MASTERDOTO).
+                   Die Figuren je Partie sind Teams × Einheiten. -->
               <select id="cfg-players">
-                <option value="1">1</option>
-                <option value="2" selected>2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
+                <option value="3" selected>3 — klein</option>
+                <option value="4">4 — groß</option>
+                <option value="5">5 — Krieg</option>
               </select>
             </label>
           </div>

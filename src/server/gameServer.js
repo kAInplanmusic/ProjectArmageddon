@@ -164,11 +164,27 @@ class LobbySession {
     return { replay: this.recorder.toJSON(), tick: this.match.world.tickCount };
   }
 
-  /** Ordnet Lobby-Plätze den tatsächlichen Spieler-Entities zu. */
+  /**
+   * Ordnet Lobby-Plätze den tatsächlichen Spieler-Entities zu.
+   *
+   * Die Zuordnung geht über `seat.figureIndex` — den SLOT im Motor, nicht über
+   * die Position im Sitz-Array.
+   *
+   * FUND (belegt, 2026-09-20): Vorher stand hier `players[index]` mit der
+   * Array-Position. Das stimmt nur, solange die Plätze in der Reihenfolge des
+   * Motors entstehen. Der Motor erzeugt die Figuren aber VERSCHRÄNKT
+   * (`#spawnPlayers`: `teamId = index % teams`) — bei zwei Teams mit je drei
+   * Einheiten ist die Reihenfolge T0E1, T1E1, T0E2, T1E2, T0E3, T1E3. Ein
+   * Beitritt, der ein ganzes Team belegt, fügt seine drei Plätze aber
+   * hintereinander ein (T0E1, T0E2, T0E3) — und bekäme damit die Figuren von
+   * Team 1 und 2. Mit `figureIndex` ist die Zuordnung unabhängig von der
+   * Reihenfolge der Beitritte.
+   */
   #assignEntityIds() {
     const players = this.match.players;
     this.lobby.seats.forEach((seat, index) => {
-      seat.entityId = players[index]?.entityId ?? null;
+      const slot = seat.figureIndex ?? index;
+      seat.entityId = players[slot]?.entityId ?? null;
       if (seat.entityId !== null) this.byEntity.set(seat.entityId, seat.token);
     });
   }
@@ -311,6 +327,10 @@ class LobbySession {
       kartentyp: this.lobby.kartentyp ?? null,
       orientation: this.lobby.orientation ?? 'landscape',
       entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
+      // Alle Figuren dieses Beitrags (Matcharten: ein ganzes Team).
+      entityIds: this.lobby.seats
+        .filter(seat => seat.token === token && seat.entityId !== null)
+        .map(seat => seat.entityId),
       snapshot: this.match.getState(),
     }));
   }
@@ -338,8 +358,26 @@ class LobbySession {
     return result;
   }
 
+  /**
+   * Der Platz eines Tokens für die AKTIVE Figur.
+   *
+   * Im Modus der Matcharten gehören einem Token mehrere Figuren (ein ganzes
+   * Team). Wer nur den ERSTEN Platz nimmt, zielt mit der falschen: Der Server
+   * prüft `activePlayerId` gegen `playerId` und lehnt ab — der Mensch könnte
+   * seine zweite und dritte Einheit nie ziehen, und die Waffenwahl zeigte auf
+   * eine fremde Figur.
+   *
+   * Ist die aktive Figur NICHT die eigene, bleibt der erste eigene Platz: Die
+   * Ablehnung lautet dann „nicht am Zug" statt „kein Spielerplatz".
+   */
+  #platzFuer(token) {
+    const eigene = this.lobby.seats.filter(entry => entry.token === token);
+    if (eigene.length === 0) return null;
+    return eigene.find(entry => entry.entityId === this.match.activePlayerId) ?? eigene[0];
+  }
+
   #handleInput(token, message) {
-    const seat = this.lobby.seats.find(entry => entry.token === token);
+    const seat = this.#platzFuer(token);
     if (!seat || seat.entityId === null) {
       return { ok: false, errors: ['Kein Spielerplatz'] };
     }
@@ -395,7 +433,8 @@ class LobbySession {
   }
 
   handleWeaponSelect(token, weaponId) {
-    const seat = this.lobby.seats.find(entry => entry.token === token);
+    // Die Waffe wird für die AKTIVE eigene Figur gewählt — siehe #platzFuer.
+    const seat = this.#platzFuer(token);
     if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
     const ok = this.match.inventory.selectWeapon(seat.entityId, weaponId);
     return { ok, errors: ok ? [] : ['Waffe nicht verfügbar'] };
@@ -795,7 +834,22 @@ export class GameServer {
         this.metrics.lobbiesCreated += 1;
         const created = this.#lobbies.create({
           teams: Number(body.teams ?? 2),
-          playersPerTeam: Number(body.playersPerTeam ?? 2),
+          /*
+           * Beide Angaben sind FREIWILLIG und werden durchgereicht, nicht
+           * vorbelegt.
+           *
+           * Vorher stand hier `Number(body.playersPerTeam ?? 2)`: Damit war
+           * „nicht angegeben" immer eine 2, und `unitsPerPlayer` hätte nie
+           * greifen können. `null` bedeutet jetzt „nicht angegeben" — der
+           * Lobby-Manager entscheidet dann (Vorgabe 2 bzw. der Modus mit einem
+           * Platz je Beitritt).
+           */
+          playersPerTeam: body.playersPerTeam === undefined || body.playersPerTeam === null
+            ? null
+            : Number(body.playersPerTeam),
+          unitsPerPlayer: body.unitsPerPlayer === undefined || body.unitsPerPlayer === null
+            ? null
+            : Number(body.unitsPerPlayer),
           preset: body.preset ?? 'hills',
           // Leerstring und fehlend sind gleichbedeutend: „der bewährte Generator".
           kartentyp: body.kartentyp || null,
@@ -937,9 +991,19 @@ export class GameServer {
               this.#sessions.set(lobbyId, session);
             }
             session.attach(seat.token, socket);
-            // Die Live-Sitzung hat dem Platz gerade eine Entity-ID zugewiesen.
-            // Der Rückgabewert von join() ist eine Kopie und daher veraltet.
-            const liveSeat = lobby.seats.find(entry => entry.token === seat.token);
+            // Die Live-Sitzung hat den Plätzen gerade Entity-IDs zugewiesen.
+            // Der Rückgabewert von join() ist eine Kopie und daher veraltet —
+            // gelesen wird aus `lobby.seats`.
+            /*
+             * Alle Figuren dieses Beitrags melden — nicht nur die erste.
+             *
+             * Im Modus der Matcharten gehören demselben Token MEHRERE Figuren
+             * (ein ganzes Team). Mit nur einer `entityId` hielte der Client jede
+             * andere eigene Figur für fremd: „Du bist nicht am Zug", kein
+             * Waffenzugriff, keine Kennzahlen. `entityId` bleibt für ältere
+             * Clients erhalten und nennt die erste Figur.
+             */
+            const eigeneSeats = lobby.seats.filter(entry => entry.token === seat.token);
             socket.send(controlMessage(CONTROL.WELCOME, {
               protocol: PROTOCOL_VERSION,
               lobbyId,
@@ -947,7 +1011,9 @@ export class GameServer {
               preset: lobby.preset,
               token: seat.token,
               seatIndex: seat.seatIndex,
-              entityId: liveSeat?.entityId ?? seat.entityId,
+              entityId: eigeneSeats[0]?.entityId ?? seat.entityId,
+              entityIds: eigeneSeats.map(entry => entry.entityId).filter(id => id !== null),
+              unitsPerPlayer: lobby.unitsPerPlayer ?? null,
               resumed: seat.resumed,
             }));
             break;

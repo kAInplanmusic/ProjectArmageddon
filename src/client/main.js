@@ -155,8 +155,17 @@ class Game {
     this.verbucht = false;
     /** Erfolge, die in dieser Partie neu freigeschaltet wurden. */
     this.neueErfolge = [];
-    /** Die eigene Figur (für Kennzahlen und Sieg/Niederlage). */
+    /**
+     * Die eigene Figur (für Kennzahlen und Sieg/Niederlage) und ALLE eigenen
+     * Figuren.
+     *
+     * `eigenerSpielerId` bleibt der erste Platz — die Anzeige braucht einen
+     * Namen für „du". `eigeneSpielerIds` trägt das ganze TEAM: Im Modus der
+     * Matcharten führt ein Mensch 3–5 Einheiten, und die Kennzahlen müssen alle
+     * zählen.
+     */
     this.eigenerSpielerId = null;
+    this.eigeneSpielerIds = [];
     this.profil = this.#ladeProfil();
 
     this.input = new InputController(this.canvas, {
@@ -341,7 +350,15 @@ class Game {
   /** Liest die Menükonfiguration und startet das passende Match. */
   startFromMenu() {
     const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
-    const playersPerTeam = Number(document.getElementById('cfg-players')?.value ?? 2);
+    /*
+     * „Einheiten je Spieler" — die Zahl der Matcharten (3/4/5).
+     *
+     * Ein Mensch führt ein ganzes TEAM, nicht eine Figur: Klein nennt 3
+     * Einheiten je Spieler, groß 4, Krieg 5 (siehe MASTERDOTO, „Matcharten").
+     * `playersPerTeam` ist derselbe Wert — der Motor kennt nur Figuren je Team.
+     */
+    const unitsPerPlayer = Number(document.getElementById('cfg-players')?.value ?? 3);
+    const playersPerTeam = unitsPerPlayer;
     /*
      * Der Kartentyp ist keine Einstellung mehr.
      *
@@ -377,8 +394,8 @@ class Game {
 
     if (serverUrl) {
       return this.startOnline({
-        serverUrl, lobbyId, teams, playersPerTeam, preset, kartentyp, seed, backdropKey,
-        orientation, sidegrades, loadouts,
+        serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
+        backdropKey, orientation, sidegrades, loadouts,
       });
     }
     return this.startMatch({
@@ -625,13 +642,23 @@ class Game {
       const item = document.createElement('li');
 
       const label = document.createElement('span');
-      const belegt = `${lobby.occupied ?? 0}/${lobby.capacity ?? '?'}`;
+      /*
+       * Gezählt werden BEITRETENDE, nicht Figuren.
+       *
+       * Im Modus der Matcharten sind das zwei verschiedene Zahlen: Ein Mensch
+       * belegt ein ganzes Team (3–5 Figuren). Der Server nennt deshalb
+       * `seatsTotal` (wie viele Menschen hineinpassen) neben `capacity` (wie
+       * viele Figuren). Ohne diese Unterscheidung stünde „1/6 Plätze" und
+       * „Beitreten" an einer Lobby, die schon voll ist.
+       */
+      const plaetze = lobby.seatsTotal ?? lobby.capacity ?? 0;
+      const belegt = `${lobby.occupied ?? 0}/${plaetze || '?'}`;
       label.textContent = `${lobby.id} · ${lobby.preset ?? 'hills'} · ${belegt} Plätze`;
 
       const join = document.createElement('button');
       join.type = 'button';
-      join.textContent = lobby.occupied >= lobby.capacity ? 'Voll' : 'Beitreten';
-      join.disabled = lobby.occupied >= lobby.capacity;
+      join.textContent = lobby.occupied >= plaetze ? 'Voll' : 'Beitreten';
+      join.disabled = lobby.occupied >= plaetze;
       join.addEventListener('click', () => {
         const lobbyInput = document.getElementById('cfg-lobby');
         if (lobbyInput) lobbyInput.value = lobby.id;
@@ -813,8 +840,8 @@ class Game {
   }
 
   async startOnline({
-    serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, preset = 'hills',
-    kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
+    serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
+    preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
     orientation = 'landscape', sidegrades = null, loadouts = null,
   } = {}) {
     this.gewaehlteKulisse = backdropKey;
@@ -837,7 +864,17 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, playersPerTeam, preset, kartentyp, seed, orientation,
+            teams, preset, kartentyp, seed, orientation,
+            /*
+             * Genau EINE der beiden Angaben — sie widersprechen sich sonst.
+             *
+             * `unitsPerPlayer` setzt den Modus der Matcharten (ein Beitritt
+             * besetzt ein ganzes Team); ohne die Angabe gilt die alte Aufteilung
+             * mit `playersPerTeam` als Platzzahl. Beides zu senden lehnt der
+             * Server ab („widersprechen sich"), und zwar zu Recht: Es wären zwei
+             * Zahlen für dieselbe Größe.
+             */
+            ...(unitsPerPlayer ? { unitsPerPlayer } : { playersPerTeam }),
             ...(Array.isArray(sidegrades) && sidegrades.some(s => s !== null) ? { sidegrades } : {}),
             // Nur mitschicken, wenn wirklich etwas gewählt wurde — sonst bliebe
             // die Anfrage größer als nötig und die alte Regel wäre nicht mehr
@@ -876,7 +913,21 @@ class Game {
 
     client.on('hello', () => this.hud.log('Handshake abgeschlossen', 'good'));
     client.on('joined', payload => {
-      this.hud.log(`Lobby ${client.lobbyId} — Platz ${payload.seatIndex + 1}`, 'accent');
+      /*
+       * Im Modus der Matcharten führt ein Mensch ein ganzes TEAM (3–5 Einheiten).
+       * `entityIds` nennt alle; `entityId` bleibt die erste Figur. Beide werden
+       * übernommen — sonst zählten die Kennzahlen nur ein Drittel der eigenen
+       * Schüsse.
+       */
+      this.eigeneSpielerIds = Array.isArray(payload.entityIds) && payload.entityIds.length > 0
+        ? [...payload.entityIds]
+        : (payload.entityId === null || payload.entityId === undefined ? [] : [payload.entityId]);
+      this.eigenerSpielerId = this.eigeneSpielerIds[0] ?? null;
+      this.hud.log(
+        `Lobby ${client.lobbyId} — Platz ${payload.seatIndex + 1}`
+        + (this.eigeneSpielerIds.length > 1 ? ` (${this.eigeneSpielerIds.length} Einheiten)` : ''),
+        'accent',
+      );
       if (payload.seed !== null && payload.seed !== undefined) {
         this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
       }
@@ -2034,7 +2085,7 @@ class Game {
   #zeigeMatchKennzahlen() {
     const ziel = document.getElementById('match-kennzahlen');
     if (!ziel || !this.stats) return;
-    const zusammenfassung = this.stats.zusammenfassung(this.eigenerSpielerId);
+    const zusammenfassung = this.stats.zusammenfassung(this.eigeneSpielerIds);
     const figuren = zusammenfassung.figuren;
     const eigener = zusammenfassung.eigener;
 
@@ -2069,8 +2120,9 @@ class Game {
     const tabelle = document.getElementById('match-tabelle');
     if (tabelle) {
       const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer'];
+      // Jede EIGENE Figur ist „du" — im Modus der Matcharten sind das mehrere.
       const zeilenAlle = figuren.map(f => [
-        `P${f.playerId}${f.playerId === this.eigenerSpielerId ? ' (du)' : ''}`,
+        `P${f.playerId}${this.eigeneSpielerIds.includes(f.playerId) ? ' (du)' : ''}`,
         String(f.schaden),
         String(f.schuesse),
         f.trefferquote === null ? '—' : `${Math.round(f.trefferquote * 100)} %`,
@@ -2482,10 +2534,21 @@ class Game {
 
   /** Beginnt die Erfassung für ein neues Match. */
   #starteErfassung() {
-    const teams = new Map(this.match.getState().entities.map(e => [e.entityId, e.teamId]));
+    const zustand = this.match.getState();
+    const teams = new Map(zustand.entities.map(e => [e.entityId, e.teamId]));
     this.stats = new MatchStats({ teams });
-    // Die eigene Figur: das ist der Spieler, dessen Kennzahlen ins Profil gehen.
-    this.eigenerSpielerId = this.match.activePlayerId;
+    /*
+     * Die EIGENEN Figuren: das ganze Team 0, nicht nur die erste Figur.
+     *
+     * Lokal ist der Platz am Gerät der erste Spieler — und damit Team 0. Früher
+     * stand hier `match.activePlayerId`, also GENAU EINE Figur: Im Modus der
+     * Matcharten führt ein Mensch aber 3–5 Einheiten, und zwei Drittel seiner
+     * Schüsse wären nie in sein Profil gekommen. Welches Team das eigene ist,
+     * entscheidet der Startzustand (Team 0).
+     */
+    const eigene = zustand.entities.filter(e => e.teamId === 0).map(e => e.entityId);
+    this.eigeneSpielerIds = eigene.length > 0 ? eigene : [this.match.activePlayerId];
+    this.eigenerSpielerId = this.eigeneSpielerIds[0] ?? null;
     return this.stats;
   }
 
@@ -2497,7 +2560,7 @@ class Game {
    */
   #verbucheMatch() {
     if (!this.stats || this.verbucht) return false;
-    const zusammenfassung = this.stats.zusammenfassung(this.eigenerSpielerId);
+    const zusammenfassung = this.stats.zusammenfassung(this.eigeneSpielerIds);
     if (!zusammenfassung.entschieden) return false;
 
     this.profil.merge(zusammenfassung);
@@ -2527,7 +2590,7 @@ class Game {
      */
     const erreichtVorher = this.profil.erfolge;
     const werte = erfolgsKennzahlen(
-      this.stats.zusammenfassung(this.eigenerSpielerId),
+      this.stats.zusammenfassung(this.eigeneSpielerIds),
       this.profil.toJSON(),
     );
     const frisch = neueErfolgeFuer(werte, erreichtVorher);
@@ -2611,7 +2674,7 @@ class Game {
     const zaehler = document.getElementById('erfolge-zaehler');
     if (!zaehler) return;
 
-    const partei = this.stats ? this.stats.zusammenfassung(this.eigenerSpielerId) : null;
+    const partei = this.stats ? this.stats.zusammenfassung(this.eigeneSpielerIds) : null;
     const werte = erfolgsKennzahlen(partei, this.profil.toJSON());
     const u = erfolgsUebersicht(werte, this.profil.erfolge);
 
@@ -2838,7 +2901,7 @@ class Game {
       profil: () => this.profil.toJSON(),
       /** Kennzahlen der laufenden Partie (oder null). */
       matchKennzahlen: () => (this.stats
-        ? this.stats.zusammenfassung(this.eigenerSpielerId)
+        ? this.stats.zusammenfassung(this.eigeneSpielerIds)
         : null),
       /**
        * Profil zurücksetzen (für Tests und den Menü-Knopf).
@@ -2853,7 +2916,7 @@ class Game {
       },
       /** Erfolgsübersicht mit Fortschritt und Hinweisen. */
       erfolge: () => {
-        const partei = this.stats ? this.stats.zusammenfassung(this.eigenerSpielerId) : null;
+        const partei = this.stats ? this.stats.zusammenfassung(this.eigeneSpielerIds) : null;
         return erfolgsUebersicht(
           erfolgsKennzahlen(partei, this.profil.toJSON()),
           this.profil.erfolge,

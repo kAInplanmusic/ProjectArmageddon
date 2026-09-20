@@ -97,49 +97,69 @@ test('`teamSize` steht NICHT mehr in der Konfiguration', () => {
     + 'keinen Leser. Wer eine Teamgrenze braucht: `server/lobby.js` prüft sie.');
 });
 
-test('Die Lobby-Grenze und die Kapazität widersprechen sich nicht', () => {
+test('Die Lobby-Grenzen und die Figurenzahl widersprechen sich nicht', () => {
   /*
    * Damit der Widerspruch nicht in anderer Form zurückkommt: Die alte Fassung
    * erlaubte **3 je Team**, aber **12 in der Summe** — zwei Zahlen, die
    * einander widersprachen, und die kleinere war die wirksame.
    *
-   * Geprüft wird jetzt die BEZIEHUNG statt eines festen Werts: Die Grenze je
-   * Team darf die Gesamtkapazität nur dann unterschreiten, wenn wenigstens ein
-   * Team sie ausschöpfen kann. Sonst ist sie wieder eine Zahl, die niemand
-   * erreicht.
+   * Seit dem Modus der Matcharten gibt es DREI Grenzen, die zusammenpassen
+   * müssen:
    *
-   * FUND (belegt): Die Grenze wurde von 3 auf 6 verschoben, nachdem gemessen
-   * war, dass der Motor 12 Figuren trägt. Der Test hat die Verschiebung
-   * bemerkt und verlangt — wie in seinem eigenen Kommentar angekündigt — dass
-   * er mitzieht.
+   *  - `MAX_PLAYERS_PER_TEAM` (6)  — Einheiten je Spieler,
+   *  - `MAX_LOBBY_PLAYERS`   (12)  — Beitretende im ALTEN Modus (ein Platz je
+   *    Beitritt),
+   *  - `MAX_LOBBY_FIGURES`   (40)  — Figuren, die wirksame Grenze im Modus der
+   *    Matcharten (Krieg: 8 Spieler × 5 Einheiten).
+   *
+   * Geprüft wird die BEZIEHUNG, nicht ein fester Wert: Die größte Matchart muss
+   * hineinpassen, und die Grenze je Team muss innerhalb der Figurengrenze
+   * erreichbar sein. Sonst ist sie wieder eine Zahl, die niemand erreicht.
    */
   const text = fs.readFileSync(path.join(ROOT, 'src', 'server', 'lobby.js'), 'utf8');
 
-  assert.match(text, /playersPerTeam\s*>\s*MAX_PLAYERS_PER_TEAM/,
-    'Die Lobby-Validierung für playersPerTeam fehlt oder prüft nicht mehr '
+  assert.match(text, /jeSpieler\s*>\s*MAX_PLAYERS_PER_TEAM/,
+    'Die Lobby-Validierung für unitsPerPlayer fehlt oder prüft nicht mehr '
+    + 'gegen MAX_PLAYERS_PER_TEAM');
+  assert.match(text, /figurenProTeam\s*>\s*MAX_PLAYERS_PER_TEAM/,
+    'Die Lobby-Validierung für die Figuren je Team fehlt oder prüft nicht mehr '
     + 'gegen MAX_PLAYERS_PER_TEAM');
 
-  // Die beiden Konstanten müssen zusammenpassen.
-  const jeTeam = /export const MAX_PLAYERS_PER_TEAM = (\d+)/.exec(text);
-  const gesamt = /export const MAX_LOBBY_PLAYERS = (\d+)/.exec(text);
-  assert.ok(jeTeam && gesamt, 'MAX_PLAYERS_PER_TEAM oder MAX_LOBBY_PLAYERS fehlt');
+  const zahl = (name) => {
+    const treffer = new RegExp(`export const ${name} = (\\d+)`).exec(text);
+    assert.ok(treffer, `${name} fehlt`);
+    return Number(treffer[1]);
+  };
+  const jeTeam = zahl('MAX_PLAYERS_PER_TEAM');
+  const beitritte = zahl('MAX_LOBBY_PLAYERS');
+  const figuren = zahl('MAX_LOBBY_FIGURES');
 
-  const proTeam = Number(jeTeam[1]);
-  const kapazitaet = Number(gesamt[1]);
-
-  assert.ok(proTeam <= kapazitaet,
-    `Je Team sind ${proTeam} erlaubt, die Gesamtkapazität ist aber nur `
-    + `${kapazitaet} — die Grenze je Team wäre nie erreichbar`);
+  // Der alte Modus: Ein Platz je Beitritt, und bei zwei Teams muss die Grenze je
+  // Team die Summe ausschöpfen können.
+  assert.ok(jeTeam * 2 >= beitritte,
+    `Bei zwei Teams ergäben ${jeTeam} × 2 = ${jeTeam * 2} Plätze, die Kapazität `
+    + `liegt bei ${beitritte} — die Grenze je Team ist dann nicht die wirksame, `
+    + 'sondern die Summe. Das ist erlaubt, aber dann muss der Kommentar es sagen.');
 
   /*
-   * Wenigstens ein Team muss die Grenze ausschöpfen können: Bei zwei Teams
-   * muss 2 × proTeam die Kapazität erreichen oder überschreiten.
+   * Das KRIEGSMATCH muss hineinpassen: 8 Spieler (Teams) mit je 5 Einheiten.
+   * Die Werte stehen in MASTERDOTO, „Matcharten" — hier als Zahl, damit die
+   * Grenze nicht stillschweigend unter die Matchart fällt.
    */
-  assert.ok(proTeam * 2 >= kapazitaet,
-    `Bei zwei Teams ergäben ${proTeam} × 2 = ${proTeam * 2} Spieler, die `
-    + `Kapazität liegt bei ${kapazitaet} — die Grenze je Team ist dann nicht `
-    + 'die wirksame, sondern die Summe. Das ist erlaubt, aber dann muss der '
-    + 'Kommentar es sagen.');
+  const KRIEG_TEAMS = 8;
+  const KRIEG_EINHEITEN = 5;
+  assert.ok(KRIEG_EINHEITEN <= jeTeam,
+    `Der Kriegsmodus nennt ${KRIEG_EINHEITEN} Einheiten je Spieler, erlaubt sind `
+    + `nur ${jeTeam}`);
+  assert.ok(KRIEG_TEAMS * KRIEG_EINHEITEN <= figuren,
+    `Der Kriegsmodus umfasst ${KRIEG_TEAMS} × ${KRIEG_EINHEITEN} = `
+    + `${KRIEG_TEAMS * KRIEG_EINHEITEN} Figuren, die Grenze liegt bei ${figuren}`);
+
+  // Und die Figurengrenze muss über der Figurenzahl des ALTEN Höchstfalls
+  // liegen, sonst wäre der Altmodus stillschweigend geschrumpft.
+  assert.ok(figuren >= beitritte,
+    `Figuren (${figuren}) dürfen nicht unter der alten Platzzahl (${beitritte}) `
+    + 'liegen — sonst schrumpfte der Altmodus');
 });
 
 test('Kein Feld der Konfiguration ist ungenutzt', () => {

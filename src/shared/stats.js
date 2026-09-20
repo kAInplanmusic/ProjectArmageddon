@@ -203,13 +203,18 @@ export class MatchStats {
   /**
    * Zusammenfassung der Partie — die Grundlage für das Profil.
    *
-   * @param {number} [eigenerSpielerId] - aus dessen Sicht (Sieg, „bester Schuss")
+   * @param {number|number[]|Set<number>} [eigeneFiguren] - aus Sicht dieser
+   *   Figuren (Sieg, „bester Schuss"). Mehrere sind der Normalfall: Ein Mensch
+   *   führt im Modus der Matcharten ein ganzes TEAM (3–5 Einheiten), und sein
+   *   Profil muss alle seine Einheiten zählen — sonst wären zwei Drittel seiner
+   *   Schüsse unsichtbar.
    */
-  zusammenfassung(eigenerSpielerId = null) {
+  zusammenfassung(eigeneFiguren = null) {
     const figuren = this.alle();
     const gesamt = figuren.reduce((summe, f) => summe + f.schaden, 0);
     // Spielzeit aus den Takten des Matches, nicht aus der Uhr des Rechners.
     const dauerSekunden = this.tick / 60;
+    const eigeneIds = eigenerSpielerIdListe(eigeneFiguren);
     return {
       runden: this.runde,
       ticks: this.tick,
@@ -225,7 +230,48 @@ export class MatchStats {
       schadenGesamt: Math.round(gesamt),
       /** Schaden je Minute — über die TATSÄCHLICHE Spieldauer. */
       schadenProMinute: dauerSekunden > 0 ? Math.round(gesamt / (dauerSekunden / 60)) : 0,
-      eigener: eigenerSpielerId !== null ? this.fuer(eigenerSpielerId) : null,
+      eigener: eigeneIds.length > 0 ? this.fuerMehrere(eigeneIds) : null,
+    };
+  }
+
+  /**
+   * Kennzahlen MEHRERER Figuren als eine Zeile.
+   *
+   * Sie werden summiert, nicht gemittelt: Ein Mensch mit drei Einheiten hat
+   * dreimal so viele Schüsse abgegeben wie einer mit einer. Gemittelt sähe er
+   * aus wie ein Spieler, der ein Drittel so viel tut — und die Erfolge
+   * („300 Schaden in einer Partie") wären für ihn unerreichbar.
+   *
+   * `playerId` nennt die ERSTE Figur, `figuren` alle: So bleibt eine Anzeige
+   * möglich, die nur einen Platz kennt.
+   */
+  fuerMehrere(ids) {
+    const liste = eigenerSpielerIdListe(ids);
+    if (liste.length === 0) return null;
+    const einzelne = liste.map(id => this.fuer(id)).filter(Boolean);
+    if (einzelne.length === 0) return null;
+    if (einzelne.length === 1) return { ...einzelne[0], figuren: [einzelne[0].playerId] };
+
+    const summe = feld => einzelne.reduce((s, e) => s + e[feld], 0);
+    const schuesse = summe('schuesse');
+    const treffer = summe('treffer');
+    return {
+      playerId: einzelne[0].playerId,
+      figuren: einzelne.map(e => e.playerId),
+      // Ein Team hat einen Zustand; gemeldet wird der der ersten Figur.
+      teamId: einzelne[0].teamId,
+      schuesse,
+      treffer,
+      schaden: summe('schaden'),
+      absorbierterSchaden: summe('absorbierterSchaden'),
+      trefferquote: schuesse > 0 ? treffer / schuesse : null,
+      zuege: summe('zuege'),
+      lieblingswaffe: lieblingswaffe(einzelne
+        .map(e => e.lieblingswaffe)
+        .filter(Boolean)
+        .reduce((karte, w) => karte.set(w.waffeId, (karte.get(w.waffeId) ?? 0) + w.anzahl), new Map())),
+      // `null`, solange nicht entschieden — sonst aus Sicht der ersten Figur.
+      sieg: einzelne[0].sieg,
     };
   }
 }
@@ -239,6 +285,20 @@ export function lieblingswaffe(zaehler) {
     if (anzahl > besterWert) { beste = waffe; besterWert = anzahl; }
   }
   return { waffeId: beste, anzahl: besterWert };
+}
+
+/**
+ * Macht aus einer Kennung, einer Liste oder einem Set eine Liste von IDs.
+ *
+ * Die Kennzahlen nahmen früher genau EINE Kennung entgegen. Seit ein Mensch ein
+ * ganzes Team führt (3–5 Einheiten), muss dieselbe Stelle mehrere verstehen —
+ * ohne dass alle Aufrufer umgeschrieben werden müssen.
+ */
+export function eigenerSpielerIdListe(eingabe) {
+  if (eingabe === null || eingabe === undefined) return [];
+  if (eingabe instanceof Set) return [...eingabe].filter(id => id !== null && id !== undefined);
+  if (Array.isArray(eingabe)) return eingabe.filter(id => id !== null && id !== undefined);
+  return [eingabe];
 }
 
 /**

@@ -95,6 +95,24 @@ export function referenzTick({
   return snapshotTick + vorsprung;
 }
 
+/**
+ * Ist die aktive Figur eine EIGENE?
+ *
+ * Im Modus der Matcharten gehören einem Menschen MEHRERE Figuren (ein ganzes
+ * Team, 3–5 Einheiten). Ein Vergleich gegen eine einzelne Kennung — wie vorher
+ * (`latest.activePlayerId === this.#entityId`) — meldete für alle weiteren
+ * eigenen Einheiten „nicht am Zug": kein Feuerbefehl, kein Waffenzugriff.
+ *
+ * Bewusst eine reine Funktion: Sie ist damit ohne Socket prüfbar.
+ */
+export function istEigenerZug(activePlayerId, eigeneEntityIds) {
+  if (activePlayerId === null || activePlayerId === undefined) return false;
+  if (!eigeneEntityIds) return false;
+  if (eigeneEntityIds instanceof Set) return eigeneEntityIds.has(activePlayerId);
+  if (Array.isArray(eigeneEntityIds)) return eigeneEntityIds.includes(activePlayerId);
+  return false;
+}
+
 export class NetworkClient {
   #url;
   #socket = null;
@@ -102,6 +120,8 @@ export class NetworkClient {
   #token = null;
   #lobbyId = null;
   #entityId = null;
+  /** Alle eigenen Figuren. Leer, bis der Server sie meldet. */
+  #entityIds = new Set();
   #seed = null;
   #teamId = null;
   #snapshots = [];
@@ -157,9 +177,34 @@ export class NetworkClient {
     }
   }
 
+  /**
+   * Übernimmt die gemeldeten eigenen Figuren.
+   *
+   * Additiv statt ersetzend: Eine spätere Nachricht kann eine Teilmenge nennen
+   * (z. B. nur die gerade beigetretene Figur), und ein Verwerfen würde bereits
+   * bekannte eigene Einheiten wieder zu fremden machen — der Client hielte sich
+   * mitten im Match für nicht am Zug.
+   */
+  #merkeEigeneFiguren(ids) {
+    for (const id of ids ?? []) {
+      if (id !== null && id !== undefined) this.#entityIds.add(id);
+    }
+    // `entityId` bleibt die erste gemeldete Figur.
+    if (this.#entityId === null && this.#entityIds.size > 0) {
+      this.#entityId = [...this.#entityIds][0];
+    }
+  }
+
   get state() { return this.#state; }
   get token() { return this.#token; }
   get entityId() { return this.#entityId; }
+  /**
+   * Alle eigenen Figuren.
+   *
+   * Im Modus der Matcharten sind das mehrere (ein Team). `entityId` bleibt die
+   * ERSTE Figur — für Anzeigen, die nur eine nennen können.
+   */
+  get entityIds() { return [...this.#entityIds]; }
   get teamId() { return this.#teamId; }
   get lobbyId() { return this.#lobbyId; }
   get worldSeed() { return this.#seed; }
@@ -187,8 +232,7 @@ export class NetworkClient {
   }
   get isConnected() { return this.#state === CONNECTION_STATE.CONNECTED; }
   get isMyTurn() {
-    const latest = this.latestSnapshot;
-    return Boolean(latest && latest.activePlayerId === this.#entityId);
+    return istEigenerZug(this.latestSnapshot?.activePlayerId ?? null, this.#entityIds);
   }
 
   get latestSnapshot() {
@@ -298,11 +342,21 @@ export class NetworkClient {
           this.#token = message.token;
           this.#lobbyId = message.lobbyId ?? this.#lobbyId;
           this.#entityId = message.entityId ?? null;
+          /*
+           * ALLE eigenen Figuren übernehmen.
+           *
+           * Ohne diesen Schritt bliebe `#entityIds` leer und `isMyTurn` immer
+           * falsch: Der Client hielte sich dauerhaft für einen Zuschauer. Der
+           * Rückfall auf die einzelne `entityId` hält einen älteren Server
+           * bedienbar.
+           */
+          this.#merkeEigeneFiguren(message.entityIds ?? (message.entityId ? [message.entityId] : []));
           if (message.seed !== undefined) this.#seed = message.seed;
           this.#state = CONNECTION_STATE.CONNECTED;
           this.#emit('joined', {
             token: this.#token,
             entityId: this.#entityId,
+            entityIds: this.entityIds,
             seatIndex: message.seatIndex,
             resumed: message.resumed,
             seed: this.#seed,
@@ -316,6 +370,8 @@ export class NetworkClient {
       case CONTROL.LOBBY_STATE: {
         this.#lobbyId = message.lobby ?? this.#lobbyId;
         if (message.seed !== undefined) this.#seed = message.seed;
+        // Die Platzmitteilung nach einem Beitritt nennt alle eigenen Figuren.
+        if (Array.isArray(message.entityIds)) this.#merkeEigeneFiguren(message.entityIds);
         this.#emit('lobby_state', message);
         break;
       }

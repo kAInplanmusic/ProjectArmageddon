@@ -214,6 +214,28 @@ aktualisiert; ein Klick auf „Beitreten“ übernimmt nur die Lobby-ID ins Form
 gestartet wird weiterhin über „Match starten“. Wiederbeitritts-Token werden
 dabei nicht angezeigt.
 
+### Matcharten — ein Mensch führt ein Team
+
+Ein Team = ein Mensch. Das Menü stellt beide Zahlen ein: **Teams** (2–8) und
+**Einheiten je Spieler** — und die zweite Zahl ist keine freie Wahl, sondern die
+Matchart:
+
+| Matchart | Spieler (Teams) | Einheiten je Spieler | Figuren |
+|---|---|---|---|
+| klein | 2–4 | 3 | 6–12 |
+| groß | 4 | 4 | 16 |
+| Krieg | 6–8 | 5 | 30–40 |
+
+Wer ein Match startet, besetzt also ein GANZES Team: Alle Einheiten dieses Teams
+gehören ihm, die freien Teams übernimmt die Bot-KI. Die Zugordnung bleibt „jede
+Einheit einzeln" (S1E1, S2E1, S1E2 …) — nie zweimal dieselbe Seite
+hintereinander, und die Zugzeit gilt je Zug.
+
+Einen Modus mit **einer** Einheit je Spieler gibt es nicht: Bis 2026-09-20 nahm
+jeder Beitritt genau einen Platz ein (ein Mensch = eine Figur), was den Matcharten
+widersprach. Mit `unitsPerPlayer` in `POST /api/lobby/create` besetzt ein Beitritt
+das ganze Team; das Feld wird auch im Lokalspiel ausgewertet.
+
 ### Balance messen
 
 ```bash

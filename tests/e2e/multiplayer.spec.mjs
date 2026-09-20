@@ -477,3 +477,57 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
     await context.close();
   }
 });
+
+test('Online führt ein Mensch ein ganzes Team — drei Einheiten', async ({ browser }) => {
+  /*
+   * Der Modus der Matcharten, online geprüft.
+   *
+   * Vorher belegte jeder Beitritt genau EINEN Platz: Ein Mensch steuerte eine
+   * Figur, und `WELCOME` nannte genau eine `entityId`. Mit `unitsPerPlayer = 3`
+   * besetzt der Beitritt ein ganzes Team — und der Client muss ALLE drei Figuren
+   * als seine kennen, sonst hielte er sich für einen Zuschauer.
+   */
+  const context = await browser.newContext();
+  try {
+    const page = await context.newPage();
+    await page.goto('/');
+    await page.evaluate(
+      options => window.__PA__.startOnline(options),
+      {
+        serverUrl: SERVER_URL, teams: 2, unitsPerPlayer: 3, seed: 13579, name: 'Feldherr',
+      },
+    );
+
+    await expect.poll(
+      async () => page.evaluate(() => window.__PA__.getNetwork()?.state ?? null),
+      { timeout: 20_000, message: 'Client muss sich verbinden' },
+    ).toBe('connected');
+
+    // Sechs Figuren: 2 Teams × 3 Einheiten.
+    await expect.poll(
+      async () => page.evaluate(() => window.__PA__.getState()?.entities.length ?? 0),
+      { timeout: 20_000 },
+    ).toBe(6);
+
+    const eigene = await page.evaluate(() => window.__PA__.getNetwork().entityIds);
+    expect(eigene.length).toBe(3);
+    expect(new Set(eigene).size).toBe(3);
+    // `entityId` bleibt die erste eigene Figur (für Anzeigen mit einem Platz).
+    const erste = await page.evaluate(() => window.__PA__.getNetwork().entityId);
+    expect(eigene).toContain(erste);
+
+    // Alle drei gehören DEMSELBEN Team — und die übrigen drei einem anderen.
+    const teams = await page.evaluate(ids => {
+      const zustand = window.__PA__.getState();
+      return zustand.entities.map(e => ({ id: e.entityId, team: e.teamId, mein: ids.includes(e.entityId) }));
+    }, eigene);
+    expect(new Set(teams.filter(e => e.mein).map(e => e.team)).size).toBe(1);
+    expect(teams.filter(e => e.mein).length).toBe(3);
+    expect(teams.filter(e => !e.mein).length).toBe(3);
+
+    // Die Anzeige nennt die Zahl der Einheiten, damit sie nicht überrascht.
+    await expect(page.locator('#log-list')).toContainText('3 Einheiten', { timeout: 10_000 });
+  } finally {
+    await context.close();
+  }
+});

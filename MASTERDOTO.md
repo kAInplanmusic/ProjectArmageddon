@@ -30,6 +30,7 @@ begründet**; sie steht jeweils am Eintrag. **Offene Häkchen: 0.**
 | Konten und Anmeldung | KEINE Serverkonten; Fortschritt als Datei sichern/laden | 6 Unit-Tests (`tests/identity.test.js`), 1 E2E |
 | Entwurfsphase (Draft) | KEIN Draft (nichts zu verteilen, Klasse ist je Platz frei wählbar) | Begründung am Eintrag |
 | Gleichzeitige Züge | KEINE; das Modell „jede Einheit einzeln" ist umgesetzt und belegt | `tests/zugreihenfolge.test.js` |
+| **Einheiten je Spieler** | **Ein Mensch führt ein ganzes TEAM (3/4/5 Einheiten) — der Modus der Matcharten war im Server nicht umgesetzt** | `tests/einheiten-je-spieler.test.js` (10 Tests), `grosse-teams.spec.mjs` |
 | Matchdauer | 100 Leben bleiben; die Dauer hängt an der Zugzeit, nicht an der Gesundheit | `npm run check:time` nennt die Entscheidung |
 | Erfolge | Inhalte gesetzt; zwei nachweislich unerreichbare Schwellen korrigiert | `npm run check:achievements` Exit 0 |
 | Zwei `test.fixme`-Kulissen-Tests | Umgeschrieben (Kartencharakter bzw. Seed-Determinismus) — keine `fixme` mehr | `terrain-presets.spec.mjs` 5/5 |
@@ -60,18 +61,22 @@ Audio, keine Client-Prädiktion, Zugzeit nicht erzwungen, keine Persistenz" —
 alles läuft längst.
 
 **Verifikation dieses Durchgangs:** `npm run lint` 0 Fehler · `npm test`
-**971/971 grün** · `runtime-smoke.spec.mjs` 10/10 · `terrain-presets.spec.mjs` 5/5 ·
-`profil.spec.mjs` 9/9 · `check:fuses` 0 Verstöße · `check:achievements` Exit 0 ·
-`npm run build` grün.
+**981/981 grün** · E2E: `runtime-smoke` 10/10 · `terrain-presets` 5/5 ·
+`profil` 9/9 · `grosse-teams` 6/6 · `loadout-choice` 5/5 · `multiplayer` 10/10
+(inkl. des neuen Online-Tests „drei Einheiten") · `check:fuses` 0 Verstöße ·
+`check:achievements` Exit 0 · `npm run build` und `npm run validate` grün.
 Die **E2E-Batterie als Ganzes** wurde nicht gefahren — die 16 vorbestehenden
 Ausfälle dieses Rechners (siehe unten) sind davon unberührt und wären keine
 Aussage über diesen Durchgang.
 
-**Bewusst NICHT gemacht:** dass ein Mensch ONLINE mehrere Plätze besitzt („Krieg:
-2 Menschen mit je 5 Einheiten"). Das ist die einzige verbliebene Lücke aus dem
-Modell „jede Einheit einzeln" — und sie ist eine Änderung an Lobby, Protokoll UND
-Client zugleich, kein Häkchen. Die Grenze steht bei `MAX_PLAYERS_PER_TEAM`
-(`src/server/lobby.js`) und am Eintrag „Gleichzeitige Züge".
+**Berichtigt am 2026-09-20 (zweiter Durchgang):** Die erste Fassung dieses
+Absatzes erklärte „ein Mensch besitzt online eine Figur" zur dokumentierten
+Grenze. Das war **falsch** — die Matcharten kennen keinen Modus mit einer
+Einheit je Spieler; sie nennen 3, 4 bzw. 5 Einheiten JE SPIELER. Der Server
+setzte es trotzdem so um (ein Beitritt = ein Platz). Die Lücke ist jetzt
+**gebaut**: `unitsPerPlayer` lässt einen Beitritt ein ganzes Team besetzen, das
+Menü bietet genau 3/4/5 an, und `tests/einheiten-je-spieler.test.js` hält das
+Modell fest. Siehe „Einheiten je Spieler" unten.
 
 ## Verifikationsstand
 
@@ -81,8 +86,8 @@ in Klammern).*
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
-| Unit-/Integrationstests | `npm test` | **971/971** grün (zwei Läufe: 324 s und 256 s; vorher 947/947) — der eine rote Test des Durchgangs war `emblem.test.js` (Muster-Wächter) und ist nachgezogen |
-| Browser-E2E | `npm run test:e2e` | **nicht als Batterie gefahren** — die 16 vorbestehenden Ausfälle dieses Rechners (siehe Befund unten) sind unverändert. Gefahren und grün: `runtime-smoke` (10/10), `terrain-presets` (5/5), `profil` (9/9) |
+| Unit-/Integrationstests | `npm test` | **981/981** grün (Läufe: 324 s, 256 s und 367 s; vorher 947/947) — die roten Tests der beiden Durchgänge waren `emblem.test.js` (Muster-Wächter) und `match-rules.test.js` (Lobby-Grenzen) und sind nachgezogen |
+| Browser-E2E | `npm run test:e2e` | **nicht als Batterie gefahren** — die 16 vorbestehenden Ausfälle dieses Rechners (siehe Befund unten) sind unverändert. Gefahren und grün: `runtime-smoke` (10/10), `terrain-presets` (5/5), `profil` (9/9), `grosse-teams` (6/6), `loadout-choice` (5/5), `multiplayer` (10/10) |
 | Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
@@ -2595,16 +2600,18 @@ Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
 
       *Belegt:* `tests/zugreihenfolge.test.js` hält fest, dass erst alle ersten
       Einheiten ziehen, dann alle zweiten (`S1E1, S2E1, …, S1E2`) — nie zweimal
-      derselbe Spieler hintereinander. Lokal (Hot-Seat) spielt der Mensch ALLE
-      Figuren, also auch mehrere Einheiten je Seite; online besitzt ein Mensch
-      eine Figur, freie Plätze übernimmt die Bot-KI. Der Stand steht als
-      Kommentar bei `MAX_PLAYERS_PER_TEAM` (`src/server/lobby.js`).
+      derselbe Spieler hintereinander. Lokal (Hot-Seat) spielt der Mensch JEDE
+      Figur der Reihe nach; online führt ein Mensch ein ganzes TEAM
+      (`unitsPerPlayer`, siehe „Einheiten je Spieler"), freie Teams übernimmt die
+      Bot-KI. Der Stand steht als Kommentar bei `MAX_PLAYERS_PER_TEAM`
+      (`src/server/lobby.js`).
 
-      *Bewusst nicht gebaut:* dass ein Mensch ONLINE mehrere Plätze besitzt
-      („Krieg: 2 Menschen mit je 5 Einheiten"). Das bräuchte Token → mehrere
-      Plätze, `WELCOME` mit Entity-Listen und eine Anzeige für „welche meiner
-      Figuren ist am Zug" — Lobby, Protokoll und Client zugleich. Die Grenze
-      ist dokumentiert, nicht vergessen.
+      *Berichtigt (2026-09-20):* Hier stand, ein Mensch besitze online „eine
+      Figur" und mehrere Plätze je Mensch seien „bewusst nicht gebaut". Das
+      widersprach den Matcharten (3/4/5 Einheiten je Spieler). Die Umsetzung ist
+      nachgeholt — sie brauchte Token → mehrere Plätze, `WELCOME` mit
+      Entity-Listen und eine Figur-Zuordnung im Client; alles drei ist gebaut
+      (`tests/einheiten-je-spieler.test.js`).
 
       *Gemessen* (`npm run check:simultaneous`), Partiedauer bei 29 Runden:
 
@@ -2656,9 +2663,58 @@ Drei Recherche-Aufträge liefen parallel; die Berichte liegen in
       mit sechs Tests fest, darunter die Kernprüfung: *Die zweite Einheit folgt
       nach allen ersten Einheiten.*
 
-      **Offen bleibt allein die Umsetzung der mehreren Einheiten je Spieler.**
-      Der Motor kennt heute eine Figur je Spieler; „Einheiten" als Konzept gibt
-      es noch nicht.
+      ### Einheiten je Spieler — GEBAUT (2026-09-20, zweiter Durchgang)
+
+      Hier stand: *„Offen bleibt allein die Umsetzung der mehreren Einheiten je
+      Spieler. Der Motor kennt heute eine Figur je Spieler; ‚Einheiten' als
+      Konzept gibt es noch nicht."* Das ist erledigt.
+
+      **Was fehlte:** Der Motor erzeugt die Figuren längst verschränkt und
+      verschränkt auch die Züge — aber die LOBBY gab jedem Beitritt genau EINEN
+      Platz. Ein Mensch steuerte damit eine Figur, obwohl die Matcharten 3/4/5
+      Einheiten je Spieler nennen. Es fehlte also nicht der Motor, sondern die
+      Zuteilung.
+
+      **Was gebaut ist:**
+
+      | Stelle | Änderung |
+      |---|---|
+      | `LobbyManager.create` | Neue Option `unitsPerPlayer` (1…6). Sie SETZT die Figuren je Team; ohne sie bleibt die alte Aufteilung (ein Platz je Beitritt) für Werkzeuge, Tests und ältere Replays |
+      | `LobbyManager.join` | Mit `unitsPerPlayer` besetzt ein Beitritt ein GANZES TEAM: `unitsPerPlayer` Plätze, EIN Token. Freie Teams übernimmt die Bot-KI |
+      | `seat.figureIndex` | Jeder Platz kennt seinen SLOT im Motor (`unitIndex × teams + teamId`). Die Zuordnung war vorher die Array-Position — bei drei Plätzen hintereinander hätte ein Mensch die Figuren fremder Teams bekommen |
+      | `LobbySession.#platzFuer` | Eingaben und Waffenwahl gehen an die AKTIVE eigene Figur. Vorher an die erste — die zweite und dritte Einheit wären unspielbar gewesen |
+      | `WELCOME` / `LOBBY_STATE` | Nennen `entityIds` (alle eigenen Figuren). `entityId` bleibt die erste |
+      | `NetworkClient` | `isMyTurn` prüft gegen ALLE eigenen Figuren (`istEigenerZug`), nicht gegen eine |
+      | `MatchStats` | `zusammenfassung(ids)` und `fuerMehrere(ids)` summieren die Kennzahlen aller eigenen Einheiten — sonst wären zwei Drittel der Schüsse nie im Profil gelandet |
+      | `MAX_LOBBY_FIGURES = 40` | Die wirksame Grenze ist die FIGURENZAHL (Krieg: 8 × 5 = 40). `MAX_LOBBY_PLAYERS = 12` gilt nur noch im alten Modus |
+      | Menü | „Spieler pro Team" (1–6) heißt jetzt „Einheiten je Spieler" (3 klein, 4 groß, 5 Krieg); die Teamwahl bietet 2–8 |
+
+      **Belege:** `tests/einheiten-je-spieler.test.js` (10 Tests: Besitz, Slots,
+      Beschreibung, Altmodus, Grenzen, Figur-Zuordnung, Platzmitteilung, Schuss
+      der ZWEITEN Einheit, `istEigenerZug`, Summierung der Kennzahlen),
+      `tests/e2e/grosse-teams.spec.mjs` (Matcharten im Browser),
+      `tests/e2e/loadout-choice.spec.mjs` (Plätze = Teams × Einheiten).
+
+      **Was weiterhin NICHT geht:** Ein Team kann nicht von ZWEI Menschen geführt
+      werden (geteilte Einheiten). Das ist kein vorgesehener Modus — die
+      Matcharten ordnen jedem Spieler ein Team zu.
+
+      **Was die Umstellung sonst noch berührt hat — die Übertragung.** Der
+      Höchstfall war „12 Figuren, 4,0 kB/s". Im Krieg sind es **40 Figuren und
+      12,2 kB/s** (gemessen, Seed 42, 600 Schritte, 20 Hz):
+
+      | Matchart | Figuren | Snapshot | Übertragung |
+      |---|---|---|---|
+      | klein / alt | 12 | 204 B | 4,0 kB/s |
+      | groß (4×4) | 16 | 264 B | 5,2 kB/s |
+      | Krieg (6×5) | 30 | 474 B | 9,3 kB/s |
+      | Krieg (8×5) | 40 | 624 B | 12,2 kB/s |
+
+      Das ist kein Problem (die Bytes je Figur sind konstant, der Server trägt
+      es) — aber das alte Budget (320 B / 6 kB/s) galt für ZWÖLF Figuren und wäre
+      ab jetzt still falsch gewesen. `tests/snapshot-size.test.js` prüft deshalb
+      beide Fälle: 12 Figuren gegen das alte Budget, 40 gegen ein neues
+      (700 B / 14 kB/s).
 
 **Auftrag (2026-09-17):** Das Browser-Spiel soll auf gemieteten Instanzen laufen
 (RunPod GPU / Hetzner CPU, sekundengenau abgerechnet), in Full-HD bis 4K, mit

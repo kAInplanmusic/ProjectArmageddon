@@ -104,20 +104,42 @@ test('Ein Delta-Snapshot ist GENAU SO GROSS wie ein Vollsnapshot', () => {
     'Ein Delta ist unterschiedlich groß — die Annahme in der Doku stimmt nicht mehr');
 });
 
-test('Die Übertragung bleibt im Budget — auch im Höchstfall', () => {
+test('Die Übertragung bleibt im Budget — auch im Höchstfall der Matcharten', () => {
   /*
-   * Zwölf Figuren ist das Maximum (MAX_LOBBY_PLAYERS = 12), 20 Hz die feste
-   * Senderate. Bleibt der Höchstfall unter dem Budget, ist Kompression eine
-   * Lösung ohne Problem.
+   * Der Höchstfall ist NICHT mehr zwölf Figuren.
+   *
+   * MAX_LOBBY_PLAYERS = 12 galt, solange ein Beitritt einen Platz belegte. Mit
+   * dem Modus der Matcharten (ein Mensch führt ein Team, `unitsPerPlayer`) nennt
+   * der Kriegsmodus **8 Spieler × 5 Einheiten = 40 Figuren**; die wirksame Grenze
+   * heißt jetzt MAX_LOBBY_FIGURES = 40.
+   *
+   * Gemessen (Seed 42, 600 Schritte, 20 Hz):
+   *
+   *     12 Figuren (klein/groß-alt) → 204 B →  4,0 kB/s
+   *     16 Figuren (groß)           → 264 B →  5,2 kB/s
+   *     30 Figuren (Krieg klein)    → 474 B →  9,3 kB/s
+   *     40 Figuren (Krieg maximal)  → 624 B → 12,2 kB/s
+   *
+   * Das alte Budget (320 B / 6 kB/s) beschrieb damit nur noch den ALTEN
+   * Höchstfall. Für den neuen gilt ein eigenes — dreimal so hoch, aber immer noch
+   * weit unter dem, was eine Kompression rechtfertigen würde (Bytes je Figur sind
+   * konstant, siehe Test unten).
    */
-  const hoch = messen({ teams: 3, playersPerTeam: 4, schritte: 600 });
-  const kbProSekunde = (hoch.schnitt * SNAPSHOT_HZ) / 1024;
+  const alt = messen({ teams: 3, playersPerTeam: 4, schritte: 600 });
+  const kbAlt = (alt.schnitt * SNAPSHOT_HZ) / 1024;
+  assert.equal(alt.figuren, 12);
+  assert.ok(alt.maximum <= 320,
+    `Zwölf Figuren: ${alt.maximum} Bytes (Budget: 320)`);
+  assert.ok(kbAlt <= 6,
+    `Zwölf Figuren: ${kbAlt.toFixed(1)} kB/s (Budget: 6)`);
 
-  assert.equal(hoch.figuren, 12, 'Der Höchstfall sind zwölf Figuren');
-  assert.ok(hoch.maximum <= 320,
-    `Ein Snapshot ist bis zu ${hoch.maximum} Bytes groß (Budget: 320)`);
-  assert.ok(kbProSekunde <= 6,
-    `Die Übertragung erreicht ${kbProSekunde.toFixed(1)} kB/s (Budget: 6)`);
+  const krieg = messen({ teams: 8, playersPerTeam: 5, schritte: 600 });
+  const kbKrieg = (krieg.schnitt * SNAPSHOT_HZ) / 1024;
+  assert.equal(krieg.figuren, 40, 'Krieg: 8 Spieler × 5 Einheiten');
+  assert.ok(krieg.maximum <= 700,
+    `Vierzig Figuren: ${krieg.maximum} Bytes (Budget: 700; gemessen 624)`);
+  assert.ok(kbKrieg <= 14,
+    `Vierzig Figuren: ${kbKrieg.toFixed(1)} kB/s (Budget: 14; gemessen 12,2)`);
 });
 
 test('Die Größe wächst linear mit der Figurenzahl, nicht schneller', () => {

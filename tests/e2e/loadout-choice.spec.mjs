@@ -50,25 +50,27 @@ test.describe('Klassenwahl im Menü', () => {
     for (const a of erwartet.archetypen) expect(archetypWerte).toContain(a);
   });
 
-  test('Die Felder richten sich nach Teams und Spielerzahl', async ({ page }) => {
+  test('Die Felder richten sich nach Teams und Einheiten je Spieler', async ({ page }) => {
     /*
-     * Ändert man die Teamzahl, muss die Liste neu aufgebaut werden — sonst
-     * stünden dort Felder für Plätze, die es nicht mehr gibt.
+     * Ändert man die Teamzahl oder die Einheiten je Spieler, muss die Liste neu
+     * aufgebaut werden — sonst stünden dort Felder für Plätze, die es nicht mehr
+     * gibt.
      */
     await oeffneLoadouts(page);
 
     const zaehleFelder = () => page.locator('#loadout-felder select[id^="cfg-loadout-klasse-"]').count();
-    expect(await zaehleFelder()).toBe(4);
+    // Vorgabe: 2 Teams × 3 Einheiten = 6 Plätze (Matchart „klein").
+    expect(await zaehleFelder()).toBe(6);
 
-    // 3 Teams × 1 Spieler = 3 Plätze
+    // 3 Teams × 3 Einheiten = 9 Plätze
     await page.selectOption('#cfg-teams', '3');
-    await page.selectOption('#cfg-players', '1');
-    await expect.poll(zaehleFelder, { timeout: 3000 }).toBe(3);
+    await page.selectOption('#cfg-players', '3');
+    await expect.poll(zaehleFelder, { timeout: 3000 }).toBe(9);
 
-    // Zurück auf 2 × 2
-    await page.selectOption('#cfg-teams', '2');
-    await page.selectOption('#cfg-players', '2');
-    await expect.poll(zaehleFelder, { timeout: 3000 }).toBe(4);
+    // 4 Teams × 4 Einheiten = 16 Plätze (Matchart „groß")
+    await page.selectOption('#cfg-teams', '4');
+    await page.selectOption('#cfg-players', '4');
+    await expect.poll(zaehleFelder, { timeout: 3000 }).toBe(16);
   });
 
   test('Das Label nennt die Standardzuteilung des Platzes', async ({ page }) => {
