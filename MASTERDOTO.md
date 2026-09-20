@@ -128,6 +128,46 @@ setzte es trotzdem so um (ein Beitritt = ein Platz). Die Lücke ist jetzt
 Menü bietet genau 3/4/5 an, und `tests/einheiten-je-spieler.test.js` hält das
 Modell fest. Siehe „Einheiten je Spieler" unten.
 
+## Offene Aufgabe: die zwei Riesenklassen zerlegen (gemessen 2026-09-20)
+
+**Das ist die letzte echte Architektur-Schuld des Projekts** — und sie ist bewusst
+NICHT in einem Rutsch gemacht: Sie berührt jede der 183 E2E-Prüfungen und jede
+Determinismus-Zusage. Ein Umbau dieses Umfangs braucht denselben Belegweg wie
+alles andere hier (messen, ändern, gegenprüfen), keinen Anhang.
+
+*Gemessen mit einem Blockzähler über die Methodengrenzen:*
+
+| Datei | Zeilen | Methoden | davon in Methoden | größte Brocken |
+|---|---|---|---|---|
+| `src/engine/match.js` | 3.567 | 73 | 2.399 (67 %) | `fire()` 211 [1458–1668], `getState()` 149 [3248–3396], `spawnPlayers()` 96, `applyTargetEffect()` 91, `buildTerrain()` 89, `resolveGuentherWheel()` 87, `stateHash()` 76 |
+| `src/client/main.js` | 3.698 | 84 | 2.641 (71 %) | `handleEvents()` 229 [1463–1691], `exposeDebugApi()` 166, `startOnline()` 165, `handleRemoteEvent()` 142, `bindMenu()` 100, `zeigeErfolge()` 80 |
+
+*Die Reihenfolge ist nach RISIKO geordnet, nicht nach Zeilen — zuerst das, was am
+wenigsten Mitspieler hat:*
+
+1. **`client/debugApi.js` aus `exposeDebugApi()` (166 Zeilen).** Reine
+   Verdrahtung von `window.__PA__` über Rückrufe. Kein Spielzustand, keine
+   Nebenläufigkeit. Geprüft von `runtime-smoke` (10 Prüfungen) und den
+   E2E-Spezifikationen, die die Debug-API benutzen.
+2. **`engine/stateSnapshot.js` aus `getState()` und `stateHash()` (225 Zeilen).**
+   Beide LESEN nur. Sie bekommen die Spielerdaten als Argument und geben den
+   Ansichtszustand bzw. den Hash zurück. Der Hash ist die Determinismus-Zusage des
+   Projekts — `tests/replay.test.js`, `tests/determinism*` und
+   `npm run replay -- record` + `--verify` (Hash `808ac5eb`) sind die Gegenprobe.
+3. **`client/ereignisse.js` aus `handleEvents()` und `handleRemoteEvent()`
+   (371 Zeilen).** Zwei `switch`-Blöcke über dieselben Ereignisarten; sie werden zu
+   EINER Zuordnungstabelle (Ereignis → Wirkung). Der Gewinn ist nicht nur Kürze:
+   Lokaler und Online-Zweig können dann nicht mehr auseinanderlaufen —
+   `tests/event-coverage.test.js` prüft genau das heute schon und würde es
+   erzwingen.
+4. **Erst danach `engine/match.js` weiter zerlegen** (`fire()` 211 Zeilen als
+   `engine/shooting.js`, `spawnPlayers()`/`buildTerrain()` als Aufbau).
+
+*Belegweg für jeden Schritt:* `npm test` (983) und die betroffenen
+E2E-Spezifikationen müssen VOR und NACH dem Schritt dasselbe Ergebnis zeigen; der
+Zustandshash des Replays muss identisch bleiben. Kein Schritt ohne diesen
+Vergleich — sonst tauscht man Übersicht gegen Determinismus.
+
 ## Verifikationsstand
 
 *Stand 2026-09-20, gemessen nach dem Durchgang „offene Punkte" (vorherige Zahlen
