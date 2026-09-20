@@ -959,7 +959,19 @@
             <summary>Mein Profil</summary>
             <div id="profil-werte" class="profil-werte" aria-label="Eigene Kennzahlen"></div>
             <p id="profil-hinweis" class="muted"></p>
+            <!--
+              Profilsicherung (2026-09-20): Es gibt keine Konten, also muss der
+              Spieler seinen Fortschritt selbst mitnehmen können. „Sichern" legt
+              eine JSON-Datei an, „Laden" nimmt sie wieder an. Das Dateifeld ist
+              versteckt und wird vom Knopf geöffnet — ein nacktes Dateifeld sieht
+              je nach Browser verschieden aus und ist ohne Beschriftung nicht zu
+              deuten.
+            -->
             <div class="field-row">
+              <button id="profil-export" type="button" class="secondary">Fortschritt sichern</button>
+              <button id="profil-import" type="button" class="secondary">Sicherung laden</button>
+              <input id="profil-import-datei" type="file" accept="application/json,.json" hidden
+                aria-hidden="true" tabindex="-1">
               <button id="profil-reset" type="button" class="secondary">Zahlen zurücksetzen</button>
             </div>
           </details>

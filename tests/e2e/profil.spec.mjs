@@ -270,3 +270,70 @@ test('Ein beschädigtes Profil blockiert das Spiel nicht', async ({ page }) => {
   expect(profil.partien).toBe(0);
   await expect(page.locator('#game-canvas')).toBeVisible();
 });
+
+test('Der Fortschritt lässt sich sichern und anderswo wieder laden', async ({ page }) => {
+  /*
+   * Die ENTSCHEIDUNG vom 2026-09-20: keine Konten, aber eine Datei.
+   *
+   * Der reale Schaden war „ein anderer Browser oder ein gelöschter Cache
+   * bedeutet: alles weg". Der Test geht den ganzen Weg: Profil füllen, sichern
+   * (die Datei entsteht wirklich), Profil leeren, Sicherung laden — die Zahlen
+   * sind zurück. Danach die Gegenprobe: Eine fremde Datei wird ABGELEHNT und
+   * verändert nichts.
+   */
+  await page.goto('/');
+  await page.waitForFunction(() => Boolean(window.__PA__));
+  await page.locator('#profil-browser summary').click();
+  await expect(page.locator('#profil-export')).toBeVisible();
+  await expect(page.locator('#profil-import')).toBeVisible();
+
+  const ergebnis = await page.evaluate(() => {
+    const spiel = window.__PA__.game;
+    // Erkennbare Zahlen setzen (die Anzeige wird dabei nicht gebraucht).
+    spiel.profil.partien = 7;
+    spiel.profil.siege = 4;
+    spiel.profil.schaden = 1234;
+    spiel.profil.erfolge.add('muster_erste_partie');
+
+    const sicherung = spiel.profilSichern();
+    const gespeicherterText = sicherung.text;
+
+    // Profil leeren: Die Zahlen sind weg.
+    spiel.profilZuruecksetzen();
+    const nachReset = spiel.profil.partien;
+
+    // Fremde Datei zuerst: Sie darf NICHTS verändern.
+    const fremd = spiel.profilLaden('{"format":"etwas-anderes","version":1,"profil":{}}');
+    const nachFremd = spiel.profil.partien;
+
+    // Und jetzt die echte Sicherung.
+    const geladen = spiel.profilLaden(gespeicherterText);
+
+    return {
+      sicherungOk: sicherung.ok,
+      textLaenge: gespeicherterText?.length ?? 0,
+      nachReset,
+      fremdOk: fremd.ok,
+      nachFremd,
+      geladenOk: geladen.ok,
+      partien: spiel.profil.partien,
+      siege: spiel.profil.siege,
+      schaden: spiel.profil.schaden,
+      erfolg: spiel.profil.erfolge.has('muster_erste_partie'),
+    };
+  });
+
+  expect(ergebnis.sicherungOk).toBe(true);
+  expect(ergebnis.textLaenge).toBeGreaterThan(50);
+  expect(ergebnis.nachReset).toBe(0);
+  expect(ergebnis.fremdOk).toBe(false);
+  expect(ergebnis.nachFremd).toBe(0);
+  expect(ergebnis.geladenOk).toBe(true);
+  expect(ergebnis.partien).toBe(7);
+  expect(ergebnis.siege).toBe(4);
+  expect(ergebnis.schaden).toBe(1234);
+  expect(ergebnis.erfolg).toBe(true);
+
+  // Und die Anzeige zieht mit (nicht nur der Zustand).
+  await expect(page.locator('#profil-werte')).toContainText('7');
+});

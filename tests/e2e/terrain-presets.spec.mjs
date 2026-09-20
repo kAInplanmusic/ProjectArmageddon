@@ -155,69 +155,70 @@ test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', asy
 });
 
 /*
- * OFFEN (befund vom 2026-09-19, wartet auf eine Produktentscheidung):
+ * ENTSCHIEDEN UND UMGESCHRIEBEN (2026-09-20).
  *
- * Dieser Test erwartet, dass jede Geländeform ihr eigenes Leitbiom zeigt
- * (`flooded → deluge` …). Das war die Regel, als das PRESET die Karte baute.
- * Seit der autonome Generator die Vorgabe ist — `main.js` übergibt
- * `kartentyp: 'autonom'`, und die MASTERDOTO hält ausdrücklich fest, dass es
- * „kein Auswahlfeld" geben soll und ein Test beweist, dass ein übergebener Typ
- * IGNORIERT wird — kommt das Biom aus dem CHARAKTER der Karte
- * (`match.js #waehleSzeneAusCharakter`, `kartencharakter`). Über den Menüweg
- * zeigten deshalb gemessen ALLE vier Formen dieselbe Kulisse (`alpine`).
+ * Die frühere Fassung erwartete, dass jede Geländeform ihr eigenes Leitbiom
+ * zeigt (`flooded → deluge` …). Das galt, als das PRESET die Karte baute. Seit
+ * der autonome Generator die Vorgabe ist (`main.js` übergibt
+ * `kartentyp: 'autonom'`), entscheidet der Seed — und die Kulisse folgt dem
+ * CHARAKTER der Karte (`match.js #waehleSzeneAusCharakter`, `kartencharakter`).
+ * Über den Menüweg zeigten deshalb gemessen ALLE vier Formen dieselbe Kulisse.
  *
- * Die Zuordnung selbst ist unverändert; sie hängt nur an einer anderen Größe.
- * Solange die Menü-Auswahl `#cfg-preset` die Karte gar nicht mehr beeinflusst,
- * kann dieser Test nicht sinnvoll grün werden — er prüft eine Zusage, die die
- * Anzeige nicht mehr gibt.
+ * Die Entscheidung ist die des Auftraggebers von damals: `#cfg-preset` ist
+ * ENTFERNT (ein Bedienelement, das nichts bewirkt, ist irreführender als
+ * keines). Der Test prüft jetzt die Zusage, die es wirklich gibt:
  *
- * ZU ENTSCHEIDEN: Entweder `#cfg-preset` wieder durchreichen (dann gilt die
- * alte Zuordnung und dieser Test gilt wieder) oder das Feld aus dem Menü
- * entfernen und den Test auf den Charakter umschreiben. Beides ist eine
- * Produktentscheidung, keine Reparatur.
+ *     Das Biom der gezeigten Szene ist die Ableitung des Kartencharakters.
+ *
+ * Damit ist er wieder eine echte Gegenprobe: Er würde fallen, wenn die Anzeige
+ * eine andere Kulisse zöge als die Karte hergibt — oder wenn das Biom aus dem
+ * Seed direkt käme statt aus dem Charakter.
  */
-test.fixme('Jede der vier neuen Formen nutzt ihre EIGENE Szene', async ({ page }) => {
+test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', { timeout: 180_000 }, async ({ page }) => {
   /*
-   * Alle vier hatten zunächst KEINE eigene Szene und fielen auf `forest` zurück —
-   * eine „Flut" sah aus wie ein Wald. Inzwischen hat jede ihr Leitbiom:
+   * Zuerst war die Kulisse dem PRESET zugeordnet („Flut sieht aus wie eine
+   * Flut"), dann fiel sie auf `forest` zurück („eine Flut sah aus wie ein
+   * Wald"), jetzt folgt sie dem CHARAKTER der erzeugten Karte.
    *
-   *   flooded → deluge   (versunkene Stadt, Monsun, ertränkter Wald,
-   *                       Reisterrassen, Dammbruch)
-   *   open    → open     (Weizenfelder, Heide, Salzpfanne, Polder, Präriesturm)
-   *   spires  → spires   (Karsttürme, Dolomiten, Basaltsäulen, Felspfeiler,
-   *                       Eisnadeln)
-   *   warren  → warren   (Schlucht, Stadtruinen, Höhlengänge, Bambusdickicht,
-   *                       Schützengräben)
+   * Geprüft wird die Ableitung selbst — nicht, dass irgendein Biom gesetzt ist.
+   * Der Vergleich kommt aus derselben Funktion, die der Motor benutzt
+   * (`biomFuerCharakter`), wird aber IM BROWSER aufgerufen: Eine Kopie der Regel
+   * hier wäre eine zweite Wahrheit und würde einen Fehler in der Anzeige
+   * überdecken.
    *
-   * Geprüft wird, dass die ZUORDNUNG ankommt — nicht nur, dass irgendein Biom
-   * gesetzt ist. Der Rückfall `forest` wäre die stille Rückkehr des Fehlers.
+   * Mehrere Seeds, damit nicht ein einzelner Charakter die Aussage trägt.
    */
-  const ZUORDNUNG = {
-    flooded: 'deluge',
-    open: 'open',
-    spires: 'spires',
-    warren: 'warren',
-  };
+  const SEEDS = [4242, 4243, 4244, 4245, 7777, 9001];
 
-  for (const [form, erwartet] of Object.entries(ZUORDNUNG)) {
+  for (const seed of SEEDS) {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
-    // Keine Kartenform mehr wählbar (2026-09-19): Der Generator entscheidet aus
-    // dem Seed. Diese Fassung wartet auf ihre Neufassung (Kulisse folgt dem
-    // Charakter der Karte) — der Befund steht im Kommentar über dem Test.
+    await page.locator('#cfg-seed').fill(String(seed));
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay')).toBeHidden();
 
-    const kulisse = await page.evaluate(() => window.__PA__.backdrop());
-    expect(kulisse.szene?.biom, `${form} nutzt nicht sein eigenes Biom`)
-      .toBe(erwartet);
-    expect(kulisse.szene.biom, `${form} fällt auf den Wald-Rückfall zurück`)
-      .not.toBe('forest');
-    expect(kulisse.szene.himmel, `${form}: Szene ohne Himmel`).toBeTruthy();
-    expect(kulisse.szene.wasser, `${form}: Szene ohne Wasser`).toBeTruthy();
-    // Und es ist die generative Szene (Vorgabe), keine Bildkulisse.
-    expect(kulisse.key).toBeNull();
+    const stand = await page.evaluate(async () => {
+      const modul = await import('/src/shared/biomwahl.js');
+      const match = window.__PA__.getMatch();
+      const kulisse = window.__PA__.backdrop();
+      return {
+        charakter: match.kartencharakter ?? null,
+        erwartet: modul.biomFuerCharakter(match.kartencharakter),
+        biom: kulisse.szene?.biom ?? null,
+        himmel: kulisse.szene?.himmel ?? null,
+        wasser: kulisse.szene?.wasser ?? null,
+        bildKey: kulisse.key,
+      };
+    });
+
+    expect(stand.charakter, `Seed ${seed}: das Match nennt keinen Kartencharakter`).toBeTruthy();
+    expect(stand.biom, `Seed ${seed}: die Kulisse folgt nicht dem Charakter`)
+      .toBe(stand.erwartet);
+    expect(stand.himmel, `Seed ${seed}: Szene ohne Himmel`).toBeTruthy();
+    expect(stand.wasser, `Seed ${seed}: Szene ohne Wasser`).toBeTruthy();
+    // Und es ist die generative Szene (die Vorgabe), keine Bildkulisse.
+    expect(stand.bildKey, `Seed ${seed}: Bildkulisse statt generativer Szene`).toBeNull();
   }
 });
 
@@ -270,48 +271,44 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
 });
 
 /*
- * OFFEN (derselbe Befund wie oben, 2026-09-19): Dieser Test vergleicht die
- * Geländekennzahlen der vier FORMEN und erwartet messbare Unterschiede. Über
- * den Menüweg erzeugen alle vier Formen dieselbe Karte — gemessen identische
- * Werte (`hash 6bc9aa96`, Prüfsumme 241449400, `landAnteil 0,524`), weil
- * `main.js:323` `kartentyp: 'autonom'` übergibt und der Seed die Karte
- * bestimmt. Die Varianzwerte waren deshalb bitgleich (beide 225,92865438575646).
+ * ENTSCHIEDEN UND UMGESCHRIEBEN (2026-09-20).
  *
- * ZU ENTSCHEIDEN mit `#cfg-preset` (siehe oben). Danach: entweder die vier
- * Formen über den Motor starten (dann greift die alte Messung), oder den Test
- * auf VERSCHIEDENE SEEDS umschreiben — die Karten unterscheiden sich dann
- * nachweislich, und der Test bliebe eine echte Gegenprobe.
+ * Die frühere Fassung verglich die Geländekennzahlen der vier FORMEN über das
+ * Menü. Das kann nicht mehr funktionieren: `main.js` übergibt
+ * `kartentyp: 'autonom'`, der SEED bestimmt die Karte — gemessen erzeugten alle
+ * vier Formen dieselbe (`hash 6bc9aa96`, `landAnteil 0,524`).
+ *
+ * Die Neufassung vergleicht deshalb SEEDS. Das ist die stärkere Aussage: Sie
+ * prüft genau die Zusage, auf der Client und Server aufbauen — GLEICHER Seed
+ * ergibt GLEICHE Karte, VERSCHIEDENE Seeds verschiedene. Der Determinismus ist
+ * damit im Browser belegt, nicht nur in Node.
  */
-test.fixme('Vier Formen unterscheiden sich auch im Browser messbar', async ({ page }) => {
+test('Gleicher Seed ergibt dieselbe Karte, verschiedene Seeds verschiedene (Browser wie Node)', { timeout: 180_000 }, async ({ page }) => {
   /*
-   * Gegenprobe zur Unit-Messung: Die Erzeugung im Browser muss dieselben
-   * Unterschiede zeigen wie in Node. Wäre das anders, liefe die Anzeige mit
-   * einem anderen Gelände als die Simulation — und der Determinismus zwischen
-   * Client und Server wäre hinfällig.
+   * Gegenprobe zur Unit-Messung: Die Erzeugung im Browser muss dieselbe Karte
+   * ergeben wie in Node. Wäre das anders, liefe die Anzeige mit einem anderen
+   * Gelände als die Simulation — und der Determinismus zwischen Client und
+   * Server wäre hinfällig.
+   *
+   * Geprüft wird deshalb das, worauf Client und Server aufbauen:
+   *   - GLEICHER Seed, zweimal gestartet  → dieselbe Karte (auch der Hash).
+   *   - VERSCHIEDENE Seeds                 → verschiedene Karten.
+   * Gegen feste Höhenwerte wird NICHT geprüft: Die Varianz hängt an der
+   * Auflösung der Höhenabtastung (gemessen: 124 im Browser gegen 191 in Node
+   * bei `spires`) — ein solcher Wert wäre ein Wettrennen um Fenstergrößen.
    */
-  /* Die Form wird nicht mehr übergeben: Sie wählt keine Karte mehr (2026-09-19). */
-  const messen = async _form => {
+  const messen = async seed => {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
-    // Keine Kartenform mehr wählbar (2026-09-19): Der Generator entscheidet aus
-    // dem Seed. Die Neufassung dieses Tests vergleicht deshalb SEEDS.
     /*
      * SEED FESTSCHREIBEN — sonst vergleicht der Test verschiedene Karten.
      *
-     * Fund (belegt): Bleibt das Seed-Feld leer, zieht `startMatch` einen
-     * ZUFÄLLIGEN Seed. Jeder `messen()`-Aufruf erzeugte damit ein anderes
-     * Gelände, und die gemessene Höhenvarianz schwankte entsprechend:
-     *
-     *     spires:  124, 182, 197, 221   (vier Läufe, vier Karten)
-     *     open:     15,4 / 15,7 / 15,7  (zufällig stabil, weil sehr flach)
-     *
-     * Der Test war deshalb ein Wettrennen: Er fiel um, sobald der zufällige Seed
-     * gerade eine flachere `spires`-Karte ergab. Mit festem Seed werden die
-     * Zahlen vergleichbar — und der Test prüft wirklich die Geländeform statt
-     * das Glück beim Seed.
+     * Fund (belegt, 2026-09-19): Bleibt das Feld leer, zieht `startMatch` einen
+     * ZUFÄLLIGEN Seed; jeder Aufruf erzeugte ein anderes Gelände, und die
+     * gemessene Höhenvarianz schwankte entsprechend (124, 182, 197, 221).
      */
-    await page.locator('#cfg-seed').fill(String(SEED));
+    await page.locator('#cfg-seed').fill(String(seed));
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay')).toBeHidden();
 
@@ -334,47 +331,47 @@ test.fixme('Vier Formen unterscheiden sich auch im Browser messbar', async ({ pa
       let land = 0;
       for (const zelle of bitmap) if (zelle) land += 1;
 
-      // Dieselbe Zahl muss der Zustandshash ergeben — Server und Client rechnen
-      // aus demselben Seed dasselbe Gelände.
-      return { varianz, landAnteil: land / (width * height), hash: match.stateHash() };
+      // Der Zustandshash ist die Zahl, die Client und Server aus demselben Seed
+      // übereinstimmend bilden müssen.
+      return {
+        varianz,
+        landAnteil: land / (width * height),
+        hash: match.stateHash(),
+        seedUsed: match.seedManager.baseSeed,
+      };
     });
   };
 
-  /*
-   * Verglichen wird RELATIV, nicht gegen feste Zahlen aus einer anderen Umgebung.
-   *
-   * Fund (belegt): Der Test verlangte für `spires` eine Höhenvarianz > 150 — der
-   * Wert stammte aus der Node-Messung (`tests/terrain-presets.test.js`: 191 bei
-   * 1280×720). Im Browser gemessen sind es **124**. Die beiden Zahlen sind nicht
-   * vergleichbar: Das Match-Terrain wird auf die Leinwandgröße erzeugt, und die
-   * Varianz hängt an der Auflösung der Höhenabtastung. Der Test war damit ein
-   * Wettrennen um 26 Punkte — er fiel um, sobald sich die Fenstergröße im
-   * Testlauf unterschied.
-   *
-   * Die Aussage, um die es geht, ist ohnehin relativ: `spires` muss STEILER sein
-   * als die anderen Formen, `open` FLACHER. Das gilt in jeder Auflösung.
-   */
-  const offen = await messen('open');
-  const huegel = await messen('hills');
-  const spitz = await messen('spires');
-  const flut = await messen('flooded');
+  const erst = await messen(4242);
+  const nochmal = await messen(4242);
+  const anders = await messen(9001);
 
   test.info().annotations.push({
-    type: 'Höhenvarianz im Browser',
-    description: `open ${offen.varianz.toFixed(0)} | hills ${huegel.varianz.toFixed(0)} `
-      + `| spires ${spitz.varianz.toFixed(0)} | flooded ${flut.varianz.toFixed(0)}`,
+    type: 'Karte im Browser',
+    description: `Seed 4242: Varianz ${erst.varianz.toFixed(1)} | `
+      + `Land ${(erst.landAnteil * 100).toFixed(1)} % | Hash ${erst.hash} `
+      + `(zweiter Lauf: ${nochmal.hash}) — Seed 9001: Varianz `
+      + `${anders.varianz.toFixed(1)} | Hash ${anders.hash}`,
   });
 
-  // Belegte Werte bei Seed 4242 (gemessen, vier Läufe): open rund 15, hills
-  // rund 50, spires rund 190, flooded rund 200. Geprüft wird der Abstand, nicht
-  // die Zahl selbst — der Abstand gilt in jeder Umgebung.
-  expect(offen.varianz, `Offene Weite ist nicht flach (${offen.varianz.toFixed(0)})`)
-    .toBeLessThan(huegel.varianz / 2);
-  expect(spitz.varianz, `Felsspitzen sind nicht steiler als Hügel (${spitz.varianz.toFixed(0)} `
-    + `gegen ${huegel.varianz.toFixed(0)})`).toBeGreaterThan(huegel.varianz * 2);
-  expect(flut.landAnteil, `Flut hat zu viel Land (${(flut.landAnteil * 100).toFixed(0)} %)`)
-    .toBeLessThan(0.35);
+  // 1. Der Seed kommt an — nicht ein zufälliger.
+  expect(erst.seedUsed).toBe(4242);
+  expect(anders.seedUsed).toBe(9001);
 
-  // Alle drei sind verschieden — und jedes Match hat einen eigenen Hash.
-  expect(new Set([offen.hash, spitz.hash, flut.hash]).size).toBe(3);
+  // 2. GLEICHER Seed, zweimal gestartet: dieselbe Karte.
+  expect(nochmal.hash).toBe(erst.hash);
+  expect(nochmal.varianz).toBeCloseTo(erst.varianz, 6);
+  expect(nochmal.landAnteil).toBeCloseTo(erst.landAnteil, 9);
+
+  // 3. VERSCHIEDENE Seeds: verschiedene Karten.
+  expect(anders.hash).not.toBe(erst.hash);
+  const unterscheidetSich = Math.abs(anders.varianz - erst.varianz) > 0.5
+    || Math.abs(anders.landAnteil - erst.landAnteil) > 0.001;
+  expect(unterscheidetSich, 'zwei verschiedene Seeds ergaben dasselbe Gelände').toBe(true);
+
+  // 4. Sanity: Es ist überhaupt Land da (kein Fixwert, nur ein Bereich).
+  for (const messung of [erst, nochmal, anders]) {
+    expect(messung.landAnteil).toBeGreaterThan(0.02);
+    expect(messung.landAnteil).toBeLessThan(0.98);
+  }
 });

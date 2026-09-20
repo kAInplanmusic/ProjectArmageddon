@@ -28,7 +28,13 @@ import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { SoundMixer } from './soundMixer.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
-import { PROFIL_SCHLUESSEL, ablageHinweis, geraeteKennung } from '../shared/identity.js';
+import {
+  PROFIL_SCHLUESSEL,
+  ablageHinweis,
+  geraeteKennung,
+  sicherungAlsText,
+  sicherungAusText,
+} from '../shared/identity.js';
 import { factionsWithSprites, spriteCount } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import {
@@ -209,6 +215,31 @@ class Game {
       this.profilZuruecksetzen();
       this.hud.log('Profil zurückgesetzt', 'neutral');
     });
+
+    /*
+     * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei.
+     *
+     * Der Ablauf ist bewusst der eines Downloads/Uploads und nicht der eines
+     * Formulars: Der Spieler bekommt eine Datei, die er aufbewahren kann. Ohne
+     * diese zwei Knöpfe wäre „Profil liegt im Browser" eine Sackgasse — ein
+     * gelöschter Cache hieße Verlust, und es gäbe keinen Ausweg.
+     */
+    document.getElementById('profil-export')?.addEventListener('click', () => {
+      this.profilSichern();
+    });
+    const importKnopf = document.getElementById('profil-import');
+    const importDatei = document.getElementById('profil-import-datei');
+    importKnopf?.addEventListener('click', () => importDatei?.click());
+    importDatei?.addEventListener('change', () => {
+      const datei = importDatei.files?.[0];
+      if (!datei) return;
+      // Nach der Auswahl zurücksetzen, damit dieselbe Datei erneut wählbar ist.
+      datei.text()
+        .then(text => this.profilLaden(text))
+        .catch(error => this.hud.log(`Sicherung nicht lesbar: ${error.message}`, 'danger'))
+        .finally(() => { importDatei.value = ''; });
+    });
+
     this.#zeigeProfil();
     this.#zeigeErfolge();
 
@@ -2687,6 +2718,71 @@ class Game {
     this.#zeigeProfil();
     this.#zeigeErfolge();
     return this.profil;
+  }
+
+  /**
+   * Schreibt eine Profilsicherung als Datei — der Ausweg aus „nur im Browser".
+   *
+   * ENTSCHEIDUNG (2026-09-20): Es gibt keine Serverkonten (kein Personenbezug,
+   * keine Anmeldung, keine Speicherfrist zu überwachen). Der reale Schaden war
+   * aber der Verlust bei einem Browserwechsel. Die Datei löst genau den, ohne
+   * ein Konto zu brauchen.
+   *
+   * @returns {{ok: boolean, text: string|null, fehler: string|null}}
+   */
+  profilSichern() {
+    try {
+      const text = sicherungAlsText(this.profil.toJSON(), {
+        erstelltAm: new Date().toISOString(),
+      });
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anker = document.createElement('a');
+      anker.href = url;
+      anker.download = 'projectarmageddon-profil.json';
+      document.body.append(anker);
+      anker.click();
+      anker.remove();
+      // Erst nach dem Klick freigeben: sonst kann der Download leer ankommen.
+      URL.revokeObjectURL(url);
+      this.hud?.log('Profilsicherung heruntergeladen', 'active');
+      return { ok: true, text, fehler: null };
+    } catch (error) {
+      this.hud?.log(`Sicherung fehlgeschlagen: ${error.message}`, 'danger');
+      return { ok: false, text: null, fehler: error.message };
+    }
+  }
+
+  /**
+   * Lädt eine Profilsicherung aus Text (Dateiinhalt).
+   *
+   * Eine ungültige Datei wird ABGELEHNT, nicht teilweise übernommen: Ein halb
+   * geladenes Profil wäre der schlimmere Zustand — der Spieler sähe Erfolge, die
+   * er nie erreicht hat, oder verlöre seine eigenen.
+   *
+   * @returns {{ok: boolean, fehler: string|null}}
+   */
+  profilLaden(text) {
+    const geprueft = sicherungAusText(text);
+    if (!geprueft.ok) {
+      this.hud?.log(`Sicherung abgelehnt: ${geprueft.fehler}`, 'danger');
+      return { ok: false, fehler: geprueft.fehler };
+    }
+    const geladen = PlayerProfile.fromJSON(geprueft.profil);
+    /*
+     * Erfolge VEREINIGEN statt ersetzen.
+     *
+     * Ein Erfolg, der einmal erreicht war, wird nie wieder abgenommen (siehe
+     * `achievements.js`). Eine Sicherung aus einem älteren Stand darf deshalb
+     * keinen Erfolg wegnehmen, den dieser Browser schon hat.
+     */
+    for (const id of this.profil.erfolge) geladen.erfolge.add(id);
+    this.profil = geladen;
+    this.#speichereProfil();
+    this.#zeigeProfil();
+    this.#zeigeErfolge();
+    this.hud?.log('Profilsicherung geladen', 'active');
+    return { ok: true, fehler: null };
   }
 
   #exposeDebugApi() {

@@ -27,8 +27,11 @@ import { fileURLToPath } from 'node:url';
 
 import {
   ABLAGEORTE, AKTUELLER_ABLAGEORT,
+  SICHERUNG_FORMAT, SICHERUNG_VERSION,
   erzeugeKennung, geraeteKennung, ablageHinweis,
+  erstelleSicherung, sicherungAlsText, pruefeSicherung, sicherungAusText,
 } from '../src/shared/identity.js';
+import { PlayerProfile } from '../src/shared/stats.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -179,4 +182,150 @@ test('Die Konfiguration reicht die Kennung an das Profil weiter', () => {
     'die Geräte-Kennung wird beim Speichern nicht mitgeschrieben');
   assert.match(code, /geraet:/,
     'das Feld `geraet` fehlt in der gespeicherten Nutzlast');
+});
+
+// ------------------------------------------------------- Profilsicherung
+
+/**
+ * Die ENTSCHEIDUNG vom 2026-09-20: keine Serverkonten, dafür eine Datei.
+ *
+ * Der reale Schaden war „ein gelöschter Cache bedeutet den Verlust aller
+ * Erfolge". Eine Datei löst genau den, ohne personenbezogene Daten zu erheben,
+ * ohne Anmeldung und ohne Speicherfrist. Diese Tests prüfen die Datei so streng
+ * wie eine Schnittstelle: Was hereinkommt, ist Fremddaten.
+ */
+
+/** Ein vollständiges Profil, wie `toJSON()` es liefert. */
+function beispielProfil() {
+  return {
+    name: 'Anna',
+    fraktion: 'pirates',
+    partien: 12,
+    siege: 7,
+    niederlagen: 5,
+    serie: 2,
+    serieRekord: 3,
+    schuesse: 210,
+    treffer: 88,
+    schaden: 1400,
+    absorbierterSchaden: 90,
+    zuege: 210,
+    spielzeitSekunden: 5400,
+    waffen: { pa_001: 40, pa_028: 5 },
+    fraktionen: { pirates: 12 },
+    erfolge: ['muster_siege_10', 'muster_erster_schuss'],
+  };
+}
+
+test('Eine Sicherung überlebt den Weg hin und zurück', () => {
+  const profil = beispielProfil();
+  const text = sicherungAlsText(profil, { erstelltAm: '2026-09-20T10:00:00.000Z' });
+
+  const geprueft = sicherungAusText(text);
+  assert.equal(geprueft.ok, true, geprueft.fehler);
+  // Die Erfolge kommen SORTIERT zurück — Absicht: Gleicher Inhalt soll gleich
+  // aussehen, sonst hinge die Datei an der Einfügereihenfolge.
+  assert.deepEqual(geprueft.profil, { ...profil, erfolge: [...profil.erfolge].sort() });
+  assert.deepEqual([...profil.erfolge].sort(), geprueft.profil.erfolge);
+
+  // Und der Inhalt ergibt ein gültiges Profil.
+  const wiederhergestellt = PlayerProfile.fromJSON(geprueft.profil);
+  assert.equal(wiederhergestellt.partien, 12);
+  assert.equal(wiederhergestellt.schaden, 1400);
+  assert.equal(wiederhergestellt.erfolge.has('muster_siege_10'), true);
+  assert.deepEqual([...wiederhergestellt.erfolge].sort(), [...profil.erfolge].sort());
+});
+
+test('Eine Sicherung trägt die Geräte-Kennung NICHT', () => {
+  /*
+   * Die Kennung ist ein pseudonymes Merkmal des Browsers. In einer Datei, die
+   * weitergereicht wird, hätte sie nichts zu suchen — sie würde beim Laden nur
+   * zwei Geräte zusammenführen, die niemand zusammenführen wollte.
+   */
+  const sicherung = erstelleSicherung(beispielProfil());
+  assert.equal('geraet' in sicherung, false, 'die Sicherung trägt ein Gerätefeld');
+  assert.equal('geraet' in sicherung.profil, false, 'das Profil trägt ein Gerätefeld');
+  assert.doesNotMatch(JSON.stringify(sicherung), /geraet/,
+    'irgendwo in der Sicherung steht ein Gerätefeld');
+});
+
+test('Fremde Dateien werden abgelehnt, nicht halb übernommen', () => {
+  /*
+   * Der wichtigste Test dieser Gruppe: Die Prüfung darf NICHT tolerant sein.
+   * `PlayerProfile` ist es (fehlende Felder bekommen Vorgaben) — eine Datei mit
+   * `waffen: "abc"` ergäbe dort still ein Profil mit drei Waffen namens „0",
+   * „1", „2". Genau solche Daten kommen über einen Datei-Upload herein.
+   */
+  const faelle = [
+    [{}, /keine ProjectArmageddon-Sicherung/],
+    [{ format: 'irgendwas', version: 1, profil: {} }, /keine ProjectArmageddon-Sicherung/],
+    [{ format: SICHERUNG_FORMAT, version: 0, profil: {} }, /keine gültige Version/],
+    [{ format: SICHERUNG_FORMAT, version: SICHERUNG_VERSION + 1, profil: {} }, /neueren Fassung/],
+    [{ format: SICHERUNG_FORMAT, version: SICHERUNG_VERSION }, /kein Profil/],
+    [{ format: SICHERUNG_FORMAT, version: SICHERUNG_VERSION, profil: [] }, /kein Profil/],
+  ];
+  for (const [daten, erwartet] of faelle) {
+    const geprueft = pruefeSicherung(daten);
+    assert.equal(geprueft.ok, false, `akzeptiert: ${JSON.stringify(daten)}`);
+    assert.match(geprueft.fehler, erwartet);
+  }
+
+  // Falsche Typen INNERHALB des Profils.
+  const typfehler = [
+    ['partien', 'viele'],
+    ['schaden', Number.NaN],
+    ['name', 42],
+    ['waffen', 'abc'],
+    ['waffen', { pa_001: 'viel' }],
+    ['fraktionen', 7],
+    ['erfolge', 'muster_siege_10'],
+    ['erfolge', [1, 2]],
+  ];
+  for (const [feld, wert] of typfehler) {
+    const geprueft = pruefeSicherung({
+      format: SICHERUNG_FORMAT,
+      version: SICHERUNG_VERSION,
+      profil: { ...beispielProfil(), [feld]: wert },
+    });
+    assert.equal(geprueft.ok, false, `${feld}=${JSON.stringify(wert)} wurde akzeptiert`);
+  }
+
+  // Und: Die Prüfung nimmt nur BEKANNTE Felder an — nichts wird durchgereicht.
+  const mitFremdfeld = pruefeSicherung({
+    format: SICHERUNG_FORMAT,
+    version: SICHERUNG_VERSION,
+    profil: { ...beispielProfil(), schuld: 999, __proto__: { boese: true } },
+  });
+  assert.equal(mitFremdfeld.ok, true);
+  assert.equal('schuld' in mitFremdfeld.profil, false, 'ein fremdes Feld wurde übernommen');
+});
+
+test('Kein gültiges JSON ist kein Absturz', () => {
+  const geprueft = sicherungAusText('{ das ist kein JSON');
+  assert.equal(geprueft.ok, false);
+  assert.match(geprueft.fehler, /kein gültiges JSON/);
+  assert.equal(geprueft.profil, null);
+});
+
+test('Der Hinweis nennt dem Spieler den Weg mit — nicht nur den Verlust', () => {
+  /*
+   * Die alte Fassung nannte nur die Gefahr („ein gelöschter Cache bedeutet
+   * Verlust"). Seit es die Sicherung gibt, muss der Hinweis auch sagen, WIE man
+   * sie nutzt — sonst kennt der Spieler die Knöpfe nicht.
+   */
+  const hinweis = ablageHinweis();
+  assert.equal(hinweis.ort, AKTUELLER_ABLAGEORT);
+  assert.match(hinweis.hinweis, /sichern/i);
+  assert.match(hinweis.hinweis, /laden/i);
+});
+
+test('Die Sicherung ersetzt kein Konto — der Konto-Ablageort bleibt unbenutzt', () => {
+  /*
+   * Eine Entscheidung ist nur dann eine, wenn sie im Code sichtbar bleibt:
+   * `SERVER_KONTO` existiert als Möglichkeit, ist aber nicht aktiv, und die
+   * Begründung steht bei der Sicherung.
+   */
+  assert.notEqual(AKTUELLER_ABLAGEORT, ABLAGEORTE.SERVER_KONTO);
+  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'shared', 'identity.js'), 'utf8');
+  assert.match(quelle, /keine Serverkonten/);
 });
