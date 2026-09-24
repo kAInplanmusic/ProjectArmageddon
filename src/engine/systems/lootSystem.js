@@ -82,18 +82,12 @@ export const RARITY_WEIGHTS = Object.freeze({ common: 55, uncommon: 25, rare: 12
 
 /** Waffen-IDs nach Index (1-basiert) fuer die projektion in Int32-Felder. */
 const WEAPON_ID_BY_INDEX = new Map();
-const WEAPON_INDEX_BY_ID = new Map();
 for (const weapon of Object.values(WEAPONS_BY_ID)) {
   WEAPON_ID_BY_INDEX.set(weapon.index, weapon.id);
-  WEAPON_INDEX_BY_ID.set(weapon.id, weapon.index);
 }
 
 export function weaponIdFromIndex(index) {
   return WEAPON_ID_BY_INDEX.get(index) ?? null;
-}
-
-export function weaponIndexFromId(id) {
-  return WEAPON_INDEX_BY_ID.get(id) ?? 0;
 }
 
 export class LootSystem {

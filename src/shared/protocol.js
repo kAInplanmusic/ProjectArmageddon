@@ -90,7 +90,6 @@ export const CONTROL = Object.freeze({
 export const COORD_SCALE = 4;      // 0.25 px Auflösung
 export const HEALTH_SCALE = 10;    // 0.1 HP Auflösung
 export const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
-export const SHIELD_SCALE = 1;      // Schild in ganzen Punkten
 /** Obergrenze für Einfrierdauer im Drahtformat (ein Byte). */
 export const MAX_WIRE_FREEZE_TURNS = 255;
 /** Bitfeld im dirty-Byte: welche Felder eines Spielers sich geändert haben. */

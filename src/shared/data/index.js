@@ -11,6 +11,3 @@ export function loadProjectArmageddonWeaponDatabase() {
 export function loadTerrainMaterialDefinitions() {
   return loadJson('./terrainMaterialsV1.json');
 }
-
-export const PROJECT_ARMAGEDDON_WEAPON_DATABASE = loadProjectArmageddonWeaponDatabase();
-export const TERRAIN_MATERIAL_DEFINITIONS = loadTerrainMaterialDefinitions();
