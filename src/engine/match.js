@@ -39,6 +39,7 @@ import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
+import { damageTypeId } from './damageTypes.js';
 import { getClassLoadout } from '../shared/config/loadouts.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
@@ -47,7 +48,7 @@ import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
-import { POWER_TO_SPEED, simulateFlight } from '../shared/ballistics.js';
+import { POWER_TO_SPEED, raycastSegment, simulateFlight } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 
 /**
@@ -268,6 +269,13 @@ const TURRET_WEAPON = Object.freeze({
   speedFactor: 1,
   terrainDamage: 6,
   maxRange: 800,
+  /**
+   * Das Geschütz schießt über Deckung hinweg (Steilfeuer) — es braucht deshalb
+   * KEINE Sichtlinie. Die Schadensart ist Sprengwirkung, wie bei jeder
+   * Flächenwaffe (siehe `src/engine/damageTypes.js`).
+   */
+  requiresLineOfSight: false,
+  damageType: 'explosive',
 });
 /**
  * Antriebskräfte, die die Suche durchprobiert.
@@ -1521,6 +1529,30 @@ export class MatchController {
       return { ok: false, errors: ['In diesem Zug wurde bereits geschossen'] };
     }
 
+    /*
+     * SICHTLINIE — steht VOR dem Munitionsverbrauch.
+     *
+     * Ein abgelehnter Schuss darf keine Ladung kosten (dieselbe Regel wie bei
+     * der Nachladezeit oben). Selbstwirkungen (Heilung, Schild, Sprung, Buff)
+     * sind ausgenommen: Sie gehen auf den Schützen und brauchen kein Ziel —
+     * ein Verband benötigt keine Sichtlinie.
+     *
+     * FUND (belegt, gemessen 2026-09-25): `requiresLineOfSight` stand im
+     * Katalog, der Motor las es nirgends. Jetzt entscheidet es über die
+     * Abgabe: Ein Direktschütze (Präzision, Strahl, Plasma, Pfeil, Blitz)
+     * kann nicht über Deckung schießen — dafür gibt es Steilfeuerwaffen.
+     */
+    if (weapon.requiresLineOfSight) {
+      const sichtEffekt = buildEffect(weapon);
+      const selbstwirkung = Boolean(sichtEffekt) && SELF_TARGET_KINDS.has(sichtEffekt.kind);
+      if (!selbstwirkung && !this.hasLineOfSight(playerId, angle, power, weapon)) {
+        return {
+          ok: false,
+          errors: [`${weapon.displayName} verlangt freie Sicht zum Ziel — die Sichtlinie ist versperrt`],
+        };
+      }
+    }
+
     if (!this.#inventory.consume(playerId, weapon.id, 1)) {
       return { ok: false, errors: ['Keine Munition'] };
     }
@@ -1549,7 +1581,25 @@ export class MatchController {
      *
      * Die drei Wege (Selbstwirkung, Hitscan, Projektil) melden alle hier.
      */
-    this.#events.emit('shot', { playerId, weaponId: weapon.id, angle, power });
+    this.#events.emit('shot', {
+      playerId,
+      weaponId: weapon.id,
+      angle,
+      power,
+      /*
+       * Die ZIELART reist im Ereignis mit.
+       *
+       * FUND (belegt, gemessen 2026-09-25): `weapon.targeting` stand im
+       * Katalog, aber der Motor las das Feld nirgends — er entschied die
+       * Frage „geht das auf den Schützen oder ins Ziel?" allein aus der
+       * Wirkung (`buildEffect`/`SELF_TARGET_KINDS`). Die Designdatei
+       * widersprach ihm dabei bei 11 Waffen (Heilzauber als "directional").
+       * Beide Seiten sind jetzt in Übereinstimmung (`npm run check:targeting`),
+       * und die Zielart steht den Verbrauchern — Anzeige, Aufzeichnung, Ton —
+       * als eigenes Feld zur Verfügung.
+       */
+      targeting: weapon.targeting ?? null,
+    });
 
     // Wirkungen, die auf den Schützen selbst gehen (Heilung, Schild, Sprung,
     // Munition, Aufklärung), werden sofort ausgelöst. Es wird bewusst KEIN
@@ -1597,6 +1647,16 @@ export class MatchController {
     this.#world.addComponent(projectileId, 'Projectile', {
       owner: playerId,
       weaponId: weapon.index,
+      /*
+       * Die SCHADENSART reist als Zahl mit dem Geschoss.
+       *
+       * FUND (belegt, gemessen 2026-09-25): `weapon.damageType` stand im
+       * Katalog (27 Arten), aber kein Stück Motor las ihn — jede Waffe wirkte
+       * gleich. Über `damageType` im Projektil erreicht die Art jetzt das
+       * Schadenereignis (`damageSystem.applyDamage` → `damage`-Event) und steht
+       * damit Resistenzen, Anzeige und Aufzeichnung zur Verfügung.
+       */
+      damageType: damageTypeId(weapon.damageType),
       // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
       damage: weapon.damage * profile.damageMultiplier * this.#statuses.damageMultiplier(playerId),
       /*
@@ -1944,6 +2004,7 @@ export class MatchController {
       // eigene Geschütz soll ihm zugerechnet werden (Kennzahlen, Sieg).
       owner: turret.ownerId,
       weaponId: waffe.index,
+      damageType: damageTypeId(waffe.damageType),
       damage: turret.damage,
       blastRadius: waffe.blastRadius || 18,
       knockback: waffe.knockback ?? 0,
@@ -2037,7 +2098,9 @@ export class MatchController {
     const target = this.#playerAt(result.hitX, result.hitY, shooterId);
     if (target !== null) {
       const damage = weapon.damage * this.#statuses.damageMultiplier(shooterId);
-      this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId);
+      this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId, {
+        damageType: damageTypeId(weapon.damageType),
+      });
 
       // Wirkung über den Schaden hinaus (Einfrieren, Schaden über Zeit).
       // Fällt die Waffe nicht in SPECIAL_EFFECTS, greift die Ableitung aus dem
@@ -2921,6 +2984,72 @@ export class MatchController {
       bounds: { minX: 0, maxX: this.width, minY: 0, maxY: this.height },
     });
     return bahn.points;
+  }
+
+  /**
+   * Freie Sichtlinie für einen Schuss?
+   *
+   * ## Was hier gemessen wird
+   *
+   * Geprüft wird die GERADE von der Mündung in Zielrichtung — bis zur
+   * Reichweite der Waffe bzw. bis zum Kartenrand. Liegt Gestein auf dieser
+   * Geraden, hat der Schütze in dieser Richtung keine Sicht und der Schuss
+   * wird abgelehnt.
+   *
+   * ## Warum die Zielgerade und nicht die Flugbahn
+   *
+   * Der naheliegende Ansatz — die Bahn simulieren und die Sehne von der
+   * Mündung zum Einschlag prüfen — wurde gebaut und VERWORFEN. Er ist an
+   * einem Grenzfall gescheitert: Trifft das Geschoss 20 px vor der Mündung auf
+   * eine Wand, dann IST der Einschlag die Wand, und die Sehne dorthin ist
+   * trivial frei. Der Schütze hätte „Sicht" gemeldet bekommen, obwohl er in
+   * eine Wand direkt vor sich schießt.
+   *
+   * Die Zielgerade kennt diesen Grenzfall nicht: Sie geht von der Mündung aus
+   * und trifft die Wand nach 20 px — gesperrt. Sie ist außerdem unabhängig von
+   * Kraft und Schwerkraft, also allein eine Aussage über die Richtung.
+   *
+   * ## Steilfeuer ist ausgenommen — über das Merkmal, nicht über diese Funktion
+   *
+   * Mörser, Granaten und das Geschütz schießen über Deckung hinweg. Bei ihnen
+   * ist `requiresLineOfSight` false, deshalb wird diese Funktion für sie gar
+   * nicht erst befragt.
+   *
+   * FUND (belegt, gemessen 2026-09-25): Das Merkmal stand im Katalog, der
+   * Motor las es nirgends — eine Zusage ohne Wirkung.
+   *
+   * @returns {boolean} true, wenn die Zielgerade frei ist
+   */
+  hasLineOfSight(playerId, angle, power, weapon = null) {
+    const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
+    if (!waffe) return false;
+
+    const launch = this.#launchVector(playerId, angle, power, waffe);
+    const dirX = Math.cos(angle);
+    const dirY = -Math.sin(angle);
+    const start = this.#findMuzzle(launch.x, launch.y, dirX, dirY, playerId);
+    // Kein freies Feld in Schussrichtung: Der Schütze steht mit der Mündung in
+    // der Wand — eine Sichtlinie gibt es dann nicht.
+    if (start === null) return false;
+
+    /*
+     * Länge der Zielgeraden: die Reichweite der Waffe, aber nie über den
+     * Kartenrand hinaus. Sonst meldete der Rand („Rand ist fest", siehe
+     * `CollisionMask.isSolid`) eine Sichtlinie als versperrt, die offen ist.
+     * Deshalb wird gegen den tatsächlichen Rand gekürzt, nicht gegen eine
+     * feste Zahl.
+     */
+    let laenge = Math.max(1, (waffe.maxRange || 0) * weitenFaktor(this.width));
+    if (dirX > 1e-6) laenge = Math.min(laenge, (this.width - 1 - start.x) / dirX);
+    else if (dirX < -1e-6) laenge = Math.min(laenge, (0 - start.x) / dirX);
+    if (dirY < -1e-6) laenge = Math.min(laenge, (0 - start.y) / dirY);
+    else if (dirY > 1e-6) laenge = Math.min(laenge, (this.height - 1 - start.y) / dirY);
+    if (!Number.isFinite(laenge) || laenge <= 1) return false;
+
+    const blocker = raycastSegment(start.x, start.y, start.x + dirX * laenge, start.y + dirY * laenge, {
+      isSolid: (x, y) => this.#terrain.isSolid(x, y),
+    });
+    return blocker === null;
   }
 
   /**

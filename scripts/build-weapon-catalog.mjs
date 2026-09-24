@@ -331,6 +331,80 @@ export function resolveDamage(stats) {
 }
 
 /**
+ * Namenshinweise für die Schadensart, wenn die Quelldatei keine angibt.
+ *
+ * FUND (belegt, gemessen 2026-09-24): 26 der 150 Waffen tragen KEIN
+ * `damage_type` (alle melee sowie ein Teil der ranged/heavy_ranged). Der
+ * Generator füllte dafür pauschal "physical" — ein Raketenwerfer und eine
+ * Maschinenpistole hatten damit dieselbe Schadensart wie ein Baseballschläger.
+ *
+ * Die Hinweise sind deterministisch und aus dem ANZEIGENAMEN abgeleitet — die
+ * Quelle wird nicht angetastet. Reihenfolge ist entscheidend: der erste
+ * passende Hinweis gewinnt.
+ */
+const DAMAGE_TYPE_BY_NAME_HINT = Object.freeze([
+  ['explosive', ['raketen', 'granate', 'feuerwerk', 'geschütz', 'spreng', 'bombe', 'mine']],
+  ['fire', ['fackel', 'feuer', 'flamme', 'brand', 'lava', 'glut']],
+  ['electric', ['blitz', 'strom', 'elektro', 'tesla', 'plasma']],
+  ['arcane', ['magisch', 'zauber', 'rune', 'arkana']],
+  ['ice', ['eis', 'frost', 'kälte']],
+  ['poison', ['gift', 'säure', 'toxin']],
+  ['energy', ['energie', 'quanten', 'strahl']],
+]);
+
+/**
+ * Schadensart einer Waffe.
+ *
+ * Die Quelldatei führt `damage_type` nur für 124 der 150 Waffen. Fehlt es,
+ * wird die Art aus dem Anzeigenamen abgeleitet; greift auch das nicht, gilt
+ * "physical" (die belastbare Standardannahme für Schneiden/Schlagen).
+ */
+export function deriveDamageType(stats, displayName) {
+  const explizit = pickString(stats, 'damage_type', 'damageType');
+  if (explizit) return { damageType: explizit, damageTypeSource: 'source' };
+
+  const name = String(displayName ?? '').toLowerCase();
+  for (const [art, hinweise] of DAMAGE_TYPE_BY_NAME_HINT) {
+    if (hinweise.some(hinweis => name.includes(hinweis))) {
+      return { damageType: art, damageTypeSource: 'derived' };
+    }
+  }
+  return { damageType: 'physical', damageTypeSource: 'derived' };
+}
+
+/**
+ * Wirkungsnamen, die eine FREIE SICHTLINIE zum Ziel verlangen.
+ *
+ * FUND (belegt, gemessen 2026-09-24): `requiresLineOfSight` stand in der
+ * Quelldatei für ALLE 150 Waffen auf false — ein Feld mit einer Zusage ohne
+ * Wirkung. Der Motor las es nirgends (außer als 0,95-Multiplikator im
+ * powerScore, wo false ebenfalls nichts bewirkte).
+ *
+ * Eine Sichtlinien-Waffe ist eine, die DIREKT zielt: Präzision, Strahl,
+ * Plasma, Pfeil, Blitz. Ein Mörser oder eine Granate braucht bewusst KEINE
+ * Sichtlinie — man schießt über Deckung hinweg. Deshalb wird das Merkmal aus
+ * dem Wirkungsnamen abgeleitet statt pauschal gesetzt.
+ */
+export const LINE_OF_SIGHT_SPECIALS = Object.freeze(new Set([
+  'precision', 'sniper', 'railgun', 'laser', 'beam', 'quantum_shot',
+  'quantum_blast', 'plasma_bolt', 'plasma', 'arrow',
+  'heavy_arrow', 'magic_bolt', 'chain_lightning', 'rifle', 'blaster',
+  'revolver', 'pistole', 'magic_whip', 'energy_fist', 'magic_hammer',
+]));
+/*
+ * NICHT in der Liste: `drill_cannon`. Die Bohrkanone kommt als `flank`-Anflug
+ * (schwere Artillerie von der Seite) und schießt damit über Deckung hinweg —
+ * eine Sichtlinie zu verlangen widerspräche ihrer Anflugart. Das hat
+ * `npm run check:damage-types` beim ersten Lauf beanstandet (pa_113).
+ */
+
+/** Braucht diese Waffe freie Sicht zum Ziel? */
+export function needsLineOfSight(weapon) {
+  if (weapon.requiresLineOfSight) return true;
+  return LINE_OF_SIGHT_SPECIALS.has(weapon.special);
+}
+
+/**
  * Referenzwert der `gravity`-Skala in den Quelldaten.
  *
  * Die Quelle nennt für 26 Waffen einen Wert zwischen 62 und 92, wovon 19 exakt
@@ -763,7 +837,9 @@ const weapons = raw.weapons.map(entry => {
     piercing: pickPositive(stats, 'piercing'),
     // `aoe` ist in der Quelle konstant false — Flaechenwirkung ergibt sich aus dem Radius.
     aoe: toNumber(stats.aoe) > 0 || blastRadius > 0,
-    damageType: pickString(stats, 'damage_type', 'damageType') ?? 'physical',
+    // Schadensart: erst NACH der Identitätszuweisung bestimmt, weil sie aus dem
+    // endgültigen Anzeigenamen abgeleitet wird (siehe deriveDamageType()).
+    damageType: null,
     elemental: {
       fire: pickPositive(stats, 'fire_damage', 'fireDamage'),
       ice: pickPositive(stats, 'ice_damage', 'iceDamage'),
@@ -823,6 +899,39 @@ const weapons = raw.weapons.map(entry => {
   // Anflugart aus dem Wirkungsnamen ableiten.
   if (STRIKE_FROM_SKY.has(weapon.special)) weapon.strikeStyle = 'sky';
   else if (STRIKE_FROM_FLANK.has(weapon.special)) weapon.strikeStyle = 'flank';
+
+  /*
+   * SCHADENSART: aus der Designdatei oder aus dem Anzeigenamen abgeleitet.
+   *
+   * FUND (belegt, gemessen 2026-09-25): 26 der 150 Waffen tragen kein
+   * `damage_type`. Der Generator füllte dafür pauschal "physical" — ein
+   * Raketenwerfer hatte damit dieselbe Schadensart wie ein Baseballschläger.
+   * Die Ableitung steht NACH der Identitätszuweisung, weil sie aus dem
+   * endgültigen Anzeigenamen gebildet wird.
+   */
+  {
+    const abgeleitet = deriveDamageType(stats, weapon.displayName);
+    weapon.damageType = abgeleitet.damageType;
+    weapon.damageTypeSource = abgeleitet.damageTypeSource;
+  }
+
+  /*
+   * SICHTLINIE: Designdatei ODER direkte Feuerart.
+   *
+   * FUND (belegt, gemessen 2026-09-25): `requiresLineOfSight` stand in der
+   * Quelldatei für ALLE 150 Waffen auf false — eine Zusage ohne Wirkung, die
+   * der Motor nirgends las. Die Ableitung aus dem Wirkungsnamen setzt das
+   * Merkmal dort, wo es mechanisch stimmt (Präzision, Strahl, Plasma, Pfeil,
+   * Blitz), und lässt es bei Mörsern und Granaten bewusst aus, die über
+   * Deckung hinweg schießen. Ein Wert aus der Designdatei bleibt gültig;
+   * die Herkunft wird festgehalten.
+   */
+  if (!weapon.requiresLineOfSight) {
+    weapon.requiresLineOfSight = needsLineOfSight(weapon);
+  }
+  weapon.requiresLineOfSightSource = weapon.requiresLineOfSight
+    ? (balance.requiresLineOfSight ? 'source' : 'derived')
+    : 'none';
 
   /*
    * Zünder: Die Designdatei hält die ABSICHT fest (`mechanic.fuseIntent`).

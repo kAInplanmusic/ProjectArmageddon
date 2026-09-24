@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createGameWorld } from '../src/engine/init.js';
 import { EventBus } from '../src/engine/events.js';
+import { damageTypeId } from '../src/engine/damageTypes.js';
 
 test('DamageSystem emits one deterministic death and cleans up the entity', () => {
   const world = createGameWorld({ turnDuration: 1000 });
@@ -22,9 +23,15 @@ test('DamageSystem emits one deterministic death and cleans up the entity', () =
   // viel Schaden vom Schild abgefangen wurde. Hier gibt es kein Schild, der
   // Wert ist also 0 — geprüft wird er trotzdem, damit ein stiller Wegfall des
   // Feldes auffällt.
+  //
+  // `damageType` kam am 2026-09-25 dazu (Schadensart als Zahlenindex,
+  // `src/engine/damageTypes.js`). Ohne Angabe gilt 0 = körperlich. Auch dieses
+  // Feld wird hier mitgeprüft, aus demselben Grund wie oben.
   assert.deepEqual(
     damage.killFeed,
-    [{ target: entity, attacker: 99, damage: 10, absorbedByShield: 0, tick: 0 }],
+    [{
+      target: entity, attacker: 99, damage: 10, absorbedByShield: 0, tick: 0, damageType: 0,
+    }],
   );
 });
 
@@ -53,7 +60,8 @@ test('Die Schild-Absorption wird im Kill-Feed und im Ereignis gemeldet', () => {
   world.services.events.on('damage', payload => events.push(payload));
 
   const damage = world.getSystem('damage');
-  damage.applyDamage(world, entity, 50, 7);
+  const feuer = damageTypeId('fire');
+  damage.applyDamage(world, entity, 50, 7, { damageType: feuer });
   world.services.events.drain();
 
   // 30 Schild, 20 treffen die Gesundheit.
@@ -62,6 +70,15 @@ test('Die Schild-Absorption wird im Kill-Feed und im Ereignis gemeldet', () => {
   assert.equal(Math.round(eintrag.damage), 20);
   assert.equal(Math.round(eintrag.absorbedByShield), 30);
   assert.equal(schild, 0);
+
+  // Die Schadensart reist in BEIDE Richtungen mit: in den Kill-Feed und ins
+  // Ereignis. Ohne diese Prüfung wäre das Feld nur vorhanden, nicht wirksam.
+  assert.equal(eintrag.damageType, feuer,
+    'Der Kill-Feed muss die Schadensart tragen');
+  assert.equal(events[0].damageType, feuer,
+    'Das Ereignis muss die Kennung der Schadensart tragen');
+  assert.equal(events[0].damageTypeName, 'fire',
+    'Das Ereignis muss den NAMEN der Schadensart tragen');
 
   // Das Ereignis muss denselben aufgeteilten Schaden melden, damit die Anzeige
   // „Schild absorbiert" darstellen kann.

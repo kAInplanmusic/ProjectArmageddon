@@ -59,6 +59,15 @@ export function registerDefaultComponents(componentStore) {
   componentStore.registerComponent('Projectile', {
     owner: 'Int32Array',
     weaponId: 'Int32Array',
+    /**
+     * Schadensart als Zahl (siehe `src/engine/damageTypes.js`).
+     *
+     * FUND (belegt, gemessen 2026-09-25): `weapon.damageType` stand im Katalog,
+     * aber kein Motorlas das Feld. Die Art reist jetzt bis ins Schadensereignis
+     * mit — nötig für elementare Resistenzen und für jeden Effekt, der von der
+     * Art abhängt. Nur Zahlen: der Komponentenspeicher führt keine Zeichenketten.
+     */
+    damageType: 'Int32Array',
     damage: 'Float32Array',
     blastRadius: 'Float32Array',
     knockback: 'Float32Array',

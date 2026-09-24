@@ -221,9 +221,17 @@ test('Projektilwaffen verursachen weiterhin Schaden', () => {
    * Baseballschläger (110 px, eine Wurfwaffe) kann auf der Testdistanz nicht
    * treffen — die Prüfung würde dann die Wurfweite messen statt den Einschlag.
    * Gemessen wird mit einer Waffe, die die Standarddistanz sicher überschreitet.
+   *
+   * UND OHNE SICHTLINIEN-ZWANG: Seit 2026-09-25 lehnt `fire()` Waffen mit
+   * `requiresLineOfSight` ab, wenn die Zielgerade versperrt ist. Dieser Test
+   * schießt bewusst WAAGERECHT (Winkel 0–0,18), und eine waagerechte Gerade
+   * läuft auf jeder Karte schnell in eine Bodenwelle. Der Test würde dann die
+   * Sichtlinien-Regel messen statt den Einschlag — er sucht sich deshalb eine
+   * Waffe ohne dieses Merkmal. Die Sichtlinien-Regel selbst ist in
+   * `tests/wirkungsmerkmale-match.test.js` belegt.
    */
   const projectile = WEAPONS.find(weapon => weapon.delivery === 'projectile'
-    && weapon.damage > 0 && weapon.maxRange >= 400);
+    && weapon.damage > 0 && weapon.maxRange >= 400 && !weapon.requiresLineOfSight);
   assert.ok(projectile,
     'Es muss eine Projektilwaffe mit Schaden und ausreichender Reichweite geben');
   assert.equal(projectile.category !== 'melee', true,

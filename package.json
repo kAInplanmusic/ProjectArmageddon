@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "validate": "node --input-type=module -e \"await import('./src/shared/index.js'); await import('./src/engine/index.js'); await import('./src/server/index.js'); await import('./src/client/index.js'); console.log('ProjectArmageddon skeleton is valid.');\"",
     "check:targeting": "node scripts/check-weapon-targeting.mjs",
+    "check:damage-types": "node scripts/check-damage-types.mjs",
     "balance:classes": "node scripts/class-balance.mjs",
     "check:fuses": "node scripts/check-fuses.mjs",
     "check:effects": "node scripts/check-effects.mjs",

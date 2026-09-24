@@ -3731,7 +3731,7 @@
       },
       "mechanic": {
         "specialEffect": "random_spell",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -4044,7 +4044,7 @@
       },
       "mechanic": {
         "specialEffect": "heal",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -4220,7 +4220,7 @@
       },
       "mechanic": {
         "specialEffect": "mutation",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -4443,7 +4443,7 @@
       },
       "mechanic": {
         "specialEffect": "shield_freeze",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -4624,7 +4624,7 @@
       },
       "mechanic": {
         "specialEffect": "scroll_spell",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -4802,7 +4802,7 @@
       },
       "mechanic": {
         "specialEffect": "area_buff",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -5067,7 +5067,7 @@
       },
       "mechanic": {
         "specialEffect": "guardian",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -5113,7 +5113,7 @@
       },
       "mechanic": {
         "specialEffect": "blood_ritual",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -5472,7 +5472,7 @@
       },
       "mechanic": {
         "specialEffect": "auto_target",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -6554,7 +6554,7 @@
       },
       "mechanic": {
         "specialEffect": "guardian_ultimate",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -6598,7 +6598,7 @@
       },
       "mechanic": {
         "specialEffect": "relic_buff",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },

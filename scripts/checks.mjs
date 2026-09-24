@@ -36,6 +36,7 @@ const GATES = [
   { skript: 'check:fuses', schuetzt: 'Zünder-Absicht (timed/impact)' },
   { skript: 'matrix:check', schuetzt: 'veraltete Wirkungs-Übersicht' },
   { skript: 'check:targeting', schuetzt: 'Zielarten der Waffen' },
+  { skript: 'check:damage-types', schuetzt: 'Schadensart und Sichtlinie der Waffen' },
   { skript: 'check:range', schuetzt: 'Reichweiten-Konsistenz' },
   { skript: 'check:terrain', schuetzt: 'Terrain-Erzeugung' },
   { skript: 'check:map', schuetzt: 'Kartenmaße' },

@@ -235,7 +235,9 @@ export class ProjectileSystem {
         if (pierceFrei > 0 && hit.target !== null && world.isActive(hit.target)) {
           const trefferSchaden = world.getComponent(entityId, 'Projectile', 'damage') || 0;
           if (trefferSchaden > 0) {
-            world.getSystem('damage')?.applyDamage(world, hit.target, trefferSchaden, owner);
+            world.getSystem('damage')?.applyDamage(world, hit.target, trefferSchaden, owner, {
+              damageType: world.getComponent(entityId, 'Projectile', 'damageType'),
+            });
           }
           world.setComponent(entityId, 'Projectile', 'pierce', pierceFrei - 1);
           world.setComponent(entityId, 'Projectile', 'letztesZiel', hit.target);
@@ -376,6 +378,10 @@ export class ProjectileSystem {
     const knockback = world.getComponent(entityId, 'Projectile', 'knockback') || 0;
     const terrainDamage = world.getComponent(entityId, 'Projectile', 'terrainDamage') || 0;
     const owner = world.getComponent(entityId, 'Projectile', 'owner');
+    // Die Schadensart reist mit dem Geschoss (siehe `src/engine/damageTypes.js`).
+    // Flächenschaden trägt sie genauso wie ein Direkttreffer — ein Feuerball
+    // wirkt auch im Radius als Feuer.
+    const damageType = world.getComponent(entityId, 'Projectile', 'damageType');
 
     // Krater: expliziter Terrain-Schaden hat Vorrang, sonst leitet sich der
     // Radius aus der Flaechenwirkung ab. Reine Direktschusswaffen graben nur
@@ -398,7 +404,7 @@ export class ProjectileSystem {
 
     if (damage > 0 && blastRadius <= 0 && hitTarget !== null && world.isActive(hitTarget)) {
       // Waffe ohne Flaechenwirkung: voller Schaden nur auf das getroffene Ziel.
-      world.getSystem('damage')?.applyDamage(world, hitTarget, damage, owner);
+      world.getSystem('damage')?.applyDamage(world, hitTarget, damage, owner, { damageType });
     }
 
     if (blastRadius > 0 && damage > 0) {
@@ -418,7 +424,7 @@ export class ProjectileSystem {
         const applied = damage * falloff;
         const damageSystem = world.getSystem('damage');
         if (damageSystem) {
-          damageSystem.applyDamage(world, victimId, applied, owner);
+          damageSystem.applyDamage(world, victimId, applied, owner, { damageType });
         }
 
         if (knockback > 0 && dist > 0.0001) {
@@ -432,7 +438,9 @@ export class ProjectileSystem {
     }
 
     if (events) {
-      events.emit('explosion', { x, y, radius: blastRadius, damage, owner, projectile: entityId });
+      events.emit('explosion', {
+        x, y, radius: blastRadius, damage, owner, projectile: entityId, damageType,
+      });
     }
 
     world.setComponent(entityId, 'Projectile', 'alive', 0);

@@ -167,7 +167,10 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run matrix` | Erzeugt `docs/matrix-terrain-waffen-wirkung.md` — Wirkung jeder der 150 Waffen, Zerstörungsgrad, Terrain-Arten |
 | `npm run matrix:check` | Prüft, ob diese Übersicht noch zum Katalog passt |
 | `npm run check:effects` | Prüft, ob jedes Wirkfeld des Katalogs im Motor ankommt |
-| `npm test` | Unit- und Integrationstests: **983 Tests in 95 Dateien**, ~4,7 min |
+| `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
+| `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
+| `npm run checks` | **Alle Prüfwerkzeuge in einem Lauf** (~30 s); Exit-Code 1, sobald eines fehlschlägt |
+| `npm test` | Unit- und Integrationstests: **997 Tests in 97 Dateien**, ~5,7 min |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -321,8 +324,11 @@ nicht von Hand gepflegt.
 | Eigenschaft | Stand |
 |---|---|
 | Anzeigename, interner Name, ID, Index | eindeutig, keine Platzhalter |
-| Schussart | 95 Projektil, 55 Hitscan |
+| Schussart | 96 Projektil, 54 Hitscan |
 | Schaden | 143 von 150; 7 richten keinen an (Selbstwirkung/Nutzen) |
+| Schadensart | 27 Arten; alle 150 gesetzt (124 aus der Designdatei, 26 aus dem Anzeigenamen abgeleitet) |
+| Sichtlinie | 13 Direktschützen verlangen freie Sicht; Steilfeuer ist ausgenommen |
+| Zielart | 150/150 gesetzt, deckungsgleich mit der Wirkung (0 Widersprüche) |
 | Flächenwirkung | 56 Waffen, 22 verschiedene Radien |
 | Seltenheit | fünf Stufen (`powerTier`), nach Stärke abgeleitet |
 | Schadensherkunft | 98 echte Designwerte, 45 aus der Kategorie abgeleitet, 7 ohne Schaden |
@@ -351,6 +357,43 @@ ab, `npm run check:fuses` prüft die Zusage (impact ⇒ 0 s, timed ⇒ länger a
 Flug, kein Zünder an einer Hitscan-Waffe — dort gäbe es kein Geschoss, das liegen
 bleiben könnte). Vorher wurde die Absicht aus dem Namen erschlossen; dadurch
 zündete jede Zünderwaffe erst nach der Landung.
+
+**Schadensart (`damageType`): im Motor angekommen.** Die Designdatei nennt für
+124 der 150 Waffen eine Schadensart; die 26 übrigen (alle Nahkampf, ein Teil des
+direkten Fernkampfs) bekommen sie im Generator aus dem **Anzeigenamen**
+abgeleitet — ein Raketenwerfer wirkt als `explosive`, eine Fackel als `fire`,
+eine Zauberwaffe als `arcane`. Damit steht die Herkunft als
+`damageTypeSource: "source" | "derived"` im Katalog.
+
+Die Arten sind in `src/engine/damageTypes.js` als **Zahlenindex** festgehalten
+(27 Arten, `physical = 0`). Der Index ist handgepflegt und darf nur **erweitert,
+nie umgeordnet** werden: Die Kennungen stehen in Int32-Feldern des
+Komponentenspeichers und gehen über Momentaufnahmen an den Client — eine
+Verschiebung würde die Bedeutung laufender Aufzeichnungen brechen. Die Art reist
+im Projektil mit und steht im `damage`-Ereignis als Kennung **und** Name
+(`damageType`, `damageTypeName`), damit Anzeige, Aufzeichnung und künftige
+Resistenzen sie lesen können.
+
+**Sichtlinie (`requiresLineOfSight`): 13 Waffen brauchen freie Sicht.** Das
+Merkmal stand zuvor für **alle** 150 Waffen auf `false` — eine Zusage ohne
+Wirkung. Der Generator leitet es aus dem Wirkungsnamen ab und setzt es für
+Direktschützen (Präzision, Strahl, Plasma, Pfeil, Blitz). Geprüft wird die
+**Zielgerade** von der Mündung in Schussrichtung bis zur Reichweite bzw. zum
+Kartenrand (`MatchController.hasLineOfSight()`); liegt Gestein darauf, lehnt
+`fire()` den Schuss ab — **vor** dem Munitionsverbrauch, ein abgelehnter Schuss
+kostet also keine Ladung.
+
+Bewusst **nicht** betroffen sind Steilfeuerwaffen: Mörser, Granaten und das
+Geschütz schießen über Deckung hinweg und tragen das Merkmal deshalb nicht.
+Selbstwirkungen (Heilung, Schild, Sprung, Munition) brauchen ebenfalls keine
+Sichtlinie — ein Verband benötigt kein Ziel.
+
+**Zielart (`targeting`): Feld und Wirkung stimmen überein.** Der Motor
+entscheidet die Frage „geht das auf den Schützen oder ins Ziel?" aus der
+**Wirkung** (`SELF_TARGET_KINDS`) — eine Regel, eine Stelle. Die Designdatei
+widersprach dem bei 11 Waffen (Heilzauber als `directional`); diese 11 sind
+korrigiert, `npm run check:targeting` meldet **150/150 Übereinstimmung, 0
+Widersprüche**. Die Zielart reist im `shot`-Ereignis mit.
 
 **Nachgemessen, nicht behauptet:** `maxRange` und `cooldown` sind NICHT mehr für
 alle Waffen gleich (63 bzw. 4 verschiedene Werte). Frühere Fassungen dieses

@@ -1,6 +1,6 @@
 # ProjectArmageddon — Master TODO / Codeaudit
 
-Stand: 2026-09-17
+Stand: 2026-09-25
 Branch: `main`
 
 Diese Datei ist die **Single Source of Truth** für offene Arbeit. Alles, was hier
@@ -14,6 +14,33 @@ Absichtserklärungen.
 > Zugzeit-Steuerung, Wind, Hitscan-Pfad, Fallschaden, Wasser, Mahlstrom. Sie wurde
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
+
+## Wirkungsmerkmale der 150 Waffen (2026-09-25)
+
+Auftrag: „erstelle die drei klar benannten Datenfelder (damageType,
+requiresLineOfSight, targeting), befülle sie für alle 150 waffen und
+implementiere sie in den motor."
+
+Ergebnis: Alle drei Felder sind befüllt UND im Motor wirksam — vorher waren zwei
+von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
+
+| Feld | Vorher | Jetzt |
+|---|---|---|
+| `damageType` | 124 von 150 gesetzt, 26 pauschal `physical`, **0 Motorleser** | 150/150 gesetzt, **27 Arten**, reist im Projektil bis ins `damage`-Ereignis |
+| `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
+| `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
+
+Verifikation dieses Durchgangs: `npm test` **997/997** grün ·
+`npm run checks` **21 Gates in ~52 s, 0 Verstöße** · `npm run validate` grün ·
+`eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
+check:damage-types` 0 Fehler.
+
+Neu in diesem Zug: `src/engine/damageTypes.js` (Zahlenindex), `scripts/check-damage-types.mjs`
+(neues Gate), `tests/weapon-damage-types.test.js` (7), `tests/wirkungsmerkmale-match.test.js` (7);
+`tests/weapon-targeting.test.js` von „dokumentierter Widerspruch" auf „Wächter gegen
+Rückfall" umgeschrieben. Dazu die Dead-Code-Bereinigung (3 Dateien, 4 Konstanten,
+Commit `7b78b38`). Die Einzelbelege stehen unter **„Offene Punkte aus dem Audit"**
+unten — dort ist jeder Punkt mit Messung und Fundstelle begründet.
 
 ## Audit-MCP und Tiefen-Audit (2026-09-24)
 
@@ -47,8 +74,8 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 
 | Prüfung | Ergebnis |
 |---|---|
-| Gate-Batterie | **7/7** — lint, validate, checks (20 Gates), build, perf, balance, smoke:fast · 155,8 s |
-| Unit-Suite | **983 Tests, 983 bestanden, 0 fehlgeschlagen** · 292 s |
+| Gate-Batterie | **7/7** — lint, validate, checks (21 Gates), build, perf, balance, smoke:fast |
+| Unit-Suite | **997 Tests, 997 bestanden, 0 fehlgeschlagen** |
 | Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
 | Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
 | Secrets | 0 Fundstellen in getrackten Dateien |
@@ -56,12 +83,12 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 
 ### Offen aus dem Audit (33 Punkte in `docs/audit-tief.md`, Auszug)
 
-| Punkt | Fundstelle |
-|---|---|
-| 3 Dateien ohne jeden Importeur (183 Zeilen) | `src/client/rendering/waterSimulation.js`, `src/client/rendering/terrainRenderer.js`, `src/client/ui.js` |
-| Konstante ohne Leser | `SHIELD_SCALE` (`src/shared/protocol.js:93`) |
-| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) — `PRIMARY_BIOME_BY_PRESET` in zwei Dateien ist dagegen **Absicht** (Projektregel) |
-| Design, nicht entschieden | `requiresLineOfSight` ist bei allen 150 Waffen konstant `false` |
+| Punkt | Fundstelle | Stand |
+|---|---|---|
+| 3 Dateien ohne jeden Importeur (183 Zeilen) | `src/client/rendering/waterSimulation.js`, `src/client/rendering/terrainRenderer.js`, `src/client/ui.js` | **entfernt 2026-09-25** (Commit `7b78b38`) |
+| Konstanten ohne Leser | `SHIELD_SCALE` (`src/shared/protocol.js`), `PROJECT_ARMAGEDDON_WEAPON_DATABASE` + `TERRAIN_MATERIAL_DEFINITIONS` (`shared/data/index.js`), `weaponIndexFromId` (`lootSystem.js`) | **entfernt 2026-09-25** |
+| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) — `PRIMARY_BIOME_BY_PRESET` in zwei Dateien ist dagegen **Absicht** (Projektregel) | **offen** |
+| Design, nicht entschieden | `requiresLineOfSight` ist bei allen 150 Waffen konstant `false` | **behoben 2026-09-25**: 13 Waffen verlangen freie Sicht, im Motor verdrahtet |
 
 ### Vier eigene Messfehler des Werkzeugs, gefunden und korrigiert
 
@@ -3306,24 +3333,91 @@ nicht nach Reihenfolge des Findens. Jeder Punkt nennt den Beleg.
 - [x] **`wurfAbgeleitet` entfernt — 0 Leser.** Vom Agenten selbst im Zug
       „Nahkampf wirft" eingeführt und nie benutzt (21 Einträge im Katalog).
       Fünf weitere Verdachtsfelder wurden in der Einzelprüfung **entlastet**:
-      `aoe`, `sourceRarity`, `requiresLineOfSight` und `effectMagnitude` werden
-      im Generator gelesen, `cooldownSource` ist als Herkunftsnachweis
-      kommentiert.
+      `aoe`, `sourceRarity` und `effectMagnitude` werden im Generator gelesen,
+      `cooldownSource` ist als Herkunftsnachweis kommentiert.
+      *Korrektur (2026-09-25):* Bei `requiresLineOfSight` trug die Entlastung
+      damals zu weit — der Generator las das Feld zwar als QUELLWERT, im MOTOR
+      hatte es aber keine Wirkung (alle 150 Waffen `false`). Siehe den eigenen
+      Eintrag unten.
       Beleg: `docs/audit-selbst.md`, Befund 2.
 
-- [x] **`targeting`: Widerspruch dokumentiert und prüfbar gemacht.**
-      Die Designdatei nennt 11 Waffen `directional`, die nachweislich auf den
+- [x] **`targeting`: Widerspruch BEHOBEN (2026-09-25) — und das Feld ist verdrahtet.**
+      Die Designdatei nannte 11 Waffen `directional`, die nachweislich auf den
       **Schützen** wirken (Heilzauber, Eisschild, Auto-Turret …). Bei 139 von
-      150 stimmt das Feld.
-      *Nicht geändert:* `project_armageddon_weapons_v1.json` ist die
-      handgepflegte **Designdatei** — dort ohne Auftrag Werte zu ändern wäre
-      derselbe Fehler wie eine Balance-Änderung nebenbei.
-      *Stattdessen:* `npm run check:targeting` meldet den Widerspruch mit einer
-      **fertigen Korrekturtabelle** (ID, Name, special, Wirkung, Vorschlag), und
-      `tests/weapon-targeting.test.js` hält ihn fest.
-      *Der Motor leitet korrekt ab* (`SELF_TARGET_KINDS`); das Feld zu
-      verdrahten würde 11 Waffen falsch steuern (Heilzauber als Angriff).
-      Beleg: `docs/audit-selbst.md`, Befund 2.
+      150 stimmte das Feld.
+      *Zuerst nur dokumentiert* — die Designdatei wurde nicht ohne Auftrag
+      geändert, `npm run check:targeting` meldete den Widerspruch mit
+      Korrekturtabelle, `tests/weapon-targeting.test.js` hielt ihn fest.
+      *Dann beauftragt und ausgeführt:* Auf ausdrückliche Freigabe („befülle sie
+      für alle 150 Waffen") wurde die Designdatei an genau diesen 11 Stellen auf
+      `self_or_area` korrigiert (einmaliges Hilfsskript, **nicht behalten** — der
+      Diff von 11 Zeilen steht in der Git-Historie).
+      *Ergebnis:* `npm run check:targeting` → **150/150 übereinstimmend, 0
+      Widersprüche**. Der Motor entscheidet weiterhin nach der WIRKUNG
+      (`SELF_TARGET_KINDS`) — die Korrektur bringt die Daten in Übereinstimmung
+      statt die Regel zu doppeln. Das Feld reist jetzt als Teil des
+      `shot`-Ereignisses zu den Verbrauchern.
+      Beleg: `docs/audit-selbst.md`, Befund 2; `npm run check:targeting`.
+
+- [x] **`damageType`: 26 Waffen ohne Schadensart — befüllt und VERDRAHTET.**
+      FUND (belegt, gemessen 2026-09-25): Die Designdatei führt `damage_type` für
+      124 der 150 Waffen. Die 26 übrigen (alle Nahkampf, ein Teil des direkten
+      Fernkampfs) füllte der Generator pauschal mit `physical` — ein
+      „Raketenwerfer" trug damit dieselbe Art wie ein „Baseballschläger". Und der
+      Motor las das Feld **nirgends**.
+      *Behoben:* Der Generator leitet die Art für diese 26 aus dem Anzeigenamen
+      ab (`deriveDamageType`, Hinweisliste in Rangfolge; `physical` bleibt der
+      belegte Rückfallwert). Herkunft steht als `damageTypeSource`.
+      *Verdrahtung:* Neues Modul `src/engine/damageTypes.js` (handgepflegter
+      Zahlenindex, 27 Arten, `physical = 0`, Regel „nur anhängen"), `damageType`
+      als Int32-Feld der Projektil-Komponente, gesetzt in `fire()`, im Geschütz
+      und im Hitscan-Pfad, durchgereicht über alle vier Aufrufstellen des
+      Projektilsystems bis ins `damage`- und `explosion`-Ereignis (dort mit
+      Kennung UND Namen).
+      *Gemessen:* 150/150 gesetzt, 27 Arten im Katalog, 0 leer; ein realer
+      Flächenschuss liefert `damageType: 11, damageTypeName: "fire"`.
+      Beleg: `tests/weapon-damage-types.test.js` (7),
+      `tests/wirkungsmerkmale-match.test.js` (7).
+
+- [x] **`requiresLineOfSight`: stand für ALLE 150 Waffen auf `false` — jetzt wirksam.**
+      FUND (belegt, gemessen 2026-09-25): Das Merkmal war eine Zusage ohne
+      Wirkung; der Motor las es nirgends (nur als 0,95-Faktor im `powerScore`,
+      wo `false` ebenfalls nichts bewirkte).
+      *Behoben:* Ableitung aus dem Wirkungsnamen (`LINE_OF_SIGHT_SPECIALS`) für
+      Direktschützen — Präzision, Strahl, Plasma, Pfeil, Blitz. **13 Waffen**
+      verlangen jetzt freie Sicht. Steilfeuer (Mörser, Granate, Geschütz) ist
+      bewusst ausgenommen, weil es über Deckung schießt.
+      *Verdrahtung:* Öffentliche Methode `MatchController.hasLineOfSight()` und
+      eine Sperre in `fire()` **vor** dem Munitionsverbrauch (ein abgelehnter
+      Schuss darf keine Ladung kosten); Selbstwirkungen (Heilung, Schild,
+      Sprung) sind ausgenommen.
+      *Zwei Ansätze gebaut und VERWORFEN — beide im Code dokumentiert:*
+      (1) Bahn simulieren und die Sehne Mündung→Einschlag prüfen: scheiterte am
+      gemessenen Grenzfall „Wand 20 px vor der Mündung" (der Einschlag IST die
+      Wand, die Sehne dorthin trivial frei). (2) Start an der Fußposition: die
+      Bahn endete im ersten Schritt im Boden. Endstand ist die **Zielgerade** von
+      der Mündung, längenbegrenzt auf Reichweite bzw. Kartenrand.
+      *Der Prüfer hat sofort einen echten Fehler gefunden:* Die Bohrkanone
+      (`drill_cannon`) ist `flank`-Anflug (schwere Artillerie) und durfte keine
+      Sichtlinie verlangen — Liste korrigiert.
+      *Werkzeug:* `npm run check:damage-types` (in `npm run checks` als Gate).
+      Beleg: `tests/weapon-damage-types.test.js`,
+      `tests/wirkungsmerkmale-match.test.js`.
+
+- [x] **Drei Dateien und vier Konstanten ohne Leser entfernt (2026-09-25).**
+      Gemessen über `rg`: `src/client/rendering/waterSimulation.js`,
+      `src/client/rendering/terrainRenderer.js`, `src/client/ui.js` (kein
+      Importeur, auch kein dynamischer); `SHIELD_SCALE` (`protocol.js`),
+      `PROJECT_ARMAGEDDON_WEAPON_DATABASE` + `TERRAIN_MATERIAL_DEFINITIONS`
+      (`shared/data/index.js`), `weaponIndexFromId` samt zugehöriger — dann
+      leserloser — Map-Füllung (`lootSystem.js`).
+      *Nicht angefasst:* Vier von einem Prüf-Agenten zusätzlich gemeldete
+      Fundstellen (`achievements.js:944`, `classes.js:385`, `water.js:219`,
+      `weapons.js:7059`) wurden **nicht** übernommen: nicht verifizierbar, und
+      `weapons.js` ist die GENERIERTE Datei — Handarbeit dort wird beim nächsten
+      `npm run weapons:build` überschrieben.
+      *Belegt:* `npm run validate` und `eslint src/` danach grün, Commit
+      `7b78b38`.
 
 - [x] **`sourceRarity` ist Doppelspur zu `rarity` — kein Befund.** Der Verdacht
       kam aus einer Zählung über `src/` allein. Die Nachprüfung zeigt: Beide

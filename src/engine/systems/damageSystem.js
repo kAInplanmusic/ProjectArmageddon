@@ -9,6 +9,7 @@
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import { COMBAT_RULES } from '../../shared/config/combat.js';
+import { damageTypeId, damageTypeName } from '../damageTypes.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -52,6 +53,9 @@ export class DamageSystem {
    * @param {object} [options]
    * @param {number} [options.flatResistance=0]
    * @param {number} [options.percentResistance=0] 0..1
+   * @param {number} [options.damageType] Kennung der Schadensart
+   *   (`src/engine/damageTypes.js`). Reist bis ins Ereignis mit, damit
+   *   Resistenzen, Anzeige und Aufzeichnung die Art kennen. 0 = körperlich.
    * @returns {number} verbleibende Gesundheit
    */
   applyDamage(world, entityId, amount, attackerId = null, options = {}) {
@@ -92,6 +96,7 @@ export class DamageSystem {
       damage: finalDamage,
       absorbedByShield,
       tick: world.tickCount,
+      damageType: damageTypeId(options.damageType),
     });
     if (this.#killFeed.length > 200) this.#killFeed.shift();
 
@@ -101,6 +106,8 @@ export class DamageSystem {
       amount: finalDamage,
       absorbedByShield,
       remaining: newHealth,
+      damageType: damageTypeId(options.damageType),
+      damageTypeName: damageTypeName(damageTypeId(options.damageType)),
     });
 
     return newHealth;
