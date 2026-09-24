@@ -27,8 +27,24 @@
  */
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+/*
+ * `fileURLToPath`, NICHT `.pathname`.
+ *
+ * Belegt am 2026-09-24: Das Projektverzeichnis enthält Leerzeichen
+ * („AnunnakiTools Projekte/laufende Projekte"). `new URL(...).pathname`
+ * liefert den Pfad deshalb PROZENT-KODIERT —
+ * `/home/patrick/AnunnakiTools%20Projekte/…` — und `fs.existsSync` darauf
+ * ist `false`. Jeder `spawn` mit diesem `cwd` scheitert mit ENOENT
+ * (`spawn npm ENOENT`), der Rauchtest war damit vollständig
+ * funktionsunfähig und meldete keinen einzigen Schritt.
+ *
+ * 38 andere Dateien im Projekt machen es bereits richtig; diese eine war
+ * die Ausnahme. Wer hier `.pathname` zurückbaut, bricht den Rauchtest
+ * erneut — auf einem Rechner ohne Leerzeichen im Pfad aber unsichtbar.
+ */
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 /** Ein freier Port, vom Betriebssystem erfragt statt geraten. */
 function freierPort() {
@@ -48,10 +64,26 @@ function laufe(befehl, argumente, fristMs) {
     const start = performance.now();
     const p = spawn(befehl, argumente, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let ausgabe = '';
+    // Vorab deklariert, damit der `error`-Zweig die Frist aufräumen kann, ohne
+    // von der zeitlichen Reihenfolge der Zuweisung abzuhängen.
+    let frist = null;
     p.stdout.on('data', d => { ausgabe += d.toString(); });
     p.stderr.on('data', d => { ausgabe += d.toString(); });
 
-    const frist = setTimeout(() => { p.kill('SIGKILL'); }, fristMs);
+    /*
+     * Ohne diesen Zweig wird ein Startfehler (z. B. ENOENT, weil `cwd` nicht
+     * existiert) als unbehandeltes `error`-Ereignis GEWORFEN und reißt den
+     * ganzen Lauf mit einem Stacktrace ab — der Rauchtest meldet dann keinen
+     * FEHLER-Schritt, er stürzt ab. Genau das ist am 2026-09-24 passiert:
+     * `spawn npm ENOENT`, und die Ausgabe war ein Stacktrace statt einer
+     * Zeile „FEHLER".
+     */
+    p.on('error', fehler => {
+      clearTimeout(frist);
+      resolve({ code: -1, ausgabe: `${ausgabe}\nStart fehlgeschlagen: ${fehler?.message ?? fehler}`, ms: performance.now() - start });
+    });
+
+    frist = setTimeout(() => { p.kill('SIGKILL'); }, fristMs);
     p.on('exit', code => {
       clearTimeout(frist);
       resolve({ code, ausgabe, ms: performance.now() - start });
