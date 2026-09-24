@@ -317,11 +317,11 @@ in Klammern).*
 | Linting | `npm run lint` | grün, 0 Fehler — jetzt mit `no-dupe-class-members` |
 | Unit-/Integrationstests | `npm test` | **983/983** grün (vorher 947/947) — die roten Tests der Durchgänge (`emblem.test.js`, `match-rules.test.js`, `persistence-restart.test.js`) sind nachgezogen; die Zahl sank von 981, weil mit dem Server-Bot auch `tests/bot-ai.test.js` entfiel |
 | Browser-E2E | `npm run test:e2e` | **183 grün / 0 rot / 1 übersprungen in 25,2 min** (vorher 165/16/1). Die Profiling-Spezifikation läuft **7/7** — auf der echten GPU dieses Rechners. Die Online-Spezifikationen brauchen jetzt einen zweiten Menschen |
-| Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in 25 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
+| Rauchtest (schnell) | `npm run smoke:fast` | 4/4 in ~30 s (Ersatz für den 9,4-min-E2E bei kleinen Änderungen) |
 | Build | `npm run build` | grün |
 | Validierung | `npm run validate` | grün |
-| Performance | `npm run perf` | 0 Ticks über 16,7 ms, 182,7× Echtzeit, p99 0,28 ms |
-| Balance | `npm run balance` | Auf der STARTENTFERNUNG des Spiels (854 px, Vorgabekarte 2560): 72 Waffen mit Schaden am Ziel, 36 Selbstwirkungs-Waffen (alle wirksam), **42 ohne Wirkung** — überwiegend Waffen, deren Reichweite auf 854 px nicht trägt (Nahkampf). Die frühere Zahl „1 ohne Wirkung" galt bei 426 px; die Messdistanz hat sich mit der Kartengröße geändert |
+| Performance | `npm run perf` | 0 Ticks über 16,7 ms, 123× Echtzeit, p99 0,40 ms (der Echtzeitfaktor schwankt mit der Rechnerlast; 182× wurde früher gemessen) |
+| Balance | `npm run balance` | Auf der STARTENTFERNUNG des Spiels (854 px, Vorgabekarte 2560): **71 Waffen mit Schaden am Ziel** (vorher 72), 36 Selbstwirkungs-Waffen (alle wirksam), **43 ohne Wirkung** (vorher 42) — überwiegend Waffen, deren Reichweite auf 854 px nicht trägt (Nahkampf). Der eine verschobene Platz kommt von der neuen SICHTLINIE: Eine Direktschützen-Waffe hat auf dem Messwinkel keine freie Zielgerade. Wichtig: **„immer blockiert: 0"** — keine Waffe ist auf allen Entfernungen gesperrt. Die frühere Zahl „1 ohne Wirkung" galt bei 426 px; die Messdistanz hat sich mit der Kartengröße geändert |
 | Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13** (unverändert) |
 | **Wirkfelder** | `npm run check:effects` | **0 Verstöße.** Zuvor hatten **8 Waffen Wirkungen ohne Motor**: 6 mit `piercing`, 2 mit `homing` — kein Stück Code las die Felder. Jetzt schlagen sie durch bzw. fliegen zielsuchend, `aoe` wird aus dem Radius abgeleitet |
 | **Wirkungs-Übersicht** | `npm run matrix` / `npm run matrix:check` | `docs/matrix-terrain-waffen-wirkung.md`: 150 Waffen mit Kraterradius und -fläche, 6 Zerstörungsgrade (46–28.353 px²), 8 Terrain-Arten mit gemessenem Festanteil, Wasserlinie und leerem Innenraum |
