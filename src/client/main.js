@@ -1493,12 +1493,21 @@ class Game {
           break;
         case 'shot':
           /*
-           * Der Abschuss hat einen Klang — aber keinen eigenen Zeichencode.
+           * Der Abschuss hat einen Klang — und seit 2026-09-25 ein
+           * Mündungsfeuer.
            *
-           * Der Fall steht hier, weil die Klangregel an EINER Stelle liegen
-           * soll: Der Mischer entscheidet, ob gespielt wird (eingeschaltet?
-           * Ausgabegerät da?), der Aufrufort kennt nur das Ereignis.
+           * Vorher stand hier NUR der Klang: Der Schuss war zu hören, aber an
+           * der Figur geschah nichts. Bei einem Spiel, dessen ganze Handlung
+           * aus Schüssen besteht, ist das die auffälligste Lücke der
+           * Darstellung — man sieht nicht, WER geschossen hat.
+           *
+           * Das Ereignis trägt `playerId` und `angle`; mehr braucht der
+           * Renderer nicht, weil er das Feuer an der AKTUELLEN Position der
+           * Figur zeichnet (siehe `addMuzzleFlash`). Der Klang bleibt an
+           * derselben Stelle — die Regel „wer spielt, entscheidet der Mischer"
+           * gilt unverändert.
            */
+          this.renderer.addMuzzleFlash(payload.playerId, payload.angle ?? 0);
           this.sound?.verarbeite({ type: 'shot' });
           break;
         /*

@@ -16,6 +16,7 @@ import {
   displayGroupLabel,
 } from '../shared/config/weapons.js';
 import { WATER_STATE, waterStateFor, waterLabel, DROWN_LEVEL } from '../shared/config/water.js';
+import { ladungAnteil } from './weaponAnimation.js';
 
 const LOG_LIMIT = 60;
 
@@ -421,11 +422,42 @@ export class Hud {
     if (restCooldown > 0) {
       const cd = document.createElement('span');
       cd.className = 'weapon-cooldown';
-      cd.textContent = `⏳ ${restCooldown}`;
+
+      /*
+       * Ein BALKEN statt nur einer Zahl.
+       *
+       * FUND (belegt, 2026-09-25): Die Anzeige bestand aus „⏳ N" und sonst
+       * nichts. Eine Zahl zählt in ZÜGEN, nicht in Sekunden — der Spieler kann
+       * daraus nicht ablesen, wie weit das Nachladen ist, ohne den
+       * Gesamtwert zu kennen. Der Balken zeigt es ohne Rechnen.
+       *
+       * Die Umrechnung steht in `weaponAnimation.js` (`ladungAnteil`) und ist
+       * dort ohne DOM prüfbar — dieselbe Trennung wie bei den
+       * Waffenanimationen im Renderer.
+       */
+      const gesamt = weapon?.cooldown ?? 0;
+      const anteil = ladungAnteil(restCooldown, gesamt);
+
+      const spur = document.createElement('span');
+      spur.className = 'weapon-cooldown-track';
+      const fuellung = document.createElement('span');
+      fuellung.className = 'weapon-cooldown-fill';
+      fuellung.style.width = `${Math.round(anteil * 100)}%`;
+      spur.append(fuellung);
+
+      const zahl = document.createElement('span');
+      zahl.className = 'weapon-cooldown-value';
+      zahl.textContent = `⏳ ${restCooldown}`;
       cd.title = `Lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`;
+
+      cd.append(zahl, spur);
       item.append(cd);
       item.classList.add('is-cooling');
       item.dataset.cooldown = String(restCooldown);
+      // Die Zahlen des Balkens als Datenattribute: Die E2E-Suite prüft damit
+      // den Fortschritt, ohne aus dem CSS rechnen zu müssen.
+      item.dataset.cooldownTotal = String(gesamt);
+      item.dataset.cooldownReady = String(Math.round(anteil * 100));
     }
 
     const radius = weapon?.blastRadius ?? 0;

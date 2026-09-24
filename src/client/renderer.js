@@ -19,6 +19,10 @@ import {
 } from './effects.js';
 import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
 import {
+  erzeugeMuendungsfeuer, muendungsfeuer, rueckstossVersatz, ROHR_LAENGE,
+  fadenkreuzSegmente, pulsFaktor, blitzPuls,
+} from './weaponAnimation.js';
+import {
   drawSky as drawGenerativeSky,
   drawAmbient,
   drawLandmarks,
@@ -267,6 +271,21 @@ export class Renderer {
     this.effects.push(erzeugeBlitz(x, y, radius, optionen));
   }
 
+  /**
+   * Mündungsfeuer an der Waffe einer Figur.
+   *
+   * Geführt wird die FIGUR, nicht eine Position: Der Blitz wird bei jedem Bild
+   * an der AKTUELLEN Stelle der Figur gezeichnet. Ein Schuss, der zwischen
+   * Ereignis und Bild noch einen Schritt macht, bekommt sein Feuer damit nicht
+   * an der alten Position.
+   *
+   * @param {number} entityId Schütze
+   * @param {number} angle    Schusswinkel (0 = rechts, π/2 = oben)
+   */
+  addMuzzleFlash(entityId, angle) {
+    this.effects.push(erzeugeMuendungsfeuer(entityId, angle));
+  }
+
   #updateEffects() {
     // Die Alterung liegt in `effects.js` — dort ist sie ohne Canvas prüfbar.
     this.effects = schreiteEffekteFort(this.effects);
@@ -363,20 +382,28 @@ export class Renderer {
   /**
    * Explosionsradius-Vorschau am Zielpunkt der Flugbahn.
    * Zeigt, wie groß die Flächenwirkung der gewählten Waffe ist.
+   *
+   * Der Radius ATMET (`blitzPuls`): Ein stiller Ring ist von einem
+   * Geländekreis nicht zu unterscheiden. Bei reduzierter Bewegung bleibt die
+   * Größe konstant — die Aussage („so groß ist die Fläche") geht nicht
+   * verloren, nur die Bewegung.
    */
   #drawBlastPreview(aimPreview, blastRadius) {
     if (!aimPreview || aimPreview.length === 0 || !blastRadius || blastRadius <= 0) return;
     const impact = aimPreview[aimPreview.length - 1];
     if (!impact) return;
 
+    const puls = blitzPuls(blastRadius, this.time, { reducedMotion: this.reducedMotion });
+
     this.ctx.save();
     this.ctx.setLineDash([5, 5]);
+    this.ctx.lineDashOffset = -puls.strichVersatz;
     this.ctx.strokeStyle = 'rgba(244, 162, 97, 0.6)';
     this.ctx.lineWidth = 2;
     this.ctx.beginPath();
-    this.ctx.arc(impact.x, impact.y, blastRadius, 0, Math.PI * 2);
+    this.ctx.arc(impact.x, impact.y, puls.radius, 0, Math.PI * 2);
     this.ctx.stroke();
-    this.ctx.fillStyle = 'rgba(244, 162, 97, 0.10)';
+    this.ctx.fillStyle = `rgba(244, 162, 97, ${puls.alpha.toFixed(3)})`;
     this.ctx.fill();
     this.ctx.restore();
   }
@@ -705,10 +732,56 @@ export class Renderer {
       // Geschützrohr in Zielrichtung
       const isActive = entity.entityId === activePlayerId;
       const angle = isActive && aim ? aim.angle : entity.angle;
+
+      /*
+       * MÜNDUNGSFEUER UND RÜCKSTOSS.
+       *
+       * Der Effekt wird über die FIGUR geführt (siehe `addMuzzleFlash`), nicht
+       * über eine Position — deshalb hier der Blick in die Effektliste. Er
+       * trägt Winkel und Lebensdauer; die Geometrie kommt aus
+       * `weaponAnimation.js` und ist dort ohne Canvas prüfbar.
+       */
+      const muendung = this.effects.find(
+        (e) => e.kind === 'muzzle' && e.entityId === entity.entityId,
+      ) ?? null;
+      const feuerLeben = muendung ? muendung.life : 0;
+      const rueck = rueckstossVersatz(feuerLeben, { reducedMotion: this.reducedMotion });
+
       this.ctx.rotate(-angle);
       this.ctx.fillStyle = isActive ? '#f4a261' : '#9aa7b4';
-      this.ctx.fillRect(0, -2.5, 15, 5);
+      // Der Rückstoß verschiebt das Rohr nach hinten, ohne es zu verkürzen.
+      this.ctx.fillRect(rueck, -2.5, ROHR_LAENGE, 5);
       this.ctx.restore();
+
+      // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —
+      // es wird deshalb NACH dem Zurücksetzen der Drehung gezeichnet.
+      if (muendung) {
+        const feuer = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
+        const mx = entity.x + feuer.offsetX;
+        const my = entity.y + feuer.offsetY;
+
+        this.ctx.save();
+        this.ctx.globalAlpha = feuer.alpha;
+        this.ctx.translate(mx, my);
+        this.ctx.rotate(-angle);
+        const verlauf = this.ctx.createLinearGradient(0, 0, feuer.length, 0);
+        verlauf.addColorStop(0, muendung.farbe);
+        verlauf.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        this.ctx.fillStyle = verlauf;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, -feuer.halfWidth);
+        this.ctx.lineTo(feuer.length, 0);
+        this.ctx.lineTo(0, feuer.halfWidth);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Heller Kern an der Mündung — ohne ihn wirkt der Kegel flach.
+        this.ctx.fillStyle = '#fffbe6';
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, feuer.coreRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+      }
 
       this.#drawHealthBar(entity);
     }
@@ -820,12 +893,36 @@ export class Renderer {
     this.ctx.stroke();
     this.ctx.restore();
 
+    /*
+     * ZIELVISIER am Einschlagpunkt.
+     *
+     * Vorher stand hier ein stiller Kreis mit Radius 7. Ein Kreis ist jedoch
+     * von einem Geländepunkt oder einer Kistenmarkierung nicht zu
+     * unterscheiden — und er sagt nicht, dass der markierte Punkt eine
+     * MÖGLICHKEIT ist, keine Tatsache (die Tatsache trägt `#drawPrediction`
+     * mit voller Linie und gefülltem Punkt).
+     *
+     * Deshalb ein Fadenkreuz, das atmet (`fadenkreuzSegmente`, `pulsFaktor`).
+     * Bei reduzierter Bewegung steht es still, bleibt aber vollständig: Die
+     * Bewegung ist die Zugabe, die Aussage ist der Punkt.
+     */
     const last = points[points.length - 1];
+    const puls = pulsFaktor(this.time, { reducedMotion: this.reducedMotion });
+    const { segmente, innen } = fadenkreuzSegmente(last.x, last.y, 9 * puls);
+
+    this.ctx.save();
     this.ctx.strokeStyle = 'rgba(244, 162, 97, 0.9)';
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = 1.5;
     this.ctx.beginPath();
-    this.ctx.arc(last.x, last.y, 7, 0, Math.PI * 2);
+    for (const [x1, y1, x2, y2] of segmente) {
+      this.ctx.moveTo(x1, y1);
+      this.ctx.lineTo(x2, y2);
+    }
     this.ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.arc(last.x, last.y, innen, 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
   }
 
   /**

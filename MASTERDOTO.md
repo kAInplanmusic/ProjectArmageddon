@@ -30,10 +30,11 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Durchgangs: `npm test` **997/997** grün ·
+Verifikation dieses Durchgangs: `npm test` **1008/1008** grün ·
 `npm run checks` **21 Gates in ~52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
-check:damage-types` 0 Fehler.
+check:damage-types` 0 Fehler · `npm run build` erfolgreich · E2E
+`tests/e2e/drop-cooldown.spec.mjs` **7/7** grün im echten Browser.
 
 Neu in diesem Zug: `src/engine/damageTypes.js` (Zahlenindex), `scripts/check-damage-types.mjs`
 (neues Gate), `tests/weapon-damage-types.test.js` (7), `tests/wirkungsmerkmale-match.test.js` (7);
@@ -41,6 +42,37 @@ Neu in diesem Zug: `src/engine/damageTypes.js` (Zahlenindex), `scripts/check-dam
 Rückfall" umgeschrieben. Dazu die Dead-Code-Bereinigung (3 Dateien, 4 Konstanten,
 Commit `7b78b38`). Die Einzelbelege stehen unter **„Offene Punkte aus dem Audit"**
 unten — dort ist jeder Punkt mit Messung und Fundstelle begründet.
+
+### Waffenanimationen (zweiter Teil des Durchgangs)
+
+Auftrag der Ergänzung: „waffenanimationen (bewegung, schuss, zielen)".
+
+Gebaut: **`src/client/weaponAnimation.js`** — reiner Rechenkern ohne Canvas
+(dasselbe Muster wie `effects.js`, weil `renderer.js` in `node --test` nicht
+ladbar ist und Animationen dort unprüfbar wären).
+
+| Teil | Umsetzung | Ort |
+|---|---|---|
+| Mündungsfeuer + Rückstoß | `muendungsfeuer()`, `rueckstossVersatz()` | `renderer.js` `#drawEntities`, `addMuzzleFlash()`; Auslöser in `main.js` `case 'shot'` (vorher NUR Klang) |
+| Zielen | `fadenkreuzSegmente()` + `pulsFaktor()` — ersetzt den stillen Kreis am Einschlagpunkt | `renderer.js` `#drawAimPreview` |
+| Flächenwirkung | `blitzPuls()` (Radius atmet, Ring dreht) | `renderer.js` `#drawBlastPreview` |
+| Nachladen | `ladungAnteil()` als Balken statt nur „⏳ N" | `hud.js`, CSS in `index.html` |
+
+`tests/weapon-animation.test.js` (**11**) misst die Aussagen, nicht Pixelzahlen:
+Kegel in Schussrichtung (bei 0, π/2 und π geprüft), Rückstoß im ersten Bild am
+größten, Fadenkreuz MIT Lücke in der Mitte, Balken leer beim Schuss und voll bei
+Bereitschaft. Jeder Animationstest hat eine Gegenprobe mit `reducedMotion: true`
+— Bewegung entfällt, Aussage bleibt.
+
+Zwei echte Fehler beim Testen gefunden und behoben: `rueckstossVersatz()` lieferte
+`-0` (in `Object.is` ungleich `0`), und `MUENDUNGSFEUER_BILDER = 6` machte
+`decay = 1/6` periodisch — der Effekt lebte ein Bild länger als angekündigt.
+Jetzt 8 (Zweierpotenz, exakte Lebensdauer).
+
+BEWUSST NICHT geändert: `#drawPrediction` bleibt ein VOLLER Strich. Der
+Kommentar dort erklärt ihn als gewollten Unterschied zur gestrichelten
+Zielhilfe („zwei Wege, zwei Muster") — ein marschierender Strich hätte diese
+Entscheidung überschrieben.
 
 ## Audit-MCP und Tiefen-Audit (2026-09-24)
 
@@ -75,7 +107,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 | Prüfung | Ergebnis |
 |---|---|
 | Gate-Batterie | **7/7** — lint, validate, checks (21 Gates), build, perf, balance, smoke:fast |
-| Unit-Suite | **997 Tests, 997 bestanden, 0 fehlgeschlagen** |
+| Unit-Suite | **1008 Tests, 1008 bestanden, 0 fehlgeschlagen** |
 | Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
 | Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
 | Secrets | 0 Fundstellen in getrackten Dateien |

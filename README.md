@@ -169,8 +169,8 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:effects` | Prüft, ob jedes Wirkfeld des Katalogs im Motor ankommt |
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
-| `npm run checks` | **Alle Prüfwerkzeuge in einem Lauf** (~30 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **997 Tests in 97 Dateien**, ~5,7 min |
+| `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
+| `npm test` | Unit- und Integrationstests: **1008 Tests in 98 Dateien**, ~5,7 min |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -400,6 +400,36 @@ alle Waffen gleich (63 bzw. 4 verschiedene Werte). Frühere Fassungen dieses
 README behaupteten das Gegenteil — damals stimmte es, inzwischen leitet der
 Generator beide aus der Designdatei ab. Spritesheets gibt es weiterhin nicht, die
 Darstellung ist prozedural; Bilder existieren nur als Waffen-Icons.
+
+## Waffendarstellung und Animationen
+
+Die Darstellung ist **prozedural** (es gibt keine Waffensprites, nur Icons — siehe
+„Waffenkatalog"). Die Bewegung kommt aus einem eigenen Rechenkern,
+`src/client/weaponAnimation.js`:
+
+| Teil | Was man sieht | Umsetzung |
+|---|---|---|
+| Mündungsfeuer | Beim Schuss blitzt ein Kegel an der Mündung, mit hellem Kern | `muendungsfeuer()` — Kegel in **Schussrichtung**, Geometrie in Weltachsen |
+| Rückstoß | Das Rohr fährt kurz zurück und kommt wieder vor | `rueckstossVersatz()` — im ersten Bild am größten, dann linear auf 0 |
+| Zielen | Am Einschlagpunkt der Zielhilfe steht ein **atmendes Fadenkreuz** | `fadenkreuzSegmente()` + `pulsFaktor()` |
+| Flächenwirkung | Der Radius der Explosionsvorschau atmet, der Ring dreht sich | `blitzPuls()` |
+| Nachladen | Die Waffenzeile zeigt einen **Nachladebalken** statt nur „⏳ N" | `ladungAnteil()` (0 = gerade geschossen, 1 = bereit) |
+
+**Warum ein eigenes Modul:** `renderer.js` ist in `node --test` nicht ladbar
+(Vite-Importe), jede dort versteckte Animation ist damit unprüfbar. Die
+Geometrie liegt deshalb in einem reinen Modul — dasselbe Muster wie bei
+`effects.js` (Partikel, Strahlen, Blitze). `tests/weapon-animation.test.js`
+misst die Aussagen: dass der Kegel in **Schussrichtung** zeigt (nicht in eine
+feste Richtung), dass der Rückstoß am Anfang am größten ist, dass das
+Fadenkreuz eine **Lücke in der Mitte** hat (sonst verdeckt es genau den Punkt,
+den es markiert) und dass der Balken beim Schuss leer und bei Bereitschaft voll
+ist.
+
+**Barrierefreiheit ist Bedingung, nicht Zugabe:** Bei
+`prefers-reduced-motion` entfällt jede BEWEGUNG, aber keine Aussage — das
+Mündungsfeuer erscheint weiterhin (nur ohne Rückstoßfahrt), das Fadenkreuz
+steht still, der Radius bleibt konstant, die CSS-Übergänge des Balkens
+entfallen. Die Tests haben dafür je eine Gegenprobe mit `reducedMotion: true`.
 
 ## Spezialeffekte
 

@@ -301,6 +301,44 @@
       color: #fbbf24;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /*
+     * Nachladebalken.
+     *
+     * Die Zahl allein („⏳ 2") nennt nur die RESTMENGE — ohne den Gesamtwert ist
+     * sie nicht einzuordnen. Der Balken füllt sich vom Abfeuern (leer) bis zur
+     * Bereitschaft (voll); die `transition` macht den Sprung beim Zugwechsel
+     * lesbar statt abrupt.
+     *
+     * Der Balken bleibt auch bei abgeblendeter Zeile klar erkennbar, weil die
+     * Deckkraft der Zeile nur 0,55 beträgt und die Füllung eine eigene Farbe
+     * trägt.
+     */
+    .weapon-item .weapon-cooldown-track {
+      display: inline-block;
+      width: 42px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.18);
+      overflow: hidden;
+      vertical-align: middle;
+    }
+
+    .weapon-item .weapon-cooldown-fill {
+      display: block;
+      height: 100%;
+      border-radius: 2px;
+      background: #fbbf24;
+      transition: width 220ms ease-out;
+    }
+
+    /* Bei reduzierter Bewegung ohne Übergang — die Länge bleibt die Aussage. */
+    @media (prefers-reduced-motion: reduce) {
+      .weapon-item .weapon-cooldown-fill { transition: none; }
     }
 
     /* Gruppenkopf der Waffenliste (vier Unterkategorien) */
