@@ -15,6 +15,62 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Audit-MCP und Tiefen-Audit (2026-09-24)
+
+Auftrag: „bau dir aus allen Skills und MCPs ein MCP für Tiefen-Audit von Spielen und
+Spielengines, und fahre das Audit bis ins tiefste Detail, mit Auswertung und TODO."
+
+Ergebnis: `tools/audit-mcp` (19 Werkzeuge, 2 Prompts, **null Abhängigkeiten**) und der
+Bericht **`docs/audit-tief.md`** (397 Zeilen, Ampel, 18 Abschnitte, TODO mit 33 Punkten).
+Das MCP ist in `~/.hermes/config.yaml` als `mcp_servers.audit` registriert.
+
+### Ein Befund war kein Berichtspunkt, sondern ein Defekt — behoben
+
+| Was | Beleg | Stand |
+|---|---|---|
+| **`scripts/smoke-fast.mjs` war vollständig funktionsunfähig** | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben: 4 von 4 in 26,8 s** |
+
+Ursache war **eine Zeile**: `const ROOT = new URL('..', import.meta.url).pathname;`.
+`.pathname` liefert den Pfad **prozent-kodiert**; das Projektverzeichnis enthält Leerzeichen,
+daraus wurde `AnunnakiTools%20Projekte/…`. `fs.existsSync` darauf ist `false`, jeder `spawn`
+mit diesem `cwd` scheitert mit ENOENT. **Reichweite gemessen:** 38 Stellen im Projekt
+benutzen das korrekte `fileURLToPath`, genau 1 nicht — und das war der Wächter des schnellen
+Zyklus, die Datei, die laut eigenem Kommentar „nach jeder Änderung" laufen soll.
+
+Zweiter Defekt in derselben Datei: `laufe()` hängte keinen `error`-Handler an den `spawn`,
+deshalb wurde der Startfehler als unbehandeltes Ereignis geworfen statt als FEHLER-Schritt
+zu erscheinen. Beides behoben; die Ursache steht als Kommentar am Fundort, und
+`audit_paths` prüft die Fehlerklasse künftig automatisch (Gegenprobe in beide Richtungen
+gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehlalarm).
+
+### Verifizierter Stand nach dem Audit
+
+| Prüfung | Ergebnis |
+|---|---|
+| Gate-Batterie | **7/7** — lint, validate, checks (20 Gates), build, perf, balance, smoke:fast · 155,8 s |
+| Unit-Suite | **983 Tests, 983 bestanden, 0 fehlgeschlagen** · 292 s |
+| Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
+| Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
+| Secrets | 0 Fundstellen in getrackten Dateien |
+| Leistung | 0 Ticks über 16,7 ms (p99 0,30 ms) |
+
+### Offen aus dem Audit (33 Punkte in `docs/audit-tief.md`, Auszug)
+
+| Punkt | Fundstelle |
+|---|---|
+| 3 Dateien ohne jeden Importeur (183 Zeilen) | `src/client/rendering/waterSimulation.js`, `src/client/rendering/terrainRenderer.js`, `src/client/ui.js` |
+| Konstante ohne Leser | `SHIELD_SCALE` (`src/shared/protocol.js:93`) |
+| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) — `PRIMARY_BIOME_BY_PRESET` in zwei Dateien ist dagegen **Absicht** (Projektregel) |
+| Design, nicht entschieden | `requiresLineOfSight` ist bei allen 150 Waffen konstant `false` |
+
+### Vier eigene Messfehler des Werkzeugs, gefunden und korrigiert
+
+Der erste Lauf war plausibel und teilweise falsch. Gefunden wurden: Kommentarzeilen als
+`Math.random`-Treffer gezählt (3 von 3 Treffern waren Kommentare) · „unbenutzte Konstanten"
+zählte nur dateifremde Leser (67 gemeldet, 3 echt) · stumme Ereignisse als Lücken gemeldet
+(gegen die Wächter-Liste gestellt: 0) · der Detektor zählte **seinen eigenen Suchausdruck**
+als Befund (3 Fehlalarme). Jede Korrektur steht als Kommentar an der Stelle.
+
 ## Durchgang 2026-09-20 — die offenen Punkte entschieden und umgesetzt
 
 Auftrag: „alle offenen Punkte fertig machen". Die Regel dieser Datei gilt weiter —

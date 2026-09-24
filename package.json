@@ -52,7 +52,10 @@
     "replay": "node scripts/replay.mjs",
     "icons": "python3 scripts/create-weapon-icons.py",
     "weapons:build": "node scripts/build-weapon-catalog.mjs",
-    "checks:schnell": "node scripts/checks.mjs --schnell"
+    "checks:schnell": "node scripts/checks.mjs --schnell",
+    "audit:liste": "node tools/audit-mcp/server.mjs --liste",
+    "audit:status": "node tools/audit-mcp/server.mjs --ruf audit_status",
+    "audit:bericht": "node tools/audit-mcp/server.mjs --ruf audit_bericht"
   },
   "keywords": [
     "artillery",

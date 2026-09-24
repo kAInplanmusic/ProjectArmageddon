@@ -75,7 +75,7 @@ export default [
     },
   },
   {
-    files: ['scripts/**/*.mjs', 'scripts/**/*.js', '*.mjs'],
+    files: ['scripts/**/*.mjs', 'scripts/**/*.js', 'tools/**/*.mjs', '*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
