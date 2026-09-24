@@ -30,6 +30,7 @@ import { PlayerInventory } from './inventory.js';
 import {
   StatusStore,
   buildEffect,
+  elementalEffectFor,
   SELF_TARGET_KINDS,
   EFFECT_KIND,
   RANDOM_EFFECT_POOL,
@@ -2039,7 +2040,9 @@ export class MatchController {
       this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId);
 
       // Wirkung über den Schaden hinaus (Einfrieren, Schaden über Zeit).
-      const effect = buildEffect(weapon);
+      // Fällt die Waffe nicht in SPECIAL_EFFECTS, greift die Ableitung aus dem
+      // Elementarwert — sonst bliebe Feuer-/Gift-/Eisschaden ohne Wirkung.
+      const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
       if (effect && !SELF_TARGET_KINDS.has(effect.kind)) {
         this.#applyTargetEffect(effect, target, shooterId);
       }
@@ -2722,7 +2725,7 @@ export class MatchController {
     if (!weaponId) return;
 
     const weapon = getWeapon(weaponId);
-    const effect = buildEffect(weapon);
+    const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
     if (!effect || SELF_TARGET_KINDS.has(effect.kind)) return;
 
     if (target !== null && target !== undefined) {

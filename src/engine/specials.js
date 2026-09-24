@@ -236,6 +236,51 @@ export function hasSpecialEffect(weapon) {
 }
 
 /**
+ * Elementarwirkung einer Waffe OHNE zugeordneten Spezialeffekt.
+ *
+ * FUND (belegt, gemessen 2026-09-24): Zehn Waffen tragen Elementarschaden
+ * (`elemental.fire/ice/poison` > 0), aber KEIN `special`, das in
+ * SPECIAL_EFFECTS gemappt ist — `buildEffect` liefert für sie `null`, und der
+ * Elementarwert bleibt damit wirkungslos. Der „Feuerball" (fire=30) und die
+ * „Höllenkanone" (fire=48) richteten nur ihren Grundschaden an, nie eine
+ * Verbrennung; die „Kaktusbombe" (poison=12) vergiftete nie.
+ *
+ * Diese Funktion schließt die Lücke: Fehlt die Zuordnung, wird die Wirkung aus
+ * dem Elementarwert selbst abgeleitet — Feuer und Gift als Schaden über Zeit,
+ * Eis als Einfrieren. Die Formeln sind DIESELBEN wie in `buildEffect`, damit es
+ * EINE Auffassung von „wie stark brennt/friert das" gibt.
+ *
+ * @param {object} weapon - Eintrag aus dem Waffenkatalog
+ * @returns {object|null} Effekt mit `kind` und Parametern
+ */
+export function elementalEffectFor(weapon) {
+  const fire = weapon?.elemental?.fire ?? 0;
+  const ice = weapon?.elemental?.ice ?? 0;
+  const poison = weapon?.elemental?.poison ?? 0;
+  const elementalSum = fire + ice + poison;
+  if (elementalSum <= 0) return null;
+
+  // Eis dominiert → Einfrieren; sonst der stärkere Schaden-über-Zeit-Effekt.
+  if (ice >= fire && ice >= poison) {
+    return {
+      kind: EFFECT_KIND.FREEZE,
+      turns: Math.min(
+        SPECIAL_DEFAULTS.maxTurns,
+        SPECIAL_DEFAULTS.freezeTurns + Math.floor(elementalSum / 40),
+      ),
+    };
+  }
+
+  const element = fire >= poison ? 'fire' : 'poison';
+  return {
+    kind: EFFECT_KIND.DAMAGE_OVER_TIME,
+    element,
+    damagePerTurn: Math.max(SPECIAL_DEFAULTS.dotDamagePerTurn, Math.round(elementalSum / 2)),
+    turns: SPECIAL_DEFAULTS.dotTurns,
+  };
+}
+
+/**
  * Baut den konkreten Effekt einer Waffe inklusive Zahlenwerten.
  *
  * Die Zahlen stammen aus den Elementarschäden der Waffe, wo vorhanden; sonst

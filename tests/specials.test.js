@@ -10,6 +10,7 @@ import {
   EFFECT_KIND,
   SELF_TARGET_KINDS,
   buildEffect,
+  elementalEffectFor,
   effectFor,
   SPECIAL_DEFAULTS,
   RANDOM_EFFECT_POOL,
@@ -600,6 +601,33 @@ test('Die meisten zuvor wirkungslosen Waffen haben jetzt eine Wirkung', () => {
 
   assert.deepEqual(ohneWirkung, [],
     `Diese Waffen haben weiterhin keine Wirkung: ${ohneWirkung.join(', ')}`);
+});
+
+test('Elementarschaden ohne Special wirkt als DoT oder Einfrieren', () => {
+  // FUND (2026-09-24): Zehn Waffen tragen elemental.fire/ice/poison, aber kein
+  // in SPECIAL_EFFECTS gemapptes `special`. buildEffect lieferte null, der
+  // Elementarwert blieb wirkungslos. elementalEffectFor leitet die Wirkung ab.
+  const feuerball = WEAPONS_BY_ID.pa_072; // fireball, fire=30, special=fireball (ungemappt)
+  assert.equal(buildEffect(feuerball), null, 'Feuerball hat kein gemapptes Special');
+  const effekt = elementalEffectFor(feuerball);
+  assert.equal(effekt.kind, EFFECT_KIND.DAMAGE_OVER_TIME);
+  assert.equal(effekt.element, 'fire');
+  assert.ok(effekt.damagePerTurn >= SPECIAL_DEFAULTS.dotDamagePerTurn);
+  assert.equal(effekt.turns, SPECIAL_DEFAULTS.dotTurns);
+
+  // Gift: Kaktusbombe (spike_blast, poison=12) → DoT poison.
+  const kaktus = WEAPONS_BY_ID.pa_028;
+  const gift = elementalEffectFor(kaktus);
+  assert.equal(gift.kind, EFFECT_KIND.DAMAGE_OVER_TIME);
+  assert.equal(gift.element, 'poison');
+
+  // Eis dominiert → Einfrieren, nicht DoT.
+  const eis = elementalEffectFor({ elemental: { fire: 0, ice: 40, poison: 0 } });
+  assert.equal(eis.kind, EFFECT_KIND.FREEZE);
+  assert.ok(eis.turns >= 1);
+
+  // Ohne Elementarwert: keine Ableitung.
+  assert.equal(elementalEffectFor({ elemental: { fire: 0, ice: 0, poison: 0 } }), null);
 });
 
 test('Eine Wirkung wird nur einmal angewendet und beendet den Zug', () => {
