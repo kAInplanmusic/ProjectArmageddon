@@ -16,6 +16,7 @@ import {
   parseControlMessage,
   decodeSnapshot,
 } from '../shared/protocol.js';
+import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 
 export const CONNECTION_STATE = Object.freeze({
   IDLE: 'idle',
@@ -27,11 +28,15 @@ export const CONNECTION_STATE = Object.freeze({
 
 const MAX_BACKOFF_MS = 8000;
 
-/** Simulations-Ticks je Sekunde (Simulation läuft mit 60 Hz, Snapshots mit 20 Hz). */
-export const TICKS_PER_SECOND = 60;
-
-/** Dauer eines Simulations-Ticks in Millisekunden. */
-export const TICK_MS = 1000 / TICKS_PER_SECOND;
+/*
+ * Takt und Tickdauer kommen aus `src/shared/config/network.js` — dieselbe Zahl,
+ * die der Server liest. Hier standen früher ein eigenes `TICKS_PER_SECOND = 60`
+ * und ein daraus abgeleitetes `TICK_MS`; damit gab es den Takt zweimal im Baum.
+ *
+ * `TICK_MS` wird weiterhin von hier exportiert: `tests/referenz-tick.test.js`
+ * liest die Tickdauer über diesen Pfad.
+ */
+export { TICK_MS };
 
 /**
  * Der Tick, auf den sich eine Eingabe bezieht.
@@ -91,7 +96,7 @@ export function referenzTick({
   // `TICK_MS`: `2000 / (1000/60)` ergibt 119,99998 und damit 119 statt 120 Ticks.
   // An der Fenstergrenze entscheidet genau diese eine Tick-Nummer darüber, ob
   // der Server den Schuss annimmt.
-  const vorsprung = Math.min(maxVorsprungTicks, Math.floor((vergangen * TICKS_PER_SECOND) / 1000));
+  const vorsprung = Math.min(maxVorsprungTicks, Math.floor((vergangen * SIMULATION_HZ) / 1000));
   return snapshotTick + vorsprung;
 }
 

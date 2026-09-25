@@ -31,12 +31,22 @@ import {
   toDeltaBase,
 } from '../shared/protocol.js';
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
+import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { ReplayRecorder } from '../engine/replay.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
 
-export const SIMULATION_HZ = 60;
+/*
+ * Der Simulationstakt kommt aus `src/shared/config/network.js` — dort steht er
+ * EINMAL, und der Client liest dieselbe Zahl. Hier stand früher ein eigenes
+ * `SIMULATION_HZ = 60` (siehe Fund in der Quelldatei).
+ *
+ * `SIMULATION_HZ` wird weiterhin von hier re-exportiert: `src/server/index.js`
+ * gibt den Namen nach außen, und ein entfernter Export wäre eine stille
+ * Änderung an der Schnittstelle des Servers.
+ */
+export { SIMULATION_HZ };
+
 export const SNAPSHOT_HZ = 20;
-const TICK_MS = 1000 / SIMULATION_HZ;
 const SNAPSHOT_INTERVAL_MS = 1000 / SNAPSHOT_HZ;
 /**
  * Vermerk für unbegrenzte Munition. Muss mit `getState()` im MatchController

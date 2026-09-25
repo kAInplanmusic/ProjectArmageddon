@@ -170,7 +170,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1008 Tests in 98 Dateien**, ~5,7 min |
+| `npm test` | Unit- und Integrationstests: **1015 Tests in 99 Dateien**, ~5,7 min |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |

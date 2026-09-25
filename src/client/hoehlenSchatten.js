@@ -106,8 +106,12 @@ export const LUFT_SCHWELLE = 0.05;
  *
  * 0,45 ist die Grenze: Eine Wand soll heller wirken als das Gestein daneben,
  * aber nicht wie Gras an der Oberfläche.
+ *
+ * OHNE `export`: Der Wert wird nur in DIESER Datei gelesen (unten bei
+ * `zumLicht`). Der Audit meldete den Export als „ohne Leser" — ein Export, den
+ * niemand importiert, ist eine Absicht ohne Wirkung.
  */
-export const LICHT_ANTEIL = 0.45;
+const LICHT_ANTEIL = 0.45;
 
 /**
  * Rechnet die Schattierung für ein festes Pixel aus.

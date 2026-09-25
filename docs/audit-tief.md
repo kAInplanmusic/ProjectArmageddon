@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-09-24T20:57:49.109Z · **Commit:** `15b6565` (main) · **Node:** v22.23.2
+**Erzeugt:** 2026-09-25T04:43:41.908Z · **Commit:** `9f481f3` (main) · **Node:** v22.23.2
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -13,10 +13,10 @@
 | gates | 🟢 gruen | alle gefahrenen Gates bestanden |
 | determinismus | 🟢 gruen | Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene Hashes. |
 | ereignisse | 🟢 gruen | 8 stumme Ereignisse — alle im Wächter als bewusst stumm begründet |
-| toteDateien | 🟠 gelb | 3 Dateien ohne Importeur |
-| unbenutzteKonstanten | 🟠 gelb | 3 definiert, nie gelesen |
-| pfade | 🟢 gruen | Alle 40 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
-| doppelregeln | 🟠 gelb | 4 Bezeichner in 2+ Dateien definiert |
+| toteDateien | 🟢 gruen | 0 Dateien ohne Importeur |
+| unbenutzteKonstanten | 🟢 gruen | 0 definiert, nie gelesen |
+| pfade | 🟢 gruen | Alle 41 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
+| doppelregeln | 🟠 gelb | 1 Bezeichner in 2+ Dateien definiert |
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
 | zufall | 🟠 gelb | 1 Zeit-/Zufallstreffer im Simulationspfad |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
@@ -49,21 +49,21 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 86 | 36277 |
-| tests | 125 | 33302 |
-| scripts | 43 | 8706 |
+| src | 86 | 37105 |
+| tests | 129 | 34034 |
+| scripts | 44 | 8907 |
 | tools | 7 | 2844 |
 
-Ungetrackte Änderungen beim Lauf: **6**
+Ungetrackte Änderungen beim Lauf: **14**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 7 s | – |
+| lint | 🟢 bestanden | 5.9 s | – |
 | validate | 🟢 bestanden | 0.4 s | – |
 
-**2/2 bestanden** · Gesamtdauer 7.4 s
+**2/2 bestanden** · Gesamtdauer 6.3 s
 
 ## 3. Determinismus
 
@@ -82,13 +82,13 @@ Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene 
 | Seed | Runden | Züge | Schüsse | Ticks | Spielzeit (s) | Status |
 |---|---|---|---|---|---|---|
 | 101 | 25 | 62 | 53 | 3747 | 62.5 | gameover |
-| 202 | 26 | 61 | 52 | 3640 | 60.7 | gameover |
+| 202 | 26 | 61 | 51 | 3591 | 59.9 | gameover |
 | 303 | 25 | 62 | 52 | 3509 | 58.5 | gameover |
 | 404 | 25 | 73 | 57 | 3930 | 65.5 | gameover |
-| 505 | 31 | 80 | 60 | 4917 | 82 | gameover |
+| 505 | 31 | 79 | 59 | 4807 | 80.1 | gameover |
 
-**Mittel:** 26.4 Runden · 67.6 Züge · 54.8 Schüsse · 65.8 s Simulationszeit
-**Spanne:** Runden 25–31 · Spielzeit 58.5–82 s
+**Mittel:** 26.4 Runden · 67.4 Züge · 54.4 Schüsse · 65.3 s Simulationszeit
+**Spanne:** Runden 25–31 · Spielzeit 58.5–80.1 s
 
 Mahlstrom greift ab Runde **8**. Davor beendet: **0 von 5**.
 
@@ -129,13 +129,13 @@ Karte (Default): 2560×1440 px · Abstand zum nächsten Gegner ≈ 640 px · Ges
 | cooldown | 0 | 1 | 3 | 4 / 150 |
 | maxRange | 110 | 565 | 1062 | 63 / 150 |
 | projectileSpeed | 0 | 40.8 | 100 | 25 / 150 |
-| powerScore | 0 | 57.86 | 463.82 | 132 / 150 |
+| powerScore | 0 | 56.34 | 463.82 | 133 / 150 |
 | terrainDamage | 0 | 0 | 95 | 16 / 150 |
 | fuseTime | 0 | 0 | 5 | 5 / 150 |
 
 **Auffälligkeiten:** ohneSchadenswert=7 · ohneMunition=0 · ohneKlassenbezug=0
 
-**Felder mit überall gleichem Wert (1):** `requiresLineOfSight`=false
+**Felder mit überall gleichem Wert (0):** keine
 
 ## 7. Klassen × Archetypen
 
@@ -172,7 +172,7 @@ die Form liefert immer dasselbe.
 
 Züge 86 · Schüsse 65 · gemessene Ticks 5036
 
-Tick-Kosten: mittel **0.0672 ms** · p95 0.1147 ms · p99 0.1609 ms · max 2.6010 ms
+Tick-Kosten: mittel **0.0635 ms** · p95 0.0927 ms · p99 0.1439 ms · max 1.3761 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -181,28 +181,17 @@ Budget eingehalten: kein Tick über 16,7 ms.
 
 ### 10.1 Dateien ohne Importeur
 
-| Datei | Zeilen |
-|---|---|
-| src/client/rendering/waterSimulation.js | 82 |
-| src/client/rendering/terrainRenderer.js | 66 |
-| src/client/ui.js | 35 |
+Keine. Der Wächter `tests/no-dead-code.test.js` hält diese Zahl bei 0.
 
 ### 10.2 Konstanten ohne Leser
 
-| Konstante | Ort |
-|---|---|
-| `PROJECT_ARMAGEDDON_WEAPON_DATABASE` | src/shared/data/index.js:15 |
-| `TERRAIN_MATERIAL_DEFINITIONS` | src/shared/data/index.js:16 |
-| `SHIELD_SCALE` | src/shared/protocol.js:93 |
+Keine — jede definierte Konstante unter `src/` wird irgendwo gelesen.
 
 ### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)
 
 | Name | Orte |
 |---|---|
 | `PRIMARY_BIOME_BY_PRESET` | src/shared/config/backdrops.js:944 · src/shared/config/scenery.js:420 |
-| `TICK_MS` | src/server/gameServer.js:39 · src/client/networkClient.js:34 |
-| `PLAYER_HALF_WIDTH` | src/engine/match.js:385 · src/engine/systems/projectileSystem.js:35 |
-| `PLAYER_HALF_HEIGHT` | src/engine/match.js:386 · src/engine/systems/projectileSystem.js:36 |
 
 ### 10.4 Marker im Quelltext
 
@@ -212,7 +201,7 @@ Budget eingehalten: kein Tick über 16,7 ms.
 
 | Datei | Zeilen | Generator | Kopf als generiert markiert | schreibt beim Import |
 |---|---|---|---|---|
-| src/shared/config/weapons.js | 7059 | scripts/build-weapon-catalog.mjs | ja | nein |
+| src/shared/config/weapons.js | 7359 | scripts/build-weapon-catalog.mjs | ja | nein |
 
 ### 10.6 Zufall und Zeit im Simulationspfad
 
@@ -230,22 +219,22 @@ Davon **8 dokumentiert** als bewusst stumm (Wächter `tests/event-coverage.test.
 
 | Ereignis | emittiert in | Urteil |
 |---|---|---|
-| `dot_applied` | src/engine/match.js:2533 | bewusst stumm (dokumentiert) |
+| `dot_applied` | src/engine/match.js:2605 | bewusst stumm (dokumentiert) |
 | `entity_in_water` | src/engine/systems/characterSystem.js:138 | bewusst stumm (dokumentiert) |
-| `projectile_expired` | src/engine/systems/projectileSystem.js:316, src/engine/systems/projectileSystem.js:327 | bewusst stumm (dokumentiert) |
-| `round_crates` | src/engine/systems/lootSystem.js:154 | bewusst stumm (dokumentiert) |
-| `turn_end` | src/engine/match.js:2961 | bewusst stumm (dokumentiert) |
-| `water_pushed` | src/engine/match.js:2578 | bewusst stumm (dokumentiert) |
-| `weapon_cooldown` | src/engine/match.js:2319 | bewusst stumm (dokumentiert) |
-| `weapon_dropped` | src/engine/match.js:2111 | bewusst stumm (dokumentiert) |
+| `projectile_expired` | src/engine/systems/projectileSystem.js:324, src/engine/systems/projectileSystem.js:335 | bewusst stumm (dokumentiert) |
+| `round_crates` | src/engine/systems/lootSystem.js:148 | bewusst stumm (dokumentiert) |
+| `turn_end` | src/engine/match.js:3099 | bewusst stumm (dokumentiert) |
+| `water_pushed` | src/engine/match.js:2650 | bewusst stumm (dokumentiert) |
+| `weapon_cooldown` | src/engine/match.js:2391 | bewusst stumm (dokumentiert) |
+| `weapon_dropped` | src/engine/match.js:2183 | bewusst stumm (dokumentiert) |
 
 *Keine Lücke:* Jedes stumme Ereignis hat im Wächter eine Begründung. Ein stummes Ereignis ohne Begründung wäre die Lücke.
 
 ## 12. Pfad-Auflösung (`fileURLToPath` statt `.pathname`)
 
-**40** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
+**41** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
 
-Alle 40 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
+Alle 41 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
 
 ## 13. Server-Autorität und Secrets
 
@@ -279,25 +268,25 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 **Rot:** keine
 
-**Gelb:** toteDateien, unbenutzteKonstanten, doppelregeln, zufall
+**Gelb:** doppelregeln, zufall
 
-**Grün:** gates, determinismus, ereignisse, pfade, marker, secrets, perf
+**Grün:** gates, determinismus, ereignisse, toteDateien, unbenutzteKonstanten, pfade, marker, secrets, perf
 
 ### Was schon belegt gut funktioniert
 
 - **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (7ef3d6ed), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
 - **Kein TODO/FIXME im Quelltext.** Die offene Arbeit steht in der SSOT (MASTERDOTO), nicht verstreut im Code.
+- **Keine Datei ohne Importeur.** Der Wächter hält die 974 toten Zeilen von damals bei 0.
 - **Kein Secret in getrackten Dateien.**
 - **Ereignis-Abdeckung ist sauber:** 35 von 43 Ereignisarten behandelt, die 8 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN begründet — nicht vergessen, sondern entschieden.
-- **Keine stille Doppelregel gefunden:** Es gibt 4 gleichnamige Definitionen — welche davon Absicht sind (z. B. `PRIMARY_BIOME_BY_PRESET`, das laut Projektregel in ZWEI Dateien stehen MUSS), steht in der Auswertung.
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 33302 Zeilen Tests gegen 36277 Zeilen Quelltext (Verhältnis 0.92).
-- **Der Waffenkatalog ist kein Datenmüll:** 132 verschiedene powerScore-Werte bei 150 Waffen.
+- **Keine stille Doppelregel gefunden:** Es gibt 1 gleichnamige Definitionen — welche davon Absicht sind (z. B. `PRIMARY_BIOME_BY_PRESET`, das laut Projektregel in ZWEI Dateien stehen MUSS), steht in der Auswertung.
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 34034 Zeilen Tests gegen 37105 Zeilen Quelltext (Verhältnis 0.92).
+- **Der Waffenkatalog ist kein Datenmüll:** 133 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
 
 1. 8 stumme Engine-Ereignisse — unsichtbare Lücken in der Anzeige.
 2. Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.
-3. 3 Konstanten ohne Leser — Werte, die eine Wirkung versprechen, die es nicht gibt.
 
 ## 16. Nicht messbar in dieser Umgebung
 
@@ -309,64 +298,28 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ## 17. TODO
 
-33 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+23 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
 ### HOCH (1)
 
 - [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:64
       this.#startedAt = Date.now();
 
-### MITTEL (10)
+### MITTEL (1)
 
-- [ ] Datei ohne Importeur: src/client/rendering/waterSimulation.js
-      82 Zeilen, kein Leser
-- [ ] Datei ohne Importeur: src/client/rendering/terrainRenderer.js
-      66 Zeilen, kein Leser
-- [ ] Datei ohne Importeur: src/client/ui.js
-      35 Zeilen, kein Leser
-- [ ] Konstante ohne Leser: PROJECT_ARMAGEDDON_WEAPON_DATABASE
-      src/shared/data/index.js:15
-- [ ] Konstante ohne Leser: TERRAIN_MATERIAL_DEFINITIONS
-      src/shared/data/index.js:16
-- [ ] Konstante ohne Leser: SHIELD_SCALE
-      src/shared/protocol.js:93
 - [ ] Doppelregel: PRIMARY_BIOME_BY_PRESET
       src/shared/config/backdrops.js:944 · src/shared/config/scenery.js:420
-- [ ] Doppelregel: TICK_MS
-      src/server/gameServer.js:39 · src/client/networkClient.js:34
-- [ ] Doppelregel: PLAYER_HALF_WIDTH
-      src/engine/match.js:385 · src/engine/systems/projectileSystem.js:35
-- [ ] Doppelregel: PLAYER_HALF_HEIGHT
-      src/engine/match.js:386 · src/engine/systems/projectileSystem.js:36
 
-### NIEDRIG (22)
+### NIEDRIG (21)
 
-- [ ] Export ohne Leser: LICHT_ANTEIL
-      src/client/hoehlenSchatten.js
-- [ ] Export ohne Leser: buildRosterView
-      src/client/main.js
 - [ ] Export ohne Leser: buildHilfeView
       src/client/main.js
-- [ ] Export ohne Leser: TICKS_PER_SECOND
-      src/client/networkClient.js
-- [ ] Export ohne Leser: TerrainRenderer
-      src/client/rendering/terrainRenderer.js
-- [ ] Export ohne Leser: WaterSimulation
-      src/client/rendering/waterSimulation.js
 - [ ] Export ohne Leser: spriteUrl
       src/client/roster.js
 - [ ] Export ohne Leser: rosterWithSprites
       src/client/roster.js
 - [ ] Export ohne Leser: hatHohlraeume
       src/client/terrainBaker.js
-- [ ] Export ohne Leser: initUI
-      src/client/ui.js
-- [ ] Export ohne Leser: updateTurnInfo
-      src/client/ui.js
-- [ ] Export ohne Leser: showEntityDeath
-      src/client/ui.js
-- [ ] Export ohne Leser: weaponIndexFromId
-      src/engine/systems/lootSystem.js
 - [ ] Export ohne Leser: PIERCE_SCHUTZ_TICKS
       src/engine/systems/projectileSystem.js
 - [ ] Export ohne Leser: createDistHandler
@@ -381,8 +334,24 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
       src/shared/config/classes.js
 - [ ] Export ohne Leser: FALLBACK_ARCHETYPE_ID
       src/shared/config/classes.js
-- [ ] Feld „requiresLineOfSight" ist bei allen 150 Waffen konstant (false) *[Offen — Design-Entscheidung]*
-      Verdrahten oder entfernen — Balance-Entscheidung.
+- [ ] Export ohne Leser: WATER_WIRE_SCALE
+      src/shared/config/water.js
+- [ ] Export ohne Leser: loadProjectArmageddonWeaponDatabase
+      src/shared/data/index.js
+- [ ] Export ohne Leser: loadTerrainMaterialDefinitions
+      src/shared/data/index.js
+- [ ] Export ohne Leser: GERAETE_SCHLUESSEL
+      src/shared/identity.js
+- [ ] Export ohne Leser: HEALTH_SCALE
+      src/shared/protocol.js
+- [ ] Export ohne Leser: TURN_MS_SCALE
+      src/shared/protocol.js
+- [ ] Export ohne Leser: MAX_WIRE_FREEZE_TURNS
+      src/shared/protocol.js
+- [ ] Export ohne Leser: REICHWEITEN_RESERVE
+      src/shared/reichweite.js
+- [ ] Export ohne Leser: eigenerSpielerIdListe
+      src/shared/stats.js
 - [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
       0 von 5 Partien endeten VOR Runde 8
 

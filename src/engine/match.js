@@ -39,6 +39,7 @@ import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
+import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { damageTypeId } from './damageTypes.js';
 import { getClassLoadout } from '../shared/config/loadouts.js';
 import { pickScenery } from '../shared/config/scenery.js';
@@ -391,8 +392,13 @@ const JUMP_SPEED_INFLUENCE_ABOVE = 0.5;
 const JUMP_SPEED_INFLUENCE_BELOW = 0.25;
 
 
-const PLAYER_HALF_WIDTH = 7;
-const PLAYER_HALF_HEIGHT = 10;
+/*
+ * Trefferfeld und Körpermaße kommen aus `src/shared/config/player.js`. Hier
+ * standen sie ein ZWEITES Mal (Audit-Fund „Doppelregel"), während
+ * `projectileSystem.js` für die Trefferprüfung eine dritte Kopie führte. Drei
+ * Zahlen für denselben Körper: Wer eine ändert, verschiebt entweder die Figur
+ * oder das Feld, das sie treffen soll.
+ */
 /**
  * Größter Höhenunterschied, den eine Verschiebung (Ziehen oder Schub)
  * überwinden darf.

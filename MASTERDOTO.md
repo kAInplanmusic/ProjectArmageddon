@@ -30,11 +30,11 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Durchgangs: `npm test` **1008/1008** grün ·
-`npm run checks` **21 Gates in ~52 s, 0 Verstöße** · `npm run validate` grün ·
+Verifikation dieses Zuges: `npm test` **1015/1015** grün ·
+`npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
-check:damage-types` 0 Fehler · `npm run build` erfolgreich · E2E
-`tests/e2e/drop-cooldown.spec.mjs` **7/7** grün im echten Browser.
+check:damage-types` 0 Fehler · `npm run build` erfolgreich ·
+**voller E2E: 183 bestanden, 0 rot, 1 übersprungen in 27,3 min**.
 
 Neu in diesem Zug: `src/engine/damageTypes.js` (Zahlenindex), `scripts/check-damage-types.mjs`
 (neues Gate), `tests/weapon-damage-types.test.js` (7), `tests/wirkungsmerkmale-match.test.js` (7);
@@ -74,6 +74,33 @@ Kommentar dort erklärt ihn als gewollten Unterschied zur gestrichelten
 Zielhilfe („zwei Wege, zwei Muster") — ein marschierender Strich hätte diese
 Entscheidung überschrieben.
 
+### Doppelregeln aufgelöst (dritter Teil des Durchgangs)
+
+Der letzte technische Punkt aus „Offene Punkte aus dem Audit": Zahlen, die
+zweimal im Baum standen und deren Auseinanderlaufen KEINEN Fehler wirft.
+
+| Was | Vorher | Jetzt |
+|---|---|---|
+| Simulationstakt | `SIMULATION_HZ = 60` (Server) UND `TICKS_PER_SECOND = 60` (Client), jede Seite mit eigenem `TICK_MS` | `SIMULATION_HZ` + `TICK_MS` in `src/shared/config/network.js`; beide Seiten importieren; `SIMULATION_HZ` wird vom Server weiter re-exportiert, `TICK_MS` vom Client (die Tests lesen über diese Pfade) |
+| Spieler-Trefferfeld | `PLAYER_HALF_WIDTH/_HEIGHT` in `match.js` UND als Exporte in `projectileSystem.js` — die Exporte hatten **keinen Importeur** | `src/shared/config/player.js`; Motor und Projektil-System importieren |
+
+Warum das gefährlich war, nicht nur unsauber: Läuft der Takt auseinander, bezieht
+der Client seine Eingabe auf einen Tick, den der Server nicht kennt — es gibt
+keine Meldung, nur ein abgelehntes Kommando. Läuft das Trefferfeld auseinander,
+geht ein Schuss durch die Figur hindurch, ohne dass eine Prüfung anschlägt. In
+beiden Fällen ist der Fehler still.
+
+Neu: `tests/eine-regel-eine-stelle.test.js` (**7**) prüft nicht den WERT, sondern
+die ANZAHL DER STELLEN — eine zweite Definition lässt den Test fallen, egal
+welchen Wert sie hat. Dazu die Gegenprobe, dass Server und Client tatsächlich
+dieselbe Zahl BENUTZEN (nicht nur dieselbe definieren), und dass der
+abgeschaffte Zweitname `TICKS_PER_SECOND` nicht als Code zurückkehrt
+(Kommentare werden vorher entfernt — die Fundstelle zu benennen ist erwünscht).
+
+**Voller E2E-Lauf** (die Pflicht nach einer Mechanik-Änderung, nicht nur der
+Einzeltest): **183 bestanden, 0 rot, 1 übersprungen in 27,3 min** — ohne
+A/B-Vergleich, weil kein einziger Fehler auftrat.
+
 ## Audit-MCP und Tiefen-Audit (2026-09-24)
 
 Auftrag: „bau dir aus allen Skills und MCPs ein MCP für Tiefen-Audit von Spielen und
@@ -107,7 +134,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 | Prüfung | Ergebnis |
 |---|---|
 | Gate-Batterie | **7/7** — lint, validate, checks (21 Gates), build, perf, balance, smoke:fast |
-| Unit-Suite | **1008 Tests, 1008 bestanden, 0 fehlgeschlagen** |
+| Unit-Suite | **1015 Tests, 1015 bestanden, 0 fehlgeschlagen** |
 | Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
 | Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
 | Secrets | 0 Fundstellen in getrackten Dateien |
@@ -119,7 +146,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 |---|---|---|
 | 3 Dateien ohne jeden Importeur (183 Zeilen) | `src/client/rendering/waterSimulation.js`, `src/client/rendering/terrainRenderer.js`, `src/client/ui.js` | **entfernt 2026-09-25** (Commit `7b78b38`) |
 | Konstanten ohne Leser | `SHIELD_SCALE` (`src/shared/protocol.js`), `PROJECT_ARMAGEDDON_WEAPON_DATABASE` + `TERRAIN_MATERIAL_DEFINITIONS` (`shared/data/index.js`), `weaponIndexFromId` (`lootSystem.js`) | **entfernt 2026-09-25** |
-| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) — `PRIMARY_BIOME_BY_PRESET` in zwei Dateien ist dagegen **Absicht** (Projektregel) | **offen** |
+| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) — `PRIMARY_BIOME_BY_PRESET` in zwei Dateien ist dagegen **Absicht** (Projektregel) | **behoben 2026-09-25**: Takt und Trefferfeld je EINE Quelle in `src/shared/config/`, Wächter `tests/eine-regel-eine-stelle.test.js` |
 | Design, nicht entschieden | `requiresLineOfSight` ist bei allen 150 Waffen konstant `false` | **behoben 2026-09-25**: 13 Waffen verlangen freie Sicht, im Motor verdrahtet |
 
 ### Vier eigene Messfehler des Werkzeugs, gefunden und korrigiert

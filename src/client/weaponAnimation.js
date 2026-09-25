@@ -43,10 +43,14 @@
  */
 export const MUENDUNGSFEUER_BILDER = 8;
 
-/** Dauer des Rückstoßes in Bildern. */
-export const RUECKSTOSS_BILDER = 8;
-
-/** Größter Rückstoß in Pixeln (das Rohr ist 15 px lang). */
+/**
+ * Größter Rückstoß in Pixeln (das Rohr ist 15 px lang).
+ *
+ * Der Rückstoß hat KEINE eigene Dauer-Konstante: Er wird aus demselben `life`
+ * gerechnet wie das Mündungsfeuer, und beide enden mit `MUENDUNGSFEUER_BILDER`.
+ * Ein zweiter Name für dieselbe Zahl stand hier kurz und wurde vom Audit als
+ * „Export ohne Leser" gemeldet — er wäre die nächste Doppelregel gewesen.
+ */
 export const RUECKSTOSS_MAX = 4;
 
 /** Länge des Rohres ab der Figurenmitte — muss zu `#drawEntities` passen. */

@@ -20,6 +20,7 @@ import {
   integrateStep,
   raycastSegment,
 } from '../../shared/ballistics.js';
+import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -32,8 +33,13 @@ import {
  * Die Konstante ist entfernt; die Reihenfolge wird nur noch an EINER Stelle
  * gepflegt. Ein Test hält das fest (`tests/system-priority.test.js`).
  */
-export const PLAYER_HALF_WIDTH = 7;
-export const PLAYER_HALF_HEIGHT = 10;
+/*
+ * Trefferfeld und Körpermaße kommen aus `src/shared/config/player.js`.
+ *
+ * Hier standen sie als EXPORTE ein zweites Mal (`PLAYER_HALF_WIDTH = 7`,
+ * `PLAYER_HALF_HEIGHT = 10`) — und diese Exporte hatten KEINEN Importeur. Die
+ * Trefferprüfung unten las die lokale Kopie, der Motor führte seine eigene.
+ */
 
 /**
  * Von Projektilen und Zielvorschau gemeinsam genutzte Physik-Konstanten.

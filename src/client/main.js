@@ -2924,7 +2924,7 @@ buildRosterView();
  * Platzhalter statt eines stillen Ausfalls — bei 81 Dateien bliebe ein fehlendes
  * sonst unbemerkt.
  */
-export function buildRosterView() {
+function buildRosterView() {
   const reiter = document.getElementById('roster-tabs');
   const liste = document.getElementById('roster-list');
   const info = document.getElementById('roster-info');
