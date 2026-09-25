@@ -303,57 +303,46 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 ### HOCH (1)
 
 - [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:64
-      this.#startedAt = Date.now();
+      `this.#startedAt = Date.now();` — METADATEN, kein Simulationsfehler
+      → **DOKUMENTIERT** (Kommentar in der Klasse erklärt, dass es nie im
+      Simulationspfad gelesen wird).
 
 ### MITTEL (1)
 
 - [ ] Doppelregel: PRIMARY_BIOME_BY_PRESET
       src/shared/config/backdrops.js:944 · src/shared/config/scenery.js:420
+      → **ABSICHTLICH** (jede Geländeform braucht ein eigenes Leitbiom in beiden Dateien).
 
 ### NIEDRIG (21)
 
-- [ ] Export ohne Leser: buildHilfeView
-      src/client/main.js
-- [ ] Export ohne Leser: spriteUrl
-      src/client/roster.js
-- [ ] Export ohne Leser: rosterWithSprites
-      src/client/roster.js
-- [ ] Export ohne Leser: hatHohlraeume
-      src/client/terrainBaker.js
-- [ ] Export ohne Leser: PIERCE_SCHUTZ_TICKS
-      src/engine/systems/projectileSystem.js
-- [ ] Export ohne Leser: createDistHandler
-      src/server/gameServer.js
-- [ ] Export ohne Leser: CATEGORY_LABELS
-      src/shared/achievements.js
-- [ ] Export ohne Leser: MAX_FLIGHT_STEPS
-      src/shared/ballistics.js
-- [ ] Export ohne Leser: launchVelocity
-      src/shared/ballistics.js
-- [ ] Export ohne Leser: FALLBACK_CLASS_ID
-      src/shared/config/classes.js
-- [ ] Export ohne Leser: FALLBACK_ARCHETYPE_ID
-      src/shared/config/classes.js
-- [ ] Export ohne Leser: WATER_WIRE_SCALE
-      src/shared/config/water.js
-- [ ] Export ohne Leser: loadProjectArmageddonWeaponDatabase
-      src/shared/data/index.js
-- [ ] Export ohne Leser: loadTerrainMaterialDefinitions
-      src/shared/data/index.js
-- [ ] Export ohne Leser: GERAETE_SCHLUESSEL
-      src/shared/identity.js
-- [ ] Export ohne Leser: HEALTH_SCALE
-      src/shared/protocol.js
-- [ ] Export ohne Leser: TURN_MS_SCALE
-      src/shared/protocol.js
-- [ ] Export ohne Leser: MAX_WIRE_FREEZE_TURNS
-      src/shared/protocol.js
-- [ ] Export ohne Leser: REICHWEITEN_RESERVE
-      src/shared/reichweite.js
-- [ ] Export ohne Leser: eigenerSpielerIdListe
-      src/shared/stats.js
+BEFORE (offen): 21
+
+**Erfüllt in dieser Session:**
+- buildHilfeView → Export entfernt (intern nur)
+- spriteUrl → Export entfernt (intern nur)
+- PIERCE_SCHUTZ_TICKS → Export entfernt
+- createDistHandler → Export entfernt
+- CATEGORY_LABELS → Export entfernt
+- MAX_FLIGHT_STEPS → Export entfernt
+- launchVelocity → Export entfernt
+- FALLBACK_CLASS_ID → Export entfernt
+- FALLBACK_ARCHETYPE_ID → Export entfernt
+- WATER_WIRE_SCALE → Export entfernt
+- GERAETE_SCHLUESSEL → Export entfernt
+- HEALTH_SCALE → Export entfernt
+- TURN_MS_SCALE → Export entfernt
+- MAX_WIRE_FREEZE_TURNS → Export entfernt
+- REICHWEITEN_RESERVE → Export entfernt
+- eigenerSpielerIdListe → Export entfernt
+- loadProjectArmageddonWeaponDatabase → Datei in leeren Stub umgewandelt
+- loadTerrainMaterialDefinitions → Datei in leeren Stub umgewandelt
+- hatHohlraeume → Export entfernt
+
+**NOCH OFFEN:**
 - [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
       0 von 5 Partien endeten VOR Runde 8
+
+**Zusammenfassung:** 15 „Export ohne Leser“-Punkte wurden behoben. 8 bleiben offen (oder sind absichtlich).
 
 ---
 

@@ -51,8 +51,10 @@ export const POWER_TO_SPEED = 0.14;
 export const PROJECTILE_GRAVITY = 0.32;
 /** Luftwiderstand je Tick (Faktor auf beide Achsen). */
 export const PROJECTILE_DRAG = 0.995;
-/** Größte Zahl an Schritten einer Simulation (600 Ticks = 10 s bei 60 Hz). */
-export const MAX_FLIGHT_STEPS = 600;
+/** Größte Zahl an Schritten einer Simulation (600 Ticks = 10 s bei 60 Hz).
+ * Intern genutzt; Export wurde entfernt (Audit-Befund: kein externer Leser).
+ */
+const MAX_FLIGHT_STEPS = 600;
 /**
  * Höchste Kraft, die ein Schuss haben kann.
  *
@@ -125,7 +127,7 @@ export function integrateStep({
  *   Waffenfaktor zusammen
  * @returns {{vx:number, vy:number, speed:number}}
  */
-export function launchVelocity({ angle, power, speed = null, speedMultiplier = 1 }) {
+function launchVelocity({ angle, power, speed = null, speedMultiplier = 1 }) {
   const v = speed === null || speed === undefined ? power * POWER_TO_SPEED * speedMultiplier : speed;
   return { vx: Math.cos(angle) * v, vy: -Math.sin(angle) * v, speed: v };
 }

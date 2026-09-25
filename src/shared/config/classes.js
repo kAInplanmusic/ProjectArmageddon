@@ -132,9 +132,11 @@ export const CLASS_ARCHETYPES = Object.freeze({
  */
 export const ARCHETYPE_LAUNCH_BASE = 1.2;
 
-/** Rückfallwerte, falls eine unbekannte Kennung übergeben wird. */
-export const FALLBACK_CLASS_ID = 'scout';
-export const FALLBACK_ARCHETYPE_ID = 'brawler';
+/** Rückfallwerte, falls eine unbekannte Kennung übergeben wird.
+ * Intern genutzt; Export wurde entfernt (Audit-Befund: kein externer Leser).
+ */
+const FALLBACK_CLASS_ID = 'scout';
+const FALLBACK_ARCHETYPE_ID = 'brawler';
 
 export const CLASS_IDS = Object.freeze(Object.keys(CLASS_DEFINITIONS));
 export const ARCHETYPE_IDS = Object.freeze(Object.keys(CLASS_ARCHETYPES));

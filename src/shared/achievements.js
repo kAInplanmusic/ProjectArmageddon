@@ -68,8 +68,10 @@ export const CATEGORIES = Object.freeze({
   TEAM: 'team',
 });
 
-/** Beschriftungen der Gruppen — für die Anzeige, nicht für die Logik. */
-export const CATEGORY_LABELS = Object.freeze({
+/** Beschriftungen der Gruppen — für die Anzeige, nicht für die Logik.
+ * Intern genutzt; Export wurde entfernt (Audit-Befund: kein externer Leser).
+ */
+const CATEGORY_LABELS = Object.freeze({
   [CATEGORIES.EINSTIEG]: 'Einstieg',
   [CATEGORIES.KAMPF]: 'Kampf',
   [CATEGORIES.PRAEZISION]: 'Präzision',

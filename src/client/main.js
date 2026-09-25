@@ -3106,7 +3106,7 @@ buildHilfeView();
  * Wie `buildRosterView` wird erst beim Aufklappen gezeichnet, damit der
  * Seitenstart nicht belastet wird.
  */
-export function buildHilfeView() {
+function buildHilfeView() {
   const reiter = document.getElementById('hilfe-tabs');
   const inhalt = document.getElementById('hilfe-inhalt');
   const behaelter = document.getElementById('hilfe-browser');

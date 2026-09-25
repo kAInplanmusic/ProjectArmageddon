@@ -61,6 +61,8 @@ export class ReplayRecorder {
       // neue Aufzeichnungen ohne Grund verschieden.
       ...(hatLoadouts ? { loadouts: loadouts.map(l => (l ? { ...l } : null)) } : {}),
     };
+    // METADATEN: #startedAt ist ein PRODUKTIONSZEITSTEMPEL (createdAt im JSON).
+    // Er dient nur der Lesbarkeit und wird nie im Simulationspfad gelesen.
     this.#startedAt = Date.now();
   }
 

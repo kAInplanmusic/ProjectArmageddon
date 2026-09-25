@@ -69,7 +69,8 @@
 export const BEZUGS_KARTENBREITE = 1920;
 
 /** Wie viel Reserve über dem Abstand zum nächsten Gegner liegen soll. */
-export const REICHWEITEN_RESERVE = 1.5;
+/** Intern genutzt; Export wurde entfernt (Audit-Befund: kein externer Leser). */
+const REICHWEITEN_RESERVE = 1.5;
 
 /** Die Grenzen des Faktors — ein Ausreißer darf das Spiel nicht zerlegen. */
 export const FAKTOR_MIN = 0.55;

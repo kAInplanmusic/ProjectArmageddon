@@ -1231,7 +1231,7 @@ export { LobbySession };
  * @param {string} [distDir='dist']
  * @returns {function(object, object, URL): boolean}
  */
-export function createDistHandler(distDir = 'dist') {
+function createDistHandler(distDir = 'dist') {
   const root = resolve(process.cwd(), distDir);
   const MIME = {
     '.html': 'text/html; charset=utf-8',

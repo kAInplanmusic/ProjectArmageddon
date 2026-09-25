@@ -65,7 +65,7 @@ export const DEFAULT_PROJECTILE_DRAG = PROJECTILE_DRAG;
 export const HOMING_TURN_PER_TICK = 0.0003;
 
 /** Wie lange ein durchschlagenes Ziel nicht wieder getroffen wird (Ticks). */
-export const PIERCE_SCHUTZ_TICKS = 4;
+const PIERCE_SCHUTZ_TICKS = 4;
 
 export class ProjectileSystem {
   #gravity;

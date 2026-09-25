@@ -502,7 +502,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
   *
   * @returns {boolean}
   */
- export function hatHohlraeume(bitmap, width, height) {
+  function hatHohlraeume(bitmap, width, height) {
    for (let x = 0; x < width; x += 1) {
      for (let y = 1; y < height - 1; y += 1) {
        const überdacht = bitmap[(y - 1) * width + x] === 1;

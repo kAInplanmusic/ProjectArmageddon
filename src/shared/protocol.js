@@ -87,11 +87,11 @@ export const CONTROL = Object.freeze({
   LOADOUTS: 'loadouts',
 });
 
-export const COORD_SCALE = 4;      // 0.25 px Auflösung
-export const HEALTH_SCALE = 10;    // 0.1 HP Auflösung
-export const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
+const COORD_SCALE = 4;      // 0.25 px Auflösung
+const HEALTH_SCALE = 10;    // 0.1 HP Auflösung
+const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
 /** Obergrenze für Einfrierdauer im Drahtformat (ein Byte). */
-export const MAX_WIRE_FREEZE_TURNS = 255;
+const MAX_WIRE_FREEZE_TURNS = 255;
 /** Bitfeld im dirty-Byte: welche Felder eines Spielers sich geändert haben. */
 export const DIRTY = Object.freeze({
   POSITION: 1 << 0,

@@ -34,8 +34,10 @@ export const WET_LEVEL = 0.35;
  */
 export const DROWN_LEVEL = 0.72;
 
-/** Skalierung im Drahtformat: ein Byte für den Füllstand. */
-export const WATER_WIRE_SCALE = 255;
+/** Skalierung im Drahtformat: ein Byte für den Füllstand.
+ * Intern genutzt; Export wurde entfernt (Audit-Befund: kein externer Leser).
+ */
+const WATER_WIRE_SCALE = 255;
 
 export const WATER_STATE = Object.freeze({
   DRY: 'dry',

@@ -24,10 +24,13 @@ const BILDER = import.meta.glob('./assets/characters/*/*.png', {
 /**
  * Liefert die URL eines Charakterbildes.
  *
+ * Intern genutzt von `rosterWithSprites` und `factionsWithSprites`.
+ * Der Export wurde entfernt (Audit-Befund: kein externer Leser).
+ *
  * @param {object} character Eintrag aus CHARACTERS
  * @returns {string|null}
  */
-export function spriteUrl(character) {
+function spriteUrl(character) {
   if (!character) return null;
   return BILDER[`./assets/characters/${character.faction}/${character.sprite}`] ?? null;
 }

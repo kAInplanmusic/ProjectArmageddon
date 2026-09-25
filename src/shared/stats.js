@@ -290,11 +290,13 @@ export function lieblingswaffe(zaehler) {
 /**
  * Macht aus einer Kennung, einer Liste oder einem Set eine Liste von IDs.
  *
+ * Intern genutzt; Export wurde entfernt (Audit-Befund: kein externer Leser).
+ *
  * Die Kennzahlen nahmen früher genau EINE Kennung entgegen. Seit ein Mensch ein
  * ganzes Team führt (3–5 Einheiten), muss dieselbe Stelle mehrere verstehen —
  * ohne dass alle Aufrufer umgeschrieben werden müssen.
  */
-export function eigenerSpielerIdListe(eingabe) {
+function eigenerSpielerIdListe(eingabe) {
   if (eingabe === null || eingabe === undefined) return [];
   if (eingabe instanceof Set) return [...eingabe].filter(id => id !== null && id !== undefined);
   if (Array.isArray(eingabe)) return eingabe.filter(id => id !== null && id !== undefined);
