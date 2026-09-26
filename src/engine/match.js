@@ -12,8 +12,9 @@ import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
 import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
 import { erzeugeKarte } from '../shared/terrainGen2.js';
-import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
-import { hashState } from './stateSnapshot.js';
+import { erzeugeAutonomeKarte, materialAmPunkt } from '../shared/terrainGen3.js';
+import { TERRAIN_MATERIAL, RUECKPRALL_MINDESTTEMPO } from '../shared/config/terrain.js';
+import { baueAnsichtszustand, hashState } from './stateSnapshot.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
 } from '../shared/erreichbarkeit.js';
@@ -33,9 +34,7 @@ import {
   elementalEffectFor,
   SELF_TARGET_KINDS,
   EFFECT_KIND,
-  RANDOM_EFFECT_POOL,
 } from './specials.js';
-import { validateCommand } from '../shared/validation.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
@@ -49,8 +48,11 @@ import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
-import { POWER_TO_SPEED, raycastSegment, simulateFlight } from '../shared/ballistics.js';
+import { POWER_TO_SPEED } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
+import {
+  fire, projectileLifetime, aimPreview, hasLineOfSight, launchOrigin,
+} from './shooting.js';
 
 /**
  * Kartenmaße je Ausrichtung.
@@ -411,10 +413,6 @@ const JUMP_SPEED_INFLUENCE_BELOW = 0.25;
 const MAX_SHIFT_SLOPE = 16;
 /** Wie weit entlang der Schussrichtung nach freiem Feld gesucht wird. */
 const MUZZLE_SEARCH_DISTANCE = 48;
-/** Mindestwerte für Zufallswaffen, damit auch schwache Waffen spürbar wirken. */
-const SPECIAL_HEAL_MIN = 35;
-const SPECIAL_SHIELD_MIN = 40;
-const RANDOM_MOVE_DISTANCE = 60;
 
 export class MatchController {
   #world;
@@ -422,6 +420,25 @@ export class MatchController {
   #events = new EventBus();
   #terrain;
   #bitmap;
+  /**
+   * Das Bodenmaterial-Feld dieser Karte (Eis, Gummi, Erde) — oder `null`.
+   *
+   * `null` heißt: einfacher Boden überall. Das ist der Fall bei den
+   * 1D-Geländen (Presets) und bei alten Replays; der autonome Generator
+   * liefert ein Feld mit (`terrainGen3.js`).
+   */
+  #material = null;
+  /**
+   * Der Bewegungszustand der Figuren VOR dem Physikschritt.
+   *
+   * Warum gemerkt: Das Bodenmaterial wirkt NACH dem Physikschritt, und es
+   * braucht zwei Werte, die dort schon überschrieben sind — die waagerechte
+   * Geschwindigkeit vor der Reibung (für Eis) und das senkrechte Tempo des
+   * Aufpralls (für Gummi).
+   *
+   * entityId → { vx, vy, grounded }
+   */
+  #bewegung = new Map();
   #water;
   #inventory = new PlayerInventory();
   /**
@@ -821,6 +838,12 @@ export class MatchController {
       waterLevel = k.wasserY;
       this.kartencharakter = k.charakter;
       this.kartenkennzahlen = k.kennzahlen;
+      /*
+       * Das Bodenmaterial kommt aus DEMSELBEN Generator und damit aus
+       * DEMSELBEN Seed. Es wird hier nur übernommen — gelesen wird es an
+       * genau EINER Stelle, siehe `materialAt`.
+       */
+      this.#material = k.material ?? null;
     } else if (this.kartentyp) {
       const k = erzeugeKarte({
         rng: terrainRng,
@@ -1094,10 +1117,21 @@ export class MatchController {
     // Fliegende Kisten bewegen sich VOR dem Physikschritt: sie sollen im selben
     // Tick landen, in dem sie den Boden berühren.
     this.#stepFlyingCrates();
+    /*
+     * Bodenmaterial, Teil 1: den Bewegungszustand VOR dem Schritt merken.
+     *
+     * Das Material wirkt nach dem Schritt (siehe `#wendeBodenmaterialAn`) —
+     * zu diesem Zeitpunkt sind Reibung und Aufprall aber schon verrechnet.
+     * Der Zustand von vorher ist die einzige Quelle für „wie schnell war die
+     * Figur wirklich".
+     */
+    this.#merkeBewegung();
     this.#world.step();
     // Nach dem Physikschritt prüfen, wer gelandet ist — davon hängt ab, ob ein
     // Doppelsprung wieder zur Verfügung steht.
     this.#updateGroundedState();
+    // Bodenmaterial, Teil 2: DIE EINE Stelle, an der es gelesen und angewandt wird.
+    this.#wendeBodenmaterialAn();
 
     // Günther bewegt sich nach der Physik: Er läuft auf der Oberfläche, die
     // sich in diesem Schritt geändert haben kann.
@@ -1320,6 +1354,96 @@ export class MatchController {
     }
   }
 
+  // -------------------------------------------------------- Bodenmaterial
+
+  /**
+   * Das Bodenmaterial an einer Weltposition.
+   *
+   * DIE EINE Lesestelle: Hier — und nur hier — legt der Motor das Materialfeld
+   * aus. Ohne Feld (`null`: 1D-Gelände, alte Replays) ist der Boden Erde.
+   * Die Begründung des Verfahrens steht in `terrainGen3.js`, die Werte in
+   * `config/terrain.js`.
+   */
+  materialAt(x, y) {
+    return materialAmPunkt(this.#material, x, y);
+  }
+
+  /** Das Materialfeld dieser Karte — für Werkzeuge, `null` bei 1D-Gelände. */
+  get terrainMaterial() { return this.#material; }
+
+  /** Bewegungszustand vor dem Physikschritt merken (das Material wirkt danach). */
+  #merkeBewegung() {
+    for (const entry of this.#players) {
+      if (!entry.alive) continue;
+      this.#bewegung.set(entry.entityId, {
+        vx: this.#world.getComponent(entry.entityId, 'Velocity', 'x') ?? 0,
+        vy: this.#world.getComponent(entry.entityId, 'Velocity', 'y') ?? 0,
+        grounded: this.isGrounded(entry.entityId),
+      });
+    }
+  }
+
+  /**
+   * Wendet die Physik des Bodenmaterials an — beim Aufsetzen und beim Bewegen.
+   *
+   * EIS rutscht (die Bodenreibung des Schritts wird anteilig zurückgenommen,
+   * nie über den gemerkten Wert hinaus — Eis beschleunigt nicht). GUMMI federt
+   * (ein Teil des Aufpralltempos kommt als senkrechter Impuls zurück, ab
+   * `RUECKPRALL_MINDESTTEMPO`, damit das Federn ausklingt). Beides ohne Zufall
+   * und ohne Uhr.
+   *
+   * ## Warum es dazu KEIN Ereignis gibt
+   *
+   * Naheliegend wären `boden_rutschig`/`boden_rueckprall`. Sie unterbleiben
+   * bewusst: `tests/event-coverage.test.js` verlangt, dass JEDES
+   * Engine-Ereignis einen Behandlungszweig in der Anzeige hat — ein Ereignis
+   * ohne Zweig wäre eine stumme Stelle, genau der Fehler, den jener Test
+   * festhält. Die Anzeige zu erweitern stand hier nicht zur Verfügung, also
+   * wird auch nichts gemeldet. Der Boden ist über Position und Geschwindigkeit
+   * der Figur sichtbar; ein eigenes Ereignis braucht er nicht.
+   */
+  #wendeBodenmaterialAn() {
+    for (const entry of this.#players) {
+      if (!entry.alive) continue;
+      const vorher = this.#bewegung.get(entry.entityId);
+      if (!vorher) continue;
+
+      const x = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
+      const y = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
+      /*
+       * Gelesen wird die BODENZEILE, nicht die Fußlinie.
+       *
+       * FUND (belegt, eigener Fehler): Zuerst stand hier `y`. Das ist die
+       * Fußlinie — und die schwankt im Betrieb um einige Pixel (das
+       * CharacterSystem setzt eine landende Figur auf `Oberfläche − halbe
+       * Höhe`, die Schwerkraft zieht sie im nächsten Schritt wieder herunter).
+       * Gemessen lag eine Figur dabei abwechselnd bei y=702 und y=711; bei
+       * einer Materialzelle von 64 px fiel sie damit von einer Zelle in die
+       * nächste, und derselbe Boden meldete einmal „Gummi" und einmal „Eis".
+       *
+       * `y + PLAYER_HALF_HEIGHT` ist der tiefste Punkt des Körpers — dort
+       * berührt er den Grund. Diese Zeile ist über die ganze Schwankung
+       * dieselbe.
+       */
+      const material = this.materialAt(x, y + PLAYER_HALF_HEIGHT);
+      if (material.id === TERRAIN_MATERIAL.NORMAL) continue;
+
+      const stehtJetzt = this.isGrounded(entry.entityId);
+
+      if (material.rutschigkeit > 0 && stehtJetzt) {
+        const vx = this.#world.getComponent(entry.entityId, 'Velocity', 'x') ?? 0;
+        const neu = vx + (vorher.vx - vx) * material.rutschigkeit;
+        this.#world.setComponent(entry.entityId, 'Velocity', 'x', neu);
+      }
+
+      if (material.rueckprall > 0 && !vorher.grounded && stehtJetzt
+        && vorher.vy > RUECKPRALL_MINDESTTEMPO) {
+        const impuls = vorher.vy * material.rueckprall;
+        this.#world.setComponent(entry.entityId, 'Velocity', 'y', -impuls);
+      }
+    }
+  }
+
   /**
    * Startpunkt und Geschwindigkeit für eine Anflugart.
    *
@@ -1431,308 +1555,235 @@ export class MatchController {
     return ergebnis;
   }
 
-  /**
-   * Startpunkt und Geschwindigkeit für eine Anflugart.
-   *
-   * Für `self` gibt die Methode `null` zurück — dann gilt der normale Weg.
-   * `sky`: von oben auf den Zielpunkt. `flank`: von der Seite in Zielrichtung.
-   *
-   * @returns {{spawn:{x:number,y:number}, vx:number, vy:number}|null}
-   */
-  #resolveStrike(weapon, x, y, angle, power) {
-    const style = weapon?.strikeStyle ?? 'self';
-    if (style === 'self') return null;
-
-    // Zielpunkt über die normale Bahn bestimmen.
-    const bahn = this.#resolveHitscan(x, y, angle, power, weapon, null);
-    const zielX = Number.isFinite(bahn.hitX) ? bahn.hitX : x;
-    const zielY = Number.isFinite(bahn.hitY) ? bahn.hitY : y;
-
-    if (style === 'sky') {
-      const hoehe = 320;
-      const fall = 14;
-      return { spawn: { x: zielX, y: Math.max(0, zielY - hoehe) }, vx: 0, vy: fall };
-    }
-
-    // `flank`: von der Seite, aus der Richtung, aus der „geschossen" wird.
-    const richtung = Math.cos(angle) >= 0 ? -1 : 1;
-    const weite = 420;
-    const tempo = 12;
-    return {
-      spawn: { x: zielX + richtung * weite, y: Math.max(0, zielY - 60) },
-      vx: -richtung * tempo,
-      vy: 2,
-    };
-  }
 
   /**
-   * Feuert mit der aktiven Waffe. Wird sowohl lokal als auch serverseitig
-   * aufgerufen und durchlaeuft immer die vollstaendige Validierung.
+   * Feuert mit der aktiven Waffe — ein reiner Delegator.
+   *
+   * ## W1-4b: Delegation nach engine/shooting.js
+   *
+   * Der Rumpf stand hier 211 Zeilen lang und griff 20-mal in private Felder.
+   * Er liegt jetzt als reine Funktion `fire(quelle, …)` in
+   * `engine/shooting.js` — nach demselben Muster wie `stateSnapshot.js`
+   * (W1-4a): `#schussQuelle()` benennt jede Angabe, die das Schießen liest.
+   * Diese Liste ist die Schnittstelle; ein neues Feld dort braucht einen
+   * Eintrag in der Quelle.
    *
    * @returns {{ok:boolean, errors?:string[], projectileId?:number, hit?:object|null}}
    */
   fire(playerId, angle, power, weaponId = null) {
-    const errors = [];
-    if (this.#status !== 'playing') errors.push('Match laeuft nicht');
+    return fire(this.#schussQuelle(), playerId, angle, power, weaponId);
+  }
 
-    const command = validateCommand(
-      { playerId, angle, power, weaponId, tick: this.#world.tickCount, type: 'fire' },
+  /**
+   * Sammelt genau die Werte, die `engine/shooting.js` liest.
+   *
+   * ## Warum es diese Methode gibt
+   *
+   * `fire()` und die übrigen Schieß-Methoden griffen vorher direkt in private
+   * Felder (Status, Inventar, Zugfolge, Zustände). Der Schieß-Ablauf soll rein
+   * bleiben und bekommt deshalb keine `this`-Zugriffe mehr, sondern diese
+   * Quelle — dieselbe Haltung wie `#zustandsQuelle()` für den Ansichtszustand.
+   *
+   * ## Die Entscheidungen im Einzelnen
+   *
+   *  - Was fertig gerechnet ist, wird fertig übergeben: `statuses`, `players`,
+   *    `turnOrder` als schlichte Werte.
+   *  - Was FALLWEISE gebraucht wird, geht als Rückfrage hinein:
+   *    `isPlayerAlive`, `cooldownFor`, `surfaceYAt`, `deployTurret`,
+   *    `applyTargetEffect`, `applyCooldown` — sie hängen an privaten Feldern
+   *    (Kühlzeiten, Spieler, Terrain).
+   *  - `rng` geht als GANZES hinein: Die Zufallswirkung einer Waffe zieht
+   *    daraus, und zwar an derselben Stelle im Ablauf wie vorher — der
+   *    Determinismus hängt an der Reihenfolge der Züge.
+   *  - `hasFired`/`markFired` sind getrennte Funktionen: Der Ablauf LIEST das
+   *    Flag (Ein Schuss je Zug) und SETZT es nach dem Abschuss — ein
+   *    gemeinsamer Zugriff wäre eine verdeckte Schreibstelle.
+   *  - `shotsInFlight` geht als GANZES hinein (die Map selbst): Der Einschlag
+   *    trägt die Waffe über denselben Speicher; eine Kopie bräche die
+   *    Zuordnung.
+   *
+   * ## Vertrag
+   *
+   * Die Schlüssel sind die Eingabe von `fire()` und der übrigen Funktionen in
+   * `engine/shooting.js`. Wer einen umbenennt, zieht dort mit.
+   */
+  #schussQuelle() {
+    return {
+      world: this.#world,
+      terrain: this.#terrain,
+      events: this.#events,
+      inventory: this.#inventory,
+      statuses: this.#statuses,
+      players: this.#players,
+      turnOrder: this.#turnOrder,
+      shotsInFlight: this.#shotsInFlight,
+      width: this.width,
+      height: this.height,
+      status: this.#status,
+      activePlayerId: this.activePlayerId,
+      isPlayerAlive: id => this.isPlayerAlive(id),
+      cooldownFor: (id, weaponId) => this.cooldownFor(id, weaponId),
+      surfaceYAt: x => this.surfaceYAt(x),
+      deployTurret: (id, effect) => this.#deployTurret(id, effect),
+      rng: this.#rng,
+      applyTargetEffect: (effect, target, attacker) => this.#applyTargetEffect(effect, target, attacker),
+      applyCooldown: (id, weapon) => this.#applyCooldown(id, weapon),
+      hasFired: () => this.#hasFired,
+      markFired: id => { this.#hasFired = true; this.#lastShotBy = id; },
+      endTurn: () => this.endTurn(),
+      // Die Schieß-Primitive: Strahl, Mündung, Spielertreffer, Abschussvektor.
+      // Sie bleiben im Match (Kartenmaß bzw. Terrain-/Spielerzugriff) und werden
+      // von shooting.js über die Quelle gerufen.
+      resolveHitscan: (ox, oy, angle, power, weapon, shooterId) =>
+        this.#resolveHitscan(ox, oy, angle, power, weapon, shooterId),
+      findMuzzle: (ox, oy, dirX, dirY, shooterId) =>
+        this.#findMuzzle(ox, oy, dirX, dirY, shooterId),
+      playerAt: (x, y, excludeId) => this.#playerAt(x, y, excludeId),
+      launchVector: (playerId, angle, power, weapon) =>
+        this.#launchVector(playerId, angle, power, weapon),
+    };
+  }
+
+  // -------------------------------------- Schieß-Primitive (für shooting.js)
+
+  /**
+   * Auflösen eines Hitscan-Schusses. Bleibt im Match (nicht in `shooting.js`),
+   * weil die Strahllänge ein Kartenmaß ist — `shooting.js` ruft sie über die Quelle.
+   */
+  #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null) {
+    const speed = power * POWER_TO_SPEED;
+    /*
+     * Die Strahllänge folgt der KARTE.
+     *
+     * FUND (belegt 2026-09-19): Hier stand `weapon.maxRange` in Pixeln, ohne
+     * Kartenfaktor. Die ballistischen Waffen wachsen seit der Reichweiten-
+     * korrektur mit der Kartenbreite (Reserve 1,28× auf jeder Größe), die
+     * Hitscan-Waffen blieben bei ihrem Katalogwert — auf einer 5120er Karte
+     * fielen damit 76 Waffen gegen 74 ab. Vorgabe: der Strahl skaliert mit.
+     *
+     * Gerechnet wird mit dem WEITENfaktor (`weitenFaktor`), weil `maxRange`
+     * eine WEITE ist — nicht mit dem Geschwindigkeitsfaktor.
+     */
+    const strahlweite = weapon.maxRange * weitenFaktor(this.width);
+    const maxSteps = Math.max(2, Math.round(strahlweite / Math.max(1, speed)));
+    const dirX = Math.cos(angle);
+    // Der Winkel wird gegen die Bildschirmachse gemessen: 0 = rechts, π/2 = oben.
+    const dirY = -Math.sin(angle);
+
+    // Mündung bestimmen. Ein Start direkt auf der Schützenposition ist falsch:
+    // Der Schütze steht auf dem Boden, und sein eigenes Trefferfeld reicht
+    // ±PLAYER_HALF_HEIGHT um die Fußposition. Der Strahl würde deshalb sofort
+    // im eigenen Körper bzw. im Boden darunter enden und das eigentliche Ziel
+    // nie erreichen. Deshalb wird der Startpunkt entlang der Schussrichtung aus
+    // dem Körper herausgeschoben, bis freies Feld erreicht ist.
+    const start = this.#findMuzzle(originX, originY, dirX, dirY, shooterId);
+    if (start === null) {
+      // Kein freies Feld in Schussrichtung: die Waffe kann nicht abgefeuert werden.
+      return { hitX: originX, hitY: originY, hit: false, target: null, blocked: true };
+    }
+
+    const result = ccdRaycast(
       {
-        currentTick: this.#world.tickCount,
-        activePlayerId: this.activePlayerId,
-        knownPlayerIds: this.#turnOrder,
+        startX: start.x,
+        startY: start.y,
+        velocityX: dirX * speed,
+        velocityY: dirY * speed,
+        drag: 1,
+        gravity: 0,
+        maxSteps,
+      },
+      // Der Schütze selbst darf den Strahl nicht blockieren.
+      (x, y) => {
+        if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) return true;
+        const hitPlayer = this.#playerAt(x, y, shooterId);
+        return hitPlayer !== null;
       }
     );
-    if (!command.valid) return { ok: false, errors: command.errors };
-    if (errors.length > 0) return { ok: false, errors };
 
-    if (!this.isPlayerAlive(playerId)) {
-      return { ok: false, errors: ['Spieler ist nicht mehr aktiv'] };
-    }
-
-    const resolvedWeaponId = weaponId ?? this.#inventory.getActiveWeaponId(playerId);
-    const weapon = resolvedWeaponId ? getWeapon(resolvedWeaponId) : null;
-    if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewaehlt'] };
-    // Nachladezeit prüfen, BEVOR Munition verbraucht wird — sonst kostet ein
-    // abgelehnter Schuss eine Ladung.
-    const restCooldown = this.cooldownFor(playerId, weapon.id);
-    if (restCooldown > 0) {
-      return {
-        ok: false,
-        errors: [`${weapon.displayName} lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`],
-        cooldown: restCooldown,
-      };
-    }
-
-    /*
-     * EIN Schuss je Zug.
-     *
-     * Fund (belegt): Diese Prüfung fehlte. Der Zug endet erst, wenn das Geschoss
-     * verflogen ist (`#hasFired && !projectilesActive` in `step()`). Solange ein
-     * Schuss noch flog, konnte derselbe Spieler ERNEUT feuern — und mit dem
-     * nächsten Takt noch einmal.
-     *
-     * Gemessen im Aufzeichnungslauf (Seed 4242): Spieler 3 feuerte bei Takt 452
-     * und 453, ohne dass dazwischen ein `turn_end` lag. Zwei Schüsse in einem
-     * Zug, jeder mit voller Munition abgezogen.
-     *
-     * Im Mehrspieler wäre das ein Cheat: Ein Client muss nur schnell genug
-     * nachlegen, bevor sein erster Schuss landet. Die bestehende Prüfung
-     * („Spieler ist nicht am Zug") greift erst NACH dem Zugwechsel und deckt
-     * dieses Zeitfenster nicht ab.
-     *
-     * REIHENFOLGE: Diese Prüfung steht NACH Nachladezeit und Munition, nicht
-     * davor. Fund (belegt): Zuerst stand sie ganz oben, und damit verdeckte sie
-     * die genauere Begründung — der Test „Nachladezeit erscheint in der
-     * Waffenliste und blockiert den Schuss" (Seed 4711) feuert zweimal im selben
-     * Zug und erwartete „lädt nach", bekam aber „In diesem Zug wurde bereits
-     * geschossen". Beide Aussagen sind wahr; die Waffe ist die nützlichere
-     * Auskunft, weil sie dem Spieler sagt, WAS ihn hindert.
-     *
-     * Blockiert wird in beiden Fällen — es geht nur um die Begründung.
-     */
-    if (this.#hasFired) {
-      return { ok: false, errors: ['In diesem Zug wurde bereits geschossen'] };
-    }
-
-    /*
-     * SICHTLINIE — steht VOR dem Munitionsverbrauch.
-     *
-     * Ein abgelehnter Schuss darf keine Ladung kosten (dieselbe Regel wie bei
-     * der Nachladezeit oben). Selbstwirkungen (Heilung, Schild, Sprung, Buff)
-     * sind ausgenommen: Sie gehen auf den Schützen und brauchen kein Ziel —
-     * ein Verband benötigt keine Sichtlinie.
-     *
-     * FUND (belegt, gemessen 2026-09-25): `requiresLineOfSight` stand im
-     * Katalog, der Motor las es nirgends. Jetzt entscheidet es über die
-     * Abgabe: Ein Direktschütze (Präzision, Strahl, Plasma, Pfeil, Blitz)
-     * kann nicht über Deckung schießen — dafür gibt es Steilfeuerwaffen.
-     */
-    if (weapon.requiresLineOfSight) {
-      const sichtEffekt = buildEffect(weapon);
-      const selbstwirkung = Boolean(sichtEffekt) && SELF_TARGET_KINDS.has(sichtEffekt.kind);
-      if (!selbstwirkung && !this.hasLineOfSight(playerId, angle, power, weapon)) {
-        return {
-          ok: false,
-          errors: [`${weapon.displayName} verlangt freie Sicht zum Ziel — die Sichtlinie ist versperrt`],
-        };
-      }
-    }
-
-    if (!this.#inventory.consume(playerId, weapon.id, 1)) {
-      return { ok: false, errors: ['Keine Munition'] };
-    }
-
-    const player = this.#players.find(entry => entry.entityId === playerId);
-    const profile = combatProfile(
-      CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
-      player?.sidegradeId ?? null,
-    );
-    const { x, y, vx, vy } = this.#launchVector(playerId, angle, power, weapon);
-
-    this.#world.setComponent(playerId, 'Weapon', 'angle', angle);
-    this.#world.setComponent(playerId, 'Weapon', 'power', power);
-    this.#hasFired = true;
-    this.#lastShotBy = playerId;
-
-    /*
-     * Jeder abgegebene Schuss wird gemeldet — an EINER Stelle, vor der
-     * Verzweigung nach Anflugart.
-     *
-     * Fund (belegt): Für Projektile gab es `projectile_spawn`, für Treffer
-     * `hitscan`/`projectile_impact` — aber nichts für einen Schuss, der weder
-     * trifft noch ein Projektil erzeugt. Die Trefferquote (`Treffer / Schüsse`)
-     * ließ sich damit nicht rechnen: Der Nenner fehlte, und für Hitscan-Waffen
-     * wäre er grundsätzlich 0 gewesen.
-     *
-     * Die drei Wege (Selbstwirkung, Hitscan, Projektil) melden alle hier.
-     */
-    this.#events.emit('shot', {
-      playerId,
-      weaponId: weapon.id,
-      angle,
-      power,
-      /*
-       * Die ZIELART reist im Ereignis mit.
-       *
-       * FUND (belegt, gemessen 2026-09-25): `weapon.targeting` stand im
-       * Katalog, aber der Motor las das Feld nirgends — er entschied die
-       * Frage „geht das auf den Schützen oder ins Ziel?" allein aus der
-       * Wirkung (`buildEffect`/`SELF_TARGET_KINDS`). Die Designdatei
-       * widersprach ihm dabei bei 11 Waffen (Heilzauber als "directional").
-       * Beide Seiten sind jetzt in Übereinstimmung (`npm run check:targeting`),
-       * und die Zielart steht den Verbrauchern — Anzeige, Aufzeichnung, Ton —
-       * als eigenes Feld zur Verfügung.
-       */
-      targeting: weapon.targeting ?? null,
-    });
-
-    // Wirkungen, die auf den Schützen selbst gehen (Heilung, Schild, Sprung,
-    // Munition, Aufklärung), werden sofort ausgelöst. Es wird bewusst KEIN
-    // Geschoss erzeugt: ein Projektil, das nur dazu dient, den eigenen Effekt
-    // auszulösen, wäre im Spiel irreführend.
-    const special = buildEffect(weapon);
-    if (special && SELF_TARGET_KINDS.has(special.kind)) {
-      const outcome = this.#applySelfEffect(special, playerId, weapon);
-      this.#events.emit('special_effect', {
-        playerId, weaponId: weapon.id, kind: special.kind, ...outcome,
+    const target = this.#playerAt(result.hitX, result.hitY, shooterId);
+    if (target !== null) {
+      const damage = weapon.damage * this.#statuses.damageMultiplier(shooterId);
+      this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId, {
+        damageType: damageTypeId(weapon.damageType),
       });
-      this.#applyCooldown(playerId, weapon);
-      this.endTurn();
-      return { ok: true, projectileId: null, hit: null, special: { kind: special.kind, ...outcome } };
+
+      // Wirkung über den Schaden hinaus (Einfrieren, Schaden über Zeit).
+      // Fällt die Waffe nicht in SPECIAL_EFFECTS, greift die Ableitung aus dem
+      // Elementarwert — sonst bliebe Feuer-/Gift-/Eisschaden ohne Wirkung.
+      const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
+      if (effect && !SELF_TARGET_KINDS.has(effect.kind)) {
+        this.#applyTargetEffect(effect, target, shooterId);
+      }
     }
 
-    if (weapon.delivery === 'hitscan') {
-      const hit = this.#resolveHitscan(x, y, angle, power, weapon, playerId);
-      this.#events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
-      this.#applyCooldown(playerId, weapon);
-      return { ok: true, projectileId: null, hit };
+    return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
+  }
+
+  /**
+   * Sucht den Mündungspunkt: den ersten Punkt entlang der Schussrichtung, der
+   * weder in festem Terrain noch im Körper eines Spielers liegt.
+   *
+   * Der Abschuss beginnt in der Körpermitte: `originY` ist die KOPFposition
+   * des Schützen (`surfaceY - PLAYER_HALF_HEIGHT - 2`), die Körpermitte liegt
+   * `PLAYER_HALF_HEIGHT / 2` darunter und damit frei vom Boden. Ein Start auf
+   * der Fußposition läge IM Terrain — das Geschoss verschwände im ersten
+   * Simulationsschritt.
+   *
+   * @returns {{x:number,y:number}|null}
+   */
+  #findMuzzle(originX, originY, dirX, dirY, shooterId = null) {
+    const bodyY = originY - PLAYER_HALF_HEIGHT / 2;
+    for (let distance = 0; distance <= MUZZLE_SEARCH_DISTANCE; distance += 2) {
+      const x = originX + dirX * distance;
+      const y = bodyY + dirY * distance;
+      if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) continue;
+      if (this.#playerAt(x, y, shooterId) !== null) continue;
+      return { x, y };
     }
+    return null;
+  }
 
-    // Anflugart: Ein Luftangriff kommt von oben auf den Zielpunkt, schwere
-    // Artillerie von der Seite. Beides wird hier in Startpunkt und
-    // Geschwindigkeit übersetzt — der Zielpunkt bleibt der der normalen Zielung.
-    const strike = this.#resolveStrike(weapon, x, y, angle, power);
+  /**
+   * Spieler an einer Position.
+   * @param {number|null} [excludeId] - wird übersprungen (meist der Schütze)
+   */
+  #playerAt(x, y, excludeId = null) {
+    for (const entry of this.#players) {
+      if (excludeId !== null && entry.entityId === excludeId) continue;
+      if (!entry.alive) continue;
+      const px = this.#world.getComponent(entry.entityId, 'Position', 'x') || 0;
+      const py = this.#world.getComponent(entry.entityId, 'Position', 'y') || 0;
+      if (Math.abs(x - px) <= PLAYER_HALF_WIDTH && Math.abs(y - py) <= PLAYER_HALF_HEIGHT) {
+        return entry.entityId;
+      }
+    }
+    return null;
+  }
 
-    const projectileId = this.#world.createEntity();
-
-    // Abschusspunkt aus dem Körper des Schützen herausschieben.
-    //
-    // `x, y` ist die Fußposition auf dem Boden und liegt damit IM festen
-    // Terrain. Ein Projektil, das dort entsteht, kollidiert im ersten
-    // Simulationsschritt mit dem Boden und verschwindet, ohne das Ziel je zu
-    // erreichen — Direktschaden war so unmöglich.
-    const spawn = strike
-      ? strike.spawn
-      : (this.#findMuzzle(x, y, Math.cos(angle), -Math.sin(angle), playerId) ?? { x, y });
-    this.#world.addComponent(projectileId, 'Position', { x: spawn.x, y: spawn.y });
-    this.#world.addComponent(projectileId, 'Velocity', {
-      x: strike ? strike.vx : vx,
-      y: strike ? strike.vy : vy,
-    });
-    this.#world.addComponent(projectileId, 'Projectile', {
-      owner: playerId,
-      weaponId: weapon.index,
-      /*
-       * Die SCHADENSART reist als Zahl mit dem Geschoss.
-       *
-       * FUND (belegt, gemessen 2026-09-25): `weapon.damageType` stand im
-       * Katalog (27 Arten), aber kein Stück Motor las ihn — jede Waffe wirkte
-       * gleich. Über `damageType` im Projektil erreicht die Art jetzt das
-       * Schadenereignis (`damageSystem.applyDamage` → `damage`-Event) und steht
-       * damit Resistenzen, Anzeige und Aufzeichnung zur Verfügung.
-       */
-      damageType: damageTypeId(weapon.damageType),
-      // Der Schadensbonus aus Buffs wirkt auf den tatsaechlichen Schaden.
-      damage: weapon.damage * profile.damageMultiplier * this.#statuses.damageMultiplier(playerId),
-      /*
-       * Der Mindestradius ist ein TREFFERFENSTER, keine Explosion.
-       *
-       * FUND (belegt): Hier stand `weapon.blastRadius || 24` — ein pauschaler
-       * Fallback von 24 px für JEDE Waffe ohne Flächenwirkung (60 Projektile).
-       * Für ein Geschoss, das aus der Mündung heraus beschleunigt, ist das ein
-       * sinnvolles Trefferfenster.
-       *
-       * Für eine WURFWAFFE ist es falsch: Sie wird direkt am Körper abgeworfen
-       * und bleibt durch ihre niedrige Geschwindigkeit (Faktor 0,3–0,6) mehrere
-       * Ticks in diesem Radius. Gemessen: Der Baseballschläger verursachte am
-       * SCHÜTZEN 104 Schaden bei jedem Winkel und am Ziel 0 — er traf sich
-       * selbst, statt zu fliegen.
-       *
-       * Wurfwaffen bekommen deshalb KEIN Trefferfenster: Sie treffen direkt
-       * (der Besitzer ist vom Treffer ausgeschlossen, siehe projectileSystem)
-       * oder gar nicht. Ihr Krater entsteht über `terrainDamage`.
-       */
-      blastRadius: weapon.blastRadius
-        || (weapon.category === 'melee' ? 0 : 24),
-      knockback: weapon.knockback,
-      drag: 0.995,
-      gravityScale: weapon.gravityScale || 1,
-      windFactor: 1,
-      terrainDamage: weapon.terrainDamage,
-      bounces: weapon.bounces,
-      /*
-       * Durchschlag und Zielsuche kommen aus der Waffe in das GESCHOSS.
-       *
-       * Das Projektil ist die einzige Stelle, an der beide wirken können: Der
-       * Durchschlag entscheidet im Flug, die Zielsuche krümmt die Bahn je Tick.
-       * Beide Werte sind Zahlen — der Komponentenspeicher führt nur Zahlen.
-       */
-      pierce: weapon.piercing > 0 ? Math.round(weapon.piercing) : 0,
-      homing: weapon.homing > 0 ? weapon.homing : 0,
-      letztesZiel: -1,
-      pierceSchutz: 0,
-      /*
-       * Die Lebensdauer kommt aus EINER Quelle (`projectileLifetime`) — die KI
-       * liest sie von dort und plant deshalb keine Schüsse mehr, deren Geschoss
-       * mitten im Flug verfällt.
-       */
-      lifetime: this.projectileLifetime(playerId, angle, power, weapon),
-      /**
-       * Zünder in Ticks (0 = Aufprallwaffe). Eine Granate explodiert nicht beim
-       * Aufprall, sondern nach Ablauf — sie bleibt liegen und zündet.
-       *
-       * ENTSCHIEDEN (2026-09-20): Die Absicht steht als `mechanic.fuseIntent` in
-       * der Designdatei, der Generator leitet `fuseTime` daraus ab
-       * (`npm run weapons:build`). `impact` → 0 (beim Aufprall), `timed` → die
-       * gestufte Dauer. Vorher wurde die Absicht aus dem NAMEN erschlossen;
-       * dadurch zündete jede Zünderwaffe erst nach der Landung, und der
-       * „Explosive Energieball" war die einzige Waffe ohne Wirkung.
-       *
-       * Geprüft wird die Zusage von `npm run check:fuses`: `impact` verlangt
-       * Zünder 0, `timed` verlangt Zünder > Flugzeit, ein Hitscan darf gar
-       * keinen Zünder tragen (er erzeugt kein Geschoss, das liegen bleiben
-       * könnte). Ein Verstoß endet dort mit Exit-Code 1.
-       */
-      fuseTicks: this.#fuseTicksFor(weapon),
-      alive: 1,
+  /**
+   * Abschussvektor inklusive Klassen- und Archetypenmodifikatoren.
+   *
+   * Bleibt im Match (und nicht in `shooting.js`), weil die Abschussgeschwindigkeit
+   * an der KARTE hängt: `launchSpeedMultiplier({ … kartenbreite: this.width })`
+   * ist die EINE Stelle, an der der Spielerschuss skaliert wird. Die drei
+   * Lesestellen (Spielerschuss, Lebensdauer, Sichtlinie) teilen sie über die
+   * Quelle — eine zweite Fassung in `shooting.js` wäre genau die Doppelregel,
+   * die `tests/reichweite-konsistenz.test.js` festhält.
+   */
+  #launchVector(playerId, angle, power, weapon = null) {
+    const player = this.#players.find(entry => entry.entityId === playerId);
+    const x = this.#world.getComponent(playerId, 'Position', 'x') || 0;
+    const y = this.#world.getComponent(playerId, 'Position', 'y') || 0;
+    const speed = power * POWER_TO_SPEED * launchSpeedMultiplier({
+      classId: player?.classId ?? 0,
+      archetypeId: player?.archetypeId ?? 0,
+      sidegradeId: player?.sidegradeId ?? null,
+      weapon,
+      // Die Karte gehört in DIESE Rechnung — sonst vergisst sie eine Aufrufstelle.
+      kartenbreite: this.width,
     });
 
-    this.#shotsInFlight.set(projectileId, weapon.id);
-
-    this.#events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
-    this.#applyCooldown(playerId, weapon);
-    return { ok: true, projectileId, hit: null };
+    return { x, y, speed, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };
   }
 
   // ------------------------------------------------------------- Geschütze
@@ -2051,74 +2102,6 @@ export class MatchController {
     });
   }
 
-  #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null) {
-    const speed = power * POWER_TO_SPEED;
-    /*
-     * Die Strahllänge folgt der KARTE.
-     *
-     * FUND (belegt 2026-09-19): Hier stand `weapon.maxRange` in Pixeln, ohne
-     * Kartenfaktor. Die ballistischen Waffen wachsen seit der Reichweiten-
-     * korrektur mit der Kartenbreite (Reserve 1,28× auf jeder Größe), die
-     * Hitscan-Waffen blieben bei ihrem Katalogwert — auf einer 5120er Karte
-     * fielen damit 76 Waffen gegen 74 ab. Vorgabe: der Strahl skaliert mit.
-     *
-     * Gerechnet wird mit dem WEITENfaktor (`weitenFaktor`), weil `maxRange`
-     * eine WEITE ist — nicht mit dem Geschwindigkeitsfaktor.
-     */
-    const strahlweite = weapon.maxRange * weitenFaktor(this.width);
-    const maxSteps = Math.max(2, Math.round(strahlweite / Math.max(1, speed)));
-    const dirX = Math.cos(angle);
-    // Der Winkel wird gegen die Bildschirmachse gemessen: 0 = rechts, π/2 = oben.
-    const dirY = -Math.sin(angle);
-
-    // Mündung bestimmen. Ein Start direkt auf der Schützenposition ist falsch:
-    // Der Schütze steht auf dem Boden, und sein eigenes Trefferfeld reicht
-    // ±PLAYER_HALF_HEIGHT um die Fußposition. Der Strahl würde deshalb sofort
-    // im eigenen Körper bzw. im Boden darunter enden und das eigentliche Ziel
-    // nie erreichen. Deshalb wird der Startpunkt entlang der Schussrichtung aus
-    // dem Körper herausgeschoben, bis freies Feld erreicht ist.
-    const start = this.#findMuzzle(originX, originY, dirX, dirY, shooterId);
-    if (start === null) {
-      // Kein freies Feld in Schussrichtung: die Waffe kann nicht abgefeuert werden.
-      return { hitX: originX, hitY: originY, hit: false, target: null, blocked: true };
-    }
-
-    const result = ccdRaycast(
-      {
-        startX: start.x,
-        startY: start.y,
-        velocityX: dirX * speed,
-        velocityY: dirY * speed,
-        drag: 1,
-        gravity: 0,
-        maxSteps,
-      },
-      // Der Schütze selbst darf den Strahl nicht blockieren.
-      (x, y) => {
-        if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) return true;
-        const hitPlayer = this.#playerAt(x, y, shooterId);
-        return hitPlayer !== null;
-      }
-    );
-
-    const target = this.#playerAt(result.hitX, result.hitY, shooterId);
-    if (target !== null) {
-      const damage = weapon.damage * this.#statuses.damageMultiplier(shooterId);
-      this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId, {
-        damageType: damageTypeId(weapon.damageType),
-      });
-
-      // Wirkung über den Schaden hinaus (Einfrieren, Schaden über Zeit).
-      // Fällt die Waffe nicht in SPECIAL_EFFECTS, greift die Ableitung aus dem
-      // Elementarwert — sonst bliebe Feuer-/Gift-/Eisschaden ohne Wirkung.
-      const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
-      if (effect && !SELF_TARGET_KINDS.has(effect.kind)) {
-        this.#applyTargetEffect(effect, target, shooterId);
-      }
-    }
-
-    return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
-  }
 
   /**
    * Wirft eine Waffe ab und legt sie als aufhebbare Kiste in der Nähe ab.
@@ -2357,15 +2340,6 @@ export class MatchController {
     }
   }
 
-  /**
-   * Zünderdauer einer Waffe in Simulationsschritten.
-   * Die Waffe nennt Sekunden; die Simulation rechnet in Ticks zu 60 Hz.
-   */
-  #fuseTicksFor(weapon) {
-    const sekunden = weapon?.fuseTime ?? 0;
-    if (!(sekunden > 0)) return 0;
-    return Math.max(1, Math.round(sekunden * 60));
-  }
 
   /** Verbleibender Zünder eines Projektils in Sekunden (0 = kein Zünder). */
   fuseSecondsLeft(projectileId) {
@@ -2408,170 +2382,6 @@ export class MatchController {
     }
   }
 
-  /**
-   * Wendet eine Wirkung auf den Schützen an.
-   *
-   * @param {object} effect - aus buildEffect()
-   * @param {number} playerId
-   * @param {object} weapon
-   * @returns {object} Beschreibung des tatsächlichen Ergebnisses
-   */
-  #applySelfEffect(effect, playerId, weapon) {
-    switch (effect.kind) {
-      case EFFECT_KIND.HEAL: {
-        const health = this.#world.getComponent(playerId, 'Health', 'current') ?? 0;
-        const max = this.#world.getComponent(playerId, 'Health', 'max') ?? 0;
-        // Heilung wird begrenzt: das Schild zählt mit, sonst wäre Heilung bei
-        // vollem Schild wirkungslos verpufft.
-        const headroom = Math.max(0, max - health);
-        const healed = Math.min(effect.amount, headroom);
-        if (healed > 0) this.#world.setComponent(playerId, 'Health', 'current', health + healed);
-        return { healed, amount: effect.amount };
-      }
-
-      case EFFECT_KIND.SHIELD: {
-        const shield = this.#statuses.addShield(playerId, effect.amount);
-        return { shield, amount: effect.amount };
-      }
-
-      case EFFECT_KIND.DAMAGE_BOOST: {
-        const multiplier = this.#statuses.addBoost(playerId, effect.multiplier, 2);
-        return { multiplier };
-      }
-
-      case EFFECT_KIND.ARMOR: {
-        const reduction = this.#statuses.addArmor(playerId, effect.reduction);
-        return { reduction };
-      }
-
-      case EFFECT_KIND.AMMO: {
-        const restored = this.#restoreAmmo(playerId, effect.amount);
-        return { restored };
-      }
-
-      case EFFECT_KIND.MOVE: {
-        const moved = this.#shiftPlayer(playerId, effect.distance);
-        return { moved };
-      }
-
-      case EFFECT_KIND.TURRET: {
-        const turret = this.#deployTurret(playerId, effect);
-        // Ohne freien Platz in der Nähe wird nicht aufgestellt — ein Geschütz im
-        // Fels wäre unsichtbar und nutzlos. Der Aufrufer meldet das.
-        return turret
-          ? { turretId: turret.entityId, x: turret.x, y: turret.y, rounds: turret.roundsLeft }
-          : { turretId: null, reason: 'kein Platz für ein Geschütz' };
-      }
-
-      case EFFECT_KIND.REVEAL: {
-        const turns = this.#statuses.reveal(playerId, effect.turns);
-        return { revealedTurns: turns };
-      }
-
-      case EFFECT_KIND.RANDOM: {
-        // Auswahl über den Match-Zufallsgenerator: bei gleichem Seed dieselbe
-        // Wirkung. Bewusst NICHT Math.random — sonst wäre ein Replay nicht mehr
-        // reproduzierbar.
-        const pool = effect.pool?.length ? effect.pool : RANDOM_EFFECT_POOL;
-        const gewaehlt = pool[this.#rng.nextIntBelow(pool.length)];
-        const unterEffekt = this.#buildSubEffect(gewaehlt, weapon);
-        const outcome = this.#applySelfEffect(unterEffekt, playerId, weapon);
-        return { randomKind: gewaehlt, ...outcome };
-      }
-
-      default:
-        return { ignored: effect.kind, weaponId: weapon?.id ?? null };
-    }
-  }
-
-  /**
-   * Baut den konkreten Effekt für eine gewählte Wirkungsart.
-   * Nötig für Zufallswaffen, deren Ziel erst beim Auslösen feststeht.
-   */
-  #buildSubEffect(kind, weapon) {
-    const schaden = weapon?.damage ?? 0;
-    switch (kind) {
-      case EFFECT_KIND.HEAL:
-        return { kind, amount: Math.max(SPECIAL_HEAL_MIN, Math.round(schaden * 1.2)) };
-      case EFFECT_KIND.SHIELD:
-        return { kind, amount: Math.max(SPECIAL_SHIELD_MIN, Math.round(schaden * 1.1)) };
-      case EFFECT_KIND.DAMAGE_BOOST:
-        return { kind, multiplier: 1.5 };
-      case EFFECT_KIND.ARMOR:
-        return { kind, reduction: 0.3 };
-      case EFFECT_KIND.AMMO:
-        return { kind, amount: 3 };
-      case EFFECT_KIND.MOVE:
-        return { kind, distance: RANDOM_MOVE_DISTANCE };
-      default:
-        return { kind: EFFECT_KIND.HEAL, amount: SPECIAL_HEAL_MIN };
-    }
-  }
-
-  /**
-   * Füllt Munition der Waffen eines Spielers auf.
-   *
-   * Es wird von der ERSTEN Waffe an aufgefüllt, deren Vorrat nicht unbegrenzt
-   * ist. Dadurch ist das Ergebnis deterministisch und unabhängig von der
-   * Reihenfolge im Inventar.
-   *
-   * @returns {number} tatsächlich aufgefüllte Ladungen
-   */
-  #restoreAmmo(playerId, amount) {
-    const weapons = this.#inventory.getWeapons(playerId);
-    let remaining = Math.max(0, Math.floor(amount));
-    let restored = 0;
-
-    for (const weaponId of weapons) {
-      if (remaining <= 0) break;
-      const weapon = getWeapon(weaponId);
-      if (!weapon) continue;
-      const current = this.#inventory.getAmmo(playerId, weaponId);
-      if (!Number.isFinite(current)) continue; // unbegrenzt: nichts aufzufüllen
-
-      const capacity = Math.max(1, weapon.maxAmmo || 1);
-      const fehlt = Math.max(0, capacity - current);
-      const give = Math.min(remaining, fehlt);
-      if (give <= 0) continue;
-
-      this.#inventory.grantAmmo(playerId, weaponId, give);
-      remaining -= give;
-      restored += give;
-    }
-    return restored;
-  }
-
-  /**
-   * Versetzt einen Spieler entlang der Geländeoberfläche.
-   *
-   * Für Sprung- und Teleportwaffen. Die Bewegung ist bewusst auf einen
-   * Geländepunkt begrenzt: ein Teleport in festes Terrain oder aus der Karte
-   * heraus wäre ein Fehler, kein Feature.
-   *
-   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
-   */
-  #shiftPlayer(playerId, distance) {
-    const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
-    const startY = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
-
-    // In der aktuellen Blickrichtung nach vorne, sofern das Ziel frei ist;
-    // sonst ein Stück zurück. Beides wird auf dem Gelände verankert.
-    const candidates = [startX + distance, startX - distance];
-    for (const targetX of candidates) {
-      if (targetX < PLAYER_HALF_WIDTH || targetX > this.width - PLAYER_HALF_WIDTH) continue;
-      const surface = this.surfaceYAt(Math.round(targetX));
-      if (surface < 0) continue;
-      // Kein Platz für eine stehende Figur (z. B. Wand): nächster Kandidat.
-      if (this.#terrain.isSolid(Math.floor(targetX), Math.floor(surface - PLAYER_HALF_HEIGHT))) continue;
-
-      this.#world.setComponent(playerId, 'Position', 'x', targetX);
-      this.#world.setComponent(playerId, 'Position', 'y', surface);
-      this.#world.setComponent(playerId, 'Velocity', 'x', 0);
-      this.#world.setComponent(playerId, 'Velocity', 'y', 0);
-      return { dx: targetX - startX, dy: surface - startY };
-    }
-    return { dx: 0, dy: 0 };
-  }
 
   /**
    * Wendet eine Wirkung auf ein getroffenes Ziel an (Einfrieren, Schaden über Zeit).
@@ -2808,277 +2618,42 @@ export class MatchController {
     }
   }
 
-  /**
-   * Sucht den Mündungspunkt: den ersten Punkt entlang der Schussrichtung, der
-   * weder in festem Terrain noch im Körper eines Spielers liegt.
-   *
-   * @returns {{x:number,y:number}|null}
-   */
-  #findMuzzle(originX, originY, dirX, dirY, shooterId = null) {
-    /*
-     * Der Abschuss beginnt in der Körpermitte.
-     *
-     * `originY` ist die KOPFposition des Schützen: Beim Aufstellen setzt
-     * `#spawnPlayers` sie auf `surfaceY - PLAYER_HALF_HEIGHT - 2`, der Körper
-     * reicht also von `originY` bis `originY + 20`.
-     *
-     * ## Was hier zwischendurch stand — und warum es falsch war
-     *
-     * Im Zug „Nahkampfwaffen werfen" stand hier kurz `originY - PLAYER_HALF_HEIGHT`
-     * mit der Begründung, ein flacher Wurf grübe sich sonst ein. Das war ein
-     * Fehlschluss aus einer Messung auf einer Steigung: Der Baseballschläger
-     * schlug nach 6 px ein, weil der HANG vor ihm anstieg, nicht weil der
-     * Abschuss zu tief lag.
-     *
-     * `originY - PLAYER_HALF_HEIGHT` setzt den Start 10 px ÜBER den Kopf. Folge:
-     * Jeder Schuss fliegt weitere Strecken — gemessen traf der Wasserblaster
-     * (`pa_063`) auf 90 px nicht mehr, sein Einschlag wanderte von 310 auf 484
-     * (`tests/specials.test.js`, „Wasserschub").
-     *
-     * Die Körpermitte ist die richtige Stelle: Sie liegt innerhalb der Figur
-     * (5 px unter der Kopfposition) und damit frei vom Boden.
-     */
-    const bodyY = originY - PLAYER_HALF_HEIGHT / 2;
-    for (let distance = 0; distance <= MUZZLE_SEARCH_DISTANCE; distance += 2) {
-      const x = originX + dirX * distance;
-      const y = bodyY + dirY * distance;
-      if (this.#terrain.isSolid(Math.floor(x), Math.floor(y))) continue;
-      if (this.#playerAt(x, y, shooterId) !== null) continue;
-      return { x, y };
-    }
-    return null;
-  }
 
-  /**
-   * Spieler an einer Position.
-   * @param {number|null} [excludeId] - wird übersprungen (meist der Schütze)
-   */
-  #playerAt(x, y, excludeId = null) {
-    for (const entry of this.#players) {
-      if (excludeId !== null && entry.entityId === excludeId) continue;
-      if (!entry.alive) continue;
-      const px = this.#world.getComponent(entry.entityId, 'Position', 'x') || 0;
-      const py = this.#world.getComponent(entry.entityId, 'Position', 'y') || 0;
-      if (Math.abs(x - px) <= PLAYER_HALF_WIDTH && Math.abs(y - py) <= PLAYER_HALF_HEIGHT) {
-        return entry.entityId;
-      }
-    }
-    return null;
-  }
 
   /**
    * Wie viele Ticks ein Geschoss dieses Schusses lebt.
    *
-   * ## Warum das eine eigene, öffentliche Methode ist
-   *
-   * FUND (belegt, gemessen): Die Lebensdauer des Geschosses begrenzt die
-   * Flugzeit — und die Zielberechnung wusste davon nichts. Der Bot plante Bögen
-   * mit 83 Ticks Flugzeit für ein Geschoss, das nach 72 Ticks verfällt
-   * (`projectile_expired` mitten im Flug, gemessen an Seed 1000, Zug 3). Der
-   * Schuss verschwand vor dem Ziel, und die Rechnung sah trotzdem „Treffer".
-   *
-   * Die Rechnung steht in `fire()` — und NUR dort. `fire()` ruft diese Methode
-   * auf, statt sie ein zweites Mal auszuschreiben.
-   *
-   * FUND (belegt, ESLint): Diese Methode stand hier ZWEIMAL wortgleich
-   * untereinander. In JavaScript gewinnt die letzte Fassung, die erste war
-   * damit toter Code — und ein Leser hätte an der falschen Stelle geändert.
-   * Aufgefallen ist es erst, als `no-dupe-class-members` in die
-   * Linting-Konfiguration aufgenommen wurde.
-   *
-   * @param {number} playerId
-   * @param {number} angle
-   * @param {number} power
-   * @param {object|null} [weapon]
-   * @returns {number} Ticks
+   * Delegiert an `engine/shooting.js` — dort steht die Herleitung (Reichweite
+   * und tatsächliche Anfangsgeschwindigkeit, samt Kartenskalierung).
    */
   projectileLifetime(playerId, angle, power, weapon = null) {
-    const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
-    if (!waffe) return 30;
-    const { vx, vy } = this.#launchVector(playerId, angle, power, waffe);
-    /*
-     * Lebensdauer aus der eigenen Reichweite und der TATSÄCHLICHEN
-     * Anfangsgeschwindigkeit: sonst verfällt ein schnelles Geschoss mitten im
-     * Flug oder ein langsames bleibt unnötig lange bestehen.
-     *
-     * UND aus der KARTE (FUND belegt, gemessen 2026-09-19): Der Deckel lautet
-     * `maxRange * 1,5` — mit einem kartenunabhängigen Katalogwert. Seit die
-     * ballistische Weite mit der Kartenbreite wächst, schneidet er sie ab:
-     * gemessen über 150 Waffen × 3 Klassen greift er bei **96 von 285**
-     * Kombinationen, am stärksten bei Artillerie auf 2560 px (Weite 2367 px
-     * gegen Deckel 1593 px — es fehlen 774 px). Deshalb skaliert `maxRange`
-     * hier mit dem WEITENfaktor der Karte.
-     */
-    const reichweite = waffe.maxRange * weitenFaktor(this.width);
-    return Math.max(30, Math.round(
-      reichweite / Math.max(1, Math.hypot(vx, vy)),
-    ) * 1.5, this.#fuseTicksFor(waffe) + 30);
+    return projectileLifetime(this.#schussQuelle(), playerId, angle, power, weapon);
   }
 
-  /**
-   * Abschussvektor inklusive Klassen- und Archetypenmodifikatoren.
-   * Wird von fire() und aimPreview() gemeinsam genutzt, damit Vorschau und
-   * tatsaechlicher Schuss identisch rechnen.
-   */
-  #launchVector(playerId, angle, power, weapon = null) {
-    const player = this.#players.find(entry => entry.entityId === playerId);
-    const x = this.#world.getComponent(playerId, 'Position', 'x') || 0;
-    const y = this.#world.getComponent(playerId, 'Position', 'y') || 0;
-    /*
-     * Klasse, Archetyp, Sidegrade und Waffenfaktor kommen aus EINER Quelle:
-     * `launchSpeedMultiplier` (`src/shared/launchSpeed.js`).
-     *
-     * FUND (belegt): Hier stand dieselbe Multiplikation ausgeschrieben —
-     * `profile.launchSpeedMultiplier * weaponFactor`. Sie war korrekt, aber
-     * sie war die ZWEITE Fassung derselben Regel neben `shotPrediction.js`.
-     * Der Geschwindigkeitsfaktor der Waffe wirkte dadurch an zwei Stellen
-     * (14 Waffengeschwindigkeiten, siehe Kommentar unten) — und die Bot-KI
-     * hätte die dritte gebraucht.
-     */
-    const speed = power * POWER_TO_SPEED * launchSpeedMultiplier({
-      classId: player?.classId ?? 0,
-      archetypeId: player?.archetypeId ?? 0,
-      sidegradeId: player?.sidegradeId ?? null,
-      weapon,
-      // Die Karte gehört in DIESE Rechnung — sonst vergisst sie eine Aufrufstelle.
-      kartenbreite: this.width,
-    });
-
-    return { x, y, speed, vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed };
-  }
 
   /**
-   * Zielvorschau: simuliert die Flugbahn mit exakt derselben Physik wie das
-   * ProjectileSystem (Gravitation, Wind, Drag) und bricht beim ersten
-   * Terraintreffer ab.
+   * Zielvorschau — delegiert an `engine/shooting.js`.
    *
-   * Die Schleife ist NICHT hier nachgebaut, sondern `simulateFlight` aus
-   * `src/shared/ballistics.js` — dieselbe Funktion, die die clientseitige
-   * Vorhersage und die Bot-KI benutzen. Eine eigene Kopie war der Ursprung des
-   * Ballistik-Fehlers im Geschütz-Pfad (siehe `tests/turret-ballistics.test.js`).
-   *
-   * @returns {{x:number,y:number}[]}
+   * Die Bahn rechnet `simulateFlight` aus `src/shared/ballistics.js` — dieselbe
+   * Funktion, die die clientseitige Vorhersage und die Bot-KI benutzen.
    */
   aimPreview(playerId, angle, power, steps = 180, weapon = null) {
-    if (!this.isPlayerAlive(playerId)) return [];
-    // Die Vorschau muss dieselbe Geschwindigkeit nutzen wie der echte Schuss,
-    // sonst zeigt sie eine Bahn, die die Waffe nicht fliegt.
-    const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
-    const launch = this.#launchVector(playerId, angle, power, waffe);
-
-    const bahn = simulateFlight({
-      x: launch.x,
-      y: launch.y,
-      angle,
-      power,
-      speed: launch.speed,
-      // Der Schwerkraftfaktor der Waffe gehört dazu: 28 der 150 Waffen fliegen
-      // mit einem anderen Faktor, und ohne ihn zeigte die Vorschau dort eine
-      // Bahn, die das Projektil nicht fliegt.
-      gravityScale: waffe?.gravityScale ?? 1,
-      wind: this.#world.services.match.wind ?? 0,
-      steps,
-      sampleEvery: 3,
-      /*
-       * Ohne Startpunkt: `aimPreview` liefert seit jeher die Punkte NACH dem
-       * ersten Schritt, und Aufrufer lesen `punkte[0]` als ersten Schritt
-       * (`tests/sidegrades-match.test.js`, `tests/shot-prediction.test.js`
-       * vergleicht den letzten Punkt mit dem Einschlag).
-       */
-      includeStart: false,
-      isSolid: (x, y) => this.#terrain.isSolid(x, y),
-      bounds: { minX: 0, maxX: this.width, minY: 0, maxY: this.height },
-    });
-    return bahn.points;
+    return aimPreview(this.#schussQuelle(), playerId, angle, power, steps, weapon);
   }
 
   /**
-   * Freie Sichtlinie für einen Schuss?
-   *
-   * ## Was hier gemessen wird
-   *
-   * Geprüft wird die GERADE von der Mündung in Zielrichtung — bis zur
-   * Reichweite der Waffe bzw. bis zum Kartenrand. Liegt Gestein auf dieser
-   * Geraden, hat der Schütze in dieser Richtung keine Sicht und der Schuss
-   * wird abgelehnt.
-   *
-   * ## Warum die Zielgerade und nicht die Flugbahn
-   *
-   * Der naheliegende Ansatz — die Bahn simulieren und die Sehne von der
-   * Mündung zum Einschlag prüfen — wurde gebaut und VERWORFEN. Er ist an
-   * einem Grenzfall gescheitert: Trifft das Geschoss 20 px vor der Mündung auf
-   * eine Wand, dann IST der Einschlag die Wand, und die Sehne dorthin ist
-   * trivial frei. Der Schütze hätte „Sicht" gemeldet bekommen, obwohl er in
-   * eine Wand direkt vor sich schießt.
-   *
-   * Die Zielgerade kennt diesen Grenzfall nicht: Sie geht von der Mündung aus
-   * und trifft die Wand nach 20 px — gesperrt. Sie ist außerdem unabhängig von
-   * Kraft und Schwerkraft, also allein eine Aussage über die Richtung.
-   *
-   * ## Steilfeuer ist ausgenommen — über das Merkmal, nicht über diese Funktion
-   *
-   * Mörser, Granaten und das Geschütz schießen über Deckung hinweg. Bei ihnen
-   * ist `requiresLineOfSight` false, deshalb wird diese Funktion für sie gar
-   * nicht erst befragt.
-   *
-   * FUND (belegt, gemessen 2026-09-25): Das Merkmal stand im Katalog, der
-   * Motor las es nirgends — eine Zusage ohne Wirkung.
-   *
-   * @returns {boolean} true, wenn die Zielgerade frei ist
+   * Freie Sichtlinie für einen Schuss? — delegiert an `engine/shooting.js`.
    */
   hasLineOfSight(playerId, angle, power, weapon = null) {
-    const waffe = weapon ?? getWeapon(this.#inventory.getActiveWeaponId(playerId));
-    if (!waffe) return false;
-
-    const launch = this.#launchVector(playerId, angle, power, waffe);
-    const dirX = Math.cos(angle);
-    const dirY = -Math.sin(angle);
-    const start = this.#findMuzzle(launch.x, launch.y, dirX, dirY, playerId);
-    // Kein freies Feld in Schussrichtung: Der Schütze steht mit der Mündung in
-    // der Wand — eine Sichtlinie gibt es dann nicht.
-    if (start === null) return false;
-
-    /*
-     * Länge der Zielgeraden: die Reichweite der Waffe, aber nie über den
-     * Kartenrand hinaus. Sonst meldete der Rand („Rand ist fest", siehe
-     * `CollisionMask.isSolid`) eine Sichtlinie als versperrt, die offen ist.
-     * Deshalb wird gegen den tatsächlichen Rand gekürzt, nicht gegen eine
-     * feste Zahl.
-     */
-    let laenge = Math.max(1, (waffe.maxRange || 0) * weitenFaktor(this.width));
-    if (dirX > 1e-6) laenge = Math.min(laenge, (this.width - 1 - start.x) / dirX);
-    else if (dirX < -1e-6) laenge = Math.min(laenge, (0 - start.x) / dirX);
-    if (dirY < -1e-6) laenge = Math.min(laenge, (0 - start.y) / dirY);
-    else if (dirY > 1e-6) laenge = Math.min(laenge, (this.height - 1 - start.y) / dirY);
-    if (!Number.isFinite(laenge) || laenge <= 1) return false;
-
-    const blocker = raycastSegment(start.x, start.y, start.x + dirX * laenge, start.y + dirY * laenge, {
-      isSolid: (x, y) => this.#terrain.isSolid(x, y),
-    });
-    return blocker === null;
+    return hasLineOfSight(this.#schussQuelle(), playerId, angle, power, weapon);
   }
 
   /**
-   * Der Punkt, an dem ein Schuss WIRKLICH beginnt — die Mündung.
-   *
-   * `fire()` schiebt den Abschusspunkt aus dem Körper des Schützen heraus
-   * (`#findMuzzle`): Ein Projektil, das in der Fußposition entsteht, kollidiert
-   * im ersten Schritt mit dem Boden. Wer den Schuss vorausberechnen will
-   * (Bot-KI, Vorhersage, Waffenprüfung), muss denselben Punkt nehmen — sonst
-   * rechnet er ab einer anderen Stelle und trifft daneben, obwohl die Rechnung
-   * stimmt.
-   *
-   * Die Mündung hängt vom WINKEL ab (sie wird entlang der Schussrichtung
-   * gesucht), deshalb ist der Winkel Parameter und nicht die Richtung.
-   *
-   * @returns {{x:number,y:number}} Mündung; fällt auf die Schützenposition
-   *   zurück, wenn in Schussrichtung kein freies Feld liegt (dann lehnt
-   *   `fire()` den Schuss ohnehin ab)
+   * Der Punkt, an dem ein Schuss WIRKLICH beginnt — delegiert an
+   * `engine/shooting.js`.
    */
   launchOrigin(playerId, angle) {
-    const x = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
-    const y = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
-    return this.#findMuzzle(x, y, Math.cos(angle), -Math.sin(angle), playerId) ?? { x, y };
+    return launchOrigin(this.#schussQuelle(), playerId, angle);
   }
 
   endTurn() {
@@ -3384,153 +2959,105 @@ export class MatchController {
     return this.#events.flush();
   }
 
+  /**
+   * Der Ansichtszustand — was der Client zeichnet, was der Server verschickt und
+   * was `stateHash()` hashed.
+   *
+   * ## Warum hier nur noch delegiert wird
+   *
+   * Der Aufbau des Zustands stand bis 2026-09-26 als 149-Zeilen-Rumpf in dieser
+   * Methode und griff dabei 39-mal in private Felder. Als reine Funktion
+   * `baueAnsichtszustand(quelle)` liegt er in `engine/stateSnapshot.js` — mit
+   * denselben Feldnamen in derselben Reihenfolge, denn `hashState()` hashed die
+   * Reihenfolge mit.
+   *
+   * Was hier bleibt, ist die KOPPLUNG: `#zustandsQuelle()` benennt jede
+   * einzelne Angabe, die der Zustand liest. Diese Liste ist die Schnittstelle —
+   * ein neues Feld im Zustand braucht einen Eintrag dort.
+   */
   getState() {
-    const entities = this.#players.map(entry => {
-      /*
-       * `alive` ist der Lebensstatus des SPIELERS, nicht die Belegung des
-       * ECS-Platzes.
-       *
-       * Fund (belegt): Beides fiel auseinander, weil das ECS die IDs
-       * gefallener Entities neu vergibt. Die Anzeige meldete eine tote Figur
-       * dann als lebendig mit 0 Leben — und zeichnete sie weiter, weil die
-       * Position einer Kiste gelesen wurde, die inzwischen dieselbe ID trug.
-       */
-      const alive = entry.alive;
-      return {
-        entityId: entry.entityId,
-        teamId: entry.teamId,
-        classId: entry.classId,
-        archetypeId: entry.archetypeId,
-        /**
-         * Der Sidegrade des Spielers (oder null).
-         *
-         * Er gehört in den Zustand, weil die Anzeige ihn braucht: Ohne ihn
-         * müsste der Client raten, mit welchem Profil eine Figur rechnet — und
-         * die Winkelvorschau zeigte eine Bahn, die der Server anders rechnet.
-         * `classId`/`archetypeId` stehen aus demselben Grund hier.
-         */
-        sidegradeId: entry.sidegradeId ?? null,
-        label: entry.label,
-        alive,
-        x: alive ? this.#world.getComponent(entry.entityId, 'Position', 'x') : 0,
-        y: alive ? this.#world.getComponent(entry.entityId, 'Position', 'y') : 0,
-        /**
-         * Füllstand des Wassers an der Position der Figur (0..1).
-         *
-         * Ohne diesen Wert konnte die Anzeige weder „nass" noch „ertrinkt"
-         * zeigen: Die Schwellen kannte nur das CharacterSystem, und übertragen
-         * wurde nichts davon. Der Wert wird gerundet, damit Anzeige und
-         * Drahtformat (ein Byte) dieselbe Zahl sehen.
-         */
-        waterLevel: alive
-          ? Math.round(this.waterLevelAt(
-            this.#world.getComponent(entry.entityId, 'Position', 'x'),
-            this.#world.getComponent(entry.entityId, 'Position', 'y'),
-          ) * 1000) / 1000
-          : 0,
-        health: alive ? this.#world.getComponent(entry.entityId, 'Health', 'current') : 0,
-        maxHealth: alive ? this.#world.getComponent(entry.entityId, 'Health', 'max') : 0,
-        angle: alive ? this.#world.getComponent(entry.entityId, 'Weapon', 'angle') : 0,
-        power: alive ? this.#world.getComponent(entry.entityId, 'Weapon', 'power') : 0,
-        activeWeaponId: this.#inventory.getActiveWeaponId(entry.entityId),
-        inventory: this.#inventory.getWeapons(entry.entityId),
-        /** Verbleibende Nachladezeit je Waffe in Zügen (nur belegte Waffen). */
-        cooldowns: Object.fromEntries(
-          this.#inventory.getWeapons(entry.entityId)
-            .map(weaponId => [weaponId, this.cooldownFor(entry.entityId, weaponId)])
-            .filter(([, rest]) => rest > 0),
-        ),
-        ammo: Object.fromEntries(
-          this.#inventory.getWeapons(entry.entityId).map(weaponId => {
-            const amount = this.#inventory.getAmmo(entry.entityId, weaponId);
-            return [weaponId, Number.isFinite(amount) ? amount : 'unbegrenzt'];
-          })
-        ),
-      };
-    });
+    return baueAnsichtszustand(this.#zustandsQuelle());
+  }
 
-    const projectiles = [];
-    for (const id of this.#world.getEntitiesBySignature(
-      COMPONENT_SIGNATURES.POSITION | COMPONENT_SIGNATURES.PROJECTILE
-    )) {
-      if (!this.#world.isActive(id)) continue;
-      const fuseTicks = this.#world.getComponent(id, 'Projectile', 'fuseTicks') || 0;
-      projectiles.push({
-        entityId: id,
-        x: this.#world.getComponent(id, 'Position', 'x'),
-        y: this.#world.getComponent(id, 'Position', 'y'),
-        owner: this.#world.getComponent(id, 'Projectile', 'owner'),
-        // Zünder in Sekunden, damit die Anzeige den Countdown zeigen kann.
-        // Bewusst in Sekunden und nicht in Ticks: die Anzeige soll die Zeit
-        // zeigen, die der Spieler auch wahrnimmt.
-        fuseSeconds: fuseTicks > 0 ? Math.round((fuseTicks / 60) * 10) / 10 : 0,
-      });
-    }
-
-    const crates = [];
-    for (const id of this.#world.getEntitiesBySignature(
-      COMPONENT_SIGNATURES.CRATE | COMPONENT_SIGNATURES.POSITION
-    )) {
-      if (!this.#world.isActive(id)) continue;
-      crates.push({
-        entityId: id,
-        x: this.#world.getComponent(id, 'Position', 'x'),
-        y: this.#world.getComponent(id, 'Position', 'y'),
-        crateType: this.#world.getComponent(id, 'Crate', 'crateType'),
-        rarity: this.#world.getComponent(id, 'Crate', 'rarity'),
-      });
-    }
-
+  /**
+   * Sammelt genau die Werte, die der Ansichtszustand liest.
+   *
+   * ## Warum es diese Methode gibt
+   *
+   * `getState()` zog seine Daten vorher direkt aus der halben Klasse (39
+   * Zugriffe auf private Felder). Der Zustandsaufbau soll rein bleiben und
+   * bekommt deshalb keine `this`-Zugriffe mehr, sondern diese Quelle. Jeder
+   * Eintrag hier ist eine bewusste Kopplungs-Entscheidung: Wer den Zustand
+   * erweitert, sieht an EINER Stelle, was er dafür preisgibt — statt es
+   * zwischen 149 Zeilen Aufbaulogik zu suchen.
+   *
+   * ## Die Entscheidungen im Einzelnen
+   *
+   *  - Was er schon fertig rechnen kann, wird fertig übergeben: `statuses` und
+   *    `guenther` als ABZUG (`snapshot()`), `maelstrom` als Paar
+   *    `{active, inset}`, `turrets` als Liste. `stateSnapshot.js` kennt damit
+   *    weder `StatusStore` noch `GuentherSystem` noch `MaelstromSystem` — nur
+   *    Zahlen, Wahrheitswerte und Felder.
+   *  - Was FALLWEISE gebraucht wird, geht als Rückfrage hinein:
+   *    `waterLevelAt(x, y)` (Wassertiefe, mit der Begrenzung dieser Klasse) und
+   *    `cooldownFor(playerId, weaponId)` (Nachladezeit je Waffe). Beide werden
+   *    je Figur bzw. je Waffe aufgerufen; sie vorab auszurechnen hieße, die
+   *    Schleife aus dem Zustandsaufbau hierher zu duplizieren.
+   *  - `world` geht als GANZES hinein: Der Zustand liest Komponenten
+   *    (`Position`, `Health`, `Weapon`, `Projectile`, `Crate`), fragt Entities
+   *    nach Signatur ab und braucht den Taktzähler. Ein Vorrat einzelner Felder
+   *    bildet das nicht ab, und die Welt ist ohnehin schon öffentlich
+   *    (`get world()`).
+   *  - `players` wird NICHT kopiert: Der Aufbau liest die Einträge nur. Eine
+   *    Kopie je Zustandsabruf wäre Aufwand ohne Wirkung — `getState()` läuft im
+   *    Anzeigetakt.
+   *
+   * ## Vertrag
+   *
+   * Die Schlüssel hier sind die Eingabe von `baueAnsichtszustand()`. Wer einen
+   * davon umbenennt, muss es dort mitziehen — `#zustandsQuelle()` und die
+   * Funktion in `engine/stateSnapshot.js` gehören zusammen.
+   */
+  #zustandsQuelle() {
     return {
+      // Spielerliste: Stammdaten, Klassenzuordnung, `alive`, Anzeigename.
+      players: this.#players,
+      // Die Welt: Komponenten, Signaturen, Taktzähler.
+      world: this.#world,
+      // Wassertiefe an einer Weltposition — die Begrenzung auf die Karte und
+      // die Rasterrechnung bleiben in dieser Klasse.
+      waterLevelAt: (x, y) => this.waterLevelAt(x, y),
+      // Ausrüstung: aktive Waffe, Waffenliste, Munition je Waffe.
+      inventory: this.#inventory,
+      // Nachladezeit je Waffe in Zügen — wird je belegter Waffe abgefragt.
+      cooldownFor: (playerId, weaponId) => this.cooldownFor(playerId, weaponId),
+      // Matchzustand: der Rundenzähler und alles, was den Zug beschreibt.
       status: this.#status,
       round: this.#round,
       maxRounds: this.maxRounds,
       wind: this.#wind,
-      tick: this.#world.tickCount,
       turnElapsedMs: this.#turnElapsed,
       turnDurationMs: this.#turnDurationMs,
       activePlayerId: this.activePlayerId,
       winnerTeamId: this.#winnerTeamId,
-      /**
-       * Laufende Zustände je Spieler-ID (Schild, Einfrieren, Schaden über Zeit,
-       * Schadensbonus). Für die Anzeige und für Tests.
-       */
+      // Zustände je Spieler (Schild, eingefroren, Schaden über Zeit, Bonus)
+      // als Abzug — die Anzeige bekommt dieselben Zahlen wie der Hash.
       statuses: this.#statuses.snapshot(),
+      // Der Mahlstrom: vor dem Start gibt es ihn noch nicht (siehe `?.`).
       maelstrom: {
         active: this.#maelstrom?.isActive ?? false,
         inset: this.#maelstrom?.inset ?? 0,
       },
-      entities,
-      projectiles,
-      crates,
-      /*
-       * Aufgestellte Geschütze.
-       *
-       * Sie stehen im Zustand, damit die Anzeige sie zeigen kann — und damit
-       * Tests sie prüfen können, ohne in private Felder zu greifen.
-       */
-      turrets: [...this.#turrets.values()].map(t => ({
-        entityId: t.entityId,
-        teamId: t.teamId,
-        ownerId: t.ownerId,
-        x: t.x,
-        y: t.y,
-        damage: t.damage,
-        range: t.range,
-        roundsLeft: t.roundsLeft,
-      })),
+      // Aufgestellte Geschütze — schlichte Einträge, keine ECS-Entities.
+      turrets: [...this.#turrets.values()],
+      // Kartengröße und Ausrichtung (für die Anzeige und die Umrechnung).
       terrainWidth: this.width,
       terrainHeight: this.height,
       orientation: this.orientation,
+      // Günther ebenso als Abzug: Sein Aufbau liegt im GuentherSystem.
       guenther: this.#guenther ? this.#guenther.snapshot() : null,
-      // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
-      // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
-      // und den Tests.
-      scenery: {
-        biomeId: this.scenery.biomeId,
-        skyId: this.scenery.skyId,
-        waterId: this.scenery.waterId,
-      },
+      // Die Kulisse als Kennungen — der Client baut sie aus dem Seed selbst.
+      scenery: this.scenery,
     };
   }
 
