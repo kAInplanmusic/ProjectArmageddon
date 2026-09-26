@@ -30,6 +30,7 @@ import { MatchController } from '../src/engine/match.js';
 import {
   encodeSnapshot, toDeltaBase,
   HEADER_SIZE, PLAYER_STRIDE, PROJECTILE_STRIDE, CRATE_STRIDE, TURRET_STRIDE,
+  GUENTHER_STRIDE, GUENTHER_POOP_STRIDE, MAX_WIRE_POOPS,
 } from '../src/shared/protocol.js';
 
 /**
@@ -51,7 +52,7 @@ function messe(teams, playersPerTeam, seed) {
 
   const groessen = [];
   const deltas = [];
-  const aufteilung = { spieler: [], projektile: [], kisten: [], geschuetze: [] };
+  const aufteilung = { spieler: [], projektile: [], kisten: [], geschuetze: [], guenther: [] };
 
   while (ticks < 800 && match.status === 'playing') {
     const zustand = match.getState();
@@ -75,6 +76,23 @@ function messe(teams, playersPerTeam, seed) {
     aufteilung.projektile.push((state.projectiles ?? []).length * PROJECTILE_STRIDE);
     aufteilung.kisten.push((state.crates ?? []).length * CRATE_STRIDE);
     aufteilung.geschuetze.push((state.turrets ?? []).length * TURRET_STRIDE);
+    /*
+     * Der Guenther-Block — seit Protokoll v7 ein fester Teil jedes Snapshots.
+     *
+     * FUND (belegt): Er fehlte in dieser Aufteilung, und damit addierten sich
+     * die Posten nicht mehr zum Ganzen. Die gedruckten Prozente werden gegen
+     * `mittel` gerechnet — die Summe der Teile lag gemessen bei 212 B, waehrend
+     * `mittel` rund 220 B betrug. Wer die Aufteilung liest, um zu entscheiden,
+     * wo er Bytes spart, muss die Posten zusammenzaehlen koennen.
+     *
+     * Der Block ist IMMER vorhanden (auch ohne Guenther: `aktiv: false`), die
+     * Haufenliste ist bei `MAX_WIRE_POOPS` gedeckelt — derselbe Wert, den der
+     * Encoder benutzt (`protocol.js`). Keine zweite Zahl hier.
+     */
+    aufteilung.guenther.push(
+      GUENTHER_STRIDE
+      + Math.min((state.guenther?.haufen ?? []).length, MAX_WIRE_POOPS) * GUENTHER_POOP_STRIDE,
+    );
 
     previous = toDeltaBase(state);
 
@@ -103,6 +121,10 @@ function messe(teams, playersPerTeam, seed) {
     anteilProjektile: mittel(aufteilung.projektile),
     anteilKisten: mittel(aufteilung.kisten),
     anteilGeschuetze: mittel(aufteilung.geschuetze),
+    anteilGuenther: mittel(aufteilung.guenther),
+    /** Die Summe der Posten — muss `mittel` ergeben, sonst fehlt ein Posten. */
+    summePosten: HEADER_SIZE + mittel(aufteilung.spieler) + mittel(aufteilung.projektile)
+      + mittel(aufteilung.kisten) + mittel(aufteilung.geschuetze) + mittel(aufteilung.guenther),
     ticks,
   };
 }
@@ -154,9 +176,38 @@ console.log(`  Spieler           ${vier.anteilSpieler.toFixed(0)} B   (${((vier.
 console.log(`  Projektile        ${vier.anteilProjektile.toFixed(0)} B   (${((vier.anteilProjektile / vier.mittel) * 100).toFixed(0)} %)`);
 console.log(`  Kisten            ${vier.anteilKisten.toFixed(0)} B   (${((vier.anteilKisten / vier.mittel) * 100).toFixed(0)} %)`);
 console.log(`  Geschütze         ${vier.anteilGeschuetze.toFixed(0)} B   (${((vier.anteilGeschuetze / vier.mittel) * 100).toFixed(0)} %)`);
+console.log(`  Günther           ${vier.anteilGuenther.toFixed(0)} B   (${((vier.anteilGuenther / vier.mittel) * 100).toFixed(0)} %)`);
+/*
+ * Die Gegenprobe gehoert in die AUSGABE, nicht in den Kopf.
+ *
+ * Als der Guenther-Block in Protokoll v7 dazukam, fehlte er hier — die Posten
+ * addierten sich nicht mehr zum Ganzen (gemessen 212 B gegen rund 220 B
+ * `mittel`), und die Prozente waren damit still falsch. Wer eine Aufteilung
+ * liest, um zu entscheiden, wo er Bytes spart, muss sich auf ihre Summe
+ * verlassen koennen. Diese Zeile macht das nachpruefbar: Weicht sie ab, fehlt
+ * ein Posten im Werkzeug — nicht im Format.
+ */
+const summeAbweichung = vier.summePosten - vier.mittel;
+console.log(`  ${'Summe'.padEnd(18)}${vier.summePosten.toFixed(0)} B   `
+  + `(gegen Mittel ${vier.mittel.toFixed(0)} B — Abweichung ${summeAbweichung.toFixed(1)} B)`);
+if (Math.abs(summeAbweichung) > 0.5) {
+  console.log('  ACHTUNG: Die Posten addieren sich NICHT zum gemessenen Mittel.');
+  console.log('  Entweder fehlt ein Posten in dieser Aufteilung, oder ein Stride');
+  console.log('  in der Rechnung weicht von `protocol.js` ab. Nicht dem Mittel');
+  console.log('  glauben, ohne die Differenz zu erklaeren.');
+}
 console.log('');
-console.log('  Die Spielereinträge sind der größte Posten (15 B je Figur). Bei 8');
-console.log('  Spielern sind das 120 B von 202 B — 59 %.');
+/*
+ * Die Zahl im Fliesstext wird GERECHNET, nicht abgeschrieben.
+ *
+ * Hier stand „Bei 8 Spielern sind das 120 B von 202 B — 59 %". Die 202 B waren
+ * die Groesse VOR dem Guenther-Block; nach dem Stridewechsel stand dort eine
+ * Zahl, die der eigene Lauf nicht mehr hergab.
+ */
+const achtSpieler = ergebnisse.find(e => e.name === '8 Spieler');
+console.log(`  Die Spielereinträge sind der größte Posten (15 B je Figur). Bei 8`);
+console.log(`  Spielern sind das ${achtSpieler.anteilSpieler.toFixed(0)} B von ${achtSpieler.mittel.toFixed(0)} B — `
+  + `${((achtSpieler.anteilSpieler / achtSpieler.mittel) * 100).toFixed(0)} %.`);
 console.log('  Wer dort spart (etwa `waterLevel` und `frozenTurns` nur bei Bedarf),');
 console.log('  spart am meisten.');
 

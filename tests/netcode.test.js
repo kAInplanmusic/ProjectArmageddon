@@ -15,8 +15,14 @@ import {
   // Drahtformats und wird dort gepflegt. Ein Literal hier bricht bei jeder
   // Erweiterung — so geschehen beim Kistenfeld in v5.
   HEADER_SIZE,
+  PLAYER_STRIDE,
+  PROJECTILE_STRIDE,
   CRATE_STRIDE,
   TURRET_STRIDE,
+  GUENTHER_STRIDE,
+  GUENTHER_POOP_STRIDE,
+  GUENTHER_FLAG,
+  MAX_WIRE_POOPS,
 } from '../src/shared/protocol.js';
 import { SnapshotHistory } from '../src/server/lagCompensation.js';
 import { LobbyManager, LOBBY_STATUS } from '../src/server/lobby.js';
@@ -541,12 +547,16 @@ test('Ein Snapshot ohne Kistenfeld bleibt gültig', () => {
 test('Ein abgeschnittener Kistenpuffer wirft nicht', () => {
   // Ein unvollständiger Snapshot darf den Client nicht abstürzen lassen: Er wird
   // verworfen (null) oder liefert, was vollständig da ist.
+  //
+  // Der Puffer wird MITTEN in der Kistensektion abgeschnitten. „Drei Byte vom
+  // Ende" würde seit Protokoll v7 nicht mehr dort landen: Hinter den Kisten folgt
+  // der Günther-Block. Deshalb wird die Länge aus dem Layout gerechnet.
   const bytes = encodeSnapshot({
     tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
     crates: [{ entityId: 1, x: 10, y: 20, crateType: 0, rarity: 0 }],
   });
 
-  const abgeschnitten = bytes.slice(0, bytes.length - 3);
+  const abgeschnitten = bytes.slice(0, HEADER_SIZE + CRATE_STRIDE - 3);
   const decoded = decodeSnapshot(abgeschnitten);
   // Entweder abgelehnt oder mit leerer Kistenliste — beides ist in Ordnung,
   // ein Wurf wäre es nicht.
@@ -626,11 +636,14 @@ test('Geschütze kosten genau TURRET_STRIDE je Stück', () => {
 });
 
 test('Ein abgeschnittener Geschützpuffer wirft nicht', () => {
+  // Wie bei den Kisten: Der Schnitt liegt MITTEN in der Geschützsektion und wird
+  // aus dem Layout gerechnet, nicht „drei Byte vom Ende" — hinter dem Geschütz
+  // folgt seit Protokoll v7 der Günther-Block.
   const bytes = encodeSnapshot({
     tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
     crates: [], turrets: [{ entityId: 1, x: 10, y: 20, teamId: 0, roundsLeft: 2 }],
   });
-  const decoded = decodeSnapshot(bytes.slice(0, bytes.length - 3));
+  const decoded = decodeSnapshot(bytes.slice(0, HEADER_SIZE + TURRET_STRIDE - 3));
   if (decoded) assert.equal(decoded.turrets.length, 0, 'Ein halber Eintrag wurde übernommen');
 });
 
@@ -652,4 +665,216 @@ test('Die Delta-Basis führt Geschütze nicht mit — sie sind nicht deltafähig
     turrets: [{ entityId: 1, x: 10, y: 20, teamId: 0, roundsLeft: 2 }],
   });
   assert.equal(basis.has(1), false, 'toDeltaBase hat ein Geschütz als Figur aufgenommen');
+});
+
+// ------------------------------------------------------------------ Günther
+
+test('Günther und seine Kackhaufen überleben die Kodierung (Protokoll v7)', () => {
+  /*
+   * Fund (belegt): Der Snapshot übertrug Günther überhaupt nicht — `grep -n
+   * guenther src/shared/protocol.js` fand nichts. Der Motor erzeugt ihn in beiden
+   * Modi und `match.getState()` führt ihn, die Anzeige liest `guenther.aktiv`,
+   * `.x`, `.y`, `.richtung` und `.haufen[]` — nur auf der Leitung fehlte er.
+   * Ergebnis im Spiel: ONLINE lief ein unsichtbarer NPC über die Karte, dessen
+   * Haufen langsamer machten und vergifteten. Man wurde geschwächt, ohne eine
+   * Ursache zu sehen.
+   *
+   * Der Test hält beides fest: dass die Werte ankommen UND dass die statische
+   * Deko (`identity`, `plan`) zu Hause bleibt. Kisten und Geschütze stehen im
+   * selben Zustand mit — sie prüfen die REIHENFOLGE der Sektionen: Ein vertauschtes
+   * Layout würde hier Müll liefern, nicht bloß einen fehlenden Wert.
+   */
+  const state = {
+    tick: 4711,
+    round: 3,
+    wind: 0.02,
+    activePlayerId: 11,
+    entities: [
+      { entityId: 11, teamId: 0, alive: true, x: 2300, y: 900, health: 88, shield: 0, frozenTurns: 0 },
+    ],
+    projectiles: [],
+    crates: [{ entityId: 21, x: 700, y: 400, crateType: 1, rarity: 2 }],
+    turrets: [{ entityId: 31, x: 800, y: 500, teamId: 1, roundsLeft: 3 }],
+    guenther: {
+      aktiv: true,
+      x: 2329.2,
+      y: 824,
+      richtung: -1,
+      runde: 3,
+      haufen: [{ x: 2318.4, y: 824 }, { x: 2402.7, y: 812.25 }],
+      auftritte: 1,
+      pinkelGesamt: 4,
+      haufenGesamt: 2,
+      plan: [3, 8],
+      identity: { name: 'Günther', breed: 'Kleinspitz', height: 22 },
+    },
+  };
+
+  const bytes = encodeSnapshot(state);
+  const decoded = decodeSnapshot(bytes);
+
+  assert.ok(decoded, 'Dekodierung fehlgeschlagen');
+  assert.ok(decoded.guenther, 'Der dekodierte Snapshot kennt Günther nicht — der Client bleibt blind');
+
+  // Die Felder, die die Anzeige liest, müssen stimmen.
+  assert.equal(decoded.guenther.aktiv, true);
+  assert.ok(Math.abs(decoded.guenther.x - 2329.2) <= 0.125, `x: ${decoded.guenther.x}`);
+  assert.ok(Math.abs(decoded.guenther.y - 824) <= 0.125, `y: ${decoded.guenther.y}`);
+  assert.equal(decoded.guenther.richtung, -1, 'die Laufrichtung muss das Vorzeichen tragen');
+
+  // Und die Haufen — Position für Position, mit den krummen Koordinaten.
+  assert.equal(decoded.guenther.haufen.length, 2, `${decoded.guenther.haufen.length} Haufen statt 2`);
+  assert.ok(Math.abs(decoded.guenther.haufen[0].x - 2318.4) <= 0.125, `Haufen 1 x: ${decoded.guenther.haufen[0].x}`);
+  assert.ok(Math.abs(decoded.guenther.haufen[0].y - 824) <= 0.125);
+  assert.ok(Math.abs(decoded.guenther.haufen[1].x - 2402.7) <= 0.125, `Haufen 2 x: ${decoded.guenther.haufen[1].x}`);
+  assert.ok(Math.abs(decoded.guenther.haufen[1].y - 812.25) <= 0.125);
+
+  // Die Nachbarn im selben Puffer sind unversehrt — die Reihenfolge stimmt.
+  assert.equal(decoded.crates.length, 1);
+  assert.equal(decoded.crates[0].entityId, 21);
+  assert.equal(decoded.turrets.length, 1);
+  assert.equal(decoded.turrets[0].entityId, 31);
+  assert.equal(decoded.entities.length, 1);
+  assert.equal(decoded.entities[0].x, 2300);
+
+  // Die Größe ist die Summe ihrer Teile: Kopf + eine Figur + eine Kiste + ein
+  // Geschütz + Block + zwei Haufen.
+  assert.equal(bytes.length, HEADER_SIZE + PLAYER_STRIDE + CRATE_STRIDE + TURRET_STRIDE
+    + GUENTHER_STRIDE + 2 * GUENTHER_POOP_STRIDE);
+
+  // Statische Deko gehört NICHT auf die Leitung: Sie kostete in jedem Takt
+  // konstante Bytes, obwohl der Client sie aus `src/shared/config/guenther.js`
+  // selbst liest.
+  assert.equal('identity' in decoded.guenther, false, 'identity ist Deko und gehört nicht auf den Draht');
+  assert.equal('plan' in decoded.guenther, false, 'plan ist Konfiguration und gehört nicht auf den Draht');
+
+  // Die Richtung +1 kommt genauso an.
+  const rechts = decodeSnapshot(encodeSnapshot({
+    ...state, guenther: { ...state.guenther, richtung: 1 },
+  }));
+  assert.equal(rechts.guenther.richtung, 1);
+});
+
+test('Der Server-Zustand trägt Günther bis zum Client', () => {
+  /*
+   * Der Weg, den der Server tatsächlich geht (`gameServer.broadcastSnapshot`):
+   * Rohzustand aus dem MatchController spreizen, Schild und Einfrierdauer je
+   * Spieler dazumischen, dann kodieren. Günther kommt aus `match.getState()`
+   * (`guenther: guentherSystem.snapshot()`) und muss unverändert durchlaufen —
+   * ohne eine Zeile im Server, die ihn eigens durchreicht.
+   */
+  const match = new MatchController({ seed: 7, teams: 2, playersPerTeam: 2 });
+  match.start();
+  const rohZustand = match.getState();
+  const statuses = rohZustand.statuses ?? {};
+  const state = {
+    ...rohZustand,
+    entities: rohZustand.entities.map(entity => ({
+      ...entity,
+      shield: statuses[entity.entityId]?.shield ?? 0,
+      frozenTurns: statuses[entity.entityId]?.frozenTurns ?? 0,
+    })),
+  };
+
+  assert.ok(state.guenther, 'Der Zustand des MatchControllers führt Günther nicht — die Kette beginnt nicht');
+  const decoded = decodeSnapshot(encodeSnapshot(state, { turnRemainingMs: 1000 }));
+
+  assert.ok(decoded.guenther, 'Nach dem Draht fehlt Günther — der Client wäre blind');
+  assert.equal(decoded.guenther.aktiv, Boolean(state.guenther.aktiv));
+  assert.equal(decoded.guenther.haufen.length,
+    Math.min(state.guenther.haufen.length, MAX_WIRE_POOPS));
+});
+
+test('Ein Client mit alter Version lehnt den Günther-Snapshot ab (gewollt)', () => {
+  /*
+   * Das ist die Absicherung, KEIN Fehler: Ein Formatwechsel ohne Versionssprung
+   * ließe einen alten Client dieselben Bytes anders lesen — er bekäme Müll statt
+   * einer klaren Absage. Deshalb steigt die Version auf 7, und die vorige Version
+   * wird abgelehnt.
+   */
+  const bytes = encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null,
+    entities: [], projectiles: [], crates: [], turrets: [],
+    guenther: { aktiv: true, x: 100, y: 200, richtung: 1, haufen: [{ x: 100, y: 200 }] },
+  });
+
+  assert.ok(PROTOCOL_VERSION >= 7, `Protokollversion ${PROTOCOL_VERSION} — v7 trägt Günther`);
+  assert.equal(bytes[2], PROTOCOL_VERSION, 'das Versionsbyte muss die Fassung tragen');
+
+  const alt = Uint8Array.from(bytes);
+  alt[2] = PROTOCOL_VERSION - 1;
+  assert.equal(decodeSnapshot(alt), null,
+    'Ein Client der Vorfassung muss den Snapshot ablehnen, statt ihn falsch zu lesen');
+});
+
+test('Ohne Güntherfeld bleibt der Snapshot gültig', () => {
+  /*
+   * Rückwärtsverträglichkeit im Aufruf, nicht auf dem Draht: Manche Aufrufer bauen
+   * einen Zustand von Hand (Tests, Werkzeuge) und kennen `guenther` nicht. Sie
+   * dürfen nicht abstürzen. Der Block ist trotzdem da — mit `aktiv: false`, damit
+   * die Anzeige nichts zeichnet, statt einen halben Hund zu erfinden.
+   */
+  const decoded = decodeSnapshot(encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null, entities: [], projectiles: [],
+  }));
+  assert.ok(decoded);
+  assert.deepEqual(decoded.guenther, { aktiv: false, x: 0, y: 0, richtung: 1, haufen: [] });
+});
+
+test('Ein abgeschnittener Güntherpuffer wirft nicht', () => {
+  // Wie bei Kisten und Geschützen: Ein halber Snapshot wird verworfen oder liefert,
+  // was vollständig da ist — ein Wurf wäre es nicht.
+  const bytes = encodeSnapshot({
+    tick: 1, round: 1, wind: 0, activePlayerId: null,
+    entities: [], projectiles: [], crates: [], turrets: [],
+    guenther: { aktiv: true, x: 100, y: 200, richtung: 1, haufen: [{ x: 10, y: 20 }, { x: 30, y: 40 }] },
+  });
+  const decoded = decodeSnapshot(bytes.slice(0, bytes.length - 3));
+  if (decoded) {
+    assert.ok(decoded.guenther.haufen.length <= 2, 'Ein halber Haufen wurde übernommen');
+    assert.equal(typeof decoded.guenther.aktiv, 'boolean');
+  }
+});
+
+test('Die Delta-Basis führt Günther nicht mit — er ist nicht deltafähig', () => {
+  // Günther bewegt sich bei JEDEM Takt; „ein Haufen ist dazugekommen" bräuchte
+  // Kennungen und Entfernungsmeldungen, die mehr kosten als sie sparen. Wie
+  // Kisten und Geschütze wird er vollständig übertragen.
+  const basis = toDeltaBase({
+    entities: [], projectiles: [], crates: [], turrets: [],
+    guenther: { aktiv: true, x: 10, y: 20, richtung: 1, haufen: [{ x: 1, y: 2 }] },
+  });
+  assert.equal(basis.size, 0, 'toDeltaBase hat Günther oder einen Haufen als Figur aufgenommen');
+});
+
+test('Der Günther-Block liegt hinter den Geschützen — die Reihenfolge ist fest', () => {
+  /*
+   * Ein vertauschtes Layout liest Müll statt eines Fehlers. Der Test hält die
+   * REIHENFOLGE fest (Figuren, Projektile, Kisten, Geschütze, Günther, Haufen),
+   * indem er die Offsets selbst nachrechnet — und das aktiv-Flag im Block sucht,
+   * nicht nur „ein Feld".
+   */
+  const state = {
+    tick: 1, round: 1, wind: 0, activePlayerId: null,
+    entities: [{ entityId: 1, teamId: 0, alive: true, x: 10, y: 20, health: 100 }],
+    projectiles: [{ entityId: 2, x: 30, y: 40 }],
+    crates: [{ entityId: 3, x: 50, y: 60, crateType: 0, rarity: 0 }],
+    turrets: [{ entityId: 4, x: 70, y: 80, teamId: 1, roundsLeft: 2 }],
+    guenther: { aktiv: true, x: 90, y: 100, richtung: -1, haufen: [{ x: 110, y: 120 }] },
+  };
+  const bytes = encodeSnapshot(state);
+  const blockStart = HEADER_SIZE + PLAYER_STRIDE + PROJECTILE_STRIDE + CRATE_STRIDE + TURRET_STRIDE;
+
+  assert.equal(bytes[HEADER_SIZE - 1], 1, 'die Haufenzahl steht im letzten Kopfbyte (25. Byte, Index 24)');
+  assert.equal(bytes[blockStart + 5], GUENTHER_FLAG.AKTIV, 'das aktiv-Bit steht nicht im Block');
+  // x und y des Blocks, quantisiert auf 0,25 px.
+  const view = new DataView(bytes.buffer);
+  assert.equal(view.getInt16(blockStart, true), 90 * 4);
+  assert.equal(view.getInt16(blockStart + 2, true), 100 * 4);
+  assert.equal(view.getInt8(blockStart + 4), -1);
+  assert.equal(view.getInt16(blockStart + GUENTHER_STRIDE, true), 110 * 4);
+
+  // Und der Haufen bleibt auch im dekodierten Zustand hinter Günther.
+  const decoded = decodeSnapshot(bytes);
+  assert.deepEqual(decoded.guenther.haufen, [{ x: 110, y: 120 }]);
 });

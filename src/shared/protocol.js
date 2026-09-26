@@ -17,14 +17,20 @@
  *   [17]     Projektilanzahl
  *   [18..19] Restzugzeit in 100 ms (Uint16, 0 = keine laufende Zugzeit)
  *   [20..21] Flags (Uint16, Bit 0 = Vollsnapshot statt Delta)
- *   ab [22]  je Spieler 15 Byte:
+ *   [22]     Kistenanzahl (ab v5)
+ *   [23]     Geschützanzahl (ab v6)
+ *   [24]     Kackhaufenzahl (ab v7)
+ *   ab [25]  je Spieler 15 Byte:
  *     id Uint16, team Uint8, alive Uint8,
  *     x Int16 (0.25 px), y Int16 (0.25 px), health Int16 (0.1 HP),
  *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY),
  *     shield Uint8, frozenTurns Uint8, waterLevel Uint8 (Wasserstand 0..255)
  *   danach je Projektil 6 Byte: id Uint16, x Int16, y Int16 (0.25 px)
- *   [22]     Kistenanzahl, danach je Kiste 8 Byte (ab v5)
- *   [23]     Geschützanzahl, danach je Geschütz 8 Byte: id, x, y, Team, Restrunden (ab v6)
+ *   danach je Kiste 8 Byte (ab v5): id, x, y, Art, Seltenheit
+ *   danach je Geschütz 8 Byte (ab v6): id, x, y, Team, Restrunden
+ *   danach der Günther-Block, IMMER 6 Byte (ab v7):
+ *     x Int16 (0.25 px), y Int16 (0.25 px), richtung Int8 (±1), Flags Uint8 (Bit 0 = aktiv)
+ *   und ganz zuletzt je Kackhaufen die Anzahl aus [24] × 4 Byte: x Int16, y Int16 (0.25 px)
  *
  * v3 → v4: Wasserstand je Spieler. Die Anzeige konnte bisher weder „nass" noch
  * „ertrinkt" darstellen — die Schwellen kannte nur das CharacterSystem, und
@@ -43,6 +49,9 @@
 // Wasserstand: Quantisierung und Grenzen kommen aus der gemeinsamen Config —
 // ein zweiter Satz Zahlen hier wäre die nächste doppelte Regel.
 import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
+// Ebenso die Kackhaufen-Obergrenze: Sie steht in der Config, aus der die
+// Simulation sie liest — ein zweiter Deckel hier wäre die nächste doppelte Regel.
+import { GUENTHER_POOP } from './config/guenther.js';
 
 /**
  * Version des Drahtformats.
@@ -55,8 +64,15 @@ import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
  *    ein unsichtbarer Angreifer.
  *    Eine ältere Gegenstelle lehnt den Snapshot ab, statt ihn falsch zu lesen;
  *    genau dafür gibt es diese Zahl.
+ * 7: Günther und seine Kackhaufen werden übertragen. Er ist derselbe Fall wie die
+ *    Geschütze, nur schlimmer: Er läuft frei über die Karte, pinkelt Spieler an
+ *    (Schaden) und legt Haufen, die langsamer machen und vergiften. Sein Aufbau
+ *    lag bisher allein im lokalen Ansichtszustand; online sah man weder ihn noch
+ *    die Haufen — man wurde geschwächt und verlangsamt, ohne eine Ursache zu
+ *    sehen. Eine ältere Gegenstelle lehnt den Snapshot ab, statt ihn falsch zu
+ *    lesen; genau dafür gibt es diese Zahl.
  */
-export const PROTOCOL_VERSION = 6;
+export const PROTOCOL_VERSION = 7;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -133,6 +149,42 @@ export const CRATE_STRIDE = 8;
  */
 export const TURRET_STRIDE = 8;
 /**
+ * Günther im Snapshot: x (2), y (2), Richtung (1), Flags (1).
+ *
+ * `identity` und `plan` fehlen bewusst: Der Aufbau (Name, Fellfarbe, Maße) und
+ * der Auftrittsplan sind statische Konfiguration aus
+ * `src/shared/config/guenther.js` — der Client liest sie ohnehin direkt. Sie
+ * mitzusenden hieße, jeden Zustandstakt um konstante Bytes für nichts zu
+ * verlängern. Übertragen wird, was sich BEWEGT: wo er steht, wohin er schaut und
+ * ob er gerade da ist.
+ */
+export const GUENTHER_STRIDE = 6;
+/**
+ * Kackhaufen im Snapshot: x (2), y (2).
+ *
+ * Ein Haufen ist ein Punkt auf der Karte — sonst nichts. Wirkdauer
+ * (`GUENTHER_POOP.turns`) und Schaden stecken in der Config, nicht im Zustand.
+ */
+export const GUENTHER_POOP_STRIDE = 4;
+/** Bitfeld im Günther-Block. */
+export const GUENTHER_FLAG = Object.freeze({
+  /** Günther ist in dieser Runde auf der Karte. */
+  AKTIV: 1 << 0,
+});
+/**
+ * Höchstzahl der Haufen auf der Leitung — und damit die Obergrenze des
+ * Zustandstakts.
+ *
+ * Die Liste in `GuentherSystem` wächst NICHT unbegrenzt: Beim Ablegen fällt der
+ * älteste Haufen heraus, sobald `GUENTHER_POOP.maxPiles` erreicht ist
+ * (`guentherSystem.js`, „Älteste Haufen entfernen, damit sich das Feld nicht
+ * zupflastert"). Diese Zahl wird hier NICHT neu gesetzt, sondern aus derselben
+ * Config gelesen — der Deckel gehört der Simulation, das Drahtformat folgt ihm.
+ * Ein Byte als Zählfeld reicht damit mit großem Abstand (6 statt 255); wer
+ * `maxPiles` über 255 hebt, muss das Zählfeld mitziehen.
+ */
+export const MAX_WIRE_POOPS = Math.min(GUENTHER_POOP.maxPiles, 255);
+/**
  * Kopf des Snapshots.
  *
  * 22 → 23 mit Protokoll v5: Die Kistenzahl brauchte ein eigenes Feld.
@@ -140,8 +192,9 @@ export const TURRET_STRIDE = 8;
  * Bits der Flags zu packen wäre platzsparender gewesen, aber der Kopf ist die
  * Stelle, an der man nachliest, was übertragen wird — zwei Zahlen in einem Feld
  * machen das schwerer. Ein Byte je Art ist hier gut angelegt.
+ * 24 → 25 mit Protokoll v7: dazu die Kackhaufenzahl, aus demselben Grund.
  */
-export const HEADER_SIZE = 24;
+export const HEADER_SIZE = 25;
 
 function clampInt16(value) {
   const rounded = Math.round(value);
@@ -187,11 +240,19 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
   const projectiles = state.projectiles ?? [];
   const crates = state.crates ?? [];
   const turrets = state.turrets ?? [];
+  const guenther = state.guenther ?? null;
+  // Die Haufenliste wird auf die Obergrenze gekürzt, BEVOR die Größe gerechnet
+  // wird: Sonst verspräche das Zählfeld mehr Einträge, als der Puffer hergibt.
+  // (Eigener Name, weil `haufen` unten der Laufeintrag ist — Singular und Plural
+  // heißen hier gleich.)
+  const haufenListe = (guenther?.haufen ?? []).slice(0, MAX_WIRE_POOPS);
   const size = HEADER_SIZE
     + players.length * PLAYER_STRIDE
     + projectiles.length * PROJECTILE_STRIDE
     + crates.length * CRATE_STRIDE
-    + turrets.length * TURRET_STRIDE;
+    + turrets.length * TURRET_STRIDE
+    + GUENTHER_STRIDE
+    + haufenListe.length * GUENTHER_POOP_STRIDE;
   const bytes = new Uint8Array(size);
   const view = new DataView(bytes.buffer);
 
@@ -211,6 +272,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
   view.setUint16(20, isDelta ? 0 : SNAPSHOT_FLAG.FULL, true);
   bytes[22] = Math.min(255, crates.length);
   bytes[23] = Math.min(255, turrets.length);
+  bytes[24] = haufenListe.length;
 
   let offset = HEADER_SIZE;
   for (const player of players) {
@@ -282,6 +344,31 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     offset += TURRET_STRIDE;
   }
 
+  /*
+   * Günther steht NACH den Geschützen — die Reihenfolge muss zu decodeSnapshot
+   * passen. Sein Block ist IMMER vorhanden, auch wenn er gerade nicht auftritt:
+   * Ein fester Platz hält die Größenformel ehrlich ("Summe ihrer Teile"), und
+   * `aktiv` im Flags-Byte sagt der Anzeige, ob sie ihn zeichnet. Eine weggelassene
+   * Sektion müsste im Kopf angekündigt werden — eine Fallunterscheidung mehr auf
+   * beiden Seiten für sechs Bytes.
+   *
+   * Fehlt `guenther` im Zustand (von Hand gebaute Zustände in Tests und
+   * Werkzeugen), wird ein INAKTIVER Block geschrieben: gültig, leer, kein Wurf.
+   */
+  view.setInt16(offset, clampInt16((guenther?.x ?? 0) * COORD_SCALE), true);
+  view.setInt16(offset + 2, clampInt16((guenther?.y ?? 0) * COORD_SCALE), true);
+  // Richtung ist immer ±1 (`GuentherSystem` kippt sie nur per Vorzeichen) —
+  // als Int8 geht sie damit verlustfrei auf die Leitung.
+  view.setInt8(offset + 4, (guenther?.richtung ?? 1) < 0 ? -1 : 1);
+  view.setUint8(offset + 5, guenther?.aktiv ? GUENTHER_FLAG.AKTIV : 0);
+  offset += GUENTHER_STRIDE;
+
+  for (const haufen of haufenListe) {
+    view.setInt16(offset, clampInt16((haufen.x ?? 0) * COORD_SCALE), true);
+    view.setInt16(offset + 2, clampInt16((haufen.y ?? 0) * COORD_SCALE), true);
+    offset += GUENTHER_POOP_STRIDE;
+  }
+
   return bytes;
 }
 
@@ -310,6 +397,9 @@ export function decodeSnapshot(input, previous = null) {
   const crateCount = view.getUint8(22);
   // Geschützzahl — ab Protokoll v6.
   const turretCount = view.getUint8(23);
+  // Kackhaufenzahl — ab Protokoll v7. Die Haufen selbst stehen ganz am Ende,
+  // hinter dem Günther-Block; diese Zahl ist ihre Länge.
+  const poopCount = view.getUint8(24);
   const turnRemainingMs = view.getUint16(18, true) * TURN_MS_SCALE;
   const flags = view.getUint16(20, true);
   const isFull = (flags & SNAPSHOT_FLAG.FULL) !== 0;
@@ -408,6 +498,36 @@ export function decodeSnapshot(input, previous = null) {
     offset += TURRET_STRIDE;
   }
 
+  /*
+   * Günther steht NACH den Geschützen, seine Haufen danach — die Reihenfolge muss
+   * zu encodeSnapshot passen. Er wird im Zustand ausdrücklich mitgeführt, weil er
+   * sonst online unsichtbar wäre: Der Client konnte ihn nicht erfinden, sah aber
+   * sehr wohl seine Wirkung (Schaden, verlangsamte Bewegung) — ein Angreifer und
+   * Verlangsamer ohne Ursache im Bild.
+   *
+   * Die Anzeige liest genau diese Felder: `aktiv`, `x`, `y`, `richtung` und die
+   * Haufenliste. Ein abgeschnittener Puffer liefert einen INAKTIVEN Block statt
+   * einer Ausnahme — wie bei Kisten und Geschützen gilt: ein halber Snapshot ist
+   * besser als ein Absturz.
+   */
+  const guenther = { aktiv: false, x: 0, y: 0, richtung: 1, haufen: [] };
+  if (offset + GUENTHER_STRIDE <= view.byteLength) {
+    guenther.x = view.getInt16(offset, true) / COORD_SCALE;
+    guenther.y = view.getInt16(offset + 2, true) / COORD_SCALE;
+    guenther.richtung = view.getInt8(offset + 4);
+    guenther.aktiv = (view.getUint8(offset + 5) & GUENTHER_FLAG.AKTIV) !== 0;
+    offset += GUENTHER_STRIDE;
+
+    for (let i = 0; i < Math.min(poopCount, MAX_WIRE_POOPS); i++) {
+      if (offset + GUENTHER_POOP_STRIDE > view.byteLength) break;
+      guenther.haufen.push({
+        x: view.getInt16(offset, true) / COORD_SCALE,
+        y: view.getInt16(offset + 2, true) / COORD_SCALE,
+      });
+      offset += GUENTHER_POOP_STRIDE;
+    }
+  }
+
   return {
     version: PROTOCOL_VERSION,
     isFull,
@@ -420,6 +540,7 @@ export function decodeSnapshot(input, previous = null) {
     projectiles,
     crates,
     turrets,
+    guenther,
     previous: nextPrevious,
   };
 }
@@ -436,6 +557,10 @@ export function controlMessage(type, payload = {}) {
  * Wichtig: NICHT von Hand eine Map mit Weltkoordinaten bauen. Der Vergleich
  * läuft auf den skalierten Ganzzahlen; unskalierte Werte führen dazu, dass der
  * Encoder jede Position als "geändert" meldet und das Delta nichts spart.
+ *
+ * Günther steht hier bewusst NICHT drin — wie Kisten und Geschütze ist er nicht
+ * deltafähig: Er bewegt sich bei jedem Takt, und „ein Haufen ist dazugekommen"
+ * bräuchte Kennungen und Entfernungsmeldungen, die mehr kosten als sie sparen.
  *
  * @param {object} state - MatchController.getState()
  * @returns {Map<number, object>} Rohwerte je Entity-ID (Position, Gesundheit,
