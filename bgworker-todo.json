@@ -5,7 +5,7 @@
     "branch": "main",
     "ssot": "MASTERDOTO.md — hier gilt: erledigt ist nur, was durch Test oder Messung belegt ist",
     "regelwerk": "../AGENTS.md — messen statt behaupten, kein Loeschen/Geld/Secrets ohne Rueckfrage",
-    "stand": "2026-09-26 (Abend)",
+    "stand": "2026-09-26 (Nacht)",
     "erzeugt_von": "Hermes Agent (Auftraggeber + Pruefer)",
     "arbeitsweise": {
       "phasen": "Phase 1 laeuft parallel mit DISJUNKTEN Dateien; Phase 2 startet erst, wenn Phase 1 auf main konsolidiert ist",
@@ -18,10 +18,10 @@
     "historie": {
       "2026-09-26_abend": "Sieben geplante Todos (W1-W7) abgearbeitet, dazu fuenf Befunde aus dem Tiefen-Audit (M1-M5). Der Baum war zu Beginn ROT und unverifiziert: Eine Vorsitzung hatte W1-W5 gebaut und liegen gelassen; tests/event-coverage.test.js warf 3 von 4 Tests um.",
       "wichtigster_befund": "Der Tiefen-Audit sprach die Doppelregel PRIMARY_BIOME_BY_PRESET mit einem FREI ERFUNDENEN Satz frei ('laut Projektregel in ZWEI Dateien stehen MUSS') — der Satz war in tools/audit-mcp/lib/bericht.mjs:387 FEST VERDRAHTET und erschien bei jedem Lauf. Der Audit-Agent hat ihn als Tatsache weitergegeben. Nachgemessen war es ein echtes, wertgleiches Duplikat ohne Importbeziehung. Die Meldung '27 undokumentiert stumme Ereignisse' war ebenfalls ein Werkzeugfehler: der Detektor suchte nur ZITIERTE Ereignisnamen, die Zuordnungstabelle benutzt aber unquotierte Schluessel.",
-      "merksatz_imporeure": "Vor dem Entfernen eines Exports die IMPORTEURE lesen, nicht nur die Leser des Namens — main.js importiert aus roster.js, ohne die Namen im Quelltext je zu erwaehnen."
+      "merksatz_imporeure": "Vor dem Entfernen eines Exports die IMPORTEURE lesen, nicht nur die Leser des Namens — main.js importiert aus roster.js, ohne die Namen im Quelltext je zu erwaehnen.",
+      "nachtrag_spaeter_abend": "Nach dem ersten Konsolidieren: Drahtformat v7 (Guenther), Client-Anschluss, zwei Analyse-Berichte, drei Werkzeug-Reparaturen derselben Fehlerklasse (fest verdrahtetes Urteil unter live gemessenen Zahlen: bericht.mjs, check-maelstrom.mjs, measure-network.mjs) und der Befund O9 (Sprung nicht aufzeichenbar, bewiesen und mit Wache im Repo)."
     }
   },
-
   "todos": [
     {
       "id": "W1",
@@ -156,73 +156,92 @@
       "warum": "Zwei Worker meldeten per Lint, die Konstante in src/engine/match.js:415 sei 'assigned a value but never used'. Nachgemessen: sie wird in match.js:1736 in #findMuzzle gelesen. Die Meldung war ein ZWISCHENSTAND des laufenden Parallel-Umbaus (fire() war schon ausgelagert, #findMuzzle noch nicht neu verdrahtet).",
       "lehre": "Eine rote Lint-Meldung aus einem Baum, in dem ein anderer Worker gerade umbaut, ist ein Zeitpunkt, kein Befund. Wer sie glaubt und loescht, zerstoert die Muendungssuche."
     },
-
     {
       "id": "O1",
-      "titel": "OFFEN — Doku: MASTERDOTO.md:154 traegt den widerlegten Freispruch noch",
+      "titel": "ERLEDIGT — Doku: MASTERDOTO.md:154 traegt den widerlegten Freispruch noch",
       "phase": 3,
-      "status": "offen",
+      "status": "erledigt",
       "prioritaet": "P1",
       "warum": "Die Zeile behauptet weiterhin: 'PRIMARY_BIOME_BY_PRESET in zwei Dateien ist dagegen Absicht (Projektregel)'. Das ist widerlegt (siehe M3) und muss richtiggestellt werden, sonst lebt die falsche Aussage in der SSOT weiter.",
-      "besitzt": ["MASTERDOTO.md"],
-      "hinweis": "9 Testdateien lesen MASTERDOTO/README — nicht editieren, solange ein Testlauf laeuft."
+      "besitzt": [
+        "MASTERDOTO.md"
+      ],
+      "hinweis": "9 Testdateien lesen MASTERDOTO/README — nicht editieren, solange ein Testlauf laeuft.",
+      "ergebnis_beim_abgleich": "Der Freispruch ist weg: MASTERDOTO:154 sagt jetzt 'ein wertgleiches Duplikat, keine Absicht' samt Fundstelle (nur noch backdrops.js definiert, scenery.js importiert + re-exportiert). Beleg: Commit e26821d, `npm run check:docs` Exit 0."
     },
     {
       "id": "O2",
-      "titel": "OFFEN — Zweig-Divergenz: 15 Ereignisse sind einzweigig",
+      "titel": "TEILWEISE — Zweig-Divergenz: 15 Ereignisse sind einzweigig",
       "phase": 3,
-      "status": "messung laeuft",
+      "status": "teilweise erledigt",
       "prioritaet": "P1",
       "warum": "Gemessen: 38 Eintraege in EREIGNIS_WIRKUNGEN, davon 22 in beiden Zweigen, 11 NUR LOKAL (guenther_wheel/-pee/-poop/-poop_hit, jumped, landed, crate_landed, crate_pickup_blocked, crate_pickup, fall_damage, toxic_rain) und 4 NUR ONLINE (terrain_destroyed, projectile_spawn, turn_start, karte_unerreichbar); 1 in keinem (drowning, bewusst). Wo die Engine in einem Modus sendet und der Client dort schweigt, sieht der Spieler nichts — genau die Fehlerklasse, wegen der ereignisse.js existiert.",
       "messung": "docs/analyse-ereigniszweige.md (Worker sa-0-33cfe364, rein lesend)",
-      "besitzt": ["src/client/ereignisse.js", "tests/event-coverage.test.js"],
-      "hinweis": "Alle Luecken liegen in DERSELBEN Datei — nur EIN Worker, nacheinander."
+      "besitzt": [
+        "src/client/ereignisse.js",
+        "tests/event-coverage.test.js"
+      ],
+      "hinweis": "Alle Luecken liegen in DERSELBEN Datei — nur EIN Worker, nacheinander.",
+      "ergebnis_beim_abgleich": "Von den 15 einzweigigen Ereignissen sind 5 nachgezogen: guenther_wheel/-pee/-poop/-poop_hit und crate_pickup_blocked (Commit 01db34e). Verbleibend nur-lokal (6): jumped, landed, crate_landed, crate_pickup, fall_damage, toxic_rain. jumped und crate_landed sind online NICHT STILL, SONDERN INEXISTENT (kein Sprung-/Abwurf-Befehl im CONTROL-Protokoll) — sie sind hier nicht behebbar und gehoeren zu O8. ECHT offen bleiben: crate_pickup, landed, fall_damage, toxic_rain (Engine emittiert sie im Server-Match, der Client verwirft sie)."
     },
     {
       "id": "O3",
-      "titel": "OFFEN — Befund: Guenther ist im Online-Match moeglicherweise unsichtbar",
+      "titel": "ERLEDIGT (Code) — Befund: Guenther ist im Online-Match moeglicherweise unsichtbar",
       "phase": 3,
-      "status": "messung laeuft",
+      "status": "erledigt (Code) — E2E-Nachweis offen",
       "prioritaet": "P1",
       "warum": "Wenn ein online spielender Mensch einen NPC nicht sieht, dessen Haufen ihn verlangsamen und vergiften, ist das ein Erlebnis-Fehler, kein Detail. Fremdmeldung — als Widerlegungsversuch beauftragt, weil in diesem Projekt schon mehrere gravierende Befunde Fehlalarme waren.",
       "messung": "docs/analyse-guenther-online.md (Worker sa-1-6d91da5d, rein lesend)",
-      "besitzt": ["src/client/main.js", "src/engine/stateSnapshot.js"]
+      "besitzt": [
+        "src/client/main.js",
+        "src/engine/stateSnapshot.js"
+      ],
+      "ergebnis_beim_abgleich": "Drahtweg v7 (Commit 941d347) UND Client-Anschluss (Commit 01db34e): die Onlinesicht setzt `guenther: snapshot.guenther ?? null`. Zweig-Zaehlung 26 -> 31 von 38. NICHT im Browser beobachtet: es gibt bis heute KEINEN E2E, der Guenther online prueft (tests/e2e/guenther.spec.mjs hat fuenf Tests, alle lokal)."
     },
     {
       "id": "O4",
-      "titel": "OFFEN — Kommentar in tests/event-coverage.test.js ist veraltet",
+      "titel": "ERLEDIGT — Kommentar in tests/event-coverage.test.js ist veraltet",
       "phase": 3,
-      "status": "offen",
+      "status": "erledigt",
       "prioritaet": "P3",
       "warum": "Zeilen 134-136 behaupten: '(Das Werkzeug tools/audit-mcp sucht weiterhin nur emit() — dort fehlen dieselben vier Arten.)' Das stimmt seit M1/M2 nicht mehr; der Detektor zaehlt emit() UND melde().",
-      "besitzt": ["tests/event-coverage.test.js"]
+      "besitzt": [
+        "tests/event-coverage.test.js"
+      ],
+      "ergebnis_beim_abgleich": "Der veraltete Kommentar ist richtiggestellt: statisch.mjs:536 zaehlt `emit|melde`, der Kommentar in event-coverage.test.js sagt es jetzt. Dabei sieben weitere falsche Zeilenangaben korrigiert (u.a. projectileSystem.js:119 -> 275, match.js:1301 -> 1335, shooting.js:325 -> 344). Beleg: Commit e26821d."
     },
     {
       "id": "O5",
-      "titel": "OFFEN — Design-Entscheidung: Partien enden nie vor Runde 8",
+      "titel": "ERLEDIGT (Fehlspur) — Design-Entscheidung: Partien enden nie vor Runde 8",
       "phase": 3,
-      "status": "offen — Entscheidung des Auftraggebers",
+      "status": "erledigt — war KEINE offene Entscheidung",
       "prioritaet": "P2",
       "warum": "Gemessen: 0 von 5 Partien endeten VOR dem Mahlstrom-Breakpoint (Runde 8). Das ist eine Balance-Frage, keine Code-Frage: Entweder ist der Breakpoint zu spaet, oder die Partien sind zu kurz. Wird NICHT eigenmaechtig geaendert.",
-      "art": "design"
+      "art": "design",
+      "ergebnis_beim_abgleich": "Der Audit-TODO war eine Fehlspur: Die Entscheidung (roundBreakpoint 8) steht begruendet samt Messwerttabelle in src/shared/config/match.js. Falsch war das WERKZEUG (check-maelstrom.mjs hatte ein fest verdrahtetes Fazit fuer Breakpoint 15 und nannte 'spaet' den heutigen Stand). Repariert in Commit e31d1c7."
     },
     {
       "id": "O6",
-      "titel": "OFFEN — Testzahl in der Doku nachziehen",
+      "titel": "ERLEDIGT — Testzahl in der Doku nachziehen",
       "phase": 3,
-      "status": "offen",
+      "status": "erledigt",
       "prioritaet": "P3",
       "warum": "MASTERDOTO.md und README.md nennen 1027 Tests in 100 Dateien. Nach W6/W7/M2/M3/M5 sind es mehr (im Worker-Lauf gemessen: 1049). Beide Stellen sind ueber check:docs gekoppelt.",
-      "besitzt": ["MASTERDOTO.md", "README.md"]
+      "besitzt": [
+        "MASTERDOTO.md",
+        "README.md"
+      ],
+      "ergebnis_beim_abgleich": "Testzahl nachgezogen: 1057 in 102 Dateien (neu erhoben; der erste Lauf mit 1049 wurde verworfen, weil waehrend seiner Laufzeit drei Dateien geaendert wurden). Beleg: Commit e26821d, `npm run check:docs` Exit 0."
     },
     {
       "id": "O7",
-      "titel": "OFFEN — E2E-Lauf (Playwright) steht aus",
+      "titel": "LAEUFT — E2E-Lauf (Playwright) steht aus",
       "phase": 3,
-      "status": "offen",
+      "status": "laeuft",
       "prioritaet": "P2",
       "warum": "Der Umbau von fire() nach shooting.js und der neue Import scenery.js -> backdrops.js sind in Node verifiziert, aber NICHT im Browser-Bundle. Die Specs tests/e2e/terrain-presets.spec.mjs:240 und backdrops.spec.mjs:268 importieren das Modul im Browser.",
-      "beleg": "npm run test:e2e (27 Dateien, ~10 min) — muss nach dem Konsolidieren gefahren werden"
+      "beleg": "npm run test:e2e (27 Dateien, ~10 min) — muss nach dem Konsolidieren gefahren werden",
+      "ergebnis_beim_abgleich": "Voller E2E-Lauf ueber 28 Specs auf stillem Baum. Bekannter Vorabfehler laut audit_e2e_plan: die profiling-Specs scheitern ohne GPU (SwiftShader) — vorbestehend, nicht als Regression zu werten."
     },
     {
       "id": "O8",
@@ -237,9 +256,26 @@
         "Wechselwirkung mit O2/crate_pickup_blocked: lokal feuert der Hinweis 'Vorrat voll — erst eine Waffe abwerfen (Q)' gemessen 60-mal in 60 Ticks. Online ist der Vorrat genauso voll und die geratene Loesung NICHT AUSFUEHRBAR. Der Spieler kann Loot nicht aufnehmen und erfaehrt keinen Grund, den er beheben koennte.",
         "Gateschaft: MatchController.jump()/dropWeapon() sind im Motor fertig und getestet — es fehlt ausschliesslich der Drahtweg (CONTROL-Nachricht + Server-Handler + Client-Verdrahtung). Dieselbe Zwei-Stellen-Kur, die fuer Kisten (v5) und Geschuetze (v6) schon zweimal gemacht wurde (dokumentiert in protocol.js:49-60)."
       ],
-      "besitzt": ["src/shared/protocol.js", "src/server/gameServer.js", "src/client/main.js"],
+      "besitzt": [
+        "src/shared/protocol.js",
+        "src/server/gameServer.js",
+        "src/client/main.js"
+      ],
       "hinweis": "Beruehrt protocol.js — deshalb erst NACH dem laufenden Guenther-Drahtformat-Auftrag, und dann als eigener Auftrag mit Versionssprung. NICHT mit dem Guenther-Fix vermischen.",
       "art": "befund_moeglicherweise_design"
+    },
+    {
+      "id": "O9",
+      "titel": "OFFEN — Ein Sprung ist nicht aufzeichenbar: Replays mit Sprung divergieren",
+      "phase": 3,
+      "status": "offen — bestaetigt und BEWIESEN, mit Wache im Repo",
+      "prioritaet": "P1",
+      "warum": "BEWIESEN mit einer Sonde (zwei Partien, identischer Seed, identische Schussfolge, in der zweiten zusaetzlich ein Sprung; aufgezeichnet wurden nur die Schuesse): ohne Sprung Hash b528e643 -> Wiedergabe b528e643 REPRODUZIERBAR; mit Sprung Hash 380b5ef8 -> Wiedergabe c7576510 ABWEICHUNG, und 3 von 12 aufgezeichneten Schuessen beim Abspielen ABGELEHNT. Ursache: `ReplayRecorder.recordInput({tick, playerId, angle, power, weaponId})` (src/engine/replay.js:118) kennt genau EINE Eingabeart, den Schuss; der Wiedergabepfad (:393) ruft ausschliesslich match.fire(...). Der Sprung ist aber Simulationszustand — jump() setzt Velocity.y.",
+      "warum_es_schwer_wiegt": "Nicht nur ein Testproblem: der Server zeichnet JEDES Online-Match auf (gameServer.js:456) und stellt Sitzungen daraus wieder her (toPersisted). Ein Replay ohne den Sprung stellt nach einem Server-NEUSTART einen ABWEICHENDEN Spielzustand wieder her — still, weil die Wiederherstellung nicht gegen den Vorher-Zustand prueft.",
+      "gepinnt": "tests/replay-sprung-luecke.test.js (Commit 32b1f81), drei Tests: Gegenprobe ohne Sprung, der Befund selbst (Vorbedingung scharf geprueft — wird nicht gesprungen, FAELLT der Test), und ein Quelltext-Test auf recordInput, der faellt, sobald jemand eine zweite Eingabeart einfuehrt. Der Kopfkommentar nennt die Bedingung zum UMDRECHEN der Wache.",
+      "konsequenz_fuer_O8": "Fuer Online-Springen gibt es nur EINEN verantwortbaren Schnitt: ERST das Replay-Format um den Sprung erweitern, DANN den Drahtweg bauen. Umgekehrt ist zwischen den beiden Schritten jeder Serverneustart ein Zustandsverlust.",
+      "entwurf": "docs/auftraege/online-sprung-und-abwurf.md (in Arbeit)",
+      "art": "arbeit"
     }
   ]
 }
