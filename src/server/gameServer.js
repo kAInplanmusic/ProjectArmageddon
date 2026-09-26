@@ -1040,6 +1040,49 @@ export class GameServer {
                 logger: this.logger,
               });
               this.#sessions.set(lobbyId, session);
+              /*
+               * ============ ENTSCHEIDUNG (Fund W5): Status nachziehen ============
+               *
+               * *Der Befund (gemessen in `tests/server-integration.test.js`):*
+               * Beim Match-Ende löscht die Sitzung sich selbst (`#finish` →
+               * `onEmpty`); die Lobby und ihre Plätze bleiben stehen. Ein
+               * späterer Beitritt mit Token findet keine Sitzung mehr und legt
+               * HIER eine neue an — das Match beginnt bei Runde 1. Die Lobby trug
+               * dabei weiter „finished" (= entschieden), WÄHREND in ihr gespielt
+               * wurde: „es ist vorbei" und „es läuft" zugleich. Wer die Lobby
+               * liest, sah eine erledigte Lobby, in der gespielt wird.
+               *
+               * *Die Entscheidung:* Der Status wird beim Wiederanlauf
+               * nachgezogen. Die Lobby ist ein WIEDERSPIEL-Gefäß, kein einmaliges
+               * Match. Sie trägt „open", solange kein Match in ihr unterwegs ist,
+               * „running", sobald eines unterwegs ist, und „finished", sobald ihr
+               * Match entschieden und die Sitzung weg ist. Damit ist der Zustand
+               * widerspruchsfrei: „finished" und „es wird gespielt" schließen
+               * sich aus.
+               *
+               * *Warum „running" und nicht „open":* „running" ändert fast
+               * nichts — `LobbyManager.join` lehnt ohnehin alles außer „open" ab,
+               * also kommt in die wiederbelebte Lobby weiterhin kein fremder
+               * Client (beim laufenden Match sind zusätzlich alle Teams besetzt).
+               * Genau dieselbe Kennzeichnung trägt eine Lobby, deren Match per
+               * `START_MATCH` gestartet wurde. „open" wäre die GRÖSSERE Änderung:
+               * Es öffnete die Tür für neue Spieler und stellte die Lobby zurück
+               * in den Lobby-Browser (der Client zeigt nur `status === 'open'`) —
+               * ein Eintrag, der beim Klick abgelehnt wird, also eine Sackgasse.
+               *
+               * *„running" meint die MATCHPHASE, nicht die Tick-Schleife:* Auch
+               * ein per `START_MATCH` gestartetes Match steht auf „running",
+               * während es auf einen Wiederverbinder wartet (`session.laeuft` ist
+               * dann `false`, siehe den Socket-`close`-Handler unten). Ein Status,
+               * der die Tick-Schleife abbildet, flackerte bei jedem
+               * Verbindungsabbruch zwischen „open" und „running" — und ein „open"
+               * mitten im Match wäre die nächste Tür, die nicht aufgeht.
+               *
+               * *Die Gegenprobe steht im selben Test:* „finished" bleibt, wo es
+               * hingehört (entschieden, keine Sitzung, niemand da) — und in ein
+               * laufendes Match kommt kein fremder Client.
+               */
+              if (lobby.status === LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId);
             }
             session.attach(seat.token, socket);
             if (!session.laeuft && this.#lobbies.alleTeamsBesetzt(lobbyId)) {

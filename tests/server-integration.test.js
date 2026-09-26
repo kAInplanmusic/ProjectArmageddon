@@ -240,7 +240,14 @@ test('Reconnect mit Token stellt denselben Platz wieder her', { timeout: 20_000 
   }
 });
 
-test('Unbesetzte Plätze werden von Bots gesteuert und das Match endet', { timeout: 60_000 }, async () => {
+/*
+ * Kein zweiter Mensch — und es gibt keine Bot-KI, die einspringen könnte.
+ * Der Server führt nur die Simulation; die Zugzeit läuft ab, ohne dass jemand
+ * schießt, und das Match endet über die RUNDENGRENZE (nicht durch Ausschaltung).
+ * Der Test hält fest, dass dieses Vorspulen deterministisch läuft und dass die
+ * Lag-Kompensationshistorie dabei gefüllt wird.
+ */
+test('Ein Match ohne Schützen läuft deterministisch bis zur Rundengrenze', { timeout: 60_000 }, async () => {
   const { server, url, port } = await startTestServer();
   const wsUrl = `ws://127.0.0.1:${port}/ws`;
   const client = new TestClient(wsUrl);
@@ -251,7 +258,8 @@ test('Unbesetzte Plätze werden von Bots gesteuert und das Match endet', { timeo
     client.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
     await client.waitFor(CONTROL.WELCOME);
 
-    // Ohne zweiten Client übernimmt der Bot den Gegner.
+    // Ohne zweiten Client ist die Lobby unvollständig — es läuft NICHTS von
+    // selbst. Der Test spult die Simulation deshalb ausdrücklich vor.
     const session = server.getSession(created.lobby.id);
     assert.ok(session, 'Sitzung muss existieren');
 
@@ -274,8 +282,8 @@ test('Unbesetzte Plätze werden von Bots gesteuert und das Match endet', { timeo
       }
     }
 
-    assert.ok(moved, 'Bot muss den Matchzustand verändern');
-    assert.equal(session.match.status, 'gameover', 'Match muss auch mit Bots enden');
+    assert.ok(moved, 'Ohne Schützen muss sich der Matchzustand über die Runden ändern');
+    assert.equal(session.match.status, 'gameover', 'Match muss über die Rundengrenze enden');
     assert.ok(session.match.round >= 1);
     assert.ok(session.match.winnerTeamId !== undefined);
 
@@ -410,10 +418,23 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
    * Team einen verbundenen Menschen hat. Genau das prüft dieser Test in beiden
    * Richtungen — mit EINEM Wiederverbinder passiert nichts, mit BEIDEN läuft es.
    *
-   * Zwei Eigentümlichkeiten hält er ausdrücklich fest, weil sie überraschen:
-   *  - Der Lobby-Status bleibt „finished", während in ihr ein neues Match läuft.
+   * Zwei Eigentümlichkeiten hielt er ursprünglich fest, weil sie überraschen:
+   *  - Der Lobby-Status blieb „finished", während in ihr ein neues Match läuft.
    *  - Ein FREMDER Client (ohne Token) kommt nicht mehr hinein, obwohl dort
    *    wieder gespielt wird.
+   *
+   * NACHGEZOGEN (Fund W5): Die erste Eigentümlichkeit war ein Widerspruch im
+   * Zustand — „entschieden" und „es läuft" zugleich — und ist behoben: Eine
+   * wiederbelebte Lobby ist keine entschiedene mehr und trägt „running"
+   * (`src/server/gameServer.js`, `JOIN_LOBBY`). Die Zusicherung unten ist damit
+   * NICHT abgeschwächt, sondern auf die Wahrheit gezogen; die Messung des
+   * Widerspruchs selber steht im Test „Eine Lobby, in der ein neues Match läuft,
+   * meldet nicht mehr „finished"".
+   *
+   * Die zweite Eigentümlichkeit bleibt und ist jetzt begründet statt
+   * widersprüchlich: Die Lobby ist zu, WEIL in ihr ein Match läuft — dieselbe
+   * Regel wie bei „START_MATCH". Dass ein Fremder nicht hineinkommt, ohne dass
+   * dort gespielt wird, prüft derselbe neue Test.
    */
   const { server, url, port } = await startTestServer();
   const wsUrl = `ws://127.0.0.1:${port}/ws`;
@@ -473,12 +494,25 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
       assert.ok(zustand.seed !== undefined, 'Der Seed für den Terrainaufbau muss mitkommen');
 
       /*
-       * Der Lobby-Status steht dagegen auf „beendet". Wer die Lobby-Liste liest,
-       * sieht sie als erledigt — das ist der Ist-Zustand, und ein Test soll ihn
-       * festhalten statt eine Wunschvorstellung.
+       * Der Lobby-Status: NICHT mehr „beendet".
+       *
+       * Hier stand vorher `assert.equal(zustand.status, 'finished', 'Der
+       * Lobby-Status bleibt auf „beendet"')` — festgehalten als Ist-Zustand, ohne
+       * ihn zu werten. Er war aber ein Widerspruch: In dieselbe Lobby ist gerade
+       * ein NEUES Match eingezogen (Runde 1, „playing", siehe oben). „entschieden"
+       * und „es wird dort gespielt" schließen sich aus.
+       *
+       * Begründete Wahrheit (W5): Eine wiederbelebte Lobby ist keine entschiedene
+       * mehr und wird beim Wiederanlauf auf „running" nachgezogen — dieselbe
+       * Kennzeichnung, die ein per `START_MATCH` gestartetes Match trägt, und
+       * dieselbe Regel für den Zugang: Wer kein Token hat, kommt nicht hinein,
+       * WEIL dort ein Match läuft. Der Test wird damit nicht weicher, sondern
+       * schärfer: Neben „es läuft" ist jetzt auch der Status widerspruchsfrei.
        */
-      assert.equal(zustand.status, 'finished',
-        'Der Lobby-Status bleibt auf „beendet"');
+      assert.equal(zustand.status, 'running',
+        'Die wiederbelebte Lobby darf nicht mehr „beendet" melden');
+      assert.notEqual(zustand.status, 'finished',
+        'Ein Match in der Lobby schließt den Status „beendet" aus');
 
       /*
        * Und jetzt der Kern der Sache: Das NEUE Match LÄUFT NICHT.
@@ -516,7 +550,11 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
       erneut.close();
     }
 
-    // Und ein fremder Client kommt nicht mehr hinein.
+    /*
+     * Und ein fremder Client kommt nicht mehr hinein — jetzt aus demselben Grund
+     * wie bei einem per `START_MATCH` gestarteten Match: In der Lobby läuft ein
+     * Match, also nimmt sie niemanden mehr auf (Status „running", siehe oben).
+     */
     const fremd = new TestClient(wsUrl);
     try {
       await fremd.open();
@@ -525,6 +563,148 @@ test('Der Reconnect auf ein entschiedenes Match startet ein NEUES Match', { time
       assert.match(fehler.error, /nimmt keine Spieler mehr auf/);
     } finally {
       fremd.close();
+    }
+  } finally {
+    client.close();
+    zweiterClient.close();
+    await server.close();
+  }
+});
+
+test('Eine Lobby, in der ein neues Match läuft, meldet nicht mehr „finished"', { timeout: 60_000 }, async () => {
+  /*
+   * DER WIDERSPRUCH, gemessen.
+   *
+   * Nach einem entschiedenen Match löscht die Sitzung sich selbst (`#finish` →
+   * `onEmpty`). Der Lobby-Zustand bleibt aber stehen. Ein späterer Beitritt mit
+   * Token findet keine Sitzung mehr und legt eine NEUE an — in derselben Lobby,
+   * mit einem Match ab Runde 1 (siehe den Test darüber).
+   *
+   * Ab da behauptet die Lobby „finished" (entschieden), während in ihr gespielt
+   * wird. Das sind zwei Zustände, die sich ausschließen: „entschieden" heißt, es
+   * ist vorbei — ein laufendes Match heißt, es ist nicht vorbei. Der Test hält
+   * deshalb beide Seiten DERSELBEN Wahrheit fest:
+   *
+   *     entschieden, keine Sitzung, nichts läuft   → „finished"
+   *     ein Match ist in dieser Lobby unterwegs    → „running", nie „finished"
+   *
+   * Der Widerspruch ist die Fehlerklasse, die dieses Projekt sonst mit einem
+   * Wächter belegt; ein Zustand, der sich selbst widerspricht, ist keine
+   * Geschmacksfrage. Er stand bis hierher nur als Fließtext in MASTERDOTO
+   * („Bekannte Grenzen") — hier steht er als Messung.
+   */
+  const { server, url, port } = await startTestServer();
+  const wsUrl = `ws://127.0.0.1:${port}/ws`;
+  const client = new TestClient(wsUrl);
+  const zweiterClient = new TestClient(wsUrl);
+
+  try {
+    const created = await createLobby(url, { teams: 2, playersPerTeam: 1, seed: 99 });
+    // Der Lobby-Zustand, wie ihn ein Leser der API sieht — nicht die Sitzung.
+    const lobbyStatus = () => server.lobbyManager.get(created.lobby.id)?.status ?? null;
+
+    await client.open();
+    client.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
+    await client.waitFor(CONTROL.WELCOME);
+
+    // Der zweite Mensch — ohne ihn läuft nichts (es gibt keine Bot-KI).
+    await zweiterClient.open();
+    zweiterClient.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Zweiter' });
+    const zweiterWillkommen = await zweiterClient.waitFor(CONTROL.WELCOME);
+
+    const session = server.getSession(created.lobby.id);
+    await matchZuEndeSpielen(session);
+
+    /*
+     * Seite 1: entschieden und nichts läuft → „finished". Das muss so bleiben;
+     * eine Lobby, in der niemand mehr spielt, darf nicht „running" heißen.
+     */
+    assert.equal(lobbyStatus(), 'finished',
+      'Ohne Sitzung und ohne Match muss die Lobby „finished" melden');
+    assert.ok(!server.getSession(created.lobby.id),
+      'Nach dem Ende muss die Sitzung verschwunden sein');
+
+    // Der zweite Mensch geht: damit läuft das wiederbelebte Match nicht sofort
+    // los, und die Wiederbelebung lässt sich allein beobachten.
+    zweiterClient.close();
+    await new Promise(r => setTimeout(r, 300));
+
+    const erneut = new TestClient(wsUrl);
+    const zweiterZurueck = new TestClient(wsUrl);
+    try {
+      await erneut.open();
+      erneut.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, token: created.player.token });
+      await erneut.waitFor(CONTROL.WELCOME);
+
+      /*
+       * Gegenprobe in der WARTEPHASE (nur ein Mensch zurück, Match noch nicht
+       * gestartet): Auch hier kommt kein fremder Client hinein. Vorher war das
+       * eine Folge des Status „finished" — jetzt ist es dieselbe begründete
+       * Regel wie im laufenden Match: In diese Lobby ist ein Match eingezogen,
+       * also nimmt sie niemanden mehr auf.
+       */
+      const fremdWartend = new TestClient(wsUrl);
+      try {
+        await fremdWartend.open();
+        fremdWartend.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Fremd' });
+        const fehler = await fremdWartend.waitFor(CONTROL.ERROR);
+        assert.match(fehler.error, /nimmt keine Spieler mehr auf/,
+          'Auch wartend darf die wiederbelebte Lobby keinen fremden Client aufnehmen');
+      } finally {
+        fremdWartend.close();
+      }
+
+      // Der zweite Mensch kommt über sein Token zurück — damit läuft das neue
+      // Match wieder (beide Teams besetzt).
+      await zweiterZurueck.open();
+      zweiterZurueck.send(CONTROL.JOIN_LOBBY, {
+        lobbyId: created.lobby.id,
+        token: zweiterWillkommen.token,
+      });
+      await zweiterZurueck.waitFor(CONTROL.WELCOME);
+
+      const frist = Date.now() + 10_000;
+      while (Date.now() < frist && erneut.snapshots.length === 0) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      assert.ok(erneut.snapshots.length > 0,
+        'Mit zwei Menschen müssen wieder Snapshots fließen');
+      assert.equal(server.getSession(created.lobby.id)?.match?.status, 'playing',
+        'Das wiederbelebte Match MUSS gerade gespielt werden — sonst prüft der Test unten nichts');
+
+      /*
+       * Gegenprobe zum Zugang: In eine Lobby, in der ein Match läuft, kommt kein
+       * FREMDER Client (ohne Token). Diese Probe gilt VOR und NACH der Korrektur
+       * — sie ist die Seite, die sich nicht ändern darf.
+       */
+      const fremd = new TestClient(wsUrl);
+      try {
+        await fremd.open();
+        fremd.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Fremd' });
+        const fehler = await fremd.waitFor(CONTROL.ERROR);
+        assert.match(fehler.error, /nimmt keine Spieler mehr auf/,
+          'Ein fremder Client darf nicht in eine Lobby mit laufendem Match');
+        assert.ok(!fremd.controls.some(m => m.t === CONTROL.WELCOME),
+          'Der fremde Client darf kein Willkommen erhalten');
+      } finally {
+        fremd.close();
+      }
+
+      // Und keine fremde Figur darf im Match aufgetaucht sein.
+      assert.equal(server.lobbyManager.get(created.lobby.id).seats.length, 2,
+        'Der fremde Client darf keinen Platz belegt haben');
+
+      /*
+       * Seite 2: Jetzt läuft dort ein Match — also ist die Lobby NICHT mehr
+       * entschieden. Genau hier steht vor der Korrektur „finished", während
+       * `match.status` oben „playing" gemeldet hat: der gemessene Widerspruch.
+       */
+      assert.equal(lobbyStatus(), 'running',
+        `Widerspruch: In der Lobby läuft ein Match (status „playing"), `
+        + `aber die Lobby meldet „${lobbyStatus()}"`);
+    } finally {
+      erneut.close();
+      zweiterZurueck.close();
     }
   } finally {
     client.close();
