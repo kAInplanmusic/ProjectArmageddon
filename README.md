@@ -170,7 +170,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1027 Tests in 100 Dateien**, ~4,6 min. *Nachgezogen 2026-09-26:* Dateizahl gemessen (`ls tests/*.test.js \| wc -l` → 100), Testzahl aus einem vollen Lauf (`node --test` → 1027 bestanden, 0 rot). Die vorige Messung nannte 1015; dazu kamen `tests/replay-uhr.test.js` (8) sowie die Leitbiom-Gegenproben und der W5-Reconnect-Test |
+| `npm test` | Unit- und Integrationstests: **1057 Tests in 102 Dateien**, ~4,6 min. *Nachgezogen 2026-09-26:* Dateizahl gemessen (`ls tests/*.test.js \| wc -l` → 102), Testzahl aus einem vollen Lauf (`node --test` → 1057 bestanden, 0 rot, 289,0 s). Die vorige Messung nannte 1027 in 100 Dateien; seither kamen `tests/shooting.test.js` (6) und `tests/terrain-material.test.js` (13) hinzu |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |

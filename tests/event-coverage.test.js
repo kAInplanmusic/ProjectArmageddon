@@ -5,7 +5,7 @@
  *
  * Ein Black-Box-Audit meldete: Im lokalen Spiel sah man den Einschlag eines
  * Projektils nicht. Nachgeprüft: Die Engine sendet `projectile_impact`
- * (`projectileSystem.js:119`), und der Client hatte zwei getrennte
+ * (`projectileSystem.js:275`), und der Client hatte zwei getrennte
  * Ereignisbehandler —
  *
  *   - `#handleEvents`       für das LOKALE Match
@@ -127,13 +127,13 @@ function verarbeiteInBeidenZweigen(typ, nutzlast) {
  * Gesucht wird nach BEIDEN Wegen, auf denen die Engine Ereignisse meldet:
  * `emit('…')` (überall) und `melde('…')` (Günthers System, das den Melder als
  * `kontext.melde` bekommt — `guentherSystem.js:276` ff., verdrahtet in
- * `match.js:1301` auf dieselbe Ereignisliste). Nur `emit(` zu suchen hieß: vier
+ * `match.js:1335` auf dieselbe Ereignisliste). Nur `emit(` zu suchen hieß: vier
  * Ereignisarten waren für diesen Wächter unsichtbar — genau die Art stiller
  * Durchlauf, gegen die die Datei antritt.
  *
- * (Das Werkzeug `tools/audit-mcp` sucht weiterhin nur `emit(` — dort fehlen
- * dieselben vier Arten. Der Unterschied der Zahlen ist damit erklärt und nicht
- * ein zweiter Befund.)
+ * (Das Werkzeug `tools/audit-mcp` wurde nachgezogen: `lib/statisch.mjs:536`
+ * sucht mit `(?:emit|melde)\(` nach BEIDEN Meldewegen. Der alte Stand „dort
+ * fehlen dieselben vier Arten" gilt nicht mehr.)
  */
 function ereignisseDerEngine() {
   const dateien = [];
@@ -162,12 +162,12 @@ function ereignisseDerEngine() {
  * einer Einzelprüfung (nicht geraten): Für jedes Ereignis wurde nachgesehen,
  * ob die Wirkung auf einem anderen Weg sichtbar wird.
  *
- * Die Bedeutung ist ENG: „KEIN Client-Zweig behandelt dieses Ereignis; was der
- * Spieler davon sieht, entsteht über ein anderes Element." Ein Ereignis, das
- * `EREIGNIS_WIRKUNGEN` behandelt, gehört deshalb NICHT hierher — der Eintrag
- * wäre keine Dokumentation, sondern eine Falschaussage. Genau das verlangte die
- * Audit-Meldung vom 2026-09-26 für 27 Ereignisse; sie sind deshalb NICHT
- * eingetragen worden (siehe `AUDIT_LISTE_2026_09_26`).
+ * Die Bedeutung ist ENG: „Der Spieler sieht von diesem Ereignis NICHTS; der
+ * sichtbare Effekt entsteht über ein anderes Element." Ein Zweig in der Tabelle
+ * ist damit KEIN Widerspruch — drei Einträge stehen GENAU DESHALB mit
+ * einschränkender Begründung hier: `shot`, `crate_landed` und `turn_start`.
+ * Die 27 der Audit-Meldung haben dagegen eine sichtbare Wirkung; sie gehören
+ * NICHT hierher (siehe `AUDIT_LISTE_2026_09_26`).
  *
  * Der Stand steht seit dem 2026-09-26 hier auf Modulebene (vorher im Rumpf des
  * letzten Tests): Der Nachtrag zur Audit-Meldung und die Einzweig-Prüfung lesen
@@ -215,21 +215,21 @@ const bewusstStumm = new Set([
  * Test unten hält beides fest: einen Zweig haben sie, und in `bewusstStumm`
  * dürfen sie nicht landen.
  *
- * ## Warum dasselbe Werkzeug trotzdem 27 meldet (belegt, nicht vermutet)
+ * ## Warum das Werkzeug 27 meldete — und was daraus wurde
  *
- * `tools/audit-mcp/lib/statisch.mjs` → `ereignisAbdeckung()` hält ein Ereignis
- * für behandelt, wenn sein NAME als ZEICHENKETTE in `src/client/**` vorkommt
- * (`/['"]([a-z0-9_]{3,})['"]/`, dort Zeile 384–386). Die Tabelle benutzt aber
- * UNQUOTIERTE Schlüssel (`projectile_impact: beide(…)`) — diese Suche kann sie
- * nicht erfassen. Werkzeugsicht derselben Sitzung: 6 gedeckt / 10 dokumentiert /
- * 27 undokumentiert; wahre Sicht: 43 emittierte Arten, davon 33 in der Tabelle
- * behandelt und 10 bewusst stumm, 0 ohne beides.
+ * `tools/audit-mcp/lib/statisch.mjs` → `ereignisAbdeckung()` (dort :525) hielt
+ * ein Ereignis für behandelt, wenn sein NAME als ZEICHENKETTE in `src/client/**`
+ * vorkam (`/['"]([a-z0-9_]{3,})['"]/`, heute :564). Die Tabelle benutzt aber
+ * UNQUOTIERTE Schlüssel (`projectile_impact: beide(…)`) — der alte Leser konnte
+ * sie nicht erfassen und meldete deshalb 27 als „undokumentiert".
  *
- * Die Meldung ist damit ein MESSFEHLER des Lesers, kein Zustand des Spiels. Wer
- * sie abstellen will, ändert den LESER (die Tabelle in die Zählung aufnehmen) —
- * nicht diese Liste: Ein Eintrag in `bewusstStumm` brächte hier keine Wirkung
- * (die Ereignisse sind behandelt) und würde zusätzlich behaupten, es gäbe
- * keinen Zweig.
+ * Der Leser wurde nachgezogen und zählt seitdem AUCH die unquotierten Schlüssel
+ * (`:565`). Nachgemessen mit dem heutigen Werkzeug: 47 emittierte Arten, 39
+ * gedeckt, 8 bewusst stumm, 0 undokumentiert. Die 27 stehen deshalb NUR als
+ * Meldung von damals hier — als Beleg, dass die Ereignisse nicht stumm waren,
+ * nicht als offener Befund. Ein Eintrag in `bewusstStumm` brächte hier keine
+ * Wirkung (die Ereignisse sind behandelt) und würde zusätzlich behaupten, es
+ * gäbe keinen Zweig.
  *
  * @type {string[]}
  */
@@ -258,7 +258,7 @@ const AUDIT_LISTE_2026_09_26 = [
   'terrain_destroyed',     // ereignisse.js:90  — nur online :92 (Krater)
   'toxic_rain',            // ereignisse.js:499 — lokal :501
   'turn_skipped',          // ereignisse.js:340 — beide :341
-  'turret_deployed',       // ereignisse.js:289 — beide :291 + lokal :295
+  'turret_deployed',       // ereignisse.js:289 — lokal :291 + :295, online :300
   'turret_expired',        // ereignisse.js:322 — beide :323
   'turret_fired',          // ereignisse.js:313 — lokal :315, online :318
 ];
@@ -349,7 +349,7 @@ const EINZWEIG_BELEGT = new Map([
   // --- nur online behandelt (lokal kommt es aus einem anderen Weg)
   ['projectile_spawn', {
     zweig: 'online',
-    entweder: 'lokal BRAUCHT es keinen Zweig: die Vorhersage gibt es dort nicht — src/client/main.js:1480–1481 (#startShotPrediction kehrt im lokalen Modus sofort zurück), gezeichnet wird sie nur online (:1961). Das Ereignis läuft lokal trotzdem (es kommt aus dem Motor, src/engine/shooting.js:325) und fällt in eine leere Stelle: Absicht, keine Lücke.',
+    entweder: 'lokal BRAUCHT es keinen Zweig: die Vorhersage gibt es dort nicht — src/client/main.js:1480–1481 (#startShotPrediction kehrt im lokalen Modus sofort zurück), gezeichnet wird sie nur online (:1961). Das Ereignis läuft lokal trotzdem (es kommt aus dem Motor, src/engine/shooting.js:344) und fällt in eine leere Stelle: Absicht, keine Lücke.',
   }],
   ['terrain_destroyed', {
     zweig: 'online',
@@ -357,7 +357,7 @@ const EINZWEIG_BELEGT = new Map([
   }],
   ['karte_unerreichbar', {
     zweig: 'online',
-    offen: 'im lokalen Match läuft dieselbe Prüfung und sendet dasselbe Ereignis: src/engine/match.js:641 (Aufruf in `start()`) → `#pruefeErreichbarkeit` ab :684 → :742. Der lokale Zweig fehlt, und ein anderes Element zeigt es nicht: das Ergebnis landet nur in `match.erreichbarkeit` (src/engine/match.js:735), und außerhalb von match.js liest das niemand (einziger Leser im ganzen Projekt: tests/zugreihenfolge.test.js:144). BEFUND: wer lokal auf einer abgeschnittenen Karte spielt, erfährt es nicht.',
+    offen: 'im lokalen Match läuft dieselbe Prüfung und sendet dasselbe Ereignis: src/engine/match.js:658 (Aufruf in `start()`) → `#pruefeErreichbarkeit` ab :701 → die Zuweisung `this.erreichbarkeit` in :752. Der lokale Zweig fehlt, und ein anderes Element zeigt es nicht: das Ergebnis landet nur in `match.erreichbarkeit` (src/engine/match.js:752), und außerhalb von match.js liest das niemand (einziger Leser im ganzen Projekt: tests/zugreihenfolge.test.js:144). BEFUND: wer lokal auf einer abgeschnittenen Karte spielt, erfährt es nicht.',
   }],
   ['turn_start', {
     zweig: 'online',

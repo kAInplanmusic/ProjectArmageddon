@@ -30,12 +30,12 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1027/1027** grün
-*(Testzahl nachgezogen am 2026-09-26 nach dem ersten vollen `npm test` seither;
-zur Zeit dieses Zuges waren es 1015/1015 — die Differenz sind die seither
-hinzugekommenen Tests: `tests/replay-uhr.test.js` (8) sowie die neuen
-Leitbiom-Gegenproben und der W5-Reconnect-Test in
-`tests/terrain-presets.test.js` / `tests/server-integration.test.js`)* ·
+Verifikation dieses Zuges: `npm test` **1057/1057** grün
+*(Testzahl nachgezogen am 2026-09-26 aus einem vollen Lauf (`node --test
+tests/*.test.js` → 1057 bestanden, 0 rot, 289,0 s, Dateizahl 102). Die
+vorige Messung nannte 1027 in 100 Dateien; seither kamen
+`tests/shooting.test.js` (6) und `tests/terrain-material.test.js` (13) hinzu
+— 1027 + 19 = 1046; die übrigen 11 sitzen in bereits vorhandenen Dateien)* ·
 `npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
 check:damage-types` 0 Fehler · `npm run build` erfolgreich ·
@@ -139,7 +139,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 | Prüfung | Ergebnis |
 |---|---|
 | Gate-Batterie | **7/7** — lint, validate, checks (21 Gates), build, perf, balance, smoke:fast |
-| Unit-Suite | **1027 Tests, 1027 bestanden, 0 fehlgeschlagen** — *nachgezogen 2026-09-26 (erster voller `npm test` seit der letzten Messung): Dateizahl **100** (`ls tests/*.test.js \| wc -l`), Testzahl **1027**. Die vorige Messung 2026-09-25 nannte 1015/1015 in 99 Dateien; seither kam `tests/replay-uhr.test.js` (8 Tests) hinzu, dazu die Leitbiom-Gegenproben und der W5-Reconnect-Test* |
+| Unit-Suite | **1057 Tests, 1057 bestanden, 0 fehlgeschlagen** — *nachgezogen 2026-09-26 (voller Lauf `node --test tests/*.test.js`, 289,0 s): Dateizahl **102** (`ls tests/*.test.js \| wc -l`), Testzahl **1057**. Die vorige Messung nannte 1027 in 100 Dateien; seither kamen `tests/shooting.test.js` (6 Tests) und `tests/terrain-material.test.js` (13 Tests) hinzu — 1027 + 19 = 1046; die übrigen 11 sitzen in bereits vorhandenen Dateien* |
 | Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
 | Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
 | Secrets | 0 Fundstellen in getrackten Dateien |
@@ -151,7 +151,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 |---|---|---|
 | 3 Dateien ohne jeden Importeur (183 Zeilen) | `src/client/rendering/waterSimulation.js`, `src/client/rendering/terrainRenderer.js`, `src/client/ui.js` | **entfernt 2026-09-25** (Commit `7b78b38`) |
 | Konstanten ohne Leser | `SHIELD_SCALE` (`src/shared/protocol.js`), `PROJECT_ARMAGEDDON_WEAPON_DATABASE` + `TERRAIN_MATERIAL_DEFINITIONS` (`shared/data/index.js`), `weaponIndexFromId` (`lootSystem.js`) | **entfernt 2026-09-25** |
-| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) — `PRIMARY_BIOME_BY_PRESET` in zwei Dateien ist dagegen **Absicht** (Projektregel) | **behoben 2026-09-25**: Takt und Trefferfeld je EINE Quelle in `src/shared/config/`, Wächter `tests/eine-regel-eine-stelle.test.js` |
+| Vier Doppelregeln | `TICK_MS` (Server+Client) · `PLAYER_HALF_WIDTH/_HEIGHT` (match.js + projectileSystem.js) · `PRIMARY_BIOME_BY_PRESET` (backdrops.js + scenery.js — ein **wertgleiches Duplikat**, keine Absicht) | **behoben 2026-09-25**: Takt und Trefferfeld je EINE Quelle in `src/shared/config/`, Wächter `tests/eine-regel-eine-stelle.test.js`; `PRIMARY_BIOME_BY_PRESET` wird nur noch in `src/shared/config/backdrops.js:968` definiert, `scenery.js:21` importiert und `:438` reicht es weiter — Projektregel „eine Regel, eine Stelle" |
 | Design, nicht entschieden | `requiresLineOfSight` ist bei allen 150 Waffen konstant `false` | **behoben 2026-09-25**: 13 Waffen verlangen freie Sicht, im Motor verdrahtet |
 
 ### Vier eigene Messfehler des Werkzeugs, gefunden und korrigiert
@@ -1471,6 +1471,48 @@ und für die Anzeige ohne Bedeutung — dort zählt, WO das Geschütz steht und 
 lange es feuert. Kein Delta (wie bei den Kisten): Der einzige Änderungsfall ist
 „dasselbe Geschütz verliert eine Runde", und ein Delta bräuchte Kennungen und
 Entfernungsmeldungen, die mehr kosten als sie sparen.
+
+### Übertragung (Protokoll v7) — Günther und seine Haufen
+
+**Derselbe Fehlertyp wie bei den Kisten (v5) und den Geschützen (v6), zum dritten
+Mal.** Günther lief im Motor online mit — gemessen über vier Seeds und je rund
+900 aktive Ticks erzeugt der Server alle vier seiner Ereignisarten —, aber das
+Drahtformat kannte ihn nicht. Die Onlinesicht des Clients setzte deshalb kein
+`guenther`-Feld, und der Renderer stieg **weich** aus (`guenther?.aktiv`,
+`haufen ?? []`): kein Fehler, keine Meldung, nur ein unsichtbarer NPC, dessen
+Haufen den Spieler langsamer machten und vergifteten. Er wusste nicht, warum.
+
+```
+Kopf 24 → 25 Byte  ([24] = Zahl der Kackhaufen)
+je Günther 6 Byte:  x Int16, y Int16 (0,25 px), Richtung Int8 (±1), Flags Uint8 (Bit 0 = aktiv)
+je Haufen  4 Byte:  x Int16, y Int16
+```
+
+Der Block ist **immer** vorhanden — auch ohne Günther (`aktiv: false`), damit die
+Sektion eine feste Position behält und der Decoder nicht raten muss. Drei
+Entscheidungen, die dazugehören:
+
+1. **`identity` und `plan` reisen nicht mit.** Sie sind statische Konfiguration
+   und Deko; der Client liest sie selbst. Auf der Leitung wären sie konstante
+   Bytes für nichts. Ein Test hält das fest.
+2. **Kein zweiter Haufen-Deckel.** Das System entfernt alte Haufen bereits selbst
+   (`guentherSystem.js:301`, `maxPiles = 6`); das Drahtformat liest **dieselbe**
+   Zahl (`MAX_WIRE_POOPS = Math.min(GUENTHER_POOP.maxPiles, 255)`) — eine zweite
+   Konstante wäre die nächste doppelte Regel.
+3. **Die Budgets blieben unangetastet.** Gemessen: 12 Figuren 225 B (Budget 320),
+   40 Figuren 645 B (Budget 700), künstlicher Höchstfall 40 Figuren + 6 Haufen
+   669 B. Der Zuwachs ist konstant 7 B plus höchstens 24 B Haufen und passt in
+   den vorhandenen Spielraum — der Wächter wurde **nicht** gelockert.
+
+**Was dabei noch offen ist** (2026-09-26, gemessen): `src/client/main.js` setzt im
+Online-Pfad weiterhin kein `guenther`-Feld. **Der Drahtweg ist damit fertig, die
+Anzeige nicht** — Günther bleibt online unsichtbar, bis die Client-Seite
+nachgezogen ist. Und: das `CONTROL`-Protokoll kennt weder `JUMP` noch
+`DROP_WEAPON`, weshalb **Springen und Waffe-Abwerfen online gar nicht auslösbar
+sind** (`main.js:794` und `:818` steigen im Online-Modus aus, der Sprung dabei
+stumm). Der Sprung ist laut diesem Dokument „die kostbarste Größe" — und die
+einzige echte Stärke des Scouts wurde ausdrücklich über ihn wirksam gemacht.
+Online existiert sie damit nicht. Eigener Auftrag, eigener Versionssprung.
 
 ### Anzeige
 
