@@ -19,7 +19,8 @@
       "2026-09-26_abend": "Sieben geplante Todos (W1-W7) abgearbeitet, dazu fuenf Befunde aus dem Tiefen-Audit (M1-M5). Der Baum war zu Beginn ROT und unverifiziert: Eine Vorsitzung hatte W1-W5 gebaut und liegen gelassen; tests/event-coverage.test.js warf 3 von 4 Tests um.",
       "wichtigster_befund": "Der Tiefen-Audit sprach die Doppelregel PRIMARY_BIOME_BY_PRESET mit einem FREI ERFUNDENEN Satz frei ('laut Projektregel in ZWEI Dateien stehen MUSS') — der Satz war in tools/audit-mcp/lib/bericht.mjs:387 FEST VERDRAHTET und erschien bei jedem Lauf. Der Audit-Agent hat ihn als Tatsache weitergegeben. Nachgemessen war es ein echtes, wertgleiches Duplikat ohne Importbeziehung. Die Meldung '27 undokumentiert stumme Ereignisse' war ebenfalls ein Werkzeugfehler: der Detektor suchte nur ZITIERTE Ereignisnamen, die Zuordnungstabelle benutzt aber unquotierte Schluessel.",
       "merksatz_imporeure": "Vor dem Entfernen eines Exports die IMPORTEURE lesen, nicht nur die Leser des Namens — main.js importiert aus roster.js, ohne die Namen im Quelltext je zu erwaehnen.",
-      "nachtrag_spaeter_abend": "Nach dem ersten Konsolidieren: Drahtformat v7 (Guenther), Client-Anschluss, zwei Analyse-Berichte, drei Werkzeug-Reparaturen derselben Fehlerklasse (fest verdrahtetes Urteil unter live gemessenen Zahlen: bericht.mjs, check-maelstrom.mjs, measure-network.mjs) und der Befund O9 (Sprung nicht aufzeichenbar, bewiesen und mit Wache im Repo)."
+      "nachtrag_spaeter_abend": "Nach dem ersten Konsolidieren: Drahtformat v7 (Guenther), Client-Anschluss, zwei Analyse-Berichte, drei Werkzeug-Reparaturen derselben Fehlerklasse (fest verdrahtetes Urteil unter live gemessenen Zahlen: bericht.mjs, check-maelstrom.mjs, measure-network.mjs) und der Befund O9 (Sprung nicht aufzeichenbar, bewiesen und mit Wache im Repo).",
+      "mcp_falle": "Ein langlaufender MCP-Server ist eine eingefrorene Sicht auf seinen eigenen Code. Nach Aenderungen an tools/audit-mcp/** liefert der laufende Prozess alte Zahlen mit voller Ueberzeugung. Gegenprobe: dasselbe Werkzeug frisch per CLI starten und beide Ergebnisse nebeneinanderstellen."
     }
   },
   "todos": [
@@ -276,6 +277,18 @@
       "konsequenz_fuer_O8": "Fuer Online-Springen gibt es nur EINEN verantwortbaren Schnitt: ERST das Replay-Format um den Sprung erweitern, DANN den Drahtweg bauen. Umgekehrt ist zwischen den beiden Schritten jeder Serverneustart ein Zustandsverlust.",
       "entwurf": "docs/auftraege/online-sprung-und-abwurf.md (in Arbeit)",
       "art": "arbeit"
+    },
+    {
+      "id": "O10",
+      "titel": "WERKZEUGFALLE — ein langlaufender MCP-Server meldet nach eigener Codeaenderung die ALTE Welt",
+      "phase": 3,
+      "status": "offen — bewiesen, Ursache des Geisterbefunds '27 stumme Ereignisse'",
+      "prioritaet": "P1",
+      "warum": "Der MCP-Server `audit` ist ein LANGLAUFENDER Prozess und haelt seine Module im Speicher. Nachdem ein Worker `tools/audit-mcp/lib/statisch.mjs` repariert hatte (der Detektor suchte Ereignisnamen nur als ZITIERTE Zeichenkette, die Zuordnungstabelle benutzt aber unquotierte Schluessel), lieferte der MCP weiter das alte Ergebnis.",
+      "beleg": "GLEICHE Frage, ZWEI Codestaende, direkt gegenuebergestellt: MCP `audit_events` -> gesamt 43, gedeckt 6, stumm 37, undokumentiert 27, Urteil '27 stumme Ereignisse sind NICHT dokumentiert'. CLI frisch gestartet (`node tools/audit-mcp/server.mjs --ruf audit_events`) -> gesamt 47, gedeckt 39, stumm 8, undokumentiert 0, Urteil 'keine Luecke'.",
+      "folge": "Das erklaert den Geisterbefund, der diese Sitzung einen ganzen Worker-Durchgang gekostet hat: Die '27 undokumentiert stummen Ereignisse' waren NIE ein Produktmangel. Das Werkzeug meldete die Welt von vor seiner eigenen Reparatur — mit voller Ueberzeugung und gruener Ampel.",
+      "regel": "Jede Aussage eines MCP-Servers ueber den Code muss gegen einen FRISCH gestarteten Lauf desselben Werkzeugs geprueft werden, bevor sie als Befund gilt. Ein MCP-Ergebnis ist ein Zeitpunkt, kein Zustand — genau wie eine verzogert eintreffende Background-Meldung.",
+      "art": "werkzeug"
     }
   ]
 }
