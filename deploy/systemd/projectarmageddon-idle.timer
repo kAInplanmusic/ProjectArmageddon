@@ -1,0 +1,36 @@
+# systemd-Timer: ProjectArmageddon Idle-Bremse
+#
+# VORLAGE — nicht installiert (nichts wird hier gemietet). Einrichten auf dem
+# KNOTEN nach dem Mieten:
+#
+#   cp deploy/systemd/projectarmageddon-idle.service /etc/systemd/system/
+#   cp deploy/systemd/projectarmageddon-idle.timer   /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now projectarmageddon-idle.timer
+#
+# DANN — und nur dann darf gemietet bleiben, was gemietet ist:
+#   systemctl list-timers projectarmageddon-idle.timer
+#   ls -l /etc/projectarmageddon/ist-gemietet
+# Die AUSGABE gehört in docs/betrieb-INSTANZ.md, Abschnitt "Nachweis"
+# (AGENTS.md §5 Punkt 3: eine Datei im Repo ist kein laufender Dienst).
+#
+# Der Takt ist eine Minute. Ein feinerer Takt kostet nichts (der Durchlauf ist
+# ein Curl gegen den eigenen Server), bringt aber auch nichts — die
+# Abschaltfristen werden in Minuten gemessen.
+
+[Unit]
+Description=ProjectArmageddon Idle-Bremse (prüft jede Minute)
+Documentation=file:/opt/projectarmageddon/docs/betrieb-INSTANZ.md
+
+[Timer]
+# Erst nach dem Anlauf prüfen, dann im Minutentakt. Persistent=nein ist
+# Absicht: Ein nachgeholter Durchlauf nach einem Reboot ist wertlos — die Uhr
+# des Knotens ist der Bezug, nicht die Uhr vor dem Reboot.
+OnBootSec=5min
+OnUnitActiveSec=1min
+AccuracySec=10s
+Persistent=false
+Unit=projectarmageddon-idle.service
+
+[Install]
+WantedBy=timers.target

@@ -170,7 +170,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1015 Tests in 99 Dateien**, ~5,7 min |
+| `npm test` | Unit- und Integrationstests: **1027 Tests in 100 Dateien**, ~4,6 min. *Nachgezogen 2026-09-26:* Dateizahl gemessen (`ls tests/*.test.js \| wc -l` → 100), Testzahl aus einem vollen Lauf (`node --test` → 1027 bestanden, 0 rot). Die vorige Messung nannte 1015; dazu kamen `tests/replay-uhr.test.js` (8) sowie die Leitbiom-Gegenproben und der W5-Reconnect-Test |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **184 Tests in 28 Spezifikationen**, ~22 min. 7 davon messen Bildzeiten und brauchen eine echte GPU (auf einem Software-Rasterer rot, siehe `docs/testgrenzen.md`) |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -482,6 +482,13 @@ Im HUD erscheinen laufende Zustände als Marken in der Spielerliste
 | Scout | 0.9 | 0.8 | 0.7 | 1.2 | 0.8 |
 | Heavy | 1.1 | 1.2 | 1.0 | 0.8 | 1.3 |
 | Artillery | 0.8 | 0.9 | 1.3 | 0.7 | 0.9 |
+
+Rohfelder der Tabelle (`src/shared/config/classes.js:55-68`): `drag`, `mass`,
+`power` (Spalte „Kraft“), `speed` (Spalte „Tempo“), `health`. **Vorsicht bei der
+Spalte „Tempo“:** Gemeint ist der Klassenwert `speed`, und der wirkt auf den
+**Absprung** — die Anzeige nennt ihn deshalb „Beweglichkeit“. Intern heißt
+dagegen `power` (= Spalte „Kraft“) `tempo`, weil er die Schussgeschwindigkeit
+meint (`classes.js:332-345`). Beides zu verwechseln wäre irreführend.
 
 Dazu drei Archetypen (Brawler, Artillerist, Okkultist) mit eigenen Prozent-Modifikatoren.
 

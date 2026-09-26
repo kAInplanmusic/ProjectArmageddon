@@ -30,7 +30,12 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1015/1015** grün ·
+Verifikation dieses Zuges: `npm test` **1027/1027** grün
+*(Testzahl nachgezogen am 2026-09-26 nach dem ersten vollen `npm test` seither;
+zur Zeit dieses Zuges waren es 1015/1015 — die Differenz sind die seither
+hinzugekommenen Tests: `tests/replay-uhr.test.js` (8) sowie die neuen
+Leitbiom-Gegenproben und der W5-Reconnect-Test in
+`tests/terrain-presets.test.js` / `tests/server-integration.test.js`)* ·
 `npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
 check:damage-types` 0 Fehler · `npm run build` erfolgreich ·
@@ -134,7 +139,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 | Prüfung | Ergebnis |
 |---|---|
 | Gate-Batterie | **7/7** — lint, validate, checks (21 Gates), build, perf, balance, smoke:fast |
-| Unit-Suite | **1015 Tests, 1015 bestanden, 0 fehlgeschlagen** |
+| Unit-Suite | **1027 Tests, 1027 bestanden, 0 fehlgeschlagen** — *nachgezogen 2026-09-26 (erster voller `npm test` seit der letzten Messung): Dateizahl **100** (`ls tests/*.test.js \| wc -l`), Testzahl **1027**. Die vorige Messung 2026-09-25 nannte 1015/1015 in 99 Dateien; seither kam `tests/replay-uhr.test.js` (8 Tests) hinzu, dazu die Leitbiom-Gegenproben und der W5-Reconnect-Test* |
 | Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
 | Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
 | Secrets | 0 Fundstellen in getrackten Dateien |
@@ -282,19 +287,37 @@ NICHT in einem Rutsch gemacht: Sie berührt jede der 183 E2E-Prüfungen und jede
 Determinismus-Zusage. Ein Umbau dieses Umfangs braucht denselben Belegweg wie
 alles andere hier (messen, ändern, gegenprüfen), keinen Anhang.
 
-*Gemessen mit einem Blockzähler über die Methodengrenzen:*
+*Gemessen mit einem Blockzähler über die Methodengrenzen (2026-09-20; die Zeilen­zahlen sind unten richtiggestellt).*
+
+> **RICHTIGGESTELLT 2026-09-26 — die Zerlegung ist weiter als hier beschrieben.**
+> Die Tabelle darunter ist der Stand VOR den Schritten. Nachgemessen am
+> 2026-09-26 (`wc -l`, `grep -n`):
+>
+> | Datei | damals | jetzt | Beleg |
+> |---|---|---|---|
+> | `src/engine/match.js` | 3.567 | **3.588** (dazwischen 3.498; später durch neue Felder gewachsen) | `wc -l src/engine/match.js` |
+> | `src/client/main.js` | 3.698 | **3.235** | `wc -l src/client/main.js` |
+>
+> Und die „größten Brocken" sind kleiner geworden: `getState()` ist **kein**
+> 149-Zeilen-Rumpf mehr, sondern **2 Zeilen** (Delegator), siehe unten.
 
 | Datei | Zeilen | Methoden | davon in Methoden | größte Brocken |
 |---|---|---|---|---|
-| `src/engine/match.js` | 3.567 | 73 | 2.399 (67 %) | `fire()` 211 [1458–1668], `getState()` 149 [3248–3396], `spawnPlayers()` 96, `applyTargetEffect()` 91, `buildTerrain()` 89, `resolveGuentherWheel()` 87, `stateHash()` 76 |
-| `src/client/main.js` | 3.698 | 84 | 2.641 (71 %) | `handleEvents()` 229 [1463–1691], `exposeDebugApi()` 166, `startOnline()` 165, `handleRemoteEvent()` 142, `bindMenu()` 100, `zeigeErfolge()` 80 |
+| `src/engine/match.js` | 3.588 | 73 | 2.399 (67 %) | `fire()` 211 [1458–1668], ~~`getState()` 149 [3248–3396]~~ **→ 3 Zeilen, Delegator (2026-09-26)**, `spawnPlayers()` 96, `applyTargetEffect()` 91, `buildTerrain()` 89, `resolveGuentherWheel()` 87, `stateHash()` 76 |
+| `src/client/main.js` | 3.235 | 84 | 2.641 (71 %) | `handleEvents()` 229 [1463–1691], `exposeDebugApi()` 166, `startOnline()` 165, `handleRemoteEvent()` 142, `bindMenu()` 100, `zeigeErfolge()` 80 |
 
-### Stand: Schritte 1 und 2 sind GEBAUT (2026-09-20)
+### Stand: Schritte 1, 2, 3 und 4a sind GEBAUT
 
 | Schritt | Ergebnis | Beleg |
 |---|---|---|
-| 1 · `client/debugApi.js` | **erledigt.** `window.__PA__` liegt in einer eigenen Datei (189 Zeilen), die Klasse behält einen 5-zeiligen Delegator. `main.js`: **3.698 → 3.539 Zeilen**. Nebenbei entstand `shared/zeit.js` (`FIXED_TIMESTEP`), weil ihn jetzt zwei Dateien brauchen | `runtime-smoke` **10/10** — JEDE Prüfung dieser Datei liest den Zustand über `window.__PA__`; lint 0 |
-| 2 · `engine/stateSnapshot.js` | **erledigt.** `stateHash()` ist eine reine Funktion über den Ansichtszustand (103 Zeilen). `match.js`: **3.567 → 3.498 Zeilen** | `npm test` **983/983** — darunter die Determinismus- und Replay-Prüfungen, die genau diesen Hash vergleichen |
+| 1 · `client/debugApi.js` | **erledigt.** `window.__PA__` liegt in einer eigenen Datei (195 Zeilen), die Klasse behält einen 5-zeiligen Delegator. `main.js`: **3.698 → 3.539 Zeilen**. Nebenbei entstand `shared/zeit.js` (`FIXED_TIMESTEP`), weil ihn jetzt zwei Dateien brauchen | `runtime-smoke` **10/10** — JEDE Prüfung dieser Datei liest den Zustand über `window.__PA__`; lint 0 |
+| 2 · `engine/stateSnapshot.js` (Teil 1: `stateHash()`) | **erledigt.** `stateHash()` ist eine reine Funktion über den Ansichtszustand (damals 103 Zeilen). `match.js`: **3.567 → 3.498 Zeilen** | `npm test` **983/983** — darunter die Determinismus- und Replay-Prüfungen, die genau diesen Hash vergleichen |
+| 3 · `client/ereignisse.js` | **erledigt.** `handleEvents()`/`handleRemoteEvent()` liegen in `src/client/ereignisse.js` (**571 Zeilen**); der lokale und der Online-Zweig teilen sich EINE Ereignis-Zuordnung. | `tests/event-coverage.test.js` — es vergleicht Engine-Ereignisse gegen die behandelten Zweige |
+| 4a · `getState()` → `engine/stateSnapshot.js` | **erledigt (2026-09-26).** Der 149-Zeilen-Rumpf ist als reine Funktion `baueAnsichtszustand(quelle)` ausgezogen; `match.js` behält einen **2-zeiligen Delegator** und `#zustandsQuelle()` als EINZIGE Kopplungsstelle. `stateSnapshot.js`: **297 Zeilen** (beide Funktionen) | `npm test`; `npm run lint` 0; `npm run replay -- record` + `play --verify` → Hash identisch; `rg -n '\bthis\b' src/engine/stateSnapshot.js` → **kein Treffer** |
+
+**Offen bleibt Schritt 4 im Übrigen:** `fire()` (211 Zeilen) als `engine/shooting.js`
+und `spawnPlayers()`/`buildTerrain()` als Aufbau sind **noch nicht** ausgezogen —
+`match.js` liegt deshalb weiterhin über 3.200 Zeilen (gemessen 3.588).
 
 **Ein Fehler, der fast durchgerutscht wäre (Schritt 1):** Beim Ersetzen von `this.`
 blieb `game: this,` stehen — das Muster suchte `this` MIT Punkt. In einem Modul ist
@@ -304,9 +327,15 @@ Gefunden hat es `runtime-smoke`, **nicht** der Linter: Ein Linter prüft Syntax 
 Namen, nicht ob eine Schnittstelle noch das liefert, was ihre Aufrufer erwarten.
 Das ist das Argument für den Belegweg, der hier von Anfang an aufgeschrieben war.
 
-**Was `getState()` angeht** (der zweite Teil von Schritt 2): Es hat **38** private
-Zugriffe und braucht deshalb einen Kontext-Parameter — ein eigener, größerer
+**Was `getState()` anging** (der zweite Teil von Schritt 2): Es hatte **38** private
+Zugriffe und brauchte deshalb einen Kontext-Parameter — ein eigener, größerer
 Schritt. Die Messung steht oben in der Tabelle (149 Zeilen).
+
+> **ERLEDIGT (Schritt 4a, 2026-09-26).** Genau so ist es gebaut: `getState()`
+> reicht den Zustand als Argument hinein (`baueAnsichtszustand(this.#zustandsQuelle())`)
+> und `stateSnapshot.js` greift auf **nichts außer diesem Argument** zu
+> (`rg -n '\bthis\b' src/engine/stateSnapshot.js` → kein Treffer). Der Belegweg
+> steht in der Tabelle oben.
 
 *Die Reihenfolge ist nach RISIKO geordnet, nicht nach Zeilen — zuerst das, was am
 wenigsten Mitspieler hat:*
@@ -315,19 +344,26 @@ wenigsten Mitspieler hat:*
    Verdrahtung von `window.__PA__` über Rückrufe. Kein Spielzustand, keine
    Nebenläufigkeit. Geprüft von `runtime-smoke` (10 Prüfungen) und den
    E2E-Spezifikationen, die die Debug-API benutzen.
-2. **`engine/stateSnapshot.js` aus `getState()` und `stateHash()` (225 Zeilen).**
-   Beide LESEN nur. Sie bekommen die Spielerdaten als Argument und geben den
-   Ansichtszustand bzw. den Hash zurück. Der Hash ist die Determinismus-Zusage des
-   Projekts — `tests/replay.test.js`, `tests/determinism*` und
-   `npm run replay -- record` + `--verify` (Hash `808ac5eb`) sind die Gegenprobe.
-3. **`client/ereignisse.js` aus `handleEvents()` und `handleRemoteEvent()`
-   (371 Zeilen).** Zwei `switch`-Blöcke über dieselben Ereignisarten; sie werden zu
-   EINER Zuordnungstabelle (Ereignis → Wirkung). Der Gewinn ist nicht nur Kürze:
-   Lokaler und Online-Zweig können dann nicht mehr auseinanderlaufen —
-   `tests/event-coverage.test.js` prüft genau das heute schon und würde es
-   erzwingen.
+2. ~~**`engine/stateSnapshot.js` aus `getState()` und `stateHash()` (225 Zeilen).**~~
+   **ERLEDIGT (2026-09-26).** Beide LESEN nur. Sie bekommen die Spielerdaten als
+   Argument und geben den Ansichtszustand bzw. den Hash zurück. Der Hash ist die
+   Determinismus-Zusage des Projekts — `tests/replay.test.js`, `tests/determinism*`
+   und `npm run replay -- record` + `--verify` sind die Gegenprobe.
+   *Richtiggestellt 2026-09-26:* Der Hash ist **`9ec63e8c`**, nicht `808ac5eb` —
+   nachgemessen mit `node scripts/replay.mjs record` (Default-Lauf, Seed aus dem
+   Werkzeug, 2440 Ticks, Runde 13). `808ac5eb` war der Stand vor dem gewachsenen
+   Waffenkatalog; dieselbe Lehre wie bei der Zahl im Modulkopf von
+   `stateSnapshot.js`. `match.js` behält heute einen 2-zeiligen Delegator.
+3. ~~**`client/ereignisse.js` aus `handleEvents()` und `handleRemoteEvent()`
+   (371 Zeilen).**~~ **ERLEDIGT (2026-09-26).** Zwei `switch`-Blöcke über dieselben
+   Ereignisarten sind zu EINER Zuordnungstabelle (Ereignis → Wirkung) geworden
+   (`src/client/ereignisse.js`, 571 Zeilen). Der Gewinn ist nicht nur Kürze:
+   Lokaler und Online-Zweig können nicht mehr auseinanderlaufen —
+   `tests/event-coverage.test.js` prüft genau das und erzwingt es.
 4. **Erst danach `engine/match.js` weiter zerlegen** (`fire()` 211 Zeilen als
    `engine/shooting.js`, `spawnPlayers()`/`buildTerrain()` als Aufbau).
+   **TEILWEISE: `getState()` ist ausgezogen (Schritt 4a, siehe oben); `fire()`
+   und die Aufbau-Methoden stehen noch aus.**
 
 *Belegweg für jeden Schritt:* `npm test` (983) und die betroffenen
 E2E-Spezifikationen müssen VOR und NACH dem Schritt dasselbe Ergebnis zeigen; der
@@ -349,15 +385,15 @@ in Klammern).*
 | Validierung | `npm run validate` | grün |
 | Performance | `npm run perf` | 0 Ticks über 16,7 ms, 123× Echtzeit, p99 0,40 ms (der Echtzeitfaktor schwankt mit der Rechnerlast; 182× wurde früher gemessen) |
 | Balance | `npm run balance` | Auf der STARTENTFERNUNG des Spiels (854 px, Vorgabekarte 2560): **71 Waffen mit Schaden am Ziel** (vorher 72), 36 Selbstwirkungs-Waffen (alle wirksam), **43 ohne Wirkung** (vorher 42) — überwiegend Waffen, deren Reichweite auf 854 px nicht trägt (Nahkampf). Der eine verschobene Platz kommt von der neuen SICHTLINIE: Eine Direktschützen-Waffe hat auf dem Messwinkel keine freie Zielgerade. Wichtig: **„immer blockiert: 0"** — keine Waffe ist auf allen Entfernungen gesperrt. Die frühere Zahl „1 ohne Wirkung" galt bei 426 px; die Messdistanz hat sich mit der Kartengröße geändert |
-| Balance (Sweep) | `npm run balance:sweep` | Über acht Entfernungen (40–850 px): **Median Shots-to-Kill 13** (unverändert) |
+| Balance (Sweep) | `npm run balance:sweep` | Über die aus der Kartenbreite abgeleiteten Stufen (nachgemessen 2026-09-26: neun Entfernungen, 40–2440 px): **Median Shots-to-Kill 13** (unverändert). Vorher stand hier „acht Entfernungen (40–850 px)" |
 | **Wirkfelder** | `npm run check:effects` | **0 Verstöße.** Zuvor hatten **8 Waffen Wirkungen ohne Motor**: 6 mit `piercing`, 2 mit `homing` — kein Stück Code las die Felder. Jetzt schlagen sie durch bzw. fliegen zielsuchend, `aoe` wird aus dem Radius abgeleitet |
 | **Wirkungs-Übersicht** | `npm run matrix` / `npm run matrix:check` | `docs/matrix-terrain-waffen-wirkung.md`: 150 Waffen mit Kraterradius und -fläche, 6 Zerstörungsgrade (46–28.353 px²), 8 Terrain-Arten mit gemessenem Festanteil, Wasserlinie und leerem Innenraum |
-| **Prüfwerkzeuge** | `npm run checks` | **20 Gates in 39 s, 0 Verstöße** — und seit 2026-09-20 in der CI verdrahtet. Vorher lief in der Pipeline KEINES dieser Werkzeuge (nur lint, test, e2e): Ein Gate, das niemand aufruft, ist eine Empfehlung. Das jüngste Gate ist `check:docs` — es vergleicht die Zahlen der Dokumentation mit dem Code und hat sich beim ersten Lauf selbst gemeldet (19 statt 20 Gates) |
+| **Prüfwerkzeuge** | `npm run checks` | **21 Gates, 0 Verstöße** (richtiggestellt 2026-09-26: hier stand „20 Gates in 39 s"; die Gate-Zahl ist **21** — `npm run check:docs` zählt sie gegen `scripts/checks.mjs` und meldet „ok MASTERDOTO: 21 Gates", `grep -c "skript: '" scripts/checks.mjs` → 21; die frühere Dauer 39 s ist eine damalige Messung und wurde nicht nachgeprüft) — und seit 2026-09-20 in der CI verdrahtet. Vorher lief in der Pipeline KEINES dieser Werkzeuge (nur lint, test, e2e): Ein Gate, das niemand aufruft, ist eine Empfehlung. Das jüngste Gate ist `check:docs` — es vergleicht die Zahlen der Dokumentation mit dem Code und hat sich beim ersten Lauf selbst gemeldet (19 statt 20 Gates) |
 | Node-Version | `package.json` → `engines` | `>=22` festgeschrieben (die CI nutzte 22, das Projekt sagte NICHTS — eine zu alte Version fiel erst mitten im Lauf auf) |
 | GPU-Pfad | `npm run test:e2e` (profiling) | **7/7 grün.** Auf diesem Rechner läuft die echte GPU: `ANGLE (Intel, Mesa Intel HD Graphics 3000)`, **13,6 ms je Mio. Pixel** auf 2560×1440 (21,3 fps kopflos, 29,3 fps mit Fenster). Ohne GPU-Flags rastert SwiftShader mit **48,2 ms je Mio. Pixel** (5,6 fps) — Faktor 3,5 Unterschied. Der frühere fps-Festwert (20) galt für eine 1280×720-Karte und ist jetzt flächenbezogen |
 | Zünder-Absicht | `npm run check:fuses` | **0 Verstöße**; 11 Waffen `timed`, 7 `impact` (vorher 18 — fünf Hitscan-Waffen trugen einen wirkungslosen Zünder, sieben sind Aufprallwaffen) |
 | Erfolgs-Schwellen | `npm run check:achievements` | Exit 0 — alle Partie-Schwellen und Raten erreichbar oder in Reichweite |
-| Replay | `npm run replay -- record` + `play --verify` | Zustandshash `808ac5eb` identisch, „exakt reproduzierbar" |
+| Replay | `npm run replay -- record` + `play --verify` | Zustandshash `9ec63e8c` identisch, „exakt reproduzierbar" (richtiggestellt 2026-09-26: hier stand `808ac5eb`; das war der Stand VOR dem gewachsenen Waffenkatalog — nachgemessen mit `node scripts/replay.mjs record`, 2440 Ticks, Runde 13) |
 | Determinismus | manuell, 3000 Ticks | Seed 4242 → `bc9695fa` reproduzierbar, Seed 9999 → `c0531097` |
 | Lasttest | in `npm test` enthalten | 8 Clients / 4 Lobbys stabil |
 | ~~Bot-Treffsicherheit~~ | ~~`npm run check:bots`~~ | **ENTFALLEN (2026-09-20).** Es gibt keine Bot-KI; Werkzeug, Bot und Test sind entfernt (siehe „KEINE BOT-KI" unten) |
@@ -1605,14 +1641,26 @@ Umgebung — der Abstand gilt in jeder Auflösung.
 
 ## Erfolge: Mechanik und Inhalte
 
-Die Mechanik steht, die Inhalte fehlen — **absichtlich**. Was im Katalog steht,
-sind 12 **Muster** (`muster: true`), damit die Mechanik prüfbar ist; im Menü sind
-sie als „Muster" gekennzeichnet, damit ein Platzhalterkatalog nicht wie ein
-fertiger aussieht.
+Die Mechanik steht, die Inhalte sind **gesetzt** (Entscheidung 2026-09-20). Der
+Katalog führt **11 Erfolge**; jeder trägt einen echten Namen, einen Satz und einen
+Hinweis.
 
-**Die 12 Muster sind als Beispiele bestätigt** (Entscheidung des Auftraggebers) —
-sie bleiben stehen, bis ein vollständiger Katalog kommt, und der Katalog wird
-später an genau dieser Stelle ergänzt.
+*Richtiggestellt 2026-09-26:* Hier stand „Die Mechanik steht, die Inhalte fehlen —
+**absichtlich**. Was im Katalog steht, sind 12 **Muster** (`muster: true`) …" und
+„**Die 12 Muster sind als Beispiele bestätigt** (Entscheidung des Auftraggebers) —
+sie bleiben stehen, bis ein vollständiger Katalog kommt". Beides ist überholt: Es
+sind **11 Einträge**, das Feld `muster` ist **entfernt** (die Anzeige meldet keine
+Muster mehr). Offen bleiben die **Symbole als Bilder** und die **Belohnungen**
+(`reward` ist überall `null`); der Katalogumfang selbst (11 statt 100) ist eine
+Inhaltsfrage.
+
+*Beleg:* `src/shared/achievements.js:83-110` (Modulkopf „**INHALT GESETZT
+(2026-09-20)** … Bis hierher waren die elf Einträge Muster (`muster: true`) … Jeder
+Eintrag trägt jetzt einen echten Namen, einen Satz und einen Hinweis"),
+`:111` (`export const ACHIEVEMENTS`, 11 Einträge), `:252`
+(`MUSTER_ANZAHL = ACHIEVEMENTS.filter(e => e.muster).length` → 0). Nachgemessen
+2026-09-26: `node -e "import('./src/shared/achievements.js').then(m => …)"` →
+`ACHIEVEMENTS: 11`, `muster: 0`.
 
 **Die Erfolge sind allgemein** (ebenfalls entschieden): kein Fraktionsbezug, kein
 Charakterbezug, eine einzige Liste für alle. Damit ist auch die Frage nach
@@ -1670,7 +1718,13 @@ Katalog lässt die Auswertung unverändert. Genau so ist es geprüft.
 
 ### OFFEN
 
-- **Die 100 Erfolge**: Namen, Texte, Hinweise, Symbole, Belohnungen.
+- **Die 100 Erfolge — teilweise erledigt (richtiggestellt 2026-09-26).** Namen,
+  Texte und Hinweise sind **gesetzt**: 11 Einträge mit echtem Namen, Satz und
+  Hinweis (Entscheidung 2026-09-20, Beleg `src/shared/achievements.js:83-110`).
+  *Hier stand „Die 100 Erfolge: Namen, Texte, Hinweise, Symbole, Belohnungen" als
+  offener Punkt.* Offen sind allein die **Symbole als Bilder** (siehe unten) und
+  die **Belohnungen**; der Katalogumfang selbst (11 statt 100) ist eine
+  Inhaltsfrage.
 - **Die Symbole als Bilder.** Es gibt keine Bilddateien; die Anzeige verwendet
   ★/☆ und tut nicht so, als gäbe es welche. Ein Symbol je Erfolg gehört zur
   Inhaltslieferung.
@@ -2159,10 +2213,14 @@ Behoben:
 
 - Ohne Angabe wird jetzt auf der **Startentfernung des Spiels** gemessen, aus
   einem echten Match abgelesen (nicht geraten).
-- `--sweep` (`npm run balance:sweep`) misst auf sieben Entfernungen von 90 bis
-  850 px. Bewertet wird die beste — jede Waffe ist für eine Entfernung gebaut,
-  und einen Baseballschläger auf 850 px zu messen ist so unfair wie schwere
-  Artillerie auf 90 px.
+- `--sweep` (`npm run balance:sweep`) misst über die Kartenbreite, bewertet wird
+  die beste — jede Waffe ist für eine Entfernung gebaut, und einen
+  Baseballschläger auf 850 px zu messen ist so unfair wie schwere
+  Artillerie auf 90 px. *Richtiggestellt 2026-09-26:* Hier stand „auf sieben
+  Entfernungen von 90 bis 850 px". Die Liste ist seit dem Umbau nicht mehr fest,
+  sondern kommt aus der Kartenbreite; nachgemessen (`npm run balance --
+  --only=pa_001 --sweep`) sind es neun Stufen: 40, 383, 726, 854, 1069, 1411,
+  1754, 2097, 2440 px.
 - `testDistanz` ist immer die **tatsächlich** gemessene Entfernung. Bei
   hügeligem Gelände verkürzt die Liniensuche stillschweigend; ohne diesen Wert
   ginge eine 800-px-Messung, die in Wahrheit bei 400 px stattfand, als
@@ -2172,7 +2230,14 @@ Behoben:
   gemeldete Entfernung ist eine wirklich gemessene (nie verlängert), Nahkampf
   reicht weniger weit als Artillerie, Rollenverteilung vollständig.
 
-### Ergebnis (Karte hills, 150 Waffen, sieben Entfernungen)
+### Ergebnis (Karte hills, 150 Waffen, sieben Entfernungen — damalige Liste, nicht neu erhoben)
+
+> *Zur Einordnung (2026-09-26):* Dieser Block ist eine Messung mit der damaligen
+> festen Entfernungsliste auf der 1280-px-Karte (das Spiel startete damals bei
+> 426 px, siehe oben) und wurde **nicht neu erhoben**. Die Entfernungsliste leitet
+> sich inzwischen aus der Kartenbreite ab und umfasst auf der Vorgabekarte neun
+> Stufen (40–2440 px, siehe „Werkzeuge"); die aktuellen Zahlen stehen in der
+> Werkzeugtabelle oben.
 
 | Größe | Wert |
 |---|---|
@@ -2382,8 +2447,14 @@ Abstände zwischen Prüfung und Eintrag zeigt:
 ### Werkzeuge
 - `npm run lint` / `lint:fix` — ESLint, als CI-Gate nutzbar.
 - `npm run balance` — Balance-Bericht über alle 150 Waffen (auf der
-  Startentfernung des Spiels). `npm run balance:sweep` misst zusätzlich über
-  sieben Entfernungen von 90 bis 850 px.
+  Startentfernung des Spiels). `npm run balance:sweep` misst zusätzlich über die
+  Kartenbreite: die Stufen werden aus `MAP_WIDTH` abgeleitet
+  (`scripts/balance-report.mjs:119-134`, `SCHRITTE = 8`), die Startentfernung ist
+  immer dabei. Nachgemessen (2026-09-26, `npm run balance -- --only=pa_001
+  --sweep`): neun Entfernungen — 40, 383, 726, 854, 1069, 1411, 1754, 2097,
+  2440 px. Vorher stand hier „sieben Entfernungen von 90 bis 850 px"; das war der
+  Stand der festen Liste auf der 1280-px-Karte (`scripts/balance-report.mjs:95-100`
+  beschreibt den Fund).
 - `npm run perf` — Performance-Profil mit Budget-Gate.
 - `npm run replay` — Aufzeichnen, Abspielen, `--verify`.
 - `npm run icons` — Icon-Pipeline (Pillow, ohne ImageMagick).
@@ -2659,9 +2730,13 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [x] **Erfolgs-MECHANIK.** Definition als Datentabelle, Auswertung über flache
       Kennzahlen (Partie + Profil), Fortschritt 0..100 %, Persistenz im Profil,
       Übersicht im Menü mit Stand und Hinweis. Siehe „Erfolge: Mechanik und
-      Inhalte". **OFFEN: die Inhalte** — die 100 Erfolge (Namen, Texte, Symbole,
-      Belohnungen) und die Icons sind Gestaltung und wurden nicht erfunden; im
-      Katalog stehen 12 MUSTER (`muster: true`), im Menü als Muster gekennzeichnet.
+      Inhalte". **Inhalte gesetzt (2026-09-20); offen sind Symbole als Bilder und
+      Belohnungen.** *Richtiggestellt 2026-09-26:* Hier stand „**OFFEN: die
+      Inhalte** — die 100 Erfolge (Namen, Texte, Symbole, Belohnungen) und die
+      Icons sind Gestaltung und wurden nicht erfunden; im Katalog stehen 12 MUSTER
+      (`muster: true`), im Menü als Muster gekennzeichnet." Der Katalog führt
+      **11 Einträge** mit echten Namen, Texten und Hinweisen; das Feld `muster` ist
+      entfernt (`src/shared/achievements.js:83-110`, `MUSTER_ANZAHL` in `:252`).
 - [x] **Erfolgs-Emblem am Spielernamen.** Erledigt als **Ableitung ohne
       Gestaltung**: `emblem()` in `src/shared/achievements.js` verdichtet die
       erreichten Erfolge zu Anzahl, Rang (höchster `tier`) und Fortschrittsanteil
@@ -2673,13 +2748,21 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Angezeigt im HUD in der Spielerliste, **nur am EIGENEN Spieler**: Nur
       dessen Profil liegt vor, ein fremdes Emblem wäre geraten.
       Kein Emblem, solange nichts erreicht ist (`rang: null`) — ein leerer
-      Platzhalter wäre irreführend. Ein Tooltip nennt Anzahl, Rang und den
-      Hinweis, dass die heutigen Erfolge Muster sind.
+      Platzhalter wäre irreführend. Der Tooltip nennt Anzahl und Rang; der Zusatz
+      „nur Muster — die Inhalte fehlen noch" erscheint **nur**, wenn alle
+      erreichten Erfolge Muster sind — seit 2026-09-20 ist das nie der Fall
+      (`nurMuster` in `src/shared/achievements.js:472`, `src/client/hud.js:209`).
+      *Richtiggestellt 2026-09-26:* Hier stand „Ein Tooltip nennt Anzahl, Rang und
+      den Hinweis, dass die heutigen Erfolge Muster sind."
       Abgesichert in `tests/emblem.test.js` (8) und
       `tests/e2e/emblem.spec.mjs` (5).
-      **Offen bleibt die Gestaltung:** Die 100 Erfolge sind weiterhin Muster
-      (`muster: true`, im Menü gekennzeichnet). Namen, Texte und Symbole sind
-      deine Entscheidung; die Mechanik nimmt sie auf, ohne Code-Änderung.
+      **Offen bleibt die Gestaltung — Symbole als Bilder und Belohnungen.**
+      *Richtiggestellt 2026-09-26:* Hier stand „Die 100 Erfolge sind weiterhin
+      Muster (`muster: true`, im Menü gekennzeichnet). Namen, Texte und Symbole
+      sind deine Entscheidung." Das ist überholt — Namen, Texte und Hinweise sind
+      seit 2026-09-20 gesetzt, es sind **11 Einträge**, das Muster-Feld ist
+      entfernt (`src/shared/achievements.js:83-110`, `:252`). Die Mechanik nimmt
+      einen neuen Erfolg weiterhin als Tabellenzeile auf, ohne Code-Änderung.
 - [x] **Spielerprofile.** Name, Lieblingsnation, Lieblingswaffe, Kennzahlen:
       Schüsse gesamt, Spielzeit, Gesamtschaden, Schaden pro Minute, Trefferquote,
       Siege, Serie. **ERFASSEN und ANZEIGEN erledigt** — siehe
@@ -3823,7 +3906,11 @@ beschrieben.
 
       *Belege:* `tests/achievements.test.js` (Format, Muster-Wächter,
       Schwellen-Wächter), `npm run check:achievements` Exit 0.
-      Alle 11 Erfolge tragen `muster: true`. Die **Mechanik ist vollständig** —
+      Alle 11 Erfolge tragen **kein** `muster: true` mehr: Das Feld ist entfernt,
+      `MUSTER_ANZAHL` (`src/shared/achievements.js:252`) ergibt 0. *Richtiggestellt
+      2026-09-26:* Hier stand „Alle 11 Erfolge tragen `muster: true`." — das war
+      ein Rest der Fassung VOR der Inhalts-Entscheidung und widersprach dem Absatz
+      darüber („das Muster-Feld ist entfernt"). Die **Mechanik ist vollständig** —
       der Modulkopf sagt ausdrücklich: „Ein neuer Erfolg ist eine neue Zeile in
       der Tabelle, kein Code." Namen, Texte und Symbole sind eine
       Gestaltungsentscheidung (Content).
@@ -3841,7 +3928,17 @@ beschrieben.
       | Schaden je Partie | 149 |
       | Dauer je Partie | ~12 min |
 
-      *Ergebnis der Prüfung:* 9 von 11 Mustern sind erreichbar oder in
+      > **ÜBERHOLT (richtiggestellt 2026-09-26).** Die folgenden Absätze
+      > beschreiben den Stand VOR der Inhalts-Entscheidung vom 2026-09-20:
+      > „Muster" ist die damalige Bezeichnung für die 11 Erfolge, die Schwelle
+      > „200 Schaden je Minute" ist inzwischen auf **20** korrigiert (siehe oben),
+      > und `npm run achievements:vorlage` gibt es **nicht mehr** —
+      > `scripts/achievement-vorlage.mjs` ist entfernt (siehe oben) und
+      > `package.json` führt keinen solchen Befehl (`grep -n "vorlage"
+      > package.json` → kein Treffer, Exit 1). Die Absätze bleiben als Nachweis
+      > stehen.
+
+      *Ergebnis der Prüfung (damals):* 9 von 11 Mustern sind erreichbar oder in
       Reichweite. **Eines ist praktisch unerreichbar:**
 
       > **„200 Schaden je Minute"** — verlangt 200, erreicht werden **13**
@@ -3852,7 +3949,8 @@ beschrieben.
       Minute, dann ist sie knapp erreichbar) oder den Text ändern. Die
       Infrastruktur steht; es ist eine Tabellenzeile.
 
-      **Neu: `npm run achievements:vorlage`** — sie legt die Entscheidung als
+      **Damals neu: `npm run achievements:vorlage`** (der Befehl existiert nicht
+      mehr, siehe den Hinweis oben) — sie legte die Entscheidung als
       Tabelle vor. Je Eintrag stehen die fertigen Teile (Stufe, Gruppe,
       Bedingung, Text, Hinweis, alle geprüft) neben dem, was zu entscheiden ist:
 
@@ -3990,11 +4088,27 @@ laufen noch; ihre Ergebnisse kommen in einem eigenen Durchgang.
   `tests/melee-throw-match.test.js` (5, Wirkung im Match inkl. Gegenprobe, dass
   sich der Werfer nicht selbst trifft).
 
-- **Die Zünder ALLER 18 Zünder-Waffen sind länger als die Flugzeit.**
+- **Die Zünder der 11 Zünder-Waffen sind länger als die Flugzeit.** *(Zahl
+  richtiggestellt 2026-09-26: hier stand „ALLER **18** Zünder-Waffen".)*
 
   Gemessen: Die Flugzeit eines Projektils beträgt bei voller Kraft rund
   **1 Sekunde**, die Zünder stehen auf **1 bis 5 Sekunden**. Jede Zünder-Waffe
   zündet damit erst **nach** der Landung.
+
+  *Zur Zahl (nachgemessen 2026-09-26):* `WEAPONS.filter(w => w.fuseIntent ===
+  'timed')` → **11** (`fuseTime` ∈ {1, 2, 3, 5}), `=== 'impact'` → **7**,
+  `(w.fuseTime ?? 0) > 0` → **11** (`src/shared/config/weapons.js`,
+  `scripts/check-fuses.mjs:73,106-107`; `npm run check:fuses` meldet „11 Waffen
+  `timed`, 7 `impact`"). Die 18 war der Stand VOR der Einführung von
+  `mechanic.fuseIntent`: Damals trugen 18 Waffen einen Zünder, fünf davon waren
+  Hitscan-Waffen mit wirkungslosem Zünder.
+
+  *Nachtrag:* Die vier unten genannten Namen sind inzwischen **Aufprallwaffen**
+  mit Zünder 0 — „Explosiver Energieball", „Meteoritenbrocken", „Meteorregen"
+  und „Höllenkanone" stehen auf `fuseIntent: 'impact'`. Bleiben die 11
+  Liegezeit-Waffen (Granaten, Giftwolken, „Kosmische Wassermelone").
+
+  *Der ursprüngliche Befund (Stand vor dem Umbau):*
 
   Für Granaten ist das gewollt — sie sollen liegen bleiben und dann zünden. Für
   „Explosiver Energieball", „Meteoritenbrocken", „Meteorregen" und
@@ -4059,12 +4173,19 @@ laufen noch; ihre Ergebnisse kommen in einem eigenen Durchgang.
   Balance-Entscheidung und bewusst **nicht** nebenbei getroffen;
   `tests/class-profile.test.js` hält den aktuellen Wert fest.
 
-- **Die Klasse/Archetyp-Kopplung als Anzeige-Hinweis.** Die Hilfe nennt die
-  Kopplung weiterhin als Hinweis („Im laufenden Match sind nur drei der neun
-  Kombinationen erreichbar"). Das gilt für den Standardfall ohne Wahl — wer die
-  Konfiguration nutzt, kann alle neun erreichen. Der Hinweis ist damit nicht
-  falsch, aber unvollständig; er wird beim nächsten Anzeige-Durchgang
-  präzisiert.
+- **Die Klasse/Archetyp-Kopplung als Anzeige-Hinweis — überholt in der Bewertung
+  (richtiggestellt 2026-09-26).** *Hier stand:* „Die Hilfe nennt die Kopplung
+  weiterhin als Hinweis („Im laufenden Match sind nur drei der neun Kombinationen
+  erreichbar“). Das gilt für den Standardfall ohne Wahl … Der Hinweis ist damit
+  nicht falsch, aber unvollständig; er wird beim nächsten Anzeige-Durchgang
+  präzisiert." Der Hinweis ist inzwischen **präzisiert**: `kopplungHinweis`
+  lautet „**Standardmäßig** sind im laufenden Match nur drei der neun
+  Kombinationen erreichbar (Scout/Brawler, Heavy/Artillerist,
+  Artillery/Okkultist): Klasse und Archetyp werden gemeinsam über den
+  Listenindex vergeben. **Über die Match-Konfiguration lässt sich jede
+  Kombination wählen.**" (`src/shared/config/classes.js:381-385`, ausgeliefert in
+  `src/client/main.js:3006`; Wächter `tests/onboarding-hilfe.test.js:132-133`).
+  Die angekündigte Präzisierung ist damit erledigt.
 
 - **Der Scout hatte keine wirksame Stärke — BEHOBEN.**
 
@@ -4137,44 +4258,91 @@ laufen noch; ihre Ergebnisse kommen in einem eigenen Durchgang.
   (`deriveMaxRange`, `deriveCooldown`, `simulateProjectileReach`), die
   Laufzeit-Helfer (`getWeapon`, `orderInventoryBySubcategory`) stehen im
   ERZEUGTEN Katalog — der Generator schreibt sie als Text.
-- **Balance-Bericht bei 90 px.** Schwere Artillerie und Ultimate-Waffen sind für
-  große Entfernungen gebaut und erscheinen in der Messung als wirkungslos. Das
-  ist eine Grenze des Aufbaus, kein Urteil über die Waffe.
-- **Keine Client-Prädiktion.** Bei Latenz weicht der eigene Schuss sichtbar vom
-  Serverergebnis ab.
+- **Balance-Bericht bei 90 px — ÜBERHOLT (richtiggestellt 2026-09-26).**
+  *Vorher stand hier:* „Schwere Artillerie und Ultimate-Waffen sind für große
+  Entfernungen gebaut und erscheinen in der Messung als wirkungslos. Das ist
+  eine Grenze des Aufbaus, kein Urteil über die Waffe." Das galt für die FESTE
+  Messdistanz von 90 px — die ist seit 2026-09-20 weg (siehe „Balance-Messung
+  über die Kartenbreite"). Ohne Angabe misst der Bericht auf der
+  **Startentfernung des Spiels**, die er aus einem echten Match abliest
+  (`startEntfernung()` in `scripts/balance-report.mjs:146-153`, aufgerufen in
+  `:482`), und
+  `--sweep` (`npm run balance:sweep`) über die Kartenbreite; bewertet wird die
+  BESTE Entfernung. Nachgemessen (`node`, `MatchController` mit `start()`):
+  Startentfernung **854 px** auf der Vorgabekarte 2560 px. Was bleibt, ist eine
+  Grenze des WERKZEUGS, kein Urteil über die Waffe: Eine Einzelmessung auf einer
+  einzigen Entfernung nennt weiterhin Waffen „ohne Wirkung", deren Reichweite
+  dort endet (Werkzeugtabelle oben, Zeile `npm run balance`: „43 ohne Wirkung").
+  Genau dafür gibt es den Sweep.
+- **Keine Client-Prädiktion — ÜBERHOLT (richtiggestellt 2026-09-26).**
+  *Vorher stand hier:* „Bei Latenz weicht der eigene Schuss sichtbar vom
+  Serverergebnis ab." Die Prädiktion läuft seit dem P1-Abschnitt Netcode:
+  `src/client/shotPrediction.js` rechnet die Bahn sofort und zeichnet sie, die
+  Serverantwort löst sie auf (`resolve`) oder verwirft sie (`discard`)
+  (`src/client/shotPrediction.js`; `src/client/main.js:52` Import, `:131`
+  Instanz mit `timeoutMs: 1000`, `:1287` Abschuss, `:1480`
+  `#startShotPrediction`, `:1545` `begin`; `resolve` im Ereignispfad,
+  `src/client/ereignisse.js:158`, `:197`, `:206` — Zeilennummern nachgelesen am
+  2026-09-26); ohne Antwort läuft sie nach 1 s aus. Belegt durch
+  `tests/shot-prediction.test.js` — es vergleicht die Bahn mit
+  `MatchController.aimPreview` auf 1 px.
 - **Persistenz ist dateibasiert.** Für mehrere Serverinstanzen wäre ein
-  gemeinsamer Speicher nötig.
-- **Erfolge, Profile und Konten existieren nicht.** Alle Kennzahlen werden
-  derzeit nirgends dauerhaft erfasst.
+  gemeinsamer Speicher nötig. — **bleibt gültig; am 2026-09-26 geprüft und
+  bestätigt.** `src/server/persistence.js:9-14` schreibt eine EINZELNE
+  JSON-Datei atomar (temp + `rename`, `:49-51`) und liest sie (`:65`); es gibt
+  weder Sperre noch gemeinsamen Speicher noch eine Instanz-Kennung
+  (`grep -rn "redis\|sqlite\|postgres" src/` findet nichts). Zwei Prozesse auf
+  derselben Datei überschreiben einander — die Aussage stimmt unverändert.
+- **Erfolge, Profile und Konten existieren nicht — ÜBERHOLT (richtiggestellt
+  2026-09-26).** *Vorher stand hier:* „Alle Kennzahlen werden derzeit nirgends
+  dauerhaft erfasst." Das ist falsch: **Erfolge und Spielerprofile laufen.**
+  Kennzahlen (`MatchStats`, `PlayerProfile`, `src/shared/stats.js:40`, `:314`),
+  Profil und Fortschritt liegen im `localStorage`
+  (`src/client/main.js:2264-2267`), das Menü zeigt die Erfolgs-Übersicht
+  (`#zeigeErfolge`, `src/client/main.js:2415`), das Emblem am eigenen Namen kommt aus
+  `emblem()` (`src/shared/achievements.js:445`). Schwellen prüft
+  `npm run check:achievements`, Mechanik und Fortschritt
+  `tests/achievements.test.js`. **Konten sind bewusst ABGELEHNT** (Entscheidung
+  2026-09-20); statt eines Kontos gibt es die Profil-Sicherung als JSON-Datei
+  (Export/Import, `src/client/main.js:238-256`). Offen sind allein die Inhalte:
+  nach der Werkzeugtabelle „11 statt 100 Erfolge".
 
-- **Klasse und Archetyp sind im Match fest gekoppelt.** Beide werden über
-  `index % 3` zugeteilt, es sind also nur drei der neun Kombinationen
-  erreichbar (scout/brawler, heavy/artillerist, artillery/occultist). Die
-  Tabellen führen neun. Das ist ein offener Balance-Punkt, kein Fehler —
-  `combatProfile()` kann alle neun, das Spiel erzeugt nur drei.
+- **Klasse und Archetyp waren fest gekoppelt — ÜBERHOLT (richtiggestellt
+  2026-09-26).** *Vorher stand hier:* „Beide werden über `index % 3` zugeteilt,
+  es sind also nur drei der neun Kombinationen erreichbar (scout/brawler,
+  heavy/artillerist, artillery/occultist). Die Tabellen führen neun. Das ist ein
+  offener Balance-Punkt, kein Fehler." Der Kopplungsteil stimmt nicht mehr: Die
+  Zuteilung liegt seit der Behebung in `resolveLoadout(index, wahl)`
+  (`src/shared/config/classes.js:177`), das eine Wahl aus der
+  Match-Konfiguration annimmt (`MatchController({ loadouts })`,
+  `src/engine/match.js:549-566`, angewandt in `:999`; im Menü
+  `#loadoutsAusMenue`, `src/client/main.js:537`). Ohne Wahl greift die alte
+  Regel — ein Match ohne diese Option und ein Replay aus einer älteren Fassung
+  verlaufen exakt wie bisher (Wächter: `tests/loadout-choice.test.js`). Die drei
+  Diagonalen (Tempo 0,6417 / 1,1667 / 1,7333) sind damit der **Standardfall**,
+  nicht mehr die einzige Möglichkeit; die sechs übrigen Kombinationen
+  (0,8167 bis 1,5167) sind über die Konfiguration erreichbar.
 
-  **Gemessen** (`node`, `MatchController` mit 6 Figuren, Seed 4242): Die
-  tatsächlich vergebenen Kombinationen sind genau die drei genannten. Was dabei
-  unerreichbar bleibt, sind gerade die EXTREME der Tabellen:
-
-  | erreichbar | Tempo-Faktor | unerreichbar | Tempo-Faktor |
-  |---|---|---|---|
-  | scout/brawler | 0,6417 | scout/occultist | 0,9333 |
-  | heavy/artillerist | 1,1667 | heavy/brawler | 0,9167 |
-  | artillery/occultist | 1,7333 | heavy/occultist | 1,3333 |
-  | | | artillery/brawler | 1,1917 |
-  | | | artillery/artillerist | 1,5167 |
-  | | | scout/artillerist | 0,8167 |
-
-  Die Spannweite der Tabellen reicht von 0,64 bis 1,73 (Faktor 2,7), das Spiel
-  nutzt davon drei Punkte. Wer die Kopplung löst, ändert damit die Balance
-  messbar — siehe den Entwurf in
-  `docs/entwurf-onboarding-sidegrades-counterplay.md`, der sie im Menü
-  ausdrücklich BENENNEN will, statt sie zu verschweigen.
-- **Vier Dimensionen der Klassentabellen sind wirksamkeitslos.** `drag`, `mass`,
-  Klassentempo und Archetyptempo liest der Motor nicht; sie stehen in
-  `profil.inert` und sind getestet. Sie zu verdrahten ist eine
-  Balance-Entscheidung.
+  **Offen bleibt die BALANCE-Bewertung, nicht die Erreichbarkeit:** Die Messungen
+  (`npm run balance`, `npm run balance:classes`) wurden für die drei alten
+  Kombinationen erhoben; für die sechs neuen gibt es noch keine
+  Vergleichszahlen. Siehe den ausführlichen Punkt „Die Kopplung von Klasse und
+  Archetyp ist aufgehoben — offen bleibt die Balance" weiter oben und den Entwurf
+  in `docs/entwurf-onboarding-sidegrades-counterplay.md`.
+- **Die Dimensionen der Klassentabellen, die der Motor nicht liest, stehen in
+  `profil.inert`.** *Richtiggestellt 2026-09-26: hier stand „**Vier**
+  Dimensionen der Klassentabellen sind wirksamkeitslos. `drag`, `mass`,
+  Klassentempo und Archetyptempo liest der Motor nicht".* `profil.inert` führt
+  inzwischen **fünf** Schlüssel — nachgemessen: `Object.keys(combatProfile(
+  'scout','brawler').inert)` → `drag, mass, classSpeed, archetypeSpeed,
+  archetypeLaunchAsDamage` (`src/shared/config/classes.js:285-291`, festgehalten
+  in `tests/class-profile.test.js:164-171`).
+  *`classSpeed` ist dabei keine wirksamkeitslose Dimension:* derselbe Wert steht
+  als `mobilityMultiplier` im Profil (`classes.js:276`; gemessen
+  `combatProfile('scout','brawler').mobilityMultiplier` → 1,2) und wirkt im
+  Match auf den Absprung (`match.js` `#mobilityFactor`). Ungenutzt bleiben
+  `drag`, `mass`, `archetypeSpeed` und der Namensrest
+  `archetypeLaunchAsDamage`. Sie zu verdrahten ist eine Balance-Entscheidung.
   **Behoben:** `archetype.damage` stand hier ebenfalls — der Name versprach
   Schaden, der Wert wirkte aber aufs **Tempo** (der Okkultist schießt am
   schnellsten). Das Feld heißt jetzt `launch`; die Umbenennung ändert keinen
@@ -4188,14 +4356,40 @@ laufen noch; ihre Ergebnisse kommen in einem eigenen Durchgang.
   Beim Ende löscht die Sitzung sich selbst (`#finish` → `onEmpty`), ein späterer
   Beitritt findet keine Sitzung mehr und legt eine neue an — das Match beginnt
   bei Runde 1. Für den Client ist das eher angenehm (es fließen wieder
-  Snapshots, kein „für immer veraltetes Brett"), aber zwei Dinge überraschen und
-  sind in `tests/server-integration.test.js` festgehalten: Der **Lobby-Status
-  bleibt „finished"**, während in ihr wieder gespielt wird, und ein **fremder
-  Client kommt nicht mehr hinein**, obwohl dort gespielt wird. Ein „Rematch" ist
-  das also nur für die, die schon drin waren.
+  Snapshots, kein „für immer veraltetes Brett").
+
+  **Richtiggestellt 2026-09-26 (Fund W5):** Hier stand, der **Lobby-Status
+  bleibe „finished"**, während in ihr wieder gespielt wird. Das war ein
+  Widerspruch im Zustand und ist **behoben**: Eine wiederbelebte Lobby ist keine
+  entschiedene mehr und wird beim Wiederanlauf auf **„running"** nachgezogen
+  (`src/server/gameServer.js`, `JOIN_LOBBY`: `if (lobby.status ===
+  LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId)`). Die Wahrheit ist
+  jetzt widerspruchsfrei — „entschieden, keine Sitzung, niemand da" → `finished`;
+  „ein Match ist in dieser Lobby unterwegs" → `running`, nie `finished`.
+
+  Was **bleibt**: ein **fremder Client kommt nicht mehr hinein**, obwohl dort
+  gespielt wird — dieselbe begründete Regel wie bei einem per `START_MATCH`
+  gestarteten Match (in der Lobby läuft ein Match, also nimmt sie niemanden mehr
+  auf). Ein „Rematch" ist das also nur für die, die schon drin waren. Beides ist
+  gemessen in `tests/server-integration.test.js` — „Der Reconnect auf ein
+  entschiedenes Match startet ein NEUES Match" und „Eine Lobby, in der ein neues
+  Match läuft, meldet nicht mehr „finished"".
 - **Verpasste `match_over` wird nur auf die PING-Anfrage wiederholt.** Das
   schließt die Lücke (Fehler 32), kostet aber bis zu zwei Sekunden, bis der
   Client es erfährt. Ein eigenes Zeitintervall wäre schneller, würde aber ohne
   Not Nachrichten erzeugen, solange sich niemand meldet.
 
-- **Kein Audio.**
+- **Kein Audio — ÜBERHOLT (richtiggestellt 2026-09-26).** *Vorher stand hier:*
+  „Kein Audio." Der Klang ist prozedural erzeugt und im Browser gemessen:
+  `src/client/sound.js` liefert die drei Rezepte (Explosion, Schuss, Treffer),
+  `src/client/soundMixer.js:31` importiert sie, `src/client/main.js:27` lädt den
+  `SoundMixer`, `:106` legt ihn an, `:267` gibt den gesperrten `AudioContext`
+  beim ersten Tastendruck frei, und die Protokollereignisse lösen ihn aus
+  (`src/client/ereignisse.js:115` Explosion, `:135` Schuss, `:144` Schaden; der
+  Kontext wird mit `sound: this.sound` in `src/client/main.js:1363` gebaut —
+  Zeilennummern nachgelesen am 2026-09-26, der Ereignispfad wurde an dem Tag
+  gerade aus `main.js` herausgezogen). Tests:
+  `tests/sound.test.js` und `tests/sound-mixer.test.js` — nachgefahren
+  (2026-09-26): die vier Dateien `sound`, `sound-mixer`, `shot-prediction` und
+  `achievements` melden 53 Tests, 53 grün, 0 rot. Siehe den Abschnitt „Sound —
+  prozedural, ohne Dateien" oben und `docs/recherche/sound-und-juice.md`.

@@ -1,0 +1,47 @@
+# systemd-Einheit: ProjectArmageddon Idle-Bremse — EIN Durchlauf
+#
+# Das ist der Teil, der die Kosten begrenzt. Er läuft als systemd-Timer
+# (projectarmageddon-idle.timer) unabhängig vom Startskript: Auch wenn keine
+# SSH-Sitzung mehr offen ist und der Startprozess längst weg ist, prüft dieser
+# Durchlauf weiter und schaltet ab.
+#
+# VORLAGE — nicht installiert. Siehe deploy/systemd/projectarmageddon.service
+# und docs/betrieb-INSTANZ.md.
+#
+# WAS DER DURCHLAUF TUT (Kurzfassung, Details in scripts/betrieb/idle-watch.sh)
+#   1. Maschinenlaufzeit >= PA_MAX_MACHINE_MINUTES?      → abschalten
+#   2. Serverlaufzeit  >= PA_MAX_RUNTIME_MINUTES?        → abschalten
+#   3. Seit PA_IDLE_MINUTES keine Aktivität (0 Sitzungen, 0 Lobbys, keine
+#      gestiegenen Zähler, keine offene TCP-Verbindung)? → abschalten
+#   Sonst: nichts.
+#
+# RÜCKGABEWERTE (im Journal sichtbar: journalctl -u projectarmageddon-idle)
+#   0  nichts zu tun
+#   10 Bremse hat ausgelöst
+#   11 Handlungsbedarf, aber NICHT SCHARF (Marker /etc/projectarmageddon/ist-gemietet fehlt)
+#   12 Knotenabschaltung verlangt, aber nicht bestätigt (PA_POWEROFF_CONFIRM)
+
+[Unit]
+Description=ProjectArmageddon Idle-Bremse (ein Durchlauf)
+Documentation=file:/opt/projectarmageddon/docs/betrieb-INSTANZ.md
+# Diese Zeile ist die Notbremse GEGEN Fehlbedienung: Die Bremse greift nur auf
+# einem Knoten, der ausdrücklich als gemietet gekennzeichnet wurde. Fehlt der
+# Marker, wird der Durchlauf von systemd übersprungen — und `systemctl status
+# projectarmageddon-idle.service` sagt das im Klartext ("Condition check
+# resulted in skip"). Der Nachweis nach dem Mieten prüft genau diesen Marker.
+ConditionPathExists=/etc/projectarmageddon/ist-gemietet
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/projectarmageddon/betrieb.env
+ExecStart=/opt/projectarmageddon/scripts/betrieb/idle-watch.sh --once
+
+# Der Zustand (letzte Aktivität, letzte Bremse) liegt in /var/lib/projectarmageddon.
+StateDirectory=projectarmageddon
+RuntimeDirectory=projectarmageddon
+
+# Der Durchlauf wird gemessen, nicht geraten: Diese Zeile macht "Bremse hat
+# ausgelöst" (10) zu einem ERFOLGREICHEN Lauf, damit der Auslöser den Timer
+# nicht dauerhaft rot färbt. Rot bleibt damit für echte Fehler (11/12).
+SuccessExitStatus=0 10
+Nice=5

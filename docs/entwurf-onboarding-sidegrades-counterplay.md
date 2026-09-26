@@ -108,6 +108,17 @@ Je Klasse eine Karte mit:
   „Bekannte Grenzen"). Die Übersicht zeigt neun Kombinationen, das Spiel erzeugt drei —
   dieser Unterschied muss im Text stehen, sonst ist die Übersicht irreführend.
 
+  > **Nachtrag 2026-09-26 (Richtigstellung):** Dieser Hinweis gilt nur noch für den
+  > STANDARDFALL. Die Kopplung ist aufgehoben — die Zuteilung liegt in
+  > `resolveLoadout(index, wahl)` (`src/shared/config/classes.js:177`) und nimmt eine
+  > Wahl aus der Match-Konfiguration entgegen (`MatchController({ loadouts })`,
+  > `src/engine/match.js:549-566`, angewandt in `:999`), im Menü über
+  > `#loadoutsAusMenue` (`src/client/main.js:537`). Ohne Wahl greift die alte Regel —
+  > dann sind es weiterhin genau drei Kombinationen, mit Wahl alle neun. Der
+  > Anzeigetext muss deshalb BEIDE Fälle nennen; ein bloßes „nur drei erreichbar" wäre
+  > jetzt falsch. Die frühere Fundstelle `match.js:432-433` stimmt ebenfalls nicht
+  > mehr (kein `index % 3` mehr an der Zuteilungsstelle).
+
 **Verworfener Teilvorschlag:** Die `inert`-Dimensionen (`drag`, `mass`, Tempo) als
 Spielwerte darstellen. Sie wirken nicht — sie als Zahlen mit Balken zu zeigen wäre die
 Lüge, die `classes.js` gerade vermeidet. Sie erscheinen maximal als **grau hinterlegter

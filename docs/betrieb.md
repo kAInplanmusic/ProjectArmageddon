@@ -77,7 +77,9 @@ kill -TERM <pid>     # geordnet
 
 `HOST` steht deshalb standardmäßig auf `127.0.0.1`. Wer ihn auf `0.0.0.0`
 bindet, macht ihn für jeden im Netz erreichbar — im offenen Netz für jeden
-überhaupt. Das Startskript warnt in diesem Fall.
+überhaupt. Das Startskript (`scripts/betrieb/server-start.sh`) bricht in diesem
+Fall ab; freigeschaltet wird das nur ausdrücklich über
+`PA_ERLAUBE_OEFFENTLICH=yes`.
 
 Für einen echten Betrieb fehlen drei Dinge, in dieser Reihenfolge:
 
@@ -164,3 +166,43 @@ Zeitreihensystem.
 - **Ob der Server Kulissen ausliefern soll.** Heute liegen sie als Dateien im
   Client. Sie zentral auszuliefern wäre derselbe Prozess — aber es wäre eine
   Änderung an der Auslieferung, nicht am Betrieb.
+
+---
+
+## 7. Vorbereitet: die startbare Betriebsform (ohne Miete)
+
+Der Weg in einen echten Betrieb liegt vollständig vor — als **Vorbereitung**,
+nicht als laufender Dienst:
+
+| Was | Wo |
+|---|---|
+| Startskript (startet `npm run server`) | `scripts/betrieb/server-start.sh` |
+| Idle-Bremse (Leerlauf, Serverlaufzeit, Maschinenlaufzeit) | `scripts/betrieb/idle-watch.sh` |
+| systemd-Vorlagen (Dienst, Bremse, Timer) | `deploy/systemd/` |
+| Betriebsparameter (Vorlage, mit `LÜCKE`-Feldern) | `deploy/betrieb.env.example` |
+| Eintragsgerüst + Nachweisplatz | `docs/betrieb-INSTANZ.md` |
+
+**Ohne gemieteten Knoten prüfbar** — und das ist die Form, in der es heute
+vorliegt:
+
+```bash
+bash -n scripts/betrieb/server-start.sh          # Syntax
+scripts/betrieb/server-start.sh --print-config   # Trockenlauf: zeigt die Abschaltparameter
+```
+
+Das Startskript startet `npm run server` **und** die Idle-Bremse als
+Kindprozess. Ein Server ohne Abschaltung wird nicht gestartet: Der Fall vom
+2026-09-25 (fünf Hetzner-Server liefen tagelang weiter, weil ein
+Abschaltautomatismus im Repo für einen laufenden Dienst gehalten wurde) ist der
+Grund, warum beides zusammengehört.
+
+Die Bremse stoppt den Server nach `PA_IDLE_MINUTES` ohne Aktivität — und in
+jedem Fall nach `PA_MAX_RUNTIME_MINUTES` (Prozess) bzw.
+`PA_MAX_MACHINE_MINUTES` (Knoten). Was als „Aktivität" gilt, ist gemessen:
+`/healthz` liefert Sitzungen, Lobbys und fortlaufende Zähler; zusätzlich zählt
+die Bremse die offenen TCP-Verbindungen am Spielport.
+
+**Bevor etwas gemietet wird**, sind die drei Punkte aus AGENTS.md §5 zu
+erfüllen. Der Nachweis mit der Ausgabe von `systemctl list-timers` **vom Knoten**
+gehört in `docs/betrieb-INSTANZ.md`, Abschnitt 3. Eine Datei im Repo ist kein
+laufender Dienst.

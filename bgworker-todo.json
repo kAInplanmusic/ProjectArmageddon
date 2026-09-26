@@ -1,0 +1,228 @@
+{
+  "_meta": {
+    "projekt": "ProjectArmageddon",
+    "pfad": "/home/patrick/AnunnakiTools Projekte/laufende Projekte/ProjectArmageddon",
+    "branch": "main",
+    "ssot": "MASTERDOTO.md — hier gilt: erledigt ist nur, was durch Test oder Messung belegt ist",
+    "regelwerk": "../AGENTS.md — messen statt behaupten, kein Loeschen/Geld/Secrets ohne Rueckfrage",
+    "stand": "2026-09-26 (Abend)",
+    "erzeugt_von": "Hermes Agent (Auftraggeber + Pruefer)",
+    "arbeitsweise": {
+      "phasen": "Phase 1 laeuft parallel mit DISJUNKTEN Dateien; Phase 2 startet erst, wenn Phase 1 auf main konsolidiert ist",
+      "eigentum": "Jeder Worker besitzt genau die in 'besitzt' genannten Dateien. Schreiben ausserhalb ist verboten.",
+      "commits": "Worker committen NICHT. Der Auftraggeber prueft und committet sequenziell.",
+      "keine_testanpassung": "Wird ein Test rot, ist der Umbau falsch — oder der Test war schon vorher falsch; dann belegen, nicht raten.",
+      "belegpflicht": "Jede Fertigmeldung MUSS die Ausgabe der Belegbefehle enthalten. Ohne Ausgabe gilt sie als nicht erledigt.",
+      "keine_repo_gates_waehrend_workern": "Ein repo-weiter Lauf parallel zu schreibenden Workern macht fremde Tests lastbedingt rot. Der Auftraggeber faehrt die Batterie NACH der Rueckgabe, seriell."
+    },
+    "historie": {
+      "2026-09-26_abend": "Sieben geplante Todos (W1-W7) abgearbeitet, dazu fuenf Befunde aus dem Tiefen-Audit (M1-M5). Der Baum war zu Beginn ROT und unverifiziert: Eine Vorsitzung hatte W1-W5 gebaut und liegen gelassen; tests/event-coverage.test.js warf 3 von 4 Tests um.",
+      "wichtigster_befund": "Der Tiefen-Audit sprach die Doppelregel PRIMARY_BIOME_BY_PRESET mit einem FREI ERFUNDENEN Satz frei ('laut Projektregel in ZWEI Dateien stehen MUSS') — der Satz war in tools/audit-mcp/lib/bericht.mjs:387 FEST VERDRAHTET und erschien bei jedem Lauf. Der Audit-Agent hat ihn als Tatsache weitergegeben. Nachgemessen war es ein echtes, wertgleiches Duplikat ohne Importbeziehung. Die Meldung '27 undokumentiert stumme Ereignisse' war ebenfalls ein Werkzeugfehler: der Detektor suchte nur ZITIERTE Ereignisnamen, die Zuordnungstabelle benutzt aber unquotierte Schluessel.",
+      "merksatz_imporeure": "Vor dem Entfernen eines Exports die IMPORTEURE lesen, nicht nur die Leser des Namens — main.js importiert aus roster.js, ohne die Namen im Quelltext je zu erwaehnen."
+    }
+  },
+
+  "todos": [
+    {
+      "id": "W1",
+      "titel": "Zerlegung Schritt 3 — client/ereignisse.js",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-0-c5883ff8 (Test) + Vorsitzung (Umbau)",
+      "prioritaet": "P1",
+      "warum": "main.js trug ZWEI Schalter ueber dieselben Engine-Ereignisse (lokal 229 Zeilen, online 142), die schon einmal auseinandergelaufen waren.",
+      "ergebnis": "src/client/ereignisse.js mit EREIGNIS_WIRKUNGEN (38 Eintraege) und beide(fn); main.js 3538 -> 3235 Zeilen; kein 'this' im neuen Modul. Verhalten nachweislich gleich: der alte lokale Zweig hatte 'case projectile_impact: addFlash(x, y, 14)', neu steht 'projectile_impact: beide((k, n) => k.renderer.addFlash(n.x, n.y, 14))'.",
+      "beleg": "node --test tests/event-coverage.test.js 4/4; npm run lint 0; Mutationsprobe (Eintrag ausgeschält -> 3 Tests rot; Ruecknahme -> sha256 identisch)"
+    },
+    {
+      "id": "W2",
+      "titel": "Zerlegung Schritt 4a — getState() nach engine/stateSnapshot.js",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-0-7349c6e5",
+      "prioritaet": "P1",
+      "ergebnis": "getState() ist 2-zeiliger Delegator auf baueAnsichtszustand(this.#zustandsQuelle()); stateSnapshot.js 103 -> 297 Zeilen; kein 'this'.",
+      "beleg": "hashState unveraendert (9ec63e8c); replay record + play --verify 'exakt reproduzierbar'; npm test 1027/1027"
+    },
+    {
+      "id": "W3",
+      "titel": "Dokumentationsstand aufraeumen + check:docs gruen halten",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-1-2a2f6175 + sa-0-7349c6e5",
+      "prioritaet": "P2",
+      "ergebnis": "9 zusaetzliche ueberholte Aussagen in MASTERDOTO.md korrigiert (Erfolge/muster, Zuender-Zahl 18->11, Dimensionen 4->5, Gate-Zahl 20->21, Testdateizahl), je mit Fundstelle.",
+      "beleg": "npm run check:docs Exit 0; npm run validate Exit 0"
+    },
+    {
+      "id": "W4",
+      "titel": "Betrieb: Deployment-Vorbereitung ohne Mietvertrag",
+      "phase": 1,
+      "status": "erledigt",
+      "prioritaet": "P2",
+      "ergebnis": "deploy/{README.md,betrieb.env.example,systemd/*}, docs/betrieb-INSTANZ.md, scripts/betrieb/{server-start.sh,idle-watch.sh}",
+      "beleg": "bash -n beider Skripte OK; Dateiexistenz geprueft. KEINE Kosten, kein externer Dienst beruehrt."
+    },
+    {
+      "id": "W5",
+      "titel": "Rematch/Wiederverbinden auf ein entschiedenes Match konsistent machen",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-0-7349c6e5",
+      "prioritaet": "P3",
+      "ergebnis": "Der Widerspruch war real und ist behoben: JOIN_LOBBY zieht den Lobby-Status auf 'running' nach, waehrend dort ein neues Match laeuft. Entscheidung des Auftraggebers: B (neues Match bei Wiederverbindung), Test haelt es fest.",
+      "beleg": "tests/server-integration.test.js 'Eine Lobby, in der ein neues Match laeuft, meldet nicht mehr finished' — gruen; npm test 1027/1027"
+    },
+    {
+      "id": "W6",
+      "titel": "Zerlegung Schritt 4b — fire() nach engine/shooting.js",
+      "phase": 2,
+      "status": "erledigt",
+      "worker": "sa-0-305375bc",
+      "prioritaet": "P1",
+      "ergebnis": "src/engine/shooting.js (745 Zeilen, kein 'this'); match.js 3588 -> 3163 Zeilen. Ausgelagert: fire, resolveStrike, fuseTicksFor, projectileLifetime, aimPreview, hasLineOfSight, launchOrigin, applySelfEffect. Im Match geblieben (weil tests/reichweite-konsistenz.test.js match.js als TEXT liest): #resolveHitscan, #launchVector, #findMuzzle, #playerAt.",
+      "beleg": "npm test 1049/0; artifacts/replay-20260910.json (VOR der Aenderung aufgezeichnet) verifiziert weiterhin -> Hash 9ec63e8c identisch"
+    },
+    {
+      "id": "W7",
+      "titel": "Bodenmaterialien mit eigener Physik (Eis rutschig, Gummi federnd)",
+      "phase": 2,
+      "status": "erledigt",
+      "worker": "sa-0-305375bc",
+      "prioritaet": "P2",
+      "ergebnis": "src/shared/config/terrain.js (Katalog, Achsen rutschigkeit/rueckprall); terrainGen3.js leitet das Material deterministisch aus rng.fork(0x4D4154) ab (64-px-Zellen, ~62% Erde / ~22% Eis / ~15% Gummi, jede Karte alle drei); match.js materialAt(x,y) ist die EINE Lesestelle. Nur autonome Karten tragen Material, 1D-Presets bleiben Erde.",
+      "beleg": "node --test tests/terrain-material.test.js 13/13; npm run check:biome Exit 0; npm run lint 0; Test: ein material-Parameter wird ignoriert (kein Auswahlfeld)",
+      "eigener_fund": "Gelesen werden muss die BODENZEILE (y + PLAYER_HALF_HEIGHT), nicht die Fusslinie — gemessen schwankte die Fusslinie zwischen y=702 und 711 und wechselte dabei die 64-px-Zelle: derselbe Boden meldete einmal Gummi und einmal Eis."
+    },
+    {
+      "id": "M1",
+      "titel": "Audit-Werkzeug: Freispruch fuer Doppelregeln war fest verdrahtet",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-0-51368324",
+      "prioritaet": "P1",
+      "warum": "tools/audit-mcp/lib/bericht.mjs:387 behauptete in JEDEM Bericht, eine gleichnamige Definition sei Absicht — auch wenn sie ein echtes Duplikat war. Die Ueberschrift lautete 'Keine stille Doppelregel gefunden', waehrend der Detektor in derselben Zeile eine gefunden hatte.",
+      "ergebnis": "DOPPELREGEL_AUSNAHMEN + beurteileDoppelregeln(): ein Urteil wird GELESEN, nicht behauptet. Fail-safe: nicht gelistete Doppelregel = OFFEN. Dazu 8 weitere fest verdrahtete Fazit-Saetze behoben (Abschnitt 0, stumme Ereignisse, Waffen-Zahl 150, Pfad-Zahlen 38/1, Smoke-Kennzahlen) und ein Absturz in ampel() bei audit_all.",
+      "beleg": "probe-doppelregeln.mjs Exit 0 bei 'Alle Erwartungen erfuellt'; drei Faelle woertlich (nicht gelistet -> OFFEN; gelistet mit Begruendung -> bewusst; leere Liste -> kein Satz); npm run lint 0"
+    },
+    {
+      "id": "M2",
+      "titel": "27 'undokumentiert stumme' Ereignisse — Werkzeugfehler, kein Produktmangel",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-1-57177a33",
+      "prioritaet": "P1",
+      "warum": "Die Meldung entstand, weil ereignisAbdeckung() in tools/audit-mcp/lib/statisch.mjs Ereignisnamen nur als ZITIERTE Zeichenkette suchte. Die Zuordnungstabelle benutzt unquotierte Schluessel (projectile_impact: beide(...)) -> fuer die Suche unsichtbar.",
+      "ergebnis": "Alle 27 haben einen Zweig in src/client/ereignisse.js. Es wurde NICHTS in bewusstStumm eingetragen (das waeren 27 Falschaussagen gewesen). Der Waechter fuehrt jetzt die Namensliste mit Fundstelle je Ereignis, eine Pruefung gegen das Auffangbecken und je einen Beleg fuer einzweigige Ereignisse. Der Sammler liest auch melde('...') -> 43 auf 47 Ereignisarten.",
+      "beleg": "node --test tests/event-coverage.test.js 6/6; npm run lint 0; Mutationsproben in /tmp-Kopie"
+    },
+    {
+      "id": "M3",
+      "titel": "Doppelregel PRIMARY_BIOME_BY_PRESET auf eine Quelle",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-3-210ab68b",
+      "prioritaet": "P2",
+      "ergebnis": "Wertgleichheit belegt (8 Schluessel identisch) -> Angleichung war richtig, nicht melden-statt-anfassen. Quelle ist src/shared/config/backdrops.js (der Katalog hat die Regel definiert, 4e9930e; scenery.js hat kopiert, 5b57cb6). scenery.js re-exportiert. Zirkularitaet geprueft: backdrops.js hat null Imports.",
+      "beleg": "node --test backdrops/scenery/terrain-presets/eine-regel-eine-stelle -> 65/65; npm run check:biome Exit 0; doppelregeln() -> 0"
+    },
+    {
+      "id": "M4",
+      "titel": "Waechter deckt die Doppelregel jetzt ab; 'tote Exporte' einzeln geprueft",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-2-e89e9052 (Pruefung) + Auftraggeber (Entfernung)",
+      "prioritaet": "P2",
+      "ergebnis": "PRIMARY_BIOME_BY_PRESET in EINE_STELLE eingetragen (Gegenprobe in /tmp: mit Eintrag ROT, ohne Eintrag GRUEN -> die Luecke war real). Von 5 gemeldeten 'Exporten ohne Leser' ist GENAU EINER wirklich tot (rosterWithSprites, entfernt); EREIGNIS_WIRKUNGEN hat einen externen Leser (Audit-Behauptung widerlegt), GERAETE_SCHLUESSEL/isValidAngle/isValidPower leben intern und bleiben.",
+      "beleg": "node --test tests/eine-regel-eine-stelle.test.js 8/8; grep-Ausgaben je Name woertlich; npm run lint 0 nach der Entfernung",
+      "eigener_irrtum": "Beim Entfernen von rosterWithSprites wurde zunaechst auch factionsWithSprites mitgeloescht — main.js:2622 benutzt sie. Aufgefallen am Lint (no-unused-vars), nicht am Test. Wiederhergestellt; die Lehre steht als Kommentar in src/client/roster.js."
+    },
+    {
+      "id": "M5",
+      "titel": "Wanduhr-Zugriff Date.now() in src/engine/replay.js:66",
+      "phase": 1,
+      "status": "erledigt",
+      "worker": "sa-2-fafdc8c6",
+      "prioritaet": "P2",
+      "ergebnis": "Fall (b): Metadaten, kein Determinismus-Fehler, aber eine Falle. #startedAt hat genau EINEN Leser (toJSON -> createdAt); ReplayRecorder.fromJSON uebernimmt createdAt nicht einmal. Zwei Aufzeichnungen desselben Seeds sind gleich bis auf createdAt — Datei-Gleichheit ist nicht garantiert, Hash-Gleichheit schon. Gepinnt mit tests/replay-uhr.test.js.",
+      "beleg": "Gemessen mit verstellter Uhr und createdAt 0/1/-1/ferne Zukunft -> Hash stets f2d232c3; Mutationsproben A und B machen die Pins rot; npm run lint 0"
+    },
+    {
+      "id": "M6",
+      "titel": "MUZZLE_SEARCH_DISTANCE — vermeintlich tot, tatsaechlich lebendig",
+      "phase": 1,
+      "status": "erledigt — KEINE Aenderung noetig",
+      "prioritaet": "P3",
+      "warum": "Zwei Worker meldeten per Lint, die Konstante in src/engine/match.js:415 sei 'assigned a value but never used'. Nachgemessen: sie wird in match.js:1736 in #findMuzzle gelesen. Die Meldung war ein ZWISCHENSTAND des laufenden Parallel-Umbaus (fire() war schon ausgelagert, #findMuzzle noch nicht neu verdrahtet).",
+      "lehre": "Eine rote Lint-Meldung aus einem Baum, in dem ein anderer Worker gerade umbaut, ist ein Zeitpunkt, kein Befund. Wer sie glaubt und loescht, zerstoert die Muendungssuche."
+    },
+
+    {
+      "id": "O1",
+      "titel": "OFFEN — Doku: MASTERDOTO.md:154 traegt den widerlegten Freispruch noch",
+      "phase": 3,
+      "status": "offen",
+      "prioritaet": "P1",
+      "warum": "Die Zeile behauptet weiterhin: 'PRIMARY_BIOME_BY_PRESET in zwei Dateien ist dagegen Absicht (Projektregel)'. Das ist widerlegt (siehe M3) und muss richtiggestellt werden, sonst lebt die falsche Aussage in der SSOT weiter.",
+      "besitzt": ["MASTERDOTO.md"],
+      "hinweis": "9 Testdateien lesen MASTERDOTO/README — nicht editieren, solange ein Testlauf laeuft."
+    },
+    {
+      "id": "O2",
+      "titel": "OFFEN — Zweig-Divergenz: 15 Ereignisse sind einzweigig",
+      "phase": 3,
+      "status": "messung laeuft",
+      "prioritaet": "P1",
+      "warum": "Gemessen: 38 Eintraege in EREIGNIS_WIRKUNGEN, davon 22 in beiden Zweigen, 11 NUR LOKAL (guenther_wheel/-pee/-poop/-poop_hit, jumped, landed, crate_landed, crate_pickup_blocked, crate_pickup, fall_damage, toxic_rain) und 4 NUR ONLINE (terrain_destroyed, projectile_spawn, turn_start, karte_unerreichbar); 1 in keinem (drowning, bewusst). Wo die Engine in einem Modus sendet und der Client dort schweigt, sieht der Spieler nichts — genau die Fehlerklasse, wegen der ereignisse.js existiert.",
+      "messung": "docs/analyse-ereigniszweige.md (Worker sa-0-33cfe364, rein lesend)",
+      "besitzt": ["src/client/ereignisse.js", "tests/event-coverage.test.js"],
+      "hinweis": "Alle Luecken liegen in DERSELBEN Datei — nur EIN Worker, nacheinander."
+    },
+    {
+      "id": "O3",
+      "titel": "OFFEN — Befund: Guenther ist im Online-Match moeglicherweise unsichtbar",
+      "phase": 3,
+      "status": "messung laeuft",
+      "prioritaet": "P1",
+      "warum": "Wenn ein online spielender Mensch einen NPC nicht sieht, dessen Haufen ihn verlangsamen und vergiften, ist das ein Erlebnis-Fehler, kein Detail. Fremdmeldung — als Widerlegungsversuch beauftragt, weil in diesem Projekt schon mehrere gravierende Befunde Fehlalarme waren.",
+      "messung": "docs/analyse-guenther-online.md (Worker sa-1-6d91da5d, rein lesend)",
+      "besitzt": ["src/client/main.js", "src/engine/stateSnapshot.js"]
+    },
+    {
+      "id": "O4",
+      "titel": "OFFEN — Kommentar in tests/event-coverage.test.js ist veraltet",
+      "phase": 3,
+      "status": "offen",
+      "prioritaet": "P3",
+      "warum": "Zeilen 134-136 behaupten: '(Das Werkzeug tools/audit-mcp sucht weiterhin nur emit() — dort fehlen dieselben vier Arten.)' Das stimmt seit M1/M2 nicht mehr; der Detektor zaehlt emit() UND melde().",
+      "besitzt": ["tests/event-coverage.test.js"]
+    },
+    {
+      "id": "O5",
+      "titel": "OFFEN — Design-Entscheidung: Partien enden nie vor Runde 8",
+      "phase": 3,
+      "status": "offen — Entscheidung des Auftraggebers",
+      "prioritaet": "P2",
+      "warum": "Gemessen: 0 von 5 Partien endeten VOR dem Mahlstrom-Breakpoint (Runde 8). Das ist eine Balance-Frage, keine Code-Frage: Entweder ist der Breakpoint zu spaet, oder die Partien sind zu kurz. Wird NICHT eigenmaechtig geaendert.",
+      "art": "design"
+    },
+    {
+      "id": "O6",
+      "titel": "OFFEN — Testzahl in der Doku nachziehen",
+      "phase": 3,
+      "status": "offen",
+      "prioritaet": "P3",
+      "warum": "MASTERDOTO.md und README.md nennen 1027 Tests in 100 Dateien. Nach W6/W7/M2/M3/M5 sind es mehr (im Worker-Lauf gemessen: 1049). Beide Stellen sind ueber check:docs gekoppelt.",
+      "besitzt": ["MASTERDOTO.md", "README.md"]
+    },
+    {
+      "id": "O7",
+      "titel": "OFFEN — E2E-Lauf (Playwright) steht aus",
+      "phase": 3,
+      "status": "offen",
+      "prioritaet": "P2",
+      "warum": "Der Umbau von fire() nach shooting.js und der neue Import scenery.js -> backdrops.js sind in Node verifiziert, aber NICHT im Browser-Bundle. Die Specs tests/e2e/terrain-presets.spec.mjs:240 und backdrops.spec.mjs:268 importieren das Modul im Browser.",
+      "beleg": "npm run test:e2e (27 Dateien, ~10 min) — muss nach dem Konsolidieren gefahren werden"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+# systemd-Einheit: ProjectArmageddon Spielserver
+#
+# VORLAGE — bewusst nicht installiert. Dieses Repo mietet nichts (AGENTS.md §5):
+# Der Knoten, auf dem das hier liegt, ist eine Entscheidung des Auftraggebers.
+#
+# Platzhalter, die beim Aufsetzen ersetzt werden müssen (siehe
+# docs/betrieb-INSTANZ.md, Abschnitt "Offene Punkte"):
+#   /opt/projectarmageddon   Projektwurzel auf dem Knoten
+#   pa                       Systembenutzer ohne Anmeldung
+#   /etc/projectarmageddon/betrieb.env   Abschaltparameter (Vorlage: deploy/betrieb.env.example)
+#
+# Einrichten (auf dem KNOTEN, nach dem Mieten):
+#   install -d /opt/projectarmageddon
+#   rsync -a --delete ./ /opt/projectarmageddon/
+#   install -d /etc/projectarmageddon
+#   cp deploy/betrieb.env.example /etc/projectarmageddon/betrieb.env   # Werte eintragen!
+#   touch /etc/projectarmageddon/ist-gemietet    # schaltet die Bremse scharf
+#   cp deploy/systemd/projectarmageddon.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now projectarmageddon.service
+#
+# NACHWEIS, dass die Bremse laufen wird (AGENTS.md §5 Punkt 3):
+#   systemctl list-timers projectarmageddon-idle.timer
+#   ls -l /etc/projectarmageddon/ist-gemietet
+#   /opt/projectarmageddon/scripts/betrieb/idle-watch.sh --print-config
+
+[Unit]
+Description=ProjectArmageddon Spielserver (autoritativ)
+Documentation=file:/opt/projectarmageddon/docs/betrieb.md
+Documentation=file:/opt/projectarmageddon/docs/betrieb-INSTANZ.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=pa
+Group=pa
+WorkingDirectory=/opt/projectarmageddon
+EnvironmentFile=-/etc/projectarmageddon/betrieb.env
+ExecStart=/opt/projectarmageddon/scripts/betrieb/server-start.sh
+
+# Neustart nach einem Absturz — aber NICHT nach einem geordneten Stopp. Die
+# Idle-Bremse stoppt genau so (`systemctl stop`), und systemd startet einen
+# sauber beendeten Dienst nicht neu. Stünde hier "always", würde der Server
+# jede Minute von der Bremse gestoppt und von systemd wieder gestartet.
+Restart=on-failure
+RestartSec=5
+
+# Zeit für das geordnete Beenden: scripts/server.mjs speichert den Zustand
+# (Seed + Eingaben) bei SIGTERM. Zu kurz abgeschnitten wäre der Zustand weg.
+TimeoutStopSec=30
+KillMode=mixed
+
+StateDirectory=projectarmageddon
+RuntimeDirectory=projectarmageddon
+
+# HARTE OBERGRENZE (Ablaufdatum auf Prozessebene).
+# Wenn das gesetzt wird, MUSS Restart auf "no" oder "on-abnormal" stehen —
+# sonst startet systemd den Server nach Ablauf der Frist immer wieder neu und
+# die Kosten laufen weiter. Die zweite, unabhängige Frist ist
+# PA_MAX_MACHINE_MINUTES in deploy/betrieb.env.example (hängt am Knoten, nicht
+# am Prozess).
+#RuntimeMaxSec=10800
+
+# Ohne Anmeldung und ohne TLS nach außen: nicht auf 0.0.0.0 binden, bevor ein
+# Reverse-Proxy mit TLS davor steht (docs/betrieb.md, Abschnitt 3).
+# Die Bindeadresse kommt aus HOST in /etc/projectarmageddon/betrieb.env.
+Environment=HOST=127.0.0.1
+
+# Härtung (kostet nichts, hilft gegen die häufigsten Fälle).
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/projectarmageddon
+
+[Install]
+WantedBy=multi-user.target
