@@ -96,12 +96,42 @@ schiefgegangen ist. Die vier wichtigsten:
 - **Kein Bild.** Das MCP misst die Simulation, nicht das Rendering. Visuelle
   Qualität und der WebGPU-Pfad sind ohne echten Browser nicht prüfbar.
 - **Kein Netz.** Latenzverhalten nur über `tests/e2e/network-conditions.spec.mjs`.
-- **Der E2E-Lauf läuft nicht im MCP.** 27 Dateien, ~10 Minuten — dafür gibt
+- **Der E2E-Lauf läuft nicht im MCP.** 28 Dateien, ~11 Minuten — dafür gibt
   `audit_e2e_plan` den Plan und `npm run test:e2e` den Lauf.
 - **Statische Treffer sind Kandidaten, keine Urteile.** Ein toter Export kann
   Absicht sein (Testbarkeit), eine Konstante kann von außen gelesen werden
   (Konfiguration). Jeder Treffer muss nachgelesen werden — das Werkzeug sortiert
   vor, es entscheidet nicht.
+- **Ein laufender MCP-Server ist eine EINGEFRORENE Sicht auf seinen eigenen
+  Code.** Wer `lib/**` oder `server.mjs` ändert, ändert nicht den Prozess, der
+  gerade antwortet. Der liefert danach weiter die alte Welt — mit voller
+  Überzeugung.
+
+  **Belegt (2026-09-26).** Nach der Reparatur von `lib/statisch.mjs` (der
+  Ereignis-Detektor suchte Namen nur als *zitierte* Zeichenkette, die
+  Zuordnungstabelle benutzt aber unquotierte Schlüssel) lieferte derselbe Aufruf
+  zwei verschiedene Antworten:
+
+  | Quelle | gesamt | gedeckt | stumm | undokumentiert | Urteil |
+  |---|---|---|---|---|---|
+  | MCP (langlaufender Prozess) | 43 | 6 | 37 | **27** | „27 stumme Ereignisse sind NICHT dokumentiert" |
+  | CLI, frisch gestartet | 47 | 39 | 8 | **0** | „keine Lücke" |
+
+  Die „27 undokumentiert stummen Ereignisse" haben daraufhin einen ganzen
+  Arbeitsdurchgang gekostet — sie waren nie ein Produktmangel, sondern ein
+  Prozess, der die Welt von vor seiner eigenen Reparatur meldete.
+
+  **Regel: Jede Aussage des MCP über den Code wird gegen einen frisch gestarteten
+  Lauf geprüft, bevor sie als Befund gilt.**
+
+  ```bash
+  # Gegenprobe: dieselbe Frage, frischer Prozess
+  node tools/audit-mcp/server.mjs --ruf audit_events
+  ```
+
+  Ein MCP-Ergebnis ist ein **Zeitpunkt**, kein Zustand. Nach jeder Änderung unter
+  `tools/audit-mcp/` den Server neu starten (Hermes: Verbindung trennen und neu
+  aufbauen) — oder das Ergebnis als verdächtig kennzeichnen.
 
 ## Herkunft der Prüffragen
 

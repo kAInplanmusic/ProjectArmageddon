@@ -4,7 +4,7 @@
  *
  * ## Warum dieses Skript existiert
  *
- * Der volle E2E-Lauf dauert **9,4 Minuten** (27 Dateien, jede startet einen
+ * Der volle E2E-Lauf dauert **9,4 Minuten** (28 Dateien, jede startet einen
  * Vite-Server und einen Browser). Neun Minuten Wartezeit nach jeder Änderung
  * führen dazu, dass man Änderungen **bündelt** — und dann rutschen Fehler
  * durch, die ein sofortiger Lauf gefunden hätte.

@@ -12,7 +12,7 @@ import { npmRun } from './repo.mjs';
  * Die Gates in der Reihenfolge, in der sie laufen sollen.
  *
  * `kosten` ist die Erfahrung aus dem Projekt: `test:e2e` braucht ~10 min
- * (27 Dateien, jede startet Vite + Browser), `test` ~1 min, alles andere
+ * (28 Dateien, jede startet Vite + Browser), `test` ~1 min, alles andere
  * Sekunden. Wer schnell prüfen will, nimmt `schnell`.
  */
 export const GATES = {
@@ -24,7 +24,7 @@ export const GATES = {
   perf: { skript: 'perf', schuetzt: 'Tick-Budget 16,7 ms', kosten: 'mittel' },
   balance: { skript: 'balance', schuetzt: 'Waffen-Balance-Bericht', kosten: 'mittel' },
   'smoke:fast': { skript: 'smoke:fast', schuetzt: 'Kernpfade (Start, Match, Schuss, Zugwechsel, Ende)', kosten: 'mittel' },
-  'test:e2e': { skript: 'test:e2e', schuetzt: 'Echter Browser, echte Interaktion (27 Dateien)', kosten: 'sehr-lang' },
+  'test:e2e': { skript: 'test:e2e', schuetzt: 'Echter Browser, echte Interaktion (28 Dateien)', kosten: 'sehr-lang' },
 };
 
 /** Ordnet einen Gate-Lauf ein und zieht die Kennzahlen heraus. */

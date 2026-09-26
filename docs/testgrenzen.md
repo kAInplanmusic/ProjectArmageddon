@@ -15,7 +15,7 @@ vom 2026-09-17 und waren seither überholt).
 | Quellcode | 35.955 Zeilen (30.255) |
 | Tests | 32.684 Zeilen (26.546) |
 | Unit-Tests | 974 (93 Dateien) — vorher 795 in 72 Dateien |
-| E2E-Tests | 184 (28 Dateien) — 183 grün, 0 rot, 1 übersprungen; vorher 172 in 27 Dateien |
+| E2E-Tests | 184 (28 Dateien) — 183 grün, 0 rot, 1 übersprungen; vorher 172 in 28 Dateien |
 | Werkzeuge | 37 Skripte (22) |
 | Unit-Laufzeit | **4,7 min** (22 s) |
 | E2E-Laufzeit | **22,5 min** (9,4 min) |
@@ -69,7 +69,7 @@ neun der damals roten Tests hingen an dieser Annahme.
 9,4 Minuten je vollem Lauf
 ```
 
-Bei 27 Dateien läuft Playwright parallel, aber jeder Lauf startet einen
+Bei 28 Dateien läuft Playwright parallel, aber jeder Lauf startet einen
 Vite-Server und einen Browser. Der Nachzügler-Effekt ist bereits aufgetreten:
 **Drei frühere „Fehlschläge" waren Altlasten abgeschlossener Läufe**, deren
 Meldungen verspätet eintrafen.
