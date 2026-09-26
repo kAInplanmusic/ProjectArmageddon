@@ -223,6 +223,23 @@
       "prioritaet": "P2",
       "warum": "Der Umbau von fire() nach shooting.js und der neue Import scenery.js -> backdrops.js sind in Node verifiziert, aber NICHT im Browser-Bundle. Die Specs tests/e2e/terrain-presets.spec.mjs:240 und backdrops.spec.mjs:268 importieren das Modul im Browser.",
       "beleg": "npm run test:e2e (27 Dateien, ~10 min) — muss nach dem Konsolidieren gefahren werden"
+    },
+    {
+      "id": "O8",
+      "titel": "OFFEN — GROESSTER BEFUND: Springen und Waffe-Abwerfen gibt es online NICHT",
+      "phase": 3,
+      "status": "offen — bestaetigt, vom Auftraggeber selbst gemessen",
+      "prioritaet": "P1",
+      "warum": "Zwei Mechaniken des lokalen Spiels fehlen im Online-Match vollstaendig. Belegt: src/client/main.js:794 'if (!this.match || this.mode !== \"local\") return null;' — der Sprung steigt online STUMM aus, ohne Meldung. src/client/main.js:818 ebenso fuer dropWeapon, dort mit Hinweis ('Abwerfen ist nur im lokalen Match moeglich'). Und das CONTROL-Protokoll (src/shared/protocol.js:68-88) kennt genau HELLO, JOIN_LOBBY, START_MATCH, INPUT, SELECT_WEAPON, PING — KEIN JUMP, KEIN DROP_WEAPON; INPUT traegt nur Winkel und Kraft. Auch der Server verarbeitet nur diese (src/server/gameServer.js:1005-1170).",
+      "folgen": [
+        "Der Sprung ist laut match.js 'die kostbarste Groesse' (Position), und die Klassenschwaeche des Scouts wurde ausdruecklich UEBER den Sprung wirksam gemacht (JUMP_SPEED_INFLUENCE_ABOVE/BELOW, gemessen +35 % Sprunghoehe, 116,9 gegen 86,6 px). ONLINE EXISTIERT DIE EINZIGE ECHTE STAERKE DES SCOUTS DAMIT NICHT.",
+        "Der Doppelsprung haengt am Zug und nicht am Boden (match.js jump()) — er ist online ebenfalls nicht ausloesbar.",
+        "Wechselwirkung mit O2/crate_pickup_blocked: lokal feuert der Hinweis 'Vorrat voll — erst eine Waffe abwerfen (Q)' gemessen 60-mal in 60 Ticks. Online ist der Vorrat genauso voll und die geratene Loesung NICHT AUSFUEHRBAR. Der Spieler kann Loot nicht aufnehmen und erfaehrt keinen Grund, den er beheben koennte.",
+        "Gateschaft: MatchController.jump()/dropWeapon() sind im Motor fertig und getestet — es fehlt ausschliesslich der Drahtweg (CONTROL-Nachricht + Server-Handler + Client-Verdrahtung). Dieselbe Zwei-Stellen-Kur, die fuer Kisten (v5) und Geschuetze (v6) schon zweimal gemacht wurde (dokumentiert in protocol.js:49-60)."
+      ],
+      "besitzt": ["src/shared/protocol.js", "src/server/gameServer.js", "src/client/main.js"],
+      "hinweis": "Beruehrt protocol.js — deshalb erst NACH dem laufenden Guenther-Drahtformat-Auftrag, und dann als eigener Auftrag mit Versionssprung. NICHT mit dem Guenther-Fix vermischen.",
+      "art": "befund_moeglicherweise_design"
     }
   ]
 }
