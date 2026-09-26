@@ -28,6 +28,7 @@ import { SoundMixer } from './soundMixer.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { exposeDebugApi } from './debugApi.js';
+import { verarbeiteLokal, verarbeiteOnline } from './ereignisse.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import {
   PROFIL_SCHLUESSEL,
@@ -1151,147 +1152,16 @@ class Game {
     };
   }
 
+  /**
+   * Eine Meldung des Servers an die Anzeige weitergeben.
+   *
+   * Die Fassade bleibt hier, die Wirkung steht in `client/ereignisse.js`: Der
+   * Online-Zweig und der lokale Zweig lesen DIESELBE Zuordnungstabelle —
+   * vorher waren es zwei Schalter über denselben Ereignisarten, die schon
+   * einmal auseinandergelaufen sind.
+   */
   #handleRemoteEvent(message) {
-    switch (message.t) {
-      case 'terrain_destroyed':
-        this.renderer.applyCrater(message.x, message.y, message.radius || 12);
-        break;
-      case 'explosion':
-        this.renderer.spawnExplosionParticles(message.x, message.y, message.radius || 12);
-        this.renderer.addFlash(message.x, message.y, (message.radius || 12) * 1.4);
-        this.renderer.applyCrater(message.x, message.y, message.radius || 12);
-        break;
-      case 'hitscan':
-        /*
-         * ROLLBACK: Der Server bestätigt den Schuss. Ab hier zeichnet der echte
-         * Strahl — die Vorhersage wird aufgelöst und verschwindet. Ohne diesen
-         * Schritt stünde die geschätzte Bahn neben der echten, und der Spieler
-         * sähe zwei Kurven für einen Schuss.
-         *
-         * Der Einschlagpunkt des Servers ist zugleich die Messlatte: Weicht er
-         * vom vorhergesagten ab, war das Terrain inzwischen anders (der Client
-         * hat denselben Krater noch nicht verarbeitet).
-         */
-        this.shotPredictor.resolve({
-          impact: Number.isFinite(message.hitX) && Number.isFinite(message.hitY)
-            ? { x: message.hitX, y: message.hitY }
-            : null,
-        });
-        this.#drawHitscanBeam(message);
-        break;
-      case 'projectile_spawn':
-        // Der Server hat das Geschoss erzeugt: die Vorhersage hat ihre Aufgabe
-        // erfüllt und wird von der echten Flugbahn abgelöst.
-        this.shotPredictor.resolve();
-        break;
-      case 'shot':
-        // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
-        // zeichnen, aber die Vorhersage ist damit erledigt.
-        this.shotPredictor.resolve();
-        break;
-      case 'projectile_impact':
-        this.renderer.addFlash(message.x, message.y, 14);
-        break;
-      /*
-       * Durchschlag: Der Einschlag blitzt, aber das Geschoss FLIEGT WEITER.
-       *
-       * Die Rückmeldung ist wichtig, weil die Wirkung sonst unsichtbar bliebe:
-       * Ein Durchschuss sieht aus wie ein Schuss, der sein Ziel verfehlt hat —
-       * erst der Blitz am Opfer zeigt, dass er getroffen hat und weiterlief.
-       */
-      case 'projectile_pierced':
-        this.renderer.addFlash(message.x, message.y, 10, { color: '#ffd166' });
-        break;
-      // Dieselben zwei Fälle wie lokal — ein Spieler soll dasselbe sehen,
-      // egal in welchem Modus er spielt.
-      case 'loot_error':
-        this.hud.log(`Beute konnte nicht verteilt werden: ${message.message}`, 'danger');
-        break;
-      case 'fuse_armed':
-        this.hud.log('Eine Granate liegt und tickt …', 'neutral');
-        this.renderer.addFlash(message.x, message.y, 10, { color: '#ffd166' });
-        break;
-      case 'fuse_expired':
-        this.hud.log('Eine Granate ist liegen geblieben und gezündet', 'accent');
-        this.renderer.addFlash(message.x, message.y, 22, { color: '#f4a261' });
-        break;
-      // Geschütze: Aufstellen, Feuern, Ablaufen.
-      case 'turret_deployed':
-        this.hud.log(
-          `Geschütz aufgestellt — ${message.rounds} Runden, ${message.damage} Schaden`,
-          'accent',
-        );
-        break;
-      case 'turret_fired':
-        this.hud.log('Das Geschütz feuert', 'neutral');
-        break;
-      case 'turret_expired':
-        this.hud.log('Geschütz abgelaufen', 'neutral');
-        break;
-      // Wirkungen und Zustände kommen im Online-Modus als Serverereignisse.
-      // Sie werden über dieselben Helfer gemeldet wie lokal, damit die
-      // Meldungen in beiden Betriebsarten gleich lauten.
-      case 'special_effect':
-        this.#logSpecialEffect(message);
-        break;
-      case 'frozen':
-        this.hud.log(`${this.#nameOf(message.playerId)} ist eingefroren (${message.turns} Zug/Züge)`, 'accent');
-        break;
-      case 'turn_skipped':
-        this.hud.log(`${this.#nameOf(message.playerId)} setzt aus — eingefroren`, 'danger');
-        break;
-      case 'dot_tick':
-        this.hud.log(`${this.#nameOf(message.playerId)} erleidet ${Math.round(message.damage)} Schaden (${(message.elements ?? []).join(', ')})`, 'danger');
-        break;
-      case 'shield_absorbed':
-        this.hud.log(`Schild fängt ${Math.round(message.absorbed)} Schaden ab`, 'good');
-        break;
-      case 'pulled':
-        this.hud.log(`${this.#nameOf(message.playerId)} wurde herangezogen`, 'accent');
-        break;
-      case 'heal':
-        this.hud.log(`+${Math.round(message.amount)} Heilung`, 'good');
-        break;
-      case 'maelstrom_contract':
-        this.remoteInset = message.inset;
-        this.renderer.applyContraction(message.inset);
-        this.hud.log('Mahlstrom zieht sich zusammen', 'danger');
-        break;
-      case 'death':
-        this.hud.log('Eine Einheit wurde ausgeschaltet', 'danger');
-        break;
-      case 'turn_start':
-        this.remoteStatus = 'playing';
-        break;
-      case 'round_start':
-        this.hud.log(`Runde ${message.round} — Wind ${Number(message.wind ?? 0).toFixed(3)}`, 'neutral');
-        break;
-      case 'match_over':
-        this.remoteStatus = 'gameover';
-        this.remoteWinner = message.winnerTeamId ?? null;
-        this.#showEndScreen(message.winnerTeamId ?? null);
-        break;
-      /*
-       * Die Karte hat eine Figur auf einer unerreichbaren Fläche.
-       *
-       * Das ist kein Fehler im Ablauf — die Partie läuft weiter —, aber der
-       * betroffene Spieler soll es WISSEN. Ohne diesen Eintrag säße er auf
-       * einer Insel und wartete darauf, dass etwas passiert, ohne zu ahnen,
-       * dass niemand ihn erreichen kann.
-       *
-       * Die Meldung ist bewusst nüchtern: Sie nennt den Zustand, nicht eine
-       * Schuldzuweisung. Es ist eine Eigenschaft der gezogenen Karte.
-       */
-      case 'karte_unerreichbar':
-        this.hud.log(
-          `Die Karte hat eine abgeschnittene Fläche (${message.grund}) — `
-          + 'eine Einheit ist von dort aus nicht erreichbar',
-          'warn',
-        );
-        break;
-      default:
-        break;
-    }
+    verarbeiteOnline(this.#ereignisKontext(), message);
   }
 
   /**
@@ -1460,243 +1330,62 @@ class Game {
     }
   }
 
+  /**
+   * Die Ereignisse des lokalen Simulationsschritts an die Anzeige weitergeben.
+   *
+   * Die Wirkungszuordnung steht in `client/ereignisse.js`; hier bleibt nur die
+   * Übergabe. Der Kontext wird EINMAL je Ereignisfolge gebaut, nicht je
+   * Ereignis: Er enthält nur Zugänge, die auf den laufenden Zustand zeigen.
+   */
   #handleEvents(events) {
-    for (const { type, payload } of events) {
-      switch (type) {
-        case 'explosion':
-          this.renderer.applyCrater(payload.x, payload.y, payload.radius || 12);
-          this.renderer.addFlash(payload.x, payload.y, (payload.radius || 12) * 1.4);
-          /*
-           * Der Klang zum Einschlag.
-           *
-           * Der Mischer entscheidet selbst, ob er etwas tut — ist der Klang
-           * abgeschaltet oder gibt es kein Ausgabegerät, ist der Aufruf ein
-           * No-Op. Deshalb steht hier keine Bedingung: Die Regel liegt an
-           * EINER Stelle (im Mischer), nicht an jedem Aufrufort.
-           */
-          this.sound?.verarbeite({ type: 'explosion', radius: payload.radius || 12 });
-          break;
-        case 'hitscan':
-          // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
-          this.#drawHitscanBeam(payload);
-          this.sound?.verarbeite({ type: 'shot' });
-          /*
-           * Ein Treffer klingt anders als ein Fehlschuss.
-           *
-           * Das Ereignis trägt `hit` (ob getroffen wurde) und `target`. Nur
-           * wenn wirklich jemand getroffen wurde, gibt es den kurzen
-           * Bestätigungsklang — sonst würde jeder Schuss ins Leere quittiert.
-           */
-          if (payload.hit && payload.target) {
-            this.sound?.verarbeite({ type: 'damage' });
-          }
-          break;
-        case 'shot':
-          /*
-           * Der Abschuss hat einen Klang — und seit 2026-09-25 ein
-           * Mündungsfeuer.
-           *
-           * Vorher stand hier NUR der Klang: Der Schuss war zu hören, aber an
-           * der Figur geschah nichts. Bei einem Spiel, dessen ganze Handlung
-           * aus Schüssen besteht, ist das die auffälligste Lücke der
-           * Darstellung — man sieht nicht, WER geschossen hat.
-           *
-           * Das Ereignis trägt `playerId` und `angle`; mehr braucht der
-           * Renderer nicht, weil er das Feuer an der AKTUELLEN Position der
-           * Figur zeichnet (siehe `addMuzzleFlash`). Der Klang bleibt an
-           * derselben Stelle — die Regel „wer spielt, entscheidet der Mischer"
-           * gilt unverändert.
-           */
-          this.renderer.addMuzzleFlash(payload.playerId, payload.angle ?? 0);
-          this.sound?.verarbeite({ type: 'shot' });
-          break;
-        /*
-         * Beute-Fehler.
-         *
-         * FUND (belegt, Ereignis-Abdeckungstest): `loot_error` wurde von der
-         * Engine gesendet, aber von KEINEM Client-Zweig behandelt — der Fehler
-         * verschwand spurlos. Wer nichts davon erfährt, sucht den Fehler bei
-         * sich: „Warum kommt keine Kiste?"
-         *
-         * Der Zustand ist selten (er tritt nur auf, wenn die Beuteverteilung
-         * scheitert), aber genau deshalb ist eine Meldung wichtig: Ein Fehler,
-         * der nie passiert, braucht keine; einer, der selten passiert, braucht
-         * eine, sonst ist er beim ersten Mal ein Rätsel.
-         */
-        case 'loot_error':
-          this.hud.log(`Beute konnte nicht verteilt werden: ${payload.message}`, 'danger');
-          break;
-        /*
-         * Eine liegende Granate ist gezündet.
-         *
-         * FUND (belegt): Ebenfalls stumm. Der Krater erschien zwar über
-         * `explosion`, aber der Spieler erfuhr nicht, DASS eine zuvor geworfene
-         * Granate gezündet hat. Das ist gerade bei den Zünder-Waffen wichtig
-         * (siehe MASTERDOTO, „Bekannte Grenzen": dort ist der Zünder länger als
-         * die Flugzeit — die Ladung zündet also mit Verzögerung am Boden).
-         */
-        case 'fuse_armed':
-          /*
-           * Eine Granate ist liegen geblieben und tickt jetzt.
-           *
-           * Die VORSTUFE zu `fuse_expired`: Der Spieler soll wissen, dass dort
-           * etwas liegt — sonst überrascht ihn die Explosion zwei Sekunden
-           * später an einer Stelle, an der er nichts erwartet.
-           */
-          this.hud.log('Eine Granate liegt und tickt …', 'neutral');
-          this.renderer.addFlash(payload.x, payload.y, 10, { color: '#ffd166' });
-          break;
-        case 'fuse_expired':
-          this.hud.log('Eine Granate ist liegen geblieben und gezündet', 'accent');
-          this.renderer.addFlash(payload.x, payload.y, 22, { color: '#f4a261' });
-          break;
-        /*
-         * Einschlag eines Projektils.
-         *
-         * FUND (belegt, Black-Box-Audit): Dieser Fall FEHLTE hier. Er war nur
-         * im ONLINE-Zweig (`#handleRemoteEvent`) ergänzt — im lokalen Match
-         * blieb der Einschlag damit ohne Blitz, und im Protokoll stand nur
-         * „ist gelandet". Wer lokal spielt (der Standardfall), sah also nicht,
-         * WO sein Schuss eingeschlagen ist.
-         *
-         * Der Krater kommt aus `explosion` (oben) — der Blitz hier markiert den
-         * Moment des Aufpralls. Beides gehört zusammen: der Krater ist das
-         * Ergebnis, der Blitz der Einschlag.
-         *
-         * Gemessen: Die Engine sendet das Ereignis
-         * (`projectileSystem.js:119`), der lokale Zweig ignorierte es.
-         */
-        case 'projectile_impact':
-          this.renderer.addFlash(payload.x, payload.y, 14);
-          break;
-        // Durchschlag (siehe der lokale Zweig): Blitz, Flug geht weiter.
-        case 'projectile_pierced':
-          this.renderer.addFlash(payload.x, payload.y, 10, { color: '#ffd166' });
-          break;
-        /*
-         * Geschütze.
-         *
-         * Fund (belegt): Diese Fälle fehlten hier. Sie waren nur im
-         * ONLINE-Zweig (`#handleRemoteEvent`) ergänzt worden, und im lokalen
-         * Match blieb das Aufstellen damit stumm — gemessen stand im Protokoll
-         * nur „Schuss abgegeben (60 Kraft)". Ein Geschütz, dessen Aufstellen
-         * niemand gemeldet bekommt, ist für den Spieler nicht vorhanden.
-         */
-        case 'turret_deployed':
-          this.hud.log(
-            `Geschütz aufgestellt — ${payload.rounds} Runden, ${payload.damage} Schaden`,
-            'accent',
-          );
-          this.renderer.addFlash(payload.x, payload.y, 18, { color: '#d9b44a' });
-          break;
-        case 'turret_fired':
-          this.renderer.addFlash(payload.x, payload.y, 12, { color: '#d9b44a' });
-          break;
-        case 'turret_expired':
-          this.hud.log('Geschütz abgelaufen', 'neutral');
-          break;
-        case 'special_effect':
-          // Wirkungen auf den Schützen: Heilung, Schild, Sprung, Munition.
-          this.#logSpecialEffect(payload);
-          break;
-        case 'frozen':
-          this.hud.log(`${this.#nameOf(payload.playerId)} ist eingefroren (${payload.turns} Zug/Züge)`, 'accent');
-          break;
-        case 'turn_skipped':
-          this.hud.log(`${this.#nameOf(payload.playerId)} setzt aus — eingefroren`, 'danger');
-          break;
-        case 'dot_tick':
-          this.hud.log(`${this.#nameOf(payload.playerId)} erleidet ${Math.round(payload.damage)} Schaden (${payload.elements.join(', ')})`, 'danger');
-          break;
-        case 'shield_absorbed': {
-          // Sichtbar am Ort der Figur, nicht am Ursprung: ein Blitz bei (0,0)
-          // hätte mit der Figur nichts zu tun.
-          const geschuetzt = this.currentState()?.entities?.find(e => e.entityId === payload.playerId);
-          if (geschuetzt) this.renderer.addFlash(geschuetzt.x, geschuetzt.y, 16, { color: '#4cc9f0' });
-          this.hud.log(`Schild fängt ${Math.round(payload.absorbed)} Schaden ab`, 'good');
-          break;
-        }
-        case 'pulled':
-          this.hud.log(`${this.#nameOf(payload.playerId)} wurde herangezogen`, 'accent');
-          break;
-        case 'guenther_wheel':
-          this.showGuentherWheel(payload);
-          break;
-        case 'guenther_pee':
-          this.hud.log(`Günther pinkelt ${this.#nameOf(payload.playerId)} an (−${payload.amount})`, 'neutral');
-          break;
-        case 'guenther_poop':
-          this.hud.log('Günther hat ein Häufchen gemacht', 'neutral');
-          break;
-        case 'guenther_poop_hit':
-          this.hud.log(`${this.#nameOf(payload.playerId)} ist in ein Häufchen getreten`, 'danger');
-          break;
-        case 'jumped':
-          this.hud.log(`${this.#nameOf(payload.playerId)} springt${payload.double ? ' (Doppelsprung)' : ''}`, 'accent');
-          break;
-        case 'landed':
-          this.hud.log(`${this.#nameOf(payload.playerId)} ist gelandet`);
-          break;
-        case 'crate_landed':
-          this.hud.log('Abgeworfene Waffe gelandet', 'neutral');
-          break;
-        case 'crate_pickup_blocked':
-          // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
-          this.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
-          break;
-        case 'heal':
-          this.hud.log(`+${Math.round(payload.amount)} Heilung für ${this.#nameOf(payload.entityId)}`, 'good');
-          break;
-        // 'drowning' wird NICHT hier protokolliert: Das CharacterSystem meldet
-        // es bei JEDEM Simulationsschritt, solange die Figur unter Wasser ist —
-        // das sind bis zu 60 Meldungen je Sekunde, die das Protokoll
-        // überschwemmen. Die Meldung entsteht stattdessen beim ÜBERGANG in
-        // #trackWater und nennt die Figur beim Namen. Das `break` bleibt
-        // zwingend: ohne es würde das Ereignis in den nächsten Fall rutschen.
-        case 'drowning':
-          break;
-        case 'maelstrom_contract':
-          this.renderer.applyContraction(payload.inset);
-          this.hud.log('Mahlstrom zieht sich zusammen', 'danger');
-          break;
-        case 'death': {
-          const victim = this.match.players.find(player => player.entityId === payload.entityId);
-          this.hud.log(`${victim?.label ?? `Entity ${payload.entityId}`} ausgeschaltet`, 'danger');
-          break;
-        }
-        case 'crate_pickup': {
-          const who = this.match.players.find(player => player.entityId === payload.playerId);
-          const reward = payload.reward;
-          const text = reward?.kind === 'weapon'
-            ? `${who?.label ?? 'Spieler'} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
-            : reward?.kind === 'heal' ? `${who?.label ?? 'Spieler'} heilt ${reward.amount} HP`
-            : reward?.kind === 'trap' ? `${who?.label ?? 'Spieler'} löst eine Sprengfalle aus`
-            : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
-          this.hud.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
-          break;
-        }
-        case 'fall_damage':
-          this.hud.log(`Sturzschaden: ${Math.round(payload.damage)}`, 'danger');
-          break;
-        case 'round_start':
-          this.hud.log(`Runde ${payload.round} — Wind ${Number(payload.wind ?? 0).toFixed(3)}`, 'neutral');
-          break;
-        case 'toxic_rain':
-          if (payload.affected?.length) this.hud.log('Toxischer Regen trifft die Zone', 'danger');
-          break;
-        case 'match_over':
-          /*
-           * Nur beim ERSTEN Mal protokollieren. Der Server wiederholt die
-           * Nachricht auf jede PING-Anfrage, solange das Match entschieden ist
-           * (siehe PING-Zweig im Server) — sonst stünde alle zwei Sekunden
-           * dieselbe Zeile im Protokoll und verdrängte alles andere.
-           */
-          if (this.remoteStatus !== 'gameover') this.hud.log('Match beendet', 'accent');
-          break;
-        default:
-          break;
-      }
-    }
+    const kontext = this.#ereignisKontext();
+    for (const ereignis of events) verarbeiteLokal(kontext, ereignis);
+  }
+
+  /**
+   * Sammelt GENAU die Werte, die `client/ereignisse.js` braucht.
+   *
+   * ## Warum es dieses Objekt gibt
+   *
+   * Das Ereignismodul kennt kein `this` — es kann die Klasse nicht benutzen.
+   * Statt ihm die Instanz zu geben (damit läge jede private Methode in
+   * Reichweite), steht hier Zeile für Zeile, WAS es benutzen darf: Renderer,
+   * HUD, Klang, Match, Schussvorhersage, fünf Helfer und — als einziger
+   * schreibender Zugang — der Online-Zustand.
+   *
+   * Jede Zeile ist damit eine bewusste Entscheidung über Kopplung: Kommt eine
+   * dazu, ist sie sichtbar; fällt eine weg, ebenso.
+   */
+  #ereignisKontext() {
+    return {
+      renderer: this.renderer,
+      hud: this.hud,
+      sound: this.sound,
+      match: this.match,
+      shotPredictor: this.shotPredictor,
+      /*
+       * Die folgenden Helfer bleiben in dieser Klasse, weil sie privates
+       * Wissen brauchen (Zustand, Namen, Überlagerung). Das Modul RUFT sie
+       * auf und bildet nichts davon nach.
+       */
+      nameOf: playerId => this.#nameOf(playerId),
+      findEntity: entityId => this.currentState()?.entities?.find(e => e.entityId === entityId) ?? null,
+      drawHitscanBeam: nutzlast => this.#drawHitscanBeam(nutzlast),
+      logSpecialEffect: nutzlast => this.#logSpecialEffect(nutzlast),
+      showGuentherWheel: nutzlast => this.showGuentherWheel(nutzlast),
+      showEndScreen: sieger => this.#showEndScreen(sieger),
+      /*
+       * Der Online-Zustand gehört dem Client. Statt das Modul Felder schreiben
+       * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
+       * Werte ein Serverereignis ändern darf.
+       */
+      fernzustand: {
+        status: () => this.remoteStatus,
+        setzeStatus: wert => { this.remoteStatus = wert; },
+        setzeSieger: wert => { this.remoteWinner = wert; },
+        setzeEinschnitt: wert => { this.remoteInset = wert; },
+      },
+    };
   }
 
   /** Name einer Spielfigur für Log-Meldungen. */
