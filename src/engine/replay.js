@@ -61,8 +61,27 @@ export class ReplayRecorder {
       // neue Aufzeichnungen ohne Grund verschieden.
       ...(hatLoadouts ? { loadouts: loadouts.map(l => (l ? { ...l } : null)) } : {}),
     };
-    // METADATEN: #startedAt ist ein PRODUKTIONSZEITSTEMPEL (createdAt im JSON).
-    // Er dient nur der Lesbarkeit und wird nie im Simulationspfad gelesen.
+    /*
+     * METADATEN — der EINZIGE Wanduhr-Zugriff dieser Datei.
+     *
+     * `#startedAt` ist ein PRODUKTIONSZEITSTEMPEL und landet ausschließlich über
+     * `toJSON()` als `createdAt` in der Aufzeichnung („wann wurde das
+     * aufgenommen"). KEIN Leser führt in die Simulation: `fromJSON` — der Weg,
+     * den jede Wiedergabe geht — liest nur `format`, `seed`, `config`,
+     * `totalTicks`, `entries` und `rounds`; `createdAt` wird nicht einmal
+     * übernommen. `MatchController#zustandsQuelle()` (die Eingabe des
+     * Zustandshashs) kennt keinen Zeitstempel.
+     *
+     * FALLE: Der Zustandshash belegt die Reproduzierbarkeit des ZUSTANDS, nicht
+     * die der Datei. Zwei Aufzeichnungen desselben Matches sind hash-gleich,
+     * ihre JSON-Bytes unterscheiden sich aber in genau diesem Feld. Wer je
+     * Datei-Gleichheit prüfen will, muss `createdAt` vorher entfernen.
+     *
+     * Wer dieses Feld in den Simulationspfad zieht — als Seed, Timer oder
+     * Zustandsfeld —, bricht den Replay-Vertrag. Gemessen und festgehalten ist
+     * die Wirkungslosigkeit in `tests/replay-uhr.test.js`; dort schlägt auch der
+     * Wächter an, sobald ein zweiter Leser dazukommt.
+     */
     this.#startedAt = Date.now();
   }
 
