@@ -46,6 +46,7 @@
  * @module terrainGen3
  */
 import { oberflaechen } from './terrainGen2.js';
+import { TERRAIN_MATERIAL, materialById } from './config/terrain.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -244,6 +245,111 @@ function gitterrauschen(rng, spalten, zeilen) {
     const unten = i(x0, y0 + 1) + (i(x0 + 1, y0 + 1) - i(x0, y0 + 1)) * tx;
     return oben + (unten - oben) * ty;
   };
+}
+
+/*
+ * ======================================================================
+ * Die Bodenmaterialien — Eis und Gummi, aus dem Seed
+ * ======================================================================
+ *
+ * ## Worum es geht
+ *
+ * Das Gelände sagt bisher nur, WO fest ist. Es sagt nicht, WIE sich der
+ * Boden anfühlt. Zwei Figuren auf demselben Hügel spielen dasselbe — egal,
+ * ob darunter Erde, Eis oder Gummi liegt.
+ *
+ * Diese Schicht zieht aus DEMSELBEN Seed, der die Karte formt, ein zweites
+ * Feld: das **Material** des Bodens. Eis nimmt die Reibung (rutschig), Gummi
+ * gibt sie zurück (federnd), Erde bleibt Erde. Der Motor liest es an EINER
+ * Stelle beim Aufsetzen und Bewegen.
+ *
+ * ## Warum aus einem EIGENEN Zweig
+ *
+ * FUND (belegt, eigener Fehler): Der naheliegende Weg — ein paar zusätzliche
+ * `rng.next()` hinter der Karte — verschiebt ALLE folgenden Züge. Das
+ * `erzeugeAutonomeKarte` würfelt aber bis zu acht Mal (Charakter ziehen,
+ * bauen, prüfen); ein einziger zusätzlicher Zug ändert damit, welche Karte
+ * ein misslungener Versuch beim nächsten Mal zieht. Gemessen wäre das keine
+ * neue Eigenschaft, sondern ein **anderer Generator** — die bestehenden
+ * Karten hätten sich mitgeändert.
+ *
+ * Deshalb hängt das Material an einem **Zweig** des Seeds
+ * (`rng.fork(offset)`): Derselbe Seed, eine eigene Zahlenfolge. Der
+ * Kartenzufall bleibt damit unberührt, und das Material ist trotzdem
+ * vollständig durch den Seed bestimmt.
+ *
+ * ## Warum das Gitter GROB ist
+ *
+ * Die Materialzelle ist 64 px breit — etwa viereinhalb Figuren. Feiner wäre
+ * ein Flickenteppich: Eine Figur stünde mit einem Fuß auf Eis und mit dem
+ * anderen auf Gummi, und der Boden wäre keine Fläche mehr, sondern ein
+ * Muster. Grob genug für eine lesbare Zone, fein genug für Abwechslung.
+ *
+ * ## Warum die Schwellen asymmetrisch sind
+ *
+ * Das Rauschen ist geglättet und sammelt sich um 0,5; die Extreme sind
+ * selten. Die Schwellen (0,78 für Eis, 0,16 für Gummi) schneiden deshalb
+ * nur die Flanken ab — die meiste Karte bleibt Erde. Das ist gewollt: Ein
+ * Sonderboden ist ein FUNDSTÜCK, kein Grundzustand.
+ */
+/** Der Seed-Zweig des Materials. Eine eigene Zahl, damit sie nicht kollidiert. */
+const MATERIAL_FORK = 0x4D4154;   // „MAT"
+/** Kantenlänge einer Materialzelle in Pixeln. */
+const MATERIAL_ZELLE = 64;
+/** Ab diesem Rauschwert wird die Zelle Eis. */
+const MATERIAL_EIS_SCHWELLE = 0.78;
+/** Unter diesem Rauschwert wird die Zelle Gummi. */
+const MATERIAL_GUMMI_SCHWELLE = 0.16;
+
+/**
+ * Baut das Materialfeld aus einem (abgezweigten) RNG.
+ *
+ * @returns {{feld:Uint8Array, spalten:number, zeilen:number, zelle:number}}
+ */
+function baueMaterialfeld(rng, width, height) {
+  const spalten = Math.max(2, Math.ceil(width / MATERIAL_ZELLE));
+  const zeilen = Math.max(2, Math.ceil(height / MATERIAL_ZELLE));
+  const rauschen = gitterrauschen(rng, spalten, zeilen);
+
+  const feld = new Uint8Array(spalten * zeilen);
+  for (let gy = 0; gy < zeilen; gy += 1) {
+    for (let gx = 0; gx < spalten; gx += 1) {
+      const t = rauschen(gx / spalten, gy / zeilen);
+      let id = TERRAIN_MATERIAL.NORMAL;
+      if (t > MATERIAL_EIS_SCHWELLE) id = TERRAIN_MATERIAL.ICE;
+      else if (t < MATERIAL_GUMMI_SCHWELLE) id = TERRAIN_MATERIAL.RUBBER;
+      feld[gy * spalten + gx] = id;
+    }
+  }
+
+  return { feld, spalten, zeilen, zelle: MATERIAL_ZELLE };
+}
+
+/**
+ * Das Material an einer Weltposition.
+ *
+ * Diese Funktion ist die EINZIGE Stelle, die das Materialfeld auslegt — der
+ * Motor ruft sie beim Aufsetzen und Bewegen. Ohne Feld (1D-Gelände, alte
+ * Replays) ist der Boden Erde, also der Zustand von vorher.
+ *
+ * @returns {object} Material aus dem Katalog (`config/terrain.js`)
+ */
+export function materialAmPunkt(material, x, y) {
+  if (!material) return materialById(TERRAIN_MATERIAL.NORMAL);
+  const gx = Math.max(0, Math.min(material.spalten - 1, Math.floor(x / material.zelle)));
+  const gy = Math.max(0, Math.min(material.zeilen - 1, Math.floor(y / material.zelle)));
+  return materialById(material.feld[gy * material.spalten + gx]);
+}
+
+/** Zählt die Materialzellen je Art — für Prüfwerkzeuge und Tests. */
+export function zaehleMaterialien(material) {
+  const zaehler = new Map();
+  if (!material) return zaehler;
+  for (const id of material.feld) {
+    const m = materialById(id);
+    zaehler.set(m.key, (zaehler.get(m.key) ?? 0) + 1);
+  }
+  return zaehler;
 }
 
 /**
@@ -857,7 +963,19 @@ function baueKarte({ rng, width, height, charakter }) {
     wasserY = inneres[Math.max(0, stellung)];
   }
 
-  return { bitmap, surface, wasserY };
+  /*
+   * Die Bodenmaterialien — ZULETZT, und aus einem eigenen Seed-Zweig.
+   *
+   * Die Reihenfolge ist der Punkt: Der Kartenzufall ist hier bereits
+   * vollständig verbraucht, und `rng.fork(...)` liest den Elternstrom gar
+   * nicht erst an. Damit ist das Material seed-bestimmt, ohne die Karte (und
+   * ohne den zweiten Versuch einer misslungenen Karte) zu verschieben.
+   */
+  const material = typeof rng.fork === 'function'
+    ? baueMaterialfeld(rng.fork(MATERIAL_FORK), width, height)
+    : null;
+
+  return { bitmap, surface, wasserY, material };
 }
 
 /** Misst die Kennzahlen einer Karte. */
