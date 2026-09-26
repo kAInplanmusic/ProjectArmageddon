@@ -370,31 +370,56 @@ export const EREIGNIS_WIRKUNGEN = {
     k.hud.log(`${k.nameOf(n.playerId)} wurde herangezogen`, 'accent');
   }),
 
-  // Günther: seine Streiche gibt es nur im lokalen Match — der Server kennt
-  // diese Ereignisarten nicht.
-  guenther_wheel: {
-    lokal: (k, n) => {
-      k.showGuentherWheel(n);
-    },
-  },
+  /*
+   * Günther: seine Streiche laufen in BEIDEN Betriebsarten.
+   *
+   * KORRIGIERTER KOMMENTAR (belegt). Hier stand:
+   *
+   *   „Günther: seine Streiche gibt es nur im lokalen Match — der Server kennt
+   *    diese Ereignisarten nicht."
+   *
+   * Das ist nachgemessen WIDERLEGT. Der Server schickt JEDES Engine-Ereignis
+   * ohne Whitelist an alle Clients — `src/server/gameServer.js:246–248`:
+   *
+   *   for (const event of this.match.consumeEvents()) {
+   *     this.#broadcastControl(event.type, { round: this.match.round, ...event.payload });
+   *   }
+   *
+   * und er sagt an anderer Stelle selbst, dass die speziellen NPCs bewusst
+   * mitlaufen (`src/server/gameServer.js:291–293`). Der Client reicht jede
+   * unbekannte Steuernachricht an `game_event` weiter
+   * (`src/client/networkClient.js:396–398`, `default:`-Zweig). Die vier Arten
+   * kommen online also AN — sie wurden erst HIER, bei der Wirkung, verworfen.
+   *
+   * Die Meldungen sind in beiden Betriebsarten gleich: Sie nennen die Figur über
+   * `k.nameOf`, und der Name steht in beiden Ansichtszuständen (lokal aus
+   * `match.getState()`, online aus dem Snapshot). Deshalb `beide(fn)`.
+   */
+  guenther_wheel: beide((k, n) => {
+    /*
+     * Der Ruf ist identisch — die Wirkung liegt in `Main#showGuentherWheel`.
+     *
+     * EIN Unterschied steckt IM Aufgerufenen, nicht hier: die Heimdall-Szene
+     * zieht ihren Seed aus `this.match.seedManager.baseSeed`
+     * (`src/client/main.js:1622`). Online ist `this.match` null, der Rückfall
+     * `?? 0` greift — die Szene läuft mit Seed 0 statt dem Match-Seed. Sichtbar
+     * ist das nur an der Heimdall-Animation; das Rad selbst zeigt in beiden
+     * Betriebsarten denselben Ausgang.
+     */
+    k.showGuentherWheel(n);
+  }),
 
-  guenther_pee: {
-    lokal: (k, n) => {
-      k.hud.log(`Günther pinkelt ${k.nameOf(n.playerId)} an (−${n.amount})`, 'neutral');
-    },
-  },
+  guenther_pee: beide((k, n) => {
+    k.hud.log(`Günther pinkelt ${k.nameOf(n.playerId)} an (−${n.amount})`, 'neutral');
+  }),
 
-  guenther_poop: {
-    lokal: (k) => {
-      k.hud.log('Günther hat ein Häufchen gemacht', 'neutral');
-    },
-  },
+  guenther_poop: beide((k) => {
+    k.hud.log('Günther hat ein Häufchen gemacht', 'neutral');
+  }),
 
-  guenther_poop_hit: {
-    lokal: (k, n) => {
-      k.hud.log(`${k.nameOf(n.playerId)} ist in ein Häufchen getreten`, 'danger');
-    },
-  },
+  guenther_poop_hit: beide((k, n) => {
+    k.hud.log(`${k.nameOf(n.playerId)} ist in ein Häufchen getreten`, 'danger');
+  }),
 
   jumped: {
     lokal: (k, n) => {
@@ -414,10 +439,33 @@ export const EREIGNIS_WIRKUNGEN = {
     },
   },
 
+  /*
+   * Voller Vorrat: Die Kiste bleibt liegen. Der GRUND ist in beiden
+   * Betriebsarten derselbe — die AUFFORDERUNG nicht.
+   *
+   * Lokal nennt die Meldung die Taste (Q), denn dort gibt es das Abwerfen:
+   * `Main#dropWeapon` läuft nur im lokalen Match (`src/client/main.js:817`),
+   * dieselbe Stelle steigt sonst vorzeitig aus — `src/client/main.js:818`:
+   * `if (!this.match || this.mode !== 'local')` samt eigener Meldung
+   * „Abwerfen ist nur im lokalen Match möglich". Online gibt es KEINEN
+   * Abwerf-Weg im Client (kein Aufrufer von `dropWeapon` außer der lokalen
+   * Tastenzuordnung `main.js:178`).
+   *
+   * Deshalb steht die Q-Aufforderung NUR im lokalen Zweig: Eine online
+   * angezeigte „(Q)"-Aufforderung verspräche eine Taste, die dort nichts tut.
+   * Der Online-Text benennt nur den Zustand. — Vorher hatte
+   * `crate_pickup_blocked` NUR den lokalen Zweig: Online kam das Ereignis an
+   * (`src/server/gameServer.js:246–248`) und fiel bei der Wirkung weg; der
+   * Spieler konnte nicht aufnehmen und erfuhr keinen Grund.
+   */
   crate_pickup_blocked: {
     lokal: (k) => {
       // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
       k.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
+    },
+    online: (k) => {
+      // Online gibt es kein Abwerfen — nur der Zustand, keine Taste.
+      k.hud.log('Vorrat voll — die Waffe kann nicht aufgenommen werden', 'danger');
     },
   },
 

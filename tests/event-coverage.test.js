@@ -63,6 +63,8 @@ import { fileURLToPath } from 'node:url';
 
 import { MatchController } from '../src/engine/match.js';
 import { EREIGNIS_WIRKUNGEN, verarbeiteLokal, verarbeiteOnline } from '../src/client/ereignisse.js';
+// Der Draht: belegt, dass ein v7-Snapshot Günther trägt (siehe Test unten).
+import { encodeSnapshot, decodeSnapshot } from '../src/shared/protocol.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -235,7 +237,7 @@ const bewusstStumm = new Set([
  */
 const AUDIT_LISTE_2026_09_26 = [
   'crate_pickup',          // ereignisse.js:424 — lokal :433 (Protokollzeile je Beuteart)
-  'crate_pickup_blocked',  // ereignisse.js:417 — lokal :420 („Vorrat voll …")
+  'crate_pickup_blocked',  // ereignisse.js:461 — beide (lokal mit (Q)-Hinweis, online ohne — kein Abwerfen online)
   'death',                 // ereignisse.js:479 — beide :482/:485
   'dot_tick',              // ereignisse.js:344 — beide :351
   'fall_damage',           // ereignisse.js:489 — lokal :491
@@ -264,27 +266,46 @@ const AUDIT_LISTE_2026_09_26 = [
 ];
 
 /**
- * Der Beleg für Günthers vier Ereignisarten — sie sind außerhalb der 27
- * gemeldeten und nur hier gelandet, weil der Sammler jetzt auch `melde('…')`
- * liest (`melde` steht nirgends sonst im Motor: `guentherSystem.js`).
+ * Günther im Online-Betrieb — der Anschluss ist gelegt (2026-09-26).
  *
- * Belegt ist:
- *   - der Streich läuft auch online — die NPCs stecken im Motor und laufen mit
- *     der Simulation (`src/server/gameServer.js:292`),
- *   - die Onlinesicht führt aber kein `guenther`-Feld (`src/client/main.js:1119`
- *     bis `:1143` — die Felder des Online-Zustands), und der Renderer zeichnet
- *     Günther und seine Haufen GENAU daraus (`src/client/renderer.js:1218`,
- *     `:1200`),
- *   - kein Zweig der vier Arten ist online vorhanden (`ereignisse.js:375` ff.).
+ * ## Der Befund, der hier stand
  *
- * Sichtbar bleiben online nur die FOLGEN (Schaden → Lebensbalken,
- * `src/client/hud.js:247`; Beute → Bestand).
+ * Zwei Hälften fehlten online, beide belegt:
  *
- * NICHT gemessen: ob der Server Günther überhaupt würfeln lässt (`gameServer.js:292`
- * ist ein Kommentar, kein Messwert) und ob die Folgen in jedem Fall ankommen.
- * Deshalb steht bei den vier Einträgen `offen` und nicht `entweder`.
+ *   - Die Onlinesicht führte kein `guenther`-Feld (die Felder des
+ *     Online-Zustands in `src/client/main.js`, damals :1119–:1143), obwohl der
+ *     Renderer Günther und seine Haufen GENAU daraus zeichnet
+ *     (`src/client/renderer.js:1218` `#drawGuenther(state.guenther)`, `:1200`
+ *     `#drawPoopPiles(state.guenther?.haufen ?? [])`). Lokal reichte
+ *     `src/engine/stateSnapshot.js:201` (`guenther: quelle.guenther`) es durch.
+ *   - Keiner der vier Streich-Arten hatte einen Online-Zweig
+ *     (`src/client/ereignisse.js`, damals :375 ff.) — obwohl der Server JEDES
+ *     Engine-Ereignis ohne Whitelist schickt (`src/server/gameServer.js:246–248`)
+ *     und der Client unbekannte Steuernachrichten an `game_event` weiterreicht
+ *     (`src/client/networkClient.js:396–398`). Sie kamen an und fielen erst bei
+ *     der Wirkung weg.
+ *
+ * ## Stand jetzt
+ *
+ * Beide Hälften sind geschlossen und durch die Tests unten festgehalten:
+ *
+ *   - `guenther: snapshot.guenther ?? null` in der Onlinesicht
+ *     (`src/client/main.js:1165`, Form wie `crates`/`turrets`),
+ *   - die vier Streich-Arten sind `beide(fn)` (`src/client/ereignisse.js:398`
+ *     ff.), `crate_pickup_blocked` hat einen eigenen Online-Text (`:461`).
+ *
+ * Damit sind die vier Arten KEINE Einzweig-Fälle mehr und stehen nicht in
+ * `EINZWEIG_BELEGT`. Sichtbare Folge eines Streichs bleibt zusätzlich der
+ * Lebensbalken (`src/client/hud.js:247`).
+ *
+ * **Grenze dieses Belegs:** Die Onlinesicht (`Game#onlineViewState`) ist ohne
+ * Browser/DOM nicht ausführbar — `import('./src/client/main.js')` bricht schon
+ * am Modulkopf ab (`const game = new Game()`, `src/client/main.js:2617`; der
+ * Import scheitert mit „(intermediate value).glob is not a function"). Deshalb
+ * belegt der Test unten den ausführbaren Teil (v7-Snapshot rein → dekodiertes
+ * `guenther` raus) UND den Textweg der Onlinesicht (die Durchreichung als
+ * Quelltext, wie es diese Datei für das Modul schon tut).
  */
-const GUENTHER_ONLINE_OFFEN = 'Online fehlt Günthers DARSTELLUNG: die Onlinesicht führt kein `guenther`-Feld (src/client/main.js:1119–1143), der Renderer zeichnet Günther und seine Haufen daraus (src/client/renderer.js:1218, :1200), und keiner der vier Zweige ist online vorhanden (src/client/ereignisse.js:375 ff.). Sichtbar bleiben nur die Folgen (Schaden → src/client/hud.js:247). Ob der Server würfelt, ist NICHT gemessen.';
 
 /**
  * Ereignisse, die nur EINEN der beiden Zweige haben — je Ereignis mit der
@@ -315,10 +336,6 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'lokal',
     entweder: 'online steht der Bestand in der Waffenliste: src/client/main.js:1000 (remoteLoadouts aus der LOADOUTS-Nachricht) → :1114 (inventory) → :1212 (#weaponIdsForActivePlayer)',
   }],
-  ['crate_pickup_blocked', {
-    zweig: 'lokal',
-    offen: 'online kommt das Ereignis an (src/server/gameServer.js:246–248) und kein Zweig nimmt es; ein anderes Element zeigt die Ursache nicht — die Kiste bleibt liegen, die Waffenliste bleibt gleich. Die Meldung dazu gibt es nur lokal, src/client/ereignisse.js:420. BEFUND: online bleibt ein voller Vorrat ohne Rückmeldung.',
-  }],
   ['fall_damage', {
     zweig: 'lokal',
     entweder: 'online sinkt der Lebensbalken: src/client/main.js:1103 (health aus dem Snapshot) → src/client/hud.js:216 (Balkenbreite) und :247 (Zahl)',
@@ -339,12 +356,6 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'lokal',
     entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:1143 (crates) → src/client/renderer.js:1201 (#drawCrates)',
   }],
-
-  // --- Günthers Streiche (nur lokal behandelt, siehe GUENTHER_ONLINE_OFFEN)
-  ['guenther_wheel', { zweig: 'lokal', offen: GUENTHER_ONLINE_OFFEN }],
-  ['guenther_pee', { zweig: 'lokal', offen: GUENTHER_ONLINE_OFFEN }],
-  ['guenther_poop', { zweig: 'lokal', offen: GUENTHER_ONLINE_OFFEN }],
-  ['guenther_poop_hit', { zweig: 'lokal', offen: GUENTHER_ONLINE_OFFEN }],
 
   // --- nur online behandelt (lokal kommt es aus einem anderen Weg)
   ['projectile_spawn', {
@@ -585,4 +596,127 @@ test('Ereignisse mit nur EINEM Zweig sind einzeln belegt', () => {
         `${typ}: auch ein \`offen\` braucht die Fundstelle der ausbleibenden Wirkung`);
     }
   }
+});
+
+// ------------------------------------------- Günthers Anschluss im Online-Betrieb
+
+test('Der v7-Snapshot trägt Günther — und die Onlinesicht reicht ihn durch', () => {
+  /*
+   * DIE Prüfung, die den Anschluss festhält: Günther ist online sichtbar.
+   *
+   * Die Kette hat zwei Enden, deshalb zwei Glieder:
+   *
+   *  (1) AUSGEFÜHRT — Was der Client EMPFÄNGT, trägt Günther. Ein v7-Snapshot
+   *      mit aktivem Günther und zwei Haufen geht durch `encodeSnapshot` /
+   *      `decodeSnapshot` und kommt mit `aktiv === true` und DERSELBEN
+   *      Haufenzahl heraus. Das ist genau der `snapshot`, den die Onlinesicht
+   *      liest (`src/client/networkClient.js:243`, `latestSnapshot`).
+   *
+   *  (2) QUELLTEXT — Was die Onlinesicht damit TUT. `Game#onlineViewState`
+   *      (`src/client/main.js:1053`) reicht `snapshot.guenther` als Feld `guenther`
+   *      durch, in der Form von `crates`/`turrets` daneben. Dieser Schritt ist
+   *      hier NICHT ausführbar: `main.js` bricht schon beim Import am Modulkopf
+   *      ab (`const game = new Game()`, `src/client/main.js:2617`) — ohne
+   *      Browser/DOM gibt es keine Instanz von `Game`. Deshalb der
+   *      Quelltextbeleg; es ist dasselbe Mittel, mit dem diese Datei oben prüft,
+   *      dass `main.js` die Tabelle überhaupt benutzt (der `verarbeiteLokal`
+   *      /`verarbeiteOnline`-Abschnitt). Und der Renderer, der es zeichnet,
+   *      liest GENAU dieses Feld — auch das wird hier festgehalten.
+   */
+  const snapshot = {
+    tick: 1234,
+    round: 3,
+    wind: 0,
+    activePlayerId: 1,
+    entities: [{ entityId: 1, teamId: 0, x: 120, y: 60, health: 100, alive: true }],
+    projectiles: [],
+    crates: [],
+    turrets: [],
+    guenther: {
+      aktiv: true,
+      x: 240,
+      y: 300,
+      richtung: -1,
+      haufen: [{ x: 10, y: 20 }, { x: 30, y: 40 }],
+    },
+  };
+
+  const decoded = decodeSnapshot(encodeSnapshot(snapshot));
+  assert.equal(decoded.guenther.aktiv, true,
+    'Der dekodierte Snapshot muss Günther als aktiv führen — sonst zeichnet der Renderer nichts');
+  assert.equal(decoded.guenther.haufen.length, 2,
+    'Die Haufenzahl muss den Draht unverändert passieren');
+
+  // (2) Die Onlinesicht reicht das Feld durch — und der Renderer liest es.
+  const main = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
+  assert.match(main, /guenther:\s*snapshot\.guenther/,
+    'Die Onlinesicht muss `guenther` aus dem Snapshot in den Ansichtszustand setzen '
+    + '(ohne diese Zeile ist Günther online unsichtbar)');
+
+  const renderer = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
+  assert.match(renderer, /#drawGuenther\(state\.guenther\)/,
+    'Der Renderer zeichnet Günther aus `state.guenther` — genau dieses Feld muss die Onlinesicht liefern');
+  assert.match(renderer, /#drawPoopPiles\(state\.guenther\?\.haufen/,
+    'Der Renderer zeichnet die Haufen aus `state.guenther.haufen`');
+});
+
+test('Günthers vier Streiche werden ONLINE behandelt — die Wirkung läuft wirklich', () => {
+  /*
+   * Vorher hatten die vier Arten NUR lokale Zweige, obwohl der Server sie
+   * schickt (`src/server/gameServer.js:246–248`) und der Client sie
+   * durchreicht (`src/client/networkClient.js:396–398`).
+   *
+   * Geprüft wird nicht nur „ein Zweig ist da", sondern dass eine WIRKUNG
+   * entsteht: Der Online-Einstieg wird gerufen und aufgezeichnet.
+   */
+  const { online } = behandelteTypen();
+  for (const typ of ['guenther_wheel', 'guenther_pee', 'guenther_poop', 'guenther_poop_hit']) {
+    assert.ok(online.has(typ), `${typ} braucht einen ONLINE-Zweig`);
+  }
+
+  const gesehen = [];
+  const kontext = {
+    hud: { log: text => gesehen.push(['log', text]) },
+    showGuentherWheel: n => gesehen.push(['rad', n.outcome]),
+    nameOf: () => 'P1',
+  };
+  verarbeiteOnline(kontext, { t: 'guenther_wheel', outcome: 'heimdall', label: 'Heimdall' });
+  verarbeiteOnline(kontext, { t: 'guenther_pee', playerId: 1, amount: 5 });
+  verarbeiteOnline(kontext, { t: 'guenther_poop', x: 1, y: 2 });
+  verarbeiteOnline(kontext, { t: 'guenther_poop_hit', playerId: 1 });
+
+  assert.deepEqual(gesehen.map(e => e[0]), ['rad', 'log', 'log', 'log'],
+    'Jede der vier Arten muss online eine Wirkung erzeugen — keine darf still durchfallen');
+  assert.equal(gesehen[0][1], 'heimdall',
+    'Das Rad dreht auf den Ausgang, den das Serverereignis trägt — nicht auf einen eigenen Wurf');
+});
+
+test('`crate_pickup_blocked` meldet online den vollen Vorrat — ohne Q-Aufforderung', () => {
+  /*
+   * Vorher fiel das Ereignis online still durch: Der Spieler konnte nicht
+   * aufnehmen und erfuhr keinen Grund. Die Wirkung wird hier ausgeführt.
+   *
+   * Und sie muss sich vom lokalen Text UNTERSCHEIDEN: Die lokale Meldung nennt
+   * die Taste (Q), doch online gibt es KEIN Abwerfen — `Main#dropWeapon` steigt
+   * dort vorzeitig aus (`src/client/main.js:818`:
+   * `if (!this.match || this.mode !== 'local')`). Eine online angezeigte
+   * „(Q)"-Aufforderung wäre eine falsche Anweisung; deshalb hat der Online-Text
+   * einen eigenen Rumpf statt `beide(fn)`.
+   */
+  const { online } = behandelteTypen();
+  assert.ok(online.has('crate_pickup_blocked'),
+    'online bleibt der volle Vorrat ohne Rückmeldung — der Spieler erfährt den Grund nicht');
+
+  const lokalTexte = [];
+  verarbeiteLokal({ hud: { log: text => lokalTexte.push(text) } },
+    { type: 'crate_pickup_blocked', payload: { crateId: 1, playerId: 1, reason: 'voll' } });
+  const onlineTexte = [];
+  verarbeiteOnline({ hud: { log: text => onlineTexte.push(text) } },
+    { t: 'crate_pickup_blocked', crateId: 1, playerId: 1, reason: 'voll' });
+
+  assert.equal(lokalTexte.length, 1, 'lokal muss eine Meldung entstehen');
+  assert.equal(onlineTexte.length, 1, 'online muss eine Meldung entstehen');
+  assert.match(lokalTexte[0], /\(Q\)/, 'lokal nennt die Abwerf-Taste');
+  assert.doesNotMatch(onlineTexte[0], /\(Q\)/,
+    'online gibt es kein Abwerfen (`src/client/main.js:818`) — die Meldung darf es nicht versprechen');
 });

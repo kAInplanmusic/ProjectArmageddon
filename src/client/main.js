@@ -1147,6 +1147,22 @@ class Game {
        * Besitzer hätte einen unsichtbaren Angreifer.
        */
       turrets: snapshot.turrets ?? [],
+      /*
+       * Günther aus dem Snapshot (Protokoll v7).
+       *
+       * FUND (belegt): Hier fehlte das Feld. Der Renderer zeichnet Günther und
+       * seine Haufen GENAU aus `state.guenther` (`renderer.js:1218` ruft
+       * `#drawGuenther(state.guenther)`, `:1200` `#drawPoopPiles(state.guenther?.haufen ?? [])`),
+       * und die lokale Sicht reichte es durch (`engine/stateSnapshot.js:201`:
+       * `guenther: quelle.guenther`). Online setzte der Ansichtszustand nur
+       * `crates` und `turrets` — Günther lief mit der Simulation, war aber
+       * unsichtbar.
+       *
+       * Form wie bei `crates`/`turrets`: unverändert aus dem Snapshot
+       * durchgereicht. Fehlt das Feld, steigt der Renderer weich aus
+       * (`?.aktiv`, `?? []`) — dieselbe Absicherung wie lokal.
+       */
+      guenther: snapshot.guenther ?? null,
       terrainWidth: this.remoteTerrain?.width ?? this.renderer.width,
       terrainHeight: this.remoteTerrain?.height ?? this.renderer.height,
     };
