@@ -2,18 +2,27 @@
 /**
  * Misst, wann der Mahlstrom greift und ob er die Partie noch beeinflusst.
  *
- * ## Der Befund
- *
- * Ein User-Flow-Audit stellte fest: Der Mahlstrom (der Sturm, der das Gelände
- * verengt) greift ab Runde **15** (`MATCH_RULES.suddenDeath.roundBreakpoint`).
- * Gemessen endeten **6 von 8 Partien bei oder nach Runde 15** — der
- * Spannungsbogen kommt also, aber die Partie war oft schon entschieden.
- *
  * ## Was dieses Werkzeug tut
  *
  * Es spielt Partien und protokolliert, in welcher Runde sie enden und wie viele
  * Runden der Mahlstrom noch aktiv war. Daraus wird sichtbar, ob der Breakpoint
  * eine Eskalation ist oder eine Formalität am Ende.
+ *
+ * ## Der Stand, aus dem dieser Kopf entstand (Historie)
+ *
+ * Als das Werkzeug geschrieben wurde, lag `roundBreakpoint` bei **15**. Gemessen
+ * endeten damals **6 von 8 Partien bei oder nach Runde 15** — der Sturm griff
+ * also erst, wenn die Partie ohnehin entschieden war.
+ *
+ * **Der Breakpoint steht heute bei 8 und ist eine getroffene Entscheidung.** Die
+ * Begründung samt Messwerttabelle steht bei der Konstanten in
+ * `src/shared/config/match.js` (`suddenDeath.roundBreakpoint`): acht Runden
+ * geben Zeit, die Karte zu lesen, und lassen danach rund 18 Runden unter Sturm.
+ *
+ * **Dieses Werkzeug entscheidet nichts und spricht nichts frei.** Es misst und
+ * meldet. Der Kopf nennt bewusst keine Zahl als „die richtige" — wer den
+ * Breakpoint ändert, ändert Spielgefühl, und das ist eine Design-Entscheidung
+ * des Auftraggebers, keine Rechenaufgabe.
  *
  * ## Warum das eine Entscheidung ist
  *
@@ -39,8 +48,15 @@ const ANZAHL = Number(args.get('seeds') ?? 6);
 /** Der heutige Breakpoint, aus der Konfiguration gelesen statt abgeschrieben. */
 const HEUTE = MATCH_RULES.suddenDeath.roundBreakpoint;
 
-/** Geprüfte Breakpoints — der heutige und drei frühere. */
-const KANDIDATEN = [4, 6, 8, 10, HEUTE];
+/**
+ * Geprüfte Breakpoints — feste Kandidaten plus der heutige.
+ *
+ * `HEUTE` kann mit einem Kandidaten zusammenfallen (aktuell: 8). Ohne
+ * Entdopplung stünde dieselbe Zeile zweimal in der Tabelle und die
+ * Markierung „<- heute" sähe aus wie ein Fehler. Sortiert, damit die
+ * Reihenfolge lesbar bleibt und nicht von der Konfiguration abhängt.
+ */
+const KANDIDATEN = [...new Set([4, 6, 8, 10, HEUTE])].sort((a, b) => a - b);
 
 /**
  * Spielt eine Partie und protokolliert den Verlauf.
@@ -142,25 +158,36 @@ for (const bp of KANDIDATEN) {
 }
 
 console.log('');
-if (vorBreakpoint === 0) {
-  console.log(`BEFUND: Keine der ${ANZAHL} Partien endete VOR Runde ${HEUTE}.`);
-  console.log('  Der Mahlstrom ist damit kein Endspiel-Beschleuniger, sondern der');
-  console.log('  Regelweg: Er greift, wenn die Partie ohnehin zu Ende geht.');
-} else {
-  console.log(`BEFUND: ${vorBreakpoint} von ${ANZAHL} Partien endeten VOR Runde ${HEUTE}.`);
-}
+/*
+ * Das Fazit wird aus der Messung GEBILDET, nicht daneben geschrieben.
+ *
+ * Hier stand ein fest verdrahteter Satz: „Der Mahlstrom ist damit kein
+ * Endspiel-Beschleuniger, sondern der Regelweg: Er greift, wenn die Partie
+ * ohnehin zu Ende geht." Der Satz war richtig, als der Breakpoint bei 15 lag,
+ * und er wurde bei JEDEM Lauf ausgegeben — auch bei Breakpoint 8, wo im Mittel
+ * rund 21 von 26 Runden unter Sturm liegen. Ein Bericht, der seiner eigenen
+ * Messung widerspricht, ist schlimmer als keiner: Er schickt den Leser an eine
+ * längst verlassene Stelle.
+ */
+console.log(`BEFUND: ${vorBreakpoint} von ${ANZAHL} Partien endeten VOR Runde ${HEUTE}.`);
+const anteilUnterSturm = mittel > 0 ? (unterSturm / mittel) * 100 : 0;
+console.log(`  Der Mahlstrom greift in jeder gemessenen Partie und traegt im Mittel`);
+console.log(`  ${unterSturm.toFixed(1)} von ${mittel.toFixed(1)} Runden = ${anteilUnterSturm.toFixed(0)} % der Partie.`);
 
 console.log('');
-console.log('DIE ENTSCHEIDUNG');
+console.log('WAS DARAUS FOLGT — und was nicht:');
 console.log('');
-console.log('  Der Breakpoint bestimmt, ob das Endspiel ein Kampf gegen die Verengung');
-console.log('  wird oder ein Auslaufen:');
+console.log('  Aus dem Anteil allein folgt KEIN Urteil. Er beschreibt die Groesse:');
+console.log('  - kleiner Anteil: der Sturm raeumt auf, was ohnehin entschieden ist;');
+console.log('  - grosser Anteil: die Verengung ist der Regelweg der Partie.');
+console.log('  Ob sie dabei als SPIELZIEL wirkt (Bewegungszwang, Hineinwerfen des');
+console.log('  Gegners) oder nur als Zeitgeber, misst dieses Werkzeug NICHT — dafuer');
+console.log('  braeuchte es Partien mit echten Spielern (User-Flow-Audit).');
+
 console.log('');
-console.log('  - Spaet (heute): Der Sturm raeumt auf, was ohnehin entschieden ist.');
-console.log('    Er kostet keine Entscheidung und erzeugt keine Spannung.');
-console.log('  - Frueh (8-10): Beide Seiten muessen sich bewegen, verlieren Gelande');
-console.log('    und koennen die Verengung als Waffe nutzen (den Gegner hineinwerfen).');
-console.log('    Das ist ein neues Spielziel — aber es verkuerzt die Partie.');
+console.log(`  Der Breakpoint ist eine DESIGN-Entscheidung. Sie steht begruendet in`);
+console.log(`  src/shared/config/match.js (suddenDeath.roundBreakpoint = ${HEUTE}) —`);
+console.log('  samt der Messwerttabelle, aus der sie abgeleitet wurde.');
 console.log('');
-console.log('  Die Zahlen oben zeigen, wie viele Runden unter Sturm verblieben. Ein');
-console.log('  frueherer Breakpoint aendert das Spielgefuehl und gehoert entschieden.');
+console.log('  Dieses Werkzeug MISST und MELDET. Es entscheidet nicht, es spricht');
+console.log('  keinen Wert frei und es nennt keinen Breakpoint den richtigen.');
