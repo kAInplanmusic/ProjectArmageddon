@@ -17,6 +17,15 @@
  *
  * Deshalb wird nicht nur der WERT geprüft, sondern die ANZAHL DER STELLEN: Eine
  * zweite Definition lässt diesen Test fallen, egal welchen Wert sie hat.
+ *
+ * Der Fall `PRIMARY_BIOME_BY_PRESET` zeigt, warum das eine TABELLE braucht und
+ * nicht bloß die Maschinerie: Der Bezeichner stand in ZWEI Dateien definiert
+ * (`src/shared/config/backdrops.js` und `src/shared/config/scenery.js`), und
+ * weil er hier nicht eingetragen war, hat der Wächter die Doppelung nie
+ * gesehen. Die Definitionsstelle ist jetzt allein `backdrops.js`; `scenery.js`
+ * reicht den Wert über eine Re-Export-Naht (`export { … };`) weiter. Genau
+ * diese Naht erkennt `definitionsstellen` NICHT als Definition (siehe dort),
+ * deshalb ist die Naht erlaubt und der Eintrag unten die einzige Zusage.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -65,6 +74,9 @@ const EINE_STELLE = [
   ['TICK_MS', 'src/shared/config/network.js'],
   ['PLAYER_HALF_WIDTH', 'src/shared/config/player.js'],
   ['PLAYER_HALF_HEIGHT', 'src/shared/config/player.js'],
+  // Stand als Doppelregel in backdrops.js UND scenery.js. Letzteres ist jetzt
+  // reine Re-Export-Naht — siehe Kopfkommentar und `definitionsstellen`.
+  ['PRIMARY_BIOME_BY_PRESET', 'src/shared/config/backdrops.js'],
 ];
 
 for (const [name, erwartet] of EINE_STELLE) {

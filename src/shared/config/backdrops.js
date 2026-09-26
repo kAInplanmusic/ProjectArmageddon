@@ -932,7 +932,7 @@ export function paletteFor(backdrop) {
 }
 
 /**
- * Leitbiom je Geländeform.
+ * Leitbiom je Geländeform — die EINZIGE Quelle dieser Tabelle.
  *
  * Mehrere Biome teilen sich eine Geländeform (hills gilt für Wald, Stadt,
  * Western und Noir). Ohne Leitbiom würde die Standardkulisse zufällig aus allen
@@ -940,6 +940,30 @@ export function paletteFor(backdrop) {
  *
  * Die Wahl des Spielers bleibt davon unberührt: alle sechzig Kulissen sind
  * erreichbar, nur die VORGABE ist eindeutig.
+ *
+ * Die Tabelle steht hier, und zwar aus zwei Gründen:
+ *
+ *  1. Hier ist die Regel entstanden — mit dem Kulissen-Katalog, dessen Biome
+ *     das Leitbiom auswählt (`pickBackdrop`).
+ *  2. Hier wird sie durchgesetzt: `tests/backdrops.test.js` prüft sie gegen
+ *     `BACKDROP_BIOMES`.
+ *
+ * Die Projektregel, die dahinter steht:
+ *
+ *     Jede Geländeform hat genau EIN eigenes Leitbiom, dessen `mapPreset`
+ *     diese Form ist.
+ *
+ * Die später hinzugekommenen Geländeformen haben je ein eigenes Leitbiom mit
+ * eigenen Bildern — die Regel gilt damit für alle acht Formen.
+ *
+ * ACHTUNG, Doppelregel-Vorgeschichte: Die Tabelle stand ZWEIMAL im Baum —
+ * einmal hier, einmal in `src/shared/config/scenery.js`, OHNE Import zwischen
+ * beiden. Sie war wertgleich, und ein Vergleichstest hielt die beiden Kopien
+ * nur zusammen: Das verhindert das Auseinanderlaufen, beseitigt die Doppelung
+ * aber nicht. `scenery.js` reicht die Tabelle jetzt von hier durch
+ * (`import … from './backdrops.js'` plus `export { PRIMARY_BIOME_BY_PRESET }`);
+ * eine Re-Export-Naht ist keine zweite Definition. Werte ändern heißt ab jetzt:
+ * hier ändern, an genau dieser Stelle.
  */
 export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
   islands: 'maritime',

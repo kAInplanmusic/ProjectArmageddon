@@ -16,6 +16,7 @@ import {
   pickBackdrop,
   paletteFor,
 } from '../src/shared/config/backdrops.js';
+import { PRIMARY_BIOME_BY_PRESET as LEITBIOM_AUS_SCENERY } from '../src/shared/config/scenery.js';
 import { TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 
 /**
@@ -503,4 +504,49 @@ test('Alle sechzig Kulissen sind auswählbar', () => {
   // Wahl erreichbar sein. Eine feste 60 hätte beim nächsten Biom nichts gesagt.
   assert.equal(erreichbar.size, ALL_BACKDROPS.length);
   assert.ok(erreichbar.size >= 60, `Nur ${erreichbar.size} Kulissen erreichbar`);
+});
+
+// ------------------------------------------------------------------ Eine Stelle
+
+/** Alle .js-Dateien unterhalb von `ordner`, rekursiv. */
+function quelldateien(ordner) {
+  const ergebnis = [];
+  for (const eintrag of fs.readdirSync(ordner, { withFileTypes: true })) {
+    const voll = path.join(ordner, eintrag.name);
+    if (eintrag.isDirectory()) ergebnis.push(...quelldateien(voll));
+    else if (eintrag.name.endsWith('.js')) ergebnis.push(voll);
+  }
+  return ergebnis;
+}
+
+test('Das Leitbiom je Geländeform hat genau EINE Quelle', () => {
+  /*
+   * Der Befund, gegen den dieser Test steht: `PRIMARY_BIOME_BY_PRESET` war
+   * ZWEIMAL im Baum definiert — in `backdrops.js` UND in `scenery.js`, ohne
+   * Import zwischen beiden. Die Tabellen waren wertgleich; ein Vergleichstest
+   * (`tests/terrain-presets.test.js`) hielt die beiden Kopien lediglich
+   * zusammen. Das verhindert das Auseinanderlaufen, beseitigt die Doppelung
+   * aber nicht: Wer den einen Wert ändert, ändert nichts.
+   *
+   * Jetzt definiert nur noch der Kulissen-Katalog die Tabelle; `scenery.js`
+   * importiert und re-exportiert sie. Geprüft wird deshalb die IDENTITÄT des
+   * Objekts und die ANZAHL DER DEFINITIONSSTELLEN — nicht die Wertgleichheit:
+   * Zwei wertgleiche, aber getrennte Tabellen ließen diesen Test fallen, egal
+   * welchen Wert sie haben.
+   */
+  assert.equal(PRIMARY_BIOME_BY_PRESET, LEITBIOM_AUS_SCENERY,
+    'scenery.js hält eine eigene Kopie der Tabelle statt der des Katalogs');
+
+  // Gegenprobe im Quelltext: eine zweite `const`-Definition — egal wo unter
+  // `src/` — ist genau der Fehler, der hier behoben wurde. Eng gefasst wie in
+  // `tests/eine-regel-eine-stelle.test.js`: `export { NAME };` ist eine
+  // Weiterleitung und ausdrücklich erlaubt, `const NAME =` nicht.
+  const muster = /^\s*(?:export\s+)?const\s+PRIMARY_BIOME_BY_PRESET\s*=/;
+  const stellen = quelldateien(path.join(ROOT, 'src'))
+    .filter(datei => fs.readFileSync(datei, 'utf8').split('\n').some(zeile => muster.test(zeile)))
+    .map(datei => path.relative(ROOT, datei).split(path.sep).join('/'));
+
+  assert.deepEqual(stellen, ['src/shared/config/backdrops.js'],
+    'PRIMARY_BIOME_BY_PRESET muss allein in src/shared/config/backdrops.js definiert sein, '
+    + `gefunden in: ${stellen.join(', ') || '—'}`);
 });

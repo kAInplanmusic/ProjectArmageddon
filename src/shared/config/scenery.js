@@ -18,6 +18,7 @@
  * @module scenery
  */
 import { SeededRandom } from '../prng.js';
+import { PRIMARY_BIOME_BY_PRESET } from './backdrops.js';
 
 // ------------------------------------------------------------------ Himmel
 
@@ -416,23 +417,25 @@ export const SCENERY_BIOMES = Object.freeze({
   },
 });
 
-/** Leitbiom je Geländeform — dieselbe Regel wie im Kulissen-Katalog. */
-export const PRIMARY_BIOME_BY_PRESET = Object.freeze({
-  islands: 'maritime',
-  mountains: 'alpine',
-  hills: 'forest',
-  caverns: 'caverns',
-  /*
-   * Die später hinzugekommenen Geländeformen. Jede hat jetzt ein EIGENES
-   * Leitbiom mit eigenen Bildern — die Projektregel „jede Geländeform hat genau
-   * ein eigenes Leitbiom, dessen `mapPreset` diese Form ist" gilt damit für alle
-   * acht Formen. Ein Test hält das fest (`tests/backdrops.test.js`).
-   */
-  flooded: 'deluge',
-  open: 'open',
-  spires: 'spires',
-  warren: 'warren',
-});
+/**
+ * Leitbiom je Geländeform — hier nur HEREINGEREICHT und weitergegeben, NICHT
+ * definiert.
+ *
+ * Die Tabelle steht an genau EINER Stelle: im Kulissen-Katalog
+ * (`./backdrops.js`), wo die Regel entstanden ist und wo
+ * `tests/backdrops.test.js` sie gegen die Biome durchsetzt.
+ *
+ * Vorher stand sie ZWEIMAL im Baum — hier und dort, ohne Import zwischen
+ * beiden. Beide Fassungen waren wertgleich, und `tests/terrain-presets.test.js`
+ * verglich sie Zeile für Zeile: Das hält die Kopien zusammen, beseitigt die
+ * Doppelung aber nicht — „wer den einen Wert ändert, ändert nichts".
+ *
+ * Der Re-Export bleibt stehen, damit `pickScenery` unten und alle Leser dieser
+ * Datei unverändert dieselbe Tabelle sehen. Eine Re-Export-Naht
+ * (`export { NAME };`) ist KEINE zweite Definition; genau so unterscheidet es
+ * auch der Wächter `tests/eine-regel-eine-stelle.test.js`.
+ */
+export { PRIMARY_BIOME_BY_PRESET };
 
 // ------------------------------------------------------------------ Erzeugung
 

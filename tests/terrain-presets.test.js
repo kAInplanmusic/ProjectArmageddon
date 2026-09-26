@@ -5,8 +5,14 @@ import { MatchController } from '../src/engine/match.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { generateTerrain, surfaceY, TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 import { WET_LEVEL } from '../src/shared/config/water.js';
-import { PRIMARY_BIOME_BY_PRESET as BIOME_SCENERY } from '../src/shared/config/scenery.js';
-import { PRIMARY_BIOME_BY_PRESET as BIOME_BACKDROPS } from '../src/shared/config/backdrops.js';
+import {
+  PRIMARY_BIOME_BY_PRESET as BIOME_SCENERY,
+  SCENERY_BIOMES,
+} from '../src/shared/config/scenery.js';
+import {
+  PRIMARY_BIOME_BY_PRESET as BIOME_BACKDROPS,
+  BACKDROP_BIOMES,
+} from '../src/shared/config/backdrops.js';
 
 /**
  * Geländeformen.
@@ -272,6 +278,16 @@ test('Alle Geländeformen haben eigene Kulissen — oder stehen namentlich hier'
     // Die ursprünglichen Formen MÜSSEN zugeordnet sein.
     assert.ok(BIOME_SCENERY[preset], `${preset}: keine Biomgruppe in scenery.js`);
     assert.ok(BIOME_BACKDROPS[preset], `${preset}: keine Biomgruppe in backdrops.js`);
+    /*
+     * Dieser Vergleich ist seit dem Umbau eine IDENTITÄTS-Prüfung: `scenery.js`
+     * reicht die Tabelle aus dem Kulissen-Katalog nur durch (`export { … }`),
+     * beide Namen zeigen also auf DASSELBE Objekt. Der Vergleich ist damit
+     * richtiger als vorher (er kann nicht mehr "wertgleich, aber getrennt"
+     * melden) — aber er sagt nichts mehr über den INHALT der Kataloge aus.
+     * Genau das prüft der Test „Die Leitbiom-Zuordnung zeigt auf echte Biome"
+     * darunter: dass der hier genannte Name in BEIDEN Katalogen wirklich
+     * existiert und dort die richtige Geländeform trägt.
+     */
     assert.equal(BIOME_SCENERY[preset], BIOME_BACKDROPS[preset],
       `${preset}: die Biomgruppen in scenery.js und backdrops.js weichen voneinander ab`);
   }
@@ -280,6 +296,62 @@ test('Alle Geländeformen haben eigene Kulissen — oder stehen namentlich hier'
   // hier eintragen — sonst fällt der Test darüber (fehlende Biomgruppe).
   assert.equal(OHNE_KULISSEN.length, 0,
     'Es gibt wieder Formen ohne Kulissen — das ist eine bewusste Entscheidung und gehört begründet');
+});
+
+test('Die Leitbiom-Zuordnung zeigt auf echte Biome — in BEIDEN Katalogen', () => {
+  /*
+   * Gegenprobe zum Test darüber.
+   *
+   * Der Vergleich dort stellt nur fest, dass `scenery.js` und `backdrops.js`
+   * denselben Namen für dieselbe Geländeform nennen — nach dem Umbau sind das
+   * ohnehin dieselben Objekte (eine Quelle, ein Re-Export). Er würde deshalb
+   * auch dann bestehen, wenn der Name auf ein Biom zeigte, das es im jeweiligen
+   * Katalog gar nicht gibt (`hills` → `wuestenplanet`).
+   *
+   * Dieser Test schließt die Lücke: Für jede Geländeform wird das Leitbiom
+   * nachgeschlagen und dann in BEIDEN Katalogen nachgeprüft —
+   *
+   *   1. `SCENERY_BIOMES` (der generative Katalog) muss einen Eintrag unter
+   *      diesem Namen führen; sonst fiele `pickScenery` still auf `forest`
+   *      zurück, und die Karte sähe nicht wie ihre Form aus.
+   *   2. `BACKDROP_BIOMES` (der Bildkatalog) muss das Biom führen UND sein
+   *      `mapPreset` muss genau diese Geländeform sein. Das ist die
+   *      Projektregel: Jede Form hat genau EIN eigenes Leitbiom, dessen
+   *      `mapPreset` diese Form ist.
+   *
+   * Damit ist die Zuordnung an der Stelle belegt, an der sie wirkt — nicht nur
+   * als Gleichheit zweier Namen.
+   */
+  for (const preset of Object.keys(TERRAIN_PRESETS)) {
+    const leitbiom = BIOME_BACKDROPS[preset];
+
+    // (1) Der generative Katalog kennt das Leitbiom.
+    assert.ok(SCENERY_BIOMES[leitbiom],
+      `${preset}: Leitbiom „${leitbiom}“ fehlt in SCENERY_BIOMES — pickScenery `
+      + 'fiele auf forest zurück');
+
+    // (2) Der Bildkatalog kennt es und trägt die passende Geländeform.
+    const biom = BACKDROP_BIOMES.find(eintrag => eintrag.id === leitbiom);
+    assert.ok(biom,
+      `${preset}: Leitbiom „${leitbiom}“ fehlt in BACKDROP_BIOMES`);
+    assert.equal(biom.mapPreset, preset,
+      `${preset}: ` + `'` + leitbiom + `'` + `.mapPreset ist „${biom.mapPreset}“, `
+      + `erwartet „${preset}“`);
+  }
+});
+
+test('Die Leitbiom-Gegenprobe erkennt eine verdrehte Zuordnung', () => {
+  /*
+   * Der Kern einer Gegenprobe ist, dass sie bei einem Fehler anschlägt. Hier
+   * wird deshalb die Zuordnung absichtlich verdreht und mit DERSELBEN Regel
+   * geprüft, die der Test darüber anwendet. Wäre die Prüfung wirkungslos, ginge
+   * die Verdrehung durch — dieser Test fiele dann um.
+   */
+  const falsch = { ...BIOME_BACKDROPS, hills: 'alpine' }; // alpine trägt mountains
+  const biom = BACKDROP_BIOMES.find(eintrag => eintrag.id === falsch.hills);
+  assert.ok(biom, 'Die Probe braucht ein Biom, das es gibt');
+  assert.notEqual(biom.mapPreset, 'hills',
+    'Die Katalog-Prüfung muss erkennen, dass „alpine“ nicht zu hills gehört');
 });
 
 test('Das Gelände bleibt deterministisch — auch mit der neuen Startplatzsuche', () => {
