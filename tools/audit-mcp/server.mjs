@@ -29,6 +29,7 @@ import {
   toteDateien, unbenutzteExporte, unbenutzteKonstanten, doppelregeln, marker,
   nichtdeterminismus, zufallImProjekt, ereignisAbdeckung, pfadAufloesung, serverAutoritaet,
   secretScan, generierteDateien, zeilenStatistik, inventar,
+  beurteileDoppelregeln, DOPPELREGEL_AUSNAHMEN_QUELLE,
 } from './lib/statisch.mjs';
 import {
   determinismus, spielverlauf, ballistik, waffenKennzahlen, klassenMatrix,
@@ -195,6 +196,7 @@ const WERKZEUGE = {
       const exporte = unbenutzteExporte();
       const konstanten = unbenutzteKonstanten();
       const doppelt = doppelregeln();
+      const doppeltUrteil = beurteileDoppelregeln(doppelt);
       const mark = marker();
       const generiert = generierteDateien();
       const kurz = umfang !== 'voll';
@@ -202,7 +204,17 @@ const WERKZEUGE = {
         toteDateien: kurz ? { anzahl: dateien.length, top: dateien.slice(0, 10) } : dateien,
         unbenutzteExporte: kurz ? { anzahl: exporte.length, top: exporte.slice(0, 15) } : exporte,
         unbenutzteKonstanten: kurz ? { anzahl: konstanten.length, liste: konstanten.slice(0, 15) } : konstanten,
-        doppelregeln: kurz ? { anzahl: doppelt.length, liste: doppelt.slice(0, 10) } : doppelt,
+        // Die MESSUNG bleibt eine Messung; das Urteil kommt aus der
+        // Ausnahmeliste (siehe DOPPELREGEL_AUSNAHMEN in lib/statisch.mjs).
+        doppelregeln: kurz
+          ? {
+            anzahl: doppelt.length,
+            begruendet: doppeltUrteil.begruendet.map(d => d.name),
+            offen: doppeltUrteil.offen.map(d => ({ name: d.name, orte: d.orte, grund: d.grund })),
+            quelle: DOPPELREGEL_AUSNAHMEN_QUELLE,
+            liste: doppelt.slice(0, 10),
+          }
+          : { messung: doppelt, urteil: doppeltUrteil },
         marker: { anzahl: mark.length, liste: mark },
         generierteDateien: generiert,
       });
@@ -210,21 +222,28 @@ const WERKZEUGE = {
   },
 
   audit_events: {
-    beschreibung: 'Ereignis-Abdeckung: Welche Ereignisse emittiert die Engine, und welcher Client-Zweig behandelt sie? Unterscheidet GEDECKT, DOKUMENTIERT-BEWUSST-STUMM (aus dem Wächter tests/event-coverage.test.js) und UNDOKUMENTIERT STUMM — nur die letzte Gruppe ist eine Lücke.',
+    beschreibung: 'Ereignis-Abdeckung: Sucht beide Meldewege der Engine (`emit(` und `melde(`) und stellt sie gegen den Client. Unterscheidet GEDECKT (Name als Zeichenkette ODER als unquotierter Tabellenschlüssel — Textsuche, dafür der schwächere Beleg `gedecktNurSchluessel`), DOKUMENTIERT-BEWUSST-STUMM (aus dem Wächter tests/event-coverage.test.js, MIT gelesenem Begründungstext) und UNDOKUMENTIERT STUMM — nur die letzte Gruppe ist eine Lücke.',
     schema: { type: 'object', properties: {}, additionalProperties: false },
     async ruf() {
       const a = ereignisAbdeckung();
+      const ohneGrund = a.stummListeOhneBegruendung;
       return text({
         gesamt: a.gesamt,
         gedeckt: a.gedeckt.length,
+        gedecktNurSchluessel: a.gedecktNurSchluessel.map(g => g.ereignis),
         stummInsgesamt: a.stumm.length,
-        stummDokumentiert: a.stummDokumentiert.map(s => s.ereignis),
+        stummDokumentiert: a.stummDokumentiert.map(s => ({ ereignis: s.ereignis, begruendung: s.begruendung })),
+        stummListeOhneBegruendung: ohneGrund,
         stummUndokumentiert: a.stummUndokumentiert,
         waechterVorhanden: a.waechterVorhanden,
         waechterListe: a.waechterListe,
-        urteil: a.stummUndokumentiert.length === 0
-          ? `Alle ${a.stumm.length} stummen Ereignisse sind im Wächter als bewusst stumm begründet — keine Lücke.`
-          : `${a.stummUndokumentiert.length} stumme Ereignisse sind NICHT dokumentiert: ${a.stummUndokumentiert.map(s => s.ereignis).join(', ')}`,
+        // Das Urteil nennt NUR, was gelesen wurde: ein Eintrag zählt als
+        // begründet, wenn der Begründungstext im Wächter steht. Fehlt er, ist
+        // der Eintrag offen — nicht freigesprochen.
+        urteil: a.stummUndokumentiert.length === 0 && ohneGrund.length === 0
+          ? `Alle ${a.stumm.length} stummen Ereignisse sind im Wächter mit Begründung gelistet (${a.stummDokumentiert.length} gelesene Begründungen aus ${a.waechterListe.length} Wächter-Einträgen) — keine Lücke.`
+          : `${a.stummUndokumentiert.length} stumme Ereignisse sind NICHT dokumentiert: ${a.stummUndokumentiert.map(s => s.ereignis).join(', ')}`
+            + (ohneGrund.length ? ` · ${ohneGrund.length} im Wächter gelistet, aber OHNE Begründung: ${ohneGrund.map(s => s.ereignis).join(', ')}` : ''),
       });
     },
   },
@@ -333,23 +352,36 @@ const WERKZEUGE = {
       ergebnis.klassen = klassenMatrix({});
       ergebnis.terrain = terrainVielfalt({ anzahl: terrainProForm });
       ergebnis.perf = leistung({ zuge: 120 });
-      ergebnis.toteDateien = toteDateien();
-      ergebnis.unbenutzteKonstanten = unbenutzteKonstanten();
-      ergebnis.doppelregeln = doppelregeln();
-      ergebnis.marker = marker();
+      // Die Ampel liest `d.statisch.*`, `d.pfade` und `d.zufall.*` — genau die
+      // Form, die `audit_bericht` baut. Vorher lagen diese Felder hier flach
+      // (`ergebnis.toteDateien`, `ergebnis.nichtdeterminismus`), und `ampel()`
+      // brach mit „Cannot read properties of undefined (reading 'toteDateien')"
+      // ab: der ganze Aufruf lieferte statt Zahlen einen Fehlertext.
+      const doppeltGemessen = doppelregeln();
+      ergebnis.statisch = {
+        toteDateien: toteDateien(),
+        unbenutzteExporte: unbenutzteExporte(),
+        unbenutzteKonstanten: unbenutzteKonstanten(),
+        doppelregeln: doppeltGemessen,
+        doppelregelnUrteil: beurteileDoppelregeln(doppeltGemessen),
+        marker: marker(),
+        generierteDateien: generierteDateien(),
+      };
+      ergebnis.pfade = pfadAufloesung();
+      ergebnis.zufall = { imSimulationspfad: nichtdeterminismus(), ausserhalb: zufallImProjekt() };
       ergebnis.ereignisse = (() => {
         const a = ereignisAbdeckung();
         return {
           gesamt: a.gesamt,
           gedeckt: a.gedeckt.length,
-          stumm: a.stumm.length,
-          stummDokumentiert: a.stummDokumentiert.map(s => s.ereignis),
-          stummUndokumentiert: a.stummUndokumentiert.map(s => s.ereignis),
+          stumm: a.stumm,
+          stummDokumentiert: a.stummDokumentiert,
+          stummListeOhneBegruendung: a.stummListeOhneBegruendung,
+          stummUndokumentiert: a.stummUndokumentiert,
+          waechterVorhanden: a.waechterVorhanden,
         };
       })();
-      ergebnis.nichtdeterminismus = { imSimulationspfad: nichtdeterminismus(), ausserhalb: zufallImProjekt() };
       ergebnis.secrets = secretScan();
-      ergebnis.generierteDateien = generierteDateien();
       ergebnis.checklist = { themen: themen(), quellen: quellen(), anzahl: KATALOG.length };
       ergebnis.ampel = ampel(ergebnis);
       return text(ergebnis);
@@ -369,6 +401,10 @@ const WERKZEUGE = {
       additionalProperties: false,
     },
     async ruf({ pfad = 'docs/audit-tief.md', gates = 'schnell', seeds = [101, 202, 303, 404, 505], terrainProForm = 12 } = {}) {
+      // Doppelregeln EINMAL messen und daraus das Urteil lesen: zwei Messungen
+      // könnten bei paralleler Arbeit am Baum auseinanderlaufen, und dann stünde
+      // in einem Bericht eine Zahl neben einem Urteil aus einer anderen Messung.
+      const doppeltGemessen = doppelregeln();
       const daten = {
         stand: { git: gitStatus(), umfang: zeilenStatistik(), node: process.version },
         gates: fahreGates({ welche: gates }),
@@ -383,7 +419,8 @@ const WERKZEUGE = {
           toteDateien: toteDateien(),
           unbenutzteExporte: unbenutzteExporte(),
           unbenutzteKonstanten: unbenutzteKonstanten(),
-          doppelregeln: doppelregeln(),
+          doppelregeln: doppeltGemessen,
+          doppelregelnUrteil: beurteileDoppelregeln(doppeltGemessen),
           marker: marker(),
           generierteDateien: generierteDateien(),
         },
@@ -392,8 +429,10 @@ const WERKZEUGE = {
           return {
             gesamt: a.gesamt,
             gedeckt: a.gedeckt.length,
+            gedecktNurSchluessel: a.gedecktNurSchluessel.length,
             stumm: a.stumm,
             stummDokumentiert: a.stummDokumentiert,
+            stummListeOhneBegruendung: a.stummListeOhneBegruendung,
             stummUndokumentiert: a.stummUndokumentiert,
             waechterVorhanden: a.waechterVorhanden,
           };
@@ -418,6 +457,9 @@ const WERKZEUGE = {
           toteDateien: daten.statisch.toteDateien.length,
           unbenutzteKonstanten: daten.statisch.unbenutzteKonstanten.length,
           doppelregeln: daten.statisch.doppelregeln.length,
+          doppelregelnOffen: daten.statisch.doppelregelnUrteil.offen.length,
+          doppelregelnBegruendet: daten.statisch.doppelregelnUrteil.begruendet.length,
+          ausnahmenOhneMessung: daten.statisch.doppelregelnUrteil.verwaisteAusnahmen.length,
           stummeEreignisse: daten.ereignisse.stumm.length,
           secrets: daten.secrets.length,
         },
@@ -439,26 +481,80 @@ export function ampel(d) {
   const felder = {};
   const setze = (name, zustand, begruendung) => { felder[name] = { zustand, begruendung }; };
 
-  setze('gates', d.gates.fehlgeschlagen.length === 0 ? 'gruen' : 'rot',
-    d.gates.fehlgeschlagen.length === 0 ? 'alle gefahrenen Gates bestanden' : `rot: ${d.gates.fehlgeschlagen.join(', ')}`);
+  /**
+   * Länge einer Messung — oder `null`, wenn in diesem Lauf nicht gemessen.
+   *
+   * Warum das hier steht: Fehlte eine Messung, brach `ampel()` vorher mit einem
+   * TypeError ab (belegt: `audit_all` lieferte „Cannot read properties of
+   * undefined (reading 'toteDateien')" statt Zahlen). Und ein fehlendes Feld darf
+   * sich NICHT wie Sauberkeit lesen: „nicht gemessen" ist gelb, nie grün.
+   */
+  const laenge = (x) => (Array.isArray(x) ? x.length : typeof x === 'number' ? x : null);
+  const namen = (x) => (Array.isArray(x) ? x.map(s => s?.ereignis ?? s) : []);
+  const nichtsGemessen = 'in diesem Lauf nicht gemessen — gilt NICHT als grün (fail-safe)';
 
-  setze('determinismus', d.determinismus.deterministisch && d.determinismus.seedWirkt ? 'gruen' : 'rot', d.determinismus.urteil);
+  setze('gates', !Array.isArray(d.gates?.fehlgeschlagen) ? 'gelb' : d.gates.fehlgeschlagen.length === 0 ? 'gruen' : 'rot',
+    !Array.isArray(d.gates?.fehlgeschlagen) ? nichtsGemessen
+      : d.gates.fehlgeschlagen.length === 0 ? 'alle gefahrenen Gates bestanden'
+        : `rot: ${d.gates.fehlgeschlagen.join(', ')}`);
 
-  const undokumentiert = d.ereignisse.stummUndokumentiert?.length ?? 0;
-  const stummGesamt = d.ereignisse.stumm?.length ?? 0;
-  setze('ereignisse', undokumentiert === 0 ? 'gruen' : 'gelb',
-    undokumentiert === 0
-      ? `${stummGesamt} stumme Ereignisse — alle im Wächter als bewusst stumm begründet`
-      : `${undokumentiert} UNDOKUMENTIERT stumme Ereignisse: ${d.ereignisse.stummUndokumentiert.map(s => s.ereignis ?? s).join(', ')}`);
+  setze('determinismus', d.determinismus?.deterministisch && d.determinismus?.seedWirkt ? 'gruen' : 'rot',
+    d.determinismus?.urteil ?? nichtsGemessen);
 
-  setze('toteDateien', d.statisch.toteDateien.length === 0 ? 'gruen' : 'gelb', `${d.statisch.toteDateien.length} Dateien ohne Importeur`);
-  setze('unbenutzteKonstanten', d.statisch.unbenutzteKonstanten.length === 0 ? 'gruen' : 'gelb', `${d.statisch.unbenutzteKonstanten.length} definiert, nie gelesen`);
-  setze('pfade', d.pfade.falsch.length === 0 ? 'gruen' : 'rot', d.pfade.urteil);
-  setze('doppelregeln', d.statisch.doppelregeln.length === 0 ? 'gruen' : 'gelb', `${d.statisch.doppelregeln.length} Bezeichner in 2+ Dateien definiert`);
-  setze('marker', d.statisch.marker.length === 0 ? 'gruen' : 'gelb', `${d.statisch.marker.length} TODO/FIXME im Quelltext`);
-  setze('zufall', d.zufall.imSimulationspfad.length === 0 ? 'gruen' : 'gelb', `${d.zufall.imSimulationspfad.length} Zeit-/Zufallstreffer im Simulationspfad`);
-  setze('secrets', d.secrets.length === 0 ? 'gruen' : 'rot', `${d.secrets.length} Fundstellen in getrackten Dateien`);
-  setze('perf', d.perf.ticksUeberBudget === 0 ? 'gruen' : 'gelb', d.perf.urteil);
+  // Ereignisse: Als begründet gilt nur, was im Wächter MIT Begründungstext
+  // gelistet ist (gelesen, nicht unterstellt). Ein nicht lesbarer Wächter macht
+  // jedes stumme Ereignis undokumentiert — der lautere Fehler.
+  const ereignisse = d.ereignisse ?? {};
+  const undokumentiert = ereignisse.stummUndokumentiert?.length ?? 0;
+  const ohneGrund = ereignisse.stummListeOhneBegruendung?.length ?? 0;
+  const stummGesamt = laenge(ereignisse.stumm);
+  if (stummGesamt === null) {
+    setze('ereignisse', 'gelb', nichtsGemessen);
+  } else if (ereignisse.waechterVorhanden === false) {
+    setze('ereignisse', 'gelb', `${stummGesamt} stumme Ereignisse, aber der Wächter tests/event-coverage.test.js ist NICHT lesbar — jedes gilt als undokumentiert (fail-safe)`);
+  } else if (undokumentiert + ohneGrund === 0) {
+    setze('ereignisse', 'gruen', `${stummGesamt} stumme Ereignisse — alle im Wächter mit Begründung gelistet (${ereignisse.stummDokumentiert?.length ?? 0} gelesene Begründungen)`);
+  } else {
+    const teile = [];
+    if (undokumentiert) teile.push(`${undokumentiert} UNDOKUMENTIERT: ${namen(ereignisse.stummUndokumentiert).join(', ')}`);
+    if (ohneGrund) teile.push(`${ohneGrund} im Wächter gelistet, aber OHNE Begründung: ${namen(ereignisse.stummListeOhneBegruendung).join(', ')}`);
+    setze('ereignisse', 'gelb', teile.join(' · '));
+  }
+
+  const statisch = d.statisch ?? {};
+  const zaehlfeld = (name, liste, text) => {
+    const n = laenge(liste);
+    setze(name, n === null ? 'gelb' : n === 0 ? 'gruen' : 'gelb', n === null ? nichtsGemessen : text(n));
+  };
+  zaehlfeld('toteDateien', statisch.toteDateien, n => `${n} Dateien ohne Importeur`);
+  zaehlfeld('unbenutzteKonstanten', statisch.unbenutzteKonstanten, n => `${n} definiert, nie gelesen`);
+  zaehlfeld('marker', statisch.marker, n => `${n} TODO/FIXME im Quelltext`);
+  zaehlfeld('zufall', d.zufall?.imSimulationspfad, n => `${n} Zeit-/Zufallstreffer im Simulationspfad`);
+
+  const pfadFalsch = d.pfade?.falsch;
+  setze('pfade', !Array.isArray(pfadFalsch) ? 'gelb' : pfadFalsch.length === 0 ? 'gruen' : 'rot',
+    d.pfade?.urteil ?? nichtsGemessen);
+
+  // Doppelregeln: Das Urteil wird aus der Ausnahmeliste GELESEN, nicht aus der
+  // Zahl abgeleitet. Eine begründete Ausnahme braucht keine Entscheidung mehr;
+  // jede nicht gelistete Doppelregel ist offen.
+  const drUrteil = statisch.doppelregelnUrteil ?? beurteileDoppelregeln(statisch.doppelregeln ?? []);
+  if (!Array.isArray(statisch.doppelregeln)) {
+    setze('doppelregeln', 'gelb', nichtsGemessen);
+  } else if (drUrteil.liste.length === 0) {
+    setze('doppelregeln', 'gruen', 'keine Doppelregel gemessen');
+  } else if (drUrteil.offen.length === 0 && drUrteil.verwaisteAusnahmen.length === 0) {
+    setze('doppelregeln', 'gruen', `${drUrteil.begruendet.length} Doppelregel(n), jede in ${DOPPELREGEL_AUSNAHMEN_QUELLE} begründet: ${drUrteil.begruendet.map(x => x.name).join(', ')}`);
+  } else {
+    const teile = [];
+    if (drUrteil.offen.length) teile.push(`${drUrteil.offen.length} OFFEN (nicht in der Ausnahmeliste): ${drUrteil.offen.map(x => x.name).join(', ')}`);
+    if (drUrteil.verwaisteAusnahmen.length) teile.push(`${drUrteil.verwaisteAusnahmen.length} Ausnahme(n) in der Liste greifen nicht: ${drUrteil.verwaisteAusnahmen.map(x => x.name).join(', ')}`);
+    setze('doppelregeln', 'gelb', teile.join(' · '));
+  }
+
+  setze('secrets', !Array.isArray(d.secrets) ? 'gelb' : d.secrets.length === 0 ? 'gruen' : 'rot',
+    Array.isArray(d.secrets) ? `${d.secrets.length} Fundstellen in getrackten Dateien` : nichtsGemessen);
+  setze('perf', d.perf?.ticksUeberBudget === 0 ? 'gruen' : 'gelb', d.perf?.urteil ?? nichtsGemessen);
 
   return {
     felder,

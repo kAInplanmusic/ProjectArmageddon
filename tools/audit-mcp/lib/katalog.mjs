@@ -482,7 +482,7 @@ export const KATALOG = [
     thema: 'werkzeug',
     frage: 'Löst jede Stelle den eigenen Modulpfad mit `fileURLToPath` auf — oder mit `new URL(...).pathname`?',
     methode: 'Über alle Quelltextdateien nach `new URL(...import.meta.url).pathname` suchen und die `fileURLToPath`-Stellen dagegen zählen. `.pathname` ist PROZENT-KODIERT: enthält der Projektpfad ein Leerzeichen, wird daraus `%20`, `fs.existsSync` ist `false` und jeder `spawn` mit diesem `cwd` scheitert mit ENOENT.',
-    beleg: '38 Stellen richtig, 1 falsch — die falsche war `scripts/smoke-fast.mjs:31`, also der Wächter des schnellen Zyklus. Er meldete 0 von 4 Schritten; nach dem Fix 4 von 4 in 26,8 s.',
+    beleg: 'BEFUND VOM 2026-09-24 (historisch, nicht der heutige Stand): 38 Stellen richtig, 1 falsch — die falsche war `scripts/smoke-fast.mjs:31`, also der Wächter des schnellen Zyklus. Er meldete 0 von 4 Schritten; nach dem Fix 4 von 4 in 26,8 s. Live nachmessbar über das Werkzeug `audit_paths` — nachgemessen am 2026-09-26: 42 richtig, 0 falsch.',
     quelle: 'projectarmageddon-verification',
   },
   {

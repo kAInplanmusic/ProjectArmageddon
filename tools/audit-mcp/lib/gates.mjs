@@ -61,6 +61,19 @@ function bewerte(name, ergebnis) {
     kennzahlen.zeilen = zeilen;
     if (fehlgeschlagen) kennzahlen.fehlgeschlagen = fehlgeschlagen;
   }
+  if (name === 'smoke:fast') {
+    // Die Zeile lautet: `Rauchtest: 4 von 4 Schritten OK in 26,8 s`
+    // (scripts/smoke-fast.mjs:246). Gelesen statt behauptet: Der Bericht nennt
+    // diese Zahlen, damit sein Abschnitt „während des Audits behoben" nicht auf
+    // historische Werte zurückfallen muss (belegter Fehler: bericht.mjs stand
+    // dort mit „4 von 4 in 26,8 s" fest verdrahtet).
+    const m = text.match(/Rauchtest:\s*(\d+)\s*von\s*(\d+)\s*Schritten OK\s*in\s*([\d.,]+)\s*s/);
+    if (m) {
+      kennzahlen.schritteOk = Number(m[1]);
+      kennzahlen.schritteGesamt = Number(m[2]);
+      kennzahlen.dauerSekunden = Number(m[3].replace(',', '.'));
+    }
+  }
   if (name === 'lint' && ergebnis.code !== 0) {
     const probleme = text.match(/(\d+) problem/);
     if (probleme) kennzahlen.probleme = Number(probleme[1]);

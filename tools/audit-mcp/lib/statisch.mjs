@@ -196,6 +196,10 @@ export function unbenutzteKonstanten({ nurUnter = 'src/' } = {}) {
  * Doppelregeln: derselbe Bezeichner (GROSS geschrieben oder Funktion) wird in
  * mehr als einer Datei definiert. Das ist die Klasse der Befunde, bei denen
  * "wer den einen Wert ändert, ändert nichts".
+ *
+ * Das Ergebnis ist eine reine MESSUNG (Name + Orte) und enthält KEIN Urteil.
+ * Ob eine gefundene Doppelregel Absicht ist, entscheidet ausschließlich
+ * `beurteileDoppelregeln()` anhand der Ausnahmeliste unten.
  */
 export function doppelregeln({ nurUnter = 'src/' } = {}) {
   const dateien = quellDateien().filter(f => rel(f).startsWith(nurUnter));
@@ -213,6 +217,125 @@ export function doppelregeln({ nurUnter = 'src/' } = {}) {
   return [...orte.entries()]
     .filter(([, l]) => l.length > 1)
     .map(([name, orte]) => ({ name, orte }));
+}
+
+/** Wo die Ausnahmeliste steht — der Ort, den jeder Freispruch zitieren muss. */
+export const DOPPELREGEL_AUSNAHMEN_QUELLE =
+  'tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)';
+
+/**
+ * Die AUSNAHMELISTE für Doppelregeln: Hier steht, welche gleichnamige Definition
+ * in zwei Dateien ABSICHT ist — mit Begründung und den dokumentierten Orten.
+ *
+ * Warum diese Liste existiert (belegter Fehler, 2026-09-26): `bericht.mjs`
+ * schrieb einen fest verdrahteten Freispruch in JEDEN Bericht, sobald der
+ * Detektor mindestens EINE Doppelregel fand:
+ * „Keine stille Doppelregel gefunden: … welche davon Absicht sind (z. B.
+ * `PRIMARY_BIOME_BY_PRESET`, das laut Projektregel in ZWEI Dateien stehen
+ * MUSS), steht in der Auswertung." Drei Fehler in einem Satz:
+ *   1. Die Überschrift behauptete „keine gefunden", während die Zahl daneben
+ *      eine fand — der Bericht widersprach seiner eigenen Messung.
+ *   2. Den zitierten Fall gab es in der Ausnahmeliste nicht: Es gibt keine
+ *      Projektregel „muss in ZWEI Dateien stehen"; die Projektregel lautet
+ *      „eine Regel, eine Stelle". Die Regel war FREI ERFUNDEN.
+ *   3. Der genannte Fall war ein ECHTES Duplikat (zwei wertgleiche Definitionen
+ *      in `src/shared/config/backdrops.js` und `scenery.js`, ohne
+ *      Importbeziehung) — ein Duplikat wurde als Beleg für Sauberkeit genannt.
+ *
+ * Ab hier gilt: **Ein Freispruch wird GELESEN, nicht behauptet.**
+ *   - Name steht in dieser Liste UND die gemessenen Orte stimmen mit `orte`
+ *     überein → „bewusst, begründet" — MIT der Begründung aus dieser Liste.
+ *   - Name fehlt in der Liste, hat keine Begründung, oder die Orte weichen ab
+ *     → offener Befund. FAIL-SAFE in Richtung des lauteren Fehlers: im Zweifel
+ *       gilt eine Doppelregel als OFFEN, niemals als Absicht.
+ *   - Keine Doppelregel gemessen → es wird kein Satz über Doppelregeln erzeugt.
+ *
+ * Beide Felder sind Pflicht; ein Eintrag ohne `begruendung` wird nicht als
+ * Freispruch gewertet (er ist selbst ein Befund).
+ *
+ *   'BEZEICHNER': {
+ *     begruendung: 'warum die zweite Stelle Absicht ist',
+ *     orte: ['src/shared/…:12', 'src/shared/…:34'],
+ *   }
+ *
+ * Derzeit ist keine Doppelregel als Absicht dokumentiert: Was der Detektor
+ * findet, ist offen.
+ */
+export const DOPPELREGEL_AUSNAHMEN = new Map([
+  // (leer — bewusst: kein Freispruch auf Vorrat)
+]);
+
+/**
+ * Stellt die MESSUNG gegen die Ausnahmeliste und liefert das Urteil.
+ *
+ * Reine Funktion ohne Dateizugriff — dadurch ist sie in der Gegenprobe mit
+ * einer künstlichen Liste aufrufbar, und ein fehlendes Feld in den Berichtsdaten
+ * kann keinen Freispruch erzeugen (fehlende Liste ⇒ alles offen).
+ *
+ * @param {{name: string, orte: string[]}[]} liste Messung aus `doppelregeln()`
+ * @param {Map<string, {begruendung: string, orte: string[]}>} ausnahmen
+ */
+export function beurteileDoppelregeln(liste = [], ausnahmen = DOPPELREGEL_AUSNAHMEN) {
+  const gemessen = Array.isArray(liste) ? liste : [];
+  const liste_ = gemessen.map(({ name, orte }) => {
+    const eintrag = ausnahmen?.get?.(name);
+    if (!eintrag || !eintrag.begruendung) {
+      return {
+        name, orte, ausnahme: false, begruendung: null,
+        grund: eintrag
+          ? 'in der Ausnahmeliste, aber OHNE Begründung — gilt als offen'
+          : `nicht in der Ausnahmeliste ${DOPPELREGEL_AUSNAHMEN_QUELLE} — gilt als offen`,
+      };
+    }
+    const gemessenOrte = [...orte].sort().join(' · ');
+    const dokumentierteOrte = [...(eintrag.orte ?? [])].sort().join(' · ');
+    if (!dokumentierteOrte || dokumentierteOrte !== gemessenOrte) {
+      return {
+        name, orte, ausnahme: false, begruendung: eintrag.begruendung,
+        grund: `gelistet, aber die gemessenen Orte weichen von den dokumentierten ab `
+          + `(dokumentiert: ${dokumentierteOrte || 'keine'} | gemessen: ${gemessenOrte}) — gilt als offen`,
+      };
+    }
+    return { name, orte, ausnahme: true, begruendung: eintrag.begruendung, grund: null };
+  });
+
+  const gemesseneNamen = new Set(gemessen.map(x => x.name));
+  const verwaisteAusnahmen = [...(ausnahmen?.entries?.() ?? [])]
+    .filter(([name]) => !gemesseneNamen.has(name))
+    .map(([name, e]) => ({ name, begruendung: e?.begruendung ?? null }));
+
+  return {
+    quelle: DOPPELREGEL_AUSNAHMEN_QUELLE,
+    liste: liste_,
+    offen: liste_.filter(x => !x.ausnahme),
+    begruendet: liste_.filter(x => x.ausnahme),
+    verwaisteAusnahmen,
+  };
+}
+
+/**
+ * Letzter Commit, der eine Datei angefasst hat (`git log -1`).
+ *
+ * Für Sätze der Form „damals war es genau 1 Stelle": Die Zahl ist historisch
+ * und in diesem Lauf nicht messbar — der Beleg ist der Commit. Liefert `null`,
+ * wenn git nicht antwortet; der Bericht muss dann sagen, dass er es NICHT
+ * belegen konnte, statt die Zahl ohne Beleg zu behaupten.
+ */
+export function letzterCommit(relativerPfad) {
+  try {
+    const aus = execFileSync('git', ['log', '-1', '--format=%h %ad', '--date=short', '--', relativerPfad],
+      { cwd: ROOT, encoding: 'utf8' }).trim();
+    if (!aus) return null;
+    const [hash, datum] = aus.split(' ');
+    return { hash, datum, pfad: relativerPfad };
+  } catch {
+    return null;
+  }
+}
+
+/** Existiert eine Datei unterhalb der Projektwurzel? Für Aussagen über Wächter. */
+export function dateiVorhanden(relativerPfad) {
+  return fs.existsSync(path.join(ROOT, relativerPfad));
 }
 
 /** TODO/FIXME/XXX/HACK im Quelltext (die stille Schuldenliste). */
@@ -324,8 +447,10 @@ function istAusgefuehrterCode(zeile, index) {
  * Die Fehlerklasse ist tückisch, weil sie ZWEI Umstände braucht: ein
  * Sonderzeichen im Pfad UND eine Stelle, die den Pfad als `cwd` benutzt. Auf
  * einem Rechner ohne Leerzeichen im Pfad ist die Stelle unsichtbar grün. Genau
- * deshalb ist sie eine Prüfung und keine Konvention: 38 Dateien machten es
- * richtig, eine nicht — und die eine war der Wächter des schnellen Zyklus.
+ * deshalb ist sie eine Prüfung und keine Konvention: Am 2026-09-24 machten es 38
+ * Stellen richtig, eine nicht — und die eine war der Wächter des schnellen
+ * Zyklus. Die Zahl von HEUTE liefert `pfadAufloesung()` selbst; hier steht sie
+ * bewusst mit Datum, weil sie historisch ist.
  */
 export function pfadAufloesung() {
   const falsch = [];
@@ -352,6 +477,32 @@ export function pfadAufloesung() {
 }
 
 /**
+ * Liest die Menge `bewusstStumm` SAMT Begründung aus dem Wächter-Quelltext.
+ *
+ * Ergebnis: Name → Begründungstext oder `null`, wenn der Eintrag keinen
+ * Begründungskommentar hat. Ausgelagert (und damit prüfbar), weil genau daran
+ * der zweite fest verdrahtete Satz hing: Der Bericht behauptete „jedes stumme
+ * Ereignis ist mit Begründung gelistet", während hier nur die Zugehörigkeit zur
+ * Menge geprüft wurde. Wer gelistet ist, aber keine Begründung hat, ist OFFEN.
+ */
+export function leseBewusstStumm(waechterText = '') {
+  const block = waechterText.match(/bewusstStumm\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
+  const begruendungen = new Map();
+  if (!block) return { vorhanden: false, begruendungen };
+  block[1].split('\n').forEach(zeile => {
+    const mitGrund = zeile.match(/'([a-z0-9_]+)'\s*,?\s*\/\/\s*(\S.*)$/i);
+    if (mitGrund) {
+      begruendungen.set(mitGrund[1], mitGrund[2].trim());
+      return;
+    }
+    // Gelistet, aber ohne Begründung auf derselben Zeile → bleibt `null`.
+    const ohneGrund = zeile.match(/'([a-z0-9_]+)'/i);
+    if (ohneGrund && !begruendungen.has(ohneGrund[1])) begruendungen.set(ohneGrund[1], null);
+  });
+  return { vorhanden: true, begruendungen };
+}
+
+/**
  * Ereignis-Abdeckung: Welche Ereignisse emittiert die Engine, und welcher
  * Client-Zweig behandelt sie?
  *
@@ -361,58 +512,105 @@ export function pfadAufloesung() {
  * **Zweite Stufe (die eigentliche Tiefe):** Ein stummes Ereignis ist nur dann
  * ein Befund, wenn es UNDOKUMENTIERT stumm ist. Das Projekt führt dafür den
  * Wächter `tests/event-coverage.test.js` mit einer Menge `bewusstStumm` samt
- * Begründung je Eintrag. Diese Menge wird HIER gelesen und gegen die gemessenen
- * stummen Ereignisse gestellt. Erst dadurch unterscheidet das Werkzeug
- * „Absicht" von „Lücke" — ohne diesen Schritt meldet es 8 stumme Ereignisse,
- * von denen alle 8 dokumentiert sind (belegt im ersten Lauf).
+ * Begründung je Eintrag (als `// …`-Kommentar hinter dem Namen).
+ *
+ * Gelesen wird BEIDES: der Name UND der Begründungstext. Das war nicht immer
+ * so — bis 2026-09-26 prüfte dieses Modul nur die Zugehörigkeit zur Menge,
+ * während der Bericht behauptete, jedes stumme Ereignis sei „EINZELN begründet"
+ * (`bericht.mjs`: „Ereignis-Abdeckung ist sauber … mit Begründung"). Ein
+ * Eintrag, dessen Begründung gelöscht wird, wäre damit weiter freigesprochen
+ * worden. Fail-safe: Wer gelistet ist, aber dessen Begründung fehlt, gilt als
+ * OFFEN (`stummListeOhneBegruendung`), nicht als entschieden.
  */
 export function ereignisAbdeckung() {
   const engine = walk(path.join(ROOT, 'src', 'engine'), { endungen: QUELTEXT });
   const emittiert = new Map();
+  // ZWEI Meldewege, nicht einer — belegt in `tests/event-coverage.test.js:124-136`:
+  // `emit('…')` (überall) und `melde('…')` (Günthers System, `guentherSystem.js:276`,
+  // `:302`, `:319`, `:341`). Nur `emit(` zu suchen hieß: vier Ereignisarten waren
+  // für dieses Werkzeug unsichtbar — der Bericht gab damit eine kleinere Gesamtzahl
+  // aus, als der Motor meldet.
   for (const datei of engine) {
     const text = read(datei) ?? '';
     text.split('\n').forEach((zeile, i) => {
-      for (const m of zeile.matchAll(/emit\(\s*'([a-z0-9_]+)'/gi)) {
+      for (const m of zeile.matchAll(/(?:emit|melde)\(\s*'([a-z0-9_]+)'/gi)) {
         if (!emittiert.has(m[1])) emittiert.set(m[1], []);
-        emittiert.get(m[1]).push(`${rel(datei)}:${i + 1}`);
+        const ort = `${rel(datei)}:${i + 1}`;
+        if (!emittiert.get(m[1]).includes(ort)) emittiert.get(m[1]).push(ort);
       }
     });
   }
 
   const clientDateien = walk(path.join(ROOT, 'src', 'client'), { endungen: QUELTEXT });
   const clientText = clientDateien.map(f => read(f) ?? '').join('\n');
-  const behandelt = new Set(
-    [...clientText.matchAll(/['"]([a-z0-9_]{3,})['"]/gi)].map(m => m[1]),
-  );
+  /**
+   * Behandelt-Nachweis in ZWEI Belegstärken, beide Textsuche (kein Aufrufgraph):
+   *
+   *   `zitat`      — der Name steht als Zeichenkette im Client. Starker Beleg.
+   *   `schluessel` — der Name steht als UNQUOTIERTER Schlüssel da
+   *                  (`crate_pickup: {` in `src/client/ereignisse.js:424`).
+   *
+   * Die zweite Stufe fehlte bis 2026-09-26: Die Zuordnungstabelle benutzt
+   * unquotierte Schlüssel, die Suche nach Zeichenketten konnte sie nicht
+   * erfassen — der Bericht meldete deshalb 27 Ereignisse als „UNDOKUMENTIERT",
+   * die im Client sehr wohl einen Zweig haben (`tests/event-coverage.test.js:218-232`
+   * hält dieselbe Feststellung fest). Ein Urteil über die Methode hinaus ist
+   * derselbe Fehler wie der Doppelregel-Freispruch, nur in die andere Richtung.
+   *
+   * Weil ein unquotierter Schlüssel AUCH ein fremder Schlüssel sein kann, wird er
+   * getrennt gezählt und im Bericht als schwächerer Beleg benannt — kein stiller
+   * Freispruch.
+   */
+  const zitate = new Set([...clientText.matchAll(/['"]([a-z0-9_]{3,})['"]/gi)].map(m => m[1]));
+  const schluessel = new Set([...clientText.matchAll(/^\s*([a-z0-9_]{3,})\s*:/gmi)].map(m => m[1]));
+  const behandelt = new Set([...emittiert.keys()].filter(n => zitate.has(n) || schluessel.has(n)));
 
   // Die dokumentierte Absicht — aus dem Wächter, nicht aus einer zweiten Liste.
+  // Gelesen werden Name UND Begründung (der `// …`-Kommentar hinter dem Namen,
+  // `tests/event-coverage.test.js:248-267`). Ohne Begründungstext ist der
+  // Eintrag kein Nachweis von Absicht.
   const waechter = read(path.join(ROOT, 'tests', 'event-coverage.test.js')) ?? '';
-  const block = waechter.match(/bewusstStumm\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
-  const dokumentiert = new Set(
-    block ? [...block[1].matchAll(/'([a-z0-9_]+)'/gi)].map(m => m[1]) : [],
-  );
+  const { vorhanden: waechterVorhanden, begruendungen } = leseBewusstStumm(waechter);
 
   const stumm = [];
   const stummUndokumentiert = [];
   const stummDokumentiert = [];
+  const stummListeOhneBegruendung = [];
   const gedeckt = [];
   for (const [name, orte] of [...emittiert.entries()].sort()) {
     if (behandelt.has(name)) {
-      gedeckt.push({ ereignis: name, orte });
+      gedeckt.push({ ereignis: name, orte, beleg: zitate.has(name) ? 'zitat' : 'schluessel' });
       continue;
     }
-    const eintrag = { ereignis: name, orte, dokumentiertBewusstStumm: dokumentiert.has(name) };
+    const gelistet = begruendungen.has(name);
+    const begruendung = gelistet ? begruendungen.get(name) : null;
+    const eintrag = {
+      ereignis: name,
+      orte,
+      begruendung,
+      gelistetBewusstStumm: gelistet,
+      dokumentiertBewusstStumm: Boolean(begruendung),
+      urteil: begruendung
+        ? 'bewusst stumm (begründet)'
+        : gelistet
+          ? '**GELISTET, aber OHNE Begründung**'
+          : '**UNDOKUMENTIERT**',
+    };
     stumm.push(eintrag);
-    (eintrag.dokumentiertBewusstStumm ? stummDokumentiert : stummUndokumentiert).push(eintrag);
+    if (eintrag.dokumentiertBewusstStumm) stummDokumentiert.push(eintrag);
+    else if (gelistet) stummListeOhneBegruendung.push(eintrag);
+    else stummUndokumentiert.push(eintrag);
   }
   return {
     gedeckt,
+    gedecktNurSchluessel: gedeckt.filter(g => g.beleg === 'schluessel'),
     stumm,
     stummDokumentiert,
+    stummListeOhneBegruendung,
     stummUndokumentiert,
     gesamt: emittiert.size,
-    waechterVorhanden: Boolean(block),
-    waechterListe: [...dokumentiert],
+    waechterVorhanden,
+    waechterListe: [...begruendungen.keys()],
   };
 }
 

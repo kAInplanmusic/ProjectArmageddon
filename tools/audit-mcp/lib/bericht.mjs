@@ -13,9 +13,81 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './repo.mjs';
+import {
+  beurteileDoppelregeln,
+  letzterCommit,
+  dateiVorhanden,
+  DOPPELREGEL_AUSNAHMEN_QUELLE,
+} from './statisch.mjs';
 
 const zahl = (v, n = 2) => (typeof v === 'number' ? v.toFixed(n) : String(v));
 const pct = (a, b) => (b ? `${((a / b) * 100).toFixed(0)} %` : '–');
+
+/**
+ * Die Sätze über Doppelregeln — aus dem MESSERGEBNIS formuliert, nie behauptet.
+ *
+ * Warum diese Funktion existiert (belegter Fehler, 2026-09-26): An dieser Stelle
+ * stand ein fest verdrahteter Satz, der in JEDEN Bericht geschrieben wurde, sobald
+ * der Detektor mindestens eine Doppelregel fand:
+ *
+ *   „**Keine stille Doppelregel gefunden:** Es gibt N gleichnamige Definitionen —
+ *    welche davon Absicht sind (z. B. `PRIMARY_BIOME_BY_PRESET`, das laut
+ *    Projektregel in ZWEI Dateien stehen MUSS), steht in der Auswertung."
+ *
+ * Drei Fehler in einem Satz: (1) Er widersprach seiner eigenen Messung („keine
+ * gefunden" bei N > 0). (2) Er berief sich auf eine Projektregel, die es nicht
+ * gibt — die Projektregel lautet „eine Regel, eine Stelle". (3) Der genannte Fall
+ * war ein echtes, wertgleiches Duplikat ohne Importbeziehung: ein Duplikat wurde
+ * als Beleg für Sauberkeit genannt.
+ *
+ * Deshalb hier die Regel: Ein Freispruch wird aus `DOPPELREGEL_AUSNAHMEN`
+ * GELESEN (Name + Begründung + dokumentierte Orte). Steht ein Name nicht in der
+ * Liste, ist er ein OFFENER Befund — fail-safe in Richtung des lauteren Fehlers.
+ * Gibt es keine Doppelregel, gibt es keinen Satz.
+ *
+ * @param {ReturnType<typeof beurteileDoppelregeln>} urteil
+ * @returns {string[]} Markdown-Zeilen (leer, wenn es nichts zu sagen gibt)
+ */
+export function doppelregelSaetze(urteil) {
+  const saetze = [];
+  if (!urteil) return saetze;
+
+  const gemessen = urteil.liste?.length ?? 0;
+  const offen = urteil.offen ?? [];
+  const begruendet = urteil.begruendet ?? [];
+  const verwaist = urteil.verwaisteAusnahmen ?? [];
+
+  // Keine Doppelregel gemessen → KEIN Satz über Doppelregeln. Kein Satz über
+  // „keine gefunden" (genau der war der Fehler), und keine Zeile, die eine
+  // ungemessene Sauberkeit behauptet. Einzige Ausnahme von dieser Stille: eine
+  // Ausnahme in der Liste, die ins Leere greift, ist selbst ein Befund
+  // (Freispruch auf Vorrat) und wird als solcher gemeldet.
+  if (gemessen === 0 && verwaist.length === 0) return saetze;
+
+  if (offen.length) {
+    const namen = offen.map(o => `\`${o.name}\` (${o.orte.join(' · ')})`).join(', ');
+    saetze.push(`- **OFFENE Doppelregeln (${offen.length}):** ${namen}. `
+      + (offen.length === 1 ? 'Diese Definition' : 'Diese Definitionen')
+      + ` steht in mehr als einer Datei und ist NICHT in der Ausnahmeliste \`${DOPPELREGEL_AUSNAHMEN_QUELLE}\` `
+      + 'begründet — nach der Projektregel „eine Regel, eine Stelle" ein offener Befund, kein Freispruch. '
+      + 'Ein Freispruch wird ab hier GELESEN, nicht behauptet: Wer ihn will, trägt den Namen mit Begründung und Orten in die Liste ein.');
+  }
+
+  for (const b of begruendet) {
+    saetze.push(`- **Bewusst und begründet (${begruendet.length}):** \`${b.name}\` (${b.orte.join(' · ')}) — `
+      + `Ausnahme laut \`${DOPPELREGEL_AUSNAHMEN_QUELLE}\`: ${b.begruendung}`);
+  }
+
+  if (verwaist.length) {
+    saetze.push(`- **Ausnahme(n) ohne Messung (${verwaist.length}):** ${verwaist.map(v => `\`${v.name}\``).join(', ')} — `
+      + `in \`${DOPPELREGEL_AUSNAHMEN_QUELLE}\` gelistet, aber der Detektor findet dazu keine Doppelregel mehr. `
+      + 'Ein Freispruch auf Vorrat: Eintrag entfernen, sonst greift er später ohne Prüfung.');
+  }
+
+  // Keine Doppelregel → kein Satz (die Liste war oben schon leer).
+  if (!offen.length && !begruendet.length && !verwaist.length) return [];
+  return saetze;
+}
 
 /** Baut den TODO-Block aus den Befunden. */
 export function todoAus(d) {
@@ -35,9 +107,23 @@ export function todoAus(d) {
   for (const s of d.ereignisse.stummUndokumentiert) {
     add(`Ereignis „${s.ereignis}" ist stumm und NICHT dokumentiert`, `Emittiert in ${s.orte.slice(0, 2).join(', ')} — Begründung im Wächter nachtragen oder einen Client-Zweig bauen`, 'mittel', 'entscheidung');
   }
+  for (const s of d.ereignisse.stummListeOhneBegruendung ?? []) {
+    add(`Ereignis „${s.ereignis}" ist im Wächter gelistet, aber OHNE Begründung`, `Emittiert in ${s.orte.slice(0, 2).join(', ')} — die Liste \`bewusstStumm\` in \`tests/event-coverage.test.js\` wertet ihn sonst ohne Nachweis frei; Begründung an den Eintrag schreiben`, 'mittel', 'entscheidung');
+  }
   for (const f of d.statisch.toteDateien) add(`Datei ohne Importeur: ${f.datei}`, `${f.zeilen} Zeilen, kein Leser`, 'mittel');
   for (const k of d.statisch.unbenutzteKonstanten) add(`Konstante ohne Leser: ${k.name}`, `${k.datei}:${k.zeile}`, 'mittel');
-  for (const dr of d.statisch.doppelregeln) add(`Doppelregel: ${dr.name}`, dr.orte.join(' · '), 'mittel');
+  // Doppelregeln: NUR die offenen werden zur Arbeit. Eine begründete Ausnahme
+  // (gelesen aus DOPPELREGEL_AUSNAHMEN) ist entschieden und darf nicht als
+  // offener Punkt erscheinen; eine Ausnahme ohne Messung ist dagegen ein Befund.
+  const drUrteil = d.statisch.doppelregelnUrteil ?? beurteileDoppelregeln(d.statisch.doppelregeln ?? []);
+  for (const dr of drUrteil.offen) {
+    add(`Offene Doppelregel: ${dr.name}`, `${dr.orte.join(' · ')} — ${dr.grund}`, 'mittel');
+  }
+  for (const v of drUrteil.verwaisteAusnahmen) {
+    add(`Ausnahme ohne Messung: ${v.name}`,
+      `In \`${DOPPELREGEL_AUSNAHMEN_QUELLE}\` gelistet, aber keine Doppelregel dazu gemessen — Eintrag entfernen (Freispruch auf Vorrat).`,
+      'niedrig');
+  }
   for (const m of d.statisch.marker) add(`Marker ${m.marker} in ${m.datei}:${m.zeile}`, m.text, 'niedrig');
   for (const z of d.zufall.imSimulationspfad) add(`Zufall/Zeit im Simulationspfad: ${z.datei}:${z.zeile}`, z.text, 'hoch');
   for (const u of d.statisch.unbenutzteExporte.slice(0, 20)) add(`Export ohne Leser: ${u.name}`, u.datei, 'niedrig');
@@ -47,10 +133,10 @@ export function todoAus(d) {
 
   // Design-Fragen werden NICHT entschieden.
   for (const w of d.waffen.wirkungsloseFelder.konstantNumerisch) {
-    add(`Feld „${w.feld}" trägt bei allen 150 Waffen denselben Wert (${w.wert})`, 'Es verspricht eine Unterscheidung, die es nicht gibt. Verdrahten oder entfernen — Balance-Entscheidung.', 'niedrig', 'design');
+    add(`Feld „${w.feld}" trägt bei allen ${d.waffen.anzahl} Waffen denselben Wert (${w.wert})`, 'Es verspricht eine Unterscheidung, die es nicht gibt. Verdrahten oder entfernen — Balance-Entscheidung.', 'niedrig', 'design');
   }
   for (const w of d.waffen.wirkungsloseFelder.konstantBool) {
-    add(`Feld „${w.feld}" ist bei allen 150 Waffen konstant (${w.wert})`, 'Verdrahten oder entfernen — Balance-Entscheidung.', 'niedrig', 'design');
+    add(`Feld „${w.feld}" ist bei allen ${d.waffen.anzahl} Waffen konstant (${w.wert})`, 'Verdrahten oder entfernen — Balance-Entscheidung.', 'niedrig', 'design');
   }
   add('Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen', `${d.spielverlauf.vorMahlstromBeendet} von ${d.spielverlauf.parteien.length} Partien endeten VOR Runde ${d.spielverlauf.mahlstromAb}`, 'niedrig', 'design');
 
@@ -85,24 +171,44 @@ export function berichtMarkdown(d, todo) {
   }
   push('');
 
-  // ── Umfang ──────────────────────────────────────────────────────────────
+  // ── Während des Audits behoben ──────────────────────────────────────────
+  // Dieser Abschnitt beschreibt eine VERGANGENE Reparatur. Er stand bis
+  // 2026-09-26 mit fest verdrahteten Zahlen da („38 Stellen … genau 1 nicht",
+  // „jetzt 4 von 4 in 26,8 s") und widersprach damit der Messung in Abschnitt 12
+  // desselben Berichts, die live 41 Stellen / 0 falsch meldete. Dieselbe
+  // Fehlerklasse wie beim Doppelregel-Freispruch: ein fest verdrahtetes Fazit
+  // unter live erhobenen Zahlen. Ab hier gilt: Was dieser Lauf messen kann, wird
+  // gemessen; was historisch ist, steht als historisch da — mit seinem Commit.
   push('## 0. Während dieses Audits behoben');
   push('');
   push('Ein Befund dieses Audits war kein Berichtspunkt, sondern ein Defekt, der die Prüfung selbst lahmlegte.');
-  push('Er ist **repariert und nachgemessen** — nicht nur beschrieben:');
+  push('Er ist **repariert** — und, soweit dieser Lauf es messen kann, nachgemessen:');
   push('');
+  const smokeFix = letzterCommit('scripts/smoke-fast.mjs');
+  const smokeGate = (d.gates.ergebnisse ?? []).find(e => e.gate === 'smoke:fast') ?? null;
+  const smokeKz = smokeGate?.kennzahlen ?? {};
+  const smokeZustand = smokeGate
+    ? (smokeGate.ok
+      ? `Gerade nachgemessen: **${smokeKz.schritteOk ?? '?'} von ${smokeKz.schritteGesamt ?? '?'} Schritten OK in ${smokeGate.dauerSekunden} s**`
+      : `Das Gate ist in diesem Lauf **rot** (exit ${smokeGate.exitCode}) — die Aussage „behoben" ist damit widerlegt`)
+    : `Das Gate \`smoke:fast\` war in DIESEM Lauf nicht dabei (gefahren: ${(d.gates.gefahren ?? []).join(', ') || 'keines'}) — die historische Zahl ist hier NICHT nachgemessen`;
   push('| Was | Beleg | Zustand |');
   push('|---|---|---|');
-  push('| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — jetzt **4 von 4 in 26,8 s** |');
+  push(`| \`scripts/smoke-fast.mjs\` war vollständig funktionsunfähig | \`spawn npm ENOENT\`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — ${smokeZustand}${smokeFix ? ` (letzter Commit an der Datei: \`${smokeFix.hash}\`, ${smokeFix.datum})` : ' (der behebende Commit ließ sich in diesem Lauf NICHT lesen — die Reparatur ist damit unbelegt)'} |`);
   push('');
   push('**Ursache (eine Zeile, zwei Umstände):** `const ROOT = new URL(\'..\', import.meta.url).pathname;`');
   push('`.pathname` liefert den Pfad prozent-kodiert. Das Projektverzeichnis enthält Leerzeichen, also wurde daraus');
   push('`/home/patrick/AnunnakiTools%20Projekte/laufende%20Projekte/ProjectArmageddon/` — und `fs.existsSync` darauf ist `false`.');
   push('Jeder `spawn` mit diesem `cwd` scheitert dann mit ENOENT.');
   push('');
-  push('**Reichweite, gemessen:** 38 Stellen im Projekt benutzen das korrekte `fileURLToPath`, genau **1** nicht —');
-  push('`scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die, die nach');
-  push('jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.');
+  const pfadFalsch = d.pfade.falsch ?? [];
+  push(`**Reichweite, in DIESEM Lauf gemessen:** ${d.pfade.anzahlRichtig} Stellen im Projekt benutzen das korrekte \`fileURLToPath\`, `
+    + (pfadFalsch.length === 0
+      ? '**keine** mehr.'
+      : `**${pfadFalsch.length}** noch nicht (${pfadFalsch.map(f => `\`${f.datei}:${f.zeile}\``).join(', ')}).`));
+  push(`Damals — **historische Zahl, in diesem Lauf nicht messbar**${smokeFix ? `, Beleg: Commit \`${smokeFix.hash}\` (${smokeFix.datum})` : ', Beleg: NICHT lesbar'} — `
+    + 'war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,');
+  push('die nach jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.');
   push('');
   push('**Zweiter Defekt in derselben Datei:** `laufe()` hängte keinen `error`-Handler an den `spawn`. Ein Startfehler');
   push('wurde deshalb als unbehandeltes Ereignis GEWORFEN und riss den Lauf mit einem Stacktrace ab, statt als sauberer');
@@ -237,8 +343,11 @@ export function berichtMarkdown(d, todo) {
   push('');
   push('### 10.1 Dateien ohne Importeur');
   push('');
-  if (d.statisch.toteDateien.length === 0) push('Keine. Der Wächter `tests/no-dead-code.test.js` hält diese Zahl bei 0.');
-  else {
+  if (d.statisch.toteDateien.length === 0) {
+    push(`Keine. Wächter \`tests/no-dead-code.test.js\`: ${dateiVorhanden('tests/no-dead-code.test.js')
+      ? 'vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`)'
+      : '**NICHT gefunden** — die Aussage „der Wächter hält die Zahl bei 0" wäre unbelegt'}.`);
+  } else {
     push('| Datei | Zeilen |');
     push('|---|---|');
     for (const f of d.statisch.toteDateien) push(`| ${f.datei} | ${f.zeilen} |`);
@@ -255,11 +364,36 @@ export function berichtMarkdown(d, todo) {
   push('');
   push('### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)');
   push('');
-  if (d.statisch.doppelregeln.length === 0) push('Keine.');
+  const drUrteil = d.statisch.doppelregelnUrteil ?? beurteileDoppelregeln(d.statisch.doppelregeln ?? []);
+  if (drUrteil.liste.length === 0) push('Keine gemessen.');
   else {
-    push('| Name | Orte |');
-    push('|---|---|');
-    for (const dr of d.statisch.doppelregeln) push(`| \`${dr.name}\` | ${dr.orte.join(' · ')} |`);
+    push(`Gemessen: **${drUrteil.liste.length}** · davon aus der Ausnahmeliste begründet: **${drUrteil.begruendet.length}** · `
+      + `OFFEN: **${drUrteil.offen.length}**. Das Urteil wird aus \`${DOPPELREGEL_AUSNAHMEN_QUELLE}\` gelesen; `
+      + 'ohne Eintrag dort gilt eine Doppelregel als offen (fail-safe in Richtung des lauteren Fehlers).');
+    push('');
+    push('| Name | Orte | Urteil |');
+    push('|---|---|---|');
+    for (const dr of drUrteil.liste) {
+      const bescheid = dr.ausnahme
+        ? `bewusst, begründet: ${dr.begruendung}`
+        : `**OFFEN** — ${dr.grund}`;
+      push(`| \`${dr.name}\` | ${dr.orte.join(' · ')} | ${bescheid} |`);
+    }
+    if (drUrteil.verwaisteAusnahmen.length) {
+      push('');
+      push(`**${drUrteil.verwaisteAusnahmen.length} Ausnahme(n) in der Liste greifen nicht** `
+        + `(${drUrteil.verwaisteAusnahmen.map(v => `\`${v.name}\``).join(', ')}): der Detektor findet dazu keine Doppelregel mehr — `
+        + 'der Eintrag wäre ein Freispruch auf Vorrat und gehört entfernt.');
+    }
+  }
+  // Auch ohne gemessene Doppelregel ist eine Ausnahme, die ins Leere greift,
+  // ein Befund: sie wertet später ohne Prüfung frei.
+  if (drUrteil.liste.length === 0 && drUrteil.verwaisteAusnahmen.length) {
+    push('');
+    push(`**${drUrteil.verwaisteAusnahmen.length} Ausnahme(n) in der Liste greifen ins Leere** `
+      + `(${drUrteil.verwaisteAusnahmen.map(v => `\`${v.name}\``).join(', ')}): `
+      + `in \`${DOPPELREGEL_AUSNAHMEN_QUELLE}\` gelistet, aber keine Doppelregel dazu gemessen — `
+      + 'ein Freispruch auf Vorrat, der beim nächsten Fund ohne Prüfung greift. Eintrag entfernen.');
   }
   push('');
   push('### 10.4 Marker im Quelltext');
@@ -294,20 +428,37 @@ export function berichtMarkdown(d, todo) {
   // ── Ereignisse ──────────────────────────────────────────────────────────
   push('## 11. Ereignis-Abdeckung');
   push('');
-  push(`**${d.ereignisse.gesamt}** emittierte Ereignisarten · **${d.ereignisse.gedeckt}** im Client behandelt · **${d.ereignisse.stumm.length}** stumm.`);
+  push(`**${d.ereignisse.gesamt}** emittierte Ereignisarten (\`emit(\` UND \`melde(\`) · **${d.ereignisse.gedeckt}** im Client behandelt · **${d.ereignisse.stumm.length}** stumm.`);
+  push('');
+  push(`*Methode und ihre Belegstärke (Textsuche, kein Aufrufgraph):* Ein Ereignis gilt als behandelt, wenn sein Name unter \`src/client/\` `
+    + `als Zeichenkette oder als UNQUOTIERTER Tabellenschlüssel vorkommt. `
+    + `Davon **${d.ereignisse.gedecktNurSchluessel ?? 0} nur über einen Schlüssel** belegt — der schwächere Beleg; `
+    + 'ein solcher Name kann theoretisch ein fremder Schlüssel sein. Bis 2026-09-26 zählte das Werkzeug nur Zeichenketten '
+    + 'und meldete dadurch Namen als „UNDOKUMENTIERT", die im Client einen Zweig haben (`tests/event-coverage.test.js:218-232`). '
+    + 'Ein „stumm" aus dieser Tabelle ist ein PRÜFAUFTRAG, kein Urteil.');
   push('');
   if (d.ereignisse.stumm.length) {
-    push(`Davon **${d.ereignisse.stummDokumentiert.length} dokumentiert** als bewusst stumm (Wächter \`tests/event-coverage.test.js\`), **${d.ereignisse.stummUndokumentiert.length} undokumentiert**.`);
+    const ohneGrund = d.ereignisse.stummListeOhneBegruendung ?? [];
+    push(`Davon **${d.ereignisse.stummDokumentiert.length} mit Begründung als bewusst stumm gelistet** (Wächter \`tests/event-coverage.test.js\`), `
+      + `**${d.ereignisse.stummUndokumentiert.length} undokumentiert**`
+      + (ohneGrund.length ? `, **${ohneGrund.length} im Wächter gelistet, aber OHNE Begründung**` : '') + '.');
     push('');
-    push('| Ereignis | emittiert in | Urteil |');
-    push('|---|---|---|');
+    if (!d.ereignisse.waechterVorhanden) {
+      push('**Der Wächter ist nicht lesbar:** `tests/event-coverage.test.js` fehlt, oder seine Menge `bewusstStumm` ließ sich nicht auslesen. '
+        + 'Jedes stumme Ereignis gilt deshalb als undokumentiert — fail-safe, damit ein fehlender Wächter nicht als Freispruch durchgeht.');
+      push('');
+    }
+    push('| Ereignis | emittiert in | Urteil | Begründung (aus dem Wächter) |');
+    push('|---|---|---|---|');
     for (const s of d.ereignisse.stumm) {
-      push(`| \`${s.ereignis}\` | ${s.orte.slice(0, 3).join(', ')} | ${s.dokumentiertBewusstStumm ? 'bewusst stumm (dokumentiert)' : '**UNDOKUMENTIERT**'} |`);
+      const urteil = s.urteil ?? (s.dokumentiertBewusstStumm ? 'bewusst stumm (begründet)' : '**UNDOKUMENTIERT**');
+      const grund = s.begruendung ? s.begruendung.replace(/\|/g, '\\|') : s.gelistetBewusstStumm ? '*(keine — Eintrag ohne Begründung)*' : '*(nicht gelistet)*';
+      push(`| \`${s.ereignis}\` | ${s.orte.slice(0, 3).join(', ')} | ${urteil} | ${grund} |`);
     }
     push('');
-    push(d.ereignisse.stummUndokumentiert.length === 0
-      ? '*Keine Lücke:* Jedes stumme Ereignis hat im Wächter eine Begründung. Ein stummes Ereignis ohne Begründung wäre die Lücke.'
-      : '*Befund:* Die undokumentierten brauchen eine Begründung oder einen Client-Zweig.');
+    push(d.ereignisse.stummUndokumentiert.length === 0 && ohneGrund.length === 0
+      ? '*Keine Lücke:* Jedes stumme Ereignis ist im Wächter MIT Begründung gelistet — der Begründungstext wird in dieser Spalte einzeln gezeigt. Geprüft ist damit, dass eine Begründung HINGESCHRIEBEN wurde; ob sie stichhaltig ist, ist eine Einzelprüfung und keine Messung.'
+      : '*Befund:* Die undokumentierten brauchen eine Begründung oder einen Client-Zweig; die gelisteten ohne Begründung werten sich sonst selbst frei.');
   }
   push('');
 
@@ -377,15 +528,23 @@ export function berichtMarkdown(d, todo) {
   if (d.determinismus.deterministisch && d.determinismus.seedWirkt) {
     push(`- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (${d.determinismus.laeufe[0].hash}), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.`);
   }
-  if (d.statisch.marker.length === 0) push('- **Kein TODO/FIXME im Quelltext.** Die offene Arbeit steht in der SSOT (MASTERDOTO), nicht verstreut im Code.');
-  if (d.statisch.toteDateien.length === 0) push('- **Keine Datei ohne Importeur.** Der Wächter hält die 974 toten Zeilen von damals bei 0.');
+  if (d.statisch.marker.length === 0) push('- **Kein TODO/FIXME im Quelltext.** Gemessen: 0 Treffer (Abschnitt 10.4). Wo die offene Arbeit steht (SSOT/MASTERDOTO), prüft dieser Bericht nicht — das ist eine Vereinbarung, keine Messung.');
+  if (d.statisch.toteDateien.length === 0) {
+    const waechterTote = dateiVorhanden('tests/no-dead-code.test.js');
+    push(`- **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). `
+      + `Wächter \`tests/no-dead-code.test.js\`: ${waechterTote
+        ? 'vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht'
+        : '**NICHT gefunden** — die Aussage „der Wächter hält die Zahl bei 0" wäre unbelegt'}.`);
+  }
   if (d.secrets.length === 0) push('- **Kein Secret in getrackten Dateien.**');
-  if (d.ereignisse.stumm.length > 0 && d.ereignisse.stummUndokumentiert.length === 0) {
-    push(`- **Ereignis-Abdeckung ist sauber:** ${d.ereignisse.gedeckt} von ${d.ereignisse.gesamt} Ereignisarten behandelt, die ${d.ereignisse.stumm.length} stummen sind im Wächter \`tests/event-coverage.test.js\` EINZELN begründet — nicht vergessen, sondern entschieden.`);
+  const drAuswertung = d.statisch.doppelregelnUrteil ?? beurteileDoppelregeln(d.statisch.doppelregeln ?? []);
+  const ereignisOhneGrund = d.ereignisse.stummListeOhneBegruendung ?? [];
+  if (d.ereignisse.stumm.length > 0 && d.ereignisse.stummUndokumentiert.length === 0 && ereignisOhneGrund.length === 0) {
+    push(`- **Ereignis-Abdeckung ist sauber:** ${d.ereignisse.gedeckt} von ${d.ereignisse.gesamt} Ereignisarten behandelt, die ${d.ereignisse.stumm.length} stummen sind im Wächter \`tests/event-coverage.test.js\` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).`);
   }
-  if (d.statisch.doppelregeln.length > 0) {
-    push(`- **Keine stille Doppelregel gefunden:** Es gibt ${d.statisch.doppelregeln.length} gleichnamige Definitionen — welche davon Absicht sind (z. B. \`PRIMARY_BIOME_BY_PRESET\`, das laut Projektregel in ZWEI Dateien stehen MUSS), steht in der Auswertung.`);
-  }
+  // Doppelregeln: Der Freispruch kommt aus der Liste, nicht aus der Feder.
+  // Keine Doppelregel gemessen → KEIN Satz (auch kein Satz über das Fehlen).
+  push(...doppelregelSaetze(drAuswertung));
   push(`- **Der Gate-Apparat ist erheblich:** ${d.gates.gesamt} Gates in diesem Lauf, ${d.stand.umfang.tests.zeilen} Zeilen Tests gegen ${d.stand.umfang.src.zeilen} Zeilen Quelltext (Verhältnis ${(d.stand.umfang.tests.zeilen / d.stand.umfang.src.zeilen).toFixed(2)}).`);
   push(`- **Der Waffenkatalog ist kein Datenmüll:** ${d.waffen.verteilung.powerScore.verschiedene} verschiedene powerScore-Werte bei ${d.waffen.anzahl} Waffen.`);
   push('');
@@ -393,7 +552,10 @@ export function berichtMarkdown(d, todo) {
   push('');
   const bremsen = [];
   if (d.gates.fehlgeschlagen.length) bremsen.push('Rote Gates blockieren jede belastbare Aussage über den Stand.');
-  if (d.ereignisse.stumm.length) bremsen.push(`${d.ereignisse.stumm.length} stumme Engine-Ereignisse — unsichtbare Lücken in der Anzeige.`);
+  if (d.ereignisse.stumm.length) {
+    const offen = d.ereignisse.stummUndokumentiert.length + (d.ereignisse.stummListeOhneBegruendung?.length ?? 0);
+    bremsen.push(`${d.ereignisse.stumm.length} stumme Engine-Ereignisse (${d.ereignisse.stummDokumentiert.length} mit Begründung gelistet, ${offen} OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.`);
+  }
   if (d.zufall.imSimulationspfad.length) bremsen.push('Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.');
   if (d.statisch.unbenutzteKonstanten.length) bremsen.push(`${d.statisch.unbenutzteKonstanten.length} Konstanten ohne Leser — Werte, die eine Wirkung versprechen, die es nicht gibt.`);
   if (!bremsen.length) bremsen.push('Keine strukturelle Bremse in diesem Lauf gefunden.');

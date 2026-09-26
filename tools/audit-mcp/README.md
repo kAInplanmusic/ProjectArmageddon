@@ -74,6 +74,22 @@ schiefgegangen ist. Die vier wichtigsten:
 - **Design-Entscheidungen trifft das Werkzeug nicht.** Was eine Balance- oder
   Produktfrage ist (konstante Waffenfelder, Mahlstrom-Breakpoint), steht im
   Bericht als *„Offen — Design-Entscheidung"* mit den Zahlen daneben.
+- **Ein Freispruch wird GELESEN, nicht behauptet.** Wo das Werkzeug etwas für
+  Absicht erklären könnte, muss die Absicht in einer prüfbaren Quelle stehen —
+  sonst meldet es einen offenen Befund. Fail-safe in Richtung des **lauteren**
+  Fehlers: im Zweifel offen, nie „Absicht".
+  - **Doppelregeln** stehen in `lib/statisch.mjs` unter `DOPPELREGEL_AUSNAHMEN`
+    (Name → Begründung + dokumentierte Orte). Nur ein Eintrag mit Begründung UND
+    deckungsgleichen Orten wird freigesprochen, und der Bericht nennt die
+    Begründung wörtlich. Nicht gelistet, ohne Begründung, mit abweichenden Orten
+    oder ohne Messung ⇒ offener Befund.
+  - **Stumme Ereignisse** zählen nur dann als dokumentiert, wenn im Wächter
+    `tests/event-coverage.test.js` NEBEN dem Namen ein Begründungskommentar
+    steht; der Text wird gelesen und im Bericht einzeln gezeigt. Ein gelisteter
+    Eintrag ohne Begründung ist offen — sonst würde eine gelöschte Begründung
+    still freisprechen.
+  - Die Gegenprobe dazu: `node tools/audit-mcp/probe-doppelregeln.mjs`
+    (Exit-Code 1, sobald eine Erwartung verletzt ist).
 
 ## Grenzen
 
