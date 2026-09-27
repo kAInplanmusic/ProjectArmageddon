@@ -188,6 +188,10 @@ Vorbedingung je Auftrag steht dabei, damit nichts auf einer belegten Datei start
 | **C-7** 4 Barrels / 137 Zeilen ohne Konsument | Katalogquelle | U abgegeben | von U zu belegen |
 | **C-9** Zeilenbudget für die größten unbewachten Dateien | `tests/` | frei | größte ohne Budget: **7358 Zeilen** |
 
+| **B-9a** Verbindungsmerkmal auf die Leitung | `src/shared/protocol.js` + `src/client/**` | **frei** | Gemessen: 1,2 s nach dem Trennen kommen nur Anzeigeereignisse, **kein** Hinweis. Der Server WEISS es (`connected:1`, Platz `connected:false`) — aber nur über HTTP, nie über den WebSocket. **Das ist eine Protokolländerung** (CONTROL + Client), deshalb bewusst NICHT als Nebenbei-Fix gemacht. Der Arbeiter rät ausdrücklich davon ab, dafür `CONTROL.ERROR` zu missbrauchen — eine vorhandene Nachricht für einen fremden Zweck wäre die nächste Doppelregel. |
+| **Start/Beitritt-Reihenfolge (Befund 5, neu)** | `src/server/lobby.js` | **frei** | Gemessen: das Versprechen „die Lobby nimmt wieder einen auf" gilt nur für den beitrittsgestarteten Weg, NICHT bei `START_MATCH` (Status `running` → „nimmt keine Spieler mehr auf"). Verschiebt Oberflächenverhalten → Entscheidung nötig, nicht eigenmächtig. |
+| **gameServer-Zerlegung** | `src/server/gameServer.js` | **frei** | Zahlen bestätigt und verfeinert: 357 Zeilen, davon **175 Kommentar**, 169 Code; `JOIN_LOBBY` allein 170 Zeilen / 112 Kommentar. **Kein Zeilenbudget** außer `match.js < 3200` — ein Umbau ist also nicht erzwungen. Zurückgestellt mit Begründung (Kommentaranteil, E2E in dieser Runde nicht lauffähig). |
+
 **Ein Abnahmelauf, auf den alles wartet** (erst wenn kein Arbeiter mehr schreibt):
 voller Testlauf, E2E über 30 Spezifikationen, danach die zwei Zahlen nachziehen. Während
 Schreiber laufen, ist Rot ein Lastartefakt — ein Befund, der in dieser Sitzung schon
