@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-09-26T18:36:08.331Z · **Commit:** `d2d8495` (main) · **Node:** v22.23.2
+**Erzeugt:** 2026-09-27T04:38:06.594Z · **Commit:** `221aa34` (main) · **Node:** v22.23.2
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -12,12 +12,12 @@
 |---|---|---|
 | gates | 🟢 gruen | alle gefahrenen Gates bestanden |
 | determinismus | 🟢 gruen | Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene Hashes. |
-| ereignisse | 🟢 gruen | 8 stumme Ereignisse — alle im Wächter mit Begründung gelistet (8 gelesene Begründungen) |
+| ereignisse | 🟢 gruen | 7 stumme Ereignisse — alle im Wächter mit Begründung gelistet (7 gelesene Begründungen) |
 | toteDateien | 🟢 gruen | 0 Dateien ohne Importeur |
 | unbenutzteKonstanten | 🟢 gruen | 0 definiert, nie gelesen |
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
 | zufall | 🟠 gelb | 1 Zeit-/Zufallstreffer im Simulationspfad |
-| pfade | 🟢 gruen | Alle 42 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
+| pfade | 🟢 gruen | Alle 48 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
 | doppelregeln | 🟢 gruen | keine Doppelregel gemessen |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
 | perf | 🟢 gruen | Budget eingehalten: kein Tick über 16,7 ms. |
@@ -29,15 +29,15 @@ Er ist **repariert** — und, soweit dieser Lauf es messen kann, nachgemessen:
 
 | Was | Beleg | Zustand |
 |---|---|---|
-| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — Das Gate `smoke:fast` war in DIESEM Lauf nicht dabei (gefahren: lint, validate) — die historische Zahl ist hier NICHT nachgemessen (letzter Commit an der Datei: `dfce278`, 2026-09-25) |
+| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — Das Gate `smoke:fast` war in DIESEM Lauf nicht dabei (gefahren: lint, validate) — die historische Zahl ist hier NICHT nachgemessen (letzter Commit an der Datei: `0d571d8`, 2026-09-26) |
 
 **Ursache (eine Zeile, zwei Umstände):** `const ROOT = new URL('..', import.meta.url).pathname;`
 `.pathname` liefert den Pfad prozent-kodiert. Das Projektverzeichnis enthält Leerzeichen, also wurde daraus
 `/home/patrick/AnunnakiTools%20Projekte/laufende%20Projekte/ProjectArmageddon/` — und `fs.existsSync` darauf ist `false`.
 Jeder `spawn` mit diesem `cwd` scheitert dann mit ENOENT.
 
-**Reichweite, in DIESEM Lauf gemessen:** 42 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **keine** mehr.
-Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `dfce278` (2026-09-25) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
+**Reichweite, in DIESEM Lauf gemessen:** 48 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **keine** mehr.
+Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `0d571d8` (2026-09-26) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
 die nach jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
 
 **Zweiter Defekt in derselben Datei:** `laufe()` hängte keinen `error`-Handler an den `spawn`. Ein Startfehler
@@ -49,29 +49,29 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 88 | 37808 |
-| tests | 130 | 35040 |
-| scripts | 44 | 8907 |
-| tools | 8 | 3455 |
+| src | 89 | 39103 |
+| tests | 136 | 37648 |
+| scripts | 44 | 9401 |
+| tools | 11 | 4214 |
 
-Ungetrackte Änderungen beim Lauf: **31**
+Ungetrackte Änderungen beim Lauf: **4**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 6.2 s | – |
+| lint | 🟢 bestanden | 6.5 s | – |
 | validate | 🟢 bestanden | 0.5 s | – |
 
-**2/2 bestanden** · Gesamtdauer 6.7 s
+**2/2 bestanden** · Gesamtdauer 7 s
 
 ## 3. Determinismus
 
 | Lauf | Seed | Zustandshash | Status | Runde |
 |---|---|---|---|---|
-| 1 | 4242 | `7ef3d6ed` | playing | 3 |
-| 2 | 4242 | `7ef3d6ed` | playing | 3 |
-| 3 | 9999 | `95e928a` | playing | 3 |
+| 1 | 4242 | `cd0e6cae` | playing | 3 |
+| 2 | 4242 | `cd0e6cae` | playing | 3 |
+| 3 | 9999 | `4c8df6c3` | playing | 3 |
 
 Derselbe Seed → derselbe Hash: **JA** · Verschiedene Seeds → verschiedene Hashes: **JA**
 
@@ -172,7 +172,7 @@ die Form liefert immer dasselbe.
 
 Züge 86 · Schüsse 65 · gemessene Ticks 5036
 
-Tick-Kosten: mittel **0.0601 ms** · p95 0.1166 ms · p99 0.1462 ms · max 0.8656 ms
+Tick-Kosten: mittel **0.0625 ms** · p95 0.1008 ms · p99 0.1552 ms · max 0.9383 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -211,30 +211,29 @@ Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **3
 
 ## 11. Ereignis-Abdeckung
 
-**47** emittierte Ereignisarten (`emit(` UND `melde(`) · **39** im Client behandelt · **8** stumm.
+**47** emittierte Ereignisarten (`emit(` UND `melde(`) · **40** im Client behandelt · **7** stumm.
 
-*Methode und ihre Belegstärke (Textsuche, kein Aufrufgraph):* Ein Ereignis gilt als behandelt, wenn sein Name unter `src/client/` als Zeichenkette oder als UNQUOTIERTER Tabellenschlüssel vorkommt. Davon **33 nur über einen Schlüssel** belegt — der schwächere Beleg; ein solcher Name kann theoretisch ein fremder Schlüssel sein. Bis 2026-09-26 zählte das Werkzeug nur Zeichenketten und meldete dadurch Namen als „UNDOKUMENTIERT", die im Client einen Zweig haben (`tests/event-coverage.test.js:218-232`). Ein „stumm" aus dieser Tabelle ist ein PRÜFAUFTRAG, kein Urteil.
+*Methode und ihre Belegstärke (Textsuche, kein Aufrufgraph):* Ein Ereignis gilt als behandelt, wenn sein Name unter `src/client/` als Zeichenkette oder als UNQUOTIERTER Tabellenschlüssel vorkommt. Davon **34 nur über einen Schlüssel** belegt — der schwächere Beleg; ein solcher Name kann theoretisch ein fremder Schlüssel sein. Bis 2026-09-26 zählte das Werkzeug nur Zeichenketten und meldete dadurch Namen als „UNDOKUMENTIERT", die im Client einen Zweig haben (`tests/event-coverage.test.js:218-232`). Ein „stumm" aus dieser Tabelle ist ein PRÜFAUFTRAG, kein Urteil.
 
-Davon **8 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-coverage.test.js`), **0 undokumentiert**.
+Davon **7 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-coverage.test.js`), **0 undokumentiert**.
 
 | Ereignis | emittiert in | Urteil | Begründung (aus dem Wächter) |
 |---|---|---|---|
-| `dot_applied` | src/engine/match.js:2451 | bewusst stumm (begründet) | Zustandsmarke am Spielernamen |
+| `dot_applied` | src/engine/match.js:2416 | bewusst stumm (begründet) | Zustandsmarke am Spielernamen |
 | `entity_in_water` | src/engine/systems/characterSystem.js:138 | bewusst stumm (begründet) | Wasserstand steht als Marke am Spielernamen |
 | `projectile_expired` | src/engine/systems/projectileSystem.js:324, src/engine/systems/projectileSystem.js:335 | bewusst stumm (begründet) | ein verfallenes Geschoss ist kein Ereignis für den |
-| `round_crates` | src/engine/systems/lootSystem.js:148 | bewusst stumm (begründet) | Buchführung; die Anzahl steht im HUD |
-| `turn_end` | src/engine/match.js:2710 | bewusst stumm (begründet) | dito, plus Zugwechsel im Spielerfeld |
-| `water_pushed` | src/engine/match.js:2496 | bewusst stumm (begründet) | der Wasserstand am Ziel ist die sichtbare Wirkung |
-| `weapon_cooldown` | src/engine/match.js:2237 | bewusst stumm (begründet) | die Waffenliste zeigt den Nachladezustand |
-| `weapon_dropped` | src/engine/match.js:2038 | bewusst stumm (begründet) | `dropWeapon()` meldet das Ergebnis direkt im Log |
+| `round_crates` | src/engine/systems/lootSystem.js:170 | bewusst stumm (begründet) | Buchführung; die Anzahl steht im HUD |
+| `turn_end` | src/engine/match.js:2675 | bewusst stumm (begründet) | dito, plus Zugwechsel im Spielerfeld |
+| `water_pushed` | src/engine/match.js:2461 | bewusst stumm (begründet) | der Wasserstand am Ziel ist die sichtbare Wirkung |
+| `weapon_cooldown` | src/engine/match.js:2366 | bewusst stumm (begründet) | die Waffenliste zeigt den Nachladezustand |
 
 *Keine Lücke:* Jedes stumme Ereignis ist im Wächter MIT Begründung gelistet — der Begründungstext wird in dieser Spalte einzeln gezeigt. Geprüft ist damit, dass eine Begründung HINGESCHRIEBEN wurde; ob sie stichhaltig ist, ist eine Einzelprüfung und keine Messung.
 
 ## 12. Pfad-Auflösung (`fileURLToPath` statt `.pathname`)
 
-**42** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
+**48** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
 
-Alle 42 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
+Alle 48 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
 
 ## 13. Server-Autorität und Secrets
 
@@ -274,17 +273,17 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ### Was schon belegt gut funktioniert
 
-- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (7ef3d6ed), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
+- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (cd0e6cae), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
 - **Kein TODO/FIXME im Quelltext.** Gemessen: 0 Treffer (Abschnitt 10.4). Wo die offene Arbeit steht (SSOT/MASTERDOTO), prüft dieser Bericht nicht — das ist eine Vereinbarung, keine Messung.
 - **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht.
 - **Kein Secret in getrackten Dateien.**
-- **Ereignis-Abdeckung ist sauber:** 39 von 47 Ereignisarten behandelt, die 8 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 35040 Zeilen Tests gegen 37808 Zeilen Quelltext (Verhältnis 0.93).
+- **Ereignis-Abdeckung ist sauber:** 40 von 47 Ereignisarten behandelt, die 7 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 37648 Zeilen Tests gegen 39103 Zeilen Quelltext (Verhältnis 0.96).
 - **Der Waffenkatalog ist kein Datenmüll:** 133 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
 
-1. 8 stumme Engine-Ereignisse (8 mit Begründung gelistet, 0 OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.
+1. 7 stumme Engine-Ereignisse (7 mit Begründung gelistet, 0 OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.
 2. Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.
 
 ## 16. Nicht messbar in dieser Umgebung
@@ -297,17 +296,15 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ## 17. TODO
 
-8 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+7 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
 ### HOCH (1)
 
 - [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:85
       this.#startedAt = Date.now();
 
-### NIEDRIG (7)
+### NIEDRIG (6)
 
-- [ ] Export ohne Leser: rosterWithSprites
-      src/client/roster.js
 - [ ] Export ohne Leser: resolveStrike
       src/engine/shooting.js
 - [ ] Export ohne Leser: fuseTicksFor

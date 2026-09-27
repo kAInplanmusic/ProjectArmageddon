@@ -129,11 +129,31 @@ Die Quelldatei hat keinen `damage`-Wert. Der Generator verwendet einen Ersatzwer
 
 ---
 
-## 10. E2E: 7 Tests brauchen echte GPU → **rot im CI**
+## 10. ~~E2E: 7 Tests brauchen echte GPU~~ → **WIDERLEGT (es war Last, nicht fehlende Grafik)**
 
-`profiling-Bildzeiten-*` Tests scheitern auf SwiftShader.
+> **Korrektur 2026-09-27.** Dieser Punkt war falsch. Eigener Vollauf über alle 30
+> Spezifikationen auf stillem Baum (kein Worker aktiv):
+> ```
+> 190 passed · 1 skipped · 0 failed (25,2 min)  — Exit 0
+> ```
+> **Alle 7 `profiling`-Specs grün**, auch `Bildzeiten mit Explosionen und
+> Partikeln (Software-Rasterung) — mountains` und `Bildzeiten auf dem echten
+> Grafikpfad`. Sie scheitern **nicht** „auf SwiftShader".
+>
+> Der Grund für die früheren roten: **Last.** In einem Lauf mit fünf
+> gleichzeitigen Workern stand `längstes Bild 900 ms` gegen ein Limit von
+> `500 ms` — dieselbe Messung, einmal belastet und einmal allein. Das ist der
+> Beleg für die Projektregel, die genau das verlangt: *„Ein repo-weiter Lauf
+> parallel zu schreibenden Workern macht fremde Tests lastbedingt rot. Der
+> Auftraggeber fährt die Batterie NACH der Rückgabe, seriell."*
+>
+> `MASTERDOTO.md:393` wusste es bereits: „**7/7 grün.** Auf diesem Rechner läuft
+> die echte GPU (`ANGLE (Intel, Mesa Intel HD Graphics 3000)`)."
 
-**Test im Browser**: Diese Tests **können nicht** in `npm run test:e2e` ausgeführt werden, ohne Chrome mit Hardware-Acceleration.
+**Test im Browser**: `npm run test:e2e` — aber **allein**. Parallel zu anderen
+Lasten sind die Bildzeit-Specs empfindlich und werden rot, ohne dass etwas
+kaputt ist.
+
 
 ---
 

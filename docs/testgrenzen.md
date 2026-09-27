@@ -15,10 +15,10 @@ vom 2026-09-17 und waren seither überholt).
 | Quellcode | 35.955 Zeilen (30.255) |
 | Tests | 32.684 Zeilen (26.546) |
 | Unit-Tests | 974 (93 Dateien) — vorher 795 in 72 Dateien |
-| E2E-Tests | 184 (28 Dateien) — 183 grün, 0 rot, 1 übersprungen; vorher 172 in 28 Dateien |
+| E2E-Tests | 191 (30 Dateien) — 190 grün, 0 rot, 1 übersprungen (gemessen 2026-09-27, seriell); vorher 184 in 28 Dateien |
 | Werkzeuge | 37 Skripte (22) |
 | Unit-Laufzeit | **4,7 min** (22 s) |
-| E2E-Laufzeit | **22,5 min** (9,4 min) |
+| E2E-Laufzeit | **25,2 min** (9,4 min) |
 
 Das Verhältnis Test- zu Quellcode liegt bei **0,91** — für ein Projekt dieser
 Größe ist das hoch.
