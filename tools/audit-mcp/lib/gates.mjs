@@ -27,8 +27,13 @@ export const GATES = {
   'test:e2e': { skript: 'test:e2e', schuetzt: 'Echter Browser, echte Interaktion (28 Dateien)', kosten: 'sehr-lang' },
 };
 
-/** Ordnet einen Gate-Lauf ein und zieht die Kennzahlen heraus. */
-function bewerte(name, ergebnis) {
+/**
+ * Ordnet einen Gate-Lauf ein und zieht die Kennzahlen heraus.
+ *
+ * Exportiert, damit die Gegenprobe (`probe-checks-messwert.mjs`) genau die
+ * Funktion prüfen kann, die im Betrieb läuft — nicht eine Nachbildung davon.
+ */
+export function bewerte(name, ergebnis) {
   const text = ergebnis.out;
   const kennzahlen = {};
 
@@ -56,10 +61,50 @@ function bewerte(name, ergebnis) {
     if (m2) kennzahlen.mittelMs = Number(m2[1]);
   }
   if (name === 'checks') {
-    const fehlgeschlagen = [...text.matchAll(/(\S+)\s+FEHLGESCHLAGEN|FEHLGESCHLAGEN\s+(\S+)/g)].length;
-    const zeilen = [...text.matchAll(/^\s*(?:OK|FEHLGESCHLAGEN|✓|✗)/gm)].length;
-    kennzahlen.zeilen = zeilen;
-    if (fehlgeschlagen) kennzahlen.fehlgeschlagen = fehlgeschlagen;
+    // Das Format ist NICHT geraten, sondern aus `scripts/checks.mjs:81-86`
+    // gelesen — dort steht:
+    //
+    //   ok   check:docs     383 ms  Zahlen in der Doku     (exit 0)
+    //   FEHL check:docs     383 ms  Zahlen in der Doku     (exit != 0)
+    //   21 Gates in 66.3 s | fehlgeschlagen: 0
+    //
+    // Vorher suchte diese Stelle nach `OK|FEHLGESCHLAGEN`. Beide Schreibweisen
+    // kommen in der Ausgabe NICHT vor (`ok` klein, `FEHL` kurz), also fand sie
+    // 0 Zeilen und lieferte still leere Kennzahlen. Gemessen am 2026-09-26:
+    // `kennzahlen = {"zeilen": 0}`, kein `fehlgeschlagen`-Feld — ein Gate, das
+    // 21 Werkzeuge fährt, meldete Zahlen wie ein ausgefallenes Gate. Ein
+    // leerer Messwert ist keine Null, sondern eine kaputte Messung; deshalb
+    // unterscheidet der Befund unten beides.
+    // Gesucht wird die Zeile, die `scripts/checks.mjs:82` SELBST druckt:
+    //   `${marke} ${skript.padEnd(22)} ${dauer} ms ${schuetzt}`
+    // Der Zwang auf Dauer + Einheit (`\d+ ms`) ist Absicht: die Ausgabe eines
+    // fehlgeschlagenen Werkzeugs erscheint darunter im Klartext (Zeile 89-93)
+    // und kann selbst Wörter wie „FEHL" enthalten. Nur die Zeile mit Skriptname
+    // UND Millisekunden ist eine Gate-Zeile.
+    const zeilenTreffer = [...text.matchAll(/^(ok|FEHL)\s+(\S+)\s+(\d+)\s+ms\b/gm)];
+    const fehlTreffer = zeilenTreffer.filter((m) => m[1] === 'FEHL');
+    kennzahlen.zeilen = zeilenTreffer.length;
+    kennzahlen.bestanden = zeilenTreffer.length - fehlTreffer.length;
+    kennzahlen.fehlgeschlagen = fehlTreffer.length;
+    if (fehlTreffer.length) kennzahlen.fehlgeschlageneWerkzeuge = fehlTreffer.map((m) => m[2]);
+
+    // Die Summenzeile als Gegenprobe: sie stammt aus demselben Lauf, aber aus
+    // einer unabhängigen Zeile. Weichen Zählung und Summe voneinander ab, ist
+    // das Format geändert worden — und das wird gesagt, nicht geschluckt.
+    const summe = text.match(/(\d+)\s+Gates\s+in\s+([\d.,]+)\s*s\s*\|\s*fehlgeschlagen:\s*(\d+)/);
+    if (summe) {
+      kennzahlen.gatesLautSumme = Number(summe[1]);
+      kennzahlen.dauerSekunden = Number(summe[2].replace(',', '.'));
+      kennzahlen.fehlgeschlagenLautSumme = Number(summe[3]);
+    }
+
+    if (zeilenTreffer.length === 0) {
+      kennzahlen.hinweis = 'Ausgabe von scripts/checks.mjs NICHT lesbar (erwartet „ok  <skript> …" je Gate). '
+        + 'Die Zahlen sind damit nicht gemessen — nicht null. Format von scripts/checks.mjs geändert?';
+    } else if (summe && kennzahlen.fehlgeschlagen !== kennzahlen.fehlgeschlagenLautSumme) {
+      kennzahlen.hinweis = `Zählung und Summenzeile widersprechen sich: ${kennzahlen.fehlgeschlagen} FEHL-Zeile(n) gezählt, `
+        + `${kennzahlen.fehlgeschlagenLautSumme} laut „fehlgeschlagen:" in scripts/checks.mjs.`;
+    }
   }
   if (name === 'smoke:fast') {
     // Die Zeile lautet: `Rauchtest: 4 von 4 Schritten OK in 26,8 s`

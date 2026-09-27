@@ -18,8 +18,9 @@ Er bündelt **drei Dinge**, die vorher verstreut waren:
 node tools/audit-mcp/server.mjs
 
 # Diagnose ohne MCP
-npm run audit:liste                      # Werkzeuge, Prompts, Kataloggröße
+npm run audit:liste                      # Werkzeuge, Prompts, Kataloggröße, Code-Fingerabdruck
 npm run audit:status                     # Repozustand
+node tools/audit-mcp/server.mjs --ruf audit_stand        # läuft der Prozess mit dem Code auf der Platte?
 node tools/audit-mcp/server.mjs --ruf audit_deadcode
 node tools/audit-mcp/server.mjs --ruf 'audit_gates' '{"welche":"schnell"}'
 
@@ -35,8 +36,9 @@ Es gibt **keine Abhängigkeit**: Der Server spricht JSON-RPC 2.0 zeilenweise
 
 | Werkzeug | Was es liefert |
 |---|---|
+| `audit_stand` | **Code-Fingerabdruck**: SHA-256 über `lib/*.mjs` + `server.mjs`. Stellt den Stand des LAUFENDEN Prozesses dem gegenüber, was JETZT auf der Platte liegt — bei Abweichung „Dieser Server läuft mit altem Code — Neustart nötig", Datei für Datei |
 | `audit_status` | Commit, Branch, ungetrackte Änderungen, Umfang (Dateien/Zeilen je Bereich), Gate-Liste |
-| `audit_gates` | Gate-Batterie mit Exit-Code, Dauer und Kennzahlen je Gate |
+| `audit_gates` | Gate-Batterie mit Exit-Code, Dauer und Kennzahlen je Gate — die Kennzahlen werden aus der ECHTEN Ausgabe gelesen (`ok  <skript>  <n> ms` je Gate plus Summenzeile) und gegeneinander geprüft; ein fremdes Format meldet einen `hinweis`, statt still 0 zu sagen |
 | `audit_determinism` | Derselbe Seed zweimal → gleicher Zustandshash? Anderer Seed → anderer? |
 | `audit_flow` | Partiedauer, Züge, Schüsse, Rundenzahl, Sieger je Seed |
 | `audit_ballistics` | Wurfweite über Winkel × Kraft aus der ECHTEN Vorhersage, Geschoss-Lebensdauer |
@@ -132,6 +134,41 @@ schiefgegangen ist. Die vier wichtigsten:
   Ein MCP-Ergebnis ist ein **Zeitpunkt**, kein Zustand. Nach jeder Änderung unter
   `tools/audit-mcp/` den Server neu starten (Hermes: Verbindung trennen und neu
   aufbauen) — oder das Ergebnis als verdächtig kennzeichnen.
+
+### Der Prozess sagt jetzt selbst, ob er alt ist
+
+Seit 2026-09-27 ist aus dem Vorsatz („nach jeder Änderung neu starten") eine
+Messung geworden — die Regel ist damit nicht mehr guter Wille, sondern prüfbar:
+
+- **Jede Werkzeugantwort trägt `werkzeugStand`**:
+  `{hash, prozessStart, dateienGehasht, platteHash, veraltet, urteil}`.
+  `veraltet: true` heißt: der Code, der hier antwortet, ist NICHT der Code, der
+  auf der Platte liegt. Dann steht die Warnung zusätzlich als eigener Textblock
+  am Anfang der Antwort — im Wortlaut: **„Dieser Server läuft mit altem Code —
+  Neustart nötig"** (dazu eine ASCII-Fassung, weil eine Warnung, die nur als
+  „läuft" ankommt, keine Warnung ist).
+- **`audit_stand`** zeigt die Gegenüberstellung im Detail: welche Datei(en)
+  geändert wurden (mit beiden Hashes), welche neu dazukam, welche verschwand —
+  und welche **nicht lesbar** war. Unlesbar ist eine Abweichung, kein
+  Gleichstand (fail-safe).
+- Der Fingerabdruck umfasst `lib/*.mjs` + `server.mjs` und wird **beim
+  Prozessstart** gebildet. Er ist keine feste Dateiliste: eine neu
+  hinzugekommene `lib/*.mjs` ändert ihn.
+- Der `initialize`-Handschlag nennt seinen Stand (`serverInfo.stand`),
+  `--liste` ebenfalls — man kann also vor der ersten Frage sehen, wer antwortet.
+
+```bash
+# Frischer Prozess: läuft mit dem, was auf der Platte liegt
+node tools/audit-mcp/server.mjs --ruf audit_stand
+# → "abweichung": false · hash == platteHash
+```
+
+Die Gegenproben dazu (Exit-Code 1, sobald eine Erwartung verletzt ist):
+`node tools/audit-mcp/probe-stand.mjs` startet den Server als echten
+MCP-Prozess auf einer Kopie unter `/tmp` und ändert Dateien UNTER dem laufenden
+Prozess (geändert / neu / unlesbar / Neustart); `probe-checks-messwert.mjs`
+prüft die Kennzahlen-Leser der Gate-Batterie, inklusive fail-safe bei fremdem
+Format.
 
 ## Herkunft der Prüffragen
 

@@ -38,15 +38,78 @@ import {
 import { GATES, fahreGates, e2ePlan } from './lib/gates.mjs';
 import { KATALOG, themen, quellen, filtereKatalog } from './lib/katalog.mjs';
 import { schreibeBericht } from './lib/bericht.mjs';
+import {
+  PROZESS_STAND, ALT_CODE_MELDUNG, NEUSTART_HINWEIS, standFeld, standBericht,
+} from './lib/stand.mjs';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 /* ─────────────────────────── Werkzeuge ─────────────────────────── */
 
 /** Kurzform für ein Text-Ergebnis. */
 const text = (t) => ({ content: [{ type: 'text', text: typeof t === 'string' ? t : JSON.stringify(t, null, 2) }] });
 
+/**
+ * Hängt den Code-Fingerabdruck an JEDES Werkzeugergebnis — zentral, an genau
+ * einer Stelle, damit kein Werkzeug ihn vergessen kann.
+ *
+ * Warum das am Ergebnis hängt und nicht nur in `audit_stand` steht (belegter
+ * Fehler, 2026-09-26): Ein langlaufender Server lieferte nach der Reparatur von
+ * `lib/statisch.mjs` weiter die alte Welt — 27 angeblich undokumentierte
+ * stumme Ereignisse, die einen ganzen Arbeitsdurchgang gekostet haben. Die
+ * Warnung taugt nur, wenn sie in dem Ergebnis steht, das gerade gelesen wird.
+ *
+ * Drei Wege, damit sie nicht übersehen werden kann:
+ *   1. als Feld `werkzeugStand` IM JSON-Ergebnis (maschinell lesbar),
+ *   2. als `_meta.werkzeugStand` am MCP-Result (protokollkonform),
+ *   3. als zusätzlicher Textblock am Anfang JEDER Antwort — auch bei denen,
+ *      die gar kein JSON liefern.
+ */
+function mitStand(ergebnis) {
+  const stand = standFeld();
+  const content = Array.isArray(ergebnis?.content) ? [...ergebnis.content] : [];
+
+  const ersteTextStelle = content.findIndex((c) => c?.type === 'text');
+  if (ersteTextStelle >= 0) {
+    const original = content[ersteTextStelle];
+    let ersetzt = null;
+    try {
+      const obj = JSON.parse(original.text);
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        obj.werkzeugStand = stand;
+        ersetzt = JSON.stringify(obj, null, 2);
+      }
+    } catch {
+      // Kein JSON (z. B. reiner Text): dann wird das Feld angehängt.
+    }
+    content[ersteTextStelle] = { type: 'text', text: ersetzt ?? `${original.text}\nwerkzeugStand: ${JSON.stringify(stand)}` };
+  } else {
+    content.unshift({ type: 'text', text: `werkzeugStand: ${JSON.stringify(stand)}` });
+  }
+
+  const kopf = stand.veraltet
+    ? `⚠ ${ALT_CODE_MELDUNG}\n${stand.urteil}\nNeustart: ${NEUSTART_HINWEIS}\n`
+    : null;
+  if (kopf) content.unshift({ type: 'text', text: kopf });
+
+  return { ...ergebnis, content, _meta: { ...(ergebnis?._meta ?? {}), werkzeugStand: stand } };
+}
+
+/** Ein Ergebnis als druckbaren Text (für den CLI-Aufruf `--ruf`). */
+function alsText(ergebnis) {
+  const mit = mitStand(ergebnis);
+  return mit.content.map((c) => c.text).join('\n');
+}
+
 const WERKZEUGE = {
+  audit_stand: {
+    beschreibung: 'Code-Fingerabdruck (SHA-256 über tools/audit-mcp/lib/*.mjs + server.mjs): stellt den Stand des LAUFENDEN Prozesses dem gegenüber, was JETZT auf der Platte liegt. Bei Abweichung meldet es „Dieser Server läuft mit altem Code — Neustart nötig", Datei für Datei. Fail-safe: unlesbare Dateien gelten als Abweichung, nicht als Gleichstand.',
+    schema: { type: 'object', properties: {}, additionalProperties: false },
+    async ruf() {
+      return text(standBericht());
+    },
+  },
+
   audit_status: {
     beschreibung: 'Repozustand: Commit, Branch, ungetrackte Änderungen, Umfang (Zeilen), Node-Version, verfügbare Gates, letzte Commits.',
     schema: { type: 'object', properties: {}, additionalProperties: false },
@@ -63,6 +126,15 @@ const WERKZEUGE = {
         gates: Object.fromEntries(Object.entries(GATES).map(([k, v]) => [k, v.schuetzt])),
         npmSkripte: Object.keys(pkg.scripts ?? {}).length,
         toolVersion: VERSION,
+        // Der Fingerabdruck des laufenden Codes steht an JEDER Antwort
+        // (`werkzeugStand`) — hier zusätzlich mit der Dateizahl, weil
+        // `audit_status` die Zustandsfrage des Aufrufers beantwortet.
+        mcpStand: {
+          hash: PROZESS_STAND.hash,
+          prozessStart: PROZESS_STAND.prozessStart,
+          dateienGehasht: Object.keys(PROZESS_STAND.dateien).length,
+          hinweis: 'Gegenprobe mit audit_stand — ein langlaufender Server kann mit altem Code antworten.',
+        },
       });
     },
   },
@@ -603,12 +675,21 @@ async function behandle(nachricht) {
       return antworte(id, {
         protocolVersion: params?.protocolVersion ?? '2025-06-18',
         capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-        serverInfo: { name: 'audit-mcp', version: VERSION },
+        serverInfo: {
+          name: 'audit-mcp',
+          version: VERSION,
+          // Der Fingerabdruck des Codes, der hier antwortet — auch die
+          // Handschlag-Antwort sagt damit, auf welchem Stand sie steht.
+          stand: { hash: PROZESS_STAND.hash, prozessStart: PROZESS_STAND.prozessStart },
+        },
         instructions:
           'Tiefen-Audit für Spiele und Spielengines. Erst `audit_status`, dann `audit_all` für den Überblick, '
           + 'danach die Einzelwerkzeuge für die Tiefe, und `audit_bericht` für die Datei. '
           + 'Regel dieses Servers: jeder Befund braucht eine Fundstelle (datei:zeile) ODER eine Messung — '
-          + 'und jede Zahl muss im selben Zugriff entstanden sein, in dem sie gelesen wird.',
+          + 'und jede Zahl muss im selben Zugriff entstanden sein, in dem sie gelesen wird. '
+          + 'Jede Antwort trägt `werkzeugStand` (SHA-256 des laufenden Codes): zeigt `veraltet: true`, '
+          + 'läuft dieser Server mit altem Code — dann `audit_stand` aufrufen und den Server neu starten, '
+          + 'bevor das Ergebnis als Befund gilt.'
       });
 
     case 'notifications/initialized':
@@ -627,12 +708,14 @@ async function behandle(nachricht) {
       if (!werkzeug) return fehler(id, -32602, `Unbekanntes Werkzeug: ${name}`);
       try {
         const ergebnis = await werkzeug.ruf(params?.arguments ?? {});
-        return antworte(id, ergebnis);
+        // Der Fingerabdruck hängt an JEDEM Ergebnis — hier, an der einzigen
+        // Stelle, durch die alle Werkzeugantworten laufen.
+        return antworte(id, mitStand(ergebnis));
       } catch (e) {
-        return antworte(id, {
+        return antworte(id, mitStand({
           content: [{ type: 'text', text: `Fehler in ${name}: ${e.message}` }],
           isError: true,
-        });
+        }));
       }
     }
 
@@ -683,7 +766,15 @@ async function behandle(nachricht) {
 const argumente = process.argv.slice(2);
 
 if (argumente.includes('--liste')) {
-  process.stdout.write(`${JSON.stringify({ werkzeuge: WERKZEUG_LISTE.map(w => w.name), prompts: PROMPTS.map(p => p.name), katalogEintraege: KATALOG.length, gates: Object.keys(GATES) }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({
+    werkzeuge: WERKZEUG_LISTE.map(w => w.name),
+    prompts: PROMPTS.map(p => p.name),
+    katalogEintraege: KATALOG.length,
+    gates: Object.keys(GATES),
+    // Der Fingerabdruck des laufenden Codes steht auch hier: `--liste` ist der
+    // erste Aufruf, mit dem man prüft, WAS da eigentlich antwortet.
+    stand: { hash: PROZESS_STAND.hash, prozessStart: PROZESS_STAND.prozessStart, dateien: Object.keys(PROZESS_STAND.dateien).length },
+  }, null, 2)}\n`);
   process.exit(0);
 }
 
@@ -698,7 +789,10 @@ if (rufIndex >= 0) {
   const argsJson = argumente[rufIndex + 2];
   werkzeug.ruf(argsJson ? JSON.parse(argsJson) : {})
     .then(r => {
-      process.stdout.write(`${r.content[0].text}\n`);
+      // Auch der Einzelaufruf trägt den Fingerabdruck: er ist die Gegenprobe
+      // gegen den langlaufenden MCP-Prozess und muss selbst sagen, auf welchem
+      // Stand er steht.
+      process.stdout.write(`${alsText(r)}\n`);
       process.exit(0);
     })
     .catch(e => {
