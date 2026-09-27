@@ -786,8 +786,25 @@ class Game {
    * Springt mit der Figur am Zug.
    *
    * Der Sprung ist eine echte Physik (siehe `MatchController.jump`): Er setzt
-   * einen Impuls, die Figur fliegt und landet. Der zweite Druck in der Luft ist
-   * der Doppelsprung — je Zug sind zwei Sprünge möglich.
+   * einen Impuls, die Figur fliegt und landet.
+   *
+   * ## Seit 2026-09-27: keine Obergrenze mehr
+   *
+   * Vorher stand hier „je Zug sind zwei Sprünge möglich" (Bodensprung +
+   * Doppelsprung). Der Auftraggeber hat entschieden: „nein sprung kann man
+   * unendlich" — die Zahlengrenze ist entfallen. Geblieben ist, dass der ERSTE
+   * Sprung eines Zuges vom Boden kommen muss; jeder weitere geht auch in der
+   * Luft.
+   *
+   * Die Unterscheidung der Meldung hängt deshalb weiter an `ergebnis.double`
+   * und nicht an einer Restzahl: `false` = vom Boden abgesprungen, `true` = in
+   * der Luft abgesprungen. Beides bleibt richtig, gleich wie oft gesprungen
+   * wird.
+   *
+   * `ergebnis.jumpsLeft` ist mit entfallener Grenze `null` („unbegrenzt") — die
+   * Anzeige liest es deshalb NICHT. Der Wert steht überall gleich (auch im
+   * Netzpfad, wo das `jumped`-Ereignis als JSON ankommt); die Begründung steht
+   * bei `SPRUENGE_UNBEGRENZT` in `src/engine/match.js`.
    *
    * @param {number} [seitlich] - -1 links, 0 gerade, 1 rechts
    */

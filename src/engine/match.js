@@ -349,6 +349,46 @@ const DOUBLE_JUMP_FACTOR = 0.8;
 const JUMP_SIDE_IMPULSE = 2.4;
 
 /**
+ * Der Wert, der „es gibt keine Obergrenze" benennt.
+ *
+ * ## Warum es das gibt
+ *
+ * Bis 2026-09-27 zählte der Motor zwei Sprünge je Zug und meldete den Rest als
+ * Zahl (`jumpsLeft: 1`, dann `0`, danach „Keine Sprünge mehr in diesem Zug").
+ * Auf Entscheidung des Auftraggebers ruht der Sprung auf KEINER Obergrenze mehr
+ * („nein sprung kann man unendlich"). Damit ist jede Restzahl eine Aussage über
+ * einen Zähler, den es nicht mehr gibt.
+ *
+ * ## Warum `null` und nicht `Infinity`
+ *
+ * `JSON.stringify(Infinity)` ergibt `null` (JSON kennt kein Unendlich). Das
+ * `jumped`-Ereignis geht im Netzspiel als JSON über die Leitung
+ * (`protocol.js#encodeMessage`), lokal entsteht derselbe Wert im Prozess. Mit
+ * `Infinity` stünden lokal also `Infinity` und online `null` — zwei Werte für
+ * dieselbe Sache, genau die Art Auseinanderlaufen, die `client/ereignisse.js`
+ * an anderer Stelle schon einmal getroffen hat. `null` ist der einzige Wert, der
+ * in BEIDEN Pfaden derselbe ist.
+ *
+ * ## Was der Spieler sieht: keine Zahl, sondern „unbegrenzt"
+ *
+ * Die Unterscheidung der Anzeige hängt NICHT an diesem Feld, sondern an
+ * `double`: `double === false` heißt „vom Boden abgesprungen", `double === true`
+ * „in der Luft". Beides bleibt mit unbegrenzten Sprüngen bedeutsam (siehe
+ * `docs/sprung-regel.md`).
+ *
+ * ## Wichtige Messung: Der Fallschaden ist KEINE Bremse
+ *
+ * Die Annahme, unbegrenztes Springen bremse sich über den Fallschaden selbst,
+ * trägt nicht — gemessen am unveränderten Motor (`docs/sprung-regel.md`):
+ * Der Absprungimpuls beträgt 9,2 px/Takt (Doppelsprung 7,36), die
+ * Fallschadensschwelle aber 11 px/Takt (`characterSystem.js`). Ein Sprung landet
+ * mit gemessenen 9,62 px/Takt und damit UNTER der Schwelle: Springer nehmen
+ * keinen Schaden, gleich wie viele es sind. Der Motor stützt die Annahme nicht;
+ * gemeldet statt erfunden.
+ */
+const SPRUENGE_UNBEGRENZT = null;
+
+/**
  * Wie stark die Beweglichkeit einer Klasse (`CLASS_DEFINITIONS[].speed`) auf den
  * Absprung wirkt — getrennt für Werte über und unter 1,0.
  *
@@ -1183,9 +1223,29 @@ export class MatchController {
     return this.#terrain.isSolid(Math.floor(x), tiefster);
   }
 
-  /** Verbleibende Sprünge in dieser Flugphase (0, 1 oder 2). */
+  /**
+   * Verbleibende Sprünge — seit der Entscheidung „Sprung kann man unendlich"
+   * immer `null` („unbegrenzt").
+   *
+   * Die Methode hat keinen Zähler mehr, sondern EINEN Wahrheitswert zu melden:
+   * Es gibt keine endliche Zahl verbleibender Sprünge. Vorher rechnete sie
+   * `2 - verbraucht`; mit entfallener Obergrenze wäre jede Zahl falsch —
+   * `0` läse sich als „keine mehr übrig" (genau das Gegenteil), `1`/`2` als
+   * Obergrenze, die es nicht mehr gibt.
+   *
+   * Warum `null` und nicht `Infinity`: siehe `SPRUENGE_UNBEGRENZT`.
+   * Die Begründung der Regel und die Messung zur Fallschaden-Bremse stehen in
+   * `docs/sprung-regel.md`.
+   *
+   * @param {number} playerId
+   * @returns {null} immer `null` — „unbegrenzt"
+   */
   jumpsLeft(playerId) {
-    return Math.max(0, 2 - (this.#jumpsUsed.get(playerId) ?? 0));
+    // Der Parameter bleibt: Aufrufer (Debug-API, Tests) fragen weiter je Spieler
+    // und `null` gilt für jeden. Kein `undefined`, damit die Prüfung „Feld
+    // vorhanden, Wert aber keine Zahl" im Client eindeutig bleibt.
+    void playerId;
+    return SPRUENGE_UNBEGRENZT;
   }
 
   /**
@@ -1231,19 +1291,40 @@ export class MatchController {
    *
    * Der Sprung ist eine echte Physik: er setzt einen senkrechten Impuls, die
    * Figur fliegt danach unter Schwerkraft und landet. Fallschaden greift wie bei
-   * jedem Sturz, ein zu hoher Sprung kann also schaden.
+   * jedem Sturz.
    *
-   * Der Sprung beendet den Zug NICHT, aber je Zug sind nur zwei möglich (einer
-   * vom Boden, einer in der Luft). Die Begrenzung ist nötig, weil ein Sprung die
-   * Position ändert — in einem Artillerie-Spiel die kostbarste Größe — und
-   * unbegrenztes Springen jede Deckung entwerten würde.
+   * ## Keine Obergrenze mehr (Entscheidung des Auftraggebers)
    *
-   * Der zweite Sprung (Doppelsprung) geht nur EINMAL je Flugphase und ist
-   * schwächer. Beim Landen wird zurückgesetzt.
+   * „nein sprung kann man unendlich" — die frühere Grenze von zwei Sprüngen je
+   * Zug (einer vom Boden, einer in der Luft) ist ENTFALLEN. Geblieben ist allein
+   * die Bodenregel für den ERSTEN Sprung eines Zuges: Sie begrenzt, WIE eine
+   * Sprungfolge BEGINNT, nicht wie viele folgen.
+   *
+   * ## Was diese Regel NICHT bremst (gemessen, nicht angenommen)
+   *
+   * Der Auftraggeber ging davon aus, der Fallschaden sei die Bremse. Das trägt
+   * nicht: Der Absprung setzt 9,2 px/Takt (Doppelsprung 7,36), die
+   * Fallschadensschwelle liegt aber bei 11 px/Takt (`characterSystem.js`,
+   * `#fallDamageThreshold`). Gemessen landet eine Figur nach einem Sprung mit
+   * 9,62 px/Takt — UNTER der Schwelle. Zehn Sprünge nacheinander ergeben
+   * 0 Fallschaden (Messung und Rechnung: `docs/sprung-regel.md`). Unbegrenztes
+   * Springen ist damit nicht durch Schaden begrenzt; wer unbegrenzt in der Luft
+   * nachspringt, kann beliebig lange oben bleiben, weil jeder Sprung die
+   * senkrechte Geschwindigkeit SETZT statt sie zu addieren.
+   *
+   * Die Zahl steht hier, damit der nächste Leser nicht wieder eine Bremse
+   * annimmt, die es nicht gibt. Eine NEUE Bremse wurde auf Anweisung nicht
+   * erfunden.
+   *
+   * ## Der Sprung beendet den Zug NICHT
+   *
+   * Grund: Ein Sprung in der Luft setzt voraus, dass der Spieler während seines
+   * eigenen Flugs noch am Zug ist. Beendete der erste Sprung den Zug, wäre die
+   * Fortsetzung nie auslösbar.
    *
    * @param {number} playerId
    * @param {number} [horizontal] - seitliche Richtung: -1, 0 oder 1
-   * @returns {{ok:boolean, jumpsLeft?:number, impulse?:number, errors?:string[]}}
+   * @returns {{ok:boolean, jumpsLeft?:null, double?:boolean, impulse?:number, errors?:string[]}}
    */
   jump(playerId, horizontal = 0) {
     const errors = [];
@@ -1255,18 +1336,26 @@ export class MatchController {
     const grounded = this.isGrounded(playerId);
     const verbraucht = this.#jumpsUsed.get(playerId) ?? 0;
 
-    // Der erste Sprung geht nur vom Boden, der zweite nur in der Luft.
-    // Der Zähler wird ausschließlich beim Zugbeginn zurückgesetzt — ein Reset
-    // beim Landen würde erlauben, innerhalb eines Zuges beliebig oft zu
-    // springen, zu landen und wieder zu springen.
+    /*
+     * Der ERSTE Sprung eines Zuges geht nur vom Boden.
+     *
+     * Das ist die einzige gebliebene Grenze — und sie grenzt nicht die ZAHL der
+     * Sprünge ein, sondern ihren ANFANG: Ohne sie wäre ein Absprung mitten im
+     * Flug ein gültiger „erster" Sprung, der Bodenkontakt hätte für die Mechanik
+     * keine Bedeutung mehr, und dieselbe Figur könnte aus jeder Fallhöhe
+     * heraus nachspringen.
+     *
+     * Der Zähler wird weiterhin beim Zugbeginn zurückgesetzt: Die Regel gilt je
+     * Zug, nicht je Flugphase.
+     */
     if (!grounded && verbraucht === 0) {
       return { ok: false, errors: ['In der Luft ist kein erster Sprung möglich'] };
     }
-    if (verbraucht >= 2) {
-      return { ok: false, errors: ['Keine Sprünge mehr in diesem Zug'] };
-    }
+    // Die frühere Grenze `if (verbraucht >= 2) return 'Keine Sprünge mehr …'`
+    // ist entfallen — siehe die Messung im Kopf dieser Methode.
 
     const istDoppel = !grounded;
+
     // Verlangsamung wirkt auf den Absprung: Wer in einen Kackhaufen getreten ist,
     // kommt schlechter vom Boden weg.
     const langsam = this.#statuses.slowOf(playerId);
@@ -1294,19 +1383,28 @@ export class MatchController {
     }
 
     this.#jumpsUsed.set(playerId, verbraucht + 1);
-    const rest = 2 - (verbraucht + 1);
 
+    /*
+     * `jumpsLeft` ist mit entfallener Obergrenze KEINE Zahl mehr: `null` heißt
+     * „unbegrenzt". Der Wert sieht in beiden Betriebsarten gleich aus — im
+     * Netzspiel geht dieses Feld als JSON über die Leitung, und `Infinity` würde
+     * dort zu `null` (siehe `SPRUENGE_UNBEGRENZT`).
+     *
+     * Die Anzeige braucht das Feld nicht: Sie unterscheidet „Sprung" und
+     * „Doppelsprung" an `double` (vom Boden / in der Luft), und diese
+     * Unterscheidung bleibt richtig, egal wie oft danach noch gesprungen wird.
+     */
     this.#events.emit('jumped', {
-      playerId, double: istDoppel, impulse: impuls, jumpsLeft: rest,
+      playerId, double: istDoppel, impulse: impuls, jumpsLeft: SPRUENGE_UNBEGRENZT,
     });
 
     // Der Sprung beendet den Zug NICHT.
     //
-    // Grund: Ein Doppelsprung setzt voraus, dass der Spieler während seines
+    // Grund: Ein Sprung in der Luft setzt voraus, dass der Spieler während seines
     // eigenen Flugs noch am Zug ist. Beendete der erste Sprung den Zug, wäre der
     // zweite nie auslösbar — die Mechanik hätte sich selbst ausgeschlossen.
-    // Begrenzt wird stattdessen über die Zahl der Sprünge je Zug.
-    return { ok: true, jumpsLeft: rest, impulse: impuls, double: istDoppel };
+    // Eine Obergrenze je Zug gibt es nicht mehr (siehe Kopf dieser Methode).
+    return { ok: true, jumpsLeft: SPRUENGE_UNBEGRENZT, impulse: impuls, double: istDoppel };
   }
 
   /**
@@ -2787,10 +2885,16 @@ export class MatchController {
     // seinen Zug aussetzt.
     this.#tickCooldowns(entityId);
 
-    // Sprünge zu Beginn des Zuges zurücksetzen. Damit stehen je Zug höchstens
-    // zwei zur Verfügung — ein Bodensprung und ein Doppelsprung. Ein Reset beim
-    // LANDEN wäre nicht ausreichend: man könnte innerhalb eines Zuges beliebig
-    // oft springen, landen und wieder springen.
+    /*
+     * Sprünge zu Beginn des Zuges zurücksetzen.
+     *
+     * Der Zähler begrenzt seit 2026-09-27 KEINE Anzahl mehr (die Obergrenze ist
+     * entfallen, siehe `jump()`): Er unterscheidet nur noch, ob der Spieler in
+     * diesem Zug schon einmal abgesprungen ist. Daran hängt EINE Regel — der
+     * erste Sprung eines Zuges geht nur vom Boden. Der Reset gehört deshalb an
+     * den Zugbeginn („je Zug") und nicht ans Landen („je Flugphase"): Ein Reset
+     * beim Landen würde die Bodenregel aufheben.
+     */
     this.#jumpsUsed.set(entityId, 0);
 
     if (turnState.damage > 0 && this.isPlayerAlive(entityId)) {

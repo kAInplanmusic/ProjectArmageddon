@@ -696,16 +696,22 @@ test('Die Sprungrichtung wird TYPGEPRÜFT, nicht still geklemmt', { timeout: 30_
   }
 });
 
-test('Ein dritter Sprung im selben Zug wird abgelehnt', { timeout: 30_000 }, async () => {
+test('Die Bodenregel gilt weiter, die Zahlengrenze nicht mehr', { timeout: 30_000 }, async () => {
   /*
-   * Der Motor erlaubt zwei Sprünge je Zug (Bodensprung + Doppelsprung). Das
-   * Zählen liegt AUSSCHLIESSLICH im Motor (`#jumpsUsed`) — der Server zählt
-   * nichts nach. Dieser Test prüft, dass die Grenze überhaupt greift und dass die
-   * Ablehnung als `errors`-Liste zurückkommt.
+   * BIS 2026-09-27 hieß dieser Test „Ein dritter Sprung im selben Zug wird
+   * abgelehnt": Der Motor zählte zwei Sprünge je Zug und lehnte den dritten ab
+   * („Das Zählen liegt AUSSCHLIESSLICH im Motor (`#jumpsUsed`) — der Server zählt
+   * nichts nach"). Diese Zahlengrenze ist auf Entscheidung des Auftraggebers
+   * entfallen („nein sprung kann man unendlich", siehe `docs/sprung-regel.md`).
    *
-   * Der erste Sprung braucht festen Boden: Die Figur startet auf Kopfhöhe und
-   * muss erst fallen. Deshalb wird der erste Sprung wiederholt, bis er greift —
-   * ABER nur bei der Boden-Ablehnung (jeder andere Fehler ist ein echter Fehler).
+   * Die Regel, die geblieben ist, prüft dieser Test weiterhin NUR über die
+   * Leitung: Der ERSTE Sprung eines Zuges geht nur vom Boden. Sie liegt
+   * ausschließlich im Motor, der Client kann sie nicht umgehen.
+   *
+   *   1. Ein Sprung aus der Luft OHNE vorherigen Bodensprung wird abgelehnt
+   *      („In der Luft ist kein erster Sprung möglich").
+   *   2. Nach einem geglückten Bodensprung sind weitere Sprünge im selben Zug
+   *      NICHT mehr verboten — es kommt keine Zähl-Ablehnung mehr.
    */
   const { server, url } = await starteServer();
   try {
@@ -715,6 +721,9 @@ test('Ein dritter Sprung im selben Zug wird abgelehnt', { timeout: 30_000 }, asy
     const snap = await warteAufSnapshot(a);
     assert.equal(snap.activePlayerId, entityA, 'A muss am Zug sein');
 
+    // (1) Die Figur startet auf Kopfhöhe und fällt — der erste Sprung braucht
+    // festen Boden. Wiederholt wird NUR bei der Boden-Ablehnung; jeder andere
+    // Fehler ist ein echter Fehler.
     let ersterSprung = false;
     for (let i = 0; i < 25 && !ersterSprung; i += 1) {
       a.drainErrors();
@@ -731,17 +740,24 @@ test('Ein dritter Sprung im selben Zug wird abgelehnt', { timeout: 30_000 }, asy
     }
     assert.ok(ersterSprung, 'Vorbedingung: der erste Sprung muss irgendwann greifen');
 
-    // Der Doppelsprung ist erlaubt, der dritte nicht mehr.
-    a.drainErrors();
-    a.send(CONTROL.JUMP, { seitlich: 0 });
-    await new Promise(r => setTimeout(r, 80));
-    a.send(CONTROL.JUMP, { seitlich: 0 });
-
-    const fehler = await a.sammleFehler(800);
-    assert.ok(fehler.length >= 1, 'Der dritte Sprung im selben Zug wurde nicht abgelehnt');
-    const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
-    assert.match(grund, /Keine Sprünge mehr/i,
-      `Ablehnung aus dem falschen Grund: ${grund}`);
+    /*
+     * (2) Drei weitere Sprünge im selben Zug. Erwartet wird KEINE Ablehnung.
+     *
+     * Ausnahme, die den Test nicht umgehen soll: Endet der Zug während der
+     * Versuche, meldet der Server „Nur der aktive Spieler kann springen" — das
+     * ist die Zugordnung, nicht die Sprungregel. Dann bricht die Schleife ab;
+     * die Aussage über das Zählen ist für die bereits gesendeten Sprünge belegt.
+     */
+    for (let n = 2; n <= 4; n += 1) {
+      a.drainErrors();
+      a.send(CONTROL.JUMP, { seitlich: 0 });
+      const fehler = await a.sammleFehler(300);
+      const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
+      assert.doesNotMatch(grund, /Keine Sprünge mehr/i,
+        `Sprung ${n} wurde gezählt abgelehnt — die Obergrenze ist entfallen: ${grund}`);
+      if (/aktive Spieler|Match läuft nicht/i.test(grund)) break;
+      assert.equal(fehler.length, 0, `Sprung ${n} im selben Zug wurde abgelehnt: ${grund}`);
+    }
   } finally {
     await server.close();
   }

@@ -194,7 +194,9 @@ const bewusstStumm = new Set([
   'turn_start',        // Rundenanzeige im HUD
   'turn_end',          // dito, plus Zugwechsel im Spielerfeld
   'entity_in_water',   // Wasserstand steht als Marke am Spielernamen
+                       // (seit 2026-09-27 GEDROSSELT: im Snapshot redundant)
   'damage',            // Lebensbalken sinkt sichtbar
+                       // (seit 2026-09-27 GEDROSSELT: im Snapshot redundant)
   'dot_applied',       // Zustandsmarke am Spielernamen
 
   // --- Dient der Steuerung, nicht der Anzeige
@@ -213,7 +215,18 @@ const bewusstStumm = new Set([
    */
 
   // --- Wird bewusst zusammengefasst gemeldet
-  'drowning',          // bis zu 60x/s: nur beim ÜBERGANG gemeldet (#trackWater)
+  /*
+   * `drowning` — die Begründung, die hier bis 2026-09-27 stand, war sachlich
+   * FALSCH: „bis zu 60x/s: nur beim ÜBERGANG gemeldet (#trackWater)". Sie
+   * vermischte die ANZEIGE mit dem SERVER. `Main#trackWater` notiert nur den
+   * Übergang — der Motor dagegen meldet es JEDEN Takt, solange die Figur tief
+   * genug unter Wasser ist (gemessen 15092 von 15092 Takten). Der Eintrag bleibt
+   * richtig, die Begründung ist ersetzt: `drowning` hat KEINEN Zweig (`{}` in
+   * `EREIGNIS_WIRKUNGEN`) und ist seit 2026-09-27 gedrosselt, weil sein Wert im
+   * Snapshot nachgerechnet redundant ist (`GEDROSSELTE_EREIGNISARTEN`, Gruppe 2;
+   * Messreihen in `docs/ereignis-info-gehalt.md`).
+   */
+  'drowning',
   'round_crates',      // Buchführung; die Anzahl steht im HUD
   'projectile_expired', // ein verfallenes Geschoss ist kein Ereignis für den
                         // Spieler — es hat nichts getroffen
@@ -757,11 +770,14 @@ test('`crate_pickup_blocked` meldet online den vollen Vorrat — MIT Q-Aufforder
  * bewegen. Folge im Browser: Das HUD-Protokoll führt 60 Zeilen und lief in
  * 1,8 s durch; eine wichtige Servermeldung war damit unsichtbar.
  *
- * Die Tests hier halten die zwei Zusagen des Filters fest:
+ * Die Tests hier halten die drei Zusagen des Filters fest:
  *   1. Wiederholungen derselben Art und Figur werden zusammengefasst (die
- *      ERSTE Meldung geht raus — es bleibt sichtbar, DASS gelandet wurde),
- *   2. zustandstragende Ereignisse kommen UNGEKUERZT durch — und der Filter
- *      berührt die Simulation nicht.
+ *      ERSTE Meldung geht raus — es bleibt sichtbar, DASS etwas geschah),
+ *   2. zustandstragende Ereignisse kommen UNGEKUERZT durch — AUSSER den drei,
+ *      die im Snapshot nachgerechnet redundant sind (`damage`,
+ *      `entity_in_water`, `drowning`; gemessen, siehe
+ *      `docs/ereignis-info-gehalt.md`),
+ *   3. der Filter berührt die Simulation nicht.
  */
 
 /** Läuft ein Match und liefert jedes Ereignis mit Takt und Nutzlast. */
@@ -780,7 +796,7 @@ function sammleEreignisse({ ticks, seed = 20260910, teams = 2, playersPerTeam = 
   return { match, gesehen };
 }
 
-test('Der Sendefilter drosselt nur reine Anzeige — die Einteilung ist vollständig', () => {
+test('Der Sendefilter drosselt nur Anzeige oder snapshot-redundanten Zustand — die Einteilung ist vollständig', () => {
   /*
    * Warum dieser Test der wichtigste der Gruppe ist: Eine Einteilung, die
    * veraltet, ist gefährlicher als keine. Fällt eine neue Zustandsart in die
@@ -809,15 +825,42 @@ test('Der Sendefilter drosselt nur reine Anzeige — die Einteilung ist vollstä
     + 'einmal entscheiden, ob sie Zustand tragen (ZUSTANDSEREIGNISARTEN) oder nur Anzeige sind '
     + '(ANZEIGE_EREIGNISARTEN) — sonst kann eine neue Zustandsart still gefiltert werden.');
 
-  // Gedrosselt wird nur, was als reine Anzeige eingeordnet ist.
+  /*
+   * Die Drossel trifft ZWEI Gruppen, und die Prüfung unterscheidet sie:
+   *
+   *  1. reine Anzeigearten (Bodenkontakte) — sie dürfen NIE Zustand tragen,
+   *  2. drei Zustandsarten, die ihren Wert jeden Takt melden, obwohl er im
+   *     Snapshot steht (`damage`, `entity_in_water`, `drowning`). Sie sind
+   *     gemessen redundant (`docs/ereignis-info-gehalt.md`) und stehen deshalb
+   *     seit 2026-09-27 in der Drossel.
+   *
+   * Für Gruppe 2 gilt die alte Zusicherung „gedrosselt ⇒ Anzeige" bewusst NICHT.
+   * Was sie ersetzt, ist die Bedingung: gedrosselt werden darf Zustand nur, wenn
+   * er im Snapshot nachgerechnet redundant ist — und deshalb steht die
+   * Ausnahmeliste hier NAMENTLICH und nicht als „alles, was auch Zustand ist".
+   */
+  const imSnapshotRedundant = new Set(['damage', 'entity_in_water', 'drowning']);
   for (const art of GEDROSSELTE_EREIGNISARTEN) {
+    if (imSnapshotRedundant.has(art)) {
+      assert.ok(zustand.has(art),
+        `"${art}" ist als snapshot-redundant gedrosselt, steht aber nicht in ZUSTANDSEREIGNISARTEN`);
+      continue;
+    }
     assert.ok(anzeige.has(art), `"${art}" ist gedrosselt, aber nicht als Anzeige eingeordnet`);
     assert.ok(!zustand.has(art),
       `"${art}" ist gedrosselt UND trägt Zustand — das ist ein Informationsverlust, kein Filter`);
   }
 
-  // Die Arten, die der Auftrag ausdrücklich schützt, sind ungedrosselt.
-  for (const art of ['damage', 'drowning', 'entity_in_water', 'turn_start',
+  /*
+   * Die Arten, die der Auftrag ausdrücklich schützt, sind ungedrosselt: Zustand,
+   * der NICHT im Snapshot steht (Sturzschaden, Zustandsschaden über Zeit,
+   * Heilung, Tod, Zugwechsel, Terrainzerstörung, Geschosserzeugung). Bei ihnen
+   * WÄRE eine verlorene Meldung ein Informationsverlust.
+   *
+   * `damage`, `drowning` und `entity_in_water` standen hier bis 2026-09-27 — sie
+   * sind aus der Liste entfernt, weil genau das Gegenteil gemessen wurde.
+   */
+  for (const art of ['fall_damage', 'dot_tick', 'heal', 'death', 'turn_start',
     'terrain_destroyed', 'projectile_spawn']) {
     assert.ok(zustand.has(art), `"${art}" trägt Zustand und muss in ZUSTANDSEREIGNISARTEN stehen`);
     assert.ok(!GEDROSSELTE_EREIGNISARTEN.includes(art), `"${art}" darf NICHT gedrosselt werden`);
@@ -873,12 +916,22 @@ test('34x `landed` derselben Figur in 120 Takten: die erste Meldung geht raus, d
   assert.equal(zahlen.unterdrueckt, 68 - gehtRaus.length, 'Was nicht rausgeht, wird gezählt — nicht verschwiegen');
 });
 
-test('`damage` kommt ungekuerzt durch — 34 Meldungen in 120 Takten, 34 auf der Leitung', () => {
+test('`damage` wird zusammengefasst — 34 Meldungen in 120 Takten, hoechstens 4 auf der Leitung', () => {
   /*
-   * Die Gegenprobe zur Drossel: Schaden ist Spielzustand (Lebensbalken, Höhe des
-   * Schadens). Eine zusammengefasste Schadensmeldung wäre ein verlorener Wert —
-   * hier wird geprüft, dass der Filter die Finger davon lässt: dieselbe Meldung,
-   * dieselbe Figur, dasselbe dichte Muster wie beim `landed`-Fall.
+   * BIS 2026-09-27 stand hier das Gegenteil („`damage` kommt ungekürtzt durch —
+   * 34 Meldungen, 34 auf der Leitung"). Die Begründung war eine Annahme: Schaden
+   * sei Spielzustand und stehe NICHT im Snapshot. Gemessen steht er dort —
+   * `remaining` == Snapshot-Gesundheit in 15092 von 15092 Fällen,
+   * `amount` == Takt-Differenz in 15084 von 15092 (`docs/ereignis-info-gehalt.md`).
+   *
+   * Geprüft wird jetzt dasselbe dichte Muster wie bei `landed`: Die ERSTE
+   * Meldung geht raus (sonst wäre der Treffer gelöscht statt zusammengefasst),
+   * die Wiederholungen im Fenster werden zusammengefasst.
+   *
+   * VORBEHALT: `damage` trägt `attackerId`, und der Urheber steht NICHT im
+   * Snapshot. Heute liest ihn niemand; soll ihn je eine Anzeige zeigen, muss
+   * `damage` aus der Drossel heraus oder je Urheber zusammengefasst werden. Der
+   * Satz steht als Bedingung an `GEDROSSELTE_EREIGNISARTEN` im Code.
    */
   const filter = new EreignisSendefilter();
   let gesendet = 0;
@@ -886,13 +939,17 @@ test('`damage` kommt ungekuerzt durch — 34 Meldungen in 120 Takten, 34 auf der
     const payload = { entityId: 3, attackerId: 1, amount: 5 + i, remaining: 100 - i };
     if (filter.durchlassen('damage', payload, 4 + i * 3)) gesendet += 1;
   }
-  assert.equal(gesendet, 34, 'Jede Schadensmeldung muss raus — keine wird zusammengefasst');
+  assert.ok(gesendet > 0,
+    'Die erste Schadensmeldung muss raus — zusammengefasst heißt nicht gelöscht');
+  assert.ok(gesendet <= 4,
+    `In 120 Takten passen höchstens 4 Fenster (30 Takte), gesendet: ${gesendet}`);
+  assert.ok(gesendet < 34, `Die Wiederholungen müssen zusammengefasst werden, gesendet: ${gesendet}`);
   const zahlen = filter.zahlen().find(z => z.art === 'damage');
-  assert.equal(zahlen.unterdrueckt, 0, 'Der Filter darf bei `damage` nichts unterdrücken');
-  assert.equal(zahlen.gesendet, 34);
+  assert.equal(zahlen.unterdrueckt, 34 - gesendet, 'Was nicht rausgeht, wird gezählt — nicht verschwiegen');
+  assert.equal(zahlen.gesendet, gesendet);
 });
 
-test('Ein echtes Match verliert kein einziges Zustandsereignis — und alle Anzeigearten bleiben sichtbar', () => {
+test('Ein echtes Match verliert kein einziges Zustandsereignis, das NICHT im Snapshot steht — und alle Anzeigearten bleiben sichtbar', () => {
   /*
    * Die schwerste Zusage, an einem echten Lauf geprüft (nicht an einer
    * Nachricht aus der Hand): Ein Match mit vier Figuren auf `hills`, 1800 Takte
@@ -901,12 +958,19 @@ test('Ein echtes Match verliert kein einziges Zustandsereignis — und alle Anze
    * Verglichen wird Zeichen für Zeichen: Die Folge der Zustandsereignisse muss
    * VORHER und NACHHER identisch sein. Zusätzlich darf KEINE Anzeigeart
    * vollständig verschwinden — zusammengefasst heißt nicht gelöscht.
+   *
+   * AUSGENOMMEN sind seit 2026-09-27 die drei Zustandsarten, die im Snapshot
+   * nachgerechnet redundant sind (`damage`, `entity_in_water`, `drowning`) —
+   * bei ihnen ist das Zusammenfassen die ENTSCHEIDUNG, nicht ein Fehler. Sie
+   * werden unten einzeln geprüft: sichtbar bleiben sie, vollständig dürfen sie
+   * nicht bleiben.
    */
   const { gesehen } = sammleEreignisse({ ticks: 1800 });
   assert.ok(gesehen.length > 500,
     `Der Lauf muss die Flut enthalten (gemessen ${gesehen.length} Ereignisse) — sonst prüft der Test nichts`);
 
-  const zustandsarten = new Set(ZUSTANDSEREIGNISARTEN);
+  const imSnapshotRedundant = new Set(['damage', 'entity_in_water', 'drowning']);
+  const zustandsarten = new Set([...ZUSTANDSEREIGNISARTEN].filter(art => !imSnapshotRedundant.has(art)));
   const filter = new EreignisSendefilter();
   const gefiltert = [];
   for (const e of gesehen) if (filter.durchlassen(e.type, e.payload, e.takt)) gefiltert.push(e);
@@ -914,13 +978,24 @@ test('Ein echtes Match verliert kein einziges Zustandsereignis — und alle Anze
   const text = liste => JSON.stringify(liste.map(e => [e.type, e.payload, e.takt]));
   assert.equal(text(gesehen.filter(e => zustandsarten.has(e.type))),
     text(gefiltert.filter(e => zustandsarten.has(e.type))),
-    'Ein Zustandsereignis fehlt oder hat sich geändert — der Filter darf nur reine Anzeige zusammenfassen');
+    'Ein Zustandsereignis fehlt oder hat sich geändert — der Filter darf nur '
+    + 'Zustand zusammenfassen, der im Snapshot nachgerechnet redundant ist');
 
   for (const art of new Set(gesehen.map(e => e.type))) {
     const vorher = gesehen.filter(e => e.type === art).length;
     const nachher = gefiltert.filter(e => e.type === art).length;
     assert.ok(nachher > 0,
       `"${art}" ist vollständig verschwunden (${vorher} vorher, 0 nachher) — zusammengefasst heißt nicht gelöscht`);
+  }
+
+  // Die drei gedrosselten Zustandsarten: sichtbar ja, vollständig nein.
+  for (const art of imSnapshotRedundant) {
+    const vorher = gesehen.filter(e => e.type === art).length;
+    if (vorher === 0) continue; // kommt in diesem Lauf nicht vor (z. B. kein Wasser)
+    const nachher = gefiltert.filter(e => e.type === art).length;
+    assert.ok(nachher > 0, `"${art}" ist vollständig verschwunden (${vorher} -> 0)`);
+    assert.ok(nachher < vorher,
+      `"${art}" wurde nicht zusammengefasst (${vorher} -> ${nachher}) — dann stünde es zu Unrecht in der Drossel`);
   }
 
   const landedVorher = gesehen.filter(e => e.type === 'landed').length;

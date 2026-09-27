@@ -229,8 +229,16 @@ test('Der Sprung geht online als Befehl raus und kommt als Ereignis zurück', as
   // aus einer Nachricht des Clients.
   expect(rahmen.playerId, 'Der Sprung traf die falsche Figur').toBe(eigeneKennung);
   expect(rahmen.double).toBe(false);
-  // Der erste Sprung eines Zuges verbraucht einen von zwei.
-  expect(rahmen.jumpsLeft).toBe(1);
+  /*
+   * `jumpsLeft` ist seit der entfallenen Zwei-Sprung-Grenze `null` = unbegrenzt
+   * (Entscheidung des Auftraggebers: „nein sprung kann man unendlich", siehe
+   * `docs/sprung-regel.md`). Der Rahmen trägt das Feld weiter, damit lokal und
+   * online DERSELBE Wert ankommt — eine Zahl gäbe es nicht mehr, und `Infinity`
+   * würde auf dem Draht zu `null` (`src/engine/match.js`, `SPRUENGE_UNBEGRENZT`).
+   * Die Anzeige unterscheidet „Sprung"/„Doppelsprung" an `double` — das prüft
+   * die Zeile darüber.
+   */
+  expect(rahmen.jumpsLeft).toBeNull();
 
   /*
    * (2) Der Zustand: die Figur ist wirklich geflogen. Zwei Zuglängen werden

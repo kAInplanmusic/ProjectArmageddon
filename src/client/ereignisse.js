@@ -62,13 +62,114 @@ function beide(fn) {
   return { lokal: fn, online: fn };
 }
 
+/* ======================================================================
+ * Der Kontext — unvollständig geliefert heißt: nichts werfen
+ * ======================================================================
+ *
+ * FUND (belegt, 2026-09-27): Ein Aufruf mit unvollständigem Kontext riss den
+ * GESAMTEN Ereignis-Durchlauf ab —
+ *
+ *   TypeError: Cannot read properties of undefined (reading 'status')
+ *     at Object.lokal (src/client/ereignisse.js:615:25)
+ *
+ * `k.fernzustand` war dort nicht gesetzt, und der Wurf brach die Schleife über
+ * alle Ereignisse ab: EIN fehlendes Feld nahm ALLE folgenden Meldungen mit,
+ * nicht nur die eigene. Im echten Client ist das Feld gesetzt
+ * (`main.js#ereignisKontext`) — es war kein Live-Fehler, sondern ein Aufrufer,
+ * der einen Teil des Vertrags wegließ. Ein solcher Aufruf darf trotzdem nicht
+ * mehr kosten als seine eigene Wirkung.
+ *
+ * ## Was hier entschieden wird
+ *
+ *  - JEDE Kontextlesung ist gegen ein fehlendes Feld unempfindlich
+ *    (`k.hud?.log(...)`, `k.fernzustand?.status()` …). Vorbild im Haus ist
+ *    `k.sound?.verarbeite(...)`; `sound` DARF fehlen (kein Ausgabegerät), und
+ *    dieselbe Schreibweise trägt jetzt jedes Feld. Fehlt ein Feld, entfällt
+ *    genau seine Wirkung — nichts wirft.
+ *  - EIN GANZ fehlender Kontext wird an den Einstiegen abgefangen, statt `k?.`
+ *    an jede Lesung zu schreiben: `k` selbst ist kein Feld der Tabelle.
+ *  - Fehlende Pflichtfelder werden EINMAL laut gemeldet (siehe
+ *    `kontextBrauchbar`) statt bei jedem Ereignis zu werfen. Im Normalbetrieb
+ *    kostet die Prüfung EINEN Wahrheitswert je Ereignis und erzeugt keine
+ *    einzige Meldung.
+ *
+ * ## Pflichtfelder je Betriebsart — und warum `match`/`sound` fehlen
+ *
+ * `sound` darf fehlen (siehe oben). `match` ist ONLINE planmäßig `null`
+ * (`main.js` erzeugt im Online-Betrieb kein lokales Match) — stünde es in der
+ * Online-Liste, meldete jeder Online-Lauf einen Mangel, den es nicht gibt.
+ * Deshalb zwei Listen statt einer.
+ */
+const KONTEXT_PFLICHTFELDER = Object.freeze({
+  lokal: Object.freeze([
+    'renderer', 'hud', 'nameOf', 'match', 'shotPredictor',
+    'findEntity', 'drawHitscanBeam', 'logSpecialEffect', 'showGuentherWheel',
+    'fernzustand', 'showEndScreen',
+  ]),
+  online: Object.freeze([
+    'renderer', 'hud', 'nameOf', 'shotPredictor',
+    'findEntity', 'drawHitscanBeam', 'logSpecialEffect', 'showGuentherWheel',
+    'fernzustand', 'showEndScreen',
+  ]),
+});
+
+/**
+ * Merker der schon gemeldeten Lücken und der zuletzt geprüften Kontexte.
+ *
+ * Gemeldet wird je LÜCKE einmal (nicht je Ereignis): Ein Durchlauf über hundert
+ * Ereignisse erzeugt so höchstens EINE Zeile. Die Identität des zuletzt
+ * geprüften Kontexts spart die Prüfung ganz — `main.js` baut den Kontext EINMAL
+ * je Ereignisfolge (`#handleEvents`), nicht je Ereignis.
+ */
+const gemeldeteLuecken = new Set();
+const zuletztGeprueft = { lokal: null, online: null };
+
+/**
+ * Ist der Kontext benutzbar?
+ *
+ * Meldet eine Lücke EINMAL (`console.warn`) und läuft danach ohne weitere
+ * Prüfung: Der Normalfall soll nichts kosten und nichts sagen. Gemeldet wird nur,
+ * WAS fehlt — die betroffenen Wirkungen entfallen still, weil die Alternative
+ * (werfen) genau der Fehler wäre, der hier behoben wird.
+ *
+ * @param {'lokal'|'online'} einstieg Die Betriebsart (eigene Pflichtfelder)
+ * @param {object} kontext Der übergebene Kontext
+ * @returns {boolean} `false` NUR, wenn gar kein Kontext übergeben wurde
+ */
+function kontextBrauchbar(einstieg, kontext) {
+  if (typeof kontext !== 'object' || kontext === null) {
+    meldeLuecke(`${einstieg}:kein-kontext`,
+      `[ereignisse] ${einstieg}: kein Kontext übergeben — ohne ihn tut keine Wirkung `
+      + 'etwas. Aufrufer: `Main#ereignisKontext()` (src/client/main.js).');
+    return false;
+  }
+  // Normalfall: derselbe Kontext wie eben — EIN Vergleich, keine Feldprüfung.
+  if (zuletztGeprueft[einstieg] === kontext) return true;
+  zuletztGeprueft[einstieg] = kontext;
+
+  const fehlend = (KONTEXT_PFLICHTFELDER[einstieg] ?? []).filter(feld => kontext[feld] == null);
+  if (fehlend.length > 0) {
+    meldeLuecke(`${einstieg}:${fehlend.join(',')}`,
+      `[ereignisse] ${einstieg}: Kontextfeld(er) fehlen: ${fehlend.join(', ')} — die Wirkungen, `
+      + 'die sie lesen, entfallen still. Aufrufer: `Main#ereignisKontext()` (src/client/main.js).');
+  }
+  return true;
+}
+
+/** Meldet eine Lücke genau EINMAL — der Schlüssel ist die Lücke selbst. */
+function meldeLuecke(schluessel, text) {
+  if (gemeldeteLuecken.has(schluessel)) return;
+  gemeldeteLuecken.add(schluessel);
+  console.warn(text);
+}
+
 /** „Schild fängt … Schaden ab" — der Text ist in beiden Betriebsarten derselbe. */
-const schildMeldung = (k, n) => k.hud.log(`Schild fängt ${Math.round(n.absorbed)} Schaden ab`, 'good');
+const schildMeldung = (k, n) => k.hud?.log(`Schild fängt ${Math.round(n.absorbed)} Schaden ab`, 'good');
 
 /** Der Mahlstrom zieht sich zusammen — Kontraktion und Meldung. */
 const mahlstromZiehtSich = (k, n) => {
-  k.renderer.applyContraction(n.inset);
-  k.hud.log('Mahlstrom zieht sich zusammen', 'danger');
+  k.renderer?.applyContraction(n.inset);
+  k.hud?.log('Mahlstrom zieht sich zusammen', 'danger');
 };
 
 /**
@@ -89,7 +190,7 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   terrain_destroyed: {
     online: (k, n) => {
-      k.renderer.applyCrater(n.x, n.y, n.radius || 12);
+      k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
     },
   },
 
@@ -102,8 +203,8 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   explosion: {
     lokal: (k, n) => {
-      k.renderer.applyCrater(n.x, n.y, n.radius || 12);
-      k.renderer.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
+      k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
+      k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
       /*
        * Der Klang zum Einschlag.
        *
@@ -115,9 +216,9 @@ export const EREIGNIS_WIRKUNGEN = {
       k.sound?.verarbeite({ type: 'explosion', radius: n.radius || 12 });
     },
     online: (k, n) => {
-      k.renderer.spawnExplosionParticles(n.x, n.y, n.radius || 12);
-      k.renderer.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
-      k.renderer.applyCrater(n.x, n.y, n.radius || 12);
+      k.renderer?.spawnExplosionParticles(n.x, n.y, n.radius || 12);
+      k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
+      k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
     },
   },
 
@@ -131,7 +232,7 @@ export const EREIGNIS_WIRKUNGEN = {
   hitscan: {
     lokal: (k, n) => {
       // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
-      k.drawHitscanBeam(n);
+      k.drawHitscanBeam?.(n);
       k.sound?.verarbeite({ type: 'shot' });
       /*
        * Ein Treffer klingt anders als ein Fehlschuss.
@@ -155,12 +256,12 @@ export const EREIGNIS_WIRKUNGEN = {
        * vom vorhergesagten ab, war das Terrain inzwischen anders (der Client
        * hat denselben Krater noch nicht verarbeitet).
        */
-      k.shotPredictor.resolve({
+      k.shotPredictor?.resolve({
         impact: Number.isFinite(n.hitX) && Number.isFinite(n.hitY)
           ? { x: n.hitX, y: n.hitY }
           : null,
       });
-      k.drawHitscanBeam(n);
+      k.drawHitscanBeam?.(n);
     },
   },
 
@@ -188,13 +289,13 @@ export const EREIGNIS_WIRKUNGEN = {
        * derselben Stelle — die Regel „wer spielt, entscheidet der Mischer"
        * gilt unverändert.
        */
-      k.renderer.addMuzzleFlash(n.playerId, n.angle ?? 0);
+      k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0);
       k.sound?.verarbeite({ type: 'shot' });
     },
     // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
     // zeichnen, aber die Vorhersage ist damit erledigt.
     online: (k) => {
-      k.shotPredictor.resolve();
+      k.shotPredictor?.resolve();
     },
   },
 
@@ -203,7 +304,7 @@ export const EREIGNIS_WIRKUNGEN = {
     // Die Vorhersage hat ihre Aufgabe erfüllt und wird von der echten
     // Flugbahn abgelöst.
     online: (k) => {
-      k.shotPredictor.resolve();
+      k.shotPredictor?.resolve();
     },
   },
 
@@ -223,7 +324,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * Gemessen: Die Engine sendet das Ereignis (`projectileSystem.js:119`).
    */
   projectile_impact: beide((k, n) => {
-    k.renderer.addFlash(n.x, n.y, 14);
+    k.renderer?.addFlash(n.x, n.y, 14);
   }),
 
   /*
@@ -234,7 +335,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * erst der Blitz am Opfer zeigt, dass er getroffen hat und weiterlief.
    */
   projectile_pierced: beide((k, n) => {
-    k.renderer.addFlash(n.x, n.y, 10, { color: '#ffd166' });
+    k.renderer?.addFlash(n.x, n.y, 10, { color: '#ffd166' });
   }),
 
   /*
@@ -251,7 +352,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * eine, sonst ist er beim ersten Mal ein Rätsel.
    */
   loot_error: beide((k, n) => {
-    k.hud.log(`Beute konnte nicht verteilt werden: ${n.message}`, 'danger');
+    k.hud?.log(`Beute konnte nicht verteilt werden: ${n.message}`, 'danger');
   }),
 
   /*
@@ -268,13 +369,13 @@ export const EREIGNIS_WIRKUNGEN = {
    * einer Stelle, an der er nichts erwartet.
    */
   fuse_armed: beide((k, n) => {
-    k.hud.log('Eine Granate liegt und tickt …', 'neutral');
-    k.renderer.addFlash(n.x, n.y, 10, { color: '#ffd166' });
+    k.hud?.log('Eine Granate liegt und tickt …', 'neutral');
+    k.renderer?.addFlash(n.x, n.y, 10, { color: '#ffd166' });
   }),
 
   fuse_expired: beide((k, n) => {
-    k.hud.log('Eine Granate ist liegen geblieben und gezündet', 'accent');
-    k.renderer.addFlash(n.x, n.y, 22, { color: '#f4a261' });
+    k.hud?.log('Eine Granate ist liegen geblieben und gezündet', 'accent');
+    k.renderer?.addFlash(n.x, n.y, 22, { color: '#f4a261' });
   }),
 
   /*
@@ -288,16 +389,16 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   turret_deployed: {
     lokal: (k, n) => {
-      k.hud.log(
+      k.hud?.log(
         `Geschütz aufgestellt — ${n.rounds} Runden, ${n.damage} Schaden`,
         'accent',
       );
-      k.renderer.addFlash(n.x, n.y, 18, { color: '#d9b44a' });
+      k.renderer?.addFlash(n.x, n.y, 18, { color: '#d9b44a' });
     },
     // Online ohne Blitz: der Markierungsblitz am Aufstellort ist lokal. Das
     // Protokoll ist in beiden Betriebsarten dasselbe.
     online: (k, n) => {
-      k.hud.log(
+      k.hud?.log(
         `Geschütz aufgestellt — ${n.rounds} Runden, ${n.damage} Schaden`,
         'accent',
       );
@@ -312,15 +413,15 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   turret_fired: {
     lokal: (k, n) => {
-      k.renderer.addFlash(n.x, n.y, 12, { color: '#d9b44a' });
+      k.renderer?.addFlash(n.x, n.y, 12, { color: '#d9b44a' });
     },
     online: (k) => {
-      k.hud.log('Das Geschütz feuert', 'neutral');
+      k.hud?.log('Das Geschütz feuert', 'neutral');
     },
   },
 
   turret_expired: beide((k) => {
-    k.hud.log('Geschütz abgelaufen', 'neutral');
+    k.hud?.log('Geschütz abgelaufen', 'neutral');
   }),
 
   /*
@@ -330,15 +431,15 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   special_effect: beide((k, n) => {
     // Wirkungen auf den Schützen: Heilung, Schild, Sprung, Munition.
-    k.logSpecialEffect(n);
+    k.logSpecialEffect?.(n);
   }),
 
   frozen: beide((k, n) => {
-    k.hud.log(`${k.nameOf(n.playerId)} ist eingefroren (${n.turns} Zug/Züge)`, 'accent');
+    k.hud?.log(`${k.nameOf?.(n.playerId)} ist eingefroren (${n.turns} Zug/Züge)`, 'accent');
   }),
 
   turn_skipped: beide((k, n) => {
-    k.hud.log(`${k.nameOf(n.playerId)} setzt aus — eingefroren`, 'danger');
+    k.hud?.log(`${k.nameOf?.(n.playerId)} setzt aus — eingefroren`, 'danger');
   }),
 
   dot_tick: beide((k, n) => {
@@ -348,7 +449,7 @@ export const EREIGNIS_WIRKUNGEN = {
      * frozeThisTurn }` zurück), der Vorgabewert greift also nie — er ist hier
      * beibehalten, damit ein fehlendes Feld keine Ausnahme auslöst.
      */
-    k.hud.log(`${k.nameOf(n.playerId)} erleidet ${Math.round(n.damage)} Schaden (${(n.elements ?? []).join(', ')})`, 'danger');
+    k.hud?.log(`${k.nameOf?.(n.playerId)} erleidet ${Math.round(n.damage)} Schaden (${(n.elements ?? []).join(', ')})`, 'danger');
   }),
 
   /*
@@ -359,15 +460,15 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   shield_absorbed: {
     lokal: (k, n) => {
-      const geschuetzt = k.findEntity(n.playerId);
-      if (geschuetzt) k.renderer.addFlash(geschuetzt.x, geschuetzt.y, 16, { color: '#4cc9f0' });
+      const geschuetzt = k.findEntity?.(n.playerId);
+      if (geschuetzt) k.renderer?.addFlash(geschuetzt.x, geschuetzt.y, 16, { color: '#4cc9f0' });
       schildMeldung(k, n);
     },
     online: schildMeldung,
   },
 
   pulled: beide((k, n) => {
-    k.hud.log(`${k.nameOf(n.playerId)} wurde herangezogen`, 'accent');
+    k.hud?.log(`${k.nameOf?.(n.playerId)} wurde herangezogen`, 'accent');
   }),
 
   /*
@@ -406,19 +507,19 @@ export const EREIGNIS_WIRKUNGEN = {
      * ist das nur an der Heimdall-Animation; das Rad selbst zeigt in beiden
      * Betriebsarten denselben Ausgang.
      */
-    k.showGuentherWheel(n);
+    k.showGuentherWheel?.(n);
   }),
 
   guenther_pee: beide((k, n) => {
-    k.hud.log(`Günther pinkelt ${k.nameOf(n.playerId)} an (−${n.amount})`, 'neutral');
+    k.hud?.log(`Günther pinkelt ${k.nameOf?.(n.playerId)} an (−${n.amount})`, 'neutral');
   }),
 
   guenther_poop: beide((k) => {
-    k.hud.log('Günther hat ein Häufchen gemacht', 'neutral');
+    k.hud?.log('Günther hat ein Häufchen gemacht', 'neutral');
   }),
 
   guenther_poop_hit: beide((k, n) => {
-    k.hud.log(`${k.nameOf(n.playerId)} ist in ein Häufchen getreten`, 'danger');
+    k.hud?.log(`${k.nameOf?.(n.playerId)} ist in ein Häufchen getreten`, 'danger');
   }),
 
   /*
@@ -433,9 +534,21 @@ export const EREIGNIS_WIRKUNGEN = {
    * GENAU EINE Meldung je Sprung: Der Client loggt im Online-Pfad NICHT selbst
    * (`Main#jump` sendet nur den Befehl) — sonst stünde dieselbe Handlung zweimal
    * im Live-Bereich. Der Text kommt aus `n.double`, wie lokal.
+   *
+   * Seit der Sprung keine Obergrenze mehr hat, ist `n.jumpsLeft` `null`
+   * („unbegrenzt", siehe `SPRUENGE_UNBEGRENZT` in `src/engine/match.js`) und
+   * wird hier NICHT gelesen: Die Unterscheidung „Sprung"/„Doppelsprung" steht in
+   * `n.double` (vom Boden / in der Luft) und bleibt richtig, egal wie viele
+   * Sprünge folgen. Wer hier später eine Zahl erwartet, liest `null` — das ist
+   * die Aussage, keine Lücke.
+   *
+   * Online kommt dieses Ereignis erst seit 2026-09-27 ungedrosselt an: Vorher
+   * stand `jumped` in `GEDROSSELTE_EREIGNISARTEN` (`src/shared/protocol.js`), und
+   * der Doppelsprung (gemessen 5 Takte nach dem ersten) fiel in das
+   * 30-Takte-Fenster — die Zeile kam online nie an.
    */
   jumped: beide((k, n) => {
-    k.hud.log(`${k.nameOf(n.playerId)} springt${n.double ? ' (Doppelsprung)' : ''}`, 'accent');
+    k.hud?.log(`${k.nameOf?.(n.playerId)} springt${n.double ? ' (Doppelsprung)' : ''}`, 'accent');
   }),
 
   /*
@@ -448,12 +561,12 @@ export const EREIGNIS_WIRKUNGEN = {
    * führen ihn.
    */
   landed: beide((k, n) => {
-    k.hud.log(`${k.nameOf(n.playerId)} ist gelandet`);
+    k.hud?.log(`${k.nameOf?.(n.playerId)} ist gelandet`);
   }),
 
   crate_landed: {
     lokal: (k) => {
-      k.hud.log('Abgeworfene Waffe gelandet', 'neutral');
+      k.hud?.log('Abgeworfene Waffe gelandet', 'neutral');
     },
   },
 
@@ -473,7 +586,7 @@ export const EREIGNIS_WIRKUNGEN = {
     online: (k, n) => {
       const name = getWeapon(n.weaponId)?.displayName ?? n.weaponId;
       const vorrat = n.ammo < 0 ? '∞' : n.ammo;
-      k.hud.log(`${k.nameOf(n.playerId)} wirft ${name} ab (${vorrat} Munition)`, 'accent');
+      k.hud?.log(`${k.nameOf?.(n.playerId)} wirft ${name} ab (${vorrat} Munition)`, 'accent');
     },
   },
 
@@ -491,7 +604,7 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   crate_pickup_blocked: beide((k) => {
     // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
-    k.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
+    k.hud?.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
   }),
 
   /*
@@ -505,24 +618,24 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   crate_pickup: {
     lokal: (k, n) => {
-      const who = k.match.players.find(player => player.entityId === n.playerId);
+      const who = k.match?.players?.find(player => player.entityId === n.playerId);
       const reward = n.reward;
       const text = reward?.kind === 'weapon'
         ? `${who?.label ?? 'Spieler'} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
         : reward?.kind === 'heal' ? `${who?.label ?? 'Spieler'} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who?.label ?? 'Spieler'} löst eine Sprengfalle aus`
         : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
-      k.hud.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
+      k.hud?.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
     },
     online: (k, n) => {
-      const who = k.nameOf(n.playerId);
+      const who = k.nameOf?.(n.playerId);
       const reward = n.reward;
       const text = reward?.kind === 'weapon'
         ? `${who} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
         : reward?.kind === 'heal' ? `${who} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who} löst eine Sprengfalle aus`
         : `${who} öffnet eine leere Kiste`;
-      k.hud.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
+      k.hud?.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
     },
   },
 
@@ -533,10 +646,10 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   heal: {
     lokal: (k, n) => {
-      k.hud.log(`+${Math.round(n.amount)} Heilung für ${k.nameOf(n.entityId)}`, 'good');
+      k.hud?.log(`+${Math.round(n.amount)} Heilung für ${k.nameOf?.(n.entityId)}`, 'good');
     },
     online: (k, n) => {
-      k.hud.log(`+${Math.round(n.amount)} Heilung`, 'good');
+      k.hud?.log(`+${Math.round(n.amount)} Heilung`, 'good');
     },
   },
 
@@ -557,7 +670,7 @@ export const EREIGNIS_WIRKUNGEN = {
     // Online kennt zusätzlich den Einschnitt als Clientzustand: der Snapshot
     // trägt ihn weiter (`remoteInset`).
     online: (k, n) => {
-      k.fernzustand.setzeEinschnitt(n.inset);
+      k.fernzustand?.setzeEinschnitt(n.inset);
       mahlstromZiehtSich(k, n);
     },
   },
@@ -570,11 +683,11 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   death: {
     lokal: (k, n) => {
-      const victim = k.match.players.find(player => player.entityId === n.entityId);
-      k.hud.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
+      const victim = k.match?.players?.find(player => player.entityId === n.entityId);
+      k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
     },
     online: (k) => {
-      k.hud.log('Eine Einheit wurde ausgeschaltet', 'danger');
+      k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
     },
   },
 
@@ -586,11 +699,11 @@ export const EREIGNIS_WIRKUNGEN = {
    * nennt keinen Namen, deshalb `beide(fn)`.
    */
   fall_damage: beide((k, n) => {
-    k.hud.log(`Sturzschaden: ${Math.round(n.damage)}`, 'danger');
+    k.hud?.log(`Sturzschaden: ${Math.round(n.damage)}`, 'danger');
   }),
 
   round_start: beide((k, n) => {
-    k.hud.log(`Runde ${n.round} — Wind ${Number(n.wind ?? 0).toFixed(3)}`, 'neutral');
+    k.hud?.log(`Runde ${n.round} — Wind ${Number(n.wind ?? 0).toFixed(3)}`, 'neutral');
   }),
 
   /*
@@ -601,7 +714,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * dieselbe, deshalb `beide(fn)` und derselbe Text.
    */
   toxic_rain: beide((k, n) => {
-    if (n.affected?.length) k.hud.log('Toxischer Regen trifft die Zone', 'danger');
+    if (n.affected?.length) k.hud?.log('Toxischer Regen trifft die Zone', 'danger');
   }),
 
   match_over: {
@@ -612,19 +725,19 @@ export const EREIGNIS_WIRKUNGEN = {
      * dieselbe Zeile im Protokoll und verdrängte alles andere.
      */
     lokal: (k) => {
-      if (k.fernzustand.status() !== 'gameover') k.hud.log('Match beendet', 'accent');
+      if (k.fernzustand?.status() !== 'gameover') k.hud?.log('Match beendet', 'accent');
     },
     // Online endet die Partie: Status, Sieger und Endbildschirm.
     online: (k, n) => {
-      k.fernzustand.setzeStatus('gameover');
-      k.fernzustand.setzeSieger(n.winnerTeamId ?? null);
-      k.showEndScreen(n.winnerTeamId ?? null);
+      k.fernzustand?.setzeStatus('gameover');
+      k.fernzustand?.setzeSieger(n.winnerTeamId ?? null);
+      k.showEndScreen?.(n.winnerTeamId ?? null);
     },
   },
 
   turn_start: {
     online: (k) => {
-      k.fernzustand.setzeStatus('playing');
+      k.fernzustand?.setzeStatus('playing');
     },
   },
 
@@ -643,7 +756,7 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   karte_unerreichbar: {
     online: (k, n) => {
-      k.hud.log(
+      k.hud?.log(
         `Die Karte hat eine abgeschnittene Fläche (${n.grund}) — `
         + 'eine Einheit ist von dort aus nicht erreichbar',
         'warn',
@@ -654,20 +767,31 @@ export const EREIGNIS_WIRKUNGEN = {
 
 /**
  * Verarbeitet EIN Ereignis des lokalen Matches.
+ *
+ * Der Kontext wird geprüft, BEVOR nachgeschlagen wird: Ein unvollständiger
+ * Kontext soll seine eigene Wirkung verlieren — nicht die ganze Ereignisfolge
+ * (siehe „Der Kontext" oben).
+ *
  * @param {object} kontext Zugänge aus `Main#ereignisKontext()`
  * @param {{type: string, payload: object}} ereignis Eintrag aus `match.consumeEvents()`
  * @returns {void}
  */
 export function verarbeiteLokal(kontext, ereignis) {
-  EREIGNIS_WIRKUNGEN[ereignis.type]?.lokal?.(kontext, ereignis.payload);
+  if (!kontextBrauchbar('lokal', kontext)) return;
+  EREIGNIS_WIRKUNGEN[ereignis?.type]?.lokal?.(kontext, ereignis?.payload);
 }
 
 /**
  * Verarbeitet EINE Meldung des Servers.
+ *
+ * Lokal wie online dieselbe Prüfung: Die Pflichtfelder unterscheiden sich
+ * (`match` fehlt online planmäßig), der Umgang mit einem Mangel nicht.
+ *
  * @param {object} kontext Zugänge aus `Main#ereignisKontext()`
  * @param {{t: string}} nachricht Servermeldung (`game_event`)
  * @returns {void}
  */
 export function verarbeiteOnline(kontext, nachricht) {
-  EREIGNIS_WIRKUNGEN[nachricht.t]?.online?.(kontext, nachricht);
+  if (!kontextBrauchbar('online', kontext)) return;
+  EREIGNIS_WIRKUNGEN[nachricht?.t]?.online?.(kontext, nachricht);
 }

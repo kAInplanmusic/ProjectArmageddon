@@ -579,8 +579,15 @@ export function controlMessage(type, payload = {}) {
  *  - `ZUSTANDSEREIGNISARTEN` tragen Zustand, den der Client sonst nicht
  *    erfährt: Schaden und seine Höhe, Wasserstand und Ertrinken, Zugwechsel,
  *    Terrainzerstörung, Projektile, Tode, Kisten, Waffenbestand. Sie werden
- *    NIE gefiltert — eine verlorene Meldung wäre ein Informationsverlust, kein
- *    Bandbreitengewinn.
+ *    grundsätzlich nicht gefiltert — eine verlorene Meldung wäre ein
+ *    Informationsverlust, kein Bandbreitengewinn.
+ *
+ *    **Ausnahme, gemessen (2026-09-27):** Drei dieser Arten melden ihren Wert
+ *    JEDEN Takt, und der Wert steht bereits im Snapshot, den jeder Client
+ *    bekommt (`damage`, `entity_in_water`, `drowning`). Sie werden gedrosselt —
+ *    mit Nachweis und Vorbehalt in `GEDROSSELTE_EREIGNISARTEN`, Gruppe 2. Die
+ *    Regel ist damit NICHT „Zustand wird nie gefiltert", sondern: „Zustand wird
+ *    nur gefiltert, wenn er im Snapshot nachgerechnet redundant ist".
  *  - `ANZEIGE_EREIGNISARTEN` sind Blitz, Klang und Protokollzeile. Was sie
  *    nennen, steht bereits im Snapshot: die Positionen der Figuren, den
  *    Wasserstand, die Projektile. Ein verlorenes `landed` nimmt dem Spieler
@@ -630,12 +637,21 @@ export const ANZEIGE_EREIGNISARTEN = Object.freeze([
 ]);
 
 /**
- * Ereignisarten, die ZUSTAND tragen — sie werden nie gefiltert.
+ * Ereignisarten, die ZUSTAND tragen — sie werden grundsätzlich nicht gefiltert.
  *
  * Die Aufzählung ist absichtlich vollständig statt „alles außer Anzeige": Wer
  * eine neue Ereignisart einführt, muss sie hier eintragen und dabei einmal
  * entscheiden, ob sie Zustand trägt. Ein Filter, der unbekannte Arten still
  * durchwinkt, wäre die zweite Regel an einer zweiten Stelle.
+ *
+ * ## „Trägt Zustand" heißt NICHT mehr „wird nie gedrosselt" (2026-09-27)
+ *
+ * Drei Arten dieser Liste melden ihren Wert jeden Takt, obwohl er im Snapshot
+ * schon steht (`damage`, `entity_in_water`, `drowning`). Sie sind gemessen
+ * redundant und werden deshalb gedrosselt — die Einordnung HIER bleibt trotzdem
+ * richtig: Sie tragen Zustand, sie sind nur nicht die einzige Quelle dafür.
+ * Wer diese Liste liest, um „kommt immer an" anzunehmen, muss
+ * `GEDROSSELTE_EREIGNISARTEN` mitlesen (Gruppe 2, mit Nachweis und Vorbehalt).
  */
 export const ZUSTANDSEREIGNISARTEN = Object.freeze([
   'crate_pickup',
@@ -673,25 +689,109 @@ export const ZUSTANDSEREIGNISARTEN = Object.freeze([
 ]);
 
 /**
- * Die gedrosselten Arten — die Schnittmenge aus „reine Anzeige" und
- * „wiederholt sich nachweislich".
+ * Die gedrosselten Arten — was sich nachweislich wiederholt, OHNE neue
+ * Information zu tragen.
  *
- * Alle drei sind BODENKONTAKT-Meldungen: Eine Figur (oder eine abgeworfene
- * Kiste) meldet ihre Landung. Genau dieser Übergang flattert bei einer
- * STEHENDEN Figur — gemessen 17 Landungen in 120 Takten (alle 7 Takte), ohne
- * dass sich die Figur bewegt.
+ * Zwei Gruppen stehen hier, und sie werden unterschiedlich begründet. Beide
+ * haben dasselbe Verfahren: Die ERSTE Meldung je Art und Figur geht immer raus
+ * (siehe `durchlassen`), weitere im 30-Takte-Fenster werden zusammengefasst — es
+ * bleibt also sichtbar, DASS etwas geschah.
  *
- * Warum das keinen echten Vorgang verschluckt: Die erste Meldung je Fenster geht
- * IMMER raus (siehe `durchlassen`) — es bleibt also sichtbar, DASS gelandet
- * wurde. Ein zweiter ECHTER Bodenkontakt derselben Figur kann innerhalb des
- * Fensters gar nicht stattfinden: Zwischen zwei echten Landungen liegt immer
- * eine Flugphase, und die ist länger als das Fenster (gemessen: ein Sprung
- * dauert 50 Takte bis zur Landung — siehe `EREIGNIS_DROSSEL_TAKTE`).
+ * ## Gruppe 1 — Bodenkontakt (`landed`, `crate_landed`)
+ *
+ * Eine Figur (oder eine abgeworfene Kiste) meldet ihre Landung. Genau dieser
+ * Übergang flattert bei einer STEHENDEN Figur — gemessen 17 Landungen in 120
+ * Takten (alle 7 Takte), ohne dass sich die Figur bewegt.
+ *
+ * Warum das keinen echten Vorgang verschluckt: Ein zweiter ECHTER Bodenkontakt
+ * derselben Figur kann innerhalb des Fensters gar nicht stattfinden — zwischen
+ * zwei echten Landungen liegt immer eine Flugphase, und die ist länger als das
+ * Fenster (gemessen: ein Sprung dauert 50 Takte bis zur Landung, siehe
+ * `EREIGNIS_DROSSEL_TAKTE`).
+ *
+ * ## Gruppe 2 — Dauer meldende Zustandsarten (`damage`, `entity_in_water`,
+ * `drowning`)
+ *
+ * Diese drei tragen Zustand und standen deshalb bis 2026-09-27 unter dem
+ * ausdrücklichen Schutz „wird NIE gefiltert" (siehe `ZUSTANDSEREIGNISARTEN`).
+ * Gemessen war dieser Schutz eine Annahme: Der Wert, den sie melden, steht
+ * bereits im Snapshot, den jeder Client ohnehin bekommt
+ * (`docs/ereignis-info-gehalt.md`, Messreihen bei 40 Figuren auf `flooded`):
+ *
+ *   - `entity_in_water`: `payload.level` == `snapshot.waterLevel` in 15066 von
+ *     15092 Fällen; die 26 Ausnahmen sind AUSSCHLIESSLICH Sterbetakte. Bei
+ *     lebenden Figuren: 0 Abweichungen.
+ *   - `drowning`: dasselbe Feld gegen dieselbe Schwelle (`DROWN_LEVEL` 0,72),
+ *     15092 von 15092 Mal `>= 0,72`. Kein eigener Zustand, kein Klang, kein Text.
+ *   - `damage`: `remaining` == Snapshot-Gesundheit in 15092 von 15092 Fällen
+ *     (innerhalb der Auflösung des Drahts), `amount` == die Takt-Differenz in
+ *     15084 von 15092.
+ *
+ * Nutzen derselben 30-Takte-Drossel bei denselben Bytes: `damage` 22,94 KB/s +
+ * `entity_in_water` 8,95 KB/s + `drowning` 7,95 KB/s = **39,84 KB/s** — der Kanal
+ * fällt von 42,29 auf 2,46 KB/s je Client (**−94,2 %**). Die drei sind 97,5 %
+ * dessen, was nach der Anzeige-Drossel noch ausgeliefert wird.
+ *
+ * Unabhängig nachgemessen (Seed 20260910, `flooded`, 40 Figuren, 1800 Takte =
+ * 30 s, 30 Byte Rahmenzuschlag je Nachricht): je Art **15092 → 516** Meldungen,
+ * die drei zusammen 154,19 → 5,28 KB/s, der ganze Kanal 161,13 → 6,74 KB/s
+ * (**−95,8 %**). Die 15092 stimmen mit der Messreihe in
+ * `docs/ereignis-info-gehalt.md` überein — dieselbe Zahl, zwei Läufe.
+ *
+ * VERLUST: kein angezeigter Text und keine angezeigte Zahl — die Zahlen kommen
+ * aus `fall_damage`, `dot_tick`, `special_effect` und `heal`. Keine der drei hat
+ * einen Zweig in `EREIGNIS_WIRKUNGEN` (`entity_in_water` und `damage` haben dort
+ * gar keinen Schlüssel, `drowning` ist `{}`), und `MatchStats` läuft nur lokal
+ * (`main.js`: online ist `stats` null).
+ *
+ * ## ⚠ VORBEHALT ZU `damage`: der Urheber
+ *
+ * `damage` trägt `attackerId` — und der Urheber steht NICHT im Snapshot. Heute
+ * liest ihn niemand (0 Leser), der Verlust ist also null. Die Bedingung, unter
+ * der das gilt, gehört hierher, damit der Nächste sie sieht statt sie zu raten:
+ *
+ *     WENN je eine Anzeige den URHEBER eines Treffers zeigen soll, muss `damage`
+ *     aus dieser Liste heraus — ODER die Zusammenfassung führt die Meldungen je
+ *     Urheber getrennt (Fenster je Art, Figur UND `attackerId`), damit kein
+ *     Urheber still verloren geht.
+ *
+ * ## Warum `jumped` hier NICHT mehr steht (2026-09-27)
+ *
+ * Der Sprung stand hier, solange der Motor zwei Sprünge je Zug zuließ und den
+ * zweiten an den ersten band („erst nach dem Landen möglich"). Seit der Sprung
+ * auf keiner Obergrenze mehr ruht (`match.js#jump`), kann eine Figur beliebig oft
+ * und unmittelbar nacheinander springen — der Abstand ist keine Flugphase mehr.
+ *
+ * Gemessen am Filter mit dem Muster des Motors (ein Sprung je Takt, 61 Sprünge
+ * in 61 Takten): 3 von 61 kamen durch, 58 wurden verschluckt. Schon der
+ * NORMALFALL war betroffen: Der zweite Sprung eines Zuges wird gemessen 5 Takte
+ * nach dem ersten gesetzt — innerhalb des 30-Takte-Fensters, also kam die Zeile
+ * „Doppelsprung" online nie beim Spieler an (die Datei
+ * `tests/e2e/online-sprung-abwurf.spec.mjs` prüft nur den ERSTEN Sprung, deshalb
+ * fiel es nicht auf).
+ *
+ * Der Sprung ist damit keine Wiederholung ohne neue Information mehr, sondern
+ * eine Handlung, die der Spieler ausführt und im Protokoll SEHEN soll — die
+ * Voraussetzung für eine Drossel fehlt. Die Kosten sind benannt und gemessen:
+ * Wer im Takt springt, erzeugt 61 kleine Steuernachrichten je Sekunde (der Nutzen
+ * wiegt den Fall auf; die Alternative — ein längeres Fenster — würde echte
+ * Sprünge verschlucken, also die Anzeige belügen).
+ *
+ * ## Die Simulation ist von alldem unberührt
+ *
+ * Der Filter sitzt HINTER `consumeEvents()` im Server: Die Ereignisse sind zu
+ * diesem Zeitpunkt entstanden, der Zufallsstrom ist verbraucht. Replays zeichnen
+ * Eingaben auf, keine Ereignisse — Determinismus und Wiedergabegleichheit können
+ * hier nicht hängen. `tests/event-coverage.test.js` weist das nach.
  */
 export const GEDROSSELTE_EREIGNISARTEN = Object.freeze([
+  // Gruppe 1: Bodenkontakte (Bounce-Artefakt einer stehenden Figur).
   'landed',
-  'jumped',
   'crate_landed',
+  // Gruppe 2: Dauer meldende Zustandsarten — im Snapshot nachgerechnet redundant.
+  'damage',
+  'entity_in_water',
+  'drowning',
 ]);
 
 /**
@@ -704,9 +804,14 @@ export const GEDROSSELTE_EREIGNISARTEN = Object.freeze([
  *
  * Obergrenze: Das Fenster muss KÜRZER sein als die kürzeste echte Flugphase,
  * sonst verschluckte es eine echte Landung. Gemessen dauert ein Sprung 50 Takte
- * bis zum `landed` (0,83 s, auf `hills` und `flooded` gleich), und ein zweiter
- * Sprung ist erst nach dem Landen möglich. 30 Takte liegen damit mit Abstand
- * unter dem kürzesten echten Folgeereignis derselben Figur.
+ * bis zum `landed` (0,83 s, auf `hills` und `flooded` gleich). 30 Takte liegen
+ * damit mit Abstand unter dem kürzesten echten Folgeereignis derselben Figur.
+ *
+ * Der zweite Teil der alten Begründung („ein zweiter Sprung ist erst nach dem
+ * Landen möglich") ist mit der entfallenen Sprung-Obergrenze hinfällig und
+ * deshalb entfernt — die Obergrenze des Fensters stützt sich auf `landed`
+ * allein. Siehe `GEDROSSELTE_EREIGNISARTEN`, warum `jumped` nicht mehr gedrosselt
+ * wird.
  *
  * Beide Zahlen stammen aus `docs/ereigniskanal-filter.md` (Messläufe 1–5).
  */

@@ -13,6 +13,9 @@ import {
   DAMAGE_BY_CATEGORY,
   strikeStyleFor,
 } from '../scripts/build-weapon-catalog.mjs';
+// Für die Sprung-Regel: Der Sendefilter entscheidet, ob ein SPRUNG überhaupt
+// beim Client ankommt (siehe „Sprünge kommen ungedrosselt über die Leitung").
+import { EreignisSendefilter } from '../src/shared/protocol.js';
 
 /**
  * Waffen-Identität, Zünder, Wurfabwurf und Sprung.
@@ -591,33 +594,45 @@ test('Sprung setzt einen Impuls nach oben und landet wieder', () => {
   assert.ok(hoehe < 200, `Der Sprung ist zu hoch: ${hoehe.toFixed(0)} px`);
 });
 
-test('Ein Doppelsprung ist möglich, ein dritter nicht', () => {
+test('Springe sind nicht gezählt — nach dem Doppelsprung folgt ein weiterer', () => {
+  /*
+   * Bis 2026-09-27 endete der zweite Sprung mit „Keine Sprünge mehr in diesem
+   * Zug". Diese Obergrenze ist auf Entscheidung des Auftraggebers entfallen
+   * („nein sprung kann man unendlich"); damit ist `jumpsLeft` keine Zahl mehr,
+   * sondern `null` = unbegrenzt. Der Test hält BEIDES fest: dass weiter
+   * gesprungen werden darf UND dass dort keine Restzahl mehr steht.
+   *
+   * Die Unterscheidung der Anzeige hängt an `double` und nicht an der Zahl:
+   * `false` = vom Boden, `true` = in der Luft. Genau das prüfen die beiden
+   * ersten Sprünge mit.
+   */
   const match = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
   match.start();
   const spieler = match.activePlayerId;
   lande(match, spieler);
   zumSpieler(match, spieler);
 
-  assert.equal(match.jumpsLeft(spieler), 2, 'Zu Beginn zwei Sprünge');
+  assert.equal(match.jumpsLeft(spieler), null, 'Kein Zähler mehr: null heißt unbegrenzt');
 
   const erst = match.jump(spieler, 1);
-  assert.equal(erst.ok, true);
-  assert.equal(erst.jumpsLeft, 1);
+  assert.equal(erst.ok, true, `Sprung abgelehnt: ${erst.errors?.join(', ')}`);
+  assert.equal(erst.double, false, 'Der erste Sprung kommt vom Boden');
+  assert.equal(erst.jumpsLeft, null, 'jumpsLeft ist null — unbegrenzt, keine Restzahl');
 
-  // In der Luft: der zweite Sprung.
+  // In der Luft: der Doppelsprung.
   for (let i = 0; i < 5; i++) { match.step(); match.consumeEvents(); }
   assert.equal(match.isGrounded(spieler), false, 'Testannahme: in der Luft');
 
   const zweit = match.jump(spieler, -1);
   assert.equal(zweit.ok, true, `Doppelsprung abgelehnt: ${zweit.errors?.join(', ')}`);
   assert.equal(zweit.double, true, 'Der zweite Sprung muss als Doppelsprung gelten');
-  assert.equal(zweit.jumpsLeft, 0);
+  assert.equal(zweit.jumpsLeft, null);
 
-  // Ein dritter ist nicht möglich.
+  // Ein dritter ist NICHT mehr verboten: Die Zahlengrenze ist entfallen.
   for (let i = 0; i < 3; i++) { match.step(); match.consumeEvents(); }
   const dritt = match.jump(spieler, 0);
-  assert.equal(dritt.ok, false, 'Ein dritter Sprung darf nicht gehen');
-  assert.ok(dritt.errors.some(f => f.includes('Keine Sprünge')), `Meldung: ${dritt.errors}`);
+  assert.equal(dritt.ok, true, `Dritter Sprung abgelehnt: ${dritt.errors?.join(', ')}`);
+  assert.equal(dritt.double, true, 'In der Luft ist auch der dritte Sprung ein Doppelsprung');
 });
 
 test('Der Doppelsprung ist schwächer als der erste', () => {
@@ -658,28 +673,34 @@ test('Nur der aktive Spieler darf springen', () => {
   assert.ok(ergebnis.errors.some(f => f.includes('aktive Spieler')), `Meldung: ${ergebnis.errors}`);
 });
 
-test('Die Sprünge werden zu Beginn eines Zuges zurückgesetzt', () => {
+test('Ein neuer Zug beginnt wieder mit dem Bodensprung', () => {
+  /*
+   * Auch ohne Zahlengrenze hat der Zähler EINE Bedeutung: Er merkt, ob der
+   * Spieler in diesem Zug schon einmal abgesprungen ist. Daran hängt die
+   * Bodenregel für den ERSTEN Sprung — und die gilt je ZUG, nicht je Flugphase.
+   * Ein Reset beim Landen würde sie aufheben.
+   */
   const match = new MatchController({ seed: 1414, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
   match.start();
   const spieler = match.activePlayerId;
   lande(match, spieler);
   zumSpieler(match, spieler);
 
-  // Beide Sprünge verbrauchen.
+  // Drei Sprünge in diesem Zug: Boden, Luft, Luft.
   match.jump(spieler, 0);
   for (let i = 0; i < 5; i++) { match.step(); match.consumeEvents(); }
   match.jump(spieler, 0);
-  assert.equal(match.jumpsLeft(spieler), 0);
+  for (let i = 0; i < 5; i++) { match.step(); match.consumeEvents(); }
+  assert.equal(match.jump(spieler, 0).ok, true, 'Auch der dritte Sprung ist erlaubt');
+  assert.equal(match.jumpsLeft(spieler), null, 'jumpsLeft bleibt null — unbegrenzt');
 
-  // Nach einem Landen im SELBEN Zug bleibt es bei null.
-  for (let i = 0; i < 300 && !match.isGrounded(spieler); i++) { match.step(); match.consumeEvents(); }
-  assert.equal(match.jumpsLeft(spieler), 0,
-    'Ein Landen im selben Zug darf keine neuen Sprünge geben');
-
-  // Neuer Zug: wieder zwei.
+  // Neuer Zug: Der Zähler beginnt bei null, der erste Sprung geht wieder vom Boden.
   match.endTurn();
   zumSpieler(match, spieler);
-  assert.equal(match.jumpsLeft(spieler), 2, 'Ein neuer Zug muss zwei Sprünge geben');
+  lande(match, spieler);
+  const neu = match.jump(spieler, 0);
+  assert.equal(neu.ok, true, 'Im neuen Zug muss der Bodensprung wieder gehen');
+  assert.equal(neu.double, false, 'Der erste Sprung des neuen Zuges kommt vom Boden');
 });
 
 test('Sprung und Schuss schließen sich nicht aus', () => {
@@ -732,4 +753,149 @@ test('Der Sprung ist deterministisch', () => {
     };
   };
   assert.deepEqual(lauf(), lauf(), 'Gleicher Seed muss denselben Sprung ergeben');
+});
+
+/* ============================================ Sprung ohne Obergrenze (2026-09-27)
+ *
+ * Die Entscheidung des Auftraggebers, wörtlich: „nein sprung kann man unendlich,
+ * aber fallschaden beendet". Der erste Teil ist gebaut (die Zwei-Sprung-Grenze
+ * ist entfernt). Der zweite Teil — der Fallschaden als Bremse — ist GEMESSEN und
+ * trägt NICHT: Der Absprung setzt rund 10,1 px/Takt, die Fallschadensschwelle
+ * liegt bei 11 px/Takt. Diese Tests halten beides fest, damit die Annahme nicht
+ * später wieder als Tatsache auftaucht. Rechnung und Messreihen:
+ * `docs/sprung-regel.md`.
+ */
+
+test('Zehn Bodensprünge in EINEM Zug gehen durch — und kosten kein Leben', () => {
+  // Seed 606 ist gemessen: zehn Sprünge, flacher Boden, 0 Fallschaden.
+  const match = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+  match.start();
+  const spieler = match.activePlayerId;
+  lande(match, spieler);
+  zumSpieler(match, spieler);
+
+  const lebenVor = match.world.getComponent(spieler, 'Health', 'current');
+  let gelungen = 0;
+  const abgelehnt = [];
+  for (let n = 1; n <= 10; n += 1) {
+    lande(match, spieler);
+    const ergebnis = match.jump(spieler, 1);
+    if (ergebnis.ok) gelungen += 1;
+    else abgelehnt.push(`${n}: ${ergebnis.errors?.join(', ')}`);
+
+    for (let i = 0; i < 400; i += 1) {
+      match.step();
+      for (const ereignis of match.consumeEvents()) {
+        assert.notEqual(ereignis.type, 'fall_damage',
+          `Fallschaden beim Sprung ${n}: ${JSON.stringify(ereignis.payload)}`);
+      }
+      if (i > 2 && match.isGrounded(spieler)) break;
+    }
+  }
+
+  assert.equal(gelungen, 10, `Nur ${gelungen} von 10 Sprüngen gingen durch: ${abgelehnt.join(' | ')}`);
+  assert.equal(match.activePlayerId, spieler, 'Springen darf den Zug nicht beenden');
+  assert.equal(match.world.getComponent(spieler, 'Health', 'current'), lebenVor,
+    'Springen darf kein Leben kosten (gemessen: 0 Schaden bei zehn Sprüngen)');
+});
+
+test('In der Luft lässt sich beliebig oft nachsetzen', () => {
+  /*
+   * Vorher war hier nach dem zweiten Sprung Schluss. Der Test setzt fünf
+   * Luft-Sprünge nach dem Bodensprung und hält fest, dass alle fünf angenommen
+   * werden — die Figur bleibt damit oben, solange der Spieler weiterspringt
+   * (jeder Sprung SETZT die senkrechte Geschwindigkeit, er addiert sie nicht).
+   * Das ist die Folge, die der Auftraggeber wollte; sie steht hier als Messung,
+   * nicht als Meinung.
+   */
+  const match = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+  match.start();
+  const spieler = match.activePlayerId;
+  lande(match, spieler);
+  zumSpieler(match, spieler);
+
+  assert.equal(match.jump(spieler, 0).ok, true, 'Der Bodensprung muss gehen');
+
+  let luftSprünge = 0;
+  for (let n = 0; n < 5; n += 1) {
+    for (let i = 0; i < 20; i += 1) { match.step(); match.consumeEvents(); }
+    if (match.jump(spieler, 1).ok) luftSprünge += 1;
+  }
+  assert.equal(luftSprünge, 5, 'Fünf nachgesetzte Luft-Sprünge müssen alle durchgehen');
+});
+
+test('Der Sprung bleibt unter der Fallschadensschwelle — sie bremst ihn nicht', () => {
+  /*
+   * Die Annahme des Auftraggebers („fallschaden beendet") wird hier am lebenden
+   * Motor gemessen, statt sie zu unterstellen: erst der Absprungimpuls des
+   * Sprungs, dann die Schwelle selbst. Die Schwelle wird GESETZT (vy auf eine
+   * stehende Figur, ein Schritt) — kontrolliert, ohne Geländezufall.
+   */
+  const match = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+  match.start();
+  const spieler = match.activePlayerId;
+  lande(match, spieler);
+  zumSpieler(match, spieler);
+
+  const ergebnis = match.jump(spieler, 0);
+  assert.equal(ergebnis.ok, true);
+
+  // Höhe messen, bis die Figur wieder steht.
+  const yStart = match.world.getComponent(spieler, 'Position', 'y');
+  let gipfel = yStart;
+  for (let i = 0; i < 400; i += 1) {
+    match.step();
+    match.consumeEvents();
+    gipfel = Math.min(gipfel, match.world.getComponent(spieler, 'Position', 'y'));
+    if (i > 2 && match.isGrounded(spieler)) break;
+  }
+  const hoehe = yStart - gipfel;
+  assert.ok(hoehe > 100, `Der Sprung ist für diese Messung zu niedrig: ${hoehe.toFixed(1)} px`);
+
+  /** Fallschaden bei einer gesetzten Sinkgeschwindigkeit (px/Takt). */
+  const fallschaden = (vy) => {
+    const m = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+    m.start();
+    const id = m.activePlayerId;
+    lande(m, id);
+    const vorher = m.world.getComponent(id, 'Health', 'current');
+    m.world.setComponent(id, 'Velocity', 'y', vy);
+    m.step();
+    const treffer = m.consumeEvents().find(e => e.type === 'fall_damage');
+    return treffer ? vorher - m.world.getComponent(id, 'Health', 'current') : 0;
+  };
+
+  assert.equal(fallschaden(10), 0,
+    'Unter der Absprunghöhe darf kein Fallschaden entstehen');
+  assert.ok(fallschaden(11.5) > 0,
+    'Über der Schwelle MUSS Fallschaden entstehen — sonst misst dieser Test nichts');
+  assert.ok(ergebnis.impulse < 11,
+    `Der Absprung (${ergebnis.impulse} px/Takt) liegt nicht mehr unter der `
+    + 'Fallschadensschwelle (11) — dann wäre Springen doch bestraft und die '
+    + 'Begründung in docs/sprung-regel.md ist überholt');
+});
+
+test('Sprünge kommen ungedrosselt über die Leitung', () => {
+  /*
+   * `jumped` stand bis 2026-09-27 in `GEDROSSELTE_EREIGNISARTEN` (30-Takte-
+   * Fenster je Art und Figur). Mit unbegrenzten Sprüngen ist der Abstand keine
+   * Flugphase mehr — gemessen kamen vom Muster „ein Sprung je Takt" nur 3 von 61
+   * Nachrichten durch, und schon der normale Doppelsprung (5 Takte nach dem
+   * ersten) wurde verschluckt: online war die Zeile „Doppelsprung" nie zu sehen.
+   * Die Drossel der BODENKONTAKTE bleibt unangetastet — dort ist sie belegt
+   * (Bounce-Artefakt: 34 Landungen in 120 Takten ohne Bewegung).
+   */
+  const filter = new EreignisSendefilter();
+  let durch = 0;
+  for (let takt = 0; takt < 61; takt += 1) {
+    if (filter.durchlassen('jumped', { playerId: 1 }, takt)) durch += 1;
+  }
+  assert.equal(durch, 61, `Nur ${durch} von 61 Sprüngen kamen durch — echte Sprünge würden verschluckt`);
+
+  const boden = new EreignisSendefilter();
+  let landungen = 0;
+  for (let i = 0; i < 34; i += 1) {
+    if (boden.durchlassen('landed', { playerId: 1 }, 4 + i * 3)) landungen += 1;
+  }
+  assert.ok(landungen < 34, `landed wurde nicht mehr gedrosselt (${landungen} von 34 durchgelassen)`);
 });
