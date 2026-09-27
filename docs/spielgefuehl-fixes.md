@@ -170,6 +170,14 @@ E2E (gemessen):
   Error: Der Schuss-Klang muss online gerufen werden (vorher 0, jetzt 0)
 ```
 
+Der Durchgang wird bei einem Dev-Server-Reload wiederholt (`[vite] page reload`
+durch parallel schreibende Arbeiter — gemessen: „Execution context was destroyed,
+most likely because of a navigation"); die Zusicherung selbst bleibt unverändert.
+**Achtung, Folge für den Kopf-Commit:** Der Commit `10ff791` hat genau diesen
+Zustand der Zähne-Probe eingefangen (Klangaufruf im `shot`-Online-Zweig
+auskommentiert). Das ist mit `71a8985` nachgezogen — wer auf einem Stand VOR
+`71a8985` prüft, hat online einen stummen Schuss.
+
 ### Replay-Grenze
 
 Zustandshash unverändert `9ec63e8c`: Die Änderung liegt im Client-Anzeigepfad;
@@ -307,7 +315,7 @@ Zustandshash unverändert `9ec63e8c`: reine CSS-Änderung.
 | `npx playwright test tests/e2e/prediction-gpu.spec.mjs -g „HALTEN"` | 4× grün (Stabilität nach der Tipp-Dauer-Prüfung) |
 | `npx playwright test tests/e2e/grosse-teams.spec.mjs -g „Protokoll"` | 1/1 grün |
 | `npx playwright test tests/e2e/accessibility.spec.mjs tests/e2e/grosse-teams.spec.mjs` | 17/17 grün |
-| `npx playwright test tests/e2e/prediction-online.spec.mjs -g „Klang"` | 1/1 grün (echter Server, echter Mischer) |
+| `npx playwright test tests/e2e/prediction-online.spec.mjs -g „Klang"` | 3× grün (echter Server, echter Mischer) — der Durchgang wiederholt sich bei einem Dev-Server-Reload |
 | `npx playwright test tests/e2e/screenreader.spec.mjs` | 11/11 grün (Live-Region unversehrt) |
 
 `npm test` und `npm run test:e2e` wurden NICHT als Volllauf gefahren (Auftrag:

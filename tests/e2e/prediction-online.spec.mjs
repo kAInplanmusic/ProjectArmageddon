@@ -305,28 +305,57 @@ test.describe('Schussvorhersage online', () => {
      * gibt es ihn (gemessen: `starte()` → true). Ohne ihn wäre diese Messung
      * nicht möglich — dann sagt der Test das, statt grün zu sein und nichts
      * bewiesen zu haben.
+     *
+     * ## Warum der Durchgang wiederholt wird
+     *
+     * Der E2E-Satz läuft neben schreibenden Arbeitern. Der Dev-Server lädt die
+     * Seite bei JEDER Quelländerung neu (`[vite] page reload`) — mitten im Test
+     * zerstört das den Ausführungs-Kontext (gemessen: „Execution context was
+     * destroyed, most likely because of a navigation"), und nach einem Reload
+     * läuft kein Match mehr. Bei genau diesem Fehler wird der ganze Aufbau
+     * wiederholt; die Zusicherung selbst bleibt unverändert.
      */
-    await starteOnlineMatch(page);
-    await warteAufEigenenZug(page);
+    test.setTimeout(120_000);
 
-    const bereit = await page.evaluate(() => window.__PA__.game.sound.starte());
-    expect(bereit, 'Ohne AudioContext lässt sich der Klangweg hier nicht messen').toBe(true);
+    const messen = async () => {
+      await starteOnlineMatch(page);
+      await warteAufEigenenZug(page);
 
-    const vorher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
+      const bereit = await page.evaluate(() => window.__PA__.game.sound.starte());
+      expect(bereit, 'Ohne AudioContext lässt sich der Klangweg hier nicht messen').toBe(true);
 
-    await page.keyboard.press('Enter');
+      const vorher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
 
-    // Auf den ZUWACHS warten — der Zähler ist der Beleg, nicht eine Frist.
-    await page.waitForFunction(
-      grenze => {
-        const z = window.__PA__.game.sound.gezaehlt;
-        return z.schuss + z.explosion + z.treffer > grenze;
-      },
-      vorher.schuss + vorher.explosion + vorher.treffer,
-      { timeout: 20_000 },
-    );
+      await page.keyboard.press('Enter');
 
-    const nachher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
+      // Auf den ZUWACHS warten — der Zähler ist der Beleg, nicht eine Frist.
+      await page.waitForFunction(
+        grenze => {
+          const z = window.__PA__.game.sound.gezaehlt;
+          return z.schuss + z.explosion + z.treffer > grenze;
+        },
+        vorher.schuss + vorher.explosion + vorher.treffer,
+        { timeout: 20_000 },
+      );
+
+      const nachher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
+      return { vorher, nachher };
+    };
+
+    let ergebnis = null;
+    let letzterFehler = null;
+    for (let versuch = 0; versuch < 3 && ergebnis === null; versuch += 1) {
+      try {
+        ergebnis = await messen();
+      } catch (fehler) {
+        letzterFehler = fehler;
+        if (!/Execution context was destroyed|closed/i.test(String(fehler?.message))) throw fehler;
+        await page.waitForTimeout(300);
+      }
+    }
+    if (ergebnis === null) throw letzterFehler;
+
+    const { vorher, nachher } = ergebnis;
     expect(nachher.schuss,
       `Der Schuss-Klang muss online gerufen werden (vorher ${vorher.schuss}, jetzt ${nachher.schuss})`)
       .toBeGreaterThan(vorher.schuss);
