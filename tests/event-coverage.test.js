@@ -192,9 +192,17 @@ const bewusstStumm = new Set([
   // --- Dient der Steuerung, nicht der Anzeige
   'shot',              // löst die Vorhersage auf (shotPredictor.resolve)
   'weapon_cooldown',   // die Waffenliste zeigt den Nachladezustand
-  'weapon_dropped',    // `dropWeapon()` meldet das Ergebnis direkt im Log
   'crate_landed',      // lokaler Zweig hat einen Fall; online übernimmt es
                        // die Kistenliste
+  /*
+   * `weapon_dropped` stand hier bis O8 mit der Begründung „`dropWeapon()` meldet
+   * das Ergebnis direkt im Log". Die gilt NUR für den lokalen Zweig. Seit O8 gibt
+   * es das Abwerfen online, und dort meldet kein lokaler `dropWeapon()`-Pfad —
+   * das Ereignis hat deshalb einen `online`-Zweig bekommen (`ereignisse.js`) und
+   * gehört NICHT mehr in diese Menge: Hier bedeutet ein Eintrag „es gibt KEINEN
+   * Zweig". Eine veraltete Begründung wäre genau der stille Fehler, den diese
+   * Liste verhindern soll.
+   */
 
   // --- Wird bewusst zusammengefasst gemeldet
   'drowning',          // bis zu 60x/s: nur beim ÜBERGANG gemeldet (#trackWater)
@@ -237,14 +245,14 @@ const bewusstStumm = new Set([
  */
 const AUDIT_LISTE_2026_09_26 = [
   'crate_pickup',          // ereignisse.js:424 — lokal :433 (Protokollzeile je Beuteart)
-  'crate_pickup_blocked',  // ereignisse.js:461 — beide (lokal mit (Q)-Hinweis, online ohne — kein Abwerfen online)
+  'crate_pickup_blocked',  // ereignisse.js:461 — beide (Q-Hinweis gilt seit O8 auch online, dort gibt es das Abwerfen)
   'death',                 // ereignisse.js:479 — beide :482/:485
   'dot_tick',              // ereignisse.js:344 — beide :351
   'fall_damage',           // ereignisse.js:489 — lokal :491
   'frozen',                // ereignisse.js:336 — beide :337
   'fuse_armed',            // ereignisse.js:270 — beide :271 (Protokoll) + :272 (Blitz)
   'fuse_expired',          // ereignisse.js:275 — beide :276 + :277
-  'jumped',                // ereignisse.js:399 — lokal :401
+  'jumped',                // ereignisse.js:399 — beide :401 (seit O8 auch online)
   'karte_unerreichbar',    // ereignisse.js:542 — nur online :544 (siehe unten, offen)
   'landed',                // ereignisse.js:405 — lokal :407
   'loot_error',            // ereignisse.js:253 — beide :254
@@ -292,7 +300,9 @@ const AUDIT_LISTE_2026_09_26 = [
  *   - `guenther: snapshot.guenther ?? null` in der Onlinesicht
  *     (`src/client/main.js:1165`, Form wie `crates`/`turrets`),
  *   - die vier Streich-Arten sind `beide(fn)` (`src/client/ereignisse.js:398`
- *     ff.), `crate_pickup_blocked` hat einen eigenen Online-Text (`:461`).
+ *     ff.), `crate_pickup_blocked` ist seit O8 ebenfalls `beide(fn)` — vorher
+ *     hatte es einen eigenen Online-Text ohne (Q), weil es online kein Abwerfen
+ *     gab; das Abwerfen gibt es seit O8 (siehe der Test am Datei-Ende).
  *
  * Damit sind die vier Arten KEINE Einzweig-Fälle mehr und stehen nicht in
  * `EINZWEIG_BELEGT`. Sichtbare Folge eines Streichs bleibt zusätzlich der
@@ -338,19 +348,23 @@ const EINZWEIG_BELEGT = new Map([
    * `toxic_rain` hatten bis dahin nur einen `lokal:`-Zweig, obwohl der Server
    * sie sendet (`src/server/gameServer.js:246-248`). Sie haben jetzt einen
    * `online:`-Zweig (`src/client/ereignisse.js`) und sind KEINE Einzweig-Fälle
-   * mehr — deshalb stehen sie hier nicht mehr. `jumped` und `crate_landed`
-   * bleiben einzweigig; ihr Online-Beleg hängt an O8.
+   * mehr — deshalb stehen sie hier nicht mehr.
+   *
+   * O8 nachgezogen (2026-09-27): `jumped` hatte nur einen `lokal:`-Zweig (online
+   * sprang niemand). Seit es den Online-Sprung gibt, ist es `beide(fn)` und damit
+   * kein Einzweig-Fall mehr — der Eintrag ist hier entfernt. `crate_landed`
+   * bleibt einzweigig; sein Online-Beleg ist die Kistenliste aus dem Snapshot.
    */
-  ['jumped', {
-    zweig: 'lokal',
-    entweder: 'online ist der Sprung als Bewegung sichtbar: src/client/main.js:1077 (interpolierte Entities aus dem Snapshot) → src/client/renderer.js:1217 (#drawEntities)',
-  }],
   ['crate_landed', {
     zweig: 'lokal',
     entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:1143 (crates) → src/client/renderer.js:1201 (#drawCrates)',
   }],
 
   // --- nur online behandelt (lokal kommt es aus einem anderen Weg)
+  ['weapon_dropped', {
+    zweig: 'online',
+    entweder: 'lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition, Listenaktualisierung) — src/client/main.js:857 (`hud.log`) und :858 (`hud.update`) —, es braucht deshalb keinen Tabellenzweig. ONLINE gibt es diesen lokalen Erfolgspfad nicht: der Server führt den Abwurf aus und schickt das Ereignis; ohne den `online:`-Zweig fiele es stumm weg.',
+  }],
   ['projectile_spawn', {
     zweig: 'online',
     entweder: 'lokal BRAUCHT es keinen Zweig: die Vorhersage gibt es dort nicht — src/client/main.js:1480–1481 (#startShotPrediction kehrt im lokalen Modus sofort zurück), gezeichnet wird sie nur online (:1961). Das Ereignis läuft lokal trotzdem (es kommt aus dem Motor, src/engine/shooting.js:344) und fällt in eine leere Stelle: Absicht, keine Lücke.',
@@ -684,21 +698,25 @@ test('Günthers vier Streiche werden ONLINE behandelt — die Wirkung läuft wir
     'Das Rad dreht auf den Ausgang, den das Serverereignis trägt — nicht auf einen eigenen Wurf');
 });
 
-test('`crate_pickup_blocked` meldet online den vollen Vorrat — ohne Q-Aufforderung', () => {
+test('`crate_pickup_blocked` meldet online den vollen Vorrat — MIT Q-Aufforderung', () => {
   /*
-   * Vorher fiel das Ereignis online still durch: Der Spieler konnte nicht
-   * aufnehmen und erfuhr keinen Grund. Die Wirkung wird hier ausgeführt.
+   * Vor O8 fiel das Ereignis online still durch: Der Spieler konnte nicht
+   * aufnehmen und erfuhr keinen Grund. Seit O2 hat es einen Online-Zweig; seit O8
+   * gibt es das Abwerfen AUCH online (`CONTROL.DROP_WEAPON`).
    *
-   * Und sie muss sich vom lokalen Text UNTERSCHEIDEN: Die lokale Meldung nennt
-   * die Taste (Q), doch online gibt es KEIN Abwerfen — `Main#dropWeapon` steigt
-   * dort vorzeitig aus (`src/client/main.js:818`:
-   * `if (!this.match || this.mode !== 'local')`). Eine online angezeigte
-   * „(Q)"-Aufforderung wäre eine falsche Anweisung; deshalb hat der Online-Text
-   * einen eigenen Rumpf statt `beide(fn)`.
+   * Vorher unterschieden sich die Texte bewusst: nur lokal nannte die Taste (Q),
+   * online nicht — „eine online angezeigte (Q)-Aufforderung wäre eine falsche
+   * Anweisung". Diese Begründung ist mit O8 GEGENSTANDSLOS: Die Taste wirkt
+   * online genauso. Der Eintrag ist deshalb `beide(fn)`, und beide Meldungen
+   * nennen die Taste und sind identisch.
+   *
+   * Ein Online-Text ohne Handlung ließe den Spieler mit vollem Vorrat ohne
+   * Ausweg zurück — genau der Zustand, den O8 behebt.
    */
-  const { online } = behandelteTypen();
+  const { lokal, online } = behandelteTypen();
   assert.ok(online.has('crate_pickup_blocked'),
     'online bleibt der volle Vorrat ohne Rückmeldung — der Spieler erfährt den Grund nicht');
+  assert.ok(lokal.has('crate_pickup_blocked'), 'lokal muss den vollen Vorrat melden');
 
   const lokalTexte = [];
   verarbeiteLokal({ hud: { log: text => lokalTexte.push(text) } },
@@ -710,6 +728,8 @@ test('`crate_pickup_blocked` meldet online den vollen Vorrat — ohne Q-Aufforde
   assert.equal(lokalTexte.length, 1, 'lokal muss eine Meldung entstehen');
   assert.equal(onlineTexte.length, 1, 'online muss eine Meldung entstehen');
   assert.match(lokalTexte[0], /\(Q\)/, 'lokal nennt die Abwerf-Taste');
-  assert.doesNotMatch(onlineTexte[0], /\(Q\)/,
-    'online gibt es kein Abwerfen (`src/client/main.js:818`) — die Meldung darf es nicht versprechen');
+  assert.match(onlineTexte[0], /\(Q\)/,
+    'online gibt es seit O8 das Abwerfen (CONTROL.DROP_WEAPON) — die Meldung muss die Taste nennen');
+  assert.deepEqual(onlineTexte, lokalTexte,
+    'Da beide Betriebsarten dieselbe Handlung haben, müssen die Texte identisch sein (beide(fn))');
 });

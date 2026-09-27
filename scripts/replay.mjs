@@ -5,12 +5,18 @@
  * Aufrufe:
  *   node scripts/replay.mjs record [--seed=N] [--teams=N] [--players=N] \
  *                                  [--preset=NAME] [--rounds=N] [--shots=N] \
- *                                  [--out=DATEI] [--quiet]
+ *                                  [--out=DATEI] [--quiet] \
+ *                                  [--no-jump] [--no-drop]
  *   node scripts/replay.mjs play DATEI [--until=N] [--verify]
  *   node scripts/replay.mjs info DATEI
  *
  * `--verify` prüft, dass das Replay exakt denselben Zustandshash erzeugt wie
  * beim Aufzeichnen — der Determinismusbeweis für einen konkreten Lauf.
+ *
+ * Seit O8 zeichnet `record` standardmäßig AUCH einen Sprung und einen Abwurf auf
+ * (`kind: 'jump'`/`'drop'`): Genau dieser neue Eintrag muss im Verify-Lauf
+ * vorkommen, sonst prüfte `--verify` den neuen Eingabepfad nie. Mit `--no-jump`
+ * bzw. `--no-drop` lässt sich der alte, sprungfreie Lauf reproduzieren.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -58,17 +64,66 @@ function record(args) {
 
   const hashTrace = [];
   let shots = 0;
+  let spruenge = 0;
+  let abwuerfe = 0;
   let ticks = 0;
+  const mitSprung = !args['no-jump'];
+  const mitAbwurf = !args['no-drop'];
 
   while (match.status === 'playing' && ticks < 400_000) {
     const state = match.getState();
     if (state.activePlayerId !== null && state.turnElapsedMs < 16 && shots < maxShots) {
+      const playerId = state.activePlayerId;
+
+      /*
+       * EIN Sprung je Aufzeichnung, sobald der Motor ihn erlaubt.
+       *
+       * `jump()` lehnt den ersten Sprung in der Luft ab ("In der Luft ist kein
+       * erster Sprung möglich") — die Figur startet auf Kopfhöhe und muss erst
+       * fallen. Deshalb wird `isGrounded()` abgewartet statt geraten. Der Sprung
+       * ist Simulationszustand und MUSS im Eintrag stehen (`kind: 'jump'`),
+       * sonst weicht die Wiedergabe ab.
+       */
+      if (mitSprung && spruenge === 0 && shots === 3 && match.isGrounded(playerId)) {
+        const seitlich = 1;
+        if (match.jump(playerId, seitlich).ok) {
+          recorder.recordInput({
+            tick: match.world.tickCount, playerId, seitlich, kind: 'jump',
+          });
+          spruenge += 1;
+        }
+      }
+
+      /*
+       * EIN Abwurf je Aufzeichnung, sobald eine abwerfbare Waffe vorliegt.
+       *
+       * Der Abwurf ist der schärfere Fall: Er erzeugt drei Zufallswerte aus
+       * demselben Strom wie der Wind. Fehlt der Eintrag, weicht nicht nur die
+       * Kiste ab, sondern der Wind jeder folgenden Runde. Die Reservewaffe ist
+       * geschützt (`removeWeapon` lehnt sie ab) — die Schleife sucht deshalb die
+       * erste Waffe, die der Motor wirklich hergibt, und die aktive wird
+       * übersprungen, damit der folgende Schuss unberührt bleibt.
+       */
+      if (mitAbwurf && abwuerfe === 0 && shots === 6) {
+        const aktiv = match.inventory.getActiveWeaponId(playerId);
+        for (const weaponId of match.inventory.getWeapons(playerId)) {
+          if (weaponId === aktiv) continue;
+          if (match.dropWeapon(playerId, weaponId).ok) {
+            recorder.recordInput({
+              tick: match.world.tickCount, playerId, weaponId, kind: 'drop',
+            });
+            abwuerfe += 1;
+            break;
+          }
+        }
+      }
+
       // Deterministisch variierende Zielwerte: deckt verschiedene Flugbahnen ab.
       const angle = Math.PI / 4 + (shots % 9) * 0.05;
       const power = 50 + (shots % 6) * 8;
-      const result = match.fire(state.activePlayerId, angle, power);
+      const result = match.fire(playerId, angle, power);
       if (result.ok) {
-        recorder.recordInput({ tick: match.world.tickCount, playerId: state.activePlayerId, angle, power });
+        recorder.recordInput({ tick: match.world.tickCount, playerId, angle, power });
         shots += 1;
       }
     }
@@ -101,6 +156,8 @@ function record(args) {
     console.log(`  Seed        : ${seed}`);
     console.log(`  Konfig      : ${teams} Teams x ${playersPerTeam} Spieler, Karte ${preset}`);
     console.log(`  Schüsse     : ${shots}`);
+    console.log(`  Sprünge     : ${spruenge}`);
+    console.log(`  Abwürfe     : ${abwuerfe}`);
     console.log(`  Ticks       : ${match.world.tickCount}`);
     console.log(`  Runden      : ${match.round}`);
     console.log(`  Endstatus   : ${match.status} (Sieger: ${match.winnerTeamId ?? 'keiner'})`);

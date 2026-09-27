@@ -158,7 +158,7 @@ class LobbySession {
     while (this.match.status === 'playing' && this.match.world.tickCount < limit && guard < limit + 10) {
       const tick = this.match.world.tickCount;
       for (const entry of byTick.get(tick) ?? []) {
-        this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
+        this.#applyReplayEntry(entry);
       }
       this.match.step();
       this.match.consumeEvents();
@@ -166,6 +166,30 @@ class LobbySession {
     }
     for (const entry of entries) this.recorder.recordInput(entry);
     this.recorder.finalize(this.match.world.tickCount);
+  }
+
+  /**
+   * Wendet EINEN Aufzeichnungseintrag an — je nach Art (wie `ReplayPlayer`).
+   *
+   * Fund (belegt): Hier stand ausschließlich `match.fire(...)`. Eine
+   * Aufzeichnung mit Sprung oder Abwurf wurde bei der Wiederherstellung deshalb
+   * STILL unvollständig nachgespielt: Der Sprung fehlte (die Figur stand
+   * woanders), der Abwurf fehlte (der Zufallsstrom war verschoben, damit auch
+   * der Wind). Ohne diesen Zweig wäre jeder Serverneustart nach einem
+   * Online-Sprung ein stiller Zustandsverlust.
+   *
+   * RÜCKWÄRTSKOMPATIBILITÄT: Ein Eintrag ohne `kind` ist ein Schuss.
+   */
+  #applyReplayEntry(entry) {
+    if (entry.kind === 'jump') {
+      this.match.jump(entry.playerId, entry.seitlich ?? 0);
+      return;
+    }
+    if (entry.kind === 'drop') {
+      this.match.dropWeapon(entry.playerId, entry.weaponId);
+      return;
+    }
+    this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
   }
 
   /** Momentaufnahme für die Persistenz. */
@@ -470,6 +494,107 @@ class LobbySession {
     if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
     const ok = this.match.inventory.selectWeapon(seat.entityId, weaponId);
     return { ok, errors: ok ? [] : ['Waffe nicht verfügbar'] };
+  }
+
+  /**
+   * Führt einen Sprung aus.
+   *
+   * Eigene Steuernachricht statt eines `kind`-Feldes in `INPUT`: Der Sprung ist
+   * kein Schuss mit anderen Zahlen, sondern eine eigene Handlung — genauso, wie
+   * `SELECT_WEAPON` trotz `weaponId` in `INPUT` ein eigener Befehl ist. Das
+   * `tick`-Feld der Schussnachricht wird hier bewusst NICHT verlangt: Der
+   * Impuls ist sofort und autoritativ, es gibt nichts zu interpolieren.
+   *
+   * Die Identität kommt AUS DEM TOKEN (`#platzFuer`), nie aus der Nachricht. Die
+   * Figurenzustands-Prüfungen (am Boden, höchstens zwei je Zug, am Zug) liegen
+   * im Motor — hier wird NICHTS doppelt gezählt (Regel „eine Regel, eine
+   * Stelle").
+   *
+   * @param {string} token
+   * @param {object} message - Felder `seitlich` (-1|0|1); alles andere wird ignoriert
+   * @returns {{ok:boolean, errors?:string[]}}
+   */
+  handleJump(token, message = {}) {
+    const result = this.#handleJump(token, message);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  #handleJump(token, message) {
+    const seat = this.#platzFuer(token);
+    if (!seat || seat.entityId === null) {
+      return { ok: false, errors: ['Kein Spielerplatz'] };
+    }
+
+    /*
+     * Die Richtung wird TYPGEprüft, nicht geklemmt.
+     *
+     * Der Motor klemmt mit `Math.max(-1, Math.min(1, Number(horizontal) || 0))`
+     * — das ist Toleranz, keine Prüfung: `Number('1e9')` würde still zu `1`, aus
+     * Unsinn ein gültiger Sprung. Die Projektregel „`Number(x)` ist keine
+     * Typprüfung" (`validation.js`) gilt hier genauso. Fehlt das Feld, gilt `0`
+     * (gerade).
+     */
+    const seitlich = message.seitlich ?? 0;
+    if (typeof seitlich !== 'number' || !Number.isInteger(seitlich) || seitlich < -1 || seitlich > 1) {
+      return { ok: false, errors: ['seitlich muss -1, 0 oder 1 sein'] };
+    }
+
+    const result = this.match.jump(seat.entityId, seitlich);
+    if (result.ok) {
+      this.recorder.recordInput({
+        tick: this.match.world.tickCount,
+        playerId: seat.entityId,
+        seitlich,
+        kind: 'jump',
+      });
+    }
+    return { ok: result.ok, errors: result.errors ?? [] };
+  }
+
+  /**
+   * Wirft eine Waffe ab.
+   *
+   * Wie `handleJump` eine eigene Steuernachricht. Die Zugehörigkeit der Waffe
+   * entscheidet der Motor über die `playerId` aus dem TOKEN
+   * (`inventory.removeWeapon`), nicht über die Waffe allein — ein Client kann
+   * also keine fremde Waffe abwerfen.
+   *
+   * @param {string} token
+   * @param {string} weaponId
+   * @returns {{ok:boolean, errors?:string[]}}
+   */
+  handleDropWeapon(token, weaponId) {
+    const result = this.#handleDropWeapon(token, weaponId);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  #handleDropWeapon(token, weaponId) {
+    const seat = this.#platzFuer(token);
+    if (!seat || seat.entityId === null) {
+      return { ok: false, errors: ['Kein Spielerplatz'] };
+    }
+    if (typeof weaponId !== 'string' || weaponId.length === 0) {
+      return { ok: false, errors: ['weaponId muss eine Zeichenkette sein'] };
+    }
+
+    const result = this.match.dropWeapon(seat.entityId, weaponId);
+    if (result.ok) {
+      this.recorder.recordInput({
+        tick: this.match.world.tickCount,
+        playerId: seat.entityId,
+        weaponId,
+        kind: 'drop',
+      });
+    }
+    return { ok: result.ok, errors: result.errors ?? [] };
   }
 
   /**
@@ -1163,6 +1288,22 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleWeaponSelect(context.token, message.weaponId);
+            if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            break;
+          }
+
+          case CONTROL.JUMP: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = session.handleJump(context.token, message);
+            if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            break;
+          }
+
+          case CONTROL.DROP_WEAPON: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = session.handleDropWeapon(context.token, message.weaponId);
             if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
             break;
           }

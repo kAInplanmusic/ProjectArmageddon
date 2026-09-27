@@ -90,6 +90,8 @@ export const CONTROL = Object.freeze({
   START_MATCH: 'start_match',
   INPUT: 'input',
   SELECT_WEAPON: 'select_weapon',
+  JUMP: 'jump',
+  DROP_WEAPON: 'drop_weapon',
   RESUME: 'resume',
   ERROR: 'error',
   PING: 'ping',

@@ -600,3 +600,187 @@ test('Ein Client kann nicht mehrfach im selben Zug schießen', { timeout: 30_000
     await server.close();
   }
 });
+
+/**
+ * Lobby mit zwei verbundenen Menschen und SEHR langer Zugzeit.
+ *
+ * Wichtig für die Sprungtests: Ohne lange Zugzeit reicht der Server den Zug
+ * weiter, während der Test noch prüft — und die Zusicherungen liefen gegen einen
+ * falschen aktiven Spieler. Zwei VERBUNDENE Clients (kein Bot) halten den Zug
+ * zudem stehen, solange niemand feuert.
+ */
+async function langeLobby(url, baseUrl) {
+  const erzeugt = await lobbyErzeugen(baseUrl, { turnDurationMs: 600_000 });
+  const lobbyId = erzeugt.lobby.id;
+
+  const a = new TestClient(url);
+  await a.open();
+  a.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'Anna', token: erzeugt.player?.token });
+  const welcomeA = await a.waitFor(CONTROL.WELCOME);
+
+  const b = new TestClient(url);
+  await b.open();
+  b.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'Bert' });
+  const welcomeB = await b.waitFor(CONTROL.WELCOME);
+
+  a.send(CONTROL.START_MATCH, {});
+  await new Promise(r => setTimeout(r, 700));
+
+  return { lobbyId, a, b, entityA: welcomeA.entityId, entityB: welcomeB.entityId };
+}
+
+test('Der Client kann keinen Sprung für eine fremde Figur auslösen', { timeout: 30_000 }, async () => {
+  /*
+   * Dieselbe Eigenschaft wie beim Schuss: Der Sprung gehört dem, dessen TOKEN
+   * ihn schickt. Der Client schickt eine gefälschte `playerId` mit — der Server
+   * darf sie nicht lesen. Ohne das könnte jeder die Figur des Gegners (oder des
+   * aktiven Spielers) über die Karte springen lassen.
+   */
+  const { server, url } = await starteServer();
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { a, b, entityA } = await langeLobby(wsUrl, url);
+
+    const snap = await warteAufSnapshot(a);
+    assert.equal(snap.activePlayerId, entityA, 'Der erste Zug muss bei A liegen');
+
+    // B ist NICHT am Zug und gibt sich als A aus.
+    b.drainErrors();
+    b.sendRaw(JSON.stringify({
+      t: CONTROL.JUMP, seitlich: 0, playerId: entityA,
+    }));
+
+    const fehler = await b.sammleFehler(800);
+    assert.ok(fehler.length >= 1, 'Ein Sprung der fremden Figur wurde nicht abgelehnt');
+    const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
+    assert.match(grund, /aktive Spieler kann springen|nicht am Zug/i,
+      `Ablehnung aus dem falschen Grund: ${grund}`);
+  } finally {
+    await server.close();
+  }
+});
+
+test('Die Sprungrichtung wird TYPGEPRÜFT, nicht still geklemmt', { timeout: 30_000 }, async () => {
+  /*
+   * Der Motor klemmt mit `Number(horizontal) || 0`. Das ist Toleranz, keine
+   * Prüfung: `Number('1e9')` würde still zu 1, aus Unsinn würde ein gültiger
+   * Sprung. Der Handler muss Typ und Bereich prüfen — dieselbe Regel wie bei
+   * Winkel und Kraft („Number(x) ist keine Typprüfung").
+   *
+   * `1e9` ist bewusst dabei: Es ist eine GANZZAHL und rutscht an
+   * `Number.isInteger` vorbei — nur die Bereichsprüfung fängt es.
+   */
+  const { server, url } = await starteServer();
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { a, entityA } = await langeLobby(wsUrl, url);
+
+    const snap = await warteAufSnapshot(a);
+    assert.equal(snap.activePlayerId, entityA, 'A muss am Zug sein');
+
+    const angriffe = ['rechts', 1e9, -1e9, true, 1.5, -2, 2, [], {}];
+    a.drainErrors();
+    for (const seitlich of angriffe) {
+      a.sendRaw(JSON.stringify({ t: CONTROL.JUMP, seitlich }));
+      await new Promise(r => setTimeout(r, 20));
+    }
+
+    const fehler = await a.sammleFehler(900);
+    assert.ok(fehler.length >= angriffe.length,
+      `Nur ${fehler.length} von ${angriffe.length} unsinnigen Richtungen wurden abgelehnt`);
+    const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
+    assert.match(grund, /seitlich muss/i,
+      `Der Handler prüfte den Typ nicht, sondern ließ den Motor klemmen: ${grund}`);
+  } finally {
+    await server.close();
+  }
+});
+
+test('Ein dritter Sprung im selben Zug wird abgelehnt', { timeout: 30_000 }, async () => {
+  /*
+   * Der Motor erlaubt zwei Sprünge je Zug (Bodensprung + Doppelsprung). Das
+   * Zählen liegt AUSSCHLIESSLICH im Motor (`#jumpsUsed`) — der Server zählt
+   * nichts nach. Dieser Test prüft, dass die Grenze überhaupt greift und dass die
+   * Ablehnung als `errors`-Liste zurückkommt.
+   *
+   * Der erste Sprung braucht festen Boden: Die Figur startet auf Kopfhöhe und
+   * muss erst fallen. Deshalb wird der erste Sprung wiederholt, bis er greift —
+   * ABER nur bei der Boden-Ablehnung (jeder andere Fehler ist ein echter Fehler).
+   */
+  const { server, url } = await starteServer();
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { a, entityA } = await langeLobby(wsUrl, url);
+
+    const snap = await warteAufSnapshot(a);
+    assert.equal(snap.activePlayerId, entityA, 'A muss am Zug sein');
+
+    let ersterSprung = false;
+    for (let i = 0; i < 25 && !ersterSprung; i += 1) {
+      a.drainErrors();
+      a.send(CONTROL.JUMP, { seitlich: 0 });
+      await new Promise(r => setTimeout(r, 120));
+      const fehler = a.drainErrors();
+      if (fehler.length === 0) {
+        ersterSprung = true;
+        break;
+      }
+      const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
+      assert.match(grund, /In der Luft/i,
+        `Erster Sprung aus unerwartetem Grund abgelehnt: ${grund}`);
+    }
+    assert.ok(ersterSprung, 'Vorbedingung: der erste Sprung muss irgendwann greifen');
+
+    // Der Doppelsprung ist erlaubt, der dritte nicht mehr.
+    a.drainErrors();
+    a.send(CONTROL.JUMP, { seitlich: 0 });
+    await new Promise(r => setTimeout(r, 80));
+    a.send(CONTROL.JUMP, { seitlich: 0 });
+
+    const fehler = await a.sammleFehler(800);
+    assert.ok(fehler.length >= 1, 'Der dritte Sprung im selben Zug wurde nicht abgelehnt');
+    const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
+    assert.match(grund, /Keine Sprünge mehr/i,
+      `Ablehnung aus dem falschen Grund: ${grund}`);
+  } finally {
+    await server.close();
+  }
+});
+
+test('Der Client kann keine FREMDE Waffe abwerfen', { timeout: 30_000 }, async () => {
+  /*
+   * Der Abwurf ist NEU über den Draht (`CONTROL.DROP_WEAPON`) und hatte in dieser
+   * Datei noch keine Prüfung. Die Zugehörigkeit entscheidet das Inventar über die
+   * `playerId` — und die kommt aus dem TOKEN.
+   *
+   * Geprüft wird der schärfere Fall: Client A wirft eine Waffe ab, die ER NICHT
+   * besitzt (aber vielleicht der Gegner). Ohne die Token-Bindung ließe sich so
+   * fremdes Material auf die Karte werfen.
+   */
+  const { server, url } = await starteServer();
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { a, entityA } = await langeLobby(wsUrl, url);
+
+    // Eine gültige Waffe suchen, die A sicher NICHT führt.
+    const besessen = new Set(a.controls
+      .filter(m => m.t === CONTROL.LOADOUTS)
+      .flatMap(m => Object.values(m.loadouts ?? {}))
+      .flatMap(l => l?.inventory ?? []));
+    const fremde = WEAPONS.find(w => !besessen.has(w.id));
+    assert.ok(fremde, 'Keine nicht besessene Waffe gefunden');
+    void entityA;
+
+    a.drainErrors();
+    a.send(CONTROL.DROP_WEAPON, { weaponId: fremde.id });
+
+    const fehler = await a.sammleFehler(800);
+    assert.ok(fehler.length >= 1,
+      `Der Abwurf der nicht besessenen Waffe „${fremde.id}" wurde angenommen`);
+    const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
+    assert.match(grund, /nicht geführt|Unbekannte Waffe/i,
+      `Ablehnung aus dem falschen Grund: ${grund}`);
+  } finally {
+    await server.close();
+  }
+});

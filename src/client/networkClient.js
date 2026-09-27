@@ -450,6 +450,38 @@ export class NetworkClient {
     return true;
   }
 
+  /**
+   * Meldet einen Sprung an den Server.
+   *
+   * Eigene Nachricht, kein Feld in `INPUT` — und KEIN `tick`: Der Sprung wird
+   * nicht interpoliert, sein Impuls ist sofort und autoritativ. Der Server
+   * entscheidet anhand des Tokens, welche Figur springt.
+   *
+   * @param {number} [seitlich=0] - -1 links, 0 gerade, 1 rechts
+   * @returns {boolean} ob die Nachricht abgeschickt wurde
+   */
+  sendJump(seitlich = 0) {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.JUMP, { seitlich }));
+    return true;
+  }
+
+  /**
+   * Meldet einen Waffenabwurf an den Server.
+   *
+   * Dem Server wird NUR die Waffe genannt — nicht der Spieler: Die Zugehörigkeit
+   * prüft er anhand des Tokens. Die Kiste landet im Snapshot (seit Protokoll v5)
+   * und ist damit ohnehin für alle sichtbar.
+   *
+   * @param {string} weaponId
+   * @returns {boolean} ob die Nachricht abgeschickt wurde
+   */
+  sendDropWeapon(weaponId) {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.DROP_WEAPON, { weaponId }));
+    return true;
+  }
+
   ping() {
     if (!this.isConnected || !this.#socket) return;
     this.#lastPingAt = performance.now();

@@ -421,11 +421,22 @@ export const EREIGNIS_WIRKUNGEN = {
     k.hud.log(`${k.nameOf(n.playerId)} ist in ein Häufchen getreten`, 'danger');
   }),
 
-  jumped: {
-    lokal: (k, n) => {
-      k.hud.log(`${k.nameOf(n.playerId)} springt${n.double ? ' (Doppelsprung)' : ''}`, 'accent');
-    },
-  },
+  /*
+   * Sprung — in BEIDEN Betriebsarten.
+   *
+   * Lokal entsteht das Ereignis im eigenen Motor, online kommt es vom Server
+   * (`src/server/gameServer.js` schickt jedes Motorereignis als Steuernachricht).
+   * Bis O8 gab es NUR den lokalen Zweig: online sprang niemand, also fiel nichts
+   * auf — sobald der Server einen Sprung ausführt, wäre der Zweig aber der
+   * einzige Ort, an dem der Spieler erfährt, dass seine Figur fliegt.
+   *
+   * GENAU EINE Meldung je Sprung: Der Client loggt im Online-Pfad NICHT selbst
+   * (`Main#jump` sendet nur den Befehl) — sonst stünde dieselbe Handlung zweimal
+   * im Live-Bereich. Der Text kommt aus `n.double`, wie lokal.
+   */
+  jumped: beide((k, n) => {
+    k.hud.log(`${k.nameOf(n.playerId)} springt${n.double ? ' (Doppelsprung)' : ''}`, 'accent');
+  }),
 
   /*
    * Landung nach Sprung oder Fall — in BEIDEN Betriebsarten.
@@ -447,34 +458,41 @@ export const EREIGNIS_WIRKUNGEN = {
   },
 
   /*
-   * Voller Vorrat: Die Kiste bleibt liegen. Der GRUND ist in beiden
-   * Betriebsarten derselbe — die AUFFORDERUNG nicht.
+   * Abgeworfene Waffe — ONLINE.
    *
-   * Lokal nennt die Meldung die Taste (Q), denn dort gibt es das Abwerfen:
-   * `Main#dropWeapon` läuft nur im lokalen Match (`src/client/main.js:817`),
-   * dieselbe Stelle steigt sonst vorzeitig aus — `src/client/main.js:818`:
-   * `if (!this.match || this.mode !== 'local')` samt eigener Meldung
-   * „Abwerfen ist nur im lokalen Match möglich". Online gibt es KEINEN
-   * Abwerf-Weg im Client (kein Aufrufer von `dropWeapon` außer der lokalen
-   * Tastenzuordnung `main.js:178`).
+   * Lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition,
+   * Listenaktualisierung), deshalb gibt es hier KEINEN lokalen Zweig: eine
+   * zweite Zeile wäre eine Dopplung.
    *
-   * Deshalb steht die Q-Aufforderung NUR im lokalen Zweig: Eine online
-   * angezeigte „(Q)"-Aufforderung verspräche eine Taste, die dort nichts tut.
-   * Der Online-Text benennt nur den Zustand. — Vorher hatte
-   * `crate_pickup_blocked` NUR den lokalen Zweig: Online kam das Ereignis an
-   * (`src/server/gameServer.js:246–248`) und fiel bei der Wirkung weg; der
-   * Spieler konnte nicht aufnehmen und erfuhr keinen Grund.
+   * Online gilt diese Begründung NICHT: Dort gibt es keinen lokalen
+   * `dropWeapon`-Erfolgspfad — der Server führt den Abwurf aus. Ohne diesen
+   * Zweig fiele `weapon_dropped` STUMM weg, und der Spieler sähe nur eine neue
+   * Kiste ohne genannten Grund.
    */
-  crate_pickup_blocked: {
-    lokal: (k) => {
-      // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
-      k.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
-    },
-    online: (k) => {
-      // Online gibt es kein Abwerfen — nur der Zustand, keine Taste.
-      k.hud.log('Vorrat voll — die Waffe kann nicht aufgenommen werden', 'danger');
+  weapon_dropped: {
+    online: (k, n) => {
+      const name = getWeapon(n.weaponId)?.displayName ?? n.weaponId;
+      const vorrat = n.ammo < 0 ? '∞' : n.ammo;
+      k.hud.log(`${k.nameOf(n.playerId)} wirft ${name} ab (${vorrat} Munition)`, 'accent');
     },
   },
+
+  /*
+   * Voller Vorrat: Die Kiste bleibt liegen — die AUFFORDERUNG gilt jetzt in
+   * beiden Betriebsarten.
+   *
+   * Vor O8 war sie NUR lokal richtig: `Main#dropWeapon` stieg online stumm aus
+   * (`mode !== 'local'`), deshalb nannte nur der lokale Zweig die Taste (Q), und
+   * der Online-Text benannte bloß den Zustand. Seit O8 gibt es einen
+   * Abwerf-Weg online (`CONTROL.DROP_WEAPON`) — die Taste wirkt dort genauso wie
+   * lokal, also darf und muss die Aufforderung in beiden Zweigen stehen. Ein
+   * Online-Text ohne Handlung ließe den Spieler mit vollem Vorrat ohne Ausweg
+   * zurück.
+   */
+  crate_pickup_blocked: beide((k) => {
+    // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
+    k.hud.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
+  }),
 
   /*
    * Kiste aufgenommen — in BEIDEN Betriebsarten, NUR der Name kommt anders.

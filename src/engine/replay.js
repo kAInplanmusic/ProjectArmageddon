@@ -108,14 +108,29 @@ export class ReplayRecorder {
 
   /**
    * Zeichnet eine angewendete Eingabe auf.
+   *
+   * Das Format kennt MEHRERE Eingabearten. Der Schuss ist die älteste; er trägt
+   * `angle`/`power`. Der Sprung trägt `seitlich`, der Abwurf `weaponId`. Das
+   * `kind` steht IM EINTRAG (nicht im Kopf): Die Art ist je Eingabe verschieden,
+   * und ein Kopf-Feld „alle Eingaben sind Schüsse" wäre Rauschen (siehe die
+   * Regel bei den Kopf-Feldern oben).
+   *
+   * RÜCKWÄRTSKOMPATIBILITÄT: Ein Eintrag OHNE `kind` wird als SCHUSS gelesen
+   * (Standardwert `'shot'`). Das ist keine Bequemlichkeit, sondern die
+   * Voraussetzung dafür, dass bereits gespeicherte Aufzeichnungen — und damit die
+   * Sitzungswiederherstellung nach einem Serverneustart — weiter lesbar sind.
+   * Ein strenger Leser machte ALLE alten Aufzeichnungen unbrauchbar.
+   *
    * @param {object} entry
    * @param {number} entry.tick - Tick, bei dem die Eingabe wirkte
    * @param {number} entry.playerId
-   * @param {number} entry.angle
-   * @param {number} entry.power
-   * @param {string|null} [entry.weaponId]
+   * @param {number} [entry.angle] - Winkel (bei Schüssen)
+   * @param {number} [entry.power] - Kraft (bei Schüssen)
+   * @param {string|null} [entry.weaponId] - Waffentyp (bei Schüssen UND beim Abwurf)
+   * @param {number} [entry.seitlich] - Richtung des Sprungs (−1, 0, 1)
+   * @param {'shot'|'jump'|'drop'} [entry.kind='shot'] - Art der Eingabe
    */
-  recordInput({ tick, playerId, angle, power, weaponId = null }) {
+  recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, kind = 'shot' }) {
     if (!Number.isInteger(tick) || tick < 0) {
       throw new TypeError('tick muss eine nichtnegative Ganzzahl sein');
     }
@@ -137,13 +152,24 @@ export class ReplayRecorder {
      * Fehlersuche, Anti-Cheat). Die Datei wird dadurch wenige Prozent größer —
      * das ist der Genauigkeit angemessen.
      */
-    this.#entries.push({
-      tick,
-      playerId,
-      angle,
-      power,
-      weaponId: weaponId ?? null,
-    });
+    const eintrag = { tick, playerId, kind };
+    if (kind === 'jump') {
+      /*
+       * Der Sprung trägt NUR die Richtung — kein Winkel, keine Kraft. Der Impuls
+       * selbst wird im Motor aus Figurenzustand, Klasse und Zugzähler gerechnet
+       * (siehe `MatchController.jump`); ihn hier festzuhalten hieße, die Physik
+       * ein zweites Mal zu führen und bei der ersten Balance-Änderung falsch zu
+       * liegen.
+       */
+      eintrag.seitlich = Math.max(-1, Math.min(1, Math.trunc(seitlich) || 0));
+    } else if (kind === 'drop') {
+      eintrag.weaponId = weaponId ?? null;
+    } else {
+      eintrag.angle = angle;
+      eintrag.power = power;
+      eintrag.weaponId = weaponId ?? null;
+    }
+    this.#entries.push(eintrag);
     return this;
   }
 
@@ -362,6 +388,33 @@ export class ReplayPlayer {
   }
 
   /**
+   * Wendet EINE aufgezeichnete Eingabe an — je nach Art.
+   *
+   * Der Wiedergabepfad kannte früher ausschließlich `match.fire(...)`. Damit
+   * konnte eine Aufzeichnung einen Sprung oder einen Abwurf GAR NICHT
+   * wiedergeben: Sie sind Simulationszustand (der Sprung setzt `Velocity`, der
+   * Abwurf verschiebt über den Wurf den Zufallsstrom und damit den Wind), aber
+   * das Format hatte keinen Platz für sie.
+   *
+   * RÜCKWÄRTSKOMPATIBILITÄT: `entry.kind` fehlt in allen älteren Aufzeichnungen.
+   * Der Vergleich läuft deshalb gegen `'jump'`/`'drop'` mit Standardfall
+   * SCHUSS — ein Eintrag ohne `kind` wird wie bisher geschossen. Ein strenger
+   * Leser würde hier alle vorhandenen Aufzeichnungen unbrauchbar machen.
+   *
+   * @param {object} entry - Eintrag aus `ReplayRecorder#entries`
+   * @returns {{ok:boolean, errors?:string[]}} Ergebnis des Motors
+   */
+  #wendeEingabeAn(entry) {
+    if (entry.kind === 'jump') {
+      return this.match.jump(entry.playerId, entry.seitlich ?? 0);
+    }
+    if (entry.kind === 'drop') {
+      return this.match.dropWeapon(entry.playerId, entry.weaponId);
+    }
+    return this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
+  }
+
+  /**
    * Wendet einen Simulationstakt an.
    * @returns {boolean} false, wenn nichts mehr zu tun ist
    */
@@ -390,7 +443,7 @@ export class ReplayPlayer {
     if (tick > this.letzterEingabeTakt) {
       this.letzterEingabeTakt = tick;
       for (const entry of this.byTick.get(tick) ?? []) {
-        const result = this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId);
+        const result = this.#wendeEingabeAn(entry);
         if (result.ok) this.appliedInputs += 1;
         else this.rejected.push({ tick, entry, errors: result.errors });
       }

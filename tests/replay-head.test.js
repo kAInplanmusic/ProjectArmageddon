@@ -205,3 +205,62 @@ test('Der Kopf-Kommentar nennt die beiden heiklen Felder', () => {
   assert.match(text, /sidegrades/, 'der Kopf-Kommentar erwähnt sidegrades nicht');
   assert.match(text, /loadouts/, 'der Kopf-Kommentar erwähnt loadouts nicht');
 });
+
+test('Ein Eintrag OHNE `kind` wird als SCHUSS gelesen (Abwärtskompatibilität)', () => {
+  /*
+   * Das Replay-Format kennt seit O8 Eingabearten (`kind`: shot/jump/drop). Alle
+   * VORHER gespeicherten Aufzeichnungen haben kein `kind` — und sie müssen
+   * weiter lesbar sein, sonst wären sie und die Sitzungswiederherstellung nach
+   * einem Serverneustart unbrauchbar.
+   *
+   * Der Test spielt ein echtes Match, zeichnet Schüsse auf und ENTFERNT danach
+   * das `kind`-Feld aus jedem Eintrag — genau der Zustand einer alten Datei.
+   * Die Wiedergabe muss denselben Zustandshash ergeben.
+   */
+  const match = new MatchController({
+    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'hills',
+    turnDurationMs: 1_000_000, maxRounds: 20,
+  });
+  match.start();
+
+  const recorder = new ReplayRecorder({
+    seed: match.seedManager.baseSeed,
+    teams: match.teams,
+    playersPerTeam: match.playersPerTeam,
+    preset: match.preset,
+    maxRounds: match.maxRounds,
+    turnDurationMs: match.turnDurationMs,
+  });
+
+  let schuesse = 0;
+  let ticks = 0;
+  while (match.status === 'playing' && ticks < 60_000 && schuesse < 10) {
+    const state = match.getState();
+    if (state.activePlayerId !== null && state.turnElapsedMs < 16) {
+      const angle = Math.PI / 4 + (schuesse % 7) * 0.05;
+      const power = 55 + (schuesse % 5) * 7;
+      if (match.fire(state.activePlayerId, angle, power).ok) {
+        recorder.recordInput({
+          tick: match.world.tickCount, playerId: state.activePlayerId, angle, power,
+        });
+        schuesse += 1;
+      }
+    }
+    match.step();
+    match.consumeEvents();
+    ticks += 1;
+  }
+  recorder.finalize(match.world.tickCount);
+  const hash = match.stateHash();
+
+  const alt = JSON.parse(JSON.stringify(recorder.toJSON()));
+  // Das `kind`-Feld entfernen: Das ist der Aufbau einer VOR-O8-Aufzeichnung.
+  for (const entry of alt.entries) delete entry.kind;
+  assert.ok(alt.entries.every(e => !('kind' in e)), 'Testannahme: kein Eintrag trägt kind');
+
+  const ergebnis = playReplay(alt);
+  assert.equal(ergebnis.rejected.length, 0,
+    'Ein Eintrag ohne kind darf NICHT als ungültig gelten');
+  assert.equal(ergebnis.match.stateHash(), hash,
+    'Eine Aufzeichnung ohne kind muss exakt wie bisher wiedergegeben werden');
+});

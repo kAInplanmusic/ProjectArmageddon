@@ -1,59 +1,35 @@
 /**
- * BEFUND-WACHE: Ein Sprung ist in einer Aufzeichnung NICHT reproduzierbar.
+ * WACHE: Ein Sprung MUSS in einer Aufzeichnung reproduzierbar sein.
  *
- * ## Der Befund, gemessen
+ * ## Der Befund, der zu dieser Datei fuehrte (gemessen 2026-09-26)
  *
- * Aufgezeichnet werden kann nur EIN Ding: ein Schuss.
+ * Aufgezeichnet werden konnte nur EIN Ding: ein Schuss.
  * `ReplayRecorder.recordInput({ tick, playerId, angle, power, weaponId })`
- * (`src/engine/replay.js:118`) — und der Wiedergabepfad ruft ausschliesslich
- * `match.fire(...)` (`:393`). Fuer einen Sprung hat das Format keinen Platz.
+ * — und der Wiedergabepfad rief ausschliesslich `match.fire(...)`. Fuer einen
+ * Sprung hatte das Format keinen Platz.
  *
  * Der Sprung ist aber SIMULATIONSZUSTAND: `MatchController.jump()` setzt einen
  * Geschwindigkeitsimpuls (`Velocity.y`), die Figur fliegt danach unter
- * Schwerkraft. Er veraendert also den Spielverlauf — und wird nicht aufgezeichnet.
- *
- * ## Gemessen (Sonde, 2026-09-26)
- *
- * Zwei Partien, identischer Seed, identische Konfiguration, identische Schussfolge.
- * In der zweiten Partie zusaetzlich EIN Sprung (nur wenn `isGrounded()` es erlaubt):
+ * Schwerkraft. Er veraendert also den Spielverlauf — und wurde nicht
+ * aufgezeichnet.
  *
  *     ohne Sprung   Hash nach Aufzeichnung b528e643  -> Wiedergabe b528e643  REPRODUZIERBAR
  *     mit  Sprung   Hash nach Aufzeichnung 380b5ef8  -> Wiedergabe c7576510  ABWEICHUNG
  *
- * Und ein zweites Signal, das die Groesse zeigt: mit Sprung wurden beim
- * Abspielen **3 von 12** aufgezeichneten Schuessen ABGELEHNT — das Match ist so
- * weit auseinandergelaufen, dass die Aufzeichnung nicht mehr zum Takt passt.
+ * ## Was daraus wurde (O8)
  *
- * ## Warum das heute niemanden trifft
+ * Das Replay-Format kennt jetzt MEHRERE Eingabearten (`kind`): Schuss, Sprung
+ * und Abwurf (`src/engine/replay.js`). Der Server zeichnet Sprung und Abwurf auf
+ * (`gameServer.js`), und die Wiedergabe wendet sie ueber `#wendeEingabeAn` an.
  *
- *  - `scripts/replay.mjs` schiesst nur und springt nie — seine Aufzeichnungen
- *    verifizieren deshalb.
- *  - ONLINE kann niemand springen: `src/client/main.js:793-794` steigt bei
- *    `mode !== 'local'` STUMM aus, und das `CONTROL`-Protokoll kennt keinen
- *    Sprungbefehl. Eine Serveraufzeichnung kann also keinen Sprung enthalten.
- *  - Eine LOKAL gespielte Partie mit Sprung wird nicht aufgezeichnet, weil nur
- *    `scripts/replay.mjs` aufzeichnet — und das springt nicht.
- *
- * Der Befund ist damit LATENT: er wartet auf den ersten, der springt und dabei
- * aufzeichnet.
- *
- * ## Warum diese Wache existiert — und wann sie UMZUDREHEN ist
- *
- * Sie haelt den Ist-Zustand fest. Der naechste, der Online-Springen baut
- * (Befund O8, `docs/auftraege/online-sprung-und-abwurf.md`), wird hier ROT und
- * liest, was zu tun ist:
- *
- *   **Das Replay-Format muss den Sprung aufnehmen** (eine Eingabeart neben dem
- *   Schuss), UND der Server muss ihn aufzeichnen. Danach wird aus dieser Wache
- *   eine Gleichheits-Zusicherung: dieselbe Partie mit Sprung muss reproduzierbar
- *   sein.
- *
- * Wer diese Datei loescht, statt sie umzudrehen, nimmt den Befund mit.
+ * **Diese Wache ist damit UMGEDREHT** — aus „der Sprung ist NICHT
+ * reproduzierbar" wurde „der Sprung IST reproduzierbar". Der Kopfkommentar hielt
+ * das ausdruecklich fest: Die Datei wurde nicht geloescht, sondern umgedreht.
  *
  * ## Reichweite
  *
- * Gemessen wird der MOTOR, ohne Browser und ohne Server. Der Befund ist damit
- * eine Eigenschaft des Aufzeichnungsformats, nicht des Netzwerkwegs.
+ * Gemessen wird der MOTOR, ohne Browser und ohne Server. Die Wiedergabe ist
+ * damit eine Eigenschaft des Aufzeichnungsformats, nicht des Netzwerkwegs.
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -71,7 +47,8 @@ const KONFIG = Object.freeze({
 });
 
 /**
- * Spielt eine Partie und zeichnet nur das auf, was der Recorder kann: Schuesse.
+ * Spielt eine Partie und zeichnet auf, was der Recorder kann: Schuesse und
+ * (optional) EINEN Sprung.
  *
  * @param {boolean} mitSprung - ob zusaetzlich EINMAL gesprungen wird
  * @returns {{document: object, spruenge: number, schuesse: number, hash: string}}
@@ -95,10 +72,19 @@ function partie(mitSprung) {
        * `jump()` lehnt ab, wenn die Figur nicht am Boden steht ("In der Luft ist
        * kein erster Sprung moeglich"): Eine Figur auf `boden - 12` (Kopfhoehe)
        * muss erst fallen. Deshalb wird `isGrounded()` abgewartet statt geraten.
+       *
+       * Seit O8 wird der Sprung AUFGEZEICHNET (`kind: 'jump'`) — vorher fehlte er
+       * im Format, und die Wiedergabe lief auseinander.
        */
       if (mitSprung && spruenge === 0 && schuesse === 3 && match.isGrounded(state.activePlayerId)) {
         const ergebnis = match.jump(state.activePlayerId, 1);
-        if (ergebnis.ok) spruenge += 1;
+        if (ergebnis.ok) {
+          recorder.recordInput({
+            tick: match.world.tickCount, playerId: state.activePlayerId,
+            seitlich: 1, kind: 'jump',
+          });
+          spruenge += 1;
+        }
       }
 
       const angle = Math.PI / 4 + (schuesse % 9) * 0.05;
@@ -136,9 +122,9 @@ function partie(mitSprung) {
 
 test('Die Gegenprobe: OHNE Sprung ist die Aufzeichnung reproduzierbar', () => {
   /*
-   * Ohne diesen Test waere der Befund unten nicht aussagekraeftig — er koennte
-   * auch heissen "Aufzeichnung funktioniert generell nicht". Erst der
-   * Unterschied zwischen den beiden Faellen zeigt, dass es der SPRUNG ist.
+   * Ohne diesen Test waere die Zusicherung unten nicht aussagekraeftig — sie
+   * koennte auch heissen "Aufzeichnung funktioniert generell nicht". Erst die
+   * Gleichheit in beiden Faellen zeigt, dass die Aufzeichnung traegt.
    */
   const { document, spruenge, hash } = partie(false);
   assert.equal(spruenge, 0, 'Vorbedingung: in diesem Lauf wird nicht gesprungen');
@@ -150,7 +136,7 @@ test('Die Gegenprobe: OHNE Sprung ist die Aufzeichnung reproduzierbar', () => {
   assert.equal(zurueck.world.tickCount, document.expected.tick, 'Auch der Takt muss stimmen');
 });
 
-test('BEFUND: Ein Sprung ist NICHT aufzeichenbar und macht die Wiedergabe abweichend', () => {
+test('Ein aufgezeichneter Sprung ist reproduzierbar (O8)', () => {
   const { document, spruenge, hash } = partie(true);
   /*
    * Vorbedingung scharf pruefen: Wenn der Sprung nicht ausgeloest wurde, misst
@@ -158,28 +144,28 @@ test('BEFUND: Ein Sprung ist NICHT aufzeichenbar und macht die Wiedergabe abweic
    * Test — er saehe wie Bestaetigung aus.
    */
   assert.equal(spruenge, 1, 'Vorbedingung: der Sprung MUSS ausgeloest worden sein');
+  assert.ok(document.entries.some(e => e.kind === 'jump'),
+    'Der aufgezeichnete Sprung muss als Eintrag mit kind="jump" im Dokument stehen');
 
   const { match: zurueck, rejected } = playReplay(document, {});
 
-  // 1. Der aufgezeichnete Zustand ist NICHT der wiedergegebene.
-  assert.notEqual(zurueck.stateHash(), hash,
-    'Wenn diese Zusicherung faellt, ist der Sprung aufzeichenbar geworden — '
-    + 'DANN ist diese Wache umzudrehen (Gleichheit fordern), nicht zu loeschen. '
-    + 'Siehe Kopfkommentar.');
+  // Der aufgezeichnete Zustand IST der wiedergegebene — die Umkehrung der alten
+  // Befund-Wache.
+  assert.equal(zurueck.stateHash(), hash,
+    'Der Sprung ist aufzeichenbar — die Wiedergabe muss denselben Zustand ergeben. '
+    + 'Faellt diese Zusicherung, ist das Replay-Format kaputt, nicht der Sprung.');
 
-  // 2. Die Abweichung ist gross genug, dass Aufzeichnungen abgelehnt werden.
-  assert.ok(rejected.length > 0,
-    'Die Abweichung muss sich in abgelehnten Eingaben zeigen — ein reiner '
-    + 'Hash-Unterschied ohne abgelehnte Eingaben waere ein anderer Befund');
+  // Keine Eingabe darf verloren gehen.
+  assert.equal(rejected.length, 0,
+    'Bei reproduzierbarer Wiedergabe darf keine Eingabe abgelehnt werden');
 });
 
-test('Der Recorder kennt genau EINE Eingabeart: den Schuss', () => {
+test('Der Recorder kennt die zweite Eingabeart: den Sprung', () => {
   /*
-   * Der strukturelle Grund des Befunds, an der Quelle geprueft.
-   *
-   * Diese Zusicherung ist absichtlich am QUELLTEXT: Sie faellt, sobald jemand
-   * eine zweite Eingabeart einfuehrt — und zwingt ihn, den Befund oben
-   * mitzunehmen statt ihn zu uebersehen.
+   * Der strukturelle Grund, an der Quelle geprueft — jetzt mit umgekehrtem
+   * Vorzeichen. Frueher stand hier ein Verbot (`doesNotMatch`), das den Befund
+   * festhielt; O8 hat den Befund eingeloest, und der Test fordert jetzt die
+   * zweite Eingabeart.
    */
   const quelle = readFileSync(
     new URL('../src/engine/replay.js', import.meta.url), 'utf8',
@@ -188,7 +174,6 @@ test('Der Recorder kennt genau EINE Eingabeart: den Schuss', () => {
   assert.ok(signatur, 'recordInput muss es geben');
   assert.match(signatur[1], /angle/, 'Der Schuss traegt einen Winkel');
   assert.match(signatur[1], /power/, 'Der Schuss traegt eine Kraft');
-  assert.doesNotMatch(signatur[1], /jump|sprung|kind|type/,
-    'recordInput kennt KEINE Eingabeart und KEINEN Sprung. Wer hier eine zweite '
-    + 'Art ergaenzt, muss den Befund-Test oben umdrehen (siehe Kopfkommentar).');
+  assert.match(signatur[1], /kind/, 'Das Format kennt Eingabearten');
+  assert.match(signatur[1], /seitlich/, 'Der Sprung traegt eine Richtung');
 });

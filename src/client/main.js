@@ -176,7 +176,8 @@ class Game {
       onWeaponSelect: index => this.selectWeapon(index),
       // Aktive Waffe abwerfen (Q).
       onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()),
-      // Springen (Leertaste), mit A/D als Richtung.
+      // Springen (SHIFT), mit A/D als Richtung. NICHT die Leertaste — die lädt
+      // den Schuss auf (siehe `input.js`).
       onJump: seitlich => this.jump(seitlich),
     });
 
@@ -791,6 +792,26 @@ class Game {
    * @param {number} [seitlich] - -1 links, 0 gerade, 1 rechts
    */
   jump(seitlich = 0) {
+    /*
+     * ONLINE: eigener Befehl an den Server — und KEINE eigene Meldung.
+     *
+     * Der Server führt den Sprung aus und schickt das `jumped`-Ereignis an alle
+     * Clients; die Anzeige dafür steht im `online`-Zweig von `ereignisse.js`.
+     * Würde hier zusätzlich geloggt, stünde EIN Sprung zweimal im Protokoll —
+     * genau die Doppelmeldung, die den Live-Bereich zumüllt.
+     */
+    if (this.mode === 'online') {
+      if (!this.network?.isConnected) {
+        this.hud.log('Nicht verbunden', 'danger');
+        return null;
+      }
+      if (!this.network.isMyTurn) {
+        this.hud.log('Nur am eigenen Zug kann gesprungen werden', 'neutral');
+        return null;
+      }
+      this.network.sendJump(seitlich);
+      return { ok: true, pending: true };
+    }
     if (!this.match || this.mode !== 'local') return null;
     const playerId = this.match.activePlayerId;
     if (playerId === null) return null;
@@ -815,8 +836,34 @@ class Game {
    * @param {number} anzeigePosition - Position wie in der Liste (0-basiert)
    */
   dropWeapon(anzeigePosition) {
+    /*
+     * ONLINE: eigener Befehl an den Server — die Meldung kommt aus dem
+     * `weapon_dropped`-Ereignis (siehe `ereignisse.js`), NICHT von hier.
+     *
+     * Die Anzeigeposition wird über die Bestandsliste aufgelöst (dieselbe
+     * Übersetzung wie lokal): Die Liste gliedert nach Gruppen um, der
+     * Inventarindex der aktiven Waffe ist deshalb nicht ihre Anzeigeposition.
+     */
+    if (this.mode === 'online') {
+      if (!this.network?.isConnected) {
+        this.hud.log('Nicht verbunden', 'danger');
+        return null;
+      }
+      if (!this.network.isMyTurn) {
+        this.hud.log('Nur am eigenen Zug kann eine Waffe abgeworfen werden', 'neutral');
+        return null;
+      }
+      const index = this.#inventoryIndexAt(anzeigePosition);
+      if (index === null) return null;
+      const view = this.onlineViewState;
+      const active = view?.entities.find(entity => entity.entityId === view.activePlayerId);
+      const weaponId = active?.inventory?.[index];
+      if (!weaponId) return null;
+      this.network.sendDropWeapon(weaponId);
+      return { ok: true, pending: true };
+    }
     if (!this.match || this.mode !== 'local') {
-      this.hud.log('Abwerfen ist nur im lokalen Match möglich', 'neutral');
+      this.hud.log('Abwerfen ist im Replay nicht möglich', 'neutral');
       return null;
     }
     const index = this.#inventoryIndexAt(anzeigePosition);
