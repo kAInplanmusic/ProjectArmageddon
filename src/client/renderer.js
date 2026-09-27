@@ -12,6 +12,8 @@ import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
+import { LOOT_DROP_RULES } from '../shared/config/loot.js';
+import { RARITY_IDS } from '../engine/systems/lootSystem.js';
 import { prefersReducedMotion } from './dom.js';
 import {
   erzeugePartikel, schreitePartikelFort,
@@ -52,7 +54,6 @@ const BACKDROP_URLS = import.meta.glob('./assets/backdrops/*.jpg', {
 const SKY_TOP = '#0d1b2a';
 const SKY_BOTTOM = '#1b3a4b';
 const CRATE_COLORS = ['#dcdcdc', '#4cc9f0', '#a855f7', '#fbbf24'];
-const RARITY_COLORS = ['#e8eef5', '#4cc9f0', '#a855f7', '#fbbf24'];
 
 export class Renderer {
   constructor(canvas) {
@@ -684,7 +685,11 @@ export class Renderer {
 
   #drawCrates(crates) {
     for (const crate of crates) {
-      const color = RARITY_COLORS[crate.rarity] ?? CRATE_COLORS[0];
+      // Seltenheitsfarbe aus der Config, nicht im Renderer gewaehlt: Die
+      // Liste stand hier ein zweites Mal (`RARITY_COLORS`) und war bereits
+      // abgedriftet (docs/duplikate-bericht.md Fund 12). `crate.rarity` ist
+      // der Index in `RARITY_IDS`.
+      const color = LOOT_DROP_RULES.rarityColors[RARITY_IDS[crate.rarity]] ?? CRATE_COLORS[0];
       const size = 14;
       this.ctx.save();
       this.ctx.translate(crate.x, crate.y);

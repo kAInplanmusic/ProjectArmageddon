@@ -49,6 +49,7 @@ import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
 import { POWER_TO_SPEED } from '../shared/ballistics.js';
+import { PROJECTILE_GRAVITY } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 import {
   fire, projectileLifetime, aimPreview, hasLineOfSight, launchOrigin,
@@ -319,8 +320,8 @@ const TURRET_ELEVATIONS = Object.freeze([0.05, 0.15, 0.3, 0.5, 0.785, 1.0]);
 const TURRET_PATH_STEPS = 900;
 /** Größter Abstand, bei dem noch geschossen wird (halbe Figurenbreite). */
 const TURRET_MAX_MISS = 22;
-/** Schwerkraft der Geschosse — derselbe Wert wie im ProjectileSystem. */
-const GRAVITY = 0.32;
+/** Schwerkraft der Geschosse — Referenz auf die zentrale Konstante. */
+export const GRAVITY = PROJECTILE_GRAVITY;
 const MAX_WIND = 0.05;
 /** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
 const CRATE_GRAVITY = 0.30;
@@ -2065,7 +2066,7 @@ export class MatchController {
       damage: turret.damage,
       blastRadius: waffe.blastRadius || 18,
       knockback: waffe.knockback ?? 0,
-      drag: 0.995,
+      drag: DEFAULT_PROJECTILE_DRAG,
       gravityScale: waffe.gravityScale ?? 1,
       windFactor: 1,
       terrainDamage: waffe.terrainDamage ?? 0,

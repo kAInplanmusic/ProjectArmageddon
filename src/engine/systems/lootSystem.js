@@ -8,7 +8,7 @@
  * @module LootSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { weightedRarity, rollCrateCount, rollCrateContents } from '../../shared/config/loot.js';
+import { LOOT_DROP_RULES, weightedRarity, rollCrateCount, rollCrateContents } from '../../shared/config/loot.js';
 import { pickWeaponForRarity, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
 /*
@@ -77,7 +77,29 @@ import { pickWeaponForRarity, WEAPONS_BY_ID } from '../../shared/config/weapons.
 export const PICKUP_RADIUS = 110;
 
 export const CRATE_TYPES = Object.freeze({ weapon: 0, sustain: 1, empty: 2, trap: 3 });
-export const RARITY_IDS = Object.freeze(['standard', 'enhanced', 'premium', 'epic']);
+/*
+ * Die Seltenheits-Namen der Kisten — EIN Kanal, keine zweite Liste.
+ *
+ * FUND (belegt, docs/duplikate-bericht.md Fund 10): Hier stand die Liste ein
+ * ZWEITES Mal als Literal (['standard','enhanced','premium','epic']) — wortgleich
+ * mit `LOOT_DROP_RULES.rarities` in `shared/config/loot.js`. Beide wurden gelesen;
+ * wer eine aenderte, verschob still die Zuordnung Index -> Seltenheit im
+ * Drahtformat (`protocol.js` CRATE_STRIDE) und in der Anzeige.
+ *
+ * Sie zeigt jetzt auf die eine Quelle.
+ */
+export const RARITY_IDS = LOOT_DROP_RULES.rarities;
+/*
+ * Gewichte je Seltenheitsstufe. Die Schluessel MÜSSEN dieselben sein wie die
+ * Namen in `RARITY_IDS` (Waechter: `tests/loot.test.js`).
+ *
+ * FUND (belegt, docs/duplikate-bericht.md Fund 11): Die Gewichte sind nach den
+ * fuenf powerTier-Stufen benannt, `RARITY_IDS` trug aber die vier Quell-Namen.
+ * `weightedRarity` verbindet beide ueber `weights[r] || 0` — nur `epic` kam in
+ * beiden Raeumen vor, jede Kiste wurde also `epic`. Die Namen sind jetzt EIN
+ * Raum; dieselbe Gewichtstabelle zieht weiterhin den Waffenkatalog
+ * (`pickWeaponForRarity`).
+ */
 export const RARITY_WEIGHTS = Object.freeze({ common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 });
 
 /** Waffen-IDs nach Index (1-basiert) fuer die projektion in Int32-Felder. */

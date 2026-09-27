@@ -12,6 +12,7 @@ import {
   createLootSeedManager,
   getLootRng,
 } from '../src/shared/config/loot.js';
+import { RARITY_IDS, RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 
 test('Loot rolls are deterministic for the same seed', () => {
   const roll = seed => {
@@ -59,4 +60,27 @@ test('Loot seed manager isolates the loot stream', () => {
     Array.from({ length: 10 }, () => lootA.next()),
     Array.from({ length: 10 }, () => lootB.next()),
   );
+});
+
+/*
+ * Waechter: Die Namen der Ziehung und die Schluessel der Gewichte sind EIN Raum.
+ *
+ * FUND (belegt, docs/duplikate-bericht.md Fund 10/11): `RARITY_IDS` stand als
+ * zweites Literal neben `LOOT_DROP_RULES.rarities`, und die Gewichte waren nach
+ * den powerTier-Stufen benannt (common/uncommon/rare/epic/legendary), waehrend
+ * die Namen die Quell-Raritaeten trugen (standard/enhanced/premium/epic). Nur
+ * `epic` kam in beiden Raeumen vor — jede Rundenkiste wurde damit `epic`.
+ *
+ * Laufen die beiden Raeume wieder auseinander, faellt dieser Test.
+ */
+test('RARITY_IDS und RARITY_WEIGHTS teilen denselben Namensraum', () => {
+  assert.deepEqual(
+    [...RARITY_IDS].sort(),
+    Object.keys(RARITY_WEIGHTS).sort(),
+    'Die Namen der Ziehung und die Schluessel der Gewichte muessen genau '
+    + 'dieselben sein — sonst liest weightedRarity fuer die fehlenden Namen 0.',
+  );
+  // Und die Liste hat genau EINE Quelle.
+  assert.deepEqual(RARITY_IDS, LOOT_DROP_RULES.rarities,
+    'RARITY_IDS muss auf LOOT_DROP_RULES.rarities zeigen, nicht eine Kopie sein.');
 });
