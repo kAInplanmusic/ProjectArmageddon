@@ -148,7 +148,12 @@ export function exposeDebugApi(game) {
       jump: seitlich => game.jump(seitlich ?? 0),
       /** Steht die Figur am Zug auf festem Grund? */
       isGrounded: () => game.match ? game.match.isGrounded(game.match.activePlayerId) : false,
-      /** Verbleibende Sprünge des Spielers am Zug. */
+      /**
+       * Verbleibende Sprünge des Spielers am Zug.
+       *
+       * `null` bedeutet UNBEGRENZT — seit 2026-09-27 gibt es keine Obergrenze
+       * mehr (siehe `docs/sprung-regel.md`). Kein Match: 0.
+       */
       jumpsLeft: () => game.match ? game.match.jumpsLeft(game.match.activePlayerId) : 0,
       /**
        * Waffenkatalog und Wirkungen für Tests und Automatisierung.

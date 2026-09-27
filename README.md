@@ -147,9 +147,17 @@ ist die folgende.
 | `Q` | Aktive Waffe abwerfen |
 | `R` | Zurück zum Menü |
 
-**Sprung:** Je Zug sind zwei Sprünge möglich — einer vom Boden, einer in der
-Luft. Der Sprung beendet den Zug nicht, damit der Doppelsprung auslösbar bleibt.
-Ein Sturz aus großer Höhe richtet Fallschaden an.
+**Sprung:** Die Sprünge eines Zuges sind **unbegrenzt**. Der erste geht nur vom
+Boden, weitere in der Luft. Der Sprung beendet den Zug nicht, damit Sprungfolgen
+auslösbar bleiben.
+
+> **Bekannte Folge (gemessen 2026-09-27, `docs/sprung-regel.md`):** Der
+> Absprungimpuls (10,12 px/Takt) liegt UNTER der Fallschaden-Schwelle
+> (11 px/Takt) — ein Sprung prallt mit 9,62 px/Takt auf. **Fallschaden bremst
+> das Springen deshalb nicht:** zehn in der Luft nachgesetzte Sprünge ergaben
+> +633 px Höhe und 1048 px seitlich, ohne einen Punkt Schaden. Die Regel macht
+> den Sprung damit zum freien Flug. Ob das so bleiben soll, ist eine offene
+> Entscheidung.
 
 **Abwurf:** Der Vorrat fasst sechs abwerfbare Waffen. Ist er voll, wird eine
 Waffenkiste nicht aufgenommen; stattdessen muss zuerst abgeworfen werden. Die
@@ -170,7 +178,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1075 Tests in 103 Dateien**, ~4,8 min. *Nachgezogen 2026-09-27:* Dateizahl gemessen (`ls tests/*.test.js \| wc -l` → 103), Testzahl aus einem vollen Lauf (`npm test` → 1075 bestanden, 0 rot, 287,5 s). Die vorige Messung nannte 1057; seither kamen die Tests fuer O8/O9 (Sprung/Abwurf online), den Ereignisfilter, die Kisten-Seltenheit und die vier nachgezogenen Online-Ereignisse hinzu |
+| `npm test` | Unit- und Integrationstests: **1075 Tests in 105 Dateien**, ~4,8 min. *Nachgezogen 2026-09-27:* Dateizahl gemessen (`ls tests/*.test.js \| wc -l` → 103), Testzahl aus einem vollen Lauf (`npm test` → 1075 bestanden, 0 rot, 287,5 s). Die vorige Messung nannte 1057; seither kamen die Tests fuer O8/O9 (Sprung/Abwurf online), den Ereignisfilter, die Kisten-Seltenheit und die vier nachgezogenen Online-Ereignisse hinzu |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **191 Tests in 30 Spezifikationen**, ~25 min (190 grün, 1 übersprungen, 0 rot). 7 davon messen Bildzeiten; sie laufen auf diesem Rechner **7/7 grün** (echte GPU, `ANGLE/Intel HD 3000`), sind aber LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

@@ -240,9 +240,18 @@ test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-AP
    * nannten derweil „Leertaste: Springen", während die Leertaste auflädt.
    *
    * Geprüft wird deshalb über die TASTATUR: Shift drücken → die Figur springt.
-   * Beide Zusicherungen zusammen sind nötig: `jumpsLeft` sinkt SOFORT (der
-   * Sprung wurde ausgelöst), die Höhe ändert sich erst mit den Ticks (es ist
-   * wirklich Physik).
+   *
+   * NACHGEZOGEN 2026-09-27: Hier stand `jumpsLeft` als sofortiges Signal
+   * („sinkt SOFORT"). Seit die Sprünge je Zug UNBEGRENZT sind
+   * (`docs/sprung-regel.md`), ist `jumpsLeft` keine Zahl mehr — es ist `null`
+   * („unbegrenzt"), und `null - 1` prüfte nichts. Das Signal ist deshalb ein
+   * anderes, aber ebenso sofortiges und schärferes: das `jumped`-Ereignis. Es
+   * belegt nicht nur, DASS etwas geschah, sondern dass es den Weg über den
+   * Ereigniskanal genommen hat.
+   *
+   * Beide Zusicherungen zusammen sind weiter nötig: das Ereignis SOFORT (der
+   * Sprung wurde ausgelöst), die Höhe erst mit den Ticks (es ist wirklich
+   * Physik).
    */
   await bootMatch(page, { seed: 4242 });
 
@@ -251,17 +260,23 @@ test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-AP
     window.__PA__.advance(10);
     const s = window.__PA__.getState();
     return {
-      jumps: window.__PA__.jumpsLeft(),
+      steht: window.__PA__.isGrounded(),
       y: s.entities.find(e => e.entityId === s.activePlayerId).y,
     };
   });
-  expect(vorher.jumps, 'Die Figur steht nicht auf dem Boden').toBeGreaterThan(0);
+  // Der erste Sprung eines Zuges geht nur vom Boden. Steht die Figur nicht,
+  // prüfte der Test die Bodenregel statt den Auslöser.
+  expect(vorher.steht, 'Die Figur steht nicht auf dem Boden').toBe(true);
 
   await page.keyboard.press('Shift');
 
-  const nachTaste = await page.evaluate(() => window.__PA__.jumpsLeft());
-  expect(nachTaste, 'Shift hat den Sprung nicht ausgelöst')
-    .toBe(vorher.jumps - 1);
+  // SOFORTIGES Signal: der Sprung erscheint als Ereignis. Es entsteht beim
+  // Tastendruck und wird beim nächsten Simulationsschritt eingesammelt.
+  const ereignisarten = await page.evaluate(() => {
+    window.__PA__.advance(1);
+    return window.__PA__.events().map(e => e.type);
+  });
+  expect(ereignisarten, 'Shift hat den Sprung nicht ausgelöst').toContain('jumped');
 
   const nachTicks = await page.evaluate(() => {
     window.__PA__.advance(8);
