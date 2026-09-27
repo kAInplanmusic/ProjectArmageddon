@@ -284,16 +284,40 @@ test('Jede Lesestelle benutzt die benannte Funktion', () => {
     + 'dreierlei bedeutete. Bitte geschwindigkeitsFaktor/weitenFaktor benutzen.');
 
   /*
-   * Und die drei Stellen, die eine GESCHWINDIGKEIT bilden, geben die
-   * Kartenbreite an die gemeinsame Regel mit (`launchSpeedMultiplier`). Seit
-   * 2026-09-19 gehört sie dort hinein — der Versuch, sie daneben zu
-   * multiplizieren, hat genau den Fehler erzeugt, den diese Datei festhält.
+   * Und die Stellen, die eine GESCHWINDIGKEIT bilden, geben die Kartenbreite an
+   * die gemeinsame Regel mit (`launchSpeedMultiplier`). Seit 2026-09-19 gehört
+   * sie dort hinein — der Versuch, sie daneben zu multiplizieren, hat genau den
+   * Fehler erzeugt, den diese Datei festhält.
+   *
+   * Für das Geschütz stand der Ausdruck `* geschwindigkeitsFaktor(this.width)`
+   * deshalb früher ZWEIMAL in `match.js` — in der Bahnersuchung (Geschütz-
+   * Vorschau) und im Geschoss. Der Grund dafür war die fehlende gemeinsame
+   * Funktion, nicht die Regel: Zwei Formeln können auseinanderlaufen, und dann
+   * zielt das Geschütz nach dem einen Wert und schießt mit dem anderen. Jetzt
+   * gibt es die Funktion (`#turretLaunch`), und BEIDE Stellen gehen durch sie.
+   *
+   * Geprüft wird deshalb genau das: Die Formel steht EINMAL da, und es gibt
+   * ZWEI Aufrufer. Eine Kopie, die von der gemeinsamen Funktion abweicht, fällt
+   * hier auf.
    */
-  const geschwindigkeitsStellen = motor.match(/\* geschwindigkeitsFaktor\(this\.width\)/g) ?? [];
-  assert.equal(geschwindigkeitsStellen.length, 2,
-    `match.js skaliert an ${geschwindigkeitsStellen.length} Stellen selbst — `
-    + 'erwartet sind 2 (Geschütz-Vorschau und Geschoss). Der Spielerschuss geht '
-    + 'über launchSpeedMultiplier und muss dort `kartenbreite` mitgeben.');
+  const eigeneSkalierung = motor.match(/\* geschwindigkeitsFaktor\(this\.width\)/g) ?? [];
+  assert.equal(eigeneSkalierung.length, 1,
+    `match.js skaliert an ${eigeneSkalierung.length} Stellen selbst — erwartet ist `
+    + 'genau EINE: die gemeinsame Funktion `#turretLaunch` des Geschützes. '
+    + 'Der Spielerschuss geht über launchSpeedMultiplier und muss dort '
+    + '`kartenbreite` mitgeben; eine zweite Stelle daneben ist genau der Fehler, '
+    + 'den diese Datei festhält.');
+
+  assert.match(motor, /#turretLaunch\(kraft, winkel, waffe\)\s*\{/,
+    'die gemeinsame Funktion `#turretLaunch` des Geschützes fehlt — die '
+    + 'Abschussgeschwindigkeit wird wieder an jeder Stelle einzeln gebildet');
+
+  const turretAufrufe = motor.match(/this\.#turretLaunch\(/g) ?? [];
+  assert.equal(turretAufrufe.length, 2,
+    `das Geschütz bildet seinen Abschuss an ${turretAufrufe.length} Stellen — `
+    + 'erwartet sind ZWEI Aufrufe derselben Funktion `#turretLaunch` '
+    + '(Bahnersuchung und Geschoss). Standen dort zwei Formeln, zielt das '
+    + 'Geschütz mit dem einen Wert und schießt mit dem anderen.');
 
   assert.match(motor, /launchSpeedMultiplier\({[\s\S]*?kartenbreite: this\.width[\s\S]*?}\)/,
     'der Spielerschuss muss seine Kartenbreite an launchSpeedMultiplier geben');

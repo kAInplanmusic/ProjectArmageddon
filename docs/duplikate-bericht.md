@@ -3,6 +3,61 @@
 Stand: 2026-09-26 · Branch `main` · HEAD `e26821d` · **rein lesender Auftrag**: keine Aenderung an
 `src/**` oder `tests/**`, kein Testlauf, kein Build, kein Server. Die einzige Schreibe ist diese Datei.
 
+---
+
+## Nachtrag 2026-09-27 — Fund 1 und Fund 5 sind behoben (mit Beleg)
+
+Der Bericht war **rein lesend**. Dieser Nachtrag ist die Fortsetzung: Ausgangsstand der Arbeit war
+HEAD `7afe1b8`, und der Beweis der Unberuehrtheit ist wieder der Replay-Hash.
+
+| | VORHER | NACHHER |
+|---|---|---|
+| Replay `artifacts/replay-20260910.json` | `9ec63e8c` | `9ec63e8c` |
+| `* geschwindigkeitsFaktor(this.width)` in `match.js` | 2 Vorkommen | **1** (in `#turretLaunch`) |
+| Integrationsschritt in `#simulateTurretPath` | 4 Zeilen nachgebaut | `integrateStep(...)` |
+| Zeilen `match.js` (`split('\n')`) | 3196 | 3195 |
+
+**Zuerst der Waechter, dann die Behebung.** Beide Behebungen waren durch zwei Textproben gesperrt,
+die den WORTLAUT festhielten — eine geaenderte Rechnung mit gleichem Text haetten sie nicht gemerkt:
+
+1. `tests/turret-ballistics.test.js` suchte die Signatur `#simulateTurretPath(turret, winkel,
+   kraft, waffe) {`, schnitt den Rumpf per Klammerzaehlung heraus und verlangte darin `vy *= drag`
+   und `const wind = this.#wind`. Ersetzt durch eine VERHALTENS-Pruefung: `match.turretPath(...)`
+   (neuer, benannter Zugang in `match.js`) wird Punkt fuer Punkt gegen `simulateFlight` aus
+   `src/shared/ballistics.js` verglichen — Abweichung **0 px**, ueber sechs echte Windwerte aus
+   sechs Runden (`seed 4242`; gemessen −0,0434 … +0,0317) mit zwei Schuessen je Wind,
+   Bahnlaengen 126–900 Takte (so viele, wie `TURRET_PATH_STEPS` zulaesst).
+2. `tests/reichweite-konsistenz.test.js` verlangte den Ausdruck `* geschwindigkeitsFaktor(this.width)`
+   **genau zweimal**. Der Grund der Zweiheit (fehlende gemeinsame Funktion) ist entfallen; geprueft
+   wird jetzt: Die Formel steht **genau einmal** (in `#turretLaunch`) und hat **genau zwei Aufrufer**
+   (Bahnersuchung und Geschoss). Die Begruendung der alten Fassung („der Spielerschuss geht ueber
+   `launchSpeedMultiplier` und muss dort `kartenbreite` mitgeben") ist uebernommen.
+
+**Mutationsproben — in KOPIEN unter `/tmp`, nicht im Repo.** Jede Aenderung an der Rechnung macht
+die neue Pruefung rot:
+
+| Probe | Aenderung in der Kopie | neuer Waechter | alter Textanker |
+|---|---|---|---|
+| A | vier alte Zeilen zurueck + `const wind = this.#wind * 0.5;` | **rot** (0,02 px, Bahnpunkt 0) | **gruen** — alle vier Muster treffen zu |
+| B | Drag auf `vy` weggenommen (der historische Fehler) | **rot** (0,06 px) | — |
+| C | Windquelle `this.#currentStrength` (= wind × 10) | **rot** (0,04 px) | — |
+| D | Geschoss bildet `speed` wieder selbst (Fund 5 zurueck) | rot („skaliert an 2 Stellen") | — |
+
+Probe A ist der Kern des Ganzen: Der Text war **unveraendert** (`vy *= drag` stand da), die Rechnung
+war falsch — der alte Anker haette geschwiegen. Deshalb wurde er ersetzt und nicht gestrichen.
+Zweiter Beleg aus denselben Proben: Die beiden Funktionskopien IM Testfile (`echteBahn`/
+`geschuetzBahn`, Zeile 57/84) bleiben in allen vier Proben **gruen** — Kopie gegen Kopie kann einen
+Fehler nicht sehen.
+
+**Warum die Auslagerung bitgleich ging.** Der Auslagerung steht nichts entgegen, weil nur der
+Integrationsschritt wandert: Die Schwerkraft kommt als `gravity` (die Waffe skaliert sie weiterhin
+VOR dem Aufruf), Wind und Drag sind dieselben Groessen, und die Reihenfolge im geteilten
+`integrateStep` ist die Reihenfolge der alten vier Zeilen. Gelände-Abbruch (`this.surfaceYAt`,
+Kartenrand) und Windquelle (`this.#wind`) bleiben Eigenanteil von `match.js` — sie gehoeren zur
+Karte, nicht zur Physik. Ergebnis: Hash `9ec63e8c` vor und nach JEDEM der drei Schritte.
+
+**Was NICHT angefasst wurde:** `src/shared/**`, `src/client/**`, `src/server/**` — kein Byte.
+
 ## Was hier gesucht wurde — und warum
 
 Vorhanden und hier nur als **Werkzeug** benutzt (nicht wiederholt):

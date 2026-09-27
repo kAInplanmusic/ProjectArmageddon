@@ -22,9 +22,11 @@
  *  3. **Die Schnittstelle** — jede Funktion läuft über eine schlichte Quelle.
  *     Ein Aufruf mit einem Literal muss genügen, und die Regeln der Suche
  *     (Richtung, Gleichstand, kein Blindfeuer) müssen daran sichtbar sein.
- *  4. **Die Bahn bleibt im Match** — `#simulateTurretPath` ist von
- *     `tests/turret-ballistics.test.js` im Quelltext von `match.js` gepinnt.
- *     Dieses Modul darf die Physik deshalb NICHT ein zweites Mal führen.
+ *  4. **Die Bahn bleibt im Match** — `#simulateTurretPath` liest Kartenbreite,
+ *     Wind (`this.#wind`) und Gelände; `tests/turret-ballistics.test.js`
+ *     vergleicht sie Punkt für Punkt mit `simulateFlight` aus
+ *     `src/shared/ballistics.js`. Dieses Modul darf die Physik deshalb NICHT
+ *     ein zweites Mal führen.
  *  5. **Die Gegenprobe** am echten Motor: Das Geschütz feuert weiterhin.
  */
 import { test } from 'node:test';
@@ -113,11 +115,14 @@ test('Die Konstanten des Geschützes stehen nur EINMAL', () => {
 
 test('Das Geschütz-Modul führt die Bahn nicht ein zweites Mal', () => {
   /*
-   * Die Bahn (`#simulateTurretPath`) bleibt im Match — sie ist dort gepinnt
-   * (`tests/turret-ballistics.test.js:232-281`). Eine zweite Integrationsschleife
-   * hier wäre genau die Doppelung, die `docs/duplikate-bericht.md` als Fund 1
-   * beschreibt: dieselben vier Zeilen an zwei Stellen, die auseinanderlaufen
-   * können.
+   * Die Bahn (`#simulateTurretPath`) bleibt im Match — sie liest Kartenbreite,
+   * Wind (`this.#wind`) und Gelände, und `tests/turret-ballistics.test.js`
+   * vergleicht sie Punkt für Punkt gegen die geteilte Regel. Eine zweite
+   * Integrationsschleife hier wäre genau die Doppelung, die
+   * `docs/duplikate-bericht.md` als Fund 1 beschreibt: dieselben vier Zeilen an
+   * zwei Stellen, die auseinanderlaufen können. Den Integrationsschritt selbst
+   * liefert `integrateStep` (`src/shared/ballistics.js`) — auch ihn darf dieses
+   * Modul nicht nachbauen.
    */
   const modul = ohneKommentare(quelle('src/engine/turret.js'));
 

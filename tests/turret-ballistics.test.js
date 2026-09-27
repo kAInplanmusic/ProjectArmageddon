@@ -29,25 +29,35 @@
  *
  * ## Was hier geprüft wird
  *
- * Die **Kopplung** der beiden Implementierungen. Der Test baut beide Wege
- * getrennt nach und vergleicht sie Punkt für Punkt. Läuft einer der beiden
- * wieder auseinander, schlägt er fehl.
+ * Die **Kopplung** der beiden Implementierungen. Der Test lässt sich die Bahn
+ * vom MOTOR geben — `match.turretPath(...)` in `match.js` — und rechnet die
+ * Gegenprobe mit der geteilten Regel (`simulateFlight`, die `integrateStep`
+ * benutzt, aus `src/shared/ballistics.js`). Verglichen wird Punkt für Punkt,
+ * die Abweichung muss 0 px sein.
+ *
+ * ## Warum das eine Messung ist und keine Textprobe
+ *
+ * Vorher stand hier eine Strukturprüfung AM QUELLTEXT: Sie suchte die Signatur
+ * `#simulateTurretPath(turret, winkel, kraft, waffe) {` in `match.js`, schnitt
+ * den Rumpf per Klammerzählung heraus und verlangte darin `vy *= drag` und
+ * `const wind = this.#wind`. Das hält den WORTLAUT fest, nicht die Wirkung:
+ *
+ *     const wind = this.#wind * 0.5;   // erfüllt BEIDE Muster — und rechnet falsch
+ *
+ * Zwei Kurven zu vergleichen ist strenger. Jede Änderung an der Rechnung fällt
+ * auf, auch eine, die den Text unverändert lässt.
  *
  * Ein früherer Kommentar behauptete „wie das echte Geschoss" — und log. Ein
  * Kommentar kann nicht fehlschlagen; dieser Test kann es.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { DEFAULT_PROJECTILE_DRAG, DEFAULT_PROJECTILE_GRAVITY } from '../src/engine/systems/projectileSystem.js';
-import { POWER_TO_SPEED } from '../src/engine/match.js';
-import { MatchController } from '../src/engine/match.js';
-
-const HIER = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(HIER, '..');
+import { MatchController, POWER_TO_SPEED } from '../src/engine/match.js';
+import { simulateFlight } from '../src/shared/ballistics.js';
+import { geschwindigkeitsFaktor } from '../src/shared/reichweite.js';
+import { TURRET_PATH_STEPS, TURRET_WEAPON } from '../src/engine/turret.js';
 
 /**
  * Die Physik des ECHTEN Geschosses (`ProjectileSystem.#step`), nachgebaut.
@@ -76,10 +86,14 @@ function echteBahn(startX, startY, winkel, kraft, wind, { speedFactor = 1, gravi
 }
 
 /**
- * Die Physik des Geschütz-Pfads — WIE SIE SEIN SOLL.
+ * Die Physik des Geschütz-Pfads — nachgebaut, als Modell für die Tests unten.
  *
- * Wird diese Funktion geändert, muss `#simulateTurretPath` in `match.js`
- * mitgezogen werden. Der Test hält beide zusammen.
+ * ACHTUNG: Diese Nachbildung hält `match.js` NICHT mehr fest. Sie ist ein
+ * Modell für sich („so soll die Bewegung aussehen") und kann nur gegen die
+ * zweite Nachbildung oben laufen. Die Kopplung an den MOTOR prüft allein
+ * `Die Geschütz-Bahn ist Punkt für Punkt die Bahn der geteilten Regel` unten —
+ * sie vergleicht `match.turretPath(...)` mit `simulateFlight` aus
+ * `src/shared/ballistics.js`.
  */
 function geschuetzBahn(startX, startY, winkel, kraft, wind, { speedFactor = 1, gravityScale = 1 } = {}) {
   const speed = kraft * POWER_TO_SPEED * speedFactor;
@@ -208,77 +222,140 @@ test('Die Konstanten kommen aus EINER Quelle', () => {
     'POWER_TO_SPEED muss exportiert sein, sonst kann der Pfad ihn nicht nutzen');
 });
 
-test('Der Quelltext des Geschütz-Pfads nutzt die richtige Wind-Quelle', () => {
+test('Die Geschütz-Bahn ist Punkt für Punkt die Bahn der geteilten Regel', () => {
   /*
-   * Strukturprüfung am Quelltext: `#simulateTurretPath` ist privat und damit
-   * von außen nicht aufrufbar. Die verhaltensbasierten Tests oben prüfen die
-   * NACHGEBAUTE Formel — dieser prüft, dass der echte Code sie auch benutzt.
+   * DIE Prüfung, die den Fehler von damals festhält — als Messung, nicht als
+   * Textprobe.
    *
-   * Insbesondere: KEIN Zugriff auf `currentStrength` (die 10-fache Größe) und
-   * KEIN hartkodiertes `0.02`.
+   * Der Motor gibt seine Bahn heraus (`match.turretPath`, siehe `match.js`),
+   * die Gegenprobe rechnet `simulateFlight` aus `src/shared/ballistics.js` —
+   * dieselbe Funktion, aus der die echten Geschosse ihre Bewegung nehmen.
+   * Verglichen wird jeder einzelne Bahnpunkt; die Abweichung muss 0 px sein.
+   *
+   * Was der Fund war (gemessen, Kraft 100, 45 Grad): Die Bahn des Geschützes
+   * wich in ZWEI Punkten von der Regel des echten Geschosses ab —
+   *
+   *   1. `vx += wind * 0.02` mit `currentStrength` (das ist `wind * 10`)
+   *      wirkte mit Faktor 0,2 statt 1,0 — das FÜNFFACHE zu wenig.
+   *   2. `vy` wurde nicht gedraggt, `vx` schon.
+   *
+   * Zielweiten-Abweichung vor der Korrektur: Wind 0 → +14,6 px (allein der
+   * fehlende vy-Drag), Wind 0,025 → −16,9 px, Wind 0,05 → −48,4 px,
+   * Wind −0,05 → +77,7 px. Das Geschütz zielte damit systematisch nach einer
+   * falschen Regel und schoss daneben.
+   *
+   * Keine dieser Abweichungen überlebt diese Messung: Eine andere Windquelle,
+   * ein anderer Windfaktor, ein fehlender Drag auf einer der beiden Achsen oder
+   * eine andere Reihenfolge verschiebt PUNKTE — nicht Text.
    */
-  const quelle = fs.readFileSync(
-    path.join(ROOT, 'src', 'engine', 'match.js'), 'utf8',
-  );
+  const TAKTE = TURRET_PATH_STEPS;
   /*
-   * Gesucht wird die DEFINITION, nicht die erste Erwähnung. Ein erster Anlauf
-   * nahm `indexOf('#simulateTurretPath(')` — und traf den Kommentar in
-   * `#aimTurret`, der die Methode erwähnt. Der Ausschnitt enthielt damit
-   * fremden Code, und der Test schlug aus dem falschen Grund fehl.
-   *
-   * Die Definition ist an `#simulateTurretPath(turret, winkel, kraft, waffe) {`
-   * erkennbar — an der Signatur MIT Parametern und öffnender Klammer.
+   * Weit über der Karte: Innerhalb der Takte, die die Bahn selbst rechnen darf
+   * (`TURRET_PATH_STEPS`), kann so weder das Gelände noch die Unterkante die
+   * Bahn beenden — verglichen wird der reine Integrationsschritt, und genau
+   * dort saß der Fehler.
    */
-  const signatur = '#simulateTurretPath(turret, winkel, kraft, waffe) {';
-  const start = quelle.indexOf(signatur);
-  assert.ok(start > 0,
-    'Die Definition von #simulateTurretPath wurde nicht gefunden — '
-    + 'wurde die Signatur geändert?');
-  const startName = start + '#simulateTurretPath'.length;
+  const START = { x: 1280, y: -200_000 };
+  // Zwei Schüsse je Wind: steil und flach — der steile wiegt `vy`, der flache `vx`.
+  const SCHUESSE = [[Math.PI / 4, 100], [1.2, 60]];
 
-  /*
-   * Der Rumpf wird über Klammerzählung bestimmt, nicht über die Suche nach
-   * `\n  }`. Letzteres schnitt beim ERSTEN inneren Block ab — die `for`-Schleife
-   * schließt auf derselben Ebene ein, und damit fehlten die Drag-Zeilen im
-   * Ausschnitt. Derselbe Fehler steckte im Ereignis-Abdeckungstest.
-   */
-  const auf = quelle.indexOf('{', startName);
-  let tiefe = 0;
-  let ende = auf;
-  for (let i = auf; i < quelle.length; i += 1) {
-    if (quelle[i] === '{') tiefe += 1;
-    else if (quelle[i] === '}') {
-      tiefe -= 1;
-      if (tiefe === 0) { ende = i; break; }
+  const match = new MatchController({
+    seed: 4242, teams: 2, playersPerTeam: 1, preset: 'open',
+    turnDurationMs: 1_000_000, maxRounds: 12,
+  });
+  match.start();
+
+  const windwerte = [];
+  let verglichen = 0;
+
+  for (let runde = 0; runde < 12; runde += 1) {
+    /*
+     * Der Wind wird zu RUNDENBEGINN neu gewürfelt, und die Bahn liest ihn aus
+     * `this.#wind`. Jede Runde liefert damit einen ECHTEN, reproduzierbaren
+     * Windwert — keiner wird im Test gesetzt.
+     */
+    const wind = match.wind;
+    if (!windwerte.includes(wind)) windwerte.push(wind);
+
+    for (const [winkel, kraft] of SCHUESSE) {
+      const speed = kraft * POWER_TO_SPEED * (TURRET_WEAPON.speedFactor ?? 1)
+        * geschwindigkeitsFaktor(match.width);
+
+      /*
+       * Die Gegenprobe: derselbe Abschussvektor, aber gerechnet von der
+       * geteilten Regel. `gravity` und `drag` werden ABSICHTLICH nicht
+       * mitgegeben — die Vorgaben des Moduls SIND die Konstanten, aus denen das
+       * Geschoss lebt. Eine hier abgeschriebene 0,995 wäre die Doppelregel von
+       * damals. `bounds` sind die Kartengrenzen: dieselben, an denen die Bahn
+       * des Geschützes abbricht.
+       */
+      const referenz = simulateFlight({
+        x: START.x, y: START.y, angle: winkel, power: kraft, speed, wind,
+        gravityScale: TURRET_WEAPON.gravityScale ?? 1,
+        steps: TAKTE,
+        includeStart: false,
+        bounds: {
+          minX: 0, maxX: match.width,
+          minY: Number.NEGATIVE_INFINITY, maxY: match.height,
+        },
+      });
+
+      const bahn = match.turretPath({ x: START.x, y: START.y }, winkel, kraft);
+
+      // Ein Vergleich über wenige Punkte wäre kein Vergleich.
+      assert.ok(bahn.length > 100,
+        `Wind ${wind}, Kraft ${kraft}: die Bahn des Geschützes hat nur `
+        + `${bahn.length} Punkte`);
+
+      const gemeinsam = Math.min(bahn.length, referenz.points.length);
+      for (let i = 0; i < gemeinsam; i += 1) {
+        const p = bahn[i];
+        const q = referenz.points[i];
+
+        assert.ok(p.x === q.x && p.y === q.y,
+          `Wind ${wind}, Kraft ${kraft}, Winkel ${winkel.toFixed(3)}: Bahnpunkt ${i} `
+          + `weicht um ${Math.hypot(p.x - q.x, p.y - q.y).toFixed(2)} px ab `
+          + `(${p.x} / ${p.y} gegen ${q.x} / ${q.y}).\n`
+          + 'Die Bahn des Geschützes muss die GETEILTE Regel benutzen '
+          + '(`integrateStep` aus `src/shared/ballistics.js`): Windquelle '
+          + '`this.#wind` (NICHT `currentStrength` — das ist wind * 10), '
+          + 'Windfaktor 1,0 und Drag auf BEIDE Achsen. Der Fehler von damals '
+          + 'verschob die Zielweite um bis zu 77,7 px (Wind 0: +14,6 px, '
+          + 'Wind 0,025: −16,9 px, Wind 0,05: −48,4 px, Wind −0,05: +77,7 px) '
+          + '— das Geschütz zielte nach einer falschen Regel und schoss daneben.');
+      }
+
+      /*
+       * Die Länge: Der Motor bricht am Kartenrand ab und behält den Punkt
+       * jenseits der Grenze nicht (`match.js`); `simulateFlight` meldet ihn als
+       * Aufprall. Genau EIN Punkt mehr ist deshalb erlaubt — und nur, wenn die
+       * Gegenprobe auch wirklich an den Kartengrenzen endete.
+       */
+      const mehr = referenz.points.length - bahn.length;
+      assert.ok(mehr === 0 || (mehr === 1 && referenz.terminatedBy === 'bounds'),
+        `Wind ${wind}, Kraft ${kraft}: die Bahnen enden verschieden lang `
+        + `(${bahn.length} gegen ${referenz.points.length} Punkte, Ende der `
+        + `Gegenprobe: ${referenz.terminatedBy})`);
+
+      verglichen += 1;
     }
+
+    match.endTurn();
+    match.consumeEvents();
   }
-  const rumpf = quelle.slice(start, ende + 1);
 
   /*
-   * Kommentare werden VOR der Prüfung entfernt.
-   *
-   * FUND (belegt, im Test selbst): Der erste Anlauf prüfte den Rumpf roh — und
-   * schlug fehl, weil `currentStrength` in einem ERKLÄRENDEN Kommentar stand
-   * („Der frühere Zugriff auf currentStrength war der eigentliche Fehler").
-   * Der Test fand den Text, nicht den Code.
-   *
-   * Dasselbe Muster gab es schon einmal in `tests/class-profile.test.js`. Ein
-   * Strukturtest muss den Code prüfen, nicht die Dokumentation darüber.
+   * Die Vorbedingungen des Vergleichs — ohne sie wäre er über die Jahre still
+   * bedeutungslos: mehrere Windwerte, in BEIDE Richtungen, jeder von Wirkung.
+   * (Der Wind, den das Geschütz liest, wirkt nur, wenn er nicht 0 ist.)
    */
-  const code = rumpf
-    .replace(/\/\*[\s\S]*?\*\//g, '')   // Blockkommentare
-    .replace(/\/\/[^\n]*/g, '');          // Zeilenkommentare
-
-  assert.doesNotMatch(code, /currentStrength/,
-    'Der Pfad darf NICHT `currentStrength` lesen — das ist wind * 10');
-  assert.doesNotMatch(code, /\*\s*0\.02\b/,
-    'Der Faktor 0,02 darf nicht zurückkehren — er machte den Wind 5x zu schwach');
-  assert.match(code, /vy \*= drag|vy \*= DEFAULT_PROJECTILE_DRAG/,
-    'Der Drag muss auf BEIDE Achsen wirken');
-
-  // Und die Gegenprobe: Die Wind-Quelle ist die richtige.
-  assert.match(code, /const wind = this\.#wind/,
-    'Der Pfad muss `this.#wind` lesen — die Größe, die auch das Projektil nutzt');
+  const wirksame = windwerte.filter(w => Math.abs(w) > 0.001);
+  assert.ok(wirksame.length >= 4,
+    `nur ${wirksame.length} Windwerte mit Wirkung: ${windwerte.join(', ')}`);
+  assert.ok(windwerte.some(w => w > 0.001) && windwerte.some(w => w < -0.001),
+    `die Windwerte decken nur eine Richtung ab: ${windwerte.join(', ')}`);
+  assert.equal(verglichen, 12 * SCHUESSE.length,
+    'es wurden nicht alle Windwerte verglichen');
 });
 
 test('Ein Geschütz trifft ein Ziel auf mittlerer Distanz', () => {

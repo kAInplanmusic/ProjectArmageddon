@@ -48,7 +48,7 @@ import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
-import { POWER_TO_SPEED, PROJECTILE_GRAVITY } from '../shared/ballistics.js';
+import { POWER_TO_SPEED, PROJECTILE_GRAVITY, integrateStep } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 import {
   fire, projectileLifetime, aimPreview, hasLineOfSight, launchOrigin,
@@ -1985,70 +1985,65 @@ export class MatchController {
         x: this.#world.getComponent(entityId, 'Position', 'x') ?? 0,
         y: this.#world.getComponent(entityId, 'Position', 'y') ?? 0,
       }),
-      /*
-       * Die Bahn bleibt im Match: Die Wind-Quelle (`this.#wind`), der Drag auf
-       * BEIDEN Achsen und die Kartenbreite sind in dieser Datei festgehalten
-       * (`tests/turret-ballistics.test.js`, `tests/reichweite-konsistenz.test.js`).
-       */
+      // Die Bahn bleibt im Match: Wind-Quelle (`this.#wind`), Terrain- und
+      // Kartenabbruch. Der Integrationsschritt kommt aus `integrateStep`
+      // (`src/shared/ballistics.js`) — dieselbe Regel wie beim echten Geschoss.
       bahn: (turret, winkel, kraft) => this.#simulateTurretPath(turret, winkel, kraft, TURRET_WEAPON),
     };
   }
 
   /**
    * Rechnet eine Flugbahn schrittweise nach — mit der Physik des echten
-   * Geschosses.
+   * Geschosses: Der Integrationsschritt kommt aus `integrateStep`
+   * (`src/shared/ballistics.js`), Terrain- und Kartenabbruch bleiben hier.
    *
    * FUND (belegt, Code-Audit): Hier stand ein NACHBAU der Ballistik, der in
-   * zwei Punkten von `ProjectileSystem` abwich — und zwar unbemerkt, weil der
-   * Kommentar „wie das echte Geschoss" Übereinstimmung behauptete:
+   * zwei Punkten abwich — unbemerkt, weil der Kommentar „wie das echte
+   * Geschoss" Übereinstimmung behauptete:
    *
-   *   1. `vx += wind * 0.02` mit `wind = currentStrength`. `currentStrength`
-   *      ist aber `wind * 10` (siehe `#rollWind`), also wirkte effektiv
-   *      `wind * 0,2` — das FÜNFFACHE zu wenig gegen `match.wind * 1,0` im
-   *      `ProjectileSystem`.
-   *   2. `vy` wurde NICHT gedraggt, `vx` schon. Das echte Geschoss draggt
-   *      BEIDE Achsen (`vx *= drag; vy *= drag`).
+   *   1. `vx += wind * 0.02` mit `wind = currentStrength` (= `wind * 10`),
+   *      wirkte also mit 0,2 statt 1,0 — das FÜNFFACHE zu wenig.
+   *   2. `vy` wurde NICHT gedraggt, `vx` schon.
    *
-   * Gemessene Abweichung der Zielweite (Kraft 100, 45°):
-   *   Wind  0      +14,6 px   (allein durch den fehlenden vy-Drag)
-   *   Wind  0,025  −16,9 px
-   *   Wind  0,05   −48,4 px
-   *   Wind −0,05   +77,7 px
+   * Gemessene Zielweiten-Abweichung (Kraft 100, 45°): Wind 0 → +14,6 px
+   * (allein der fehlende vy-Drag), 0,025 → −16,9 px, 0,05 → −48,4 px,
+   * −0,05 → +77,7 px. `#aimTurret` wählt mit dieser Bahn den Schusswinkel —
+   * bei bis zu 78 px Fehler schoss das Geschütz systematisch daneben.
    *
-   * Wirkung: `#aimTurret` wählt mit dieser Bahn den Schusswinkel, der ein Ziel
-   * treffen soll. Bei bis zu 78 px Fehler schießt das Geschütz daneben — und
-   * zwar systematisch nach einer falschen Regel, nicht zufällig.
-   *
-   * Die Behebung ist bewusst KEINE neue Formel, sondern die Übernahme der
-   * geltenden: dieselben Konstanten (`GRAVITY`, `DRAG`), dieselbe Wind-Quelle
-   * (`match.wind`, NICHT `currentStrength`) und beide Achsen gedraggt.
+   * Die Behebung war die ÜBERNAHME der geltenden Regel, keine neue Formel. Seit
+   * Fund 1 des Duplikat-Berichts ist sie auch keine Abschrift mehr:
+   * `integrateStep` ist dieselbe Funktion, die `ProjectileSystem` und
+   * `simulateFlight` benutzen. `tests/turret-ballistics.test.js` vergleicht die
+   * Bahn Punkt für Punkt; die Textprobe auf `vy *= drag` ist entfallen.
    */
   #simulateTurretPath(turret, winkel, kraft, waffe) {
-    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);
+    const abschuss = this.#turretLaunch(kraft, winkel, waffe);
     let x = turret.x;
     let y = turret.y;
-    let vx = Math.cos(winkel) * speed;
-    let vy = -Math.sin(winkel) * speed;
+    let vx = abschuss.vx;
+    let vy = abschuss.vy;
     const gravitation = GRAVITY * (waffe.gravityScale ?? 1);
 
-    /*
-     * Die Wind-Quelle ist `wind` — die Größe, die auch das `ProjectileSystem`
-     * liest (`match.wind`). Der frühere Zugriff auf `currentStrength` war der
-     * eigentliche Fehler: Dort war der Wind schon mit 10 multipliziert.
-     */
+    // Die Wind-Quelle ist `wind` — die Größe, die auch das `ProjectileSystem`
+    // liest. Der frühere Zugriff auf `currentStrength` war der eigentliche
+    // Fehler: Dort war der Wind schon mit 10 multipliziert.
     const wind = this.#wind;
 
-    // Der Drag kommt aus DERSELBEN Konstante wie beim echten Geschoss —
-    // `DEFAULT_PROJECTILE_DRAG` ist oben importiert. Eine eigene Zahl wäre
-    // genau die Doppelregel, die zu diesem Fehler geführt hat.
+    // Der Drag kommt aus DERSELBEN Konstante wie beim echten Geschoss
+    // (`DEFAULT_PROJECTILE_DRAG` ist oben importiert).
     const drag = DEFAULT_PROJECTILE_DRAG;
 
     const bahn = [];
     for (let schritt = 0; schritt < TURRET_PATH_STEPS; schritt++) {
-      vy += gravitation;
-      vx += wind;
-      vx *= drag;
-      vy *= drag;
+      /*
+       * EIN Tick Geschossphysik — aus der geteilten Regel, nicht nachgebaut.
+       * `gravitation` ist die Schwerkraft des Turmgeschosses, Wind und Drag sind
+       * dieselben wie beim echten Geschoss (`TURRET_WEAPON` führt keinen
+       * eigenen Windfaktor).
+       */
+      const naechste = integrateStep({ vx, vy, gravity: gravitation, wind, drag });
+      vx = naechste.vx;
+      vy = naechste.vy;
       x += vx;
       y += vy;
       if (x < 0 || x > this.width || y > this.height) break;
@@ -2061,16 +2056,35 @@ export class MatchController {
     return bahn;
   }
 
+  /**
+   * Der Abschuss des Geschützes — EINE Stelle für Bahnersuchung und Geschoss
+   * (Fund 5: Die Abschussgeschwindigkeit stand zweimal hier; liefen die Kopien
+   * auseinander, zielte das Geschütz nach dem einen Wert und schoss mit dem
+   * anderen). Der Kartenfaktor steckt nur hier — der Spielerschuss trägt
+   * zusätzlich Klassen-, Archetyp- und Waffenfaktor und geht über
+   * `launchSpeedMultiplier({ …, kartenbreite: this.width })`.
+   */
+  #turretLaunch(kraft, winkel, waffe) {
+    const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);
+    return { speed, vx: Math.cos(winkel) * speed, vy: -Math.sin(winkel) * speed };
+  }
+
+  /**
+   * Die Flugbahn des Geschützes — der benannte Zugang zu `#simulateTurretPath`
+   * für die PRÜFUNG: `tests/turret-ballistics.test.js` vergleicht diese Bahn
+   * Punkt für Punkt mit `simulateFlight` aus `src/shared/ballistics.js`, statt
+   * ihren Quelltext zu lesen.
+   */
+  turretPath(turret, winkel, kraft) {
+    return this.#simulateTurretPath(turret, winkel, kraft, TURRET_WEAPON);
+  }
+
   /** Erzeugt das Geschoss eines Geschützes. */
   #spawnTurretProjectile(turret, schuss, ziel = null) {
     const waffe = TURRET_WEAPON;
-    /*
-     * Die Abschussgeschwindigkeit rechnet der MATCH, nicht `engine/turret.js`:
-     * `tests/reichweite-konsistenz.test.js` zählt den Kartenfaktor
-     * (`* geschwindigkeitsFaktor(this.width)`) an genau ZWEI Stellen in dieser
-     * Datei — Bahnersuchung und Geschoss.
-     */
-    const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);
+    // Dieselbe Abschussgeschwindigkeit wie die Bahnersuchung — EIN Aufruf der
+    // gemeinsamen Funktion (`#turretLaunch`).
+    const { speed } = this.#turretLaunch(schuss.power, schuss.angle, waffe);
     const geschoss = turretProjectile({ turret, waffe, winkel: schuss.angle, speed });
     const [vx, vy] = [geschoss.velocity.x, geschoss.velocity.y];
 

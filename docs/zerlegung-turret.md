@@ -54,17 +54,20 @@ winkel, kraft)`) — und reicht sie hinein. Dasselbe Muster wie `shooting.js` (W
 
 **Was in `match.js` geblieben ist — und warum (das ist der Kern dieser Zerlegung):**
 
-- **Die Bahn** `#simulateTurretPath` (`:2088-2153`, 66 Zeilen) — gepinnt, siehe Abschnitt 3.
-- **Die Abschussgeschwindigkeit** an zwei Stellen (`:2118`, `:2158`) — gepinnt, siehe
-  Abschnitt 4.
+- **Die Bahn** `#simulateTurretPath` — sie liest Kartenbreite, Wind (`this.#wind`) und Gelände.
+  Der INTEGRATIONSSCHRITT darin kommt seit dem 2026-09-27 aus `integrateStep`
+  (`src/shared/ballistics.js`); siehe Abschnitt 3.
+- **Die Abschussgeschwindigkeit** — seit dem 2026-09-27 in EINER privaten Methode
+  (`#turretLaunch`), mit zwei Aufrufern; siehe Abschnitt 4.
 - Die vier Namen aus W6 (`#resolveHitscan`, `#launchVector`, `#findMuzzle`, `#playerAt`) —
   unangetastet (`bgworker-todo.json`, Eintrag W6).
 
 ---
 
-## 3. Blocker 1: Die Bahn darf `match.js` nicht verlassen
+## 3. Blocker 1: Die Bahn durfte `match.js` nicht verlassen — am 2026-09-27 behoben
 
-`tests/turret-ballistics.test.js` liest `match.js` **als Text**. Wörtlich (`:232-281`):
+`tests/turret-ballistics.test.js` las `match.js` **als Text**. Wörtlich (`:232-281`, Fassung von
+damals):
 
 ```js
   const signatur = '#simulateTurretPath(turret, winkel, kraft, waffe) {';
@@ -80,24 +83,50 @@ winkel, kraft)`) — und reicht sie hinein. Dasselbe Muster wie `shooting.js` (W
     'Der Pfad muss `this.#wind` lesen — die Größe, die auch das Projektil nutzt');
 ```
 
-Daraus folgt zweierlei:
+Daraus folgte zweierlei:
 
-1. **Der Auftragsteil „die Bahn auslagern“ ist nicht ausführbar**, solange dieser Test steht:
+1. **Der Auftragsteil „die Bahn auslagern“ war nicht ausführbar**, solange dieser Test stand:
    Er sucht die Definition in `match.js` und schneidet ihren Rumpf per Klammerzählung heraus.
-   Wandert `#simulateTurretPath` nach `turret.js`, fällt der Test — und zwar zu Recht, denn er
-   ist als Wächter genau dafür gebaut.
-2. **Fund 1 des Duplikat-Berichts bleibt offen.** Der Bericht schlägt vor, den Pfad
-   `integrateStep` aus `src/shared/ballistics.js` benutzen zu lassen („eine Auslagerung, die
-   nichts entfernt“ hatte hier ihren Gegner in der Physik). Genau das würde aber die Zeile
+2. **Fund 1 des Duplikat-Berichts blieb offen.** Der Bericht schlägt vor, den Pfad
+   `integrateStep` aus `src/shared/ballistics.js` benutzen zu lassen. Genau das würde die Zeile
    `vy *= drag` aus dem Rumpf **entfernen** — und damit `tests/turret-ballistics.test.js:276`
-   rot machen. Die Nachbildung der vier Zeilen steht deshalb weiter in `match.js`. Der
-   Rechenweg wurde NICHT angetastet: Der Hash entscheidet, und er ist gleich geblieben.
-   *Wer Fund 1 beheben will, muss zuerst den Wächter mitziehen — das ist eine eigene Aufgabe
-   und keine Nebenwirkung dieser Zerlegung.*
+   rot machen.
 
-## 4. Blocker 2: Die Abschussgeschwindigkeit muss zweimal in `match.js` stehen
+**Der Ausweg: zuerst der Wächter, dann die Behebung.** Die Textprobe wurde nicht gestrichen,
+sondern durch eine **Verhaltens-Prüfung** ersetzt:
 
-`tests/reichweite-konsistenz.test.js` liest `match.js` ebenfalls als Text. Wörtlich (`:295-299`):
+- `match.turretPath(turret, winkel, kraft)` ist der benannte Zugang zu `#simulateTurretPath`.
+- Der Test vergleicht diese Bahn Punkt für Punkt mit `simulateFlight` aus
+  `src/shared/ballistics.js` — über sechs echte Windwerte (je eine Runde, `seed 4242`) und zwei
+  Schüsse je Wind, Bahnlängen 126–900 Takte, Abweichung **0 px**.
+- Die Fehlermeldung nennt weiter den echten Fund: Windquelle (`this.#wind` statt
+  `currentStrength` = wind × 10), Drag auf BEIDE Achsen und die gemessenen px-Zahlen
+  (Wind 0 → +14,6 px, 0,025 → −16,9 px, 0,05 → −48,4 px, −0,05 → +77,7 px).
+
+Danach war der Weg frei: `#simulateTurretPath` ruft für jeden Tick `integrateStep`. **Eigenanteil
+bleibt der Gelände-Abbruch** (`this.surfaceYAt`, Kartenrand) und die Windquelle (`this.#wind`) —
+sie gehören zur Karte, nicht zur Physik. Der Rechenweg wurde damit NICHT angetastet: Der Hash ist
+gleich geblieben (`9ec63e8c`), vor und nach dem Schritt.
+
+**Die Bahn selbst bleibt weiterhin in `match.js`** — ausgelagert ist nur der Integrationsschritt,
+nicht die Bahn. Der Modulkopf von `engine/turret.js` begründet das (Karten- und Terrainzugriff);
+seine dortige Verengung auf „Zeile 232-281 hält das fest“ ist mit dem neuen Wächter überholt.
+
+### Mutationsprobe (Kopie unter `/tmp`, nicht im Repo)
+
+| Änderung in der Kopie | neuer Wächter | alter Textanker |
+|---|---|---|
+| vier alte Zeilen zurück + `const wind = this.#wind * 0.5;` | **rot** (0,02 px, Bahnpunkt 0) | **grün** — alle vier Muster treffen zu |
+| Drag auf `vy` weggenommen | **rot** (0,06 px) | — |
+| Windquelle `this.#currentStrength` | **rot** (0,04 px) | — |
+
+Der erste Fall ist der Beleg für die Überlegenheit: Der Text war unverändert (`vy *= drag` stand
+da), die Rechnung war falsch.
+
+## 4. Blocker 2: Die Abschussgeschwindigkeit musste zweimal in `match.js` stehen — am 2026-09-27 behoben
+
+`tests/reichweite-konsistenz.test.js` las `match.js` ebenfalls als Text. Wörtlich (`:295-299`,
+Fassung von damals):
 
 ```js
   const geschwindigkeitsStellen = motor.match(/\* geschwindigkeitsFaktor\(this\.width\)/g) ?? [];
@@ -107,18 +136,23 @@ Daraus folgt zweierlei:
     + 'über launchSpeedMultiplier und muss dort `kartenbreite` mitgeben.');
 ```
 
-Der Ausdruck, den Fund 5 des Duplikat-Berichts als zeichengleich an `:2118` und `:2158`
-benennt, **muss** also in `match.js` bleiben — zweimal. Eine gemeinsame Hilfsfunktion (oder ein
-Wert aus `turret.js`) würde die Zahl auf 1 bzw. 0 senken und den Test rot machen. Deshalb:
+Der Ausdruck, den Fund 5 des Duplikat-Berichts als zeichengleich an zwei Stellen benennt,
+**musste** also in `match.js` bleiben — zweimal. Eine gemeinsame Hilfsfunktion (oder ein Wert aus
+`turret.js`) hätte die Zahl auf 1 bzw. 0 gesenkt und den Test rot gemacht. **Fund 5 blieb damit
+offen** und war hier gemeldet statt still „mitgelöst“.
 
-- In `#simulateTurretPath` (Bahn) steht weiter
-  `const speed = kraft * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);`
-- In `#spawnTurretProjectile` (Geschoss) steht weiter
-  `const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);`
-  — und `turretProjectile()` bekommt die fertige `speed` als Wert übergeben.
+**Der Ausweg: die Begründung der Zweiheit ernst nehmen.** Sie war nicht „die Regel gilt zweimal“,
+sondern „es gab keine gemeinsame Funktion“. Der Test wurde deshalb auf die eigentliche Zusage
+umgestellt: **genau eine Definition + genau zwei Aufrufe**.
 
-Beide Stellen tragen jetzt einen Kommentar, der den Grund nennt. **Fund 5 bleibt damit offen**
-und ist hier gemeldet statt still „mitgelöst“.
+- Die Formel steht nur noch in `#turretLaunch(kraft, winkel, waffe)` — samt Kartenfaktor.
+- `#simulateTurretPath` (Bahnersuchung) und `#spawnTurretProjectile` (Geschoss) rufen sie auf.
+- Der Spielerschuss gehört NICHT hinein: Er trägt zusätzlich Klassen-, Archetyp- und Waffenfaktor
+  und geht über `launchSpeedMultiplier({ …, kartenbreite: this.width })` — die alte Begründung
+  steht wörtlich in der neuen Testfassung.
+
+Mutationsprobe: Bildet das Geschoss seine Geschwindigkeit wieder selbst, meldet der Test
+„match.js skaliert an 2 Stellen selbst — erwartet ist genau EINE“. Der Hash blieb `9ec63e8c`.
 
 ---
 

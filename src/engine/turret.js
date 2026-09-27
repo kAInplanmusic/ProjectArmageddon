@@ -26,23 +26,24 @@
  *  4. `turretProjectile` — die Werte des Geschosses (Komponenteninhalt).
  *  5. Die Konstanten, aus denen diese vier lesen.
  *
- * Im Match bleibt die PHYSIK der Bahn: `#simulateTurretPath` rechnet einen
- * Schritt nach und liest dabei Kartenbreite (`this.width`) und Terrain
- * (`this.surfaceYAt`). Sie bleibt dort, weil zwei Wächter genau diese Stellen in
- * `match.js` festhalten:
+ * Im Match bleibt die PHYSIK der Bahn: `#simulateTurretPath` liest Kartenbreite
+ * (`this.width`) und Terrain (`this.surfaceYAt`) und bricht die Bahn am Gelände
+ * ab. Sie bleibt dort, weil Karten- und Terrainwissen zum Match gehört — NICHT
+ * der Integrationsschritt. Der kommt aus der geteilten Regel
+ * (`integrateStep`, `src/shared/ballistics.js`), wie beim echten Geschoss.
  *
- *  - `tests/turret-ballistics.test.js` (Zeile 232-281) sucht die Definition
- *    `#simulateTurretPath(turret, winkel, kraft, waffe) {` samt Wind-Quelle
- *    (`const wind = this.#wind`) und den Drag-Zeilen im Quelltext von
- *    `match.js` und schneidet ihren Rumpf per Klammerzählung heraus.
- *  - `tests/reichweite-konsistenz.test.js` (Zeile 295-299) zählt ZWEI Stellen
- *    mit `* geschwindigkeitsFaktor(this.width)` in `match.js` (Bahnersuchung und
- *    Geschoss).
+ * DER WÄCHTER IST VERHALTEN, NICHT TEXT. Früher verlangten zwei Textproben, dass
+ * die Zeilen `vy *= drag` und `const wind = this.#wind` in `match.js` stehen —
+ * sie hielten damit die ABSCHRIFT fest, die den Integrationsschritt nachbaute,
+ * und verboten den Umzug. Jetzt vergleicht `tests/turret-ballistics.test.js` die
+ * Bahn Punkt für Punkt gegen `simulateFlight` über mehrere echte Windwerte.
+ * Beleg, dass das strenger ist: eine Mutationsprobe (Wind halbiert, TEXT
+ * unverändert) blieb für den Textanker GRÜN und wurde für die Messung ROT.
+ * `tests/reichweite-konsistenz.test.js` zählt nicht mehr zwei Vorkommen des
+ * Geschwindigkeitsausdrucks, sondern prüft EINE Definition (`#turretLaunch`) mit
+ * zwei Aufrufern — der Grund der alten Zweiheit ist als Begründung übernommen.
  *
- * Die Suche ruft die Bahn deshalb über die Quelle (`bahn`), und die
- * Abschussgeschwindigkeit bleibt in `match.js`. Beides ist in
- * `docs/zerlegung-turret.md` belegt — inklusive der Frage, die dadurch offen
- * bleibt (`integrateStep` aus `src/shared/ballistics.js`).
+ * Beides ist in `docs/zerlegung-turret.md` belegt.
  *
  * ## Die Schnittstelle
  *
