@@ -28,6 +28,7 @@ ich im Code selbst gelesen:
 | **A-9** Abbruchknopf online | `grep -rn zeigeAbbruch src/client/*.js` → **genau EIN** `(true)` | **bestätigt** — es steht im lokalen Zweig (darunter `Lokales Match — Seed …`, `return { mode: 'local' }`) |
 | **B-8** `pruneDisconnected` | `grep -rn pruneDisconnected src/` | **bestätigt** — definiert `lobby.js:462`, **kein Aufrufer in `src/`**; der Kommentar `:446` verspricht „Team verfällt" |
 | **B-11** R-Taste | `index.html:1063` gegen `main.js:295` | **bestätigt** — Keymap sagt „Neustart", der Handler ruft `this.abortMatch()` |
+| **A-10** abgelehnter Online-Beitritt | `menuOverlay.hidden = true` an `:816/:957/:2335`; Server lehnt ab (`gameServer.js:1170`, `lobby.js:355/369`); `setTimeout` im Client: **genau einer**, für ein Günther-Overlay | **bestätigt** — Menü weg, Ablehnung möglich, **kein Timeout, kein Rückweg** |
 | **A-12** `hasSpecialEffect` | `grep -rn 'function hasSpecialEffect' src/` | **teilweise korrigiert** — **zwei** Definitionen, nicht vier. Zwei unvereinbare Regeln bleibt: `engine/specials.js:234` (`effectFor(...) !== null`) gegen `config/weapons.js:7128` (`damage > 0 \|\| SPECIAL_WITHOUT_DAMAGE.includes(...)`). Die erste hat **0 Leser** — bestätigt. Die Zahl „89 von 150" habe ich **nicht** nachgerechnet. |
 
 ---
@@ -45,7 +46,7 @@ ich im Code selbst gelesen:
 | A-7 | **Sidegrad erreicht den Client nie** — Bahn ±335 px | `main.js:1607` | A | 🟡 Worker K |
 | A-8 | **Fallschaden bremst nicht** — 633 px Sturz, 0 Schaden | Schwelle 11 gegen Aufprall 9,62 | A | 🟡 Worker L |
 | A-9 | **Abbruchknopf online nicht erreichbar** | `main.js:774`, `index.html:400` (`[hidden]` unüberstimmbar) | A | ⬜ |
-| A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `main.js:913`, `gameServer.js:1205`, `lobby.js:369` | A | ⬜ |
+| A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `menuOverlay.hidden` an `:816/:957/:2335`, Server `gameServer.js:1170` + `lobby.js:355/369` | A | ⬜ |
 | A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
 | A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ⬜ |
 | A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | 🟡 Worker K |
@@ -83,6 +84,25 @@ ich im Code selbst gelesen:
 | C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ⬜ |
 
 ---
+
+## Das Prüfloch — warum zwei schwere Fehler überleben konnten
+
+Gemessen über alle **30** E2E-Spezifikationen (`ls tests/e2e/*.spec.mjs | wc -l`):
+
+| Gegenstand | Spezifikationen, die ihn prüfen |
+|---|---|
+| `maelstrom` | **0** |
+| `sound` / Klang | **0** |
+| `jump` / `jumpsLeft` | 2 |
+| `charge` / `isCharging` | 2 |
+| `hud-log` | 1 |
+| `sidegrade` | 2 |
+
+**Die zwei Fehler, die der Spieler am stärksten merkt — Online stumm und der sieben
+Runden unsichtbare Mahlstrom — haben null Abdeckung.** Ein Fehler ohne Test kann
+beliebig lange überleben; er ist kein Zufall, er ist die Folge. Deshalb muss jeder Fix
+aus dieser Runde seinen eigenen Test mitbringen, sonst fällt er beim nächsten Umbau
+wieder um.
 
 ## ❌ Fehlalarme (widerlegt — damit sie nicht wiederkommen)
 
