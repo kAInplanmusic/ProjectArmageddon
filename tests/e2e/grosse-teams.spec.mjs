@@ -93,6 +93,63 @@ test('Krieg: 6 Teams mit 5 Einheiten zeigen 30 Figuren und laufen', async ({ pag
   await expect(page.locator('#end-overlay')).toBeHidden();
 });
 
+test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt mehr als eine Zeile', async ({ page }) => {
+  /*
+   * ## Der Befund, den dieser Test festhält (belegt, gemessen in Chrome)
+   *
+   * `#hud-log` hing in Zeile 3 des HUD-Rasters, und Zeile 2 ist `1fr` — sie
+   * wächst mit ihrem Inhalt. Bei 30–40 Figuren ist die Spielerliste über 2000 px
+   * hoch, damit rutschte das Protokoll UNTER die Spielfläche: gemessen
+   * `top = 2221 px` bei einer Spielfläche, die bei `855 px` endet. Sichtbar waren
+   * **0 Zeilen** — und zwar genau dann, wenn viele Meldungen entstehen.
+   *
+   * Die alte Prüfung an dieser Stelle war `expect(page.locator('#hud-log')).toBeVisible()`
+   * und hat das NICHT bemerkt: `toBeVisible()` fragt nur nach einer nicht-leeren
+   * Box, nicht danach, ob sie auf der Spielfläche liegt. Genau die Unterscheidung
+   * „gehört ins Modell" gegen „ist zu sehen" war damit ungeprüft.
+   *
+   * ## Was hier geprüft wird
+   *
+   * Die GEOMETRIE: Der Kasten muss innerhalb der Spielfläche liegen, und es
+   * müssen mehrere Zeilen GANZ sichtbar sein. Gemessen wird mit Füllzeilen, weil
+   * die Fläche sich sonst nach dem Inhalt richtet (wenige Meldungen = kleiner
+   * Kasten) — geprüft werden soll die Kapazität, nicht der Zufall eines Laufs.
+   */
+  await starteMit(page, 6, 5);
+  await expect(page.locator('#roster .roster-item')).toHaveCount(30, { timeout: 20_000 });
+
+  const messung = await page.evaluate(() => {
+    const game = window.__PA__.game;
+    for (let i = 0; i < 30; i += 1) game.hud.log(`Füllzeile ${i}`);
+
+    const stage = document.getElementById('stage').getBoundingClientRect();
+    const box = document.getElementById('hud-log').getBoundingClientRect();
+    const liste = document.getElementById('log-list');
+
+    // Sichtbar = im Kasten UND auf der Spielfläche (der Kasten schneidet
+    // überzählige Zeilen ab, die Spielfläche alles außerhalb).
+    const oben = Math.max(box.top, stage.top);
+    const unten = Math.min(box.bottom, stage.bottom);
+    let sichtbar = 0;
+    for (const li of liste.children) {
+      const r = li.getBoundingClientRect();
+      if (r.height > 0 && r.top >= oben - 0.5 && r.bottom <= unten + 0.5) sichtbar += 1;
+    }
+    return {
+      imStage: box.top >= stage.top - 0.5 && box.bottom <= stage.bottom + 0.5,
+      boxTop: Math.round(box.top),
+      stageBottom: Math.round(stage.bottom),
+      sichtbar,
+    };
+  });
+
+  expect(messung.imStage,
+    `Das Protokoll liegt NICHT auf der Spielfläche: top ${messung.boxTop} px, `
+    + `Fläche endet bei ${messung.stageBottom} px`).toBe(true);
+  expect(messung.sichtbar, `Sichtbare Protokollzeilen: ${messung.sichtbar} von 30 Füllzeilen`)
+    .toBeGreaterThanOrEqual(8);
+});
+
 test('Das Loadout bietet einen Platz für jede Figur der Partie', async ({ page }) => {
   /*
    * Der Folgefehler, den man leicht übersieht: Die Loadout-Felder werden aus

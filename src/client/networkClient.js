@@ -12,6 +12,7 @@ import {
   CONTROL,
   MESSAGE_TYPE,
   MAGIC,
+  PROTOCOL_VERSION,
   controlMessage,
   parseControlMessage,
   decodeSnapshot,
@@ -147,6 +148,15 @@ export class NetworkClient {
   #fullSnapshots = 0;
   /** Letzter dekodierter Snapshot — Basis für das Delta-Encoding. */
   #lastDecoded = null;
+  /**
+   * Verworfene Zustandstakte (Protokollversion passt nicht, Puffer
+   * abgeschnitten, Kennung falsch) — je Sitzung gezählt.
+   *
+   * Vorher gab es diesen Zähler nicht: Ein leerer Bildschirm ohne Meldung war
+   * die einzige Spur. Der Zähler macht den Ausfall bezifferbar (Debug-API,
+   * HUD-Meldung).
+   */
+  #snapshotRejects = 0;
   #pingTimer = null;
   #pingIntervalMs;
 
@@ -233,6 +243,12 @@ export class NetworkClient {
       joinsSent: this.#joinsSent,
       snapshotsReceived: this.#snapshotsReceived,
       fullSnapshots: this.#fullSnapshots,
+      /*
+       * Verworfene Zustandstakte. Ohne diese Zahl ist ein Protokollfehler ein
+       * schwarzes Bild ohne Meldung; mit ihr steht im Diagnosebild, wie viele
+       * Takte verloren gingen (und die HUD-Meldung nennt den Grund).
+       */
+      snapshotRejects: this.#snapshotRejects,
     };
   }
   get isConnected() { return this.#state === CONNECTION_STATE.CONNECTED; }
@@ -322,7 +338,37 @@ export class NetworkClient {
       // `previous` übergeben, damit nicht übertragene Felder aus dem letzten
       // Snapshot übernommen werden (Delta-Encoding).
       const snapshot = decodeSnapshot(data, this.#lastDecoded?.previous ?? null);
-      if (!snapshot) return;
+      if (!snapshot) {
+        /*
+         * Ein verworfener Zustandstakt wird GEZÄHLT und GEMELDET.
+         *
+         * FUND (belegt, Datenfluss-Audit): Hier stand nur `return` — der
+         * schlimmste Fall eines stillen Fehlers. Passt die Protokollversion
+         * nicht (älterer Server, neuer Client oder umgekehrt), liefert
+         * `decodeSnapshot` `null`; der Client verwarf JEDEN Takt, zeigte ein
+         * schwarzes Bild und meldete nichts. Der Spieler sah ein stehendes Bild
+         * ohne Ursache, das Protokoll keine Zeile — und die drei Stellen, die
+         * `null` liefern können (falsche Version, abgeschnittener Puffer,
+         * falsche Kennung), waren von außen nicht zu unterscheiden.
+         *
+         * Deshalb geht der GRUND mit: Version und Puffergröße stehen im Kopf
+         * des Frames und werden hier ausgelesen, damit die Meldung sagt, WAS
+         * nicht passt. Gemeldet wird über `snapshot_rejected`; die Anzeige
+         * (`main.js`) schreibt die erste Zeile und danach nicht jede weitere.
+         */
+        const version = view.length > 2 ? view[2] : null;
+        this.#snapshotRejects += 1;
+        this.#emit('snapshot_rejected', {
+          grund: version !== PROTOCOL_VERSION
+            ? `Protokollversion ${version} statt ${PROTOCOL_VERSION}`
+            : 'unlesbarer oder abgeschnittener Zustandstakt',
+          version,
+          erwartet: PROTOCOL_VERSION,
+          bytes: view.length,
+          versuche: this.#snapshotRejects,
+        });
+        return;
+      }
       this.#lastDecoded = snapshot;
       this.#snapshots.push(snapshot);
       if (this.#snapshots.length > 30) this.#snapshots.shift();

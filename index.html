@@ -254,7 +254,35 @@
 
     #hud-left { grid-column: 1; grid-row: 2; align-self: start; }
     #hud-right { grid-column: 3; grid-row: 2; align-self: start; }
-    #hud-log { grid-column: 1 / -1; grid-row: 3; max-height: 108px; overflow: hidden; }
+
+    /*
+     * Das Ereignisprotokoll steht AM UNTEREN RAND der Spielfläche — unabhängig
+     * von der Größe der Spielerliste.
+     *
+     * FUND (belegt, in Chrome gemessen mit echtem Motor und Hud, 1440×900):
+     * `max-height: 108px` war nicht der begrenzende Faktor. Die Zeile 2 des
+     * HUD-Rasters ist `1fr` und wächst mit ihrem Inhalt: Bei 40 Figuren ist die
+     * Spielerliste 2092 px hoch, damit rutschte das Protokoll auf y = 2221 px,
+     * während die Spielfläche bei y = 855 px endet — 0 sichtbare Zeilen, nicht
+     * 4–5. Bei vier Figuren fiel das nie auf (108 px ≈ 5 Zeilen); der Fehler
+     * zeigt sich genau dann, wenn viele Meldungen entstehen.
+     *
+     * Deshalb hängt die Fläche nicht mehr im Raster, sondern am unteren Rand,
+     * und ihre Höhe wächst mit dem Fenster (Zielbild Full-HD bis 4K). Sie ist
+     * gegen jede künftige Höhe der Nachbarspalten unempfindlich — das ist der
+     * Unterschied zwischen „gehört ins Modell" und „ist zu sehen".
+     *
+     * `bottom: 12px` und `left/right: 12px` entsprechen dem Rasterabstand
+     * (`#hud { padding: 12px; gap: 10px }`), den die Zeile vorher hatte.
+     */
+    #hud-log {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      max-height: clamp(108px, 22vh, 340px);
+      overflow: hidden;
+    }
 
     #roster, #weapon-list { list-style: none; margin: 0; padding: 8px; display: grid; gap: 6px; }
 

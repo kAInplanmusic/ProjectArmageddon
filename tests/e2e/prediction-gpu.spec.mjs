@@ -189,4 +189,153 @@ test.describe('Tastatur feuert', () => {
     const zustand = await page.evaluate(() => window.__PA__.game.match.getState());
     expect(zustand.tick).toBeGreaterThan(0);
   });
+
+  test('HALTEN lädt auf: es ergibt mehr Kraft als ein Tippen', async ({ page }) => {
+    /*
+     * ## Der Befund, den dieser Test festhält (belegt)
+     *
+     * `InputController#releaseCharge` löschte `#charging` VOR `onFire()`, und
+     * `Main#fire` las genau danach `isCharging` — immer `false`. Die Folge: Der
+     * Ladezweig in `fire()` war toter Code, jede Kugel flog mit der eingestellten
+     * Kraft, und der Spieler sah keinen Ladefortschritt. Der alte Test dieser
+     * Datei prüfte nur `tick > 0` — er hätte das nie bemerkt: Es passierte ja
+     * etwas, nur nicht das Versprochene („halten = mehr Kraft", README und
+     * Tastaturliste in `index.html`).
+     *
+     * ## Warum die Tasten IM SEITENKONTEXT gesendet werden
+     *
+     * Ein Tipp ist ein Tastendruck, der praktisch keine Zeit dauert. Über das
+     * Playwright-Protokoll gedrückt (keyboard.down + keyboard.up) dauerte
+     * „Tippen" gemessen **~650 ms** — der Seitenprozess ist direkt nach dem
+     * Matchstart mit dem Backen des Geländes beschäftigt. Gemessen wurde damit
+     * `Schuss abgegeben (68 Kraft)` für einen „Tipp". Das ist kein Tipp mehr,
+     * sondern ein halbes Aufladen, und der Vergleich hätte die Wirkung des
+     * HALTENS nicht mehr belegt.
+     *
+     * Deshalb werden echte `KeyboardEvent`s im selben Task gesendet: Drücken und
+     * Loslassen ohne Zeit dazwischen ist genau der getippte Schuss, und die
+     * Ladung wird über `performance.now()` gemessen — die Größe, die das Spiel
+     * selbst benutzt. Der Weg ist unverändert echt: dieselben `window`-Listener
+     * (`InputController#attach`), derselbe `onFire`-Pfad, dieselbe Meldung im
+     * Protokoll. Dass auch die echte Playwright-Tastatur feuert, hält der Test
+     * direkt darüber fest (`Die Leertaste lädt weiterhin auf …`).
+     *
+     * ## Ein „Tipp" muss auch ein Tipp sein
+     *
+     * Die Dauer des Tipps wird MITGEMESSEN (`performance.now()` um die beiden
+     * Versendungen — dieselbe Uhr wie der Ladefortschritt). Auf einer belasteten
+     * Maschine dauert selbst dieser Block länger: gemessen **514 ms** für einen
+     * „Tipp", was `Schuss abgegeben (60 Kraft)` ergibt. Das ist kein Tipp,
+     * sondern ein halbes Aufladen — und genau dieser Fall hat den Test einmal
+     * rot gemacht. Deshalb gilt ein Durchgang nur, wenn der Tipp unter 150 ms
+     * blieb; sonst wird der ganze Durchgang wiederholt. Die Zusicherung selbst
+     * bleibt streng.
+     *
+     * ## Was gemessen wird
+     *
+     * Zwei Zahlen aus dem Protokoll: ein getippter und ein voll aufgeladener
+     * Schuss. Dazu der Ladefortschritt WÄHREND des Haltens — genau die Größe,
+     * aus der die Ladeanzeige im Renderer und der Kraftwert im HUD entstehen.
+     */
+    await page.goto('/');
+    await page.waitForFunction(() => window.__PA__?.game, null, { timeout: 15_000 });
+
+    const messen = () => page.evaluate(async () => {
+      const api = window.__PA__;
+      const warte = ms => new Promise(fertig => setTimeout(fertig, ms));
+      const runter = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      const hoch = () => window.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+      const leseKraft = () => {
+        const treffer = [...document.querySelectorAll('#log-list li')]
+          .map(li => (li.textContent ?? '').match(/Schuss abgegeben \((\d+) Kraft\)/))
+          .filter(Boolean);
+        return treffer.length > 0 ? Number(treffer[0][1]) : null;
+      };
+      const starte = async () => {
+        api.startMatch({ seed: 20260916, teams: 2, playersPerTeam: 1, preset: 'hills' });
+        await warte(100);
+      };
+
+      // 1) TIPPEN: Drücken und Loslassen ohne Zeit dazwischen — und die Dauer
+      //    messen (sie IST die Ladedauer dieses Schusses).
+      await starte();
+      const t0 = performance.now();
+      runter();
+      hoch();
+      const tippDauer = performance.now() - t0;
+      await warte(150);
+      const getippt = leseKraft();
+
+      // 2) HALTEN: länger als die volle Ladezeit (1200 ms).
+      await starte();
+      runter();
+      await warte(500);
+      const beimHalten = { laedt: api.game.input.isCharging, anteil: api.game.input.chargeRatio };
+      await warte(900);
+      hoch();
+      await warte(150);
+      const gehalten = leseKraft();
+
+      return { getippt, gehalten, beimHalten, tippDauer };
+    });
+
+    /*
+     * Zwei Gründe für eine Wiederholung:
+     *
+     *  1. Ein Reload des Dev-Servers (schreibende Parallelarbeiter →
+     *     `[vite] page reload`) zerstört den Ausführungs-Kontext mitten in der
+     *     Messung.
+     *  2. Der „Tipp" war auf einer belasteten Maschine KEIN Tipp (Dauer über
+     *     150 ms) — dann misst der Vergleich nicht, was er messen soll.
+     *
+     * Die Zusicherung selbst (Halten > Tippen, Spanne 30…100) bleibt streng.
+     */
+    const dauern = [];
+    let ergebnis = null;
+    let letzterFehler = null;
+    for (let versuch = 0; versuch < 5 && ergebnis === null; versuch += 1) {
+      try {
+        const lauf = await messen();
+        dauern.push(Math.round(lauf.tippDauer));
+        if (lauf.tippDauer > 150) {
+          await page.waitForTimeout(300);
+          continue;
+        }
+        ergebnis = lauf;
+      } catch (fehler) {
+        letzterFehler = fehler;
+        if (!/Execution context was destroyed|closed/i.test(String(fehler?.message))) throw fehler;
+        await page.waitForTimeout(300);
+      }
+    }
+    if (ergebnis === null) {
+      throw letzterFehler ?? new Error(
+        `Kein gültiger Tipp-Durchgang: gemessene Tipp-Dauern ${JSON.stringify(dauern)} ms `
+        + '(erlaubt sind höchstens 150 ms) — die Maschine ist zu belastet für diese Messung',
+      );
+    }
+
+    const { getippt, gehalten, beimHalten, tippDauer } = ergebnis;
+
+    // Vorbedingungen — ohne sie prüfte der Vergleich nichts.
+    expect(getippt, 'Ein getippter Schuss muss gefeuert haben').not.toBeNull();
+    expect(gehalten, 'Ein gehaltener Schuss muss gefeuert haben').not.toBeNull();
+    expect(beimHalten.laedt, 'Während des Haltens muss geladen werden').toBe(true);
+    expect(beimHalten.anteil, 'Der Ladefortschritt muss wachsen (die Größe der Ladeanzeige)')
+      .toBeGreaterThan(0.4);
+
+    // DIE Zusicherung: Halten ergibt MEHR Kraft als Tippen.
+    expect(gehalten, `Halten (${gehalten}) muss mehr Kraft ergeben als Tippen (${getippt}, `
+      + `${Math.round(tippDauer)} ms)`)
+      .toBeGreaterThan(getippt);
+    /*
+     * Und die Spanne ist die zugesagte: Tippen = Minimum (30), voll = 100.
+     *
+     * Gemessen mit dieser Sonde (`/tmp/pa-probe/probe-laden.mjs`, nicht im
+     * Repo): **Tippen 33, Halten 100**. Die Grenzen lassen Last zu und schließen
+     * trotzdem aus, dass ein „Tipp" ein halbes Aufladen war.
+     */
+    expect(getippt).toBeLessThan(60);
+    expect(gehalten).toBeGreaterThanOrEqual(90);
+  });
 });

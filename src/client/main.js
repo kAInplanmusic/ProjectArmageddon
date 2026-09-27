@@ -16,7 +16,7 @@ import { isTextEntry } from './dom.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
 import { Renderer } from './renderer.js';
 import { Camera } from './camera.js';
-import { InputController } from './input.js';
+import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { buildTerrainForSeed } from './terrainPreview.js';
@@ -48,6 +48,7 @@ import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
 import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../shared/terrainGen.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
+import { maelstromActiveFromRound } from '../shared/config/match.js';
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile, beschreibe } from '../shared/stats.js';
@@ -172,7 +173,10 @@ class Game {
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
       onAim: (angle, power) => { this.aim = { angle, power }; },
-      onFire: () => this.fire(),
+      // Die Kraft kommt AUS dem Aufladen (`InputController#releaseCharge`) —
+      // sie wird dort gelesen, bevor das Laden endet. Enter ruft `fire()` ohne
+      // Argument und schießt mit der eingestellten Kraft (`this.aim.power`).
+      onFire: kraft => this.fire(kraft),
       onWeaponSelect: index => this.selectWeapon(index),
       // Aktive Waffe abwerfen (Q).
       onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()),
@@ -204,6 +208,24 @@ class Game {
 
     document.getElementById('start-button')?.addEventListener('click', () => this.startFromMenu());
     document.getElementById('rematch-button')?.addEventListener('click', () => {
+      /*
+       * REVANCHE = DIESELBE KARTE.
+       *
+       * FUND (belegt, Datenfluss-Audit): Der Knopf öffnete nur wieder das Menü.
+       * Das Seed-Feld ist dort standardmäßig LEER (`placeholder="leer = neue
+       * Karte"`), und ein leerer Seed heißt ein NEUER Zufalls-Seed
+       * (`match.js:564` `MatchSeedManager.createRandom()`). Wer „Revanche"
+       * drückte, spielte also auf einer anderen Karte — obwohl der Knopf nach
+       * einem Neuanlauf auf derselben Karte klingt. Gemessen an zwei Läufen ohne
+       * Seed: baseSeed 3367130477 gegen 1341271627, Zustandshash `98aad2e2`
+       * gegen `e6da56da`.
+       *
+       * Der Wert steht im Feld, nicht in einer zweiten Ablage: So sieht der
+       * Spieler, worauf er als Nächstes spielt, und kann ihn LÖSCHEN, wenn er
+       * wirklich eine neue Karte will. Dieselbe Karte ist die Vorgabe, die neue
+       * bleibt eine bewusste Handlung.
+       */
+      this.#seedFuerRevanche();
       this.endOverlay.hidden = true;
       this.menuOverlay.hidden = false;
     });
@@ -284,6 +306,28 @@ class Game {
      * ein Eintrag in der Tastaturliste des Menüs.
      */
     this.abortButton?.addEventListener('click', () => this.abortMatch());
+  }
+
+  /**
+   * Trägt den Seed der letzten Partie ins Menü ein — für die Revanche.
+   *
+   * Der Wert kommt aus DER Quelle, die ihn geführt hat: lokal aus dem
+   * MatchController (`seedManager.baseSeed` — bei leerem Feld ein gezogener
+   * Zufallswert), online aus der Lobby (`networkClient.worldSeed`, vom Server
+   * im `lobby_state` gemeldet). Es gibt keine zweite Ablage und keinen eigenen
+   * Zähler: Der Seed ist bereits da, er wurde nur nicht weitergegeben.
+   *
+   * @returns {number|null} der eingetragene Seed, `null` wenn keiner bekannt ist
+   */
+  #seedFuerRevanche() {
+    const seed = this.mode === 'online'
+      ? (this.network?.worldSeed ?? null)
+      : (this.match?.seedManager?.baseSeed ?? null);
+    const feld = document.getElementById('cfg-seed');
+    if (seed === null || seed === undefined || !feld) return null;
+    feld.value = String(seed);
+    this.hud.log(`Revanche auf derselben Karte — Seed ${seed}`, 'accent');
+    return seed;
   }
 
   /**
@@ -1056,6 +1100,25 @@ class Game {
       this.hud.log(`Server: ${text}`, 'danger');
     });
     client.on('game_event', message => this.#handleRemoteEvent(message));
+    /*
+     * Ein VERWORFENER Zustandstakt wird gemeldet, nicht verschwiegen.
+     *
+     * FUND (belegt, Datenfluss-Audit): `decodeSnapshot` liefert `null`, wenn die
+     * Protokollversion nicht passt oder der Puffer abgeschnitten ist — der
+     * Client verwarf den Takt und kehrte still zurück. Folge: schwarzes Bild
+     * ohne Meldung, keine Zeile im Protokoll, und für den Spieler kein
+     * Unterschied zwischen „Server sendet nicht", „Protokoll passt nicht" und
+     * „Netz spinnt". Gemeldet wird der ERSTE Ausfall je Verbindung — eine Zeile
+     * je Takt wäre selbst eine Zumutung; die Gesamtzahl steht im Zähler
+     * (`networkClient.stats.snapshotRejects`, Debug-Ansicht).
+     */
+    client.on('snapshot_rejected', info => {
+      if (info.versuche !== 1) return;
+      this.hud.log(
+        `Zustandstakt verworfen: ${info.grund} (${info.bytes} Byte) — das Bild steht, bis das passt`,
+        'danger',
+      );
+    });
     // Bestände kommen wegen ihrer variablen Länge nicht im binären Snapshot,
     // sondern als eigene Nachricht bei Änderung.
     // Der Ansichtszustand wird jeden Frame neu gebaut; die Bestände werden dort
@@ -1160,12 +1223,47 @@ class Game {
         ?? (CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1),
       archetypeId: this.remoteLoadouts?.[entity.entityId]?.archetypeId
         ?? (ARCHETYPE_IDS[index % ARCHETYPE_IDS.length] === 'brawler' ? 0 : 1),
+      /*
+       * Der SIDEGRADE kommt aus derselben Bestandsnachricht wie die Klasse.
+       *
+       * FUND (belegt, Datenfluss-Audit): Diese Zeile fehlte, und `#startShotPrediction`
+       * las `eigene.sidegradeId` (`:1607`) — der Wert war online also IMMER
+       * `undefined`, und die Bahn wurde ohne Sidegrade gerechnet, obwohl der
+       * Server mit ihm rechnet. Gemessen an der Bahnlänge (Sonde
+       * `/tmp/pa-stille/sonde1-sidegrade-maxhealth.mjs`, 45°, Kraft 100, flacher
+       * Boden): artillery/scharfschütze 134 px ohne, 191 px mit `kompakt`
+       * (+57 px) und 98 px mit `schwerlast` (−36 px) — der Faktor geht von
+       * 0,5347 auf 0,6417 bzw. 0,4545. Auf einer großen Karte wächst der Fehler
+       * mit dem Quadrat des Faktors (Bahnweite ∝ f²), also auf mehrere hundert
+       * Pixel.
+       *
+       * Der Rückfall ist der NEUTRALE Wert (`null` = „kein Sidegrade") — genau
+       * wie im Motor, wo eine unbekannte Kennung wie „kein Sidegrade" wirkt. Ein
+       * geratener Ersatzwert wäre hier besonders schädlich: Er zeigte eine Bahn,
+       * die zu keinem Profil gehört.
+       */
+      sidegradeId: this.remoteLoadouts?.[entity.entityId]?.sidegradeId ?? null,
       label: `P${index + 1}`,
       alive: entity.alive,
       x: entity.x,
       y: entity.y,
       health: entity.health,
-      maxHealth: 100,
+      /*
+       * Höchstleben aus der Bestandsnachricht — nicht die Konstante 100.
+       *
+       * FUND (belegt, Datenfluss-Audit): Hier stand `maxHealth: 100`. Die
+       * Klassen und Archetypen ergeben gemessen 32 verschiedene Werte von 48 bis
+       * 195 (scout/späher 96, artillery 108, heavy/brawler 156, mit
+       * Zusatzpanzerung 120/135/195). `hud.js:365` und `renderer.js:795` rechnen
+       * `health / maxHealth` ohne Obergrenze: Ein voller Balken eines Brawlers
+       * war 156 % breit, ein unverletzter Späher sah mit 96 % beschädigt aus.
+       *
+       * Die 100 bleibt als Startwert, bis die erste Bestandsnachricht da ist —
+       * sie ist der Vorgabewert der Simulation (`BASE_HEALTH`), nicht die
+       * Gesundheit der Klasse. Der Server schickt sie beim Beitritt sofort
+       * (`syncLoadouts(true)`), sie wird also im ersten Bild ersetzt.
+       */
+      maxHealth: this.remoteLoadouts?.[entity.entityId]?.maxHealth ?? 100,
       // Wasserstand kommt je Spieler mit dem Snapshot (Protokoll v4) und geht
       // unverändert in den Ansichtszustand — dieselbe Anzeige wie im lokalen
       // Modus, ohne zweiten Rechenweg.
@@ -1191,7 +1289,26 @@ class Game {
       activePlayerId: snapshot.activePlayerId,
       winnerTeamId: this.remoteWinner ?? null,
       statuses,
-      maelstrom: { active: (snapshot.round ?? 0) >= 15, inset: this.remoteInset ?? 0 },
+      /*
+       * Der Mahlstrom — aus der EINEN Schwelle der Konfiguration.
+       *
+       * FUND (belegt, Datenfluss-Audit): Hier stand `active: (snapshot.round ?? 0) >= 15`
+       * — der WERT VOR der letzten Balancing-Änderung. Der Motor greift seitdem
+       * ab Runde 8 (`MATCH_RULES.suddenDeath.roundBreakpoint`, gelesen in
+       * `match.js:2722`). ONLINE war der Sturm damit sieben Runden lang
+       * UNSICHTBAR: Der Renderer zeichnet die Sturmwand nur bei `active`
+       * (`renderer.js`, `#drawMaelstrom`), das HUD meldete derweil grün „Läuft"
+       * (`hud.js:255`) — während die Karte sich zusammenzog und Leben kostete.
+       * Zwei unabhängige Prüfer haben es gefunden; lokal fiel es nicht auf, weil
+       * dort der Motor den Wert liefert (`engine/stateSnapshot.js:175`).
+       *
+       * Gelesen wird die Konfiguration, nicht eine zweite Zahl: `snapshot.round`
+       * steht auf der Leitung, `roundBreakpoint` kommt aus DERSELBEN Datei, aus
+       * der der Motor ihn liest. Ein Feld im Snapshot wäre die Alternative
+       * gewesen — sie kostete ein Byte im Kopf und eine Protokollversion für
+       * einen Wert, der sich aus zwei vorhandenen Angaben ergibt.
+       */
+      maelstrom: { active: maelstromActiveFromRound(snapshot.round), inset: this.remoteInset ?? 0 },
       entities,
       projectiles: snapshot.projectiles ?? [],
       /*
@@ -1342,15 +1459,39 @@ class Game {
     this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
   }
 
-  /** Feuert in der aktuellen Betriebsart. */
-  fire() {
+  /**
+   * Feuert in der aktuellen Betriebsart.
+   *
+   * ## Woher die Kraft kommt (Befund, belegt 2026-09-27)
+   *
+   * Hier stand:
+   *
+   *     const charging = this.input.isCharging;
+   *     const power = charging
+   *       ? Math.min(100, Math.max(8, Math.round(30 + this.input.chargeRatio * 70)))
+   *       : this.aim.power;
+   *
+   * Das war TOTER CODE: `InputController#releaseCharge` löschte `#charging`
+   * vor dem Aufruf von `onFire`, also lieferte `isCharging` immer `false` und
+   * `power` war immer `this.aim.power`. Das Aufladen hatte keine Wirkung —
+   * obwohl README und die Tastaturliste es versprechen.
+   *
+   * Jetzt bringt der Aufruf die Kraft MIT (`kraftAusLadung`), gelesen vom
+   * Eingabe-Controller, bevor das Laden endet. Wer keine übergibt (Enter über
+   * `#onKeyDown`, die Diagnose `__PA__.fire`), schießt mit der eingestellten
+   * Kraft `this.aim.power` — das ist unverändert.
+   *
+   * @param {number|null} geladen Kraft aus dem Aufladen, oder `null`
+   */
+  fire(geladen = null) {
     const state = this.currentState();
     if (!state) return { ok: false, errors: ['Kein laufendes Match'] };
     if (state.status !== 'playing') return { ok: false, errors: ['Match ist beendet'] };
 
-    const charging = this.input.isCharging;
-    const power = charging
-      ? Math.min(100, Math.max(8, Math.round(30 + this.input.chargeRatio * 70)))
+    // Die aufgeladene Kraft gilt in BEIDEN Betriebsarten — der Server rechnet
+    // mit derselben Zahl, die die Anzeige während des Ladens gezeigt hat.
+    const power = Number.isFinite(geladen)
+      ? Math.max(MIN_KRAFT, Math.min(MAX_KRAFT, Math.round(geladen)))
       : this.aim.power;
 
     if (this.mode === 'online') {
@@ -1403,7 +1544,15 @@ class Game {
     this.lastEvents = events;
     // Kennzahlen aus DENSELBEN Ereignissen, die auch das Protokoll speist —
     // keine zweite Buchführung, die abweichen könnte.
-    this.stats?.feedAll(events);
+    //
+    // Der TAKT geht mit: Er steht in keinem Ereignis (Ereignisse tragen nur
+    // ihre Nutzlast), und ohne ihn blieb `MatchStats.tick` bei 0 stehen. Die
+    // Folge war ein stiller Fehler in der Trefferquote — das Trefferfenster
+    // (`TREFFER_FENSTER_TICKS`) verglich 0 gegen 0 und war damit IMMER
+    // durchlässig: Ein Schuss, dessen Schaden erst 2000 Takte später ankam,
+    // zählte als Treffer. Gemessen vorher `treffer: 1, trefferquote: 1` für
+    // genau diesen Fall (siehe `tests/stats-trefferfenster.test.js`).
+    this.stats?.feedAll(events, this.match.world.tickCount);
     this.#handleEvents(events);
     if (before === 'playing' && this.match.status === 'gameover') {
       this.#showEndScreen(this.match.winnerTeamId);
@@ -2025,8 +2174,23 @@ class Game {
     const myTurn = this.mode === 'online'
       ? this.network?.isMyTurn === true
       : state.status === 'playing' && playerId !== null;
+
+    /*
+     * Der Ladefortschritt gehört ins Bild — und in die Rechnung, die gezeigt wird.
+     *
+     * `chargeRatio` gab es schon, es hat ihn nur niemand gelesen: Wer hielt,
+     * sah nichts und schoss mit derselben Kraft wie ein Tipp. Hier wird derselbe
+     * Wert benutzt, den `fire()` beim Loslassen bekommt — Zielhilfe, HUD-Zahl
+     * und der Schuss selbst zeigen deshalb dieselbe Kraft. Zwei getrennte
+     * Rechnungen könnten auseinanderlaufen, und der Spieler sähe eine Kraft, die
+     * nicht die seine ist.
+     */
+    const laedt = this.input.isCharging;
+    const ladeAnteil = laedt ? this.input.chargeRatio : 0;
+    const ladeKraft = laedt ? kraftAusLadung(ladeAnteil) : null;
+
     const aimPreview = (myTurn && this.mode === 'local')
-      ? this.match.aimPreview(playerId, this.aim.angle, this.aim.power)
+      ? this.match.aimPreview(playerId, this.aim.angle, ladeKraft ?? this.aim.power)
       : null;
 
     this.waterFrame = (this.waterFrame + 1) % 4;
@@ -2067,12 +2231,18 @@ class Game {
     this.renderer.render(state, {
       aimPreview,
       prediction,
-      aim: this.aim,
+      // Während des Ladens zeigt die Anzeige die aufgeladene Zahl — dieselbe,
+      // mit der der Schuss beim Loslassen fliegt.
+      aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
+      ladeAnteil,
       water: this.mode === 'online' ? null : (this.waterFrame === 0 ? this.match.water : null),
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.#trackWater(state);
-    this.hud.update(state, { aim: this.aim, onWeaponSelect: index => this.selectWeapon(index) });
+    this.hud.update(state, {
+      aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
+      onWeaponSelect: index => this.selectWeapon(index),
+    });
     if (this.mode === 'online') this.hud.setConnection?.(
       this.network?.state ?? CONNECTION_STATE.IDLE,
       this.network?.latencyMs ?? 0,

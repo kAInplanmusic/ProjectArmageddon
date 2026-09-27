@@ -278,4 +278,57 @@ test.describe('Schussvorhersage online', () => {
     const zustand = await page.evaluate(() => window.__PA__.prediction());
     expect(zustand.active, 'Nach einer Ablehnung darf keine Vorhersage laufen').toBe(false);
   });
+
+  test('Online wird der Klang GERUFEN — der Mischer zählt den Schuss aus dem Serverereignis', async ({ page }) => {
+    /*
+     * ## Der Befund (belegt, 2026-09-27)
+     *
+     * Alle vier Klangaufrufe des Clients lagen in den NUR-LOKALEN Zweigen
+     * (`src/client/ereignisse.js`: `explosion`, zweimal `hitscan`, `shot`). Die
+     * Online-Zweige machten nur `shotPredictor.resolve()`: **kein Schuss-,
+     * kein Explosions-, kein Trefferklang**. Der Mischer wurde online übergeben
+     * (`main.js#ereignisKontext`) und nie gerufen — wer online spielte, hörte
+     * überhaupt nichts. Dass keine E2E-Spezifikation je den Klang prüfte, ist
+     * der Grund, warum das überleben konnte.
+     *
+     * ## Was hier geprüft wird
+     *
+     * NICHT eine Attrappe, sondern der ECHTE Mischer im Browser: `SoundMixer`
+     * führt Zähler (`gezaehlt`) genau für diese Messung. Gemessen wird am
+     * Zuwachs nach einem Schuss — und „online" heißt dabei nicht nur „im
+     * Online-Modus", sondern „aus einem SERVEREREIGNIS": Der Client feuert nur
+     * `sendInput`, Klang entsteht erst, wenn die Bestätigung des Servers
+     * eintrifft und durch `verarbeiteOnline` läuft. Vorher blieb der Zähler
+     * dabei stehen.
+     *
+     * Vorbedingung: Der Mischer braucht einen AudioContext. In dieser Umgebung
+     * gibt es ihn (gemessen: `starte()` → true). Ohne ihn wäre diese Messung
+     * nicht möglich — dann sagt der Test das, statt grün zu sein und nichts
+     * bewiesen zu haben.
+     */
+    await starteOnlineMatch(page);
+    await warteAufEigenenZug(page);
+
+    const bereit = await page.evaluate(() => window.__PA__.game.sound.starte());
+    expect(bereit, 'Ohne AudioContext lässt sich der Klangweg hier nicht messen').toBe(true);
+
+    const vorher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
+
+    await page.keyboard.press('Enter');
+
+    // Auf den ZUWACHS warten — der Zähler ist der Beleg, nicht eine Frist.
+    await page.waitForFunction(
+      grenze => {
+        const z = window.__PA__.game.sound.gezaehlt;
+        return z.schuss + z.explosion + z.treffer > grenze;
+      },
+      vorher.schuss + vorher.explosion + vorher.treffer,
+      { timeout: 20_000 },
+    );
+
+    const nachher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
+    expect(nachher.schuss,
+      `Der Schuss-Klang muss online gerufen werden (vorher ${vorher.schuss}, jetzt ${nachher.schuss})`)
+      .toBeGreaterThan(vorher.schuss);
+  });
 });

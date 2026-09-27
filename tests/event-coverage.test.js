@@ -444,6 +444,70 @@ test('Beide Zweige behandeln den Einschlag GLEICH', () => {
     'Beide Zweige müssen denselben Blitz erzeugen — gleicher Ort, gleiche Maße');
 });
 
+test('Die Klangebene gilt ONLINE genauso wie lokal — Schuss, Explosion, Treffer', () => {
+  /*
+   * ## Der Befund (belegt, 2026-09-27)
+   *
+   * Alle vier Klangaufrufe des Clients standen in den NUR-LOKALEN Zweigen
+   * (`ereignisse.js`: `explosion`, zweimal `hitscan`, `shot`). Der Online-Zweig
+   * machte nur `shotPredictor.resolve()` — Mündungsfeuer, Schuss- und
+   * Explosionsklang fehlten. Der Mischer WIRD online übergeben
+   * (`Main#ereignisKontext`, `sound: this.sound`), er wurde nur nie gerufen.
+   * Wer online spielte, hörte überhaupt keine Schüsse und Einschläge.
+   *
+   * ## Was hier geprüft wird
+   *
+   * Nicht „ein Zweig ist da", sondern dass online GENAU DIESELBEN Klänge
+   * entstehen wie lokal — über den echten Einstieg `verarbeiteOnline`, mit
+   * einem Mischer, der die Aufrufe aufzeichnet. Die Erwartung ist deshalb
+   * `deepEqual(lokal, online)`: Beide Betriebsarten müssen dieselbe Tonfolge
+   * erzeugen, inklusive der Bedingung „`damage` nur bei einem echten Treffer".
+   *
+   * ## Und keine Klangflut
+   *
+   * Das `damage`-Klangsignal hängt am TREFFER eines `hitscan`-Ereignisses, nicht
+   * am `damage`-Ereignis des Motors. Das ist der Unterschied: `damage` meldet im
+   * großen Match jeden Takt und ist gedrosselt (`GEDROSSELTE_EREIGNISARTEN`,
+   * gemessen 15092 Meldungen in 30 s bei 40 Figuren) — ein Klang daran wäre ein
+   * Dauerläuten. Gemessen an einem echten Replay (38 Schüsse, 40,7 s, durch den
+   * Sendefilter): 74 Klang-Anlässe = **1,8 je Sekunde**.
+   */
+  const gehoert = { lokal: [], online: [] };
+  const kontext = zweig => ({
+    sound: { verarbeite: ereignis => gehoert[zweig].push(ereignis.type) },
+    hud: { log: () => {} },
+    renderer: {
+      applyCrater() {}, addFlash() {}, spawnExplosionParticles() {}, addMuzzleFlash() {},
+    },
+    shotPredictor: { resolve() {} },
+    drawHitscanBeam() {},
+    logSpecialEffect() {},
+    showGuentherWheel() {},
+    showEndScreen() {},
+    nameOf: () => 'P1',
+    match: { players: [] },
+    fernzustand: { status: () => 'playing', setzeStatus() {}, setzeSieger() {}, setzeEinschnitt() {} },
+  });
+
+  const faelle = [
+    ['explosion', { x: 10, y: 20, radius: 30 }],
+    ['shot', { playerId: 1, angle: 0.5 }],
+    // Fehlschuss: EIN Klang (der Schuss), KEIN Trefferklang.
+    ['hitscan', { playerId: 1, weaponId: 'pa_002', hit: false, hitX: 5, hitY: 6 }],
+    // Treffer: Schuss UND Treffer.
+    ['hitscan', { playerId: 1, weaponId: 'pa_002', hit: true, target: 2, hitX: 5, hitY: 6 }],
+  ];
+  for (const [typ, nutzlast] of faelle) {
+    verarbeiteLokal(kontext('lokal'), { type: typ, payload: nutzlast });
+    verarbeiteOnline(kontext('online'), { t: typ, ...nutzlast });
+  }
+
+  assert.deepEqual(gehoert.lokal, ['explosion', 'shot', 'shot', 'shot', 'damage'],
+    `Der lokale Klangweg ist nicht der erwartete: ${JSON.stringify(gehoert.lokal)}`);
+  assert.deepEqual(gehoert.online, gehoert.lokal,
+    'ONLINE muss dieselbe Tonfolge erzeugen wie lokal — sonst ist die Klangebene dort wieder stumm');
+});
+
 test('Die Engine sendet den Einschlag wirklich', () => {
   /*
    * Die Gegenprobe zum Strukturtest: Wäre das Ereignis nie gesendet worden,

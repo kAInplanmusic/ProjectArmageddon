@@ -9,6 +9,46 @@
  */
 import { isTextEntry } from './dom.js';
 
+/** Kraft eines getippten Schusses (Ladefortschritt 0). */
+export const MIN_KRAFT = 30;
+
+/** Kraft eines voll aufgeladenen Schusses (Ladefortschritt 1). */
+export const MAX_KRAFT = 100;
+
+/**
+ * Die Kraft eines aufgeladenen Schusses: 0 = gerade getippt, 1 = voll geladen.
+ *
+ * ## Der Befund, der diese Funktion sichtbar machte (belegt)
+ *
+ * Die Formel stand bis 2026-09-27 als toter Zweig in `Main#fire`:
+ *
+ *     const charging = this.input.isCharging;
+ *     const power = charging ? Math.min(100, Math.max(8, Math.round(30 + this.input.chargeRatio * 70))) : this.aim.power;
+ *
+ * `#releaseCharge()` löschte `#charging` VOR dem Feuern (`onFire()`), also war
+ * `isCharging` beim Lesen immer `false` — `power` war immer `this.aim.power`.
+ * Das Aufladen war damit eine Attrappe, während README („halten = mehr Kraft")
+ * und die Tastaturliste in `index.html` es versprachen. Es gab außerdem keine
+ * Anzeige: `chargeRatio` existierte, aber niemand zeichnete ihn.
+ *
+ * ## Warum die Rechnung hier steht und nicht im Aufrufer
+ *
+ * Als reine Funktion ist sie ohne DOM und ohne Browser prüfbar — dieselbe
+ * Trennung wie bei `weaponAnimation.js`. Der Aufrufer (`Main#fire`) bekommt die
+ * fertige Zahl vom Eingabe-Controller und rechnet nicht nach.
+ *
+ * Ein TIPPEN ergibt {@link MIN_KRAFT} (schwacher Schuss), volles Aufladen
+ * {@link MAX_KRAFT}. Beides ist eine Zusage an den Spieler: Wer hält, schießt
+ * weiter.
+ *
+ * @param {number} anteil Ladefortschritt 0..1 (aus `InputController#chargeRatio`)
+ * @returns {number} Kraft zwischen {@link MIN_KRAFT} und {@link MAX_KRAFT}
+ */
+export function kraftAusLadung(anteil) {
+  const a = Math.max(0, Math.min(1, Number(anteil) || 0));
+  return Math.round(MIN_KRAFT + a * (MAX_KRAFT - MIN_KRAFT));
+}
+
 export class InputController {
   #canvas;
   #handlers;
@@ -24,7 +64,8 @@ export class InputController {
    * @param {object} handlers
    * @param {function():{x:number,y:number}|null} handlers.getOrigin - Ursprung der Figur am Zug
    * @param {function(number, number):void} handlers.onAim
-   * @param {function():void} handlers.onFire
+   * @param {function(number):void} handlers.onFire - Kraft des Schusses (aus dem Aufladen);
+   *   ein Tippen liefert `MIN_KRAFT`
    */
   constructor(canvas, handlers = {}) {
     this.#canvas = canvas;
@@ -175,9 +216,29 @@ export class InputController {
     this.#chargeStart = performance.now();
   }
 
+  /**
+   * Beendet das Aufladen und feuert — mit der Kraft, die aufgeladen wurde.
+   *
+   * ## Die Reihenfolge ist der Befund (belegt, 2026-09-27)
+   *
+   * Hier stand:
+   *
+   *     this.#charging = false;
+   *     this.#handlers.onFire?.();
+   *
+   * `#charging` wurde also VOR dem Feuern gelöscht, und `chargeRatio` liefert
+   * nach dem Löschen `0` (`get chargeRatio`). `Main#fire` las `isCharging` und
+   * bekam immer `false` — der Ladezweig dort war toter Code, jede Kugel flog mit
+   * der eingestellten Kraft. Das Aufladen war eine Attrappe.
+   *
+   * Deshalb: ERST die Kraft lesen, DANN das Laden beenden, DANN feuern. Der
+   * Handler bekommt den Wert als Argument — so kann keine spätere Änderung der
+   * Reihenfolge die Angabe still wieder verschlucken.
+   */
   #releaseCharge() {
+    const kraft = kraftAusLadung(this.chargeRatio);
     this.#charging = false;
-    this.#handlers.onFire?.();
+    this.#handlers.onFire?.(kraft);
   }
 
   /** Ladefortschritt 0..1 (nur UI-Feedback, keine Simulationsgröße). */

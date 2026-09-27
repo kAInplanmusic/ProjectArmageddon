@@ -380,6 +380,56 @@ export class Renderer {
   }
 
   /**
+   * Die Ladeanzeige: ein schmaler Balken in der Bildmitte.
+   *
+   * ## Warum es sie gibt (belegt, 2026-09-27)
+   *
+   * README und die Tastaturliste versprechen „Klick / Leertaste: Aufladen und
+   * feuern" — sichtbar war davon nichts. `InputController#chargeRatio` gab es
+   * („nur UI-Feedback"), es hat ihn nur niemand gezeichnet. Wer hielt, sah
+   * keinen Unterschied zum Tippen und schoss (damals) auch nicht weiter.
+   *
+   * ## Warum hier und in dieser Form
+   *
+   * - **Bildmitte statt unterer Rand**: Der untere Rand der Spielfläche ist vom
+   *   HUD-Protokoll belegt (`#hud-log`, ein DOM-Aufsatz ÜBER dem Canvas). Dort
+   *   wäre der Balken hinter der Meldungsliste.
+   * - **Kein zweites Zielkreuz**: Die Zielhilfe (`#drawAimPreview`) gibt es nur
+   *   lokal. Online — wo ebenfalls aufgeladen wird — wäre ein Ring an einer
+   *   nicht gezeichneten Zielhilfe unsichtbar. Ein Balken trägt die Aussage in
+   *   beiden Betriebsarten.
+   * - **Farben und Maße aus dem Bestand**: Dieselbe Orange wie die Zielhilfe
+   *   (`rgba(244, 162, 97, …)`) und der dunkle Grund der Flächen (siehe
+   *   `SKY_TOP`). Die Spur ist auch bei Anteil 0 sichtbar — sie sagt „es lädt",
+   *   bevor der erste Fortschritt messbar ist.
+   *
+   * Bei `reducedMotion` bewegt sich hier nichts: Der Balken wächst, und Wachsen
+   * ist die Aussage, nicht die Bewegung.
+   *
+   * @param {number} anteil Ladefortschritt 0..1
+   */
+  #drawLadeanzeige(anteil) {
+    const a = Math.max(0, Math.min(1, Number(anteil) || 0));
+    const breite = Math.max(140, Math.min(320, this.width * 0.2));
+    const hoehe = 10;
+    const spurBreite = breite + 4;
+    const x = Math.round((this.width - spurBreite) / 2);
+    // Etwas unter der Bildmitte: Die Figur am Zug steht im Zentrum, der Balken
+    // soll sie nicht verdecken.
+    const y = Math.round(this.height * 0.58);
+
+    this.ctx.save();
+    this.ctx.fillStyle = 'rgba(13, 27, 42, 0.85)';
+    this.ctx.fillRect(x, y, spurBreite, hoehe + 4);
+    this.ctx.strokeStyle = 'rgba(244, 162, 97, 0.85)';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.strokeRect(x, y, spurBreite, hoehe + 4);
+    this.ctx.fillStyle = 'rgba(244, 162, 97, 0.95)';
+    this.ctx.fillRect(x + 2, y + 2, Math.round(breite * a), hoehe);
+    this.ctx.restore();
+  }
+
+  /**
    * Explosionsradius-Vorschau am Zielpunkt der Flugbahn.
    * Zeigt, wie groß die Flächenwirkung der gewählten Waffe ist.
    *
@@ -1146,10 +1196,13 @@ export class Renderer {
    * @param {object} options
    * @param {Array} [options.aimPreview]
    * @param {object} [options.aim]
+   * @param {number} [options.ladeAnteil] - Ladefortschritt 0..1; > 0 zeigt die
+   *   Ladeanzeige. Solange geladen wird, ist das der einzige sichtbare Hinweis
+   *   darauf, dass Halten etwas bewirkt (online gibt es keine Zielhilfe).
    * @param {object} [options.water] - WaterField-Instanz des Matches
    * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
-  render(state, { aimPreview = null, prediction = null, aim = null, water = null, blastRadius = 0 } = {}) {
+  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = 0, water = null, blastRadius = 0 } = {}) {
     // Zugänglichkeit je Bild neu abfragen: Ändert der Nutzer die
     // Systemeinstellung, greift sie ohne Neuladen.
     this.reducedMotion = prefersReducedMotion();
@@ -1232,6 +1285,9 @@ export class Renderer {
     // Der Mahlstrom ist ein Bildschirm-Effekt (er legt sich über alles).
     this.#drawMaelstrom(state.maelstrom);
     this.#drawWindArrow(state.wind);
+    // Die Ladeanzeige liegt ÜBER dem Geschehen: Sie gehört zur Eingabe des
+    // Spielers, nicht zur Welt — sie darf nicht hinter einer Figur verschwinden.
+    this.#drawLadeanzeige(ladeAnteil);
 
     // Regen, Schnee, Funken und Glühwürmchen liegen VOR dem Geschehen: sie
     // ziehen zwischen Kamera und Figuren.

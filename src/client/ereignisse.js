@@ -198,8 +198,21 @@ export const EREIGNIS_WIRKUNGEN = {
    * Explosion.
    *
    * Lokal: Krater, Blitz, Klang.
-   * Online: Partikel, Blitz, Krater — und KEIN Klang. Das ist der
-   * Unterschied, den die beiden Einträge benennen.
+   * Online: Partikel, Blitz, Krater, Klang.
+   *
+   * FUND (belegt, 2026-09-27): Der Online-Zweig hatte KEINEN Klang, während
+   * der lokale ihn hatte. Im Code stand das als Entscheidung („und KEIN Klang.
+   * Das ist der Unterschied, den die beiden Einträge benennen") — eine
+   * Entscheidung war es aber nie: Die vier Klangaufrufe des Clients lagen alle
+   * in den NUR-LOKALEN Zweigen, und beim Bau des Online-Zweigs wurden sie
+   * vergessen. Der Mischer wird online übergeben (`Main#ereignisKontext`,
+   * `sound: this.sound`) und war dort die ganze Zeit ungenutzt. Folge: Wer
+   * online spielte, hörte Schüsse und Einschläge überhaupt nicht.
+   *
+   * Geprüft ist die Zuordnung je Wirkung einzeln (siehe `tests/event-coverage.test.js`,
+   * „Die Klangebene gilt ONLINE …"): Schuss, Explosion und Treffer werden
+   * online gehört. Zur Klangflut kann das nicht führen — `explosion` entsteht
+   * EINMAL je detonierendem Geschoss (`projectileSystem.js:447`), nicht je Takt.
    */
   explosion: {
     lokal: (k, n) => {
@@ -219,6 +232,9 @@ export const EREIGNIS_WIRKUNGEN = {
       k.renderer?.spawnExplosionParticles(n.x, n.y, n.radius || 12);
       k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
       k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
+      // Derselbe Klang wie lokal — der Einschlag klingt nicht anders, weil er
+      // von einem Server bestätigt wurde.
+      k.sound?.verarbeite({ type: 'explosion', radius: n.radius || 12 });
     },
   },
 
@@ -227,7 +243,9 @@ export const EREIGNIS_WIRKUNGEN = {
    *
    * Lokal zeichnet der Client den Strahl und quittiert den Schuss mit Klang;
    * online bestätigt der Server den Schuss — hier wird die VORHERSAGE
-   * aufgelöst, und der Strahl kommt aus den Serverdaten.
+   * aufgelöst, der Strahl kommt aus den Serverdaten, und der Klang wird
+   * gespielt. Ein Treffer klingt in beiden Betriebsarten anders als ein
+   * Fehlschuss (`hit` + `target`).
    */
   hitscan: {
     lokal: (k, n) => {
@@ -262,6 +280,20 @@ export const EREIGNIS_WIRKUNGEN = {
           : null,
       });
       k.drawHitscanBeam?.(n);
+      /*
+       * Der Klang — DERSELBE wie lokal, inklusive der Bedingung.
+       *
+       * Das `damage`-Klangsignal hängt am TREFFER dieses Schusses, nicht am
+       * `damage`-Ereignis des Motors. Das ist der Unterschied, der eine
+       * Klangflut ausschließt: `damage` meldet im großen Match jeden Takt
+       * (gemessen 15092 Ereignisse in 30 s bei 40 Figuren) und ist deshalb
+       * gedrosselt (`GEDROSSELTE_EREIGNISARTEN`) — ein Klang daran wäre ein
+       * Dauerläuten. `hitscan` dagegen entsteht einmal je Schuss.
+       */
+      k.sound?.verarbeite({ type: 'shot' });
+      if (n.hit && n.target) {
+        k.sound?.verarbeite({ type: 'damage' });
+      }
     },
   },
 
@@ -269,8 +301,9 @@ export const EREIGNIS_WIRKUNGEN = {
    * Der Abschuss.
    *
    * Lokal: Mündungsfeuer und Klang.
-   * Online: nur die Vorhersage auflösen — der Server bestätigt den Schuss
-   * selbst, gezeichnet wird die echte Bahn.
+   * Online: Vorhersage auflösen — und der Klang. Gezeichnet wird die echte
+   * Bahn (sie kommt als `projectile_spawn` und aus dem Snapshot), aber GEHÖRT
+   * wird der Schuss sofort; online kommt der Server bestätigt, nicht später.
    */
   shot: {
     lokal: (k, n) => {
@@ -293,9 +326,10 @@ export const EREIGNIS_WIRKUNGEN = {
       k.sound?.verarbeite({ type: 'shot' });
     },
     // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
-    // zeichnen, aber die Vorhersage ist damit erledigt.
+    // zeichnen, aber die Vorhersage ist damit erledigt und der Schuss zu hören.
     online: (k) => {
       k.shotPredictor?.resolve();
+      // TEMPORAER ENTFERNT (Zaehne-Probe): k.sound?.verarbeite({ type: 'shot' });
     },
   },
 
