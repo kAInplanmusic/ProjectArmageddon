@@ -3,6 +3,15 @@
 **Status**: Work-in-progress (2026-09-26 22:26)  
 **Ziel**: Systemisches Verständnis der Waffen-Balance, nicht eine triviale Tabelle aller 150 Waffen.
 
+> **NACHTRAG 2026-09-27 (Worker C, Auftrag „O8-Nachzug").** Eine Aussage dieses
+> Papiers ist überholt: §5 behauptete, online gebe es **keinen** Sprung und
+> **kein** Waffe-Abwerfen. O8 ist umgesetzt (Commit `68f551c`) — die Stelle ist
+> unten richtiggestellt und markiert. **Alle übrigen Aussagen wurden gegen den
+> heutigen Baum gelesen und bleiben unverändert** (Einzelnachweis:
+> `docs/hunter-doku-nachzug.md`, Abschnitt `waffen-balance-whitepaper.md`).
+> Die Zahlen dieses Papiers sind **nicht** nachgemessen worden — sie stammen aus
+> seiner eigenen Erhebung und stehen hier als Zeitzeugnis.
+
 ---
 
 ## 1. Überblick
@@ -116,7 +125,16 @@ Testdateizahl: `102` in der Doku, `103` in der Wildbahn. Ursache: Neuer Waechter
 4. **Schuss** → `INPUT` → `fire()` → `ProjectileSystem`
 5. **Ergebnis** → Treffer: Damage, Knockback, Terrain-Damage
 
-**Chapeau**: Der Flow ist **konsistent**, aber **kein Sprung/Waffe-Abwerfen** online verfügbar. Scout verliert seine Hauptunterscheidungsmerkmal online.
+**Chapeau** `[O8, nachgezogen 2026-09-27]`: Der Flow ist **konsistent**, und
+**Sprung wie Waffe-Abwerfen sind online verfügbar** — der Scout verliert sein
+Hauptunterscheidungsmerkmal online **nicht mehr**. Der Vor-O8-Satz lautete:
+„Der Flow ist **konsistent**, aber **kein Sprung/Waffe-Abwerfen** online
+verfügbar. Scout verliert seine Hauptunterscheidungsmerkmal online."
+Belege: `CONTROL.JUMP`/`CONTROL.DROP_WEAPON` (`src/shared/protocol.js:93-94`),
+Server-Handler `handleJump`/`handleDropWeapon` (`src/server/gameServer.js:517`
+/`:570`, Verteiler `:1295`/`:1303`), Client `sendJump`/`sendDropWeapon`
+(`src/client/networkClient.js:463`/`:479`, die `send`-Zeilen darin `:465`/`:481`), Anzeige `jumped`/`weapon_dropped`
+(`src/client/ereignisse.js:437`/`:472`).
 
 ---
 
@@ -137,6 +155,8 @@ Testdateizahl: `102` in der Doku, `103` in der Wildbahn. Ursache: Neuer Waechter
 1. **Soll `GRAVITY = 0.32` wirklich separat gehalten werden?**
 2. **Wie groß ist der Nutzen von 150 Waffen vs. 80 getuned?**
 3. **Welche Waffen sollen Online-Spezifika haben?** (Scout-Sprung, Günther-Poops)
+   — *Nachtrag 2026-09-27: Die Frage bleibt eine Designfrage, ist aber kleiner
+   geworden: Der Scout-Sprung ist **kein fehlendes** Online-Spezifikum mehr (O8).*
 
 ---
 

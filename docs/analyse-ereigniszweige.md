@@ -12,6 +12,19 @@ Ende gegen `e31d1c7` erneut nachgeprüft (`/tmp/check.mjs`: **80 von 80**
 Prüfproben gefunden, keine offen; Tabelle unverändert 38/22/11/4/1,
 `src/client/ereignisse.js` unverändert md5 `64eeb62551f78159166177efbf3d7fb5`).
 
+> **NACHTRAG 2026-09-27 (Worker C, Auftrag „O8-Nachzug").** Dieser Bericht
+> beschreibt den **Vor-O8-Stand** und ist dort korrekt. **O8 ist umgesetzt**
+> (Commit `68f551c`): `CONTROL.JUMP`/`CONTROL.DROP_WEAPON`
+> (`src/shared/protocol.js:93-94`), `handleJump`/`handleDropWeapon`
+> (`src/server/gameServer.js:517`/`:570`, Verteiler `:1295`/`:1303`),
+> `sendJump`/`sendDropWeapon` (`src/client/networkClient.js:463`/`:479`, die `send`-Zeilen darin `:465`/`:481`).
+> Drei Urteile dieser Analyse sind dadurch hinfällig (`jumped`, `crate_landed`,
+> `crate_pickup_blocked`); sie sind unten **an Ort und Stelle** richtiggestellt
+> und mit `[O8, nachgezogen 2026-09-27]` markiert, die alte Formulierung steht
+> jeweils als Zitat daneben. **Alle übrigen Urteile wurden gegen den heutigen
+> Baum geprüft und bleiben unverändert** gültig (Einzelnachweis:
+> `docs/hunter-doku-nachzug.md`, Abschnitt `analyse-ereigniszweige.md`).
+
 **Sonden** (lagen in `/tmp`, nichts im Repo): `/tmp/parse2.mjs` (Tabelle
 auswerten), `/tmp/probe.mjs`, `/tmp/probe2.mjs`, `/tmp/probe4.mjs` (Motorläufe
 mit `MatchController` — derselben Klasse, die Server und Client benutzen).
@@ -31,8 +44,25 @@ Ausgabe davor: die Messungen haben keine Datei angefasst.
 
 ## 1. Gemessener Ist-Stand der Tabelle
 
-`EREIGNIS_WIRKUNGEN` (`src/client/ereignisse.js:82`) hat **38 Einträge**:
+`EREIGNIS_WIRKUNGEN` (`src/client/ereignisse.js:82`) hatte **38 Einträge**:
 **22** in beiden Zweigen, **11** nur lokal, **4** nur online, **1** ohne Zweig.
+
+**Stand heute `[O8, nachgezogen 2026-09-27]`: 39 Einträge, 32 in beiden Zweigen,
+1 nur lokal, 5 nur online, 1 ohne Zweig** (also 6 Einzweigige statt 15).
+Gemessen über die Geladenen Einträge, nicht per Textsuche:
+
+```
+node --input-type=module -e "import { EREIGNIS_WIRKUNGEN } from './src/client/ereignisse.js'; … typeof v.lokal === 'function' …"
+Eintraege gesamt: 39
+beide: 32 | nur lokal: 1 | nur online: 5 | ohne Zweig: 1
+nur lokal: crate_landed
+nur online: terrain_destroyed, projectile_spawn, weapon_dropped, turn_start, karte_unerreichbar
+ohne Zweig: drowning
+```
+
+Drei Einträge haben sich durch O8 bewegt: `jumped` (nur-lokal → `beide(fn)`),
+`crate_pickup_blocked` (Text jetzt in beiden Zweigen mit Q-Hinweis) und der
+**neue** Eintrag `weapon_dropped` (nur-online, `ereignisse.js:472`).
 Gemessen mit `/tmp/parse2.mjs` (Textauswertung der Tabelle; `beide(fn)` wird als
 beide Zweige gezählt — das war beim ersten Anlauf die Fehlerquelle eines eigenen
 Parsers, der nur `lokal:`/`online:`-Zeilen sah und deshalb 13 „ohne Zweig"
@@ -43,13 +73,16 @@ BEIDE (22): explosion, hitscan, shot, projectile_impact, projectile_pierced, loo
             fuse_expired, turret_deployed, turret_fired, turret_expired, special_effect, frozen,
             turn_skipped, dot_tick, shield_absorbed, pulled, heal, maelstrom_contract, death,
             round_start, match_over
-NUR LOKAL (11): guenther_wheel, guenther_pee, guenther_poop, guenther_poop_hit, jumped, landed,
+NUR LOKAL (1)  [O8, nachgezogen 2026-09-27]: crate_landed
+  (der Stand DIESER Analyse, 11): guenther_wheel, guenther_pee, guenther_poop, guenther_poop_hit, jumped, landed,
             crate_landed, crate_pickup_blocked, crate_pickup, fall_damage, toxic_rain
-NUR ONLINE (4): terrain_destroyed, projectile_spawn, turn_start, karte_unerreichbar
+NUR ONLINE (5)  [O8, nachgezogen 2026-09-27]: terrain_destroyed, projectile_spawn, weapon_dropped (NEU in O8), turn_start, karte_unerreichbar
+  (der Stand DIESER Analyse, 4): terrain_destroyed, projectile_spawn, turn_start, karte_unerreichbar
 KEIN ZWEIG (1): drowning   (bewusst stumm, begründet in ereignisse.js:451–461)
 ```
 
-Die **15** Einzweigigen (11 + 4) sind die Arbeitsmenge dieses Berichts.
+Die **15** Einzweigigen (11 + 4) waren die Arbeitsmenge dieses Berichts; heute
+sind es **6** (1 + 5) `[O8, nachgezogen 2026-09-27]`.
 
 ## 2. Die zwei strukturellen Wege (Grundlage jedes Urteils)
 
@@ -97,10 +130,10 @@ Ereignissen.
 | guenther_pee | nur lokal | `guentherSystem.js:276` | ja, gemessen 22× | ja — `gameServer.js:246–248` | BEGRUENDET (HP sinkt: `main.js:1103` → `hud.js:216/217/247`) |
 | guenther_poop | nur lokal | `guentherSystem.js:302` | ja, gemessen 8× | ja — `gameServer.js:246–248` | **ECHTE LUECKE (online)** — siehe 4.1 |
 | guenther_poop_hit | nur lokal | `guentherSystem.js:319` | ja, gemessen 5× | ja — `gameServer.js:246–248` | BEGRUENDET (`dot_tick` beide Zweige, `ereignisse.js:344–352`, nennt das Element „poop") |
-| jumped | nur lokal | `match.js:1291` | ja, aber nur über `jump()` (Taste SHIFT, `input.js:152`) | **nein** — online erzeugt der Motor es nie (kein Sprungbefehl im Protokoll) | BEGRUENDET (der andere Modus erzeugt es nicht) — siehe 6.1 |
+| ~~jumped~~ → **`beide(fn)`** `[O8, nachgezogen 2026-09-27]` | ~~nur lokal~~ | `match.js:1292` (Stand der Analyse: `:1291`) | ja, über `jump()` (Taste SHIFT, `input.js:152`) **und online über `CONTROL.JUMP`** (`protocol.js:93` → Verteiler `gameServer.js:1295` → `handleJump` `:517`) | **ja** — der Server springt und schickt es (`gameServer.js:246–248`); Client-Zweig `ereignisse.js:437` ist `beide(fn)` | **ERLEDIGT (O8)** — die Vor-O8-Begründung („der andere Modus erzeugt es nicht") ist hinfällig; siehe 6.1 mit Nachtrag |
 | landed | nur lokal | `match.js:1351` (`#updateGroundedState`, gerufen aus `step()` `:1132`) | ja, gemessen 344 in 600 Ticks | ja — `gameServer.js:246–248` | BEGRUENDET (Bewegung aus dem Snapshot: `main.js:1077` → `renderer.js:1217`) — Flut-Nebenbefund 8.1 |
-| crate_landed | nur lokal | `match.js:2303` (`#stepCrate` ← `:1119`) | ja | **nein** — nur abgeworfene Waffen fliegen, der Abwurf ist lokal-only | BEGRUENDET (der andere Modus erzeugt es nicht) — siehe 6.2 |
-| crate_pickup_blocked | nur lokal | `lootSystem.js:187` | ja, gemessen 60 von 60 Ticks | ja — `gameServer.js:246–248` | **ECHTE LUECKE (online)** — siehe 4.2 |
+| crate_landed | nur lokal (Zweig unverändert) | `match.js:2303` (`#stepCrate` ← `:1119`) | ja, gemessen | **ja** `[O8, nachgezogen 2026-09-27]` — die Begründung der Analyse („nur abgeworfene Waffen fliegen, der Abwurf ist lokal-only") **fällt**: seit O8 gibt es den Abwurf online (`CONTROL.DROP_WEAPON`, `protocol.js:94` → Verteiler `gameServer.js:1303` → `handleDropWeapon` `:570`), und nur der Abwurf setzt `inFlight: 1` (`match.js:2159`, in `dropWeapon` `:2128`). Selbst gemessen: ein erfolgreicher `dropWeapon` erzeugt `crate_landed` (Motorlauf, seed 4242: `crate_landed: 1`) | **BEGRUENDET — aber mit NEUER Begründung:** der Online-Zweig fehlt weiterhin, und `crate_landed` ist jetzt auch online erzeugt. Gedeckt ist die Stille allein durch den `bewusstStumm`-Eintrag („online übernimmt es die Kistenliste", `tests/event-coverage.test.js`, Menge `bewusstStumm`). Ein zusätzlicher Online-Test fehlt — siehe 6.2 mit Nachtrag |
+| crate_pickup_blocked | **beide** `[O8, nachgezogen 2026-09-27]` (Stand der Analyse: nur lokal) | `lootSystem.js:187` | ja, gemessen 60 von 60 Ticks | ja — `gameServer.js:246–248` | **ERLEDIGT (O8)** — siehe 4.2 mit Nachtrag |
 | crate_pickup | nur lokal | `lootSystem.js:198` | ja, gemessen 5× | ja — `gameServer.js:246–248` | BEGRUENDET (Bestand: `main.js:1000` → `:1114` → `:1212`; HP bei sustain/trap) |
 | fall_damage | nur lokal | `characterSystem.js:122` | im Modus möglich (Knockback beider Modi) | ja — `gameServer.js:246–248` | BEGRUENDET (HP sinkt: `main.js:1103` → `hud.js:216/217/247`) |
 | toxic_rain | nur lokal | `maelstromSystem.js:96` | ja, gemessen 47× | ja — `gameServer.js:246–248` | BEGRUENDET (Schaden wirkt: `maelstromSystem.js:92` → `main.js:1103` → `hud.js:247`) |
@@ -143,7 +176,10 @@ nimmt. Der lokale Zweig hat dafür nur die Protokollzeile
 (`ereignisse.js:387–391`, „Günther hat ein Häufchen gemacht"); online fehlt auch
 diese.
 
-### 4.2 `crate_pickup_blocked` — online kommt das Ereignis an und fällt
+### 4.2 `crate_pickup_blocked` — der Befund galt, ist seit O8 BEHOBEN `[O8, nachgezogen 2026-09-27]`
+
+*(Ursprüngliche Überschrift: „4.2 `crate_pickup_blocked` — online kommt das
+Ereignis an und fällt".)*
 
 **Der Motor erzeugt es in beiden Betriebsarten.** Das `LootSystem` ist ein
 ECS-System desselben Motors (`lootSystem.js:152` `update()`), die Bedingung hängt
@@ -169,6 +205,14 @@ sich nicht. Der Spieler steht auf einer Waffe, kann sie nicht nehmen und erfähr
 nicht, dass er erst abwerfen muss — der Satz, der das erklärt
 (`ereignisse.js:420`, „Vorrat voll — erst eine Waffe abwerfen (Q)"), existiert
 nur lokal.
+
+> **NACHTRAG 2026-09-27 (O8): behoben.** Der Eintrag ist jetzt
+> `crate_pickup_blocked: beide((k) => …)` (`src/client/ereignisse.js:492`) und
+> nennt die Taste **in beiden Zweigen**. Der Grund der alten Fassung — „online
+> gibt es kein Abwerfen, eine angezeigte Taste verspräche etwas" — trifft nicht
+> mehr zu; der Nachtrag im Quelltext an genau dieser Stelle sagt es wörtlich.
+> Der Zusatzbefund unten (Dauerzustand statt Übergang) bleibt richtig und ist
+> **nicht** behoben.
 
 **Nicht empirisch gemessen:** eine tatsächliche Auslösung in einem Online-Match
 (kein Serverlauf erlaubt). Strukturell ist sie belegt: derselbe Motor ohne
@@ -231,6 +275,12 @@ Die Tabelle im Wächter begründet diese beiden damit, dass die Wirkung „als
 Bewegung" bzw. „über die Kistenliste" sichtbar sei. Der **tragfähigere** Grund
 ist ein anderer — und er ist strenger: Der Online-Modus kennt den Auslöser nicht.
 
+> **NACHTRAG 2026-09-27 (O8): dieser strenge Grund gilt nur noch für
+> `crate_landed`.** Für `jumped` ist er **falsch** (der Online-Modus kennt den
+> Auslöser seit O8), und für `crate_landed` ist die Aussage „der Abwurf ist
+> lokal-only" **falsch** — der Abwurf ist online möglich, also entsteht
+> `crate_landed` auch online. Beide Abschnitte unten sind einzeln nachgezogen.
+
 ### 6.1 `jumped`
 
 `match.js:1291` sendet `jumped` in `jump(playerId, horizontal)`. Aufgerufen wird
@@ -246,6 +296,17 @@ still, sondern **nicht existent** — im Motorlauf über 4575 Ticks (ohne Eingab
 kam es **0 ×** vor, obwohl `landed` 2616 × auftrat. Kein Spieler kann online
 springen; die Lücke wäre erst dann eine, wenn der Sprung ins Protokoll käme.
 
+> **NACHTRAG 2026-09-27: der Sprung ist ins Protokoll gekommen — 6.1 ist
+> erledigt.** Gemessen/zitiert: `CONTROL.JUMP: 'jump'`
+> (`src/shared/protocol.js:93`), Verteiler `src/server/gameServer.js:1295` →
+> `handleJump` (`:517`, intern `#handleJump` `:526`), Client `sendJump`
+> (`src/client/networkClient.js:463`, gerufen aus `main.js:812`), und der
+> Tabelleneintrag ist `beide(fn)` (`src/client/ereignisse.js:437`). Gegen einen
+> **echten** Server belegt `tests/anti-cheat.test.js` (`CONTROL.JUMP` gegen
+> `GameServer.listen(0)` + `ws`-Clients, u. a. „Der Server führt den Sprung aus").
+> Die Aussage „der Server ruft `match.jump()` nirgends" ist damit überholt;
+> `match.js:1241` ist die Methode, `:1292` das `jumped`-Emit.
+
 ### 6.2 `crate_landed`
 
 `match.js:2303` sendet `crate_landed` in `#stepCrate`, gerufen aus
@@ -259,6 +320,29 @@ im lokalen Match möglich' }`), und `CONTROL` enthält kein `drop`. **Folge:**
 `crate_landed` entsteht online nie (im Motorlauf 0 ×), die Kistenliste im
 Snapshot ist dafür die richtige Gegenprobe — aber nicht der Grund.
 
+> **NACHTRAG 2026-09-27 (O8): die Prämisse ist gefallen, das Urteil bleibt —
+> aber es steht auf einem anderen Bein.** Der Abwurf ist **nicht mehr
+> lokal-only**: `Main#dropWeapon` (`main.js:838`) hat den Online-Zweig `:847`
+> (kein `mode !== 'local'`-Ausstieg mehr), sendet `CONTROL.DROP_WEAPON`
+> (`:862` → `networkClient.js:479` → `protocol.js:94`), und der Server führt ihn
+> über `handleDropWeapon` aus (`gameServer.js:1303` → `:570`/`:579`). Damit
+> setzt auch online ein Abwurf `inFlight: 1` (`match.js:2159`), das Geschoss
+> fliegt und **`crate_landed` wird erzeugt**. Eigene Messung (Motorlauf, seed
+> 4242, `turnDurationMs` 1000000, 600 Ticks nach einem erfolgreichen Abwurf):
+> `{"landed":344,"crate_landed":1}`.
+> **Folge für dieses Urteil:** `crate_landed` ist jetzt ein EREIGNIS, DAS AUCH
+> ONLINE ERZEUGT WIRD, und der Client verwirft es dort still (nur `lokal:`).
+> Die Begründung „der andere Modus erzeugt es nicht" stimmt nicht mehr; gedeckt
+> ist die Stille nur durch den `bewusstStumm`-Eintrag in
+> `tests/event-coverage.test.js` („lokaler Zweig hat einen Fall; online
+> übernimmt es die Kistenliste"). **Offen blieb ein Online-Test**, der belegt,
+> dass die Kiste im Online-Snapshot sichtbar ist — **er entsteht gerade**:
+> `tests/e2e/online-sprung-abwurf.spec.mjs` (im Arbeitsbaum, ungetrackt, angelegt
+> 2026-09-27T03:41) prüft das über die Zusicherung „Die abgeworfene Kiste
+> erscheint nicht im Snapshot". **Keine Zeilenangabe:** die Datei wurde während
+> dieser Nacharbeit mehrmals geändert. **Ich habe ihn nicht gefahren** — ob er grün
+> ist, sagt diese Zeile nicht. Bis dahin bleibt die Deckung eine Code-Lesung.
+
 ## 7. Die zwei gemeldeten Fälle — Ergebnis des Widerlegungsversuchs
 
 **`crate_pickup_blocked`: bestätigt, und schärfer als gemeldet.** Die Engine
@@ -269,6 +353,14 @@ verschärft:** lokal ist der Eintrag kein Übergang, sondern ein Dauerzustand �
 protokolliert 60 Zeilen je Sekunde, solange der Spieler mit vollem Vorrat neben
 einer Waffenkiste steht (dieselbe Klasse wie `drowning`, das deshalb bewusst
 stumm ist, `ereignisse.js:451–461`).
+
+> **NACHTRAG 2026-09-27 (O8): erledigt.** Der Online-Text nennt die Taste jetzt
+> ebenfalls („Vorrat voll — erst eine Waffe abwerfen (Q)", `ereignisse.js:492`,
+> `beide(fn)`), weil Q online wirkt. Nebenbefund zur alten Fassung: sie sagte
+> „kein Zweig nimmt es online" — das widersprach 4.2 derselben Datei, wo der
+> Online-Zweig mit dem Text „… die Waffe kann nicht aufgenommen werden"
+> nachgelesen ist. Die Lücke war also nie „kein Zweig", sondern „ein Zweig ohne
+> Ausweg".
 
 **`karte_unerreichbar`: in der Sache bestätigt, in der Begründung zu eng.** Die
 Aussage „der lokale Zweig fehlt; der Wert landet nur in `match.erreichbarkeit`"
@@ -304,6 +396,13 @@ Häufigkeitswert: **0 von 90** gezogenen Karten lösten die Prüfung aus.
    Der Test prüft diesen Widerspruch nur für die 27 Namen der Audit-Liste
    (`tests/event-coverage.test.js:517–522`); diese drei sind nicht darunter,
    also fällt nichts um.
+   **Nachtrag 2026-09-27 (O8):** Die Zahl der Namen mit Zweig ist bei **drei**
+   geblieben, die Liste selbst ist kürzer geworden: `weapon_dropped` ist in O8
+   **aus `bewusstStumm` entfernt** worden (es hat jetzt einen `online`-Zweig,
+   `ereignisse.js:472`), die Menge hat damit **12 statt 13** Einträge
+   (gemessen: `const bewusstStumm` in `tests/event-coverage.test.js:184`, Ende
+   `:213`). Die Zeilenangaben dieses Punkts (185/191/194) sind gewandert; die
+   Aussage bleibt.
 4. **Veraltete Zeilenangaben** im `offen`-Text zu `karte_unerreichbar`
    (`tests/event-coverage.test.js:360`): genannt werden `match.js:641/684/742/735`
    — tatsächlich `:658/701/759/752`. Der Wächter verlangt nur, dass **irgendwo**

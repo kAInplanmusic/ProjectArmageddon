@@ -9,6 +9,22 @@ Gelesene Dateien (vollständig): `src/client/ereignisse.js` (655 Zeilen),
 (1255). Ergänzend belegt: `src/client/main.js`, `src/server/gameServer.js`,
 `src/client/networkClient.js`, `tests/event-coverage.test.js`.
 
+> **NACHTRAG 2026-09-27 (Worker C, Auftrag „O8-Nachzug").** Dieser Bericht
+> beschreibt den **Vor-O8-Stand**. O8 ist inzwischen umgesetzt (Commit `68f551c`,
+> „feat(O8,O9): Online-Sprung und Waffe-Abwerfen ueber den Drahtweg"): das
+> Protokoll kennt `CONTROL.JUMP`/`CONTROL.DROP_WEAPON`
+> (`src/shared/protocol.js:93-94`), der Server hat die Handler `handleJump`
+> (`src/server/gameServer.js:517`, Verteiler `:1295`) und `handleDropWeapon`
+> (`:570`, Verteiler `:1303`), der Client sendet über `sendJump`/`sendDropWeapon`
+> (`src/client/networkClient.js:463`/`:479`, die `send`-Zeilen darin `:465`/`:481`).
+>
+> Die davon betroffenen Sätze sind unten **an Ort und Stelle** richtiggestellt
+> und mit `[O8, nachgezogen 2026-09-27]` markiert; die alten Formulierungen
+> stehen als Zitat daneben (Projektkonvention: richtigstellen statt löschen).
+> **Alles andere in dieser Datei ist gegen den heutigen Baum geprüft und
+> unverändert gültig** — die geprüften und die geänderten Stellen sind einzeln
+> aufgeführt in `docs/hunter-doku-nachzug.md`, Abschnitt `hunter-ui.md`.
+
 ---
 
 ## 0. Ergebnis in drei Sätzen
@@ -36,7 +52,12 @@ lautloser No-Op.
 | `toxic_rain` | `ereignisse.js:547` | `:548-550` | **fehlte** | `src/engine/systems/maelstromSystem.js:96` |
 
 *(Zeilennummern: Stand VOR der Korrektur. Nach der Korrektur:
-`landed:439`, `crate_pickup:488`, `fall_damage:570`, `toxic_rain:585`.)*
+`landed:439`, `crate_pickup:488`, `fall_damage:570`, `toxic_rain:585`.
+**Nachtrag 2026-09-27:** die O8-Einfügungen (Kommentare + Eintrag
+`weapon_dropped`) haben die Tabelle erneut verschoben — gemessen heute:
+`jumped:437`, `landed:450`, `crate_landed:454`, `weapon_dropped:472`,
+`crate_pickup_blocked:492`, `crate_pickup:506`, `drowning:553`,
+`fall_damage:588`, `toxic_rain:603`, `karte_unerreichbar:644`.)*
 
 **Warum sie ankommen — die Kette ist lückenlos bis zur Wirkung:**
 
@@ -78,6 +99,7 @@ Schaden, aber keinen Grund.
 |---|---|---|---|---|
 | vorher | `jumped, landed, crate_landed, crate_pickup, fall_damage, toxic_rain` (6) | 4 | `drowning` | 27 |
 | nachher | `jumped, crate_landed` (2) | 4 | `drowning` | **31** |
+| heute `[O8, nachgezogen 2026-09-27]` | `crate_landed` (1) | 5 | `drowning` | **32** — 39 Einträge gesamt |
 
 `node --test tests/event-coverage.test.js` → **9/9 grün** (u. a. „Ereignisse mit
 nur EINEM Zweig sind einzeln belegt").
@@ -143,15 +165,23 @@ und wendet an**.
     sonst Meldung `:1255`), schickt `network.selectWeapon(weaponId)`, protokolliert
     die Wahl. Der Server bestätigt über den Snapshot.
   - **lokal** (`:1271-1278`): `match.inventory.selectWeapon(playerId, weaponId)`.
-- Abwerfen (Q) ist **lokal-only**: `dropWeapon` (`:817-841`) steigt online
-  vorzeitig aus (`:818`, Meldung `:819`); es gibt keinen Online-Aufrufer.
+- Abwerfen (Q) wirkt **in beiden Betriebsarten** `[O8, nachgezogen 2026-09-27]`.
+  Der Vor-O8-Satz lautete: „Abwerfen (Q) ist **lokal-only**: `dropWeapon`
+  (`:817-841`) steigt online vorzeitig aus (`:818`, Meldung `:819`); es gibt
+  keinen Online-Aufrufer." Heute hat `dropWeapon` (`main.js:838`) einen
+  Online-Zweig (`:847`), ruft `sendDropWeapon` (`:862` →
+  `networkClient.js:479`), der `CONTROL.DROP_WEAPON` sendet (`protocol.js:94`);
+  der Server führt ihn in `handleDropWeapon` (`gameServer.js:570`, Verteiler
+  `:1303`) aus. Die Rückmeldung online kommt aus dem Ereignis
+  `weapon_dropped` (`ereignisse.js:472`), NICHT aus `main.js`.
 
 ---
 
 ## 4. `bewusstStumm` — welche Ereignisse sind bewusst still?
 
-Definition und Liste stehen in `tests/event-coverage.test.js:184-205`
-(Menge `bewusstStumm`, 13 Namen). Bedeutung ist eng: „Der Spieler sieht von
+Definition und Liste stehen in `tests/event-coverage.test.js:184-213`
+(Menge `bewusstStumm`, **12 Namen** `[O8, nachgezogen 2026-09-27]`; vor O8 waren
+es 13 — `weapon_dropped` ist entfernt, siehe Tabelle unten). Bedeutung ist eng: „Der Spieler sieht von
 diesem Ereignis NICHTS; der sichtbare Effekt entsteht über ein anderes Element."
 
 | Eintrag | Begründung (Kurzform) | Zeile |
@@ -163,7 +193,7 @@ diesem Ereignis NICHTS; der sichtbare Effekt entsteht über ein anderes Element.
 | `dot_applied` | Zustandsmarke am Namen | `:190` |
 | `shot` | löst die Vorhersage auf (`shotPredictor.resolve`) | `:193` |
 | `weapon_cooldown` | Waffenliste zeigt den Nachladezustand | `:194` |
-| `weapon_dropped` | `dropWeapon()` meldet das Ergebnis direkt | `:195` |
+| ~~`weapon_dropped`~~ | **NICHT MEHR IN DER MENGE** `[O8, nachgezogen 2026-09-27]`. Vor O8: „`dropWeapon()` meldet das Ergebnis direkt" (`:195`) — diese Begründung gilt nur LOKAL; seit O8 wirft man auch online ab, dort meldet kein lokaler `dropWeapon()`-Pfad, und das Ereignis hat einen `online`-Zweig (`ereignisse.js:472`). In dieser Menge bedeutet ein Eintrag „es gibt KEINEN Zweig" | — (Vor-O8-Stand) |
 | `crate_landed` | lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste | `:196-197` |
 | `drowning` | bis 60×/s → nur beim ÜBERGANG gemeldet (`#trackWater`) | `:200` |
 | `round_crates` | Buchführung; Anzahl steht im HUD | `:201` |
@@ -171,15 +201,17 @@ diesem Ereignis NICHTS; der sichtbare Effekt entsteht über ein anderes Element.
 | `water_pushed` | Wasserstand am Ziel ist die sichtbare Wirkung | `:204` |
 
 **Zusätzlich und unabhängig davon:** der **einzige** Tabelleneintrag ganz ohne
-Zweig ist `drowning: {}` (`src/client/ereignisse.js:535`, Begründung im
-Kommentar `:527-534`): Das CharacterSystem meldet es bei **jedem**
+Zweig ist `drowning: {}` (heute `src/client/ereignisse.js:553`
+`[O8, nachgezogen 2026-09-27]`; vor den O8-Einfügungen `:535`, Begründung im
+Kommentar darüber): Das CharacterSystem meldet es bei **jedem**
 Simulationsschritt (bis 60/s). Ein Eintrag steht trotzdem da, damit sichtbar
 ist, dass die Stille **entschieden** und nicht vergessen wurde.
 `drowning` ist zugleich in `bewusstStumm` (`:200`) — die zweite Absicherung.
 
 > Hinweis zur Zählung: Der Kommentar `tests/event-coverage.test.js:229-230`
-> nennt „8 bewusst stumm" von 47 emittierten Arten. Die **Menge** hat aber 13
-> Einträge; die „8" beziehen sich auf die Schnittmenge mit den 47 tatsächlich
+> nennt „8 bewusst stumm" von 47 emittierten Arten. Die **Menge** hat aber
+> **12** Einträge `[O8, nachgezogen 2026-09-27]` (13 vor O8; `weapon_dropped`
+> fiel heraus, weil es einen `online`-Zweig bekam); die „8" beziehen sich auf die Schnittmenge mit den 47 tatsächlich
 > emittierten Arten, nicht auf die Listengröße. Kein Widerspruch, aber zwei
 > verschiedene Zahlen für zwei verschiedene Dinge — hier festgehalten, damit
 > die nächste Zählung nicht stolpert.
@@ -218,8 +250,13 @@ der Renderer kennt keine Betriebsart, er zeichnet nur den übergebenen Zustand):
   `water` (online `null`) — `:1961-2013`.
 - `fire()`: online `network.sendInput` + Sofort-Vorhersage (`:1292-1305`),
   lokal `match.fire` (`:1324`).
-- `jump()` (`:793-806`) und `dropWeapon()` (`:817-841`) sind lokal-only;
-  online steigen sie mit eigener Meldung aus.
+- `jump()` (`:794`) und `dropWeapon()` (`:838`) **sind nicht mehr lokal-only**
+  `[O8, nachgezogen 2026-09-27]`. Der Vor-O8-Satz lautete: „`jump()` (`:793-806`)
+  und `dropWeapon()` (`:817-841`) sind lokal-only; online steigen sie mit eigener
+  Meldung aus." Heute: `jump` hat den Online-Zweig `:803` → `sendJump` `:812`
+  (`networkClient.js:463`), `dropWeapon` den Zweig `:847` → `:862`. Online
+  **meldet der Client selbst nicht** — die genau einmalige Rückmeldung kommt aus
+  den Ereignissen (`jumped` `ereignisse.js:437`, `weapon_dropped` `:472`).
 
 **Fazit:** Darstellung (Renderer/HUD) ist betriebsart-agnostisch und liest
 ausschließlich den Zustand; die Unterscheidung lokal/online **existiert genau
