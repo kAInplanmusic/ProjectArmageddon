@@ -30,12 +30,14 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1075/1075** grün
-*(Testzahl nachgezogen am 2026-09-26 aus einem vollen Lauf (`node --test
-tests/*.test.js` → 1075 bestanden, 0 rot, 287,5 s, Dateizahl 103). Die
-vorige Messung nannte 1027 in 100 Dateien; seither kamen
-`tests/shooting.test.js` (6) und `tests/terrain-material.test.js` (13) hinzu
-— 1027 + 19 = 1046; die übrigen 11 sitzen in bereits vorhandenen Dateien)* ·
+Verifikation dieses Zuges: `npm test` **1122/1122** grün
+*(Nachgemessen 2026-09-27 aus einem vollen Lauf (`npm test` → 1122 bestanden,
+0 rot, 0 übersprungen, 281,5 s, Dateizahl `ls tests/*.test.js | wc -l` → 107).
+Die vorige Messung nannte 1075 in 103 Dateien; seither kamen die Prüfungen für
+unbegrenzte Sprünge und den HUD-Vorrang, die Zerlegung des Geschützes
+(`tests/turret-zerlegung.test.js`), der gemeinsame Kommentar-Helfer
+(`tests/ohne-kommentare.test.js`) und die Wache gegen eine zweite Kopie hinzu
+— 1075 + 47 = 1122)* ·
 `npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
 check:damage-types` 0 Fehler · `npm run build` erfolgreich ·
@@ -139,7 +141,7 @@ gefahren: echter Fall wird gefunden, Muster-in-Zeichenkette erzeugt keinen Fehla
 | Prüfung | Ergebnis |
 |---|---|
 | Gate-Batterie | **7/7** — lint, validate, checks (21 Gates), build, perf, balance, smoke:fast |
-| Unit-Suite | **1075 Tests, 1075 bestanden, 0 fehlgeschlagen** — *nachgezogen 2026-09-26 (voller Lauf `npm test`, 287,5 s): Dateizahl **103** (`ls tests/*.test.js \| wc -l`), Testzahl **1075**. Die vorige Messung nannte 1057; seither kamen `tests/shooting.test.js` (6 Tests) und `tests/terrain-material.test.js` (13 Tests) hinzu — 1027 + 19 = 1046; die übrigen 11 sitzen in bereits vorhandenen Dateien* |
+| Unit-Suite | **1122 Tests, 1122 bestanden, 0 fehlgeschlagen** — *nachgezogen 2026-09-26 (voller Lauf `npm test`, 287,5 s): Dateizahl **103** (`ls tests/*.test.js \| wc -l`), Testzahl **1075**. Die vorige Messung nannte 1057; seither kamen `tests/shooting.test.js` (6 Tests) und `tests/terrain-material.test.js` (13 Tests) hinzu — 1027 + 19 = 1046; die übrigen 11 sitzen in bereits vorhandenen Dateien* |
 | Determinismus | gleicher Seed → gleicher Hash, anderer Seed → anderer Hash |
 | Ereignis-Abdeckung | 8 stumme Ereignisse, **alle 8 im Wächter begründet** — keine Lücke |
 | Secrets | 0 Fundstellen in getrackten Dateien |
