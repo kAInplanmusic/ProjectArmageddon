@@ -8,7 +8,9 @@
  * @module LootSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
-import { LOOT_DROP_RULES, weightedRarity, rollCrateCount, rollCrateContents } from '../../shared/config/loot.js';
+import {
+  weightedRarity, rollCrateCount, rollCrateContents, LOOT_DROP_RULES,
+} from '../../shared/config/loot.js';
 import { pickWeaponForRarity, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
 /*
@@ -78,28 +80,12 @@ export const PICKUP_RADIUS = 110;
 
 export const CRATE_TYPES = Object.freeze({ weapon: 0, sustain: 1, empty: 2, trap: 3 });
 /*
- * Die Seltenheits-Namen der Kisten — EIN Kanal, keine zweite Liste.
- *
- * FUND (belegt, docs/duplikate-bericht.md Fund 10): Hier stand die Liste ein
- * ZWEITES Mal als Literal (['standard','enhanced','premium','epic']) — wortgleich
- * mit `LOOT_DROP_RULES.rarities` in `shared/config/loot.js`. Beide wurden gelesen;
- * wer eine aenderte, verschob still die Zuordnung Index -> Seltenheit im
- * Drahtformat (`protocol.js` CRATE_STRIDE) und in der Anzeige.
- *
- * Sie zeigt jetzt auf die eine Quelle.
+ * Die Seltenheits-Namen sind KEINE zweite Liste: sie kommen aus dem Katalog.
+ * FUND (belegt, 2026-09-27): Hier stand dasselbe Vierfach-Literal ein zweites
+ * Mal. Wertgleich, aber ohne Verbindung — wer den Katalog aenderte, haette hier
+ * still eine andere Liste stehen lassen.
  */
 export const RARITY_IDS = LOOT_DROP_RULES.rarities;
-/*
- * Gewichte je Seltenheitsstufe. Die Schluessel MÜSSEN dieselben sein wie die
- * Namen in `RARITY_IDS` (Waechter: `tests/loot.test.js`).
- *
- * FUND (belegt, docs/duplikate-bericht.md Fund 11): Die Gewichte sind nach den
- * fuenf powerTier-Stufen benannt, `RARITY_IDS` trug aber die vier Quell-Namen.
- * `weightedRarity` verbindet beide ueber `weights[r] || 0` — nur `epic` kam in
- * beiden Raeumen vor, jede Kiste wurde also `epic`. Die Namen sind jetzt EIN
- * Raum; dieselbe Gewichtstabelle zieht weiterhin den Waffenkatalog
- * (`pickWeaponForRarity`).
- */
 export const RARITY_WEIGHTS = Object.freeze({ common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 });
 
 /** Waffen-IDs nach Index (1-basiert) fuer die projektion in Int32-Felder. */
@@ -143,6 +129,31 @@ export class LootSystem {
 
       const contents = rollCrateContents(activeRng);
       const crateType = CRATE_TYPES[contents] ?? CRATE_TYPES.empty;
+      /*
+       * BEWUSSTER ZUSTAND (gemessen, 2026-09-27) — NICHT versehentlich aendern.
+       *
+       * `RARITY_WEIGHTS` ist nach `powerTier` benannt (common/uncommon/rare/epic/
+       * legendary), `RARITY_IDS` traegt die vier `rarity`-Namen (standard/
+       * enhanced/premium/epic). Nur 'epic' kommt in beiden vor -> die Gewichte
+       * aller anderen Namen sind 0 -> die Ziehung faellt IMMER auf 'epic'.
+       *
+       * GEMESSEN: 20 000 von 20 000 Ziehungen = 'epic'. Jede Rundenkiste traegt
+       * damit Seltenheit 3.
+       *
+       * Das ist eine ENTSCHEIDUNG DES AUFTRAGGEBERS (2026-09-27): die vorherige
+       * Fassung hat den Namensraum vereinheitlicht und damit echte Verteilungen
+       * erzeugt (55/25/12/6/2 %). Sie wurde auf Wunsch ZURUECKGENOMMEN, weil sie
+       * das Spielgefuehl der Kisten aendert.
+       *
+       * WAS EINE AENDERUNG KOSTET: der Zustandshash wandert (gemessen:
+       * 9ec63e8c -> 384c51cf auf Seed 20260910) — Altreplays und die Pruefvorlage
+       * `artifacts/replay-20260910.json` verifizieren dann nicht mehr. Der
+       * Zufallsstrom bleibt dabei unberuehrt (genau ein `next()` je Ziehung, in
+       * beiden Fassungen).
+       *
+       * Wer das umstellt, aendert das Spielgefuehl — also fragen, nicht tun.
+       * Festgehalten in `tests/loot.test.js`.
+       */
       const rarityName = weightedRarity(activeRng, RARITY_WEIGHTS, RARITY_IDS);
       const rarityId = Math.max(0, RARITY_IDS.indexOf(rarityName));
 

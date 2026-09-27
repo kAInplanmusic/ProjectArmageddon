@@ -3,19 +3,6 @@
  *
  * Wichtigkeit: Alle Zufallsoperationen müssen über einen deterministischen PRNG
  * laufen, der vom Server verteilt wird. KEIN Math.random() im Simulationspfad!
- *
- * ## EINE Quelle fuer die Seltenheits-Namen
- *
- * `rarities` ist die einzige Namensliste der Seltenheitsstufen. Sie MUSS mit den
- * Schluesseln der Gewichte uebereinstimmen (`RARITY_WEIGHTS` in
- * `engine/systems/lootSystem.js`; Waechter: `tests/loot.test.js`).
- *
- * FUND (belegt, docs/duplikate-bericht.md Fund 10/11): Vorher standen hier die
- * vier Quell-Namen (standard/enhanced/premium/epic), waehrend die Gewichte nach
- * den fuenf powerTier-Stufen benannt waren (common/uncommon/rare/epic/legendary).
- * Nur `epic` kam in beiden Raeumen vor: `weights[r] || 0` ergab [0,0,0,6], und
- * JEDE Rundenkiste wurde damit `epic`. Dieselbe Liste stand ausserdem ein
- * zweites Mal als `RARITY_IDS` in `lootSystem.js`.
  */
 
 import { MatchSeedManager } from '../seed.js';
@@ -32,17 +19,16 @@ export const LOOT_DROP_RULES = Object.freeze({
     empty: 0.10,
     trap: 0.05
   }),
-  rarities: Object.freeze(['common', 'uncommon', 'rare', 'epic', 'legendary']),
+  rarities: Object.freeze(['standard', 'enhanced', 'premium', 'epic']),
   gamechangerMatchRate: Object.freeze({
     minimum: 0.05,
     maximum: 0.10
   }),
   rarityColors: Object.freeze({
-    common: '#ffffff',
-    uncommon: '#3b82f6',
-    rare: '#a855f7',
-    epic: '#fbbf24',
-    legendary: '#f97316'
+    standard: '#ffffff',
+    enhanced: '#3b82f6',
+    premium: '#a855f7',
+    epic: '#fbbf24'
   })
 });
 

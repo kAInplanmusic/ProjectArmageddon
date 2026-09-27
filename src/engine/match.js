@@ -48,8 +48,7 @@ import { GuentherSystem } from './systems/guentherSystem.js';
 import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
-import { POWER_TO_SPEED } from '../shared/ballistics.js';
-import { PROJECTILE_GRAVITY } from '../shared/ballistics.js';
+import { POWER_TO_SPEED, PROJECTILE_GRAVITY } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 import {
   fire, projectileLifetime, aimPreview, hasLineOfSight, launchOrigin,
@@ -320,8 +319,16 @@ const TURRET_ELEVATIONS = Object.freeze([0.05, 0.15, 0.3, 0.5, 0.785, 1.0]);
 const TURRET_PATH_STEPS = 900;
 /** Größter Abstand, bei dem noch geschossen wird (halbe Figurenbreite). */
 const TURRET_MAX_MISS = 22;
-/** Schwerkraft der Geschosse — Referenz auf die zentrale Konstante. */
-export const GRAVITY = PROJECTILE_GRAVITY;
+/*
+ * Die Schwerkraft der Geschosse — eine REFERENZ auf die zentrale Konstante.
+ *
+ * FUND (belegt, 2026-09-27): Hier stand `const GRAVITY = 0.32;` neben
+ * `PROJECTILE_GRAVITY = 0.32` in `src/shared/ballistics.js`. Wertgleich, deshalb
+ * unauffaellig — aber der Geschuetz-Zielpfad las die EIGENE Kopie, waehrend der
+ * Erreichbarkeitspfad die geteilte Konstante nahm. Wer `PROJECTILE_GRAVITY`
+ * getunt haette, haette das Geschuetz STILL falsch zielen lassen.
+ */
+const GRAVITY = PROJECTILE_GRAVITY;
 const MAX_WIND = 0.05;
 /** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
 const CRATE_GRAVITY = 0.30;
@@ -2152,6 +2159,13 @@ export class MatchController {
       crateType: CRATE_TYPES.weapon,
       crateX: startX,
       crateY: startY - 14,
+      /*
+       * BEWUSSTER ZUSTAND: die Waffen tragen ihre Seltenheit im `powerTier`-
+       * Namensraum (common/uncommon/rare/epic/legendary), `RARITY_IDS` fuehrt die
+       * vier `rarity`-Namen. Kein Waffenwert kommt darin vor -> gemessen liegt
+       * der Index bei ALLEN 150 Waffen auf 0. Siehe die Begruendung an der
+       * Ziehungsstelle in `systems/lootSystem.js`.
+       */
       rarity: Math.max(0, RARITY_IDS.indexOf(weapon.rarity)),
       weaponId: weapon.index,
       picked: 0,

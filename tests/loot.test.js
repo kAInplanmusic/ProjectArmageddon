@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { SeededRandom } from '../src/shared/prng.js';
+import { WEAPONS } from '../src/shared/config/weapons.js';
+import { RARITY_IDS, RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 import {
   LOOT_DROP_RULES,
   createPseudoRandomDropState,
@@ -12,7 +14,6 @@ import {
   createLootSeedManager,
   getLootRng,
 } from '../src/shared/config/loot.js';
-import { RARITY_IDS, RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 
 test('Loot rolls are deterministic for the same seed', () => {
   const roll = seed => {
@@ -63,24 +64,43 @@ test('Loot seed manager isolates the loot stream', () => {
 });
 
 /*
- * Waechter: Die Namen der Ziehung und die Schluessel der Gewichte sind EIN Raum.
+ * ============ WACHE: der bewusste Zustand der Kisten-Seltenheit ============
  *
- * FUND (belegt, docs/duplikate-bericht.md Fund 10/11): `RARITY_IDS` stand als
- * zweites Literal neben `LOOT_DROP_RULES.rarities`, und die Gewichte waren nach
- * den powerTier-Stufen benannt (common/uncommon/rare/epic/legendary), waehrend
- * die Namen die Quell-Raritaeten trugen (standard/enhanced/premium/epic). Nur
- * `epic` kam in beiden Raeumen vor — jede Rundenkiste wurde damit `epic`.
+ * Diese Tests sind KEINE Qualitaetsaussage -- sie halten einen ENTSCHIEDENEN
+ * Zustand fest, damit er nicht versehentlich kippt.
  *
- * Laufen die beiden Raeume wieder auseinander, faellt dieser Test.
+ * Hintergrund (gemessen 2026-09-27): `RARITY_WEIGHTS` ist nach `powerTier`
+ * benannt, `RARITY_IDS` traegt die vier `rarity`-Namen. Nur 'epic' kommt in
+ * beiden vor. Eine vereinheitlichende Fassung wurde gebaut und auf Wunsch des
+ * Auftraggebers ZURUECKGENOMMEN, weil sie das Spielgefuehl der Kisten aendert
+ * (Kisten waren vorher immer 'epic', danach 55/25/12/6/2 %).
+ *
+ * Faellt einer dieser Tests, hat jemand das Spielgefuehl geaendert. Dann ist das
+ * eine Entscheidung, keine Regression -- und der Replay-Hash wandert mit
+ * (gemessen 9ec63e8c -> 384c51cf auf Seed 20260910).
  */
-test('RARITY_IDS und RARITY_WEIGHTS teilen denselben Namensraum', () => {
-  assert.deepEqual(
-    [...RARITY_IDS].sort(),
-    Object.keys(RARITY_WEIGHTS).sort(),
-    'Die Namen der Ziehung und die Schluessel der Gewichte muessen genau '
-    + 'dieselben sein — sonst liest weightedRarity fuer die fehlenden Namen 0.',
-  );
-  // Und die Liste hat genau EINE Quelle.
-  assert.deepEqual(RARITY_IDS, LOOT_DROP_RULES.rarities,
-    'RARITY_IDS muss auf LOOT_DROP_RULES.rarities zeigen, nicht eine Kopie sein.');
+test('WACHE: RARITY_IDS ist die Katalog-Liste, keine zweite Kopie', () => {
+  assert.equal(RARITY_IDS, LOOT_DROP_RULES.rarities,
+    'RARITY_IDS muss die Liste aus LOOT_DROP_RULES sein -- ein zweites Literal '
+    + 'laeuft sonst auseinander');
+  assert.deepEqual([...RARITY_IDS], ['standard', 'enhanced', 'premium', 'epic']);
+});
+
+test('WACHE: Rundenkisten ziehen bewusst immer "epic" (Namensraum-Mismatch ist entschieden)', () => {
+  const rng = new SeededRandom(4242);
+  const namen = new Set();
+  for (let i = 0; i < 5000; i += 1) namen.add(weightedRarity(rng, RARITY_WEIGHTS, RARITY_IDS));
+
+  assert.deepEqual([...namen], ['epic'],
+    'Die Ziehung faellt immer auf "epic", weil nur dieser Name in beiden Listen '
+    + 'vorkommt. Andere Namen hier = der Namensraum wurde vereinheitlicht; dann '
+    + 'ist das Spielgefuehl der Kisten geaendert und der Replay-Hash wandert mit.');
+  assert.equal(RARITY_IDS.indexOf('epic'), 3, 'epic liegt auf Index 3');
+});
+
+test('WACHE: abgeworfene Waffen tragen Seltenheit 0 (kein Waffenname liegt in RARITY_IDS)', () => {
+  const indizes = new Set(WEAPONS.map(w => Math.max(0, RARITY_IDS.indexOf(w.rarity))));
+  assert.deepEqual([...indizes], [0],
+    'Alle Waffen-Seltenheiten liegen ausserhalb von RARITY_IDS. Andere Indizes '
+    + 'hier = ein Namensraum wurde angeglichen.');
 });
