@@ -331,26 +331,19 @@ const AUDIT_LISTE_2026_09_26 = [
  * damit ein neuer halber Zweig nicht unbemerkt entsteht.
  */
 const EINZWEIG_BELEGT = new Map([
-  // --- nur lokal behandelt (im Online-Betrieb kommt das Ereignis an und fällt)
-  ['crate_pickup', {
-    zweig: 'lokal',
-    entweder: 'online steht der Bestand in der Waffenliste: src/client/main.js:1000 (remoteLoadouts aus der LOADOUTS-Nachricht) → :1114 (inventory) → :1212 (#weaponIdsForActivePlayer)',
-  }],
-  ['fall_damage', {
-    zweig: 'lokal',
-    entweder: 'online sinkt der Lebensbalken: src/client/main.js:1103 (health aus dem Snapshot) → src/client/hud.js:216 (Balkenbreite) und :247 (Zahl)',
-  }],
+  /*
+   * --- nur lokal behandelt (im Online-Betrieb kommt das Ereignis an und fällt)
+   *
+   * O2 nachgezogen (2026-09-27): `crate_pickup`, `fall_damage`, `landed` und
+   * `toxic_rain` hatten bis dahin nur einen `lokal:`-Zweig, obwohl der Server
+   * sie sendet (`src/server/gameServer.js:246-248`). Sie haben jetzt einen
+   * `online:`-Zweig (`src/client/ereignisse.js`) und sind KEINE Einzweig-Fälle
+   * mehr — deshalb stehen sie hier nicht mehr. `jumped` und `crate_landed`
+   * bleiben einzweigig; ihr Online-Beleg hängt an O8.
+   */
   ['jumped', {
     zweig: 'lokal',
     entweder: 'online ist der Sprung als Bewegung sichtbar: src/client/main.js:1077 (interpolierte Entities aus dem Snapshot) → src/client/renderer.js:1217 (#drawEntities)',
-  }],
-  ['landed', {
-    zweig: 'lokal',
-    entweder: 'wie `jumped` — die Landung ist die Bewegung der Figur: src/client/main.js:1077 → src/client/renderer.js:1217',
-  }],
-  ['toxic_rain', {
-    zweig: 'lokal',
-    entweder: 'online sinkt der Lebensbalken der Betroffenen: der Regen teilt echten Schaden aus (src/engine/systems/maelstromSystem.js:92 applyDamage) → src/client/main.js:1103 (health) → src/client/hud.js:247',
   }],
   ['crate_landed', {
     zweig: 'lokal',

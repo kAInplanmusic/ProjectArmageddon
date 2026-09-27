@@ -427,11 +427,18 @@ export const EREIGNIS_WIRKUNGEN = {
     },
   },
 
-  landed: {
-    lokal: (k, n) => {
-      k.hud.log(`${k.nameOf(n.playerId)} ist gelandet`);
-    },
-  },
+  /*
+   * Landung nach Sprung oder Fall — in BEIDEN Betriebsarten.
+   *
+   * FUND (belegt, O2): Hier stand nur `lokal:`; online kam das Ereignis an
+   * (`src/server/gameServer.js:246-248`) und fiel bei der Wirkung weg, weil
+   * `verarbeiteOnline` nur `.online` liest (`:618`). Der Name kommt aus
+   * `k.nameOf` — lokal aus `match.getState()`, online aus dem Snapshot; beide
+   * führen ihn.
+   */
+  landed: beide((k, n) => {
+    k.hud.log(`${k.nameOf(n.playerId)} ist gelandet`);
+  }),
 
   crate_landed: {
     lokal: (k) => {
@@ -469,6 +476,15 @@ export const EREIGNIS_WIRKUNGEN = {
     },
   },
 
+  /*
+   * Kiste aufgenommen — in BEIDEN Betriebsarten, NUR der Name kommt anders.
+   *
+   * FUND (belegt, O2): Hier stand nur `lokal:`; online fiel das Ereignis bei
+   * der Wirkung weg. Der lokale Zweig liest den Namen aus der Spielerliste
+   * (`k.match.players`) — online ist `k.match` null (`src/client/ereignisse.js:1380`,
+   * `match: this.match` im Kontext), deshalb benutzt der Online-Zweig den
+   * gemeinsamen `k.nameOf`, der dort aus dem Snapshot liest.
+   */
   crate_pickup: {
     lokal: (k, n) => {
       const who = k.match.players.find(player => player.entityId === n.playerId);
@@ -478,6 +494,16 @@ export const EREIGNIS_WIRKUNGEN = {
         : reward?.kind === 'heal' ? `${who?.label ?? 'Spieler'} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who?.label ?? 'Spieler'} löst eine Sprengfalle aus`
         : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
+      k.hud.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
+    },
+    online: (k, n) => {
+      const who = k.nameOf(n.playerId);
+      const reward = n.reward;
+      const text = reward?.kind === 'weapon'
+        ? `${who} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
+        : reward?.kind === 'heal' ? `${who} heilt ${reward.amount} HP`
+        : reward?.kind === 'trap' ? `${who} löst eine Sprengfalle aus`
+        : `${who} öffnet eine leere Kiste`;
       k.hud.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
     },
   },
@@ -534,21 +560,31 @@ export const EREIGNIS_WIRKUNGEN = {
     },
   },
 
-  fall_damage: {
-    lokal: (k, n) => {
-      k.hud.log(`Sturzschaden: ${Math.round(n.damage)}`, 'danger');
-    },
-  },
+  /*
+   * Sturzschaden — in BEIDEN Betriebsarten.
+   *
+   * FUND (belegt, O2): Hier stand nur `lokal:`; online war der Lebensverlust
+   * damit UNERKLÄRT — der Balken sank, aber niemand nannte den Grund. Der Text
+   * nennt keinen Namen, deshalb `beide(fn)`.
+   */
+  fall_damage: beide((k, n) => {
+    k.hud.log(`Sturzschaden: ${Math.round(n.damage)}`, 'danger');
+  }),
 
   round_start: beide((k, n) => {
     k.hud.log(`Runde ${n.round} — Wind ${Number(n.wind ?? 0).toFixed(3)}`, 'neutral');
   }),
 
-  toxic_rain: {
-    lokal: (k, n) => {
-      if (n.affected?.length) k.hud.log('Toxischer Regen trifft die Zone', 'danger');
-    },
-  },
+  /*
+   * Toxischer Regen — in BEIDEN Betriebsarten.
+   *
+   * FUND (belegt, O2): Hier stand nur `lokal:`; online war der Lebensverlust
+   * der Betroffenen ebenfalls unerklärt. Die Zone ist in beiden Betriebsarten
+   * dieselbe, deshalb `beide(fn)` und derselbe Text.
+   */
+  toxic_rain: beide((k, n) => {
+    if (n.affected?.length) k.hud.log('Toxischer Regen trifft die Zone', 'danger');
+  }),
 
   match_over: {
     /*
