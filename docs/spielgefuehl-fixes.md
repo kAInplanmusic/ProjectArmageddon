@@ -89,6 +89,14 @@ das Gelände), und `Schuss abgegeben (68 Kraft)` ist kein Tipp mehr. Dass auch d
 echte Playwright-Tastatur feuert, hält der Test darüber fest
 (`prediction-gpu.spec.mjs:181`).
 
+Und ein „Tipp" muss auch ein Tipp bleiben: Der Test MISST die Dauer des Tipps
+(`performance.now()` um die beiden Versendungen — dieselbe Uhr wie der
+Ladefortschritt). Gemessen unter Last: **514 ms** für einen „Tipp", was
+`Schuss abgegeben (60 Kraft)` ergibt. Deshalb gilt ein Durchgang nur, wenn der
+Tipp unter 150 ms blieb, sonst wird der ganze Durchgang wiederholt (bis zu fünf
+Versuche, Fehlermeldung nennt die gemessenen Dauern). Die Zusicherung selbst
+bleibt streng — vor und nach der Wiederholung.
+
 ### Replay-Grenze
 
 `npm run replay -- play artifacts/replay-20260910.json --verify` liefert VOR und
@@ -135,16 +143,31 @@ explosion 36 · hitscan 1 · shot 37  →  74 Klang-Anlässe  =  1,82 je Sekunde
 zum Vergleich: damage 27 (gedrosselt), drowning 0
 ```
 
-### Test
+### Tests — zwei Belege, eine Attrappe wie im Browser
 
-`tests/event-coverage.test.js:447` — „Die Klangebene gilt ONLINE genauso wie
-lokal — Schuss, Explosion, Treffer": ruft BEIDE Einstiege
-(`verarbeiteLokal`/`verarbeiteOnline`) mit einem aufzeichnenden Mischer und
-verlangt Gleichheit:
+**1. Zweig-Test (ohne Browser)** — `tests/event-coverage.test.js:447` — „Die
+Klangebene gilt ONLINE genauso wie lokal — Schuss, Explosion, Treffer": ruft
+BEIDE Einstiege (`verarbeiteLokal`/`verarbeiteOnline`) mit einem aufzeichnenden
+Mischer (Attrappe) und verlangt Gleichheit:
 
 ```
 lokal  = [explosion, shot, shot, shot, damage]
 online = [explosion, shot, shot, shot, damage]   ← vorher leer
+```
+
+**2. E2E im echten Online-Match (mit Server)** —
+`tests/e2e/prediction-online.spec.mjs:282` — „Online wird der Klang GERUFEN":
+Der Client feuert nur `sendInput`; gemessen wird der Zuwachs der Zähler des
+**echten** `SoundMixer` (`gezaehlt`) NACH dem Serverereignis. Vorher blieb der
+Zähler stehen. Damit ist die Lücke geschlossen, dass keine einzige
+E2E-Spezifikation den Klang je berührte.
+
+Gegenprobe (Zähne): Mit entferntem Online-Klangaufruf im `shot`-Zweig fällt der
+E2E (gemessen):
+
+```
+✘ Online wird der Klang GERUFEN … (13.0s)
+  Error: Der Schuss-Klang muss online gerufen werden (vorher 0, jetzt 0)
 ```
 
 ### Replay-Grenze
@@ -279,8 +302,12 @@ Zustandshash unverändert `9ec63e8c`: reine CSS-Änderung.
 | `npm run lint` | Exit 0, keine Meldung |
 | `npm run check:docs` | „Geprüfte Behauptungen: alle richtig" |
 | `node --test tests/event-coverage.test.js tests/sound-mixer.test.js tests/hud-vorrang.test.js tests/ereignis-kontext.test.js` | 47/47 grün |
-| `npx playwright test tests/e2e/prediction-gpu.spec.mjs -g „HALTEN"` | 1/1 grün (Halten > Tippen) |
+| `node --test tests/no-dead-code.test.js tests/source-boundaries.test.js tests/eine-regel-eine-stelle.test.js tests/ohne-kommentare.test.js tests/system-priority.test.js tests/dom.test.js tests/weapon-animation.test.js tests/effects.test.js` | 64/64 grün |
+| `npx playwright test tests/e2e/prediction-gpu.spec.mjs` (ganze Datei) | 9/9 grün, darunter „HALTEN lädt auf …" |
+| `npx playwright test tests/e2e/prediction-gpu.spec.mjs -g „HALTEN"` | 4× grün (Stabilität nach der Tipp-Dauer-Prüfung) |
 | `npx playwright test tests/e2e/grosse-teams.spec.mjs -g „Protokoll"` | 1/1 grün |
+| `npx playwright test tests/e2e/accessibility.spec.mjs tests/e2e/grosse-teams.spec.mjs` | 17/17 grün |
+| `npx playwright test tests/e2e/prediction-online.spec.mjs -g „Klang"` | 1/1 grün (echter Server, echter Mischer) |
 | `npx playwright test tests/e2e/screenreader.spec.mjs` | 11/11 grün (Live-Region unversehrt) |
 
 `npm test` und `npm run test:e2e` wurden NICHT als Volllauf gefahren (Auftrag:
@@ -295,13 +322,17 @@ lastempfindlich, parallel schreibende Arbeiter).
    konnte nicht nachgemessen werden (Volllauf verboten) und wurde deshalb NICHT
    angefasst: `check:docs` vergleicht nur, dass beide Dokumente dieselbe Zahl
    nennen — das tun sie weiterhin. Ein späterer Volllauf muss die Zahl
-   nachziehen.
+   nachziehen. (Die Zahl der E2E-SPEZIFIKATIONEN bleibt bei 30: die neuen Tests
+   stehen in vorhandenen Dateien, keine neue Datei.)
 2. **Der Klang ist nicht GEHÖRT worden.** Es gibt in dieser Umgebung kein
-   Audio-Ausgabegerät. Belegt ist, dass die vier Wirkungen online den Mischer
-   rufen (Test) und wie oft (Sonde) — nicht, wie es klingt.
-3. **Online-Ende zu Ende nicht geprüft.** Der Nachweis für Befund 2 ist der
-   Zweig-Test am echten Einstieg `verarbeiteOnline`, nicht eine Sitzung gegen
-   einen laufenden Server. Ein Online-E2E (Server + Client + Mischer) steht aus.
+   Audio-Ausgabegerät am Ohr. Belegt ist, dass der echte Mischer den Schuss aus
+   dem Serverereignis zählt (E2E) und wie oft Klang entstehen kann (Sonde) —
+   nicht, wie es klingt.
+3. **Der Nachweis für den GEGNER fehlt.** Der Online-E2E misst den Zähler des
+   GREIFENDEN Clients (der Server bestätigt den eigenen Schuss). Der zweite
+   Mensch ist im Test ein roher Socket, kein Browser — dass AUCH das Gegenüber
+   den Schuss hört, ist damit nicht gemessen, sondern nur dieselbe Codebahn
+   (`verarbeiteOnline` läuft bei jedem Client).
 4. **Der Ladebalken ist nicht bildlich geprüft.** Kein Bildvergleich. Geprüft
    ist die Größe, die ihn speist (`chargeRatio` beim Halten > 0,4), die Zahl im
    HUD und der Kraftwert im Protokoll. Dass der Balken bei `ladeAnteil = 0`
@@ -309,13 +340,17 @@ lastempfindlich, parallel schreibende Arbeiter).
    Aufrufstelle) — nicht aus Pixeln.
 5. **Das Mündungsfeuer online fehlt weiterhin** (siehe Befund 2, „Bewusst NICHT
    mit erledigt").
-6. **Der E2E-Lauf ist während dieses Zuges durch einen parallel schreibenden
+6. **Der Mahlstrom ist NICHT angefasst.** Die Lücke, dass `maelstrom` in keiner
+   E2E-Spezifikation vorkommt, ist ein eigener Befund (7 Runden unsichtbar) und
+   liegt außerhalb dieses Auftrags (er berührt Motor und Renderer-Zustand, nicht
+   die vier Klangstellen).
+7. **Der E2E-Lauf ist während dieses Zuges durch einen parallel schreibenden
    Arbeiter gestört worden**: Der Dev-Server lädt die Seite bei jeder
    Quelländerung neu (`[vite] page reload`), mitten in einem Test wurde dadurch
    der Ausführungs-Kontext zerstört (der Ladetest wiederholt den Durchgang
    deshalb selbst). In einem Lauf war außerdem der WebGPU-Test aus
    `prediction-gpu.spec.mjs` rot (`expect(pfad.path).toBe('cpu')`), ohne dass
-   Gelände- oder GPU-Code berührt wurde — das ist Umgebungsrauschen, kein Befund
-   dieses Zuges.
-7. **Die Sonden liegen in `/tmp/pa-probe/`**, nicht im Repo. Sie sind damit
+   Gelände- oder GPU-Code berührt wurde; im Lauf danach war dieselbe Datei 9/9
+   grün. Das ist Umgebungsrauschen, kein Befund dieses Zuges.
+8. **Die Sonden liegen in `/tmp/pa-probe/`**, nicht im Repo. Sie sind damit
    nicht versioniert; die Aufrufe stehen oben, die Ergebnisse hier.

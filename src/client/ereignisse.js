@@ -329,7 +329,7 @@ export const EREIGNIS_WIRKUNGEN = {
     // zeichnen, aber die Vorhersage ist damit erledigt und der Schuss zu hören.
     online: (k) => {
       k.shotPredictor?.resolve();
-      // TEMPORAER ENTFERNT (Zaehne-Probe): k.sound?.verarbeite({ type: 'shot' });
+      k.sound?.verarbeite({ type: 'shot' });
     },
   },
 
