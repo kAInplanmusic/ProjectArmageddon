@@ -823,7 +823,7 @@ class Game {
         return null;
       }
       if (!this.network.isMyTurn) {
-        this.hud.log('Nur am eigenen Zug kann gesprungen werden', 'neutral');
+        this.hud.log('Nur am eigenen Zug kann gesprungen werden', 'notice');
         return null;
       }
       this.network.sendJump(seitlich);
@@ -836,7 +836,7 @@ class Game {
     const ergebnis = this.match.jump(playerId, seitlich);
     if (!ergebnis.ok) {
       // Kein Grund zur Beunruhigung: eine Meldung genügt.
-      this.hud.log(ergebnis.errors.join(', '), 'neutral');
+      this.hud.log(ergebnis.errors.join(', '), 'notice');
       return ergebnis;
     }
     this.hud.log(ergebnis.double ? 'Doppelsprung' : 'Sprung', 'accent');
@@ -867,7 +867,7 @@ class Game {
         return null;
       }
       if (!this.network.isMyTurn) {
-        this.hud.log('Nur am eigenen Zug kann eine Waffe abgeworfen werden', 'neutral');
+        this.hud.log('Nur am eigenen Zug kann eine Waffe abgeworfen werden', 'notice');
         return null;
       }
       const index = this.#inventoryIndexAt(anzeigePosition);
@@ -880,7 +880,7 @@ class Game {
       return { ok: true, pending: true };
     }
     if (!this.match || this.mode !== 'local') {
-      this.hud.log('Abwerfen ist im Replay nicht möglich', 'neutral');
+      this.hud.log('Abwerfen ist im Replay nicht möglich', 'notice');
       return null;
     }
     const index = this.#inventoryIndexAt(anzeigePosition);
@@ -1316,7 +1316,7 @@ class Game {
       // Client eine Waffe, die dem aktiven Spieler gar nicht gehört, und der
       // Server lehnte sie ab.
       if (!this.network?.isMyTurn) {
-        this.hud.log('Nur am eigenen Zug kann die Waffe gewechselt werden', 'neutral');
+        this.hud.log('Nur am eigenen Zug kann die Waffe gewechselt werden', 'notice');
         return;
       }
       const view = this.onlineViewState;

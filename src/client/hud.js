@@ -21,6 +21,126 @@ import { ladungAnteil } from './weaponAnimation.js';
 const LOG_LIMIT = 60;
 
 /**
+ * Vorrang im Ereignisprotokoll: zwei Klassen, zwei Budgets.
+ *
+ * ## Der Befund, der dazu führte (belegt, zwei Messungen)
+ *
+ * Das Protokoll hielt 60 Zeilen; jede neue kam vorn hinein, die älteste fiel
+ * hinten heraus — nach ZEIT, nicht nach Wichtigkeit. Eine STEHENDE Figur
+ * erzeugt ~34 `landed`-Meldungen je Sekunde (Physik-Bounce um 4 px). Gemessen
+ * mit echtem Motor, echtem Hud, 4242 und 10 s Laufzeit:
+ *
+ *   Lage                          Zeilen/s   Überlebt
+ *   4 Figuren, hills, ungefiltert      34,5   105 Takte = 1,8 s
+ *   4 Figuren, flooded, ungefiltert    17,3   210 Takte = 3,5 s
+ *   40 Figuren, hills, ungefiltert    344,2    14 Takte = 0,2 s
+ *   40 Figuren, flooded, ungefiltert  138,4    28 Takte = 0,5 s
+ *
+ * Der Sendefilter des Servers (`src/shared/protocol.js`, `EreignisSendefilter`)
+ * nimmt davon die Wiederholungen weg — das verbessert die Lage, löst sie aber
+ * nicht: bei 40 Figuren bleiben gefiltert 72,2 Zeilen/s auf `hills` (0,7 s) und
+ * 29,6 auf `flooded` (1,9 s). Eine Servermeldung wie „In der Luft ist kein
+ * erster Sprung möglich" (kommt als `danger`, siehe `main.js`) war damit weg,
+ * bevor der Spieler sie gelesen hatte.
+ *
+ * ## Was hier passiert
+ *
+ * Zwei Wege, sie ergänzen sich:
+ *
+ * **1. Reserviertes Budget (`VORRANG_LIMIT`).** Meldungen sind entweder
+ * `vorrang` (Fehler, Zugwechsel, Ereignisse, Ablehnungsbegründungen:
+ * `danger`, `accent`, `good`, `notice`) oder `rauschen` (Anzeigearten mit dem
+ * Vorgabeton `neutral` — `landed` und Verwandte).
+ *
+ * Vorrangmeldungen haben ein EIGENES Budget (20) und können nur ihresgleichen
+ * verdrängen. Anzeigerauschen kann eine Vorrangmeldung **nie** verdrängen —
+ * unabhängig davon, wie viel davon ankommt und wie viele verschiedene Texte es
+ * sind. Umgekehrt darf die Anzeige den Platz, den der Vorrang GERADE nicht
+ * braucht, mitbenutzen: Das Protokoll führt bis zu 60 Zeilen, und beim ersten
+ * Vorrangbedarf räumt das Rauschen (das ist der „geliehene Rest"). So bleibt
+ * die Obergrenze `LOG_LIMIT` erhalten — ein Protokoll, das bei 40 Zeilen
+ * dichtmacht, obwohl keine einzige Vorrangmeldung ansteht, wäre eine
+ * Verschlechterung ohne Nutzen.
+ *
+ * **2. Zusammenfassen statt anhäufen.** Eine Meldung mit DEM SELBEN Text belegt
+ * nur EINE Zeile; weitere Vorkommen zählen dort hoch (`… ist gelandet ×12`).
+ * Das senkt den Zufluss, statt ihn nur anders zu verteilen: Bei 4 Figuren sind
+ * genau 4 Landungstexte im Umlauf, das Rauschbudget läuft deshalb praktisch
+ * nicht mehr über.
+ *
+ * Für Vorrangmeldungen wird nur eine UNMITTELBAR folgende Wiederholung
+ * zusammengefasst (Tastenspam auf dieselbe Sperre). Eine spätere gleiche
+ * Meldung ist ein NEUES Ereignis und bekommt eine neue Zeile — „A ist am Zug"
+ * der nächsten Runde darf nicht in der Zeile der vorigen Runde verschwinden,
+ * sonst fiele die Zugwechsel-Ansage weg (die wichtigste Ansage des Protokolls).
+ *
+ * ## Warum nicht die anderen Wege
+ *
+ * - **Fehler nie automatisch entfernen** (nur manuell/beim Matchwechsel): Der
+ *   Knotenbestand wüchse dann unbegrenzt über `LOG_LIMIT` hinaus. Ein
+ *   Screenreader liest die Region beim Fokussieren ganz vor — bei Hunderten
+ *   Zeilen ist das kein Vorrang, sondern eine Zumutung. Zudem bräuchte die
+ *   wachsende Liste sofort wieder eine Obergrenze, also genau diese Budgets.
+ * - **Nur zusammenfassen** (ohne Budgets): hilft nur bei GLEICHEM Text. Ein
+ *   Rauschgemisch aus vielen verschiedenen Anzeigetexten (auf `flooded`:
+ *   Wassermeldungen je Figur und Füllstand) verdrängt eine Vorrangmeldung
+ *   weiterhin. Die Zusicherung wäre „meistens", nicht „nie".
+ *
+ * ## Grenze, offen benannt
+ *
+ * Die Klassenzuordnung liest den TON der Meldung. Eine Meldung mit dem
+ * Vorgabeton `neutral`, die inhaltlich eine Begründung ist, gehört damit ins
+ * Rauschbudget — dafür gibt es den Ton `notice` (siehe `VORRANG_TOENE`); die
+ * fünf Aufrufstellen in `main.js`, die ihn setzen sollten, stehen in
+ * `docs/hud-vorrang.md`.
+ */
+const VORRANG_LIMIT = 20;
+
+/**
+ * Töne, die eine Aussage tragen (Fehler, Zugwechsel, Ereignis, abgelehnte
+ * Eingabe) und deshalb Vorrang bekommen. Alles andere ist Anzeige.
+ *
+ * ## `notice` — die Ablehnungsbegründung
+ *
+ * `notice` ist für Meldungen dieser Art:
+ *
+ *   „Nur am eigenen Zug kann gesprungen werden"
+ *   „In der Luft ist kein erster Sprung möglich"        (Sprung abgelehnt)
+ *   „Nur am eigenen Zug kann eine Waffe abgeworfen werden"
+ *
+ * Der Spieler drückt etwas, es passiert nichts — er MUSS den Grund erfahren
+ * können. Solche Meldungen sind heute mit dem Vorgabeton `neutral` unterwegs
+ * (fünf Stellen in `main.js`, siehe `docs/hud-vorrang.md` §6) und landen damit
+ * im Rauschbudget.
+ *
+ * **Warum ein eigener Ton und nicht `danger`:** `danger` heißt im ganzen Haus
+ * Schaden und Gefahr (und ist rot, `#ef476f`). Eine abgelehnte Tasteneingabe
+ * damit zu schreiben, ließe jeden Tastendruck wie einen Angriff aussehen — die
+ * Farbe ist eine Aussage über die Lage, nicht über den Ort des Problems.
+ *
+ * **Warum nicht eine Kennzeichnung am Aufruf** (`{ dringend: true }`): Ton und
+ * Wichtigkeit sind dieselbe Frage an denselben Aufruf. Zwei Achsen dafür sind
+ * zwei Regeln für eine Sache — genau die Doppelregel, die dieses Projekt an
+ * anderen Stellen teuer bezahlt hat (Simulationstakt, Trefferfeld, Reichweite).
+ *
+ * **Warum keine Texterkennung** (Muster wie /nicht möglich|Nur am eigenen
+ * Zug/): eine ZWEITE Regelquelle. Sie fällt bei der nächsten Umformulierung
+ * still aus (die Meldung ist dann wieder ungeschützt) oder greift bei einer
+ * Meldung, die inhaltlich etwas anderes sagt. Der Ton steht dort, wo die
+ * Absicht entsteht — beim Absender.
+ */
+const VORRANG_TOENE = Object.freeze(new Set(['danger', 'accent', 'good', 'notice']));
+
+/**
+ * Klasse einer Protokollmeldung — die Zuteilung des Zeilenbudgets.
+ * @param {string} tone Der Ton, mit dem die Meldung geschrieben wurde
+ * @returns {'vorrang'|'rauschen'} `vorrang` behält einen reservierten Rest
+ */
+export function protokollKlasse(tone) {
+  return VORRANG_TOENE.has(tone) ? 'vorrang' : 'rauschen';
+}
+
+/**
  * Farben der abgeleiteten Waffenstufen.
  *
  * Die Quelle kennt nur common/uncommon/rare; epic und legendary leitet der
@@ -37,7 +157,24 @@ const TIER_COLORS = Object.freeze({
 
 export class Hud {
   #elements;
+  /** Das Dokument, aus dem ALLE Knoten kommen (siehe Konstruktor). */
+  #document;
+  /**
+   * Das Protokoll als Modell — neueste Zeile ZUERST.
+   *
+   * Jeder Eintrag führt seinen Knoten mit. Ein Zusammenfassen oder ein
+   * Hinauswerfen muss GENAU diesen Knoten treffen; ohne die Bindung würde das
+   * Trimmen den falschen Knoten entfernen und die Live-Region dabei neu
+   * aufbauen.
+   */
   #logEntries = [];
+  /**
+   * Lebende Rauschzeilen je Text — der Zähler des Zusammenfassens.
+   *
+   * Nur Rauschzeilen: Bei Vorrangmeldungen wird ausschließlich eine
+   * UNMITTELBAR folgende Wiederholung zusammengefasst (siehe `log`).
+   */
+  #rauschZeilen = new Map();
   #selectedWeaponIndex = 0;
   #rosterSignature = '';
   #weaponSignature = '';
@@ -45,6 +182,18 @@ export class Hud {
   #lastActiveId = null;
 
   constructor(documentRef = document) {
+    /*
+     * Das übergebene Dokument gilt ÜBERALL.
+     *
+     * Fund (belegt beim Bau der Protokoll-Tests): Der Konstruktor nahm ein
+     * `documentRef`, die Render-Methoden lasen aber den GLOBALEN `document`
+     * (`#renderRoster`, `#renderWeapons`, `#logItem`). Im Browser fällt das
+     * nicht auf — `Main` übergibt genau dieses globale Dokument. Außerhalb des
+     * Browsers macht es das HUD unprüfbar: Ein Test kann kein eigenes Dokument
+     * einhängen, weil die Hälfte der Klasse am globalen hängt. Jetzt kommt
+     * alles aus EINER Quelle.
+     */
+    this.#document = documentRef;
     this.#elements = {
       round: documentRef.getElementById('hud-round'),
       wind: documentRef.getElementById('hud-wind'),
@@ -173,13 +322,13 @@ export class Hud {
     this.#rosterSignature = signature;
 
     list.replaceChildren(...state.entities.map(entity => {
-      const item = document.createElement('li');
+      const item = this.#document.createElement('li');
       item.className = 'roster-item';
       item.dataset.entityId = String(entity.entityId);
       if (entity.entityId === state.activePlayerId) item.classList.add('is-active');
       if (!entity.alive) item.classList.add('is-dead');
 
-      const name = document.createElement('span');
+      const name = this.#document.createElement('span');
       name.textContent = entity.label;
       name.style.color = TEAM_COLORS[entity.teamId % TEAM_COLORS.length];
 
@@ -194,7 +343,7 @@ export class Hud {
        * Kein Emblem, solange nichts erreicht ist (`rang === null`): Ein leerer
        * Platzhalter wäre irreführend.
        */
-      const emblemElement = document.createElement('span');
+      const emblemElement = this.#document.createElement('span');
       if (entity.entityId === state.eigenerSpielerId && state.emblem?.rang) {
         emblemElement.className = 'roster-emblem';
         emblemElement.dataset.tier = state.emblem.rang;
@@ -209,9 +358,9 @@ export class Hud {
           + (state.emblem.nurMuster ? ' (nur Muster — die Inhalte fehlen noch)' : '');
       }
 
-      const track = document.createElement('span');
+      const track = this.#document.createElement('span');
       track.className = 'hp-track';
-      const fill = document.createElement('span');
+      const fill = this.#document.createElement('span');
       fill.className = 'hp-fill';
       const ratio = entity.maxHealth > 0 ? Math.max(0, entity.health / entity.maxHealth) : 0;
       fill.style.width = `${Math.round(ratio * 100)}%`;
@@ -243,7 +392,7 @@ export class Hud {
         });
       }
 
-      const hp = document.createElement('span');
+      const hp = this.#document.createElement('span');
       hp.textContent = String(Math.max(0, Math.round(entity.health)));
       hp.style.fontVariantNumeric = 'tabular-nums';
 
@@ -252,7 +401,7 @@ export class Hud {
       item.append(name, emblemElement, track, hp);
 
       for (const marke of marken) {
-        const badge = document.createElement('span');
+        const badge = this.#document.createElement('span');
         badge.className = 'status-badge';
         badge.textContent = marke.text;
         badge.style.color = marke.color;
@@ -295,7 +444,7 @@ export class Hud {
      * genau in dem Moment, in dem er etwas ausgewählt hatte, und musste sich von
      * vorn durch die Seite tabben.
      */
-    const fokussierteWaffe = document.activeElement?.dataset?.weaponId ?? null;
+    const fokussierteWaffe = this.#document.activeElement?.dataset?.weaponId ?? null;
 
     /*
      * Eine Ordnung für Anzeige UND Eingabe. Die angezeigte Nummer ist die
@@ -337,7 +486,7 @@ export class Hud {
 
     const kinder = [];
     for (const gruppe of gruppen) {
-      const kopf = document.createElement('li');
+      const kopf = this.#document.createElement('li');
       kopf.className = 'weapon-group';
       kopf.dataset.subcategory = gruppe.id;
       kopf.textContent = `${gruppe.label} (${gruppe.eintraege.length})`;
@@ -358,7 +507,7 @@ export class Hud {
 
   /** Baut eine Zeile der Waffenliste. */
   #buildWeaponItem({ weaponId, index, weapon, anzeigeNummer }, active, onWeaponSelect) {
-    const item = document.createElement('li');
+    const item = this.#document.createElement('li');
     item.className = 'weapon-item';
     item.dataset.weaponId = weaponId;
     item.dataset.tier = weapon?.powerTier ?? 'common';
@@ -388,7 +537,7 @@ export class Hud {
     // hinterlegt. Fehlt die Datei, bleibt die Zeile ohne Bild nutzbar.
     const iconUrl = iconUrlFor(weapon);
     if (iconUrl) {
-      const image = document.createElement('img');
+      const image = this.#document.createElement('img');
       image.className = 'weapon-icon';
       // Auflösung über den Katalog: der Pfad ist relativ zu weapons.js.
       image.src = iconUrl;
@@ -401,13 +550,13 @@ export class Hud {
       item.append(image);
     }
 
-    const label = document.createElement('span');
+    const label = this.#document.createElement('span');
     label.className = 'weapon-name';
     label.textContent = `${anzeigeNummer ?? index + 1}. ${weapon?.displayName ?? weaponId}`;
     // Rarität als Farbe: die abgeleitete Stufe ist im Katalog dokumentiert.
     label.style.color = TIER_COLORS[weapon?.powerTier] ?? TIER_COLORS.common;
 
-    const meta = document.createElement('span');
+    const meta = this.#document.createElement('span');
     const ammo = active?.ammo?.[weaponId];
     const restCooldown = active?.cooldowns?.[weaponId] ?? 0;
     meta.textContent = ammo === 'unbegrenzt'
@@ -420,7 +569,7 @@ export class Hud {
     // Nachladezeit sichtbar machen: ohne sie wäre unklar, warum ein Schuss
     // abgelehnt wird. Die Zeile wird zusätzlich abgeblendet.
     if (restCooldown > 0) {
-      const cd = document.createElement('span');
+      const cd = this.#document.createElement('span');
       cd.className = 'weapon-cooldown';
 
       /*
@@ -438,14 +587,14 @@ export class Hud {
       const gesamt = weapon?.cooldown ?? 0;
       const anteil = ladungAnteil(restCooldown, gesamt);
 
-      const spur = document.createElement('span');
+      const spur = this.#document.createElement('span');
       spur.className = 'weapon-cooldown-track';
-      const fuellung = document.createElement('span');
+      const fuellung = this.#document.createElement('span');
       fuellung.className = 'weapon-cooldown-fill';
       fuellung.style.width = `${Math.round(anteil * 100)}%`;
       spur.append(fuellung);
 
-      const zahl = document.createElement('span');
+      const zahl = this.#document.createElement('span');
       zahl.className = 'weapon-cooldown-value';
       zahl.textContent = `⏳ ${restCooldown}`;
       cd.title = `Lädt nach — noch ${restCooldown} ${restCooldown === 1 ? 'Zug' : 'Züge'}`;
@@ -488,13 +637,48 @@ export class Hud {
     return item;
   }
 
-  /** Fügt eine Zeile zum Ereignisprotokoll hinzu. */
+  /**
+   * Fügt eine Zeile zum Ereignisprotokoll hinzu.
+   *
+   * Der Ton entscheidet nicht nur die Farbe, sondern auch die Klasse und damit
+   * das Zeilenbudget (Begründung und Messwerte: siehe `VORRANG_LIMIT` oben).
+   *
+   * ## Zusammenfassen statt anhäufen
+   *
+   * Ist der Text schon als Zeile vorhanden, wird diese hochgezählt
+   * (`… ist gelandet ×12`) statt eine zweite Zeile anzulegen. Die Zeile bleibt
+   * dabei STEHEN, wo sie steht: Das Protokoll liest sich von oben nach unten
+   * als „das Neueste zuerst", eine hochgezählte Zeile ist aber kein neues
+   * Ereignis, sondern dieselbe Meldung öfter. Wer die Reihenfolge streng
+   * chronologisch braucht, darf nicht zusammenfassen — für ein
+   * Ereignisprotokoll ist die Zahl aussagekräftiger als 40 gleiche Zeilen.
+   *
+   * @param {string} message Der Meldungstext
+   * @param {string} [tone] `danger` | `accent` | `good` | `notice` = Vorrang,
+   *   sonst Anzeige
+   */
   log(message, tone = 'neutral') {
-    this.#logEntries.unshift({ message, tone });
-    if (this.#logEntries.length > LOG_LIMIT) this.#logEntries.pop();
+    const text = String(message);
+    const vorhanden = this.#zeileZumZaehlen(text, tone);
 
+    if (vorhanden) {
+      vorhanden.anzahl += 1;
+      vorhanden.beschriftung = `${text} ×${vorhanden.anzahl}`;
+      /*
+       * NUR der Text des vorhandenen Knotens ändert sich.
+       *
+       * Kein Einfügen, kein Neuaufbau. Für die Live-Region (`role="log"`,
+       * `aria-relevant="additions"`, siehe index.html) ist eine Textänderung
+       * keine Hinzufügung — der Screenreader liest die Region deshalb nicht
+       * erneut vor. Zugleich bleibt die Zahl der Knoten unverändert.
+       */
+      if (vorhanden.knoten) vorhanden.knoten.textContent = vorhanden.beschriftung;
+      return;
+    }
+
+    const klasse = protokollKlasse(tone);
+    const eintrag = { text, tone, klasse, anzahl: 1, beschriftung: text, knoten: null };
     const list = this.#elements.log;
-    if (!list) return;
 
     /*
      * Nur die NEUE Zeile einfügen — die Liste nicht neu aufbauen.
@@ -503,17 +687,116 @@ export class Hud {
      * index.html). Ein `replaceChildren` über alle Zeilen würde bei jeder
      * Meldung 60 Knoten neu erzeugen; ein Screenreader liest die Region dann
      * als Ganzes vor — bei jeder einzelnen Meldung. Deshalb: vorn einfügen und
-     * hinten abschneiden. Der Screenreader bekommt genau einen neuen Knoten zu
-     * sehen (`aria-relevant="additions"`).
+     * die älteste Zeile hinten entfernen. Der Screenreader bekommt genau einen
+     * neuen Knoten zu sehen (`aria-relevant="additions"`).
      */
-    list.prepend(this.#logItem(message, tone));
-    while (list.children.length > LOG_LIMIT) list.lastElementChild.remove();
+    if (list) {
+      eintrag.knoten = this.#logItem(text, tone);
+      list.prepend(eintrag.knoten);
+    }
+    this.#logEntries.unshift(eintrag);
+    if (klasse === 'rauschen') this.#rauschZeilen.set(text, eintrag);
+
+    this.#trimme();
+  }
+
+  /**
+   * Sucht die Zeile, in der eine Meldung hochgezählt werden darf.
+   *
+   * Rauschen: jede lebende Zeile mit demselben Text — bei 4 Figuren sind genau
+   * 4 Landungstexte im Umlauf, sie wechseln sich ab und dürfen sich trotzdem
+   * zusammenfassen.
+   *
+   * Vorrang: NUR die neueste Zeile, und nur bei gleichem Text. Eine spätere
+   * gleiche Meldung ist ein neues Ereignis: „A ist am Zug" der nächsten Runde
+   * muss eine neue Zeile werden (und damit angesagt werden), nicht der Zähler
+   * der vorigen Runde steigen.
+   *
+   * @param {string} text Der Meldungstext
+   * @param {string} tone Der Ton der Meldung
+   * @returns {object|null} Der Eintrag, der hochgezählt werden darf
+   */
+  #zeileZumZaehlen(text, tone) {
+    if (protokollKlasse(tone) === 'rauschen') return this.#rauschZeilen.get(text) ?? null;
+    const neueste = this.#logEntries[0];
+    return neueste && neueste.klasse === 'vorrang' && neueste.text === text ? neueste : null;
+  }
+
+  /**
+   * Hält die Grenzen des Protokolls ein — auf Kosten der richtigen Klasse.
+   *
+   * Zwei Grenzen, zwei Zahler:
+   *
+   * 1. **Vorrang über seinem Budget** (`VORRANG_LIMIT`): Es fällt die älteste
+   *    VORRANGzeile. Vorrang verdrängt Vorrang — das ist die natürliche
+   *    Alterung wichtiger Meldungen.
+   * 2. **Überhang über `LOG_LIMIT`:** Den zahlt IMMER das Rauschen (älteste
+   *    Rauschzeile zuerst). Deshalb kann Anzeigerauschen eine Vorrangmeldung
+   *    nicht verdrängen: Der Pfad, der sie entfernen könnte, entfernt nur
+   *    Seinesgleichen.
+   *
+   * Der zweite Schritt kann nicht ins Leere laufen: `VORRANG_LIMIT` (20) liegt
+   * unter `LOG_LIMIT` (60), es bleibt also immer mindestens eine Rauschzeile
+   * übrig, bevor die Gesamtzahl die Grenze überschreiten könnte.
+   */
+  #trimme() {
+    while (this.#zaehle('vorrang') > VORRANG_LIMIT) {
+      if (!this.#entferneAelteste('vorrang')) break;
+    }
+    while (this.#logEntries.length > LOG_LIMIT) {
+      if (!this.#entferneAelteste('rauschen')) break;
+    }
+
+    /*
+     * Sicherheitsnetz gegen ein Auseinanderlaufen von Modell und Anzeige.
+     *
+     * Im Normalbetrieb greift es NIE (das Modell ist oben schon auf `LOG_LIMIT`
+     * begrenzt). Es steht hier, weil eine Live-Region, die über die Grenze
+     * hinaus wächst, für einen Screenreader unbrauchbar wird — lieber eine
+     * Zeile zu wenig als eine unbegrenzte Region.
+     */
+    const list = this.#elements.log;
+    while (list && list.children.length > LOG_LIMIT) list.lastElementChild.remove();
+  }
+
+  /** Zählt die Einträge einer Klasse. */
+  #zaehle(klasse) {
+    let zahl = 0;
+    for (const eintrag of this.#logEntries) if (eintrag.klasse === klasse) zahl += 1;
+    return zahl;
+  }
+
+  /**
+   * Entfernt die ÄLTESTE Zeile einer Klasse (das Ende der Liste — sie ist
+   * neueste-zuerst) und räumt Zähler und Knoten mit auf.
+   * @param {'vorrang'|'rauschen'} klasse
+   * @returns {boolean} true, wenn eine Zeile entfernt wurde
+   */
+  #entferneAelteste(klasse) {
+    for (let i = this.#logEntries.length - 1; i >= 0; i -= 1) {
+      const eintrag = this.#logEntries[i];
+      if (eintrag.klasse !== klasse) continue;
+      this.#logEntries.splice(i, 1);
+      if (this.#rauschZeilen.get(eintrag.text) === eintrag) this.#rauschZeilen.delete(eintrag.text);
+      eintrag.knoten?.remove();
+      return true;
+    }
+    return false;
   }
 
   /** Baut eine Protokollzeile. */
   #logItem(message, tone) {
-    const item = document.createElement('li');
+    const item = this.#document.createElement('li');
     item.textContent = message;
+    /*
+     * `notice` (Ablehnungsbegründung) wird WIE `neutral` gezeichnet.
+     *
+     * Der Ton entscheidet die Klasse und damit das Zeilenbudget — nicht die
+     * Farbe. Eine abgelehnte Tasteneingabe ist kein Schaden: Rot wäre eine
+     * Aussage über die Lage, die nicht stimmt. Die Zeile hebt sich deshalb
+     * nicht von den Anzeigezeilen ab; sie bleibt nur länger stehen. Wer hier
+     * später eine eigene Farbe setzt, ändert eine getroffene Entscheidung.
+     */
     item.style.color = tone === 'danger' ? '#ef476f'
       : tone === 'good' ? '#90be6d'
       : tone === 'accent' ? '#f4a261'
@@ -523,6 +806,7 @@ export class Hud {
 
   clearLog() {
     this.#logEntries = [];
+    this.#rauschZeilen.clear();
     this.#elements.log?.replaceChildren();
   }
 }
