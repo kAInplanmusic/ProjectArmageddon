@@ -26,7 +26,8 @@
 import readline from 'node:readline';
 import { ROOT, gitStatus, packageJson, run, rel } from './lib/repo.mjs';
 import {
-  toteDateien, unbenutzteExporte, unbenutzteKonstanten, doppelregeln, marker,
+  toteDateien, toteDaten, datenDateien, einstiegspunkte, sichtgrenzen,
+  unbenutzteExporte, unbenutzteKonstanten, doppelregeln, marker,
   nichtdeterminismus, zufallImProjekt, ereignisAbdeckung, pfadAufloesung, serverAutoritaet,
   secretScan, generierteDateien, zeilenStatistik, inventar,
   beurteileDoppelregeln, DOPPELREGEL_AUSNAHMEN_QUELLE,
@@ -255,7 +256,7 @@ const WERKZEUGE = {
   },
 
   audit_deadcode: {
-    beschreibung: 'Statische Tiefenanalyse: Dateien ohne Importeur, unbenutzte Exporte, definierte-aber-nie-gelesene Konstanten, Doppelregeln (derselbe Name in 2+ Dateien), TODO-Marker, generierte Dateien.',
+    beschreibung: 'Statische Tiefenanalyse: Dateien ohne Importeur, DATENDATEIEN (.json) ohne Leser, unbenutzte Exporte, definierte-aber-nie-gelesene Konstanten, Doppelregeln (derselbe Name 2+ mal auf Modul-Ebene definiert), TODO-Marker, generierte Dateien — dazu die SICHTGRENZEN: was dieses Werkzeug ausdrücklich NICHT sieht.',
     schema: {
       type: 'object',
       properties: {
@@ -265,6 +266,8 @@ const WERKZEUGE = {
     },
     async ruf({ umfang = 'kurz' } = {}) {
       const dateien = toteDateien();
+      const daten = toteDaten();
+      const datenAlle = datenDateien();
       const exporte = unbenutzteExporte();
       const konstanten = unbenutzteKonstanten();
       const doppelt = doppelregeln();
@@ -274,6 +277,17 @@ const WERKZEUGE = {
       const kurz = umfang !== 'voll';
       return text({
         toteDateien: kurz ? { anzahl: dateien.length, top: dateien.slice(0, 10) } : dateien,
+        // Datendateien ohne Leser: bis 2026-09-27 fielen sie aus JEDER Sonde
+        // (QUELTEXT kannte kein .json) — gemeldet wurde 0. `geprueft` steht
+        // neben `anzahl`, damit die Zahl eine Bezugsgröße hat.
+        toteDaten: kurz
+          ? {
+            anzahl: daten.length,
+            geprueft: datenAlle.length,
+            bytes: daten.reduce((s, d) => s + d.bytes, 0),
+            top: daten.slice(0, 10),
+          }
+          : { geprueft: datenAlle.length, liste: daten },
         unbenutzteExporte: kurz ? { anzahl: exporte.length, top: exporte.slice(0, 15) } : exporte,
         unbenutzteKonstanten: kurz ? { anzahl: konstanten.length, liste: konstanten.slice(0, 15) } : konstanten,
         // Die MESSUNG bleibt eine Messung; das Urteil kommt aus der
@@ -289,6 +303,12 @@ const WERKZEUGE = {
           : { messung: doppelt, urteil: doppeltUrteil },
         marker: { anzahl: mark.length, liste: mark },
         generierteDateien: generiert,
+        // Die Freisprüche, die dieses Werkzeug selbst ausspricht, MIT BELEG.
+        einstiegspunkte: einstiegspunkte(),
+        // Und die eigene Grenze, damit 0 nicht mit „nichts da" verwechselt
+        // wird: eine Meldung, die ihre Lücke nennt, ist mehr wert als eine
+        // stille Null.
+        sichtgrenzen: sichtgrenzen(),
       });
     },
   },
@@ -432,6 +452,10 @@ const WERKZEUGE = {
       const doppeltGemessen = doppelregeln();
       ergebnis.statisch = {
         toteDateien: toteDateien(),
+        toteDaten: toteDaten(),
+        datenGeprueft: datenDateien().length,
+        einstiegspunkte: einstiegspunkte(),
+        sichtgrenzen: sichtgrenzen(),
         unbenutzteExporte: unbenutzteExporte(),
         unbenutzteKonstanten: unbenutzteKonstanten(),
         doppelregeln: doppeltGemessen,
@@ -489,6 +513,10 @@ const WERKZEUGE = {
         perf: leistung({ zuge: 150 }),
         statisch: {
           toteDateien: toteDateien(),
+          toteDaten: toteDaten(),
+          datenGeprueft: datenDateien().length,
+          einstiegspunkte: einstiegspunkte(),
+          sichtgrenzen: sichtgrenzen(),
           unbenutzteExporte: unbenutzteExporte(),
           unbenutzteKonstanten: unbenutzteKonstanten(),
           doppelregeln: doppeltGemessen,
@@ -527,6 +555,9 @@ const WERKZEUGE = {
           partienGemessen: daten.spielverlauf.parteien.length,
           rundenMittel: daten.spielverlauf.mittel.runden,
           toteDateien: daten.statisch.toteDateien.length,
+          toteDaten: daten.statisch.toteDaten.length,
+          toteDatenBytes: daten.statisch.toteDaten.reduce((s, d) => s + d.bytes, 0),
+          datenGeprueft: daten.statisch.datenGeprueft,
           unbenutzteKonstanten: daten.statisch.unbenutzteKonstanten.length,
           doppelregeln: daten.statisch.doppelregeln.length,
           doppelregelnOffen: daten.statisch.doppelregelnUrteil.offen.length,
@@ -599,6 +630,14 @@ export function ampel(d) {
     setze(name, n === null ? 'gelb' : n === 0 ? 'gruen' : 'gelb', n === null ? nichtsGemessen : text(n));
   };
   zaehlfeld('toteDateien', statisch.toteDateien, n => `${n} Dateien ohne Importeur`);
+  // Datendateien (.json) sind ein EIGENES Feld: bis 2026-09-27 fielen sie aus
+  // jeder Sonde (QUELTEXT kannte kein .json). Fehlt die Liste, ist das gelb —
+  // „nicht gemessen" darf sich nie wie Sauberkeit lesen.
+  const datenAnzahl = laenge(statisch.toteDaten);
+  setze('toteDaten', datenAnzahl === null ? 'gelb' : datenAnzahl === 0 ? 'gruen' : 'gelb',
+    datenAnzahl === null
+      ? nichtsGemessen
+      : `${datenAnzahl} von ${statisch.datenGeprueft ?? '?'} Datendateien (.json) unter src/ haben keinen Leser`);
   zaehlfeld('unbenutzteKonstanten', statisch.unbenutzteKonstanten, n => `${n} definiert, nie gelesen`);
   zaehlfeld('marker', statisch.marker, n => `${n} TODO/FIXME im Quelltext`);
   zaehlfeld('zufall', d.zufall?.imSimulationspfad, n => `${n} Zeit-/Zufallstreffer im Simulationspfad`);

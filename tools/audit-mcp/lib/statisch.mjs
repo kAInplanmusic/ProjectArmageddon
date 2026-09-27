@@ -18,11 +18,78 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, walk, rel, read } from './repo.mjs';
 
-/** Endungen, die Quelltext sind (nicht Doku/Daten). */
+/**
+ * Endungen, die QUELTEXT sind (nicht Doku/Daten).
+ *
+ * **Diese Liste war blind für `.json` (belegt 2026-09-27).** Sie lautete
+ * `['.js','.mjs','.cjs','.ts','.tsx']`; damit fiel jede Datendatei aus JEDER
+ * Sonde dieses Moduls. Die Folge war eine stille Lücke: unter `src/` lagen
+ * drei `.json` mit **null Lesern** (168 979 B — siehe `toteDaten()`), und
+ * `audit_deadcode` meldete `0`. Ein Werkzeug, das 0 meldet, weil es nicht
+ * hinschaut, erzeugt Vertrauen — und ist damit gefährlicher als eines, das
+ * schweigt.
+ *
+ * Deshalb wird `.json` an ZWEI Stellen getrennt geführt:
+ *   - hier als Quelltext: NEIN. In einer JSON-Datei gibt es keine `export`-
+ *     Anweisung, keinen Import und keine Doppelregel — ein Quelltextleser
+ *     hätte dort nichts zu suchen.
+ *   - als `DATEN_ENDUNGEN`: eigene Sonde `toteDaten()`, eigene Zeile im
+ *     Bericht, eigener TODO-Eintrag.
+ */
 const QUELTEXT = ['.js', '.mjs', '.cjs', '.ts', '.tsx'];
 
-/** Dateien, die als Einstieg gelten und daher keinen Importeur brauchen. */
-const EINSTIEG = /(^|\/)(index\.(js|mjs|ts)|main\.(js|mjs|ts)|server\.mjs|vite\.config\.mjs)$/;
+/** Endungen, die DATEN sind — geprüft von `toteDaten()`, nicht als Quelltext. */
+export const DATEN_ENDUNGEN = ['.json'];
+
+/**
+ * Endungen, in denen ein LESER stehen kann: Quelltext und Browser-HTML.
+ *
+ * Doku (`.md`) zählt ausdrücklich NICHT. Der erste Lauf dieser Sonde hätte sich
+ * sonst selbst betrogen: `docs/ARCHIVED.md` und `docs/audit-arch-grenzen.md`
+ * nennen `projectArmageddonWeaponsV1.json` beim Namen — ein Dateiname in einem
+ * Bericht ist aber kein Leser, sondern ein Kommentar in Prosa. Dieselbe Lektion
+ * wie „Kommentarzeilen sind keine Treffer" (`README.md`), nur eine Ebene höher.
+ */
+const LESER_ENDUNGEN = [...QUELTEXT, '.html'];
+
+/**
+ * Einstiegs-NAMEN: so heißen Dateien, die definitionsgemäß keinen Importeur
+ * haben können (Barrel, `main`, Browser-/Server-Start).
+ *
+ * **Der Name allein ist kein Nachweis.** Bis 2026-09-27 galt: wer so heißt, ist
+ * Einstiegspunkt — damit war `src/shared/data/index.js` freigesprochen, obwohl
+ * die Datei keinen Code enthält, nichts re-exportiert und niemand sie lädt
+ * („the check ran into the void"). Der Freispruch muss GELESEN werden: ein
+ * Einstiegspunkt ist nur, wer (a) Code hat und (b) in einem Manifest AUSSERHALB
+ * von `src/` namentlich genannt wird — siehe `einstiegspunkt()`.
+ */
+const EINSTIEG_MUSTER = /(^|\/)(index\.(js|mjs|ts)|main\.(js|mjs|ts)|server\.mjs|vite\.config\.mjs)$/;
+
+/** Manifeste außerhalb `src/`, in denen ein Einstiegspunkt genannt sein MUSS. */
+const EINSTIEG_QUELLEN = ['package.json', 'index.html', 'vite.config.mjs', 'playwright.config.mjs'];
+
+/**
+ * Quelltext ohne Kommentare — die Fassung des WERKZEUGS.
+ *
+ * Dieselbe Regel wie `tests/helfer/ohne-kommentare.js` auf der Testseite (dort
+ * mit den vier historischen Fassungen begründet): Block- und Zeilenkommentare
+ * werden ENTFERNT, auch nachgestellte; HTML-Kommentare ebenfalls. Jedes neue
+ * Muster in diesem Modul, das einen Namen oder Pfad sucht, muss durch diesen
+ * Filter — sonst zählt es Erklärungen als Treffer, und ein Werkzeug, das
+ * Kommentare zählt, ist ein Werkzeug, dem niemand glaubt.
+ *
+ * Grenze der Näherung (identisch zum Test-Helfer): ein Zeilenkommentar-Zeichen
+ * INNERHALB einer Zeichenkette wird mitgeschnitten (der Wächter `(^|[^:])`
+ * rettet `https://…`), und ein Blockanfang innerhalb einer Zeichenkette beginnt
+ * fälschlich einen Block. Für die hier geprüften Dateien ist das nachgesehen
+ * folgenlos.
+ */
+export function streicheKommentare(text = '') {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
 
 /** Alle Projektdateien (ohne die üblichen Ausschlüsse). */
 export function projektDateien() {
@@ -32,6 +99,150 @@ export function projektDateien() {
 /** Quelltextdateien unter src/. */
 export function quellDateien() {
   return walk(path.join(ROOT, 'src'), { endungen: QUELTEXT });
+}
+
+/** Datendateien unter src/ (der Sonde `toteDaten()`). */
+export function datenDateien() {
+  return walk(path.join(ROOT, 'src'), { endungen: DATEN_ENDUNGEN });
+}
+
+/** Der Text der äußeren Bezugnahmen — einmal gelesen, für alle Urteile derselbe. */
+export function aeussereBezugnahmen() {
+  return EINSTIEG_QUELLEN
+    .map(f => `## ${f}\n${read(path.join(ROOT, f)) ?? ''}`)
+    .join('\n');
+}
+
+/**
+ * Zieht alle PFAD-ÄHNLICHEN Zeichenketten aus Manifesten (`'./src/a/b.js'`,
+ * `"/src/client/main.js"`).
+ *
+ * Bewusst kein `includes('index.js')`: `package.json` nennt `src/server/index.js`
+ * — eine Suche nach dem bloßen Dateinamen würde damit JEDES `index.js` im Baum
+ * freisprechen. Verglichen wird der auf `src/…` normalisierte Pfad.
+ */
+export function genanntePfade(text = '') {
+  const pfade = new Set();
+  for (const m of text.matchAll(/['"(]\s*\.?\/?((?:[\w.-]+\/)*[\w.-]+\.(?:js|mjs|cjs|ts|tsx|json|html))/g)) {
+    pfade.add(m[1]);
+  }
+  return pfade;
+}
+
+/**
+ * Ist diese Datei ein BELEGTER Einstiegspunkt?
+ *
+ * Zwei Bedingungen, beide nachlesbar:
+ *   1. Der Name sieht nach Einstieg aus (`EINSTIEG_MUSTER`) UND die Datei hat
+ *      Code (nicht nur Kommentare). Eine leere `index.js` ist kein Einstieg,
+ *      sie ist eine leere Datei.
+ *   2. Der Pfad wird in einem Manifest AUSSERHALB `src/` genannt (package.json,
+ *      index.html, vite.config.mjs, playwright.config.mjs).
+ *
+ * Wer beides nicht erfüllt, wird wie jede andere Datei auf Importeure geprüft.
+ * Fail-safe in Richtung des LAUTEREN Fehlers: im Zweifel gilt eine Datei als
+ * prüfpflichtig, nicht als freigesprochen.
+ *
+ * @param {string} relativerPfad z. B. `src/shared/data/index.js`
+ * @param {string} text Dateiinhalt
+ * @param {Set<string>|null} aeussereGenanntePfade Ergebnis von `genanntePfade(aeussereBezugnahmen())`
+ */
+export function einstiegspunkt(relativerPfad, text = '', aeussereGenanntePfade = null) {
+  if (!EINSTIEG_MUSTER.test(relativerPfad)) {
+    return { einstieg: false, grund: 'kein Einstiegsname (kein index/main/server/vite.config)' };
+  }
+  const code = streicheKommentare(text).trim();
+  if (code.length === 0) {
+    return {
+      einstieg: false,
+      grund: 'Name klingt nach Einstieg (`index.js`), die Datei hat aber KEINEN Code (nur Kommentare) — kein Einstiegspunkt, wird auf Importeure geprüft',
+    };
+  }
+  const genannt = aeussereGenanntePfade ?? genanntePfade(aeussereBezugnahmen());
+  if (!genannt.has(relativerPfad)) {
+    return {
+      einstieg: false,
+      grund: `nicht in ${EINSTIEG_QUELLEN.join(' / ')} genannt — kein BELEGTER Einstiegspunkt`,
+    };
+  }
+  return {
+    einstieg: true,
+    grund: `namentlich in ${EINSTIEG_QUELLEN.join(' / ')} genannt und nicht leer`,
+  };
+}
+
+/**
+ * Die Einstiegspunkte MIT BELEG — damit ein Freispruch gelesen wird.
+ * Ohne Beleg gibt es hier keinen Eintrag (siehe `einstiegspunkt()`).
+ */
+export function einstiegspunkte() {
+  const genannt = genanntePfade(aeussereBezugnahmen());
+  const aus = [];
+  for (const datei of quellDateien()) {
+    const r = rel(datei);
+    const u = einstiegspunkt(r, read(datei) ?? '', genannt);
+    if (u.einstieg) aus.push({ datei: r, beleg: u.grund });
+  }
+  return aus.sort((a, b) => a.datei.localeCompare(b.datei));
+}
+
+/**
+ * Datendateien ohne Leser (`DATEN_ENDUNGEN` unter `src/`).
+ *
+ * Warum das eine eigene Sonde ist: `unbenutzteExporte()`/`unbenutzteKonstanten()`
+ * fragen nach Bezeichnern, `toteDateien()` nach Importen — eine `.json` hat
+ * weder noch. Sie wird von einem Pfad gelesen (`readFileSync(... 'x.json')`,
+ * `import x from './x.json'`), also ist der Leser eine PFAD-Nennung im Code.
+ *
+ * Gelesen wird ausschließlich CODE (`LESER_ENDUNGEN`) und ausschließlich ohne
+ * Kommentare: `docs/ARCHIVED.md` nennt `projectArmageddonWeaponsV1.json` beim
+ * Namen — ein Bericht ist kein Leser.
+ */
+export function toteDaten({ nurUnter = 'src/' } = {}) {
+  const daten = projektDateien()
+    .filter(f => DATEN_ENDUNGEN.includes(path.extname(f)))
+    .filter(f => rel(f).startsWith(nurUnter));
+  const quellen = projektDateien().filter(f => LESER_ENDUNGEN.includes(path.extname(f)));
+  const texte = new Map(quellen.map(f => [f, streicheKommentare(read(f) ?? '')]));
+
+  const befunde = [];
+  for (const datei of daten) {
+    const r = rel(datei);
+    const name = path.basename(datei);
+    const leser = [];
+    for (const [f, t] of texte) {
+      if (f === datei) continue;
+      // Der Dateiname ODER der Projektpfad — beides ist eine Nennung im Code.
+      // Mehrzeilig unkritisch: gesucht wird im ganzen Text, nicht je Zeile.
+      if (t.includes(name) || t.includes(r)) leser.push(rel(f));
+    }
+    if (leser.length > 0) continue;
+    let bytes = 0;
+    try { bytes = fs.statSync(datei).size; } catch { bytes = 0; }
+    befunde.push({ datei: r, bytes, leser: 0 });
+  }
+  return befunde.sort((a, b) => b.bytes - a.bytes);
+}
+
+/**
+ * Was dieses Modul NICHT sieht — als Zeilen, die jede Antwort mitführt.
+ *
+ * Eine stille Lücke ist mehr wert als keine Meldung? Nein, umgekehrt: eine
+ * Meldung, die ihre eigene Grenze nennt, ist mehr wert als eine stille Lücke.
+ * Jede Zeile hier ist selbst nachprüfbar (die Endungen stehen in diesem Modul,
+ * die Ausschlüsse in `repo.mjs#SKIP_DIRS`).
+ */
+export function sichtgrenzen() {
+  return {
+    quelltext: `Dateifilter Quelltext: ${QUELTEXT.join('/')} — .json/.html/.css/.yml/.md gelten NICHT als Quelltext (in ihnen gibt es keinen Export, keinen Import, keine Doppelregel).`,
+    daten: `Dateifilter Daten: ${DATEN_ENDUNGEN.join('/')} NUR unter src/ — .json ausserhalb src/ (z. B. project_armageddon_weapons_v1.json, bgworker-todo.json, .pa-state/lobbies.json) wird NICHT erfasst.`,
+    leser: `Leser-Suche: nur CODE (${LESER_ENDUNGEN.join('/')}) ohne Kommentare — ein Dateiname in Doku (.md) zaehlt NICHT als Leser. Eine Pfad-NENNUNG im Code ist dagegen schon ein Leser: wer den Namen in einem Test, einer Probe oder einer Zeichenkette erwaehnt, spricht die Datei frei (belegt an dieser Stelle selbst: eine kopierte Probe im Pruefgebiet hat ihre eigenen synthetischen Dateien freigesprochen — probe-blindstellen.mjs).`,
+    importe: "Import-Erkennung: Textsuche nach `from '…'` und `import('…')` — mehrzeilig geprueft (probe-blindstellen.mjs). Ein Pfad, der erst zur Laufzeit gebaut wird (Variable, Template-String, `import.meta.glob`), ist NICHT erkennbar.",
+    doppelregeln: 'Doppelregeln: nur Definitionen auf MODUL-Ebene (Spalte 0) unter src/ — lokale Namen in Funktionsruempfen zaehlen NICHT (gemessen: 391 „Doppelnamen", davon 2 echte Regeln); Definitionen in scripts/, tests/ und tools/ werden NICHT erfasst.',
+    exporte: 'unbenutzteExporte zaehlt NAMEN, nicht BINDUNGEN: Steht derselbe Name in einer zweiten Datei als Export, gilt er als gelesen — die tote Fassung bleibt unsichtbar (belegt: hasSpecialEffect in src/engine/specials.js:234, maskiert durch den gleichnamigen Export in src/shared/config/weapons.js:7128; gemeldet werden nur 5 „Exporte ohne externen Leser").',
+    einstieg: `Einstiegspunkte: nur mit BELEG (namentlich in ${EINSTIEG_QUELLEN.join(' / ')} genannt UND nicht codeleer) — sonst wird geprueft.`,
+    ausgeschlossen: 'Nicht durchsucht (SKIP_DIRS aus repo.mjs): node_modules, .git, dist, build, artifacts, test-results, playwright-report, .pa-state, coverage, .vite, uploaded.',
+  };
 }
 
 /**
@@ -71,19 +282,38 @@ export function importIndex(dateien = projektDateien()) {
 
 /**
  * Tote Dateien: Quelltextdateien ohne jeden Importeur.
- * Barrel-Dateien (index.*) und Einstiegspunkte sind ausgenommen — sie werden
- * definitionsgemäß von außen geladen.
+ *
+ * „Einstiegspunkt" ist hier ein BELEG, kein Name (siehe `einstiegspunkt()`).
+ * Bis 2026-09-27 wurde jede Datei mit Einstiegsnamen freigesprochen — auch
+ * `src/shared/data/index.js`, die keinen Code enthält und niemanden hat, der
+ * sie lädt. Der Freispruch war damit still, und die Prüfung maß an dieser
+ * Stelle nichts.
+ *
+ * Für jeden Befund wird der Grund mitgeliefert, damit er nachlesbar ist:
+ * „kein Importeur" ist nicht dasselbe wie „heißt `index.js`, ist aber leer".
  */
 export function toteDateien() {
   const dateien = quellDateien();
   const index = importIndex();
+  const genannt = genanntePfade(aeussereBezugnahmen());
   const tot = [];
   for (const datei of dateien) {
     const r = rel(datei);
-    if (EINSTIEG.test(r)) continue;
+    const text = read(datei) ?? '';
+    const urteil = einstiegspunkt(r, text, genannt);
+    if (urteil.einstieg) continue;
     const leser = index.get(datei) ?? [];
     if (leser.length === 0) {
-      tot.push({ datei: r, zeilen: (read(datei) ?? '').split('\n').length });
+      tot.push({
+        datei: r,
+        zeilen: text.split('\n').length,
+        // Zeilen mit echtem Code (ohne Kommentare) — trennt „29 Zeilen" von
+        // „29 Zeilen, davon 0 Code". Ohne diese Zahl liest sich eine
+        // kommentarleere Datei wie ein umfangreiches Modul.
+        codeZeilen: streicheKommentare(text).split('\n').filter(z => z.trim().length > 0).length,
+        importeure: 0,
+        grund: urteil.grund,
+      });
     }
   }
   return tot.sort((a, b) => b.zeilen - a.zeilen);
@@ -193,30 +423,89 @@ export function unbenutzteKonstanten({ nurUnter = 'src/' } = {}) {
 }
 
 /**
- * Doppelregeln: derselbe Bezeichner (GROSS geschrieben oder Funktion) wird in
- * mehr als einer Datei definiert. Das ist die Klasse der Befunde, bei denen
- * "wer den einen Wert ändert, ändert nichts".
+ * Definitionen auf MODUL-Ebene (Spalte 0) in EINEM Text — die reine Messfunktion
+ * hinter `doppelregeln()`.
  *
- * Das Ergebnis ist eine reine MESSUNG (Name + Orte) und enthält KEIN Urteil.
- * Ob eine gefundene Doppelregel Absicht ist, entscheidet ausschließlich
+ * Ausgelagert, damit die Erwartungen der Gegenprobe (`probe-blindstellen.mjs`)
+ * OHNE Dateizugriff prüfbar sind: Was zählt als Definition, was nicht. Die
+ * Fälle, die dabei zählen:
+ *   - `export function hasSpecialEffect(weapon) {`  → JA (Modul-Ebene, Spalte 0)
+ *   - ` * HIER STAND \`hasSpecialEffect()\` — …`     → NEIN (Zeile im Blockkommentar)
+ *   - `// export function x() {`                     → NEIN (auskommentiert)
+ *   - `  const x = 1;`                               → NEIN (lokale Größe, Spalte 2)
+ *
+ * @returns {{name: string, art: string, exportiert: boolean, zeile: number}[]}
+ */
+export function modulDefinitionen(text = '') {
+  const aus = [];
+  text.split('\n').forEach((zeile, i) => {
+    const m = zeile.match(
+      /^(export\s+)?(?:async\s+)?(const|let|var|function|class)\s+([A-Za-z_$][\w$]*)\s*[=(]/,
+    );
+    if (!m) return;
+    aus.push({ name: m[3], art: m[2], exportiert: Boolean(m[1]), zeile: i + 1 });
+  });
+  return aus;
+}
+
+/**
+ * Doppelregeln: derselbe Bezeichner wird an mehr als einer Stelle auf
+ * MODUL-EBENE definiert. Das ist die Klasse der Befunde, bei denen
+ * „wer den einen Wert ändert, ändert nichts".
+ *
+ * **Warum das umgeschrieben werden musste (belegt 2026-09-27).** Das alte Muster
+ * war `/^\s*(?:export\s+)?const\s+([A-Z_][A-Z0-9_]{2,})\s*=/` und sah damit
+ * ausschließlich Konstanten in GROSSBUCHSTABEN. Mehrfach definierte FUNKTIONEN
+ * waren unsichtbar — und mit ihnen der teuerste Fall im Baum:
+ * `hasSpecialEffect` stand in `src/engine/specials.js:234` MIT EINER ANDEREN
+ * REGEL als in `src/shared/config/weapons.js:7128` (`effectFor(…)!==null` gegen
+ * `damage > 0 || SPECIAL_WITHOUT_DAMAGE.includes(…)`). Gemeldet wurde `0`.
+ * Der Fall ist inzwischen IN `src/` repariert (die Motor-Fassung ist eine
+ * Notiz); die Gegenprobe stellt ihn aus `git show HEAD:…` wieder her und zeigt,
+ * dass der Detektor ihn findet — `probe-blindstellen.mjs`, Fall B.
+ *
+ * Die Ursache war tiefer als das Muster: das alte Verfahren zählte NAMEN, nicht
+ * BINDUNGEN. Ein Name, der irgendwo im Baum vorkommt, galt als „gelesen" —
+ * obwohl er dort an eine ANDERE Definition gebunden ist (siehe die
+ * Sichtgrenze `unbenutzteExporte` in `sichtgrenzen()`).
+ *
+ * Die zweite Falle ist die Gegenseite: ein Muster über ALLE Definitionen —
+ * `^\s*(?:export\s+)?(const|let|var|function|class)\s+NAME` — findet im
+ * Ist-Baum **391** mehrfach vergebene Namen, davon fast alle lokale Hilfsgrößen
+ * (`y`, `x`, `index`, `ergebnis`, `entry`) in Funktionsrümpfen. Ein Werkzeug,
+ * das 200 Treffer meldet, von denen 190 unbrauchbar sind, ist unbrauchbar.
+ *
+ * Deshalb bleibt genau EINE Grenze übrig, und sie ist die des Projekts: **eine
+ * Regel, eine Stelle** gilt für Modul-Ebene (Spalte 0). Ein lokaler Name in
+ * einem Funktionsrumpf ist keine zweite Regel, er ist eine Variable.
+ *
+ * Das Ergebnis ist eine reine MESSUNG (Name + Orte + Art) und enthält KEIN
+ * Urteil. Ob eine gefundene Doppelregel Absicht ist, entscheidet ausschließlich
  * `beurteileDoppelregeln()` anhand der Ausnahmeliste unten.
  */
 export function doppelregeln({ nurUnter = 'src/' } = {}) {
   const dateien = quellDateien().filter(f => rel(f).startsWith(nurUnter));
   const orte = new Map();
   for (const datei of dateien) {
-    const text = read(datei) ?? '';
-    text.split('\n').forEach((zeile, i) => {
-      const m = zeile.match(/^\s*(?:export\s+)?const\s+([A-Z_][A-Z0-9_]{2,})\s*=/);
-      if (!m) return;
-      const liste = orte.get(m[1]) ?? [];
-      liste.push(`${rel(datei)}:${i + 1}`);
-      orte.set(m[1], liste);
-    });
+    for (const d of modulDefinitionen(read(datei) ?? '')) {
+      const liste = orte.get(d.name) ?? [];
+      liste.push({ ort: `${rel(datei)}:${d.zeile}`, art: d.art, exportiert: d.exportiert });
+      orte.set(d.name, liste);
+    }
   }
   return [...orte.entries()]
     .filter(([, l]) => l.length > 1)
-    .map(([name, orte]) => ({ name, orte }));
+    .map(([name, stellen]) => ({
+      name,
+      // `orte` bleibt die Liste aus `datei:zeile` — an ihr hängt das Urteil
+      // (`beurteileDoppelregeln`) und die Ausnahmeliste. Die Zusatzangaben
+      // stehen getrennt, damit eine Formaterweiterung kein Urteil verschiebt.
+      orte: stellen.map(s => s.ort),
+      stellen,
+      dateien: new Set(stellen.map(s => s.ort.split(':')[0])).size,
+      exportiertMehrfach: stellen.filter(s => s.exportiert).length > 1,
+    }))
+    .sort((a, b) => b.orte.length - a.orte.length || a.name.localeCompare(b.name));
 }
 
 /** Wo die Ausnahmeliste steht — der Ort, den jeder Freispruch zitieren muss. */

@@ -46,7 +46,7 @@ Es gibt **keine Abhängigkeit**: Der Server spricht JSON-RPC 2.0 zeilenweise
 | `audit_classes` | 9er-Matrix Klasse × Archetyp mit den Wirk-Achsen und ihren Spannweiten |
 | `audit_terrain` | Landanteil je Geländeform über viele Seeds — Mittelwert UND Streuung |
 | `audit_perf` | Tick-Kosten (mittel/p95/p99/max) gegen das 16,7-ms-Budget, je Schritt gemessen |
-| `audit_deadcode` | Dateien ohne Importeur, unbenutzte Exporte/Konstanten, Doppelregeln, Marker, generierte Dateien |
+| `audit_deadcode` | Dateien ohne Importeur, **Datendateien (`.json`) ohne Leser**, unbenutzte Exporte/Konstanten, Doppelregeln (derselbe Name 2+ mal auf **Modul-Ebene** definiert), Marker, generierte Dateien — **plus `einstiegspunkte` (jeder Freispruch mit Beleg) und `sichtgrenzen` (was das Werkzeug NICHT sieht)** |
 | `audit_events` | Emittierte vs. behandelte Ereignisse — gedeckt von stumm |
 | `audit_security` | Identität aus dem Token? `Number()` auf Drahtwerten? direkt gelesene Kennungen? Grenzen |
 | `audit_secrets` | Secret-Scan über `git ls-files` (Werte nie im Klartext, nur Fingerabdruck) |
@@ -92,6 +92,68 @@ schiefgegangen ist. Die vier wichtigsten:
     still freisprechen.
   - Die Gegenprobe dazu: `node tools/audit-mcp/probe-doppelregeln.mjs`
     (Exit-Code 1, sobald eine Erwartung verletzt ist).
+- **Ein Werkzeug, das 0 meldet, weil es nicht hinschaut, ist gefährlicher als
+  eines, das schweigt — es erzeugt Vertrauen.** Deshalb steht die eigene
+  Sichtgrenze in JEDER Antwort von `audit_deadcode` (`sichtgrenzen`) und im
+  Bericht (Abschnitt 16.1), wörtlich:
+
+  > `Dateifilter Quelltext: .js/.mjs/.cjs/.ts/.tsx — .json/.html/.css/.yml/.md
+  > gelten NICHT als Quelltext (in ihnen gibt es keinen Export, keinen Import,
+  > keine Doppelregel).`
+  >
+  > `Dateifilter Daten: .json NUR unter src/ — .json ausserhalb src/ (z. B.
+  > project_armageddon_weapons_v1.json, bgworker-todo.json,
+  > .pa-state/lobbies.json) wird NICHT erfasst.`
+
+  Dazu: `Einstiegspunkte` sind kein NAME mehr, sondern ein BELEG (namentlich in
+  `package.json`/`index.html`/`vite.config.mjs`/`playwright.config.mjs` genannt
+  UND nicht code-leer), und jeder Freispruch wird als Tabelle mitgeliefert.
+
+## Die vier Blindstellen der eigenen Werkzeuge (behoben 2026-09-27)
+
+Ein Prüfer hat belegt: Die `0`-Meldungen dieses Werkzeugs waren für ihre Fragen
+korrekt und für DREI andere blind. Alle vier sind behoben, jede mit einer
+Gegenprobe (`probe-blindstellen.mjs`).
+
+| # | Blindstelle (vorher) | Gegenstand im Baum | vorher | nachher |
+|---|---|---|---|---|
+| 1 | `QUELTEXT` kannte kein `.json` (`statisch.mjs`) | 3 `.json` unter `src/` mit **0 Lesern** (168 979 Byte) | **0 Meldungen** — die Dateien erschienen in keiner Antwort | neue Sonde `toteDaten()`: **3 von 3** geprüft, 3 Treffer, Bytesumme ausgewiesen |
+| 2 | `EINSTIEG` fing JEDES `index.js` | `src/shared/data/index.js`: 30 Zeilen, **0 Code**, 0 Importeure, in keinem Manifest | Datei still freigesprochen | Einstiegspunkt nur mit BELEG; die Datei wird geprüft und **gemeldet** (mit Grund) |
+| 3 | `doppelregeln()` sah nur `const GROSSBUCHSTABEN` | `hasSpecialEffect` — zwei unvereinbare Regeln (`specials.js` gegen `weapons.js`) | **0** | Modul-Ebene (Spalte 0), jedes `const`/`let`/`var`/`function`/`class`: **findet den Fall** (Gegenprobe Fall B aus `git show HEAD:…`) |
+| 4 | „kein Importeur"-Wächter lief nur über `src/engine/` | 30 von 90 Dateien geprüft (33 %) | 60 Dateien (67 %) ungeprüft | `tests/no-dead-code.test.js` läuft über **alle 90**, prüft seine Abdeckung selbst und verlangt für jeden Freispruch eine Begründung |
+
+**Belegter Fall zu 3 — und die Falle dahinter.** Die Gegenprobe stellt den
+Zustand aus der Git-Historie wieder her und misst:
+
+```
+orte: src/shared/config/weapons.js:7128 · src/engine/specials.js:234 · dateien: 2
+```
+
+Die zweite Falle ist das Muster selbst: `^\s*(?:export\s+)?(const|let|var|function|class)\s+NAME`
+findet im Ist-Baum **391** mehrfach vergebene Namen — fast alles lokale
+Hilfsgrößen (`y`, `x`, `index`, `ergebnis`) in Funktionsrümpfen. Ein Werkzeug,
+das 200 Treffer meldet, von denen 190 unbrauchbar sind, ist unbrauchbar. Deshalb
+gilt die Grenze des Projekts: **Modul-Ebene (Spalte 0)**. Damit bleiben 2
+Treffer — und beide sind echt.
+
+**Vier Fallen, die beim Erweitern dieses Werkzeugs wiederkommen:**
+
+1. **Kommentarzeilen sind keine Treffer** — gilt für JEDES neue Muster.
+   `streicheKommentare()` (`statisch.mjs`) ist die Fassung des Werkzeugs,
+   `tests/helfer/ohne-kommentare.js` die der Testseite. Belegt: `src/engine/specials.js`
+   enthält `hasSpecialEffect` heute nur noch als Notiz (`HIER STAND …`) — der
+   Detektor darf daraus keine zweite Definition machen.
+2. **Ein Dateiname in einem Bericht ist kein Leser.** `docs/ARCHIVED.md` nennt
+   `projectArmageddonWeaponsV1.json` — die erste Fassung von `toteDaten()` hätte
+   die Datei damit freigesprochen. Gelesen wird nur CODE (`.js|.mjs|.cjs|.ts|.tsx|.html`).
+3. **Der Prüfer darf nicht im Prüfgebiet liegen.** Eine Probe, die im selben
+   Baum liegt und die geprüften Pfade selbst nennt, spricht sie frei (genau das
+   ist `probe-blindstellen.mjs` beim ersten Lauf passiert — sie kopiert deshalb
+   nur `lib/` in das Temp-Projekt).
+4. **Mehrzeilige Anweisungen.** Der erste Import-Scanner des Prüfers erkannte
+   `import { … } from` über mehrere Zeilen nicht → 127 Phantom-Verletzungen.
+   `importIndex()` ist mit drei Formen geprüft (Zeilenumbruch in der Klammer, vor
+   `from`, und `import(…)`) — Gegenprobe Fall E.
 
 ## Grenzen
 
@@ -168,7 +230,12 @@ Die Gegenproben dazu (Exit-Code 1, sobald eine Erwartung verletzt ist):
 MCP-Prozess auf einer Kopie unter `/tmp` und ändert Dateien UNTER dem laufenden
 Prozess (geändert / neu / unlesbar / Neustart); `probe-checks-messwert.mjs`
 prüft die Kennzahlen-Leser der Gate-Batterie, inklusive fail-safe bei fremdem
-Format.
+Format; `probe-doppelregeln.mjs` prüft das Urteil über Doppelregeln und die
+gelesenen Ereignis-Begründungen; **`probe-blindstellen.mjs` prüft die vier
+Blindstellen selbst** — in BEIDE Richtungen: der belegte Gegenstand MUSS
+gefunden werden (Fall B stellt ihn aus `git show HEAD:…` wieder her), und der
+Scheintreffer darf NICHT gefunden werden (Kommentarzeilen, Doku-Nennungen, lokale
+Namen, auskommentierte Definitionen).
 
 ## Herkunft der Prüffragen
 

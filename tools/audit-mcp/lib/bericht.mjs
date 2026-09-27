@@ -110,7 +110,16 @@ export function todoAus(d) {
   for (const s of d.ereignisse.stummListeOhneBegruendung ?? []) {
     add(`Ereignis „${s.ereignis}" ist im Wächter gelistet, aber OHNE Begründung`, `Emittiert in ${s.orte.slice(0, 2).join(', ')} — die Liste \`bewusstStumm\` in \`tests/event-coverage.test.js\` wertet ihn sonst ohne Nachweis frei; Begründung an den Eintrag schreiben`, 'mittel', 'entscheidung');
   }
-  for (const f of d.statisch.toteDateien) add(`Datei ohne Importeur: ${f.datei}`, `${f.zeilen} Zeilen, kein Leser`, 'mittel');
+  for (const f of d.statisch.toteDateien) {
+    add(`Datei ohne Importeur: ${f.datei}`,
+      `${f.zeilen} Zeilen (davon ${f.codeZeilen ?? '?'} mit Code), kein Leser — ${f.grund ?? 'Grund nicht erfasst'}`,
+      'mittel');
+  }
+  for (const x of d.statisch.toteDaten ?? []) {
+    add(`Datendatei ohne Leser: ${x.datei}`,
+      `${x.bytes} Byte, kein Leser im Code — entweder anbinden oder entfernen (vorher in \`ARCHIVED.md\` prüfen, ob der Inhalt absichtlich aufgehoben ist)`,
+      'niedrig');
+  }
   for (const k of d.statisch.unbenutzteKonstanten) add(`Konstante ohne Leser: ${k.name}`, `${k.datei}:${k.zeile}`, 'mittel');
   // Doppelregeln: NUR die offenen werden zur Arbeit. Eine begründete Ausnahme
   // (gelesen aus DOPPELREGEL_AUSNAHMEN) ist entschieden und darf nicht als
@@ -348,9 +357,42 @@ export function berichtMarkdown(d, todo) {
       ? 'vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`)'
       : '**NICHT gefunden** — die Aussage „der Wächter hält die Zahl bei 0" wäre unbelegt'}.`);
   } else {
-    push('| Datei | Zeilen |');
+    push('| Datei | Zeilen | davon Code | Grund (warum kein Freispruch) |');
+    push('|---|---|---|---|');
+    for (const f of d.statisch.toteDateien) {
+      push(`| ${f.datei} | ${f.zeilen} | ${f.codeZeilen ?? '–'} | ${f.grund ?? '—'} |`);
+    }
+  }
+  push('');
+  push('#### Die Freisprüche dieser Prüfung — mit Beleg');
+  push('');
+  push('Ein Einstiegspunkt ist hier kein NAME, sondern ein BELEG: die Datei muss Code');
+  push(`haben UND in einem Manifest außerhalb \`src/\` namentlich genannt sein (\`package.json\`, \`index.html\`, \`vite.config.mjs\`, \`playwright.config.mjs\`).`);
+  push('Wer nur so heißt, wird geprüft — bis 2026-09-27 galt das Gegenteil, und `src/shared/data/index.js` war damit still freigesprochen.');
+  push('');
+  if (!d.statisch.einstiegspunkte?.length) {
+    push('Kein Einstiegspunkt mit Beleg gefunden — **jede** Datei wurde auf Importeure geprüft (fail-safe).');
+  } else {
+    push('| Einstiegspunkt | Beleg |');
     push('|---|---|');
-    for (const f of d.statisch.toteDateien) push(`| ${f.datei} | ${f.zeilen} |`);
+    for (const e of d.statisch.einstiegspunkte) push(`| ${e.datei} | ${e.beleg} |`);
+  }
+  push('');
+  push('### 10.1b Datendateien ohne Leser');
+  push('');
+  const toteDaten = d.statisch.toteDaten ?? null;
+  if (toteDaten === null) {
+    push('**NICHT GEMESSEN** in diesem Lauf — gilt nicht als sauber.');
+  } else if (toteDaten.length === 0) {
+    push(`Keine: alle ${d.statisch.datenGeprueft ?? '?'} \`.json\` unter \`src/\` werden von irgendwo im CODE gelesen.`);
+  } else {
+    const bytes = toteDaten.reduce((s, x) => s + x.bytes, 0);
+    push(`**${toteDaten.length} von ${d.statisch.datenGeprueft ?? '?'}** Datendateien unter \`src/\` haben keinen Leser im Code — zusammen **${bytes} Byte**.`);
+    push('Gelesen wird nur CODE ohne Kommentare: ein Dateiname in einem Bericht (`.md`) ist kein Leser.');
+    push('');
+    push('| Datei | Byte | Leser |');
+    push('|---|---|---|');
+    for (const x of toteDaten) push(`| ${x.datei} | ${x.bytes} | ${x.leser} |`);
   }
   push('');
   push('### 10.2 Konstanten ohne Leser');
@@ -529,6 +571,9 @@ export function berichtMarkdown(d, todo) {
     push(`- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (${d.determinismus.laeufe[0].hash}), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.`);
   }
   if (d.statisch.marker.length === 0) push('- **Kein TODO/FIXME im Quelltext.** Gemessen: 0 Treffer (Abschnitt 10.4). Wo die offene Arbeit steht (SSOT/MASTERDOTO), prüft dieser Bericht nicht — das ist eine Vereinbarung, keine Messung.');
+  if ((d.statisch.toteDaten ?? []).length === 0) {
+    push(`- **Keine Datendatei ohne Leser.** Gemessen: alle ${d.statisch.datenGeprueft ?? '?'} \`.json\` unter \`src/\` werden im Code genannt (Abschnitt 10.1b). Bis 2026-09-27 war diese Zahl gar nicht messbar — \`QUELTEXT\` kannte kein \`.json\`.`);
+  }
   if (d.statisch.toteDateien.length === 0) {
     const waechterTote = dateiVorhanden('tests/no-dead-code.test.js');
     push(`- **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). `
@@ -570,6 +615,17 @@ export function berichtMarkdown(d, todo) {
   push('- **Netzwerklatenz unter realen Bedingungen.** Nur simulierbar (`tests/e2e/network-conditions.spec.mjs`).');
   push('- **Der volle E2E-Lauf (28 Dateien, ~10 min).** Plan über `audit_e2e_plan`; bekannte vorbestehende Fehler: profiling-Specs ohne GPU.');
   push('- **Menschenzeit statt Simulationszeit.** Die Umrechnung braucht eine Bedenkzeit-Annahme und ist deshalb ausgewiesen, nicht gemessen.');
+  push('');
+  push('### 16.1 Was die statischen Sonden NICHT sehen');
+  push('');
+  push('Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JEDER Antwort des Werkzeugs `audit_deadcode` ausgegeben — eine Meldung, die ihre Lücke nennt, ist mehr wert als eine stille Null:');
+  push('');
+  const grenzen = d.statisch.sichtgrenzen ?? null;
+  if (!grenzen) {
+    push('**NICHT AUSGEGEBEN** in diesem Lauf — ältere Berichte können aus einer Fassung stammen, die ihre Grenze nicht nannte.');
+  } else {
+    for (const [feld, text] of Object.entries(grenzen)) push(`- *${feld}:* ${text}`);
+  }
   push('');
 
   // ── TODO ────────────────────────────────────────────────────────────────
