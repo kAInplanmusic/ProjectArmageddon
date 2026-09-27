@@ -31,6 +31,22 @@ import { DEFAULT_PROJECTILE_GRAVITY, DEFAULT_PROJECTILE_DRAG } from '../src/engi
 const hier = dirname(fileURLToPath(import.meta.url));
 const WURZEL = resolve(hier, '..');
 
+/**
+ * Quelltext ohne Kommentare — fuer Textproben, die eine Zahl VERBIETEN.
+ *
+ * Eine Zahl in einer Erklaerung ist keine zweite Regel. Dieselbe Lehre steht
+ * im Audit-Werkzeug (`tools/audit-mcp/README.md`): Kommentarzeilen sind keine
+ * Treffer.
+ *
+ * Grenze der Naeherung: ein `//` in einer Zeichenkette wird mitgeschnitten. Fuer
+ * die geprueften Dateien ist das folgenlos (keine URLs in Zeichenketten).
+ */
+function ohneKommentare(text) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
 test('Die Konstanten der Vorhersage stimmen mit der Simulation überein', () => {
   /*
    * Schwerkraft, Luftwiderstand und Kraft→Geschwindigkeit kommen aus EINER
@@ -63,9 +79,23 @@ test('Die Konstanten der Vorhersage stimmen mit der Simulation überein', () => 
     'src/engine/systems/projectileSystem.js',
     'src/client/shotPrediction.js',
   ]) {
-    const text = readFileSync(resolve(WURZEL, datei), 'utf8');
+    const text = ohneKommentare(readFileSync(resolve(WURZEL, datei), 'utf8'));
     if (datei !== 'src/shared/ballistics.js') {
-      // Keine zweite ZAHL in den Weiterleitungen.
+      /*
+       * Keine zweite ZAHL in den Weiterleitungen.
+       *
+       * Geprueft wird der Quelltext OHNE Kommentare. Das ist keine Kosmetik:
+       * FUND (belegt, 2026-09-27) — der Test fiel, weil ein Kommentar in
+       * `match.js` die alte Zeile Woertlich zitierte
+       * ("`PROJECTILE_GRAVITY = 0.32` in ballistics.js", als Begruendung einer
+       * Zusammenfuehrung). Der Code war korrekt, die Zahl stand nur in der
+       * ERKLAERUNG. Ein Werkzeug, das Kommentare zaehlt, meldet einen Fehler,
+       * den es nicht gibt — dieselbe Lehre, die das Audit-Werkzeug schon
+       * gelernt hat ("Kommentarzeilen sind keine Treffer", README tools/audit-mcp).
+       *
+       * Wer einen Kommentar mit der alten Zahl braucht, um die Historie zu
+       * erklaeren, soll ihn schreiben duerfen.
+       */
       assert.doesNotMatch(text, /(POWER_TO_SPEED|PROJECTILE_DRAG|PROJECTILE_GRAVITY)\s*=\s*0\.\d/,
         `${datei} führt eine eigene Zahl — sie muss aus src/shared/ballistics.js kommen`);
       assert.match(text, /shared\/ballistics\.js/,
