@@ -52,6 +52,14 @@ const EINORDNUNG = {
   '#drawEffects': 'welt',
   '#drawHeimdall': 'welt',
   '#drawParticles': 'welt',
+  /*
+   * Die Ladeanzeige liegt ÜBER dem Geschehen und gehört zur EINGABE des
+   * Spielers: Sie zeigt, wie weit sein eigener Druck fortgeschritten ist
+   * (siehe renderer.js#drawLadeanzeige). Sie darf sich nicht mit der Kamera
+   * verschieben — sonst wandert der Hinweis aus der Bildmitte, während der
+   * Spieler zielt, und genau dort wird er gebraucht.
+   */
+  '#drawLadeanzeige': 'bildschirm',
   /* Rechnet nur Zustände fort — zeichnet nichts, gehört in keine Schicht. */
   '#updateEffects': 'keins',
 };
