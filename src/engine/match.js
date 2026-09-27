@@ -53,6 +53,10 @@ import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
 import {
   fire, projectileLifetime, aimPreview, hasLineOfSight, launchOrigin,
 } from './shooting.js';
+import {
+  aimTurret, freierPlatz, naechsterGegner, turretProjectile,
+  TURRET_WEAPON, TURRET_WEAPON_ID, TURRET_PATH_STEPS,
+} from './turret.js';
 
 /**
  * Kartenmaße je Ausrichtung.
@@ -253,72 +257,16 @@ export const HOHECHSTE_KRAFT = 100;
 /*
  * Geschütze.
  *
- * Das Geschütz ist keine eigene Waffe im Katalog, sondern ein Geschoss mit
- * eigenen Werten. Dafür braucht es einen Platzhalter, der die Flugeigenschaften
- * liefert: Das Geschoss fliegt wie ein kleines, schnelles Wurfgeschoss.
+ * Die Werte des Geschützes (`TURRET_WEAPON`, `TURRET_POWERS`,
+ * `TURRET_ELEVATIONS`, `TURRET_MAX_MISS`) und die Winkel/Kraft-Suche stehen in
+ * `engine/turret.js` — siehe dessen Modulkopf, `docs/zerlegung-turret.md` und
+ * `docs/duplikate-bericht.md` (Fund 1/2/5).
  *
- * `TURRET_POWERS`/`TURRET_ELEVATIONS` sind die Winkelsuche (siehe
- * `#turretShot`). Beide Listen sind FEST — kein Zufall, damit ein Replay
- * dieselben Schüsse ergibt.
+ * Hier bleiben nur die LESER: die Bahn (`#simulateTurretPath`, liest
+ * `TURRET_PATH_STEPS`) und das Geschoss (`#spawnTurretProjectile`, liest Waffe
+ * und Kennung). Die Suche ist deshalb ausgelagert, weil sie reine Rechnung über
+ * feste Listen ist und in dieser Klasse nur über eine Instanz prüfbar war.
  */
-const TURRET_WEAPON_ID = '__geschuetz';
-const TURRET_WEAPON = Object.freeze({
-  index: -1,
-  displayName: 'Geschütz',
-  damage: 0,          // Der Schaden kommt aus dem Geschütz-Eintrag.
-  blastRadius: 18,
-  knockback: 0,
-  gravityScale: 1,
-  speedFactor: 1,
-  terrainDamage: 6,
-  maxRange: 800,
-  /**
-   * Das Geschütz schießt über Deckung hinweg (Steilfeuer) — es braucht deshalb
-   * KEINE Sichtlinie. Die Schadensart ist Sprengwirkung, wie bei jeder
-   * Flächenwaffe (siehe `src/engine/damageTypes.js`).
-   */
-  requiresLineOfSight: false,
-  damageType: 'explosive',
-});
-/**
- * Antriebskräfte, die die Suche durchprobiert.
- *
- * ## Warum die Liste so fein ist
- *
- * FUND (belegt): Hier standen fünf Werte — `[40, 55, 70, 85, 100]`. Ihre
- * erreichbaren Weiten (ohne Luftwiderstand) sind:
- *
- *     Kraft  40  →  143 px
- *     Kraft  55  →  270 px     Lücke 127 px
- *     Kraft  70  →  437 px     Lücke 167 px
- *     Kraft  85  →  644 px     Lücke 207 px
- *     Kraft 100  →  891 px     Lücke 247 px
- *
- * Zwischen zwei Stufen lag also bis zu **247 px** — fast ein Fünftel der alten
- * Karte. Solange die Karte 1280 px breit war, fiel das kaum auf: Die Gegner
- * standen rund 600 px entfernt, und Kraft 85 traf.
- *
- * Seit die Vorgabekarte 2560 px breit ist, stehen sie bei ~513 px — genau in
- * der Lücke zwischen 437 und 644. Gemessen feuerte das Geschütz deshalb nur
- * **einmal in vier Runden**, obwohl ein Ziel durchgehend in Reichweite war
- * (`tests/turret.test.js`).
- *
- * ## Die feinere Staffelung
- *
- * 15 Stufen statt 5. Die Lücke sinkt damit auf rund 60 px — kleiner als eine
- * Figur (14 px breit) mal dem Trefferfenster. Die Suche kostet mehr Rechnung
- * (15 × 6 = 90 Bahnen statt 30), aber sie läuft **je Runde einmal**, nicht je
- * Takt.
- */
-const TURRET_POWERS = Object.freeze([
-  40, 46, 52, 58, 64, 70, 76, 82, 88, 94, 100, 106, 112, 118, 124,
-]);
-/** Erhöhungswinkel (0 = flach, 1 = 45°), feste Reihenfolge. */
-const TURRET_ELEVATIONS = Object.freeze([0.05, 0.15, 0.3, 0.5, 0.785, 1.0]);
-/** Schritte je Bahnberechnung. Reicht für die halbe Kartenbreite. */
-const TURRET_PATH_STEPS = 900;
-/** Größter Abstand, bei dem noch geschossen wird (halbe Figurenbreite). */
-const TURRET_MAX_MISS = 22;
 /*
  * Die Schwerkraft der Geschosse — eine REFERENZ auf die zentrale Konstante.
  *
@@ -1908,23 +1856,16 @@ export class MatchController {
     if (!spieler?.alive) return null;
 
     const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
-    // Abwechselnd rechts und links suchen — feste Reihenfolge, damit die
-    // Platzwahl bei gleichem Seed dieselbe bleibt (Determinismus).
-    const kandidaten = [startX];
-    for (let abstand = 12; abstand <= 60; abstand += 12) {
-      kandidaten.push(startX + abstand, startX - abstand);
-    }
-
-    let platz = null;
-    for (const x of kandidaten) {
-      const gerundet = Math.round(x);
-      if (gerundet < PLAYER_HALF_WIDTH || gerundet > this.width - PLAYER_HALF_WIDTH) continue;
-      const boden = this.surfaceYAt(gerundet);
-      // Festes Gelände über dem Wasser: Ein Geschütz im Hochwasser wäre weg.
-      if (boden <= 0 || this.waterLevelAt(gerundet, boden) >= WET_LEVEL) continue;
-      platz = { x: gerundet, y: boden - 6 };
-      break;
-    }
+    /*
+     * Die Platzsuche (feste Kandidatenfolge, festes und trockenes Gelände) ist
+     * reine Rechnung über Karte und Terrain und steht deshalb in
+     * `engine/turret.js` — dort ist sie ohne Match prüfbar.
+     */
+    const platz = freierPlatz({
+      breite: this.width,
+      surfaceYAt: x => this.surfaceYAt(x),
+      waterLevelAt: (x, y) => this.waterLevelAt(x, y),
+    }, startX);
     if (!platz) return null;
 
     const entityId = this.#nextTurretId();
@@ -2003,86 +1944,54 @@ export class MatchController {
     }
   }
 
-  /** Nächster lebender Gegner eines Geschützes innerhalb seiner Reichweite. */
+  /**
+   * Nächster lebender Gegner eines Geschützes innerhalb seiner Reichweite.
+   *
+   * Delegator nach `engine/turret.js`: Die Zielwahl ist reine Rechnung über die
+   * Spielerliste und die Positionen — der Match reicht beides über die Quelle
+   * hinein.
+   */
   #nearestEnemyOf(turret) {
-    let bestes = null;
-    let besteDistanz = Infinity;
-    for (const entry of this.#players) {
-      if (!entry.alive || entry.teamId === turret.teamId) continue;
-      const x = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
-      const y = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
-      const distanz = Math.hypot(x - turret.x, y - turret.y);
-      if (distanz > turret.range) continue;
-      // Bei Gleichstand entscheidet die kleinere Kennung — deterministisch.
-      if (distanz < besteDistanz || (distanz === besteDistanz && entry.entityId < (bestes?.entityId ?? Infinity))) {
-        besteDistanz = distanz;
-        bestes = { entityId: entry.entityId, x, y, distanz };
-      }
-    }
-    return bestes;
+    return naechsterGegner(this.#geschuetzQuelle(), turret);
   }
 
   /**
-   * Sucht Winkel und Kraft für ein Geschütz.
+   * Sucht Winkel und Kraft für ein Geschütz — Delegator nach `turret.js`.
    *
-   * ## Warum gesucht und nicht gerechnet
+   * Die Suche selbst (feste Kraft- und Winkellisten, Abstand der Bahn zum Ziel,
+   * „kein Blindfeuer") steht in `engine/turret.js` und wird in
+   * `tests/turret-zerlegung.test.js` ohne Match geprüft. Der Match baut dafür die
+   * Quelle und reicht sie hinein; die Bahn rechnet weiterhin
+   * `#simulateTurretPath`.
    *
-   * Die Bahn hängt an Schwerkraft, Luftwiderstand, Wind und Eigengewicht der
-   * Waffe (`gravityScale`). Eine geschlossene Lösung gäbe es nur für die reine
-   * Wurfparabel — sie würde bei Wind und gezogenen Waffen danebenliegen.
-   *
-   * Deshalb wird die ECHTE Bahn verschossen: Für eine Reihe von Winkeln wird die
-   * Flugbahn schrittweise nachgerechnet und der Winkel gewählt, dessen Bahn dem
-   * Ziel am nächsten kommt. Das nutzt dieselbe Rechnung wie das Spiel — eine
-   * zweite Formel könnte von ihr abweichen.
-   *
-   * Die Winkelliste ist fest (kein Zufall), damit das Ergebnis bei gleichem Seed
-   * dasselbe bleibt.
-   *
-   * @returns {{angle: number, power: number}|null}
+   * @returns {{angle: number, power: number, naehe: number}|null}
    */
   #turretShot(turret, ziel) {
-    const waffe = TURRET_WEAPON;
-    // Nur die Waagerechte entscheidet die Richtung — die Höhe steckt in der
-    // Winkelsuche (die Bahn wird für jeden Winkel wirklich durchgerechnet).
-    const dx = ziel.x - turret.x;
+    return aimTurret(this.#geschuetzQuelle(), turret, ziel);
+  }
 
-    // Grundrichtung: nach links oder rechts. Der Winkel wird gegen die
-    // Bildschirmachse gemessen (0 = rechts, π/2 = oben).
-    const basis = dx >= 0 ? 0 : Math.PI;
-    const richtung = dx >= 0 ? 1 : -1;
-
-    let bestes = null;
-    let bestesDelta = Infinity;
-
-    for (const kraft of TURRET_POWERS) {
-      for (const steigung of TURRET_ELEVATIONS) {
-        const winkel = basis + richtung * steigung;
-        const bahn = this.#simulateTurretPath(turret, winkel, kraft, waffe);
-        if (bahn.length === 0) continue;
-
-        // Kürzester Abstand der Bahn zum Ziel — nicht „letzter Punkt": Ein
-        // Schuss, der das Ziel im Vorbeiflug streift, ist ein Treffer.
-        let naehe = Infinity;
-        for (const punkt of bahn) {
-          const d = Math.hypot(punkt.x - ziel.x, punkt.y - ziel.y);
-          if (d < naehe) naehe = d;
-        }
-        // Kraft bevorzugen, die nicht volle Leistung braucht: Bei gleicher
-        // Näherung ist der flachere Schuss schneller am Ziel.
-        const bewertet = naehe + kraft * 0.002;
-        if (bewertet < bestesDelta) {
-          bestesDelta = bewertet;
-          bestes = { angle: winkel, power: kraft, naehe };
-        }
-      }
-    }
-
-    if (!bestes) return null;
-    // Kein Blindfeuer: Liegt die beste Bahn weiter als die halbe Zielbreite
-    // entfernt, wird nicht geschossen.
-    if (bestes.naehe > TURRET_MAX_MISS) return null;
-    return bestes;
+  /**
+   * Die Quelle des Geschützes — genau die Werte, die `engine/turret.js` liest.
+   *
+   * Dasselbe Muster wie `#schussQuelle()` für `shooting.js`: Was fertig
+   * gerechnet ist, geht als Wert hinein (`players`); was Terrain-, Karten- oder
+   * Weltzugriff braucht, geht als Rückfrage hinein (`positionOf`, `bahn`). Wer
+   * ein Feld umbenennt, zieht `turret.js` mit — beide gehören zusammen.
+   */
+  #geschuetzQuelle() {
+    return {
+      players: this.#players,
+      positionOf: entityId => ({
+        x: this.#world.getComponent(entityId, 'Position', 'x') ?? 0,
+        y: this.#world.getComponent(entityId, 'Position', 'y') ?? 0,
+      }),
+      /*
+       * Die Bahn bleibt im Match: Die Wind-Quelle (`this.#wind`), der Drag auf
+       * BEIDEN Achsen und die Kartenbreite sind in dieser Datei festgehalten
+       * (`tests/turret-ballistics.test.js`, `tests/reichweite-konsistenz.test.js`).
+       */
+      bahn: (turret, winkel, kraft) => this.#simulateTurretPath(turret, winkel, kraft, TURRET_WEAPON),
+    };
   }
 
   /**
@@ -2155,31 +2064,20 @@ export class MatchController {
   /** Erzeugt das Geschoss eines Geschützes. */
   #spawnTurretProjectile(turret, schuss, ziel = null) {
     const waffe = TURRET_WEAPON;
+    /*
+     * Die Abschussgeschwindigkeit rechnet der MATCH, nicht `engine/turret.js`:
+     * `tests/reichweite-konsistenz.test.js` zählt den Kartenfaktor
+     * (`* geschwindigkeitsFaktor(this.width)`) an genau ZWEI Stellen in dieser
+     * Datei — Bahnersuchung und Geschoss.
+     */
     const speed = schuss.power * POWER_TO_SPEED * (waffe.speedFactor ?? 1) * geschwindigkeitsFaktor(this.width);
-    const vx = Math.cos(schuss.angle) * speed;
-    const vy = -Math.sin(schuss.angle) * speed;
+    const geschoss = turretProjectile({ turret, waffe, winkel: schuss.angle, speed });
+    const [vx, vy] = [geschoss.velocity.x, geschoss.velocity.y];
 
     const entityId = this.#world.createEntity();
-    this.#world.addComponent(entityId, 'Position', { x: turret.x, y: turret.y });
-    this.#world.addComponent(entityId, 'Velocity', { x: vx, y: vy });
-    this.#world.addComponent(entityId, 'Projectile', {
-      // Verursacher ist der EIGENTÜMER des Geschützes: Ein Abschuss durch das
-      // eigene Geschütz soll ihm zugerechnet werden (Kennzahlen, Sieg).
-      owner: turret.ownerId,
-      weaponId: waffe.index,
-      damageType: damageTypeId(waffe.damageType),
-      damage: turret.damage,
-      blastRadius: waffe.blastRadius || 18,
-      knockback: waffe.knockback ?? 0,
-      drag: DEFAULT_PROJECTILE_DRAG,
-      gravityScale: waffe.gravityScale ?? 1,
-      windFactor: 1,
-      terrainDamage: waffe.terrainDamage ?? 0,
-      bounces: 0,
-      lifetime: Math.max(30, Math.round(turret.range / Math.max(1, speed)) * 2),
-      fuseTicks: 0,
-      alive: 1,
-    });
+    this.#world.addComponent(entityId, 'Position', geschoss.position);
+    this.#world.addComponent(entityId, 'Velocity', geschoss.velocity);
+    this.#world.addComponent(entityId, 'Projectile', geschoss.projectile);
 
     this.#shotsInFlight.set(entityId, TURRET_WEAPON_ID);
 
