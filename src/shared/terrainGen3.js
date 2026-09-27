@@ -40,11 +40,22 @@
  *
  * FUND (belegt, 2026-09-27): Dieser Kopf sprach von **zwölf** Achsen, gezogen
  * wurden **sieben** — und eine davon (`zusammenhaengung`) wurde an keiner
- * Stelle gelesen. Gemessen über 50 Seeds erzeugte der Generator deshalb
- * **immer genau eine** Landmasse und nur zwei Formklassen
- * (`gebirgig` 46, `hoehlig` 4). Terrassen, Kessel, Überhänge und getrennte
- * Landmassen kamen in keiner einzigen Karte vor, obwohl die 2D-Maske sie
- * darstellen kann.
+ * Stelle gelesen. Gemessen über 50 Seeds (1280×720, gleiche Sonde vorher und
+ * nachher) fehlten ganze Formen:
+ *
+ *     Kennzahl                        vorher    nachher
+ *     Karten mit Terrassen             3/50     46/50
+ *     Plateaus je Karte (Mittel)       10,7      40,9
+ *     Überhang-Spalten je Karte         0,0       8,8
+ *     Höhennutzung (Mittel)            0,720     0,815
+ *     Versuche je Karte                 1,10      1,30
+ *
+ * Die Zahl der globalen Bildähnlichkeit (mittlerer Hamming-Abstand zweier
+ * Masken, 19,4 % → 19,7 %) sagt darüber **nichts** — sie wird von der
+ * Flächenverteilung dominiert, nicht von der Struktur. Wer „mehr Abwechslung"
+ * belegen will, muss die Formen einzeln zählen; die Sonde liegt unter
+ * `/tmp/terrain-audit.mjs`, die gepinnten Zahlen in
+ * `tests/terrain-formen.test.js` und `docs/terrain-ausbau.md`.
  *
  * Jetzt sind es zwölf Achsen, und jede hat eine nachweisbare Wirkung in der
  * Maske. Dazu kommt eine neue Form, die keine Achse braucht: der
@@ -181,17 +192,29 @@ export const CHARAKTER_ACHSEN = Object.freeze({
    * fand nur Definition und Ziehung) — eine Achse ohne Wirkung, also eine
    * Absicht ohne Folge.
    *
-   * Eine Messung über 50 Seeds bestätigte die Wirkung der Lücke: Der Generator
-   * erzeugte **immer genau eine** zusammenhängende Landmasse
-   * (`Stuecke = 1`, `groesstesStueckAnteil = 1.000`) und nur zwei der
-   * angestrebten Formklassen (`gebirgig` 46, `hoehlig` 4 von 50). „Inseln",
-   * „Terrassen", „Kessel" und „Überhänge" kamen **nicht ein einziges Mal** vor,
-   * obwohl das Verfahren (2D-Maske) sie darstellen kann.
+   * Gemessen über 50 Seeds (1280×720) fehlten dem Generator damit ganze
+   * Formen: **3 von 50 Karten** hatten überhaupt Terrassen (Mittel 10,7
+   * Plateaus), und **Überhänge kamen in keiner einzigen Karte vor** (0
+   * Spalten mit einem Felsband über einem Hohlraum). Die 2D-Maske könnte all
+   * das darstellen — der Generator zog es nur nicht.
    *
-   * Die fünf Achsen unten schließen genau diese Lücke. Sie sind wie die
-   * bestehenden aus einem BEREICH gezogen und U-förmig gewichtet — der Seed
+   * ## Was die erste Messung falsch erzählte
+   *
+   * FUND (belegt, eigener Messfehler): Der erste Anlauf zählte die Landmassen
+   * auf der ROhen Bitmap und meldete in 50 von 50 Karten `Stuecke = 1` — daraus
+   * wurde die Behauptung „der Generator erzeugt immer genau eine Landmasse".
+   * Das war falsch gemessen: Der Kartenboden ist **versiegelt** (damit niemand
+   * aus der Welt fällt), und über diese eine Reihe hängt jedes Landstück mit
+   * jedem zusammen. Über dem WASSERSPIEGEL — der Fläche, auf der Figuren
+   * laufen — hatte schon der alte Generator im Mittel **1,88** Massen, die
+   * größte mit 83 % des Landes. Die Zählung auf der rohen Maske war blind für
+   * genau die Frage, um die es geht.
+   *
+   * Die fünf Achsen unten schließen die Lücke, die wirklich da war. Sie sind wie
+   * die bestehenden aus einem BEREICH gezogen und U-förmig gewichtet — der Seed
    * entscheidet, nichts anderes. Sie sind kein Schalter: Bei jedem Wert steht
-   * die Wirkung in einem sichtbaren Verhältnis zur Achse (siehe `baueKarte`).
+   * die Wirkung in einem nachweisbaren Verhältnis zur Achse (siehe `baueKarte`
+   * und `tests/terrain-formen.test.js`).
    */
   /**
    * Terrassen — wie sehr die Flanken in begehbare Stufen zerfallen.
@@ -1728,7 +1751,23 @@ export function pruefeSpielbarkeit(k) {
   if (k.landAnteil > 0.9) {
     return { ok: false, grund: `zu viel Land (${(k.landAnteil * 100).toFixed(0)} %)` };
   }
-  if (k.hoehennutzung < 0.12) {
+  if (k.hoehennutzung < 0.2) {
+    /*
+     * ## Warum die Schwelle bei 0,20 liegt — bei derselben Zahl wie die
+     * Geländegüte
+     *
+     * FUND (belegt, 2026-09-27): Hier stand **0,12**, und die Geländegüte
+     * verlangt in `tests/gelaendeguete.test.js` **0,20**. Zwei Schwellen für
+     * dieselbe Eigenschaft: Der Generator lieferte damit Karten aus, die der
+     * eigene Qualitätstest als „spielt in einem Band" ablehnt. Aufgefallen ist
+     * das beim Terrain-Ausbau, als eine gezogene Karte mit 0,189 durchkam und
+     * der Güte-Test umfiel — bei richtigem Produkt und richtiger Regel, nur an
+     * zwei verschiedenen Zahlen.
+     *
+     * Die 0,20 ist die strengere und die begründete (siehe die Herleitung dort:
+     * Höhe und Flankensteilheit sind ein Tauschhandel, 0,20 fängt die echten
+     * Ausreißer ab). Wer sie ändern will, ändert sie an EINER Stelle.
+     */
     return { ok: false, grund: `zu flach (${(k.hoehennutzung * 100).toFixed(0)} % Höhennutzung)` };
   }
   if (k.erhebungen < 4) {
