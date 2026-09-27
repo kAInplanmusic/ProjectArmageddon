@@ -207,6 +207,16 @@ export const WEAPON_IDENTITIES = Object.freeze({
   pa_114: {
     displayName: 'Gleitschirm',
     concept: 'Weiter, aber mit Pause',
+    /*
+     * ACHTUNG — „weiter" ist heute NICHT eingeloest. Das Konzept steht am
+     * `effectMagnitude` (150 gegen 64 beim Raketenrucksack), aber
+     * `buildEffect` in `src/engine/specials.js` liest diesen Wert nicht: Beide
+     * Geraete springen 60 px (SPECIAL_DEFAULTS.moveDistance). Unterschiedlich
+     * sind nur Munition (3 gegen 6) und Abklingzeit (2 gegen 0) — das traegt
+     * „mit Pause", nicht „weiter". Die Luecke steht in
+     * `FELDER_OHNE_PRODUKTLESER_OFFEN` weiter unten; der Leser gehoert nach
+     * `src/engine/specials.js`.
+     */
     overrides: { damage: 0, effectMagnitude: 150, maxAmmo: 3, cooldownTurns: 2 },
   },
 
@@ -539,6 +549,90 @@ export function iconPathFor(iconFile) {
  * nicht von der Laufzeit abhängen (Build-Reihenfolge), braucht aber dieselbe
  * Aussage, um zu entscheiden, ob eine Waffe überhaupt erspielbar ist.
  */
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * FELDER OHNE LESER — die Fehlerklasse dieses Projekts, hier festgehalten.
+ *
+ * GEMESSEN (2026-09-27, Sonde ueber `src/**` ausserhalb dieser Katalogdatei):
+ * Von den 42 Feldnamen des Katalogs hat eine Reihe KEINEN Motor- oder
+ * Clientleser. Ein Feld, das niemand liest, ist keine Eigenschaft, sondern eine
+ * Behauptung — der Spieler liest „weiter Gleitflug" und die Figur springt 60 px.
+ *
+ * Diese beiden Listen sind die EINE Quelle fuer die Antwort auf die Frage
+ * „warum steht das da?". `tests/weapon-field-wiring.test.js` verbindet sie mit
+ * dem erzeugten Katalog: Jedes Feld ohne Leser MUSS hier stehen. Ein neues Feld
+ * ohne Leser faellt damit im Test auf, statt still im Katalog zu liegen.
+ *
+ * Die Listen sind ABSICHTLICH hier und nicht in `src/`: Sie beschreiben die
+ * Begruendung der Ausgabe, nicht das Spiel.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Katalogfelder ohne Produktleser — BEWUSST ohne Leser.
+ *
+ * Aufgenommen ist nur, was eine nachvollziehbare Aufgabe hat: Herkunftsnachweis
+ * fuer Pruefwerkzeuge, Quellwert fuer eine Ableitung, oder Laufzeit-API, die von
+ * einem anderen Modul derselben Datei benutzt wird. Wer hier etwas ergaenzt,
+ * muss den Grund nennen koennen — „ist eben da" ist keiner.
+ */
+export const FELDER_OHNE_PRODUKTLESER_BEWUSST = Object.freeze({
+  aoe: 'Abgeleiteter Alias von `blastRadius > 0` (eine Aussage, eine Quelle). '
+    + 'Kein Motorleser, weil der Radius die Aussage schon traegt; '
+    + '`npm run check:effects` haelt die Gleichheit beider Felder fest.',
+  concept: 'Freiraum-Beschreibung der acht Waffen mit eigener Identitaet '
+    + '(zwei Saetze zum Zielkonflikt). Adressat ist der Mensch an der Designdatei, '
+    + 'nicht der Motor; `tests/weapon-identity.test.js` liest sie.',
+  cooldownSource: 'Herkunftsnachweis: der `cooldown`-Wert der Designdatei. '
+    + 'Er ist dort konstant 0, deshalb ist der Nachweis heute bei allen 150 Waffen '
+    + '0. Er belegt, dass die Nachladezeit HERGELEITET ist und nicht abgeschrieben.',
+  damageSource: 'Herkunftsnachweis des Schadenswerts: `source` (Designdaten), '
+    + '`placeholder`/`derived` (Ersatzwert aus der Kategorie). '
+    + '`npm run balance` und `tests/assets.test.js` lesen ihn.',
+  damageTypeSource: 'Herkunftsnachweis der Schadensart: `source` (Designdatei, 124) '
+    + 'oder `derived` (aus dem Anzeigenamen, 26). `tests/weapon-damage-types.test.js` liest ihn.',
+  fuseIntent: 'Die ZUENDER-ABSICHT der Designdatei (`timed`/`impact`), nicht der Zuender '
+    + 'selbst. Der Motor liest `fuseTime` — den aus der Absicht ABGELEITETEN Wert; die '
+    + 'Absicht bleibt daneben stehen, weil ohne sie nicht pruefbar waere, ob die Ableitung '
+    + 'stimmt (`npm run check:fuses` vergleicht beide und schlaegt bei Widerspruch fehl). '
+    + 'In `src/engine/shooting.js` steht der Name nur in einem Kommentar.',
+  icon: 'Dateiname des Quell-Assets (z.B. IMG_9033.PNG). Er ist die EINGABE der '
+    + 'Pfadableitung `iconPathFor` -> `iconPath`; das ist der Pfad, den der Client laedt.',
+  iconPath: 'Wird von `iconUrlFor` IN DIESER DATEI gelesen (der Client ruft nur '
+    + '`iconUrlFor(weapon)`), und `iconUrlFor` loest ihn gegen diese Datei auf. '
+    + 'Ein Pfad ausserhalb dieser Datei aufzuloesen war der Fehler, der die Icons ins Leere '
+    + 'zeigen liess — deshalb steht der Leser hier und nicht im Client.',
+  internalName: 'Stabile Kennung der Designdatei (ASCII, ohne Umlaute) fuer '
+    + 'Werkzeuge und Zuordnungen. Anzeigenamen duerfen sich aendern, diese Kennung nicht.',
+  projectileSpeed: 'Quellwert (0/70/48…). Der Motor liest NICHT ihn, sondern den '
+    + 'normalisierten `speedFactor` daraus — sonst gaebe es zwei Aussagen ueber dieselbe '
+    + 'Geschwindigkeit. Skripte und Gates lesen den Rohwert weiter (check:reichweite).',
+  requiresLineOfSightSource: 'Herkunftsnachweis der Sichtlinie (`none`/`derived`/`source`). '
+    + '`npm run check:damage-types` prueft damit, dass ein Sichtlinien-Verlangen aus der '
+    + 'Designdatei stammt und nicht erfunden wurde.',
+  sourceRarity: 'Unveraenderte Raritaet der Designdatei (common/uncommon/rare) neben dem '
+    + 'abgeleiteten `powerTier`. `npm run balance` berichtet beide, um die Ableitung pruefbar '
+    + 'zu halten.',
+});
+
+/**
+ * Katalogfelder, deren Leser FEHLT — offene Luecke, gemeldet.
+ *
+ * Der Unterschied zur Liste darueber: Diese Felder sind NICHT bewusst ohne Leser.
+ * Sie tragen Daten, die ein Versprechen ausdruecken, und der Code, der es
+ * einloesen muesste, ist nicht da. Nachgetragen wird er in `src/` — nicht hier.
+ */
+export const FELDER_OHNE_PRODUKTLESER_OFFEN = Object.freeze({
+  effectMagnitude: 'Wirkungsstaerke fuer Verschiebungen (Sprung, Teleport): Werte 64/72/150/165 '
+    + 'bei den vier Flug-/Sprunggeraeten. GEMESSEN (2026-09-27): `buildEffect` in '
+    + '`src/engine/specials.js` setzt fuer MOVE/PULL `distance: SPECIAL_DEFAULTS.moveDistance` '
+    + '(60) — die Waffe wird NICHT befragt. Folge in Zahlen: Raketenrucksack (64) und '
+    + 'Gleitschirm (150) springen beide exakt 60 px, obwohl die Identitaeten „kurzer, haeufiger '
+    + 'Satz" gegen „weit, aber mit Pause" zusagen. Sie unterscheiden sich nur ueber Munition '
+    + 'und Abklingzeit. Der Leser gehoert in den MOVE-Zweig von `buildEffect`; '
+    + '`src/engine/specials.js` ist nicht Teil dieses Auftrags (sieben andere Arbeiter).',
+});
+
 const SPECIAL_WITHOUT_DAMAGE = new Set([
   'flight', 'mobility', 'water_mobility', 'grapple', 'teleport', 'portal',
   'portal_field', 'hologram_portal', 'teleport_platform', 'dimension_orb',
@@ -904,9 +998,20 @@ const weapons = raw.weapons.map(entry => {
   // unterschiedliche Werte, damit sie sich wirklich unterscheiden. Das geschieht
   // VOR allen Ableitungen, weil Reichweite, Geschwindigkeit und Nachladezeit
   // daraus folgen.
+  //
+  // FUND (belegt, gemessen 2026-09-27): `overrides` wurde als GANZES auf die
+  // Waffe kopiert. Damit landete `cooldownTurns` — ein STEUERFELD dieser
+  // Overrides-Tabelle — als zweites Feld neben `cooldown` im Katalog, bei vier
+  // Waffen, zwei davon mit dem Wert 2. Ein Leser dafuer existierte nicht: Ein
+  // Schattenfeld mit demselben Inhalt wie `cooldown` ist die schlimmere
+  // Doppelung als zwei Namen fuer eine Sache, weil beide auseinanderlaufen
+  // koennen, ohne dass es auffaellt. Die Kopie schleust das Steuerfeld jetzt
+  // nicht mehr mit; `cooldown` bleibt die eine Aussage.
   const identity = identityFor(entry.id);
   if (identity) {
-    Object.assign(weapon, identity.overrides);
+    const overrides = { ...identity.overrides };
+    delete overrides.cooldownTurns;
+    Object.assign(weapon, overrides);
     weapon.concept = identity.concept;
     // Ein eigener Schadenswert ist kein Ersatzwert mehr.
     if (identity.overrides.damage !== undefined) {

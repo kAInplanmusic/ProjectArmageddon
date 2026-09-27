@@ -20,7 +20,7 @@
  *     ruft das hier auf. Es gibt keine zweite Fassung dieser vier Zeilen.
  *  2. `raycastSegment()` — der pixelgenaue Strahl entlang einer Flugstrecke
  *     gegen Terrain und Trefferfelder. Dieselbe Abtastung nutzt der Motor
- *     (`ProjectileSystem`) und die Vorausberechnung (Bot, Vorhersage).
+ *     (`ProjectileSystem`), die Zielvorschau und die Client-Vorhersage.
  *  3. `simulateFlight()` — die Vorwärtssimulation eines ganzen Schusses. Sie
  *     ist die „Wahrheit" für Vorhersage und KI: `FORMEL = Startpunkt,
  *     SIMULATION = Wahrheit, SCORE = Auswahl` (Recherche, Punkt 4.3).

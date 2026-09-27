@@ -45,8 +45,8 @@ import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/playe
  * Von Projektilen und Zielvorschau gemeinsam genutzte Physik-Konstanten.
  *
  * Die ZAHL steht in `src/shared/ballistics.js` — dieselbe Quelle, aus der die
- * clientseitige Vorhersage, die Zielvorschau des MatchControllers und die
- * Bot-KI lesen. Diese Namen bleiben exportiert, weil Tests und die
+ * clientseitige Vorhersage und die Zielvorschau des MatchControllers lesen.
+ * Diese Namen bleiben exportiert, weil Tests und die
  * Reichweitenrechnung sie führen.
  */
 export const DEFAULT_PROJECTILE_GRAVITY = PROJECTILE_GRAVITY;
@@ -168,8 +168,8 @@ export class ProjectileSystem {
        *
        * Reihenfolge und Vorzeichen stehen dort, nicht hier. Wer den Motor
        * schneller machen oder „nur kurz" anpassen will: Jede Änderung hier
-       * verschiebt auch die Bahn, die die Zielvorschau und die Bot-KI
-       * vorhersagen — die beiden lesen dieselbe Funktion.
+       * verschiebt auch die Bahn, die die Zielvorschau und die clientseitige
+       * Vorhersage ausrechnen — die beiden lesen dieselbe Funktion.
        */
       const naechsteGeschwindigkeit = integrateStep({
         vx,
@@ -350,9 +350,9 @@ export class ProjectileSystem {
    * Prueft die Strecke in Teilschritten gegen Terrain und Spieler-AABBs.
    *
    * Die Abtastung selbst steht in `raycastSegment` (`src/shared/ballistics.js`)
-   * und wird von der Vorhersage (Client), der Zielvorschau und der Bot-KI
-   * mitbenutzt: Ein Geschoss, das „durch eine Wand tunnelt", tut das sonst in
-   * der Vorhersage anders als im Motor.
+   * und wird von der Vorhersage (Client) und der Zielvorschau mitbenutzt:
+   * Ein Geschoss, das „durch eine Wand tunnelt", tut das sonst in der
+   * Vorhersage anders als im Motor.
    *
    * @returns {{x:number,y:number,target:number|null}|null}
    */

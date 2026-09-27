@@ -13,6 +13,7 @@
  * @module main
  */
 import { isTextEntry } from './dom.js';
+import { haerteAusTreffer } from './gefuehl.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
 import { Renderer } from './renderer.js';
 import { Camera } from './camera.js';
@@ -121,6 +122,20 @@ class Game {
      * Snapshot); hier wird nur der ÜBERGANG erkannt.
      */
     this.waterStates = new Map();
+
+    /**
+     * Zählerstand des Mischers beim letzten geprüften Bild.
+     *
+     * Nötig, um einen Treffer NICHT zweimal zu hören: Der Klang zum Treffer
+     * eines HITSCAN-Schusses entsteht im Ereigniszweig (`ereignisse.js`), der
+     * Klang zu jedem anderen Treffer aus dem Zustand (`#spieleTrefferklang`).
+     * Beide Wege zielen auf dieselbe Handlung — ohne diesen Vergleich hätte ein
+     * Treffer zwei Klänge übereinander.
+     *
+     * Gelesen wird der ZÄHLER des Mischers (`gezaehlt.treffer`) und nicht eine
+     * eigene Buchführung: Er zählt genau die erzeugten Klänge.
+     */
+    this.letzterTrefferklang = 0;
 
     /**
      * Vorhersage des eigenen Schusses (Online-Modus).
@@ -1142,7 +1157,7 @@ class Game {
     this.#applyOrientation(orientation, terrain.width, terrain.height);
     this.setSceneryFromSeed(seed, preset);
     this.renderer.buildTerrainLayer(terrain.bitmap, terrain.width, terrain.height);
-    this.renderer.particles = [];
+    this.renderer.gefuehlZuruecksetzen();
     this.hud.log(`Terrain aus Seed ${seed} rekonstruiert`, 'neutral');
   }
 
@@ -1656,6 +1671,47 @@ class Game {
     }
   }
 
+  /**
+   * Spielt den Klang zu den Treffern, die der Renderer im letzten Bild gesehen
+   * hat — und zwar nur, wenn der Ereigniszweig ihn nicht schon gespielt hat.
+   *
+   * ## Warum es diesen Weg zusätzlich gibt
+   *
+   * Der Klang zum Treffer hing bis hierher NUR am Ereigniszweig, und dort an
+   * einer Bedingung: `hitscan` mit `hit && target` (`ereignisse.js`, beide
+   * Betriebsarten). Wer mit einer GESCHOSSWAFFE traf — dem Standardfall —, hörte
+   * nichts. Das `damage`-Ereignis, an dem es hängen könnte, ist gedrosselt
+   * (höchstens alle 30 Takte je Figur) und gemessen viel zu häufig (15092
+   * Ereignisse in 30 s bei 40 Figuren) — ein Klang daran wäre ein Dauerläuten.
+   *
+   * Der Zustand trägt die vollständige Wahrheit: Der Renderer vergleicht die
+   * Gesundheit jeder Figur und meldet jedes Absinken (`Renderer#nimmTreffer`).
+   * Hier wird daraus ein Klang — mit der Härte aus dem Schadensanteil und mit
+   * einem AKUSTISCHEN Dämpfer: Hat der Ereigniszweig im selben Bild schon einen
+   * Trefferklang erzeugt (gemessen am Zähler des Mischers), bleibt dieser Weg
+   * still. Zwei Klänge übereinander wären ein doppelter Treffer.
+   *
+   * Es entsteht KEIN neuer Klang: benutzt wird `SoundMixer#spieleTreffer` mit
+   * dem vorhandenen Rezept (`sound.js#treffer`) — ein Kratzer klingt dunkler als
+   * ein Volltreffer, sonst nichts.
+   */
+  #spieleTrefferklang() {
+    const treffer = this.renderer.nimmTreffer?.() ?? [];
+    /*
+     * Der Zähler wird IMMER gelesen, auch ohne Treffer: Sonst bliebe er stehen,
+     * und der nächste echte Klang des Ereigniszweigs sähe wie ein Zuwachs in
+     * genau diesem Bild aus (er hätte den Zustandstreffer verschluckt).
+     */
+    const zaehler = this.sound?.gezaehlt?.treffer ?? 0;
+    const ueberEreignis = zaehler > this.letzterTrefferklang;
+    this.letzterTrefferklang = zaehler;
+
+    if (treffer.length === 0 || ueberEreignis) return;
+    for (const t of treffer) {
+      this.sound?.spieleTreffer(haerteAusTreffer(t.schaden, t.maxHealth));
+    }
+  }
+
   /** Meldet eine Wirkung auf den Schützen im Protokoll. */
   #logSpecialEffect(payload) {
     const name = this.#nameOf(payload.playerId);
@@ -1996,7 +2052,13 @@ class Game {
 
   #afterWorldReady(bitmap, water) {
     this.renderer.buildTerrainLayer(bitmap, this.match.width, this.match.height);
-    this.renderer.particles = [];
+    /*
+     * Neue Karte: Alles, was sich das Gefühl gemerkt hat, gehört zur ALTEN.
+     * Das schließt die Splitter ein (`particles`) — sie standen hier vorher
+     * einzeln, und mit ihnen wären Narben, Spuren und die Gesundheitswerte der
+     * vorigen Figuren stehen geblieben.
+     */
+    this.renderer.gefuehlZuruecksetzen();
     this.hud.clearLog();
     this.accumulator = 0;
     this.lastFrameTime = 0;
@@ -2239,6 +2301,11 @@ class Game {
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.#trackWater(state);
+    /*
+     * Der Klang zum Treffer — NACH dem Zeichnen, weil die Treffer im
+     * Zeichenaufruf entstehen (siehe `Renderer#nimmTreffer`).
+     */
+    this.#spieleTrefferklang();
     this.hud.update(state, {
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       onWeaponSelect: index => this.selectWeapon(index),

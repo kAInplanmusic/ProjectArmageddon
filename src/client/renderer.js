@@ -28,6 +28,12 @@ import {
   drawLandmarks,
   drawWaterSurface,
 } from './sceneryPainter.js';
+import {
+  findeTreffer, trefferMarke, zuckVersatz,
+  ruckFuer, altereRuck, ruckVersatz,
+  ergaenzeNarbe, verlaengereSpur,
+  rauchWolke, schreiteRauchFort, rauchDarstellung,
+} from './gefuehl.js';
 
 /**
  * Kulissen-URLs, von Vite aufgelöst.
@@ -79,6 +85,43 @@ export class Renderer {
     this.time = 0;
     /** Transiente Effekte (Strahlen, Blitze) mit Lebensdauer in Frames. */
     this.effects = [];
+
+    /*
+     * ============================ DAS GEFÜHL ============================
+     *
+     * Die vier Zustände, die aus einem Treffer und einem Einschlag eine
+     * RÜCKMELDUNG machen. Sie stehen alle hier — der Renderer ist der einzige,
+     * der sie zeichnet, und er ist der einzige, der weiß, welches Bild gerade
+     * läuft.
+     *
+     * Die Rechenkerne liegen in `gefuehl.js` und sind dort ohne Canvas
+     * geprüft; hier wird nur gehalten und gezeichnet (dasselbe Muster wie
+     * `particles`/`effects`).
+     */
+    /** Marken der Treffer (Ring, Zucken, Blitz) — altern wie die Effekte. */
+    this.trefferMarken = [];
+    /** Letzte Gesundheit je Figur — die Grundlage der Trefferkennung. */
+    this.letzteWerte = new Map();
+    /** Treffer des LETZTEN Bildes — der Klang wird in `main.js` gespielt. */
+    this.letzteTreffer = [];
+    /** Narben der Krater (Brandränder) — begrenzt, siehe `NARBEN_MAX`. */
+    this.narben = [];
+    /** Rauch nach großen Einschlägen — der Nachhall. */
+    this.rauch = [];
+    /** Flugspuren je Projektil (`entityId` → Punkte). */
+    this.spuren = new Map();
+    /** Der laufende Kamera-Ruck (oder `null`). */
+    this.ruck = null;
+    /**
+     * Letzter angewandter Krater: Ort, Radius und Bild.
+     *
+     * Nötig, weil derselbe Einschlag online ZWEI Ereignisse erzeugt
+     * (`explosion` und `terrain_destroyed`, beide mit demselben Radius) und
+     * beide `applyCrater` rufen. Ohne diesen Merker bekäme ein Online-Einschlag
+     * die doppelte Splitterwolke und den doppelten Rauch — sichtbar, weil die
+     * Partikel seit diesem Zug auch GEZEICHNET werden (siehe `render`).
+     */
+    this.letzterKrater = null;
 
     /**
      * Geladene Kulisse (Hintergrundbild) oder null.
@@ -289,6 +332,47 @@ export class Renderer {
   #updateEffects() {
     // Die Alterung liegt in `effects.js` — dort ist sie ohne Canvas prüfbar.
     this.effects = schreiteEffekteFort(this.effects);
+    /*
+     * Die Marken des Gefühls altern mit DERSELBEN Funktion: Sie haben dieselbe
+     * Form (`life`/`decay`), und eine zweite Alterungsregel könnte davon
+     * abweichen. Rauch und Ruck haben eigene Regeln (der Rauch steigt, der Ruck
+     * hat keine Form), sie stehen deshalb in `gefuehl.js`.
+     */
+    this.trefferMarken = schreiteEffekteFort(this.trefferMarken);
+    this.rauch = schreiteRauchFort(this.rauch);
+    this.ruck = altereRuck(this.ruck);
+  }
+
+  /**
+   * Liest die Gesundheit jeder Figur und macht aus jedem ABSINKEN eine Marke.
+   *
+   * Der Vergleich steht in `gefuehl.js#findeTreffer`; hier wird nur der Zustand
+   * gehalten. Die Treffer des Bildes bleiben in `letzteTreffer` stehen, bis
+   * `main.js` sie abholt (`nimmTreffer`) — der Renderer spielt keinen Klang.
+   */
+  #ermittleTreffer(state) {
+    const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
+    this.letzteWerte = befund.zustand;
+    this.letzteTreffer = befund.treffer;
+    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke(treffer));
+  }
+
+  /**
+   * Schreibt die Flugspuren fort — und vergisst die verschwundenen Geschosse.
+   *
+   * Die Karte wird je Bild NEU gebaut: Ein Geschoss, das nicht mehr im Zustand
+   * steht, ist eingeschlagen oder verfallen; seine Spur gehört dann nicht mehr
+   * ins Bild. Ohne diesen Neubau sammelten sich Spuren toter Geschosse an — und
+   * die wiederverwendeten Entity-IDs hängten neue Geschosse an alte Spuren.
+   */
+  #fuehreSpuren(projektile) {
+    const neu = new Map();
+    for (const projektil of projektile) {
+      const schluessel = projektil?.entityId ?? projektil?.id ?? null;
+      if (schluessel === null) continue;
+      neu.set(schluessel, verlaengereSpur(this.spuren.get(schluessel), projektil.x, projektil.y));
+    }
+    this.spuren = neu;
   }
 
   #drawEffects() {
@@ -545,7 +629,23 @@ export class Renderer {
     }
   }
 
-  /** Stanzt einen Krater in die sichtbare Terrain-Ebene. */
+  /**
+   * Stanzt einen Krater in die sichtbare Terrain-Ebene.
+   *
+   * ## Der Krater war schon da — seine NARBE nicht
+   *
+   * `destination-out` schneidet ein Loch. Sichtbar ist es, weil dahinter der
+   * Himmel steht — aber es liest sich wie „dort ist kein Boden mehr", nicht wie
+   * „dort hat es eingeschlagen". Was fehlte, ist die Spur am Rand: ein dunkler
+   * Brandrand, der auch dann bleibt, wenn der Blitz und die Splitter längst weg
+   * sind. Er wird NICHT ins Terrain gebacken (das wäre eine zweite Wahrheit
+   * neben der Kollisionsmaske), sondern als Liste gezeichnet
+   * (`#drawNarben`) — begrenzt auf `NARBEN_MAX`.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @param {number} radius
+   */
   applyCrater(x, y, radius) {
     if (!this.terrainLayer) return;
     const ctx = this.terrainLayer.getContext('2d');
@@ -555,7 +655,61 @@ export class Renderer {
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+
+    /*
+     * Doppelte Krater im SELBEN Bild: siehe `letzterKrater`. Die Ränder, der
+     * Rauch und der Ruck gelten für den Einschlag, nicht für das Ereignis —
+     * zweimal dasselbe zu zeichnen wäre zweimal derselbe Einschlag.
+     */
+    const doppelt = Boolean(this.letzterKrater)
+      && this.letzterKrater.zeit === this.time
+      && this.letzterKrater.x === x
+      && this.letzterKrater.y === y
+      && this.letzterKrater.radius === radius;
+    if (doppelt) return;
+    this.letzterKrater = { x, y, radius, zeit: this.time };
+
     this.spawnExplosionParticles(x, y, radius);
+    this.narben = ergaenzeNarbe(this.narben, x, y, radius);
+    this.rauch.push(...rauchWolke(x, y, radius));
+    // Nur ein GROSSER Krater ruckt (siehe `RUCK_SCHWELLE`); ein neuer Ruck
+    // ersetzt den alten, damit eine Salve die Kamera nicht aufschaukelt.
+    this.ruck = ruckFuer(radius, { reducedMotion: this.reducedMotion }) ?? this.ruck;
+  }
+
+  /**
+   * Setzt alles zurück, was sich das Gefühl gemerkt hat.
+   *
+   * Nötig beim Kartenaufbau (neues Match, Online-Terrain): Sonst wanderten
+   * Narben und Spuren der alten Karte in die neue, und die Trefferkennung
+   * verglich die Gesundheit der alten Figuren mit der der neuen.
+   */
+  gefuehlZuruecksetzen() {
+    this.particles = [];
+    this.trefferMarken = [];
+    this.letzteWerte = new Map();
+    this.letzteTreffer = [];
+    this.narben = [];
+    this.rauch = [];
+    this.spuren = new Map();
+    this.ruck = null;
+    this.letzterKrater = null;
+    return this;
+  }
+
+  /**
+   * Die Treffer des letzten Bildes — und leert die Liste.
+   *
+   * Der Renderer zeichnet sie, aber er spielt keinen Klang: Der Mischer hängt
+   * an `main.js`. Der Übergabezeitpunkt ist deshalb genau ein Bild (siehe
+   * `Main#spieleTrefferklang`).
+   *
+   * @returns {Array<object>} Treffer aus `findeTreffer`
+   */
+  nimmTreffer() {
+    const treffer = this.letzteTreffer;
+    this.letzteTreffer = [];
+    return treffer;
   }
 
   /** Entfernt die vom Mahlstrom abgetragenen Randspalten. */
@@ -762,8 +916,23 @@ export class Renderer {
       if (!entity.alive) continue;
       const color = TEAM_COLORS[entity.teamId % TEAM_COLORS.length];
 
+      /*
+       * DAS ZUCKEN DER GETROFFENEN FIGUR.
+       *
+       * Die Marke wird über die FIGUR geführt (`entityId`), nicht über eine
+       * feste Stelle — dieselbe Regel wie beim Mündungsfeuer: Die Figur kann
+       * zwischen Treffer und Bild noch ein Stück geflogen sein (Rückstoß,
+       * Flächenschaden), und das Zucken gehört an die Figur, nicht an den Ort.
+       *
+       * Die RICHTUNG ist aus dem Zustand nicht bekannt (kein Snapshot führt
+       * eine Einschlagrichtung je Figur) — der Ausschlag wechselt deshalb das
+       * Vorzeichen, statt gerichtet zu sein. Was fehlt, wird nicht erfunden.
+       */
+      const marke = this.trefferMarken.find(m => m.entityId === entity.entityId) ?? null;
+      const zuck = zuckVersatz(marke ? marke.life : 0, { reducedMotion: this.reducedMotion });
+
       this.ctx.save();
-      this.ctx.translate(entity.x, entity.y);
+      this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
       // Schatten
       this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -776,6 +945,22 @@ export class Renderer {
       this.ctx.beginPath();
       this.ctx.arc(0, -2, 7, 0, Math.PI * 2);
       this.ctx.fill();
+
+      /*
+       * Der Treffer-Blitz AUF der Figur: Im ersten Drittel der Marke steht ein
+       * heller Kern auf dem Körper. Er ist das Bild, das ein Treffer in der
+       * Wahrnehmung hinterlässt („es hat eingeschlagen"), und er folgt der
+       * Figur — der Ring am Einschlagort bleibt daneben stehen.
+       */
+      if (marke && marke.life > 0.66) {
+        this.ctx.globalAlpha = Math.min(1, (marke.life - 0.66) * 3);
+        this.ctx.fillStyle = '#fff3c4';
+        this.ctx.beginPath();
+        this.ctx.arc(0, -2, 7, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.globalAlpha = 1;
+      }
+
       this.ctx.fillStyle = '#1b232c';
       this.ctx.fillRect(-6, 4, 12, 7);
 
@@ -833,15 +1018,22 @@ export class Renderer {
         this.ctx.restore();
       }
 
-      this.#drawHealthBar(entity);
+      this.#drawHealthBar(entity, zuck);
     }
   }
 
-  #drawHealthBar(entity) {
+  /**
+   * Der Lebensbalken über einer Figur.
+   *
+   * Der Versatz kommt von außen: Die Figur zuckt bei einem Treffer um wenige
+   * Pixel, und der Balken gehört zu ihr — ein Balken, der stehen bleibt, während
+   * die Figur wackelt, liest sich als zwei Dinge.
+   */
+  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }) {
     const width = 30;
     const height = 4;
-    const x = entity.x - width / 2;
-    const y = entity.y - 22;
+    const x = entity.x + versatz.dx - width / 2;
+    const y = entity.y + versatz.dy - 22;
     const ratio = entity.maxHealth > 0 ? Math.max(0, entity.health / entity.maxHealth) : 0;
     const color = ratio > 0.6 ? '#90be6d' : ratio > 0.3 ? '#fbbf24' : '#ef476f';
 
@@ -1163,6 +1355,143 @@ export class Renderer {
     this.ctx.globalAlpha = 1;
   }
 
+  /**
+   * Die Brandränder der Krater.
+   *
+   * Ein Krater ist ein Loch in der Geländeschicht — er zeigt den Himmel durch
+   * den Boden. Diese Ränder machen aus dem Loch einen EINSCHLAG: ein dunkler
+   * Saum an der Kante und ein angesengter Ton darum. Beide Farben stammen aus
+   * dem Bestand (die Schattenfarbe `rgba(0,0,0,0.35)` benutzen Schatten,
+   * Kisten und Geschütze; `#e76f51` ist die dritte Partikelfarbe aus
+   * `effects.js`).
+   *
+   * Gezeichnet wird über dem Gelände und UNTER dem Wasser: Ein Krater unter
+   * Wasser soll durch das Wasser scheinen, nicht darüber liegen.
+   */
+  #drawNarben() {
+    if (this.narben.length === 0) return;
+    this.ctx.save();
+    for (const narbe of this.narben) {
+      this.ctx.globalAlpha = 0.18;
+      this.ctx.strokeStyle = '#e76f51';
+      this.ctx.lineWidth = 5;
+      this.ctx.beginPath();
+      this.ctx.arc(narbe.x, narbe.y, narbe.radius + 4, 0, Math.PI * 2);
+      this.ctx.stroke();
+
+      this.ctx.globalAlpha = 0.35;
+      this.ctx.strokeStyle = '#000000';
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(narbe.x, narbe.y, narbe.radius + 1.5, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  /**
+   * Die Flugspuren der Projektile.
+   *
+   * Ein Projektil war ein wandernder Lichtfleck ohne Herkunft. Die Spur zeigt
+   * die letzten `SPUR_PUNKTE_MAX` Positionen, nach hinten dünner und
+   * durchsichtiger — dieselbe Orange wie der Geschosskern selbst
+   * (`#f4a261`, siehe `#drawProjectiles`), damit Spur und Geschoss als EIN
+   * Ding gelesen werden.
+   *
+   * Die Punkte kommen aus dem Zustand (`state.projectiles`), nicht aus einer
+   * eigenen Zeitreihe: Der Renderer verliert also nichts, wenn ein Bild
+   * ausfällt — er zeichnet dann eine gröbere Spur statt einer falschen. Ein
+   * Sprung über `SPUR_SPRUNG_MAX` gilt als anderes Geschoss (siehe
+   * `verlaengereSpur`).
+   */
+  #drawSpuren() {
+    if (this.spuren.size === 0) return;
+    this.ctx.save();
+    this.ctx.lineCap = 'round';
+    for (const punkte of this.spuren.values()) {
+      if (punkte.length < 2) continue;
+      for (let i = 1; i < punkte.length; i += 1) {
+        // 0 = ältester Punkt (verblasst), 1 = direkt am Geschoss. Die ersten
+        // Punkte sind bewusst fast unsichtbar (0,25), der Kopf deutlich (0,8):
+        // Eine gleichmäßig helle Spur über die halbe Karte wäre ein Strich, der
+        // mit dem Gelände verwechselt werden kann.
+        const anteil = i / punkte.length;
+        this.ctx.globalAlpha = 0.25 + 0.55 * anteil;
+        this.ctx.strokeStyle = '#f4a261';
+        this.ctx.lineWidth = 1.5 + 3.5 * anteil;
+        this.ctx.beginPath();
+        this.ctx.moveTo(punkte[i - 1].x, punkte[i - 1].y);
+        this.ctx.lineTo(punkte[i].x, punkte[i].y);
+        this.ctx.stroke();
+      }
+    }
+    this.ctx.restore();
+  }
+
+  /**
+   * Der Nachhall: Rauch über einem großen Einschlag.
+   *
+   * Phase 3 der Explosion in der Recherche des Projekts
+   * (`docs/recherche/sound-und-juice.md` §4.5). Zuvor war ein Einschlag nach
+   * ~180 ms vorbei (Blitz 11 Bilder, Splitter 29) — bei einem Spiel, dessen
+   * ganze Handlung aus Einschlägen besteht, war das zu kurz.
+   *
+   * Der Rauch ist ausdrücklich ein HINTERGRUND: halbdurchsichtig, langsam, und
+   * bei reduzierter Bewegung entfällt er (er bewegt sich) — die Narbe bleibt,
+   * denn sie trägt dieselbe Aussage ohne Bewegung.
+   */
+  #drawRauch() {
+    if (this.rauch.length === 0 || this.reducedMotion) return;
+    this.ctx.save();
+    for (const wolke of this.rauch) {
+      const { radius, alpha } = rauchDarstellung(wolke);
+      const verlauf = this.ctx.createRadialGradient(wolke.x, wolke.y, 0, wolke.x, wolke.y, radius);
+      verlauf.addColorStop(0, wolke.farbe);
+      verlauf.addColorStop(1, 'rgba(43, 53, 64, 0)');
+      this.ctx.globalAlpha = alpha;
+      this.ctx.fillStyle = verlauf;
+      this.ctx.beginPath();
+      this.ctx.arc(wolke.x, wolke.y, radius, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+    this.ctx.restore();
+  }
+
+  /**
+   * Die Rückmeldung eines Treffers: ein kurzer Ring plus ein heller Kern.
+   *
+   * Warum ein Ring und kein zweiter Blitz: Der Blitz (`addFlash`) markiert
+   * einen ORT (Einschlag, Zündung, Schild). Ein Treffer an einer FIGUR ist eine
+   * andere Aussage — er gehört an die Figur und muss auch dann zu sehen sein,
+   * wenn dieselbe Stelle gerade schon einen Explosionsblitz trägt. Die Farbe
+   * ist die Gefahrenfarbe des HUD (`#ef476f`, siehe Lebensbalken und
+   * Mahlstrom); ein tödlicher Treffer bekommt den hellen Kern der Blitze
+   * (`#fff3c4`), wie ihn Blitz und Strahl bereits benutzen.
+   */
+  #drawTreffer() {
+    if (this.trefferMarken.length === 0) return;
+    this.ctx.save();
+    for (const marke of this.trefferMarken) {
+      const anteil = Math.max(0, Math.min(1, marke.life));
+      const radius = marke.radius * (1 + (1 - anteil) * 0.8);
+
+      this.ctx.globalAlpha = anteil;
+      this.ctx.strokeStyle = marke.toedlich ? '#fff3c4' : '#ef476f';
+      this.ctx.lineWidth = 1.5 + 2 * anteil;
+      this.ctx.beginPath();
+      this.ctx.arc(marke.x, marke.y, radius, 0, Math.PI * 2);
+      this.ctx.stroke();
+
+      // Der Kern sitzt dort, wo die Figur getroffen wurde, und geht schnell aus.
+      this.ctx.globalAlpha = anteil * 0.5;
+      this.ctx.fillStyle = '#fff3c4';
+      this.ctx.beginPath();
+      this.ctx.arc(marke.x, marke.y, 3 + 2 * anteil, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+    this.ctx.restore();
+  }
+
   #drawMaelstrom(maelstrom) {
     if (!maelstrom?.active || maelstrom.inset <= 0) return;
     const { inset } = maelstrom;
@@ -1209,6 +1538,25 @@ export class Renderer {
     this.time += 1;
 
     /*
+     * ===================== DAS GEFÜHL JE BILD ERMITTELN =====================
+     *
+     * Zwei Zustände werden hier aus dem ZUSTAND abgeleitet, nicht aus
+     * Ereignissen:
+     *
+     *   1. TREFFER — ein Absinken der Gesundheit einer Figur. Warum aus dem
+     *      Zustand und nicht aus dem `damage`-Ereignis: siehe Modulkopf von
+     *      `gefuehl.js`.
+     *   2. FLUGSPUR — die Positionen der Projektile. Dieselbe Größe, aus der
+     *      auch `#drawProjectiles` zeichnet; eine zweite Buchführung könnte
+     *      davon abweichen.
+     *
+     * Beides geschieht VOR dem Zeichnen, damit die Rückmeldung im selben Bild
+     * erscheint wie die Ursache.
+     */
+    this.#ermittleTreffer(state);
+    this.#fuehreSpuren(state.projectiles ?? []);
+
+    /*
      * Die Kamera trennt zwei Schichten.
      *
      * FUND (belegt): Bis hierher zeichnete `render()` alles 1:1 — die Karte war
@@ -1232,10 +1580,42 @@ export class Renderer {
      */
     this.#drawSky();
 
+    /*
+     * DER KAMERA-RUCK.
+     *
+     * Er wird auf die TRANSFORMATION addiert, nicht auf die Kamera selbst:
+     * `Camera` beschreibt, WELCHER Ausschnitt der Karte zu sehen ist — der Ruck
+     * beschreibt, wie die Fläche in diesem Bild steht. Ein Ruck, der die
+     * Kameraposition ändert, würde beim nächsten Bild nachziehen und die Karte
+     * dauerhaft verschieben; ein Versatz in der Transformation ist mit dem Bild
+     * wieder weg.
+     *
+     * Der Versatz ist in BILDSCHIRMpixeln (die Transformation endet in
+     * Gerätepixeln) und deshalb vom Zoom unabhängig. Bei reduzierter Bewegung
+     * und ohne großen Krater ist er genau null (siehe `ruckVersatz`).
+     */
+    const ruck = ruckVersatz(this.ruck, { bild: this.time, reducedMotion: this.reducedMotion });
+    /*
+     * Ob eine Klammer geöffnet wurde — sie wird unten wieder geschlossen. Ohne
+     * dieses Merkmal bliebe im kamerafreien Pfad (Replay, Testbild) mit Ruck ein
+     * `save()` je Bild offen: Der Zustandsstapel des Canvas wüchse unbegrenzt.
+     */
+    let klammerOffen = false;
+
     if (this.kamera) {
       const t = this.kamera.transformation();
       this.ctx.save();
-      this.ctx.setTransform(t.skalierung, 0, 0, t.skalierung, t.versatzX, t.versatzY);
+      klammerOffen = true;
+      this.ctx.setTransform(
+        t.skalierung, 0, 0, t.skalierung,
+        t.versatzX + ruck.x, t.versatzY + ruck.y,
+      );
+    } else if (ruck.x !== 0 || ruck.y !== 0) {
+      // Ohne Kamera (Replay, Testbild) wurde bisher 1:1 gezeichnet. Ein Ruck
+      // braucht trotzdem eine Transformation — sonst ruckte es dort nicht.
+      this.ctx.save();
+      klammerOffen = true;
+      this.ctx.setTransform(1, 0, 0, 1, ruck.x, ruck.y);
     }
 
     if (this.terrainLayer) {
@@ -1246,6 +1626,12 @@ export class Renderer {
        */
       this.ctx.drawImage(this.terrainLayer, 0, 0);
     }
+
+    /*
+     * Die Kraterränder liegen AUF dem Gelände und UNTER dem Wasser: Ein Krater
+     * unter Wasser soll durch das Wasser scheinen, nicht darauf liegen.
+     */
+    this.#drawNarben();
 
     this.#drawWater(water);
     this.#drawBlastPreview(aimPreview, blastRadius);
@@ -1267,9 +1653,35 @@ export class Renderer {
      * Zwei gleiche Kurven in derselben Farbe wären nicht zu unterscheiden.
      */
     this.#drawPrediction(prediction);
+    /*
+     * Die Flugspur liegt UNTER den Figuren: Sie erzählt, woher ein Geschoss
+     * kam, und darf dabei keine Figur verdecken — die Lesbarkeit der Figuren
+     * geht vor.
+     */
+    this.#drawSpuren();
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? []);
+    /*
+     * FUND (belegt, dieser Zug): `#drawParticles` war definiert und wurde
+     * NIRGENDS gerufen. Gemessen: Eine Explosion füllte `renderer.particles`
+     * mit 26 Splittern (`erzeugePartikel`, `MAX_PARTIKEL`), sie alterten über
+     * `updateParticles()` und verschwanden nach 29 Bildern — gezeichnet wurde
+     * kein einziger. Die Explosion bestand damit aus Blitz (11 Bilder) und
+     * Krater; die Splitter, die es seit dem Effektmodul gibt, waren ein
+     * Rechenergebnis ohne Bild.
+     *
+     * Der Aufruf steht VOR dem Rauch: Splitter fliegen vor der Rauchwolke, die
+     * sie hinterlassen.
+     */
+    this.#drawParticles();
+    this.#drawRauch();
+    /*
+     * Der Trefferring liegt ÜBER Splittern und Rauch, aber UNTER den Blitzen:
+     * Er ist die unmittelbare Rückmeldung an den Spieler und darf nicht von
+     * einem nachträglichen Einschlagblitz derselben Stelle verschluckt werden.
+     */
+    this.#drawTreffer();
     this.#drawEffects();
     this.#drawHeimdall();
     this.#updateEffects();
@@ -1280,7 +1692,7 @@ export class Renderer {
      * Fenstergröße. Ohne das würde der Windpfeil mit der Kamera wandern — er
      * zeigt eine Richtung, keine Kartenstelle.
      */
-    if (this.kamera) this.ctx.restore();
+    if (klammerOffen) this.ctx.restore();
 
     // Der Mahlstrom ist ein Bildschirm-Effekt (er legt sich über alles).
     this.#drawMaelstrom(state.maelstrom);

@@ -5,10 +5,12 @@
  *
  * „Wie schnell fliegt dieser Schuss?" wurde an drei Stellen beantwortet:
  * inline in `MatchController.#launchVector` (der echte Schuss), in der
- * clientseitigen Vorhersage (`shotPrediction.js`) und — beim Umbau der Bot-KI —
- * gebraucht vom Server. Drei Lesestellen derselben Verrechnung sind genau die
- * Doppelregel, die dieses Projekt schon mehrfach teuer bezahlt hat: Wer die
- * Klassenbalance ändert, muss alle drei finden.
+ * clientseitigen Vorhersage (`shotPrediction.js`) und im Server-Bot. Die dritte
+ * Stelle ist mit der Bot-KI am 2026-09-20 entfallen — gelesen wird die Regel
+ * heute an ZWEI Stellen: im Motor (`#launchVector`) und im Client (`main.js`,
+ * über die Naht in `shotPrediction.js`). Genau solche Lesestellen derselben
+ * Verrechnung sind die Doppelregel, die dieses Projekt schon mehrfach teuer
+ * bezahlt hat: Wer die Klassenbalance ändert, muss beide finden.
  *
  * Die Verrechnung selbst bleibt in `combatProfile()` (`config/classes.js`) —
  * dort steht die Balance. Hier steht nur, WIE sie auf einen Schuss angewandt
@@ -39,6 +41,9 @@ import { geschwindigkeitsFaktor } from './reichweite.js';
  * im Motor, im Bot und in der Client-Vorhersage. Genau so entstand der Fehler,
  * den `tests/reichweite-konsistenz.test.js` jetzt festhält — der Spielerschuss
  * vergaß ihn, das Geschütz nicht, und beide hielten sich für richtig.
+ *
+ * Der Bot ist am 2026-09-20 mit der Bot-KI entfallen; Aufrufstellen sind heute
+ * der Motor und der Client.
  *
  * Wer die Kartenbreite kennt, gibt sie hier mit. Dann gibt es nur EINEN Weg zu
  * einer Abschussgeschwindigkeit, und Vergessen ist keine Option mehr.

@@ -400,9 +400,10 @@ export function fuseTicksFor(weapon) {
  *
  * ## Warum das eine eigene, öffentliche Methode ist
  *
- * FUND (belegt, gemessen): Die Lebensdauer des Geschosses begrenzt die
- * Flugzeit — und die Zielberechnung wusste davon nichts. Der Bot plante Bögen
- * mit 83 Ticks Flugzeit für ein Geschoss, das nach 72 Ticks verfällt
+ * FUND (belegt, gemessen mit dem damaligen Server-Bot — die Bot-KI ist am
+ * 2026-09-20 entfallen): Die Lebensdauer des Geschosses begrenzt die Flugzeit
+ * — und die Zielberechnung wusste davon nichts. Der Bot plante Bögen mit
+ * 83 Ticks Flugzeit für ein Geschoss, das nach 72 Ticks verfällt
  * (`projectile_expired` mitten im Flug, gemessen an Seed 1000, Zug 3). Der
  * Schuss verschwand vor dem Ziel, und die Rechnung sah trotzdem „Treffer".
  *
@@ -437,8 +438,8 @@ export function projectileLifetime(quelle, playerId, angle, power, weapon = null
  * Terraintreffer ab.
  *
  * Die Schleife ist NICHT hier nachgebaut, sondern `simulateFlight` aus
- * `src/shared/ballistics.js` — dieselbe Funktion, die die clientseitige
- * Vorhersage und die Bot-KI benutzen. Eine eigene Kopie war der Ursprung des
+ * `src/shared/ballistics.js` — dieselbe Funktion, die auch die clientseitige
+ * Vorhersage benutzt. Eine eigene Kopie war der Ursprung des
  * Ballistik-Fehlers im Geschütz-Pfad (siehe `tests/turret-ballistics.test.js`).
  *
  * @returns {{x:number,y:number}[]}
@@ -548,7 +549,7 @@ export function hasLineOfSight(quelle, playerId, angle, power, weapon = null) {
  * `fire()` schiebt den Abschusspunkt aus dem Körper des Schützen heraus
  * (`findMuzzle`): Ein Projektil, das in der Fußposition entsteht, kollidiert
  * im ersten Schritt mit dem Boden. Wer den Schuss vorausberechnen will
- * (Bot-KI, Vorhersage, Waffenprüfung), muss denselben Punkt nehmen — sonst
+ * (Zielvorschau, clientseitige Vorhersage), muss denselben Punkt nehmen — sonst
  * rechnet er ab einer anderen Stelle und trifft daneben, obwohl die Rechnung
  * stimmt.
  *
