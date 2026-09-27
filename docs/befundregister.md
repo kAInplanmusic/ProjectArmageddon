@@ -25,6 +25,10 @@ ich im Code selbst gelesen:
 | Online ist die Klangebene weg | `ereignisse.js:216/236/245/293` + `shot.online:296-299` | **bestätigt** — die vier Mischer-Aufrufe liegen in den nur-lokalen Zweigen |
 | Protokoll nur 4–5 Zeilen sichtbar | `index.html:257` | **bestätigt** — `max-height: 108px; overflow: hidden` |
 | Mahlstrom-Schwelle zweimal | `main.js:1194` | **bestätigt** — Client rechnet hart `>= 15` |
+| **A-9** Abbruchknopf online | `grep -rn zeigeAbbruch src/client/*.js` → **genau EIN** `(true)` | **bestätigt** — es steht im lokalen Zweig (darunter `Lokales Match — Seed …`, `return { mode: 'local' }`) |
+| **B-8** `pruneDisconnected` | `grep -rn pruneDisconnected src/` | **bestätigt** — definiert `lobby.js:462`, **kein Aufrufer in `src/`**; der Kommentar `:446` verspricht „Team verfällt" |
+| **B-11** R-Taste | `index.html:1063` gegen `main.js:295` | **bestätigt** — Keymap sagt „Neustart", der Handler ruft `this.abortMatch()` |
+| **A-12** `hasSpecialEffect` | `grep -rn 'function hasSpecialEffect' src/` | **teilweise korrigiert** — **zwei** Definitionen, nicht vier. Zwei unvereinbare Regeln bleibt: `engine/specials.js:234` (`effectFor(...) !== null`) gegen `config/weapons.js:7128` (`damage > 0 \|\| SPECIAL_WITHOUT_DAMAGE.includes(...)`). Die erste hat **0 Leser** — bestätigt. Die Zahl „89 von 150" habe ich **nicht** nachgerechnet. |
 
 ---
 
@@ -43,7 +47,7 @@ ich im Code selbst gelesen:
 | A-9 | **Abbruchknopf online nicht erreichbar** | `main.js:774`, `index.html:400` (`[hidden]` unüberstimmbar) | A | ⬜ |
 | A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `main.js:913`, `gameServer.js:1205`, `lobby.js:369` | A | ⬜ |
 | A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
-| A-12 | **`hasSpecialEffect` viermal, zwei unvereinbare Regeln — 89 von 150 Waffen abweichend** | `specials.js:234` (0 Leser) vs. `weapons.js:7128` | A | ⬜ |
+| A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ⬜ |
 | A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | 🟡 Worker K |
 | A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ⬜ |
 
@@ -126,6 +130,18 @@ Ein widerlegter Befund ist ein Ergebnis, kein Nichts. Diese stammen von den Prü
 | **K** | Stille Fehler: Sidegrad, Mahlstrom, Taktwert, Revanche-Seed | shared/protocol.js, stateSnapshot.js, systems, server |
 | **L** | Fallschaden bremst den Charakter (Entscheidung des Auftraggebers) | engine/match.js, characterSystem.js, config |
 | **M** | Blindheit der eigenen Werkzeuge | tools/audit-mcp/** |
+
+## Anker-Regel (aus einem Fehler dieser Runde)
+
+Während sechs Arbeiter in `src/` schreiben, **wandern die Zeilennummern**. Gemessen:
+die einzige Fundstelle des Abbruchknopfs lag zum Zeitpunkt des Berichts bei
+`main.js:774`, waehrend dieser Prüfung bei **`:818`** — 44 Zeilen weiter, weil ein
+anderer Arbeiter dieselbe Datei bearbeitet. Der Befund selbst ist unverändert gültig.
+
+Deshalb: **jede Fundstelle im Register und in jedem Bericht über den NAMEN verankern
+(Funktion, Konstante, Dateiname) und die Zeile als Momentaufnahme kennzeichnen.** Ein
+Bericht mit nackten Zeilennummern ist nach dem nächsten Umbau falsch, ohne dass jemand
+etwas falsch gemacht hätte — genau so ist `hunter-ui.md` um +113 Zeilen verrutscht.
 
 **Regel für alle:** nie zwei Arbeiter auf derselben Datei; `npm test` und der E2E-Satz
 laufen erst, wenn alle Schreiber ruhen (Lastartefakte sind keine Befunde); der
