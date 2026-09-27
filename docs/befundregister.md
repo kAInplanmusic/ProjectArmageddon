@@ -168,6 +168,31 @@ laufen erst, wenn alle Schreiber ruhen (Lastartefakte sind keine Befunde); der
 Zustandshash `9ec63e8c` des Altreplays ist das Kriterium für unveränderte Simulation —
 außer wo der Auftraggeber eine Simulationänderung ausdrücklich erlaubt hat (A-8).
 
+## Warteschlange — die nächste Welle (festgelegt, noch nicht vergeben)
+
+Zehn Arbeiterplätze sind belegt; diese Aufträge starten, sobald eine Datei frei wird.
+Vorbedingung je Auftrag steht dabei, damit nichts auf einer belegten Datei startet.
+
+| Auftrag | Datei (muss frei sein) | Vorbedingung | Belegter Befund |
+|---|---|---|---|
+| **A-9** Abbruchknopf online erreichbar | `src/client/main.js` | J abgegeben | **von mir bestätigt** — genau EIN `#zeigeAbbruch(true)`, im lokalen Zweig |
+| **B-11** Etikett und Wirkung der R-Taste zusammenbringen | `index.html`, `src/client/main.js` | A-9 | **von mir bestätigt** — Keymap „Neustart", Handler `abortMatch()` |
+| **C-5** Zeilenluft für `match.js` | `src/engine/match.js`, `tests/shooting.test.js` | L abgegeben | **5 Zeilen** Luft unter 3200; jede weitere Änderung sprengt die Regel |
+| **Prüfloch Mahlstrom** | `tests/e2e/` (neue Datei) | frei | **0 Spezifikationen** — der Fehler konnte 7 Runden überleben |
+| **Prüfloch Klang** | `tests/e2e/` (neue Datei) | J abgegeben | **0 Spezifikationen** — deshalb war online stumm unbemerkt |
+| **E2E-Zahl nachziehen** | `MASTERDOTO.md`, `README.md` | **volle Läufe** | nennt 183 aus einem älteren Lauf; letzter gemessener: 190 grün / 1 übersprungen von 191 |
+| **Testzahl nachziehen** | `README.md`, `MASTERDOTO.md` | **voller Lauf** | steht auf 1122, gemessen vor drei Commits |
+| **B-4** `onJump`/`onWeaponDrop` nie gelesen | `src/client/hud.js`, `main.js` | J abgegeben | 0 Treffer im Rumpf von `hud.update` |
+| **B-9** Trennung ohne Meldung | `src/server/**` | P abgegeben | der verbliebene Spieler erfährt nichts |
+| **C-6** „Bot-KI" in 22 Kommentaren | `src/**` (nur Kommentare) | Q abgegeben | `server/index.js:33` verneint sie ausdrücklich |
+| **C-7** 4 Barrels / 137 Zeilen ohne Konsument | Katalogquelle | U abgegeben | von U zu belegen |
+| **C-9** Zeilenbudget für die größten unbewachten Dateien | `tests/` | frei | größte ohne Budget: **7358 Zeilen** |
+
+**Ein Abnahmelauf, auf den alles wartet** (erst wenn kein Arbeiter mehr schreibt):
+voller Testlauf, E2E über 30 Spezifikationen, danach die zwei Zahlen nachziehen. Während
+Schreiber laufen, ist Rot ein Lastartefakt — ein Befund, der in dieser Sitzung schon
+einmal fast falsch festgehalten worden wäre.
+
 ## Offen nach dieser Runde
 
 Vollständiger Zug durch `MASTERDOTO.md` (offene Punkte über fünf Abschnitte) gegen dieses
