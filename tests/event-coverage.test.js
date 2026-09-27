@@ -64,7 +64,15 @@ import { fileURLToPath } from 'node:url';
 import { MatchController } from '../src/engine/match.js';
 import { EREIGNIS_WIRKUNGEN, verarbeiteLokal, verarbeiteOnline } from '../src/client/ereignisse.js';
 // Der Draht: belegt, dass ein v7-Snapshot Günther trägt (siehe Test unten).
-import { encodeSnapshot, decodeSnapshot } from '../src/shared/protocol.js';
+import {
+  encodeSnapshot,
+  decodeSnapshot,
+  EreignisSendefilter,
+  ANZEIGE_EREIGNISARTEN,
+  ZUSTANDSEREIGNISARTEN,
+  GEDROSSELTE_EREIGNISARTEN,
+  EREIGNIS_DROSSEL_TAKTE,
+} from '../src/shared/protocol.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -732,4 +740,272 @@ test('`crate_pickup_blocked` meldet online den vollen Vorrat — MIT Q-Aufforder
     'online gibt es seit O8 das Abwerfen (CONTROL.DROP_WEAPON) — die Meldung muss die Taste nennen');
   assert.deepEqual(onlineTexte, lokalTexte,
     'Da beide Betriebsarten dieselbe Handlung haben, müssen die Texte identisch sein (beide(fn))');
+});
+
+/* ===========================================================================
+ * Der SENDEFILTER des Ereigniskanals — die Gegenrichtung derselben Frage
+ * ===========================================================================
+ *
+ * Die Tests oben prüfen, was der CLIENT mit einem Ereignis tut. Hier geht es um
+ * die andere Hälfte des Kanals: Was der SERVER überhaupt auf die Leitung legt.
+ *
+ * Der Befund (mehrfach unabhängig gemessen, `docs/ereigniskanal-filter.md`):
+ * Der Server schickte JEDES Motorereignis ungefiltert. Bei vier Figuren auf
+ * `hills` waren das 3428 `landed`-Nachrichten in 100 s (34,3/s = 86,8 % der
+ * Steuerlast); bei 40 Figuren 34 283 (342,8/s). Ursache ist ein Bounce-Artefakt
+ * einer STEHENDEN Figur — sie meldet alle 7 Takte eine Landung, ohne sich zu
+ * bewegen. Folge im Browser: Das HUD-Protokoll führt 60 Zeilen und lief in
+ * 1,8 s durch; eine wichtige Servermeldung war damit unsichtbar.
+ *
+ * Die Tests hier halten die zwei Zusagen des Filters fest:
+ *   1. Wiederholungen derselben Art und Figur werden zusammengefasst (die
+ *      ERSTE Meldung geht raus — es bleibt sichtbar, DASS gelandet wurde),
+ *   2. zustandstragende Ereignisse kommen UNGEKUERZT durch — und der Filter
+ *      berührt die Simulation nicht.
+ */
+
+/** Läuft ein Match und liefert jedes Ereignis mit Takt und Nutzlast. */
+function sammleEreignisse({ ticks, seed = 20260910, teams = 2, playersPerTeam = 2, preset = 'hills' }) {
+  const match = new MatchController({ seed, teams, playersPerTeam, preset, maxRounds: 30 });
+  match.start();
+  const gesehen = [];
+  for (let i = 0; i < ticks; i += 1) {
+    if (match.status !== 'playing') break;
+    match.step();
+    const takt = match.world.tickCount;
+    for (const ereignis of match.consumeEvents()) {
+      gesehen.push({ type: ereignis.type, payload: ereignis.payload, takt });
+    }
+  }
+  return { match, gesehen };
+}
+
+test('Der Sendefilter drosselt nur reine Anzeige — die Einteilung ist vollständig', () => {
+  /*
+   * Warum dieser Test der wichtigste der Gruppe ist: Eine Einteilung, die
+   * veraltet, ist gefährlicher als keine. Fällt eine neue Zustandsart in die
+   * Anzeige-Menge (oder umgekehrt), verschwindet sie still vom Draht — genau
+   * der Fehler, den O2 für vier Ereignisse beheben musste.
+   *
+   * Geprüft wird gegen ZWEI Quellen: die tatsächlich emittierten Arten
+   * (`ereignisseDerEngine()`, beide Meldewege) und die Zuordnungstabelle des
+   * Clients. Jede Art muss in GENAU einer der beiden Mengen stehen.
+   */
+  const anzeige = new Set(ANZEIGE_EREIGNISARTEN);
+  const zustand = new Set(ZUSTANDSEREIGNISARTEN);
+
+  assert.equal(anzeige.size, ANZEIGE_EREIGNISARTEN.length, 'Keine Dopplung in ANZEIGE_EREIGNISARTEN');
+  assert.equal(zustand.size, ZUSTANDSEREIGNISARTEN.length, 'Keine Dopplung in ZUSTANDSEREIGNISARTEN');
+  for (const art of anzeige) {
+    assert.ok(!zustand.has(art), `"${art}" steht in beiden Mengen — genau eine muss gelten`);
+  }
+
+  const bekannt = new Set([...anzeige, ...zustand]);
+  const ausQuelle = [...ereignisseDerEngine()];
+  const ausTabelle = Object.keys(EREIGNIS_WIRKUNGEN);
+  const unbekannt = [...new Set([...ausQuelle, ...ausTabelle])].filter(art => !bekannt.has(art));
+  assert.deepEqual(unbekannt, [],
+    'Diese Ereignisarten fehlen in der Einteilung des Sendefilters. Wer sie einführt, muss '
+    + 'einmal entscheiden, ob sie Zustand tragen (ZUSTANDSEREIGNISARTEN) oder nur Anzeige sind '
+    + '(ANZEIGE_EREIGNISARTEN) — sonst kann eine neue Zustandsart still gefiltert werden.');
+
+  // Gedrosselt wird nur, was als reine Anzeige eingeordnet ist.
+  for (const art of GEDROSSELTE_EREIGNISARTEN) {
+    assert.ok(anzeige.has(art), `"${art}" ist gedrosselt, aber nicht als Anzeige eingeordnet`);
+    assert.ok(!zustand.has(art),
+      `"${art}" ist gedrosselt UND trägt Zustand — das ist ein Informationsverlust, kein Filter`);
+  }
+
+  // Die Arten, die der Auftrag ausdrücklich schützt, sind ungedrosselt.
+  for (const art of ['damage', 'drowning', 'entity_in_water', 'turn_start',
+    'terrain_destroyed', 'projectile_spawn']) {
+    assert.ok(zustand.has(art), `"${art}" trägt Zustand und muss in ZUSTANDSEREIGNISARTEN stehen`);
+    assert.ok(!GEDROSSELTE_EREIGNISARTEN.includes(art), `"${art}" darf NICHT gedrosselt werden`);
+  }
+});
+
+test('34x `landed` derselben Figur in 120 Takten: die erste Meldung geht raus, der Rest wird zusammengefasst', () => {
+  /*
+   * Das ist der gemessene Kernfall: Eine STEHENDE Figur pendelt um 4 px und
+   * meldet alle 7 Takte eine Landung. Der Test benutzt genau dieses Muster
+   * (34 Landungen in 120 Takten, Figur 3) — nicht ein erfundenes.
+   *
+   * Zwei Zusagen: Die Zahl der Meldungen sinkt deutlich, UND die erste Meldung
+   * geht raus (sonst wäre die Landung nicht bloß zusammengefasst, sondern
+   * gelöscht — und niemand sähe, DASS gelandet wurde).
+   */
+  const filter = new EreignisSendefilter();
+  const gehtRaus = [];
+  const landungen = [];
+  for (let i = 0; i < 34; i += 1) {
+    const takt = 4 + i * 3; // ~ alle 3 Takte, dichter als das echte Artefakt
+    landungen.push({ takt, art: 'landed', payload: { playerId: 3 } });
+  }
+  /*
+   * Dazu dieselben Landungen einer ZWEITEN Figur — sie dürfen nicht
+   * mitgedrosselt werden, denn das Fenster gilt je Art UND Figur.
+   *
+   * Die zweite Liste wird GEBAUT, nicht an die erste angehängt: Ein
+   * `for (const x of landungen) landungen.push(...)` läuft endlos (die Schleife
+   * besucht die eigenen Anhänge) — genau das hat diesen Test beim ersten Lauf
+   * in den Speicherlauf getrieben.
+   */
+  const zweiteFigur = landungen.map(({ takt }) => ({ takt, art: 'landed', payload: { playerId: 4 } }));
+
+  for (const e of [...landungen, ...zweiteFigur]) {
+    if (filter.durchlassen(e.art, e.payload, e.takt)) gehtRaus.push(e);
+  }
+
+  const gesendet3 = gehtRaus.filter(e => e.payload.playerId === 3);
+  const gesendet4 = gehtRaus.filter(e => e.payload.playerId === 4);
+  const zahlen = filter.zahlen().find(z => z.art === 'landed');
+
+  assert.equal(zahlen.empfangen, 68, 'Alle 68 Meldungen müssen den Filter erreichen (nichts wird vorab verworfen)');
+  assert.ok(gesendet3.length > 0, 'Die erste Landung der Figur muss gesendet werden');
+  assert.ok(gesendet3.length <= 4,
+    `Figur 3 darf höchstens 4 Meldungen erzeugen (gemessen wurden ${gesendet3.length}) — `
+    + 'bei 120 Takten Fenster von 30 Takten sind das 4 Fenster');
+  assert.ok(gesendet3.length * 3 < 34,
+    `Deutlich weniger als 34: gesendet ${gesendet3.length}`);
+  assert.equal(gesendet3[0].takt, 4, 'Die ERSTE Landung steht im Sendeplan — sonst wäre sie gelöscht statt zusammengefasst');
+  assert.equal(gesendet4.length, gesendet3.length,
+    'Zwei verschiedene Figuren dürfen sich nicht gegenseitig die Meldung wegnehmen');
+  assert.equal(zahlen.unterdrueckt, 68 - gehtRaus.length, 'Was nicht rausgeht, wird gezählt — nicht verschwiegen');
+});
+
+test('`damage` kommt ungekuerzt durch — 34 Meldungen in 120 Takten, 34 auf der Leitung', () => {
+  /*
+   * Die Gegenprobe zur Drossel: Schaden ist Spielzustand (Lebensbalken, Höhe des
+   * Schadens). Eine zusammengefasste Schadensmeldung wäre ein verlorener Wert —
+   * hier wird geprüft, dass der Filter die Finger davon lässt: dieselbe Meldung,
+   * dieselbe Figur, dasselbe dichte Muster wie beim `landed`-Fall.
+   */
+  const filter = new EreignisSendefilter();
+  let gesendet = 0;
+  for (let i = 0; i < 34; i += 1) {
+    const payload = { entityId: 3, attackerId: 1, amount: 5 + i, remaining: 100 - i };
+    if (filter.durchlassen('damage', payload, 4 + i * 3)) gesendet += 1;
+  }
+  assert.equal(gesendet, 34, 'Jede Schadensmeldung muss raus — keine wird zusammengefasst');
+  const zahlen = filter.zahlen().find(z => z.art === 'damage');
+  assert.equal(zahlen.unterdrueckt, 0, 'Der Filter darf bei `damage` nichts unterdrücken');
+  assert.equal(zahlen.gesendet, 34);
+});
+
+test('Ein echtes Match verliert kein einziges Zustandsereignis — und alle Anzeigearten bleiben sichtbar', () => {
+  /*
+   * Die schwerste Zusage, an einem echten Lauf geprüft (nicht an einer
+   * Nachricht aus der Hand): Ein Match mit vier Figuren auf `hills`, 1800 Takte
+   * (30 s) — die Bounce-Flut ist dabei voll da.
+   *
+   * Verglichen wird Zeichen für Zeichen: Die Folge der Zustandsereignisse muss
+   * VORHER und NACHHER identisch sein. Zusätzlich darf KEINE Anzeigeart
+   * vollständig verschwinden — zusammengefasst heißt nicht gelöscht.
+   */
+  const { gesehen } = sammleEreignisse({ ticks: 1800 });
+  assert.ok(gesehen.length > 500,
+    `Der Lauf muss die Flut enthalten (gemessen ${gesehen.length} Ereignisse) — sonst prüft der Test nichts`);
+
+  const zustandsarten = new Set(ZUSTANDSEREIGNISARTEN);
+  const filter = new EreignisSendefilter();
+  const gefiltert = [];
+  for (const e of gesehen) if (filter.durchlassen(e.type, e.payload, e.takt)) gefiltert.push(e);
+
+  const text = liste => JSON.stringify(liste.map(e => [e.type, e.payload, e.takt]));
+  assert.equal(text(gesehen.filter(e => zustandsarten.has(e.type))),
+    text(gefiltert.filter(e => zustandsarten.has(e.type))),
+    'Ein Zustandsereignis fehlt oder hat sich geändert — der Filter darf nur reine Anzeige zusammenfassen');
+
+  for (const art of new Set(gesehen.map(e => e.type))) {
+    const vorher = gesehen.filter(e => e.type === art).length;
+    const nachher = gefiltert.filter(e => e.type === art).length;
+    assert.ok(nachher > 0,
+      `"${art}" ist vollständig verschwunden (${vorher} vorher, 0 nachher) — zusammengefasst heißt nicht gelöscht`);
+  }
+
+  const landedVorher = gesehen.filter(e => e.type === 'landed').length;
+  const landedNachher = gefiltert.filter(e => e.type === 'landed').length;
+  assert.ok(landedNachher < landedVorher / 3,
+    `Die Flut muss deutlich sinken: ${landedVorher} -> ${landedNachher}`);
+  assert.ok(landedNachher > 0, 'Es muss weiterhin sichtbar sein, DASS gelandet wurde');
+});
+
+test('Das Drosselfenster ist kürzer als eine echte Flugphase — eine echte Landung kann nicht verschluckt werden', () => {
+  /*
+   * Warum dieser Test die Fensterlänge absichert: Die Drossel darf nur
+   * WIEDERHOLUNGEN desselben Zustands treffen. Zwischen zwei ECHTEN Landungen
+   * derselben Figur liegt immer eine Flugphase — ist das Fenster länger als
+   * diese, würde eine echte Landung verschluckt. Der Test misst die Flugdauer am
+   * laufenden Motor und hält sie gegen die Fensterlänge: Ändert jemand die
+   * Sprungphysik, fällt hier auf, dass die Fensterlänge nachgezogen werden muss.
+   *
+   * Gemessen: 50 Takte von `jump()` bis `landed` (auf `hills` und `flooded`
+   * gleich, siehe `docs/ereigniskanal-filter.md`).
+   */
+  for (const preset of ['hills', 'flooded']) {
+    const match = new MatchController({ seed: 777, teams: 2, playersPerTeam: 2, preset });
+    match.start();
+    for (let i = 0; i < 60; i += 1) { match.step(); match.consumeEvents(); }
+    const aktiver = match.getState().activePlayerId;
+    assert.equal(match.jump(aktiver, 0).ok, true, `Der Sprung muss angenommen werden (${preset})`);
+
+    let flugTakte = 0;
+    let gelandet = false;
+    while (flugTakte < 400 && !gelandet) {
+      match.step();
+      flugTakte += 1;
+      for (const e of match.consumeEvents()) {
+        if (e.type === 'landed' && e.payload.playerId === aktiver) gelandet = true;
+      }
+    }
+    assert.equal(gelandet, true, `Die Figur muss innerhalb von 400 Takten landen (${preset})`);
+    assert.ok(EREIGNIS_DROSSEL_TAKTE < flugTakte,
+      `Das Fenster (${EREIGNIS_DROSSEL_TAKTE} Takte) muss kürzer sein als die Flugdauer `
+      + `(${flugTakte} Takte auf ${preset}) — sonst verschluckt die Drossel eine echte Landung`);
+  }
+});
+
+test('Der Sendefilter sitzt hinter consumeEvents — die Simulation sieht ihn nicht', () => {
+  /*
+   * Die Determinismus-Zusage, in zwei Teilen:
+   *
+   *  1. AUSFÜHRUNG: Zwei Matches mit demselben Seed durchlaufen — bei einem
+   *     wandert jedes Ereignis durch den Filter, beim anderen nicht. Der
+   *     Zustandshash am Ende muss gleich sein: Der Filter kann die Simulation
+   *     nicht beeinflussen, weil er ihre Ereignisse nur LIEST.
+   *  2. QUELLE: Unter `src/engine/` darf der Filter an keiner Stelle vorkommen.
+   *     Ein Import dort würde ihn in den Simulationspfad ziehen — und die
+   *     Wiedergabegleichheit hinge an einem Netzwerkdetail. Replays zeichnen
+   *     Eingaben auf, keine Ereignisse (`src/engine/replay.js`).
+   */
+  const gefiltert = sammleEreignisse({ ticks: 900, seed: 4242 });
+  const roh = sammleEreignisse({ ticks: 900, seed: 4242 });
+  assert.deepEqual(gefiltert.gesehen, roh.gesehen,
+    'Die Ereignisströme zweier identischer Matches müssen gleich sein (Determinismus)');
+  assert.equal(gefiltert.match.stateHash(), roh.match.stateHash(),
+    'Der Zustandshash muss gleich bleiben — der Filter darf die Simulation nicht berühren');
+
+  const dateien = [];
+  const sammeln = dir => {
+    for (const eintrag of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, eintrag.name);
+      if (eintrag.isDirectory()) sammeln(p);
+      else if (eintrag.name.endsWith('.js')) dateien.push(p);
+    }
+  };
+  sammeln(path.join(ROOT, 'src', 'engine'));
+
+  const treffer = dateien.filter(datei => {
+    const text = fs.readFileSync(datei, 'utf8');
+    return /EreignisSendefilter|durchlassen|GEDROSSELTE_EREIGNISARTEN|ANZEIGE_EREIGNISARTEN/.test(text);
+  });
+  assert.deepEqual(treffer.map(p => path.relative(ROOT, p)), [],
+    'Der Sendefilter gehört NICHT in den Simulationspfad — er sitzt im Server hinter consumeEvents()');
+
+  // Und der Server benutzt ihn auch wirklich (sonst wäre alles oben Theorie).
+  const server = fs.readFileSync(path.join(ROOT, 'src', 'server', 'gameServer.js'), 'utf8');
+  assert.match(server, /this\.match\.consumeEvents\(\)[\s\S]{0,400}durchlassen\(/,
+    'Der Server muss den Filter im Ereigniskanal NACH consumeEvents() anwenden');
+  assert.match(server, /if \(!this\.sendefilter\.durchlassen/,
+    'Die unterdrückte Meldung darf NICHT gesendet werden (continue statt broadcast)');
 });

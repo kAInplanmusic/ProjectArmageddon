@@ -29,6 +29,7 @@ import {
   parseControlMessage,
   encodeSnapshot,
   toDeltaBase,
+  EreignisSendefilter,
 } from '../shared/protocol.js';
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
@@ -82,6 +83,16 @@ class LobbySession {
      * Sitzung die Zuordnung, ohne sie bei jedem Aufruf zu wiederholen.
      */
     this.logger = logger ? logger.child({ lobbyId: lobby.id }) : null;
+    /*
+     * Sendefilter für den Ereigniskanal — EINE Instanz je Sitzung.
+     *
+     * Das Gedächtnis der Drossel (letzter Takt je Art und Figur) gehört zu
+     * genau dieser Partie: Zwei Lobbys haben eigene Taktzähler und dürfen sich
+     * keine Fenster teilen. Die Zahlen des Filters (`zahlen()`) machen den
+     * Effekt nachprüfbar — ohne sie wäre „der Kanal ist jetzt ruhiger" eine
+     * Behauptung. Siehe `src/shared/protocol.js`, Abschnitt „SENDEFILTER".
+     */
+    this.sendefilter = new EreignisSendefilter();
     this.match = new MatchController({
       seed: lobby.seed,
       teams: lobby.teams,
@@ -267,7 +278,30 @@ class LobbySession {
       this.stepSimulation(1);
     }
 
+    /*
+     * Der SENDEFILTER sitzt HINTER `consumeEvents()`.
+     *
+     * Warum genau hier: Die Ereignisse sind zu diesem Zeitpunkt entstanden, die
+     * Simulation ist durchgelaufen, der Zufallsstrom ist verbraucht. Der Filter
+     * entscheidet nur noch, was auf die Leitung geht — er kann die Simulation,
+     * die Tick-Reihenfolge und die Wiedergabegleichheit damit nicht berühren.
+     * (Replays zeichnen EINGABEN auf, nicht Ereignisse, siehe
+     * `src/engine/replay.js`.)
+     *
+     * Warum überhaupt: Ein ungefilterter Kanal schickte gemessen 34,3
+     * `landed`-Nachrichten je Sekunde bei vier Figuren — 86,8 % der Steuerlast
+     * und der Grund, weshalb das HUD-Protokoll (60 Zeilen) in unter zwei
+     * Sekunden durchlief und eine wichtige Servermeldung unsichtbar machte.
+     * Einzelheiten, Klassifikation und Messung: `src/shared/protocol.js`
+     * (Abschnitt „SENDEFILTER") und `docs/ereigniskanal-filter.md`.
+     */
+    const takt = this.match.world.tickCount;
     for (const event of this.match.consumeEvents()) {
+      if (!this.sendefilter.durchlassen(event.type, event.payload, takt)) {
+        if (this.metrics) this.metrics.controlMessagesSuppressed += 1;
+        continue;
+      }
+      if (this.metrics) this.metrics.controlMessagesSent += 1;
       this.#broadcastControl(event.type, { round: this.match.round, ...event.payload });
     }
 
@@ -347,6 +381,29 @@ class LobbySession {
       ticks: this.match.world.tickCount,
       reason: this.match.winnerTeamId === null ? 'unentschieden' : 'ausscheidung',
     });
+    /*
+     * Bilanz des Sendefilters — EINE Zeile je Partie, und nur wenn er etwas
+     * getan hat.
+     *
+     * Sie steht hier, weil der Effekt sonst unsichtbar bliebe: Dass der Kanal
+     * ruhiger ist, sieht man im Betrieb nicht (fehlende Nachrichten sieht
+     * niemand); die Zahlen des Filters sind der einzige Beleg. Die Liste der
+     * Arten zeigt zugleich, WORAN gespart wurde — erwartet wird `landed`, also
+     * reine Anzeige. Taucht dort eine Zustandsart auf, ist das ein Fehler im
+     * Filter und in dieser Zeile sofort zu sehen.
+     */
+    const kanalBilanz = this.sendefilter.summe();
+    if (kanalBilanz.unterdrueckt > 0) {
+      this.logger?.info('ereigniskanal', 'Sendefilter: Wiederholungen zusammengefasst', {
+        empfangen: kanalBilanz.empfangen,
+        gesendet: kanalBilanz.gesendet,
+        unterdrueckt: kanalBilanz.unterdrueckt,
+        anteilUnterdrueckt: Number(
+          ((kanalBilanz.unterdrueckt / Math.max(1, kanalBilanz.empfangen)) * 100).toFixed(2),
+        ),
+        arten: this.sendefilter.zahlen().filter(eintrag => eintrag.unterdrueckt > 0),
+      });
+    }
     this.#broadcastControl('match_over', {
       winnerTeamId: this.match.winnerTeamId,
       rounds: this.match.round,
@@ -764,6 +821,14 @@ export class GameServer {
       commandsRejected: 0,
       lobbiesCreated: 0,
       errors: 0,
+      /*
+       * Ereigniskanal: gesendete und vom Sendefilter unterdrückte
+       * Steuernachrichten. Die beiden Zahlen sind der Betriebsbeleg dafür, dass
+       * der Filter wirkt — und der Wächter dafür, dass er nicht mehr
+       * unterdrückt als beabsichtigt (unterdrückt wird nur „reine Anzeige").
+       */
+      controlMessagesSent: 0,
+      controlMessagesSuppressed: 0,
     };
     /** Optionale Persistenz: null deaktiviert das Speichern vollständig. */
     this.persistence = persistence;

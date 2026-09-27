@@ -552,6 +552,294 @@ export function controlMessage(type, payload = {}) {
   return JSON.stringify({ v: PROTOCOL_VERSION, t: type, ...payload });
 }
 
+/* ---------------------------------------------------------------------------
+ * SENDEFILTER FÜR DEN EREIGNISKANAL
+ * ---------------------------------------------------------------------------
+ *
+ * ## Der Befund, der zu diesem Block führte
+ *
+ * Der Server schickte JEDES Motorereignis ungefiltert an alle Clients
+ * (`gameServer.js`: Schleife über `consumeEvents()`). Gemessen bei vier Figuren
+ * auf der Karte `hills`: 3428 `landed`-Nachrichten in 100 s (34,3/s) = 143,9 von
+ * 165,8 KB der Steuerlast (86,8 %). Bei 40 Figuren auf `flooded` waren es
+ * 1147 Nachrichten/s = 94,65 KB/s JE CLIENT — gegen 12,48 KB/s Snapshot, also
+ * Ursache ist KEIN Spielgeschehen, sondern ein Bounce-Artefakt: Eine stehende
+ * Figur pendelt um 4 px, und der Bodenkontakt wechselt dabei 17-mal in 120
+ * Takten (gemessen: alle 7 Takte, Median 7). Jeder Wechsel erzeugt ein `landed`.
+ *
+ * Im Browser hatte das eine Folge, die den Spieler wirklich trifft: Das
+ * HUD-Protokoll führt 60 Zeilen (`src/client/hud.js`). Bei ~34 Landungen/s läuft
+ * es in unter zwei Sekunden durch — eine wichtige Servermeldung („In der Luft
+ * ist kein erster Sprung möglich") war damit faktisch unsichtbar.
+ *
+ * ## Was hier entschieden wird — und was ausdrücklich NICHT
+ *
+ * Zwei Mengen, und jede Ereignisart des Motors steht in GENAU einer:
+ *
+ *  - `ZUSTANDSEREIGNISARTEN` tragen Zustand, den der Client sonst nicht
+ *    erfährt: Schaden und seine Höhe, Wasserstand und Ertrinken, Zugwechsel,
+ *    Terrainzerstörung, Projektile, Tode, Kisten, Waffenbestand. Sie werden
+ *    NIE gefiltert — eine verlorene Meldung wäre ein Informationsverlust, kein
+ *    Bandbreitengewinn.
+ *  - `ANZEIGE_EREIGNISARTEN` sind Blitz, Klang und Protokollzeile. Was sie
+ *    nennen, steht bereits im Snapshot: die Positionen der Figuren, den
+ *    Wasserstand, die Projektile. Ein verlorenes `landed` nimmt dem Spieler
+ *    keine Information über den Spielzustand — nur eine Zeile im Protokoll.
+ *
+ * Gedrosselt werden davon die Arten, die NACHWEISLICH wiederholen, ohne dass
+ * sich etwas geändert hat (`GEDROSSELTE_EREIGNISARTEN`, siehe dort). Die
+ * übrigen Anzeigearten sind so selten (unter 0,05/s gemessen), dass eine Drossel
+ * nichts einspart und nur Risiko wäre: Was nichts kostet, muss man auch nicht
+ * anfassen.
+ *
+ * ## Determinismus — warum dieser Filter die Simulation nicht berühren kann
+ *
+ * Der Filter sitzt HINTER `consumeEvents()`: Die Ereignisse sind zu diesem
+ * Zeitpunkt bereits entstanden, die Simulation ist durchgelaufen, der
+ * Zufallsstrom ist verbraucht. Hier wird nur noch entschieden, was auf die
+ * Leitung geht. Replays zeichnen EINGABEN auf, nicht Ereignisse
+ * (`src/engine/replay.js`) — die Wiedergabegleichheit hängt damit nicht an
+ * diesem Filter. `tests/event-coverage.test.js` weist beides nach: kein
+ * Importeur unter `src/engine/`, und zwei identische Matches (mit und ohne
+ * Filter) liefern denselben Zustandshash.
+ */
+
+/**
+ * Ereignisarten, die NUR die Anzeige bedienen (Blitz, Klang, Protokollzeile).
+ *
+ * Jede dieser Arten steht in genau EINER der beiden Mengen; die Vollständigkeit
+ * prüft `tests/event-coverage.test.js` gegen die tatsächlich emittierten Arten,
+ * damit die Einteilung nicht still veraltet.
+ */
+export const ANZEIGE_EREIGNISARTEN = Object.freeze([
+  'landed',
+  'jumped',
+  'crate_landed',
+  'projectile_impact',
+  'projectile_expired',
+  'projectile_pierced',
+  'explosion',
+  'hitscan',
+  'special_effect',
+  'fuse_armed',
+  'fuse_expired',
+  'guenther_wheel',
+  'guenther_pee',
+  'guenther_poop',
+  'guenther_poop_hit',
+]);
+
+/**
+ * Ereignisarten, die ZUSTAND tragen — sie werden nie gefiltert.
+ *
+ * Die Aufzählung ist absichtlich vollständig statt „alles außer Anzeige": Wer
+ * eine neue Ereignisart einführt, muss sie hier eintragen und dabei einmal
+ * entscheiden, ob sie Zustand trägt. Ein Filter, der unbekannte Arten still
+ * durchwinkt, wäre die zweite Regel an einer zweiten Stelle.
+ */
+export const ZUSTANDSEREIGNISARTEN = Object.freeze([
+  'crate_pickup',
+  'crate_pickup_blocked',
+  'damage',
+  'death',
+  'dot_applied',
+  'dot_tick',
+  'drowning',
+  'entity_in_water',
+  'fall_damage',
+  'frozen',
+  'heal',
+  'karte_unerreichbar',
+  'loot_error',
+  'maelstrom_contract',
+  'match_over',
+  'projectile_spawn',
+  'pulled',
+  'round_crates',
+  'round_start',
+  'shield_absorbed',
+  'shot',
+  'terrain_destroyed',
+  'toxic_rain',
+  'turn_end',
+  'turn_skipped',
+  'turn_start',
+  'turret_deployed',
+  'turret_expired',
+  'turret_fired',
+  'water_pushed',
+  'weapon_cooldown',
+  'weapon_dropped',
+]);
+
+/**
+ * Die gedrosselten Arten — die Schnittmenge aus „reine Anzeige" und
+ * „wiederholt sich nachweislich".
+ *
+ * Alle drei sind BODENKONTAKT-Meldungen: Eine Figur (oder eine abgeworfene
+ * Kiste) meldet ihre Landung. Genau dieser Übergang flattert bei einer
+ * STEHENDEN Figur — gemessen 17 Landungen in 120 Takten (alle 7 Takte), ohne
+ * dass sich die Figur bewegt.
+ *
+ * Warum das keinen echten Vorgang verschluckt: Die erste Meldung je Fenster geht
+ * IMMER raus (siehe `durchlassen`) — es bleibt also sichtbar, DASS gelandet
+ * wurde. Ein zweiter ECHTER Bodenkontakt derselben Figur kann innerhalb des
+ * Fensters gar nicht stattfinden: Zwischen zwei echten Landungen liegt immer
+ * eine Flugphase, und die ist länger als das Fenster (gemessen: ein Sprung
+ * dauert 50 Takte bis zur Landung — siehe `EREIGNIS_DROSSEL_TAKTE`).
+ */
+export const GEDROSSELTE_EREIGNISARTEN = Object.freeze([
+  'landed',
+  'jumped',
+  'crate_landed',
+]);
+
+/**
+ * Länge des Wiederholungsfensters in Takten (60 Hz ⇒ 30 Takte = 0,5 s).
+ *
+ * Untergrenze: Das Bounce-Artefakt wiederholt sich alle 7 Takte. Das Fenster ist
+ * damit gut viermal so lang wie die Störung und schluckt sie zuverlässig —
+ * gemessen sinkt `landed` bei vier Figuren von 3428 auf 688 Nachrichten in 100 s
+ * (34,3/s auf 6,9/s), bei 40 Figuren von 34283 auf 6880 (342,8/s auf 68,8/s).
+ *
+ * Obergrenze: Das Fenster muss KÜRZER sein als die kürzeste echte Flugphase,
+ * sonst verschluckte es eine echte Landung. Gemessen dauert ein Sprung 50 Takte
+ * bis zum `landed` (0,83 s, auf `hills` und `flooded` gleich), und ein zweiter
+ * Sprung ist erst nach dem Landen möglich. 30 Takte liegen damit mit Abstand
+ * unter dem kürzesten echten Folgeereignis derselben Figur.
+ *
+ * Beide Zahlen stammen aus `docs/ereigniskanal-filter.md` (Messläufe 1–5).
+ */
+export const EREIGNIS_DROSSEL_TAKTE = 30;
+
+/**
+ * Die Kennung, auf die sich ein Wiederholungsfenster bezieht.
+ *
+ * Gedrosselt wird je ART UND FIGUR — zwei verschiedene Figuren, die im selben
+ * Takt landen, dürfen sich nicht gegenseitig die Meldung wegnehmen. Gesucht
+ * wird das erste Feld, das die handelnde Einheit benennt; fehlt es (Meldung
+ * ohne Einheit), gilt die Art als Ganzes als eine Kennung.
+ */
+function fensterKennung(nutzlast) {
+  for (const feld of ['playerId', 'entityId', 'crateId', 'turretId']) {
+    const wert = nutzlast?.[feld];
+    if (wert !== undefined && wert !== null) return String(wert);
+  }
+  return '';
+}
+
+/**
+ * Sendefilter für den Ereigniskanal: drosselt Wiederholungen, zählt mit.
+ *
+ * ## Warum eine Klasse und nicht eine Funktion
+ *
+ * Die Drossel braucht GEDÄCHTNIS: den letzten Takt je Art und Figur. Dieses
+ * Gedächtnis gehört zu EINER Partie — zwei Lobbys mit eigenen Taktzählern
+ * dürfen sich nicht dieselben Fenster teilen. Die Instanz lebt deshalb in der
+ * Sitzung (`LobbySession`), nicht im Modul.
+ *
+ * ## Die Regeln im Einzelnen
+ *
+ *  - Die erste Meldung einer Art je Figur geht immer raus.
+ *  - Weitere derselben Art und Figur erst wieder nach `drosselTakte` Takten.
+ *  - Zustandsarten und unbekannte Arten laufen UNGEKUERZT durch.
+ *  - Ohne Taktangabe (`takt` fehlt oder ist keine Zahl) wird NICHT gedrosselt:
+ *    Eine verlorene Meldung ist schlimmer als eine überflüssige.
+ */
+export class EreignisSendefilter {
+  #drosselTakte;
+  #gedrosselt;
+  #letzterTakt = new Map();
+  #zaehler = new Map();
+
+  /**
+   * @param {object} [optionen]
+   * @param {number} [optionen.drosselTakte] Fensterlänge in Takten
+   * @param {Iterable<string>} [optionen.gedrosselt] zu drosselnde Arten.
+   *   `[]` schaltet die Drossel ab — genau das ist die VORHER-Messung des
+   *   Berichts: derselbe Server, dieselbe Sitzung, nur ohne Drossel.
+   */
+  constructor({ drosselTakte = EREIGNIS_DROSSEL_TAKTE, gedrosselt = GEDROSSELTE_EREIGNISARTEN } = {}) {
+    if (!Number.isFinite(drosselTakte) || drosselTakte < 1) {
+      throw new TypeError('Das Drosselfenster muss mindestens einen Takt betragen');
+    }
+    this.#drosselTakte = Math.round(drosselTakte);
+    this.#gedrosselt = new Set(gedrosselt);
+  }
+
+  /** Ist diese Art gedrosselt? (Anzeige) */
+  drosselt(art) {
+    return this.#gedrosselt.has(art);
+  }
+
+  /** Fensterlänge in Takten. */
+  get drosselTakte() {
+    return this.#drosselTakte;
+  }
+
+  #zaehlerFuer(art) {
+    let eintrag = this.#zaehler.get(art);
+    if (!eintrag) {
+      eintrag = { art, empfangen: 0, gesendet: 0, unterdrueckt: 0 };
+      this.#zaehler.set(art, eintrag);
+    }
+    return eintrag;
+  }
+
+  /**
+   * Darf diese Meldung raus?
+   *
+   * @param {string} art Ereignisart (wird die `t` der Steuernachricht)
+   * @param {object} [nutzlast] Felder des Ereignisses (Kennung der Figur)
+   * @param {number} [takt] Takt der Simulation, in dem das Ereignis anfiel
+   * @returns {boolean} true = senden, false = unterdrückt
+   */
+  durchlassen(art, nutzlast = {}, takt = null) {
+    const zaehler = this.#zaehlerFuer(art);
+    zaehler.empfangen += 1;
+
+    if (this.#gedrosselt.has(art) && Number.isFinite(takt)) {
+      const schluessel = `${art}\u0000${fensterKennung(nutzlast)}`;
+      const letzter = this.#letzterTakt.get(schluessel);
+      if (letzter !== undefined && takt - letzter < this.#drosselTakte) {
+        zaehler.unterdrueckt += 1;
+        return false;
+      }
+      this.#letzterTakt.set(schluessel, takt);
+    }
+
+    zaehler.gesendet += 1;
+    return true;
+  }
+
+  /**
+   * Die eigenen Zahlen — je Art, absteigend nach unterdrückten Meldungen.
+   *
+   * Sie sind der Beleg, dass der Filter wirkt: Ohne sie wäre „der Kanal ist
+   * jetzt ruhiger" eine Behauptung. Der Bericht
+   * (`docs/ereigniskanal-filter.md`) druckt genau diese Liste ab.
+   *
+   * @returns {Array<{art: string, empfangen: number, gesendet: number, unterdrueckt: number}>}
+   */
+  zahlen() {
+    return [...this.#zaehler.values()]
+      .map(eintrag => ({ ...eintrag }))
+      .sort((a, b) => b.unterdrueckt - a.unterdrueckt || a.art.localeCompare(b.art));
+  }
+
+  /** Summe über alle Arten. */
+  summe() {
+    const summe = { empfangen: 0, gesendet: 0, unterdrueckt: 0 };
+    for (const eintrag of this.#zaehler.values()) {
+      summe.empfangen += eintrag.empfangen;
+      summe.gesendet += eintrag.gesendet;
+      summe.unterdrueckt += eintrag.unterdrueckt;
+    }
+    return summe;
+  }
+}
+
+
 /**
  * Erzeugt die Delta-Basis aus einem Match-State — in genau der Rohform, die
  * encodeSnapshot/decodeSnapshot erwarten.
