@@ -209,8 +209,8 @@ export const BASE_HEALTH = 100;
  * Kraft in Geschwindigkeit (px/Tick je Krafteinheit).
  *
  * Die ZAHL steht in `src/shared/ballistics.js` — dort, wo auch Schwerkraft,
- * Luftwiderstand und der Integrationsschritt liegen. Motor, Zielvorschau,
- * clientseitige Vorhersage und Bot-KI lesen dieselbe Konstante.
+ * Luftwiderstand und der Integrationsschritt liegen. Motor, Zielvorschau und
+ * clientseitige Vorhersage lesen dieselbe Konstante (eine Bot-KI gibt es nicht).
  *
  * FUND (belegt): Zuvor stand die Zahl hier UND als Abschrift in
  * `shotPrediction.js` (dort als `PREDICTION_POWER_TO_SPEED`). Der Test, der
@@ -1331,6 +1331,21 @@ export class MatchController {
     }
 
     this.#jumpsUsed.set(playerId, verbraucht + 1);
+
+    /*
+     * Ein Sprung IN DER LUFT ist Schuld — er wird beim Aufprall abgerechnet.
+     *
+     * Warum das gemeldet wird und nicht hier verrechnet: Der Fallschaden
+     * entsteht in `characterSystem.js` (Schwelle, Skala, Aufpralltempo), und
+     * „eine Regel, eine Stelle" heißt hier: Der Motor meldet das EREIGNIS
+     * („es wurde ein Luft-Sprung angesetzt"), das System rechnet die FOLGE.
+     * Die Zahlen selbst stehen in `src/shared/config/fallschaden.js`.
+     *
+     * Der Bodensprung meldet nichts: Er hat Boden unter sich, die Höhe ist
+     * bezahlt. Nur der Luft-Sprung SETZT `vy` neu (statt zu addieren) und
+     * schenkt damit Höhe, die die Figur nicht hat.
+     */
+    if (istDoppel) this.#world.getSystem('character')?.meldeLuftsprung(playerId);
 
     /*
      * `jumpsLeft` ist mit entfallener Obergrenze KEINE Zahl mehr: `null` heißt
@@ -2660,7 +2675,7 @@ export class MatchController {
    * Zielvorschau — delegiert an `engine/shooting.js`.
    *
    * Die Bahn rechnet `simulateFlight` aus `src/shared/ballistics.js` — dieselbe
-   * Funktion, die die clientseitige Vorhersage und die Bot-KI benutzen.
+   * Funktion, die die Zielvorschau und die clientseitige Vorhersage benutzen.
    */
   aimPreview(playerId, angle, power, steps = 180, weapon = null) {
     return aimPreview(this.#schussQuelle(), playerId, angle, power, steps, weapon);
