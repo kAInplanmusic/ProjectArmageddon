@@ -1241,34 +1241,21 @@ export class MatchController {
    * Figur fliegt danach unter Schwerkraft und landet. Fallschaden greift wie bei
    * jedem Sturz.
    *
-   * ## Keine Obergrenze mehr (Entscheidung des Auftraggebers)
+   * ## Unbegrenzt springen — der Fallschaden ist die Bremse
    *
-   * „nein sprung kann man unendlich" — die frühere Grenze von zwei Sprüngen je
-   * Zug (einer vom Boden, einer in der Luft) ist ENTFALLEN. Geblieben ist allein
-   * die Bodenregel für den ERSTEN Sprung eines Zuges: Sie begrenzt, WIE eine
-   * Sprungfolge BEGINNT, nicht wie viele folgen.
+   * „nein sprung kann man unendlich" (Entscheidung des Auftraggebers). Die
+   * frühere Grenze von zwei Sprüngen je Zug ist ENTFALLEN; geblieben ist allein
+   * die Bodenregel für den ERSTEN Sprung: Sie begrenzt, WIE eine Sprungfolge
+   * BEGINNT, nicht wie viele folgen.
    *
-   * ## Was diese Regel NICHT bremst (gemessen, nicht angenommen)
+   * Jeder Sprung IN DER LUFT legt 3 px/Takt Aufpralltempo zu. Gemessen über
+   * drei Seeds identisch: 1 Sprung 0 Schaden · 3 Sprünge 22 · 10 Sprünge ~90 von
+   * 96 · 200 Sprünge tödlich; Geländekanten bleiben bei 0. Belege und die
+   * Formel: `docs/fallschaden-bremse.md`, die Zahlen in
+   * `src/shared/config/fallschaden.js`.
    *
-   * Der Auftraggeber ging davon aus, der Fallschaden sei die Bremse. Das trägt
-   * nicht: Der Absprung setzt 9,2 px/Takt (Doppelsprung 7,36), die
-   * Fallschadensschwelle liegt aber bei 11 px/Takt (`characterSystem.js`,
-   * `#fallDamageThreshold`). Gemessen landet eine Figur nach einem Sprung mit
-   * 9,62 px/Takt — UNTER der Schwelle. Zehn Sprünge nacheinander ergeben
-   * 0 Fallschaden (Messung und Rechnung: `docs/sprung-regel.md`). Unbegrenztes
-   * Springen ist damit nicht durch Schaden begrenzt; wer unbegrenzt in der Luft
-   * nachspringt, kann beliebig lange oben bleiben, weil jeder Sprung die
-   * senkrechte Geschwindigkeit SETZT statt sie zu addieren.
-   *
-   * Die Zahl steht hier, damit der nächste Leser nicht wieder eine Bremse
-   * annimmt, die es nicht gibt. Eine NEUE Bremse wurde auf Anweisung nicht
-   * erfunden.
-   *
-   * ## Der Sprung beendet den Zug NICHT
-   *
-   * Grund: Ein Sprung in der Luft setzt voraus, dass der Spieler während seines
-   * eigenen Flugs noch am Zug ist. Beendete der erste Sprung den Zug, wäre die
-   * Fortsetzung nie auslösbar.
+   * Der Sprung beendet den Zug NICHT: ein Luft-Sprung setzt voraus, dass der
+   * Spieler während seines eigenen Flugs noch am Zug ist.
    *
    * @param {number} playerId
    * @param {number} [horizontal] - seitliche Richtung: -1, 0 oder 1
