@@ -17,7 +17,32 @@ Von einer Waffe braucht der Schütze **44 Treffer**, um ein Ziel zu töten. Das 
 
 ---
 
-## 3. **43 Waffen blockieren von selbst** (0 Schaden)
+## 3. ~~**43 Waffen blockieren von selbst** (0 Schaden)~~ — **WIDERLEGT**
+
+> **Korrektur 2026-09-27.** Dieser Punkt war **falsch**, und zwar vollständig.
+> Die 43 Waffen wirken — nur nicht auf 854 px. Ursache war ein **Messartefakt
+> des Standardlaufs** von `scripts/balance-report.mjs`: der Pfad endete mit
+> `return [startEntfernung]` und maß damit **genau eine** Entfernung, die
+> größte des Spiels. Wurf- und Nahkampfwaffen reichen 30–75 px und wurden
+> daraus als „ohne Wirkung" geschlossen.
+>
+> **Nachgemessen** (eigene Messung, `npm run balance` nach dem Werkzeug-Fix):
+> ```
+> Messgrenze: gemessen wurde NUR auf 854 px — der größten Entfernung des Spiels
+> Ohne Schaden NUR auf dieser Entfernung: 43 Waffen
+>   davon wirken näher (40 / 90 / 200 / 300 / 450 / 650 px) doch: 43
+> Ohne jede Wirkung (auf keiner Messdistanz): 0 | immer blockiert: 0
+> ```
+> **Alle 43 wirken.** Beispiele: Baseballschläger 19,6 Schaden bis 40 px,
+> Kettensäge 36,4 bis 90 px, Void-Ritter 38,8 bis 90 px, Boxhandschuhe 9,2 bis
+> 200 px. Der erste Durchgang blieb unverändert (71 Waffen mit Schaden, 36
+> selbstwirksam, Ø 13,8, Median STK 44) — die Korrektur ist rein additiv.
+>
+> **Der hier genannte Grund war ebenfalls falsch.** Gemessen:
+> `npm run check:fuses` → 11 Zünderwaffen, **0 Verstöße** („Zünder > Flugzeit"
+> widerlegt), und **alle 43 tragen einen `projectileSpeed`** (27,2–98)
+> („kein `projectileSpeed`" widerlegt). Die Tabelle unten beschreibt nur noch,
+> **wo** diese Waffen gemessen wurden — nicht mehr, was sie seien.
 
 | Typ | Anzahl | Beispiele |
 |---|---|---|
@@ -30,7 +55,8 @@ Von einer Waffe braucht der Schütze **44 Treffer**, um ein Ziel zu töten. Das 
 | tech | 1 | Magnetkanone |
 | ultimate | 1 | Void-Ritter |
 
-**Grund**: `terrainDamage` = 0, kein `projectileSpeed`, oder Zünder > Flugzeit.
+**Grund**: keine — die Waffen sind in Ordnung. Der Fehler lag im Messwerkzeug.
+Genaue Reichweite je Waffe: `docs/balance-messgrenze.md`.
 
 ---
 
@@ -52,7 +78,21 @@ Beispiele: Raketenrucksack (`move`), Heilzauber (`heal`), Zeit-Sanduhr (`damage_
 
 ---
 
-## 6. Schwächste Waffen: 15 Nahkampf-Waffen mit **0 Schaden**
+## 6. ~~Schwächste Waffen: 15 Nahkampf-Waffen mit **0 Schaden**~~ — **WIDERLEGT**
+
+> **Korrektur 2026-09-27.** Auch dieser Punkt war falsch — siehe Punkt 3.
+> Gemessen wirken diese Waffen auf kurze Distanz:
+> ```
+> Baseballschläger  wirkt bis  40 px | 19,6 Schaden
+> Schaufel          wirkt bis  40 px | 14   Schaden
+> Tonfa             wirkt bis  40 px | 15,4 Schaden
+> Morgenstern       wirkt bis  90 px | 29,4 Schaden
+> Eispickel         wirkt bis  90 px | 21   Schaden
+> Kettensäge        wirkt bis  90 px | 36,4 Schaden
+> Kampfmesser       wirkt bis  90 px | 23,8 Schaden
+> ```
+> Die Aussage „scheitern bei `projectile`-Delivery" (unten) ist damit ebenfalls
+> widerlegt: ihr `projectileSpeed` liegt bei 27,2–98, sie fliegen nur **kurz**.
 
 ```
 Baseballschläger, Feuerfaust, Hakenklinge, Morgenstern, Schaufel,
@@ -60,7 +100,8 @@ Tonfa, Eispickel, Kettensäge, Zwillingskatanas, Katana,
 Runenschwert, Rapier, Kampfmesser, Kriegssense, Gebogene Klinge
 ```
 
-**Test im Browser**: Diese Waffen scheitern bei `projectile`-Delivery. Der Ball sollte nicht genug Energie haben, um zu zünden.
+**Test im Browser**: Nah herangehen. Diese Waffen sind **Nahkampf** — sie sollen
+auf 854 px nicht treffen.
 
 ---
 
@@ -98,6 +139,22 @@ Die Quelldatei hat keinen `damage`-Wert. Der Generator verwendet einen Ersatzwer
 
 ## Sofortige Handlungsempfehlungen
 
-1. **Nahkampf-Waffen**: Entweder `damage` erhöhen ODER `projectileSpeed` ändern, damit die Bahn nicht zu früh zündet.
-2. **Reichweite vs. Schaden**: Der aktuelle Zusammenhang `Ø13.8` ist zu niedrig — fast jede Waffe muss 44 Schüsse brauchen.
-3. **Selbstwirkung**: 36 Waffen sind "moveset". Das ist **nicht schlecht**, aber dokumentieren, was sie bewirken.
+> **Korrigiert 2026-09-27.** Die ursprünglichen Empfehlungen 1 und 2 beruhten
+> auf dem widerlegten Befund aus Punkt 3/6 („43 Waffen ohne Wirkung") und sind
+> damit gegenstandslos. Sie hätten 43 gesunde Waffen „repariert".
+
+1. ~~**Nahkampf-Waffen**: `damage` erhöhen ODER `projectileSpeed` ändern~~
+   **Gegenstandslos.** Gemessen: `npm run check:fuses` → 11 Zünderwaffen,
+   **0 Verstöße**; alle 43 tragen einen `projectileSpeed` (27,2–98). An den
+   Waffen ist nichts zu reparieren. `weapons.js` ist ohnehin AUTO-GENERIERT —
+   Änderungen daran überschreibt der nächste Build.
+2. ~~**Reichweite vs. Schaden**: `Ø13,8` ist zu niedrig~~ **Gegenstandslos.**
+   Der Wert ist der Durchschnitt über **nur die wirksamen** Waffen auf 854 px.
+   Er sagt nichts über die Nahkampfwaffen aus, die dort nicht treffen sollen.
+3. **Selbstwirkung**: 36 Waffen sind „moveset". Das ist **nicht schlecht**, aber dokumentieren, was sie bewirken.
+4. **Was wirklich zu tun wäre** (gemessen, `docs/balance-messgrenze.md`): die
+   Nachmess-Leiter des Berichts ist grob (6 Stufen, 40–650 px) und die zweite
+   Runde dünner besetzt als die erste (1 Schuss, 4 Winkel gegen 3 Schüsse,
+   6 Winkel). Eine Waffe, die nur in einem schmalen Band **zwischen** zwei
+   Stufen wirkt, könnte weiter als wirkungslos gelten — der Werkzeugfehler ist
+   entschärft, nicht ausgerottet.

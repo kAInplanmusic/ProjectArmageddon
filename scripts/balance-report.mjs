@@ -16,6 +16,20 @@
  * Nahdistanz-Wirkung auf gleicher Höhe — nicht die Wirksamkeit über eine
  * ganze Karte, die von der Spielweise abhängt.
  *
+ * ## Die Messgrenze des Standardlaufs (Nachtrag)
+ *
+ * Ohne `--distances`/`--sweep` misst der Standardlauf GENAU EINE Entfernung: die
+ * Startentfernung des Spiels (854 px) — die GRÖSSTE, die vorkommt. Auf ihr kann
+ * keine Wurf-/Nahkampfwaffe treffen. Ein Urteil „ohne Wirkung" war damit eine
+ * Behauptung, die die Messung nicht trug: Es hieß in Wahrheit „reicht bis
+ * hierher nicht".
+ *
+ * Deshalb misst der Bericht in einem ZWEITEN Durchgang genau die Waffen nach,
+ * die auf der Startentfernung wirkungslos erscheinen — auf kurzen Entfernungen
+ * (siehe `NACHMESS_DISTANZEN`). Wer dort wirkt, wird als „wirkt, aber nur bis
+ * X px" gemeldet, nicht als „ohne Wirkung". Die Zahl der ursprünglich
+ * gemeldeten Waffen steht als Gegenprobe in `messgrenze` und im Bericht.
+ *
  * Aufruf:
  *   node scripts/balance-report.mjs [--top=N] [--worst=N] [--json] [--tier=NAME]
  *                                   [--only=pa_001] [--preset=NAME] [--distance=N]
@@ -296,19 +310,113 @@ function fireOnce(weapon, { seed, shooterX = 160, distance: dist = distance, ang
 const TEST_ANGLES = [0, 0.06, 0.12, 0.2, 0.3, 0.45];
 
 /**
+ * Die Entfernungen der ZWEITEN Messung für die Messgrenze des Standardlaufs.
+ *
+ * ## Warum es diese zweite Messung gibt
+ *
+ * FUND (belegt, vom Auftraggeber gemessen): Der Standardlauf misst GENAU EINE
+ * Entfernung — die Startentfernung des Spiels (854 px, siehe `messdistanzen`).
+ * Das ist die GRÖSSTE Entfernung, die im Spiel vorkommt. Jede Wurf- und
+ * Nahkampfwaffe kann dort nicht treffen und erschien deshalb im Bericht als
+ * „ohne Wirkung", obwohl sie wirkt — nur eben näher. Wörtliche Messung:
+ *
+ *     node scripts/balance-report.mjs --only=pa_001 --distances=40,90,200,854
+ *     -> Baseballschläger 13,1 Schaden, „Ohne jede Wirkung: 0"
+ *     node scripts/balance-report.mjs            (nur 854 px)
+ *     -> Baseballschläger 0 Schaden, „ohne Wirkung"
+ *
+ * Dieselbe Waffe, zwei Antworten — nur die Messdistanz unterscheidet sie.
+ *
+ * ## Dieselbe Fehlerklasse ist im Projekt schon einmal behoben worden
+ *
+ * Im `--sweep`-Zweig steht als Kommentar, dass die erste Messstufe 90 px für
+ * Wurfwaffen zu grob war und der Bericht sie deshalb als „ohne Wirkung" meldete,
+ * „obwohl sie wirken — nur eben näher". Damals wurde 90 → 40 px korrigiert. Der
+ * STANDARDPFAD hat denselben Fehler eine Stufe höher nie verloren: Er misst
+ * weiter nur die weite Entfernung und spricht dort ein Urteil, das eine
+ * Ein-Distanz-Messung nicht stützen kann.
+ *
+ * ## Der Weg: erst wie bisher, dann nur die Verdächtigen nachmessen
+ *
+ * Gemessen wird weiter ZUERST auf der Startentfernung — die Anzeige dieser
+ * Zahlen ändert sich also nicht. Nachgemessen werden NUR die Waffen, die dort
+ * wirkungslos erscheinen (im Standardlauf 43 von 150). Sie bekommen REIHERUM kurze
+ * Entfernungen, mit je einem Schuss und einer kleineren Winkelliste. Damit
+ * wächst die Laufzeit um wenige Prozent statt sich zu verdoppeln — ein voller
+ * Sweep über alle 150 Waffen wäre ein Vielfaches.
+ *
+ * Wer auch dort nicht wirkt, ist wirklich wirkungslos. Wer dort wirkt, wird als
+ * „wirkt, aber nur bis X px" gemeldet — mit der gemessenen Zahl.
+ *
+ * 40 px ist die unterste Stufe (dieselbe wie im Sweep): darunter träfe nichts
+ * mehr, und die Wurfwaffen wirken genau in diesem Bereich.
+ *
+ * ## Warum die Leiter bis 650 px reicht (und nicht nur bis 200)
+ *
+ * FUND (belegt, erster Anlauf): Mit nur 40/90/200 px blieben DREI Waffen falsch
+ * angeklagt — `pa_048` (Bananengranate), `pa_055` (Scharfschützengewehr) und
+ * `pa_120` (Energiefaust). Nachgemessen wirken sie in einem BAND ÜBER 200 px:
+ *
+ *     pa_048  300 px: 3,2 Schaden   426 px: 0,9
+ *     pa_055   40 px: 6,8          300 px: 24,4
+ *     pa_120  300 px: 36,7         426/600 px: 55
+ *
+ * Eine Leiter, die nur den Nahbereich abdeckt, verschiebt den Fehler also nur
+ * eine Stufe — statt „ohne Wirkung" hieße es dann „wirkt nur bis 200 px", und
+ * für diese drei wäre auch das falsch. Erst mit den Stufen bis 650 px ist die
+ * Aussage „wirkt bis X px" durch eine Messung gedeckt.
+ *
+ * Die Stufen sind bewusst grob (6 statt der 9 des Sweeps) und die Winkel kurz:
+ * Nachgemessen werden nur die Verdächtigen, und die Laufzeit des Standardlaufs
+ * bleibt dadurch nahe an der alten.
+ */
+const NACHMESS_DISTANZEN = Object.freeze([40, 90, 200, 300, 450, 650]);
+
+
+/**
+ * Winkel für die zweite Messung.
+ *
+ * Bewusst kürzer als `TEST_ANGLES` (4 statt 6): Auf kurze Entfernung trifft der
+ * flache Schuss; die steilen Winkel existieren nur, weil schwere Artillerie auf
+ * weite Entfernung überhöht schießen muss. Weniger Winkel heißt weniger Matches,
+ * und die Laufzeit der zweiten Messung bleibt klein.
+ *
+ * 0,45 rad ist dabei NICHT verzichtbar — GEMESSEN: Mit nur drei flachen Winkeln
+ * (0 / 0,1 / 0,25) blieb `pa_055` (Scharfschützengewehr) fälschlich als „ohne
+ * jede Wirkung" stehen: Seine Treffer auf 300 px (24,4 Schaden) brauchen den
+ * überhöhten Schuss. Eine gekürzte Winkelliste darf keine falsche Anklage
+ * erzeugen — deshalb bleibt der steilste Winkel des Standardlaufs drin.
+ */
+const NACHMESS_ANGLES = Object.freeze([0, 0.1, 0.25, 0.45]);
+
+
+/**
  * Eine Waffe auf EINER Entfernung messen.
  *
  * `dist` ist die angefragte Entfernung; gemessen wird die, die
  * `findClearLineAdaptive` tatsächlich findet. Beide werden zurückgegeben, damit
  * eine verkürzte Messung nicht als lange Messung durchgeht.
+ *
+ * ## Die Optionen — für die zweite Messung an der Messgrenze
+ *
+ * Der Standardlauf ruft die Funktion ohne Optionen auf; dann gelten die
+ * Vorgaben (`samples` Schüsse, `TEST_ANGLES`). Die zweite Messung für die
+ * wirkungslos erscheinenden Waffen ruft sie mit WENIGER Proben und einer
+ * kürzeren Winkelliste auf: Es geht dort nur um die eine Frage „wirkt die Waffe
+ * auf dieser kurzen Entfernung überhaupt?", und dafür kostet jeder zusätzliche
+ * Schuss Laufzeit ohne neue Erkenntnis.
+ *
+ * @param {object} [optionen]
+ * @param {number} [optionen.proben] - Schüsse je Winkel (Vorgabe: `samples`)
+ * @param {number[]} [optionen.winkel] - durchprobierte Winkel (Vorgabe: `TEST_ANGLES`)
  */
-function measureAtDistance(weapon, index, dist) {
+function measureAtDistance(weapon, index, dist, { proben = samples, winkel = TEST_ANGLES } = {}) {
   const runs = [];
   let gemesseneDistanz = dist;
 
   if (weapon.delivery === 'hitscan') {
     // Hitscan wirkt sofort, der Winkel ist unkritisch.
-    for (let i = 0; i < samples; i++) {
+    for (let i = 0; i < proben; i++) {
       const seed = 4242 + index * 977 + i * 31;
       const outcome = fireOnce(weapon, { seed, angle: 0, distance: dist });
       if (outcome) runs.push(outcome);
@@ -317,7 +425,7 @@ function measureAtDistance(weapon, index, dist) {
     // Besten Winkel bestimmen, dann mit diesem mehrfach messen.
     let bestAngle = 0;
     let bestDamage = -1;
-    for (const angle of TEST_ANGLES) {
+    for (const angle of winkel) {
       const outcome = fireOnce(weapon, { seed: 4242 + index * 977, angle, distance: dist });
       if (!outcome) continue;
       if (outcome.damage > bestDamage) {
@@ -326,7 +434,7 @@ function measureAtDistance(weapon, index, dist) {
       }
       if (outcome.damage > 0) break; // treffender Winkel gefunden
     }
-    for (let i = 0; i < samples; i++) {
+    for (let i = 0; i < proben; i++) {
       const seed = 4242 + index * 977 + i * 31;
       const outcome = fireOnce(weapon, { seed, angle: bestAngle, distance: dist });
       if (outcome) runs.push(outcome);
@@ -488,19 +596,130 @@ for (const { weapon, index } of pool) {
   if (row) results.push(row);
 }
 
-// Drei Gruppen, die nicht verwechselt werden dürfen:
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ZWEITE MESSUNG — die Messgrenze des Standardlaufs
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Der Standardlauf misst EINE Entfernung: die Startentfernung des Spiels. Das
+ * ist die GRÖSSTE Entfernung, die im Spiel vorkommt. Ein Urteil „ohne Wirkung"
+ * auf dieser Grundlage ist eine Behauptung, die eine Ein-Distanz-Messung nicht
+ * stützen kann — es könnte genauso gut heißen: „reicht bis hierher nicht".
+ *
+ * Deshalb wird nach dem ersten Durchgang nachgemessen: NUR die Waffen, die auf
+ * der Startentfernung wirkungslos erscheinen, und nur REIHERUM, auf kurzen
+ * Entfernungen. Ergebnis:
+ *
+ *   wirkt dort     -> „wirkt, aber nur bis X px"  (nicht „ohne Wirkung")
+ *   wirkt dort nicht -> „ohne jede Wirkung"        (über ALLE Messdistanzen)
+ *
+ * Die Zuordnung steht in `nachmessung` je Waffe; `unwirksamZuerst` ist die
+ * Liste VOR der zweiten Messung und trägt die Gegenprobe im Bericht.
+ *
+ * Die Laufzeit: Nachgemessen werden nur die Verdächtigen (im Standardlauf 43
+ * von 150), je Entfernung mit EINEM Schuss und einer kürzeren Winkelliste. Ein
+ * voller Sweep über alle 150 Waffen wäre ein Vielfaches davon.
+ */
+const weaponById = new Map(WEAPONS.map(weapon => [weapon.id, weapon]));
+const indexNachId = new Map(indexed.map(eintrag => [eintrag.weapon.id, eintrag.index]));
+
+/** Die kurzen Entfernungen der zweiten Messung — ohne eine, die schon gemessen wurde. */
+const nachmessDistanzen = NACHMESS_DISTANZEN.filter(dist => !distanzen.includes(dist));
+
+/**
+ * Eine Waffe auf den kurzen Entfernungen nachmessen.
+ * @returns {{rows:object[], schaden:number, wirktBis:number}}
+ *   `schaden` ist der höchste gemessene Schaden, `wirktBis` die größte
+ *   Entfernung, auf der die Waffe Schaden angerichtet hat (0 = wirkt nirgends).
+ */
+function nachmessen(weapon, index) {
+  const rows = [];
+  /*
+   * Der zuletzt treffende Winkel wird ZUERST versucht (die Liste bleibt sonst
+   * vollständig — es wird nur umsortiert). Auf kurzen Entfernungen ist der
+   * flache Schuss der richtige, und ein bereits treffender Winkel spart die
+   * übrigen Versuche: `measureAtDistance` bricht beim ersten Treffer ab.
+   */
+  let guterWinkel = null;
+  for (const dist of nachmessDistanzen) {
+    const winkel = guterWinkel === null
+      ? NACHMESS_ANGLES
+      : [guterWinkel, ...NACHMESS_ANGLES.filter(a => a !== guterWinkel)];
+    const row = measureAtDistance(weapon, index, dist, { proben: 1, winkel });
+    if (!row) continue;
+    rows.push(row);
+    if (row.schaden > 0) guterWinkel = row.testWinkel;
+  }
+  const wirkt = rows.filter(row => row.schaden > 0);
+  const hoechster = rows.reduce((a, b) => (b.schaden > a.schaden ? b : a), { schaden: 0 });
+  return {
+    rows,
+    schaden: hoechster.schaden,
+    wirktBis: wirkt.length > 0 ? Math.max(...wirkt.map(row => row.testDistanz)) : 0,
+  };
+}
+
+const nachmessung = new Map();
+const unwirksamZuerst = results.filter(row => row.schaden <= 0 && !row.istSelbstwirkung);
+for (const row of unwirksamZuerst) {
+  const weapon = weaponById.get(row.id);
+  const index = indexNachId.get(row.id);
+  if (!weapon || index === undefined) continue;
+  nachmessung.set(row.id, nachmessen(weapon, index));
+}
+
+/**
+ * Waffen, die auf der Startentfernung wirkungslos ERSCHEINEN, auf kurzen
+ * Entfernungen aber wirken. Sie dürfen NICHT als „ohne Wirkung" gemeldet
+ * werden — sie wirken, nur näher.
+ */
+const wirktNurNaeher = unwirksamZuerst.filter(row => (nachmessung.get(row.id)?.schaden ?? 0) > 0);
+
+/** Waffen, die auch auf den kurzen Entfernungen nichts bewirkt haben. */
+const ohneWirkung = unwirksamZuerst.filter(row => (nachmessung.get(row.id)?.schaden ?? 0) <= 0);
+
+// Vier Gruppen, die nicht verwechselt werden dürfen:
 //  - Schaden: richtet am Ziel Schaden an (die eigentliche Vergleichsgröße).
 //  - Selbstwirkung: wirkt auf den Schützen (Heilung, Sprung, Munition). Kein
 //    Schaden am Ziel ist hier KORREKT, nicht ein Mangel.
-//  - ohne Wirkung: weder Schaden noch Selbstwirkung — das ist die echte Liste
-//    der offenen Arbeit.
+//  - wirkt nur näher: auf der Startentfernung wirkungslos, auf kurzer
+//    Entfernung wirksam. Ein REICHWEITEN-Befund, kein Waffendefekt — siehe die
+//    zweite Messung oben.
+//  - ohne Wirkung: weder Schaden noch Selbstwirkung, auch nicht auf den kurzen
+//    Entfernungen. Das ist die echte Liste der offenen Arbeit.
 const wirksam = results.filter(row => row.schaden > 0);
 const selbstwirkung = results.filter(row => row.schaden <= 0 && row.istSelbstwirkung);
 const selbstGewirkt = selbstwirkung.filter(row => row.selbstGewirkt > 0);
 const selbstOhneWirkung = selbstwirkung.filter(row => row.selbstGewirkt === 0);
-const unwirksam = results.filter(row => row.schaden <= 0 && !row.istSelbstwirkung);
+const unwirksam = ohneWirkung;
 const blockiert = results.filter(row => row.blockiert === row.versuche);
 const sortImpact = (a, b) => (b.schaden - a.schaden) || (a.shotsToKill ?? 999) - (b.shotsToKill ?? 999);
+
+/**
+ * Die Waffen der vierten Gruppe mit ihrer gemessenen Reichweite.
+ * `beiMessdistanz` ist der Schaden auf der Startentfernung (0), `wirktBis` die
+ * größte Entfernung der zweiten Messung, auf der die Waffe getroffen hat.
+ */
+const naeherWirksam = wirktNurNaeher.map(row => {
+  const nach = nachmessung.get(row.id) ?? { schaden: 0, wirktBis: 0, rows: [] };
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    delivery: row.delivery,
+    declaredDamage: row.declaredDamage,
+    beiMessdistanz: row.testDistanz,
+    schadenAufMessdistanz: row.schaden,
+    wirktBis: nach.wirktBis,
+    hoechsterSchaden: nach.schaden,
+    nachmessung: nach.rows.map(eintrag => ({
+      angefragt: eintrag.angefragteDistanz,
+      gemessen: eintrag.testDistanz,
+      schaden: eintrag.schaden,
+      winkel: eintrag.testWinkel,
+    })),
+  };
+}).sort((a, b) => a.wirktBis - b.wirktBis || a.id.localeCompare(b.id));
 
 const report = {
   konfiguration: {
@@ -510,10 +729,29 @@ const report = {
     probenProWaffe: samples,
     waffen: results.length,
     auswahl: only ?? tierFilter ?? 'alle',
+    /**
+     * Die zweite Messung an der Messgrenze. Sie läuft NUR für die Waffen, die
+     * auf der Startentfernung wirkungslos erscheinen — ein voller Sweep wäre
+     * ein Vielfaches an Laufzeit.
+     */
+    nachmessung: {
+      distanzen: nachmessDistanzen,
+      probenProWaffe: 1,
+      winkel: [...NACHMESS_ANGLES],
+    },
   },
   zusammenfassung: {
     wirksam: wirksam.length,
+    /**
+     * ECHTE Wirkungslosigkeit: auch auf den kurzen Entfernungen der zweiten
+     * Messung kein Schaden. NICHT dasselbe wie „auf der Startentfernung
+     * wirkungslos" — das ist `wirkungslosBeiMessdistanz`.
+     */
     unwirksam: unwirksam.length,
+    /** Der Befund VOR der zweiten Messung — die Gegenprobe. */
+    wirkungslosBeiMessdistanz: unwirksamZuerst.length,
+    /** Davon: wirken auf kurzer Entfernung doch (Reichweiten-Befund). */
+    wirktNurNaeher: wirktNurNaeher.length,
     selbstwirkung: selbstwirkung.length,
     selbstGewirkt: selbstGewirkt.length,
     selbstOhneWirkung: selbstOhneWirkung.length,
@@ -530,6 +768,21 @@ const report = {
   staerkste: [...results].sort(sortImpact).slice(0, topCount),
   schwaechste: [...results].sort((a, b) => (a.schaden - b.schaden) || (b.versuche - a.versuche)).slice(0, worstCount),
   unwirksameIds: unwirksam.map(row => row.id),
+  /** Waffen, die nur auf kurzer Entfernung wirken — mit ihrer Messung. */
+  wirktNurNaeher: naeherWirksam,
+  wirktNurNaeherIds: naeherWirksam.map(row => row.id),
+  /**
+   * Die Gegenprobe als EIGENE Zahl: wie viele Waffen der Standardlauf vorher
+   * als wirkungslos gemeldet hätte und wie viele davon nach der zweiten Messung
+   * doch wirken. Ein Bericht, der nur das Endergebnis zeigt, lässt die
+   * Messgrenze unsichtbar — und genau das war der Fehler.
+   */
+  messgrenze: {
+    messdistanz: distanzen.length === 1 ? distanzen[0] : null,
+    wirkungslosBeiMessdistanz: unwirksamZuerst.length,
+    davonWirkenNaeher: wirktNurNaeher.length,
+    ohneJedeWirkung: unwirksam.length,
+  },
   selbstOhneWirkungIds: selbstOhneWirkung.map(row => row.id),
   /**
    * Verteilung der besten Entfernung: Zeigt, ob Waffen überhaupt für
@@ -565,6 +818,28 @@ const report = {
       .sort((a, b) => a[0] - b[0])
       .map(([dist, ids]) => ({ reichweite: dist, anzahl: ids.length, ids }));
   })(),
+  /**
+   * Dieselbe Verteilung — aber MIT der zweiten Messung an der Messgrenze.
+   *
+   * FUND (belegt): Ohne sie behauptete die Verteilung „43 Waffen mit Reichweite
+   * 0 px" — also „diese Waffen wirken nirgends". Genau das ist durch die zweite
+   * Messung widerlegt: Alle 43 wirken, nur näher. Für sie trägt diese Verteilung
+   * die dort gemessene Reichweite ein. Die rohe Verteilung bleibt daneben
+   * stehen, damit beide Zahlen nachprüfbar sind.
+   */
+  reichweiteNachMessgrenze: (() => {
+    const zaehler = new Map();
+    for (const row of results) {
+      const nach = nachmessung.get(row.id);
+      const naeher = nach && nach.wirktBis > 0 ? nach.wirktBis : 0;
+      const wert = row.reichweite > 0 ? row.reichweite : naeher;
+      if (!zaehler.has(wert)) zaehler.set(wert, []);
+      zaehler.get(wert).push(row.id);
+    }
+    return [...zaehler.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([dist, ids]) => ({ reichweite: dist, anzahl: ids.length, ids }));
+  })(),
   rollen: {
     nurNahbereich: results.filter(row => row.istNahkampf).length,
     auchLangstrecke: results.filter(row => row.istLangstrecke).length,
@@ -584,7 +859,43 @@ if (asJson) {
   console.log(`  Umfang        : ${report.konfiguration.waffen} Waffen (${report.konfiguration.auswahl})`);
   console.log(`  Schaden am Ziel: ${z.wirksam} Waffen`);
   console.log(`  Selbstwirkung  : ${z.selbstwirkung} Waffen (${z.selbstGewirkt} wirken nachweislich, ${z.selbstOhneWirkung} nicht)`);
-  console.log(`  Ohne jede Wirkung: ${z.unwirksam} | immer blockiert: ${z.immerBlockiert}`);
+
+  /*
+   * ── Die Messgrenze, und was sie trägt ────────────────────────────────────
+   *
+   * FUND (belegt): Hier stand nur „Ohne jede Wirkung: 43 | immer blockiert: 0".
+   * Das ist eine BEHAUPTUNG — „diese Waffe hat keine Wirkung" —, die eine
+   * Messung auf GENAU EINER Entfernung nicht stützen kann. Die Entfernung ist
+   * die Startentfernung des Spiels und damit die GRÖSSTE, die vorkommt: Auf
+   * 854 px kann eine Wurfwaffe nicht treffen, und der Bericht schloss daraus
+   * auf Wirkungslosigkeit statt auf Reichweite.
+   *
+   * Deshalb nennt das Urteil jetzt seine Messgrenze und stellt die Gegenprobe
+   * daneben: wie viele Waffen auf DIESER Entfernung keinen Schaden angerichtet
+   * haben und wie viele davon auf kurzer Entfernung doch wirken.
+   */
+  console.log(`  Messgrenze     : ${distanzen.length === 1
+    ? `gemessen wurde NUR auf ${distanzen[0]} px — der größten Entfernung des Spiels`
+    : `gemessen wurde auf ${distanzen.join(', ')} px`}`);
+  console.log(`  Ohne Schaden NUR auf dieser Entfernung: ${z.wirkungslosBeiMessdistanz} Waffen`);
+  console.log(`    davon wirken näher (${nachmessDistanzen.join(' / ')} px) doch: ${z.wirktNurNaeher}`);
+  console.log(`  Ohne jede Wirkung (auf keiner Messdistanz): ${z.unwirksam} | immer blockiert: ${z.immerBlockiert}`);
+
+  /*
+   * Die vierte Gruppe ausgeschrieben: Für jede Waffe die gemessene Zahl, bis
+   * wohin sie wirkt. Ohne diese Liste bliebe „wirkt, aber nur näher" eine
+   * Behauptung ohne Beleg.
+   */
+  if (naeherWirksam.length > 0) {
+    console.log(`\n  Wirkt, aber nur bis X px (auf ${distanzen.join('/')} px kein Schaden, näher schon):`);
+    for (const row of naeherWirksam) {
+      console.log(`    wirkt bis ${String(row.wirktBis).padStart(4)} px | ${String(row.hoechsterSchaden).padStart(6)} Schaden`
+        + ` | ${row.category.padEnd(13)} | ${row.delivery.padEnd(11)} | ${row.name}`);
+    }
+    console.log('    (Das ist ein REICHWEITEN-Befund, kein Waffendefekt: Eine Wurfwaffe,');
+    console.log('     die auf 854 px nicht trifft, reicht schlicht nicht so weit. Der');
+    console.log('     Bericht darf sie deshalb nicht „ohne Wirkung" nennen.)');
+  }
 
   if (z.selbstwirkung > 0) {
     console.log('\n  Selbstwirkende Waffen (wirken auf den Schützen, kein Schaden am Ziel):');
@@ -613,11 +924,18 @@ if (asJson) {
   /*
    * Die Reichweite ist die Zahl mit Aussagekraft: Sie zeigt, ob es überhaupt
    * Fernkampfrollen gibt oder ob alles nur im Nahbereich wirkt.
+   *
+   * Gezeigt wird die Verteilung MIT der zweiten Messung (`reichweiteNachMessgrenze`),
+   * weil die rohe Verteilung „43 Waffen mit Reichweite 0" behauptete — eine
+   * Aussage, die die zweite Messung widerlegt hat. Die rohe Zahl steht als
+   * Gegenprobe darunter.
    */
-  console.log('\n  Reichweite (größte Entfernung, auf der die Waffe noch wirkt):');
-  for (const gruppe of report.reichweite) {
+  console.log('\n  Reichweite (größte Entfernung, auf der die Waffe noch wirkt; MIT Nachmessung):');
+  for (const gruppe of report.reichweiteNachMessgrenze) {
     console.log(`    ${String(gruppe.reichweite).padStart(4)} px : ${String(gruppe.anzahl).padStart(3)} Waffen`);
   }
+  const ohneReichweiteRoh = report.reichweite.find(gruppe => gruppe.reichweite === 0)?.anzahl ?? 0;
+  console.log(`    (roh, ohne Nachmessung: ${ohneReichweiteRoh} Waffen mit Reichweite 0 px)`);
   console.log(`    Nur Nahbereich (bis 200 px): ${report.rollen.nurNahbereich}`);
   console.log(`    Auch Langstrecke (ab 550 px): ${report.rollen.auchLangstrecke}`);
 
@@ -630,6 +948,9 @@ if (asJson) {
 
   console.log('\n  Schwächste Waffen:');
   for (const row of report.schwaechste) console.log(fmt(row));
+  console.log(`    (Die Zahlen gelten NUR für die Messentfernung ${distanzen.join('/')} px. Eine Waffe,`);
+  console.log('     die dort 0 zeigt, kann auf kurze Entfernung voll wirken — siehe die');
+  console.log('     Liste „wirkt, aber nur bis X px" oben.)');
 
   // Waffen ohne Designwert in der Quelldatei — getrennt von solchen, die einen
   // Wert haben, aber trotzdem nicht wirken (siehe Ursachenschätzung unten).
@@ -639,7 +960,7 @@ if (asJson) {
   }
 
   if (z.unwirksam > 0) {
-    console.log(`\n  Ohne Wirkung (${z.unwirksam}):`);
+    console.log(`\n  Ohne jede Wirkung (${z.unwirksam}) — auch nach der Nachmessung auf ${nachmessDistanzen.join('/')} px:`);
     const byCategory = {};
     for (const row of unwirksam) {
       byCategory[row.category] = byCategory[row.category] ?? [];
