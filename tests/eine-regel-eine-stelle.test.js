@@ -37,6 +37,7 @@ import { SIMULATION_HZ, TICK_MS } from '../src/shared/config/network.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../src/shared/config/player.js';
 import { TICK_MS as TICK_MS_CLIENT } from '../src/client/networkClient.js';
 import { SIMULATION_HZ as SIMULATION_HZ_SERVER } from '../src/server/gameServer.js';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -123,12 +124,6 @@ test('Die abgeschafften Zweitnamen sind nirgends mehr im CODE zu finden', () => 
    * in einer Erklärung steht — sonst bestraft der Wächter die Dokumentation.
    * Dasselbe Vorgehen nutzt `tests/source-boundaries.test.js`.
    */
-  const ohneKommentare = (text) => text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter(zeile => !zeile.trim().startsWith('//'))
-    .join('\n');
-
   const treffer = DATEIEN
     .filter(datei => ohneKommentare(fs.readFileSync(datei, 'utf8')).includes('TICKS_PER_SECOND'))
     .map(datei => path.relative(ROOT, datei).split(path.sep).join('/'));

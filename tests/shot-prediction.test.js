@@ -27,6 +27,7 @@ import { POWER_TO_SPEED } from '../src/shared/ballistics.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 import { DEFAULT_PROJECTILE_GRAVITY, DEFAULT_PROJECTILE_DRAG } from '../src/engine/systems/projectileSystem.js';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const WURZEL = resolve(hier, '..');
@@ -41,12 +42,6 @@ const WURZEL = resolve(hier, '..');
  * Grenze der Naeherung: ein `//` in einer Zeichenkette wird mitgeschnitten. Fuer
  * die geprueften Dateien ist das folgenlos (keine URLs in Zeichenketten).
  */
-function ohneKommentare(text) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
-}
-
 test('Die Konstanten der Vorhersage stimmen mit der Simulation überein', () => {
   /*
    * Schwerkraft, Luftwiderstand und Kraft→Geschwindigkeit kommen aus EINER

@@ -28,6 +28,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -36,13 +37,6 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const main = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
 
 /** Entfernt Kommentare, damit Strukturtests den Code prüfen, nicht die Doku. */
-function ohneKommentare(text) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/\/\/[^\n]*/g, '');
-}
-
 test('Der Abbruch ist ein echter Knopf, kein Text', () => {
   /*
    * Die Zugänglichkeit: Ein `div` mit Klick-Handler ist nicht per Tastatur

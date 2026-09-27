@@ -29,6 +29,7 @@ import { fire as shootingFire } from '../src/engine/shooting.js';
 import { COMPONENT_SIGNATURES } from '../src/engine/ecs/componentStore.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = resolve(HIER, '..');
@@ -41,10 +42,6 @@ function quelle(datei) {
  * Entfernt Kommentare — ein Strukturtest prüft den CODE, nicht die Doku.
  * (Dieselbe Haltung wie in `tests/reichweite-konsistenz.test.js`.)
  */
-function ohneKommentare(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
-
 test('shooting.js enthält kein `this`', () => {
   /*
    * DIE Kernzusage der Auslagerung. Eine Funktion, die über `this` an eine

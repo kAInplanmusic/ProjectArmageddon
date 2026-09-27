@@ -3,6 +3,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 /**
  * Grenzen zwischen Client und Server.
@@ -59,13 +60,7 @@ test('Der gemeinsame Balken re-exportiert keine Node-Builtin-Module', () => {
 
   // Nur ECHTE Export-Anweisungen zählen. Ein Vorkommen im Kommentar ist gerade
   // gewollt: Dort steht, warum der Ordner nicht re-exportiert wird.
-  const ohneKommentare = quelle
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter(zeile => !zeile.trim().startsWith('//'))
-    .join('\n');
-
-  const reexportiert = [...ohneKommentare.matchAll(/export\s+\*\s+from\s+'([^']+)'|export\s*\{[^}]*\}\s*from\s+'([^']+)'/g)]
+  const reexportiert = [...ohneKommentare(quelle).matchAll(/export\s+\*\s+from\s+'([^']+)'|export\s*\{[^}]*\}\s*from\s+'([^']+)'/g)]
     .map(m => m[1] ?? m[2]);
 
   for (const ausnahme of AUSNAHMEN) {

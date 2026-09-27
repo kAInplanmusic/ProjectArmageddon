@@ -33,15 +33,12 @@ import {
 import { TERRAIN_MATERIALS, RUECKPRALL_MINDESTTEMPO } from '../src/shared/config/terrain.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { PLAYER_HALF_HEIGHT } from '../src/shared/config/player.js';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = resolve(HIER, '..');
 
 function quelle(datei) { return readFileSync(resolve(WURZEL, datei), 'utf8'); }
-
-function ohneKommentare(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
 
 function karte(seed, width = 640, height = 360, extra = {}) {
   return erzeugeAutonomeKarte({ rng: new SeededRandom(seed), width, height, ...extra });

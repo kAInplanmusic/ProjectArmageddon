@@ -35,6 +35,7 @@ import { COMPONENT_SIGNATURES } from '../src/engine/ecs/componentStore.js';
 import { launchSpeedMultiplier } from '../src/shared/launchSpeed.js';
 import { getWeapon, WEAPONS } from '../src/shared/config/weapons.js';
 import { DEFAULT_PROJECTILE_GRAVITY } from '../src/engine/systems/projectileSystem.js';
+import { ohneKommentare } from './helfer/ohne-kommentare.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = resolve(HIER, '..');
@@ -49,10 +50,6 @@ function quelle(datei) {
  * Ein Strukturtest prüft den CODE, nicht die Doku. Sonst schlägt er an, weil
  * ein Kommentar den behobenen Fehler erklärt.
  */
-function ohneKommentare(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
-
 test('Weitenfaktor ist das Quadrat des Geschwindigkeitsfaktors', () => {
   /*
    * Die eine Regel: `x = v²/g`. Wer die Geschwindigkeit mit `g` skaliert,
