@@ -56,6 +56,25 @@ const SNAPSHOT_INTERVAL_MS = 1000 / SNAPSHOT_HZ;
 const UNLIMITED_AMMO = 'unbegrenzt';
 /** Nach so vielen Snapshots geht wieder ein Vollsnapshot raus (Resync). */
 const FULL_SNAPSHOT_INTERVAL = SNAPSHOT_HZ * 2;
+/**
+ * Wie oft die Lobby-Verwaltung nach ABGELAUFENEN Beitritten sieht.
+ *
+ * FUND (belegt, 2026-09-27): `LobbyManager#pruneDisconnected` war vollständig
+ * gebaut — und hatte **keinen einzigen Aufrufer** (`grep -rn pruneDisconnected
+ * src/` fand nur Definition und Kommentar). Der Kommentar an `disconnect`
+ * versprach dafür „Nach dem Reconnect-Fenster verfällt sein Team und die Lobby
+ * nimmt wieder einen Menschen auf"; gemessen galt das Gegenteil: Der Platz
+ * blieb für immer belegt, und der nächste Mensch bekam „Alle 2 Teams sind
+ * besetzt — kein Platz frei", auch zehn Minuten nach dem Trennen.
+ *
+ * Der Wert ist ein Kompromiss: Das Fenster selbst ist 30 s
+ * (`LobbyManager`, Vorgabe), und die Sicht wird höchstens um dieses Intervall
+ * später richtig. Kleiner wäre feiner, kostete aber einen Weckruf je Sekunde
+ * für eine Verwaltungsrunde über wenige Lobbies — deshalb 5 s. Wer den Beitritt
+ * nicht abwarten will, ruft `GameServer#pruneLobbies` zusätzlich direkt (das
+ * tut der Beitrittspfad selbst, siehe `JOIN_LOBBY`).
+ */
+const PRUNE_INTERVAL_MS = 5_000;
 
 class LobbySession {
   /** Wurde das Match-Ende schon gemeldet? Siehe #finish. */
@@ -871,6 +890,15 @@ export class GameServer {
   #lobbies;
   #persistenceTimer = null;
   /**
+   * Weckruf der Verwaltungsrunde für abgelaufene Beitritte (`pruneLobbies`).
+   *
+   * Eigener Zeitgeber neben der Persistenz: Speichern und Beitritts-Verwaltung
+   * sind zwei Aufgaben mit zwei Intervallen. Ein gemeinsamer wäre die nächste
+   * doppelte Regel — wer eines der beiden Intervalle ändert, hätte das andere
+   * mitgeändert.
+   */
+  #pruneTimer = null;
+  /**
    * Ergebnisse der Zustandsprüfung je wiederhergestellter Lobby.
    *
    * Sie stehen hier und nicht nur im Log, damit ein Neustart PRÜFBAR ist:
@@ -886,6 +914,7 @@ export class GameServer {
     serveStatic = null,
     persistence = null,
     persistenceIntervalMs = 10_000,
+    pruneIntervalMs = PRUNE_INTERVAL_MS,
     logger = null,
   } = {}) {
     this.#lobbies = lobbyManager;
@@ -930,8 +959,46 @@ export class GameServer {
     this.persistence = persistence;
     this.persistenceIntervalMs = persistenceIntervalMs;
     this.#persistenceTimer = null;
+    /** Intervall der Verwaltungsrunde (Tests setzen es klein). */
+    this.pruneIntervalMs = pruneIntervalMs;
 
-    this.#httpServer = createHttpServer((request, response) => this.#handleHttp(request, response));
+    /*
+     * Der HTTP-Pfad ist ASYNCHRON — und hatte keinen Fehlerweg.
+     *
+     * FUND (belegt, 2026-09-27): `#handleHttp` ist `async`, sein Rückgabewert
+     * wurde aber nirgends abgewartet. Warf die Auslieferung des gebauten
+     * Clients (`serveStatic` → `readFileSync`, etwa weil die Datei zwischen
+     * `statSync` und dem Lesen verschwand), entstand eine UNBEHANDELTE
+     * Promise-Ablehnung. Gemessen mit einem werfenden `serveStatic`: keine
+     * Antwort an den Client (fetch lief in den Abbruch), und danach genau eine
+     * `unhandledRejection` — in Node die Stelle, die den Prozess beendet.
+     * Eine Ablehnung ohne Antwort ist die Fehlerklasse, die der Client NICHT
+     * anzeigen kann: Er sieht nur „lädt nicht".
+     *
+     * Deshalb endet jeder Fehler dieses Pfades als 500 mit lesbarem Grund, und
+     * er wird protokolliert. Ist der Kopf schon gesendet (Fehler erst beim
+     * Schreiben der Nutzlast), ist keine Antwort mehr möglich — dann wird die
+     * Verbindung geschlossen statt still zu hängen.
+     */
+    this.#httpServer = createHttpServer((request, response) => {
+      this.#handleHttp(request, response).catch(fehler => {
+        this.metrics.errors += 1;
+        this.logger.error('http_failed', 'HTTP-Anfrage fehlgeschlagen', {
+          method: request.method,
+          url: request.url,
+          error: fehler,
+        });
+        if (response.headersSent || response.writableEnded) {
+          response.destroy();
+          return;
+        }
+        try {
+          this.#json(response, 500, this.#fehlerNutzlast(`Serverfehler: ${fehler?.message ?? fehler}`));
+        } catch {
+          response.destroy();
+        }
+      });
+    });
     this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
@@ -1099,6 +1166,78 @@ export class GameServer {
     this.#persistenceTimer = null;
   }
 
+  /**
+   * Startet die Verwaltungsrunde für ABGELAUFENE Beitritte.
+   *
+   * Ohne sie gilt das Versprechen aus `LobbyManager#disconnect` nicht: Ein
+   * getrennter Mensch besetzt sein Team dauerhaft, weil `pruneDisconnected` nie
+   * gerufen wird. Gemessen (Sonde 2026-09-27, zwei Teams, `reconnectWindowMs`
+   * künstlich auf 10 Minuten überzogen): Nach dem Trennen blieb der Platz
+   * belegt, und der nächste Mensch bekam „Alle 2 Teams sind besetzt — kein
+   * Platz frei".
+   *
+   * Wie `startPersistence` idempotent und `unref`t: Ein Zeitgeber darf den
+   * Prozess nicht am Beenden hindern (Tests und `npm run server` beenden sich
+   * sonst nicht).
+   */
+  startPruning() {
+    if (this.#pruneTimer) return this;
+    this.#pruneTimer = setInterval(() => this.pruneLobbies(), this.pruneIntervalMs);
+    if (typeof this.#pruneTimer.unref === 'function') this.#pruneTimer.unref();
+    return this;
+  }
+
+  stopPruning() {
+    if (this.#pruneTimer) clearInterval(this.#pruneTimer);
+    this.#pruneTimer = null;
+    return this;
+  }
+
+  /**
+   * Lässt abgelaufene Beitritte verfallen — die EINE Stelle, die
+   * `LobbyManager#pruneDisconnected` ruft.
+   *
+   * Sie wird aus zwei Richtungen erreicht:
+   *  1. der Verwaltungsrunde (`startPruning`, Vorgabe 5 s), und
+   *  2. dem Beitrittspfad (`JOIN_LOBBY` ruft sie VOR `join`), damit die
+   *     Entscheidung „Team frei oder nicht" nie auf einem veralteten Stand
+   *     beruht: Wer beitritt, soll nicht 5 s warten müssen.
+   *
+   * Der Zeitpunkt ist ein Parameter und keine versteckte Uhr: Ein Test kann
+   * damit das Reconnect-Fenster überziehen, ohne 30 s zu warten.
+   *
+   * @param {number} [now=Date.now()]
+   * @returns {Array<{lobbyId: string, token: string, name: string|null}>}
+   */
+  pruneLobbies(now = Date.now()) {
+    const entfernt = this.#lobbies.pruneDisconnected(now);
+    for (const eintrag of entfernt) {
+      this.logger.info('lobby_beitritt_verfallen', 'Reconnect-Fenster abgelaufen — Team wieder frei', {
+        lobbyId: eintrag.lobbyId,
+        name: eintrag.name,
+      });
+    }
+    /*
+     * HIER STAND EINE ZUSÄTZLICHE ZEILE, die eine Sitzung stoppt, wenn nach dem
+     * Verfall niemand mehr verbunden ist.
+     *
+     * Sie ist wieder entfernt, weil ihr Fall nicht erreichbar ist: Ein Platz
+     * wird nur dann verfallbar, wenn sein `close`-Ereignis ihn getrennt hat —
+     * und genau dieser Handler prüft bereits „alle Plätze getrennt?" und stoppt
+     * die Sitzung (`session?.stop()`, siehe `#handleConnection`). Beim LETZTEN
+     * `close` sind alle übrigen Plätze noch da und ebenfalls getrennt, also
+     * greift er. Eine Zeile, deren Wirkung sich nicht vorführen lässt, ist toter
+     * Code — auch wenn sie gut gemeint ist.
+     *
+     * Der verbleibende Fall ist ein anderer und älter als diese Arbeit: Ein über
+     * `POST /api/lobby/create` angelegter Host-Platz steht von Anfang an auf
+     * `connected: true`, auch wenn sich nie ein Socket anmeldet. Er verfällt
+     * nicht und hält das Match am Laufen. Das ist kein Teil dieser Reparatur und
+     * steht im Bericht (`docs/server-seite-fixes.md`) als offener Punkt.
+     */
+    return entfernt;
+  }
+
   get lobbyManager() {
     return this.#lobbies;
   }
@@ -1167,7 +1306,10 @@ export class GameServer {
     const lobbyMatch = url.pathname.match(/^\/api\/lobby\/([A-Za-z0-9-]+)$/);
     if (request.method === 'GET' && lobbyMatch) {
       const lobby = this.#lobbies.describe(lobbyMatch[1]);
-      if (!lobby) return this.#json(response, 404, { error: 'Lobby nicht gefunden' });
+      // Dieselbe Nutzlast wie im WebSocket-Pfad (`#fehlerNutzlast`): Der Grund
+      // steht in `error` UND in `errors` — ein Leser muss nicht wissen, auf
+      // welchem Weg die Ablehnung kam.
+      if (!lobby) return this.#json(response, 404, this.#fehlerNutzlast('Lobby nicht gefunden'));
       return this.#json(response, 200, { lobby });
     }
 
@@ -1222,7 +1364,7 @@ export class GameServer {
           teams: body.teams,
           playersPerTeam: body.playersPerTeam,
         });
-        return this.#json(response, 400, { error: error.message });
+        return this.#json(response, 400, this.#fehlerNutzlast(error.message));
       }
     }
 
@@ -1231,7 +1373,7 @@ export class GameServer {
       if (handled) return;
     }
 
-    this.#json(response, 404, { error: 'Nicht gefunden' });
+    this.#json(response, 404, this.#fehlerNutzlast('Nicht gefunden'));
   }
 
   #readBody(request) {
@@ -1261,11 +1403,84 @@ export class GameServer {
     response.end(body);
   }
 
+  /**
+   * EINE Nutzlast für jede Ablehnung des Servers.
+   *
+   * FUND (belegt, 2026-09-27): Für dieselbe Bedeutung wurden ZWEI Formen
+   * gesendet — der Kommandopfad `errors: [ … ]` (`START_MATCH`, `INPUT`,
+   * `SELECT_WEAPON`, `JUMP`, `DROP_WEAPON`), der Auffangpfad `error: '…'`
+   * (unbekannte Lobby, laufende Lobby, volle Lobby, unbekannter
+   * Nachrichtentyp, ungültige Nachricht). Am Draht gemessen:
+   *
+   *     {"v":8,"t":"error","error":"Lobby nicht gefunden"}
+   *     {"v":8,"t":"error","errors":["Warte auf Mitspieler: Jedes Team braucht einen Menschen."]}
+   *
+   * Der eigene Client liest beide (`errors?.[0] ?? message.error`), ein fremder
+   * muss es ebenfalls — und jede neue Ablehnungsstelle muss raten, welche Form
+   * gerade gilt. Deshalb trägt jede Ablehnung ab hier BEIDE Felder: `error`
+   * für Leser der alten Form (und für den Menschen im Log), `errors` als Liste
+   * für den Kommandopfad. Die Redundanz ist Absicht; die Prüfung in
+   * `tests/server-ablehnungen.test.js` hält fest, dass der Client an JEDER
+   * Ablehnungsstelle einen Grund zeigen kann.
+   *
+   * @param {string|string[]} fehler - Text oder Liste; leere Einträge fallen weg
+   */
+  #fehlerNutzlast(fehler) {
+    const liste = (Array.isArray(fehler) ? fehler : [fehler])
+      .filter(eintrag => typeof eintrag === 'string' && eintrag.length > 0);
+    return { error: liste[0] ?? 'Unbekannter Fehler', errors: liste };
+  }
+
+  /**
+   * Schickt eine Ablehnung — und stürzt nicht, wenn der Socket schon weg ist.
+   *
+   * Dieselbe Rücksicht wie `#broadcastControl`/`broadcastSnapshot` (sie
+   * überspringen Sockets mit `readyState !== 1`): Ein `send` auf einen nicht
+   * offenen WebSocket ist kein Zustellversuch, sondern ein Fehler. Der Aufruf
+   * steht im `catch`-Zweig — eine Ausnahme dort verließe den Nachrichten-
+   * Zuhörer. Stattdessen wird der Vorgang sichtbar verworfen (Log-Zeile).
+   *
+   * @returns {boolean} true, wenn gesendet wurde
+   */
+  #fehlerSenden(socket, fehler) {
+    const nutzlast = this.#fehlerNutzlast(fehler);
+    if (!socket || socket.readyState !== 1) {
+      this.logger.warn('error_reply_dropped', 'Ablehnung konnte nicht zugestellt werden — Socket nicht offen', {
+        readyState: socket?.readyState ?? null,
+        grund: nutzlast.error,
+      });
+      return false;
+    }
+    socket.send(controlMessage(CONTROL.ERROR, nutzlast));
+    return true;
+  }
+
   #handleConnection(socket) {
     let context = { lobbyId: null, token: null };
 
     socket.on('message', (raw, isBinary) => {
-      if (isBinary) return; // Client -> Server ist ausschliesslich JSON-Kontrolle.
+      /*
+       * Binärrahmen vom Client werden verworfen — GRUND und Vermerk.
+       *
+       * Die Richtung Client → Server ist ausschließlich JSON-Kontrolle (siehe
+       * `protocol.js`); Snapshots laufen nur Server → Client. Ein Client, der
+       * hier binär sendet, hat einen Fehler — und bekam bisher GAR KEINE
+       * Antwort: gemessen (Sonde 2026-09-27) blieb der Socket 700 ms lang still,
+       * ohne Fehlermeldung, ohne Log-Zeile. Genau die Klasse „Ablehnung ohne
+       * Rückweg".
+       *
+       * Warum trotzdem KEINE Fehlermeldung auf die Leitung geht: Das wäre eine
+       * Verstärkung (1 Byte hinein, ~100 Byte hinaus) und damit eine Einladung,
+       * den Server mit Müll zuzustellen. Die Sichtbarkeit stellt stattdessen die
+       * Log-Zeile her — dieselbe Entscheidung wie bei der Nutzlastgrenze, die
+       * ebenfalls protokolliert und abweist.
+       */
+      if (isBinary) {
+        this.logger.warn('binary_message_rejected', 'Binärrahmen vom Client verworfen — diese Richtung ist JSON', {
+          bytes: raw?.byteLength ?? raw?.length ?? null,
+        });
+        return;
+      }
 
       /*
        * Nutzlastgrenze VOR dem Parsen.
@@ -1290,15 +1505,16 @@ export class GameServer {
           bytes: nutzlastBytes,
           limit: INPUT_LIMITS.maxPayloadBytes,
         });
-        socket.send(controlMessage(CONTROL.ERROR, {
-          error: `Nachricht zu groß (${nutzlastBytes} Byte, erlaubt ${INPUT_LIMITS.maxPayloadBytes})`,
-        }));
+        this.#fehlerSenden(
+          socket,
+          `Nachricht zu groß (${nutzlastBytes} Byte, erlaubt ${INPUT_LIMITS.maxPayloadBytes})`,
+        );
         return;
       }
 
       const message = parseControlMessage(raw);
       if (!message) {
-        socket.send(controlMessage(CONTROL.ERROR, { error: 'Ungültige Nachricht' }));
+        this.#fehlerSenden(socket, 'Ungültige Nachricht');
         return;
       }
 
@@ -1313,8 +1529,32 @@ export class GameServer {
 
           case CONTROL.JOIN_LOBBY: {
             const lobbyId = message.lobbyId;
+            /*
+             * VOR der Belegungsprüfung die Verwaltungsrunde nachziehen.
+             *
+             * Ein Platz, dessen Reconnect-Fenster abgelaufen ist, ist frei —
+             * auch wenn die Runde ihn noch nicht weggeräumt hat (Vorgabe: alle
+             * 5 s). Ohne diese Zeile hinge die Entscheidung „Team frei oder
+             * nicht" davon ab, ob zufällig gerade eine Runde lief: Der nächste
+             * Mensch bekäme „Alle Teams sind besetzt — kein Platz frei", obwohl
+             * seit Minuten niemand mehr da ist. Sie ist billig (wenige Lobbys,
+             * wenige Plätze) und macht das Versprechen aus `disconnect` an der
+             * Stelle wahr, an der es zählt.
+             */
+            this.pruneLobbies();
             const lobby = this.#lobbies.get(lobbyId);
-            if (!lobby) throw new Error('Lobby nicht gefunden');
+            /*
+             * Die Kennung gehört in die Meldung.
+             *
+             * Der Client wiederholt den Beitritt bei jeder Wiederverbindung mit
+             * derselben ID; ohne sie lautet die Frage im Fehlerbericht „Lobby
+             * nicht gefunden" — mit ihr „…: 8f3a1c2d" und der Fall ist
+             * nachvollziehbar. Fehlt das Feld ganz, wird das eigens gesagt:
+             * „keine Kennung" ist eine andere Ursache als „falsche Kennung".
+             */
+            if (!lobby) {
+              throw new Error(`Lobby nicht gefunden: ${lobbyId ?? '(keine Kennung)'}`);
+            }
             this.logger.info('lobby_join', 'Spieler tritt einer Lobby bei', {
               lobbyId,
               seats: lobby.seats.length,
@@ -1386,15 +1626,43 @@ export class GameServer {
                */
               if (lobby.status === LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId);
             }
-            session.attach(seat.token, socket);
-            if (!session.laeuft && this.#lobbies.alleTeamsBesetzt(lobbyId)) {
+            /*
+             * ============ ENTSCHEIDUNG: erst starten, DANN anmelden ============
+             *
+             * FUND (belegt, Sonde 2026-09-27): Hier stand `attach` VOR der
+             * Startprüfung. `attach` sendet die `lobby_state`-Nachricht MIT
+             * `laeuft: this.laeuft` — und in diesem Augenblick lief die Sitzung
+             * noch nicht. Gemessen (zwei Teams, je ein Platz, zwei Menschen):
+             *
+             *     1. Beitritt   → laeuft=false besetzteTeams=1/2
+             *     2. Beitritt   → laeuft=false besetzteTeams=2/2   ← DER LETZTE
+             *     danach: alleTeamsBesetzt=true, Session läuft=true
+             *
+             * Genau der letzte Beitretende — der, mit dem das Match beginnt —
+             * las damit „Warte auf Mitspieler: 2/2 Teams besetzt", also eine
+             * volle Lobby als wartende. Die Anzeige widersprach der Lage.
+             *
+             * Die Reihenfolge heilt das ohne neue Nachricht: Ist das Match mit
+             * diesem Beitritt vollständig, läuft die Sitzung, BEVOR `attach`
+             * seinen Zustand meldet — und `laeuft` ist wahr. Der erste
+             * Beitretende (Teams noch frei) bekommt weiterhin `false` und damit
+             * den ehrlichen Wartehinweis.
+             *
+             * Die andere Richtung ist ausgeschlossen: Ein Timer kann zwischen
+             * `start()` und `attach()` nicht feuern — beide laufen im selben
+             * synchronen Durchgang.
+             */
+            const alleBesetzt = this.#lobbies.alleTeamsBesetzt(lobbyId);
+            if (!session.laeuft && alleBesetzt) {
               session.start();
               this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
                 lobbyId,
                 teams: lobby.teams,
                 unitsPerPlayer: lobby.playersPerTeam,
               });
-            } else if (!session.laeuft) {
+            }
+            session.attach(seat.token, socket);
+            if (!session.laeuft) {
               this.logger.info('lobby_waiting', 'Warte auf weitere Spieler', {
                 lobbyId,
                 teams: lobby.teams,
@@ -1440,9 +1708,7 @@ export class GameServer {
              * — es gibt aber keine Bot-KI.
              */
             if (!this.#lobbies.alleTeamsBesetzt(context.lobbyId)) {
-              socket.send(controlMessage(CONTROL.ERROR, {
-                errors: ['Warte auf Mitspieler: Jedes Team braucht einen Menschen.'],
-              }));
+              this.#fehlerSenden(socket, 'Warte auf Mitspieler: Jedes Team braucht einen Menschen.');
               break;
             }
             this.#lobbies.markRunning(context.lobbyId);
@@ -1455,9 +1721,7 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleInput(context.token, message);
-            if (!result.ok) {
-              socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
-            }
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }
 
@@ -1465,7 +1729,7 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleWeaponSelect(context.token, message.weaponId);
-            if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }
 
@@ -1473,7 +1737,7 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleJump(context.token, message);
-            if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }
 
@@ -1481,7 +1745,7 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleDropWeapon(context.token, message.weaponId);
-            if (!result.ok) socket.send(controlMessage(CONTROL.ERROR, { errors: result.errors }));
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }
 
@@ -1516,7 +1780,7 @@ export class GameServer {
             break;
 
           default:
-            socket.send(controlMessage(CONTROL.ERROR, { error: `Unbekannter Nachrichtentyp: ${message.t}` }));
+            this.#fehlerSenden(socket, `Unbekannter Nachrichtentyp: ${String(message.t)}`);
         }
       } catch (error) {
         this.metrics.errors += 1;
@@ -1527,7 +1791,13 @@ export class GameServer {
           messageType: parseControlMessage(raw)?.t ?? null,
           error,
         });
-        socket.send(controlMessage(CONTROL.ERROR, { error: error.message }));
+        /*
+         * Der Grund geht so raus, dass der Client ihn zeigen kann — auch
+         * hier: Das Feldpaar `{error, errors}` entsteht in EINER Stelle
+         * (`#fehlerNutzlast`), damit eine neue Ablehnung nicht wieder die
+         * Form wählt. Siehe die Begründung dort.
+         */
+        this.#fehlerSenden(socket, error?.message ?? String(error));
       }
     });
 
@@ -1563,6 +1833,10 @@ export class GameServer {
   async close() {
     // Vor dem Herunterfahren sichern, damit ein Neustart das Match fortsetzen kann.
     this.stopPersistence();
+    // Beide Zeitgeber gehören zu einem laufenden Server; ein stehender soll
+    // nicht weiter aufräumen. (Beide sind `unref`t, aber ein offener Zeitgeber
+    // nach `close()` wäre ein Leck in Tests.)
+    this.stopPruning();
     this.saveState();
     for (const session of this.#sessions.values()) session.stop();
     this.#sessions.clear();
@@ -1653,6 +1927,17 @@ export async function startServer(options = {}) {
   const server = new GameServer({ ...options, persistence });
   const restored = server.restoreState();
   server.startPersistence();
+  /*
+   * Die Verwaltungsrunde läuft im BETRIEB mit — dort, wo `startServer` benutzt
+   * wird (`npm run server`).
+   *
+   * FUND (belegt, 2026-09-27): `LobbyManager#pruneDisconnected` hatte keinen
+   * Aufrufer; ein getrennter Mensch besetzte sein Team dauerhaft, und der
+   * nächste bekam „Alle Teams sind besetzt". Wer den Server über `GameServer`
+   * selbst startet (Tests, Einbettung), muss `startPruning()` ebenfalls rufen —
+   * `tests/server-lobby-verfall.test.js` tut das.
+   */
+  server.startPruning();
   const info = await server.listen(options.port ?? Number(process.env.PORT ?? 3000), options.host ?? '127.0.0.1');
   return { server, restored, ...info };
 }
