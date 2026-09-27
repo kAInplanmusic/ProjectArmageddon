@@ -97,3 +97,31 @@ export function computeMaelstromDamage(roundNumber, rules = MATCH_RULES.suddenDe
   }
   return rules.outOfZoneDamageBase * (rules.outOfZoneGrowthFactor ** (roundNumber - rules.roundBreakpoint));
 }
+
+/**
+ * Greift der Mahlstrom ab dieser Runde?
+ *
+ * FUND (belegt, Datenfluss-Audit): Die Schwelle stand ZWEIMAL — der Motor liest
+ * `MATCH_RULES.suddenDeath.roundBreakpoint` (`match.js:2722`, heute 8), der
+ * Online-Ansichtszustand rechnete hart `>= 15` (`main.js:1194`, der WERT VOR der
+ * letzten Balancing-Änderung). Folge: Online war der Mahlstrom von Runde 8 bis 14
+ * UNSICHTBAR, während die Karte sich zusammenzog, Leben kostete und der Renderer
+ * die Sturmwand nur bei `active` zeichnet (`renderer.js`, `#drawMaelstrom`) — das
+ * HUD meldete
+ * derweil grün „Läuft". Lokal stimmte es, weil dort der Motor den Wert liefert
+ * (`engine/stateSnapshot.js`).
+ *
+ * Diese Funktion ist die EINE Aussprache der Regel für Leser, die den Wert nicht
+ * im Zustand finden (der Client bekommt online nur die Rundenzahl). Sie liest
+ * dieselbe Konfiguration wie der Motor; ein Aufruf mit einer zweiten Zahl wäre
+ * genau die Kopie, die diesen Fehler erzeugt hat.
+ *
+ * @param {number} roundNumber - laufende Runde (1-basiert)
+ * @param {object} [rules=MATCH_RULES.suddenDeath]
+ * @returns {boolean}
+ */
+export function maelstromActiveFromRound(roundNumber, rules = MATCH_RULES.suddenDeath) {
+  const runde = Number(roundNumber);
+  if (!Number.isFinite(runde)) return false;
+  return runde >= rules.roundBreakpoint;
+}

@@ -29,6 +29,13 @@
 /** Ein Schuss gilt als Treffer, wenn innerhalb dieser Takte Schaden ankommt. */
 const TREFFER_FENSTER_TICKS = 240;
 
+/** Takt auf eine gültige, nichtnegative Ganzzahl bringen. */
+function alsTakt(wert) {
+  const takt = Number(wert);
+  if (!Number.isFinite(takt) || takt < 0) return null;
+  return Math.trunc(takt);
+}
+
 /**
  * Sammelt Kennzahlen einer Partie.
  *
@@ -82,10 +89,40 @@ export class MatchStats {
   }
 
   /**
+   * Setzt den Takt fort, aus dem das Trefferfenster gerechnet wird.
+   *
+   * FUND (belegt, Datenfluss-Audit): Diese Fortschreibung fehlte. `this.tick`
+   * wurde nur in `match_over` gesetzt (`p.ticks`) — während der Partie blieb er
+   * bei **0** stehen. Das Trefferfenster verglich damit `0 - 0 <= 240`, war
+   * also IMMER durchlässig: Ein Schuss, dessen Schaden erst 2000 Takte später
+   * ankam, zählte als Treffer (gemessen vorher `treffer: 1`,
+   * `trefferquote: 1`; sichtbar für den Spieler in der Trefferquote des
+   * Berichts). Kein Test deckte es, weil `tests/stats.test.js` den Takt von Hand
+   * nachzog (`stats.tick = match.world.tickCount`) — der Test führte die Zeile
+   * aus, die im Produkt fehlte.
+   *
+   * Der Wert kommt von AUSSEN, weil ihn kein Ereignis trägt: Ereignisse führen
+   * nur ihre Nutzlast, der Takt gehört zum Lauf. Ein Aufrufer, der ihn kennt,
+   * gibt ihn mit (`MatchStats#feedAll(events, tick)`).
+   *
+   * @param {number} tick
+   * @returns {this}
+   */
+  setTick(tick) {
+    const takt = alsTakt(tick);
+    if (takt !== null) this.tick = takt;
+    return this;
+  }
+
+  /**
    * Verarbeitet ein Ereignis des Matches.
+   * @param {object} ereignis
+   * @param {number} [tick] - Takt, in dem das Ereignis entstand. Ohne Angabe
+   *   gilt der zuletzt gesetzte Takt (siehe `setTick`).
    * @returns {boolean} true, wenn das Ereignis ausgewertet wurde
    */
-  feed(ereignis) {
+  feed(ereignis, tick = null) {
+    if (tick !== null) this.setTick(tick);
     if (!ereignis || typeof ereignis.type !== 'string') return false;
     const p = ereignis.payload ?? {};
 
@@ -157,8 +194,16 @@ export class MatchStats {
     }
   }
 
-  /** Verarbeitet eine Liste von Ereignissen. */
-  feedAll(ereignisse = []) {
+  /**
+   * Verarbeitet eine Liste von Ereignissen.
+   *
+   * @param {object[]} ereignisse
+   * @param {number} [tick] - Takt, in dem dieser Stapel entstand. Er wird VOR
+   *   der Auswertung gesetzt: Alle Ereignisse eines Simulationsschritts gehören
+   *   zu seinem Ende, und genau so rechnet das Trefferfenster.
+   */
+  feedAll(ereignisse = [], tick = null) {
+    if (tick !== null) this.setTick(tick);
     let verarbeitet = 0;
     for (const e of ereignisse) if (this.feed(e)) verarbeitet += 1;
     return verarbeitet;

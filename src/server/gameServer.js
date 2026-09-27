@@ -131,10 +131,28 @@ class LobbySession {
       loadouts: this.match.loadouts,
     });
 
-    // Wiederherstellung: Eingaben bis zum gespeicherten Tick erneut anwenden.
-    // Die Simulation ist deterministisch, deshalb entsteht exakt derselbe Zustand.
-    if (Array.isArray(replayEntries) && replayEntries.length > 0) {
-      this.#restoreFromReplay(replayEntries, replayTotalTicks);
+    /*
+     * Wiederherstellung: bis zum gespeicherten Tick vorspulen — auch OHNE
+     * aufgezeichnete Eingaben.
+     *
+     * FUND (belegt, gemessen 2026-09-27): Hier stand
+     *     `if (Array.isArray(replayEntries) && replayEntries.length > 0)`
+     * — ohne Einträge wurde gar nicht wiederhergestellt. Eine Partie, in der
+     * noch NIEMAND geschossen hatte (oder in der alle Eingaben abgelehnt
+     * wurden), kam damit am ANFANG zurück statt am gesicherten Takt: gemessen
+     * gesicherter Takt 92, wiederhergestellter Takt 0, Zustandshash `2ee23ca9`
+     * → `3260a37`. Figuren standen wieder auf ihren Startplätzen und alles
+     * Gelände war unberührt — die gespielten 92 Takte waren still weg.
+     *
+     * Die Tickzahl allein genügt als Bedingung: Sie sagt, wie weit die
+     * Simulation lief, und die Simulation ist aus Seed + Konfiguration
+     * deterministisch. Ein leeres Eingabefeld ist kein Grund, nicht
+     * vorzuspulen.
+     */
+    const hatFortschritt = (Array.isArray(replayEntries) && replayEntries.length > 0)
+      || Number(replayTotalTicks) > 0;
+    if (hatFortschritt) {
+      this.#restoreFromReplay(Array.isArray(replayEntries) ? replayEntries : [], replayTotalTicks);
     }
 
     this.history = new SnapshotHistory();
@@ -164,7 +182,29 @@ class LobbySession {
       byTick.get(entry.tick).push(entry);
     }
 
-    const limit = Math.max(totalTicks, ...entries.map(entry => entry.tick)) + 1;
+    /*
+     * Bis ZUM GESICHERTEN TAKT — nicht einen darüber hinaus.
+     *
+     * FUND (belegt, Datenfluss-Audit): Hier stand `… + 1` in der Grenze
+     * (`limit = Math.max(totalTicks, …) + 1`) bei der Bedingung
+     * `tickCount < limit`. Die Schleife lief damit einen Schritt ÜBER den
+     * gesicherten Takt hinaus, obwohl der Kommentar daneben „exakt derselbe
+     * Zustand" behauptete. Gemessen (Seed 20260910, 420 gesicherte Takte):
+     * Takte 420 → 421, alle vier Figuren je 792,82 → 784,0 (8 px tiefer, freier
+     * Fall), `turnElapsedMs` 5250,0 → 5266,7, Zustandshash `1e199a57` →
+     * `d4248776`.
+     *
+     * Die Eingaben des GESICHERTEN Takts werden danach noch angewendet: Sie
+     * wirkten BEI diesem Takt (`handleInput` wendet sofort an und zeichnet den
+     * laufenden Takt auf), ihr unmittelbarer Effekt gehört also zum gesicherten
+     * Zustand — ein zusätzlicher Simulationsschritt gehörte nicht dazu.
+     *
+     * Dass die Grenze jetzt stimmt, ist nicht nur eine Rechnung: `restoreLobby`
+     * vergleicht den wiederhergestellten Zustandshash mit dem gesicherten
+     * (`saved.hash`) und meldet jede Abweichung. Ein Rückfall in diese Klasse
+     * wäre beim nächsten Neustart zu sehen.
+     */
+    const limit = Math.max(totalTicks, ...entries.map(entry => entry.tick));
     let guard = 0;
     while (this.match.status === 'playing' && this.match.world.tickCount < limit && guard < limit + 10) {
       const tick = this.match.world.tickCount;
@@ -174,6 +214,9 @@ class LobbySession {
       this.match.step();
       this.match.consumeEvents();
       guard += 1;
+    }
+    if (this.match.world.tickCount === limit) {
+      for (const entry of byTick.get(limit) ?? []) this.#applyReplayEntry(entry);
     }
     for (const entry of entries) this.recorder.recordInput(entry);
     this.recorder.finalize(this.match.world.tickCount);
@@ -708,6 +751,49 @@ class LobbySession {
         activeWeaponId: entry.activeWeaponId ?? null,
         classId: spieler?.classId ?? null,
         archetypeId: spieler?.archetypeId ?? null,
+        /*
+         * Der SIDEGRADE gehört in dieselbe Nachricht — als dritter Wert neben
+         * Klasse und Archetyp.
+         *
+         * FUND (belegt, Datenfluss-Audit): Die Online-Schussvorhersage liest
+         * `eigene.sidegradeId` (`main.js:1607`), und auf der Leitung gab es das
+         * Feld nirgends — weder im binären Snapshot (fester Spielerblock, siehe
+         * oben) noch in dieser Nachricht. Der Client rechnete deshalb IMMER ohne
+         * Sidegrade. Gemessen an der Bahnlänge (`predictTrajectory`, 45°, Kraft
+         * 100, Karte 2560 px): Artillery ohne Sidegrade 1144 px, mit `kompakt`
+         * 1479 px (+335), mit `schwerlast` 914 px (−229) — der Spieler wählte
+         * einen Sidegrade, und die angezeigte Bahn gehörte zu einem anderen
+         * Profil als der Server rechnete.
+         *
+         * Warum HIER und nicht im binären Snapshot: `sidegradeId` ist eine
+         * Zeichenkette (variable Länge) und ändert sich nie während eines
+         * Matches — genau die Kategorie, für die es diese Nachricht schon gibt
+         * (siehe Klasse/Archetyp oben). Der Wert kommt vom MOTOR
+         * (`match.players[].sidegradeId`, dort schon gegen `SIDEGRADE_IDS`
+         * aufgelöst), nicht aus der Lobby-Konfiguration: So steht auch hier nur
+         * EINE Wahrheit, und eine unbekannte Kennung wirkt überall gleich
+         * (wie „kein Sidegrade").
+         */
+        sidegradeId: spieler?.sidegradeId ?? null,
+        /*
+         * Höchstleben — ebenfalls ein Wert, der sich nie ändert.
+         *
+         * FUND (belegt, Datenfluss-Audit): Im Online-Ansichtszustand stand
+         * `maxHealth: 100` als Konstante (`main.js:1168`). Die Klassen und
+         * Archetypen ergeben aber andere Werte als 100: eigene Messung über alle
+         * Kombinationen (BASE_HEALTH × `combatProfile().healthMultiplier`) —
+         * **32 verschiedene Werte, Spanne 48 … 195** (scout/späher 96,
+         * artillery/scharfschütze 108, heavy/brawler 156, mit Zusatzpanzerung
+         * 120 / 135 / 195). `hud.js:365` und `renderer.js:795` rechnen
+         * `health / maxHealth` OHNE Obergrenze — ein voller Lebensbalken eines
+         * 156-HP-Brawlers war damit 156 % breit, ein unverletzter Späher sah mit
+         * 96 % beschädigt aus.
+         *
+         * Gelesen wird der Wert, den der MOTOR gesetzt hat (`Health.max`) —
+         * nicht nachgerechnet. Eine zweite Multiplikation hier wäre die nächste
+         * Kopie einer Regel; `match.js:1050` rechnet sie schon.
+         */
+        maxHealth: this.match.world.getComponent(seat.entityId, 'Health', 'max') ?? null,
       };
     }
     return table;
@@ -784,6 +870,16 @@ export class GameServer {
   #sessions = new Map();
   #lobbies;
   #persistenceTimer = null;
+  /**
+   * Ergebnisse der Zustandsprüfung je wiederhergestellter Lobby.
+   *
+   * Sie stehen hier und nicht nur im Log, damit ein Neustart PRÜFBAR ist:
+   * `{lobbyId, gleich, erwartet, gemessen, tick, tickGesichert}` je Lobby.
+   * FUND (belegt, Datenfluss-Audit): Vorher gab es keine Gegenprobe — der
+   * Wiederaufbau lief einen Takt zu weit und stand nach dem Seed-Fehler auf
+   * einer anderen Karte, ohne dass irgendwo etwas auffiel. Siehe `restoreLobby`.
+   */
+  #restorePruefungen = [];
 
   constructor({
     lobbyManager = new LobbyManager(),
@@ -946,8 +1042,11 @@ export class GameServer {
         continue;
       }
       try {
-        const { lobby } = restoreLobby(entry, {
+        const { lobby, hashPruefung } = restoreLobby(entry, {
           lobbyManager: this.#lobbies,
+          // Für die Gegenprobe des wiederhergestellten Zustands (siehe
+          // `restoreLobby`): gleich oder abweichend, mit beiden Hashes.
+          logger: this.logger,
           createSession: (target, options) => {
             /*
              * Wiederhergestellte Sitzung — sie LÄUFT noch nicht.
@@ -970,6 +1069,7 @@ export class GameServer {
           },
         });
         if (lobby) restored += 1;
+        if (hashPruefung) this.#restorePruefungen.push({ lobbyId: entry.id, ...hashPruefung });
       } catch (error) {
         skipped += 1;
         this.logger.warn('lobby_restore_skipped', 'Lobby konnte nicht wiederhergestellt werden', {
@@ -1005,6 +1105,18 @@ export class GameServer {
 
   get sessionCount() {
     return this.#sessions.size;
+  }
+
+  /**
+   * Ergebnisse der Zustandsprüfung aus dem letzten `restoreState()`.
+   *
+   * Ein Eintrag je wiederhergestellter Lobby mit Zustandshash:
+   * `{lobbyId, gleich, erwartet, gemessen, tick, tickGesichert}`. Ein leeres
+   * Feld heißt „es gab nichts wiederherzustellen" oder „die Sicherung trug
+   * keinen Hash" (alte Fassung) — nicht „alles in Ordnung".
+   */
+  get restorePruefungen() {
+    return [...this.#restorePruefungen];
   }
 
   getSession(lobbyId) {

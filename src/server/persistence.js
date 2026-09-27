@@ -14,6 +14,7 @@
 import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { hashState } from '../engine/stateSnapshot.js';
 
 export const PERSISTENCE_VERSION = 1;
 
@@ -102,6 +103,40 @@ export function serializeLobby(lobby, session) {
   const ticks = session?.match?.world?.tickCount ?? 0;
   session?.recorder?.finalize?.(ticks);
 
+  /*
+   * Der Seed, der WIRKLICH gespielt wurde.
+   *
+   * FUND (belegt, Datenfluss-Audit): Hier stand `seed: lobby.seed`. Ohne
+   * Eingabe im Menü ist der Wert `undefined` — und `JSON.stringify` lässt einen
+   * `undefined`-Schlüssel ersatzlos WEG (gemessen: kein `"seed":` in der
+   * Datei). Beim Wiederaufbau stand die Partie danach auf einer ANDEREN Karte:
+   * `restoreLobby` reichte `undefined` an den `MatchController`, der daraus
+   * einen frischen Zufalls-Seed zieht (`match.js:564`
+   * `MatchSeedManager.createRandom()`). Gemessen: baseSeed 3367130477 →
+   * 1341271627, Zustandshash `98aad2e2` → `e6da56da`.
+   *
+   * Der echte Wert lag die ganze Zeit im MOTOR (`seedManager.baseSeed`) und im
+   * Replay-Kopf (`replay.seed`). Er wird hier ausdrücklich mitgeschrieben; der
+   * Rückfall auf alte Dateien bleibt (`replay.seed`, siehe `restoreLobby`).
+   */
+  const seed = lobby.seed ?? session?.match?.seedManager?.baseSeed ?? null;
+
+  /*
+   * Der ZUSTANDSHASH der gesicherten Partie.
+   *
+   * FUND (belegt, Datenfluss-Audit): Der Wiederaufbau lief einen Takt zu weit
+   * (`#restoreFromReplay`, `limit = … + 1`), während der Kommentar darüber
+   * „exakt derselbe Zustand" behauptete. Gemessen: 420 → 421 Takte, alle
+   * Figuren 8 px tiefer, Hash `1e199a57` → `d4248776`.
+   *
+   * Ein solcher Fehler war STILL, weil niemand den wiederhergestellten Zustand
+   * gegen den gesicherten hielt. Mit diesem Feld tut es `restoreLobby`: Es
+   * vergleicht und schreibt eine Zeile — gleich oder abweichend. Der Hash wird
+   * mit `hashState()` gebildet, also mit DEMSELBEN Verfahren, das die
+   * Determinismus-Zusage des Replays prüft.
+   */
+  const hash = session?.match ? hashState(session.match.getState()) : null;
+
   return {
     id: lobby.id,
     teams: lobby.teams,
@@ -109,7 +144,7 @@ export function serializeLobby(lobby, session) {
     capacity: lobby.capacity,
     preset: lobby.preset,
     orientation: lobby.orientation ?? 'landscape',
-    seed: lobby.seed,
+    seed,
     status: lobby.status,
     createdAt: lobby.createdAt,
     seats: lobby.seats.map(seat => ({
@@ -122,6 +157,8 @@ export function serializeLobby(lobby, session) {
     // Replay-Kern: Seed + Konfiguration + Eingaben genügen zur Rekonstruktion.
     replay: session?.recorder?.toJSON() ?? null,
     tick: session?.match?.world?.tickCount ?? 0,
+    /** Zustandshash des gesicherten Takts — Prüfwert für den Wiederaufbau. */
+    hash,
   };
 }
 
@@ -139,15 +176,38 @@ export function serializeLobby(lobby, session) {
  * @param {object} deps
  * @param {object} deps.lobbyManager
  * @param {function(object):object} deps.createSession - erzeugt eine LobbySession
- * @returns {{lobby: object, session: object|null}}
+ * @param {object} [deps.logger] - strukturierter Logger; ohne ihn unterbleibt
+ *   die Meldung über den Zustandsvergleich (siehe unten)
+ * @returns {{lobby: object, session: object|null, hashPruefung: object|null}}
+ *   `hashPruefung` ist `null`, wenn keine Sicherung mit Hash vorlag — sonst
+ *   `{gleich, erwartet, gemessen, tick, tickGesichert}`.
  */
-export function restoreLobby(saved, { lobbyManager, createSession }) {
+export function restoreLobby(saved, { lobbyManager, createSession, logger = null }) {
+  /*
+   * Der Seed kommt aus der Sicherung — und wenn dort keiner steht, aus dem
+   * REPLAY-KOPF.
+   *
+   * FUND (belegt, Datenfluss-Audit): Hier stand allein `saved.seed`. Eine Lobby
+   * ohne Eingabe im Seed-Feld speicherte `undefined`, und `JSON.stringify`
+   * lässt den Schlüssel weg — der Wert fehlte also in der Datei, obwohl der
+   * Replay-Kopf denselben Seed trug (gemessen 3367130477). Der Wiederaufbau zog
+   * einen NEUEN Zufalls-Seed (`match.js:564`), und die fortgesetzte Partie stand
+   * auf einer anderen Karte: baseSeed 3367130477 → 1341271627, Hash `98aad2e2`
+   * → `e6da56da`.
+   *
+   * Der Rückfall liest dieselbe Zahl, die auch die Wiedergabe benutzt — ein
+   * zweiter Ort für den Seed ist damit nicht nötig. Alte Sicherungen (ohne
+   * `seed`, ohne `hash`) funktionieren unverändert, weil ihr Replay-Kopf den
+   * Seed schon immer trug.
+   */
+  const seed = saved.seed ?? saved.replay?.seed ?? undefined;
+
   const lobby = lobbyManager.create({
     teams: saved.teams,
     playersPerTeam: saved.playersPerTeam,
     preset: saved.preset,
     orientation: saved.orientation ?? 'landscape',
-    seed: saved.seed,
+    seed,
     hostName: saved.seats?.[0]?.name ?? 'Host',
   }).lobby;
 
@@ -194,7 +254,43 @@ export function restoreLobby(saved, { lobbyManager, createSession }) {
     }));
   }
 
-  return { lobby: target, session };
+  /*
+   * Die Gegenprobe: Steht die wiederhergestellte Partie auf dem Zustand, der
+   * gesichert wurde?
+   *
+   * Sie ist der Kern dieser Änderung. Vorher gab es niemanden, der diese Frage
+   * stellte — und genau deshalb blieb der Takt-Fehler („ein Schritt zu weit")
+   * und der Seed-Fehler („andere Karte") unbemerkt. Jetzt steht bei JEDER
+   * Wiederherstellung eine Zeile im Log: gleich oder abweichend, mit beiden
+   * Hashes und beiden Taktzahlen. Ein künftiger Fehler dieser Klasse wird damit
+   * beim ersten Neustart laut statt still.
+   *
+   * Fehlt `saved.hash` (Sicherung aus einer älteren Fassung), unterbleibt die
+   * Prüfung — sie behauptet nichts, was sie nicht messen kann.
+   */
+  let hashPruefung = null;
+  if (session && typeof saved.hash === 'string') {
+    const gemessen = hashState(session.match.getState());
+    const takt = session.match.world.tickCount;
+    hashPruefung = {
+      gleich: gemessen === saved.hash,
+      erwartet: saved.hash,
+      gemessen,
+      tick: takt,
+      tickGesichert: saved.tick ?? null,
+    };
+    if (hashPruefung.gleich) {
+      logger?.info('restore_hash', 'Wiederherstellung exakt — Zustandshash stimmt mit der Sicherung überein', {
+        lobbyId: saved.id, hash: gemessen, tick: takt,
+      });
+    } else {
+      logger?.warn('restore_hash_abweichung', 'Wiederhergestellter Zustand weicht von der Sicherung ab', {
+        lobbyId: saved.id, ...hashPruefung,
+      });
+    }
+  }
+
+  return { lobby: target, session, hashPruefung };
 }
 
 export default PersistenceStore;

@@ -25,7 +25,8 @@
  *     x Int16 (0.25 px), y Int16 (0.25 px), health Int16 (0.1 HP),
  *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY),
  *     shield Uint8, frozenTurns Uint8, waterLevel Uint8 (Wasserstand 0..255)
- *   danach je Projektil 6 Byte: id Uint16, x Int16, y Int16 (0.25 px)
+ *   danach je Projektil 7 Byte: id Uint16, x Int16, y Int16 (0.25 px),
+ *     Zünderrest Uint8 (Zehntelsekunden, ab v8)
  *   danach je Kiste 8 Byte (ab v5): id, x, y, Art, Seltenheit
  *   danach je Geschütz 8 Byte (ab v6): id, x, y, Team, Restrunden
  *   danach der Günther-Block, IMMER 6 Byte (ab v7):
@@ -71,8 +72,17 @@ import { GUENTHER_POOP } from './config/guenther.js';
  *    die Haufen — man wurde geschwächt und verlangsamt, ohne eine Ursache zu
  *    sehen. Eine ältere Gegenstelle lehnt den Snapshot ab, statt ihn falsch zu
  *    lesen; genau dafür gibt es diese Zahl.
+ * 8: Die Zünderrestzeit je Projektil. FUND (belegt, Datenfluss-Audit): Der
+ *    Renderer zeichnet Ring und Sekundenzahl aus `projectile.fuseSeconds`
+ *    (`renderer.js`, `#drawProjectiles`), der Projektilblock führte aber nur
+ *    `entityId/x/y` — online stand dort immer `0`, die Anzeige erschien also
+ *    NUR lokal. Genau die Information, für die sie gebaut wurde (wann zündet die liegende
+ *    Granate?), fehlte damit im Online-Spiel. Ein Byte reicht: der längste
+ *    Zünder im Katalog ist 5 s (`fuseTime`, 150 Waffen geprüft), also 50
+ *    Zehntelsekunden von 255. Eine ältere Gegenstelle lehnt den Snapshot ab,
+ *    statt ihn falsch zu lesen; genau dafür gibt es diese Zahl.
  */
-export const PROTOCOL_VERSION = 7;
+export const PROTOCOL_VERSION = 8;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -108,6 +118,14 @@ export const CONTROL = Object.freeze({
 const COORD_SCALE = 4;      // 0.25 px Auflösung
 const HEALTH_SCALE = 10;    // 0.1 HP Auflösung
 const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
+/**
+ * Zünderrest im Drahtformat: Zehntelsekunden in einem Byte.
+ *
+ * Der längste Zünder im Waffenkatalog ist 5 s (`fuseTime`) — 50 von 255
+ * möglichen Schritten. Die Obergrenze wird trotzdem geklemmt: Ein von Hand
+ * gebauter Zustand (Tests, Werkzeuge) darf den Puffer nicht sprengen.
+ */
+const FUSE_SCALE = 10;
 /** Obergrenze für Einfrierdauer im Drahtformat (ein Byte). */
 const MAX_WIRE_FREEZE_TURNS = 255;
 /** Bitfeld im dirty-Byte: welche Felder eines Spielers sich geändert haben. */
@@ -133,7 +151,15 @@ export const SNAPSHOT_FLAG = Object.freeze({
  * wachsen.
  */
 export const PLAYER_STRIDE = 15;
-export const PROJECTILE_STRIDE = 6;
+/**
+ * Projektil im Snapshot: Kennung (2), x (2), y (2), Zünderrest (1).
+ *
+ * Der Zünderrest (Zehntelsekunden) stand bis Protokoll v8 nur im lokalen
+ * Ansichtszustand. ONLINE zeigte der Renderer deshalb keinen Countdown
+ * (`renderer.js`, `#drawProjectiles`, liest `projectile.fuseSeconds`), obwohl
+ * er genau dafür gebaut ist — man sah nicht, wann eine liegende Granate zündet.
+ */
+export const PROJECTILE_STRIDE = 7;
 /**
  * Kiste im Snapshot: Kennung (2), x (2), y (2), Art (1), Seltenheit (1).
  *
@@ -210,6 +236,18 @@ function clampUint16(value) {
   if (rounded < 0) return 0;
   if (rounded > 65535) return 65535;
   return rounded;
+}
+
+/**
+ * Zünderrest für die Leitung: Zehntelsekunden, geklemmt auf ein Byte.
+ *
+ * Gerundet wird hier — nicht schon im Zustand —, damit Anzeige und Draht exakt
+ * dieselbe Zahl sehen (dieselbe Regel wie beim Wasserstand).
+ */
+function toWireFuse(fuseSeconds) {
+  const zehntel = Math.round((Number(fuseSeconds) || 0) * FUSE_SCALE);
+  if (!Number.isFinite(zehntel) || zehntel < 0) return 0;
+  return Math.min(255, zehntel);
 }
 
 /**
@@ -325,6 +363,13 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     view.setUint16(offset, (projectile.entityId ?? 0) & 0xffff, true);
     view.setInt16(offset + 2, clampInt16((projectile.x ?? 0) * COORD_SCALE), true);
     view.setInt16(offset + 4, clampInt16((projectile.y ?? 0) * COORD_SCALE), true);
+    /*
+     * Der Zünderrest (ab v8). Er wird in Zehntelsekunden übertragen, weil die
+     * Anzeige ihn in Sekunden mit einer Nachkommastelle zeigt
+     * (`renderer.js`, `#drawProjectiles`)
+     * — eine gröbere Auflösung wäre auf dem Bildschirm als Sprung zu sehen.
+     */
+    view.setUint8(offset + 6, toWireFuse(projectile.fuseSeconds));
     offset += PROJECTILE_STRIDE;
   }
 
@@ -457,6 +502,12 @@ export function decodeSnapshot(input, previous = null) {
       entityId: view.getUint16(offset, true),
       x: view.getInt16(offset + 2, true) / COORD_SCALE,
       y: view.getInt16(offset + 4, true) / COORD_SCALE,
+      /*
+       * Zünderrest in Sekunden (ab v8) — in DERSELBEN Einheit, in der der
+       * lokale Ansichtszustand ihn führt (`stateSnapshot.js`: `fuseSeconds`).
+       * Die Anzeige liest ihn damit in beiden Betriebsarten gleich.
+       */
+      fuseSeconds: view.getUint8(offset + 6) / FUSE_SCALE,
     });
     offset += PROJECTILE_STRIDE;
   }
