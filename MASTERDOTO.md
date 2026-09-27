@@ -263,7 +263,7 @@ Die Profiling-Spezifikation läuft 7/7 auf der echten GPU dieses Rechners
 (`ANGLE (Intel, Mesa Intel HD Graphics 3000)`); der eine übersprungene Test ist
 der Aufschlag-Test, der sich mit Begründung überspringt, wenn Untergrund UND
 Differenz beide auffällig sind. Gefahren NACH der Zerlegung der Schritte 1 und 2
-— die Batterie ist damit auch deren Beleg über alle 28 Spezifikationen. — der eine rote ist
+— die Batterie ist damit auch deren Beleg über alle 30 Spezifikationen. — der eine rote ist
 „Bildzeiten auf dem echten Grafikpfad" und verlangt eine GPU, die dieser
 Rechner nicht hat (gemessen 17,2 fps gegen die geforderten 20; der Bodenweg
 ist `cpu`). Alle übrigen, auch die sieben zuvor roten Bildzeit-Tests, laufen.

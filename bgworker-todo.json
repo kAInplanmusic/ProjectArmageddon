@@ -248,7 +248,7 @@
       "id": "O8",
       "titel": "OFFEN — GROESSTER BEFUND: Springen und Waffe-Abwerfen gibt es online NICHT",
       "phase": 3,
-      "status": "offen — bestaetigt, vom Auftraggeber selbst gemessen",
+      "status": "erledigt",
       "prioritaet": "P1",
       "warum": "Zwei Mechaniken des lokalen Spiels fehlen im Online-Match vollstaendig. Belegt: src/client/main.js:794 'if (!this.match || this.mode !== \"local\") return null;' — der Sprung steigt online STUMM aus, ohne Meldung. src/client/main.js:818 ebenso fuer dropWeapon, dort mit Hinweis ('Abwerfen ist nur im lokalen Match moeglich'). Und das CONTROL-Protokoll (src/shared/protocol.js:68-88) kennt genau HELLO, JOIN_LOBBY, START_MATCH, INPUT, SELECT_WEAPON, PING — KEIN JUMP, KEIN DROP_WEAPON; INPUT traegt nur Winkel und Kraft. Auch der Server verarbeitet nur diese (src/server/gameServer.js:1005-1170).",
       "folgen": [
@@ -263,20 +263,22 @@
         "src/client/main.js"
       ],
       "hinweis": "Beruehrt protocol.js — deshalb erst NACH dem laufenden Guenther-Drahtformat-Auftrag, und dann als eigener Auftrag mit Versionssprung. NICHT mit dem Guenther-Fix vermischen.",
-      "art": "befund_moeglicherweise_design"
+      "art": "befund_moeglicherweise_design",
+      "ergebnis": "Online-Sprung und Waffe-Abwerfen vollständig implementiert (protokoll, server, client, ereignisse)"
     },
     {
       "id": "O9",
       "titel": "OFFEN — Ein Sprung ist nicht aufzeichenbar: Replays mit Sprung divergieren",
       "phase": 3,
-      "status": "offen — bestaetigt und BEWIESEN, mit Wache im Repo",
+      "status": "erledigt",
       "prioritaet": "P1",
       "warum": "BEWIESEN mit einer Sonde (zwei Partien, identischer Seed, identische Schussfolge, in der zweiten zusaetzlich ein Sprung; aufgezeichnet wurden nur die Schuesse): ohne Sprung Hash b528e643 -> Wiedergabe b528e643 REPRODUZIERBAR; mit Sprung Hash 380b5ef8 -> Wiedergabe c7576510 ABWEICHUNG, und 3 von 12 aufgezeichneten Schuessen beim Abspielen ABGELEHNT. Ursache: `ReplayRecorder.recordInput({tick, playerId, angle, power, weaponId})` (src/engine/replay.js:118) kennt genau EINE Eingabeart, den Schuss; der Wiedergabepfad (:393) ruft ausschliesslich match.fire(...). Der Sprung ist aber Simulationszustand — jump() setzt Velocity.y.",
       "warum_es_schwer_wiegt": "Nicht nur ein Testproblem: der Server zeichnet JEDES Online-Match auf (gameServer.js:456) und stellt Sitzungen daraus wieder her (toPersisted). Ein Replay ohne den Sprung stellt nach einem Server-NEUSTART einen ABWEICHENDEN Spielzustand wieder her — still, weil die Wiederherstellung nicht gegen den Vorher-Zustand prueft.",
       "gepinnt": "tests/replay-sprung-luecke.test.js (Commit 32b1f81), drei Tests: Gegenprobe ohne Sprung, der Befund selbst (Vorbedingung scharf geprueft — wird nicht gesprungen, FAELLT der Test), und ein Quelltext-Test auf recordInput, der faellt, sobald jemand eine zweite Eingabeart einfuehrt. Der Kopfkommentar nennt die Bedingung zum UMDRECHEN der Wache.",
       "konsequenz_fuer_O8": "Fuer Online-Springen gibt es nur EINEN verantwortbaren Schnitt: ERST das Replay-Format um den Sprung erweitern, DANN den Drahtweg bauen. Umgekehrt ist zwischen den beiden Schritten jeder Serverneustart ein Zustandsverlust.",
       "entwurf": "docs/auftraege/online-sprung-und-abwurf.md (in Arbeit)",
-      "art": "arbeit"
+      "art": "arbeit",
+      "ergebnis": "Replay-Format erweitert um kind: 'jump'/'drop', Test-Wache umgedreht"
     },
     {
       "id": "O10",
