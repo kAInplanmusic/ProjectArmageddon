@@ -230,10 +230,22 @@ export function effectFor(specialName) {
   return SPECIAL_EFFECTS[specialName] ?? null;
 }
 
-/** Hat diese Waffe eine Wirkung über Schaden und Fläche hinaus? */
-export function hasSpecialEffect(weapon) {
-  return effectFor(weapon?.special) !== null;
-}
+/*
+ * HIER STAND `hasSpecialEffect()` — eine ZWEITE Antwort auf dieselbe Frage.
+ *
+ * Die eine Regel steht in `src/shared/config/weapons.js` (erzeugt aus
+ * `scripts/build-weapon-catalog.mjs`): `damage > 0 || SPECIAL_WITHOUT_DAMAGE`.
+ * Die gestrichene Fassung fragte dagegen `effectFor(weapon.special) !== null`
+ * und gab auf 89 der 150 Waffen die ANDERE Antwort (nachgemessen, s.
+ * `docs/tote-regeln.md`). Gelesen hat sie niemand: kein Import in `src/`,
+ * `tests/`, `scripts/` oder `tools/` — der Audit uebersah sie, weil er NAMEN
+ * zaehlt statt Import-Bindungen.
+ *
+ * `effectFor` bleibt: `buildEffect` hier in der Datei und die Wirkungs-Tests
+ * lesen sie weiterhin. `tests/tote-regeln.test.js` haelt fest, dass es in
+ * `src/` nur EINE Definitionsstelle gibt — eine zweite laesst den Waechter
+ * fallen, egal welche Regel sie traegt.
+ */
 
 /**
  * Elementarwirkung einer Waffe OHNE zugeordneten Spezialeffekt.
