@@ -63,9 +63,17 @@ const DATEIEN = quelldateien(path.join(ROOT, 'src'));
  * `NAME` wird als Wortgrenze gesucht, damit `PLAYER_HALF_WIDTH` nicht schon
  * durch `PLAYER_HALF_WIDTH_EXTRA` trifft.
  */
-function definitionsstellen(name) {
-  const muster = new RegExp(`^\\s*(?:export\\s+)?const\\s+${name}\\s*=`);
-  return DATEIEN
+function definitionsstellen(name, dateien = DATEIEN) {
+  /*
+   * Auch `function NAME(` zaehlt als Definition. Vorher wurde nur die
+   * const-Form erkannt — und `ohneKommentare` stand in vier der sechs Kopien
+   * als `function`, waere also durch die Wache geschluepft. Eine Wache, die
+   * die haeufigere Schreibweise nicht sieht, ist keine.
+   */
+  const muster = new RegExp(
+    `^\\s*(?:export\\s+)?(?:const\\s+${name}\\s*=|function\\s+${name}\\s*\\()`,
+  );
+  return dateien
     .filter(datei => fs.readFileSync(datei, 'utf8').split('\n').some(zeile => muster.test(zeile)))
     .map(datei => path.relative(ROOT, datei).split(path.sep).join('/'));
 }
@@ -83,6 +91,32 @@ const EINE_STELLE = [
 for (const [name, erwartet] of EINE_STELLE) {
   test(`${name} wird an genau EINER Stelle definiert`, () => {
     const stellen = definitionsstellen(name);
+    assert.deepEqual(stellen, [erwartet],
+      `${name} muss allein in ${erwartet} definiert sein, gefunden in: ${stellen.join(', ') || '—'}`);
+  });
+}
+
+/*
+ * DIESELBE FRAGE FUER DIE TESTSEITE.
+ *
+ * `DATEIEN` deckt nur `src/` ab. Genau dort lag der blinde Fleck: `ohneKommentare`
+ * stand in SECHS Testdateien, in VIER Fassungen (siehe
+ * `tests/helfer/ohne-kommentare.js` fuer die Belege und die Entscheidung).
+ * Eine Regel an sechs Stellen ist sechs Regeln — und zwei davon urteilten
+ * ueber dieselbe Datei verschieden.
+ *
+ * Diese Wache meldet die naechste Kopie. Sie ist der Grund, warum die
+ * Zusammenfuehrung nicht in einem halben Jahr wieder auseinanderlaeuft.
+ */
+const TESTDATEIEN = quelldateien(path.join(ROOT, 'tests'));
+
+const EINE_STELLE_TESTS = [
+  ['ohneKommentare', 'tests/helfer/ohne-kommentare.js'],
+];
+
+for (const [name, erwartet] of EINE_STELLE_TESTS) {
+  test(`${name} wird an genau EINER Stelle definiert (Testseite)`, () => {
+    const stellen = definitionsstellen(name, TESTDATEIEN);
     assert.deepEqual(stellen, [erwartet],
       `${name} muss allein in ${erwartet} definiert sein, gefunden in: ${stellen.join(', ') || '—'}`);
   });
