@@ -39,12 +39,30 @@
  * (Faktor 0,3–0,6) und den schnellen Geschossen (bis 1,6) zu ungenau.
  */
 import { WEAPONS } from '../src/shared/config/weapons.js';
+/*
+ * Die Motor-Konstanten werden IMPORTIERT, nicht abgeschrieben.
+ *
+ * FUND (belegt, 2026-09-27): Hier standen `POWER_TO_SPEED = 0.14`,
+ * `GRAVITY = 0.32` und `DRAG = 0.995` als eigene Literale — wertgleich, aber
+ * ohne Verbindung zur Quelle. Wer eine davon im Motor aendert, haette dieses
+ * Pruefwerkzeug still falsch rechnen lassen: es haette weiter Zünderdauern
+ * gegen eine Flugzeit geprueft, die es so nicht mehr gibt. Derselbe Fehler
+ * stand in `scripts/build-weapon-catalog.mjs` (vier Werte) und in
+ * `src/engine/match.js` (GRAVITY, inzwischen ebenfalls auf die Quelle gezogen).
+ *
+ * Quelle ist `src/shared/ballistics.js` — dieselbe, aus der Projektil-,
+ * Vorhersage- und Bot-Rechnung lesen.
+ */
+import {
+  POWER_TO_SPEED, PROJECTILE_GRAVITY, PROJECTILE_DRAG, MAX_POWER,
+} from '../src/shared/ballistics.js';
 
-/** Konstanten wie im Motor (`src/engine/match.js`). */
-const POWER = 100;
-const POWER_TO_SPEED = 0.14;
-const GRAVITY = 0.32;
-const DRAG = 0.995;
+/** Kraft, mit der geprueft wird: die Hoechstkraft des Motors. */
+const POWER = MAX_POWER;
+/** Die Schwerkraft der Geschosse — derselbe Wert wie im Motor. */
+const GRAVITY = PROJECTILE_GRAVITY;
+/** Der Luftwiderstand je Tick — derselbe Wert wie im Motor. */
+const DRAG = PROJECTILE_DRAG;
 const WINKEL = Math.PI / 4;
 
 /** Ein Tick entspricht 16 ms (60 Hz) — so rechnet auch die Anzeige. */

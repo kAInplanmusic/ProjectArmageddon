@@ -43,6 +43,26 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+/*
+ * Referenzwerte der Simulation — IMPORTIERT, nicht abgeschrieben.
+ *
+ * FUND (belegt, 2026-09-27): Hier standen vier eigene Literale
+ * (`SIM_POWER = 100`, `SIM_POWER_TO_SPEED = 0.14`, `SIM_GRAVITY = 0.32`,
+ * `SIM_DRAG = 0.995`) mit dem Kommentar „dieselben Größen wie im Motor".
+ * Wertgleich — aber genau diese Datei ERZEUGT den Waffenkatalog, aus dem
+ * `maxRange` je Waffe stammt. Wer `POWER_TO_SPEED` im Motor getunt und hier
+ * nachzuziehen vergessen haette, haette einen Katalog mit falschen
+ * Reichweiten erzeugt, ohne dass irgendeine Prüfung angeschlagen wäre:
+ * die Werte sind Literale, keine Referenzen.
+ *
+ * Quelle ist `src/shared/ballistics.js`.
+ */
+import {
+  POWER_TO_SPEED as SIM_POWER_TO_SPEED,
+  PROJECTILE_GRAVITY as SIM_GRAVITY,
+  PROJECTILE_DRAG as SIM_DRAG,
+  MAX_POWER as SIM_POWER,
+} from '../src/shared/ballistics.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
@@ -667,11 +687,11 @@ export function speedFactorFor(weapon) {
   return Number(Math.min(1.6, Math.max(untergrenze, roh / REFERENCE_PROJECTILE_SPEED)).toFixed(4));
 }
 
-/** Referenzwerte der Simulation — dieselben Größen wie im Motor. */
-const SIM_POWER = 100;
-const SIM_POWER_TO_SPEED = 0.14;
-const SIM_GRAVITY = 0.32;
-const SIM_DRAG = 0.995;
+/*
+ * Die vier Referenzwerte kommen aus dem Import oben
+ * (`SIM_POWER`, `SIM_POWER_TO_SPEED`, `SIM_GRAVITY`, `SIM_DRAG`).
+ * Hier standen sie als eigene Literale — siehe die Begruendung am Import.
+ */
 
 /**
  * Reichweite eines Projektils durch Simulation der Flugbahn.
