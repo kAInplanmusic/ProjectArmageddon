@@ -65,7 +65,7 @@ ich im Code selbst gelesen:
 | B-7 | Online-Feuern ohne Verbindung stumm (Nachbarn melden, `fire()` nicht) | Bericht | B | ✅ 2026-10-01 — `fire()` meldet jetzt „Nicht verbunden" und loggt „Schuss konnte nicht gesendet werden". Wächter `tests/feuern-ohne-verbunden.test.js` |. |
 | B-8 | `pruneDisconnected` hat **keinen** Produktionsaufrufer — Doku-Versprechen „Team verfällt" gilt nicht | Bericht | B | ✅ 2026-10-01 — Produktionsaufrufer existiert (`pruneLobbies` ruft `pruneDisconnected`). `startPruning` läuft im Server-Start. Wächter `tests/verfall-aufrufer.test.js` |
 | B-9 | Beim Trennen erfährt der verbliebene Spieler nichts | Bericht | B | ✅ 2026-10-01 — `socket.on('close')` ruft jetzt `broadcastLobbyState()` auf, damit alle verbliebenen Clients den aktualisierten Lobbyzustand erhalten. Wächter `tests/server-beitritt-und-trennung.test.js` |. |
-| B-10 | Letzter Beitretender liest „Warte auf Mitspieler: **2/2** Teams besetzt" | `attach` vor `session.start()` | B | ⬜ |
+| B-10 | Letzter Beitretender liest „Warte auf Mitspieler: **2/2** Teams besetzt" | `attach` vor `session.start()` | B | ✅ 2026-10-01 — Reihenfolge geändert: Session wird vor `attach` gestartet, `laeuft` ist jetzt korrekt. Wächter `tests/server-beitritt-und-trennung.test.js` |. |
 | B-11 | `R` heißt in der Keymap „Neustart", verlässt aber das Match | `index.html:1035` vs. `main.js:273-275` | B | ✅ 2026-10-01 — Tastaturliste sagt jetzt „Match verlassen", Kommentar im Code nachgezogen. Wächter `tests/abort-knopf.test.js` (R-Zeile muss „verlassen" nennen) |
 | B-12 | `karte_unerreichbar` lokal stumm; Code-Kommentar widerspricht dem Test | Bericht | B | ⬜ |
 
