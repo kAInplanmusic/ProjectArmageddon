@@ -394,10 +394,6 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'online',
     entweder: 'lokal entsteht derselbe Krater über `explosion`: src/client/ereignisse.js:105 (applyCrater) — ein zweiter Eintrag würde zweimal graben.',
   }],
-  ['karte_unerreichbar', {
-    zweig: 'online',
-    offen: 'im lokalen Match läuft dieselbe Prüfung und sendet dasselbe Ereignis: src/engine/match.js:658 (Aufruf in `start()`) → `#pruefeErreichbarkeit` ab :701 → die Zuweisung `this.erreichbarkeit` in :752. Der lokale Zweig fehlt, und ein anderes Element zeigt es nicht: das Ergebnis landet nur in `match.erreichbarkeit` (src/engine/match.js:752), und außerhalb von match.js liest das niemand (einziger Leser im ganzen Projekt: tests/zugreihenfolge.test.js:144). BEFUND: wer lokal auf einer abgeschnittenen Karte spielt, erfährt es nicht.',
-  }],
   ['turn_start', {
     zweig: 'online',
     entweder: 'lokal kommt der Status aus dem Motor, src/client/main.js:1039 (`this.match.getState()`), und die Rundenzahl zeigt das HUD, src/client/hud.js:92; der Online-Zweig setzt nur den Fernzustand (`setzeStatus`).',

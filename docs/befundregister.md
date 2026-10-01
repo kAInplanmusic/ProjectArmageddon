@@ -67,7 +67,7 @@ ich im Code selbst gelesen:
 | B-9 | Beim Trennen erfährt der verbliebene Spieler nichts | Bericht | B | ✅ 2026-10-01 — `socket.on('close')` ruft jetzt `broadcastLobbyState()` auf, damit alle verbliebenen Clients den aktualisierten Lobbyzustand erhalten. Wächter `tests/server-beitritt-und-trennung.test.js` |. |
 | B-10 | Letzter Beitretender liest „Warte auf Mitspieler: **2/2** Teams besetzt" | `attach` vor `session.start()` | B | ✅ 2026-10-01 — Reihenfolge geändert: Session wird vor `attach` gestartet, `laeuft` ist jetzt korrekt. Wächter `tests/server-beitritt-und-trennung.test.js` |. |
 | B-11 | `R` heißt in der Keymap „Neustart", verlässt aber das Match | `index.html:1035` vs. `main.js:273-275` | B | ✅ 2026-10-01 — Tastaturliste sagt jetzt „Match verlassen", Kommentar im Code nachgezogen. Wächter `tests/abort-knopf.test.js` (R-Zeile muss „verlassen" nennen) |
-| B-12 | `karte_unerreichbar` lokal stumm; Code-Kommentar widerspricht dem Test | Bericht | B | ⬜ |
+| B-12 | `karte_unerreichbar` lokal stumm; Code-Kommentar widerspricht dem Test | Bericht | B | ✅ 2026-10-01 — der Motor prüft auch lokal und emittiert das Ereignis; dem Client fehlte der `lokal`-Zweig. Jetzt `beide(fn)`, Eintrag aus `EINZWEIG_BELEGT` entfernt. Wächter `tests/event-coverage.test.js` |
 
 ## C — Werkzeuge und Ordnung
 
@@ -77,7 +77,7 @@ ich im Code selbst gelesen:
 | C-2 | `EINSTIEG` fängt jedes `index.js` (auch das leere) | Werkzeug | C | 🟡 Worker M |
 | C-3 | `doppelregeln()` sieht nur `const GROSSBUCHSTABEN` — Funktionen unsichtbar | Werkzeug | C | 🟡 Worker M |
 | C-4 | „kein Importeur"-Wächter prüft **30 von 90** Dateien | Werkzeug | C | 🟡 Worker M |
-| C-5 | `match.js` **3195/3200 = 5 Zeilen Luft** | `tests/shooting.test.js` | C | ⬜ |
+| C-5 | `match.js` **3195/3200 = 5 Zeilen Luft** | `tests/shooting.test.js` | C | ✅ 2026-10-01 — die Zahl ist überholt: `match.js` steht bei **3092** Zeilen (Zerlegung Schritt 4 abgeschlossen), also 108 Zeilen Luft. Wächter `tests/match-zeilenbudget.test.js` hält die 3200-Grenze fest, statt sie in Fließtext zu führen |
 | C-6 | „Bot-KI" in 22 Kommentaren als Begründung, obwohl `server/index.js:33` sie verneint | Bericht | C | ⬜ |
 | C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ⬜ |
 | C-8 | `gameServer.js:1145` 282 Z. / 26 `this.`; `guentherSystem.update` 66 `this.` in 169 Z. | Bericht | C | ⬜ |

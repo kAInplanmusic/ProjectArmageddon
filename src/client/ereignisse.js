@@ -776,27 +776,29 @@ export const EREIGNIS_WIRKUNGEN = {
   },
 
   /*
-   * Die Karte hat eine Figur auf einer unerreichbaren Fläche.
-   *
-   * Das ist kein Fehler im Ablauf — die Partie läuft weiter —, aber der
-   * betroffene Spieler soll es WISSEN. Ohne diesen Eintrag säße er auf
-   * einer Insel und wartete darauf, dass etwas passiert, ohne zu ahnen,
-   * dass niemand ihn erreichen kann.
-   *
-   * Die Meldung ist bewusst nüchtern: Sie nennt den Zustand, nicht eine
-   * Schuldzuweisung. Es ist eine Eigenschaft der gezogenen Karte.
-   *
-   * Online only: die Prüfung gehört zur Karte, und die kennt der Server.
-   */
-  karte_unerreichbar: {
-    online: (k, n) => {
+     * Die Karte hat eine Figur auf einer unerreichbaren Fläche.
+     *
+     * Das ist kein Fehler im Ablauf — die Partie läuft weiter —, aber der
+     * betroffene Spieler soll es WISSEN. Ohne diesen Eintrag säse er auf
+     * einer Insel und wartete darauf, dass etwas passiert, ohne zu ahnen,
+     * dass niemand ihn erreichen kann.
+     *
+     * Die Meldung ist bewusst nüchtern: Sie nennt den Zustand, nicht eine
+     * Schuldzuweisung. Es ist eine Eigenschaft der gezogenen Karte.
+     *
+     * FUND (belegt): Der lokale Zweig fehlte. Die Engine prüft lokal und
+     * sendet `karte_unerreichbar` (match.js:755), aber der Client hatte
+     * nur `online:`. Lokaler Spieler erfuhr es nicht.
+     *
+     * BEICHS: dieselbe Meldung in beiden Modi.
+     */
+    karte_unerreichbar: beide((k, n) => {
       k.hud?.log(
         `Die Karte hat eine abgeschnittene Fläche (${n.grund}) — `
         + 'eine Einheit ist von dort aus nicht erreichbar',
         'warn',
       );
-    },
-  },
+    }),
 };
 
 /**
