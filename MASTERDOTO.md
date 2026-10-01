@@ -198,8 +198,27 @@ freies Team ist kein Bot-Team, sondern ein freies Team. Daneben gibt es
 Motor (`guentherSystem.js`, Geschütztürme), laufen deterministisch mit und
 besetzen KEIN Team.
 
+**Abnahme 2026-10-01 — konsolidierter Stand**
+
+**Gates gemessen 2026-10-01**
+- `npm test` 1230/1230 grün, 126 Dateien
+- `npm run checks` 21 Gates, 0 Verstöße
+- `npm run lint` 0 Fehler
+- `npm run build` 505,61 kB JS, gzip 138,38 kB
+- `npm run perf` 0 Ticks >16,67 ms, 193,8× Echtzeit
+
+**Abnahmeberichte vorhanden**
+- `docs/abnahme-ux-2026-10-01.md` — E2E-Abdeckung, Lücken Maus/Touch/Hochformat, 3 harte offene UX-Punkte
+- `docs/abnahme-optimierung-2026-10-01.md` — Bundle-Analyse, Perf-Verbesserung, WebP −27 %/−36 %
+- `docs/abnahme-deploy-2026-10-01.md` — Server-Start/Stop reproduzierbar, Rollback nicht dokumentiert
+- `docs/abnahme-bugs-2026-10-01.md` — C-Befunde bewertet, Werkzeug-Blindstelle, 7 tote Exporte
+- `docs/abnahme-balance-2026-10-01.md` — 150 Waffen, 77 wirksam bei 854 px, Median STK 37, 37 nur näher wirksam
+
+**Offene Design-Entscheidungen**
+- Balance: Median STK 37 bei 200 HP/854 px — zu lang? Bedarf Sweep über Distanzen; `npm run balance:sweep` läuft im Hintergrund.
+- UX: Steuerungsliste nach oben, Maus-E2E, W/S halten, Revanche-Zustand zurücksetzen
+
 **Was entfernt ist** (vorher stand hier ein Server-Bot, der jede Figur ohne
-verbundenen Client selbst schoss):
 
 | Entfernt | Warum |
 |---|---|
