@@ -515,6 +515,38 @@ class LobbySession {
     if (this.clients.size === 0) this.emptySince = Date.now();
   }
 
+  /**
+   * Sende den aktuellen Lobbyzustand an alle verbundenen Clients dieser Sitzung.
+   *
+   * Wird nach `disconnect` aufgerufen, damit die verbliebenen Spieler sofort
+   * sehen, dass ein Team getrennt ist (B-9). Ohne diesen Broadcast würden sie
+   * die Änderung erst beim nächsten regulären Tick bemerken — oder gar nicht,
+   * wenn die Lobby im Wartezustand bleibt.
+   */
+  broadcastLobbyState() {
+    if (this.clients.size === 0) return;
+    const msg = {
+      lobby: this.lobby.id,
+      status: this.lobby.status,
+      seed: this.match?.seedManager?.baseSeed ?? null,
+      preset: this.lobby.preset,
+      kartentyp: this.lobby.kartentyp ?? null,
+      orientation: this.lobby.orientation ?? 'landscape',
+      laeuft: this.laeuft,
+      teams: this.lobby.teams,
+      besetzteTeams: new Set(
+        this.lobby.seats.filter(seat => seat.token !== null && seat.connected).map(seat => seat.teamId)
+      ).size,
+      unitsPerPlayer: this.lobby.playersPerTeam,
+      snapshot: this.match?.getState() ?? null,
+    };
+    for (const socket of this.clients.values()) {
+      if (socket.readyState === 1) {
+        socket.send(controlMessage(CONTROL.LOBBY_STATE, msg));
+      }
+    }
+  }
+
   /** Verarbeitet einen Feuerbefehl mit vollständiger Validierung. */
   /**
    * Nimmt ein Spielerkommando entgegen und zählt das Ergebnis.
@@ -1806,6 +1838,11 @@ export class GameServer {
       const session = this.#sessions.get(context.lobbyId);
       session?.detach(context.token);
       this.#lobbies.disconnect(context.lobbyId, context.token);
+      // B-9: Verbliebene Spieler müssen erfahren, dass ein Mitspieler getrennt ist.
+      // Nach dem `disconnect` senden wir den aktualisierten Lobbyzustand an alle
+      // noch verbundenen Clients, damit die Anzeige (z. B. „Warte auf Mitspieler")
+      // sofort stimmt und nicht erst beim nächsten Tick aktualisiert wird.
+      session?.broadcastLobbyState();
       const lobby = this.#lobbies.get(context.lobbyId);
       if (lobby && lobby.seats.every(seat => !seat.connected)) {
         session?.stop();

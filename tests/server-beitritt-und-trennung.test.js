@@ -121,21 +121,16 @@ test('ZUSTANDS-PIN: Beim Trennen geht keine Meldung an den verbliebenen Spieler'
     const getrennt = sicht.lobby.seats.filter(seat => seat.connected === false);
     assert.equal(getrennt.length, 1, 'Der getrennte Platz muss als getrennt geführt sein');
 
-    // Was auf der LEITUNG ankommt: nichts, was die Trennung nennt.
-    //
-    // Beurteilt wird nicht „kam überhaupt etwas?" — die Sitzung sendet
-    // selbstverständlich Spielereignisse (`turn_start`, `round_crates`, …).
-    // Gesucht ist die MELDUNG über den Weggang: ein Nachrichtentyp, der ihn
-    // nennt, oder ein Text, in dem der Name steht.
-    const spuren = fenster.control.filter(nachricht =>
-      /leav|left|disconnect|verlass|trenn|lobby_state|verfallen/i.test(String(nachricht.t))
-      || JSON.stringify(nachricht).includes('Zweiter'));
-    assert.deepEqual(
-      spuren, [],
-      `OFFENER BEFUND: Der verbliebene Spieler bekommt keine Meldung über die Trennung `
-      + `— meldet der Server sie künftig, fällt dieser Pin und der Test wird umgestellt. `
-      + `Gekommen sind: ${JSON.stringify([...new Set(fenster.control.map(n => n.t))])}`,
+    // Was auf der LEITUNG ankommt: jetzt ein `lobby_state`-Broadcast nach dem Trennen.
+    // Der Pin war: keine Meldung, heute ist die Meldung da.
+    const spuren = fenster.control.filter(nachricht => 
+      /lobby_state/i.test(String(nachricht.t))
     );
+    assert.ok(spuren.length > 0, 'Nach dem Trennen sollte ein lobby_state-Broadcast ankommen');
+
+    // Prüfen, dass der Lobbyzustand aktuell ist (besetzteTeams passt)
+    const letztesLobby = spuren[spuren.length - 1];
+    assert.equal(letztesLobby.besetzteTeams, 1, 'Im Lobbyzustand muss besetzteTeams auf 1 reduziert sein');
     assert.ok(fenster.snapshots > 0, 'Die Sitzung läuft weiter und sendet Zustände');
   } finally {
     await server.close();
