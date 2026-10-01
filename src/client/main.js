@@ -962,7 +962,17 @@ class Game {
     const vorrat = ergebnis.ammo < 0 ? '∞' : ergebnis.ammo;
     this.hud.log(`${name} abgeworfen (${vorrat} Munition liegt bereit)`, 'accent');
     // Die Liste muss sofort nachziehen.
-    this.hud.update(this.currentState(), { aim: this.aim, onWeaponSelect: i => this.selectWeapon(i), onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()), onJump: seitlich => this.jump(seitlich) });
+    /*
+     * Nur `aim` und `onWeaponSelect` — `hud.update` kennt genau diese.
+     *
+     * FUND (belegt, B-4 im Befundregister): Hier standen zusätzlich
+     * `onWeaponDrop` und `onJump`. `Hud#update` liest nur `aim` und
+     * `onWeaponSelect` (Signatur in `hud.js`); die zwei anderen wurden nie
+     * gelesen — toter Draht. Die Sprung-/Abwurf-Eingabe läuft längst über den
+     * `InputController` (`#input` im Konstruktor), nicht über die HUD-Liste.
+     * Ein Parameter, den niemand liest, ist eine Absicht ohne Wirkung.
+     */
+    this.hud.update(this.currentState(), { aim: this.aim, onWeaponSelect: i => this.selectWeapon(i) });
     return ergebnis;
   }
 

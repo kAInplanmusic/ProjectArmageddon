@@ -59,7 +59,7 @@ ich im Code selbst gelesen:
 | B-1 | Lebensbalken online mit fester 100; 32 echte Werte 48–195, **100 kommt nicht vor** | `main.js:1168`, `hud.js:365` | B | 🟡 Worker K |
 | B-2 | Der Restore läuft einen Takt zu weit — alle Figuren 8 px tiefer, Kommentar „exakt derselbe Zustand" widerlegt | `gameServer.js:167/169` | B | 🟡 Worker K |
 | B-3 | Zünder-Countdown online immer 0 | `renderer.js:820` | B | 🟡 Worker K |
-| B-4 | `onJump`/`onWeaponDrop` an `hud.update` übergeben und dort **nie gelesen** | 0 Treffer | B | ⬜ |
+| B-4 | `onJump`/`onWeaponDrop` an `hud.update` übergeben und dort **nie gelesen** | 0 Treffer | B | ✅ 2026-10-01 — tote Parameter aus dem `hud.update`-Aufruf entfernt; Eingabe läuft über `InputController`. Wächter `tests/hud-verdrahtung.test.js` (je Schlüssel genau 1 Feld in `main.js`; Gegenprobe gefahren) |
 | B-5 | `☠`/`↑`-Marken online fest auf leer/1 | Bericht | B | ⬜ |
 | B-6 | Kader ohne Überlaufschutz bei 30–40 Figuren | Bericht | B | ⬜ |
 | B-7 | Online-Feuern ohne Verbindung stumm (Nachbarn melden, `fire()` nicht) | Bericht | B | ⬜ |
