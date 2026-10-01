@@ -61,7 +61,7 @@ ich im Code selbst gelesen:
 | B-3 | Zünder-Countdown online immer 0 | `renderer.js:820` | B | 🟡 Worker K |
 | B-4 | `onJump`/`onWeaponDrop` an `hud.update` übergeben und dort **nie gelesen** | 0 Treffer | B | ✅ 2026-10-01 — tote Parameter aus dem `hud.update`-Aufruf entfernt; Eingabe läuft über `InputController`. Wächter `tests/hud-verdrahtung.test.js` (je Schlüssel genau 1 Feld in `main.js`; Gegenprobe gefahren) |
 | B-5 | `☠`/`↑`-Marken online fest auf leer/1 | Bericht | B | ⬜ |
-| B-6 | Kader ohne Überlaufschutz bei 30–40 Figuren | Bericht | B | ⬜ |
+| B-6 | Kader ohne Überlaufschutz bei 30–40 Figuren | Bericht | B | ✅ 2026-10-01 — `#hud-left`/`#hud-right` bekommen `align-self: stretch; min-height: 0; overflow-y: auto`; der Kader scrollt statt über die Spielfläche zu ragen. E2E `grosse-teams.spec.mjs` (Geometrie gemessen, Gegenprobe gefahren) |
 | B-7 | Online-Feuern ohne Verbindung stumm (Nachbarn melden, `fire()` nicht) | Bericht | B | ⬜ |
 | B-8 | `pruneDisconnected` hat **keinen** Produktionsaufrufer — Doku-Versprechen „Team verfällt" gilt nicht | Bericht | B | ⬜ |
 | B-9 | Beim Trennen erfährt der verbliebene Spieler nichts | Bericht | B | ⬜ |

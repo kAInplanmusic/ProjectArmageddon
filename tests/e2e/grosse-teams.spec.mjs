@@ -93,6 +93,71 @@ test('Krieg: 6 Teams mit 5 Einheiten zeigen 30 Figuren und laufen', async ({ pag
   await expect(page.locator('#end-overlay')).toBeHidden();
 });
 
+test('Krieg: der Kader bleibt bei 30 Figuren auf der Spielfläche und ist scrollbar', async ({ page }) => {
+  /*
+   * ## Der Befund (B-6 im Befundregister, A9 im Prüfbericht)
+   *
+   * `#hud-left` hatte `align-self: start` und die Liste `#roster` keinen
+   * `overflow` — bei 30–40 Figuren wuchs die Liste über Zeile 2 des HUD-Rasters
+   * hinaus und lag HINTER dem (absolut positionierten) Protokollfeld: unten
+   * fehlten Figuren, einen Scrollweg gab es nicht.
+   *
+   * ## Was hier geprüft wird
+   *
+   * Die GEOMETRIE, nicht `toBeVisible()` (das prüft nur eine nicht-leere Box,
+   * keine Deckung):
+   *
+   *   1. Der Kader-Kasten bleibt INNERHALB der Spielfläche.
+   *   2. Die Liste ist scrollbar (`scrollHeight > clientHeight`) — der
+   *      Überlaufschutz ist da, statt den Inhalt abzuschneiden.
+   *   3. Der LETZTE Eintrag ist durch Scrollen ERREICHBAR — bei 30 Figuren
+   *      muss auch die unterste Figur einsehbar sein.
+   */
+  await starteMit(page, 6, 5);
+  await expect(page.locator('#roster .roster-item')).toHaveCount(30, { timeout: 20_000 });
+
+  const messung = await page.evaluate(() => {
+    const stage = document.getElementById('stage').getBoundingClientRect();
+    // Der Scroll-Container ist das PANEL (#hud-left), nicht die Liste (#roster):
+    // `overflow-y: auto` sitzt auf dem Panel, die `<ul>` wächst innen weiter.
+    const panel = document.getElementById('hud-left');
+    const liste = document.getElementById('roster');
+    const items = [...liste.querySelectorAll('.roster-item')];
+
+    const box = panel.getBoundingClientRect();
+    // Vor dem Scrollen: liegt das Panel auf der Spielfläche?
+    const imStage = box.top >= stage.top - 0.5 && box.bottom <= stage.bottom + 0.5;
+    const scrollbar = panel.scrollHeight > panel.clientHeight;
+
+    // Letzten Eintrag anfahren und messen, ob er im sichtbaren Fenster liegt.
+    panel.scrollTop = panel.scrollHeight;
+    const letzter = items[items.length - 1].getBoundingClientRect();
+    const erreichbar = letzter.bottom <= stage.bottom + 0.5 && letzter.top >= stage.top - 0.5;
+
+    return {
+      imStage,
+      scrollbar,
+      scrollHeight: panel.scrollHeight,
+      clientHeight: panel.clientHeight,
+      erreichbar,
+      letzterTop: Math.round(letzter.top),
+      letzterBottom: Math.round(letzter.bottom),
+      stageTop: Math.round(stage.top),
+      stageBottom: Math.round(stage.bottom),
+    };
+  });
+
+  expect(messung.imStage,
+    `Der Kader läuft über die Spielfläche hinaus (bottom ${messung.letzterBottom} > stage ${messung.stageBottom})`)
+    .toBe(true);
+  expect(messung.scrollbar,
+    `Kein Überlaufschutz: scrollHeight ${messung.scrollHeight} == clientHeight ${messung.clientHeight}`)
+    .toBe(true);
+  expect(messung.erreichbar,
+    `Der letzte Kader-Eintrag ist auch nach dem Scrollen nicht sichtbar (top ${messung.letzterTop})`)
+    .toBe(true);
+});
+
 test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt mehr als eine Zeile', async ({ page }) => {
   /*
    * ## Der Befund, den dieser Test festhält (belegt, gemessen in Chrome)
