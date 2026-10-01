@@ -113,6 +113,25 @@ test('Beide Wege laufen durch dieselbe Methode', () => {
     'Der Tastenzweig räumt noch selbst auf — er soll `abortMatch()` nutzen');
 });
 
+test('Die Tastaturliste nennt die R-Taste beim Namen — verlassen, nicht Neustart', () => {
+  /*
+   * B-11 im Befundregister, hier als Wächter.
+   *
+   * Die Taste `R` ruft `abortMatch()` — sie VERLÄSST das Match ins Menü (mit
+   * Rückfrage), sie STARTET es nicht neu. Die Tastaturliste im Menü behauptete
+   * aber „R Neustart" — genau das Gegenteil der Wirkung. Ein „Neustart" ist die
+   * Revanche-Taste (dieselbe Karte, neuer Lauf), die es als eigenen Knopf gibt.
+   *
+   * Wer „Neustart" liest und R trifft, verliert seine Partie in der Annahme,
+   * sie neu zu starten. Die Beschriftung muss zur Wirkung passen.
+   */
+  const zeile = html.match(/<b>R<\/b>\s*([^<]+)/);
+  assert.ok(zeile, 'die Tastaturzeile der R-Taste wurde nicht gefunden');
+  assert.match(zeile[1], /verlassen/i,
+    `die R-Taste ist als „${zeile[1].trim()}" beschriftet — sie verlässt das Match, `
+    + 'nicht „Neustart"');
+});
+
 test('Der Abbruch fragt nach', () => {
   /*
    * Der Kern des Befunds: Ein Fehlgriff darf keine Partie kosten. Geprüft wird,

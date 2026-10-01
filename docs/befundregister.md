@@ -66,7 +66,7 @@ ich im Code selbst gelesen:
 | B-8 | `pruneDisconnected` hat **keinen** Produktionsaufrufer — Doku-Versprechen „Team verfällt" gilt nicht | Bericht | B | ⬜ |
 | B-9 | Beim Trennen erfährt der verbliebene Spieler nichts | Bericht | B | ⬜ |
 | B-10 | Letzter Beitretender liest „Warte auf Mitspieler: **2/2** Teams besetzt" | `attach` vor `session.start()` | B | ⬜ |
-| B-11 | `R` heißt in der Keymap „Neustart", verlässt aber das Match | `index.html:1035` vs. `main.js:273-275` | B | ⬜ |
+| B-11 | `R` heißt in der Keymap „Neustart", verlässt aber das Match | `index.html:1035` vs. `main.js:273-275` | B | ✅ 2026-10-01 — Tastaturliste sagt jetzt „Match verlassen", Kommentar im Code nachgezogen. Wächter `tests/abort-knopf.test.js` (R-Zeile muss „verlassen" nennen) |
 | B-12 | `karte_unerreichbar` lokal stumm; Code-Kommentar widerspricht dem Test | Bericht | B | ⬜ |
 
 ## C — Werkzeuge und Ordnung

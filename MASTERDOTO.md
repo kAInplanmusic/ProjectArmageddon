@@ -30,16 +30,16 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1225/1225** grün
-*(Nachgemessen 2026-10-01 aus einem vollen Lauf (`npm test` → **1225 bestanden,
+Verifikation dieses Zuges: `npm test` **1226/1226** grün
+*(Nachgemessen 2026-10-01 aus einem vollen Lauf (`npm test` → **1226 bestanden,
 0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js | wc -l` → **122**).
-Die Zahl ist seither fünfmal gewachsen (983 → 1122 → 1218 → 1223 → 1225); die
+Die Zahl ist seither fünfmal gewachsen (983 → 1122 → 1218 → 1223 → 1226); die
 Schritte stehen im Verlauf: unbegrenzte Sprünge, HUD-Vorrang, Zerlegung des
 Geschützes (`tests/turret-zerlegung.test.js`), gemeinsamer Kommentar-Helfer
 (`tests/ohne-kommentare.test.js`), Wache gegen eine zweite Kopie — und zuletzt
 `tests/zerlegung-aufbau.test.js` (9), `tests/profil-anzeige.test.js` (4),
-`tests/abort-knopf.test.js` (1, A-9: Abbruchknopf online) und
-`tests/hud-verdrahtung.test.js` (2, B-4: toter Draht aus der HUD-Liste))* ·
+`tests/abort-knopf.test.js` (2, A-9: Abbruchknopf online + B-11: R-Taste heißt
+verlassen) und `tests/hud-verdrahtung.test.js` (2, B-4))* ·
 `npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
 check:damage-types` 0 Fehler · `npm run build` erfolgreich ·

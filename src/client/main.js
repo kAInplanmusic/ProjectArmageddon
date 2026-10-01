@@ -307,7 +307,7 @@ class Game {
        */
       void this.sound?.starte();
 
-      // Der Neustart darf nicht ausgelöst werden, während in ein Formularfeld
+      // Der Abbruch darf nicht ausgelöst werden, während in ein Formularfeld
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
       if (isTextEntry(event.target)) return;
       if (event.key === 'r' || event.key === 'R') {
