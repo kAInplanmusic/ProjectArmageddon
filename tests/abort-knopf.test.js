@@ -146,6 +146,30 @@ test('Der Knopf ist nur im Match sichtbar', () => {
     + 'drei Nutzungen (lokal, online, Aufräumen)');
 });
 
+test('Online wird der Abbruchknopf EINGEBLENDET — nicht nur lokal', () => {
+  /*
+   * A-9 im Befundregister, hier als Wächter festgehalten.
+   *
+   * Der Test darüber zählt nur die GESAMTZAHL der `#zeigeAbbruch`-Aufrufe — er
+   * war grün, während der Online-Zweig den Knopf NIE einblendete. Zählen findet
+   * eine fehlende STELLE nicht: Solange lokal + Aufräumen genug Aufrufe liefern,
+   * bleibt der Zähler grün, obwohl online kein Rückweg existiert.
+   *
+   * Deshalb wird hier die STELLE geprüft: Im Rumpf von `startOnline` muss ein
+   * `#zeigeAbbruch(true)` stehen. Nur dort entsteht online ein Match, das man
+   * verlassen können muss.
+   */
+  const code = ohneKommentare(main);
+  const start = code.indexOf('async startOnline(');
+  const ende = code.indexOf('#buildRemoteTerrain', start);
+  assert.ok(start >= 0 && ende > start,
+    'die Methoden-Grenzen von startOnline() wurden nicht gefunden');
+
+  const rumpf = code.slice(start, ende);
+  assert.match(rumpf, /#zeigeAbbruch\(true\)/,
+    'startOnline blendet den Abbruchknopf nicht ein — online gibt es keinen Rückweg');
+});
+
 test('Der Knopf ist im HTML von Anfang an versteckt', () => {
   /*
    * FUND (belegt, im E2E-Lauf): Beim ersten Anlauf fehlte das `hidden`-Attribut

@@ -978,6 +978,19 @@ class Game {
     this.hud.log('Verbinde mit Server …', 'accent');
     this.mode = 'online';
     this.running = true;
+    /*
+     * Der Abbruchknopf gilt auch online — nicht nur lokal.
+     *
+     * FUND (belegt, A-9 im Befundregister): `#zeigeAbbruch(true)` stand nur im
+     * LOKALEN Zweig. Online verschwand das Menü, aber der Knopf erschien nie —
+     * wer eine Lobby nicht wollte oder aus einem Match aussteigen musste, hatte
+     * keinen Rückweg außer Neuladen. `abortMatch()` konnte das längst (er prüft
+     * `mode === 'online'` und trennt über `#verlasseMatch`); es fehlte allein
+     * das EINBLENDEN. Gezeigt wird ab dem Commit aufs Verbinden — auch während
+     * „Warte auf Mitspieler" will man zurücktreten können (der Server verfällt
+     * das Team über `pruneDisconnected`).
+     */
+    this.#zeigeAbbruch(true);
 
     let targetLobby = lobbyId;
     let resolvedSeed = seed;
@@ -1020,6 +1033,8 @@ class Game {
     } catch (error) {
       this.hud.log(`Serverfehler: ${error.message}`, 'danger');
       this.menuOverlay.hidden = false;
+      // Kein Match, kein Abbruchknopf — der Fehlschlag führt zurück ins Menü.
+      this.#zeigeAbbruch(false);
       return { ok: false, error: error.message };
     }
 

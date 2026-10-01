@@ -45,7 +45,7 @@ ich im Code selbst gelesen:
 | A-6 | **Mahlstrom online 7 Runden unsichtbar** — Motor 8, Client 15 | `main.js:1194`, `renderer.js:1117` | A | 🟡 Worker K |
 | A-7 | **Sidegrad erreicht den Client nie** — Bahn ±335 px | `main.js:1607` | A | 🟡 Worker K |
 | A-8 | **Fallschaden bremst nicht** — 633 px Sturz, 0 Schaden | Schwelle 11 gegen Aufprall 9,62 | A | 🟡 Worker L |
-| A-9 | **Abbruchknopf online nicht erreichbar** | `main.js:774`, `index.html:400` (`[hidden]` unüberstimmbar) | A | ⬜ |
+| A-9 | **Abbruchknopf online nicht erreichbar** | `main.js:774`, `index.html:400` (`[hidden]` unüberstimmbar) | A | ✅ 2026-10-01 — `startOnline` blendet `#zeigeAbbruch(true)` ein; Fehlschlag-Pfad blendet aus. Wächter `tests/abort-knopf.test.js` (Online-Zweig geprüft, Gegenprobe gefahren) |
 | A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `menuOverlay.hidden` an `:816/:957/:2335`, Server `gameServer.js:1170` + `lobby.js:355/369` | A | ⬜ |
 | A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
 | A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ⬜ |
