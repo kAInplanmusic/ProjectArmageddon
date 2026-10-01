@@ -1925,6 +1925,38 @@ export async function startServer(options = {}) {
     ?? (persistenceEnabled ? new PersistenceStore({ path: options.statePath ?? '.pa-state/lobbies.json' }) : null);
 
   const server = new GameServer({ ...options, persistence });
+  /*
+   * ERST den Port binden, DANN den Zustand wiederherstellen.
+   *
+   * FUND (belegt, gemessen 2026-09-27): Hier stand `restoreState()` VOR
+   * `listen()`. Die Wiederherstellung spielt jeden gesicherten Replay-Kern
+   * erneut durch — rund 60 ms je gespielter Lobby. Gemessen mit dem Zustand
+   * dieses Arbeitsbaums (321 Lobbys, davon 90 mit Replay):
+   *
+   *     Zeit bis „läuft auf"   5 573 ms   (unbelastet)
+   *                            ~9 500 ms  (unter paralleler Last)
+   *
+   * Ein belegter Port meldete sich deshalb erst NACH der ganzen
+   * Wiederherstellung — für den Startenden ein Hänger, keine Fehlermeldung.
+   * Gemessen am belegten Port, mit und ohne Zustandsdatei:
+   *
+   *     ohne PA_STATE_PATH (Repozustand): Exit 1 nach 5 992 ms
+   *     mit  PA_STATE_PATH (leer):        Exit 1 nach   301 ms
+   *
+   * Die Meldung („Port … ist bereits belegt") war die ganze Zeit richtig — sie
+   * kam nur zu spät. `listen()` braucht den Zustand nicht: Es bindet den Socket
+   * und sonst nichts. Der Test `tests/server-start.test.js:302` wartete 10 s und
+   * tötete den Prozess danach mit SIGKILL; sein Exit-Wert war dann die
+   * Zeichenkette `timeout` statt der erwarteten 1 — der Befund.
+   *
+   * Die Umstellung ist gefahrlos, weil `restoreState()` synchron läuft: Zwischen
+   * der Zusage von `listen()` und dem Ende der Wiederherstellung gibt es kein
+   * `await`, also wird in diesem Fenster keine einzige Anfrage bedient.
+   */
+  const info = await server.listen(
+    options.port ?? Number(process.env.PORT ?? 3000),
+    options.host ?? '127.0.0.1',
+  );
   const restored = server.restoreState();
   server.startPersistence();
   /*
@@ -1938,7 +1970,6 @@ export async function startServer(options = {}) {
    * `tests/server-lobby-verfall.test.js` tut das.
    */
   server.startPruning();
-  const info = await server.listen(options.port ?? Number(process.env.PORT ?? 3000), options.host ?? '127.0.0.1');
   return { server, restored, ...info };
 }
 

@@ -325,8 +325,19 @@ test('Ein belegter Port meldet sich verständlich, nicht als Stapelauszug', asyn
     zweiter.stderr.on('data', d => { text += d.toString(); });
 
     const code = await new Promise(resolve => {
-      zweiter.on('exit', resolve);
-      setTimeout(() => { zweiter.kill('SIGKILL'); resolve('timeout'); }, 10_000);
+      /*
+       * Die Frist wird beim Ende des Prozesses AUFGEHOBEN.
+       *
+       * FUND (belegt, gemessen 2026-09-27): Hier stand nur
+       * `zweiter.on('exit', resolve)` neben einem `setTimeout(…, 10_000)`. Im
+       * Normalfall endet der Prozess nach ~0,3 s — die Frist lief trotzdem weiter
+       * und hielt den Testprozess weitere 10 s am Leben. Gemessen: der Test
+       * selbst brauchte 636 ms, die Testdatei 10 481 ms. Ein offener Zeitgeber
+       * ist kein Fehler im Prüfergebnis, aber er kostet jede Runde 10 s und
+       * verdeckt, wie lange der geprüfte Weg wirklich braucht.
+       */
+      const frist = setTimeout(() => { zweiter.kill('SIGKILL'); resolve('timeout'); }, 10_000);
+      zweiter.on('exit', wert => { clearTimeout(frist); resolve(wert); });
     });
 
     assert.equal(code, 1, 'Ein belegter Port muss mit Code 1 enden, nicht abstürzen');

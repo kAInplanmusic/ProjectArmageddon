@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-09-27T04:38:06.594Z · **Commit:** `221aa34` (main) · **Node:** v22.23.2
+**Erzeugt:** 2026-09-27T15:28:19.936Z · **Commit:** `686a85f` (main) · **Node:** v22.23.2
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -12,33 +12,33 @@
 |---|---|---|
 | gates | 🟢 gruen | alle gefahrenen Gates bestanden |
 | determinismus | 🟢 gruen | Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene Hashes. |
-| ereignisse | 🟢 gruen | 7 stumme Ereignisse — alle im Wächter mit Begründung gelistet (7 gelesene Begründungen) |
+| ereignisse | 🟠 gelb | 28 UNDOKUMENTIERT stumme Ereignisse: crate_pickup, crate_pickup_blocked, death, dot_tick, fall_damage, frozen, fuse_armed, fuse_expired, jumped, karte_unerreichbar, landed, loot_error, maelstrom_contract, match_over, projectile_impact, projectile_pierced, projectile_spawn, pulled, round_start, shield_absorbed, special_effect, terrain_destroyed, toxic_rain, turn_skipped, turret_deployed, turret_expired, turret_fired, weapon_dropped |
 | toteDateien | 🟢 gruen | 0 Dateien ohne Importeur |
 | unbenutzteKonstanten | 🟢 gruen | 0 definiert, nie gelesen |
+| pfade | 🟢 gruen | Alle 54 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
+| doppelregeln | 🟢 gruen | 0 Bezeichner in 2+ Dateien definiert |
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
 | zufall | 🟠 gelb | 1 Zeit-/Zufallstreffer im Simulationspfad |
-| pfade | 🟢 gruen | Alle 48 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
-| doppelregeln | 🟢 gruen | keine Doppelregel gemessen |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
 | perf | 🟢 gruen | Budget eingehalten: kein Tick über 16,7 ms. |
 
 ## 0. Während dieses Audits behoben
 
 Ein Befund dieses Audits war kein Berichtspunkt, sondern ein Defekt, der die Prüfung selbst lahmlegte.
-Er ist **repariert** — und, soweit dieser Lauf es messen kann, nachgemessen:
+Er ist **repariert und nachgemessen** — nicht nur beschrieben:
 
 | Was | Beleg | Zustand |
 |---|---|---|
-| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — Das Gate `smoke:fast` war in DIESEM Lauf nicht dabei (gefahren: lint, validate) — die historische Zahl ist hier NICHT nachgemessen (letzter Commit an der Datei: `0d571d8`, 2026-09-26) |
+| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — jetzt **4 von 4 in 26,8 s** |
 
 **Ursache (eine Zeile, zwei Umstände):** `const ROOT = new URL('..', import.meta.url).pathname;`
 `.pathname` liefert den Pfad prozent-kodiert. Das Projektverzeichnis enthält Leerzeichen, also wurde daraus
 `/home/patrick/AnunnakiTools%20Projekte/laufende%20Projekte/ProjectArmageddon/` — und `fs.existsSync` darauf ist `false`.
 Jeder `spawn` mit diesem `cwd` scheitert dann mit ENOENT.
 
-**Reichweite, in DIESEM Lauf gemessen:** 48 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **keine** mehr.
-Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `0d571d8` (2026-09-26) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
-die nach jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
+**Reichweite, gemessen:** 38 Stellen im Projekt benutzen das korrekte `fileURLToPath`, genau **1** nicht —
+`scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die, die nach
+jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
 
 **Zweiter Defekt in derselben Datei:** `laufe()` hängte keinen `error`-Handler an den `spawn`. Ein Startfehler
 wurde deshalb als unbehandeltes Ereignis GEWORFEN und riss den Lauf mit einem Stacktrace ab, statt als sauberer
@@ -49,29 +49,29 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 89 | 39103 |
-| tests | 136 | 37648 |
-| scripts | 44 | 9401 |
-| tools | 11 | 4214 |
+| src | 92 | 43181 |
+| tests | 155 | 43865 |
+| scripts | 44 | 9514 |
+| tools | 12 | 4991 |
 
-Ungetrackte Änderungen beim Lauf: **4**
+Ungetrackte Änderungen beim Lauf: **2**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 6.5 s | – |
-| validate | 🟢 bestanden | 0.5 s | – |
+| lint | 🟢 bestanden | 7.2 s | – |
+| validate | 🟢 bestanden | 0.4 s | – |
 
-**2/2 bestanden** · Gesamtdauer 7 s
+**2/2 bestanden** · Gesamtdauer 7.6 s
 
 ## 3. Determinismus
 
 | Lauf | Seed | Zustandshash | Status | Runde |
 |---|---|---|---|---|
-| 1 | 4242 | `cd0e6cae` | playing | 3 |
-| 2 | 4242 | `cd0e6cae` | playing | 3 |
-| 3 | 9999 | `4c8df6c3` | playing | 3 |
+| 1 | 4242 | `7ef3d6ed` | playing | 3 |
+| 2 | 4242 | `7ef3d6ed` | playing | 3 |
+| 3 | 9999 | `95e928a` | playing | 3 |
 
 Derselbe Seed → derselbe Hash: **JA** · Verschiedene Seeds → verschiedene Hashes: **JA**
 
@@ -172,7 +172,7 @@ die Form liefert immer dasselbe.
 
 Züge 86 · Schüsse 65 · gemessene Ticks 5036
 
-Tick-Kosten: mittel **0.0625 ms** · p95 0.1008 ms · p99 0.1552 ms · max 0.9383 ms
+Tick-Kosten: mittel **0.0592 ms** · p95 0.0933 ms · p99 0.1383 ms · max 0.6806 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -181,7 +181,7 @@ Budget eingehalten: kein Tick über 16,7 ms.
 
 ### 10.1 Dateien ohne Importeur
 
-Keine. Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`).
+Keine. Der Wächter `tests/no-dead-code.test.js` hält diese Zahl bei 0.
 
 ### 10.2 Konstanten ohne Leser
 
@@ -189,7 +189,7 @@ Keine — jede definierte Konstante unter `src/` wird irgendwo gelesen.
 
 ### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)
 
-Keine gemessen.
+Keine.
 
 ### 10.4 Marker im Quelltext
 
@@ -199,7 +199,7 @@ Keine gemessen.
 
 | Datei | Zeilen | Generator | Kopf als generiert markiert | schreibt beim Import |
 |---|---|---|---|---|
-| src/shared/config/weapons.js | 7359 | scripts/build-weapon-catalog.mjs | ja | nein |
+| src/shared/config/weapons.js | 7355 | scripts/build-weapon-catalog.mjs | ja | nein |
 
 ### 10.6 Zufall und Zeit im Simulationspfad
 
@@ -211,29 +211,57 @@ Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **3
 
 ## 11. Ereignis-Abdeckung
 
-**47** emittierte Ereignisarten (`emit(` UND `melde(`) · **40** im Client behandelt · **7** stumm.
+**43** emittierte Ereignisarten · **6** im Client behandelt · **37** stumm.
 
-*Methode und ihre Belegstärke (Textsuche, kein Aufrufgraph):* Ein Ereignis gilt als behandelt, wenn sein Name unter `src/client/` als Zeichenkette oder als UNQUOTIERTER Tabellenschlüssel vorkommt. Davon **34 nur über einen Schlüssel** belegt — der schwächere Beleg; ein solcher Name kann theoretisch ein fremder Schlüssel sein. Bis 2026-09-26 zählte das Werkzeug nur Zeichenketten und meldete dadurch Namen als „UNDOKUMENTIERT", die im Client einen Zweig haben (`tests/event-coverage.test.js:218-232`). Ein „stumm" aus dieser Tabelle ist ein PRÜFAUFTRAG, kein Urteil.
+Davon **9 dokumentiert** als bewusst stumm (Wächter `tests/event-coverage.test.js`), **28 undokumentiert**.
 
-Davon **7 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-coverage.test.js`), **0 undokumentiert**.
+| Ereignis | emittiert in | Urteil |
+|---|---|---|
+| `crate_landed` | src/engine/match.js:2330 | bewusst stumm (dokumentiert) |
+| `crate_pickup` | src/engine/systems/lootSystem.js:231 | **UNDOKUMENTIERT** |
+| `crate_pickup_blocked` | src/engine/systems/lootSystem.js:220 | **UNDOKUMENTIERT** |
+| `death` | src/engine/systems/damageSystem.js:135 | **UNDOKUMENTIERT** |
+| `dot_applied` | src/engine/match.js:2442 | bewusst stumm (dokumentiert) |
+| `dot_tick` | src/engine/match.js:2816 | **UNDOKUMENTIERT** |
+| `entity_in_water` | src/engine/systems/characterSystem.js:226 | bewusst stumm (dokumentiert) |
+| `fall_damage` | src/engine/systems/characterSystem.js:200 | **UNDOKUMENTIERT** |
+| `frozen` | src/engine/match.js:2426 | **UNDOKUMENTIERT** |
+| `fuse_armed` | src/engine/systems/projectileSystem.js:223 | **UNDOKUMENTIERT** |
+| `fuse_expired` | src/engine/systems/projectileSystem.js:202 | **UNDOKUMENTIERT** |
+| `jumped` | src/engine/match.js:1347 | **UNDOKUMENTIERT** |
+| `karte_unerreichbar` | src/engine/match.js:755 | **UNDOKUMENTIERT** |
+| `landed` | src/engine/match.js:1407 | **UNDOKUMENTIERT** |
+| `loot_error` | src/engine/match.js:1102 | **UNDOKUMENTIERT** |
+| `maelstrom_contract` | src/engine/systems/maelstromSystem.js:69 | **UNDOKUMENTIERT** |
+| `match_over` | src/engine/match.js:2777, src/engine/match.js:2858 | **UNDOKUMENTIERT** |
+| `projectile_expired` | src/engine/systems/projectileSystem.js:324, src/engine/systems/projectileSystem.js:335 | bewusst stumm (dokumentiert) |
+| `projectile_impact` | src/engine/systems/projectileSystem.js:275 | **UNDOKUMENTIERT** |
+| `projectile_pierced` | src/engine/systems/projectileSystem.js:265 | **UNDOKUMENTIERT** |
+| `projectile_spawn` | src/engine/match.js:2113, src/engine/shooting.js:344 | **UNDOKUMENTIERT** |
+| `pulled` | src/engine/match.js:2436 | **UNDOKUMENTIERT** |
+| `round_crates` | src/engine/systems/lootSystem.js:181 | bewusst stumm (dokumentiert) |
+| `round_start` | src/engine/match.js:2736 | **UNDOKUMENTIERT** |
+| `shield_absorbed` | src/engine/match.js:873 | **UNDOKUMENTIERT** |
+| `special_effect` | src/engine/shooting.js:228 | **UNDOKUMENTIERT** |
+| `terrain_destroyed` | src/engine/systems/projectileSystem.js:402 | **UNDOKUMENTIERT** |
+| `toxic_rain` | src/engine/systems/maelstromSystem.js:96 | **UNDOKUMENTIERT** |
+| `turn_end` | src/engine/match.js:2701 | bewusst stumm (dokumentiert) |
+| `turn_skipped` | src/engine/match.js:2826 | **UNDOKUMENTIERT** |
+| `turn_start` | src/engine/match.js:2833 | bewusst stumm (dokumentiert) |
+| `turret_deployed` | src/engine/match.js:1896 | **UNDOKUMENTIERT** |
+| `turret_expired` | src/engine/match.js:1935 | **UNDOKUMENTIERT** |
+| `turret_fired` | src/engine/match.js:2118 | **UNDOKUMENTIERT** |
+| `water_pushed` | src/engine/match.js:2487 | bewusst stumm (dokumentiert) |
+| `weapon_cooldown` | src/engine/match.js:2392 | bewusst stumm (dokumentiert) |
+| `weapon_dropped` | src/engine/match.js:2193 | **UNDOKUMENTIERT** |
 
-| Ereignis | emittiert in | Urteil | Begründung (aus dem Wächter) |
-|---|---|---|---|
-| `dot_applied` | src/engine/match.js:2416 | bewusst stumm (begründet) | Zustandsmarke am Spielernamen |
-| `entity_in_water` | src/engine/systems/characterSystem.js:138 | bewusst stumm (begründet) | Wasserstand steht als Marke am Spielernamen |
-| `projectile_expired` | src/engine/systems/projectileSystem.js:324, src/engine/systems/projectileSystem.js:335 | bewusst stumm (begründet) | ein verfallenes Geschoss ist kein Ereignis für den |
-| `round_crates` | src/engine/systems/lootSystem.js:170 | bewusst stumm (begründet) | Buchführung; die Anzahl steht im HUD |
-| `turn_end` | src/engine/match.js:2675 | bewusst stumm (begründet) | dito, plus Zugwechsel im Spielerfeld |
-| `water_pushed` | src/engine/match.js:2461 | bewusst stumm (begründet) | der Wasserstand am Ziel ist die sichtbare Wirkung |
-| `weapon_cooldown` | src/engine/match.js:2366 | bewusst stumm (begründet) | die Waffenliste zeigt den Nachladezustand |
-
-*Keine Lücke:* Jedes stumme Ereignis ist im Wächter MIT Begründung gelistet — der Begründungstext wird in dieser Spalte einzeln gezeigt. Geprüft ist damit, dass eine Begründung HINGESCHRIEBEN wurde; ob sie stichhaltig ist, ist eine Einzelprüfung und keine Messung.
+*Befund:* Die undokumentierten brauchen eine Begründung oder einen Client-Zweig.
 
 ## 12. Pfad-Auflösung (`fileURLToPath` statt `.pathname`)
 
-**48** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
+**54** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
 
-Alle 48 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
+Alle 54 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
 
 ## 13. Server-Autorität und Secrets
 
@@ -267,23 +295,22 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 **Rot:** keine
 
-**Gelb:** zufall
+**Gelb:** ereignisse, zufall
 
-**Grün:** gates, determinismus, ereignisse, toteDateien, unbenutzteKonstanten, marker, pfade, doppelregeln, secrets, perf
+**Grün:** gates, determinismus, toteDateien, unbenutzteKonstanten, pfade, doppelregeln, marker, secrets, perf
 
 ### Was schon belegt gut funktioniert
 
-- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (cd0e6cae), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
-- **Kein TODO/FIXME im Quelltext.** Gemessen: 0 Treffer (Abschnitt 10.4). Wo die offene Arbeit steht (SSOT/MASTERDOTO), prüft dieser Bericht nicht — das ist eine Vereinbarung, keine Messung.
-- **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht.
+- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (7ef3d6ed), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
+- **Kein TODO/FIXME im Quelltext.** Die offene Arbeit steht in der SSOT (MASTERDOTO), nicht verstreut im Code.
+- **Keine Datei ohne Importeur.** Der Wächter hält die 974 toten Zeilen von damals bei 0.
 - **Kein Secret in getrackten Dateien.**
-- **Ereignis-Abdeckung ist sauber:** 40 von 47 Ereignisarten behandelt, die 7 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 37648 Zeilen Tests gegen 39103 Zeilen Quelltext (Verhältnis 0.96).
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 43865 Zeilen Tests gegen 43181 Zeilen Quelltext (Verhältnis 1.02).
 - **Der Waffenkatalog ist kein Datenmüll:** 133 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
 
-1. 7 stumme Engine-Ereignisse (7 mit Begründung gelistet, 0 OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.
+1. 37 stumme Engine-Ereignisse — unsichtbare Lücken in der Anzeige.
 2. Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.
 
 ## 16. Nicht messbar in dieser Umgebung
@@ -291,17 +318,76 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Visuelle Qualität des Renderings.** Braucht einen echten Browser; dieses MCP misst die Simulation, nicht das Bild.
 - **Echter WebGPU-Pfad.** Ohne GPU-Adapter fällt die Umgebung auf CPU zurück.
 - **Netzwerklatenz unter realen Bedingungen.** Nur simulierbar (`tests/e2e/network-conditions.spec.mjs`).
-- **Der volle E2E-Lauf (28 Dateien, ~10 min).** Plan über `audit_e2e_plan`; bekannte vorbestehende Fehler: profiling-Specs ohne GPU.
+- **Der volle E2E-Lauf (27 Dateien, ~10 min).** Plan über `audit_e2e_plan`; bekannte vorbestehende Fehler: profiling-Specs ohne GPU.
 - **Menschenzeit statt Simulationszeit.** Die Umrechnung braucht eine Bedenkzeit-Annahme und ist deshalb ausgewiesen, nicht gemessen.
 
 ## 17. TODO
 
-7 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+35 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
 ### HOCH (1)
 
 - [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:85
       this.#startedAt = Date.now();
+
+### MITTEL (28)
+
+- [ ] Ereignis „crate_pickup" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/lootSystem.js:231 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „crate_pickup_blocked" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/lootSystem.js:220 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „death" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/damageSystem.js:135 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „dot_tick" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2816 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „fall_damage" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/characterSystem.js:200 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „frozen" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2426 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „fuse_armed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/projectileSystem.js:223 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „fuse_expired" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/projectileSystem.js:202 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „jumped" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:1347 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „karte_unerreichbar" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:755 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „landed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:1407 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „loot_error" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:1102 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „maelstrom_contract" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/maelstromSystem.js:69 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „match_over" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2777, src/engine/match.js:2858 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „projectile_impact" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/projectileSystem.js:275 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „projectile_pierced" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/projectileSystem.js:265 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „projectile_spawn" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2113, src/engine/shooting.js:344 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „pulled" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2436 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „round_start" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2736 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „shield_absorbed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:873 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „special_effect" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/shooting.js:228 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „terrain_destroyed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/projectileSystem.js:402 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „toxic_rain" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/systems/maelstromSystem.js:96 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „turn_skipped" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2826 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „turret_deployed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:1896 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „turret_expired" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:1935 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „turret_fired" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2118 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+- [ ] Ereignis „weapon_dropped" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
+      Emittiert in src/engine/match.js:2193 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
 
 ### NIEDRIG (6)
 
