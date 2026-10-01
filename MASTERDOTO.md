@@ -30,15 +30,16 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1218/1218** grün
-*(Nachgemessen 2026-10-01 aus einem vollen Lauf (`npm test` → **1218 bestanden,
-0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js | wc -l` → **120**).
-Die Zahl ist seither dreimal gewachsen (983 → 1122 → 1218); die Schritte stehen
+Verifikation dieses Zuges: `npm test` **1222/1222** grün
+*(Nachgemessen 2026-10-01 aus einem vollen Lauf (`npm test` → **1222 bestanden,
+0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js | wc -l` → **121**).
+Die Zahl ist seither dreimal gewachsen (983 → 1122 → 1222); die Schritte stehen
 im Verlauf: unbegrenzte Sprünge, HUD-Vorrang, Zerlegung des Geschützes
 (`tests/turret-zerlegung.test.js`), gemeinsamer Kommentar-Helfer
 (`tests/ohne-kommentare.test.js`), Wache gegen eine zweite Kopie — und zuletzt
 `tests/zerlegung-aufbau.test.js` (9 Prüfungen) für die Auslagerung von
-`#spawnPlayers()`/`#buildTerrain()`)* ·
+`#spawnPlayers()`/`#buildTerrain()` sowie `tests/profil-anzeige.test.js`
+(4 Prüfungen) für die Auslagerung der Profil-/Erfolgsanzeige)* ·
 `npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
 check:damage-types` 0 Fehler · `npm run build` erfolgreich ·
@@ -293,11 +294,20 @@ Ausgezogen wurden `debugApi`, `stateSnapshot` (Hash + Ansichtszustand),
 **reine Funktionen über eine Quelle**, mit Delegatoren im Motor. Die Belege stehen
 in der Tabelle unter „Stand: Schritte 1, 2, 3, 4a und 4b sind GEBAUT".
 
-**Was offen bleibt:** `src/client/main.js` (3.235 Zeilen). Dort sind `handleEvents()`
-und `handleRemoteEvent()` bereits nach `client/ereignisse.js` ausgezogen; die
-größten verbleibenden Brocken sind `exposeDebugApi()` (→ erledigt, `debugApi.js`),
-`startOnline()`, `bindMenu()` und `zeigeErfolge()`. Das ist **kein** Motor-Risiko
-(kein Determinismus-Bezug) und steht als eigene Aufgabe an.
+**Was offen bleibt:** `src/client/main.js` — zuletzt gemessen **3.435 Zeilen**
+(`wc -l`, 2026-10-01; die frühere Zahl 3.235 ist überholt). Dort sind
+`handleEvents()`/`handleRemoteEvent()` nach `client/ereignisse.js` und
+`exposeDebugApi()` nach `debugApi.js` ausgezogen. Neu (2026-10-01) auch die
+DARSTELLUNG: `#zeigeProfil()` und `#zeigeErfolge()` sind als reine Funktionen
+`baueProfilAnzeige`/`baueErfolgsAnzeige` in `client/profilanzeige.js` (197 Zeilen,
+0 `this`); die Klasse behält Delegatoren. Nebenbei fiel die Doppelregel
+`TIER_REIHENFOLGE` (wortgleich mit `TIERS` aus `shared/achievements.js`) — der
+Client liest jetzt `TIERS`. Belegt durch `tests/profil-anzeige.test.js` (4) und
+E2E `profil.spec.mjs` + `erfolge.spec.mjs` (**17/17**).
+
+Die größten verbleibenden Brocken in `main.js` sind jetzt `startOnline()`
+(~165 Zeilen) und `#bindMenu()` (~100) — Orchestrierung, tief an `this`
+gebunden. Das ist **kein** Motor-Risiko (kein Determinismus-Bezug).
 
 **Klein und benannt (2026-10-01): die letzte Wanduhr aus `src/engine/` holen.**
 Das Audit-Werkzeug meldet `src/engine/replay.js:85` (`this.#startedAt = Date.now()`)

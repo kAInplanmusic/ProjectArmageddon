@@ -30,10 +30,10 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline } from './ereignisse.js';
+import { baueProfilAnzeige, baueErfolgsAnzeige } from './profilanzeige.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import {
   PROFIL_SCHLUESSEL,
-  ablageHinweis,
   geraeteKennung,
   sicherungAlsText,
   sicherungAusText,
@@ -52,11 +52,10 @@ import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { maelstromActiveFromRound } from '../shared/config/match.js';
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
-import { MatchStats, PlayerProfile, beschreibe } from '../shared/stats.js';
+import { MatchStats, PlayerProfile } from '../shared/stats.js';
 import {
   kennzahlen as erfolgsKennzahlen,
   neueErfolge as neueErfolgeFuer,
-  uebersicht as erfolgsUebersicht,
   emblem,
 } from '../shared/achievements.js';
 
@@ -72,7 +71,11 @@ import {
 
 
 /** Reihenfolge der Schwierigkeitsstufen in der Erfolgsübersicht (leicht zuerst). */
-const TIER_REIHENFOLGE = ['leicht', 'mittel', 'schwer', 'sehr schwer'];
+/*
+ * `TIER_REIHENFOLGE` ist ENTFERNT — die Reihenfolge stand hier wortgleich mit
+ * `TIERS` aus `shared/achievements.js`. Die Erfolgsanzeige liest jetzt `TIERS`
+ * (siehe `client/profilanzeige.js`, Modulkopf).
+ */
 
 const MAX_STEPS_PER_FRAME = 8;
 
@@ -2664,56 +2667,7 @@ class Game {
 
   /** Aktualisiert die Profilanzeige im Menü. */
   #zeigeProfil() {
-    const ziel = document.getElementById('profil-werte');
-    if (!ziel) return;
-    const text = beschreibe(this.profil);
-    const zeilen = [
-      ['Partien', text.partien],
-      ['Bilanz', text.bilanz],
-      ['Siegquote', text.siegquote],
-      ['Serie', text.serie],
-      ['Beste Serie', text.besteSerie],
-      ['Schüsse', text.schuesse],
-      ['Trefferquote', text.trefferquote],
-      ['Schaden gesamt', text.schaden],
-      ['Schaden', text.schadenProMinute],
-      ['Spielzeit', text.spielzeit],
-      ['Lieblingswaffe', text.lieblingswaffe],
-      ['Lieblingsnation', text.lieblingsfraktion],
-    ];
-    ziel.replaceChildren(...zeilen.map(([bezeichnung, wert]) => {
-      const zeile = document.createElement('div');
-      zeile.className = 'profil-zeile';
-      const dt = document.createElement('span');
-      dt.className = 'profil-name';
-      dt.textContent = `${bezeichnung}:`;
-      const dd = document.createElement('span');
-      dd.className = 'profil-wert';
-      dd.textContent = wert;
-      zeile.append(dt, dd);
-      return zeile;
-    }));
-
-    // Ein Hinweis auf die fehlende Fraktionsangabe: Eine leere Zeile ohne
-    // Begründung sähe nach einem Fehler aus.
-    const hinweis = document.getElementById('profil-hinweis');
-    if (hinweis) {
-      /*
-       * Zwei Dinge stehen hier: warum die Lieblingsnation leer ist, und WO der
-       * Fortschritt liegt.
-       *
-       * Der zweite Teil kam mit dem Audit: Profil und Erfolge liegen im Browser
-       * (`identity.js`, `AKTUELLER_ABLAGEORT`). Ohne Hinweis erfährt der Spieler
-       * erst beim Browserwechsel, dass alles weg ist — dann ist es zu spät.
-       */
-      const teile = [];
-      if (!this.profil.lieblingsfraktion) {
-        teile.push('Die Lieblingsnation braucht eine Charakterwahl — die gibt es noch nicht.');
-      }
-      const ablage = ablageHinweis();
-      if (ablage.hinweis) teile.push(ablage.hinweis);
-      hinweis.textContent = teile.join(' ');
-    }
+    baueProfilAnzeige({ document, profil: this.profil });
   }
 
   /**
@@ -2730,84 +2684,13 @@ class Game {
    * Anzeige nicht den Eindruck eines fertigen Katalogs erwecken.
    */
   #zeigeErfolge() {
-    const zaehler = document.getElementById('erfolge-zaehler');
-    if (!zaehler) return;
-
-    const partei = this.stats ? this.stats.zusammenfassung(this.eigeneSpielerIds) : null;
-    const werte = erfolgsKennzahlen(partei, this.profil.toJSON());
-    const u = erfolgsUebersicht(werte, this.profil.erfolge);
-
-    zaehler.textContent = `${u.erreicht} von ${u.gesamt} erreicht`
-      + (u.musterAnzahl > 0
-        ? ` — davon ${u.musterAnzahl} Muster (die Inhalte fehlen noch)`
-        : '');
-
-    // Die zuletzt freigeschalteten zuerst: Das ist die Neuigkeit.
-    const frisch = new Set((this.neueErfolge ?? []).map(e => e.id));
-
-    const ziel = document.getElementById('erfolge-liste');
-    if (!ziel) return;
-
-    const zeilen = [];
-    for (const gruppe of u.gruppen) {
-      const kopf = document.createElement('div');
-      kopf.className = 'erfolg-gruppe';
-      kopf.textContent = `${gruppe.label} — ${gruppe.erreicht} von ${gruppe.gesamt}`;
-      zeilen.push(kopf);
-
-      // Erreichte zuerst innerhalb der Gruppe.
-      const sortiert = [...gruppe.eintraege].sort((a, b) =>
-        (b.erreicht - a.erreicht) || (TIER_REIHENFOLGE.indexOf(a.tier) - TIER_REIHENFOLGE.indexOf(b.tier)));
-
-      for (const e of sortiert) {
-        const zeile = document.createElement('div');
-        zeile.className = `erfolg${e.erreicht ? ' erreicht' : ''}${frisch.has(e.id) ? ' frisch' : ''}`;
-        zeile.dataset.erfolgId = e.id;
-        zeile.dataset.tier = e.tier;
-
-        const symbol = document.createElement('span');
-        symbol.className = 'erfolg-symbol';
-        // Kein Bild vorhanden: Die Kennung steht als Kürzel, damit die Anzeige
-        // nicht so tut, als gäbe es Symbole. `aria-hidden`, weil der Titel folgt.
-        symbol.textContent = e.erreicht ? '★' : '☆';
-        symbol.setAttribute('aria-hidden', 'true');
-
-        const text = document.createElement('span');
-        text.className = 'erfolg-text';
-
-        const titel = document.createElement('b');
-        titel.textContent = e.title;
-        if (e.muster) {
-          const marke = document.createElement('i');
-          marke.className = 'erfolg-muster';
-          marke.textContent = 'Muster';
-          titel.append(' ', marke);
-        }
-
-        const stufe = document.createElement('span');
-        stufe.className = `erfolg-stufe stufe-${e.tier.replace(/\s+/g, '-')}`;
-        stufe.textContent = e.tier;
-
-        const beschreibung = document.createElement('span');
-        beschreibung.className = 'erfolg-hinweis';
-        beschreibung.textContent = e.hint;
-
-        const stand = document.createElement('span');
-        stand.className = 'erfolg-stand';
-        // Prozent statt „800 / 1000", wenn das Ziel eine Quote ist — sonst
-        // stünde dort „0,42 / 0,5".
-        stand.textContent = e.erreicht
-          ? 'erreicht'
-          : (e.ziel > 0 && e.ziel <= 1
-            ? `${Math.round(e.fortschritt * 100)} %`
-            : `${Math.round(e.stand)} / ${Math.round(e.ziel)}`);
-
-        text.append(titel, ' ', stufe, document.createElement('br'), beschreibung);
-        zeile.append(symbol, text, stand);
-        zeilen.push(zeile);
-      }
-    }
-    ziel.replaceChildren(...zeilen);
+    baueErfolgsAnzeige({
+      document,
+      stats: this.stats,
+      profil: this.profil,
+      eigeneSpielerIds: this.eigeneSpielerIds,
+      neueErfolge: this.neueErfolge,
+    });
   }
 
   /**

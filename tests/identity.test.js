@@ -143,12 +143,27 @@ test('Der Hinweis nennt dem Spieler, wo sein Fortschritt liegt', () => {
 test('Der Hinweis steht auch im Menü', () => {
   /*
    * Ein Hinweis, den niemand sieht, ist keiner. Geprüft wird die Verdrahtung.
+   *
+   * Seit 2026-10-01 liegt die DARSTELLUNG in `client/profilanzeige.js`
+   * (`baueProfilAnzeige`), weil `#zeigeProfil()` in `main.js` ein reiner
+   * Delegator wurde. Die Verdrahtung prüft deshalb die GANZE Kette statt
+   * einer einzigen Datei:
+   *
+   *   main.js  →  importiert `baueProfilAnzeige` und ruft sie
+   *   profilanzeige.js  →  ruft `ablageHinweis()` und schreibt `profil-hinweis`
+   *
+   * Beide Enden müssen da sein: Ein Import ohne Aufruf wäre toter Draht, ein
+   * Aufruf ohne das DOM-Ziel ein Hinweis ins Leere.
    */
   const main = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
-  assert.match(main, /ablageHinweis\(\)/,
-    'der Ablage-Hinweis wird im Client nicht benutzt');
-  assert.match(main, /profil-hinweis/,
-    'das Element für den Hinweis fehlt');
+  const anzeige = fs.readFileSync(path.join(ROOT, 'src', 'client', 'profilanzeige.js'), 'utf8');
+
+  assert.match(main, /baueProfilAnzeige/,
+    'main.js verdrahtet die Profilanzeige nicht (Import oder Aufruf fehlt)');
+  assert.match(anzeige, /ablageHinweis\(\)/,
+    'der Ablage-Hinweis wird in der Profilanzeige nicht benutzt');
+  assert.match(anzeige, /profil-hinweis/,
+    'das Element für den Hinweis fehlt in der Profilanzeige');
 });
 
 test('Die offene Entscheidung ist als offen markiert', () => {
