@@ -1232,16 +1232,17 @@ class Game {
 
     // Zustände kommen je Spieler mit dem Snapshot (Protokoll v3) und werden in
     // den Ansichtszustand übernommen, damit die Anzeige sie darstellen kann.
+    // B-5: DOTS/Boost werden NICHT über das Wire-Format übertragen — sie bleiben also leer.
+    // Jede Figur bekommt JEDEZ Takt einen Status-Eintrag, damit alte Marken nicht „kleben"
+    // bleiben und Schild/Einfrieren korrekt zurückgesetzt werden.
     const statuses = {};
     for (const entity of snapshot.entities ?? []) {
-      if ((entity.shield ?? 0) > 0 || (entity.frozenTurns ?? 0) > 0) {
-        statuses[entity.entityId] = {
-          shield: entity.shield ?? 0,
-          frozenTurns: entity.frozenTurns ?? 0,
-          dots: [],
-          boostMultiplier: 1,
-        };
-      }
+      statuses[entity.entityId] = {
+        shield: entity.shield ?? 0,
+        frozenTurns: entity.frozenTurns ?? 0,
+        dots: [],
+        boostMultiplier: 1,
+      };
     }
 
     const entities = (this.network.interpolatedEntities() ?? []).map((entity, index) => ({
