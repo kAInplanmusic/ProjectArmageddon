@@ -1539,7 +1539,10 @@ class Game {
       : this.aim.power;
 
     if (this.mode === 'online') {
-      if (!this.network?.isConnected) return { ok: false, errors: ['Nicht verbunden'] };
+      if (!this.network?.isConnected) {
+        this.hud.log('Nicht verbunden — Schuss konnte nicht gesendet werden', 'danger');
+        return { ok: false, errors: ['Nicht verbunden'] };
+      }
       if (!this.network.isMyTurn) {
         this.hud.log('Nicht am Zug', 'danger');
         return { ok: false, errors: ['Nicht am Zug'] };
