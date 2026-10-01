@@ -30,14 +30,15 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1122/1122** grün
-*(Nachgemessen 2026-09-27 aus einem vollen Lauf (`npm test` → 1122 bestanden,
-0 rot, 0 übersprungen, 281,5 s, Dateizahl `ls tests/*.test.js | wc -l` → 107).
-Die vorige Messung nannte 1075 in 103 Dateien; seither kamen die Prüfungen für
-unbegrenzte Sprünge und den HUD-Vorrang, die Zerlegung des Geschützes
-(`tests/turret-zerlegung.test.js`), der gemeinsame Kommentar-Helfer
-(`tests/ohne-kommentare.test.js`) und die Wache gegen eine zweite Kopie hinzu
-— 1075 + 47 = 1122)* ·
+Verifikation dieses Zuges: `npm test` **1218/1218** grün
+*(Nachgemessen 2026-10-01 aus einem vollen Lauf (`npm test` → **1218 bestanden,
+0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js | wc -l` → **120**).
+Die Zahl ist seither dreimal gewachsen (983 → 1122 → 1218); die Schritte stehen
+im Verlauf: unbegrenzte Sprünge, HUD-Vorrang, Zerlegung des Geschützes
+(`tests/turret-zerlegung.test.js`), gemeinsamer Kommentar-Helfer
+(`tests/ohne-kommentare.test.js`), Wache gegen eine zweite Kopie — und zuletzt
+`tests/zerlegung-aufbau.test.js` (9 Prüfungen) für die Auslagerung von
+`#spawnPlayers()`/`#buildTerrain()`)* ·
 `npm run checks` **21 Gates in ~40–52 s, 0 Verstöße** · `npm run validate` grün ·
 `eslint .` 0 Fehler · `npm run check:targeting` 150/150 · `npm run
 check:damage-types` 0 Fehler · `npm run build` erfolgreich ·
@@ -282,33 +283,59 @@ setzte es trotzdem so um (ein Beitritt = ein Platz). Die Lücke ist jetzt
 Menü bietet genau 3/4/5 an, und `tests/einheiten-je-spieler.test.js` hält das
 Modell fest. Siehe „Einheiten je Spieler" unten.
 
-## Offene Aufgabe: die zwei Riesenklassen zerlegen (gemessen 2026-09-20)
+## Zerlegung der zwei Riesenklassen (Auftrag 2026-09-20 — 2026-10-01 ABGESCHLOSSEN)
 
-**Das ist die letzte echte Architektur-Schuld des Projekts** — und sie ist bewusst
-NICHT in einem Rutsch gemacht: Sie berührt jede der 183 E2E-Prüfungen und jede
-Determinismus-Zusage. Ein Umbau dieses Umfangs braucht denselben Belegweg wie
-alles andere hier (messen, ändern, gegenprüfen), keinen Anhang.
+**Der Motor ist zerlegt.** `src/engine/match.js` ist von 3.588 über 3.196 auf
+**3.091 Zeilen** gefallen (Ziel aus `tests/shooting.test.js`: unter 3.200).
+Ausgezogen wurden `debugApi`, `stateSnapshot` (Hash + Ansichtszustand),
+`ereignisse`, `shooting` (`fire` und sieben weitere Funktionen),
+`spawnManager` (`erzeugeSpieler`) und `terrainBuilder` (`baueTerrain`) — alle als
+**reine Funktionen über eine Quelle**, mit Delegatoren im Motor. Die Belege stehen
+in der Tabelle unter „Stand: Schritte 1, 2, 3, 4a und 4b sind GEBAUT".
 
-*Gemessen mit einem Blockzähler über die Methodengrenzen (2026-09-20; die Zeilen­zahlen sind unten richtiggestellt).*
+**Was offen bleibt:** `src/client/main.js` (3.235 Zeilen). Dort sind `handleEvents()`
+und `handleRemoteEvent()` bereits nach `client/ereignisse.js` ausgezogen; die
+größten verbleibenden Brocken sind `exposeDebugApi()` (→ erledigt, `debugApi.js`),
+`startOnline()`, `bindMenu()` und `zeigeErfolge()`. Das ist **kein** Motor-Risiko
+(kein Determinismus-Bezug) und steht als eigene Aufgabe an.
 
-> **RICHTIGGESTELLT 2026-09-26 — die Zerlegung ist weiter als hier beschrieben.**
-> Die Tabelle darunter ist der Stand VOR den Schritten. Nachgemessen am
-> 2026-09-26 (`wc -l`, `grep -n`):
+**Klein und benannt (2026-10-01): die letzte Wanduhr aus `src/engine/` holen.**
+Das Audit-Werkzeug meldet `src/engine/replay.js:85` (`this.#startedAt = Date.now()`)
+als Zeit-Treffer im Simulationspfad. Gemessen ist er ein **Fehlalarm**
+(`tests/replay-uhr.test.js`, 8 Prüfungen; Begründung in `docs/audit-tief.md` §10.6) —
+`#startedAt` hat genau EINEN Leser (`toJSON` → `createdAt`), und `fromJSON`
+übernimmt den Wert nicht. Er bleibt trotzdem sichtbar, weil der Umbau eine
+getestete Konstruktion verschieben würde. **Der saubere Weg, wenn er gewünscht
+ist:** `ReplayRecorder` bekommt `createdAt` als Konstruktor-Option, der AUFRUFER
+stempelt — dann hat `engine/` keinen Wanduhr-Zugriff mehr und die Heuristik ist
+grün. Eigene Aufgabe, eigener Belegweg (die 8 Wächter müssen VOR und NACH
+dasselbe zeigen).
+
+**Audit-Ampel nach diesem Zug (2026-10-01, `audit_all`): rot 0 · gelb 1 · grün 11.**
+Vorher: 4 gelb (`toteDateien`, `toteDaten`, `doppelregeln`, `zufall`) — die ersten
+drei sind erledigt (Meldung: „0 Dateien ohne Importeur", „0 von 0 Datendateien",
+„keine Doppelregel gemessen"). Das letzte Gelb ist der oben benannte Fehlalarm.
+
+*Gemessen mit einem Blockzähler über die Methodengrenzen (2026-09-20; die Zeilenzahlen sind unten richtiggestellt).*
+
+> **NACHGEMESSEN 2026-10-01 — die Motor-Zerlegung ist abgeschlossen.**
 >
-> | Datei | damals | jetzt | Beleg |
+> | Datei | 2026-09-20 | 2026-10-01 | Beleg |
 > |---|---|---|---|
-> | `src/engine/match.js` | 3.567 | **3.588** (dazwischen 3.498; später durch neue Felder gewachsen) | `wc -l src/engine/match.js` |
-> | `src/client/main.js` | 3.698 | **3.235** | `wc -l src/client/main.js` |
+> | `src/engine/match.js` | 3.588 | **3.091** | `wc -l src/engine/match.js` |
+> | `src/client/main.js` | 3.235 | **3.235** (unverändert; offen) | `wc -l src/client/main.js` |
 >
-> Und die „größten Brocken" sind kleiner geworden: `getState()` ist **kein**
-> 149-Zeilen-Rumpf mehr, sondern **2 Zeilen** (Delegator), siehe unten.
+> Die in der Tabelle darunter genannten Brocken `fire()` (211), `spawnPlayers()` (96)
+> und `buildTerrain()` (89) sind **Delegatoren geworden** (2–14 Zeilen); `getState()`
+> war es schon. `stateHash()` (76) liegt als reine Funktion in `stateSnapshot.js`.
+> Die Tabelle ist damit der **Stand VOR** der Zerlegung und bleibt als Messdokument stehen.
 
 | Datei | Zeilen | Methoden | davon in Methoden | größte Brocken |
 |---|---|---|---|---|
 | `src/engine/match.js` | 3.588 | 73 | 2.399 (67 %) | `fire()` 211 [1458–1668], ~~`getState()` 149 [3248–3396]~~ **→ 3 Zeilen, Delegator (2026-09-26)**, `spawnPlayers()` 96, `applyTargetEffect()` 91, `buildTerrain()` 89, `resolveGuentherWheel()` 87, `stateHash()` 76 |
 | `src/client/main.js` | 3.235 | 84 | 2.641 (71 %) | `handleEvents()` 229 [1463–1691], `exposeDebugApi()` 166, `startOnline()` 165, `handleRemoteEvent()` 142, `bindMenu()` 100, `zeigeErfolge()` 80 |
 
-### Stand: Schritte 1, 2, 3 und 4a sind GEBAUT
+### Stand: Schritte 1, 2, 3, 4a und 4b sind GEBAUT
 
 | Schritt | Ergebnis | Beleg |
 |---|---|---|
@@ -316,10 +343,39 @@ alles andere hier (messen, ändern, gegenprüfen), keinen Anhang.
 | 2 · `engine/stateSnapshot.js` (Teil 1: `stateHash()`) | **erledigt.** `stateHash()` ist eine reine Funktion über den Ansichtszustand (damals 103 Zeilen). `match.js`: **3.567 → 3.498 Zeilen** | `npm test` **983/983** — darunter die Determinismus- und Replay-Prüfungen, die genau diesen Hash vergleichen |
 | 3 · `client/ereignisse.js` | **erledigt.** `handleEvents()`/`handleRemoteEvent()` liegen in `src/client/ereignisse.js` (**571 Zeilen**); der lokale und der Online-Zweig teilen sich EINE Ereignis-Zuordnung. | `tests/event-coverage.test.js` — es vergleicht Engine-Ereignisse gegen die behandelten Zweige |
 | 4a · `getState()` → `engine/stateSnapshot.js` | **erledigt (2026-09-26).** Der 149-Zeilen-Rumpf ist als reine Funktion `baueAnsichtszustand(quelle)` ausgezogen; `match.js` behält einen **2-zeiligen Delegator** und `#zustandsQuelle()` als EINZIGE Kopplungsstelle. `stateSnapshot.js`: **297 Zeilen** (beide Funktionen) | `npm test`; `npm run lint` 0; `npm run replay -- record` + `play --verify` → Hash identisch; `rg -n '\bthis\b' src/engine/stateSnapshot.js` → **kein Treffer** |
+| 4b · `fire()` → `engine/shooting.js` | **erledigt (`8ee4935`, nachgemessen 2026-10-01).** Der 211-Zeilen-Rumpf liegt als reine Funktion `fire(quelle, …)` in `engine/shooting.js` (**746 Zeilen**, **0 `this`-Zugriffe**); `match.js` behält einen **2-zeiligen Delegator** und `#schussQuelle()` als EINZIGE Kopplungsstelle. Neben `fire` sind `applySelfEffect`, `resolveStrike`, `projectileLifetime`, `aimPreview`, `hasLineOfSight`, `launchOrigin`, `fuseTicksFor` ausgezogen. | `tests/shooting.test.js` **6/6**; `npm test` **1209/1209**; `npm run lint` 0 |
+| 4c · `#spawnPlayers()` → `engine/spawnManager.js` | **erledigt (2026-10-01).** Der 96-Zeilen-Rumpf liegt als reine Funktion `erzeugeSpieler(quelle)` in `engine/spawnManager.js` (**145 Zeilen**, **0 `this`-Zugriffe**). Sie liefert die Spieler-Einträge als **Rückgabe**; die Zugfolge leitet der Delegator daraus ab, damit die Funktion die Klassen-Arrays nicht selbst anfasst. | `tests/einheiten-je-spieler.test.js` 10/10; `tests/sidegrades-match.test.js` 7/7; `tests/viel-figuren`; `npm test` **1209/1209** |
+| 4d · `#buildTerrain()` → `engine/terrainBuilder.js` | **erledigt (2026-10-01).** Der 95-Zeilen-Rumpf liegt als reine Funktion `baueTerrain(quelle)` in `engine/terrainBuilder.js` (**143 Zeilen**, **0 `this`-Zugriffe**). Neu darin: **EIN Rückgabepfad für drei Erzeuger** — die frühere Fassung gab aus jedem Generator-Zweig ein eigenes Objekt zurück (dreimal derselbe Aufbau). Die Kollisionsmaske baut weiterhin das Match: der Builder liefert die Bitmap. | `tests/terrain-*.test.js`; `tests/state-hash.test.js`; `npm test` **1209/1209**; `check:terrain` grün |
 
-**Offen bleibt Schritt 4 im Übrigen:** `fire()` (211 Zeilen) als `engine/shooting.js`
-und `spawnPlayers()`/`buildTerrain()` als Aufbau sind **noch nicht** ausgezogen —
-`match.js` liegt deshalb weiterhin über 3.200 Zeilen (gemessen 3.588).
+**Schritt 4 ist damit VOLLSTÄNDIG.** `match.js`: **3.196 → 3.091 Zeilen** (gemessen `wc -l`,
+2026-10-01), unter der 3.200er-Regel aus `tests/shooting.test.js`.
+Der Replay-Vertrag ist unverändert: `scripts/replay.mjs record` + `play --verify` →
+„VERIFY: Replay ist exakt reproduzierbar." — die Auslagerung hat den Zustandshash nicht berührt.
+
+**Was bei der Zerlegung gefunden und behoben wurde (2026-10-01):**
+
+1. **`terrainBuilder` rechnete `CollisionMask.fromBitmap` ein ZWEITES Mal** — das Match
+   baute die Maske noch einmal aus derselben Bitmap. Dieselben Daten zweimal ausgewertet,
+   zwei Wahrheiten darüber, was die Kollision trägt. Jetzt baut nur `match.js` die Maske;
+   der Builder liefert die Bitmap. (Der Strukturtest
+   `tests/no-dead-code.test.js` „Die lebenden Terrain-Bausteine sind weiterhin da"
+   verlangt `CollisionMask` in `match.js` — der Wächter hat die richtige Grenze gezogen.)
+2. **Drei fast identische Rückgabe-Blöcke** in `terrainBuilder` — der Erzeuger-Zweig
+   bestimmte, welches Objekt zurückkam. Jetzt: ein Rückgabepfad, jeder Zweig setzt nur
+   seine Besonderheiten (`kartencharakter`, `kartenkennzahlen`, `material`).
+3. **`check:camera` war rot** (vorbestehend, unabhängig von der Zerlegung): sechs
+   Zeichenfunktionen aus dem Gefühls-/Partikelsystem (`#drawNarben`, `#drawSpuren`,
+   `#drawRauch`, `#drawTreffer`, `#ermittleTreffer`, `#fuehreSpuren`) waren nicht
+   eingeordnet. Sie sind jetzt eingeordnet — die vier `draw*` als WELT, die zwei
+   `er…/fuehre…` als „keins" (sie rechnen nur). **21 Gates, 0 Verstöße.**
+
+
+**ERLEDIGT (2026-10-01):** `fire()` liegt in `engine/shooting.js`, `#spawnPlayers()`
+in `engine/spawnManager.js`, `#buildTerrain()` in `engine/terrainBuilder.js` — siehe
+die Tabelle oben. `match.js` ist damit von 3.588 auf **3.091 Zeilen** gefallen.
+Weitere Luft braucht jetzt Auslagerung ANDERER Brocken (die größten verbleibenden
+Methoden: `#handleProjectileImpact`, `#resolveGuentherWheel`, `#applyTargetEffect`)
+oder das Kürzen von Erzählkommentaren — die Zerlegung der vier genannten ist abgeschlossen.
 
 **Ein Fehler, der fast durchgerutscht wäre (Schritt 1):** Beim Ersetzen von `this.`
 blieb `game: this,` stehen — das Muster suchte `this` MIT Punkt. In einem Modul ist

@@ -14,6 +14,20 @@ import { ohneKommentare } from './helfer/ohne-kommentare.js';
  * Archivstands kam genau so ein Fall mit herein (`src/shared/data/index.js`).
  *
  * Deshalb wird hier die Regel festgehalten statt nur einmal korrigiert.
+ *
+ * ## Stand 2026-10-01: die Ausnahmeliste ist LEER
+ *
+ * Der damalige Fall ist nicht umgangen, sondern **weg**: `src/shared/data/index.js`
+ * war ein code-leerer Platzhalter (kein Export, kein Importeur, keine Anweisung).
+ * Er trug zuletzt kein `node:` mehr — damit war er keine Ausnahme mehr, sondern
+ * nur noch eine Datei, die niemand brauchte. Er ist entfernt (siehe
+ * `tests/no-dead-code.test.js` und `ARCHIVED.md`).
+ *
+ * Die Liste bleibt als **Mechanik** stehen: Wer wieder eine serverseitige Datei
+ * unter `src/shared/` braucht, trägt sie mit Begründung ein — der Test
+ * „Die Ausnahmeliste bleibt begründet" verlangt dann, dass sie WIRKLICH
+ * Node-Builtins lädt. Heute läuft diese Schleife leer; die Prüfung darüber
+ * („src/shared enthält keine Node-Builtins") prüft weiterhin jede Datei.
  */
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
@@ -23,13 +37,14 @@ const ROOT = path.join(HIER, '..');
 const ENDUNGEN = ['.js', '.mjs'];
 
 /**
- * Bekannte Ausnahme.
+ * Bekannte Ausnahmen — heute keine.
  *
- * `src/shared/data/index.js` liest seine JSON-Dateien über `node:fs`. Das Modul
- * ist damit ausschließlich serverseitig nutzbar. Es ist bewusst NICHT aus dem
- * gemeinsamen Balken `src/shared/index.js` re-exportiert — siehe ARCHIVED.md.
+ * Eine Datei hier darf Node-Builtins laden und wird dann NICHT aus
+ * `src/shared/index.js` re-exportiert. Der Eintrag braucht eine Begründung im
+ * Test „Die Ausnahmeliste bleibt begründet", der zusätzlich prüft, dass die
+ * Datei das `node:`-Laden nicht heimlich aufgegeben hat.
  */
-const AUSNAHMEN = new Set(['src/shared/data/index.js']);
+const AUSNAHMEN = new Set();
 
 function dateienUnter(ordner) {
   const ergebnis = [];

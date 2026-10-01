@@ -45,9 +45,15 @@ unverändert. Die Terrain-Sonde wurde zweimal ausgeführt (10:38 und 11:07), bei
 * **Nicht** geprüft: CSS, `index.html`-Gestaltung (nur Element-IDs und Zuhoerer),
   `dist/`, `tools/audit-mcp/**` (nur als Belegquelle gelesen), `uploaded/`, `artifacts/`.
 * **JSON-Dateien** (`src/shared/data/*.json`, `project_armageddon_weapons_v1.json`) sind
-  für meinen Scanner unsichtbar (Filter `.js`/`.mjs`). Zur Laufzeit liest sie niemand:
-  `src/shared/data/index.js` ist code-leer („Intentionally empty", dort begründet),
+  für meinen Scanner unsichtbar (Filter `.js`/`.mjs`). Zur Laufzeit liest sie niemand;
   der Katalog kommt aus dem generierten `src/shared/config/weapons.js`.
+
+  > **NACHTRAG 2026-10-01:** Die beiden JSON-Dateien unter `src/shared/data/` und
+  > `src/client/assets/weaponIcons.json` sind ENTFERNT (null Leser). Mit ihnen ging
+  > `src/shared/data/index.js` — ein code-leerer Platzhalter, der den Ordner
+  > dokumentierte. Der Ordner `src/shared/data/` existiert damit nicht mehr; die
+  > Herkunft der Dateien steht in `ARCHIVED.md` (§`src/shared/data/`). Der Befund
+  > `toteDaten` des Audit-Werkzeugs ist damit leer.
 * **Bundellage**: `src/client/index.js`, `src/engine/index.js`, `src/server/index.js`,
   `src/shared/index.js` sind für die *Anwendung* toter Code — sie werden nur von
   `npm run validate` (package.json) und Tests geladen. Ihre Re-Exporte sind deshalb

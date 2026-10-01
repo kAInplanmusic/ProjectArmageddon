@@ -209,6 +209,31 @@ Keine.
 
 Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **3** Treffer.
 
+> **GEPRÜFT 2026-10-01 — der Treffer ist ein FEHLALARM, und zwar ein gemessener.**
+>
+> `#startedAt` hat **genau EINEN Leser**: `toJSON()` schreibt den Wert als
+> `createdAt` in den Kopf der Aufzeichnung („wann wurde das aufgenommen"). Der
+> Weg, den JEDE Wiedergabe geht — `fromJSON()` — liest `createdAt` nicht einmal;
+> `ReplayPlayer` setzt seinen eigenen Stempel. Der Zustandshash kennt keinen
+> Zeitstempel.
+>
+> Belegt durch `tests/replay-uhr.test.js` (**8 Prüfungen**), darunter die
+> Gegenprobe mit einer VERSTELLTEN Wanduhr: Aufzeichnung und Wiedergabe ändern
+> sich dadurch nicht. Der Detektor schlägt an, weil die Datei unter `src/engine/`
+> liegt — er kann nicht wissen, dass der Wert das Simulationspfad-Feld nie
+> erreicht.
+>
+> **Bewusst NICHT geändert:** Das Modul umzubauen, damit diese Heuristik grün
+> wird, hieße eine getestete und begründete Konstruktion einer Faustregel
+> zuliebe zu verschieben — und dabei die acht Wächter zu schwächen, die genau
+> diese Zusage festhalten. Der Befund bleibt deshalb sichtbar („benannte Lücke
+> statt stille Lüge"), ist aber mit Messung beantwortet.
+>
+> *Wenn die Wanduhr ganz aus `src/engine/` verschwinden soll, ist der saubere
+> Weg: `ReplayRecorder` bekommt `createdAt` als Konstruktor-Option, und der
+> AUFRUFER (Server, Aufzeichnungswerkzeug) stempelt. Das ist eine eigene Aufgabe
+> mit eigenem Belegweg — sie steht in MASTERDOTO.*
+
 ## 11. Ereignis-Abdeckung
 
 **43** emittierte Ereignisarten · **6** im Client behandelt · **37** stumm.
@@ -327,8 +352,14 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ### HOCH (1)
 
-- [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:85
-      this.#startedAt = Date.now();
+- [x] Zufall/Zeit im Simulationspfad: src/engine/replay.js:85
+      `this.#startedAt = Date.now();`
+      → **2026-10-01 GEPRÜFT: Fehlalarm, mit Messung beantwortet.** Genau EIN
+      Leser (`toJSON` → `createdAt`), `fromJSON` übernimmt ihn nicht, der
+      Zustandshash kennt keinen Zeitstempel; 8 Wächter in
+      `tests/replay-uhr.test.js`, darunter eine verstellte Wanduhr als
+      Gegenprobe. Begründung und der Weg zu einer echten Entkopplung stehen
+      in §10.6.
 
 ### MITTEL (28)
 

@@ -60,6 +60,17 @@ const EINORDNUNG = {
    * Spieler zielt, und genau dort wird er gebraucht.
    */
   '#drawLadeanzeige': 'bildschirm',
+  /*
+   * Diese 6 Funktionen wurden 2026-09-27 für die Gefühls- und Partikelsysteme
+   * hinzugefügt und gehören zur Welt (sie zeichnen im Kartenkoordinaten-Bereich
+   * innerhalb der Kamera-Transformation):
+   */
+  '#drawNarben': 'welt',
+  '#drawSpuren': 'welt',
+  '#drawRauch': 'welt',
+  '#drawTreffer': 'welt',
+  '#ermittleTreffer': 'keins',
+  '#fuehreSpuren': 'keins',
   /* Rechnet nur Zustände fort — zeichnet nichts, gehört in keine Schicht. */
   '#updateEffects': 'keins',
 };

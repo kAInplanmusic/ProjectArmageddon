@@ -73,6 +73,7 @@
  */
 import { oberflaechen } from './terrainGen2.js';
 import { TERRAIN_MATERIAL, materialById } from './config/terrain.js';
+import { gitterrauschen } from './terrainNoise.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -354,31 +355,6 @@ export function zieheCharakter(rng, randGewicht = 0.45) {
     lippen: zieh(CHARAKTER_ACHSEN.lippen),
     uebergang: zieh(CHARAKTER_ACHSEN.uebergang),
     bruchstelle: zieh(CHARAKTER_ACHSEN.bruchstelle),
-  };
-}
-
-/**
- * Gitterrauschen über einem 2D-Gitter — wie in `terrainGen2`, hier lokal,
- * damit dieses Modul nicht von dessen Innenleben abhängt.
- */
-function gitterrauschen(rng, spalten, zeilen) {
-  const punkte = new Float32Array((spalten + 1) * (zeilen + 1));
-  for (let i = 0; i < punkte.length; i += 1) punkte[i] = rng.next();
-
-  const glatt = t => t * t * (3 - 2 * t);
-
-  return (fx, fy) => {
-    const x = Math.max(0, Math.min(spalten - 1e-6, fx * spalten));
-    const y = Math.max(0, Math.min(zeilen - 1e-6, fy * zeilen));
-    const x0 = Math.floor(x);
-    const y0 = Math.floor(y);
-    const tx = glatt(x - x0);
-    const ty = glatt(y - y0);
-
-    const i = (px, py) => punkte[py * (spalten + 1) + px];
-    const oben = i(x0, y0) + (i(x0 + 1, y0) - i(x0, y0)) * tx;
-    const unten = i(x0, y0 + 1) + (i(x0 + 1, y0 + 1) - i(x0, y0 + 1)) * tx;
-    return oben + (unten - oben) * ty;
   };
 }
 

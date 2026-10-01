@@ -42,11 +42,13 @@
  *
  *   - **Nur `.js` unter `src/`.** `.mjs`/`.cjs`/`.ts` gibt es dort nicht; käme
  *     eine dazu, fiele sie hier still heraus.
- *   - **KEINE Datendateien.** `src/shared/data/*.json` und
- *     `src/client/assets/weaponIcons.json` sind keine Module und haben keine
- *     Importeure — sie sind ein eigener Befund und werden vom Werkzeug
- *     gemeldet (`node tools/audit-mcp/server.mjs --ruf audit_deadcode` →
- *     `toteDaten`), nicht von diesem Test.
+ *   - **KEINE Datendateien.** `.json` ist kein Modul und hat keinen Importeur;
+ *     die Prüfung gilt der Code-Ebene. Das Werkzeug meldet Datendateien als
+ *     eigenen Befund (`node tools/audit-mcp/server.mjs --ruf audit_deadcode` →
+ *     `toteDaten`), nicht dieser Test. **Stand 2026-10-01: null Datendateien
+ *     unter `src/`** — die drei gemeldeten (`src/shared/data/*.json`,
+ *     `src/client/assets/weaponIcons.json`) sind entfernt; der Befund ist
+ *     damit leer, nicht bloß abgehakt.
  *   - **Kein Aufrufgraph.** Geprüft wird die NENNUNG des Dateinamens in einer
  *     Projektdatei (dieselbe Textsuche wie im Werkzeug). Eine Datei, die nur in
  *     einem Kommentar genannt wird, gilt deshalb als angebunden; eine, deren
@@ -115,17 +117,23 @@ const ERLAUBT_OHNE_IMPORTEUR = new Map([
   ['src/server/index.js', 'Barrel UND `"main"` in package.json'],
   // Der Browser-Einstiegspunkt: `index.html:1087` lädt ihn als Modul.
   ['src/client/main.js', 'Browser-Einstieg: `index.html` lädt `src/client/main.js`'],
-  /**
-   * Der Sonderfall, und er steht hier AUSDRÜCKLICH als Ausnahme statt als
-   * Barrel: `src/shared/data/index.js` ist **code-leer** (30 Zeilen, davon 0
-   * Anweisungen, siehe Kopfkommentar der Datei), wird von NIEMANDEM geladen und
-   * von keinem Manifest genannt. Er ist damit kein Einstiegspunkt, sondern ein
-   * liegengebliebener Modulplatzhalter — und genau so meldet ihn das Werkzeug
-   * (`audit_deadcode` → `toteDateien`). Der Eintrag hält ihn aus diesem
-   * Wächter heraus, damit die ENTSCHEIDUNG „entfernen" nicht durch einen roten
-   * Test erzwungen wird; sichtbar bleibt sie.
+  /*
+   * ENTFERNT 2026-10-01: `src/shared/data/index.js` stand hier als
+   * „code-leerer Modulplatzhalter, Entscheidung offen". Die Entscheidung ist
+   * gefallen — die Datei ist WEG.
+   *
+   * Warum sie weichen konnte: 30 Zeilen, davon NULL Anweisungen und NULL
+   * Exporte; kein Importeur im ganzen Baum (auch nicht über einen Barrel), von
+   * keinem Manifest genannt. Ihr Inhalt war der NACHWEIS, dass die beiden
+   * JSON-Dateien und die beiden Lader entfernt wurden — das ist Dokumentation,
+   * und sie steht vollständig in `ARCHIVED.md` (§`src/shared/data/`) und in
+   * `docs/verkabelung.md`. Eine Datei, die nur Dokumentation ist, gehört nicht
+   * in `src/`.
+   *
+   * Damit hat dieser Wächter **keine einzige** Ausnahme mehr für einen
+   * liegengebliebenen Platzhalter — nur noch Barrel-Dateien und den
+   * Browser-Einstieg, und die sind über `package.json`/`index.html` belegt.
    */
-  ['src/shared/data/index.js', 'code-leeres Modul (0 Anweisungen); Werkzeug meldet es als „ohne Importeur" — Entscheidung offen'],
 ]);
 
 /** Jede Datei unter `src/` muss von irgendwem geladen werden. */

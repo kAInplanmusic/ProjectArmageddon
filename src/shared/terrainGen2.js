@@ -47,54 +47,15 @@
  * @module terrainGen2
  */
 
+import { gitterrauschen } from './terrainNoise.js';
+
 /**
- * Erzeugt ein Wertrauschen über einem 2D-Gitter.
+ * Die Kartentypen.
  *
- * ## Warum Wertrauschen und nicht Perlin
- *
- * Perlin liefert glattere Ergebnisse, braucht aber Gradientenvektoren und ist
- * damit rund dreimal so viel Code. Für Höhlen und Landmassen liegt der
- * Unterschied unter der Sichtbarkeitsschwelle — gemessen mit
- * `npm run measure:terrain`. Wertrauschen ist dafür **nachvollziehbar**: Jeder
- * Gitterpunkt ist schlicht eine Zufallszahl.
- *
- * ## Die Gitterweite gehört zur Karte, nicht zum Code
- *
- * FUND (belegt): Die alte Fassung nutzte **feste** Stützstellenzahlen (6 und
- * 18). Auf einer 1280er Karte ergab das 8 Erhebungen, auf einer 5120er **0** —
- * das Gelände wurde zu einem Brett, weil dieselben sechs Wellen auf das
- * Vierfache gestreckt wurden.
- *
- * Hier ist die Gitterweite ein **Anteil der Kartenbreite**: Bei „hügelig"
- * liegt ein Gitterpunkt alle ~200 px, unabhängig von der Kartengröße. Ein
- * größeres Feld hat damit **mehr** Hügel, nicht breitere.
- *
- * @param {object} rng - SeededRandom
- * @param {number} spalten - Gitterpunkte in x
- * @param {number} zeilen - Gitterpunkte in y
- * @returns {(fx:number, fy:number) => number} Wert in [0,1]
+ * Jeder Typ beschreibt, **wie viel** Land, Höhlen und Struktur entstehen —
+ * nicht, wie es aussieht (das ist Sache der Kulisse).
  */
-function gitterrauschen(rng, spalten, zeilen) {
-  const punkte = new Float32Array((spalten + 1) * (zeilen + 1));
-  for (let i = 0; i < punkte.length; i += 1) punkte[i] = rng.next();
 
-  /** Weiche Interpolation (smoothstep) — verhindert sichtbare Gitterkanten. */
-  const glatt = t => t * t * (3 - 2 * t);
-
-  return (fx, fy) => {
-    const x = Math.max(0, Math.min(spalten - 1e-6, fx * spalten));
-    const y = Math.max(0, Math.min(zeilen - 1e-6, fy * zeilen));
-    const x0 = Math.floor(x);
-    const y0 = Math.floor(y);
-    const tx = glatt(x - x0);
-    const ty = glatt(y - y0);
-
-    const i = (px, py) => punkte[py * (spalten + 1) + px];
-    const oben = i(x0, y0) + (i(x0 + 1, y0) - i(x0, y0)) * tx;
-    const unten = i(x0, y0 + 1) + (i(x0 + 1, y0 + 1) - i(x0, y0 + 1)) * tx;
-    return oben + (unten - oben) * ty;
-  };
-}
 
 /**
  * Die Kartentypen.

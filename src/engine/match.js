@@ -10,11 +10,12 @@
 import { createGameWorld, SYSTEM_PRIORITIES } from './init.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
-import { generateTerrain, surfaceY as findSurfaceY } from '../shared/terrainGen.js';
-import { erzeugeKarte } from '../shared/terrainGen2.js';
-import { erzeugeAutonomeKarte, materialAmPunkt } from '../shared/terrainGen3.js';
+import { surfaceY as findSurfaceY } from '../shared/terrainGen.js';
+import { materialAmPunkt } from '../shared/terrainGen3.js';
 import { TERRAIN_MATERIAL, RUECKPRALL_MINDESTTEMPO } from '../shared/config/terrain.js';
 import { baueAnsichtszustand, hashState } from './stateSnapshot.js';
+import { erzeugeSpieler } from './spawnManager.js';
+import { baueTerrain } from './terrainBuilder.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
 } from '../shared/erreichbarkeit.js';
@@ -40,7 +41,6 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shar
 import { getWeapon } from '../shared/config/weapons.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { damageTypeId } from './damageTypes.js';
-import { getClassLoadout } from '../shared/config/loadouts.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
 import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
@@ -789,98 +789,39 @@ export class MatchController {
 
   #buildTerrain() {
     /*
-     * Die Reichweitenskalierung braucht kein Feld mehr.
+     * Delegiert an `engine/terrainBuilder.js` — das rein funktionale
+     * `baueTerrain(quelle)` erledigt die Arbeit. Der Match-Delegator
+     * benennt jede Eingabe, die der Terrain-Bau liest.
      *
-     * Sie war hier einmal gespeichert (`this.#reichweite`), weil `width` erst
-     * beim Geländebau feststeht. Seit 2026-09-19 fragen die Lesestellen die
-     * Funktionen direkt mit `this.width` — eine Quelle, kein Zwischenspeicher,
-     * der veralten kann. Siehe `src/shared/reichweite.js` für die Herleitung.
+     * Die Kollisionsmaske entsteht HIER, nicht im Builder: Sie ist der
+     * Produktivpfad der Kollision und gehört damit dem Motor. Der Builder
+     * liefert die Bitmap — dieselben Daten zweimal auszuwerten wäre eine
+     * zweite Rechnung und eine zweite Wahrheit (siehe dortiger Modulkopf).
      */
+    const ergebnis = baueTerrain({
+      seedManager: this.#seedManager,
+      width: this.width,
+      height: this.height,
+      kartentyp: this.kartentyp,
+      preset: this.preset,
+      events: this.#events,
+      statuses: this.#statuses,
+      handleProjectileImpact: payload => this.#handleProjectileImpact(payload),
+      world: this.#world,
+    });
 
-    const terrainRng = this.#seedManager.getSubRng('TERRAIN');
+    this.#bitmap = ergebnis.bitmap;
+    this.#terrain = CollisionMask.fromBitmap(this.#bitmap, this.width, this.height);
+    this.#material = ergebnis.material;
+    this.kartencharakter = ergebnis.kartencharakter;
+    this.kartenkennzahlen = ergebnis.kartenkennzahlen;
+    this.#waterBaseY = ergebnis.waterBaseY;
 
-    /*
-     * Zwei Generatoren, ein Schalter.
-     *
-     * Der alte (`generateTerrain`) erzeugt ein **1D-Höhenfeld**: je Spalte
-     * genau eine Oberfläche, alles darunter massiv. Damit sind Höhlen, Tunnel,
-     * Überhänge und schwebende Inseln nicht darstellbar — das ist eine
-     * Eigenschaft des Verfahrens, nicht ein Mangel des Codes.
-     *
-     * Der neue (`erzeugeKarte`) erzeugt eine **2D-Maske** und kann all das.
-     * Möglich ist das ohne Motorumbau, weil die Kollision ohnehin 2D ist
-     * (`CollisionMask.fromBitmap` mit `isSolid(x, y)`) — nur der Generator
-     * schrieb bisher ein Höhenfeld hinein.
-     *
-     * Der Umschalter steht auf dem KARTENTYP: Ist einer gesetzt, baut der neue
-     * Generator die Karte. Ohne Angabe bleibt es beim bewährten Verhalten —
-     * ein unbekannter Aufrufer soll nicht plötzlich anderes Gelände bekommen.
-     */
-    let bitmap;
-    let waterLevel;
-
-    if (this.kartentyp === 'autonom') {
-      /*
-       * Der autonome Generator: Er zieht seinen Charakter aus dem Seed — kein
-       * Typ, keine Schablone. Was dabei entsteht, steht in `charakter` und
-       * `kennzahlen` und ist damit nachprüfbar.
-       */
-      const k = erzeugeAutonomeKarte({
-        rng: terrainRng,
-        width: this.width,
-        height: this.height,
-      });
-      bitmap = k.bitmap;
-      waterLevel = k.wasserY;
-      this.kartencharakter = k.charakter;
-      this.kartenkennzahlen = k.kennzahlen;
-      /*
-       * Das Bodenmaterial kommt aus DEMSELBEN Generator und damit aus
-       * DEMSELBEN Seed. Es wird hier nur übernommen — gelesen wird es an
-       * genau EINER Stelle, siehe `materialAt`.
-       */
-      this.#material = k.material ?? null;
-    } else if (this.kartentyp) {
-      const k = erzeugeKarte({
-        rng: terrainRng,
-        width: this.width,
-        height: this.height,
-        typ: this.kartentyp,
-      });
-      bitmap = k.bitmap;
-      waterLevel = k.wasserY;
-    } else {
-      const alt = generateTerrain({
-        rng: terrainRng,
-        width: this.width,
-        height: this.height,
-        preset: this.preset,
-      });
-      bitmap = alt.bitmap;
-      waterLevel = alt.waterLevel;
-    }
-
-    this.#bitmap = bitmap;
-    this.#terrain = CollisionMask.fromBitmap(bitmap, this.width, this.height);
-    // Schild und Rüstung greifen im DamageSystem, damit sie auch bei
-    // Flächenschaden wirken — dort verteilt der Radius den Schaden, nicht die
-    // Waffe. Der Modifikator ist die einzige Brücke dorthin.
-    this.#world.services.damageModifier = (entityId, amount) => {
-      const armor = this.#statuses.armorOf(entityId);
-      const afterArmor = amount * (1 - armor);
-      const { absorbed, rest } = this.#statuses.absorbWithShield(entityId, afterArmor);
-      if (absorbed > 0) {
-        this.#events.emit('shield_absorbed', { playerId: entityId, absorbed });
-      }
-      return { amount: rest };
-    };
-
-    // Wirkungen beim Einschlag eines Projektils.
-    this.#world.services.onProjectileImpact = payload => this.#handleProjectileImpact(payload);
+    this.#world.services.damageModifier = ergebnis.services.damageModifier;
+    this.#world.services.onProjectileImpact = ergebnis.services.onProjectileImpact;
 
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
-    this.#waterBaseY = waterLevel;
   }
 
   #buildWater() {
@@ -993,101 +934,25 @@ export class MatchController {
     return idealX;
   }
 
+  /**
+   * Stellt die Spieler auf — ein reiner Delegator.
+   *
+   * ## Schritt 4: Delegation nach engine/spawnManager.js
+   *
+   * Der Rumpf stand hier 96 Zeilen lang und griff in private Felder (Welt,
+   * Inventar, Spielerliste, Zugfolge). Er liegt jetzt als reine Funktion
+   * `erzeugeSpieler(quelle)` in `engine/spawnManager.js` — nach demselben
+   * Muster wie `stateSnapshot.js` (W1-4a) und `shooting.js` (W1-4b):
+   * `#spawnQuelle()` benennt jede Angabe, die das Aufstellen liest.
+   *
+   * Die Quelle liefert die fertigen Spieler-Einträge als Rückgabe; die
+   * Zugfolge entsteht daraus (Entity-Kennung je Eintrag), damit die Funktion
+   * die Klassen-Arrays nicht selbst anfassen muss.
+   */
   #spawnPlayers() {
-    const total = this.teams * this.playersPerTeam;
-    const spacing = this.width / (total + 1);
-    // Ein Startloadout je Klasse, nicht je Spieler: Die Auswahl hängt allein an
-    // der Klasse. Vorher startete jede Klasse mit demselben neutralen Loadout —
-    // die Klasse veränderte nur Werte, nicht die Mittel.
-    const loadouts = new Map(CLASS_IDS.map(id => [id, getClassLoadout(id)]));
-
-    for (let index = 0; index < total; index++) {
-      const teamId = index % this.teams;
-      /*
-       * Klasse und Archetyp — aus der Konfiguration, sonst nach der alten Regel.
-       *
-       * FUND (belegt): Vorher standen hier `index % 3` für BEIDE Werte, also
-       * dieselbe Zahl. Damit waren nur die drei Diagonalen erreichbar
-       * (scout/brawler, heavy/artillerist, artillery/occultist) — die extremsten
-       * Profile der Tabelle wurden nie erzeugt. Die Auflösung liegt jetzt in
-       * `resolveLoadout()` (classes.js) und nimmt eine Wahl entgegen.
-       *
-       * Ohne Wahl greift die alte Regel: Ein Match ohne `loadouts` verläuft
-       * exakt wie bisher, ebenso ein Replay aus einer älteren Fassung.
-       */
-      const wahl = resolveLoadout(index, this.loadouts[index] ?? null);
-      const classId = CLASS_IDS.indexOf(wahl.classId);
-      const archetypeId = ARCHETYPE_IDS.indexOf(wahl.archetypeId);
-
-      const x = Math.round(spacing * (index + 1));
-      /*
-       * Trockener Startplatz.
-       *
-       * Fund (belegt): Die Startposition war schlicht `spacing × (index + 1)`.
-       * Auf einer wasserreichen Karte liegt diese Stelle aber unter dem
-       * Wasserspiegel — gemessen bei der Geländeform `flooded`: **51 % der
-       * Figuren (81 von 160 über 40 Seeds) starteten untergetaucht** und
-       * ertranken im ersten Zug. Bei den vier ursprünglichen Formen fiel es nicht
-       * auf, weil dort der Wasserspiegel tief genug liegt; die Startposition war
-       * also nur zufällig sicher, nicht geprüft.
-       */
-      const startX = this.#drySpawnX(x);
-      const groundY = this.surfaceYAt(startX);
-      const y = (groundY > 0 ? groundY : this.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
-
-      const entityId = this.#world.createEntity();
-      /*
-       * Der Sidegrade dieses Platzes — aus der Konfiguration, nicht gewürfelt.
-       *
-       * Er wird VOR dem Kampfprofil aufgelöst, weil auch das LEBEN davon
-       * abhängt (`combatProfile().healthMultiplier`). Ohne diese Reihenfolge
-       * hätte eine Figur mit Zusatzpanzerung das Leben ohne die Panzerung.
-       */
-      const sidegradeId = this.sidegrades[index] ?? null;
-      // Leben kommt aus dem gemeinsamen Kampfprofil (classes.js) — nicht aus
-      // einer zweiten, hier nachgebauten Multiplikation.
-      const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId);
-      const maxHealth = Math.round(this.baseHealth * profile.healthMultiplier);
-
-      this.#world.addComponent(entityId, 'Position', { x, y });
-      this.#world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
-      this.#world.addComponent(entityId, 'Health', { current: maxHealth, max: maxHealth });
-      this.#world.addComponent(entityId, 'Class', { classId, archetypeId });
-      this.#world.addComponent(entityId, 'Team', { teamId });
-      this.#world.addComponent(entityId, 'Weapon', { angle: teamId === 0 ? Math.PI / 4 : (Math.PI * 3) / 4, power: 55 });
-      this.#world.addComponent(entityId, 'Input', { angle: 0, power: 0 });
-      this.#world.addComponent(entityId, 'Rotation', { angle: 0 });
-
-      this.#inventory.register(entityId, loadouts.get(CLASS_IDS[classId]) ?? loadouts.get(CLASS_IDS[0]));
-
-      this.#players.push({
-        entityId,
-        teamId,
-        classId,
-        archetypeId,
-        /**
-         * Die Sidegrade-Kennung des Platzes — `null`, wenn keine gewählt wurde
-         * oder die Kennung unbekannt ist.
-         *
-         * Sie steht am SPIELER, weil die drei Lesestellen des Kampfprofils
-         * (`fire`, `#launchVector`, `#applyDamage`-Pfad) über `player?.classId`
-         * gehen. Ein Sidegrade an einer vierten Stelle zu führen hieße, die
-         * Verrechnung zu duplizieren — genau die Doppelregel, die classes.js
-         * beseitigt hat.
-         */
-        sidegradeId: profile.sidegradeId,
-        label: `P${index + 1}`,
-        /**
-         * Lebensstatus des SPIELERS.
-         *
-         * Bewusst hier geführt und nicht über `world.isActive(entityId)`
-         * ermittelt: Das ECS vergibt IDs gefallener Entities neu (siehe
-         * `#registerSystems`), und dann liegt unter derselben ID eine Kiste.
-         */
-        alive: true,
-      });
-      this.#turnOrder.push(entityId);
-    }
+    const eintraege = erzeugeSpieler(this.#spawnQuelle());
+    this.#players.push(...eintraege);
+    this.#turnOrder.push(...eintraege.map(eintrag => eintrag.entityId));
   }
 
   #spawnRoundLoot() {
@@ -2888,6 +2753,37 @@ export class MatchController {
       : this.#water.getLevel(Math.floor(x), Math.floor(y));
     return clampWaterLevel(roh);
   }
+  /**
+   * Sammelt die Werte, die `erzeugeSpieler` liest.
+   *
+   * ## Warum diese Methode gibt
+   *
+   * Der Spieler-Spawn soll rein bleiben und bekommt deshalb keine
+   * `this`-Zugriffe mehr, sondern diese Quelle — dieselbe Haltung wie
+   * `#zustandsQuelle()` für den Ansichtszustand.
+   *
+   * `drySpawnX` bleibt als Funktion im Match (sie hängt an `surfaceYAt`,
+   * `waterLevelAt` und der Kartenbreite) und wird als Rückfrage hineingereicht.
+   *
+   * @returns {object} die Quelle für `erzeugeSpieler`
+   */
+  #spawnQuelle() {
+    return {
+      teams: this.teams,
+      playersPerTeam: this.playersPerTeam,
+      width: this.width,
+      height: this.height,
+      drySpawnX: idealX => this.#drySpawnX(idealX),
+      surfaceYAt: x => this.surfaceYAt(x),
+      world: this.#world,
+      inventory: this.#inventory,
+      sidegrades: this.sidegrades,
+      loadouts: this.loadouts,
+      baseHealth: this.baseHealth,
+      resolveLoadout,
+    };
+  }
+
 
   /**
    * Setzt den Wasserstand an einer Weltposition (Gegenstück zu `waterLevelAt`).

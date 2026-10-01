@@ -9,7 +9,14 @@ export * from './config/water.js';
 export * from './prng.js';
 export * from './seed.js';
 
-// Hinweis: src/shared/data/ wird hier BEWUSST nicht re-exportiert. Jenes Modul
-// liest seine JSON-Dateien beim Laden über `node:fs` — im Browser gibt es das
-// nicht, und dieser Balken wird von Client und Server gemeinsam genutzt. Wer die
-// Daten im Server braucht, importiert direkt aus './data/index.js'.
+/*
+ * Dieser Balken wird von Client UND Server gemeinsam genutzt. Alles, was hier
+ * re-exportiert wird, muss im Browser laufen — deshalb steht hier KEIN Modul
+ * mit Node-Builtins (`node:fs` gibt es dort nicht).
+ *
+ * HISTORIE: Genau deshalb war `src/shared/data/` nie re-exportiert. Der Ordner
+ * enthielt zuletzt nur noch einen code-leeren Platzhalter; er ist am 2026-10-01
+ * entfernt (Belege: `ARCHIVED.md`, `tests/source-boundaries.test.js`). Die Regel
+ * gilt weiter: Wer eine serverseitige Datei unter `src/shared/` braucht, trägt
+ * sie in die Ausnahmeliste des Grenztests ein — nicht in diesen Balken.
+ */

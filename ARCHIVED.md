@@ -27,6 +27,13 @@ samt `projectArmageddonWorldAdapter.js` als Anbindung an die Spielwelt.
 
 ### `src/shared/data/`
 
+> **NACHTRAG 2026-10-01 — dieser Ordner existiert nicht mehr.** Er enthielt
+> zuletzt nur noch `index.js` (code-leer, kein Export, kein Importeur) — ein
+> Platzhalter, der den Abgang der beiden JSON-Dateien dokumentierte. Er ist
+> entfernt; damit ist der Ordner weg. Die Beschreibung darunter bleibt als
+> **Bestandsaufnahme des Archivstands** stehen (so kam er herein), nicht als
+> Aussage über den heutigen Baum.
+
 Ein Lader plus zwei JSON-Dateien. Dazu zwei Hinweise:
 
 - **`projectArmageddonWeaponsV1.json` ist ein inhaltsgleiches Duplikat** von
