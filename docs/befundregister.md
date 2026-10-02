@@ -48,7 +48,7 @@ ich im Code selbst gelesen:
 | A-9 | **Abbruchknopf online nicht erreichbar** | `main.js:774`, `index.html:400` (`[hidden]` unüberstimmbar) | A | ✅ 2026-10-01 — `startOnline` blendet `#zeigeAbbruch(true)` ein; Fehlschlag-Pfad blendet aus. Wächter `tests/abort-knopf.test.js` (Online-Zweig geprüft, Gegenprobe gefahren) |
 | A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `menuOverlay.hidden` an `:816/:957/:2335`, Server `gameServer.js:1170` + `lobby.js:355/369` | A | ⬜ |
 | A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
-| A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ⬜ |
+| A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ✅ 2026-10-02 — **sachlich erledigt**, nachgemessen: nur noch EINE Definition (`config/weapons.js:7124`). Die Stelle in `specials.js` ist heute ein Grabstein-Kommentar; `doppelregeln` meldet 0. Wächter `tests/tote-regeln.test.js` |
 | A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | 🟡 Worker K |
 | A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ⬜ |
 

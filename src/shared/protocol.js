@@ -82,7 +82,7 @@ import { GUENTHER_POOP } from './config/guenther.js';
  *    Zehntelsekunden von 255. Eine ältere Gegenstelle lehnt den Snapshot ab,
  *    statt ihn falsch zu lesen; genau dafür gibt es diese Zahl.
  */
-export const PROTOCOL_VERSION = 8;
+export const PROTOCOL_VERSION = 9;
 export const MAGIC = [0x50, 0x41]; // 'PA'
 
 export const MESSAGE_TYPE = Object.freeze({
@@ -128,6 +128,12 @@ const TURN_MS_SCALE = 100;  // 0.1 s Auflösung
 const FUSE_SCALE = 10;
 /** Obergrenze für Einfrierdauer im Drahtformat (ein Byte). */
 const MAX_WIRE_FREEZE_TURNS = 255;
+/*
+ * Schadensbonus als Zehntel auf die Leitung (Protokoll v9). Ein Faktor von 1,0
+ * wird damit zu 10 — die Auflösung von 0,1 reicht für die Marke „↑ N\" und
+ * vermeidet Gleitkomma auf dem Draht (dieselbe Regel wie beim Wasserstand).
+ */
+const BOOST_SCALE = 10;
 /** Bitfeld im dirty-Byte: welche Felder eines Spielers sich geändert haben. */
 export const DIRTY = Object.freeze({
   POSITION: 1 << 0,
@@ -137,6 +143,18 @@ export const DIRTY = Object.freeze({
   STATUS: 1 << 3,
   /** Wasserstand (Protokoll v4). */
   WATER: 1 << 4,
+  /*
+   * Zustandsmarken „Schaden über Zeit\" (Anzahl) und „Schadensbonus\"
+   * (Zehntel-Faktor) — Protokoll v9.
+   *
+   * FUND (belegt, docs/verkabelung.md §C): Der Client füllte beide Felder fest
+   * mit `dots: []` / `boostMultiplier: 1`. Folge online: Wer vergiftet wurde
+   * oder einen Bonus hatte, verlor bzw. gewann Leben OHNE jede Marke — die
+   * Anzeige behauptete, es passiere nichts. Lokal stimmten die Werte.
+   * Der eigene Wächter `tests/status-marke-online.test.js` hielt die Lücke als
+   * „bewusst offen\" fest; dieser Eintrag schließt sie.
+   */
+  MARKS: 1 << 5,
 });
 
 /** Bitfeld in den Snapshot-Flags. */
@@ -150,7 +168,7 @@ export const SNAPSHOT_FLAG = Object.freeze({
  * bewusste Entscheidung, keine Zufallszahl — und sie soll nicht unbemerkt
  * wachsen.
  */
-export const PLAYER_STRIDE = 15;
+export const PLAYER_STRIDE = 17;
 /**
  * Projektil im Snapshot: Kennung (2), x (2), y (2), Zünderrest (1).
  *
@@ -331,8 +349,15 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     // Wasserstand ganzzahlig — wie alle Drahtwerte, damit der Delta-Vergleich
     // auf genau den übertragenen Zahlen läuft.
     const waterRaw = toWireWaterLevel(player.waterLevel ?? 0);
+    /*
+     * Zustandsmarken (Protokoll v9): Anzahl der laufenden Schaden-über-Zeit-
+     * Effekte und der Schadensbonus als Zehntelfaktor. Beide waren bis v8
+     * NUR lokal vorhanden — online behauptete die Anzeige „nichts passiert\".
+     */
+    const dotsRaw = Math.max(0, Math.min(255, Math.round(player.dotsCount ?? 0)));
+    const boostRaw = Math.max(0, Math.min(255, Math.round((player.boostMultiplier ?? 1) * BOOST_SCALE)));
 
-    let dirty = DIRTY.POSITION | DIRTY.HEALTH | DIRTY.ALIVE | DIRTY.STATUS | DIRTY.WATER;
+    let dirty = DIRTY.POSITION | DIRTY.HEALTH | DIRTY.ALIVE | DIRTY.STATUS | DIRTY.WATER | DIRTY.MARKS;
     if (isDelta) {
       const before = previous.get(player.entityId);
       if (before) {
@@ -342,6 +367,7 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
         if (before.alive !== alive) dirty |= DIRTY.ALIVE;
         if (before.shieldRaw !== shieldRaw || before.frozenRaw !== frozenRaw) dirty |= DIRTY.STATUS;
         if (before.waterRaw !== waterRaw) dirty |= DIRTY.WATER;
+        if (before.dotsRaw !== dotsRaw || before.boostRaw !== boostRaw) dirty |= DIRTY.MARKS;
       }
     }
 
@@ -356,6 +382,8 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     view.setUint8(offset + 12, shieldRaw);
     view.setUint8(offset + 13, frozenRaw);
     view.setUint8(offset + 14, waterRaw);
+    view.setUint8(offset + 15, dotsRaw);
+    view.setUint8(offset + 16, boostRaw);
     offset += PLAYER_STRIDE;
   }
 
@@ -467,6 +495,8 @@ export function decodeSnapshot(input, previous = null) {
     const shieldRaw = view.getUint8(offset + 12);
     const frozenRaw = view.getUint8(offset + 13);
     const waterRaw = view.getUint8(offset + 14);
+    const dotsRaw = view.getUint8(offset + 15);
+    const boostRaw = view.getUint8(offset + 16);
 
     const before = carry?.get(entityId);
     entities.push({
@@ -482,6 +512,16 @@ export function decodeSnapshot(input, previous = null) {
       waterLevel: fromWireWaterLevel(
         (dirty & DIRTY.WATER) !== 0 || !before ? waterRaw : before.waterRaw,
       ),
+      /*
+       * Zustandsmarken (Protokoll v9): Anzahl der DoT-Effekte und der
+       * Schadensbonus als Faktor. Vor v9 fehlten beide auf der Leitung, und der
+       * Client füllte sie mit Konstanten — online gab es deshalb nie eine
+       * Gift- oder Bonusmarke.
+       */
+      dotsCount: (dirty & DIRTY.MARKS) !== 0 || !before ? dotsRaw : before.dotsRaw,
+      boostMultiplier: (
+        (dirty & DIRTY.MARKS) !== 0 || !before ? boostRaw : before.boostRaw
+      ) / BOOST_SCALE,
     });
     nextPrevious.set(entityId, {
       xRaw: (dirty & DIRTY.POSITION) !== 0 || !before ? xRaw : before.xRaw,
@@ -491,6 +531,8 @@ export function decodeSnapshot(input, previous = null) {
       shieldRaw: (dirty & DIRTY.STATUS) !== 0 || !before ? shieldRaw : before.shieldRaw,
       frozenRaw: (dirty & DIRTY.STATUS) !== 0 || !before ? frozenRaw : before.frozenRaw,
       waterRaw: (dirty & DIRTY.WATER) !== 0 || !before ? waterRaw : before.waterRaw,
+      dotsRaw: (dirty & DIRTY.MARKS) !== 0 || !before ? dotsRaw : before.dotsRaw,
+      boostRaw: (dirty & DIRTY.MARKS) !== 0 || !before ? boostRaw : before.boostRaw,
     });
     offset += PLAYER_STRIDE;
   }
@@ -1026,6 +1068,10 @@ export function toDeltaBase(state) {
         Math.round(entity.frozenTurns ?? 0),
       )),
       waterRaw: toWireWaterLevel(entity.waterLevel ?? 0),
+      // Zustandsmarken (Protokoll v9) — müssen in der Basis stehen, sonst meldet
+      // der Encoder sie in jedem Takt als „geändert\" und das Delta spart nichts.
+      dotsRaw: Math.max(0, Math.min(255, Math.round(entity.dotsCount ?? 0))),
+      boostRaw: Math.max(0, Math.min(255, Math.round((entity.boostMultiplier ?? 1) * BOOST_SCALE))),
     });
   }
   return base;

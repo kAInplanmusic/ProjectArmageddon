@@ -24,10 +24,11 @@ import { SNAPSHOT_HZ } from '../src/server/gameServer.js';
  * festgehalten werden — beide sind leicht zu übersehen und teuer zu glauben:
  *
  * 1. **Das Delta-Encoding spart KEINE Bytes.** Die Größe ist
- *    `HEADER + Figuren × 15 + Projektile × 6`, unabhängig davon, wie viele
- *    Felder sich geändert haben. Die Dirty-Bits sind ein SIGNAL an den Client
- *    („was ist neu"), keine Kompression. Wer „Delta" liest und Einsparung
- *    annimmt, irrt.
+ *    `HEADER + Figuren × 17 + Projektile × 7`, unabhängig davon, wie viele
+ *    Felder sich geändert haben. (Der Spielerblock maß bis Protokoll v8 15 Byte;
+ *    v9 hat `dotsCount` und `boostMultiplier` angehängt.) Die Dirty-Bits sind
+ *    ein SIGNAL an den Client („was ist neu"), keine Kompression. Wer „Delta"
+ *    liest und Einsparung annimmt, irrt.
  *
  * 2. **Kompression ist nicht nötig.** Gemessen: 4,0 kB/s bei zwölf Figuren und
  *    20 Hz — der Höchstfall. Eine variable Stride würde Bytes sparen, aber das
@@ -137,7 +138,7 @@ test('Die Übertragung bleibt im Budget — auch im Höchstfall der Matcharten',
    * gemessen +7 B je Snapshot, dazu höchstens MAX_WIRE_POOPS × 4 = 24 B für die
    * Haufen, wenn welche liegen. Beide Budgets halten damit weiterhin; der
    * künstliche Höchstfall aus 40 Figuren, sechs Haufen und einem Projektil wie
-   * einer Kiste misst 669 B und bleibt unter 700.
+   * einer Kiste misst 669 B (v8) bzw. 750 B (v9, +81 B) und bleibt unter 790.
    *
    * Die Budgets selbst sind UNVERÄNDERT geblieben: Der Zuwachs ist mit 7 B
    * konstant plus 4 B je liegendem Haufen klein genug, dass er in den bestehenden
@@ -155,10 +156,10 @@ test('Die Übertragung bleibt im Budget — auch im Höchstfall der Matcharten',
   const krieg = messen({ teams: 8, playersPerTeam: 5, schritte: 600 });
   const kbKrieg = (krieg.schnitt * SNAPSHOT_HZ) / 1024;
   assert.equal(krieg.figuren, 40, 'Krieg: 8 Spieler × 5 Einheiten');
-  assert.ok(krieg.maximum <= 700,
-    `Vierzig Figuren: ${krieg.maximum} Bytes (Budget: 700; gemessen 645)`);
-  assert.ok(kbKrieg <= 14,
-    `Vierzig Figuren: ${kbKrieg.toFixed(1)} kB/s (Budget: 14; gemessen 12,3)`);
+  assert.ok(krieg.maximum <= 780,
+    `Vierzig Figuren: ${krieg.maximum} Bytes (Budget: 780; gemessen 726)`);
+  assert.ok(kbKrieg <= 15,
+    `Vierzig Figuren: ${kbKrieg.toFixed(1)} kB/s (Budget: 15; gemessen 13,8)`);
 });
 
 test('Die Größe wächst linear mit der Figurenzahl, nicht schneller', () => {
@@ -171,7 +172,7 @@ test('Die Größe wächst linear mit der Figurenzahl, nicht schneller', () => {
   const mittel = messen({ teams: 2, playersPerTeam: 4 });
   const gross = messen({ teams: 3, playersPerTeam: 4 });
 
-  // Die Differenz je Figur ist ungefähr konstant (PLAYER_STRIDE = 15).
+  // Die Differenz je Figur ist ungefähr konstant (PLAYER_STRIDE = 17 seit v9).
   const jeFigurKleinMittel = (mittel.schnitt - klein.schnitt) / (mittel.figuren - klein.figuren);
   const jeFigurMittelGross = (gross.schnitt - mittel.schnitt) / (gross.figuren - mittel.figuren);
 
@@ -201,8 +202,9 @@ test('Quantisierung ist aktiv: Koordinaten kosten zwei Byte, nicht vier', () => 
   assert.equal(encodeSnapshot(state).length, formel(state));
 
   // Und die Stride passt zu den erwarteten Feldern: 2+2 (x,y) + 2 (health)
-  // + 1 (alive/flags) + 1 (shield) + 1 (frozen) + 1 (Wasser) + Kopfzeilen.
-  assert.ok(PLAYER_STRIDE >= 12 && PLAYER_STRIDE <= 16,
+  // + 1 (alive/flags) + 1 (shield) + 1 (frozen) + 1 (Wasser)
+  // + 1 (dotsCount) + 1 (boostMultiplier, Protokoll v9) + Kopfzeilen.
+  assert.ok(PLAYER_STRIDE >= 12 && PLAYER_STRIDE <= 18,
     `PLAYER_STRIDE ist ${PLAYER_STRIDE} — deutlich mehr als die erwarteten Felder`);
 });
 
@@ -219,7 +221,8 @@ test('Günther kostet konstant 6 Byte plus 4 je Haufen — und bleibt im Budget'
    *   statt einen zweiten Deckel zu erfinden.
    *
    * Gemessen nach der Änderung: 40 Figuren + sechs Haufen + Projektil + Kiste
-   * = 669 Byte, unter dem Kriegsbudget von 700.
+   * = 669 Byte (v8) bzw. 750 Byte (v9, +2 B je Figur und das Günther-Aufgebot
+   * dieses Aufbaus), unter dem Kriegsbudget von 780 (gemessen 750).
    */
   const basis = {
     tick: 1, round: 1, wind: 0, activePlayerId: null,
@@ -257,6 +260,9 @@ test('Günther kostet konstant 6 Byte plus 4 je Haufen — und bleibt im Budget'
   );
 
   // Der Höchstfall des Kriegsmodus MIT vollem Günther bleibt im Budget.
+  // NACHTRAG 2026-10-02: Budget von 700 auf 790 gehoben — Protokoll v9 kostet
+  // 2 Byte je Figur (40 × 2 = 80) plus das große Günther-Aufgebot dieses
+  // Aufbaus (6 Haufen à 4 Byte in JEDEM Snapshot, also nochmals 24).
   const match = new MatchController({ seed: 42, teams: 8, playersPerTeam: 5 });
   match.start();
   match.fire(match.activePlayerId, Math.PI / 4, 70);
@@ -271,6 +277,6 @@ test('Günther kostet konstant 6 Byte plus 4 je Haufen — und bleibt im Budget'
   };
   const groesse = encodeSnapshot(voll).length;
   assert.equal(krieg.entities.length, 40, 'Krieg: 8 Spieler × 5 Einheiten');
-  assert.ok(groesse <= 700,
-    `40 Figuren mit sechs Haufen: ${groesse} Bytes (Budget: 700; gemessen 669)`);
+  assert.ok(groesse <= 790,
+    `40 Figuren mit sechs Haufen: ${groesse} Bytes (Budget: 790; gemessen 750)`);
 });

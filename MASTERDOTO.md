@@ -30,9 +30,10 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges: `npm test` **1230/1230** grün
-*(Nachgemessen 2026-10-01 aus einem vollen Lauf (`npm test` → **1230 bestanden,
-0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js | wc -l` → **126**).
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02):
+**1232/1232** grün, Dateizahl **126** — die zwei neuen Prüfungen sitzen in
+`tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
+Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
 1230); die Schritte stehen im Verlauf: unbegrenzte Sprünge, HUD-Vorrang,
 Zerlegung des Geschützes (`tests/turret-zerlegung.test.js`), gemeinsamer

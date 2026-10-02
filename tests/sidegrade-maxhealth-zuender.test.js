@@ -253,7 +253,12 @@ test('Der Projektilblock trägt den Zünderrest (Protokoll v8)', () => {
     'Die Größenformel muss die Stride-Zahl einhalten',
   );
   assert.equal(PROJECTILE_STRIDE, 7, 'Projektil: Kennung, x, y, Zünderrest');
-  assert.equal(PLAYER_STRIDE, 15);
+  /*
+   * Der Spielerblock maß 15 Byte bis Protokoll v8. v9 hat die Zustandsmarken
+   * `dotsCount` und `boostMultiplier` angehängt (2 Byte) — hier gepinnt, damit
+   * ein weiterer Zuwachs bewusst geschieht und nicht nebenbei.
+   */
+  assert.equal(PLAYER_STRIDE, 17, 'Spielerblock seit v9: 15 + dotsCount + boostMultiplier');
 
   const gelesen = decodeSnapshot(bytes);
   assert.ok(gelesen, 'Der eigene Snapshot muss lesbar sein');
@@ -320,5 +325,12 @@ test('Die Lesestellen im Client reichen Sidegrad und Höchstleben durch (Wache)'
     /maxHealth:\s*this\.remoteLoadouts\?\.\[entity\.entityId\]\?\.maxHealth/,
     'Der Ansichtszustand muss das Höchstleben aus der Bestandsnachricht übernehmen',
   );
-  assert.equal(PROTOCOL_VERSION, 8, 'Der Zünderrest kam mit v8');
+  /*
+   * Die Protokollversion als Mindestmaß, nicht als Gleichheit: Der Zünderrest
+   * kam mit v8, die Zustandsmarken mit v9. Der Test soll den RÜCKBAU fangen
+   * (das Merkmal fällt aus dem Draht), nicht jede Erweiterung verbieten —
+   * eine Gleichheit auf eine Zahl hätte bei jeder neuen Version ohne Grund
+   * gerissen.
+   */
+  assert.ok(PROTOCOL_VERSION >= 8, 'Der Zünderrest kam mit v8');
 });

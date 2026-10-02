@@ -34,6 +34,12 @@ import {
   ergaenzeNarbe, verlaengereSpur,
   rauchWolke, schreiteRauchFort, rauchDarstellung,
 } from './gefuehl.js';
+/*
+ * Die Kisten-ARTEN für die Zeichnung. Die Zuordnung Zahl → Art steht einmal im
+ * Motor (`CRATE_TYPES`); hier gelesen, nicht als zweite Zahlenliste geführt —
+ * sonst zeigte die Anzeige irgendwann eine andere Kiste als die, die dort liegt.
+ */
+import { CRATE_TYPES } from '../engine/systems/lootSystem.js';
 
 /**
  * Kulissen-URLs, von Vite aufgelöst.
@@ -899,14 +905,46 @@ export class Renderer {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(-size / 2, -size / 2, size, size);
-      this.ctx.beginPath();
-      this.ctx.moveTo(-size / 2, -size / 2);
-      this.ctx.lineTo(size / 2, size / 2);
-      this.ctx.moveTo(size / 2, -size / 2);
-      this.ctx.lineTo(-size / 2, size / 2);
+      /*
+       * DIE ART DER KISTE SICHTBAR MACHEN (FUND behoben, docs/verkabelung.md §B1).
+       *
+       * Hier stand NUR die Seltenheitsfarbe. Die Art (`crateType`) war die ganze
+       * Zeit auf der Leitung und im Zustand, wurde aber nirgends gezeichnet —
+       * eine SPENGFALLE sah damit aus wie eine Waffenkiste. Für den Spieler ist
+       * das der Unterschied zwischen „holen" und „nicht anfassen".
+       *
+       * Die Marke ersetzt das X der alten Zeichnung, weil das X die einzige
+       * Aussage war, die über jeder Kiste stand. Gefülltes Quadrat = Waffe,
+       * Ring = Nachschub, leer = leer, Warndreieck = Falle.
+       */
       this.ctx.strokeStyle = color;
-      this.ctx.globalAlpha = 0.5;
-      this.ctx.stroke();
+      this.ctx.globalAlpha = 0.85;
+      this.ctx.lineWidth = 2;
+      const halb = size / 2;
+      switch (crate.crateType) {
+        case CRATE_TYPES.weapon:
+          this.ctx.fillStyle = color;
+          this.ctx.fillRect(-halb + 3, -halb + 3, size - 6, size - 6);
+          break;
+        case CRATE_TYPES.sustain:
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, halb - 3, 0, Math.PI * 2);
+          this.ctx.stroke();
+          break;
+        case CRATE_TYPES.trap: {
+          // Warndreieck — die einzige Art, die man NICHT öffnen will.
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, -halb + 2);
+          this.ctx.lineTo(halb - 2, halb - 2);
+          this.ctx.lineTo(-halb + 2, halb - 2);
+          this.ctx.closePath();
+          this.ctx.stroke();
+          break;
+        }
+        default:
+          // `empty` — die Kiste bleibt leer gezeichnet, das ist die Aussage.
+          break;
+      }
       this.ctx.restore();
     }
   }

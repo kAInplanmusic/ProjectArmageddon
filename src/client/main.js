@@ -1230,18 +1230,21 @@ class Game {
     if (remaining > (this.remoteTurnDurationMs ?? 0)) this.remoteTurnDurationMs = remaining;
     const turnDurationMs = this.remoteTurnDurationMs || 30_000;
 
-    // Zustände kommen je Spieler mit dem Snapshot (Protokoll v3) und werden in
-    // den Ansichtszustand übernommen, damit die Anzeige sie darstellen kann.
-    // B-5: DOTS/Boost werden NICHT über das Wire-Format übertragen — sie bleiben also leer.
-    // Jede Figur bekommt JEDEZ Takt einen Status-Eintrag, damit alte Marken nicht „kleben"
-    // bleiben und Schild/Einfrieren korrekt zurückgesetzt werden.
+    // Zustandsmarken kommen jetzt ebenfalls über die Leitung (Protokoll v9):
+    // `dotsCount` (Anzahl der Schaden-über-Zeit-Effekte) und `boostMultiplier`.
+    // Vor v9 standen hier die Konstanten `[]` und `1` — online erschien deshalb
+    // NIE eine Gift- oder Bonusmarke, obwohl Leben verloren bzw. dazugewonnen
+    // wurde (Defekt aus docs/verkabelung.md §C). Jede Figur bekommt weiterhin
+    // JEDEZ Takt einen Eintrag, damit alte Marken nicht kleben (B-5).
     const statuses = {};
     for (const entity of snapshot.entities ?? []) {
       statuses[entity.entityId] = {
         shield: entity.shield ?? 0,
         frozenTurns: entity.frozenTurns ?? 0,
-        dots: [],
-        boostMultiplier: 1,
+        // Die Anzeige zählt die Marken (`hud.js`), nicht ihre Inhalte — lokal
+        // ist es dieselbe Zahl (`statuses[id].dots.length`).
+        dots: new Array(entity.dotsCount ?? 0).fill(null),
+        boostMultiplier: entity.boostMultiplier ?? 1,
       };
     }
 

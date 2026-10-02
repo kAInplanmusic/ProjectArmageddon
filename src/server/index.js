@@ -48,7 +48,6 @@ export {
 export { validateCommand, normalizeInput, isTickInWindow, INPUT_LIMITS } from '../shared/validation.js';
 
 // Shared-Config
-export { GAME_RULES } from '../shared/config/rules.js';
 export { MATCH_RULES, computeMaelstromDamage } from '../shared/config/match.js';
 export { NETWORK_RULES } from '../shared/config/network.js';
 export { COMBAT_RULES } from '../shared/config/combat.js';

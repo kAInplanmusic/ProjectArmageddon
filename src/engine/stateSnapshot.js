@@ -108,6 +108,19 @@ export function baueAnsichtszustand(quelle) {
       maxHealth: alive ? quelle.world.getComponent(entry.entityId, 'Health', 'max') : 0,
       angle: alive ? quelle.world.getComponent(entry.entityId, 'Weapon', 'angle') : 0,
       power: alive ? quelle.world.getComponent(entry.entityId, 'Weapon', 'power') : 0,
+      /**
+       * Zustandsmarken (Protokoll v9): Anzahl der laufenden Schaden-über-Zeit-
+       * Effekte und der Schadensbonus als Faktor.
+       *
+       * Vorher standen beide NUR im lokalen Zustand (`statuses`) und wurden nie
+       * übertragen; online füllte der Client sie mit `[]` und `1` — die Marken
+       * „☠ N\" und „↑\" konnten dort also NIE erscheinen, obwohl Leben verloren
+       * bzw. dazugewonnen wurde. `docs/verkabelung.md` §C führt das als Defekt.
+       */
+      dotsCount: alive ? (quelle.statuses?.[entry.entityId]?.dots?.length ?? 0) : 0,
+      boostMultiplier: alive
+        ? Number((quelle.statuses?.[entry.entityId]?.boostMultiplier ?? 1).toFixed(3))
+        : 1,
       activeWeaponId: quelle.inventory.getActiveWeaponId(entry.entityId),
       inventory: quelle.inventory.getWeapons(entry.entityId),
       /** Verbleibende Nachladezeit je Waffe in Zügen (nur belegte Waffen). */
@@ -266,7 +279,7 @@ export function hashState(state) {
       entities,
       projectiles: state.projectiles.map(p => [p.entityId, Math.round(p.x), Math.round(p.y)]),
       statuses: zustaende,
-      turrets: (state.turrets ?? []).map(t => [t.entityId ?? null, Math.round(t.x), Math.round(t.y), t.rounds ?? null]),
+      turrets: (state.turrets ?? []).map(t => [t.entityId ?? null, Math.round(t.x), Math.round(t.y), t.roundsLeft ?? null]),
       maelstrom: state.maelstrom
         ? [Boolean(state.maelstrom.active), Math.round((state.maelstrom.inset ?? 0) * 1000)]
         : null,

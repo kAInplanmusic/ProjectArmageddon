@@ -16,7 +16,6 @@ export { TerrainSync } from '../engine/terrain/terrainSync.js';
 export { computeTrajectory, ccdRaycast } from '../engine/physics/ballistics.js';
 
 // Shared-Config (wie Server)
-export { GAME_RULES } from '../shared/config/rules.js';
 export { MATCH_RULES, computeMaelstromDamage } from '../shared/config/match.js';
 export { NETWORK_RULES } from '../shared/config/network.js';
 export { COMBAT_RULES } from '../shared/config/combat.js';
