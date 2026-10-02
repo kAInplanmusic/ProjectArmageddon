@@ -33,6 +33,19 @@ Stand: 2026-10-02 · Branch `main` · Ausgangscommit `8ee42a3`
 
 ---
 
+## 1b. Nachtrag 2026-10-02 (zweiter Commit `1037a53`)
+
+| # | Punkt | Beleg |
+|---|---|---|
+| 9 | **Der eine rote Volllauf-Test kippte über die Testumgebung, nicht über das Spiel** — `profiling.spec.mjs` „Bildzeiten messen (Software-Rasterung)": die Bilder schleife war nur über die BILDZAHL begrenzt (300), und unter SwiftShader sind das 241,7 ms × 300 = **72 s in einem einzigen `page.evaluate`**. Playwright brach mit „Execution context was destroyed" ab. Isoliert war der Test auf BEIDEN Seiten grün (HEAD 6/6, mit v9 6/6) — der A/B hat ihn entlastet, dieser Commit behebt ihn | Messung: 241,7 ms/Bild, 4,1 fps, Faktor 14,5× Budget. Jetzt `MESS_ZEITGRENZE_MS = 45_000`; Zusicherung von „300 Bilder" auf „mindestens 60" (Perzentile sind ab ~60 belastbar). **Ergebnis: 6/6 grün, Laufzeit 8,1 → 6,3 min.** Mutationsprobe in einer Kopie (Grenze auf 50 ms): **4 von 6 fallen** gezielt mit „zu wenige Bilder gemessen (1)" — der Wächter greift weiterhin |
+
+**Merksatz aus diesem Fund:** Ein Test, der eine feste MENGE verlangt, wo er
+eine belastbare STICHPROBE braucht, prüft die Maschine. Dieselbe Verwechslung
+steckte schon im fps-Budget (vor der Kartenvergrößerung) und im
+Terrain-Budget — dort jeweils behoben, hier zum dritten Mal.
+
+---
+
 ## 2. Sofort und klein (kein Design-Entscheid nötig)
 
 | # | Punkt | Beleg | Aufwand |
