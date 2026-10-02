@@ -359,7 +359,7 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
  *
  * @returns {{spawn:{x:number,y:number}, vx:number, vy:number}|null}
  */
-export function resolveStrike(quelle, weapon, x, y, angle, power) {
+function resolveStrike(quelle, weapon, x, y, angle, power) {
   const style = weapon?.strikeStyle ?? 'self';
   if (style === 'self') return null;
 
@@ -389,7 +389,7 @@ export function resolveStrike(quelle, weapon, x, y, angle, power) {
  * Zünderdauer einer Waffe in Simulationsschritten.
  * Die Waffe nennt Sekunden; die Simulation rechnet in Ticks zu 60 Hz.
  */
-export function fuseTicksFor(weapon) {
+function fuseTicksFor(weapon) {
   const sekunden = weapon?.fuseTime ?? 0;
   if (!(sekunden > 0)) return 0;
   return Math.max(1, Math.round(sekunden * 60));
@@ -578,7 +578,7 @@ export function launchOrigin(quelle, playerId, angle) {
  * @param {object} effect - aus buildEffect()
  * @returns {object} Beschreibung des tatsächlichen Ergebnisses
  */
-export function applySelfEffect(quelle, effect, playerId, weapon) {
+function applySelfEffect(quelle, effect, playerId, weapon) {
   switch (effect.kind) {
     case EFFECT_KIND.HEAL: {
       const health = quelle.world.getComponent(playerId, 'Health', 'current') ?? 0;

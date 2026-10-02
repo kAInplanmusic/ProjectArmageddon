@@ -1416,13 +1416,36 @@ export class GameServer {
         if (raw.length > 8192) raw = raw.slice(0, 8192);
       });
       request.on('end', () => {
+        /*
+         * Leerer Body ist eine gültige Eingabe (der Client sendet keine
+         * Felder — alle treffen auf ihre Standardwerte). Ungültiges JSON
+         * hingegen ist ein Protokollverletzungsversuch und darf nicht still
+         * als {} untergehen: Die Nachbarschaft meldet jeden anderen
+         * `catch`-Zweig (siehe §6 in docs/abnahme-bugs-2026-10-01.md).
+         */
+        if (!raw) {
+          resolve({});
+          return;
+        }
         try {
-          resolve(raw ? JSON.parse(raw) : {});
-        } catch {
+          resolve(JSON.parse(raw));
+        } catch (error) {
+          this.logger.warn('http_body_invalid', 'Ungültiger JSON-Request-Body', {
+            path: request.url,
+            method: request.method,
+            error: error.message,
+          });
           resolve({});
         }
       });
-      request.on('error', () => resolve({}));
+      request.on('error', error => {
+        this.logger.warn('http_body_error', 'Fehler beim Lesen des Request-Bodys', {
+          path: request.url,
+          method: request.method,
+          error: error.message,
+        });
+        resolve({});
+      });
     });
   }
 

@@ -36,11 +36,11 @@ export const INPUT_LIMITS = Object.freeze({
   maxPayloadBytes: 512,
 });
 
-export function isValidAngle(angle) {
+function isValidAngle(angle) {
   return Number.isFinite(angle) && angle >= INPUT_LIMITS.angleMin && angle <= INPUT_LIMITS.angleMax;
 }
 
-export function isValidPower(power) {
+function isValidPower(power) {
   return Number.isFinite(power) && power >= INPUT_LIMITS.powerMin && power <= INPUT_LIMITS.powerMax;
 }
 

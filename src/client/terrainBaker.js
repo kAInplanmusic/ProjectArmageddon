@@ -524,7 +524,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
  *
  * @returns {Promise<ImageData|null>}
  */
-export async function renderGroundOnGpu({ device, bitmap, width, height, palette }) {
+async function renderGroundOnGpu({ device, bitmap, width, height, palette }) {
   const rows = surfaceRows(bitmap, width, height);
   // -1 (keine Oberfläche) in der unsigned Textur als Höchstwert.
   const surfaceData = new Uint32Array(width);

@@ -39,7 +39,7 @@
 export const PROFIL_SCHLUESSEL = 'pa-profil-v1';
 
 /** Der Ablageschlüssel der Geräte-Kennung. */
-export const GERAETE_SCHLUESSEL = 'pa-geraet-v1';
+const GERAETE_SCHLUESSEL = 'pa-geraet-v1';
 
 /**
  * Die möglichen Ablageorte eines Profils.
