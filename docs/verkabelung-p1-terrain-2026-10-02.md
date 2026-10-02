@@ -179,12 +179,14 @@ ergibt **0 abweichende Zellen**. Und der Fix ist billiger als im Bericht steht:
 
 KEINE Protokollaenderung, kein Netzwerkumbau, kein Serverantasten.
 
-### Offen (unveraendert)
+### Berichtigung des eigenen Nachtrags
 
-`terrainBuilder.js:46-51` dokumentiert seine Eingaben — `width`/`height` sind dort
-falsch (gelesen werden `quelle.width`/`quelle.height`, die Aufrufer setzen `laenge`
-und berechnen `hoehe`). Fuer den Fix irrelevant, aber beim Anfassen nachziehen,
-sonst faellt der naechste Leser in dieselbe Falle.
+Der Satz oben, `terrainBuilder.js:46-51` dokumentiere `width`/`height` FALSCH, war
+selbst falsch — nachgeprueft: `match.js:803-804` uebergibt genau `width`/`height`,
+die Doku stimmt. Die Notiz stammte aus einer Sonde, deren Sonden-Kommentar ich fuer
+Code hielt. Gestrichen, damit kein falscher Auftrag in der Queue stehen bleibt.
+(Und es ist dieselbe Fehlerklasse wie die, die der Kommentar-Fix in fa42c70 im
+Audit-Werkzeug behebt: ein Kommentar ist kein Leser.)
 
 Ob `erzeugeAutonomeKarte` im Client ohne `events`/`statuses`/`world` (die der
 Serverpfad mitgibt) vollstaendig deterministisch bleibt, ist NICHT geprueft.
