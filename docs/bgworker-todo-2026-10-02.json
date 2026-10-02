@@ -1,0 +1,202 @@
+{
+  "_meta": {
+    "projekt": "ProjectArmageddon",
+    "repo": "/home/patrick/AnunnakiTools Projekte/laufende Projekte/ProjectArmageddon",
+    "stand": "2026-10-02",
+    "basis_commit": "ba7e3d6",
+    "ssot": [
+      "MASTERDOTO.md",
+      "docs/auftragswarteschlange-2026-10-02.md",
+      "docs/befundregister.md"
+    ],
+    "arbeitsweise": {
+      "phasen": "Todos mit ueberlappenden 'besitzt'-Dateien laufen NIE parallel, sondern in getrennten Phasen.",
+      "eigentum": "'besitzt' ist die Wahrheit. Was nicht in 'besitzt' steht, wird NICHT angefasst.",
+      "commits": "Kinder committen NICHT und pushen NICHT. Der Auftraggeber prueft jeden Bericht selbst und committet sequenziell mit expliziten Pfaden.",
+      "keine_testanpassung": "Tests werden NUR angepasst, wenn der Auftrag es ausdruecklich sagt. Ein gruener Test, der einen Fehler BRAUCHT, ist kein Test.",
+      "belegpflicht": "Jede Behauptung braucht eine Messung oder eine Datei:Zeile. 'Laeuft' ist keine Angabe.",
+      "ehrlichkeit": "'nicht_geprueft' ist Pflichtfeld und muss die Stellen nennen, die der Auftraggeber selbst nachfahren muss.",
+      "keine_destruktiven_ops": "Kein Löschen von Dateien ausserhalb von 'besitzt'. Kein pkill (PID-Handle benutzen).",
+      "gate_disziplin": "Kein E2E-Lauf waehrend ein anderer E2E-Lauf laeuft. Vor jedem E2E: rm -f .pa-state/lobbies.json (sonst faelscht der wiederhergestellte Spielstand die Messung)."
+    },
+    "rollen": "Agent = Auftraggeber + Pruefer. Behauptungen der Kinder (auch verworfene Vorschlaege) werden nachgeprueft, nicht geglaubt."
+  },
+  "todos": [
+    {
+      "id": "W1",
+      "titel": "Werkzeug-Blindstelle: unbenutzteExporte/unbenutzteKonstanten lesen Kommentare als Leser",
+      "phase": 1,
+      "status": "erledigt",
+      "abhaengig_von": [],
+      "worker": "bg-worker (parallele Phase 1)",
+      "besitzt": [
+        "tools/audit-mcp/lib/statisch.mjs",
+        "tools/audit-mcp/lib/statisch.test.mjs"
+      ],
+      "verboten": [
+        "src/**",
+        "tests/**",
+        "index.html",
+        "docs/**"
+      ],
+      "ist_stand_gemessen": {
+        "fundstelle": "tools/audit-mcp/lib/statisch.mjs:333 (unbenutzteExporte) und :393 (unbenutzteKonstanten)",
+        "fehler": "Beide bauen `alleTexte` als `new Map(dateien.map(f => [f, read(f) ?? '']))` — OHNE streicheKommentare. Eine Funktion, die nur in einem FREMD-Kommentar genannt wird, gilt damit als gelesen.",
+        "beweis": "unbenutzteExporte meldet 5 statt 7: `applySelfEffect` (src/engine/shooting.js) und `renderGroundOnGpu` (src/client/terrainBaker.js) fehlen. Ihre EINZIGEN Fremdnennungen sind Kommentare: tests/shooting.test.js:163 und tests/terrain-baker.test.js:276.",
+        "vorbild": "streicheKommentare ist in derselben Datei schon vorhanden (Zeile 87) und wird von toteDaten() (Zeile 206) korrekt benutzt."
+      },
+      "auftrag": [
+        "1. Pruefe die Messung selbst nach (grep auf die beiden Namen, Kommentare entfernen, Leser suchen). Wenn die Zahl 5/7 nicht stimmt, das im Bericht nennen.",
+        "2. Repariere BEIDE Stellen: `alleTexte` ueber streicheKommentare fuehren. Ein Helfer, EINE Stelle — keine zweite Fassung.",
+        "3. Gegenprobe in BEIDE Richtungen belegen: (a) ein Name, der nur im Kommentar steht, gilt danach als UNGELESEN; (b) ein Name, der wirklich importiert wird, bleibt gelesen. Ohne (a) ist nicht belegt, dass der Fix wirkt; ohne (b), dass er nicht ueberschiiesst.",
+        "4. Wenn ein Test fuer das Werkzeug existiert: erweitern. Wenn nicht: die Gegenprobe als ausfuehrbare Sonde im Werkzeugordner ablegen und im Bericht nennen, wo sie liegt."
+      ],
+      "belegweg": [
+        "node tools/audit-mcp/server.mjs --ruf audit_deadcode '{}'  (vorher/nachher vergleichen)",
+        "node --test tools/audit-mcp/lib/statisch.test.mjs  (falls vorhanden)"
+      ],
+      "abnahme": [
+        "audit_deadcode meldet jetzt 7 unbenutzte Exporte statt 5 (die zwei Kommentar-Faelle sind sichtbar)",
+        "Gegenprobe (a) UND (b) sind im Bericht mit Befehl und Ausgabe belegt",
+        "kein Fund wurde 'wegdefiniert' — die zwei Namen bleiben im Bericht stehen, sie sind echte Funde",
+        "Bericht nennt gemessen die neuen Zahlen"
+      ],
+      "ergebnis": "Commit fa42c70 — 5->7, Gegenprobe beigelegt"
+    },
+    {
+      "id": "W2",
+      "titel": "gameServer #readBody: ungueltiges JSON wird still zu {} (die einzige stille Stelle im Baum)",
+      "phase": 1,
+      "status": "erledigt",
+      "abhaengig_von": [],
+      "worker": "bg-worker (parallele Phase 1)",
+      "besitzt": [
+        "src/server/gameServer.js",
+        "tests/server-*.test.js"
+      ],
+      "verboten": [
+        "src/client/**",
+        "src/shared/protocol.js",
+        "tests/e2e/**",
+        "index.html"
+      ],
+      "ist_stand_gemessen": {
+        "fundstelle": "src/server/gameServer.js:1411 (#readBody)",
+        "fehler": "Der catch-Zweig macht `resolve({})` und der error-Zweig ebenfalls — beide OHNE Log. Ein kaputter Request-Body wird damit zu einem gueltigen leeren Objekt; der Aufrufer (Zeile 1349) kann 'kaputt' nicht von 'leer' unterscheiden.",
+        "kontext": "docs/abnahme-bugs-2026-10-01.md §6: Von 11 catch-Zweigen im Server ist dies die EINZIGE stille Stelle; alle anderen liefern einen definierten Wert MIT Meldung oder sind ausdruecklich dokumentiert."
+      },
+      "auftrag": [
+        "1. Lies den Aufrufer (Zeile 1349) und stelle fest, was er mit {} tut. Die Aenderung darf ihn NICHT brechen.",
+        "2. Unterscheide im #readBody: 'leerer Body' (legitim, weiterhin {}) von 'ungueltiges JSON' (Fehler). Der Fehlerfall wird ueber den vorhandenen Logger gemeldet — mit derselben Schreibweise wie die anderen Meldungen der Datei (event/msg, siehe Nachbarschaft).",
+        "3. Entscheide begruendet, ob der Aufrufer einen 400 senden soll oder ob dieselbe Antwort wie bisher reicht. ACHTUNG: Eine Statusaenderung ist eine Verhaltensaenderung an einem externen Vertrag. Wenn unklar, NICHT aendern, sondern nur melden und die Entscheidung im Bericht als 'Entscheidung noetig' ausweisen.",
+        "4. Regressionstest: ungueltiger Body wird gemeldet, leerer Body bleibt still."
+      ],
+      "belegweg": [
+        "npm test",
+        "node --test tests/server-beitritt-und-trennung.test.js",
+        "npm run lint"
+      ],
+      "abnahme": [
+        "ungueltiges JSON erzeugt eine Log-Meldung; das ist mit einer Ausgabe belegt",
+        "leerer Body verhaelt sich unveraendert (Test oder Messung)",
+        "npm test bleibt vollstaendig gruen — die Zahl vorher/nachher nennen",
+        "wenn die Statuscode-Entscheidung offen blieb: das ausdruecklich als 'nicht entschieden' im Bericht"
+      ],
+      "ergebnis": "Commit dd30534 — Meldung drin, HTTP-Status offen"
+    },
+    {
+      "id": "W3",
+      "titel": "7 Exporte ohne externen Leser: entfernen oder Leser belegen",
+      "phase": 1,
+      "status": "erledigt",
+      "abhaengig_von": [],
+      "worker": "bg-worker (parallele Phase 1)",
+      "besitzt": [
+        "src/engine/shooting.js",
+        "src/shared/identity.js",
+        "src/shared/validation.js",
+        "src/client/terrainBaker.js"
+      ],
+      "verboten": [
+        "src/shared/config/weapons.js",
+        "src/engine/match.js",
+        "tests/**",
+        "tools/**"
+      ],
+      "ist_stand_gemessen": {
+        "fundstellen": {
+          "resolveStrike": "src/engine/shooting.js:362",
+          "fuseTicksFor": "src/engine/shooting.js:392",
+          "applySelfEffect": "src/engine/shooting.js:581",
+          "GERAETE_SCHLUESSEL": "src/shared/identity.js:42",
+          "isValidAngle": "src/shared/validation.js:38",
+          "isValidPower": "src/shared/validation.js:42",
+          "renderGroundOnGpu": "src/client/terrainBaker.js:527"
+        },
+        "messung": "Fuer alle sieben: 0 echte Fremdleser. Die zwei einzigen 'Treffer' (applySelfEffect, renderGroundOnGpu) sind KOMMENTARZEILEN: tests/shooting.test.js:163 und tests/terrain-baker.test.js:276.",
+        "grundregel": "Alle sieben werden INNERHALB ihrer Datei benutzt — es ist also nur das Wort `export` ueberzaehlig, nicht die Funktion."
+      },
+      "auftrag": [
+        "1. Pruefe fuer JEDEN der sieben Namen selbst nach, dass es keinen echten Leser gibt (Import-Bindung suchen, nicht grep -c!). Ein Name, der ueber ein Barrel re-exportiert wird, ist NICHT tot — das ausdruecklich pruefen und im Bericht nennen.",
+        "2. Entferne nur das ueberzaehlige `export`, NICHT die Funktion. Funktionskoerper und interne Aufrufer bleiben unveraendert.",
+        "3. Wenn ein Name doch einen Leser hat: NICHT anfassen und im Bericht mit Datei:Zeile als 'entlastet' nennen.",
+        "4. WICHTIG: Pruefe vorher, ob ein Textwaechter in tests/ den Namen woertlich pinnt. Wenn ja: NICHT aendern, als blockierenden Waechter im Bericht melden (das ist ein Entwurfshinweis, kein Hindernis)."
+      ],
+      "belegweg": [
+        "npm test",
+        "npm run lint",
+        "npm run validate",
+        "npm run build"
+      ],
+      "abnahme": [
+        "alle sieben einzeln abgearbeitet: entfernt ODER mit Datei:Zeile entlastet",
+        "npm test vollstaendig gruen, Zahl genannt",
+        "npm run validate gruen (die Barrels laden die Module)",
+        "keine Datei angefasst, die nicht in 'besitzt' steht"
+      ],
+      "ergebnis": "Commit dd30534 — 7 Exporte entfernt"
+    },
+    {
+      "id": "W4",
+      "titel": "P1-1 pruefen: baut der Client die Online-Karte mit dem falschen Generator?",
+      "phase": 2,
+      "status": "offen",
+      "abhaengig_von": [],
+      "worker": null,
+      "besitzt": [
+        "docs/verkabelung-p1-terrain-2026-10-02.md"
+      ],
+      "verboten": [
+        "src/**",
+        "tests/**",
+        "index.html",
+        "package.json"
+      ],
+      "ist_stand_gemessen": {
+        "behauptung": "docs/verkabelung.md Pipeline 3, BEFUND P1: Der Server baut online fuer die SIMULATION `erzeugeAutonomeKarte`, der Client fuer die ANZEIGE `generateTerrain` — 34,0 % der Kartenzellen weichen ab (Seed 3367130477, 2560x1440).",
+        "wichtige_vorsicht": "ZURUECKGESTELLT am 2026-10-02: Die alte Messung ist moeglicherweise veraltet. Der Motor hat einen `terrainBuilder.js`, der `erzeugeAutonomeKarte` kapselt (src/engine/terrainBuilder.js:87); terrainPreview.js importiert `generateTerrain` direkt (src/client/terrainPreview.js:8). OB das noch auseinanderlaeuft, ist UNGEPRUEFT.",
+        "entscheidung_noetig": "Der Fix staende in einer von GENAU EINER E2E-Spezifikation gedeckten Flaeche plus einer Protokollaenderung. Deshalb ist dieser Auftrag LESEND: erst messen, dann entscheiden."
+      },
+      "auftrag": [
+        "1. NUR LESEND. Keine Datei ausser der eigenen Berichtsdatei anfassen, kein git-Schreibvorgang.",
+        "2. Baue BEIDE Karten mit den ECHTEN Modulen fuer denselben Seed und dieselbe Kartengroesse: serverseitig ueber den Pfad, den MatchController benutzt (src/engine/terrainBuilder.js), clientseitig ueber buildTerrainForSeed (src/client/terrainPreview.js).",
+        "3. Vergleiche die Kollisions-Bitmaps zellweise und NENNE die Zahl (abweichende Zellen / Gesamtzellen, in Prozent). Ebenso den Wasserstand.",
+        "4. Beantworte ausdruecklich: (a) weichen sie ab? (b) wenn ja, folgt der Unterschied aus dem Generator oder aus Preset/Orientierung/Seed-Unterstrom? (c) reicht der Client den 'kartentyp' ueberhaupt bis zum Generator durch, oder faellt er unterwegs weg (networkClient-Konstruktor pruefen)?",
+        "5. Nenne den KLEINSTEN Fix als Vorschlag — aber baue ihn NICHT.",
+        "6. Die Sonde selbst nach /tmp, nicht ins Repo. Die Messung und ihre Ausgabe gehoeren in die Berichtsdatei; die Sonde nur nennen, nicht einchecken."
+      ],
+      "belegweg": [
+        "die eigene Sonde, zweimal ausgefuehrt, beide Ausgaben in der Berichtsdatei",
+        "grep der Import-Kette terrainBuilder -> match.js",
+        "git status --short  (muss vorher und nachher gleich sein)"
+      ],
+      "abnahme": [
+        "Berichtsdatei liegt vor und nennt die Prozentzahl mit Sonde, Seed und Kartengroesse",
+        "die drei Fragen (a)(b)(c) sind einzeln beantwortet",
+        "git status --short ist unveraendert — die Pruefung hat nichts im Baum geaendert",
+        "wenn die Abweichung NICHT mehr besteht: das als Ergebnis festhalten (der Befund waere dann ueberholt, nicht widerlegt)"
+      ]
+    }
+  ],
+  "_phasen_regel": "Phase 1 = W1, W2, W3 duerfen PARALLEL laufen: ihre 'besitzt'-Listen sind disjunkt. W4 (Phase 2) ist rein lesend und koennte auch parallel, wird aber erst nach Phase 1 gestartet, damit waehrend der Schreibvorgaenge keine Sonde im Baum liegt."
+}

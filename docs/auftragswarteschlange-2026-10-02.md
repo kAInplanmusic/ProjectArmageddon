@@ -134,3 +134,25 @@ Terrain-Budget — dort jeweils behoben, hier zum dritten Mal.
   Einzelsonden nehmen.
 - `npm run audit:tief` existiert nicht (nur `audit:liste`, `audit:status`,
   `audit:bericht`).
+
+## 5. Nachtrag 2026-10-02 (dritter Commit `dd30534`) — drei Auftraege parallel abgearbeitet
+
+Drei Subagenten an **disjunkten** Dateigruppen, Auftragsspeicher
+`docs/bgworker-todo-2026-10-02.json` (mit `besitzt`/`verboten` und Phasenregel).
+Der Agent hat jeden Bericht am Code nachgeprueft, nicht geglaubt.
+
+| # | Punkt | Beleg |
+|---|---|---|
+| 10 | **Audit-Werkzeug: Kommentare zaehlten als Leser** — `unbenutzteExporte()`/`unbenutzteKonstanten()` in `tools/audit-mcp/lib/statisch.mjs` lasen ohne `streicheKommentare`. Ein Name, der nur in einem Fremd-Kommentar stand, galt als gelesen | **5 → 7 unbenutzte Exporte.** Die zwei neu gemeldeten (`applySelfEffect`, `renderGroundOnGpu`) hatten als einzige Fremdnennung eine Kommentarzeile. Kein Ueberschiessen: Konstanten 0 vor/nach, echter Import bleibt ungemeldet. Gegenprobe als `tools/audit-mcp/probe-kommentar-leser.mjs` beigelegt (Wegwerf-Projekt, Platzhalter-Namen) |
+| 11 | **Die einzige stille Stelle des Servers** — `#readBody` (gameServer.js:1411) machte ungueltiges JSON ohne Meldung zu `{}` | Leerer Body bleibt still, ungueltiges JSON und Stream-Fehler melden jetzt im Dateiformat. **HTTP-Status bewusst NICHT geaendert** (externer Vertrag) — Entscheidung offen. Mutationsprobe: Meldung ausgebaut → Test faellt (`0 !== 1`) |
+| 12 | **Sieben `export` ohne externen Leser** entfernt (Funktionen bleiben) | Ueber Import-Bindungen geprueft, nicht per `grep`: die zwei „Treffer" waren Kommentarzeilen. Kein Barrel re-exportiert sie |
+
+**Zwei Lehren, die der Agent selbst gemacht hat:**
+
+1. Ein Kind baute die **Gegenprobe richtig, aber den Fix nicht** — und setzte dann
+   in seiner eigenen Sonde stillschweigend voraus, „die Kopie hat den Fix schon".
+   Ungeprueft. Der Fix fehlte. Lehre: eine Sonde, die den Fix voraussetzt, beweist
+   ihn nicht.
+2. Dasselbe Kind hinterliess eine **Debug-Datei in `lib/`**. Sie wanderte in jede
+   Kopie mit und liess seine eigene Gegenprobe scheitern — die Sonde war nie
+   falsch, der Baum war schmutzig. Lehre: erst den Baum putzen, dann messen.
