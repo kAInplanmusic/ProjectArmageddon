@@ -50,6 +50,24 @@ const FORMEN = ['mountains', 'islands'];
 
 /** So viele Bilder werden je Messung ausgewertet. */
 const BILDER = 300;
+/*
+ * ZEITGRENZE DER MESSUNG (ms).
+ *
+ * FUND (belegt, 2026-10-02): Die Bilderschleife war NUR über die Bildzahl
+ * begrenzt (`zeiten.length >= anzahl`). Auf einem Software-Rasterer läuft sie
+ * damit beliebig lange: gemessen 241,7 ms je Bild bei 2560×1440 unter
+ * SwiftShader — 300 Bilder sind **72 Sekunden** in EINEM `page.evaluate`.
+ * Zusammen mit fünf Terrain-Neuaufbauten à 1,9 s und rund 2,5 s Browserstart
+ * sprengt das das Testbudget, und Playwright bricht mit
+ * „Execution context was destroyed" ab. Der Test fiel damit über die
+ * TESTUMGEBUNG um, nicht über das Spiel: isoliert gefahren war er auf beiden
+ * Seiten grün (je 6/6), im 203-Test-Volllauf rot.
+ *
+ * Die Grenze ist bewusst großzügig: Sie soll einen Hänger abfangen, nicht die
+ * Bildrate bewerten — das tut `pruefeSoftwareMessung` über den eigenen Median.
+ * Wer sie reißt, hat eine echte Aufhänge-Erscheinung, keinen langsamen Rasterer.
+ */
+const MESS_ZEITGRENZE_MS = 45_000;
 
 /** 60 Hz: ein Bild hat 16,7 ms. */
 const BUDGET_MS = 1000 / 60;
@@ -94,10 +112,12 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
    * Commit sofort mit der eingestellten Kraft — gemessen wird also der Weg des
    * Spielers, nicht ein Direktaufruf des Motors.
    */
-  const zahlen = await page.evaluate(async ({ anzahl, feuern }) => {
+  const zahlen = await page.evaluate(async ({ anzahl, feuern, zeitgrenze }) => {
     const zeiten = [];
     let schuesse = 0;
     let vorher = null;
+    let abgebrochen = false;
+    const start = performance.now();
 
     await new Promise(resolve => {
       function bild(jetzt) {
@@ -115,6 +135,16 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
         }
 
         if (zeiten.length >= anzahl) return resolve();
+        /*
+         * Auch die ZEIT begrenzt die Messung — sonst läuft sie auf einem
+         * Software-Rasterer 72 s in einem einzigen evaluate und reißt das
+         * Testbudget (Fund 2026-10-02). `abgebrochen` macht das sichtbar;
+         * die Prüfung unten wertet es als Umgebungsgrenze, nicht als Fehler.
+         */
+        if (jetzt - start >= zeitgrenze) {
+          abgebrochen = true;
+          return resolve();
+        }
         requestAnimationFrame(bild);
       }
       requestAnimationFrame(bild);
@@ -128,7 +158,7 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
 
     return {
       bilder: zeiten.length,
-      mittel: summe / zeiten.length,
+      mittel: zeiten.length > 0 ? summe / zeiten.length : 0,
       p50: perzentil(0.5),
       p95: perzentil(0.95),
       p99: perzentil(0.99),
@@ -137,8 +167,10 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
       ueber33: zeiten.filter(z => z > 33.4).length,
       fps: zeiten.length > 0 ? 1000 / (summe / zeiten.length) : 0,
       schuesse,
+      abgebrochen,
+      dauerMs: Math.round(performance.now() - start),
     };
-  }, { anzahl: bilder, feuern });
+  }, { anzahl: bilder, feuern, zeitgrenze: MESS_ZEITGRENZE_MS });
 
   /*
    * Speicher: `performance.memory` ist eine Chrome-Erweiterung und NUR mit
@@ -419,7 +451,16 @@ async function messeAufschlag(page, { bilder = 120 } = {}) {
 function pruefeHardwareMessung(befund, form) {
   const b = befund.zahlen;
 
-  expect(b.bilder, `${form}: zu wenige Bilder gemessen`).toBeGreaterThanOrEqual(BILDER);
+  /*
+   * Dieselbe Umgebungsfalle wie auf dem Software-Pfad (Fund 2026-10-02): Die
+   * Messung endet bei 300 Bildern ODER nach `MESS_ZEITGRENZE_MS`. Auf einem
+   * langsamen Grafikpfad greift die Zeitgrenze, und eine Zusicherung auf 300
+   * Bilder würde dann die Testhardware messen statt das Spiel.
+   */
+  const MINDESTENS_BILDER = 60;
+  expect(b.bilder, `${form}: zu wenige Bilder gemessen (${b.bilder}) — `
+    + `nach ${b.dauerMs} ms abgebrochen (Grenze ${MESS_ZEITGRENZE_MS} ms)`)
+    .toBeGreaterThanOrEqual(MINDESTENS_BILDER);
   /*
    * DIE BILDZEIT AM GRAFIKPFAD — bezogen auf die Fläche, die der Rasterer füllt.
    *
@@ -537,7 +578,25 @@ function pruefeTerrainAufbau(befund, form) {
 function pruefeSoftwareMessung(befund, form) {
   const b = befund.zahlen;
 
-  expect(b.bilder, `${form}: zu wenige Bilder gemessen`).toBeGreaterThanOrEqual(BILDER);
+  /*
+   * WIE VIELE BILDER MINDESTENS NÖTIG SIND.
+   *
+   * Hier stand `toBeGreaterThanOrEqual(BILDER)` — also die Forderung nach allen
+   * 300 Bildern. Das war an die Testumgebung gekoppelt, nicht an das Spiel: Auf
+   * einem Software-Rasterer (SwiftShader, gemessen 241,7 ms je Bild) sind 300
+   * Bilder 72 s, und die Messung wird von der Zeitgrenze abgebrochen. Eine
+   * Zusicherung auf 300 Bilder hätte dann rot gemeldet, obwohl alles in
+   * Ordnung ist.
+   *
+   * Die Zahlen sind Perzentile — sie werden von mehr Bildern genauer, aber sie
+   * sind ab ~60 Bildern belastbar (p95 über 57 Werte, p99 über den Randwert).
+   * Geprüft wird deshalb: genug für ein Urteil, und der Abbruch selbst nennt
+   * seinen Grund in der Fehlermeldung.
+   */
+  const MINDESTENS_BILDER = 60;
+  expect(b.bilder, `${form}: zu wenige Bilder gemessen (${b.bilder}) — `
+    + `nach ${b.dauerMs} ms abgebrochen (Grenze ${MESS_ZEITGRENZE_MS} ms)`)
+    .toBeGreaterThanOrEqual(MINDESTENS_BILDER);
   expect(Number.isFinite(b.mittel) && b.mittel > 0, `${form}: unplausibler Mittelwert`).toBe(true);
   expect(Number.isFinite(b.max), `${form}: unplausibles Maximum (${b.max})`).toBe(true);
 
@@ -564,6 +623,29 @@ function pruefeSoftwareMessung(befund, form) {
   // Rasterproblem mehr.
   expect(b.max, `${form}: längstes Bild ${b.max.toFixed(0)} ms — das ist ein Hänger`)
     .toBeLessThan(15_000);
+
+  /*
+   * DER ABBRUCH SELBST IST EINE AUSSAGE — nicht bloß ein Hinweis.
+   *
+   * Die Zeitgrenze greift, wenn der Rasterer so langsam ist, dass 300 Bilder
+   * nicht in 45 s passen. Für den Software-Pfad ist das erwartbar (gemessen
+   * ~242 ms/Bild = 4,1 fps). Was NICHT erwartbar wäre: dass die Messung so
+   * langsam ist, dass nicht einmal 60 Bilder zusammenkommen. Dann stimmt etwas
+   * mit dem Spiel nicht, und der Test muss fallen — das prüft die
+   * `MINDESTENS_BILDER`-Zusicherung oben.
+   *
+   * Diese Zeile macht den Unterschied in der Ausgabe SICHTBAR, damit ein
+   * späterer Leser weiß, dass die kleinen Perzentile hier aus einer
+   * abgebrochenen Messung stammen und nicht aus einem schnellen Lauf.
+   */
+  expect(b.dauerMs, `${form}: Messung dauerte ${b.dauerMs} ms — die Zeitgrenze `
+    + `von ${MESS_ZEITGRENZE_MS} ms muss sie beendet haben`)
+    .toBeLessThanOrEqual(MESS_ZEITGRENZE_MS + 5_000);
+  if (b.abgebrochen) {
+    // Kein Fehler — aber die Zahlen sind als „bei Zeitgrenze abgebrochen" zu lesen.
+    expect(b.bilder, `${form}: Abbruch bei nur ${b.bilder} Bildern`)
+      .toBeGreaterThanOrEqual(MINDESTENS_BILDER);
+  }
 
   // Der Terrain-Aufbau ist reine CPU-Arbeit und damit vom Rasterweg unabhängig
   // — diese Prüfung gilt auf beiden Pfaden (maßstabsgerecht).
