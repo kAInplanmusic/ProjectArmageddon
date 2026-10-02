@@ -16,6 +16,16 @@
  *
  * Aufruf:  node tools/audit-mcp/probe-kommentar-leser.mjs
  * Exit-Code 0 = alle Erwartungen erfüllt, 1 = mindestens eine verletzt.
+ *
+ * MESSREGEL (2026-10-02 teuer gelernt): Diese Sonde gegen eine KOPIE des Baums
+ * halten, nie gegen den Baum, in dem sie liegt. Ihr eigener Kopf nennt die
+ * Ziel-Namen in Kommentaren — in einem Baum OHNE den Fix zaehlen genau diese
+ * Kommentare als Leser und VERDECKEN die Funde (gemessen: 7 -> 5). Wer dann
+ * schliesst „der Fix wirkt nicht“, hat die Sonde gemessen, nicht den Code.
+ *
+ * ZWEITE REGEL: immer nur EINE Aenderung im Baum, dann messen. Ein gleichzeitig
+ * laufender zweiter Fix hat hier schon einmal den Zuwachs zugeschrieben bekommen,
+ * der ihm nicht gehoerte.
  */
 import fs from 'node:fs';
 import os from 'node:os';

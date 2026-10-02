@@ -145,7 +145,38 @@ Der Agent hat jeden Bericht am Code nachgeprueft, nicht geglaubt.
 |---|---|---|
 | 10 | **Audit-Werkzeug: Kommentare zaehlten als Leser** — `unbenutzteExporte()`/`unbenutzteKonstanten()` in `tools/audit-mcp/lib/statisch.mjs` lasen ohne `streicheKommentare`. Ein Name, der nur in einem Fremd-Kommentar stand, galt als gelesen | **5 → 7 unbenutzte Exporte.** Die zwei neu gemeldeten (`applySelfEffect`, `renderGroundOnGpu`) hatten als einzige Fremdnennung eine Kommentarzeile. Kein Ueberschiessen: Konstanten 0 vor/nach, echter Import bleibt ungemeldet. Gegenprobe als `tools/audit-mcp/probe-kommentar-leser.mjs` beigelegt (Wegwerf-Projekt, Platzhalter-Namen) |
 | 11 | **Die einzige stille Stelle des Servers** — `#readBody` (gameServer.js:1411) machte ungueltiges JSON ohne Meldung zu `{}` | Leerer Body bleibt still, ungueltiges JSON und Stream-Fehler melden jetzt im Dateiformat. **HTTP-Status bewusst NICHT geaendert** (externer Vertrag) — Entscheidung offen. Mutationsprobe: Meldung ausgebaut → Test faellt (`0 !== 1`) |
-| 12 | **Sieben `export` ohne externen Leser** entfernt (Funktionen bleiben) | Ueber Import-Bindungen geprueft, nicht per `grep`: die zwei „Treffer" waren Kommentarzeilen. Kein Barrel re-exportiert sie |
+| 12 | **Zwoelf `export` ohne externen Leser** entfernt (Funktionen bleiben) | Gemessen ueber das Werkzeug selbst: 12 → 0 Befunde. Die Namen bleiben als Bindung erhalten, wo sie intern gebraucht werden |
+
+### Korrektur zum ersten Anlauf (der Agent lag zweimal falsch)
+
+**Fehler 1 — zwei Aenderungen einander zugeschrieben.** Der Kommentar-Fix (Punkt 10)
+und die `export`-Entfernung (Punkt 12) liefen GLEICHZEITIG im selben Baum. Gemessen
+wurde 5 → 7, und der Agent schrieb den Zuwachs dem Kommentar-Fix zu. Richtig war:
+W3s Entfernung *erhoehte* die Zahl. Sauberer A/B auf EINEM alten Baum, je eine
+Aenderung: **mit Fix 7, ohne Fix 5** — der Fix wirkt, aber aus einem anderen Grund
+als behauptet (er trifft `applySelfEffect`/`renderGroundOnGpu` in
+`tests/shooting.test.js:163` bzw. `tests/terrain-baker.test.js:276`).
+
+**Fehler 2 — das Messwerkzeug vergiftete die eigene Messung.** Die Gegenprobe
+`probe-kommentar-leser.mjs` nennt die echten Ziel-Namen in einem Kommentar. Wird
+gegen einen Baum OHNE den Fix gemessen, zaehlt genau dieser Kommentar als Leser und
+verdeckt die Funde (7 → 5). Der Agent schloss daraus „mein Fix wirkt nicht“. Die
+Datei nennt diese Gefahr in ihrem eigenen Kopf (Zeile 6–11); der Agent hat erst
+gemessen, dann gelesen.
+
+**Lehre (gehoert ins Werkzeug, nicht in eine Fussnote):** erst EINE Aenderung im
+Baum, dann messen. Und die Gegenprobe gegen eine KOPIE halten, nie gegen den Baum,
+in dem sie liegt — sonst misst man die Sonde, nicht den Code.
+
+### Offener Punkt (neu, aus dem zweiten Anlauf)
+
+Das Werkzeug liest `export default { resolveStrike, fuseTicksFor, applySelfEffect }`
+in `src/engine/shooting.js` **nicht** als Leser. Diese Namen sind ueber
+`shootingModule.resolveStrike` erreichbar und damit KEINE toten Exporte — sie
+erscheinen aber im Befund. Die Grenze ist dokumentiert (`sichtgrenzen().exporte`,
+„zaehlt NAMEN, nicht BINDUNGEN“), ihr Eintrag nennt aber nur den gleichnamigen
+Export-Fall, nicht den Default-Export-Block. Nachzutragen; betroffen sind derzeit
+3 Namen (shooting.js).
 
 **Zwei Lehren, die der Agent selbst gemacht hat:**
 

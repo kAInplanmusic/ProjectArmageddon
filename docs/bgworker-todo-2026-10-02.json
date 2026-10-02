@@ -154,7 +154,7 @@
         "npm run validate gruen (die Barrels laden die Module)",
         "keine Datei angefasst, die nicht in 'besitzt' steht"
       ],
-      "ergebnis": "Commit dd30534 — 7 Exporte entfernt"
+      "ergebnis": "Commit dd30534 — 12 Exporte entfernt (nicht 7); Namen als Bindungen erhalten"
     },
     {
       "id": "W4",
