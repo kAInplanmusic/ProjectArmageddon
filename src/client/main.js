@@ -20,7 +20,7 @@ import { Camera } from './camera.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
-import { buildTerrainForSeed } from './terrainPreview.js';
+import { buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -1081,12 +1081,12 @@ class Game {
         'accent',
       );
       if (payload.seed !== null && payload.seed !== undefined) {
-        this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
+        this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
       }
     });
     client.on('lobby_state', payload => {
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
-        this.#buildRemoteTerrain(payload.seed, payload.preset ?? preset, payload.orientation ?? orientation);
+        this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
       }
       /*
        * Wartet die Lobby noch auf Menschen?
@@ -1176,12 +1176,21 @@ class Game {
     return { ok: true, mode: 'online', lobbyId: targetLobby };
   }
 
-  #buildRemoteTerrain(seed, preset, orientation = 'landscape') {
-    const terrain = buildTerrainForSeed(seed, preset, orientation);
+  #buildRemoteTerrain(quelle) {
+    const { seed, preset, orientation, kartentyp } = quelle;
+    const terrain = buildTerrainForSeed(seed, preset, orientation, kartentyp);
     this.remoteTerrain = terrain;
-    // Fläche und Kulisse zuerst — die Kulisse liefert die Bodenfarbe für die
-    // Geländeschicht. Der Server schickt nur Seed und Ausrichtung; beides ergibt
-    // auf beiden Seiten dieselbe Karte.
+    /*
+     * Fläche und Kulisse zuerst — die Kulisse liefert die Bodenfarbe für die
+     * Geländeschicht.
+     *
+     * KORREKTUR (Befund P1, 2026-10-02): Hier stand „Der Server schickt nur Seed
+     * und Ausrichtung; beides ergibt auf beiden Seiten dieselbe Karte." Das war
+     * FALSCH — es fehlte der Kartentyp. Der Server baut die autonome Karte aus
+     * `erzeugeAutonomeKarte`, diese Anzeige baute sie aus `generateTerrain`:
+     * gemessen 34,23 % abweichende Zellen, 106 px anderer Wasserstand. Der Client
+     * hat `kartentyp` im Snapshot bekommen und hier weggeworfen.
+     */
     this.#applyOrientation(orientation, terrain.width, terrain.height);
     this.setSceneryFromSeed(seed, preset);
     this.renderer.buildTerrainLayer(terrain.bitmap, terrain.width, terrain.height);
