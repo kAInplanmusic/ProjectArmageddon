@@ -330,7 +330,21 @@ export function toteDateien() {
  */
 export function unbenutzteExporte({ nurUnter = 'src/' } = {}) {
   const dateien = projektDateien().filter(f => QUELTEXT.includes(path.extname(f)));
-  const alleTexte = new Map(dateien.map(f => [f, read(f) ?? '']));
+  /*
+   * KOMMENTARE VOR DER LESERSUCHE ENTFERNEN (Fund 2026-10-02).
+   *
+   * Hier stand `read(f) ?? ''` — ohne streicheKommentare. Folge: Eine Funktion,
+   * die nur in einem FREMD-Kommentar genannt wird, galt als gelesen. Gemessen:
+   * Das Werkzeug meldete 5 unbenutzte Exporte statt 7; es verschwanden genau die
+   * zwei, deren einzige Fremdnennung ein Kommentar war (`applySelfEffect` in
+   * tests/shooting.test.js:163, `renderGroundOnGpu` in
+   * tests/terrain-baker.test.js:276).
+   *
+   * Das Werkzeug verurteilt an anderer Stelle genau dieses Muster
+   * (tools/audit-mcp/README.md: „Kommentarzeilen sind keine Treffer") und
+   * `toteDaten()` (Zeile ~206) macht es schon richtig — dieselbe Regel gilt hier.
+   */
+  const alleTexte = new Map(dateien.map(f => [f, streicheKommentare(read(f) ?? '')]));
   const befunde = [];
 
   for (const datei of dateien) {
@@ -390,7 +404,12 @@ export function unbenutzteExporte({ nurUnter = 'src/' } = {}) {
  */
 export function unbenutzteKonstanten({ nurUnter = 'src/' } = {}) {
   const dateien = projektDateien().filter(f => QUELTEXT.includes(path.extname(f)));
-  const alleTexte = new Map(dateien.map(f => [f, read(f) ?? '']));
+  /*
+   * Dieselbe Regel wie in unbenutzteExporte() (Fund 2026-10-02): Ohne
+   * streicheKommentare zählt eine Konstante, die nur in einem Fremd-Kommentar
+   * genannt wird, als gelesen — und der Detektor meldet sie nicht.
+   */
+  const alleTexte = new Map(dateien.map(f => [f, streicheKommentare(read(f) ?? '')]));
   const befunde = [];
 
   for (const datei of dateien) {
