@@ -7,11 +7,31 @@
  * @module CollisionMask
  */
 
+/**
+ * Ruft `fn(px, py)` für jede Zelle eines Kraters auf.
+ *
+ * EINE Rechenvorschrift für Server-Maske und Client-Karte: Wer die Zellen an
+ * zwei Stellen getrennt herleitet, bekommt irgendwann zwei verschiedene Löcher.
+ */
+export function eachCraterCell(width, height, x, y, radius, fn) {
+  for (let dy = -radius; dy <= radius; dy++) {
+    const dx = Math.sqrt(radius * radius - dy * dy);
+    for (let ix = -Math.floor(dx); ix <= Math.floor(dx); ix++) {
+      const px = Math.round(x + ix);
+      const py = Math.round(y + dy);
+      if (px >= 0 && px < width && py >= 0 && py < height) {
+        if (ix * ix + dy * dy <= radius * radius) fn(px, py);
+      }
+    }
+  }
+}
+
 export class CollisionMask {
   #width;
   #height;
   #words; // Uint32Array
   #dirty = false;
+  #craters = [];
 
   constructor(width, height) {
     if (width <= 0 || height <= 0) {
@@ -101,21 +121,20 @@ export class CollisionMask {
    * @param {number} radius - Krater-Radius
    */
   punchCrater(x, y, radius) {
-    for (let dy = -radius; dy <= radius; dy++) {
-      const dx = Math.sqrt(radius * radius - dy * dy);
-      for (let ix = -Math.floor(dx); ix <= Math.floor(dx); ix++) {
-        const px = Math.round(x + ix);
-        const py = Math.round(y + dy);
-        if (px >= 0 && px < this.#width && py >= 0 && py < this.#height) {
-          const distSq = ix * ix + dy * dy;
-          if (distSq <= radius * radius) {
-            this.setPixel(px, py, false);
-          }
-        }
-      }
-    }
+    eachCraterCell(this.#width, this.#height, x, y, radius, (px, py) => this.setPixel(px, py, false));
+    this.#craters.push([x, y, radius]);
     this.#dirty = true;
   }
+
+  /**
+   * Alle bisherigen Krater in der Reihenfolge ihrer Entstehung als `[x, y, radius]`.
+   *
+   * Warum es das gibt (Audit 2026-10-09): Ein Client, der später beitritt oder
+   * die Verbindung wieder aufnimmt, baut das Gelände aus dem Seed und sieht
+   * damit die UNZERSTÖRTE Karte, während der Server längst Löcher hat (nach nur
+   * 9 Kratern wichen 3 082 Zellen ab). Das Protokoll liefert sie jetzt nach.
+   */
+  get craterLog() { return this.#craters.map(eintrag => [...eintrag]); }
 
   get width() { return this.#width; }
   get height() { return this.#height; }

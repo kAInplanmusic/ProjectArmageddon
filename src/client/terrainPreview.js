@@ -9,7 +9,7 @@
  *
  * @module terrainPreview
  */
-import { CollisionMask } from '../engine/terrain/collisionMask.js';
+import { CollisionMask, eachCraterCell } from '../engine/terrain/collisionMask.js';
 import { generateTerrain } from '../shared/terrainGen.js';
 import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import { MatchSeedManager } from '../shared/seed.js';
@@ -86,6 +86,22 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
     width: masse.width,
     height: masse.height,
   };
+}
+
+/**
+ * Trägt einen Krater in die Client-Karte ein (Bitmap UND Maske).
+ *
+ * Fund (belegt, Audit 2026-10-09): Online wurde ein Krater nur auf die
+ * Zeichenfläche gestanzt. Die Bitmap, gegen die die Zielvorschau rechnet
+ * (`main.js`, `isSolid`), blieb unzerstört — die vorhergesagte Bahn prallte an
+ * Boden ab, der längst weg war.
+ */
+export function applyCraterToTerrain(terrain, x, y, radius) {
+  if (!terrain?.bitmap) return;
+  eachCraterCell(terrain.width, terrain.height, x, y, radius, (px, py) => {
+    terrain.bitmap[py * terrain.width + px] = 0;
+  });
+  terrain.mask?.punchCrater(x, y, radius);
 }
 
 export { MAP_SIZES };

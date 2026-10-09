@@ -262,6 +262,10 @@ class LobbySession {
       this.match.dropWeapon(entry.playerId, entry.weaponId);
       return;
     }
+    if (entry.kind === 'select') {
+      this.match.inventory.selectWeapon(entry.playerId, entry.weaponId);
+      return;
+    }
     this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
   }
 
@@ -626,14 +630,26 @@ class LobbySession {
 
     if (!command.valid) return { ok: false, errors: command.errors };
 
-    const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, command.input.weaponId);
+    /*
+     * Die Waffe wird VOR dem Schuss aufgelöst und so aufgezeichnet.
+     *
+     * Fund (belegt, Audit 2026-10-09): Der Client sendet `weaponId:null`; welche
+     * Waffe schießt, entschied allein die Auswahl im Inventar
+     * (`SELECT_WEAPON`) — und die wurde nicht aufgezeichnet. Replay und
+     * Wiederherstellung nach einem Serverneustart feuerten deshalb die
+     * Standardwaffe: Live-Hash `fe6e49cc`, Replay-Hash `91bca67c`.
+     * Mit der aufgelösten Kennung im Eintrag braucht das Replay die Auswahl nicht.
+     */
+    const waffe = command.input.weaponId
+      ?? this.match.inventory.getActiveWeaponId(seat.entityId);
+    const result = this.match.fire(seat.entityId, command.input.angle, command.input.power, waffe);
     if (result.ok) {
       this.recorder.recordInput({
         tick: currentTick,
         playerId: seat.entityId,
         angle: command.input.angle,
         power: command.input.power,
-        weaponId: command.input.weaponId,
+        weaponId: waffe,
       });
     }
     return { ok: result.ok, errors: result.errors ?? [], interpolatedFrom: history?.tick ?? null };
@@ -644,6 +660,17 @@ class LobbySession {
     const seat = this.#platzFuer(token);
     if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
     const ok = this.match.inventory.selectWeapon(seat.entityId, weaponId);
+    if (ok) {
+      // Die Auswahl ist Simulationszustand (sie entscheidet über spätere
+      // Schüsse mit `weaponId:null` und steht im Zustandshash) — ohne diesen
+      // Eintrag weicht jedes Replay und jede Wiederherstellung ab.
+      this.recorder.recordInput({
+        tick: this.match.world.tickCount,
+        playerId: seat.entityId,
+        weaponId,
+        kind: 'select',
+      });
+    }
     return { ok, errors: ok ? [] : ['Waffe nicht verfügbar'] };
   }
 
@@ -1748,6 +1775,9 @@ export class GameServer {
               entityIds: eigeneSeats.map(entry => entry.entityId).filter(id => id !== null),
               unitsPerPlayer: lobby.unitsPerPlayer ?? null,
               resumed: seat.resumed,
+              // Bisherige Krater: Wer später beitritt oder wieder verbindet,
+              // baut das Gelände aus dem Seed und braucht die Löcher dazu.
+              craters: session.match.terrain?.craterLog ?? [],
             }));
             break;
           }
