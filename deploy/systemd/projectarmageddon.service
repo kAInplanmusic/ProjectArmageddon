@@ -48,7 +48,14 @@ RestartSec=5
 
 # Zeit für das geordnete Beenden: scripts/server.mjs speichert den Zustand
 # (Seed + Eingaben) bei SIGTERM. Zu kurz abgeschnitten wäre der Zustand weg.
-TimeoutStopSec=30
+TimeoutStopSec=120
+# Sicherung nach JEDEM Stopp (Idle-Bremse, manuelles Stoppen, Absturz, Herunterfahren):
+# Spielstand, Replays, Journal, Programmstand -> /var/lib/projectarmageddon/snapshots,
+# die neuesten PA_SNAPSHOT_KEEP bleiben, ältere werden gelöscht. Das Minuszeichen
+# heißt: ein Fehlschlag der Sicherung blockiert das Stoppen NICHT (er steht im Journal).
+ExecStopPost=-/opt/projectarmageddon/scripts/betrieb/snapshot.sh --grund "Dienst gestoppt (${SERVICE_RESULT})"
+# Das Journal des Dienstes darf der Dienstbenutzer für die Sicherung lesen.
+SupplementaryGroups=systemd-journal
 KillMode=mixed
 
 StateDirectory=projectarmageddon

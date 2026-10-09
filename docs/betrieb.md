@@ -206,3 +206,66 @@ die Bremse die offenen TCP-Verbindungen am Spielport.
 erfüllen. Der Nachweis mit der Ausgabe von `systemctl list-timers` **vom Knoten**
 gehört in `docs/betrieb-INSTANZ.md`, Abschnitt 3. Eine Datei im Repo ist kein
 laufender Dienst.
+
+## 8. Sicherung vor dem Abschalten (Snapshots)
+
+Die Instanz läuft nur, wenn gespielt wird. Damit Spielstand, Replays, Protokolle
+und der genaue Programmstand nicht am einen Knoten hängen, legt
+`scripts/betrieb/snapshot.sh` bei **jedem Stopp des Dienstes** einen Snapshot ab
+und behält nur die **neuesten 3** (`PA_SNAPSHOT_KEEP`, 1 bis 50). Ältere werden
+automatisch gelöscht — **erst nachdem** der neue vollständig und lesbar da ist.
+
+| Ebene | Was | Wann | Überlebt das Löschen des Servers? |
+|---|---|---|---|
+| **Archiv** (immer) | `.tar.gz` mit `state/` (Spielstände, Replays), `logs/` (Journal, Dienststatus), `app/` (git-Hash, nicht eingecheckte Änderungen, Quelltext), `config/` (Betriebsparameter, Zugangsdaten **geschwärzt**), `manifest.json` mit Prüfsummen; daneben `.sha256` | `ExecStopPost` des Dienstes: Idle-Bremse, manuelles Stoppen, Absturz, Herunterfahren | **Nein** — liegt auf dem Server (`/var/lib/projectarmageddon/snapshots`) |
+| **Cloud-Abbild** (optional, `PA_SNAPSHOT_CLOUD=yes`) | Hetzner-Abbild des ganzen Servers über die `hcloud`-CLI, Label `projectarmageddon-snapshot=auto`, die neuesten `PA_HCLOUD_KEEP` bleiben | Idle-Bremse, **vor** `poweroff` | **Ja** |
+
+Bilder und Videos kommen nicht ins Archiv (`PA_SNAPSHOT_MIT_ASSETS=no`): Es wird
+dadurch rund 1 MB statt vieler hundert MB groß; der Stand ist über den `gitHash`
+im Manifest wiederherstellbar.
+
+### Wichtig: „ausgeschaltet" ist bei Hetzner nicht „kostenlos"
+
+Hetzner Cloud rechnet einen Server ab, **solange er existiert** — auch
+ausgeschaltet. Die Kosten enden erst mit dem **Löschen**. (Quelle: Hetzner-FAQ,
+über Websuche bestätigt am 2026-10-09; der Preis eines Abbilds je GB und Monat
+steht auf der Hetzner-Preisseite und ist vor dem Einsatz dort nachzulesen.)
+Wer sparen will, arbeitet so: **Abbild → Server löschen → beim nächsten Spiel
+einen neuen Server aus dem neuesten Abbild erstellen.** Dafür ist die Cloud-Ebene
+da; das Archiv allein reicht dafür nicht. Das automatische **Löschen des Servers
+macht dieses Skript bewusst nicht** — das ist eine unumkehrbare Handlung und
+bleibt bei dir (oder einer eigenen, ausdrücklich eingerichteten Automation).
+
+### Einrichten (auf dem Knoten, einmalig)
+
+1. `scripts/betrieb/snapshot.sh --print-config` — zeigt, was gelten würde.
+2. `/etc/projectarmageddon/betrieb.env` (Rechte 600, Besitzer root) um die
+   `PA_SNAPSHOT_*`-Zeilen aus `deploy/betrieb.env.example` ergänzen. Für die
+   Cloud-Ebene: `PA_SNAPSHOT_CLOUD=yes`, `PA_HCLOUD_SERVER=<Name>`,
+   `HCLOUD_TOKEN=<Projekt-Token>`. Das Token gehört **nur** in diese Datei.
+3. `hcloud` installieren (nur für die Cloud-Ebene).
+4. Probe: `sudo -u pa scripts/betrieb/snapshot.sh --trocken`, dann echt:
+   `scripts/betrieb/snapshot.sh --grund "Probe"` und `ls -l /var/lib/projectarmageddon/snapshots`.
+5. Nachweis, dass der Dienst sichert: `systemctl stop projectarmageddon` und
+   danach `journalctl -u projectarmageddon -n 20` — die Zeile „Snapshot erstellt".
+
+### Zurückspielen
+
+- **Archiv:** `tar -tzf pa-snapshot-<Zeit>.tar.gz` zeigt den Inhalt;
+  `sha256sum -c pa-snapshot-<Zeit>.tar.gz.sha256` prüft ihn. Spielstände:
+  `tar -xzf … ./state/lobbies.json` und nach `PA_STATE_PATH` kopieren. Programmstand:
+  `manifest.json` → `gitHash`, plus `app/nicht-eingecheckt.patch`.
+- **Cloud-Abbild:** neuen Server aus dem Abbild erstellen (`hcloud server create
+  --image <ID> …`).
+
+### Grenzen (ehrlich)
+
+- Ein Archiv auf demselben Server schützt **nicht** vor dem Löschen des Servers.
+  Dafür braucht es das Cloud-Abbild oder eine Kopie nach außen (nicht gebaut).
+- Das Cloud-Abbild ist bei laufendem Betriebssystem „absturzkonsistent": Der Dienst
+  ist beim Aufruf bereits gestoppt, das System selbst läuft noch.
+- Die Cloud-Ebene ist **nicht gegen Hetzner getestet** (kein Zugang in dieser
+  Umgebung) — nur gegen einen Platzhalter für `hcloud`. Erste echte Probe auf dem
+  Knoten, mit `--trocken` und danach einem ersten Lauf unter Aufsicht.
+- Die Sicherung läuft beim Stopp. Bricht der Strom ohne Stopp weg (Server von
+  außen gelöscht), gibt es keinen Lauf.

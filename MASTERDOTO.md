@@ -15,6 +15,44 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Sicherung vor dem Abschalten (Auftrag 2026-10-09) — GEBAUT, auf dem Knoten NICHT erprobt
+
+Auftrag: Die Hetzner-Instanz läuft nur zum Spielen. Vor dem Herunterfahren bzw. nach
+jedem Spiel soll automatisch ein Snapshot des Gesamtstands (Programmstand, Daten,
+Protokolle, Ereignisse) abgelegt werden; die neuesten 2–3 bleiben, ältere werden
+automatisch gelöscht.
+
+- [x] `scripts/betrieb/snapshot.sh`: Archiv (`state/`, `logs/`, `app/`, `config/`
+  mit geschwärzten Zugangsdaten, `manifest.json` mit Prüfsummen, `.sha256`), behält
+  die neuesten `PA_SNAPSHOT_KEEP` (Standard 3, erlaubt 1–50; ungültige Werte
+  löschen nichts). Gelöscht wird erst NACH dem vollständigen, geprüften neuen
+  Archiv; fremde Dateien im Ordner bleiben unberührt; Sperre gegen Doppelläufe;
+  Mindest-Platz-Prüfung.
+- [x] Verdrahtung: `ExecStopPost` in `deploy/systemd/projectarmageddon.service`
+  (läuft bei Idle-Bremse, manuellem Stoppen, Absturz, Herunterfahren);
+  `idle-watch.sh` ruft vor `poweroff` das Cloud-Abbild (`--nur-cloud`), ein
+  Fehlschlag hält das Abschalten nicht auf. `npm run snapshot` für den Handlauf.
+- [x] Optional Hetzner-Abbild (`PA_SNAPSHOT_CLOUD=yes`, `hcloud`-CLI), Retention nur
+  über das eigene Label, nur nach erfolgreicher Erstellung.
+- [x] Tests: `tests/snapshot-skript.test.js` (9) — Inhalt/Schwärzung, Retention
+  (5 alte + 1 neues -> 3), ungültiges KEEP, zu wenig Platz, Trockenlauf, Cloud mit
+  Platzhalter-`hcloud` (erst erstellen, dann nur die ältesten löschen; bei Fehlschlag
+  nichts löschen; ohne Token/Server kein Aufruf), Idle-Bremse-Reihenfolge
+  (Abbild vor Abschalten, auch bei Fehlschlag). Der Test fand einen echten Fehler:
+  `exec … 2>/dev/null` hatte stderr dauerhaft umgelenkt, alle Fehlermeldungen des
+  Skripts wären unsichtbar gewesen.
+- [x] **Richtiggestellt:** `docs/betrieb-INSTANZ.md` behauptete „Nur `poweroff`
+  beendet die Kosten". Hetzner Cloud rechnet einen ausgeschalteten Server weiter ab,
+  bis er GELÖSCHT ist (Hetzner-FAQ, per Websuche bestätigt 2026-10-09). Doku in
+  `docs/betrieb.md` Abschnitt 8 und im INSTANZ-Dokument berichtigt.
+- [ ] **Offen / Entscheidung:** (a) Erste Probe auf dem Knoten
+  (`--trocken`, dann echt, dann `systemctl stop` und Journalzeile). (b) Die
+  Cloud-Ebene ist nicht gegen echtes Hetzner getestet (nur Platzhalter). (c) Wer
+  den Server nach dem Abbild LÖSCHT (Kostenersparnis) und neu aus dem Abbild
+  erstellt — bewusst nicht automatisiert. (d) Das Archiv auf demselben Server
+  überlebt dessen Löschen nicht; eine Kopie nach außen ist nicht gebaut.
+  (e) Preis des Abbilds je GB/Monat in `docs/betrieb-INSTANZ.md` eintragen.
+
 ## Netcode-/Determinismus-Audit (2026-10-09) — offene Punkte
 
 Auftrag: Gesamtaudit (Code, Tests, Architektur, Performance) mit Fokus Determinismus,
@@ -146,8 +184,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1258/134 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1258/1258** grün, Dateizahl **134** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1267/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
+**1267/1267** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

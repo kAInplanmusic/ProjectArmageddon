@@ -18,6 +18,7 @@ Die Skripte dazu liegen in `scripts/betrieb/`:
 |---|---|
 | `scripts/betrieb/server-start.sh` | startet `npm run server` **und** die Idle-Bremse; `--print-config` zeigt alle Abschaltparameter, ohne zu starten |
 | `scripts/betrieb/idle-watch.sh` | die Bremse selbst: Leerlauf, Serverlaufzeit, Maschinenlaufzeit |
+| `scripts/betrieb/snapshot.sh` | Sicherung bei jedem Stopp (Archiv, optional Hetzner-Abbild); behält die neuesten 3 — `docs/betrieb.md` Abschnitt 8 |
 
 ## Ohne gemieteten Knoten prüfbar
 
@@ -26,6 +27,8 @@ bash -n scripts/betrieb/server-start.sh       # Syntax
 bash -n scripts/betrieb/idle-watch.sh
 scripts/betrieb/server-start.sh --print-config
 scripts/betrieb/idle-watch.sh --print-config
+scripts/betrieb/snapshot.sh --print-config
+bash -n scripts/betrieb/snapshot.sh
 ```
 
 ## Bevor irgendetwas gemietet wird
