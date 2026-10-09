@@ -707,6 +707,8 @@ export const EREIGNIS_WIRKUNGEN = {
     // trägt ihn weiter (`remoteInset`).
     online: (k, n) => {
       k.fernzustand?.setzeEinschnitt(n.inset);
+      // Auch die Karte, gegen die die Zielvorschau rechnet — nicht nur das Bild.
+      k.karte?.einschnitt(n.inset);
       mahlstromZiehtSich(k, n);
     },
   },

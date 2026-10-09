@@ -412,6 +412,7 @@ export class NetworkClient {
             resumed: message.resumed,
             seed: this.#seed,
             craters: Array.isArray(message.craters) ? message.craters : [],
+            inset: Number(message.inset) || 0,
           });
           this.#emit('state', this.#state);
         } else {
@@ -433,6 +434,14 @@ export class NetworkClient {
         // 'game_event', weil sie den Ansichtszustand ergänzen und nicht als
         // Spielereignis protokolliert werden sollen.
         this.#emit('loadouts', message.loadouts ?? {});
+        break;
+
+      case CONTROL.TERRAIN_HASH:
+        this.#emit('terrain_hash', message);
+        break;
+
+      case CONTROL.TERRAIN_STATE:
+        this.#emit('terrain_state', message);
         break;
 
       case CONTROL.ERROR:
@@ -526,6 +535,13 @@ export class NetworkClient {
   sendDropWeapon(weaponId) {
     if (!this.isConnected || !this.#socket) return false;
     this.#socket.send(controlMessage(CONTROL.DROP_WEAPON, { weaponId }));
+    return true;
+  }
+
+  /** Fordert Krater und Einschnitt neu an (Antwort: Ereignis `terrain_state`). */
+  requestTerrain() {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.TERRAIN_REQUEST));
     return true;
   }
 

@@ -916,6 +916,9 @@ class LobbySession {
     // verlorenen Frame nicht dauerhaft mit falschen Werten weiterrechnet.
     const forceFull = this.snapshotCounter % FULL_SNAPSHOT_INTERVAL === 0;
 
+    // Terrain-Hash zusammen mit dem Vollsnapshot (siehe CONTROL.TERRAIN_HASH).
+    if (forceFull) this.#broadcastControl(CONTROL.TERRAIN_HASH, this.terrainStand(false));
+
     const sent = [];
     for (const [token, socket] of this.clients.entries()) {
       if (socket.readyState !== 1) continue;
@@ -932,6 +935,26 @@ class LobbySession {
     for (const token of this.clients.keys()) this.previousByToken.set(token, nextPrevious);
 
     return sent[0] ?? null;
+  }
+
+  /**
+   * Kartenstand für Abgleich und Nachlieferung: Hash der Maske, Kraterzahl und
+   * Mahlstrom-Einschnitt; mit `mitKratern` zusätzlich die Kraterliste.
+   *
+   * Der Hash wird bei jedem Aufruf frisch über die Maske gerechnet, ohne
+   * Zwischenspeicher: Gemessen (2560x1440, 115 200 Wörter, Median über 200
+   * Läufe) kostet das ca. 0,1 ms — rund 1 % eines 16,7-ms-Ticks und nur alle
+   * 2 s. Ein Zwischenspeicher wäre ein zweiter Zustand, der veralten kann.
+   */
+  terrainStand(mitKratern) {
+    const terrain = this.match.terrain;
+    const stand = {
+      hash: terrain.hash(),
+      craters: terrain.craterCount,
+      inset: this.match.maelstrom?.inset ?? 0,
+    };
+    if (mitKratern) stand.craters = terrain.craterLog;
+    return stand;
   }
 
   #broadcastControl(type, payload) {
@@ -1778,6 +1801,8 @@ export class GameServer {
               // Bisherige Krater: Wer später beitritt oder wieder verbindet,
               // baut das Gelände aus dem Seed und braucht die Löcher dazu.
               craters: session.match.terrain?.craterLog ?? [],
+              // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
+              inset: session.match.maelstrom?.inset ?? 0,
             }));
             break;
           }
@@ -1831,6 +1856,14 @@ export class GameServer {
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleDropWeapon(context.token, message.weaponId);
             if (!result.ok) this.#fehlerSenden(socket, result.errors);
+            break;
+          }
+
+          case CONTROL.TERRAIN_REQUEST: {
+            // Der Client hat eine Abweichung gemessen und baut die Karte neu.
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            socket.send(controlMessage(CONTROL.TERRAIN_STATE, session.terrainStand(true)));
             break;
           }
 

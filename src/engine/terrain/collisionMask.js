@@ -26,6 +26,29 @@ export function eachCraterCell(width, height, x, y, radius, fn) {
   }
 }
 
+/**
+ * Ruft `fn(px, py)` für jede Zelle des Mahlstrom-Einschnitts auf: die ersten
+ * `inset` Spalten links und rechts, über die ganze Höhe.
+ *
+ * EINE Rechenvorschrift für Server (`MaelstromSystem.contract`) und Client
+ * (`applyInsetToTerrain`), wie bei `eachCraterCell`. Berührt der Einschnitt die
+ * Mitte (`inset * 2 >= width`), wird nichts abgetragen — so verhielt sich der
+ * Server schon immer.
+ */
+export function eachInsetCell(width, height, inset, fn) {
+  if (!(inset > 0) || inset * 2 >= width) return;
+  const spalten = Math.min(Math.floor(inset), width);
+  for (let x = 0; x < spalten; x++) {
+    for (let y = 0; y < height; y++) {
+      fn(x, y);
+      fn(width - 1 - x, y);
+    }
+  }
+}
+
+const FNV_BASIS = 0x811c9dc5;
+const FNV_PRIMZAHL = 0x01000193;
+
 export class CollisionMask {
   #width;
   #height;
@@ -135,6 +158,25 @@ export class CollisionMask {
    * 9 Kratern wichen 3 082 Zellen ab). Das Protokoll liefert sie jetzt nach.
    */
   get craterLog() { return this.#craters.map(eintrag => [...eintrag]); }
+
+  /**
+   * Kompakter Hash der Maske (FNV-1a, wortweise über die 32-Bit-Maskenwörter,
+   * Breite und Höhe fliessen ein). Deterministisch und plattformunabhängig
+   * (`Math.imul`); dient dem Abgleich Server <-> Client (Terrain-Hash).
+   * Kosten gemessen in `tests/terrain-hash.test.js` (2560x1440, 115 200 Wörter).
+   * @returns {number} vorzeichenlose 32-Bit-Zahl
+   */
+  hash() {
+    let h = FNV_BASIS;
+    h = Math.imul(h ^ this.#width, FNV_PRIMZAHL);
+    h = Math.imul(h ^ this.#height, FNV_PRIMZAHL);
+    const w = this.#words;
+    for (let i = 0; i < w.length; i++) h = Math.imul(h ^ w[i], FNV_PRIMZAHL);
+    return h >>> 0;
+  }
+
+  /** Anzahl bisheriger Krater (billig; `craterLog` kopiert die Liste). */
+  get craterCount() { return this.#craters.length; }
 
   get width() { return this.#width; }
   get height() { return this.#height; }
