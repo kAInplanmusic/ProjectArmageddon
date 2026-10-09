@@ -113,6 +113,23 @@ export const CONTROL = Object.freeze({
    * sprengen. Ohne diese Nachricht blieb die Waffenliste im Online-Modus leer.
    */
   LOADOUTS: 'loadouts',
+  /**
+   * Terrain-Hash (Server -> Client), gesendet mit jedem Vollsnapshot (alle ~2 s):
+   * `{hash, craters, inset}` — FNV-1a über die Kollisionsmaske (`CollisionMask.hash`),
+   * Kraterzahl und Mahlstrom-Einschnitt.
+   *
+   * WARUM EINE STEUERNACHRICHT UND KEIN FELD IM BINÄREN SNAPSHOT: Der Hash ist
+   * 4 Byte alle 2 s, nicht je Takt. Ein Feld im Kopf (HEADER_SIZE) kostete alle
+   * 20 Hz 4 Byte mehr, bräche das Drahtformat (Protokollversion, jede
+   * Snapshot-Testkonstante) und gälte auch für Deltas, wo er sinnlos ist.
+   * Als JSON-Zeile hat er keinen Einfluss auf Deltaformat und Bandbreite; eine
+   * ältere Gegenstelle ignoriert den unbekannten Typ als Spielereignis.
+   */
+  TERRAIN_HASH: 'terrain_hash',
+  /** Client -> Server: aktuellen Karten-Nachtrag (Krater + Einschnitt) anfordern. */
+  TERRAIN_REQUEST: 'terrain_request',
+  /** Server -> Client: Antwort auf `terrain_request`: `{craters, inset, hash}`. */
+  TERRAIN_STATE: 'terrain_state',
 });
 
 const COORD_SCALE = 4;      // 0.25 px Auflösung

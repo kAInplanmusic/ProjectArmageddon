@@ -56,9 +56,23 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   verschwundenem Boden ab (`applyCraterToTerrain`, auch bei laufendem Spiel).
   *Test:* `tests/krater-nachlieferung.test.js` (Zellengleichheit Maske und Bitmap;
   WELCOME beim Reconnect über den echten Server).
-  *Bleibt offen:* der Mahlstrom-Einschnitt (`inset`) wird beim Wiedereinstieg
-  nicht in die Karte nachgezogen; ein Terrain-Hash im Vollsnapshot als Prüfung
-  fehlt weiterhin.
+  *Nachtrag (erledigt, Branch `claude/mahlstrom-terrainhash`):* (a) Mahlstrom-Einschnitt:
+  `WELCOME` trägt `inset`, der Client wendet ihn nach dem Aufbau an
+  (`applyInsetToTerrain`: Bitmap, Maske, Zeichenfläche); Server und Client rechnen
+  über dieselbe Vorschrift `eachInsetCell`. *Zweiter Fund, gleich behoben:* online
+  zog `maelstrom_contract` nur die Zeichenfläche zusammen, Bitmap/Maske der
+  Zielvorschau behielten den Randstreifen (`karte.einschnitt` in `ereignisse.js`).
+  (b) Terrain-Hash: mit jedem Vollsnapshot (alle ~2 s) geht eine Steuernachricht
+  `terrain_hash {hash, craters, inset}` raus (FNV-1a über die Maskenwörter,
+  `CollisionMask.hash`); als Steuernachricht statt Snapshot-Kopffeld, damit
+  Drahtformat und Protokollversion (9) unverändert bleiben. Der Client vergleicht,
+  meldet eine Zeile im HUD-Protokoll und baut per `terrain_request` ->
+  `terrain_state` (Seed + Krater + Einschnitt) neu. Kosten gemessen (2560x1440,
+  115 200 Wörter): Median ca. 0,14-0,22 ms, p99 ca. 0,3 ms je Aufruf, also rund
+  1 % des 16,7-ms-Ticks, nur alle 2 s; deshalb ohne Zwischenspeicher.
+  *Test:* `tests/mahlstrom-terrainhash.test.js` (6 Prüfungen). *Grenze:* geprüft
+  wird die Kollisionsmaske; Abweichungen allein im gezeichneten Bild (Renderer)
+  erkennt der Hash nicht.
 - [x] **P1 — Server-Tick-Spitzen durch die Geschütz-Zielsuche — BEHOBEN 2026-10-09.**
   Ursache: `aimTurret` rechnet ein Raster aus Kraft × Winkel × 900 Schritte, und
   `#simulateTurretPath` rief je Schritt zweimal `surfaceYAt` (Spaltenscan, bis
@@ -104,9 +118,10 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
 - [ ] **P3 — Browser-Abdeckung:** Firefox und Safari sind ungeprüft (in der
   Sandbox nur Chromium). Client-Heap über 10 Runden, Initial-Load-Zeit und
   Allokationen im Render-Loop sind nicht gemessen.
-- [ ] **P3 — Cross-Engine-Terrain:** Der Client baut das Terrain selbst aus dem
-  Seed (`terrainGen3` nutzt einen Aufruf einer transzendenten Funktion). Risiko
-  klein, aber unbelegt — der Terrain-Hash aus dem Krater-Punkt schließt das.
+- [x] **P3 — Cross-Engine-Terrain — abgesichert 2026-10-09.** Der Client baut das
+  Terrain selbst aus dem Seed. Eine Abweichung zwischen Browsern würde jetzt vom
+  Terrain-Hash erkannt und per `terrain_request` korrigiert. Ob sie in Firefox
+  oder Safari tatsächlich auftritt, bleibt ungeprüft (dort nicht gelaufen).
 
 ### Entscheidung zur Hardware (2026-10-09)
 
@@ -131,8 +146,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1245/130 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`):
-**1245/1245** grün, Dateizahl **130** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1258/134 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
+**1258/1258** grün, Dateizahl **134** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

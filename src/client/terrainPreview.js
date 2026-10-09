@@ -9,7 +9,7 @@
  *
  * @module terrainPreview
  */
-import { CollisionMask, eachCraterCell } from '../engine/terrain/collisionMask.js';
+import { CollisionMask, eachCraterCell, eachInsetCell } from '../engine/terrain/collisionMask.js';
 import { generateTerrain } from '../shared/terrainGen.js';
 import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import { MatchSeedManager } from '../shared/seed.js';
@@ -102,6 +102,51 @@ export function applyCraterToTerrain(terrain, x, y, radius) {
     terrain.bitmap[py * terrain.width + px] = 0;
   });
   terrain.mask?.punchCrater(x, y, radius);
+}
+
+/**
+ * Trägt den Mahlstrom-Einschnitt (die ersten `inset` Spalten links und rechts)
+ * in die Client-Karte ein: Bitmap UND Maske, über dieselbe Rechenvorschrift wie
+ * der Server (`eachInsetCell`).
+ *
+ * Fund (belegt, Audit 2026-10-09): Online zog `maelstrom_contract` nur die
+ * Zeichenfläche zusammen. Bitmap und Maske der Client-Karte behielten das
+ * Gelände im Randstreifen, und wer danach beitrat, baute die Karte ohnehin aus
+ * dem Seed. Idempotent: ein größerer Einschnitt umfasst den kleineren.
+ */
+export function applyInsetToTerrain(terrain, inset) {
+  if (!terrain?.bitmap) return;
+  terrain.einschnitt = Math.max(terrain.einschnitt ?? 0, inset);
+  eachInsetCell(terrain.width, terrain.height, inset, (px, py) => {
+    terrain.bitmap[py * terrain.width + px] = 0;
+    terrain.mask?.setPixel(px, py, false);
+  });
+}
+
+/** Hash der Client-Maske — dieselbe Funktion wie auf dem Server (`CollisionMask.hash`). */
+export function terrainHash(terrain) {
+  return terrain?.mask ? terrain.mask.hash() : null;
+}
+
+/**
+ * Vergleicht die Client-Karte mit der `terrain_hash`-Meldung des Servers.
+ *
+ * Urteile: 'gleich', 'abweichung' (Karte neu bauen) oder 'abwarten'.
+ * 'abwarten' gilt, wenn Hash UND Stand (Kraterzahl, Einschnitt) abweichen: dann
+ * kann ein Ereignis noch unterwegs sein, und erst die zweite Meldung in Folge
+ * (`wartet`) zählt als Abweichung. Stimmt der Stand überein und der Hash nicht,
+ * ist die Karte sicher verfälscht — sofort 'abweichung'.
+ *
+ * @param {object} terrain - Client-Karte (`bitmap`, `mask`)
+ * @param {{hash:number, craters:number, inset:number}} meldung
+ * @param {boolean} [wartet=false] - schon die vorige Meldung wich ab
+ */
+export function bewerteTerrainHash(terrain, meldung, wartet = false) {
+  const lokal = terrainHash(terrain);
+  if (lokal === null || lokal === meldung.hash) return { urteil: 'gleich', lokal };
+  const standGleich = terrain.mask.craterCount === meldung.craters
+    && (terrain.einschnitt ?? 0) === (meldung.inset ?? 0);
+  return { urteil: standGleich || wartet ? 'abweichung' : 'abwarten', lokal };
 }
 
 export { MAP_SIZES };

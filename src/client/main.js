@@ -20,7 +20,7 @@ import { Camera } from './camera.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
-import { applyCraterToTerrain, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
+import { applyCraterToTerrain, applyInsetToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -1084,8 +1084,14 @@ class Game {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
         // Krater, die vor dem Beitritt entstanden sind (Reconnect/Spätbeitritt).
         this.#wendeKraterAn(payload.craters);
+        // Mahlstrom-Einschnitt, der vor dem Beitritt entstanden ist.
+        this.#wendeEinschnittAn(payload.inset);
       }
     });
+    // Terrain-Hash: Abgleich der eigenen Karte mit der des Servers (alle ~2 s).
+    this.terrainAbweichungOffen = false;
+    client.on('terrain_hash', meldung => this.#pruefeTerrainHash(meldung));
+    client.on('terrain_state', stand => this.#baueKarteNeu(stand));
     client.on('lobby_state', payload => {
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
@@ -1187,8 +1193,44 @@ class Game {
     }
   }
 
+  /** Trägt den Mahlstrom-Einschnitt in Karte, Zeichenfläche und Anzeigezustand ein. */
+  #wendeEinschnittAn(inset) {
+    if (!(inset > 0)) return;
+    this.remoteInset = inset;
+    applyInsetToTerrain(this.remoteTerrain, inset);
+    this.renderer.applyContraction(inset);
+  }
+
+  /**
+   * Gleicht die Karte mit dem Server-Hash ab. Bei Abweichung: eine Zeile im
+   * Protokoll und Nachlieferung (Krater + Einschnitt) anfordern. Das erste
+   * Urteil 'abwarten' (Stand weicht ab, Ereignis womöglich noch unterwegs)
+   * wird erst bei der nächsten Meldung zur Abweichung.
+   */
+  #pruefeTerrainHash(meldung) {
+    if (!this.remoteTerrain) return;
+    const urteil = bewerteTerrainHash(this.remoteTerrain, meldung, this.terrainAbweichungOffen);
+    this.terrainAbweichungOffen = urteil.urteil === 'abwarten';
+    if (urteil.urteil !== 'abweichung') return;
+    this.hud.log(
+      `Terrain-Hash weicht ab (Client ${urteil.lokal?.toString(16)}, Server ${Number(meldung.hash).toString(16)}) — Karte wird neu aufgebaut`,
+      'danger',
+    );
+    this.network?.requestTerrain();
+  }
+
+  /** Baut die Karte aus Seed + gelieferten Kratern + Einschnitt neu auf. */
+  #baueKarteNeu(stand) {
+    if (!this.remoteTerrainQuelle) return;
+    this.#buildRemoteTerrain(this.remoteTerrainQuelle);
+    this.#wendeKraterAn(stand.craters);
+    this.#wendeEinschnittAn(stand.inset);
+    this.terrainAbweichungOffen = false;
+  }
+
   #buildRemoteTerrain(quelle) {
     const { seed, preset, orientation, kartentyp } = quelle;
+    this.remoteTerrainQuelle = quelle;
     const terrain = buildTerrainForSeed(seed, preset, orientation, kartentyp);
     this.remoteTerrain = terrain;
     /*
@@ -1678,7 +1720,11 @@ class Game {
        * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
        * Werte ein Serverereignis ändern darf.
        */
-      karte: { krater: (x, y, radius) => applyCraterToTerrain(this.remoteTerrain, x, y, radius) },
+      karte: {
+        krater: (x, y, radius) => applyCraterToTerrain(this.remoteTerrain, x, y, radius),
+        // Der Mahlstrom trägt Bitmap und Maske ab, nicht nur die Zeichenfläche.
+        einschnitt: inset => applyInsetToTerrain(this.remoteTerrain, inset),
+      },
       fernzustand: {
         status: () => this.remoteStatus,
         setzeStatus: wert => { this.remoteStatus = wert; },

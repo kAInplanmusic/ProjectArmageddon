@@ -8,6 +8,7 @@
  * @module MaelstromSystem
  */
 import { COMPONENT_SIGNATURES } from '../ecs/world.js';
+import { eachInsetCell } from '../terrain/collisionMask.js';
 import { MATCH_RULES } from '../../shared/config/match.js';
 
 /*
@@ -57,14 +58,12 @@ export class MaelstromSystem {
       return { inset: this.#inset, removedColumns: 0 };
     }
 
+    // Dieselbe Rechenvorschrift wie der Client (`applyInsetToTerrain`).
     let removed = 0;
-    for (let x = 0; x < this.#inset; x++) {
-      for (let y = 0; y < height; y++) {
-        terrain.setPixel(x, y, false);
-        terrain.setPixel(width - 1 - x, y, false);
-        removed += 2;
-      }
-    }
+    eachInsetCell(width, height, this.#inset, (x, y) => {
+      terrain.setPixel(x, y, false);
+      removed += 1;
+    });
 
     world.services?.events?.emit('maelstrom_contract', { inset: this.#inset, removed });
     return { inset: this.#inset, removedColumns: removed };
