@@ -411,6 +411,7 @@ export class NetworkClient {
             seatIndex: message.seatIndex,
             resumed: message.resumed,
             seed: this.#seed,
+            craters: Array.isArray(message.craters) ? message.craters : [],
           });
           this.#emit('state', this.#state);
         } else {

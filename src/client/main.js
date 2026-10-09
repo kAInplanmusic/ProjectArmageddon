@@ -20,7 +20,7 @@ import { Camera } from './camera.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
-import { buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
+import { applyCraterToTerrain, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -1082,6 +1082,8 @@ class Game {
       );
       if (payload.seed !== null && payload.seed !== undefined) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
+        // Krater, die vor dem Beitritt entstanden sind (Reconnect/Spätbeitritt).
+        this.#wendeKraterAn(payload.craters);
       }
     });
     client.on('lobby_state', payload => {
@@ -1174,6 +1176,15 @@ class Game {
     client.startPing(2000);
     if (!this.animationHandle) this.#loop(performance.now());
     return { ok: true, mode: 'online', lobbyId: targetLobby };
+  }
+
+  /** Trägt Krater in Karte und Zeichenfläche ein: `[[x, y, radius], ...]`. */
+  #wendeKraterAn(krater) {
+    if (!Array.isArray(krater)) return;
+    for (const [x, y, radius] of krater) {
+      applyCraterToTerrain(this.remoteTerrain, x, y, radius);
+      this.renderer.applyCrater(x, y, radius);
+    }
   }
 
   #buildRemoteTerrain(quelle) {
@@ -1667,6 +1678,7 @@ class Game {
        * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
        * Werte ein Serverereignis ändern darf.
        */
+      karte: { krater: (x, y, radius) => applyCraterToTerrain(this.remoteTerrain, x, y, radius) },
       fernzustand: {
         status: () => this.remoteStatus,
         setzeStatus: wert => { this.remoteStatus = wert; },

@@ -37,19 +37,28 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
 
 ### Offen — nach Wirkung auf das Spiel
 
-- [ ] **P0 — Replay/Wiederherstellung: Waffenwahl fehlt.** Der Client sendet beim
-  Schuss `weaponId:null`; `handleWeaponSelect` zeichnet nichts auf. Replay und
-  Wiederherstellung nach Serverneustart feuern die Standardwaffe.
-  *Beleg:* über den echten `LobbySession`-Pfad Live-Hash `fe6e49cc`, Replay-Hash
-  `91bca67c`. *Fix:* in `handleInput` `weaponId ?? getActiveWeaponId()` vor dem
-  Aufzeichnen auflösen (oder `kind:'select'` einführen und in `ReplayPlayer` und
-  `#applyReplayEntry` anwenden). *Test:* Waffe wählen → schießen → Replay-Hash gleich.
-- [ ] **P0 — Reconnect/Spätbeitritt: Krater-Historie fehlt.** `WELCOME` trägt nur
-  `seed`/`preset`; der Client baut das Terrain frisch aus dem Seed, `resumed`
-  wertet er nicht aus. *Beleg:* nach 9 Kratern weichen 3 082 Zellen zwischen
-  Server-Kollisionsmaske und Client-Neuaufbau ab. *Fix:* Krater-Log (x, y, r) im
-  Match führen und nach `WELCOME` senden; zusätzlich Terrain-Hash im Vollsnapshot,
-  damit der Client Abweichungen erkennt. *Test:* Join nach N Kratern → Masken gleich.
+- [x] **P0 — Replay/Wiederherstellung: Waffenwahl fehlte — BEHOBEN 2026-10-09.**
+  Der Client sendet beim Schuss `weaponId:null`; `handleWeaponSelect` zeichnete
+  nichts auf, Replay und Wiederherstellung feuerten die Standardwaffe (Live-Hash
+  `fe6e49cc`, Replay-Hash `91bca67c`). *Fix:* neue Eingabeart `kind:'select'`
+  (`ReplayRecorder`, `ReplayPlayer`, `#applyReplayEntry`) und die beim Schuss
+  aufgelöste Waffe im Eintrag. *Nebenbefund beim Fix:* Mit der aufgelösten Waffe
+  allein blieb der Hash verschieden — die aktive Waffe steht selbst im
+  Zustandshash, erst der `select`-Eintrag schließt das. *Test:*
+  `tests/replay-waffenwahl.test.js` (vorher rot, jetzt grün).
+- [x] **P0 — Reconnect/Spätbeitritt: Krater-Historie fehlte — BEHOBEN 2026-10-09.**
+  `WELCOME` trug nur `seed`/`preset` (nach 9 Kratern 3 082 abweichende Zellen).
+  *Fix:* `CollisionMask` führt ein Krater-Log (`craterLog`), `WELCOME` liefert
+  `craters`, der Client trägt sie nach dem Aufbau ein (`#wendeKraterAn`). Eine
+  Rechenvorschrift für Server und Client (`eachCraterCell`). *Zweiter Fund, gleich
+  behoben:* Online wurde ein Krater nur auf die Zeichenfläche gestanzt — die
+  Bitmap der Zielvorschau blieb unzerstört, die Bahn prallte an längst
+  verschwundenem Boden ab (`applyCraterToTerrain`, auch bei laufendem Spiel).
+  *Test:* `tests/krater-nachlieferung.test.js` (Zellengleichheit Maske und Bitmap;
+  WELCOME beim Reconnect über den echten Server).
+  *Bleibt offen:* der Mahlstrom-Einschnitt (`inset`) wird beim Wiedereinstieg
+  nicht in die Karte nachgezogen; ein Terrain-Hash im Vollsnapshot als Prüfung
+  fehlt weiterhin.
 - [ ] **P1 — Server-Tick-Spitzen durch die Geschütz-Zielsuche.**
   `aimTurret` rechnet ein Raster aus Kraft × Winkel mit je 900 Schritten und ruft
   in `#simulateTurretPath` zweimal je Schritt `surfaceYAt` (Spaltenscan).
@@ -104,8 +113,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02):
-**1232/1232** grün, Dateizahl **126** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1245/130 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`):
+**1245/1245** grün, Dateizahl **130** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

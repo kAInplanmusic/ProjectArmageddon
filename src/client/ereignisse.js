@@ -191,6 +191,8 @@ export const EREIGNIS_WIRKUNGEN = {
   terrain_destroyed: {
     online: (k, n) => {
       k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
+      // Auch die Karte, gegen die die Zielvorschau rechnet — nicht nur das Bild.
+      k.karte?.krater(n.x, n.y, n.radius || 12);
     },
   },
 
