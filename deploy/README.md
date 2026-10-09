@@ -18,6 +18,7 @@ Die Skripte dazu liegen in `scripts/betrieb/`:
 |---|---|
 | `scripts/betrieb/server-start.sh` | startet `npm run server` **und** die Idle-Bremse; `--print-config` zeigt alle Abschaltparameter, ohne zu starten |
 | `scripts/betrieb/idle-watch.sh` | die Bremse selbst: Leerlauf, Serverlaufzeit, Maschinenlaufzeit |
+| `scripts/betrieb/snapshot-einrichten.sh` | einmalige Einrichtung der Sicherung auf dem Knoten (prüft das Hetzner-Token, schreibt `betrieb.env`) |
 | `scripts/betrieb/snapshot.sh` | Sicherung bei jedem Stopp (Archiv, optional Hetzner-Abbild); behält die neuesten 3 — `docs/betrieb.md` Abschnitt 8 |
 
 ## Ohne gemieteten Knoten prüfbar

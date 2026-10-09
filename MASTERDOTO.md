@@ -45,6 +45,12 @@ automatisch gelöscht.
   beendet die Kosten". Hetzner Cloud rechnet einen ausgeschalteten Server weiter ab,
   bis er GELÖSCHT ist (Hetzner-FAQ, per Websuche bestätigt 2026-10-09). Doku in
   `docs/betrieb.md` Abschnitt 8 und im INSTANZ-Dokument berichtigt.
+- [x] `scripts/betrieb/snapshot-einrichten.sh` (2026-10-09): Einrichtung auf dem
+  Knoten in einem Aufruf — schreibt `betrieb.env` (600) ohne doppelte Zeilen, prüft das
+  Hetzner-Token per Leseabfrage und den Servernamen, bevor etwas gespeichert wird,
+  liest die Datei nie per `source`, gibt das Token nie aus; Trockenlauf, echtes
+  Abbild erst mit `--erstes-abbild`. Anleitung Schritt für Schritt in
+  `docs/betrieb.md` Abschnitt 8. Tests: 3 weitere in `tests/snapshot-skript.test.js` (12).
 - [ ] **Offen / Entscheidung:** (a) Erste Probe auf dem Knoten
   (`--trocken`, dann echt, dann `systemctl stop` und Journalzeile). (b) Die
   Cloud-Ebene ist nicht gegen echtes Hetzner getestet (nur Platzhalter). (c) Wer
@@ -184,8 +190,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1267/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1267/1267** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1270/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
+**1270/1270** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

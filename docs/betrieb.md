@@ -236,18 +236,79 @@ da; das Archiv allein reicht dafür nicht. Das automatische **Löschen des Serve
 macht dieses Skript bewusst nicht** — das ist eine unumkehrbare Handlung und
 bleibt bei dir (oder einer eigenen, ausdrücklich eingerichteten Automation).
 
-### Einrichten (auf dem Knoten, einmalig)
+### Einrichten (auf dem Knoten, einmalig) — Schritt für Schritt
 
-1. `scripts/betrieb/snapshot.sh --print-config` — zeigt, was gelten würde.
-2. `/etc/projectarmageddon/betrieb.env` (Rechte 600, Besitzer root) um die
-   `PA_SNAPSHOT_*`-Zeilen aus `deploy/betrieb.env.example` ergänzen. Für die
-   Cloud-Ebene: `PA_SNAPSHOT_CLOUD=yes`, `PA_HCLOUD_SERVER=<Name>`,
-   `HCLOUD_TOKEN=<Projekt-Token>`. Das Token gehört **nur** in diese Datei.
-3. `hcloud` installieren (nur für die Cloud-Ebene).
-4. Probe: `sudo -u pa scripts/betrieb/snapshot.sh --trocken`, dann echt:
-   `scripts/betrieb/snapshot.sh --grund "Probe"` und `ls -l /var/lib/projectarmageddon/snapshots`.
-5. Nachweis, dass der Dienst sichert: `systemctl stop projectarmageddon` und
-   danach `journalctl -u projectarmageddon -n 20` — die Zeile „Snapshot erstellt".
+Alles läuft auf dem gemieteten Server, per SSH, als root. Das Skript
+`scripts/betrieb/snapshot-einrichten.sh` erledigt die Handarbeit und ist beliebig oft
+wiederholbar.
+
+**Nur Archiv (Standard, kein Hetzner-Zugang nötig):**
+
+```bash
+sudo /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh
+```
+
+Das trägt die Einstellungen in `/etc/projectarmageddon/betrieb.env` ein (Rechte 600),
+zeigt die geltende Konfiguration und macht einen Trockenlauf. Es erzeugt noch nichts.
+
+**Mit Cloud-Abbild:**
+
+1. In der Hetzner-Console: Projekt öffnen → **Security** → **API tokens** →
+   *Generate API token* → Name z. B. `projectarmageddon-snapshot`, Rechte
+   **Read & Write** → Token kopieren (wird nur einmal angezeigt).
+2. Den **genauen Servernamen** aus der Console notieren (Spalte „Name").
+3. Auf dem Knoten:
+
+   ```bash
+   sudo PA_HCLOUD_SERVER=<Servername> /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh --cloud
+   ```
+
+   Das Skript installiert `hcloud` (per apt, falls möglich), fragt das Token
+   **verdeckt** ab, prüft es mit einer reinen Leseabfrage (`hcloud server list`),
+   prüft, dass der Servername im Projekt existiert, und schreibt erst dann alles
+   in `betrieb.env`. Bei falschem Token oder Namen wird **nichts gespeichert**.
+4. Erstes echtes Abbild, unter Aufsicht:
+
+   ```bash
+   sudo /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh --cloud --erstes-abbild
+   ```
+
+   Danach in der Console unter *Servers → <Server> → Snapshots* kontrollieren:
+   Das Abbild trägt das Label `projectarmageddon-snapshot=auto`.
+5. Nachweis, dass der Dienst beim Stoppen sichert:
+
+   ```bash
+   sudo systemctl stop projectarmageddon
+   sudo journalctl -u projectarmageddon -n 30 | grep -i snapshot
+   ls -l /var/lib/projectarmageddon/snapshots
+   ```
+
+   Erwartet: die Zeile „Snapshot erstellt" und eine `.tar.gz` mit `.sha256`.
+
+### Der Ablauf zum Geldsparen (Abbild → löschen → neu)
+
+Das Skript löscht den Server **nie** selbst. Von Hand:
+
+1. Nach dem Spielen sichert die Idle-Bremse (Archiv + Cloud-Abbild, wenn an).
+   Kontrolle: `hcloud image list --type snapshot --selector projectarmageddon-snapshot=auto`
+   zeigt das neueste Abbild mit Datum.
+2. **Erst wenn das neue Abbild dasteht:** Server in der Console löschen (oder
+   `hcloud server delete <Name>`). Ab hier fallen keine Serverkosten mehr an, nur
+   noch die Abbilder.
+3. Zum nächsten Spiel:
+
+   ```bash
+   hcloud image list --type snapshot --selector projectarmageddon-snapshot=auto   # neueste ID merken
+   hcloud server create --name <Servername> --type <Typ> --image <ID> --location <Ort> --ssh-key <Key>
+   ```
+
+   Der neue Server startet mit dem Stand des Abbilds: Spiel, Spielstände, Replays,
+   Konfiguration. Die **IP-Adresse ist neu**, außer eine eigene „Primary IP" ist
+   angelegt und wird zugewiesen.
+
+Achtung: Das Abbild enthält `betrieb.env` **mit dem Token**. Wer Zugriff auf deine
+Abbilder hat, hat damit auch das Token — im Hetzner-Projekt keine fremden Nutzer
+einladen, und das Token bei Verdacht sofort in der Console löschen.
 
 ### Zurückspielen
 

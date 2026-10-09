@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -251,5 +251,87 @@ ${schlaegtFehl ? 'exit 1' : 'exit 0'}
     } finally {
       rmSync(env.wurzel, { recursive: true, force: true });
     }
+  }
+});
+
+// ------------------------------------------------------------ Einrichtung auf dem Knoten
+
+const EINRICHTEN = join(process.cwd(), 'scripts/betrieb/snapshot-einrichten.sh');
+
+function einrichten(env, args, extra = {}, { listeFehler = false } = {}) {
+  const bin = join(env.wurzel, 'bin');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, 'hcloud'), `#!/usr/bin/env bash
+if [ "$1 $2" = "server list" ]; then ${listeFehler ? 'exit 1' : 'printf "spiel-1\\nanderer\\n"; exit 0'}; fi
+exit 0
+`);
+  chmodSync(join(bin, 'hcloud'), 0o755);
+  const etc = join(env.wurzel, 'etc');
+  const r = spawnSync('bash', [EINRICHTEN, ...args], {
+    env: {
+      PATH: `${bin}:${process.env.PATH}`,
+      PA_ETC: etc,
+      PA_SNAPSHOT_DIR: env.snapshots,
+      PA_STATE_DIR: env.zustand,
+      PA_SYSTEMD_UNIT: 'gibt-es-nicht.service',
+      ...extra,
+    },
+    encoding: 'utf8',
+    stdin: 'ignore',
+  });
+  return { r, etc, datei: join(etc, 'betrieb.env') };
+}
+
+test('Einrichtung ohne Cloud: Archiv-Ebene eingetragen, Cloud aus, Rechte 600', () => {
+  const env = umgebung();
+  try {
+    const { r, datei } = einrichten(env, []);
+    assert.equal(r.status, 0, r.stderr);
+    const inhalt = readFileSync(datei, 'utf8');
+    assert.match(inhalt, /^PA_SNAPSHOT_KEEP=3$/m);
+    assert.match(inhalt, /^PA_SNAPSHOT_CLOUD=no$/m);
+    assert.equal(statSync(datei).mode & 0o777, 0o600);
+    assert.equal(archive(env.snapshots).length, 0, 'ohne --erstes-abbild wird nichts erzeugt');
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('Einrichtung mit Cloud: Token geprüft und NUR in der Datei, zweiter Lauf ohne Doppelzeilen', () => {
+  const env = umgebung();
+  try {
+    const extra = { HCLOUD_TOKEN: 'sehr$geheim"token', PA_HCLOUD_SERVER: 'spiel-1' };
+    const { r, datei } = einrichten(env, ['--cloud'], extra);
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr + r.stdout, /sehr\$geheim/, 'das Token wird nie ausgegeben');
+    let inhalt = readFileSync(datei, 'utf8');
+    assert.match(inhalt, /^PA_SNAPSHOT_CLOUD=yes$/m);
+    assert.match(inhalt, /^PA_HCLOUD_SERVER=spiel-1$/m);
+    assert.ok(inhalt.includes('HCLOUD_TOKEN=sehr$geheim"token'), 'Sonderzeichen bleiben unversehrt');
+    assert.equal(statSync(datei).mode & 0o777, 0o600);
+
+    const zweiter = einrichten(env, ['--cloud'], extra);
+    assert.equal(zweiter.r.status, 0, zweiter.r.stderr);
+    inhalt = readFileSync(datei, 'utf8');
+    assert.equal(inhalt.split('\n').filter(z => z.startsWith('PA_SNAPSHOT_KEEP=')).length, 1);
+    assert.equal(inhalt.split('\n').filter(z => z.startsWith('HCLOUD_TOKEN=')).length, 1);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('Einrichtung: falscher Servername oder abgelehntes Token -> nichts gespeichert', () => {
+  const env = umgebung();
+  try {
+    const falscherName = einrichten(env, ['--cloud'], { HCLOUD_TOKEN: 'tok', PA_HCLOUD_SERVER: 'gibt-es-nicht' });
+    assert.notEqual(falscherName.r.status, 0);
+    assert.match(falscherName.r.stderr, /spiel-1/, 'die vorhandenen Server werden genannt');
+    assert.doesNotMatch(readFileSync(falscherName.datei, 'utf8'), /HCLOUD_TOKEN/);
+
+    const abgelehnt = einrichten(env, ['--cloud'], { HCLOUD_TOKEN: 'tok', PA_HCLOUD_SERVER: 'spiel-1' }, { listeFehler: true });
+    assert.notEqual(abgelehnt.r.status, 0);
+    assert.doesNotMatch(readFileSync(abgelehnt.datei, 'utf8'), /HCLOUD_TOKEN/);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
   }
 });
