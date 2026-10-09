@@ -251,64 +251,71 @@ sudo /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh
 Das trägt die Einstellungen in `/etc/projectarmageddon/betrieb.env` ein (Rechte 600),
 zeigt die geltende Konfiguration und macht einen Trockenlauf. Es erzeugt noch nichts.
 
-**Mit Cloud-Abbild:**
+**Cloud-Abbild — zwei Wege. Das Token liegt in keinem Fall auf der Platte des Servers.**
 
-1. In der Hetzner-Console: Projekt öffnen → **Security** → **API tokens** →
-   *Generate API token* → Name z. B. `projectarmageddon-snapshot`, Rechte
-   **Read & Write** → Token kopieren (wird nur einmal angezeigt).
-2. Den **genauen Servernamen** aus der Console notieren (Spalte „Name").
-3. Auf dem Knoten:
+Hintergrund: Ein Hetzner-Abbild ist eine Kopie der ganzen Platte. Stünde das Token in
+`betrieb.env`, steckte es in jedem Abbild und in jedem daraus erstellten Server. Deshalb
+gilt: **kein Token auf der Platte.** `snapshot.sh` verweigert das Cloud-Abbild sogar,
+solange in `betrieb.env` ein `HCLOUD_TOKEN` steht.
 
-   ```bash
-   sudo PA_HCLOUD_SERVER=<Servername> /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh --cloud
-   ```
+| | Weg A — von deinem Rechner (empfohlen) | Weg B — vom Server aus |
+|---|---|---|
+| Token liegt | nur auf deinem Rechner (`hcloud context`) | im Arbeitsspeicher des Servers (`/run`, tmpfs) |
+| Vorher nötig | nichts auf dem Server | nach jedem Start einmal `token-setzen.sh` (30 s per SSH) |
+| Wann das Abbild entsteht | du startest es nach dem Spiel | automatisch vor dem Abschalten (Idle-Bremse) |
+| Vergisst du den Schritt | kein Abbild — Server einfach nicht löschen | kein Abbild, die Bremse schaltet trotzdem ab (Kosten); im Journal steht der Grund |
 
-   Das Skript installiert `hcloud` (per apt, falls möglich), fragt das Token
-   **verdeckt** ab, prüft es mit einer reinen Leseabfrage (`hcloud server list`),
-   prüft, dass der Servername im Projekt existiert, und schreibt erst dann alles
-   in `betrieb.env`. Bei falschem Token oder Namen wird **nichts gespeichert**.
-4. Erstes echtes Abbild, unter Aufsicht:
+**Weg A (empfohlen) — auf deinem Rechner:**
 
-   ```bash
-   sudo /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh --cloud --erstes-abbild
-   ```
-
-   Danach in der Console unter *Servers → <Server> → Snapshots* kontrollieren:
-   Das Abbild trägt das Label `projectarmageddon-snapshot=auto`.
-5. Nachweis, dass der Dienst beim Stoppen sichert:
+1. `hcloud` installieren und einmal anmelden: Hetzner-Console → Projekt → *Security* →
+   *API tokens* → Token mit **Read & Write** erzeugen, dann `hcloud context create projectarmageddon`
+   (das Token wird nur lokal gespeichert).
+2. Nach dem Spiel — der Server soll danach weg:
 
    ```bash
-   sudo systemctl stop projectarmageddon
-   sudo journalctl -u projectarmageddon -n 30 | grep -i snapshot
-   ls -l /var/lib/projectarmageddon/snapshots
+   scripts/betrieb/abbild-lokal.sh --server <Servername> --ausschalten --loeschen --ja-wirklich
    ```
 
-   Erwartet: die Zeile „Snapshot erstellt" und eine `.tar.gz` mit `.sha256`.
-
-### Der Ablauf zum Geldsparen (Abbild → löschen → neu)
-
-Das Skript löscht den Server **nie** selbst. Von Hand:
-
-1. Nach dem Spielen sichert die Idle-Bremse (Archiv + Cloud-Abbild, wenn an).
-   Kontrolle: `hcloud image list --type snapshot --selector projectarmageddon-snapshot=auto`
-   zeigt das neueste Abbild mit Datum.
-2. **Erst wenn das neue Abbild dasteht:** Server in der Console löschen (oder
-   `hcloud server delete <Name>`). Ab hier fallen keine Serverkosten mehr an, nur
-   noch die Abbilder.
+   Es fährt den Server sauber herunter, erstellt das Abbild des **ausgeschalteten**
+   Servers (dateisystemkonsistent), prüft, dass es `available` ist, löscht ältere
+   Abbilder (die neuesten 3 bleiben) und löscht erst **dann** den Server. Ohne
+   `--loeschen` bleibt der Server stehen. Mit `--trocken` zeigt es nur, was es täte.
 3. Zum nächsten Spiel:
 
    ```bash
-   hcloud image list --type snapshot --selector projectarmageddon-snapshot=auto   # neueste ID merken
-   hcloud server create --name <Servername> --type <Typ> --image <ID> --location <Ort> --ssh-key <Key>
+   scripts/betrieb/server-aus-abbild.sh --name <Servername> --typ <Typ> --ort <Ort> --ssh-key <Key>
    ```
 
-   Der neue Server startet mit dem Stand des Abbilds: Spiel, Spielstände, Replays,
-   Konfiguration. Die **IP-Adresse ist neu**, außer eine eigene „Primary IP" ist
-   angelegt und wird zugewiesen.
+   Es nimmt das **neueste** Abbild und verweigert, wenn der Name schon vergeben ist.
 
-Achtung: Das Abbild enthält `betrieb.env` **mit dem Token**. Wer Zugriff auf deine
-Abbilder hat, hat damit auch das Token — im Hetzner-Projekt keine fremden Nutzer
-einladen, und das Token bei Verdacht sofort in der Console löschen.
+**Weg B — auf dem Server, Token nur im Arbeitsspeicher:**
+
+```bash
+sudo PA_HCLOUD_SERVER=<Servername> /opt/projectarmageddon/scripts/betrieb/snapshot-einrichten.sh --cloud
+```
+
+Das Skript prüft das Token (reine Leseabfrage) und den Servernamen, legt das Token
+**nur in `/run`** ab (`token-setzen.sh`) und entfernt ein früher gespeichertes
+`HCLOUD_TOKEN` aus `betrieb.env`. Nach **jedem Neustart** des Servers ist das Token
+weg und muss mit `sudo scripts/betrieb/token-setzen.sh` neu gesetzt werden.
+`token-setzen.sh` weigert sich, auf eine Platte zu schreiben.
+
+**Kontrolle (beide Wege):** In der Console unter *Servers → Snapshots* trägt das
+Abbild das Label `projectarmageddon-snapshot=auto`. Dass der Dienst beim Stoppen
+das Archiv anlegt:
+
+```bash
+sudo systemctl stop projectarmageddon
+sudo journalctl -u projectarmageddon -n 30 | grep -i snapshot
+ls -l /var/lib/projectarmageddon/snapshots
+```
+
+### Falls ein Token je auf der Platte lag (Altlast)
+
+Abbilder, die damals entstanden, können es enthalten (auch gelöschte Dateien lassen
+sich aus einem Plattenabbild unter Umständen wiederherstellen). Dann: Token in der
+Hetzner-Console **löschen**, ein neues erzeugen, und die alten Abbilder löschen. Das
+Einrichtungsskript meldet diesen Fall, wenn es ein Token in `betrieb.env` findet.
 
 ### Zurückspielen
 
