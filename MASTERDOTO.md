@@ -176,6 +176,15 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   nur noch den Takt ab (der Zustand wurde nie gelesen). Server-Tick 0,104 →
   0,086 ms (−17 %). Die zweite Berechnung (Rückgabewert von `match.step()`)
   bleibt, weil Aufrufer sie nutzen könnten.
+- [x] **Browser-Beleg für den Terrain-Abgleich (2026-10-09).** Die Entscheidungslogik war nur
+  über Hilfsfunktionen getestet. `tests/e2e/terrain-abgleich.spec.mjs` (2 Tests, echter
+  Browser + echter Server): (1) eine absichtlich verfälschte Client-Karte wird am
+  Hash erkannt, steht im HUD-Protokoll und wird neu aufgebaut; (2) nach einem Schuss und
+  gekapptem Socket (automatischer Wiedereinstieg mit Token) gleicht die Client-Karte dem
+  Server, **ohne** dass der Hash eine Abweichung melden musste. *Gegenprobe
+  (Mutation):* Krater-Nachlieferung abgeschaltet -> Test 2 rot (der Hash heilt die
+  Karte zwar, meldet aber die Abweichung — also zwei unabhängige Sicherungen);
+  `requestTerrain` abgeschaltet -> Test 1 rot.
 - [ ] **P2 — Rendering auf CPU-Hardware messen (Teil erledigt).** In der Sandbox
   (Software-Rendering, headless) liegt ein Frame bei 50–83 ms. Der CPU-Profiler
   zeigt: nur ~4 % davon sind JavaScript (`zeichneElement` 0,4 %, `#drawWater`
