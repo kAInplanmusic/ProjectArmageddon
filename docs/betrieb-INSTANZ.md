@@ -212,8 +212,14 @@ Ausgabe (leer):
       auch bei nie gestartetem Server greift, aus)
 - [ ] **LÜCKE** `PA_MAX_RUNTIME_MINUTES` bestätigen oder ändern
 - [ ] **LÜCKE** `PA_IDLE_MINUTES` bestätigen oder ändern
-- [ ] **LÜCKE** `PA_ACTION`: `stop` oder `poweroff`. Nur `poweroff` beendet die
-      Kosten. Bei `poweroff` zusätzlich `PA_POWEROFF_CONFIRM=yes`.
+- [ ] **LÜCKE** `PA_ACTION`: `stop` oder `poweroff`. `poweroff` schaltet den
+      Knoten ab, **beendet bei Hetzner aber die Kosten nicht** (abgerechnet wird, bis
+      der Server GELÖSCHT ist, siehe `docs/betrieb.md` Abschnitt 8). Bei `poweroff`
+      zusätzlich `PA_POWEROFF_CONFIRM=yes`.
+- [ ] **LÜCKE** Sicherung: `PA_SNAPSHOT_KEEP` bestätigen (Standard 3);
+      Cloud-Abbild ja/nein (`PA_SNAPSHOT_CLOUD`), `PA_HCLOUD_SERVER`, `HCLOUD_TOKEN`
+      in `betrieb.env` (Rechte 600); Preis je GB und Monat eintragen; Nachweis
+      „Snapshot erstellt" aus dem Journal (Abschnitt 8, Schritt 5).
 - [ ] **LÜCKE** Hostname/Benutzer auf dem Knoten (die Platzhalter
       `/opt/projectarmageddon` und `pa` in `deploy/systemd/` ersetzen)
 - [ ] **LÜCKE** Zweiter Alarm außerhalb des Knotens (Abschnitt 1 „Kosten")

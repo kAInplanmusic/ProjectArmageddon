@@ -84,6 +84,7 @@ PA_BREMSE_DATEI="${PA_BREMSE_DATEI:-}"
 PA_SERVER_PID="${PA_SERVER_PID:-}"
 PA_INTERVAL_SECONDS="${PA_INTERVAL_SECONDS:-30}"
 PA_DRY_RUN="${PA_DRY_RUN:-0}"
+PA_SNAPSHOT_SKRIPT="${PA_SNAPSHOT_SKRIPT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/snapshot.sh}"
 
 # Ergebnis des Durchlaufs (überlebt als globale Größe, damit die Funktionen
 # unter `set -e` nicht als „Fehler" hochblubbern).
@@ -209,6 +210,16 @@ bremse() { # $1 Grund, $2 Beleg
 
   zustand_schreiben last-brake "$(date -Is) | $grund | $beleg"
   stoppe_server || protokoll "  ! stoppe_server meldete einen Fehler"
+
+  # Cloud-Abbild VOR dem Abschalten (nur bei PA_SNAPSHOT_CLOUD=yes). Das lokale
+  # Archiv hat schon der Dienst selbst beim Stoppen angelegt (ExecStopPost). Ein
+  # Fehlschlag verhindert das Abschalten NICHT — die Kosten laufen weiter, und die
+  # alten Abbilder bleiben ohnehin unberührt.
+  if [ "$PA_ACTION" = "poweroff" ] && [ "${PA_SNAPSHOT_CLOUD:-no}" = "yes" ]; then
+    protokoll "  → Cloud-Abbild vor dem Abschalten ($PA_SNAPSHOT_SKRIPT --nur-cloud)"
+    "$PA_SNAPSHOT_SKRIPT" --nur-cloud --grund "Idle-Bremse: $grund" \
+      || protokoll "  ! Cloud-Abbild fehlgeschlagen — Abschalten läuft trotzdem weiter"
+  fi
 
   if [ "$PA_ACTION" = "poweroff" ]; then
     if [ "$PA_POWEROFF_CONFIRM" != "yes" ]; then
