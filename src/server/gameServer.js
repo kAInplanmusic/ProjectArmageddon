@@ -34,6 +34,7 @@ import {
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { ReplayRecorder } from '../engine/replay.js';
+import { TokenBucket, RATE_TRENNEN_NACH } from './rateLimit.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
 
 /*
@@ -375,7 +376,17 @@ class LobbySession {
     // Rate raus, unabhängig davon, wie viele Ticks pro Aufruf liefen.
     this.snapshotAccumulator += elapsed;
     if (this.snapshotAccumulator >= SNAPSHOT_INTERVAL_MS) {
-      this.snapshotAccumulator = 0;
+      /*
+       * Den Rest BEHALTEN statt auf 0 zu setzen.
+       *
+       * Fund (belegt, Audit 2026-10-09): Hier stand `= 0`. Die Prüfung läuft nur
+       * alle 16,7 ms; bei 50 ms Soll griff sie erst im vierten Takt (66,7 ms) und
+       * warf den Überschuss weg — gemessen 65 ms Abstand, also 15 Hz statt der
+       * ausgewiesenen 20 Hz. Mit dem Rest liegt der Schnitt bei 20 Hz. Ein
+       * Rückstau (Server hing) wird gekappt, damit danach kein Stoß folgt.
+       */
+      this.snapshotAccumulator -= SNAPSHOT_INTERVAL_MS;
+      if (this.snapshotAccumulator >= SNAPSHOT_INTERVAL_MS) this.snapshotAccumulator = 0;
       this.broadcastSnapshot();
     }
 
@@ -397,7 +408,16 @@ class LobbySession {
        * warum das so ist.
        */
       this.match.step();
-      this.history.push(this.match.world.tickCount, this.match.getState());
+      /*
+       * Nur der TAKT wird vermerkt, nicht der Zustand.
+       *
+       * Fund (belegt, Audit 2026-10-09): Hier wurde je Tick ein vollständiger
+       * Ansichtszustand gebaut und abgelegt — `getState()` ist rund die Hälfte der
+       * Tickkosten (0,032 von 0,057 ms). Gelesen wird der Zustand nie: die
+       * einzige Abfrage (`#handleInput`) nutzt `history.get(tick)?.tick`, also nur
+       * die Taktnummer für `interpolatedFrom`.
+       */
+      this.history.push(this.match.world.tickCount, null);
     }
     if (this.match.status === 'gameover') this.#finish();
     return this.match.getState();
@@ -1013,6 +1033,8 @@ export class GameServer {
        */
       controlMessagesSent: 0,
       controlMessagesSuppressed: 0,
+      // Nachrichten, die die Mengenbegrenzung je Verbindung verworfen hat.
+      messagesRateLimited: 0,
     };
     /** Optionale Persistenz: null deaktiviert das Speichern vollständig. */
     this.persistence = persistence;
@@ -1540,7 +1562,29 @@ export class GameServer {
   #handleConnection(socket) {
     let context = { lobbyId: null, token: null };
 
+    const mengenGrenze = new TokenBucket();
     socket.on('message', (raw, isBinary) => {
+      /*
+       * Mengenbegrenzung VOR allem anderen — auch vor dem Parsen. Verworfene
+       * Nachrichten bekommen KEINE Antwort (sonst wäre die Fehlermeldung die
+       * Verstärkung); sichtbar wird es über Zähler und Log. Wer dauerhaft
+       * überzieht, wird getrennt.
+       */
+      if (!mengenGrenze.erlaube()) {
+        if (this.metrics) this.metrics.messagesRateLimited += 1;
+        if (mengenGrenze.verworfeneInFolge === 1) {
+          this.logger.warn('rate_limited', 'Nachrichten über der Mengengrenze verworfen', {
+            lobbyId: context.lobbyId,
+          });
+        }
+        if (mengenGrenze.verworfeneInFolge >= RATE_TRENNEN_NACH) {
+          this.logger.warn('rate_limit_disconnect', 'Verbindung wegen Dauerüberlast getrennt', {
+            lobbyId: context.lobbyId,
+          });
+          socket.close(1008, 'Zu viele Nachrichten');
+        }
+        return;
+      }
       /*
        * Binärrahmen vom Client werden verworfen — GRUND und Vermerk.
        *
