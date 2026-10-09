@@ -62,6 +62,9 @@ PA_SNAPSHOT_CLOUD="${PA_SNAPSHOT_CLOUD:-no}"
 PA_HCLOUD_SERVER="${PA_HCLOUD_SERVER:-}"
 PA_HCLOUD_KEEP="${PA_HCLOUD_KEEP:-$PA_SNAPSHOT_KEEP}"
 PA_HCLOUD_LABEL="${PA_HCLOUD_LABEL:-projectarmageddon-snapshot=auto}"
+# Das Token liegt NICHT auf der Platte (sonst steckt es in jedem Abbild), sondern
+# im Arbeitsspeicher: scripts/betrieb/token-setzen.sh
+PA_HCLOUD_TOKEN_DATEI="${PA_HCLOUD_TOKEN_DATEI:-/run/projectarmageddon/hcloud-token}"
 
 MODUS_ARCHIV=1
 MODUS_CLOUD=0
@@ -119,7 +122,7 @@ $PROGRAMM — Parameter (Trockenlauf: es wird NICHTS geschrieben)
   Betriebsdatei        : $PA_SNAPSHOT_ENV_DATEI (Zugangsdaten werden geschwärzt)
   Mindestens frei      : ${PA_SNAPSHOT_MIN_FREI_MB} MB
   Cloud-Abbild         : $PA_SNAPSHOT_CLOUD (Server: ${PA_HCLOUD_SERVER:-LÜCKE}, Label: $PA_HCLOUD_LABEL, behalten: $PA_HCLOUD_KEEP)
-  HCLOUD_TOKEN         : $( [ -n "${HCLOUD_TOKEN:-}" ] && echo "gesetzt" || echo "NICHT gesetzt" )
+  HCLOUD_TOKEN         : $( if [ -n "${HCLOUD_TOKEN:-}" ] || [ -f "$PA_HCLOUD_TOKEN_DATEI" ]; then echo "vorhanden (Arbeitsspeicher: $PA_HCLOUD_TOKEN_DATEI)"; else echo "NICHT gesetzt"; fi )
 TEXT
 }
 
@@ -278,8 +281,26 @@ cloud_snapshot() {
     fehler "Cloud-Abbild gewünscht, aber die hcloud-CLI fehlt — nichts gelöscht"
     return 1
   fi
+  # Token: Umgebung, sonst die Datei im Arbeitsspeicher.
+  if [ -z "${HCLOUD_TOKEN:-}" ] && [ -f "$PA_HCLOUD_TOKEN_DATEI" ]; then
+    local rechte
+    rechte=$(stat -c %a "$PA_HCLOUD_TOKEN_DATEI" 2>/dev/null || echo unbekannt)
+    if [ "$rechte" != "600" ] && [ "$rechte" != "400" ]; then
+      fehler "$PA_HCLOUD_TOKEN_DATEI hat Rechte $rechte (verlangt: 600) — Token wird nicht gelesen"
+      return 1
+    fi
+    HCLOUD_TOKEN=$(tr -d '[:space:]' < "$PA_HCLOUD_TOKEN_DATEI")
+    export HCLOUD_TOKEN
+  fi
   if [ -z "${HCLOUD_TOKEN:-}" ]; then
-    fehler "HCLOUD_TOKEN ist nicht gesetzt — Cloud-Abbild nicht möglich, nichts gelöscht"
+    fehler "kein Hetzner-Token im Arbeitsspeicher ($PA_HCLOUD_TOKEN_DATEI fehlt). Einmal nach dem Start: sudo scripts/betrieb/token-setzen.sh — oder das Abbild von deinem Rechner aus machen: scripts/betrieb/abbild-lokal.sh. Nichts gelöscht."
+    return 1
+  fi
+  # SCHUTZ: Ein Token auf der Platte würde mit ins Abbild kopiert. Dann gibt es kein
+  # Abbild — lieber keins als eins, das den Schlüssel zum Hetzner-Projekt enthält.
+  if [ "${PA_SNAPSHOT_TOKEN_AUF_PLATTE_OK:-no}" != "yes" ] && [ -f "$PA_SNAPSHOT_ENV_DATEI" ] \
+     && grep -Eq '^[[:space:]]*(export[[:space:]]+)?HCLOUD_TOKEN[[:space:]]*=[[:space:]]*[^[:space:]]' "$PA_SNAPSHOT_ENV_DATEI"; then
+    fehler "In $PA_SNAPSHOT_ENV_DATEI steht ein HCLOUD_TOKEN — es käme in das Abbild. Abbruch. Zeile entfernen und das Token neu erzeugen (siehe docs/betrieb.md Abschnitt 8), nichts gelöscht."
     return 1
   fi
   if [ -z "$PA_HCLOUD_SERVER" ]; then

@@ -12,13 +12,15 @@ import { join } from 'node:path';
  */
 const SKRIPT = join(process.cwd(), 'scripts/betrieb/snapshot.sh');
 
-function umgebung() {
+function umgebung({ tokenInDatei = true } = {}) {
   const wurzel = mkdtempSync(join(tmpdir(), 'pa-snap-'));
   const zustand = join(wurzel, 'zustand');
   mkdirSync(zustand, { recursive: true });
   writeFileSync(join(zustand, 'lobbies.json'), '{"lobbies":["wichtig"]}');
   const envDatei = join(wurzel, 'betrieb.env');
-  writeFileSync(envDatei, 'PORT=3000\nHCLOUD_TOKEN=streng-geheim\nSERVER_API_KEY = auch-geheim\n');
+  writeFileSync(envDatei, tokenInDatei
+    ? 'PORT=3000\nHCLOUD_TOKEN=streng-geheim\nSERVER_API_KEY = auch-geheim\n'
+    : 'PORT=3000\nSERVER_API_KEY = auch-geheim\n');
   return { wurzel, zustand, envDatei, snapshots: join(zustand, 'snapshots') };
 }
 
@@ -151,7 +153,7 @@ exit 0
 }
 
 test('Cloud-Abbild: erstellt, dann nur die ältesten über N gelöscht (nach ID)', () => {
-  const env = umgebung();
+  const env = umgebung({ tokenInDatei: false });
   try {
     const { bin, logDatei } = hcloudPlatzhalter(env.wurzel);
     const r = lauf(env, ['--nur-cloud', '--grund', 'Test'], {
@@ -173,7 +175,7 @@ test('Cloud-Abbild: erstellt, dann nur die ältesten über N gelöscht (nach ID)
 });
 
 test('Cloud-Abbild schlägt fehl: es wird NICHTS gelöscht', () => {
-  const env = umgebung();
+  const env = umgebung({ tokenInDatei: false });
   try {
     const { bin, logDatei } = hcloudPlatzhalter(env.wurzel, { erstellenSchlaegtFehl: true });
     const r = lauf(env, ['--nur-cloud'], {
@@ -191,7 +193,7 @@ test('Cloud-Abbild schlägt fehl: es wird NICHTS gelöscht', () => {
 });
 
 test('Cloud-Abbild ohne Token oder Servernamen: Fehler, nichts gelöscht', () => {
-  const env = umgebung();
+  const env = umgebung({ tokenInDatei: false });
   try {
     const { bin, logDatei } = hcloudPlatzhalter(env.wurzel);
     const ohneToken = lauf(env, ['--nur-cloud'], { PATH: `${bin}:${process.env.PATH}`, PA_HCLOUD_SERVER: 's' });
@@ -274,6 +276,8 @@ exit 0
       PA_SNAPSHOT_DIR: env.snapshots,
       PA_STATE_DIR: env.zustand,
       PA_SYSTEMD_UNIT: 'gibt-es-nicht.service',
+      PA_TOKEN_DATEI: join(env.wurzel, 'ram', 'hcloud-token'),
+      PA_TOKEN_PLATTE_OK: 'yes',
       ...extra,
     },
     encoding: 'utf8',
@@ -307,14 +311,18 @@ test('Einrichtung mit Cloud: Token geprüft und NUR in der Datei, zweiter Lauf o
     let inhalt = readFileSync(datei, 'utf8');
     assert.match(inhalt, /^PA_SNAPSHOT_CLOUD=yes$/m);
     assert.match(inhalt, /^PA_HCLOUD_SERVER=spiel-1$/m);
-    assert.ok(inhalt.includes('HCLOUD_TOKEN=sehr$geheim"token'), 'Sonderzeichen bleiben unversehrt');
+    assert.ok(!inhalt.includes('sehr$geheim'), 'das Token steht NICHT in der betrieb.env (sie steckt in jedem Abbild)');
+    assert.doesNotMatch(inhalt, /HCLOUD_TOKEN/);
     assert.equal(statSync(datei).mode & 0o777, 0o600);
+    const tokenDatei = join(env.wurzel, 'ram', 'hcloud-token');
+    assert.equal(readFileSync(tokenDatei, 'utf8').trim(), 'sehr$geheim"token', 'Sonderzeichen bleiben unversehrt');
+    assert.equal(statSync(tokenDatei).mode & 0o777, 0o600);
 
     const zweiter = einrichten(env, ['--cloud'], extra);
     assert.equal(zweiter.r.status, 0, zweiter.r.stderr);
     inhalt = readFileSync(datei, 'utf8');
     assert.equal(inhalt.split('\n').filter(z => z.startsWith('PA_SNAPSHOT_KEEP=')).length, 1);
-    assert.equal(inhalt.split('\n').filter(z => z.startsWith('HCLOUD_TOKEN=')).length, 1);
+    assert.equal(inhalt.split('\n').filter(z => z.startsWith('HCLOUD_TOKEN=')).length, 0);
   } finally {
     rmSync(env.wurzel, { recursive: true, force: true });
   }
@@ -331,6 +339,220 @@ test('Einrichtung: falscher Servername oder abgelehntes Token -> nichts gespeich
     const abgelehnt = einrichten(env, ['--cloud'], { HCLOUD_TOKEN: 'tok', PA_HCLOUD_SERVER: 'spiel-1' }, { listeFehler: true });
     assert.notEqual(abgelehnt.r.status, 0);
     assert.doesNotMatch(readFileSync(abgelehnt.datei, 'utf8'), /HCLOUD_TOKEN/);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+// ------------------------------------------------ Token nie auf der Platte / nie im Abbild
+
+test('Ein HCLOUD_TOKEN in der Betriebsdatei verhindert das Cloud-Abbild (es käme ins Abbild)', () => {
+  const env = umgebung({ tokenInDatei: true });
+  try {
+    const { bin, logDatei } = hcloudPlatzhalter(env.wurzel);
+    const r = lauf(env, ['--nur-cloud'], {
+      PATH: `${bin}:${process.env.PATH}`,
+      HCLOUD_TOKEN: 'aus-der-umgebung',
+      PA_HCLOUD_SERVER: 'spiel-1',
+    });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /käme in das Abbild/);
+    assert.ok(!existsSync(logDatei), 'hcloud wurde nicht aufgerufen — kein Abbild mit Schlüssel darin');
+    // Ausdrücklich erlaubt (z. B. für eine Notlage) geht es.
+    const erlaubt = lauf(env, ['--nur-cloud'], {
+      PATH: `${bin}:${process.env.PATH}`,
+      HCLOUD_TOKEN: 'aus-der-umgebung',
+      PA_HCLOUD_SERVER: 'spiel-1',
+      PA_SNAPSHOT_TOKEN_AUF_PLATTE_OK: 'yes',
+    });
+    assert.equal(erlaubt.status, 0, erlaubt.stderr);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('Das Token aus der Arbeitsspeicher-Datei wird gelesen — aber nur mit Rechten 600', () => {
+  const env = umgebung({ tokenInDatei: false });
+  try {
+    const { bin, logDatei } = hcloudPlatzhalter(env.wurzel);
+    const tokenDatei = join(env.wurzel, 'token');
+    writeFileSync(tokenDatei, 'aus-der-datei\n');
+    chmodSync(tokenDatei, 0o644);
+    const gemeinsam = { PATH: `${bin}:${process.env.PATH}`, PA_HCLOUD_SERVER: 'spiel-1', PA_HCLOUD_TOKEN_DATEI: tokenDatei };
+    const zuOffen = lauf(env, ['--nur-cloud'], gemeinsam);
+    assert.notEqual(zuOffen.status, 0);
+    assert.match(zuOffen.stderr, /Rechte 644/);
+    assert.ok(!existsSync(logDatei));
+    chmodSync(tokenDatei, 0o600);
+    const ok = lauf(env, ['--nur-cloud'], gemeinsam);
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.match(readFileSync(logDatei, 'utf8'), /server create-image/);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('Einrichtung entfernt ein früher gespeichertes Token aus der Betriebsdatei und warnt', () => {
+  const env = umgebung();
+  try {
+    const etc = join(env.wurzel, 'etc');
+    mkdirSync(etc, { recursive: true });
+    writeFileSync(join(etc, 'betrieb.env'), 'PORT=3000\nHCLOUD_TOKEN=alt-und-gefaehrlich\n', { mode: 0o600 });
+    const { r, datei } = einrichten(env, []);
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(readFileSync(datei, 'utf8'), /alt-und-gefaehrlich|HCLOUD_TOKEN/);
+    assert.match(r.stderr, /LÖSCHEN und ein neues erzeugen/);
+    assert.doesNotMatch(r.stderr + r.stdout, /alt-und-gefaehrlich/);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+const TOKEN_SETZEN = join(process.cwd(), 'scripts/betrieb/token-setzen.sh');
+
+test('token-setzen: verweigert eine Platte, akzeptiert Arbeitsspeicher, --loeschen entfernt', () => {
+  const env = umgebung();
+  try {
+    const { bin } = hcloudPlatzhalter(env.wurzel);
+    const tokenDatei = join(env.wurzel, 'ram', 'token');
+    const basis = { PATH: `${bin}:${process.env.PATH}`, PA_TOKEN_DATEI: tokenDatei };
+    const platte = spawnSync('bash', [TOKEN_SETZEN, '--stdin'], { env: basis, input: 'tok\n', encoding: 'utf8' });
+    // Nur wenn das Testverzeichnis NICHT zufällig tmpfs ist, muss abgelehnt werden.
+    const fs = spawnSync('stat', ['-f', '-c', '%T', env.wurzel], { encoding: 'utf8' }).stdout.trim();
+    if (fs !== 'tmpfs' && fs !== 'ramfs') {
+      assert.notEqual(platte.status, 0);
+      assert.match(platte.stderr, /nicht im Arbeitsspeicher/);
+      assert.ok(!existsSync(tokenDatei));
+    }
+    const erlaubt = spawnSync('bash', [TOKEN_SETZEN, '--stdin'], {
+      env: { ...basis, PA_TOKEN_PLATTE_OK: 'yes' }, input: 'tok\n', encoding: 'utf8',
+    });
+    assert.equal(erlaubt.status, 0, erlaubt.stderr);
+    assert.equal(statSync(tokenDatei).mode & 0o777, 0o600);
+    assert.doesNotMatch(erlaubt.stderr, /tok\b/, 'das Token wird nicht ausgegeben');
+    const weg = spawnSync('bash', [TOKEN_SETZEN, '--loeschen'], { env: basis, encoding: 'utf8' });
+    assert.equal(weg.status, 0);
+    assert.ok(!existsSync(tokenDatei));
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+// ------------------------------------------------ Abbild von deinem Rechner (Token bleibt dort)
+
+/** Zustandsbehafteter Platzhalter: Server-Status, Abbilder, Aufrufprotokoll. */
+function lokalerPlatzhalter(wurzel, { anfangsStatus = 'off', abbildStatus = 'available', abbilder = [11, 12, 13, 14, 15], erstellenFehler = false } = {}) {
+  const bin = join(wurzel, 'lbin');
+  mkdirSync(bin, { recursive: true });
+  const log = join(wurzel, 'lokal.log');
+  const status = join(wurzel, 'status');
+  writeFileSync(status, anfangsStatus);
+  writeFileSync(join(bin, 'hcloud'), `#!/usr/bin/env bash
+echo "$@" >> "${log}"
+case "$1 $2" in
+  "server describe") cat "${status}"; exit 0 ;;
+  "server shutdown") echo off > "${status}"; exit 0 ;;
+  "server poweroff") echo off > "${status}"; exit 0 ;;
+  "server create-image") ${erstellenFehler ? 'exit 1' : 'exit 0'} ;;
+  "server delete") exit 0 ;;
+  "server create") exit 0 ;;
+  "image list") printf '${abbilder.join('\\n')}\\n'; exit 0 ;;
+  "image describe") echo "${abbildStatus}"; exit 0 ;;
+  "image delete") exit 0 ;;
+esac
+exit 0
+`);
+  chmodSync(join(bin, 'hcloud'), 0o755);
+  return { bin, log };
+}
+
+const ABBILD_LOKAL = join(process.cwd(), 'scripts/betrieb/abbild-lokal.sh');
+const SERVER_NEU = join(process.cwd(), 'scripts/betrieb/server-aus-abbild.sh');
+const zeilen = datei => readFileSync(datei, 'utf8').trim().split('\n');
+
+test('abbild-lokal: läuft der Server noch, wird nichts getan', () => {
+  const env = umgebung();
+  try {
+    const { bin, log } = lokalerPlatzhalter(env.wurzel, { anfangsStatus: 'running' });
+    const r = spawnSync('bash', [ABBILD_LOKAL, '--server', 's'], { env: { PATH: `${bin}:${process.env.PATH}` }, encoding: 'utf8' });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /läuft/);
+    assert.doesNotMatch(readFileSync(log, 'utf8'), /create-image|delete/);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('abbild-lokal: ausgeschalteter Server -> Abbild, nur die ältesten fallen weg, Server bleibt', () => {
+  const env = umgebung();
+  try {
+    const { bin, log } = lokalerPlatzhalter(env.wurzel);
+    const r = spawnSync('bash', [ABBILD_LOKAL, '--server', 's', '--keep', '3'], { env: { PATH: `${bin}:${process.env.PATH}` }, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    const protokoll = zeilen(log);
+    assert.ok(protokoll.some(z => z.startsWith('server create-image')));
+    assert.deepEqual(protokoll.filter(z => z.startsWith('image delete')).map(z => z.split(' ')[2]).sort(), ['11', '12']);
+    assert.ok(!protokoll.some(z => z.startsWith('server delete')), 'der Server wird ohne --loeschen nicht angefasst');
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('abbild-lokal: --loeschen ohne --ja-wirklich wird abgelehnt; mit beidem erst NACH dem geprüften Abbild', () => {
+  const env = umgebung();
+  try {
+    const a = lokalerPlatzhalter(env.wurzel);
+    const ohne = spawnSync('bash', [ABBILD_LOKAL, '--server', 's', '--loeschen'], { env: { PATH: `${a.bin}:${process.env.PATH}` }, encoding: 'utf8' });
+    assert.notEqual(ohne.status, 0);
+    assert.ok(!existsSync(a.log), 'nicht einmal hcloud wurde aufgerufen');
+
+    const mit = spawnSync('bash', [ABBILD_LOKAL, '--server', 's', '--loeschen', '--ja-wirklich'], { env: { PATH: `${a.bin}:${process.env.PATH}` }, encoding: 'utf8' });
+    assert.equal(mit.status, 0, mit.stderr);
+    const protokoll = zeilen(a.log);
+    assert.ok(protokoll.findIndex(z => z.startsWith('server create-image')) < protokoll.findIndex(z => z.startsWith('server delete')));
+    assert.ok(protokoll.findIndex(z => z.startsWith('image describe')) < protokoll.findIndex(z => z.startsWith('server delete')), 'erst prüfen, dann löschen');
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('abbild-lokal: Abbild fehlgeschlagen oder nicht verfügbar -> Server und alte Abbilder bleiben', () => {
+  const env = umgebung();
+  try {
+    for (const optionen of [{ erstellenFehler: true }, { abbildStatus: 'creating' }]) {
+      rmSync(join(env.wurzel, 'lokal.log'), { force: true });
+      const { bin, log } = lokalerPlatzhalter(env.wurzel, optionen);
+      const r = spawnSync('bash', [ABBILD_LOKAL, '--server', 's', '--loeschen', '--ja-wirklich'], { env: { PATH: `${bin}:${process.env.PATH}` }, encoding: 'utf8' });
+      assert.notEqual(r.status, 0, JSON.stringify(optionen));
+      assert.doesNotMatch(readFileSync(log, 'utf8'), /server delete|image delete/, JSON.stringify(optionen));
+    }
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('abbild-lokal --ausschalten: erst herunterfahren, dann Abbild', () => {
+  const env = umgebung();
+  try {
+    const { bin, log } = lokalerPlatzhalter(env.wurzel, { anfangsStatus: 'running' });
+    const r = spawnSync('bash', [ABBILD_LOKAL, '--server', 's', '--ausschalten'], { env: { PATH: `${bin}:${process.env.PATH}`, PA_WARTE_SEKUNDEN: '6' }, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    const protokoll = zeilen(log);
+    assert.ok(protokoll.findIndex(z => z.startsWith('server shutdown')) < protokoll.findIndex(z => z.startsWith('server create-image')));
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});
+
+test('server-aus-abbild: nimmt das NEUESTE Abbild und verweigert einen vorhandenen Namen', () => {
+  const env = umgebung();
+  try {
+    const { bin, log } = lokalerPlatzhalter(env.wurzel);
+    // Der Platzhalter kennt jeden Namen -> "gibt es schon".
+    const vorhanden = spawnSync('bash', [SERVER_NEU, '--name', 's', '--typ', 'cx22', '--ort', 'nbg1', '--ssh-key', 'k'], { env: { PATH: `${bin}:${process.env.PATH}` }, encoding: 'utf8' });
+    assert.notEqual(vorhanden.status, 0);
+    assert.match(vorhanden.stderr, /schon einen Server/);
+    assert.doesNotMatch(readFileSync(log, 'utf8'), /server create /);
   } finally {
     rmSync(env.wurzel, { recursive: true, force: true });
   }

@@ -9,7 +9,7 @@
 #      keine doppelten Zeilen, fremde Zeilen bleiben)
 #   3. Cloud-Ebene (nur mit --cloud): installiert `hcloud` (wenn möglich), liest das
 #      Token (verdeckt, oder aus HCLOUD_TOKEN), PRÜFT es mit einer reinen Leseabfrage
-#      und schreibt es NUR in die betrieb.env
+#      und legt es NUR im Arbeitsspeicher ab (token-setzen.sh) — nie auf der Platte
 #   4. zeigt die geltende Konfiguration und macht einen Trockenlauf
 #   5. erst mit --erstes-abbild wird ein ECHTES Archiv bzw. Cloud-Abbild erzeugt
 #
@@ -24,7 +24,7 @@
 #   PA_SNAPSHOT_KEEP   wie viele bleiben (Vorgabe 3)
 #   PA_ETC             Konfigurationsordner (Vorgabe /etc/projectarmageddon; für Tests)
 #
-# Das Token wird nie ausgegeben und nie ins Repo geschrieben.
+# Das Token wird nie ausgegeben, nie ins Repo und nie auf die Platte geschrieben.
 
 set -euo pipefail
 
@@ -70,6 +70,21 @@ setze_schluessel() { # $1 Schlüssel, $2 Wert
   ' "$ENV_DATEI" > "$temp"
   mv -- "$temp" "$ENV_DATEI"
   chmod 600 "$ENV_DATEI"
+}
+
+# Entfernt eine Zeile HCLOUD_TOKEN=… aus der betrieb.env. Die Datei wird neu
+# geschrieben, die alte vorher überschrieben (best effort — auf Journaling-
+# Dateisystemen ist Überschreiben keine Garantie: im Zweifel Token neu erzeugen).
+entferne_token_aus_datei() {
+  if ! grep -Eq '^[[:space:]]*(export[[:space:]]+)?HCLOUD_TOKEN[[:space:]]*=' "$ENV_DATEI" 2>/dev/null; then return 0; fi
+  local temp
+  temp=$(mktemp "$ETC/.env.XXXXXX")
+  chmod 600 "$temp"
+  grep -Ev '^[[:space:]]*(export[[:space:]]+)?HCLOUD_TOKEN[[:space:]]*=' "$ENV_DATEI" > "$temp" || true
+  command -v shred >/dev/null 2>&1 && shred -n 1 "$ENV_DATEI" 2>/dev/null || true
+  mv -- "$temp" "$ENV_DATEI"
+  chmod 600 "$ENV_DATEI"
+  protokoll "ACHTUNG: In der betrieb.env stand ein HCLOUD_TOKEN — entfernt. Bereits erstellte Abbilder können es noch enthalten: das Token in der Hetzner-Console LÖSCHEN und ein neues erzeugen."
 }
 
 mkdir -p "$ETC"
@@ -127,10 +142,14 @@ if [ "$CLOUD" = "1" ]; then
 
   setze_schluessel PA_SNAPSHOT_CLOUD yes
   setze_schluessel PA_HCLOUD_SERVER "$server"
-  setze_schluessel HCLOUD_TOKEN "$token"
-  protokoll "Cloud-Ebene eingeschaltet für Server '$server' (Token nur in $ENV_DATEI)."
+  # Das Token kommt NICHT in die betrieb.env (die steckt in jedem Abbild), sondern
+  # in den Arbeitsspeicher. Ein früher dort eingetragenes Token wird entfernt.
+  entferne_token_aus_datei
+  printf '%s\n' "$token" | "$SKRIPT_DIR/token-setzen.sh" --stdin
+  protokoll "Cloud-Ebene eingeschaltet für Server '$server' (Token nur im Arbeitsspeicher)."
 else
   setze_schluessel PA_SNAPSHOT_CLOUD no
+  entferne_token_aus_datei
 fi
 
 # Die Datei wird NICHT mit `source` gelesen (ein Wert mit Sonderzeichen wäre sonst
@@ -139,7 +158,7 @@ export PA_SNAPSHOT_DIR="$SNAPSHOT_DIR" PA_SNAPSHOT_KEEP="$KEEP"
 export PA_SNAPSHOT_LOG_TAGE="${PA_SNAPSHOT_LOG_TAGE:-14}" PA_SNAPSHOT_MIT_ASSETS="${PA_SNAPSHOT_MIT_ASSETS:-no}"
 export PA_SNAPSHOT_ENV_DATEI="$ENV_DATEI"
 if [ "$CLOUD" = "1" ]; then
-  export PA_SNAPSHOT_CLOUD=yes PA_HCLOUD_SERVER="$server" HCLOUD_TOKEN="$token"
+  export PA_SNAPSHOT_CLOUD=yes PA_HCLOUD_SERVER="$server" HCLOUD_TOKEN="$token"  # nur für diesen Prozess
   CLOUD_OPTION="--cloud "
 else
   export PA_SNAPSHOT_CLOUD=no

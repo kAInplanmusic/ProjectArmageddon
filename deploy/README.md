@@ -19,6 +19,9 @@ Die Skripte dazu liegen in `scripts/betrieb/`:
 | `scripts/betrieb/server-start.sh` | startet `npm run server` **und** die Idle-Bremse; `--print-config` zeigt alle Abschaltparameter, ohne zu starten |
 | `scripts/betrieb/idle-watch.sh` | die Bremse selbst: Leerlauf, Serverlaufzeit, Maschinenlaufzeit |
 | `scripts/betrieb/snapshot-einrichten.sh` | einmalige Einrichtung der Sicherung auf dem Knoten (prüft das Hetzner-Token, schreibt `betrieb.env`) |
+| `scripts/betrieb/abbild-lokal.sh` | **auf deinem Rechner:** Server herunterfahren, Hetzner-Abbild, alte löschen, optional Server löschen — das Token verlässt deinen Rechner nie |
+| `scripts/betrieb/server-aus-abbild.sh` | **auf deinem Rechner:** neuen Server aus dem neuesten Abbild erstellen |
+| `scripts/betrieb/token-setzen.sh` | legt das Hetzner-Token nur im Arbeitsspeicher des Servers ab (nie auf der Platte) |
 | `scripts/betrieb/snapshot.sh` | Sicherung bei jedem Stopp (Archiv, optional Hetzner-Abbild); behält die neuesten 3 — `docs/betrieb.md` Abschnitt 8 |
 
 ## Ohne gemieteten Knoten prüfbar
