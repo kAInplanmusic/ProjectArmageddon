@@ -44,7 +44,7 @@ async function matchZuEndeSpielen(page, { seed = 4242 } = {}) {
   return page.evaluate(() => window.__PA__.getState()?.status);
 }
 
-test('Die Übersicht ist von Anfang an da — mit Fortschritt statt leer', async ({ page }) => {
+test('Die Übersicht ist von Anfang an da — mit Fortschritt statt leer @critical', async ({ page }) => {
   /*
    * Wichtig: Vor der ersten Partie zeigt die Liste nicht nichts, sondern jeden
    * Erfolg mit Stand 0 und einem Hinweis. Eine leere Liste wäre für einen neuen
@@ -68,7 +68,7 @@ test('Die Übersicht ist von Anfang an da — mit Fortschritt statt leer', async
   await expect(erste.locator('.erfolg-stand')).not.toBeEmpty();
 });
 
-test('Der Zähler nennt die Muster ausdrücklich', async ({ page }) => {
+test('Der Zähler nennt die Muster ausdrücklich @critical', async ({ page }) => {
   /*
    * Ein Katalog aus Platzhaltern darf nicht wie ein fertiger aussehen. Solange
    * Muster enthalten sind, muss die Anzeige das sagen — sonst liest sich „12 von
@@ -90,7 +90,7 @@ test('Der Zähler nennt die Muster ausdrücklich', async ({ page }) => {
   }
 });
 
-test('Die Stufen sind in der Anzeige vollständig', async ({ page }) => {
+test('Die Stufen sind in der Anzeige vollständig @critical', async ({ page }) => {
   // Die Auswertung liefert die Stufen; die Anzeige muss sie zeigen können. Eine
   // Stufe ohne Beschriftung wäre in der Liste eine leere Stelle.
   await page.goto('/');
@@ -105,7 +105,7 @@ test('Die Stufen sind in der Anzeige vollständig', async ({ page }) => {
   }
 });
 
-test('Eine gespielte Partie schaltet Erfolge frei und meldet sie', async ({ page }) => {
+test('Eine gespielte Partie schaltet Erfolge frei und meldet sie @critical', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -127,7 +127,7 @@ test('Eine gespielte Partie schaltet Erfolge frei und meldet sie', async ({ page
   expect(profil.erfolge.length).toBe(nachher.erreicht);
 });
 
-test('Erreichte Erfolge sind in der Liste als erreicht gekennzeichnet', async ({ page }) => {
+test('Erreichte Erfolge sind in der Liste als erreicht gekennzeichnet @critical', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await matchZuEndeSpielen(page);
@@ -145,7 +145,7 @@ test('Erreichte Erfolge sind in der Liste als erreicht gekennzeichnet', async ({
   expect(erreicht).toBe('erreicht');
 });
 
-test('Die Erfolge überleben einen Neustart der Seite', async ({ page }) => {
+test('Die Erfolge überleben einen Neustart der Seite @critical', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await matchZuEndeSpielen(page);
@@ -162,7 +162,7 @@ test('Die Erfolge überleben einen Neustart der Seite', async ({ page }) => {
   expect((await page.evaluate(() => window.__PA__.erfolge().erreicht))).toBe(vorher.length);
 });
 
-test('Ein einmal erreichter Erfolg bleibt es auch nach dem Zurücksetzen der Zahlen', async ({ page }) => {
+test('Ein einmal erreichter Erfolg bleibt es auch nach dem Zurücksetzen der Zahlen @critical', async ({ page }) => {
   /*
    * Grenzfall, bewusst geprüft: Der Zurücksetzen-Knopf leert die KENNZAHLEN. Er
    * ist NICHT dafür da, Erfolge zu nehmen — wer ihn drückt, um die Statistik zu
@@ -185,7 +185,7 @@ test('Ein einmal erreichter Erfolg bleibt es auch nach dem Zurücksetzen der Zah
   expect(nachReload.length).toBe(erreichtVorher.length);
 });
 
-test('Kein Erfolg verschwindet, wenn die Zahlen zurückgehen', async ({ page }) => {
+test('Kein Erfolg verschwindet, wenn die Zahlen zurückgehen @critical', async ({ page }) => {
   /*
    * `serie_rekord` ist der Fall: Der Rekord steht, aber eine Bedingung über die
    * AKTUELLE Serie könnte wieder darunter fallen. Geprüft wird über die API: Der

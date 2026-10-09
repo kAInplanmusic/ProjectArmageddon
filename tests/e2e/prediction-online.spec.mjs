@@ -110,7 +110,7 @@ async function warteAufEigenenZug(page, timeoutMs = 30_000) {
 }
 
 test.describe('Schussvorhersage online', () => {
-  test('Der eigene Schuss ist SOFORT sichtbar, die Serverantwort löst ihn auf', async ({ page }) => {
+  test('Der eigene Schuss ist SOFORT sichtbar, die Serverantwort löst ihn auf @regression', async ({ page }) => {
     /*
      * Die Serverantwort wird künstlich verzögert. Gemessen wird DANN, ob die
      * Vorhersage bereits steht — bei unverzögertem Netz wäre sie nach wenigen
@@ -224,7 +224,7 @@ test.describe('Schussvorhersage online', () => {
     expect(fehler, `Seitenfehler: ${fehler.join(' | ')}`).toEqual([]);
   });
 
-  test('Klasse, Archetyp und Waffe kommen vom Server — nicht geraten', async ({ page }) => {
+  test('Klasse, Archetyp und Waffe kommen vom Server — nicht geraten @regression', async ({ page }) => {
     /*
      * Die Gegenprobe zum Fund: Der Client darf die Klasse NICHT aus dem
      * Listenindex ableiten. Geprüft wird, dass der Wert aus der
@@ -260,7 +260,7 @@ test.describe('Schussvorhersage online', () => {
     expect(pruefung.imZustand.archetypeId).toBe(pruefung.imBestand.archetypeId);
   });
 
-  test('Ein abgelehnter Schuss lässt keine Bahn stehen', async ({ page }) => {
+  test('Ein abgelehnter Schuss lässt keine Bahn stehen @regression', async ({ page }) => {
     /*
      * Feuern, wenn man NICHT am Zug ist: Der Server lehnt ab. Die Vorhersage
      * darf dann nicht sichtbar bleiben — sonst zeigte die Anzeige eine Bahn für
@@ -279,7 +279,7 @@ test.describe('Schussvorhersage online', () => {
     expect(zustand.active, 'Nach einer Ablehnung darf keine Vorhersage laufen').toBe(false);
   });
 
-  test('Online wird der Klang GERUFEN — der Mischer zählt den Schuss aus dem Serverereignis', async ({ page }) => {
+  test('Online wird der Klang GERUFEN — der Mischer zählt den Schuss aus dem Serverereignis @regression', async ({ page }) => {
     /*
      * ## Der Befund (belegt, 2026-09-27)
      *

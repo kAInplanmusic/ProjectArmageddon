@@ -42,7 +42,7 @@ async function starteMatch(page) {
   );
 }
 
-test('Der Knopf ist im Match sichtbar und im Menü nicht', async ({ page }) => {
+test('Der Knopf ist im Match sichtbar und im Menü nicht @critical', async ({ page }) => {
   await page.goto('/');
 
   const knopf = page.locator('#hud-abort');
@@ -63,7 +63,7 @@ test('Der Knopf ist im Match sichtbar und im Menü nicht', async ({ page }) => {
   await expect(knopf).toBeEnabled();
 });
 
-test('Ein abgelehnter Abbruch lässt das Match weiterlaufen', async ({ page }) => {
+test('Ein abgelehnter Abbruch lässt das Match weiterlaufen @critical', async ({ page }) => {
   await starteMatch(page);
   const knopf = page.locator('#hud-abort');
   await expect(knopf).toBeVisible();
@@ -83,7 +83,7 @@ test('Ein abgelehnter Abbruch lässt das Match weiterlaufen', async ({ page }) =
   await expect(knopf).toBeVisible();
 });
 
-test('Ein bestätigter Abbruch führt ins Menü', async ({ page }) => {
+test('Ein bestätigter Abbruch führt ins Menü @critical', async ({ page }) => {
   await starteMatch(page);
   const knopf = page.locator('#hud-abort');
   await expect(knopf).toBeVisible();
@@ -103,7 +103,7 @@ test('Ein bestätigter Abbruch führt ins Menü', async ({ page }) => {
   expect(match, 'nach dem Abbruch darf kein Match mehr laufen').toBe(null);
 });
 
-test('Die Rückfrage nennt die Folge', async ({ page }) => {
+test('Die Rückfrage nennt die Folge @critical', async ({ page }) => {
   /*
    * Eine Rückfrage „Wirklich?" ohne Angabe der Folge hilft nicht. Geprüft wird,
    * dass der Text sagt, was passiert.
@@ -119,7 +119,7 @@ test('Die Rückfrage nennt die Folge', async ({ page }) => {
   expect(text.toLowerCase()).toContain('verlassen');
 });
 
-test('Die Taste R verhält sich gleich', async ({ page }) => {
+test('Die Taste R verhält sich gleich @critical', async ({ page }) => {
   /*
    * Beide Wege laufen durch dieselbe Methode. Geprüft wird, dass die Taste
    * ebenfalls nachfragt — und bei „Nein" nichts tut.

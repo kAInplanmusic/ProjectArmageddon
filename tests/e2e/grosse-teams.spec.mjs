@@ -40,7 +40,7 @@ async function starteMit(page, teams, einheiten) {
   await expect(page.locator('#menu-overlay')).toBeHidden({ timeout: 15000 });
 }
 
-test('Das Menü bietet genau die Einheiten der Matcharten an — 3, 4 und 5', async ({ page }) => {
+test('Das Menü bietet genau die Einheiten der Matcharten an — 3, 4 und 5 @slow', async ({ page }) => {
   /*
    * Vorher standen dort 1 bis 6. Die 1 widersprach dem Modell („ein Mensch führt
    * ein Team"); die 6 war im Kriegsmodus nicht vorgesehen und ergäbe mit 8 Teams
@@ -60,25 +60,25 @@ test('Das Menü bietet genau die Einheiten der Matcharten an — 3, 4 und 5', as
   expect(texte.join(' ')).toContain('Krieg');
 });
 
-test('Klein: 2 Teams mit 3 Einheiten zeigen 6 Figuren', async ({ page }) => {
+test('Klein: 2 Teams mit 3 Einheiten zeigen 6 Figuren @slow', async ({ page }) => {
   await starteMit(page, 2, 3);
 
   await expect(page.locator('#roster .roster-item')).toHaveCount(6, { timeout: 10_000 });
 });
 
-test('Klein (Maximum): 4 Teams mit 3 Einheiten zeigen 12 Figuren', async ({ page }) => {
+test('Klein (Maximum): 4 Teams mit 3 Einheiten zeigen 12 Figuren @slow', async ({ page }) => {
   await starteMit(page, 4, 3);
 
   await expect(page.locator('#roster .roster-item')).toHaveCount(12, { timeout: 10_000 });
 });
 
-test('Groß: 4 Teams mit 4 Einheiten zeigen 16 Figuren', async ({ page }) => {
+test('Groß: 4 Teams mit 4 Einheiten zeigen 16 Figuren @slow', async ({ page }) => {
   await starteMit(page, 4, 4);
 
   await expect(page.locator('#roster .roster-item')).toHaveCount(16, { timeout: 15_000 });
 });
 
-test('Krieg: 6 Teams mit 5 Einheiten zeigen 30 Figuren und laufen', async ({ page }) => {
+test('Krieg: 6 Teams mit 5 Einheiten zeigen 30 Figuren und laufen @slow', async ({ page }) => {
   /*
    * Die kleinste Kriegs-Matchart (6 × 5 = 30). Nicht nur starten: Bei dreißig
    * Figuren ist die Zugreihenfolge der erste Pfad, der bricht, wenn irgendwo eine
@@ -93,7 +93,7 @@ test('Krieg: 6 Teams mit 5 Einheiten zeigen 30 Figuren und laufen', async ({ pag
   await expect(page.locator('#end-overlay')).toBeHidden();
 });
 
-test('Krieg: der Kader bleibt bei 30 Figuren auf der Spielfläche und ist scrollbar', async ({ page }) => {
+test('Krieg: der Kader bleibt bei 30 Figuren auf der Spielfläche und ist scrollbar @slow', async ({ page }) => {
   /*
    * ## Der Befund (B-6 im Befundregister, A9 im Prüfbericht)
    *
@@ -158,7 +158,7 @@ test('Krieg: der Kader bleibt bei 30 Figuren auf der Spielfläche und ist scroll
     .toBe(true);
 });
 
-test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt mehr als eine Zeile', async ({ page }) => {
+test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt mehr als eine Zeile @slow', async ({ page }) => {
   /*
    * ## Der Befund, den dieser Test festhält (belegt, gemessen in Chrome)
    *
@@ -215,7 +215,7 @@ test('Das Protokoll bleibt bei 30 Figuren AUF der Spielfläche — und zeigt meh
     .toBeGreaterThanOrEqual(8);
 });
 
-test('Das Loadout bietet einen Platz für jede Figur der Partie', async ({ page }) => {
+test('Das Loadout bietet einen Platz für jede Figur der Partie @slow', async ({ page }) => {
   /*
    * Der Folgefehler, den man leicht übersieht: Die Loadout-Felder werden aus
    * Teams × Einheiten aufgebaut. Bliebe die Liste kürzer, könnten die übrigen

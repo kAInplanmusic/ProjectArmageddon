@@ -106,13 +106,13 @@ async function openClient(context, { lobbyId = null, name = 'Tester' } = {}) {
   return page;
 }
 
-test('Server meldet Bereitschaft über /healthz', async () => {
+test('Server meldet Bereitschaft über /healthz @slow @network', async () => {
   const health = await (await fetch(`${SERVER_URL}/healthz`)).json();
   expect(health.status).toBe('ok');
   expect(health.protocol).toBe(PROTOCOL_VERSION);
 });
 
-test('Zwei Browser spielen in derselben Lobby', async ({ browser }) => {
+test('Zwei Browser spielen in derselben Lobby @slow @network', async ({ browser }) => {
   const contextA = await browser.newContext();
   const contextB = await browser.newContext();
 
@@ -170,7 +170,7 @@ test('Zwei Browser spielen in derselben Lobby', async ({ browser }) => {
   }
 });
 
-test('BEIDE Clients sehen die Loot-Kisten', async ({ browser }) => {
+test('BEIDE Clients sehen die Loot-Kisten @slow @network', async ({ browser }) => {
   /*
    * Fund (belegt): Kisten waren online unsichtbar. Der Client setzte in
    * `onlineViewState` fest `crates: []`, und `encodeSnapshot` übertrug Kisten
@@ -222,7 +222,7 @@ test('BEIDE Clients sehen die Loot-Kisten', async ({ browser }) => {
   }
 });
 
-test('Die Kistenangabe flackert nicht und bleibt bei beiden Clients gleich', async ({ browser }) => {
+test('Die Kistenangabe flackert nicht und bleibt bei beiden Clients gleich @slow @network', async ({ browser }) => {
   /*
    * Gegenprobe zur Übertragung. Eine Kiste, die in einem Snapshot fehlt und im
    * nächsten wieder da ist, wäre ein Anzeigefehler: Kisten sind im Delta NICHT
@@ -289,7 +289,7 @@ test('Die Kistenangabe flackert nicht und bleibt bei beiden Clients gleich', asy
   }
 });
 
-test('Client verbindet sich nach Abbruch neu', async ({ browser }) => {
+test('Client verbindet sich nach Abbruch neu @slow @network', async ({ browser }) => {
   const context = await browser.newContext();
   try {
     const page = await openClient(context, { name: 'Cara' });
@@ -311,7 +311,7 @@ test('Client verbindet sich nach Abbruch neu', async ({ browser }) => {
   }
 });
 
-test('Latenz wird laufend gemessen', async ({ browser }) => {
+test('Latenz wird laufend gemessen @slow @network', async ({ browser }) => {
   const context = await browser.newContext();
   try {
     const page = await openClient(context, { name: 'Lena' });
@@ -346,7 +346,7 @@ test('Latenz wird laufend gemessen', async ({ browser }) => {
   }
 });
 
-test('Ping-Intervall lehnt ungültige Werte ab', async ({ browser }) => {
+test('Ping-Intervall lehnt ungültige Werte ab @slow @network', async ({ browser }) => {
   const context = await browser.newContext();
   try {
     const page = await openClient(context, { name: 'Pia' });
@@ -376,7 +376,7 @@ test('Ping-Intervall lehnt ungültige Werte ab', async ({ browser }) => {
 });
 
 
-test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) => {
+test('Waffenliste ist online gefüllt und zeigt Munition @slow @network', async ({ browser }) => {
   // Vorher war `inventory` im Online-Ansichtszustand fest auf [] gesetzt, dazu
   // `ammo: {}` und `activeWeaponId: null`. Folge: Im Mehrspielermodus war die
   // Waffenliste dauerhaft leer und es ließ sich keine Waffe wählen. Der binäre
@@ -460,7 +460,7 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
   }
 });
 
-test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) => {
+test('Waffenwahl ist online nur am eigenen Zug möglich @slow @network', async ({ browser }) => {
   const context = await browser.newContext();
   let zweiter = null;
   try {
@@ -492,7 +492,7 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
   }
 });
 
-test('Online führt ein Mensch ein ganzes Team — drei Einheiten', async ({ browser }) => {
+test('Online führt ein Mensch ein ganzes Team — drei Einheiten @slow @network', async ({ browser }) => {
   /*
    * Der Modus der Matcharten, online geprüft.
    *

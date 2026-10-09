@@ -29,7 +29,7 @@ async function oeffneHilfe(page) {
 }
 
 test.describe('Hilfe-Bereich', () => {
-  test('Die Reiter erscheinen und der erste ist ausgewählt', async ({ page }) => {
+  test('Die Reiter erscheinen und der erste ist ausgewählt @ui', async ({ page }) => {
     await oeffneHilfe(page);
 
     const reiter = page.locator('#hilfe-tabs button');
@@ -48,7 +48,7 @@ test.describe('Hilfe-Bereich', () => {
     await expect(reiter.nth(1)).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('Der Klassen-Reiter zeigt die wirksamen Zahlen aus der Config', async ({ page }) => {
+  test('Der Klassen-Reiter zeigt die wirksamen Zahlen aus der Config @ui', async ({ page }) => {
     await oeffneHilfe(page);
 
     /*
@@ -75,7 +75,7 @@ test.describe('Hilfe-Bereich', () => {
     }
   });
 
-  test('Das Startaufgebot erscheint mit Rolle und konkreter Waffe', async ({ page }) => {
+  test('Das Startaufgebot erscheint mit Rolle und konkreter Waffe @ui', async ({ page }) => {
     /*
      * Der Onboarding-Nutzen an dieser Stelle: Das Startaufgebot einer Klasse war
      * im Menü NIRGENDS zu sehen.
@@ -113,7 +113,7 @@ test.describe('Hilfe-Bereich', () => {
     expect(text).not.toMatch(/Kür der Klasse/);
   });
 
-  test('Die Archetypen zeigen TEMPO, nicht Schaden', async ({ page }) => {
+  test('Die Archetypen zeigen TEMPO, nicht Schaden @ui', async ({ page }) => {
     /*
      * Fund aus dem Codeaudit: `archetype.launch` (früher `damage`) geht als Tempo-Faktor in die
      * Abschussgeschwindigkeit ein und wird NICHT als Schaden angewandt. Eine
@@ -140,7 +140,7 @@ test.describe('Hilfe-Bereich', () => {
       + 'aber nur auf das Tempo').not.toContain('Schaden');
   });
 
-  test('Die Kopplung und die wirkungslosen Werte werden genannt', async ({ page }) => {
+  test('Die Kopplung und die wirkungslosen Werte werden genannt @ui', async ({ page }) => {
     /*
      * Beide Hinweise verlangt der Entwurf ausdrücklich:
      *  - Die Übersicht zeigt neun Kombinationen, im Match sind drei erreichbar.
@@ -157,7 +157,7 @@ test.describe('Hilfe-Bereich', () => {
     expect(text).toMatch(/drag/);
   });
 
-  test('Der Sidegrade-Reiter zeigt je Klasse die Angebote aus der Config', async ({ page }) => {
+  test('Der Sidegrade-Reiter zeigt je Klasse die Angebote aus der Config @ui', async ({ page }) => {
     /*
      * Die Hilfe muss die Sidegrades erklären — sie sind Teil des Onboardings.
      * Geprüft wird gegen die Config, damit eine Änderung an den Sidegrades nicht
@@ -195,7 +195,7 @@ test.describe('Hilfe-Bereich', () => {
     expect(text).toMatch(/Untergrenze/);
   });
 
-  test('Der Loot-Reiter zeigt die Verteilung und die Loot-Grenze', async ({ page }) => {
+  test('Der Loot-Reiter zeigt die Verteilung und die Loot-Grenze @ui', async ({ page }) => {
     await oeffneHilfe(page);
     // Index 3 = Loot (0 Klassen, 1 Sidegrades, 2 Counterplay, 3 Loot, 4 Karte).
     await page.locator('#hilfe-tabs button').nth(3).click();
@@ -222,7 +222,7 @@ test.describe('Hilfe-Bereich', () => {
     expect(text).toContain(`${Math.round(config * 100)} %`);
   });
 
-  test('Der Karten-Reiter zeigt alle acht Geländeformen', async ({ page }) => {
+  test('Der Karten-Reiter zeigt alle acht Geländeformen @ui', async ({ page }) => {
     await oeffneHilfe(page);
     // Index 4 = Karte.
     await page.locator('#hilfe-tabs button').nth(4).click();
@@ -239,7 +239,7 @@ test.describe('Hilfe-Bereich', () => {
     }
   });
 
-  test('Das Umschalten der Reiter wechselt den Inhalt', async ({ page }) => {
+  test('Das Umschalten der Reiter wechselt den Inhalt @ui', async ({ page }) => {
     // Ohne diese Prüfung könnte der Reiterwechsel wirkungslos sein, und alle
     // Tests oben hätten trotzdem den ersten Reiter gesehen.
     //
@@ -290,7 +290,7 @@ test.describe('Hilfe-Bereich', () => {
     expect(zurueck).not.toBe(karte);
   });
 
-  test('Keine Zahlen im Erklärungstext der Anzeige', async ({ page }) => {
+  test('Keine Zahlen im Erklärungstext der Anzeige @ui', async ({ page }) => {
     /*
      * Die Erklärungssätze dürfen keine Spielwerte nennen — sonst gäbe es eine
      * zweite Quelle, die bei einer Balance-Änderung mitwandern müsste. Hier

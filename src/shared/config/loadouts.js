@@ -99,14 +99,14 @@ const kleinste = feld => w => -(w[feld]);
  *
  * Die Kriterien folgen den Klassenwerten aus `classes.js`:
  *
- *  - **scout** (power 0,7 · speed 1,2 · health 0,8): schießt schwach und ist
+ *  - **scout** (power 0,7 · speed 1,2): schießt schwach und ist
  *    beweglich. Er trägt deshalb das *leichte* Besteck — kleinste Fläche,
  *    schnellstes Geschoss, kürzeste Strahlwaffe — und als Kür ein
  *    Bewegungsmittel. `speedFactor` ist der einzige Faktor, den die schwache
  *    Klasse nicht dämpft; er hat deshalb Vorrang beim Direktschuss.
- *  - **heavy** (power 1,0 · health 1,3): robust und langsam. Er darf stehen
+ *  - **heavy** (power 1,0): robust und langsam. Er darf stehen
  *    bleiben und nimmt dafür Wucht: größte Fläche, mehr Schaden.
- *  - **artillery** (power 1,3 · health 0,9): stärkster Schuss, zerbrechlich.
+ *  - **artillery** (power 1,3): stärkster Schuss, zerbrechlich.
  *    Er muss treffen, bevor er getroffen wird — in JEDER Rolle zählt zuerst die
  *    Reichweite.
  */

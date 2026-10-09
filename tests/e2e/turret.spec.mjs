@@ -90,7 +90,7 @@ async function bisRunde(page, zielRunde, maxTakte = 40_000) {
   }, { zielRunde, maxTakte });
 }
 
-test('Die Waffe hat im Browser eine Wirkung', async ({ page }) => {
+test('Die Waffe hat im Browser eine Wirkung @edge', async ({ page }) => {
   // Der Kern: Vorher war `buildEffect('pa_124')` gleich null.
   const stand = await starteMitGeschuetz(page);
   expect(stand.wirkung, 'buildEffect liefert immer noch null').toBeTruthy();
@@ -100,7 +100,7 @@ test('Die Waffe hat im Browser eine Wirkung', async ({ page }) => {
   expect(stand.special?.kind).toBe('turret');
 });
 
-test('Das Geschütz steht im Spielzustand und wird gezeichnet', async ({ page }) => {
+test('Das Geschütz steht im Spielzustand und wird gezeichnet @edge', async ({ page }) => {
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
 
@@ -139,7 +139,7 @@ test('Das Geschütz steht im Spielzustand und wird gezeichnet', async ({ page })
   expect(fehler, `Seitenfehler beim Zeichnen: ${fehler.join(' | ')}`).toEqual([]);
 });
 
-test('Die Anzeige meldet Aufstellen, Feuern und Ablaufen', async ({ page }) => {
+test('Die Anzeige meldet Aufstellen, Feuern und Ablaufen @edge', async ({ page }) => {
   /*
    * Ein Geschütz, das niemand bemerkt, ist keines. Die Meldungen laufen über
    * dasselbe Protokoll wie alle anderen Ereignisse.
@@ -176,7 +176,7 @@ test('Die Anzeige meldet Aufstellen, Feuern und Ablaufen', async ({ page }) => {
   expect(zahl('turret_expired'), 'Kein turret_expired-Ereignis').toBe(1);
 });
 
-test('Nach dem Ablaufen ist kein Geschütz mehr im Zustand', async ({ page }) => {
+test('Nach dem Ablaufen ist kein Geschütz mehr im Zustand @edge', async ({ page }) => {
   await starteMitGeschuetz(page);
   const stand = await bisRunde(page, 8);
 
@@ -184,7 +184,7 @@ test('Nach dem Ablaufen ist kein Geschütz mehr im Zustand', async ({ page }) =>
   expect(stand.turrets.length, 'Ein Geschütz blieb über seine Laufzeit hinaus stehen').toBe(0);
 });
 
-test('Zwei Schüsse in einem Zug sind auch über die Anzeige nicht möglich', async ({ page }) => {
+test('Zwei Schüsse in einem Zug sind auch über die Anzeige nicht möglich @edge', async ({ page }) => {
   /*
    * Der Exploit aus dem Motortest, hier über den Weg, den ein Client nimmt.
    * `fire()` ist die einzige Tür zum Schießen.

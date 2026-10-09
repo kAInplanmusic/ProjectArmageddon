@@ -25,7 +25,7 @@ async function boot(page, { seed = 20260911 } = {}) {
   }, { timeout: 10_000 });
 }
 
-test('Abwerfen per Taste legt eine Kiste ab und entfernt die Waffe', async ({ page }) => {
+test('Abwerfen per Taste legt eine Kiste ab und entfernt die Waffe @regression', async ({ page }) => {
   await boot(page, { seed: 4242 });
 
   const vorher = await page.evaluate(() => {
@@ -66,7 +66,7 @@ test('Abwerfen per Taste legt eine Kiste ab und entfernt die Waffe', async ({ pa
   expect(nachher.gefuehrt).toContain(nachher.aktiv);
 });
 
-test('Die abgeworfene Waffe fliegt und landet aufhebbar', async ({ page }) => {
+test('Die abgeworfene Waffe fliegt und landet aufhebbar @regression', async ({ page }) => {
   await boot(page, { seed: 313 });
 
   const ergebnis = await page.evaluate(() => {
@@ -121,7 +121,7 @@ test('Die abgeworfene Waffe fliegt und landet aufhebbar', async ({ page }) => {
   expect(ergebnis.kisteImZustand).toBe(true);
 });
 
-test('Aufheben einer Abwurfkiste stellt den Munitionsvorrat her', async ({ page }) => {
+test('Aufheben einer Abwurfkiste stellt den Munitionsvorrat her @regression', async ({ page }) => {
   await boot(page, { seed: 5150 });
 
   const ergebnis = await page.evaluate(() => {
@@ -175,7 +175,7 @@ test('Aufheben einer Abwurfkiste stellt den Munitionsvorrat her', async ({ page 
   expect(ergebnis.kisteWeg).toBe(true);
 });
 
-test('Nachladezeit erscheint in der Waffenliste und blockiert den Schuss', async ({ page }) => {
+test('Nachladezeit erscheint in der Waffenliste und blockiert den Schuss @regression', async ({ page }) => {
   await boot(page, { seed: 4711 });
 
   const ergebnis = await page.evaluate(() => {
@@ -216,7 +216,7 @@ test('Nachladezeit erscheint in der Waffenliste und blockiert den Schuss', async
   expect(zweiter.errors.join(' ')).toContain('lädt nach');
 });
 
-test('Voller Vorrat meldet sich und verhindert stillen Verlust', async ({ page }) => {
+test('Voller Vorrat meldet sich und verhindert stillen Verlust @regression', async ({ page }) => {
   await boot(page, { seed: 1212 });
 
   const ergebnis = await page.evaluate(() => {
@@ -265,7 +265,7 @@ test('Voller Vorrat meldet sich und verhindert stillen Verlust', async ({ page }
   await expect(page.locator('#log-list')).toContainText('Vorrat voll');
 });
 
-test('Nach dem Abwerfen ist wieder Platz', async ({ page }) => {
+test('Nach dem Abwerfen ist wieder Platz @regression', async ({ page }) => {
   await boot(page, { seed: 808 });
 
   const ergebnis = await page.evaluate(() => {
@@ -297,7 +297,7 @@ test('Nach dem Abwerfen ist wieder Platz', async ({ page }) => {
   expect(ergebnis.anzahl).toBeLessThan(6);
 });
 
-test('Die Waffennummern steigen, und Taste N trifft die Nummer N', async ({ page }) => {
+test('Die Waffennummern steigen, und Taste N trifft die Nummer N @regression', async ({ page }) => {
   /*
    * Fund (belegt): Nummerierung und Gliederung der Liste liefen auseinander.
    * Die Nummer kam aus der Anzeigeordnung (Reservewaffe zuletzt), der Platz in

@@ -80,7 +80,7 @@ async function matchMitGuenther(page) {
   return { nachrichten, zweiter };
 }
 
-test('Günther kommt online über die Leitung — nicht aus einem lokalen Motor', async ({ page }) => {
+test('Günther kommt online über die Leitung — nicht aus einem lokalen Motor @network', async ({ page }) => {
   test.setTimeout(120_000);
   await matchMitGuenther(page);
 
@@ -124,7 +124,7 @@ test('Günther kommt online über die Leitung — nicht aus einem lokalen Motor'
   expect([-1, 1]).toContain(stand.guenther.richtung);
 });
 
-test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
+test('Der Renderer zeichnet Günther auch online @network', async ({ page }) => {
   await matchMitGuenther(page);
   await page.waitForFunction(
     () => window.__PA__.getState()?.guenther?.aktiv === true,
@@ -213,7 +213,7 @@ test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
   ).toBeGreaterThan(300);
 });
 
-test('Günthers Streiche kommen online an und stehen im Protokoll', async ({ page }) => {
+test('Günthers Streiche kommen online an und stehen im Protokoll @network', async ({ page }) => {
   const { nachrichten } = await matchMitGuenther(page);
 
   /*
@@ -244,7 +244,7 @@ test('Günthers Streiche kommen online an und stehen im Protokoll', async ({ pag
   expect(meldungen[0].imDom, 'Die Haufen-Meldung stand nicht in der Anzeigeliste').toBe(true);
 });
 
-test('Auch die übrigen Günther-Ereignisse laufen über die Leitung', async ({ page }) => {
+test('Auch die übrigen Günther-Ereignisse laufen über die Leitung @network', async ({ page }) => {
   const { nachrichten } = await matchMitGuenther(page);
 
   /*

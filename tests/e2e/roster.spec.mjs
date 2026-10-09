@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
  * und keine Figur ohne Bild.
  */
 
-test('Die Kaderansicht zeigt neun Fraktionen', async ({ page }) => {
+test('Die Kaderansicht zeigt neun Fraktionen @edge', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -22,7 +22,7 @@ test('Die Kaderansicht zeigt neun Fraktionen', async ({ page }) => {
   expect(namen.join(' ')).toContain('Datenkult');
 });
 
-test('Jede Fraktion zeigt neun Charaktere mit geladenem Bild', async ({ page }) => {
+test('Jede Fraktion zeigt neun Charaktere mit geladenem Bild @edge', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();
@@ -58,7 +58,7 @@ test('Jede Fraktion zeigt neun Charaktere mit geladenem Bild', async ({ page }) 
   }
 });
 
-test('Jeder Eintrag nennt Superwaffe, Biografie und Profil', async ({ page }) => {
+test('Jeder Eintrag nennt Superwaffe, Biografie und Profil @edge', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();
@@ -79,7 +79,7 @@ test('Jeder Eintrag nennt Superwaffe, Biografie und Profil', async ({ page }) =>
   expect(profil).toContain('−');
 });
 
-test('Alle 81 Bilder sind über den Kader erreichbar', async ({ page }) => {
+test('Alle 81 Bilder sind über den Kader erreichbar @edge', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();

@@ -101,15 +101,15 @@ export const CLASS_DEFINITIONS = Object.freeze({
  */
 export const CLASS_ARCHETYPES = Object.freeze({
   brawler: Object.freeze({
-    health: 1.2, launch: 1.1, speed: 0.9,
+    health: 1.0, launch: 1.1, speed: 0.9,
     erklaerung: 'Robust und ausgeglichen — verzeiht Fehler.',
   }),
   artillerist: Object.freeze({
-    health: 0.8, launch: 1.4, speed: 0.8,
+    health: 1.0, launch: 1.4, speed: 0.8,
     erklaerung: 'Schnellerer Abschuss, weniger Leben — für Treffer aus der Distanz.',
   }),
   occultist: Object.freeze({
-    health: 0.7, launch: 1.6, speed: 1.0,
+    health: 1.0, launch: 1.6, speed: 1.0,
     erklaerung: 'Schießt am schnellsten, ist am zerbrechlichsten — ein Glasgeschütz.',
   }),
 });

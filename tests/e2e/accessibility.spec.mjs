@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => Boolean(window.__PA__));
 });
 
-test('Tippen im Seed-Feld steuert nicht das Spiel', async ({ page }) => {
+test('Tippen im Seed-Feld steuert nicht das Spiel @ui', async ({ page }) => {
   // Bewusst OHNE Matchstart: die Menüfelder sind nach dem Start ausgeblendet.
   // Im Menü ist die Tastatursteuerung bereits aktiv (der InputController hängt
   // global am Fenster), also lässt sich der Fehler hier direkt beobachten.
@@ -51,7 +51,7 @@ test('Tippen im Seed-Feld steuert nicht das Spiel', async ({ page }) => {
   expect(await page.evaluate(() => window.__PA__.game.input.isCharging)).toBe(false);
 });
 
-test('"r" im Textfeld startet kein Match neu', async ({ page }) => {
+test('"r" im Textfeld startet kein Match neu @ui', async ({ page }) => {
   await page.evaluate(() => window.__PA__.startMatch({ seed: 777, teams: 2, playersPerTeam: 1 }));
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
 
@@ -76,7 +76,7 @@ test('"r" im Textfeld startet kein Match neu', async ({ page }) => {
   expect(await page.evaluate(() => window.__PA__.game.aim.angle)).toBe(vorher);
 });
 
-test('Leertaste im Textfeld feuert nicht', async ({ page }) => {
+test('Leertaste im Textfeld feuert nicht @ui', async ({ page }) => {
   // Ohne Matchstart prüfen, dass die Leertaste keine Ladung beginnt und kein
   // Projektil entsteht.
   const feld = page.locator('#cfg-seed');
@@ -88,7 +88,7 @@ test('Leertaste im Textfeld feuert nicht', async ({ page }) => {
   expect(await page.evaluate(() => window.__PA__.getMatch())).toBeNull();
 });
 
-test('Die Spielfläche ist per Tastatur fokussierbar', async ({ page }) => {
+test('Die Spielfläche ist per Tastatur fokussierbar @ui', async ({ page }) => {
   await page.evaluate(() => window.__PA__.startMatch({ seed: 999, teams: 2, playersPerTeam: 1 }));
 
   const canvas = page.locator('#game-canvas');
@@ -104,7 +104,7 @@ test('Die Spielfläche ist per Tastatur fokussierbar', async ({ page }) => {
   expect(label.length).toBeGreaterThan(20);
 });
 
-test('Fokussierte Elemente sind sichtbar hervorgehoben', async ({ page }) => {
+test('Fokussierte Elemente sind sichtbar hervorgehoben @ui', async ({ page }) => {
   // Der Fokusring muss sich messbar vom unfokussierten Zustand unterscheiden.
   const button = page.locator('#start-button');
 
@@ -132,7 +132,7 @@ test('Fokussierte Elemente sind sichtbar hervorgehoben', async ({ page }) => {
   ).toBe(true);
 });
 
-test('Alle Formularfelder sind per Tab erreichbar', async ({ page }) => {
+test('Alle Formularfelder sind per Tab erreichbar @ui', async ({ page }) => {
   const erwarteteReihenfolge = [
     'cfg-teams', 'cfg-players', 'cfg-seed',
     'cfg-server', 'cfg-lobby', 'start-button',
@@ -153,7 +153,7 @@ test('Alle Formularfelder sind per Tab erreichbar', async ({ page }) => {
   }
 });
 
-test('Der Sprunglink führt zum Spielfeld', async ({ page }) => {
+test('Der Sprunglink führt zum Spielfeld @ui', async ({ page }) => {
   const link = page.locator('#skip-to-board');
   await expect(link).toHaveAttribute('href', '#game-canvas');
 
@@ -164,7 +164,7 @@ test('Der Sprunglink führt zum Spielfeld', async ({ page }) => {
   expect(nachher).toBeGreaterThan(vorher);
 });
 
-test('Versteckte Overlays nehmen keinen Fokus', async ({ page }) => {
+test('Versteckte Overlays nehmen keinen Fokus @ui', async ({ page }) => {
   await page.evaluate(() => window.__PA__.startMatch({ seed: 1234, teams: 2, playersPerTeam: 1 }));
 
   // Das Menü ist nach dem Start verborgen und darf keine Fokusziele mehr liefern.
@@ -214,7 +214,7 @@ async function matchMitExplosion(page) {
   });
 }
 
-test('Bei „Bewegung reduzieren" entfallen die Explosionspartikel', async ({ page }) => {
+test('Bei „Bewegung reduzieren" entfallen die Explosionspartikel @ui', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
 
   // Die Einstellung muss im Browser ankommen.
@@ -236,7 +236,7 @@ test('Bei „Bewegung reduzieren" entfallen die Explosionspartikel', async ({ pa
   expect(parseFloat(dauer)).toBeLessThan(0.01);
 });
 
-test('Ohne die Einstellung gibt es weiterhin Partikel', async ({ page }) => {
+test('Ohne die Einstellung gibt es weiterhin Partikel @ui', async ({ page }) => {
   // Gegenprobe: Ohne sie wäre der Test oben auch dann grün, wenn die
   // Explosionsgrafik gar nicht mehr funktionierte.
   await page.emulateMedia({ reducedMotion: 'no-preference' });

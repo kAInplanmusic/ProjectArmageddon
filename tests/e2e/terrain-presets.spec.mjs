@@ -33,7 +33,7 @@ const SEED = 4242;
  * geprüft — dort, wo er hingehört.
  */
 
-test('Mit festem Seed lässt sich über das Menü ein Match starten', { timeout: 180_000 }, async ({ page }) => {
+test('Mit festem Seed lässt sich über das Menü ein Match starten @slow', { timeout: 180_000 }, async ({ page }) => {
   /*
    * Der vollständige Spielerpfad. Geprüft wird nicht nur, dass das Match läuft,
    * sondern auch dass alle Figuren auf TROCKENEM Grund stehen.
@@ -88,7 +88,7 @@ test('Mit festem Seed lässt sich über das Menü ein Match starten', { timeout:
   }
 });
 
-test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', async ({ page }) => {
+test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler @slow', async ({ page }) => {
   /*
    * `flooded` und `warren` haben noch KEINE eigene Kulissengruppe (siehe
    * MASTERDOTO). Sie müssen trotzdem starten und gezeichnet werden.
@@ -174,7 +174,7 @@ test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', asy
  * eine andere Kulisse zöge als die Karte hergibt — oder wenn das Biom aus dem
  * Seed direkt käme statt aus dem Charakter.
  */
-test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', { timeout: 180_000 }, async ({ page }) => {
+test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters @slow', { timeout: 180_000 }, async ({ page }) => {
   /*
    * Zuerst war die Kulisse dem PRESET zugeordnet („Flut sieht aus wie eine
    * Flut"), dann fiel sie auf `forest` zurück („eine Flut sah aus wie ein
@@ -222,7 +222,7 @@ test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', { timeout: 1
   }
 });
 
-test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page }) => {
+test('Die Biomgruppen der neuen Formen sind im Menü wählbar @slow', async ({ page }) => {
   /*
    * Eine Geländeform mit eigenem Biom ist nur dann fertig, wenn die Kulissen auch
    * WÄHLBAR sind: Der Spieler soll nicht nur die Vorgabe sehen, sondern zwischen
@@ -283,7 +283,7 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
  * ergibt GLEICHE Karte, VERSCHIEDENE Seeds verschiedene. Der Determinismus ist
  * damit im Browser belegt, nicht nur in Node.
  */
-test('Gleicher Seed ergibt dieselbe Karte, verschiedene Seeds verschiedene (Browser wie Node)', { timeout: 180_000 }, async ({ page }) => {
+test('Gleicher Seed ergibt dieselbe Karte, verschiedene Seeds verschiedene (Browser wie Node) @slow', { timeout: 180_000 }, async ({ page }) => {
   /*
    * Gegenprobe zur Unit-Messung: Die Erzeugung im Browser muss dieselbe Karte
    * ergeben wie in Node. Wäre das anders, liefe die Anzeige mit einem anderen

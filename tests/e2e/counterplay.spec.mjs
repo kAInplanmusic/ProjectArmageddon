@@ -19,7 +19,7 @@ test.describe('Counterplay-Anzeige', () => {
    * Gelände-Klassen-Zuordnung als Nachschlagewerk, ohne eine Wahl zu behaupten.
    */
 
-  test('Der Counterplay-Reiter erklärt die Klassen und die Karten', async ({ page }) => {
+  test('Der Counterplay-Reiter erklärt die Klassen und die Karten @ui', async ({ page }) => {
     await page.goto('/');
     const behaelter = page.locator('#hilfe-browser');
     await behaelter.locator('summary').click();
@@ -63,7 +63,7 @@ test.describe('Counterplay-Anzeige', () => {
     }
   });
 
-  test('Die Anzeige nennt die Kartengunst ausdrücklich als Empfehlung', async ({ page }) => {
+  test('Die Anzeige nennt die Kartengunst ausdrücklich als Empfehlung @ui', async ({ page }) => {
     /*
      * Der wichtigste Punkt der Leitentscheidung: Es gibt KEINEN Bonus. Wenn die
      * Anzeige das nicht sagt, würde der Spieler einen Multiplikator erwarten,
@@ -88,7 +88,7 @@ test.describe('Counterplay-Anzeige', () => {
       .not.toMatch(/Beweglichkeit.*nicht gelesen/);
   });
 
-  test('Der Kader zeigt je Charakter die Counterplay-Zeile', async ({ page }) => {
+  test('Der Kader zeigt je Charakter die Counterplay-Zeile @ui', async ({ page }) => {
     await page.goto('/');
     const kader = page.locator('#roster-browser');
     await kader.locator('summary').click();
@@ -121,7 +121,7 @@ test.describe('Counterplay-Anzeige', () => {
     expect(scoutZeile, 'die Scout-Zeile fehlt').toBeTruthy();
   });
 
-  test('Die Counterplay-Anzeige nennt keine Zahlen', async ({ page }) => {
+  test('Die Counterplay-Anzeige nennt keine Zahlen @ui', async ({ page }) => {
     // Dieselbe Regel wie überall: Werte stehen in den Balken daneben, nicht im
     // Text — sonst gäbe es eine zweite Quelle, die veralten kann.
     await page.goto('/');

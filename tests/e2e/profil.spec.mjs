@@ -85,7 +85,7 @@ async function matchZuEndeSpielen(page, { seed = 4242 } = {}) {
   return page.evaluate(() => window.__PA__.getState()?.status);
 }
 
-test('Das Profil ist zu Beginn leer', async ({ page }) => {
+test('Das Profil ist zu Beginn leer @edge', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -106,7 +106,7 @@ test('Das Profil ist zu Beginn leer', async ({ page }) => {
   await expect(page.locator('#profil-hinweis')).toContainText('Charakterwahl');
 });
 
-test('Ein gespieltes Match landet im Profil', async ({ page }) => {
+test('Ein gespieltes Match landet im Profil @edge', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -137,7 +137,7 @@ test('Ein gespieltes Match landet im Profil', async ({ page }) => {
   expect(nachher.profil.siege + nachher.profil.niederlagen).toBe(1);
 });
 
-test('Die Kennzahlen der Partie erscheinen im Endbildschirm', async ({ page }) => {
+test('Die Kennzahlen der Partie erscheinen im Endbildschirm @edge', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await matchZuEndeSpielen(page);
@@ -156,7 +156,7 @@ test('Die Kennzahlen der Partie erscheinen im Endbildschirm', async ({ page }) =
   expect(tabelle).toContain('(du)');
 });
 
-test('Das Profil überlebt einen Neustart der Seite', async ({ page }) => {
+test('Das Profil überlebt einen Neustart der Seite @edge', async ({ page }) => {
   /*
    * Der Kern der Speicherung: Die Zahlen liegen im lokalen Speicher des Browsers.
    * Ohne diesen Test wäre ein Profil denkbar, das nur im Speicher lebt — und
@@ -181,7 +181,7 @@ test('Das Profil überlebt einen Neustart der Seite', async ({ page }) => {
   expect(nachher.waffen).toEqual(vorher.waffen);
 });
 
-test('Ein zweites Match wird hinzugezählt, nicht ersetzt', async ({ page }) => {
+test('Ein zweites Match wird hinzugezählt, nicht ersetzt @edge', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -198,7 +198,7 @@ test('Ein zweites Match wird hinzugezählt, nicht ersetzt', async ({ page }) => 
   expect(zweite.spielzeitSekunden).toBeGreaterThan(erste.spielzeitSekunden);
 });
 
-test('Ein Match wird nur EINMAL verbucht', async ({ page }) => {
+test('Ein Match wird nur EINMAL verbucht @edge', async ({ page }) => {
   /*
    * Absicherung gegen doppelte Buchung: Der Endbildschirm kann mehrfach
    * ausgelöst werden (Revanche, Neustart, doppeltes Ereignis). Die Partie darf
@@ -228,7 +228,7 @@ test('Ein Match wird nur EINMAL verbucht', async ({ page }) => {
   expect(nachher.schaden).toBe(vorher.schaden);
 });
 
-test('Zurücksetzen leert die Zahlen — und sie bleiben leer', async ({ page }) => {
+test('Zurücksetzen leert die Zahlen — und sie bleiben leer @edge', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await matchZuEndeSpielen(page);
@@ -252,7 +252,7 @@ test('Zurücksetzen leert die Zahlen — und sie bleiben leer', async ({ page })
   expect((await page.evaluate(() => window.__PA__.profil())).partien).toBe(0);
 });
 
-test('Ein beschädigtes Profil blockiert das Spiel nicht', async ({ page }) => {
+test('Ein beschädigtes Profil blockiert das Spiel nicht @edge', async ({ page }) => {
   /*
    * Fehlertoleranz: Der Eintrag im lokalen Speicher kann von einer älteren
    * Version stammen oder fremd geschrieben sein. Ein Profil ist Beiwerk — es darf
@@ -271,7 +271,7 @@ test('Ein beschädigtes Profil blockiert das Spiel nicht', async ({ page }) => {
   await expect(page.locator('#game-canvas')).toBeVisible();
 });
 
-test('Der Fortschritt lässt sich sichern und anderswo wieder laden', async ({ page }) => {
+test('Der Fortschritt lässt sich sichern und anderswo wieder laden @edge', async ({ page }) => {
   /*
    * Die ENTSCHEIDUNG vom 2026-09-20: keine Konten, aber eine Datei.
    *

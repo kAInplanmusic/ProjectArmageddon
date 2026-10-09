@@ -88,7 +88,7 @@ async function matchMitEigenemZug(page) {
   return { nachrichten, zweiter };
 }
 
-test('Der Sprung geht online als Befehl raus und kommt als Ereignis zurück', async ({ page }) => {
+test('Der Sprung geht online als Befehl raus und kommt als Ereignis zurück @network', async ({ page }) => {
   const { nachrichten } = await matchMitEigenemZug(page);
 
   /*
@@ -285,7 +285,7 @@ test('Der Sprung geht online als Befehl raus und kommt als Ereignis zurück', as
   expect(meldungen[0].imDom, 'Die Meldung stand nicht in der Anzeigeliste').toBe(true);
 });
 
-test('Das Abwerfen geht online über den Server und wird gemeldet', async ({ page }) => {
+test('Das Abwerfen geht online über den Server und wird gemeldet @network', async ({ page }) => {
   const { nachrichten } = await matchMitEigenemZug(page);
 
   // Die Waffenliste MUSS im DOM stehen: Sie liefert die Anzeigeposition, und
@@ -373,7 +373,7 @@ test('Das Abwerfen geht online über den Server und wird gemeldet', async ({ pag
   expect(meldungen[0].imDom, 'Die Meldung stand nicht in der Anzeigeliste').toBe(true);
 });
 
-test('Ein fremder Sprung wird abgelehnt und erzeugt kein Ereignis', async ({ page }) => {
+test('Ein fremder Sprung wird abgelehnt und erzeugt kein Ereignis @network', async ({ page }) => {
   /*
    * Die Gegenprobe zum ersten Test — sonst könnte das `jumped` dort auch von
    * irgendeinem Sprung stammen. Der ZWEITE MENSCH schickt hier denselben

@@ -18,7 +18,7 @@ async function oeffneLoadouts(page) {
 }
 
 test.describe('Klassenwahl im Menü', () => {
-  test('Je Spielerplatz gibt es Felder für Klasse und Archetyp', async ({ page }) => {
+  test('Je Spielerplatz gibt es Felder für Klasse und Archetyp @ui', async ({ page }) => {
     /*
      * Die Zahl der Felder folgt „Teams" × „Spieler pro Team". Bei der Vorgabe
      * (2 × 2) sind es vier Plätze.
@@ -50,7 +50,7 @@ test.describe('Klassenwahl im Menü', () => {
     for (const a of erwartet.archetypen) expect(archetypWerte).toContain(a);
   });
 
-  test('Die Felder richten sich nach Teams und Einheiten je Spieler', async ({ page }) => {
+  test('Die Felder richten sich nach Teams und Einheiten je Spieler @ui', async ({ page }) => {
     /*
      * Ändert man die Teamzahl oder die Einheiten je Spieler, muss die Liste neu
      * aufgebaut werden — sonst stünden dort Felder für Plätze, die es nicht mehr
@@ -73,7 +73,7 @@ test.describe('Klassenwahl im Menü', () => {
     await expect.poll(zaehleFelder, { timeout: 3000 }).toBe(16);
   });
 
-  test('Das Label nennt die Standardzuteilung des Platzes', async ({ page }) => {
+  test('Das Label nennt die Standardzuteilung des Platzes @ui', async ({ page }) => {
     // Ohne Wahl gilt die alte Regel — das Label zeigt sie, damit man sieht,
     // was man ändert.
     await oeffneLoadouts(page);
@@ -99,7 +99,7 @@ test.describe('Klassenwahl im Menü', () => {
     }
   });
 
-  test('Eine gewählte Kombination erreicht das Match', async ({ page }) => {
+  test('Eine gewählte Kombination erreicht das Match @ui', async ({ page }) => {
     /*
      * Der Kern: Was im Menü steht, muss im laufenden Match ankommen — und zwar
      * als PROFILE, nicht nur als Eintrag. Geprüft wird am LEBEN, weil das eine
@@ -138,7 +138,7 @@ test.describe('Klassenwahl im Menü', () => {
     expect(befund.plaetze[0].hp).toBe(erwartet);
   });
 
-  test('Ohne Wahl bleibt die Standardzuteilung', async ({ page }) => {
+  test('Ohne Wahl bleibt die Standardzuteilung @ui', async ({ page }) => {
     // Die Abwärtskompatibilität im Browser: Wer nichts wählt, bekommt das
     // Spiel von vorher.
     await page.goto('/');

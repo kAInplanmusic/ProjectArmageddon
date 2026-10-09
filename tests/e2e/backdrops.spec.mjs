@@ -63,7 +63,7 @@ async function farbvielfalt(page, mitKulisse) {
   }, mitKulisse);
 }
 
-test('Die Kulisse wird tatsächlich gezeichnet', async ({ page }) => {
+test('Die Kulisse wird tatsächlich gezeichnet @slow', async ({ page }) => {
   await startMitKulisse(page);
 
   const mit = await farbvielfalt(page, true);
@@ -74,7 +74,7 @@ test('Die Kulisse wird tatsächlich gezeichnet', async ({ page }) => {
   expect(mit).toBeGreaterThan(500);
 });
 
-test('Die Kulisse passt zum gewählten Gelände', async ({ page }) => {
+test('Die Kulisse passt zum gewählten Gelände @slow', async ({ page }) => {
   await startMitKulisse(page, { preset: 'caverns', seed: 777, backdropKey: 'caverns/crystal' });
 
   const info = await page.evaluate(() => {
@@ -86,7 +86,7 @@ test('Die Kulisse passt zum gewählten Gelände', async ({ page }) => {
   expect(info.datei).toMatch(/^caverns_/);
 });
 
-test('Gleicher Seed zeigt dieselbe Kulisse', async ({ page }) => {
+test('Gleicher Seed zeigt dieselbe Kulisse @slow', async ({ page }) => {
   await startMitKulisse(page, { seed: 31337 });
   const erste = await page.evaluate(() => window.__PA__.game.renderer.backdropKey);
 
@@ -111,7 +111,7 @@ test('Gleicher Seed zeigt dieselbe Kulisse', async ({ page }) => {
   expect(zweite).toBe(erste);
 });
 
-test('Ohne Kulisse bleibt das Spiel spielbar', async ({ page }) => {
+test('Ohne Kulisse bleibt das Spiel spielbar @slow', async ({ page }) => {
   // Fällt eine Kulisse aus, muss der Farbverlauf greifen — ein schwarzer
   // Bildschirm wäre ein Totalausfall statt einer verschlechterten Darstellung.
   await startMitKulisse(page);
@@ -136,7 +136,7 @@ test('Ohne Kulisse bleibt das Spiel spielbar', async ({ page }) => {
   expect(stand.nichtSchwarz).toBe(true);
 });
 
-test('Die Spielfiguren bleiben vor heller Kulisse erkennbar', async ({ page }) => {
+test('Die Spielfiguren bleiben vor heller Kulisse erkennbar @slow', async ({ page }) => {
   // Eine Schnee- oder Wüstenkulisse ist hell. Ohne die Abdunkelung nach unten
   // wären Figuren und Anzeigen dort kaum zu sehen.
   await startMitKulisse(page, { preset: 'mountains', seed: 11, backdropKey: 'alpine/winter_snow' });
@@ -169,7 +169,7 @@ test('Die Spielfiguren bleiben vor heller Kulisse erkennbar', async ({ page }) =
 });
 
 
-test('Der Boden bekommt die Farbe der Kulisse', async ({ page }) => {
+test('Der Boden bekommt die Farbe der Kulisse @slow', async ({ page }) => {
   // Vorher war der Boden immer grün — über Packeis, Basalt und Sand gleichermaßen.
   // Geprüft wird die tatsächlich gezeichnete Bodenfarbe zweier gegensätzlicher
   // Kulissen: sie muss sich deutlich unterscheiden.
@@ -215,7 +215,7 @@ test('Der Boden bekommt die Farbe der Kulisse', async ({ page }) => {
   expect(summe(lava.palette)).toBeLessThan(220);
 });
 
-test('Eine gewählte Kulisse wird auch wirklich verwendet', async ({ page }) => {
+test('Eine gewählte Kulisse wird auch wirklich verwendet @slow', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -245,7 +245,7 @@ test('Eine gewählte Kulisse wird auch wirklich verwendet', async ({ page }) => 
   expect(info.palette.surface[2]).toBeGreaterThan(info.palette.surface[1]);
 });
 
-test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
+test('Die Kulissenauswahl im Menü ist vollständig @slow', async ({ page }) => {
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -279,7 +279,7 @@ test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
   expect(katalog.kulissen).toBeGreaterThanOrEqual(60);
 });
 
-test('Ohne Wahl ist die generative Kulisse aktiv', async ({ page }) => {
+test('Ohne Wahl ist die generative Kulisse aktiv @slow', async ({ page }) => {
   // Die generative Kulisse ist die Vorgabe: Sie passt sich jeder Kartengröße an,
   // ein Bild nicht.
   await page.goto('http://127.0.0.1:5173/');
@@ -307,7 +307,7 @@ test('Ohne Wahl ist die generative Kulisse aktiv', async ({ page }) => {
   expect(stand.keinBild).toBe(true);
 });
 
-test('Ein gewähltes Bild schlägt die generative Kulisse', async ({ page }) => {
+test('Ein gewähltes Bild schlägt die generative Kulisse @slow', async ({ page }) => {
   await startMitKulisse(page, { seed: 4242, backdropKey: 'noir/rainy_street' });
 
   const stand = await page.evaluate(() => {

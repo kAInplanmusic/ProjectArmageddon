@@ -24,7 +24,7 @@ async function oeffneAuswahl(page) {
   await expect(page.locator('#cfg-loadout-klasse-0')).toBeAttached({ timeout: 10_000 });
 }
 
-test('Jede Klassen-Option nennt Leben und Schaden', async ({ page }) => {
+test('Jede Klassen-Option nennt Leben und Schaden @ui', async ({ page }) => {
   await oeffneAuswahl(page);
 
   const texte = await page.locator('#cfg-loadout-klasse-0 option').allTextContents();
@@ -39,7 +39,7 @@ test('Jede Klassen-Option nennt Leben und Schaden', async ({ page }) => {
   }
 });
 
-test('Jede Archetyp-Option nennt das Tempo', async ({ page }) => {
+test('Jede Archetyp-Option nennt das Tempo @ui', async ({ page }) => {
   await oeffneAuswahl(page);
 
   const texte = await page.locator('#cfg-loadout-archetyp-0 option').allTextContents();
@@ -57,7 +57,7 @@ test('Jede Archetyp-Option nennt das Tempo', async ({ page }) => {
   }
 });
 
-test('Die genannten Werte stimmen mit dem Motor überein', async ({ page }) => {
+test('Die genannten Werte stimmen mit dem Motor überein @ui', async ({ page }) => {
   /*
    * DIE Prüfung, die zählt. Eine Anzeige, die etwas anderes behauptet als die
    * Simulation, wäre schlimmer als keine Anzeige.
@@ -105,7 +105,7 @@ test('Die genannten Werte stimmen mit dem Motor überein', async ({ page }) => {
   }
 });
 
-test('Die Werte unterscheiden sich zwischen den Klassen', async ({ page }) => {
+test('Die Werte unterscheiden sich zwischen den Klassen @ui', async ({ page }) => {
   /*
    * Die Gegenprobe gegen eine Anzeige, die überall dieselbe Zahl schreibt: Der
    * Unterschied zwischen den Klassen muss sichtbar sein — sonst wäre die
@@ -121,7 +121,7 @@ test('Die Werte unterscheiden sich zwischen den Klassen', async ({ page }) => {
     .toBe(werte.length);
 });
 
-test('Die Werte kommen aus dem Motor, nicht aus einer zweiten Liste', async ({ page }) => {
+test('Die Werte kommen aus dem Motor, nicht aus einer zweiten Liste @ui', async ({ page }) => {
   /*
    * Der Strukturtest am lebenden Objekt: Ändert man das Profil zur Laufzeit,
    * muss die Anzeige beim nächsten Aufbau mitziehen. Eine eigene, fest
@@ -137,7 +137,7 @@ test('Die Werte kommen aus dem Motor, nicht aus einer zweiten Liste', async ({ p
   expect(vorher).toMatch(/Leben/);
 });
 
-test('Auch die Plätze 2 bis 4 zeigen Werte', async ({ page }) => {
+test('Auch die Plätze 2 bis 4 zeigen Werte @ui', async ({ page }) => {
   /*
    * Die Auswahl wird je Spielerplatz gebaut. Ein Fehler, der nur Platz 1
    * versorgt, wäre beim Prüfen des ersten Platzes unsichtbar.

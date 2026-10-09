@@ -331,9 +331,9 @@ export class Renderer {
    * @param {number} entityId Schütze
    * @param {number} angle    Schusswinkel (0 = rechts, π/2 = oben)
    */
-  addMuzzleFlash(entityId, angle) {
-    this.effects.push(erzeugeMuendungsfeuer(entityId, angle));
-  }
+  addMuzzleFlash(entityId, angle, options = {}) {
+    this.effects.push(erzeugeMuendungsfeuer(entityId, angle, options));
+}
 
   #updateEffects() {
     // Die Alterung liegt in `effects.js` — dort ist sie ohne Canvas prüfbar.

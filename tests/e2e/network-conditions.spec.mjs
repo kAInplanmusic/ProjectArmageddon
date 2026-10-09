@@ -256,7 +256,7 @@ function netzZustand(page) {
 
 // ------------------------------------------------------------ Latenz
 
-test('Bei 120 ms Latenz bleibt der Client verbunden, bedienbar und misst ehrlich', async ({ page }) => {
+test('Bei 120 ms Latenz bleibt der Client verbunden, bedienbar und misst ehrlich @network', async ({ page }) => {
   /*
    * Die Verzögerung liegt auf ALLEN Nachrichten des Servers — auch auf dem
    * PONG. Sonst misst die Latenzanzeige des Clients nur die ungestörte
@@ -321,7 +321,7 @@ test('Bei 120 ms Latenz bleibt der Client verbunden, bedienbar und misst ehrlich
 
 // ------------------------------------------------------------ Paketverlust
 
-test('Bei Paketverlust bleibt die Verbindung, und der Zustand läuft weiter', async ({ page }) => {
+test('Bei Paketverlust bleibt die Verbindung, und der Zustand läuft weiter @network', async ({ page }) => {
   // Jeder dritte Snapshot fällt aus; Steuerungsnachrichten laufen durch.
   const zaehler = await stoerungLegen(page, { dropJedenNtenSnapshot: 3 });
   const fehler = await openClient(page);
@@ -379,7 +379,7 @@ test('Bei Paketverlust bleibt die Verbindung, und der Zustand läuft weiter', as
   expect(fehler, `Seitenfehler: ${fehler.join(' | ')}`).toEqual([]);
 });
 
-test('Nach einem Aussetzer holt der Vollsnapshot den Client zurück', async ({ page }) => {
+test('Nach einem Aussetzer holt der Vollsnapshot den Client zurück @network', async ({ page }) => {
   /*
    * Der harte Fall: Für einige Sekunden kommt GAR nichts mehr durch, ohne dass
    * die Verbindung abreißt (der Socket bleibt offen, es fehlen nur die Daten).
@@ -476,7 +476,7 @@ test('Nach einem Aussetzer holt der Vollsnapshot den Client zurück', async ({ p
   expect(fehler, `Seitenfehler: ${fehler.join(' | ')}`).toEqual([]);
 });
 
-test('Der Störer verwirft nur Spielrahmen, keine Steuerung', async ({ page }) => {
+test('Der Störer verwirft nur Spielrahmen, keine Steuerung @network', async ({ page }) => {
   /*
    * Gegenprobe zur Störung selbst: Steuerungsnachrichten (Handshake, Lobby,
    * Spielende) müssen durchlaufen, sonst prüfen die Tests oben etwas anderes

@@ -307,7 +307,7 @@ function bilanz(zeiten) {
 }
 
 test.describe('Dynamik — Bildzeit und Zeichenaufrufe je Maßnahme', () => {
-  test('Jede Maßnahme ist im Budget — mit Zahl vor und nach', async ({ page }) => {
+  test('Jede Maßnahme ist im Budget — mit Zahl vor und nach @critical @slow', async ({ page }) => {
     /*
      * Dieses Zeitlimit gilt für DIESEN Test: Er misst 200 Renderer-Aufrufe, und
      * ein Aufruf auf 2560×1440 kostet in Software-Rasterung ein paar
@@ -463,7 +463,7 @@ test.describe('Dynamik — Bildzeit und Zeichenaufrufe je Maßnahme', () => {
 });
 
 test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
-  test('Die Explosionssplitter werden GEZEICHNET (der Fehler dieser Sitzung)', async ({ page }) => {
+  test('Die Explosionssplitter werden GEZEICHNET (der Fehler dieser Sitzung) @critical @slow', async ({ page }) => {
     /*
      * VOR diesem Zug war `#drawParticles` im Renderer definiert und wurde von
      * KEINER Stelle gerufen: Die Splitter entstanden, alterten und
@@ -512,7 +512,7 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
       .toBeGreaterThan(0);
   });
 
-  test('Ein Treffer hinterlässt Ring und Blitz auf der Figur', async ({ page }) => {
+  test('Ein Treffer hinterlässt Ring und Blitz auf der Figur @critical @slow', async ({ page }) => {
     const befund = await mitWiederholung(page, async () => {
       await installiereHelfer(page);
       return page.evaluate(() => {
@@ -564,7 +564,7 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
     expect(befund.unterschiedMarken, 'die Treffermarke ändert keinen Bildpunkt').toBeGreaterThan(0);
   });
 
-  test('Die Flugspur liegt hinter dem Geschoss', async ({ page }) => {
+  test('Die Flugspur liegt hinter dem Geschoss @critical @slow', async ({ page }) => {
     const befund = await mitWiederholung(page, async () => {
       await installiereHelfer(page);
       return page.evaluate(() => {
@@ -615,7 +615,7 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
     expect(befund.unterschied, 'die Spur ändert keinen Bildpunkt').toBeGreaterThan(0);
   });
 
-  test('Der Kraterrand macht aus dem Loch einen Einschlag', async ({ page }) => {
+  test('Der Kraterrand macht aus dem Loch einen Einschlag @critical @slow', async ({ page }) => {
     const befund = await mitWiederholung(page, async () => {
       await installiereHelfer(page);
       return page.evaluate(() => {
@@ -665,7 +665,7 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
     expect(befund.unterschiedNarbe, 'der Kraterrand wird nicht gezeichnet').toBeGreaterThan(0);
   });
 
-  test('Der Kamera-Ruck ist messbar, gedeckelt und bei reduzierter Bewegung aus', async ({ page }) => {
+  test('Der Kamera-Ruck ist messbar, gedeckelt und bei reduzierter Bewegung aus @critical @slow', async ({ page }) => {
     /**
      * Liest die Transformation, die der Renderer WIRKLICH setzt.
      *
@@ -744,7 +744,7 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
 });
 
 test.describe('Dynamik — der Klang', () => {
-  test('Der Trefferklang kommt aus dem Zustand (echter Mischer)', async ({ page }) => {
+  test('Der Trefferklang kommt aus dem Zustand (echter Mischer) @critical @slow', async ({ page }) => {
     /*
      * Gemessen wird am ECHTEN Mischer (`SoundMixer#spieleTreffer`), nicht an
      * einer Attrappe: Der Klang zum Treffer eines GESCHOSSES entstand bis zu
@@ -817,7 +817,7 @@ test.describe('Dynamik — der Klang', () => {
     }
   });
 
-  test('Ein Treffer im selben Bild klingt NICHT zweimal', async ({ page }) => {
+  test('Ein Treffer im selben Bild klingt NICHT zweimal @critical @slow', async ({ page }) => {
     /*
      * Der Klang zum Treffer entsteht an ZWEI Stellen: im Ereigniszweig (nur
      * Hitscan, `ereignisse.js`) und aus dem Zustand

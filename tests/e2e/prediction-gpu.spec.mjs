@@ -26,7 +26,7 @@ async function starteLokalesMatch(page, seed = '20260916') {
 }
 
 test.describe('Boden-Rechenweg (WebGPU-Auswahl)', () => {
-  test('In dieser Umgebung ist WebGPU nicht verfügbar — der Rückfall nennt den Grund', async ({ page }) => {
+  test('In dieser Umgebung ist WebGPU nicht verfügbar — der Rückfall nennt den Grund @regression', async ({ page }) => {
     await page.goto('/');
     const ergebnis = await page.evaluate(() => window.__PA__.enableGpu());
     expect(ergebnis.available).toBe(false);
@@ -44,7 +44,7 @@ test.describe('Boden-Rechenweg (WebGPU-Auswahl)', () => {
     expect(ergebnis.reason).not.toMatch(/unknown|undefined/);
   });
 
-  test('Nach der Anfrage ist der Weg ausgewiesen und liefert trotzdem Pixel', async ({ page }) => {
+  test('Nach der Anfrage ist der Weg ausgewiesen und liefert trotzdem Pixel @regression', async ({ page }) => {
     await starteLokalesMatch(page);
     await page.evaluate(() => window.__PA__.enableGpu());
 
@@ -81,7 +81,7 @@ test.describe('Boden-Rechenweg (WebGPU-Auswahl)', () => {
     expect(gefuellt.undurchsichtig).toBeGreaterThan(gefuellt.gesamt * 0.2);
   });
 
-  test('Die Vorgabe ist die CPU — ohne Wahl wird kein Gerät angefordert', async ({ page }) => {
+  test('Die Vorgabe ist die CPU — ohne Wahl wird kein Gerät angefordert @regression', async ({ page }) => {
     await starteLokalesMatch(page);
     const pfad = await page.evaluate(() => window.__PA__.terrainPath());
     // `attempted` bleibt false: Wer die Option nicht wählt, bekommt keinen
@@ -92,7 +92,7 @@ test.describe('Boden-Rechenweg (WebGPU-Auswahl)', () => {
 });
 
 test.describe('Schussvorhersage', () => {
-  test('Lokal läuft keine Vorhersage — der Schuss ist ohnehin sofort da', async ({ page }) => {
+  test('Lokal läuft keine Vorhersage — der Schuss ist ohnehin sofort da @regression', async ({ page }) => {
     await starteLokalesMatch(page);
     // Feuern: Der Schuss geht in die lokale Simulation, nicht durchs Netz.
     await page.keyboard.press('Enter');
@@ -103,7 +103,7 @@ test.describe('Schussvorhersage', () => {
     expect(zustand.stats.predictions).toBe(0);
   });
 
-  test('Nach einem lokalen Schuss gibt es weiterhin genau eine Anzeige', async ({ page }) => {
+  test('Nach einem lokalen Schuss gibt es weiterhin genau eine Anzeige @regression', async ({ page }) => {
     /*
      * Die Vorhersage darf die lokale Anzeige NICHT verdoppeln: Lokal erzeugt die
      * Simulation das Ereignis sofort, eine zusätzliche Vorschau wäre ein zweiter
@@ -117,7 +117,7 @@ test.describe('Schussvorhersage', () => {
     expect(zustand.pending).toBeNull();
   });
 
-  test('Der Vorhersage-Zustand ist über die Diagnose abfragbar', async ({ page }) => {
+  test('Der Vorhersage-Zustand ist über die Diagnose abfragbar @regression', async ({ page }) => {
     await starteLokalesMatch(page);
     const zustand = await page.evaluate(() => window.__PA__.prediction());
     expect(zustand).toHaveProperty('active');
@@ -128,7 +128,7 @@ test.describe('Schussvorhersage', () => {
 });
 
 test.describe('Tastatur feuert', () => {
-  test('Enter löst einen Schuss aus', async ({ page }) => {
+  test('Enter löst einen Schuss aus @regression', async ({ page }) => {
     /*
      * Fund (belegt): Enter wurde STUMM verworfen. In `input.js` stand es in der
      * Aufzählung der ignorierten Tasten, während das README „`Enter` | Feuern"
@@ -178,7 +178,7 @@ test.describe('Tastatur feuert', () => {
       `Enter muss einen Schuss auslösen. Protokoll: ${JSON.stringify(danach.protokoll.slice(0, 6))}`).toBe(true);
   });
 
-  test('Die Leertaste lädt weiterhin auf und feuert beim Loslassen', async ({ page }) => {
+  test('Die Leertaste lädt weiterhin auf und feuert beim Loslassen @regression', async ({ page }) => {
     // Die Gegenprobe: Der Enter-Weg darf die Leertaste nicht verdrängt haben.
     await starteLokalesMatch(page);
     await page.keyboard.down(' ');
@@ -190,7 +190,7 @@ test.describe('Tastatur feuert', () => {
     expect(zustand.tick).toBeGreaterThan(0);
   });
 
-  test('HALTEN lädt auf: es ergibt mehr Kraft als ein Tippen', async ({ page }) => {
+  test('HALTEN lädt auf: es ergibt mehr Kraft als ein Tippen @regression', async ({ page }) => {
     /*
      * ## Der Befund, den dieser Test festhält (belegt)
      *

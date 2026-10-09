@@ -36,7 +36,7 @@ async function startMitGuenther(page, { maxSeeds = 120 } = {}) {
   return gefunden;
 }
 
-test('Günther wird gezeichnet, wenn er aktiv ist', async ({ page }) => {
+test('Günther wird gezeichnet, wenn er aktiv ist @edge', async ({ page }) => {
   await startMitGuenther(page);
 
   const stand = await page.evaluate(() => {
@@ -113,7 +113,7 @@ async function radZeigen(page, payload, { warteAufText = true } = {}) {
   }, { p: payload, warten: warteAufText });
 }
 
-test('Das Glücksrad erscheint und zeigt den Ausgang', async ({ page }) => {
+test('Das Glücksrad erscheint und zeigt den Ausgang @edge', async ({ page }) => {
   await startMitGuenther(page);
 
   const rad = await radZeigen(page, {
@@ -127,7 +127,7 @@ test('Das Glücksrad erscheint und zeigt den Ausgang', async ({ page }) => {
   expect(rad.detail).toContain('setzt eine Runde aus');
 });
 
-test('Heimdall wird hervorgehoben und löst die Animation aus', async ({ page }) => {
+test('Heimdall wird hervorgehoben und löst die Animation aus @edge', async ({ page }) => {
   await startMitGuenther(page);
 
   const rad = await radZeigen(page, {
@@ -152,7 +152,7 @@ test('Heimdall wird hervorgehoben und löst die Animation aus', async ({ page })
   expect(hatAnimation).toBe(true);
 });
 
-test('Das Rad verschwindet nach kurzer Zeit wieder', async ({ page }) => {
+test('Das Rad verschwindet nach kurzer Zeit wieder @edge', async ({ page }) => {
   await startMitGuenther(page);
 
   const rad = await radZeigen(page, {
@@ -166,7 +166,7 @@ test('Das Rad verschwindet nach kurzer Zeit wieder', async ({ page }) => {
   await expect(page.locator('#guenther-wheel')).toBeHidden({ timeout: 8000 });
 });
 
-test('Jeder Rad-Ausgang lässt sich anzeigen', async ({ page }) => {
+test('Jeder Rad-Ausgang lässt sich anzeigen @edge', async ({ page }) => {
   await startMitGuenther(page);
 
   const ausgaenge = await page.evaluate(() => window.__PA__.guentherWheelOutcomes());

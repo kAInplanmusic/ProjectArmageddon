@@ -69,8 +69,10 @@
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.63.0",
+    "dependency-cruiser": "^18.5.0",
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
+    "knip": "^6.39.0",
     "vite": "^8.3.0"
   },
   "dependencies": {
@@ -78,5 +80,17 @@
   },
   "engines": {
     "node": ">=22"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kAInplanmusic/ProjectArmageddon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kAInplanmusic/ProjectArmageddon/issues"
+  },
+  "homepage": "https://github.com/kAInplanmusic/ProjectArmageddon#readme"
 }

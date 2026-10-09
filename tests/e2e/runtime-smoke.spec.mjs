@@ -26,7 +26,7 @@ async function bootMatch(page, { seed = 20260910, teams = 2, players = 2, preset
   return errors;
 }
 
-test('Startseite lädt Canvas, HUD und Menü', async ({ page }) => {
+test('Startseite lädt Canvas, HUD und Menü @critical', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(String(error)));
 
@@ -45,7 +45,7 @@ test('Startseite lädt Canvas, HUD und Menü', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('Matchstart erzeugt Spieler, Terrain und Kisten', async ({ page }) => {
+test('Matchstart erzeugt Spieler, Terrain und Kisten @critical', async ({ page }) => {
   const errors = await bootMatch(page, { seed: 4242, teams: 2, players: 2 });
 
   const state = await page.evaluate(() => window.__PA__.getState());
@@ -74,7 +74,7 @@ test('Matchstart erzeugt Spieler, Terrain und Kisten', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('HUD zeigt Runde, Spielerliste und Waffen des aktiven Spielers', async ({ page }) => {
+test('HUD zeigt Runde, Spielerliste und Waffen des aktiven Spielers @critical', async ({ page }) => {
   await bootMatch(page, { seed: 99 });
 
   await expect(page.locator('#hud-round')).toHaveText('1');
@@ -91,7 +91,7 @@ test('HUD zeigt Runde, Spielerliste und Waffen des aktiven Spielers', async ({ p
   await expect(page.locator('#hud-active')).toContainText('am Zug');
 });
 
-test('Zielvorschau liefert eine ballistische Flugbahn', async ({ page }) => {
+test('Zielvorschau liefert eine ballistische Flugbahn @critical', async ({ page }) => {
   await bootMatch(page, { seed: 7 });
 
   const preview = await page.evaluate(() => window.__PA__.aimPreview(Math.PI / 4, 70));
@@ -104,7 +104,7 @@ test('Zielvorschau liefert eine ballistische Flugbahn', async ({ page }) => {
   expect(minY).toBeLessThan(preview[0].y);
 });
 
-test('Schuss erzeugt ein Projektil und beendet den Zug', async ({ page }) => {
+test('Schuss erzeugt ein Projektil und beendet den Zug @critical', async ({ page }) => {
   await bootMatch(page, { seed: 31337 });
 
   const before = await page.evaluate(() => window.__PA__.getState());
@@ -121,7 +121,7 @@ test('Schuss erzeugt ein Projektil und beendet den Zug', async ({ page }) => {
   expect(after.activePlayerId).not.toBe(before.activePlayerId);
 });
 
-test('Match läuft deterministisch bis zum Spielende', async ({ page }) => {
+test('Match läuft deterministisch bis zum Spielende @critical', async ({ page }) => {
   await bootMatch(page, { seed: 5150 });
 
   const finalState = await page.evaluate(() => {
@@ -172,7 +172,7 @@ test('Match läuft deterministisch bis zum Spielende', async ({ page }) => {
   await expect(page.locator('#winner-text')).toContainText('gewinnt');
 });
 
-test('Gleicher Seed erzeugt identischen Matchzustand', async ({ page }) => {
+test('Gleicher Seed erzeugt identischen Matchzustand @critical', async ({ page }) => {
   const first = await (async () => {
     await bootMatch(page, { seed: 8675309 });
     return page.evaluate(() => {
@@ -192,7 +192,7 @@ test('Gleicher Seed erzeugt identischen Matchzustand', async ({ page }) => {
   expect(second).toBe(first);
 });
 
-test('Unterschiedliche Seeds erzeugen unterschiedliche Matches', async ({ page }) => {
+test('Unterschiedliche Seeds erzeugen unterschiedliche Matches @critical', async ({ page }) => {
   await bootMatch(page, { seed: 111 });
   const first = await page.evaluate(() => {
     window.__PA__.advance(60);
@@ -208,7 +208,7 @@ test('Unterschiedliche Seeds erzeugen unterschiedliche Matches', async ({ page }
   expect(second).not.toBe(first);
 });
 
-test('Terrain wird durch Einschläge zerstört', async ({ page }) => {
+test('Terrain wird durch Einschläge zerstört @critical', async ({ page }) => {
   await bootMatch(page, { seed: 2024 });
 
   const cratered = await page.evaluate(async () => {
@@ -230,7 +230,7 @@ test('Terrain wird durch Einschläge zerstört', async ({ page }) => {
   expect(cratered.after).toBe(true);
 });
 
-test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-API', async ({ page }) => {
+test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-API @critical', async ({ page }) => {
   /*
    * FUND (belegt, 2026-09-20): Der Sprung hatte KEINEN Auslöser. Der Code hatte
    * einen Zweig auf `event.code === 'Space'`, der nie lief — die Leertaste

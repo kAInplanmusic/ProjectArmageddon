@@ -46,7 +46,7 @@ async function fluten(page, level) {
   }, level);
 }
 
-test('Eine Figur im Wasser bekommt eine Marke mit Zustand und Prozent', async ({ page }) => {
+test('Eine Figur im Wasser bekommt eine Marke mit Zustand und Prozent @edge', async ({ page }) => {
   await boot(page);
   const ergebnis = await fluten(page, 0.8);
 
@@ -65,7 +65,7 @@ test('Eine Figur im Wasser bekommt eine Marke mit Zustand und Prozent', async ({
   expect(titel.length).toBeGreaterThan(20);
 });
 
-test('Nasses Wasser ohne Ertrinkgefahr wird als „nass" gezeigt', async ({ page }) => {
+test('Nasses Wasser ohne Ertrinkgefahr wird als „nass" gezeigt @edge', async ({ page }) => {
   await boot(page);
   // 0,5 liegt zwischen den Schwellen: gebremst, aber kein Schaden.
   const ergebnis = await fluten(page, 0.5);
@@ -77,7 +77,7 @@ test('Nasses Wasser ohne Ertrinkgefahr wird als „nass" gezeigt', async ({ page
   await expect(marke).not.toContainText('untergetaucht');
 });
 
-test('Das Protokoll meldet den Übergang, nicht jeden Simulationsschritt', async ({ page }) => {
+test('Das Protokoll meldet den Übergang, nicht jeden Simulationsschritt @edge', async ({ page }) => {
   await boot(page);
 
   /*
@@ -126,7 +126,7 @@ test('Das Protokoll meldet den Übergang, nicht jeden Simulationsschritt', async
   expect(meldungen.gesamt).toBeLessThan(15);
 });
 
-test('Wasser verschwindet aus der Anzeige, wenn die Figur heraus ist', async ({ page }) => {
+test('Wasser verschwindet aus der Anzeige, wenn die Figur heraus ist @edge', async ({ page }) => {
   await boot(page);
   await fluten(page, 0.9);
   await expect(page.locator('#roster .status-badge').first()).toBeVisible();

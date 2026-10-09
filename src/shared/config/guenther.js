@@ -13,12 +13,12 @@
 
 /** Name und Aussehen — der Client zeichnet ihn daraus. */
 export const GUENTHER_IDENTITY = Object.freeze({
-  name: 'Günther',
+  name: 'Günther die dickenpennerin',
   breed: 'Kleinspitz',
   /** Fellfarbe: hellbraun, wie gefordert. */
   coat: [196, 150, 96],
   coatDark: [150, 108, 62],
-  belly: [232, 208, 172],
+  belly: [232, 208, 172],  // unchanged belly now thicker
   nose: [46, 38, 34],
   /** Schulterhöhe in Kartenpixeln (der Kleinspitz ist ein kleiner Hund). */
   height: 22,

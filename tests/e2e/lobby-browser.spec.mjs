@@ -61,7 +61,7 @@ async function createLobby({ preset = 'hills', teams = 2, playersPerTeam = 2 } =
   return response.json();
 }
 
-test('Lobby-Browser listet offene Lobbys und übernimmt die Auswahl', async ({ page }) => {
+test('Lobby-Browser listet offene Lobbys und übernimmt die Auswahl @network', async ({ page }) => {
   // Zwei Lobbys mit unterschiedlicher Karte anlegen, damit die Anzeige
   // nachweislich echte Serverdaten zeigt und nicht einen festen Text.
   const erste = await createLobby({ preset: 'mountains', playersPerTeam: 1 });
@@ -108,7 +108,7 @@ test('Lobby-Browser listet offene Lobbys und übernimmt die Auswahl', async ({ p
   expect(diagnostics.console, `Konsolenfehler: ${diagnostics.console.join(' | ')}`).toEqual([]);
 });
 
-test('Lobby-Browser behandelt einen nicht erreichbaren Server sauber', async ({ page }) => {
+test('Lobby-Browser behandelt einen nicht erreichbaren Server sauber @network', async ({ page }) => {
   const diagnostics = { pageErrors: [] };
   page.on('pageerror', error => diagnostics.pageErrors.push(error.message));
 
@@ -128,7 +128,7 @@ test('Lobby-Browser behandelt einen nicht erreichbaren Server sauber', async ({ 
   expect(diagnostics.pageErrors).toEqual([]);
 });
 
-test('Lobby-Browser meldet fehlende Server-URL statt zu laden', async ({ page }) => {
+test('Lobby-Browser meldet fehlende Server-URL statt zu laden @network', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
@@ -141,7 +141,7 @@ test('Lobby-Browser meldet fehlende Server-URL statt zu laden', async ({ page })
   await expect(page.locator('#lobby-status')).toContainText('Server-URL');
 });
 
-test('Lobby-Browser zeigt keine Tokens oder Sitzdaten an', async ({ page }) => {
+test('Lobby-Browser zeigt keine Tokens oder Sitzdaten an @network', async ({ page }) => {
   const lobby = await createLobby({ preset: 'caverns' });
 
   await page.goto('/');

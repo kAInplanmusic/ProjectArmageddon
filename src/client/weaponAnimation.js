@@ -41,6 +41,49 @@
  * 7 statt 6. Bei 8 ist `1/8 = 0,125` exakt darstellbar: Die Lebensdauer ist
  * damit genau das, was hier steht, und Tests können sie festnageln.
  */
+
+/**
+ * Weapon-specific visual styles based on damage type and category.
+ */
+export const WAFFEN_STILE = {
+  farben: {
+    fire: '#ff5500',
+    energy: '#4cc9f0',
+    plasma: '#a855f7',
+    electric: '#fbbf24',
+    ice: '#e8eef5',
+    poison: '#90be6d',
+    physical: '#ffe066',
+    explosive: '#f4a261',
+    magic: '#9d4edd',
+  },
+  rueckstoss: {
+    melee: 0.4,
+    ranged: 1.0,
+    heavy_ranged: 2.2,
+    ultimate: 3.5,
+    tech: 1.4,
+    magic: 0.7,
+    elemental: 1.1,
+    utility: 0.5,
+  }
+};
+
+/**
+ * Returns the color and recoil multiplier for a specific weapon.
+ */
+export function waffenEigenschaften(weapon) {
+  if (!weapon) return { farbe: WAFFEN_STILE.farben.physical, rueckstoss: 1 };
+  
+  const type = weapon.stats?.damage_type || 'physical';
+  const cat = weapon.category || 'ranged';
+  
+  return {
+    farbe: WAFFEN_STILE.farben[type] || WAFFEN_STILE.farben.physical,
+    rueckstoss: WAFFEN_STILE.rueckstoss[cat] || 1
+  };
+}
+
 export const MUENDUNGSFEUER_BILDER = 8;
 
 /**
@@ -77,10 +120,10 @@ export function pulsFaktor(bild, { reducedMotion = false, amplitude = 0.15 } = {
  * Der Wert klingt über die Lebensdauer des Effekts ab: im ersten Bild am
  * größten, danach linear auf 0.
  */
-export function rueckstossVersatz(life, { reducedMotion = false } = {}) {
+export function rueckstossVersatz(life, { reducedMotion = false, staerke = 1 } = {}) {
   if (reducedMotion) return 0;
   const anteil = Math.max(0, Math.min(1, life));
-  const versatz = -RUECKSTOSS_MAX * anteil;
+  const versatz = -RUECKSTOSS_MAX * staerke * anteil;
   // `-0` vermeiden: Es ist rechnerisch dasselbe wie 0, aber `Object.is(-0, 0)`
   // ist false — und ein `-0` in einer Anzeige oder einem Vergleich ist eine
   // Falle, die niemand sucht.
@@ -99,7 +142,7 @@ export function rueckstossVersatz(life, { reducedMotion = false } = {}) {
  * @returns {{offsetX:number, offsetY:number, length:number, halfWidth:number,
  *   coreRadius:number, alpha:number}}
  */
-export function muendungsfeuer(angle, life, { reducedMotion = false } = {}) {
+export function muendungsfeuer(angle, life, { reducedMotion = false, staerke = 1 } = {}) {
   const anteil = Math.max(0, Math.min(1, life));
   // Der Kegel wächst nach vorn, während er verblasst.
   const wachstum = 1 + (1 - anteil) * 0.8;
@@ -107,7 +150,7 @@ export function muendungsfeuer(angle, life, { reducedMotion = false } = {}) {
   const halfWidth = 4.2 * wachstum;
 
   // Die Mündung liegt am Ende des Rohres. Der Rückstoß zieht sie nach hinten.
-  const versatz = ROHR_LAENGE + rueckstossVersatz(life, { reducedMotion });
+  const versatz = ROHR_LAENGE + rueckstossVersatz(life, { reducedMotion, staerke });
 
   /* Kein Pulsieren bei reduzierter Bewegung: Der Kern ist dann konstant groß. */
   const coreRadius = reducedMotion ? 3 : 3 + (1 - anteil) * 2;
@@ -189,12 +232,13 @@ export function ladungAnteil(rest, gesamt) {
  * bleibt es auch dann richtig, wenn sich die Figur zwischen Ereignis und Bild
  * bewegt hat.
  */
-export function erzeugeMuendungsfeuer(entityId, angle, { farbe = '#ffe066' } = {}) {
+export function erzeugeMuendungsfeuer(entityId, angle, { farbe = '#ffe066', staerke = 1 } = {}) {
   return {
     kind: 'muzzle',
     entityId,
     angle,
     farbe,
+    staerke,
     life: 1,
     // Die Alterung übernimmt `schreiteEffekteFort` (effects.js) — sie rechnet
     // nur `life - decay`, es braucht also keine weiteren Felder.

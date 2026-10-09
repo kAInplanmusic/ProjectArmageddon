@@ -42,7 +42,7 @@ async function matchStarten(page, { seed = 20260911 } = {}) {
 
 // ------------------------------------------------------- zugängliche Namen
 
-test('Kein bedienbares Element bleibt im Menü ohne Namen', async ({ page, context }) => {
+test('Kein bedienbares Element bleibt im Menü ohne Namen @ui', async ({ page, context }) => {
   const cdp = await context.newCDPSession(page);
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
@@ -66,7 +66,7 @@ test('Kein bedienbares Element bleibt im Menü ohne Namen', async ({ page, conte
   expect(benannt.join(' | ').toLowerCase()).toContain('match starten');
 });
 
-test('Auch im laufenden Match ist jedes bedienbare Element benannt', async ({ page, context }) => {
+test('Auch im laufenden Match ist jedes bedienbare Element benannt @ui', async ({ page, context }) => {
   const cdp = await context.newCDPSession(page);
   await matchStarten(page);
 
@@ -94,7 +94,7 @@ test('Auch im laufenden Match ist jedes bedienbare Element benannt', async ({ pa
 
 // ------------------------------------------------------------- Live-Region
 
-test('Das Ereignisprotokoll ist eine Live-Region für laufende Meldungen', async ({ page }) => {
+test('Das Ereignisprotokoll ist eine Live-Region für laufende Meldungen @ui', async ({ page }) => {
   await matchStarten(page);
 
   const merkmal = await page.evaluate(() => {
@@ -123,7 +123,7 @@ test('Das Ereignisprotokoll ist eine Live-Region für laufende Meldungen', async
   expect(knoten.ariaLive).toBe('polite');
 });
 
-test('Eine neue Meldung erzeugt genau EINEN neuen Knoten', async ({ page }) => {
+test('Eine neue Meldung erzeugt genau EINEN neuen Knoten @ui', async ({ page }) => {
   /*
    * Der Kern der Sache. Würde `Hud#log` die Liste bei jeder Meldung neu
    * aufbauen (wie vorher mit `replaceChildren`), dann sähe die Live-Region bei
@@ -159,7 +159,7 @@ test('Eine neue Meldung erzeugt genau EINEN neuen Knoten', async ({ page }) => {
   expect(befund.texte).toContain('Zweite Testzeile');
 });
 
-test('Das Protokoll wird oben begrenzt und meldet keine Entfernung', async ({ page }) => {
+test('Das Protokoll wird oben begrenzt und meldet keine Entfernung @ui', async ({ page }) => {
   await matchStarten(page);
 
   const befund = await page.evaluate(() => {
@@ -179,7 +179,7 @@ test('Das Protokoll wird oben begrenzt und meldet keine Entfernung', async ({ pa
   expect(befund.ersteTexte[0]).toBe('Füllzeile 79');
 });
 
-test('Der Zugwechsel wird gemeldet', async ({ page }) => {
+test('Der Zugwechsel wird gemeldet @ui', async ({ page }) => {
   /*
    * Für einen Screenreader ist „wer ist dran" die wichtigste Frage. Die
    * Anzeige `#hud-active` ist sichtbar, aber keine Live-Region — die Meldung
@@ -223,7 +223,7 @@ test('Der Zugwechsel wird gemeldet', async ({ page }) => {
   expect(letzte).toMatch(/^P\d+ ist am Zug$/);
 });
 
-test('Runde, Wind und Zugzeit sind absichtlich KEINE Live-Region', async ({ page }) => {
+test('Runde, Wind und Zugzeit sind absichtlich KEINE Live-Region @ui', async ({ page }) => {
   /*
    * Gegenprobe zur Entscheidung: Diese drei ändern sich im Sekundentakt. Wären
    * sie Live-Regionen, redete der Screenreader pausenlos und übertönte jede
@@ -251,7 +251,7 @@ test('Runde, Wind und Zugzeit sind absichtlich KEINE Live-Region', async ({ page
 
 // ------------------------------------------------------------ Waffenauswahl
 
-test('Die Waffenliste ist ohne Maus bedienbar und wird als Knopf benannt', async ({ page, context }) => {
+test('Die Waffenliste ist ohne Maus bedienbar und wird als Knopf benannt @ui', async ({ page, context }) => {
   const cdp = await context.newCDPSession(page);
   await matchStarten(page);
 
@@ -275,7 +275,7 @@ test('Die Waffenliste ist ohne Maus bedienbar und wird als Knopf benannt', async
   expect(aktuell).toBe(1);
 });
 
-test('Leertaste auf einer Waffenzeile wählt und feuert NICHT', async ({ page }) => {
+test('Leertaste auf einer Waffenzeile wählt und feuert NICHT @ui', async ({ page }) => {
   /*
    * Die Leertaste feuert im Spiel (Eingabe-Controller global am Fenster). Auf
    * einer fokussierten Waffenzeile muss sie die Waffe WÄHLEN und darf nicht
@@ -312,7 +312,7 @@ test('Leertaste auf einer Waffenzeile wählt und feuert NICHT', async ({ page })
   expect(ergebnis.aktiveWaffe).toBeTruthy();
 });
 
-test('Der Fokus auf einer Waffenzeile überlebt den Neuaufbau der Liste', async ({ page }) => {
+test('Der Fokus auf einer Waffenzeile überlebt den Neuaufbau der Liste @ui', async ({ page }) => {
   /*
    * Fund (belegt): Die Waffenliste wird bei jeder Änderung neu aufgebaut
    * (`replaceChildren`) — nach einem Schuss, nach dem Waffenwechsel, beim
@@ -353,7 +353,7 @@ test('Der Fokus auf einer Waffenzeile überlebt den Neuaufbau der Liste', async 
   expect(befund.fokusNachher).toBe(befund.waffe);
 });
 
-test('Tab erreicht die Waffenliste und das Spielfeld', async ({ page }) => {
+test('Tab erreicht die Waffenliste und das Spielfeld @ui', async ({ page }) => {
   // Grobe Fokusreihenfolge: Der Sprunglink führt zum Spielfeld, und die
   // Waffenzeilen liegen in der Tab-Reihenfolge.
   await matchStarten(page);

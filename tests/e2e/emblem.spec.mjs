@@ -32,7 +32,7 @@ async function setzeProfil(page, profil) {
 }
 
 test.describe('Erfolgs-Emblem', () => {
-  test('Ohne erreichte Erfolge erscheint kein Emblem', async ({ page }) => {
+  test('Ohne erreichte Erfolge erscheint kein Emblem @edge', async ({ page }) => {
     /*
      * Ein leerer Platzhalter wäre irreführend — er sähe aus wie ein verpasster
      * Erfolg. Die Anzeige zeigt dann gar nichts.
@@ -43,7 +43,7 @@ test.describe('Erfolgs-Emblem', () => {
     await expect(page.locator('#roster .roster-emblem')).toHaveCount(0);
   });
 
-  test('Mit erreichten Erfolgen erscheint das Emblem am eigenen Namen', async ({ page }) => {
+  test('Mit erreichten Erfolgen erscheint das Emblem am eigenen Namen @edge', async ({ page }) => {
     /*
      * Geprüft wird gegen die ABLEITUNG, nicht gegen eine im Test abgetippte
      * Zahl: Nur so ist belegt, dass die Anzeige aus derselben Quelle stammt.
@@ -68,7 +68,7 @@ test.describe('Erfolgs-Emblem', () => {
     if (erwartet.nurMuster) expect(titel).toContain('Muster');
   });
 
-  test('Das Emblem steht am EIGENEN Spieler, nicht an fremden', async ({ page }) => {
+  test('Das Emblem steht am EIGENEN Spieler, nicht an fremden @edge', async ({ page }) => {
     /*
      * Nur das eigene Profil liegt vor. Ein Emblem an einem fremden Namen wäre
      * geraten — die Kernprüfung dieser Datei.
@@ -94,7 +94,7 @@ test.describe('Erfolgs-Emblem', () => {
     expect(befund.alleIds.length).toBeGreaterThan(1);
   });
 
-  test('Der Rang färbt das Abzeichen — der Client erfindet keine Farbe', async ({ page }) => {
+  test('Der Rang färbt das Abzeichen — der Client erfindet keine Farbe @edge', async ({ page }) => {
     /*
      * Die Farbe kommt aus dem CSS über `data-tier`. Damit ist die Zuordnung
      * Rang → Farbe an EINER Stelle (dem Stylesheet) und nicht im Code
@@ -142,7 +142,7 @@ test.describe('Erfolgs-Emblem', () => {
     expect(befund?.farbe).toMatch(/^rgb/);
   });
 
-  test('Ein unbekannter Erfolg verfälscht das Emblem nicht', async ({ page }) => {
+  test('Ein unbekannter Erfolg verfälscht das Emblem nicht @edge', async ({ page }) => {
     // Toleranz wie überall: Eine Kennung aus einer älteren Fassung zählt nicht
     // mit, statt die Anzeige zu verfälschen.
     await setzeProfil(page, {

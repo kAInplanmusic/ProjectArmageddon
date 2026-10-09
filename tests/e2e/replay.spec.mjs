@@ -60,7 +60,7 @@ async function replayLaden(page, dokument) {
   return geladen;
 }
 
-test('Eine Aufzeichnung lässt sich laden und Schritt für Schritt ansehen', async ({ page }) => {
+test('Eine Aufzeichnung lässt sich laden und Schritt für Schritt ansehen @edge', async ({ page }) => {
   const { dokument, totalTicks } = aufzeichnen();
   expect(await replayLaden(page, dokument)).toBe(true);
 
@@ -80,7 +80,7 @@ test('Eine Aufzeichnung lässt sich laden und Schritt für Schritt ansehen', asy
   expect((await page.evaluate(() => window.__PA__.replay())).tick).toBe(31);
 });
 
-test('Der Spielzustand im Browser entspricht der Aufzeichnung', async ({ page }) => {
+test('Der Spielzustand im Browser entspricht der Aufzeichnung @edge', async ({ page }) => {
   /*
    * Der entscheidende Test. Wird hier ein anderer Hash erreicht als beim
    * Aufzeichnen, zeigt die Anzeige ein anderes Match als `replay --verify`
@@ -104,7 +104,7 @@ test('Der Spielzustand im Browser entspricht der Aufzeichnung', async ({ page })
   expect(ergebnis.hash).toBe(endHash);
 });
 
-test('Springen ist deterministisch — auch rückwärts', async ({ page }) => {
+test('Springen ist deterministisch — auch rückwärts @edge', async ({ page }) => {
   const { dokument } = aufzeichnen();
   await replayLaden(page, dokument);
 
@@ -129,7 +129,7 @@ test('Springen ist deterministisch — auch rückwärts', async ({ page }) => {
   expect(rueckwaerts.hash).toBe(vorwaerts.hash);
 });
 
-test('Abspielen, Pause und Neustart steuern die Wiedergabe', async ({ page }) => {
+test('Abspielen, Pause und Neustart steuern die Wiedergabe @edge', async ({ page }) => {
   const { dokument } = aufzeichnen();
   await replayLaden(page, dokument);
 
@@ -150,7 +150,7 @@ test('Abspielen, Pause und Neustart steuern die Wiedergabe', async ({ page }) =>
   expect(await page.evaluate(() => window.__PA__.replay().tick)).toBe(0);
 });
 
-test('Die Wiedergabe endet und dann passiert nichts mehr', async ({ page }) => {
+test('Die Wiedergabe endet und dann passiert nichts mehr @edge', async ({ page }) => {
   const { dokument, totalTicks } = aufzeichnen();
   await replayLaden(page, dokument);
 
@@ -167,7 +167,7 @@ test('Die Wiedergabe endet und dann passiert nichts mehr', async ({ page }) => {
   expect(await page.evaluate(() => window.__PA__.replay().tick)).toBe(amEnde);
 });
 
-test('Im Replay kann nicht gespielt werden', async ({ page }) => {
+test('Im Replay kann nicht gespielt werden @edge', async ({ page }) => {
   /*
    * Fund-Absicherung: Ohne Sperre würde ein Tastendruck die nachgespielte
    * Rechnung verändern — der Zustand wäre danach weder das Replay noch ein
@@ -197,7 +197,7 @@ test('Im Replay kann nicht gespielt werden', async ({ page }) => {
   expect(nachher.tick).toBe(vorher.tick);
 });
 
-test('Die Aufzeichnung ist klein — sie enthält nur Eingaben', async ({ page }) => {
+test('Die Aufzeichnung ist klein — sie enthält nur Eingaben @edge', async ({ page }) => {
   /*
    * Der Grund, warum eine Aufzeichnung wenige Kilobyte groß ist und jede Stelle
    * angesprungen werden kann: Sie enthält Seed und Schüsse, nicht den Verlauf.

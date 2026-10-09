@@ -32,7 +32,7 @@ async function weaponWithEffect(page, kind) {
   }, kind);
 }
 
-test('Heilung wirkt und erscheint im Protokoll', async ({ page }) => {
+test('Heilung wirkt und erscheint im Protokoll @edge', async ({ page }) => {
   await boot(page);
 
   const heilwaffe = await weaponWithEffect(page, 'heal');
@@ -62,7 +62,7 @@ test('Heilung wirkt und erscheint im Protokoll', async ({ page }) => {
   await expect(page.locator('#log-list')).toContainText('heilt');
 });
 
-test('Schild erscheint als Marke in der Spielerliste', async ({ page }) => {
+test('Schild erscheint als Marke in der Spielerliste @edge', async ({ page }) => {
   await boot(page, { seed: 4711 });
 
   const schildwaffe = await weaponWithEffect(page, 'shield');
@@ -88,7 +88,7 @@ test('Schild erscheint als Marke in der Spielerliste', async ({ page }) => {
   await expect(marke.first()).toHaveAttribute('title', /Schild/);
 });
 
-test('Einfrieren lässt einen Zug aussetzen und wird gemeldet', async ({ page }) => {
+test('Einfrieren lässt einen Zug aussetzen und wird gemeldet @edge', async ({ page }) => {
   await boot(page, { seed: 909 });
 
   const ergebnis = await page.evaluate(() => {
@@ -113,7 +113,7 @@ test('Einfrieren lässt einen Zug aussetzen und wird gemeldet', async ({ page })
   expect(ergebnis.eingefroren).toBe(false);
 });
 
-test('Schaden über Zeit wirkt bei jedem Zugbeginn', async ({ page }) => {
+test('Schaden über Zeit wirkt bei jedem Zugbeginn @edge', async ({ page }) => {
   await boot(page, { seed: 31415 });
 
   const verlauf = await page.evaluate(() => {
@@ -138,7 +138,7 @@ test('Schaden über Zeit wirkt bei jedem Zugbeginn', async ({ page }) => {
   expect(Math.round(verlauf[0] - verlauf[1])).toBe(15);
 });
 
-test('Selbstwirkende Waffe erzeugt kein Projektil und beendet den Zug', async ({ page }) => {
+test('Selbstwirkende Waffe erzeugt kein Projektil und beendet den Zug @edge', async ({ page }) => {
   await boot(page, { seed: 6060 });
 
   const nachschub = await weaponWithEffect(page, 'ammo');
@@ -185,7 +185,7 @@ test('Selbstwirkende Waffe erzeugt kein Projektil und beendet den Zug', async ({
   expect(ergebnis.zugNachher).not.toBe(ergebnis.zugVorher);
 });
 
-test('Das Match bleibt nach allen Effekten lauffähig', async ({ page }) => {
+test('Das Match bleibt nach allen Effekten lauffähig @edge', async ({ page }) => {
   await boot(page, { seed: 12321 });
 
   // Alle Wirkungsarten nacheinander auslösen und danach bis zum Spielende
@@ -245,7 +245,7 @@ test('Das Match bleibt nach allen Effekten lauffähig', async ({ page }) => {
   expect(ergebnis.runde).toBeGreaterThan(1);
 });
 
-test('Determinismus bleibt mit Effekten erhalten', async ({ page }) => {
+test('Determinismus bleibt mit Effekten erhalten @edge', async ({ page }) => {
   // Zwei Läufe mit gleichem Seed müssen denselben Hash ergeben — auch wenn
   // Effekte im Spiel sind. Der Zufall der Zufallswaffe darf daran nichts ändern.
   await boot(page, { seed: 777 });

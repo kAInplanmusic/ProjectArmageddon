@@ -1,4 +1,5 @@
 /**
+import { waffenEigenschaften } from './weaponAnimation.js';
  * Wirkungen der Ereignisse — EINE Zuordnungstabelle für beide Betriebsarten.
  *
  * ## Warum diese Datei existiert
@@ -307,24 +308,14 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   shot: {
     lokal: (k, n) => {
-      /*
-       * Der Abschuss hat einen Klang — und seit 2026-09-25 ein
-       * Mündungsfeuer.
-       *
-       * Vorher stand hier NUR der Klang: Der Schuss war zu hören, aber an
-       * der Figur geschah nichts. Bei einem Spiel, dessen ganze Handlung
-       * aus Schüssen besteht, ist das die auffälligste Lücke der
-       * Darstellung — man sieht nicht, WER geschossen hat.
-       *
-       * Das Ereignis trägt `playerId` und `angle`; mehr braucht der
-       * Renderer nicht, weil er das Feuer an der AKTUELLEN Position der
-       * Figur zeichnet (siehe `addMuzzleFlash`). Der Klang bleibt an
-       * derselben Stelle — die Regel „wer spielt, entscheidet der Mischer"
-       * gilt unverändert.
-       */
-      k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0);
-      k.sound?.verarbeite({ type: 'shot' });
-    },
+      // Get weapon for styling
+      const weapon = n.weaponId ? getWeapon(n.weaponId) : null;
+      const { farbe, rueckstoss } = weapon 
+        ? waffenEigenschaften(weapon) 
+        : { farbe: '#ffe066', rueckstoss: 1 };
+      
+      k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0, { farbe, staerke: rueckstoss });
+      k.sound?.verarbeite({ type: 'shot' });,
     // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
     // zeichnen, aber die Vorhersage ist damit erledigt und der Schuss zu hören.
     online: (k) => {

@@ -707,7 +707,7 @@ for (const form of FORMEN) {
  * ANDERER Browser als in den übrigen Tests läuft.
  */
 test.describe('Bildzeiten mit Hardware-Beschleunigung', () => {
-  test('Bildzeiten auf dem echten Grafikpfad', async () => {
+  test('Bildzeiten auf dem echten Grafikpfad @critical @slow @edge', async () => {
     /*
      * Diese Prüfung MISST und braucht dafür Zeit: Ihr eigenes Zeitlimit von 60 s
      * riß sie auf diesem Rechner (Browser-Start, 300 Bilder bei ~33 ms, fünf
@@ -792,7 +792,7 @@ test.describe('Bildzeiten mit Hardware-Beschleunigung', () => {
  * — er ist das Maß, das beide verbindet.
  */
 test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
-  test('Das Spiel kostet deutlich weniger als ein 60-Hz-Budget', async ({ page }) => {
+  test('Das Spiel kostet deutlich weniger als ein 60-Hz-Budget @critical @slow @edge', async ({ page }) => {
     // Auf einem Software-Rasterer dauert der leere Takt selbst ~200 ms je Bild;
     // 150 Bilder je Seite passen dann nicht in 60 s (gemessen: Timeout).
     test.slow();
@@ -874,7 +874,7 @@ test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
  * würde ein Leck je Neuaufbau (etwa ein neuer Puffer ohne Freigabe) im Test
  * nicht auffallen.
  */
-test('Terrain-Neuaufbau: Fläche stimmt mit dem Match überein', async ({ page }) => {
+test('Terrain-Neuaufbau: Fläche stimmt mit dem Match überein @critical @slow @edge', async ({ page }) => {
   test.slow();
   const befund = await messen(page, { form: 'mountains', bilder: 60, feuern: false });
 

@@ -18,7 +18,7 @@ async function oeffneSidegrades(page) {
 }
 
 test.describe('Sidegrade-Auswahl im Menü', () => {
-  test('Je Klasse gibt es ein Feld mit den Optionen aus der Config', async ({ page }) => {
+  test('Je Klasse gibt es ein Feld mit den Optionen aus der Config @ui', async ({ page }) => {
     /*
      * Die Optionen dürfen NICHT im Markup stehen — sie kommen aus
      * `sidegradesForClass()`. Geprüft wird gegen die Config, nicht gegen eine
@@ -50,7 +50,7 @@ test.describe('Sidegrade-Auswahl im Menü', () => {
     }
   });
 
-  test('Die Optionen tragen Name und Erklärung', async ({ page }) => {
+  test('Die Optionen tragen Name und Erklärung @ui', async ({ page }) => {
     // Ein Feld mit nackten Kennungen wäre unbrauchbar: Der Spieler muss sehen,
     // was er tauscht.
     await oeffneSidegrades(page);
@@ -63,7 +63,7 @@ test.describe('Sidegrade-Auswahl im Menü', () => {
     expect(texte.some(t => t.includes('—'))).toBe(true);
   });
 
-  test('Der Start übernimmt die Wahl ins Match', async ({ page }) => {
+  test('Der Start übernimmt die Wahl ins Match @ui', async ({ page }) => {
     /*
      * Der Kern: Die Auswahl im Formular muss das Kampfprofil erreichen. Geprüft
      * wird am LEBEN der Figur — der Sidegrade „gepanzert" gibt mehr davon, und
@@ -116,7 +116,7 @@ test.describe('Sidegrade-Auswahl im Menü', () => {
       .toBe(true);
   });
 
-  test('Ohne Wahl bleibt das Match wie zuvor', async ({ page }) => {
+  test('Ohne Wahl bleibt das Match wie zuvor @ui', async ({ page }) => {
     // Die Abwärtskompatibilität im Browser: Standard ist „ohne Sidegrade", und
     // dann darf sich nichts ändern.
     await page.goto('/');
@@ -129,7 +129,7 @@ test.describe('Sidegrade-Auswahl im Menü', () => {
     expect(sidegrades.every(s => s === null)).toBe(true);
   });
 
-  test('Die Anzeige der Sidegrade-Erklärung nennt keine Zahlen', async ({ page }) => {
+  test('Die Anzeige der Sidegrade-Erklärung nennt keine Zahlen @ui', async ({ page }) => {
     // Dieselbe Regel wie bei Klassen und Gelände: Zahlen stehen in den
     // Faktoren, nicht im Text — sonst gäbe es eine zweite Quelle.
     await oeffneSidegrades(page);
