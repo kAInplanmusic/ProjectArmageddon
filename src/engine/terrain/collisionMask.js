@@ -55,6 +55,7 @@ export class CollisionMask {
   #words; // Uint32Array
   #dirty = false;
   #craters = [];
+  #version = 0;
 
   constructor(width, height) {
     if (width <= 0 || height <= 0) {
@@ -117,6 +118,31 @@ export class CollisionMask {
     }
 
     this.#dirty = true;
+    this.#version += 1;
+  }
+
+  /**
+   * Zählt jede Änderung der Maske. Wer aus der Maske Abgeleitetes zwischenspeichert
+   * (z. B. die Oberflächenhöhe je Spalte), vergleicht diese Zahl und wirft seinen
+   * Zwischenspeicher bei einer Änderung weg.
+   */
+  get version() { return this.#version; }
+
+  /**
+   * Höchster fester Pixel einer Spalte — die Oberfläche, wie sie JETZT ist.
+   * @param {number} x - wird wie bei der Kartensuche abgerundet und an den Rand geklemmt
+   * @returns {number} Y oder -1, wenn die Spalte leer ist
+   */
+  topSolidY(x) {
+    const spalte = Math.max(0, Math.min(this.#width - 1, Math.floor(x)));
+    if (Number.isNaN(spalte)) return -1;
+    const wordsPerRow = Math.ceil(this.#width / 32);
+    const wortSpalte = Math.floor(spalte / 32);
+    const maske = 1 << (spalte % 32);
+    for (let y = 0; y < this.#height; y++) {
+      if (this.#words[y * wordsPerRow + wortSpalte] & maske) return y;
+    }
+    return -1;
   }
 
   /**

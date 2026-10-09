@@ -10,7 +10,6 @@
 import { createGameWorld, SYSTEM_PRIORITIES } from './init.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
-import { surfaceY as findSurfaceY } from '../shared/terrainGen.js';
 import { materialAmPunkt } from '../shared/terrainGen3.js';
 import { TERRAIN_MATERIAL, RUECKPRALL_MINDESTTEMPO } from '../shared/config/terrain.js';
 import { baueAnsichtszustand, hashState } from './stateSnapshot.js';
@@ -420,6 +419,8 @@ export class MatchController {
   #bitmap;
   /** Oberflächenhöhe je Spalte (`OBERFLAECHE_UNBEKANNT` = noch nicht gesucht). */
   #oberflaeche = null;
+  /** `version` der Maske, zu der der Merker oben gehört. */
+  #oberflaecheVersion = -1;
   /**
    * Das Bodenmaterial-Feld dieser Karte (Eis, Gummi, Erde) — oder `null`.
    *
@@ -2739,23 +2740,34 @@ export class MatchController {
 
   surfaceYAt(x) {
     /*
-     * Je Spalte nur EINMAL gesucht.
+     * Die Oberfläche, wie sie JETZT ist — aus der Kollisionsmaske, nicht aus der
+     * Karte des Aufbaus.
      *
-     * Fund (belegt, Audit 2026-10-09): `findSurfaceY` tastet die Spalte von oben
-     * ab (bis zu 1440 Zellen). Die Geschütz-Zielsuche (`#simulateTurretPath`)
-     * ruft das je Bahnschritt zweimal auf, über das ganze Raster aus Kraft und
-     * Winkel — gemessen 25–38 ms in einem einzelnen Tick (Budget 16,7 ms).
+     * FUND (belegt, Audit 2026-10-09, zuerst falsch eingeordnet): Hier stand die
+     * Suche in `#bitmap`, der Karte AUS DEM AUFBAU. Krater gehen aber nur in die
+     * Maske (`#terrain`); die Bitmap bleibt unverändert. Folge: Alles, was sich an
+     * der Oberfläche ausrichtet, sah Boden, den ein Krater längst entfernt hatte.
+     * Gemessen: bei 9 Einschlägen lag `surfaceYAt` in 7 Kratermitten bis zu 20 px
+     * über dem echten Boden; eine Kiste, die über einem Krater (r = 40) landete,
+     * blieb 41 px über dem Boden in der Luft stehen und war 300 Ticks später noch
+     * dort (die Physik überspringt Kisten). Dasselbe gilt für Günther (läuft auf
+     * dieser Höhe), die Bahnplanung der Geschütze, das Versetzen von Figuren und
+     * den Kistenabwurf einer Runde.
      *
-     * Der Cache ist folgenlos für die Simulation: `#bitmap` ist die Karte AUS DEM
-     * AUFBAU und wird nie verändert (Krater gehen in die Kollisionsmaske
-     * `#terrain`, nicht in die Bitmap), die Antwort hängt also nur von `x` ab.
+     * Die Höhe je Spalte wird gemerkt. Der Merker gilt, solange sich die Maske nicht
+     * ändert (`version`); jede Änderung (Krater, Mahlstrom) verwirft ihn ganz —
+     * Änderungen sind selten (ein Einschlag, eine Runde), Abfragen sehr häufig (die
+     * Geschützsuche fragt zigtausendmal, siehe Tick-Spitzen 25–38 ms).
      */
+    if (this.#oberflaecheVersion !== this.#terrain.version) {
+      this.#oberflaeche.fill(OBERFLAECHE_UNBEKANNT);
+      this.#oberflaecheVersion = this.#terrain.version;
+    }
     const spalte = Math.max(0, Math.min(this.width - 1, Math.floor(x)));
     if (Number.isNaN(spalte)) return -1;
     let boden = this.#oberflaeche[spalte];
     if (boden === OBERFLAECHE_UNBEKANNT) {
-      const gesucht = findSurfaceY(this.#bitmap, this.width, this.height, spalte);
-      boden = gesucht < 0 ? -1 : gesucht;
+      boden = this.#terrain.topSolidY(spalte);
       this.#oberflaeche[spalte] = boden;
     }
     return boden;
