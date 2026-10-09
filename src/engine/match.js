@@ -276,6 +276,8 @@ export const HOHECHSTE_KRAFT = 100;
  * Erreichbarkeitspfad die geteilte Konstante nahm. Wer `PROJECTILE_GRAVITY`
  * getunt haette, haette das Geschuetz STILL falsch zielen lassen.
  */
+/** Marke im Oberflächen-Cache: Spalte noch nicht abgetastet. */
+const OBERFLAECHE_UNBEKANNT = -2;
 const GRAVITY = PROJECTILE_GRAVITY;
 const MAX_WIND = 0.05;
 /** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
@@ -416,6 +418,8 @@ export class MatchController {
   #events = new EventBus();
   #terrain;
   #bitmap;
+  /** Oberflächenhöhe je Spalte (`OBERFLAECHE_UNBEKANNT` = noch nicht gesucht). */
+  #oberflaeche = null;
   /**
    * Das Bodenmaterial-Feld dieser Karte (Eis, Gummi, Erde) — oder `null`.
    *
@@ -811,6 +815,7 @@ export class MatchController {
     });
 
     this.#bitmap = ergebnis.bitmap;
+    this.#oberflaeche = new Int32Array(this.width).fill(OBERFLAECHE_UNBEKANNT);
     this.#terrain = CollisionMask.fromBitmap(this.#bitmap, this.width, this.height);
     this.#material = ergebnis.material;
     this.kartencharakter = ergebnis.kartencharakter;
@@ -1914,7 +1919,8 @@ export class MatchController {
       x += vx;
       y += vy;
       if (x < 0 || x > this.width || y > this.height) break;
-      if (this.surfaceYAt(Math.round(x)) > 0 && y >= this.surfaceYAt(Math.round(x))) {
+      const boden = this.surfaceYAt(Math.round(x));
+      if (boden > 0 && y >= boden) {
         bahn.push({ x, y });
         break;
       }
@@ -2732,8 +2738,27 @@ export class MatchController {
   // -------------------------------------------------------------- Zugriff
 
   surfaceYAt(x) {
-    const groundY = findSurfaceY(this.#bitmap, this.width, this.height, x);
-    return groundY < 0 ? -1 : groundY;
+    /*
+     * Je Spalte nur EINMAL gesucht.
+     *
+     * Fund (belegt, Audit 2026-10-09): `findSurfaceY` tastet die Spalte von oben
+     * ab (bis zu 1440 Zellen). Die Geschütz-Zielsuche (`#simulateTurretPath`)
+     * ruft das je Bahnschritt zweimal auf, über das ganze Raster aus Kraft und
+     * Winkel — gemessen 25–38 ms in einem einzelnen Tick (Budget 16,7 ms).
+     *
+     * Der Cache ist folgenlos für die Simulation: `#bitmap` ist die Karte AUS DEM
+     * AUFBAU und wird nie verändert (Krater gehen in die Kollisionsmaske
+     * `#terrain`, nicht in die Bitmap), die Antwort hängt also nur von `x` ab.
+     */
+    const spalte = Math.max(0, Math.min(this.width - 1, Math.floor(x)));
+    if (Number.isNaN(spalte)) return -1;
+    let boden = this.#oberflaeche[spalte];
+    if (boden === OBERFLAECHE_UNBEKANNT) {
+      const gesucht = findSurfaceY(this.#bitmap, this.width, this.height, spalte);
+      boden = gesucht < 0 ? -1 : gesucht;
+      this.#oberflaeche[spalte] = boden;
+    }
+    return boden;
   }
 
   /**

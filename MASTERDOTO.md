@@ -56,39 +56,72 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   verschwundenem Boden ab (`applyCraterToTerrain`, auch bei laufendem Spiel).
   *Test:* `tests/krater-nachlieferung.test.js` (Zellengleichheit Maske und Bitmap;
   WELCOME beim Reconnect über den echten Server).
-  *Bleibt offen:* der Mahlstrom-Einschnitt (`inset`) wird beim Wiedereinstieg
-  nicht in die Karte nachgezogen; ein Terrain-Hash im Vollsnapshot als Prüfung
-  fehlt weiterhin.
-- [ ] **P1 — Server-Tick-Spitzen durch die Geschütz-Zielsuche.**
-  `aimTurret` rechnet ein Raster aus Kraft × Winkel mit je 900 Schritten und ruft
-  in `#simulateTurretPath` zweimal je Schritt `surfaceYAt` (Spaltenscan).
-  *Beleg:* 6 Ticks über 4 ms in 34 760 (25–38 ms, Budget 16,7 ms); Median 0,034 ms,
-  p99 0,15 ms. *Fix:* `surfaceYAt` einmal je Schritt, Höhenprofil cachen und bei
-  `terrain_destroyed` verwerfen; alternativ Suche einmal je Zug oder über Ticks verteilt.
-- [ ] **P1 — Terrain-Backen im Client blockiert (CPU-Weg).** 1,27 s je Kartenaufbau
-  (max 1,42 s, 3,69 Mio. Pixel). *Fix:* zeilenweise über mehrere Frames oder in
-  einem Worker mit OffscreenCanvas. Der WebGPU-Pfad ist für den Betrieb ohne GPU
-  nicht relevant.
-- [ ] **P2 — Snapshot-Rate real 15 Hz statt 20 Hz.** `snapshotAccumulator = 0`
-  verwirft den Rest; gemessen 65 ms Abstand. *Fix:* `-= SNAPSHOT_INTERVAL_MS`.
-- [ ] **P2 — Kein Rate-Limit je Socket.** 50 000 `INPUT`-Nachrichten brachten
-  50 000 Fehlerantworten und bis zu 495 ms Event-Loop-Lag (stoppt alle Lobbys im
-  Prozess). *Fix:* Token-Bucket (~30 Nachrichten/s), Fehlerantworten drosseln,
-  bei Dauerverstoß trennen. Privates Projekt: niedrige Dringlichkeit.
-- [ ] **P3 — `getState()` zweimal je Tick** (`match.step()` und `history.push`):
-  57 % der Tick-Kosten (0,032 von 0,057 ms). Die History dient nur dem
-  Anzeigefeld `interpolatedFrom`. *Fix:* entfernen oder nur jeden N-ten Tick füllen.
-- [ ] **P2 — Rendering auf CPU-Hardware messen.** In der Sandbox (Software-
-  Rendering, headless) lag ein Frame bei ~80 ms (p99 133 ms) — das ist KEINE
-  Aussage über die Zielhardware. `npm run perf:browser` auf dem Rechner der
-  Spieler laufen lassen, dann pro Zeichenschritt (Terrain-Layer, Wasser, Partikel,
-  Kulisse) aufschlüsseln und das Teuerste zuerst optimieren.
+  *Nachtrag (erledigt, Branch `claude/mahlstrom-terrainhash`):* (a) Mahlstrom-Einschnitt:
+  `WELCOME` trägt `inset`, der Client wendet ihn nach dem Aufbau an
+  (`applyInsetToTerrain`: Bitmap, Maske, Zeichenfläche); Server und Client rechnen
+  über dieselbe Vorschrift `eachInsetCell`. *Zweiter Fund, gleich behoben:* online
+  zog `maelstrom_contract` nur die Zeichenfläche zusammen, Bitmap/Maske der
+  Zielvorschau behielten den Randstreifen (`karte.einschnitt` in `ereignisse.js`).
+  (b) Terrain-Hash: mit jedem Vollsnapshot (alle ~2 s) geht eine Steuernachricht
+  `terrain_hash {hash, craters, inset}` raus (FNV-1a über die Maskenwörter,
+  `CollisionMask.hash`); als Steuernachricht statt Snapshot-Kopffeld, damit
+  Drahtformat und Protokollversion (9) unverändert bleiben. Der Client vergleicht,
+  meldet eine Zeile im HUD-Protokoll und baut per `terrain_request` ->
+  `terrain_state` (Seed + Krater + Einschnitt) neu. Kosten gemessen (2560x1440,
+  115 200 Wörter): Median ca. 0,14-0,22 ms, p99 ca. 0,3 ms je Aufruf, also rund
+  1 % des 16,7-ms-Ticks, nur alle 2 s; deshalb ohne Zwischenspeicher.
+  *Test:* `tests/mahlstrom-terrainhash.test.js` (6 Prüfungen). *Grenze:* geprüft
+  wird die Kollisionsmaske; Abweichungen allein im gezeichneten Bild (Renderer)
+  erkennt der Hash nicht.
+- [x] **P1 — Server-Tick-Spitzen durch die Geschütz-Zielsuche — BEHOBEN 2026-10-09.**
+  Ursache: `aimTurret` rechnet ein Raster aus Kraft × Winkel × 900 Schritte, und
+  `#simulateTurretPath` rief je Schritt zweimal `surfaceYAt` (Spaltenscan, bis
+  1440 Zellen). Vorher 6 Ticks über 4 ms in 34 760 (25–38 ms, Budget 16,7).
+  *Fix:* Oberflächenhöhe je Spalte gecacht (die Bitmap ändert sich nie, Krater
+  gehen in die Maske) und je Schritt nur ein Aufruf. *Nachher:* Maximum 15,7 ms,
+  sonst ≤ 5,5 ms; Zustandshash unverändert (`fe0ef43f`, 100 Läufe).
+  Test: `tests/oberflaeche-cache.test.js`.
+  **Neue Frage dazu (offen, Entscheidung nötig):** `surfaceYAt` liest die
+  UNZERSTÖRTE Karte aus dem Aufbau. Alles, was darüber läuft — Geschützbahn,
+  Kistenabwurf, Teleport, Spawn — sieht Boden, der durch Krater längst weg ist.
+  Ob das gewollt ist, ist nicht belegt; geändert wurde es nicht (Balance und
+  Zustandshash hängen daran).
+- [x] **P1 — Terrain-Backen im Client — BEHOBEN 2026-10-09.** Die 1,27 s waren
+  nicht das Backen als Ganzes, sondern `schattiereHoehlen` (~1 100 ms, 289
+  Stichproben je Pixel) — und die tritt auf der Standardkarte online
+  (`kartentyp:'autonom'`, mit Höhlen) auf. *Fix:* Summentabellen je Restklasse
+  (x mod 3, y mod 3), Ergebnis Byte für Byte identisch (6 Fälle, 0 abweichende
+  Bytes). Im Browser: `autonom` 1 260 → 222 ms, `hills` 294 → 102 ms. Chunking
+  oder Worker sind damit nicht mehr nötig. Test:
+  `tests/hoehlen-schatten-summentabelle.test.js`.
+- [x] **P2 — Snapshot-Rate — BEHOBEN 2026-10-09.** `= 0` → Rest behalten (Rückstau
+  gekappt). Gemessen am echten Server: 16,5 Hz → 20 Hz (Abstand p50 50 ms).
+  Netzlast steigt damit von ~52 auf ~70 KB/s bei 8 Spielern, weiter kein Engpass.
+- [x] **P2 — Rate-Limit je Socket — BEHOBEN 2026-10-09.** Token-Bucket
+  (`src/server/rateLimit.js`: 30/s, Stoß 60), verworfene Nachrichten ohne Antwort,
+  Zähler `messagesRateLimited`, Trennung nach 600 verworfenen in Folge. Vorher
+  50 000 Nachrichten → 50 000 Antworten; jetzt höchstens ein Stoß (≤ 60). Test:
+  `tests/mengenbegrenzung.test.js` (rot ohne Fix).
+- [x] **P3 — `getState()` zweimal je Tick — BEHOBEN 2026-10-09.** Die History legt
+  nur noch den Takt ab (der Zustand wurde nie gelesen). Server-Tick 0,104 →
+  0,086 ms (−17 %). Die zweite Berechnung (Rückgabewert von `match.step()`)
+  bleibt, weil Aufrufer sie nutzen könnten.
+- [ ] **P2 — Rendering auf CPU-Hardware messen (Teil erledigt).** In der Sandbox
+  (Software-Rendering, headless) liegt ein Frame bei 50–83 ms. Der CPU-Profiler
+  zeigt: nur ~4 % davon sind JavaScript (`zeichneElement` 0,4 %, `#drawWater`
+  0,4 %, GC 0,2 %), **96 % sind native Rasterarbeit** — JS-Mikrooptimierungen
+  bringen dort nichts. Ein Ausschlussversuch (Terrain-Layer bzw. Kulisse
+  abschalten) war im Rauschen nicht auszumachen (Kontrolllauf 50 ms gegen 67 ms
+  Basis). Offen: auf der Hardware der Spieler messen (`npm run perf:browser`),
+  Verdächtige sind die vollflächigen `drawImage`-Aufrufe (Terrain-Layer
+  2560×1440, Wasserschicht, Kulisse) je Frame.
 - [ ] **P3 — Browser-Abdeckung:** Firefox und Safari sind ungeprüft (in der
   Sandbox nur Chromium). Client-Heap über 10 Runden, Initial-Load-Zeit und
   Allokationen im Render-Loop sind nicht gemessen.
-- [ ] **P3 — Cross-Engine-Terrain:** Der Client baut das Terrain selbst aus dem
-  Seed (`terrainGen3` nutzt einen Aufruf einer transzendenten Funktion). Risiko
-  klein, aber unbelegt — der Terrain-Hash aus dem Krater-Punkt schließt das.
+- [x] **P3 — Cross-Engine-Terrain — abgesichert 2026-10-09.** Der Client baut das
+  Terrain selbst aus dem Seed. Eine Abweichung zwischen Browsern würde jetzt vom
+  Terrain-Hash erkannt und per `terrain_request` korrigiert. Ob sie in Firefox
+  oder Safari tatsächlich auftritt, bleibt ungeprüft (dort nicht gelaufen).
 
 ### Entscheidung zur Hardware (2026-10-09)
 
@@ -113,8 +146,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1245/130 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`):
-**1245/1245** grün, Dateizahl **130** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1258/134 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
+**1258/1258** grün, Dateizahl **134** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

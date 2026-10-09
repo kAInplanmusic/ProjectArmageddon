@@ -207,42 +207,83 @@ export function schattenAnteil(bitmap, width, height, x, y) {
  * @returns {Uint8ClampedArray} derselbe Puffer
  */
 export function schattiereHoehlen(data, bitmap, width, height, oberflaechenFarbe = null) {
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      // Nur festes Land wird behandelt. Ein Hohlraum bleibt leer.
-      if (!bitmap[y * width + x]) continue;
+  /*
+   * Luftanteil über Summentabellen statt über 289 Stichproben je Pixel.
+   *
+   * Fund (belegt, Audit 2026-10-09): `schattenAnteil` tastet je festem Pixel ein
+   * 17×17-Gitter ab (Schritt 3). Auf einer 2560×1440-Karte mit Höhlen — das ist
+   * die Standardkarte online (`kartentyp:'autonom'`) — sind das rund eine
+   * Milliarde Lesezugriffe: gemessen 1 260 ms im Browser, davon rund 1 100 ms in
+   * dieser Funktion. Der Hauptthread steht dabei still.
+   *
+   * Die Stichproben eines Pixels liegen alle im selben Raster wie das Pixel
+   * selbst (`x + 3k`, `y + 3m`). Je Restklasse (x mod 3, y mod 3) ist die Zahl
+   * der Luftzellen in einem 17×17-Fenster daher eine Kastensumme über das
+   * Teilgitter — mit einer Summentabelle in O(1). Die Zahlen `luft` und
+   * `gesamt` sind GANZZAHLIG dieselben wie in `schattenAnteil`, die Division und
+   * alles danach unverändert: Das Ergebnis ist Byte für Byte identisch (ein Test
+   * vergleicht gegen die Stichprobenfassung).
+   */
+  const halb = SCHATTEN_RADIUS / 3; // Fenster: -8 … +8 Teilgitterzellen
+  const maxNx = Math.ceil(width / 3);
+  const maxNy = Math.ceil(height / 3);
+  const summe = new Int32Array((maxNx + 1) * (maxNy + 1));
 
-      const anteil = schattenAnteil(bitmap, width, height, x, y);
-      if (anteil <= 0) continue;
+  for (let ry = 0; ry < 3; ry += 1) {
+    const ny = Math.ceil((height - ry) / 3);
+    if (ny <= 0) continue;
+    for (let rx = 0; rx < 3; rx += 1) {
+      const nx = Math.ceil((width - rx) / 3);
+      if (nx <= 0) continue;
+      const zeile = nx + 1;
 
-      const index = (y * width + x) * 4;
-
-      /*
-       * Ohne eine Zielscheibe wird abgedunkelt — das ist der alte Weg und
-       * bleibt für Aufrufer gültig, die keine Palettenfarbe mitgeben.
-       */
-      if (!oberflaechenFarbe) {
-        const faktor = 1 - anteil * (1 - SCHATTEN_MAX);
-        data[index] = Math.round(data[index] * faktor);
-        data[index + 1] = Math.round(data[index + 1] * faktor);
-        data[index + 2] = Math.round(data[index + 2] * faktor);
-        continue;
+      // Summentabelle der Luftzellen dieses Teilgitters. Die Tabelle wird für
+      // alle neun Restklassen wiederverwendet — Rand (Zeile 0, Spalte 0) neu auf 0.
+      summe.fill(0, 0, (ny + 1) * zeile);
+      for (let iy = 0; iy < ny; iy += 1) {
+        const y = 3 * iy + ry;
+        let laufend = 0;
+        for (let ix = 0; ix < nx; ix += 1) {
+          if (!bitmap[y * width + 3 * ix + rx]) laufend += 1;
+          summe[(iy + 1) * zeile + ix + 1] = summe[iy * zeile + ix + 1] + laufend;
+        }
       }
 
-      /*
-       * Mit Palettenfarbe wird zum Licht gezogen: Die Wand neben der Öffnung
-       * bekommt einen Anteil der hellen Oberflächenfarbe.
-       *
-       * Der Anteil ist bewusst begrenzt (höchstens 45 %): Eine Wand soll
-       * heller wirken als das Gestein daneben, aber nicht wie Gras an der
-       * Oberfläche. Sonst sähe die Höhle aus, als läge sie im Freien.
-       */
-      const zumLicht = anteil * LICHT_ANTEIL;
+      for (let iy = 0; iy < ny; iy += 1) {
+        const y = 3 * iy + ry;
+        const y0 = iy - halb < 0 ? 0 : iy - halb;
+        const y1 = iy + halb > ny - 1 ? ny - 1 : iy + halb;
+        for (let ix = 0; ix < nx; ix += 1) {
+          const x = 3 * ix + rx;
+          if (!bitmap[y * width + x]) continue;
 
-      for (let k = 0; k < 3; k += 1) {
-        data[index + k] = Math.round(
-          data[index + k] * (1 - zumLicht) + oberflaechenFarbe[k] * zumLicht,
-        );
+          const x0 = ix - halb < 0 ? 0 : ix - halb;
+          const x1 = ix + halb > nx - 1 ? nx - 1 : ix + halb;
+          const gesamt = (x1 - x0 + 1) * (y1 - y0 + 1);
+          const luft = summe[(y1 + 1) * zeile + x1 + 1] - summe[y0 * zeile + x1 + 1]
+            - summe[(y1 + 1) * zeile + x0] + summe[y0 * zeile + x0];
+          const luftAnteil = gesamt === 0 ? 0 : luft / gesamt;
+          if (luftAnteil < LUFT_SCHWELLE) continue;
+          const anteil = Math.min(1, (luftAnteil - LUFT_SCHWELLE) / 0.25);
+          if (anteil <= 0) continue;
+
+          const index = (y * width + x) * 4;
+
+          if (!oberflaechenFarbe) {
+            const faktor = 1 - anteil * (1 - SCHATTEN_MAX);
+            data[index] = Math.round(data[index] * faktor);
+            data[index + 1] = Math.round(data[index + 1] * faktor);
+            data[index + 2] = Math.round(data[index + 2] * faktor);
+            continue;
+          }
+
+          const zumLicht = anteil * LICHT_ANTEIL;
+          for (let k = 0; k < 3; k += 1) {
+            data[index + k] = Math.round(
+              data[index + k] * (1 - zumLicht) + oberflaechenFarbe[k] * zumLicht,
+            );
+          }
+        }
       }
     }
   }

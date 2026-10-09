@@ -34,6 +34,7 @@ import {
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { ReplayRecorder } from '../engine/replay.js';
+import { TokenBucket, RATE_TRENNEN_NACH } from './rateLimit.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
 
 /*
@@ -375,7 +376,17 @@ class LobbySession {
     // Rate raus, unabhängig davon, wie viele Ticks pro Aufruf liefen.
     this.snapshotAccumulator += elapsed;
     if (this.snapshotAccumulator >= SNAPSHOT_INTERVAL_MS) {
-      this.snapshotAccumulator = 0;
+      /*
+       * Den Rest BEHALTEN statt auf 0 zu setzen.
+       *
+       * Fund (belegt, Audit 2026-10-09): Hier stand `= 0`. Die Prüfung läuft nur
+       * alle 16,7 ms; bei 50 ms Soll griff sie erst im vierten Takt (66,7 ms) und
+       * warf den Überschuss weg — gemessen 65 ms Abstand, also 15 Hz statt der
+       * ausgewiesenen 20 Hz. Mit dem Rest liegt der Schnitt bei 20 Hz. Ein
+       * Rückstau (Server hing) wird gekappt, damit danach kein Stoß folgt.
+       */
+      this.snapshotAccumulator -= SNAPSHOT_INTERVAL_MS;
+      if (this.snapshotAccumulator >= SNAPSHOT_INTERVAL_MS) this.snapshotAccumulator = 0;
       this.broadcastSnapshot();
     }
 
@@ -397,7 +408,16 @@ class LobbySession {
        * warum das so ist.
        */
       this.match.step();
-      this.history.push(this.match.world.tickCount, this.match.getState());
+      /*
+       * Nur der TAKT wird vermerkt, nicht der Zustand.
+       *
+       * Fund (belegt, Audit 2026-10-09): Hier wurde je Tick ein vollständiger
+       * Ansichtszustand gebaut und abgelegt — `getState()` ist rund die Hälfte der
+       * Tickkosten (0,032 von 0,057 ms). Gelesen wird der Zustand nie: die
+       * einzige Abfrage (`#handleInput`) nutzt `history.get(tick)?.tick`, also nur
+       * die Taktnummer für `interpolatedFrom`.
+       */
+      this.history.push(this.match.world.tickCount, null);
     }
     if (this.match.status === 'gameover') this.#finish();
     return this.match.getState();
@@ -916,6 +936,9 @@ class LobbySession {
     // verlorenen Frame nicht dauerhaft mit falschen Werten weiterrechnet.
     const forceFull = this.snapshotCounter % FULL_SNAPSHOT_INTERVAL === 0;
 
+    // Terrain-Hash zusammen mit dem Vollsnapshot (siehe CONTROL.TERRAIN_HASH).
+    if (forceFull) this.#broadcastControl(CONTROL.TERRAIN_HASH, this.terrainStand(false));
+
     const sent = [];
     for (const [token, socket] of this.clients.entries()) {
       if (socket.readyState !== 1) continue;
@@ -932,6 +955,26 @@ class LobbySession {
     for (const token of this.clients.keys()) this.previousByToken.set(token, nextPrevious);
 
     return sent[0] ?? null;
+  }
+
+  /**
+   * Kartenstand für Abgleich und Nachlieferung: Hash der Maske, Kraterzahl und
+   * Mahlstrom-Einschnitt; mit `mitKratern` zusätzlich die Kraterliste.
+   *
+   * Der Hash wird bei jedem Aufruf frisch über die Maske gerechnet, ohne
+   * Zwischenspeicher: Gemessen (2560x1440, 115 200 Wörter, Median über 200
+   * Läufe) kostet das ca. 0,1 ms — rund 1 % eines 16,7-ms-Ticks und nur alle
+   * 2 s. Ein Zwischenspeicher wäre ein zweiter Zustand, der veralten kann.
+   */
+  terrainStand(mitKratern) {
+    const terrain = this.match.terrain;
+    const stand = {
+      hash: terrain.hash(),
+      craters: terrain.craterCount,
+      inset: this.match.maelstrom?.inset ?? 0,
+    };
+    if (mitKratern) stand.craters = terrain.craterLog;
+    return stand;
   }
 
   #broadcastControl(type, payload) {
@@ -1013,6 +1056,8 @@ export class GameServer {
        */
       controlMessagesSent: 0,
       controlMessagesSuppressed: 0,
+      // Nachrichten, die die Mengenbegrenzung je Verbindung verworfen hat.
+      messagesRateLimited: 0,
     };
     /** Optionale Persistenz: null deaktiviert das Speichern vollständig. */
     this.persistence = persistence;
@@ -1540,7 +1585,29 @@ export class GameServer {
   #handleConnection(socket) {
     let context = { lobbyId: null, token: null };
 
+    const mengenGrenze = new TokenBucket();
     socket.on('message', (raw, isBinary) => {
+      /*
+       * Mengenbegrenzung VOR allem anderen — auch vor dem Parsen. Verworfene
+       * Nachrichten bekommen KEINE Antwort (sonst wäre die Fehlermeldung die
+       * Verstärkung); sichtbar wird es über Zähler und Log. Wer dauerhaft
+       * überzieht, wird getrennt.
+       */
+      if (!mengenGrenze.erlaube()) {
+        if (this.metrics) this.metrics.messagesRateLimited += 1;
+        if (mengenGrenze.verworfeneInFolge === 1) {
+          this.logger.warn('rate_limited', 'Nachrichten über der Mengengrenze verworfen', {
+            lobbyId: context.lobbyId,
+          });
+        }
+        if (mengenGrenze.verworfeneInFolge >= RATE_TRENNEN_NACH) {
+          this.logger.warn('rate_limit_disconnect', 'Verbindung wegen Dauerüberlast getrennt', {
+            lobbyId: context.lobbyId,
+          });
+          socket.close(1008, 'Zu viele Nachrichten');
+        }
+        return;
+      }
       /*
        * Binärrahmen vom Client werden verworfen — GRUND und Vermerk.
        *
@@ -1778,6 +1845,8 @@ export class GameServer {
               // Bisherige Krater: Wer später beitritt oder wieder verbindet,
               // baut das Gelände aus dem Seed und braucht die Löcher dazu.
               craters: session.match.terrain?.craterLog ?? [],
+              // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
+              inset: session.match.maelstrom?.inset ?? 0,
             }));
             break;
           }
@@ -1831,6 +1900,14 @@ export class GameServer {
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleDropWeapon(context.token, message.weaponId);
             if (!result.ok) this.#fehlerSenden(socket, result.errors);
+            break;
+          }
+
+          case CONTROL.TERRAIN_REQUEST: {
+            // Der Client hat eine Abweichung gemessen und baut die Karte neu.
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            socket.send(controlMessage(CONTROL.TERRAIN_STATE, session.terrainStand(true)));
             break;
           }
 
