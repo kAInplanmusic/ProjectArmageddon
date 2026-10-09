@@ -139,11 +139,23 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   gehen in die Maske) und je Schritt nur ein Aufruf. *Nachher:* Maximum 15,7 ms,
   sonst ≤ 5,5 ms; Zustandshash unverändert (`fe0ef43f`, 100 Läufe).
   Test: `tests/oberflaeche-cache.test.js`.
-  **Neue Frage dazu (offen, Entscheidung nötig):** `surfaceYAt` liest die
-  UNZERSTÖRTE Karte aus dem Aufbau. Alles, was darüber läuft — Geschützbahn,
-  Kistenabwurf, Teleport, Spawn — sieht Boden, der durch Krater längst weg ist.
-  Ob das gewollt ist, ist nicht belegt; geändert wurde es nicht (Balance und
-  Zustandshash hängen daran).
+  **Korrektur (2026-10-09, später am Tag):** Hier stand zuerst eine „offene Frage":
+  Ob `surfaceYAt` die unzerstörte Karte liest, sei vielleicht gewollt. Das war falsch
+  eingeordnet — es ist ein **Fehler**, und er ist behoben. `surfaceYAt` suchte in
+  `#bitmap` (Karte aus dem Aufbau); Krater gehen aber nur in die Kollisionsmaske.
+  *Gemessen:* bei 9 Einschlägen lag `surfaceYAt` in 7 Kratermitten bis 20 px über
+  dem echten Boden; eine über einem Krater (r = 40) gelandete Kiste stand **41 px
+  in der Luft** und war 300 Ticks später noch dort (die Physik überspringt Kisten).
+  Betroffen waren alle, die sich an der Oberfläche ausrichten: Kistenlandung und
+  Rundenkisten, Günther, Bahnplanung der Geschütze, Versetzen von Figuren. (Die
+  Startaufstellung nicht — dort gibt es noch keine Krater.)
+  *Fix:* `surfaceYAt` liest die Maske (`CollisionMask.topSolidY`), der Merker je
+  Spalte wird bei jeder Änderung der Maske (`version`) verworfen. Kistenlandung
+  jetzt auf dem echten Boden (y 571 statt 530). Tick-Spitzen weiter unter dem
+  Budget (max 14,2 ms). *Folge:* Matches mit Kratern laufen jetzt anders ab als
+  vorher (Referenz-Hash `fe0ef43f` → `86935655`); eine VOR dem Update gespeicherte,
+  laufende Lobby würde nach dem Update beim Wiederherstellen abweichen.
+  Tests: `tests/oberflaeche-cache.test.js` (jetzt 3, inkl. Kiste über Krater).
 - [x] **P1 — Terrain-Backen im Client — BEHOBEN 2026-10-09.** Die 1,27 s waren
   nicht das Backen als Ganzes, sondern `schattiereHoehlen` (~1 100 ms, 289
   Stichproben je Pixel) — und die tritt auf der Standardkarte online
@@ -204,8 +216,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1280/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1280/1280** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1281/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
+**1281/1281** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
