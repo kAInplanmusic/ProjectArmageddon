@@ -15,6 +15,80 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Netcode-/Determinismus-Audit (2026-10-09) — offene Punkte
+
+Auftrag: Gesamtaudit (Code, Tests, Architektur, Performance) mit Fokus Determinismus,
+Netcode und Rundenzustand. **Betrieb: ausschließlich CPU, keine GPU** (Vorgabe des
+Auftraggebers; `docs/betrieb.md`: der Server braucht keine GPU). Alle Zahlen
+unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
+
+### Belegt in Ordnung (keine Maßnahme)
+
+- **Determinismus:** 100 Läufe, Seed 1337, 8 Figuren, 11 Runden, 18 093 Ticks →
+  1 Zustandshash; anderer Seed → anderer Hash. Kein `Math.random`/`Date.now` im
+  Engine-Pfad (nur Metadaten und Seed-Rückfall).
+- **Kollision:** Projektile per CCD mit 1-px-Abtastung (`raycastSegment`).
+- **Zug-Zustandsmaschine:** Doppelschuss, falscher Spieler und Schuss nach
+  Zugwechsel werden abgelehnt; Zugfolge läuft ohne Eingaben sauber durch.
+- **Latenz (Proxy mit Verzögerung):** 0/50/150/300 ms RTT → 0 Fehler, Projektil
+  nach 72/72/196/309 ms sichtbar. Netzlast 335 B je Snapshot, 52 KB/s bei 8 Spielern.
+- **Heap (Server):** 7,7 → 9,1 MB über 30 Runden / 90 000 Ticks — kein Leck.
+- **Tests:** 1241/1241 grün; E2E `network-conditions` 4/4 grün.
+
+### Offen — nach Wirkung auf das Spiel
+
+- [ ] **P0 — Replay/Wiederherstellung: Waffenwahl fehlt.** Der Client sendet beim
+  Schuss `weaponId:null`; `handleWeaponSelect` zeichnet nichts auf. Replay und
+  Wiederherstellung nach Serverneustart feuern die Standardwaffe.
+  *Beleg:* über den echten `LobbySession`-Pfad Live-Hash `fe6e49cc`, Replay-Hash
+  `91bca67c`. *Fix:* in `handleInput` `weaponId ?? getActiveWeaponId()` vor dem
+  Aufzeichnen auflösen (oder `kind:'select'` einführen und in `ReplayPlayer` und
+  `#applyReplayEntry` anwenden). *Test:* Waffe wählen → schießen → Replay-Hash gleich.
+- [ ] **P0 — Reconnect/Spätbeitritt: Krater-Historie fehlt.** `WELCOME` trägt nur
+  `seed`/`preset`; der Client baut das Terrain frisch aus dem Seed, `resumed`
+  wertet er nicht aus. *Beleg:* nach 9 Kratern weichen 3 082 Zellen zwischen
+  Server-Kollisionsmaske und Client-Neuaufbau ab. *Fix:* Krater-Log (x, y, r) im
+  Match führen und nach `WELCOME` senden; zusätzlich Terrain-Hash im Vollsnapshot,
+  damit der Client Abweichungen erkennt. *Test:* Join nach N Kratern → Masken gleich.
+- [ ] **P1 — Server-Tick-Spitzen durch die Geschütz-Zielsuche.**
+  `aimTurret` rechnet ein Raster aus Kraft × Winkel mit je 900 Schritten und ruft
+  in `#simulateTurretPath` zweimal je Schritt `surfaceYAt` (Spaltenscan).
+  *Beleg:* 6 Ticks über 4 ms in 34 760 (25–38 ms, Budget 16,7 ms); Median 0,034 ms,
+  p99 0,15 ms. *Fix:* `surfaceYAt` einmal je Schritt, Höhenprofil cachen und bei
+  `terrain_destroyed` verwerfen; alternativ Suche einmal je Zug oder über Ticks verteilt.
+- [ ] **P1 — Terrain-Backen im Client blockiert (CPU-Weg).** 1,27 s je Kartenaufbau
+  (max 1,42 s, 3,69 Mio. Pixel). *Fix:* zeilenweise über mehrere Frames oder in
+  einem Worker mit OffscreenCanvas. Der WebGPU-Pfad ist für den Betrieb ohne GPU
+  nicht relevant.
+- [ ] **P2 — Snapshot-Rate real 15 Hz statt 20 Hz.** `snapshotAccumulator = 0`
+  verwirft den Rest; gemessen 65 ms Abstand. *Fix:* `-= SNAPSHOT_INTERVAL_MS`.
+- [ ] **P2 — Kein Rate-Limit je Socket.** 50 000 `INPUT`-Nachrichten brachten
+  50 000 Fehlerantworten und bis zu 495 ms Event-Loop-Lag (stoppt alle Lobbys im
+  Prozess). *Fix:* Token-Bucket (~30 Nachrichten/s), Fehlerantworten drosseln,
+  bei Dauerverstoß trennen. Privates Projekt: niedrige Dringlichkeit.
+- [ ] **P3 — `getState()` zweimal je Tick** (`match.step()` und `history.push`):
+  57 % der Tick-Kosten (0,032 von 0,057 ms). Die History dient nur dem
+  Anzeigefeld `interpolatedFrom`. *Fix:* entfernen oder nur jeden N-ten Tick füllen.
+- [ ] **P2 — Rendering auf CPU-Hardware messen.** In der Sandbox (Software-
+  Rendering, headless) lag ein Frame bei ~80 ms (p99 133 ms) — das ist KEINE
+  Aussage über die Zielhardware. `npm run perf:browser` auf dem Rechner der
+  Spieler laufen lassen, dann pro Zeichenschritt (Terrain-Layer, Wasser, Partikel,
+  Kulisse) aufschlüsseln und das Teuerste zuerst optimieren.
+- [ ] **P3 — Browser-Abdeckung:** Firefox und Safari sind ungeprüft (in der
+  Sandbox nur Chromium). Client-Heap über 10 Runden, Initial-Load-Zeit und
+  Allokationen im Render-Loop sind nicht gemessen.
+- [ ] **P3 — Cross-Engine-Terrain:** Der Client baut das Terrain selbst aus dem
+  Seed (`terrainGen3` nutzt einen Aufruf einer transzendenten Funktion). Risiko
+  klein, aber unbelegt — der Terrain-Hash aus dem Krater-Punkt schließt das.
+
+### Entscheidung zur Hardware (2026-10-09)
+
+Server auf **CPU**. Eine 8er-Partie kostet rund 0,3 % eines Kerns; eine GPU wäre
+nur für serverseitiges Rendering/Video-Streaming oder ein ML-Modell sinnvoll —
+beides nicht geplant. Sprünge in Spielgefühl und Qualität kommen aus den Punkten
+oben (Replay, Reconnect, Ruckler), nicht aus Hardware. Kapazitätsschätzung für
+eine Zielgröße: `npm run plan:scale` (in diesem Audit nicht ausgeführt).
+
 ## Wirkungsmerkmale der 150 Waffen (2026-09-25)
 
 Auftrag: „erstelle die drei klar benannten Datenfelder (damageType,
