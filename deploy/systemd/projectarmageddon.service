@@ -59,7 +59,12 @@ SupplementaryGroups=systemd-journal
 KillMode=mixed
 
 StateDirectory=projectarmageddon
+StateDirectoryMode=0700
 RuntimeDirectory=projectarmageddon
+# Gruppe `pa` darf das Token lesen (token-setzen.sh legt es als root:pa 640 an); das Verzeichnis überlebt
+# einen Dienststopp, sonst fehlte das Token genau im ExecStopPost und nach jedem Neustart.
+RuntimeDirectoryMode=0750
+RuntimeDirectoryPreserve=yes
 
 # HARTE OBERGRENZE (Ablaufdatum auf Prozessebene).
 # Wenn das gesetzt wird, MUSS Restart auf "no" oder "on-abnormal" stehen —
@@ -80,6 +85,32 @@ PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=yes
 ReadWritePaths=/var/lib/projectarmageddon
+# Verschärfung (Audit 2026-10-13). NICHT gegen ein echtes systemd gelaufen — nach dem Aufsetzen prüfen:
+#   systemd-analyze security projectarmageddon.service ; journalctl -u projectarmageddon -b
+# `MemoryDenyWriteExecute` fehlt mit Absicht: Node (V8) braucht ausführbaren Speicher.
+# Neue Dateien nur für den Dienstbenutzer lesbar (Zustandsdatei und Archive enthalten Spieler-Tokens).
+UMask=0077
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+# Nur die Standardgruppe; eine strengere Liste (`~@privileged`) könnte tar/git/hcloud der Sicherung töten.
+SystemCallFilter=@system-service
+# Obergrenzen gegen Ressourcenerschöpfung (ein Kern, wenige GB Speicher; bei Bedarf anheben).
+MemoryMax=1G
+TasksMax=256
+LimitNOFILE=4096
 
 [Install]
 WantedBy=multi-user.target

@@ -696,8 +696,10 @@ class LobbySession {
     // Die Waffe wird für die AKTIVE eigene Figur gewählt — siehe #platzFuer.
     const seat = this.#platzFuer(token);
     if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
+    const vorher = this.match.inventory.getActiveWeaponId?.(seat.entityId);
     const ok = this.match.inventory.selectWeapon(seat.entityId, weaponId);
-    if (ok) {
+    // Nur Wechsel aufzeichnen: Wiederholungen derselben Waffe wuchsen unbegrenzt (Audit 2026-10-13).
+    if (ok && vorher !== weaponId) {
       // Die Auswahl ist Simulationszustand (sie entscheidet über spätere
       // Schüsse mit `weaponId:null` und steht im Zustandshash) — ohne diesen
       // Eintrag weicht jedes Replay und jede Wiederherstellung ab.
@@ -1772,6 +1774,14 @@ export class GameServer {
              * wenige Plätze) und macht das Versprechen aus `disconnect` an der
              * Stelle wahr, an der es zählt.
              */
+            // Ein zweiter Beitritt auf demselben Socket löst die alte Zuordnung (Audit 2026-10-13: der alte
+            // Platz blieb sonst „verbunden" und hielt sein Match am Laufen).
+            if (context.lobbyId && context.token) {
+              const alt = this.#sessions.get(context.lobbyId);
+              if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
+              this.#lobbies.disconnect(context.lobbyId, context.token);
+              context = { lobbyId: null, token: null };
+            }
             this.pruneLobbies();
             const lobby = this.#lobbies.get(lobbyId);
             /*

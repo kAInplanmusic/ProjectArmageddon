@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PersistenceStore, serializeLobby, restoreLobby, PERSISTENCE_VERSION } from '../src/server/persistence.js';
@@ -194,6 +194,17 @@ test('Replay-basierte Wiederherstellung erzeugt denselben Matchzustand', () => {
     assert.equal(replayed.round, match.round);
     assert.equal(replayed.status, match.status);
     assert.equal(replayed.stateHash(), match.stateHash(), 'Zustandshash muss identisch sein');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('Die Zustandsdatei ist nur für den Besitzer lesbar (enthält Spieler-Tokens)', () => {
+  const dir = tempDir();
+  try {
+    const store = new PersistenceStore({ path: join(dir, 'state.json') });
+    assert.equal(store.save({ lobbies: [{ id: 'abc', seats: [{ token: 'geheim' }] }] }), true);
+    assert.equal(statSync(store.path).mode & 0o777, 0o600);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

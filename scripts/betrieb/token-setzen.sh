@@ -83,5 +83,11 @@ umask 077
 temp=$(mktemp "$verzeichnis/.token.XXXXXX")
 printf '%s\n' "$token" > "$temp"
 chmod 600 "$temp"
+# Der Dienst läuft als `pa`, die Sicherung (ExecStopPost) ebenfalls, das Token wird aber als root
+# gesetzt: Gruppe `pa` darf lesen (640), sonst bliebe die Cloud-Ebene unter systemd wirkungslos.
+gruppe="${PA_TOKEN_GRUPPE:-pa}"
+if [ "$(id -u)" -eq 0 ] && getent group "$gruppe" >/dev/null 2>&1; then
+  chgrp "$gruppe" "$temp" && chmod 640 "$temp"
+fi
 mv -- "$temp" "$TOKEN_DATEI"
 protokoll "Token liegt im Arbeitsspeicher: $TOKEN_DATEI (weg nach Neustart oder mit --loeschen)."

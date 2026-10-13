@@ -557,3 +557,24 @@ test('server-aus-abbild: nimmt das NEUESTE Abbild und verweigert einen vorhanden
     rmSync(env.wurzel, { recursive: true, force: true });
   }
 });
+
+test('Token mit Rechten 640 wird nur mit der Gruppe des Dienstes gelesen (root schreibt, pa liest)', () => {
+  const env = umgebung({ tokenInDatei: false });
+  try {
+    const { bin, logDatei } = hcloudPlatzhalter(env.wurzel);
+    const tokenDatei = join(env.wurzel, 'token');
+    writeFileSync(tokenDatei, 'aus-der-datei\n');
+    chmodSync(tokenDatei, 0o640);
+    const gemeinsam = { PATH: `${bin}:${process.env.PATH}`, PA_HCLOUD_SERVER: 'spiel-1', PA_HCLOUD_TOKEN_DATEI: tokenDatei };
+    // Gruppe der Datei = Gruppe des Prozesses: erlaubt.
+    const ok = lauf(env, ['--nur-cloud'], gemeinsam);
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.match(readFileSync(logDatei, 'utf8'), /server create-image/);
+    // Lesbar für alle (644) bleibt abgelehnt.
+    chmodSync(tokenDatei, 0o644);
+    const offen = lauf(env, ['--nur-cloud'], gemeinsam);
+    assert.notEqual(offen.status, 0);
+  } finally {
+    rmSync(env.wurzel, { recursive: true, force: true });
+  }
+});

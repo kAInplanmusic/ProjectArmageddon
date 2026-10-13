@@ -48,7 +48,8 @@ export class PersistenceStore {
         ...payload,
       };
       const temp = `${this.#path}.${randomUUID().slice(0, 8)}.tmp`;
-      writeFileSync(temp, JSON.stringify(document), 'utf8');
+      // Modus 600: Die Datei enthält die Reconnect-Tokens der Spieler (Audit 2026-10-13: war 644).
+      writeFileSync(temp, JSON.stringify(document), { encoding: 'utf8', mode: 0o600 });
       renameSync(temp, this.#path);
       this.#lastError = null;
       return true;

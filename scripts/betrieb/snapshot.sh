@@ -45,6 +45,8 @@
 # Exit: 0 ok · 1 Fehler (alte Snapshots unberührt) · 2 falsche Bedienung
 
 set -euo pipefail
+# Archive und Manifest enthalten Spielstände mit Reconnect-Tokens: nur für den Besitzer lesbar.
+umask 077
 
 PROGRAMM="${0##*/}"
 SKRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -290,10 +292,20 @@ cloud_snapshot() {
   if [ -z "${HCLOUD_TOKEN:-}" ] && [ -f "$PA_HCLOUD_TOKEN_DATEI" ]; then
     local rechte
     rechte=$(stat -c %a "$PA_HCLOUD_TOKEN_DATEI" 2>/dev/null || echo unbekannt)
-    if [ "$rechte" != "600" ] && [ "$rechte" != "400" ]; then
-      fehler "$PA_HCLOUD_TOKEN_DATEI hat Rechte $rechte (verlangt: 600) — Token wird nicht gelesen"
-      return 1
-    fi
+    # 600/400: nur der Besitzer. 640/440: zusätzlich die GRUPPE des Dienstbenutzers — nötig, weil
+    # token-setzen.sh als root schreibt, ExecStopPost aber als `pa` läuft. Alles andere (andere
+    # Gruppe, Lesen für alle) wird abgelehnt.
+    case "$rechte" in
+      600|400) ;;
+      640|440)
+        if [ "$(stat -c %G "$PA_HCLOUD_TOKEN_DATEI" 2>/dev/null)" != "$(id -gn)" ]; then
+          fehler "$PA_HCLOUD_TOKEN_DATEI hat Rechte $rechte, aber eine fremde Gruppe — Token wird nicht gelesen"
+          return 1
+        fi ;;
+      *)
+        fehler "$PA_HCLOUD_TOKEN_DATEI hat Rechte $rechte (verlangt: 600, oder 640 mit der Gruppe des Dienstes) — Token wird nicht gelesen"
+        return 1 ;;
+    esac
     HCLOUD_TOKEN=$(tr -d '[:space:]' < "$PA_HCLOUD_TOKEN_DATEI")
     export HCLOUD_TOKEN
   fi

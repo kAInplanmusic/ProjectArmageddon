@@ -284,14 +284,19 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   (a) **Zugpause nicht im Snapshot** (`turnPauseMs` fehlt im Protokoll): Wer mitten in der Pause neu verbindet oder `turn_start`
   verpasst, sieht keinen Hinweis; Overlay läuft in Wanduhrzeit (im Replay-Modus mit Tempo ≠ 1× kann es abweichen). Protokoll-Version
   nicht erhöht. — mittel. (b) **Hash blind** für `#turnPauseTicks`, `#sturmRunden`, Terrainmaske u. a. — mittel.
-  (c) **Spielertoken im Klartext** in der Zustandsdatei (Modus 644) und in Archiven; systemd-Unit ohne `UMask=0077`, ohne
-  `MemoryMax`/`TasksMax`/`LimitNOFILE`/Syscall-Filter. — mittel. (d) **`ExecStopPost` läuft als `pa`, `token-setzen.sh` legt die Datei als
-  root 600 an** ⇒ Cloud-Ebene unter systemd vermutlich wirkungslos (nicht gegen echtes systemd geprüft). (e) HTTP-Host-Sitz bleibt
-  `connected:true` (Aufräumen greift nur nach der 15-min-Frist). (f) Ein zweites `join_lobby` auf demselben Socket löst die alte Zuordnung nicht.
-  (g) `select_weapon` wird ohne Obergrenze aufgezeichnet (~5 MB/h je Verbindung bei Dauerfeuer). (h) CORS spiegelt jeden Origin, keine
-  Origin-Prüfung für WS. (i) 2 hohe `npm audit`-Funde (nur Entwicklung, transitiv; `npm audit fix` möglich). (j) **Mahlstrom-Regen trifft jede
-  Außen-Figur bei JEDEM Zugbeginn** (bei 4 Figuren 60 % je Runde; Config sagt „je Zug“) — Design-Entscheidung; `computeMaelstromDamage`
-  hat keinen Aufrufer. (k) Kein Versions-Handshake. (l) **Touch:** kein Sprung/Abwurf, Waffenzeilen nur 22 px hoch, Kraft nur über
+  (c) **ERLEDIGT (2026-10-13, Auftraggeber: „Zustimmung“):** Zustandsdatei Modus 600, Archive/Manifest `umask 077`; systemd-Unit mit
+  `UMask=0077`, `StateDirectoryMode=0700`, `PrivateDevices`, `ProtectKernel*`, `ProtectControlGroups`, `RestrictAddressFamilies`,
+  `RestrictNamespaces`, `LockPersonality`, `CapabilityBoundingSet=`, `SystemCallFilter=@system-service`, `MemoryMax=1G`, `TasksMax=256`,
+  `LimitNOFILE=4096` — **nicht gegen echtes systemd gelaufen** (`systemd-analyze verify` ohne Befund; nach dem Aufsetzen
+  `systemd-analyze security` und `journalctl` prüfen; bei Abstürzen der Sicherung zuerst die Syscall-Filterung lockern).
+  (d) **ERLEDIGT (unter systemd ungeprüft):** `token-setzen.sh` legt das Token als root:pa 640 an, `snapshot.sh` liest 600/400 oder 640 mit der
+  eigenen Gruppe, `RuntimeDirectoryPreserve=yes`. Tests: `snapshot-skript` (+1), `persistence` (+1).
+  (e) HTTP-Host-Sitz bleibt `connected:true` (Aufräumen greift nur nach der 15-min-Frist). (f) **ERLEDIGT:** ein zweites `join_lobby` auf
+  demselben Socket löst die alte Zuordnung. (g) **ERLEDIGT:** `select_weapon` wird nur bei einem echten Wechsel aufgezeichnet.
+  (h) CORS spiegelt jeden Origin, keine Origin-Prüfung für WS. (i) **ERLEDIGT:** `npm audit fix` (nur `package-lock.json`), 0 Funde, Build
+  und Tests grün. (j) **Mahlstrom-Regen trifft jede Außen-Figur bei JEDEM Zugbeginn — bleibt so** (Auftraggeber „Zustimmung“ auf die
+  Rückfrage; Annahme, bei Bedarf korrigieren; bei 4 Figuren 60 % je Runde, Config sagt „je Zug“; `computeMaelstromDamage` hat keinen Aufrufer).
+  (k) Kein Versions-Handshake. (l) **Touch:** kein Sprung/Abwurf, Waffenzeilen nur 22 px hoch, Kraft nur über
   Haltedauer. (m) **Performance (relativ):** Kulisse „generativ" zeichnet ~187 `fill()` je Bild, `parseCss` je Element und Bild neu — auf
   Offscreen-Canvas cachen; `clip-path` der Panels kostet Compositing. (n) Hauptmenü ohne `role=dialog`/`inert`. (o) Matches mit
   > 4 Figuren in langen Valhalla-Läufen und Gummi/Eis-Landung nur gelesen, nicht gemessen.
@@ -397,7 +402,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1303/1303** grün, Dateizahl **139** — die zwei neuen Prüfungen sitzen in
+**1305/1305** grün, Dateizahl **139** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
