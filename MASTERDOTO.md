@@ -194,32 +194,28 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   Basis). Offen: auf der Hardware der Spieler messen (`npm run perf:browser`),
   Verdächtige sind die vollflächigen `drawImage`-Aufrufe (Terrain-Layer
   2560×1440, Wasserschicht, Kulisse) je Frame.
-- [ ] **P3 — Browser-Abdeckung (Stand 2026-10-13): Firefox gelaufen, WebKit nicht.**
-  Firefox 155.0 (Playwright `firefox-1543`) läuft in der Sandbox; mit einer
-  temporären Konfiguration außerhalb des Repos liefen `multiplayer.spec.mjs`,
-  `terrain-abgleich.spec.mjs` und `replay.spec.mjs` **19/19 grün** (gleiche
-  Ergebnisse wie Chromium). WebKit (`webkit-2359`) ist heruntergeladen, startet
-  aber nicht: dem Host fehlen `libgtk-4.so.1`, `libgraphene-1.0.so.0`,
-  `libevent-2.1.so.7`, `libgstgl-1.0.so.0`, `libgstcodecparsers-1.0.so.0`,
-  `libavif.so.16`, `libwayland-server.so.0`, `libmanette-0.2.so.0`,
-  `libenchant-2.so.2`, `libsecret-1.so.0`, `libGLESv2.so.2` (Playwright:
-  „Host system is missing dependencies to run browsers“). Safari/WebKit bleibt
-  ungeprüft, daher bleibt der Punkt offen. Client-Heap über 10 Runden,
-  Initial-Load-Zeit und Allokationen im Render-Loop sind weiterhin nicht gemessen.
+- [x] **P3 — Browser-Abdeckung (2026-10-13): Chromium, Firefox UND WebKit gelaufen.**
+  Firefox 155 und **WebKit 26.6** (Playwright `webkit-2359`; die fehlenden Systembibliotheken ließen sich per
+  `apt-get install` nachrüsten: `libgtk-4-1 libgraphene-1.0-0 libevent-2.1-7t64 libavif16 libwayland-server0 …`)
+  bestanden `multiplayer.spec.mjs`, `terrain-abgleich.spec.mjs` und `replay.spec.mjs` jeweils **19/19**
+  (mit temporärer Konfiguration außerhalb des Repos, Zugpause aus). Damit ist auch der Terrain-Hash unter WebKit
+  gleich dem des Servers (Seeds 5150/5151). Einschränkung: Das ist die WebKit-Engine unter Linux, nicht Safari
+  auf macOS/iOS (andere Grafik-/Audio-Stacks). Offen bleibt nur: Client-Heap über 10 Runden, Initial-Load-Zeit und
+  Allokationen im Render-Loop auf echter Hardware (`npm run perf:browser`).
 - [x] **P3 — Cross-Engine-Terrain — abgesichert 2026-10-09.** Der Client baut das
   Terrain selbst aus dem Seed. Eine Abweichung zwischen Browsern würde jetzt vom
   Terrain-Hash erkannt und per `terrain_request` korrigiert. In **Firefox 155**
   tritt sie nicht auf: der Client-Hash ist in `terrain-abgleich.spec.mjs` (Seeds
   5150 und 5151, inkl. Krater und Wiedereinstieg) gleich dem Server-Hash, ohne
   „Terrain-Hash weicht ab“. Das ist ein Stichprobenbeleg für zwei Seeds, kein
-  Beweis für alle; Safari/WebKit bleibt ungeprüft (nicht lauffähig, s. u.).
+  Beweis für alle; Unter WebKit 26.6 ebenfalls gleich (2026-10-13, s. Browser-Abdeckung).
 - [x] **P3 — Audit „28 undokumentiert stumme Ereignisse" — nachgeprüft 2026-10-13.**
   Alle 28 einzeln gegen den Code: 28 A (emittiert, Eintrag in
   `EREIGNIS_WIRKUNGEN`, durch `tests/event-coverage.test.js` gehalten; davon 3
   bewusst einzweigig mit Beleg: `projectile_spawn`, `terrain_destroyed`,
   `weapon_dropped`), 0 B, 0 C. Die Liste von 2026-09-24 war überholt; die
   Checkboxen in `docs/audit-tief.md` stehen auf `[x]` mit Fundstelle.
-- [ ] **NIEDRIG — „Exporte ohne Leser" und Matchdauer/Mahlstrom (2026-10-13, Branch
+- [x] **NIEDRIG (erledigt) — „Exporte ohne Leser" und Matchdauer/Mahlstrom (2026-10-13, Branch
   `claude/audit-exporte`).** Von den fünf Exporten aus `docs/audit-tief.md` waren
   `GERAETE_SCHLUESSEL`, `isValidAngle`, `isValidPower` schon seit `dd30534` keine
   Exporte mehr; `resolveStrike` und `fuseTicksFor` standen nur noch im
@@ -264,7 +260,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   und `playwright.config.mjs`, `VITE_ZUGPAUSE_SEKUNDEN=0` für den Browser). Die Mahlstrom-Zeit (6–12 min Spielzeit)
   zählt Ticks — die Pausen zählen mit. Online ist die Wiederholung aus dem Snapshot-Zustand abgeleitet (nicht
   gegen echten Server mit Latenz geprüft). Tests: `tests/zugpause.test.js` (4); Unit 1297, E2E 43/43.
-- [ ] **UI — offen aus der Durchsicht (nicht umgesetzt, nach Auswirkung):**
+- [x] **UI — Durchsicht abgearbeitet (2026-10-13).** Punkte 1–4 erledigt, (5a) Ladebalken und (5b) Zug-Übergang durch Zugpause + Wiederholung (s. oben) behoben. Rest von (5): Flüssigkeit/Timing der Animationen nur auf echter Hardware beurteilbar — kein offener Auftrag an die Entwicklung, sondern eine Abnahme durch den Auftraggeber:
   (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
   (2) **ERLEDIGT (2026-10-13, Ursache war ein Physikfehler):** **Protokoll-Spam:** „P3 ertrinkt (100 % unter Wasser)" / „P3 ist wieder über Wasser" wechseln
