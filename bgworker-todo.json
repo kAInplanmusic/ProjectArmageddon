@@ -183,13 +183,13 @@
         "tests/event-coverage.test.js"
       ],
       "hinweis": "Alle Luecken liegen in DERSELBEN Datei — nur EIN Worker, nacheinander.",
-      "ergebnis_beim_abgleich": "Von den 15 einzweigigen Ereignissen sind 5 nachgezogen: guenther_wheel/-pee/-poop/-poop_hit und crate_pickup_blocked (Commit 01db34e). Verbleibend nur-lokal (6): jumped, landed, crate_landed, crate_pickup, fall_damage, toxic_rain. jumped und crate_landed sind online NICHT STILL, SONDERN INEXISTENT (kein Sprung-/Abwurf-Befehl im CONTROL-Protokoll) — sie sind hier nicht behebbar und gehoeren zu O8. ECHT offen bleiben: crate_pickup, landed, fall_damage, toxic_rain (Engine emittiert sie im Server-Match, der Client verwirft sie)."
+      "ergebnis_beim_abgleich": "Von den 15 einzweigigen Ereignissen sind 5 nachgezogen: guenther_wheel/-pee/-poop/-poop_hit und crate_pickup_blocked (Commit 01db34e). Verbleibend nur-lokal (6): jumped, landed, crate_landed, crate_pickup, fall_damage, toxic_rain. jumped und crate_landed sind online NICHT STILL, SONDERN INEXISTENT (kein Sprung-/Abwurf-Befehl im CONTROL-Protokoll) — sie sind hier nicht behebbar und gehoeren zu O8. ECHT offen bleiben: crate_pickup, landed, fall_damage, toxic_rain (Engine emittiert sie im Server-Match, der Client verwirft sie). || NACHTRAG 2026-10-13: Status unveraendert (Luecken crate_pickup, landed, fall_damage, toxic_rain sind Code-Arbeit, kein E2E-Thema). Die Gesamtbatterie ist ohne Regression: E2E-Gesamtlauf 2026-10-13 (npx playwright test, seriell, Chromium/Chrome-Kanal, SwiftShader): 205 Tests in 32 Spezifikationen, 203 gruen, 0 rot, 2 uebersprungen, 17,4 min. "
     },
     {
       "id": "O3",
-      "titel": "ERLEDIGT (Code) — Befund: Guenther ist im Online-Match moeglicherweise unsichtbar",
+      "titel": "ERLEDIGT — Befund: Guenther ist im Online-Match moeglicherweise unsichtbar",
       "phase": 3,
-      "status": "erledigt (Code) — E2E-Nachweis offen",
+      "status": "erledigt",
       "prioritaet": "P1",
       "warum": "Wenn ein online spielender Mensch einen NPC nicht sieht, dessen Haufen ihn verlangsamen und vergiften, ist das ein Erlebnis-Fehler, kein Detail. Fremdmeldung — als Widerlegungsversuch beauftragt, weil in diesem Projekt schon mehrere gravierende Befunde Fehlalarme waren.",
       "messung": "docs/analyse-guenther-online.md (Worker sa-1-6d91da5d, rein lesend)",
@@ -197,7 +197,7 @@
         "src/client/main.js",
         "src/engine/stateSnapshot.js"
       ],
-      "ergebnis_beim_abgleich": "Drahtweg v7 (Commit 941d347) UND Client-Anschluss (Commit 01db34e): die Onlinesicht setzt `guenther: snapshot.guenther ?? null`. Zweig-Zaehlung 26 -> 31 von 38. NICHT im Browser beobachtet: es gibt bis heute KEINEN E2E, der Guenther online prueft (tests/e2e/guenther.spec.mjs hat fuenf Tests, alle lokal)."
+      "ergebnis_beim_abgleich": "Drahtweg v7 (Commit 941d347) UND Client-Anschluss (Commit 01db34e): die Onlinesicht setzt `guenther: snapshot.guenther ?? null`. Zweig-Zaehlung 26 -> 31 von 38. NICHT im Browser beobachtet: es gibt bis heute KEINEN E2E, der Guenther online prueft (tests/e2e/guenther.spec.mjs hat fuenf Tests, alle lokal). || NACHTRAG 2026-10-13: Der Online-Nachweis existiert inzwischen: tests/e2e/guenther-online.spec.mjs, 4 Tests, im Gesamtlauf alle gruen. E2E-Gesamtlauf 2026-10-13 (npx playwright test, seriell, Chromium/Chrome-Kanal, SwiftShader): 205 Tests in 32 Spezifikationen, 203 gruen, 0 rot, 2 uebersprungen, 17,4 min. "
     },
     {
       "id": "O4",
@@ -236,13 +236,13 @@
     },
     {
       "id": "O7",
-      "titel": "LAEUFT — E2E-Lauf (Playwright) steht aus",
+      "titel": "ERLEDIGT — E2E-Lauf (Playwright) gefahren",
       "phase": 3,
-      "status": "laeuft",
+      "status": "erledigt",
       "prioritaet": "P2",
       "warum": "Der Umbau von fire() nach shooting.js und der neue Import scenery.js -> backdrops.js sind in Node verifiziert, aber NICHT im Browser-Bundle. Die Specs tests/e2e/terrain-presets.spec.mjs:240 und backdrops.spec.mjs:268 importieren das Modul im Browser.",
       "beleg": "npm run test:e2e (27 Dateien, ~10 min) — muss nach dem Konsolidieren gefahren werden",
-      "ergebnis_beim_abgleich": "Voller E2E-Lauf ueber 28 Specs auf stillem Baum. Bekannter Vorabfehler laut audit_e2e_plan: die profiling-Specs scheitern ohne GPU (SwiftShader) — vorbestehend, nicht als Regression zu werten."
+      "ergebnis_beim_abgleich": "Voller E2E-Lauf ueber 28 Specs auf stillem Baum. Bekannter Vorabfehler laut audit_e2e_plan: die profiling-Specs scheitern ohne GPU (SwiftShader) — vorbestehend, nicht als Regression zu werten. || E2E-Gesamtlauf 2026-10-13 (npx playwright test, seriell, Chromium/Chrome-Kanal, SwiftShader): 205 Tests in 32 Spezifikationen, 203 gruen, 0 rot, 2 uebersprungen, 17,4 min. Die erwarteten profiling-Fehler ohne GPU traten NICHT auf: die Bildzeit-Tests sind gruen bzw. ueberspringen sich selbst (profiling: 6 gruen, 1 uebersprungen wegen SwiftShader). Damit laufen fire()/shooting.js und scenery.js -> backdrops.js im Browser-Bundle (terrain-presets 5/5, backdrops 10/10 gruen)."
     },
     {
       "id": "O8",
