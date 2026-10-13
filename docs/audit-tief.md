@@ -443,7 +443,7 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
       src/shared/validation.js:39 ist seit `dd30534` kein Export mehr; intern gelesen `validation.js:75`
 - [x] Export ohne Leser: isValidPower *[erledigt — `export` fehlt schon]*
       src/shared/validation.js:43 ist seit `dd30534` kein Export mehr; intern gelesen `validation.js:78`
-- [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]* — **wartet auf Entscheidung des Auftraggebers**
+- [x] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen — **ENTSCHIEDEN 2026-10-13**: Match läuft bis zur Entscheidung (kein Rundenlimit), Valhalla beginnt zufällig nach 6–12 min Spielzeit; siehe MASTERDOTO
       0 von 5 Partien endeten VOR Runde 8
 
       **Messung (2026-10-13)** — `npm run check:maelstrom` (6 Partien) und `npm run check:time` (4 Partien je Wert),

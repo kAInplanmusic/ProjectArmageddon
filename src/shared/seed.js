@@ -28,6 +28,11 @@ export const SEED_OFFSETS = Object.freeze({
    * Glücksrad) die übrigen Zufallsströme nicht verschieben.
    */
   GUENTHER: 5_000_000,
+  /**
+   * Valhalla — der Zeitpunkt, zu dem der Mahlstrom beginnt. Eigener Zweig, damit
+   * diese EINE Ziehung keinen anderen Zufallsstrom verschiebt.
+   */
+  VALHALLA: 6_000_000,
 });
 
 /**

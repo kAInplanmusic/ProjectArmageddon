@@ -3,7 +3,6 @@ import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { WEAPONS, WEAPONS_BY_ID, getWeapon } from '../src/shared/config/weapons.js';
 import { WET_LEVEL, DROWN_LEVEL } from '../src/shared/config/water.js';
-import { MATCH_RULES } from '../src/shared/config/match.js';
 import {
   StatusStore,
   SPECIAL_EFFECTS,
@@ -492,9 +491,9 @@ test('Schaden über Zeit kann nicht unbegrenzt andauern', () => {
    * Bedingung wird ausdrücklich genannt.
    */
   const runde = match.getState().round;
-  assert.ok(runde < MATCH_RULES.suddenDeath.roundBreakpoint,
-    `Testannahme: Runde ${runde} liegt vor dem Breakpoint `
-    + `(${MATCH_RULES.suddenDeath.roundBreakpoint}) — sonst misst der Test den Sturm mit`);
+  assert.ok(match.world.tickCount < match.valhallaTick,
+    `Testannahme: Tick ${match.world.tickCount} liegt vor dem Beginn von Valhalla `
+    + `(${match.valhallaTick}, Runde ${runde}) — sonst misst der Test den Sturm mit`);
 
   match.endTurn();
   assert.equal(match.world.getComponent(aktiver, 'Health', 'current'), abgelaufen,

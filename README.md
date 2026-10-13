@@ -178,7 +178,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1281 Tests in 135 Dateien**, ~4 min. *Nachgemessen 2026-10-02 (`npm test` → **1232 bestanden, 0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js \| wc -l` → **126**). Die Dateizahl ist unverändert — die zwei neuen Prüfungen sitzen in `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online). Vorige Messung 2026-10-01: 1230.* Gegenüber der Messung vom 27.09. (1122 in 119) sind es 108 Prüfungen mehr; die jüngsten Zugänge: `tests/zerlegung-aufbau.test.js` (9), `tests/profil-anzeige.test.js` (4), `tests/abort-knopf.test.js` (2, A-9 + B-11), `tests/hud-verdrahtung.test.js` (2, B-4), `tests/status-marke-online.test.js` (1, B-5), `tests/feuern-ohne-verbunden.test.js` (1, B-7), `tests/verfall-aufrufer.test.js` (1, B-8) und `tests/match-zeilenbudget.test.js` (1, C-5).* |
+| `npm test` | Unit- und Integrationstests: **1287 Tests in 135 Dateien**, ~4 min. *Nachgemessen 2026-10-02 (`npm test` → **1232 bestanden, 0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js \| wc -l` → **126**). Die Dateizahl ist unverändert — die zwei neuen Prüfungen sitzen in `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online). Vorige Messung 2026-10-01: 1230.* Gegenüber der Messung vom 27.09. (1122 in 119) sind es 108 Prüfungen mehr; die jüngsten Zugänge: `tests/zerlegung-aufbau.test.js` (9), `tests/profil-anzeige.test.js` (4), `tests/abort-knopf.test.js` (2, A-9 + B-11), `tests/hud-verdrahtung.test.js` (2, B-4), `tests/status-marke-online.test.js` (1, B-5), `tests/feuern-ohne-verbunden.test.js` (1, B-7), `tests/verfall-aufrufer.test.js` (1, B-8) und `tests/match-zeilenbudget.test.js` (1, C-5).* |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **205 Tests in 32 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -502,9 +502,12 @@ Dazu drei Archetypen (Brawler, Artillerist, Okkultist) mit eigenen Prozent-Modif
 
 ### Mahlstrom / Sudden Death
 
-Ab Runde 15 zieht sich die sichere Zone zusammen: Terrain wird pro Runde um
-32 px von außen abgetragen, außerhalb der Zone wirkt toxischer Regen
-(15 % Max-HP pro Zug) und der Knockback aller Waffen steigt um 100 %.
+**Valhalla** beginnt zufällig zwischen **6 und 12 Minuten Spielzeit** (aus dem Match-Seed
+gezogen, den Spielern nicht angekündigt; wirksam zum nächsten Rundenbeginn). Danach zieht
+sich die sichere Zone zusammen: Terrain wird pro Runde um 32 px von außen abgetragen,
+außerhalb der Zone wirkt toxischer Regen (15 % Max-HP pro Zug) und der Knockback aller
+Waffen steigt um 100 %. Ein Match läuft, **bis es entschieden ist** — es gibt kein
+Rundenlimit im Spiel (nur ein Notnetz bei Runde 300, das nie erreicht wird).
 
 ### Schadensreihenfolge
 

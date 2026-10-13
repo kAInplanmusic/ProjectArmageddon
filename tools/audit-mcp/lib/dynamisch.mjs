@@ -11,7 +11,6 @@
 import { MatchController, MAP_SIZES } from '../../../src/engine/match.js';
 import { WEAPONS } from '../../../src/shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS, combatProfile } from '../../../src/shared/config/classes.js';
-import { MATCH_RULES } from '../../../src/shared/config/match.js';
 import { TERRAIN_PRESETS, generateTerrain } from '../../../src/shared/terrainGen.js';
 import { createRng } from '../../../src/shared/prng.js';
 
@@ -133,7 +132,10 @@ export function spielverlauf({ seeds = [101, 202, 303, 404, 505], teams = 2, pla
   }
 
   const mittel = feld => Number((parteien.reduce((s, p) => s + p[feld], 0) / parteien.length).toFixed(1));
-  const abbruch = MATCH_RULES?.suddenDeath?.roundBreakpoint ?? 15;
+  // ACHTUNG: Valhalla beginnt seit 2026-10-13 zufällig nach 6–12 Minuten Spielzeit, nicht
+  // mehr ab einer festen Runde. Die Runde 8 ist hier nur noch eine NÄHERUNG für die
+  // Kennzahl "vor dem Mahlstrom beendet" dieses älteren Audit-Werkzeugs.
+  const abbruch = 8;
   return {
     konfiguration: { teams, playersPerTeam, preset },
     parteien,

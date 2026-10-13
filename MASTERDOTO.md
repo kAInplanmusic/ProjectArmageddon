@@ -225,11 +225,35 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   Exporte mehr; `resolveStrike` und `fuseTicksFor` standen nur noch im
   leserlosen `export default`-Block von `src/engine/shooting.js` (kein Importeur,
   gesucht in src/, tests/, scripts/, tools/) — Block entfernt, Funktionen bleiben
-  intern, 1281/1281 Tests grün. Matchdauer (offen, **wartet auf Entscheidung des
-  Auftraggebers**): 0 von 8 Partien enden vor dem Mahlstrom-Breakpoint (Runde 8);
-  Ø 28,6/29,4/31,0 Runden bei 2/4/8 Figuren, 31/68/131 Züge, 10/23/44 min bei
-  20 s je Zug (Obergrenze); Mahlstrom trägt ~72 % der Partie. Tabelle, Grenzen der
-  Messung und Alternativen: `docs/audit-tief.md`, Abschnitt NIEDRIG.
+  intern, 1281/1281 Tests grün. Matchdauer/Mahlstrom: siehe den nächsten Eintrag
+  (entschieden am 2026-10-13).
+- [x] **ENTSCHIEDEN UND UMGESETZT (2026-10-13): Matchdauer „so lang bis aus", Valhalla
+  zufällig nach 6–12 Minuten.** Auftraggeber-Entscheidung zu der Messung oben.
+  (1) **Valhalla (Mahlstrom)** beginnt zufällig zwischen 6 und 12 Minuten SPIELZEIT
+  (Ticks/60, nicht Uhrzeit), einmal aus dem Match-Seed gezogen (eigener Zweig
+  `VALHALLA`, verschiebt keinen anderen Strom): gleicher Seed = gleicher Zeitpunkt,
+  Replay und Wiederherstellung bleiben exakt. Wirksam zum nächsten Rundenbeginn
+  (Verspätung höchstens eine Rundenlänge). Der Zeitpunkt ist den Spielern nicht
+  bekannt. Die feste Runde (`roundBreakpoint`, vorher 8) ist entfallen — sie hing von
+  der Figurenzahl ab (8 Figuren: Runde 8 nach über 20 min). (2) **Kein Rundenlimit
+  im Spiel**: das Match läuft, bis es entschieden ist. Es endet verlässlich, weil der
+  Mahlstrom die Karte zusammenzieht und außerhalb der Zone 15 % Max-HP je Zug kosten
+  (gemessen: ein Match ganz ohne Schüsse endete nach 29,5 min / Runde 45 durch den
+  Sturm). Als reines Notnetz bleibt `MATCH_RULES.roundLimitBackstop = 300` (Sieger:
+  Restgesundheit wie bei der alten Grenze); im Spiel nie erreicht. Günthers Auftritte
+  nutzen weiter einen eigenen Planungshorizont von 30 Runden (sonst träte er kaum
+  noch auf). (3) **Online-Client**: der Sturm gilt als aktiv, sobald der Server den
+  ersten Einschnitt gemeldet hat (`maelstrom_contract` / `WELCOME.inset`) — keine
+  zweite Regel im Client. *Folgen:* Matches laufen anders ab als vor der Änderung
+  (Replays/gespeicherte Lobbys VOR dem Update spielen sich nicht mehr exakt nach;
+  Replay-Kopf `maxRounds` alter Aufzeichnungen war 30). `check:maelstrom` misst jetzt
+  den Beginn statt Breakpoint-Kandidaten. Tests: `tests/valhalla.test.js` (10);
+  angepasst: `replay.test.js` (Mahlstrom-Replay braucht jetzt Spielzeit),
+  `gameplay.test.js`, `specials.test.js`; entfernt: `maelstrom-schwelle.test.js`
+  (prüfte die feste Runde und die Client-Kopie davon). *Nicht entschieden/offen:*
+  ob der Beginn vorher irgendwie angedeutet werden soll (Warnung), und die
+  Mahlstrom-Kontraktion dauert bei Karte 2560 px bis zu 40 Runden — bei gleichzeitig
+  sehr langen Matches (8 Figuren) wäre eine schnellere Kontraktion zu prüfen.
 
 **Abgleich der Auftragsdateien (2026-10-13).** Die 31 offenen Abnahmekriterien in
 `docs/auftraege/online-sprung-und-abwurf.md` (18), `zerlegung-schritt3-ereignisse.md`
@@ -281,8 +305,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `requiresLineOfSight` | **alle 150 auf `false`**, 0 Motorleser | **13 Direktschützen** verlangen freie Sicht; `fire()` lehnt sonst ab |
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
-Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1281/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1281/1281** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
+Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
+**1287/1287** grün, Dateizahl **135** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

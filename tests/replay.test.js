@@ -147,20 +147,23 @@ test('Replay meldet ungültige Eingaben statt still zu scheitern', () => {
 });
 
 test('Replay deckt Mahlstrom und Rundenwechsel ab', () => {
-  // Bewusst OHNE Schüsse: tödliche Treffer würden das Match vor Runde 15
-  // beenden. Kurze Zugzeit, damit die Runden ohne Echtzeit-Wartezeit laufen.
+  // Bewusst OHNE Schüsse: tödliche Treffer würden das Match vor Valhalla beenden.
+  // Valhalla beginnt seit 2026-10-13 nach 6–12 Minuten SPIELZEIT (nicht mehr ab einer
+  // Runde) — die Zugzeit ist deshalb normal lang (20 s), und es wird gespielt, bis der
+  // Sturm läuft und drei weitere Runden vergangen sind. Der Lauf kostet wenige Sekunden.
   const match = new MatchController({
-    seed: 12321, teams: 2, playersPerTeam: 1, turnDurationMs: 100, maxRounds: 20 });
+    seed: 6, teams: 2, playersPerTeam: 1, turnDurationMs: 20_000 });
   match.start();
 
   const recorder = new ReplayRecorder({
-    seed: 12321, teams: 2, playersPerTeam: 1, preset: 'hills',
+    seed: 6, teams: 2, playersPerTeam: 1, preset: 'hills',
     maxRounds: match.maxRounds, turnDurationMs: match.turnDurationMs });
 
   const roundMarks = [];
   let guard = 0;
   let lastRound = match.round;
-  while (match.status === 'playing' && match.round < 18 && guard < 60_000) {
+  let sturmRunde = null;
+  while (match.status === 'playing' && guard < 4_000_000) {
     match.step();
     for (const event of match.consumeEvents()) {
       if (event.type === 'round_start') {
@@ -171,12 +174,15 @@ test('Replay deckt Mahlstrom und Rundenwechsel ab', () => {
       roundMarks.push(match.round);
       lastRound = match.round;
     }
+    if (sturmRunde === null && match.world.services.maelstrom.isActive) sturmRunde = match.round;
+    if (sturmRunde !== null && match.round >= sturmRunde + 3) break;
     guard += 1;
   }
 
-  assert.ok(match.round >= 15, `Testaufbau muss Runde 15 erreichen, war ${match.round}`);
+  assert.ok(sturmRunde !== null, 'Testaufbau: Valhalla muss beginnen (Match endete zu früh)');
+  assert.ok(match.world.tickCount >= match.valhallaTick, 'Der Sturm beginnt nicht vor dem gezogenen Zeitpunkt');
   assert.equal(match.world.services.maelstrom.isActive, true, 'Mahlstrom muss aktiv sein');
-  assert.ok(roundMarks.length >= 13, `Es müssen mehrere Runden durchlaufen worden sein: ${roundMarks.length}`);
+  assert.ok(roundMarks.length >= 8, `Es müssen mehrere Runden durchlaufen worden sein: ${roundMarks.length}`);
   recorder.finalize(match.world.tickCount);
 
   const { match: replayed, rejected } = playReplay(recorder);
