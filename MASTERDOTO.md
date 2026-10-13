@@ -219,6 +219,23 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   20 s je Zug (Obergrenze); Mahlstrom trägt ~72 % der Partie. Tabelle, Grenzen der
   Messung und Alternativen: `docs/audit-tief.md`, Abschnitt NIEDRIG.
 
+**Abgleich der Auftragsdateien (2026-10-13).** Die 31 offenen Abnahmekriterien in
+`docs/auftraege/online-sprung-und-abwurf.md` (18), `zerlegung-schritt3-ereignisse.md`
+(6) und `zerlegung-schritt4-zustand-und-schuss.md` (7) wurden einzeln gegen den
+heutigen Stand geprüft (Belegbefehle ausgeführt: `node --test`, `npm run replay`
+mit `--verify`, `npx eslint .`, `check-docs`, `wc -l`, `rg`, Playwright
+`online-sprung-abwurf` 3/3, `runtime-smoke` 10/10, `multiplayer` 10/10).
+**28 erfüllt und abgehakt, 3 bewusst offen gelassen:** `main.js` < 3.250 Zeilen
+(Istwert 3.534, das Ziel wurde laut Verlauf nie erreicht; der Vorher-Wert ist nicht
+mehr messbar), `npm test` 983/983 (Istwert 1281/1281 grün, nur die Zahl ist
+überholt) und fester Seed 4242 über `#cfg-seed` im Online-E2E (der Test nutzt
+Seed 5 über die Lobby-Erstellung). Zwei Zahlen sind anders als erwartet:
+`match.js` hat 3.129 Zeilen und liegt damit noch unter der 3.200er-Grenze
+(Kriterium erfüllt), und der Unterpunkt „dritter Sprung wird abgelehnt“ ist durch
+die Entscheidung des Auftraggebers zur unbegrenzten Sprungzahl entfallen. Eine
+Lücke bleibt: die Wiederherstellung einer Lobby MIT Sprung ist nur ad hoc
+gemessen (Hash 4750e27b = 4750e27b), es gibt keinen Dauer-Test dafür.
+
 ### Entscheidung zur Hardware (2026-10-09)
 
 Server auf **CPU**. Eine 8er-Partie kostet rund 0,3 % eines Kerns; eine GPU wäre

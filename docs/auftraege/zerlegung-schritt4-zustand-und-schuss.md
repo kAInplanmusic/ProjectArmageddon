@@ -86,14 +86,21 @@ Ende-zu-Ende-Beweis.
 
 ## Abnahmekriterien
 
-- [ ] `engine/shooting.js` und (erweitertes) `engine/stateSnapshot.js` existieren
-- [ ] `rg -n '\bthis\b' src/engine/stateSnapshot.js src/engine/shooting.js` → nur
+- [x] `engine/shooting.js` und (erweitertes) `engine/stateSnapshot.js` existieren
+      — belegt 2026-10-13: `wc -l src/engine/shooting.js src/engine/stateSnapshot.js` → 746 und 310 Zeilen, beide vorhanden.
+- [x] `rg -n '\bthis\b' src/engine/stateSnapshot.js src/engine/shooting.js` → nur
       Parameter-Zugriffe, kein `this` (dieselbe Regel wie in Schritt 3)
+      — belegt 2026-10-13: `rg -n '\bthis\b' src/engine/stateSnapshot.js src/engine/shooting.js` → keine Treffer (0 in beiden Dateien).
 - [ ] `npm test` **983/983** (Zahl und Ergebnis identisch zu vorher)
-- [ ] Replay: `record` + `play --verify` meldet „exakt reproduzierbar", Hash wie vorher
-- [ ] `runtime-smoke` 10/10
-- [ ] `match.js` unter 3.200 Zeilen (heute 3.499)
-- [ ] `npm run lint` 0, `npm run check:docs` 0
+      — nicht erfüllt/überholt (geprüft 2026-10-13): Istwert `npm test` → 1281/1281 grün, 0 rot (`node --test tests/*.test.js`), Ziel war die Zahl 983. Die Zahl ist überholt, weil seither Tests hinzukamen (`MASTERDOTO.md`: „Die Zahl ist seither sechsmal gewachsen (983 → 1122 → …)“). Das Ergebnis (alles grün) stimmt. Nicht abgehakt, weil die Zahl im Wortlaut steht.
+- [x] Replay: `record` + `play --verify` meldet „exakt reproduzierbar", Hash wie vorher
+      — belegt 2026-10-13: `npm run replay -- record --out=artifacts/replay-verify.json` + `play … --verify` → „VERIFY: Replay ist exakt reproduzierbar.“, Hash de0b6889 (mit Sprung und Abwurf); ohne (`--no-jump --no-drop`) Hash 8f5575a6, ebenfalls reproduzierbar. „Hash wie vorher“ ist nicht belegbar: der Hash VOR der Zerlegung ist nirgends dokumentiert, und die Aufzeichnung hat sich seit O8 geändert.
+- [x] `runtime-smoke` 10/10
+      — belegt 2026-10-13: `npx playwright test tests/e2e/runtime-smoke.spec.mjs` → 10 passed.
+- [x] `match.js` unter 3.200 Zeilen (heute 3.499)
+      — belegt 2026-10-13: `wc -l src/engine/match.js` → 3129 Zeilen, unter 3.200 (`tests/shooting.test.js:60` „match.js bleibt unter 3200 Zeilen“ grün). Der Ausgangswert „heute 3.499“ im Kriterium ist überholt (MASTERDOTO: 3.196 → 3.091 am 2026-10-01); seither +38 Zeilen, die 3.200er-Grenze hält mit 71 Zeilen Reserve.
+- [x] `npm run lint` 0, `npm run check:docs` 0
+      — belegt 2026-10-13: `npx eslint .` Exit 0; `node scripts/check-docs.mjs` Exit 0.
 
 ## Was NICHT zu tun ist
 
