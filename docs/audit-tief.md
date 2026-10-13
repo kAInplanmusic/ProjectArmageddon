@@ -422,18 +422,57 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ### NIEDRIG (6)
 
-- [ ] Export ohne Leser: resolveStrike
-      src/engine/shooting.js
-- [ ] Export ohne Leser: fuseTicksFor
-      src/engine/shooting.js
-- [ ] Export ohne Leser: GERAETE_SCHLUESSEL
-      src/shared/identity.js
-- [ ] Export ohne Leser: isValidAngle
-      src/shared/validation.js
-- [ ] Export ohne Leser: isValidPower
-      src/shared/validation.js
-- [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
+- [x] Export ohne Leser: resolveStrike *[erledigt 2026-10-13: Default-Export-Block entfernt]*
+      src/engine/shooting.js — war nur noch im Block `export default { … }` (Z. 738–747) sichtbar; `rg` findet
+      keinen Importeur des Default-Exports, `match.js:52-54` und `tests/shooting.test.js:28` importieren nur
+      benannte Exporte (`fire`, `projectileLifetime`, `aimPreview`, `hasLineOfSight`, `launchOrigin`). Die Funktion
+      bleibt (intern gerufen, `shooting.js:246`); nur der leserlose Block ist gefallen
+- [x] Export ohne Leser: fuseTicksFor *[erledigt 2026-10-13: wie `resolveStrike`]*
+      src/engine/shooting.js — intern gelesen `shooting.js:338` und `:432`; Default-Export-Block entfernt
+- [x] Export ohne Leser: GERAETE_SCHLUESSEL *[erledigt — `export` fehlt schon]*
+      src/shared/identity.js:42 ist seit `dd30534` kein Export mehr (`const`); intern gelesen `:102`/`:106`
+- [x] Export ohne Leser: isValidAngle *[erledigt — `export` fehlt schon]*
+      src/shared/validation.js:39 ist seit `dd30534` kein Export mehr; intern gelesen `validation.js:75`
+- [x] Export ohne Leser: isValidPower *[erledigt — `export` fehlt schon]*
+      src/shared/validation.js:43 ist seit `dd30534` kein Export mehr; intern gelesen `validation.js:78`
+- [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]* — **wartet auf Entscheidung des Auftraggebers**
       0 von 5 Partien endeten VOR Runde 8
+
+      **Messung (2026-10-13)** — `npm run check:maelstrom` (6 Partien) und `npm run check:time` (4 Partien je Wert),
+      dazu eine eigene Messung mit 8 Seeds je Figurenzahl (Skript nicht eingecheckt; gleiche Bot-Logik wie
+      `check-maelstrom.mjs`: feste Winkel, Kraft 80, Standardwaffe; Simulation 60 Hz, Rundenzähler = ein voller
+      Umlauf der Zugreihenfolge; `maxRounds = 30`, Rundengrenze greift bei Runde 31).
+      Mahlstrom: `suddenDeath.roundBreakpoint = 8`, `terrainContractionPixelsPerRound = 32`.
+
+      | Figuren | Bots | Runden (Ø) | Züge (Ø) | Sim-Ticks (Ø) | Dauer bei 20 s/Zug | bei 30 s/Zug | vor Runde 8 zu Ende | Ausschaltung |
+      |---|---|---|---|---|---|---|---|---|
+      | 2 | nur Team 0 | 28,6 | 31 | 1184 (20 s) | 10,4 min | 15,6 min | 0/8 | 1/8 |
+      | 4 | nur Team 0 | 29,4 | 68 | 1755 (29 s) | 22,8 min | 34,2 min | 0/8 | 2/8 |
+      | 8 | nur Team 0 | 31,0 | 131 | 2248 (37 s) | 43,6 min | 65,4 min | 0/8 | 0/8 |
+      | 2 | beide Teams | 28,6 | 30 | 1148 (19 s) | 9,8 min | 14,8 min | 0/8 | 1/8 |
+      | 4 | beide Teams | 29,6 | 57 | 1974 (33 s) | 19,0 min | 28,6 min | 0/8 | 5/8 |
+      | 8 | beide Teams | 31,0 | 99 | 3676 (61 s) | 33,0 min | 49,6 min | 0/8 | 0/8 |
+
+      Repo-Werkzeuge (4 Figuren): `check:maelstrom` — Endrunden 24, 25, 31, 31, 31, 31, 0 von 6 vor Runde 8, Ø 20,8 von
+      28,8 Runden (72 %) unter Sturm. `check:time` — Ø 29,5 Runden, 68,8 Züge, 22,9 min bei 20 s/Zug, 1 von 4
+      Ausschaltungen (bei Startgesundheit 60: 18,3 min, 3 von 4).
+
+      Lesart: Der Mahlstrom wird in JEDER gemessenen Partie erreicht (Spiel endet nie vor Runde 8; Ausschaltung
+      selten, meist Rundengrenze). Er trägt rund 70–75 % der Partie. Die reine Rechenzeit ist klein (20–61 s
+      Simulation); die Matchdauer wird von der Zugzeit bestimmt und wächst linear mit der Figurenzahl: 8 Figuren
+      brauchen bei 20 s/Zug rund 33–44 min — mehr als doppelt so lang wie 4 Figuren — der Breakpoint liegt aber
+      bei allen Größen an derselben Rundenzahl, also relativ zur Gesamtdauer gleich früh.
+      Grenzen der Messung: Die Bots zielen nicht; echte Spieler treffen und beenden Partien früher. Die Dauer in
+      Minuten setzt voraus, dass jeder Zug die volle Zugzeit nutzt (Obergrenze, nicht Durchschnitt).
+
+      **Empfehlung (keine Entscheidung):** Breakpoint 8 beibehalten, solange die Messung mit zielenden Spielern
+      nicht das Gegenteil zeigt (Beleg: Partien enden hier nie davor, der Mahlstrom ist also kein toter Code).
+      Alternativen, falls 8-Figuren-Partien zu lang geraten: (a) Breakpoint nach Figurenzahl staffeln
+      (z. B. 2 Figuren: 8, 4: 8, 8: 6) — gleicher Spannungsbogen, kürzere Wartezeit; (b) Breakpoint als Anteil der
+      Rundengrenze statt fester Zahl; (c) `maxRounds` je Matchart senken (große Partien enden früher per
+      Rundengrenze), ohne den Mahlstrom anzufassen; (d) Zugzeit bei 8 Figuren kürzen. Jede Variante ändert
+      Spielgefühl und braucht eine Messung mit zielenden Spielern.
+      Status: **wartet auf Entscheidung des Auftraggebers.**
 
 ---
 

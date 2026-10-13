@@ -734,14 +734,3 @@ function shiftPlayer(quelle, playerId, distance) {
   }
   return { dx: 0, dy: 0 };
 }
-
-export default {
-  fire,
-  resolveStrike,
-  fuseTicksFor,
-  projectileLifetime,
-  aimPreview,
-  hasLineOfSight,
-  launchOrigin,
-  applySelfEffect,
-};
