@@ -837,34 +837,41 @@ eingesammelt hat. **Ob online vorhergesagt wird, entscheidet der Auftraggeber**
 
 ## G.1 Die Vorbedingung (zuerst, nicht gleichzeitig)
 
-- [ ] Ein Eintrag im Replay kann **Springen** und **Abwerfen** beschreiben; der
+- [x] Ein Eintrag im Replay kann **Springen** und **Abwerfen** beschreiben; der
       Leser liest einen Eintrag **ohne** `kind` als Schuss (Rückwärtskompatibilität).
       Beleg: `node --test tests/replay-head.test.js` bleibt grün, und ein neuer
       Test liest eine Aufzeichnung **ohne** `kind` und fordert Gleichheit des Hashes.
-- [ ] `tests/replay-sprung-luecke.test.js` ist **umgedreht** (nicht gelöscht):
+      — belegt 2026-10-13: `node --test tests/replay-head.test.js` 9/9 grün; Test „Ein Eintrag OHNE `kind` wird als SCHUSS gelesen“ (`tests/replay-head.test.js:209`) entfernt `kind` aus jedem Eintrag und fordert gleichen Hash; Server-Leser `#applyReplayEntry` (`src/server/gameServer.js:257`) behandelt Eintrag ohne `kind` als Schuss.
+- [x] `tests/replay-sprung-luecke.test.js` ist **umgedreht** (nicht gelöscht):
       dieselbe Partie mit Sprung ergibt denselben Zustandshash. Der Kopfkommentar
       der Datei ist auf den neuen Stand gebracht.
-- [ ] Eine Aufzeichnung **mit Sprung und mit Abwurf** verifiziert gegen sich selbst
+      — belegt 2026-10-13: `node --test tests/replay-sprung-luecke.test.js` 3/3 grün; Test „Ein aufgezeichneter Sprung ist reproduzierbar (O8)“ fordert `zurueck.stateHash() === hash` (Datei umgedreht, nicht gelöscht); Kopfkommentar nennt die Eingabearten (`kind`: Schuss, Sprung …).
+- [x] Eine Aufzeichnung **mit Sprung und mit Abwurf** verifiziert gegen sich selbst
       und gegen die Gegenprobe.
       `npm run replay -- record --out=artifacts/replay-verify.json`
       `npm run replay -- play artifacts/replay-verify.json --verify`
       (`scripts/replay.mjs` springt heute nicht — der Weg muss den neuen Eintrag
       erzeugen, sonst prüft dieser Punkt nichts.)
       Danach `rm -f artifacts/replay-verify.json` (`artifacts/` ist getrackt).
-- [ ] Der Server zeichnet **beide** auf: `grep -n "recordInput" src/server/gameServer.js`
+      — belegt 2026-10-13: `npm run replay -- record --out=artifacts/replay-verify.json` → 33 `shot`, 1 `jump`, 1 `drop`, Zustandshash de0b6889; `npm run replay -- play artifacts/replay-verify.json --verify` → „VERIFY: Replay ist exakt reproduzierbar.“ (Tick 2506, Zwischenhash bei 2500 OK); Datei danach gelöscht, `git status` sauber. Gegenprobe: `record --no-jump --no-drop` → Hash 8f5575a6, ebenfalls reproduzierbar (Test „Die Gegenprobe: OHNE Sprung …“ in `replay-sprung-luecke.test.js`). `scripts/replay.mjs` erzeugt den Sprung/Abwurf-Eintrag heute standardmäßig.
+- [x] Der Server zeichnet **beide** auf: `grep -n "recordInput" src/server/gameServer.js`
       zeigt den ruhenden Aufruf innerhalb des Sprung- und des Abwurfpfads, jeweils
       hinter `result.ok`.
-- [ ] Die Wiederherstellung kennt beide: `gameServer.js:150-169`
+      — belegt 2026-10-13: `grep -n "recordInput" src/server/gameServer.js` → Zeile 746 (`kind: 'jump'`) und 788 (`kind: 'drop'`), beide innerhalb `if (result.ok)`; dazu 667 (Schuss) und 687 (`select`).
+- [x] Die Wiederherstellung kennt beide: `gameServer.js:150-169`
       (`#restoreFromReplay`) wendet nicht nur `match.fire` an.
-- [ ] **Belegprobe für die Vorbedingung:** zwei Läufe derselben Sitzung mit Sprung,
+      — belegt 2026-10-13: die Zeilenangabe `150-169` ist überholt; `#restoreFromReplay` steht heute bei `src/server/gameServer.js:198`, `#applyReplayEntry` (:257) kennt `jump`, `drop`, `select` und Schuss (`match.fire`). Sachlich erfüllt.
+- [x] **Belegprobe für die Vorbedingung:** zwei Läufe derselben Sitzung mit Sprung,
       einmal über den Wiederherstellungspfad — gleicher Zustandshash. Ohne diesen
       Schritt ist D.4 nur behauptet.
+      — belegt 2026-10-13, NUR ad hoc: mit einem Wegwerfskript (nicht eingecheckt) gegen einen echten Server (Seed 4242, Sprung über `CONTROL.JUMP`, `saveState`, Neustart aus derselben Datei) → Aufzeichnung enthält `jump`, `restorePruefungen[0].gleich === true`, Hash 4750e27b = 4750e27b bei Takt 120 (Log `restore_hash`). LÜCKE: es gibt im Repo keinen Dauer-Test dafür; `tests/wiederaufbau-seed-und-takt.test.js` und `tests/persistence.test.js` enthalten keinen Sprung.
 
 ## G.2 Der Drahtweg
 
-- [ ] `CONTROL.JUMP` und `CONTROL.DROP_WEAPON` in `protocol.js`; der Server hat je
+- [x] `CONTROL.JUMP` und `CONTROL.DROP_WEAPON` in `protocol.js`; der Server hat je
       einen `case` und einen Handler nach dem Muster von `handleWeaponSelect`.
-- [ ] **Identität aus dem Token**, kein `entityId` aus der Nachricht:
+      — belegt 2026-10-13: `src/shared/protocol.js:103-104` (`JUMP`, `DROP_WEAPON`); `src/server/gameServer.js:1890` und `:1898` je ein `case`, Handler `handleJump`/`handleDropWeapon` nach dem Muster von `handleWeaponSelect`.
+- [x] **Identität aus dem Token**, kein `entityId` aus der Nachricht:
       `node --test tests/anti-cheat.test.js` wird um Prüfungen erweitert:
       - fremder Token kann keinen Sprung für eine andere Figur auslösen,
       - ein dritter Sprung im selben Zug wird mit `errors`-Liste abgelehnt,
@@ -872,24 +879,31 @@ eingesammelt hat. **Ob online vorhergesagt wird, entscheidet der Auftraggeber**
       - ein Abwurf einer Waffe, die die Figur **nicht** hat, wird abgelehnt.
       Diese Datei prüft gegen einen ECHTEN Server (`GameServer.listen(0)` + `ws`) —
       eine Attrappe belegt nichts.
-- [ ] `node --test tests/netcode.test.js` bleibt grün (`validateCommand` und
+      — belegt 2026-10-13: `node --test tests/anti-cheat.test.js` 13/13 grün, läuft gegen einen echten Server (`starteServer`, `ws`). Abgedeckt: fremde Figur (:632), `seitlich` = 'rechts'/1e9/-1e9/true/… (:663), fremde Waffe abwerfen (:766). Der Unterpunkt „dritter Sprung wird abgelehnt“ ist ÜBERHOLT: die Zwei-Sprünge-Grenze entfiel auf Entscheidung des Auftraggebers („nein sprung kann man unendlich“, `docs/sprung-regel.md`); Test :699 heißt jetzt „Die Bodenregel gilt weiter, die Zahlengrenze nicht mehr“ und prüft, dass KEINE Zähl-Ablehnung kommt.
+- [x] `node --test tests/netcode.test.js` bleibt grün (`validateCommand` und
       `isTickInWindow` bleiben für den Schuss unverändert).
-- [ ] `node --test tests/event-coverage.test.js` bleibt grün; der `online`-Zweig
+      — belegt 2026-10-13: `node --test tests/netcode.test.js` 34/34 grün.
+- [x] `node --test tests/event-coverage.test.js` bleibt grün; der `online`-Zweig
       für `jumped` existiert, und die `bewusstStumm`-Begründung für
       `weapon_dropped` ist neu gefasst (F.2).
-- [ ] Keine zweite Zählung der Sprünge im Server (Regel „eine Regel, eine Stelle"):
+      — belegt 2026-10-13: `node --test tests/event-coverage.test.js` 16/16 grün; `jumped: beide(…)` in `src/client/ereignisse.js:586`; `weapon_dropped` hat einen `online`-Zweig (`ereignisse.js`) und steht NICHT mehr in `bewusstStumm`, der Kommentar in `tests/event-coverage.test.js:208-216` ist neu gefasst.
+- [x] Keine zweite Zählung der Sprünge im Server (Regel „eine Regel, eine Stelle"):
       `node --test tests/eine-regel-eine-stelle.test.js`.
+      — belegt 2026-10-13: `node --test tests/eine-regel-eine-stelle.test.js` 9/9 grün; `grep -n "jumpsUsed" src/server/gameServer.js` → keine Treffer, `handleJump` zählt nichts (Kommentar vor `handleJump`). Hinweis: der Wächtertest selbst deckt Sprünge nicht ausdrücklich ab; belegt ist es durch die Quelltextprüfung.
 
 ## G.3 Anzeige
 
-- [ ] Genau EINE Meldung je Sprung online; keine Dopplung mit einem Client-Pfad
+- [x] Genau EINE Meldung je Sprung online; keine Dopplung mit einem Client-Pfad
       (F.3). Prüfbar an der Zahl der `hud.log`-Aufrufe im Erfolgspfad.
-- [ ] Der Online-Text für `crate_pickup_blocked` wird **richtig**, sobald es das
+      — belegt 2026-10-13: E2E `tests/e2e/online-sprung-abwurf.spec.mjs` 3/3 grün (`npx playwright test tests/e2e/online-sprung-abwurf.spec.mjs`); Sprungtest fordert `meldungen.length === 1` und `/^P\d+ springt$/`; im Code ist `jumped: beide(…)` (`ereignisse.js:586`) der einzige `hud.log`-Aufruf für den Sprung.
+- [x] Der Online-Text für `crate_pickup_blocked` wird **richtig**, sobald es das
       Abwerfen online gibt (`ereignisse.js:461-470`): der Vorrat ist voll, es gibt
       jetzt eine Handlung — also darf die Taste wieder genannt werden (oder
       bewusst nicht, siehe G.6).
-- [ ] Der veraltete Kommentar in `main.js:179` („Springen (Leertaste)") ist
+      — belegt 2026-10-13: `crate_pickup_blocked: beide(…)` (`src/client/ereignisse.js:641`) → „Vorrat voll — erst eine Waffe abwerfen (Q)“ in beiden Betriebsarten; die Zeilenangabe `461-470` ist überholt.
+- [x] Der veraltete Kommentar in `main.js:179` („Springen (Leertaste)") ist
       berichtigt; HUD-Hilfe und README nennen SHIFT.
+      — belegt 2026-10-13: `src/client/main.js:201` lautet „Springen (SHIFT), mit A/D als Richtung. NICHT die Leertaste“; `grep -rn "Springen (Leertaste)" src` → keine Treffer; `README.md:143` und `index.html:1058` nennen Shift. Die Zeilenangabe `main.js:179` ist überholt.
 
 ## G.4 Gates (in dieser Reihenfolge, Ergebniszahlen in den Abschluss)
 
@@ -913,17 +927,21 @@ einem Muster, das sich selbst trifft:
 
 ## G.5 E2E (neu zu schreiben)
 
-- [ ] Ein Online-Sprung wird im **Zustand** geprüft, nicht über eine Wartezeit:
+- [x] Ein Online-Sprung wird im **Zustand** geprüft, nicht über eine Wartezeit:
       die Methode im Seitenkontext anzapfen und den Wert im **selben**
       `page.evaluate` ablegen (Muster im Skill `projectarmageddon-verification`,
       Abschnitt „E2E: Zustand prüfen, nicht Uhrzeit"). Eine Zusicherung „nach
       200 ms fliegt die Figur noch" fällt auf dieser Hardware bei richtigem
       Produkt um.
+      — belegt 2026-10-13: der Test zapft `NetworkClient#on('snapshot')` im Seitenkontext an (`window.__SPUR__`) und prüft den Anstieg `yVorher - yTiefst > 30` im Zustand; `waitForTimeout(2500)` ist nur Sammelfenster, keine Zusicherung über die Zeit. Kleine Abweichung vom Wortlaut: Ablage im Hook, Lesen in einem späteren `page.evaluate`. Lauf 3/3 grün.
 - [ ] Fester Seed vor dem Start: `await page.locator('#cfg-seed').fill('4242')`.
-- [ ] Die Meldung erscheint genau einmal (Zähler im Live-Bereich, nicht in zwei
+      — nicht erfüllt/überholt (geprüft 2026-10-13): der Test setzt den Seed nicht über `#cfg-seed` mit 4242, sondern `seed: SEED` (= 5, `tests/e2e/online-sprung-abwurf.spec.mjs:48`) bei der Lobby-Erstellung über `starteOnlineMatch` (`tests/e2e/helfer/online-match.mjs`). Der Zweck (fester Seed vor dem Start) ist erfüllt, der Wortlaut (Menüfeld, 4242) nicht; ein Online-Match hat im Menü kein solches Feld, das Kriterium ist für die Online-Form überholt. Nicht abgehakt, weil der Wortlaut nicht stimmt.
+- [x] Die Meldung erscheint genau einmal (Zähler im Live-Bereich, nicht in zwei
       Schritten gelesen — `#hud-log` im ANIMATIONSBILD neu aufgebaut).
-- [ ] Der Abwurf: die Waffe ist danach in der Kistenliste, und die eigene Liste
+      — belegt 2026-10-13: `expect(meldungen.length).toBe(1)` für „springt“ und für „wirft … ab“, im Anzeige-Augenblick mitgelesen (`imDom`, `helfer/online-match.mjs`), nicht in zwei Schritten gelesen.
+- [x] Der Abwurf: die Waffe ist danach in der Kistenliste, und die eigene Liste
       hat eine Waffe weniger.
+      — belegt 2026-10-13: Abwurf-Test prüft, dass die Kiste (`crateId`) in `getState().crates` erscheint und die Waffe aus dem `inventory` der Figur verschwunden ist (Enthaltensein statt Zählvergleich „eine weniger“, gleichwertig); Meldung „wirft … ab (N Munition)“ genau einmal.
 
 ## G.6 Was dieses Dokument NICHT entscheidet
 

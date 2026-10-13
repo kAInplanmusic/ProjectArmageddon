@@ -79,13 +79,19 @@ Ereignisse reagiert. `multiplayer` prüft den Online-Zweig.
 
 ## Abnahmekriterien
 
-- [ ] `src/client/ereignisse.js` existiert, keine Zeile darin enthält `this`
+- [x] `src/client/ereignisse.js` existiert, keine Zeile darin enthält `this`
+      — belegt 2026-10-13: `wc -l src/client/ereignisse.js` → 837 Zeilen (damals 571). `grep -n '\bthis\b' src/client/ereignisse.js` → 6 Treffer, ALLE in Kommentarzeilen (:211, :521, :522, :540, :541, :652, Beschreibungen von `main.js`/`gameServer.js`); im Code kein `this`. Der Wortlaut „keine Zeile enthält `this`“ stimmt für die Kommentare also nicht, die Absicht (keine Kopplung an eine Klasse) ist erfüllt.
 - [ ] `main.js` ist um mindestens 300 Zeilen kürzer (Ziel: < 3.250)
-- [ ] `tests/event-coverage.test.js` unverändert grün
-- [ ] `runtime-smoke` 10/10, `multiplayer` 10/10 (Ergebnis wie VOR dem Umbau)
-- [ ] `npm run lint` 0, `npm run check:docs` 0
-- [ ] Die Zuordnungstabelle ist der EINZIGE Ort, der Ereignisarten auf Wirkungen
+      — nicht erfüllt/überholt (geprüft 2026-10-13): `wc -l src/client/main.js` → 3534 Zeilen, Ziel war < 3.250 (mind. 300 weniger). Laut `MASTERDOTO.md` (Abschnitt „Zerlegung der zwei Riesenklassen“) maß `main.js` am 2026-10-01 noch 3.435 Zeilen (die Zahl 3.235 gilt dort als überholt), das Ziel < 3.250 wurde nie erreicht; seither ist die Datei weiter gewachsen. Der Vorher-Wert des Umbaus ist nicht belegbar (die Git-Historie ist auf 67 Commits gekürzt, `ereignisse.js` erscheint erstmals in `7afe1b8`), die „300 Zeilen kürzer“ lassen sich deshalb nicht nachmessen.
+- [x] `tests/event-coverage.test.js` unverändert grün
+      — belegt 2026-10-13: `node --test tests/event-coverage.test.js` 16/16 grün. Einschränkung: die Datei ist seither mit Absicht geändert worden (O8: `jumped` online, `weapon_dropped` aus `bewusstStumm`), „unverändert“ ist daher nicht mehr nachweisbar, „grün“ schon.
+- [x] `runtime-smoke` 10/10, `multiplayer` 10/10 (Ergebnis wie VOR dem Umbau)
+      — belegt 2026-10-13: `npx playwright test tests/e2e/runtime-smoke.spec.mjs` 10 passed; `npx playwright test tests/e2e/multiplayer.spec.mjs` 10 passed. Der Vergleichswert „wie VOR dem Umbau“ ist nicht belegbar, beide Läufe sind heute vollständig grün.
+- [x] `npm run lint` 0, `npm run check:docs` 0
+      — belegt 2026-10-13: `npx eslint .` Exit 0; `node scripts/check-docs.mjs` Exit 0 („Geprüfte Behauptungen: alle richtig“).
+- [x] Die Zuordnungstabelle ist der EINZIGE Ort, der Ereignisarten auf Wirkungen
       abbildet — beide Zweige lesen daraus
+      — belegt 2026-10-13: `EREIGNIS_WIRKUNGEN` (`src/client/ereignisse.js:183`) wird von `verarbeiteLokal` (:819) und `verarbeiteOnline` (:834) gelesen; `grep -rn "event.type" src/client` außerhalb davon → keine Treffer in `main.js`; `main.js` ruft nur `verarbeiteLokal`/`verarbeiteOnline` (Import :32). Hinweis: `soundMixer.verarbeite` (`src/client/soundMixer.js`) ordnet Ereignisarten Klängen zu, wird aber nur aus der Tabelle heraus aufgerufen (`k.sound?.verarbeite(…)`) und ist die Klangzuordnung, keine zweite Wirkungstabelle.
 
 ## Was NICHT zu tun ist
 
