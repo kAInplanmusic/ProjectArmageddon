@@ -363,62 +363,70 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ### MITTEL (28)
 
-- [ ] Ereignis „crate_pickup" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/lootSystem.js:231 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „crate_pickup_blocked" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/lootSystem.js:220 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „death" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/damageSystem.js:135 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „dot_tick" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2816 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „fall_damage" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/characterSystem.js:200 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „frozen" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2426 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „fuse_armed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/projectileSystem.js:223 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „fuse_expired" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/projectileSystem.js:202 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „jumped" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:1347 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „karte_unerreichbar" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:755 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „landed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:1407 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „loot_error" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:1102 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „maelstrom_contract" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/maelstromSystem.js:69 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „match_over" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2777, src/engine/match.js:2858 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „projectile_impact" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/projectileSystem.js:275 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „projectile_pierced" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/projectileSystem.js:265 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „projectile_spawn" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2113, src/engine/shooting.js:344 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „pulled" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2436 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „round_start" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2736 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „shield_absorbed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:873 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „special_effect" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/shooting.js:228 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „terrain_destroyed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/projectileSystem.js:402 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „toxic_rain" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/systems/maelstromSystem.js:96 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „turn_skipped" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2826 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „turret_deployed" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:1896 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „turret_expired" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:1935 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „turret_fired" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2118 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
-- [ ] Ereignis „weapon_dropped" ist stumm und NICHT dokumentiert *[braucht Begründung oder Behandlung]*
-      Emittiert in src/engine/match.js:2193 — Begründung im Wächter nachtragen oder einen Client-Zweig bauen
+> **Nachprüfung 2026-10-13:** Alle 28 Ereignisse einzeln gegen den heutigen Code
+> geprüft — alle werden emittiert, alle haben einen Eintrag in
+> `EREIGNIS_WIRKUNGEN` (`src/client/ereignisse.js`), keines ist unbehandelt
+> stumm. Die Liste entstand am LESER des Werkzeugs (unquotierte Schlüssel der
+> Tabelle), siehe `tests/event-coverage.test.js:48-57`; die Zeilenangaben des
+> Audits sind überholt. Die „Emittiert in"-Stellen unten sind die heutigen.
+> Gegenprobe: `tests/event-coverage.test.js` (Wächter „Audit-Meldung").
+
+- [x] Ereignis „crate_pickup" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/lootSystem.js:231; Zuordnung `src/client/ereignisse.js:655` (lokal+online): Protokollzeile je Beuteart. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „crate_pickup_blocked" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/lootSystem.js:220; Zuordnung `src/client/ereignisse.js:641` (beide): „Vorrat voll — erst eine Waffe abwerfen (Q)". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „death" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/damageSystem.js:135; Zuordnung `src/client/ereignisse.js:722` (lokal+online): Protokoll „… ausgeschaltet". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „dot_tick" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2688; Zuordnung `src/client/ereignisse.js:481` (beide): Protokoll mit Schaden und Elementen. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „fall_damage" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/characterSystem.js:200; Zuordnung `src/client/ereignisse.js:739` (beide): Protokoll „Sturzschaden: N". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „frozen" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2298; Zuordnung `src/client/ereignisse.js:473` (beide): Protokoll „… ist eingefroren". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „fuse_armed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/projectileSystem.js:223; Zuordnung `src/client/ereignisse.js:407` (beide): Protokoll plus Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „fuse_expired" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/projectileSystem.js:202; Zuordnung `src/client/ereignisse.js:412` (beide): Protokoll plus Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „jumped" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:1218; Zuordnung `src/client/ereignisse.js:586` (beide): Protokoll „… springt". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „karte_unerreichbar" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:760; Zuordnung `src/client/ereignisse.js:799` (beide): Protokoll-Warnung (seit 2026-10-01 auch lokal, docs/befundregister.md:70). Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „landed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:1278; Zuordnung `src/client/ereignisse.js:599` (beide): Protokoll „… ist gelandet". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „loot_error" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:973; Zuordnung `src/client/ereignisse.js:390` (beide): Protokoll „Beute konnte nicht verteilt werden". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „maelstrom_contract" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/maelstromSystem.js:68; Zuordnung `src/client/ereignisse.js:704` (lokal+online): Kontraktion plus Protokoll. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „match_over" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2649, src/engine/match.js:2730; Zuordnung `src/client/ereignisse.js:758` (lokal+online): lokal Protokoll, online Endbildschirm. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „projectile_impact" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/projectileSystem.js:275; Zuordnung `src/client/ereignisse.js:362` (beide): Blitz am Einschlagort. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „projectile_pierced" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/projectileSystem.js:265; Zuordnung `src/client/ereignisse.js:373` (beide): Blitz am Opfer. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „projectile_spawn" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:1985, src/engine/shooting.js:344; Zuordnung `src/client/ereignisse.js:339` (nur online (bewusst)): online löst es die Vorhersage auf; lokal gibt es keine Vorhersage (tests/event-coverage.test.js:389-392). Wächter: tests/event-coverage.test.js:385-396 (`EINZWEIG_BELEGT`).
+- [x] Ereignis „pulled" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2308; Zuordnung `src/client/ereignisse.js:506` (beide): Protokoll „… wurde herangezogen". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „round_start" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2608; Zuordnung `src/client/ereignisse.js:743` (beide): Protokoll „Runde N — Wind …". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „shield_absorbed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/terrainBuilder.js:161 (vormals match.js:873); Zuordnung `src/client/ereignisse.js:497` (lokal+online): Protokoll, lokal zusätzlich Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „special_effect" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/shooting.js:228; Zuordnung `src/client/ereignisse.js:468` (beide): Meldung über logSpecialEffect. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „terrain_destroyed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/projectileSystem.js:402; Zuordnung `src/client/ereignisse.js:191` (nur online (bewusst)): lokal entsteht der Krater aus `explosion` (tests/event-coverage.test.js:393-396). Wächter: tests/event-coverage.test.js:385-396 (`EINZWEIG_BELEGT`).
+- [x] Ereignis „toxic_rain" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/systems/maelstromSystem.js:95; Zuordnung `src/client/ereignisse.js:754` (beide): Protokoll „Toxischer Regen trifft die Zone". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „turn_skipped" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2698; Zuordnung `src/client/ereignisse.js:477` (beide): Protokoll „… setzt aus". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „turret_deployed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:1767; Zuordnung `src/client/ereignisse.js:426` (lokal+online): Protokoll, lokal zusätzlich Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „turret_expired" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:1806; Zuordnung `src/client/ereignisse.js:459` (beide): Protokoll „Geschütz abgelaufen". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „turret_fired" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:1990; Zuordnung `src/client/ereignisse.js:450` (lokal+online): lokal Blitz, online Protokollzeile. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
+- [x] Ereignis „weapon_dropped" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
+      Emittiert in src/engine/match.js:2065; Zuordnung `src/client/ereignisse.js:621` (nur online (bewusst)): lokal meldet `Main#dropWeapon` direkt (tests/event-coverage.test.js:385-388). Wächter: tests/event-coverage.test.js:385-396 (`EINZWEIG_BELEGT`).
 
 ### NIEDRIG (6)
 

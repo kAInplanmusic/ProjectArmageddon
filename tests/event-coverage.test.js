@@ -265,17 +265,17 @@ const bewusstStumm = new Set([
  * @type {string[]}
  */
 const AUDIT_LISTE_2026_09_26 = [
-  'crate_pickup',          // ereignisse.js:424 — lokal :433 (Protokollzeile je Beuteart)
+  'crate_pickup',          // ereignisse.js:655 — lokal+online (Protokollzeile je Beuteart; Stand 2026-10-13)
   'crate_pickup_blocked',  // ereignisse.js:461 — beide (Q-Hinweis gilt seit O8 auch online, dort gibt es das Abwerfen)
   'death',                 // ereignisse.js:479 — beide :482/:485
   'dot_tick',              // ereignisse.js:344 — beide :351
-  'fall_damage',           // ereignisse.js:489 — lokal :491
+  'fall_damage',           // ereignisse.js:739 — beide (seit O2; Stand 2026-10-13)
   'frozen',                // ereignisse.js:336 — beide :337
   'fuse_armed',            // ereignisse.js:270 — beide :271 (Protokoll) + :272 (Blitz)
   'fuse_expired',          // ereignisse.js:275 — beide :276 + :277
   'jumped',                // ereignisse.js:399 — beide :401 (seit O8 auch online)
-  'karte_unerreichbar',    // ereignisse.js:542 — nur online :544 (siehe unten, offen)
-  'landed',                // ereignisse.js:405 — lokal :407
+  'karte_unerreichbar',    // ereignisse.js:799 — beide (seit 2026-10-01, docs/befundregister.md B-12; Stand 2026-10-13)
+  'landed',                // ereignisse.js:599 — beide (seit O2; Stand 2026-10-13)
   'loot_error',            // ereignisse.js:253 — beide :254
   'maelstrom_contract',    // ereignisse.js:463 — beide :70/:71 (Kontraktion + Protokoll)
   'match_over',            // ereignisse.js:505 — lokal :513, online :517–:519
@@ -287,7 +287,7 @@ const AUDIT_LISTE_2026_09_26 = [
   'shield_absorbed',       // ereignisse.js:360 — beide :363 (Blitz) und :66 (Meldung)
   'special_effect',        // ereignisse.js:331 — beide :333 → main.js:1431
   'terrain_destroyed',     // ereignisse.js:90  — nur online :92 (Krater)
-  'toxic_rain',            // ereignisse.js:499 — lokal :501
+  'toxic_rain',            // ereignisse.js:754 — beide (seit O2; Stand 2026-10-13)
   'turn_skipped',          // ereignisse.js:340 — beide :341
   'turret_deployed',       // ereignisse.js:289 — lokal :291 + :295, online :300
   'turret_expired',        // ereignisse.js:322 — beide :323
