@@ -275,11 +275,17 @@
      * `bottom: 12px` und `left/right: 12px` entsprechen dem Rasterabstand
      * (`#hud { padding: 12px; gap: 10px }`), den die Zeile vorher hatte.
      */
+    /*
+     * Zwischen den Seitenleisten und ÜBER der Zielanzeige (`#hud-aim`): Vorher lag das
+     * Protokoll über die volle Breite am Rand und verdeckte Winkel/Kraft/Radius
+     * (Screenshot 1280×720, 2026-10-13). Auf schmalen Fenstern (≤ 900 px) bleibt es
+     * wie früher über die ganze Breite.
+     */
     #hud-log {
       position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
+      left: max(232px, calc(22% + 22px));
+      right: max(232px, calc(22% + 22px));
+      bottom: 64px;
       max-height: clamp(108px, 22vh, 340px);
       overflow: hidden;
     }
@@ -468,6 +474,10 @@
     }
     #lobby-list button { font-size: 12px; padding: 2px 8px; }
     .muted { color: var(--muted); }
+
+    @media (max-width: 900px) {
+      #hud-log { left: 12px; right: 12px; bottom: 64px; }
+    }
 
     #hud-aim {
       grid-column: 2;

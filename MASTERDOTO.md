@@ -227,6 +227,22 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   gesucht in src/, tests/, scripts/, tools/) — Block entfernt, Funktionen bleiben
   intern, 1281/1281 Tests grün. Matchdauer/Mahlstrom: siehe den nächsten Eintrag
   (entschieden am 2026-10-13).
+- [x] **UI-Durchsicht (2026-10-13, Screenshots 1280×720 und 390×800, Chromium; keine Konsolenfehler):**
+  Behoben: Ereignisprotokoll lag über die volle Breite und verdeckte Winkel/Kraft/Radius —
+  jetzt zwischen den Seitenleisten und über der Zielanzeige (`index.html`, `#hud-log`).
+- [ ] **UI — offen aus der Durchsicht (nicht umgesetzt, nach Auswirkung):**
+  (1) **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
+  Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
+  (2) **Protokoll-Spam:** „P3 ertrinkt (100 % unter Wasser)" / „P3 ist wieder über Wasser" wechseln
+  sich Zeile für Zeile ab (Figur im Grenzbereich der Wasserlinie) — Meldungen zusammenfassen
+  oder Hysterese; auch „ist gelandet ×39" je Figur beim Start. Prüfen, ob die Figur wirklich
+  flackert (Spiellogik) oder nur die Meldung. — mittel
+  (3) **Seitenleisten** (je ~22 % Breite, fast volle Höhe, 96 % deckend) verdecken bei 1280×720
+  viel Spielfeld; halbtransparent oder einklappbar. — mittel
+  (4) Menü: Beschriftung „Bodenberechnung" sitzt über einem zu hohen Auswahlfeld (Ausrichtung
+  zur Nachbarspalte). — niedrig
+  (5) **Animationen/Übergänge** (Menü→Spiel, Rundenwechsel, Waffenwechsel, Sieg) nicht bewertet —
+  dafür braucht es Videoaufnahmen statt Standbilder. — offen
 - [x] **Mahlstrom-Tempo (2026-10-13):** Kontraktion = 1 + Gefallene der Vorrunde (max. 4 Schritte à 32 px); Rückstoß-Bonus +100 % und +25 % je Sturmrunde bis +300 %. Konfig `maxContractionSteps`, `knockbackPercentBonusPerRound/Max`. „Waffen stärker“ (Schaden) bewusst NICHT umgesetzt — Rückstoß statt Schaden; Rückfrage offen.
 - [x] **Valhalla-Vorzeichen (2026-10-13):** zwei Raben in Blitzen, zufällig 1–60 s vor Valhalla (Annahme: „in“ = 1 Minute; Fenster in `MATCH_RULES.suddenDeath.valhallaOmen*LeadSeconds` änderbar). Ereignis `valhalla_omen`, Donner, Tests in `tests/valhalla.test.js`.
 - [x] **ENTSCHIEDEN UND UMGESETZT (2026-10-13): Matchdauer „so lang bis aus", Valhalla
