@@ -261,8 +261,16 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   viel Spielfeld; halbtransparent oder einklappbar. — mittel
   (4) **ERLEDIGT (2026-10-13):** (`.field-row { align-items: start }`). Vorher: Menü: Beschriftung „Bodenberechnung" sitzt über einem zu hohen Auswahlfeld (Ausrichtung
   zur Nachbarspalte). — niedrig
-  (5) **Animationen/Übergänge** (Menü→Spiel, Rundenwechsel, Waffenwechsel, Sieg) nicht bewertet —
-  dafür braucht es Videoaufnahmen statt Standbilder. — offen
+  (5) **Animationen — Teilprüfung per Video (2026-10-13, 960×540, Chromium headless, Software-Rendering):**
+  Aufgenommen und Einzelbilder ausgewertet: Menü→Spiel, Ladeanzeige (Balken wächst 40→77→88), Waffenwechsel
+  (Liste und Beschriftung wechseln sofort), Zugwechsel (Hervorhebung + Zugzeit springen). **Nicht beurteilbar:**
+  Flüssigkeit/Timing — die Aufnahme läuft in der Sandbox mit ~12–20 B/s (CPU-Rendering), Flugbahn und
+  Explosion fielen zwischen die Einzelbilder. Beobachtet: (a) die Ladeanzeige ist auch im Ruhezustand als
+  leere dunkle Spur in der Bildmitte sichtbar (Absicht laut Kommentar, wirkt aber wie ein schwebender
+  Balken) — niedrig; (b) viele Schüsse enden nach 1–6 Takten im Gelände vor der Figur (Spielregel, kein
+  Fehler), der Zugwechsel folgt dann sofort ohne sichtbare Pause — mittel (Zug-Übergang ohne Überblendung/
+  Kamerafahrt); (c) Sieg-Bildschirm und Rundenwechsel nicht aufgenommen (Match zu lang). Echte
+  Bewertung nur mit Aufnahme auf realer Hardware (`npm run perf:browser`, Bildschirmaufnahme). — offen
 - [x] **Mahlstrom-Tempo (2026-10-13):** Kontraktion = 1 + Gefallene der Vorrunde (max. 4 Schritte à 32 px); Rückstoß-Bonus +100 % und +25 % je Sturmrunde bis +300 %. Konfig `maxContractionSteps`, `knockbackPercentBonusPerRound/Max`. „Waffen stärker“ (Schaden) bewusst NICHT umgesetzt — Rückstoß statt Schaden; Rückfrage offen.
 - [x] **Valhalla-Vorzeichen (2026-10-13):** zwei Raben in Blitzen, zufällig 1–60 s vor Valhalla (Annahme: „in“ = 1 Minute; Fenster in `MATCH_RULES.suddenDeath.valhallaOmen*LeadSeconds` änderbar). Ereignis `valhalla_omen`, Donner, Tests in `tests/valhalla.test.js`.
 - [x] **ENTSCHIEDEN UND UMGESETZT (2026-10-13): Matchdauer „so lang bis aus", Valhalla
