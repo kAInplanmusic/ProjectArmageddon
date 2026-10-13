@@ -509,6 +509,10 @@ außerhalb der Zone wirkt toxischer Regen (15 % Max-HP pro Zug) und der Knockbac
 Waffen steigt um 100 %. Ein Match läuft, **bis es entschieden ist** — es gibt kein
 Rundenlimit im Spiel (nur ein Notnetz bei Runde 300, das nie erreicht wird).
 
+**Tempo:** Je in der Vorrunde gefallener Figur zieht sich der Sturm einen zusätzlichen
+Schritt zusammen (1–4 Schritte je Runde); der Rückstoß wächst mit jeder Sturmrunde um
+25 % (Start +100 %, Deckel +300 %).
+
 **Vorzeichen:** zufällig 1–60 s vor Valhalla (ebenfalls aus dem Match-Seed) erscheinen zwei
 Raben in Blitzen am Himmel und blicken aufs Schlachtfeld (Ereignis `valhalla_omen`, mit
 Donner; reine Anzeige, ohne Einfluss auf den Spielzustand; bei „reduzierte Bewegung“ ohne

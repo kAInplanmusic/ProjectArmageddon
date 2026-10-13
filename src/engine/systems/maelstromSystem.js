@@ -43,12 +43,13 @@ export class MaelstromSystem {
   /**
    * Fuehrt die Kontraktion fuer eine neue Runde aus.
    * @param {object} world
+   * @param {number} [schritte=1] Anzahl Kontraktionsschritte dieser Runde
    * @returns {{inset:number, removedColumns:number}}
    */
-  contract(world) {
+  contract(world, schritte = 1) {
     const terrain = world.services?.terrain ?? null;
     const pixels = MATCH_RULES.suddenDeath.terrainContractionPixelsPerRound;
-    this.#inset += pixels;
+    this.#inset += pixels * Math.max(1, schritte);
 
     if (!terrain) return { inset: this.#inset, removedColumns: 0 };
 

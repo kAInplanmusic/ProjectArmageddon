@@ -196,3 +196,11 @@ test('omenZustand: rein, begrenzt, ruhige Variante ohne Blitze', () => {
   assert.ok(ruhig.raben.alpha > 0);
   assert.equal(omenZustand(NaN, 5), null);
 });
+
+test('Tempo: 1 + Gefallene Schritte (höchstens 4), Rückstoß wächst mit jeder Sturmrunde', async () => {
+  const { computeContractionSteps, computeKnockbackBonusPercent } = await import('../src/shared/config/match.js');
+  assert.deepEqual([0, 1, 2, 3, 4, 9].map(n => computeContractionSteps(n)), [1, 2, 3, 4, 4, 4]);
+  assert.equal(computeKnockbackBonusPercent(0), 100);
+  assert.equal(computeKnockbackBonusPercent(2), 150);
+  assert.equal(computeKnockbackBonusPercent(999), 300);
+});

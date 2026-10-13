@@ -227,6 +227,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   gesucht in src/, tests/, scripts/, tools/) — Block entfernt, Funktionen bleiben
   intern, 1281/1281 Tests grün. Matchdauer/Mahlstrom: siehe den nächsten Eintrag
   (entschieden am 2026-10-13).
+- [x] **Mahlstrom-Tempo (2026-10-13):** Kontraktion = 1 + Gefallene der Vorrunde (max. 4 Schritte à 32 px); Rückstoß-Bonus +100 % und +25 % je Sturmrunde bis +300 %. Konfig `maxContractionSteps`, `knockbackPercentBonusPerRound/Max`. „Waffen stärker“ (Schaden) bewusst NICHT umgesetzt — Rückstoß statt Schaden; Rückfrage offen.
 - [x] **Valhalla-Vorzeichen (2026-10-13):** zwei Raben in Blitzen, zufällig 1–60 s vor Valhalla (Annahme: „in“ = 1 Minute; Fenster in `MATCH_RULES.suddenDeath.valhallaOmen*LeadSeconds` änderbar). Ereignis `valhalla_omen`, Donner, Tests in `tests/valhalla.test.js`.
 - [x] **ENTSCHIEDEN UND UMGESETZT (2026-10-13): Matchdauer „so lang bis aus", Valhalla
   zufällig nach 6–12 Minuten.** Auftraggeber-Entscheidung zu der Messung oben.

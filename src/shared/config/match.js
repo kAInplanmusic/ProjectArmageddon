@@ -94,6 +94,16 @@ export const MATCH_RULES = Object.freeze({
     valhallaOmenMinLeadSeconds: 1,
     toxicRainMaxHpPercentPerTurn: 15,
     knockbackPercentBonus: 100,
+    /*
+     * Tempo (Entscheidung des Auftraggebers, 2026-10-13): Je Figur, die in der
+     * Vorrunde gefallen ist, zieht sich der Sturm einen ZUSÄTZLICHEN Schritt zusammen
+     * — 1 + Gefallene, höchstens `maxContractionSteps` (also 1–4 Schritte je Runde).
+     * Zugleich wächst der Rückstoß mit jeder Sturmrunde (`knockbackPercentBonusPerRound`,
+     * gedeckelt bei `knockbackPercentBonusMax`): lange Matches enden schneller.
+     */
+    maxContractionSteps: 4,
+    knockbackPercentBonusPerRound: 25,
+    knockbackPercentBonusMax: 300,
     terrainContractionPixelsPerRound: 32,
     outOfZoneDamageBase: 10,
     outOfZoneGrowthFactor: 1.5
@@ -141,4 +151,16 @@ export function computeMaelstromDamage(roundsSinceStart, rules = MATCH_RULES.sud
   const n = Number(roundsSinceStart);
   if (!Number.isFinite(n) || n < 0) return 0;
   return rules.outOfZoneDamageBase * (rules.outOfZoneGrowthFactor ** n);
+}
+
+/** Schritte der Kontraktion in dieser Runde: 1 + Gefallene der Vorrunde, höchstens `maxContractionSteps`. */
+export function computeContractionSteps(gefallene, rules = MATCH_RULES.suddenDeath) {
+  const n = Math.max(0, Math.floor(Number(gefallene) || 0));
+  return Math.min(rules.maxContractionSteps, 1 + n);
+}
+
+/** Rückstoß-Bonus in Prozent in der n-ten Sturmrunde (0 = erste). */
+export function computeKnockbackBonusPercent(roundsSinceStart, rules = MATCH_RULES.suddenDeath) {
+  const n = Math.max(0, Math.floor(Number(roundsSinceStart) || 0));
+  return Math.min(rules.knockbackPercentBonusMax, rules.knockbackPercentBonus + n * rules.knockbackPercentBonusPerRound);
 }

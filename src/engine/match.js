@@ -35,7 +35,7 @@ import {
   SELF_TARGET_KINDS,
   EFFECT_KIND,
 } from './specials.js';
-import { MATCH_RULES, drawValhallaTick, drawValhallaOmen } from '../shared/config/match.js';
+import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -423,6 +423,8 @@ export class MatchController {
   #valhallaTick = 0;
   /** Vorzeichen: `{tick, vorlaufSekunden, bildSeed}`; `#omenGezeigt` merkt, dass es schon kam. */
   #valhallaOmen = null;
+  #lebendZuRundenbeginn = null;
+  #sturmRunden = 0;
   #omenGezeigt = false;
   /** Oberflächenhöhe je Spalte (`OBERFLAECHE_UNBEKANNT` = noch nicht gesucht). */
   #oberflaeche = null;
@@ -2618,14 +2620,18 @@ export class MatchController {
       return;
     }
 
+    const lebend = this.#players.filter(p => p.alive).length;
     // Valhalla: einmal gestartet, bleibt der Mahlstrom an. Der Beginn hängt an der
     // SPIELZEIT (Ticks), nicht an der Rundenzahl — siehe MATCH_RULES.suddenDeath.
     if (this.#maelstrom.isActive || this.#world.tickCount >= this.#valhallaTick) {
       if (!this.#maelstrom.isActive) this.#maelstrom.activate();
-      this.#maelstrom.contract(this.#world);
+      const gefallene = Math.max(0, (this.#lebendZuRundenbeginn ?? lebend) - lebend);
+      this.#maelstrom.contract(this.#world, computeContractionSteps(gefallene));
       this.#world.services.match.knockbackMultiplier =
-        1 + MATCH_RULES.suddenDeath.knockbackPercentBonus / 100;
+        1 + computeKnockbackBonusPercent(this.#sturmRunden) / 100;
+      this.#sturmRunden += 1;
     }
+    this.#lebendZuRundenbeginn = lebend;
     const wind = this.#rollWind();
     this.#wind = wind;
     this.#currentStrength = wind * 10;
