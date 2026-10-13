@@ -244,7 +244,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   `event-coverage` (Flut ist weg → Prüfung bedingt). Unit 1292/1292; E2E Replay/Mehrspieler/
   Terrain/Wasser 23/23.
 - [ ] **UI — offen aus der Durchsicht (nicht umgesetzt, nach Auswirkung):**
-  (1) **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
+  (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
   (2) **ERLEDIGT (2026-10-13, Ursache war ein Physikfehler):** **Protokoll-Spam:** „P3 ertrinkt (100 % unter Wasser)" / „P3 ist wieder über Wasser" wechseln
   sich Zeile für Zeile ab (Figur im Grenzbereich der Wasserlinie) — Meldungen zusammenfassen

@@ -479,6 +479,27 @@
       #hud-log { left: 12px; right: 12px; bottom: 64px; }
     }
 
+    /*
+     * Handy im Querformat (Höhe ≤ 520 px): Das HUD nahm vorher fast die ganze Fläche
+     * (Screenshot 844×390, 2026-10-13) — Kopfzeile ~90 px, Seitenleisten und Protokoll
+     * darüber. Kompakt: schmale Kopfzeile, schmale Leisten mit kleiner Schrift,
+     * Protokoll nur zwei Zeilen, Waffenliste ohne Beschriftungsgruppen-Rand.
+     */
+    @media (max-height: 520px) {
+      #hud { padding: 6px; gap: 6px; grid-template-columns: minmax(96px, 16%) 1fr minmax(170px, 26%); }
+      #hud-top { gap: 6px; }
+      .stat { padding: 3px 8px; min-width: 52px; }
+      .stat .value { font-size: 14px; }
+      .stat .label, .stat > span:first-child { font-size: 9px; }
+      #hud-abort .value, #hud-abort { font-size: 12px; }
+      #roster, #weapon-list { padding: 4px; gap: 3px; }
+      .roster-item { font-size: 11px; padding: 2px 4px; }
+      #hud-left, #hud-right { max-height: calc(100vh - 96px); font-size: 11px; }
+      #hud-log { left: 6px; right: 6px; bottom: 40px; max-height: 44px; font-size: 11px; }
+      #hud-aim { padding: 3px 10px; font-size: 11px; gap: 8px; }
+      #hud-right li { font-size: 11px; }
+    }
+
     #hud-aim {
       grid-column: 2;
       grid-row: 3;
