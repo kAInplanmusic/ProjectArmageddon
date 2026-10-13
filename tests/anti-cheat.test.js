@@ -41,6 +41,9 @@ class TestClient {
       this.socket.once('open', resolve);
       this.socket.once('error', reject);
     });
+    this.geschlossen = null;
+    this.socket.on('close', code => { this.geschlossen = code; });
+    this.socket.on('error', () => { /* z. B. zu große Nachricht: der Server schließt (1009) */ });
     this.socket.on('message', (raw, isBinary) => {
       if (isBinary) {
         const decoded = decodeSnapshot(raw);
@@ -509,7 +512,10 @@ test('Die Nutzlast ist begrenzt — eine Riesennachricht wird abgewiesen', { tim
     a.sendRaw(riesig);
 
     const fehler = await a.sammleFehler(1200);
-    assert.ok(fehler.length >= 1,
+    // Seit dem Audit 2026-10-13 hat der WebSocket eine harte Obergrenze (`maxPayload`, 64 KiB): Ein
+    // Frame von 1 MB wird nicht mehr gelesen, der Server schließt die Verbindung (1009). Beides gilt
+    // als Abweisung — ein Fehlertext (kleinere Überschreitung) oder das Schließen.
+    assert.ok(fehler.length >= 1 || a.geschlossen === 1009,
       'Eine Nachricht mit 1 MB Nutzlast wurde nicht abgewiesen');
 
     // Der Server läuft weiter.

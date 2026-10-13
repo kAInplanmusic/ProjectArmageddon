@@ -44,6 +44,7 @@ export class ReplayRecorder {
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
+    kartentyp = null, orientation = 'landscape',
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -58,6 +59,9 @@ export class ReplayRecorder {
       teams, playersPerTeam, preset, maxRounds, turnDurationMs,
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
+      // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
+      ...(kartentyp ? { kartentyp } : {}),
+      ...(orientation && orientation !== 'landscape' ? { orientation } : {}),
       ...(hatSidegrades ? { sidegrades: [...sidegrades] } : {}),
       // Nur aufnehmen, wenn wirklich etwas gewählt wurde — sonst wären alte und
       // neue Aufzeichnungen ohne Grund verschieden.
@@ -306,6 +310,8 @@ export class ReplayPlayer {
       preset: config.preset,
       maxRounds: config.maxRounds,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
+      ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
+      ...(config.orientation ? { orientation: config.orientation } : {}),
       ...(config.turnPauseTicks ? { turnPauseTicks: config.turnPauseTicks, turnReplayTicks: config.turnReplayTicks ?? 0 } : {}),
       /*
        * Sidegrades aus dem Kopf — oder keine.

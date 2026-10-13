@@ -95,6 +95,20 @@ export class LobbyManager {
      * Wer mehr Teams erlaubt, als Farben da sind, bricht die Anzeige — die
      * Zuordnung ist `TEAM_COLORS[teamId]`.
      */
+    // Strenge Typprüfung VOR jeder Wirkung (Audit 2026-10-13: Dezimalzahlen, Texte, Objekte und riesige
+    // Zeichenketten wurden angenommen und machten die Lobby unbenutzbar).
+    if (!Number.isInteger(teams)) throw new Error('teams muss eine ganze Zahl sein');
+    if (seed !== undefined && !(Number.isInteger(seed) && seed >= 0 && seed <= 0xFFFFFFFF)) {
+      throw new Error('seed muss eine ganze Zahl von 0 bis 4294967295 sein');
+    }
+    for (const [feld, wert] of [['preset', preset], ['kartentyp', kartentyp], ['hostName', hostName]]) {
+      if (wert !== null && wert !== undefined && (typeof wert !== 'string' || wert.length > 64)) {
+        throw new Error(`${feld} muss eine Zeichenkette mit höchstens 64 Zeichen sein`);
+      }
+    }
+    for (const [feld, wert] of [['playersPerTeam', playersPerTeam], ['unitsPerPlayer', unitsPerPlayer]]) {
+      if (wert !== null && !Number.isInteger(wert)) throw new Error(`${feld} muss eine ganze Zahl sein`);
+    }
     if (teams < 2 || teams > TEAM_COLORS.length) {
       throw new Error(`teams muss zwischen 2 und ${TEAM_COLORS.length} liegen`);
     }

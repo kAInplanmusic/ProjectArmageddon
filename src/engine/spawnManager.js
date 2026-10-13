@@ -55,6 +55,7 @@ export function erzeugeSpieler(quelle) {
   // die Klasse veränderte nur Werte, nicht die Mittel.
   const loadouts = new Map(CLASS_IDS.map(id => [id, getClassLoadout(id)]));
   const eintraege = [];
+  const belegteX = [];
 
   for (let index = 0; index < total; index++) {
     const teamId = index % quelle.teams;
@@ -86,7 +87,8 @@ export function erzeugeSpieler(quelle) {
      * auf, weil dort der Wasserspiegel tief genug liegt; die Startposition war
      * also nur zufällig sicher, nicht geprüft.
      */
-    const startX = quelle.drySpawnX(x);
+    const startX = quelle.drySpawnX(x, belegteX);
+    belegteX.push(startX);
     const groundY = quelle.surfaceYAt(startX);
     const y = (groundY > 0 ? groundY : quelle.height * 0.4) - PLAYER_HALF_HEIGHT - 2;
 

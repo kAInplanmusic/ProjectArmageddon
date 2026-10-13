@@ -144,6 +144,11 @@ export function serializeLobby(lobby, session) {
     capacity: lobby.capacity,
     preset: lobby.preset,
     orientation: lobby.orientation ?? 'landscape',
+    // Ohne diese Felder entstand nach einem Neustart eine andere Karte/Besetzung (Audit 2026-10-13).
+    kartentyp: lobby.kartentyp ?? null,
+    unitsPerPlayer: lobby.unitsPerPlayer ?? null,
+    sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
+    loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
     seed,
     status: lobby.status,
     createdAt: lobby.createdAt,
@@ -152,6 +157,11 @@ export function serializeLobby(lobby, session) {
       name: seat.name,
       token: seat.token,
       entityId: seat.entityId,
+      // Team und Figurplatz: Ohne sie konnte nach einem Neustart ein Fremder die Plätze übernehmen.
+      teamId: seat.teamId,
+      figureIndex: seat.figureIndex,
+      unitIndex: seat.unitIndex,
+      playerIndex: seat.playerIndex,
       connected: false,
     })),
     // Replay-Kern: Seed + Konfiguration + Eingaben genügen zur Rekonstruktion.
@@ -207,6 +217,10 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
     playersPerTeam: saved.playersPerTeam,
     preset: saved.preset,
     orientation: saved.orientation ?? 'landscape',
+    kartentyp: saved.kartentyp ?? saved.replay?.config?.kartentyp ?? null,
+    unitsPerPlayer: saved.unitsPerPlayer ?? null,
+    sidegrades: saved.sidegrades ?? null,
+    loadouts: saved.loadouts ?? null,
     seed,
     hostName: saved.seats?.[0]?.name ?? 'Host',
   }).lobby;
@@ -232,6 +246,9 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       skipStart: false,
       replayEntries: saved.replay.entries ?? [],
       replayTotalTicks: saved.replay.totalTicks ?? 0,
+      // Die Pause der Aufzeichnung (alte Sicherungen: keine).
+      turnPauseTicks: saved.replay.config?.turnPauseTicks ?? 0,
+      turnReplayTicks: saved.replay.config?.turnReplayTicks ?? 0,
     })
     : null;
 
@@ -251,6 +268,9 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       connected: false,
       disconnectedAt: Date.now(),
       entityId: seat.entityId ?? null,
+      ...(seat.teamId !== undefined ? {
+        teamId: seat.teamId, figureIndex: seat.figureIndex, unitIndex: seat.unitIndex, playerIndex: seat.playerIndex,
+      } : {}),
     }));
   }
 

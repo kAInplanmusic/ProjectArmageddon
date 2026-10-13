@@ -260,6 +260,41 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   und `playwright.config.mjs`, `VITE_ZUGPAUSE_SEKUNDEN=0` für den Browser). Die Mahlstrom-Zeit (6–12 min Spielzeit)
   zählt Ticks — die Pausen zählen mit. Online ist die Wiederholung aus dem Snapshot-Zustand abgeleitet (nicht
   gegen echten Server mit Latenz geprüft). Tests: `tests/zugpause.test.js` (4); Unit 1297, E2E 43/43.
+- [x] **TIEFENAUDIT 2026-10-13 (vier unabhängige Prüfer; Berichte nachgeprüft, Befunde unten).**
+  Nicht abgeschlossen: der Prüfer „Tests/Doku/Balance“ brach durch ein Nutzungslimit ab (kein Bericht) — Mutationstests
+  und Doku-Abgleich stehen aus (siehe offene Punkte).
+  **Behoben (mit Tests in `tests/audit-2026-10-13.test.js`, `tests/server-haertung-audit.test.js`, `tests/zugpause.test.js`):**
+  (1) **Spawn stapelte Figuren** (Kartentyp autonom; durch meinen eigenen Fix vom selben Tag sichtbar geworden: 3×5 Figuren →
+  126 von 300 Seeds mit identischer Position) — `#drySpawnX` kennt jetzt belegte Plätze (Mindestabstand 22 px); 360 Konfigurationen: 0 Stapel.
+  (2) **Replay-Kopf verlor `kartentyp`/`orientation`** (jedes Online-Replay der Standardkarte war ein anderes Match) — jetzt im Kopf.
+  (3) **Wiederherstellung verlor `kartentyp`, `sidegrades`, `loadouts`, `unitsPerPlayer`** und die **Teamzuordnung der Plätze**
+  (nach Neustart konnte ein Fremder die Plätze eines Spielers übernehmen, Spieler kam nicht mehr ins Match) — jetzt gesichert und
+  wiederhergestellt. (4) **Zugpause kommt aus dem gesicherten Kopf**, nicht aus der Umgebungsvariable (sonst Hash-Abweichung beim
+  Wiederherstellen). (5) **`drop_weapon`** nur noch am eigenen Zug und nicht in der Zugpause (der Abwurf zog Zufallszahlen und
+  änderte den Wind der nächsten Runde). (6) Toter aktiver Spieler beendet den Zug sofort (vorher bis zum Zeitablauf). (7) Wiederholung
+  nach eingefrorenem Spieler nicht mehr gelöscht. (8) **Server:** `maxPayload` 64 KiB (vorher 100 MiB; zu große Frames
+  schließen die Verbindung), **Socket-Fehler-Zuhörer** (ohne ihn hätte ein Fehler den Prozess beendet), Typprüfung beim Anlegen
+  (400 ohne Karteileiche), Obergrenze 500 Lobbys (503) und 30 Neuanlagen/Minute je Adresse (429), ungültiger/zu großer Body ⇒ 400
+  (vorher stille Standard-Lobby), **verwaiste Lobbys/Sitzungen werden nach 15 min ohne Verbindung entfernt** (vorher liefen 40 Matches
+  ewig, ~4,5 MB je Sitzung), Reconnect-Race (veraltetes `close` trennte den neuen Socket). (9) **Client:** Klick auf eine Waffenzeile
+  wählte die falsche Waffe (Index doppelt umgerechnet), Touch-Abbruch (`pointercancel`) ließ das Laden hängen, Wiederholung zeigte
+  den Schuss des Vorspielers/Vormatches, Zugpause-Overlay blieb nach Abbruch stehen, HP-Balken der Spielerliste unsichtbar
+  (4 Elemente in 3 Spalten), Kontrast der Seitenleisten (Deckkraft 84 %), Zähler nicht mehr jede Sekunde vorgelesen.
+  **Offen / Entscheidung nötig:**
+  (a) **Zugpause nicht im Snapshot** (`turnPauseMs` fehlt im Protokoll): Wer mitten in der Pause neu verbindet oder `turn_start`
+  verpasst, sieht keinen Hinweis; Overlay läuft in Wanduhrzeit (im Replay-Modus mit Tempo ≠ 1× kann es abweichen). Protokoll-Version
+  nicht erhöht. — mittel. (b) **Hash blind** für `#turnPauseTicks`, `#sturmRunden`, Terrainmaske u. a. — mittel.
+  (c) **Spielertoken im Klartext** in der Zustandsdatei (Modus 644) und in Archiven; systemd-Unit ohne `UMask=0077`, ohne
+  `MemoryMax`/`TasksMax`/`LimitNOFILE`/Syscall-Filter. — mittel. (d) **`ExecStopPost` läuft als `pa`, `token-setzen.sh` legt die Datei als
+  root 600 an** ⇒ Cloud-Ebene unter systemd vermutlich wirkungslos (nicht gegen echtes systemd geprüft). (e) HTTP-Host-Sitz bleibt
+  `connected:true` (Aufräumen greift nur nach der 15-min-Frist). (f) Ein zweites `join_lobby` auf demselben Socket löst die alte Zuordnung nicht.
+  (g) `select_weapon` wird ohne Obergrenze aufgezeichnet (~5 MB/h je Verbindung bei Dauerfeuer). (h) CORS spiegelt jeden Origin, keine
+  Origin-Prüfung für WS. (i) 2 hohe `npm audit`-Funde (nur Entwicklung, transitiv; `npm audit fix` möglich). (j) **Mahlstrom-Regen trifft jede
+  Außen-Figur bei JEDEM Zugbeginn** (bei 4 Figuren 60 % je Runde; Config sagt „je Zug“) — Design-Entscheidung; `computeMaelstromDamage`
+  hat keinen Aufrufer. (k) Kein Versions-Handshake. (l) **Touch:** kein Sprung/Abwurf, Waffenzeilen nur 22 px hoch, Kraft nur über
+  Haltedauer. (m) **Performance (relativ):** Kulisse „generativ" zeichnet ~187 `fill()` je Bild, `parseCss` je Element und Bild neu — auf
+  Offscreen-Canvas cachen; `clip-path` der Panels kostet Compositing. (n) Hauptmenü ohne `role=dialog`/`inert`. (o) Matches mit
+  > 4 Figuren in langen Valhalla-Läufen und Gummi/Eis-Landung nur gelesen, nicht gemessen.
 - [x] **UI — Durchsicht abgearbeitet (2026-10-13).** Punkte 1–4 erledigt, (5a) Ladebalken und (5b) Zug-Übergang durch Zugpause + Wiederholung (s. oben) behoben. Rest von (5): Flüssigkeit/Timing der Animationen nur auf echter Hardware beurteilbar — kein offener Auftrag an die Entwicklung, sondern eine Abnahme durch den Auftraggeber:
   (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
@@ -362,7 +397,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1297/1297** grün, Dateizahl **137** — die zwei neuen Prüfungen sitzen in
+**1303/1303** grün, Dateizahl **139** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

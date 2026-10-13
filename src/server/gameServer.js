@@ -101,6 +101,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
+    turnPauseTicks = null, turnReplayTicks = null,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -140,8 +141,10 @@ class LobbySession {
       sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
       // Klassenwahl je Platz — wie die Sidegrades Teil der Konfiguration.
       loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
-      turnPauseTicks: ZUGPAUSE_TICKS,
-      turnReplayTicks: ZUGPAUSE_TICKS > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
+      // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
+      // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
+      turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
+      turnReplayTicks: turnReplayTicks ?? (ZUGPAUSE_TICKS > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0),
     });
     this.match.start();
 
@@ -152,6 +155,7 @@ class LobbySession {
       playersPerTeam: lobby.playersPerTeam,
       preset: lobby.preset,
       kartentyp: lobby.kartentyp ?? null,
+      orientation: lobby.orientation ?? 'landscape',
       maxRounds: this.match.maxRounds,
       turnDurationMs: this.match.turnDurationMs,
       turnPauseTicks: this.match.turnPauseTicks,
@@ -796,6 +800,11 @@ class LobbySession {
       return { ok: false, errors: ['weaponId muss eine Zeichenkette sein'] };
     }
 
+    // Nur am eigenen Zug und nicht in der Zugpause: Der Abwurf zieht Zufallszahlen und änderte sonst den
+    // Wind der nächsten Runde (Audit 2026-10-13).
+    if (seat.entityId !== this.match.activePlayerId || this.match.turnPauseMs > 0) {
+      return { ok: false, errors: ['Abwerfen nur am eigenen Zug, nicht in der Zugpause'] };
+    }
     const result = this.match.dropWeapon(seat.entityId, weaponId);
     if (result.ok) {
       this.recorder.recordInput({
@@ -1031,7 +1040,13 @@ export class GameServer {
     persistenceIntervalMs = 10_000,
     pruneIntervalMs = PRUNE_INTERVAL_MS,
     logger = null,
+    maxLobbies = Number(process.env.PA_MAX_LOBBYS) || 500,
+    maxLobbyAnlegenProMinute = Number(process.env.PA_LOBBYS_PRO_MINUTE) || 30,
+    lobbyLeerTtlMs = Number(process.env.PA_LOBBY_LEER_MS) || 15 * 60_000,
   } = {}) {
+    this.maxLobbies = maxLobbies;
+    this.maxLobbyAnlegenProMinute = maxLobbyAnlegenProMinute;
+    this.lobbyLeerTtlMs = lobbyLeerTtlMs;
     this.#lobbies = lobbyManager;
     this.serveStatic = serveStatic ?? createDistHandler();
     /**
@@ -1078,6 +1093,8 @@ export class GameServer {
     this.#persistenceTimer = null;
     /** Intervall der Verwaltungsrunde (Tests setzen es klein). */
     this.pruneIntervalMs = pruneIntervalMs;
+    this.#createVerlauf = new Map();
+    this.#leerBeobachtet = new Map();
 
     /*
      * Der HTTP-Pfad ist ASYNCHRON — und hatte keinen Fehlerweg.
@@ -1116,7 +1133,7 @@ export class GameServer {
         }
       });
     });
-    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
+    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 65_536 });
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
      * `error`-Ereignisse mit.
@@ -1245,6 +1262,8 @@ export class GameServer {
               onEmpty: id => this.#sessions.delete(id),
               replayEntries: options.replayEntries,
               replayTotalTicks: options.replayTotalTicks,
+              turnPauseTicks: options.turnPauseTicks,
+              turnReplayTicks: options.turnReplayTicks,
               metrics: this.metrics,
               logger: this.logger,
             });
@@ -1352,6 +1371,24 @@ export class GameServer {
      * nicht und hält das Match am Laufen. Das ist kein Teil dieser Reparatur und
      * steht im Bericht (`docs/server-seite-fixes.md`) als offener Punkt.
      */
+    // Verwaiste Lobbys und Sitzungen räumen (Audit 2026-10-13): Eine Lobby, an der länger als
+    // `lobbyLeerTtlMs` kein einziger Socket hing — auch eine nur per HTTP angelegte —, wird samt Sitzung
+    // entfernt. Gemessen wurde sonst: 40 Lobbys liefen ewig, ~4,5 MB je Sitzung.
+    const sichtbar = new Set();
+    for (const lobby of this.#lobbies.all()) {
+      sichtbar.add(lobby.id);
+      const session = this.#sessions.get(lobby.id);
+      if (session && session.clients.size > 0) { this.#leerBeobachtet.delete(lobby.id); continue; }
+      const seit = this.#leerBeobachtet.get(lobby.id);
+      if (seit === undefined) { this.#leerBeobachtet.set(lobby.id, now); continue; }
+      if (now - seit < this.lobbyLeerTtlMs) continue;
+      session?.stop();
+      this.#sessions.delete(lobby.id);
+      this.#lobbies.close(lobby.id);
+      this.#leerBeobachtet.delete(lobby.id);
+      this.logger.info('lobby_verwaist_entfernt', 'Lobby ohne Verbindung entfernt', { lobbyId: lobby.id });
+    }
+    for (const id of this.#leerBeobachtet.keys()) if (!sichtbar.has(id)) this.#leerBeobachtet.delete(id);
     return entfernt;
   }
 
@@ -1378,6 +1415,9 @@ export class GameServer {
   getSession(lobbyId) {
     return this.#sessions.get(lobbyId) ?? null;
   }
+
+  #createVerlauf;
+  #leerBeobachtet;
 
   async #handleHttp(request, response) {
     const url = new URL(request.url, 'http://localhost');
@@ -1432,8 +1472,17 @@ export class GameServer {
 
     if (request.method === 'POST' && url.pathname === '/api/lobby/create') {
       const body = await this.#readBody(request);
+      if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+        return this.#json(response, 400, this.#fehlerNutzlast('Ungültiger oder zu großer Request-Body'));
+      }
+      // Begrenzung (Audit 2026-10-13): Anzahl offener Lobbys und Anlegen je Adresse und Minute.
+      if (this.#lobbies.size >= this.maxLobbies) {
+        return this.#json(response, 503, this.#fehlerNutzlast('Zu viele Lobbys — bitte später erneut versuchen'));
+      }
+      if (!this.#createErlaubt(request.socket?.remoteAddress ?? '?')) {
+        return this.#json(response, 429, this.#fehlerNutzlast('Zu viele neue Lobbys von dieser Adresse'));
+      }
       try {
-        this.metrics.lobbiesCreated += 1;
         const created = this.#lobbies.create({
           teams: Number(body.teams ?? 2),
           /*
@@ -1463,6 +1512,7 @@ export class GameServer {
           sidegrades: Array.isArray(body.sidegrades) ? body.sidegrades : null,
           loadouts: Array.isArray(body.loadouts) ? body.loadouts : null,
         });
+        this.metrics.lobbiesCreated += 1;
         this.logger.info('lobby_created', 'Lobby angelegt', {
           lobbyId: created.lobby.id,
           teams: created.lobby.teams,
@@ -1493,12 +1543,24 @@ export class GameServer {
     this.#json(response, 404, this.#fehlerNutzlast('Nicht gefunden'));
   }
 
+  /** Höchstens `maxLobbyAnlegenProMinute` neue Lobbys je Adresse und Minute. */
+  #createErlaubt(adresse, now = Date.now()) {
+    const fenster = (this.#createVerlauf.get(adresse) ?? []).filter(t => now - t < 60_000);
+    if (fenster.length >= this.maxLobbyAnlegenProMinute) { this.#createVerlauf.set(adresse, fenster); return false; }
+    fenster.push(now);
+    this.#createVerlauf.set(adresse, fenster);
+    if (this.#createVerlauf.size > 5000) this.#createVerlauf.clear();
+    return true;
+  }
+
   #readBody(request) {
     return new Promise(resolve => {
       let raw = '';
+      let zuGross = false;
       request.on('data', chunk => {
+        if (zuGross) return;
         raw += chunk;
-        if (raw.length > 8192) raw = raw.slice(0, 8192);
+        if (raw.length > 8192) { zuGross = true; raw = ''; }
       });
       request.on('end', () => {
         /*
@@ -1508,6 +1570,8 @@ export class GameServer {
          * als {} untergehen: Die Nachbarschaft meldet jeden anderen
          * `catch`-Zweig (siehe §6 in docs/abnahme-bugs-2026-10-01.md).
          */
+        // Zu groß oder ungültig: `null` (der Aufrufer lehnt ab), nicht still ein Standard-Body.
+        if (zuGross) { resolve(null); return; }
         if (!raw) {
           resolve({});
           return;
@@ -1520,7 +1584,7 @@ export class GameServer {
             method: request.method,
             error: error.message,
           });
-          resolve({});
+          resolve(null);
         }
       });
       request.on('error', error => {
@@ -1597,6 +1661,11 @@ export class GameServer {
 
   #handleConnection(socket) {
     let context = { lobbyId: null, token: null };
+    // Ohne diesen Zuhörer beendet ein Socket-Fehler (z. B. zu große Nachricht, `maxPayload`) als UNBEHANDELTE
+    // Ausnahme den ganzen Prozess. `ws` schließt die Verbindung danach selbst (1009).
+    socket.on('error', error => {
+      this.logger.warn('ws_socket_fehler', 'Socket-Fehler — Verbindung wird geschlossen', { error: error.message });
+    });
 
     const mengenGrenze = new TokenBucket();
     socket.on('message', (raw, isBinary) => {
@@ -1979,6 +2048,8 @@ export class GameServer {
     socket.on('close', () => {
       if (!context.lobbyId || !context.token) return;
       const session = this.#sessions.get(context.lobbyId);
+      // Hat dieser Token inzwischen einen NEUEREN Socket, ist dies ein veraltetes close (Audit 2026-10-13).
+      if (session && session.clients.get(context.token) !== socket && session.clients.has(context.token)) return;
       session?.detach(context.token);
       this.#lobbies.disconnect(context.lobbyId, context.token);
       // B-9: Verbliebene Spieler müssen erfahren, dass ein Mitspieler getrennt ist.

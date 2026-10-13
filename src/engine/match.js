@@ -924,8 +924,10 @@ export class MatchController {
    * @param {number} idealX
    * @returns {number} x-Position mit festem, trockenem Boden
    */
-  #drySpawnX(idealX) {
+  #drySpawnX(idealX, belegt = []) {
+    const frei = x => belegt.every(b => Math.abs(b - x) >= 2 * PLAYER_HALF_WIDTH + 8); // keine Stapelung
     const trocken = x => {
+      if (!frei(x)) return false;
       if (x < PLAYER_HALF_WIDTH + 2 || x > this.width - PLAYER_HALF_WIDTH - 2) return false;
       const boden = this.surfaceYAt(x);
       if (boden <= 0) return false;
@@ -1057,7 +1059,7 @@ export class MatchController {
     this.#checkVictory();
 
     const projectilesActive = this.activeProjectileCount > 0;
-    if (this.#turnElapsed >= this.#turnDurationMs || (this.#hasFired && !projectilesActive)) {
+    if (this.#turnElapsed >= this.#turnDurationMs || (this.#hasFired && !projectilesActive) || !this.isPlayerAlive(this.activePlayerId)) {
       this.endTurn();
     }
     return this.getState();
@@ -2605,7 +2607,7 @@ export class MatchController {
     if (this.#status !== 'playing') return;
     const previous = this.activePlayerId;
     this.#turnElapsed = 0;
-    this.#hatteSchuss = this.#hasFired;
+    this.#hatteSchuss ||= this.#hasFired;
     this.#hasFired = false;
 
     let nextIndex = this.#turnIndex;
@@ -2870,7 +2872,7 @@ export class MatchController {
       playersPerTeam: this.playersPerTeam,
       width: this.width,
       height: this.height,
-      drySpawnX: idealX => this.#drySpawnX(idealX),
+      drySpawnX: (idealX, belegt) => this.#drySpawnX(idealX, belegt),
       surfaceYAt: x => this.surfaceYAt(x),
       world: this.#world,
       inventory: this.#inventory,
@@ -3179,8 +3181,7 @@ export class MatchController {
   /** Aktuelle Zugzeit in Millisekunden (für Persistenz und Replay). */
   get turnDurationMs() { return this.#turnDurationMs; }
   get turnPauseMs() { return Math.round(this.#turnPauseTicks * 1000 / SIMULATION_HZ); }
-  get turnPauseTicks() { return this.#turnPauseTicksConfigured; }
-  get turnReplayTicks() { return this.#turnReplayTicksConfigured; }
+  get turnPauseTicks() { return this.#turnPauseTicksConfigured; } get turnReplayTicks() { return this.#turnReplayTicksConfigured; }
 
   get activePlayerId() {
     const id = this.#turnOrder[this.#turnIndex];

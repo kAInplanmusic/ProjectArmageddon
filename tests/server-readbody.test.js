@@ -42,8 +42,8 @@ test('POST /api/lobby/create mit ungültigem JSON: Fehler im Log', async () => {
       headers: { 'content-type': 'application/json' },
       body: '{kaputt', // ungültiges JSON
     });
-    // Die Antwort bleibt 201 (Standardwerte), aber der Fehler ist gemeldet.
-    assert.equal(antwort.status, 201, 'ungültiger Body führt nicht zu einem 500');
+    // Seit dem Audit 2026-10-13: ungültiger Body ⇒ 400 ohne Nebenwirkung (vorher: stille Standard-Lobby).
+    assert.equal(antwort.status, 400, 'ungültiger Body führt zu 400, nicht zu 500 und nicht zu einer Lobby');
 
     // Der entscheidende Teil: der Fehler darf NICHT still verschwinden.
     const fehler = logger.finde('http_body_invalid');
