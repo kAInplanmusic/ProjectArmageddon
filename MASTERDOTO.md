@@ -281,9 +281,12 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   den Schuss des Vorspielers/Vormatches, Zugpause-Overlay blieb nach Abbruch stehen, HP-Balken der Spielerliste unsichtbar
   (4 Elemente in 3 Spalten), Kontrast der Seitenleisten (Deckkraft 84 %), Zähler nicht mehr jede Sekunde vorgelesen.
   **Offen / Entscheidung nötig:**
-  (a) **Zugpause nicht im Snapshot** (`turnPauseMs` fehlt im Protokoll): Wer mitten in der Pause neu verbindet oder `turn_start`
-  verpasst, sieht keinen Hinweis; Overlay läuft in Wanduhrzeit (im Replay-Modus mit Tempo ≠ 1× kann es abweichen). Protokoll-Version
-  nicht erhöht. — mittel. (b) **Hash blind** für `#turnPauseTicks`, `#sturmRunden`, Terrainmaske u. a. — mittel.
+  (a) **ERLEDIGT (2026-10-13, Auftraggeber: „Zugpause fixieren“):** Wer mitten in der Pause beitritt oder neu verbindet, sieht sie jetzt
+  (`lobby_state.snapshot.turnPauseMs` startet den Hinweis); lokal und im Replay zählt die ENGINE (`state.turnPauseMs`, exakt auch bei
+  Tempo ≠ 1×/Seek), nur online läuft die Wanduhr ab `turn_start`. Kein Eingriff ins Binärprotokoll (Version bleibt 9) — der Beitritts-Zustand ist
+  JSON. `?zugpause=N` in der URL überschreibt die Pause (Tests/Vorführung). E2E `tests/e2e/zugpause.spec.mjs` (2). (b) **ERLEDIGT:** `turnPauseMs`
+  steht im Zustandshash, solange eine Pause läuft (sonst bleibt jeder bisherige Hash gleich). Terrainmaske/`#sturmRunden` bleiben außerhalb
+  (abgeleitet bzw. durch `terrain_hash` abgedeckt).
   (c) **ERLEDIGT (2026-10-13, Auftraggeber: „Zustimmung“):** Zustandsdatei Modus 600, Archive/Manifest `umask 077`; systemd-Unit mit
   `UMask=0077`, `StateDirectoryMode=0700`, `PrivateDevices`, `ProtectKernel*`, `ProtectControlGroups`, `RestrictAddressFamilies`,
   `RestrictNamespaces`, `LockPersonality`, `CapabilityBoundingSet=`, `SystemCallFilter=@system-service`, `MemoryMax=1G`, `TasksMax=256`,
@@ -297,8 +300,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   und Tests grün. (j) **Mahlstrom-Regen trifft jede Außen-Figur bei JEDEM Zugbeginn — bleibt so** (Auftraggeber „Zustimmung“ auf die
   Rückfrage; Annahme, bei Bedarf korrigieren; bei 4 Figuren 60 % je Runde, Config sagt „je Zug“; `computeMaelstromDamage` hat keinen Aufrufer).
   (k) Kein Versions-Handshake. (l) **Touch:** kein Sprung/Abwurf, Waffenzeilen nur 22 px hoch, Kraft nur über
-  Haltedauer. (m) **Performance (relativ):** Kulisse „generativ" zeichnet ~187 `fill()` je Bild, `parseCss` je Element und Bild neu — auf
-  Offscreen-Canvas cachen; `clip-path` der Panels kostet Compositing. (n) Hauptmenü ohne `role=dialog`/`inert`. (o) Matches mit
+  Haltedauer. (m) **Performance (Auftraggeber: „Performance verbessern“, 2026-10-13):** hintere Kulisse (Himmel, Himmelskörper, Ambiente hinten, Landmarken) wird nur jedes 2. Bild neu gezeichnet und sonst als Zwischenbild aufgelegt (`Renderer#drawKulisse`), `parseCss`/`luma` je Kulisse einmal. Gemessen im Software-Rendering 1280×720 (drei Seeds, Median je Bild): 49,9/83,4/116,6 ms → 33,4/66,7/83,3 ms (≈ −30 %; Messung unter paralleler Last, nur relativ aussagekräftig). Nicht gemessen auf echter Hardware. Nicht umgesetzt: `clip-path` der Panels entfernen (Messung ohne Vorteil, verändert den Look). Der Aufschlag-Test (`profiling.spec.mjs`) toleriert jetzt kleine negative Werte (Rauschen, 6 % des Untergrunds). (n) Hauptmenü ohne `role=dialog`/`inert`. (o) Matches mit
   > 4 Figuren in langen Valhalla-Läufen und Gummi/Eis-Landung nur gelesen, nicht gemessen.
 - [x] **UI — Durchsicht abgearbeitet (2026-10-13).** Punkte 1–4 erledigt, (5a) Ladebalken und (5b) Zug-Übergang durch Zugpause + Wiederholung (s. oben) behoben. Rest von (5): Flüssigkeit/Timing der Animationen nur auf echter Hardware beurteilbar — kein offener Auftrag an die Entwicklung, sondern eine Abnahme durch den Auftraggeber:
   (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
@@ -402,7 +404,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1305/1305** grün, Dateizahl **139** — die zwei neuen Prüfungen sitzen in
+**1306/1306** grün, Dateizahl **139** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

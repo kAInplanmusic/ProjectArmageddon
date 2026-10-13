@@ -84,3 +84,18 @@ test('SchussAufnahme: ein Flug wird aufgenommen, kurze Flüge und laufende nicht
   assert.equal(a.vorhanden, false, 'ein 1-Punkt-Flug ist keine Wiederholung wert');
   assert.equal(a.zustand(0.5), null);
 });
+
+test('Die Zugpause steht im Zustandshash (nur solange sie läuft) und im Beitritts-Zustand', async () => {
+  const { hashState } = await import('../src/engine/stateSnapshot.js');
+  const m = neu({ turnPauseTicks: 180 });
+  const mitPause = hashState(m.getState());
+  assert.equal(m.getState().turnPauseMs, 3000);
+  schritte(m, 1);
+  assert.notEqual(hashState(m.getState()), mitPause);
+  const o = neu({});
+  assert.equal(o.getState().turnPauseMs, 0);
+  // Ohne Pause bleibt der Hash der bisherigen Form (keine Pause-Marke im Hash).
+  const ohne = new MatchController({ seed: 6, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 20_000 });
+  ohne.start();
+  assert.equal(hashState(ohne.getState()), hashState(o.getState()));
+});

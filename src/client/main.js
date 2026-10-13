@@ -53,10 +53,16 @@ import { MATCH_RULES } from '../shared/config/match.js';
 import { SchussAufnahme } from './schussWiederholung.js';
 import { SIMULATION_HZ } from '../shared/config/network.js';
 
-/** Zugpause in Sekunden; `VITE_ZUGPAUSE_SEKUNDEN` überschreibt (E2E-Tests spielen ohne Pause). */
-const ZUGPAUSE_SEKUNDEN = Number.isFinite(Number(import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN)) && import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN !== undefined && import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN !== ''
-  ? Number(import.meta.env.VITE_ZUGPAUSE_SEKUNDEN)
-  : MATCH_RULES.turnPauseSeconds;
+/**
+ * Zugpause in Sekunden. Vorrang: URL-Parameter `?zugpause=N` (Tests/Vorführung), dann
+ * `VITE_ZUGPAUSE_SEKUNDEN` (E2E-Läufe ohne Pause), sonst die Spielregel.
+ */
+function zugpauseSekunden() {
+  const nutzbar = wert => (wert !== undefined && wert !== null && wert !== '' && Number.isFinite(Number(wert)) && Number(wert) >= 0 ? Number(wert) : null);
+  let url = null;
+  try { url = nutzbar(new URLSearchParams(globalThis.location?.search ?? '').get('zugpause')); } catch { /* kein Browser */ }
+  return url ?? nutzbar(import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN) ?? MATCH_RULES.turnPauseSeconds;
+}
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile } from '../shared/stats.js';
@@ -817,8 +823,8 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts,
-      turnPauseTicks: Math.round(ZUGPAUSE_SEKUNDEN * SIMULATION_HZ),
-      turnReplayTicks: ZUGPAUSE_SEKUNDEN > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
+      turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
+      turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
     this.match.start();
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
@@ -1125,6 +1131,11 @@ class Game {
           + 'es gibt keine Bot-KI, jedes Team braucht einen Menschen.',
           'accent',
         );
+      }
+      // Wer mitten in der Zugpause (neu) verbindet, sieht sie trotzdem: Der Beitritts-Zustand trägt die Restzeit.
+      const pauseRestMs = Number(payload.snapshot?.turnPauseMs) || 0;
+      if (pauseRestMs > 0) {
+        this.#starteZugpause({ pauseTicks: pauseRestMs * SIMULATION_HZ / 1000, replayTicks: 0, playerId: payload.snapshot.activePlayerId });
       }
       /*
        * Der mitgesendete `snapshot` wird hier bewusst NICHT ausgewertet.
@@ -1775,8 +1786,14 @@ class Game {
   #zugpauseAnzeige(state) {
     this.schussAufnahme.erfasse(state?.projectiles);
     const feld = document.getElementById('zugpause');
+    // Lokal und im Replay zählt die ENGINE (Takte, exakt auch bei Tempo ≠ 1× und Seek); nur online, wo
+    // der Zustand die Pause nicht trägt, läuft die Wanduhr ab dem Ereignis `turn_start`.
+    const ausEngine = this.mode !== 'online' && typeof state?.turnPauseMs === 'number';
+    if (ausEngine && state.turnPauseMs > 0 && !this.zugpause) {
+      this.zugpause = { start: performance.now(), dauerMs: state.turnPauseMs, wiederholungMs: 0, playerId: state.activePlayerId };
+    }
     const z = this.zugpause;
-    const rest = z ? z.dauerMs - (performance.now() - z.start) : 0;
+    const rest = !z ? 0 : (ausEngine ? state.turnPauseMs : z.dauerMs - (performance.now() - z.start));
     if (!z || rest <= 0 || state?.status !== 'playing') {
       this.zugpause = null;
       if (feld && !feld.hidden) feld.hidden = true;

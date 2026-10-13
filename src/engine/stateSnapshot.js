@@ -277,6 +277,8 @@ export function hashState(state) {
       activePlayerId: state.activePlayerId,
       winnerTeamId: state.winnerTeamId ?? null,
       turnElapsedMs: Math.round(state.turnElapsedMs ?? 0),
+      // Nur während einer Zugpause im Hash (sonst bleiben alle bisherigen Hashes unverändert).
+      ...(state.turnPauseMs > 0 ? { turnPauseMs: Math.round(state.turnPauseMs) } : {}),
       entities,
       projectiles: state.projectiles.map(p => [p.entityId, Math.round(p.x), Math.round(p.y)]),
       statuses: zustaende,

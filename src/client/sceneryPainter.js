@@ -106,13 +106,25 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
   void zeit;
 }
 
+const DUNKEL_CACHE = new WeakMap();
+
+/** Ist der Himmel dunkel? Je Kulisse einmal gerechnet (vorher je Element und Bild: parseCss + luma). */
+function istDunkel(scenery) {
+  let wert = DUNKEL_CACHE.get(scenery);
+  if (wert === undefined) {
+    wert = luma(parseCss(scenery.sky.colors[0])) < 100;
+    DUNKEL_CACHE.set(scenery, wert);
+  }
+  return wert;
+}
+
 /** Einzelne Ambientesorte zeichnen. */
 function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrund) {
   const x = element.x * breite;
   const y = element.y * hoehe;
   const skala = element.scale;
   const bewegung = Math.sin((zeit * 0.02 + element.phase) * Math.PI * 2);
-  const dunkel = luma(parseCss(scenery.sky.colors[0])) < 100;
+  const dunkel = istDunkel(scenery);
 
   switch (element.kind) {
     case 'stars': {

@@ -29,6 +29,9 @@ import {
   drawLandmarks,
   drawWaterSurface,
 } from './sceneryPainter.js';
+
+/** Die hintere Kulisse wird nur jedes n-te Bild neu gezeichnet (siehe `#drawKulisse`). */
+const KULISSE_BILDER = 2;
 import {
   findeTreffer, trefferMarke, zuckVersatz,
   ruckFuer, altereRuck, ruckVersatz,
@@ -152,6 +155,8 @@ export class Renderer {
     this.palette = DEFAULT_TERRAIN_PALETTE;
     /** Generative Kulisse; hat Vorrang vor einem Hintergrundbild. */
     this.scenery = null;
+    /** Zwischenbild der hinteren Kulisse (siehe `#drawKulisse`). */
+    this.kulissenSchicht = null;
 
     /*
      * WebGPU: Gerät, wenn vorhanden — sonst `null`.
@@ -750,14 +755,46 @@ export class Renderer {
     this.particles = schreitePartikelFort(this.particles);
   }
 
+  /**
+   * Die hintere Kulisse (Himmel, Himmelskörper, Ambiente hinten, Landmarken) wird nur jedes
+   * `KULISSE_BILDER`-te Bild neu gezeichnet und sonst als fertiges Bild aufgelegt.
+   *
+   * Messung (Audit 2026-10-13, Software-Rendering 1280×720, Canvas 2560×1440): `fill()` 43 ms und `fillRect`
+   * 14 ms je Bild bei ~187 Aufrufen — fast alles aus dem Ambiente (Sterne, Wolken, Regen). Wolken und
+   * Funkeln ändern sich langsam; mit jedem 2. Bild sieht man keinen Unterschied. Ohne `document`
+   * (Tests) oder bei Größen-/Kulissenwechsel wird direkt gezeichnet bzw. neu aufgebaut.
+   */
+  #drawKulisse() {
+    const direkt = ctx => {
+      drawGenerativeSky(ctx, this.width, this.height, this.scenery, this.time);
+      drawAmbient(ctx, this.width, this.height, this.scenery, this.time, false);
+      // Die Horizontlinie liegt knapp über der Geländekante. Ein Horizont in der
+      // Bildmitte würde vom Gelände verdeckt und die Landmarke verschwände.
+      drawLandmarks(ctx, this.width, this.height, this.scenery, this.height * 0.47);
+    };
+    if (typeof document === 'undefined') { direkt(this.ctx); return; }
+    let c = this.kulissenSchicht;
+    const neu = !c || c.scenery !== this.scenery || c.w !== this.width || c.h !== this.height;
+    if (neu) {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.width;
+      canvas.height = this.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { direkt(this.ctx); return; }
+      c = this.kulissenSchicht = { canvas, ctx, scenery: this.scenery, w: this.width, h: this.height, zeit: -Infinity };
+    }
+    if (neu || this.time - c.zeit >= KULISSE_BILDER || this.time < c.zeit) {
+      c.ctx.clearRect(0, 0, c.w, c.h);
+      direkt(c.ctx);
+      c.zeit = this.time;
+    }
+    this.ctx.drawImage(c.canvas, 0, 0, this.width, this.height);
+  }
+
   #drawSky() {
     // Generative Kulisse hat Vorrang: sie passt sich jeder Kartengröße an.
     if (this.scenery) {
-      drawGenerativeSky(this.ctx, this.width, this.height, this.scenery, this.time);
-      drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, false);
-      // Die Horizontlinie liegt knapp über der Geländekante. Ein Horizont in der
-      // Bildmitte würde vom Gelände verdeckt und die Landmarke verschwände.
-      drawLandmarks(this.ctx, this.width, this.height, this.scenery, this.height * 0.47);
+      this.#drawKulisse();
       return;
     }
 
