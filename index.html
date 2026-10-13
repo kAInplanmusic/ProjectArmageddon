@@ -252,8 +252,22 @@
       font-variant-numeric: tabular-nums;
     }
 
-    #hud-left { grid-column: 1; grid-row: 2; align-self: stretch; min-height: 0; overflow-y: auto; }
-    #hud-right { grid-column: 3; grid-row: 2; align-self: stretch; min-height: 0; overflow-y: auto; }
+    /*
+     * Die Seitenleisten wachsen mit ihrem Inhalt (vorher: volle Höhe, fast deckend — bei
+     * 1280×720 verdeckten sie viel Spielfeld, Screenshot 2026-10-13) und sind
+     * durchscheinend. Die Höhe ist begrenzt (Platz für Protokoll und Zielanzeige),
+     * darüber scrollt die Liste.
+     */
+    #hud-left, #hud-right {
+      grid-row: 2;
+      align-self: start;
+      min-height: 0;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+      background: linear-gradient(160deg, rgba(19, 26, 34, 0.66), rgba(11, 15, 20, 0.58));
+    }
+    #hud-left { grid-column: 1; }
+    #hud-right { grid-column: 3; }
 
     /*
      * Das Ereignisprotokoll steht AM UNTEREN RAND der Spielfläche — unabhängig

@@ -250,7 +250,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   sich Zeile für Zeile ab (Figur im Grenzbereich der Wasserlinie) — Meldungen zusammenfassen
   oder Hysterese; auch „ist gelandet ×39" je Figur beim Start. Prüfen, ob die Figur wirklich
   flackert (Spiellogik) oder nur die Meldung. — mittel
-  (3) **Seitenleisten** (je ~22 % Breite, fast volle Höhe, 96 % deckend) verdecken bei 1280×720
+  (3) **ERLEDIGT (2026-10-13):** Seitenleisten wachsen mit dem Inhalt, durchscheinend (~60 %), Höhe begrenzt (`index.html`). Vorher: **Seitenleisten** (je ~22 % Breite, fast volle Höhe, 96 % deckend) verdecken bei 1280×720
   viel Spielfeld; halbtransparent oder einklappbar. — mittel
   (4) Menü: Beschriftung „Bodenberechnung" sitzt über einem zu hohen Auswahlfeld (Ausrichtung
   zur Nachbarspalte). — niedrig
