@@ -161,7 +161,7 @@ export class CharacterSystem {
          * ist: `√(2·g·h)` — gemessen 4,20 px/Takt bei 20 px Höhe, 5,88 bei 40,
          * 15,96 bei 300, 24,36 bei 700 (Sonde: `docs/fallschaden-bremse.md` §2).
          */
-        const aufsetzZeile = vy > 0 ? this.#ersteSolideZeile(terrain, nextX, y, nextY) : null;
+        const aufsetzZeile = vy > 0 ? this.#ersteSolideZeile(terrain, nextX, y + PLAYER_HALF_HEIGHT, nextY + PLAYER_HALF_HEIGHT) : null;
 
         if (aufsetzZeile !== null) {
           resolvedY = aufsetzZeile - PLAYER_HALF_HEIGHT;

@@ -1065,7 +1065,7 @@ export class MatchController {
     // Prüfpunkt knapp unter den Füßen (y+2) liegt noch in der Luft: das Terrain
     // beginnt erst eine halbe Körperhöhe unter der Fußlinie, weil die Figur auf
     // seiner Oberkante steht.
-    const tiefster = Math.floor(y + PLAYER_HALF_HEIGHT - 1);
+    const tiefster = Math.floor(y + PLAYER_HALF_HEIGHT);
     return this.#terrain.isSolid(Math.floor(x), tiefster);
   }
 

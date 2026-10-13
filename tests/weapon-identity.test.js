@@ -767,8 +767,9 @@ test('Der Sprung ist deterministisch', () => {
  */
 
 test('Zehn Bodensprünge in EINEM Zug gehen durch — und kosten kein Leben', () => {
-  // Seed 606 ist gemessen: zehn Sprünge, flacher Boden, 0 Fallschaden.
-  const match = new MatchController({ seed: 606, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
+  // Seed 619 ist gemessen: zehn Sprünge, kein Absturz über eine Kante, 0 Fallschaden
+  // (606 war es vor der Landungskorrektur vom 2026-10-13; die Sprünge tragen ~250 px weit).
+  const match = new MatchController({ seed: 619, teams: 2, playersPerTeam: 1, turnDurationMs: 1_000_000 });
   match.start();
   const spieler = match.activePlayerId;
   lande(match, spieler);

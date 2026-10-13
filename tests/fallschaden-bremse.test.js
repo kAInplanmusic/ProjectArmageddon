@@ -126,7 +126,9 @@ function kante(seed, hoehe) {
   const x = match.world.getComponent(spieler, 'Position', 'x');
   const grund = oberflaeche(match, x);
   assert.ok(grund !== null, 'Vorbedingung: die Spalte hat einen Boden');
-  match.world.setComponent(spieler, 'Position', 'y', grund - hoehe);
+  // `y` ist die Körpermitte: Die Füße stehen `hoehe` über dem Boden, wenn die Mitte
+  // PLAYER_HALF_HEIGHT + hoehe darüber liegt (seit der Landungskorrektur, 2026-10-13).
+  match.world.setComponent(spieler, 'Position', 'y', grund - PLAYER_HALF_HEIGHT - hoehe);
   match.world.setComponent(spieler, 'Velocity', 'y', 0);
   match.world.setComponent(spieler, 'Velocity', 'x', 0);
 

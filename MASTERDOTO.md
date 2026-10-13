@@ -230,10 +230,23 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
 - [x] **UI-Durchsicht (2026-10-13, Screenshots 1280×720 und 390×800, Chromium; keine Konsolenfehler):**
   Behoben: Ereignisprotokoll lag über die volle Breite und verdeckte Winkel/Kraft/Radius —
   jetzt zwischen den Seitenleisten und über der Zielanzeige (`index.html`, `#hud-log`).
+- [x] **FUND + FIX (2026-10-13): Figuren wippten im Stand (Landungs-Abtastung).** Die Landung tastete
+  die Spalte ab `y` (Körpermitte) statt ab der Fußlinie `y + PLAYER_HALF_HEIGHT` ab; `isGrounded`
+  prüfte eine Zeile darüber (`− 1`). Folge: Eine stehende Figur sank ~9 px ein, wurde „gelandet"
+  und hochgesetzt — alle 7 Takte, endlos (Seed 12, P3: y 923→931,8→923, Ereignis `landed` ×39).
+  Das war die Quelle der „Bounce-Flut" (>500 Ereignisse/30 s), der Protokoll-Zeilen
+  „ertrinkt/wieder über Wasser" (Figur an der Wasserlinie) und unnötigen Netzlast. Fix:
+  `characterSystem.js` (Abtastung ab Fußlinie) + `match.js#isGrounded` (kein `− 1`). Browser-Probe
+  (6 Seeds, 9 s): 20 Wasserzeilen → 0–1. **Spielphysik ändert sich leicht** (Landehöhe 10 px
+  kürzer; alte Replays aus der Zeit davor können abweichen). Tests nachgezogen:
+  `fallschaden-bremse` (Hilfsfunktion `kante` setzt die Fußhöhe), `weapon-identity` (Seed 619 statt
+  606: die Sprünge tragen ~250 px und stürzten bei Seed 606 neu über eine Kante),
+  `event-coverage` (Flut ist weg → Prüfung bedingt). Unit 1292/1292; E2E Replay/Mehrspieler/
+  Terrain/Wasser 23/23.
 - [ ] **UI — offen aus der Durchsicht (nicht umgesetzt, nach Auswirkung):**
   (1) **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
-  (2) **Protokoll-Spam:** „P3 ertrinkt (100 % unter Wasser)" / „P3 ist wieder über Wasser" wechseln
+  (2) **ERLEDIGT (2026-10-13, Ursache war ein Physikfehler):** **Protokoll-Spam:** „P3 ertrinkt (100 % unter Wasser)" / „P3 ist wieder über Wasser" wechseln
   sich Zeile für Zeile ab (Figur im Grenzbereich der Wasserlinie) — Meldungen zusammenfassen
   oder Hysterese; auch „ist gelandet ×39" je Figur beim Start. Prüfen, ob die Figur wirklich
   flackert (Spiellogik) oder nur die Meldung. — mittel
