@@ -207,6 +207,17 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   bewusst einzweigig mit Beleg: `projectile_spawn`, `terrain_destroyed`,
   `weapon_dropped`), 0 B, 0 C. Die Liste von 2026-09-24 war überholt; die
   Checkboxen in `docs/audit-tief.md` stehen auf `[x]` mit Fundstelle.
+- [ ] **NIEDRIG — „Exporte ohne Leser" und Matchdauer/Mahlstrom (2026-10-13, Branch
+  `claude/audit-exporte`).** Von den fünf Exporten aus `docs/audit-tief.md` waren
+  `GERAETE_SCHLUESSEL`, `isValidAngle`, `isValidPower` schon seit `dd30534` keine
+  Exporte mehr; `resolveStrike` und `fuseTicksFor` standen nur noch im
+  leserlosen `export default`-Block von `src/engine/shooting.js` (kein Importeur,
+  gesucht in src/, tests/, scripts/, tools/) — Block entfernt, Funktionen bleiben
+  intern, 1281/1281 Tests grün. Matchdauer (offen, **wartet auf Entscheidung des
+  Auftraggebers**): 0 von 8 Partien enden vor dem Mahlstrom-Breakpoint (Runde 8);
+  Ø 28,6/29,4/31,0 Runden bei 2/4/8 Figuren, 31/68/131 Züge, 10/23/44 min bei
+  20 s je Zug (Obergrenze); Mahlstrom trägt ~72 % der Partie. Tabelle, Grenzen der
+  Messung und Alternativen: `docs/audit-tief.md`, Abschnitt NIEDRIG.
 
 ### Entscheidung zur Hardware (2026-10-09)
 
