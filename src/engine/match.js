@@ -935,7 +935,17 @@ export class MatchController {
        * Fußpunkt 0, am Körper 1.
        */
       const kopf = boden - PLAYER_HALF_HEIGHT - 2;
-      return this.waterLevelAt(x, kopf) < WET_LEVEL;
+      if (this.waterLevelAt(x, kopf) >= WET_LEVEL) return false;
+      /*
+       * FUND (belegt, 2026-10-13, Menüweg `kartentyp: 'autonom'`): Fuß- und Kopfpunkt
+       * allein übersehen ein flaches Becken dazwischen. Seed 1, Figur P5: Wasser
+       * von y = 959 bis 969 (11 px), Boden bei 970, Kopf bei 958 — beide Punkte
+       * „trocken", die Körpermitte (die für Ertrinken zählt) bei Füllstand 1,0. Die
+       * Figur fiel 4 px und stand untergetaucht. Deshalb auch die Mitte und die
+       * Zeile über dem Boden prüfen.
+       */
+      return this.waterLevelAt(x, boden - 1) < WET_LEVEL
+        && this.waterLevelAt(x, boden - PLAYER_HALF_HEIGHT) < WET_LEVEL;
     };
 
     if (trocken(idealX)) return idealX;

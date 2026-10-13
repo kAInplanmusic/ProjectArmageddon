@@ -104,7 +104,7 @@ export function erzeugeSpieler(quelle) {
     const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId);
     const maxHealth = Math.round(quelle.baseHealth * profile.healthMultiplier);
 
-    quelle.world.addComponent(entityId, 'Position', { x, y });
+    quelle.world.addComponent(entityId, 'Position', { x: startX, y });
     quelle.world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
     quelle.world.addComponent(entityId, 'Health', { current: maxHealth, max: maxHealth });
     quelle.world.addComponent(entityId, 'Class', { classId, archetypeId });

@@ -243,6 +243,13 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   606: die Sprünge tragen ~250 px und stürzten bei Seed 606 neu über eine Kante),
   `event-coverage` (Flut ist weg → Prüfung bedingt). Unit 1292/1292; E2E Replay/Mehrspieler/
   Terrain/Wasser 23/23.
+- [x] **FUND + FIX (2026-10-13): Figuren starteten im Wasser (Menüweg).** `spawnManager.js` suchte
+  per `drySpawnX` einen trockenen Platz, setzte die Figur aber auf den ALTEN Wunsch-x (nur y kam vom
+  neuen Platz). Gemessen (`kartentyp: 'autonom'`, 100 Seeds × 6 Figuren, 30 Takte): in **46 %** der
+  Matches stand mindestens eine Figur untergetaucht — jetzt **0**. Zusätzlich prüft die Trockenprüfung
+  nun auch Körpermitte und Zeile über dem Boden (flaches Becken zwischen Fuß und Kopf wurde übersehen).
+  Neuer Test `tests/startplatz-trocken.test.js` (schlägt ohne Fix fehl). Spielverlauf auf solchen Karten
+  ändert sich (andere Startplätze) — alte Replays mit `autonom` können abweichen. Unit 1293, E2E 33/33.
 - [ ] **UI — offen aus der Durchsicht (nicht umgesetzt, nach Auswirkung):**
   (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
@@ -252,7 +259,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   flackert (Spiellogik) oder nur die Meldung. — mittel
   (3) **ERLEDIGT (2026-10-13):** Seitenleisten wachsen mit dem Inhalt, durchscheinend (~60 %), Höhe begrenzt (`index.html`). Vorher: **Seitenleisten** (je ~22 % Breite, fast volle Höhe, 96 % deckend) verdecken bei 1280×720
   viel Spielfeld; halbtransparent oder einklappbar. — mittel
-  (4) Menü: Beschriftung „Bodenberechnung" sitzt über einem zu hohen Auswahlfeld (Ausrichtung
+  (4) **ERLEDIGT (2026-10-13):** (`.field-row { align-items: start }`). Vorher: Menü: Beschriftung „Bodenberechnung" sitzt über einem zu hohen Auswahlfeld (Ausrichtung
   zur Nachbarspalte). — niedrig
   (5) **Animationen/Übergänge** (Menü→Spiel, Rundenwechsel, Waffenwechsel, Sieg) nicht bewertet —
   dafür braucht es Videoaufnahmen statt Standbilder. — offen
