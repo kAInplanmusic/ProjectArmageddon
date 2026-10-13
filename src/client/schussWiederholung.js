@@ -16,6 +16,7 @@ const HOECHSTPUNKTE = 1200;
 export class SchussAufnahme {
   #spur = [];
   #fliegt = false;
+  #frisch = false;
 
   /**
    * Pro Bild mit der aktuellen Geschossliste aufrufen.
@@ -28,6 +29,7 @@ export class SchussAufnahme {
       this.#fliegt = true;
       if (this.#spur.length < HOECHSTPUNKTE) this.#spur.push([erstes.x, erstes.y]);
     } else {
+      if (this.#fliegt) this.#frisch = true; // ein Flug ist gerade zu Ende gegangen
       this.#fliegt = false;
     }
   }
@@ -39,8 +41,18 @@ export class SchussAufnahme {
 
   get punkte() { return this.#spur.length; }
 
+  /**
+   * Gehört die Aufnahme zum Zug, der gerade endete? Gibt EINMAL `true` zurück, nachdem ein Flug
+   * zu Ende ging — ein Zug ohne Geschoss (Teleport, Bewegung) zeigt nie den Schuss des Vorspielers.
+   */
+  nimmFrische() {
+    const f = this.#frisch;
+    this.#frisch = false;
+    return f && this.vorhanden;
+  }
+
   /** Vergisst die Aufnahme (neues Match). */
-  verwerfe() { this.#spur = []; this.#fliegt = false; }
+  verwerfe() { this.#spur = []; this.#fliegt = false; this.#frisch = false; }
 
   /**
    * Zustand der Wiedergabe zum Zeitpunkt `anteil` (0..1 der Wiederholungsdauer).

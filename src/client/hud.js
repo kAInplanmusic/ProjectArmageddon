@@ -398,7 +398,8 @@ export class Hud {
 
       // Das Emblem steht ZWISCHEN Name und Lebensbalken: Es gehört zum Namen,
       // nicht zu den Zustandsmarken (die hinter dem Balken stehen).
-      item.append(name, emblemElement, track, hp);
+      if (emblemElement.textContent) item.append(name, emblemElement, track, hp);
+      else item.append(name, track, hp);
 
       for (const marke of marken) {
         const badge = this.#document.createElement('span');
@@ -619,7 +620,10 @@ export class Hud {
       (weapon?.cooldown ?? 0) > 0 ? `Nachladen ${weapon.cooldown} Zug/Züge` : 'kein Nachladen',
       weapon?.category ? `Kategorie ${weapon.category}` : null,
     ].filter(Boolean).join(' · ');
-    item.addEventListener('click', () => onWeaponSelect?.(index));
+    // `onWeaponSelect` erwartet die ANZEIGEPOSITION (wie die Zifferntasten), nicht den Inventarindex
+    // (Audit 2026-10-13: Klick auf „2.“ wählte sonst die falsche Waffe).
+    const anzeigePosition = (anzeigeNummer ?? index + 1) - 1;
+    item.addEventListener('click', () => onWeaponSelect?.(anzeigePosition));
     /*
      * Eingabe und Leertaste wählen die Waffe.
      *
@@ -632,7 +636,7 @@ export class Hud {
       if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
       event.preventDefault();
       event.stopPropagation();
-      onWeaponSelect?.(index);
+      onWeaponSelect?.(anzeigePosition);
     });
     return item;
   }

@@ -162,6 +162,8 @@
       image-rendering: pixelated;
     }
 
+    #game-canvas { touch-action: none; }
+
     .panel {
       background: linear-gradient(160deg, rgba(19, 26, 34, 0.96), rgba(11, 15, 20, 0.96));
       border: 1px solid var(--panel-edge);
@@ -285,7 +287,7 @@
       min-height: 0;
       max-height: calc(100vh - 150px);
       overflow-y: auto;
-      background: linear-gradient(160deg, rgba(19, 26, 34, 0.66), rgba(11, 15, 20, 0.58));
+      background: linear-gradient(160deg, rgba(19, 26, 34, 0.84), rgba(11, 15, 20, 0.8));
     }
     #hud-left { grid-column: 1; }
     #hud-right { grid-column: 3; }
@@ -789,9 +791,9 @@
         </div>
       </section>
 
-      <div id="zugpause" role="status" aria-live="polite" hidden>
+      <div id="zugpause" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span class="zugpause-titel"></span>
-        <span class="zugpause-zahl"></span>
+        <span class="zugpause-zahl" aria-hidden="true"></span>
       </div>
       <section id="hud" aria-label="Spiel-HUD">
         <div id="hud-top">

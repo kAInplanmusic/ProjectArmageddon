@@ -95,6 +95,12 @@ export class InputController {
       this.#beginCharge();
     });
 
+    // Der Browser kann eine Berührung abbrechen (Scrollen, Systemgeste): ohne diese Behandlung
+    // bliebe die Ladung stehen (Audit 2026-10-13, Touch).
+    window.addEventListener('pointercancel', () => {
+      if (this.#charging) this.#releaseCharge();
+    });
+
     window.addEventListener('pointerup', event => {
       if (event.button !== 0) return;
       if (this.#charging) this.#releaseCharge();

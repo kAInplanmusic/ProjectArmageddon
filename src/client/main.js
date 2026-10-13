@@ -393,6 +393,7 @@ class Game {
     this.network?.disconnect();
     this.network = null;
     this.match = null;
+    this.#setzeZugpauseZurueck();
     this.mode = 'local';
     this.endOverlay.hidden = true;
     this.menuOverlay.hidden = false;
@@ -808,6 +809,7 @@ class Game {
   } = {}) {
     this.network?.disconnect();
     this.network = null;
+    this.#setzeZugpauseZurueck();
     this.mode = 'local';
 
     // Sidegrades gehören in die Match-Konfiguration — sie verändern das
@@ -1758,6 +1760,14 @@ class Game {
     };
   }
 
+  /** Neues Match, Replay oder Abbruch: Pause und alte Aufnahme verwerfen, Hinweis ausblenden. */
+  #setzeZugpauseZurueck() {
+    this.zugpause = null;
+    this.schussAufnahme.verwerfe();
+    const feld = document.getElementById('zugpause');
+    if (feld) feld.hidden = true;
+  }
+
   /**
    * Pro Bild: erfasst den Flug, steuert Pausen-Hinweis (DOM) und liefert den Stand der
    * Wiederholung für den Renderer (oder `null`).
@@ -1787,6 +1797,8 @@ class Game {
       feld.hidden = false;
     }
     if (!inWiederholung) return null;
+    if (z.mitSpur === undefined) z.mitSpur = this.schussAufnahme.nimmFrische();
+    if (!z.mitSpur) return null;
     // Die Wiederholung läuft über die ganze Wiederholungsphase (leicht verlangsamt).
     return this.schussAufnahme.zustand(1 - (rest - freezeMs) / z.wiederholungMs);
   }
@@ -2555,6 +2567,7 @@ class Game {
     if (!this.replayPlayer) return this;
     this.network?.disconnect();
     this.network = null;
+    this.#setzeZugpauseZurueck();
     this.mode = 'replay';
     this.match = this.replayPlayer.match;
     this.replayPlaying = false;
