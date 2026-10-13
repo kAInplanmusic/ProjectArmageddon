@@ -194,13 +194,35 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   Basis). Offen: auf der Hardware der Spieler messen (`npm run perf:browser`),
   Verdächtige sind die vollflächigen `drawImage`-Aufrufe (Terrain-Layer
   2560×1440, Wasserschicht, Kulisse) je Frame.
-- [ ] **P3 — Browser-Abdeckung:** Firefox und Safari sind ungeprüft (in der
-  Sandbox nur Chromium). Client-Heap über 10 Runden, Initial-Load-Zeit und
-  Allokationen im Render-Loop sind nicht gemessen.
+- [ ] **P3 — Browser-Abdeckung (Stand 2026-10-13): Firefox gelaufen, WebKit nicht.**
+  Firefox 155.0 (Playwright `firefox-1543`) läuft in der Sandbox; mit einer
+  temporären Konfiguration außerhalb des Repos liefen `multiplayer.spec.mjs`,
+  `terrain-abgleich.spec.mjs` und `replay.spec.mjs` **19/19 grün** (gleiche
+  Ergebnisse wie Chromium). WebKit (`webkit-2359`) ist heruntergeladen, startet
+  aber nicht: dem Host fehlen `libgtk-4.so.1`, `libgraphene-1.0.so.0`,
+  `libevent-2.1.so.7`, `libgstgl-1.0.so.0`, `libgstcodecparsers-1.0.so.0`,
+  `libavif.so.16`, `libwayland-server.so.0`, `libmanette-0.2.so.0`,
+  `libenchant-2.so.2`, `libsecret-1.so.0`, `libGLESv2.so.2` (Playwright:
+  „Host system is missing dependencies to run browsers“). Safari/WebKit bleibt
+  ungeprüft, daher bleibt der Punkt offen. Client-Heap über 10 Runden,
+  Initial-Load-Zeit und Allokationen im Render-Loop sind weiterhin nicht gemessen.
 - [x] **P3 — Cross-Engine-Terrain — abgesichert 2026-10-09.** Der Client baut das
   Terrain selbst aus dem Seed. Eine Abweichung zwischen Browsern würde jetzt vom
-  Terrain-Hash erkannt und per `terrain_request` korrigiert. Ob sie in Firefox
-  oder Safari tatsächlich auftritt, bleibt ungeprüft (dort nicht gelaufen).
+  Terrain-Hash erkannt und per `terrain_request` korrigiert. In **Firefox 155**
+  tritt sie nicht auf: der Client-Hash ist in `terrain-abgleich.spec.mjs` (Seeds
+  5150 und 5151, inkl. Krater und Wiedereinstieg) gleich dem Server-Hash, ohne
+  „Terrain-Hash weicht ab“. Das ist ein Stichprobenbeleg für zwei Seeds, kein
+  Beweis für alle; Safari/WebKit bleibt ungeprüft (nicht lauffähig, s. o.).
+
+**E2E-Gesamtlauf 2026-10-13.** Die gesamte Browser-Batterie lief seriell
+(`npx playwright test`, ein Worker, Chromium über den Chrome-Kanal, GPU-lose
+Sandbox mit SwiftShader): **205 Tests in 32 Spezifikationen, 203 grün, 0 rot,
+2 übersprungen**, Dauer 17,4 min. Übersprungen haben sich die Tests selbst:
+`prediction-online` („Ein abgelehnter Schuss lässt keine Bahn stehen“, Client
+war bereits am Zug) und `profiling` („Bildzeiten auf dem echten Grafikpfad“,
+nur Software-Rasterung). Damit ist der in `bgworker-todo.json` offene
+E2E-Lauf (O7) erbracht; der Umbau von `fire()` nach `shooting.js` und der Import
+`scenery.js` → `backdrops.js` laufen im Browser-Bundle.
 
 ### Entscheidung zur Hardware (2026-10-09)
 
