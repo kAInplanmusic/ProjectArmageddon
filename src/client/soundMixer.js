@@ -28,7 +28,7 @@
  * @module soundMixer
  */
 
-import { erzeugeRauschen, explosion, schuss, treffer } from './sound.js';
+import { donner, erzeugeRauschen, explosion, schuss, treffer } from './sound.js';
 
 export class SoundMixer {
   #ctx = null;
@@ -37,7 +37,7 @@ export class SoundMixer {
   #an = true;
   #lautstaerke = 0.8;
   /** Zähler: Wie viele Klänge wurden erzeugt? Für die Messung. */
-  #gezaehlt = { explosion: 0, schuss: 0, treffer: 0 };
+  #gezaehlt = { explosion: 0, schuss: 0, treffer: 0, donner: 0 };
 
   /**
    * @param {object} optionen
@@ -163,6 +163,14 @@ export class SoundMixer {
     return true;
   }
 
+  /** Donner zum Vorzeichen von Valhalla (zwei Raben im Blitz). */
+  spieleDonner() {
+    if (!this.#an || !this.#ctx) return false;
+    donner(this.#ctx, this.#rauschen, { lautstaerke: 0.9, ziel: this.#ziel() });
+    this.#gezaehlt.donner += 1;
+    return true;
+  }
+
   /**
    * Ein Abschuss.
    *
@@ -218,6 +226,8 @@ export class SoundMixer {
         const groesse = Math.max(0.6, Math.min(1.6, 0.6 + Math.sqrt(radius) / 12));
         return this.spieleExplosion({ groesse });
       }
+      case 'valhalla_omen':
+        return this.spieleDonner();
       case 'shot':
         return this.spieleSchuss(Number(ereignis.tonhoehe ?? 1));
       case 'damage':

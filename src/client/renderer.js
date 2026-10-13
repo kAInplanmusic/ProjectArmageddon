@@ -18,6 +18,7 @@ import {
   erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
 } from './effects.js';
 import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
+import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
   erzeugeMuendungsfeuer, muendungsfeuer, rueckstossVersatz, ROHR_LAENGE,
   fadenkreuzSegmente, pulsFaktor, blitzPuls,
@@ -89,6 +90,8 @@ export class Renderer {
     this.reducedMotion = prefersReducedMotion();
     this.waterFrame = 0;
     this.time = 0;
+    /** Vorzeichen von Valhalla (zwei Raben im Blitz): `{start, bildSeed}` oder null. */
+    this.omen = null;
     /** Transiente Effekte (Strahlen, Blitze) mit Lebensdauer in Frames. */
     this.effects = [];
 
@@ -1530,6 +1533,24 @@ export class Renderer {
     this.ctx.restore();
   }
 
+  /** Startet das Vorzeichen von Valhalla: zwei Raben erscheinen im Blitz und schauen auf das Feld. */
+  startValhallaOmen(bildSeed = 1, { jetzt = performance.now() } = {}) {
+    this.omen = { start: jetzt, bildSeed: Number(bildSeed) || 1 };
+  }
+
+  #drawOmen() {
+    if (!this.omen) return;
+    // Echtzeit statt Bildzähler: Die Blitze sollen unabhängig von der Bildrate gleich lang sein.
+    // `festesAlter` ist ein Prüfhaken (Bildschirmfotos, Tests): hält das Vorzeichen an einer Stelle an.
+    const alter = this.omen.festesAlter ?? (performance.now() - this.omen.start) / 1000;
+    const zustand = omenZustand(alter, this.omen.bildSeed, { reducedMotion: this.reducedMotion });
+    if (!zustand) {
+      this.omen = null;
+      return;
+    }
+    zeichneOmen(this.ctx, this.width, this.height, zustand);
+  }
+
   #drawMaelstrom(maelstrom) {
     if (!maelstrom?.active || maelstrom.inset <= 0) return;
     const { inset } = maelstrom;
@@ -1734,6 +1755,8 @@ export class Renderer {
 
     // Der Mahlstrom ist ein Bildschirm-Effekt (er legt sich über alles).
     this.#drawMaelstrom(state.maelstrom);
+    // Das Vorzeichen liegt über der Welt, aber unter der Anzeige.
+    this.#drawOmen();
     this.#drawWindArrow(state.wind);
     // Die Ladeanzeige liegt ÜBER dem Geschehen: Sie gehört zur Eingabe des
     // Spielers, nicht zur Welt — sie darf nicht hinter einer Figur verschwinden.

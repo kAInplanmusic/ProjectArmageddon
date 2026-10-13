@@ -793,6 +793,7 @@ export const ZUSTANDSEREIGNISARTEN = Object.freeze([
   'turret_deployed',
   'turret_expired',
   'turret_fired',
+  'valhalla_omen',
   'water_pushed',
   'weapon_cooldown',
   'weapon_dropped',

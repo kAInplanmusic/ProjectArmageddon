@@ -35,7 +35,7 @@ import {
   SELF_TARGET_KINDS,
   EFFECT_KIND,
 } from './specials.js';
-import { MATCH_RULES, drawValhallaTick } from '../shared/config/match.js';
+import { MATCH_RULES, drawValhallaTick, drawValhallaOmen } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -421,6 +421,9 @@ export class MatchController {
   #bitmap;
   /** Tick, ab dessen nächstem Rundenbeginn der Mahlstrom greift (Valhalla). */
   #valhallaTick = 0;
+  /** Vorzeichen: `{tick, vorlaufSekunden, bildSeed}`; `#omenGezeigt` merkt, dass es schon kam. */
+  #valhallaOmen = null;
+  #omenGezeigt = false;
   /** Oberflächenhöhe je Spalte (`OBERFLAECHE_UNBEKANNT` = noch nicht gesucht). */
   #oberflaeche = null;
   /** `version` der Maske, zu der der Merker oben gehört. */
@@ -575,7 +578,11 @@ export class MatchController {
       : new MatchSeedManager(seed);
     this.#rng = this.#seedManager.getSubRng('MATCH_BASE');
     // Valhalla: Zeitpunkt (Ticks seit Matchbeginn) einmal aus dem Seed gezogen.
-    this.#valhallaTick = drawValhallaTick(this.#seedManager.getSubRng('VALHALLA'));
+    const valhallaRng = this.#seedManager.getSubRng('VALHALLA');
+    this.#valhallaTick = drawValhallaTick(valhallaRng);
+    // Das Vorzeichen (zwei Raben im Blitz) kommt zufällig 1–60 s vorher — aus demselben Zweig,
+    // NACH der ersten Ziehung, damit der Beginn unverändert bleibt.
+    this.#valhallaOmen = drawValhallaOmen(valhallaRng, this.#valhallaTick);
     this.#turnDurationMs = turnDurationMs
       ?? MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
     this.maxRounds = maxRounds;
@@ -990,6 +997,15 @@ export class MatchController {
     if (this.#status !== 'playing') return this.getState();
 
     this.#turnElapsed += dt;
+    // Vorzeichen: zwei Raben im Blitz, 1–60 s vor Valhalla (einmal je Match). Reine Anzeige —
+    // das Ereignis ändert keinen Zustand und fließt nicht in den Zustandshash.
+    if (!this.#omenGezeigt && this.#world.tickCount >= this.#valhallaOmen.tick) {
+      this.#omenGezeigt = true;
+      this.#events.emit('valhalla_omen', {
+        tick: this.#world.tickCount,
+        bildSeed: this.#valhallaOmen.bildSeed,
+      });
+    }
     // Fliegende Kisten bewegen sich VOR dem Physikschritt: sie sollen im selben
     // Tick landen, in dem sie den Boden berühren.
     this.#stepFlyingCrates();
@@ -3115,6 +3131,8 @@ export class MatchController {
   get inventory() { return this.#inventory; }
   /** Tick, ab dem Valhalla beginnt (für Werkzeuge und Tests; die Spieler erfahren ihn nicht). */
   get valhallaTick() { return this.#valhallaTick; }
+  /** Zeitpunkt des Vorzeichens (für Werkzeuge und Tests). */
+  get valhallaOmenTick() { return this.#valhallaOmen.tick; }
   /** Laufende Zustände der Spieler (Schild, Einfrieren, Schaden über Zeit). */
   get statuses() { return this.#statuses; }
   get players() { return [...this.#players]; }

@@ -227,6 +227,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   gesucht in src/, tests/, scripts/, tools/) — Block entfernt, Funktionen bleiben
   intern, 1281/1281 Tests grün. Matchdauer/Mahlstrom: siehe den nächsten Eintrag
   (entschieden am 2026-10-13).
+- [x] **Valhalla-Vorzeichen (2026-10-13):** zwei Raben in Blitzen, zufällig 1–60 s vor Valhalla (Annahme: „in“ = 1 Minute; Fenster in `MATCH_RULES.suddenDeath.valhallaOmen*LeadSeconds` änderbar). Ereignis `valhalla_omen`, Donner, Tests in `tests/valhalla.test.js`.
 - [x] **ENTSCHIEDEN UND UMGESETZT (2026-10-13): Matchdauer „so lang bis aus", Valhalla
   zufällig nach 6–12 Minuten.** Auftraggeber-Entscheidung zu der Messung oben.
   (1) **Valhalla (Mahlstrom)** beginnt zufällig zwischen 6 und 12 Minuten SPIELZEIT

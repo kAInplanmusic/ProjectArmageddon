@@ -173,6 +173,16 @@ const mahlstromZiehtSich = (k, n) => {
 };
 
 /**
+ * Vorzeichen von Valhalla: zwei Raben erscheinen im Blitz am Himmel und schauen auf das
+ * Schlachtfeld (1–60 s vor Beginn des Mahlstroms, zufällig; der Server/Motor meldet es).
+ */
+const valhallaVorzeichen = (k, n) => {
+  k.renderer?.startValhallaOmen(n.bildSeed);
+  k.sound?.verarbeite({ type: 'valhalla_omen' });
+  k.hud?.log('Zwei Raben erscheinen im Blitz am Himmel … Valhalla naht', 'danger');
+};
+
+/**
  * Ereignisart → Wirkung.
  *
  * Die Schlüssel sind die Ereignisarten, die die Engine (`match.consumeEvents()`)
@@ -700,6 +710,11 @@ export const EREIGNIS_WIRKUNGEN = {
    * ohne Wirkung bleibt und nicht vergessen wurde.
    */
   drowning: {},
+
+  valhalla_omen: {
+    lokal: valhallaVorzeichen,
+    online: valhallaVorzeichen,
+  },
 
   maelstrom_contract: {
     lokal: mahlstromZiehtSich,

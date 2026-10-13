@@ -143,6 +143,49 @@ export function explosion(ctx, rauschen, {
 }
 
 /**
+ * Donner zum Blitz: ein kurzer Knall, dann langes, tiefes Grollen.
+ *
+ * Gehört zum Vorzeichen von Valhalla (zwei Raben im Blitz). Zwei Schläge im Abstand,
+ * der zweite lauter — wie die Blitzfolge im Bild.
+ *
+ * @returns {{ende:number}}
+ */
+export function donner(ctx, rauschen, { lautstaerke = 1, zeit = ctx.currentTime, ziel = null } = {}) {
+  const zielKnoten = ziel ?? ctx.destination;
+  let ende = zeit;
+  for (const [versatz, kraft, laenge] of [[0.05, 0.55, 1.6], [0.62, 0.8, 2.3], [2.45, 1, 3.2]]) {
+    const t = zeit + versatz;
+    const quelle = ctx.createBufferSource();
+    quelle.buffer = rauschen;
+    const tiefpass = ctx.createBiquadFilter();
+    tiefpass.type = 'lowpass';
+    tiefpass.frequency.setValueAtTime(900, t);
+    tiefpass.frequency.exponentialRampToValueAtTime(70, t + laenge * 0.8);
+    const huelle = ctx.createGain();
+    huelle.gain.setValueAtTime(0.0001, t);
+    huelle.gain.exponentialRampToValueAtTime(lautstaerke * kraft, t + 0.03);
+    huelle.gain.exponentialRampToValueAtTime(lautstaerke * kraft * 0.35, t + 0.4);
+    huelle.gain.exponentialRampToValueAtTime(0.0001, t + laenge);
+    const grollen = ctx.createOscillator();
+    grollen.type = 'sine';
+    grollen.frequency.setValueAtTime(58, t);
+    grollen.frequency.exponentialRampToValueAtTime(30, t + laenge * 0.7);
+    const grollHuelle = ctx.createGain();
+    grollHuelle.gain.setValueAtTime(0.0001, t);
+    grollHuelle.gain.exponentialRampToValueAtTime(0.7 * lautstaerke * kraft, t + 0.12);
+    grollHuelle.gain.exponentialRampToValueAtTime(0.0001, t + laenge * 0.9);
+    quelle.connect(tiefpass).connect(huelle).connect(zielKnoten);
+    grollen.connect(grollHuelle).connect(zielKnoten);
+    quelle.start(t);
+    quelle.stop(t + laenge);
+    grollen.start(t);
+    grollen.stop(t + laenge);
+    ende = Math.max(ende, t + laenge);
+  }
+  return { ende };
+}
+
+/**
  * Ein Abschuss.
  *
  * Zwei Schichten: eine harte, hohe Transiente (das „Pop") und ein kurzer

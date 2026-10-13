@@ -83,6 +83,15 @@ export const MATCH_RULES = Object.freeze({
      */
     valhallaMinSeconds: 360,
     valhallaMaxSeconds: 720,
+    /*
+     * Das Vorzeichen (Omen): Zufällig zwischen 60 und 1 Sekunde VOR Valhalla
+     * erscheinen zwei Raben im Blitz am Himmel und schauen auf das Schlachtfeld
+     * (Entscheidung des Auftraggebers, 2026-10-13). Der Zeitpunkt wird wie der
+     * Beginn selbst aus dem Seed gezogen — die einzige Warnung, die die Spieler
+     * bekommen, und sie kommt unberechenbar.
+     */
+    valhallaOmenMaxLeadSeconds: 60,
+    valhallaOmenMinLeadSeconds: 1,
     toxicRainMaxHpPercentPerTurn: 15,
     knockbackPercentBonus: 100,
     terrainContractionPixelsPerRound: 32,
@@ -104,6 +113,23 @@ export const MATCH_RULES = Object.freeze({
 export function drawValhallaTick(rng, rules = MATCH_RULES.suddenDeath) {
   const sekunden = rng.nextInt(rules.valhallaMinSeconds, rules.valhallaMaxSeconds);
   return sekunden * SIMULATION_HZ;
+}
+
+/**
+ * Wann die Raben erscheinen: Tick des Vorzeichens und ein Bildseed für die Darstellung.
+ *
+ * Wird NACH `drawValhallaTick` aus DEMSELBEN Zweig gezogen — die erste Ziehung
+ * (der Beginn) bleibt dadurch unverändert.
+ *
+ * @param {{nextInt:(min:number, max:number)=>number}} rng - derselbe Zweig `VALHALLA`
+ * @param {number} valhallaTick - Ergebnis von `drawValhallaTick`
+ * @param {object} [rules=MATCH_RULES.suddenDeath]
+ * @returns {{tick:number, vorlaufSekunden:number, bildSeed:number}}
+ */
+export function drawValhallaOmen(rng, valhallaTick, rules = MATCH_RULES.suddenDeath) {
+  const vorlaufSekunden = rng.nextInt(rules.valhallaOmenMinLeadSeconds, rules.valhallaOmenMaxLeadSeconds);
+  const bildSeed = rng.nextInt(1, 0x7fffffff);
+  return { tick: Math.max(0, valhallaTick - vorlaufSekunden * SIMULATION_HZ), vorlaufSekunden, bildSeed };
 }
 
 /**

@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MatchController } from '../src/engine/match.js';
-import { MATCH_RULES, computeMaelstromDamage, drawValhallaTick } from '../src/shared/config/match.js';
+import { MATCH_RULES, computeMaelstromDamage, drawValhallaTick, drawValhallaOmen } from '../src/shared/config/match.js';
 import { SIMULATION_HZ } from '../src/shared/config/network.js';
 import { MatchSeedManager } from '../src/shared/seed.js';
+import { omenZustand, OMEN_DAUER } from '../src/client/valhallaOmen.js';
+import { EreignisSendefilter } from '../src/shared/protocol.js';
 
 /**
  * Valhalla (Entscheidung des Auftraggebers, 2026-10-13):
@@ -145,4 +147,52 @@ test('Der Online-Client leitet den Sturm nicht aus der Rundenzahl her', () => {
     .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(quelltext, /maelstromActiveFromRound/);
   assert.match(quelltext, /maelstrom:\s*\{\s*active:\s*\(this\.remoteInset\s*\?\?\s*0\)\s*>\s*0/);
+});
+
+test('Vorzeichen: 1–60 s vor Valhalla, je Seed fest, beide Ränder genutzt', () => {
+  const leads = new Set();
+  for (let seed = 1; seed <= 400; seed += 1) {
+    const mk = () => {
+      const rng = new MatchSeedManager(seed).getSubRng('VALHALLA');
+      const tick = drawValhallaTick(rng);
+      return { tick, omen: drawValhallaOmen(rng, tick) };
+    };
+    const { tick, omen } = mk();
+    assert.ok(omen.vorlaufSekunden >= 1 && omen.vorlaufSekunden <= 60);
+    assert.equal(omen.tick, tick - omen.vorlaufSekunden * SIMULATION_HZ);
+    assert.deepEqual(omen, mk().omen);
+    leads.add(omen.vorlaufSekunden);
+  }
+  assert.ok(Math.min(...leads) <= 3 && Math.max(...leads) >= 58 && leads.size > 40);
+});
+
+test('Die Engine meldet das Vorzeichen genau einmal, vor Valhalla', () => {
+  const match = new MatchController({ seed: 6, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 20_000 });
+  match.start();
+  const omenTick = match.valhallaOmenTick;
+  assert.ok(omenTick <= match.valhallaTick);
+  const treffer = [];
+  while (match.world.tickCount <= omenTick + 5 && match.status === 'playing') {
+    match.step();
+    for (const e of match.consumeEvents()) if (e.type === 'valhalla_omen') treffer.push({ tick: match.world.tickCount, e });
+  }
+  assert.equal(treffer.length, 1);
+  assert.ok(treffer[0].tick >= omenTick && treffer[0].tick <= omenTick + 1);
+  assert.ok(Number.isInteger((treffer[0].e.data ?? treffer[0].e.payload ?? treffer[0].e).bildSeed));
+});
+
+test('Der Sendefilter lässt valhalla_omen immer durch', () => {
+  const f = new EreignisSendefilter();
+  assert.equal(f.drosselt('valhalla_omen'), false);
+});
+
+test('omenZustand: rein, begrenzt, ruhige Variante ohne Blitze', () => {
+  assert.equal(omenZustand(-1, 5), null);
+  assert.equal(omenZustand(OMEN_DAUER + 0.1, 5), null);
+  assert.deepEqual(omenZustand(2, 5), omenZustand(2, 5));
+  const ruhig = omenZustand(3, 5, { reducedMotion: true });
+  assert.equal(ruhig.blitzlicht, 0);
+  assert.equal(ruhig.blitze.length, 0);
+  assert.ok(ruhig.raben.alpha > 0);
+  assert.equal(omenZustand(NaN, 5), null);
 });
