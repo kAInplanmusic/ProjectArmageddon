@@ -201,6 +201,12 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   Terrain selbst aus dem Seed. Eine Abweichung zwischen Browsern würde jetzt vom
   Terrain-Hash erkannt und per `terrain_request` korrigiert. Ob sie in Firefox
   oder Safari tatsächlich auftritt, bleibt ungeprüft (dort nicht gelaufen).
+- [x] **P3 — Audit „28 undokumentiert stumme Ereignisse" — nachgeprüft 2026-10-13.**
+  Alle 28 einzeln gegen den Code: 28 A (emittiert, Eintrag in
+  `EREIGNIS_WIRKUNGEN`, durch `tests/event-coverage.test.js` gehalten; davon 3
+  bewusst einzweigig mit Beleg: `projectile_spawn`, `terrain_destroyed`,
+  `weapon_dropped`), 0 B, 0 C. Die Liste von 2026-09-24 war überholt; die
+  Checkboxen in `docs/audit-tief.md` stehen auf `[x]` mit Fundstelle.
 
 ### Entscheidung zur Hardware (2026-10-09)
 
