@@ -2,6 +2,8 @@
  * Match-Regel-Konfiguration für ProjectArmageddon.
  * Enthält Timer, Sudden-Death-Parameter und Mahlstrom-Konfiguration.
  */
+import { SIMULATION_HZ } from './network.js';
+
 export const MATCH_RULES = Object.freeze({
   /*
    * Maße des Spiels.
@@ -46,43 +48,41 @@ export const MATCH_RULES = Object.freeze({
     duelSeconds: Object.freeze({ seconds: 30 }),
     fourPlayerSeconds: Object.freeze({ seconds: 20 }),
   }),
+  /*
+   * Das Match endet, wenn es entschieden ist — nicht nach einer festen Rundenzahl
+   * (Entscheidung des Auftraggebers, 2026-10-13: „Matchdauer so lang bis aus").
+   *
+   * Dass es endet, sichert der Mahlstrom (Valhalla): Er zieht die Karte Runde für
+   * Runde zusammen, und wer außerhalb der Zone steht, verliert je Zug 15 % seiner
+   * Gesundheit. Ist die Karte ganz zusammengezogen, steht jede Figur im Gift.
+   *
+   * `roundLimitBackstop` ist NUR ein Netz für den Fall, dass das nicht greift
+   * (ein Fehler im Motor): Danach entscheidet die Restgesundheit, wie früher bei
+   * der alten Rundengrenze. Im Spiel wird er nicht erreicht — gemessen endet auch
+   * ein Match ohne jeden Schuss durch den Mahlstrom lange vorher.
+   */
+  roundLimitBackstop: 300,
+
   suddenDeath: Object.freeze({
     /*
-     * Ab welcher Runde der Mahlstrom greift.
+     * Valhalla: wann der Mahlstrom beginnt.
      *
-     * ## Warum 8 (vorher 15)
+     * Entscheidung des Auftraggebers (2026-10-13): ZUFÄLLIG zwischen 6 und 12
+     * Minuten Spielzeit — nicht mehr ab einer festen Runde (vorher Runde 8). Mit
+     * der Rundenzahl hing der Beginn von der Zahl der Figuren ab (bei 8 Figuren
+     * dauert Runde 8 über 20 Minuten, bei 2 knapp vier); die Spielzeit gilt für
+     * jede Matchgröße gleich.
      *
-     * FUND (belegt, User-Flow-Audit): Bei 15 endete **keine** der gemessenen
-     * Partien vor dem Breakpoint — der Sturm griff also erst, wenn die Partie
-     * ohnehin zu Ende ging. Er räumte auf, statt zu eskalieren; als
-     * Spannungsbogen war er wirkungslos.
-     *
-     * Gemessen mit `npm run check:maelstrom` (6 Partien, Ø 24 Runden):
-     *
-     *     Breakpoint   greift nach   verbleibende Runden (Ø)
-     *            4       Runde 4             22,0
-     *            8       Runde 8             18,0
-     *           10      Runde 10             16,0
-     *           15      Runde 15             11,0   (vorher)
-     *
-     * ## Warum 8 und nicht 4
-     *
-     * Der Breakpoint bestimmt, was das Endspiel IST:
-     *
-     *   - **spät (15):** Der Sturm räumt auf, was entschieden ist. Er kostet
-     *     keine Entscheidung und erzeugt keine Spannung.
-     *   - **früh (8):** Die Verengung wird zum **Spielziel** — beide Seiten
-     *     müssen sich bewegen, verlieren Gelände und können den Gegner
-     *     hineinwerfen.
-     *   - **sehr früh (4):** Die Partie wird zur reinen Fluchtbewegung. Das
-     *     Gelände ist dann Nebensache, und die regulären Waffen (Bogenwurf,
-     *     Geländeverformung) verlieren an Gewicht.
-     *
-     * Acht Runden geben dem Spieler Zeit, die Karte zu lesen und eine Position
-     * zu beziehen — und lassen danach 18 Runden unter Sturm, in denen die
-     * Verengung wirkt. Das ist die Mitte zwischen „zu spät" und „verdrängt".
+     * - ZUFÄLLIG, aber nicht würfelnd: Der Zeitpunkt wird einmal aus dem Match-Seed
+     *   gezogen (eigener Zweig `VALHALLA`). Derselbe Seed ergibt denselben
+     *   Zeitpunkt — Replays und Wiederherstellung bleiben exakt.
+     * - SPIELZEIT = Simulationszeit seit Matchbeginn (Ticks / 60), nicht die Uhr.
+     * - Der Beginn wird zu Beginn der nächsten RUNDE wirksam (die Karte zieht sich
+     *   pro Runde zusammen). Verspätung also höchstens eine Rundenlänge.
+     * - Die Spieler erfahren den Zeitpunkt nicht vorher; die Ziehung ist geheim.
      */
-    roundBreakpoint: 8,
+    valhallaMinSeconds: 360,
+    valhallaMaxSeconds: 720,
     toxicRainMaxHpPercentPerTurn: 15,
     knockbackPercentBonus: 100,
     terrainContractionPixelsPerRound: 32,
@@ -91,37 +91,28 @@ export const MATCH_RULES = Object.freeze({
   })
 });
 
-export function computeMaelstromDamage(roundNumber, rules = MATCH_RULES.suddenDeath) {
-  if (roundNumber < rules.roundBreakpoint) {
-    return 0;
-  }
-  return rules.outOfZoneDamageBase * (rules.outOfZoneGrowthFactor ** (roundNumber - rules.roundBreakpoint));
+/**
+ * Zeitpunkt (in Ticks seit Matchbeginn), zu dem Valhalla beginnt.
+ *
+ * Gleichverteilt über ganze Sekunden zwischen `valhallaMinSeconds` und
+ * `valhallaMaxSeconds` (beide eingeschlossen).
+ *
+ * @param {{nextInt:(min:number, max:number)=>number}} rng - der Zweig `VALHALLA`
+ * @param {object} [rules=MATCH_RULES.suddenDeath]
+ * @returns {number} Ticks
+ */
+export function drawValhallaTick(rng, rules = MATCH_RULES.suddenDeath) {
+  const sekunden = rng.nextInt(rules.valhallaMinSeconds, rules.valhallaMaxSeconds);
+  return sekunden * SIMULATION_HZ;
 }
 
 /**
- * Greift der Mahlstrom ab dieser Runde?
+ * Schaden des Mahlstroms in der n-ten Runde UNTER dem Sturm.
  *
- * FUND (belegt, Datenfluss-Audit): Die Schwelle stand ZWEIMAL — der Motor liest
- * `MATCH_RULES.suddenDeath.roundBreakpoint` (`match.js:2722`, heute 8), der
- * Online-Ansichtszustand rechnete hart `>= 15` (`main.js:1194`, der WERT VOR der
- * letzten Balancing-Änderung). Folge: Online war der Mahlstrom von Runde 8 bis 14
- * UNSICHTBAR, während die Karte sich zusammenzog, Leben kostete und der Renderer
- * die Sturmwand nur bei `active` zeichnet (`renderer.js`, `#drawMaelstrom`) — das
- * HUD meldete
- * derweil grün „Läuft". Lokal stimmte es, weil dort der Motor den Wert liefert
- * (`engine/stateSnapshot.js`).
- *
- * Diese Funktion ist die EINE Aussprache der Regel für Leser, die den Wert nicht
- * im Zustand finden (der Client bekommt online nur die Rundenzahl). Sie liest
- * dieselbe Konfiguration wie der Motor; ein Aufruf mit einer zweiten Zahl wäre
- * genau die Kopie, die diesen Fehler erzeugt hat.
- *
- * @param {number} roundNumber - laufende Runde (1-basiert)
- * @param {object} [rules=MATCH_RULES.suddenDeath]
- * @returns {boolean}
+ * @param {number} roundsSinceStart - 0 in der Runde, in der Valhalla beginnt
  */
-export function maelstromActiveFromRound(roundNumber, rules = MATCH_RULES.suddenDeath) {
-  const runde = Number(roundNumber);
-  if (!Number.isFinite(runde)) return false;
-  return runde >= rules.roundBreakpoint;
+export function computeMaelstromDamage(roundsSinceStart, rules = MATCH_RULES.suddenDeath) {
+  const n = Number(roundsSinceStart);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return rules.outOfZoneDamageBase * (rules.outOfZoneGrowthFactor ** n);
 }

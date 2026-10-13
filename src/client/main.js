@@ -49,7 +49,7 @@ import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
 import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../shared/terrainGen.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
-import { maelstromActiveFromRound } from '../shared/config/match.js';
+import { MATCH_RULES } from '../shared/config/match.js';
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile } from '../shared/stats.js';
@@ -1390,7 +1390,7 @@ class Game {
     return {
       status: this.remoteStatus ?? 'playing',
       round: snapshot.round,
-      maxRounds: 30,
+      maxRounds: MATCH_RULES.roundLimitBackstop,
       wind: snapshot.wind,
       tick: snapshot.tick,
       turnElapsedMs: Math.max(0, turnDurationMs - remaining),
@@ -1399,25 +1399,22 @@ class Game {
       winnerTeamId: this.remoteWinner ?? null,
       statuses,
       /*
-       * Der Mahlstrom — aus der EINEN Schwelle der Konfiguration.
+       * Der Mahlstrom (Valhalla): aktiv, sobald der Server den ersten Einschnitt
+       * gemeldet hat.
        *
-       * FUND (belegt, Datenfluss-Audit): Hier stand `active: (snapshot.round ?? 0) >= 15`
-       * — der WERT VOR der letzten Balancing-Änderung. Der Motor greift seitdem
-       * ab Runde 8 (`MATCH_RULES.suddenDeath.roundBreakpoint`, gelesen in
-       * `match.js:2722`). ONLINE war der Sturm damit sieben Runden lang
-       * UNSICHTBAR: Der Renderer zeichnet die Sturmwand nur bei `active`
-       * (`renderer.js`, `#drawMaelstrom`), das HUD meldete derweil grün „Läuft"
-       * (`hud.js:255`) — während die Karte sich zusammenzog und Leben kostete.
-       * Zwei unabhängige Prüfer haben es gefunden; lokal fiel es nicht auf, weil
-       * dort der Motor den Wert liefert (`engine/stateSnapshot.js:175`).
+       * Der Beginn hängt seit 2026-10-13 an einer zufällig gezogenen SPIELZEIT
+       * (6–12 Minuten, `MATCH_RULES.suddenDeath`), nicht mehr an einer festen
+       * Runde. Der Client kann ihn deshalb nicht aus der Rundenzahl herleiten —
+       * und soll ihn auch nicht kennen: der Zeitpunkt ist geheim. Er erfährt ihn
+       * über das, was der Server ohnehin sendet: `maelstrom_contract` (mit dem
+       * Einschnitt, der Wert steht in `remoteInset`) und beim Wiedereinstieg
+       * `WELCOME.inset`. Einschnitt > 0 heißt: der Sturm läuft.
        *
-       * Gelesen wird die Konfiguration, nicht eine zweite Zahl: `snapshot.round`
-       * steht auf der Leitung, `roundBreakpoint` kommt aus DERSELBEN Datei, aus
-       * der der Motor ihn liest. Ein Feld im Snapshot wäre die Alternative
-       * gewesen — sie kostete ein Byte im Kopf und eine Protokollversion für
-       * einen Wert, der sich aus zwei vorhandenen Angaben ergibt.
+       * Vorgeschichte (Datenfluss-Audit): Die Schwelle stand einmal ein zweites Mal
+       * im Client und wich vom Motor ab — der Sturm war online sieben Runden lang
+       * unsichtbar. Mit einer Quelle (dem Server) kann das nicht mehr passieren.
        */
-      maelstrom: { active: maelstromActiveFromRound(snapshot.round), inset: this.remoteInset ?? 0 },
+      maelstrom: { active: (this.remoteInset ?? 0) > 0, inset: this.remoteInset ?? 0 },
       entities,
       projectiles: snapshot.projectiles ?? [],
       /*

@@ -35,7 +35,7 @@ import {
   SELF_TARGET_KINDS,
   EFFECT_KIND,
 } from './specials.js';
-import { MATCH_RULES } from '../shared/config/match.js';
+import { MATCH_RULES, drawValhallaTick } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
@@ -275,6 +275,8 @@ export const HOHECHSTE_KRAFT = 100;
  * Erreichbarkeitspfad die geteilte Konstante nahm. Wer `PROJECTILE_GRAVITY`
  * getunt haette, haette das Geschuetz STILL falsch zielen lassen.
  */
+/** Runden, über die Günthers Auftritte verteilt werden (vorher: die Rundengrenze 30). */
+const GUENTHER_PLANUNGSHORIZONT = 30;
 /** Marke im Oberflächen-Cache: Spalte noch nicht abgetastet. */
 const OBERFLAECHE_UNBEKANNT = -2;
 const GRAVITY = PROJECTILE_GRAVITY;
@@ -417,6 +419,8 @@ export class MatchController {
   #events = new EventBus();
   #terrain;
   #bitmap;
+  /** Tick, ab dessen nächstem Rundenbeginn der Mahlstrom greift (Valhalla). */
+  #valhallaTick = 0;
   /** Oberflächenhöhe je Spalte (`OBERFLAECHE_UNBEKANNT` = noch nicht gesucht). */
   #oberflaeche = null;
   /** `version` der Maske, zu der der Merker oben gehört. */
@@ -533,7 +537,7 @@ export class MatchController {
      * bei `baseHealth`).
      */
     kartentyp = null,
-    maxRounds = 30,
+    maxRounds = MATCH_RULES.roundLimitBackstop,
     turnDurationMs = null,
     orientation = 'landscape',
     /**
@@ -570,6 +574,8 @@ export class MatchController {
       ? MatchSeedManager.createRandom()
       : new MatchSeedManager(seed);
     this.#rng = this.#seedManager.getSubRng('MATCH_BASE');
+    // Valhalla: Zeitpunkt (Ticks seit Matchbeginn) einmal aus dem Seed gezogen.
+    this.#valhallaTick = drawValhallaTick(this.#seedManager.getSubRng('VALHALLA'));
     this.#turnDurationMs = turnDurationMs
       ?? MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
     this.maxRounds = maxRounds;
@@ -618,7 +624,10 @@ export class MatchController {
      */
     this.#guenther = new GuentherSystem({
       rng: this.#seedManager.getSubRng('GUENTHER'),
-      maxRounds: this.maxRounds,
+      // Planungshorizont für Günthers Auftritte — NICHT die Rundengrenze (die ist ein
+      // Netz und liegt weit darüber). Mit 300 träten seine ~2 Auftritte je Spiel
+      // praktisch nie mehr in einem normalen Match auf.
+      maxRounds: GUENTHER_PLANUNGSHORIZONT,
       width: this.width,
       height: this.height,
     });
@@ -2593,7 +2602,9 @@ export class MatchController {
       return;
     }
 
-    if (this.#round >= MATCH_RULES.suddenDeath.roundBreakpoint) {
+    // Valhalla: einmal gestartet, bleibt der Mahlstrom an. Der Beginn hängt an der
+    // SPIELZEIT (Ticks), nicht an der Rundenzahl — siehe MATCH_RULES.suddenDeath.
+    if (this.#maelstrom.isActive || this.#world.tickCount >= this.#valhallaTick) {
       if (!this.#maelstrom.isActive) this.#maelstrom.activate();
       this.#maelstrom.contract(this.#world);
       this.#world.services.match.knockbackMultiplier =
@@ -3102,6 +3113,8 @@ export class MatchController {
   get water() { return this.#water; }
   get events() { return this.#events; }
   get inventory() { return this.#inventory; }
+  /** Tick, ab dem Valhalla beginnt (für Werkzeuge und Tests; die Spieler erfahren ihn nicht). */
+  get valhallaTick() { return this.#valhallaTick; }
   /** Laufende Zustände der Spieler (Schild, Einfrieren, Schaden über Zeit). */
   get statuses() { return this.#statuses; }
   get players() { return [...this.#players]; }
