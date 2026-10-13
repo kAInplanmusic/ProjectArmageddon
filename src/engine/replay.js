@@ -43,7 +43,7 @@ export class ReplayRecorder {
    */
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
-    maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null,
+    maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -56,6 +56,8 @@ export class ReplayRecorder {
     const hatLoadouts = Array.isArray(loadouts) && loadouts.some(l => l !== null && l !== undefined);
     this.#config = {
       teams, playersPerTeam, preset, maxRounds, turnDurationMs,
+      // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
+      ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       ...(hatSidegrades ? { sidegrades: [...sidegrades] } : {}),
       // Nur aufnehmen, wenn wirklich etwas gewählt wurde — sonst wären alte und
       // neue Aufzeichnungen ohne Grund verschieden.
@@ -304,6 +306,7 @@ export class ReplayPlayer {
       preset: config.preset,
       maxRounds: config.maxRounds,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
+      ...(config.turnPauseTicks ? { turnPauseTicks: config.turnPauseTicks, turnReplayTicks: config.turnReplayTicks ?? 0 } : {}),
       /*
        * Sidegrades aus dem Kopf — oder keine.
        *

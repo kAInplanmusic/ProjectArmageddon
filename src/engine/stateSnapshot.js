@@ -177,6 +177,7 @@ export function baueAnsichtszustand(quelle) {
     wind: quelle.wind,
     tick: quelle.world.tickCount,
     turnElapsedMs: quelle.turnElapsedMs,
+    turnPauseMs: quelle.turnPauseMs ?? 0,
     turnDurationMs: quelle.turnDurationMs,
     activePlayerId: quelle.activePlayerId,
     winnerTeamId: quelle.winnerTeamId,

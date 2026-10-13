@@ -394,10 +394,6 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'online',
     entweder: 'lokal entsteht derselbe Krater über `explosion`: src/client/ereignisse.js:105 (applyCrater) — ein zweiter Eintrag würde zweimal graben.',
   }],
-  ['turn_start', {
-    zweig: 'online',
-    entweder: 'lokal kommt der Status aus dem Motor, src/client/main.js:1039 (`this.match.getState()`), und die Rundenzahl zeigt das HUD, src/client/hud.js:92; der Online-Zweig setzt nur den Fernzustand (`setzeStatus`).',
-  }],
 ]);
 
 test('Der lokale Zweig behandelt den Einschlag eines Projekils', () => {

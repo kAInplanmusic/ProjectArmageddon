@@ -85,6 +85,7 @@ const RANDOM_MOVE_DISTANCE = 60;
 export function fire(quelle, playerId, angle, power, weaponId = null) {
   const errors = [];
   if (quelle.status !== 'playing') errors.push('Match läuft nicht');
+  if ((quelle.turnPauseMs ?? 0) > 0) errors.push('Zugpause: der Zug beginnt gleich');
 
   const command = validateCommand(
     { playerId, angle, power, weaponId, tick: quelle.world.tickCount, type: 'fire' },

@@ -168,6 +168,27 @@
       clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
     }
 
+    /* Zugpause: Hinweis über dem Spielfeld (Wiederholung, danach Stillstand mit Zähler). */
+    #zugpause {
+      position: absolute;
+      left: 50%;
+      top: 22%;
+      transform: translateX(-50%);
+      z-index: 5;
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      padding: 8px 22px;
+      pointer-events: none;
+      background: linear-gradient(160deg, rgba(19, 26, 34, 0.82), rgba(11, 15, 20, 0.78));
+      border: 1px solid var(--panel-edge);
+      clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+    }
+    #zugpause[hidden] { display: none; }
+    #zugpause .zugpause-titel { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+    #zugpause .zugpause-zahl { font-size: 44px; font-weight: 800; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
+    #zugpause .zugpause-zahl:empty { display: none; }
+
     #hud {
       position: absolute;
       inset: 0;
@@ -768,6 +789,10 @@
         </div>
       </section>
 
+      <div id="zugpause" role="status" aria-live="polite" hidden>
+        <span class="zugpause-titel"></span>
+        <span class="zugpause-zahl"></span>
+      </div>
       <section id="hud" aria-label="Spiel-HUD">
         <div id="hud-top">
           <div class="stat panel">

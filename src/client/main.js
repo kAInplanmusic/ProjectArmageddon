@@ -50,6 +50,13 @@ import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js
 import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../shared/terrainGen.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
 import { MATCH_RULES } from '../shared/config/match.js';
+import { SchussAufnahme } from './schussWiederholung.js';
+import { SIMULATION_HZ } from '../shared/config/network.js';
+
+/** Zugpause in Sekunden; `VITE_ZUGPAUSE_SEKUNDEN` überschreibt (E2E-Tests spielen ohne Pause). */
+const ZUGPAUSE_SEKUNDEN = Number.isFinite(Number(import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN)) && import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN !== undefined && import.meta.env?.VITE_ZUGPAUSE_SEKUNDEN !== ''
+  ? Number(import.meta.env.VITE_ZUGPAUSE_SEKUNDEN)
+  : MATCH_RULES.turnPauseSeconds;
 import { ReplayPlayer } from '../engine/replay.js';
 import { ShotPredictor, predictTrajectory, launchSpeedMultiplier } from './shotPrediction.js';
 import { MatchStats, PlayerProfile } from '../shared/stats.js';
@@ -125,6 +132,8 @@ class Game {
      * Snapshot); hier wird nur der ÜBERGANG erkannt.
      */
     this.waterStates = new Map();
+    this.schussAufnahme = new SchussAufnahme();
+    this.zugpause = null;
 
     /**
      * Zählerstand des Mischers beim letzten geprüften Bild.
@@ -806,6 +815,8 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts,
+      turnPauseTicks: Math.round(ZUGPAUSE_SEKUNDEN * SIMULATION_HZ),
+      turnReplayTicks: ZUGPAUSE_SEKUNDEN > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
     this.match.start();
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
@@ -1712,6 +1723,7 @@ class Game {
       logSpecialEffect: nutzlast => this.#logSpecialEffect(nutzlast),
       showGuentherWheel: nutzlast => this.showGuentherWheel(nutzlast),
       showEndScreen: sieger => this.#showEndScreen(sieger),
+      starteZugpause: nutzlast => this.#starteZugpause(nutzlast),
       /*
        * Der Online-Zustand gehört dem Client. Statt das Modul Felder schreiben
        * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
@@ -1729,6 +1741,54 @@ class Game {
         setzeEinschnitt: wert => { this.remoteInset = wert; },
       },
     };
+  }
+
+  /**
+   * Beginn der Zugpause (Ereignis `turn_start` mit `pauseTicks`/`replayTicks`).
+   * Nur Anzeige: Die Sperre gegen Schießen und Springen liegt in der Engine.
+   */
+  #starteZugpause(nutzlast) {
+    const ticks = Number(nutzlast?.pauseTicks) || 0;
+    if (ticks <= 0) { this.zugpause = null; return; }
+    this.zugpause = {
+      start: performance.now(),
+      dauerMs: ticks * 1000 / SIMULATION_HZ,
+      wiederholungMs: (Number(nutzlast.replayTicks) || 0) * 1000 / SIMULATION_HZ,
+      playerId: nutzlast.playerId,
+    };
+  }
+
+  /**
+   * Pro Bild: erfasst den Flug, steuert Pausen-Hinweis (DOM) und liefert den Stand der
+   * Wiederholung für den Renderer (oder `null`).
+   */
+  #zugpauseAnzeige(state) {
+    this.schussAufnahme.erfasse(state?.projectiles);
+    const feld = document.getElementById('zugpause');
+    const z = this.zugpause;
+    const rest = z ? z.dauerMs - (performance.now() - z.start) : 0;
+    if (!z || rest <= 0 || state?.status !== 'playing') {
+      this.zugpause = null;
+      if (feld && !feld.hidden) feld.hidden = true;
+      return null;
+    }
+    const freezeMs = z.dauerMs - z.wiederholungMs;
+    const inWiederholung = z.wiederholungMs > 0 && rest > freezeMs;
+    if (feld) {
+      const titel = feld.querySelector('.zugpause-titel');
+      const zahl = feld.querySelector('.zugpause-zahl');
+      if (inWiederholung) {
+        titel.textContent = 'WIEDERHOLUNG';
+        zahl.textContent = '';
+      } else {
+        titel.textContent = `${this.#nameOf(z.playerId)} ist gleich dran`;
+        zahl.textContent = String(Math.max(1, Math.ceil(rest / 1000)));
+      }
+      feld.hidden = false;
+    }
+    if (!inWiederholung) return null;
+    // Die Wiederholung läuft über die ganze Wiederholungsphase (leicht verlangsamt).
+    return this.schussAufnahme.zustand(1 - (rest - freezeMs) / z.wiederholungMs);
   }
 
   /** Name einer Spielfigur für Log-Meldungen. */
@@ -2347,8 +2407,9 @@ class Game {
      * nicht die seine ist.
      */
     const laedt = this.input.isCharging;
-    const ladeAnteil = laedt ? this.input.chargeRatio : 0;
+    const ladeAnteil = laedt ? this.input.chargeRatio : null;
     const ladeKraft = laedt ? kraftAusLadung(ladeAnteil) : null;
+    const wiederholung = this.#zugpauseAnzeige(state);
 
     const aimPreview = (myTurn && this.mode === 'local')
       ? this.match.aimPreview(playerId, this.aim.angle, ladeKraft ?? this.aim.power)
@@ -2396,6 +2457,7 @@ class Game {
       // mit der der Schuss beim Loslassen fliegt.
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       ladeAnteil,
+      wiederholung,
       water: this.mode === 'online' ? null : (this.waterFrame === 0 ? this.match.water : null),
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });

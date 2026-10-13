@@ -1,6 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 import { existsSync } from 'node:fs';
 
+// Die E2E-Tests schießen sofort nach dem Zugbeginn: Spiel und Server laufen hier ohne Zugpause.
+// (Die Pause selbst ist in tests/zugpause.test.js und von Hand geprüft.)
+process.env.VITE_ZUGPAUSE_SEKUNDEN = process.env.VITE_ZUGPAUSE_SEKUNDEN ?? '0';
+process.env.PA_ZUGPAUSE_SEKUNDEN = process.env.PA_ZUGPAUSE_SEKUNDEN ?? '0';
+
 /**
  * E2E-Konfiguration.
  *

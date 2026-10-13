@@ -250,6 +250,20 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   nun auch Körpermitte und Zeile über dem Boden (flaches Becken zwischen Fuß und Kopf wurde übersehen).
   Neuer Test `tests/startplatz-trocken.test.js` (schlägt ohne Fix fehl). Spielverlauf auf solchen Karten
   ändert sich (andere Startplätze) — alte Replays mit `autonom` können abweichen. Unit 1293, E2E 33/33.
+- [x] **Ladebalken, Wiederholung, Zugpause (2026-10-13, Auftraggeber: „Repariere den Ladebalken und kurzes Replay
+  zwischen den Zügen und zusätzlich 3 Sekunden freeze vor dem Zug“):**
+  (1) **Ladebalken:** nur noch beim Laden sichtbar (`ladeAnteil = null` im Ruhezustand) — vorher stand eine leere
+  Spur als „schwebender Balken“ in der Bildmitte. (2) **Zugpause (Engine, `turnPauseTicks`, Vorgabe 0):** 3 s
+  Stillstand vor jedem Zug — Zugzeit läuft nicht, Schießen/Springen gesperrt (Zielen erlaubt); Anzeige „P2 ist gleich
+  dran“ mit Zähler 3-2-1. (3) **Wiederholung (`turnReplayTicks`, +2 s, nur nach einem Schuss):** der Client nimmt die
+  Flugbahn aus `state.projectiles` auf (`src/client/schussWiederholung.js`) und spielt sie vor der Pause als blaue Spur
+  mit Kopf und Einschlagring ab, Beschriftung „WIEDERHOLUNG“; keine Wiederholung bei < 6 Bahnpunkten (Einschlag direkt
+  vor der Figur). Zahlen in `MATCH_RULES.turnPauseSeconds` (3) / `turnReplaySeconds` (2). Server (`gameServer.js`) und
+  lokales Spiel setzen die Pause; Replay-Köpfe tragen `turnPauseTicks` nur, wenn > 0 (alte Replays unverändert).
+  **Folgen:** Matches dauern je Zug 3–5 s länger; Tests/E2E laufen ohne Pause (`PA_ZUGPAUSE_SEKUNDEN=0` in `npm test`
+  und `playwright.config.mjs`, `VITE_ZUGPAUSE_SEKUNDEN=0` für den Browser). Die Mahlstrom-Zeit (6–12 min Spielzeit)
+  zählt Ticks — die Pausen zählen mit. Online ist die Wiederholung aus dem Snapshot-Zustand abgeleitet (nicht
+  gegen echten Server mit Latenz geprüft). Tests: `tests/zugpause.test.js` (4); Unit 1297, E2E 43/43.
 - [ ] **UI — offen aus der Durchsicht (nicht umgesetzt, nach Auswirkung):**
   (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
@@ -352,7 +366,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1293/1293** grün, Dateizahl **136** — die zwei neuen Prüfungen sitzen in
+**1297/1297** grün, Dateizahl **137** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

@@ -35,6 +35,7 @@ import {
   SELF_TARGET_KINDS,
   EFFECT_KIND,
 } from './specials.js';
+import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
@@ -513,6 +514,7 @@ export class MatchController {
   #turnOrder = [];
   #turnIndex = 0;
   #turnElapsed = 0;
+  #turnPauseTicksConfigured = 0; #turnPauseTicks = 0; #turnReplayTicksConfigured = 0; #hatteSchuss = false;
   #turnDurationMs;
   #round = 1;
   #wind = 0;
@@ -544,6 +546,8 @@ export class MatchController {
     kartentyp = null,
     maxRounds = MATCH_RULES.roundLimitBackstop,
     turnDurationMs = null,
+    turnPauseTicks = 0,
+    turnReplayTicks = 0,
     orientation = 'landscape',
     /**
      * Grundgesundheit vor dem Klassenfaktor. Teil der KONFIGURATION, wie
@@ -588,6 +592,8 @@ export class MatchController {
     this.#turnDurationMs = turnDurationMs
       ?? MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
     this.maxRounds = maxRounds;
+    this.#turnPauseTicksConfigured = Math.max(0, Math.floor(Number(turnPauseTicks) || 0));
+    this.#turnReplayTicksConfigured = Math.max(0, Math.floor(Number(turnReplayTicks) || 0));
     /** Grundgesundheit (siehe Konstruktor-Option) — mal Klassenfaktor. */
     this.baseHealth = baseHealth;
     this.preset = preset;
@@ -1008,7 +1014,8 @@ export class MatchController {
   step(dt = 1000 / 60) {
     if (this.#status !== 'playing') return this.getState();
 
-    this.#turnElapsed += dt;
+    if (this.#turnPauseTicks > 0) this.#turnPauseTicks -= 1;
+    else this.#turnElapsed += dt;
     // Vorzeichen: zwei Raben im Blitz, 1–60 s vor Valhalla (einmal je Match). Reine Anzeige —
     // das Ereignis ändert keinen Zustand und fließt nicht in den Zustandshash.
     if (!this.#omenGezeigt && this.#world.tickCount >= this.#valhallaOmen.tick) {
@@ -1172,6 +1179,7 @@ export class MatchController {
   jump(playerId, horizontal = 0) {
     const errors = [];
     if (this.#status !== 'playing') errors.push('Match läuft nicht');
+    if (this.#turnPauseTicks > 0) errors.push('Zugpause: der Zug beginnt gleich');
     if (playerId !== this.activePlayerId) errors.push('Nur der aktive Spieler kann springen');
     if (!this.isPlayerAlive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
     if (errors.length > 0) return { ok: false, errors };
@@ -1584,6 +1592,7 @@ export class MatchController {
       width: this.width,
       height: this.height,
       status: this.#status,
+      turnPauseMs: this.turnPauseMs,
       activePlayerId: this.activePlayerId,
       isPlayerAlive: id => this.isPlayerAlive(id),
       cooldownFor: (id, weaponId) => this.cooldownFor(id, weaponId),
@@ -2596,6 +2605,7 @@ export class MatchController {
     if (this.#status !== 'playing') return;
     const previous = this.activePlayerId;
     this.#turnElapsed = 0;
+    this.#hatteSchuss = this.#hasFired;
     this.#hasFired = false;
 
     let nextIndex = this.#turnIndex;
@@ -2745,7 +2755,14 @@ export class MatchController {
 
     this.#world.getSystem('turn')?.startTurn();
     if (this.#maelstrom.isActive) this.#maelstrom.applyToxicRain(this.#world);
-    this.#events.emit('turn_start', { playerId: entityId, round: this.#round, wind: this.#wind });
+    // Zugpause: Wiederholung des letzten Schusses (nur nach einem Schuss), danach Stillstand.
+    const wiederholung = this.#hatteSchuss ? this.#turnReplayTicksConfigured : 0;
+    this.#hatteSchuss = false;
+    this.#turnPauseTicks = this.#turnPauseTicksConfigured > 0 ? this.#turnPauseTicksConfigured + wiederholung : 0;
+    this.#events.emit('turn_start', {
+      playerId: entityId, round: this.#round, wind: this.#wind,
+      pauseTicks: this.#turnPauseTicks, replayTicks: wiederholung,
+    });
   }
 
   #rollWind() {
@@ -3046,6 +3063,7 @@ export class MatchController {
       maxRounds: this.maxRounds,
       wind: this.#wind,
       turnElapsedMs: this.#turnElapsed,
+      turnPauseMs: this.turnPauseMs,
       turnDurationMs: this.#turnDurationMs,
       activePlayerId: this.activePlayerId,
       winnerTeamId: this.#winnerTeamId,
@@ -3160,6 +3178,9 @@ export class MatchController {
   get maelstrom() { return this.#maelstrom; }
   /** Aktuelle Zugzeit in Millisekunden (für Persistenz und Replay). */
   get turnDurationMs() { return this.#turnDurationMs; }
+  get turnPauseMs() { return Math.round(this.#turnPauseTicks * 1000 / SIMULATION_HZ); }
+  get turnPauseTicks() { return this.#turnPauseTicksConfigured; }
+  get turnReplayTicks() { return this.#turnReplayTicksConfigured; }
 
   get activePlayerId() {
     const id = this.#turnOrder[this.#turnIndex];

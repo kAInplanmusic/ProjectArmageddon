@@ -33,6 +33,15 @@ import {
 } from '../shared/protocol.js';
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
+import { MATCH_RULES } from '../shared/config/match.js';
+
+/** Zugpause vor jedem Zug (siehe `MATCH_RULES.turnPauseSeconds`). */
+// `PA_ZUGPAUSE_SEKUNDEN` überschreibt die Vorgabe (Tests und Lasttests spielen ohne Pause).
+const ZUGPAUSE_TICKS = Math.round(
+  (Number.isFinite(Number(process.env.PA_ZUGPAUSE_SEKUNDEN)) && process.env.PA_ZUGPAUSE_SEKUNDEN !== undefined && process.env.PA_ZUGPAUSE_SEKUNDEN !== ''
+    ? Number(process.env.PA_ZUGPAUSE_SEKUNDEN)
+    : MATCH_RULES.turnPauseSeconds) * SIMULATION_HZ,
+);
 import { ReplayRecorder } from '../engine/replay.js';
 import { TokenBucket, RATE_TRENNEN_NACH } from './rateLimit.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
@@ -131,6 +140,8 @@ class LobbySession {
       sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
       // Klassenwahl je Platz — wie die Sidegrades Teil der Konfiguration.
       loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
+      turnPauseTicks: ZUGPAUSE_TICKS,
+      turnReplayTicks: ZUGPAUSE_TICKS > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
     this.match.start();
 
@@ -143,6 +154,8 @@ class LobbySession {
       kartentyp: lobby.kartentyp ?? null,
       maxRounds: this.match.maxRounds,
       turnDurationMs: this.match.turnDurationMs,
+      turnPauseTicks: this.match.turnPauseTicks,
+      turnReplayTicks: this.match.turnReplayTicks,
       // Ohne diesen Eintrag spielte eine Wiedergabe ein Match OHNE Sidegrades
       // und liefe ab dem ersten Schuss auseinander.
       sidegrades: this.match.sidegrades,

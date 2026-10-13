@@ -789,8 +789,10 @@ export const EREIGNIS_WIRKUNGEN = {
   },
 
   turn_start: {
-    online: (k) => {
+    lokal: (k, n) => { k.starteZugpause?.(n); },
+    online: (k, n) => {
       k.fernzustand?.setzeStatus('playing');
+      k.starteZugpause?.(n);
     },
   },
 

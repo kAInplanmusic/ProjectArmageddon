@@ -502,6 +502,8 @@ export class Renderer {
    * @param {number} anteil Ladefortschritt 0..1
    */
   #drawLadeanzeige(anteil) {
+    // Nur beim Laden sichtbar: Eine leere Spur im Ruhezustand sah aus wie ein schwebender Balken.
+    if (anteil === null || anteil === undefined) return;
     const a = Math.max(0, Math.min(1, Number(anteil) || 0));
     const breite = Math.max(140, Math.min(320, this.width * 0.2));
     const hoehe = 10;
@@ -1086,6 +1088,43 @@ export class Renderer {
     this.ctx.fillRect(x, y, width * ratio, height);
   }
 
+  /**
+   * Wiederholung des letzten Schusses (Zugpause): verblassende Spur, leuchtender Kopf,
+   * am Ende ein Einschlagring. Nur Anzeige; die Daten stammen aus `SchussAufnahme`.
+   */
+  #drawWiederholung(w) {
+    if (!w?.spur?.length) return;
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (let i = 1; i < w.spur.length; i += 1) {
+      const alter = i / w.spur.length;
+      ctx.strokeStyle = `rgba(76, 201, 240, ${0.12 + 0.6 * alter})`;
+      ctx.beginPath();
+      ctx.moveTo(w.spur[i - 1][0], w.spur[i - 1][1]);
+      ctx.lineTo(w.spur[i][0], w.spur[i][1]);
+      ctx.stroke();
+    }
+    const [kx, ky] = w.kopf;
+    const glut = ctx.createRadialGradient(kx, ky, 0, kx, ky, 12);
+    glut.addColorStop(0, '#ffffff');
+    glut.addColorStop(0.45, '#4cc9f0');
+    glut.addColorStop(1, 'rgba(76,201,240,0)');
+    ctx.fillStyle = glut;
+    ctx.beginPath();
+    ctx.arc(kx, ky, 12, 0, Math.PI * 2);
+    ctx.fill();
+    if (w.aufprall) {
+      ctx.strokeStyle = 'rgba(244, 162, 97, 0.9)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(kx, ky, 22, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   #drawProjectiles(projectiles) {
     for (const projectile of projectiles) {
       const gradient = this.ctx.createRadialGradient(projectile.x, projectile.y, 0, projectile.x, projectile.y, 8);
@@ -1590,7 +1629,7 @@ export class Renderer {
    * @param {object} [options.water] - WaterField-Instanz des Matches
    * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
-  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = 0, water = null, blastRadius = 0 } = {}) {
+  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = null, wiederholung = null, water = null, blastRadius = 0 } = {}) {
     // Zugänglichkeit je Bild neu abfragen: Ändert der Nutzer die
     // Systemeinstellung, greift sie ohne Neuladen.
     this.reducedMotion = prefersReducedMotion();
@@ -1721,6 +1760,7 @@ export class Renderer {
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? []);
+    this.#drawWiederholung(wiederholung);
     /*
      * FUND (belegt, dieser Zug): `#drawParticles` war definiert und wurde
      * NIRGENDS gerufen. Gemessen: Eine Explosion füllte `renderer.particles`
