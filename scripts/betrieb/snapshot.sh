@@ -227,8 +227,13 @@ archiv_erstellen() {
   fi
 
   # --- Betriebsparameter, geschwärzt
-  if [ -f "$PA_SNAPSHOT_ENV_DATEI" ]; then
+  if [ -f "$PA_SNAPSHOT_ENV_DATEI" ] && [ -r "$PA_SNAPSHOT_ENV_DATEI" ]; then
     schwaerze < "$PA_SNAPSHOT_ENV_DATEI" > "$stage/config/betrieb.env.geschwaerzt"
+  elif [ -f "$PA_SNAPSHOT_ENV_DATEI" ]; then
+    # Üblich im Dienst: die Datei gehört root (Rechte 600), der Dienst läuft als `pa`.
+    # Gefunden bei der Abnahme auf einem echten Knoten — ohne diesen Zweig brach das
+    # Archiv beim Stopp mit „Permission denied" ab.
+    echo "$PA_SNAPSHOT_ENV_DATEI ist für diesen Benutzer nicht lesbar — nicht erfasst." > "$stage/config/HINWEIS.txt"
   fi
   if [ -d "$ROOT/deploy/systemd" ]; then cp -r "$ROOT/deploy/systemd" "$stage/config/systemd" 2>/dev/null || true; fi
 
@@ -298,7 +303,7 @@ cloud_snapshot() {
   fi
   # SCHUTZ: Ein Token auf der Platte würde mit ins Abbild kopiert. Dann gibt es kein
   # Abbild — lieber keins als eins, das den Schlüssel zum Hetzner-Projekt enthält.
-  if [ "${PA_SNAPSHOT_TOKEN_AUF_PLATTE_OK:-no}" != "yes" ] && [ -f "$PA_SNAPSHOT_ENV_DATEI" ] \
+  if [ "${PA_SNAPSHOT_TOKEN_AUF_PLATTE_OK:-no}" != "yes" ] && [ -f "$PA_SNAPSHOT_ENV_DATEI" ] && [ -r "$PA_SNAPSHOT_ENV_DATEI" ] \
      && grep -Eq '^[[:space:]]*(export[[:space:]]+)?HCLOUD_TOKEN[[:space:]]*=[[:space:]]*[^[:space:]]' "$PA_SNAPSHOT_ENV_DATEI"; then
     fehler "In $PA_SNAPSHOT_ENV_DATEI steht ein HCLOUD_TOKEN — es käme in das Abbild. Abbruch. Zeile entfernen und das Token neu erzeugen (siehe docs/betrieb.md Abschnitt 8), nichts gelöscht."
     return 1
