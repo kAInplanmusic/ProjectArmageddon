@@ -26,7 +26,8 @@ const FUGE = [8, 9, 11];
 const KONTUR = hexRgb(PAL.kontur);
 const MOOS_LIMETTE = hexRgb(PAL.limette);
 /** Kleine Palette der Steintöne: Blaugrau, Braungrau, Olivgrau, Schiefer. */
-const TOENE = [[56, 68, 88], [92, 76, 60], [74, 82, 52], [84, 80, 74], [64, 72, 84]];
+// Dunkler als zuerst (Entwurf: dunkles Olivbraun/Blaugrau): Faktor 0,78 auf die Grundtöne.
+const TOENE = [[56, 68, 88], [92, 76, 60], [74, 82, 52], [84, 80, 74], [64, 72, 84]].map(c => c.map(v => Math.round(v * 0.78)));
 const MOOS_STEIN = [52, 104, 30];
 
 function glatt(a, b, x) {
