@@ -176,7 +176,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1361 Tests in 145 Dateien**, ~2 min (Stand 2026-10-14: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1370 Tests in 145 Dateien**, ~2 min (Stand 2026-10-14: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **211 Tests in 36 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -541,12 +541,15 @@ Munition, damit kein Match durch leere Magazine stehenbleibt.
 - Physik liegt in `Uint32Array`-Bitmasken (32 Pixel pro Wort).
 - Krater werden über `punchCrater` in Bitmaske **und** Canvas-Ebene gestrichen —
   beide werden aus demselben Ereignisstrom geändert und können nicht divergieren.
-- Zerstörungsfassung 2 (Replay-Kopf `config.zerstoerung`, `src/engine/zerstoerung.js`):
+- Zerstörungsfassung 3 (Standard; Replay-Kopf `config.zerstoerung`, `src/engine/zerstoerung.js`):
   raue Kraterränder (deterministisch aus Ort, Radius und Tiefe), Tiefe nach Waffe
   (grabende Waffen tief, Sprengwaffen flach), freischwebende Geländeinseln und
   gekappte Brücken stürzen nach (Figuren, Kisten, Geschütze fahren mit), lose
-  Kisten und Geschütze fallen bei Bodenverlust. Dateien ohne das Feld spielen als
-  Fassung 1 (runde Krater, kein Nachrutschen) unverändert weiter.
+  Kisten und Geschütze fallen bei Bodenverlust. Fassung 3 lässt auch große Schollen
+  (bis 60 000 Zellen) fallen; Fassung 2 (Grenze 6000 Zellen) und Dateien ohne das Feld
+  (Fassung 1: runde Krater, kein Nachrutschen) spielen unverändert weiter. Die Landung
+  einer Insel zeigt Staubwolke, Druckwellen, Brocken und ein Bildzittern nach Masse
+  und Fallhöhe (nur Client, nicht im Hash).
 - Vier Presets: Hügel, Berge, Inseln, Höhlen.
 
 ## Qualitätsregeln

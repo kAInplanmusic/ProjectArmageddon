@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1361/1361** grün, Dateizahl **145** (Stand 2026-10-14: +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1370/1370** grün, Dateizahl **145** (Stand 2026-10-14, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -1778,9 +1778,76 @@ Wiederherstellung einer alten Sicherung.
   Bild schneidet nicht mehr zusätzlich einen Kreis mit dem Flächenradius in die Ebene
   (das Loch war größer als das der Kollisionsmaske).
 - **Offen / bewusst nicht:** Bei Landung bleibt die Insel starr (kein Zerbröckeln am
-  Hang); schwebende Massen über 6000 Zellen fallen nicht; die Sprengwirkung auf
+  Hang, keine Verformung; der Aufprall ist nur Staub, Brocken und Bildzittern, siehe
+  „Optimierung" unten); in Fassung 2 fallen schwebende Massen über 6000 Zellen nicht
+  (Fassung 3: bis 60 000); die Sprengwirkung auf
   Pflanzen nutzt weiter den Kreisradius. `match.js` bleibt unter dem Zeilenbudget (3199);
   die Logik liegt in `src/engine/zerstoerung.js`.
+
+### Optimierung: Landschaft, Zerstörung, Netz (2026-10-14, Zerstörungsfassung 3)
+
+**Messumgebung:** 4 Kerne, Chrome mit SwiftShader (Software-Rasterung), Karte 2560×1440,
+Seed 20260916; alle Zahlen „vorher" von `main` (e350c29) und „nachher" aus derselben
+Sitzung gegeneinander gefahren (`tests/e2e/profiling.spec.mjs`, dazu eigene Messungen
+im Browser). Die Bildzeiten dieser Umgebung sind vom Rasterer bestimmt (leerer
+`requestAnimationFrame`-Takt 40–54 ms); die Budgets der Profilingtests blieben
+unverändert.
+
+1. **Terrain-Neuaufbau** (`buildTerrainLayer`): vorher Backen (Verlaufsfarbe, Höhlenschatten,
+   Kantenlicht per `fillRect`), dann `getImageData` zurücklesen, jedes Pixel noch einmal
+   färben (`veredleGelaende`), `putImageData`. Die Vorstufe war überflüssig, weil die
+   Veredelung jede Farbe überschreibt und nur die Deckkraft (= die Maske) übernimmt.
+   Jetzt `baueGelaendeEbene` (`gelaendeStil.js`): Deckkraft aus der Maske, ein Färbelauf
+   (`faerbeGelaende`), ein `putImageData`. **Pixelgleich** (Browser: gleiche Prüfsumme
+   beider Wege; Node: `tests/comic-stil.test.js`). Zusätzlich je Pixel gespart: Nenner
+   des Zellrandmaßes aus einer Tabelle (kein `sqrt`), Tiefen- und Randglättung aus
+   Tabellen, Spaltensummanden vorab. Gemessen im laufenden Spiel (Median, 7 Läufe):
+   **1020–1055 ms → 530–540 ms** (−49 %); im Profilingtest (Mittel über 5 Läufe,
+   gleiche Sitzung gegen `main`): 660–750 ms → 465–590 ms. Rest: der Färbelauf
+   (~375 ms in Chrome); weiter nur mit anderem Muster oder Worker möglich.
+2. **Wasser blinkte**: `main.js` reichte das Wasserfeld nur in jedem vierten Bild an den
+   Renderer, der in den anderen Bildern nichts zeichnete (belegt: 4 `putImageData` auf
+   16 Bilder). Jetzt wird die Ebene alle vier Bilder neu berechnet, aber JEDES Bild
+   aufgelegt — und nur als umschließendes Rechteck der nassen Zellen (die Ebene ist
+   sonst ein ganzes Bild groß: ohne den Ausschnitt lag das Bildzeit-Mittel bei 52–55 statt 38–42 ms).
+   Pflichtprüfung: `tests/e2e/water-hud.spec.mjs` (Aufruf je Bild, Ausschnitt).
+3. **Pflanzenebene**: Sie ist so groß wie die Karte, aber nur 0,3–13 % belegt; jedes
+   Bild wurde sie ganz aufgelegt. Jetzt nur noch überschneidungsfreie Streifen um die
+   Pflanzen (`pflanzenStreifen`, belegt: kein belegtes Pixel außerhalb, 5 Seeds).
+4. **Profil der Hauptschleife** (CDP-Profiler, 6 s, 4-Kern-Chrome): Hauptthread zu 97 %
+   leer; die größten Eigenzeiten sind `render` (15 ms/6 s), `zeichneElement` der Kulisse
+   (11 ms), `#drawWater` (6 ms), `save` (5 ms). Je Bild 46 `save`/`restore`, ~320 Pfade.
+   Die Bildzeit ist Rasterarbeit im GPU-Prozess, nicht Skriptzeit — deshalb die Streifen
+   und der Wasserausschnitt (weniger Fläche), nicht Mikrotuning an `save()`.
+5. **Aufprall landender Inseln** (nur Client): `aufprallStaerke` (Masse und Fallhöhe,
+   0–1) → `aufprallEffekt` (Staubwolke am Fuß, zwei Druckwellen an der Bodenkante
+   entlang, Brocken) und `ruckAufprall` (Bildzittern mit `skala`, 16 Bilder, gedeckelt auf
+   `RUCK_MAX`; kleine Schollen bewegen das Bild nicht). Bei „Bewegung reduzieren" entfällt
+   alles außer dem Einsetzen. Kein Hash, kein Protokoll.
+6. **6000-Zellen-Grenze** (Fassung 3, `suchGrenzen`): Generierte Karten haben keine freien
+   Massen (8 Seeds gemessen: 0; einmal 21 Zellen), eine Lücke entsteht erst, wenn ein
+   Spieler eine Scholle > 6000 Zellen (z. B. 100×80 px) von ihrer Brücke trennt — sie
+   blieb in der Luft hängen. Fassung 3: Grenze 60 000 Zellen; die Breitensuche ist durch
+   eine Tiefensuche nach unten zuerst ersetzt (gewachsener Fels erreicht den Kartenboden
+   nach wenigen hundert Zellen statt erst bei „zu groß"), und eine angefangene Füllung
+   läuft im nächsten Tick weiter, statt eine Masse am Stück abzuarbeiten. Gemessen am
+   Spielverlauf (4 Seeds, 6000 Ticks, Schüsse): größte Suchkosten je Tick **6001–6131 →
+   3580–4117**. Versionsmarke: `ZERSTOERUNG_SCHOLLEN` (3) ist Standard und steht in neuen
+   Aufzeichnungen; Fassung 2 behält Grenzen und Suchreihenfolge (Beleg: Goldhashes
+   `85bd9975`/`e331aaaa`/`e22f0a55`/`afa508f1` von `main` in `tests/zerstoerung.test.js`,
+   dazu Replay-Rundlauf je Fassung).
+7. **Server/Netz** (`LobbySession` im Prozess, 2 Teams × 3 Figuren, 3600 Ticks mit
+   Schüssen, ein Client): `tick()` im Mittel 0,06–0,10 ms (warm, Spitze 3 ms; die
+   13–17 ms des ersten Einschlags sind JIT-Anlauf), `broadcastSnapshot` 0,034 ms,
+   `syncLoadouts` ohne Änderung 0,02 ms (20 Hz → 0,04 % eines Kerns). Datenrate eines
+   Clients: Snapshot 137 B × 20 Hz = 2,7 KB/s, Steuernachrichten zusammen ~0,2 KB/s;
+   `loadouts` 705 B je Änderung (5 in 60 s), `terrain_hash` 77 B alle 2 s,
+   `terrain_destroyed` 108 B. Eine fallende Insel (81 Spalten) kostet 1028 B
+   (`terrain_detached`) + 1035 B (`terrain_settled`, trägt die Spaltenläufe für
+   Spätbeitretende nochmals). **Befund:** keine offensichtliche Verschwendung; die
+   doppelten Läufe sind nötig (ein Client, der mitten im Fall beitritt, kennt den
+   Sprite nicht) und selten, und das Start-Kit vergrößert die Bestandsnachricht
+   nicht auffällig (4 Waffen je Figur). Nicht geändert.
 
 ## Fortsetzung 2026-09-11 (2) — Netzwerk unter Störung, Screenreader
 
