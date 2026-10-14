@@ -7,13 +7,105 @@
  * @module CollisionMask
  */
 
+/** Stützstellen der Randrauheit rund um den Krater. */
+const KRATER_SEGMENTE = 16;
+/** Größte Abweichung des Randes vom Kreis (Anteil des Radius). */
+const KRATER_RAUHEIT = 0.1;
+/** Kleinere Krater bleiben glatt: Die Abweichung läge unter einem Pixel. */
+const KRATER_RAUH_AB_RADIUS = 8;
+
+/** Ganzzahl-Mischer (Murmur-Finalizer): nur `Math.imul` und Verschiebungen, überall gleich. */
+function mische32(h) {
+  let v = h | 0;
+  v ^= v >>> 16;
+  v = Math.imul(v, 0x85ebca6b);
+  v ^= v >>> 13;
+  v = Math.imul(v, 0xc2b2ae35);
+  v ^= v >>> 16;
+  return v >>> 0;
+}
+
+/**
+ * Die Form eines rauen Kraters — eine reine Funktion von Ort, Radius und Tiefe.
+ *
+ * Server (`Zerstoerung.krater`) und Client (`applyCraterToTerrain`) rechnen
+ * dieselbe Form aus denselben vier Ganzzahlen. Es kommen KEINE Winkelfunktionen
+ * vor (`Math.sin`/`Math.cos` dürfen in Browsern in der letzten Stelle
+ * abweichen und ließen Randzellen auseinanderlaufen); nur `+ - * /` und
+ * `Math.imul`, die IEEE-754 und die Ganzzahlarithmetik überall gleich ausführen.
+ *
+ * @param {number} x
+ * @param {number} y
+ * @param {number} radius
+ * @param {number} tiefe - Tiefe unterhalb des Einschlagpunkts in Prozent des Radius
+ * @returns {{radius:number, tiefe:number, rauh:number, versatz:Float64Array}}
+ */
+export function kraterForm(x, y, radius, tiefe) {
+  let h = mische32(
+    Math.imul(Math.round(x) | 0, 73856093)
+    ^ Math.imul(Math.round(y) | 0, 19349663)
+    ^ Math.imul(radius | 0, 83492791)
+    ^ Math.imul(tiefe | 0, 0x2545f491),
+  );
+  const versatz = new Float64Array(KRATER_SEGMENTE);
+  for (let i = 0; i < KRATER_SEGMENTE; i++) {
+    h = mische32(h + 0x9e3779b9);
+    versatz[i] = (h & 0xffff) / 32767.5 - 1;
+  }
+  return {
+    radius,
+    tiefe: Math.max(0.5, tiefe / 100),
+    rauh: radius >= KRATER_RAUH_AB_RADIUS ? KRATER_RAUHEIT : 0,
+    versatz,
+  };
+}
+
+/**
+ * Liegt der Versatz (ix, dy) vom Mittelpunkt im Krater? Der Rand folgt einem
+ * Pseudowinkel (`|x|+|y|`-Norm statt `atan2`), die Tiefe dehnt nur die untere Hälfte.
+ */
+export function kraterInnen(form, ix, dy) {
+  const a = Math.abs(ix) + Math.abs(dy);
+  if (a === 0) return true;
+  let t;
+  if (dy >= 0) t = ix >= 0 ? dy / a : 1 - ix / a;
+  else t = ix < 0 ? 2 - dy / a : 3 + ix / a;
+  const s = t * (KRATER_SEGMENTE / 4);
+  const i0 = Math.floor(s);
+  const f0 = s - i0;
+  const f = f0 * f0 * (3 - 2 * f0);
+  const a0 = form.versatz[i0 % KRATER_SEGMENTE];
+  const a1 = form.versatz[(i0 + 1) % KRATER_SEGMENTE];
+  const r = form.radius * (1 + form.rauh * (a0 + (a1 - a0) * f));
+  const ey = dy > 0 ? dy / form.tiefe : dy;
+  return ix * ix + ey * ey <= r * r;
+}
+
 /**
  * Ruft `fn(px, py)` für jede Zelle eines Kraters auf.
  *
  * EINE Rechenvorschrift für Server-Maske und Client-Karte: Wer die Zellen an
  * zwei Stellen getrennt herleitet, bekommt irgendwann zwei verschiedene Löcher.
+ *
+ * Ohne `tiefe` (Altfassung, `ZERSTOERUNG_ALT`) ist der Krater ein perfekter
+ * Kreis, Zelle für Zelle wie immer. Mit `tiefe` (Prozent) entsteht die raue Form
+ * aus `kraterForm`.
  */
-export function eachCraterCell(width, height, x, y, radius, fn) {
+export function eachCraterCell(width, height, x, y, radius, fn, tiefe = null) {
+  if (tiefe !== null && tiefe !== undefined) {
+    const form = kraterForm(x, y, radius, tiefe);
+    const reichweite = Math.ceil(radius * (1 + form.rauh));
+    const unten = Math.ceil(reichweite * form.tiefe);
+    for (let dy = -reichweite; dy <= unten; dy++) {
+      const py = Math.round(y + dy);
+      if (py < 0 || py >= height) continue;
+      for (let ix = -reichweite; ix <= reichweite; ix++) {
+        const px = Math.round(x + ix);
+        if (px >= 0 && px < width && kraterInnen(form, ix, dy)) fn(px, py);
+      }
+    }
+    return;
+  }
   for (let dy = -radius; dy <= radius; dy++) {
     const dx = Math.sqrt(radius * radius - dy * dy);
     for (let ix = -Math.floor(dx); ix <= Math.floor(dx); ix++) {
@@ -168,15 +260,27 @@ export class CollisionMask {
    * @param {number} x - Zentrum X
    * @param {number} y - Zentrum Y
    * @param {number} radius - Krater-Radius
+   * @param {number|null} [tiefe] - Tiefe in Prozent (raue Form), `null` = Kreis
    */
-  punchCrater(x, y, radius) {
-    eachCraterCell(this.#width, this.#height, x, y, radius, (px, py) => this.setPixel(px, py, false));
-    this.#craters.push([x, y, radius]);
+  punchCrater(x, y, radius, tiefe = null) {
+    eachCraterCell(this.#width, this.#height, x, y, radius, (px, py) => this.setPixel(px, py, false), tiefe);
+    this.#craters.push(tiefe === null || tiefe === undefined ? [x, y, radius] : [x, y, radius, tiefe]);
     this.#dirty = true;
   }
 
   /**
-   * Alle bisherigen Krater in der Reihenfolge ihrer Entstehung als `[x, y, radius]`.
+   * Hängt einen Eintrag an das Log, der kein Krater ist (eine gelandete Insel:
+   * `['s', dy, x, y0, y1, ...]`, siehe `engine/zerstoerung.js`). Die Reihenfolge
+   * im Log ist die Reihenfolge der Änderungen; der Client spielt es so ab.
+   */
+  logEintrag(eintrag) {
+    this.#craters.push(eintrag);
+  }
+
+  /**
+   * Alle bisherigen Änderungen in der Reihenfolge ihrer Entstehung: Krater als
+   * `[x, y, radius]` (Altfassung) bzw. `[x, y, radius, tiefe]` (raue Form) und
+   * gelandete Inseln als `['s', dy, ...]` (siehe `logEintrag`).
    *
    * Warum es das gibt (Audit 2026-10-09): Ein Client, der später beitritt oder
    * die Verbindung wieder aufnimmt, baut das Gelände aus dem Seed und sieht

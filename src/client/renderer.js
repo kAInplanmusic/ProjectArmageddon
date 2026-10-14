@@ -20,8 +20,10 @@ import {
 import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
-  zeichneFunken, zeichneSchadenszahl,
+  zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
 } from './effektStil.js';
+import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer } from './zerstoerungOptik.js';
+import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import { zeichneSoldat, zeichneNamensschild } from './figuren.js';
 import { veredleGelaende, zeichneKraterRand } from './gelaendeStil.js';
@@ -139,6 +141,9 @@ export class Renderer {
     this.letzteTreffer = [];
     /** Narben der Krater (Brandränder) — begrenzt, siehe `NARBEN_MAX`. */
     this.narben = [];
+    /** Trümmer der Zerstörung und abgelöste, fallende Geländeinseln (nur Anzeige). */
+    this.truemmer = [];
+    this.inselfall = new Inselfall();
     /** Rauch nach großen Einschlägen — der Nachhall. */
     this.rauch = [];
     /** Flugspuren je Projektil (`entityId` → Punkte). */
@@ -697,13 +702,26 @@ export class Renderer {
    * @param {number} y
    * @param {number} radius
    */
-  applyCrater(x, y, radius) {
+  applyCrater(x, y, radius, tiefe = null) {
     if (!this.terrainLayer) return;
+    /*
+     * Zerstörungsfassung 2: `terrain_destroyed` trägt die wahre Form (`tiefe`). Das
+     * `explosion` im selben Bild meldet nur den Flächenradius und schneidet nicht
+     * noch einmal — das Loch wäre sonst größer als das der Kollisionsmaske.
+     */
+    const zuvor = this.letzterKrater;
+    if (tiefe === null && zuvor?.tiefe != null && zuvor.zeit === this.time && zuvor.x === x && zuvor.y === y) return;
     const ctx = this.terrainLayer.getContext('2d');
+    const umriss = tiefe === null ? null : kraterUmriss(x, y, radius, tiefe);
     ctx.save();
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    if (umriss) {
+      ctx.moveTo(umriss[0].x, umriss[0].y);
+      for (const punkt of umriss) ctx.lineTo(punkt.x, punkt.y);
+    } else {
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+    }
     ctx.fill();
     ctx.restore();
 
@@ -718,16 +736,54 @@ export class Renderer {
       && this.letzterKrater.y === y
       && this.letzterKrater.radius === radius;
     if (doppelt) return;
-    this.letzterKrater = { x, y, radius, zeit: this.time };
-    zeichneKraterRand(ctx, x, y, radius, this.scenery?.seed ?? 0);
+    this.letzterKrater = { x, y, radius, tiefe, zeit: this.time };
+    if (umriss) zeichneKraterRuss(ctx, umriss, x, y, this.scenery?.seed ?? 0);
+    else zeichneKraterRand(ctx, x, y, radius, this.scenery?.seed ?? 0);
     if (entfernePflanzenImKrater(this.pflanzen, x, y, radius)) this.#zeichnePflanzenNeu();
 
     this.spawnExplosionParticles(x, y, radius);
     this.narben = ergaenzeNarbe(this.narben, x, y, radius);
+    if (umriss) this.narben[this.narben.length - 1].umriss = umriss;
     this.rauch.push(...rauchWolke(x, y, radius));
+    if (umriss) this.#zerstoerungsOptik(erzeugeTruemmer(x, y, radius, tiefe), erzeugeStaub(x, y, radius, this.#erdfarbe()));
     // Nur ein GROSSER Krater ruckt (siehe `RUCK_SCHWELLE`); ein neuer Ruck
     // ersetzt den alten, damit eine Salve die Kamera nicht aufschaukelt.
     this.ruck = ruckFuer(radius, { reducedMotion: this.reducedMotion }) ?? this.ruck;
+  }
+
+  /** Farbe der Erde für Staub und Trümmer: das Tiefenbraun der Geländepalette. */
+  #erdfarbe() {
+    const [r, g, b] = this.palette?.deep ?? [92, 70, 52];
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  /** Trümmer und Staub aufnehmen (gedeckelt; bei „Bewegung reduzieren" entfallen sie). */
+  #zerstoerungsOptik(truemmer, staub) {
+    if (this.reducedMotion) return;
+    if (this.truemmer.length < 160) this.truemmer.push(...truemmer);
+    if (this.rauch.length < 60) this.rauch.push(...staub);
+  }
+
+  /** `terrain_detached`: Eine Geländeinsel löst sich und beginnt zu fallen. */
+  starteInsel(id, runs) {
+    const befund = this.inselfall.start(this.terrainLayer, id, runs, this.pflanzen);
+    if (!befund) return;
+    if (befund.pflanzenGeaendert) this.#zeichnePflanzenNeu();
+    this.#zerstoerungsOptik(inselTruemmer(runs), inselStaub(runs, this.#erdfarbe(), 4));
+  }
+
+  /**
+   * `terrain_settled` bzw. Log-Eintrag `['s', dy, ...]`: Die Insel liegt `dy` tiefer.
+   * Mit `stumm` (Nachtrag aus dem Log) entfallen Staub und Ruck.
+   */
+  landeInsel(id, runs, dy, { stumm = false } = {}) {
+    if (!this.terrainLayer || !(dy > 0)) return;
+    if (this.inselfall.lande(this.terrainLayer, id, runs, dy, this.pflanzen)) this.#zeichnePflanzenNeu();
+    const g = inselGrenzen(runs);
+    if (stumm || !g) return;
+    const unten = runs.map((wert, i) => (i % 3 === 0 ? wert : wert + dy));
+    this.#zerstoerungsOptik(inselTruemmer(unten), inselStaub(unten, this.#erdfarbe()));
+    this.ruck = ruckFuer(Math.max(g.breite, g.hoehe) / 2, { reducedMotion: this.reducedMotion }) ?? this.ruck;
   }
 
   /**
@@ -746,6 +802,8 @@ export class Renderer {
     this.letzteTreffer = [];
     this.narben = [];
     this.rauch = [];
+    this.truemmer = [];
+    this.inselfall.zuruecksetzen();
     this.spuren = new Map();
     this.ruck = null;
     this.letzterKrater = null;
@@ -793,6 +851,8 @@ export class Renderer {
 
   updateParticles() {
     this.particles = schreitePartikelFort(this.particles);
+    this.truemmer = schreiteTruemmerFort(this.truemmer);
+    this.inselfall.schritt();
   }
 
   /**
@@ -1441,6 +1501,10 @@ export class Renderer {
 
   #drawParticles() {
     zeichneFunken(this.ctx, this.particles);
+    if (this.truemmer.length > 0) {
+      const [r, g, b] = this.palette?.deep ?? [92, 70, 52];
+      zeichneTruemmer(this.ctx, this.truemmer, [`rgb(${r}, ${g}, ${b})`, `rgb(${r + 24}, ${g + 18}, ${b + 12})`, '#3b2f26']);
+    }
   }
 
   /**
@@ -1459,21 +1523,7 @@ export class Renderer {
   #drawNarben() {
     if (this.narben.length === 0) return;
     this.ctx.save();
-    for (const narbe of this.narben) {
-      this.ctx.globalAlpha = 0.18;
-      this.ctx.strokeStyle = '#e76f51';
-      this.ctx.lineWidth = 5;
-      this.ctx.beginPath();
-      this.ctx.arc(narbe.x, narbe.y, narbe.radius + 4, 0, Math.PI * 2);
-      this.ctx.stroke();
-
-      this.ctx.globalAlpha = 0.35;
-      this.ctx.strokeStyle = '#000000';
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.arc(narbe.x, narbe.y, narbe.radius + 1.5, 0, Math.PI * 2);
-      this.ctx.stroke();
-    }
+    for (const narbe of this.narben) zeichneNarbe(this.ctx, narbe);
     this.ctx.restore();
   }
 
@@ -1718,6 +1768,7 @@ export class Renderer {
        * liegt sie wie bisher bei (0, 0) des Fensters.
        */
       this.ctx.drawImage(this.terrainLayer, 0, 0);
+      this.inselfall.zeichne(this.ctx);
     }
 
     /*

@@ -101,7 +101,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -143,6 +143,7 @@ class LobbySession {
       loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
       // Ausrüstung: Standard = Start-Kit; eine alte Sicherung bringt ihre Fassung mit (`undefined` = Standard).
       kit,
+      zerstoerung,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -169,6 +170,7 @@ class LobbySession {
       // Wiedergabe die Standardzuteilung statt der gewählten Profile.
       loadouts: this.match.loadouts,
       kit: this.match.kit,
+      zerstoerung: this.match.zerstoerung,
     });
 
     /*
@@ -999,6 +1001,8 @@ class LobbySession {
       hash: terrain.hash(),
       craters: terrain.craterCount,
       inset: this.match.maelstrom?.inset ?? 0,
+      // Inseln im Fall stehen nicht in der Maske: Der Client darf dann nicht vergleichen.
+      faellt: this.match.setzung?.faellt ?? 0,
     };
     if (mitKratern) stand.craters = terrain.craterLog;
     return stand;
@@ -1273,6 +1277,7 @@ export class GameServer {
               turnPauseTicks: options.turnPauseTicks,
               turnReplayTicks: options.turnReplayTicks,
               kit: options.kit,
+              zerstoerung: options.zerstoerung,
               metrics: this.metrics,
               logger: this.logger,
             });

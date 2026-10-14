@@ -241,3 +241,91 @@ export function zeichneSchadenszahl(ctx, z) {
   ctx.fillText(z.text, z.x, z.y);
   ctx.restore();
 }
+
+/** Linienzug aus Punkten (geschlossen, wenn der letzte dem ersten gleicht). */
+function linienzug(ctx, punkte) {
+  ctx.beginPath();
+  ctx.moveTo(punkte[0].x, punkte[0].y);
+  for (let i = 1; i < punkte.length; i += 1) ctx.lineTo(punkte[i].x, punkte[i].y);
+}
+
+/**
+ * Rußschatten und Brandrand eines Kraters in die Geländeebene (nur dort, wo
+ * Gelände steht: `source-atop`). Der Umriss ist die wahre Form des Kraters
+ * (`kraterUmriss`), nicht ein Kreis. Von außen nach innen: weiter Rußschatten,
+ * angesengter Saum, verkohlte Kante; dazu kurze Rußzungen, die in den Boden
+ * ziehen. Die Zungen entstehen aus `hash2` über den Ort, nie aus Zufall.
+ *
+ * @param {Array<{x:number,y:number}>} umriss
+ */
+export function zeichneKraterRuss(ctx, umriss, x, y, seed = 0) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const stufen = [
+    ['rgba(12, 9, 7, 0.16)', 22],
+    ['rgba(18, 12, 8, 0.26)', 13],
+    ['rgba(231, 111, 81, 0.22)', 7],
+    ['rgba(8, 6, 5, 0.82)', 3],
+  ];
+  for (const [farbe, breite] of stufen) {
+    ctx.strokeStyle = farbe;
+    ctx.lineWidth = breite;
+    linienzug(ctx, umriss);
+    ctx.stroke();
+  }
+  const sx = Math.round(x);
+  const sy = Math.round(y);
+  const n = umriss.length - 1;
+  const zungen = Math.min(10, 4 + Math.floor(n / 8));
+  ctx.strokeStyle = 'rgba(8, 6, 5, 0.55)';
+  ctx.lineWidth = 1.4;
+  for (let i = 0; i < zungen; i += 1) {
+    const p = umriss[Math.floor(hash2(sx + i, sy, seed + 11) * n) % n];
+    const w = Math.atan2(p.y - y, p.x - x);
+    const laenge = 5 + hash2(sx, sy + i, seed + 13) * 11;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + Math.cos(w) * laenge, p.y + Math.sin(w) * laenge);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/**
+ * Narbe eines Kraters (bleibt über dem Gelände stehen): ein angesengter Ton und
+ * ein dunkler Saum. Mit `umriss` folgt sie der wahren Kraterform, sonst (Altfassung)
+ * dem Kreis.
+ */
+export function zeichneNarbe(ctx, narbe) {
+  const bahnFuer = zugabe => {
+    if (narbe.umriss) { linienzug(ctx, narbe.umriss); return; }
+    ctx.beginPath();
+    ctx.arc(narbe.x, narbe.y, narbe.radius + zugabe, 0, Math.PI * 2);
+  };
+  ctx.globalAlpha = 0.18;
+  ctx.strokeStyle = '#e76f51';
+  ctx.lineWidth = 5;
+  bahnFuer(4);
+  ctx.stroke();
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  bahnFuer(1.5);
+  ctx.stroke();
+}
+
+/** Trümmerstücke: kleine gedrehte Erdbrocken, die zum Ende hin verblassen. */
+export function zeichneTruemmer(ctx, truemmer, toene) {
+  for (const t of truemmer) {
+    ctx.globalAlpha = Math.min(1, t.life * 1.6);
+    ctx.fillStyle = toene[t.ton % toene.length];
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.rotate(t.winkel);
+    ctx.fillRect(-t.groesse / 2, -t.groesse / 2, t.groesse, t.groesse * 0.8);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}

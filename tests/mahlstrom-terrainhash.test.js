@@ -3,7 +3,7 @@ import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { CollisionMask, eachInsetCell } from '../src/engine/terrain/collisionMask.js';
 import {
-  applyCraterToTerrain,
+  applyLogEntryToTerrain,
   applyInsetToTerrain,
   bewerteTerrainHash,
   buildTerrainForSeed,
@@ -54,7 +54,7 @@ function bitmapAbweichung(karte, maske) {
 
 function baueClientKarte(match, { krater = true, einschnitt = true } = {}) {
   const karte = buildTerrainForSeed(4242, 'hills', 'landscape', null);
-  if (krater) for (const [x, y, radius] of match.terrain.craterLog) applyCraterToTerrain(karte, x, y, radius);
+  if (krater) for (const eintrag of match.terrain.craterLog) applyLogEntryToTerrain(karte, eintrag);
   if (einschnitt) applyInsetToTerrain(karte, match.maelstrom.inset);
   return karte;
 }
@@ -204,7 +204,7 @@ test('Server: WELCOME trägt inset, Vollsnapshot bringt terrain_hash, terrain_re
     const wieder = await warte(() => neu.eingang.find(m => m.t === CONTROL.WELCOME && m.entityId));
     assert.equal(wieder.inset, inset);
     const karte = buildTerrainForSeed(4242, 'hills', 'landscape', null);
-    for (const [x, y, r] of wieder.craters) applyCraterToTerrain(karte, x, y, r);
+    for (const eintrag of wieder.craters) applyLogEntryToTerrain(karte, eintrag);
     applyInsetToTerrain(karte, wieder.inset);
     assert.equal(karte.mask.hash(), sitzung.match.terrain.hash());
     neu.socket.close(); b.socket.close();

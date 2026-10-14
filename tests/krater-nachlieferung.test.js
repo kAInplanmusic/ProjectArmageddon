@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
-import { applyCraterToTerrain, buildTerrainForSeed } from '../src/client/terrainPreview.js';
+import { applyLogEntryToTerrain, buildTerrainForSeed } from '../src/client/terrainPreview.js';
 
 /**
  * Regression (Audit 2026-10-09): Ein Client, der nach Kratern beitritt oder die
@@ -40,7 +40,7 @@ test('Karte aus Seed + Krater-Log ist zellengleich zur Server-Maske', () => {
   const ohne = unterschiede(match.terrain, frisch.mask, frisch.width, frisch.height);
   assert.ok(ohne > 0, 'Ohne Nachlieferung weicht die Karte ab (das ist der Fehler)');
 
-  for (const [x, y, radius] of log) applyCraterToTerrain(frisch, x, y, radius);
+  for (const eintrag of log) applyLogEntryToTerrain(frisch, eintrag);
   assert.equal(unterschiede(match.terrain, frisch.mask, frisch.width, frisch.height), 0, 'Maske gleich');
 
   // Auch die Bitmap, gegen die die Zielvorschau rechnet.

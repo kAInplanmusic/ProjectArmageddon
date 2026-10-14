@@ -22,7 +22,7 @@ import { Hud } from './hud.js';
 import { zeigeToast } from './toasts.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
-import { applyCraterToTerrain, applyInsetToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
+import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -1304,12 +1304,20 @@ class Game {
     return { ok: true, mode: 'online', lobbyId: targetLobby };
   }
 
-  /** Trägt Krater in Karte und Zeichenfläche ein: `[[x, y, radius], ...]`. */
+  /**
+   * Trägt das Änderungslog in Karte und Zeichenfläche ein, in der Reihenfolge des
+   * Servers: Krater `[x, y, radius]` / `[x, y, radius, tiefe]` und gelandete
+   * Inseln `['s', dy, ...Spaltenläufe]`.
+   */
   #wendeKraterAn(krater) {
     if (!Array.isArray(krater)) return;
-    for (const [x, y, radius] of krater) {
-      applyCraterToTerrain(this.remoteTerrain, x, y, radius);
-      this.renderer.applyCrater(x, y, radius);
+    for (const eintrag of krater) {
+      applyLogEntryToTerrain(this.remoteTerrain, eintrag);
+      if (eintrag[0] === 's') {
+        this.renderer.landeInsel(null, eintrag.slice(2), eintrag[1], { stumm: true });
+      } else {
+        this.renderer.applyCrater(eintrag[0], eintrag[1], eintrag[2], eintrag[3] ?? null);
+      }
     }
   }
 
@@ -1843,7 +1851,9 @@ class Game {
        * Werte ein Serverereignis ändern darf.
        */
       karte: {
-        krater: (x, y, radius) => applyCraterToTerrain(this.remoteTerrain, x, y, radius),
+        krater: (x, y, radius, tiefe = null) => applyCraterToTerrain(this.remoteTerrain, x, y, radius, tiefe),
+        // Eine gelandete Geländeinsel wandert in Bitmap und Maske nach unten.
+        insel: (dy, runs) => applySettleToTerrain(this.remoteTerrain, dy, runs),
         // Der Mahlstrom trägt Bitmap und Maske ab, nicht nur die Zeichenfläche.
         einschnitt: inset => applyInsetToTerrain(this.remoteTerrain, inset),
       },

@@ -21,6 +21,7 @@ import {
   raycastSegment,
 } from '../../shared/ballistics.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
+import { kraterTiefeProzent } from '../../shared/config/zerstoerung.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -398,8 +399,14 @@ export class ProjectileSystem {
 
     if (terrain && craterRadius > 0) {
       const radius = Math.max(2, Math.round(craterRadius));
-      terrain.punchCrater(x, y, radius);
-      if (events) events.emit('terrain_destroyed', { x, y, radius });
+      const zerstoerung = services.zerstoerung ?? null;
+      if (zerstoerung) {
+        // Zerstörungsfassung 2: raue Form, Tiefe nach Waffe, Nachrutschen (engine/zerstoerung.js).
+        zerstoerung.krater(x, y, radius, kraterTiefeProzent(terrainDamage, blastRadius, radius));
+      } else {
+        terrain.punchCrater(x, y, radius);
+        if (events) events.emit('terrain_destroyed', { x, y, radius });
+      }
     }
 
     // Wasser verdrängen: Explosionen drücken das Wasser im Radius nach außen.

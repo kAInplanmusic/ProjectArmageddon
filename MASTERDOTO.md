@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1336/1336** grün, Dateizahl **143** (Stand 2026-10-14: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; vorher 1326/142 mit den zwei Prüfungen in
+**1361/1361** grün, Dateizahl **145** (Stand 2026-10-14: +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -1734,6 +1734,53 @@ Die Klassen (Power/Speed/Health, `combatProfile`, Archetypen, Sidegrades) bleibe
   (`kettenblitz`, `bohre`), `match.js` unverändert (Zeilenbudget). Die zwei
   Beschwörungen sind in der Designdatei jetzt `self_or_area`.
 - Die Klassenloadouts (`getClassLoadout`) bleiben für `kit` 1 erhalten.
+
+### Zerstörung: raue Krater und nachstürzendes Gelände (2026-10-14)
+
+**Auftrag:** Zerstörungsmechanik verbessern, deterministisch und replay-kompatibel.
+**Versionsmarke:** `config.zerstoerung` im Replay-Kopf (`src/shared/config/zerstoerung.js`,
+wie `config.kit`). Fassung 2 ist Standard und steht in jeder neuen Aufzeichnung; eine
+Datei oder Sicherung **ohne** das Feld wird als Fassung 1 gelesen (runde Krater, kein
+Nachrutschen). Beleg: `tests/zerstoerung.test.js` fährt drei Seeds in Fassung 1 und
+vergleicht Zustands- und Maskenhash mit den Werten von `main` vor der Änderung
+(`eb0d7904`/`560554f0`/`80a1308e`), dazu ein Replay mit Altkopf und die
+Wiederherstellung einer alten Sicherung.
+
+- **(a) Krater:** `kraterForm`/`kraterInnen` (`collisionMask.js`) — der Rand weicht bis
+  10 % vom Kreis ab (16 Stützstellen aus einem Ganzzahl-Hash über Ort, Radius, Tiefe;
+  **keine** Winkelfunktion, damit Browser und Server dieselben Zellen treffen). Tiefe
+  nach Waffe (`kraterTiefeProzent`): nur `terrainDamage` (Spaten, Bohrer, Schwerschlag)
+  135 %, beides 115 %, nur Flächenradius 85 %, Radius ≤ 5 rund. Das Ereignis
+  `terrain_destroyed` und der Eintrag im Kraterlog tragen `tiefe` mit; der Client
+  rechnet die Form mit derselben Funktion (`eachCraterCell(..., tiefe)`).
+- **(b) Nachrutschen** (`src/engine/zerstoerung.js`, nur Fassung 2): Nach einem Krater
+  sucht die Engine an dessen Rand nach Masse, die nicht mehr mit dem Kartenrand
+  verbunden ist (Breitensuche, 8er-Nachbarschaft). Eine Insel bis 6000 Zellen löst sich,
+  fällt mit 0,45 px/Tick² (höchstens 10 px/Tick) und wird beim Aufsetzen wieder
+  eingesetzt; größere Massen gelten als gewachsener Fels, absichtlich schwebende
+  Inseln der Kartengenerators bleiben, solange sie niemand anschießt. **Kostenbudget:**
+  höchstens 9000 besuchte Zellen je Tick (die Suche setzt im nächsten Tick fort), je
+  Krater höchstens 4 Massen angefangen; gemessen 1–3 ms je Suchtick. Figuren, liegende
+  Kisten und Geschütze auf der Insel fahren mit; wer unter der Landung steht, wird auf
+  die Insel gehoben und nimmt 20 Schaden. Während des Falls steht die Insel nicht in
+  der Maske (`terrain_hash` trägt dann `faellt > 0`, der Client vergleicht nicht).
+  Ereignisse: `terrain_detached` (Anzeige), `terrain_settled` (Zustand, mit Spaltenläufen);
+  das Kraterlog trägt gelandete Inseln als `['s', dy, ...Spaltenläufe]`, der Client
+  spielt es in Server-Reihenfolge ab (`applyLogEntryToTerrain`) — er rechnet die Suche
+  nicht nach.
+- **(d) Lose Objekte:** liegende Kisten und Geschütze fallen bei Bodenverlust (Krater,
+  Mahlstrom, gelandete Insel) mit 0,5 px/Tick² bis zum nächsten Boden; Figuren fielen
+  schon vorher über das `CharacterSystem`.
+- **(c) Optik (nur Client, nicht im Hash):** Trümmer und Staub (`zerstoerungOptik.js`,
+  `effektStil.js`), Rußschatten und Brandrand entlang der **wahren** Kraterform in der
+  Geländeebene (`zeichneKraterRuss`), Narben folgen dem Umriss, abgelöste Inseln fallen
+  als Bild (`inselfall.js`), Pflanzen auf der Insel fahren mit. Das `explosion` im selben
+  Bild schneidet nicht mehr zusätzlich einen Kreis mit dem Flächenradius in die Ebene
+  (das Loch war größer als das der Kollisionsmaske).
+- **Offen / bewusst nicht:** Bei Landung bleibt die Insel starr (kein Zerbröckeln am
+  Hang); schwebende Massen über 6000 Zellen fallen nicht; die Sprengwirkung auf
+  Pflanzen nutzt weiter den Kreisradius. `match.js` bleibt unter dem Zeilenbudget (3199);
+  die Logik liegt in `src/engine/zerstoerung.js`.
 
 ## Fortsetzung 2026-09-11 (2) — Netzwerk unter Störung, Screenreader
 

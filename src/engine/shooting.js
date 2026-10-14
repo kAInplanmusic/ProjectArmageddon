@@ -411,8 +411,13 @@ function bohre(quelle, effekt, winkel, hit) {
     const y = Math.round(hit.hitY + dy * abstand * i);
     if (x < 0 || y < 0 || x >= quelle.width || y >= quelle.height) break;
     const radius = i === 0 ? effekt.entryRadius : effekt.radius;
-    quelle.terrain.punchCrater(x, y, radius);
-    quelle.events.emit('terrain_destroyed', { x, y, radius });
+    const zerstoerung = quelle.world?.services?.zerstoerung;
+    if (zerstoerung) {
+      zerstoerung.krater(x, y, radius, 100);
+    } else {
+      quelle.terrain.punchCrater(x, y, radius);
+      quelle.events.emit('terrain_destroyed', { x, y, radius });
+    }
   }
 }
 

@@ -96,12 +96,47 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
  * (`main.js`, `isSolid`), blieb unzerstört — die vorhergesagte Bahn prallte an
  * Boden ab, der längst weg war.
  */
-export function applyCraterToTerrain(terrain, x, y, radius) {
+export function applyCraterToTerrain(terrain, x, y, radius, tiefe = null) {
   if (!terrain?.bitmap) return;
   eachCraterCell(terrain.width, terrain.height, x, y, radius, (px, py) => {
     terrain.bitmap[py * terrain.width + px] = 0;
-  });
-  terrain.mask?.punchCrater(x, y, radius);
+  }, tiefe);
+  terrain.mask?.punchCrater(x, y, radius, tiefe);
+}
+
+/**
+ * Trägt EINEN Logeintrag der Server-Maske (`CollisionMask.craterLog`) in die
+ * Client-Karte ein: einen Krater (`[x, y, radius]` / `[x, y, radius, tiefe]`) oder
+ * eine gelandete Insel (`['s', dy, ...Spaltenläufe]`).
+ */
+export function applyLogEntryToTerrain(terrain, eintrag) {
+  if (eintrag[0] === 's') {
+    const [, dy, ...runs] = eintrag;
+    applySettleToTerrain(terrain, dy, runs);
+  } else {
+    const [x, y, radius, tiefe = null] = eintrag;
+    applyCraterToTerrain(terrain, x, y, radius, tiefe);
+  }
+}
+
+/**
+ * Trägt eine gelandete Geländeinsel in die Client-Karte ein (Bitmap UND Maske):
+ * die Zellen der Spaltenläufe `runs = [x, y0, y1, ...]` wandern `dy` Zeilen nach
+ * unten. Erst alles löschen, dann alles setzen — sonst löschte ein Lauf die
+ * frisch gesetzten Zellen des Nachbarn. Der Eintrag geht wie auf dem Server ins
+ * Log der Maske, damit die Zählung beider Seiten übereinstimmt.
+ */
+export function applySettleToTerrain(terrain, dy, runs) {
+  if (!terrain?.bitmap || !(dy > 0)) return;
+  const { width, height } = terrain;
+  const setze = (x, y, fest) => {
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    terrain.bitmap[y * width + x] = fest ? 1 : 0;
+    terrain.mask?.setPixel(x, y, fest);
+  };
+  for (let i = 0; i + 2 < runs.length; i += 3) for (let y = runs[i + 1]; y <= runs[i + 2]; y++) setze(runs[i], y, false);
+  for (let i = 0; i + 2 < runs.length; i += 3) for (let y = runs[i + 1]; y <= runs[i + 2]; y++) setze(runs[i], y + dy, true);
+  terrain.mask?.logEintrag(['s', dy, ...runs]);
 }
 
 /**
@@ -143,7 +178,8 @@ export function terrainHash(terrain) {
  */
 export function bewerteTerrainHash(terrain, meldung, wartet = false) {
   const lokal = terrainHash(terrain);
-  if (lokal === null || lokal === meldung.hash) return { urteil: 'gleich', lokal };
+  // Inseln im Fall stehen in der Server-Maske nicht: Der Vergleich wäre bis zur Landung falsch.
+  if (lokal === null || lokal === meldung.hash || meldung.faellt > 0) return { urteil: 'gleich', lokal };
   const standGleich = terrain.mask.craterCount === meldung.craters
     && (terrain.einschnitt ?? 0) === (meldung.inset ?? 0);
   return { urteil: standGleich || wartet ? 'abweichung' : 'abwarten', lokal };

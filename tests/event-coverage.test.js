@@ -394,6 +394,14 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'online',
     entweder: 'lokal entsteht derselbe Krater über `explosion`: src/client/ereignisse.js:105 (applyCrater) — ein zweiter Eintrag würde zweimal graben.',
   }],
+  ['terrain_detached', {
+    zweig: 'online',
+    entweder: 'ein lokales Match gibt es im Client nicht mehr (die Engine läuft nur auf dem Server); die Anzeige der fallenden Insel hängt allein an diesem Ereignis: src/client/ereignisse.js:217 (renderer.starteInsel).',
+  }],
+  ['terrain_settled', {
+    zweig: 'online',
+    entweder: 'wie `terrain_destroyed`: die Landung trägt Bitmap und Maske der Zielvorschau nach, src/client/ereignisse.js:221 (karte.insel) — ein lokaler Zweig würde zweimal verschieben.',
+  }],
 ]);
 
 test('Der lokale Zweig behandelt den Einschlag eines Projekils', () => {

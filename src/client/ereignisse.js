@@ -200,9 +200,26 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   terrain_destroyed: {
     online: (k, n) => {
-      k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
+      // `tiefe` fehlt bei Altfassung (runder Krater), sonst Teil der Kraterform.
+      const tiefe = n.tiefe ?? null;
+      k.renderer?.applyCrater(n.x, n.y, n.radius || 12, tiefe);
       // Auch die Karte, gegen die die Zielvorschau rechnet — nicht nur das Bild.
-      k.karte?.krater(n.x, n.y, n.radius || 12);
+      k.karte?.krater(n.x, n.y, n.radius || 12, tiefe);
+    },
+  },
+
+  /*
+   * Eine Geländeinsel (Überhang, gekappte Brücke) löst sich und fällt — nur Anzeige;
+   * die Simulation hat sie schon aus der Maske genommen. Die Landung kommt als
+   * `terrain_settled` und trägt den Zustand (Bitmap und Maske der Zielvorschau).
+   */
+  terrain_detached: {
+    online: (k, n) => { k.renderer?.starteInsel(n.id, n.runs); },
+  },
+  terrain_settled: {
+    online: (k, n) => {
+      k.karte?.insel(n.dy, n.runs);
+      k.renderer?.landeInsel(n.id, n.runs, n.dy);
     },
   },
 

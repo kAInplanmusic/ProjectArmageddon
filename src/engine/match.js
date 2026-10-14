@@ -40,6 +40,8 @@ import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionStep
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
+import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
+import { Zerstoerung } from './zerstoerung.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { damageTypeId } from './damageTypes.js';
 import { pickScenery } from '../shared/config/scenery.js';
@@ -394,7 +396,6 @@ const JUMP_SPEED_INFLUENCE_ABOVE = 0.5;
 /** Dämpfung für Klassen unter 1,0 — siehe Begründung oben, Punkt 2. */
 const JUMP_SPEED_INFLUENCE_BELOW = 0.25;
 
-
 /*
  * Trefferfeld und Körpermaße kommen aus `src/shared/config/player.js`. Hier
  * standen sie ein ZWEITES Mal (Audit-Fund „Doppelregel"), während
@@ -497,6 +498,7 @@ export class MatchController {
    * entityId → { ownerId, teamId, x, y, damage, range, roundsLeft }
    */
   #turrets = new Map();
+  #setzung = null; // raue Krater, Inselfall, fallende Objekte (nur `zerstoerung >= 2`)
   /*
    * Hier stand ein Feld `#reichweite` (der Weitenfaktor dieser Karte).
    *
@@ -581,6 +583,8 @@ export class MatchController {
     loadouts = null,
     /** Ausrüstungsfassung: `KIT_STARTER` (Reserve + 2 Common, Standard) oder `KIT_KLASSE` (Altverhalten, nur für alte Replays). */
     kit = KIT_STANDARD,
+    /** Zerstörungsfassung (`config/zerstoerung.js`): 2 = raue Krater + Nachrutschen, 1 = Altverhalten (alte Replays). */
+    zerstoerung = ZERSTOERUNG_STANDARD,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -607,6 +611,7 @@ export class MatchController {
     /** Loadout-Wahl je Spielerplatz — Kopie, wie bei den Sidegrades. */
     this.loadouts = Array.isArray(loadouts) ? [...loadouts] : [];
     this.kit = normalisiereKit(kit);
+    this.zerstoerung = normalisiereZerstoerung(zerstoerung);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -856,6 +861,7 @@ export class MatchController {
 
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
+    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets });
   }
 
   #buildWater() {
@@ -1044,6 +1050,7 @@ export class MatchController {
      */
     this.#merkeBewegung();
     this.#world.step();
+    this.#setzung?.schritt();
     // Nach dem Physikschritt prüfen, wer gelandet ist — davon hängt ab, ob ein
     // Doppelsprung wieder zur Verfügung steht.
     this.#updateGroundedState();
@@ -1532,7 +1539,6 @@ export class MatchController {
 
     return ergebnis;
   }
-
 
   /**
    * Feuert mit der aktiven Waffe — ein reiner Delegator.
@@ -2046,7 +2052,6 @@ export class MatchController {
     });
   }
 
-
   /**
    * Wirft eine Waffe ab und legt sie als aufhebbare Kiste in der Nähe ab.
    *
@@ -2286,7 +2291,6 @@ export class MatchController {
     }
   }
 
-
   /** Verbleibender Zünder eines Projektils in Sekunden (0 = kein Zünder). */
   fuseSecondsLeft(projectileId) {
     if (!this.#world.isActive(projectileId)) return 0;
@@ -2327,7 +2331,6 @@ export class MatchController {
       else this.#cooldowns.set(key, rest - 1);
     }
   }
-
 
   /**
    * Wendet eine Wirkung auf ein getroffenes Ziel an (Einfrieren, Schaden über Zeit).
@@ -2564,8 +2567,6 @@ export class MatchController {
     }
   }
 
-
-
   /**
    * Wie viele Ticks ein Geschoss dieses Schusses lebt.
    *
@@ -2575,7 +2576,6 @@ export class MatchController {
   projectileLifetime(playerId, angle, power, weapon = null) {
     return projectileLifetime(this.#schussQuelle(), playerId, angle, power, weapon);
   }
-
 
   /**
    * Zielvorschau — delegiert an `engine/shooting.js`.
@@ -2883,7 +2883,6 @@ export class MatchController {
     };
   }
 
-
   /**
    * Setzt den Wasserstand an einer Weltposition (Gegenstück zu `waterLevelAt`).
    *
@@ -3156,12 +3155,7 @@ export class MatchController {
 
   get world() { return this.#world; }
   get terrain() { return this.#terrain; }
-  /*
-   * `get bitmap()` stand hier ein ZWEITES Mal (wortgleich, 1000 Zeilen nach der
-   * ersten Fassung). In JavaScript gewinnt die letzte — die erste war toter
-   * Code. Der Zugriff bleibt über die dokumentierte Fassung oben erhalten;
-   * aufgefallen ist die Dopplung erst durch `no-dupe-class-members`.
-   */
+  get setzung() { return this.#setzung; }
   get water() { return this.#water; }
   get events() { return this.#events; }
   get inventory() { return this.#inventory; }

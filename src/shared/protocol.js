@@ -115,8 +115,10 @@ export const CONTROL = Object.freeze({
   LOADOUTS: 'loadouts',
   /**
    * Terrain-Hash (Server -> Client), gesendet mit jedem Vollsnapshot (alle ~2 s):
-   * `{hash, craters, inset}` — FNV-1a über die Kollisionsmaske (`CollisionMask.hash`),
-   * Kraterzahl und Mahlstrom-Einschnitt.
+   * `{hash, craters, inset, faellt}` — FNV-1a über die Kollisionsmaske (`CollisionMask.hash`),
+   * Zahl der Logeinträge (Krater und gelandete Inseln), Mahlstrom-Einschnitt und Zahl der
+   * Geländeinseln im Fall (`faellt`; solange sie > 0 ist, fehlen die Inseln in der Server-Maske,
+   * und der Client vergleicht nicht).
    *
    * WARUM EINE STEUERNACHRICHT UND KEIN FELD IM BINÄREN SNAPSHOT: Der Hash ist
    * 4 Byte alle 2 s, nicht je Takt. Ein Feld im Kopf (HEADER_SIZE) kostete alle
@@ -736,6 +738,7 @@ export const ANZEIGE_EREIGNISARTEN = Object.freeze([
   'projectile_expired',
   'projectile_pierced',
   'explosion',
+  'terrain_detached',
   'hitscan',
   'special_effect',
   'fuse_armed',
@@ -786,6 +789,7 @@ export const ZUSTANDSEREIGNISARTEN = Object.freeze([
   'shield_absorbed',
   'shot',
   'terrain_destroyed',
+  'terrain_settled',
   'toxic_rain',
   'turn_end',
   'turn_skipped',
