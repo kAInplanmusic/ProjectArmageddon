@@ -434,3 +434,16 @@ select option { background: #14181d; color: var(--ink); }
 
 /* Sprungmarke (Barrierefreiheit) im selben Stil. */
 #skip-to-board:focus { background: var(--lime); color: #10210a; font-family: var(--font-display); }
+
+/* Menü: Inhalte der Unterbereiche dürfen die rechte Spalte nicht überdecken (lange Felder/Tabellen scrollen). */
+#menu-overlay .menu-weitere { min-width: 0; }
+#menu-overlay details > :not(summary) { max-width: 100%; overflow-x: auto; }
+#menu-overlay .menu-konfig { min-width: 0; }
+/* Protokoll: genug Zeilen auch bei großen Fenstern (E2E: mindestens 8 bei 1440×900). */
+#hud-log { max-height: clamp(70px, 19vh, 220px); }
+#menu-overlay .overlay-card { grid-template-columns: 330px minmax(0, 1fr); }
+#menu-overlay .menu-weitere { grid-template-columns: minmax(0, 1fr); }
+#menu-overlay .menu-weitere > details { min-width: 0; }
+@media (max-width: 860px) {
+  #menu-overlay .overlay-card { grid-template-columns: minmax(0, 1fr); }
+}
