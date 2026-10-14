@@ -146,3 +146,33 @@ test('Wasser verschwindet aus der Anzeige, wenn die Figur heraus ist', async ({ 
   await expect(page.locator('#roster .status-badge')).toHaveCount(0);
   await expect(page.locator('#log-list')).toContainText('wieder über Wasser');
 });
+
+test('Das Wasser wird in JEDEM Bild aufgelegt, nicht nur in jedem vierten (kein Blinken), und nur als Ausschnitt', async ({ page }) => {
+  await boot(page);
+  await fluten(page, 0.8);
+  const befund = await page.evaluate(async () => {
+    const R = window.__PA__.game.renderer;
+    const ctx = R.ctx;
+    const original = ctx.drawImage.bind(ctx);
+    let wasserBlits = 0;
+    let flaecheSumme = 0;
+    ctx.drawImage = (quelle, ...rest) => {
+      if (quelle === R.waterLayer) { wasserBlits += 1; flaecheSumme += rest.length === 8 ? rest[6] * rest[7] : R.width * R.height; }
+      return original(quelle, ...rest);
+    };
+    const render = R.render.bind(R);
+    let bilder = 0;
+    R.render = (...args) => { bilder += 1; return render(...args); };
+    // Ein Bild per Hand, mit dem Wasser des Matches; vier Bilder in Folge = ein voller Wasserzyklus.
+    const wasser = window.__PA__.game.match.water;
+    for (let i = 0; i < 8; i += 1) {
+      R.render(window.__PA__.game.currentState(), { water: wasser, wasserNeu: i % 4 === 0 });
+    }
+    ctx.drawImage = original;
+    R.render = render;
+    return { bilder, wasserBlits, mittlereFlaeche: flaecheSumme / Math.max(1, wasserBlits), kartenflaeche: R.width * R.height };
+  });
+  expect(befund.bilder).toBe(8);
+  expect(befund.wasserBlits, 'in jedem Bild liegt die Wasserebene auf').toBe(8);
+  expect(befund.mittlereFlaeche, 'nur der Ausschnitt mit Wasser, nicht die ganze Karte').toBeLessThan(befund.kartenflaeche * 0.9);
+});

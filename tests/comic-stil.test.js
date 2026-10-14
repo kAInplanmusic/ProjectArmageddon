@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
-import { veredleGelaende } from '../src/client/gelaendeStil.js';
+import { veredleGelaende, baueGelaendeEbene, faerbeGelaende } from '../src/client/gelaendeStil.js';
 import { plazierePflanzen } from '../src/client/pflanzen.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from '../src/client/schadenszahlen.js';
 
@@ -57,6 +57,34 @@ test('Die Geländefärbung ist deterministisch und lässt die Maske unberührt',
   const c = attrappe(bitmap);
   veredleGelaende(c.layer, bitmap, B, H, PALETTE, 8);
   assert.notDeepEqual([...a.data], [...c.data], 'ein anderer Seed muss ein anderes Muster geben');
+});
+
+test('Ein-Zug-Aufbau: Ausgangsfarben zählen nicht, nur die Deckkraft — das Bild ist das der alten Zwei-Stufen-Fassung', () => {
+  const bitmap = karte();
+  // Alt: erst eine fertige Bodenfarbe (so wie der Baker sie liefert), dann veredeln.
+  const alt = attrappe(bitmap);
+  veredleGelaende(alt.layer, bitmap, B, H, PALETTE, 7);
+  // Neu: nur Deckkraft aus der Maske, dann in einem Zug färben.
+  let geschrieben = null;
+  const noop = () => {};
+  const ctx = {
+    createImageData: (b, h) => ({ data: new Uint8ClampedArray(b * h * 4), width: b, height: h }),
+    putImageData: (bild) => { geschrieben = bild.data; },
+    save: noop, restore: noop, beginPath: noop, moveTo: noop, lineTo: noop, quadraticCurveTo: noop,
+    closePath: noop, fill: noop, stroke: noop,
+  };
+  baueGelaendeEbene({ getContext: () => ctx }, bitmap, B, H, PALETTE, 7);
+  assert.deepEqual([...geschrieben], [...alt.data]);
+
+  // Und die Rechnung hängt wirklich nicht an den Ausgangsfarben.
+  const d1 = new Uint8ClampedArray(B * H * 4);
+  const d2 = new Uint8ClampedArray(B * H * 4);
+  for (let i = 0; i < bitmap.length; i += 1) {
+    if (bitmap[i]) { d1[i * 4 + 3] = 255; d2[i * 4] = 200; d2[i * 4 + 1] = 3; d2[i * 4 + 2] = 99; d2[i * 4 + 3] = 255; }
+  }
+  faerbeGelaende(d1, bitmap, B, H, PALETTE, 7);
+  faerbeGelaende(d2, bitmap, B, H, PALETTE, 7);
+  assert.deepEqual([...d1], [...d2]);
 });
 
 test('Pflanzenplätze hängen nur von Gelände und Seed ab', () => {

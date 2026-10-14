@@ -17,19 +17,19 @@ import {
   erzeugePartikel, schreitePartikelFort,
   erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
 } from './effects.js';
-import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
+import { bakeTerrainLayer, detectWebGpu } from './terrainBaker.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
 } from './effektStil.js';
-import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer } from './zerstoerungOptik.js';
+import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import { zeichneSoldat, zeichneNamensschild } from './figuren.js';
-import { veredleGelaende, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
+import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
-  plazierePflanzen, zeichnePflanzenSchicht, entfernePflanzenImKrater, entfernePflanzenAmRand,
+  plazierePflanzen, zeichnePflanzenSchicht, entfernePflanzenImKrater, entfernePflanzenAmRand, pflanzenStreifen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
@@ -53,7 +53,7 @@ const KULISSE_BILDER = 3;
 const KULISSE_BEWEGT_ANTEIL = 0.7;
 import {
   findeTreffer, trefferMarke, zuckVersatz,
-  ruckFuer, altereRuck, ruckVersatz,
+  ruckFuer, ruckAufprall, altereRuck, ruckVersatz,
   ergaenzeNarbe, verlaengereSpur,
   rauchWolke, schreiteRauchFort, rauchDarstellung,
 } from './gefuehl.js';
@@ -98,6 +98,11 @@ export class Renderer {
     this.terrainLayer = null;
     this.pflanzen = [];
     this.pflanzenSchicht = null;
+    /** Ob die Wasserebene schon berechnet wurde (sonst muss `#drawWater` rechnen). */
+    this.wasserFertig = false;
+    this.wasserRahmen = null;
+    /** Streifen der Pflanzenebene, die tatsächlich aufgelegt werden. */
+    this.pflanzenStreifen = [];
     this.waterLayer = document.createElement('canvas');
     this.waterLayer.width = Math.ceil(this.width / WATER_SCALE);
     this.waterLayer.height = Math.ceil(this.height / WATER_SCALE);
@@ -282,6 +287,8 @@ export class Renderer {
     // Die Geländeschicht ist auf die alte Größe gebaut und muss neu entstehen.
     this.terrainLayer = null;
     this.pflanzenSchicht = null;
+    this.pflanzenStreifen = [];
+    this.wasserFertig = false;
     this.pflanzen = [];
     // Auch die GPU-Nachbesserung braucht die neue Größe; ohne das Aufräumen
     // könnte ein spät eintreffendes GPU-Ergebnis die alte Ebene einsetzen.
@@ -600,13 +607,10 @@ export class Renderer {
     const layer = document.createElement('canvas');
     layer.width = width;
     layer.height = height;
-    const ctx = layer.getContext('2d');
 
-    const { layer: gebaut } = bakeTerrainLayerCpu({
-      layer, ctx, bitmap, width, height, palette: this.palette,
-    });
-    veredleGelaende(gebaut, bitmap, width, height, this.palette, this.scenery?.seed ?? 0);
-    this.terrainLayer = gebaut;
+    // Ein Zug statt Backen + Zurücklesen + Veredeln (siehe `baueGelaendeEbene`): pixelgleich, ohne Doppelarbeit.
+    baueGelaendeEbene(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0);
+    this.terrainLayer = layer;
     this.#baePflanzen(bitmap, width, height);
     /** Zuletzt gebackene Karte — der GPU-Weg braucht Bitmap und Maße erneut. */
     this.terrainSource = { bitmap, width, height };
@@ -626,7 +630,7 @@ export class Renderer {
     // oder bei einem Fehler bleibt es beim CPU-Ergebnis.
     if (this.gpuDevice) this.#applyGpuTerrain(width, height, bitmap);
 
-    return gebaut;
+    return layer;
   }
 
   /** Setzt Pflanzen auf das Gelände und zeichnet ihre Ebene (hinter dem Gelände, gecacht). */
@@ -643,6 +647,7 @@ export class Renderer {
     const schicht = this.pflanzenSchicht;
     if (!schicht) return;
     zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
+    this.pflanzenStreifen = pflanzenStreifen(this.pflanzen, schicht.width, schicht.height);
   }
 
   /**
@@ -783,8 +788,10 @@ export class Renderer {
     const g = inselGrenzen(runs);
     if (stumm || !g) return;
     const unten = runs.map((wert, i) => (i % 3 === 0 ? wert : wert + dy));
-    this.#zerstoerungsOptik(inselTruemmer(unten), inselStaub(unten, this.#erdfarbe()));
-    this.ruck = ruckFuer(Math.max(g.breite, g.hoehe) / 2, { reducedMotion: this.reducedMotion }) ?? this.ruck;
+    // Aufprall nach Masse und Fallhöhe: Staub, Druckwellen, Brocken, Bildzittern (alles nur Darstellung).
+    const aufprall = aufprallEffekt(unten, dy, this.#erdfarbe());
+    this.#zerstoerungsOptik(aufprall.truemmer, aufprall.staub);
+    this.ruck = ruckAufprall(aufprall.staerke, { reducedMotion: this.reducedMotion }) ?? this.ruck;
   }
 
   /**
@@ -805,6 +812,7 @@ export class Renderer {
     this.rauch = [];
     this.truemmer = [];
     this.inselfall.zuruecksetzen();
+    this.wasserFertig = false;
     this.spuren = new Map();
     this.ruck = null;
     this.letzterKrater = null;
@@ -999,8 +1007,23 @@ export class Renderer {
     return u.maske;
   }
 
-  #drawWater(water) {
+  /**
+   * Wasser zeichnen.
+   *
+   * Die Wasserebene (Farben, Wellen, Schaum) wird nur alle paar Bilder neu BERECHNET (`neu`), aber
+   * JEDES Bild aufgelegt. Zuvor kam `water` nur in jedem vierten Bild an und alles andere übersprang
+   * das Zeichnen — das Wasser blinkte mit 15 Hz (belegt: 4 `putImageData` auf 16 Bilder).
+   *
+   * @param {object|null} water - WaterField des Matches
+   * @param {boolean} neu - Ebene neu berechnen (sonst die zuletzt berechnete auflegen)
+   */
+  #drawWater(water, neu = true) {
     if (!water) return;
+    if (!neu && this.wasserFertig) {
+      this.#legeWasserAuf();
+      return;
+    }
+    this.wasserFertig = true;
     this.waterCtx.clearRect(0, 0, this.waterLayer.width, this.waterLayer.height);
     const image = this.waterCtx.createImageData(this.waterLayer.width, this.waterLayer.height);
     const data = image.data;
@@ -1028,6 +1051,8 @@ export class Renderer {
     const oben = this.wasserOben?.length === bg ? this.wasserOben : (this.wasserOben = new Int16Array(bg));
     lauf.fill(-1);
     oben.fill(-1);
+    // Umschließendes Rechteck der nassen Zellen: Nur dieses Stück wird später aufgelegt.
+    let nx0 = bg; let nx1 = -1; let ny0 = hg; let ny1 = -1;
 
     for (let y = 0; y < hg; y += 1) {
       const zeile = y * bg;
@@ -1036,6 +1061,10 @@ export class Renderer {
         const level = levels[i];
         if (level <= 0.02) { lauf[x] = -1; continue; }
         const k = lauf[x] + 1;
+        if (x < nx0) nx0 = x;
+        if (x > nx1) nx1 = x;
+        if (y < ny0) ny0 = y;
+        if (y > ny1) ny1 = y;
         if (k === 0) { if (oben[x] < 0) oben[x] = y; }
         lauf[x] = k;
         const f = stufen[k < STUFEN ? k : STUFEN - 1];
@@ -1070,16 +1099,30 @@ export class Renderer {
       }
     }
     this.waterCtx.putImageData(image, 0, 0);
+    // Zwei Zellen Rand: Das Hochskalieren der Ebene blendet an der Kante in Transparent aus.
+    this.wasserRahmen = nx1 < 0 ? null : {
+      x0: Math.max(0, nx0 - 2), y0: Math.max(0, ny0 - 2), x1: Math.min(bg, nx1 + 3), y1: Math.min(hg, ny1 + 3),
+    };
+    this.#legeWasserAuf();
+  }
 
-    this.ctx.save();
-    this.ctx.globalAlpha = 0.88;
-    this.ctx.drawImage(this.waterLayer, 0, 0, this.width, this.height);
-    this.ctx.restore();
+  /** Legt die berechnete Wasserebene samt Oberflächenstruktur auf das Bild. */
+  #legeWasserAuf() {
+    const r = this.wasserRahmen;
+    if (r) {
+      this.ctx.save();
+      this.ctx.globalAlpha = 0.88;
+      // Nur das Rechteck mit Wasser (die Ebene ist sonst durchsichtig, aber ein ganzes Bild groß).
+      const sx = this.width / this.waterLayer.width;
+      const sy = this.height / this.waterLayer.height;
+      this.ctx.drawImage(this.waterLayer, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, r.x0 * sx, r.y0 * sy, (r.x1 - r.x0) * sx, (r.y1 - r.y0) * sy);
+      this.ctx.restore();
+    }
 
     // Struktur der Wasserart NACH der Fläche: Kruste, Wellen, Blasen und Sterne
     // liegen auf dem Wasser, nicht darunter — an den Spiegel der Spalten geheftet.
     if (this.scenery) {
-      drawWaterSurface(this.ctx, this.width, this.height, this.scenery, this.time, { oben, skala: WATER_SCALE });
+      drawWaterSurface(this.ctx, this.width, this.height, this.scenery, this.time, { oben: this.wasserOben, skala: WATER_SCALE });
     }
   }
 
@@ -1750,9 +1793,10 @@ export class Renderer {
    *   Ladeanzeige. Solange geladen wird, ist das der einzige sichtbare Hinweis
    *   darauf, dass Halten etwas bewirkt (online gibt es keine Zielhilfe).
    * @param {object} [options.water] - WaterField-Instanz des Matches
+   * @param {boolean} [options.wasserNeu] - Wasserebene neu berechnen (sonst die letzte auflegen)
    * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
-  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = null, wiederholung = null, water = null, blastRadius = 0 } = {}) {
+  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = null, wiederholung = null, water = null, wasserNeu = true, blastRadius = 0 } = {}) {
     // Zugänglichkeit je Bild neu abfragen: Ändert der Nutzer die
     // Systemeinstellung, greift sie ohne Neuladen.
     this.reducedMotion = prefersReducedMotion();
@@ -1839,7 +1883,12 @@ export class Renderer {
       this.ctx.setTransform(1, 0, 0, 1, ruck.x, ruck.y);
     }
 
-    if (this.pflanzenSchicht) this.ctx.drawImage(this.pflanzenSchicht, 0, 0);
+    if (this.pflanzenSchicht) {
+      // Nur die Streifen um die Pflanzen: die Ebene ist sonst leer (siehe `pflanzenStreifen`).
+      for (const r of this.pflanzenStreifen) {
+        this.ctx.drawImage(this.pflanzenSchicht, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+      }
+    }
     if (this.terrainLayer) {
       /*
        * Die Geländeschicht wird in Kartenkoordinaten gezeichnet (0, 0) — unter
@@ -1856,7 +1905,7 @@ export class Renderer {
      */
     this.#drawNarben();
 
-    this.#drawWater(water);
+    this.#drawWater(water, wasserNeu);
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);

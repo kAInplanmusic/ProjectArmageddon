@@ -2605,7 +2605,9 @@ class Game {
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       ladeAnteil,
       wiederholung,
-      water: this.mode === 'online' ? null : (this.waterFrame === 0 ? this.match.water : null),
+      // Das Wasser wird JEDES Bild aufgelegt, aber nur alle vier Bilder neu berechnet.
+      water: this.mode === 'online' ? null : this.match.water,
+      wasserNeu: this.waterFrame === 0,
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.#trackWater(state);

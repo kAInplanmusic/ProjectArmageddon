@@ -240,3 +240,43 @@ export function zeichnePflanzenSchicht(ctx, liste, breite, hoehe, palette) {
   const farben = pflanzenFarben(palette);
   for (const p of liste) zeichnePflanze(ctx, p, farben);
 }
+
+/**
+ * Umschließendes Rechteck einer Pflanze (großzügig, Kontur und Neigung eingerechnet).
+ * Breiter als jede Form in `zeichnePflanze`: Palmwedel und Farnblätter reichen bis 1,3 h zur Seite,
+ * Büsche bis 1,3 h, Kronen bis 1,5 h hoch.
+ */
+export function pflanzenRahmen(p, breite, hoehe) {
+  const halb = Math.ceil(p.h * 1.4 + 8);
+  const x0 = Math.max(0, Math.floor(p.x - halb));
+  const x1 = Math.min(breite, Math.ceil(p.x + halb));
+  const y0 = Math.max(0, Math.floor(p.y - p.h * 1.6 - 8));
+  const y1 = Math.min(hoehe, Math.ceil(p.y + p.h * 0.4 + 6));
+  return { x0, x1, y0, y1 };
+}
+
+/**
+ * Die Pflanzenebene ist so groß wie die Karte, aber fast leer. Statt sie jedes Bild
+ * ganz aufzulegen (die Karte hat bis zu 3,7 Mio. Pixel), genügen Streifen um die Pflanzen:
+ * überlappende Rahmen werden zu SENKRECHTEN Streifen ohne Überlappung verschmolzen
+ * (jedes Pixel wird höchstens einmal gezeichnet, das Bild bleibt pixelgleich).
+ *
+ * @returns {Array<{x0:number,x1:number,y0:number,y1:number}>} sortiert nach `x0`, überschneidungsfrei
+ */
+export function pflanzenStreifen(liste, breite, hoehe) {
+  const rahmen = liste.map(p => pflanzenRahmen(p, breite, hoehe))
+    .filter(r => r.x1 > r.x0 && r.y1 > r.y0)
+    .sort((a, b) => a.x0 - b.x0);
+  const streifen = [];
+  for (const r of rahmen) {
+    const letzter = streifen[streifen.length - 1];
+    if (letzter && r.x0 < letzter.x1) {
+      letzter.x1 = Math.max(letzter.x1, r.x1);
+      letzter.y0 = Math.min(letzter.y0, r.y0);
+      letzter.y1 = Math.max(letzter.y1, r.y1);
+    } else {
+      streifen.push({ ...r });
+    }
+  }
+  return streifen;
+}

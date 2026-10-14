@@ -250,7 +250,37 @@ function tabelle(laenge, skala, seed) {
 export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0) {
   const ctx = layer.getContext('2d');
   const bild = ctx.getImageData(0, 0, breite, hoehe);
+  const buescheln = faerbeGelaende(bild.data, bitmap, breite, hoehe, palette, seed);
+  ctx.putImageData(bild, 0, 0);
+  zeichneBueschel(ctx, buescheln.liste, buescheln.saum, seed);
+  return buescheln.liste;
+}
+
+/**
+ * Baut die Geländeebene in EINEM Zug: Deckkraft aus der Maske, Färbung, ein einziges `putImageData`.
+ *
+ * Der Weg über `bakeTerrainLayerCpu` (Verlaufsfarbe, Höhlenschatten, Kantenlicht per `fillRect`) und
+ * dann `veredleGelaende` (`getImageData` zurücklesen, alles überschreiben) färbte jedes Pixel
+ * zweimal und las die Ebene vom Rasterer zurück. `faerbeGelaende` überschreibt jede Farbe ohnehin;
+ * von der Vorstufe zählt nur die Deckkraft, und die ist genau die Maske. Das Ergebnis ist
+ * pixelgleich zu `bake` + `veredleGelaende` (belegt in `tests/comic-stil.test.js`).
+ *
+ * @param {{getContext:function}} layer - leere Ebene in Kartengröße
+ * @returns {Array<{x:number,y:number,h:number}>} Grasbüschel-Positionen
+ */
+export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 0) {
+  const ctx = layer.getContext('2d');
+  const bild = ctx.createImageData(breite, hoehe);
   const d = bild.data;
+  for (let i = 0, n = breite * hoehe; i < n; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
+  const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed);
+  ctx.putImageData(bild, 0, 0);
+  zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);
+  return ergebnis.liste;
+}
+
+/** Rechenkern der Färbung: schreibt in `d` (RGBA, Deckkraft schon gesetzt). */
+export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
   const S = baueSteine(breite, hoehe, seed, palette);
   const { nx, ny, p1x, p1y, w1, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3 } = S;
 
@@ -272,7 +302,44 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
   // Erdschicht unter dem Saum: die Bodenfarbe, abgedunkelt und leicht erdig.
   const erde = mischeRgb(mischeRgb(palette.surface, palette.deep, 0.6), art === 'schnee' ? [96, 110, 128] : [74, 54, 36], 0.4).map(v => v * 0.62);
   const ERDE_TIEFE = 54;
+  // Steckplatz (0..8) im 3×3-Block der Zellen -> Zellindex-Versatz.
+  const slotOff = Int32Array.from([-nx - 1, -nx, -nx + 1, -1, 0, 1, nx - 1, nx, nx + 1]);
   const runStart = new Int32Array(breite).fill(-1);
+
+  /*
+   * Je Spalte und je Tiefe vorab, was im Pixelrumpf sonst Millionen Mal gerechnet würde.
+   * Die Summanden bleiben einzeln (gleiche Rechenfolge wie zuvor): das Bild ist bitgleich.
+   */
+  const vsA = new Float64Array(breite);
+  const vsB = new Float64Array(breite);
+  const lyA = new Float64Array(breite);
+  const lyB = new Float64Array(breite);
+  const vignX = new Float64Array(breite);
+  for (let x = 0; x < breite; x += 1) {
+    vsA[x] = (wyx[x] - 0.5) * 14;
+    vsB[x] = (wyx2[x] - 0.5) * 5;
+    lyA[x] = (wyx[x] - 0.5) * 44;
+    lyB[x] = (x >> 4) * 0.35;
+    vignX[x] = 1 - 0.2 * (1 - glatt(0, 0.1, Math.min(x, breite - 1 - x) / breite));
+  }
+  const tiefeT = new Float64Array(hoehe + 1);
+  for (let t = 0; t <= hoehe; t += 1) tiefeT[t] = glatt(18, 640, t);
+  // Nenner des Randmaßes der ersten Ebene je Zellpaar im 3×3-Block um die Mitte (Steckplätze 0..8): kein sqrt je Pixel.
+  const nenner = new Float64Array(nx * ny * 81);
+  for (let j = 1; j < ny - 1; j += 1) {
+    for (let i = 1; i < nx - 1; i += 1) {
+      const mitte = j * nx + i;
+      for (let a = 0; a < 9; a += 1) {
+        for (let c = 0; c < 9; c += 1) {
+          const ka = mitte + (Math.floor(a / 3) - 1) * nx + (a % 3 - 1);
+          const kc = mitte + (Math.floor(c / 3) - 1) * nx + (c % 3 - 1);
+          const ax = p1x[ka] - p1x[kc];
+          const ay = p1y[ka] - p1y[kc];
+          nenner[mitte * 81 + a * 9 + c] = 2 * Math.sqrt(ax * ax + ay * ay) + 1e-6;
+        }
+      }
+    }
+  }
 
   for (let y = 0; y < hoehe; y += 1) {
     const verschX = (wxy[y] - 0.5) * 16 + (wxy2[y] - 0.5) * 6;
@@ -286,7 +353,7 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
       if (d[o + 3] === 0) continue;
 
       const sx = x + verschX;
-      const sy = (y + (wyx[x] - 0.5) * 14 + (wyx2[x] - 0.5) * 5) * YSTRECK;
+      const sy = (y + vsA[x] + vsB[x]) * YSTRECK;
       let ci = Math.floor(sx / GROSS_B) + 2;
       let cj = Math.floor(sy / GROSS_HS) + 2;
       ci = ci < 1 ? 1 : ci > nx - 2 ? nx - 2 : ci;
@@ -295,21 +362,18 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
       // Ebene 1: gewichtete Zellen (Power-Diagramm), Abstand zur Mittelsenkrechten als Randmaß.
       let D1 = 1e18;
       let D2 = 1e18;
-      let best = 0;
-      let zweit = 0;
-      for (let dj = -1; dj <= 1; dj += 1) {
-        const zeile = (cj + dj) * nx + ci;
-        for (let di = -1; di <= 1; di += 1) {
-          const k = zeile + di;
-          const dx = sx - p1x[k];
-          const dy = sy - p1y[k];
-          const dd = dx * dx + dy * dy - w1[k];
-          if (dd < D1) { D2 = D1; zweit = best; D1 = dd; best = k; } else if (dd < D2) { D2 = dd; zweit = k; }
-        }
+      let sb = 0;
+      let sz1 = 0;
+      const mitte = cj * nx + ci;
+      for (let slot = 0; slot < 9; slot += 1) {
+        const k = mitte + slotOff[slot];
+        const dx = sx - p1x[k];
+        const dy = sy - p1y[k];
+        const dd = dx * dx + dy * dy - w1[k];
+        if (dd < D1) { D2 = D1; sz1 = sb; D1 = dd; sb = slot; } else if (dd < D2) { D2 = dd; sz1 = slot; }
       }
-      const ax = p1x[best] - p1x[zweit];
-      const ay = p1y[best] - p1y[zweit];
-      let e = (D2 - D1) / (2 * Math.sqrt(ax * ax + ay * ay) + 1e-6);
+      const best = mitte + slotOff[sb];
+      let e = (D2 - D1) / nenner[mitte * 81 + sb * 9 + sz1];
 
       // Ebene 2: mittlere Steine im Brocken (Randmaß über vorberechnete Kehrwerte der Punktabstände).
       const c2 = n2[best];
@@ -359,7 +423,7 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
       const tiefe = y - runStart[x];
 
       // Lagen: schräg-wellige Bänder; die feine Lage setzt dünne dunkle Fugen und zieht warm/kalt.
-      const ly = (y + LAGE_RAND + (wyx[x] - 0.5) * 44 + (x >> 4) * 0.35) | 0;
+      const ly = (y + LAGE_RAND + lyA[x] + lyB[x]) | 0;
       const lage = lagen[ly < 0 ? 0 : ly];
       const fein = lagenFein[ly < 0 ? 0 : ly];
       const warm = lage * 2 - 1;
@@ -436,9 +500,8 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
       }
 
       // Tiefe: nach unten deutlich dunkler und kühler, Rand der Karte als Vignette.
-      const t = glatt(18, 640, tiefe);
-      const rand = Math.min(x, breite - 1 - x) / breite;
-      const vign = 1 - 0.2 * (1 - glatt(0, 0.1, rand));
+      const t = tiefeT[tiefe];
+      const vign = vignX[x];
       const dunkel = (1.06 - 0.56 * t) * hoeheFaktor * vign;
       r *= dunkel * (1 - 0.06 * t);
       gg *= dunkel;
@@ -462,9 +525,7 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
   const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);
   zeichneRand(d, bitmap, breite, hoehe, art);
   zeichneKontur(d, bitmap, breite, hoehe);
-  ctx.putImageData(bild, 0, 0);
-  zeichneBueschel(ctx, buescheln, saum, seed);
-  return buescheln;
+  return { liste: buescheln, saum };
 }
 
 /** Moos- und Grasschicht an jeder Oberkante; schreibt direkt in die Pixel. */
