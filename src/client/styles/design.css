@@ -705,9 +705,33 @@ select option { background: #14181d; color: var(--ink); }
   .lk-info { gap: 4px; }
   .lk-id { font-size: 20px; }
   .lk-kopf { gap: 6px; }
-  #toasts { top: 6px; right: 6px; width: min(300px, calc(100vw - 12px)); gap: 5px; }
-  .toast { font-size: 13px; padding: 5px 10px 5px 8px; }
+  /*
+   * Toasts in niedrigen Fenstern (z. B. 800x400): Oben rechts deckten sie die Lobbykarte und das Menü zu.
+   * Jetzt klein, unten mittig und höchstens die zwei neuesten sichtbar; im Spiel links am Rand
+   * (dort liegen weder Waffenleiste noch FEUER noch die HUD-Kopfzeile).
+   */
+  #toasts {
+    top: auto; right: auto; bottom: 6px; left: 50%; transform: translateX(-50%);
+    width: min(320px, calc(100vw - 16px)); gap: 3px; align-items: stretch;
+  }
+  .toast {
+    min-height: 28px; padding: 2px 8px 2px 6px; font-size: 12px; line-height: 1.2; gap: 6px;
+    grid-template-columns: 20px minmax(0, 1fr) auto; border-radius: 5px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    animation-name: toast-ein-klein;
+  }
+  .toast.is-weg { animation-name: toast-aus-klein; }
+  .toast-symbol { width: 20px; height: 20px; font-size: 13px; }
+  .toast-zahl { font-size: 14px; }
+  /* Über dem Menü nur die neueste Meldung (eine Zeile), im Spiel die zwei neuesten. */
+  #toasts > .toast:nth-last-child(n + 2) { display: none; }
+  #toasts { bottom: 3px; width: min(300px, calc(100vw - 16px)); }
+  body:not(:has(#menu-overlay:not([hidden]))) #toasts {
+    left: 8px; bottom: auto; top: 46%; transform: none; width: min(240px, 34vw);
+  }
+  body:not(:has(#menu-overlay:not([hidden]))) #toasts > .toast:nth-last-child(2) { display: grid; }
 }
+@keyframes toast-ein-klein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-aus-klein { to { opacity: 0; transform: translateY(8px); } }
 @media (max-width: 480px) {
   #lobby-list li.lobby-karte { grid-template-columns: 1fr; }
   #lobby-list .lk-beitreten { width: 100%; }
