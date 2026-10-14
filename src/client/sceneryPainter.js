@@ -17,7 +17,7 @@
  * @module sceneryPainter
  */
 
-import { PAL, folge, rauschen1, hexRgb } from './stil.js';
+import { PAL, folge, rauschen1, hexRgb, hash2 } from './stil.js';
 import { zeichnePflanze } from './pflanzen.js';
 
 const BG0 = hexRgb(PAL.bg0);
@@ -521,6 +521,7 @@ function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
  * @param {number} grundlinie - y der Horizontlinie in Pixeln
  */
 export function drawLandmarks(ctx, breite, hoehe, scenery, grundlinie) {
+  zeichneHorizontLicht(ctx, breite, scenery, grundlinie);
   zeichneFelsmassive(ctx, breite, hoehe, scenery, grundlinie);
   if (scenery.landmarks?.length) {
     // Die Höhe wird für die Zeichenroutinen gebraucht; sie steckt nicht im
@@ -531,6 +532,28 @@ export function drawLandmarks(ctx, breite, hoehe, scenery, grundlinie) {
     }
   }
   zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie);
+}
+
+/**
+ * Lichtstimmung am Horizont: ein weicher Schein unter dem Himmelskörper (warm bei Sonne, kühl bei Mond oder
+ * Gewitter). Liegt hinter allen Silhouetten und wird mit der übrigen Kulisse einmal gebacken.
+ */
+function zeichneHorizontLicht(ctx, breite, scenery, grundlinie) {
+  const himmel = scenery.sky;
+  if (!himmel?.colors?.length) return;
+  const licht = himmel.light ?? 0.8;
+  const kind = scenery.celestial?.kind;
+  const kuehl = kind === 'moon' || (!kind && licht < 0.6);
+  const farbe = kuehl ? [138, 168, 214] : kind === 'setting_sun' ? [255, 150, 84] : [255, 218, 156];
+  const x = (scenery.celestial?.x ?? 0.5) * breite;
+  const r = breite * 0.6;
+  const schein = ctx.createRadialGradient(x, grundlinie, 0, x, grundlinie, r);
+  const st = 0.1 + 0.2 * licht;
+  schein.addColorStop(0, rgb(farbe, st));
+  schein.addColorStop(0.4, rgb(farbe, st * 0.42));
+  schein.addColorStop(1, rgb(farbe, 0));
+  ctx.fillStyle = schein;
+  ctx.fillRect(0, grundlinie - r * 0.6, breite, r * 0.8);
 }
 
 /** Graue Felsmassive mit Kanten und Facetten, aus dem Seed der Kulisse. */
@@ -663,7 +686,11 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
   const f0 = mix(dunst, BG0, 0.42);
   const f1 = mix(mix(boden, dunst, 0.4), BG0, 0.66);
   const f2 = mix(mix(boden, dunst, 0.15), BG0, 0.76);
+  const f_1 = mix(dunst, BG0, 0.3);
+  const lichtFarbe = mix(dunst, [255, 244, 220], 0.45);
   const ebenen = [
+    // Fernste Kette: hell und dunstig, kleine Wälder, kaum Kontrast zum Himmel (Luftperspektive).
+    { versatz: -hoehe * 0.04, amp: 0.1, farbe: f_1, baum: mix(f_1, BG0, 0.22), rausch: seed + 41, baumH: [9, 8], dicht: 30, felsen: 0 },
     { versatz: -4, amp: 0.075, farbe: f0, baum: mix(mix(f0, BG0, 0.5), gruen, 0.1), rausch: seed + 3, baumH: [24, 22], dicht: 52, felsen: 2 },
     { versatz: hoehe * 0.1, amp: 0.085, farbe: f1, baum: mix(mix(f1, BG0, 0.55), gruen, 0.14), rausch: seed + 17, baumH: [40, 30], dicht: 76, felsen: 1 },
     { versatz: hoehe * 0.2, amp: 0.07, farbe: f2, baum: mix(mix(f2, BG0, 0.6), gruen, 0.12), rausch: seed + 29, baumH: [62, 40], dicht: 110, felsen: 1 },
@@ -672,7 +699,7 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
   ctx.lineJoin = 'round';
   ebenen.forEach((ebene, e) => {
     const basis = grundlinie + ebene.versatz;
-    const profil = x => basis - hoehe * ebene.amp * (0.25 + 0.75 * rauschen1(x / (breite * (0.13 - e * 0.015)), ebene.rausch));
+    const profil = x => basis - hoehe * ebene.amp * (0.25 + 0.75 * rauschen1(x / (breite * (0.13 - e * 0.012)), ebene.rausch));
     const zufall = folge(seed * 7 + e * 101 + 1);
 
     // Felswände hinter der Kette (nur in den ferneren Ebenen).
@@ -702,6 +729,14 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
     ctx.strokeStyle = rgb(mix(ebene.farbe, dunst, 0.3));
     ctx.lineWidth = 3;
     ctx.stroke();
+    // Kammlicht: ein heller Saum knapp über dem Kamm, nach vorn kräftiger (die ferne Kette liegt im Dunst).
+    ctx.beginPath();
+    for (let x = 0; x <= breite; x += 16) {
+      if (x === 0) ctx.moveTo(x, profil(x) - 2); else ctx.lineTo(x, profil(x) - 2);
+    }
+    ctx.strokeStyle = rgb(lichtFarbe, 0.1 + 0.07 * e);
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
     // Bäume auf dem Kamm: Tannen und Palmen gemischt, nahe Ebenen größer.
     const farbe = rgb(ebene.baum);
@@ -724,7 +759,7 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
     // Dunst unterhalb des Kamms dieser Ebene: trennt sie von der nächsten, nimmt die Tiefe zu.
     const nebel = ctx.createLinearGradient(0, basis - hoehe * 0.05, 0, basis + hoehe * 0.13);
     nebel.addColorStop(0, rgb(dunst, 0));
-    nebel.addColorStop(0.5, rgb(dunst, 0.2 - e * 0.04));
+    nebel.addColorStop(0.5, rgb(dunst, 0.34 - e * 0.07));
     nebel.addColorStop(1, rgb(dunst, 0));
     ctx.fillStyle = nebel;
     ctx.fillRect(0, basis - hoehe * 0.05, breite, hoehe * 0.18);
@@ -732,8 +767,8 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
   // Bodennebel ganz unten: die Kulisse läuft weich in die Geländekante aus.
   const bodennebel = ctx.createLinearGradient(0, grundlinie + hoehe * 0.2, 0, hoehe);
   bodennebel.addColorStop(0, rgb(dunst, 0));
-  bodennebel.addColorStop(0.6, rgb(dunst, 0.1));
-  bodennebel.addColorStop(1, rgb(dunst, 0.04));
+  bodennebel.addColorStop(0.6, rgb(dunst, 0.14));
+  bodennebel.addColorStop(1, rgb(dunst, 0.06));
   ctx.fillStyle = bodennebel;
   ctx.fillRect(0, grundlinie + hoehe * 0.2, breite, hoehe);
   ctx.restore();
@@ -753,51 +788,82 @@ export function waterColors(water) {
 /**
  * Zeichnet die Oberfläche einer Wasserart (Wellen, Kruste, Blasen, Sterne).
  * Wird NACH der Wasserfläche gezeichnet, damit die Struktur sichtbar bleibt.
+ *
+ * Die Struktur ist an den tatsächlichen Wasserspiegel geheftet (`oberflaeche.oben` = erste Wasserzelle je
+ * Spalte, -1 = kein Wasser; `skala` = Weltpixel je Zelle) und läuft deshalb nie über Land. Ohne diese Angabe
+ * (Tests, Vorschau) steht ein gerader Spiegel bei zwei Dritteln der Höhe.
+ *
+ * @param {{oben:Int16Array, skala:number}|null} [oberflaeche]
  */
-export function drawWaterSurface(ctx, breite, hoehe, scenery, zeit) {
+export function drawWaterSurface(ctx, breite, hoehe, scenery, zeit, oberflaeche = null) {
   const art = scenery.water;
   if (!art) return;
+  const skala = oberflaeche?.skala ?? 4;
+  let oben = oberflaeche?.oben;
+  if (!oben) {
+    oben = new Int16Array(Math.ceil(breite / skala)).fill(Math.round(hoehe * 0.66 / skala));
+  }
+  const n = oben.length;
+  const seed = scenery.seed ?? 0;
+
+  /** Zeichnet einen Linienzug entlang des Spiegels; `tiefer` verschiebt ihn nach unten, `welle` ist die Auslenkung. */
+  const spiegelLinie = (tiefer, phase, amp, freq, schritt = 2) => {
+    ctx.beginPath();
+    let offen = false;
+    for (let x = 0; x < n; x += schritt) {
+      const y0 = oben[x];
+      if (y0 < 0) { offen = false; continue; }
+      const px = x * skala;
+      const py = y0 * skala + tiefer + Math.sin(x * freq + phase) * amp;
+      if (offen) ctx.lineTo(px, py); else { ctx.moveTo(px, py); offen = true; }
+    }
+    ctx.stroke();
+  };
 
   ctx.save();
   switch (art.surface) {
     case 'waves': {
-      ctx.strokeStyle = `rgba(220,240,255,0.28)`;
+      // Kammlinien parallel zum Spiegel, dazu helle Schaumkappen auf einzelnen Wellen.
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(232,246,255,0.5)';
+      ctx.lineWidth = 2;
+      spiegelLinie(1, zeit * 0.05, 2.2, 0.36);
+      ctx.strokeStyle = 'rgba(200,228,248,0.22)';
       ctx.lineWidth = 1.5;
-      for (let i = 0; i < 7; i += 1) {
-        const y = hoehe * (0.62 + i * 0.055);
-        const versatz = Math.sin(zeit * 0.02 + i) * 8;
-        ctx.beginPath();
-        for (let x = 0; x <= breite; x += 24) {
-          const welle = Math.sin((x + versatz + i * 40) * 0.02) * 3.5;
-          if (x === 0) ctx.moveTo(x, y + welle);
-          else ctx.lineTo(x, y + welle);
-        }
-        ctx.stroke();
+      spiegelLinie(14, zeit * 0.035 + 2, 2.6, 0.27);
+      spiegelLinie(30, zeit * 0.025 + 4, 3, 0.19, 3);
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      for (let x = 2; x < n - 3; x += 3) {
+        if (oben[x] < 0 || oben[x + 2] < 0 || hash2(x, 3, seed) < 0.78) continue;
+        const px = x * skala;
+        const py = oben[x] * skala + Math.sin(x * 0.36 + zeit * 0.05) * 2.2 - 1;
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + 11, py + 0.8);
       }
+      ctx.stroke();
       break;
     }
     case 'crust': {
-      // Abgekühlte Kruste auf Lava: dunkle Platten mit glühenden Rissen.
-      ctx.globalAlpha = 0.55;
-      for (let i = 0; i < 26; i += 1) {
-        const x = ((i * 137) % breite);
-        const y = hoehe * (0.68 + ((i * 53) % 30) / 100);
-        const r = 12 + ((i * 17) % 22);
-        ctx.fillStyle = 'rgba(38,26,22,0.75)';
-        ctx.beginPath();
-        ctx.ellipse(x, y, r, r * 0.42, (i % 5) * 0.3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.strokeStyle = 'rgba(255,150,40,0.5)';
+      // Abgekühlte Kruste auf Lava: dunkle Platten auf dem Spiegel mit glühender Kante.
+      ctx.strokeStyle = 'rgba(255,170,60,0.55)';
+      ctx.lineWidth = 3;
+      spiegelLinie(1, zeit * 0.03, 1.5, 0.3);
+      ctx.strokeStyle = 'rgba(255,110,30,0.3)';
       ctx.lineWidth = 2;
-      for (let i = 0; i < 9; i += 1) {
-        const y = hoehe * (0.7 + i * 0.032);
+      spiegelLinie(12, zeit * 0.02 + 1, 3, 0.2, 3);
+      for (let x = 0; x < n - 4; x += 5) {
+        if (oben[x] < 0 || hash2(x, 7, seed) < 0.45) continue;
+        const r = 9 + hash2(x, 8, seed) * 18;
+        const px = x * skala + Math.sin(zeit * 0.01 + x) * 3;
+        const py = oben[x] * skala + 5 + hash2(x, 9, seed) * 18;
+        ctx.fillStyle = 'rgba(38,26,22,0.78)';
         ctx.beginPath();
-        for (let x = 0; x <= breite; x += 30) {
-          const riss = Math.sin((x + i * 60) * 0.03) * 4;
-          if (x === 0) ctx.moveTo(x, y + riss);
-          else ctx.lineTo(x, y + riss);
-        }
+        ctx.ellipse(px, py, r, r * 0.38, (hash2(x, 10, seed) - 0.5) * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,150,40,0.5)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
       break;
@@ -805,36 +871,46 @@ export function drawWaterSurface(ctx, breite, hoehe, scenery, zeit) {
     case 'bubbles':
     case 'grain': {
       const istTreibsand = art.surface === 'grain';
-      ctx.fillStyle = istTreibsand ? 'rgba(120,96,58,0.35)' : 'rgba(180,230,150,0.3)';
-      for (let i = 0; i < 120; i += 1) {
-        const x = (i * 211) % breite;
-        const y = hoehe * (0.66 + ((i * 71) % 32) / 100);
-        const r = istTreibsand ? 1.6 : 2.2 + Math.abs(Math.sin(zeit * 0.03 + i)) * 1.6;
+      ctx.fillStyle = istTreibsand ? 'rgba(120,96,58,0.45)' : 'rgba(180,230,150,0.4)';
+      ctx.strokeStyle = istTreibsand ? 'rgba(236,214,160,0.4)' : 'rgba(214,246,180,0.35)';
+      ctx.lineWidth = 1.2;
+      spiegelLinie(1, zeit * 0.02, 1.2, 0.25, 3);
+      for (let x = 0; x < n; x += 2) {
+        if (oben[x] < 0 || hash2(x, 11, seed) < 0.72) continue;
+        // Blasen steigen vom Grund zum Spiegel und platzen dort; Treibsand-Körner zittern nur.
+        const lauf = istTreibsand ? 0.3 : ((zeit * 0.012 + hash2(x, 12, seed)) % 1);
+        const py = oben[x] * skala + 4 + (1 - lauf) * 40;
+        const r = istTreibsand ? 1.6 : 1.4 + hash2(x, 13, seed) * 2.2;
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(x * skala + Math.sin(zeit * 0.04 + x) * 2, py, r, 0, Math.PI * 2);
+        if (istTreibsand) ctx.fill(); else ctx.stroke();
       }
       break;
     }
     case 'stars': {
-      for (let i = 0; i < 90; i += 1) {
-        const x = (i * 173) % breite;
-        const y = hoehe * (0.66 + ((i * 43) % 32) / 100);
-        const funkeln = 0.3 + 0.7 * Math.abs(Math.sin(zeit * 0.02 + i * 1.3));
+      for (let x = 0; x < n; x += 2) {
+        if (oben[x] < 0 || hash2(x, 14, seed) < 0.55) continue;
+        const funkeln = 0.3 + 0.7 * Math.abs(Math.sin(zeit * 0.02 + x * 1.3));
         ctx.fillStyle = `rgba(210,190,255,${funkeln * 0.7})`;
-        ctx.fillRect(x, y, 1.6, 1.6);
+        ctx.fillRect(x * skala, oben[x] * skala + 3 + hash2(x, 15, seed) * 60, 1.8, 1.8);
       }
+      ctx.strokeStyle = 'rgba(196,170,255,0.4)';
+      ctx.lineWidth = 1.5;
+      spiegelLinie(1, zeit * 0.02, 1.4, 0.3, 3);
       break;
     }
     case 'ripples': {
-      ctx.strokeStyle = 'rgba(240,255,250,0.22)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 40; i += 1) {
-        const x = (i * 97) % breite;
-        const y = hoehe * (0.66 + ((i * 61) % 30) / 100);
-        const rw = 8 + ((i * 13) % 16);
+      // Ringe, die sich am Spiegel ausbreiten und verblassen.
+      ctx.strokeStyle = 'rgba(240,255,250,0.35)';
+      ctx.lineWidth = 1.2;
+      spiegelLinie(1, zeit * 0.03, 1, 0.3, 3);
+      for (let x = 1; x < n; x += 4) {
+        if (oben[x] < 0 || hash2(x, 16, seed) < 0.6) continue;
+        const alter = (zeit * 0.01 + hash2(x, 17, seed)) % 1;
+        const rw = 4 + alter * 20;
+        ctx.globalAlpha = 1 - alter;
         ctx.beginPath();
-        ctx.ellipse(x, y, rw, rw * 0.28, 0, 0, Math.PI * 2);
+        ctx.ellipse(x * skala, oben[x] * skala + 3 + hash2(x, 18, seed) * 6, rw, rw * 0.26, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
       break;

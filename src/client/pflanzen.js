@@ -10,6 +10,7 @@
 import {
   PAL, hash2, mischeRgb, css, gruenAnteil, folge,
 } from './stil.js';
+import { bodenArt } from './gelaendeStil.js';
 
 const BLATT = [46, 128, 30];
 const BLATT_DUNKEL = [22, 76, 24];
@@ -30,10 +31,11 @@ const BEWUCHS = Object.freeze({
  * @param {number} hoehe
  * @param {number} seed
  * @param {string|null} biomId
+ * @param {string} [art] - Bodenart aus `bodenArt()`: auf Schnee wachsen Tannen, auf Sand Palmen und Dürrgras
  * @returns {Array<{art:string,x:number,y:number,h:number,spiegel:boolean,seed:number}>}
  */
-export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId) {
-  const dichte = BEWUCHS[biomId] ?? 0.2;
+export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'gras') {
+  const dichte = (BEWUCHS[biomId] ?? 0.2) * (boden === 'fels' || boden === 'asche' ? 0.5 : 1);
   const rows = new Int32Array(breite).fill(-1);
   for (let x = 0; x < breite; x += 1) {
     for (let y = 0; y < hoehe; y += 1) {
@@ -51,10 +53,14 @@ export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId) {
     const eben = links >= 0 && rechts >= 0 && Math.abs(links - rechts) <= 14;
     if (y >= 0 && y < hoehe * 0.8 && zufall() < dichte + 0.1) {
       const w = zufall();
-      const art = !eben ? (w < 0.5 ? 'busch' : 'gras')
+      let art = !eben ? (w < 0.5 ? 'busch' : 'gras')
         : w < 0.3 ? 'palme' : w < 0.55 ? 'busch' : w < 0.8 ? 'farn' : 'gras';
+      // Passend zum Boden: Tannen im Schnee, Dürrgras statt Farn auf Sand, auf nacktem Fels nur Gestrüpp.
+      if (boden === 'schnee') art = w < 0.6 ? 'tanne' : w < 0.8 ? 'busch' : 'gras';
+      else if (boden === 'sand' && art === 'farn') art = 'gras';
+      else if ((boden === 'fels' || boden === 'asche') && art === 'palme') art = 'busch';
       const h = art === 'palme' ? 38 + zufall() * 26 : art === 'busch' ? 12 + zufall() * 8
-        : art === 'farn' ? 14 + zufall() * 10 : 8 + zufall() * 5;
+        : art === 'farn' ? 14 + zufall() * 10 : art === 'tanne' ? 34 + zufall() * 28 : 8 + zufall() * 5;
       liste.push({ art, x: ix, y: y + 2, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 9999) });
     }
     x += 46 + zufall() * 70 / Math.max(0.35, dichte);
@@ -133,6 +139,48 @@ export function zeichnePflanze(ctx, p, f) {
     blatt(ctx, kx, ky, -Math.PI / 2, p.h * 0.28, p.h * 0.05, 0, f.hell, f.kontur);
     ctx.fillStyle = f.dunkel;
     ctx.beginPath(); ctx.arc(kx, ky + 1, p.h * 0.05 + 1, 0, Math.PI * 2); ctx.fill();
+  } else if (p.art === 'tanne') {
+    // Tanne: Stamm und vier übereinanderliegende Zacken, die obere Hälfte mit Schneekappe.
+    const stufen = 4;
+    const b = p.h * 0.46;
+    const zeichneZacken = (breiteF, fuell, strich) => {
+      ctx.beginPath();
+      ctx.moveTo(p.x - p.h * 0.05, p.y);
+      ctx.lineTo(p.x - p.h * 0.05, p.y - p.h * 0.14);
+      for (let i = 0; i < stufen; i += 1) {
+        const unten = p.y - p.h * (0.1 + 0.74 * (i / stufen));
+        const br = b * breiteF * (1 - 0.18 * i);
+        ctx.lineTo(p.x - br, unten);
+        ctx.lineTo(p.x - br * 0.28, unten - p.h * 0.05);
+      }
+      ctx.lineTo(p.x, p.y - p.h);
+      for (let i = stufen - 1; i >= 0; i -= 1) {
+        const unten = p.y - p.h * (0.1 + 0.74 * (i / stufen));
+        const br = b * breiteF * (1 - 0.18 * i);
+        ctx.lineTo(p.x + br * 0.28, unten - p.h * 0.05);
+        ctx.lineTo(p.x + br, unten);
+      }
+      ctx.lineTo(p.x + p.h * 0.05, p.y - p.h * 0.14);
+      ctx.lineTo(p.x + p.h * 0.05, p.y);
+      ctx.closePath();
+      if (strich) { ctx.strokeStyle = strich; ctx.lineWidth = 2.6; ctx.stroke(); }
+      ctx.fillStyle = fuell;
+      ctx.fill();
+    };
+    zeichneZacken(1, f.dunkel, f.kontur);
+    // Lichtseite: schmalere Zackenform in Blattgrün über der dunklen.
+    zeichneZacken(0.62, f.blatt, null);
+    // Reif auf den oberen Stufen.
+    ctx.fillStyle = f.hell;
+    for (let i = 1; i < stufen; i += 1) {
+      const unten = p.y - p.h * (0.1 + 0.74 * (i / stufen));
+      ctx.beginPath();
+      ctx.moveTo(p.x - b * (1 - 0.18 * i) * 0.5 * s, unten - p.h * 0.02);
+      ctx.lineTo(p.x, unten - p.h * 0.17);
+      ctx.lineTo(p.x + b * (1 - 0.18 * i) * 0.18 * s, unten - p.h * 0.05);
+      ctx.closePath();
+      ctx.fill();
+    }
   } else if (p.art === 'busch') {
     const klumpen = 4;
     for (let pass = 0; pass < 2; pass += 1) {
@@ -170,6 +218,14 @@ export function zeichnePflanze(ctx, p, f) {
 
 /** Farben der Vordergrundpflanzen, zur Bodenfarbe hin getönt. */
 export function pflanzenFarben(palette) {
+  const boden = bodenArt(palette.surface);
+  // Eigene Töne je Bodenart: blaugrüne Nadeln im Schnee, ausgeblichenes Dürrgras auf Sand, graugrünes Gestrüpp auf Fels.
+  if (boden === 'schnee') return { blatt: css([46, 104, 92]), dunkel: css([26, 66, 62]), hell: css([214, 232, 240]), stamm: css(STAMM), kontur: PAL.kontur };
+  if (boden === 'sand') return { blatt: css([150, 142, 66]), dunkel: css([104, 98, 44]), hell: css([214, 198, 110]), stamm: css([112, 84, 52]), kontur: PAL.kontur };
+  if (boden === 'fels' || boden === 'asche') {
+    const g = css(mischeRgb(palette.surface, [72, 98, 60], 0.55));
+    return { blatt: g, dunkel: css(mischeRgb(palette.surface, [36, 52, 34], 0.6)), hell: css(mischeRgb(palette.surface, [122, 150, 90], 0.5)), stamm: css(STAMM), kontur: PAL.kontur };
+  }
   const gm = gruenAnteil(palette.surface);
   const t = c => css(mischeRgb(mischeRgb(palette.surface, [20, 24, 20], 0.5), c, gm));
   return {

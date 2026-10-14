@@ -78,9 +78,15 @@ export function zeigeToast(message, tone = 'info', doc = globalThis.document) {
   return toast;
 }
 
+/** Standzeit: in niedrigen Fenstern (die Toasts sitzen dort über dem Menü) kürzer. */
+function dauerFuer(ton) {
+  const niedrig = globalThis.matchMedia?.('(max-height: 520px)').matches;
+  return Math.round(TOAST_DAUER_MS[ton] * (niedrig ? 0.6 : 1));
+}
+
 function plane(toast, ton) {
   clearTimeout(toast._frist);
-  toast._frist = setTimeout(() => entferne(toast), TOAST_DAUER_MS[ton]);
+  toast._frist = setTimeout(() => entferne(toast), dauerFuer(ton));
 }
 
 function entferne(toast) {

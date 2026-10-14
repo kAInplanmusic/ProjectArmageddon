@@ -29,6 +29,52 @@ const MOOS_LIMETTE = hexRgb(PAL.limette);
 // Dunkler als zuerst (Entwurf: dunkles Olivbraun/Blaugrau): Faktor 0,78 auf die Grundtöne.
 const TOENE = [[56, 68, 88], [92, 76, 60], [74, 82, 52], [84, 80, 74], [64, 72, 84]].map(c => c.map(v => Math.round(v * 0.78)));
 const MOOS_STEIN = [52, 104, 30];
+/** Anteil der Bodenfarbe (Oberfläche/Tiefe) an den Steintönen: jede Karte bekommt ihr eigenes Gestein. */
+const STEIN_TON = 0.34;
+
+/**
+ * Welcher Saum gehört auf diesen Boden? Gras, Schnee, Sand oder nackter Fels.
+ *
+ * Aus der Oberflächenfarbe der Kulisse abgeleitet (reine Darstellung, keine Regel):
+ * Auf einer Schneekarte liegt eine Schneehaube auf dem Fels, auf Sand eine Düne, auf
+ * Basalt nur ein Staubsaum — nicht überall neongrünes Moos.
+ *
+ * @param {number[]} oberflaeche - RGB der Oberfläche
+ * @returns {'gras'|'schnee'|'sand'|'fels'|'asche'}
+ */
+export function bodenArt(oberflaeche) {
+  const [r, g, b] = oberflaeche;
+  const hell = 0.299 * r + 0.587 * g + 0.114 * b;
+  if (hell > 185 && b >= r - 6) return 'schnee';
+  if (hell > 150 && r > b + 36 && r >= g - 6) return 'sand';
+  if (g - Math.max(r, b) > 6) return 'gras';
+  return hell < 100 ? 'asche' : 'fels';
+}
+
+/** Farben und Form des Saums je Bodenart (Dicke in Pixeln bei 2560×1440). */
+function saumFuer(art, palette) {
+  const o = palette.surface;
+  const heller = (c, t) => mischeRgb(c, [255, 250, 240], t);
+  switch (art) {
+    case 'schnee':
+      return { hell: [248, 251, 255], mittel: [218, 232, 246], tief: [172, 194, 224], basis: 10, amp: 8, tropf: 0.04, kruste: 0.5, bueschel: null };
+    case 'sand':
+      return { hell: heller(o, 0.35), mittel: mischeRgb(o, [236, 196, 120], 0.35), tief: mischeRgb(o, palette.deep, 0.35), basis: 6, amp: 6, tropf: 0.02, kruste: 0.7, bueschel: [[132, 118, 58], [196, 176, 96]] };
+    case 'fels':
+    case 'asche': {
+      const staub = mischeRgb(o, art === 'asche' ? [120, 116, 112] : [200, 196, 184], 0.32);
+      return { hell: staub, mittel: mischeRgb(staub, palette.deep, 0.4), tief: mischeRgb(staub, palette.deep, 0.7), basis: 4, amp: 4, tropf: 0.03, kruste: 0.8, bueschel: art === 'fels' ? [[78, 92, 62], [120, 136, 88]] : null };
+    }
+    default: {
+      const gm = gruenAnteil(o);
+      const tint = c => mischeRgb(o, c, gm);
+      return {
+        hell: tint([168, 255, 52]), mittel: tint(mischeRgb(MOOS_LIMETTE, [40, 130, 10], 0.3)), tief: tint([34, 96, 16]),
+        basis: 9, amp: 9, tropf: 0.1, kruste: 0.5, bueschel: [mischeRgb(o, [110, 230, 24], gm), mischeRgb(o, [176, 255, 70], gm)],
+      };
+    }
+  }
+}
 
 function glatt(a, b, x) {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
@@ -105,10 +151,12 @@ function baueSteine(breite, hoehe, seed, palette) {
           const ton2 = h3(64) < 0.2 ? Math.floor(h3(65) * TOENE.length) % TOENE.length : ton;
           const v = 0.78 + 0.46 * h3(66);
           const t = TOENE[ton2];
-          s.lr[kl] = (t[0] * 0.86 + tint[0] * 0.14) * v;
-          s.lg[kl] = (t[1] * 0.86 + tint[1] * 0.14) * v;
-          s.lb[kl] = (t[2] * 0.86 + tint[2] * 0.14) * v;
-          s.lflag[kl] = (sz > 26 && h3(67) < 0.3 ? 1 : 0) | (h3(68) < 0.22 ? 2 : 0);
+          s.lr[kl] = (t[0] * (1 - STEIN_TON) + tint[0] * STEIN_TON) * v;
+          s.lg[kl] = (t[1] * (1 - STEIN_TON) + tint[1] * STEIN_TON) * v;
+          s.lb[kl] = (t[2] * (1 - STEIN_TON) + tint[2] * STEIN_TON) * v;
+          // Bit 1 Riss, 2 Moosfleck, 4 Ader (Quarz oder Erz), 8 Erzton statt Quarz.
+          s.lflag[kl] = (sz > 26 && h3(67) < 0.3 ? 1 : 0) | (h3(68) < 0.22 ? 2 : 0)
+            | (h3(70) < 0.34 ? 4 : 0) | (h3(71) < 0.45 ? 8 : 0);
           s.lang[kl] = h3(69) * Math.PI;
         }
       }
@@ -156,6 +204,30 @@ function maserKachel(seed) {
   return t;
 }
 
+/** Kachel (256×256) für Adern: nur grobes Rauschen, damit die Linien lang und ruhig laufen statt zu kritzeln. */
+function aderKachel(seed) {
+  const N = 256;
+  const zelle = 64;
+  const g = N / zelle;
+  const t = new Float32Array(N * N);
+  for (let y = 0; y < N; y += 1) {
+    const fy = y / zelle;
+    const j = Math.floor(fy);
+    const sv = (fy - j) * (fy - j) * (3 - 2 * (fy - j));
+    for (let x = 0; x < N; x += 1) {
+      const fx = x / zelle;
+      const i = Math.floor(fx);
+      const su = (fx - i) * (fx - i) * (3 - 2 * (fx - i));
+      const a = hash2(i % g, j % g, seed);
+      const b = hash2((i + 1) % g, j % g, seed);
+      const c = hash2(i % g, (j + 1) % g, seed);
+      const dd = hash2((i + 1) % g, (j + 1) % g, seed);
+      t[y * N + x] = (a * (1 - su) + b * su) * (1 - sv) + (c * (1 - su) + dd * su) * sv;
+    }
+  }
+  return t;
+}
+
 /** 1-D-Rauschtabelle (0..1) für Verzerrung und Maserung. */
 function tabelle(laenge, skala, seed) {
   const t = new Float32Array(laenge);
@@ -189,7 +261,17 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
   const wyx2 = tabelle(breite, 13, seed + 204);
   const mx = tabelle(breite, 23, seed + 205);
   const kachel = maserKachel(seed + 206);
+  const adern = aderKachel(seed + 211);
   const strata = tabelle(hoehe, 19, seed + 207);
+  // Gesteinslagen: breite wellige Bänder (Sediment) mit Farbwechsel warm/kalt, dazu feine Fugen an den Lagengrenzen.
+  const LAGE_RAND = 48;
+  const lagen = tabelle(hoehe + 2 * LAGE_RAND, 27, seed + 208);
+  const lagenFein = tabelle(hoehe + 2 * LAGE_RAND, 7, seed + 209);
+  const art = bodenArt(palette.surface);
+  const saum = saumFuer(art, palette);
+  // Erdschicht unter dem Saum: die Bodenfarbe, abgedunkelt und leicht erdig.
+  const erde = mischeRgb(mischeRgb(palette.surface, palette.deep, 0.6), art === 'schnee' ? [96, 110, 128] : [74, 54, 36], 0.4).map(v => v * 0.62);
+  const ERDE_TIEFE = 54;
   const runStart = new Int32Array(breite).fill(-1);
 
   for (let y = 0; y < hoehe; y += 1) {
@@ -274,10 +356,30 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
       g = g < -1 ? -1 : g > 1 ? 1 : g;
       const mm = 2 * kachel[(((y + (x >> 8) * 97) & 255) << 8) | (x & 255)];
       const fleck = 0.9 + 0.1 * mm;
-      const f = (1 + 0.3 * g) * fleck * schicht;
-      let r = lr[leaf] * f;
+      const tiefe = y - runStart[x];
+
+      // Lagen: schräg-wellige Bänder; die feine Lage setzt dünne dunkle Fugen und zieht warm/kalt.
+      const ly = (y + LAGE_RAND + (wyx[x] - 0.5) * 44 + (x >> 4) * 0.35) | 0;
+      const lage = lagen[ly < 0 ? 0 : ly];
+      const fein = lagenFein[ly < 0 ? 0 : ly];
+      const warm = lage * 2 - 1;
+      const lageF = (0.9 + 0.2 * lage + 0.06 * fein) * schicht;
+      const f = (1 + 0.3 * g) * fleck * lageF;
+      let r = lr[leaf] * f * (1 + 0.1 * warm);
       let gg = lg[leaf] * f;
-      let b = lb[leaf] * f;
+      let b = lb[leaf] * f * (1 - 0.1 * warm);
+      const fuge = fein - 0.5;
+      if (fuge < 0.012 && fuge > -0.012) { r *= 0.8; gg *= 0.8; b *= 0.82; }
+
+      // Erdschicht direkt unter dem Saum: weich ins Gestein verlaufend, mit Körnung am Übergang.
+      if (tiefe < ERDE_TIEFE + 12) {
+        const eg = 1 - glatt(10 + mx[x] * 12, ERDE_TIEFE + (mm - 1) * 10, tiefe);
+        if (eg > 0) {
+          const q = eg * 0.55;
+          const eh = 0.78 + 0.3 * g + 0.2 * (mm - 1);
+          r += (erde[0] * eh - r) * q; gg += (erde[1] * eh - gg) * q; b += (erde[2] * eh - b) * q;
+        }
+      }
 
       // Kantenlicht: oben/links hell, unten/rechts dunkel; schmal bei kleinen Steinen.
       if (e < 5) {
@@ -309,6 +411,17 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
         }
       }
 
+      // Adern: dünne Quarz- oder Erzbänder, die auf einem Teil der Steine schräg durchlaufen.
+      if ((flagge & 4) && e > 2) {
+        const dk = adern[((((y - (x >> 1)) & 255) << 8) | ((x + (y >> 1)) & 255))] - 0.5;
+        const ad = dk < 0 ? -dk : dk;
+        if (ad < 0.016) {
+          const q = (1 - ad / 0.016) * 0.7;
+          if (flagge & 8) { r += (176 - r) * q; gg += (122 - gg) * q; b += (58 - b) * q; }
+          else { r += (214 - r) * q; gg += (224 - gg) * q; b += (230 - b) * q; }
+        }
+      }
+
       // Riss.
       if ((flagge & 1) && e > 1.7) {
         const w = lang[leaf];
@@ -323,7 +436,6 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
       }
 
       // Tiefe: nach unten deutlich dunkler und kühler, Rand der Karte als Vignette.
-      const tiefe = y - runStart[x];
       const t = glatt(18, 640, tiefe);
       const rand = Math.min(x, breite - 1 - x) / breite;
       const vign = 1 - 0.2 * (1 - glatt(0, 0.1, rand));
@@ -347,29 +459,26 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
     }
   }
 
-  const buescheln = malMoos(d, bitmap, breite, hoehe, palette, seed);
+  const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);
+  zeichneRand(d, bitmap, breite, hoehe, art);
   zeichneKontur(d, bitmap, breite, hoehe);
   ctx.putImageData(bild, 0, 0);
-  zeichneBueschel(ctx, buescheln, palette, seed);
+  zeichneBueschel(ctx, buescheln, saum, seed);
   return buescheln;
 }
 
 /** Moos- und Grasschicht an jeder Oberkante; schreibt direkt in die Pixel. */
-function malMoos(d, bitmap, breite, hoehe, palette, seed) {
-  const gm = gruenAnteil(palette.surface);
-  const tint = (c) => mischeRgb(palette.surface, c, gm);
-  const hell = tint([168, 255, 52]);
-  const mittel = tint(mischeRgb(MOOS_LIMETTE, [40, 130, 10], 0.3));
-  const tief = tint([34, 96, 16]);
+function malMoos(d, bitmap, breite, hoehe, saum, seed) {
+  const { hell, mittel, tief } = saum;
   const buescheln = [];
 
   for (let x = 0; x < breite; x += 1) {
     // Dicke der Moosschicht: wellig, mit einzelnen Tropfkanten, die als Zungen nach unten hängen.
     const gruppe = Math.floor(x / 3);
-    const traufe = hash2(gruppe, 13, seed + 99) > 0.9
+    const traufe = hash2(gruppe, 13, seed + 99) > 1 - saum.tropf
       ? (6 + 16 * hash2(gruppe, 14, seed + 99)) * (1 - Math.abs((x % 3) - 1) * 0.35) : 0;
-    const dicke = 9 + 9 * rauschen1(x / 38, seed + 91) + 3 * hash2(x, 3, seed + 92)
-      + (hash2(x >> 2, 9, seed + 93) > 0.88 ? 5 : 0) + traufe;
+    const dicke = saum.basis + saum.amp * rauschen1(x / 38, seed + 91) + 3 * saum.kruste * hash2(x, 3, seed + 92)
+      + (hash2(x >> 2, 9, seed + 93) > 0.88 ? 5 * saum.kruste : 0) + traufe;
     let lauf = 0;
     let luft = 1000;
     for (let y = 0; y < hoehe; y += 1) {
@@ -400,12 +509,51 @@ function malMoos(d, bitmap, breite, hoehe, palette, seed) {
       else c = tief;
       if (k >= dicke - 1.5 && hash2(x, y, seed + 94) < 0.5) continue;
       d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
-      if (k === 0 && y > 0 && hash2(x, 5, seed + 95) > 0.9 && x > 4 && x < breite - 5) {
+      if (saum.bueschel && k === 0 && y > 0 && hash2(x, 5, seed + 95) > 0.9 && x > 4 && x < breite - 5) {
         buescheln.push({ x, y, h: 6 + Math.floor(hash2(x, 6, seed + 96) * 9) });
       }
     }
   }
   return buescheln;
+}
+
+/**
+ * Kantenlicht (Rim-Light) und Kantenschatten: Das Licht fällt von links oben. Feste Pixel mit Luft links
+ * oder oben (ein bis zwei Pixel weit) werden aufgehellt, solche mit Luft rechts oder unten abgedunkelt.
+ * Das hebt Felsflanken und Überhänge vom Hintergrund ab und kostet nur Nachbarschaftslesen im Bake-Lauf.
+ */
+function zeichneRand(d, bitmap, breite, hoehe, art) {
+  // Sonnenfarbe je Boden: warm auf Gras und Sand, kühl auf Schnee und Fels.
+  const licht = art === 'schnee' ? [196, 224, 255] : art === 'sand' ? [255, 226, 160] : art === 'gras' ? [236, 255, 170] : [214, 214, 232];
+  for (let y = 2; y < hoehe - 2; y += 1) {
+    const zeile = y * breite;
+    for (let x = 2; x < breite - 2; x += 1) {
+      const i = zeile + x;
+      if (!bitmap[i]) continue;
+      const o = i * 4;
+      if (d[o + 3] === 0) continue;
+      const l1 = !bitmap[i - 1];
+      const o1 = !bitmap[i - breite];
+      const r1 = !bitmap[i + 1];
+      const u1 = !bitmap[i + breite];
+      if (l1 || o1 || r1 || u1) {
+        // Erste Pixelreihe an der Kante.
+        if (l1 || o1) {
+          const st = (l1 ? 0.32 : 0.16) + (o1 && l1 ? 0.1 : 0);
+          d[o] += (licht[0] - d[o]) * st; d[o + 1] += (licht[1] - d[o + 1]) * st; d[o + 2] += (licht[2] - d[o + 2]) * st;
+        } else {
+          d[o] *= 0.72; d[o + 1] *= 0.72; d[o + 2] *= 0.74;
+        }
+        continue;
+      }
+      // Zweite Reihe: schwächer.
+      if (!bitmap[i - 2] || !bitmap[i - 2 * breite]) {
+        d[o] += (licht[0] - d[o]) * 0.12; d[o + 1] += (licht[1] - d[o + 1]) * 0.12; d[o + 2] += (licht[2] - d[o + 2]) * 0.12;
+      } else if (!bitmap[i + 2] || !bitmap[i + 2 * breite]) {
+        d[o] *= 0.88; d[o + 1] *= 0.88; d[o + 2] *= 0.89;
+      }
+    }
+  }
 }
 
 /** Dunkle Comic-Kontur: jedes Luftpixel neben festem Gelände wird zur Linie. */
@@ -426,10 +574,10 @@ function zeichneKontur(d, bitmap, breite, hoehe) {
 }
 
 /** Kleine Grashalme über der Kante (mit dunkler Kontur). */
-function zeichneBueschel(ctx, buescheln, palette, seed) {
-  const gm = gruenAnteil(palette.surface);
-  const halm = css(mischeRgb(palette.surface, [110, 230, 24], gm));
-  const halmHell = css(mischeRgb(palette.surface, [176, 255, 70], gm));
+function zeichneBueschel(ctx, buescheln, saum, seed) {
+  if (!saum.bueschel) return;
+  const halm = css(saum.bueschel[0]);
+  const halmHell = css(saum.bueschel[1]);
   ctx.save();
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';

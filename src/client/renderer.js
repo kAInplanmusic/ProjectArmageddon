@@ -26,7 +26,8 @@ import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inse
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import { zeichneSoldat, zeichneNamensschild } from './figuren.js';
-import { veredleGelaende, zeichneKraterRand } from './gelaendeStil.js';
+import { veredleGelaende, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
+import { mischeRgb as mischeFarbe } from './stil.js';
 import {
   plazierePflanzen, zeichnePflanzenSchicht, entfernePflanzenImKrater, entfernePflanzenAmRand,
 } from './pflanzen.js';
@@ -630,7 +631,7 @@ export class Renderer {
 
   /** Setzt Pflanzen auf das Gelände und zeichnet ihre Ebene (hinter dem Gelände, gecacht). */
   #baePflanzen(bitmap, width, height) {
-    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, this.scenery?.biomeId ?? null);
+    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, this.scenery?.biomeId ?? null, bodenArt(this.palette.surface));
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -969,26 +970,104 @@ export class Renderer {
     ];
   }
 
+  /**
+   * Uferkarte des Wassers: je Wasserzelle, ob dort Gelände steht.
+   *
+   * Aus der gebackenen Geländeebene (der sichtbaren Wahrheit, mit allen Kratern) auf Wassergröße
+   * verkleinert. Neu gebaut wird nur, wenn sich die Ebene oder der letzte Krater geändert hat
+   * (oder alle 120 Bilder für den Mahlstrom-Rand) — nie jedes Bild.
+   */
+  #uferMaske() {
+    const schicht = this.terrainLayer;
+    if (!schicht || typeof document === 'undefined') return null;
+    const w = this.waterLayer.width;
+    const h = this.waterLayer.height;
+    let u = this.uferStand;
+    if (!u || u.schicht !== schicht || u.krater !== this.letzterKrater || u.w !== w || u.h !== h || this.time - u.zeit > 120) {
+      const c = u?.canvas && u.w === w && u.h === h ? u.canvas : document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const cx = c.getContext('2d', { willReadFrequently: true });
+      if (!cx) return null;
+      cx.drawImage(schicht, 0, 0, w, h);
+      const daten = cx.getImageData(0, 0, w, h).data;
+      const maske = u?.maske?.length === w * h ? u.maske : new Uint8Array(w * h);
+      for (let i = 0; i < maske.length; i += 1) maske[i] = daten[i * 4 + 3] > 110 ? 1 : 0;
+      u = { schicht, krater: this.letzterKrater, w, h, zeit: this.time, canvas: c, maske };
+      this.uferStand = u;
+    }
+    return u.maske;
+  }
+
   #drawWater(water) {
     if (!water) return;
     this.waterCtx.clearRect(0, 0, this.waterLayer.width, this.waterLayer.height);
     const image = this.waterCtx.createImageData(this.waterLayer.width, this.waterLayer.height);
     const data = image.data;
     const levels = water.levels;
+    const bg = this.waterLayer.width;
+    const hg = this.waterLayer.height;
 
-    for (let i = 0; i < levels.length; i++) {
-      const level = levels[i];
-      if (level <= 0.02) continue;
-      const index = i * 4;
-      // Wasserfarbe aus der Kulisse: Meer, Lava, Schlamm und Gift sind
-      // unterschiedliche Stoffe und dürfen nicht gleich blau sein. Gemischt wird
-      // nach Tiefe — flache Stellen heller, tiefe dunkler.
-      const tiefe = Math.min(1, level);
-      const farbe = this.#wasserFarbe(tiefe);
-      data[index] = farbe[0];
-      data[index + 1] = farbe[1];
-      data[index + 2] = farbe[2];
-      data[index + 3] = Math.round(Math.min(0.72, level) * 210 * (this.scenery?.water?.alpha ?? 1));
+    /*
+     * Ein Durchlauf, der alles Wasser-Aussehen mitnimmt (keine zusätzliche Ebene):
+     *  - Tiefenverlauf: je Spalte zählt `lauf` die Zellen unter dem Spiegel; flach hell, tief dunkel.
+     *  - Glanz und sanfte Wellen in den obersten Zellen (Phase aus Zeit und Spalte).
+     *  - Schaum dort, wo am Spiegel Gelände neben dem Wasser steht (Uferkarte).
+     * Die Farbstufen je Tiefe sind einmal je Bild vorgerechnet, nicht je Zelle.
+     */
+    const art = this.scenery?.water ?? null;
+    const STUFEN = 26;
+    const stufen = new Array(STUFEN);
+    for (let k = 0; k < STUFEN; k += 1) stufen[k] = this.#wasserFarbe(Math.min(1, k / (STUFEN - 1)));
+    const glanz = art ? mischeFarbe(art.shallow, [255, 255, 255], 0.8) : [226, 244, 255];
+    const schaum = art ? mischeFarbe(art.shallow, [255, 255, 255], 0.82) : [240, 248, 255];
+    const alphaArt = art?.alpha ?? 1;
+    const phase = this.reducedMotion ? 0 : this.time * 0.05;
+    const ufer = this.#uferMaske();
+    const lauf = this.wasserLauf?.length === bg ? this.wasserLauf : (this.wasserLauf = new Int16Array(bg));
+    const oben = this.wasserOben?.length === bg ? this.wasserOben : (this.wasserOben = new Int16Array(bg));
+    lauf.fill(-1);
+    oben.fill(-1);
+
+    for (let y = 0; y < hg; y += 1) {
+      const zeile = y * bg;
+      for (let x = 0; x < bg; x += 1) {
+        const i = zeile + x;
+        const level = levels[i];
+        if (level <= 0.02) { lauf[x] = -1; continue; }
+        const k = lauf[x] + 1;
+        if (k === 0) { if (oben[x] < 0) oben[x] = y; }
+        lauf[x] = k;
+        const f = stufen[k < STUFEN ? k : STUFEN - 1];
+        let r = f[0];
+        let g = f[1];
+        let b = f[2];
+        let a = Math.round(Math.min(0.72, level) * 210 * alphaArt);
+        if (k < 14) {
+          // Sanfte Wellen: Helligkeit schwingt mit Spalte, Tiefe und Zeit, nach unten abklingend.
+          const m = Math.sin(x * 0.42 + k * 0.85 + phase) * 0.075 * (1 - k / 14);
+          r += r * m; g += g * m; b += b * m;
+          if (k < 5) {
+            // Glanz am Spiegel, in der Spalte unruhig.
+            const gl = (5 - k) / 5 * (0.5 + 0.4 * Math.sin(x * 0.9 - phase * 1.7));
+            r += (glanz[0] - r) * gl; g += (glanz[1] - g) * gl; b += (glanz[2] - b) * gl;
+            a += (255 - a) * gl * 0.4;
+          }
+          if (ufer && k < 9 && (ufer[i - 1] || ufer[i + 1] || (k < 4 && (ufer[i - bg] || ufer[i - 2 * bg])))) {
+            // Schaumsaum am Ufer: stärker am Spiegel, mit Brandung (die Breite pulsiert leicht).
+            const sf = (1 - k / 9) * (0.62 + 0.3 * Math.sin(x * 0.2 + phase * 2.3));
+            if (sf > 0) {
+              r += (schaum[0] - r) * sf; g += (schaum[1] - g) * sf; b += (schaum[2] - b) * sf;
+              a += (255 - a) * sf * 0.7;
+            }
+          }
+        }
+        const index = i * 4;
+        data[index] = r < 0 ? 0 : r > 255 ? 255 : r;
+        data[index + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+        data[index + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+        data[index + 3] = a > 255 ? 255 : a;
+      }
     }
     this.waterCtx.putImageData(image, 0, 0);
 
@@ -998,9 +1077,9 @@ export class Renderer {
     this.ctx.restore();
 
     // Struktur der Wasserart NACH der Fläche: Kruste, Wellen, Blasen und Sterne
-    // liegen auf dem Wasser, nicht darunter.
+    // liegen auf dem Wasser, nicht darunter — an den Spiegel der Spalten geheftet.
     if (this.scenery) {
-      drawWaterSurface(this.ctx, this.width, this.height, this.scenery, this.time);
+      drawWaterSurface(this.ctx, this.width, this.height, this.scenery, this.time, { oben, skala: WATER_SCALE });
     }
   }
 
