@@ -583,7 +583,7 @@ export class MatchController {
     loadouts = null,
     /** Ausrüstungsfassung: `KIT_STARTER` (Reserve + 2 Common, Standard) oder `KIT_KLASSE` (Altverhalten, nur für alte Replays). */
     kit = KIT_STANDARD,
-    /** Zerstörungsfassung (`config/zerstoerung.js`): 2 = raue Krater + Nachrutschen, 1 = Altverhalten (alte Replays). */
+    /** Zerstörungsfassung (`config/zerstoerung.js`): 3 = Standard (große Schollen fallen), 2 = raue Krater + Nachrutschen bis 6000 Zellen, 1 = Altverhalten. */
     zerstoerung = ZERSTOERUNG_STANDARD,
   } = {}) {
     this.#seedManager = seed === undefined
@@ -861,7 +861,7 @@ export class MatchController {
 
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
-    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets });
+    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung });
   }
 
   #buildWater() {

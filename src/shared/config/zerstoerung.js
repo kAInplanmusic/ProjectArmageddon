@@ -12,7 +12,12 @@
  *     Das Feld FEHLT in jeder Datei aus der Zeit davor — `ReplayRecorder.fromJSON`
  *     setzt dann diesen Wert.
  *   - `ZERSTOERUNG_GELAENDE` (2): raue Krater mit waffenabhängiger Tiefe und
- *     Nachrutschen freischwebender Geländeinseln (`engine/zerstoerung.js`).
+ *     Nachrutschen freischwebender Geländeinseln (`engine/zerstoerung.js`);
+ *     Massen über 6000 Zellen gelten als gewachsener Fels.
+ *   - `ZERSTOERUNG_SCHOLLEN` (3): wie 2, aber auch große Schollen (bis 60 000
+ *     Zellen) stürzen nach; die Suche läuft dafür auch MITTEN in einer Masse über
+ *     mehrere Ticks weiter statt eine Masse am Stück abzuarbeiten. Aufzeichnungen
+ *     mit Fassung 2 laufen mit den alten Grenzen unverändert.
  *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
@@ -21,11 +26,28 @@
 
 export const ZERSTOERUNG_ALT = 1;
 export const ZERSTOERUNG_GELAENDE = 2;
-export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_GELAENDE;
+export const ZERSTOERUNG_SCHOLLEN = 3;
+export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_SCHOLLEN;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereZerstoerung(fassung) {
-  return fassung === ZERSTOERUNG_ALT || fassung === ZERSTOERUNG_GELAENDE ? fassung : ZERSTOERUNG_STANDARD;
+  return fassung === ZERSTOERUNG_ALT || fassung === ZERSTOERUNG_GELAENDE || fassung === ZERSTOERUNG_SCHOLLEN
+    ? fassung : ZERSTOERUNG_STANDARD;
+}
+
+/**
+ * Suchgrenzen einer Fassung (ab `ZERSTOERUNG_GELAENDE`).
+ *
+ * Fassung 2: Massen über 6000 Zellen gelten als Fels, eine Masse wird in EINEM Tick
+ * zu Ende gefüllt. Fassung 3: Schollen bis 60 000 Zellen fallen, und auch die Füllung
+ * einer einzelnen Masse ist auf `SUCH_BUDGET_PRO_TICK` je Tick begrenzt (sie setzt im
+ * nächsten Tick fort), damit ein Tick nie mehr als das Budget kostet.
+ *
+ * @returns {{maxZellen:number, faktor:number, fortsetzen:boolean}}
+ */
+export function suchGrenzen(fassung) {
+  if (fassung >= ZERSTOERUNG_SCHOLLEN) return { maxZellen: INSEL_MAX_ZELLEN_SCHOLLEN, faktor: SUCH_BUDGET_FAKTOR, fortsetzen: true };
+  return { maxZellen: INSEL_MAX_ZELLEN, faktor: SUCH_BUDGET_FAKTOR, fortsetzen: false };
 }
 
 /**
@@ -48,6 +70,8 @@ export function kraterTiefeProzent(terrainDamage, blastRadius, radius) {
 
 /** Größte Insel (Zellen), die noch nachstürzt; größere Massen gelten als gewachsener Fels. */
 export const INSEL_MAX_ZELLEN = 6000;
+/** Fassung 3: größte Scholle (Zellen), die noch nachstürzt (rund 245 × 245 px). */
+export const INSEL_MAX_ZELLEN_SCHOLLEN = 60000;
 /** Besuchte Zellen je Tick für die Inselsuche (Kostenbudget; die Suche setzt im nächsten Tick fort). */
 export const SUCH_BUDGET_PRO_TICK = 9000;
 /** Gesamtbudget einer Krater-Analyse in Vielfachen von `INSEL_MAX_ZELLEN`; der Rest gilt als verankert. */

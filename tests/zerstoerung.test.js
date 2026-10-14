@@ -6,8 +6,8 @@ import { CollisionMask, eachCraterCell, kraterForm, kraterInnen } from '../src/e
 import { Zerstoerung, spaltenlaeufe } from '../src/engine/zerstoerung.js';
 import { COMPONENT_SIGNATURES } from '../src/engine/ecs/world.js';
 import {
-  ZERSTOERUNG_ALT, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_STANDARD, normalisiereZerstoerung,
-  kraterTiefeProzent, INSEL_MAX_ZELLEN, SUCH_BUDGET_PRO_TICK,
+  ZERSTOERUNG_ALT, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_SCHOLLEN, ZERSTOERUNG_STANDARD, normalisiereZerstoerung,
+  kraterTiefeProzent, INSEL_MAX_ZELLEN, INSEL_MAX_ZELLEN_SCHOLLEN, SUCH_BUDGET_PRO_TICK, suchGrenzen,
 } from '../src/shared/config/zerstoerung.js';
 import { restoreLobby } from '../src/server/persistence.js';
 import {
@@ -109,6 +109,31 @@ test('Determinismus: zwei Läufe gleichen Seeds ergeben dieselbe Maske, Log und 
   assert.ok(a.match.terrain.craterLog.every(e => e.length === 4 || e[0] === 's'), 'Fassung 2 loggt die Tiefe mit');
 });
 
+test('Fassung 2 (Zwischenstand): Zustands- und Maskenhash bleiben Bit für Bit wie auf main (Goldwerte, gemessen am Stand e350c29)', () => {
+  const gold = [
+    { seed: 4242, stateHash: '85bd9975', terrainHash: 2599208668, krater: 30 },
+    { seed: 606, stateHash: 'e331aaaa', terrainHash: 1925442896, krater: 31 },
+    { seed: 31, stateHash: 'e22f0a55', terrainHash: 2205927199, krater: 31 },
+    { seed: 9001, stateHash: 'afa508f1', terrainHash: 3786376531, krater: 32 },
+  ];
+  for (const g of gold) {
+    const m = new MatchController({ seed: g.seed, teams: 2, playersPerTeam: 2, preset: 'hills', zerstoerung: ZERSTOERUNG_GELAENDE });
+    m.start();
+    let schuesse = 0;
+    for (let tick = 0; tick < 6000; tick++) {
+      if (m.activeProjectileCount === 0 && tick % 120 === 0) {
+        m.fire(m.activePlayerId, 0.5 + (schuesse % 9) * 0.15, 40 + (schuesse * 13) % 50, null);
+        schuesse += 1;
+      }
+      m.step();
+      m.consumeEvents();
+    }
+    assert.equal(m.stateHash(), g.stateHash, `Seed ${g.seed}`);
+    assert.equal(m.terrain.hash(), g.terrainHash, `Seed ${g.seed}`);
+    assert.equal(m.terrain.craterCount, g.krater, `Seed ${g.seed}`);
+  }
+});
+
 test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Goldwerte von main)', () => {
   // Zustandshash und Maskenhash, gemessen mit dem Stand VOR dieser Änderung (git main, 2026-10-14).
   const gold = [
@@ -136,7 +161,7 @@ test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Go
   }
 });
 
-test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt Fassung 2', () => {
+test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (3), Fassung 2 bleibt Fassung 2', () => {
   const alt = {
     format: 1, createdAt: 0, seed: 4242,
     config: { teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, turnDurationMs: 30000, kit: 3 },
@@ -149,10 +174,16 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt Fas
   assert.equal(match.setzung, null);
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_GELAENDE);
+  assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_SCHOLLEN);
+  assert.equal(ZERSTOERUNG_STANDARD, ZERSTOERUNG_SCHOLLEN);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_GELAENDE);
+  assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_SCHOLLEN);
+
+  // Eine Aufzeichnung der Zwischenzeit (Fassung 2) behält ihre Fassung und damit ihre Grenzen.
+  const zwei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_GELAENDE });
+  zwei.finalize(300);
+  assert.equal(playReplay(ReplayRecorder.fromJSON(zwei.serialize())).match.zerstoerung, ZERSTOERUNG_GELAENDE);
 
   assert.equal(normalisiereZerstoerung(undefined), ZERSTOERUNG_STANDARD);
   assert.equal(normalisiereZerstoerung(7), ZERSTOERUNG_STANDARD);
@@ -160,7 +191,7 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt Fas
 });
 
 test('Replay mit Schüssen: Altkopf und neuer Kopf geben jeweils den Live-Lauf exakt wieder', () => {
-  for (const fassung of [ZERSTOERUNG_ALT, ZERSTOERUNG_GELAENDE]) {
+  for (const fassung of [ZERSTOERUNG_ALT, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_SCHOLLEN]) {
     const live = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: fassung });
     live.start();
     const rec = new ReplayRecorder({
@@ -353,10 +384,10 @@ function maskeAusBoden(breite, hoehe, bodenY) {
   return CollisionMask.fromBitmap(bitmap, breite, hoehe);
 }
 
-function bauEinheit(maske, turrets = new Map()) {
+function bauEinheit(maske, turrets = new Map(), fassung = ZERSTOERUNG_GELAENDE) {
   const welt = stubWelt();
   const ereignisse = [];
-  const z = new Zerstoerung({ terrain: maske, world: welt, events: { emit: (type, payload) => ereignisse.push({ type, payload }) }, turrets });
+  const z = new Zerstoerung({ terrain: maske, world: welt, events: { emit: (type, payload) => ereignisse.push({ type, payload }) }, turrets, fassung });
   return { z, welt, ereignisse };
 }
 
@@ -426,6 +457,74 @@ test('Inseln über der Obergrenze gelten als gewachsener Fels', () => {
   z.krater(335, 300, 20, 100); // kappt die Brücke
   for (let i = 0; i < 60; i++) z.schritt();
   assert.deepEqual(ereignisse.filter(e => e.type === 'terrain_detached'), []);
+});
+
+/** Eine Scholle (`breite` × `hoehe`) schwebt über dem Boden und hängt an einer 10 px breiten Brücke. */
+function maskeMitScholle(breite, hoehe) {
+  const maske = maskeAusBoden(900, 700, 650);
+  for (let x = 300; x < 300 + breite; x++) for (let y = 100; y < 100 + hoehe; y++) maske.setPixel(x, y, true);
+  for (let x = 310; x < 320; x++) for (let y = 100 + hoehe; y < 650; y++) maske.setPixel(x, y, true);
+  return maske;
+}
+
+test('Fassung 3: eine Scholle über 6000 Zellen stürzt nach (Fassung 2 lässt sie hängen); jeder Tick bleibt im Budget', () => {
+  assert.equal(suchGrenzen(ZERSTOERUNG_GELAENDE).maxZellen, INSEL_MAX_ZELLEN);
+  assert.equal(suchGrenzen(ZERSTOERUNG_SCHOLLEN).maxZellen, INSEL_MAX_ZELLEN_SCHOLLEN);
+  for (const [breite, hoehe] of [[80, 100], [200, 150]]) {
+    const zellen = breite * hoehe;
+    assert.ok(zellen > INSEL_MAX_ZELLEN && zellen < INSEL_MAX_ZELLEN_SCHOLLEN);
+
+    const { z: z2, ereignisse: e2 } = bauEinheit(maskeMitScholle(breite, hoehe), new Map(), ZERSTOERUNG_GELAENDE);
+    z2.krater(315, 100 + hoehe + 120, 20, 100);
+    for (let i = 0; i < 60; i++) z2.schritt();
+    assert.deepEqual(e2.filter(e => e.type === 'terrain_detached'), [], `Fassung 2: ${zellen} Zellen bleiben hängen`);
+
+    const maske = maskeMitScholle(breite, hoehe);
+    const { z, ereignisse } = bauEinheit(maske, new Map(), ZERSTOERUNG_SCHOLLEN);
+    z.krater(315, 100 + hoehe + 120, 20, 100);
+    let maxKosten = 0;
+    for (let i = 0; i < 400 && ereignisse.filter(e => e.type === 'terrain_settled').length === 0; i++) {
+      z.schritt();
+      maxKosten = Math.max(maxKosten, z.suchkosten);
+    }
+    assert.ok(maxKosten <= SUCH_BUDGET_PRO_TICK, `Tickkosten ${maxKosten} im Budget`);
+    const gelandet = ereignisse.filter(e => e.type === 'terrain_settled');
+    assert.equal(gelandet.length, 1, `Fassung 3: ${zellen} Zellen stürzen und landen`);
+    assert.ok(gelandet[0].payload.dy > 20, `fiel ${gelandet[0].payload.dy} px`);
+    assert.equal(maske.isSolid(350, 100), false, 'alte Lage leer');
+    assert.equal(maske.isSolid(350, 100 + gelandet[0].payload.dy), true, 'neue Lage fest');
+  }
+});
+
+test('Fassung 3: über 60 000 Zellen bleibt Fels; gewachsener Boden kostet nur wenige hundert Zellen je Krater', () => {
+  const { z, ereignisse } = bauEinheit(maskeMitScholle(260, 260), new Map(), ZERSTOERUNG_SCHOLLEN);
+  assert.ok(260 * 260 > INSEL_MAX_ZELLEN_SCHOLLEN);
+  z.krater(315, 100 + 260 + 120, 20, 100);
+  for (let i = 0; i < 80; i++) z.schritt();
+  assert.deepEqual(ereignisse.filter(e => e.type === 'terrain_detached'), []);
+
+  // Ein Krater im Boden: die Masse reicht nach unten bis zum Kartenrand und ist nach wenigen Zellen verankert.
+  const { z: boden } = bauEinheit(maskeAusBoden(900, 700, 400), new Map(), ZERSTOERUNG_SCHOLLEN);
+  boden.krater(450, 410, 40, 100);
+  let kosten = 0;
+  for (let i = 0; i < 10; i++) { boden.schritt(); kosten += boden.suchkosten; }
+  assert.ok(kosten < 3000, `Kosten ${kosten}`);
+});
+
+test('Fassung 3: eine angehaltene Füllung läuft im nächsten Tick weiter und ergibt dieselbe Insel wie ohne Anhalten', () => {
+  // Gleiche Scholle, einmal mit dem normalen Budget, einmal Tick für Tick: dasselbe Ereignis (Spaltenläufe).
+  const lauf = () => {
+    const { z, ereignisse } = bauEinheit(maskeMitScholle(120, 90), new Map(), ZERSTOERUNG_SCHOLLEN);
+    z.krater(315, 90 + 100 + 120, 20, 100);
+    for (let i = 0; i < 200; i++) z.schritt();
+    return ereignisse.filter(e => e.type === 'terrain_detached').map(e => e.payload.runs);
+  };
+  const a = lauf();
+  assert.equal(a.length, 1);
+  assert.deepEqual(a, lauf());
+  const spalten = new Set();
+  for (let i = 0; i < a[0].length; i += 3) spalten.add(a[0][i]);
+  assert.ok(spalten.size >= 120, 'die ganze Scholle ist dabei');
 });
 
 test('Lose Objekte: Geschütz und Kiste fallen mit, wenn ihnen der Boden fehlt, und stehen danach fest', () => {

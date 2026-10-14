@@ -19,9 +19,13 @@
  * ## Kostenbudget
  *
  * Die Inselsuche besucht je Tick höchstens `SUCH_BUDGET_PRO_TICK` Zellen und
- * setzt im nächsten Tick fort. Eine Masse über `INSEL_MAX_ZELLEN` gilt als
- * gewachsener Fels (verankert); je Krater werden höchstens
- * `SUCH_BUDGET_FAKTOR` solche Massen angefangen. Das Fallen kostet je Tick nur
+ * setzt im nächsten Tick fort. Eine Masse über der Obergrenze der Fassung
+ * (`suchGrenzen`: 6000 Zellen in Fassung 2, 60 000 in Fassung 3) gilt als
+ * gewachsener Fels (verankert); je Krater werden höchstens `faktor` solche
+ * Massen angefangen. In Fassung 2 wird eine Masse in einem Tick zu Ende gefüllt
+ * (ein Tick kostet dann bis zu Budget + Obergrenze); ab Fassung 3 hält auch die
+ * Füllung an der Budgetgrenze an und läuft im nächsten Tick weiter — ein Tick
+ * kostet nie mehr als das Budget. Das Fallen kostet je Tick nur
  * die untere Kante der Insel; die Maske wird beim Start und beim Aufsetzen
  * einmal beschrieben.
  *
@@ -39,7 +43,7 @@ import { COMPONENT_SIGNATURES } from './ecs/world.js';
 import { eachCraterCell } from './terrain/collisionMask.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
 import {
-  INSEL_MAX_ZELLEN, SUCH_BUDGET_PRO_TICK, SUCH_BUDGET_FAKTOR, INSEL_GRAVITATION,
+  SUCH_BUDGET_PRO_TICK, INSEL_GRAVITATION, ZERSTOERUNG_GELAENDE, suchGrenzen,
   INSEL_TEMPO_MAX, INSEL_QUETSCH_SCHADEN, OBJEKT_GRAVITATION,
 } from '../shared/config/zerstoerung.js';
 
@@ -109,6 +113,7 @@ export class Zerstoerung {
   #getragen = new Set();
   #maskenStand = -1;
   #suchkosten = 0;
+  #grenzen;
 
   /**
    * @param {object} quelle
@@ -116,8 +121,10 @@ export class Zerstoerung {
    * @param {object} quelle.world - ECS-Welt
    * @param {object} quelle.events - Ereigniswarteschlange
    * @param {Map<number, object>} quelle.turrets - Geschütze des Matches (`x`, `y` werden bewegt)
+   * @param {number} [quelle.fassung] - Zerstörungsfassung (`config.zerstoerung`), bestimmt die Suchgrenzen
    */
-  constructor({ terrain, world, events, turrets }) {
+  constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE }) {
+    this.#grenzen = suchGrenzen(fassung);
     this.#terrain = terrain;
     this.#world = world;
     this.#events = events;
@@ -160,14 +167,21 @@ export class Zerstoerung {
         this.#job = this.#neuerJob(auftrag);
       }
       const job = this.#job;
-      while (job.pos < job.saat.length && budget > 0 && job.rest > 0) {
-        const start = job.saat[job.pos];
-        job.pos += 1;
-        if (job.besucht.has(start)) continue;
-        const besucht = this.#fuelle(job, start);
+      // Eine angefangene Füllung geht vor (nur Fassung 3 hält mitten in einer Masse an).
+      if (job.fuellung) {
+        const besucht = this.#fuelle(job, null, budget);
         budget -= besucht;
         this.#suchkosten += besucht;
       }
+      while (!job.fuellung && job.pos < job.saat.length && budget > 0 && job.rest > 0) {
+        const start = job.saat[job.pos];
+        job.pos += 1;
+        if (job.besucht.has(start)) continue;
+        const besucht = this.#fuelle(job, start, budget);
+        budget -= besucht;
+        this.#suchkosten += besucht;
+      }
+      if (job.fuellung) return; // Budget verbraucht: im nächsten Tick weiter
       if (job.pos >= job.saat.length || job.rest <= 0) {
         for (const insel of job.inseln) this.#starte(insel);
         this.#job = null;
@@ -216,60 +230,95 @@ export class Zerstoerung {
     }
     return {
       saat, pos: 0, besucht: new Map(), stati: [], inseln: [], ankerAb: new Map(),
-      rest: INSEL_MAX_ZELLEN * SUCH_BUDGET_FAKTOR,
+      rest: this.#grenzen.maxZellen * this.#grenzen.faktor, fuellung: null,
     };
   }
 
   /**
-   * Füllt eine zusammenhängende Masse (8er-Nachbarschaft, Breitensuche).
-   * Verankert ist sie, wenn sie den Kartenrand berührt, größer als
-   * `INSEL_MAX_ZELLEN` ist oder an eine schon als verankert erkannte Masse grenzt.
+   * Füllt eine zusammenhängende Masse (8er-Nachbarschaft).
+   * Verankert ist sie, wenn sie den Kartenrand berührt, größer als die Obergrenze
+   * der Fassung ist oder an eine schon als verankert erkannte Masse grenzt.
    *
+   * Fassung 2 füllt breit (Warteschlange) und die Masse am Stück. Ab Fassung 3 füllt
+   * die Suche TIEF und nach unten zuerst (Stapel): Gewachsener Fels erreicht so den
+   * Kartenboden nach wenigen hundert Zellen, statt erst nach 60 000 als „zu groß" zu
+   * gelten — eine echte Insel muss ohnehin ganz durchsucht werden, dort ist die
+   * Reihenfolge gleichgültig. Die Füllung hält nach `limit` bearbeiteten Zellen an
+   * (`job.fuellung` bleibt gesetzt) und wird mit `start === null` fortgesetzt.
+   *
+   * @param {number|null} start - Startzelle, `null` setzt `job.fuellung` fort
+   * @param {number} limit - Zellen, die dieser Aufruf höchstens bearbeitet (nur Fassung 3)
    * @returns {number} besuchte Zellen (für das Budget)
    */
-  #fuelle(job, start) {
+  #fuelle(job, start, limit) {
     const breite = this.#breite;
     const hoehe = this.#hoehe;
     const terrain = this.#terrain;
-    const id = job.stati.length;
-    job.stati.push('insel');
-    // Schnellweg: Reicht fester Boden senkrecht bis zum Kartenrand, ist die Masse verankert.
-    if (this.#senkrechtVerankert(job, start)) {
-      job.stati[id] = 'anker';
+    const { maxZellen, fortsetzen } = this.#grenzen;
+    let f = job.fuellung;
+    if (start !== null) {
+      const id = job.stati.length;
+      job.stati.push('insel');
+      // Schnellweg: Reicht fester Boden senkrecht bis zum Kartenrand, ist die Masse verankert.
+      if (this.#senkrechtVerankert(job, start)) {
+        job.stati[id] = 'anker';
+        job.besucht.set(start, id);
+        return 1;
+      }
+      f = { id, zellen: [start], i: 0, verankert: false, stapel: fortsetzen ? [0] : null };
       job.besucht.set(start, id);
-      return 1;
     }
-    const zellen = [start];
-    job.besucht.set(start, id);
-    let verankert = false;
-    for (let i = 0; i < zellen.length && !verankert; i++) {
-      const k = zellen[i];
+    const { id, zellen, stapel } = f;
+    const von = f.i;
+    const bis = fortsetzen ? von + Math.max(1, limit) : Infinity;
+    const offen = () => (stapel ? stapel.length > 0 : f.i < zellen.length);
+    const pruefe = (nx, ny) => {
+      if (!terrain.isSolid(nx, ny)) return;
+      const zelle = nx * hoehe + ny;
+      const fremd = job.besucht.get(zelle);
+      if (fremd === undefined) {
+        job.besucht.set(zelle, id);
+        zellen.push(zelle);
+        if (stapel) stapel.push(zellen.length - 1);
+      } else if (fremd !== id && job.stati[fremd] === 'anker') {
+        f.verankert = true;
+      }
+    };
+    for (; offen() && !f.verankert && f.i < bis; f.i++) {
+      const k = stapel ? zellen[stapel.pop()] : zellen[f.i];
       const x = Math.floor(k / hoehe);
       const y = k - x * hoehe;
-      if (x === 0 || y === 0 || x === breite - 1 || y === hoehe - 1 || zellen.length > INSEL_MAX_ZELLEN) {
-        verankert = true;
+      if (x === 0 || y === 0 || x === breite - 1 || y === hoehe - 1 || zellen.length > maxZellen) {
+        f.verankert = true;
         break;
       }
-      for (let ddx = -1; ddx <= 1 && !verankert; ddx++) {
-        for (let ddy = -1; ddy <= 1; ddy++) {
-          if (ddx === 0 && ddy === 0) continue;
-          if (!terrain.isSolid(x + ddx, y + ddy)) continue;
-          const nk = k + ddx * hoehe + ddy;
-          const fremd = job.besucht.get(nk);
-          if (fremd === undefined) {
-            job.besucht.set(nk, id);
-            zellen.push(nk);
-          } else if (fremd !== id && job.stati[fremd] === 'anker') {
-            verankert = true;
-            break;
+      if (stapel) {
+        // Oben zuerst einstellen, unten zuletzt: der Stapel gibt die untere Nachbarzelle als erste heraus.
+        for (let ddy = -1; ddy <= 1 && !f.verankert; ddy++) {
+          for (let ddx = -1; ddx <= 1 && !f.verankert; ddx++) {
+            if (ddx !== 0 || ddy !== 0) pruefe(x + ddx, y + ddy);
+          }
+        }
+      } else {
+        for (let ddx = -1; ddx <= 1 && !f.verankert; ddx++) {
+          for (let ddy = -1; ddy <= 1; ddy++) {
+            if (ddx === 0 && ddy === 0) continue;
+            pruefe(x + ddx, y + ddy);
+            if (f.verankert) break;
           }
         }
       }
     }
+    if (!f.verankert && offen()) {
+      // Nur Fassung 3: Budget verbraucht, die Füllung geht im nächsten Tick weiter.
+      job.fuellung = f;
+      return f.i - von;
+    }
+    job.fuellung = null;
     job.rest -= zellen.length;
-    if (verankert) job.stati[id] = 'anker';
+    if (f.verankert) job.stati[id] = 'anker';
     else job.inseln.push(Int32Array.from(zellen).sort());
-    return zellen.length;
+    return fortsetzen ? Math.max(1, f.i - von) : zellen.length;
   }
 
   /** Fester Boden von der Zelle senkrecht nach unten bis zum Kartenrand? (Je Spalte merkt sich der Job den Fund.) */
