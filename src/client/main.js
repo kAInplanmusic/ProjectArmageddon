@@ -19,6 +19,7 @@ import { Renderer } from './renderer.js';
 import { Camera } from './camera.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
+import { zeigeToast } from './toasts.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
@@ -751,6 +752,7 @@ class Game {
     } catch (error) {
       // Kein Absturz bei nicht erreichbarem Server: das Menü bleibt bedienbar.
       if (status) status.textContent = `Server nicht erreichbar (${error.message})`;
+      zeigeToast(`Server nicht erreichbar (${error.message})`, 'danger');
       list.replaceChildren();
       return { ok: false, reason: error.message };
     }
@@ -765,8 +767,8 @@ class Game {
     if (status) status.textContent = `${offen.length} offene Lobby(s)`;
     list.replaceChildren(...offen.map(lobby => {
       const item = document.createElement('li');
+      item.className = 'lobby-karte';
 
-      const label = document.createElement('span');
       /*
        * Gezählt werden BEITRETENDE, nicht Figuren.
        *
@@ -777,20 +779,61 @@ class Game {
        * „Beitreten" an einer Lobby, die schon voll ist.
        */
       const plaetze = lobby.seatsTotal ?? lobby.capacity ?? 0;
-      const belegt = `${lobby.occupied ?? 0}/${plaetze || '?'}`;
-      label.textContent = `${lobby.id} · ${lobby.preset ?? 'hills'} · ${belegt} Plätze`;
+      const belegtZahl = lobby.occupied ?? 0;
+      const voll = belegtZahl >= plaetze;
+      const verbunden = Math.min(lobby.connected ?? belegtZahl, belegtZahl);
+      item.dataset.zustand = voll ? 'voll' : belegtZahl > 0 ? 'wartet' : 'leer';
+
+      const el = (tag, klasse, text) => {
+        const knoten = document.createElement(tag);
+        if (klasse) knoten.className = klasse;
+        if (text !== undefined) knoten.textContent = text;
+        return knoten;
+      };
+
+      // Kopf: Lobby-ID (Wiedererkennung) und Karte als Chip.
+      const kopf = el('div', 'lk-kopf');
+      kopf.append(el('span', 'lk-id', lobby.id), el('span', 'chip chip-karte', lobby.preset ?? 'hills'));
+
+      // Konfig-Zusammenfassung als kleine Chips.
+      const konfig = el('div', 'lk-konfig');
+      if (lobby.teams) konfig.append(el('span', 'chip', `${lobby.teams} Teams × ${lobby.playersPerTeam ?? '?'}`));
+      // Querformat ist der Normalfall und bleibt unbeschriftet; nur die Ausnahme bekommt einen Chip.
+      if (lobby.orientation === 'portrait') konfig.append(el('span', 'chip', 'Hochformat'));
+
+      // Spielerplätze: ein Feld je Platz (belegt/verbunden/getrennt/frei) plus Zahl.
+      const platzZeile = el('div', 'lk-plaetze');
+      const felder = el('span', 'lk-felder');
+      felder.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < Math.min(plaetze, 12); i += 1) {
+        const zustand = i < verbunden ? 'bereit' : i < belegtZahl ? 'getrennt' : 'frei';
+        felder.append(el('span', `lk-platz is-${zustand}`));
+      }
+      const belegt = `${belegtZahl}/${plaetze || '?'}`;
+      platzZeile.append(felder, el('span', 'lk-zahl', `${belegt} Plätze`));
+
+      // Bereit-Status: die Lobby ist offen, voll oder wartet auf Mitspieler.
+      const stand = voll ? 'Voll' : belegtZahl === 0 ? 'Leer — du startest' : `Wartet auf ${plaetze - belegtZahl}`;
+      const zusatz = belegtZahl > 0 && verbunden < belegtZahl ? ` · ${belegtZahl - verbunden} getrennt` : '';
+      const statusChip = el('span', `chip chip-status is-${item.dataset.zustand}`, stand + zusatz);
 
       const join = document.createElement('button');
       join.type = 'button';
-      join.textContent = lobby.occupied >= plaetze ? 'Voll' : 'Beitreten';
-      join.disabled = lobby.occupied >= plaetze;
+      join.className = 'lk-beitreten';
+      join.textContent = voll ? 'Voll' : 'Beitreten';
+      join.disabled = voll;
+      join.setAttribute('aria-label', `${voll ? 'Voll' : 'Beitreten'}: Lobby ${lobby.id}, ${belegt} Plätze`);
       join.addEventListener('click', () => {
         const lobbyInput = document.getElementById('cfg-lobby');
         if (lobbyInput) lobbyInput.value = lobby.id;
         if (status) status.textContent = `Lobby ${lobby.id} ausgewählt — auf "Match starten" klicken.`;
+        zeigeToast(`Lobby ${lobby.id} ausgewählt`, 'good');
       });
 
-      item.append(label, join);
+      const info = el('div', 'lk-info');
+      konfig.append(statusChip);
+      info.append(kopf, konfig, platzZeile);
+      item.append(info, join);
       return item;
     }));
     return { ok: true, count: offen.length };
@@ -1106,6 +1149,7 @@ class Game {
       }
     } catch (error) {
       this.hud.log(`Serverfehler: ${error.message}`, 'danger');
+      zeigeToast(`Serverfehler: ${error.message}`, 'danger');
       this.menuOverlay.hidden = false;
       // Kein Match, kein Abbruchknopf — der Fehlschlag führt zurück ins Menü.
       this.#zeigeAbbruch(false);
@@ -1195,8 +1239,14 @@ class Game {
        */
     });
     client.on('state', state => {
-      if (state === CONNECTION_STATE.RECONNECTING) this.hud.log('Verbindung verloren — versuche Wiederverbindung', 'danger');
-      if (state === CONNECTION_STATE.CONNECTED) this.hud.log('Verbunden', 'good');
+      if (state === CONNECTION_STATE.RECONNECTING) {
+        this.hud.log('Verbindung verloren — versuche Wiederverbindung', 'danger');
+        zeigeToast('Verbindung verloren — versuche Wiederverbindung', 'danger');
+      }
+      if (state === CONNECTION_STATE.CONNECTED) {
+        this.hud.log('Verbunden', 'good');
+        zeigeToast('Verbunden', 'good');
+      }
       /*
        * Den Verbindungszustand SOFORT ins HUD schreiben, nicht erst im
        * Zeichenbild.
@@ -1218,6 +1268,7 @@ class Game {
       // zeigte die Anzeige eine Bahn für einen Schuss, den es nie gab.
       this.shotPredictor.discard(text);
       this.hud.log(`Server: ${text}`, 'danger');
+      zeigeToast(`Server: ${text}`, 'danger');
     });
     client.on('game_event', message => this.#handleRemoteEvent(message));
     /*
