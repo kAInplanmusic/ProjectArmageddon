@@ -315,8 +315,8 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   gemessen (rAF-Median, Software-Rendering, 3 Seeds): 33/33/50 ms statt vorher 50/83/117 ms. `renderer.render()` bezahlt die Rasterung jetzt sofort (`save()` erzwingt sie; ~30 ms in Software, GPU
   vernachlässigbar) — der Dynamik-Test prüft bei langsamem Untergrund deshalb die DIFFERENZ der Maßnahme. **Tests:** Unit 1319, E2E (Redesign-Lauf) grün bis auf die zwei oben behobenen.
   **Bekannte Schwächen / nächste Schritte:** Bruchstein wirkt regelmäßig (größere, unregelmäßigere Steine), große flache dunkle Fläche zwischen Hügeln und Boden bei flachen Karten, ältere Landmarken nur umgefärbt,
-  Moos auf Sand/Schnee-Biomen abgeschwächt, Schildzahl ungeprüft im Spiel (Zustand führt noch keinen Schild), Hochformat-Karte und zweites Biom nicht eigens aufgenommen, Lobby-/Loadout-Karten und Sieg-Dialog
-  (Entwurf: „VICTORY!“ mit Belohnungen) nur umgefärbt, nicht neu aufgebaut; keine Figuren-Sprites (die Fraktionsbilder haben Schachbrett-Hintergrund und sind nicht direkt nutzbar).
+  Moos auf Sand/Schnee-Biomen abgeschwächt, Schildzahl ungeprüft im Spiel (Zustand führt noch keinen Schild), Hochformat-Karte und zweites Biom nicht eigens aufgenommen, Lobby-/Loadout-Karten
+  nur umgefärbt, nicht neu aufgebaut (Sieg-Dialog: neu gebaut 2026-10-14 — Siegerzeichen, Siegerzeile, Kennzahlen, Knöpfe „Revanche“ und „Zum Menü“, E2E `sieg-dialog.spec.mjs`); keine Figuren-Sprites (die Fraktionsbilder haben Schachbrett-Hintergrund und sind nicht direkt nutzbar).
 - [x] **Touch-Bedienung und Menü-Semantik (2026-10-14, Audit-Punkte (l) und (n)):** Bei grobem Zeiger (Handy) erscheinen am eigenen Zug die
   Tasten „⤴ Links“, „Rechts ⤴“, „Abwurf“ (≥ 44 px hoch; vorher gab es Sprung/Abwurf nur per Tastatur), Waffenzeilen mind. 36 px hoch; im
   kompakten Querformat rücken Zielanzeige und Protokoll zur Seite. Zielen/Schießen bleiben Ziehen/Halten auf dem Spielfeld. Das Hauptmenü ist

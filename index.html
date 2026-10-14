@@ -1197,6 +1197,12 @@
       <section id="end-overlay" class="overlay" hidden aria-label="Spielende">
         <div class="overlay-card panel">
           <h1>Match <span class="accent">beendet</span></h1>
+          <!-- Siegerzeichen (Entwurf „VICTORY!“): reine Dekoration. -->
+          <svg class="sieg-schaedel" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+            <path d="M32 4C17 4 8 14 8 27c0 8 3 13 8 16v9c0 2 2 4 4 4h5v-6h3v6h8v-6h3v6h5c2 0 4-2 4-4v-9c5-3 8-8 8-16C56 14 47 4 32 4z" fill="#7cfc00" stroke="#10210a" stroke-width="3" stroke-linejoin="round"/>
+            <ellipse cx="22" cy="28" rx="7" ry="8" fill="#0d0f12"/><ellipse cx="42" cy="28" rx="7" ry="8" fill="#0d0f12"/>
+            <path d="M32 36l-4 8h8z" fill="#0d0f12"/>
+          </svg>
           <p id="winner-text">—</p>
           <p id="end-summary">—</p>
           <!--
@@ -1207,7 +1213,10 @@
           -->
           <div id="match-kennzahlen" class="profil-werte" aria-label="Kennzahlen dieser Partie"></div>
           <table id="match-tabelle" class="match-tabelle" aria-label="Beitrag aller Spieler"></table>
-          <button id="rematch-button" type="button">Revanche</button>
+          <div class="end-knoepfe">
+            <button id="rematch-button" type="button">Revanche</button>
+            <button id="end-menu-button" type="button" class="secondary">Zum Menü</button>
+          </div>
         </div>
       </section>
     </div>

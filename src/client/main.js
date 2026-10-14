@@ -273,6 +273,7 @@ class Game {
     this.abortButton = document.getElementById('hud-abort');
     this.#zeigeAbbruch(false);
     this.winnerText = document.getElementById('winner-text');
+    document.getElementById('end-menu-button')?.addEventListener('click', () => this.#verlasseMatch());
     this.endSummary = document.getElementById('end-summary');
 
     document.getElementById('start-button')?.addEventListener('click', () => this.startFromMenu());
