@@ -164,6 +164,37 @@
 
     #game-canvas { touch-action: none; }
 
+    /* Touch-Aktionen: nur mit grobem Zeiger sichtbar; große Trefferflächen (≥ 44 px). */
+    #touch-aktionen { display: none; }
+    @media (pointer: coarse) {
+      #touch-aktionen:not([hidden]) {
+        display: flex;
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        z-index: 6;
+        gap: 8px;
+      }
+      /* Platz links unten für die Tasten: Das Protokoll rückt nach rechts. */
+      #hud-log { left: 250px !important; }
+      #hud-aim { transform: translateX(125px); }
+      #touch-aktionen button {
+        min-width: 62px;
+        min-height: 46px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text, #e8eef5);
+        background: rgba(19, 26, 34, 0.88);
+        border: 1px solid var(--panel-edge, #2a3a4a);
+        border-radius: 6px;
+        touch-action: manipulation;
+      }
+      #touch-aktionen button:active { background: rgba(244, 162, 97, 0.35); }
+      /* Waffenzeilen: größere Trefferfläche (vorher 22 px hoch). */
+      .weapon-item { min-height: 36px; }
+    }
+
     .panel {
       background: linear-gradient(160deg, rgba(19, 26, 34, 0.96), rgba(11, 15, 20, 0.96));
       border: 1px solid var(--panel-edge);
@@ -791,6 +822,13 @@
         </div>
       </section>
 
+      <!-- Touch-Aktionen (nur bei grobem Zeiger, z. B. Handy): Sprung links/rechts und Abwurf — vorher gab es dafür
+           nur Tastatur (Shift, A/D, Q). Zielen und Schießen laufen weiter über Ziehen/Halten auf dem Spielfeld. -->
+      <div id="touch-aktionen" role="group" aria-label="Aktionen" hidden>
+        <button type="button" data-aktion="sprung-links" aria-label="Nach links springen">⤴ Links</button>
+        <button type="button" data-aktion="sprung-rechts" aria-label="Nach rechts springen">Rechts ⤴</button>
+        <button type="button" data-aktion="abwurf" aria-label="Aktive Waffe abwerfen">Abwurf</button>
+      </div>
       <div id="zugpause" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span class="zugpause-titel"></span>
         <span class="zugpause-zahl" aria-hidden="true"></span>
@@ -876,7 +914,7 @@
         </div>
       </section>
 
-      <section id="menu-overlay" class="overlay" aria-label="Hauptmenü">
+      <section id="menu-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Hauptmenü">
         <div class="overlay-card panel">
           <h1>Project <span class="accent">Armageddon</span></h1>
           <p class="subtitle">

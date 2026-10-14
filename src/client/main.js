@@ -203,6 +203,13 @@ class Game {
     this.eigeneSpielerIds = [];
     this.profil = this.#ladeProfil();
 
+    // Touch-Aktionen (Sprung links/rechts, Abwurf): rufen dieselben Wege wie Shift+A/D und Q.
+    document.getElementById('touch-aktionen')?.addEventListener('click', ereignis => {
+      const aktion = ereignis.target?.closest?.('button')?.dataset?.aktion;
+      if (aktion === 'sprung-links') this.jump(-1);
+      else if (aktion === 'sprung-rechts') this.jump(1);
+      else if (aktion === 'abwurf') this.dropWeapon(this.#activeDisplayPosition());
+    });
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
       onAim: (angle, power) => { this.aim = { angle, power }; },
@@ -224,6 +231,16 @@ class Game {
 
   #bindMenu() {
     this.menuOverlay = document.getElementById('menu-overlay');
+    // Solange das Menü offen ist, sind Spielfeld und HUD dahinter nicht bedienbar (Tastatur/Screenreader):
+    // `inert` folgt dem `hidden` des Menüs (Audit 2026-10-13: Tab lief durch das Menü ins Spielfeld).
+    const menuHinweis = () => {
+      for (const id of ['game-canvas', 'hud']) {
+        const el = document.getElementById(id);
+        if (el) el.inert = !this.menuOverlay.hidden;
+      }
+    };
+    new MutationObserver(menuHinweis).observe(this.menuOverlay, { attributes: true, attributeFilter: ['hidden'] });
+    menuHinweis();
     this.endOverlay = document.getElementById('end-overlay');
     /*
      * Der Abbruchknopf im HUD — sichtbar nur während eines Matches.
@@ -2435,6 +2452,9 @@ class Game {
      * Rechnungen könnten auseinanderlaufen, und der Spieler sähe eine Kraft, die
      * nicht die seine ist.
      */
+    // Touch-Aktionen nur am eigenen Zug im lokalen/Online-Spiel (nicht im Replay, nicht im Menü).
+    const touchFeld = document.getElementById('touch-aktionen');
+    if (touchFeld) touchFeld.hidden = !(myTurn && this.mode !== 'replay');
     const laedt = this.input.isCharging;
     const ladeAnteil = laedt ? this.input.chargeRatio : null;
     const ladeKraft = laedt ? kraftAusLadung(ladeAnteil) : null;
