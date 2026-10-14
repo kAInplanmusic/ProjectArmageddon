@@ -301,6 +301,22 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   Rückfrage; Annahme, bei Bedarf korrigieren; bei 4 Figuren 60 % je Runde, Config sagt „je Zug“; `computeMaelstromDamage` hat keinen Aufrufer).
   (k) Kein Versions-Handshake. (l) **Touch: ERLEDIGT** (s. o.; Kraft weiter nur über Haltedauer). (m) **Performance (Auftraggeber: „Performance verbessern“, 2026-10-13):** hintere Kulisse (Himmel, Himmelskörper, Ambiente hinten, Landmarken) wird nur jedes 2. Bild neu gezeichnet und sonst als Zwischenbild aufgelegt (`Renderer#drawKulisse`), `parseCss`/`luma` je Kulisse einmal. Gemessen im Software-Rendering 1280×720 (drei Seeds, Median je Bild): 49,9/83,4/116,6 ms → 33,4/66,7/83,3 ms (≈ −30 %; Messung unter paralleler Last, nur relativ aussagekräftig). Nicht gemessen auf echter Hardware. Nicht umgesetzt: `clip-path` der Panels entfernen (Messung ohne Vorteil, verändert den Look). Der Aufschlag-Test (`profiling.spec.mjs`) toleriert jetzt kleine negative Werte (Rauschen, 6 % des Untergrunds). (n) **ERLEDIGT:** Hauptmenü als Dialog, dahinter `inert`. (o) Matches mit
   > 4 Figuren in langen Valhalla-Läufen und Gummi/Eis-Landung nur gelesen, nicht gemessen.
+- [x] **REDESIGN (2026-10-14, Auftraggeber: „komplettes Refactoring, Re-Design aller Design- und Canvas-Teile“; Vorlage: Entwürfe „Turn. Aim. Destroy.“, `assets/ui design/`):**
+  **Designsystem** `src/client/styles/design.css` (liegt nach dem Inline-Stil, überschreibt ihn; IDs/Klassen/Beschriftungen unverändert): Palette Limette #7CFC00 / Orange #FFB800 /
+  Rotorange #FF4D00 / Cyan / Violett auf #0D0F12–#3E444D, Schriften **Bebas Neue** (Überschriften, Zahlen) und **Exo 2** (Text), lokal über `@fontsource` (offline, ohne CDN).
+  **Hauptmenü:** zweispaltig — Ananas-Granaten-Logo (`public/logo.png`, aus `assets/logos/logo.png` freigestellt), Menüpunkte mit Pfeil links, „Spiel einrichten“ + großer Limetten-Knopf rechts; Favicon aus dem Emblem.
+  **HUD (nach Entwurf):** Winkelregler mit Ring (Zahl in der Mitte), Waffenleiste unten mit Zifferntaste und Munition auf jeder Kachel (gewählte Waffe mit Namensschild),
+  großer orangefarbener **FEUER-Knopf** (Halten = laden, Loslassen = schießen; Tastatur Enter/Leertaste; Ladebalken im Knopf), Spielerliste mit sichtbaren Lebensbalken, ruhigeres Protokoll.
+  **Waffen-Icons:** 150 Icons freigestellt (graue Hintergründe und Wasserzeichen entfernt; wenige mit eigenem Rahmen bleiben, z. B. die Axt).
+  **Canvas (Teilauftrag, Worktree-Agent, von mir gesichtet):** Gelände als Bruchstein (Voronoi, Seed-deterministisch) mit Moos-/Grasschicht und Comic-Kontur (`gelaendeStil.js`), dunkle Dschungel-
+  Kulisse mit Felsmassiven, Palmen, Büschen, Nebel (`sceneryPainter.js`, `pflanzen.js`), Comic-Soldaten mit Helm, Teamfarbe, Panzerfaust und Namensplakette (`figuren.js`), Neon-Flugbahn mit
+  Fadenkreuz, Glut-Geschosse, Explosionen mit Druckring und Funken (`effektStil.js`), schwebende Schadenszahlen (-75, kritisch -150!, +50, Schild +25; `schadenszahlen.js`), Wasser/Mahlstrom/Raben in die Palette eingepasst.
+  **Performance:** Kulisse = 1 statische Ebene (Himmel+Silhouetten) + bewegtes Ambiente in halber Auflösung nur im oberen Streifen, jedes 3. Bild (das Auflegen kostete vorher 27 ms je Bild in Software);
+  gemessen (rAF-Median, Software-Rendering, 3 Seeds): 33/33/50 ms statt vorher 50/83/117 ms. `renderer.render()` bezahlt die Rasterung jetzt sofort (`save()` erzwingt sie; ~30 ms in Software, GPU
+  vernachlässigbar) — der Dynamik-Test prüft bei langsamem Untergrund deshalb die DIFFERENZ der Maßnahme. **Tests:** Unit 1319, E2E (Redesign-Lauf) grün bis auf die zwei oben behobenen.
+  **Bekannte Schwächen / nächste Schritte:** Bruchstein wirkt regelmäßig (größere, unregelmäßigere Steine), große flache dunkle Fläche zwischen Hügeln und Boden bei flachen Karten, ältere Landmarken nur umgefärbt,
+  Moos auf Sand/Schnee-Biomen abgeschwächt, Schildzahl ungeprüft im Spiel (Zustand führt noch keinen Schild), Hochformat-Karte und zweites Biom nicht eigens aufgenommen, Lobby-/Loadout-Karten und Sieg-Dialog
+  (Entwurf: „VICTORY!“ mit Belohnungen) nur umgefärbt, nicht neu aufgebaut; keine Figuren-Sprites (die Fraktionsbilder haben Schachbrett-Hintergrund und sind nicht direkt nutzbar).
 - [x] **Touch-Bedienung und Menü-Semantik (2026-10-14, Audit-Punkte (l) und (n)):** Bei grobem Zeiger (Handy) erscheinen am eigenen Zug die
   Tasten „⤴ Links“, „Rechts ⤴“, „Abwurf“ (≥ 44 px hoch; vorher gab es Sprung/Abwurf nur per Tastatur), Waffenzeilen mind. 36 px hoch; im
   kompakten Querformat rücken Zielanzeige und Protokoll zur Seite. Zielen/Schießen bleiben Ziehen/Halten auf dem Spielfeld. Das Hauptmenü ist
@@ -430,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1314/1314** grün, Dateizahl **140** — die zwei neuen Prüfungen sitzen in
+**1319/1319** grün, Dateizahl **141** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

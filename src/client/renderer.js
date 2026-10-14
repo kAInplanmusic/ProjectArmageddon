@@ -45,7 +45,9 @@ const FIGUR_SKALA = 1.5;
 const FIGUR_HOCH = -5;
 
 /** Die hintere Kulisse wird nur jedes n-te Bild neu gezeichnet (siehe `#drawKulisse`). */
-const KULISSE_BILDER = 2;
+const KULISSE_BILDER = 3;
+/** Anteil der Bildhöhe (von oben), in dem das bewegte Ambiente liegt; nur dieser Streifen wird aufgelegt. */
+const KULISSE_BEWEGT_ANTEIL = 0.7;
 import {
   findeTreffer, trefferMarke, zuckVersatz,
   ruckFuer, altereRuck, ruckVersatz,
@@ -810,32 +812,38 @@ export class Renderer {
       drawLandmarks(ctx, this.width, this.height, this.scenery, horizont);
     };
     if (typeof document === 'undefined') { direkt(this.ctx); return; }
-    const schicht = () => {
+    const schicht = (maßstab = 1, anteil = 1) => {
       const canvas = document.createElement('canvas');
-      canvas.width = this.width;
-      canvas.height = this.height;
+      canvas.width = Math.ceil(this.width * maßstab);
+      canvas.height = Math.ceil(this.height * anteil * maßstab);
       const ctx = canvas.getContext('2d');
       return ctx ? { canvas, ctx } : null;
     };
     let c = this.kulissenSchicht;
     const neu = !c || c.scenery !== this.scenery || c.w !== this.width || c.h !== this.height;
     if (neu) {
+      // Statisch: Himmel UND Silhouetten in EINER Ebene (ein Blit je Bild statt zwei). Bewegtes (Wolken, Sterne,
+      // Dunst) liegt darüber in der zweiten — nur im oberen Teil des Bildes, dort liegt das ganze Ambiente hinten.
       const himmel = schicht();
-      const bewegt = schicht();
-      const vorne = schicht();
-      if (!himmel || !bewegt || !vorne) { direkt(this.ctx); return; }
+      // Das bewegte Ambiente (weiche Wolken, Sterne, Dunst) in halber Auflösung und nur im oberen Streifen:
+      // ein Fünftel der Pixel; beim Auflegen wird hochskaliert. Gemessen: das Auflegen kostete vorher 27 ms je Bild.
+      const bewegt = schicht(0.5, KULISSE_BEWEGT_ANTEIL);
+      if (!himmel || !bewegt) { direkt(this.ctx); return; }
       drawGenerativeSky(himmel.ctx, this.width, this.height, this.scenery, 0);
-      drawLandmarks(vorne.ctx, this.width, this.height, this.scenery, horizont);
-      c = this.kulissenSchicht = { himmel, bewegt, vorne, scenery: this.scenery, w: this.width, h: this.height, zeit: -Infinity };
+      drawLandmarks(himmel.ctx, this.width, this.height, this.scenery, horizont);
+      c = this.kulissenSchicht = { himmel, bewegt, scenery: this.scenery, w: this.width, h: this.height, zeit: -Infinity };
     }
     if (neu || this.time - c.zeit >= KULISSE_BILDER || this.time < c.zeit) {
-      c.bewegt.ctx.clearRect(0, 0, c.w, c.h);
+      c.bewegt.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      c.bewegt.ctx.clearRect(0, 0, c.bewegt.canvas.width, c.bewegt.canvas.height);
+      c.bewegt.ctx.setTransform(0.5, 0, 0, 0.5, 0, 0);
       drawAmbient(c.bewegt.ctx, c.w, c.h, this.scenery, this.time, false);
+      c.bewegt.ctx.setTransform(1, 0, 0, 1, 0, 0);
       c.zeit = this.time;
     }
     this.ctx.drawImage(c.himmel.canvas, 0, 0, this.width, this.height);
-    this.ctx.drawImage(c.bewegt.canvas, 0, 0, this.width, this.height);
-    this.ctx.drawImage(c.vorne.canvas, 0, 0, this.width, this.height);
+    const oben = Math.ceil(this.height * KULISSE_BEWEGT_ANTEIL);
+    this.ctx.drawImage(c.bewegt.canvas, 0, 0, c.bewegt.canvas.width, c.bewegt.canvas.height, 0, 0, this.width, oben);
   }
 
   #drawSky() {

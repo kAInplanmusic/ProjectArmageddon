@@ -440,7 +440,7 @@ select option { background: #14181d; color: var(--ink); }
 #menu-overlay details > :not(summary) { max-width: 100%; overflow-x: auto; }
 #menu-overlay .menu-konfig { min-width: 0; }
 /* Protokoll: genug Zeilen auch bei großen Fenstern (E2E: mindestens 8 bei 1440×900). */
-#hud-log { max-height: clamp(70px, 19vh, 220px); bottom: 112px; }
+#hud-log { max-height: clamp(70px, 24vh, 260px); bottom: 112px; }
 #menu-overlay .overlay-card { grid-template-columns: 330px minmax(0, 1fr); }
 #menu-overlay .menu-weitere { grid-template-columns: minmax(0, 1fr); }
 #menu-overlay .menu-weitere > details { min-width: 0; }
