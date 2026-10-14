@@ -429,7 +429,8 @@ test('Waffenliste ist online gefüllt und zeigt Munition', async ({ browser }) =
         .map(el => Number((el.getAttribute('aria-label') ?? '').split('.')[0])),
     }));
 
-    expect(liste.zeilen).toBe(5);
+    // Start-Kit: Reserve + zwei Common-Waffen (vorher vier Klassenwaffen + Reserve = 5).
+    expect(liste.zeilen).toBe(3);
     // Genau eine Waffe ist als aktiv markiert.
     expect(liste.aktiv).toBe(1);
     /*

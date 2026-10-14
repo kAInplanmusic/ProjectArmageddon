@@ -313,7 +313,7 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   Fadenkreuz, Glut-Geschosse, Explosionen mit Druckring und Funken (`effektStil.js`), schwebende Schadenszahlen (-75, kritisch -150!, +50, Schild +25; `schadenszahlen.js`), Wasser/Mahlstrom/Raben in die Palette eingepasst.
   **Performance:** Kulisse = 1 statische Ebene (Himmel+Silhouetten) + bewegtes Ambiente in halber Auflösung nur im oberen Streifen, jedes 3. Bild (das Auflegen kostete vorher 27 ms je Bild in Software);
   gemessen (rAF-Median, Software-Rendering, 3 Seeds): 33/33/50 ms statt vorher 50/83/117 ms. `renderer.render()` bezahlt die Rasterung jetzt sofort (`save()` erzwingt sie; ~30 ms in Software, GPU
-  vernachlässigbar) — der Dynamik-Test prüft bei langsamem Untergrund deshalb die DIFFERENZ der Maßnahme. **Tests:** Unit 1319, E2E (Redesign-Lauf) grün bis auf die zwei oben behobenen.
+  vernachlässigbar) — der Dynamik-Test prüft bei langsamem Untergrund deshalb die DIFFERENZ der Maßnahme. **Tests:** Unit 1326, E2E (Redesign-Lauf) grün bis auf die zwei oben behobenen.
   **Gelände-Feinschliff (2026-10-14):** drei Steinebenen (große Brocken 60–140 px, mittlere und kleine Füllsteine, gewichtete Voronoi-Zellen mit verzerrten Kanten), fünf Grundtöne (Faktor 0,78 abgedunkelt), Moos mit Tropfkanten, Tiefenverlauf; drei Hügelketten in Tiefenstufen mit Baum-/Felssilhouetten und Dunst statt der leeren Fläche; Backzeit +130 ms einmalig, Bildzeit unverändert (33 ms). Offen: Nadelbäume wirken etwas pagodenartig, Terrain insgesamt noch bunter als der Entwurf (`TOENE` in `gelaendeStil.js`), Kraterrand nur an einem Seed geprüft. **Bekannte Schwächen / nächste Schritte:** ältere Landmarken nur umgefärbt,
   Moos auf Sand/Schnee-Biomen abgeschwächt, Schildzahl ungeprüft im Spiel (Zustand führt noch keinen Schild), Hochformat-Karte und zweites Biom nicht eigens aufgenommen, Lobby-/Loadout-Karten
   nur umgefärbt, nicht neu aufgebaut (Sieg-Dialog: neu gebaut 2026-10-14 — Siegerzeichen, Siegerzeile, Kennzahlen, Knöpfe „Revanche“ und „Zum Menü“, E2E `sieg-dialog.spec.mjs`); keine Figuren-Sprites (die Fraktionsbilder haben Schachbrett-Hintergrund und sind nicht direkt nutzbar).
@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1319/1319** grün, Dateizahl **141** — die zwei neuen Prüfungen sitzen in
+**1326/1326** grün, Dateizahl **142** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -1687,6 +1687,36 @@ denselben vier Waffen; die Klasse veränderte nur Werte, nicht die Mittel.
   Unterschiede zwischen den Klassen, Stufengrenze mit Gegenprobe,
   Determinismus, Rückfall für unbekannte Klassen, Deckung der Bewegungsliste
   mit dem Wirkungskatalog.
+
+### Start-Kit statt Klassenloadout (2026-10-14)
+
+**Vorgabe (User):** Waffen sind nicht mehr klassengebunden — wie in Worms startet
+jeder Spieler mit wenigen einfachen Waffen und sammelt den Rest über Loot-Kisten.
+Die Klassen (Power/Speed/Health, `combatProfile`, Archetypen, Sidegrades) bleiben
+**unverändert**; sie bestimmen nur noch die Werte einer Figur.
+
+- **Start (Fassung `kit` 2, Standard):** Reserve `pa_028` (unbegrenzt) + zwei
+  Common-Waffen — eine Wurfwaffe (`ranged`, ohne Nachladezeit) und eine
+  `tech`-Strahlwaffe —, deterministisch aus Match-Seed und Spielerplatz
+  (`getStarterWaffen()` in `loadouts.js`, reiner Hash, **kein** Zufallsstrom
+  verbraucht), klassenunabhängig. Ohne Sichtlinienzwang, ohne Nahkampf.
+- **Alles andere unverändert:** Q-Abwurf, `MAX_WEAPONS = 6`, `crate_pickup_blocked`
+  bei vollem Vorrat, Kisten geben Waffen (Munition auf Besitz wird gemerged).
+  Jede der 150 Waffen kann aus einer Kiste fallen (`pickWeaponForRarity`, Gewicht
+  je Stufe 55/25/12/6/2 je Waffe; Epic + Legendary zusammen unter 3 %).
+- **Replay/Persistenz:** Der Kopf trägt `config.kit`. Neue Aufzeichnungen schreiben
+  immer `kit: 2`; eine Datei **ohne** das Feld (alle Altdateien und alten
+  Sicherungen) wird als `kit: 1` gelesen und spielt das alte Klassenloadout —
+  sonst wäre der Zustandshash anders. Getestet in `tests/start-kit.test.js`.
+- **Alle 150 feuern:** `tests/start-kit.test.js` feuert jede Katalogwaffe einmal in
+  einem Match (kein Wurf, Hash zweimal gleich). Die elf Waffen ohne eigenen
+  Handler (`pa_149, 115, 105, 085, 116, 107, 088, 141, 143, 129, 113`) crashen
+  nicht: sieben haben über `SPECIAL_EFFECTS` einen Selbsteffekt (Reliktkugel
+  Schadensbonus, Wächterstatue/Blutritual Heilung, Zauberrolle/Chaosmagier
+  Zufallszauber, Allsehendes Auge Aufdeckung, Dimensionsriss 60 px Sprung); vier
+  (`pa_141, 143, 129, 113`: Astralkrieger, Astralross, Tesla-Turm, Bohrkanone)
+  haben keinen Effekt und feuern als gewöhnliche Schadenswaffe ohne Zusatzwirkung.
+- Die Klassenloadouts (`getClassLoadout`) bleiben für `kit` 1 erhalten.
 
 ## Fortsetzung 2026-09-11 (2) — Netzwerk unter Störung, Screenreader
 
