@@ -1,0 +1,215 @@
+/**
+ * Comic-Soldaten und Namensschilder.
+ *
+ * Reine Darstellung: Die Figur ist ein Körper von 14 × 20 Pixeln (Kollision),
+ * gezeichnet wird ein Soldat mit Helm, Gesicht, Körper in Teamfarbe, dicker
+ * dunkler Kontur und einer Panzerfaust, die zum Zielwinkel zeigt. Der Ursprung
+ * ist die Körpermitte der Figur.
+ *
+ * @module figuren
+ */
+import {
+  PAL, hexRgb, mischeRgb, css,
+} from './stil.js';
+
+const KONTUR = PAL.kontur;
+const HELM = [78, 88, 60];
+const HAUT = [226, 176, 132];
+const HOSE = [52, 58, 44];
+const ROHR = [84, 98, 52];
+
+function kontur(ctx, breite = 1.6) {
+  ctx.strokeStyle = KONTUR;
+  ctx.lineWidth = breite;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+}
+
+function rundRect(ctx, x, y, b, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + b - r, y);
+  ctx.quadraticCurveTo(x + b, y, x + b, y + r);
+  ctx.lineTo(x + b, y + h - r);
+  ctx.quadraticCurveTo(x + b, y + h, x + b - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+/**
+ * Zeichnet einen Soldaten.
+ *
+ * @param {CanvasRenderingContext2D} ctx - Ursprung = Körpermitte der Figur
+ * @param {object} p
+ * @param {string} p.team - Teamfarbe (`#rrggbb`)
+ * @param {number} p.winkel - Zielwinkel im Bogenmaß (0 = rechts, π/2 = oben)
+ * @param {number} p.atem - vertikaler Versatz von Kopf und Schultern (0 ohne Bewegung)
+ * @param {number} p.rueck - Rückstoß des Rohrs in Pixeln
+ * @param {boolean} p.aktiv - die Figur ist am Zug
+ * @param {number} p.treffer - Aufhellung durch einen Treffer (0 bis 1)
+ * @param {number} p.rohrLaenge - Länge des Rohrs bis zur Mündung
+ */
+export function zeichneSoldat(ctx, p) {
+  const rechts = Math.cos(p.winkel) >= 0;
+  const f = rechts ? 1 : -1;
+  const team = hexRgb(p.team);
+  const teamDunkel = css(mischeRgb(team, [10, 12, 14], 0.45));
+  const teamHell = css(mischeRgb(team, [255, 255, 255], 0.22));
+  const koerper = css(team);
+  const atem = p.atem;
+
+  ctx.save();
+  ctx.scale(f, 1);
+
+  // Beine und Stiefel
+  ctx.fillStyle = css(HOSE);
+  rundRect(ctx, -4.6, 2.5, 4.2, 6.5, 1);
+  ctx.fill(); kontur(ctx);
+  rundRect(ctx, 0.4, 2.5, 4.2, 6.5, 1);
+  ctx.fill(); kontur(ctx);
+  ctx.fillStyle = '#15181c';
+  rundRect(ctx, -5.6, 7.6, 5.6, 3.2, 1.2);
+  ctx.fill(); kontur(ctx, 1.3);
+  rundRect(ctx, -0.2, 7.6, 5.8, 3.2, 1.2);
+  ctx.fill(); kontur(ctx, 1.3);
+
+  // Rumpf in Teamfarbe mit Gürtel
+  ctx.fillStyle = koerper;
+  rundRect(ctx, -5.8, -6 + atem * 0.5, 11.6, 10, 2.4);
+  ctx.fill(); kontur(ctx, 1.9);
+  ctx.fillStyle = teamHell;
+  ctx.fillRect(-4.6, -5 + atem * 0.5, 4, 2);
+  ctx.fillStyle = teamDunkel;
+  ctx.fillRect(-5.2, 1.6, 10.4, 2);
+  ctx.fillStyle = '#d8b44a';
+  ctx.fillRect(-0.9, 1.6, 1.8, 2);
+
+  // Kopf: Gesicht und Helm
+  const ky = -9.2 + atem;
+  ctx.fillStyle = css(HAUT);
+  ctx.beginPath();
+  ctx.arc(0.8, ky + 0.6, 3.5, 0, Math.PI * 2);
+  ctx.fill(); kontur(ctx, 1.5);
+  ctx.fillStyle = '#14171a';
+  ctx.beginPath();
+  ctx.arc(2.5, ky + 0.2, 0.85, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#7a5440';
+  ctx.fillRect(0.4, ky + 2.2, 3.6, 1.1);
+
+  ctx.fillStyle = css(HELM);
+  ctx.beginPath();
+  ctx.arc(0.6, ky - 0.4, 4.8, Math.PI, Math.PI * 2);
+  ctx.lineTo(5.4, ky - 0.4);
+  ctx.lineTo(-4.2, ky - 0.4);
+  ctx.closePath();
+  ctx.fill(); kontur(ctx, 1.7);
+  ctx.fillStyle = koerper;
+  ctx.fillRect(-3.6, ky - 1.9, 8.4, 1.4);
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.beginPath();
+  ctx.arc(-1.2, ky - 3.2, 1.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Panzerfaust: folgt dem Zielwinkel (im Weltraum, nicht gespiegelt)
+  ctx.save();
+  ctx.translate(0, -1.5 + atem * 0.5);
+  ctx.rotate(-p.winkel);
+  if (!rechts) ctx.scale(1, -1);
+  const l = p.rohrLaenge + 5;
+  const x0 = p.rueck - 4;
+  ctx.fillStyle = css(ROHR);
+  rundRect(ctx, x0, -2.7, l, 5.4, 1.6);
+  ctx.fill(); kontur(ctx, 1.8);
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.fillRect(x0 + 2, -2.2, l - 5, 1.1);
+  // Mündungswulst und hintere Düse
+  ctx.fillStyle = '#26301a';
+  rundRect(ctx, x0 + l - 3.4, -3.5, 3.4, 7, 1.2);
+  ctx.fill(); kontur(ctx, 1.5);
+  ctx.fillStyle = p.aktiv ? PAL.orange : '#7d7a66';
+  ctx.fillRect(x0 + l - 1.6, -2, 1.2, 4);
+  rundRect(ctx, x0 - 1.6, -3.2, 3, 6.4, 1);
+  ctx.fillStyle = '#1d2216';
+  ctx.fill(); kontur(ctx, 1.3);
+  // Haltegriff und Hand
+  ctx.fillStyle = '#1d2216';
+  ctx.fillRect(x0 + l * 0.42, 2.4, 1.8, 2.6);
+  ctx.fillStyle = css(HAUT);
+  ctx.beginPath();
+  ctx.arc(x0 + l * 0.42 + 0.9, 3.2, 1.6, 0, Math.PI * 2);
+  ctx.fill(); kontur(ctx, 1.2);
+  ctx.restore();
+
+  if (p.treffer > 0) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, p.treffer);
+    ctx.fillStyle = '#fff3c4';
+    ctx.beginPath();
+    ctx.arc(0, -2, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/** Lebensbalken-Farbe nach Füllstand (Palette des Entwurfs). */
+export function balkenFarbe(anteil) {
+  return anteil > 0.6 ? PAL.limette : anteil > 0.3 ? PAL.orange : PAL.rotorange;
+}
+
+/**
+ * Namensschild mit Lebensbalken: dunkle Plakette, heller Text (Kontrast über 12:1).
+ *
+ * @param {CanvasRenderingContext2D} ctx - in Kartenkoordinaten
+ */
+export function zeichneNamensschild(ctx, x, y, label, anteil, teamFarbe, aktiv) {
+  const text = String(label ?? '').slice(0, 12);
+  ctx.save();
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const breite = Math.max(30, Math.ceil(ctx.measureText(text).width) + 10);
+  const bx = Math.round(x - breite / 2);
+  const by = Math.round(y - 48);
+
+  ctx.fillStyle = 'rgba(13, 15, 18, 0.88)';
+  rundRect(ctx, bx, by, breite, 12, 3);
+  ctx.fill();
+  ctx.strokeStyle = aktiv ? PAL.limette : teamFarbe;
+  ctx.lineWidth = aktiv ? 1.6 : 1.2;
+  ctx.stroke();
+  ctx.fillStyle = PAL.text;
+  ctx.fillText(text, x, by + 6.5);
+
+  const bb = breite - 4;
+  const bbx = bx + 2;
+  const bby = by + 14;
+  ctx.fillStyle = PAL.kontur;
+  ctx.fillRect(bbx - 1, bby - 1, bb + 2, 7);
+  ctx.fillStyle = PAL.bg2;
+  ctx.fillRect(bbx, bby, bb, 5);
+  ctx.fillStyle = balkenFarbe(anteil);
+  ctx.fillRect(bbx, bby, Math.max(0, bb * anteil), 5);
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fillRect(bbx, bby, Math.max(0, bb * anteil), 1.5);
+  ctx.restore();
+
+  if (aktiv) {
+    ctx.save();
+    ctx.fillStyle = PAL.limette;
+    ctx.strokeStyle = PAL.kontur;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x - 4, by - 7);
+    ctx.lineTo(x + 4, by - 7);
+    ctx.lineTo(x, by - 1.5);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+    ctx.restore();
+  }
+}

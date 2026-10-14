@@ -44,7 +44,7 @@ export const PARTIKEL_ABNAHME = 0.035;
 export const PARTIKEL_GRAVITATION = 0.18;
 
 /** Farben der Splitter — aus der Palette des Spiels. */
-const PARTIKEL_FARBEN = Object.freeze(['#f4a261', '#ffd166', '#e76f51']);
+const PARTIKEL_FARBEN = Object.freeze(['#FFB800', '#FF4D00', '#ffd166']);
 
 /**
  * Erzeugt die Splitterwolke einer Explosion.
