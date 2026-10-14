@@ -3,8 +3,12 @@ import test from 'node:test';
 import {
   erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, kraterUmriss, inselGrenzen,
   schreiteInselFort, nimmPflanzenDerInsel, verschiebePflanzenMitInsel, inselStaub, inselTruemmer,
-  TRUEMMER_MAX, STAUB_SCHWELLE,
+  TRUEMMER_MAX, STAUB_SCHWELLE, inselZellen, aufprallStaerke, aufprallEffekt,
 } from '../src/client/zerstoerungOptik.js';
+import {
+  ruckAufprall, ruckVersatz, altereRuck, ruckFuer, AUFPRALL_RUCK_BILDER, RUCK_MAX,
+} from '../src/client/gefuehl.js';
+import { pflanzenStreifen, pflanzenRahmen } from '../src/client/pflanzen.js';
 
 /**
  * Optik der Zerstörung: reiner Rechenkern, nur Anzeige (kein Hash, kein Zufall).
@@ -63,4 +67,69 @@ test('Pflanzen: wurzelnde Pflanzen werden mit der Insel abgenommen und bei der L
   assert.equal(verschiebePflanzenMitInsel(rest, runs, 7), true);
   assert.deepEqual(rest, [{ x: 11, y: 59 }, { x: 40, y: 52 }]);
   assert.equal(verschiebePflanzenMitInsel([], runs, 7), false);
+});
+
+/** Eine Insel aus `breite` Spalten à `hoehe` Zeilen, linke obere Ecke (x0, y0). */
+function scholle(x0, y0, breite, hoehe) {
+  const runs = [];
+  for (let x = x0; x < x0 + breite; x++) runs.push(x, y0, y0 + hoehe - 1);
+  return runs;
+}
+
+test('Aufprall: Stärke wächst mit Masse und Fallhöhe, bleibt in 0..1 und ist deterministisch', () => {
+  assert.equal(inselZellen(scholle(0, 0, 10, 5)), 50);
+  const kiesel = aufprallStaerke(scholle(0, 0, 6, 4), 8);
+  const brocken = aufprallStaerke(scholle(0, 0, 100, 80), 150);
+  assert.ok(kiesel > 0 && kiesel < 0.3, `Kiesel ${kiesel}`);
+  assert.ok(brocken > 0.9 && brocken <= 1, `Brocken ${brocken}`);
+  assert.ok(aufprallStaerke(scholle(0, 0, 60, 40), 100) > aufprallStaerke(scholle(0, 0, 60, 40), 10), 'tiefer = härter');
+  assert.ok(aufprallStaerke(scholle(0, 0, 100, 80), 50) > aufprallStaerke(scholle(0, 0, 20, 10), 50), 'schwerer = härter');
+  assert.equal(aufprallStaerke(scholle(0, 0, 100, 80), 150), brocken);
+});
+
+test('Aufprall: Staubwolke am Fuß mit zwei Druckwellen nach außen, Brocken und Stärke wachsen mit dem Schlag', () => {
+  const klein = aufprallEffekt(scholle(100, 300, 12, 6), 6, 'c');
+  const gross = aufprallEffekt(scholle(100, 300, 120, 80), 140, 'c');
+  assert.deepEqual(gross, aufprallEffekt(scholle(100, 300, 120, 80), 140, 'c'));
+  assert.ok(gross.staub.length > klein.staub.length && gross.truemmer.length > klein.truemmer.length);
+  assert.ok(gross.staub.every(w => w.farbe === 'c' && w.life === 1 && w.y === 379));
+  const links = gross.staub.filter(w => w.vx < -0.9 && w.x === 100);
+  const rechts = gross.staub.filter(w => w.vx > 0.9 && w.x === 219);
+  assert.equal(links.length, 1, 'Druckwelle nach links');
+  assert.equal(rechts.length, 1, 'Druckwelle nach rechts');
+  assert.deepEqual(aufprallEffekt([], 10, 'c'), { staerke: 0, staub: [], truemmer: [] });
+});
+
+test('Aufprall-Ruck: erst ab Schwelle, skaliert mit der Stärke, hält länger als der Kraterruck und verklingt', () => {
+  assert.equal(ruckAufprall(0.1), null);
+  assert.equal(ruckAufprall(0.9, { reducedMotion: true }), null);
+  assert.equal(ruckAufprall(Number.NaN), null);
+  const leicht = ruckAufprall(0.31);
+  const hart = ruckAufprall(1);
+  assert.ok(leicht.skala < hart.skala && hart.skala === 1);
+  const amplitude = ruck => Math.max(...[0, 1, 2, 3, 4, 5, 6].map(bild => Math.max(Math.abs(ruckVersatz(ruck, { bild }).x), Math.abs(ruckVersatz(ruck, { bild }).y))));
+  assert.ok(amplitude(leicht) < amplitude(hart));
+  assert.ok(amplitude(hart) <= RUCK_MAX + 1e-9, 'nie über dem Deckel');
+  assert.ok(amplitude(hart) <= amplitude(ruckFuer(100)) + 1e-9, 'höchstens so hart wie der größte Krater');
+  let ruck = hart;
+  let bilder = 0;
+  while (ruck) { ruck = altereRuck(ruck); bilder += 1; }
+  assert.equal(bilder, AUFPRALL_RUCK_BILDER);
+  assert.ok(AUFPRALL_RUCK_BILDER > 8, 'länger als der Kraterruck');
+});
+
+test('Pflanzenstreifen: überschneidungsfrei, decken jeden Rahmen ab und bleiben im Bild', () => {
+  const pflanzen = [
+    { art: 'busch', x: 100, y: 500, h: 16 }, { art: 'palme', x: 120, y: 480, h: 50 },
+    { art: 'gras', x: 600, y: 300, h: 10 }, { art: 'tanne', x: 2550, y: 700, h: 60 },
+  ];
+  const streifen = pflanzenStreifen(pflanzen, 2560, 1440);
+  assert.ok(streifen.length >= 2 && streifen.length < pflanzen.length, 'Nachbarn verschmelzen');
+  for (let i = 1; i < streifen.length; i++) assert.ok(streifen[i].x0 >= streifen[i - 1].x1, 'ohne Überlappung');
+  for (const p of pflanzen) {
+    const r = pflanzenRahmen(p, 2560, 1440);
+    assert.ok(streifen.some(s => s.x0 <= r.x0 && s.x1 >= r.x1 && s.y0 <= r.y0 && s.y1 >= r.y1), `${p.art} bei ${p.x} abgedeckt`);
+  }
+  assert.ok(streifen.every(s => s.x0 >= 0 && s.y0 >= 0 && s.x1 <= 2560 && s.y1 <= 1440));
+  assert.deepEqual(pflanzenStreifen([], 2560, 1440), []);
 });

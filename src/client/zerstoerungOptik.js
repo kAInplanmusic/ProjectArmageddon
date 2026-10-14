@@ -244,3 +244,54 @@ export function verschiebePflanzenMitInsel(pflanzen, runs, dy) {
   }
   return bewegt;
 }
+
+/** Zellenzahl einer Insel aus ihren Spaltenläufen. */
+export function inselZellen(runs) {
+  let n = 0;
+  for (let i = 0; i + 2 < runs.length; i += 3) n += runs[i + 2] - runs[i + 1] + 1;
+  return n;
+}
+
+/**
+ * Wie hart schlägt eine Insel auf? 0 (Kiesel) bis 1 (Felsbrocken aus großer Höhe).
+ * Gewichtet die Masse (Wurzel der Zellenzahl, bei 8000 Zellen voll) und die Fallhöhe
+ * `dy` (bei 160 px voll). Nur Darstellung: Die Landung selbst bestimmt der Server.
+ */
+export function aufprallStaerke(runs, dy) {
+  const masse = Math.min(1, inselZellen(runs) / 8000);
+  const fall = Math.min(1, Math.max(0, Number(dy) || 0) / 160);
+  return Math.min(1, 0.12 + 0.55 * Math.sqrt(masse) + 0.33 * fall);
+}
+
+/**
+ * Der Aufprall einer gelandeten Insel: eine Staubwolke am Fuß, zwei Druckwellen, die an
+ * der Bodenkante entlang nach außen laufen, Brocken, die vom Rand springen — alles nach
+ * `aufprallStaerke` skaliert. Das Bildzittern (`ruckAufprall`) bestimmt der Renderer.
+ *
+ * @param {number[]} unten - Spaltenläufe an der ENDGÜLTIGEN Lage (Versatz schon eingerechnet)
+ * @param {number} dy - Fallhöhe in Pixeln
+ * @param {string} farbe - CSS-Farbe der Erde
+ * @returns {{staerke:number, staub:object[], truemmer:object[]}}
+ */
+export function aufprallEffekt(unten, dy, farbe) {
+  const g = inselGrenzen(unten);
+  if (!g) return { staerke: 0, staub: [], truemmer: [] };
+  const staerke = aufprallStaerke(unten, dy);
+  const staub = inselStaub(unten, farbe, 4 + Math.round(staerke * 5));
+  // Druckwellen: Staub, der links und rechts der Insel am Boden entlangrollt.
+  const hoehe = Math.max(5, Math.min(16, g.breite / 8)) * (0.7 + 0.6 * staerke);
+  for (const seite of [-1, 1]) {
+    staub.push({
+      x: seite < 0 ? g.x0 : g.x1,
+      y: g.y1,
+      vx: seite * (0.9 + 1.4 * staerke),
+      vy: -0.12 - 0.1 * staerke,
+      life: 1,
+      decay: 1 / STAUB_BILDER,
+      startRadius: hoehe,
+      farbe,
+    });
+  }
+  const truemmer = inselTruemmer(unten, 6 + Math.round(staerke * 14));
+  return { staerke, staub, truemmer };
+}

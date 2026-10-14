@@ -257,6 +257,28 @@ export function ruckFuer(radius, { reducedMotion = false } = {}) {
   return { kind: 'ruck', radius: r, life: 1, decay: 1 / RUCK_BILDER };
 }
 
+/** Ab dieser Aufprallstärke (0..1) einer landenden Geländeinsel ruckt das Bild. */
+export const AUFPRALL_RUCK_SCHWELLE = 0.3;
+/** Lebensdauer des Aufprall-Rucks in Bildern: länger als der Kraterruck, weil Fels nachbebt (Zweierpotenz). */
+export const AUFPRALL_RUCK_BILDER = 16;
+
+/**
+ * Ein Ruck für eine landende Geländeinsel — oder `null`.
+ *
+ * Wie der Kraterruck (`ruckFuer`), aber mit `skala`: Eine kleine Scholle lässt das Bild
+ * kaum zittern, ein Felsbrocken voll. Rein optisch; fließt in keinen Hash.
+ *
+ * @param {number} staerke - Aufprallstärke 0..1 (`aufprallStaerke`)
+ */
+export function ruckAufprall(staerke, { reducedMotion = false } = {}) {
+  const st = Number(staerke);
+  if (reducedMotion || !Number.isFinite(st) || st < AUFPRALL_RUCK_SCHWELLE) return null;
+  return {
+    kind: 'ruck', radius: RUCK_SCHWELLE, life: 1, decay: 1 / AUFPRALL_RUCK_BILDER,
+    skala: Math.min(1, 0.4 + 0.6 * begrenze01(st)),
+  };
+}
+
 /** Altert den Ruck um ein Bild; gibt `null` zurück, wenn er verklungen ist. */
 export function altereRuck(ruck) {
   if (!ruck) return null;
@@ -277,7 +299,7 @@ export function ruckVersatz(ruck, { bild = 0, reducedMotion = false } = {}) {
   if (!ruck || reducedMotion) return { x: 0, y: 0 };
   const anteil = begrenze01(ruck.life);
   // Schneller abbauend als linear: Der Einschlag ist hart, das Nachlassen auch.
-  const amplitude = RUCK_MAX * (1 - Math.sqrt(1 - anteil));
+  const amplitude = RUCK_MAX * (ruck.skala ?? 1) * (1 - Math.sqrt(1 - anteil));
   return {
     x: amplitude * Math.cos(bild * 2.4),
     y: amplitude * Math.sin(bild * 3.7) * 0.6,
