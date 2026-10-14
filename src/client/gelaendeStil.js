@@ -16,33 +16,18 @@ import {
   PAL, hash2, rauschen1, mischeRgb, hexRgb, gruenAnteil, css,
 } from './stil.js';
 
-const ZELLE_B = 50;
-const ZELLE_H = 32;
-const STEIN_NEUTRAL = [74, 66, 58];
-const FUGE = [11, 10, 9];
+/** Größe der großen Brocken (Kartenpixel, bei 2560×1440); die Zellen werden gewichtet und verzerrt. */
+const GROSS_B = 124;
+const GROSS_H = 92;
+/** Die Zellabstände werden senkrecht gestreckt: Steine liegen breiter als hoch. */
+const YSTRECK = 1.22;
+const GROSS_HS = GROSS_H * YSTRECK;
+const FUGE = [8, 9, 11];
 const KONTUR = hexRgb(PAL.kontur);
 const MOOS_LIMETTE = hexRgb(PAL.limette);
-
-/** Feature-Punkte der Steinzellen (versetzte Reihen wie ein Bruchsteinmauerwerk). */
-function baueZellen(breite, hoehe, seed) {
-  const nx = Math.ceil(breite / ZELLE_B) + 3;
-  const ny = Math.ceil(hoehe / ZELLE_H) + 3;
-  const px = new Float32Array(nx * ny);
-  const py = new Float32Array(nx * ny);
-  const wert = new Float32Array(nx * ny);
-  for (let j = 0; j < ny; j += 1) {
-    for (let i = 0; i < nx; i += 1) {
-      const gi = i - 1;
-      const gj = j - 1;
-      const k = j * nx + i;
-      const versatz = (gj & 1) * 0.5;
-      px[k] = (gi + versatz + 0.12 + 0.76 * hash2(gi, gj, seed + 11)) * ZELLE_B;
-      py[k] = (gj + 0.12 + 0.76 * hash2(gi, gj, seed + 23)) * ZELLE_H;
-      wert[k] = hash2(gi, gj, seed + 37);
-    }
-  }
-  return { nx, px, py, wert };
-}
+/** Kleine Palette der Steintöne: Blaugrau, Braungrau, Olivgrau, Schiefer. */
+const TOENE = [[56, 68, 88], [92, 76, 60], [74, 82, 52], [84, 80, 74], [64, 72, 84]];
+const MOOS_STEIN = [52, 104, 30];
 
 function glatt(a, b, x) {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
@@ -50,7 +35,136 @@ function glatt(a, b, x) {
 }
 
 /**
- * Färbt die Geländeebene als Bruchsteinwand mit Moos-Kante und Kontur.
+ * Baut die Steinstruktur: drei Ebenen ineinander.
+ *
+ * Große Brocken sind gewichtete Voronoi-Zellen (Power-Diagramm) auf einem
+ * gestaffelten, stark gestreuten Raster. Jeder Brocken bleibt entweder ganz
+ * oder zerfällt in 2 bis 4 mittlere Steine, von denen manche nochmals in 2 bis
+ * 3 kleine Füllsteine brechen. So entstehen wenige große, mehrere mittlere und
+ * viele kleine Steine in einer Wand — kein gleichmäßiges Pflaster.
+ */
+function baueSteine(breite, hoehe, seed, palette) {
+  const nx = Math.ceil(breite / GROSS_B) + 5;
+  const ny = Math.ceil(hoehe / GROSS_H) + 5;
+  const n = nx * ny;
+  const s = {
+    nx, ny,
+    p1x: new Float32Array(n), p1y: new Float32Array(n), w1: new Float32Array(n),
+    n2: new Uint8Array(n),
+    p2x: new Float32Array(n * 4), p2y: new Float32Array(n * 4),
+    n3: new Uint8Array(n * 4),
+    p3x: new Float32Array(n * 12), p3y: new Float32Array(n * 12),
+    lcx: new Float32Array(n * 12), lcy: new Float32Array(n * 12), lsz: new Float32Array(n * 12),
+    lr: new Float32Array(n * 12), lg: new Float32Array(n * 12), lb: new Float32Array(n * 12),
+    lflag: new Uint8Array(n * 12), lang: new Float32Array(n * 12),
+    inv2: new Float32Array(n * 16), inv3: new Float32Array(n * 36),
+  };
+  const tint = mischeRgb(palette.surface, palette.deep, 0.5);
+  for (let j = 0; j < ny; j += 1) {
+    for (let i = 0; i < nx; i += 1) {
+      const gi = i - 2;
+      const gj = j - 2;
+      const k = j * nx + i;
+      const h = a => hash2(gi, gj, seed + a);
+      const x1 = (gi + 0.3 * (gj & 1) + 0.05 + 0.9 * h(11)) * GROSS_B;
+      const y1 = (gj + 0.05 + 0.9 * h(23)) * GROSS_HS;
+      s.p1x[k] = x1;
+      s.p1y[k] = y1;
+      s.w1[k] = (h(31) - 0.45) * 0.6 * GROSS_B * GROSS_B;
+      const r = h(37);
+      const n2 = r < 0.26 ? 1 : r < 0.54 ? 2 : r < 0.82 ? 3 : 4;
+      s.n2[k] = n2;
+      const ton = Math.floor(h(41) * TOENE.length) % TOENE.length;
+      for (let j2 = 0; j2 < n2; j2 += 1) {
+        const k2 = k * 4 + j2;
+        const hh = a => hash2(gi * 4 + j2, gj, seed + a);
+        const qx = n2 === 1 ? x1 : x1 + (hh(51) - 0.5) * 0.75 * GROSS_B;
+        const qy = n2 === 1 ? y1 : y1 + (hh(52) - 0.5) * 0.75 * GROSS_HS;
+        s.p2x[k2] = qx;
+        s.p2y[k2] = qy;
+        const n3 = n2 > 1 && hh(53) < 0.4 ? (hh(54) < 0.5 ? 2 : 3) : 0;
+        s.n3[k2] = n3;
+        const grosser = n2 === 1 ? 58 : n2 === 2 ? 44 : n2 === 3 ? 36 : 30;
+        for (let m = 0; m < Math.max(1, n3); m += 1) {
+          const kl = k2 * 3 + m;
+          const h3 = a => hash2(gi * 12 + j2 * 3 + m, gj, seed + a);
+          let cx = qx;
+          let cy = qy;
+          let sz = grosser;
+          if (n3) {
+            cx = qx + (h3(61) - 0.5) * 36;
+            cy = qy + (h3(62) - 0.5) * 30;
+            s.p3x[kl] = cx;
+            s.p3y[kl] = cy;
+            sz = 19 + 4 * h3(63);
+          }
+          s.lcx[kl] = cx;
+          s.lcy[kl] = cy;
+          s.lsz[kl] = sz;
+          const ton2 = h3(64) < 0.2 ? Math.floor(h3(65) * TOENE.length) % TOENE.length : ton;
+          const v = 0.78 + 0.46 * h3(66);
+          const t = TOENE[ton2];
+          s.lr[kl] = (t[0] * 0.86 + tint[0] * 0.14) * v;
+          s.lg[kl] = (t[1] * 0.86 + tint[1] * 0.14) * v;
+          s.lb[kl] = (t[2] * 0.86 + tint[2] * 0.14) * v;
+          s.lflag[kl] = (sz > 26 && h3(67) < 0.3 ? 1 : 0) | (h3(68) < 0.22 ? 2 : 0);
+          s.lang[kl] = h3(69) * Math.PI;
+        }
+      }
+      for (let a = 0; a < n2; a += 1) {
+        for (let c = 0; c < n2; c += 1) {
+          s.inv2[k * 16 + a * 4 + c] = 0.5 / (Math.hypot(s.p2x[k * 4 + a] - s.p2x[k * 4 + c], s.p2y[k * 4 + a] - s.p2y[k * 4 + c]) + 1e-6);
+        }
+        const q = k * 4 + a;
+        for (let u = 0; u < s.n3[q]; u += 1) {
+          for (let c = 0; c < s.n3[q]; c += 1) {
+            s.inv3[q * 9 + u * 3 + c] = 0.5 / (Math.hypot(s.p3x[q * 3 + u] - s.p3x[q * 3 + c], s.p3y[q * 3 + u] - s.p3y[q * 3 + c]) + 1e-6);
+          }
+        }
+      }
+    }
+  }
+  return s;
+}
+
+/** Kachel (256×256) aus zweistufigem Wertrauschen für die Steinmaserung; kein Streifenmuster. */
+function maserKachel(seed) {
+  const N = 256;
+  const t = new Float32Array(N * N);
+  const stufen = [[32, 0.65], [8, 0.35]];
+  for (const [zelle, gewicht] of stufen) {
+    const g = N / zelle;
+    for (let y = 0; y < N; y += 1) {
+      const fy = y / zelle;
+      const j = Math.floor(fy);
+      const v = fy - j;
+      const sv = v * v * (3 - 2 * v);
+      for (let x = 0; x < N; x += 1) {
+        const fx = x / zelle;
+        const i = Math.floor(fx);
+        const u = fx - i;
+        const su = u * u * (3 - 2 * u);
+        const a = hash2(i % g, j % g, seed + zelle);
+        const b = hash2((i + 1) % g, j % g, seed + zelle);
+        const c = hash2(i % g, (j + 1) % g, seed + zelle);
+        const dd = hash2((i + 1) % g, (j + 1) % g, seed + zelle);
+        t[y * N + x] += gewicht * ((a * (1 - su) + b * su) * (1 - sv) + (c * (1 - su) + dd * su) * sv);
+      }
+    }
+  }
+  return t;
+}
+
+/** 1-D-Rauschtabelle (0..1) für Verzerrung und Maserung. */
+function tabelle(laenge, skala, seed) {
+  const t = new Float32Array(laenge);
+  for (let i = 0; i < laenge; i += 1) t[i] = rauschen1(i / skala, seed);
+  return t;
+}
+
+/**
+ * Färbt die Geländeebene als Wand aus großen, unregelmäßigen Bruchsteinen mit
+ * Tiefenverlauf, Moosflecken, Rissen, Moos-Kante und Kontur.
  *
  * @param {{getContext:function}} layer - die gebackene Geländeebene
  * @param {Uint8Array} bitmap - 1 = fest
@@ -64,62 +178,170 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
   const ctx = layer.getContext('2d');
   const bild = ctx.getImageData(0, 0, breite, hoehe);
   const d = bild.data;
-  const { nx, px, py, wert } = baueZellen(breite, hoehe, seed);
+  const S = baueSteine(breite, hoehe, seed, palette);
+  const { nx, ny, p1x, p1y, w1, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3 } = S;
+
+  // Verzerrung: Kanten wackeln, damit aus geraden Voronoi-Kanten Bruchkanten werden.
+  const wxy = tabelle(hoehe, 31, seed + 201);
+  const wxy2 = tabelle(hoehe, 11, seed + 202);
+  const wyx = tabelle(breite, 41, seed + 203);
+  const wyx2 = tabelle(breite, 13, seed + 204);
+  const mx = tabelle(breite, 23, seed + 205);
+  const kachel = maserKachel(seed + 206);
+  const strata = tabelle(hoehe, 19, seed + 207);
+  const runStart = new Int32Array(breite).fill(-1);
 
   for (let y = 0; y < hoehe; y += 1) {
-    const cj = (y / ZELLE_H) | 0;
+    const verschX = (wxy[y] - 0.5) * 16 + (wxy2[y] - 0.5) * 6;
+    const hoeheFaktor = 1 - 0.2 * (y / hoehe);
+    const schicht = 0.96 + 0.08 * strata[y];
     for (let x = 0; x < breite; x += 1) {
       const idx = y * breite + x;
-      if (!bitmap[idx]) continue;
+      if (!bitmap[idx]) { runStart[x] = -1; continue; }
+      if (runStart[x] < 0) runStart[x] = y;
       const o = idx * 4;
       if (d[o + 3] === 0) continue;
 
-      const ci = (x / ZELLE_B) | 0;
-      let d1 = 1e9;
-      let d2 = 1e9;
+      const sx = x + verschX;
+      const sy = (y + (wyx[x] - 0.5) * 14 + (wyx2[x] - 0.5) * 5) * YSTRECK;
+      let ci = Math.floor(sx / GROSS_B) + 2;
+      let cj = Math.floor(sy / GROSS_HS) + 2;
+      ci = ci < 1 ? 1 : ci > nx - 2 ? nx - 2 : ci;
+      cj = cj < 1 ? 1 : cj > ny - 2 ? ny - 2 : cj;
+
+      // Ebene 1: gewichtete Zellen (Power-Diagramm), Abstand zur Mittelsenkrechten als Randmaß.
+      let D1 = 1e18;
+      let D2 = 1e18;
       let best = 0;
-      for (let dj = 0; dj < 3; dj += 1) {
-        const rowBase = (cj + dj) * nx;
-        for (let di = 0; di < 3; di += 1) {
-          const k = rowBase + ci + di;
-          const dx = x - px[k];
-          const dy = (y - py[k]) * 1.35;
+      let zweit = 0;
+      for (let dj = -1; dj <= 1; dj += 1) {
+        const zeile = (cj + dj) * nx + ci;
+        for (let di = -1; di <= 1; di += 1) {
+          const k = zeile + di;
+          const dx = sx - p1x[k];
+          const dy = sy - p1y[k];
+          const dd = dx * dx + dy * dy - w1[k];
+          if (dd < D1) { D2 = D1; zweit = best; D1 = dd; best = k; } else if (dd < D2) { D2 = dd; zweit = k; }
+        }
+      }
+      const ax = p1x[best] - p1x[zweit];
+      const ay = p1y[best] - p1y[zweit];
+      let e = (D2 - D1) / (2 * Math.sqrt(ax * ax + ay * ay) + 1e-6);
+
+      // Ebene 2: mittlere Steine im Brocken (Randmaß über vorberechnete Kehrwerte der Punktabstände).
+      const c2 = n2[best];
+      let j2 = 0;
+      if (c2 > 1) {
+        let a1 = 1e18;
+        let a2 = 1e18;
+        let z2 = 0;
+        const basis = best * 4;
+        for (let t = 0; t < c2; t += 1) {
+          const dx = sx - p2x[basis + t];
+          const dy = sy - p2y[basis + t];
           const dd = dx * dx + dy * dy;
-          if (dd < d1) { d2 = d1; d1 = dd; best = k; } else if (dd < d2) { d2 = dd; }
+          if (dd < a1) { a2 = a1; z2 = j2; a1 = dd; j2 = t; } else if (dd < a2) { a2 = dd; z2 = t; }
+        }
+        const e2s = (a2 - a1) * inv2[best * 16 + j2 * 4 + z2] * 1.3;
+        if (e2s < e) e = e2s;
+      }
+
+      // Ebene 3: kleine Füllsteine.
+      const k2 = best * 4 + j2;
+      const c3 = n3[k2];
+      let m = 0;
+      if (c3 > 0) {
+        let a1 = 1e18;
+        let a2 = 1e18;
+        let z3 = 0;
+        const basis = k2 * 3;
+        for (let t = 0; t < c3; t += 1) {
+          const dx = sx - p3x[basis + t];
+          const dy = sy - p3y[basis + t];
+          const dd = dx * dx + dy * dy;
+          if (dd < a1) { a2 = a1; z3 = m; a1 = dd; m = t; } else if (dd < a2) { a2 = dd; z3 = t; }
+        }
+        const e3s = (a2 - a1) * inv3[k2 * 9 + m * 3 + z3] * 1.7;
+        if (e3s < e) e = e3s;
+      }
+
+      const leaf = k2 * 3 + m;
+      const sz = lsz[leaf];
+      const ddx = (sx - lcx[leaf]) / sz;
+      const ddy = (sy - lcy[leaf]) / sz;
+      let g = -(0.55 * ddx + 0.83 * ddy);
+      g = g < -1 ? -1 : g > 1 ? 1 : g;
+      const mm = 2 * kachel[(((y + (x >> 8) * 97) & 255) << 8) | (x & 255)];
+      const fleck = 0.9 + 0.1 * mm;
+      const f = (1 + 0.3 * g) * fleck * schicht;
+      let r = lr[leaf] * f;
+      let gg = lg[leaf] * f;
+      let b = lb[leaf] * f;
+
+      // Kantenlicht: oben/links hell, unten/rechts dunkel; schmal bei kleinen Steinen.
+      if (e < 5) {
+        const k = 1 - e / 5;
+        const bev = k * k;
+        const licht = g > 0 ? bev * g * 62 : bev * g * 34;
+        r += licht; gg += licht * 0.97; b += licht * 0.9;
+      }
+
+      // Moosfleck auf der Oberseite einzelner Steine.
+      const flagge = lflag[leaf];
+      if (flagge & 2) {
+        const w = lang[leaf];
+        const mxp = lcx[leaf] + Math.cos(w) * sz * 0.35;
+        const myp = lcy[leaf] - sz * 0.5;
+        const dx = sx - mxp;
+        const dy = sy - myp;
+        const rad = sz * 0.62;
+        const nah = 1 - Math.sqrt(dx * dx + dy * dy) / rad;
+        if (nah > 0) {
+          const a = nah * 1.5 - 0.3 + (hash2(x >> 1, y >> 1, seed + 88) - 0.5) * 0.7 + (mm - 1) * 0.5;
+          if (a > 0 && g > -0.2) {
+            const q = (a > 1 ? 1 : a) * 0.8;
+            const hell = 0.8 + 0.35 * g;
+            r += (MOOS_STEIN[0] * hell - r) * q;
+            gg += (MOOS_STEIN[1] * hell - gg) * q;
+            b += (MOOS_STEIN[2] * hell - b) * q;
+          }
         }
       }
-      const rand = (Math.sqrt(d2) - Math.sqrt(d1)) * 0.5;
-      const v = wert[best];
-      const grob = 0.9 + 0.2 * rauschen1(x / 90 + y / 140, seed + 5);
 
-      const f = (0.58 + 0.3 * v) * grob;
-      let r = (d[o] * 0.3 + STEIN_NEUTRAL[0] * 0.7) * f;
-      let g = (d[o + 1] * 0.3 + STEIN_NEUTRAL[1] * 0.7) * f;
-      let b = (d[o + 2] * 0.3 + STEIN_NEUTRAL[2] * 0.7) * f;
-      if (v > 0.93) { r *= 0.9; g *= 1.08; b *= 0.9; }
-
-      const schatten = 0.62 + 0.38 * glatt(1.0, 9, rand);
-      r *= schatten; g *= schatten; b *= schatten;
-
-      if (rand < 4.2) {
-        const dx = x - px[best];
-        const dy = (y - py[best]) * 1.35;
-        if (dx + dy < 0) {
-          const licht = (4.2 - rand) / 4.2 * 34;
-          r += licht; g += licht * 0.95; b += licht * 0.85;
+      // Riss.
+      if ((flagge & 1) && e > 1.7) {
+        const w = lang[leaf];
+        const ca = Math.cos(w);
+        const sa = Math.sin(w);
+        const entlang = ddx * ca + ddy * sa;
+        const quer = (-ddx * sa + ddy * ca) * sz + (mx[x] - 0.5) * 4;
+        const ae = entlang < 0 ? -entlang : entlang;
+        if (ae < 0.85 && quer < 0.8 * (1.1 - ae) && quer > -0.8 * (1.1 - ae)) {
+          r *= 0.42; gg *= 0.42; b *= 0.45;
         }
       }
+
+      // Tiefe: nach unten deutlich dunkler und kühler, Rand der Karte als Vignette.
+      const tiefe = y - runStart[x];
+      const t = glatt(18, 640, tiefe);
+      const rand = Math.min(x, breite - 1 - x) / breite;
+      const vign = 1 - 0.2 * (1 - glatt(0, 0.1, rand));
+      const dunkel = (1.06 - 0.56 * t) * hoeheFaktor * vign;
+      r *= dunkel * (1 - 0.06 * t);
+      gg *= dunkel;
+      b *= dunkel * (1 + 0.05 * t);
+
       const korn = hash2(x, y, seed + 71) * 7 - 3.5;
-      r += korn; g += korn; b += korn;
+      r += korn; gg += korn; b += korn;
 
-      if (rand < 1.05) {
-        const t = glatt(0.45, 1.05, rand);
-        r = FUGE[0] + (r - FUGE[0]) * t;
-        g = FUGE[1] + (g - FUGE[1]) * t;
-        b = FUGE[2] + (b - FUGE[2]) * t;
+      if (e < 1.5) {
+        const q = glatt(0.5, 1.5, e);
+        r = FUGE[0] + (r - FUGE[0]) * q;
+        gg = FUGE[1] + (gg - FUGE[1]) * q;
+        b = FUGE[2] + (b - FUGE[2]) * q;
       }
       d[o] = r < 0 ? 0 : r > 255 ? 255 : r;
-      d[o + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+      d[o + 1] = gg < 0 ? 0 : gg > 255 ? 255 : gg;
       d[o + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
     }
   }
@@ -141,8 +363,12 @@ function malMoos(d, bitmap, breite, hoehe, palette, seed) {
   const buescheln = [];
 
   for (let x = 0; x < breite; x += 1) {
-    const dicke = 6 + 6 * rauschen1(x / 34, seed + 91) + 2.5 * hash2(x, 3, seed + 92)
-      + (hash2(x >> 2, 9, seed + 93) > 0.9 ? 4 : 0);
+    // Dicke der Moosschicht: wellig, mit einzelnen Tropfkanten, die als Zungen nach unten hängen.
+    const gruppe = Math.floor(x / 3);
+    const traufe = hash2(gruppe, 13, seed + 99) > 0.9
+      ? (6 + 16 * hash2(gruppe, 14, seed + 99)) * (1 - Math.abs((x % 3) - 1) * 0.35) : 0;
+    const dicke = 9 + 9 * rauschen1(x / 38, seed + 91) + 3 * hash2(x, 3, seed + 92)
+      + (hash2(x >> 2, 9, seed + 93) > 0.88 ? 5 : 0) + traufe;
     let lauf = 0;
     let luft = 1000;
     for (let y = 0; y < hoehe; y += 1) {
@@ -155,20 +381,26 @@ function malMoos(d, bitmap, breite, hoehe, palette, seed) {
       }
       if (lauf === 0) luft = 0;
       lauf += 1;
+      const o = (y * breite + x) * 4;
       if (lauf > dicke) {
+        // Schatten unter dem Moos: setzt die grüne Schicht gegen den Stein ab.
+        if (lauf <= dicke + 5) {
+          const sch = 0.55 + 0.09 * (lauf - dicke);
+          d[o] *= sch; d[o + 1] *= sch; d[o + 2] *= sch;
+          continue;
+        }
         while (y + 1 < hoehe && bitmap[(y + 1) * breite + x]) y += 1;
         continue;
       }
       const k = lauf - 1;
       let c;
-      if (k === 0) c = hell;
-      else if (k < dicke - 2.2) c = mittel;
+      if (k < 2) c = hell;
+      else if (k < dicke - 3) c = mittel;
       else c = tief;
-      if (k >= dicke - 1 && hash2(x, y, seed + 94) < 0.5) continue;
-      const o = (y * breite + x) * 4;
+      if (k >= dicke - 1.5 && hash2(x, y, seed + 94) < 0.5) continue;
       d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
-      if (k === 0 && y > 0 && hash2(x, 5, seed + 95) > 0.935 && x > 4 && x < breite - 5) {
-        buescheln.push({ x, y, h: 4 + Math.floor(hash2(x, 6, seed + 96) * 6) });
+      if (k === 0 && y > 0 && hash2(x, 5, seed + 95) > 0.9 && x > 4 && x < breite - 5) {
+        buescheln.push({ x, y, h: 6 + Math.floor(hash2(x, 6, seed + 96) * 9) });
       }
     }
   }
@@ -245,6 +477,18 @@ export function zeichneKraterRand(ctx, x, y, radius, seed = 0) {
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.arc(x, y, radius + 1.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Frische Bruchkante: hellerer Rand oben/links (Licht), dunkel unten/rechts — passt zu den Steinkanten.
+  ctx.strokeStyle = 'rgba(150, 146, 128, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, radius + 6, Math.PI * 0.85, Math.PI * 1.7);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(6, 7, 9, 0.5)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x, y, radius + 7, Math.PI * -0.1, Math.PI * 0.7);
   ctx.stroke();
 
   const sx = Math.round(x);
