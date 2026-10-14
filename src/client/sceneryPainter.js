@@ -593,55 +593,149 @@ function zeichneFelsmassive(ctx, breite, hoehe, scenery, grundlinie) {
   ctx.restore();
 }
 
-/** Ferne Hügel mit Palmen und Büschen als dunkle Silhouetten, dazu Nebelbank. */
+/** Nadelbaum als Silhouette: gestapelte Zacken, ein Pfad, keine Kontur. */
+function zeichneTanne(ctx, x, y, h, b) {
+  const stufen = 4;
+  ctx.beginPath();
+  ctx.moveTo(x - b * 0.07, y);
+  ctx.lineTo(x - b * 0.07, y - h * 0.16);
+  for (let i = 0; i < stufen; i += 1) {
+    const unten = y - h * (0.12 + 0.8 * (i / stufen));
+    const breite = b * (0.5 - 0.1 * i);
+    ctx.lineTo(x - breite, unten);
+    ctx.lineTo(x - breite * 0.3, unten - h * 0.03);
+  }
+  ctx.lineTo(x, y - h);
+  for (let i = stufen - 1; i >= 0; i -= 1) {
+    const unten = y - h * (0.12 + 0.8 * (i / stufen));
+    const breite = b * (0.5 - 0.1 * i);
+    ctx.lineTo(x + breite * 0.3, unten - h * 0.03);
+    ctx.lineTo(x + breite, unten);
+  }
+  ctx.lineTo(x + b * 0.07, y - h * 0.16);
+  ctx.lineTo(x + b * 0.07, y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/** Eckiger Felsklotz als ferne Silhouette (wie die grauen Felswände des Zielbilds). */
+function zeichneFelswand(ctx, x, y, b, h, zufall, farbe, kante) {
+  const n = 7;
+  const spitze = 2 + Math.floor(zufall() * 3);
+  const pts = [];
+  for (let i = 0; i <= n; i += 1) {
+    const t = i / n;
+    const huelle = Math.pow(Math.sin(Math.PI * Math.min(0.98, Math.max(0.02, t))), 0.6);
+    const hoch = i === spitze ? 1 : 0.5 + 0.38 * zufall();
+    pts.push([x + b * t, y - h * huelle * hoch]);
+  }
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  for (const [px, py] of pts) ctx.lineTo(px, py);
+  ctx.lineTo(x + b, y);
+  ctx.closePath();
+  ctx.fillStyle = farbe;
+  ctx.fill();
+  // Lichtseite links der Spitze als eine helle Facette.
+  const [sx, sy] = pts[spitze];
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(pts[spitze - 1][0], pts[spitze - 1][1]);
+  ctx.lineTo(x + b * (spitze / n) * 0.9, y - h * 0.15);
+  ctx.lineTo(sx - 3, y - h * 0.3);
+  ctx.closePath();
+  ctx.fillStyle = kante;
+  ctx.fill();
+}
+
+/**
+ * Ferne Hügelketten in drei Tiefenstufen mit Baumsilhouetten, Felswänden und
+ * Dunst dazwischen. Bei flachen Karten füllen sie den Raum zwischen Horizont und
+ * Gelände: je ferner, desto heller und blauer (Luftperspektive), je näher, desto
+ * dunkler. Alles statisch — gezeichnet wird einmal in die gecachte Kulissenebene.
+ */
 function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
   const seed = scenery.seed ?? 0;
-  const hang = rgb(mix(scenery.ground.surface, BG0, 0.86));
-  const hangVorn = rgb(mix(scenery.ground.surface, BG0, 0.78));
+  const stufen = scenery.sky?.colors ?? [];
+  const dunst = stufen.length ? mix(parseCss(stufen[stufen.length - 1]), [92, 112, 120], 0.45) : [80, 104, 112];
+  const boden = scenery.ground.surface;
+  const gruen = [30, 72, 30];
+  const f0 = mix(dunst, BG0, 0.42);
+  const f1 = mix(mix(boden, dunst, 0.4), BG0, 0.66);
+  const f2 = mix(mix(boden, dunst, 0.15), BG0, 0.76);
   const ebenen = [
-    { versatz: -8, farbe: hang, rauschSeed: seed + 3, stufe: 0.1 },
-    { versatz: 16, farbe: hangVorn, rauschSeed: seed + 17, stufe: 0.07 },
+    { versatz: -4, amp: 0.075, farbe: f0, baum: mix(mix(f0, BG0, 0.5), gruen, 0.1), rausch: seed + 3, baumH: [24, 22], dicht: 52, felsen: 2 },
+    { versatz: hoehe * 0.1, amp: 0.085, farbe: f1, baum: mix(mix(f1, BG0, 0.55), gruen, 0.14), rausch: seed + 17, baumH: [40, 30], dicht: 76, felsen: 1 },
+    { versatz: hoehe * 0.2, amp: 0.07, farbe: f2, baum: mix(mix(f2, BG0, 0.6), gruen, 0.12), rausch: seed + 29, baumH: [62, 40], dicht: 110, felsen: 1 },
   ];
   ctx.save();
   ctx.lineJoin = 'round';
   ebenen.forEach((ebene, e) => {
-    const profil = x => grundlinie + ebene.versatz - hoehe * ebene.stufe * rauschen1(x / (breite * 0.16), ebene.rauschSeed);
+    const basis = grundlinie + ebene.versatz;
+    const profil = x => basis - hoehe * ebene.amp * (0.25 + 0.75 * rauschen1(x / (breite * (0.13 - e * 0.015)), ebene.rausch));
+    const zufall = folge(seed * 7 + e * 101 + 1);
+
+    // Felswände hinter der Kette (nur in den ferneren Ebenen).
+    for (let f = 0; f < ebene.felsen; f += 1) {
+      const fx = breite * (0.1 + 0.8 * zufall());
+      const fb = breite * (0.1 + 0.1 * zufall());
+      zeichneFelswand(ctx, fx - fb / 2, profil(fx) + 10, fb, hoehe * (0.11 + 0.09 * zufall()), zufall,
+        rgb(mix(ebene.farbe, dunst, 0.12)), rgb(mix(ebene.farbe, dunst, 0.34), 0.5));
+    }
+
+    // Hügelkörper: oben die Ebenenfarbe, nach unten in die nächste Tiefe übergehend (nie flach schwarz).
     ctx.beginPath();
     ctx.moveTo(0, hoehe);
     for (let x = 0; x <= breite; x += 16) ctx.lineTo(x, profil(x));
     ctx.lineTo(breite, hoehe);
     ctx.closePath();
-    const hangVerlauf = ctx.createLinearGradient(0, grundlinie - 20, 0, hoehe * 0.95);
-    hangVerlauf.addColorStop(0, ebene.farbe);
-    hangVerlauf.addColorStop(0.55, rgb(mix(BG0, BG1, 0.4)));
-    hangVerlauf.addColorStop(1, rgb(BG0));
-    ctx.fillStyle = hangVerlauf;
+    const naechste = ebenen[e + 1] ? ebenen[e + 1].farbe : mix(boden, BG0, 0.9);
+    const verlauf = ctx.createLinearGradient(0, basis - hoehe * ebene.amp, 0, basis + hoehe * 0.2);
+    verlauf.addColorStop(0, rgb(ebene.farbe));
+    verlauf.addColorStop(1, rgb(mix(ebene.farbe, naechste, 0.55)));
+    ctx.fillStyle = verlauf;
     ctx.fill();
     ctx.beginPath();
     for (let x = 0; x <= breite; x += 16) {
       if (x === 0) ctx.moveTo(x, profil(x)); else ctx.lineTo(x, profil(x));
     }
-    ctx.strokeStyle = rgb(BG0);
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = rgb(mix(ebene.farbe, dunst, 0.3));
+    ctx.lineWidth = 3;
     ctx.stroke();
 
-    const zufall = folge(seed * 7 + e * 101 + 1);
-    const silhouette = rgb(mix(e === 0 ? mix(scenery.ground.surface, BG0, 0.86) : mix(scenery.ground.surface, BG0, 0.78), [30, 70, 26], 0.18));
-    let x = 20 + zufall() * 40;
-    while (x < breite - 10) {
-      const art = zufall() < 0.45 ? 'palme' : 'busch';
-      const h = art === 'palme' ? (e === 0 ? 30 : 42) + zufall() * 20 : 12 + zufall() * 8;
-      zeichnePflanze(ctx, { art, x, y: profil(x) + 3, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 999) },
-        { blatt: silhouette, dunkel: silhouette, hell: silhouette, stamm: silhouette, kontur: null });
-      x += 60 + zufall() * 90;
+    // Bäume auf dem Kamm: Tannen und Palmen gemischt, nahe Ebenen größer.
+    const farbe = rgb(ebene.baum);
+    ctx.fillStyle = farbe;
+    let x = 10 + zufall() * ebene.dicht;
+    while (x < breite - 6) {
+      const h = ebene.baumH[0] + zufall() * ebene.baumH[1];
+      const art = zufall();
+      if (art < 0.5) zeichneTanne(ctx, x, profil(x) + 3, h * 1.25, h * 0.55);
+      else if (art < 0.8) {
+        zeichnePflanze(ctx, { art: 'palme', x, y: profil(x) + 3, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 999) },
+          { blatt: farbe, dunkel: farbe, hell: farbe, stamm: farbe, kontur: null });
+      } else {
+        zeichnePflanze(ctx, { art: 'busch', x, y: profil(x) + 4, h: h * 0.4, spiegel: false, seed: Math.floor(zufall() * 999) },
+          { blatt: farbe, dunkel: farbe, hell: farbe, stamm: farbe, kontur: null });
+      }
+      x += ebene.dicht * (0.45 + zufall() * 0.9);
     }
+
+    // Dunst unterhalb des Kamms dieser Ebene: trennt sie von der nächsten, nimmt die Tiefe zu.
+    const nebel = ctx.createLinearGradient(0, basis - hoehe * 0.05, 0, basis + hoehe * 0.13);
+    nebel.addColorStop(0, rgb(dunst, 0));
+    nebel.addColorStop(0.5, rgb(dunst, 0.2 - e * 0.04));
+    nebel.addColorStop(1, rgb(dunst, 0));
+    ctx.fillStyle = nebel;
+    ctx.fillRect(0, basis - hoehe * 0.05, breite, hoehe * 0.18);
   });
-  const nebel = ctx.createLinearGradient(0, grundlinie - 36, 0, grundlinie + 40);
-  nebel.addColorStop(0, 'rgba(80, 110, 112, 0)');
-  nebel.addColorStop(0.55, 'rgba(80, 110, 112, 0.2)');
-  nebel.addColorStop(1, 'rgba(80, 110, 112, 0)');
-  ctx.fillStyle = nebel;
-  ctx.fillRect(0, grundlinie - 36, breite, 76);
+  // Bodennebel ganz unten: die Kulisse läuft weich in die Geländekante aus.
+  const bodennebel = ctx.createLinearGradient(0, grundlinie + hoehe * 0.2, 0, hoehe);
+  bodennebel.addColorStop(0, rgb(dunst, 0));
+  bodennebel.addColorStop(0.6, rgb(dunst, 0.1));
+  bodennebel.addColorStop(1, rgb(dunst, 0.04));
+  ctx.fillStyle = bodennebel;
+  ctx.fillRect(0, grundlinie + hoehe * 0.2, breite, hoehe);
   ctx.restore();
 }
 
