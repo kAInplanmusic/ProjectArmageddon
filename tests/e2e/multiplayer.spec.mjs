@@ -471,8 +471,8 @@ test('Waffenwahl ist online nur am eigenen Zug möglich', async ({ browser }) =>
       port: SERVER_PORT,
       lobbyId: await page.evaluate(() => window.__PA__.game.lobbyId),
     });
-    // Vier Klassenwaffen plus Reserve (siehe Test „Waffenliste ist online gefüllt").
-    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(5, { timeout: 20_000 });
+    // Start-Kit: zwei Common-Waffen plus Reserve (siehe Test „Waffenliste ist online gefüllt").
+    await expect(page.locator('#weapon-list .weapon-item')).toHaveCount(3, { timeout: 20_000 });
 
     // Bei fremdem Zug darf kein Wechsel gesendet werden, und die Meldung muss
     // im Protokoll erscheinen statt stillschweigend zu scheitern.
