@@ -210,6 +210,25 @@ class Game {
       else if (aktion === 'sprung-rechts') this.jump(1);
       else if (aktion === 'abwurf') this.dropWeapon(this.#activeDisplayPosition());
     });
+    // FEUER-Knopf: Halten lädt auf, Loslassen schießt — wie Leertaste/Maus auf dem Spielfeld.
+    const feuerKnopf = document.getElementById('hud-fire');
+    if (feuerKnopf) {
+      feuerKnopf.addEventListener('pointerdown', ereignis => {
+        if (ereignis.button !== 0) return;
+        ereignis.preventDefault();
+        feuerKnopf.setPointerCapture?.(ereignis.pointerId);
+        this.input.ladenStarten();
+      });
+      const loslassen = () => this.input.ladenLoslassen();
+      feuerKnopf.addEventListener('pointerup', loslassen);
+      feuerKnopf.addEventListener('pointercancel', () => { if (this.input.isCharging) this.input.ladenLoslassen(); });
+      feuerKnopf.addEventListener('keydown', ereignis => {
+        if ((ereignis.key === 'Enter' || ereignis.key === ' ') && !ereignis.repeat) { ereignis.preventDefault(); ereignis.stopPropagation(); this.input.ladenStarten(); }
+      });
+      feuerKnopf.addEventListener('keyup', ereignis => {
+        if (ereignis.key === 'Enter' || ereignis.key === ' ') { ereignis.preventDefault(); ereignis.stopPropagation(); loslassen(); }
+      });
+    }
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
       onAim: (angle, power) => { this.aim = { angle, power }; },
@@ -2458,6 +2477,11 @@ class Game {
     const laedt = this.input.isCharging;
     const ladeAnteil = laedt ? this.input.chargeRatio : null;
     const ladeKraft = laedt ? kraftAusLadung(ladeAnteil) : null;
+    const feuerKnopf = document.getElementById('hud-fire');
+    if (feuerKnopf) {
+      feuerKnopf.style.setProperty('--ladung', String(ladeAnteil ?? 0));
+      feuerKnopf.disabled = !(myTurn && this.mode !== 'replay');
+    }
     const wiederholung = this.#zugpauseAnzeige(state);
 
     const aimPreview = (myTurn && this.mode === 'local')

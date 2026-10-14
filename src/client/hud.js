@@ -281,6 +281,14 @@ export class Hud {
       this.#lastActiveId = active.entityId;
     }
     if (el.angle) el.angle.textContent = `${Math.round((((aim?.angle ?? active?.angle ?? 0)) * 180) / Math.PI)}°`;
+    // Winkelregler (Entwurf): Ring füllt sich mit dem Winkel (0–180°), Zahl in der Mitte.
+    const dial = this.#document.getElementById?.('hud-dial');
+    if (dial) {
+      const grad = Math.round((((aim?.angle ?? active?.angle ?? 0)) * 180) / Math.PI);
+      dial.style?.setProperty?.('--winkel', `${Math.max(0, Math.min(180, grad)) * 2}deg`);
+      const zahl = dial.querySelector?.('.dial-wert');
+      if (zahl && zahl.textContent !== `${grad}°`) zahl.textContent = `${grad}°`;
+    }
     if (el.power) el.power.textContent = String(Math.round(aim?.power ?? active?.power ?? 0));
 
     // Flächenwirkung der gewählten Waffe: hilft beim Einschätzen des Splash-Radius.
@@ -512,6 +520,12 @@ export class Hud {
     item.className = 'weapon-item';
     item.dataset.weaponId = weaponId;
     item.dataset.tier = weapon?.powerTier ?? 'common';
+    // Für die Waffenleiste (CSS): Zifferntaste und Munition als Marke auf der Kachel.
+    item.dataset.nr = String(anzeigeNummer ?? index + 1);
+    {
+      const bestand = active?.ammo?.[weaponId];
+      item.dataset.munition = bestand === 'unbegrenzt' ? '∞' : String(bestand ?? 0);
+    }
     const istAktiv = weaponId === active?.activeWeaponId;
     if (istAktiv) item.classList.add('is-active');
 

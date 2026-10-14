@@ -9,6 +9,7 @@
     einen 404 — bei jedem Besuch. Die Datei liegt in public/, damit Vite sie im
     Build mitkopiert.
   -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <title>Project Armageddon</title>
   <style>
@@ -792,6 +793,7 @@
     .roster-list .r-bio { color: #a8b8c9; }
     .roster-list .r-prof { color: #8fa4b8; }
   </style>
+  <link rel="stylesheet" href="/src/client/styles/design.css" />
 </head>
 <body>
   <a id="skip-to-board" href="#game-canvas">Direkt zum Spielfeld</a>
@@ -880,6 +882,13 @@
           <ul id="weapon-list" aria-label="Waffen und Munition"></ul>
         </div>
 
+        <!-- Untere Leiste (Entwurf): Winkelregler links, Waffenleiste Mitte (#hud-right), FIRE rechts. -->
+        <div id="hud-dial" aria-hidden="true"><span class="dial-wert">45°</span><span class="dial-name">WINKEL</span></div>
+        <button type="button" id="hud-fire" aria-label="Feuern: halten zum Aufladen, loslassen zum Schießen">
+          <span class="fire-text">FEUER</span>
+          <span class="fire-unter">HALTEN ZUM LADEN</span>
+          <span class="fire-ladung" aria-hidden="true"></span>
+        </button>
         <div id="hud-aim" class="panel">
           <span>Winkel <span class="value" id="hud-angle">45°</span></span>
           <span>Kraft <span class="value" id="hud-power">55</span></span>
@@ -916,11 +925,15 @@
 
       <section id="menu-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Hauptmenü">
         <div class="overlay-card panel">
+          <div class="menu-marke">
+            <div class="menu-logo" role="img" aria-label="Project Armageddon — Turn. Aim. Destroy."></div>
           <h1>Project <span class="accent">Armageddon</span></h1>
           <p class="subtitle">
             Rundenbasierte 2D-Artillerie-Taktik. Zerstöre das Terrain, lies den Wind und
             schalte die gegnerischen Teams aus, bevor der Mahlstrom alles verschlingt.
           </p>
+          </div>
+          <div class="menu-konfig">
           <div class="field-row">
             <label>Teams
               <!-- Ein Team = ein Mensch. Die Zahl der Teams ist damit die Zahl
@@ -1022,6 +1035,9 @@
             </label>
           </div>
           <button id="start-button" type="button">Match starten</button>
+          </div>
+          <div class="menu-weitere">
+
           <details id="lobby-browser">
             <summary>Offene Lobbys anzeigen</summary>
             <div class="field-row">
@@ -1163,6 +1179,7 @@
               <button id="profil-reset" type="button" class="secondary">Zahlen zurücksetzen</button>
             </div>
           </details>
+                    </div>
           <div class="keymap">
             <span><b>Maus</b> Zielen</span>
             <span><b>Klick / Leertaste</b> Aufladen und feuern</span>

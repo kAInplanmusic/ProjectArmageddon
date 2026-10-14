@@ -247,6 +247,10 @@ export class InputController {
     this.#handlers.onFire?.(kraft);
   }
 
+  /** Für den FEUER-Knopf der Oberfläche (Halten = laden, Loslassen = schießen). */
+  ladenStarten() { this.#beginCharge(); }
+  ladenLoslassen() { if (this.#charging) this.#releaseCharge(); }
+
   /** Ladefortschritt 0..1 (nur UI-Feedback, keine Simulationsgröße). */
   get chargeRatio() {
     if (!this.#charging) return 0;

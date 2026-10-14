@@ -1,0 +1,436 @@
+/*
+ * DESIGN-SCHICHT (Redesign 2026-10-14, Entwurf des Auftraggebers: „Turn. Aim. Destroy.“)
+ *
+ * Diese Datei liegt NACH dem Inline-Stil in index.html und überschreibt ihn: Palette, Schriften,
+ * Knöpfe, Flächen, Menü, HUD. Die Struktur (IDs, Klassen, Beschriftungen) bleibt, damit Tests und
+ * Barrierefreiheit unverändert gelten.
+ *
+ * Palette: Hintergründe #0D0F12 / #1B1F24 / #2B3138 / #3E444D, Limette #7CFC00 (primär), Orange #FFB800,
+ * Rotorange #FF4D00, Cyan #00E0FF, Violett #884DFF, Text #D9DEE7.
+ */
+@import '@fontsource/bebas-neue/latin-400.css';
+@import '@fontsource/exo-2/latin-400.css';
+@import '@fontsource/exo-2/latin-600.css';
+@import '@fontsource/exo-2/latin-700.css';
+
+:root {
+  --bg: #0d0f12;
+  --panel: #1b1f24;
+  --panel-2: #2b3138;
+  --panel-edge: #3e444d;
+  --ink: #d9dee7;
+  --muted: #8b95a3;
+  --lime: #7cfc00;
+  --lime-dim: #4f9e00;
+  --orange: #ffb800;
+  --red: #ff4d00;
+  --cyan: #00e0ff;
+  --violet: #884dff;
+  --accent: var(--lime);
+  --accent-2: var(--cyan);
+  --danger: var(--red);
+  --ok: var(--lime);
+  --font: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif;
+}
+
+html, body {
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(124, 252, 0, 0.06), transparent 55%),
+    radial-gradient(ellipse at 90% 110%, rgba(255, 77, 0, 0.06), transparent 50%),
+    var(--bg);
+  font-family: var(--font);
+}
+
+h1, h2, h3, summary, button, .stat .label, label, .roster-item span:first-child, .weapon-group {
+  font-family: var(--font-display);
+}
+
+/* ---------------------------------------------------------------- Flächen */
+.panel {
+  background: linear-gradient(180deg, rgba(43, 49, 56, 0.96), rgba(27, 31, 36, 0.96));
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  clip-path: none;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ---------------------------------------------------------------- Knöpfe */
+button {
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  border-radius: 5px;
+  border: 1px solid #5a626d;
+  background: linear-gradient(180deg, #343b43, #22272d);
+  color: var(--ink);
+  padding: 10px 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+button:hover { background: linear-gradient(180deg, #3e4650, #292f36); border-color: var(--lime-dim); }
+button:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+button.secondary { background: linear-gradient(180deg, #2b3138, #1b1f24); border-color: var(--panel-edge); }
+button:focus-visible, summary:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+#start-button, #rematch-button {
+  font-size: 30px;
+  letter-spacing: 0.08em;
+  padding: 12px 20px;
+  color: #10210a;
+  background: linear-gradient(180deg, #a6ff3d 0%, #7cfc00 45%, #5bc200 100%);
+  border: 1px solid #c8ff7a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 1px #2a4d00, 0 3px 0 #2f5a00, 0 8px 22px rgba(124, 252, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+#start-button:hover, #rematch-button:hover {
+  background: linear-gradient(180deg, #b9ff63 0%, #8dff1f 45%, #66d100 100%);
+  box-shadow: 0 0 0 1px #2a4d00, 0 3px 0 #2f5a00, 0 10px 30px rgba(124, 252, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ---------------------------------------------------------------- Felder */
+select, input[type='text'], input[type='number'] {
+  background: #0f1318;
+  color: var(--ink);
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  font-family: var(--font);
+  font-size: 14px;
+}
+label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
+.field-hint { font-family: var(--font); letter-spacing: 0; text-transform: none; color: #6f7886; font-size: 11.5px; }
+
+/* ---------------------------------------------------------------- Menü */
+.overlay {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(124, 252, 0, 0.07), transparent 55%),
+    radial-gradient(ellipse at 80% 90%, rgba(255, 77, 0, 0.08), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 10px),
+    rgba(10, 12, 15, 0.92);
+  backdrop-filter: blur(4px);
+}
+
+#menu-overlay .overlay-card {
+  width: min(1040px, 94%);
+  grid-template-columns: minmax(250px, 330px) minmax(0, 1fr);
+  grid-template-areas:
+    'marke  konfig'
+    'weitere konfig';
+  align-content: start;
+  gap: 18px 28px;
+  padding: 26px 30px 24px;
+}
+
+/* Marke: Logo (die Überschrift bleibt für Screenreader und Tests im DOM). */
+#menu-overlay .menu-marke { grid-area: marke; display: grid; gap: 10px; justify-items: center; text-align: center; }
+#menu-overlay .menu-logo {
+  width: min(100%, 250px);
+  aspect-ratio: 718 / 971;
+  background: url('/logo.png') center / contain no-repeat;
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.6));
+}
+#menu-overlay h1 {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+#menu-overlay .subtitle { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+#menu-overlay .menu-konfig {
+  grid-area: konfig;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 18px 20px 20px;
+  background: rgba(13, 15, 18, 0.55);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+}
+#menu-overlay .menu-konfig::before {
+  content: 'Spiel einrichten';
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  color: var(--lime);
+  border-bottom: 1px solid var(--panel-edge);
+  padding-bottom: 8px;
+}
+#menu-overlay .menu-weitere { grid-area: weitere; display: grid; gap: 6px; align-content: start; }
+
+/* Weitere Bereiche als Menüpunkte (Entwurf: schmale Knöpfe mit Pfeil). */
+#menu-overlay details {
+  background: linear-gradient(180deg, #2b3138, #1f2429);
+  border: 1px solid var(--panel-edge);
+  border-radius: 5px;
+  margin: 0;
+}
+#menu-overlay details[open] { border-color: var(--lime-dim); background: #1b1f24; }
+#menu-overlay summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 19px;
+  letter-spacing: 0.07em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#menu-overlay summary::-webkit-details-marker { display: none; }
+#menu-overlay summary::after {
+  content: '›';
+  font-size: 26px;
+  line-height: 1;
+  color: var(--lime);
+  transition: transform 120ms ease;
+}
+#menu-overlay details[open] > summary::after { transform: rotate(90deg); }
+#menu-overlay summary:hover { color: #fff; background: rgba(124, 252, 0, 0.06); }
+#menu-overlay details > :not(summary) { padding-left: 14px; padding-right: 14px; }
+#menu-overlay details > :last-child { padding-bottom: 12px; }
+
+#menu-overlay .keymap { grid-column: 1 / -1; opacity: 0.85; border-top: 1px solid var(--panel-edge); padding-top: 12px; grid-template-columns: repeat(3, 1fr); }
+#menu-overlay .keymap b { color: var(--lime); font-weight: 700; }
+
+/* Schmale Fenster: einspaltig. */
+@media (max-width: 860px) {
+  #menu-overlay .overlay-card { grid-template-columns: 1fr; grid-template-areas: 'marke' 'konfig' 'weitere'; }
+  #menu-overlay .menu-logo { width: min(100%, 170px); }
+}
+
+/* ---------------------------------------------------------------- HUD: Kopfzeile */
+.stat {
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(43, 49, 56, 0.94), rgba(20, 23, 27, 0.94));
+  border: 1px solid var(--panel-edge);
+  clip-path: none;
+}
+.stat .label, .stat > span:first-child {
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.stat .value { font-family: var(--font-display); letter-spacing: 0.04em; font-size: 26px; color: #fff; }
+#hud-status { color: var(--lime) !important; }
+#hud-wind .value, #hud-wind { color: #fff; }
+
+/* ---------------------------------------------------------------- HUD: Spielerliste und Protokoll */
+#hud-left.panel, #hud-right.panel, #hud-log.panel { clip-path: none; border-radius: 6px; }
+.roster-item { border-left: 4px solid transparent; border-radius: 3px; font-size: 15px; }
+.roster-item.is-active { border-left-color: var(--lime); background: linear-gradient(90deg, rgba(124, 252, 0, 0.16), transparent); }
+.hp-track { border-radius: 4px; background: #0b0d10; border: 1px solid #343a42; }
+.hp-fill { border-radius: 3px; }
+#log-list { font-family: var(--font); color: #aab3c0; }
+
+/* ---------------------------------------------------------------- HUD: Waffenleiste und Zielanzeige */
+#hud-aim.panel { border-radius: 6px; font-family: var(--font-display); font-size: 18px; letter-spacing: 0.05em; }
+#hud-aim .value { color: var(--lime); }
+.weapon-item { border-radius: 4px; }
+.weapon-item.is-active { border-left-color: var(--lime); background: linear-gradient(90deg, rgba(124, 252, 0, 0.18), transparent); }
+#weapon-list .weapon-group { font-family: var(--font-display); letter-spacing: 0.1em; color: var(--muted); }
+
+/* ---------------------------------------------------------------- Dialoge */
+#end-overlay .overlay-card {
+  width: min(560px, 92%);
+  border-color: var(--lime-dim);
+  box-shadow: 0 0 0 1px rgba(124, 252, 0, 0.25), 0 0 60px rgba(124, 252, 0, 0.18), 0 16px 60px rgba(0, 0, 0, 0.7);
+}
+#end-overlay h1 { font-size: 54px; letter-spacing: 0.08em; text-align: center; }
+#end-overlay h1 .accent, h1 .accent { color: var(--lime); }
+#winner-text { font-family: var(--font-display); font-size: 34px; letter-spacing: 0.06em; color: var(--orange); }
+
+#zugpause { border-radius: 6px; clip-path: none; border-color: var(--lime-dim); }
+#zugpause .zugpause-titel { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.1em; color: var(--lime); }
+#zugpause .zugpause-zahl { font-family: var(--font-display); font-size: 64px; color: #fff; text-shadow: 0 0 18px rgba(124, 252, 0, 0.5); }
+
+/* ======================================================= HUD: untere Leiste (Entwurf) */
+/* Raster: Zeile 3 = Winkelregler | Waffenleiste | FEUER. */
+#hud { grid-template-columns: minmax(170px, 22%) 1fr minmax(170px, 22%); gap: 8px; }
+
+#hud-dial {
+  grid-column: 1; grid-row: 3; justify-self: start; align-self: end;
+  position: relative;
+  width: 92px; height: 92px;
+  border-radius: 50%;
+  display: grid; place-content: center; text-align: center;
+  --winkel: 90deg;
+  background:
+    radial-gradient(circle at 50% 50%, #14181d 0 58%, transparent 59%),
+    conic-gradient(from 270deg, var(--lime) 0 var(--winkel), #2b3138 var(--winkel) 360deg);
+  box-shadow: 0 0 0 3px #0d0f12, 0 0 18px rgba(124, 252, 0, 0.25), 0 6px 18px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+#hud-dial .dial-wert { font-family: var(--font-display); font-size: 32px; line-height: 1; color: #fff; letter-spacing: 0.03em; }
+#hud-dial .dial-name { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.18em; color: var(--muted); }
+
+#hud-fire {
+  grid-column: 3; grid-row: 3; justify-self: end; align-self: end;
+  position: relative; overflow: hidden;
+  min-width: 190px; height: 64px;
+  padding: 4px 18px 0;
+  display: grid; place-content: center; text-align: center; gap: 0;
+  pointer-events: auto;
+  color: #1a1300;
+  background: linear-gradient(180deg, #ffd24d 0%, #ffb800 55%, #e69500 100%);
+  border: 1px solid #ffe08a;
+  box-shadow: 0 0 0 1px #5a3d00, 0 4px 0 #6b4800, 0 10px 24px rgba(255, 184, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  touch-action: none;
+  user-select: none;
+}
+#hud-fire:hover { background: linear-gradient(180deg, #ffdd70 0%, #ffc21f 55%, #f09f00 100%); border-color: #ffe08a; }
+#hud-fire .fire-text { font-family: var(--font-display); font-size: 36px; line-height: 1; letter-spacing: 0.1em; position: relative; z-index: 1; }
+#hud-fire .fire-unter { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; opacity: 0.7; position: relative; z-index: 1; }
+/* Ladebalken im Knopf: wächst mit dem Halten (0..1). */
+#hud-fire .fire-ladung {
+  position: absolute; left: 0; bottom: 0; height: 7px;
+  width: calc(var(--ladung, 0) * 100%);
+  background: linear-gradient(90deg, var(--lime), var(--orange), var(--red));
+  box-shadow: 0 0 12px rgba(255, 77, 0, 0.7);
+  transition: width 60ms linear;
+}
+#hud-fire:disabled { filter: grayscale(0.85) brightness(0.55); cursor: not-allowed; box-shadow: none; }
+
+/* Waffenleiste: #hud-right wird zur Kachelreihe in der Mitte. */
+#hud-right.panel {
+  grid-column: 2; grid-row: 3; justify-self: center; align-self: end;
+  max-height: none; overflow: visible;
+  padding: 6px 8px;
+  background: linear-gradient(180deg, rgba(43, 49, 56, 0.9), rgba(20, 23, 27, 0.92));
+}
+#weapon-list { display: flex; flex-wrap: nowrap; gap: 6px; padding: 0; max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+#weapon-list .weapon-group { display: none; }
+#weapon-list .weapon-item {
+  position: relative;
+  display: grid; place-items: center;
+  flex: 0 0 auto;
+  width: 60px; height: 60px; min-height: 0;
+  padding: 0;
+  border: 1px solid #3e444d; border-left: 1px solid #3e444d;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #262c33, #181c21);
+  overflow: visible;
+}
+#weapon-list .weapon-item .weapon-icon { width: 42px; height: 42px; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)); }
+#weapon-list .weapon-item.is-active { border-color: var(--lime); background: linear-gradient(180deg, #2e3d22, #1b2314); box-shadow: 0 0 0 1px rgba(124, 252, 0, 0.5), 0 0 14px rgba(124, 252, 0, 0.35); }
+/* Name und Text: nur für die gewählte Waffe als Beschriftung über der Leiste; sonst für Screenreader im DOM. */
+#weapon-list .weapon-item .weapon-name, #weapon-list .weapon-item > span:not(.weapon-cooldown) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+#weapon-list .weapon-item.is-active .weapon-name {
+  width: auto; height: auto; overflow: visible; clip: auto;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  padding: 3px 10px; font-family: var(--font-display); font-size: 17px; letter-spacing: 0.06em;
+  background: rgba(13, 15, 18, 0.92); border: 1px solid var(--lime-dim); border-radius: 4px; z-index: 3;
+}
+/* Marken: Zifferntaste oben links, Munition unten rechts. */
+#weapon-list .weapon-item::before {
+  content: attr(data-nr); position: absolute; top: 2px; left: 5px;
+  font-family: var(--font-display); font-size: 13px; color: var(--muted);
+}
+#weapon-list .weapon-item::after {
+  content: attr(data-munition); position: absolute; right: 4px; bottom: 1px;
+  min-width: 18px; text-align: right;
+  font-family: var(--font-display); font-size: 16px; color: #fff; text-shadow: 0 1px 2px #000;
+}
+#weapon-list .weapon-item.is-cooling { opacity: 0.55; }
+#weapon-list .weapon-item .weapon-cooldown { position: absolute; left: 4px; right: 4px; bottom: 4px; }
+#weapon-list .weapon-item[data-tier='rare'] { border-color: #2a6e86; }
+#weapon-list .weapon-item[data-tier='epic'] { border-color: #6a43bd; }
+#weapon-list .weapon-item[data-tier='legendary'] { border-color: #b8891a; }
+#weapon-list .weapon-item.is-active[data-tier] { border-color: var(--lime); }
+
+/* Zielanzeige: schmale Textzeile über der Leiste. */
+#hud-aim.panel {
+  grid-column: 2; grid-row: 2; align-self: end; justify-self: center;
+  margin-bottom: 78px;
+  padding: 3px 14px; font-size: 16px; background: rgba(13, 15, 18, 0.7); box-shadow: none; border-color: transparent;
+}
+/* Protokoll: über der unteren Leiste. */
+#hud-log { bottom: 92px; }
+
+@media (max-height: 520px) {
+  #hud-dial { width: 60px; height: 60px; }
+  #hud-dial .dial-wert { font-size: 21px; }
+  #hud-dial .dial-name { display: none; }
+  #hud-fire { min-width: 120px; height: 46px; }
+  #hud-fire .fire-text { font-size: 26px; }
+  #hud-fire .fire-unter { display: none; }
+  #weapon-list .weapon-item { width: 44px; height: 44px; }
+  #weapon-list .weapon-item .weapon-icon { width: 30px; height: 30px; }
+  #weapon-list .weapon-item::after { font-size: 12px; }
+  #hud-aim.panel { margin-bottom: 52px; }
+  #hud-log { bottom: 56px !important; }
+}
+
+/* Lebensbalken der Spielerliste: der Füllstand ist ein <span> und braucht Blockdarstellung. */
+.hp-track { display: block; height: 10px; overflow: hidden; }
+.hp-fill { display: block; height: 100%; }
+
+/* Zielanzeige: kompakte Spalte rechts neben dem Winkelregler (Winkel steht schon im Ring). */
+#hud-aim.panel {
+  grid-column: 1; grid-row: 3; justify-self: start; align-self: end;
+  margin: 0 0 4px 104px;
+  display: grid; gap: 0; padding: 2px 10px; line-height: 1.15;
+  font-size: 15px; background: rgba(13, 15, 18, 0.6);
+}
+#hud-aim.panel > span:first-child { display: none; }
+#hud-aim.panel > #hud-active { color: var(--lime); font-size: 14px; }
+
+/* Protokoll: ruhiger, höchstens 5–6 Zeilen, über der unteren Leiste und zwischen den Rändern. */
+#hud-log { max-height: clamp(70px, 13vh, 130px); bottom: 90px; font-size: 13px; background: linear-gradient(180deg, rgba(27, 31, 36, 0.62), rgba(13, 15, 18, 0.72)); }
+#weapon-list { overflow: visible; }
+
+@media (max-height: 520px) {
+  .stat .value { font-size: 18px; }
+  .stat { padding: 2px 8px; }
+  #hud-aim.panel { display: none; }
+  #hud-log { left: 80px !important; right: 6px; max-height: 50px; font-size: 11px; }
+}
+
+/* ======================================================= Menü-Unterbereiche: Tabs, Listen, Tabellen */
+#roster-tabs button, #hilfe-tabs button {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--panel-edge);
+  background: #20252b;
+  color: var(--ink);
+  box-shadow: none;
+}
+#roster-tabs button[aria-selected='true'], #hilfe-tabs button[aria-selected='true'] {
+  background: linear-gradient(180deg, #2d3d1c, #1d2812);
+  border-color: var(--lime);
+  color: var(--lime);
+}
+.roster-info, .hilfe-inhalt .h-einleitung, .hilfe-inhalt .h-erklaerung { color: #a4adb9; }
+.roster-info b, .hilfe-inhalt h3, .hilfe-inhalt h4, .roster-list .r-name { color: #fff; }
+.hilfe-inhalt h3, .roster-list .r-name { font-family: var(--font-display); letter-spacing: 0.05em; font-size: 1.15em; }
+.roster-list .r-waffe { color: var(--orange); }
+.roster-list li { border-top-color: #2b3138; }
+
+#lobby-list li { background: #20252b; border: 1px solid var(--panel-edge); border-left: 3px solid var(--lime-dim); border-radius: 4px; }
+
+.match-tabelle th { color: var(--muted); font-family: var(--font-display); letter-spacing: 0.08em; font-weight: 400; }
+.match-tabelle td { border-top-color: #2b3138; }
+.profil-name { color: var(--muted); }
+.profil-wert { color: #fff; }
+.erfolg-gruppe { color: var(--orange); font-family: var(--font-display); letter-spacing: 0.1em; }
+.erfolg.erreicht .erfolg-stand { color: var(--lime); }
+.badge.live { border-color: var(--lime); color: var(--lime); }
+
+/* Schaltflächen in den Unterbereichen: klein, nicht schreiend. */
+#menu-overlay details button { font-size: 16px; padding: 6px 12px; }
+#menu-overlay details .secondary { background: linear-gradient(180deg, #2b3138, #1b1f24); }
+
+/* Schaltflächen-Zeilen und Eingabefelder im Dunkel-Look. */
+input[type='range'] { accent-color: var(--lime); }
+select option { background: #14181d; color: var(--ink); }
+
+/* Spielende: Titel wie im Entwurf („VICTORY!“) — groß, Limette mit Leuchten. */
+#end-overlay h1 { text-shadow: 0 0 24px rgba(124, 252, 0, 0.45); }
+#end-summary { font-family: var(--font); color: #a4adb9; }
+
+/* Sprungmarke (Barrierefreiheit) im selben Stil. */
+#skip-to-board:focus { background: var(--lime); color: #10210a; font-family: var(--font-display); }
