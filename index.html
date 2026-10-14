@@ -879,7 +879,24 @@
         </div>
 
         <div id="hud-right" class="panel">
+          <!-- Waffenmenü (Besitz als Dropdown): Taste E, hier auch per Tippen. -->
+          <button type="button" id="waffen-menue-knopf" aria-haspopup="dialog" aria-expanded="false" aria-controls="waffenmenue" title="Waffenmenü (E)">
+            <span class="wm-knopf-symbol" aria-hidden="true">&#9776;</span>
+            <span class="wm-knopf-text">Waffen</span>
+            <span class="wm-knopf-taste" aria-hidden="true">E</span>
+          </button>
           <ul id="weapon-list" aria-label="Waffen und Munition"></ul>
+        </div>
+
+        <!-- Waffenmenü: zeigt den Besitz, gruppiert nach Kategorie (src/client/waffenMenue.js). -->
+        <div id="waffenmenue" role="dialog" aria-modal="false" aria-label="Waffenmenü" tabindex="-1" hidden>
+          <div class="wm-leiste">
+            <h2 class="wm-titel">Waffen</h2>
+            <button type="button" id="waffenmenue-schliessen" aria-label="Waffenmenü schließen">&#10005;</button>
+          </div>
+          <div id="waffenmenue-liste" role="listbox" aria-label="Deine Waffen" aria-orientation="vertical"></div>
+          <p id="waffenmenue-info" class="wm-info"></p>
+          <p class="wm-hinweis">Pfeile wählen · Enter nimmt die Waffe · Esc schließt</p>
         </div>
 
         <!-- Untere Leiste (Entwurf): Winkelregler links, Waffenleiste Mitte (#hud-right), FIRE rechts. -->
@@ -1189,6 +1206,7 @@
             <span><b>W / S</b> Kraft ändern</span>
             <span><b>1–9</b> Waffe wählen</span>
             <span><b>Q</b> Waffe abwerfen</span>
+            <span><b>E</b> Waffenmenü (Besitz als Auswahl)</span>
             <span><b>R</b> Match verlassen</span>
           </div>
         </div>

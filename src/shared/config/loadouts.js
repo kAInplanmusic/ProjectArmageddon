@@ -59,7 +59,79 @@
  * Waffenreihenfolge im Katalog.
  */
 
-import { WEAPONS, getDefaultLoadout } from './weapons.js';
+import { WEAPONS, getDefaultLoadout, FALLBACK_WEAPON_ID } from './weapons.js';
+
+/*
+ * START-KIT (Worms-Stil) — Stand 2026-10-14.
+ *
+ * Neue Vorgabe: Die Waffen sind NICHT mehr klassengebunden. Jeder Spieler startet
+ * mit wenigen einfachen Waffen (Reserve `pa_028` unbegrenzt + zwei Common-Waffen)
+ * und findet den Rest über Loot-Kisten — jede der 150 Waffen kann dort fallen.
+ * Die Klasse (Power/Speed/Health, `combatProfile`) bestimmt nur noch die WERTE
+ * einer Figur.
+ *
+ * Die Klassenloadouts oben bleiben als Fassung 1 erhalten, weil Aufzeichnungen aus
+ * der Zeit davor sonst ein anderes Match spielten (anderes Inventar = anderer
+ * Zustandshash).
+ *
+ * Die Fassung heißt `kit`:
+ *   - `KIT_KLASSE` (1): Klassenloadout, 4 Waffen + Reserve (alt, nur für Replays)
+ *   - `KIT_STARTER` (2): Reserve + 2 Common-Waffen, klassenunabhängig (Standard)
+ *
+ * Eine Aufzeichnung OHNE `kit` im Kopf stammt aus der Zeit davor und ist
+ * `KIT_KLASSE` (siehe `replay.js`).
+ */
+export const KIT_KLASSE = 1;
+export const KIT_STARTER = 2;
+/** Fassung, mit der neue Partien starten. */
+export const KIT_STANDARD = KIT_STARTER;
+
+/** Ist `kit` eine bekannte Fassung? Alles andere fällt auf den Standard. */
+export function normalisiereKit(kit) {
+  return kit === KIT_KLASSE || kit === KIT_STARTER ? kit : KIT_STANDARD;
+}
+
+/** Kleiner Ganzzahl-Mischer (reiner Hash, KEIN Zufallsstrom): gleiche Eingabe, gleiche Zahl. */
+function mische(seed, platz, salz) {
+  let x = (Number(seed) ^ Math.imul(platz + 1, 0x9E3779B1) ^ Math.imul(salz + 1, 0x85EBCA6B)) >>> 0;
+  x = Math.imul(x ^ (x >>> 16), 0x7FEB352D) >>> 0;
+  x = Math.imul(x ^ (x >>> 15), 0x846CA68B) >>> 0;
+  return (x ^ (x >>> 16)) >>> 0;
+}
+
+/**
+ * Die zwei Common-Startwaffen eines Platzes — deterministisch aus Match-Seed und
+ * Spielerplatz, unabhängig von der Klasse. Eine Wurfwaffe (Projektil mit Flugbahn)
+ * und eine Strahlwaffe (sofortiger Treffer): So kann jeder Weit- und Direktschüsse.
+ * Der Katalog hat keine Common-Waffe mit Flächenwirkung; Terrain bearbeiten kommt
+ * über Kisten.
+ *
+ * Es zählt nur der Katalog: keine Nahkampfwaffe (kurze Reichweite), keine
+ * Sichtlinienwaffe (wird je nach Gelände abgelehnt), nicht die Reserve, keine
+ * Waffe mit Nachladezeit (der erste Zug bleibt unkompliziert) und keine ohne
+ * eigenen Motor-Handler (nur `ranged`-Projektile, `tech`-Strahlwaffen).
+ */
+export function getStarterWaffen(seed, platz) {
+  const taugt = w => w.powerTier === 'common' && w.id !== FALLBACK_WEAPON_ID
+    && !w.requiresLineOfSight && w.maxAmmo >= 2 && w.damage > 0 && w.cooldown === 0;
+  const wurf = WEAPONS.filter(w => taugt(w) && w.delivery === 'projectile' && w.category === 'ranged');
+  const strahl = WEAPONS.filter(w => taugt(w) && w.delivery === 'hitscan' && w.category === 'tech');
+  return [wurf[mische(seed, platz, 0) % wurf.length], strahl[mische(seed, platz, 1) % strahl.length]]
+    .filter(Boolean).map(w => w.id);
+}
+
+/**
+ * Startwaffen eines Spielers (ohne die Reserve; `register` legt sie dazu).
+ *
+ * @param {string} klasse - Klassenkennung (nur für Fassung 1 relevant)
+ * @param {number} [kit] - Fassung, siehe oben
+ * @param {{seed?:number, platz?:number}} [wo] - Match-Seed und Spielerplatz (Fassung 2)
+ * @returns {string[]} Waffenkennungen
+ */
+export function getStartWaffen(klasse, kit = KIT_STANDARD, { seed = 0, platz = 0 } = {}) {
+  if (normalisiereKit(kit) === KIT_KLASSE) return getClassLoadout(klasse);
+  return getStarterWaffen(seed, platz);
+}
 
 /** Rollen eines Klassen-Loadouts, in fester Reihenfolge. */
 export const LOADOUT_ROLES = Object.freeze(['flaeche', 'direkt', 'hitscan', 'kuer']);
@@ -249,4 +321,7 @@ export function getClassLoadout(klasse, count = 4) {
   return getClassLoadoutDetail(klasse, count).map(eintrag => eintrag.weaponId);
 }
 
-export default { getClassLoadout, getClassLoadoutDetail, LOADOUT_ROLES, START_TIERS };
+export default {
+  getClassLoadout, getClassLoadoutDetail, getStartWaffen, getStarterWaffen, LOADOUT_ROLES, START_TIERS,
+  KIT_KLASSE, KIT_STARTER, KIT_STANDARD,
+};

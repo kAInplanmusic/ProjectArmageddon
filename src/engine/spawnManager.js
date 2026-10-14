@@ -12,7 +12,7 @@
  */
 
 import { CLASS_IDS, ARCHETYPE_IDS, combatProfile } from '../shared/config/classes.js';
-import { getClassLoadout } from '../shared/config/loadouts.js';
+import { getStartWaffen, KIT_STARTER } from '../shared/config/loadouts.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
 
 /**
@@ -43,6 +43,8 @@ import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
  * - `loadouts` — Loadout-Wahl je Spielerplatz
  * - `baseHealth` — Grundgesundheit
  * - `resolveLoadout` — Auflösung von Klasse/Archetyp je Platz
+ * - `kit` — Ausrüstungsfassung (`KIT_STARTER` = Reserve + 2 Common, `KIT_KLASSE` = Altverhalten)
+ * - `seed` — Match-Seed (für die deterministische Startwaffenwahl)
  *
  * @param {object} quelle - die Werte, die den Spawn-Prozess steuern
  * @returns {Array<object>} playerEntry[] — Array mit Spieler-Einträgen
@@ -53,7 +55,7 @@ export function erzeugeSpieler(quelle) {
   // Ein Startloadout je Klasse, nicht je Spieler: Die Auswahl hängt allein an
   // der Klasse. Vorher startete jede Klasse mit demselben neutralen Loadout —
   // die Klasse veränderte nur Werte, nicht die Mittel.
-  const loadouts = new Map(CLASS_IDS.map(id => [id, getClassLoadout(id)]));
+  const kit = quelle.kit ?? KIT_STARTER;
   const eintraege = [];
   const belegteX = [];
 
@@ -115,7 +117,12 @@ export function erzeugeSpieler(quelle) {
     quelle.world.addComponent(entityId, 'Input', { angle: 0, power: 0 });
     quelle.world.addComponent(entityId, 'Rotation', { angle: 0 });
 
-    quelle.inventory.register(entityId, loadouts.get(CLASS_IDS[classId]) ?? loadouts.get(CLASS_IDS[0]));
+    // Start-Kit: Fassung 1 = Klassenloadout (alte Replays), Fassung 2 = Reserve + zwei
+    // Common-Waffen aus Seed und Platz — klassenunabhängig. `register` legt die Reserve dazu.
+    quelle.inventory.register(
+      entityId,
+      getStartWaffen(CLASS_IDS[classId], kit, { seed: quelle.seed, platz: index }),
+    );
 
     eintraege.push({
       entityId,

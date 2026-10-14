@@ -101,7 +101,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -141,6 +141,8 @@ class LobbySession {
       sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
       // Klassenwahl je Platz — wie die Sidegrades Teil der Konfiguration.
       loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
+      // Ausrüstung: Standard = Start-Kit; eine alte Sicherung bringt ihre Fassung mit (`undefined` = Standard).
+      kit,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -166,6 +168,7 @@ class LobbySession {
       // Dasselbe gilt für die Klassenwahl: Ohne sie im Kopf spielte die
       // Wiedergabe die Standardzuteilung statt der gewählten Profile.
       loadouts: this.match.loadouts,
+      kit: this.match.kit,
     });
 
     /*
@@ -1269,6 +1272,7 @@ export class GameServer {
               replayTotalTicks: options.replayTotalTicks,
               turnPauseTicks: options.turnPauseTicks,
               turnReplayTicks: options.turnReplayTicks,
+              kit: options.kit,
               metrics: this.metrics,
               logger: this.logger,
             });

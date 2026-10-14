@@ -486,3 +486,122 @@ select option { background: #14181d; color: var(--ink); }
 #end-overlay .profil-werte, #end-overlay .match-tabelle { text-align: left; }
 #end-overlay .profil-name { text-align: left; }
 #end-overlay .match-tabelle td:first-child, #end-overlay .match-tabelle th:first-child { text-align: left; }
+
+/* ======================================================= Waffenmenü + Schnellleiste */
+#hud-right.panel { display: flex; align-items: center; gap: 8px; pointer-events: none; }
+#hud-right.panel > * { pointer-events: auto; }
+#weapon-list .weapon-item { pointer-events: auto; cursor: pointer; }
+
+/* Knopf, der das Menü öffnet: gleiche Kachelgröße wie die Leiste, großer Tippbereich. */
+#waffen-menue-knopf {
+  position: relative; flex: 0 0 auto;
+  display: grid; place-items: center; align-content: center; gap: 0;
+  width: 60px; height: 60px; padding: 0;
+  border: 1px solid var(--orange); border-radius: 6px;
+  background: linear-gradient(180deg, #3a3220, #1d1a12);
+  color: var(--orange); box-shadow: inset 0 1px 0 rgba(255, 220, 140, 0.25);
+  touch-action: manipulation; cursor: pointer;
+}
+#waffen-menue-knopf:hover, #waffen-menue-knopf[aria-expanded='true'] {
+  background: linear-gradient(180deg, #5a4a22, #2c2514); color: #ffd86b; border-color: #ffd86b;
+}
+#waffen-menue-knopf:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#waffen-menue-knopf .wm-knopf-symbol { font-size: 22px; line-height: 1; }
+#waffen-menue-knopf .wm-knopf-text { font-family: var(--font-display); font-size: 14px; letter-spacing: 0.08em; line-height: 1; }
+#waffen-menue-knopf .wm-knopf-taste {
+  position: absolute; top: 2px; right: 5px; font-family: var(--font-display); font-size: 12px; color: var(--muted);
+}
+@media (pointer: coarse) { #waffen-menue-knopf .wm-knopf-taste { display: none; } }
+
+#waffenmenue {
+  position: absolute; z-index: 20; pointer-events: auto;
+  left: 50%; transform: translateX(-50%);
+  bottom: 96px;
+  width: min(560px, calc(100% - 24px));
+  max-height: min(72vh, calc(100% - 110px));
+  display: flex; flex-direction: column;
+  padding: 10px 12px 8px;
+  background: linear-gradient(180deg, rgba(43, 49, 56, 0.97), rgba(20, 23, 27, 0.98));
+  border: 1px solid var(--panel-edge); border-top: 2px solid var(--orange); border-radius: 8px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+}
+#waffenmenue[hidden] { display: none; }
+#waffenmenue:focus { outline: none; }
+#waffenmenue .wm-leiste { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+#waffenmenue .wm-titel { margin: 0; font-size: 26px; letter-spacing: 0.08em; color: var(--orange); }
+#waffenmenue-suche {
+  flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 12px;
+  font: 16px var(--font); color: var(--ink);
+  background: #0f1216; border: 1px solid var(--panel-edge); border-radius: 6px;
+}
+#waffenmenue-suche:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#waffenmenue .wm-zaehler { font-size: 13px; color: var(--muted); white-space: nowrap; }
+#waffenmenue-schliessen {
+  flex: 0 0 auto; width: 44px; height: 40px; padding: 0; font-size: 18px;
+  color: var(--ink); background: #20252b; border: 1px solid var(--panel-edge); border-radius: 6px; cursor: pointer;
+}
+#waffenmenue-schliessen:hover { border-color: var(--red); color: var(--red); }
+#waffenmenue-schliessen:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+#waffenmenue-liste { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 4px; }
+#waffenmenue .wm-leer { margin: 18px 0; text-align: center; color: var(--muted); }
+#waffenmenue-leer { margin: 18px 0; text-align: center; color: var(--muted); }
+#waffenmenue-leer[hidden] { display: none; }
+
+.wm-gruppe { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 5px; margin-bottom: 10px; }
+.wm-gruppe[hidden] { display: none; }
+.wm-kopf {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px;
+  position: sticky; top: 0; z-index: 1; padding: 3px 2px 2px;
+  background: rgba(27, 31, 36, 0.97); border-bottom: 1px solid var(--panel-edge);
+}
+.wm-kopf-haupt { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.1em; color: var(--orange); }
+.wm-kopf-unter { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
+.wm-kopf-zahl { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+.wm-opt {
+  position: relative; display: grid; grid-template-columns: 40px 1fr auto; grid-template-rows: auto auto;
+  column-gap: 8px; align-items: center; min-height: 52px; padding: 4px 28px 4px 6px;
+  background: linear-gradient(180deg, #262c33, #181c21);
+  border: 1px solid #3e444d; border-left-width: 4px; border-radius: 6px;
+  cursor: pointer; user-select: none; touch-action: manipulation;
+}
+.wm-opt[hidden] { display: none; }
+.wm-opt .wm-icon { grid-row: 1 / 3; width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)); }
+.wm-opt .wm-name { grid-column: 2 / 4; font-weight: 600; font-size: 14px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #c8d3de; }
+.wm-opt .wm-munition { grid-column: 2; font-family: var(--font-display); font-size: 16px; letter-spacing: 0.04em; color: #fff; }
+.wm-opt .wm-nachladen { grid-column: 3; font-size: 12px; color: var(--orange); }
+.wm-opt .wm-stern { position: absolute; top: 0; right: 0; width: 28px; height: 28px; display: grid; place-items: center; font-size: 16px; color: var(--muted); }
+.wm-opt .wm-stern:hover, .wm-opt.is-fav .wm-stern { color: var(--orange); }
+.wm-opt[data-tier='uncommon'] { border-left-color: #90be6d; } .wm-opt[data-tier='uncommon'] .wm-name { color: #90be6d; }
+.wm-opt[data-tier='rare'] { border-left-color: #4cc9f0; } .wm-opt[data-tier='rare'] .wm-name { color: #4cc9f0; }
+.wm-opt[data-tier='epic'] { border-left-color: #b388ff; } .wm-opt[data-tier='epic'] .wm-name { color: #b388ff; }
+.wm-opt[data-tier='legendary'] { border-left-color: #ffb703; } .wm-opt[data-tier='legendary'] .wm-name { color: #ffb703; }
+.wm-opt:hover { background: linear-gradient(180deg, #313943, #1f242a); }
+.wm-opt.is-aktiv { border-color: var(--lime); box-shadow: 0 0 0 1px rgba(124, 252, 0, 0.45); }
+.wm-opt.is-fokus { outline: 2px solid var(--orange); outline-offset: 1px; }
+.wm-opt.is-cooling { opacity: 0.7; }
+.wm-opt.is-leer { opacity: 0.38; filter: grayscale(0.8); cursor: not-allowed; }
+.wm-opt.is-wackeln { animation: wm-wackeln 0.25s; }
+@keyframes wm-wackeln { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .wm-opt.is-wackeln { animation: none; outline: 2px solid var(--red); } }
+
+#waffenmenue .wm-info { margin: 6px 0 0; min-height: 20px; font-size: 14px; color: var(--ink); border-top: 1px solid var(--panel-edge); padding-top: 6px; }
+#waffenmenue .wm-hinweis { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+@media (pointer: coarse) {
+  .wm-opt { min-height: 56px; }
+  #waffenmenue .wm-hinweis { display: none; }
+}
+/* Niedrige Querformat-Bildschirme (Handy): Menü füllt die Höhe, Detailzeile entfällt. */
+@media (max-height: 520px) {
+  #waffen-menue-knopf { width: 44px; height: 44px; }
+  #waffen-menue-knopf .wm-knopf-symbol { font-size: 16px; }
+  #waffen-menue-knopf .wm-knopf-text { font-size: 11px; }
+  #hud-right.panel { gap: 5px; }
+  #waffenmenue { bottom: 56px; top: 6px; max-height: none; padding: 6px 8px; width: min(560px, calc(100% - 12px)); }
+  #waffenmenue .wm-titel { display: none; }
+  #waffenmenue .wm-info { display: none; }
+  #waffenmenue .wm-hinweis { display: none; }
+  .wm-gruppe { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}

@@ -18,6 +18,7 @@
  * @module replay
  */
 import { MatchController } from './match.js';
+import { KIT_STANDARD, KIT_KLASSE, normalisiereKit } from '../shared/config/loadouts.js';
 
 export const REPLAY_FORMAT_VERSION = 1;
 
@@ -44,7 +45,7 @@ export class ReplayRecorder {
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
-    kartentyp = null, orientation = 'landscape',
+    kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -57,6 +58,13 @@ export class ReplayRecorder {
     const hatLoadouts = Array.isArray(loadouts) && loadouts.some(l => l !== null && l !== undefined);
     this.#config = {
       teams, playersPerTeam, preset, maxRounds, turnDurationMs,
+      /*
+       * Ausrüstungsfassung (Start-Kit-Umbau 2026-10-14). Neue Aufzeichnungen tragen
+       * IMMER `kit`; eine Datei OHNE das Feld stammt aus der Zeit davor und ist
+       * `KIT_KLASSE` (siehe `fromJSON`) — sonst spielte sie mit dem Start-Kit ein
+       * anderes Match. Das Feld fehlt also nur in Altdateien, nie in neuen.
+       */
+      kit: normalisiereKit(kit),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -225,7 +233,8 @@ export class ReplayRecorder {
     if (!parsed || parsed.format !== REPLAY_FORMAT_VERSION) {
       throw new Error(`Unbekanntes Replay-Format: ${parsed?.format}`);
     }
-    const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config });
+    // Altdatei ohne `kit` = Klassenloadout (siehe Kommentar im Konstruktor).
+    const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, kit: parsed.config?.kit ?? KIT_KLASSE });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -309,6 +318,7 @@ export class ReplayPlayer {
       playersPerTeam: config.playersPerTeam,
       preset: config.preset,
       maxRounds: config.maxRounds,
+      kit: config.kit,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

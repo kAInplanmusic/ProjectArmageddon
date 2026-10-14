@@ -178,6 +178,11 @@ export class InputController {
       this.#handlers.onWeaponDrop?.();
       return;
     }
+    // E öffnet/schließt das Waffenmenü (Dropdown des Besitzes).
+    if (key === 'e' || key === 'E') {
+      this.#handlers.onWeaponMenu?.();
+      return;
+    }
     /*
      * Springen liegt auf SHIFT — nicht auf der Leertaste.
      *

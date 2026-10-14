@@ -10,6 +10,7 @@ import {
   MOVE_SPECIALS,
 } from '../src/shared/config/loadouts.js';
 import { WEAPONS, WEAPONS_BY_ID, getDefaultLoadout, FALLBACK_WEAPON_ID } from '../src/shared/config/weapons.js';
+import { KIT_KLASSE } from '../src/shared/config/loadouts.js';
 import { EFFECT_KIND, SPECIAL_EFFECTS } from '../src/engine/specials.js';
 
 /**
@@ -177,8 +178,10 @@ test('Die Bewegungsliste deckt sich mit dem Wirkungskatalog', () => {
 
 // ------------------------------------------------------- Wirkung im Spiel
 
-test('Das echte Match benutzt die Klassen-Loadouts', () => {
-  const match = new MatchController({ seed: 9001, teams: 3, playersPerTeam: 3 });
+test('Das echte Match benutzt die Klassen-Loadouts (Fassung `kit` 1, nur für alte Replays)', () => {
+  // Seit dem Start-Kit (kit 2, Standard) sind Waffen nicht mehr klassengebunden — siehe
+  // tests/start-kit.test.js. Das Klassenloadout bleibt als Fassung 1 für alte Aufzeichnungen.
+  const match = new MatchController({ seed: 9001, teams: 3, playersPerTeam: 3, kit: KIT_KLASSE });
   match.start();
   const state = match.getState();
 

@@ -19,6 +19,7 @@ import { Renderer } from './renderer.js';
 import { Camera } from './camera.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
+import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
@@ -114,6 +115,11 @@ class Game {
      */
     this.kamera = null;
     this.hud = new Hud(document);
+    // Waffenmenü: Dropdown des Besitzes (Taste E / Knopf neben der Leiste).
+    this.waffenMenue = new WaffenMenue(document, {
+      getFigur: () => this.#aktiveFigur(),
+      onSelect: weaponId => this.selectWeaponById(weaponId),
+    });
     /*
      * Der Klangmischer.
      *
@@ -239,6 +245,8 @@ class Game {
       onWeaponSelect: index => this.selectWeapon(index),
       // Aktive Waffe abwerfen (Q).
       onWeaponDrop: () => this.dropWeapon(this.#activeDisplayPosition()),
+      // Waffenmenü ein-/ausblenden (E).
+      onWeaponMenu: () => this.waffenMenue.toggle(),
       // Springen (SHIFT), mit A/D als Richtung. NICHT die Leertaste — die lädt
       // den Schuss auf (siehe `input.js`).
       onJump: seitlich => this.jump(seitlich),
@@ -1570,6 +1578,12 @@ class Game {
     return position < reihenfolge.length ? reihenfolge[position] : null;
   }
 
+  /** Die Figur am Zug aus dem Anzeige-State (lokal wie online gleiche Form). */
+  #aktiveFigur() {
+    const state = this.currentState();
+    return state?.entities?.find(entity => entity.entityId === state.activePlayerId) ?? null;
+  }
+
   /** Waffen des aktiven Spielers, je nach Betriebsart. */
   #weaponIdsForActivePlayer() {
     if (this.mode === 'online') {
@@ -1593,37 +1607,35 @@ class Game {
   selectWeapon(anzeigePosition) {
     const inventarIndex = this.#inventoryIndexAt(anzeigePosition);
     if (inventarIndex === null) return;
-    const index = inventarIndex;
+    this.selectWeaponById(this.#weaponIdsForActivePlayer()[inventarIndex]);
+  }
+
+  /**
+   * Wählt eine Waffe über ihre ID (Waffenmenü; die Zifferntasten laufen
+   * darüber ebenfalls). Der Server bekommt wie bisher nur `weaponId`.
+   *
+   * @returns {boolean} true, wenn die Wahl angenommen bzw. abgeschickt wurde
+   */
+  selectWeaponById(weaponId) {
+    if (!weaponId || !this.#weaponIdsForActivePlayer().includes(weaponId)) return false;
 
     if (this.mode === 'online') {
       // Nur die eigene Waffe wählen und nur am eigenen Zug: sonst schickte der
-      // Client eine Waffe, die dem aktiven Spieler gar nicht gehört, und der
-      // Server lehnte sie ab.
+      // Client eine Wahl, die der Server ablehnt.
       if (!this.network?.isMyTurn) {
         this.hud.log('Nur am eigenen Zug kann die Waffe gewechselt werden', 'notice');
-        return;
+        return false;
       }
-      const view = this.onlineViewState;
-      const active = view?.entities.find(entity => entity.entityId === view.activePlayerId);
-      const weaponId = active?.inventory?.[index];
-      if (weaponId) {
-        // Eine nachladende Waffe lässt sich wählen, aber nicht abfeuern — der
-        // Server lehnt den Schuss ab. Die Anzeige sagt warum.
-        this.network?.selectWeapon(weaponId);
-        // Rückmeldung wie im lokalen Spiel: ohne sie bliebe unklar, ob die Wahl
-        // angekommen ist. Der Server bestätigt die Auswahl über den Bestand.
-        this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
-      }
-      return;
+      this.network?.selectWeapon(weaponId);
+      this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+      return true;
     }
-    if (!this.match) return;
+    if (!this.match) return false;
     const playerId = this.match.activePlayerId;
-    if (playerId === null) return;
-    const inventory = this.match.inventory.get(playerId);
-    const weaponId = inventory?.weapons[index];
-    if (!weaponId) return;
+    if (playerId === null) return false;
     this.match.inventory.selectWeapon(playerId, weaponId);
     this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+    return true;
   }
 
   /**
@@ -2545,6 +2557,8 @@ class Game {
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       onWeaponSelect: index => this.selectWeapon(index),
     });
+    // Bei geschlossenem Menü ein No-op; offen: nur bei Änderung wird etwas angefasst.
+    this.waffenMenue.aktualisiere(state.entities?.find(e => e.entityId === state.activePlayerId) ?? null);
     if (this.mode === 'online') this.hud.setConnection?.(
       this.network?.state ?? CONNECTION_STATE.IDLE,
       this.network?.latencyMs ?? 0,

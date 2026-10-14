@@ -109,6 +109,10 @@ export function exposeDebugApi(game) {
       refreshLobbies: () => game.refreshLobbies(),
       /** Waffe wählen wie über die Liste (Index im Inventar). */
       selectWeapon: index => game.selectWeapon(index),
+      /** Waffe über ihre ID wählen (wie im Waffenmenü). */
+      selectWeaponById: weaponId => game.selectWeaponById(weaponId),
+      /** Waffenmenü (für Tests). */
+      waffenMenue: () => game.waffenMenue,
       /** Waffe abwerfen (Position wie in der Liste). */
       dropWeapon: index => game.dropWeapon(index),
       /** Günther-Zustand (aktiv, Position, Haufen, Plan). */

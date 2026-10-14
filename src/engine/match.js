@@ -39,6 +39,7 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
+import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { damageTypeId } from './damageTypes.js';
 import { pickScenery } from '../shared/config/scenery.js';
@@ -578,6 +579,8 @@ export class MatchController {
      * in classes.js für die Begründung, warum die Kopplung aufgehoben wurde.
      */
     loadouts = null,
+    /** Ausrüstungsfassung: `KIT_STARTER` (Reserve + 2 Common, Standard) oder `KIT_KLASSE` (Altverhalten, nur für alte Replays). */
+    kit = KIT_STANDARD,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -603,6 +606,7 @@ export class MatchController {
     this.sidegrades = Array.isArray(sidegrades) ? [...sidegrades] : [];
     /** Loadout-Wahl je Spielerplatz — Kopie, wie bei den Sidegrades. */
     this.loadouts = Array.isArray(loadouts) ? [...loadouts] : [];
+    this.kit = normalisiereKit(kit);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -2091,13 +2095,8 @@ export class MatchController {
       crateType: CRATE_TYPES.weapon,
       crateX: startX,
       crateY: startY - 14,
-      /*
-       * BEWUSSTER ZUSTAND: die Waffen tragen ihre Seltenheit im `powerTier`-
-       * Namensraum (common/uncommon/rare/epic/legendary), `RARITY_IDS` fuehrt die
-       * vier `rarity`-Namen. Kein Waffenwert kommt darin vor -> gemessen liegt
-       * der Index bei ALLEN 150 Waffen auf 0. Siehe die Begruendung an der
-       * Ziehungsstelle in `systems/lootSystem.js`.
-       */
+      // BEWUSSTER ZUSTAND: Index liegt bei allen 150 Waffen auf 0 (Namensräume
+      // powerTier/rarity) — Begründung an der Ziehung in `systems/lootSystem.js`.
       rarity: Math.max(0, RARITY_IDS.indexOf(weapon.rarity)),
       weaponId: weapon.index,
       picked: 0,
@@ -2878,6 +2877,7 @@ export class MatchController {
       inventory: this.#inventory,
       sidegrades: this.sidegrades,
       loadouts: this.loadouts,
+      kit: this.kit, seed: this.#seedManager.baseSeed,
       baseHealth: this.baseHealth,
       resolveLoadout,
     };

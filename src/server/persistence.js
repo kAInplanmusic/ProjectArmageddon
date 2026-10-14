@@ -15,6 +15,7 @@ import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, unlinkS
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { hashState } from '../engine/stateSnapshot.js';
+import { KIT_KLASSE } from '../shared/config/loadouts.js';
 
 export const PERSISTENCE_VERSION = 1;
 
@@ -250,6 +251,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       // Die Pause der Aufzeichnung (alte Sicherungen: keine).
       turnPauseTicks: saved.replay.config?.turnPauseTicks ?? 0,
       turnReplayTicks: saved.replay.config?.turnReplayTicks ?? 0,
+      // Alte Sicherungen ohne `kit` stammen aus der Zeit vor dem Start-Kit: Klassenloadout.
+      kit: saved.replay.config?.kit ?? KIT_KLASSE,
     })
     : null;
 
