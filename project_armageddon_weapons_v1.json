@@ -6237,7 +6237,7 @@
       },
       "mechanic": {
         "specialEffect": "summon_warrior",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },
@@ -6325,7 +6325,7 @@
       },
       "mechanic": {
         "specialEffect": "summon_mount",
-        "targeting": "directional",
+        "targeting": "self_or_area",
         "movement": "none",
         "destructibleTerrain": true
       },

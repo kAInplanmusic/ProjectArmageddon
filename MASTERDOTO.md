@@ -446,8 +446,8 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1326/1326** grün, Dateizahl **142** — die zwei neuen Prüfungen sitzen in
-`tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
+**1336/1336** grün, Dateizahl **143** (Stand 2026-10-14: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; vorher 1326/142 mit den zwei Prüfungen in
+`tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
 1230); die Schritte stehen im Verlauf: unbegrenzte Sprünge, HUD-Vorrang,
@@ -1695,7 +1695,12 @@ jeder Spieler mit wenigen einfachen Waffen und sammelt den Rest über Loot-Kiste
 Die Klassen (Power/Speed/Health, `combatProfile`, Archetypen, Sidegrades) bleiben
 **unverändert**; sie bestimmen nur noch die Werte einer Figur.
 
-- **Start (Fassung `kit` 2, Standard):** Reserve `pa_028` (unbegrenzt) + zwei
+- **Start (Fassung `kit` 3, Standard):** wie Fassung 2 (unten), dazu eine schwache
+  Uncommon-Flächenwaffe mit Geländeabtrag und knapper Munition (`getStarterFlaeche()`;
+  heute Salvengeber `pa_041`: 22 Schaden, Radius 16, Start-Munition **3** statt 6).
+  Grund: Fassung 2 hatte keine Common-Waffe mit Flächenwirkung, ein Spieler konnte
+  zu Beginn kein Gelände abtragen. Ein Spieler führt damit vier Waffen (Reserve + drei).
+- **Fassung `kit` 2 (alt, nur für Replays):** Reserve `pa_028` (unbegrenzt) + zwei
   Common-Waffen — eine Wurfwaffe (`ranged`, ohne Nachladezeit) und eine
   `tech`-Strahlwaffe —, deterministisch aus Match-Seed und Spielerplatz
   (`getStarterWaffen()` in `loadouts.js`, reiner Hash, **kein** Zufallsstrom
@@ -1705,17 +1710,29 @@ Die Klassen (Power/Speed/Health, `combatProfile`, Archetypen, Sidegrades) bleibe
   Jede der 150 Waffen kann aus einer Kiste fallen (`pickWeaponForRarity`, Gewicht
   je Stufe 55/25/12/6/2 je Waffe; Epic + Legendary zusammen unter 3 %).
 - **Replay/Persistenz:** Der Kopf trägt `config.kit`. Neue Aufzeichnungen schreiben
-  immer `kit: 2`; eine Datei **ohne** das Feld (alle Altdateien und alten
+  immer `kit: 3`; `kit: 2` und `kit: 1` laufen unverändert weiter (Test mit Altkopf);
+  eine Datei **ohne** das Feld (alle Altdateien und alten
   Sicherungen) wird als `kit: 1` gelesen und spielt das alte Klassenloadout —
   sonst wäre der Zustandshash anders. Getestet in `tests/start-kit.test.js`.
 - **Alle 150 feuern:** `tests/start-kit.test.js` feuert jede Katalogwaffe einmal in
-  einem Match (kein Wurf, Hash zweimal gleich). Die elf Waffen ohne eigenen
-  Handler (`pa_149, 115, 105, 085, 116, 107, 088, 141, 143, 129, 113`) crashen
-  nicht: sieben haben über `SPECIAL_EFFECTS` einen Selbsteffekt (Reliktkugel
-  Schadensbonus, Wächterstatue/Blutritual Heilung, Zauberrolle/Chaosmagier
-  Zufallszauber, Allsehendes Auge Aufdeckung, Dimensionsriss 60 px Sprung); vier
-  (`pa_141, 143, 129, 113`: Astralkrieger, Astralross, Tesla-Turm, Bohrkanone)
-  haben keinen Effekt und feuern als gewöhnliche Schadenswaffe ohne Zusatzwirkung.
+  einem Match (kein Wurf, Hash zweimal gleich). Die sieben Waffen ohne eigenen
+  Handler (`pa_149, 115, 105, 085, 116, 107, 088`) crashen nicht: sie haben über
+  `SPECIAL_EFFECTS` einen Selbsteffekt (Reliktkugel Schadensbonus,
+  Wächterstatue/Blutritual Heilung, Zauberrolle/Chaosmagier Zufallszauber,
+  Allsehendes Auge Aufdeckung, Dimensionsriss 60 px Sprung).
+- **Vier neue Effekte (2026-10-14, `tests/waffen-effekte.test.js`):** vier Waffen
+  hatten keinen Effekt und feuerten als gewöhnliche Schadenswaffe. Jetzt:
+  Astralkrieger `pa_141` (`summon_warrior`) stellt einen Krieger auf (Geschütz,
+  50 % des Waffenschadens = 35, 3 Runden); Astralross `pa_143` (`summon_mount`)
+  trägt den Schützen 140 px weit (`EFFECT_KIND.MOUNT`, eigene Art, damit die
+  Klassenkür von Fassung 1 unverändert bleibt); Tesla-Turm `pa_129`
+  (`chain_lightning`) lässt den Blitz vom Treffer auf die nächsten zwei Gegner
+  in 240 px springen (Schaden 100 % → 60 % → 36 %, Verbündete verschont,
+  Gleichstand = kleinere Kennung); Bohrkanone `pa_113` (`drill_cannon`) gräbt
+  bei Geländetreffer ein Mundloch (Radius 30) und 12 Tunnelschritte (Radius 14,
+  Abstand 11 px), gemeldet als `terrain_destroyed`. Code in `shooting.js`
+  (`kettenblitz`, `bohre`), `match.js` unverändert (Zeilenbudget). Die zwei
+  Beschwörungen sind in der Designdatei jetzt `self_or_area`.
 - Die Klassenloadouts (`getClassLoadout`) bleiben für `kit` 1 erhalten.
 
 ## Fortsetzung 2026-09-11 (2) — Netzwerk unter Störung, Screenreader

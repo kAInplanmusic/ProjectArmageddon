@@ -1,8 +1,11 @@
 /**
  * Tests: Start-Kit (Worms-Stil) — Waffen sind nicht klassengebunden.
  *
- * Jeder Spieler startet mit der Reserve (`pa_028`, unbegrenzt) und zwei
- * Common-Waffen, deterministisch aus Match-Seed und Platz; weitere Waffen kommen
+ * Jeder Spieler startet mit der Reserve (`pa_028`, unbegrenzt), zwei
+ * Common-Waffen und (Fassung `kit` 3, Standard) einer schwachen Uncommon-
+ * Flächenwaffe mit wenig Munition, deterministisch aus Match-Seed und Platz.
+ * Fassung 2 (nur Common, kein Geländeabtrag zu Beginn) und Fassung 1 (Klassen-
+ * loadout) bleiben für alte Aufzeichnungen lauffähig; weitere Waffen kommen
  * über Loot-Kisten, und JEDE der 150 Waffen darf dort fallen. Geprüft wird
  * (1) der Start, (2) dass JEDE Waffe einmal abgefeuert werden kann, ohne dass der
  * Motor wirft — auch die 11 Waffen ohne eigenen Handler —, (3) Determinismus über
@@ -15,15 +18,17 @@ import assert from 'node:assert/strict';
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
-import { KIT_KLASSE, KIT_STARTER, getClassLoadout } from '../src/shared/config/loadouts.js';
+import {
+  KIT_KLASSE, KIT_STARTER, KIT_FLAECHE, KIT_STANDARD, STARTER_FLAECHE_MUNITION,
+  getClassLoadout, getStartWaffen, getStarterFlaeche, normalisiereKit,
+} from '../src/shared/config/loadouts.js';
 import { RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { MAX_WEAPONS } from '../src/engine/inventory.js';
 
-/** Die elf Waffen, die im Motor keinen eigenen Handler haben (Stand 2026-10-14). */
+/** Die sieben Waffen, die im Motor keinen eigenen Handler haben (Stand 2026-10-14). */
 const OHNE_HANDLER = [
-  'pa_149', 'pa_115', 'pa_105', 'pa_085', 'pa_116', 'pa_107',
-  'pa_088', 'pa_141', 'pa_143', 'pa_129', 'pa_113',
+  'pa_149', 'pa_115', 'pa_105', 'pa_085', 'pa_116', 'pa_107', 'pa_088',
 ];
 
 function neuesMatch(extra = {}) {
@@ -67,20 +72,80 @@ function feuereAlle() {
   return { ergebnisse, hash: match.stateHash() };
 }
 
-test('Start: Reserve (unbegrenzt) + zwei Common-Waffen, volle Munition', () => {
+test('Start (Standard = Fassung 3): Reserve + zwei Common voll geladen + eine knappe Uncommon-Flächenwaffe', () => {
+  assert.equal(KIT_STANDARD, KIT_FLAECHE);
   const match = neuesMatch({ playersPerTeam: 2 });
+  assert.equal(match.kit, KIT_FLAECHE);
   for (const spieler of match.getState().entities) {
     const waffen = match.inventory.getWeapons(spieler.entityId);
-    assert.equal(waffen.length, 3);
+    assert.equal(waffen.length, 4);
     assert.ok(waffen.includes(FALLBACK_WEAPON_ID));
     assert.equal(match.inventory.getAmmo(spieler.entityId, FALLBACK_WEAPON_ID), Infinity);
-    for (const id of waffen.filter(w => w !== FALLBACK_WEAPON_ID)) {
+    const uncommon = waffen.filter(id => WEAPONS.find(x => x.id === id).powerTier === 'uncommon');
+    assert.equal(uncommon.length, 1, 'genau eine Uncommon-Startwaffe');
+    for (const id of waffen.filter(w => w !== FALLBACK_WEAPON_ID && !uncommon.includes(w))) {
       const w = WEAPONS.find(x => x.id === id);
       assert.equal(w.powerTier, 'common', id);
       assert.equal(match.inventory.getAmmo(spieler.entityId, id), Math.max(1, w.maxAmmo));
     }
+    // Die Flächenwaffe: schwach, mit Geländeabtrag, wenig Munition.
+    const flaeche = WEAPONS.find(x => x.id === uncommon[0]);
+    assert.ok(flaeche.blastRadius > 0 && flaeche.terrainDamage > 0, 'Flächenwirkung mit Geländeabtrag');
+    assert.ok(flaeche.damage <= 25, 'schwach');
+    assert.equal(match.inventory.getAmmo(spieler.entityId, flaeche.id), STARTER_FLAECHE_MUNITION);
+    assert.ok(STARTER_FLAECHE_MUNITION < flaeche.maxAmmo, 'weniger als die Katalogmunition');
     assert.equal(match.inventory.isFull(spieler.entityId), false);
   }
+});
+
+test('Fassung 3 hat zu Beginn eine Flächenwaffe, Fassung 2 nicht (keine Common-Flächenwaffe)', () => {
+  const abtrag = id => { const w = WEAPONS.find(x => x.id === id); return w.blastRadius > 0; };
+  for (let seed = 0; seed < 30; seed++) {
+    for (let platz = 0; platz < 4; platz++) {
+      assert.ok(!getStartWaffen('scout', KIT_STARTER, { seed, platz }).some(abtrag), `Fassung 2, Seed ${seed}`);
+      const kit3 = getStartWaffen('scout', KIT_FLAECHE, { seed, platz });
+      assert.equal(kit3.length, 3);
+      assert.ok(kit3.some(abtrag), `Fassung 3 braucht Flächenwirkung, Seed ${seed}`);
+      assert.deepEqual(kit3.slice(0, 2), getStartWaffen('scout', KIT_STARTER, { seed, platz }),
+        'die zwei Common-Waffen sind in beiden Fassungen gleich');
+    }
+  }
+  assert.equal(getStarterFlaeche(5, 0), getStarterFlaeche(5, 0));
+  assert.equal(normalisiereKit(3), KIT_FLAECHE);
+  assert.equal(normalisiereKit(99), KIT_STANDARD);
+});
+
+test('Fassung 3: der erste Schuss mit der Flächenwaffe gräbt ein Loch ins Gelände', () => {
+  const match = neuesMatch();
+  const id = match.activePlayerId;
+  const flaeche = match.inventory.getWeapons(id).find(w => WEAPONS.find(x => x.id === w).powerTier === 'uncommon');
+  match.inventory.selectWeapon(id, flaeche);
+  assert.equal(match.fire(id, Math.PI / 4, 60, flaeche).ok, true);
+  let schutz = 0;
+  while (match.activeProjectileCount > 0 && schutz < 900) { match.step(); schutz += 1; }
+  assert.ok(match.consumeEvents().some(e => e.type === 'terrain_destroyed'), 'Geländeabtrag');
+  assert.equal(match.inventory.getAmmo(id, flaeche), STARTER_FLAECHE_MUNITION - 1);
+});
+
+test('Fassung 2 bleibt lauffähig: Reserve + zwei Common, kein Abtrag, gleiches Replay-Verhalten', () => {
+  const match = neuesMatch({ kit: KIT_STARTER, playersPerTeam: 2 });
+  assert.equal(match.kit, KIT_STARTER);
+  for (const spieler of match.getState().entities) {
+    const waffen = match.inventory.getWeapons(spieler.entityId);
+    assert.equal(waffen.length, 3);
+    for (const id of waffen.filter(w => w !== FALLBACK_WEAPON_ID)) {
+      assert.equal(WEAPONS.find(x => x.id === id).powerTier, 'common', id);
+    }
+  }
+  // Altkopf mit `kit: 2`: spielt als Fassung 2 zurück, nicht als Standard.
+  const kopf = {
+    format: 1, createdAt: 0, seed: 779,
+    config: { teams: 2, playersPerTeam: 1, preset: 'hills', maxRounds: 5, turnDurationMs: 30000, kit: 2 },
+    totalTicks: 10, entries: [], rounds: [],
+  };
+  const { match: zurueck } = playReplay(ReplayRecorder.fromJSON(kopf));
+  assert.equal(zurueck.kit, KIT_STARTER);
+  assert.equal(zurueck.inventory.getWeapons(zurueck.getState().entities[0].entityId).length, 3);
 });
 
 test('Start ist klassenunabhängig und deterministisch aus Seed und Platz', () => {
@@ -148,10 +213,10 @@ test('Altes Replay (Kopf ohne `kit`) spielt weiter das Klassenloadout', () => {
 
 test('Neue Aufzeichnung trägt `kit` im Kopf und spielt als Start-Kit zurück', () => {
   const recorder = new ReplayRecorder({ seed: 778, teams: 2, playersPerTeam: 1, preset: 'hills', maxRounds: 5 });
-  assert.equal(recorder.toJSON().config.kit, KIT_STARTER);
+  assert.equal(recorder.toJSON().config.kit, KIT_STANDARD);
   recorder.finalize(10);
   const geladen = ReplayRecorder.fromJSON(recorder.serialize());
   const { match } = playReplay(geladen);
-  assert.equal(match.kit, KIT_STARTER);
-  assert.equal(match.inventory.getWeapons(match.getState().entities[0].entityId).length, 3);
+  assert.equal(match.kit, KIT_FLAECHE);
+  assert.equal(match.inventory.getWeapons(match.getState().entities[0].entityId).length, 4);
 });

@@ -23,7 +23,7 @@ export class PlayerInventory {
   #players = new Map();
 
   /** Legt einen Spieler mit Startlastout an. */
-  register(playerId, weaponIds = [], { ammoPerWeapon = null } = {}) {
+  register(playerId, weaponIds = [], { ammoPerWeapon = null, ammoCaps = null } = {}) {
     const ammo = new Map();
     // Reservewaffe mit unbegrenzter Munition: verhindert, dass ein Match
     // stehenbleibt, sobald alle Ladungen verbraucht sind.
@@ -31,7 +31,8 @@ export class PlayerInventory {
     for (const id of weaponIds) {
       const weapon = getWeapon(id);
       if (!weapon) continue;
-      ammo.set(id, ammoPerWeapon ?? Math.max(1, weapon.maxAmmo || 1));
+      const voll = ammoPerWeapon ?? Math.max(1, weapon.maxAmmo || 1);
+      ammo.set(id, ammoCaps?.[id] ? Math.min(voll, ammoCaps[id]) : voll);
     }
     if (!ammo.has(FALLBACK_WEAPON_ID)) {
       const fallback = getWeapon(FALLBACK_WEAPON_ID);

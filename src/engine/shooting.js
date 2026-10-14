@@ -237,6 +237,7 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
   if (weapon.delivery === 'hitscan') {
     const hit = quelle.resolveHitscan(x, y, angle, power, weapon, playerId);
     quelle.events.emit('hitscan', { playerId, weaponId: weapon.id, ...hit });
+    nachStrahl(quelle, special, playerId, weapon, angle, hit);
     quelle.applyCooldown(playerId, weapon);
     return { ok: true, projectileId: null, hit };
   }
@@ -345,6 +346,74 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
   quelle.events.emit('projectile_spawn', { playerId, projectileId, weaponId: weapon.id, x, y, vx, vy });
   quelle.applyCooldown(playerId, weapon);
   return { ok: true, projectileId, hit: null };
+}
+
+/**
+ * Wirkungen eines Strahls, die über den Treffer hinausgehen: Kettenblitz (Sprung
+ * auf nahe Gegner) und Bohrstrahl (Tunnel im Gelände).
+ */
+function nachStrahl(quelle, effekt, schuetzeId, weapon, winkel, hit) {
+  if (effekt?.kind === EFFECT_KIND.CHAIN && hit.target !== null) kettenblitz(quelle, effekt, schuetzeId, weapon, hit.target);
+  if (effekt?.kind === EFFECT_KIND.DRILL && hit.target === null && hit.hit && !hit.blocked) bohre(quelle, effekt, winkel, hit);
+}
+
+/**
+ * Kettenblitz: vom getroffenen Ziel zum jeweils NÄCHSTEN noch nicht getroffenen
+ * Gegner in Sprungweite, höchstens `jumps` Sprünge, der Schaden fällt je Sprung
+ * auf `falloff` des vorigen. Gleichstände entscheidet die kleinere Kennung —
+ * kein Zufall, gleiche Lage ergibt denselben Blitz.
+ */
+function kettenblitz(quelle, effekt, schuetzeId, weapon, erstesZiel) {
+  const schuetze = quelle.players.find(entry => entry.entityId === schuetzeId);
+  const reichweite = effekt.range * weitenFaktor(quelle.width);
+  const getroffen = new Set([schuetzeId, erstesZiel]);
+  let aktuell = erstesZiel;
+  let schaden = weapon.damage * quelle.statuses.damageMultiplier(schuetzeId);
+  for (let sprung = 0; sprung < effekt.jumps; sprung++) {
+    const ax = quelle.world.getComponent(aktuell, 'Position', 'x') ?? 0;
+    const ay = quelle.world.getComponent(aktuell, 'Position', 'y') ?? 0;
+    let bestes = null;
+    let besteWeite = reichweite;
+    for (const eintrag of quelle.players) {
+      const id = eintrag.entityId;
+      if (getroffen.has(id) || !quelle.isPlayerAlive(id)) continue;
+      if (schuetze && eintrag.teamId === schuetze.teamId) continue;
+      const weite = Math.hypot(
+        (quelle.world.getComponent(id, 'Position', 'x') ?? 0) - ax,
+        (quelle.world.getComponent(id, 'Position', 'y') ?? 0) - ay,
+      );
+      if (weite < besteWeite || (weite === besteWeite && bestes !== null && id < bestes)) {
+        bestes = id;
+        besteWeite = weite;
+      }
+    }
+    if (bestes === null) return;
+    schaden *= effekt.falloff;
+    quelle.world.getSystem('damage')?.applyDamage(quelle.world, bestes, schaden, schuetzeId, {
+      damageType: damageTypeId(weapon.damageType),
+    });
+    getroffen.add(bestes);
+    aktuell = bestes;
+  }
+}
+
+/**
+ * Bohrstrahl: ein Mundloch an der Auftreffstelle, dann ein Tunnel in
+ * Strahlrichtung (Löcher im Abstand von 0,8 Radius, Kreise überlappen). Jedes
+ * Loch geht über `terrain_destroyed` an die Clients wie ein Einschlagkrater.
+ */
+function bohre(quelle, effekt, winkel, hit) {
+  const dx = Math.cos(winkel);
+  const dy = -Math.sin(winkel);
+  const abstand = effekt.radius * 0.8;
+  for (let i = 0; i <= effekt.steps; i++) {
+    const x = Math.round(hit.hitX + dx * abstand * i);
+    const y = Math.round(hit.hitY + dy * abstand * i);
+    if (x < 0 || y < 0 || x >= quelle.width || y >= quelle.height) break;
+    const radius = i === 0 ? effekt.entryRadius : effekt.radius;
+    quelle.terrain.punchCrater(x, y, radius);
+    quelle.events.emit('terrain_destroyed', { x, y, radius });
+  }
 }
 
 /**
@@ -612,7 +681,8 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
       return { restored };
     }
 
-    case EFFECT_KIND.MOVE: {
+    case EFFECT_KIND.MOVE:
+    case EFFECT_KIND.MOUNT: {
       const moved = shiftPlayer(quelle, playerId, effect.distance);
       return { moved };
     }

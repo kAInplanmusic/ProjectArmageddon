@@ -12,7 +12,7 @@
  */
 
 import { CLASS_IDS, ARCHETYPE_IDS, combatProfile } from '../shared/config/classes.js';
-import { getStartWaffen, KIT_STARTER } from '../shared/config/loadouts.js';
+import { getStartWaffen, getStartMunition, KIT_STANDARD } from '../shared/config/loadouts.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
 
 /**
@@ -43,7 +43,7 @@ import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
  * - `loadouts` — Loadout-Wahl je Spielerplatz
  * - `baseHealth` — Grundgesundheit
  * - `resolveLoadout` — Auflösung von Klasse/Archetyp je Platz
- * - `kit` — Ausrüstungsfassung (`KIT_STARTER` = Reserve + 2 Common, `KIT_KLASSE` = Altverhalten)
+ * - `kit` — Ausrüstungsfassung (`KIT_FLAECHE` = Reserve + 2 Common + schwache Flächenwaffe, `KIT_STARTER` = ohne Flächenwaffe, `KIT_KLASSE` = Altverhalten)
  * - `seed` — Match-Seed (für die deterministische Startwaffenwahl)
  *
  * @param {object} quelle - die Werte, die den Spawn-Prozess steuern
@@ -55,7 +55,7 @@ export function erzeugeSpieler(quelle) {
   // Ein Startloadout je Klasse, nicht je Spieler: Die Auswahl hängt allein an
   // der Klasse. Vorher startete jede Klasse mit demselben neutralen Loadout —
   // die Klasse veränderte nur Werte, nicht die Mittel.
-  const kit = quelle.kit ?? KIT_STARTER;
+  const kit = quelle.kit ?? KIT_STANDARD;
   const eintraege = [];
   const belegteX = [];
 
@@ -118,11 +118,9 @@ export function erzeugeSpieler(quelle) {
     quelle.world.addComponent(entityId, 'Rotation', { angle: 0 });
 
     // Start-Kit: Fassung 1 = Klassenloadout (alte Replays), Fassung 2 = Reserve + zwei
-    // Common-Waffen aus Seed und Platz — klassenunabhängig. `register` legt die Reserve dazu.
-    quelle.inventory.register(
-      entityId,
-      getStartWaffen(CLASS_IDS[classId], kit, { seed: quelle.seed, platz: index }),
-    );
+    // Common-Waffen aus Seed und Platz, Fassung 3 dazu eine schwache Flächenwaffe — klassenunabhängig. `register` legt die Reserve dazu.
+    const startWaffen = getStartWaffen(CLASS_IDS[classId], kit, { seed: quelle.seed, platz: index });
+    quelle.inventory.register(entityId, startWaffen, { ammoCaps: getStartMunition(kit, startWaffen) });
 
     eintraege.push({
       entityId,

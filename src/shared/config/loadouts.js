@@ -76,19 +76,23 @@ import { WEAPONS, getDefaultLoadout, FALLBACK_WEAPON_ID } from './weapons.js';
  *
  * Die Fassung heißt `kit`:
  *   - `KIT_KLASSE` (1): Klassenloadout, 4 Waffen + Reserve (alt, nur für Replays)
- *   - `KIT_STARTER` (2): Reserve + 2 Common-Waffen, klassenunabhängig (Standard)
+ *   - `KIT_STARTER` (2): Reserve + 2 Common-Waffen, klassenunabhängig (alt, nur für Replays)
+ *   - `KIT_FLAECHE` (3): wie 2, dazu eine schwache Uncommon-Flächenwaffe mit wenig
+ *     Munition (Standard) — Fassung 2 hatte keine Waffe mit Flächenwirkung, damit
+ *     auch keinen Geländeabtrag zu Beginn
  *
  * Eine Aufzeichnung OHNE `kit` im Kopf stammt aus der Zeit davor und ist
  * `KIT_KLASSE` (siehe `replay.js`).
  */
 export const KIT_KLASSE = 1;
 export const KIT_STARTER = 2;
+export const KIT_FLAECHE = 3;
 /** Fassung, mit der neue Partien starten. */
-export const KIT_STANDARD = KIT_STARTER;
+export const KIT_STANDARD = KIT_FLAECHE;
 
 /** Ist `kit` eine bekannte Fassung? Alles andere fällt auf den Standard. */
 export function normalisiereKit(kit) {
-  return kit === KIT_KLASSE || kit === KIT_STARTER ? kit : KIT_STANDARD;
+  return kit === KIT_KLASSE || kit === KIT_STARTER || kit === KIT_FLAECHE ? kit : KIT_STANDARD;
 }
 
 /** Kleiner Ganzzahl-Mischer (reiner Hash, KEIN Zufallsstrom): gleiche Eingabe, gleiche Zahl. */
@@ -103,8 +107,8 @@ function mische(seed, platz, salz) {
  * Die zwei Common-Startwaffen eines Platzes — deterministisch aus Match-Seed und
  * Spielerplatz, unabhängig von der Klasse. Eine Wurfwaffe (Projektil mit Flugbahn)
  * und eine Strahlwaffe (sofortiger Treffer): So kann jeder Weit- und Direktschüsse.
- * Der Katalog hat keine Common-Waffe mit Flächenwirkung; Terrain bearbeiten kommt
- * über Kisten.
+ * Der Katalog hat keine Common-Waffe mit Flächenwirkung; die Flächenwaffe der
+ * Fassung 3 kommt aus `getStarterFlaeche`.
  *
  * Es zählt nur der Katalog: keine Nahkampfwaffe (kurze Reichweite), keine
  * Sichtlinienwaffe (wird je nach Gelände abgelehnt), nicht die Reserve, keine
@@ -120,17 +124,50 @@ export function getStarterWaffen(seed, platz) {
     .filter(Boolean).map(w => w.id);
 }
 
+/** Startmunition der Flächenwaffe in Fassung 3 — bewusst knapp, der Rest kommt über Kisten. */
+export const STARTER_FLAECHE_MUNITION = 3;
+
+/**
+ * Die schwache Flächenwaffe der Fassung 3, deterministisch aus Seed und Platz.
+ *
+ * Uncommon, Projektil mit Flächenwirkung UND Geländeabtrag, geringer Schaden
+ * (höchstens 25), ohne Nachladezeit und ohne Sichtlinienpflicht. Der Katalog
+ * liefert heute genau eine solche Waffe (Salvengeber `pa_041`, 22 Schaden, Radius
+ * 16); kämen weitere dazu, entscheidet derselbe Mischer wie bei den Common-Waffen.
+ */
+export function getStarterFlaeche(seed, platz) {
+  const pool = WEAPONS.filter(w => w.powerTier === 'uncommon' && w.delivery === 'projectile'
+    && w.blastRadius > 0 && w.terrainDamage > 0 && w.damage > 0 && w.damage <= 25
+    && w.cooldown === 0 && !w.requiresLineOfSight);
+  return pool.length ? pool[mische(seed, platz, 2) % pool.length].id : null;
+}
+
+/** Begrenzte Startmunition je Waffe (Kennung -> Ladungen); leer für Fassung 1 und 2. */
+export function getStartMunition(kit, waffenIds) {
+  if (normalisiereKit(kit) !== KIT_FLAECHE) return {};
+  const grenze = {};
+  for (const id of waffenIds) {
+    const w = WEAPONS.find(x => x.id === id);
+    if (w && w.powerTier !== 'common') grenze[id] = Math.min(w.maxAmmo, STARTER_FLAECHE_MUNITION);
+  }
+  return grenze;
+}
+
 /**
  * Startwaffen eines Spielers (ohne die Reserve; `register` legt sie dazu).
  *
  * @param {string} klasse - Klassenkennung (nur für Fassung 1 relevant)
  * @param {number} [kit] - Fassung, siehe oben
- * @param {{seed?:number, platz?:number}} [wo] - Match-Seed und Spielerplatz (Fassung 2)
+ * @param {{seed?:number, platz?:number}} [wo] - Match-Seed und Spielerplatz (Fassung 2 und 3)
  * @returns {string[]} Waffenkennungen
  */
 export function getStartWaffen(klasse, kit = KIT_STANDARD, { seed = 0, platz = 0 } = {}) {
-  if (normalisiereKit(kit) === KIT_KLASSE) return getClassLoadout(klasse);
-  return getStarterWaffen(seed, platz);
+  const fassung = normalisiereKit(kit);
+  if (fassung === KIT_KLASSE) return getClassLoadout(klasse);
+  const basis = getStarterWaffen(seed, platz);
+  if (fassung === KIT_STARTER) return basis;
+  const flaeche = getStarterFlaeche(seed, platz);
+  return flaeche ? [...basis, flaeche] : basis;
 }
 
 /** Rollen eines Klassen-Loadouts, in fester Reihenfolge. */

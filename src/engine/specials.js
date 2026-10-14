@@ -66,6 +66,23 @@ export const EFFECT_KIND = Object.freeze({
    * heißt hier: bei gleichem Seed dieselbe Wahl, nicht unvorhersehbar.
    */
   RANDOM: 'random',
+  /**
+   * Kettenblitz: springt vom getroffenen Ziel auf nahe Gegner über, mit
+   * abnehmendem Schaden. Gehört zu den Zielwirkungen — ohne Treffer kein
+   * Sprung. Die Rechnung steht in `shooting.js` (`kettenblitz`).
+   */
+  CHAIN: 'chain',
+  /**
+   * Reittier: wie MOVE ein Sprung des Schützen, aber mit größerer Weite. Eigene
+   * Art, damit die Bewegungsliste der Klassenkür (`MOVE_SPECIALS`, Fassung 1)
+   * unverändert bleibt.
+   */
+  MOUNT: 'mount',
+  /**
+   * Bohrstrahl: gräbt entlang des Strahls einen Tunnel ins Gelände, wo er auf
+   * festen Boden trifft. Wirkt auch ohne Figurentreffer.
+   */
+  DRILL: 'drill',
 });
 
 /** Wirkungen, aus denen eine Zufallswaffe wählen kann. */
@@ -89,6 +106,7 @@ export const SELF_TARGET_KINDS = Object.freeze(new Set([
   EFFECT_KIND.ARMOR,
   EFFECT_KIND.AMMO,
   EFFECT_KIND.MOVE,
+  EFFECT_KIND.MOUNT,
   EFFECT_KIND.REVEAL,
   EFFECT_KIND.RANDOM,
   // Das Geschütz wird am EIGENEN Standort aufgestellt — kein Projektil.
@@ -131,6 +149,18 @@ export const SPECIAL_DEFAULTS = Object.freeze({
   moveDistance: 60,
   pullDistance: 90,
   revealTurns: 2,
+  /** Kettenblitz: Sprungweite (px, vor dem Kartenfaktor), Sprünge, Schadensrest je Sprung. */
+  chainRange: 240,
+  chainJumps: 2,
+  chainFalloff: 0.6,
+  /** Bohrstrahl: Mundloch-Radius, Tunnelradius, Tunnelschritte (Abstand = 0,8 × Radius). */
+  drillEntryRadius: 30,
+  drillTunnelRadius: 14,
+  drillSteps: 12,
+  /** Reittier: Sprungweite (px) — mehr als ein gewöhnlicher Sprung (60). */
+  mountDistance: 140,
+  /** Beschworener Krieger: Anteil des Waffenschadens (Standard-Geschütz: 0,6). */
+  warriorDamage: 0.5,
   /** Obergrenze, damit Summen aus mehreren Quellen nicht entgleisen. */
   maxShield: 120,
   maxTurns: 5,
@@ -204,6 +234,14 @@ export const SPECIAL_EFFECTS = Object.freeze({
   stun: { kind: EFFECT_KIND.FREEZE },
   // Geschütz aufstellen: feuert in den Folgerunden selbst.
   auto_target: { kind: EFFECT_KIND.TURRET },
+  // Astralkrieger: ein beschworener Krieger bewacht den Standort (Geschütz, etwas schwächer).
+  summon_warrior: { kind: EFFECT_KIND.TURRET, damageFactor: SPECIAL_DEFAULTS.warriorDamage },
+  // Astralross: das Reittier trägt den Schützen weit (Sprung mit größerer Weite).
+  summon_mount: { kind: EFFECT_KIND.MOUNT },
+  // Tesla-Turm: Blitz springt auf nahe Gegner über.
+  chain_lightning: { kind: EFFECT_KIND.CHAIN },
+  // Bohrkanone: Tunnel durchs Gelände.
+  drill_cannon: { kind: EFFECT_KIND.DRILL },
   // Schaden über Zeit
   // Wasserschub: versetzt das Ziel nach außen und hebt den Wasserstand.
   water_push: { kind: EFFECT_KIND.WATER_PUSH },
@@ -336,7 +374,7 @@ export function buildEffect(weapon) {
        */
       return {
         kind: base.kind,
-        damage: Math.max(1, Math.round((weapon.damage || 0) * SPECIAL_DEFAULTS.turretDamage)),
+        damage: Math.max(1, Math.round((weapon.damage || 0) * (base.damageFactor ?? SPECIAL_DEFAULTS.turretDamage))),
         range: Math.round((weapon.maxRange || 420) * SPECIAL_DEFAULTS.turretRange),
         turns: SPECIAL_DEFAULTS.turretTurns,
       };
@@ -371,6 +409,9 @@ export function buildEffect(weapon) {
     case EFFECT_KIND.MOVE:
       return { kind: base.kind, distance: SPECIAL_DEFAULTS.moveDistance };
 
+    case EFFECT_KIND.MOUNT:
+      return { kind: base.kind, distance: SPECIAL_DEFAULTS.mountDistance };
+
     case EFFECT_KIND.PULL:
       // Nahkampf-Enterhaken ziehen kürzer als ein Sprung weit ist.
       return { kind: base.kind, distance: SPECIAL_DEFAULTS.pullDistance };
@@ -390,6 +431,22 @@ export function buildEffect(weapon) {
           SPECIAL_DEFAULTS.maxWaterPushRaise,
           Math.max(SPECIAL_DEFAULTS.waterPushRaise, (weapon.damage || 0) / 100),
         ),
+      };
+
+    case EFFECT_KIND.CHAIN:
+      return {
+        kind: base.kind,
+        range: SPECIAL_DEFAULTS.chainRange,
+        jumps: SPECIAL_DEFAULTS.chainJumps,
+        falloff: SPECIAL_DEFAULTS.chainFalloff,
+      };
+
+    case EFFECT_KIND.DRILL:
+      return {
+        kind: base.kind,
+        entryRadius: SPECIAL_DEFAULTS.drillEntryRadius,
+        radius: SPECIAL_DEFAULTS.drillTunnelRadius,
+        steps: SPECIAL_DEFAULTS.drillSteps,
       };
 
     case EFFECT_KIND.REVEAL:
