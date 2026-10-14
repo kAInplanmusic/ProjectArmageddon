@@ -18,6 +18,16 @@ import {
   erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
 } from './effects.js';
 import { bakeTerrainLayer, bakeTerrainLayerCpu, detectWebGpu } from './terrainBaker.js';
+import {
+  zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
+  zeichneFunken, zeichneSchadenszahl,
+} from './effektStil.js';
+import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
+import { zeichneSoldat, zeichneNamensschild } from './figuren.js';
+import { veredleGelaende, zeichneKraterRand } from './gelaendeStil.js';
+import {
+  plazierePflanzen, zeichnePflanzenSchicht, entfernePflanzenImKrater, entfernePflanzenAmRand,
+} from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
   erzeugeMuendungsfeuer, muendungsfeuer, rueckstossVersatz, ROHR_LAENGE,
@@ -29,6 +39,10 @@ import {
   drawLandmarks,
   drawWaterSurface,
 } from './sceneryPainter.js';
+
+/** Darstellungsgröße des Soldaten gegenüber dem 14 × 20 Pixel großen Körper (nur Anzeige). */
+const FIGUR_SKALA = 1.5;
+const FIGUR_HOCH = -5;
 
 /** Die hintere Kulisse wird nur jedes n-te Bild neu gezeichnet (siehe `#drawKulisse`). */
 const KULISSE_BILDER = 2;
@@ -77,6 +91,8 @@ export class Renderer {
     this.width = canvas.width;
     this.height = canvas.height;
     this.terrainLayer = null;
+    this.pflanzen = [];
+    this.pflanzenSchicht = null;
     this.waterLayer = document.createElement('canvas');
     this.waterLayer.width = Math.ceil(this.width / WATER_SCALE);
     this.waterLayer.height = Math.ceil(this.height / WATER_SCALE);
@@ -114,6 +130,9 @@ export class Renderer {
     this.trefferMarken = [];
     /** Letzte Gesundheit je Figur — die Grundlage der Trefferkennung. */
     this.letzteWerte = new Map();
+    /** Schwebende Schadenszahlen und die Werte des letzten Bildes (siehe `schadenszahlen.js`). */
+    this.zahlen = [];
+    this.zahlenWerte = new Map();
     /** Treffer des LETZTEN Bildes — der Klang wird in `main.js` gespielt. */
     this.letzteTreffer = [];
     /** Narben der Krater (Brandränder) — begrenzt, siehe `NARBEN_MAX`. */
@@ -254,6 +273,8 @@ export class Renderer {
     this.waterLayer.height = Math.ceil(hoehe / WATER_SCALE);
     // Die Geländeschicht ist auf die alte Größe gebaut und muss neu entstehen.
     this.terrainLayer = null;
+    this.pflanzenSchicht = null;
+    this.pflanzen = [];
     // Auch die GPU-Nachbesserung braucht die neue Größe; ohne das Aufräumen
     // könnte ein spät eintreffendes GPU-Ergebnis die alte Ebene einsetzen.
     this.terrainSource = null;
@@ -355,6 +376,7 @@ export class Renderer {
     this.trefferMarken = schreiteEffekteFort(this.trefferMarken);
     this.rauch = schreiteRauchFort(this.rauch);
     this.ruck = altereRuck(this.ruck);
+    this.zahlen = schreiteZahlenFort(this.zahlen, this.reducedMotion);
   }
 
   /**
@@ -369,6 +391,9 @@ export class Renderer {
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
     for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke(treffer));
+    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? []);
+    this.zahlenWerte = zahlen.zustand;
+    this.zahlen = ergaenzeZahlen(this.zahlen, zahlen.neu);
   }
 
   /**
@@ -416,20 +441,7 @@ export class Renderer {
         }
         this.ctx.restore();
       } else if (effect.kind === 'flash') {
-        const radius = effect.radius * (1 + (1 - effect.life) * 0.6);
-        const gradient = this.ctx.createRadialGradient(
-          effect.x, effect.y, 0,
-          effect.x, effect.y, Math.max(1, radius),
-        );
-        gradient.addColorStop(0, 'rgba(255, 243, 196, ' + alpha + ')');
-        gradient.addColorStop(0.45, 'rgba(244, 162, 97, ' + alpha * 0.7 + ')');
-        gradient.addColorStop(1, 'rgba(231, 111, 81, 0)');
-        this.ctx.save();
-        this.ctx.fillStyle = gradient;
-        this.ctx.beginPath();
-        this.ctx.arc(effect.x, effect.y, Math.max(1, radius), 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.restore();
+        zeichneExplosion(this.ctx, effect, this.reducedMotion);
       }
     }
   }
@@ -585,7 +597,9 @@ export class Renderer {
     const { layer: gebaut } = bakeTerrainLayerCpu({
       layer, ctx, bitmap, width, height, palette: this.palette,
     });
+    veredleGelaende(gebaut, bitmap, width, height, this.palette, this.scenery?.seed ?? 0);
     this.terrainLayer = gebaut;
+    this.#baePflanzen(bitmap, width, height);
     /** Zuletzt gebackene Karte — der GPU-Weg braucht Bitmap und Maße erneut. */
     this.terrainSource = { bitmap, width, height };
     /*
@@ -605,6 +619,22 @@ export class Renderer {
     if (this.gpuDevice) this.#applyGpuTerrain(width, height, bitmap);
 
     return gebaut;
+  }
+
+  /** Setzt Pflanzen auf das Gelände und zeichnet ihre Ebene (hinter dem Gelände, gecacht). */
+  #baePflanzen(bitmap, width, height) {
+    this.pflanzen = plazierePflanzen(bitmap, width, height, this.scenery?.seed ?? 0, this.scenery?.biomeId ?? null);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    this.pflanzenSchicht = canvas;
+    this.#zeichnePflanzenNeu();
+  }
+
+  #zeichnePflanzenNeu() {
+    const schicht = this.pflanzenSchicht;
+    if (!schicht) return;
+    zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
   }
 
   /**
@@ -636,7 +666,10 @@ export class Renderer {
        */
       const quelle = this.terrainSource;
       if(quelle && (quelle.width !== width || quelle.height !== height || quelle.bitmap !== bitmap)) return;
-      if (path === 'gpu') this.terrainLayer = layer;
+      if (path === 'gpu') {
+        veredleGelaende(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0);
+        this.terrainLayer = layer;
+      }
       this.gpuTerrainPath = path;
       this.gpuTerrainReason = reason;
     } catch (error) {
@@ -684,6 +717,8 @@ export class Renderer {
       && this.letzterKrater.radius === radius;
     if (doppelt) return;
     this.letzterKrater = { x, y, radius, zeit: this.time };
+    zeichneKraterRand(ctx, x, y, radius, this.scenery?.seed ?? 0);
+    if (entfernePflanzenImKrater(this.pflanzen, x, y, radius)) this.#zeichnePflanzenNeu();
 
     this.spawnExplosionParticles(x, y, radius);
     this.narben = ergaenzeNarbe(this.narben, x, y, radius);
@@ -704,6 +739,8 @@ export class Renderer {
     this.particles = [];
     this.trefferMarken = [];
     this.letzteWerte = new Map();
+    this.zahlen = [];
+    this.zahlenWerte = new Map();
     this.letzteTreffer = [];
     this.narben = [];
     this.rauch = [];
@@ -734,6 +771,7 @@ export class Renderer {
     const ctx = this.terrainLayer.getContext('2d');
     ctx.clearRect(0, 0, inset, this.height);
     ctx.clearRect(this.width - inset, 0, inset, this.height);
+    if (entfernePflanzenAmRand(this.pflanzen, inset, this.width)) this.#zeichnePflanzenNeu();
   }
 
   /**
@@ -765,30 +803,39 @@ export class Renderer {
    * (Tests) oder bei Größen-/Kulissenwechsel wird direkt gezeichnet bzw. neu aufgebaut.
    */
   #drawKulisse() {
+    const horizont = this.height * 0.47;
     const direkt = ctx => {
       drawGenerativeSky(ctx, this.width, this.height, this.scenery, this.time);
       drawAmbient(ctx, this.width, this.height, this.scenery, this.time, false);
-      // Die Horizontlinie liegt knapp über der Geländekante. Ein Horizont in der
-      // Bildmitte würde vom Gelände verdeckt und die Landmarke verschwände.
-      drawLandmarks(ctx, this.width, this.height, this.scenery, this.height * 0.47);
+      drawLandmarks(ctx, this.width, this.height, this.scenery, horizont);
     };
     if (typeof document === 'undefined') { direkt(this.ctx); return; }
-    let c = this.kulissenSchicht;
-    const neu = !c || c.scenery !== this.scenery || c.w !== this.width || c.h !== this.height;
-    if (neu) {
+    const schicht = () => {
       const canvas = document.createElement('canvas');
       canvas.width = this.width;
       canvas.height = this.height;
       const ctx = canvas.getContext('2d');
-      if (!ctx) { direkt(this.ctx); return; }
-      c = this.kulissenSchicht = { canvas, ctx, scenery: this.scenery, w: this.width, h: this.height, zeit: -Infinity };
+      return ctx ? { canvas, ctx } : null;
+    };
+    let c = this.kulissenSchicht;
+    const neu = !c || c.scenery !== this.scenery || c.w !== this.width || c.h !== this.height;
+    if (neu) {
+      const himmel = schicht();
+      const bewegt = schicht();
+      const vorne = schicht();
+      if (!himmel || !bewegt || !vorne) { direkt(this.ctx); return; }
+      drawGenerativeSky(himmel.ctx, this.width, this.height, this.scenery, 0);
+      drawLandmarks(vorne.ctx, this.width, this.height, this.scenery, horizont);
+      c = this.kulissenSchicht = { himmel, bewegt, vorne, scenery: this.scenery, w: this.width, h: this.height, zeit: -Infinity };
     }
     if (neu || this.time - c.zeit >= KULISSE_BILDER || this.time < c.zeit) {
-      c.ctx.clearRect(0, 0, c.w, c.h);
-      direkt(c.ctx);
+      c.bewegt.ctx.clearRect(0, 0, c.w, c.h);
+      drawAmbient(c.bewegt.ctx, c.w, c.h, this.scenery, this.time, false);
       c.zeit = this.time;
     }
-    this.ctx.drawImage(c.canvas, 0, 0, this.width, this.height);
+    this.ctx.drawImage(c.himmel.canvas, 0, 0, this.width, this.height);
+    this.ctx.drawImage(c.bewegt.canvas, 0, 0, this.width, this.height);
+    this.ctx.drawImage(c.vorne.canvas, 0, 0, this.width, this.height);
   }
 
   #drawSky() {
@@ -845,10 +892,12 @@ export class Renderer {
     if (!art) return [42, 122, 176];
     const flach = art.shallow;
     const tief = art.body;
+    // Zur dunklen Palette hin abgedunkelt (#0D0F12), Tönung bleibt.
+    const dunkel = (kanal, ziel) => Math.round(kanal + (ziel - kanal) * 0.35);
     return [
-      Math.round(flach[0] + (tief[0] - flach[0]) * tiefe),
-      Math.round(flach[1] + (tief[1] - flach[1]) * tiefe),
-      Math.round(flach[2] + (tief[2] - flach[2]) * tiefe),
+      dunkel(Math.round(flach[0] + (tief[0] - flach[0]) * tiefe), 13),
+      dunkel(Math.round(flach[1] + (tief[1] - flach[1]) * tiefe), 15),
+      dunkel(Math.round(flach[2] + (tief[2] - flach[2]) * tiefe), 18),
     ];
   }
 
@@ -1015,36 +1064,11 @@ export class Renderer {
       this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
       // Schatten
-      this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      this.ctx.fillStyle = 'rgba(0,0,0,0.4)';
       this.ctx.beginPath();
-      this.ctx.ellipse(0, 11, 9, 3, 0, 0, Math.PI * 2);
+      this.ctx.ellipse(0, 11, 10, 3, 0, 0, Math.PI * 2);
       this.ctx.fill();
 
-      // Körper
-      this.ctx.fillStyle = color;
-      this.ctx.beginPath();
-      this.ctx.arc(0, -2, 7, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      /*
-       * Der Treffer-Blitz AUF der Figur: Im ersten Drittel der Marke steht ein
-       * heller Kern auf dem Körper. Er ist das Bild, das ein Treffer in der
-       * Wahrnehmung hinterlässt („es hat eingeschlagen"), und er folgt der
-       * Figur — der Ring am Einschlagort bleibt daneben stehen.
-       */
-      if (marke && marke.life > 0.66) {
-        this.ctx.globalAlpha = Math.min(1, (marke.life - 0.66) * 3);
-        this.ctx.fillStyle = '#fff3c4';
-        this.ctx.beginPath();
-        this.ctx.arc(0, -2, 7, 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.globalAlpha = 1;
-      }
-
-      this.ctx.fillStyle = '#1b232c';
-      this.ctx.fillRect(-6, 4, 12, 7);
-
-      // Geschützrohr in Zielrichtung
       const isActive = entity.entityId === activePlayerId;
       const angle = isActive && aim ? aim.angle : entity.angle;
 
@@ -1061,11 +1085,21 @@ export class Renderer {
       ) ?? null;
       const feuerLeben = muendung ? muendung.life : 0;
       const rueck = rueckstossVersatz(feuerLeben, { reducedMotion: this.reducedMotion });
+      const atem = this.reducedMotion ? 0 : Math.sin(this.time * 0.07 + entity.entityId * 1.9) * 0.7;
 
-      this.ctx.rotate(-angle);
-      this.ctx.fillStyle = isActive ? '#f4a261' : '#9aa7b4';
-      // Der Rückstoß verschiebt das Rohr nach hinten, ohne es zu verkürzen.
-      this.ctx.fillRect(rueck, -2.5, ROHR_LAENGE, 5);
+      this.ctx.save();
+      this.ctx.translate(0, FIGUR_HOCH);
+      this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
+      zeichneSoldat(this.ctx, {
+        team: color,
+        winkel: angle,
+        atem,
+        rueck,
+        aktiv: isActive,
+        treffer: marke && marke.life > 0.66 ? (marke.life - 0.66) * 3 : 0,
+        rohrLaenge: ROHR_LAENGE / FIGUR_SKALA - 0.7,
+      });
+      this.ctx.restore();
       this.ctx.restore();
 
       // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —
@@ -1073,7 +1107,7 @@ export class Renderer {
       if (muendung) {
         const feuer = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
         const mx = entity.x + feuer.offsetX;
-        const my = entity.y + feuer.offsetY;
+        const my = entity.y + feuer.offsetY + FIGUR_HOCH - 1.5 * FIGUR_SKALA;
 
         this.ctx.save();
         this.ctx.globalAlpha = feuer.alpha;
@@ -1098,7 +1132,7 @@ export class Renderer {
         this.ctx.restore();
       }
 
-      this.#drawHealthBar(entity, zuck);
+      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId);
     }
   }
 
@@ -1109,20 +1143,12 @@ export class Renderer {
    * Pixel, und der Balken gehört zu ihr — ein Balken, der stehen bleibt, während
    * die Figur wackelt, liest sich als zwei Dinge.
    */
-  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }) {
-    const width = 30;
-    const height = 4;
-    const x = entity.x + versatz.dx - width / 2;
-    const y = entity.y + versatz.dy - 22;
+  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false) {
     const ratio = entity.maxHealth > 0 ? Math.max(0, entity.health / entity.maxHealth) : 0;
-    const color = ratio > 0.6 ? '#90be6d' : ratio > 0.3 ? '#fbbf24' : '#ef476f';
-
-    this.ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    this.ctx.fillRect(x - 1, y - 1, width + 2, height + 2);
-    this.ctx.fillStyle = '#2b3540';
-    this.ctx.fillRect(x, y, width, height);
-    this.ctx.fillStyle = color;
-    this.ctx.fillRect(x, y, width * ratio, height);
+    zeichneNamensschild(
+      this.ctx, entity.x + versatz.dx, entity.y + versatz.dy, entity.label, ratio,
+      TEAM_COLORS[entity.teamId % TEAM_COLORS.length], aktiv,
+    );
   }
 
   /**
@@ -1164,14 +1190,7 @@ export class Renderer {
 
   #drawProjectiles(projectiles) {
     for (const projectile of projectiles) {
-      const gradient = this.ctx.createRadialGradient(projectile.x, projectile.y, 0, projectile.x, projectile.y, 8);
-      gradient.addColorStop(0, '#fff3c4');
-      gradient.addColorStop(0.5, '#f4a261');
-      gradient.addColorStop(1, 'rgba(244,162,97,0)');
-      this.ctx.fillStyle = gradient;
-      this.ctx.beginPath();
-      this.ctx.arc(projectile.x, projectile.y, 8, 0, Math.PI * 2);
-      this.ctx.fill();
+      zeichneGeschoss(this.ctx, projectile.x, projectile.y);
 
       // Zünder-Countdown: Ohne die Zahl wäre nicht erkennbar, wie lange eine
       // Granate noch liegt. Der Ring zeigt zusätzlich den Fortschritt, damit
@@ -1217,71 +1236,22 @@ export class Renderer {
   #drawPrediction(bahn) {
     const points = bahn?.points;
     if (!points || points.length < 2) return;
-
-    this.ctx.save();
-    this.ctx.setLineDash([]);
-    // Voller Strich gegen die gestrichelte Zielhilfe: zwei Wege, zwei Muster.
-    this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.85)';
-    this.ctx.lineWidth = 2.5;
-    this.ctx.beginPath();
-    this.ctx.moveTo(points[0].x, points[0].y);
-    for (const point of points) this.ctx.lineTo(point.x, point.y);
-    this.ctx.stroke();
-
-    if (bahn.impact) {
-      this.ctx.fillStyle = 'rgba(76, 201, 240, 0.9)';
-      this.ctx.beginPath();
-      this.ctx.arc(bahn.impact.x, bahn.impact.y, 5, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-      this.ctx.lineWidth = 1.5;
-      this.ctx.stroke();
-    }
-    this.ctx.restore();
+    zeichneVorhersage(this.ctx, points, bahn.impact);
   }
 
   #drawAimPreview(points) {
     if (!points || points.length < 2) return;
-    this.ctx.save();
-    this.ctx.setLineDash([4, 6]);
-    this.ctx.strokeStyle = 'rgba(244, 162, 97, 0.75)';
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.moveTo(points[0].x, points[0].y);
-    for (const point of points) this.ctx.lineTo(point.x, point.y);
-    this.ctx.stroke();
-    this.ctx.restore();
-
     /*
-     * ZIELVISIER am Einschlagpunkt.
-     *
-     * Vorher stand hier ein stiller Kreis mit Radius 7. Ein Kreis ist jedoch
-     * von einem Geländepunkt oder einer Kistenmarkierung nicht zu
-     * unterscheiden — und er sagt nicht, dass der markierte Punkt eine
-     * MÖGLICHKEIT ist, keine Tatsache (die Tatsache trägt `#drawPrediction`
-     * mit voller Linie und gefülltem Punkt).
-     *
-     * Deshalb ein Fadenkreuz, das atmet (`fadenkreuzSegmente`, `pulsFaktor`).
-     * Bei reduzierter Bewegung steht es still, bleibt aber vollständig: Die
-     * Bewegung ist die Zugabe, die Aussage ist der Punkt.
+     * ZIELVISIER am Einschlagpunkt: ein Fadenkreuz, das atmet
+     * (`fadenkreuzSegmente`, `pulsFaktor`). Bei reduzierter Bewegung steht es
+     * still, bleibt aber vollständig. Die Bahn ist eine leuchtende Neon-Linie
+     * mit Pfeilspitze (`effektStil.js`) — eine MÖGLICHKEIT, keine Tatsache
+     * (die Tatsache trägt `#drawPrediction` in Cyan).
      */
     const last = points[points.length - 1];
     const puls = pulsFaktor(this.time, { reducedMotion: this.reducedMotion });
     const { segmente, innen } = fadenkreuzSegmente(last.x, last.y, 9 * puls);
-
-    this.ctx.save();
-    this.ctx.strokeStyle = 'rgba(244, 162, 97, 0.9)';
-    this.ctx.lineWidth = 1.5;
-    this.ctx.beginPath();
-    for (const [x1, y1, x2, y2] of segmente) {
-      this.ctx.moveTo(x1, y1);
-      this.ctx.lineTo(x2, y2);
-    }
-    this.ctx.stroke();
-    this.ctx.beginPath();
-    this.ctx.arc(last.x, last.y, innen, 0, Math.PI * 2);
-    this.ctx.stroke();
-    this.ctx.restore();
+    zeichneZielhilfe(this.ctx, points, segmente, innen);
   }
 
   /**
@@ -1462,14 +1432,7 @@ export class Renderer {
   }
 
   #drawParticles() {
-    for (const particle of this.particles) {
-      this.ctx.globalAlpha = Math.max(0, particle.life);
-      this.ctx.fillStyle = particle.color;
-      this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, particle.radius * particle.life + 0.5, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
-    this.ctx.globalAlpha = 1;
+    zeichneFunken(this.ctx, this.particles);
   }
 
   /**
@@ -1526,21 +1489,7 @@ export class Renderer {
     this.ctx.save();
     this.ctx.lineCap = 'round';
     for (const punkte of this.spuren.values()) {
-      if (punkte.length < 2) continue;
-      for (let i = 1; i < punkte.length; i += 1) {
-        // 0 = ältester Punkt (verblasst), 1 = direkt am Geschoss. Die ersten
-        // Punkte sind bewusst fast unsichtbar (0,25), der Kopf deutlich (0,8):
-        // Eine gleichmäßig helle Spur über die halbe Karte wäre ein Strich, der
-        // mit dem Gelände verwechselt werden kann.
-        const anteil = i / punkte.length;
-        this.ctx.globalAlpha = 0.25 + 0.55 * anteil;
-        this.ctx.strokeStyle = '#f4a261';
-        this.ctx.lineWidth = 1.5 + 3.5 * anteil;
-        this.ctx.beginPath();
-        this.ctx.moveTo(punkte[i - 1].x, punkte[i - 1].y);
-        this.ctx.lineTo(punkte[i].x, punkte[i].y);
-        this.ctx.stroke();
-      }
+      if (punkte.length >= 2) zeichneSpur(this.ctx, punkte);
     }
     this.ctx.restore();
   }
@@ -1631,18 +1580,18 @@ export class Renderer {
     if (!maelstrom?.active || maelstrom.inset <= 0) return;
     const { inset } = maelstrom;
     const gradientLeft = this.ctx.createLinearGradient(0, 0, inset * 2, 0);
-    gradientLeft.addColorStop(0, 'rgba(180, 20, 60, 0.55)');
-    gradientLeft.addColorStop(1, 'rgba(180, 20, 60, 0)');
+    gradientLeft.addColorStop(0, 'rgba(255, 77, 0, 0.5)');
+    gradientLeft.addColorStop(1, 'rgba(255, 77, 0, 0)');
     this.ctx.fillStyle = gradientLeft;
     this.ctx.fillRect(0, 0, inset * 2, this.height);
 
     const gradientRight = this.ctx.createLinearGradient(this.width, 0, this.width - inset * 2, 0);
-    gradientRight.addColorStop(0, 'rgba(180, 20, 60, 0.55)');
-    gradientRight.addColorStop(1, 'rgba(180, 20, 60, 0)');
+    gradientRight.addColorStop(0, 'rgba(255, 77, 0, 0.5)');
+    gradientRight.addColorStop(1, 'rgba(255, 77, 0, 0)');
     this.ctx.fillStyle = gradientRight;
     this.ctx.fillRect(this.width - inset * 2, 0, inset * 2, this.height);
 
-    this.ctx.strokeStyle = 'rgba(239, 71, 111, 0.8)';
+    this.ctx.strokeStyle = 'rgba(255, 120, 40, 0.9)';
     this.ctx.lineWidth = 2;
     this.ctx.setLineDash([10, 8]);
     this.ctx.beginPath();
@@ -1753,6 +1702,7 @@ export class Renderer {
       this.ctx.setTransform(1, 0, 0, 1, ruck.x, ruck.y);
     }
 
+    if (this.pflanzenSchicht) this.ctx.drawImage(this.pflanzenSchicht, 0, 0);
     if (this.terrainLayer) {
       /*
        * Die Geländeschicht wird in Kartenkoordinaten gezeichnet (0, 0) — unter
@@ -1819,6 +1769,7 @@ export class Renderer {
      */
     this.#drawTreffer();
     this.#drawEffects();
+    for (const zahl of this.zahlen) zeichneSchadenszahl(this.ctx, zahl);
     this.#drawHeimdall();
     this.#updateEffects();
     this.updateParticles();

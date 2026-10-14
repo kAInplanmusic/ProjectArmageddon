@@ -17,6 +17,14 @@
  * @module sceneryPainter
  */
 
+import { PAL, folge, rauschen1, hexRgb } from './stil.js';
+import { zeichnePflanze } from './pflanzen.js';
+
+const BG0 = hexRgb(PAL.bg0);
+const BG1 = hexRgb(PAL.bg1);
+const BG2 = hexRgb(PAL.bg2);
+const BG3 = hexRgb(PAL.bg3);
+
 /** Farbe aus einem RGB-Feld als CSS-Wert. */
 function rgb([r, g, b], alpha = 1) {
   return alpha >= 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${alpha})`;
@@ -45,6 +53,16 @@ function parseCss(css) {
 }
 
 /**
+ * Dunkelt eine Himmelsfarbe in Richtung der Palette ab: Der Entwurf ist nächtlich,
+ * auch wenn das Biom einen hellen Tag vorsieht. Die Farbtönung bleibt erhalten.
+ */
+function naechtlich(farbe, tiefe) {
+  const hell = luma(farbe) / 255;
+  const menge = 0.5 + 0.38 * hell + 0.08 * tiefe;
+  return mix(farbe, BG0, Math.min(0.92, menge));
+}
+
+/**
  * Zeichnet den Himmel als Verlauf und setzt den Himmelskörper.
  * @param {CanvasRenderingContext2D} ctx
  */
@@ -52,10 +70,17 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
   const stufen = scenery.sky.colors;
   const verlauf = ctx.createLinearGradient(0, 0, 0, hoehe);
   stufen.forEach((farbe, i) => {
-    verlauf.addColorStop(i / Math.max(1, stufen.length - 1), farbe);
+    verlauf.addColorStop(i / Math.max(1, stufen.length - 1), rgb(naechtlich(parseCss(farbe), i / Math.max(1, stufen.length - 1))));
   });
   ctx.fillStyle = verlauf;
   ctx.fillRect(0, 0, breite, hoehe);
+
+  const dunst = ctx.createLinearGradient(0, hoehe * 0.22, 0, hoehe * 0.62);
+  dunst.addColorStop(0, 'rgba(60, 88, 92, 0)');
+  dunst.addColorStop(0.7, 'rgba(60, 88, 92, 0.22)');
+  dunst.addColorStop(1, 'rgba(60, 88, 92, 0)');
+  ctx.fillStyle = dunst;
+  ctx.fillRect(0, hoehe * 0.22, breite, hoehe * 0.4);
 
   const koerper = scenery.celestial;
   if (!koerper) return;
@@ -65,6 +90,7 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
   const r = koerper.size * Math.min(breite, hoehe);
 
   ctx.save();
+  ctx.globalAlpha = 0.6;
   if (koerper.kind === 'stars') {
     // Kein Einzelkörper: die Sterne kommen aus dem Ambiente.
   } else if (koerper.kind === 'dim_sun') {
@@ -112,7 +138,7 @@ const DUNKEL_CACHE = new WeakMap();
 function istDunkel(scenery) {
   let wert = DUNKEL_CACHE.get(scenery);
   if (wert === undefined) {
-    wert = luma(parseCss(scenery.sky.colors[0])) < 100;
+    wert = true;
     DUNKEL_CACHE.set(scenery, wert);
   }
   return wert;
@@ -129,7 +155,7 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
   switch (element.kind) {
     case 'stars': {
       const funkeln = 0.45 + 0.55 * Math.abs(Math.sin((zeit * 0.03 + element.phase * 7) * Math.PI));
-      ctx.fillStyle = `rgba(255,255,255,${(0.35 + 0.5 * funkeln) * element.scale})`;
+      ctx.fillStyle = `rgba(217,222,231,${(0.3 + 0.45 * funkeln) * element.scale})`;
       const groesse = Math.max(1, Math.round(skala * 1.8));
       ctx.fillRect(x, y, groesse, groesse);
       break;
@@ -173,8 +199,8 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       const cx = ((element.x + drift) % 1.2 - 0.1) * breite;
       const rw = breite * 0.11 * skala;
       const rh = hoehe * 0.045 * skala;
-      const hell = element.kind === 'clouds_storm' ? 0.32 : dunkel ? 0.28 : 0.75;
-      const farbe = dunkel ? [120, 128, 140] : [255, 255, 255];
+      const hell = element.kind === 'clouds_storm' ? 0.3 : dunkel ? 0.2 : 0.75;
+      const farbe = dunkel ? [74, 84, 96] : [255, 255, 255];
 
       ctx.save();
       ctx.globalAlpha = element.kind === 'clouds_storm' ? 0.75 : 0.6;
@@ -198,8 +224,8 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       const rh = hoehe * 0.09 * skala;
       const drift = ((zeit * 0.0004 + element.phase) % 1.3 - 0.15) * breite;
       const verlauf = ctx.createRadialGradient(drift, y, 0, drift, y, rw);
-      const ton = element.kind === 'fog_banks' ? '210,216,222' : '190,180,150';
-      verlauf.addColorStop(0, `rgba(${ton},${element.kind === 'fog_banks' ? 0.4 : 0.28})`);
+      const ton = element.kind === 'fog_banks' ? '120,146,150' : '96,110,104';
+      verlauf.addColorStop(0, `rgba(${ton},${element.kind === 'fog_banks' ? 0.34 : 0.22})`);
       verlauf.addColorStop(1, `rgba(${ton},0)`);
       ctx.fillStyle = verlauf;
       ctx.beginPath();
@@ -285,7 +311,7 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
 
     case 'fireflies': {
       const an = 0.35 + 0.65 * Math.abs(Math.sin((zeit * 0.025 + element.phase * 11) * Math.PI));
-      ctx.fillStyle = `rgba(190,255,140,${an * 0.85 * skala})`;
+      ctx.fillStyle = `rgba(124,252,0,${an * 0.6 * skala})`;
       ctx.beginPath();
       ctx.arc(x + bewegung * 8, y + bewegung * 4, Math.max(1, 1.7 * skala), 0, Math.PI * 2);
       ctx.fill();
@@ -314,7 +340,7 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       }
       ctx.stroke();
       // Der Himmel wird kurz hell.
-      ctx.fillStyle = 'rgba(200,220,255,0.16)';
+      ctx.fillStyle = 'rgba(200,220,255,0.06)';
       ctx.fillRect(0, 0, breite, hoehe);
       ctx.restore();
       break;
@@ -351,8 +377,8 @@ export function drawAmbient(ctx, breite, hoehe, scenery, zeit, imVordergrund) {
  */
 function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
   const boden = scenery.ground.surface;
-  const farbe = rgb(mix(boden, [22, 24, 30], 0.55));
-  const fern = rgb(mix(boden, [22, 24, 30], 0.35));
+  const farbe = rgb(mix(boden, BG0, 0.82));
+  const fern = rgb(mix(boden, BG0, 0.7));
 
   const x = landmarke.x * breite;
   const hoehe = scenery.__hoehe * 0.3 * landmarke.scale;
@@ -414,10 +440,10 @@ function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
       }
       case 'forest_line': {
         ctx.moveTo(x - breite_ / 2, grundlinie);
-        const baeume = 9;
+        const baeume = 18;
         for (let i = 0; i < baeume; i += 1) {
           const bx = x - breite_ / 2 + (i / (baeume - 1)) * breite_;
-          const bh = hoehe * (0.4 + 0.6 * Math.abs(Math.sin(i * 2.1)));
+          const bh = hoehe * (0.16 + 0.3 * Math.abs(Math.sin(i * 2.1)));
           ctx.lineTo(bx - breite_ / (baeume * 2.2), grundlinie);
           ctx.lineTo(bx, grundlinie - bh);
           ctx.lineTo(bx + breite_ / (baeume * 2.2), grundlinie);
@@ -478,8 +504,8 @@ function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
         break;
     }
     ctx.fill();
-    ctx.strokeStyle = fuellfarbe;
-    ctx.lineWidth = versatz;
+    ctx.strokeStyle = rgb(BG0);
+    ctx.lineWidth = 1.6 + versatz;
     ctx.stroke();
   };
 
@@ -495,13 +521,128 @@ function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
  * @param {number} grundlinie - y der Horizontlinie in Pixeln
  */
 export function drawLandmarks(ctx, breite, hoehe, scenery, grundlinie) {
-  if (!scenery.landmarks?.length) return;
-  // Die Höhe wird für die Zeichenroutinen gebraucht; sie steckt nicht im
-  // Kulissenobjekt, weil das netcode-tauglich bleiben soll.
-  const mitHoehe = { ...scenery, __hoehe: hoehe };
-  for (const landmarke of scenery.landmarks) {
-    zeichneLandmarke(ctx, landmarke, breite, grundlinie, mitHoehe);
+  zeichneFelsmassive(ctx, breite, hoehe, scenery, grundlinie);
+  if (scenery.landmarks?.length) {
+    // Die Höhe wird für die Zeichenroutinen gebraucht; sie steckt nicht im
+    // Kulissenobjekt, weil das netcode-tauglich bleiben soll.
+    const mitHoehe = { ...scenery, __hoehe: hoehe };
+    for (const landmarke of scenery.landmarks) {
+      zeichneLandmarke(ctx, landmarke, breite, grundlinie, mitHoehe);
+    }
   }
+  zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie);
+}
+
+/** Graue Felsmassive mit Kanten und Facetten, aus dem Seed der Kulisse. */
+function zeichneFelsmassive(ctx, breite, hoehe, scenery, grundlinie) {
+  const zufall = folge((scenery.seed ?? 0) * 13 + 5);
+  const anzahl = 3;
+  ctx.save();
+  ctx.lineJoin = 'round';
+  for (let m = 0; m < anzahl; m += 1) {
+    const mitte = ((m + 0.5) / anzahl + (zufall() - 0.5) * 0.14) * breite;
+    const b = breite * (0.2 + zufall() * 0.12);
+    const h = hoehe * (0.17 + zufall() * 0.15);
+    const x0 = mitte - b / 2;
+    const n = 9;
+    const spitze = 3 + Math.floor(zufall() * 3);
+    const punkte = [];
+    for (let i = 0; i <= n; i += 1) {
+      const t = i / n;
+      const huelle = Math.pow(Math.sin(Math.PI * t), 0.75);
+      const kante = i === spitze ? 1 : 0.55 + 0.4 * zufall();
+      punkte.push([x0 + b * t, grundlinie + 6 - h * huelle * kante]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(x0, grundlinie + 6);
+    for (const [px, py] of punkte) ctx.lineTo(px, py);
+    ctx.lineTo(x0 + b, grundlinie + 6);
+    ctx.closePath();
+    const fuell = ctx.createLinearGradient(0, grundlinie - h, 0, grundlinie + 6);
+    fuell.addColorStop(0, rgb(mix(BG3, BG2, 0.35)));
+    fuell.addColorStop(1, rgb(BG1));
+    ctx.fillStyle = fuell;
+    ctx.fill();
+    // Sonnenseite: helle Facette von der Spitze nach links unten.
+    const [sx, sy] = punkte[spitze];
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(punkte[Math.max(0, spitze - 1)][0], punkte[Math.max(0, spitze - 1)][1]);
+    ctx.lineTo(x0 + b * (spitze / n) * 0.8, grundlinie - h * 0.25);
+    ctx.lineTo(sx - 2, grundlinie - h * 0.35);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(150, 165, 185, 0.16)';
+    ctx.fill();
+    // Schattenseite rechts der Spitze.
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(punkte[Math.min(n, spitze + 1)][0], punkte[Math.min(n, spitze + 1)][1]);
+    ctx.lineTo(x0 + b, grundlinie + 6);
+    ctx.lineTo(sx + 4, grundlinie + 6);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(7, 9, 11, 0.32)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x0, grundlinie + 6);
+    for (const [px, py] of punkte) ctx.lineTo(px, py);
+    ctx.lineTo(x0 + b, grundlinie + 6);
+    ctx.strokeStyle = rgb(BG0);
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** Ferne Hügel mit Palmen und Büschen als dunkle Silhouetten, dazu Nebelbank. */
+function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
+  const seed = scenery.seed ?? 0;
+  const hang = rgb(mix(scenery.ground.surface, BG0, 0.86));
+  const hangVorn = rgb(mix(scenery.ground.surface, BG0, 0.78));
+  const ebenen = [
+    { versatz: -8, farbe: hang, rauschSeed: seed + 3, stufe: 0.1 },
+    { versatz: 16, farbe: hangVorn, rauschSeed: seed + 17, stufe: 0.07 },
+  ];
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ebenen.forEach((ebene, e) => {
+    const profil = x => grundlinie + ebene.versatz - hoehe * ebene.stufe * rauschen1(x / (breite * 0.16), ebene.rauschSeed);
+    ctx.beginPath();
+    ctx.moveTo(0, hoehe);
+    for (let x = 0; x <= breite; x += 16) ctx.lineTo(x, profil(x));
+    ctx.lineTo(breite, hoehe);
+    ctx.closePath();
+    const hangVerlauf = ctx.createLinearGradient(0, grundlinie - 20, 0, hoehe * 0.95);
+    hangVerlauf.addColorStop(0, ebene.farbe);
+    hangVerlauf.addColorStop(0.55, rgb(mix(BG0, BG1, 0.4)));
+    hangVerlauf.addColorStop(1, rgb(BG0));
+    ctx.fillStyle = hangVerlauf;
+    ctx.fill();
+    ctx.beginPath();
+    for (let x = 0; x <= breite; x += 16) {
+      if (x === 0) ctx.moveTo(x, profil(x)); else ctx.lineTo(x, profil(x));
+    }
+    ctx.strokeStyle = rgb(BG0);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    const zufall = folge(seed * 7 + e * 101 + 1);
+    const silhouette = rgb(mix(e === 0 ? mix(scenery.ground.surface, BG0, 0.86) : mix(scenery.ground.surface, BG0, 0.78), [30, 70, 26], 0.18));
+    let x = 20 + zufall() * 40;
+    while (x < breite - 10) {
+      const art = zufall() < 0.45 ? 'palme' : 'busch';
+      const h = art === 'palme' ? (e === 0 ? 30 : 42) + zufall() * 20 : 12 + zufall() * 8;
+      zeichnePflanze(ctx, { art, x, y: profil(x) + 3, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 999) },
+        { blatt: silhouette, dunkel: silhouette, hell: silhouette, stamm: silhouette, kontur: null });
+      x += 60 + zufall() * 90;
+    }
+  });
+  const nebel = ctx.createLinearGradient(0, grundlinie - 36, 0, grundlinie + 40);
+  nebel.addColorStop(0, 'rgba(80, 110, 112, 0)');
+  nebel.addColorStop(0.55, 'rgba(80, 110, 112, 0.2)');
+  nebel.addColorStop(1, 'rgba(80, 110, 112, 0)');
+  ctx.fillStyle = nebel;
+  ctx.fillRect(0, grundlinie - 36, breite, 76);
+  ctx.restore();
 }
 
 /**

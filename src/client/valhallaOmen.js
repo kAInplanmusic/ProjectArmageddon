@@ -137,7 +137,7 @@ function zeichneRabe(ctx, { x, y, groesse, spiegeln, alpha, augen, flattern, kop
 
   const koerper = '#0a0912';
   ctx.fillStyle = koerper;
-  ctx.strokeStyle = `rgba(170, 196, 255, ${0.15 + 0.7 * lichtkante})`;
+  ctx.strokeStyle = `rgba(150, 110, 255, ${0.15 + 0.7 * lichtkante})`;
   ctx.lineWidth = 0.035;
   ctx.lineJoin = 'round';
 
@@ -185,9 +185,9 @@ function zeichneRabe(ctx, { x, y, groesse, spiegeln, alpha, augen, flattern, kop
   ctx.stroke();
   // Auge
   if (augen > 0.02) {
-    ctx.shadowColor = 'rgba(190, 215, 255, 0.95)';
+    ctx.shadowColor = 'rgba(0, 224, 255, 0.95)';
     ctx.shadowBlur = 0.35 * groesse;
-    ctx.fillStyle = `rgba(214, 232, 255, ${begrenze(augen, 0, 1)})`;
+    ctx.fillStyle = `rgba(170, 245, 255, ${begrenze(augen, 0, 1)})`;
     ctx.beginPath();
     ctx.ellipse(0.1, -0.06, 0.07, 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -213,8 +213,8 @@ export function zeichneOmen(ctx, breite, hoehe, zustand) {
   // Blitzlicht über dem ganzen Bild: kalt-bläulich, oben stärker als unten.
   if (zustand.blitzlicht > 0.01) {
     const verlauf = ctx.createLinearGradient(0, 0, 0, hoehe);
-    verlauf.addColorStop(0, `rgba(226, 236, 255, ${0.55 * zustand.blitzlicht})`);
-    verlauf.addColorStop(1, `rgba(150, 175, 255, ${0.18 * zustand.blitzlicht})`);
+    verlauf.addColorStop(0, `rgba(210, 195, 255, ${0.55 * zustand.blitzlicht})`);
+    verlauf.addColorStop(1, `rgba(136, 77, 255, ${0.18 * zustand.blitzlicht})`);
     ctx.fillStyle = verlauf;
     ctx.fillRect(0, 0, breite, hoehe);
   }
@@ -224,8 +224,8 @@ export function zeichneOmen(ctx, breite, hoehe, zustand) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     for (const [breiteLinie, farbe, alphaFaktor] of [
-      [7, 'rgba(120, 150, 255, 1)', 0.28],
-      [3, 'rgba(210, 225, 255, 1)', 0.7],
+      [7, 'rgba(136, 77, 255, 1)', 0.28],
+      [3, 'rgba(0, 224, 255, 1)', 0.7],
       [1.4, 'rgba(255, 255, 255, 1)', 1],
     ]) {
       ctx.strokeStyle = farbe;
