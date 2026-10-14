@@ -151,13 +151,11 @@ ist die folgende.
 Boden, weitere in der Luft. Der Sprung beendet den Zug nicht, damit Sprungfolgen
 auslösbar bleiben.
 
-> **Bekannte Folge (gemessen 2026-09-27, `docs/sprung-regel.md`):** Der
-> Absprungimpuls (10,12 px/Takt) liegt UNTER der Fallschaden-Schwelle
-> (11 px/Takt) — ein Sprung prallt mit 9,62 px/Takt auf. **Fallschaden bremst
-> das Springen deshalb nicht:** zehn in der Luft nachgesetzte Sprünge ergaben
-> +633 px Höhe und 1048 px seitlich, ohne einen Punkt Schaden. Die Regel macht
-> den Sprung damit zum freien Flug. Ob das so bleiben soll, ist eine offene
-> Entscheidung.
+> **Fallschaden bremst das Springen (Stand 2026-10-13, `docs/fallschaden-bremse.md`):** Jeder
+> Sprung in der Luft erhöht das Aufpralltempo um `luftsprungZuschlag` (3 px/Takt) über die
+> Fallschaden-Schwelle (11 px/Takt). Ein Bodensprung bleibt frei (Aufprall 9,6 px/Takt); ein Luftsprung
+> kostet rund 10,8 Leben, drei rund 33, neun rund 87–92 bei 96 Leben. Die Entscheidung „Sprung
+> unbegrenzt, Fallschaden beendet“ ist damit umgesetzt (die frühere Messung „freier Flug“ gilt nicht mehr).
 
 **Abwurf:** Der Vorrat fasst sechs abwerfbare Waffen. Ist er voll, wird eine
 Waffenkiste nicht aufgenommen; stattdessen muss zuerst abgeworfen werden. Die
@@ -178,7 +176,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1306 Tests in 139 Dateien**, ~4 min. *Nachgemessen 2026-10-02 (`npm test` → **1232 bestanden, 0 rot, 0 übersprungen**, Dateizahl `ls tests/*.test.js \| wc -l` → **126**). Die Dateizahl ist unverändert — die zwei neuen Prüfungen sitzen in `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online). Vorige Messung 2026-10-01: 1230.* Gegenüber der Messung vom 27.09. (1122 in 119) sind es 108 Prüfungen mehr; die jüngsten Zugänge: `tests/zerlegung-aufbau.test.js` (9), `tests/profil-anzeige.test.js` (4), `tests/abort-knopf.test.js` (2, A-9 + B-11), `tests/hud-verdrahtung.test.js` (2, B-4), `tests/status-marke-online.test.js` (1, B-5), `tests/feuern-ohne-verbunden.test.js` (1, B-7), `tests/verfall-aufrufer.test.js` (1, B-8) und `tests/match-zeilenbudget.test.js` (1, C-5).* |
+| `npm test` | Unit- und Integrationstests: **1314 Tests in 140 Dateien**, ~2 min (Stand 2026-10-14: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **207 Tests in 33 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -260,8 +258,9 @@ npm run balance -- --json            # maschinenlesbar
 ```
 
 Gemessen wird ein Einzelschuss pro frischem Match auf gleicher Höhe. Waffen ohne
-Wirkung sind überwiegend Utility- und Spezialwaffen, deren Effekt noch nicht
-implementiert ist — die Ausgabe dient damit zugleich als TODO-Liste.
+Wirkung gibt es nach `npm run balance` keine (0). Waffen ohne Schaden im Einzelschuss sind
+Selbstwirkungen (Jetpack, Dimensionssprung, Raketenrucksack …) und Nahkampfwaffen, die nur mit
+Annäherung wirken (40 Waffen ohne Schaden auf 854 px, Stand 2026-10-13).
 
 ## Architektur
 
@@ -504,7 +503,7 @@ Dazu drei Archetypen (Brawler, Artillerist, Okkultist) mit eigenen Prozent-Modif
 
 **Valhalla** beginnt zufällig zwischen **6 und 12 Minuten Spielzeit** (aus dem Match-Seed
 gezogen, den Spielern nicht angekündigt; wirksam zum nächsten Rundenbeginn). Danach zieht
-sich die sichere Zone zusammen: Terrain wird pro Runde um 32 px von außen abgetragen,
+sich die sichere Zone zusammen: Terrain wird in jedem Schritt um 32 px von außen abgetragen (1–4 Schritte je Runde, s. u.),
 außerhalb der Zone wirkt toxischer Regen (15 % Max-HP pro Zug) und der Knockback aller
 Waffen steigt um 100 %. Ein Match läuft, **bis es entschieden ist** — es gibt kein
 Rundenlimit im Spiel (nur ein Notnetz bei Runde 300, das nie erreicht wird).
@@ -512,6 +511,12 @@ Rundenlimit im Spiel (nur ein Notnetz bei Runde 300, das nie erreicht wird).
 **Tempo:** Je in der Vorrunde gefallener Figur zieht sich der Sturm einen zusätzlichen
 Schritt zusammen (1–4 Schritte je Runde); der Rückstoß wächst mit jeder Sturmrunde um
 25 % (Start +100 %, Deckel +300 %).
+
+**Zugpause:** Vor jedem Zug steht das Spiel 3 Sekunden still (Zugzeit läuft nicht, Schießen,
+Springen und Abwerfen sind gesperrt, Zielen erlaubt); nach einem Schuss läuft vorher 2 Sekunden die
+Wiederholung der Flugbahn. Zahlen in `MATCH_RULES.turnPauseSeconds` / `turnReplaySeconds`; der
+Server nimmt `PA_ZUGPAUSE_SEKUNDEN` (0 = ohne Pause), der Browser `?zugpause=N` oder
+`VITE_ZUGPAUSE_SEKUNDEN`.
 
 **Vorzeichen:** zufällig 1–60 s vor Valhalla (ebenfalls aus dem Match-Seed) erscheinen zwei
 Raben in Blitzen am Himmel und blicken aufs Schlachtfeld (Ereignis `valhalla_omen`, mit

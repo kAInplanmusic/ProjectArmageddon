@@ -31,6 +31,10 @@ Der Server liefert zwei Dinge aus **einem** Prozess:
 | `LOG_FORMAT` | `json` (Betrieb) oder `pretty` (Entwicklung) | `json` |
 | `PA_PERSISTENCE` | `off` schaltet das Speichern ab | an |
 | `PA_STATE_PATH` | Ablage der Lobby-Daten | `.pa-state/lobbies.json` |
+| `PA_MAX_LOBBYS` | Obergrenze gleichzeitiger Lobbys (darüber: HTTP 503) | `500` |
+| `PA_LOBBYS_PRO_MINUTE` | Neue Lobbys je Adresse und Minute (darüber: HTTP 429) | `30` |
+| `PA_LOBBY_LEER_MS` | Lobby ohne jede Verbindung wird nach dieser Zeit samt Sitzung entfernt | `900000` (15 min) |
+| `PA_ZUGPAUSE_SEKUNDEN` | Zugpause vor jedem Zug (`0` = keine; Tests setzen 0) | `3` |
 
 `LOG_FORMAT=json` gibt je Ereignis **eine Zeile** aus — das ist die Form, die
 Log-Sammler (journald, Loki, CloudWatch) ohne Parser lesen können.
@@ -87,11 +91,13 @@ Für einen echten Betrieb fehlen drei Dinge, in dieser Reihenfolge:
    Lösung: Es holt Zertifikate selbst und leitet WebSockets durch.
 2. **Anmeldung** — ohne sie kann jeder eine Lobby öffnen und belegen. Das ist
    der Punkt „Konten und Anmeldung" in der TODO.
-3. **Ratenbegrenzung** — ein Verbindungslimit je IP, damit ein einzelner
-   Client den Server nicht mit Lobbys flutet.
+3. **Verbindungslimit je IP** — das Anlegen von Lobbys ist je Adresse begrenzt
+   (`PA_LOBBYS_PRO_MINUTE`) und die Gesamtzahl gedeckelt (`PA_MAX_LOBBYS`); Nachrichten je Verbindung
+   begrenzt `src/server/rateLimit.js`. Ein Limit gleichzeitiger WebSocket-Verbindungen je IP gibt es nicht —
+   dafür der Reverse-Proxy.
 
 Der Server **ist** gegen die üblichen Angriffe von innen gehärtet: Eingaben
-werden validiert, es gibt eine Obergrenze für Nachrichten (`maxPayloadBytes`),
+werden validiert, es gibt zwei Obergrenzen für Nachrichten (WebSocket-`maxPayload` 64 KiB, danach schließt der Server die Verbindung; 512 Byte für Steuernachrichten in `validation.js`),
 und die Client-Autorität ist auf Winkel und Kraft begrenzt (durch Tests
 festgehalten).
 

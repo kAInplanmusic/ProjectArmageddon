@@ -1,6 +1,6 @@
 # ProjectArmageddon — Master TODO / Codeaudit
 
-Stand: 2026-09-25
+Stand: 2026-10-14 (fortlaufend gepflegt; ältere Abschnitte tragen ihr eigenes Datum)
 Branch: `main`
 
 Diese Datei ist die **Single Source of Truth** für offene Arbeit. Alles, was hier
@@ -302,6 +302,28 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   (k) Kein Versions-Handshake. (l) **Touch:** kein Sprung/Abwurf, Waffenzeilen nur 22 px hoch, Kraft nur über
   Haltedauer. (m) **Performance (Auftraggeber: „Performance verbessern“, 2026-10-13):** hintere Kulisse (Himmel, Himmelskörper, Ambiente hinten, Landmarken) wird nur jedes 2. Bild neu gezeichnet und sonst als Zwischenbild aufgelegt (`Renderer#drawKulisse`), `parseCss`/`luma` je Kulisse einmal. Gemessen im Software-Rendering 1280×720 (drei Seeds, Median je Bild): 49,9/83,4/116,6 ms → 33,4/66,7/83,3 ms (≈ −30 %; Messung unter paralleler Last, nur relativ aussagekräftig). Nicht gemessen auf echter Hardware. Nicht umgesetzt: `clip-path` der Panels entfernen (Messung ohne Vorteil, verändert den Look). Der Aufschlag-Test (`profiling.spec.mjs`) toleriert jetzt kleine negative Werte (Rauschen, 6 % des Untergrunds). (n) Hauptmenü ohne `role=dialog`/`inert`. (o) Matches mit
   > 4 Figuren in langen Valhalla-Läufen und Gummi/Eis-Landung nur gelesen, nicht gemessen.
+- [x] **AUDIT TEIL 2 — Mutationstests, Doku, Balance (2026-10-14; Bericht eines unabhängigen Prüfers, nachgeprüft).**
+  **Mutationstests:** 57 Mutanten (Landung/Wipp, Valhalla, Mahlstrom-Tempo, Zugpause, Spawn, Server-Härtung); je Bereich wurden 3–8 von 5–14 gefangen. Überlebende
+  mit Wirkung jetzt geschlossen durch `tests/audit-luecken.test.js` (5), `tests/anti-cheat.test.js` (+2), `tests/server-haertung-audit.test.js` (+1):
+  `jump()` ohne Pausensperre (der alte Test sprang vor der Landung und scheiterte aus anderem Grund), Mahlstrom-Verdrahtung
+  (`gefallene`, `#sturmRunden`), `#hatteSchuss`, Spawn-Mindestabstand (+8), `drop_weapon` in der Pause und am fremden Zug,
+  Lobby-Verfall mit/ohne Socket und Sitzungs-Stopp, `maxPayload`, Persistenz `sidegrades`/`loadouts`/`unitsPerPlayer`. Jeder dieser Mutanten
+  wird jetzt nachweislich gefangen (gegenprobiert). Offen/ohne Wirkung (niedrig): `vy < -0.5` → `-5` in `isGrounded`, Valhalla-Obergrenze
+  `Max-1`, Omen-Höchstvorlauf 59 statt 60 (statistisch nicht fangbar ohne sehr viele Seeds).
+  **Doku korrigiert:** README (Fallschaden bremst Sprünge — alte „freier Flug“-Aussage entfernt; Mahlstrom 32 px JE SCHRITT, 1–4 Schritte;
+  Zugpause beschrieben; Waffen „ohne Wirkung“ = 0, Selbstwirkungen/Nahkampf erklärt; `npm test`-Zeile bereinigt), `docs/betrieb.md`
+  (Umgebungsvariablen `PA_MAX_LOBBYS`, `PA_LOBBYS_PRO_MINUTE`, `PA_LOBBY_LEER_MS`, `PA_ZUGPAUSE_SEKUNDEN`; Verbindungslimit und
+  zwei Nachrichtengrenzen richtig beschrieben), Kommentar `maelstromSystem.js` („ab Runde 15“ → Valhalla). **Offen:** (1) **`AGENTS.md` fehlt im
+  Repo** — `docs/betrieb.md`, `docs/betrieb-INSTANZ.md` und die systemd-Vorlage verweisen auf „AGENTS.md §5/§7“ (Mietregeln); Auftraggeber:
+  Datei beilegen oder die Verweise streichen. (2) Ältere Statusberichte in `docs/` und alte Abschnitte hier führen `roundBreakpoint` 8 /
+  `maxRounds` 30 als gültig — sind datierte Berichte, durch den Valhalla-Eintrag überholt (nicht einzeln umgeschrieben).
+  (3) `ReplayRecorder` hat in `replay.js` die Vorgabe `maxRounds = 30` (Motor: 300) — nur Altlast in `scripts/replay.mjs`, der Server übergibt den Motorwert.
+  **Balance (Messung mit Bot, Näherung):** alle Matches enden (Pause 0: 24 Seeds, Median 5,4 min/24 Runden, 90 % ≤ 14,7 min, Max 18,2 min; Pause 3 s + 2 s
+  Wiederholung: 16 Seeds, Median 9,5 min/15 Runden, Max 15,3 min); kein Patt, keine Endlosschleife, auch wenn niemand schießt (3,2–54,8 min).
+  **Nur 6 von 24 Matches erreichen Valhalla** (18 von 24 sind vorher entschieden; mit Pause 6 von 16) — das 6–12-min-Fenster ist für 2×2 meist zu
+  spät (kein Fehler; Entscheidung des Auftraggebers: früher?). Bei 4 Schritten je Runde ist die Zone nach 10 Runden zu (`inset*2 ≥ 2560` nach 40 Schritten);
+  danach steht jede Figur im Gift (15 % je Zugbeginn). Klassen: Spanne 3,36–4,36 (Faktor 1,30; Scout 26 % hinter Artillery — Hinweis).
+  7 Waffen mit Schaden 0 (alles Selbstwirkungen mit Handler); 40 Waffen ohne Schaden auf 854 px (Nahkampf); 27 % des Katalogs wirken beim Matchstart nicht.
 - [x] **UI — Durchsicht abgearbeitet (2026-10-13).** Punkte 1–4 erledigt, (5a) Ladebalken und (5b) Zug-Übergang durch Zugpause + Wiederholung (s. oben) behoben. Rest von (5): Flüssigkeit/Timing der Animationen nur auf echter Hardware beurteilbar — kein offener Auftrag an die Entwicklung, sondern eine Abnahme durch den Auftraggeber:
   (1) **ERLEDIGT für Querformat (2026-10-13; Auftraggeber: Handy wird immer quer gehalten — Hochformat bewusst nicht gebaut):** kompaktes HUD bei Höhe ≤ 520 px (`index.html`, geprüft 844×390). Vorher: **Hochformat/Handy (390 px) unbrauchbar:** Spielfeld nur ein schmaler Streifen,
   Kopfzeile abgeschnitten, Protokoll darüber. Braucht ein eigenes Layout (Leisten einklappen). — hoch
@@ -404,7 +426,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1306/1306** grün, Dateizahl **139** — die zwei neuen Prüfungen sitzen in
+**1314/1314** grün, Dateizahl **140** — die zwei neuen Prüfungen sitzen in
 `tests/status-marke-online.test.js` (Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

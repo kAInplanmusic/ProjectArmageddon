@@ -58,3 +58,31 @@ test('Eine Lobby ohne jede Verbindung wird nach der Frist samt Sitzung entfernt'
     assert.equal(server.lobbyManager.size, 0, 'nach der Frist ist sie weg');
   } finally { await server.close(); }
 });
+
+test('Verwaiste Lobby: mit verbundenem Socket bleibt sie, ohne ihn werden Lobby UND Sitzung entfernt', async () => {
+  const { WebSocket } = await import('ws');
+  const { CONTROL, controlMessage } = await import('../src/shared/protocol.js');
+  const { server, url } = await start({ lobbyLeerTtlMs: 1000 });
+  try {
+    const erzeugt = await (await post(url, { teams: 2, playersPerTeam: 1, seed: 9 })).json();
+    const ws = new WebSocket(url.replace('http', 'ws') + '/ws');
+    await new Promise((res, rej) => { ws.once('open', res); ws.once('error', rej); });
+    ws.send(controlMessage(CONTROL.JOIN_LOBBY, { lobbyId: erzeugt.lobby.id, name: 'A', token: erzeugt.player?.token }));
+    for (let i = 0; i < 100 && server.sessionCount === 0; i += 1) await new Promise(r => setTimeout(r, 20));
+    assert.equal(server.sessionCount, 1, 'Sitzung entstand');
+
+    const t0 = Date.now();
+    server.pruneLobbies(t0);
+    server.pruneLobbies(t0 + 60_000);
+    assert.equal(server.lobbyManager.size, 1, 'mit verbundenem Socket wird nichts entfernt');
+    assert.equal(server.sessionCount, 1);
+
+    ws.close();
+    for (let i = 0; i < 100 && server.getSession(erzeugt.lobby.id)?.clients.size > 0; i += 1) await new Promise(r => setTimeout(r, 20));
+    const t1 = t0 + 120_000;
+    server.pruneLobbies(t1);
+    server.pruneLobbies(t1 + 1500);
+    assert.equal(server.lobbyManager.size, 0, 'Lobby weg');
+    assert.equal(server.sessionCount, 0, 'Sitzung weg (Speicher frei)');
+  } finally { await server.close(); }
+});

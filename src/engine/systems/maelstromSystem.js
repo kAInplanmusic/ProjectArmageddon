@@ -35,7 +35,7 @@ export class MaelstromSystem {
   get inset() { return this.#inset; }
   get isActive() { return this.#active; }
 
-  /** Aktiviert den Mahlstrom (ab Runde 15). */
+  /** Aktiviert den Mahlstrom (Valhalla: zufällig 6–12 min Spielzeit, siehe `MATCH_RULES.suddenDeath`). */
   activate() {
     this.#active = true;
   }

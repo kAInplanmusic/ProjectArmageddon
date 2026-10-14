@@ -88,8 +88,8 @@ class TestClient {
   close() { try { this.socket.close(); } catch { /* schon zu */ } }
 }
 
-async function starteServer() {
-  const server = new GameServer();
+async function starteServer(opts = {}) {
+  const server = new GameServer(opts);
   const info = await server.listen(0);
   return { server, ...info };
 }
@@ -802,6 +802,60 @@ test('Der Client kann keine FREMDE Waffe abwerfen', { timeout: 30_000 }, async (
     const grund = fehler.map(m => (m.errors ?? []).join(' ')).join(' | ');
     assert.match(grund, /nicht geführt|Unbekannte Waffe/i,
       `Ablehnung aus dem falschen Grund: ${grund}`);
+  } finally {
+    await server.close();
+  }
+});
+
+/** Eine Waffe, die dieser Client sicher führt (aus dem Loadout, das der Server sendet). */
+async function eigeneWaffe(client) {
+  const ende = Date.now() + 3000;
+  while (Date.now() < ende) {
+    const l = client.controls.filter(m => m.t === CONTROL.LOADOUTS).flatMap(m => Object.values(m.loadouts ?? {}));
+    const id = l.flatMap(x => x?.inventory ?? [])[0];
+    if (id) return id;
+    await new Promise(r => setTimeout(r, 30));
+  }
+  return null;
+}
+
+test('drop_weapon: nur am eigenen Zug — der Gegner, der nicht dran ist, wird abgewiesen', { timeout: 30_000 }, async () => {
+  /*
+   * Audit 2026-10-13: Der Abwurf zieht Zufallszahlen (Wurfrichtung der Kiste) und änderte damit den
+   * Wind der nächsten Runde. Wer den Seed kennt, konnte so Wind wählen. Mutationstest: ohne die Prüfung in
+   * `gameServer.js#handleDropWeapon` blieb die Suite grün.
+   */
+  const { server, url } = await starteServer();
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { a, b, entityA, entityB } = await zweiSpieler(wsUrl, url);
+    const snap = await warteAufSnapshot(a);
+    const nichtDran = snap.activePlayerId === entityA ? b : a;
+    void entityB;
+    const waffe = await eigeneWaffe(nichtDran);
+    assert.ok(waffe, 'keine eigene Waffe gefunden');
+    nichtDran.drainErrors();
+    nichtDran.send(CONTROL.DROP_WEAPON, { weaponId: waffe });
+    const fehler = await nichtDran.sammleFehler(800);
+    assert.match(fehler.map(m => (m.errors ?? []).join(' ')).join(' | '), /Abwerfen nur am eigenen Zug/);
+  } finally {
+    await server.close();
+  }
+});
+
+test('drop_weapon: in der Zugpause auch für den Spieler am Zug gesperrt', { timeout: 30_000 }, async () => {
+  const { server, url } = await starteServer({ zugPauseTicks: 1200 });
+  try {
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+    const { a, b, entityA } = await zweiSpieler(wsUrl, url);
+    const snap = await warteAufSnapshot(a);
+    const dran = snap.activePlayerId === entityA ? a : b;
+    const waffe = await eigeneWaffe(dran);
+    assert.ok(waffe, 'keine eigene Waffe gefunden');
+    dran.drainErrors();
+    dran.send(CONTROL.DROP_WEAPON, { weaponId: waffe });
+    const fehler = await dran.sammleFehler(800);
+    assert.match(fehler.map(m => (m.errors ?? []).join(' ')).join(' | '), /Zugpause/);
   } finally {
     await server.close();
   }

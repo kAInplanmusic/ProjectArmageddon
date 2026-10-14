@@ -1045,7 +1045,10 @@ export class GameServer {
     maxLobbies = Number(process.env.PA_MAX_LOBBYS) || 500,
     maxLobbyAnlegenProMinute = Number(process.env.PA_LOBBYS_PRO_MINUTE) || 30,
     lobbyLeerTtlMs = Number(process.env.PA_LOBBY_LEER_MS) || 15 * 60_000,
+    zugPauseTicks = null,
   } = {}) {
+    /** Zugpause neuer Sitzungen in Takten (`null` = Vorgabe aus Regel/Umgebung; Tests setzen sie gezielt). */
+    this.zugPauseTicks = zugPauseTicks;
     this.maxLobbies = maxLobbies;
     this.maxLobbyAnlegenProMinute = maxLobbyAnlegenProMinute;
     this.lobbyLeerTtlMs = lobbyLeerTtlMs;
@@ -1819,6 +1822,7 @@ export class GameServer {
                */
               session = new LobbySession(lobby, {
                 onEmpty: id => this.#sessions.delete(id),
+                ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
                 metrics: this.metrics,
                 logger: this.logger,
               });
