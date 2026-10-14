@@ -39,6 +39,7 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
+import { WAFFEN_STANDARD, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { Zerstoerung } from './zerstoerung.js';
@@ -585,6 +586,7 @@ export class MatchController {
     kit = KIT_STANDARD,
     /** Zerstörungsfassung (`config/zerstoerung.js`): 3 = Standard (große Schollen fallen), 2 = raue Krater + Nachrutschen bis 6000 Zellen, 1 = Altverhalten. */
     zerstoerung = ZERSTOERUNG_STANDARD,
+    waffen = WAFFEN_STANDARD,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -612,6 +614,7 @@ export class MatchController {
     this.loadouts = Array.isArray(loadouts) ? [...loadouts] : [];
     this.kit = normalisiereKit(kit);
     this.zerstoerung = normalisiereZerstoerung(zerstoerung);
+    this.waffen = normalisiereWaffen(waffen);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -1593,6 +1596,7 @@ export class MatchController {
    */
   #schussQuelle() {
     return {
+      waffenFassung: this.waffen,
       world: this.#world,
       terrain: this.#terrain,
       events: this.#events,
@@ -2552,7 +2556,7 @@ export class MatchController {
     this.#shotsInFlight.delete(projectileId);
     if (!weaponId) return;
 
-    const weapon = getWeapon(weaponId);
+    const weapon = getWaffe(weaponId, this.waffen);
     const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
     if (!effect || SELF_TARGET_KINDS.has(effect.kind)) return;
 

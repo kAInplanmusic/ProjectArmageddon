@@ -19,7 +19,7 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
 import {
-  KIT_KLASSE, KIT_STARTER, KIT_FLAECHE, KIT_STANDARD, STARTER_FLAECHE_MUNITION,
+  KIT_KLASSE, KIT_STARTER, KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, STARTER_FLAECHE_MUNITION,
   getClassLoadout, getStartWaffen, getStarterFlaeche, normalisiereKit,
 } from '../src/shared/config/loadouts.js';
 import { RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
@@ -72,9 +72,9 @@ function feuereAlle() {
   return { ergebnisse, hash: match.stateHash() };
 }
 
-test('Start (Standard = Fassung 3): Reserve + zwei Common voll geladen + eine knappe Uncommon-Flächenwaffe', () => {
-  assert.equal(KIT_STANDARD, KIT_FLAECHE);
-  const match = neuesMatch({ playersPerTeam: 2 });
+test('Start (Fassung 3, alt): Reserve + zwei Common voll geladen + eine knappe Uncommon-Flächenwaffe', () => {
+  assert.equal(KIT_STANDARD, KIT_SCHARF);
+  const match = neuesMatch({ playersPerTeam: 2, kit: KIT_FLAECHE });
   assert.equal(match.kit, KIT_FLAECHE);
   for (const spieler of match.getState().entities) {
     const waffen = match.inventory.getWeapons(spieler.entityId);
@@ -217,6 +217,6 @@ test('Neue Aufzeichnung trägt `kit` im Kopf und spielt als Start-Kit zurück', 
   recorder.finalize(10);
   const geladen = ReplayRecorder.fromJSON(recorder.serialize());
   const { match } = playReplay(geladen);
-  assert.equal(match.kit, KIT_FLAECHE);
+  assert.equal(match.kit, KIT_STANDARD);
   assert.equal(match.inventory.getWeapons(match.getState().entities[0].entityId).length, 4);
 });

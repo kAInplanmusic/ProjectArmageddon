@@ -236,6 +236,33 @@ export const WEAPON_IDENTITIES = Object.freeze({
   },
 });
 
+/**
+ * BALANCE-KORREKTUREN (Katalogfassung 2, 2026-10-14) — Schadenswerte, die nach
+ * Messung (`scripts/waffen-balance.mjs`, `npm run balance:waffen`) von den
+ * Quelldaten abweichen. Sie werden NACH den Identitäten und VOR allen Ableitungen
+ * (Reichweite, Abklingzeit, Zünder, Leistungswert, Stufe) angewandt.
+ *
+ * Alte Aufzeichnungen müssen unverändert laufen: Die Altwerte stehen in
+ * `src/shared/config/waffen-fassung.js` (`WAFFEN_ALT_WERTE`), ausgewählt über
+ * `config.waffen` im Replay-Kopf. Die Stufe (`powerTier`) bleibt bei jeder
+ * Korrektur gleich (Test `tests/waffen-fassung.test.js`).
+ *
+ * Kontaktwaffen (wirken nur bis ca. 40 px): rund +20 bis +27 % Schaden. Nur Waffen
+ * mit Schadenswert aus der Designdatei (`damageSource: 'source'`): bei abgeleiteten
+ * Werten (`placeholder`) ersetzte die Ableitung die Korrektur wieder.
+ */
+export const BALANCE_KORREKTUREN = Object.freeze({
+  pa_001: { damage: 35 }, // Baseballschläger (Kontakt)
+  pa_005: { damage: 50 }, // Morgenstern (Kontakt)
+  pa_006: { damage: 25 }, // Schaufel (Kontakt)
+  pa_007: { damage: 28 }, // Tonfa (Kontakt)
+  pa_009: { damage: 37 }, // Eispickel (Kontakt)
+  pa_040: { damage: 18 }, // Maschinenpistole (Startwaffe, 8 Schuss)
+  pa_039: { damage: 48 }, // Feldkanone / Mörser (Luftschlag, gemessen 2x Stufenmedian)
+  pa_066: { damage: 56 }, // Artilleriegeschütz (Luftschlag, gemessen 2x Stufenmedian)
+  pa_140: { damage: 60 }, // Quantenblaster (Uncommon mit Rare-Schaden)
+});
+
 /** Identität einer Waffe (oder null). */
 export function identityFor(weaponId) {
   return WEAPON_IDENTITIES[weaponId] ?? null;
@@ -1020,6 +1047,10 @@ const weapons = raw.weapons.map(entry => {
     }
     weapon.displayName = identity.displayName;
   }
+
+  // Balance-Korrekturen (Katalogfassung 2): überschreiben den Schaden VOR den Ableitungen.
+  const korrektur = BALANCE_KORREKTUREN[entry.id];
+  if (korrektur) Object.assign(weapon, korrektur);
 
   // Anflugart aus dem Wirkungsnamen ableiten.
   if (STRIKE_FROM_SKY.has(weapon.special)) weapon.strikeStyle = 'sky';

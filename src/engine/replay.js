@@ -20,6 +20,7 @@
 import { MatchController } from './match.js';
 import { KIT_STANDARD, KIT_KLASSE, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_ALT, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
+import { WAFFEN_STANDARD, WAFFEN_ALT, normalisiereWaffen } from '../shared/config/waffen-fassung.js';
 
 export const REPLAY_FORMAT_VERSION = 1;
 
@@ -47,6 +48,7 @@ export class ReplayRecorder {
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
+    waffen = WAFFEN_STANDARD,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -72,6 +74,12 @@ export class ReplayRecorder {
        * `ZERSTOERUNG_ALT` (siehe `fromJSON`) und spielt mit runden Kratern ohne Nachrutschen.
        */
       zerstoerung: normalisiereZerstoerung(zerstoerung),
+      /*
+       * Katalogfassung der Waffenwerte (Balance-Korrektur 2026-10-14). Wie `kit`: Neue
+       * Aufzeichnungen tragen IMMER `waffen`, eine Datei OHNE das Feld ist `WAFFEN_ALT`
+       * (siehe `fromJSON`) und spielt mit den Schadenswerten von vorher.
+       */
+      waffen: normalisiereWaffen(waffen),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -242,7 +250,7 @@ export class ReplayRecorder {
     }
     // Altdatei ohne `kit` = Klassenloadout (siehe Kommentar im Konstruktor).
     const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, kit: parsed.config?.kit ?? KIT_KLASSE,
-      zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT });
+      zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -328,6 +336,7 @@ export class ReplayPlayer {
       maxRounds: config.maxRounds,
       kit: config.kit,
       zerstoerung: config.zerstoerung,
+      waffen: config.waffen,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

@@ -49,6 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
+import { getWaffe } from '../shared/config/waffen-fassung.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { raycastSegment, simulateFlight } from '../shared/ballistics.js';
@@ -103,7 +104,7 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
   }
 
   const resolvedWeaponId = weaponId ?? quelle.inventory.getActiveWeaponId(playerId);
-  const weapon = resolvedWeaponId ? getWeapon(resolvedWeaponId) : null;
+  const weapon = resolvedWeaponId ? getWaffe(resolvedWeaponId, quelle.waffenFassung) : null;
   if (!weapon) return { ok: false, errors: ['Keine Waffe ausgewählt'] };
 
   // Nachladezeit prüfen, BEVOR Munition verbraucht wird — sonst kostet ein
@@ -485,7 +486,7 @@ function fuseTicksFor(weapon) {
  * @returns {number} Ticks
  */
 export function projectileLifetime(quelle, playerId, angle, power, weapon = null) {
-  const waffe = weapon ?? getWeapon(quelle.inventory.getActiveWeaponId(playerId));
+  const waffe = weapon ?? getWaffe(quelle.inventory.getActiveWeaponId(playerId), quelle.waffenFassung);
   if (!waffe) return 30;
   const { vx, vy } = quelle.launchVector(playerId, angle, power, waffe);
   /*
@@ -523,7 +524,7 @@ export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon =
   if (!quelle.isPlayerAlive(playerId)) return [];
   // Die Vorschau muss dieselbe Geschwindigkeit nutzen wie der echte Schuss,
   // sonst zeigt sie eine Bahn, die die Waffe nicht fliegt.
-  const waffe = weapon ?? getWeapon(quelle.inventory.getActiveWeaponId(playerId));
+  const waffe = weapon ?? getWaffe(quelle.inventory.getActiveWeaponId(playerId), quelle.waffenFassung);
   const launch = quelle.launchVector(playerId, angle, power, waffe);
 
   const bahn = simulateFlight({
@@ -587,7 +588,7 @@ export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon =
  * @returns {boolean} true, wenn die Zielgerade frei ist
  */
 export function hasLineOfSight(quelle, playerId, angle, power, weapon = null) {
-  const waffe = weapon ?? getWeapon(quelle.inventory.getActiveWeaponId(playerId));
+  const waffe = weapon ?? getWaffe(quelle.inventory.getActiveWeaponId(playerId), quelle.waffenFassung);
   if (!waffe) return false;
 
   const launch = quelle.launchVector(playerId, angle, power, waffe);

@@ -78,8 +78,13 @@ import { WEAPONS, getDefaultLoadout, FALLBACK_WEAPON_ID } from './weapons.js';
  *   - `KIT_KLASSE` (1): Klassenloadout, 4 Waffen + Reserve (alt, nur für Replays)
  *   - `KIT_STARTER` (2): Reserve + 2 Common-Waffen, klassenunabhängig (alt, nur für Replays)
  *   - `KIT_FLAECHE` (3): wie 2, dazu eine schwache Uncommon-Flächenwaffe mit wenig
- *     Munition (Standard) — Fassung 2 hatte keine Waffe mit Flächenwirkung, damit
- *     auch keinen Geländeabtrag zu Beginn
+ *     Munition (alt, nur für Replays) — Fassung 2 hatte keine Waffe mit Flächenwirkung,
+ *     damit auch keinen Geländeabtrag zu Beginn
+ *   - `KIT_SCHARF` (4): wie 3, aber die zweite Common-Waffe ist ein zweiter
+ *     schadenmachender Wurf statt einer Strahlwaffe (Standard). Der Katalog hat unter den
+ *     Common-Strahlwaffen (`tech`, Strahl) nur Selbstwirkungen (Bunker, Portal, Tarnnetz,
+ *     Schlauchboot ...): Der Strahl-Platz der Fassungen 2 und 3 machte NIE Schaden
+ *     (Bot-Messung `scripts/bot-partien.mjs`, MASTERDOTO „Balance 2026-10-14“).
  *
  * Eine Aufzeichnung OHNE `kit` im Kopf stammt aus der Zeit davor und ist
  * `KIT_KLASSE` (siehe `replay.js`).
@@ -87,12 +92,13 @@ import { WEAPONS, getDefaultLoadout, FALLBACK_WEAPON_ID } from './weapons.js';
 export const KIT_KLASSE = 1;
 export const KIT_STARTER = 2;
 export const KIT_FLAECHE = 3;
+export const KIT_SCHARF = 4;
 /** Fassung, mit der neue Partien starten. */
-export const KIT_STANDARD = KIT_FLAECHE;
+export const KIT_STANDARD = KIT_SCHARF;
 
 /** Ist `kit` eine bekannte Fassung? Alles andere fällt auf den Standard. */
 export function normalisiereKit(kit) {
-  return kit === KIT_KLASSE || kit === KIT_STARTER || kit === KIT_FLAECHE ? kit : KIT_STANDARD;
+  return kit === KIT_KLASSE || kit === KIT_STARTER || kit === KIT_FLAECHE || kit === KIT_SCHARF ? kit : KIT_STANDARD;
 }
 
 /** Kleiner Ganzzahl-Mischer (reiner Hash, KEIN Zufallsstrom): gleiche Eingabe, gleiche Zahl. */
@@ -124,6 +130,19 @@ export function getStarterWaffen(seed, platz) {
     .filter(Boolean).map(w => w.id);
 }
 
+/**
+ * Die zwei Common-Startwaffen der Fassung 4: zwei verschiedene schadenmachende Würfe
+ * (derselbe Mischer; der erste Wurf ist derselbe wie in Fassung 2 und 3).
+ */
+export function getStarterWaffenScharf(seed, platz) {
+  const wurf = WEAPONS.filter(w => w.powerTier === 'common' && w.id !== FALLBACK_WEAPON_ID
+    && !w.requiresLineOfSight && w.maxAmmo >= 2 && w.damage > 0 && w.cooldown === 0
+    && w.delivery === 'projectile' && w.category === 'ranged');
+  const erste = wurf[mische(seed, platz, 0) % wurf.length];
+  const rest = wurf.filter(w => w !== erste);
+  return [erste, rest[mische(seed, platz, 1) % rest.length]].filter(Boolean).map(w => w.id);
+}
+
 /** Startmunition der Flächenwaffe in Fassung 3 — bewusst knapp, der Rest kommt über Kisten. */
 export const STARTER_FLAECHE_MUNITION = 3;
 
@@ -144,7 +163,7 @@ export function getStarterFlaeche(seed, platz) {
 
 /** Begrenzte Startmunition je Waffe (Kennung -> Ladungen); leer für Fassung 1 und 2. */
 export function getStartMunition(kit, waffenIds) {
-  if (normalisiereKit(kit) !== KIT_FLAECHE) return {};
+  if (normalisiereKit(kit) < KIT_FLAECHE) return {};
   const grenze = {};
   for (const id of waffenIds) {
     const w = WEAPONS.find(x => x.id === id);
@@ -164,7 +183,7 @@ export function getStartMunition(kit, waffenIds) {
 export function getStartWaffen(klasse, kit = KIT_STANDARD, { seed = 0, platz = 0 } = {}) {
   const fassung = normalisiereKit(kit);
   if (fassung === KIT_KLASSE) return getClassLoadout(klasse);
-  const basis = getStarterWaffen(seed, platz);
+  const basis = fassung === KIT_SCHARF ? getStarterWaffenScharf(seed, platz) : getStarterWaffen(seed, platz);
   if (fassung === KIT_STARTER) return basis;
   const flaeche = getStarterFlaeche(seed, platz);
   return flaeche ? [...basis, flaeche] : basis;
@@ -360,5 +379,5 @@ export function getClassLoadout(klasse, count = 4) {
 
 export default {
   getClassLoadout, getClassLoadoutDetail, getStartWaffen, getStarterWaffen, LOADOUT_ROLES, START_TIERS,
-  KIT_KLASSE, KIT_STARTER, KIT_STANDARD,
+  KIT_KLASSE, KIT_STARTER, KIT_STANDARD, KIT_SCHARF,
 };

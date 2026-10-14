@@ -43,7 +43,7 @@ import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
  * - `loadouts` — Loadout-Wahl je Spielerplatz
  * - `baseHealth` — Grundgesundheit
  * - `resolveLoadout` — Auflösung von Klasse/Archetyp je Platz
- * - `kit` — Ausrüstungsfassung (`KIT_FLAECHE` = Reserve + 2 Common + schwache Flächenwaffe, `KIT_STARTER` = ohne Flächenwaffe, `KIT_KLASSE` = Altverhalten)
+ * - `kit` — Ausrüstungsfassung (`KIT_SCHARF` = Standard: Reserve + 2 schadenmachende Common-Würfe + schwache Flächenwaffe, `KIT_FLAECHE` = Strahlplatz statt zweitem Wurf, `KIT_STARTER` = ohne Flächenwaffe, `KIT_KLASSE` = Altverhalten)
  * - `seed` — Match-Seed (für die deterministische Startwaffenwahl)
  *
  * @param {object} quelle - die Werte, die den Spawn-Prozess steuern

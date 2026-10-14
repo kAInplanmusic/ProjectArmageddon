@@ -14,8 +14,8 @@ Regel, die der Motor benutzt. `npm run matrix:check` schlägt fehl, wenn die
 | elemental | 20 | 18–75 | 14 | 4–50 px | 2 | 1 | 0 |
 | heavy_ranged | 20 | 22–65 | 6 | 4–33 px | 5 | 2 | 1 |
 | magic | 30 | 18–62 | 9 | 4–36 px | 0 | 1 | 0 |
-| melee | 21 | 20–52 | 0 | 4–35 px | 0 | 1 | 0 |
-| ranged | 19 | 14–62 | 7 | 4–80 px | 3 | 0 | 0 |
+| melee | 21 | 24–52 | 0 | 4–35 px | 0 | 1 | 0 |
+| ranged | 19 | 18–62 | 7 | 4–80 px | 3 | 0 | 0 |
 | tech | 20 | 27–78 | 10 | 4–65 px | 0 | 1 | 1 |
 | ultimate | 10 | 55–110 | 7 | 4–95 px | 1 | 0 | 0 |
 | utility | 10 | 28–55 | 3 | 4–85 px | 0 | 0 | 0 |
@@ -69,15 +69,15 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 
 | # | Waffe | Klasse | Schaden | Radius | Krater | Grad | Rückstoß | Element | wirkt auf |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | Baseballschläger | melee | 28 | — | 8 px | 2 | 82 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 1 | Baseballschläger | melee | 35 | — | 8 px | 2 | 82 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 2 | Feuerfaust | melee | 34 | — | 4 px | 1 | 55 | Feuer 18 | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
 | 3 | Hakenklinge | melee | 30 | — | 4 px | 1 | 45 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 4 | Piratenhaken | melee | 24 | — | 4 px | 1 | 40 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 5 | Morgenstern | melee | 42 | — | 18 px | 2 | 70 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 6 | Schaufel | melee | 20 | — | 35 px | 3 | 30 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 7 | Tonfa | melee | 22 | — | 4 px | 1 | 35 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 5 | Morgenstern | melee | 50 | — | 18 px | 2 | 70 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 6 | Schaufel | melee | 25 | — | 35 px | 3 | 30 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 7 | Tonfa | melee | 28 | — | 4 px | 1 | 35 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 8 | Kriegshammer | melee | 45 | — | 20 px | 3 | 65 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 9 | Eispickel | melee | 30 | — | 10 px | 2 | 30 | Eis 25 | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
+| 9 | Eispickel | melee | 37 | — | 10 px | 2 | 30 | Eis 25 | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
 | 10 | Kettensäge | melee | 52 | — | 15 px | 2 | 35 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 11 | Zwillingskatanas | melee | 25 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 12 | Katana | melee | 32 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
@@ -107,8 +107,8 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 36 | Raketenhandschuh | ranged | 31 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 37 | Raketenwerfer | ranged | 62 | 46 | 55 px | 4 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 38 | Rakete | ranged | 50 | 38 | 23 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 39 | Feldkanone / Mörser | ranged | 58 | 45 | 27 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 40 | Maschinenpistole | ranged | 14 | — | 4 px | 1 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
+| 39 | Feldkanone / Mörser | ranged | 48 | 45 | 27 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 40 | Maschinenpistole | ranged | 18 | — | 4 px | 1 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
 | 41 | Salvengeber | heavy_ranged | 22 | 16 | 18 px | 2 | 8 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 42 | Feuerwerks-Salve | heavy_ranged | 58 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 43 | Kampfgeschütz | heavy_ranged | 50 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
@@ -134,7 +134,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 63 | Wasserblaster | elemental | 18 | — | 42 px | 4 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
 | 64 | Katapult | elemental | 68 | 48 | 29 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 65 | Meteoritenbrocken | elemental | 74 | 50 | 50 px | 4 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 66 | Artilleriegeschütz | elemental | 64 | 48 | 29 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
+| 66 | Artilleriegeschütz | elemental | 56 | 48 | 29 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 67 | Säurekanone | elemental | 35 | 38 | 23 px | 3 | — | Gift 28 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 68 | Plasma-Gewehr | elemental | 50 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
 | 69 | Raketenkanone | elemental | 46 | 40 | 24 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
@@ -208,7 +208,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 137 | Flammenklinge | tech | 55 | — | 4 px | 1 | 55 | Feuer 30 | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
 | 138 | Magischer Kriegshammer | tech | 68 | 45 | 27 px | 3 | 78 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 139 | Höllenkanone | tech | 78 | 58 | 35 px | 3 | — | Feuer 48 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 140 | Quantenblaster | tech | 72 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
+| 140 | Quantenblaster | tech | 60 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
 | 141 | Astralkrieger | ultimate | 70 | 55 | 33 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 142 | Void-Ritter | ultimate | 82 | — | 4 px | 1 | 75 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 143 | Astralross | ultimate | 65 | — | 4 px | 1 | 70 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |

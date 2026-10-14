@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1370/1370** grün, Dateizahl **145** (Stand 2026-10-14, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1382/1382** grün, Dateizahl **146** (Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -2910,6 +2910,115 @@ und Fuß ab, `floodArea` senkt nie einen vorhandenen Füllstand.
 "auto_target"`). Es braucht ein eigenes Entity mit eigener Lebensdauer und
 Trefferlogik und damit einen neuen Nachrichtentyp im Protokoll — das ist eine
 Design-Entscheidung, kein Nachziehen einer Lücke.
+
+## Balance 2026-10-14: Waffen je Seltenheitsstufe, Start-Kit, Katalogfassung
+
+Auftrag: Waffen messen (Schaden, Reichweite, Trefferquote, Zeit bis Kill), prüfen, ob
+Partien mit dem Start-Kit ohne Kisten zäh werden, nur klare Ausreißer korrigieren,
+Kontaktwaffen moderat stärker. Die Klassenwerte (`classes.js`, Archetypen, Sidegrades)
+blieben unberührt.
+
+### Werkzeuge (neu)
+
+- `npm run balance:waffen` (`scripts/waffen-balance.mjs`): zielt zuerst (Winkel x Kraft
+  mit `aimPreview`, die drei besten Einstellungen werden geschossen), stehendes Ziel auf
+  gleicher Höhe, acht Entfernungen 40–1700 px. Je Waffe: Schaden pro Schuss (Bestwert),
+  wirksame Reichweite (Schaden >= 25 % des Bestwerts), Trefferquote bis zur
+  Katalog-Reichweite, Schüsse und Züge bis Kill für Scout 96, Heavy 156, Artillery 108 HP
+  (Basis 100 x Klassenfaktor, wie der Motor rechnet), Munition und Abklingzeit. Ausreißer:
+  Schaden < 0,5x oder > 2x Median der eigenen Stufe. Ausgenommen sind Selbstwirkungen
+  (Heilung, Portale, Aufbauten: kein Schaden vorgesehen) und Zünderwaffen (ihre Bahn endet
+  nicht am ersten Aufprall; die Zielhilfe bildet Rollen und Zündzeit nicht ab, sie wären
+  Messartefakte). Der ältere `npm run balance` schießt mit festem Winkelsatz und misst
+  damit auch das Zielen; beide wurden gegeneinander gelesen, nur Waffen mit
+  übereinstimmendem Befund gelten als „klar“.
+- `npm run balance:bot` (`scripts/bot-partien.mjs`): Zielbot ohne Laufen (Kisten bleiben
+  liegen = Start-Kit ohne Kisten), 8 s Bedenkzeit je Zug als Spielzeit, Zielfehler 0,02 rad,
+  Zugzeit wie im Spiel (Duell 30 s, 2x2 20 s). Deterministisch aus dem Seed.
+- Tests: `tests/waffen-fassung.test.js` (12, davon Werkzeug, Bot, Katalogfassung, Kit 4).
+
+### Befunde
+
+1. **Das Start-Kit hatte einen toten Platz.** Der zweite Common-Platz (Strahlwaffe,
+   `tech` + `hitscan`) war in allen 800 geprüften Seed/Platz-Kombinationen eine
+   Selbstwirkung (Bunker, Hologramm-Portal, Tarnnetz, Schlauchboot, Infinity Loop ...):
+   Die katalogweiten Common-Strahlwaffen machen keinen Schaden. Jeder Spieler startete
+   also mit genau einem schadenmachenden Common-Wurf, der Salvengeber-Fläche (22 Schaden,
+   3 Schuss) und der Reserve (Kaktusbombe, 2 Züge Abklingzeit).
+2. **Ohne Kisten enden alle Partien.** Bot, 24 Seeds, Kit 3 (Stand vorher), Waffenwerte
+   vorher: 2x2 Median 6,2 min / 23 Runden (P90 13,1, Max 16,2), 16 von 24 vor Valhalla
+   entschieden, 3,9 Schaden/Schuss, Trefferquote 0,26. Duell: Median 4,3 min (P90 14,5,
+   Max 17,7), 16 von 24 vor Valhalla, 1 Remis, Trefferquote 0,15 (der Bot läuft nicht,
+   854 px Abstand). Keine Partie „offen“, kein Patt: Valhalla beendet, was der Schaden
+   nicht beendet. Zäh ist es im Duell (Spieler laufen real näher heran als der Bot), nicht
+   endlos. **Kistenrate (0,10/0,85/0,05 je Runde, 55 % Waffen) bleibt unverändert**: Der
+   Bot kann keine Kisten holen, die Messung trägt keine Aussage über eine Änderung der Rate.
+3. **Ausreißer nach Stufe** (Median Schaden/Schuss bei bestem Abstand, Scout als Schütze,
+   Faktor 0,7): common 17,5, uncommon 22,6 → 24,3, rare 48, epic 67,9, legendary 57,7.
+   Legendary liegt im Medianschaden unter Epic (5 Waffen, Flächenwaffen mit
+   Falloff; nicht angefasst). 23 Waffen standen vorher auf der Ausreißerliste, 22 sind
+   es nachher; viele Einträge sind Messgrenzen (Direkttreffer-Würfe auf große Entfernung,
+   Piratenhaken = Haken ohne Schaden), nicht Katalogfehler.
+
+### Änderungen (Katalogfassung 2, `config.waffen`)
+
+Nur `damage` (der abgeleitete `powerScore` folgt; Stufe, Abklingzeit, Reichweite, Zünder
+und Munition sind je Waffe unverändert, geprüft im Test). Quelle:
+`BALANCE_KORREKTUREN` in `scripts/build-weapon-catalog.mjs`, `weapons.js` neu erzeugt
+(`npm run weapons:build`).
+
+| Waffe | Stufe | Schaden vorher → nachher | Messung (Bestwert, Scout) vorher → nachher | Grund |
+|---|---|---|---|---|
+| Baseballschläger pa_001 | uncommon | 28 → 35 | 19,6 → 24,5 (STK Scout 5 → 4) | Kontakt (40 px) +25 % |
+| Morgenstern pa_005 | uncommon | 42 → 50 | 29,4 → 35 (4 → 3) | Kontakt +19 % |
+| Schaufel pa_006 | uncommon | 20 → 25 | 14 → 17,5 (7 → 6) | Kontakt +25 % |
+| Tonfa pa_007 | common | 22 → 28 | im Schussversuch am Nachbarn 15,4 → 19,6 | Kontakt +27 % |
+| Eispickel pa_009 | uncommon | 30 → 37 | 21 → 25,9 (5 → 4) | Kontakt +23 % |
+| Maschinenpistole pa_040 | common | 14 → 18 | 7,2 → 7,8 (14 → 13), am Nachbarn 6,0 → 7,7 | Startwaffe, 8 Schuss, 0,41x Stufenmedian |
+| Feldkanone/Mörser pa_039 | rare | 58 → 48 | 85,6 → 70,9 | Luftschlag, 1,8x Stufenmedian |
+| Artilleriegeschütz pa_066 | rare | 64 → 56 | 100,3 → 87,8 | Luftschlag, 2,1x Stufenmedian (gleichlautend `npm run balance`: 98) |
+| Quantenblaster pa_140 | uncommon | 72 → 60 | 77,7 → 64,7 | Uncommon mit Rare/Epic-Schaden (Katalog: Rare 42–68) |
+
+Bewusst NICHT geändert: Salvengeber (Startflächenwaffe, `damage <= 25` ist ihre Bedingung
+im Kit), Zwillingskatanas und Rapier (Schadenswerte abgeleitet: eine Korrektur würde von der
+Ableitung überschrieben; sie bräuchten eine Designangabe), Hakenklinge (Stufengrenze: +4
+Schaden machten sie zur Uncommon), Zünderwaffen, Hitscan-Waffen (treffen ohne Zielen: ihr
+Vorsprung ist Absicht), Flammenklinge/Quantengewehr/Energiefaust/Goldene Hand (bleiben
+über 2x Stufenmedian; offen für eine Entscheidung, Hitscan ohne Streuung).
+
+### Start-Kit Fassung 4 (`kit: 4`, Standard)
+
+Wie Fassung 3, aber der zweite Common-Platz ist ein zweiter schadenmachender Wurf
+(`getStarterWaffenScharf`, derselbe Mischer; der erste Wurf und die Flächenwaffe bleiben
+gleich). Bot, 24 Seeds, vorher (Kit 3) → nachher (Kit 4): 2x2 Schaden/Schuss 3,9 → 5,0,
+Trefferquote 0,26 → 0,34, Schüsse bis zum Ende 46 → 36, Median 6,2 → 5,1 min, vor Valhalla
+entschieden 16 → 20 von 24. Duell unverändert zäh (Schaden/Schuss 1,8 → 1,9; vor Valhalla
+16 → 17 von 24): dort entscheidet das Heranlaufen, nicht das Kit.
+
+### Replay-Kompatibilität (sichere Variante: Katalogversion im Kopf)
+
+- `config.waffen` im Replay-Kopf: `1` = Werte vor der Korrektur, `2` = Standard. Eine Datei
+  ohne das Feld ist Fassung 1 (`ReplayRecorder.fromJSON`, `restoreLobby`). Altwerte stehen
+  in `WAFFEN_ALT_WERTE` (`src/shared/config/waffen-fassung.js`); der Motor liest Waffen über
+  `getWaffe(id, fassung)` (`shooting.js`, ein Aufruf in `match.js`). `match.js` hat 3196 von
+  3199 Zeilen.
+- `config.kit` Fassung 4 ist neu; Altköpfe (kit 1–3) behalten ihre Startwaffen.
+- Altkopf-Belege: (1) Prüfsumme des Katalogs: Katalog + Altwerte = der Katalog von 573a2c6
+  (`sha256 d80e28df…`). (2) Je ein Schuss der neun geänderten Waffen mit `waffen: 1`:
+  Zustandshash und Schaden bit-gleich zu 573a2c6 (Goldwerte im Test, am alten Stand
+  gemessen), mit der Standardfassung anders. (3) Aufzeichnung mit Schüssen: Wiedergabe
+  gleicht der Live-Partie in Fassung 1 (Kopf ohne `waffen`) und Fassung 2. (4) Die
+  Zerstörungs-Goldwerte (`tests/zerstoerung.test.js`) laufen mit `kit: 3, waffen: 1` auf
+  denselben Hashes wie vorher; ihr Aufruf nannte den Standard nur stillschweigend und wurde
+  jetzt ausdrücklich gesetzt, die Werte sind unverändert.
+
+### Prüfung
+
+`npm test` 1382/1382, `npm run check:docs` grün, `npm run lint` grün. E2E (loadout-choice,
+waffenmenue, drop-cooldown, specials, replay, runtime-smoke, multiplayer, turret, counterplay):
+62 grün, 2 rot — `waffenmenue.spec.mjs:111` und `:128` (Touch: der Knopf „Abwurf“ liegt über
+dem Waffenmenü-Knopf). Dieselben zwei scheitern unverändert auf 573a2c6 (vorbestehender
+Layoutfehler der Touch-Bedienung, nicht Teil dieser Änderung, offen).
 
 ## Balance-Messung über die Kartenbreite
 

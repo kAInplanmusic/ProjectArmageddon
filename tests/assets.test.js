@@ -10,6 +10,7 @@ import {
   gravityScaleFor,
   resolveDamage,
   GRAVITY_REFERENCE,
+  BALANCE_KORREKTUREN,
 } from '../scripts/build-weapon-catalog.mjs';
 import { DEFAULT_PROJECTILE_GRAVITY } from '../src/engine/systems/projectileSystem.js';
 
@@ -195,10 +196,16 @@ test('Quelldaten-Felder sind korrekt priorisiert (snake_case vor camelCase)', ()
   const raw = JSON.parse(readFileSync(join(ROOT, 'project_armageddon_weapons_v1.json'), 'utf8'));
   const sample = raw.weapons.find(entry => entry.stats?.base_damage > 0);
   const catalogWeapon = WEAPONS_BY_ID[sample.id];
+  // Der Katalog weicht nur dort ab, wo die Balance-Korrektur es ausdrücklich vorsieht.
   assert.equal(
-    catalogWeapon.damage, sample.stats.base_damage,
+    catalogWeapon.damage, BALANCE_KORREKTUREN[sample.id]?.damage ?? sample.stats.base_damage,
     `${sample.id}: Katalogschaden weicht vom Quelldatenwert ab`,
   );
+  for (const [id, korrektur] of Object.entries(BALANCE_KORREKTUREN)) {
+    const quelle = raw.weapons.find(entry => entry.id === id);
+    assert.equal(WEAPONS_BY_ID[id].damage, korrektur.damage, `${id}: Korrektur steht im Katalog`);
+    assert.ok(quelle, `${id}: steht in der Quelldatei`);
+  }
 });
 
 
