@@ -263,6 +263,29 @@ export const BALANCE_KORREKTUREN = Object.freeze({
   pa_140: { damage: 60 }, // Quantenblaster (Uncommon mit Rare-Schaden)
 });
 
+/**
+ * Balance-Korrekturen der Katalogfassung 3 (`config.waffen: 3`), ZUSÄTZLICH zu denen
+ * der Fassung 2. Gemessen mit `npm run balance:waffen` (Stufenmedian common 17,5,
+ * uncommon 24,3; zu schwach < 0,5x, zu stark > 2x):
+ *  - Maschinenpistole: 7,8 lag unter 8,75 (0,5x common).
+ *  - Energiefaust und Flammenklinge (Hitscan, Schaden = `damage`; die Flammenklinge
+ *    bekommt durch ihren Brandeffekt etwa +15 darauf): knapp unter 2x uncommon (48,6).
+ */
+export const BALANCE_KORREKTUREN_3 = Object.freeze({
+  pa_040: { damage: 21 }, // Maschinenpistole (Startwaffe, 8 Schuss)
+  pa_120: { damage: 48 }, // Energiefaust (Hitscan)
+  pa_137: { damage: 33 }, // Flammenklinge (Hitscan + Brand)
+});
+
+/**
+ * Abgeleitete Felder, die trotz geändertem Schaden bleiben (Fassung 3): Die Ableitung
+ * würde sonst die Abklingzeit der Flammenklinge streichen und die Abschwächung
+ * teilweise aufheben. Die Reichweite folgt dagegen dem Schaden (Ableitungstest).
+ */
+export const FESTE_ABLEITUNGEN_3 = Object.freeze({
+  pa_137: { cooldown: 1 },
+});
+
 /** Identität einer Waffe (oder null). */
 export function identityFor(weaponId) {
   return WEAPON_IDENTITIES[weaponId] ?? null;
@@ -1051,6 +1074,9 @@ const weapons = raw.weapons.map(entry => {
   // Balance-Korrekturen (Katalogfassung 2): überschreiben den Schaden VOR den Ableitungen.
   const korrektur = BALANCE_KORREKTUREN[entry.id];
   if (korrektur) Object.assign(weapon, korrektur);
+  // Katalogfassung 3: weitere Korrekturen, ebenfalls VOR den Ableitungen.
+  const korrektur3 = BALANCE_KORREKTUREN_3[entry.id];
+  if (korrektur3) Object.assign(weapon, korrektur3);
 
   // Anflugart aus dem Wirkungsnamen ableiten.
   if (STRIKE_FROM_SKY.has(weapon.special)) weapon.strikeStyle = 'sky';
@@ -1195,6 +1221,7 @@ const weapons = raw.weapons.map(entry => {
   // brauchen eine Pause, die sich nicht aus Schaden und Radius ergibt
   // (Gleitschirm, Dimensionsriss).
   weapon.cooldown = identity?.overrides.cooldownTurns ?? deriveCooldown(weapon);
+  if (FESTE_ABLEITUNGEN_3[entry.id]) Object.assign(weapon, FESTE_ABLEITUNGEN_3[entry.id]);
 
   // Abgeleitete Einstufung: erweitert die Quelle um epic/legendary, ohne Werte
   // zu erfinden — reine Funktion der oben gemappten Statistiken.

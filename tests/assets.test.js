@@ -11,6 +11,7 @@ import {
   resolveDamage,
   GRAVITY_REFERENCE,
   BALANCE_KORREKTUREN,
+  BALANCE_KORREKTUREN_3,
 } from '../scripts/build-weapon-catalog.mjs';
 import { DEFAULT_PROJECTILE_GRAVITY } from '../src/engine/systems/projectileSystem.js';
 
@@ -203,7 +204,8 @@ test('Quelldaten-Felder sind korrekt priorisiert (snake_case vor camelCase)', ()
   );
   for (const [id, korrektur] of Object.entries(BALANCE_KORREKTUREN)) {
     const quelle = raw.weapons.find(entry => entry.id === id);
-    assert.equal(WEAPONS_BY_ID[id].damage, korrektur.damage, `${id}: Korrektur steht im Katalog`);
+    const soll = BALANCE_KORREKTUREN_3[id]?.damage ?? korrektur.damage;
+    assert.equal(WEAPONS_BY_ID[id].damage, soll, `${id}: Korrektur steht im Katalog`);
     assert.ok(quelle, `${id}: steht in der Quelldatei`);
   }
 });

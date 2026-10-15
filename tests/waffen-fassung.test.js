@@ -18,12 +18,12 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
 import {
-  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, normalisiereWaffen, getWaffe,
+  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, normalisiereWaffen, getWaffe,
 } from '../src/shared/config/waffen-fassung.js';
 import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
 } from '../src/shared/config/loadouts.js';
-import { BALANCE_KORREKTUREN, tierForScore } from '../scripts/build-weapon-catalog.mjs';
+import { BALANCE_KORREKTUREN, BALANCE_KORREKTUREN_3, FESTE_ABLEITUNGEN_3, tierForScore } from '../scripts/build-weapon-catalog.mjs';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import {
   messeWaffe, findeAusreisser, klassenGesundheit, ENTFERNUNGEN, STUFEN, ZU_SCHWACH, ZU_STARK,
@@ -32,6 +32,9 @@ import { spiele } from '../scripts/bot-partien.mjs';
 
 /** SHA-256 über den Katalog mit sortierten Schlüsseln (gemessen an 573a2c6). */
 const PRUEFSUMME_ALTER_KATALOG = 'd80e28df8c274f50b434ceb1a7aeab2fded9e964aeb3ef121f9274c531f81f7f';
+
+/** SHA-256 des Katalogs in Fassung 2 (gemessen am Stand d2d65aa, vor Fassung 3). */
+const PRUEFSUMME_F2 = '75ba797b1c93ec5c484cf5faea3c869d5685acef0f17f1400e326d5befb46fe4';
 
 function stabil(wert) {
   return JSON.stringify(wert, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x)
@@ -85,15 +88,24 @@ test('Katalog + Altwerte ergibt genau den Katalog von vor der Korrektur (Prüfsu
     'der heutige Katalog unterscheidet sich vom alten');
 });
 
+test('Fassung 2 bleibt bitgleich: Katalog + Fassung-2-Werte = Katalog von d2d65aa (Prüfsumme)', () => {
+  const f2 = WEAPONS.map(w => getWaffe(w.id, WAFFEN_BALANCE));
+  assert.equal(createHash('sha256').update(stabil(f2)).digest('hex'), PRUEFSUMME_F2);
+  assert.notEqual(createHash('sha256').update(stabil(WEAPONS)).digest('hex'), PRUEFSUMME_F2);
+  assert.deepEqual(Object.keys(WAFFEN_F2_WERTE).sort(), Object.keys(BALANCE_KORREKTUREN_3).sort());
+  assert.equal(getWaffe('pa_028', WAFFEN_BALANCE), WEAPONS_BY_ID.pa_028);
+  assert.equal(getWaffe('pa_028', WAFFEN_KORREKTUR), WEAPONS_BY_ID.pa_028);
+});
+
 test('Korrekturtabelle und Altwerte decken dieselben Waffen; Stufe bleibt gleich', () => {
   assert.deepEqual(Object.keys(WAFFEN_ALT_WERTE).sort(), Object.keys(BALANCE_KORREKTUREN).sort());
   for (const [id, alt] of Object.entries(WAFFEN_ALT_WERTE)) {
     const neu = WEAPONS_BY_ID[id];
-    assert.equal(neu.damage, BALANCE_KORREKTUREN[id].damage, id);
+    assert.equal(getWaffe(id, WAFFEN_BALANCE).damage, BALANCE_KORREKTUREN[id].damage, id);
     assert.notEqual(neu.damage, alt.damage, `${id}: Wert hat sich geändert`);
     assert.equal(tierForScore(alt.powerScore), neu.powerTier, `${id}: Stufe darf sich nicht ändern (Loot-Gewichte)`);
     assert.equal(getWaffe(id, WAFFEN_ALT).damage, alt.damage);
-    assert.equal(getWaffe(id, WAFFEN_BALANCE).damage, neu.damage);
+    assert.equal(getWaffe(id, WAFFEN_BALANCE).damage, BALANCE_KORREKTUREN[id].damage);
   }
   assert.equal(getWaffe('pa_028', WAFFEN_ALT), WEAPONS_BY_ID.pa_028, 'ungeänderte Waffen sind dasselbe Objekt');
   assert.equal(getWaffe('gibt_es_nicht', WAFFEN_ALT), null);
@@ -111,9 +123,10 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_BALANCE);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_KORREKTUR);
   assert.equal(normalisiereWaffen(1), WAFFEN_ALT);
   assert.equal(normalisiereWaffen(2), WAFFEN_BALANCE);
+  assert.equal(normalisiereWaffen(3), WAFFEN_KORREKTUR);
   assert.equal(normalisiereWaffen(undefined), WAFFEN_STANDARD);
   assert.equal(normalisiereWaffen(7), WAFFEN_STANDARD);
 });
@@ -135,6 +148,52 @@ test('Standardfassung: dieselben Schüsse wirken anders und im Sinne der Korrekt
   }
 });
 
+/** Gold: ein Schuss der drei Waffen von Fassung 3, gemessen mit Fassung 2 (Stand d2d65aa) und Fassung 3. */
+const GOLD_F2 = {
+  pa_040: { verloren: 7.7, hash: '88a31078' },
+  pa_120: { verloren: 55, hash: '497a7ad1' },
+  pa_137: { verloren: 70, hash: 'fe7df532' },
+};
+const GOLD_F3 = {
+  pa_040: { verloren: 9, hash: 'c338a8c3' },
+  pa_120: { verloren: 48, hash: '9cde18cd' },
+  pa_137: { verloren: 48, hash: '4634e8f6' },
+};
+
+test('Fassung 2 und 3: die drei geänderten Waffen wirken wie gemessen, Fassung 2 wie vor der Änderung', () => {
+  for (const [id, gold] of Object.entries(GOLD_F2)) {
+    const r = schussAufNachbarn(id, { waffen: WAFFEN_BALANCE });
+    assert.equal(r.hash, gold.hash, `${id}: Zustandshash Fassung 2`);
+    assert.ok(Math.abs(r.verloren - gold.verloren) < 0.1, `${id}: ${r.verloren}`);
+  }
+  for (const [id, gold] of Object.entries(GOLD_F3)) {
+    const r = schussAufNachbarn(id);
+    assert.equal(r.hash, gold.hash, `${id}: Zustandshash Fassung 3`);
+    assert.ok(Math.abs(r.verloren - gold.verloren) < 0.1, `${id}: ${r.verloren}`);
+  }
+});
+
+test('Fassung 3: Maschinenpistole über 0,5x Stufenmedian, Energiefaust/Flammenklinge unter 2x, Stufe/Reichweite/Abklingzeit gleich', () => {
+  const m = messeWaffe(WEAPONS_BY_ID.pa_040, 40);
+  assert.ok(m.schadenBest >= 0.5 * 17.5, `MP ${m.schadenBest}`);
+  for (const id of ['pa_120', 'pa_137']) {
+    const e = messeWaffe(WEAPONS_BY_ID[id], 40);
+    assert.ok(e.schadenBest <= 2 * 24.3 && e.schadenBest > 1.8 * 24.3, `${id} ${e.schadenBest}`);
+  }
+  for (const [id, f2] of Object.entries(WAFFEN_F2_WERTE)) {
+    const neu = WEAPONS_BY_ID[id];
+    assert.notEqual(neu.damage, f2.damage);
+    assert.equal(neu.damage, BALANCE_KORREKTUREN_3[id].damage);
+    assert.equal(tierForScore(f2.powerScore), neu.powerTier, `${id}: Stufe bleibt`);
+    const f2w = getWaffe(id, WAFFEN_BALANCE);
+    for (const feld of ['cooldown', 'maxAmmo', 'powerTier', 'blastRadius']) assert.equal(f2w[feld], neu[feld], `${id}.${feld}`);
+  }
+  assert.ok(Object.keys(FESTE_ABLEITUNGEN_3).every(id => id in BALANCE_KORREKTUREN_3));
+  assert.ok(WEAPONS_BY_ID.pa_040.damage > getWaffe('pa_040', WAFFEN_BALANCE).damage);
+  assert.ok(WEAPONS_BY_ID.pa_120.damage < getWaffe('pa_120', WAFFEN_BALANCE).damage);
+  assert.ok(WEAPONS_BY_ID.pa_137.damage < getWaffe('pa_137', WAFFEN_BALANCE).damage);
+});
+
 test('Replay-Kopf: Altdatei ohne `waffen` = Fassung 1, neue Aufzeichnung trägt Fassung 2, Rückspiel übernimmt sie', () => {
   const alt = {
     format: 1, createdAt: 0, seed: 4242,
@@ -148,16 +207,16 @@ test('Replay-Kopf: Altdatei ohne `waffen` = Fassung 1, neue Aufzeichnung trägt 
   assert.equal(match.kit, 3, 'Altkopf behält auch das Start-Kit der Zeit');
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.waffen, WAFFEN_BALANCE);
+  assert.equal(neu.toJSON().config.waffen, WAFFEN_KORREKTUR);
   assert.equal(neu.toJSON().config.kit, KIT_STANDARD);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(zurueck.config.waffen, WAFFEN_BALANCE);
-  assert.equal(playReplay(zurueck).match.waffen, WAFFEN_BALANCE);
+  assert.equal(zurueck.config.waffen, WAFFEN_KORREKTUR);
+  assert.equal(playReplay(zurueck).match.waffen, WAFFEN_KORREKTUR);
 });
 
 test('Altkopf-Aufzeichnung mit Schüssen: Wiedergabe gleicht der Live-Partie in Fassung 1 und in Fassung 2', () => {
-  for (const waffen of [WAFFEN_ALT, WAFFEN_BALANCE]) {
+  for (const waffen of [WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR]) {
     const live = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, kit: KIT_FLAECHE, waffen });
     const aufnahme = new ReplayRecorder({
       seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, kit: KIT_FLAECHE, waffen,

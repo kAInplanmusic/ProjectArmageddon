@@ -8,7 +8,10 @@
  *
  *   - `WAFFEN_ALT` (1): Werte vor der Korrektur. Eine Aufzeichnung OHNE `waffen`
  *     im Kopf ist `WAFFEN_ALT`.
- *   - `WAFFEN_BALANCE` (2): Werte nach der Korrektur (Standard).
+ *   - `WAFFEN_BALANCE` (2): Werte nach der Korrektur.
+ *   - `WAFFEN_KORREKTUR` (3): Maschinenpistole angehoben, Energiefaust und Flammenklinge
+ *     auf unter 2x Stufenmedian gesenkt (`BALANCE_KORREKTUREN_3`, Standard). Der Katalog
+ *     selbst trägt diese Fassung; Fassung 2 legt `WAFFEN_F2_WERTE` darüber.
  *
  * `WAFFEN_ALT_WERTE` hält je geänderter Waffe die Altwerte jener Felder, die sich
  * durch die Korrektur geändert haben (`damage` und der daraus abgeleitete
@@ -22,12 +25,24 @@ import { getWeapon } from './weapons.js';
 
 export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
-export const WAFFEN_STANDARD = WAFFEN_BALANCE;
+export const WAFFEN_KORREKTUR = 3;
+export const WAFFEN_STANDARD = WAFFEN_KORREKTUR;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
-  return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE ? fassung : WAFFEN_STANDARD;
+  return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR
+    ? fassung : WAFFEN_STANDARD;
 }
+
+/**
+ * Werte der Fassung 2 für die Waffen, die Fassung 3 verändert (`damage` und die
+ * abgeleiteten `powerScore` und `maxRange`; Abklingzeit und Stufe bleiben gleich).
+ */
+export const WAFFEN_F2_WERTE = Object.freeze({
+  pa_040: Object.freeze({ damage: 18, powerScore: 25.5 }),
+  pa_120: Object.freeze({ damage: 55, powerScore: 60.53, maxRange: 513 }),
+  pa_137: Object.freeze({ damage: 55, powerScore: 75.83, maxRange: 733 }),
+});
 
 /** Altwerte der durch die Balance-Korrektur geänderten Felder, je Waffe. */
 export const WAFFEN_ALT_WERTE = Object.freeze({
@@ -45,8 +60,9 @@ export const WAFFEN_ALT_WERTE = Object.freeze({
 const zwischenspeicher = new Map();
 
 /**
- * Die Waffe in der Fassung eines Matches. Fassung 2 ist der Katalog selbst; Fassung 1
- * legt die Altwerte darüber (einmal berechnet, eingefroren).
+ * Die Waffe in der Fassung eines Matches. Fassung 3 ist der Katalog selbst; Fassung 2
+ * legt `WAFFEN_F2_WERTE` darüber, Fassung 1 zusätzlich die Altwerte (je einmal
+ * berechnet, eingefroren).
  *
  * @param {string} id
  * @param {number} [fassung]
@@ -54,13 +70,15 @@ const zwischenspeicher = new Map();
  */
 export function getWaffe(id, fassung = WAFFEN_STANDARD) {
   const waffe = getWeapon(id);
-  if (!waffe || fassung !== WAFFEN_ALT) return waffe;
-  const alt = WAFFEN_ALT_WERTE[id];
-  if (!alt) return waffe;
-  let kopie = zwischenspeicher.get(id);
+  if (!waffe || fassung === WAFFEN_KORREKTUR) return waffe;
+  const f2 = WAFFEN_F2_WERTE[id];
+  const alt = fassung === WAFFEN_ALT ? WAFFEN_ALT_WERTE[id] : null;
+  if (!f2 && !alt) return waffe;
+  const schluessel = `${fassung}:${id}`;
+  let kopie = zwischenspeicher.get(schluessel);
   if (!kopie) {
-    kopie = Object.freeze({ ...waffe, ...alt });
-    zwischenspeicher.set(id, kopie);
+    kopie = Object.freeze({ ...waffe, ...f2, ...alt });
+    zwischenspeicher.set(schluessel, kopie);
   }
   return kopie;
 }
