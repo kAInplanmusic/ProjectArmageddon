@@ -6,13 +6,24 @@
  */
 
 import { MatchSeedManager } from '../seed.js';
+import { KISTEN_ALT, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE } from './kisten.js';
 
 export const LOOT_DROP_RULES = Object.freeze({
+  /** Kistenfassung 2 (Standard, `config/kisten.js`): im Mittel 1,6 Kisten je Runde. */
   cratesPerRoundStart: Object.freeze({
+    none: 0.05,
+    one: 0.45,
+    two: 0.35,
+    three: 0.15
+  }),
+  /** Kistenfassung 1 (Altaufzeichnungen): im Mittel 0,95 Kisten je Runde. */
+  cratesPerRoundStartAlt: Object.freeze({
     none: 0.10,
     one: 0.85,
     two: 0.05
   }),
+  /** Höchstzahl unaufgehobener Kisten gleichzeitig auf der Karte (Fassung 2). */
+  maxCratesOnMap: KISTEN_MAX_AUF_KARTE,
   contents: Object.freeze({
     weapons: 0.55,
     sustain: 0.30,
@@ -71,18 +82,22 @@ export function weightedRarity(rng, weights, rarities = LOOT_DROP_RULES.rarities
   return rarities[rarities.length - 1];
 }
 
-export function rollCrateCount(rng) {
+export function rollCrateCount(rng, kisten = KISTEN_STANDARD) {
   const r = rng.next();
-  const cumulative = LOOT_DROP_RULES.cratesPerRoundStart;
+  const raten = kisten === KISTEN_ALT ? LOOT_DROP_RULES.cratesPerRoundStartAlt : LOOT_DROP_RULES.cratesPerRoundStart;
 
-  if (r < cumulative.none) {
+  if (r < raten.none) {
     return 'none';
   }
-  const afterNone = cumulative.none + cumulative.one;
+  const afterNone = raten.none + raten.one;
   if (r < afterNone) {
     return 'one';
   }
-  return 'two';
+  const afterOne = afterNone + raten.two;
+  if (kisten === KISTEN_ALT || r < afterOne) {
+    return 'two';
+  }
+  return 'three';
 }
 
 export function rollCrateContents(rng) {

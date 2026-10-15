@@ -18,6 +18,7 @@ import { hashState } from '../engine/stateSnapshot.js';
 import { KIT_KLASSE } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_ALT } from '../shared/config/zerstoerung.js';
 import { WAFFEN_ALT } from '../shared/config/waffen-fassung.js';
+import { KISTEN_ALT } from '../shared/config/kisten.js';
 
 export const PERSISTENCE_VERSION = 1;
 
@@ -259,6 +260,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       zerstoerung: saved.replay.config?.zerstoerung ?? ZERSTOERUNG_ALT,
       // Alte Sicherungen ohne `waffen`: Schadenswerte vor der Balance-Korrektur 2026-10-14.
       waffen: saved.replay.config?.waffen ?? WAFFEN_ALT,
+      // Alte Sicherungen ohne `kisten`: Altrate (10/85/5 %), keine Obergrenze.
+      kisten: saved.replay.config?.kisten ?? KISTEN_ALT,
     })
     : null;
 

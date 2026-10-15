@@ -34,7 +34,7 @@ test('Loot rolls are deterministic for the same seed', () => {
 test('Loot probability helpers respect configured categories', () => {
   const rng = new SeededRandom(99);
   for (let i = 0; i < 100; i++) {
-    assert.ok(['none', 'one', 'two'].includes(rollCrateCount(rng)));
+    assert.ok(['none', 'one', 'two', 'three'].includes(rollCrateCount(rng)));
     assert.ok(Object.keys(LOOT_DROP_RULES.contents).includes(rollCrateContents(rng)));
     assert.ok(LOOT_DROP_RULES.rarities.includes(weightedRarity(rng, { standard: 1, enhanced: 2, premium: 3, epic: 4 })));
   }

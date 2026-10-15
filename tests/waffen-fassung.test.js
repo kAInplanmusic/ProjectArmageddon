@@ -23,6 +23,7 @@ import {
 import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
 } from '../src/shared/config/loadouts.js';
+import { KISTEN_ALT } from '../src/shared/config/kisten.js';
 import { BALANCE_KORREKTUREN, BALANCE_KORREKTUREN_3, FESTE_ABLEITUNGEN_3, tierForScore } from '../scripts/build-weapon-catalog.mjs';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import {
@@ -56,7 +57,7 @@ const GOLD_ALT = {
 
 function schussAufNachbarn(id, extra = {}) {
   const match = new MatchController({
-    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, ...extra,
+    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, kisten: KISTEN_ALT, ...extra,
   });
   match.start();
   const aktiv = match.activePlayerId;

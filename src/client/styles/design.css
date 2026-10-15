@@ -706,13 +706,15 @@ select option { background: #14181d; color: var(--ink); }
   .lk-id { font-size: 20px; }
   .lk-kopf { gap: 6px; }
   /*
-   * Toasts in niedrigen Fenstern (z. B. 800x400): Oben rechts deckten sie die Lobbykarte und das Menü zu.
-   * Jetzt klein, unten mittig und höchstens die zwei neuesten sichtbar; im Spiel links am Rand
-   * (dort liegen weder Waffenleiste noch FEUER noch die HUD-Kopfzeile).
+   * Toasts in niedrigen Fenstern (z. B. 800x400): Oben rechts deckten sie die Lobbykarte und das Menü zu, unten
+   * mittig den Rand der Lobbykarte. Jetzt schmal und durchscheinend ganz oben am Fensterrand (über dem Menü
+   * liegt dort nur der Rahmen), ohne Mausfang: ein Klick geht durch auf das Menü. Höchstens die neueste
+   * Meldung ist sichtbar. Im Spiel links am Rand (dort liegen weder Waffenleiste noch FEUER noch die
+   * HUD-Kopfzeile), dort bleibt der Toast klickbar.
    */
   #toasts {
-    top: auto; right: auto; bottom: 6px; left: 50%; transform: translateX(-50%);
-    width: min(320px, calc(100vw - 16px)); gap: 3px; align-items: stretch;
+    top: 1px; right: auto; bottom: auto; left: 50%; transform: translateX(-50%);
+    width: min(340px, calc(100vw - 16px)); gap: 3px; align-items: stretch;
   }
   .toast {
     min-height: 28px; padding: 2px 8px 2px 6px; font-size: 12px; line-height: 1.2; gap: 6px;
@@ -724,7 +726,11 @@ select option { background: #14181d; color: var(--ink); }
   .toast-zahl { font-size: 14px; }
   /* Über dem Menü nur die neueste Meldung (eine Zeile), im Spiel die zwei neuesten. */
   #toasts > .toast:nth-last-child(n + 2) { display: none; }
-  #toasts { bottom: 3px; width: min(300px, calc(100vw - 16px)); }
+  body:has(#menu-overlay:not([hidden])) .toast {
+    pointer-events: none; min-height: 22px; padding: 1px 8px 1px 5px; font-size: 11px; line-height: 1.1;
+    grid-template-columns: 16px minmax(0, 1fr) auto; opacity: 0.88; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+  body:has(#menu-overlay:not([hidden])) .toast-symbol { width: 16px; height: 16px; font-size: 11px; }
   body:not(:has(#menu-overlay:not([hidden]))) #toasts {
     left: 8px; bottom: auto; top: 46%; transform: none; width: min(240px, 34vw);
   }

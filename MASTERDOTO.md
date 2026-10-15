@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1382/1382** grün, Dateizahl **146** (Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1396/1396** grün, Dateizahl **148** (Stand 2026-10-15, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -2951,7 +2951,7 @@ blieben unberührt.
    Max 17,7), 16 von 24 vor Valhalla, 1 Remis, Trefferquote 0,15 (der Bot läuft nicht,
    854 px Abstand). Keine Partie „offen“, kein Patt: Valhalla beendet, was der Schaden
    nicht beendet. Zäh ist es im Duell (Spieler laufen real näher heran als der Bot), nicht
-   endlos. **Kistenrate (0,10/0,85/0,05 je Runde, 55 % Waffen) bleibt unverändert**: Der
+   endlos. **Kistenrate (0,10/0,85/0,05 je Runde, 55 % Waffen) blieb in diesem Schritt unverändert (später angehoben: Kistenfassung 2, siehe „Restpunkte 2026-10-15“)**: Der
    Bot kann keine Kisten holen, die Messung trägt keine Aussage über eine Änderung der Rate.
 3. **Ausreißer nach Stufe** (Median Schaden/Schuss bei bestem Abstand, Scout als Schütze,
    Faktor 0,7): common 17,5, uncommon 22,6 → 24,3, rare 48, epic 67,9, legendary 57,7.
@@ -3019,6 +3019,76 @@ waffenmenue, drop-cooldown, specials, replay, runtime-smoke, multiplayer, turret
 62 grün, 2 rot — `waffenmenue.spec.mjs:111` und `:128` (Touch: der Knopf „Abwurf“ liegt über
 dem Waffenmenü-Knopf). Dieselben zwei scheitern unverändert auf 573a2c6 (vorbestehender
 Layoutfehler der Touch-Bedienung, nicht Teil dieser Änderung, offen).
+
+## Restpunkte 2026-10-15
+
+### Katalogfassung 3 (`config.waffen: 3`, Standard)
+
+Nur `damage` (der abgeleitete `powerScore` folgt; Stufe, Munition, Zünder gleich). Quelle:
+`BALANCE_KORREKTUREN_3` in `scripts/build-weapon-catalog.mjs`, `weapons.js` neu erzeugt
+(`npm run weapons:build`). Fassungen 1 und 2 bleiben bitgleich: `getWaffe(id, 2)` legt
+`WAFFEN_F2_WERTE` über den Katalog, `getWaffe(id, 1)` zusätzlich `WAFFEN_ALT_WERTE`.
+
+| Waffe | Stufe | Schaden vorher → nachher | Messung `npm run balance:waffen` (Bestwert, Scout) vorher → nachher |
+|---|---|---|---|
+| Maschinenpistole pa_040 | common | 18 → 21 | 7,8 (0,45x Stufenmedian 17,5: zu schwach) → 9,1 (0,52x); 8 Schuss, Schüsse bis Kill (Scout/Heavy/Artillerie) 13/20/14 → 11/18/12 |
+| Energiefaust pa_120 (Hitscan) | uncommon | 55 → 48 | 55 (2,26x Median 24,3) → 48 (1,98x); Reichweite 513 → 448 (folgt dem Schaden) |
+| Flammenklinge pa_137 (Hitscan + Brand) | uncommon | 55 → 33 | 70 (2,9x) → 48 (1,98x); Reichweite 733 → 440 (folgt dem Schaden), Abklingzeit 1 bleibt (`FESTE_ABLEITUNGEN_3`, die Ableitung hätte sie gestrichen) |
+
+Der Hitscan-Messwert hängt am `damage`-Feld (Energiefaust: Messwert = Schaden; Flammenklinge:
+Schaden + etwa 15 durch den Brandeffekt) und über die abgeleitete Reichweite; Klassenfaktor,
+`blastRadius` und `terrainDamage` ändern die Messung nicht und blieben unangetastet.
+Quantengewehr und Goldene Hand bleiben auf Wunsch über 2x Stufenmedian (unverändert). Die
+Ausreißerliste schrumpft von 22 auf 19 Einträge (Maschinenpistole, Energiefaust,
+Flammenklinge entfallen; `npm run balance:waffen`).
+Zustandsbelege im Test (`waffen-fassung.test.js`): Prüfsumme des Katalogs in Fassung 2 =
+Stand d2d65aa (`sha256 75ba797b…`), Fassung 1 weiter `d80e28df…`; je ein Schuss der drei Waffen
+in Fassung 2 (Hash `88a31078`/`497a7ad1`/`fe7df532`, Schaden 7,7/55/70) und Fassung 3
+(`c338a8c3`/`9cde18cd`/`4634e8f6`, Schaden 9/48/48).
+
+### Kistenfassung 2 (`config.kisten: 2`, Standard)
+
+Befund: 0,95 Kiste je Rundenbeginn (10 % keine, 85 % eine, 5 % zwei) war „eher selten“ gegen
+den Wunsch „eher oft“. Neu (`src/shared/config/kisten.js`, `LOOT_DROP_RULES`): 5 % keine, 45 %
+eine, 35 % zwei, 15 % drei (Mittel 1,6) und höchstens 6 unaufgehobene Kisten gleichzeitig
+(`KISTEN_MAX_AUF_KARTE`, zählt auch abgeworfene Vorräte; die Zahl der Abwürfe wird auf den Rest
+begrenzt). Inhalte (55 % Waffen) und Zufallsziehung je Kiste unverändert, ein
+Zufallswert für die Anzahl je Runde wie vorher (Sub-RNG `LOOT`). Messung `npm run balance:kisten`
+(240 Seeds Rundenbeginn auf leerer Karte; 24 Seeds x 20 Runden ohne Aufheben):
+
+| | Fassung 1 (vorher) | Fassung 2 (nachher) |
+|---|---|---|
+| Kisten je Rundenbeginn | 0,96 | 1,63 |
+| Runden ohne neue Kiste | 9 % | 4 % |
+| Kisten auf der Karte nach 20 Runden ohne Aufheben (Mittel / Höchstwert) | 14 / 21 | 6 / 6 |
+
+Altköpfe: eine Aufzeichnung oder Sicherung OHNE `config.kisten` ist `KISTEN_ALT` (Altrate, keine
+Obergrenze; `ReplayRecorder.fromJSON`, `restoreLobby`). Belege (`tests/kisten.test.js`):
+Ziehung und Zufallsverbrauch in Fassung 1 gleich der wörtlichen Altfassung (300 Seeds),
+Wiedergabe gleicht der Live-Partie in beiden Fassungen (Kopf ohne Feld = Fassung 1). Die
+Zustands-Goldwerte in `waffen-fassung.test.js` und `zerstoerung.test.js` laufen jetzt mit
+ausdrücklichem `kisten: KISTEN_ALT` (Werte unverändert). Der Hilfe-Reiter „Loot“ zeigt die
+neuen Anteile (inkl. drei Kisten) aus `LOOT_DROP_RULES`. Der Bot läuft nicht und holt keine
+Kisten; die Messung zählt deshalb Abwürfe, keine Aufnahmen.
+
+### Fichten (`src/client/pflanzen.js`)
+
+Statt vier gleichmäßiger Zacken („Pagode“): schlanke Spitze, 5 bis 7 hängende Zweigschichten
+mit je Seed unterschiedlicher Länge, Lage und Kerbentiefe, geschwungene Kanten, leichte
+Asymmetrie und Neigung der Achse je Seed, sichtbarer Stamm; Schnee und Reif liegen als
+Streifen auf den Zweigoberseiten (zur Lichtseite hin länger). Gezeichnet wird weiter nur in
+die vorhandene Pflanzenebene (kein Mehraufwand je Bild, `pflanzenRahmen`/Streifen und
+Profiling-Budgets unverändert). Screenshots 1280x720 vorher/nachher (Tannenreihe und
+Alpin-Match, Seed 4242) im Arbeitsverzeichnis der Sitzung; `tests/tanne.test.js`.
+
+### Toasts bei niedrigen Fenstern (800x400)
+
+Über dem Menü saß die eine sichtbare Meldung unten mittig und überdeckte den Rand der
+Lobbykarte („Beitreten“ lag zu 100 % im Rechteck des Toasts, gemessen: Treffer
+`lobby-karte`, `lk-beitreten`). Jetzt: ganz oben am Fensterrand (`top: 1px`), 22 px hoch,
+durchscheinend (88 %), ohne Mausfang (Klicks gehen durch); über dem Menü gemessen 0
+überdeckte Bedienelemente bei 800x400 und 1280x720. Im Spiel unverändert (links am Rand,
+klickbar).
 
 ## Balance-Messung über die Kartenbreite
 

@@ -18,7 +18,7 @@ Regel, die der Motor benutzt. `npm run matrix:check` schlägt fehl, wenn die
 | ranged | 19 | 18–62 | 7 | 4–80 px | 3 | 0 | 0 |
 | tech | 20 | 27–78 | 10 | 4–65 px | 0 | 1 | 1 |
 | ultimate | 10 | 55–110 | 7 | 4–95 px | 1 | 0 | 0 |
-| utility | 10 | 28–55 | 3 | 4–85 px | 0 | 0 | 0 |
+| utility | 10 | 28–52 | 3 | 4–85 px | 0 | 0 | 0 |
 | **gesamt** | **150** | | 56 | | 11 | 6 | 2 |
 
 **Zustellart:** 96 Projektile · 54 Hitscan. Ein Hitscan erzeugt kein Geschoss — Flug, Zünder, Durchschlag und Zielsuche
@@ -108,7 +108,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 37 | Raketenwerfer | ranged | 62 | 46 | 55 px | 4 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 38 | Rakete | ranged | 50 | 38 | 23 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 39 | Feldkanone / Mörser | ranged | 48 | 45 | 27 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 40 | Maschinenpistole | ranged | 18 | — | 4 px | 1 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
+| 40 | Maschinenpistole | ranged | 21 | — | 4 px | 1 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
 | 41 | Salvengeber | heavy_ranged | 22 | 16 | 18 px | 2 | 8 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 42 | Feuerwerks-Salve | heavy_ranged | 58 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 43 | Kampfgeschütz | heavy_ranged | 50 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
@@ -188,7 +188,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 117 | Ananasbombe | utility | 48 | 45 | 27 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 118 | Feuerwesen | utility | 52 | 42 | 25 px | 3 | — | Feuer 40 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 119 | Munitionskiste | utility | — | — | 4 px | 1 | — | — | — |
-| 120 | Energiefaust | utility | 55 | — | 4 px | 1 | 78 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 120 | Energiefaust | utility | 48 | — | 4 px | 1 | 78 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 121 | Explosiver Punch | tech | 58 | 35 | 21 px | 3 | 88 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 122 | Infinity Loop | tech | 32 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 123 | Magnetkanone | tech | 40 | 45 | 27 px | 3 | 95 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
@@ -205,7 +205,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 134 | Luftangriff | tech | 62 | 65 | 39 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 135 | Meteorregen | tech | 68 | 55 | 33 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 136 | Bohrkopfrakete | tech | 64 | 48 | 65 px | 4 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 137 | Flammenklinge | tech | 55 | — | 4 px | 1 | 55 | Feuer 30 | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
+| 137 | Flammenklinge | tech | 33 | — | 4 px | 1 | 55 | Feuer 30 | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
 | 138 | Magischer Kriegshammer | tech | 68 | 45 | 27 px | 3 | 78 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 139 | Höllenkanone | tech | 78 | 58 | 35 px | 3 | — | Feuer 48 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 140 | Quantenblaster | tech | 60 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |

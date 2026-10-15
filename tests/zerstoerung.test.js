@@ -12,6 +12,7 @@ import {
 import { restoreLobby } from '../src/server/persistence.js';
 import { KIT_FLAECHE } from '../src/shared/config/loadouts.js';
 import { WAFFEN_ALT } from '../src/shared/config/waffen-fassung.js';
+import { KISTEN_ALT } from '../src/shared/config/kisten.js';
 import {
   applyLogEntryToTerrain, buildTerrainForSeed, bewerteTerrainHash,
 } from '../src/client/terrainPreview.js';
@@ -119,7 +120,7 @@ test('Fassung 2 (Zwischenstand): Zustands- und Maskenhash bleiben Bit für Bit w
     { seed: 9001, stateHash: 'afa508f1', terrainHash: 3786376531, krater: 32 },
   ];
   for (const g of gold) {
-    const m = new MatchController({ seed: g.seed, teams: 2, playersPerTeam: 2, preset: 'hills', zerstoerung: ZERSTOERUNG_GELAENDE, kit: KIT_FLAECHE, waffen: WAFFEN_ALT });
+    const m = new MatchController({ seed: g.seed, teams: 2, playersPerTeam: 2, preset: 'hills', zerstoerung: ZERSTOERUNG_GELAENDE, kit: KIT_FLAECHE, waffen: WAFFEN_ALT, kisten: KISTEN_ALT });
     m.start();
     let schuesse = 0;
     for (let tick = 0; tick < 6000; tick++) {
@@ -144,7 +145,7 @@ test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Go
     { seed: 31, stateHash: '80a1308e', terrainHash: 2433242960, krater: 31 },
   ];
   for (const g of gold) {
-    const m = new MatchController({ seed: g.seed, teams: 2, playersPerTeam: 2, preset: 'hills', zerstoerung: ZERSTOERUNG_ALT, kit: KIT_FLAECHE, waffen: WAFFEN_ALT });
+    const m = new MatchController({ seed: g.seed, teams: 2, playersPerTeam: 2, preset: 'hills', zerstoerung: ZERSTOERUNG_ALT, kit: KIT_FLAECHE, waffen: WAFFEN_ALT, kisten: KISTEN_ALT });
     m.start();
     let schuesse = 0;
     for (let tick = 0; tick < 6000; tick++) {

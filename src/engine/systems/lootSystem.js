@@ -11,6 +11,7 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import {
   weightedRarity, rollCrateCount, rollCrateContents, LOOT_DROP_RULES,
 } from '../../shared/config/loot.js';
+import { KISTEN_ALT, KISTEN_STANDARD } from '../../shared/config/kisten.js';
 import { pickWeaponForRarity, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
 /*
@@ -114,12 +115,20 @@ export class LootSystem {
    * @param {function(number):number} options.surfaceYFor
    * @returns {number[]} Entity-IDs der Kisten
    */
-  spawnRoundCrates(world, { rng, width, height, surfaceYFor }) {
+  spawnRoundCrates(world, { rng, width, height, surfaceYFor, kisten = KISTEN_STANDARD }) {
     const activeRng = rng ?? this.rng;
     if (!activeRng) throw new Error('LootSystem benoetigt einen RNG');
 
-    const count = rollCrateCount(activeRng);
-    const amount = count === 'none' ? 0 : count === 'one' ? 1 : 2;
+    const count = rollCrateCount(activeRng, kisten);
+    let amount = count === 'none' ? 0 : count === 'one' ? 1 : count === 'two' ? 2 : 3;
+    if (kisten !== KISTEN_ALT) {
+      // Fassung 2: nie mehr als `maxCratesOnMap` unaufgehobene Kisten gleichzeitig.
+      let liegen = 0;
+      for (const id of world.getEntitiesBySignature(COMPONENT_SIGNATURES.CRATE | COMPONENT_SIGNATURES.POSITION)) {
+        if (world.isActive(id) && world.getComponent(id, 'Crate', 'picked') !== 1) liegen += 1;
+      }
+      amount = Math.max(0, Math.min(amount, LOOT_DROP_RULES.maxCratesOnMap - liegen));
+    }
     const spawned = [];
 
     for (let i = 0; i < amount; i++) {

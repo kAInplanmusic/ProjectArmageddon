@@ -40,6 +40,7 @@ import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionStep
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
+import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { Zerstoerung } from './zerstoerung.js';
@@ -586,7 +587,7 @@ export class MatchController {
     kit = KIT_STANDARD,
     /** Zerstörungsfassung (`config/zerstoerung.js`): 3 = Standard (große Schollen fallen), 2 = raue Krater + Nachrutschen bis 6000 Zellen, 1 = Altverhalten. */
     zerstoerung = ZERSTOERUNG_STANDARD,
-    waffen = WAFFEN_STANDARD,
+    waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -615,6 +616,7 @@ export class MatchController {
     this.kit = normalisiereKit(kit);
     this.zerstoerung = normalisiereZerstoerung(zerstoerung);
     this.waffen = normalisiereWaffen(waffen);
+    this.kisten = normalisiereKisten(kisten);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -1016,7 +1018,7 @@ export class MatchController {
         rng: this.#seedManager.getSubRng('LOOT'),
         width: this.width,
         height: this.height,
-        surfaceYFor: x => this.surfaceYAt(x),
+        surfaceYFor: x => this.surfaceYAt(x), kisten: this.kisten,
       });
     } catch (error) {
       this.#events.emit('loot_error', { message: error.message });

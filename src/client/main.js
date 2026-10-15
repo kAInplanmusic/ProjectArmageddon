@@ -3664,6 +3664,7 @@ function zeichneLoot(container) {
     ['keine Kiste', regeln.cratesPerRoundStart.none],
     ['eine Kiste', regeln.cratesPerRoundStart.one],
     ['zwei Kisten', regeln.cratesPerRoundStart.two],
+    ['drei Kisten', regeln.cratesPerRoundStart.three],
   ]) {
     kistenListe.append(textEl('li', `${prozent(anteil)} — ${was}`));
   }

@@ -140,46 +140,85 @@ export function zeichnePflanze(ctx, p, f) {
     ctx.fillStyle = f.dunkel;
     ctx.beginPath(); ctx.arc(kx, ky + 1, p.h * 0.05 + 1, 0, Math.PI * 2); ctx.fill();
   } else if (p.art === 'tanne') {
-    // Tanne: Stamm und vier übereinanderliegende Zacken, die obere Hälfte mit Schneekappe.
-    const stufen = 4;
-    const b = p.h * 0.46;
-    const zeichneZacken = (breiteF, fuell, strich) => {
+    // Fichte: schlanke Spitze, 5 bis 7 hängende Zweigschichten, je Seed unregelmäßig in Länge und Lage,
+    // leicht schief und je Seite verschieden breit. Schneelast liegt auf den Oberseiten der Zweige.
+    const rnd = (i, k) => hash2(p.seed, i, 20 + k);
+    const n = 5 + Math.floor(rnd(0, 0) * 3);
+    const spitzeX = p.x + (rnd(0, 1) - 0.5) * p.h * 0.1 * s;
+    const oben = p.y - p.h;
+    const kronenH = p.h * 0.88;
+    const seite = [0.88 + rnd(0, 2) * 0.26, 0.88 + rnd(0, 3) * 0.26];
+    const breit = p.h * 0.37;
+    const unten = p.y - p.h * 0.1;
+    // Eckpunkte je Seite von oben nach unten: Zweigspitze und die Kerbe darunter.
+    const baue = sg => {
+      const k = [];
+      for (let i = 0; i < n; i += 1) {
+        const t = (i + 1) / n;
+        const tipY = Math.min(unten, oben + kronenH * (i + 1) / n + p.h * (0.025 + 0.04 * rnd(i, 4 + (sg > 0 ? 8 : 0))));
+        const w = breit * (0.2 + 0.8 * t ** 0.82) * (0.84 + 0.3 * rnd(i, 5 + (sg > 0 ? 8 : 0))) * seite[sg > 0 ? 1 : 0];
+        // Die Mittelachse neigt sich zur Spitze hin leicht zur Seite.
+        const achse = p.x + (spitzeX - p.x) * (1 - t) ** 1.3;
+        const tip = { x: achse + sg * w, y: tipY };
+        const kerbe = { x: achse + sg * w * (0.16 + 0.2 * rnd(i, 6 + (sg > 0 ? 8 : 0))), y: tipY - p.h * (0.05 + 0.04 * rnd(i, 7)) };
+        k.push({ tip, kerbe });
+      }
+      return k;
+    };
+    const apex = { x: spitzeX, y: oben + p.h * 0.02 };
+    /** Punktfolge einer Seite von oben nach unten: Spitze der Schicht, Kerbe darunter, nächste Spitze ... */
+    const folge2 = k => {
+      const l = [apex];
+      k.forEach((e, i) => { l.push(e.tip); if (i < n - 1) l.push(e.kerbe); });
+      return l;
+    };
+    const links = baue(-1);
+    const rechts = baue(1);
+    /** Steuerpunkt einer Kante: auswärts führende Kanten steigen erst und hängen dann, Kanten zur Kerbe sacken durch. */
+    const steuer = (a, b) => (b.y >= a.y && Math.abs(b.x - spitzeX) > Math.abs(a.x - spitzeX)
+      ? { x: a.x + (b.x - a.x) * 0.55, y: a.y + (b.y - a.y) * 0.12 }
+      : { x: (a.x + b.x) / 2, y: Math.max(a.y, b.y) + p.h * 0.03 });
+    const zeichneKrone = (mitte, faktor, fuell, strich) => {
+      const f2 = pt => ({ x: mitte + (pt.x - mitte) * faktor, y: pt.y });
+      const l = folge2(links).map(f2);
+      const r = folge2(rechts).map(f2);
+      l[0] = apex; r[0] = apex;
       ctx.beginPath();
-      ctx.moveTo(p.x - p.h * 0.05, p.y);
-      ctx.lineTo(p.x - p.h * 0.05, p.y - p.h * 0.14);
-      for (let i = 0; i < stufen; i += 1) {
-        const unten = p.y - p.h * (0.1 + 0.74 * (i / stufen));
-        const br = b * breiteF * (1 - 0.18 * i);
-        ctx.lineTo(p.x - br, unten);
-        ctx.lineTo(p.x - br * 0.28, unten - p.h * 0.05);
-      }
-      ctx.lineTo(p.x, p.y - p.h);
-      for (let i = stufen - 1; i >= 0; i -= 1) {
-        const unten = p.y - p.h * (0.1 + 0.74 * (i / stufen));
-        const br = b * breiteF * (1 - 0.18 * i);
-        ctx.lineTo(p.x + br * 0.28, unten - p.h * 0.05);
-        ctx.lineTo(p.x + br, unten);
-      }
-      ctx.lineTo(p.x + p.h * 0.05, p.y - p.h * 0.14);
-      ctx.lineTo(p.x + p.h * 0.05, p.y);
+      ctx.moveTo(apex.x, apex.y);
+      for (let i = 1; i < l.length; i += 1) { const c = steuer(l[i - 1], l[i]); ctx.quadraticCurveTo(c.x, c.y, l[i].x, l[i].y); }
+      ctx.lineTo(p.x - p.h * 0.04, unten);
+      ctx.lineTo(p.x + p.h * 0.04, unten);
+      ctx.lineTo(r[r.length - 1].x, r[r.length - 1].y);
+      for (let i = r.length - 2; i >= 0; i -= 1) { const c = steuer(r[i], r[i + 1]); ctx.quadraticCurveTo(c.x, c.y, r[i].x, r[i].y); }
       ctx.closePath();
-      if (strich) { ctx.strokeStyle = strich; ctx.lineWidth = 2.6; ctx.stroke(); }
+      if (strich) { ctx.strokeStyle = strich; ctx.lineWidth = 2.4; ctx.stroke(); }
       ctx.fillStyle = fuell;
       ctx.fill();
     };
-    zeichneZacken(1, f.dunkel, f.kontur);
-    // Lichtseite: schmalere Zackenform in Blattgrün über der dunklen.
-    zeichneZacken(0.62, f.blatt, null);
-    // Reif auf den oberen Stufen.
+    // Stamm
+    ctx.fillStyle = f.stamm;
+    ctx.fillRect(p.x - p.h * 0.045, unten - 2, p.h * 0.09, p.h * 0.1 + 2);
+    zeichneKrone(p.x, 1, f.dunkel, f.kontur);
+    // Lichtseite: schmalere Krone in Nadelgrün, zur Lichtseite hin verschoben.
+    zeichneKrone(p.x + s * p.h * 0.03, 0.6, f.blatt, null);
+    // Schnee und Reif auf den Zweigoberseiten (links kürzer, zur Lichtseite hin länger).
     ctx.fillStyle = f.hell;
-    for (let i = 1; i < stufen; i += 1) {
-      const unten = p.y - p.h * (0.1 + 0.74 * (i / stufen));
-      ctx.beginPath();
-      ctx.moveTo(p.x - b * (1 - 0.18 * i) * 0.5 * s, unten - p.h * 0.02);
-      ctx.lineTo(p.x, unten - p.h * 0.17);
-      ctx.lineTo(p.x + b * (1 - 0.18 * i) * 0.18 * s, unten - p.h * 0.05);
-      ctx.closePath();
-      ctx.fill();
+    for (let i = 0; i < n - 1; i += 1) {
+      for (const sg of [-1, 1]) {
+        if (rnd(i, 9 + (sg > 0 ? 3 : 0)) < 0.18) continue;
+        const sk = (sg === s ? 0.78 : 0.5) * (0.7 + 0.5 * rnd(i, 10));
+        const eck = sg < 0 ? links[i] : rechts[i];
+        const ab = i > 0 ? (sg < 0 ? links[i - 1].kerbe : rechts[i - 1].kerbe) : { x: spitzeX, y: oben + p.h * 0.02 };
+        const ex = ab.x + (eck.tip.x - ab.x) * sk;
+        const ey = ab.y + (eck.tip.y - ab.y) * sk * 0.85;
+        ctx.beginPath();
+        ctx.moveTo(ab.x, ab.y);
+        ctx.quadraticCurveTo(ab.x + (ex - ab.x) * 0.55, ab.y + (ey - ab.y) * 0.12 - 0.5, ex, ey);
+        ctx.lineTo(ex - sg * p.h * 0.03, ey + p.h * 0.03);
+        ctx.lineTo(ab.x + sg * p.h * 0.02, ab.y + p.h * 0.045);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
   } else if (p.art === 'busch') {
     const klumpen = 4;
