@@ -43,7 +43,7 @@ FRAKTIONEN = {
     "pixel": [
         (0, 0, "00_nullpointer-exception"), (0, 1, "01_pyrofox-a"), (0, 2, "02_pyrofox-b"),
         (1, 0, "10_arcershorn-a"), (1, 1, "11_pyrowand-a"), (1, 2, "12_shieldmon"),
-        (2, 0, "20_phantom-mal-a"), (2, 1, "21_arcanus-a"), (2, 2, "22_arcanus-b"),
+        (2, 0, "20_phantomal-a"), (2, 1, "21_arcanus-a"), (2, 2, "22_arcanus-b"),
     ],
     "datacult": [
         (0, 0, "00_nullpointer-exception"), (0, 1, "01_datapath-replicant"), (0, 2, "02_chrome-code-shifter"),

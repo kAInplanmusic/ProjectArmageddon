@@ -106,3 +106,22 @@ test('Alle 81 Bilder sind über den Kader erreichbar', async ({ page }) => {
     expect(antwort.status(), `${u} nicht abrufbar`).toBe(200);
   }
 });
+
+test('Ein Klick auf eine Figur zeigt das HD-Porträt', async ({ page }) => {
+  await page.goto('http://127.0.0.1:5173/');
+  await page.waitForFunction(() => Boolean(window.__PA__));
+  await page.locator('#roster-browser > summary').click();
+  await expect(page.locator('#roster-portrait')).toBeHidden();
+
+  await page.locator('#roster-list li').nth(1).click();
+  const bild = page.locator('#roster-portrait img');
+  await expect(bild).toHaveCount(1);
+  await page.waitForFunction(() => {
+    const b = document.querySelector('#roster-portrait img');
+    return b && b.complete && b.naturalWidth > 0;
+  });
+  const groesse = await bild.evaluate(e => ({ b: e.naturalWidth, h: e.naturalHeight, src: e.currentSrc }));
+  expect(groesse.src).toContain('characters-hd');
+  expect(groesse.b).toBe(groesse.h);
+  expect(groesse.b).toBeGreaterThan(256);
+});

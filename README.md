@@ -73,7 +73,7 @@ Neun Fraktionen zu je neun Charakteren — **81 insgesamt**. Die Inhalte stehen 
 | `src/client/roster.js` | lädt die Bilder, ordnet sie dem Katalog zu |
 
 ```bash
-python3 scripts/extract_factions.py      # 81 PNG neu erzeugen
+python3 scripts/extract_factions.py      # 81 Sprites + 81 HD-Porträts neu erzeugen
 ```
 
 Im Menü unter **„Kader ansehen"**: neun Reiter, je Fraktion die neun Charaktere
@@ -83,19 +83,31 @@ mit Bild, Kampfweise, Superwaffe, Biografie und Stärken/Schwächen.
 Bogen = Fernkampf, Stab = Magie), der Platz innerhalb der Zeile die Spielklasse
 (0 = heavy, 1 = scout, 2 = artillery). Die Dateien heißen `<zeile><spalte>_<name>.png`.
 
-**Freibstellung.** Der Hintergrund der Bögen ist ein *gemaltes* Schachbrett, kein
-Alphakanal. Die Kanten zwischen den Feldern bilden ein ein bis zwei Pixel dünnes
-Netz über die ganze Kachel; dadurch hingen Figur und Namenszeile als eine
-Komponente zusammen. Verfahren: Hintergrund über **ganze Schachfelder** bestimmen
-(so verschwindet das Netz mit), dann die größte Zusammenhangskomponente nehmen und
-zusätzlich alles ab 4 % ihrer Fläche, was sich mit ihr überschneidet — das sind
-schwebende Kugeln und Begleiter, nicht die Buchstaben des Namens. Ein dünner
-Zellrahmen wird vorher weggeschnitten.
+**Freistellung.** Die Bögen sind RGB-PNG mit eingebranntem Schachbrett als
+„Transparenz" (zwei Grautöne, Felder von rund 25 px, je Bogen leicht anderer Ton).
+Verfahren in `scripts/extract_factions.py` (numpy/scipy, deterministisch):
+Zellen exakt schneiden (Rahmen weg), Töne als glatte Karten aus dem Zellrand
+schätzen, den Hintergrund per Flutfüllung entfernen, die mit dem Rand
+zusammenhängt (dunkle Konturen halten das Figureninnere zusammen, helle Teile
+darin bleiben), eingeschlossene Schachbrettinseln über Gittertest oder flache
+Tonflächen entfernen, Randpixel entmischen (Deckungsgrad schätzen, Hintergrund
+herausrechnen, kein heller Saum), Namen, Waffensymbol und kleine Reste über
+Komponentenanalyse verwerfen (Schwärme und Glühen bleiben). Das
+halbtransparente Wasserzeichen (Vierzackstern unten rechts) wird vorher
+herausgerechnet. Einzelfälle stehen in `KORREKTUREN` im Skript.
 
-**Bekannter Inhaltsfehler.** Die Bögen 8 und 9 benennen je eine Figur
+Ausgabe: `src/client/assets/characters/` (256×256, für Anzeigen bis ~128 px) und
+`src/client/assets/characters-hd/` (gleiche Dateinamen, quadratisch, in
+Quellgröße der Zelle, ~260-350 px, nie hochskaliert). Der Kader zeigt die Liste
+mit den 256ern und beim Anklicken einer Figur das HD-Porträt (220 px, lazy).
+`tests/portraets.test.js` prüft Alphakanal, Ecken, deckenden Anteil und
+Schachbrett-Reste.
+
+**Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
 „Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
-gegen schweren Rahmen mit Kanonenarm). Die Namen wurden unverändert übernommen —
-ein Umbenennen wäre ein Eingriff in den Inhalt. Erfasst in `NAMING_CONFLICTS`,
+gegen schweren Rahmen mit Kanonenarm). Die Namen wurden unverändert aus den Bögen
+übernommen (Pixel-Bogen: „Unit A/B" statt „Einheit A/B", „Phantomal" statt
+„Phantom-Mal"; ID `phantom-mal-a` bleibt). Erfasst in `NAMING_CONFLICTS`,
 geprüft durch einen Test.
 
 ## Günther
@@ -176,7 +188,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1396 Tests in 148 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1400 Tests in 149 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **211 Tests in 36 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

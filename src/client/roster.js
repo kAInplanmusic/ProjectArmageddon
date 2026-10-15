@@ -2,7 +2,9 @@
  * Lädt die Charakterbilder und ordnet sie dem Katalog zu.
  *
  * Die 81 Figuren wurden mit `scripts/extract_factions.py` aus den Fraktionsbögen
- * geschnitten und liegen als freigestellte PNG unter assets/characters/.
+ * geschnitten und liegen als freigestellte PNG (echter Alphakanal) unter
+ * assets/characters/ (256 px, für kleine Anzeigen bis ~128 px) und
+ * assets/characters-hd/ (in Quellgröße, für Anzeigen darüber).
  *
  * ACHTUNG beim Pfad: Das Muster in `import.meta.glob` ist relativ zu DIESER
  * Datei. Dasselbe ist bei den Waffen-Ikonen und den Kulissen schon schiefgegangen
@@ -22,6 +24,16 @@ const BILDER = import.meta.glob('./assets/characters/*/*.png', {
 });
 
 /**
+ * Die HD-Porträts, LAZY: Vite macht daraus Lade-Funktionen statt sofort aufgelöster
+ * URLs, die Bilder landen als eigene Dateien im Bundle und werden erst geholt, wenn
+ * eine große Anzeige sie verlangt.
+ */
+const HD_BILDER = import.meta.glob('./assets/characters-hd/*/*.png', {
+  query: '?url',
+  import: 'default',
+});
+
+/**
  * Liefert die URL eines Charakterbildes.
  *
  * Intern genutzt von `factionsWithSprites`.
@@ -32,6 +44,19 @@ const BILDER = import.meta.glob('./assets/characters/*/*.png', {
 function spriteUrl(character) {
   if (!character) return null;
   return BILDER[`./assets/characters/${character.faction}/${character.sprite}`] ?? null;
+}
+
+/**
+ * URL des HD-Porträts (für Anzeigen größer als ~128 px). Fällt auf das 256er
+ * zurück, falls es zu der Figur kein HD-Bild gibt.
+ *
+ * @param {object} character Eintrag aus CHARACTERS
+ * @returns {Promise<string|null>}
+ */
+export async function hdUrl(character) {
+  if (!character) return null;
+  const lader = HD_BILDER[`./assets/characters-hd/${character.faction}/${character.sprite}`];
+  return lader ? lader() : spriteUrl(character);
 }
 
 /** Wie viele Bilder tatsächlich geladen wurden. */

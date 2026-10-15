@@ -40,7 +40,7 @@ import {
   sicherungAlsText,
   sicherungAusText,
 } from '../shared/identity.js';
-import { factionsWithSprites, spriteCount } from './roster.js';
+import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import {
   uebersichtFuerHilfe, classCounterplay, resolveLoadout, combatProfile,
@@ -3151,8 +3151,27 @@ function buildRosterView() {
     if (behaelter.open && !gezeichnet) zeichnen();
   });
 
+  const portraet = document.getElementById('roster-portrait');
+  // Große Ansicht (220 px): nimmt das HD-Porträt, die Liste (56 px) bleibt beim 256er.
+  const zeigePortraet = async (c) => {
+    if (!portraet) return;
+    const url = await hdUrl(c);
+    if (!url) return;
+    const bild = document.createElement('img');
+    bild.src = url;
+    bild.alt = `Porträt ${c.name}`;
+    const unterschrift = document.createElement('div');
+    unterschrift.textContent = c.name;
+    portraet.replaceChildren(bild, unterschrift);
+    portraet.hidden = false;
+  };
+
   const zeichnen = () => {
     const fraktion = fraktionen.find(f => f.id === gewaehlt) ?? fraktionen[0];
+    if (portraet) {
+      portraet.hidden = true;
+      portraet.replaceChildren();
+    }
 
     info.replaceChildren();
     const kopf = document.createElement('div');
@@ -3165,6 +3184,15 @@ function buildRosterView() {
 
     liste.replaceChildren(...fraktion.characters.map(c => {
       const li = document.createElement('li');
+      li.tabIndex = 0;
+      li.title = 'Großes Porträt anzeigen';
+      li.addEventListener('click', () => zeigePortraet(c));
+      li.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          zeigePortraet(c);
+        }
+      });
 
       if (c.url) {
         const bild = document.createElement('img');

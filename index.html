@@ -679,6 +679,9 @@
     #roster-tabs button[aria-selected="true"] { background: #2d6cdf; border-color: #2d6cdf; color: #fff; }
     .roster-info { font-size: 0.82rem; color: #9fb0c4; margin-bottom: 0.5rem; }
     .roster-info b { color: #e8eef6; }
+    .roster-portrait { margin: 0 0 0.6rem; text-align: center; color: #9fb0c4; font-size: 0.82rem; }
+    .roster-portrait img { width: 220px; height: 220px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto 0.2rem; }
+    .roster-list li { cursor: pointer; }
     .roster-list { list-style: none; margin: 0; padding: 0; max-height: 22rem; overflow-y: auto; }
     .roster-list li { display: flex; gap: 0.6rem; padding: 0.45rem 0; border-top: 1px solid #232f3d; }
     .roster-list img { width: 56px; height: 56px; flex: 0 0 56px; object-fit: contain; }
@@ -1070,6 +1073,7 @@
             <summary>Kader ansehen — 9 Fraktionen, 81 Charaktere</summary>
             <div id="roster-tabs" role="tablist" aria-label="Fraktionen"></div>
             <div id="roster-info" class="roster-info"></div>
+            <figure id="roster-portrait" class="roster-portrait" hidden aria-live="polite"></figure>
             <ul id="roster-list" class="roster-list" aria-label="Charaktere der Fraktion"></ul>
           </details>
           <!--
