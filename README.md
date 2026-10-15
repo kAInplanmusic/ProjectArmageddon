@@ -103,6 +103,13 @@ mit den 256ern und beim Anklicken einer Figur das HD-Porträt (220 px, lazy).
 `tests/portraets.test.js` prüft Alphakanal, Ecken, deckenden Anteil und
 Schachbrett-Reste.
 
+**Seitenansichten.** `src/client/assets/characters-side/<fraktion>/NN_name.png`
+(256×256, Blick nach rechts, Fußpunkt y=240, `manifest.json` mit `hasSide`,
+`anchor`, `facing`) und `src/client/assets/charactersheets/` (Front + Seite je
+Figur, 512×256) entstehen mit `scripts/seitenansichten/` (Together AI,
+FLUX.1.1-pro, lokale Freistellung); Verfahren, Kosten und Grenzen in
+`MASTERDOTO.md`, Prüfung in `tests/seitenansichten.test.js`.
+
 **Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
 „Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
 gegen schweren Rahmen mit Kanonenarm). Die Namen wurden unverändert aus den Bögen
@@ -188,7 +195,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1413 Tests in 152 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1417 Tests in 153 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **234 Tests in 38 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
