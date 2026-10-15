@@ -1,0 +1,29 @@
+{
+  "modell": "black-forest-labs/FLUX.1.1-pro",
+  "spiegeln": [
+    "rodentia/02_vanguard-captain-rix.png",
+    "rodentia/10_sharpshooter-quill.png",
+    "rodentia/11_grenadier-skitter.png",
+    "rodentia/12_volley-captain-spark.png",
+    "rodentia/20_alchemage-nibble.png",
+    "rodentia/21_technomancer-squeak.png",
+    "rodentia/22_grand-conduit-vex.png",
+    "machina/02_hydra-titan-mech.png",
+    "machina/11_heavy-battery-moerser-bot.png",
+    "machina/12_ordnance-rail-viper.png",
+    "shinobi/00_shred-katana-hanzmon.png",
+    "shinobi/10_dazzler-werner.png",
+    "shinobi/12_blowpipe-koga.png",
+    "shinobi/22_vixen-kitsune.png",
+    "undead/01_grave-zombie-kauer.png",
+    "undead/12_vessel-plague-skull.png",
+    "undead/21_scribe-necro-silas.png",
+    "datacult/21_hyper-link-hound.png",
+    "pixel/01_pyrofox-a.png",
+    "pixel/02_pyrofox-b.png",
+    "beasts/01_shrew-quakes.png",
+    "beasts/10_flame-jaws.png"
+  ],
+  "verworfen": {},
+  "fallback": []
+}

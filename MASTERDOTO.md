@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1409/1409** grün, Dateizahl **151** (Stand 2026-10-15, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1413/1413** grün, Dateizahl **152** (Stand 2026-10-15, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3714,6 +3714,46 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       OFFEN: die exklusive Waffe je Charakter, die NUR als legendaerer Drop
       erscheint. Die Superwaffe im Katalog ist die Ultimate-Faehigkeit des
       Charakters, NICHT dieser Drop — das sind zwei verschiedene Dinge.
+
+      **Seitenansichten (2026-10-15).** Je Figur ein Profilsprite (Blick nach
+      rechts, Standpose) unter `assets/characters-side/<fraktion>/NN_name.png`
+      (gleiche Dateinamen wie die Porträts, 256x256, Grundlinie y=240,
+      horizontal mittig; `manifest.json` mit `file`, `hasSide`, `anchor` {x,y} =
+      Fußpunkt, `facing: "right"`, `source: "together"`, `model`). Dazu je
+      Figur ein Einzel-Charactersheet `assets/charactersheets/<fraktion>/NN_name.png`
+      (512x256: links Front = Porträt, rechts Seite, beide auf derselben
+      Grundlinie; Zellen im `manifest.json` des Ordners). Der Client liest die
+      Dateien nur, wo `hasSide` wahr ist, sonst Porträt als Rückfall.
+      Verfahren (`scripts/seitenansichten/`): (1) `prompts.py` hält je Figur
+      eine nach dem Porträt von Hand geschriebene Beschreibung plus feste
+      Stilschablone („Full color comic illustration, bold thick dark outlines,
+      cel shaded ... strict side view, profile, facing right, solid flat
+      <Farbe> background, no shadow, no ground"). Hintergrund Magenta, bei
+      Xeno Grün, bei Rodentia Cyan, bei Phantomal und zwei Beasts Grün.
+      (2) `erzeugen.py` ruft Together reines Text-zu-Bild auf (kein Referenzbild:
+      die Referenzmodelle waren in der Organisation gesperrt, Qwen-Image und
+      FLUX.1.1-pro ignorieren `image_url`), Modell `black-forest-labs/FLUX.1.1-pro`,
+      768x1024, fester Seed 20260701 (+ Versuchsnummer), Parallelität höchstens 4,
+      Backoff, Rohbild-Cache und Kostenlog außerhalb des Repos
+      (`PA_SEITE_ARBEIT`), Abbruch bei 4,5 USD. (3) `freistellen.py` stellt
+      lokal frei (glatte Randflächen als Hintergrund, Farbabgleich für Löcher
+      zwischen Beinen und Arm, Bodenschatten, Entmischen der Randpixel),
+      spiegelt nach links blickende Rohbilder (`entscheidungen.json`), normiert
+      und schreibt Sprites, Sheets und Manifeste. (4) `kontaktbogen.py` erzeugt
+      helle und dunkle Kontaktbögen zur Sichtprüfung. Qwen-Image (rund 0,01 USD)
+      lieferte Pixelart mit schwarzem Boden und blieb deshalb nur im Piloten.
+      Kosten: 88 abgerechnete Aufrufe (4 Qwen-Pilot, 84 FLUX.1.1-pro; 81 Figuren
+      plus 3 Pilot- und Wiederholungsaufrufe), konservativ geschätzt 3,41 USD
+      (0,04 USD je FLUX-Aufruf, 0,0116 je Qwen-Aufruf), Obergrenze 4,5 USD.
+      Fallback-Figuren: keine, alle 81 haben ein Seitensprite. Grenzen: Ein Teil
+      der Bilder zeigt eher Dreiviertel- oder Frontansicht als strenges Profil
+      (Text-zu-Bild kennt die Vorlage nicht); Waffen und Zierrat weichen
+      sichtbar von den Porträts ab. Weitere erzeugen: Beschreibung in
+      `prompts.py` ändern, `erzeugen.py MODELL SCHLUESSEL --versuch 2` (neuer
+      Seed), `freistellen.py ROHDIR --entscheidungen entscheidungen.json`;
+      Schlüssel nur über die Umgebung (`TOGETHER_API_KEY` oder
+      `PA_TOGETHER_ENV` mit Pfad zu einer Datei), nie ins Repo. Prüfung:
+      `tests/seitenansichten.test.js`.
 
 ### F. Darstellung
 - [x] **Landschaftsgeneration per KI.** 60 Kulissen (12 Biome a 5 Varianten) als
