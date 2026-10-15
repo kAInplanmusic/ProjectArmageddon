@@ -880,7 +880,7 @@ class LobbySession {
         ammo,
         cooldowns,
         activeWeaponId: entry.activeWeaponId ?? null,
-        // Darstellung: Fraktion des Teams (reine Anzeige, `null` = Standardfigur).
+        // Darstellung: Fraktion des Teams (reine Anzeige, `null` = Anzeige leitet automatisch ab).
         fraktionId: this.lobby.fraktionen?.[seat.teamId ?? 0] ?? null,
         classId: spieler?.classId ?? null,
         archetypeId: spieler?.archetypeId ?? null,

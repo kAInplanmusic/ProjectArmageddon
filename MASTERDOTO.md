@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1409/1409** grün, Dateizahl **151** (Stand 2026-10-15, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1413/1413** grün, Dateizahl **152** (Stand 2026-10-15, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3097,7 +3097,13 @@ Hash und Replay-Kopf bleiben unverändert (`src/engine/match.js` wurde nicht
 angefasst, es steht am Zeilenbudget).
 
 - **Wahl:** Menü, Abschnitt „Fraktion je Team" (`#cfg-fraktion-<team>`). Leer =
-  Standardfigur (prozedural, wie zuvor). Online geht die Wahl als optionales Feld
+  „Zufällig / Automatisch" (Standard seit „Figuren sichtbar"): jedes Team bekommt
+  deterministisch aus Match-Seed (lokal) bzw. Lobby-ID (online, clientseitig,
+  falls der Server keine Fraktion nennt) eine eigene Fraktion
+  (`loeseFraktionen`); „Klassisch (ohne Figuren)" = alte prozedurale Figur.
+  Die Sprites werden zoomabhängig auf ca. 80 px Bildschirmhöhe skaliert
+  (`figurSkalaFuer`, Grenzen 0,75 bis 5,4; Hitbox unverändert, nur Anzeige).
+  Online geht die Wahl als optionales Feld
   `fraktionen` (je Team) in `POST /api/lobby/create`, der Server prüft tolerant
   (`bereinigeFraktionen`), speichert sie in Lobby und Sicherung und liefert sie
   je Figur als `fraktionId` in der Bestandsnachricht (`loadouts`). Fehlt sie:

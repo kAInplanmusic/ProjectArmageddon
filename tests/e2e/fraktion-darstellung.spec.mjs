@@ -22,19 +22,20 @@ async function starte(page, fraktionen) {
   return fehler;
 }
 
-test('Ohne Fraktion bleibt die Figurenkarte verborgen', async ({ page }) => {
-  await starte(page, null);
+test('Klassisch (ohne Figuren): die Figurenkarte bleibt verborgen', async ({ page }) => {
+  await starte(page, ['klassisch', 'klassisch']);
   await page.waitForTimeout(500);
   await expect(page.locator('#hud-figur')).toBeHidden();
 });
 
-test('Fraktionsfelder folgen der Teamzahl, Standard ist die Standardfigur', async ({ page }) => {
+test('Fraktionsfelder folgen der Teamzahl, Standard ist Zufällig / Automatisch', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#cfg-fraktion-0')).toHaveValue('');
   await expect(page.locator('#cfg-fraktion-1')).toHaveCount(1);
   await expect(page.locator('#cfg-fraktion-2')).toHaveCount(0);
   const werte = await page.locator('#cfg-fraktion-0 option').evaluateAll(o => o.map(x => x.value));
-  expect(werte.length).toBe(10);
+  expect(werte.length).toBe(11);
+  expect(werte.slice(0, 2)).toEqual(['', 'klassisch']);
 });
 
 test('Gewählte Fraktion erreicht den Renderer und wird als Sprite gezeichnet', async ({ page }) => {

@@ -27,8 +27,9 @@ import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
   zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneAuraRing, zeichneNamensschild,
+  figurSkalaFuer, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
 } from './figuren.js';
-import { charakterFuer } from '../shared/config/darstellung.js';
+import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose } from './figurAnimation.js';
@@ -125,6 +126,11 @@ export class Renderer {
     this.reducedMotion = prefersReducedMotion();
     // Darstellung: Fraktion je Team (lokal vom Menü gesetzt, online je Figur im Zustand).
     this.fraktionJeTeam = null;
+    /** Aktuelle Darstellungsgröße der Sprites relativ zur Basisgröße (zoomabhängig, siehe `#figurSkala`). */
+    this.figurSkala = 1;
+    /** Anzeigefaktor Zeichenfläche -> Bildschirm (CSS-Größe / Bitmapgröße), bei Größenänderung neu gelesen. */
+    this.cssFaktor = 1;
+    this.#beobachteAnzeigegroesse();
     // Posen der Sprites und laufende Fall-Effekte (Tod, Ertrinken).
     this.figurPosen = new FigurPosen();
     this.faelle = [];
@@ -287,6 +293,18 @@ export class Renderer {
    *
    * @returns {boolean} true, wenn sich die Größe geändert hat
    */
+  #liesAnzeigefaktor() {
+    const w = this.canvas.clientWidth;
+    if (w > 0 && this.canvas.width > 0) this.cssFaktor = w / this.canvas.width;
+  }
+
+  #beobachteAnzeigegroesse() {
+    this.#liesAnzeigefaktor();
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => this.#liesAnzeigefaktor()).observe(this.canvas);
+    }
+  }
+
   resize(breite, hoehe) {
     if (!(breite > 0) || !(hoehe > 0)) return false;
     if (this.width === breite && this.height === hoehe) return false;
@@ -294,6 +312,7 @@ export class Renderer {
     this.height = hoehe;
     this.canvas.width = breite;
     this.canvas.height = hoehe;
+    this.#liesAnzeigefaktor();
     this.waterLayer.width = Math.ceil(breite / WATER_SCALE);
     this.waterLayer.height = Math.ceil(hoehe / WATER_SCALE);
     // Die Geländeschicht ist auf die alte Größe gebaut und muss neu entstehen.
@@ -1244,8 +1263,18 @@ export class Renderer {
     }
   }
 
+  /** Die Fraktion, deren Sprite eine Figur zeigt (`null` = klassische prozedurale Figur). */
+  fraktionVon(entity) {
+    const f = entity.fraktionId;
+    if (f === KLASSISCH) return null;
+    return f || (this.fraktionJeTeam?.[entity.teamId] ?? null);
+  }
+
   #drawEntities(entities, activePlayerId, aim) {
     const jetzt = performance.now() / 1000;
+    // Sprites werden je Zoom so groß gezeichnet, dass sie auf dem Bildschirm lesbar bleiben (nur Anzeige).
+    this.figurSkala = figurSkalaFuer((this.kamera?.zoom ?? 1) * this.cssFaktor);
+    const S = this.figurSkala;
     for (const entity of entities) {
       if (!entity.alive) {
         this.#figurGestorben(entity.entityId, jetzt);
@@ -1271,10 +1300,16 @@ export class Renderer {
       this.ctx.save();
       this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
+      const fraktionId = this.fraktionVon(entity);
+      const fig = fraktionId
+        ? holeFigur(charakterFuer(fraktionId, entity.classId, entity.archetypeId))
+        : null;
+      const sk = fig ? S : 1;
+
       // Schatten
       this.ctx.fillStyle = 'rgba(0,0,0,0.4)';
       this.ctx.beginPath();
-      this.ctx.ellipse(0, 11, 10, 3, 0, 0, Math.PI * 2);
+      this.ctx.ellipse(0, 11, 10 * sk, 3 * Math.min(sk, 1.6), 0, 0, Math.PI * 2);
       this.ctx.fill();
 
       const isActive = entity.entityId === activePlayerId;
@@ -1305,12 +1340,12 @@ export class Renderer {
       const treffer = marke && marke.life > 0.66 ? (marke.life - 0.66) * 3 : 0;
       // Charakter-Sprite, wenn die Figur eine Fraktion hat und das Bild bereit ist
       // (sonst die prozedurale Figur).
-      const fraktionId = entity.fraktionId ?? this.fraktionJeTeam?.[entity.teamId] ?? null;
-      const fig = fraktionId
-        ? holeFigur(charakterFuer(fraktionId, entity.classId, entity.archetypeId))
-        : null;
-
       if (fig) {
+        // Alles Sprite-Zeug (Bild, Ring, Waffe) skaliert gemeinsam um den Fußpunkt.
+        this.ctx.save();
+        this.ctx.translate(0, FUSS_ABSTAND);
+        this.ctx.scale(S, S);
+        this.ctx.translate(0, -FUSS_ABSTAND);
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, rueck: -rueck, winkel: angle, aktiv: isActive,
         });
@@ -1341,6 +1376,7 @@ export class Renderer {
           zeichneRohr(this.ctx, rohrParam);
           this.ctx.restore();
         }
+        this.ctx.restore();
       } else {
         this.ctx.save();
         this.ctx.translate(0, FIGUR_HOCH);
@@ -1354,33 +1390,33 @@ export class Renderer {
       // es wird deshalb NACH dem Zurücksetzen der Drehung gezeichnet.
       if (muendung) {
         const feuer = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
-        const mx = entity.x + feuer.offsetX;
-        const my = entity.y + feuer.offsetY + FIGUR_HOCH - 1.5 * FIGUR_SKALA;
+        const mx = entity.x + feuer.offsetX * sk;
+        const my = entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + feuer.offsetY * sk;
 
         this.ctx.save();
         this.ctx.globalAlpha = feuer.alpha;
         this.ctx.translate(mx, my);
         this.ctx.rotate(-angle);
-        const verlauf = this.ctx.createLinearGradient(0, 0, feuer.length, 0);
+        const verlauf = this.ctx.createLinearGradient(0, 0, feuer.length * sk, 0);
         verlauf.addColorStop(0, muendung.farbe);
         verlauf.addColorStop(1, 'rgba(255, 255, 255, 0)');
         this.ctx.fillStyle = verlauf;
         this.ctx.beginPath();
-        this.ctx.moveTo(0, -feuer.halfWidth);
-        this.ctx.lineTo(feuer.length, 0);
-        this.ctx.lineTo(0, feuer.halfWidth);
+        this.ctx.moveTo(0, -feuer.halfWidth * sk);
+        this.ctx.lineTo(feuer.length * sk, 0);
+        this.ctx.lineTo(0, feuer.halfWidth * sk);
         this.ctx.closePath();
         this.ctx.fill();
 
         // Heller Kern an der Mündung — ohne ihn wirkt der Kegel flach.
         this.ctx.fillStyle = '#fffbe6';
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, feuer.coreRadius, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, feuer.coreRadius * sk, 0, Math.PI * 2);
         this.ctx.fill();
         this.ctx.restore();
       }
 
-      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId);
+      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0);
     }
   }
 
@@ -1409,7 +1445,9 @@ export class Renderer {
       const pose = fallPose(f, jetzt, this.reducedMotion, this.fallPoseTmp);
       if (!pose) { this.faelle.splice(i, 1); continue; }
       this.ctx.save();
-      this.ctx.translate(f.x, f.y);
+      this.ctx.translate(f.x, f.y + FUSS_ABSTAND);
+      this.ctx.scale(this.figurSkala, this.figurSkala);
+      this.ctx.translate(0, -FUSS_ABSTAND);
       zeichneFigurSprite(this.ctx, f.fig, {
         team: f.team, winkel: f.blick > 0 ? 0 : Math.PI, aktiv: false, zeit: jetzt, reduziert: true,
         alpha: pose.alpha,
@@ -1426,11 +1464,16 @@ export class Renderer {
    * Pixel, und der Balken gehört zu ihr — ein Balken, der stehen bleibt, während
    * die Figur wackelt, liest sich als zwei Dinge.
    */
-  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false) {
+  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false, spriteSkala = 0) {
     const ratio = entity.maxHealth > 0 ? Math.max(0, entity.health / entity.maxHealth) : 0;
+    // Klassische Figur: Schild wie bisher. Sprite: über dem Kopf des (größeren) Sprites, mitskaliert.
+    const s = spriteSkala ? Math.max(1, Math.min(2.6, spriteSkala * 0.75)) : 1;
+    const anker = spriteSkala
+      ? entity.y + versatz.dy + FUSS_ABSTAND - SPRITE_HOEHE * spriteSkala * 0.93 - 2 * s
+      : entity.y + versatz.dy - 26;
     zeichneNamensschild(
-      this.ctx, entity.x + versatz.dx, entity.y + versatz.dy, entity.label, ratio,
-      TEAM_COLORS[entity.teamId % TEAM_COLORS.length], aktiv,
+      this.ctx, entity.x + versatz.dx, anker, entity.label, ratio,
+      TEAM_COLORS[entity.teamId % TEAM_COLORS.length], aktiv, s,
     );
   }
 

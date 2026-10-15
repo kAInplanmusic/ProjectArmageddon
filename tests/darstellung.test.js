@@ -44,3 +44,25 @@ test('Die Lobby führt die Fraktionen je Team und lässt den Rest unberührt', (
   const ohne = m.create({ teams: 2, playersPerTeam: 2 }).lobby;
   assert.equal(ohne.fraktionen, null);
 });
+
+test('loeseFraktionen: automatisch, deterministisch, verschiedene Fraktionen je Team', async () => {
+  const { loeseFraktionen, KLASSISCH } = await import('../src/shared/config/darstellung.js');
+  const a = loeseFraktionen(null, 4, 20260910);
+  assert.deepEqual(a, loeseFraktionen(undefined, 4, 20260910));
+  assert.equal(a.length, 4);
+  assert.equal(new Set(a).size, 4);
+  assert.ok(a.every(istFraktion));
+  assert.equal(new Set(loeseFraktionen(null, 9, 'abc123')).size, 9);
+  assert.equal(loeseFraktionen(null, 8, 'abc123').length, 8);
+  const verschieden = new Set();
+  for (let s = 0; s < 20; s += 1) verschieden.add(loeseFraktionen(null, 2, s).join());
+  assert.ok(verschieden.size > 5);
+  const b = loeseFraktionen(['xeno', KLASSISCH, null], 3, 5);
+  assert.equal(b[0], 'xeno');
+  assert.equal(b[1], null);
+  assert.ok(istFraktion(b[2]) && b[2] !== 'xeno');
+});
+
+test('bereinigeFraktionen behält klassisch', () => {
+  assert.deepEqual(bereinigeFraktionen(['klassisch', 'xeno'], 2), ['klassisch', 'xeno']);
+});

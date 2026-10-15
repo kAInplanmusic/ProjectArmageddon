@@ -42,7 +42,7 @@ import {
 } from '../shared/identity.js';
 import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
 import { COMBAT_ROLES, classOf, FACTIONS } from '../shared/config/factions.js';
-import { bereinigeFraktionen } from '../shared/config/darstellung.js';
+import { bereinigeFraktionen, loeseFraktionen, KLASSISCH } from '../shared/config/darstellung.js';
 import { FigurenKarte } from './figurenKarte.js';
 import {
   uebersichtFuerHilfe, classCounterplay, resolveLoadout, combatProfile,
@@ -611,8 +611,12 @@ class Game {
       auswahl.id = `cfg-fraktion-${t}`;
       const keine = document.createElement('option');
       keine.value = '';
-      keine.textContent = 'Standardfigur';
+      keine.textContent = 'Zufällig / Automatisch';
       auswahl.append(keine);
+      const klassisch = document.createElement('option');
+      klassisch.value = KLASSISCH;
+      klassisch.textContent = 'Klassisch (ohne Figuren)';
+      auswahl.append(klassisch);
       for (const f of FACTIONS) {
         const o = document.createElement('option');
         o.value = f.id;
@@ -961,7 +965,7 @@ class Game {
     });
     this.match.start();
     // Darstellung: Fraktion je Team (nur Anzeige, wirkt nicht auf den Motor).
-    this.renderer.fraktionJeTeam = bereinigeFraktionen(fraktionen, teams);
+    this.renderer.fraktionJeTeam = loeseFraktionen(fraktionen, teams, this.match.seedManager.baseSeed);
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
     // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische
     // Karte noch die Bodenfarbe der vorigen Kulisse.
@@ -1220,6 +1224,8 @@ class Game {
     });
     this.network = client;
     this.lobbyId = targetLobby;
+    // Ohne Fraktionsangabe des Servers leitet jeder Client dieselbe Anzeige aus der Lobby-ID ab.
+    this.renderer.fraktionJeTeam = loeseFraktionen(null, 8, targetLobby);
 
     client.on('hello', () => this.hud.log('Handshake abgeschlossen', 'good'));
     client.on('joined', payload => {
@@ -2675,7 +2681,7 @@ class Game {
     {
       // Figurenkarte der aktiven Figur (nur bei gewählter Fraktion).
       const aktive = state.entities?.find(e => e.entityId === state.activePlayerId) ?? null;
-      const fraktion = aktive ? (aktive.fraktionId ?? this.renderer.fraktionJeTeam?.[aktive.teamId] ?? null) : null;
+      const fraktion = aktive ? this.renderer.fraktionVon(aktive) : null;
       this.figurenKarte.aktualisiere(aktive, fraktion, aktive ? TEAM_COLORS[aktive.teamId % TEAM_COLORS.length] : '');
     }
     // Bei geschlossenem Menü ein No-op; offen: nur bei Änderung wird etwas angefasst.
