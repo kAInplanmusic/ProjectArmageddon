@@ -1,6 +1,6 @@
 """Rohbilder freistellen, normalisieren und als Seitensprites ablegen.
 
-Aufruf:  python3 scripts/seitenansichten/freistellen.py ROHDIR [--entscheidungen datei.json]
+Aufruf:  python3 scripts/seitenansichten/freistellen.py ROHDIR [--entscheidungen datei.json] [--kontext KONTEXTDIR]
 
 ROHDIR enthält je Figur `<fraktion>__<NN_name>.png__vN.png` (höchste Version,
 die nicht in `verworfen` steht, gewinnt). Die Entscheidungsdatei (JSON) kann
@@ -8,6 +8,10 @@ je Schlüssel `fraktion/NN_name.png` setzen:
   "spiegeln": [Schlüssel, ...]   Rohbild blickt nach links -> horizontal spiegeln
   "verworfen": {Schlüssel: [Versionen]}   Versionen, die nicht genutzt werden
   "fallback": [Schlüssel, ...]   keine brauchbare Seite -> hasSide=false
+  "kontext": {Schlüssel: Version}   Stufe 1: statt des Text-zu-Bild-Rohbilds das
+                                    Bild-zu-Bild-Rohbild (FLUX.1-kontext-pro, kontext.py)
+                                    dieser Version aus KONTEXTDIR verwenden
+  "spiegeln_kontext": [Schlüssel, ...]  wie "spiegeln", aber für das Kontext-Rohbild
 Ausgabe: src/client/assets/characters-side/, manifest.json,
 src/client/assets/charactersheets/ und charactersheets/manifest.json, dazu
 Kontaktbögen und Prüfbericht in ROHDIR/../pruefung.
@@ -157,6 +161,7 @@ def main() -> int:
     entsch = {}
     if "--entscheidungen" in sys.argv:
         entsch = json.loads(Path(sys.argv[sys.argv.index("--entscheidungen") + 1]).read_text())
+    kdir = Path(sys.argv[sys.argv.index("--kontext") + 1]) if "--kontext" in sys.argv else None
     prf = roh.parent / "pruefung"
     prf.mkdir(exist_ok=True)
     dateien = neueste(roh, entsch)
@@ -166,9 +171,13 @@ def main() -> int:
     for schl in alle:
         eintrag = {"file": schl, "hasSide": False, "anchor": None, "facing": "right",
                    "source": "together", "model": modell}
+        kv = entsch.get("kontext", {}).get(schl)
+        if kv is not None:
+            quelle = kdir / (schl.replace("/", "__") + f"__v{kv}.png")
+            dateien[schl] = quelle
         if schl in dateien and schl not in entsch.get("fallback", []):
             rgb = np.asarray(Image.open(dateien[schl]).convert("RGB"))
-            if schl in entsch.get("spiegeln", []):
+            if schl in entsch.get("spiegeln_kontext" if kv is not None else "spiegeln", []):
                 rgb = rgb[:, ::-1]
             rgb, alpha = freistellen(np.ascontiguousarray(rgb))
             bericht[schl] = pruefen(alpha)
@@ -177,6 +186,8 @@ def main() -> int:
             ziel.parent.mkdir(parents=True, exist_ok=True)
             bild.save(ziel, optimize=True)
             eintrag.update(hasSide=True, anchor={"x": fx, "y": GRUNDLINIE})
+            if kv is not None:
+                eintrag.update(source="together-kontext", model=entsch.get("modell_kontext", "black-forest-labs/FLUX.1-kontext-pro"))
             # Einzel-Charactersheet: Front (Porträt) und Seite nebeneinander
             p = Image.open(PORTRAET / schl).convert("RGBA")
             pa = np.asarray(p)
