@@ -446,7 +446,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1404/1404** grün, Dateizahl **150** (Stand 2026-10-15, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1409/1409** grün, Dateizahl **151** (Stand 2026-10-15, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3089,6 +3089,49 @@ Lobbykarte („Beitreten“ lag zu 100 % im Rechteck des Toasts, gemessen: Treff
 durchscheinend (88 %), ohne Mausfang (Klicks gehen durch); über dem Menü gemessen 0
 überdeckte Bedienelemente bei 800x400 und 1280x720. Im Spiel unverändert (links am Rand,
 klickbar).
+
+## Figuren im Spiel: Fraktionsdarstellung (2026-10-15)
+
+Die 81 Charakterbilder erscheinen im Spiel. Reine ANZEIGE — Spielwerte, Seed,
+Hash und Replay-Kopf bleiben unverändert (`src/engine/match.js` wurde nicht
+angefasst, es steht am Zeilenbudget).
+
+- **Wahl:** Menü, Abschnitt „Fraktion je Team" (`#cfg-fraktion-<team>`). Leer =
+  Standardfigur (prozedural, wie zuvor). Online geht die Wahl als optionales Feld
+  `fraktionen` (je Team) in `POST /api/lobby/create`, der Server prüft tolerant
+  (`bereinigeFraktionen`), speichert sie in Lobby und Sicherung und liefert sie
+  je Figur als `fraktionId` in der Bestandsnachricht (`loadouts`). Fehlt sie:
+  Standardfigur. Kein Protokollbruch.
+- **Zuordnung** (`src/shared/config/darstellung.js`): Fraktion + Archetyp
+  (brawler/artillerist/occultist = Nahkampf/Fernkampf/Magie) + Klasse
+  (heavy/scout/artillery = Platz 0/1/2) ergibt genau einen der neun Charaktere
+  der Fraktion (`charakterFuer`, ohne Allokation).
+- **Sprites** (`src/client/figurenBilder.js`): lazy geladen, einmal auf 128 px
+  verkleinert (Offscreen), dazu weiße Silhouette für den Treffer-Blitz. Quellen in
+  dieser Reihenfolge: Seitenansicht `assets/characters-side/<fraktion>/<datei>`
+  (optional, Ankerpunkte aus `characters-side/manifest.json`; Spiegelung bei Blick
+  nach links gilt für beide), sonst das 256er-Porträt. Bis ein Bild bereit ist,
+  gilt die prozedurale Figur.
+- **Darstellung:** Sprite 52 px hoch, Füße bei y = +PLAYER_HALF_HEIGHT (Hitbox
+  unverändert). Teamfarbe als Fußring (aktive Figur pulsiert), Namensschild und
+  Lebensbalken wie bisher.
+- **Animation** (`src/client/figurAnimation.js`, aus der Bewegung abgeleitet, in
+  Sekunden gerechnet): Atmen, Lauf-Wippen und Neigung, Strecken im Sprung,
+  Stauchen bei der Landung, Rückstoß beim Schuss, Treffer-Blitz (Zucken kommt wie
+  bisher aus dem Renderer), Fall-Effekt (Wegfliegen) und Ertrinken (Absinken)
+  nach dem Tod. `prefers-reduced-motion`: Pose neutral, nur Blitz und Ausblenden.
+- **Waffe in der Hand:** Die Ikone der aktiven Waffe liegt am Zielstrahl und
+  dreht mit dem Winkel; Nahkampf schwingt, Selbstwirkungen zeigen einen
+  Aura-Ring. Der Mündungsblitz bleibt am Rohrende (`ROHR_LAENGE`).
+- **HUD:** Figurenkarte der aktiven Figur (`src/client/figurenKarte.js`,
+  Porträt 64 px, bei niedrigen Fenstern 28 px nur mit Namen), nur bei gewählter
+  Fraktion.
+- **Offen:** Die Seitenansichten per Bild-zu-Bild-Modell (Together AI) sind noch
+  nicht erzeugt: Der Zugang lieferte `third_party_data_sharing_blocked`. Sobald
+  sie unter `assets/characters-side/` liegen, nutzt der Client sie ohne weitere
+  Änderung. Einzel-Charactersheets (Front + Seite) folgen mit den Seitenansichten.
+- **Tests:** `tests/darstellung.test.js`, `tests/figur-animation.test.js`,
+  `tests/e2e/fraktion-darstellung.spec.mjs`.
 
 ## Balance-Messung über die Kartenbreite
 

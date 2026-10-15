@@ -22,6 +22,12 @@ async function starte(page, fraktionen) {
   return fehler;
 }
 
+test('Ohne Fraktion bleibt die Figurenkarte verborgen', async ({ page }) => {
+  await starte(page, null);
+  await page.waitForTimeout(500);
+  await expect(page.locator('#hud-figur')).toBeHidden();
+});
+
 test('Fraktionsfelder folgen der Teamzahl, Standard ist die Standardfigur', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#cfg-fraktion-0')).toHaveValue('');
@@ -42,6 +48,10 @@ test('Gewählte Fraktion erreicht den Renderer und wird als Sprite gezeichnet', 
     const fs = await import('node:fs');
     fs.writeFileSync(`${process.env.PA_SHOTS}/fraktion-${page.viewportSize().width}.png`, bild);
   }
+  // Figurenkarte der aktiven Figur: Name aus dem Kader, Porträt vorhanden.
+  await expect(page.locator('#hud-figur')).toBeVisible();
+  await expect(page.locator('#hud-figur-name')).not.toBeEmpty();
+  await expect(page.locator('#hud-figur-bild')).toHaveAttribute('src', /characters\/pirates\//);
   expect(bild.length).toBeGreaterThan(2000);
   expect(fehler).toEqual([]);
 });

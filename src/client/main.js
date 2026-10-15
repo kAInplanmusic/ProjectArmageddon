@@ -43,6 +43,7 @@ import {
 import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
 import { COMBAT_ROLES, classOf, FACTIONS } from '../shared/config/factions.js';
 import { bereinigeFraktionen } from '../shared/config/darstellung.js';
+import { FigurenKarte } from './figurenKarte.js';
 import {
   uebersichtFuerHilfe, classCounterplay, resolveLoadout, combatProfile,
 } from '../shared/config/classes.js';
@@ -117,6 +118,7 @@ class Game {
      */
     this.kamera = null;
     this.hud = new Hud(document);
+    this.figurenKarte = new FigurenKarte(document);
     // Waffenmenü: Dropdown des Besitzes (Taste E / Knopf neben der Leiste).
     this.waffenMenue = new WaffenMenue(document, {
       getFigur: () => this.#aktiveFigur(),
@@ -2670,6 +2672,12 @@ class Game {
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       onWeaponSelect: index => this.selectWeapon(index),
     });
+    {
+      // Figurenkarte der aktiven Figur (nur bei gewählter Fraktion).
+      const aktive = state.entities?.find(e => e.entityId === state.activePlayerId) ?? null;
+      const fraktion = aktive ? (aktive.fraktionId ?? this.renderer.fraktionJeTeam?.[aktive.teamId] ?? null) : null;
+      this.figurenKarte.aktualisiere(aktive, fraktion, aktive ? TEAM_COLORS[aktive.teamId % TEAM_COLORS.length] : '');
+    }
     // Bei geschlossenem Menü ein No-op; offen: nur bei Änderung wird etwas angefasst.
     this.waffenMenue.aktualisiere(state.entities?.find(e => e.entityId === state.activePlayerId) ?? null);
     if (this.mode === 'online') this.hud.setConnection?.(

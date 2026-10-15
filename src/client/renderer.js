@@ -26,10 +26,12 @@ import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inse
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
-  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneNamensschild,
+  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneAuraRing, zeichneNamensschild,
 } from './figuren.js';
 import { charakterFuer } from '../shared/config/darstellung.js';
-import { holeFigur } from './figurenBilder.js';
+import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
+import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
+import { FigurPosen, fallPose } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
@@ -123,6 +125,10 @@ export class Renderer {
     this.reducedMotion = prefersReducedMotion();
     // Darstellung: Fraktion je Team (lokal vom Menü gesetzt, online je Figur im Zustand).
     this.fraktionJeTeam = null;
+    // Posen der Sprites und laufende Fall-Effekte (Tod, Ertrinken).
+    this.figurPosen = new FigurPosen();
+    this.faelle = [];
+    this.fallPoseTmp = { dx: 0, dy: 0, rot: 0, alpha: 1 };
     this.waterFrame = 0;
     this.time = 0;
     /** Vorzeichen von Valhalla (zwei Raben im Blitz): `{start, bildSeed}` oder null. */
@@ -810,6 +816,8 @@ export class Renderer {
   gefuehlZuruecksetzen() {
     this.particles = [];
     this.trefferMarken = [];
+    this.figurPosen.leere();
+    this.faelle.length = 0;
     this.letzteWerte = new Map();
     this.zahlen = [];
     this.zahlenWerte = new Map();
@@ -1237,8 +1245,12 @@ export class Renderer {
   }
 
   #drawEntities(entities, activePlayerId, aim) {
+    const jetzt = performance.now() / 1000;
     for (const entity of entities) {
-      if (!entity.alive) continue;
+      if (!entity.alive) {
+        this.#figurGestorben(entity.entityId, jetzt);
+        continue;
+      }
       const color = TEAM_COLORS[entity.teamId % TEAM_COLORS.length];
 
       /*
@@ -1299,14 +1311,36 @@ export class Renderer {
         : null;
 
       if (fig) {
-        zeichneFigurSprite(this.ctx, fig, {
-          team: color, winkel: angle, atem, aktiv: isActive, treffer,
+        const pose = this.figurPosen.pose(entity, jetzt, {
+          reduziert: this.reducedMotion, treffer, rueck: -rueck, winkel: angle, aktiv: isActive,
         });
-        this.ctx.save();
-        this.ctx.translate(0, FIGUR_HOCH);
-        this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
-        zeichneRohr(this.ctx, rohrParam);
-        this.ctx.restore();
+        const zs = this.figurPosen.zustand(entity.entityId);
+        zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0;
+        zeichneFigurSprite(this.ctx, fig, {
+          team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
+        });
+        // Gehaltene Waffe: ihre Ikone am Zielstrahl; ohne Ikone das Rohr.
+        const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
+        const ikone = waffe ? holeWaffenIkone(waffe) : null;
+        if (ikone) {
+          const nahkampf = waffe.category === 'melee';
+          zeichneWaffeInHand(this.ctx, ikone, {
+            winkel: angle,
+            rueck: nahkampf ? 0 : rueck,
+            laenge: ROHR_LAENGE,
+            schwung: nahkampf && !this.reducedMotion ? Math.sin(feuerLeben * Math.PI) * 1.1 : 0,
+          });
+          // Selbstwirkung oder Nahkampf ohne Geschoss: kurzer Aura-Ring beim Einsatz.
+          if (feuerLeben > 0 && !this.reducedMotion && (nahkampf || waffe.damage === 0)) {
+            zeichneAuraRing(this.ctx, color, feuerLeben);
+          }
+        } else {
+          this.ctx.save();
+          this.ctx.translate(0, FIGUR_HOCH);
+          this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
+          zeichneRohr(this.ctx, rohrParam);
+          this.ctx.restore();
+        }
       } else {
         this.ctx.save();
         this.ctx.translate(0, FIGUR_HOCH);
@@ -1347,6 +1381,41 @@ export class Renderer {
       }
 
       this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId);
+    }
+  }
+
+  /**
+   * Eine Figur ist gestorben: Hatte sie ein Sprite, läuft der Fall-Effekt
+   * (Wegfliegen bzw. Ertrinken) noch kurz weiter.
+   */
+  #figurGestorben(entityId, jetzt) {
+    const z = this.figurPosen.zustand(entityId);
+    if (!z) return;
+    if (z.fig) {
+      this.faelle.push({
+        fig: z.fig, x: z.x, y: z.y, winkel: z.winkel, team: z.team, t0: jetzt,
+        ertrinkt: z.nass > 0.5, blick: z.blick, vx: z.vx,
+      });
+    }
+    this.figurPosen.vergiss(entityId);
+  }
+
+  /** Zeichnet die auslaufenden Fall-Effekte (nach den lebenden Figuren). */
+  #drawFaelle() {
+    if (this.faelle.length === 0) return;
+    const jetzt = performance.now() / 1000;
+    for (let i = this.faelle.length - 1; i >= 0; i -= 1) {
+      const f = this.faelle[i];
+      const pose = fallPose(f, jetzt, this.reducedMotion, this.fallPoseTmp);
+      if (!pose) { this.faelle.splice(i, 1); continue; }
+      this.ctx.save();
+      this.ctx.translate(f.x, f.y);
+      zeichneFigurSprite(this.ctx, f.fig, {
+        team: f.team, winkel: f.blick > 0 ? 0 : Math.PI, aktiv: false, zeit: jetzt, reduziert: true,
+        alpha: pose.alpha,
+        pose: { dx: pose.dx, dy: pose.dy, sx: 1, sy: 1, rot: pose.rot, flash: 0 },
+      });
+      this.ctx.restore();
     }
   }
 
@@ -1956,6 +2025,7 @@ export class Renderer {
      */
     this.#drawSpuren();
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
+    this.#drawFaelle();
     this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? []);
     this.#drawWiederholung(wiederholung);

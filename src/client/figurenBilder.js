@@ -15,6 +15,8 @@
  * @module figurenBilder
  */
 
+import { iconUrlFor } from '../shared/config/weapons.js';
+
 const PORTRAETS = import.meta.glob('./assets/characters/*/*.png', { query: '?url', import: 'default' });
 const SEITEN = import.meta.glob('./assets/characters-side/*/*.png', { query: '?url', import: 'default' });
 const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { eager: true, import: 'default' });
@@ -31,7 +33,8 @@ function ankerAusManifest(fraktion, datei) {
   return e ? { ...standard, ...e.anker } : standard;
 }
 
-const cache = new Map();   // Schlüssel -> Eintrag | 'laedt' | 'fehlt'
+// fraktion -> datei -> Eintrag | 'laedt' | 'fehlt' (zweistufig: Nachschlag je Bild ohne Zeichenkettenbau)
+const cache = new Map();
 
 function neueLeinwand(b, h) {
   if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(b, h);
@@ -59,6 +62,17 @@ function verkleinere(img) {
   return ziel;
 }
 
+/** Weiße Fassung der Silhouette für den Treffer-Blitz. */
+function weisse(bild) {
+  const z = neueLeinwand(CACHE_KANTE, CACHE_KANTE);
+  const c = z.getContext('2d');
+  c.drawImage(bild, 0, 0);
+  c.globalCompositeOperation = 'source-atop';
+  c.fillStyle = '#ffffff';
+  c.fillRect(0, 0, CACHE_KANTE, CACHE_KANTE);
+  return z;
+}
+
 function ladeBild(url) {
   return new Promise((ok, fehler) => {
     const img = new Image();
@@ -68,19 +82,22 @@ function ladeBild(url) {
   });
 }
 
-async function lade(schluessel, charakter) {
+async function lade(eintraege, charakter) {
+  const datei = charakter.sprite;
   try {
     const seitenLader = SEITEN[`./assets/characters-side/${charakter.faction}/${charakter.sprite}`];
     const lader = seitenLader ?? PORTRAETS[`./assets/characters/${charakter.faction}/${charakter.sprite}`];
-    if (!lader) { cache.set(schluessel, 'fehlt'); return; }
+    if (!lader) { eintraege.set(datei, 'fehlt'); return; }
     const img = await ladeBild(await lader());
-    cache.set(schluessel, {
-      bild: verkleinere(img),
+    const klein = verkleinere(img);
+    eintraege.set(datei, {
+      bild: klein,
+      hell: weisse(klein),
       seite: Boolean(seitenLader),
       anker: seitenLader ? ankerAusManifest(charakter.faction, charakter.sprite) : standard,
     });
   } catch {
-    cache.set(schluessel, 'fehlt');
+    eintraege.set(datei, 'fehlt');
   }
 }
 
@@ -89,15 +106,16 @@ async function lade(schluessel, charakter) {
  * Aufruf stößt das Laden an).
  *
  * @param {object|null} charakter - Eintrag aus CHARACTERS
- * @returns {{bild: CanvasImageSource, seite: boolean, anker: object}|null}
+ * @returns {{bild: CanvasImageSource, hell: CanvasImageSource, seite: boolean, anker: object}|null}
  */
 export function holeFigur(charakter) {
   if (!charakter) return null;
-  const schluessel = `${charakter.faction}/${charakter.sprite}`;
-  const e = cache.get(schluessel);
+  let eintraege = cache.get(charakter.faction);
+  if (!eintraege) { eintraege = new Map(); cache.set(charakter.faction, eintraege); }
+  const e = eintraege.get(charakter.sprite);
   if (e === undefined) {
-    cache.set(schluessel, 'laedt');
-    lade(schluessel, charakter);
+    eintraege.set(charakter.sprite, 'laedt');
+    lade(eintraege, charakter);
     return null;
   }
   return typeof e === 'object' ? e : null;
@@ -106,4 +124,30 @@ export function holeFigur(charakter) {
 /** Lädt die Sprites vor (z. B. beim Start eines Matches), ohne zu blockieren. */
 export function ladeVor(charaktere) {
   for (const c of charaktere) holeFigur(c);
+}
+
+// ------------------------------------------------------------ Waffen-Ikonen
+
+
+const ikonen = new Map();   // Waffen-ID -> Image (geladen) | 'laedt' | 'fehlt'
+
+/**
+ * Das Ikonenbild einer Waffe für die Darstellung in der Hand oder `null`, solange
+ * es nicht geladen ist (der erste Aufruf stößt das Laden an). Die 64-px-Ikonen
+ * werden unverändert gezeichnet.
+ *
+ * @param {object|null} waffe - Eintrag aus WEAPONS
+ * @returns {HTMLImageElement|null}
+ */
+export function holeWaffenIkone(waffe) {
+  if (!waffe) return null;
+  const e = ikonen.get(waffe.id);
+  if (e === undefined) {
+    ikonen.set(waffe.id, 'laedt');
+    const url = iconUrlFor(waffe);
+    if (!url) { ikonen.set(waffe.id, 'fehlt'); return null; }
+    ladeBild(url).then(img => ikonen.set(waffe.id, img), () => ikonen.set(waffe.id, 'fehlt'));
+    return null;
+  }
+  return typeof e === 'object' ? e : null;
 }

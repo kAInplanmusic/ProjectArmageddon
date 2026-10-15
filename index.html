@@ -879,6 +879,16 @@
 
         <div id="hud-left" class="panel">
           <ul id="roster" aria-label="Spielerübersicht"></ul>
+          <!-- Figurenkarte der aktiven Figur (nur bei gewählter Fraktion), siehe src/client/figurenKarte.js -->
+          <div id="hud-figur" hidden>
+            <img id="hud-figur-bild" width="64" height="64" alt="">
+            <div class="hud-figur-text">
+              <strong id="hud-figur-name"></strong>
+              <span id="hud-figur-klasse"></span>
+              <span id="hud-figur-hp"></span>
+              <span id="hud-figur-waffe"></span>
+            </div>
+          </div>
         </div>
 
         <div id="hud-right" class="panel">

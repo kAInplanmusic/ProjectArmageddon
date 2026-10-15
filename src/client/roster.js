@@ -36,12 +36,12 @@ const HD_BILDER = import.meta.glob('./assets/characters-hd/*/*.png', {
 /**
  * Liefert die URL eines Charakterbildes.
  *
- * Intern genutzt von `factionsWithSprites`.
+ * Genutzt von `factionsWithSprites` und der Figurenkarte im HUD.
  *
  * @param {object} character Eintrag aus CHARACTERS
  * @returns {string|null}
  */
-function spriteUrl(character) {
+export function spriteUrl(character) {
   if (!character) return null;
   return BILDER[`./assets/characters/${character.faction}/${character.sprite}`] ?? null;
 }

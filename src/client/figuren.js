@@ -170,9 +170,10 @@ export function zeichneSoldat(ctx, p) {
 }
 
 /** Höhe des Charakter-Sprites in Weltpixeln (Hitbox 20 px hoch, der Kopf ragt darüber). */
-export const SPRITE_HOEHE = 46;
+export const SPRITE_HOEHE = 52;
 /** Abstand der Füße von der Figurmitte (PLAYER_HALF_HEIGHT). */
 const FUSS_ABSTAND = 10;
+const NEUTRAL = Object.freeze({ dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0 });
 
 /**
  * Zeichnet eine Fraktionsfigur als Sprite.
@@ -184,41 +185,82 @@ const FUSS_ABSTAND = 10;
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {{bild: CanvasImageSource, anker: {fussY: number}}} fig - aus `holeFigur`
- * @param {object} p - `team`, `winkel`, `atem`, `aktiv`, `treffer`
+ * @param {object} p - `team`, `winkel`, `aktiv`, `zeit`, `reduziert`, `pose` (aus `FigurPosen`), `alpha`
  */
 export function zeichneFigurSprite(ctx, fig, p) {
   const f = Math.cos(p.winkel) >= 0 ? 1 : -1;
   const h = SPRITE_HOEHE;
   const fuss = FUSS_ABSTAND;
+  const pose = p.pose ?? NEUTRAL;
 
-  // Fußring in Teamfarbe
+  // Fußring in Teamfarbe (die aktive Figur pulsiert, sofern Bewegung erlaubt ist)
   ctx.save();
   ctx.strokeStyle = p.team;
-  ctx.globalAlpha = p.aktiv ? 0.95 : 0.7;
+  ctx.globalAlpha = (p.aktiv ? 0.95 : 0.7) * (p.alpha ?? 1);
   ctx.lineWidth = p.aktiv ? 2.4 : 1.6;
+  const puls = p.aktiv && !p.reduziert ? 1 + Math.sin(p.zeit * 5) * 0.06 : 1;
   ctx.beginPath();
-  ctx.ellipse(0, fuss, 12, 3.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, fuss, 12 * puls, 3.4 * puls, 0, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
 
   ctx.save();
-  ctx.translate(0, fuss);
-  ctx.scale(f, 1);
-  // Atmen: Streckung um den Fußpunkt (Füße bleiben am Boden).
-  const streck = 1 + p.atem * 0.012;
-  ctx.scale(1, streck);
+  if (p.alpha !== undefined && p.alpha < 1) ctx.globalAlpha = Math.max(0, p.alpha);
+  // Alle Posen drehen/strecken um den Fußpunkt, damit die Füße am Boden bleiben.
+  ctx.translate(pose.dx, fuss + pose.dy);
+  if (pose.rot !== 0) ctx.rotate(pose.rot);
+  ctx.scale(f * pose.sx, pose.sy);
   ctx.drawImage(fig.bild, -h / 2, -h * fig.anker.fussY, h, h);
-  ctx.restore();
-
-  if (p.treffer > 0) {
-    ctx.save();
-    ctx.globalAlpha = Math.min(1, p.treffer) * 0.8;
-    ctx.fillStyle = '#fff3c4';
-    ctx.beginPath();
-    ctx.arc(0, -2, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+  if (pose.flash > 0) {
+    // Treffer-Blitz: weiße Silhouette über dem Sprite.
+    ctx.globalAlpha = pose.flash * 0.85 * (p.alpha ?? 1);
+    ctx.drawImage(fig.hell, -h / 2, -h * fig.anker.fussY, h, h);
   }
+  ctx.restore();
+}
+
+/**
+ * Zeichnet die gehaltene Waffe (Ikone) vor der Figur.
+ *
+ * Die Ikone liegt am Zielstrahl, dreht mit dem Zielwinkel (bei Blick nach links
+ * gespiegelt, damit sie nie auf dem Kopf steht) und weicht beim Schuss zurück.
+ * Nahkampfwaffen schwingen beim Einsatz um die Hand.
+ *
+ * @param {CanvasRenderingContext2D} ctx - Ursprung = Figurmitte (Weltpixel)
+ * @param {CanvasImageSource} ikone
+ * @param {object} p - `winkel`, `rueck` (negativ = zurück), `laenge` (Abstand der Spitze), `schwung` (rad)
+ */
+export function zeichneWaffeInHand(ctx, ikone, p) {
+  const groesse = 17;
+  const links = Math.cos(p.winkel) < 0;
+  ctx.save();
+  ctx.translate(0, -7.25);
+  ctx.rotate(-p.winkel);
+  if (links) ctx.scale(1, -1);
+  ctx.translate(p.laenge - groesse / 2 + p.rueck, 0);
+  if (p.schwung) ctx.rotate(links ? -p.schwung : p.schwung);
+  // Dunkler Schlagschatten hebt die Ikone vom Sprite ab.
+  ctx.globalAlpha = 0.45;
+  ctx.drawImage(ikone, -groesse / 2 + 0.8, -groesse / 2 + 0.8, groesse, groesse);
+  ctx.globalAlpha = 1;
+  ctx.drawImage(ikone, -groesse / 2, -groesse / 2, groesse, groesse);
+  ctx.restore();
+}
+
+/**
+ * Kurzer Aura-Ring für Selbstwirkungen (Heilung, Schild, Verstärkung …).
+ *
+ * @param {number} anteil - 1 = frisch, 0 = verklungen
+ */
+export function zeichneAuraRing(ctx, farbe, anteil) {
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, anteil) * 0.8;
+  ctx.strokeStyle = farbe;
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.ellipse(0, -2, 10 + (1 - anteil) * 16, 14 + (1 - anteil) * 14, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 /** Lebensbalken-Farbe nach Füllstand (Palette des Entwurfs). */

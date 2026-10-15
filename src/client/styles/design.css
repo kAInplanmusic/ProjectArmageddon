@@ -742,3 +742,19 @@ select option { background: #14181d; color: var(--ink); }
   #lobby-list li.lobby-karte { grid-template-columns: 1fr; }
   #lobby-list .lk-beitreten { width: 100%; }
 }
+
+/* ---------------------------------------------------------------- HUD: Figurenkarte der aktiven Figur */
+#hud-figur { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 6px 8px; border-left: 4px solid var(--lime); border-radius: 4px; background: rgba(13, 15, 18, 0.55); }
+#hud-figur[hidden] { display: none; }
+#hud-figur-bild { width: 64px; height: 64px; object-fit: contain; flex: none; }
+.hud-figur-text { display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 1.25; }
+.hud-figur-text strong { color: #fff; font-family: var(--font-display); letter-spacing: 0.05em; font-size: 15px; overflow-wrap: anywhere; }
+.hud-figur-text span { color: #aab3c0; }
+@media (max-height: 520px) {
+  /* Niedrige Fenster: nur Porträt und Name in einer Zeile, das Protokoll liegt darunter. */
+  #hud-figur { margin-top: 2px; padding: 2px 6px; gap: 6px; }
+  #hud-figur-bild { width: 28px; height: 28px; }
+  .hud-figur-text { font-size: 11px; }
+  .hud-figur-text strong { font-size: 12px; }
+  .hud-figur-text span { display: none; }
+}
