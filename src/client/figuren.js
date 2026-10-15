@@ -40,6 +40,47 @@ function rundRect(ctx, x, y, b, h, r) {
 }
 
 /**
+ * Die Panzerfaust: folgt dem Zielwinkel (im Weltraum, nicht gespiegelt).
+ * Eigene Funktion, damit sie auch über einem Charakter-Sprite liegen kann.
+ *
+ * @param {CanvasRenderingContext2D} ctx - Ursprung = Körpermitte (Maßstab der prozeduralen Figur)
+ * @param {object} p - `winkel`, `atem`, `rueck`, `aktiv`, `rohrLaenge`
+ */
+export function zeichneRohr(ctx, p) {
+  const rechts = Math.cos(p.winkel) >= 0;
+  const atem = p.atem;
+  ctx.save();
+  ctx.translate(0, -1.5 + atem * 0.5);
+  ctx.rotate(-p.winkel);
+  if (!rechts) ctx.scale(1, -1);
+  const l = p.rohrLaenge + 5;
+  const x0 = p.rueck - 4;
+  ctx.fillStyle = css(ROHR);
+  rundRect(ctx, x0, -2.7, l, 5.4, 1.6);
+  ctx.fill(); kontur(ctx, 1.8);
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.fillRect(x0 + 2, -2.2, l - 5, 1.1);
+  // Mündungswulst und hintere Düse
+  ctx.fillStyle = '#26301a';
+  rundRect(ctx, x0 + l - 3.4, -3.5, 3.4, 7, 1.2);
+  ctx.fill(); kontur(ctx, 1.5);
+  ctx.fillStyle = p.aktiv ? PAL.orange : '#7d7a66';
+  ctx.fillRect(x0 + l - 1.6, -2, 1.2, 4);
+  rundRect(ctx, x0 - 1.6, -3.2, 3, 6.4, 1);
+  ctx.fillStyle = '#1d2216';
+  ctx.fill(); kontur(ctx, 1.3);
+  // Haltegriff und Hand
+  ctx.fillStyle = '#1d2216';
+  ctx.fillRect(x0 + l * 0.42, 2.4, 1.8, 2.6);
+  ctx.fillStyle = css(HAUT);
+  ctx.beginPath();
+  ctx.arc(x0 + l * 0.42 + 0.9, 3.2, 1.6, 0, Math.PI * 2);
+  ctx.fill(); kontur(ctx, 1.2);
+  ctx.restore();
+
+}
+
+/**
  * Zeichnet einen Soldaten.
  *
  * @param {CanvasRenderingContext2D} ctx - Ursprung = Körpermitte der Figur
@@ -115,39 +156,63 @@ export function zeichneSoldat(ctx, p) {
   ctx.fill();
   ctx.restore();
 
-  // Panzerfaust: folgt dem Zielwinkel (im Weltraum, nicht gespiegelt)
-  ctx.save();
-  ctx.translate(0, -1.5 + atem * 0.5);
-  ctx.rotate(-p.winkel);
-  if (!rechts) ctx.scale(1, -1);
-  const l = p.rohrLaenge + 5;
-  const x0 = p.rueck - 4;
-  ctx.fillStyle = css(ROHR);
-  rundRect(ctx, x0, -2.7, l, 5.4, 1.6);
-  ctx.fill(); kontur(ctx, 1.8);
-  ctx.fillStyle = 'rgba(255,255,255,0.22)';
-  ctx.fillRect(x0 + 2, -2.2, l - 5, 1.1);
-  // Mündungswulst und hintere Düse
-  ctx.fillStyle = '#26301a';
-  rundRect(ctx, x0 + l - 3.4, -3.5, 3.4, 7, 1.2);
-  ctx.fill(); kontur(ctx, 1.5);
-  ctx.fillStyle = p.aktiv ? PAL.orange : '#7d7a66';
-  ctx.fillRect(x0 + l - 1.6, -2, 1.2, 4);
-  rundRect(ctx, x0 - 1.6, -3.2, 3, 6.4, 1);
-  ctx.fillStyle = '#1d2216';
-  ctx.fill(); kontur(ctx, 1.3);
-  // Haltegriff und Hand
-  ctx.fillStyle = '#1d2216';
-  ctx.fillRect(x0 + l * 0.42, 2.4, 1.8, 2.6);
-  ctx.fillStyle = css(HAUT);
-  ctx.beginPath();
-  ctx.arc(x0 + l * 0.42 + 0.9, 3.2, 1.6, 0, Math.PI * 2);
-  ctx.fill(); kontur(ctx, 1.2);
-  ctx.restore();
+  zeichneRohr(ctx, p);
 
   if (p.treffer > 0) {
     ctx.save();
     ctx.globalAlpha = Math.min(1, p.treffer);
+    ctx.fillStyle = '#fff3c4';
+    ctx.beginPath();
+    ctx.arc(0, -2, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/** Höhe des Charakter-Sprites in Weltpixeln (Hitbox 20 px hoch, der Kopf ragt darüber). */
+export const SPRITE_HOEHE = 46;
+/** Abstand der Füße von der Figurmitte (PLAYER_HALF_HEIGHT). */
+const FUSS_ABSTAND = 10;
+
+/**
+ * Zeichnet eine Fraktionsfigur als Sprite.
+ *
+ * Ursprung = Figurmitte (wie bei `zeichneSoldat`); die Füße stehen bei
+ * y = +PLAYER_HALF_HEIGHT. Das Sprite blickt je Zielrichtung nach rechts oder
+ * links (Spiegelung). Teamfarbe: Fußring statt Einfärbung. Keine Allokation je
+ * Bild.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {{bild: CanvasImageSource, anker: {fussY: number}}} fig - aus `holeFigur`
+ * @param {object} p - `team`, `winkel`, `atem`, `aktiv`, `treffer`
+ */
+export function zeichneFigurSprite(ctx, fig, p) {
+  const f = Math.cos(p.winkel) >= 0 ? 1 : -1;
+  const h = SPRITE_HOEHE;
+  const fuss = FUSS_ABSTAND;
+
+  // Fußring in Teamfarbe
+  ctx.save();
+  ctx.strokeStyle = p.team;
+  ctx.globalAlpha = p.aktiv ? 0.95 : 0.7;
+  ctx.lineWidth = p.aktiv ? 2.4 : 1.6;
+  ctx.beginPath();
+  ctx.ellipse(0, fuss, 12, 3.4, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(0, fuss);
+  ctx.scale(f, 1);
+  // Atmen: Streckung um den Fußpunkt (Füße bleiben am Boden).
+  const streck = 1 + p.atem * 0.012;
+  ctx.scale(1, streck);
+  ctx.drawImage(fig.bild, -h / 2, -h * fig.anker.fussY, h, h);
+  ctx.restore();
+
+  if (p.treffer > 0) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, p.treffer) * 0.8;
     ctx.fillStyle = '#fff3c4';
     ctx.beginPath();
     ctx.arc(0, -2, 8, 0, Math.PI * 2);

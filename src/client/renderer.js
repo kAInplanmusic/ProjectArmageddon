@@ -25,7 +25,11 @@ import {
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
-import { zeichneSoldat, zeichneNamensschild } from './figuren.js';
+import {
+  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneNamensschild,
+} from './figuren.js';
+import { charakterFuer } from '../shared/config/darstellung.js';
+import { holeFigur } from './figurenBilder.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
@@ -117,6 +121,8 @@ export class Renderer {
      * ohne Neuladen greift.
      */
     this.reducedMotion = prefersReducedMotion();
+    // Darstellung: Fraktion je Team (lokal vom Menü gesetzt, online je Figur im Zustand).
+    this.fraktionJeTeam = null;
     this.waterFrame = 0;
     this.time = 0;
     /** Vorzeichen von Valhalla (zwei Raben im Blitz): `{start, bildSeed}` oder null. */
@@ -1277,19 +1283,37 @@ export class Renderer {
       const rueck = rueckstossVersatz(feuerLeben, { reducedMotion: this.reducedMotion });
       const atem = this.reducedMotion ? 0 : Math.sin(this.time * 0.07 + entity.entityId * 1.9) * 0.7;
 
-      this.ctx.save();
-      this.ctx.translate(0, FIGUR_HOCH);
-      this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
-      zeichneSoldat(this.ctx, {
-        team: color,
+      const rohrParam = {
         winkel: angle,
         atem,
         rueck,
         aktiv: isActive,
-        treffer: marke && marke.life > 0.66 ? (marke.life - 0.66) * 3 : 0,
         rohrLaenge: ROHR_LAENGE / FIGUR_SKALA - 0.7,
-      });
-      this.ctx.restore();
+      };
+      const treffer = marke && marke.life > 0.66 ? (marke.life - 0.66) * 3 : 0;
+      // Charakter-Sprite, wenn die Figur eine Fraktion hat und das Bild bereit ist
+      // (sonst die prozedurale Figur).
+      const fraktionId = entity.fraktionId ?? this.fraktionJeTeam?.[entity.teamId] ?? null;
+      const fig = fraktionId
+        ? holeFigur(charakterFuer(fraktionId, entity.classId, entity.archetypeId))
+        : null;
+
+      if (fig) {
+        zeichneFigurSprite(this.ctx, fig, {
+          team: color, winkel: angle, atem, aktiv: isActive, treffer,
+        });
+        this.ctx.save();
+        this.ctx.translate(0, FIGUR_HOCH);
+        this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
+        zeichneRohr(this.ctx, rohrParam);
+        this.ctx.restore();
+      } else {
+        this.ctx.save();
+        this.ctx.translate(0, FIGUR_HOCH);
+        this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
+        zeichneSoldat(this.ctx, { ...rohrParam, team: color, treffer });
+        this.ctx.restore();
+      }
       this.ctx.restore();
 
       // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —

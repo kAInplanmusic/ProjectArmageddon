@@ -41,7 +41,8 @@ import {
   sicherungAusText,
 } from '../shared/identity.js';
 import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
-import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
+import { COMBAT_ROLES, classOf, FACTIONS } from '../shared/config/factions.js';
+import { bereinigeFraktionen } from '../shared/config/darstellung.js';
 import {
   uebersichtFuerHilfe, classCounterplay, resolveLoadout, combatProfile,
 } from '../shared/config/classes.js';
@@ -517,15 +518,16 @@ class Game {
     const lobbyId = document.getElementById('cfg-lobby')?.value?.trim() ?? '';
     const sidegrades = this.#sidegradesAusMenue(teams * playersPerTeam);
     const loadouts = this.#loadoutsAusMenue(teams * playersPerTeam);
+    const fraktionen = this.#fraktionenAusMenue(teams);
 
     if (serverUrl) {
       return this.startOnline({
         serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
-        backdropKey, orientation, sidegrades, loadouts,
+        backdropKey, orientation, sidegrades, loadouts, fraktionen,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts, fraktionen,
     });
   }
 
@@ -586,6 +588,47 @@ class Game {
    * (`index % 3`). Damit ist die Änderung im Menü neutral — wer nichts wählt,
    * bekommt genau das Spiel von vorher.
    */
+  /**
+   * Fraktionswahl je Team (reine Darstellung). Bleibt eine Wahl beim Neuaufbau
+   * erhalten, soweit das Team noch existiert.
+   */
+  fillFraktionOptions() {
+    const behaelter = document.getElementById('fraktion-felder');
+    if (!behaelter) return;
+    const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
+    const alt = [];
+    for (let t = 0; t < 8; t += 1) alt.push(document.getElementById(`cfg-fraktion-${t}`)?.value ?? '');
+    behaelter.replaceChildren();
+    for (let t = 0; t < teams; t += 1) {
+      const zeile = document.createElement('div');
+      zeile.className = 'field-row';
+      const label = document.createElement('label');
+      label.setAttribute('for', `cfg-fraktion-${t}`);
+      label.textContent = `Team ${t + 1}`;
+      const auswahl = document.createElement('select');
+      auswahl.id = `cfg-fraktion-${t}`;
+      const keine = document.createElement('option');
+      keine.value = '';
+      keine.textContent = 'Standardfigur';
+      auswahl.append(keine);
+      for (const f of FACTIONS) {
+        const o = document.createElement('option');
+        o.value = f.id;
+        o.textContent = f.name;
+        auswahl.append(o);
+      }
+      auswahl.value = alt[t] ?? '';
+      zeile.append(label, auswahl);
+      behaelter.append(zeile);
+    }
+  }
+
+  #fraktionenAusMenue(teams) {
+    const liste = [];
+    for (let t = 0; t < teams; t += 1) liste.push(document.getElementById(`cfg-fraktion-${t}`)?.value || null);
+    return bereinigeFraktionen(liste, teams);
+  }
+
   fillLoadoutOptions() {
     const behaelter = document.getElementById('loadout-felder');
     if (!behaelter) return;
@@ -899,7 +942,7 @@ class Game {
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '', orientation = 'landscape',
-    sidegrades = null, loadouts = null,
+    sidegrades = null, loadouts = null, fraktionen = null,
   } = {}) {
     this.network?.disconnect();
     this.network = null;
@@ -915,6 +958,8 @@ class Game {
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
     this.match.start();
+    // Darstellung: Fraktion je Team (nur Anzeige, wirkt nicht auf den Motor).
+    this.renderer.fraktionJeTeam = bereinigeFraktionen(fraktionen, teams);
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
     // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische
     // Karte noch die Bodenfarbe der vorigen Kulisse.
@@ -1086,7 +1131,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    orientation = 'landscape', sidegrades = null, loadouts = null,
+    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null,
   } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
@@ -1094,6 +1139,8 @@ class Game {
     this.hud.clearLog();
     this.hud.log('Verbinde mit Server …', 'accent');
     this.mode = 'online';
+    // Online kommt die Fraktion je Figur vom Server (Bestandsnachricht).
+    this.renderer.fraktionJeTeam = null;
     this.running = true;
     /*
      * Der Abbruchknopf gilt auch online — nicht nur lokal.
@@ -1137,6 +1184,7 @@ class Game {
             // die Anfrage größer als nötig und die alte Regel wäre nicht mehr
             // erkennbar.
             ...(Array.isArray(loadouts) && loadouts.some(l => l !== null) ? { loadouts } : {}),
+            ...(Array.isArray(fraktionen) ? { fraktionen } : {}),
           }),
         });
         if (!response.ok) throw new Error(`Lobby konnte nicht erstellt werden (${response.status})`);
@@ -1456,6 +1504,8 @@ class Game {
        * Der Rückfall bleibt der Index — aber nur, wenn die Nachricht noch nicht
        * eingetroffen ist (direkt nach dem Beitritt).
        */
+      // Darstellung: Fraktion des Teams (Server, nur Anzeige).
+      fraktionId: this.remoteLoadouts?.[entity.entityId]?.fraktionId ?? null,
       classId: this.remoteLoadouts?.[entity.entityId]?.classId
         ?? (CLASS_IDS[index % CLASS_IDS.length] === 'scout' ? 0 : 1),
       archetypeId: this.remoteLoadouts?.[entity.entityId]?.archetypeId
@@ -3298,6 +3348,7 @@ if (typeof document !== 'undefined') {
     game.fillSidegradeOptions();
     // Loadout-Auswahl je Spielerplatz (Klasse und Archetyp entkoppelt).
     game.fillLoadoutOptions();
+    game.fillFraktionOptions();
 
     /*
      * Die Loadout-Felder richten sich nach „Teams" und „Spieler pro Team" —
@@ -3305,7 +3356,7 @@ if (typeof document !== 'undefined') {
      * dort Felder für Plätze, die es nicht mehr gibt (oder es fehlten welche).
      */
     for (const id of ['cfg-teams', 'cfg-players']) {
-      document.getElementById(id)?.addEventListener('change', () => game.fillLoadoutOptions());
+      document.getElementById(id)?.addEventListener('change', () => { game.fillLoadoutOptions(); game.fillFraktionOptions(); });
     }
   };
   if (document.readyState === 'loading') {

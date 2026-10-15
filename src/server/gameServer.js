@@ -880,6 +880,8 @@ class LobbySession {
         ammo,
         cooldowns,
         activeWeaponId: entry.activeWeaponId ?? null,
+        // Darstellung: Fraktion des Teams (reine Anzeige, `null` = Standardfigur).
+        fraktionId: this.lobby.fraktionen?.[seat.teamId ?? 0] ?? null,
         classId: spieler?.classId ?? null,
         archetypeId: spieler?.archetypeId ?? null,
         /*
@@ -1531,6 +1533,7 @@ export class GameServer {
           // eine ungültige Angabe darf das Anlegen nicht verhindern.
           sidegrades: Array.isArray(body.sidegrades) ? body.sidegrades : null,
           loadouts: Array.isArray(body.loadouts) ? body.loadouts : null,
+          fraktionen: Array.isArray(body.fraktionen) ? body.fraktionen : null,
         });
         this.metrics.lobbiesCreated += 1;
         this.logger.info('lobby_created', 'Lobby angelegt', {

@@ -154,6 +154,7 @@ export function serializeLobby(lobby, session) {
     unitsPerPlayer: lobby.unitsPerPlayer ?? null,
     sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
     loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
+    fraktionen: Array.isArray(lobby.fraktionen) ? lobby.fraktionen : null,
     seed,
     status: lobby.status,
     createdAt: lobby.createdAt,
@@ -226,6 +227,7 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
     unitsPerPlayer: saved.unitsPerPlayer ?? null,
     sidegrades: saved.sidegrades ?? null,
     loadouts: saved.loadouts ?? null,
+    fraktionen: saved.fraktionen ?? null,
     seed,
     hostName: saved.seats?.[0]?.name ?? 'Host',
   }).lobby;

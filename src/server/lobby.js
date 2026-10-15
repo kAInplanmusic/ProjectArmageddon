@@ -7,6 +7,7 @@
  *
  * @module LobbyManager
  */
+import { bereinigeFraktionen } from '../shared/config/darstellung.js';
 import { randomUUID } from 'node:crypto';
 import { ORIENTATIONS, TEAM_COLORS } from '../engine/match.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
@@ -82,7 +83,7 @@ export class LobbyManager {
   create({
     teams = 2, playersPerTeam = null, unitsPerPlayer = null, preset = 'hills', kartentyp = null,
     seed = undefined, hostName = 'Host', orientation = 'landscape', sidegrades = null,
-    loadouts = null,
+    loadouts = null, fraktionen = null,
   } = {}) {
     /*
      * Grenzen der Teamzahl.
@@ -259,6 +260,8 @@ export class LobbyManager {
       sidegrades: geprüfteSidegrades,
       // Klassenwahl je Spielerplatz — ebenfalls Konfiguration, kein Zufall.
       loadouts: geprüfteLoadouts,
+      // Darstellung: Fraktion je Team (nur Anzeige, nicht im Replay-Kopf).
+      fraktionen: bereinigeFraktionen(fraktionen, teams),
       seed,
       status: LOBBY_STATUS.OPEN,
       createdAt: Date.now(),
@@ -313,6 +316,7 @@ export class LobbyManager {
       // nicht, mit welchem Profil die Figuren antreten.
       sidegrades: Array.isArray(lobby.sidegrades) ? [...lobby.sidegrades] : null,
       loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts.map(l => (l ? { ...l } : null)) : null,
+      fraktionen: Array.isArray(lobby.fraktionen) ? [...lobby.fraktionen] : null,
       status: lobby.status,
       // Belegt = reservierte Plätze. Die Entity-ID existiert erst, wenn ein
       // Match gestartet und die Welt erzeugt wurde.
