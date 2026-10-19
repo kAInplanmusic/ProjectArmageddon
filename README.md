@@ -28,7 +28,7 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 
 ## Kulissen
 
-Sechzig KI-erzeugte Hintergrundbilder aus zwölf Biomen mit je fünf Varianten.
+Achtzig KI-erzeugte Hintergrundbilder aus sechzehn Biomen mit je fünf Varianten.
 Die Kulisse liegt hinter dem prozeduralen Gelände und bestimmt dessen Bodenfarbe.
 
 | Biom | Varianten |
@@ -45,6 +45,10 @@ Die Kulisse liegt hinter dem prozeduralen Gelände und bestimmt dessen Bodenfarb
 | Hyperrealismus | Goldenes Tal, Wüste, Polstation, Dschungelfluss, Steilküste |
 | Cowboy & Western | Wüstenstadt, Duell im Sonnenuntergang, Lagerfeuer, Wintergrenze, Prärie |
 | Film Noir | Regennasse Straße, Hafenkai, verrauchte Bar, Verfolgung, Dachsilhouette |
+| Sintflut | Dammbruch, versunkener Wald, Monsun, Reisterrassen, Dächer |
+| Offene Weite | Heidemoor, Polder, Präriegewitter, Salzwüste, Weizenfelder |
+| Felsspitzen | Basaltsäulen, Wüsten-Hoodoos, Dolomiten, Eisspitzen, Karstgipfel |
+| Gewirr | Bambusdickicht, Höhlennetz, Ruinenlabyrinth, Slot-Canyon, Schützengräben |
 
 **Auswahl:** Im Menü unter „Kulisse" (nach Biom gruppiert). „automatisch" überlässt
 die Wahl dem Seed — damit bleibt ein Match reproduzierbar, und ein Replay zeigt
