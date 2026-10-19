@@ -104,6 +104,8 @@ export function exposeDebugApi(game) {
       getMatch: () => game.match,
       getNetwork: () => game.network,
       getState: () => game.currentState(),
+      /** Sicherer Bereich, Figurenrechtecke und ausweichende Panels (CSS-Pixel). */
+      sichtbereich: () => game.hudAusweichen.diagnose(game.currentState(), game.kamera),
       startMatch: options => game.startMatch(options),
       startOnline: options => game.startOnline(options),
       refreshLobbies: () => game.refreshLobbies(),

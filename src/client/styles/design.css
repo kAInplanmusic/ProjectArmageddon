@@ -762,3 +762,16 @@ select option { background: #14181d; color: var(--ink); }
   .hud-figur-text strong { font-size: 12px; }
   .hud-figur-text span { display: none; }
 }
+
+/* ======================================================= HUD weicht Figuren aus */
+/*
+ * Steht eine Figur hinter einem seitlichen Panel (Spielerliste, Protokoll,
+ * Zielanzeige), wird das Panel durchscheinend (siehe src/client/hudAusweichen.js).
+ * Die Spielerliste ist zudem schmaler: Sie darf nicht ein Fünftel des Felds decken.
+ */
+#hud-left { justify-self: start; width: min(100%, 220px); }
+#hud-left, #hud-log, #hud-aim { transition: opacity 0.18s ease; }
+#hud-left.hud-weicht, #hud-log.hud-weicht, #hud-aim.hud-weicht { opacity: 0.22; }
+@media (prefers-reduced-motion: reduce) {
+  #hud-left, #hud-log, #hud-aim { transition: none; }
+}

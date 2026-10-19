@@ -73,6 +73,29 @@ automatisch gelöscht.
   überlebt dessen Löschen nicht; eine Kopie nach außen ist nicht gebaut.
   (e) Preis des Abbilds je GB/Monat in `docs/betrieb-INSTANZ.md` eintragen.
 
+## HUD-Layout: Figuren und Schilder bleiben sichtbar (2026-10-15) — GEBAUT
+
+Befund der Abnahme (`d1280-pirates-machina.png`): Figur links unter Spielerliste und
+Figurenkarte, Schilder von Gipfel-Figuren unter der Kopfleiste.
+
+- [x] `src/client/sichtbereich.js` (rein, getestet): sicherer Bereich aus **gemessenen**
+  Rechtecken (Kopfleiste oben, Waffenleiste/FEUER/Winkelregler/Touch-Tasten unten), Schildplatzierung
+  (über der Figur; ohne Platz unter die Füße geklappt; sonst in den Bereich geschoben; seitlich
+  begrenzt), Überdeckungsprüfung, Schub.
+- [x] `src/client/hudAusweichen.js` misst die DOM-Rechtecke (alle 6 Bilder und bei Zugwechsel/Resize,
+  nicht je Bild), setzt den Bereich im Renderer, macht seitliche Panels (`#hud-left`, `#hud-log`,
+  `#hud-aim`) durchscheinend (`.hud-weicht`), wenn eine Figur samt Schild dahinter steht, und rückt
+  eine ganz sichtbare Karte höchstens 15 % der Höhe nach unten (Himmel), wenn Köpfe unter der
+  Kopfleiste lägen. `Camera` kennt dafür `setzeRand` (scrollende Achsen: Fokus in der Mitte des freien
+  Bereichs) und `setzeSchubZiel`. Die Spielerliste ist auf 220 px begrenzt.
+- [x] Nur Darstellung: Engine, Hash, Replays unverändert. `window.__PA__.sichtbereich()` liefert
+  Bereich, Figurenrechtecke und ausweichende Panels für Tests.
+- [x] Tests: `tests/sichtbereich.test.js` (18), `tests/e2e/hud-layout.spec.mjs` (12: aktive Figur
+  nach 4 Zugwechseln in 1280x720, 800x400, Touch 844x390 über 3 Seeds nicht verdeckt und nicht unter
+  der Kopfleiste).
+- Grenze: Bei ganz sichtbarer Karte bleibt der Zoom unverändert; Figuren am linken Rand bleiben
+  hinter der Spielerliste (durchscheinend, nicht verschoben).
+
 ## Netcode-/Determinismus-Audit (2026-10-09) — offene Punkte
 
 Auftrag: Gesamtaudit (Code, Tests, Architektur, Performance) mit Fokus Determinismus,
@@ -446,7 +469,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1417/1417** grün, Dateizahl **153** (Stand 2026-10-15, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1435/1435** grün, Dateizahl **154** (Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

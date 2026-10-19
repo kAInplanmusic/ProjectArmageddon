@@ -44,6 +44,7 @@ import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
 import { COMBAT_ROLES, classOf, FACTIONS } from '../shared/config/factions.js';
 import { bereinigeFraktionen, loeseFraktionen, KLASSISCH } from '../shared/config/darstellung.js';
 import { FigurenKarte } from './figurenKarte.js';
+import { HudAusweichen } from './hudAusweichen.js';
 import {
   uebersichtFuerHilfe, classCounterplay, resolveLoadout, combatProfile,
 } from '../shared/config/classes.js';
@@ -119,6 +120,8 @@ class Game {
     this.kamera = null;
     this.hud = new Hud(document);
     this.figurenKarte = new FigurenKarte(document);
+    // Hält Figuren und Schilder frei vom HUD (gemessene Ränder, siehe hudAusweichen.js).
+    this.hudAusweichen = new HudAusweichen({ doc: document, canvas: this.canvas, renderer: this.renderer });
     // Waffenmenü: Dropdown des Besitzes (Taste E / Knopf neben der Leiste).
     this.waffenMenue = new WaffenMenue(document, {
       getFigur: () => this.#aktiveFigur(),
@@ -2312,6 +2315,7 @@ class Game {
     }
     this.renderer.resize(breite, hoehe);
     this.#setzeKameraGroesse(breite, hoehe);
+    this.hudAusweichen?.markiere();
   }
 
   /**
@@ -2651,6 +2655,8 @@ class Game {
       const fokus = state.entities.find(e => e.entityId === state.activePlayerId)
         ?? state.entities.find(e => e.alive);
       if (fokus) this.kamera.zieleAuf(fokus.x, fokus.y);
+      // HUD-Ränder messen, Schilder und Schub setzen (nur Darstellung).
+      this.hudAusweichen.aktualisiere(state, this.kamera);
       // Ein Schritt Näherung je Bild: weiches Nachziehen statt harter Schnitte.
       this.kamera.schritt();
     }

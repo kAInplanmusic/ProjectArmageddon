@@ -11,6 +11,7 @@
 import {
   PAL, hexRgb, mischeRgb, css,
 } from './stil.js';
+import { platziereSchild } from './sichtbereich.js';
 
 const KONTUR = PAL.kontur;
 const HELM = [78, 88, 60];
@@ -303,15 +304,24 @@ export function balkenFarbe(anteil) {
  *
  * @param {CanvasRenderingContext2D} ctx - in Kartenkoordinaten
  */
-export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, aktiv, s = 1) {
+export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, aktiv, s = 1, platz = null) {
   const text = String(label ?? '').slice(0, 12);
   ctx.save();
   ctx.font = 'bold 9px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const breite = Math.max(30, Math.ceil(ctx.measureText(text).width) + 10);
+  /*
+   * Liegt das Schild außerhalb des sicheren Bereichs (unter der Kopfleiste,
+   * hinter der Seitenleiste), wird es versetzt: unter die Füße geklappt oder
+   * hineingeschoben. Ohne `platz` (Replay, Tests) bleibt alles wie bisher.
+   */
+  const lage = platz?.grenzen
+    ? platziereSchild({ x, anker, fuss: platz.fuss ?? anker, breite, s }, platz.grenzen)
+    : { x, anker, unten: false };
+  const aktivPfeil = aktiv && !lage.unten;
   // Das Schild wächst vom Anker nach oben; `s` skaliert das ganze Schild (Lesbarkeit bei kleinem Zoom).
-  ctx.translate(Math.round(x - (breite * s) / 2), Math.round(anker - 22 * s));
+  ctx.translate(Math.round(lage.x - (breite * s) / 2), Math.round(lage.anker - 22 * s));
   ctx.scale(s, s);
 
   ctx.fillStyle = 'rgba(13, 15, 18, 0.88)';
@@ -333,7 +343,7 @@ export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, akt
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ctx.fillRect(2, 14, Math.max(0, bb * anteil), 1.5);
 
-  if (aktiv) {
+  if (aktivPfeil) {
     // Pfeil über dem Schild: die Figur am Zug.
     const mx = breite / 2;
     ctx.fillStyle = PAL.limette;

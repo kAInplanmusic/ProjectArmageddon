@@ -29,6 +29,7 @@ import {
   zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneAuraRing, zeichneNamensschild,
   figurSkalaFuer, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
 } from './figuren.js';
+import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
@@ -130,6 +131,8 @@ export class Renderer {
     this.figurSkala = 1;
     /** Anzeigefaktor Zeichenfläche -> Bildschirm (CSS-Größe / Bitmapgröße), bei Größenänderung neu gelesen. */
     this.cssFaktor = 1;
+    /** Sicherer Bereich in Bildschirmpixeln (ohne HUD-Ränder) oder null. */
+    this.sicherBereich = null;
     this.#beobachteAnzeigegroesse();
     // Posen der Sprites und laufende Fall-Effekte (Tod, Ertrinken).
     this.figurPosen = new FigurPosen();
@@ -1474,7 +1477,41 @@ export class Renderer {
     zeichneNamensschild(
       this.ctx, entity.x + versatz.dx, anker, entity.label, ratio,
       TEAM_COLORS[entity.teamId % TEAM_COLORS.length], aktiv, s,
+      {
+        grenzen: this.#sicherInKarte(),
+        fuss: entity.y + versatz.dy + FUSS_ABSTAND,
+      },
     );
+  }
+
+  /**
+   * Der sichere Bereich in Kartenpixeln (oder `null` ohne Kamera/Messung).
+   * Wird je Bild aus der Kameratransformation berechnet, weil sie nachzieht.
+   */
+  #sicherInKarte() {
+    if (!this.sicherBereich || !this.kamera) return null;
+    return bereichInKarte(this.sicherBereich, this.kamera.transformation());
+  }
+
+  /**
+   * Maße einer Figur für die HUD-Prüfung (Kartenpixel um `entity.y`): Kopf samt
+   * Schild (`oben`) bzw. nur Kopf (`kopf`), Füße unten, halbe Breite. Nur Rechnung, zeichnet nichts.
+   */
+  figurMasse() {
+    const sk = this.figurSkala || 1;
+    const hoch = SPRITE_HOEHE * sk * 0.93 - FUSS_ABSTAND;
+    // Das Schild (Skala wie in #drawHealthBar) ragt bis 30·s über den Kopf.
+    const schildSkala = Math.max(1, Math.min(2.6, sk * 0.75));
+    return { halbBreite: Math.max(20, SPRITE_HOEHE * sk * 0.4), oben: hoch + 2 * schildSkala + 30 * schildSkala, kopf: hoch + 4, unten: FUSS_ABSTAND };
+  }
+
+  /**
+   * Setzt den sicheren Bereich (Bildschirmpixel, ohne HUD-Ränder), `null` löscht ihn.
+   * Er wirkt auf die Schildplatzierung; siehe `sichtbereich.js`.
+   */
+  setSicherBereich(bereich) {
+    this.sicherBereich = bereich ?? null;
+    return this;
   }
 
   /**

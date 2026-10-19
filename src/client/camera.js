@@ -79,6 +79,21 @@ export class Camera {
   /** Ob der Zoom vom Nutzer gesetzt wurde (dann nicht automatisch anpassen). */
   #zoomFest = false;
 
+  /**
+   * Ränder, die das HUD verdeckt (Bildschirmpixel). Auf einer Achse, die
+   * scrollt, liegt der Fokus in der Mitte des FREIEN Bereichs, nicht des Fensters.
+   */
+  #rand = { oben: 0, unten: 0, links: 0, rechts: 0 };
+
+  /**
+   * Senkrechter Schub (Bildschirmpixel, >= 0) für eine Achse, die NICHT scrollt:
+   * Die Karte rückt nach unten, damit Köpfe nicht unter der Kopfleiste liegen.
+   * Oberhalb der Karte ist Himmel, dort darf die Ansicht überstehen.
+   */
+  #schub = 0;
+
+  #schubZiel = 0;
+
   constructor({ mapBreite, mapHoehe, schirmBreite, schirmHoehe, zoom = null } = {}) {
     this.#mapBreite = mapBreite;
     this.#mapHoehe = mapHoehe;
@@ -108,6 +123,9 @@ export class Camera {
   get zoom() { return this.#zoom; }
 
   get x() { return this.#x; }
+
+  /** Aktueller senkrechter Schub in Bildschirmpixeln (0 = keiner). */
+  get schub() { return this.#schub; }
 
   get y() { return this.#y; }
 
@@ -150,6 +168,23 @@ export class Camera {
     return true;
   }
 
+  /**
+   * Setzt die vom HUD verdeckten Ränder (Bildschirmpixel).
+   *
+   * Sie wirken nur auf Achsen, auf denen die Karte scrollt; passt die Karte
+   * ganz hinein, bleibt sie mittig (siehe `setzeSchubZiel` für oben).
+   */
+  setzeRand({ oben = 0, unten = 0, links = 0, rechts = 0 } = {}) {
+    const n = v => (Number.isFinite(v) && v > 0 ? v : 0);
+    this.#rand = { oben: n(oben), unten: n(unten), links: n(links), rechts: n(rechts) };
+    this.#begrenze();
+  }
+
+  /** Zielwert für den senkrechten Schub (wird je Bild weich angenähert). */
+  setzeSchubZiel(pixel) {
+    this.#schubZiel = Number.isFinite(pixel) && pixel > 0 ? pixel : 0;
+  }
+
   /** Zurück zum Standardzoom (ganze Karte sichtbar). */
   setzeZoomZurueck() {
     this.#zoomFest = false;
@@ -183,7 +218,22 @@ export class Camera {
   schritt() {
     this.#x += (this.#zielX - this.#x) * FOLGE_FAKTOR;
     this.#y += (this.#zielY - this.#y) * FOLGE_FAKTOR;
+    this.#schub += (this.#schubZiel - this.#schub) * FOLGE_FAKTOR;
+    if (Math.abs(this.#schubZiel - this.#schub) < 0.05) this.#schub = this.#schubZiel;
     this.#begrenze();
+  }
+
+  /** Bildschirmmitte der Achse: bei Scrollen die Mitte des freien Bereichs. */
+  #mitteX() {
+    return this.scrolltHorizontal
+      ? this.#schirmBreite / 2 + (this.#rand.links - this.#rand.rechts) / 2
+      : this.#schirmBreite / 2;
+  }
+
+  #mitteY() {
+    return this.scrolltVertikal
+      ? this.#schirmHoehe / 2 + (this.#rand.oben - this.#rand.unten) / 2
+      : this.#schirmHoehe / 2 + this.#schub;
   }
 
   /**
@@ -207,20 +257,22 @@ export class Camera {
    * „aufhören", was wie ein Fehler aussähe.
    */
   #begrenze() {
-    const halbeBreite = this.sichtbareBreite / 2;
-    const halbeHoehe = this.sichtbareHoehe / 2;
-
     // Ist die Karte schmaler als der Ausschnitt, wird sie mittig gehalten.
     if (this.sichtbareBreite >= this.#mapBreite) {
       this.#x = this.#mapBreite / 2;
     } else {
-      this.#x = Math.max(halbeBreite, Math.min(this.#mapBreite - halbeBreite, this.#x));
+      // Linke Schirmkante liegt bei x - mitte/zoom und muss >= 0 sein usw.
+      const links = this.#mitteX() / this.#zoom;
+      const rechts = (this.#schirmBreite - this.#mitteX()) / this.#zoom;
+      this.#x = Math.max(links, Math.min(this.#mapBreite - rechts, this.#x));
     }
 
     if (this.sichtbareHoehe >= this.#mapHoehe) {
       this.#y = this.#mapHoehe / 2;
     } else {
-      this.#y = Math.max(halbeHoehe, Math.min(this.#mapHoehe - halbeHoehe, this.#y));
+      const oben = this.#mitteY() / this.#zoom;
+      const unten = (this.#schirmHoehe - this.#mitteY()) / this.#zoom;
+      this.#y = Math.max(oben, Math.min(this.#mapHoehe - unten, this.#y));
     }
   }
 
@@ -236,8 +288,8 @@ export class Camera {
   transformation() {
     return {
       skalierung: this.#zoom,
-      versatzX: this.#schirmBreite / 2 - this.#x * this.#zoom,
-      versatzY: this.#schirmHoehe / 2 - this.#y * this.#zoom,
+      versatzX: this.#mitteX() - this.#x * this.#zoom,
+      versatzY: this.#mitteY() - this.#y * this.#zoom,
     };
   }
 
