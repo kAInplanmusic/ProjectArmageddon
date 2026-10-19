@@ -329,3 +329,143 @@ export function zeichneTruemmer(ctx, truemmer, toene) {
   }
   ctx.globalAlpha = 1;
 }
+
+/**
+ * Mündungsblitz bzw. Wirkungsglanz einer gehaltenen Waffe.
+ *
+ * Der Ursprung liegt am Mündungsanker, +x zeigt in Waffenrichtung. Form und
+ * Größe kommen aus der Kategorie (`waffenAnimation.js`), die Farbe aus dem
+ * Manifest (`flashColor`). Nur Pfade und Füllungen, keine Allokation je Bild.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {'kegel'|'stern'|'ring'|'funke'} form
+ * @param {number} g - Größe in Weltpixeln
+ * @param {number} a - Stärke 0..1 (1 = frisch)
+ * @param {string} farbe - Blitzfarbe der Waffe
+ */
+export function zeichneMuendungsblitz(ctx, form, g, a, farbe) {
+  if (a <= 0 || g <= 0) return;
+  const wachs = 1 + (1 - a) * 0.7;
+  const l = g * wachs;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = farbe;
+  ctx.strokeStyle = farbe;
+  switch (form) {
+    case 'kegel': {
+      ctx.globalAlpha = 0.75 * a;
+      ctx.beginPath();
+      ctx.moveTo(-1, -l * 0.2);
+      ctx.lineTo(l, 0);
+      ctx.lineTo(-1, l * 0.2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 0.9 * a;
+      ctx.fillStyle = '#fffbe6';
+      ctx.beginPath();
+      ctx.moveTo(-1, -l * 0.09);
+      ctx.lineTo(l * 0.6, 0);
+      ctx.lineTo(-1, l * 0.09);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, 0, g * 0.16 * (0.6 + a * 0.4), 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'stern': {
+      ctx.globalAlpha = 0.8 * a;
+      ctx.beginPath();
+      for (let i = 0; i < 12; i += 1) {
+        const r = (i % 2 === 0 ? l : l * 0.36) * (i === 0 ? 1.3 : 1);
+        const w = (i / 12) * Math.PI * 2;
+        if (i === 0) ctx.moveTo(Math.cos(w) * r, Math.sin(w) * r);
+        else ctx.lineTo(Math.cos(w) * r, Math.sin(w) * r);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 0.95 * a;
+      ctx.fillStyle = '#fffbe6';
+      ctx.beginPath();
+      ctx.arc(0, 0, g * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'ring': {
+      ctx.globalAlpha = 0.85 * a;
+      ctx.lineWidth = 0.8 + 2.2 * a;
+      ctx.beginPath();
+      ctx.arc(0, 0, g * (0.3 + 0.7 * (1 - a)), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.9 * a;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, 0, g * 0.2 * a + 1, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    default: {
+      // funke: kurzer Fächer aus drei Strahlen und ein Kern.
+      ctx.globalAlpha = 0.9 * a;
+      ctx.lineWidth = 1.2 + a;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (let i = -1; i <= 1; i += 1) {
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(i * 0.55) * l, Math.sin(i * 0.55) * l);
+      }
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, 0, g * 0.15 + 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+  }
+  ctx.restore();
+}
+
+/**
+ * Ein Flugobjekt als Sprite: um die Mitte gedreht, mit weichem Glanz in der
+ * Blitzfarbe dahinter.
+ *
+ * @param {object} sp - Eintrag aus `waffenSprites.js` (`projektil`, `glanz`)
+ * @param {number} winkel - Zeichenwinkel (Flugrichtung plus Eigenrotation)
+ * @param {number} groesse - Kantenlänge der Zelle in Weltpixeln
+ */
+export function zeichneGeschossSprite(ctx, sp, x, y, winkel, groesse) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.globalAlpha = 0.55;
+  ctx.drawImage(sp.glanz, -groesse * 0.7, -groesse * 0.7, groesse * 1.4, groesse * 1.4);
+  ctx.globalAlpha = 1;
+  ctx.rotate(winkel);
+  ctx.drawImage(sp.projektil, -groesse / 2, -groesse / 2, groesse, groesse);
+  ctx.restore();
+}
+
+/**
+ * Kurzer Schweif aus den letzten Positionen (Ringpuffer), nach hinten dünner
+ * und durchsichtiger, in der Blitzfarbe der Waffe.
+ *
+ * @param {import('./waffenAnimation.js').SchweifRing} ring
+ * @param {string} farbe
+ * @param {number} breite - Breite am Geschoss in Weltpixeln
+ */
+export function zeichneSchweif(ctx, ring, farbe, breite) {
+  const n = ring.anzahl;
+  if (n < 2) return;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = farbe;
+  for (let i = 1; i < n; i += 1) {
+    const anteil = i / (n - 1);
+    ctx.globalAlpha = 0.12 + 0.6 * anteil;
+    ctx.lineWidth = breite * (0.25 + 0.75 * anteil);
+    ctx.beginPath();
+    ctx.moveTo(ring.xAn(i - 1), ring.yAn(i - 1));
+    ctx.lineTo(ring.xAn(i), ring.yAn(i));
+    ctx.stroke();
+  }
+  ctx.restore();
+}

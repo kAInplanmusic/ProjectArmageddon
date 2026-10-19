@@ -281,7 +281,7 @@ const AUDIT_LISTE_2026_09_26 = [
   'match_over',            // ereignisse.js:505 — lokal :513, online :517–:519
   'projectile_impact',     // ereignisse.js:225 — beide :226 (Blitz am Einschlagort)
   'projectile_pierced',    // ereignisse.js:236 — beide :237 (Blitz am Opfer)
-  'projectile_spawn',      // ereignisse.js:202 — nur online :206 (Vorhersage auflösen)
+  'projectile_spawn',      // ereignisse.js:366 — beide (Waffe fürs Sprite) und online zusätzlich die Vorhersage auflösen
   'pulled',                // ereignisse.js:369 — beide :370
   'round_start',           // ereignisse.js:495 — beide :496
   'shield_absorbed',       // ereignisse.js:360 — beide :363 (Blitz) und :66 (Meldung)
@@ -385,10 +385,6 @@ const EINZWEIG_BELEGT = new Map([
   ['weapon_dropped', {
     zweig: 'online',
     entweder: 'lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition, Listenaktualisierung) — src/client/main.js:857 (`hud.log`) und :858 (`hud.update`) —, es braucht deshalb keinen Tabellenzweig. ONLINE gibt es diesen lokalen Erfolgspfad nicht: der Server führt den Abwurf aus und schickt das Ereignis; ohne den `online:`-Zweig fiele es stumm weg.',
-  }],
-  ['projectile_spawn', {
-    zweig: 'online',
-    entweder: 'lokal BRAUCHT es keinen Zweig: die Vorhersage gibt es dort nicht — src/client/main.js:1480–1481 (#startShotPrediction kehrt im lokalen Modus sofort zurück), gezeichnet wird sie nur online (:1961). Das Ereignis läuft lokal trotzdem (es kommt aus dem Motor, src/engine/shooting.js:344) und fällt in eine leere Stelle: Absicht, keine Lücke.',
   }],
   ['terrain_destroyed', {
     zweig: 'online',

@@ -364,9 +364,14 @@ export const EREIGNIS_WIRKUNGEN = {
 
   /* Der Server hat das Geschoss erzeugt (nur online). */
   projectile_spawn: {
+    // Waffe und Richtung für die Sprite-Darstellung des Flugobjekts (nur Anzeige).
+    lokal: (k, n) => {
+      k.renderer?.merkeGeschoss(n.projectileId, n.weaponId, n.vx, n.vy);
+    },
     // Die Vorhersage hat ihre Aufgabe erfüllt und wird von der echten
     // Flugbahn abgelöst.
-    online: (k) => {
+    online: (k, n) => {
+      k.renderer?.merkeGeschoss(n.projectileId, n.weaponId, n.vx, n.vy);
       k.shotPredictor?.resolve();
     },
   },

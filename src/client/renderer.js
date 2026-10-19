@@ -21,17 +21,23 @@ import { bakeTerrainLayer, detectWebGpu } from './terrainBaker.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
+  zeichneGeschossSprite, zeichneSchweif,
 } from './effektStil.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
-  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneAuraRing, zeichneNamensschild,
+  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, zeichneAuraRing, zeichneNamensschild,
   figurSkalaFuer, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
 } from './figuren.js';
 import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
+import { holeWaffenSprite } from './waffenSprites.js';
+import {
+  waffenParameter, waffenPose, neuePose, neueZeiten, handPunkt,
+  GeschossLagen, geschossDarstellung, geschossWinkel,
+} from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
@@ -42,7 +48,7 @@ import {
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
   erzeugeMuendungsfeuer, muendungsfeuer, rueckstossVersatz, ROHR_LAENGE,
-  fadenkreuzSegmente, pulsFaktor, blitzPuls,
+  fadenkreuzSegmente, pulsFaktor, blitzPuls, ladungAnteil,
 } from './weaponAnimation.js';
 import {
   drawSky as drawGenerativeSky,
@@ -175,6 +181,15 @@ export class Renderer {
     this.rauch = [];
     /** Flugspuren je Projektil (`entityId` → Punkte). */
     this.spuren = new Map();
+    /** Waffen-Animation: Zeiten je Figur (Ziehen, Schuss), wiederverwendete Pose, Geschosslagen, Zähler. */
+    this.waffenZustand = new Map();
+    this.waffenZeiten = neueZeiten();
+    this.waffenPoseTmp = neuePose();
+    this.handTmp = { x: 0, y: 0 };
+    this.geschosse = new GeschossLagen();
+    this.waffenStat = { sprite: 0, ikone: 0, geschossSprites: 0, geschosseGesamt: 0 };
+    /** Letzte Pose je Figur (Diagnose, Tests): `entityId` → Kopie der Felder. */
+    this.waffenDiagnose = new Map();
     /** Der laufende Kamera-Ruck (oder `null`). */
     this.ruck = null;
     /**
@@ -411,6 +426,22 @@ export class Renderer {
    */
   addMuzzleFlash(entityId, angle) {
     this.effects.push(erzeugeMuendungsfeuer(entityId, angle));
+    this.#waffenState(entityId).schuss = performance.now() / 1000;
+  }
+
+  /** Waffe und Flugrichtung eines neuen Geschosses (aus `projectile_spawn`) für die Sprite-Darstellung. */
+  merkeGeschoss(projectileId, weaponId, vx, vy) {
+    this.geschosse.merke(projectileId, weaponId, vx, vy);
+  }
+
+  /** Zeiten der Waffen-Animation einer Figur (einmal je Figur angelegt). */
+  #waffenState(entityId) {
+    let z = this.waffenZustand.get(entityId);
+    if (!z) {
+      z = { waffeId: '', zieh: -1e9, schuss: -1e9, gesehen: false };
+      this.waffenZustand.set(entityId, z);
+    }
+    return z;
   }
 
   #updateEffects() {
@@ -850,6 +881,9 @@ export class Renderer {
     this.inselfall.zuruecksetzen();
     this.wasserFertig = false;
     this.spuren = new Map();
+    this.waffenZustand.clear();
+    this.waffenDiagnose.clear();
+    this.geschosse.leere();
     this.ruck = null;
     this.letzterKrater = null;
     return this;
@@ -1278,6 +1312,8 @@ export class Renderer {
     // Sprites werden je Zoom so groß gezeichnet, dass sie auf dem Bildschirm lesbar bleiben (nur Anzeige).
     this.figurSkala = figurSkalaFuer((this.kamera?.zoom ?? 1) * this.cssFaktor);
     const S = this.figurSkala;
+    this.waffenStat.sprite = 0;
+    this.waffenStat.ikone = 0;
     for (const entity of entities) {
       if (!entity.alive) {
         this.#figurGestorben(entity.entityId, jetzt);
@@ -1341,6 +1377,8 @@ export class Renderer {
         rohrLaenge: ROHR_LAENGE / FIGUR_SKALA - 0.7,
       };
       const treffer = marke && marke.life > 0.66 ? (marke.life - 0.66) * 3 : 0;
+      // Zeichnet die Figur eine Waffe aus dem Atlas, bringt diese ihren eigenen Mündungsblitz mit.
+      let spriteWaffe = false;
       // Charakter-Sprite, wenn die Figur eine Fraktion hat und das Bild bereit ist
       // (sonst die prozedurale Figur).
       if (fig) {
@@ -1359,8 +1397,13 @@ export class Renderer {
         });
         // Gehaltene Waffe: ihre Ikone am Zielstrahl; ohne Ikone das Rohr.
         const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
-        const ikone = waffe ? holeWaffenIkone(waffe) : null;
-        if (ikone) {
+        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
+        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
+        if (waffenSprite) {
+          spriteWaffe = true;
+          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color);
+        } else if (ikone) {
+          this.waffenStat.ikone += 1;
           const nahkampf = waffe.category === 'melee';
           zeichneWaffeInHand(this.ctx, ikone, {
             winkel: angle,
@@ -1391,7 +1434,7 @@ export class Renderer {
 
       // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —
       // es wird deshalb NACH dem Zurücksetzen der Drehung gezeichnet.
-      if (muendung) {
+      if (muendung && !spriteWaffe) {
         const feuer = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
         const mx = entity.x + feuer.offsetX * sk;
         const my = entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + feuer.offsetY * sk;
@@ -1424,6 +1467,40 @@ export class Renderer {
   }
 
   /**
+   * Die gehaltene Waffe als Sprite mit prozeduraler Animation (siehe
+   * `waffenAnimation.js`): Pose aus den Zeiten seit Ziehen und Schuss, Hand
+   * aus Sprite-Höhe und Blickrichtung, Nachladegrad aus dem Zustand.
+   */
+  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color) {
+    const ws = this.#waffenState(entity.entityId);
+    if (ws.waffeId !== waffe.id) {
+      // Wechsel: Die neue Waffe schwingt von unten ein (nicht beim allerersten Bild der Figur).
+      if (ws.waffeId !== '') ws.zieh = jetzt;
+      ws.waffeId = waffe.id;
+    }
+    const selbst = waffe.damage === 0;
+    const par = waffenParameter(waffe.category, waffe.id, selbst);
+    const zt = this.waffenZeiten;
+    zt.idle = jetzt + entity.entityId * 1.7;
+    zt.seitZiehen = jetzt - ws.zieh;
+    zt.seitSchuss = jetzt - ws.schuss;
+    zt.bereit = ladungAnteil(entity.cooldowns?.[waffe.id] ?? 0, waffe.cooldown);
+    zt.treffer = treffer;
+    const pose = waffenPose(par, zt, this.reducedMotion, this.waffenPoseTmp);
+    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp);
+    zeichneWaffeSprite(this.ctx, sp, par, pose, { winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y });
+    if (feuerLeben > 0 && !this.reducedMotion && (waffe.category === 'melee' || selbst)) {
+      zeichneAuraRing(this.ctx, color, feuerLeben);
+    }
+    this.waffenStat.sprite += 1;
+    let d = this.waffenDiagnose.get(entity.entityId);
+    if (!d) { d = {}; this.waffenDiagnose.set(entity.entityId, d); }
+    d.waffeId = waffe.id; d.art = par.art; d.seitSchuss = zt.seitSchuss;
+    d.vor = pose.vor; d.hoch = pose.hoch; d.drehung = pose.drehung; d.glanz = pose.glanz;
+    d.blitz = pose.blitz; d.blitzForm = pose.blitzForm; d.weiss = pose.weiss; d.ladung = pose.ladung;
+  }
+
+  /**
    * Eine Figur ist gestorben: Hatte sie ein Sprite, läuft der Fall-Effekt
    * (Wegfliegen bzw. Ertrinken) noch kurz weiter.
    */
@@ -1437,6 +1514,8 @@ export class Renderer {
       });
     }
     this.figurPosen.vergiss(entityId);
+    this.waffenZustand.delete(entityId);
+    this.waffenDiagnose.delete(entityId);
   }
 
   /** Zeichnet die auslaufenden Fall-Effekte (nach den lebenden Figuren). */
@@ -1551,9 +1630,43 @@ export class Renderer {
     ctx.restore();
   }
 
-  #drawProjectiles(projectiles) {
+  /**
+   * Das Sprite eines Geschosses (Atlas, Kategorie der Waffe) oder `null`: dann
+   * der bisherige Glutball. Die Waffe kommt aus dem Spawn-Ereignis, sonst von
+   * der gerade gehaltenen Waffe des Besitzers.
+   */
+  #geschossSprite(lage, entities) {
+    if (lage.sp) return lage.sp;
+    if (!lage.waffeId) {
+      const besitzer = entities.find(e => e.entityId === lage.owner);
+      lage.waffeId = besitzer?.activeWeaponId ?? '';
+    }
+    const waffe = lage.waffeId ? WEAPONS_BY_ID[lage.waffeId] : null;
+    const sp = waffe ? holeWaffenSprite(waffe) : null;
+    if (sp?.projektil) {
+      lage.sp = sp;
+      lage.dar = geschossDarstellung(waffe, sp.projektilInfo);
+    }
+    return lage.sp;
+  }
+
+  #drawProjectiles(projectiles, entities = []) {
+    const jetzt = performance.now() / 1000;
+    this.waffenStat.geschosseGesamt = projectiles.length;
+    this.waffenStat.geschossSprites = 0;
     for (const projectile of projectiles) {
-      zeichneGeschoss(this.ctx, projectile.x, projectile.y);
+      const lage = this.geschosse.lage(projectile.entityId);
+      const sp = lage ? this.#geschossSprite(lage, entities) : null;
+      if (sp) {
+        // Schweif in der Blitzfarbe, dann das Sprite in Flugrichtung (Wurfdinge drehen sich zusätzlich).
+        zeichneSchweif(this.ctx, lage.ring, sp.flashColor, lage.dar.groesse * 0.32);
+        const w = geschossWinkel(lage.flug, lage.dar, jetzt - lage.t0, this.reducedMotion);
+        zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
+        lage.winkel = w;
+        this.waffenStat.geschossSprites += 1;
+      } else {
+        zeichneGeschoss(this.ctx, projectile.x, projectile.y);
+      }
 
       // Zünder-Countdown: Ohne die Zahl wäre nicht erkennbar, wie lange eine
       // Granate noch liegt. Der Ring zeigt zusätzlich den Fortschritt, damit
@@ -1841,7 +1954,9 @@ export class Renderer {
     if (this.spuren.size === 0) return;
     this.ctx.save();
     this.ctx.lineCap = 'round';
-    for (const punkte of this.spuren.values()) {
+    for (const [id, punkte] of this.spuren) {
+      // Geschosse mit Sprite tragen ihren eigenen Schweif (`#drawProjectiles`).
+      if (this.geschosse.lage(id)?.sp) continue;
       if (punkte.length >= 2) zeichneSpur(this.ctx, punkte);
     }
     this.ctx.restore();
@@ -1993,6 +2108,7 @@ export class Renderer {
      */
     this.#ermittleTreffer(state);
     this.#fuehreSpuren(state.projectiles ?? []);
+    this.geschosse.fuehre(state.projectiles ?? [], performance.now() / 1000);
 
     /*
      * Die Kamera trennt zwei Schichten.
@@ -2107,7 +2223,7 @@ export class Renderer {
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawFaelle();
     this.#drawGuenther(state.guenther);
-    this.#drawProjectiles(state.projectiles ?? []);
+    this.#drawProjectiles(state.projectiles ?? [], state.entities ?? []);
     this.#drawWiederholung(wiederholung);
     /*
      * FUND (belegt, dieser Zug): `#drawParticles` war definiert und wurde

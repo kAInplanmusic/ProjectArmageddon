@@ -12,6 +12,7 @@ import {
   PAL, hexRgb, mischeRgb, css,
 } from './stil.js';
 import { platziereSchild } from './sichtbereich.js';
+import { zeichneMuendungsblitz } from './effektStil.js';
 
 const KONTUR = PAL.kontur;
 const HELM = [78, 88, 60];
@@ -275,6 +276,78 @@ export function zeichneWaffeInHand(ctx, ikone, p) {
   ctx.drawImage(ikone, -groesse / 2 + 0.8, -groesse / 2 + 0.8, groesse, groesse);
   ctx.globalAlpha = 1;
   ctx.drawImage(ikone, -groesse / 2, -groesse / 2, groesse, groesse);
+  ctx.restore();
+}
+
+/**
+ * Zeichnet die gehaltene Waffe als Sprite aus dem Atlas (`waffenSprites.js`).
+ *
+ * Der Griffanker der Waffe sitzt auf der Hand der Figur; die Waffe dreht um den
+ * Griff mit dem Zielwinkel (bei Blick nach links gespiegelt, nie verkehrt). Auf
+ * diesem Rahmen liegen die Pose (Rückstoß, Heben, Pendeln: `waffenAnimation.js`),
+ * die Abdunkelung samt Füllband beim Nachladen, der weiße Treffer-/Aufnehm-Blitz
+ * über der Silhouette, der Aufladeglanz und der Mündungsblitz am Mündungsanker.
+ * Keine Allokation je Bild.
+ *
+ * @param {CanvasRenderingContext2D} ctx - Ursprung = Figurmitte (Weltpixel)
+ * @param {object} sp - Eintrag aus `holeWaffenSprite`
+ * @param {object} par - Parametersatz aus `waffenParameter`
+ * @param {object} pose - aus `waffenPose`
+ * @param {{winkel:number, handX:number, handY:number}} p
+ */
+export function zeichneWaffeSprite(ctx, sp, par, pose, p) {
+  const links = Math.cos(p.winkel) < 0;
+  const k = par.zelle / 128;
+  const gx = sp.grip.x * k;
+  const gy = sp.grip.y * k;
+  ctx.save();
+  ctx.translate(p.handX, p.handY);
+  ctx.rotate(-p.winkel);
+  if (links) ctx.scale(1, -1);
+  ctx.translate(pose.vor, -pose.hoch);
+  if (pose.drehung !== 0) ctx.rotate(-pose.drehung);
+  if (pose.skala !== 1) ctx.scale(pose.skala, pose.skala);
+
+  // Dunkler Schlagschatten hebt die Waffe vom Sprite ab.
+  ctx.globalAlpha = 0.4;
+  ctx.drawImage(sp.dunkel, -gx + 0.8, -gy + 0.8, par.zelle, par.zelle);
+  ctx.globalAlpha = 1;
+  ctx.drawImage(sp.held, -gx, -gy, par.zelle, par.zelle);
+
+  if (pose.dunkel > 0) {
+    ctx.globalAlpha = pose.dunkel;
+    ctx.drawImage(sp.dunkel, -gx, -gy, par.zelle, par.zelle);
+    // Füllband: Die Waffe füllt sich vom Griff zur Spitze in der Blitzfarbe.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-gx, -gy, par.zelle * pose.ladung, par.zelle);
+    ctx.clip();
+    ctx.globalAlpha = 0.6;
+    ctx.drawImage(sp.farbig, -gx, -gy, par.zelle, par.zelle);
+    ctx.restore();
+  }
+  if (pose.weiss > 0) {
+    ctx.globalAlpha = Math.min(1, pose.weiss) * 0.85;
+    ctx.drawImage(sp.silhouette, -gx, -gy, par.zelle, par.zelle);
+  }
+  ctx.globalAlpha = 1;
+
+  const mx = (sp.muzzle.x - sp.grip.x) * k;
+  const my = (sp.muzzle.y - sp.grip.y) * k;
+  if (pose.glanz > 0) {
+    // Aufladeglanz: bei Selbstwirkung um die Waffenmitte, sonst an der Mündung.
+    const selbst = par.art === 'selbst';
+    const r = (selbst ? 11 : 7) * (0.7 + 0.5 * pose.glanz);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = 0.85 * pose.glanz;
+    ctx.drawImage(sp.glanz, (selbst ? mx * 0.5 : mx) - r, (selbst ? my * 0.5 : my) - r, r * 2, r * 2);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+  }
+  if (pose.blitz > 0) {
+    ctx.translate(mx, my);
+    zeichneMuendungsblitz(ctx, pose.blitzForm, pose.blitzGroesse, pose.blitz, sp.flashColor);
+  }
   ctx.restore();
 }
 
