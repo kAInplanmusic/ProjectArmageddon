@@ -13,6 +13,8 @@ import { normalizeInput } from '../src/shared/validation.js';
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
 import { MatchController } from '../src/engine/match.js';
 import { hashState } from '../src/engine/stateSnapshot.js';
+import { serializeLobby, restoreLobby } from '../src/server/persistence.js';
+import { LobbyManager } from '../src/server/lobby.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -82,4 +84,36 @@ test('A-2: dropWeapon lehnt Spieler ab, die nicht am Zug sind, und verbraucht ke
     hashState(matchOhneVersuch.getState()),
     'Der abgelehnte Abwurf hat den Zufallsstrom verbraucht — die Partien laufen auseinander'
   );
+});
+
+test('A-3: Persistenz erhält teamId und figureIndex je Sitz über den Roundtrip', () => {
+  /*
+   * Audit-Befund: `serializeLobby` speicherte je Sitz nur seatIndex, name, token,
+   * entityId und connected. `teamId` und `figureIndex` fehlten — nach einer
+   * Wiederherstellung war die Zuordnung Sitz -> Team -> Figur zerrissen, und die
+   * Teamvergabe (`alleTeamsBesetzt`) fand keine echte Team-Nummer mehr.
+   */
+  const manager = new LobbyManager();
+  const { lobby } = manager.create({ teams: 2, playersPerTeam: 2, preset: 'hills', hostName: 'Host' });
+
+  // So vergibt die Lobby die Felder im echten Betrieb.
+  lobby.seats[0].teamId = 0;
+  lobby.seats[0].figureIndex = 1;
+  lobby.seats[1].teamId = 0;
+  lobby.seats[1].figureIndex = 0;
+
+  const serialized = serializeLobby(lobby, null);
+  assert.equal(serialized.seats[0].teamId, 0, 'teamId muss gespeichert werden');
+  assert.equal(serialized.seats[0].figureIndex, 1, 'figureIndex muss gespeichert werden');
+  assert.equal(serialized.seats[1].teamId, 0);
+  assert.equal(serialized.seats[1].figureIndex, 0);
+
+  const restored = restoreLobby(serialized, {
+    lobbyManager: new LobbyManager(),
+    createSession: () => null,
+  });
+  assert.equal(restored.lobby.seats[0].teamId, 0, 'teamId muss den Roundtrip überleben');
+  assert.equal(restored.lobby.seats[0].figureIndex, 1, 'figureIndex muss den Roundtrip überleben');
+  assert.equal(restored.lobby.seats[1].teamId, 0);
+  assert.equal(restored.lobby.seats[1].figureIndex, 0);
 });

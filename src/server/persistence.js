@@ -152,6 +152,14 @@ export function serializeLobby(lobby, session) {
       name: seat.name,
       token: seat.token,
       entityId: seat.entityId,
+      /*
+       * FUND (belegt, Audit 2026-10-09, A-3): Diese beiden Felder fehlten.
+       * Nach einer Wiederherstellung war die Zuordnung Sitz -> Team -> Figur
+       * zerrissen: `alleTeamsBesetzt` fand keine echte Team-Nummer mehr, und
+       * `#assignEntityIds` fiel auf `figureIndex ?? index` zurück.
+       */
+      teamId: seat.teamId ?? null,
+      figureIndex: seat.figureIndex ?? null,
       connected: false,
     })),
     // Replay-Kern: Seed + Konfiguration + Eingaben genügen zur Rekonstruktion.
@@ -251,6 +259,10 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       connected: false,
       disconnectedAt: Date.now(),
       entityId: seat.entityId ?? null,
+      // Audit 2026-10-09, A-3: Team und Figuren-Slot müssen mitkommen,
+      // sonst ist die Zuordnung nach einem Neustart zerrissen.
+      teamId: seat.teamId ?? null,
+      figureIndex: seat.figureIndex ?? null,
     }));
   }
 
