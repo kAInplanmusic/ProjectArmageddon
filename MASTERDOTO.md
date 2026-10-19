@@ -540,7 +540,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1464/1464** grün, Dateizahl **156** (Stand 2026-10-19, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1497/1497** grün, Dateizahl **157** (Stand 2026-10-19, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3235,9 +3235,10 @@ angefasst, es steht am Zeilenbudget).
 
 ## Waffen-Sprites: Atlanten für die Waffe in der Hand (2026-10-19)
 
-Vorbereitung, KEINE Einbindung: Der Client zeichnet weiter die 64-px-Icons aus
-`src/client/assets/icons/`. Neu sind Assets, Skript, Manifest und Test; `src/client/`
-und `src/engine/` wurden nicht angefasst (Spielwerte, Seed, Hash, Replay unverändert).
+Stufe 1 war eine Vorbereitung (Assets, Skript, Manifest und Test; `src/client/` und
+`src/engine/` unangetastet, Spielwerte, Seed, Hash, Replay unverändert). Die Einbindung
+steht im nächsten Abschnitt „Waffen-Animation“; HUD-Leiste und Menü zeigen weiter die
+64-px-Icons aus `src/client/assets/icons/`.
 
 **Verfahren** (`scripts/waffen-sprites.py`, `npm run waffen:sprites`, Pillow + numpy +
 scipy, deterministisch: zweimal laufen lassen ergibt byte-gleiche Atlanten):
@@ -3322,6 +3323,144 @@ Posenvorgabe; Empfehlung: nicht nötig, solange nur die Seitenansicht gefragt is
 Atlasgrößen, Zellen im Atlas, echter Alpha (deckend und weiche Ränder), transparente
 Ecken, Anker in der Zelle und Mündung am rechten Rand, Projektil nur bei physischem
 Geschoss, keine Zellenüberlappung, Gesamtgröße < 6 MB.
+
+## Waffen-Animation: Sprite in der Hand, Rückstoß, Blitz, Geschoss (2026-10-19)
+
+Die Waffen-Sprites (Abschnitt davor) sind jetzt eingebunden. Reine Darstellung:
+`src/engine`, `src/shared`, Hash, Replay und Protokoll sind unverändert (das
+`projectile_spawn`-Ereignis trug `weaponId`, `vx`, `vy` schon, der Client liest es jetzt auch).
+
+**Bausteine**
+
+| Datei | Aufgabe |
+|---|---|
+| `src/client/waffenSprites.js` | Atlas-Lader: Manifest (eigener Chunk) und je Kategorie ein Atlas werden erst beim ersten Bedarf geladen. Je Waffe einmal vorgeschnittene Zeichenflächen (`held`, `silhouette`, `farbig`, `dunkel`, `glanz`, `projektil`), danach nur ein Map-Zugriff ohne Allokation. Fehlt etwas, liefert `hole` dauerhaft `null` und der Renderer zeichnet das bisherige Icon. Die Abhängigkeiten sind einsetzbar (`erzeugeWaffenSprites`), die Tests laden mit falschen Leinwänden. |
+| `src/client/waffenAnimation.js` | Rechenkern ohne Canvas: Parametertabelle je Kategorie (`PARAMETER`), Korrekturtabellen je Waffen-ID (`KORREKTUREN`, `GESCHOSS_KORREKTUREN`), `waffenPose` (reine Funktion der Zeiten in Sekunden, bildratenunabhängig), `handPunkt`, Geschosswinkel, `SchweifRing` (Ringpuffer), `GeschossLagen`. |
+| `src/client/figuren.js` | `zeichneWaffeSprite`: Griffanker auf die Hand, Drehung um den Griff mit dem Zielwinkel (links gespiegelt, nie verkehrt), Abdunkelung und Füllband, weißer Silhouettenblitz, Aufladeglanz, Mündungsblitz. `zeichneWaffeInHand` (Icon) bleibt als Rückfall. |
+| `src/client/effektStil.js` | `zeichneMuendungsblitz` (Formen `kegel`, `stern`, `ring`, `funke`), `zeichneGeschossSprite`, `zeichneSchweif`. |
+| `src/client/renderer.js` | Zeiten je Figur (Ziehen, Schuss), Geschosslagen, Zähler; `addMuzzleFlash` setzt auch die Schusszeit, `merkeGeschoss` kommt aus `projectile_spawn`. |
+| `scripts/waffen-pruefbogen.mjs`, `scripts/waffen-screenshots.mjs` | Prüfbögen der Anker und Sichtprüfung im Spiel (siehe unten). |
+
+**Pose** (Waffenrahmen: +x = Zielrichtung): `vor` (Rückstoßweg), `hoch`, `drehung` um
+den Griff, `skala`, `glanz`, `blitz`, `weiss`, `dunkel`, `ladung`.
+- **Hand:** Griffanker auf `(±handVor, Fuß − 17,25/52 · Sprite-Höhe − handHoch)`; bei
+  52 px Sprite-Höhe ist das die frühere Handhöhe (−7,25 px). Das Vorzeichen folgt der Blickrichtung.
+- **Achse:** Liegt die Mündung im Atlas nicht auf der Höhe des Griffs, wird die Waffe um
+  den Griff so gedreht, dass die Mündung auf dem Zielstrahl liegt (bis ±57°, `achse` im
+  Lader). Bei langen Objekt-Waffen (`form: objekt`, Anker aus der Geometrie) liegen beide
+  Anker ohnehin auf der Mittellinie der Umrisse, weil die Höhen der geschätzten Anker streuen.
+- **Griff:** Bei Objekt-Waffen rückt der Griff um `griffObjekt` Zellpixel zum Schaft hin
+  (Schwert am Heft statt in der Klingenmitte).
+- **Idle:** Pendeln (`idleDreh`, `idleTempo`) und Heben/Senken (`idleAtem`), je Figur
+  durch die Entity-ID versetzt.
+- **Ziehen/Wechseln:** 0,25 s Einschwingen von unten (`ziehenTief`, `ziehenDreh`, kleines
+  Überschwingen), dazu ein weißer Aufnehm-Blitz über der Silhouette. Beim allerersten
+  Bild einer Figur gibt es kein Einschwingen.
+- **Nachladen:** Waffe abgedunkelt (30–55 %), ein Füllband in `flashColor` wächst vom Griff
+  zur Spitze mit dem Nachladegrad (`ladungAnteil(Rest, cooldown)` aus `weaponAnimation.js`).
+- **Treffer:** Trifft es die Figur, blitzt die Waffe wie die Figur weiß auf.
+- **Kachel-Waffen** (`form: kachel`, 28): 80 % Größe und 4 px weiter vor der Figur.
+
+**Parameter je Kategorie** (`PARAMETER`; `zelle` = Weltpixel je 128er-Zelle, Zeiten in s, Wege in px)
+
+| Kategorie | zelle | Schussart | Dauer | Kick | Rückdrehung | Heben | Aufladen | Blitz (Größe) | Griff (Objekt) |
+|---|---|---|---|---|---|---|---|---|---|
+| melee | 30 | `hieb`: Ausholen 0,06, Hieb in einem Bogen bis −1,5 rad, Rückschwung | 0,55 | 5 | – | – | – | keiner (Nahkampf) | −16 |
+| ranged | 28 | `kurz`: sofort voller Kick, quadratisches Abklingen, kleines Nachwippen (13 Hz) | 0,30 | 3,2 | 0,20 | – | – | Kegel (11) | −10 |
+| heavy_ranged | 34 | `schwer`: 40 ms Anlauf, lang, Nachschwingen (6,5 Hz) | 0,60 | 6 | 0,30 | – | – | Kegel (17) | −12 |
+| elemental | 27 | `kurz`, etwas länger | 0,40 | 3,6 | 0,26 | – | – | Stern (12) | −8 |
+| magic | 27 | `zauber`: Heben und Aufladeglanz in `flashColor`, dann Freigabe mit Stoß | 0,70 | 2,5 | 0,10 | 0,38 | 0,18 | Ring (13) nach dem Aufladen | −8 |
+| tech | 26 | `tech`: Aufladen mit Zittern, dann kurzer scharfer Stoß | 0,42 | 2,4 | 0,12 | – | 0,10 | Funkenfächer (12) | −8 |
+| utility | 24 | `selbst`: Heben und Puls, Glanz um die Waffenmitte | 0,50 | 0 | – | 0,45 | 0,20 | Funke (8), bei Selbstwirkung keiner | −8 |
+| ultimate | 32 | `zauber`, groß und langsam | 0,95 | 5 | 0,22 | 0,45 | 0,30 | Stern (21) | −8 |
+
+**Wurfwaffen** (Geschoss `ding` = die Waffe selbst fliegt, oder Zünder `fuseTime > 0`: Granaten,
+Bomben, Bumerang, Wurfklingen, Handtuch …) bekommen statt Rückstoß und Blitz eine Wurfbewegung
+(`hieb`, 0,45 s, Kick 4, kein Mündungsblitz; `parameterFuerWaffe`).
+
+Waffen ohne Schaden (`damage === 0`, 7) behandelt die Tabelle als Selbstwirkung: Art
+`selbst`, kein Mündungsblitz, nur der Glanz. Der Blitz sitzt am Mündungsanker in `flashColor`.
+Bei `prefers-reduced-motion` entfallen Pendeln, Einschwingen, Kick, Drehung und Heben
+(`vor`, `hoch`, `drehung`, `skala` bleiben 0 bzw. 1); Blitz, Glanz, Abdunkelung und
+Füllband bleiben, weil sie die Aussage tragen (dieselbe Regel wie beim alten Mündungsfeuer).
+
+**Projektile:** Fliegende Objekte nutzen das `projectile`-Sprite (87 Waffen), gezeichnet
+in Flugrichtung (Winkel aus der Positionsänderung, zu Beginn aus `vx`/`vy` des
+Spawn-Ereignisses; Zellenversatz `projectile.angle`). Eigenrotation haben Granaten
+und Bomben mit Zünder oder Abprallern (8 rad/s), Steine (6), Nahkampf-Würfe und alle mit
+`projectile.spin` oder einem Wurf-Namen (Bumerang, Shuriken, Wurf…, Axt, Messer, Hammer,
+Brocken …; 9–11 rad/s), nicht Raketen, Kugeln, Pfeile, Zauber und Geschützgranaten
+(`granate` ohne Zünder). Dahinter ein Schweif aus den letzten 8 Positionen (Ringpuffer, in
+`flashColor`, nach hinten dünner und durchsichtiger) und ein weicher Glanz. Die Waffe
+kommt aus `projectile_spawn`, sonst von der gerade gehaltenen Waffe des Besitzers. Bei
+`projectile: null` (kein Atlas, Waffe ohne Geschoss) bleibt der Glutball mit der alten Rauchspur.
+
+**Leistung:** Alle Zeichenflächen entstehen einmal je Waffe beim ersten Bedarf. Je Bild
+entstehen weder Objekte noch Gradienten (Pose, Zeiten, Handpunkt und Schweif sind
+wiederverwendet); der Blitz nutzt nur Pfade. Das Budget von `profiling.spec` blieb unverändert.
+
+**Debug-Schnittstelle:** `window.__PA__.waffenAnimation()` liefert Ladezustand
+(`lader`), Zähler des letzten Bildes (`stat.sprite`, `stat.ikone`, `stat.geschossSprites`),
+die letzte Pose je Figur und die fliegenden Geschosse.
+
+**Anker prüfen und feinjustieren**
+
+1. `node scripts/waffen-pruefbogen.mjs [--kategorie ranged] [--ids pa_037,pa_039]`
+   zeichnet mit dem echten Code je Waffe Stand rechts, Schuss und Stand links
+   (grün = Griff, rot = Mündung, gestrichelt = Zielstrahl; darunter Ankerart und
+   Achsneigung). Ausgabe: `docs/bilder/waffen-pruefboegen/<kategorie>-NN.png`.
+2. `node scripts/waffen-screenshots.mjs` erzeugt im Spiel Kontaktbögen
+   (Stand | Schuss | Flug, 2fach) und je Waffe ein Bild 1280×720 mit gehaltener
+   Schusspose: `docs/bilder/waffen-animation/`.
+3. Sitzt ein Anker schlecht, gibt es zwei Wege:
+   - **Anker selbst** (`scripts/waffen-sprites-korrekturen.json`, je Waffen-ID,
+     `grip`/`muzzle` als `[x, y]` in Zellpixeln der 128er-Zelle), danach
+     `npm run waffen:sprites`. Das Manifest wird reproduzierbar neu gebaut (die Atlanten
+     bleiben byte-gleich, nur `manifest.json` ändert sich; `anchor.source = "korrektur"`).
+   - **Darstellung** (`KORREKTUREN` in `waffenAnimation.js`): `zelle` (Größe),
+     `handVor`/`handHoch` (Hand), `griffObjekt` bzw. `griff` (Griff entlang der Achse),
+     `art`, `kick`, `rueck`, `blitzForm`, `blitzGroesse` … je Waffen-ID, ohne Rebuild.
+     Geschoss: `GESCHOSS_KORREKTUREN` (`groesse`, `spin`).
+4. Prüfbogen und Kontaktbogen neu erzeugen, nur Betroffenes prüfen.
+
+**Korrekturen dieses Zuges** (Sicht auf alle 150 Prüfbögen): Kanonen und Geschütze,
+deren Rohr im Atlas schräg steht, bekamen von Hand gesetzte Anker, damit die Waffe auf
+dem Zielstrahl liegt: pa_039 (Feldkanone/Mörser), pa_066 (Artilleriegeschütz),
+pa_124 (Auto-Turret), pa_060 (Minigun). Der Test für „Mündung am rechten Rand" gilt für
+Anker aus Geometrie und Standard; für `korrektur` genügt „innerhalb der Umrisse".
+Darstellungskorrekturen (`KORREKTUREN`): pa_049 Bumerang (`zelle` 27), pa_050 Doppelkopf-Axt
+(`zelle` 29, `handVor` 2,5), pa_051 Wurfklingen (`zelle` 28), pa_039 Feldkanone (schwere Art mit
+7 px Kick, 0,7 s und großem Kegel). `GESCHOSS_KORREKTUREN` ist leer (die Regeln trafen
+alle 87 Geschosse brauchbar).
+
+**Grenzen:** HUD-Leiste und Menü zeigen weiter die Einzel-Icons (`atlas_icons.png` wäre
+möglich, bringt aber nur wenig und berührt die Waffenleiste, die Tests und die Hilfe).
+Kachel-Waffen sind Bilder mit Rahmen und wirken in der Hand wie schwebende Karten. Die
+Prüfbögen nutzen eine Figur mit Geschütz im Sprite; in anderen Fraktionen verdeckt
+der Körper die Waffe anders.
+
+**Sichtprüfung dieses Zuges:** Alle 150 Waffen auf 15 Prüfbögen
+(`docs/bilder/waffen-pruefboegen/<kategorie>-NN.png`: melee 2, ranged 2, heavy_ranged 2,
+elemental 2, magic 3, tech 2, utility 1, ultimate 1) und 34 repräsentative Waffen im Spiel
+bei 1280×720 (`docs/bilder/waffen-animation/voll-<id>.jpg`, gehaltene Schusspose) samt 12
+Kontaktbögen Stand | Schuss | Flug (`bogen-NN.jpg`): Nahkampf pa_001, 008, 010, 012, 019;
+Fernkampf pa_022, 026, 032 (Selbstwirkung), 037, 040; schwer pa_041, 048, 049, 054, 055;
+elementar pa_062, 064, 068, 069; Magie pa_081, 087 (Selbstwirkung), 097, 104, 110; Tech
+pa_121, 126, 131, 136; Hilfsmittel pa_111, 117, 119; Ultimate pa_141, 145, 150. Befund:
+Schaft-, Griff- und Mündungslage stimmen bei den Waffen aus der Geometrie nach der
+Achsenausrichtung; Standardanker (94) sitzen bei kompakten Sprites hinter der Mitte und
+tragen die Waffe sichtbar vor dem Körper. Von Hand zu korrigieren waren nur die vier
+Geschütze oben.
+
+**Prüfung:** `tests/waffen-animation.test.js` (31): Parameter für alle acht Kategorien und
+alle Katalogkategorien, Unterschiede je Kategorie, deterministischer Zeitverlauf,
+Rückkehr in die Ruhe, Stetigkeit (kein Sprung), Rückstoß kurz gegen schwer, Hieb-Bogen,
+Heben/Glanz/Blitz bei Magie, Tech und Selbstwirkung, Ziehen, Idle, Bildratenunabhängigkeit,
+reduzierte Bewegung, Nachladeanzeige, Handpunkt, Flugwinkel, Eigenrotation, Schweif-Ring,
+Geschosslagen, Manifest-Abdeckung und der Lader (lazy, nur benutzte Atlanten, Fallback
+bei fehlendem Atlas/Manifest). `tests/e2e/waffen-animation.spec.mjs` (5): Sprite statt
+Icon mit lazy geladenem Atlas, Schuss löst Rückstoß und Blitz aus, reduzierte Bewegung,
+Geschoss-Sprite mit Schweif und Winkel, Rückfall ohne Atlas.
 
 ## Balance-Messung über die Kartenbreite
 

@@ -112,7 +112,7 @@ mit dem Porträt als Referenz, FLUX.1-kontext-pro, 2 weitere mit dem Porträt se
 lokale Freistellung); Verfahren, Kosten und Grenzen in
 `MASTERDOTO.md`, Prüfung in `tests/seitenansichten.test.js`.
 
-**Waffen-Sprites (vorbereitet, noch nicht eingebunden).** `scripts/waffen-sprites.py`
+**Waffen-Sprites und Waffen-Animation.** `scripts/waffen-sprites.py`
 (`npm run waffen:sprites`, deterministisch, kostenlos, lokal) stellt die 150 Waffen
 aus den 1024-px-Originalen frei, richtet sie waagerecht nach rechts aus und packt sie
 in 8 Kategorie-Atlanten (`atlas_<kategorie>.png`: held, silhouette, projectile) plus
@@ -120,7 +120,13 @@ in 8 Kategorie-Atlanten (`atlas_<kategorie>.png`: held, silhouette, projectile) 
 Projektil, flashColor) unter `src/client/assets/weapon-sprites/` (rund 5,1 MB).
 Handkorrekturen in `scripts/waffen-sprites-korrekturen.json`; Verfahren, Pilot mit
 KI-Bildern und Kostenhochrechnung in `MASTERDOTO.md`, Prüfung in
-`tests/waffen-sprites.test.js`.
+`tests/waffen-sprites.test.js`. Im Spiel hält die Figur die Waffe als Sprite
+(`src/client/waffenSprites.js` lädt Manifest und Kategorie-Atlanten lazy,
+`src/client/waffenAnimation.js` rechnet Pendeln, Ziehen, Rückstoß, Aufladeglanz und
+Mündungsblitz je Kategorie); Geschosse fliegen als Sprite mit Schweif. Fehlt ein Atlas,
+bleibt das alte Icon. Tabelle, Anker-Korrekturen und Feinjustierung stehen in
+`MASTERDOTO.md` („Waffen-Animation“), die Prüfbögen unter
+`docs/bilder/waffen-pruefboegen/`.
 
 **Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
 „Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
@@ -215,9 +221,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1464 Tests in 156 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1497 Tests in 157 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
-| `npm run test:e2e` | Browser-E2E: **253 Tests in 40 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
+| `npm run test:e2e` | Browser-E2E: **258 Tests in 41 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
@@ -445,9 +451,9 @@ Widersprüche**. Die Zielart reist im `shot`-Ereignis mit.
 **Nachgemessen, nicht behauptet:** `maxRange` und `cooldown` sind NICHT mehr für
 alle Waffen gleich (63 bzw. 4 verschiedene Werte). Frühere Fassungen dieses
 README behaupteten das Gegenteil — damals stimmte es, inzwischen leitet der
-Generator beide aus der Designdatei ab. Die Darstellung im Spiel ist weiterhin prozedural und nutzt die
-Waffen-Icons; vorbereitete Waffen-Sprite-Sheets (Atlanten) liegen unter
-`src/client/assets/weapon-sprites/` (siehe oben), ihre Einbindung steht aus.
+Generator beide aus der Designdatei ab. Die Waffe in der Hand wird aus den Waffen-Sprite-Atlanten unter
+`src/client/assets/weapon-sprites/` gezeichnet und prozedural animiert (siehe oben);
+HUD-Leiste und Menü zeigen weiter die Einzel-Icons.
 
 ## Waffendarstellung und Animationen
 
