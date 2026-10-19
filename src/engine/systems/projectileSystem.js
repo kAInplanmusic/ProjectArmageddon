@@ -332,7 +332,13 @@ export class ProjectileSystem {
       if (outOfBounds) {
         world.setComponent(entityId, 'Projectile', 'alive', 0);
         world.removeEntity(entityId);
-        if (events) events.emit('projectile_expired', { entityId, x: nextX, y: nextY });
+        /*
+         * Auftragswarteschlange 2.4: Der Kartenrand-Abbruch war die EINZIGE
+         * stille Stelle im Projektilsystem — anders als der Zeitablauf, der
+         * sichtbar detoniert. Das Ereignis trägt deshalb den Grund; der Client
+         * meldet genau diesen Fall.
+         */
+        if (events) events.emit('projectile_expired', { entityId, x: nextX, y: nextY, grund: 'kartenrand' });
       }
     }
   }

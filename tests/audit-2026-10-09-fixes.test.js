@@ -267,3 +267,30 @@ test('3.4: Der Build liefert keine Sourcemap aus', () => {
     'vite.config.mjs muss sourcemap: false setzen'
   );
 });
+
+test('2.4: Ein Geschoss am Kartenrand wird gemeldet, nicht still entfernt', () => {
+  /*
+   * Auftragswarteschlange 2.4: Verließ ein Geschoss die Karte, wurde es still
+   * entfernt — anders als der Zeitablauf, der sichtbar detoniert. Der
+   * outOfBounds-Zweig kennzeichnet das Ereignis jetzt mit `grund: 'kartenrand'`,
+   * und der Client meldet genau diesen Fall im Protokoll.
+   */
+  const projectileSystemQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'engine', 'systems', 'projectileSystem.js'), 'utf8')
+  );
+  const ereignisseQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'client', 'ereignisse.js'), 'utf8')
+  );
+  assert.ok(
+    projectileSystemQuelle.includes("grund: 'kartenrand'"),
+    'Der outOfBounds-Zweig muss das Ereignis als Kartenrand kennzeichnen'
+  );
+  assert.ok(
+    ereignisseQuelle.includes('projectile_expired: beide('),
+    'Der Client braucht einen projectile_expired-Zweig'
+  );
+  assert.ok(
+    ereignisseQuelle.includes("n.grund === 'kartenrand'"),
+    'Der Client muss den Kartenrand-Fall melden'
+  );
+});

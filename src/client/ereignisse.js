@@ -803,6 +803,18 @@ export const EREIGNIS_WIRKUNGEN = {
         'warn',
       );
     }),
+
+    /*
+     * Auftragswarteschlange 2.4: Der Kartenrand-Abbruch war die einzige stille
+     * Stelle — der Zeitablauf detoniert sichtbar, der Rand nicht. Gemeldet wird
+     * nur der Rand-Fall; ein Zeitablauf ohne Grund bleibt still, weil seine
+     * Explosion bereits die Rückmeldung ist.
+     */
+    projectile_expired: beide((k, n) => {
+      if (n.grund === 'kartenrand') {
+        k.hud?.log('Geschoss hat die Karte verlassen — keine Wirkung', 'warn');
+      }
+    }),
 };
 
 /**

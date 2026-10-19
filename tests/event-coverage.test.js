@@ -228,8 +228,6 @@ const bewusstStumm = new Set([
    */
   'drowning',
   'round_crates',      // Buchführung; die Anzahl steht im HUD
-  'projectile_expired', // ein verfallenes Geschoss ist kein Ereignis für den
-                        // Spieler — es hat nichts getroffen
   'water_pushed',      // der Wasserstand am Ziel ist die sichtbare Wirkung
 ]);
 
