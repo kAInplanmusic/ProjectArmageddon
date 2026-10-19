@@ -420,3 +420,21 @@ test('3.6: toPersisted ist keine zweite Fassung von serializeLobby mehr', () => 
     'toPersisted muss serializeLobby aufrufen'
   );
 });
+
+test('3.8: Die Start-Prüfung „alle Teams besetzt" ist eine Methode, kein Duplikat', () => {
+  /*
+   * Warteschlange 3.8: Die Prüfung „alle Teams besetzt → starten" stand zweimal
+   * im Server (JOIN-Pfad und START_MATCH), nur der JOIN-Pfad lief im
+   * Livebetrieb. Beide rufen jetzt dieselbe Methode; der JOIN-Pfad zieht den
+   * Lobby-Status dabei auf „running" nach (Widerspruch zu „laufendes Match in
+   * offener Lobby" beseitigt).
+   */
+  assert.ok(
+    gameServerQuelle.includes('#starteMatchFallsVoll(lobbyId, session) {'),
+    'Der Server braucht die gemeinsame Start-Methode'
+  );
+  assert.ok(
+    gameServerQuelle.includes('const gestartet = this.#starteMatchFallsVoll(lobbyId, session);'),
+    'Der JOIN-Pfad muss die gemeinsame Start-Methode rufen'
+  );
+});

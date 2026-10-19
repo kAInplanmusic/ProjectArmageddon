@@ -1193,6 +1193,28 @@ export class GameServer {
   }
 
   /**
+   * Startet die Sitzung, sobald alle Teams besetzt sind.
+   *
+   * Warteschlange 3.8: Diese Prüfung stand zweimal im Server (JOIN-Pfad und
+   * START_MATCH), nur der JOIN-Pfad lief im Livebetrieb. Es gibt jetzt genau
+   * EINE Stelle für die Prüfung und den Start.
+   *
+   * Bewusst NICHT hier: `markRunning`. Ob eine durch den letzten Beitritt
+   * gestartete Lobby „open" oder „running" trägt, ist eine offene
+   * Produktentscheidung (siehe den ZUSTANDS-PIN in
+   * tests/server-beitritt-und-trennung.test.js) — sie bleibt beim jeweiligen
+   * Aufrufer.
+   *
+   * @returns {boolean} true, wenn das Match GERADE gestartet wurde
+   */
+  #starteMatchFallsVoll(lobbyId, session) {
+    if (!this.#lobbies.alleTeamsBesetzt(lobbyId)) return false;
+    if (session.laeuft) return false;
+    session.start();
+    return true;
+  }
+
+  /**
    * Momentaufnahme ALLER Lobbys.
    *
    * Bewusst über den Lobby-Manager und nicht über die Sitzungen: Eine frisch
@@ -1849,9 +1871,8 @@ export class GameServer {
              * `start()` und `attach()` nicht feuern — beide laufen im selben
              * synchronen Durchgang.
              */
-            const alleBesetzt = this.#lobbies.alleTeamsBesetzt(lobbyId);
-            if (!session.laeuft && alleBesetzt) {
-              session.start();
+            const gestartet = this.#starteMatchFallsVoll(lobbyId, session);
+            if (gestartet) {
               this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
                 lobbyId,
                 teams: lobby.teams,
@@ -1907,14 +1928,15 @@ export class GameServer {
              *
              * Ohne diese Prüfung ließe sich ein Match starten, in dem auf der
              * gegnerischen Seite niemand ist. Vorher füllte der Bot solche Teams
-             * — es gibt aber keine Bot-KI.
+             * — es gibt aber keine Bot-KI. Die Prüfung selbst lebt in
+             * `#starteMatchFallsVoll` (Warteschlange 3.8: eine Stelle).
              */
-            if (!this.#lobbies.alleTeamsBesetzt(context.lobbyId)) {
+            const gestartet = this.#starteMatchFallsVoll(context.lobbyId, session);
+            if (!gestartet && !session.laeuft) {
               this.#fehlerSenden(socket, 'Warte auf Mitspieler: Jedes Team braucht einen Menschen.');
               break;
             }
             this.#lobbies.markRunning(context.lobbyId);
-            if (!session.laeuft) session.start();
             session.broadcastSnapshot();
             break;
           }
