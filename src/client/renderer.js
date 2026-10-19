@@ -335,18 +335,18 @@ export class Renderer {
     this.effects.push(erzeugeMuendungsfeuer(entityId, angle));
   }
 
-  #updateEffects() {
+  #updateEffects(dt = 1) {
     // Die Alterung liegt in `effects.js` — dort ist sie ohne Canvas prüfbar.
-    this.effects = schreiteEffekteFort(this.effects);
+    this.effects = schreiteEffekteFort(this.effects, dt);
     /*
      * Die Marken des Gefühls altern mit DERSELBEN Funktion: Sie haben dieselbe
      * Form (`life`/`decay`), und eine zweite Alterungsregel könnte davon
      * abweichen. Rauch und Ruck haben eigene Regeln (der Rauch steigt, der Ruck
      * hat keine Form), sie stehen deshalb in `gefuehl.js`.
      */
-    this.trefferMarken = schreiteEffekteFort(this.trefferMarken);
-    this.rauch = schreiteRauchFort(this.rauch);
-    this.ruck = altereRuck(this.ruck);
+    this.trefferMarken = schreiteEffekteFort(this.trefferMarken, dt);
+    this.rauch = schreiteRauchFort(this.rauch, dt);
+    this.ruck = altereRuck(this.ruck, dt);
   }
 
   /**
@@ -741,8 +741,8 @@ export class Renderer {
     this.particles.push(...erzeugePartikel(x, y, radius));
   }
 
-  updateParticles() {
-    this.particles = schreitePartikelFort(this.particles);
+  updateParticles(dt = 1) {
+    this.particles = schreitePartikelFort(this.particles, dt);
   }
 
   #drawSky() {
@@ -1569,11 +1569,16 @@ export class Renderer {
    * @param {object} [options.water] - WaterField-Instanz des Matches
    * @param {number} [options.blastRadius] - Flächenwirkung der gewählten Waffe
    */
-  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = 0, water = null, blastRadius = 0 } = {}) {
+  render(state, { aimPreview = null, prediction = null, aim = null, ladeAnteil = 0, water = null, blastRadius = 0, dt = 1 } = {}) {
     // Zugänglichkeit je Bild neu abfragen: Ändert der Nutzer die
     // Systemeinstellung, greift sie ohne Neuladen.
     this.reducedMotion = prefersReducedMotion();
-    this.time += 1;
+    /*
+     * Die Darstellungszeit läuft in Simulationsschritten, nicht in Bildern
+     * (Audit 2026-10-09, B-3): Auf 144 Hz ist dt ~0,42, auf 60 Hz ~1,0. Effekte,
+     * Partikel, Rauch, Ruck und Himmels-Animation altern damit in echter Zeit.
+     */
+    this.time += dt;
 
     /*
      * ===================== DAS GEFÜHL JE BILD ERMITTELN =====================
@@ -1722,8 +1727,8 @@ export class Renderer {
     this.#drawTreffer();
     this.#drawEffects();
     this.#drawHeimdall();
-    this.#updateEffects();
-    this.updateParticles();
+    this.#updateEffects(dt);
+    this.updateParticles(dt);
 
     /*
      * Die Klammer schließt VOR den Bildschirm-Anzeigen: Ab hier gilt wieder die

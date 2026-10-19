@@ -175,14 +175,16 @@ export class Camera {
   }
 
   /**
-   * Rückt die Kamera einen Schritt auf ihr Ziel zu.
+   * Rückt die Kamera einen Zeitschritt auf ihr Ziel zu.
    *
-   * Wird je Bild gerufen. Bei `FOLGE_FAKTOR` = 1 wäre die Kamera starr am Ziel;
-   * darunter zieht sie weich nach.
+   * Wird je Bild gerufen; der Faktor wird über `dt` bildratenunabhängig gemacht
+   * (Audit 2026-10-09, B-3): Zwei Halbschritte ergeben denselben Stand wie ein
+   * ganzer, weil `1 - (1-F)^dt` kompositionsfest ist.
    */
-  schritt() {
-    this.#x += (this.#zielX - this.#x) * FOLGE_FAKTOR;
-    this.#y += (this.#zielY - this.#y) * FOLGE_FAKTOR;
+  schritt(dt = 1) {
+    const faktor = 1 - Math.pow(1 - FOLGE_FAKTOR, Math.max(0, dt));
+    this.#x += (this.#zielX - this.#x) * faktor;
+    this.#y += (this.#zielY - this.#y) * faktor;
     this.#begrenze();
   }
 

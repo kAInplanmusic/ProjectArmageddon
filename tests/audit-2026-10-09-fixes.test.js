@@ -15,6 +15,12 @@ import { MatchController } from '../src/engine/match.js';
 import { hashState } from '../src/engine/stateSnapshot.js';
 import { serializeLobby, restoreLobby } from '../src/server/persistence.js';
 import { LobbyManager } from '../src/server/lobby.js';
+import {
+  erzeugePartikel,
+  erzeugeBlitz,
+  schreitePartikelFort,
+  schreiteEffekteFort,
+} from '../src/client/effects.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -162,4 +168,37 @@ test('B-2: Wasser wird in jedem Bild gezeichnet, nicht nur in jedem vierten', ()
     mainQuelle.includes("water: this.mode === 'online' ? null : this.match.water"),
     'Der Renderer muss das Wasser in jedem Bild bekommen'
   );
+});
+
+test('B-3: Effekte und Partikel altern nach Zeitschritt, nicht nach Bild', () => {
+  /*
+   * Audit-Befund: Die Simulation ist bildratenunabhängig (fester Zeitschritt),
+   * die Darstellung nicht: `this.time += 1`, Partikel und Effekte alterten je
+   * gezeichnetem Frame. Auf 144 Hz liefen sie 2,4-mal so schnell wie auf 60 Hz.
+   *
+   * Der Verhaltenstest prüft die Skalierung: Ein doppelter Zeitschritt altert
+   * doppelt, ein halber halb. Der Quelltext-Wächter erzwingt, dass der Zeitschritt
+   * tatsächlich durchgereicht wird.
+   */
+  const partikel = erzeugePartikel(0, 0, 40);
+  const einSchritt = schreitePartikelFort(partikel, 1);
+  const zweiSchritte = schreitePartikelFort(partikel, 2);
+  assert.ok(Math.abs(einSchritt[0].life - (1 - 0.035)) < 1e-9, `life nach 1 Schritt: ${einSchritt[0].life}`);
+  assert.ok(Math.abs(zweiSchritte[0].life - (1 - 2 * 0.035)) < 1e-9, `life nach 2 Schritten: ${zweiSchritte[0].life}`);
+  assert.ok(Math.abs(zweiSchritte[0].x - (0 + 2 * einSchritt[0].vx)) < 1e-9, 'Bewegung skaliert mit dt');
+
+  const blitz = erzeugeBlitz(0, 0, 10);
+  const halb = schreiteEffekteFort([blitz], 0.5);
+  assert.ok(Math.abs(halb[0].life - (1 - 0.09 * 0.5)) < 1e-9, `Effekt-Life nach 0,5: ${halb[0].life}`);
+
+  const effectsQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'client', 'effects.js'), 'utf8')
+  );
+  const rendererQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8')
+  );
+  assert.ok(effectsQuelle.includes('schreitePartikelFort(partikel, dt'), 'Partikel-Fortschritt braucht dt');
+  assert.ok(effectsQuelle.includes('schreiteEffekteFort(effekte, dt'), 'Effekt-Fortschritt braucht dt');
+  assert.ok(rendererQuelle.includes('this.time += dt'), 'Renderer-Zeit muss mit dt laufen');
+  assert.ok(mainQuelle.includes('this.#render(delta / FIXED_TIMESTEP)'), 'main.js muss dt als Simulationsschritte übergeben');
 });

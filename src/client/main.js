@@ -2326,10 +2326,10 @@ class Game {
       this.#setReplayStatus();
     }
 
-    this.#render();
+    this.#render(delta / FIXED_TIMESTEP);
   }
 
-  #render() {
+  #render(dt) {
     const state = this.currentState();
     if (!state) return;
 
@@ -2393,8 +2393,8 @@ class Game {
       const fokus = state.entities.find(e => e.entityId === state.activePlayerId)
         ?? state.entities.find(e => e.alive);
       if (fokus) this.kamera.zieleAuf(fokus.x, fokus.y);
-      // Ein Schritt Näherung je Bild: weiches Nachziehen statt harter Schnitte.
-      this.kamera.schritt();
+      // Weiches Nachziehen in echter Zeit statt je Bild (Audit 2026-10-09, B-3).
+      this.kamera.schritt(dt);
     }
 
     this.renderer.render(state, {
@@ -2406,6 +2406,7 @@ class Game {
       ladeAnteil,
       water: this.mode === 'online' ? null : this.match.water,
       blastRadius: activeWeapon?.blastRadius ?? 0,
+      dt,
     });
     this.#trackWater(state);
     /*
