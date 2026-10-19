@@ -50,7 +50,7 @@ ich im Code selbst gelesen:
 | A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
 | A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ✅ 2026-10-02 — **sachlich erledigt**, nachgemessen: nur noch EINE Definition (`config/weapons.js:7124`). Die Stelle in `specials.js` ist heute ein Grabstein-Kommentar; `doppelregeln` meldet 0. Wächter `tests/tote-regeln.test.js` |
 | A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | 🟡 Worker K |
-| A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ⬜ |
+| A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ✅ 2026-10-19 — war beim Datenfluss-Audit behoben: `networkClient` emittiert `snapshot_rejected` mit Grund, Version und Bytezahl; `main.js` schreibt die erste Zeile ins Protokoll. Wächter in `tests/audit-2026-10-09-fixes.test.js` |
 
 ## B — Stört
 

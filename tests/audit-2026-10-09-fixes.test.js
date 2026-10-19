@@ -237,3 +237,19 @@ test('A-10: Ein abgelehnter Online-Beitritt führt ins Menü zurück', () => {
     'Der Beitrittsfehler muss über #verlasseMatch() ins Menü zurückführen'
   );
 });
+
+test('A-14: Ein verworfener Zustandstakt wird gemeldet, nicht verschwiegen', () => {
+  /*
+   * Befundregister A-14: `decodeSnapshot -> null -> return` ergab ein schwarzes
+   * Bild ohne Meldung. Der Fix (Datenfluss-Audit) emittiert `snapshot_rejected`
+   * mit Grund, Version und Bytezahl; main.js schreibt die erste Zeile ins
+   * Protokoll. Der Wächter hält fest, dass dieser Pfad bleibt.
+   */
+  const networkClientQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'client', 'networkClient.js'), 'utf8')
+  );
+  assert.ok(
+    networkClientQuelle.includes("this.#emit('snapshot_rejected'"),
+    'Ein verworfener Zustandstakt muss snapshot_rejected emittieren'
+  );
+});
