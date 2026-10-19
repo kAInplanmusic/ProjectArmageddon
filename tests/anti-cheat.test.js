@@ -35,11 +35,15 @@ class TestClient {
     this.controls = [];
     this.snapshots = [];
     this.errors = [];
+    this.geschlossen = false;
     // Das open/error-Promise wird SYNCHRON erzeugt: Wird der Listener erst nach
     // einem await angehängt, kann das Ereignis schon gefeuert sein.
     this.opened = new Promise((resolve, reject) => {
       this.socket.once('open', resolve);
       this.socket.once('error', reject);
+    });
+    this.socket.on('close', () => {
+      this.geschlossen = true;
     });
     this.socket.on('message', (raw, isBinary) => {
       if (isBinary) {
@@ -509,7 +513,10 @@ test('Die Nutzlast ist begrenzt — eine Riesennachricht wird abgewiesen', { tim
     a.sendRaw(riesig);
 
     const fehler = await a.sammleFehler(1200);
-    assert.ok(fehler.length >= 1,
+    // Seit A-1/C-1a deckelt maxPayload (64 KiB) auf Protokollebene: Eine
+    // 1-MB-Nachricht kommt nicht mehr bis zur App-Prüfung, sondern die
+    // Verbindung wird gekappt. Beides ist eine Abweisung.
+    assert.ok(fehler.length >= 1 || a.geschlossen,
       'Eine Nachricht mit 1 MB Nutzlast wurde nicht abgewiesen');
 
     // Der Server läuft weiter.

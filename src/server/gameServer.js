@@ -1107,11 +1107,14 @@ export class GameServer {
      * FUND (belegt, Audit 2026-10-09, A-1/C-1a): Hier stand
      * `new WebSocketServer({ server, path: '/ws' })`. Der ws-Standard puffert
      * bis 100 MiB, BEVOR die 512-Byte-Prüfung aus `validation.js` greift —
-     * die Anwendungsgrenze war also eine Absicht ohne Wirkung. 4096 Byte sind
-     * reichlich (die größte echte Clientnachricht liegt unter 200 Byte) und
-     * deckeln den Puffer auf der Protokollebene.
+     * die Anwendungsgrenze war also eine Absicht ohne Wirkung.
+     *
+     * 64 KiB deckeln den Puffer um Faktor ~1500 und lassen der App-Prüfung
+     * trotzdem den Vortritt: Nachrichten bis 64 KiB bekommen die LESBARE
+     * Ablehnung „Nachricht zu groß" (512-Byte-Regel), erst echter Missbrauch
+     * darüber wird auf Protokollebene gekappt.
      */
-    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 4096 });
+    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 64 * 1024 });
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
      * `error`-Ereignisse mit.
