@@ -65,6 +65,9 @@ function lesePng(datei) {
 const alpha = (b, x, y) => b.px[(y * b.breite + x) * 4 + 3];
 const manifest = JSON.parse(fs.readFileSync(path.join(SEITE, 'manifest.json'), 'utf8'));
 const bogenManifest = JSON.parse(fs.readFileSync(path.join(BOGEN, 'manifest.json'), 'utf8'));
+const entscheidungen = JSON.parse(fs.readFileSync(path.join(HIER, '..', 'scripts', 'seitenansichten', 'entscheidungen.json'), 'utf8'));
+const TEXT_MODELL = 'black-forest-labs/FLUX.1.1-pro';
+const KONTEXT_MODELL = 'black-forest-labs/FLUX.1-kontext-pro';
 const schluessel = CHARACTERS.map((c) => `${c.faction}/${c.sprite}`);
 
 test('Manifest nennt jede der 81 Figuren genau einmal mit gültigen Feldern', () => {
@@ -76,8 +79,8 @@ test('Manifest nennt jede der 81 Figuren genau einmal mit gültigen Feldern', ()
   for (const [k, e] of Object.entries(manifest.figures)) {
     assert.equal(e.file, k);
     assert.equal(e.facing, 'right');
-    assert.equal(e.source, 'together');
-    assert.equal(typeof e.model, 'string');
+    assert.ok(['together', 'together-kontext'].includes(e.source), `${k}: Quelle ${e.source}`);
+    assert.equal(e.model, e.source === 'together-kontext' ? KONTEXT_MODELL : TEXT_MODELL, `${k}: Modell passt nicht zur Quelle`);
     assert.equal(typeof e.hasSide, 'boolean');
     if (e.hasSide) {
       assert.equal(e.anchor.y, manifest.groundY, `${k}: Fußpunkt nicht auf der Grundlinie`);
@@ -148,5 +151,25 @@ test('Charactersheets: Front und Seite nebeneinander, Zellen laut Manifest', () 
     for (const f of fs.readdirSync(path.join(BOGEN, ordner))) {
       assert.ok(bogenManifest.sheets[`${ordner}/${f}`], `Verwaistes Sheet ${ordner}/${f}`);
     }
+  }
+});
+
+test('Stufe 1 (Bild-zu-Bild mit Porträt als Referenz): Entscheidungen und Manifest stimmen überein', () => {
+  assert.equal(entscheidungen.modell_kontext, KONTEXT_MODELL);
+  const ersetzt = Object.keys(entscheidungen.kontext).sort();
+  assert.equal(ersetzt.length, 27);
+  const imManifest = Object.entries(manifest.figures).filter(([, e]) => e.source === 'together-kontext').map(([k]) => k).sort();
+  assert.deepEqual(imManifest, ersetzt, 'Manifest und entscheidungen.json nennen nicht dieselben Figuren');
+  for (const k of ersetzt) {
+    assert.ok(manifest.figures[k].hasSide, `${k}: ersetzt, aber ohne Seite`);
+    assert.ok(Number.isInteger(entscheidungen.kontext[k]) && entscheidungen.kontext[k] >= 2, `${k}: Version`);
+  }
+  for (const k of entscheidungen.spiegeln_kontext) assert.ok(ersetzt.includes(k), `${k}: gespiegelt, aber nicht ersetzt`);
+  // Verworfene Neuversuche behalten die alte Seite und stehen mit Grund in der Datei.
+  const verworfen = Object.keys(entscheidungen.kontext_verworfen);
+  assert.equal(verworfen.length, 4);
+  for (const k of verworfen) {
+    assert.equal(manifest.figures[k].source, 'together', `${k}: verworfen, aber ersetzt`);
+    assert.ok(entscheidungen.kontext_verworfen[k].length > 5, `${k}: Begründung fehlt`);
   }
 });

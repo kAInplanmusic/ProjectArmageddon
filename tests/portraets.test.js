@@ -168,3 +168,14 @@ test('Die Figur füllt das Bild mit kleinem Rand und liegt mittig', () => {
       `${c.faction}/${c.sprite}: Figur zu klein im Bild`);
   }
 });
+
+test('HD-Porträts bleiben in Quellgröße (Stufe-2-Entscheidung: kein künstliches Hochskalieren)', () => {
+  // Lanczos plus Schärfen und kein Together-Upscaler (GET /v1/models listet keinen)
+  // brachten gegenüber dem Browser-Skalieren keinen sichtbaren Gewinn; die HD-Bilder
+  // sind die Zellen der Fraktionsbögen (257-349 px) und werden nicht auf 512 aufgeblasen.
+  for (const c of CHARACTERS) {
+    const kopf = fs.readFileSync(path.join(HD, c.faction, c.sprite)).subarray(0, 32);
+    const b = kopf.readUInt32BE(16);
+    assert.ok(b >= 256 && b <= 360, `${c.faction}/${c.sprite}: ${b} px, keine Quellgröße der Bogenzelle`);
+  }
+});

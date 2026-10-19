@@ -10,12 +10,12 @@
    "file": "beasts/00_pikamon.png",
    "hasSide": true,
    "anchor": {
-    "x": 131,
+    "x": 155,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "beasts/01_shrew-quakes.png": {
    "file": "beasts/01_shrew-quakes.png",
@@ -109,12 +109,12 @@
    "file": "datacult/00_nullpointer-exception.png",
    "hasSide": true,
    "anchor": {
-    "x": 131,
+    "x": 107,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "datacult/01_datapath-replicant.png": {
    "file": "datacult/01_datapath-replicant.png",
@@ -186,12 +186,12 @@
    "file": "datacult/21_hyper-link-hound.png",
    "hasSide": true,
    "anchor": {
-    "x": 124,
+    "x": 98,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "datacult/22_ethereo.png": {
    "file": "datacult/22_ethereo.png",
@@ -208,45 +208,45 @@
    "file": "machina/00_chassis-endo-t8.png",
    "hasSide": true,
    "anchor": {
-    "x": 140,
+    "x": 90,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "machina/01_slasher-cyber-jax.png": {
    "file": "machina/01_slasher-cyber-jax.png",
    "hasSide": true,
    "anchor": {
-    "x": 149,
+    "x": 139,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "machina/02_hydra-titan-mech.png": {
    "file": "machina/02_hydra-titan-mech.png",
    "hasSide": true,
    "anchor": {
-    "x": 86,
+    "x": 99,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "machina/10_recon-luchs-01.png": {
    "file": "machina/10_recon-luchs-01.png",
    "hasSide": true,
    "anchor": {
-    "x": 161,
+    "x": 147,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "machina/11_heavy-battery-moerser-bot.png": {
    "file": "machina/11_heavy-battery-moerser-bot.png",
@@ -263,12 +263,12 @@
    "file": "machina/12_ordnance-rail-viper.png",
    "hasSide": true,
    "anchor": {
-    "x": 112,
+    "x": 107,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "machina/20_grid-drifter-datastream.png": {
    "file": "machina/20_grid-drifter-datastream.png",
@@ -307,34 +307,34 @@
    "file": "pirates/00_captain-sven.png",
    "hasSide": true,
    "anchor": {
-    "x": 147,
+    "x": 146,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pirates/01_swashbuckler-piet.png": {
    "file": "pirates/01_swashbuckler-piet.png",
    "hasSide": true,
    "anchor": {
-    "x": 153,
+    "x": 129,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pirates/02_iron-hook-harry.png": {
    "file": "pirates/02_iron-hook-harry.png",
    "hasSide": true,
    "anchor": {
-    "x": 147,
+    "x": 99,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pirates/10_cannoneer-klaus.png": {
    "file": "pirates/10_cannoneer-klaus.png",
@@ -362,12 +362,12 @@
    "file": "pirates/12_bombard-billy.png",
    "hasSide": true,
    "anchor": {
-    "x": 140,
+    "x": 122,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pirates/20_voodoo-witch-morgana.png": {
    "file": "pirates/20_voodoo-witch-morgana.png",
@@ -384,12 +384,12 @@
    "file": "pirates/21_storm-schamane-hooky.png",
    "hasSide": true,
    "anchor": {
-    "x": 130,
+    "x": 125,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pirates/22_chanteyman-drake.png": {
    "file": "pirates/22_chanteyman-drake.png",
@@ -406,12 +406,12 @@
    "file": "pixel/00_nullpointer-exception.png",
    "hasSide": true,
    "anchor": {
-    "x": 141,
+    "x": 167,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pixel/01_pyrofox-a.png": {
    "file": "pixel/01_pyrofox-a.png",
@@ -439,12 +439,12 @@
    "file": "pixel/10_arcershorn-a.png",
    "hasSide": true,
    "anchor": {
-    "x": 155,
+    "x": 107,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "pixel/11_pyrowand-a.png": {
    "file": "pixel/11_pyrowand-a.png",
@@ -516,12 +516,12 @@
    "file": "rodentia/01_berzerker-fang.png",
    "hasSide": true,
    "anchor": {
-    "x": 88,
+    "x": 131,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "rodentia/02_vanguard-captain-rix.png": {
    "file": "rodentia/02_vanguard-captain-rix.png",
@@ -560,12 +560,12 @@
    "file": "rodentia/12_volley-captain-spark.png",
    "hasSide": true,
    "anchor": {
-    "x": 103,
+    "x": 105,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "rodentia/20_alchemage-nibble.png": {
    "file": "rodentia/20_alchemage-nibble.png",
@@ -615,34 +615,34 @@
    "file": "shinobi/01_kunoichi-wind-flapper.png",
    "hasSide": true,
    "anchor": {
-    "x": 126,
+    "x": 117,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "shinobi/02_tetsubo-oni-brute.png": {
    "file": "shinobi/02_tetsubo-oni-brute.png",
    "hasSide": true,
    "anchor": {
-    "x": 194,
+    "x": 138,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "shinobi/10_dazzler-werner.png": {
    "file": "shinobi/10_dazzler-werner.png",
    "hasSide": true,
    "anchor": {
-    "x": 73,
+    "x": 89,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "shinobi/11_rauch-meister-genzi.png": {
    "file": "shinobi/11_rauch-meister-genzi.png",
@@ -659,12 +659,12 @@
    "file": "shinobi/12_blowpipe-koga.png",
    "hasSide": true,
    "anchor": {
-    "x": 97,
+    "x": 109,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "shinobi/20_ninjutsu-master-goemon.png": {
    "file": "shinobi/20_ninjutsu-master-goemon.png",
@@ -703,34 +703,34 @@
    "file": "undead/00_bone-racker-karl.png",
    "hasSide": true,
    "anchor": {
-    "x": 134,
+    "x": 162,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "undead/01_grave-zombie-kauer.png": {
    "file": "undead/01_grave-zombie-kauer.png",
    "hasSide": true,
    "anchor": {
-    "x": 110,
+    "x": 114,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "undead/02_grim-reaper-silas.png": {
    "file": "undead/02_grim-reaper-silas.png",
    "hasSide": true,
    "anchor": {
-    "x": 141,
+    "x": 112,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "undead/10_archer-mortis.png": {
    "file": "undead/10_archer-mortis.png",
@@ -813,23 +813,23 @@
    "file": "xeno/01_stalker-predax.png",
    "hasSide": true,
    "anchor": {
-    "x": 120,
+    "x": 85,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "xeno/02_vortex-grabber.png": {
    "file": "xeno/02_vortex-grabber.png",
    "hasSide": true,
    "anchor": {
-    "x": 109,
+    "x": 101,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   },
   "xeno/10_drone-theta.png": {
    "file": "xeno/10_drone-theta.png",
@@ -890,12 +890,12 @@
    "file": "xeno/22_null-entity-quark.png",
    "hasSide": true,
    "anchor": {
-    "x": 123,
+    "x": 109,
     "y": 240
    },
    "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
+   "source": "together-kontext",
+   "model": "black-forest-labs/FLUX.1-kontext-pro"
   }
  }
 }

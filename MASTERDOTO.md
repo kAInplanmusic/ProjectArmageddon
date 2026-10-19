@@ -469,7 +469,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1435/1435** grün, Dateizahl **154** (Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1437/1437** grün, Dateizahl **154** (Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3774,7 +3774,7 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Kosten: 88 abgerechnete Aufrufe (4 Qwen-Pilot, 84 FLUX.1.1-pro; 81 Figuren
       plus 3 Pilot- und Wiederholungsaufrufe), konservativ geschätzt 3,41 USD
       (0,04 USD je FLUX-Aufruf, 0,0116 je Qwen-Aufruf), Obergrenze 4,5 USD.
-      Fallback-Figuren: keine, alle 81 haben ein Seitensprite. Grenzen: Ein Teil
+      Fallback-Figuren: keine, alle 81 haben ein Seitensprite. Grenzen (vor Stufe 1): Ein Teil
       der Bilder zeigt eher Dreiviertel- oder Frontansicht als strenges Profil
       (Text-zu-Bild kennt die Vorlage nicht); Waffen und Zierrat weichen
       sichtbar von den Porträts ab. Weitere erzeugen: Beschreibung in
@@ -3783,6 +3783,78 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Schlüssel nur über die Umgebung (`TOGETHER_API_KEY` oder
       `PA_TOGETHER_ENV` mit Pfad zu einer Datei), nie ins Repo. Prüfung:
       `tests/seitenansichten.test.js`.
+
+      **Stufe 1 — Nachbesserung per Bild-zu-Bild (2026-10-15).** Waffen, Zierrat
+      und Farben wichen bei vielen Seitenansichten von den Porträts ab, einzelne
+      zeigten Frontalansicht. `kontext.py` schickt das eigene Porträt
+      (`assets/characters/<fraktion>/NN_name.png`, auf Weiß gelegt, 512 px) als
+      `image_url` an `black-forest-labs/FLUX.1-kontext-pro` (0,04 USD je Aufruf;
+      es werden ausschließlich diese Porträts hochgeladen, mit ausdrücklicher
+      Freigabe des Eigentümers) mit dem Prompt „same character, same colors,
+      outfit, weapon and details, full body, ... side view in profile facing
+      right, standing pose, solid flat <Farbe> background, same illustration
+      style, no text, no shadow" (Hintergrundfarben wie oben). Die Grundfassung
+      lieferte treue, aber meist Dreiviertel-Figuren; die Fassung `--stark`
+      („rotate the character 90 degrees: pure side view, true profile ...")
+      brachte bei fast allen ein Profil und wurde für alles außer den ersten drei
+      Pilotbildern benutzt. Ausgewählt nach Sicht von Porträt und Kontaktbogen:
+      31 Figuren mit größter Abweichung. Pilot an 3 Figuren (Vortex-Grabber,
+      Iron-Hook-Harry, Hydra-Titan-Mech: Alt/Neu nebeneinander, Neu klar treuer),
+      dann der Rest. Ersetzt wurde nur, wo Neu klar besser ist (Figurtreue
+      zuerst, dann Profil); `entscheidungen.json` hält je Figur die gewählte
+      Version (`kontext`), nach links blickende Neubilder (`spiegeln_kontext`)
+      und die Verworfenen mit Grund (`kontext_verworfen`). `freistellen.py
+      ... --kontext KONTEXTDIR` verarbeitet sie wie die alten Rohbilder (Freistellen,
+      Entmischen, 256x256, Grundlinie y=240) und schreibt Sprites, Sheets und
+      Manifest neu; im Manifest steht für ersetzte Figuren `source:
+      "together-kontext"`, `model: "black-forest-labs/FLUX.1-kontext-pro"`, sonst
+      unverändert `together` / FLUX.1.1-pro.
+      *Ersetzt (27):* beasts/00 Pikamon (statt Maus nun das Porträt-Tier), datacult/00
+      Nullpointer Exception (Farbe Grün statt Grau), datacult/21 Hyper-Link-Hound
+      (zwei Köpfe, Grün), machina/00 Chassis-Endo-T8 (Axt, Farben), machina/01
+      Slasher-Cyber-Jax (Schwert, Farben), machina/02 Hydra-Titan-Mech (Gatling,
+      Raketenpod), machina/10 Recon-Luchs-01 (Katzenkörper statt Frontalansicht),
+      machina/12 Ordnance-Rail-Viper (Schlangenschwanz, graue Farben, Schiene),
+      pirates/00 Captain Sven (Mantelfarbe, Säbel), pirates/01 Swashbuckler Piet
+      (Mantel, zwei Klingen), pirates/02 Iron-Hook-Harry (Goldrüstung, Gabelhand
+      und Haken; vorher Frontalansicht), pirates/12 Bombard-Billy (Bomben,
+      Bandolier), pirates/21 Storm-Schamane Hooky (graublauer Mantel statt
+      Zauberer), pixel/00 Nullpointer (grüner Plattenkörper, Pfeilstacheln),
+      pixel/10 Arcershorn (Bogen und Feuerschwanz; Version 3), rodentia/01
+      Berzerker Fang (Doppelaxt, Brauntöne), rodentia/12 Volley-Captain Spark
+      (Gatling, Rüstung), shinobi/01 Kunoichi (Kettensichel), shinobi/02
+      Tetsubo-Oni (Stachelkeule statt Axt), shinobi/10 Dazzler Werner (Farben),
+      shinobi/12 Blowpipe-Koga (Blasrohr), undead/00 Bone-Racker Karl
+      (Streitkolben), undead/01 Grave-Zombie Kauer (Knochen im Maul, Klinge),
+      undead/02 Grim-Reaper Silas (Sense statt Frontalansicht), xeno/01
+      Stalker-Predax (Energieklingen), xeno/02 Vortex-Grabber (Tentakelarme; bleibt
+      frontal, weil symmetrisch), xeno/22 Null-Entity-Quark (Kristallstab).
+      *Verworfen, Alt bleibt (4):* datacult/20 Buffer-Flow-Swarm (Neu war ein
+      Humanoid von hinten), xeno/10 Drone-Theta (Neu humanoid statt schwebender
+      Kapsel, zwei Versuche), beasts/20 Decay-Spawn (Flammen fehlen, zwei
+      Versuche), machina/11 Moerser-Bot (Neu wurde ein Humanoid statt Geschütz).
+      Grenzen: Das Modell bleibt bei Figuren mit Frontal-Symmetrie (Vortex,
+      Oni, Quark) bei Frontalansicht; Details wie der Schlüssel an Svens Haken
+      oder der Totenkopf an Billys Hut gehen teils verloren; Schatten am Boden
+      und Randreste werden lokal entfernt.
+      *Kosten Stufe 1:* 37 Aufrufe à 0,04 USD = 1,48 USD (24 Erstversuche der
+      Auswahl plus 7 weitere, 3 Pilot-Grundfassungen, 3 Wiederholungen), harte
+      Obergrenze 1,8 USD (`OBERGRENZE_STUFE_USD`, im selben `kosten.jsonl`).
+      *Kosten insgesamt:* 3,41 + 1,48 = 4,89 USD (konservativ gezählt, Qwen
+      0,0116 und FLUX je Aufruf). Alt/Neu-Kontaktbögen und Rohbilder liegen im
+      Arbeitsordner (`PA_SEITE_ARBEIT`), nicht im Repo.
+
+      **Stufe 2 — HD-Porträts hochskalieren: geprüft, NICHT umgesetzt.** Die
+      HD-Porträts (`assets/characters-hd/`, 257-349 px) sind die Zellen der
+      Fraktionsbögen in Quellgröße. Lokaler Test an 3 Figuren (Sgt-Acid-Xeno,
+      Captain Sven, Commander Chewk): Lanczos auf 512 px plus Schärfen
+      (UnsharpMask) gegenüber dem Skalieren des Browsers — kein sichtbarer
+      Gewinn, nur Halo-Risiko und größere Dateien. Together bietet kein
+      Upscale-Modell (`GET /v1/models`, Typ `image`: nur Text-zu-Bild- und
+      Edit-Modelle), und ein Edit-Modell würde die Figur neu zeichnen statt
+      schärfen; zudem deckt die Hochladefreigabe nur die 256-Porträts, nicht die
+      HD-Bilder. Ergebnis: keine Skalierung, keine Kosten; `portraets.test.js`
+      hält fest, dass die HD-Bilder in Quellgröße (256-360 px) bleiben.
 
 ### F. Darstellung
 - [x] **Landschaftsgeneration per KI.** 60 Kulissen (12 Biome a 5 Varianten) als

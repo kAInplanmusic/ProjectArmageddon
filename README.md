@@ -107,7 +107,8 @@ Schachbrett-Reste.
 (256×256, Blick nach rechts, Fußpunkt y=240, `manifest.json` mit `hasSide`,
 `anchor`, `facing`) und `src/client/assets/charactersheets/` (Front + Seite je
 Figur, 512×256) entstehen mit `scripts/seitenansichten/` (Together AI,
-FLUX.1.1-pro, lokale Freistellung); Verfahren, Kosten und Grenzen in
+FLUX.1.1-pro Text-zu-Bild, für 27 der 81 Figuren nachgebessert per Bild-zu-Bild
+mit dem Porträt als Referenz, FLUX.1-kontext-pro; lokale Freistellung); Verfahren, Kosten und Grenzen in
 `MASTERDOTO.md`, Prüfung in `tests/seitenansichten.test.js`.
 
 **Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
@@ -195,7 +196,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1435 Tests in 154 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1437 Tests in 154 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **246 Tests in 39 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

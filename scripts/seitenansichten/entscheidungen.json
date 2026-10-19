@@ -25,5 +25,42 @@
     "beasts/10_flame-jaws.png"
   ],
   "verworfen": {},
-  "fallback": []
+  "fallback": [],
+  "modell_kontext": "black-forest-labs/FLUX.1-kontext-pro",
+  "kontext": {
+    "beasts/00_pikamon.png": 2,
+    "datacult/00_nullpointer-exception.png": 2,
+    "datacult/21_hyper-link-hound.png": 2,
+    "machina/00_chassis-endo-t8.png": 2,
+    "machina/01_slasher-cyber-jax.png": 2,
+    "machina/02_hydra-titan-mech.png": 2,
+    "machina/10_recon-luchs-01.png": 2,
+    "machina/12_ordnance-rail-viper.png": 2,
+    "pirates/00_captain-sven.png": 2,
+    "pirates/01_swashbuckler-piet.png": 2,
+    "pirates/02_iron-hook-harry.png": 2,
+    "pirates/12_bombard-billy.png": 2,
+    "pirates/21_storm-schamane-hooky.png": 2,
+    "pixel/00_nullpointer-exception.png": 2,
+    "pixel/10_arcershorn-a.png": 3,
+    "rodentia/01_berzerker-fang.png": 2,
+    "rodentia/12_volley-captain-spark.png": 2,
+    "shinobi/01_kunoichi-wind-flapper.png": 2,
+    "shinobi/02_tetsubo-oni-brute.png": 2,
+    "shinobi/10_dazzler-werner.png": 2,
+    "shinobi/12_blowpipe-koga.png": 2,
+    "undead/00_bone-racker-karl.png": 2,
+    "undead/01_grave-zombie-kauer.png": 2,
+    "undead/02_grim-reaper-silas.png": 2,
+    "xeno/01_stalker-predax.png": 2,
+    "xeno/02_vortex-grabber.png": 2,
+    "xeno/22_null-entity-quark.png": 2
+  },
+  "spiegeln_kontext": ["pirates/00_captain-sven.png","pirates/01_swashbuckler-piet.png","undead/01_grave-zombie-kauer.png","machina/00_chassis-endo-t8.png","datacult/21_hyper-link-hound.png","machina/12_ordnance-rail-viper.png","pirates/02_iron-hook-harry.png","machina/02_hydra-titan-mech.png","rodentia/01_berzerker-fang.png","undead/02_grim-reaper-silas.png","pixel/00_nullpointer-exception.png","shinobi/12_blowpipe-koga.png","machina/01_slasher-cyber-jax.png"],
+  "kontext_verworfen": {
+    "datacult/20_buffer-flow-swarm.png": "Rückenansicht eines Humanoiden statt Fliege",
+    "xeno/10_drone-theta.png": "Humanoide Figur statt schwebender Kapsel (v2, v3)",
+    "beasts/20_decay-spawn.png": "Flammen fehlen (v2, v3)",
+    "machina/11_heavy-battery-moerser-bot.png": "Wurde zum Humanoiden statt Geschütz"
+  }
 }
