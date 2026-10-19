@@ -253,3 +253,17 @@ test('A-14: Ein verworfener Zustandstakt wird gemeldet, nicht verschwiegen', () 
     'Ein verworfener Zustandstakt muss snapshot_rejected emittieren'
   );
 });
+
+test('3.4: Der Build liefert keine Sourcemap aus', () => {
+  /*
+   * Auftragswarteschlange 3.4: Die Sourcemap lag mit ~2 MB im dist/. Sie ist
+   * ein Entwicklungs-Artefakt und gehört nicht in die Auslieferung.
+   */
+  const viteQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'vite.config.mjs'), 'utf8')
+  );
+  assert.ok(
+    viteQuelle.includes('sourcemap: false'),
+    'vite.config.mjs muss sourcemap: false setzen'
+  );
+});
