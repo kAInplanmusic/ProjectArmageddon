@@ -231,6 +231,9 @@ test('Die entfernten Doppel-Engines sind nicht zurückgekehrt', () => {
     // mehr (nur Re-Exporte in engine/index.js und client/index.js). Die
     // Krater-Spiegelung läuft über den Produktivpfad in match.js.
     'src/engine/terrain/terrainSync.js',
+    // Auftragswarteschlange 2.7: ballisticsWasm.js war ein Stub, der nur
+    // ballistics.js re-exportierte; isWasmSupported hatte 0 Aufrufer.
+    'src/engine/physics/ballisticsWasm.js',
   ];
 
   for (const relat of verboten) {

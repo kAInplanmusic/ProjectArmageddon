@@ -23,7 +23,6 @@ export { CollisionMask } from './terrain/collisionMask.js';
 
 // Physik/Ballistik
 export { computeTrajectory, computeAimAngle, ccdRaycast } from './physics/ballistics.js';
-export { isWasmSupported } from './physics/ballisticsWasm.js';
 
 // Engine-Initialisierung
 export { createGameWorld } from './init.js';
