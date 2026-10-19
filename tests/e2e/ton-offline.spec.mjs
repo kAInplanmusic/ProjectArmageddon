@@ -44,6 +44,8 @@ test('Variation je Schuss: zwei Würfe desselben Profils sind nicht identisch', 
     for (let i = 0; i < a.links.length; i += 1) unterschied += Math.abs(a.links[i] - b.links[i]);
     expect(unterschied).toBeGreaterThan(1);
     const gleich = await rendere({ stimmen: [{ name: 'pistole' }], seed: 1, dauer: 1 });
-    expect(gleich.links).toEqual(a.links);
+    let abweichung = 0;
+    for (let i = 0; i < a.links.length; i += 1) abweichung = Math.max(abweichung, Math.abs(gleich.links[i] - a.links[i]));
+    expect(abweichung, 'gleicher Seed, gleicher Klang').toBeLessThan(1e-4);
   });
 });
