@@ -2020,6 +2020,14 @@ export class MatchController {
     const errors = [];
     if (this.#status !== 'playing') errors.push('Match läuft nicht');
     if (!this.isPlayerAlive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
+    /*
+     * FUND (belegt, Audit 2026-10-09, A-2): Diese Prüfung fehlte. Ein Spieler,
+     * der nicht am Zug ist, konnte Kisten werfen und dabei den gemeinsamen
+     * Zufallsstrom konsumieren — ein Determinismus-Bruch. Dieselbe Prüfung steht
+     * im Sprung (`jump`) und gehört an jede Eingabe, die den Zufallsgenerator
+     * berührt.
+     */
+    if (playerId !== this.activePlayerId) errors.push('Nur der aktive Spieler kann eine Waffe abwerfen');
     if (errors.length > 0) return { ok: false, errors };
 
     const weapon = getWeapon(weaponId);
