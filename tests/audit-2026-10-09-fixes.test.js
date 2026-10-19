@@ -408,3 +408,15 @@ test('UX-7: Es gibt einen Klangschalter, und ein blockierter Klang wird gemeldet
   assert.ok(mainRoh.includes('setzeAn(soundToggle.checked)'), 'Der Schalter muss setzeAn rufen');
   assert.ok(mainRoh.includes('Klang blockiert'), 'Ein blockierter Klang muss gemeldet werden');
 });
+
+test('3.6: toPersisted ist keine zweite Fassung von serializeLobby mehr', () => {
+  /*
+   * Warteschlange 3.6: `LobbySession#toPersisted` baute `{replay, tick}` von
+   * Hand, während der Speicherpfad `serializeLobby` nutzte — zwei Fassungen
+   * derselben Persistenzform. toPersisted delegiert jetzt an serializeLobby.
+   */
+  assert.ok(
+    gameServerQuelle.includes('const voll = serializeLobby(this.lobby, this);'),
+    'toPersisted muss serializeLobby aufrufen'
+  );
+});

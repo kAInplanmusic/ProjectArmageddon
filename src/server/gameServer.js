@@ -270,10 +270,16 @@ class LobbySession {
     this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
   }
 
-  /** Momentaufnahme für die Persistenz. */
+  /**
+   * Momentaufnahme für die Persistenz.
+   *
+   * Warteschlange 3.6: Hier stand eine zweite, handgebauten Fassung von
+   * `serializeLobby` (`recorder.toJSON()` + `tickCount`). Es gibt jetzt genau
+   * EINE Fassung: `serializeLobby` in persistence.js.
+   */
   toPersisted() {
-    this.recorder.finalize(this.match.world.tickCount);
-    return { replay: this.recorder.toJSON(), tick: this.match.world.tickCount };
+    const voll = serializeLobby(this.lobby, this);
+    return { replay: voll.replay, tick: voll.tick };
   }
 
   /**
