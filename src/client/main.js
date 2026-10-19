@@ -117,7 +117,6 @@ class Game {
     this.running = false;
     this.autoLoop = true;
     this.aim = { angle: Math.PI / 4, power: 55 };
-    this.waterFrame = 0;
     this.lastEvents = [];
     /**
      * Letzter bekannter Wasserzustand je Figur — für die Meldungen im Protokoll.
@@ -2357,7 +2356,13 @@ class Game {
       ? this.match.aimPreview(playerId, this.aim.angle, ladeKraft ?? this.aim.power)
       : null;
 
-    this.waterFrame = (this.waterFrame + 1) % 4;
+    /*
+     * FUND (belegt, Audit 2026-10-09, B-2): Hier stand
+     * `this.waterFrame = (this.waterFrame + 1) % 4`, und der Renderer bekam das
+     * Wasser nur in jedem vierten Bild. Da der Bildschirm jeden Frame geleert
+     * wird, war Wasser in drei von vier Bildern unsichtbar. Das Wasser geht jetzt
+     * in JEDEM Bild an den Renderer (siehe unten, `water:`).
+     */
 
     /*
      * Die laufende Schussvorhersage wird ZUSÄTZLICH als Aim-Vorschau
@@ -2399,7 +2404,7 @@ class Game {
       // mit der der Schuss beim Loslassen fliegt.
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       ladeAnteil,
-      water: this.mode === 'online' ? null : (this.waterFrame === 0 ? this.match.water : null),
+      water: this.mode === 'online' ? null : this.match.water,
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.#trackWater(state);

@@ -27,6 +27,10 @@ const gameServerQuelle = ohneKommentare(
   fs.readFileSync(path.join(ROOT, 'src', 'server', 'gameServer.js'), 'utf8')
 );
 
+const mainQuelle = ohneKommentare(
+  fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8')
+);
+
 test('B-1: Die Winkelprüfung hängt nicht an der clientValidatedInputs-Liste', () => {
   // Verhalten: Ein ungültiger Winkel wird abgelehnt, ein gültiger angenommen.
   assert.equal(normalizeInput({ angle: 9, power: 50 }).valid, false);
@@ -141,5 +145,21 @@ test('A-1: Jeder Socket bekommt einen error-Handler, die Nutzlast ist begrenzt',
   assert.ok(
     gameServerQuelle.includes('maxPayload'),
     'maxPayload muss gesetzt sein, damit nicht 100 MiB gepuffert werden, bevor die 512-Byte-Prüfung greift'
+  );
+});
+
+test('B-2: Wasser wird in jedem Bild gezeichnet, nicht nur in jedem vierten', () => {
+  /*
+   * Audit-Befund: `waterFrame = (waterFrame + 1) % 4` lieferte das Wasser nur in
+   * jedem vierten Bild an den Renderer. Da der Bildschirm jeden Frame geleert
+   * wird, war Wasser in drei von vier Bildern unsichtbar (Flackern).
+   */
+  assert.ok(
+    !mainQuelle.includes('waterFrame'),
+    'Die waterFrame-Drosselung muss weg — Wasser gehört in jedes Bild'
+  );
+  assert.ok(
+    mainQuelle.includes("water: this.mode === 'online' ? null : this.match.water"),
+    'Der Renderer muss das Wasser in jedem Bild bekommen'
   );
 });
