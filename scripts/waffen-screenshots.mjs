@@ -3,7 +3,7 @@
  *
  * Für repräsentative Waffen (alle Kategorien, Selbstwirkung, Wurfwaffen,
  * Nahkampf) entstehen
- *   - je Waffe ein Bild 1280x720 mit gehaltener Schusspose (Rückstoß, Blitz),
+ *   - je Waffe ein Bild 960x540 (je Kategorie eines) mit gehaltener Schusspose (Rückstoß, Blitz),
  *   - Kontaktbögen mit je drei Ausschnitten (Stand, Schuss, Flug), 2fach aufgelöst.
  *
  * Die Schusspose wird für das Bild festgehalten (die Zeit seit dem Schuss
@@ -35,8 +35,14 @@ function arg(name, standard = null) {
 const ausgabe = path.resolve(arg('out', path.join(WURZEL, 'docs', 'bilder', 'waffen-animation')));
 const port = Number(arg('port', 5189));
 const nur = arg('nur');
-/** Bilder als JPEG: klein genug für das Repo. */
-const JPEG = { type: 'jpeg', quality: 82 };
+/** Bilder als JPEG: klein genug für das Repo (docs/bilder/ bleibt unter 3 MB). */
+const JPEG = { type: 'jpeg', quality: 78 };
+/** Spielbilder im Repo: 960x540. */
+const VOLL_BREITE = 960;
+const VOLL_HOEHE = 540;
+
+/** Spielbilder: je Kategorie eine Waffe (die Kontaktbögen zeigen die größere AUSWAHL). */
+const VOLL_AUSWAHL = ['pa_001', 'pa_040', 'pa_041', 'pa_062', 'pa_081', 'pa_111', 'pa_121', 'pa_141'];
 
 /** Repräsentative Auswahl: je Kategorie mehrere, dazu Sonderfälle (Selbstwirkung, Wurfwaffen, Hitscan). */
 const AUSWAHL = [
@@ -174,7 +180,7 @@ async function bogen(seite, recs, titel) {
       x.font = 'bold 12px system-ui, sans-serif';
       x.fillText(`${r[i].id}  ${r[i].name}  (${r[i].kategorie}, ${r[i].art})    Stand | Schuss | Flug`, 8, y + H - 5);
     }
-    return c.toDataURL('image/jpeg', 0.86);
+    return c.toDataURL('image/jpeg', 0.6);
   }, { recs, titel });
 }
 
@@ -212,15 +218,15 @@ async function main() {
       console.log(datei);
     }
     if (modus.voll) {
-      // Die vollen Bilder wurden mit zweifacher Auflösung aufgenommen: für 1280x720 neu in einem 1x-Kontext.
-      const ctx1 = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+      // Die Bögen wurden mit zweifacher Auflösung aufgenommen: Spielbilder neu in einem 1x-Kontext mit 960x540.
+      const ctx1 = await browser.newContext({ viewport: { width: VOLL_BREITE, height: VOLL_HOEHE }, deviceScaleFactor: 1 });
       const s1 = await ctx1.newPage();
       await s1.goto(`http://127.0.0.1:${port}/`);
       await s1.fill('#cfg-seed', '4');
       await s1.click('#start-button');
       await s1.waitForSelector('#menu-overlay', { state: 'hidden' });
       await s1.waitForFunction(() => Boolean(window.__PA__?.getMatch()));
-      for (const id of ids) {
+      for (const id of (arg('ids') ? ids : VOLL_AUSWAHL)) {
         const spieler = await waffeBereit(s1, id);
         const par = await s1.evaluate(async (w) => {
           const { parameterFuerWaffe } = await import('/src/client/waffenAnimation.js');

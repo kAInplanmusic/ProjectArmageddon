@@ -15,7 +15,10 @@
  *      Der Renderer legt Namensschilder hinein (unter die Füße geklappt, wenn
  *      oben kein Platz ist).
  *   2. Liegt eine Figur hinter einem seitlichen Panel (Spielerliste, Protokoll,
- *      Zielanzeige), wird das Panel durchscheinend (`.hud-weicht`).
+ *      Zielanzeige), bekommt das Panel `.hud-weicht`: es bleibt lesbar (Hintergrund
+ *      mindestens 72 % deckend, Text voll deckend), die Figur bleibt als
+ *      Silhouette erkennbar. Kompakter werden oder einklappen tut es bewusst
+ *      nicht: Die Größe ändert die Messung und ließe das Panel flackern.
  *   3. Ragen Köpfe unter die Kopfleiste, rückt die Ansicht ein Stück nach unten
  *      (Himmel über der Karte), wenn die Karte ohnehin ganz im Bild ist.
  *
@@ -38,7 +41,7 @@ const RAND_SELEKTOREN = [
   '#hud-top > *', '#hud-right', '#hud-fire', '#hud-dial', '#touch-aktionen',
 ];
 
-/** Seitliche Panels, die bei Überdeckung durchscheinend werden. */
+/** Seitliche Panels, die bei Überdeckung `.hud-weicht` bekommen (lesbar, nicht durchscheinend). */
 const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim'];
 
 /** Größter Schub nach unten, als Anteil der Fensterhöhe. */
@@ -173,7 +176,9 @@ export class HudAusweichen {
       aktiv: e.entityId === state.activePlayerId,
       rechteck: css(figurRechteck(e, t, { ...masse, oben: masse.kopf })),
     }));
-    // Deckende Elemente: Rand und alle Panels, die NICHT durchscheinend sind.
+    // Deckende Elemente: Rand und alle Panels ohne `.hud-weicht`. Ein
+    // `.hud-weicht`-Panel ist lesbar (Fläche mindestens 72 % deckend), lässt die
+    // Figur dahinter aber als Silhouette stehen; sie gilt dann nicht als verdeckt.
     const deckend = [...this.letzte.rand.map(css)];
     for (const id of PANEL_IDS) {
       const el = this.doc.getElementById(id);

@@ -766,12 +766,32 @@ select option { background: #14181d; color: var(--ink); }
 /* ======================================================= HUD weicht Figuren aus */
 /*
  * Steht eine Figur hinter einem seitlichen Panel (Spielerliste, Protokoll,
- * Zielanzeige), wird das Panel durchscheinend (siehe src/client/hudAusweichen.js).
+ * Zielanzeige), wird das Panel kontrastreicher und bleibt lesbar (siehe src/client/hudAusweichen.js, `.hud-weicht` weiter unten).
  * Die Spielerliste ist zudem schmaler: Sie darf nicht ein Fünftel des Felds decken.
  */
 #hud-left { justify-self: start; width: min(100%, 220px); }
-#hud-left, #hud-log, #hud-aim { transition: opacity 0.18s ease; }
-#hud-left.hud-weicht, #hud-log.hud-weicht, #hud-aim.hud-weicht { opacity: 0.22; }
+/*
+ * Steht eine Figur hinter einem Panel (`.hud-weicht`, gesetzt von hudAusweichen.js),
+ * bleibt das Panel LESBAR: Es wird nicht durchscheinend (keine `opacity`, sonst
+ * verblasst auch der Text), nur die Fläche wird etwas heller und blockiert nicht
+ * mehr ganz — Hintergrund mindestens 72 % deckend, ohne Blur (die Figur bleibt als
+ * Silhouette erkennbar). Text steht voll deckend in hellen Farben:
+ * #f2f5f9 auf dem ungünstigsten Untergrund (0,72 Panel über Weiß, ca. #636870)
+ * hat ein Kontrastverhältnis von rund 5:1 (WCAG AA ab 4,5:1).
+ * Die Größe ändert sich dabei nicht: Ein einklappendes Panel würde die Messung
+ * (die Figur ist dann nicht mehr verdeckt) zurückkippen und flackern; Layout
+ * und Messung bleiben darum stabil.
+ */
+#hud-left, #hud-log, #hud-aim { transition: background-color 0.18s ease, border-color 0.18s ease; }
+#hud-left.hud-weicht, #hud-log.hud-weicht, #hud-aim.hud-weicht {
+  background: rgba(38, 45, 53, 0.72);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #f2f5f9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+#hud-log.hud-weicht #log-list, #hud-left.hud-weicht .roster-item,
+#hud-left.hud-weicht .hud-figur-text span, #hud-log.hud-weicht #log-list li { color: #f2f5f9; }
+#hud-aim.hud-weicht #hud-active { color: #b8ff5c; }
 @media (prefers-reduced-motion: reduce) {
   #hud-left, #hud-log, #hud-aim { transition: none; }
 }
@@ -792,8 +812,11 @@ select option { background: #14181d; color: var(--ink); }
 }
 #musik-hud .musik-schalter { padding: 2px 8px; font-size: 12px; min-height: 44px; }
 #musik-hud .musik-lautstaerke input[type="range"] { width: 80px; }
-#musik-hud .musik-titel { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 900px) {
+/* Kurzanzeige „♪ <Titel>": nur der Titel kürzt sich mit Ellipsis, der volle Text steht im Tooltip. */
+#musik-hud .musik-titel { flex: 0 1 auto; min-width: 0; max-width: 18ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#musik-hud .musik-lautstaerke { flex: none; }
+/* Schmal oder niedrig: nur Schalter und Regler, damit nichts die Nachbarkacheln berührt. */
+@media (max-width: 900px), (max-height: 520px) {
   #musik-hud .musik-lautstaerke-text, #musik-hud .musik-titel { display: none; }
 }
 @media (max-height: 520px) {

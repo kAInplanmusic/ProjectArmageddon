@@ -6,7 +6,8 @@
  *
  *   `[data-musik-schalter]`  Knopf mit `aria-pressed` (Musik an/aus)
  *   `[data-musik-regler]`    `<input type="range">`, 0–100
- *   `[data-musik-titel]`     Anzeige „Läuft: <Titel>"
+ *   `[data-musik-titel]`     Anzeige „Läuft: <Titel>"; mit `data-musik-kurz` (HUD) nur
+ *                            „♪ <Titel>", der volle Text steht im Tooltip (`title`)
  *
  * Alle Kopien zeigen denselben Zustand: Jede Änderung (auch per Taste M) geht
  * über `Musik`, und `beiAenderung` schreibt sie in alle Kopien zurück.
@@ -39,12 +40,15 @@ export function bindeMusikBedienung(doc, musik) {
       r.setAttribute('aria-valuetext', `${prozent} Prozent`);
     }
     let text = '';
-    if (!zustand.aktiv) text = 'Wiedergabe in dieser Umgebung aus';
-    else if (!zustand.an) text = 'stumm';
-    else if (zustand.titel) text = `Läuft: ${zustand.titel}`;
-    else if (!zustand.gestartet) text = 'startet nach dem ersten Klick oder Tastendruck';
+    let kurz = '';
+    if (!zustand.aktiv) { text = 'Wiedergabe in dieser Umgebung aus'; kurz = '\u266A aus'; }
+    else if (!zustand.an) { text = 'stumm'; kurz = '\u266A stumm'; }
+    else if (zustand.titel) { text = `Läuft: ${zustand.titel}`; kurz = `\u266A ${zustand.titel}`; }
+    else if (!zustand.gestartet) { text = 'startet nach dem ersten Klick oder Tastendruck'; kurz = '\u266A \u2026'; }
     for (const t of titel) {
-      t.textContent = text;
+      const klein = t.hasAttribute('data-musik-kurz');
+      t.textContent = klein ? kurz : text;
+      if (klein && text) t.title = text; else t.removeAttribute('title');
       t.dataset.titel = zustand.titel;
     }
   };

@@ -180,7 +180,7 @@ async function zeichneBogen({ waffenIds, titel }) {
     const art = `${waffe.category} · Anker: ${m?.anchor?.source ?? '?'} · Art: ${par.art} · Achse ${(neigung * 180 / Math.PI).toFixed(0)}°`;
     ctx.fillText(art, sx + 4, sy + ZH - 7);
   }
-  return c.toDataURL('image/png');
+  return c.toDataURL('image/jpeg', 0.6);
 }
 
 async function main() {
@@ -211,7 +211,7 @@ async function main() {
         const teil = liste.slice(i * proBogen, (i + 1) * proBogen);
         const titel = `Waffen-Prüfbogen ${name} ${i + 1} (grün: Griff, rot: Mündung, gestrichelt: Zielstrahl)`;
         const url = await seite.evaluate(zeichneBogen, { waffenIds: teil, titel });
-        const datei = path.join(ausgabe, `${name}-${String(i + 1).padStart(2, '0')}.png`);
+        const datei = path.join(ausgabe, `${name}-${String(i + 1).padStart(2, '0')}.jpg`);
         writeFileSync(datei, Buffer.from(url.split(',')[1], 'base64'));
         ergebnisse.push(datei);
         console.log(datei);

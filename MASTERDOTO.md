@@ -3410,10 +3410,10 @@ die letzte Pose je Figur und die fliegenden Geschosse.
 1. `node scripts/waffen-pruefbogen.mjs [--kategorie ranged] [--ids pa_037,pa_039]`
    zeichnet mit dem echten Code je Waffe Stand rechts, Schuss und Stand links
    (grün = Griff, rot = Mündung, gestrichelt = Zielstrahl; darunter Ankerart und
-   Achsneigung). Ausgabe: `docs/bilder/waffen-pruefboegen/<kategorie>-NN.png`.
+   Achsneigung). Ausgabe: `docs/bilder/waffen-pruefboegen/<kategorie>-NN.jpg` (JPEG).
 2. `node scripts/waffen-screenshots.mjs` erzeugt im Spiel Kontaktbögen
-   (Stand | Schuss | Flug, 2fach) und je Waffe ein Bild 1280×720 mit gehaltener
-   Schusspose: `docs/bilder/waffen-animation/`.
+   (Stand | Schuss | Flug, 2fach) und je Kategorie ein Spielbild 960×540 mit gehaltener
+   Schusspose: `docs/bilder/waffen-animation/` (JPEG; `docs/bilder/` bleibt unter 3 MB).
 3. Sitzt ein Anker schlecht, gibt es zwei Wege:
    - **Anker selbst** (`scripts/waffen-sprites-korrekturen.json`, je Waffen-ID,
      `grip`/`muzzle` als `[x, y]` in Zellpixeln der 128er-Zelle), danach
@@ -3442,13 +3442,16 @@ Prüfbögen nutzen eine Figur mit Geschütz im Sprite; in anderen Fraktionen ver
 der Körper die Waffe anders.
 
 **Sichtprüfung dieses Zuges:** Alle 150 Waffen auf 15 Prüfbögen
-(`docs/bilder/waffen-pruefboegen/<kategorie>-NN.png`: melee 2, ranged 2, heavy_ranged 2,
-elemental 2, magic 3, tech 2, utility 1, ultimate 1) und 34 repräsentative Waffen im Spiel
-bei 1280×720 (`docs/bilder/waffen-animation/voll-<id>.jpg`, gehaltene Schusspose) samt 12
-Kontaktbögen Stand | Schuss | Flug (`bogen-NN.jpg`): Nahkampf pa_001, 008, 010, 012, 019;
-Fernkampf pa_022, 026, 032 (Selbstwirkung), 037, 040; schwer pa_041, 048, 049, 054, 055;
-elementar pa_062, 064, 068, 069; Magie pa_081, 087 (Selbstwirkung), 097, 104, 110; Tech
-pa_121, 126, 131, 136; Hilfsmittel pa_111, 117, 119; Ultimate pa_141, 145, 150. Befund:
+(`docs/bilder/waffen-pruefboegen/<kategorie>-NN.jpg`: melee 2, ranged 2, heavy_ranged 2,
+elemental 2, magic 3, tech 2, utility 1, ultimate 1), 12 Kontaktbögen Stand | Schuss | Flug
+(`docs/bilder/waffen-animation/bogen-NN.jpg`, 34 repräsentative Waffen: Nahkampf pa_001, 008,
+010, 012, 019; Fernkampf pa_022, 026, 032 (Selbstwirkung), 037, 040; schwer pa_041, 048, 049,
+054, 055; elementar pa_062, 064, 068, 069; Magie pa_081, 087 (Selbstwirkung), 097, 104, 110;
+Tech pa_121, 126, 131, 136; Hilfsmittel pa_111, 117, 119; Ultimate pa_141, 145, 150) und acht
+Spielbilder 960×540 mit gehaltener Schusspose, je Kategorie eines (`voll-<id>.jpg`: pa_001
+Nahkampf, pa_040 Fernkampf, pa_041 schwer, pa_062 elementar, pa_081 Magie, pa_111 Hilfsmittel,
+pa_121 Tech, pa_141 Ultimate). Alle Bilder sind JPEG, zusammen unter 3 MB (die übrigen
+Spielbilder lassen sich mit `node scripts/waffen-screenshots.mjs --ids …` neu erzeugen). Befund:
 Schaft-, Griff- und Mündungslage stimmen bei den Waffen aus der Geometrie nach der
 Achsenausrichtung; Standardanker (94) sitzen bei kompakten Sprites hinter der Mitte und
 tragen die Waffe sichtbar vor dem Körper. Von Hand zu korrigieren waren nur die vier

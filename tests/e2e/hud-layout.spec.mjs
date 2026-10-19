@@ -76,13 +76,28 @@ for (const f of FORMATE) {
       });
     }
 
-    test('Ein Panel hinter einer Figur wird durchscheinend, sonst bleibt es deckend', async ({ page }) => {
+    test('Ein Panel hinter einer Figur bleibt lesbar (Fläche >= 72 % deckend, Text voll deckend)', async ({ page }) => {
       const fehler = await oeffne(page, '20260910');
       await einschwingen(page);
       const d = await page.evaluate(() => window.__PA__.sichtbereich());
-      for (const id of d.weicht) {
-        const op = await page.locator(`#${id}`).evaluate(el => Number(getComputedStyle(el).opacity));
-        expect(op).toBeLessThan(0.5);
+      // Für den Fall, dass im Seed gerade keine Figur hinter einem Panel steht: erzwingen, das Verhalten ist reine CSS-Klasse.
+      await page.evaluate(() => {
+        for (const id of ['hud-left', 'hud-log', 'hud-aim']) document.getElementById(id)?.classList.add('hud-weicht');
+      });
+      await page.waitForTimeout(400); // Übergang (0,18 s) abwarten
+      for (const id of new Set([...d.weicht, 'hud-left', 'hud-log'])) {
+        const m = await page.locator(`#${id}`).evaluate(el => {
+          const cs = getComputedStyle(el);
+          // Hintergrund-Farben (auch die der Verlaufsstufen) lesen; Alpha steht im 4. Wert.
+          const alphas = [...(cs.backgroundImage + ' ' + cs.backgroundColor).matchAll(/rgba?\(([^)]*)\)/g)]
+            .map(x => { const w = x[1].split(',').map(Number); return w.length > 3 ? w[3] : 1; })
+            .filter(a => a > 0);
+          return { opacity: Number(cs.opacity), alphaMin: Math.min(...alphas), blur: cs.backdropFilter, filter: cs.filter };
+        });
+        expect(m.opacity, `#${id}: Text bleibt voll deckend`).toBe(1);
+        expect(m.alphaMin, `#${id}: Hintergrund mindestens 72 % deckend`).toBeGreaterThanOrEqual(0.72);
+        expect(m.blur, `#${id}: kein Blur`).toBe('none');
+        expect(m.filter).toBe('none');
       }
       const deckend = await page.locator('#hud-top').evaluate(el => Number(getComputedStyle(el).opacity));
       expect(deckend).toBe(1);
