@@ -12,7 +12,6 @@ export { TurnSystem } from '../engine/systems/turnSystem.js';
 export { DamageSystem } from '../engine/systems/damageSystem.js';
 export { PhysicsSystem } from '../engine/systems/physicsSystem.js';
 export { CollisionMask } from '../engine/terrain/collisionMask.js';
-export { TerrainSync } from '../engine/terrain/terrainSync.js';
 export { computeTrajectory, ccdRaycast } from '../engine/physics/ballistics.js';
 
 // Shared-Config (wie Server)

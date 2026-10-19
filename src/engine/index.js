@@ -20,7 +20,6 @@ export { ProjectilePool } from './pooling/projectilePool.js';
 
 // Terrain
 export { CollisionMask } from './terrain/collisionMask.js';
-export { TerrainSync } from './terrain/terrainSync.js';
 
 // Physik/Ballistik
 export { computeTrajectory, computeAimAngle, ccdRaycast } from './physics/ballistics.js';
