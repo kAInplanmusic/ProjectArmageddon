@@ -161,10 +161,12 @@ anheben).
 `tests/e2e/musik.spec.mjs` (7: Wiedergabe in Tests aus, `?musik=0`, Schalter, Regler samt
 Persistenz, Taste M, HUD, erzwungene Wiedergabe mit Stimmungswechsel).
 
-**Offen: Lizenz/Credits klären.** Quelle, Urheber und Lizenz der Stücke hat der Auftraggeber nicht
-genannt. Die Dateien tragen im Original nur den Kommentar „made with suno“ (von uns entfernt, hier
-vermerkt); Nutzungsrechte hängen vom Suno-Tarif zum Erzeugungszeitpunkt ab. Vor einer
-Veröffentlichung klären und Credits in Menü/Doku eintragen. Nicht gehört: die Zuordnung der
+**Credits/Lizenz:** Urheber und Rechteinhaber (Lizenzgeber) aller Stücke ist **Patrick Hilf**
+(Angabe des Auftraggebers, 2026-10-19); eingetragen in `src/client/assets/music/manifest.json`
+(`urheber`) und `CREDITS.md`. Die Dateien trugen im Original nur den Kommentar „made with suno“
+(von uns entfernt). Hinweis für eine spätere Veröffentlichung: Die Nutzungsrechte an KI-erzeugter
+Musik hängen von den Bedingungen/dem Tarif des Erzeugungsdienstes zum Zeitpunkt der Erzeugung ab;
+einen Nachweis dazu bei den Projektunterlagen ablegen. Nicht gehört: die Zuordnung der
 Stimmungen sollte der Auftraggeber einmal gegenprüfen.
 
 ## Netcode-/Determinismus-Audit (2026-10-09) — offene Punkte
