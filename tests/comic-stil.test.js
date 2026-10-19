@@ -130,3 +130,22 @@ test('Im Zeichencode der Comic-Optik steht kein Zufall und keine Uhr', () => {
     assert.ok(!/Math\.random|Date\.now|performance\.now/.test(text), `${datei}.js benutzt Zufall oder Uhr`);
   }
 });
+
+test('Die Färbung bleibt bitgleich zum Stand vor der Optimierung (Fingerabdruck) und die Tabellen-Zwischenspeicherung ändert nichts', () => {
+  const bitmap = karte();
+  const lauf = (seed, palette) => {
+    const d = new Uint8ClampedArray(B * H * 4);
+    for (let i = 0; i < bitmap.length; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
+    faerbeGelaende(d, bitmap, B, H, palette, seed);
+    let h = 0x811c9dc5;
+    for (let k = 0; k < d.length; k += 1) h = Math.imul(h ^ d[k], 0x01000193);
+    return h >>> 0;
+  };
+  const a = lauf(7, PALETTE);
+  assert.equal(lauf(7, PALETTE), a, 'zweiter Lauf (aus dem Zwischenspeicher) gleich');
+  const anders = lauf(8, PALETTE);
+  assert.notEqual(anders, a);
+  assert.equal(lauf(7, PALETTE), a, 'nach einem anderen Seed wieder dasselbe Bild');
+  assert.equal(lauf(7, { surface: [236, 240, 250], deep: [90, 100, 120] }) === a, false, 'andere Palette, anderes Bild');
+  assert.equal(a, 1239382613, 'Fingerabdruck des Stands vor der Optimierung');
+});

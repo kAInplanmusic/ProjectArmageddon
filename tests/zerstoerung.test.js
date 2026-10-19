@@ -569,3 +569,34 @@ test('Im Match: eine liegende Kiste fällt in den Krater unter ihr und bleibt li
   for (let i = 0; i < 60; i++) { match.step(); match.consumeEvents(); }
   assert.equal(match.getState().crates.find(c => c.entityId === kiste.entityId).y, y1, 'sie liegt jetzt fest');
 });
+
+/* ------------------------------------------- Goldwerte Fassung 3 (Stand vor Fassung 4) */
+
+/** FNV-1a über einen Text — ein kurzer Fingerabdruck für Ereignislisten. */
+function fingerabdruck(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return h >>> 0;
+}
+
+function gold3() {
+  // (a) Reiner Rechenkern: eine Scholle über 6000 Zellen und zwei Krater in Folge.
+  const maske = maskeMitScholle(120, 90);
+  const { z, ereignisse } = bauEinheit(maske, new Map(), ZERSTOERUNG_SCHOLLEN);
+  z.krater(315, 90 + 100 + 120, 20, 100);
+  for (let i = 0; i < 80; i++) z.schritt();
+  z.krater(360, 150, 18, 115);
+  for (let i = 0; i < 200; i++) z.schritt();
+  // (b) Im Match: Brett über der Figur, Pfeiler gekappt.
+  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN });
+  match.start();
+  const aufbau = baueBrett(match);
+  match.setzung.krater(aufbau.px, aufbau.boden - 45, 14, 100);
+  for (let i = 0; i < 200; i++) { match.step(); match.consumeEvents(); }
+  return [maske.hash(), maske.craterCount, fingerabdruck(JSON.stringify(ereignisse)), match.terrain.hash(), match.stateHash(), match.terrain.craterCount];
+}
+
+test('Fassung 3 bleibt Bit für Bit: Scholle, Krater und Brett (Goldwerte, gemessen vor Einführung von Fassung 4)', () => {
+  assert.deepEqual(gold3(), [3282633924, 3, 927077047, 2643580672, 'c81f0a06', 2]);
+  assert.deepEqual(gold3(), gold3(), 'zwei Läufe, gleiche Werte');
+});
