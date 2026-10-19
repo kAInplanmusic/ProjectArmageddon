@@ -79,8 +79,9 @@ test('Manifest nennt jede der 81 Figuren genau einmal mit gültigen Feldern', ()
   for (const [k, e] of Object.entries(manifest.figures)) {
     assert.equal(e.file, k);
     assert.equal(e.facing, 'right');
-    assert.ok(['together', 'together-kontext'].includes(e.source), `${k}: Quelle ${e.source}`);
-    assert.equal(e.model, e.source === 'together-kontext' ? KONTEXT_MODELL : TEXT_MODELL, `${k}: Modell passt nicht zur Quelle`);
+    assert.ok(['together', 'together-kontext', 'porträt'].includes(e.source), `${k}: Quelle ${e.source}`);
+    const modell = { together: TEXT_MODELL, 'together-kontext': KONTEXT_MODELL, 'porträt': null }[e.source];
+    assert.equal(e.model, modell, `${k}: Modell passt nicht zur Quelle`);
     assert.equal(typeof e.hasSide, 'boolean');
     if (e.hasSide) {
       assert.equal(e.anchor.y, manifest.groundY, `${k}: Fußpunkt nicht auf der Grundlinie`);
@@ -154,22 +155,44 @@ test('Charactersheets: Front und Seite nebeneinander, Zellen laut Manifest', () 
   }
 });
 
-test('Stufe 1 (Bild-zu-Bild mit Porträt als Referenz): Entscheidungen und Manifest stimmen überein', () => {
+test('Stufe 1 und 2 (Bild-zu-Bild mit Porträt als Referenz): Entscheidungen und Manifest stimmen überein', () => {
   assert.equal(entscheidungen.modell_kontext, KONTEXT_MODELL);
   const ersetzt = Object.keys(entscheidungen.kontext).sort();
-  assert.equal(ersetzt.length, 27);
   const imManifest = Object.entries(manifest.figures).filter(([, e]) => e.source === 'together-kontext').map(([k]) => k).sort();
   assert.deepEqual(imManifest, ersetzt, 'Manifest und entscheidungen.json nennen nicht dieselben Figuren');
+  assert.equal(ersetzt.length, 72, '20 Stufe-1-Figuren bleiben, 52 kamen in Stufe 2 dazu oder wurden neu erzeugt');
   for (const k of ersetzt) {
     assert.ok(manifest.figures[k].hasSide, `${k}: ersetzt, aber ohne Seite`);
     assert.ok(Number.isInteger(entscheidungen.kontext[k]) && entscheidungen.kontext[k] >= 2, `${k}: Version`);
   }
   for (const k of entscheidungen.spiegeln_kontext) assert.ok(ersetzt.includes(k), `${k}: gespiegelt, aber nicht ersetzt`);
-  // Verworfene Neuversuche behalten die alte Seite und stehen mit Grund in der Datei.
+  // Stufe-1-Verworfene (Humanoid statt Gestalt): in Stufe 2 neu erzeugt oder durch das Porträt ersetzt.
   const verworfen = Object.keys(entscheidungen.kontext_verworfen);
   assert.equal(verworfen.length, 4);
   for (const k of verworfen) {
-    assert.equal(manifest.figures[k].source, 'together', `${k}: verworfen, aber ersetzt`);
     assert.ok(entscheidungen.kontext_verworfen[k].length > 5, `${k}: Begründung fehlt`);
+    assert.notEqual(manifest.figures[k].source, 'together', `${k}: in Stufe 2 weder neu erzeugt noch ersetzt`);
   }
+});
+
+test('Stufe 2: Porträt als Seitensprite nur als dokumentierter letzter Ausweg', () => {
+  const portraet = Object.entries(manifest.figures).filter(([, e]) => e.source === 'porträt').map(([k]) => k).sort();
+  assert.deepEqual(portraet, [...entscheidungen.portraet].sort());
+  assert.equal(portraet.length, 2);
+  for (const k of portraet) {
+    assert.ok(manifest.figures[k].hasSide);
+    assert.ok(entscheidungen.portraet_grund[k].length > 20, `${k}: Begründung fehlt`);
+    assert.equal(entscheidungen.kontext[k], undefined, `${k}: Porträt und Kontext gleichzeitig`);
+  }
+});
+
+test('Stufe 2: Rohbild-Versionen und Maßprompts (nur 256-px-Porträts als Referenz)', () => {
+  const skript = fs.readFileSync(path.join(HIER, '..', 'scripts', 'seitenansichten', 'kontext2.py'), 'utf8');
+  assert.ok(skript.includes('src/client/assets/characters"'), 'Referenz muss das Porträt-Verzeichnis sein');
+  assert.ok(!skript.includes('characters-hd'), 'HD-Bilder sind nicht freigegeben');
+  assert.ok(skript.includes('OBERGRENZE_STUFE_USD = 5.0'));
+  const mass = fs.readFileSync(path.join(HIER, '..', 'scripts', 'seitenansichten', 'massprompts.py'), 'utf8');
+  const nMass = (mass.match(/^    "[a-z]+\/[0-9a-z_-]+\.png": \(/gm) || []).length;
+  const stufe2 = Object.keys(entscheidungen.kontext).filter((k) => entscheidungen.kontext[k] >= 4);
+  assert.equal(nMass, stufe2.length, 'Jede Stufe-2-Figur hat genau einen Maßprompt');
 });
