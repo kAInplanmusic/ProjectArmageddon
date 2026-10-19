@@ -278,6 +278,13 @@ class Game {
     });
 
     /*
+     * Fortsetzen nach Neuladen (Warteschlange 3.7): Der Token liegt im
+     * sessionStorage und holt denselben Platz zurück.
+     */
+    document.getElementById('resume-button')?.addEventListener('click', () => this.#setzeSitzungFort());
+    this.#aktualisiereSitzungsKnopf();
+
+    /*
      * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei.
      *
      * Der Ablauf ist bewusst der eines Downloads/Uploads und nicht der eines
@@ -408,6 +415,40 @@ class Game {
     this.endOverlay.hidden = true;
     this.menuOverlay.hidden = false;
     this.#zeigeAbbruch(false);
+    // Wer bewusst verlässt, braucht keine Fortsetzen-Sitzung mehr (3.7).
+    try {
+      sessionStorage.removeItem('pa-sitzung');
+    } catch { /* nicht verfügbar */ }
+    this.#aktualisiereSitzungsKnopf();
+  }
+
+  /** Blendet den Fortsetzen-Knopf ein, wenn eine Sitzung gespeichert ist. */
+  #aktualisiereSitzungsKnopf() {
+    const knopf = document.getElementById('resume-button');
+    if (!knopf) return;
+    try {
+      knopf.hidden = !sessionStorage.getItem('pa-sitzung');
+    } catch {
+      knopf.hidden = true;
+    }
+  }
+
+  /** Setzt die letzte Sitzung aus dem sessionStorage fort. */
+  #setzeSitzungFort() {
+    try {
+      const roh = sessionStorage.getItem('pa-sitzung');
+      if (!roh) return;
+      const sitzung = JSON.parse(roh);
+      this.startOnline({
+        serverUrl: sitzung.serverUrl,
+        lobbyId: sitzung.lobbyId,
+        token: sitzung.token,
+        name: sitzung.name ?? 'Spieler',
+      });
+    } catch {
+      try { sessionStorage.removeItem('pa-sitzung'); } catch { /* still */ }
+      this.#aktualisiereSitzungsKnopf();
+    }
   }
 
   /**
@@ -999,7 +1040,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    orientation = 'landscape', sidegrades = null, loadouts = null,
+    orientation = 'landscape', sidegrades = null, loadouts = null, token = null,
   } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
@@ -1072,7 +1113,7 @@ class Game {
     const client = new NetworkClient({
       url: wsUrl,
       lobbyId: targetLobby,
-      token: hostToken,
+      token: token ?? hostToken,
       playerName: name,
       seed: resolvedSeed,
       preset,
@@ -1091,6 +1132,20 @@ class Game {
     client.on('hello', () => this.hud.log('Handshake abgeschlossen', 'good'));
     client.on('joined', payload => {
       beigetreten = true;
+      /*
+       * Warteschlange 3.7: Der Sitzplatz-Token lebte nur im Tab. Er wird jetzt
+       * im sessionStorage abgelegt, damit „Letzte Sitzung fortsetzen" nach
+       * einem Neuladen denselben Platz zurückholt (JOIN_LOBBY mit Token).
+       */
+      try {
+        sessionStorage.setItem('pa-sitzung', JSON.stringify({
+          serverUrl,
+          lobbyId: client.lobbyId,
+          token: payload.token ?? token ?? hostToken ?? null,
+          name,
+        }));
+        this.#aktualisiereSitzungsKnopf();
+      } catch { /* sessionStorage nicht verfügbar — Fortsetzen entfällt still */ }
       /*
        * Im Modus der Matcharten führt ein Mensch ein ganzes TEAM (3–5 Einheiten).
        * `entityIds` nennt alle; `entityId` bleibt die erste Figur. Beide werden

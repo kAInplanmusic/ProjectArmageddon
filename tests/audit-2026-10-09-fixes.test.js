@@ -438,3 +438,17 @@ test('3.8: Die Start-Prüfung „alle Teams besetzt" ist eine Methode, kein Dupl
     'Der JOIN-Pfad muss die gemeinsame Start-Methode rufen'
   );
 });
+
+test('3.7: Der Sitzplatz-Token überlebt einen Neuladen (Fortsetzen-Knopf)', () => {
+  /*
+   * Warteschlange 3.7: Der Token lebte nur im Tab — nach einem Neuladen konnte
+   * sich niemand fortsetzen, obwohl der Server Reconnects über JOIN_LOBBY mit
+   * Token längst kann (`resumed`). Der Client speichert die Sitzung jetzt im
+   * sessionStorage und bietet im Menü „Letzte Sitzung fortsetzen" an.
+   */
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const mainRoh = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
+  assert.ok(html.includes('id="resume-button"'), 'Das Menü braucht einen Fortsetzen-Knopf');
+  assert.ok(mainRoh.includes("sessionStorage.setItem('pa-sitzung'"), 'Der Client muss die Sitzung speichern');
+  assert.ok(mainRoh.includes("sessionStorage.getItem('pa-sitzung'"), 'Der Client muss die Sitzung lesen');
+});
