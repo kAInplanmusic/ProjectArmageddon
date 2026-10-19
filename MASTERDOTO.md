@@ -4005,6 +4005,66 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       0,0116 und FLUX je Aufruf). Alt/Neu-Kontaktbögen und Rohbilder liegen im
       Arbeitsordner (`PA_SEITE_ARBEIT`), nicht im Repo.
 
+      **Seitenansichten Stufe 2 — Bewertung und Neuerzeugung (2026-10-19).**
+      Ziel: für alle 81 Figuren eine Seite, die (1) dieselbe Figur wie das
+      Porträt zeigt, (2) möglichst im echten Profil nach rechts blickt
+      (symmetrische Wesen dürfen Dreiviertel bleiben) und (3) sauber
+      freigestellt ist. *(A) Bewertung:* `paarbogen.py` legt Porträt | aktuelle
+      Seite auf Kontaktbögen (je Fraktion), jede Figur bekam Treue, Profil und
+      Freistellung (1-5); „neu“ bei Treue < 4, Profil < 3 oder Freistellung < 4
+      (Ausnahme Symmetrie). Ergebnis der Ausgangslage: 27 behalten, 54 neu
+      (meist Treue: Farben, fehlende Zweitwaffe, andere Gestalt). *(B)
+      Erzeugung:* `kontext2.py` schickt wieder nur das 256-px-Porträt (auf Weiß,
+      512 px) als `image_url` an FLUX.1-kontext-pro, diesmal mit je Figur einem
+      Maßprompt (`massprompts.py`): „rotate 90 degrees ... pure profile facing
+      right“, dazu was bleiben muss (z. B. „the golden key hanging from the
+      hook“, „the skull on the staff“, „NOT blue, keep dark green“) und die
+      Gestalt („NO legs, the lower body is the snake body on tank tracks“).
+      Parallelität 4 mit gestaffeltem Start und Backoff bei 429 (nicht
+      berechnet, Gegenbuchung im Kostenlog), Rohbild-Cache gegen Doppelaufrufe,
+      Hintergrundfarbe je Figur (bei Flammen/Leuchtringen Orange oder Cyan statt
+      Magenta/Grün gegen Mischsäume). *(C) Sichtprüfung* jedes Ergebnisses gegen
+      das Porträt; Wiederholung bei Mängeln (Buffer-Flow-Swarm: ein großer
+      statt sieben gleich kleiner Fliegen; Slasher: Pistole schwebte;
+      Decay-Spawn, Arcanus-A, Harbinger-Zeta, Dark-Matter-Witch,
+      Overlord-Kernel-Panic: Mischsaum, mit anderer Hintergrundfarbe neu). *(D)
+      Nachbearbeitung:* `freistellen.py` hat jetzt `freistellen_key()`
+      (Chroma-Key mit Randring-Palette, Löcher, Mischpixel-Abschälen,
+      Entmischen von Leuchträndern, Bodenschatten auch mit verschobenem
+      Farbton) für alle Rohbilder außer `freistellen_alt` (Cosmic-Meditate);
+      neue Entscheidungsfelder `portraet`, `spiegeln_portraet`,
+      `portraet_loeschen`, `key_alle`, `freistellen_alt`. Die Kontext-Rohbilder
+      kommen in 1024 px, die Sprites bleiben 256x256 mit Grundlinie y=240.
+      *Ergebnis:* 52 Figuren in Stufe 2 neu erzeugt (Version 4, sieben davon
+      Version 5), 2 Figuren mit dem Porträt als Sprite (`source: "porträt"`,
+      `model: null`: machina/11 Moerser-Bot, dessen Porträt schon das
+      Kettenfahrzeug im Profil nach rechts zeigt, mit entferntem Zeichen im
+      Strahl; xeno/10 Drone-Theta, dessen Porträt die schwebende Kapsel im Profil
+      zeigt; beide hatten in Text-zu-Bild und Kontext (v2, v3) einen Humanoiden
+      geliefert), 27 behalten. Zusammen 72 Sprites mit `together-kontext`, 2
+      `porträt`, 7 reines `together` (FLUX.1.1-pro). Die vier Stufe-1-
+      Verworfenen: Buffer-Flow-Swarm und Decay-Spawn jetzt per Kontext (v5),
+      Drone-Theta und Moerser-Bot per Porträt.
+      *Endnoten (T/P/F = Treue/Profil/Freistellung, 1-5):* Treue 5 bei 34
+      Figuren, 4 bei 47, nie darunter; Profil 5 bei 6, 4 bei 44, 3 bei 31 (davon 7
+      symmetrisch bzw. Oni: Dreiviertel erlaubt), nie darunter; Freistellung 4
+      bei 80, 3 bei 1 (beasts/20 Decay-Spawn: heller Flammensaum und ein
+      Rest des Bodenschattens). Dreiviertel statt Profil (P3, nicht symmetrisch): beasts/00, 20, 22,
+      datacult/00, 10, 22, machina/00, 02, pirates/02, 12, 20, 22,
+      rodentia/20, shinobi/00, 01, 21, undead/00, 02, 12, 20, xeno/00, 01, 21,
+      22. Die volle
+      Liste je Figur liegt im Arbeitsordner (`bewertung_final.txt`, nicht im
+      Repo). Grenzen: Das Modell zeichnet Menschen und Humanoide mit
+      Waffe in der Hand oft im Dreiviertelprofil; Muster aus dem Porträt
+      (Matrix-Code, Pixel-Glitch) sind in der Seite gröber; Farbsäume auf
+      Flammen und Leuchtringen entfernt die Freistellung nicht ganz.
+      *Kosten Stufe 2:* 60 abgerechnete Aufrufe à 0,04 USD = 2,40 USD
+      (52 Erstversuche, 7 Wiederholungen, 1 gebuchter Fehlversuch; HTTP 429 ohne Ergebnis wird
+      gegengebucht), harte Obergrenze 5,0 USD (`OBERGRENZE_STUFE_USD` in
+      `kontext2.py`, gesamt 10,2 USD). *Kosten insgesamt:* 4,89 + 2,40 = 7,29 USD
+      (konservativ). Hochgeladen wurden ausschließlich die 256-px-Porträts
+      (`assets/characters/`), keine HD-Bilder.
+
       **Stufe 2 — HD-Porträts hochskalieren: geprüft, NICHT umgesetzt.** Die
       HD-Porträts (`assets/characters-hd/`, 257-349 px) sind die Zellen der
       Fraktionsbögen in Quellgröße. Lokaler Test an 3 Figuren (Sgt-Acid-Xeno,

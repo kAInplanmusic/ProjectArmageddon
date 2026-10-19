@@ -107,8 +107,9 @@ Schachbrett-Reste.
 (256×256, Blick nach rechts, Fußpunkt y=240, `manifest.json` mit `hasSide`,
 `anchor`, `facing`) und `src/client/assets/charactersheets/` (Front + Seite je
 Figur, 512×256) entstehen mit `scripts/seitenansichten/` (Together AI,
-FLUX.1.1-pro Text-zu-Bild, für 27 der 81 Figuren nachgebessert per Bild-zu-Bild
-mit dem Porträt als Referenz, FLUX.1-kontext-pro; lokale Freistellung); Verfahren, Kosten und Grenzen in
+FLUX.1.1-pro Text-zu-Bild, für 72 der 81 Figuren nachgebessert per Bild-zu-Bild
+mit dem Porträt als Referenz, FLUX.1-kontext-pro, 2 weitere mit dem Porträt selbst als Seite;
+lokale Freistellung); Verfahren, Kosten und Grenzen in
 `MASTERDOTO.md`, Prüfung in `tests/seitenansichten.test.js`.
 
 **Waffen-Sprites (vorbereitet, noch nicht eingebunden).** `scripts/waffen-sprites.py`

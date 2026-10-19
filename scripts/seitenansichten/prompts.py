@@ -21,6 +21,11 @@ HINTERGRUND_AUSNAHME = {
     "pixel/20_phantomal-a.png": ("green", "#00FF00"),
     "beasts/21_cosmic-meditate.png": ("green", "#00FF00"),
     "beasts/22_sonic-blossom.png": ("green", "#00FF00"),
+    "beasts/20_decay-spawn.png": ("cyan", "#00FFFF"),  # Stufe 2: rosa Flammensaum auf Magenta
+    "pixel/21_arcanus-a.png": ("orange", "#FF8000"),  # Stufe 2: rosa Orb-Saum auf Magenta
+    "xeno/20_harbinger-zeta.png": ("orange", "#FF8000"),  # Stufe 2: grauer Mischring auf Grün
+    "xeno/21_dark-matter-witch.png": ("orange", "#FF8000"),
+    "machina/22_overlord-kernel-panic.png": ("orange", "#FF8000"),
 }
 
 STIL = (
