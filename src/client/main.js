@@ -267,6 +267,17 @@ class Game {
     });
 
     /*
+     * Klangschalter (UX-7, Warteschlange): `SoundMixer#setzeAn` existierte,
+     * war aber von außen nicht erreichbar. Der Schalter im Menü reicht den
+     * Wunsch an den Mischer weiter.
+     */
+    const soundToggle = document.getElementById('cfg-sound');
+    soundToggle?.addEventListener('change', () => {
+      this.sound?.setzeAn(soundToggle.checked);
+      this.hud.log(soundToggle.checked ? 'Klang an' : 'Klang aus', 'neutral');
+    });
+
+    /*
      * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei.
      *
      * Der Ablauf ist bewusst der eines Downloads/Uploads und nicht der eines
@@ -304,7 +315,17 @@ class Game {
        * Ein Tastendruck ist eine solche Interaktion. Sie steht bewusst VOR der
        * Formularprüfung: Auch wer in ein Textfeld tippt, hat interagiert.
        */
-      void this.sound?.starte();
+      /*
+       * UX-7 (Warteschlange): Bleibt der Mischer stumm, weil der Browser
+       * keinen AudioContext hergibt, wird das EINMAL gemeldet — vorher blieb
+       * es still ohne Fehlermeldung, was die Suche unnötig schwer macht.
+       */
+      void this.sound?.starte().then(bereit => {
+        if (!bereit && this.sound?.an && !this.klangBlockiertGemeldet) {
+          this.klangBlockiertGemeldet = true;
+          this.hud.log('Klang blockiert — der Browser hat keinen AudioContext freigegeben', 'warn');
+        }
+      });
 
       // Der Abbruch darf nicht ausgelöst werden, während in ein Formularfeld
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.

@@ -381,3 +381,30 @@ test('UX-9: Die Nicht-am-Zug-Ablehnung nennt die Restzugzeit', () => {
     'Der Server muss die Restzugzeit in die Ablehnung schreiben'
   );
 });
+
+test('UX-1: Die Steuerungsliste steht über den aufklappbaren Blöcken', () => {
+  /*
+   * Warteschlange UX-1: Die Tastenliste stand unter neun details-Blöcken und
+   * dem Startknopf — der erste Blick verriet nicht, wie man spielt. Sie steht
+   * jetzt vor den aufklappbaren Blöcken.
+   */
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const keymap = html.indexOf('<div class="keymap">');
+  const ersterDetails = html.indexOf('<details id="lobby-browser">');
+  assert.ok(keymap > 0, 'Die keymap muss existieren');
+  assert.ok(keymap < ersterDetails, 'Die keymap muss VOR dem ersten details-Block stehen');
+});
+
+test('UX-7: Es gibt einen Klangschalter, und ein blockierter Klang wird gemeldet', () => {
+  /*
+   * Warteschlange UX-7: `SoundMixer#setzeAn` existierte, war aber von außen
+   * nicht erreichbar; ein blockierter AudioContext blieb stumm ohne Meldung.
+   * Jetzt gibt es einen Schalter im Menü und eine einmalige Meldung, wenn der
+   * Browser keinen AudioContext freigibt.
+   */
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const mainRoh = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
+  assert.ok(html.includes('id="cfg-sound"'), 'Das Menü braucht einen Klangschalter');
+  assert.ok(mainRoh.includes('setzeAn(soundToggle.checked)'), 'Der Schalter muss setzeAn rufen');
+  assert.ok(mainRoh.includes('Klang blockiert'), 'Ein blockierter Klang muss gemeldet werden');
+});

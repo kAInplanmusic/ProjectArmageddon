@@ -910,6 +910,27 @@
             </label>
           </div>
           <button id="start-button" type="button">Match starten</button>
+          <!--
+            UX-1 (Warteschlange): Die Steuerungsliste stand unter neun
+            aufklappbaren Blöcken — der erste Blick verriet nicht, wie man
+            spielt. Sie steht jetzt direkt unter dem Startknopf, VOR den
+            aufklappbaren Blöcken.
+          -->
+          <div class="keymap">
+            <span><b>Maus</b> Zielen</span>
+            <span><b>Klick / Leertaste</b> Aufladen und feuern</span>
+            <span><b>Enter</b> Sofort feuern</span>
+            <span><b>Shift</b> Springen (mit A/D seitlich, in der Luft doppelt)</span>
+            <span><b>A / D</b> Winkel feinjustieren</span>
+            <span><b>W / S</b> Kraft ändern</span>
+            <span><b>1–9</b> Waffe wählen</span>
+            <span><b>Q</b> Waffe abwerfen</span>
+            <span><b>R</b> Match verlassen</span>
+          </div>
+          <label class="field-row sound-toggle">
+            <input type="checkbox" id="cfg-sound" checked />
+            Klang
+          </label>
           <details id="lobby-browser">
             <summary>Offene Lobbys anzeigen</summary>
             <div class="field-row">
@@ -1051,17 +1072,6 @@
               <button id="profil-reset" type="button" class="secondary">Zahlen zurücksetzen</button>
             </div>
           </details>
-          <div class="keymap">
-            <span><b>Maus</b> Zielen</span>
-            <span><b>Klick / Leertaste</b> Aufladen und feuern</span>
-            <span><b>Enter</b> Sofort feuern</span>
-            <span><b>Shift</b> Springen (mit A/D seitlich, in der Luft doppelt)</span>
-            <span><b>A / D</b> Winkel feinjustieren</span>
-            <span><b>W / S</b> Kraft ändern</span>
-            <span><b>1–9</b> Waffe wählen</span>
-            <span><b>Q</b> Waffe abwerfen</span>
-            <span><b>R</b> Match verlassen</span>
-          </div>
         </div>
       </section>
 
