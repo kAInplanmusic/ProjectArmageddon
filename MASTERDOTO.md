@@ -540,7 +540,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1457/1457** grün, Dateizahl **155** (Stand 2026-10-19, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1464/1464** grün, Dateizahl **156** (Stand 2026-10-19, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3232,6 +3232,96 @@ angefasst, es steht am Zeilenbudget).
   Änderung. Einzel-Charactersheets (Front + Seite) folgen mit den Seitenansichten.
 - **Tests:** `tests/darstellung.test.js`, `tests/figur-animation.test.js`,
   `tests/e2e/fraktion-darstellung.spec.mjs`.
+
+## Waffen-Sprites: Atlanten für die Waffe in der Hand (2026-10-19)
+
+Vorbereitung, KEINE Einbindung: Der Client zeichnet weiter die 64-px-Icons aus
+`src/client/assets/icons/`. Neu sind Assets, Skript, Manifest und Test; `src/client/`
+und `src/engine/` wurden nicht angefasst (Spielwerte, Seed, Hash, Replay unverändert).
+
+**Verfahren** (`scripts/waffen-sprites.py`, `npm run waffen:sprites`, Pillow + numpy +
+scipy, deterministisch: zweimal laufen lassen ergibt byte-gleiche Atlanten):
+
+1. **Quelle:** `assets/weapons/source/IMG_xxxx.PNG` (1024×1024, RGB, Waffe auf grauem
+   Verlauf, Wasserzeichen unten rechts), NICHT die 64-px-Icons. `IMG_9049` (pa_014)
+   liegt nur als `.heic` vor und braucht `pip install pillow-heif`; ohne das Paket
+   fällt das Skript auf das 64-px-Icon zurück (Warnung, im Manifest
+   `quelle.datei = …icon64`). Im vorliegenden Stand ist `quelle.datei` überall echt.
+2. **Freistellen:** Hintergrund per quadratischem Flächenfit am Randring, Flood-Fill vom
+   Rand (Abstand ≤ 30 je Kanal), hohle Rand-Komponenten (Rahmen, Plattenlinien) als
+   Hintergrund, Kleinteile (Wasserzeichen, Sterne) verworfen, eingeschlossene
+   Hintergrundinseln entfernt, 1 px erodiert (Defringe), Farben nach außen
+   fortgesetzt, dann antialiasiert verkleinert (echter Alpha, kein grauer Saum).
+3. **Form:** `objekt` (länglich, Streckung ≥ 1,5: wird gedreht, 56), `kompakt`
+   (nicht gedreht, 66) und `kachel` (Zauber- und Ultimate-Kacheln, deren Bild
+   eine Fläche mit Rahmen ist und nicht frei stehende Waffe, 28; nicht gedreht).
+4. **Ausrichtung:** Hauptachse per PCA, Spitze = dünneres Ende (Mündung/Klinge). Zeigt sie
+   klar nach links, wird gespiegelt statt um 180° gedreht (oben bleibt oben); Achsen
+   nahe waagerecht (< 8°) bleiben liegen. `manifest.rotation` = Drehung in Grad gegen
+   den Uhrzeigersinn, `gespiegelt` = Spiegelung wurde angewandt.
+5. **Varianten je Waffe:** `held` (128×128, größte Kante ≈ 90 %, mittig), `silhouette`
+   (weiß, gleicher Alpha), `icon` (128×128, unrotiert, ohne Seltenheitsrahmen; den
+   Rahmen zeichnet der Client nach `rarity`), `projectile` (32×32, Spitze rechts,
+   `projectile.angle` 0, `spin` für rotierende Würfe) nur für Waffen mit
+   physischem Geschoss, `flashColor` (dominante gesättigte Farbe, aufgehellt; kein Bild).
+   Projektile: `ding` (die Waffe selbst fliegt: 41, Nahkampf-Würfe, Granaten,
+   Bumerang) oder prozedural gezeichnet (`kugel`, `pfeil`, `rakete`, `granate`,
+   `plasma`, `feuer`, `gift`, `eis`, `wasser`, `stein`, `zauber`; in der Tabelle
+   `GESCHOSS_ART` im Skript). Hitscan und Selbstwirkung/Platzierung: `projectile: null`
+   (87 Waffen haben ein Projektil, 63 nicht).
+6. **Anker** (Zellpixel der held-Zelle): `muzzle` = rechter Rand der Waffe, `grip` =
+   30 % der Länge von hinten (bei Fern-/Schwerwaffen und Tech im unteren Teil,
+   sonst auf der Mittellinie). Bei kompakten Formen Standardwerte (`source:
+   "standard"`, 94 Waffen; 56 aus der Geometrie, `"korrektur"` bei Handwerten).
+
+**Handkorrekturen** (`scripts/waffen-sprites-korrekturen.json`, je Waffen-ID):
+`rect` (Rundrechteck für Kacheln auf Sternenhintergrund: pa_118, 141, 142, 144–150),
+`ringAbstand`/`schwelle` (Hintergrundschätzung: pa_012 Katana auf Platte, pa_054
+Schrotflinte auf Platte, pa_094 Spritze mit Schatten), `keineDrehung` (stehende Figuren
+und Bauten: pa_043, 053, 061, 078, 115, 129, 132), `umkehren` (Spitze stimmt nicht,
+15 Waffen: Hämmer, Äxte, Kettensäge, Fackel, Maschinenpistole, Revolver, Minigun,
+Wasserblaster …). Neue Korrekturen nach Kontaktbogen-Sicht eintragen und das Skript
+neu laufen lassen.
+
+**Ausgabe** (`src/client/assets/weapon-sprites/`, zusammen rund 5,1 MB, vorher 0):
+`atlas_<kategorie>.png` für melee, ranged, heavy_ranged, elemental, magic, tech,
+utility, ultimate (8 Spalten à 128 px; oben held, darunter silhouette im selben
+Raster, darunter die 32-px-Projektile), `atlas_icons.png` (16 Spalten × 10 Zeilen,
+128 px, als 256-Farben-Palette mit tRNS, 0,8 MB; 64 px skaliert der Client selbst) und
+`manifest.json`. Einzeldateien gibt es bewusst nicht. Manifest-Schema
+(`waffen[<id>]`): `id, name, category, subcategory, rarity, delivery, form,
+quelle{datei,aufloesung}, rotation, gespiegelt, streckung, content{x,y,w,h},
+held/silhouette/icon{atlas,x,y,w,h}, anchor{grip{x,y},muzzle{x,y},source},
+projectile null | {atlas,x,y,w,h,art,size{w,h},angle,spin,generiert}, flashColor,
+korrektur`.
+
+**Neue Waffe ergänzen:** Katalog (`npm run weapons:build`) erweitern, Original-PNG
+nach `assets/weapons/source/` legen, `npm run waffen:sprites`, Kontaktbogen sichten
+(`--kontaktbogen DIR`), Korrekturen eintragen, Test anpassen (150 ist fest).
+
+**Grenzen:** Bei den 28 Kacheln ist die „Waffe" ein Bild mit Rahmen (Zauber, Ultimates);
+sie sind nicht freistellbar, `held` ist dort die Kachel. pa_150 (Kosmischer Kern,
+Sternennebel ohne Kachel) behält Nebelreste am Rand. Einige Waffen haben graue
+Restschatten (pa_008). Die Anker sind Schätzwerte; bei verdrehten Formen sind
+Handwerte sinnvoll.
+
+**Pilot Stufe 2 (KI-Seitenansichten, Together AI, `scripts/waffen-sprites-ki.py`):**
+FLUX.1-kontext-pro (0,04 USD je Bild), Referenz nur das 64-px-Client-Icon auf Magenta,
+Prompt „same weapon … clean side view pointing right … flat magenta background".
+6 Waffen (Baseballschläger, Maschinenpistole, Revolver, Flammenwerfer, Jetpack,
+Bohrkopfrakete), Kosten **0,24 USD** von 0,60 USD (Log `kosten.jsonl` im Scratchpad;
+einige Aufrufe scheiterten an 429 und wurden nicht berechnet). Ergebnis: Das Modell
+gibt die Pose und die Pixelung der 64-px-Referenz praktisch 1:1 wieder, keine neue
+Seitenansicht, keine zusätzlichen Details; die lokale Extraktion aus dem
+1024-px-Original ist deutlich schärfer. **Kein Mehrwert, nichts ersetzt.**
+Hochrechnung für alle 150: 150 × 0,04 = **6,00 USD** (mit einem Nachbesserungsversuch
+je Bild 12 USD), nur sinnvoll mit hochauflösender Referenz (nicht freigegeben) und
+Posenvorgabe; Empfehlung: nicht nötig, solange nur die Seitenansicht gefragt ist.
+
+**Prüfung:** `tests/waffen-sprites.test.js` (7): 150 IDs und Stammdaten gegen den Katalog,
+Atlasgrößen, Zellen im Atlas, echter Alpha (deckend und weiche Ränder), transparente
+Ecken, Anker in der Zelle und Mündung am rechten Rand, Projektil nur bei physischem
+Geschoss, keine Zellenüberlappung, Gesamtgröße < 6 MB.
 
 ## Balance-Messung über die Kartenbreite
 

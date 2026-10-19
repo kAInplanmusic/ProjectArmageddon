@@ -111,6 +111,16 @@ FLUX.1.1-pro Text-zu-Bild, für 27 der 81 Figuren nachgebessert per Bild-zu-Bild
 mit dem Porträt als Referenz, FLUX.1-kontext-pro; lokale Freistellung); Verfahren, Kosten und Grenzen in
 `MASTERDOTO.md`, Prüfung in `tests/seitenansichten.test.js`.
 
+**Waffen-Sprites (vorbereitet, noch nicht eingebunden).** `scripts/waffen-sprites.py`
+(`npm run waffen:sprites`, deterministisch, kostenlos, lokal) stellt die 150 Waffen
+aus den 1024-px-Originalen frei, richtet sie waagerecht nach rechts aus und packt sie
+in 8 Kategorie-Atlanten (`atlas_<kategorie>.png`: held, silhouette, projectile) plus
+`atlas_icons.png` mit `manifest.json` (Zellen, Anker grip/muzzle, Drehung,
+Projektil, flashColor) unter `src/client/assets/weapon-sprites/` (rund 5,1 MB).
+Handkorrekturen in `scripts/waffen-sprites-korrekturen.json`; Verfahren, Pilot mit
+KI-Bildern und Kostenhochrechnung in `MASTERDOTO.md`, Prüfung in
+`tests/waffen-sprites.test.js`.
+
 **Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
 „Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
 gegen schweren Rahmen mit Kanonenarm). Die Namen wurden unverändert aus den Bögen
@@ -204,7 +214,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1457 Tests in 155 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1464 Tests in 156 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **253 Tests in 40 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
@@ -214,6 +224,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run balance` | Balance-Bericht über alle 150 Waffen |
 | `npm run replay` | Replay aufzeichnen/abspielen (`record`, `play`, `info`) |
 | `npm run icons` | Waffen-Icons erzeugen (Pillow, ohne ImageMagick) |
+| `npm run waffen:sprites` | Waffen-Sprite-Sheets + Manifest erzeugen (Pillow, numpy, scipy) |
 | `npm run validate` | Modulimporte prüfen |
 | `npm run weapons:build` | Waffenkatalog aus der Designdatei generieren |
 
@@ -433,8 +444,9 @@ Widersprüche**. Die Zielart reist im `shot`-Ereignis mit.
 **Nachgemessen, nicht behauptet:** `maxRange` und `cooldown` sind NICHT mehr für
 alle Waffen gleich (63 bzw. 4 verschiedene Werte). Frühere Fassungen dieses
 README behaupteten das Gegenteil — damals stimmte es, inzwischen leitet der
-Generator beide aus der Designdatei ab. Spritesheets gibt es weiterhin nicht, die
-Darstellung ist prozedural; Bilder existieren nur als Waffen-Icons.
+Generator beide aus der Designdatei ab. Die Darstellung im Spiel ist weiterhin prozedural und nutzt die
+Waffen-Icons; vorbereitete Waffen-Sprite-Sheets (Atlanten) liegen unter
+`src/client/assets/weapon-sprites/` (siehe oben), ihre Einbindung steht aus.
 
 ## Waffendarstellung und Animationen
 

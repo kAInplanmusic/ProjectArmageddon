@@ -1,0 +1,178 @@
+{
+ "_hinweis": "Handkorrekturen je Waffen-ID. rect=[x0,y0,x1,y1,radius] erzwingt Rundrechteck-Kachel (Quellpixel 1024). ringAbstand/schwelle steuern die Hintergrundschaetzung. keineDrehung, umkehren (nach der Ausrichtung spiegeln), spitzeWechseln, winkel, spiegeln, form, grip/muzzle=[x,y] in Zellpixeln, geschoss=Art oder 'keins'.",
+ "pa_118": {
+  "rect": [
+   139,
+   129,
+   895,
+   895,
+   28
+  ],
+  "form": "kachel"
+ },
+ "pa_141": {
+  "rect": [
+   127,
+   123,
+   901,
+   911,
+   10
+  ],
+  "form": "kachel"
+ },
+ "pa_142": {
+  "rect": [
+   135,
+   127,
+   891,
+   895,
+   40
+  ],
+  "form": "kachel"
+ },
+ "pa_144": {
+  "rect": [
+   123,
+   117,
+   901,
+   909,
+   60
+  ],
+  "form": "kachel"
+ },
+ "pa_145": {
+  "rect": [
+   107,
+   78,
+   911,
+   918,
+   60
+  ],
+  "form": "kachel"
+ },
+ "pa_146": {
+  "rect": [
+   140,
+   120,
+   880,
+   870,
+   30
+  ],
+  "form": "kachel"
+ },
+ "pa_147": {
+  "rect": [
+   51,
+   55,
+   971,
+   973,
+   30
+  ],
+  "form": "kachel"
+ },
+ "pa_148": {
+  "rect": [
+   165,
+   160,
+   905,
+   905,
+   80
+  ],
+  "form": "kachel"
+ },
+ "pa_149": {
+  "rect": [
+   110,
+   92,
+   915,
+   920,
+   55
+  ],
+  "form": "kachel"
+ },
+ "pa_150": {
+  "rect": [
+   185,
+   60,
+   925,
+   905,
+   300
+  ],
+  "form": "kachel"
+ },
+ "pa_012": {
+  "ringAbstand": 40
+ },
+ "pa_054": {
+  "ringAbstand": 90
+ },
+ "pa_094": {
+  "schwelle": 70
+ },
+ "pa_078": {
+  "keineDrehung": true
+ },
+ "pa_115": {
+  "keineDrehung": true
+ },
+ "pa_129": {
+  "keineDrehung": true
+ },
+ "pa_132": {
+  "keineDrehung": true
+ },
+ "pa_043": {
+  "keineDrehung": true
+ },
+ "pa_053": {
+  "keineDrehung": true
+ },
+ "pa_061": {
+  "keineDrehung": true
+ },
+ "pa_002": {
+  "umkehren": true
+ },
+ "pa_005": {
+  "umkehren": true
+ },
+ "pa_006": {
+  "umkehren": true
+ },
+ "pa_008": {
+  "umkehren": true
+ },
+ "pa_018": {
+  "umkehren": true
+ },
+ "pa_019": {
+  "umkehren": true
+ },
+ "pa_021": {
+  "umkehren": true
+ },
+ "pa_027": {
+  "umkehren": true
+ },
+ "pa_028": {
+  "umkehren": true
+ },
+ "pa_029": {
+  "umkehren": true
+ },
+ "pa_033": {
+  "umkehren": true
+ },
+ "pa_040": {
+  "umkehren": true
+ },
+ "pa_057": {
+  "umkehren": true
+ },
+ "pa_060": {
+  "umkehren": true
+ },
+ "pa_063": {
+  "umkehren": true
+ }
+}
