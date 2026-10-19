@@ -182,6 +182,36 @@ const valhallaVorzeichen = (k, n) => {
   k.hud?.log('Zwei Raben erscheinen im Blitz am Himmel … Valhalla naht', 'danger');
 };
 
+/** Weltposition einer Figur für den Klang (leer, wenn unbekannt). */
+const ortVon = (k, id) => {
+  const e = k.findEntity?.(id);
+  return e && Number.isFinite(e.x) ? { x: e.x, y: e.y } : {};
+};
+
+/** Mitte einer fallenden Geländeinsel aus ihren Spaltenläufen [x, y0, y1, …]. */
+const inselMitte = (runs, dy = 0) => {
+  if (!Array.isArray(runs) || runs.length < 3) return {};
+  let sx = 0; let sy = 0; let n = 0;
+  for (let i = 0; i + 2 < runs.length; i += 3) {
+    sx += runs[i]; sy += (runs[i + 1] + runs[i + 2]) / 2 + dy; n += 1;
+  }
+  return n ? { x: sx / n, y: sy / n } : {};
+};
+
+/**
+ * Der Klang zum Einschlag: Größe nach Radius, Material (`k.material`) und Ort. Ein Geschoss
+ * ohne Sprengradius, das eine Figur trifft, bekommt hier keinen Einschlag — den Treffer
+ * spielt der Zustandsweg (`Main#spieleTrefferklang`).
+ */
+const einschlagKlang = (k, n) => {
+  const sprengradius = n.radius ?? 0;
+  if (!(sprengradius > 0) && k.figurNah?.(n.x, n.y)) return;
+  k.sound?.verarbeite({
+    type: 'explosion', radius: n.radius || 12, sprengradius, x: n.x, y: n.y,
+    material: k.material?.(n.x, n.y) ?? 'erde',
+  });
+};
+
 /**
  * Ereignisart → Wirkung.
  *
@@ -214,12 +244,16 @@ export const EREIGNIS_WIRKUNGEN = {
    * `terrain_settled` und trägt den Zustand (Bitmap und Maske der Zielvorschau).
    */
   terrain_detached: {
-    online: (k, n) => { k.renderer?.starteInsel(n.id, n.runs); },
+    online: (k, n) => {
+      k.renderer?.starteInsel(n.id, n.runs);
+      k.sound?.verarbeite({ type: 'truemmer', ...inselMitte(n.runs) });
+    },
   },
   terrain_settled: {
     online: (k, n) => {
       k.karte?.insel(n.dy, n.runs);
       k.renderer?.landeInsel(n.id, n.runs, n.dy);
+      k.sound?.verarbeite({ type: 'insel_gelandet', ...inselMitte(n.runs, n.dy) });
     },
   },
 
@@ -255,7 +289,7 @@ export const EREIGNIS_WIRKUNGEN = {
        * No-Op. Deshalb steht hier keine Bedingung: Die Regel liegt an
        * EINER Stelle (im Mischer), nicht an jedem Aufrufort.
        */
-      k.sound?.verarbeite({ type: 'explosion', radius: n.radius || 12 });
+      einschlagKlang(k, n);
     },
     online: (k, n) => {
       k.renderer?.spawnExplosionParticles(n.x, n.y, n.radius || 12);
@@ -263,7 +297,7 @@ export const EREIGNIS_WIRKUNGEN = {
       k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
       // Derselbe Klang wie lokal — der Einschlag klingt nicht anders, weil er
       // von einem Server bestätigt wurde.
-      k.sound?.verarbeite({ type: 'explosion', radius: n.radius || 12 });
+      einschlagKlang(k, n);
     },
   },
 
@@ -280,7 +314,7 @@ export const EREIGNIS_WIRKUNGEN = {
     lokal: (k, n) => {
       // Soforttreffer sichtbar machen: Strahl vom Schützen zum Einschlag.
       k.drawHitscanBeam?.(n);
-      k.sound?.verarbeite({ type: 'shot' });
+      k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
       /*
        * Ein Treffer klingt anders als ein Fehlschuss.
        *
@@ -289,7 +323,7 @@ export const EREIGNIS_WIRKUNGEN = {
        * Bestätigungsklang — sonst würde jeder Schuss ins Leere quittiert.
        */
       if (n.hit && n.target) {
-        k.sound?.verarbeite({ type: 'damage' });
+        k.sound?.verarbeite({ type: 'damage', x: n.hitX, y: n.hitY, verzoegerung: 0.05 });
       }
     },
     online: (k, n) => {
@@ -319,9 +353,9 @@ export const EREIGNIS_WIRKUNGEN = {
        * gedrosselt (`GEDROSSELTE_EREIGNISARTEN`) — ein Klang daran wäre ein
        * Dauerläuten. `hitscan` dagegen entsteht einmal je Schuss.
        */
-      k.sound?.verarbeite({ type: 'shot' });
+      k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
       if (n.hit && n.target) {
-        k.sound?.verarbeite({ type: 'damage' });
+        k.sound?.verarbeite({ type: 'damage', x: n.hitX, y: n.hitY, verzoegerung: 0.05 });
       }
     },
   },
@@ -352,13 +386,13 @@ export const EREIGNIS_WIRKUNGEN = {
        * gilt unverändert.
        */
       k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0);
-      k.sound?.verarbeite({ type: 'shot' });
+      k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
     },
     // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
     // zeichnen, aber die Vorhersage ist damit erledigt und der Schuss zu hören.
-    online: (k) => {
+    online: (k, n) => {
       k.shotPredictor?.resolve();
-      k.sound?.verarbeite({ type: 'shot' });
+      k.sound?.verarbeite({ type: 'shot', weaponId: n?.weaponId, playerId: n?.playerId, ...ortVon(k, n?.playerId) });
     },
   },
 
@@ -439,6 +473,7 @@ export const EREIGNIS_WIRKUNGEN = {
   fuse_armed: beide((k, n) => {
     k.hud?.log('Eine Granate liegt und tickt …', 'neutral');
     k.renderer?.addFlash(n.x, n.y, 10, { color: '#ffd166' });
+    k.sound?.verarbeite({ type: 'ticken', x: n.x, y: n.y });
   }),
 
   fuse_expired: beide((k, n) => {
@@ -630,6 +665,7 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   landed: beide((k, n) => {
     k.hud?.log(`${k.nameOf?.(n.playerId)} ist gelandet`);
+    k.sound?.verarbeite({ type: 'landed', ...ortVon(k, n.playerId) });
   }),
 
   crate_landed: {
@@ -694,6 +730,7 @@ export const EREIGNIS_WIRKUNGEN = {
         : reward?.kind === 'trap' ? `${who?.label ?? 'Spieler'} löst eine Sprengfalle aus`
         : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
       k.hud?.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
+      k.sound?.verarbeite({ type: 'kiste', ...ortVon(k, n.playerId) });
     },
     online: (k, n) => {
       const who = k.nameOf?.(n.playerId);
@@ -704,6 +741,7 @@ export const EREIGNIS_WIRKUNGEN = {
         : reward?.kind === 'trap' ? `${who} löst eine Sprengfalle aus`
         : `${who} öffnet eine leere Kiste`;
       k.hud?.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
+      k.sound?.verarbeite({ type: 'kiste', ...ortVon(k, n.playerId) });
     },
   },
 
@@ -760,9 +798,11 @@ export const EREIGNIS_WIRKUNGEN = {
     lokal: (k, n) => {
       const victim = k.match?.players?.find(player => player.entityId === n.entityId);
       k.hud?.log(`${victim?.label ?? `Entity ${n.entityId}`} ausgeschaltet`, 'danger');
+      k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n.entityId) });
     },
-    online: (k) => {
+    online: (k, n) => {
       k.hud?.log('Eine Einheit wurde ausgeschaltet', 'danger');
+      k.sound?.verarbeite({ type: 'tod', ...ortVon(k, n?.entityId) });
     },
   },
 
@@ -775,6 +815,7 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   fall_damage: beide((k, n) => {
     k.hud?.log(`Sturzschaden: ${Math.round(n.damage)}`, 'danger');
+    k.sound?.verarbeite({ type: 'aufprall', staerke: Math.min(1, n.damage / 40), ...ortVon(k, n.entityId) });
   }),
 
   round_start: beide((k, n) => {
