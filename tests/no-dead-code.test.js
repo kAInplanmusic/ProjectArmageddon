@@ -234,6 +234,9 @@ test('Die entfernten Doppel-Engines sind nicht zurückgekehrt', () => {
     // Auftragswarteschlange 2.7: ballisticsWasm.js war ein Stub, der nur
     // ballistics.js re-exportierte; isWasmSupported hatte 0 Aufrufer.
     'src/engine/physics/ballisticsWasm.js',
+    // Auftragswarteschlange 3.9: ProjectilePool war eine tote Umsetzung der
+    // lebenden Projektil-Logik (projectileSystem.js) — nur Re-Exporte.
+    'src/engine/pooling/projectilePool.js',
   ];
 
   for (const relat of verboten) {

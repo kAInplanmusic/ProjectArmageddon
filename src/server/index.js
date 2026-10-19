@@ -22,7 +22,6 @@ export { LootSystem } from '../engine/systems/lootSystem.js';
 export { WaterField } from '../engine/waterField.js';
 export { EventBus } from '../engine/events.js';
 export { PlayerInventory } from '../engine/inventory.js';
-export { ProjectilePool } from '../engine/pooling/projectilePool.js';
 export { CollisionMask } from '../engine/terrain/collisionMask.js';
 export { computeTrajectory, ccdRaycast } from '../engine/physics/ballistics.js';
 

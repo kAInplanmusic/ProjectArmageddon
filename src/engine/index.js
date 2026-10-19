@@ -15,9 +15,6 @@ export { TurnSystem, getTurnDurationForPlayerCount } from './systems/turnSystem.
 export { DamageSystem } from './systems/damageSystem.js';
 export { PhysicsSystem, computeLinearDragPosition } from './systems/physicsSystem.js';
 
-// Pooling
-export { ProjectilePool } from './pooling/projectilePool.js';
-
 // Terrain
 export { CollisionMask } from './terrain/collisionMask.js';
 
