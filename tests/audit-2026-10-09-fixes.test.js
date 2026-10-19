@@ -202,3 +202,19 @@ test('B-3: Effekte und Partikel altern nach Zeitschritt, nicht nach Bild', () =>
   assert.ok(rendererQuelle.includes('this.time += dt'), 'Renderer-Zeit muss mit dt laufen');
   assert.ok(mainQuelle.includes('this.#render(delta / FIXED_TIMESTEP)'), 'main.js muss dt als Simulationsschritte übergeben');
 });
+
+test('C-1b: Die Zustandsdatei mit Spieler-Tokens ist nur für den Owner lesbar', () => {
+  /*
+   * Audit-Befund: Spieler-Tokens lagen im Klartext in `.pa-state/lobbies.json`.
+   * Ein echtes Hashing wäre eine Formatänderung; die sofortige Vorsorge ist die
+   * Dateiberechtigung 0600 beim atomaren Schreiben (temp + rename). Damit liest
+   * nur der Server-Prozess-Eigentümer die Tokens.
+   */
+  const persistenceQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'server', 'persistence.js'), 'utf8')
+  );
+  assert.ok(
+    persistenceQuelle.includes('mode: 0o600'),
+    'writeFileSync muss die Zustandsdatei mit mode 0o600 schreiben'
+  );
+});

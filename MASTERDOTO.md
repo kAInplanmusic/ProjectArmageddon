@@ -3107,7 +3107,7 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
       Charakters, NICHT dieser Drop — das sind zwei verschiedene Dinge.
 
 ### F. Darstellung
-- [x] **Landschaftsgeneration per KI.** 60 Kulissen (12 Biome a 5 Varianten) als
+- [x] **Landschaftsgeneration per KI.** 80 Kulissen (16 Biome a 5 Varianten) als
       Bilder vorab erzeugt und eingebaut, dazu ein generativer Baukasten aus Himmel,
       Wasser, Ambiente und Landmarken, der sich jeder Kartengroesse anpasst. Der
       Prompt steht im Katalog; nichts davon entsteht zur Laufzeit — Determinismus

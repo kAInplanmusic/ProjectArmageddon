@@ -48,7 +48,14 @@ export class PersistenceStore {
         ...payload,
       };
       const temp = `${this.#path}.${randomUUID().slice(0, 8)}.tmp`;
-      writeFileSync(temp, JSON.stringify(document), 'utf8');
+      /*
+       * FUND (belegt, Audit 2026-10-09, C-1b): Die Datei enthält Spieler-Tokens
+       * im Klartext. Ein Hashing wäre eine Formatänderung (der Server müsste beim
+       * Beitritt hashen statt vergleichen); die sofortige Vorsorge ist die
+       * Berechtigung 0600 — nur der Eigentümer des Server-Prozesses liest die
+       * Tokens. `rename` erhält die Rechte der Temp-Datei.
+       */
+      writeFileSync(temp, JSON.stringify(document), { encoding: 'utf8', mode: 0o600 });
       renameSync(temp, this.#path);
       this.#lastError = null;
       return true;
