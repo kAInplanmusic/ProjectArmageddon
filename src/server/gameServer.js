@@ -648,7 +648,24 @@ class LobbySession {
       }
     );
 
-    if (!command.valid) return { ok: false, errors: command.errors };
+    if (!command.valid) {
+      /*
+       * UX-9 (Warteschlange): „Spieler ist nicht am Zug" allein lässt den
+       * Spieler raten, wann er wieder darf. Die Restzugzeit steht im Zustand
+       * und wird in die Ablehnung geschrieben.
+       */
+      if (command.errors.includes('Spieler ist nicht am Zug')) {
+        const zustand = this.match.getState();
+        const restMs = Math.max(0, (zustand.turnDurationMs ?? 0) - (zustand.turnElapsedMs ?? 0));
+        return {
+          ok: false,
+          errors: command.errors.map(fehler => (fehler === 'Spieler ist nicht am Zug'
+            ? `${fehler} (noch ${Math.ceil(restMs / 1000)} s Zugzeit)`
+            : fehler)),
+        };
+      }
+      return { ok: false, errors: command.errors };
+    }
 
     /*
      * Die Waffe wird VOR dem Schuss aufgelöst und so aufgezeichnet.

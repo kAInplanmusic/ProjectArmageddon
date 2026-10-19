@@ -351,9 +351,9 @@ class Game {
    * Verlässt das laufende Match und kehrt ins Menü zurück.
    *
    * Beide Wege (Taste `R` und der HUD-Knopf) laufen hier zusammen — es gibt
-   * nur EINE Umsetzung. Der Unterschied liegt allein in der Rückfrage: Ein
-   * Tastendruck kann ein Fehlgriff sein, ein Klick auf einen beschrifteten
-   * Knopf ist eine Absicht. Deshalb fragt nur der Knopf nach.
+   * nur EINE Umsetzung. Beide Wege fragen nach: Ein Tastendruck kann ein
+   * Fehlgriff sein, und auch ein Klick soll die Partie nicht ohne Rückfrage
+   * beenden (UX-4).
    *
    * @param {{frage?: boolean}} [optionen] - `frage: true` verlangt eine
    *   Bestätigung, bevor abgebrochen wird.

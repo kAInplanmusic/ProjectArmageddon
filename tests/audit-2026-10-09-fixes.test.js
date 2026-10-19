@@ -336,3 +336,48 @@ test('C-7/2.8: Client- und Server-Barrel duplizieren keine shared-Exporte', () =
     'Der Server-Barrel muss aus dem shared-Barrel re-exportieren'
   );
 });
+
+test('UX-3: W/S sind halten-fähig — die System-Wiederholung wirkt bei Krafttasten', () => {
+  /*
+   * Warteschlange UX-3: `event.repeat` wurde pauschal verworfen; Kraft ändern
+   * hieß 45-mal tippen. Für die Krafttasten (W/S/Pfeile hoch/runter) wirkt die
+   * System-Wiederholung jetzt fortlaufend, alle anderen Tasten bleiben einmalig.
+   */
+  const inputQuelle = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'client', 'input.js'), 'utf8')
+  );
+  assert.ok(
+    inputQuelle.includes('if (event.repeat && !krafttaste) return'),
+    'input.js muss die Wiederholung nur für Nicht-Krafttasten verwerfen'
+  );
+});
+
+test('UX-4: abortMatch-Kommentar stimmt mit dem Verhalten überein (beide fragen)', () => {
+  /*
+   * Warteschlange UX-4: Der Kommentar behauptete „nur der Knopf fragt", beide
+   * Aufrufer (R-Taste und HUD-Knopf) rufen aber mit `frage: true`. Die
+   * Rückfrage auf beiden Wegen ist die sicherere Wahl — der Kommentar wird
+   * angepasst, nicht das Verhalten.
+   */
+  const mainRoh = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
+  assert.ok(
+    mainRoh.includes('Beide Wege fragen nach'),
+    'Der abortMatch-Kommentar muss beide Wege als fragend beschreiben'
+  );
+  assert.ok(
+    !mainRoh.includes('fragt nur der Knopf'),
+    'Die falsche Aussage „nur der Knopf fragt" muss weg'
+  );
+});
+
+test('UX-9: Die Nicht-am-Zug-Ablehnung nennt die Restzugzeit', () => {
+  /*
+   * Warteschlange UX-9: Wer zu früh schießt, bekam nur „Spieler ist nicht am
+   * Zug" — ohne zu wissen, wann er wieder darf. Der Server ergänzt die
+   * Restzugzeit aus dem Zustand.
+   */
+  assert.ok(
+    gameServerQuelle.includes('s Zugzeit)'),
+    'Der Server muss die Restzugzeit in die Ablehnung schreiben'
+  );
+});
