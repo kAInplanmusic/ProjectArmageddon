@@ -298,7 +298,7 @@ export function zeichneWaffeInHand(ctx, ikone, p) {
 export function zeichneWaffeSprite(ctx, sp, par, pose, p) {
   const links = Math.cos(p.winkel) < 0;
   const k = par.zelle / 128;
-  const gx = sp.grip.x * k;
+  const gx = (sp.grip.x + par.griff) * k;
   const gy = sp.grip.y * k;
   ctx.save();
   ctx.translate(p.handX, p.handY);
@@ -307,6 +307,8 @@ export function zeichneWaffeSprite(ctx, sp, par, pose, p) {
   ctx.translate(pose.vor, -pose.hoch);
   if (pose.drehung !== 0) ctx.rotate(-pose.drehung);
   if (pose.skala !== 1) ctx.scale(pose.skala, pose.skala);
+  // Achse Griff -> Mündung auf den Zielstrahl legen (geschätzte Anker sind oft leicht geneigt).
+  if (sp.achse !== 0) ctx.rotate(-sp.achse);
 
   // Dunkler Schlagschatten hebt die Waffe vom Sprite ab.
   ctx.globalAlpha = 0.4;
@@ -332,8 +334,8 @@ export function zeichneWaffeSprite(ctx, sp, par, pose, p) {
   }
   ctx.globalAlpha = 1;
 
-  const mx = (sp.muzzle.x - sp.grip.x) * k;
-  const my = (sp.muzzle.y - sp.grip.y) * k;
+  const mx = (sp.mx - par.griff) * k;
+  const my = sp.my * k;
   if (pose.glanz > 0) {
     // Aufladeglanz: bei Selbstwirkung um die Waffenmitte, sonst an der Mündung.
     const selbst = par.art === 'selbst';

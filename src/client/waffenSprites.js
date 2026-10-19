@@ -25,6 +25,8 @@ export const GESCHOSS_KANTE = 32;
 const ZELLE = 128;
 const GLANZ_KANTE = 32;
 
+/** Größte Neigung (Radiant), die ausgerichtet wird; stärker geneigte Anker gelten als Fehlschätzung. */
+const MAX_ACHSE = 1.0;
 const STANDARD_GRIFF = { x: 38, y: 64 };
 const STANDARD_MUENDUNG = { x: 118, y: 64 };
 
@@ -38,14 +40,28 @@ const STANDARD_MUENDUNG = { x: 118, y: 64 };
 export function zellenFuer(manifest, id) {
   const w = manifest?.waffen?.[id];
   if (!w?.held || !w.silhouette) return null;
+  let grip = w.anchor?.grip ?? STANDARD_GRIFF;
+  let muzzle = w.anchor?.muzzle ?? STANDARD_MUENDUNG;
+  const c = w.content;
+  if (w.form === 'objekt' && w.anchor?.source === 'geometrie' && c) {
+    /*
+     * Lange Objekte sind im Atlas schon auf ihre Hauptachse gedreht: Die Achse liegt waagerecht
+     * durch die Mitte der Umrisse. Die geschätzten Höhen der Anker streuen (Griffhöcker,
+     * Läufe) und würden die Waffe gegen den Zielstrahl neigen, deshalb liegen beide Anker auf der Mittellinie.
+     */
+    const cy = c.y + c.h / 2;
+    grip = { x: grip.x, y: cy };
+    muzzle = { x: muzzle.x, y: cy };
+  }
   return {
     atlas: w.held.atlas,
     held: w.held,
     silhouette: w.silhouette,
     projectile: w.projectile ?? null,
-    grip: w.anchor?.grip ?? STANDARD_GRIFF,
-    muzzle: w.anchor?.muzzle ?? STANDARD_MUENDUNG,
+    grip,
+    muzzle,
     flashColor: typeof w.flashColor === 'string' ? w.flashColor : '#ffd166',
+    form: typeof w.form === 'string' ? w.form : '',
   };
 }
 
@@ -108,6 +124,11 @@ export function erzeugeWaffenSprites(abh) {
     try {
       const faktor = CACHE_KANTE / ZELLE;
       const silhouette = kopie(atlas, z.silhouette, CACHE_KANTE);
+      const dx = z.muzzle.x - z.grip.x;
+      const dy = z.muzzle.y - z.grip.y;
+      const winkel = Math.atan2(dy, dx);
+      const achse = Math.max(-MAX_ACHSE, Math.min(MAX_ACHSE, winkel));
+      const laenge = Math.hypot(dx, dy);
       const gesamt = {
         id,
         held: kopie(atlas, z.held, CACHE_KANTE),
@@ -120,7 +141,16 @@ export function erzeugeWaffenSprites(abh) {
         /** Anker in Zellenpixeln des 128er-Rasters (0,0 = links oben). */
         grip: { x: z.grip.x, y: z.grip.y },
         muzzle: { x: z.muzzle.x, y: z.muzzle.y },
+        /**
+         * Neigung der Achse Griff -> Mündung in der Zelle (Radiant, begrenzt). Die Waffe wird um
+         * den Griff so gedreht, dass die Mündung auf dem Zielstrahl liegt; `mx`/`my` ist die
+         * Mündung in diesem ausgerichteten Rahmen (Zellpixel ab dem Griff).
+         */
+        achse,
+        mx: laenge * Math.cos(winkel - achse),
+        my: laenge * Math.sin(winkel - achse),
         flashColor: z.flashColor,
+        form: z.form,
         faktor,
       };
       eintraege.set(id, gesamt);

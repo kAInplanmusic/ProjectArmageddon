@@ -167,8 +167,15 @@ test('Anker grip und muzzle liegen innerhalb der Zelle, content innerhalb der De
     const c = e.content;
     assert.ok(c.x >= 0 && c.y >= 0 && c.x + c.w <= 128 && c.y + c.h <= 128, `${w.id}: content außerhalb`);
     assert.ok(Math.max(c.w, c.h) >= 100 && Math.max(c.w, c.h) <= 124, `${w.id}: größte Kante ${Math.max(c.w, c.h)} nicht ~90 %`);
-    // Mündung sitzt am rechten Rand der Waffe (nach rechts zeigend)
-    assert.ok(e.anchor.muzzle.x >= c.x + c.w - 6, `${w.id}: Mündung nicht am rechten Rand`);
+    if (e.anchor.source === 'korrektur') {
+      // Von Hand gesetzter Anker (z. B. schräges Rohr einer Kanone): Die Mündung liegt innerhalb der Umrisse der Waffe;
+      // die Animation dreht die Waffe um den Griff so, dass sie auf dem Zielstrahl liegt.
+      assert.ok(e.anchor.muzzle.x >= c.x && e.anchor.muzzle.x <= c.x + c.w
+        && e.anchor.muzzle.y >= c.y && e.anchor.muzzle.y <= c.y + c.h, `${w.id}: Mündung (korrigiert) außerhalb des Waffenumrisses`);
+    } else {
+      // Mündung sitzt am rechten Rand der Waffe (nach rechts zeigend)
+      assert.ok(e.anchor.muzzle.x >= c.x + c.w - 6, `${w.id}: Mündung nicht am rechten Rand`);
+    }
   }
 });
 

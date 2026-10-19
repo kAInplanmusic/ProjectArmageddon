@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import {
-  KATEGORIEN, PARAMETER, KORREKTUREN, waffenParameter, waffenPose, neuePose, neueZeiten, handPunkt,
+  KATEGORIEN, PARAMETER, KORREKTUREN, waffenParameter, parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
   geschossDarstellung, geschossWinkel, flugWinkel, SchweifRing, SCHWEIF_LAENGE, GeschossLagen,
 } from '../src/client/waffenAnimation.js';
 import { erzeugeWaffenSprites, zellenFuer } from '../src/client/waffenSprites.js';
@@ -68,6 +68,26 @@ test('Korrekturen je Waffen-ID überschreiben einzelne Felder, Selbstwirkung hat
     assert.ok(WEAPONS.some(w => w.id === id), `Korrektur für unbekannte Waffe ${id}`);
     assert.ok(typeof k === 'object');
   }
+});
+
+test('Wurfwaffen: Wurfbewegung ohne Mündungsblitz; Kachel-Waffen kleiner und weiter vorn', () => {
+  const wurf = waffenParameter('heavy_ranged', 'pa_zzz', false, 'objekt', true);
+  assert.equal(wurf.art, 'hieb');
+  assert.equal(wurf.blitzForm, 'keiner');
+  const aus = pose(wurf, { ...RUHE, seitSchuss: 0.15 });
+  assert.equal(aus.blitz, 0);
+  assert.ok(Math.abs(aus.drehung) > 0.2, 'Wurf schwingt');
+  const gewehr = waffenParameter('heavy_ranged', 'pa_zzz', false, 'objekt', false);
+  assert.equal(gewehr.blitzForm, 'kegel');
+  const kachel = waffenParameter('magic', 'pa_zzz', false, 'kachel');
+  assert.ok(kachel.zelle < PARAMETER.magic.zelle && kachel.handVor > PARAMETER.magic.handVor);
+  assert.equal(kachel.griff, 0, 'Kacheln haben keinen Schaftgriff');
+  assert.equal(waffenParameter('ranged', 'pa_zzz', false, 'objekt').griff, PARAMETER.ranged.griffObjekt);
+  // Aus Katalogwaffe und Sprite-Eintrag: Granate mit Zünder wird geworfen, Selbstwirkung nie mit Blitz.
+  const granate = WEAPONS.find(w => w.id === 'pa_047');
+  assert.equal(parameterFuerWaffe(granate, { form: 'kompakt', projektilInfo: { art: 'ding' } }).blitzForm, 'keiner');
+  const selbst = WEAPONS.find(w => w.damage === 0);
+  assert.equal(parameterFuerWaffe(selbst, { form: 'kachel', projektilInfo: null }).art, 'selbst');
 });
 
 test('Zeitverlauf ist deterministisch (gleiche Eingabe, gleiche Pose)', () => {
@@ -305,9 +325,11 @@ test('Geschosswinkel: Flugrichtung, Zellenversatz, Eigenrotation nur ohne reduzi
   assert.equal(geschossWinkel(1, dreht, 0.25, true), 0.5);
 });
 
-test('Eigenrotation für Granaten, Steine, Nahkampf-Wurfdinge und Bumerangs, nicht für Raketen und Kugeln', () => {
+test('Eigenrotation für Granaten mit Zünder, Steine, Nahkampf-Wurfdinge und Bumerangs, nicht für Geschützgranaten, Raketen und Kugeln', () => {
   const dreht = (waffe, proj) => geschossDarstellung(waffe, proj).spin > 0;
-  assert.ok(dreht({ id: 'a', category: 'ranged' }, { art: 'granate' }));
+  assert.ok(dreht({ id: 'a', category: 'ranged', fuseTime: 3 }, { art: 'ding' }), 'Handgranate trudelt');
+  assert.ok(dreht({ id: 'a', category: 'ranged', bounces: 2 }, { art: 'ding' }), 'Abpraller trudelt');
+  assert.ok(!dreht({ id: 'a', category: 'ranged', fuseTime: 0 }, { art: 'granate' }), 'Geschützgranate fliegt gerade');
   assert.ok(dreht({ id: 'a', category: 'elemental' }, { art: 'stein' }));
   assert.ok(dreht({ id: 'a', category: 'melee' }, { art: 'ding', spin: true }));
   assert.ok(dreht({ id: 'a', displayName: 'Bumerang', category: 'ranged' }, { art: 'ding' }));

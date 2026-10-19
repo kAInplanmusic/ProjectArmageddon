@@ -2773,14 +2773,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 62,
+     "y": 76
     },
     "muzzle": {
-     "x": 115,
-     "y": 63
+     "x": 104,
+     "y": 24
     },
-    "source": "standard"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "granate",
@@ -2798,7 +2798,7 @@
     "h": 32
    },
    "flashColor": "#eb9648",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "ranged",
     "x": 128,
@@ -4264,14 +4264,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 34,
+     "y": 64
     },
     "muzzle": {
-     "x": 120,
-     "y": 63
+     "x": 112,
+     "y": 56
     },
-    "source": "standard"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "kugel",
@@ -4690,14 +4690,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 86
     },
     "muzzle": {
-     "x": 119,
-     "y": 63
+     "x": 104,
+     "y": 12
     },
-    "source": "standard"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "granate",
@@ -4715,7 +4715,7 @@
     "h": 32
    },
    "flashColor": "#ebd165",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "elemental",
     "x": 640,
@@ -8206,18 +8206,18 @@
    },
    "anchor": {
     "grip": {
-     "x": 54,
-     "y": 63
+     "x": 56,
+     "y": 64
     },
     "muzzle": {
-     "x": 112,
-     "y": 63
+     "x": 106,
+     "y": 62
     },
-    "source": "standard"
+    "source": "korrektur"
    },
    "projectile": null,
    "flashColor": "#eb893d",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "tech",
     "x": 384,

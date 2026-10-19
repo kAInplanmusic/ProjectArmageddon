@@ -353,19 +353,23 @@ export function zeichneMuendungsblitz(ctx, form, g, a, farbe) {
   ctx.strokeStyle = farbe;
   switch (form) {
     case 'kegel': {
+      ctx.globalAlpha = 0.3 * a;
+      ctx.beginPath();
+      ctx.arc(l * 0.12, 0, l * 0.42, 0, Math.PI * 2);
+      ctx.fill();
       ctx.globalAlpha = 0.75 * a;
       ctx.beginPath();
-      ctx.moveTo(-1, -l * 0.2);
-      ctx.lineTo(l, 0);
-      ctx.lineTo(-1, l * 0.2);
+      ctx.moveTo(-1, -l * 0.3);
+      ctx.quadraticCurveTo(l * 0.45, -l * 0.14, l, 0);
+      ctx.quadraticCurveTo(l * 0.45, l * 0.14, -1, l * 0.3);
       ctx.closePath();
       ctx.fill();
       ctx.globalAlpha = 0.9 * a;
       ctx.fillStyle = '#fffbe6';
       ctx.beginPath();
-      ctx.moveTo(-1, -l * 0.09);
-      ctx.lineTo(l * 0.6, 0);
-      ctx.lineTo(-1, l * 0.09);
+      ctx.moveTo(-1, -l * 0.13);
+      ctx.lineTo(l * 0.62, 0);
+      ctx.lineTo(-1, l * 0.13);
       ctx.closePath();
       ctx.fill();
       ctx.beginPath();

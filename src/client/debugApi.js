@@ -17,6 +17,7 @@ import { MAP_WIDTH, MAP_HEIGHT, WATER_SCALE } from '../engine/match.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import { WEAPONS, getWeapon } from '../shared/config/weapons.js';
 import { buildEffect } from '../engine/specials.js';
+import { waffenSpritesZustand } from './waffenSprites.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import {
   kennzahlen as erfolgsKennzahlen,
@@ -115,6 +116,19 @@ export function exposeDebugApi(game) {
       selectWeapon: index => game.selectWeapon(index),
       /** Waffe über ihre ID wählen (wie im Waffenmenü). */
       selectWeaponById: weaponId => game.selectWeaponById(weaponId),
+      /**
+       * Waffen-Animation (Diagnose, Tests): Zustand des Sprite-Laders, Zähler des
+       * letzten Bildes, die letzte Pose je Figur und die fliegenden Geschosse.
+       */
+      waffenAnimation: () => ({
+        lader: waffenSpritesZustand(),
+        stat: { ...game.renderer.waffenStat },
+        reduziert: game.renderer.reducedMotion,
+        posen: Object.fromEntries(game.renderer.waffenDiagnose),
+        geschosse: [...game.renderer.geschosse.lagen].map(([id, g]) => ({
+          id, waffeId: g.waffeId, sprite: Boolean(g.sp), winkel: g.winkel, flug: g.flug, schweif: g.ring.anzahl,
+        })),
+      }),
       /** Waffenmenü (für Tests). */
       waffenMenue: () => game.waffenMenue,
       /** Waffe abwerfen (Position wie in der Liste). */

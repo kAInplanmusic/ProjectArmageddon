@@ -44,6 +44,8 @@ export const ZELLE = 128;
  *
  *   zelle        Weltpixel, die eine 128er-Zelle breit gezeichnet wird (Waffengröße)
  *   handVor      Handposition vor der Körpermitte in Blickrichtung
+ *   griffObjekt  Zellpixel, um die der Griff bei langen Objekt-Waffen zum Schaft hin rückt (negativ = hinten);
+ *                bei kompakten Sprites und Kacheln 0
  *   handHoch     Handposition über (negativ: unter) der Standardhöhe
  *   idleDreh     Pendeln der Waffe im Stand (Amplitude), idleAtem Heben/Senken in px, idleTempo in Hz
  *   ziehenDauer  Einschwingen von unten beim Ziehen/Wechseln; ziehenTief Startversatz, ziehenDreh Startdrehung
@@ -56,6 +58,7 @@ const BASIS = Object.freeze({
   zelle: 28,
   handVor: 3,
   handHoch: 0,
+  griffObjekt: -8,
   idleDreh: 0.03,
   idleAtem: 0.4,
   idleTempo: 0.45,
@@ -93,15 +96,15 @@ function kategorie(werte) {
  */
 export const PARAMETER = Object.freeze({
   melee: kategorie({
-    zelle: 30, handVor: 2, handHoch: -1, art: 'hieb', schussDauer: 0.55, kick: 5,
+    zelle: 30, handVor: 2, handHoch: -1, griffObjekt: -16, art: 'hieb', schussDauer: 0.55, kick: 5,
     ziehenDreh: 1.2, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0,
   }),
   ranged: kategorie({
-    zelle: 28, art: 'kurz', schussDauer: 0.3, kick: 3.2, rueck: 0.2, wippen: 0.05, wippHz: 13,
+    zelle: 28, griffObjekt: -10, art: 'kurz', schussDauer: 0.3, kick: 3.2, rueck: 0.2, wippen: 0.05, wippHz: 13,
     blitzForm: 'kegel', blitzGroesse: 11, blitzDauer: 0.09,
   }),
   heavy_ranged: kategorie({
-    zelle: 34, handVor: 1.5, handHoch: 1.5, idleDreh: 0.018, idleAtem: 0.3, ziehenDauer: 0.3,
+    zelle: 34, handVor: 1.5, handHoch: 1.5, griffObjekt: -12, idleDreh: 0.018, idleAtem: 0.3, ziehenDauer: 0.3,
     art: 'schwer', schussDauer: 0.6, kick: 6, rueck: 0.3, wippen: 0.07, wippHz: 6.5,
     blitzForm: 'kegel', blitzGroesse: 17, blitzDauer: 0.15,
   }),
@@ -134,11 +137,30 @@ export const PARAMETER = Object.freeze({
  * (`zelle`, `handVor`, `handHoch`, `art`, `kick`, `blitzForm` ...). Ergänzt wird
  * nach der Sichtprüfung der Prüfbögen (`docs`: „Waffen-Animation").
  */
-export const KORREKTUREN = Object.freeze({});
+export const KORREKTUREN = Object.freeze({
+  // Bumerang, Doppelkopf-Axt, Wurfklingen: lange Wurfwaffen, kleiner als die Schwerwaffen-Zelle.
+  pa_049: { zelle: 27 },
+  pa_050: { zelle: 29, handVor: 2.5 },
+  pa_051: { zelle: 28 },
+  // Feldkanone: schwere Waffe, langer Rückstoß mit Nachschwingen.
+  pa_039: { zelle: 32, art: 'schwer', schussDauer: 0.7, kick: 7, rueck: 0.32, wippen: 0.07, wippHz: 6, blitzForm: 'kegel', blitzGroesse: 18, blitzDauer: 0.15 },
+});
 
 /** Parametersatz für die Selbstwirkung: Heben und Puls, kein Blitz (Waffe ohne Schaden und ohne Geschoss). */
 const SELBST = Object.freeze({
   art: 'selbst', schussDauer: 0.5, kick: 0, heben: 0.45, aufladen: 0.2, blitzForm: 'keiner',
+});
+
+/**
+ * Kachel-Waffen (Zauber-/Gerätekarten ohne Umriss, `form: 'kachel'` im Manifest)
+ * halten sich schlecht in der Hand: kleiner gezeichnet und weiter vor der Figur,
+ * als schwebe die Karte vor ihr.
+ */
+const KACHEL = basis => ({ zelle: basis.zelle * 0.8, handVor: basis.handVor + 4, handHoch: basis.handHoch + 1 });
+
+/** Geworfene Waffen (das Geschoss ist die Waffe selbst oder eine Granate): Wurfbewegung, kein Mündungsblitz. */
+const WURF = Object.freeze({
+  art: 'hieb', schussDauer: 0.45, kick: 4, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0,
 });
 
 const parameterCache = new Map();
@@ -150,17 +172,38 @@ const parameterCache = new Map();
  * @param {string} kat - Katalogkategorie
  * @param {string} [waffeId]
  * @param {boolean} [selbst] - wirkt auf den Anwender (Schaden 0)
+ * @param {string} [form] - Form des Sprites laut Manifest (`kachel`, `objekt`, `kompakt`)
+ * @param {boolean} [wurf] - die Waffe wird geworfen (Geschoss `ding` oder mit Zünder/Abprallern)
  */
-export function waffenParameter(kat, waffeId = '', selbst = false) {
-  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}`;
+export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false) {
+  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}`;
   let p = parameterCache.get(schluessel);
   if (!p) {
     const basis = PARAMETER[kat] ?? PARAMETER.ranged;
     const korr = KORREKTUREN[waffeId] ?? null;
-    p = Object.freeze({ ...basis, ...(selbst ? SELBST : null), ...korr });
+    p = {
+      ...basis, ...(wurf && !selbst ? WURF : null), ...(selbst ? SELBST : null),
+      ...(form === 'kachel' ? KACHEL(basis) : null), ...korr,
+    };
+    p.griff = form === 'objekt' ? (korr?.griffObjekt ?? basis.griffObjekt) : (korr?.griff ?? 0);
+    Object.freeze(p);
     parameterCache.set(schluessel, p);
   }
   return p;
+}
+
+/**
+ * Der Parametersatz für eine Katalogwaffe samt ihrem Sprite-Eintrag: Selbstwirkung
+ * (Schaden 0), Form des Sprites und Wurfwaffe (Geschoss `ding` oder Zünder) fließen ein.
+ *
+ * @param {{id:string, category:string, damage?:number, fuseTime?:number}} waffe
+ * @param {{form?:string, projektilInfo?:{art?:string}|null}|null} sp
+ */
+export function parameterFuerWaffe(waffe, sp) {
+  return waffenParameter(
+    waffe.category, waffe.id, waffe.damage === 0, sp?.form ?? '',
+    sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0,
+  );
 }
 
 /** Eine frische, wiederverwendbare Pose in Ruhe. */
@@ -356,7 +399,7 @@ export function waffenPose(par, zeit, reduziert, aus) {
  * `spin` = Eigenrotation in rad/s (0 = richtet sich nach der Flugrichtung).
  */
 const GESCHOSS_ART = Object.freeze({
-  granate: { groesse: 17, spin: 8 },
+  granate: { groesse: 17, spin: 0 },
   stein: { groesse: 18, spin: 6 },
   rakete: { groesse: 22, spin: 0 },
   pfeil: { groesse: 20, spin: 0 },
@@ -371,9 +414,11 @@ const GESCHOSS_ART = Object.freeze({
 });
 
 /** Werfbare Dinge drehen sich auch dann, wenn das Manifest es nicht verlangt (Name, nach Katalog). */
-const WURF_NAME = /bumerang|shuriken|wurf|axt|messer|frisbee|diskus|schleuder|hammer/i;
+const WURF_NAME = /bumerang|shuriken|wurf|axt|messer|frisbee|diskus|schleuder|hammer|brocken|meteor/i;
 const SPIN_MELEE = 11;
 const SPIN_STANDARD = 9;
+/** Granaten und Bomben (Zünder oder Abpraller) trudeln; Geschützgranaten fliegen gerade. */
+const SPIN_GRANATE = 8;
 
 /** Korrekturen je Waffen-ID für die Flugdarstellung: `groesse`, `spin`. */
 export const GESCHOSS_KORREKTUREN = Object.freeze({});
@@ -381,7 +426,7 @@ export const GESCHOSS_KORREKTUREN = Object.freeze({});
 /**
  * Wie ein Geschoss gezeichnet wird.
  *
- * @param {{id?:string, displayName?:string, category?:string}} waffe
+ * @param {{id?:string, displayName?:string, category?:string, fuseTime?:number, bounces?:number}} waffe
  * @param {{art?:string, spin?:boolean, angle?:number}|null} proj - Eintrag `projectile` des Manifests
  * @returns {{groesse:number, spin:number, versatz:number}} `versatz`: Drehung der Zelle gegenüber der Flugrichtung (rad)
  */
@@ -389,7 +434,9 @@ export function geschossDarstellung(waffe, proj) {
   const art = GESCHOSS_ART[proj?.art] ?? GESCHOSS_ART.ding;
   let spin = art.spin;
   const wirft = proj?.spin === true || WURF_NAME.test(waffe?.displayName ?? '');
+  const trudelt = (waffe?.fuseTime ?? 0) > 0 || (waffe?.bounces ?? 0) > 0;
   if (spin === 0 && wirft) spin = waffe?.category === 'melee' ? SPIN_MELEE : SPIN_STANDARD;
+  else if (spin === 0 && trudelt && (proj?.art === 'ding' || proj?.art === 'granate')) spin = SPIN_GRANATE;
   const korr = GESCHOSS_KORREKTUREN[waffe?.id] ?? null;
   return {
     groesse: korr?.groesse ?? art.groesse,

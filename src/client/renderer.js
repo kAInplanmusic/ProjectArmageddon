@@ -35,7 +35,7 @@ import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
-  waffenParameter, waffenPose, neuePose, neueZeiten, handPunkt,
+  parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
   GeschossLagen, geschossDarstellung, geschossWinkel,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
@@ -438,7 +438,7 @@ export class Renderer {
   #waffenState(entityId) {
     let z = this.waffenZustand.get(entityId);
     if (!z) {
-      z = { waffeId: '', zieh: -1e9, schuss: -1e9, gesehen: false };
+      z = { waffeId: '', par: null, zieh: -1e9, schuss: -1e9 };
       this.waffenZustand.set(entityId, z);
     }
     return z;
@@ -1473,13 +1473,14 @@ export class Renderer {
    */
   #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color) {
     const ws = this.#waffenState(entity.entityId);
-    if (ws.waffeId !== waffe.id) {
-      // Wechsel: Die neue Waffe schwingt von unten ein (nicht beim allerersten Bild der Figur).
-      if (ws.waffeId !== '') ws.zieh = jetzt;
-      ws.waffeId = waffe.id;
-    }
     const selbst = waffe.damage === 0;
-    const par = waffenParameter(waffe.category, waffe.id, selbst);
+    if (ws.waffeId !== waffe.id || ws.par === null) {
+      // Wechsel: Die neue Waffe schwingt von unten ein (nicht beim allerersten Bild der Figur).
+      if (ws.waffeId !== '' && ws.waffeId !== waffe.id) ws.zieh = jetzt;
+      ws.waffeId = waffe.id;
+      ws.par = parameterFuerWaffe(waffe, sp);
+    }
+    const par = ws.par;
     const zt = this.waffenZeiten;
     zt.idle = jetzt + entity.entityId * 1.7;
     zt.seitZiehen = jetzt - ws.zieh;

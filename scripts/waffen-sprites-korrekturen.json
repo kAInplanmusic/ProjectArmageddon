@@ -170,9 +170,47 @@
   "umkehren": true
  },
  "pa_060": {
-  "umkehren": true
+  "umkehren": true,
+  "grip": [
+   34,
+   64
+  ],
+  "muzzle": [
+   112,
+   56
+  ]
  },
  "pa_063": {
   "umkehren": true
+ },
+ "pa_039": {
+  "grip": [
+   62,
+   76
+  ],
+  "muzzle": [
+   104,
+   24
+  ]
+ },
+ "pa_066": {
+  "grip": [
+   64,
+   86
+  ],
+  "muzzle": [
+   104,
+   12
+  ]
+ },
+ "pa_124": {
+  "grip": [
+   56,
+   64
+  ],
+  "muzzle": [
+   106,
+   62
+  ]
  }
 }
