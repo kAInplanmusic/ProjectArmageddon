@@ -1103,7 +1103,15 @@ export class GameServer {
         }
       });
     });
-    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws' });
+    /*
+     * FUND (belegt, Audit 2026-10-09, A-1/C-1a): Hier stand
+     * `new WebSocketServer({ server, path: '/ws' })`. Der ws-Standard puffert
+     * bis 100 MiB, BEVOR die 512-Byte-Prüfung aus `validation.js` greift —
+     * die Anwendungsgrenze war also eine Absicht ohne Wirkung. 4096 Byte sind
+     * reichlich (die größte echte Clientnachricht liegt unter 200 Byte) und
+     * deckeln den Puffer auf der Protokollebene.
+     */
+    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 4096 });
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
      * `error`-Ereignisse mit.
@@ -1133,6 +1141,20 @@ export class GameServer {
       // ist die Reihenfolge von Verbinden und Trennen aber entscheidend.
       this.logger.debug('client_connected', 'WebSocket-Verbindung geöffnet', {
         connections: this.metrics.connections,
+      });
+      /*
+       * FUND (belegt, Audit 2026-10-09, A-1): Dieser Listener fehlte. Die
+       * Bibliothek `ws` emittiert `error` bei Protokollfehlern (z. B. ungültiges
+       * UTF-8 in einem Textrahmen). Ohne Listener ist das eine unbehandelte
+       * Ausnahme — 4 Bytes beendeten den GESAMTEN Spielserver. Die kaputte
+       * Verbindung wird kontrolliert beendet; der Rest läuft weiter.
+       */
+      socket.on('error', fehler => {
+        this.logger.warn('socket_error', 'WebSocket-Verbindung meldet einen Fehler und wird beendet', {
+          code: fehler?.code ?? null,
+          message: fehler?.message ?? String(fehler),
+        });
+        socket.terminate();
       });
       socket.once('close', () => {
         this.metrics.disconnections += 1;

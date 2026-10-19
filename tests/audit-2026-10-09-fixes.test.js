@@ -23,6 +23,10 @@ const validationQuelle = ohneKommentare(
   fs.readFileSync(path.join(ROOT, 'src', 'shared', 'validation.js'), 'utf8')
 );
 
+const gameServerQuelle = ohneKommentare(
+  fs.readFileSync(path.join(ROOT, 'src', 'server', 'gameServer.js'), 'utf8')
+);
+
 test('B-1: Die Winkelprüfung hängt nicht an der clientValidatedInputs-Liste', () => {
   // Verhalten: Ein ungültiger Winkel wird abgelehnt, ein gültiger angenommen.
   assert.equal(normalizeInput({ angle: 9, power: 50 }).valid, false);
@@ -116,4 +120,26 @@ test('A-3: Persistenz erhält teamId und figureIndex je Sitz über den Roundtrip
   assert.equal(restored.lobby.seats[0].figureIndex, 1, 'figureIndex muss den Roundtrip überleben');
   assert.equal(restored.lobby.seats[1].teamId, 0);
   assert.equal(restored.lobby.seats[1].figureIndex, 0);
+});
+
+test('A-1: Jeder Socket bekommt einen error-Handler, die Nutzlast ist begrenzt', () => {
+  /*
+   * Audit-Befund (PROVEN): Der Server registrierte nur `message` und `close` am
+   * Socket. Ein Protokollfehler (4 Bytes ungültiges UTF-8) emittiert `error` —
+   * ohne Listener eine unbehandelte Ausnahme, die den GESAMTEN Spielserver
+   * beendet. Zusätzlich galt der ws-Standard `maxPayload` von 100 MiB, bevor die
+   * 512-Byte-Prüfung greift.
+   *
+   * Der Quelltext-Wächter erzwingt beides. Der Live-Beweis (Server-Prozess +
+   * 4 Bytes) würde im Testprozess selbst crashen und bleibt der Audit-Sonde
+   * vorbehalten.
+   */
+  assert.ok(
+    gameServerQuelle.includes("socket.on('error'"),
+    'Jeder Socket braucht einen error-Handler, sonst beenden 4 Bytes den Server'
+  );
+  assert.ok(
+    gameServerQuelle.includes('maxPayload'),
+    'maxPayload muss gesetzt sein, damit nicht 100 MiB gepuffert werden, bevor die 512-Byte-Prüfung greift'
+  );
 });
