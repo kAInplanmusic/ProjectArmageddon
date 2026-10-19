@@ -1,0 +1,9838 @@
+{
+ "version": 1,
+ "generator": "scripts/waffen-sprites.py",
+ "facing": "right",
+ "hinweis": "Zellen {x,y,w,h} in Atlas-Pixeln; Anker in Zellen-Pixeln der held-Zelle (0,0 = links oben). rotation = Grad gegen den Uhrzeigersinn, mit der das Original gedreht wurde (nach optionaler Spiegelung, gespiegelt:true). projectile.angle = Drehung (Grad) der Zelle gegenueber der Flugrichtung (0 = Spitze rechts).",
+ "zellen": {
+  "held": 128,
+  "silhouette": 128,
+  "icon": 128,
+  "projectile": 32
+ },
+ "atlanten": {
+  "melee": {
+   "datei": "atlas_melee.png",
+   "w": 1024,
+   "h": 800,
+   "waffen": 21
+  },
+  "ranged": {
+   "datei": "atlas_ranged.png",
+   "w": 1024,
+   "h": 800,
+   "waffen": 19
+  },
+  "heavy_ranged": {
+   "datei": "atlas_heavy_ranged.png",
+   "w": 1024,
+   "h": 800,
+   "waffen": 20
+  },
+  "elemental": {
+   "datei": "atlas_elemental.png",
+   "w": 1024,
+   "h": 800,
+   "waffen": 20
+  },
+  "magic": {
+   "datei": "atlas_magic.png",
+   "w": 1024,
+   "h": 1056,
+   "waffen": 30
+  },
+  "tech": {
+   "datei": "atlas_tech.png",
+   "w": 1024,
+   "h": 800,
+   "waffen": 20
+  },
+  "utility": {
+   "datei": "atlas_utility.png",
+   "w": 1024,
+   "h": 544,
+   "waffen": 10
+  },
+  "ultimate": {
+   "datei": "atlas_ultimate.png",
+   "w": 1024,
+   "h": 544,
+   "waffen": 10
+  },
+  "icons": {
+   "datei": "atlas_icons.png",
+   "w": 2048,
+   "h": 1280,
+   "waffen": 150
+  }
+ },
+ "waffen": {
+  "pa_001": {
+   "id": "pa_001",
+   "name": "Baseballschläger",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9033.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 49.0,
+   "gespiegelt": true,
+   "streckung": 4.85,
+   "content": {
+    "x": 6,
+    "y": 49,
+    "w": 115,
+    "h": 29
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 7
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 0,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba364",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_002": {
+   "id": "pa_002",
+   "name": "Feuerfaust",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9034.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 85.6,
+   "gespiegelt": true,
+   "streckung": 2.05,
+   "content": {
+    "x": 6,
+    "y": 29,
+    "w": 115,
+    "h": 70
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 33
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 17
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 32,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb7e1c",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_003": {
+   "id": "pa_003",
+   "name": "Hakenklinge",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9036.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 46.6,
+   "gespiegelt": true,
+   "streckung": 4.04,
+   "content": {
+    "x": 6,
+    "y": 44,
+    "w": 115,
+    "h": 40
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 65
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 64,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba55e",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_004": {
+   "id": "pa_004",
+   "name": "Piratenhaken",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9037.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 47.3,
+   "gespiegelt": true,
+   "streckung": 3.79,
+   "content": {
+    "x": 6,
+    "y": 41,
+    "w": 115,
+    "h": 45
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 62
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 58
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 12
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 96,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb9453",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_005": {
+   "id": "pa_005",
+   "name": "Morgenstern",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9040.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 43.9,
+   "gespiegelt": false,
+   "streckung": 3.13,
+   "content": {
+    "x": 6,
+    "y": 37,
+    "w": 115,
+    "h": 53
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 65
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 66
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 13
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 128,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb894f",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_006": {
+   "id": "pa_006",
+   "name": "Schaufel",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9041.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 48.6,
+   "gespiegelt": false,
+   "streckung": 3.07,
+   "content": {
+    "x": 6,
+    "y": 43,
+    "w": 115,
+    "h": 42
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 11
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 160,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb984f",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_007": {
+   "id": "pa_007",
+   "name": "Tonfa",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9042.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -45.3,
+   "gespiegelt": false,
+   "streckung": 3.28,
+   "content": {
+    "x": 6,
+    "y": 41,
+    "w": 115,
+    "h": 45
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 50
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 52
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 12
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 192,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb976a",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 768,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_008": {
+   "id": "pa_008",
+   "name": "Kriegshammer",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9043.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -43.6,
+   "gespiegelt": false,
+   "streckung": 2.01,
+   "content": {
+    "x": 6,
+    "y": 26,
+    "w": 115,
+    "h": 75
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 62
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 56
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 19
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 224,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb7349",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 896,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_009": {
+   "id": "pa_009",
+   "name": "Eispickel",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9044.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 43.4,
+   "gespiegelt": true,
+   "streckung": 2.31,
+   "content": {
+    "x": 6,
+    "y": 24,
+    "w": 115,
+    "h": 80
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 58
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 20
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 256,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#6ac5eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_010": {
+   "id": "pa_010",
+   "name": "Kettensäge",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9045.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 27.4,
+   "gespiegelt": true,
+   "streckung": 1.83,
+   "content": {
+    "x": 6,
+    "y": 26,
+    "w": 115,
+    "h": 75
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 66
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 72
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 19
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 288,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb5035",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_011": {
+   "id": "pa_011",
+   "name": "Zwillingskatanas",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9046.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.04,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 320,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb6247",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_012": {
+   "id": "pa_012",
+   "name": "Katana",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9047.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -47.3,
+   "gespiegelt": true,
+   "streckung": 3.96,
+   "content": {
+    "x": 6,
+    "y": 47,
+    "w": 115,
+    "h": 34
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 62
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 58
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 9
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 352,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba85c",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_013": {
+   "id": "pa_013",
+   "name": "Multifunktionsmesser",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9048.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.22,
+   "content": {
+    "x": 6,
+    "y": 9,
+    "w": 115,
+    "h": 110
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 28
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 384,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb1f2e",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_014": {
+   "id": "pa_014",
+   "name": "Taschenmesser",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9049.heic",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.46,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 416,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#6aaaeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_015": {
+   "id": "pa_015",
+   "name": "Runenschwert",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9050.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 47.3,
+   "gespiegelt": true,
+   "streckung": 5.14,
+   "content": {
+    "x": 6,
+    "y": 44,
+    "w": 115,
+    "h": 40
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 60
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 448,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba356",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_016": {
+   "id": "pa_016",
+   "name": "Rapier",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9051.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -47.5,
+   "gespiegelt": false,
+   "streckung": 4.75,
+   "content": {
+    "x": 6,
+    "y": 44,
+    "w": 114,
+    "h": 39
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 66
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 480,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#57a3eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_017": {
+   "id": "pa_017",
+   "name": "Kampfmesser",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9052.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 45.0,
+   "gespiegelt": true,
+   "streckung": 4.91,
+   "content": {
+    "x": 6,
+    "y": 51,
+    "w": 115,
+    "h": 25
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 61
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 60
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 512,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8d4d",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_018": {
+   "id": "pa_018",
+   "name": "Energieschwert",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9053.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 46.2,
+   "gespiegelt": false,
+   "streckung": 4.93,
+   "content": {
+    "x": 6,
+    "y": 50,
+    "w": 115,
+    "h": 27
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 7
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 544,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#43d2eb",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_019": {
+   "id": "pa_019",
+   "name": "Doppelaxt",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9054.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 43.9,
+   "gespiegelt": false,
+   "streckung": 1.91,
+   "content": {
+    "x": 6,
+    "y": 32,
+    "w": 115,
+    "h": 64
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 65
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 82
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 576,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb7f58",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_020": {
+   "id": "pa_020",
+   "name": "Kriegssense",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9055.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.37,
+   "content": {
+    "x": 9,
+    "y": 6,
+    "w": 109,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 117,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 28,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 608,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#6a82eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "melee",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 384,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_021": {
+   "id": "pa_021",
+   "name": "Gebogene Klinge",
+   "category": "melee",
+   "subcategory": "melee",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9058.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 44.4,
+   "gespiegelt": false,
+   "streckung": 5.53,
+   "content": {
+    "x": 6,
+    "y": 49,
+    "w": 115,
+    "h": 29
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 58
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 7
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "melee",
+    "x": 640,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#6abaeb",
+   "korrektur": true,
+   "held": {
+    "atlas": "melee",
+    "x": 512,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "melee",
+    "x": 512,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_022": {
+   "id": "pa_022",
+   "name": "Plasma-Blaster",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9059.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": true,
+   "streckung": 1.57,
+   "content": {
+    "x": 6,
+    "y": 23,
+    "w": 115,
+    "h": 81
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 61
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 80
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "plasma",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 0,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ebc827",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_023": {
+   "id": "pa_023",
+   "name": "Boxhandschuhe",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9060.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 58.1,
+   "gespiegelt": true,
+   "streckung": 1.63,
+   "content": {
+    "x": 6,
+    "y": 24,
+    "w": 115,
+    "h": 79
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 79
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 66
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 20
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 32,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb4c3f",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_024": {
+   "id": "pa_024",
+   "name": "Mittelfinger",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9061.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -81.2,
+   "gespiegelt": false,
+   "streckung": 1.58,
+   "content": {
+    "x": 6,
+    "y": 26,
+    "w": 115,
+    "h": 75
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 76
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 58
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 19
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 64,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#f9a770",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_025": {
+   "id": "pa_025",
+   "name": "Handtuch",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9062.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -45.2,
+   "gespiegelt": false,
+   "streckung": 2.18,
+   "content": {
+    "x": 6,
+    "y": 35,
+    "w": 115,
+    "h": 57
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 73
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 58
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 15
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 96,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#31d0eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_026": {
+   "id": "pa_026",
+   "name": "Pneumatischer Bohrer",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9063.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 57.5,
+   "gespiegelt": true,
+   "streckung": 1.51,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 112,
+    "h": 68
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 76
+    },
+    "muzzle": {
+     "x": 117,
+     "y": 50
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 28,
+     "h": 17
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 128,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb6041",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_027": {
+   "id": "pa_027",
+   "name": "Fackel",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9066.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 56.0,
+   "gespiegelt": false,
+   "streckung": 3.27,
+   "content": {
+    "x": 6,
+    "y": 44,
+    "w": 115,
+    "h": 40
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 66
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 28,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 160,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb7e20",
+   "korrektur": true,
+   "held": {
+    "atlas": "ranged",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_028": {
+   "id": "pa_028",
+   "name": "Kaktusbombe",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9067.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 47.0,
+   "gespiegelt": false,
+   "streckung": 2.29,
+   "content": {
+    "x": 6,
+    "y": 34,
+    "w": 115,
+    "h": 59
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 66
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 15
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 192,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#cdeb5c",
+   "korrektur": true,
+   "held": {
+    "atlas": "ranged",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 768,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_029": {
+   "id": "pa_029",
+   "name": "Pömpel",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9068.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -52.8,
+   "gespiegelt": true,
+   "streckung": 2.48,
+   "content": {
+    "x": 6,
+    "y": 32,
+    "w": 115,
+    "h": 64
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 67
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 224,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb5941",
+   "korrektur": true,
+   "held": {
+    "atlas": "ranged",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 896,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_030": {
+   "id": "pa_030",
+   "name": "Cyber-Bombe",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9069.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.19,
+   "content": {
+    "x": 6,
+    "y": 12,
+    "w": 115,
+    "h": 104
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 27
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 256,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#58daeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_031": {
+   "id": "pa_031",
+   "name": "Power Gauntlets",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9070.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.16,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 113
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 288,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#60d9eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_032": {
+   "id": "pa_032",
+   "name": "Raketenrucksack",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9071.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 36.7,
+   "gespiegelt": true,
+   "streckung": 1.89,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 115,
+    "h": 67
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 60
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#6079eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_033": {
+   "id": "pa_033",
+   "name": "Magischer Kampfstock",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9072.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 55.9,
+   "gespiegelt": false,
+   "streckung": 4.23,
+   "content": {
+    "x": 6,
+    "y": 45,
+    "w": 115,
+    "h": 37
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 65
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 320,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb6748",
+   "korrektur": true,
+   "held": {
+    "atlas": "ranged",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_034": {
+   "id": "pa_034",
+   "name": "Magischer Geschosszauber",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9073.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.04,
+   "content": {
+    "x": 7,
+    "y": 7,
+    "w": 113,
+    "h": 114
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 352,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb775e",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_035": {
+   "id": "pa_035",
+   "name": "Explosiver Energieball",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9074.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 7,
+    "y": 7,
+    "w": 114,
+    "h": 112
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 62
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "plasma",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 384,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8c2a",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_036": {
+   "id": "pa_036",
+   "name": "Raketenhandschuh",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9075.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.12,
+   "content": {
+    "x": 6,
+    "y": 11,
+    "w": 115,
+    "h": 106
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 416,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb913b",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_037": {
+   "id": "pa_037",
+   "name": "Raketenwerfer",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9077.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -22.2,
+   "gespiegelt": false,
+   "streckung": 2.06,
+   "content": {
+    "x": 6,
+    "y": 34,
+    "w": 115,
+    "h": 59
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 75
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 448,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8426",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_038": {
+   "id": "pa_038",
+   "name": "Rakete",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9078.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 40.6,
+   "gespiegelt": true,
+   "streckung": 1.9,
+   "content": {
+    "x": 6,
+    "y": 28,
+    "w": 115,
+    "h": 72
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 73
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 66
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 28,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "ranged",
+    "x": 480,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8329",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_039": {
+   "id": "pa_039",
+   "name": "Feldkanone / Mörser",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9079.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.27,
+   "content": {
+    "x": 11,
+    "y": 6,
+    "w": 105,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 115,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "granate",
+    "size": {
+     "w": 18,
+     "h": 14
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 512,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb9648",
+   "korrektur": false,
+   "held": {
+    "atlas": "ranged",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_040": {
+   "id": "pa_040",
+   "name": "Maschinenpistole",
+   "category": "ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9081.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 28.5,
+   "gespiegelt": false,
+   "streckung": 1.54,
+   "content": {
+    "x": 6,
+    "y": 24,
+    "w": 115,
+    "h": 79
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 47
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 50
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "kugel",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 544,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ebab6a",
+   "korrektur": true,
+   "held": {
+    "atlas": "ranged",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ranged",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_041": {
+   "id": "pa_041",
+   "name": "Salvengeber",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9082.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -45.0,
+   "gespiegelt": false,
+   "streckung": 2.61,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 115,
+    "h": 68
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 77
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 66
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ebbc36",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_042": {
+   "id": "pa_042",
+   "name": "Feuerwerks-Salve",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9083.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 6,
+    "y": 8,
+    "w": 115,
+    "h": 111
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 32,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb913d",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_043": {
+   "id": "pa_043",
+   "name": "Kampfgeschütz",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9085.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.19,
+   "content": {
+    "x": 10,
+    "y": 6,
+    "w": 108,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 117,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "granate",
+    "size": {
+     "w": 18,
+     "h": 14
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 64,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba26a",
+   "korrektur": true,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_044": {
+   "id": "pa_044",
+   "name": "Phönix-Angriff",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9086.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.12,
+   "content": {
+    "x": 11,
+    "y": 6,
+    "w": 105,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 115,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 96,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8323",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_045": {
+   "id": "pa_045",
+   "name": "Raketen-Salve",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9087.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.18,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 111,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb872a",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_046": {
+   "id": "pa_046",
+   "name": "Splittergranate",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9088.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.5,
+   "content": {
+    "x": 22,
+    "y": 6,
+    "w": 83,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 55,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 104,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 21,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 160,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb872c",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_047": {
+   "id": "pa_047",
+   "name": "Handgranate",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9089.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.31,
+   "content": {
+    "x": 14,
+    "y": 6,
+    "w": 99,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 54,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 112,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 25,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 192,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb4039",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 768,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_048": {
+   "id": "pa_048",
+   "name": "Bananengranate",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9090.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -50.3,
+   "gespiegelt": false,
+   "streckung": 2.19,
+   "content": {
+    "x": 6,
+    "y": 35,
+    "w": 115,
+    "h": 57
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 77
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 61
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 28,
+     "h": 15
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 224,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ebc429",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 896,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_049": {
+   "id": "pa_049",
+   "name": "Bumerang",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9091.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -46.7,
+   "gespiegelt": false,
+   "streckung": 2.72,
+   "content": {
+    "x": 6,
+    "y": 40,
+    "w": 115,
+    "h": 48
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 68
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 80
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 12
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb5329",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_050": {
+   "id": "pa_050",
+   "name": "Doppelkopf-Axt",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9092.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.43,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 288,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#60d1eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_051": {
+   "id": "pa_051",
+   "name": "Wurfklingen",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9093.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -39.0,
+   "gespiegelt": false,
+   "streckung": 1.96,
+   "content": {
+    "x": 6,
+    "y": 33,
+    "w": 115,
+    "h": 62
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 76
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 56
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": true,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 320,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#6ab0eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_052": {
+   "id": "pa_052",
+   "name": "Molotowcocktail",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9094.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -47.0,
+   "gespiegelt": false,
+   "streckung": 2.88,
+   "content": {
+    "x": 6,
+    "y": 41,
+    "w": 115,
+    "h": 46
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 53
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 12
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 352,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8025",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_053": {
+   "id": "pa_053",
+   "name": "Roboterbombe",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9095.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.38,
+   "content": {
+    "x": 23,
+    "y": 6,
+    "w": 81,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 55,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 103,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 21,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8d2c",
+   "korrektur": true,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_054": {
+   "id": "pa_054",
+   "name": "Schrotflinte",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9096.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -39.6,
+   "gespiegelt": false,
+   "streckung": 4.38,
+   "content": {
+    "x": 6,
+    "y": 46,
+    "w": 115,
+    "h": 36
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 68
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 65
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "kugel",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 416,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb904f",
+   "korrektur": true,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_055": {
+   "id": "pa_055",
+   "name": "Scharfschützengewehr",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9097.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -36.7,
+   "gespiegelt": false,
+   "streckung": 2.66,
+   "content": {
+    "x": 6,
+    "y": 35,
+    "w": 115,
+    "h": 57
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 65
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 56
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "kugel",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 448,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba86a",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_056": {
+   "id": "pa_056",
+   "name": "Präzisionsgewehr",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9098.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 24.1,
+   "gespiegelt": true,
+   "streckung": 1.51,
+   "content": {
+    "x": 6,
+    "y": 20,
+    "w": 115,
+    "h": 88
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 55
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 39
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "kugel",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 480,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba96a",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_057": {
+   "id": "pa_057",
+   "name": "Revolver",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9099.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 29.0,
+   "gespiegelt": false,
+   "streckung": 2.34,
+   "content": {
+    "x": 6,
+    "y": 34,
+    "w": 115,
+    "h": 60
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 75
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 73
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "kugel",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 512,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#60b1eb",
+   "korrektur": true,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_058": {
+   "id": "pa_058",
+   "name": "Kampfbogen",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9100.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -46.8,
+   "gespiegelt": false,
+   "streckung": 2.46,
+   "content": {
+    "x": 6,
+    "y": 43,
+    "w": 115,
+    "h": 41
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 70
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 61
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "pfeil",
+    "size": {
+     "w": 29,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 544,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#62aeeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_059": {
+   "id": "pa_059",
+   "name": "Armbrust",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9101.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.5,
+   "content": {
+    "x": 6,
+    "y": 9,
+    "w": 115,
+    "h": 109
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "pfeil",
+    "size": {
+     "w": 29,
+     "h": 10
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 576,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb9144",
+   "korrektur": false,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_060": {
+   "id": "pa_060",
+   "name": "Minigun",
+   "category": "heavy_ranged",
+   "subcategory": "guns",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9102.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": true,
+   "streckung": 1.21,
+   "content": {
+    "x": 6,
+    "y": 12,
+    "w": 115,
+    "h": 103
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "kugel",
+    "size": {
+     "w": 29,
+     "h": 6
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "heavy_ranged",
+    "x": 608,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb5f37",
+   "korrektur": true,
+   "held": {
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "heavy_ranged",
+    "x": 384,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_061": {
+   "id": "pa_061",
+   "name": "Feuerdämon",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9103.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 6,
+    "y": 9,
+    "w": 115,
+    "h": 109
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 0,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb4d25",
+   "korrektur": true,
+   "held": {
+    "atlas": "elemental",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_062": {
+   "id": "pa_062",
+   "name": "Flammenwerfer",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9104.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -37.6,
+   "gespiegelt": false,
+   "streckung": 2.02,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 115,
+    "h": 67
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 62
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 59
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 32,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8627",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_063": {
+   "id": "pa_063",
+   "name": "Wasserblaster",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9105.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": true,
+   "streckung": 1.43,
+   "content": {
+    "x": 6,
+    "y": 20,
+    "w": 115,
+    "h": 87
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "wasser",
+    "size": {
+     "w": 28,
+     "h": 14
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 64,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#43c8eb",
+   "korrektur": true,
+   "held": {
+    "atlas": "elemental",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_064": {
+   "id": "pa_064",
+   "name": "Katapult",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9106.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.15,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 111,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "stein",
+    "size": {
+     "w": 22,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 96,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba069",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_065": {
+   "id": "pa_065",
+   "name": "Meteoritenbrocken",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9107.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "elemental",
+    "x": 128,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ebe06a",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_066": {
+   "id": "pa_066",
+   "name": "Artilleriegeschütz",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9109.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.17,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "granate",
+    "size": {
+     "w": 18,
+     "h": 14
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 160,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ebd165",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_067": {
+   "id": "pa_067",
+   "name": "Säurekanone",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9113.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.25,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 111,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "gift",
+    "size": {
+     "w": 20,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 192,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8d37",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 768,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_068": {
+   "id": "pa_068",
+   "name": "Plasma-Gewehr",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9114.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 18.8,
+   "gespiegelt": true,
+   "streckung": 1.74,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 115,
+    "h": 67
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 60
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "plasma",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 224,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#56d1eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 896,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_069": {
+   "id": "pa_069",
+   "name": "Raketenkanone",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9115.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -36.1,
+   "gespiegelt": false,
+   "streckung": 2.5,
+   "content": {
+    "x": 6,
+    "y": 37,
+    "w": 115,
+    "h": 53
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 56
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 256,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb7153",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_070": {
+   "id": "pa_070",
+   "name": "Giftwolke",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9121.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.06,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "gift",
+    "size": {
+     "w": 20,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 288,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#48eb9b",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_071": {
+   "id": "pa_071",
+   "name": "Eisschlag",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9122.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.0,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "eis",
+    "size": {
+     "w": 28,
+     "h": 14
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 320,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#49a2eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_072": {
+   "id": "pa_072",
+   "name": "Feuerball",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9123.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.05,
+   "content": {
+    "x": 9,
+    "y": 6,
+    "w": 110,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 352,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb4b22",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_073": {
+   "id": "pa_073",
+   "name": "Tentakelgift",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9124.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 113
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "gift",
+    "size": {
+     "w": 20,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 384,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#ae6aeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_074": {
+   "id": "pa_074",
+   "name": "Verderbnis-Siegel",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9125.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 416,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#5beba2",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_075": {
+   "id": "pa_075",
+   "name": "Tornado",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9130.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.26,
+   "content": {
+    "x": 10,
+    "y": 6,
+    "w": 107,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 116,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 448,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb9b51",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_076": {
+   "id": "pa_076",
+   "name": "Portalring",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9131.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.0,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#5f77eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_077": {
+   "id": "pa_077",
+   "name": "Schwarzes Loch",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9132.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 114
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 480,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#755beb",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_078": {
+   "id": "pa_078",
+   "name": "Voodoo-Puppe",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9133.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.89,
+   "content": {
+    "x": 27,
+    "y": 6,
+    "w": 74,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 57,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 100,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 512,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eba86a",
+   "korrektur": true,
+   "held": {
+    "atlas": "elemental",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_079": {
+   "id": "pa_079",
+   "name": "Kosmisches Portal",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9134.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 112,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#549feb",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_080": {
+   "id": "pa_080",
+   "name": "Psionischer Tentakel",
+   "category": "elemental",
+   "subcategory": "elemental",
+   "rarity": "common",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9135.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 114
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 544,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb506d",
+   "korrektur": false,
+   "held": {
+    "atlas": "elemental",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "elemental",
+    "x": 384,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_081": {
+   "id": "pa_081",
+   "name": "Zauberbuch der Leere",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9136.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#ae69eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_082": {
+   "id": "pa_082",
+   "name": "Goldene Zauberrolle",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9137.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.22,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "magic",
+    "x": 0,
+    "y": 1024,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#f0d252",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_083": {
+   "id": "pa_083",
+   "name": "Goldene Hand",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9138.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.11,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9233",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_084": {
+   "id": "pa_084",
+   "name": "Astraltrank",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9139.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -75.7,
+   "gespiegelt": false,
+   "streckung": 1.64,
+   "content": {
+    "x": 6,
+    "y": 27,
+    "w": 115,
+    "h": 74
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 65
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#687deb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_085": {
+   "id": "pa_085",
+   "name": "Chaosmagier",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9140.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.33,
+   "content": {
+    "x": 17,
+    "y": 6,
+    "w": 93,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 54,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 109,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb6f51",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_086": {
+   "id": "pa_086",
+   "name": "Wirbelwind-Krieger",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9150.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.04,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 111,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#6aadeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_087": {
+   "id": "pa_087",
+   "name": "Dimensionssprung",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9151.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.04,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 111,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#546feb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_088": {
+   "id": "pa_088",
+   "name": "Dimensionsriss",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9152.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#5b75eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_089": {
+   "id": "pa_089",
+   "name": "Magischer Stiefel",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9154.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.2,
+   "content": {
+    "x": 6,
+    "y": 8,
+    "w": 115,
+    "h": 112
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#48d3eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_090": {
+   "id": "pa_090",
+   "name": "Giftpilz",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9155.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#40ebce",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_091": {
+   "id": "pa_091",
+   "name": "Astralorb",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9156.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#5da2eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_092": {
+   "id": "pa_092",
+   "name": "Heilzauber",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9157.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 114
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#67ebcf",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_093": {
+   "id": "pa_093",
+   "name": "Engelssegen",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9323.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.0,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#6aadeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_094": {
+   "id": "pa_094",
+   "name": "Heil-Injektion",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9324.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 45.7,
+   "gespiegelt": false,
+   "streckung": 4.25,
+   "content": {
+    "x": 6,
+    "y": 47,
+    "w": 115,
+    "h": 34
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eb5036",
+   "korrektur": true,
+   "held": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_095": {
+   "id": "pa_095",
+   "name": "Chaos-Elixier",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9325.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -88.4,
+   "gespiegelt": false,
+   "streckung": 1.62,
+   "content": {
+    "x": 6,
+    "y": 26,
+    "w": 115,
+    "h": 75
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eba563",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 768,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_096": {
+   "id": "pa_096",
+   "name": "Mutationselixier",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9326.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -91.2,
+   "gespiegelt": false,
+   "streckung": 1.71,
+   "content": {
+    "x": 6,
+    "y": 28,
+    "w": 115,
+    "h": 71
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 60
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#63d3eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 896,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_097": {
+   "id": "pa_097",
+   "name": "Traumfänger",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9327.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -60.2,
+   "gespiegelt": false,
+   "streckung": 1.79,
+   "content": {
+    "x": 6,
+    "y": 25,
+    "w": 115,
+    "h": 78
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 71
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#4fd2eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_098": {
+   "id": "pa_098",
+   "name": "Lava-Elixier",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9328.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -75.6,
+   "gespiegelt": false,
+   "streckung": 1.69,
+   "content": {
+    "x": 6,
+    "y": 26,
+    "w": 115,
+    "h": 75
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 58
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eb9a4c",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_099": {
+   "id": "pa_099",
+   "name": "Zeit-Sanduhr",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9329.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 106.1,
+   "gespiegelt": false,
+   "streckung": 1.51,
+   "content": {
+    "x": 6,
+    "y": 22,
+    "w": 115,
+    "h": 83
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 66
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 67
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#53a1eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_100": {
+   "id": "pa_100",
+   "name": "Würfel des Chaos",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9330.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 10,
+    "y": 6,
+    "w": 107,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 116,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#4398eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_101": {
+   "id": "pa_101",
+   "name": "Eisschild",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9331.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.23,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 113
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#54cdeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_102": {
+   "id": "pa_102",
+   "name": "Gedankensturm",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9332.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.14,
+   "content": {
+    "x": 11,
+    "y": 6,
+    "w": 105,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 115,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#5ca4eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_103": {
+   "id": "pa_103",
+   "name": "Verderbnis-Kelch",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9333.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 9,
+    "y": 6,
+    "w": 109,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 117,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#ebcf6a",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 768,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 768,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_104": {
+   "id": "pa_104",
+   "name": "Quantengewehr",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "projectile",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9334.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -33.6,
+   "gespiegelt": false,
+   "streckung": 1.79,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 114,
+    "h": 67
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 60
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 68
+    },
+    "source": "geometrie"
+   },
+   "projectile": {
+    "art": "plasma",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "magic",
+    "x": 32,
+    "y": 1024,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#6aa8eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 896,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 896,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_105": {
+   "id": "pa_105",
+   "name": "Zauberrolle",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9335.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 6,
+    "y": 9,
+    "w": 115,
+    "h": 109
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#6ab1eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 0,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_106": {
+   "id": "pa_106",
+   "name": "Sonnenamulett",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9336.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.29,
+   "content": {
+    "x": 20,
+    "y": 6,
+    "w": 88,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 55,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 107,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9f45",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 128,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_107": {
+   "id": "pa_107",
+   "name": "Allsehendes Auge",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9337.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#62d1eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 256,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_108": {
+   "id": "pa_108",
+   "name": "Magische Peitsche",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9338.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.1,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 112,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb6642",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 384,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_109": {
+   "id": "pa_109",
+   "name": "Weltenbaum",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9339.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.24,
+   "content": {
+    "x": 19,
+    "y": 6,
+    "w": 90,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 55,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 108,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eba865",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 512,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_110": {
+   "id": "pa_110",
+   "name": "Dimensionskugel",
+   "category": "magic",
+   "subcategory": "elemental",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9340.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.32,
+   "content": {
+    "x": 13,
+    "y": 6,
+    "w": 101,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 113,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#65a7eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "magic",
+    "x": 640,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_111": {
+   "id": "pa_111",
+   "name": "Grappling Hook",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9341.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.44,
+   "content": {
+    "x": 6,
+    "y": 9,
+    "w": 115,
+    "h": 110
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#2f85eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_112": {
+   "id": "pa_112",
+   "name": "Jetpack",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9342.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.19,
+   "content": {
+    "x": 19,
+    "y": 6,
+    "w": 90,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 55,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 108,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9344",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 768,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_113": {
+   "id": "pa_113",
+   "name": "Bohrkanone",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9343.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 27.9,
+   "gespiegelt": true,
+   "streckung": 1.74,
+   "content": {
+    "x": 6,
+    "y": 22,
+    "w": 115,
+    "h": 83
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 60
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 62
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eb8731",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_114": {
+   "id": "pa_114",
+   "name": "Gleitschirm",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9344.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.19,
+   "content": {
+    "x": 19,
+    "y": 6,
+    "w": 90,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 55,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 108,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9344",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_115": {
+   "id": "pa_115",
+   "name": "Wächterstatue",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9345.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 2.62,
+   "content": {
+    "x": 29,
+    "y": 6,
+    "w": 70,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 57,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 98,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9841",
+   "korrektur": true,
+   "held": {
+    "atlas": "utility",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 512,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_116": {
+   "id": "pa_116",
+   "name": "Blutritual",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9346.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb765e",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 640,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_117": {
+   "id": "pa_117",
+   "name": "Ananasbombe",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9347.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -67.2,
+   "gespiegelt": false,
+   "streckung": 1.72,
+   "content": {
+    "x": 6,
+    "y": 30,
+    "w": 115,
+    "h": 68
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 72
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#ebca3e",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 768,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_118": {
+   "id": "pa_118",
+   "name": "Feuerwesen",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9353.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 114,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb8d39",
+   "korrektur": true,
+   "held": {
+    "atlas": "utility",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 896,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_119": {
+   "id": "pa_119",
+   "name": "Munitionskiste",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9358.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.17,
+   "content": {
+    "x": 6,
+    "y": 9,
+    "w": 115,
+    "h": 109
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9244",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_120": {
+   "id": "pa_120",
+   "name": "Energiefaust",
+   "category": "utility",
+   "subcategory": "special",
+   "rarity": "uncommon",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9359.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.25,
+   "content": {
+    "x": 6,
+    "y": 11,
+    "w": 115,
+    "h": 106
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb5437",
+   "korrektur": false,
+   "held": {
+    "atlas": "utility",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "utility",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_121": {
+   "id": "pa_121",
+   "name": "Explosiver Punch",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9360.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 42.9,
+   "gespiegelt": true,
+   "streckung": 2.0,
+   "content": {
+    "x": 6,
+    "y": 25,
+    "w": 115,
+    "h": 77
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 79
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 65
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eb4c33",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_122": {
+   "id": "pa_122",
+   "name": "Infinity Loop",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9364.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.35,
+   "content": {
+    "x": 6,
+    "y": 13,
+    "w": 115,
+    "h": 102
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb2f8e",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_123": {
+   "id": "pa_123",
+   "name": "Magnetkanone",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9365.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.18,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 113
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#3d8feb",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 256,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_124": {
+   "id": "pa_124",
+   "name": "Auto-Turret",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9366.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.28,
+   "content": {
+    "x": 15,
+    "y": 6,
+    "w": 98,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 54,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 112,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb893d",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 384,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_125": {
+   "id": "pa_125",
+   "name": "Versorgungscontainer",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9368.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.11,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb8a3b",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 512,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_126": {
+   "id": "pa_126",
+   "name": "Bunker",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9369.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.06,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb8f47",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 640,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_127": {
+   "id": "pa_127",
+   "name": "Teleport-Plattform",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9372.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.07,
+   "content": {
+    "x": 6,
+    "y": 8,
+    "w": 115,
+    "h": 112
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#4bd2eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 768,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_128": {
+   "id": "pa_128",
+   "name": "Hologramm-Portal",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9373.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.09,
+   "content": {
+    "x": 6,
+    "y": 12,
+    "w": 115,
+    "h": 104
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#48cceb",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 896,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 896,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_129": {
+   "id": "pa_129",
+   "name": "Tesla-Turm",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9376.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 2.77,
+   "content": {
+    "x": 35,
+    "y": 6,
+    "w": 57,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 58,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 91,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#62a8eb",
+   "korrektur": true,
+   "held": {
+    "atlas": "tech",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 0,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_130": {
+   "id": "pa_130",
+   "name": "Tarnnetz",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9377.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.24,
+   "content": {
+    "x": 6,
+    "y": 14,
+    "w": 115,
+    "h": 99
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#afeb5a",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 128,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_131": {
+   "id": "pa_131",
+   "name": "Schlauchboot",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9379.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -29.5,
+   "gespiegelt": false,
+   "streckung": 1.83,
+   "content": {
+    "x": 6,
+    "y": 32,
+    "w": 115,
+    "h": 64
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 77
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 74
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eb8526",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 256,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 256,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_132": {
+   "id": "pa_132",
+   "name": "Alte Dame",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9380.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 2.0,
+   "content": {
+    "x": 27,
+    "y": 6,
+    "w": 74,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 57,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 100,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eba16a",
+   "korrektur": true,
+   "held": {
+    "atlas": "tech",
+    "x": 384,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 384,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_133": {
+   "id": "pa_133",
+   "name": "Fliegendes Superschaf",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9382.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.08,
+   "content": {
+    "x": 6,
+    "y": 8,
+    "w": 115,
+    "h": 112
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "ding",
+    "size": {
+     "w": 29,
+     "h": 29
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": false,
+    "atlas": "tech",
+    "x": 0,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb5338",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 512,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 512,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_134": {
+   "id": "pa_134",
+   "name": "Luftangriff",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9383.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 10,
+    "y": 6,
+    "w": 107,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 116,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9a4c",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 640,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 640,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_135": {
+   "id": "pa_135",
+   "name": "Meteorregen",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9384.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb8e3a",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 768,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 768,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 768,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_136": {
+   "id": "pa_136",
+   "name": "Bohrkopfrakete",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "objekt",
+   "quelle": {
+    "datei": "IMG_9385.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": -37.2,
+   "gespiegelt": false,
+   "streckung": 1.79,
+   "content": {
+    "x": 6,
+    "y": 28,
+    "w": 115,
+    "h": 71
+   },
+   "anchor": {
+    "grip": {
+     "x": 40,
+     "y": 80
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 60
+    },
+    "source": "geometrie"
+   },
+   "projectile": null,
+   "flashColor": "#eb954a",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 896,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 896,
+    "y": 512,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 896,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_137": {
+   "id": "pa_137",
+   "name": "Flammenklinge",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9386.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.33,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9746",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 0,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1024,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_138": {
+   "id": "pa_138",
+   "name": "Magischer Kriegshammer",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9388.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.25,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 114
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9449",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 128,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1152,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_139": {
+   "id": "pa_139",
+   "name": "Höllenkanone",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "hitscan",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9389.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.22,
+   "content": {
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 114
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 64
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 64
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb6846",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 256,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1280,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_140": {
+   "id": "pa_140",
+   "name": "Quantenblaster",
+   "category": "tech",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9390.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.08,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "plasma",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "tech",
+    "x": 32,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#68afeb",
+   "korrektur": false,
+   "held": {
+    "atlas": "tech",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "tech",
+    "x": 384,
+    "y": 640,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1408,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_141": {
+   "id": "pa_141",
+   "name": "Astralkrieger",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9391.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#62a7eb",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 0,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1536,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_142": {
+   "id": "pa_142",
+   "name": "Void-Ritter",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9393.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 0,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#637ceb",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 128,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 128,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1664,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_143": {
+   "id": "pa_143",
+   "name": "Astralross",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kompakt",
+   "quelle": {
+    "datei": "IMG_9394.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.34,
+   "content": {
+    "x": 17,
+    "y": 6,
+    "w": 93,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 54,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 109,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#67a9eb",
+   "korrektur": false,
+   "held": {
+    "atlas": "ultimate",
+    "x": 256,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 256,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1792,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_144": {
+   "id": "pa_144",
+   "name": "Kosmische Wassermelone",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9397.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.02,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 113,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 32,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#9deb45",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 384,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 384,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 1920,
+    "y": 1024,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_145": {
+   "id": "pa_145",
+   "name": "Erdspalter",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9398.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.04,
+   "content": {
+    "x": 9,
+    "y": 6,
+    "w": 110,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 118,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "stein",
+    "size": {
+     "w": 22,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 64,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb8732",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 512,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 512,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 0,
+    "y": 1152,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_146": {
+   "id": "pa_146",
+   "name": "Giftige Weltenflasche",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9399.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 114,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 96,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#83eb6a",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 640,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 640,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 128,
+    "y": 1152,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_147": {
+   "id": "pa_147",
+   "name": "Welten-Drache",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9400.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.0,
+   "content": {
+    "x": 6,
+    "y": 6,
+    "w": 115,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 52,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "feuer",
+    "size": {
+     "w": 28,
+     "h": 16
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 128,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#eb5138",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 768,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 768,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 256,
+    "y": 1152,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_148": {
+   "id": "pa_148",
+   "name": "Himmelswächter",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9401.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.01,
+   "content": {
+    "x": 7,
+    "y": 6,
+    "w": 114,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 120,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#58a5eb",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 896,
+    "y": 0,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 896,
+    "y": 256,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 384,
+    "y": 1152,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_149": {
+   "id": "pa_149",
+   "name": "Goldene Reliktkugel",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9402.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.03,
+   "content": {
+    "x": 8,
+    "y": 6,
+    "w": 112,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 119,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": null,
+   "flashColor": "#eb9e4b",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 0,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 0,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 512,
+    "y": 1152,
+    "w": 128,
+    "h": 128
+   }
+  },
+  "pa_150": {
+   "id": "pa_150",
+   "name": "Kosmischer Kern",
+   "category": "ultimate",
+   "subcategory": "special",
+   "rarity": "rare",
+   "delivery": "projectile",
+   "form": "kachel",
+   "quelle": {
+    "datei": "IMG_9403.PNG",
+    "aufloesung": 1024
+   },
+   "rotation": 0.0,
+   "gespiegelt": false,
+   "streckung": 1.13,
+   "content": {
+    "x": 13,
+    "y": 6,
+    "w": 101,
+    "h": 115
+   },
+   "anchor": {
+    "grip": {
+     "x": 53,
+     "y": 63
+    },
+    "muzzle": {
+     "x": 113,
+     "y": 63
+    },
+    "source": "standard"
+   },
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 160,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
+   "flashColor": "#509feb",
+   "korrektur": true,
+   "held": {
+    "atlas": "ultimate",
+    "x": 128,
+    "y": 128,
+    "w": 128,
+    "h": 128
+   },
+   "silhouette": {
+    "atlas": "ultimate",
+    "x": 128,
+    "y": 384,
+    "w": 128,
+    "h": 128
+   },
+   "icon": {
+    "atlas": "icons",
+    "x": 640,
+    "y": 1152,
+    "w": 128,
+    "h": 128
+   }
+  }
+ }
+}

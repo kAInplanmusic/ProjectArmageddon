@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "hinweis": "Neue Stücke: Datei mit scripts/musik-kodieren.sh erzeugen und hier eintragen. stimmung: menu | match | intensiv. dauer in Sekunden (ffprobe). Quelle, Urheber und Lizenz der Stücke sind noch zu klären (siehe MASTERDOTO, Musik-System).",
+  "stuecke": [
+    { "id": "heathcliff", "titel": "Heathcliff", "datei": "heathcliff.mp3", "dauer": 75.9, "stimmung": ["menu", "match"] },
+    { "id": "thief", "titel": "Thief", "datei": "thief.mp3", "dauer": 90.7, "stimmung": ["menu", "match"] },
+    { "id": "cliffhanger", "titel": "Cliffhanger", "datei": "cliffhanger.mp3", "dauer": 84.7, "stimmung": ["match", "intensiv"] }
+  ]
+}
