@@ -314,3 +314,25 @@ test('C-6/2.5: Keine Gegenwarts-Aussage behauptet eine Bot-KI', () => {
     'shotPrediction.js darf die Bot-KI nicht als gegenwärtigen Nutzer nennen'
   );
 });
+
+test('C-7/2.8: Client- und Server-Barrel duplizieren keine shared-Exporte', () => {
+  /*
+   * Befundregister C-7 / Warteschlange 2.8: Die Barrels teilten sich 14
+   * wortgleiche Export-Zeilen — jede Änderung musste an zwei Stellen
+   * nachgezogen werden. Beide re-exportieren jetzt aus dem shared-Barrel.
+   */
+  const clientBarrel = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'client', 'index.js'), 'utf8')
+  );
+  const serverBarrel = ohneKommentare(
+    fs.readFileSync(path.join(ROOT, 'src', 'server', 'index.js'), 'utf8')
+  );
+  assert.ok(
+    clientBarrel.includes("export * from '../shared/index.js';"),
+    'Der Client-Barrel muss aus dem shared-Barrel re-exportieren'
+  );
+  assert.ok(
+    serverBarrel.includes("export * from '../shared/index.js';"),
+    'Der Server-Barrel muss aus dem shared-Barrel re-exportieren'
+  );
+});

@@ -79,7 +79,7 @@ ich im Code selbst gelesen:
 | C-4 | „kein Importeur"-Wächter prüft **30 von 90** Dateien | Werkzeug | C | 🟡 Worker M |
 | C-5 | `match.js` **3195/3200 = 5 Zeilen Luft** | `tests/shooting.test.js` | C | ✅ 2026-10-01 — die Zahl ist überholt: `match.js` steht bei **3092** Zeilen (Zerlegung Schritt 4 abgeschlossen), also 108 Zeilen Luft. Wächter `tests/match-zeilenbudget.test.js` hält die 3200-Grenze fest, statt sie in Fließtext zu führen |
 | C-6 | „Bot-KI" in 22 Kommentaren als Begründung, obwohl `server/index.js:33` sie verneint | Bericht | C | ✅ 2026-10-19 — durchgesehen (18 Fundstellen): Historische Belege („Bot-KI ist entfallen") sind korrekt; zwei Gegenwarts-Aussagen in `shotPrediction.js` korrigiert. Wächter `tests/audit-2026-10-09-fixes.test.js` |
-| C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ⬜ |
+| C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ✅ 2026-10-19 — die 14 wortgleichen Zeilen zwischen Client- und Server-Barrel sind durch `export * from '../shared/index.js'` ersetzt (eine Quelle). Wächter `tests/audit-2026-10-09-fixes.test.js` |
 | C-8 | `gameServer.js:1145` 282 Z. / 26 `this.`; `guentherSystem.update` 66 `this.` in 169 Z. | Bericht | C | ⬜ |
 | C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ⬜ |
 
