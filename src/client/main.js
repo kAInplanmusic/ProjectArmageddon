@@ -28,6 +28,9 @@ import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { SoundMixer } from './soundMixer.js';
+import { Musik, wiedergabeErlaubt } from './musik.js';
+import { bindeMusikBedienung } from './musikBedienung.js';
+import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { exposeDebugApi } from './debugApi.js';
@@ -97,6 +100,15 @@ import {
 
 const MAX_STEPS_PER_FRAME = 8;
 
+/**
+ * Musikdateien: Vite vergibt im Build gehashte URLs; hier wird Dateiname → URL
+ * daraus. Nur eine Zuordnung — geladen (gestreamt) wird erst beim Abspielen.
+ */
+const MUSIK_URLEN = Object.fromEntries(
+  Object.entries(import.meta.glob('./assets/music/*.mp3', { query: '?url', import: 'default', eager: true }))
+    .map(([pfad, url]) => [pfad.split('/').pop(), url]),
+);
+
 class Game {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
@@ -135,6 +147,22 @@ class Game {
      * stumm, ohne zu scheitern.
      */
     this.sound = new SoundMixer();
+    /*
+     * Die Hintergrundmusik (src/client/musik.js). Hängt am Mischer: derselbe
+     * AudioContext und Limiter, eigener Lautstärkeknoten. In Headless-Läufen
+     * (navigator.webdriver) und mit `?musik=0` bleibt die Wiedergabe aus.
+     */
+    this.musik = new Musik({
+      manifest: MUSIK_MANIFEST,
+      urls: MUSIK_URLEN,
+      mischer: this.sound,
+      aktiv: wiedergabeErlaubt({
+        suche: globalThis.location?.search ?? '',
+        webdriver: globalThis.navigator?.webdriver === true,
+      }),
+    });
+    // Einschläge und Treffer ducken die Musik kurz (dezent, −6 dB für ~0,4 s).
+    this.sound.setzeLautHandler(() => this.musik.ducken());
     this.match = null;          // lokale Simulation
     this.network = null;        // Online-Verbindung
     this.mode = 'local';
@@ -260,7 +288,25 @@ class Game {
     });
 
     this.#bindMenu();
+    this.#bindeMusik();
     this.#exposeDebugApi();
+  }
+
+  /**
+   * Musik: Bedienelemente, Stimmung (Menü ↔ Match), Nutzergeste, Tab-Sichtbarkeit.
+   * Die Stimmung folgt dem `hidden` des Menüs — ein Beobachter statt Eingriffen
+   * an jedem Startpfad (lokal, online, Replay, Abbruch, Revanche).
+   */
+  #bindeMusik() {
+    bindeMusikBedienung(document, this.musik);
+    const stimmung = () => this.musik.setzeStimmung(this.menuOverlay.hidden ? 'match' : 'menu');
+    new MutationObserver(stimmung).observe(this.menuOverlay, { attributes: true, attributeFilter: ['hidden'] });
+    stimmung();
+    // Autoplay-Regel: Start erst nach einer Geste (Tasten stehen im keydown-Hörer unten).
+    for (const art of ['pointerup', 'touchend', 'click']) {
+      window.addEventListener(art, () => { void this.musik.freigeben(); }, { passive: true });
+    }
+    document.addEventListener('visibilitychange', () => this.musik.setzeVersteckt(document.hidden));
   }
 
   #bindMenu() {
@@ -373,6 +419,7 @@ class Game {
        * Formularprüfung: Auch wer in ein Textfeld tippt, hat interagiert.
        */
       void this.sound?.starte();
+      void this.musik?.freigeben();
 
       // Der Abbruch darf nicht ausgelöst werden, während in ein Formularfeld
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
@@ -3416,6 +3463,7 @@ function buildHilfeView() {
     { id: 'counterplay', label: 'Counterplay', zeichne: zeichneCounterplay },
     { id: 'loot', label: 'Loot und Seltenheiten', zeichne: zeichneLoot },
     { id: 'karte', label: 'Karte und Gelände', zeichne: zeichneKarte },
+    { id: 'ton', label: 'Ton und Musik', zeichne: zeichneTon },
   ];
 
   let gewaehlt = seiten[0].id;
@@ -3834,6 +3882,24 @@ function zeichneKarte(container) {
     raster.append(karte);
   }
   container.append(raster);
+}
+
+/** Hilfe-Seite „Ton und Musik": Bedienung der Hintergrundmusik. */
+function zeichneTon(container) {
+  container.append(textEl('p',
+    'Die Hintergrundmusik läuft im Menü und im Match und blendet beim Wechsel '
+    + 'über. Sie startet erst nach dem ersten Klick oder Tastendruck (Regel der '
+    + 'Browser). Bei Einschlägen wird sie kurz leiser, damit die Effekte tragen.', 'h-einleitung'));
+  const liste = document.createElement('ul');
+  liste.className = 'h-liste';
+  for (const zeile of [
+    'Taste M: Musik stumm/laut (nicht, solange du in ein Textfeld tippst).',
+    'Schalter „Musik an/aus“ und Regler „Musik-Lautstärke“: im Menü und oben im Spiel.',
+    'Die Anzeige „Läuft: …“ nennt das aktuelle Stück.',
+    'Deine Einstellung bleibt im Browser gespeichert (Vorgabe: an, Lautstärke 35 %).',
+    'Mit „?musik=0“ an der Adresse bleibt die Musik ganz aus.',
+  ]) liste.append(textEl('li', zeile));
+  container.append(liste);
 }
 
 /** Anteil als Prozentzahl mit dem Hinweis auf die Herkunft der Zahl. */

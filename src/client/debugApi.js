@@ -31,6 +31,8 @@ export function exposeDebugApi(game) {
     window.__PA__ = {
       game,
       getMode: () => game.mode,
+      /** Hintergrundmusik: Zustand (an, Lautstärke, Stimmung, Titel, Zähler). */
+      musik: () => game.musik?.zustand ?? null,
       /**
        * Rechenweg des Bodens (Diagnose und Tests).
        *

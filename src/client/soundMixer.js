@@ -34,6 +34,10 @@ export class SoundMixer {
   #ctx = null;
   #rauschen = null;
   #ausgang = null;
+  /** Eingang des Limiters (oder `destination`): Hier hängt auch die Musik. */
+  #limiter = null;
+  /** Wird bei Einschlägen und Treffern gerufen (Musik ducken); darf fehlen. */
+  #beiLaut = null;
   #an = true;
   #lautstaerke = 0.8;
   /** Zähler: Wie viele Klänge wurden erzeugt? Für die Messung. */
@@ -58,6 +62,30 @@ export class SoundMixer {
 
   /** Läuft der AudioContext schon? */
   get bereit() { return this.#ctx !== null; }
+
+  /**
+   * Hängt die Musik an den Mischer.
+   *
+   * Die Musik bekommt einen EIGENEN Gain-Knoten (Lautstärke getrennt von den
+   * Effekten), läuft aber durch denselben Limiter, damit Musik plus Einschläge
+   * nicht übersteuern. Voraussetzung: `starte()` war erfolgreich.
+   *
+   * @returns {{ctx: AudioContext, ziel: AudioNode}|null}
+   */
+  musikAnschluss() {
+    if (!this.#ctx || !this.#limiter) return null;
+    return { ctx: this.#ctx, ziel: this.#limiter };
+  }
+
+  /** Meldet laute Ereignisse (`'explosion'` | `'treffer'`) an die Musik (Ducken). */
+  setzeLautHandler(fn) {
+    this.#beiLaut = typeof fn === 'function' ? fn : null;
+    return this;
+  }
+
+  #meldeLaut(art) {
+    try { this.#beiLaut?.(art); } catch { /* Die Musik darf nie einen Klang verhindern. */ }
+  }
 
   /** Die Zähler — für Werkzeuge, die messen wollen. */
   get gezaehlt() { return { ...this.#gezaehlt }; }
@@ -121,6 +149,7 @@ export class SoundMixer {
 
       this.#rauschen = erzeugeRauschen(this.#ctx, 2);
 
+      this.#limiter = this.#ctx.destination;
       const kompressor = this.#ctx.createDynamicsCompressor?.();
       if (kompressor) {
         kompressor.threshold.value = -18;
@@ -128,6 +157,7 @@ export class SoundMixer {
         this.#ausgang.disconnect();
         this.#ausgang.connect(kompressor);
         kompressor.connect(this.#ctx.destination);
+        this.#limiter = kompressor;
       }
 
       if (this.#ctx.state === 'suspended') await this.#ctx.resume();
@@ -139,6 +169,7 @@ export class SoundMixer {
        */
       this.#ctx = null;
       this.#ausgang = null;
+      this.#limiter = null;
       return false;
     }
   }
@@ -160,6 +191,7 @@ export class SoundMixer {
       groesse, lautstaerke: 1, ziel: this.#ziel(),
     });
     this.#gezaehlt.explosion += 1;
+    this.#meldeLaut('explosion');
     return true;
   }
 
@@ -192,6 +224,7 @@ export class SoundMixer {
       haerte, lautstaerke: 0.7, ziel: this.#ziel(),
     });
     this.#gezaehlt.treffer += 1;
+    this.#meldeLaut('treffer');
     return true;
   }
 

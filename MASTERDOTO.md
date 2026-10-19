@@ -96,6 +96,77 @@ Figurenkarte, Schilder von Gipfel-Figuren unter der Kopfleiste.
 - Grenze: Bei ganz sichtbarer Karte bleibt der Zoom unverändert; Figuren am linken Rand bleiben
   hinter der Spielerliste (durchscheinend, nicht verschoben).
 
+## Musik-System (2026-10-19) — GEBAUT
+
+Hintergrundmusik im Browser, reine Darstellung (Engine, Seed, Replays unberührt).
+
+**Dateien**
+- `src/client/assets/music/*.mp3` + `manifest.json` (id, Titel, Datei, Dauer in s, Stimmung
+  `menu` | `match` | `intensiv`). Die drei ersten Stücke hat der Auftraggeber geliefert.
+- `scripts/musik-kodieren.sh <quelle> <id> "<Titel>"`: EBU R128 zweistufig (messen, dann linear
+  anwenden) auf **−16 LUFS, True-Peak ≤ −1,5 dBTP**, 0,4 s Ein- und 1,5 s Ausblendung, MP3
+  VBR (LAME `-V 6`, ~115–128 kbit/s), 48 kHz Stereo, Titel als Metadatum, fremde Kommentar-Tags
+  entfernt. Kontrollmessung der Ergebnisse: −15,9 / −15,9 / −16,0 LUFS, Spitze −4,8 bis −5,4 dBFS.
+- `src/client/musikListe.js` (rein, getestet): Manifestprüfung, Stücke je Stimmung (Rückfall
+  `intensiv` → `match` → alle), Wahl des nächsten Stücks.
+- `src/client/musik.js`: Wiedergabe. `src/client/musikBedienung.js`: Schalter, Regler, Titel, Taste M.
+- `soundMixer.js`: `musikAnschluss()` (Musik hängt am selben AudioContext und Limiter, eigener
+  Lautstärkeknoten) und `setzeLautHandler()` (Ducken bei Explosion/Treffer).
+- `main.js`: erzeugt `Musik`, verdrahtet Geste, Sichtbarkeit und Stimmung; `debugApi.js`:
+  `window.__PA__.musik()`; `index.html`/`design.css`: Bedienung in Menü und HUD (`#musik-hud`);
+  Hilfe: Reiter „Ton und Musik“ (6. Reiter, `hilfe.spec.mjs` angepasst).
+
+| Stück | Datei | Dauer | Größe | Stimmung |
+|---|---|---|---|---|
+| Heathcliff | `heathcliff.mp3` | 75,9 s | 1,20 MB | menu, match |
+| Thief | `thief.mp3` | 90,7 s | 1,45 MB | menu, match |
+| Cliffhanger | `cliffhanger.mp3` | 84,7 s | 1,21 MB | match, intensiv |
+
+Gesamt 3,86 MB (Quellen: je ~2 MB, 190–205 kbit/s). Zuordnung nach **Messung und Titel, nicht
+nach Anhören**: alle drei sind sehr gleichmäßig (Lautheitsumfang 1,3–1,7 LU); „Thief“ hat den
+dunkelsten Klang (Anteil über 2 kHz ~9 dB unter dem unter 200 Hz) und kommt deshalb ins Menü,
+„Heathcliff“ ist heller und beginnt leise, steigt an (Menü und Match), „Cliffhanger“ ist nach
+Titel das Spannungsstück (Match, intensiv). Ändern: nur `stimmung` im Manifest.
+
+**Verhalten**
+- Wiedergabe über `HTMLAudioElement` (`preload = 'none'`, Quelle erst beim Einsatz = Streaming; zwei
+  Elemente wechseln sich ab, nie die ganze Bibliothek) → `MediaElementAudioSourceNode` → Gain
+  „Musik" → Limiter des Mischers.
+- Autoplay: Start erst in `freigeben()`, gerufen aus `keydown`, `pointerup`, `touchend` und `click`
+  gemeinsam mit der Freigabe des Mischers. Davor nur Zustand, kein Ton.
+- Stimmung folgt dem Menü (`#menu-overlay[hidden]` → `match`, sonst `menu`). Überblendung 2 s beim
+  Stückwechsel (Restzeit ≤ 2 s) und beim Wechsel Menü ↔ Match. Auswahl zufällig als Runde ohne
+  Zurücklegen, nie dasselbe Stück direkt nacheinander (`Math.random` im Client erlaubt, nicht in
+  `src/engine`/`src/shared`).
+- Ducken: −6 dB für ~0,4 s (+0,35 s Rückkehr) bei Explosion und Treffer.
+- Versteckter Tab → Pause, sichtbar → weiter. Verbindungsabbruch ändert nichts.
+- Fehler: Datei lädt nicht → still das nächste; nach einer Runde ohne Erfolg gibt die Musik auf
+  (`aufgegeben`), bis der Schalter neu betätigt wird. Nach außen wirft nichts.
+- Aus in Tests: `navigator.webdriver` oder `?musik=0` (Wiedergabe aus, Bedienung und Zustand
+  funktionieren weiter); `?musik=1` erzwingt die Wiedergabe. Dadurch bleiben die Profiling- und
+  alle anderen Specs unbeeinflusst.
+- Bedienung: Schalter „Musik an/aus“ (`aria-pressed`) und Regler „Musik-Lautstärke“ (0–100, Vorgabe 35)
+  im Menü und im HUD, Anzeige „Läuft: <Titel>“, Taste **M** (nicht im Textfeld, nicht mit
+  Strg/Alt/Meta). Zustand in `localStorage` `pa.musik.v1` (`{an, lautstaerke}`, try/catch, ohne
+  Speicher gelten die Vorgaben). Effekte-Lautstärke unverändert (0,8).
+- `intensiv` ist im Manifest vorgesehen und über `setzeStimmung('intensiv')` abrufbar, hat aber
+  noch keinen Auslöser im Spiel (kein Fund, nur nicht gebaut).
+
+**Weiteres Stück ergänzen:** `scripts/musik-kodieren.sh quelle.mp3 meine-id "Titel"`, Dauer mit
+`ffprobe` lesen, Eintrag in `manifest.json`. Kein Code nötig; `tests/musik.test.js` prüft Datei,
+Größe, Dauer, Titel-Metadatum und Gesamtgröße (< 4 MB — bei mehr Stücken den Wert dort bewusst
+anheben).
+
+**Tests:** `tests/musik.test.js` (20: Manifest, Dateien, Playlist, Wiedergabeklasse mit Attrappen),
+`tests/e2e/musik.spec.mjs` (7: Wiedergabe in Tests aus, `?musik=0`, Schalter, Regler samt
+Persistenz, Taste M, HUD, erzwungene Wiedergabe mit Stimmungswechsel).
+
+**Offen: Lizenz/Credits klären.** Quelle, Urheber und Lizenz der Stücke hat der Auftraggeber nicht
+genannt. Die Dateien tragen im Original nur den Kommentar „made with suno“ (von uns entfernt, hier
+vermerkt); Nutzungsrechte hängen vom Suno-Tarif zum Erzeugungszeitpunkt ab. Vor einer
+Veröffentlichung klären und Credits in Menü/Doku eintragen. Nicht gehört: die Zuordnung der
+Stimmungen sollte der Auftraggeber einmal gegenprüfen.
+
 ## Netcode-/Determinismus-Audit (2026-10-09) — offene Punkte
 
 Auftrag: Gesamtaudit (Code, Tests, Architektur, Performance) mit Fokus Determinismus,
@@ -469,7 +540,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1437/1437** grün, Dateizahl **154** (Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1457/1457** grün, Dateizahl **155** (Stand 2026-10-19, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

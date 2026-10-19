@@ -875,6 +875,16 @@
             <span class="label">Match</span>
             <span class="value">verlassen</span>
           </button>
+          <!-- Musik im HUD: Schalter, Regler, Titel (gleiche Bedienung wie im Menü, Taste M). -->
+          <div id="musik-hud" class="stat panel musik-regler" role="group" aria-label="Musik">
+            <button type="button" class="musik-schalter" data-musik-schalter aria-pressed="true" title="Musik an/aus (M)">
+              <span aria-hidden="true">&#9835;</span> <span data-musik-schalter-text>Musik an</span>
+            </button>
+            <label class="musik-lautstaerke"><span class="musik-lautstaerke-text">Musik-Lautstärke</span>
+              <input type="range" data-musik-regler min="0" max="100" step="5" value="35" />
+            </label>
+            <span class="musik-titel" data-musik-titel></span>
+          </div>
         </div>
 
         <div id="hud-left" class="panel">
@@ -1071,6 +1081,24 @@
           </div>
           <div class="menu-weitere">
 
+          <!--
+            Musik (src/client/musik.js, musikBedienung.js).
+
+            Dieselben drei Bedienelemente stehen im HUD noch einmal; sie werden über
+            Datenattribute gefunden und zeigen denselben Zustand. Die Taste M
+            schaltet die Musik überall stumm/laut. Der Zustand liegt in
+            localStorage (`pa.musik.v1`), ohne Speicher gelten die Vorgaben.
+          -->
+          <div class="musik-regler" role="group" aria-label="Musik">
+            <button type="button" class="secondary musik-schalter" data-musik-schalter aria-pressed="true"
+                    title="Musik an/aus (M)">
+              <span aria-hidden="true">&#9835;</span> <span data-musik-schalter-text>Musik an</span>
+            </button>
+            <label class="musik-lautstaerke">Musik-Lautstärke
+              <input type="range" data-musik-regler min="0" max="100" step="5" value="35" />
+            </label>
+            <span class="musik-titel" data-musik-titel></span>
+          </div>
           <details id="lobby-browser">
             <summary>Offene Lobbys anzeigen</summary>
             <div class="field-row">
@@ -1237,6 +1265,7 @@
             <span><b>1–9</b> Waffe wählen</span>
             <span><b>Q</b> Waffe abwerfen</span>
             <span><b>E</b> Waffenmenü (Besitz als Auswahl)</span>
+            <span><b>M</b> Musik stumm/laut</span>
             <span><b>R</b> Match verlassen</span>
           </div>
         </div>
