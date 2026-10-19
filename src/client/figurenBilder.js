@@ -7,23 +7,27 @@
  *   2. Porträt `assets/characters/<fraktion>/<datei>` (256 px), im Spiel je
  *      Blickrichtung gespiegelt.
  *
- * Performance: Das Bild wird EINMAL auf Spielgröße (2x für Zoom) in eine eigene
- * Leinwand verkleinert; pro Bild kostet das Zeichnen dann ein `drawImage` ohne
- * Allokation. Bis ein Bild geladen ist, liefert `holeFigur` `null` — die
+ * Performance und Bildqualität: Das Bild liegt in einer Mip-Kette vorskalierter
+ * Stufen (64/96/128/192 px und das 256er Original). Jede Stufe entsteht beim
+ * ersten Gebrauch durch mehrstufiges Halbieren, wird leicht geschärft und von
+ * Randsäumen befreit; `stufeFuer` wählt je Bildschirmgröße. Pro Bild kostet das
+ * Zeichnen ein `drawImage` ohne Allokation. Bis ein Bild geladen ist, liefert `holeFigur` `null` — die
  * Zeichnung fällt dann auf die prozedurale Figur zurück.
  *
  * @module figurenBilder
  */
 
 import { iconUrlFor } from '../shared/config/weapons.js';
+import { STUFEN, stufeBauen } from './figurStufen.js';
+
+export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
 
 const PORTRAETS = import.meta.glob('./assets/characters/*/*.png', { query: '?url', import: 'default' });
 const SEITEN = import.meta.glob('./assets/characters-side/*/*.png', { query: '?url', import: 'default' });
 const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { eager: true, import: 'default' });
 
-/** Kantenlänge der gecachten Leinwand in Pixeln (Quelle: 256 px). */
+/** Kantenlänge der Standardstufe (Quelle: 256 px). */
 const CACHE_KANTE = 128;
-
 const standard = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
 
 /** Ankerpunkte je Figur aus dem Manifest der Seitenansichten (Anteile 0..1). */
@@ -35,43 +39,6 @@ function ankerAusManifest(fraktion, datei) {
 
 // fraktion -> datei -> Eintrag | 'laedt' | 'fehlt' (zweistufig: Nachschlag je Bild ohne Zeichenkettenbau)
 const cache = new Map();
-
-function neueLeinwand(b, h) {
-  if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(b, h);
-  const c = document.createElement('canvas');
-  c.width = b; c.height = h;
-  return c;
-}
-
-/** Verkleinert ein geladenes Bild auf die Cache-Größe (mehrstufig für saubere Kanten). */
-function verkleinere(img) {
-  let quelle = img;
-  let kante = Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height);
-  while (kante / 2 >= CACHE_KANTE) {
-    kante = Math.round(kante / 2);
-    const z = neueLeinwand(kante, kante);
-    const zc = z.getContext('2d');
-    zc.imageSmoothingQuality = 'high';
-    zc.drawImage(quelle, 0, 0, kante, kante);
-    quelle = z;
-  }
-  const ziel = neueLeinwand(CACHE_KANTE, CACHE_KANTE);
-  const c = ziel.getContext('2d');
-  c.imageSmoothingQuality = 'high';
-  c.drawImage(quelle, 0, 0, CACHE_KANTE, CACHE_KANTE);
-  return ziel;
-}
-
-/** Weiße Fassung der Silhouette für den Treffer-Blitz. */
-function weisse(bild) {
-  const z = neueLeinwand(CACHE_KANTE, CACHE_KANTE);
-  const c = z.getContext('2d');
-  c.drawImage(bild, 0, 0);
-  c.globalCompositeOperation = 'source-atop';
-  c.fillStyle = '#ffffff';
-  c.fillRect(0, 0, CACHE_KANTE, CACHE_KANTE);
-  return z;
-}
 
 function ladeBild(url) {
   return new Promise((ok, fehler) => {
@@ -89,13 +56,18 @@ async function lade(eintraege, charakter) {
     const lader = seitenLader ?? PORTRAETS[`./assets/characters/${charakter.faction}/${charakter.sprite}`];
     if (!lader) { eintraege.set(datei, 'fehlt'); return; }
     const img = await ladeBild(await lader());
-    const klein = verkleinere(img);
-    eintraege.set(datei, {
-      bild: klein,
-      hell: weisse(klein),
+    const fig = {
+      quelle: img,
+      stufen: new Array(STUFEN.length).fill(null),
+      bild: null,
+      hell: null,
       seite: Boolean(seitenLader),
       anker: seitenLader ? ankerAusManifest(charakter.faction, charakter.sprite) : standard,
-    });
+    };
+    const std = stufeBauen(fig, CACHE_KANTE);
+    fig.stufen[STUFEN.indexOf(CACHE_KANTE)] = std;
+    fig.bild = std.bild; fig.hell = std.hell;
+    eintraege.set(datei, fig);
   } catch {
     eintraege.set(datei, 'fehlt');
   }
