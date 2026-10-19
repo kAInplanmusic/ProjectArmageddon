@@ -1062,8 +1062,14 @@ class Game {
     this.network = client;
     this.lobbyId = targetLobby;
 
+    // A-10 (Befundregister): Solange kein `joined` eingetroffen ist, ist ein
+    // `server_error` ein BEITRITTSfehler (Lobby voll, läuft schon) — der führt
+    // zurück ins Menü, nicht ins leere Spiel.
+    let beigetreten = false;
+
     client.on('hello', () => this.hud.log('Handshake abgeschlossen', 'good'));
     client.on('joined', payload => {
+      beigetreten = true;
       /*
        * Im Modus der Matcharten führt ein Mensch ein ganzes TEAM (3–5 Einheiten).
        * `entityIds` nennt alle; `entityId` bleibt die erste Figur. Beide werden
@@ -1148,6 +1154,15 @@ class Game {
       // zeigte die Anzeige eine Bahn für einen Schuss, den es nie gab.
       this.shotPredictor.discard(text);
       this.hud.log(`Server: ${text}`, 'danger');
+      /*
+       * A-10 (Befundregister): Ein abgelehnter BEITRITT (Lobby voll, läuft
+       * schon) ließ den Spieler vor einem geschlossenen Menü zurück — nur eine
+       * Protokollzeile, kein Rückweg. Solange kein `joined` kam, ist der Fehler
+       * ein Beitrittsfehler: aufräumen und ins Menü zurück.
+       */
+      if (!beigetreten && this.mode === 'online') {
+        this.#verlasseMatch();
+      }
     });
     client.on('game_event', message => this.#handleRemoteEvent(message));
     /*

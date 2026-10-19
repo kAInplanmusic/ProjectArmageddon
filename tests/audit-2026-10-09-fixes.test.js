@@ -218,3 +218,22 @@ test('C-1b: Die Zustandsdatei mit Spieler-Tokens ist nur für den Owner lesbar',
     'writeFileSync muss die Zustandsdatei mit mode 0o600 schreiben'
   );
 });
+
+test('A-10: Ein abgelehnter Online-Beitritt führt ins Menü zurück', () => {
+  /*
+   * Befundregister A-10: Lehnte der Server den Beitritt ab (Lobby voll, läuft
+   * schon), blieb das Menü geschlossen und der Spieler sah nur eine
+   * Protokollzeile — kein Rückweg außer Neuladen. Der Fix: Solange kein
+   * `joined` eingetroffen ist, behandelt der `server_error`-Zweig den Fehler
+   * als Beitrittsfehler und räumt über `#verlasseMatch()` auf (Menü wieder da,
+   * Abbruchknopf aus, Verbindung getrennt).
+   */
+  assert.ok(
+    mainQuelle.includes("if (!beigetreten && this.mode === 'online')"),
+    'Der server_error-Zweig muss ungejoint Beitrittsfehler erkennen'
+  );
+  assert.ok(
+    mainQuelle.includes('this.#verlasseMatch();'),
+    'Der Beitrittsfehler muss über #verlasseMatch() ins Menü zurückführen'
+  );
+});
