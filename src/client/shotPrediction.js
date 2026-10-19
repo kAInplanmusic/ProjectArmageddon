@@ -26,8 +26,8 @@
  * ---------
  * Der Abschussweg (Konstanten, Integrationsschritt, Streckenabtastung) steht in
  * `src/shared/ballistics.js` — DERSELBEN Quelle, aus der auch der Motor
- * (`ProjectileSystem`), die Zielvorschau des MatchControllers und die Bot-KI
- * lesen. Eine eigene Kopie der Schleife wäre genau der Fehler, den die
+ * (`ProjectileSystem`) und die Zielvorschau des MatchControllers lesen.
+ * Eine eigene Kopie der Schleife wäre genau der Fehler, den die
  * Waffenwerte schon einmal hatten (`gravityScale` in Abschnitt 14 des
  * Codeaudits): Die Vorhersage zeigte dann eine Bahn, die die Waffe nicht fliegt.
  *
@@ -141,7 +141,7 @@ export function predictTrajectory({
 
 /*
  * Der Geschwindigkeitsfaktor stand früher hier. Er ist nach
- * `src/shared/launchSpeed.js` gewandert, weil ihn die Bot-KI (Server) und der
+ * `src/shared/launchSpeed.js` gewandert, weil ihn der Server und der
  * Motor ebenso brauchen. Der Name bleibt hier exportiert, damit die
  * öffentliche Schnittstelle dieses Moduls unverändert ist.
  */

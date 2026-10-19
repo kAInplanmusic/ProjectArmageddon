@@ -294,3 +294,23 @@ test('2.4: Ein Geschoss am Kartenrand wird gemeldet, nicht still entfernt', () =
     'Der Client muss den Kartenrand-Fall melden'
   );
 });
+
+test('C-6/2.5: Keine Gegenwarts-Aussage behauptet eine Bot-KI', () => {
+  /*
+   * Befundregister C-6 / Warteschlange 2.5: Zwei Kommentare beschrieben die
+   * GEGENWART mit einer Bot-KI, die es seit 2026-09-20 nicht mehr gibt
+   * (shotPrediction.js). Historische Belege („die Bot-KI ist entfallen")
+   * bleiben stehen; Gegenwarts-Aussagen werden korrigiert.
+   */
+  const shotPredictionQuelle = fs.readFileSync(
+    path.join(ROOT, 'src', 'client', 'shotPrediction.js'), 'utf8'
+  );
+  assert.ok(
+    !shotPredictionQuelle.includes('und die Bot-KI'),
+    'shotPrediction.js darf die Bot-KI nicht als gegenwärtige Leserin nennen'
+  );
+  assert.ok(
+    !shotPredictionQuelle.includes('die Bot-KI (Server)'),
+    'shotPrediction.js darf die Bot-KI nicht als gegenwärtigen Nutzer nennen'
+  );
+});
