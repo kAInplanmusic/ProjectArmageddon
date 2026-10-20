@@ -6,7 +6,7 @@
  *
  * @module guentherRad
  */
-import { LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
+import { LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS, GUENTHER_FEINSCHLIFF } from '../shared/config/guenther.js';
 
 /**
  * @param {{guenther:object, statuses:object, inventory:object, world:object}} q
@@ -70,7 +70,9 @@ export function loeseGuentherRad(q, playerId) {
       }
 
       case 'damage': {
-        const betrag = Math.round(q.guenther.zieheBereich(wirkung.range));
+        let betrag = Math.round(q.guenther.zieheBereich(wirkung.range));
+        // Fassung 3: Der Angriff entscheidet keine Partie — mindestens 1 Leben bleibt (der Wurf wird trotzdem gezogen).
+        if (q.fassung >= GUENTHER_FEINSCHLIFF) betrag = Math.min(betrag, Math.max(0, (q.world.getComponent(playerId, 'Health', 'current') ?? 0) - 1));
         // Als Schaden OHNE Verursacher: Günther gehört keinem Team, ein Abschuss
         // durch ihn darf nicht als Treffer eines Spielers zählen.
         q.world.getSystem('damage')?.applyDamage(q.world, playerId, betrag, null);

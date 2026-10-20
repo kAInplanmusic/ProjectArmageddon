@@ -38,8 +38,10 @@ import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
-import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD, GUENTHER_AKTION_REGELN } from '../shared/config/guenther.js';
-import { COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT } from '../shared/config/cookie.js';
+import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
+import { zeichneTiere } from './hilfeTiere.js';
+import { TierHud } from './tierHud.js';
+import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { exposeDebugApi } from './debugApi.js';
@@ -2028,6 +2030,7 @@ class Game {
   #ereignisKontext() {
     return {
       renderer: this.renderer,
+      tierBuehne: this.renderer?.tierBuehne,
       hud: this.hud,
       sound: this.sound,
       dedup: this.ereignisDedup,
@@ -2108,6 +2111,7 @@ class Game {
   /** Neues Match, Replay oder Abbruch: Pause und alte Aufnahme verwerfen, Hinweis ausblenden. */
   #setzeZugpauseZurueck() {
     this.kameraRegie?.reset();
+    this.renderer?.tierBuehne?.reset();
     this.zugpause = null;
     this.schussAufnahme.verwerfe();
     const feld = document.getElementById('zugpause');
@@ -2812,6 +2816,7 @@ class Game {
       wiederholung: wiederholung ? { kopf: wiederholung.kopf, ursprung: wiederholung.spur[0] } : null,
       krater: krater ? { id: krater, x: krater.x, y: krater.y, radius: krater.radius } : null,
       waffe: waffe ? { kategorie: waffe.category, radius: waffe.blastRadius ?? 0 } : null,
+      tier: this.renderer.tierBuehne.kameraAuftritt(),
     };
   }
 
@@ -2878,6 +2883,18 @@ class Game {
      * selben Bild gilt. Sie ändert nichts am Zustand — ein Replay bleibt
      * reproduzierbar, egal wohin die Kamera zeigt.
      */
+    // Tier-Bühne altern lassen (Blasen, Teilchen, Auftritt); Signale gehen ins Protokoll und an den Klang.
+    {
+      const tierJetzt = performance.now();
+      const tierDt = this.tierZeit ? (tierJetzt - this.tierZeit) / 1000 : 0;
+      this.tierZeit = tierJetzt;
+      for (const signal of this.renderer.tierBuehne.schritt(state, tierDt, this.renderer.reducedMotion)) {
+        if (signal.typ === 'guenther_auftritt') {
+          this.hud.log('Günther betritt die Karte', 'neutral');
+          this.sound?.verarbeite({ type: 'bellen', x: signal.x, y: signal.y, pegel: 0.7 });
+        }
+      }
+    }
     if (this.kamera) {
       // HUD-Ränder messen, Schilder und Schub setzen (nur Darstellung).
       this.hudAusweichen.aktualisiere(state, this.kamera);
@@ -2886,12 +2903,14 @@ class Game {
       this.kameraZeit = jetzt;
       this.kameraRegie.setzeReduziert(this.renderer.reducedMotion);
       const kameraAus = this.kameraRegie.schritt(dt, this.#kameraEingabe(state, wiederholung, activeWeapon, myTurn));
+      // Beben der Tiere (Cookie tobt, Schockwelle, wildes Bellen) kommt als Versatz obendrauf; 0 bei Bewegungsreduktion.
+      const beben = this.renderer.tierBuehne.versatz();
       if (kameraAus) {
         this.kamera.setzeAnsicht(kameraAus.x, kameraAus.y, kameraAus.zoom);
-        this.kamera.setzeStoss(kameraAus.stoss.x, kameraAus.stoss.y);
+        this.kamera.setzeStoss(kameraAus.stoss.x + beben.x, kameraAus.stoss.y + beben.y);
         this.kameraRegie.uebernimm(this.kamera.ansicht());
       } else {
-        this.kamera.setzeStoss(0, 0);
+        this.kamera.setzeStoss(beben.x, beben.y);
       }
       // Rest-Schritt: Schub der nicht scrollenden Achse weich annähern.
       this.kamera.schritt();
@@ -2918,6 +2937,7 @@ class Game {
      * Zeichenaufruf entstehen (siehe `Renderer#nimmTreffer`).
      */
     this.#spieleTrefferklang();
+    (this.tierHud ??= new TierHud()).aktualisiere(state, this.renderer.tierBuehne);
     this.hud.update(state, {
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       onWeaponSelect: index => this.selectWeapon(index),
@@ -3690,47 +3710,6 @@ function buildHilfeView() {
   });
 
   if (behaelter?.open) zeichnen();
-}
-
-/**
- * Reiter „Günther und Cookie" — die Tier-NPCs. Alle Zahlen stammen aus der Config
- * (`config/guenther.js`, `config/cookie.js`), die auch der Motor liest; es gibt
- * hier keine zweite Fassung der Werte.
- */
-function zeichneTiere(container) {
-  const R = GUENTHER_AKTION_REGELN;
-  const sek = ticks => `${Math.round(ticks / 6) / 10} s`;
-  container.append(textEl('p', 'Zwei neutrale Tiere laufen oder liegen auf der Karte. Sie gehören keinem Team und lassen sich nicht besiegen.', 'h-einleitung'));
-
-  container.append(textEl('h3', 'Günther, der Kleinspitz'));
-  container.append(textEl('p', 'Er erscheint im Schnitt zweimal pro Spiel, pinkelt an, hinterlässt Häufchen (Schaden und Verlangsamung) und löst bei Berührung das Glücksrad aus. Dazu kommen seine Aktionen:'));
-  const liste = document.createElement('ul');
-  for (const [text, regel] of [
-    [`Essen: frisst eine Kiste in der Nähe und heilt den nächsten Spieler um ${R.essen.heilung}.`, R.essen],
-    ['Hüpfen: reine Freude, ohne Folgen.', R.huepfen],
-    ['Ziehen (Seil): zieht einen Spieler in der Nähe zu sich heran.', R.ziehen],
-    [`Wühlen: reißt ein kleines Loch ins Gelände und gräbt mit ${Math.round(R.wuehlen.fundChance * 100)} % Chance eine Kiste aus.`, R.wuehlen],
-    [`Kuscheln: stillstehen lohnt sich, +${R.kuscheln.heilung} Leben.`, R.kuscheln],
-    [`Rücken kraulen: liegt er auf dem Rücken, gibt es +${R.kraulen.heilung} Leben (Bonus).`, R.kraulen],
-    ['Sitz und Platz: er hält still und pinkelt und kackt in dieser Zeit nicht.', R.sitz],
-    [`Wildes Bellen: er dreht durch und scheucht alle im Umkreis von ${R.chaos.radius} px auf (Chaos).`, R.chaos],
-  ]) {
-    liste.append(textEl('li', `${text} (${sek(regel.ticks)})`));
-  }
-  container.append(liste);
-
-  container.append(textEl('h3', 'Cookie, der Kater des Weltuntergangs'));
-  container.append(textEl('p', 'Cookie schläft oder frisst. Sein Hunger wächst stetig, und je größer er wird, desto lauter miaut er: leise, laut, Hungerwut. Die Lautstärke zeigt, wie dringend es ist.'));
-  const st = COOKIE_HUNGER.stufen;
-  const hunger = document.createElement('ul');
-  hunger.append(
-    textEl('li', `Hunger ab ${st.leise}: leises Miauen. Ab ${st.laut}: lautes Miauen. Ab ${st.wut}: Hungerwut.`),
-    textEl('li', `Füttern: im Laufen an ihn herangehen (−${COOKIE_PFLEGE.fuetternHunger} Hunger) oder eine Kiste in seine Nähe legen (Futternapf, −${COOKIE_PFLEGE.napfHunger}).`),
-    textEl('li', `Kuscheln: still neben ihm stehen (−${COOKIE_PFLEGE.kuschelnHunger} Hunger, +${COOKIE_PFLEGE.kuschelnHeilung} Leben).`),
-    textEl('li', `Verhungert er fast, tobt er: Er reißt Löcher ins Gelände, zerstört Kisten und schlägt Figuren (${COOKIE_WUT.schlagSchaden} Schaden).`),
-    textEl('li', 'Extrem selten will er spielen: Das löst eine kosmische Schockwelle aus.'),
-  );
-  container.append(hunger);
 }
 
 /** Kleiner Helfer: ein Element mit Textinhalt. */

@@ -297,8 +297,10 @@ export default GUENTHER_IDENTITY;
  */
 export const GUENTHER_ALT = 1;
 export const GUENTHER_AKTIONEN = 2;
+/** Fassung 3: Feinschliff nach Messung (`scripts/tiere-verteilung.mjs`), siehe unten. */
+export const GUENTHER_FEINSCHLIFF = 3;
 /** Fassung NEUER Partien (Server und Client geben sie ausdrücklich mit). */
-export const GUENTHER_FASSUNG_STANDARD = GUENTHER_AKTIONEN;
+export const GUENTHER_FASSUNG_STANDARD = GUENTHER_FEINSCHLIFF;
 
 /**
  * Fehlende oder unbekannte Werte sind `GUENTHER_ALT`: Wer die Marke nicht trägt,
@@ -307,6 +309,7 @@ export const GUENTHER_FASSUNG_STANDARD = GUENTHER_AKTIONEN;
  * das alte.)
  */
 export function normalisiereGuenther(fassung) {
+  if (fassung === GUENTHER_FEINSCHLIFF) return GUENTHER_FEINSCHLIFF;
   return fassung === GUENTHER_AKTIONEN ? GUENTHER_AKTIONEN : GUENTHER_ALT;
 }
 
@@ -348,3 +351,52 @@ export const GUENTHER_AKTION_IDS = Object.freeze(Object.keys(GUENTHER_AKTION_REG
 
 /** Wie lange die Pose „kacken" beim Ablegen eines Haufens steht. */
 export const GUENTHER_KACK_POSE_TICKS = 36;
+
+
+/*
+ * ============================================================================
+ * Fassung 3: Feinschliff nach Messung (Versionsmarke `config.guenther` = 3)
+ * ============================================================================
+ *
+ * Messung: `node scripts/tiere-verteilung.mjs --guenther=2 --cookie=2` (60 Seeds, 2x2-Bot,
+ * 7 Minuten, 25 Runden). Befund der Fassung 2:
+ *
+ *     Pinkeln 43-50 mal je Partie (75-82 Schaden), Häufchen 10-13 Treffer (120-150 Schaden):
+ *     Günther verursachte ~55 % des Gesamtschadens einer Bot-Partie (Waffen ~200, Tier ~260).
+ *     Er sollte Würze sein, nicht die Hauptwaffe.
+ *
+ * Fassung 3 senkt Pinkeln und Häufchen (seltener, weniger Schaden), lässt das Rad unberührt
+ * (Heimdall bleibt bei 5 %) und macht den Rad-Angriff NICHT tödlich: Wer Günther anläuft,
+ * verliert höchstens bis auf 1 Leben. Aktionen, Gewichte und Wirkungen bleiben wie in Fassung 2.
+ * Alles andere (Aktionsplan, Rad-Gewichte) gilt unverändert, der Zufallsstrom bleibt derselbe
+ * Teilgenerator, nur die Zahlen der Wirkung ändern sich.
+ */
+export const GUENTHER_PEE_3 = Object.freeze({
+  ...GUENTHER_PEE,
+  intervalTicks: [90, 170],
+  baseDamage: 7,
+  decay: 0.65,
+});
+
+export const GUENTHER_POOP_3 = Object.freeze({
+  ...GUENTHER_POOP,
+  intervalTicks: [420, 700],
+  damagePerTurn: 3,
+  maxPiles: 4,
+});
+
+/**
+ * Die Werte, die Simulation und Anzeige für eine Fassung lesen.
+ *
+ * @param {number} fassung - normalisierte Fassung (1, 2 oder 3)
+ * @returns {{pee:object, poop:object, aktionen:object, radAngriffNichtToedlich:boolean}}
+ */
+export function guentherWerte(fassung) {
+  const neu = fassung >= GUENTHER_FEINSCHLIFF;
+  return {
+    pee: neu ? GUENTHER_PEE_3 : GUENTHER_PEE,
+    poop: neu ? GUENTHER_POOP_3 : GUENTHER_POOP,
+    aktionen: GUENTHER_AKTION_REGELN,
+    radAngriffNichtToedlich: neu,
+  };
+}

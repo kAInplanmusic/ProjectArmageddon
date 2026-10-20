@@ -53,6 +53,7 @@
     "balance:waffen": "node scripts/waffen-balance.mjs",
     "balance:schaden": "PA_ZUGPAUSE_SEKUNDEN=0 node scripts/balance-schaden.mjs",
     "balance:kisten": "node scripts/kisten-zaehlung.mjs",
+    "balance:tiere": "node scripts/tiere-verteilung.mjs",
     "balance:bot": "node scripts/bot-partien.mjs",
     "server": "node scripts/server.mjs",
     "replay": "node scripts/replay.mjs",

@@ -14,6 +14,7 @@ import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
+import { TierBuehne } from './tierBuehne.js';
 import { holeTierPose, ladeTierPosenVor } from './tierBilder.js';
 import { prefersReducedMotion } from './dom.js';
 import {
@@ -2149,6 +2150,9 @@ export class Renderer {
 
   #tierPosenAngefordert = null;
 
+  /** Sprechblasen, Miau-Wellen, Teilchen und Kameraauftritt der Tiere (nur Darstellung). */
+  tierBuehne = new TierBuehne();
+
   /** Cookie, der Kater des Weltuntergangs: Sprite je Pose, darüber Name und Hungerbalken. */
   #drawCookie(cookie) {
     if (!cookie?.aktiv) return;
@@ -2730,6 +2734,7 @@ export class Renderer {
     this.#drawFigurEffekte();
     this.#drawGuenther(state.guenther);
     this.#drawCookie(state.cookie);
+    this.tierBuehne.zeichne(this.ctx);
     this.#drawProjectiles(state.projectiles ?? [], state.entities ?? []);
     this.#drawWiederholung(wiederholung);
     /*

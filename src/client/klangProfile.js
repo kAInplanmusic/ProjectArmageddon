@@ -274,6 +274,11 @@ export const EREIGNIS_PROFILE = Object.freeze({
     T({ f0: 900, f1: 1500, gleit: 0.25, an: 0.04, ab: 0.35, pegel: 0.3, vibrato: { hz: 7, tiefe: 30 } }),
     T({ f0: 1500, f1: 800, gleit: 0.3, start: 0.3, an: 0.02, ab: 0.35, pegel: 0.25, vibrato: { hz: 7, tiefe: 25 } }),
   ], { ton: 0.05, filter: 0.05, pegel: 0.05 }),
+  /* Schnurren: tiefes, schnell zitterndes Brummen (Cookie kuschelt, Günther wird gekrault). */
+  schnurren: P('umgebung', 0.4, 0.1, [
+    T({ welle: 'sawtooth', f0: 68, f1: 58, gleit: 0.9, an: 0.12, ab: 0.9, pegel: 0.4, partiale: [[2, 0.4], [3, 0.2]], zittern: { hz: 25, tiefe: 0.7 } }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 300, an: 0.15, ab: 0.8, pegel: 0.12 }),
+  ], { ton: 0.03, filter: 0.05, pegel: 0.05 }),
   fressen: P('umgebung', 0.6, 0.05, [
     K({ n: 9, fenster: 0.7, fmin: 600, fmax: 3000, q: 3, ab: 0.05, pegel: 0.45 }),
     R({ farbe: 'braun', filter: 'lowpass', f0: 600, an: 0.02, ab: 0.4, pegel: 0.2 }),

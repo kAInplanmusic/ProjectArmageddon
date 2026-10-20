@@ -851,6 +851,19 @@
         <span class="zugpause-titel"></span>
         <span class="zugpause-zahl" aria-hidden="true"></span>
       </div>
+      <!-- Tier-Leiste: Cookies Hunger und Miau-Pegel, Günthers Sprechblase (src/client/tierHud.js); nur sichtbar, wenn es etwas zu zeigen gibt. -->
+      <div id="tier-hud" aria-hidden="true" hidden>
+        <div id="tier-cookie" class="tier-zeile" hidden>
+          <span class="tier-name">Cookie</span>
+          <span class="tier-hunger"><i></i></span>
+          <span class="tier-pegel"><b></b><b></b><b></b></span>
+          <span class="tier-stufe"></span>
+        </div>
+        <div id="tier-guenther" class="tier-zeile" hidden>
+          <span class="tier-name">Günther</span>
+          <span class="tier-blase"></span>
+        </div>
+      </div>
       <section id="hud" aria-label="Spiel-HUD">
         <div id="hud-top">
           <div class="stat panel">

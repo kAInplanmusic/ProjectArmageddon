@@ -842,3 +842,37 @@ select option { background: #14181d; color: var(--ink); }
   #musik-hud { padding: 0 6px; }
   #musik-hud .musik-schalter, #musik-hud .musik-lautstaerke input[type="range"] { min-height: 32px; }
 }
+
+/* ======================================================= Tier-Leiste (Cookie-Hunger, Miau-Pegel, Günthers Blase) */
+#tier-hud {
+  position: fixed; z-index: 15; top: 74px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 4px; align-items: center; pointer-events: none;
+}
+#tier-hud[hidden], #tier-hud .tier-zeile[hidden] { display: none; }
+#tier-hud .tier-zeile {
+  display: flex; align-items: center; gap: 8px; padding: 3px 10px; border: 1px solid var(--panel-edge); border-radius: 6px;
+  background: linear-gradient(180deg, rgba(43, 49, 56, 0.82), rgba(27, 31, 36, 0.82)); color: var(--ink); font-size: 12px;
+}
+#tier-hud .tier-name { font-family: var(--font-display); letter-spacing: 0.1em; font-size: 14px; }
+#tier-hud .tier-hunger { width: 84px; height: 7px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); overflow: hidden; }
+#tier-hud .tier-hunger i { display: block; height: 100%; width: 0; background: #5aa86a; transition: width 0.4s linear; }
+#tier-cookie[data-stufe="leise"] .tier-hunger i { background: #d8c24a; }
+#tier-cookie[data-stufe="laut"] .tier-hunger i { background: #f0a020; }
+#tier-cookie[data-stufe="wut"] .tier-hunger i { background: #e5484d; }
+#tier-hud .tier-pegel { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+#tier-hud .tier-pegel b { width: 4px; border-radius: 1px; background: rgba(255, 255, 255, 0.18); }
+#tier-hud .tier-pegel b:nth-child(1) { height: 6px; }
+#tier-hud .tier-pegel b:nth-child(2) { height: 10px; }
+#tier-hud .tier-pegel b:nth-child(3) { height: 14px; }
+#tier-hud .tier-pegel b.an { background: #f0c040; }
+#tier-cookie[data-stufe="wut"] .tier-pegel b.an { background: #e5484d; }
+#tier-cookie.miaut .tier-pegel b.an { animation: tier-pegel-puls 0.35s ease-in-out infinite alternate; }
+#tier-cookie[data-stufe="wut"] { border-color: #e5484d; }
+#tier-hud .tier-stufe { font-variant-numeric: tabular-nums; min-width: 86px; }
+#tier-hud .tier-blase { font-weight: 700; }
+@keyframes tier-pegel-puls { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  #tier-cookie.miaut .tier-pegel b.an { animation: none; }
+  #tier-hud .tier-hunger i { transition: none; }
+}
+@media (max-width: 640px) { #tier-hud { top: 64px; } #tier-hud .tier-hunger { width: 56px; } }

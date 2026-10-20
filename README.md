@@ -160,8 +160,8 @@ sich ein Glücksrad.
 
 | Was | Wirkung |
 |---|---|
-| **Anpinkeln** | Schaden, mit jedem weiteren Mal auf denselben Spieler geringer (9 → 0,72× je Treffer, Untergrenze 1) |
-| **Häufchen** | Wer hineingerät: 3 Runden Schaden (4/Zug) und verlangsamte Bewegung (Faktor 0,55) |
+| **Anpinkeln** | Schaden, mit jedem weiteren Mal auf denselben Spieler geringer (Fassung 3: 7 → 0,65× je Treffer, Untergrenze 1; Fassung 2: 9 → 0,72×), alle 1,5 bis 2,8 s in 130 px |
+| **Häufchen** | Wer hineingerät: 3 Runden Schaden (Fassung 3: 3/Zug, Fassung 2: 4/Zug) und verlangsamte Bewegung (Faktor 0,55); alle 7 bis 11,7 s, höchstens 4 liegen |
 | **Berührung** | Glücksrad mit fünf Ausgängen (siehe unten) |
 
 Er erscheint im Mittel **zweimal pro Spiel** — die Zahl wird aber gewürfelt
@@ -177,7 +177,7 @@ feststehenden Ausgang zu.
 | Du gehst mit Günther Gassi | 30 % | eine Runde aussetzen |
 | Du fütterst Günther | 25 % | aussetzen + eine Waffe niederer Seltenheit |
 | Du spielst mit Günther | 22 % | aussetzen, dafür +50 bis +100 Leben |
-| Günther greift dich an | 18 % | 1–99 Schaden |
+| Günther greift dich an | 18 % | 1–99 Schaden (ab Fassung 3 nie tödlich: mindestens 1 Leben bleibt) |
 | **Günther wird Heimdall** | **5 %** | legendäre Waffe, Blitze, Gjallarhorn und Bifröst über dem Feld |
 
 Die Berührung zählt nur beim **eigenen Laufen** — wer stillsteht, berührt nichts.
@@ -202,21 +202,36 @@ die passende Pose.
 | Wildes Bellen | – | Chaos: scheucht alle im Umkreis von 260 px auf |
 
 Die Marke steht im Replay-Kopf als `config.guenther` (1 = nur Laufen, Pinkeln,
-Kacken, Rad; 2 = Aktionen). Fehlt sie, gilt 1 — Bit für Bit das alte Verhalten.
+Kacken, Rad; 2 = Aktionen; 3 = Feinschliff nach Messung). Fehlt sie, gilt 1 — Bit
+für Bit das alte Verhalten; Köpfe mit 2 laufen unverändert.
+
+### Fassung 3: gemessen statt geschätzt
+
+`npm run balance:tiere` spielt volle Bot-Partien (2x2, 60 Seeds, drei Spielweisen:
+Bot steht, Bot sucht die Tiere, Bot sammelt Kisten) und zählt jede Aktion,
+Heilung, Schaden, Kisten, Hungerwut und Tiertode. Befund der Fassung 2: Günther
+und Cookie verursachten zusammen rund **260 Schaden je Partie** (bei etwa 200
+Waffenschaden des Bots), wer neben Cookie stand, wurde bis zu **390 Leben**
+geheilt, und der Futternapf fraß **45 %** aller Kisten. Fassung 3 senkt das auf
+rund 140 bis 180 Schaden, höchstens ~100 Heilung für eine Figur und 16–34 % Kisten; Tiertode
+bleiben bei **0** in 180 gemessenen Partien (kein Soft-Lock, keine Partie
+wird allein von einem Tier entschieden). Die Tabellen mit Chance, Effekt, Dauer
+und Wartezeit stehen im Hilfe-Reiter „Günther und Cookie" und in
+`docs/tiere-balance.md`.
 
 ## Cookie, der Kater des Weltuntergangs
 
-Ein zweiter neutraler NPC (Fassung 2, `config.cookie`; fehlt die Marke, gibt es
-ihn nicht). Er schläft oder frisst. Sein **Hunger** (0–100) wächst in etwa zwei
-Minuten von leer auf voll; die Miau-Stufen **leise** (ab 30), **laut** (ab 60)
+Ein zweiter neutraler NPC (`config.cookie`: 2 = Kater, 3 = Feinschliff; fehlt die
+Marke, gibt es ihn nicht). Er schläft oder frisst. Sein **Hunger** (0–100) wächst in etwa drei
+Minuten (Fassung 2: zwei) von leer auf voll; die Miau-Stufen **leise** (ab 30), **laut** (ab 60)
 und **Hungerwut** (ab 85) werden lauter und häufiger — die Lautstärke ist die
 Dringlichkeit.
 
 | Was | Wirkung |
 |---|---|
-| **Füttern** | im Laufen an ihn herangehen: −45 Hunger, +10 Leben; oder eine Kiste in 70 px Nähe (Futternapf): −30 |
-| **Kuscheln** | 60 Ticks still daneben stehen: −10 Hunger, +20 Leben (Sperre 20 s je Spieler) |
-| **Toben** | in der Hungerwut: läuft auf den nächsten Spieler zu, reißt alle 12 Ticks ein Loch (Radius 30), zerstört Kisten, schlägt Figuren (40 Schaden, Sperre 2 s) – bis zur Fütterung oder Erschöpfung nach 30 s |
+| **Füttern** | im Laufen an ihn herangehen: −45 Hunger, +10 Leben; oder eine Kiste in 70 px Nähe (Futternapf, ab Hunger 60, höchstens eine je Minute): −45 (Fassung 2: ab 30, −30) |
+| **Kuscheln** | 60 Ticks still daneben stehen: −5 Hunger, +12 Leben, Sperre 50 s, höchstens dreimal je Figur (Fassung 2: −10, +20, 20 s, unbegrenzt) |
+| **Toben** | in der Hungerwut: läuft auf den nächsten Spieler zu, reißt alle 12 Ticks ein Loch (Radius 30), zerstört Kisten, schlägt Figuren (25 Schaden, Sperre 2,5 s; Fassung 2: 40 und 2 s) – bis zur Fütterung oder Erschöpfung nach 20 s (Fassung 2: 30 s) |
 | **Spielen** | extrem selten (0,8 % je Runde): kosmische Schockwelle – Krater-Ringe, Stoß und nie tödlicher Schaden (10–35) im Umkreis von 60 % der Kartenbreite |
 
 ## Steuerung
@@ -285,7 +300,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1747 Tests in 182 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1760 Tests in 183 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **310 Tests in 54 Spezifikationen**, ~50 min unter Last (Stand 2026-10-20: **308 grün, 0 rot, 2 übersprungen**, Gesamtlauf plus gezielte Nachläufe der danach behobenen Specs; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

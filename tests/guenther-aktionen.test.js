@@ -16,7 +16,7 @@ import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { GuentherSystem } from '../src/engine/systems/guentherSystem.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import {
-  GUENTHER_ALT, GUENTHER_AKTIONEN, GUENTHER_FASSUNG_STANDARD, GUENTHER_POSEN, GUENTHER_AKTION_IDS,
+  GUENTHER_ALT, GUENTHER_AKTIONEN, GUENTHER_FEINSCHLIFF, GUENTHER_FASSUNG_STANDARD, GUENTHER_POSEN, GUENTHER_AKTION_IDS,
   GUENTHER_AKTION_REGELN, normalisiereGuenther,
 } from '../src/shared/config/guenther.js';
 import { COOKIE_ALT, COOKIE_KATER } from '../src/shared/config/cookie.js';
@@ -72,8 +72,10 @@ function lauf(g, w, ctx, ticks) {
   for (let i = 0; i < ticks; i++) g.update(w, ctx);
 }
 
-test('Fassungen: neue Partien bekommen die Aktionsfassung, fehlend oder unbekannt ist Fassung 1', () => {
-  assert.equal(GUENTHER_FASSUNG_STANDARD, GUENTHER_AKTIONEN);
+test('Fassungen: neue Partien bekommen Fassung 3, 2 bleibt Fassung 2, fehlend oder unbekannt ist Fassung 1', () => {
+  assert.equal(GUENTHER_FASSUNG_STANDARD, GUENTHER_FEINSCHLIFF);
+  assert.equal(GUENTHER_FEINSCHLIFF, 3);
+  assert.equal(normalisiereGuenther(3), GUENTHER_FEINSCHLIFF);
   assert.equal(normalisiereGuenther(1), GUENTHER_ALT);
   assert.equal(normalisiereGuenther(2), GUENTHER_AKTIONEN);
   assert.equal(normalisiereGuenther(undefined), GUENTHER_ALT);

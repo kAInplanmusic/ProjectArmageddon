@@ -519,6 +519,7 @@ export class SoundMixer {
         return this.#einfach('kiste', 'kiste', 'kiste', { x, y });
       case 'bellen':
       case 'winseln':
+      case 'schnurren':
       case 'fressen':
       case 'miau_leise':
       case 'miau_laut':

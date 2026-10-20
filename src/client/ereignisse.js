@@ -64,6 +64,19 @@ function beide(fn) {
   return { lokal: fn, online: fn };
 }
 
+/**
+ * Wie `beide`, dazu geht das Ereignis an die Tier-Bühne (`k.tierBuehne`) (Sprechblasen, Teilchen, Kameraauftritt;
+ * nur Darstellung, `client/tierBuehne.js`). Fehlt die Bühne (Tests ohne Renderer), geschieht nur die Wirkung.
+ * @param {string} typ Ereignisart
+ * @param {Wirkung} fn Die gemeinsame Wirkung
+ */
+function mitBuehne(typ, fn) {
+  return beide((k, n) => {
+    k.tierBuehne?.ereignis?.(typ, n ?? {});
+    fn(k, n);
+  });
+}
+
 /* ======================================================================
  * Der Kontext — unvollständig geliefert heißt: nichts werfen
  * ======================================================================
@@ -755,7 +768,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * Der Server schickt jedes Motorereignis, die Pose steht im Snapshot. Hier nur
    * Protokollzeile und Klang.
    */
-  guenther_aktion: beide((k, n) => {
+  guenther_aktion: mitBuehne('guenther_aktion', (k, n) => {
     const text = {
       essen: 'Günther frisst eine Kiste', huepfen: 'Günther hüpft vor Freude', ziehen: 'Günther zieht am Seil',
       wuehlen: 'Günther wühlt im Boden', kuscheln: 'Günther will kuscheln', kraulen: 'Günther liegt auf dem Rücken — kraul ihn!',
@@ -766,55 +779,57 @@ export const EREIGNIS_WIRKUNGEN = {
     if (klang) k.sound?.verarbeite({ type: klang, x: n.x, y: n.y });
   }),
 
-  guenther_aktion_wirkung: beide((k, n) => {
+  guenther_aktion_wirkung: mitBuehne('guenther_aktion_wirkung', (k, n) => {
     if (n.fund) {
       k.hud?.log('Günther hat etwas ausgegraben', 'good');
       k.sound?.verarbeite({ type: 'kiste', x: n.x, y: n.y });
     } else if (n.amount > 0 && n.playerId != null) {
       k.hud?.log(`${k.nameOf?.(n.playerId)} fühlt sich besser (+${n.amount})`, 'good');
+      if (n.aktion === 'kuscheln' || n.aktion === 'kraulen') k.sound?.verarbeite({ type: 'schnurren', x: n.x, y: n.y, pegel: 0.6 });
     } else if (n.aktion === 'ziehen' && n.playerId != null) {
       k.hud?.log(`${k.nameOf?.(n.playerId)} wird am Seil gezogen`, 'neutral');
     }
     if (n.aktion === 'chaos') k.sound?.verarbeite({ type: 'bellen', x: n.x, y: n.y, pegel: 0.8 });
   }),
 
-  cookie_miau: beide((k, n) => {
+  cookie_miau: mitBuehne('cookie_miau', (k, n) => {
     // Die Lautstärke IST die Dringlichkeit: leise, laut, Hungerwut.
     k.sound?.verarbeite({ type: `miau_${n.stufe === 'wut' ? 'wut' : n.stufe}`, x: n.x, y: n.y, pegel: n.pegel });
     if (n.stufe === 'laut' || n.stufe === 'wut') k.hud?.log(`Cookie miaut ${n.stufe === 'wut' ? 'in Hungerwut' : 'laut'} (Hunger ${n.hunger})`, n.stufe === 'wut' ? 'danger' : 'neutral');
   }),
 
-  cookie_gefuettert: beide((k, n) => {
+  cookie_gefuettert: mitBuehne('cookie_gefuettert', (k, n) => {
     k.hud?.log(n.playerId != null ? `${k.nameOf?.(n.playerId)} füttert Cookie` : 'Cookie frisst eine Kiste', 'good');
     k.sound?.verarbeite({ type: 'fressen', x: n.x, y: n.y });
   }),
 
-  cookie_kuschelt: beide((k, n) => {
+  cookie_kuschelt: mitBuehne('cookie_kuschelt', (k, n) => {
     k.hud?.log(`${k.nameOf?.(n.playerId)} kuschelt mit Cookie (+${n.amount})`, 'good');
+    k.sound?.verarbeite({ type: 'schnurren', x: n.x, y: n.y, pegel: 0.7 });
   }),
 
-  cookie_tobt: beide((k, n) => {
+  cookie_tobt: mitBuehne('cookie_tobt', (k, n) => {
     k.hud?.log('Cookie tobt vor Hunger und zerstört alles!', 'danger');
     k.sound?.verarbeite({ type: 'miau_wut', x: n.x, y: n.y, pegel: 1 });
   }),
 
-  cookie_erschoepft: beide((k) => {
+  cookie_erschoepft: mitBuehne('cookie_erschoepft', (k) => {
     k.hud?.log('Cookie bricht erschöpft zusammen', 'neutral');
   }),
 
-  cookie_zerstoert: beide(() => {
+  cookie_zerstoert: mitBuehne('cookie_zerstoert', () => {
     // Der Krater kommt als `terrain_destroyed` an und hat seinen eigenen Klang.
   }),
 
-  cookie_schlag: beide((k, n) => {
+  cookie_schlag: mitBuehne('cookie_schlag', (k, n) => {
     k.hud?.log(`Cookie erwischt ${k.nameOf?.(n.playerId)} (−${n.amount})`, 'danger');
   }),
 
-  cookie_spielt: beide((k) => {
+  cookie_spielt: mitBuehne('cookie_spielt', (k) => {
     k.hud?.log('Cookie will spielen …', 'neutral');
   }),
 
-  cookie_schockwelle: beide((k, n) => {
+  cookie_schockwelle: mitBuehne('cookie_schockwelle', (k, n) => {
     k.hud?.log('Kosmische Schockwelle! Cookie hat gespielt.', 'danger');
     k.sound?.verarbeite({ type: 'schockwelle', x: n.x, y: n.y });
   }),

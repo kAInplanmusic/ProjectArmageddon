@@ -1,5 +1,5 @@
 {
-  "profilHash": "54e9987bbecca9e0",
+  "profilHash": "15f7a3759b6337e3",
   "samplerate": 48000,
   "profile": {
     "pistole": {
@@ -335,6 +335,15 @@
       "endpegelDb": -180,
       "nan": false
     },
+    "schnurren": {
+      "bus": "umgebung",
+      "dauer": 0.93,
+      "peakDb": -13.2,
+      "rmsDb": -38.8,
+      "schwerpunkt": 250,
+      "endpegelDb": -180,
+      "nan": false
+    },
     "fressen": {
       "bus": "umgebung",
       "dauer": 0.88,
@@ -530,5 +539,5 @@
   },
   "minAbstandVerhaeltnis": 1.31,
   "schussProfile": 14,
-  "profileGesamt": 53
+  "profileGesamt": 54
 }

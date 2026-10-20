@@ -30,6 +30,7 @@ import {
   GUENTHER_AKTION_REGELN,
   GUENTHER_AKTION_IDS,
   GUENTHER_KACK_POSE_TICKS,
+  guentherWerte,
 } from '../../shared/config/guenther.js';
 import { pickWeaponForRarity } from '../../shared/config/weapons.js';
 
@@ -82,6 +83,9 @@ export class GuentherSystem {
   #aktionen = 0;
   /** Fassung 2: Aktionen (`config.guenther`). In Fassung 1 bleiben alle folgenden Felder ungenutzt. */
   #fassung = GUENTHER_ALT;
+  /** Pinkeln und Häufchen der Fassung (ab 3 seltener und milder). */
+  #pee = GUENTHER_PEE;
+  #poop = GUENTHER_POOP;
   #aktionRng = null;
   /** Laufende Aktion `{id, gesamt, rest, ziel}` oder null. */
   #aktion = null;
@@ -105,6 +109,8 @@ export class GuentherSystem {
     }
     this.#rng = rng;
     this.#fassung = fassung;
+    this.#pee = guentherWerte(fassung).pee;
+    this.#poop = guentherWerte(fassung).poop;
     this.#aktionRng = aktionRng;
     if (fassung >= GUENTHER_AKTIONEN && !aktionRng) throw new TypeError('Günther ab Fassung 2 benötigt aktionRng');
     this.maxRounds = maxRounds;
@@ -189,8 +195,8 @@ export class GuentherSystem {
       y: 0,
     };
     this.#pausenTicks = 0;
-    this.#pinkelTimer = this.#rng.nextInt(20, GUENTHER_PEE.intervalTicks[0]);
-    this.#kackTimer = this.#rng.nextInt(60, GUENTHER_POOP.intervalTicks[0]);
+    this.#pinkelTimer = this.#rng.nextInt(20, this.#pee.intervalTicks[0]);
+    this.#kackTimer = this.#rng.nextInt(60, this.#poop.intervalTicks[0]);
     if (this.#fassung >= GUENTHER_AKTIONEN) {
       this.#aktion = null;
       this.#kurzPose = null;
@@ -290,14 +296,14 @@ export class GuentherSystem {
     if (!this.#ruhig()) this.#pinkelTimer -= 1;
     if (this.#pinkelTimer <= 0) {
       this.#pinkelTimer = this.#rng.nextInt(
-        GUENTHER_PEE.intervalTicks[0], GUENTHER_PEE.intervalTicks[1],
+        this.#pee.intervalTicks[0], this.#pee.intervalTicks[1],
       );
-      const opfer = this.#naechsterSpieler(world, kontext.spielerIds ?? [], GUENTHER_PEE.range);
+      const opfer = this.#naechsterSpieler(world, kontext.spielerIds ?? [], this.#pee.range);
       if (opfer !== null) {
         const vorher = this.#pinkelZaehler.get(opfer) ?? 0;
         const betrag = Math.max(
-          GUENTHER_PEE.minDamage,
-          GUENTHER_PEE.baseDamage * (GUENTHER_PEE.decay ** vorher),
+          this.#pee.minDamage,
+          this.#pee.baseDamage * (this.#pee.decay ** vorher),
         );
         this.#pinkelZaehler.set(opfer, vorher + 1);
         this.#pinkelGesamt += 1;
@@ -317,7 +323,7 @@ export class GuentherSystem {
     if (!this.#ruhig()) this.#kackTimer -= 1;
     if (this.#kackTimer <= 0) {
       this.#kackTimer = this.#rng.nextInt(
-        GUENTHER_POOP.intervalTicks[0], GUENTHER_POOP.intervalTicks[1],
+        this.#poop.intervalTicks[0], this.#poop.intervalTicks[1],
       );
       this.#haufenNummer += 1;
       this.#haufen.push({
@@ -328,7 +334,7 @@ export class GuentherSystem {
       });
       this.#haufenGesamt += 1;
       // Älteste Haufen entfernen, damit sich das Feld nicht zupflastert.
-      while (this.#haufen.length > GUENTHER_POOP.maxPiles) this.#haufen.shift();
+      while (this.#haufen.length > this.#poop.maxPiles) this.#haufen.shift();
       if (this.#fassung >= GUENTHER_AKTIONEN) this.#kurzPose = { name: 'kacken', ticks: GUENTHER_KACK_POSE_TICKS };
       melde('guenther_poop', { x: this.#position.x, y: this.#position.y });
     }
@@ -344,7 +350,7 @@ export class GuentherSystem {
         const x = world.getComponent(spielerId, 'Position', 'x') ?? 0;
         const y = world.getComponent(spielerId, 'Position', 'y') ?? 0;
         const abstand = Math.hypot(x - haufen.x, y - haufen.y);
-        if (abstand <= GUENTHER_POOP.triggerRadius) {
+        if (abstand <= this.#poop.triggerRadius) {
           this.#haufenTreffer.add(schluessel);
           haufenGetroffen(spielerId, { x: haufen.x, y: haufen.y });
           melde('guenther_poop_hit', {

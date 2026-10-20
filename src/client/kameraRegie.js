@@ -14,6 +14,8 @@
  *     Weg mit Zoom-Bogen. Bewegungsreduktion: harter Schnitt.
  *   - `verfolgung`: ein Geschoss fliegt (oder die Wiederholung der Zugpause
  *     zeigt eines): Kamera folgt mit Vorausschau, zoomt bei großer Flugweite heraus.
+ *   - `tier`: kurzer Zoom auf Cookie oder Günther bei einem Auftritt (`tierBuehne.js`), nie während eines
+ *     Geschosses, nie bei Bewegungsreduktion.
  *   - `einschlag`: kurzer Halt auf dem Einschlag mit sanftem Bildschub nach
  *     Radius und Waffenkategorie (nicht bei Bewegungsreduktion), dann zurück
  *     zur Übersicht.
@@ -115,7 +117,8 @@ export class KameraRegie {
    * @param {object} e Eingabe (siehe `main.js#kameraEingabe`):
    *   `karte`, `schirm`, `rand`, `pad`, `zoomMax`, `aktivId`, `aktiv {x,y,winkel}`,
    *   `gegner`, `geschosse`, `wiederholung {kopf, ursprung}|null`,
-   *   `krater {id,x,y,radius}|null`, `waffe {kategorie,radius}|null`, `ansicht`
+   *   `krater {id,x,y,radius}|null`, `waffe {kategorie,radius}|null`, `ansicht`,
+   *   `tier {x,y,zoom}|null` (Tierauftritt)
    * @returns {{x:number,y:number,zoom:number,stoss:{x:number,y:number}}|null}
    *   `null`, wenn die Automatik nichts setzt (Spieler führt oder nichts zu zeigen)
    */
@@ -183,6 +186,12 @@ export class KameraRegie {
     this.#fliegt = fliegtJetzt;
     if (this.#phase !== 'einschlag') this.#stoss = null;
 
+    // Tierauftritt (Cookie tobt, Schockwelle, Günther erscheint): kurzer Zoom auf das Tier. Ein Geschoss
+    // in der Luft und der Halt auf dem Einschlag haben Vorrang; bei Bewegungsreduktion gibt es ihn nicht.
+    const tier = !fliegtJetzt && this.#phase !== 'einschlag' && !this.#reduziert ? (e.tier ?? null) : null;
+    if (tier) this.#phase = 'tier';
+    else if (this.#phase === 'tier') { this.#phase = 'uebersicht'; this.#ziel = null; this.#zugwechsel = true; }
+
     if (!this.fuehrt) return null;
     if (!e.karte || !e.schirm || !e.rand) return null;
 
@@ -201,6 +210,11 @@ export class KameraRegie {
       ziel = begrenzeAnsicht({ x: this.#aufprall.x, y: this.#aufprall.y, zoom: Math.max(ganze, Math.min(z, this.#z)) },
         e.karte, e.schirm, e.rand);
       glaettPos = ZEIT.einschlag;
+    } else if (this.#phase === 'tier' && tier) {
+      const z = zoomBevorzugt(e.schirm, e.karte, { zoomMax: e.zoomMax });
+      ziel = begrenzeAnsicht({ x: tier.x, y: tier.y - 24, zoom: Math.max(ganze, Math.min(e.zoomMax ?? 4, z * tier.zoom)) },
+        e.karte, e.schirm, e.rand);
+      glaettPos = ZEIT.zielen;
     } else if (e.aktiv) {
       const kand = zielAusschnitt({ ...optionen, aktiv: e.aktiv, gegner: e.gegner, pad: e.pad });
       const sichtB = e.schirm.b / kand.zoom;

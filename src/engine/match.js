@@ -59,7 +59,7 @@ import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/c
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
 import { FeuerSystem } from './systems/feuerSystem.js';
 import { damageTypeId } from './damageTypes.js';
-import { GUENTHER_POOP } from '../shared/config/guenther.js';
+import { guentherWerte } from '../shared/config/guenther.js';
 import { loeseGuentherRad } from './guentherRad.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
@@ -671,7 +671,7 @@ export class MatchController {
       fassung: this.guenther,
       aktionRng: this.guenther >= GUENTHER_AKTIONEN ? this.#seedManager.getSubRng('GUENTHER_AKTION') : null,
     });
-    if (this.cookie >= COOKIE_KATER) this.#cookie = new CookieSystem({ rng: this.#seedManager.getSubRng('COOKIE'), width: this.width, height: this.height });
+    if (this.cookie >= COOKIE_KATER) this.#cookie = new CookieSystem({ rng: this.#seedManager.getSubRng('COOKIE'), width: this.width, height: this.height, fassung: this.cookie });
 
     this.#world = createGameWorld({ playerCount: Math.max(2, teams * playersPerTeam) });
     this.teams = teams;
@@ -1364,15 +1364,16 @@ export class MatchController {
       },
       haufenGetroffen: (spielerId) => {
         // Drei Runden Schaden und langsamere Fortbewegung (Fassung 2: als Gift).
-        if (this.#mali) this.#mali.wende(spielerId, 'gift', { dmg: GUENTHER_POOP.damagePerTurn, roh: true, dauer: GUENTHER_POOP.turns });
+        const poop = guentherWerte(this.guenther).poop;
+        if (this.#mali) this.#mali.wende(spielerId, 'gift', { dmg: poop.damagePerTurn, roh: true, dauer: poop.turns });
         else this.#statuses.addDot(spielerId, {
-          damagePerTurn: GUENTHER_POOP.damagePerTurn,
-          turns: GUENTHER_POOP.turns,
+          damagePerTurn: poop.damagePerTurn,
+          turns: poop.turns,
           element: 'poop',
         });
-        this.#statuses.addSlow(spielerId, GUENTHER_POOP.slowFactor, GUENTHER_POOP.turns);
+        this.#statuses.addSlow(spielerId, poop.slowFactor, poop.turns);
       },
-      radAufloesen: spielerId => loeseGuentherRad({ guenther: this.#guenther, statuses: this.#statuses, inventory: this.#inventory, world: this.#world }, spielerId),
+      radAufloesen: spielerId => loeseGuentherRad({ fassung: this.guenther, guenther: this.#guenther, statuses: this.#statuses, inventory: this.#inventory, world: this.#world }, spielerId),
       melde: (typ, daten) => this.#events.emit(typ, daten),
     });
   }

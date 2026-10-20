@@ -14,8 +14,8 @@
  * @module cookieSystem
  */
 import {
-  COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT, COOKIE_SPIELEN, COOKIE_IDENTITY,
-  cookieStufe,
+  COOKIE_HUNGER, cookieWut, cookieHunger, COOKIE_SPIELEN, COOKIE_IDENTITY,
+  cookieStufe, cookiePflege, COOKIE_KATER,
 } from '../../shared/config/cookie.js';
 
 export class CookieSystem {
@@ -47,10 +47,21 @@ export class CookieSystem {
   #gekuschelt = 0;
   #gewuetet = 0;
   #gespielt = 0;
+  /** Pflegewerte der Fassung (ab 3 gemäßigt). */
+  #pf;
+  /** Tick, ab dem der Futternapf wieder eine Kiste frisst (Fassung 3). */
+  #napfSperre = 0;
+  #wut;
+  #hu;
+  /** Wie oft ein Spieler schon mit Cookie gekuschelt hat (Fassung 3: Höchstzahl `kuschelnMax`). */
+  #kuschelZahl = new Map();
 
-  constructor({ rng, width, height }) {
+  constructor({ rng, width, height, fassung = COOKIE_KATER }) {
     if (!rng || typeof rng.next !== 'function') throw new TypeError('CookieSystem benötigt einen RNG mit next()');
     this.#rng = rng;
+    this.#pf = cookiePflege(fassung);
+    this.#wut = cookieWut(fassung);
+    this.#hu = cookieHunger(fassung);
     this.width = width;
     this.height = height;
     // Feste Reihenfolge der Ziehungen: Ort, Starthunger, Seitenlage.
@@ -121,7 +132,7 @@ export class CookieSystem {
 
     // --- Hunger ----------------------------------------------------------
     const schlaeft = this.#pose === 'schlafen' || this.#pose === 'schlafen_seite';
-    this.#hunger = Math.min(COOKIE_HUNGER.max, this.#hunger + COOKIE_HUNGER.proTick * (schlaeft ? COOKIE_HUNGER.schlafFaktor : 1));
+    this.#hunger = Math.min(COOKIE_HUNGER.max, this.#hunger + this.#hu.proTick * (schlaeft ? COOKIE_HUNGER.schlafFaktor : 1));
 
     // --- Spielen: kosmische Schockwelle -------------------------------------
     if (this.#spielenRest > 0) {
@@ -166,11 +177,11 @@ export class CookieSystem {
       }
       this.#wutTicks += 1;
       this.#toben(world, ids, kontext);
-      if (this.#wutTicks >= COOKIE_WUT.maxTicks) {
+      if (this.#wutTicks >= this.#wut.maxTicks) {
         this.#wutTicks = 0;
-        this.#hunger = COOKIE_WUT.erschoepftHunger;
+        this.#hunger = this.#wut.erschoepftHunger;
         this.#stufe = cookieStufe(this.#hunger);
-        this.#zwinge('liegen', COOKIE_WUT.erschoepftTicks);
+        this.#zwinge('liegen', this.#wut.erschoepftTicks);
         kontext.melde('cookie_erschoepft', { x: this.#x, y: this.#y });
       }
     } else {
@@ -192,7 +203,7 @@ export class CookieSystem {
         const fertig = this.#zwang.name;
         this.#zwang = null;
         // Nach dem Fressen wird geputzt, danach (satt) gelegen.
-        if (fertig === 'fressen' || fertig === 'brot') this.#zwinge('putzen', COOKIE_PFLEGE.putzenTicks);
+        if (fertig === 'fressen' || fertig === 'brot') this.#zwinge('putzen', this.#pf.putzenTicks);
         else if (fertig === 'putzen' && this.#stufe === 'schlaf') this.#zwinge('liegen', 80);
         else if (fertig === 'liegen' && this.#stufe === 'schlaf') this.#seitenlage = !this.#seitenlage;
       }
@@ -210,7 +221,7 @@ export class CookieSystem {
 
   /** Bei „laut" geht er zu einer Kiste in Reichweite und frisst sie (Futternapf). */
   #zurKiste(kontext) {
-    const suchweite = COOKIE_PFLEGE.kistenSuchAnteil * this.width;
+    const suchweite = this.#pf.kistenSuchAnteil * this.width;
     let ziel = null;
     let best = Infinity;
     for (const k of kontext.kisten?.() ?? []) {
@@ -218,22 +229,23 @@ export class CookieSystem {
       if (d <= suchweite && d < best) { best = d; ziel = k; }
     }
     if (!ziel) return;
-    if (best > COOKIE_PFLEGE.napfRadius * 0.5) {
+    if (best > this.#pf.napfRadius * 0.5) {
       this.#richtung = ziel.x >= this.#x ? 1 : -1;
-      this.#x += this.#richtung * COOKIE_PFLEGE.gehTempoAnteil * this.width;
+      this.#x += this.#richtung * this.#pf.gehTempoAnteil * this.width;
       this.#geht = true;
     }
   }
 
   #pflege(world, ids, kontext) {
     // Futternapf: eine liegende Kiste in der Nähe wird gefressen.
-    if (!this.#zwang || this.#zwang.name !== 'fressen') {
+    if ((!this.#zwang || this.#zwang.name !== 'fressen') && this.#napfSperre <= this.#tick) {
       for (const k of kontext.kisten?.() ?? []) {
-        if (Math.hypot(k.x - this.#x, k.y - this.#y) > COOKIE_PFLEGE.napfRadius) continue;
-        if (this.#hunger < COOKIE_HUNGER.stufen.leise) break; // satt: lässt sie liegen
+        if (Math.hypot(k.x - this.#x, k.y - this.#y) > this.#pf.napfRadius) continue;
+        if (this.#hunger < (this.#pf.napfAbHunger ?? COOKIE_HUNGER.stufen.leise)) break; // satt: lässt sie liegen
         kontext.kisteVerzehren?.(k.id);
-        this.#fuettere(COOKIE_PFLEGE.napfHunger, 'napf', kontext, null);
-        this.#zwinge('brot', COOKIE_PFLEGE.fressenTicks);
+        this.#napfSperre = this.#tick + (this.#pf.napfSperre ?? 0);
+        this.#fuettere(this.#pf.napfHunger, 'napf', kontext, null);
+        this.#zwinge('brot', this.#pf.fressenTicks);
         break;
       }
     }
@@ -247,26 +259,28 @@ export class CookieSystem {
       const abstand = Math.hypot(x - this.#x, y - this.#y);
 
       // Füttern: beim Laufen berührt (wie Günthers Rad).
-      if (id === aktiv && this.#fuetterSperre === 0 && abstand <= COOKIE_PFLEGE.fuetternRadius
-        && bewegt >= COOKIE_PFLEGE.fuetternMinBewegung && this.#hunger >= COOKIE_HUNGER.stufen.leise) {
-        this.#fuetterSperre = COOKIE_PFLEGE.fuetternSperre;
-        this.#fuettere(COOKIE_PFLEGE.fuetternHunger, 'hand', kontext, id);
-        this.#zwinge('fressen', COOKIE_PFLEGE.fressenTicks);
-        kontext.heile?.(id, COOKIE_PFLEGE.fuetternHeilung);
+      if (id === aktiv && this.#fuetterSperre === 0 && abstand <= this.#pf.fuetternRadius
+        && bewegt >= this.#pf.fuetternMinBewegung && this.#hunger >= COOKIE_HUNGER.stufen.leise) {
+        this.#fuetterSperre = this.#pf.fuetternSperre;
+        this.#fuettere(this.#pf.fuetternHunger, 'hand', kontext, id);
+        this.#zwinge('fressen', this.#pf.fressenTicks);
+        kontext.heile?.(id, this.#pf.fuetternHeilung);
         continue;
       }
       // Kuscheln: still danebenstehen, solange er nicht tobt.
-      if (abstand <= COOKIE_PFLEGE.kuschelnRadius && bewegt < COOKIE_PFLEGE.fuetternMinBewegung && this.#wutTicks === 0 && !this.#zwang) {
+      if (abstand <= this.#pf.kuschelnRadius && bewegt < this.#pf.fuetternMinBewegung && this.#wutTicks === 0 && !this.#zwang) {
         const still = (this.#still.get(id) ?? 0) + 1;
         this.#still.set(id, still);
-        if (still >= COOKIE_PFLEGE.kuschelnStillTicks && (this.#kuschelSperre.get(id) ?? 0) <= this.#tick) {
-          this.#kuschelSperre.set(id, this.#tick + COOKIE_PFLEGE.kuschelnSperre);
+        const genug = (this.#kuschelZahl.get(id) ?? 0) >= (this.#pf.kuschelnMax ?? Infinity);
+        if (still >= this.#pf.kuschelnStillTicks && !genug && (this.#kuschelSperre.get(id) ?? 0) <= this.#tick) {
+          this.#kuschelZahl.set(id, (this.#kuschelZahl.get(id) ?? 0) + 1);
+          this.#kuschelSperre.set(id, this.#tick + this.#pf.kuschelnSperre);
           this.#still.set(id, 0);
           this.#gekuschelt += 1;
-          this.#hunger = Math.max(0, this.#hunger - COOKIE_PFLEGE.kuschelnHunger);
-          this.#zwinge('kuscheln', COOKIE_PFLEGE.kuschelnTicks);
-          kontext.heile?.(id, COOKIE_PFLEGE.kuschelnHeilung);
-          kontext.melde('cookie_kuschelt', { playerId: id, amount: COOKIE_PFLEGE.kuschelnHeilung, x: this.#x, y: this.#y });
+          this.#hunger = Math.max(0, this.#hunger - this.#pf.kuschelnHunger);
+          this.#zwinge('kuscheln', this.#pf.kuschelnTicks);
+          kontext.heile?.(id, this.#pf.kuschelnHeilung);
+          kontext.melde('cookie_kuschelt', { playerId: id, amount: this.#pf.kuschelnHeilung, x: this.#x, y: this.#y });
         }
       } else {
         this.#still.set(id, 0);
@@ -281,24 +295,24 @@ export class CookieSystem {
       const zx = world.getComponent(ziel, 'Position', 'x') ?? this.#x;
       this.#richtung = zx >= this.#x ? 1 : -1;
     }
-    this.#x += this.#richtung * COOKIE_WUT.tempoAnteil * this.width;
+    this.#x += this.#richtung * this.#wut.tempoAnteil * this.width;
     this.#x = Math.max(40, Math.min(this.width - 40, this.#x));
     this.#bodenFolgen(kontext);
-    if (this.#wutTicks % COOKIE_WUT.kraterTakt === 0) {
-      kontext.krater?.(this.#x, this.#y - 12, COOKIE_WUT.kraterRadius, COOKIE_WUT.kraterTiefe);
-      const n = kontext.zerstoereObjekte?.(this.#x, this.#y - 12, COOKIE_WUT.objektRadius) ?? 0;
-      kontext.melde('cookie_zerstoert', { x: this.#x, y: this.#y, radius: COOKIE_WUT.kraterRadius, objekte: n });
+    if (this.#wutTicks % this.#wut.kraterTakt === 0) {
+      kontext.krater?.(this.#x, this.#y - 12, this.#wut.kraterRadius, this.#wut.kraterTiefe);
+      const n = kontext.zerstoereObjekte?.(this.#x, this.#y - 12, this.#wut.objektRadius) ?? 0;
+      kontext.melde('cookie_zerstoert', { x: this.#x, y: this.#y, radius: this.#wut.kraterRadius, objekte: n });
     }
     for (const id of ids) {
       if (!world.isActive(id)) continue;
       const px = world.getComponent(id, 'Position', 'x') ?? 0;
       const py = world.getComponent(id, 'Position', 'y') ?? 0;
-      if (Math.hypot(px - this.#x, py - this.#y) > COOKIE_WUT.schlagRadius) continue;
+      if (Math.hypot(px - this.#x, py - this.#y) > this.#wut.schlagRadius) continue;
       if ((this.#schlagSperre.get(id) ?? 0) > this.#tick) continue;
-      this.#schlagSperre.set(id, this.#tick + COOKIE_WUT.schlagSperre);
-      kontext.schaden?.(id, COOKIE_WUT.schlagSchaden);
-      kontext.stosse?.(id, (px >= this.#x ? 1 : -1) * COOKIE_WUT.stossX, COOKIE_WUT.stossY);
-      kontext.melde('cookie_schlag', { playerId: id, amount: COOKIE_WUT.schlagSchaden, x: px, y: py });
+      this.#schlagSperre.set(id, this.#tick + this.#wut.schlagSperre);
+      kontext.schaden?.(id, this.#wut.schlagSchaden);
+      kontext.stosse?.(id, (px >= this.#x ? 1 : -1) * this.#wut.stossX, this.#wut.stossY);
+      kontext.melde('cookie_schlag', { playerId: id, amount: this.#wut.schlagSchaden, x: px, y: py });
     }
   }
 

@@ -16,6 +16,8 @@
  *     diesen Wert — Bit für Bit das alte Verhalten.
  *   - `COOKIE_KATER` (2): Cookie liegt auf der Karte, Zufall nur über den
  *     eigenen Teilgenerator `COOKIE`.
+ *   - `COOKIE_FEINSCHLIFF` (3): wie 2, dazu die Messwerte unten (Kuscheln und Futternapf
+ *     gemäßigt). Fassung 2 bleibt Bit für Bit, was sie war.
  *
  * Alle Zeitangaben in Ticks (60 Hz), Strecken in Kartenpixeln der
  * Referenzbreite 1280 (`COOKIE_REFERENZ_BREITE`); Tempo und Reichweiten wachsen
@@ -26,11 +28,13 @@
 
 export const COOKIE_ALT = 1;
 export const COOKIE_KATER = 2;
+export const COOKIE_FEINSCHLIFF = 3;
 /** Fassung NEUER Partien (Server und Client geben sie ausdrücklich mit). */
-export const COOKIE_STANDARD = COOKIE_KATER;
+export const COOKIE_STANDARD = COOKIE_FEINSCHLIFF;
 
 /** Fehlende oder unbekannte Werte sind `COOKIE_ALT` (siehe `normalisiereGuenther`). */
 export function normalisiereCookie(fassung) {
+  if (fassung === COOKIE_FEINSCHLIFF) return COOKIE_FEINSCHLIFF;
   return fassung === COOKIE_KATER ? COOKIE_KATER : COOKIE_ALT;
 }
 
@@ -147,3 +151,70 @@ export const COOKIE_SPIELEN = Object.freeze({
   /** Ringe von Kratern um Cookie (Abstand als Vielfaches von `kraterRadius`). */
   ringe: Object.freeze([0, 1.6, -1.6, 3.2, -3.2]),
 });
+
+/*
+ * ============================================================================
+ * Fassung 3: Feinschliff nach Messung (`config.cookie` = 3)
+ * ============================================================================
+ *
+ * Messung der Fassung 2 (`node scripts/tiere-verteilung.mjs --cookie=2`, 60 Seeds):
+ *
+ *     Kuscheln         bis 30 mal je Partie, bis ~390 Leben für EINE Figur (Figur hat 100):
+ *                      wer neben Cookie steht, ist unsterblich, und Cookie wird nie hungrig
+ *                      (Hungerwut nur in 5 % der Partien, wenn Spieler ihn aufsuchen).
+ *     Futternapf       frisst 45 % aller Kisten der Partie, schon ab Hunger 30, läuft ihnen 380 px nach.
+ *     Hungerwut        Schläge zu 40: 1,4-1,6 je Partie, ~60 Schaden (bei stehenden Figuren).
+ *
+ * Fassung 3: Kuscheln heilt 12 (statt 20), je Figur höchstens dreimal, mit 50 s Sperre, und
+ * senkt den Hunger nur um 5. Der Futternapf frisst erst ab Hunger 60 (Stufe „laut") und
+ * sättigt stärker (dafür höchstens alle 60 s) und sucht nur 15 % der Kartenbreite weit. Der Schlag der
+ * Hungerwut zieht 25 ab, mit 2,5 s Sperre. Der Hunger wächst um ein Drittel langsamer, die Wut ist kürzer und folgt auf längere Ruhe (Messung:
+ * Hungerwut in 77 % der Partien, 2,1 mal je Partie, bei Fassung 2 53 % und 0,9 mal). Stufen, Pegel und
+ * Spielen bleiben unverändert.
+ */
+export const COOKIE_PFLEGE_3 = Object.freeze({
+  ...COOKIE_PFLEGE,
+  kuschelnHeilung: 12,
+  kuschelnHunger: 5,
+  kuschelnSperre: 3000,
+  kuschelnMax: 3,
+  napfAbHunger: 60,
+  napfHunger: 45,
+  /** Zwischen zwei Kisten im Napf vergehen mindestens so viele Ticks (60 s). */
+  napfSperre: 3600,
+  /** Er läuft nur zu Kisten in dieser Nähe (Anteil Kartenbreite; vorher 0,3). */
+  kistenSuchAnteil: 0.15,
+});
+
+/** Hunger der Fassung 3: 100 Hunger in 3 statt 2 Minuten (Stufen und Pegel bleiben). */
+export const COOKIE_HUNGER_3 = Object.freeze({
+  ...COOKIE_HUNGER,
+  proTick: 100 / 10800,
+});
+
+/**
+ * Toben der Fassung 3: derselbe Ablauf, aber kürzer (20 statt 30 s), mit längerer Pause danach
+ * (er sinkt auf Hunger 30 statt 50) und mildem Schlag (25 statt 40, mit 2,5 s Sperre).
+ */
+export const COOKIE_WUT_3 = Object.freeze({
+  ...COOKIE_WUT,
+  schlagSchaden: 25,
+  schlagSperre: 150,
+  maxTicks: 1200,
+  erschoepftHunger: 30,
+});
+
+/** Die Hungerwerte einer Fassung. */
+export function cookieHunger(fassung) {
+  return fassung >= COOKIE_FEINSCHLIFF ? COOKIE_HUNGER_3 : COOKIE_HUNGER;
+}
+
+/** Die Wutwerte einer Fassung. */
+export function cookieWut(fassung) {
+  return fassung >= COOKIE_FEINSCHLIFF ? COOKIE_WUT_3 : COOKIE_WUT;
+}
+
+/** Die Pflegewerte einer Fassung (Simulation und Anzeige lesen hier). */
+export function cookiePflege(fassung) {
+  return fassung >= COOKIE_FEINSCHLIFF ? COOKIE_PFLEGE_3 : COOKIE_PFLEGE;
+}

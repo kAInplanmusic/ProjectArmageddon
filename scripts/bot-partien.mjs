@@ -79,14 +79,16 @@ function planeSchuss(match, aktiv, gegner, waffe) {
   return beste;
 }
 
-export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = FEHLER, waffen = WAFFEN, denkzeit = DENKZEIT } = {}) {
+export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = FEHLER, waffen = WAFFEN, denkzeit = DENKZEIT, extra = {}, ereignis = null, beiZug = null } = {}) {
   const zugSek = teams * proTeam === 2 ? MATCH_RULES.turnTimers.duelSeconds.seconds : MATCH_RULES.turnTimers.fourPlayerSeconds.seconds;
   const zufall = strom(seed ^ 0x5bd1e995);
   const FEHLER = fehler;
   const match = new MatchController({
     seed, teams, playersPerTeam: proTeam, preset: 'hills', kit, waffen,
-    turnDurationMs: zugSek * 1000, turnPauseTicks: 0,
+    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...extra,
   });
+  // Messwerkzeuge (Tier-Verteilung): jede Ereignisliste (ein Schritt) geht durch `ereignis(liste, match)`; ohne Haken bleibt alles wie vorher.
+  const ev = () => { const liste = match.consumeEvents(); if (ereignis && liste.length) ereignis(liste, match); return liste; };
   match.start();
   const bilanz = {
     seed, schuesse: 0, treffer: 0, schaden: 0, zuege: 0, nurReserve: 0,
@@ -95,11 +97,16 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
   let schutz = 0;
   while (match.status === 'playing' && schutz < 3000) {
     schutz += 1;
-    for (let i = 0; i < Math.round(denkzeit * 60) && match.status === 'playing'; i += 1) { match.step(); match.consumeEvents(); }
+    for (let i = 0; i < Math.round(denkzeit * 60) && match.status === 'playing'; i += 1) { match.step(); ev(); }
     if (match.status !== 'playing') break;
-    const z = match.getState();
-    const aktiv = z.entities.find(e => e.entityId === z.activePlayerId);
+    let z = match.getState();
+    let aktiv = z.entities.find(e => e.entityId === z.activePlayerId);
     bilanz.zuege += 1;
+    if (beiZug && aktiv?.alive) {
+      beiZug(match, aktiv, ev);
+      z = match.getState();
+      aktiv = z.entities.find(e => e.entityId === z.activePlayerId);
+    }
     if (aktiv?.alive) {
       const ziel = naechsterGegner(z, aktiv);
       const ids = match.inventory.getWeapons(aktiv.entityId)
@@ -127,8 +134,8 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
           geschossen = true;
           if (kandidaten.length === 1 && k.id === 'pa_028') bilanz.nurReserve += 1;
           let w = 0;
-          while (match.activeProjectileCount > 0 && w < 900) { match.step(); match.consumeEvents(); w += 1; }
-          for (let i = 0; i < 12; i += 1) { match.step(); match.consumeEvents(); }
+          while (match.activeProjectileCount > 0 && w < 900) { match.step(); ev(); w += 1; }
+          for (let i = 0; i < 12; i += 1) { match.step(); ev(); }
           const nach = match.getState().entities.filter(e => e.teamId !== aktiv.teamId);
           const lebenNach = nach.reduce((s, e) => s + Math.max(0, e.alive ? e.health : 0), 0);
           const schaden = Math.max(0, lebenVor - lebenNach);
@@ -146,7 +153,7 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
     if (!match.getState().entities.length) break;
     match.endTurn();
     match.step();
-    match.consumeEvents();
+    ev();
   }
   const ende = match.getState();
   bilanz.tick = ende.tick;

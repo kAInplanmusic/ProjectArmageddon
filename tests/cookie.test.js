@@ -14,7 +14,7 @@ import { CookieSystem } from '../src/engine/systems/cookieSystem.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import {
-  COOKIE_ALT, COOKIE_KATER, COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT, COOKIE_SPIELEN,
+  COOKIE_ALT, COOKIE_KATER, COOKIE_FEINSCHLIFF, COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT, COOKIE_SPIELEN,
   COOKIE_POSEN, normalisiereCookie, cookieStufe,
 } from '../src/shared/config/cookie.js';
 import { GUENTHER_ALT } from '../src/shared/config/guenther.js';
@@ -62,8 +62,10 @@ function bisHunger(c, w, ctx, ziel, grenze = 40_000) {
   return i;
 }
 
-test('Fassungen: neue Partien sind Fassung 2, fehlend oder unbekannt ist Fassung 1', () => {
-  assert.equal(COOKIE_STANDARD, COOKIE_KATER);
+test('Fassungen: neue Partien sind Fassung 3, 2 bleibt Fassung 2, fehlend oder unbekannt ist Fassung 1', () => {
+  assert.equal(COOKIE_STANDARD, COOKIE_FEINSCHLIFF);
+  assert.equal(COOKIE_FEINSCHLIFF, 3);
+  assert.equal(normalisiereCookie(3), COOKIE_FEINSCHLIFF);
   assert.equal(normalisiereCookie(2), COOKIE_KATER);
   assert.equal(normalisiereCookie(1), COOKIE_ALT);
   assert.equal(normalisiereCookie(undefined), COOKIE_ALT);
