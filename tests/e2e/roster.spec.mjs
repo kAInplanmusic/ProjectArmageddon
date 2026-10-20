@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
  */
 
 test('Die Kaderansicht zeigt neun Fraktionen', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
   await page.locator('#roster-browser > summary').click();
@@ -23,7 +23,7 @@ test('Die Kaderansicht zeigt neun Fraktionen', async ({ page }) => {
 });
 
 test('Jede Fraktion zeigt neun Charaktere mit geladenem Bild', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();
 
@@ -59,7 +59,7 @@ test('Jede Fraktion zeigt neun Charaktere mit geladenem Bild', async ({ page }) 
 });
 
 test('Jeder Eintrag nennt Superwaffe, Biografie und Profil', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();
 
@@ -80,7 +80,7 @@ test('Jeder Eintrag nennt Superwaffe, Biografie und Profil', async ({ page }) =>
 });
 
 test('Alle 81 Bilder sind über den Kader erreichbar', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();
 
@@ -102,13 +102,13 @@ test('Alle 81 Bilder sind über den Kader erreichbar', async ({ page }) => {
 
   // Und jedes davon lässt sich auch abrufen.
   for (const u of urls) {
-    const antwort = await page.request.get(new URL(u, 'http://127.0.0.1:5173/').href);
+    const antwort = await page.request.get(new URL(u, page.url()).href);
     expect(antwort.status(), `${u} nicht abrufbar`).toBe(200);
   }
 });
 
 test('Ein Klick auf eine Figur zeigt das HD-Porträt', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#roster-browser > summary').click();
   await expect(page.locator('#roster-portrait')).toBeHidden();

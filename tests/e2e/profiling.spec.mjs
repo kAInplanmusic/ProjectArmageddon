@@ -732,7 +732,7 @@ test.describe('Bildzeiten mit Hardware-Beschleunigung', () => {
     try {
       const kontext = await browser.newContext({
         viewport: { width: 1440, height: 900 },
-        baseURL: 'http://127.0.0.1:5173',
+        baseURL: test.info().project.use.baseURL, // aus playwright.config.mjs (PA_PORT)
       });
       const page = await kontext.newPage();
 

@@ -33,6 +33,7 @@
  * @module client/ereignisse
  */
 import { getWeapon } from '../shared/config/weapons.js';
+import { materialAusEreignis } from '../shared/einschlag.js';
 
 /**
  * Eine Wirkung: bekommt den Kontext und die Nutzlast, gibt nichts zurück.
@@ -208,9 +209,46 @@ const einschlagKlang = (k, n) => {
   if (!(sprengradius > 0) && k.figurNah?.(n.x, n.y)) return;
   k.sound?.verarbeite({
     type: 'explosion', radius: n.radius || 12, sprengradius, x: n.x, y: n.y,
-    material: k.material?.(n.x, n.y) ?? 'erde',
+    // Das Feld `material` kommt aus der Engine (lokal und vom Server, shared/einschlag.js);
+    // fehlt es (älterer Server), wird aus dem bekannten Zustand abgeleitet.
+    material: materialAusEreignis(n) ?? k.material?.(n.x, n.y) ?? 'erde',
   });
 };
+
+/** Ereignisarten mit Anzeige und Klang, für die der Server den Takt `tk` mitschickt. */
+const DEDUP_ARTEN = new Set(['explosion', 'terrain_detached', 'terrain_settled']);
+
+/**
+ * Dedup der Online-Ereignisse: Schlüssel = Takt + Art + Ort (+ Geschoss bzw. Inselnummer).
+ *
+ * Ein Ereignis ohne Takt (älterer Server) oder einer anderen Art wird nie unterdrückt:
+ * Ein verlorener Klang ist schlimmer als ein doppelter. Das Gedächtnis ist begrenzt
+ * (die letzten `grenze` Schlüssel); `zuruecksetzen()` bei neuem Match/neuer Karte,
+ * weil ein neuer Server die Takte von vorn zählt.
+ */
+export class EreignisDedup {
+  #gesehen = new Set();
+  #reihe = [];
+  #grenze;
+
+  constructor(grenze = 512) { this.#grenze = grenze; }
+
+  zuruecksetzen() { this.#gesehen.clear(); this.#reihe.length = 0; }
+
+  /** @returns {boolean} true = erstmals gesehen (oder nicht prüfbar) */
+  neu(art, nutzlast) {
+    if (!DEDUP_ARTEN.has(art) || !Number.isFinite(nutzlast?.tk)) return true;
+    const ort = nutzlast.id !== undefined
+      ? `i${nutzlast.id}`
+      : `${Math.round(nutzlast.x)},${Math.round(nutzlast.y)},${nutzlast.projectile ?? ''}`;
+    const schluessel = `${nutzlast.tk}|${art}|${ort}`;
+    if (this.#gesehen.has(schluessel)) return false;
+    this.#gesehen.add(schluessel);
+    this.#reihe.push(schluessel);
+    if (this.#reihe.length > this.#grenze) this.#gesehen.delete(this.#reihe.shift());
+    return true;
+  }
+}
 
 /**
  * Ereignisart → Wirkung.
@@ -228,60 +266,48 @@ export const EREIGNIS_WIRKUNGEN = {
    * getrennt — eine Stelle, an der nur das Gelände abgetragen wurde, kennt
    * ausschließlich diesen Fall.
    */
-  terrain_destroyed: {
-    online: (k, n) => {
-      // `tiefe` fehlt bei Altfassung (runder Krater), sonst Teil der Kraterform.
-      const tiefe = n.tiefe ?? null;
-      k.renderer?.applyCrater(n.x, n.y, n.radius || 12, tiefe, n.art ?? null);
-      // Auch die Karte, gegen die die Zielvorschau rechnet — nicht nur das Bild.
-      k.karte?.krater(n.x, n.y, n.radius || 12, tiefe);
-    },
-  },
+  terrain_destroyed: beide((k, n) => {
+    // `tiefe` fehlt bei Altfassung (runder Krater), sonst Teil der Kraterform.
+    const tiefe = n.tiefe ?? null;
+    k.renderer?.applyCrater(n.x, n.y, n.radius || 12, tiefe, n.art ?? null);
+    // Auch die Karte, gegen die die Zielvorschau rechnet — nur online vorhanden (lokal ist es die Match-Maske).
+    k.karte?.krater(n.x, n.y, n.radius || 12, tiefe);
+  }),
 
   /*
    * Eine Geländeinsel (Überhang, gekappte Brücke) löst sich und fällt — nur Anzeige;
    * die Simulation hat sie schon aus der Maske genommen. Die Landung kommt als
    * `terrain_settled` und trägt den Zustand (Bitmap und Maske der Zielvorschau).
    */
-  terrain_detached: {
-    online: (k, n) => {
-      k.renderer?.starteInsel(n.id, n.runs);
-      k.sound?.verarbeite({ type: 'truemmer', ...inselMitte(n.runs) });
-    },
-  },
-  terrain_settled: {
-    online: (k, n) => {
-      k.karte?.insel(n.dy, n.runs);
-      k.renderer?.landeInsel(n.id, n.runs, n.dy);
-      k.sound?.verarbeite({ type: 'insel_gelandet', ...inselMitte(n.runs, n.dy) });
-    },
-  },
+  terrain_detached: beide((k, n) => {
+    k.renderer?.starteInsel(n.id, n.runs);
+    k.sound?.verarbeite({ type: 'truemmer', ...inselMitte(n.runs) });
+  }),
+  terrain_settled: beide((k, n) => {
+    k.karte?.insel(n.dy, n.runs);
+    k.renderer?.landeInsel(n.id, n.runs, n.dy);
+    k.sound?.verarbeite({ type: 'insel_gelandet', ...inselMitte(n.runs, n.dy) });
+  }),
 
   /*
    * Zerstörung Fassung 4. Zustand (Karte UND Bild): Zellen weg (`terrain_removed`), Schutt
    * abgesetzt (`terrain_added`), Setzrutsch (`terrain_slumped`). Nur Anzeige: Brocken fliegen
    * (`terrain_crumble`), Erdbeben (`terrain_quake`). Alle nur online — die Engine läuft auf dem Server.
    */
-  terrain_removed: {
-    online: (k, n) => {
-      k.karte?.entfernt(n.runs);
-      k.renderer?.entferneZellen(n.runs, n.art);
-    },
-  },
-  terrain_added: {
-    online: (k, n) => {
-      k.karte?.hinzu(n.zellen);
-      k.renderer?.setzeSchutt(n.zellen);
-    },
-  },
-  terrain_slumped: {
-    online: (k, n) => {
-      k.karte?.rutsch(n.zuege);
-      k.renderer?.setzeRutsch(n.zuege);
-    },
-  },
-  terrain_crumble: { online: (k, n) => { k.renderer?.bruchOptik(n); } },
-  terrain_quake: { online: (k, n) => { k.renderer?.bebenOptik(n); } },
+  terrain_removed: beide((k, n) => {
+    k.karte?.entfernt(n.runs);
+    k.renderer?.entferneZellen(n.runs, n.art);
+  }),
+  terrain_added: beide((k, n) => {
+    k.karte?.hinzu(n.zellen);
+    k.renderer?.setzeSchutt(n.zellen);
+  }),
+  terrain_slumped: beide((k, n) => {
+    k.karte?.rutsch(n.zuege);
+    k.renderer?.setzeRutsch(n.zuege);
+  }),
+  terrain_crumble: beide((k, n) => { k.renderer?.bruchOptik(n); }),
+  terrain_quake: beide((k, n) => { k.renderer?.bebenOptik(n); }),
 
   /*
    * Explosion.
@@ -303,29 +329,21 @@ export const EREIGNIS_WIRKUNGEN = {
    * online gehört. Zur Klangflut kann das nicht führen — `explosion` entsteht
    * EINMAL je detonierendem Geschoss (`projectileSystem.js:447`), nicht je Takt.
    */
-  explosion: {
-    lokal: (k, n) => {
-      k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
-      k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
-      /*
-       * Der Klang zum Einschlag.
-       *
-       * Der Mischer entscheidet selbst, ob er etwas tut — ist der Klang
-       * abgeschaltet oder gibt es kein Ausgabegerät, ist der Aufruf ein
-       * No-Op. Deshalb steht hier keine Bedingung: Die Regel liegt an
-       * EINER Stelle (im Mischer), nicht an jedem Aufrufort.
-       */
-      einschlagKlang(k, n);
-    },
-    online: (k, n) => {
-      k.renderer?.spawnExplosionParticles(n.x, n.y, n.radius || 12);
-      k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
-      k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
-      // Derselbe Klang wie lokal — der Einschlag klingt nicht anders, weil er
-      // von einem Server bestätigt wurde.
-      einschlagKlang(k, n);
-    },
-  },
+  explosion: beide((k, n) => {
+    /*
+     * Eine Wirkung für beide Betriebsarten. Der Krater trägt die Splitter selbst
+     * (`applyCrater` → `spawnExplosionParticles`); der online zusätzliche eigene Aufruf
+     * verdoppelte sie gegenüber dem lokalen Match.
+     */
+    k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
+    k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
+    /*
+     * Der Klang zum Einschlag. Der Mischer entscheidet selbst, ob er etwas tut — ist der
+     * Klang abgeschaltet oder gibt es kein Ausgabegerät, ist der Aufruf ein No-Op. Das
+     * Material trägt das Ereignis (Engine/Server), sonst wird es abgeleitet.
+     */
+    einschlagKlang(k, n);
+  }),
 
   /*
    * Soforttreffer.
@@ -939,5 +957,7 @@ export function verarbeiteLokal(kontext, ereignis) {
  */
 export function verarbeiteOnline(kontext, nachricht) {
   if (!kontextBrauchbar('online', kontext)) return;
+  // Dasselbe Ereignis zweimal zugestellt (Wiederholung, Wiederverbindung): genau einmal wirken.
+  if (kontext.dedup && !kontext.dedup.neu(nachricht?.t, nachricht)) return;
   EREIGNIS_WIRKUNGEN[nachricht?.t]?.online?.(kontext, nachricht);
 }
