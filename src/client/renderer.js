@@ -1169,6 +1169,56 @@ export class Renderer {
     bild.src = url;
   }
 
+  /**
+   * Die fertig zugeschnittene Kulisse (Bild, Glut, Abdunkelung nach unten) als eigene Zeichenfläche.
+   *
+   * Vorher wurde das Bild jedes Bild neu auf Fenstergröße skaliert und zweimal überfüllt
+   * (Glut, Abdunkelung): in Software-Rasterung rund 20 ms je Bild. Der Verlauf ist in x
+   * gleichförmig, deshalb kann er in die (breitere) Fläche eingebacken werden; die Kamera
+   * schiebt nur den Ausschnitt (`pan`). Neu gebaut wird nur bei anderem Bild, anderer Größe
+   * oder anderer Glutstufe (ändert sich einmal je Runde).
+   *
+   * @returns {{canvas: HTMLCanvasElement, breite: number}}
+   */
+  #kulissenBild(img, stimmung, glut) {
+    const w = this.width;
+    const h = this.height;
+    const glutKey = glut > 0 ? glut.toFixed(3) : '';
+    const c = this.kulissenCache;
+    if (c && c.img === img && c.w === w && c.h === h && c.stimmung === stimmung && c.glutKey === glutKey) return c;
+
+    const bw = img.naturalWidth || img.width;
+    const bh = img.naturalHeight || img.height;
+    const z = stimmung ? coverZuschnitt(bw, bh, w, h, 0) : null;
+    const breite = z ? Math.max(w, Math.ceil(bw * (w / z.sb))) : w;
+    const canvas = c?.canvas ?? document.createElement('canvas');
+    canvas.width = breite;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (z) ctx.drawImage(img, 0, z.sy, bw, z.sh, 0, 0, breite, h);
+    else ctx.drawImage(img, 0, 0, w, h);
+    if (glut > 0) {
+      ctx.fillStyle = `rgba(255,70,20,${glutKey})`;
+      ctx.fillRect(0, 0, breite, h);
+    }
+    /*
+     * Abdunkelung nach unten.
+     *
+     * Ohne sie verschwinden Figuren, Lebensbalken und Munitionsanzeige vor
+     * hellen Kulissen (Schnee, Wüste, Sonnenuntergang) — das Spiel wäre dort
+     * spielbar, aber nicht lesbar. Der Verlauf ist unten am stärksten, weil
+     * dort die Figuren stehen, und oben fast durchsichtig, damit die Kulisse
+     * sichtbar bleibt.
+     */
+    const daempfung = ctx.createLinearGradient(0, h * 0.35, 0, h);
+    daempfung.addColorStop(0, 'rgba(8,14,24,0)');
+    daempfung.addColorStop(0.55, 'rgba(8,14,24,0.28)');
+    daempfung.addColorStop(1, 'rgba(8,14,24,0.55)');
+    ctx.fillStyle = daempfung;
+    ctx.fillRect(0, 0, breite, h);
+    return (this.kulissenCache = { img, w, h, stimmung, glutKey, canvas, breite });
+  }
+
   #drawSky() {
     // Generative Kulisse hat Vorrang: sie passt sich jeder Kartengröße an.
     if (this.scenery) {
@@ -1179,9 +1229,12 @@ export class Renderer {
     // Kulisse, sobald geladen. Sie liegt HINTER dem Terrain: der Boden wird
     // danach darübergezeichnet und verdeckt die untere Bildhälfte.
     if (this.backdropReady && this.backdropImage) {
-      if (this.backdrop?.stimmung) {
+      let img = this.backdropImage;
+      const stimmung = Boolean(this.backdrop?.stimmung);
+      let pan = 0.5;
+      let glut = 0;
+      if (stimmung) {
         // Stimmungsbilder haben wechselnde Formate: cover-Zuschnitt, kein Stauchen.
-        let img = this.backdropImage;
         // Hochformat (Seitenverhältnis < 1): die Hochkant-Fassung, sobald geladen (lazy).
         if (this.width < this.height && this.backdrop.fileHoch) {
           this.#ladeHochBild(this.backdrop);
@@ -1189,42 +1242,19 @@ export class Renderer {
             img = this.backdropHochBild.bild;
           }
         }
-        let pan = 0.5;
         const k = this.kamera;
         if (k?.scrolltHorizontal) {
           const t = k.transformation({ ohneStoss: true });
           const spanne = k.karte.b * t.skalierung - k.schirm.b;
           if (spanne > 0) pan = -t.versatzX / spanne;
         }
-        const z = coverZuschnitt(img.naturalWidth || img.width, img.naturalHeight || img.height, this.width, this.height, pan);
-        this.ctx.drawImage(img, z.sx, z.sy, z.sb, z.sh, 0, 0, this.width, this.height);
-        if (String(this.backdrop.id).includes('ragnarok')) {
-          // Rein optisch: Glut steigert sich mit dem Rundenverlauf.
-          const glut = glutStaerke(this.rundeFuerKulisse);
-          if (glut > 0) {
-            this.ctx.fillStyle = `rgba(255,70,20,${glut.toFixed(3)})`;
-            this.ctx.fillRect(0, 0, this.width, this.height);
-          }
-        }
-      } else {
-        this.ctx.drawImage(this.backdropImage, 0, 0, this.width, this.height);
+        // Rein optisch: Glut der Ragnarök-Stimmungen steigert sich mit dem Rundenverlauf.
+        if (String(this.backdrop.id).includes('ragnarok')) glut = glutStaerke(this.rundeFuerKulisse);
       }
-
-      /**
-       * Abdunkelung nach unten.
-       *
-       * Ohne sie verschwinden Figuren, Lebensbalken und Munitionsanzeige vor
-       * hellen Kulissen (Schnee, Wüste, Sonnenuntergang) — das Spiel wäre dort
-       * spielbar, aber nicht lesbar. Der Verlauf ist unten am stärksten, weil
-       * dort die Figuren stehen, und oben fast durchsichtig, damit die Kulisse
-       * sichtbar bleibt.
-       */
-      const daempfung = this.ctx.createLinearGradient(0, this.height * 0.35, 0, this.height);
-      daempfung.addColorStop(0, 'rgba(8,14,24,0)');
-      daempfung.addColorStop(0.55, 'rgba(8,14,24,0.28)');
-      daempfung.addColorStop(1, 'rgba(8,14,24,0.55)');
-      this.ctx.fillStyle = daempfung;
-      this.ctx.fillRect(0, 0, this.width, this.height);
+      // Zuschnitt, Glut und Abdunkelung sind je Bild gleich: einmal vorgerechnet, je Bild nur ein 1:1-Ausschnitt.
+      const fertig = this.#kulissenBild(img, stimmung, glut);
+      const sx = Math.round(Math.max(0, fertig.breite - this.width) * Math.min(1, Math.max(0, pan)));
+      this.ctx.drawImage(fertig.canvas, sx, 0, this.width, this.height, 0, 0, this.width, this.height);
       return;
     }
 
@@ -1308,7 +1338,14 @@ export class Renderer {
     }
     this.wasserFertig = true;
     this.waterCtx.clearRect(0, 0, this.waterLayer.width, this.waterLayer.height);
-    const image = this.waterCtx.createImageData(this.waterLayer.width, this.waterLayer.height);
+    // Der Puffer wird wiederverwendet (statt je Neuberechnung ~Megabytes neu anzulegen); nasse Zellen
+    // überschreiben alle vier Kanäle, trockene müssen durchsichtig sein.
+    let image = this.wasserBild;
+    if (image?.width !== this.waterLayer.width || image.height !== this.waterLayer.height) {
+      image = this.wasserBild = this.waterCtx.createImageData(this.waterLayer.width, this.waterLayer.height);
+    } else {
+      image.data.fill(0);
+    }
     const data = image.data;
     const levels = water.levels;
     const bg = this.waterLayer.width;
