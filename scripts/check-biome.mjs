@@ -141,10 +141,61 @@ const { MatchController } = await import('../src/engine/match.js');
 const { NEUE_BIOME, SONDERBIOM_IDS } = await import('../src/shared/config/biome-neu.js');
 const { stoffHash, zaehleStoffe } = await import('../src/shared/stoffkarte.js');
 const { buildTerrainForSeed } = await import('../src/client/terrainPreview.js');
+const { WET_LEVEL } = await import('../src/shared/config/water.js');
+const KISTEN_ANZAHL_PRUEFUNG = 24;
+
+/**
+ * Kisten erreichbar (Teil von `check:crates`): Kisten entstehen bei x in [8 %, 92 %] auf der Oberfläche
+ * (`lootSystem.spawnRoundCrates`). Gemessen wird an 24 gleichmäßigen Stellen, welcher Anteil der
+ * TROCKENEN Kistenplätze zu Fuß von einem Startplatz erreichbar ist.
+ *
+ * Zu Fuß heißt: Spaltenweise über die Oberfläche (`surfaceYAt`), nur über trockene Spalten, Aufstieg
+ * höchstens `STUFE` px je Spalte (Treppe/Sprung), Abstieg beliebig (Fall). Der Zusammenhang der
+ * Bitmap (`findeFlaechen`) taugt dafür nicht: Alle Karten sind EINE Landmasse (gemessen), weil der
+ * Meeresgrund die Inseln verbindet. Plätze unter Wasser zählen nicht, werden aber als Anteil
+ * gemeldet. Karten ganz ohne Wasser sind gültig.
+ */
+const STUFE = 10;
+function kistenErreichbar(m, breite) {
+  const hoehe = m.height;
+  const oberflaeche = new Int32Array(breite);
+  const trockenSp = new Uint8Array(breite);
+  for (let x = 0; x < breite; x += 1) {
+    const y = m.surfaceYAt(x);
+    oberflaeche[x] = y;
+    trockenSp[x] = y > 0 && y < hoehe && m.waterLevelAt(x, y - 14) < WET_LEVEL ? 1 : 0;
+  }
+  const erreicht = new Uint8Array(breite);
+  const stapel = [];
+  for (const e of m.getState().entities ?? []) {
+    if (!e.alive || e.type === 'crate') continue;
+    const x = Math.max(0, Math.min(breite - 1, Math.round(e.x)));
+    if (trockenSp[x] && !erreicht[x]) { erreicht[x] = 1; stapel.push(x); }
+  }
+  while (stapel.length) {
+    const x = stapel.pop();
+    for (const nx of [x - 1, x + 1]) {
+      if (nx < 0 || nx >= breite || erreicht[nx] || !trockenSp[nx]) continue;
+      if (oberflaeche[x] - oberflaeche[nx] > STUFE) continue; // y wächst nach unten: Aufstieg = kleineres y
+      erreicht[nx] = 1;
+      stapel.push(nx);
+    }
+  }
+  let trocken = 0;
+  let erreichbar = 0;
+  for (let i = 0; i < KISTEN_ANZAHL_PRUEFUNG; i += 1) {
+    const x = Math.round(breite * (0.08 + 0.84 * (i + 0.5) / KISTEN_ANZAHL_PRUEFUNG));
+    if (!trockenSp[x]) continue;
+    trocken += 1;
+    if (erreicht[x]) erreichbar += 1;
+  }
+  return { trocken, erreichbar, anteil: trocken ? erreichbar / trocken : 1, gesamt: KISTEN_ANZAHL_PRUEFUNG };
+}
 
 console.log('');
 console.log('DIE SONDERBIOME — IST JEDE KONFIGURATION SPIELBAR?');
 console.log('');
+const KISTEN_MINDESTANTEIL = 0.5;
 let fehler = 0;
 const proBiom = new Map();
 for (let i = 0; i < 30; i += 1) {
@@ -157,19 +208,57 @@ for (let i = 0; i < 30; i += 1) {
   const c = buildTerrainForSeed(seed, 'hills', 'landscape', 'autonom', { ...fassung, biom });
   const wasser = 1 - c.waterLevel / m.height;
   const probleme = [];
+  const kisten = kistenErreichbar(m, c.width);
+  const ohneWasser = !Number.isFinite(wasser) || wasser <= 0.005;
+  if (kisten.trocken < kisten.gesamt / 4) probleme.push(`nur ${kisten.trocken} von ${kisten.gesamt} Kistenplätzen trocken`);
+  else if (kisten.anteil < KISTEN_MINDESTANTEIL) probleme.push(`nur ${(kisten.anteil * 100).toFixed(0)} % der trockenen Kistenplätze zu Fuß erreichbar`);
   if (!m.erreichbarkeit?.ok) probleme.push(`Spawn nicht erreichbar: ${m.erreichbarkeit?.grund}`);
-  if (wasser < 0 || wasser > 0.6) probleme.push(`Wasseranteil ${(wasser * 100).toFixed(0)} %`);
+  // Karten ohne Wasser sind gültig (kein Fehler, eigene Zählung); NaN wäre dagegen ein Messfehler.
+  if (Number.isNaN(wasser) || wasser < 0 || wasser > 0.6) probleme.push(`Wasseranteil ${(wasser * 100).toFixed(0)} %`);
   if (!m.stoffkarte) probleme.push('keine Stoffkarte');
   else if (stoffHash(m.stoffkarte) !== stoffHash(c.stoffkarte)) probleme.push('Client weicht ab');
   const anzahl = m.stoffkarte ? zaehleStoffe(m.stoffkarte, c.bitmap).size : 0;
   if (anzahl < 2) probleme.push('nur ein Stoff');
-  const z = proBiom.get(biom) ?? { n: 0, wasser: 0, stoffe: 0 };
-  proBiom.set(biom, { n: z.n + 1, wasser: z.wasser + wasser, stoffe: z.stoffe + anzahl });
+  const z = proBiom.get(biom) ?? { n: 0, wasser: 0, stoffe: 0, trocken: 0, kisten: 0, ohne: 0 };
+  proBiom.set(biom, { n: z.n + 1, wasser: z.wasser + wasser, stoffe: z.stoffe + anzahl, trocken: z.trocken + kisten.trocken, kisten: z.kisten + kisten.erreichbar, ohne: z.ohne + (ohneWasser ? 1 : 0) });
   if (probleme.length) { fehler += 1; console.log(`  FEHLER ${biom} Seed ${seed}: ${probleme.join('; ')}`); }
 }
 for (const [biom, z] of proBiom) {
-  console.log(`  ${biom.padEnd(15)} ${String(z.n).padStart(2)} Karten  Wasser Ø ${(z.wasser / z.n * 100).toFixed(0).padStart(2)} %  Stoffe Ø ${(z.stoffe / z.n).toFixed(1)}  ${NEUE_BIOME[biom].label}`);
+  console.log(`  ${biom.padEnd(15)} ${String(z.n).padStart(2)} Karten  Wasser Ø ${(z.wasser / z.n * 100).toFixed(0).padStart(2)} %  Stoffe Ø ${(z.stoffe / z.n).toFixed(1)}  Kisten ${z.trocken ? (z.kisten / z.trocken * 100).toFixed(0) : '--'} % erreichbar, ohne Wasser ${z.ohne}  ${NEUE_BIOME[biom].label}`);
 }
 console.log('');
 console.log(fehler ? `  ${fehler} Karten fehlerhaft` : `  Alle ${SONDERBIOM_IDS.length} Sonderbiome: 30 Karten ohne Fehler.`);
 if (fehler) process.exitCode = 1;
+
+/*
+ * Die fünf alten Biome (aus dem Kartencharakter abgeleitet): dieselbe Kistenprüfung über 20 autonome
+ * Karten, gruppiert nach dem Biom, das der Charakter ergibt. Karten ohne Wasser sind gültig.
+ */
+console.log('');
+console.log('DIE ALTEN BIOME — KISTEN ERREICHBAR?');
+console.log('');
+const alt = new Map();
+let altFehler = 0;
+for (let i = 0; i < 20; i += 1) {
+  const seed = 910000 + i * 5171;
+  const fassung = { gelaende: 2, zerstoerung: 5 };
+  const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', maxRounds: 2, turnDurationMs: 2000, ...fassung });
+  m.start();
+  m.consumeEvents();
+  const c = buildTerrainForSeed(seed, 'hills', 'landscape', 'autonom', fassung);
+  const kisten = kistenErreichbar(m, c.width);
+  const wasser = 1 - c.waterLevel / m.height;
+  const id = biomFuerCharakter(m.kartencharakter ?? {});
+  const z = alt.get(id) ?? { n: 0, trocken: 0, ok: 0, ohne: 0 };
+  alt.set(id, { n: z.n + 1, trocken: z.trocken + kisten.trocken, ok: z.ok + kisten.erreichbar, ohne: z.ohne + (wasser <= 0.005 ? 1 : 0) });
+  if (!m.erreichbarkeit?.ok || kisten.anteil < KISTEN_MINDESTANTEIL) {
+    altFehler += 1;
+    console.log(`  FEHLER ${id} Seed ${seed}: Kisten ${(kisten.anteil * 100).toFixed(0)} %, Spawn ${m.erreichbarkeit?.ok ? 'ok' : m.erreichbarkeit?.grund}`);
+  }
+}
+for (const [id, z] of alt) {
+  console.log(`  ${id.padEnd(10)} ${String(z.n).padStart(2)} Karten  Kisten ${z.trocken ? (z.ok / z.trocken * 100).toFixed(0) : '--'} % erreichbar, ohne Wasser ${z.ohne}`);
+}
+console.log('');
+console.log(altFehler ? `  ${altFehler} Karten fehlerhaft` : '  Alle Karten: Kisten erreichbar.');
+if (altFehler) process.exitCode = 1;

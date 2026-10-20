@@ -49,7 +49,7 @@ import {
   aufprallStaerke, WEICH_AB_STAERKE, WEICH_MIN_FALL, WEICH_MIN_ZELLEN, SCHUTT_MAX_JE_LANDUNG, SCHUTT_MAX_GESAMT,
   SCHUTT_GRAVITATION, SCHUTT_LEBEN, BRUCH_AB_STAERKE, BRUCH_MIN_ZELLEN, BRUCH_MIN_FALL, BRUCH_MIN_UEBERSTAND,
   BEBEN_MAX_RADIUS, BEBEN_MIN_RADIUS, BEBEN_RAND, BEBEN_STEILHEIT, BEBEN_MAX_ZUEGE, SPLITTER_MIN, SPLITTER_SPANNE, RUTSCH_SCHUB, RUTSCH_MIN_RADIUS,
-  charakterDerWaffe, ZERSTOERUNG_STOFF, ZERSTOERUNG_HANG,
+  charakterDerWaffe, ZERSTOERUNG_STOFF, ZERSTOERUNG_HANG, ZERSTOERUNG_FEIN,
   HANG_MIN_RADIUS, HANG_RADIUS_FAKTOR, HANG_MIN_WIRKRADIUS, HANG_MAX_WIRKRADIUS, HANG_STEILHEIT,
 } from '../shared/config/zerstoerung.js';
 import { stoffWirkung, wirkgruppe, bebenWirkt, stoffById, MIN_KRATER_RADIUS } from '../shared/config/stoffe.js';
@@ -161,6 +161,7 @@ export class Zerstoerung {
   #stoffAmKrater = 0;
   /** Fassung 6: lose Stoffe (Sand, Schnee, Asche) rutschen nach einem Einschlag nach. */
   #hang;
+  #fein;
   #tick = 0;
   #nacharbeit = [];
   #partikel = [];
@@ -179,6 +180,7 @@ export class Zerstoerung {
     this.#stoff = fassung >= ZERSTOERUNG_STOFF && stoffe ? stoffe : null;
     if (this.#stoff) terrain.setzeSchutz(stoffe);
     this.#hang = fassung >= ZERSTOERUNG_HANG && this.#stoff !== null;
+    this.#fein = fassung >= ZERSTOERUNG_FEIN;
     this.#grenzen = suchGrenzen(fassung);
     this.#fassung = fassung;
     this.#bruch = fassung >= ZERSTOERUNG_BRUCH;
@@ -220,7 +222,7 @@ export class Zerstoerung {
     let nebenbrueche = 0;
     if (this.#stoff) {
       const stoffId = stoffAmEinschlag(this.#stoff, this.#terrain, x, y, radius);
-      const w = stoffWirkung(stoffId, art, typeof quelle === 'number' ? gruppeFuerIndex(quelle) : 'wucht');
+      const w = stoffWirkung(stoffId, art, typeof quelle === 'number' ? gruppeFuerIndex(quelle) : 'wucht', this.#fein);
       const key = stoffById(stoffId).key;
       this.#stoffAmKrater = stoffId;
       if (Math.round(radius * w.radius) < MIN_KRATER_RADIUS) {

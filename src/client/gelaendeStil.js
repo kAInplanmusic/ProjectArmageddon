@@ -332,22 +332,13 @@ function baueTabellen(breite, hoehe, palette, seed) {
   }
   const tiefeT = new Float64Array(hoehe + 1);
   for (let t = 0; t <= hoehe; t += 1) tiefeT[t] = glatt(18, 640, t);
-  // Nenner des Randmaßes der ersten Ebene je Zellpaar im 3×3-Block um die Mitte (Steckplätze 0..8): kein sqrt je Pixel.
+  /*
+   * Nenner des Randmaßes der ersten Ebene je Zellpaar im 3×3-Block um die Mitte (Steckplätze 0..8): kein
+   * sqrt je Pixel. Der Speicher ist nullgefüllt; ein Eintrag wird erst beim ersten Gebrauch berechnet
+   * (der Wert ist immer >= 1e-6, 0 heißt „noch nicht berechnet"). Von den 81 Paaren je Zelle wird nur
+   * ein Bruchteil je gebraucht — gleiche Werte wie zuvor, aber ohne den Vorabaufwand.
+   */
   const nenner = new Float64Array(nx * ny * 81);
-  for (let j = 1; j < ny - 1; j += 1) {
-    for (let i = 1; i < nx - 1; i += 1) {
-      const mitte = j * nx + i;
-      for (let a = 0; a < 9; a += 1) {
-        for (let c = 0; c < 9; c += 1) {
-          const ka = mitte + (Math.floor(a / 3) - 1) * nx + (a % 3 - 1);
-          const kc = mitte + (Math.floor(c / 3) - 1) * nx + (c % 3 - 1);
-          const ax = p1x[ka] - p1x[kc];
-          const ay = p1y[ka] - p1y[kc];
-          nenner[mitte * 81 + a * 9 + c] = 2 * Math.sqrt(ax * ax + ay * ay) + 1e-6;
-        }
-      }
-    }
-  }
   const tabellen = { nx, ny, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3, p1, wxy, wxy2, mx, kachel, adern, strata, LAGE_RAND, lagen, lagenFein, art, saum, erde, ERDE_TIEFE, slotOff, vsA, vsB, lyA, lyB, vignX, tiefeT, nenner };
   tabellenCache = { schluessel, tabellen };
   return tabellen;
@@ -357,6 +348,7 @@ function baueTabellen(breite, hoehe, palette, seed) {
 export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null) {
   const { nx, ny, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3, p1, wxy, wxy2, mx, kachel, adern, strata, LAGE_RAND, lagen, lagenFein, art, saum, erde, ERDE_TIEFE, slotOff, vsA, vsB, lyA, lyB, vignX, tiefeT, nenner } = baueTabellen(breite, hoehe, palette, seed);
   const runStart = new Int32Array(breite).fill(-1);
+  const slotOff3 = Int32Array.from(slotOff, v => v * 3);
 
   for (let y = 0; y < hoehe; y += 1) {
     const verschX = (wxy[y] - 0.5) * 16 + (wxy2[y] - 0.5) * 6;
@@ -382,15 +374,23 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stof
       let sb = 0;
       let sz1 = 0;
       const mitte = cj * nx + ci;
+      const m3 = mitte * 3;
       for (let slot = 0; slot < 9; slot += 1) {
-        const k3 = (mitte + slotOff[slot]) * 3;
+        const k3 = m3 + slotOff3[slot];
         const dx = sx - p1[k3];
         const dy = sy - p1[k3 + 1];
         const dd = dx * dx + dy * dy - p1[k3 + 2];
         if (dd < D1) { D2 = D1; sz1 = sb; D1 = dd; sb = slot; } else if (dd < D2) { D2 = dd; sz1 = slot; }
       }
       const best = mitte + slotOff[sb];
-      let e = (D2 - D1) / nenner[mitte * 81 + sb * 9 + sz1];
+      const nIx = mitte * 81 + sb * 9 + sz1;
+      let nn = nenner[nIx];
+      if (nn === 0) {
+        const ax = p1[(best) * 3] - p1[(mitte + slotOff[sz1]) * 3];
+        const ay = p1[best * 3 + 1] - p1[(mitte + slotOff[sz1]) * 3 + 1];
+        nn = nenner[nIx] = 2 * Math.sqrt(ax * ax + ay * ay) + 1e-6;
+      }
+      let e = (D2 - D1) / nn;
 
       // Ebene 2: mittlere Steine im Brocken (Randmaß über vorberechnete Kehrwerte der Punktabstände).
       const c2 = n2[best];

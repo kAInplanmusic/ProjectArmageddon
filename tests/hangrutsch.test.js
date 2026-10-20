@@ -58,7 +58,7 @@ function zaehle(maske) {
 const rutsche = e => e.filter(x => x.type === 'terrain_slumped');
 
 test('Fassung 6 ist die Standardfassung und wird erkannt', () => {
-  assert.equal(ZERSTOERUNG_STANDARD, ZERSTOERUNG_HANG);
+  assert.equal(ZERSTOERUNG_STANDARD, 7);
   assert.equal(normalisiereZerstoerung(ZERSTOERUNG_HANG), ZERSTOERUNG_HANG);
   assert.equal(normalisiereZerstoerung(ZERSTOERUNG_STOFF), ZERSTOERUNG_STOFF);
   assert.deepEqual(Object.keys(HANG_STEILHEIT).sort(), ['asche', 'sand', 'schnee']);
