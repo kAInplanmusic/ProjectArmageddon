@@ -27,7 +27,9 @@ import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
-import { SoundMixer } from './soundMixer.js';
+import { SoundMixer, tonSpeicher } from './soundMixer.js';
+import { tonErlaubt } from './klangProfile.js';
+import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
@@ -146,7 +148,20 @@ class Game {
      * Serverbetrieb (RunPod, Hetzner) gibt es kein Ausgabegerät; dort bleibt er
      * stumm, ohne zu scheitern.
      */
-    this.sound = new SoundMixer();
+    this.sound = new SoundMixer({
+      aktiv: tonErlaubt({
+        suche: globalThis.location?.search ?? '',
+        webdriver: globalThis.navigator?.webdriver === true,
+      }),
+      speicher: tonSpeicher(),
+    });
+    // Hörerposition für Stereolage und Abstandsdämpfung: Mitte und halbe Breite der Kamera.
+    this.sound.setzeHoerer(() => {
+      const k = this.kamera;
+      if (!k) return null;
+      const halb = k.sichtbareBreite / 2;
+      return { x: k.x + halb, y: k.y + k.sichtbareHoehe / 2, halbBreite: halb };
+    });
     /*
      * Die Hintergrundmusik (src/client/musik.js). Hängt am Mischer: derselbe
      * AudioContext und Limiter, eigener Lautstärkeknoten. In Headless-Läufen
@@ -195,6 +210,7 @@ class Game {
      * eigene Buchführung: Er zählt genau die erzeugten Klänge.
      */
     this.letzterTrefferklang = 0;
+    this.cooldownMerker = null;
 
     /**
      * Vorhersage des eigenen Schusses (Online-Modus).
@@ -289,6 +305,7 @@ class Game {
 
     this.#bindMenu();
     this.#bindeMusik();
+    this.#bindeTon();
     this.#exposeDebugApi();
   }
 
@@ -307,6 +324,17 @@ class Game {
       window.addEventListener(art, () => { void this.musik.freigeben(); }, { passive: true });
     }
     document.addEventListener('visibilitychange', () => this.musik.setzeVersteckt(document.hidden));
+  }
+
+  /**
+   * Effekte: Schalter, Regler und Taste T (siehe `soundBedienung.js`); der Audiokontext
+   * startet bei der ersten Nutzergeste (Zeiger, Touch, Taste).
+   */
+  #bindeTon() {
+    bindeTonBedienung(document, this.sound);
+    for (const art of ['pointerdown', 'touchend', 'click']) {
+      window.addEventListener(art, () => { void this.sound?.starte(); }, { passive: true });
+    }
   }
 
   #bindMenu() {
@@ -1801,6 +1829,7 @@ class Game {
       }
       this.network?.selectWeapon(weaponId);
       this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+      this.sound?.verarbeite({ type: 'waffenwechsel' });
       return true;
     }
     if (!this.match) return false;
@@ -1808,6 +1837,7 @@ class Game {
     if (playerId === null) return false;
     this.match.inventory.selectWeapon(playerId, weaponId);
     this.hud.log(`Waffe: ${getWeapon(weaponId)?.displayName ?? weaponId}`);
+    this.sound?.verarbeite({ type: 'waffenwechsel' });
     return true;
   }
 
@@ -1954,6 +1984,12 @@ class Game {
        */
       nameOf: playerId => this.#nameOf(playerId),
       findEntity: entityId => this.currentState()?.entities?.find(e => e.entityId === entityId) ?? null,
+      // Untergrund an einer Stelle für den Einschlagklang: Wasser, Fels (Höhlen, Gebirge) oder Erde.
+      material: (x, y) => this.#materialAn(x, y),
+      // Steht eine lebende Figur an der Stelle? (Dann klingt der Treffer, nicht der Boden.)
+      figurNah: (x, y) => (this.currentState()?.entities ?? []).some(
+        e => e.alive !== false && Math.hypot(e.x - x, e.y - y) < 22,
+      ),
       drawHitscanBeam: nutzlast => this.#drawHitscanBeam(nutzlast),
       logSpecialEffect: nutzlast => this.#logSpecialEffect(nutzlast),
       showGuentherWheel: nutzlast => this.showGuentherWheel(nutzlast),
@@ -1982,6 +2018,13 @@ class Game {
         setzeEinschnitt: wert => { this.remoteInset = wert; },
       },
     };
+  }
+
+  /** Untergrund für den Klang: `wasser` | `fels` | `erde`. */
+  #materialAn(x, y) {
+    if ((this.water?.levelAtWorld?.(x, y) ?? 0) > 0.3) return 'wasser';
+    const biom = this.match?.biomId;
+    return biom === 'caverns' || biom === 'alpine' ? 'fels' : 'erde';
   }
 
   /**
@@ -2077,6 +2120,11 @@ class Game {
       this.waterStates.set(entity.entityId, jetzt);
 
       const prozent = Math.round((entity.waterLevel ?? 0) * 100);
+      if (jetzt !== WATER_STATE.DRY && vorher === WATER_STATE.DRY) {
+        this.sound?.verarbeite({
+          type: 'platscher', gross: jetzt === WATER_STATE.SUBMERGED, x: entity.x, y: entity.y,
+        });
+      }
       if (jetzt === WATER_STATE.SUBMERGED) {
         this.hud.log(`${entity.label} ertrinkt (${prozent} % unter Wasser)`, 'danger');
       } else if (jetzt === WATER_STATE.WET && vorher === WATER_STATE.DRY) {
@@ -2124,8 +2172,30 @@ class Game {
 
     if (treffer.length === 0 || ueberEreignis) return;
     for (const t of treffer) {
-      this.sound?.spieleTreffer(haerteAusTreffer(t.schaden, t.maxHealth));
+      this.sound?.spieleTreffer(haerteAusTreffer(t.schaden, t.maxHealth), {
+        schaden: t.schaden, maxHealth: t.maxHealth, x: t.x, y: t.y,
+      });
     }
+  }
+
+  /** Hinweiston, wenn eine Waffe des aktiven (eigenen) Spielers wieder nachgeladen ist. */
+  #pruefeNachladen(state) {
+    const aktive = state?.entities?.find(e => e.entityId === state.activePlayerId) ?? null;
+    const rest = aktive?.cooldowns;
+    if (!rest || (this.mode === 'online' && !this.network?.isMyTurn)) {
+      this.cooldownMerker = null;
+      return;
+    }
+    const alt = this.cooldownMerker;
+    if (alt && alt.id === aktive.entityId) {
+      for (const waffe of Object.keys(alt.werte)) {
+        if (alt.werte[waffe] > 0 && !(rest[waffe] > 0)) {
+          this.sound?.verarbeite({ type: 'bereit' });
+          break;
+        }
+      }
+    }
+    this.cooldownMerker = { id: aktive.entityId, werte: { ...rest } };
   }
 
   /** Meldet eine Wirkung auf den Schützen im Protokoll. */
@@ -2732,6 +2802,7 @@ class Game {
       blastRadius: activeWeapon?.blastRadius ?? 0,
     });
     this.#trackWater(state);
+    this.#pruefeNachladen(state);
     /*
      * Der Klang zum Treffer — NACH dem Zeichnen, weil die Treffer im
      * Zeichenaufruf entstehen (siehe `Renderer#nimmTreffer`).
@@ -3910,6 +3981,21 @@ function zeichneTon(container) {
     'Mit „?musik=0“ an der Adresse bleibt die Musik ganz aus.',
   ]) liste.append(textEl('li', zeile));
   container.append(liste);
+  container.append(textEl('h3', 'Effekte'));
+  container.append(textEl('p',
+    'Schüsse, Einschläge, Treffer, Landungen und Kisten haben eigene Klänge. Sie sind '
+    + 'erzeugt, nicht geladen: Jede Waffenkategorie klingt anders (Knall, Rohrdonner, '
+    + 'Zischen, Feuer, Eis, Blitz, Zauber, Laser, Hieb, Wurf), große Explosionen hallen nach. '
+    + 'Was weiter links oder rechts im Bild geschieht, klingt auch dort und leiser, wenn es weit weg ist.'));
+  const effekte = document.createElement('ul');
+  effekte.className = 'h-liste';
+  for (const zeile of [
+    'Taste T: Effekte an/aus (nicht beim Tippen in ein Textfeld).',
+    'Schalter „Effekte an/aus“ und Regler „Effekt-Lautstärke“ stehen im Menü neben der Musik.',
+    'Deine Einstellung bleibt im Browser gespeichert (Vorgabe: an, Lautstärke 80 %).',
+    'Mit „?ton=0“ an der Adresse bleiben die Effekte stumm, mit „?ton=1“ erzwingst du sie.',
+  ]) effekte.append(textEl('li', zeile));
+  container.append(effekte);
 }
 
 /** Anteil als Prozentzahl mit dem Hinweis auf die Herkunft der Zahl. */

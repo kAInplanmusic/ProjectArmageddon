@@ -746,14 +746,28 @@ select option { background: #14181d; color: var(--ink); }
 }
 
 /* ---------------------------------------------------------------- HUD: Figurenkarte der aktiven Figur */
-#hud-figur { display: flex; gap: 8px; align-items: center; margin-top: 6px; padding: 4px 8px; border-left: 4px solid var(--lime); border-radius: 4px; background: rgba(13, 15, 18, 0.55); }
+#hud-figur { display: flex; gap: 8px; align-items: center; margin-top: 6px; padding: 4px 8px; border-left: 4px solid var(--lime); border-radius: 6px; background: rgba(13, 15, 18, 0.62); }
 #hud-figur[hidden] { display: none; }
-#hud-figur-bild { width: 44px; height: 44px; object-fit: contain; flex: none; }
-.hud-figur-text { display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 1.25; }
+#hud-figur.figur-ein { animation: figur-ein 0.38s ease-out; }
+@keyframes figur-ein { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #hud-figur.figur-ein { animation: none; } }
+#hud-figur-bild { width: 52px; height: 52px; object-fit: contain; flex: none; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
+.hud-figur-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-size: 12px; line-height: 1.25; }
 .hud-figur-text strong { color: #fff; font-family: var(--font-display); letter-spacing: 0.05em; font-size: 15px; overflow-wrap: anywhere; }
 .hud-figur-text span { color: #aab3c0; }
-/* Leben und Waffe zeigen schon Liste und Waffenleiste; die Karte bleibt niedrig, damit sie keine Figuren verdeckt. */
-#hud-figur-hp, #hud-figur-waffe { display: none; }
+.hud-figur-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.hud-figur-chips .chip { font-weight: 600; font-size: 10px; line-height: 1; padding: 2px 6px; border-radius: 8px; color: #10141a; background: #aab3c0; }
+.hud-figur-chips #hud-figur-rolle[data-rolle="melee"] { background: #f4a261; }
+.hud-figur-chips #hud-figur-rolle[data-rolle="ranged"] { background: #b6e35a; }
+.hud-figur-chips #hud-figur-rolle[data-rolle="magic"] { background: #c8a2ff; }
+.hud-figur-zeile { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hud-figur-leben { display: flex; align-items: center; gap: 4px; flex: none; }
+#hud-figur-balken { display: block; width: 34px; height: 5px; border-radius: 3px; background: #1c2128; overflow: hidden; flex: none; }
+#hud-figur-balken i { display: block; height: 100%; width: 100%; background: var(--lime); transition: transform 0.3s ease-out; transform-origin: left; }
+#hud-figur-hp { font-size: 11px; }
+.hud-figur-waffe { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.hud-figur-waffe img { flex: none; }
+#hud-figur-waffe { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-height: 520px) {
   /* Niedrige Fenster: nur Porträt und Name in einer Zeile, das Protokoll liegt darunter. */
   #hud-figur { margin-top: 2px; padding: 2px 6px; gap: 6px; }
@@ -761,6 +775,7 @@ select option { background: #14181d; color: var(--ink); }
   .hud-figur-text { font-size: 11px; }
   .hud-figur-text strong { font-size: 12px; }
   .hud-figur-text span { display: none; }
+  #hud-figur.figur-ein { animation-duration: 0.25s; }
 }
 
 /* ======================================================= HUD weicht Figuren aus */

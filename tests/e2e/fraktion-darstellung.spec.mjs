@@ -52,7 +52,7 @@ test('Gewählte Fraktion erreicht den Renderer und wird als Sprite gezeichnet', 
   // Figurenkarte der aktiven Figur: Name aus dem Kader, Porträt vorhanden.
   await expect(page.locator('#hud-figur')).toBeVisible();
   await expect(page.locator('#hud-figur-name')).not.toBeEmpty();
-  await expect(page.locator('#hud-figur-bild')).toHaveAttribute('src', /characters\/pirates\//);
+  await expect(page.locator('#hud-figur-bild')).toHaveAttribute('src', /characters(-hd)?\/pirates\//);
   expect(bild.length).toBeGreaterThan(2000);
   expect(fehler).toEqual([]);
 });

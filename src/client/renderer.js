@@ -37,13 +37,16 @@ import {
 import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
+import { FigurEffekte } from './figurEffekte.js';
+import { PARAMETER, typFuer } from './figurTypen.js';
+import { FACTIONS } from '../shared/config/factions.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
   parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
   GeschossLagen, geschossDarstellung, geschossWinkel,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
-import { FigurPosen, fallPose } from './figurAnimation.js';
+import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
@@ -147,7 +150,17 @@ export class Renderer {
     // Posen der Sprites und laufende Fall-Effekte (Tod, Ertrinken).
     this.figurPosen = new FigurPosen();
     this.faelle = [];
-    this.fallPoseTmp = { dx: 0, dy: 0, rot: 0, alpha: 1 };
+    this.fallPoseTmp = { dx: 0, dy: 0, rot: 0, alpha: 1, sx: 1, sy: 1, flash: 0 };
+    /** Staub, Blasen, Splitter der Figuren (fester Vorrat) und Zeit des letzten Bildes. */
+    this.figurEffekte = new FigurEffekte();
+    this.figurZeit = 0;
+    this.sieger = null;
+    /** Zahl der in diesem Bild gezeichneten bzw. übersprungenen (außerhalb des Bildes) Figuren. */
+    this.figurStat = { gezeichnet: 0, uebersprungen: 0, stufe: 0 };
+    this.akzentJeFraktion = new Map(FACTIONS.map(f => [f.id, f.palette?.[1] ?? null]));
+    this.figurPosen.beiLandung = (x, y, staerke, typ) => {
+      this.figurEffekte.staub(x, y + FUSS_ABSTAND, staerke, (PARAMETER[typ] ?? PARAMETER.humanoid).staub);
+    };
     this.waterFrame = 0;
     this.time = 0;
     /** Vorzeichen von Valhalla (zwei Raben im Blitz): `{start, bildSeed}` oder null. */
@@ -944,6 +957,7 @@ export class Renderer {
     this.particles = [];
     this.trefferMarken = [];
     this.figurPosen.leere();
+    this.figurEffekte.leere();
     this.faelle.length = 0;
     this.letzteWerte = new Map();
     this.zahlen = [];
@@ -1393,11 +1407,28 @@ export class Renderer {
     const S = this.figurSkala;
     this.waffenStat.sprite = 0;
     this.waffenStat.ikone = 0;
+    const fz = this.figurStat;
+    fz.gezeichnet = 0; fz.uebersprungen = 0;
+    const zoomK = this.kamera?.zoom ?? 1;
+    // Sprite-Kante in Bildpunkten der Zeichenfläche: bestimmt die Mip-Stufe (siehe `stufeFuer`).
+    const spritePx = SPRITE_HOEHE * S * zoomK;
+    fz.stufe = spritePx;
+    const sicht = this.#sichtfeld(SPRITE_HOEHE * S * 1.3 + 80);
+    this.figurEffekte.aktualisiere(jetzt - this.figurZeit);
+    this.figurZeit = jetzt;
     for (const entity of entities) {
       if (!entity.alive) {
         this.#figurGestorben(entity.entityId, jetzt);
         continue;
       }
+      // Nur sichtbare Figuren werden animiert und gezeichnet (die aktive immer).
+      if (sicht && entity.entityId !== activePlayerId
+        && (entity.x < sicht.x0 || entity.x > sicht.x1 || entity.y < sicht.y0 || entity.y > sicht.y1)) {
+        this.figurPosen.ueberspringe(entity, jetzt);
+        fz.uebersprungen += 1;
+        continue;
+      }
+      fz.gezeichnet += 1;
       const color = TEAM_COLORS[entity.teamId % TEAM_COLORS.length];
 
       /*
@@ -1419,16 +1450,18 @@ export class Renderer {
       this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
       const fraktionId = this.fraktionVon(entity);
-      const fig = fraktionId
-        ? holeFigur(charakterFuer(fraktionId, entity.classId, entity.archetypeId))
-        : null;
+      const charakter = fraktionId ? charakterFuer(fraktionId, entity.classId, entity.archetypeId) : null;
+      const fig = charakter ? holeFigur(charakter) : null;
       const sk = fig ? S : 1;
+      const typ = charakter ? typFuer(charakter.id) : 'humanoid';
 
-      // Schatten
-      this.ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      this.ctx.beginPath();
-      this.ctx.ellipse(0, 11, 10 * sk, 3 * Math.min(sk, 1.6), 0, 0, Math.PI * 2);
-      this.ctx.fill();
+      // Schatten der klassischen Figur (die Sprites bringen ihren weichen Kontaktschatten mit)
+      if (!fig) {
+        this.ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, 11, 10 * sk, 3 * Math.min(sk, 1.6), 0, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
 
       const isActive = entity.entityId === activePlayerId;
       const angle = isActive && aim ? aim.angle : entity.angle;
@@ -1466,14 +1499,36 @@ export class Renderer {
         this.ctx.translate(0, FUSS_ABSTAND);
         this.ctx.scale(S, S);
         this.ctx.translate(0, -FUSS_ABSTAND);
+        const par = PARAMETER[typ];
+        const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
         const pose = this.figurPosen.pose(entity, jetzt, {
-          reduziert: this.reducedMotion, treffer, rueck: -rueck, winkel: angle, aktiv: isActive,
+          reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive,
+          feuer: feuerLeben, params: par, typ,
+          neigung: this.#bodenNeigung(entity.x, fussWelt),
+          hp: entity.maxHealth > 0 ? Math.max(0, Math.min(1, entity.health / entity.maxHealth)) : 0,
+          ergebnis: this.sieger !== null && this.sieger >= 0 ? (this.sieger === entity.teamId ? 1 : -1) : 0,
         });
         const zs = this.figurPosen.zustand(entity.entityId);
-        zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0;
+        zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0; zs.typ = typ;
+        // Wasserlinie an der Figur (lokale Höhe im Figurrahmen) und Blasen beim Waten.
+        let wasserY;
+        if ((entity.waterLevel ?? 0) > 0.03) {
+          const wy = this.#wasserLinie(entity.x);
+          if (wy < fussWelt - 1) wasserY = FUSS_ABSTAND + (wy - fussWelt) / S;
+          if (wasserY !== undefined && !this.reducedMotion && (this.time + entity.entityId * 7) % 50 === 0) {
+            this.figurEffekte.blasen(entity.x, wy + 2, 2);
+          }
+        }
         zeichneFigurSprite(this.ctx, fig, {
           team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
+          px: spritePx, breite: par.fussBreite, wasserY,
         });
+        // Die Waffe folgt dem Körper (Hangneigung, Neigung, Hüpfen), behält aber den echten Zielwinkel.
+        {
+          const r = pose.neigung + pose.rot;
+          const hh = FUSS_ABSTAND - HAND_HOEHE;
+          this.ctx.translate(pose.dx + hh * Math.sin(r), pose.dy - hh * (pose.sy - 1) + hh * (1 - Math.cos(r)));
+        }
         // Gehaltene Waffe: ihre Ikone am Zielstrahl; ohne Ikone das Rohr.
         const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
         const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
@@ -1541,7 +1596,7 @@ export class Renderer {
         this.ctx.restore();
       }
 
-      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0);
+      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0, fig ? charakter.faction : null);
     }
   }
 
@@ -1588,14 +1643,77 @@ export class Renderer {
     const z = this.figurPosen.zustand(entityId);
     if (!z) return;
     if (z.fig) {
+      const par = PARAMETER[z.typ] ?? PARAMETER.humanoid;
+      const ertrinkt = z.nass > 0.5;
       this.faelle.push({
         fig: z.fig, x: z.x, y: z.y, winkel: z.winkel, team: z.team, t0: jetzt,
-        ertrinkt: z.nass > 0.5, blick: z.blick, vx: z.vx,
+        ertrinkt, blick: z.blick, vx: z.vx, tod: par.tod, breite: par.fussBreite,
       });
+      if (!this.reducedMotion) {
+        if (ertrinkt) this.figurEffekte.blasen(z.x, z.y + FUSS_ABSTAND, 9);
+        else this.figurEffekte.tod(par.tod, z.x, z.y + 2, z.team, z.blick);
+      }
     }
     this.figurPosen.vergiss(entityId);
     this.waffenZustand.delete(entityId);
     this.waffenDiagnose.delete(entityId);
+  }
+
+  /** Pose des Fall-Effekts im Format der Sprite-Zeichnung (wiederverwendetes Objekt). */
+  fallDarstellung(pose) {
+    const d = this.fallZeichenPose ?? (this.fallZeichenPose = {
+      dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1,
+    });
+    d.dx = pose.dx; d.dy = pose.dy; d.sx = pose.sx; d.sy = pose.sy; d.rot = pose.rot; d.flash = pose.flash;
+    return d;
+  }
+
+  /** Zeichnet Staub, Blasen und Splitter der Figuren. */
+  #drawFigurEffekte() {
+    this.figurEffekte.zeichne(this.ctx);
+  }
+
+  /** Sichtbarer Kartenausschnitt (mit Rand) für das Auslassen verdeckter Figuren, `null` ohne Kamera. */
+  #sichtfeld(rand) {
+    if (!this.kamera) return null;
+    const t = this.kamera.transformation();
+    const k = t.skalierung > 0 ? t.skalierung : 1;
+    const v = this.sichtTmp ?? (this.sichtTmp = { x0: 0, x1: 0, y0: 0, y1: 0 });
+    v.x0 = -t.versatzX / k - rand; v.x1 = (this.width - t.versatzX) / k + rand;
+    v.y0 = -t.versatzY / k - rand; v.y1 = (this.height - t.versatzY) / k + rand;
+    return v;
+  }
+
+  /**
+   * Neigung des Bodens unter den Füßen (rad, höchstens ±12°) aus der Kollisionsmaske:
+   * Höhe des Geländes 7 px links und rechts der Figur. In der Luft oder ohne Gelände 0.
+   */
+  #bodenNeigung(x, fussY) {
+    const q = this.terrainSource;
+    if (!q) return 0;
+    const { bitmap, width, height } = q;
+    const hoehe = (cx) => {
+      const c = Math.round(cx);
+      if (c < 0 || c >= width) return NaN;
+      const y1 = Math.min(height - 1, Math.round(fussY) + 12);
+      for (let y = Math.max(0, Math.round(fussY) - 9); y <= y1; y += 1) if (bitmap[y * width + c]) return y;
+      return NaN;
+    };
+    const m = hoehe(x);
+    const l = hoehe(x - 7);
+    const r = hoehe(x + 7);
+    if (Number.isNaN(m) || Number.isNaN(l) || Number.isNaN(r) || m - fussY > 5) return 0;
+    const w = Math.atan2(r - l, 14);
+    return w > NEIGUNG_MAX ? NEIGUNG_MAX : w < -NEIGUNG_MAX ? -NEIGUNG_MAX : w;
+  }
+
+  /** Höhe der Wasserlinie in Kartenpixeln an Stelle `x` (`NaN`, wenn dort kein Wasser steht). */
+  #wasserLinie(x) {
+    const o = this.wasserOben;
+    if (!o || !this.wasserFertig) return NaN;
+    const c = Math.floor(x / WATER_SCALE);
+    if (c < 0 || c >= o.length || o[c] < 0) return NaN;
+    return o[c] * WATER_SCALE;
   }
 
   /** Zeichnet die auslaufenden Fall-Effekte (nach den lebenden Figuren). */
@@ -1612,8 +1730,9 @@ export class Renderer {
       this.ctx.translate(0, -FUSS_ABSTAND);
       zeichneFigurSprite(this.ctx, f.fig, {
         team: f.team, winkel: f.blick > 0 ? 0 : Math.PI, aktiv: false, zeit: jetzt, reduziert: true,
-        alpha: pose.alpha,
-        pose: { dx: pose.dx, dy: pose.dy, sx: 1, sy: 1, rot: pose.rot, flash: 0 },
+        alpha: pose.alpha, breite: f.breite,
+        px: SPRITE_HOEHE * this.figurSkala * (this.kamera?.zoom ?? 1),
+        pose: this.fallDarstellung(pose),
       });
       this.ctx.restore();
     }
@@ -1626,7 +1745,7 @@ export class Renderer {
    * Pixel, und der Balken gehört zu ihr — ein Balken, der stehen bleibt, während
    * die Figur wackelt, liest sich als zwei Dinge.
    */
-  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false, spriteSkala = 0) {
+  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false, spriteSkala = 0, fraktion = null) {
     const ratio = entity.maxHealth > 0 ? Math.max(0, entity.health / entity.maxHealth) : 0;
     // Klassische Figur: Schild wie bisher. Sprite: über dem Kopf des (größeren) Sprites, mitskaliert.
     const s = spriteSkala ? Math.max(1, Math.min(2.6, spriteSkala * 0.75)) : 1;
@@ -1639,6 +1758,13 @@ export class Renderer {
       {
         grenzen: this.#sicherInKarte(),
         fuss: entity.y + versatz.dy + FUSS_ABSTAND,
+      },
+      {
+        verz: spriteSkala ? (this.figurPosen.zustand(entity.entityId)?.pose.hpVerz ?? ratio) : ratio,
+        akzent: fraktion ? this.akzentJeFraktion.get(fraktion) : null,
+        gift: entity.dotsCount ?? 0,
+        boost: entity.boostMultiplier ?? 1,
+        zeit: performance.now() / 1000,
       },
     );
   }
@@ -2210,6 +2336,7 @@ export class Renderer {
      * Klammer mit den Weltfunktionen, danach die Bildschirm-Anzeigen (Windpfeil,
      * Mahlstrom) wieder ohne.
      */
+    this.sieger = state.winnerTeamId ?? null;
     this.#drawSky();
 
     /*
@@ -2300,6 +2427,7 @@ export class Renderer {
     this.#drawSpuren();
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawFaelle();
+    this.#drawFigurEffekte();
     this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? [], state.entities ?? []);
     this.#drawWiederholung(wiederholung);
