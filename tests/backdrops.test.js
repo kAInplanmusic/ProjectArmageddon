@@ -33,7 +33,7 @@ const BILD_DIR = path.join(ROOT, 'src', 'client', 'assets', 'backdrops');
 
 // ------------------------------------------------------------------ Katalog
 
-test('Jedes Biom hat fünf Varianten', () => {
+test('Jedes Biom hat fünf Basis- und fünf Stimmungs-Varianten', () => {
   /*
    * Die Zusage ist „fünf Varianten je Biom", nicht eine Gesamtzahl. Die
    * Gesamtzahl wird deshalb ABGELEITET: Eine feste 60 brach, sobald ein Biom
@@ -42,18 +42,22 @@ test('Jedes Biom hat fünf Varianten', () => {
    *
    * Die UNTERGRENZE bleibt stehen (zwölf Biome), denn das war die Zusage.
    */
-  assert.ok(BACKDROP_BIOMES.length >= 12,
-    `Nur ${BACKDROP_BIOMES.length} Biome — die zwölf geforderten Themen sind die Untergrenze`);
+  assert.ok(BACKDROP_BIOMES.length >= 16,
+    `Nur ${BACKDROP_BIOMES.length} Biome — die sechzehn Kulissen-Biome sind die Untergrenze`);
 
   for (const biome of BACKDROP_BIOMES) {
-    assert.equal(biome.variants.length, 5,
-      `${biome.id}: ${biome.variants.length} Varianten statt fünf`);
+    assert.equal(biome.variants.filter(v => !v.stimmung).length, 5,
+      `${biome.id}: Basis-Varianten nicht fünf`);
+    assert.deepEqual(
+      biome.variants.filter(v => v.stimmung).map(v => v.id),
+      ['stimmung_hell', 'stimmung_dunkel', 'stimmung_hoehle', 'stimmung_ragnarok', 'stimmung_ragnarok2'],
+      `${biome.id}: Stimmungen unvollständig`);
     assert.ok(biome.label?.length > 2, `${biome.id}: Beschriftung fehlt`);
     assert.ok(biome.mapPreset, `${biome.id}: kein Gelände zugeordnet`);
   }
 
-  assert.equal(ALL_BACKDROPS.length, BACKDROP_BIOMES.length * 5,
-    'Die Gesamtzahl muss Biome × 5 sein');
+  assert.equal(ALL_BACKDROPS.length, BACKDROP_BIOMES.length * 10,
+    'Die Gesamtzahl muss Biome × 10 sein');
 });
 
 test('Die Biome entsprechen den gewünschten Themen', () => {
@@ -91,7 +95,10 @@ test('Schlüssel und Dateinamen sind eindeutig', () => {
   // Und der Dateiname muss dem Schlüssel entsprechen — sonst zeigt der Katalog
   // auf ein Bild, das unter anderem Namen liegt.
   for (const b of ALL_BACKDROPS) {
-    assert.equal(b.file, `${b.key.replace('/', '_')}.jpg`,
+    const erwartet = b.stimmung
+      ? `stimmung/${b.biomeId}_${b.id.replace(/^stimmung_/, '')}.jpg`
+      : `${b.key.replace('/', '_')}.jpg`;
+    assert.equal(b.file, erwartet,
       `${b.key}: Dateiname passt nicht zum Schlüssel (${b.file})`);
   }
 });
@@ -108,7 +115,7 @@ test('Jede Variante beschreibt ihre eigene Szene', () => {
   const proBiom = BACKDROP_BIOMES.map(b => b.variants.map(v => v.prompt));
   for (let i = 0; i < proBiom.length; i++) {
     const eindeutig = new Set(proBiom[i]);
-    assert.equal(eindeutig.size, 5,
+    assert.equal(eindeutig.size, 10,
       `${BACKDROP_BIOMES[i].id}: nur ${eindeutig.size} verschiedene Szenen`);
   }
 });
@@ -193,7 +200,12 @@ test('Zu jeder Kulisse liegt eine Bilddatei', () => {
 test('Es liegt kein Bild ohne Katalogeintrag herum', () => {
   // Verwaiste Dateien blähen das Repository auf und werden nie ausgeliefert.
   const imKatalog = new Set(ALL_BACKDROPS.map(b => b.file));
-  const aufPlatte = fs.readdirSync(BILD_DIR).filter(f => f.endsWith('.jpg'));
+  const aufPlatte = [
+    ...fs.readdirSync(BILD_DIR).filter(f => f.endsWith('.jpg')),
+    ...fs.readdirSync(path.join(BILD_DIR, 'stimmung')).filter(f => f.endsWith('.jpg')).map(f => `stimmung/${f}`),
+  ];
+  const hochKatalog = new Set(ALL_BACKDROPS.filter(b => b.fileHoch).map(b => b.fileHoch));
+  for (const f of hochKatalog) imKatalog.add(f);
   const verwaist = aufPlatte.filter(f => !imKatalog.has(f));
   assert.deepEqual(verwaist, [], `Verwaiste Bilder: ${verwaist.join(', ')}`);
 });
@@ -210,12 +222,15 @@ test('Alle Bilder haben das Spielformat und eine vertretbare Größe', () => {
 
   // Gesamtumfang: alle Kulissen zusammen dürfen das Laden nicht sprengen.
   const gesamt = ALL_BACKDROPS.reduce((s, b) => s + fs.statSync(path.join(BILD_DIR, b.file)).size, 0);
-  assert.ok(gesamt < 16_000_000,
+  // Budget mit den 80 Stimmungsbildern von 16 auf 24 MB angehoben (80 Basis ca. 10,5 MB,
+  // 80 Stimmungen ca. 8 MB). Geladen wird je Match nur EIN Bild (lazy), die Dauerlast
+  // je Spieler bleibt unter 0,5 MB; die Einzelgrenze oben bleibt unverändert.
+  assert.ok(gesamt < 24_000_000,
     `Alle Kulissen zusammen sind ${(gesamt / 1024 / 1024).toFixed(1)} MB`);
 });
 
 test('Jedes Bild ist ein JPEG mit 16:9 und der Spielbreite', () => {
-  for (const backdrop of ALL_BACKDROPS.slice(0, 12)) {
+  for (const backdrop of ALL_BACKDROPS.filter(b => !b.stimmung).slice(0, 12)) {
     const puffer = fs.readFileSync(path.join(BILD_DIR, backdrop.file));
     // JPEG beginnt mit FF D8 und endet mit FF D9.
     assert.equal(puffer[0], 0xff, `${backdrop.file}: kein JPEG-Anfang`);
@@ -227,6 +242,44 @@ test('Jedes Bild ist ein JPEG mit 16:9 und der Spielbreite', () => {
     const masse = jpegGroesse(puffer);
     assert.deepEqual(masse, { breite: 1280, hoehe: 720 },
       `${backdrop.file}: ${masse.breite}x${masse.hoehe} statt 1280x720`);
+  }
+});
+
+test('Jede Stimmung ist ein JPEG in brauchbarer Auflösung (beliebiges Format)', () => {
+  const stimmungen = ALL_BACKDROPS.filter(b => b.stimmung);
+  assert.equal(stimmungen.length, BACKDROP_BIOMES.length * 5);
+  for (const backdrop of stimmungen) {
+    const puffer = fs.readFileSync(path.join(BILD_DIR, backdrop.file));
+    assert.deepEqual([puffer[0], puffer[1]], [0xff, 0xd8], `${backdrop.file}: kein JPEG-Anfang`);
+    assert.deepEqual([puffer[puffer.length - 2], puffer[puffer.length - 1]], [0xff, 0xd9],
+      `${backdrop.file}: kein JPEG-Ende`);
+    const m = jpegGroesse(puffer);
+    assert.ok(m.breite >= 640 && m.hoehe >= 600 && Math.max(m.breite, m.hoehe) >= 1024,
+      `${backdrop.file}: Auflösung zu klein (${m.breite}x${m.hoehe})`);
+    // Das Seitenverhältnis wird vom cover-Zuschnitt aufgefangen, muss aber plausibel sein.
+    const verhaeltnis = m.breite / m.hoehe;
+    assert.ok(verhaeltnis > 0.4 && verhaeltnis < 3, `${backdrop.file}: Seitenverhältnis ${verhaeltnis.toFixed(2)}`);
+  }
+});
+
+test('Jede Stimmung nennt eine vorhandene Hochkant-Fassung (9:21, cover)', () => {
+  for (const b of ALL_BACKDROPS.filter(x => x.stimmung)) {
+    assert.ok(b.fileHoch?.endsWith('_h.jpg'), `${b.key}: fileHoch fehlt`);
+    const datei = path.join(BILD_DIR, b.fileHoch);
+    assert.ok(fs.existsSync(datei), `${b.fileHoch} fehlt`);
+    const m = jpegGroesse(fs.readFileSync(datei));
+    assert.ok(m.hoehe > m.breite * 1.2, `${b.fileHoch}: kein Hochformat (${m.breite}x${m.hoehe})`);
+    if (b.id === 'stimmung_ragnarok2') {
+      assert.ok(b.fileHoch.includes('_ragnarok_h'), 'ragnarok2 nimmt ragnarok_h');
+    }
+  }
+});
+
+test('Die automatische Wahl liefert nie eine Stimmung (bestehende Seeds bleiben stabil)', () => {
+  for (let seed = 0; seed < 200; seed++) {
+    for (const preset of [null, 'islands', 'hills', 'caverns', 'warren']) {
+      assert.ok(!pickBackdrop(seed, preset).stimmung, `Seed ${seed}/${preset} ergab eine Stimmung`);
+    }
   }
 });
 
@@ -329,7 +382,8 @@ test('Das Lade-Muster im Renderer trifft die Bilder wirklich', () => {
   const quelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
   const treffer = /import\.meta\.glob\(\s*'([^']+)'/.exec(quelle);
   assert.ok(treffer, 'Kein Glob-Muster im Renderer gefunden');
-  const muster = treffer[1];
+  // `**/` schließt den Unterordner `stimmung/` ein; zum Auflösen des Ordners entfällt es.
+  const muster = treffer[1].replace('/**/', '/');
 
   // Muster gegen das Verzeichnis des Renderers auflösen.
   const rendererDir = path.join(ROOT, 'src', 'client');
@@ -339,8 +393,13 @@ test('Das Lade-Muster im Renderer trifft die Bilder wirklich', () => {
     `Das Muster „${muster}" zeigt auf ${path.resolve(gesucht)} statt auf ${BILD_DIR}`);
 
   const endung = path.extname(muster);
-  const gefunden = fs.readdirSync(gesucht).filter(f => f.endsWith(endung));
-  assert.equal(gefunden.length, ALL_BACKDROPS.length,
+  assert.ok(treffer[1].includes('/**/'), 'Das Muster muss den Unterordner stimmung/ einschließen');
+  const gefunden = [
+    ...fs.readdirSync(gesucht).filter(f => f.endsWith(endung)),
+    ...fs.readdirSync(path.join(gesucht, 'stimmung')).filter(f => f.endsWith(endung)),
+  ];
+  const hochDateien = new Set(ALL_BACKDROPS.filter(b => b.fileHoch).map(b => b.fileHoch));
+  assert.equal(gefunden.length, ALL_BACKDROPS.length + hochDateien.size,
     `Das Muster findet ${gefunden.length} Bilder, der Katalog kennt ${ALL_BACKDROPS.length}`);
 });
 
@@ -349,7 +408,7 @@ test('Der Renderer bildet den Nachschlage-Schlüssel wie Vite ihn vergibt', () =
   // „./assets/backdrops/..."). Ein anderer Schlüssel beim Nachschlagen trifft
   // nichts und der Hintergrund bleibt leer.
   const quelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
-  const globMuster = /import\.meta\.glob\(\s*'([^']+)'/.exec(quelle)[1];
+  const globMuster = /import\.meta\.glob\(\s*'([^']+)'/.exec(quelle)[1].replace('/**/', '/');
   const praefix = globMuster.slice(0, globMuster.lastIndexOf('/') + 1);
 
   const nachschlagen = /BACKDROP_URLS\[`([^`]+)`\]/.exec(quelle);
@@ -489,7 +548,7 @@ test('Die Vorauswahl bleibt beim Leitbiom', () => {
   }
 });
 
-test('Alle sechzig Kulissen sind auswählbar', () => {
+test('Alle Kulissen (inkl. Stimmungen) sind auswählbar', () => {
   // Die Vorauswahl darf die übrigen Kulissen nicht unerreichbar machen: über die
   // ausdrückliche Wahl muss jede erreichbar sein.
   const erreichbar = new Set();
@@ -503,7 +562,7 @@ test('Alle sechzig Kulissen sind auswählbar', () => {
   // Abgeleitet, nicht fest: Jede Kulisse im Katalog muss über die ausdrückliche
   // Wahl erreichbar sein. Eine feste 60 hätte beim nächsten Biom nichts gesagt.
   assert.equal(erreichbar.size, ALL_BACKDROPS.length);
-  assert.ok(erreichbar.size >= 60, `Nur ${erreichbar.size} Kulissen erreichbar`);
+  assert.ok(erreichbar.size >= 160, `Nur ${erreichbar.size} Kulissen erreichbar`);
 });
 
 // ------------------------------------------------------------------ Eine Stelle
