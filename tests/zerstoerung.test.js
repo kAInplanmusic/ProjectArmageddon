@@ -164,7 +164,7 @@ test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Go
   }
 });
 
-test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (5), Fassung 2 und 3 bleiben erhalten', () => {
+test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (6), Fassung 2 und 3 bleiben erhalten', () => {
   const alt = {
     format: 1, createdAt: 0, seed: 4242,
     config: { teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, turnDurationMs: 30000, kit: 3 },
@@ -178,7 +178,7 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
   assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_STANDARD);
-  assert.equal(ZERSTOERUNG_STANDARD, 5);
+  assert.equal(ZERSTOERUNG_STANDARD, 6);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
   assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_STANDARD);

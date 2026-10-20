@@ -45,7 +45,7 @@ import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/conf
 import { SCHADEN_STANDARD, SCHADEN_STATUS, normalisiereSchaden } from '../shared/config/schaden.js';
 import { MaliRegeln } from './schadenMali.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
-import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
+import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_HANG, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { Zerstoerung } from './zerstoerung.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { damageTypeId } from './damageTypes.js';
@@ -877,6 +877,7 @@ export class MatchController {
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
     if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung, stoffe: this.stoffkarte });
+    if (this.zerstoerung >= ZERSTOERUNG_HANG && this.stoffkarte) this.#world.services.stoffkarte = this.stoffkarte;
   }
 
   #buildWater() {

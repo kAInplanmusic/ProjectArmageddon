@@ -33,6 +33,13 @@
  *     brechen früher. Neues Ereignis `terrain_resisted`; `terrain_destroyed` trägt `stoff` und `reaktion`.
  *     Fassung 1–4 bleiben Bit für Bit.
  *
+ *   - `ZERSTOERUNG_HANG` (6): wie 5, dazu rutscht loses Material nach: nach einem Einschlag ab
+ *     Radius `HANG_MIN_RADIUS` setzen sich Spalten aus Sand, Schnee und Asche (`HANG_STEILHEIT`
+ *     je Stoff), Fels, Metall, Grundgestein und Erde bleiben stehen. Dieselben Logeinträge
+ *     (`['r', ...]`) und dasselbe Ereignis `terrain_slumped` wie der Erdbeben-Setzrutsch; der
+ *     Client lässt Pflanzen, die auf einer gerutschten Zelle stehen, abbrechen. Fassung 1–5
+ *     bleiben Bit für Bit.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/zerstoerung
@@ -43,12 +50,13 @@ export const ZERSTOERUNG_GELAENDE = 2;
 export const ZERSTOERUNG_SCHOLLEN = 3;
 export const ZERSTOERUNG_BRUCH = 4;
 export const ZERSTOERUNG_STOFF = 5;
-export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_STOFF;
+export const ZERSTOERUNG_HANG = 6;
+export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_HANG;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereZerstoerung(fassung) {
   return fassung === ZERSTOERUNG_ALT || fassung === ZERSTOERUNG_GELAENDE || fassung === ZERSTOERUNG_SCHOLLEN
-    || fassung === ZERSTOERUNG_BRUCH || fassung === ZERSTOERUNG_STOFF ? fassung : ZERSTOERUNG_STANDARD;
+    || fassung === ZERSTOERUNG_BRUCH || fassung === ZERSTOERUNG_STOFF || fassung === ZERSTOERUNG_HANG ? fassung : ZERSTOERUNG_STANDARD;
 }
 
 /**
@@ -142,6 +150,13 @@ export const SPLITTER_SPANNE = 3;
 /** Figuren am Kraterrand rutschen mit diesem Schub (px/Tick) in den Krater. */
 export const RUTSCH_SCHUB = 1.4;
 export const RUTSCH_MIN_RADIUS = 10;
+/** Hangrutsch (Fassung 6): kleinster Kraterradius, der ihn auslöst; Wirkradius = Kraterradius × Faktor in den Grenzen. */
+export const HANG_MIN_RADIUS = 12;
+export const HANG_RADIUS_FAKTOR = 1.5;
+export const HANG_MIN_WIRKRADIUS = 16;
+export const HANG_MAX_WIRKRADIUS = 60;
+/** Mindesthöhenunterschied zweier Nachbarspalten, ab dem der Stoff (Schlüssel aus `config/stoffe.js`) rutscht; fehlt der Stoff, hält er. */
+export const HANG_STEILHEIT = Object.freeze({ sand: 2, asche: 2, schnee: 3 });
 
 const BRAND_ARTEN = new Set(['fire', 'plasma', 'energy', 'dragon']);
 const BOHR_SPECIALS = new Set(['drill', 'drill_cannon', 'drill_rocket']);

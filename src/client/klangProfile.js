@@ -189,6 +189,18 @@ export const EREIGNIS_PROFILE = Object.freeze({
     T({ f0: 260, f1: 120, gleit: 0.08, ab: 0.1, pegel: 0.4 }),
     K({ n: 3, fenster: 0.12, fmin: 1500, fmax: 5000, q: 6, ab: 0.03, pegel: 0.35 }),
   ]),
+  /* Metallplatte getroffen (Stoffkarte, Stoff `metall`): heller Klirr mit langem Nachklang statt Dumpfem. */
+  einschlag_metall: ex(0.85, 0.2, [
+    R({ f0: 3200, q: 3, an: 0.001, ab: 0.06, pegel: 0.6 }),
+    T({ f0: 880, f1: 760, gleit: 0.2, partiale: [[1, 1], [2.76, 0.5], [5.4, 0.3]], ab: 0.5, pegel: 0.45 }),
+    K({ n: 4, fenster: 0.2, fmin: 3000, fmax: 8000, q: 10, ab: 0.03, pegel: 0.3 }),
+  ]),
+  explosion_metall: ex(1, 0.35, [
+    R({ farbe: 'braun', filter: 'lowpass', f0: 1600, f1: 160, sweep: 0.3, an: 0.004, ab: 0.4, pegel: 0.8 }),
+    T({ f0: 110, f1: 55, gleit: 0.3, ab: 0.35, pegel: 0.7 }),
+    T({ f0: 700, f1: 620, gleit: 0.4, partiale: [[1, 1], [2.76, 0.5], [5.4, 0.3]], ab: 0.7, pegel: 0.4 }),
+    R({ filter: 'highpass', f0: 3000, an: 0.001, ab: 0.08, pegel: 0.45 }),
+  ]),
   platscher_klein: P('treffer', 0.8, 0.1, [
     R({ f0: 600, f1: 2400, sweep: 0.2, an: 0.02, ab: 0.25, pegel: 0.6 }),
     T({ f0: 300, f1: 900, gleit: 0.08, an: 0.005, ab: 0.1, pegel: 0.3 }),
@@ -388,9 +400,10 @@ export function explosionKlasse(radius) {
 }
 
 /** Profilname für einen Einschlag. */
-export function einschlagProfil({ radius = 0, material = 'erde' } = {}) {
+export function einschlagProfil({ radius = 0, material = 'erde', stoff = null } = {}) {
   const k = explosionKlasse(radius);
   if (material === 'wasser') return k === 'gross' || k === 'riesig' ? 'platscher_gross' : 'platscher_klein';
+  if (stoff === 'metall') return k === 'einschlag' || k === 'klein' ? 'einschlag_metall' : 'explosion_metall';
   if (k === 'einschlag') return material === 'fels' ? 'einschlag_fels' : 'einschlag_erde';
   return `explosion_${k}`;
 }

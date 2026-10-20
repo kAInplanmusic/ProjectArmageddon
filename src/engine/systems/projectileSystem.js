@@ -22,7 +22,7 @@ import {
 } from '../../shared/ballistics.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
 import { kraterTiefeProzent } from '../../shared/config/zerstoerung.js';
-import { klassifiziereEinschlag } from '../../shared/einschlag.js';
+import { klassifiziereEinschlag, stoffSchluesselAmEinschlag } from '../../shared/einschlag.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -458,6 +458,8 @@ export class ProjectileSystem {
     if (events) {
       events.emit('explosion', {
         x, y, radius: blastRadius, damage, owner, projectile: entityId, damageType, material,
+        // Stoff der Karte am Einschlag (nur mit Stoffkarte und Zerstörungsfassung 6): der Klang unterscheidet Metall.
+        ...(services.stoffkarte ? { stoff: stoffSchluesselAmEinschlag(services.stoffkarte, x, y) } : {}),
       });
     }
 

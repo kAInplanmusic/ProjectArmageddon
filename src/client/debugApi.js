@@ -124,6 +124,8 @@ export function exposeDebugApi(game) {
       ruck: () => ruckVersatz(game.renderer.ruck, { bild: game.renderer.time, reducedMotion: game.renderer.reducedMotion }),
       /** Erdbeben-Optik wie das Ereignis `terrain_quake` (nur Anzeige; für Tests lokal auslösbar). */
       beben: nutzlast => game.renderer.bebenOptik(nutzlast),
+      /** Risse und Geröllzellen nach Einschlägen (Zähler und die letzten Zellen). */
+      optik: () => ({ ...game.renderer.optik }),
       /** Bildschirmpunkt (Zeichenflächenpixel) eines Kartenpunkts bei aktueller Kamera. */
       kartePunktImSchirm: (x, y) => {
         const t = game.kamera.transformation();

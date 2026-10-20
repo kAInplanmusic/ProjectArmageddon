@@ -49,7 +49,8 @@ import {
   aufprallStaerke, WEICH_AB_STAERKE, WEICH_MIN_FALL, WEICH_MIN_ZELLEN, SCHUTT_MAX_JE_LANDUNG, SCHUTT_MAX_GESAMT,
   SCHUTT_GRAVITATION, SCHUTT_LEBEN, BRUCH_AB_STAERKE, BRUCH_MIN_ZELLEN, BRUCH_MIN_FALL, BRUCH_MIN_UEBERSTAND,
   BEBEN_MAX_RADIUS, BEBEN_MIN_RADIUS, BEBEN_RAND, BEBEN_STEILHEIT, BEBEN_MAX_ZUEGE, SPLITTER_MIN, SPLITTER_SPANNE, RUTSCH_SCHUB, RUTSCH_MIN_RADIUS,
-  charakterDerWaffe, ZERSTOERUNG_STOFF,
+  charakterDerWaffe, ZERSTOERUNG_STOFF, ZERSTOERUNG_HANG,
+  HANG_MIN_RADIUS, HANG_RADIUS_FAKTOR, HANG_MIN_WIRKRADIUS, HANG_MAX_WIRKRADIUS, HANG_STEILHEIT,
 } from '../shared/config/zerstoerung.js';
 import { stoffWirkung, wirkgruppe, bebenWirkt, stoffById, MIN_KRATER_RADIUS } from '../shared/config/stoffe.js';
 import { stoffAmEinschlag, stoffAm } from '../shared/stoffkarte.js';
@@ -158,6 +159,8 @@ export class Zerstoerung {
   /** Fassung 5: Stoffkarte (`shared/stoffkarte.js`) oder `null`. */
   #stoff;
   #stoffAmKrater = 0;
+  /** Fassung 6: lose Stoffe (Sand, Schnee, Asche) rutschen nach einem Einschlag nach. */
+  #hang;
   #tick = 0;
   #nacharbeit = [];
   #partikel = [];
@@ -175,6 +178,7 @@ export class Zerstoerung {
   constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE, stoffe = null }) {
     this.#stoff = fassung >= ZERSTOERUNG_STOFF && stoffe ? stoffe : null;
     if (this.#stoff) terrain.setzeSchutz(stoffe);
+    this.#hang = fassung >= ZERSTOERUNG_HANG && this.#stoff !== null;
     this.#grenzen = suchGrenzen(fassung);
     this.#fassung = fassung;
     this.#bruch = fassung >= ZERSTOERUNG_BRUCH;
@@ -656,6 +660,7 @@ export class Zerstoerung {
     else if (nebenbrueche > 0 && art === 'sprengung' && radius >= 12) this.#splitter(x, y, radius, nebenbrueche);
     if (art === 'beben' && (!this.#stoff || bebenWirkt(this.#stoffAmKrater))) this.#startBeben(x, y, radius);
     if (radius >= RUTSCH_MIN_RADIUS) this.#rutschNach(x, y, radius);
+    if (this.#hang && art !== 'beben' && radius >= HANG_MIN_RADIUS) this.#startHang(x, y, radius);
   }
 
   /** Nebenlöcher rund um den Hauptkrater: kleine Dellen an Stellen, die wirklich Boden sind. */
@@ -951,6 +956,20 @@ export class Zerstoerung {
     this.#beben.push({ y: Math.round(y), r, x0: mx - r, spalte: 0, tops: new Int32Array(2 * r + 1).fill(-1) });
   }
 
+  /** Hangrutsch (Fassung 6): wie das Beben ein Abtastauftrag, aber ohne Erschütterung und nur für lose Stoffe. */
+  #startHang(x, y, radius) {
+    if (this.#beben.length >= 4) return;
+    const r = Math.max(HANG_MIN_WIRKRADIUS, Math.min(HANG_MAX_WIRKRADIUS, Math.round(radius * HANG_RADIUS_FAKTOR)));
+    const mx = Math.round(x);
+    this.#beben.push({ y: Math.round(y), r, x0: mx - r, spalte: 0, hang: true, tops: new Int32Array(2 * r + 1).fill(-1) });
+  }
+
+  /** Ab welchem Höhenunterschied rutscht die oberste Zelle der Spalte `spalte`? (Beben: überall gleich; Hang: je Stoff, sonst nie.) */
+  #steilheit(job, spalte) {
+    if (!job.hang) return BEBEN_STEILHEIT;
+    return HANG_STEILHEIT[stoffById(stoffAm(this.#stoff, job.x0 + spalte, job.tops[spalte])).key] ?? Infinity;
+  }
+
   /** Oberflächen der Spalten abtasten (mit dem Rest des Suchbudgets); danach setzt sich das Gelände. */
   #bebenSchritt(rest) {
     const job = this.#beben[0];
@@ -1001,8 +1020,8 @@ export class Zerstoerung {
         const i = durchgang % 2 === 0 ? k : n - 2 - k;
         if (tops[i] < 0 || tops[i + 1] < 0) continue;
         const d = tops[i + 1] - tops[i];
-        if (d >= BEBEN_STEILHEIT) zug(i, i + 1);
-        else if (-d >= BEBEN_STEILHEIT) zug(i + 1, i);
+        if (d >= this.#steilheit(job, i)) zug(i, i + 1);
+        else if (-d >= this.#steilheit(job, i + 1)) zug(i + 1, i);
       }
     }
     this.#nachkosten += n * 3;

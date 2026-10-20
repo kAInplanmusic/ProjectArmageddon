@@ -24,7 +24,7 @@ import {
   zeichneGeschossSprite, zeichneSchweif, zeichneStartGlanz,
 } from './effektStil.js';
 import {
-  materialStil, zeichneBrandspur, zeichneBohrwand, zeichneBebenRisse, loescheLaeufe, setzeSchuttZellen, verschiebeZellen,
+  materialStil, zeichneBrandspur, zeichneBohrwand, zeichneBebenRisse, kraterRisse, geroellZellen, zeichneKraterRisse, zeichneGeroell, loescheLaeufe, setzeSchuttZellen, verschiebeZellen,
   erzeugeFlugSchutt, schreiteFlugSchutt, zeichneFlugSchutt,
 } from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
@@ -51,7 +51,7 @@ import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
-  plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
+  plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
@@ -74,7 +74,7 @@ const KULISSE_BILDER = 3;
 /** Anteil der Bildhöhe (von oben), in dem das bewegte Ambiente liegt; nur dieser Streifen wird aufgelegt. */
 const KULISSE_BEWEGT_ANTEIL = 0.7;
 import {
-  findeTreffer, trefferMarke, zuckVersatz,
+  findeTreffer, trefferMarke, zuckVersatz, stossRichtung,
   ruckFuer, ruckAufprall, altereRuck, ruckVersatz,
   ergaenzeNarbe, verlaengereSpur,
   rauchWolke, schreiteRauchFort, rauchDarstellung,
@@ -183,6 +183,9 @@ export class Renderer {
      */
     /** Marken der Treffer (Ring, Zucken, Blitz) — altern wie die Effekte. */
     this.trefferMarken = [];
+    this.einschlaege = [];
+    /** Zähler der Einschlagsoptik (Risse, Geröllzellen) für die Prüfung. */
+    this.optik = { risse: 0, geroell: 0, letzte: [] };
     /** Letzte Gesundheit je Figur — die Grundlage der Trefferkennung. */
     this.letzteWerte = new Map();
     /** Schwebende Schadenszahlen und die Werte des letzten Bildes (siehe `schadenszahlen.js`). */
@@ -519,11 +522,19 @@ export class Renderer {
     }
   }
 
+  /** Merkt einen Einschlag für wenige Bilder, damit das Zucken getroffener Figuren von ihm weg zeigt. */
+  merkeEinschlag(x, y) {
+    this.einschlaege.push({ x, y, rest: 90 });
+    if (this.einschlaege.length > 8) this.einschlaege.shift();
+  }
+
   #ermittleTreffer(state) {
     const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
-    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke(treffer));
+    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) }));
+    for (const e of this.einschlaege) e.rest -= 1;
+    this.einschlaege = this.einschlaege.filter(e => e.rest > 0);
     const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
     for (const [id, art] of this.schadensArten) { if (art.rest-- <= 0) this.schadensArten.delete(id); }
     this.zahlenWerte = zahlen.zustand;
@@ -882,6 +893,7 @@ export class Renderer {
     if (umriss) zeichneKraterRuss(ctx, umriss, x, y, this.scenery?.seed ?? 0);
     else zeichneKraterRand(ctx, x, y, radius, this.scenery?.seed ?? 0);
     if (umriss && art) this.#charakterSpur(ctx, umriss, x, y, radius, art);
+    if (umriss) this.#risseUndGeroell(ctx, umriss, x, y, radius);
     const weg = [];
     if (entfernePflanzenImKrater(this.pflanzen, x, y, radius, weg)) this.#zeichnePflanzenNeu(weg);
 
@@ -903,6 +915,18 @@ export class Renderer {
   /** Farbe der Erde für Staub und Trümmer: nach Material (Staub der Bodenart, bei Gras das Tiefenbraun der Geländepalette). */
   #erdfarbe() {
     return this.#materialStil().staub;
+  }
+
+  /** Risse und Geröll nach dem Einschlag (reine Optik, aus Ort und Seed; `optik` zählt für die Prüfung). */
+  #risseUndGeroell(ctx, umriss, x, y, radius) {
+    const seed = this.scenery?.seed ?? 0;
+    const risse = kraterRisse(umriss, x, y, radius, seed);
+    const zellen = geroellZellen(umriss, x, y, radius, seed);
+    zeichneKraterRisse(ctx, risse);
+    zeichneGeroell(ctx, zellen, this.#materialStil().schutt);
+    this.optik.risse += risse.length;
+    this.optik.geroell += zellen.length;
+    this.optik.letzte = zellen;
   }
 
   /**
@@ -933,6 +957,8 @@ export class Renderer {
   setzeRutsch(zuege) {
     if (!this.terrainLayer) return;
     verschiebeZellen(this.terrainLayer.getContext('2d'), this.terrainLayer, zuege);
+    const weg = [];
+    if (entfernePflanzenAufRutsch(this.pflanzen, zuege, weg)) this.#zeichnePflanzenNeu(weg);
   }
 
   /** `terrain_crumble`: Der Rand einer gelandeten Insel platzt ab — Zellen fliegen, Staub steigt auf. */
@@ -1546,7 +1572,7 @@ export class Renderer {
         const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
         const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
-          reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive,
+          reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss,
           feuer: feuerLeben, params: par, typ,
           schussStaerke: waffenPar?.koerper ?? 1, ausfall: waffenPar?.ausfall ?? 0,
           neigung: this.#bodenNeigung(entity.x, fussWelt),

@@ -163,6 +163,110 @@ export function zeichneBebenRisse(ctx, x, y, radius, seed = 0) {
   ctx.restore();
 }
 
+/* ------------------------------------------------ Risse und Geröll nach dem Einschlag */
+
+/** Kleinster Kraterradius, an dem Risse und Geröll zu sehen sind (kleinere Löcher bleiben sauber). */
+export const RISS_MIN_RADIUS = 14;
+
+/**
+ * Haarrisse, die vom Kraterrand ins Gestein laufen — Linienzüge von je 3 bis 4 Punkten. Nur Optik:
+ * Ort und Seed bestimmen alles (`hash2`), der Client rechnet auf jedem Gerät dasselbe.
+ * Die Risse beginnen am Rand der wahren Kraterform und laufen nach außen und eher abwärts.
+ *
+ * @param {Array<{x:number,y:number}>} umriss - wahre Kraterform (geschlossener Linienzug)
+ * @returns {Array<Array<{x:number,y:number}>>}
+ */
+export function kraterRisse(umriss, x, y, radius, seed = 0) {
+  if (!umriss?.length || !(radius >= RISS_MIN_RADIUS)) return [];
+  const anzahl = Math.min(9, 3 + Math.floor(radius / 12));
+  const risse = [];
+  const sx = Math.round(x);
+  const sy = Math.round(y);
+  for (let i = 0; i < anzahl; i += 1) {
+    const start = umriss[Math.floor(hash2(sx + i, sy, seed + 71) * (umriss.length - 1))];
+    let dx = start.x - x;
+    let dy = start.y - y;
+    const l = Math.hypot(dx, dy) || 1;
+    dx /= l;
+    dy = dy / l + 0.35;
+    const punkte = [{ x: start.x, y: start.y }];
+    let px = start.x;
+    let py = start.y;
+    const teile = 3 + Math.floor(hash2(sx, sy + i, seed + 73) * 2);
+    for (let t = 0; t < teile; t += 1) {
+      const schlenker = (hash2(sx + t, sy - i, seed + 75) - 0.5) * 1.1;
+      const laenge = radius * (0.16 + hash2(sx - t, sy + i, seed + 77) * 0.16);
+      px += (dx * Math.cos(schlenker) - dy * Math.sin(schlenker)) * laenge;
+      py += (dx * Math.sin(schlenker) + dy * Math.cos(schlenker)) * laenge;
+      punkte.push({ x: px, y: py });
+    }
+    risse.push(punkte);
+  }
+  return risse;
+}
+
+/**
+ * Geröllzellen: kleine Brocken (1 bis 3 px), die rund um die UNTERE Kraterhälfte im Gestein liegen,
+ * wo das Material nachgesackt wäre. Jede Zelle hat eine ganzzahlige Lage und einen Farbindex `ton`.
+ * Die Zellen werden nur mit `source-atop` gemalt: Wo kein Gelände steht, entsteht kein Pixel.
+ *
+ * @returns {Array<{x:number,y:number,w:number,ton:number}>}
+ */
+export function geroellZellen(umriss, x, y, radius, seed = 0) {
+  if (!umriss?.length || !(radius >= RISS_MIN_RADIUS)) return [];
+  const anzahl = Math.min(26, Math.round(radius * 0.7));
+  const sx = Math.round(x);
+  const sy = Math.round(y);
+  const zellen = [];
+  for (let i = 0; i < anzahl; i += 1) {
+    const punkt = umriss[Math.floor(hash2(sx + i, sy, seed + 81) * (umriss.length - 1))];
+    if (punkt.y < y - radius * 0.2) continue;
+    const dx = punkt.x - x;
+    const dy = punkt.y - y;
+    const l = Math.hypot(dx, dy) || 1;
+    const tiefe = 1 + hash2(sx, sy + i, seed + 83) * 5;
+    zellen.push({
+      x: Math.round(punkt.x + (dx / l) * tiefe),
+      y: Math.round(punkt.y + (dy / l) * tiefe),
+      w: 1 + Math.floor(hash2(sx - i, sy, seed + 85) * 3),
+      ton: Math.floor(hash2(sx + i, sy + i, seed + 87) * 4),
+    });
+  }
+  return zellen;
+}
+
+/** Zeichnet Risse (dunkel, mit hellem Nachbarstrich) in die Geländeebene; nur dort, wo Gelände steht. */
+export function zeichneKraterRisse(ctx, risse) {
+  if (!risse.length) return;
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const rissLinie of risse) {
+    for (const [farbe, breite, versatz] of [['rgba(255, 255, 255, 0.14)', 1, 1], ['rgba(8, 6, 5, 0.7)', 1.4, 0]]) {
+      ctx.strokeStyle = farbe;
+      ctx.lineWidth = breite;
+      ctx.beginPath();
+      ctx.moveTo(rissLinie[0].x, rissLinie[0].y + versatz);
+      for (let i = 1; i < rissLinie.length; i += 1) ctx.lineTo(rissLinie[i].x, rissLinie[i].y + versatz);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/** Zeichnet die Geröllzellen in den Farben des Materials (`materialStil(...).schutt`); nur auf Gelände. */
+export function zeichneGeroell(ctx, zellen, farben) {
+  if (!zellen.length) return;
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop';
+  for (const z of zellen) {
+    ctx.fillStyle = farben[z.ton % farben.length];
+    ctx.fillRect(z.x, z.y, z.w, z.w);
+  }
+  ctx.restore();
+}
+
 /* ------------------------------------------------ Geländeebene nachziehen */
 
 /** Löscht Spaltenläufe `[x, y0, y1, ...]` aus der Ebene und zieht an den neuen Kanten eine dunkle Linie nach. */

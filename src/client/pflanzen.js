@@ -94,6 +94,25 @@ export function entfernePflanzenImKrater(liste, cx, cy, radius, entfernt = null)
   return liste.length !== vorher;
 }
 
+/**
+ * Hangrutsch: Eine Pflanze, deren Wurzel auf einer gerutschten Oberflächenzelle steht, bricht ab.
+ * `zuege` ist die Nutzlast von `terrain_slumped` (Vierergruppen `xa, ya, xb, yb`: Quelle, Ziel).
+ */
+export function entfernePflanzenAufRutsch(liste, zuege, entfernt = null) {
+  const vorher = liste.length;
+  for (let i = liste.length - 1; i >= 0; i -= 1) {
+    const p = liste[i];
+    for (let k = 0; k + 3 < zuege.length; k += 4) {
+      if (Math.abs(p.x - zuege[k]) <= 3 && Math.abs(p.y - zuege[k + 1]) <= 6) {
+        const [weg] = liste.splice(i, 1);
+        if (entfernt) entfernt.push(weg);
+        break;
+      }
+    }
+  }
+  return liste.length !== vorher;
+}
+
 /** Entfernt Pflanzen außerhalb des Mahlstrom-Randes. */
 export function entfernePflanzenAmRand(liste, inset, breite) {
   const vorher = liste.length;

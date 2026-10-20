@@ -133,3 +133,41 @@ test('Pflanzenstreifen: überschneidungsfrei, decken jeden Rahmen ab und bleiben
   assert.ok(streifen.every(s => s.x0 >= 0 && s.y0 >= 0 && s.x1 <= 2560 && s.y1 <= 1440));
   assert.deepEqual(pflanzenStreifen([], 2560, 1440), []);
 });
+
+/* ------------------------------------------------- Risse und Geröll nach dem Einschlag */
+
+test('Risse und Geröll: erst ab Mindestradius, deterministisch, Geröll liegt unten am Rand und gedeckelt', async () => {
+  const { kraterRisse, geroellZellen, RISS_MIN_RADIUS } = await import('../src/client/schuttOptik.js');
+  const umriss = kraterUmriss(300, 200, 30, 115);
+  assert.deepEqual(kraterRisse(kraterUmriss(300, 200, 6, 100), 300, 200, 6, 5), []);
+  assert.deepEqual(geroellZellen(kraterUmriss(300, 200, RISS_MIN_RADIUS - 1, 100), 300, 200, RISS_MIN_RADIUS - 1, 5), []);
+  const risse = kraterRisse(umriss, 300, 200, 30, 7);
+  assert.deepEqual(risse, kraterRisse(umriss, 300, 200, 30, 7));
+  assert.ok(risse.length >= 4 && risse.length <= 9);
+  for (const r of risse) assert.ok(r.length >= 4 && r.every(p => Number.isFinite(p.x) && Number.isFinite(p.y)));
+  assert.notDeepEqual(risse, kraterRisse(umriss, 300, 200, 30, 8), 'anderer Seed, andere Risse');
+
+  const zellen = geroellZellen(umriss, 300, 200, 30, 7);
+  assert.deepEqual(zellen, geroellZellen(umriss, 300, 200, 30, 7));
+  assert.ok(zellen.length > 0 && zellen.length <= 26);
+  for (const z of zellen) {
+    assert.ok(Number.isInteger(z.x) && Number.isInteger(z.y) && z.w >= 1 && z.w <= 3 && z.ton >= 0 && z.ton < 4);
+    assert.ok(z.y >= 200 - 30 * 0.2 - 6, `Zelle (${z.x}, ${z.y}) liegt oben am Rand`);
+    const d = Math.hypot(z.x - 300, z.y - 200);
+    assert.ok(d >= 30 * 0.4 && d <= 30 * 1.7, `Zelle ${d.toFixed(1)} px vom Zentrum`);
+  }
+});
+
+test('Geröll wird nur mit source-atop gemalt (kein Pixel im Freien), Risse ebenso', async () => {
+  const { zeichneKraterRisse, zeichneGeroell } = await import('../src/client/schuttOptik.js');
+  const modi = [];
+  let rechtecke = 0;
+  const ctx = {
+    save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fillRect() { rechtecke += 1; },
+    set globalCompositeOperation(v) { modi.push(v); },
+  };
+  zeichneGeroell(ctx, [{ x: 1, y: 2, w: 2, ton: 1 }, { x: 5, y: 6, w: 1, ton: 3 }], ['a', 'b', 'c', 'd']);
+  zeichneKraterRisse(ctx, [[{ x: 0, y: 0 }, { x: 4, y: 3 }]]);
+  assert.equal(rechtecke, 2);
+  assert.deepEqual(modi, ['source-atop', 'source-atop']);
+});

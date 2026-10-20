@@ -112,9 +112,10 @@ export function materialAusEreignis(nutzlast) {
 
 /**
  * Einhaken der Stoffkarte (`shared/stoffkarte.js`): der Materialschlüssel am Einschlag
- * ('erde', 'fels', 'metall', ...) oder `null` ohne Karte. NUR der Schlüssel — ein
- * stoffabhängiger Klang (z. B. Metall) ist bewusst nicht gebaut; `klassifiziereEinschlag`
- * bleibt bei wasser/fels/erde.
+ * ('erde', 'fels', 'metall', ...) oder `null` ohne Karte. Der Schlüssel reist als Feld `stoff`
+ * im Ereignis `explosion` (Zerstörungsfassung 6) bzw. wird im Client aus der eigenen Stoffkarte
+ * abgeleitet; heute ändert nur `metall` den Klang (`klangProfile#einschlagProfil`).
+ * `klassifiziereEinschlag` bleibt bei wasser/fels/erde.
  */
 export function stoffSchluesselAmEinschlag(stoffkarte, x, y) {
   return stoffkarte ? (materialAn(stoffkarte, x, y)?.key ?? null) : null;

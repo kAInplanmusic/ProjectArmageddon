@@ -78,7 +78,7 @@ export class FigurPosen {
    * @param {number} jetzt - Zeit in Sekunden (monoton)
    * @param {{reduziert?: boolean, treffer?: number, haerte?: number, rueck?: number, winkel?: number,
    *   aktiv?: boolean, feuer?: number, params?: object, typ?: string, neigung?: number, hp?: number,
-   *   ergebnis?: number, schussStaerke?: number, ausfall?: number}} opt
+   *   ergebnis?: number, schussStaerke?: number, ausfall?: number, stoss?: number}} opt
    * @returns {{dx:number,dy:number,sx:number,sy:number,rot:number,flash:number,tint:number,neigung:number,zug:number,hpVerz:number}} wiederverwendet!
    */
   pose(entity, jetzt, opt) {
@@ -128,7 +128,7 @@ export class FigurPosen {
     z.feuerVorher = feuer;
     const treffer = clamp(opt.treffer ?? 0, 0, 1.2);
     if (treffer > z.trefferVorher + 0.3) {
-      z.hitT = 0; z.hitDir = -f; z.hitHaerte = clamp(opt.haerte ?? 0.5, 0.2, 1);
+      z.hitT = 0; z.hitDir = Math.sign(opt.stoss ?? 0) || -f; z.hitHaerte = clamp(opt.haerte ?? 0.5, 0.2, 1);
     }
     z.trefferVorher = treffer;
     const aktiv = Boolean(opt.aktiv);

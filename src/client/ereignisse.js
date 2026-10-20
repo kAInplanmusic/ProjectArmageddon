@@ -34,7 +34,7 @@
  */
 import { MALUS } from '../shared/config/schaden.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { materialAusEreignis } from '../shared/einschlag.js';
+import { materialAusEreignis, stoffSchluesselAmEinschlag } from '../shared/einschlag.js';
 
 /**
  * Eine Wirkung: bekommt den Kontext und die Nutzlast, gibt nichts zurück.
@@ -213,6 +213,8 @@ const einschlagKlang = (k, n) => {
     // Das Feld `material` kommt aus der Engine (lokal und vom Server, shared/einschlag.js);
     // fehlt es (älterer Server), wird aus dem bekannten Zustand abgeleitet.
     material: materialAusEreignis(n) ?? k.material?.(n.x, n.y) ?? 'erde',
+    // Stoff der Karte (nur Metall ändert den Klang): aus dem Ereignis, sonst aus der eigenen Stoffkarte.
+    stoff: n.stoff ?? stoffSchluesselAmEinschlag(k.renderer?.stoffkarte ?? null, n.x, n.y),
   });
 };
 
@@ -340,6 +342,7 @@ export const EREIGNIS_WIRKUNGEN = {
      */
     k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
     k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
+    k.renderer?.merkeEinschlag?.(n.x, n.y);
     /*
      * Der Klang zum Einschlag. Der Mischer entscheidet selbst, ob er etwas tut — ist der
      * Klang abgeschaltet oder gibt es kein Ausgabegerät, ist der Aufruf ein No-Op. Das

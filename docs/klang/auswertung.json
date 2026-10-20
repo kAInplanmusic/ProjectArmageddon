@@ -1,5 +1,5 @@
 {
-  "profilHash": "01d2b7efebdc1bf0",
+  "profilHash": "360185f05fa20492",
   "samplerate": 48000,
   "profile": {
     "pistole": {
@@ -179,6 +179,24 @@
       "peakDb": -12.8,
       "rmsDb": -43.6,
       "schwerpunkt": 496,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "einschlag_metall": {
+      "bus": "treffer",
+      "dauer": 0.88,
+      "peakDb": -6.2,
+      "rmsDb": -28.6,
+      "schwerpunkt": 1010,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_metall": {
+      "bus": "treffer",
+      "dauer": 1.02,
+      "peakDb": -2,
+      "rmsDb": -26.5,
+      "schwerpunkt": 814,
       "endpegelDb": -180,
       "nan": false
     },
@@ -377,5 +395,5 @@
   },
   "minAbstandVerhaeltnis": 1.31,
   "schussProfile": 14,
-  "profileGesamt": 36
+  "profileGesamt": 38
 }

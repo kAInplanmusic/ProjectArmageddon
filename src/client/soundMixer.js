@@ -362,8 +362,9 @@ export class SoundMixer {
    * @param {number} [optionen.groesse] - alte Skala 0,6 bis 1,6 (wenn kein Radius angegeben)
    * @param {number} [optionen.radius] - Sprengradius in Weltpixeln
    * @param {string} [optionen.material] - `erde` | `fels` | `wasser`
+   * @param {string|null} [optionen.stoff] - Schlüssel der Stoffkarte am Einschlag; `metall` klingt nach Metall
    */
-  spieleExplosion({ groesse = 1, radius = null, material = 'erde', x, y, pegel = 1 } = {}) {
+  spieleExplosion({ groesse = 1, radius = null, material = 'erde', stoff = null, x, y, pegel = 1 } = {}) {
     if (!this.#bereitFuer('explosion')) return false;
     const r = radius ?? ((Math.max(0.6, groesse) - 0.6) * 12) ** 2;
     const jetzt = this.#uhr();
@@ -375,7 +376,7 @@ export class SoundMixer {
     }
     this.#letzteExplosion = { t: jetzt, x, y };
     const wasser = material === 'wasser';
-    const ok = this.#spiele(einschlagProfil({ radius: r > 0 ? r : 12, material }), {
+    const ok = this.#spiele(einschlagProfil({ radius: r > 0 ? r : 12, material, stoff }), {
       zaehler: wasser ? 'wasser' : 'explosion', x, y, pegel, laufzeit: true,
     });
     if (ok && !wasser) this.#meldeLaut('explosion');
@@ -383,10 +384,10 @@ export class SoundMixer {
   }
 
   /** Ein Einschlag ohne Sprengwirkung (Geschoss in Erde, Fels oder Wasser). */
-  spieleEinschlag({ material = 'erde', x, y, pegel = 1 } = {}) {
+  spieleEinschlag({ material = 'erde', stoff = null, x, y, pegel = 1 } = {}) {
     if (!this.#bereitFuer('einschlag')) return false;
     const wasser = material === 'wasser';
-    return this.#spiele(einschlagProfil({ radius: 0, material }), {
+    return this.#spiele(einschlagProfil({ radius: 0, material, stoff }), {
       zaehler: wasser ? 'wasser' : 'einschlag', x, y, pegel, laufzeit: true,
     });
   }
@@ -483,9 +484,9 @@ export class SoundMixer {
       case 'explosion': {
         const radius = Number(ereignis.radius ?? 40);
         const roh = Number(ereignis.sprengradius ?? radius);
-        if (roh <= 0) return this.spieleEinschlag({ material: ereignis.material, x, y });
+        if (roh <= 0) return this.spieleEinschlag({ material: ereignis.material, stoff: ereignis.stoff, x, y });
         const groesse = Math.max(0.6, Math.min(1.6, 0.6 + Math.sqrt(radius) / 12));
-        return this.spieleExplosion({ groesse, radius, material: ereignis.material, x, y });
+        return this.spieleExplosion({ groesse, radius, material: ereignis.material, stoff: ereignis.stoff, x, y });
       }
       case 'valhalla_omen':
         return this.spieleDonner();

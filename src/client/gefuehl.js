@@ -145,6 +145,24 @@ export function haerteAusTreffer(schaden, maxHealth) {
 }
 
 /**
+ * Richtung des Rückstoßes eines Treffers: weg vom nächsten jungen Einschlag (+1 nach rechts, -1 nach links,
+ * 0 wenn kein Einschlag bekannt ist oder die Figur genau darüber steht). Die Engine stößt ebenso (`dx / dist`
+ * in `projectileSystem`), das Zucken der Figur zeigt dieselbe Richtung.
+ *
+ * @param {{x:number,y:number}} treffer
+ * @param {Array<{x:number,y:number}>} einschlaege
+ */
+export function stossRichtung(treffer, einschlaege) {
+  let beste = null;
+  let abstand = Infinity;
+  for (const e of einschlaege ?? []) {
+    const d = (e.x - treffer.x) ** 2 + (e.y - treffer.y) ** 2;
+    if (d < abstand) { abstand = d; beste = e; }
+  }
+  return beste ? Math.sign(treffer.x - beste.x) : 0;
+}
+
+/**
  * Macht aus einem Treffer eine Marke für die Effektliste des Renderers.
  *
  * Die Marke ist bewusst ein Effekt derselben Form wie Blitz und Strahl
@@ -166,6 +184,7 @@ export function trefferMarke(treffer) {
     schaden: Number(treffer?.schaden) || 0,
     haerte: haerteAusTreffer(treffer?.schaden, treffer?.maxHealth),
     toedlich: Boolean(treffer?.toedlich),
+    stoss: Math.sign(Number(treffer?.stoss)) || 0,
     life: 1,
     decay: 1 / TREFFER_BILDER,
   };
