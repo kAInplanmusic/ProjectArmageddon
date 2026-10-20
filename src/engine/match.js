@@ -41,6 +41,8 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shar
 import { getWeapon } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
+import { SCHADEN_STANDARD, SCHADEN_STATUS, normalisiereSchaden } from '../shared/config/schaden.js';
+import { MaliRegeln } from './schadenMali.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { Zerstoerung } from './zerstoerung.js';
@@ -50,7 +52,8 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
 import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
-import { GUENTHER_POOP, LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS } from '../shared/config/guenther.js';
+import { GUENTHER_POOP } from '../shared/config/guenther.js';
+import { loeseGuentherRad } from './guentherRad.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { ccdRaycast } from './physics/ballistics.js';
 import { POWER_TO_SPEED, PROJECTILE_GRAVITY, integrateStep } from '../shared/ballistics.js';
@@ -461,6 +464,7 @@ export class MatchController {
    * Liegt bewusst außerhalb des ECS — konsistent zum Inventar.
    */
   #statuses = new StatusStore();
+  #mali = null;
   /**
    * Waffe je abgefeuertem Projektil, damit beim Einschlag die Wirkung der
    * richtigen Waffe angewendet werden kann. Das Projektil selbst kennt nur den
@@ -587,6 +591,7 @@ export class MatchController {
     kit = KIT_STANDARD,
     /** Zerstörungsfassung (`config/zerstoerung.js`): 3 = Standard (große Schollen fallen), 2 = raue Krater + Nachrutschen bis 6000 Zellen, 1 = Altverhalten. */
     zerstoerung = ZERSTOERUNG_STANDARD,
+    schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
   } = {}) {
     this.#seedManager = seed === undefined
@@ -617,6 +622,7 @@ export class MatchController {
     this.zerstoerung = normalisiereZerstoerung(zerstoerung);
     this.waffen = normalisiereWaffen(waffen);
     this.kisten = normalisiereKisten(kisten);
+    this.schaden = normalisiereSchaden(schaden);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -862,6 +868,15 @@ export class MatchController {
     this.#waterBaseY = ergebnis.waterBaseY;
 
     this.#world.services.damageModifier = ergebnis.services.damageModifier;
+    if (this.schaden >= SCHADEN_STATUS) {
+      this.#mali = new MaliRegeln({
+        statuses: this.#statuses, events: this.#events, world: this.#world, players: () => this.#players,
+        waterLevelAt: (x, y) => this.waterLevelAt(x, y), materialAt: this.materialAt.bind(this),
+        biomId: () => this.biomId, aktiv: () => this.activePlayerId,
+      });
+      this.#world.services.damageModifier = (id, betrag, art) => this.#mali.schaden(id, betrag, art);
+      this.#world.services.healModifier = (id, betrag) => this.#mali.heilung(id, betrag);
+    }
     this.#world.services.onProjectileImpact = ergebnis.services.onProjectileImpact;
 
     this.#world.services.terrain = this.#terrain;
@@ -1227,7 +1242,7 @@ export class MatchController {
 
     // Verlangsamung wirkt auf den Absprung: Wer in einen Kackhaufen getreten ist,
     // kommt schlechter vom Boden weg.
-    const langsam = this.#statuses.slowOf(playerId);
+    const langsam = Math.min(this.#statuses.slowOf(playerId), this.#mali?.langsamFaktor(playerId) ?? 1);
     /*
      * Die Beweglichkeit der Klasse wirkt auf den Absprung.
      *
@@ -1313,15 +1328,16 @@ export class MatchController {
         this.#world.getSystem('damage')?.applyDamage(this.#world, spielerId, betrag, null);
       },
       haufenGetroffen: (spielerId) => {
-        // Drei Runden Schaden und langsamere Fortbewegung.
-        this.#statuses.addDot(spielerId, {
+        // Drei Runden Schaden und langsamere Fortbewegung (Fassung 2: als Gift).
+        if (this.#mali) this.#mali.wende(spielerId, 'gift', { dmg: GUENTHER_POOP.damagePerTurn, roh: true, dauer: GUENTHER_POOP.turns });
+        else this.#statuses.addDot(spielerId, {
           damagePerTurn: GUENTHER_POOP.damagePerTurn,
           turns: GUENTHER_POOP.turns,
           element: 'poop',
         });
         this.#statuses.addSlow(spielerId, GUENTHER_POOP.slowFactor, GUENTHER_POOP.turns);
       },
-      radAufloesen: spielerId => this.#resolveGuentherWheel(spielerId),
+      radAufloesen: spielerId => loeseGuentherRad({ guenther: this.#guenther, statuses: this.#statuses, inventory: this.#inventory, world: this.#world }, spielerId),
       melde: (typ, daten) => this.#events.emit(typ, daten),
     });
   }
@@ -1448,102 +1464,7 @@ export class MatchController {
    *
    * In beiden Fällen liegt der Startpunkt AUSSERHALB der Sehweite, damit der
    * Angriff sichtbar „hereinfliegt" statt vor dem Spieler zu erscheinen.
-   *
-  /**
-   * Löst einen Ausgang des Glücksrads aus.
-   *
-   * Ausgewürfelt wird im GuentherSystem, angewendet hier: Das Rad braucht Zugriff
-   * auf Inventar, Zustände und Schaden — alles Dinge, die der NPC nicht kennt.
-   *
-   * @returns {{outcome:string, label:string, detail:string, effect:string}}
    */
-  #resolveGuentherWheel(playerId) {
-    const ausgang = this.#guenther.wuerfleAusgang();
-    const wirkung = ausgang.effect;
-    const ergebnis = {
-      outcome: ausgang.id,
-      label: ausgang.label,
-      detail: ausgang.detail,
-      effect: wirkung.kind,
-      amount: 0,
-      weaponId: null,
-      weaponName: null,
-    };
-
-    switch (wirkung.kind) {
-      case 'skip':
-        // Aussetzen: eine Runde nicht handeln können.
-        this.#statuses.freeze(playerId, wirkung.turns);
-        break;
-
-      case 'skipAndWeapon': {
-        this.#statuses.freeze(playerId, wirkung.turns);
-        const waffe = this.#guenther.waehleWaffe(LOW_RARITY_WEIGHTS);
-        if (waffe) {
-          if (!this.#inventory.has(playerId, waffe.id)) {
-            this.#inventory.grantWeapon(playerId, waffe.id);
-          } else {
-            /*
-             * Schon im Besitz: Munition nachfüllen statt einer wirkungslosen
-             * Gabe.
-             *
-             * FUND (belegt): Hier stand `this.#inventory.refill(...)` — diese
-             * Methode gibt es nicht. Die richtige heißt `grantAmmo`. Der Aufruf
-             * lief nur, wenn der Spieler die Waffe SCHON hatte — also im
-             * Zweifelsfall: Günthers „Füttern" hat in diesem Fall nichts getan,
-             * und zwar still.
-             *
-             * Gefunden wurde es, weil ein Test `refill is not a function`
-             * meldete — nachdem eine Änderung an Günthers Beweidung den
-             * betroffenen Zweig häufiger erreichte.
-             */
-            this.#inventory.grantAmmo(playerId, waffe.id, 3);
-          }
-          ergebnis.weaponId = waffe.id;
-          ergebnis.weaponName = waffe.displayName;
-        }
-        break;
-      }
-
-      case 'skipAndHeal': {
-        this.#statuses.freeze(playerId, wirkung.turns);
-        const betrag = Math.round(this.#guenther.zieheBereich(wirkung.heal));
-        const system = this.#world.getSystem('damage');
-        const geheilt = system?.heal?.(this.#world, playerId, betrag);
-        ergebnis.amount = typeof geheilt === 'number' ? geheilt : betrag;
-        break;
-      }
-
-      case 'damage': {
-        const betrag = Math.round(this.#guenther.zieheBereich(wirkung.range));
-        // Als Schaden OHNE Verursacher: Günther gehört keinem Team, ein Abschuss
-        // durch ihn darf nicht als Treffer eines Spielers zählen.
-        this.#world.getSystem('damage')?.applyDamage(this.#world, playerId, betrag, null);
-        ergebnis.amount = betrag;
-        break;
-      }
-
-      case 'legendaryWeapon': {
-        const waffe = this.#guenther.waehleWaffe(LEGENDARY_WEIGHTS);
-        if (waffe) {
-          if (!this.#inventory.has(playerId, waffe.id)) {
-            this.#inventory.grantWeapon(playerId, waffe.id);
-          } else {
-            // Wie oben: `refill` existiert nicht — `grantAmmo` ist gemeint.
-            this.#inventory.grantAmmo(playerId, waffe.id, 99);
-          }
-          ergebnis.weaponId = waffe.id;
-          ergebnis.weaponName = waffe.displayName;
-        }
-        break;
-      }
-
-      default:
-        break;
-    }
-
-    return ergebnis;
-  }
 
   /**
    * Feuert mit der aktiven Waffe — ein reiner Delegator.
@@ -1619,6 +1540,7 @@ export class MatchController {
       rng: this.#rng,
       applyTargetEffect: (effect, target, attacker) => this.#applyTargetEffect(effect, target, attacker),
       applyCooldown: (id, weapon) => this.#applyCooldown(id, weapon),
+      heilung: this.#mali ? (id, betrag) => this.#mali.heilung(id, betrag) : null,
       hasFired: () => this.#hasFired,
       markFired: id => { this.#hasFired = true; this.#lastShotBy = id; },
       endTurn: () => this.endTurn(),
@@ -1702,9 +1624,8 @@ export class MatchController {
       // Fällt die Waffe nicht in SPECIAL_EFFECTS, greift die Ableitung aus dem
       // Elementarwert — sonst bliebe Feuer-/Gift-/Eisschaden ohne Wirkung.
       const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
-      if (effect && !SELF_TARGET_KINDS.has(effect.kind)) {
-        this.#applyTargetEffect(effect, target, shooterId);
-      }
+      const zielwirkung = effect && !SELF_TARGET_KINDS.has(effect.kind) ? effect : null;
+      if (zielwirkung || this.#mali) this.#applyTargetEffect(zielwirkung, target, shooterId, weapon);
     }
 
     return { hitX: result.hitX, hitY: result.hitY, hit: result.hit, target };
@@ -2342,11 +2263,16 @@ export class MatchController {
    * Wendet eine Wirkung auf ein getroffenes Ziel an (Einfrieren, Schaden über Zeit).
    * Wirkt nur auf Gegner — eigene Einheiten bleiben verschont.
    */
-  #applyTargetEffect(effect, targetId, attackerId) {
+  #applyTargetEffect(effect, targetId, attackerId, weapon = null) {
     const ziel = this.#players.find(entry => entry.entityId === targetId);
     const schuetze = this.#players.find(entry => entry.entityId === attackerId);
     if (!ziel || !this.isPlayerAlive(targetId)) return null;
     if (schuetze && ziel.teamId === schuetze.teamId) return null;
+    if (this.#mali) {
+      // Fassung 2: Schaden über Zeit und Einfrieren laufen über die Mali der Schadensart.
+      const mali = this.#mali.treffer(effect, weapon, targetId, attackerId);
+      if (!effect || effect.kind === EFFECT_KIND.DAMAGE_OVER_TIME || effect.kind === EFFECT_KIND.FREEZE) return mali;
+    }
 
     switch (effect.kind) {
       case EFFECT_KIND.FREEZE: {
@@ -2519,29 +2445,18 @@ export class MatchController {
    * Für Waffen mit Flächenwirkung: Giftwolken und Feuerflächen treffen jeden
    * im Umkreis, nicht nur das direkt getroffene Ziel.
    */
-  #applyAreaEffect(effect, x, y, radius, attackerId, { ueberspringe = null } = {}) {
+  #applyAreaEffect(effect, x, y, radius, attackerId, { ueberspringe = null, weapon = null } = {}) {
     const angewendet = [];
     for (const entry of this.#players) {
       if (!entry.alive) continue;
       if (entry.entityId === attackerId) continue;
-      /*
-       * Das direkt getroffene Ziel NICHT noch einmal.
-       *
-       * Fund (belegt): Bei einer Waffe mit Flächenwirkung läuft der Effekt
-       * zweimal über das direkt getroffene Ziel — einmal direkt aus dem
-       * Projekteinschlag, einmal über die Fläche, die ja auch das Ziel einschließt.
-       * Gemessen am Wasserschub: `waterAfter` stieg in einem Einschlag erst auf
-       * 0,4 und dann auf 0,8; dieselbe Verdopplung trifft Einfrierdauer
-       * (doppelt so lange), Heranziehen (doppelte Distanz) und Schaden über Zeit
-       * (doppelte Stapel). Bei Flächenwaffen mit großem Radius fiel das auf, bei
-       * den meisten Waffen (Radius 0) nicht.
-       */
+      // Das direkt getroffene Ziel nicht noch einmal: sonst verdoppeln sich Dauer, Distanz und Stapel (gemessen am Wasserschub).
       if (ueberspringe !== null && entry.entityId === ueberspringe) continue;
       const px = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
       const py = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
       const distSq = (px - x) ** 2 + (py - y) ** 2;
       if (distSq > radius * radius) continue;
-      const outcome = this.#applyTargetEffect(effect, entry.entityId, attackerId);
+      const outcome = this.#applyTargetEffect(effect, entry.entityId, attackerId, weapon);
       if (outcome) angewendet.push({ playerId: entry.entityId, ...outcome });
     }
     return angewendet;
@@ -2560,16 +2475,17 @@ export class MatchController {
 
     const weapon = getWaffe(weaponId, this.waffen);
     const effect = buildEffect(weapon) ?? elementalEffectFor(weapon);
-    if (!effect || SELF_TARGET_KINDS.has(effect.kind)) return;
+    const zielwirkung = effect && !SELF_TARGET_KINDS.has(effect.kind) ? effect : null;
+    if (!zielwirkung && !this.#mali) return;
 
     if (target !== null && target !== undefined) {
-      this.#applyTargetEffect(effect, target, owner);
+      this.#applyTargetEffect(zielwirkung, target, owner, weapon);
     }
     // Bei Flächenwirkung zusätzlich alle Gegner im Radius treffen — eine
     // Giftwolke wirkt nicht nur auf den direkt getroffenen Gegner. Das direkt
     // getroffene Ziel ist ausgenommen: es hat den Effekt oben schon bekommen.
     if (blastRadius > 0) {
-      this.#applyAreaEffect(effect, x, y, blastRadius, owner, { ueberspringe: target });
+      this.#applyAreaEffect(zielwirkung, x, y, blastRadius, owner, { ueberspringe: target, weapon });
     }
   }
 
@@ -2624,6 +2540,7 @@ export class MatchController {
     const wrapped = nextIndex <= this.#turnIndex;
     this.#turnIndex = nextIndex;
 
+    this.#mali?.zugEnde(previous);
     this.#events.emit('turn_end', { playerId: previous, next: this.activePlayerId });
 
     if (wrapped) {
@@ -2725,6 +2642,7 @@ export class MatchController {
     // Schaden an der Tickrate statt an den Zügen und wäre bei anderer Zugzeit
     // ein anderer.
     const turnState = this.#statuses.advanceTurn(entityId);
+    this.#mali?.zugBeginn(entityId, turnState.frozeThisTurn);
 
     // Nachladezeiten dieses Spielers um einen Zug herunterzählen. Bewusst VOR
     // der Einfrier-Prüfung: eine Pause soll auch dann ablaufen, wenn der Spieler

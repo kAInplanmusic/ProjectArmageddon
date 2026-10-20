@@ -32,6 +32,7 @@
  *
  * @module client/ereignisse
  */
+import { MALUS } from '../shared/config/schaden.js';
 import { getWeapon } from '../shared/config/weapons.js';
 
 /**
@@ -564,7 +565,35 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   frozen: beide((k, n) => {
-    k.hud?.log(`${k.nameOf?.(n.playerId)} ist eingefroren (${n.turns} Zug/Züge)`, 'accent');
+    const was = n.grund ? 'betäubt' : 'eingefroren';
+    k.hud?.log(`${k.nameOf?.(n.playerId)} ist ${was} (${n.turns} Zug/Züge)`, 'accent');
+  }),
+
+  damage: beide((k, n) => {
+    k.renderer?.merkeSchadensart?.(n.entityId, n.damageTypeName);
+  }),
+
+  malus_angewendet: beide((k, n) => {
+    const m = MALUS[n.art];
+    if (!m) return;
+    const extra = n.stapel > 1 ? `, ${n.stapel} Stapel` : '';
+    k.hud?.log(`${k.nameOf?.(n.playerId)}: ${m.label} (${n.dauer} Zug/Züge${extra})`, 'accent');
+  }),
+
+  malus_beendet: beide((k, n) => {
+    const m = MALUS[n.art];
+    if (!m) return;
+    const grund = { ablauf: 'abgelaufen', heilung: 'durch Heilung entfernt', wasser: 'im Wasser gelöscht', eis: 'von Eis gelöscht', feuer: 'von Feuer getaut', limit: 'verdrängt' }[n.grund] ?? 'beendet';
+    k.hud?.log(`${k.nameOf?.(n.playerId)}: ${m.label} ${grund}`, 'neutral');
+  }),
+
+  malus_abgewehrt: beide((k, n) => {
+    const grund = { nass: 'Nässe', gummi: 'Gummiboden', schutz: 'Betäubungsschutz', limit: 'zu viele Mali' }[n.grund] ?? n.grund;
+    k.hud?.log(`${k.nameOf?.(n.playerId)}: ${MALUS[n.art]?.label ?? 'Betäubung'} abgewehrt (${grund})`, 'neutral');
+  }),
+
+  malus_leitung: beide((k, n) => {
+    k.hud?.log(`${k.nameOf?.(n.playerId)}: Schock springt über (${n.schaden} Schaden)`, 'danger');
   }),
 
   turn_skipped: beide((k, n) => {
@@ -578,7 +607,9 @@ export const EREIGNIS_WIRKUNGEN = {
      * frozeThisTurn }` zurück), der Vorgabewert greift also nie — er ist hier
      * beibehalten, damit ein fehlendes Feld keine Ausnahme auslöst.
      */
-    k.hud?.log(`${k.nameOf?.(n.playerId)} erleidet ${Math.round(n.damage)} Schaden (${(n.elements ?? []).join(', ')})`, 'danger');
+    const ende = n.lethal ? ' — und erliegt dem Schaden über Zeit' : '';
+    const deckel = n.gedeckelt ? ' (Obergrenze)' : '';
+    k.hud?.log(`${k.nameOf?.(n.playerId)} erleidet ${Math.round(n.damage)} Schaden (${(n.elements ?? []).join(', ')})${deckel}${ende}`, 'danger');
   }),
 
   /*

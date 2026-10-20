@@ -15,7 +15,7 @@ import { getWeapon } from '../src/shared/config/weapons.js';
 
 function neuesMatch(spieler = 2) {
   const match = new MatchController({
-    seed: 4242, teams: spieler, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000,
+    seed: 4242, teams: spieler, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, schaden: 1,
   });
   match.start();
   return match;

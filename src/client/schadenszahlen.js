@@ -13,6 +13,8 @@
  * @module schadenszahlen
  */
 
+import { familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
+
 /** Ab diesem Schaden (absolut) oder Anteil an der Maximalgesundheit gilt ein Treffer als schwer. */
 export const KRITISCH_ABSOLUT = 80;
 export const KRITISCH_ANTEIL = 0.5;
@@ -25,7 +27,7 @@ const MAX_ZAHLEN = 24;
  * @param {Array<object>} entities - Figuren aus dem Zustand
  * @returns {{zustand: Map<number, object>, neu: Array<{x:number,y:number,text:string,art:string}>}}
  */
-export function findeZahlen(bisher, entities) {
+export function findeZahlen(bisher, entities, arten = null) {
   const zustand = new Map();
   const neu = [];
   for (const e of entities ?? []) {
@@ -43,7 +45,11 @@ export function findeZahlen(bisher, entities) {
     const max = Number.isFinite(alt.maxHealth) && alt.maxHealth > 0 ? alt.maxHealth : 100;
     if (diff < 0) {
       const kritisch = -diff >= Math.max(KRITISCH_ABSOLUT, KRITISCH_ANTEIL * max);
-      neu.push({ x, y: y - 26, text: kritisch ? `${diff}!` : `${diff}`, art: kritisch ? 'kritisch' : 'schaden' });
+      // Schadensart (Fassung 2): Farbe und Zeichen der Familie, sofern der Treffer nicht „schwer" ist.
+      const familie = arten?.get(e.entityId) ? familieVonArt(arten.get(e.entityId)) : 'koerper';
+      const zeichen = ZAHL_FAMILIE[familie]?.symbol ?? '';
+      if (kritisch) neu.push({ x, y: y - 26, text: `${diff}!`, art: 'kritisch' });
+      else neu.push({ x, y: y - 26, text: `${diff}${zeichen}`, art: familie === 'koerper' ? 'schaden' : `schaden-${familie}` });
     } else if (diff > 0 && lebt) {
       neu.push({ x, y: y - 26, text: `+${diff}`, art: 'heilung' });
     }

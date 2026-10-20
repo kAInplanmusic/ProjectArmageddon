@@ -10,6 +10,7 @@
  *
  * @module effektStil
  */
+import { ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { PAL, hash2 } from './stil.js';
 
 function bahn(ctx, punkte) {
@@ -219,6 +220,7 @@ const ZAHL_ART = Object.freeze({
   kritisch: { farbe: PAL.orange, groesse: 22 },
   heilung: { farbe: PAL.limette, groesse: 15 },
   schild: { farbe: PAL.cyan, groesse: 15 },
+  ...Object.fromEntries(Object.entries(ZAHL_FAMILIE).map(([familie, v]) => [`schaden-${familie}`, { farbe: v.farbe, groesse: 15 }])),
 });
 
 /**
