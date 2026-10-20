@@ -486,6 +486,11 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
         const renderer = T.renderer;
         const krater = { x: 700, y: 380 };
 
+        // Die Messstelle ist eine Kartenkoordinate: Die Kameraführung hat die Ansicht auf die Figuren
+        // gezoomt, und dort läge der Krater (y≈380) oberhalb des Bildes. Hier die ganze Karte zeigen.
+        const kam = T.spiel.kamera;
+        kam.setzeAnsicht(kam.karte.b / 2, kam.karte.h / 2, kam.zoomGanzeKarte);
+
         const mit = T.ohne(['narben', 'rauch', 'trefferMarken', 'spuren'], () => {
           // Den festen Inhalt zurückschreiben: Der Renderer altert die
           // Splitter am Ende jedes Bildes, und beide Arme sollen dieselben
