@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "quelle": "Together FLUX.1-kontext-pro aus Fotos von Cookie (Besitzer Patrick Hilf)",
+  "posen": {
+    "brot": {
+      "datei": "brot.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "fressen": {
+      "datei": "fressen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "gehen": {
+      "datei": "gehen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "hungerwut": {
+      "datei": "hungerwut.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "kuscheln": {
+      "datei": "kuscheln.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "liegen": {
+      "datei": "liegen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "miau_laut": {
+      "datei": "miau_laut.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "miau_leise": {
+      "datei": "miau_leise.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "putzen": {
+      "datei": "putzen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "schlafen": {
+      "datei": "schlafen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "schlafen_seite": {
+      "datei": "schlafen_seite.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "sitzen": {
+      "datei": "sitzen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "spielen": {
+      "datei": "spielen.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    },
+    "strecken": {
+      "datei": "strecken.png",
+      "anker": {
+        "x": 128,
+        "y": 240
+      },
+      "blick": "rechts"
+    }
+  }
+}

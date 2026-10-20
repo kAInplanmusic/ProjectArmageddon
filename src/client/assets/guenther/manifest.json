@@ -1,0 +1,118 @@
+{
+ "version": 2,
+ "quelle": "together FLUX.1-kontext-pro, Fotos des Auftraggebers (Hund Günther), zweiter Durchgang (Fellfarbe, ohne Schatten)",
+ "posen": {
+  "sitz": {
+   "datei": "sitz.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "platz": {
+   "datei": "platz.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "huepfen": {
+   "datei": "huepfen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "essen": {
+   "datei": "essen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "kacken": {
+   "datei": "kacken.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "wuehlen": {
+   "datei": "wuehlen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "ziehen": {
+   "datei": "ziehen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "kuscheln": {
+   "datei": "kuscheln.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "rueckenlage": {
+   "datei": "rueckenlage.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "bellen": {
+   "datei": "bellen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "laufen": {
+   "datei": "laufen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "schlafen": {
+   "datei": "schlafen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "schuetteln": {
+   "datei": "schuetteln.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "stehen": {
+   "datei": "stehen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  }
+ }
+}
