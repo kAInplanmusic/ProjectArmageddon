@@ -37,6 +37,8 @@ export const SEED_OFFSETS = Object.freeze({
   GUENTHER_AKTION: 7_000_000,
   /** Cookie, der Kater des Weltuntergangs (Fassung 2). */
   COOKIE: 8_000_000,
+  /** Brand, Lava und Ragnarök (Feuerfassung 2) — eigener Zweig, alle übrigen Ströme bleiben unberührt. */
+  FEUER: 9_000_000,
 });
 
 /**

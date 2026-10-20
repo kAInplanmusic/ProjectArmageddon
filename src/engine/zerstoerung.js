@@ -167,6 +167,8 @@ export class Zerstoerung {
   #partikel = [];
   #beben = [];
   #nachkosten = 0;
+  /** Feuerfassung 2: ruft bei jedem Waffeneinschlag `(x, y, radius, wirkgruppe)` (entzündet oder löscht). */
+  #einschlagHaken = null;
 
   /**
    * @param {object} quelle
@@ -222,7 +224,9 @@ export class Zerstoerung {
     let nebenbrueche = 0;
     if (this.#stoff) {
       const stoffId = stoffAmEinschlag(this.#stoff, this.#terrain, x, y, radius);
-      const w = stoffWirkung(stoffId, art, typeof quelle === 'number' ? gruppeFuerIndex(quelle) : 'wucht', this.#fein);
+      const gruppe = typeof quelle === 'number' ? gruppeFuerIndex(quelle) : 'wucht';
+      const w = stoffWirkung(stoffId, art, gruppe, this.#fein);
+      this.#einschlagHaken?.(x, y, radius, gruppe);
       const key = stoffById(stoffId).key;
       this.#stoffAmKrater = stoffId;
       if (Math.round(radius * w.radius) < MIN_KRATER_RADIUS) {
@@ -247,6 +251,9 @@ export class Zerstoerung {
     if (this.#auftraege.length >= MAX_AUFTRAEGE) this.#auftraege.shift();
     this.#auftraege.push({ kreise: [{ x, y, radius, tiefe }], art, tick: this.#tick });
   }
+
+  /** @param {function|null} haken Feuerfassung 2: wird bei jedem Waffeneinschlag gerufen. */
+  setzeEinschlagHaken(haken) { this.#einschlagHaken = haken; }
 
   /** Ein Tick: Inselsuche (budgetiert), fallende Inseln, lose Objekte. */
   schritt() {

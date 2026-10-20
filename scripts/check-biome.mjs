@@ -138,7 +138,7 @@ if (haeufigstes && haeufigstes[1] / ANZAHL > 0.6) {
  * Stoffkarte vorhanden und Server/Client gleich.
  */
 const { MatchController } = await import('../src/engine/match.js');
-const { NEUE_BIOME, SONDERBIOM_IDS } = await import('../src/shared/config/biome-neu.js');
+const { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3: SONDERBIOM_IDS } = await import('../src/shared/config/biome-neu.js');
 const { stoffHash, zaehleStoffe } = await import('../src/shared/stoffkarte.js');
 const { buildTerrainForSeed } = await import('../src/client/terrainPreview.js');
 const { WET_LEVEL } = await import('../src/shared/config/water.js');
@@ -198,10 +198,10 @@ console.log('');
 const KISTEN_MINDESTANTEIL = 0.5;
 let fehler = 0;
 const proBiom = new Map();
-for (let i = 0; i < 30; i += 1) {
+for (let i = 0; i < SONDERBIOM_IDS.length * 3; i += 1) {
   const biom = SONDERBIOM_IDS[i % SONDERBIOM_IDS.length];
   const seed = 700000 + i * 7607;
-  const fassung = { gelaende: 2, zerstoerung: 5 };
+  const fassung = { gelaende: 3, zerstoerung: 5 };
   const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, turnDurationMs: 2000, ...fassung });
   m.start();
   m.consumeEvents();
@@ -227,7 +227,7 @@ for (const [biom, z] of proBiom) {
   console.log(`  ${biom.padEnd(15)} ${String(z.n).padStart(2)} Karten  Wasser Ø ${(z.wasser / z.n * 100).toFixed(0).padStart(2)} %  Stoffe Ø ${(z.stoffe / z.n).toFixed(1)}  Kisten ${z.trocken ? (z.kisten / z.trocken * 100).toFixed(0) : '--'} % erreichbar, ohne Wasser ${z.ohne}  ${NEUE_BIOME[biom].label}`);
 }
 console.log('');
-console.log(fehler ? `  ${fehler} Karten fehlerhaft` : `  Alle ${SONDERBIOM_IDS.length} Sonderbiome: 30 Karten ohne Fehler.`);
+console.log(fehler ? `  ${fehler} Karten fehlerhaft` : `  Alle ${SONDERBIOM_IDS.length} Sonderbiome: ${SONDERBIOM_IDS.length * 3} Karten ohne Fehler.`);
 if (fehler) process.exitCode = 1;
 
 /*
@@ -241,7 +241,7 @@ const alt = new Map();
 let altFehler = 0;
 for (let i = 0; i < 20; i += 1) {
   const seed = 910000 + i * 5171;
-  const fassung = { gelaende: 2, zerstoerung: 5 };
+  const fassung = { gelaende: 3, zerstoerung: 5 };
   const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', maxRounds: 2, turnDurationMs: 2000, ...fassung });
   m.start();
   m.consumeEvents();

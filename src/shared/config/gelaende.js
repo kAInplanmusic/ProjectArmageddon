@@ -15,20 +15,25 @@
  *     Zieht er keines, bleibt die Karte Bit für Bit die der Fassung 1. Dazu entsteht die
  *     Stoffkarte; wirken lässt sie erst die Zerstörungsfassung 5.
  *
+ *   - `GELAENDE_THEMEN` (3): Zusätzlich ziehen die vier Themenbiome `kosmos`, `surreal`, `fabrik`,
+ *     `burg` (`config/biome-themen.js`); die Ziehung läuft über alle dreizehn Kennungen. Fassung 2
+ *     zieht weiter nur aus den neun und kennt die Themenbiome nicht (auch nicht als Wahl).
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
  */
 import { SeededRandom } from '../prng.js';
-import { SONDERBIOM_IDS } from './biome-neu.js';
+import { SONDERBIOM_IDS, SONDERBIOM_IDS_FASSUNG_3 } from './biome-neu.js';
 
 export const GELAENDE_ALT = 1;
 export const GELAENDE_BIOME = 2;
-export const GELAENDE_STANDARD = GELAENDE_BIOME;
+export const GELAENDE_THEMEN = 3;
+export const GELAENDE_STANDARD = GELAENDE_THEMEN;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */
@@ -42,8 +47,9 @@ const BIOM_FORK = 0x42494F;
  * Die gültigen Werte der Wahl: `null`/`auto` (der Seed entscheidet), `klassisch` oder ein Sonderbiom.
  * Alles andere wird `null` (automatisch).
  */
-export function normalisiereBiomWahl(wahl) {
-  if (wahl === BIOM_KLASSISCH || SONDERBIOM_IDS.includes(wahl)) return wahl;
+export function normalisiereBiomWahl(wahl, fassung = GELAENDE_STANDARD) {
+  const ids = fassung >= GELAENDE_THEMEN ? SONDERBIOM_IDS_FASSUNG_3 : SONDERBIOM_IDS;
+  if (wahl === BIOM_KLASSISCH || ids.includes(wahl)) return wahl;
   return null;
 }
 
@@ -54,8 +60,8 @@ export function normalisiereBiomWahl(wahl) {
  */
 export function loeseGelaende(gelaende, biom, seed) {
   const fassung = normalisiereGelaende(gelaende);
-  const biomWahl = normalisiereBiomWahl(biom);
-  return { gelaende: fassung, biomWahl, sonderbiom: fassung >= GELAENDE_BIOME ? waehleSonderbiom(seed, biomWahl) : null };
+  const biomWahl = normalisiereBiomWahl(biom, fassung);
+  return { gelaende: fassung, biomWahl, sonderbiom: fassung >= GELAENDE_BIOME ? waehleSonderbiom(seed, biomWahl, fassung) : null };
 }
 
 /**
@@ -67,11 +73,12 @@ export function loeseGelaende(gelaende, biom, seed) {
  * @param {string|null} wahl - siehe `normalisiereBiomWahl`
  * @returns {string|null} Kennung aus `NEUE_BIOME` oder `null` (klassisch)
  */
-export function waehleSonderbiom(seed, wahl = null) {
-  const w = normalisiereBiomWahl(wahl);
+export function waehleSonderbiom(seed, wahl = null, fassung = GELAENDE_STANDARD) {
+  const w = normalisiereBiomWahl(wahl, fassung);
   if (w === BIOM_KLASSISCH) return null;
   if (w) return w;
   const rng = new SeededRandom(((Math.abs(Math.floor(Number(seed) || 0)) >>> 0) + BIOM_FORK) >>> 0);
   if (rng.next() >= SONDER_ANTEIL) return null;
-  return SONDERBIOM_IDS[Math.floor(rng.next() * SONDERBIOM_IDS.length)];
+  const ids = fassung >= GELAENDE_THEMEN ? SONDERBIOM_IDS_FASSUNG_3 : SONDERBIOM_IDS;
+  return ids[Math.floor(rng.next() * ids.length)];
 }

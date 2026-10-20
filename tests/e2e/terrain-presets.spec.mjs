@@ -258,14 +258,15 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
 
   for (const biom of stand.biome) {
     expect(biom.label, `Biom „${biom.id}" fehlt im Katalog`).toBeTruthy();
-    expect(biom.varianten.length, `Biom „${biom.id}" hat keine fünf Varianten`).toBe(5);
+    // Zehn Varianten je Biom: fünf Basis-Varianten und fünf Stimmungen (Heller Himmel, Sternennacht, Höhlenblick, Ragnarök 1 und 2).
+    expect(biom.varianten.length, `Biom „${biom.id}" hat keine zehn Varianten`).toBe(10);
     expect(stand.gruppen, `Die Biomgruppe „${biom.label}" fehlt im Menü`).toContain(biom.label);
     for (const key of biom.varianten) {
       expect(stand.optionen, `Die Kulisse „${key}" fehlt in der Auswahl`).toContain(key);
     }
     for (const datei of biom.bilder) {
       expect(datei, `${biom.id}: Variante ohne passenden Dateinamen`)
-        .toMatch(new RegExp(`^${biom.id}_[a-z_]*\\.jpg$`));
+        .toMatch(new RegExp(`^(stimmung/)?${biom.id}_[a-z_0-9]*\\.jpg$`));
     }
   }
 });

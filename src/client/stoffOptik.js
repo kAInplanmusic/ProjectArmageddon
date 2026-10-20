@@ -35,7 +35,9 @@ function tabelle(laenge, seed, amp) {
 export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   const wy = tabelle(hoehe, seed + 311, 4);
   const wx = tabelle(breite, seed + 312, 4);
-  const { feld, spalten, zeilen } = karte;
+  const { spalten, zeilen } = karte;
+  // Feuerfassung 2: ausgebrannte und erstarrte Zellen (Überlagerung) färben sich nach ihrem neuen Stoff.
+  const feld = karte.ueber ? karte.feld.map((v, i) => (karte.ueber[i] ? karte.ueber[i] - 1 : v)) : karte.feld;
 
   /*
    * Vorab, was im Pixelrumpf sonst Millionen Mal gesucht würde (gleiche Rechnung, gleiches Bild):

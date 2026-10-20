@@ -310,6 +310,29 @@ export const EREIGNIS_WIRKUNGEN = {
     k.renderer?.setzeRutsch(n.zuege);
   }),
   terrain_crumble: beide((k, n) => { k.renderer?.bruchOptik(n); }),
+  /*
+   * Feuerfassung 2 (`engine/systems/feuerSystem.js`): Die Optik (Flammen, Rauch, Funken, Lavaglühen) baut der Client aus
+   * den Zellenlisten selbst (`client/feuerOptik.js`). Zustand sind die Listen, Anzeige die Marken.
+   */
+  feuer_schritt: beide((k, n) => { k.renderer?.feuerSchritt(n); }),
+  feuer_lava: beide((k, n) => { k.renderer?.feuerLava(n); }),
+  lava_erstarrt: beide((k, n) => {
+    k.renderer?.lavaErstarrt(n);
+    const sp = k.renderer?.stoffkarte?.spalten || 1;
+    k.sound?.verarbeite({ type: 'zischen', x: (n.zellen[0] % sp) * 8, y: Math.floor(n.zellen[0] / sp) * 8 });
+  }),
+  lava_ausbruch: beide((k, n) => {
+    k.renderer?.feuerAusbruch(n, false);
+    k.renderer?.addFlash?.(n.x, n.y, 40);
+    k.sound?.verarbeite({ type: 'lava_grollen', x: n.x, y: n.y });
+  }),
+  flammenwand: beide((k, n) => {
+    k.renderer?.feuerAusbruch(n, true);
+    k.sound?.verarbeite({ type: 'flammen', x: n.x, y: n.y });
+  }),
+  ragnarok_beginnt: beide((k) => { k.renderer?.startRagnarok(); }),
+  feuer_verbrennt: beide((k, n) => { k.sound?.verarbeite({ type: 'flammen', x: n.x, y: n.y }); }),
+  feuer_schmilzt: beide((k, n) => { k.renderer?.spawnExplosionParticles?.(n.x, n.y, 6); k.sound?.verarbeite({ type: 'zischen', x: n.x, y: n.y }); }),
   terrain_quake: beide((k, n) => { k.renderer?.bebenOptik(n); }),
   /* Fassung 5: der Einschlag traf unzerstörbaren Stoff (Metall, Grundgestein) und ließ ihn stehen — nur Funken. */
   terrain_resisted: beide((k, n) => { k.renderer?.spawnExplosionParticles?.(n.x, n.y, Math.min(n.radius || 8, 10)); }),

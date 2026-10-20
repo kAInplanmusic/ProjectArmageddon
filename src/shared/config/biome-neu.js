@@ -59,10 +59,12 @@ export const NEUE_LANDMARKEN = Object.freeze([
   'volcano', 'floating_isles', 'mushroom_grove', 'scrap_towers', 'glacier_wall', 'kelp_forest',
 ]);
 
+import { THEMEN_BIOME } from './biome-themen.js';
+
 /** Kurzform für eine Bodenvariante. */
 const boden = (surface, deep) => ({ surface, deep });
 
-export const NEUE_BIOME = Object.freeze({
+const BIOME_FASSUNG_2 = Object.freeze({
   vulkan: {
     label: 'Vulkan & Lavafeld',
     beschreibung: 'Schwarzer Basalt, Glut in der Luft und Lava in den Senken.',
@@ -228,5 +230,14 @@ export const NEUE_BIOME = Object.freeze({
   },
 });
 
-/** Die Kennungen der Sonderbiome in fester Reihenfolge (Zug aus dem Seed, Menü). */
-export const SONDERBIOM_IDS = Object.freeze(Object.keys(NEUE_BIOME));
+/** Alle Sonderbiome: die neun der Fassung 2 und die vier Themenbiome (`biome-themen.js`, ab Fassung 3). */
+export const NEUE_BIOME = Object.freeze({ ...BIOME_FASSUNG_2, ...THEMEN_BIOME });
+
+/** Die Kennungen der neun Sonderbiome der Geländefassung 2 in fester Reihenfolge (Zug aus dem Seed, Menü). */
+export const SONDERBIOM_IDS = Object.freeze(Object.keys(BIOME_FASSUNG_2));
+
+/** Die Themenbiome (ab Geländefassung 3). */
+export const THEMEN_BIOM_IDS = Object.freeze(Object.keys(THEMEN_BIOME));
+
+/** Alle Kennungen ab Geländefassung 3: erst die neun, dann die Themenbiome (die Reihenfolge ist Teil des Seed-Zugs). */
+export const SONDERBIOM_IDS_FASSUNG_3 = Object.freeze([...SONDERBIOM_IDS, ...THEMEN_BIOM_IDS]);
