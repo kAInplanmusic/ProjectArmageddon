@@ -99,6 +99,63 @@ export function weaponIdFromIndex(index) {
   return WEAPON_ID_BY_INDEX.get(index) ?? null;
 }
 
+/**
+ * Legt EINE Kiste an (Ziehungsreihenfolge: Inhalt, Seltenheit, Waffe).
+ *
+ * Gemeinsam für Rundenkisten und Günthers Fund beim Wühlen (Fassung 2).
+ */
+export function legeKiste(world, rng, x, y) {
+  const contents = rollCrateContents(rng);
+  const crateType = CRATE_TYPES[contents] ?? CRATE_TYPES.empty;
+  /*
+   * BEWUSSTER ZUSTAND (gemessen, 2026-09-27) — NICHT versehentlich aendern.
+   *
+   * `RARITY_WEIGHTS` ist nach `powerTier` benannt (common/uncommon/rare/epic/
+   * legendary), `RARITY_IDS` traegt die vier `rarity`-Namen (standard/
+   * enhanced/premium/epic). Nur 'epic' kommt in beiden vor -> die Gewichte
+   * aller anderen Namen sind 0 -> die Ziehung faellt IMMER auf 'epic'.
+   *
+   * GEMESSEN: 20 000 von 20 000 Ziehungen = 'epic'. Jede Rundenkiste traegt
+   * damit Seltenheit 3.
+   *
+   * Das ist eine ENTSCHEIDUNG DES AUFTRAGGEBERS (2026-09-27): die vorherige
+   * Fassung hat den Namensraum vereinheitlicht und damit echte Verteilungen
+   * erzeugt (55/25/12/6/2 %). Sie wurde auf Wunsch ZURUECKGENOMMEN, weil sie
+   * das Spielgefuehl der Kisten aendert.
+   *
+   * WAS EINE AENDERUNG KOSTET: der Zustandshash wandert (gemessen:
+   * 9ec63e8c -> 384c51cf auf Seed 20260910) — Altreplays und die Pruefvorlage
+   * `artifacts/replay-20260910.json` verifizieren dann nicht mehr. Der
+   * Zufallsstrom bleibt dabei unberuehrt (genau ein `next()` je Ziehung, in
+   * beiden Fassungen).
+   *
+   * Wer das umstellt, aendert das Spielgefuehl — also fragen, nicht tun.
+   * Festgehalten in `tests/loot.test.js`.
+   */
+  const rarityName = weightedRarity(rng, RARITY_WEIGHTS, RARITY_IDS);
+  const rarityId = Math.max(0, RARITY_IDS.indexOf(rarityName));
+
+  const weapon = crateType === CRATE_TYPES.weapon ? pickWeaponForRarity(rng, RARITY_WEIGHTS) : null;
+
+  const entityId = world.createEntity();
+  world.addComponent(entityId, 'Position', { x, y });
+  world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
+  world.addComponent(entityId, 'Crate', {
+    crateType,
+    crateX: x,
+    crateY: y,
+    rarity: rarityId,
+    weaponId: weapon ? weapon.index : 0,
+    picked: 0,
+    // 0 bedeutet "kein Vorrat hinterlegt" — beim Aufheben gilt das volle Magazin.
+    ammo: 0,
+    // Rundenkisten liegen bereits; nur abgeworfene Waffen fliegen.
+    inFlight: 0,
+    flightTicks: 0,
+  });
+  return entityId;
+}
+
 export class LootSystem {
   constructor({ rng } = {}) {
     this.rng = rng ?? null;
@@ -136,54 +193,7 @@ export class LootSystem {
       const groundY = surfaceYFor(x);
       const y = (groundY > 0 ? groundY : height * 0.5) - 14;
 
-      const contents = rollCrateContents(activeRng);
-      const crateType = CRATE_TYPES[contents] ?? CRATE_TYPES.empty;
-      /*
-       * BEWUSSTER ZUSTAND (gemessen, 2026-09-27) — NICHT versehentlich aendern.
-       *
-       * `RARITY_WEIGHTS` ist nach `powerTier` benannt (common/uncommon/rare/epic/
-       * legendary), `RARITY_IDS` traegt die vier `rarity`-Namen (standard/
-       * enhanced/premium/epic). Nur 'epic' kommt in beiden vor -> die Gewichte
-       * aller anderen Namen sind 0 -> die Ziehung faellt IMMER auf 'epic'.
-       *
-       * GEMESSEN: 20 000 von 20 000 Ziehungen = 'epic'. Jede Rundenkiste traegt
-       * damit Seltenheit 3.
-       *
-       * Das ist eine ENTSCHEIDUNG DES AUFTRAGGEBERS (2026-09-27): die vorherige
-       * Fassung hat den Namensraum vereinheitlicht und damit echte Verteilungen
-       * erzeugt (55/25/12/6/2 %). Sie wurde auf Wunsch ZURUECKGENOMMEN, weil sie
-       * das Spielgefuehl der Kisten aendert.
-       *
-       * WAS EINE AENDERUNG KOSTET: der Zustandshash wandert (gemessen:
-       * 9ec63e8c -> 384c51cf auf Seed 20260910) — Altreplays und die Pruefvorlage
-       * `artifacts/replay-20260910.json` verifizieren dann nicht mehr. Der
-       * Zufallsstrom bleibt dabei unberuehrt (genau ein `next()` je Ziehung, in
-       * beiden Fassungen).
-       *
-       * Wer das umstellt, aendert das Spielgefuehl — also fragen, nicht tun.
-       * Festgehalten in `tests/loot.test.js`.
-       */
-      const rarityName = weightedRarity(activeRng, RARITY_WEIGHTS, RARITY_IDS);
-      const rarityId = Math.max(0, RARITY_IDS.indexOf(rarityName));
-
-      const weapon = crateType === CRATE_TYPES.weapon ? pickWeaponForRarity(activeRng, RARITY_WEIGHTS) : null;
-
-      const entityId = world.createEntity();
-      world.addComponent(entityId, 'Position', { x, y });
-      world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
-      world.addComponent(entityId, 'Crate', {
-        crateType,
-        crateX: x,
-        crateY: y,
-        rarity: rarityId,
-        weaponId: weapon ? weapon.index : 0,
-        picked: 0,
-        // 0 bedeutet "kein Vorrat hinterlegt" — beim Aufheben gilt das volle Magazin.
-        ammo: 0,
-        // Rundenkisten liegen bereits; nur abgeworfene Waffen fliegen.
-        inFlight: 0,
-        flightTicks: 0,
-      });
+      const entityId = legeKiste(world, activeRng, x, y);
       spawned.push(entityId);
     }
 

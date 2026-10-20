@@ -52,6 +52,10 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
 import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
+import { CookieSystem } from './systems/cookieSystem.js';
+import { baueTierKontext } from './tierKontext.js';
+import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared/config/guenther.js';
+import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { GUENTHER_POOP } from '../shared/config/guenther.js';
 import { loeseGuentherRad } from './guentherRad.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
@@ -488,6 +492,7 @@ export class MatchController {
   #jumpsUsed = new Map();
   /** Günther — der frei laufende NPC. */
   #guenther = null;
+  #cookie = null;
   /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
   #airborne = new Map();
   #maelstrom;
@@ -593,6 +598,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, // Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -622,6 +628,8 @@ export class MatchController {
     this.zerstoerung = normalisiereZerstoerung(zerstoerung);
     this.waffen = normalisiereWaffen(waffen);
     this.kisten = normalisiereKisten(kisten);
+    this.guenther = normalisiereGuenther(guenther);
+    this.cookie = normalisiereCookie(cookie);
     this.schaden = normalisiereSchaden(schaden);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
@@ -665,7 +673,10 @@ export class MatchController {
       maxRounds: GUENTHER_PLANUNGSHORIZONT,
       width: this.width,
       height: this.height,
+      fassung: this.guenther,
+      aktionRng: this.guenther >= GUENTHER_AKTIONEN ? this.#seedManager.getSubRng('GUENTHER_AKTION') : null,
     });
+    if (this.cookie >= COOKIE_KATER) this.#cookie = new CookieSystem({ rng: this.#seedManager.getSubRng('COOKIE'), width: this.width, height: this.height });
 
     this.#world = createGameWorld({ playerCount: Math.max(2, teams * playersPerTeam) });
     this.teams = teams;
@@ -1081,6 +1092,7 @@ export class MatchController {
     // Günther bewegt sich nach der Physik: Er läuft auf der Oberfläche, die
     // sich in diesem Schritt geändert haben kann.
     this.#stepGuenther();
+    this.#stepCookie();
     // KEIN `drain()` hier: das würde die Warteschlange leeren und die
     // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
     // kann. Der Client und der Server holen sie über `consumeEvents()`; die
@@ -1325,6 +1337,7 @@ export class MatchController {
       aktiverSpieler: this.#turnOrder?.length ? this.activePlayerId : null,
       spielerIds,
       surfaceYAt: x => this.surfaceYAt(x),
+      ...this.#tierKontext(),
       schaden: (spielerId, betrag) => {
         this.#world.getSystem('damage')?.applyDamage(this.#world, spielerId, betrag, null);
       },
@@ -1339,6 +1352,26 @@ export class MatchController {
         this.#statuses.addSlow(spielerId, GUENTHER_POOP.slowFactor, GUENTHER_POOP.turns);
       },
       radAufloesen: spielerId => loeseGuentherRad({ guenther: this.#guenther, statuses: this.#statuses, inventory: this.#inventory, world: this.#world }, spielerId),
+      melde: (typ, daten) => this.#events.emit(typ, daten),
+    });
+  }
+
+  /** Handgriffe der Tier-NPCs auf die Welt (`engine/tierKontext.js`). */
+  #tierKontext() {
+    return baueTierKontext({
+      world: this.#world, terrain: this.#terrain, events: this.#events, height: this.height,
+      zerstoerung: () => this.#setzung ?? null, surfaceYAt: x => this.surfaceYAt(x),
+    });
+  }
+
+  /** Cookie, der Kater des Weltuntergangs (ab `config.cookie` 2). */
+  #stepCookie() {
+    if (!this.#cookie) return;
+    this.#cookie.setRunde(this.#round);
+    this.#cookie.update(this.#world, {
+      ...this.#tierKontext(),
+      aktiverSpieler: this.#turnOrder?.length ? this.activePlayerId : null,
+      spielerIds: this.#players.filter(p => p.alive).map(p => p.entityId),
       melde: (typ, daten) => this.#events.emit(typ, daten),
     });
   }
@@ -3009,6 +3042,7 @@ export class MatchController {
       orientation: this.orientation,
       // Günther ebenso als Abzug: Sein Aufbau liegt im GuentherSystem.
       guenther: this.#guenther ? this.#guenther.snapshot() : null,
+      cookie: this.#cookie ? this.#cookie.snapshot() : null,
       // Die Kulisse als Kennungen — der Client baut sie aus dem Seed selbst.
       scenery: this.scenery,
     };

@@ -25,6 +25,11 @@ import {
   GUENTHER_CONTACT,
   GUENTHER_WHEEL,
   GUENTHER_WHEEL_TOTAL,
+  GUENTHER_ALT,
+  GUENTHER_AKTIONEN,
+  GUENTHER_AKTION_REGELN,
+  GUENTHER_AKTION_IDS,
+  GUENTHER_KACK_POSE_TICKS,
 } from '../../shared/config/guenther.js';
 import { pickWeaponForRarity } from '../../shared/config/weapons.js';
 
@@ -74,6 +79,16 @@ export class GuentherSystem {
   #auftritte = 0;
   #pinkelGesamt = 0;
   #haufenGesamt = 0;
+  #aktionen = 0;
+  /** Fassung 2: Aktionen (`config.guenther`). In Fassung 1 bleiben alle folgenden Felder ungenutzt. */
+  #fassung = GUENTHER_ALT;
+  #aktionRng = null;
+  /** Laufende Aktion `{id, gesamt, rest, ziel}` oder null. */
+  #aktion = null;
+  #aktionTimer = 0;
+  #letzteAktion = null;
+  /** Kurze Pose neben den Aktionen (kacken, schütteln, hüpfen): `{name, ticks}`. */
+  #kurzPose = null;
 
   /**
    * @param {object} options
@@ -81,12 +96,17 @@ export class GuentherSystem {
    * @param {number} options.maxRounds
    * @param {number} options.width - Kartenbreite
    * @param {number} options.height - Kartenhöhe
+   * @param {number} [options.fassung] - `config.guenther` (1 = nur alte Regeln, 2 = Aktionen)
+   * @param {object} [options.aktionRng] - Teilgenerator der Aktionen (Pflicht ab Fassung 2)
    */
-  constructor({ rng, maxRounds = 30, width, height }) {
+  constructor({ rng, maxRounds = 30, width, height, fassung = GUENTHER_ALT, aktionRng = null }) {
     if (!rng || typeof rng.next !== 'function') {
       throw new TypeError('GuentherSystem benötigt einen RNG mit next()');
     }
     this.#rng = rng;
+    this.#fassung = fassung;
+    this.#aktionRng = aktionRng;
+    if (fassung >= GUENTHER_AKTIONEN && !aktionRng) throw new TypeError('Günther ab Fassung 2 benötigt aktionRng');
     this.maxRounds = maxRounds;
     this.width = width;
     this.height = height;
@@ -171,6 +191,11 @@ export class GuentherSystem {
     this.#pausenTicks = 0;
     this.#pinkelTimer = this.#rng.nextInt(20, GUENTHER_PEE.intervalTicks[0]);
     this.#kackTimer = this.#rng.nextInt(60, GUENTHER_POOP.intervalTicks[0]);
+    if (this.#fassung >= GUENTHER_AKTIONEN) {
+      this.#aktion = null;
+      this.#kurzPose = null;
+      this.#aktionTimer = this.#aktionRng.nextInt(60, 120);
+    }
   }
 
   /**
@@ -206,7 +231,8 @@ export class GuentherSystem {
      */
     const bewegung = guentherBewegung(this.width);
     const ziel = this.#naechsterSpieler(world, kontext.spielerIds ?? [], bewegung.seekRange);
-    if (ziel !== null) {
+    // Beim wilden Bellen (Fassung 2) läuft er kopflos, nicht gezielt auf jemanden zu.
+    if (ziel !== null && !(this.#fassung >= GUENTHER_AKTIONEN && this.#aktion?.id === 'chaos')) {
       const zielX = world.getComponent(ziel, 'Position', 'x') ?? this.#position.x;
       this.#richtung = zielX >= this.#position.x ? 1 : -1;
       this.#pausenTicks = 0;
@@ -214,11 +240,14 @@ export class GuentherSystem {
 
     if (this.#pausenTicks > 0) {
       this.#pausenTicks -= 1;
+    } else if (this.#fassung >= GUENTHER_AKTIONEN && this.#steht()) {
+      // Fassung 2: Während einer Aktion (außer wildem Bellen) bleibt er stehen.
     } else {
       // Laufen: Richtung halten, an den Rändern umdrehen.
-      const tempo = ziel !== null
+      let tempo = ziel !== null
         ? bewegung.speed * GUENTHER_MOVEMENT.seekSpeed
         : bewegung.speed;
+      if (this.#fassung >= GUENTHER_AKTIONEN && this.#aktion?.id === 'chaos') tempo *= GUENTHER_AKTION_REGELN.chaos.tempo;
       this.#position.x += this.#richtung * tempo;
       if (this.#position.x < GUENTHER_SPAWN.edgeMargin) {
         this.#position.x = GUENTHER_SPAWN.edgeMargin;
@@ -258,7 +287,7 @@ export class GuentherSystem {
     if (this.#kontaktSperre > 0) this.#kontaktSperre -= 1;
 
     // --- Anpinkeln ---------------------------------------------------------
-    this.#pinkelTimer -= 1;
+    if (!this.#ruhig()) this.#pinkelTimer -= 1;
     if (this.#pinkelTimer <= 0) {
       this.#pinkelTimer = this.#rng.nextInt(
         GUENTHER_PEE.intervalTicks[0], GUENTHER_PEE.intervalTicks[1],
@@ -272,6 +301,7 @@ export class GuentherSystem {
         );
         this.#pinkelZaehler.set(opfer, vorher + 1);
         this.#pinkelGesamt += 1;
+        if (this.#fassung >= GUENTHER_AKTIONEN) this.#kurzPose = { name: 'schuetteln', ticks: 30 };
         schaden(opfer, betrag);
         melde('guenther_pee', {
           playerId: opfer,
@@ -284,7 +314,7 @@ export class GuentherSystem {
     }
 
     // --- Kackhaufen --------------------------------------------------------
-    this.#kackTimer -= 1;
+    if (!this.#ruhig()) this.#kackTimer -= 1;
     if (this.#kackTimer <= 0) {
       this.#kackTimer = this.#rng.nextInt(
         GUENTHER_POOP.intervalTicks[0], GUENTHER_POOP.intervalTicks[1],
@@ -299,6 +329,7 @@ export class GuentherSystem {
       this.#haufenGesamt += 1;
       // Älteste Haufen entfernen, damit sich das Feld nicht zupflastert.
       while (this.#haufen.length > GUENTHER_POOP.maxPiles) this.#haufen.shift();
+      if (this.#fassung >= GUENTHER_AKTIONEN) this.#kurzPose = { name: 'kacken', ticks: GUENTHER_KACK_POSE_TICKS };
       melde('guenther_poop', { x: this.#position.x, y: this.#position.y });
     }
 
@@ -337,10 +368,13 @@ export class GuentherSystem {
       if (abstand <= GUENTHER_CONTACT.radius && bewegung >= GUENTHER_CONTACT.minPlayerMove) {
         this.#kontaktSperre = GUENTHER_CONTACT.cooldownTicks;
         this.#pausenTicks = this.#rng.nextInt(60, 150);
+        if (this.#fassung >= GUENTHER_AKTIONEN) this.#kurzPose = { name: 'huepfen', ticks: 50 };
         const ergebnis = radAufloesen(aktiverSpieler);
         melde('guenther_wheel', { playerId: aktiverSpieler, ...ergebnis });
       }
     }
+
+    if (this.#fassung >= GUENTHER_AKTIONEN) this.#aktionSchritt(world, kontext);
 
     // Positionen GANZ AM ENDE fortschreiben.
     //
@@ -355,6 +389,182 @@ export class GuentherSystem {
         y: world.getComponent(spielerId, 'Position', 'y') ?? 0,
       });
     }
+  }
+
+  // ------------------------------------------------------------------
+  // Fassung 2: Aktionen
+  // ------------------------------------------------------------------
+
+  /** Steht er still? Jede Aktion außer wildem Bellen hält ihn an. */
+  #steht() {
+    return this.#aktion !== null && this.#aktion.id !== 'chaos';
+  }
+
+  /** Sitz und Platz beruhigen ihn: Pinkel- und Kack-Uhr stehen. */
+  #ruhig() {
+    return this.#fassung >= GUENTHER_AKTIONEN && this.#aktion !== null
+      && GUENTHER_AKTION_REGELN[this.#aktion.id].ruhig === true;
+  }
+
+  /**
+   * Startet eine Aktion sofort (Tests und Werkzeuge; Fassung 2).
+   *
+   * @param {string} id - Schlüssel in `GUENTHER_AKTION_REGELN`
+   * @param {number|null} [ziel] - Entity-ID des Ziels (Spieler oder Kiste)
+   */
+  erzwingeAktion(id, ziel = null) {
+    const regel = GUENTHER_AKTION_REGELN[id];
+    if (this.#fassung < GUENTHER_AKTIONEN || !regel || !GUENTHER_AKTION_IDS.includes(id)) {
+      throw new Error(`Aktion nicht verfügbar: ${id}`);
+    }
+    this.#aktion = { id, gesamt: regel.ticks, rest: regel.ticks, ziel };
+    this.#letzteAktion = id;
+  }
+
+  /** Aktuelle Pose (Sprite-Name aus `GUENTHER_POSEN`). */
+  get pose() {
+    if (this.#aktion) {
+      const regel = GUENTHER_AKTION_REGELN[this.#aktion.id];
+      // Beim Platz döst er in der zweiten Hälfte ein.
+      if (this.#aktion.id === 'platz' && this.#aktion.rest < this.#aktion.gesamt / 2) return 'schlafen';
+      return regel.pose;
+    }
+    if (this.#kurzPose) return this.#kurzPose.name;
+    return this.#pausenTicks > 0 ? 'stehen' : 'laufen';
+  }
+
+  /** Ein Schritt der Aktionsmaschine (nur Fassung 2). */
+  #aktionSchritt(world, kontext) {
+    if (this.#kurzPose && --this.#kurzPose.ticks <= 0) this.#kurzPose = null;
+    const a = this.#aktion;
+    if (a) {
+      const regel = GUENTHER_AKTION_REGELN[a.id];
+      const vergangen = a.gesamt - a.rest;
+      if (a.id === 'chaos') {
+        if (vergangen % regel.takt === 0) this.#chaos(world, kontext, regel);
+      } else if (vergangen === regel.wirkung) {
+        this.#wirke(world, kontext, a);
+      }
+      a.rest -= 1;
+      if (a.rest <= 0) {
+        this.#aktion = null;
+        this.#aktionTimer = this.#aktionRng.nextInt(
+          GUENTHER_AKTION_REGELN.intervalTicks[0], GUENTHER_AKTION_REGELN.intervalTicks[1],
+        );
+      }
+      return;
+    }
+    this.#aktionTimer -= 1;
+    if (this.#aktionTimer <= 0) this.#waehleAktion(world, kontext);
+  }
+
+  /** Wählt eine Aktion, deren Bedingung erfüllt ist (gewichtet, mit eigenem Generator). */
+  #waehleAktion(world, kontext) {
+    const spielerIds = kontext.spielerIds ?? [];
+    const kisten = kontext.kisten?.() ?? [];
+    const moegliche = [];
+    for (const id of GUENTHER_AKTION_IDS) {
+      const regel = GUENTHER_AKTION_REGELN[id];
+      let ziel = null;
+      if (regel.braucht === 'kiste') {
+        let best = Infinity;
+        for (const k of kisten) {
+          const d = Math.hypot(k.x - this.#position.x, k.y - this.#position.y);
+          if (d <= regel.reichweite && d < best) { best = d; ziel = k.id; }
+        }
+        if (ziel === null) continue;
+      } else if (regel.braucht === 'spieler') {
+        ziel = this.#naechsterSpieler(world, spielerIds, regel.reichweite);
+        if (ziel === null) continue;
+      }
+      moegliche.push({ id, regel, ziel });
+    }
+    // Dieselbe Aktion nie zweimal hintereinander (wenn es eine Wahl gibt).
+    const auswahl = moegliche.length > 1 ? moegliche.filter(m => m.id !== this.#letzteAktion) : moegliche;
+    if (auswahl.length === 0) {
+      this.#aktionTimer = GUENTHER_AKTION_REGELN.intervalTicks[0];
+      return;
+    }
+    const summe = auswahl.reduce((acc, m) => acc + m.regel.gewicht, 0);
+    let wurf = this.#aktionRng.next() * summe;
+    let gewaehlt = auswahl[auswahl.length - 1];
+    for (const m of auswahl) {
+      wurf -= m.regel.gewicht;
+      if (wurf < 0) { gewaehlt = m; break; }
+    }
+    this.#letzteAktion = gewaehlt.id;
+    this.#aktion = { id: gewaehlt.id, gesamt: gewaehlt.regel.ticks, rest: gewaehlt.regel.ticks, ziel: gewaehlt.ziel };
+    if (gewaehlt.ziel !== null && gewaehlt.regel.braucht === 'spieler') {
+      const zx = world.getComponent(gewaehlt.ziel, 'Position', 'x') ?? this.#position.x;
+      this.#richtung = zx >= this.#position.x ? 1 : -1;
+    }
+    this.#aktionen += 1;
+    kontext.melde('guenther_aktion', {
+      aktion: gewaehlt.id, pose: gewaehlt.regel.pose, x: this.#position.x, y: this.#position.y,
+      playerId: gewaehlt.regel.braucht === 'spieler' ? gewaehlt.ziel : null,
+    });
+  }
+
+  /** Die Wirkung einer Aktion zum Wirk-Tick. */
+  #wirke(world, kontext, a) {
+    const regel = GUENTHER_AKTION_REGELN[a.id];
+    const { x, y } = this.#position;
+    const live = id => id !== null && world.isActive(id);
+    let spielerId = null;
+    let betrag = 0;
+    let fund = false;
+    switch (a.id) {
+      case 'essen': {
+        // Die Kiste wird gefressen; der nächste Spieler in Reichweite wird davon satt und gesund.
+        const noch = (kontext.kisten?.() ?? []).some(k => k.id === a.ziel);
+        if (!noch) return;
+        kontext.kisteVerzehren?.(a.ziel);
+        spielerId = this.#naechsterSpieler(world, kontext.spielerIds ?? [], regel.heilReichweite);
+        if (spielerId !== null) { kontext.heile?.(spielerId, regel.heilung); betrag = regel.heilung; }
+        break;
+      }
+      case 'ziehen': {
+        if (!live(a.ziel)) return;
+        spielerId = a.ziel;
+        const px = world.getComponent(spielerId, 'Position', 'x') ?? x;
+        kontext.stosse?.(spielerId, (px >= x ? -1 : 1) * regel.zugX, regel.zugY);
+        break;
+      }
+      case 'wuehlen': {
+        kontext.krater?.(x, y + 2, regel.kraterRadius, regel.kraterTiefe);
+        // Pro Wühlen genau EIN Wurf — auch wenn nichts gefunden wird.
+        if (this.#aktionRng.nextBoolean(regel.fundChance)) {
+          const boden = kontext.surfaceYAt?.(Math.round(x)) ?? y;
+          kontext.legeKiste?.(this.#aktionRng, x, (boden > 0 ? boden : y) - 14);
+          fund = true;
+        }
+        break;
+      }
+      case 'kuscheln':
+      case 'kraulen':
+        if (!live(a.ziel)) return;
+        spielerId = a.ziel;
+        kontext.heile?.(spielerId, regel.heilung);
+        betrag = regel.heilung;
+        break;
+      default:
+        break;
+    }
+    kontext.melde('guenther_aktion_wirkung', { aktion: a.id, playerId: spielerId, amount: betrag, fund, x, y });
+  }
+
+  /** Wildes Bellen: Spieler in der Nähe werden aufgescheucht, Günther wechselt wirr die Richtung. */
+  #chaos(world, kontext, regel) {
+    if (this.#aktionRng.nextBoolean(0.5)) this.#richtung *= -1;
+    for (const id of kontext.spielerIds ?? []) {
+      if (!world.isActive(id)) continue;
+      const px = world.getComponent(id, 'Position', 'x') ?? 0;
+      const py = world.getComponent(id, 'Position', 'y') ?? 0;
+      const vx = (this.#aktionRng.next() * 2 - 1) * regel.stossX;
+      if (Math.hypot(px - this.#position.x, py - this.#position.y) > regel.radius) continue;
+      kontext.stosse?.(id, vx, regel.stossY);
+    }
+    kontext.melde('guenther_aktion_wirkung', { aktion: 'chaos', playerId: null, amount: 0, fund: false, x: this.#position.x, y: this.#position.y });
   }
 
   /**
@@ -413,6 +623,9 @@ export class GuentherSystem {
 
   /** Serialisierbare Momentaufnahme (Replay und Anzeige). */
   snapshot() {
+    const aktionen = this.#fassung >= GUENTHER_AKTIONEN
+      ? { fassung: this.#fassung, pose: this.pose, aktion: this.#aktion?.id ?? null, aktionen: this.#aktionen }
+      : {};
     return {
       aktiv: this.aktiv,
       x: Number(this.#position.x.toFixed(1)),
@@ -425,6 +638,7 @@ export class GuentherSystem {
       haufenGesamt: this.#haufenGesamt,
       plan: this.plan,
       identity: GUENTHER_IDENTITY,
+      ...aktionen,
     };
   }
 }

@@ -217,6 +217,8 @@ export function baueAnsichtszustand(quelle) {
     terrainHeight: quelle.terrainHeight,
     orientation: quelle.orientation,
     guenther: quelle.guenther,
+    // Cookie nur, wenn es ihn gibt (`config.cookie` 2): Zustände alter Partien behalten ihren Schlüsselsatz.
+    ...(quelle.cookie ? { cookie: quelle.cookie } : {}),
     // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
     // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
     // und den Tests.

@@ -19,6 +19,8 @@ import { KIT_KLASSE } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_ALT } from '../shared/config/zerstoerung.js';
 import { WAFFEN_ALT } from '../shared/config/waffen-fassung.js';
 import { KISTEN_ALT } from '../shared/config/kisten.js';
+import { GUENTHER_ALT } from '../shared/config/guenther.js';
+import { COOKIE_ALT } from '../shared/config/cookie.js';
 import { SCHADEN_ALT } from '../shared/config/schaden.js';
 
 export const PERSISTENCE_VERSION = 1;
@@ -267,6 +269,9 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       kisten: saved.replay.config?.kisten ?? KISTEN_ALT,
       // Alte Sicherungen ohne `schaden`: keine Mali je Schadensart.
       schaden: saved.replay.config?.schaden ?? SCHADEN_ALT,
+      // Alte Sicherungen ohne `guenther`/`cookie`: nur die alten Günther-Regeln, kein Cookie.
+      guenther: saved.replay.config?.guenther ?? GUENTHER_ALT,
+      cookie: saved.replay.config?.cookie ?? COOKIE_ALT,
     })
     : null;
 

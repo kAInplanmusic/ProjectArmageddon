@@ -45,6 +45,8 @@ const ZUGPAUSE_TICKS = Math.round(
 import { ReplayRecorder } from '../engine/replay.js';
 import { TokenBucket, RATE_TRENNEN_NACH } from './rateLimit.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
+import { GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
+import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 
 /*
  * Der Simulationstakt kommt aus `src/shared/config/network.js` — dort steht er
@@ -104,7 +106,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -150,6 +152,8 @@ class LobbySession {
       waffen,
       kisten,
       schaden,
+      guenther,
+      cookie,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -180,6 +184,8 @@ class LobbySession {
       waffen: this.match.waffen,
       kisten: this.match.kisten,
       schaden: this.match.schaden,
+      guenther: this.match.guenther,
+      cookie: this.match.cookie,
     });
 
     /*
@@ -1299,6 +1305,8 @@ export class GameServer {
               waffen: options.waffen,
               kisten: options.kisten,
               schaden: options.schaden,
+              guenther: options.guenther,
+              cookie: options.cookie,
               metrics: this.metrics,
               logger: this.logger,
             });

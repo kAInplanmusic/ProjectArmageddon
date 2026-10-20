@@ -166,6 +166,42 @@ feststehenden Ausgang zu.
 Die Berührung zählt nur beim **eigenen Laufen** — wer stillsteht, berührt nichts.
 Nach einem Rad bleibt Günther vier Sekunden unbeteiligt, sonst ginge es dauernd auf.
 
+### Günthers Aktionen (Fassung 2, `config.guenther`)
+
+Neue Partien geben Günther zusätzliche Aktionen, die nach einer zufälligen Pause
+mit einem **eigenen Zufallsstrom** (`GUENTHER_AKTION`) gewählt werden — nie
+zweimal dieselbe hintereinander, nur wenn die Bedingung stimmt. Das Sprite zeigt
+die passende Pose.
+
+| Aktion | Bedingung | Wirkung |
+|---|---|---|
+| Essen | Kiste in 150 px | frisst die Kiste, heilt den nächsten Spieler um 20 |
+| Hüpfen | – | nur Pose |
+| Ziehen (Seil) | Spieler in 260 px | zieht ihn zu sich |
+| Wühlen | – | kleines Loch ins Gelände, 35 % Chance auf eine ausgegrabene Kiste |
+| Kuscheln | Spieler in 90 px | +15 Leben |
+| Rücken kraulen | Spieler in 70 px | +28 Leben |
+| Sitz / Platz | – | steht still, pinkelt und kackt in der Zeit nicht |
+| Wildes Bellen | – | Chaos: scheucht alle im Umkreis von 260 px auf |
+
+Die Marke steht im Replay-Kopf als `config.guenther` (1 = nur Laufen, Pinkeln,
+Kacken, Rad; 2 = Aktionen). Fehlt sie, gilt 1 — Bit für Bit das alte Verhalten.
+
+## Cookie, der Kater des Weltuntergangs
+
+Ein zweiter neutraler NPC (Fassung 2, `config.cookie`; fehlt die Marke, gibt es
+ihn nicht). Er schläft oder frisst. Sein **Hunger** (0–100) wächst in etwa zwei
+Minuten von leer auf voll; die Miau-Stufen **leise** (ab 30), **laut** (ab 60)
+und **Hungerwut** (ab 85) werden lauter und häufiger — die Lautstärke ist die
+Dringlichkeit.
+
+| Was | Wirkung |
+|---|---|
+| **Füttern** | im Laufen an ihn herangehen: −45 Hunger, +10 Leben; oder eine Kiste in 70 px Nähe (Futternapf): −30 |
+| **Kuscheln** | 60 Ticks still daneben stehen: −10 Hunger, +20 Leben (Sperre 20 s je Spieler) |
+| **Toben** | in der Hungerwut: läuft auf den nächsten Spieler zu, reißt alle 12 Ticks ein Loch (Radius 30), zerstört Kisten, schlägt Figuren (40 Schaden, Sperre 2 s) – bis zur Fütterung oder Erschöpfung nach 30 s |
+| **Spielen** | extrem selten (0,8 % je Runde): kosmische Schockwelle – Krater-Ringe, Stoß und nie tödlicher Schaden (10–35) im Umkreis von 60 % der Kartenbreite |
+
 ## Steuerung
 
 Die zweite Tabelle ersetzt die erste: Diese Datei führte „Steuerung" zweimal und
@@ -232,7 +268,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1634 Tests in 167 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1670 Tests in 169 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **301 Tests in 50 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

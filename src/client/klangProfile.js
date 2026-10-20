@@ -253,6 +253,38 @@ export const EREIGNIS_PROFILE = Object.freeze({
     R({ filter: 'highpass', f0: 3000, an: 0.001, ab: 0.04, pegel: 0.25 }),
     T({ f0: 220, f1: 160, gleit: 0.05, ab: 0.06, pegel: 0.4 }),
   ]),
+  /* Tier-NPCs: Günther (Bellen, Winseln, Fressen) und Cookie (Miauen in drei Stufen, Schockwelle). */
+  bellen: P('umgebung', 0.8, 0.12, [0, 0.16].flatMap(start => [
+    T({ welle: 'sawtooth', f0: 720, f1: 380, gleit: 0.07, start, an: 0.004, ab: 0.09, pegel: 0.35, partiale: [[2, 0.3]] }),
+    R({ f0: 1400, q: 1.2, start, an: 0.002, ab: 0.06, pegel: 0.3 }),
+  ]), { ton: 0.08, filter: 0.1, pegel: 0.1 }),
+  winseln: P('umgebung', 0.6, 0.15, [
+    T({ f0: 900, f1: 1500, gleit: 0.25, an: 0.04, ab: 0.35, pegel: 0.3, vibrato: { hz: 7, tiefe: 30 } }),
+    T({ f0: 1500, f1: 800, gleit: 0.3, start: 0.3, an: 0.02, ab: 0.35, pegel: 0.25, vibrato: { hz: 7, tiefe: 25 } }),
+  ], { ton: 0.05, filter: 0.05, pegel: 0.05 }),
+  fressen: P('umgebung', 0.6, 0.05, [
+    K({ n: 9, fenster: 0.7, fmin: 600, fmax: 3000, q: 3, ab: 0.05, pegel: 0.45 }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 600, an: 0.02, ab: 0.4, pegel: 0.2 }),
+  ]),
+  miau_leise: P('umgebung', 0.35, 0.2, [
+    T({ welle: 'triangle', f0: 620, f1: 880, gleit: 0.18, an: 0.03, ab: 0.3, pegel: 0.35, partiale: [[2, 0.25]] }),
+    T({ welle: 'triangle', f0: 880, f1: 560, gleit: 0.2, start: 0.18, an: 0.02, ab: 0.28, pegel: 0.3 }),
+  ], { ton: 0.05, filter: 0.05, pegel: 0.05 }),
+  miau_laut: P('umgebung', 0.8, 0.15, [
+    T({ welle: 'sawtooth', f0: 520, f1: 980, gleit: 0.16, an: 0.02, ab: 0.34, pegel: 0.35, partiale: [[2, 0.4]], vibrato: { hz: 6, tiefe: 20 } }),
+    T({ welle: 'sawtooth', f0: 980, f1: 480, gleit: 0.3, start: 0.16, an: 0.02, ab: 0.4, pegel: 0.35 }),
+    R({ f0: 1800, q: 2, an: 0.02, ab: 0.4, pegel: 0.12 }),
+  ], { ton: 0.05, filter: 0.05, pegel: 0.05 }),
+  miau_wut: P('umgebung', 1, 0.2, [
+    T({ welle: 'sawtooth', f0: 380, f1: 1100, gleit: 0.12, an: 0.01, ab: 0.5, pegel: 0.45, partiale: [[2, 0.5], [3, 0.3]], zittern: { hz: 28, tiefe: 0.4 } }),
+    T({ welle: 'square', f0: 1100, f1: 300, gleit: 0.4, start: 0.12, an: 0.01, ab: 0.55, pegel: 0.3 }),
+    R({ f0: 2200, q: 1, an: 0.01, ab: 0.6, pegel: 0.3 }),
+  ], { ton: 0.06, filter: 0.06, pegel: 0.06 }),
+  schockwelle: P('umgebung', 1, 0.5, [
+    T({ f0: 90, f1: 28, gleit: 1.0, an: 0.01, ab: 1.1, pegel: 0.9 }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 1200, f1: 60, sweep: 1.2, an: 0.01, ab: 1.2, pegel: 0.8 }),
+    T({ welle: 'sine', f0: 1760, f1: 440, gleit: 0.8, start: 0.05, an: 0.01, ab: 0.9, pegel: 0.15 }),
+  ]),
   waffenwechsel: P('ui', 0.6, 0, [
     R({ f0: 2500, q: 3, an: 0.001, ab: 0.015, pegel: 1 }),
     R({ f0: 1800, q: 3, start: 0.045, an: 0.001, ab: 0.02, pegel: 0.7 }),

@@ -22,6 +22,8 @@ import { KIT_STANDARD, KIT_KLASSE, normalisiereKit } from '../shared/config/load
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_ALT, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { WAFFEN_STANDARD, WAFFEN_ALT, normalisiereWaffen } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, KISTEN_ALT, normalisiereKisten } from '../shared/config/kisten.js';
+import { GUENTHER_ALT, normalisiereGuenther } from '../shared/config/guenther.js';
+import { COOKIE_ALT, normalisiereCookie } from '../shared/config/cookie.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
 
 export const REPLAY_FORMAT_VERSION = 1;
@@ -51,6 +53,7 @@ export class ReplayRecorder {
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD,
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -86,6 +89,9 @@ export class ReplayRecorder {
       kisten: normalisiereKisten(kisten),
       /* Schadensfassung (`config/schaden.js`). Wie `kisten`: eine Datei OHNE das Feld ist `SCHADEN_ALT` (keine Mali je Schadensart). */
       schaden: normalisiereSchaden(schaden),
+      /* Tier-NPCs (`config/guenther.js`, `config/cookie.js`). Wie `kisten`: eine Datei OHNE die Felder ist `GUENTHER_ALT` (nur Laufen, Pinkeln, Kacken, Rad) und `COOKIE_ALT` (kein Cookie). */
+      guenther: normalisiereGuenther(guenther),
+      cookie: normalisiereCookie(cookie),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -257,7 +263,8 @@ export class ReplayRecorder {
     // Altdatei ohne `kit` = Klassenloadout (siehe Kommentar im Konstruktor).
     const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, kit: parsed.config?.kit ?? KIT_KLASSE,
       zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT,
-      kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT });
+      kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT,
+      guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -346,6 +353,8 @@ export class ReplayPlayer {
       waffen: config.waffen,
       kisten: config.kisten,
       schaden: config.schaden,
+      guenther: config.guenther,
+      cookie: config.cookie,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

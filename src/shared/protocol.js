@@ -52,7 +52,8 @@
 import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
 // Ebenso die Kackhaufen-Obergrenze: Sie steht in der Config, aus der die
 // Simulation sie liest — ein zweiter Deckel hier wäre die nächste doppelte Regel.
-import { GUENTHER_POOP } from './config/guenther.js';
+import { GUENTHER_POOP, GUENTHER_POSEN } from './config/guenther.js';
+import { COOKIE_POSEN } from './config/cookie.js';
 
 /**
  * Version des Drahtformats.
@@ -235,7 +236,23 @@ export const GUENTHER_POOP_STRIDE = 4;
 export const GUENTHER_FLAG = Object.freeze({
   /** Günther ist in dieser Runde auf der Karte. */
   AKTIV: 1 << 0,
+  /**
+   * Pose (Index + 1 in `GUENTHER_POSEN`, 0 = keine) in den Bits 1–5 — Fassung 2. Ältere Sender
+   * schreiben dort 0 (= `stehen`), ältere Leser prüfen nur `AKTIV`: Das Format
+   * wächst, ohne dass sich die Größe ändert.
+   */
+  POSE_SHIFT: 1,
+  POSE_MASK: 0b11111,
 });
+/**
+ * Cookie im Snapshot (nur Fassung 2, `config.cookie`): x (2), y (2), Richtung (1),
+ * Flags (1: Bit 0 aktiv, Bits 1–5 Pose-Index in `COOKIE_POSEN`), Hunger (1, 0–100).
+ *
+ * Der Block steht NACH den Haufen und fehlt ganz, wenn es keinen Cookie gibt:
+ * Puffer alter Partien bleiben Byte für Byte gleich groß. Der Leser erkennt ihn
+ * an den restlichen Bytes.
+ */
+export const COOKIE_STRIDE = 7;
 /**
  * Höchstzahl der Haufen auf der Leitung — und damit die Obergrenze des
  * Zustandstakts.
@@ -298,6 +315,12 @@ function toDataView(input) {
   return null;
 }
 
+/** Pose auf der Leitung: Index + 1; 0 heißt „keine Pose“ (Fassung 1, unbekannte Pose). */
+function poseCode(liste, pose) {
+  const i = liste.indexOf(pose);
+  return i < 0 ? 0 : i + 1;
+}
+
 /**
  * Kodiert einen Match-State in einen kompakten Binärpuffer.
  *
@@ -329,7 +352,8 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
     + crates.length * CRATE_STRIDE
     + turrets.length * TURRET_STRIDE
     + GUENTHER_STRIDE
-    + haufenListe.length * GUENTHER_POOP_STRIDE;
+    + haufenListe.length * GUENTHER_POOP_STRIDE
+    + (state.cookie ? COOKIE_STRIDE : 0);
   const bytes = new Uint8Array(size);
   const view = new DataView(bytes.buffer);
 
@@ -454,13 +478,24 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
   // Richtung ist immer ±1 (`GuentherSystem` kippt sie nur per Vorzeichen) —
   // als Int8 geht sie damit verlustfrei auf die Leitung.
   view.setInt8(offset + 4, (guenther?.richtung ?? 1) < 0 ? -1 : 1);
-  view.setUint8(offset + 5, guenther?.aktiv ? GUENTHER_FLAG.AKTIV : 0);
+  view.setUint8(offset + 5, (guenther?.aktiv ? GUENTHER_FLAG.AKTIV : 0)
+    | (poseCode(GUENTHER_POSEN, guenther?.pose) << GUENTHER_FLAG.POSE_SHIFT));
   offset += GUENTHER_STRIDE;
 
   for (const haufen of haufenListe) {
     view.setInt16(offset, clampInt16((haufen.x ?? 0) * COORD_SCALE), true);
     view.setInt16(offset + 2, clampInt16((haufen.y ?? 0) * COORD_SCALE), true);
     offset += GUENTHER_POOP_STRIDE;
+  }
+
+  if (state.cookie) {
+    const c = state.cookie;
+    view.setInt16(offset, clampInt16((c.x ?? 0) * COORD_SCALE), true);
+    view.setInt16(offset + 2, clampInt16((c.y ?? 0) * COORD_SCALE), true);
+    view.setInt8(offset + 4, (c.richtung ?? 1) < 0 ? -1 : 1);
+    view.setUint8(offset + 5, (c.aktiv ? GUENTHER_FLAG.AKTIV : 0)
+      | (poseCode(COOKIE_POSEN, c.pose) << GUENTHER_FLAG.POSE_SHIFT));
+    view.setUint8(offset + 6, Math.max(0, Math.min(100, Math.round(c.hunger ?? 0))));
   }
 
   return bytes;
@@ -630,6 +665,9 @@ export function decodeSnapshot(input, previous = null) {
     guenther.y = view.getInt16(offset + 2, true) / COORD_SCALE;
     guenther.richtung = view.getInt8(offset + 4);
     guenther.aktiv = (view.getUint8(offset + 5) & GUENTHER_FLAG.AKTIV) !== 0;
+    // Code 0 = keine Pose (Fassung 1, alte Sender): das Feld bleibt dann weg.
+    const pose = GUENTHER_POSEN[((view.getUint8(offset + 5) >> GUENTHER_FLAG.POSE_SHIFT) & GUENTHER_FLAG.POSE_MASK) - 1];
+    if (pose) guenther.pose = pose;
     offset += GUENTHER_STRIDE;
 
     for (let i = 0; i < Math.min(poopCount, MAX_WIRE_POOPS); i++) {
@@ -640,6 +678,20 @@ export function decodeSnapshot(input, previous = null) {
       });
       offset += GUENTHER_POOP_STRIDE;
     }
+  }
+
+  // Cookie: nur vorhanden, wenn der Sender ihn mitgeschickt hat (Bytes übrig).
+  let cookie = null;
+  if (offset + COOKIE_STRIDE <= view.byteLength) {
+    const flags = view.getUint8(offset + 5);
+    cookie = {
+      x: view.getInt16(offset, true) / COORD_SCALE,
+      y: view.getInt16(offset + 2, true) / COORD_SCALE,
+      richtung: view.getInt8(offset + 4),
+      aktiv: (flags & GUENTHER_FLAG.AKTIV) !== 0,
+      pose: COOKIE_POSEN[((flags >> GUENTHER_FLAG.POSE_SHIFT) & GUENTHER_FLAG.POSE_MASK) - 1] ?? 'schlafen',
+      hunger: view.getUint8(offset + 6),
+    };
   }
 
   return {
@@ -655,6 +707,7 @@ export function decodeSnapshot(input, previous = null) {
     crates,
     turrets,
     guenther,
+    ...(cookie ? { cookie } : {}),
     previous: nextPrevious,
   };
 }
@@ -749,6 +802,17 @@ export const ANZEIGE_EREIGNISARTEN = Object.freeze([
   'guenther_pee',
   'guenther_poop',
   'guenther_poop_hit',
+  'guenther_aktion',
+  'guenther_aktion_wirkung',
+  'cookie_miau',
+  'cookie_gefuettert',
+  'cookie_kuschelt',
+  'cookie_tobt',
+  'cookie_erschoepft',
+  'cookie_zerstoert',
+  'cookie_schlag',
+  'cookie_spielt',
+  'cookie_schockwelle',
 ]);
 
 /**

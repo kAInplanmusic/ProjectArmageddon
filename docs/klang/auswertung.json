@@ -1,5 +1,5 @@
 {
-  "profilHash": "01d2b7efebdc1bf0",
+  "profilHash": "ec699c9285c8b63a",
   "samplerate": 48000,
   "profile": {
     "pistole": {
@@ -299,6 +299,69 @@
       "endpegelDb": -180,
       "nan": false
     },
+    "bellen": {
+      "bus": "umgebung",
+      "dauer": 0.65,
+      "peakDb": -8.4,
+      "rmsDb": -41.1,
+      "schwerpunkt": 1673,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "winseln": {
+      "bus": "umgebung",
+      "dauer": 0.92,
+      "peakDb": -17.4,
+      "rmsDb": -41.1,
+      "schwerpunkt": 11456,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "fressen": {
+      "bus": "umgebung",
+      "dauer": 0.88,
+      "peakDb": -24.8,
+      "rmsDb": -51.2,
+      "schwerpunkt": 675,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "miau_leise": {
+      "bus": "umgebung",
+      "dauer": 0.96,
+      "peakDb": -17.6,
+      "rmsDb": -42.1,
+      "schwerpunkt": 794,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "miau_laut": {
+      "bus": "umgebung",
+      "dauer": 0.88,
+      "peakDb": -9.1,
+      "rmsDb": -35,
+      "schwerpunkt": 4790,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "miau_wut": {
+      "bus": "umgebung",
+      "dauer": 0.98,
+      "peakDb": -7.4,
+      "rmsDb": -28.6,
+      "schwerpunkt": 1720,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "schockwelle": {
+      "bus": "umgebung",
+      "dauer": 1.16,
+      "peakDb": -3.1,
+      "rmsDb": -23.8,
+      "schwerpunkt": 156,
+      "endpegelDb": -180,
+      "nan": false
+    },
     "waffenwechsel": {
       "bus": "ui",
       "dauer": 0.09,
@@ -377,5 +440,5 @@
   },
   "minAbstandVerhaeltnis": 1.31,
   "schussProfile": 14,
-  "profileGesamt": 36
+  "profileGesamt": 43
 }
