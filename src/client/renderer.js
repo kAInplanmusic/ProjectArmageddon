@@ -489,8 +489,8 @@ export class Renderer {
    * `main.js` sie abholt (`nimmTreffer`) — der Renderer spielt keinen Klang.
    */
   /** Merkt die Schadensart des letzten Treffers einer Figur (aus dem `damage`-Ereignis) für die Zahl. */
-  merkeSchadensart(entityId, art) {
-    if (typeof art === 'string') this.schadensArten.set(entityId, { name: art, rest: 45 });
+  merkeSchadensart(entityId, art, krit = false) {
+    if (typeof art === 'string') this.schadensArten.set(entityId, { name: art, krit, rest: 45 });
   }
 
   #ermittleTreffer(state) {
@@ -498,7 +498,7 @@ export class Renderer {
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
     for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke(treffer));
-    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], new Map([...this.schadensArten].map(([id, a]) => [id, a.name])));
+    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
     for (const [id, art] of this.schadensArten) { if (art.rest-- <= 0) this.schadensArten.delete(id); }
     this.zahlenWerte = zahlen.zustand;
     this.zahlen = ergaenzeZahlen(this.zahlen, zahlen.neu);

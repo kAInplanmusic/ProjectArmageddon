@@ -876,6 +876,7 @@ export class MatchController {
       });
       this.#world.services.damageModifier = (id, betrag, art) => this.#mali.schaden(id, betrag, art);
       this.#world.services.healModifier = (id, betrag) => this.#mali.heilung(id, betrag);
+      this.#world.services.schadenEreignis = true;
     }
     this.#world.services.onProjectileImpact = ergebnis.services.onProjectileImpact;
 
@@ -3089,6 +3090,8 @@ export class MatchController {
   get valhallaOmenTick() { return this.#valhallaOmen.tick; }
   /** Laufende Zustände der Spieler (Schild, Einfrieren, Schaden über Zeit). */
   get statuses() { return this.#statuses; }
+  /** Mali der Schadensarten (Fassung 2) oder `null` (Fassung 1). */
+  get mali() { return this.#mali; }
   get players() { return [...this.#players]; }
   get status() { return this.#status; }
   get round() { return this.#round; }

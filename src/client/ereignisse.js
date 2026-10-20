@@ -570,7 +570,11 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   damage: beide((k, n) => {
-    k.renderer?.merkeSchadensart?.(n.entityId, n.damageTypeName);
+    k.renderer?.merkeSchadensart?.(n.entityId, n.damageTypeName, n.isCritical === true);
+    // Krit und Selbstschaden haben eigene Klangprofile (Fassung 2); gewöhnliche Treffer klingen wie bisher über ihren Schuss.
+    if (n.isCritical === true || n.selfDamage === true) {
+      k.sound?.verarbeite({ type: 'damage', schaden: n.amount, kritisch: n.isCritical === true, selbst: n.selfDamage === true, x: n.x, y: n.y });
+    }
   }),
 
   malus_angewendet: beide((k, n) => {

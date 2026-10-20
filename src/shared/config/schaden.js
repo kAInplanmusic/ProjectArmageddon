@@ -67,7 +67,7 @@ export const MALUS = Object.freeze({
   saeure: Object.freeze({
     label: 'Säure', symbol: '⚗', farbe: '#d6e83a', bit: 3, dauer: 2, stapel: 1, schadensart: 'acid',
     ruestungAbzug: 0.25,
-    kurz: 'zersetzt die Rüstung um 25 Punkte Prozent',
+    kurz: 'zersetzt die Rüstung um 25 Prozentpunkte',
   }),
   frost: Object.freeze({
     label: 'Frost', symbol: '❄', farbe: '#7fd8ff', bit: 4, dauer: 2, stapel: 1, schadensart: 'ice',
@@ -110,10 +110,10 @@ export const OBERGRENZEN = Object.freeze({
  * wird. Die Faktoren sind gemessen (`npm run balance:schaden`) und halten Brand, Gift und
  * Fluch vergleichbar mit dem direkten Schaden einer Waffe der gleichen Stufe.
  */
-export const DOT_FAKTOR = Object.freeze({ brand: 0.8, gift: 0.7, fluch: 0.5 });
+export const DOT_FAKTOR = Object.freeze({ brand: 0.8, gift: 1, fluch: 0.7 });
 
 /** Obergrenze des Schadens je Zug eines einzelnen Eintrags (vor der Gesamtgrenze). */
-export const DOT_MAX_JE_EINTRAG = Object.freeze({ brand: 16, gift: 12, fluch: 8 });
+export const DOT_MAX_JE_EINTRAG = Object.freeze({ brand: 16, gift: 18, fluch: 10 });
 
 /** Wechselwirkungen mit Gelände und Karte. */
 export const WECHSELWIRKUNG = Object.freeze({

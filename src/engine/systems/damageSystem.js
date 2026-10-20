@@ -100,6 +100,18 @@ export class DamageSystem {
     });
     if (this.#killFeed.length > 200) this.#killFeed.shift();
 
+    // Fassung 2 (`config/schaden.js`): das Ereignis trägt zusätzlich Quelle, Ziel, Ort, Krit- und Selbstschadenkennzeichen.
+    const erweitert = world.services?.schadenEreignis
+      ? {
+        sourceEntityId: attackerId,
+        targetEntityId: entityId,
+        // Kritische Treffer kennt die Motorregel nicht; das Feld ist da, damit Anzeige und Klang es nutzen können.
+        isCritical: options.isCritical === true,
+        selfDamage: attackerId !== null && attackerId === entityId,
+        x: world.getComponent(entityId, 'Position', 'x') ?? 0,
+        y: world.getComponent(entityId, 'Position', 'y') ?? 0,
+      }
+      : {};
     world.services?.events?.emit('damage', {
       entityId,
       attackerId,
@@ -108,6 +120,7 @@ export class DamageSystem {
       remaining: newHealth,
       damageType: damageTypeId(options.damageType),
       damageTypeName: damageTypeName(damageTypeId(options.damageType)),
+      ...erweitert,
     });
 
     return newHealth;

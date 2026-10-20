@@ -46,9 +46,10 @@ export function findeZahlen(bisher, entities, arten = null) {
     if (diff < 0) {
       const kritisch = -diff >= Math.max(KRITISCH_ABSOLUT, KRITISCH_ANTEIL * max);
       // Schadensart (Fassung 2): Farbe und Zeichen der Familie, sofern der Treffer nicht „schwer" ist.
-      const familie = arten?.get(e.entityId) ? familieVonArt(arten.get(e.entityId)) : 'koerper';
+      const meldung = arten?.get(e.entityId);
+      const familie = meldung?.name ? familieVonArt(meldung.name) : 'koerper';
       const zeichen = ZAHL_FAMILIE[familie]?.symbol ?? '';
-      if (kritisch) neu.push({ x, y: y - 26, text: `${diff}!`, art: 'kritisch' });
+      if (kritisch || meldung?.krit) neu.push({ x, y: y - 26, text: `${diff}!`, art: 'kritisch' });
       else neu.push({ x, y: y - 26, text: `${diff}${zeichen}`, art: familie === 'koerper' ? 'schaden' : `schaden-${familie}` });
     } else if (diff > 0 && lebt) {
       neu.push({ x, y: y - 26, text: `+${diff}`, art: 'heilung' });
