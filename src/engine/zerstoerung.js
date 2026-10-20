@@ -49,8 +49,10 @@ import {
   aufprallStaerke, WEICH_AB_STAERKE, WEICH_MIN_FALL, WEICH_MIN_ZELLEN, SCHUTT_MAX_JE_LANDUNG, SCHUTT_MAX_GESAMT,
   SCHUTT_GRAVITATION, SCHUTT_LEBEN, BRUCH_AB_STAERKE, BRUCH_MIN_ZELLEN, BRUCH_MIN_FALL, BRUCH_MIN_UEBERSTAND,
   BEBEN_MAX_RADIUS, BEBEN_MIN_RADIUS, BEBEN_RAND, BEBEN_STEILHEIT, BEBEN_MAX_ZUEGE, SPLITTER_MIN, SPLITTER_SPANNE, RUTSCH_SCHUB, RUTSCH_MIN_RADIUS,
-  charakterDerWaffe,
+  charakterDerWaffe, ZERSTOERUNG_STOFF,
 } from '../shared/config/zerstoerung.js';
+import { stoffWirkung, wirkgruppe, bebenWirkt, stoffById, MIN_KRATER_RADIUS } from '../shared/config/stoffe.js';
+import { stoffAmEinschlag, stoffAm } from '../shared/stoffkarte.js';
 
 /** Krater unter diesem Radius lösen nichts ab. */
 const MIN_RADIUS_NACHRUTSCH = 6;
@@ -108,6 +110,16 @@ function zufall(a, b = 0, c = 0) {
 
 /** Zerstörungscharakter nach Waffenindex (`Projectile.weaponId`), einmal aus dem Katalog aufgebaut. */
 let charakterTabelle = null;
+/** Wirkgruppe (Feuer, Eis, Säure ...) nach Waffenindex. */
+let gruppeTabelle = null;
+export function gruppeFuerIndex(index) {
+  if (!gruppeTabelle) {
+    gruppeTabelle = new Map();
+    for (const waffe of WEAPONS) gruppeTabelle.set(waffe.index, wirkgruppe(waffe.damageType));
+  }
+  return gruppeTabelle.get(index) ?? 'wucht';
+}
+
 export function charakterFuerIndex(index) {
   if (!charakterTabelle) {
     charakterTabelle = new Map();
@@ -143,6 +155,9 @@ export class Zerstoerung {
   #fassung;
   /** Fassung 4: Nacharbeit gelandeter Inseln, fliegender Schutt, Erdbeben-Aufträge. */
   #bruch;
+  /** Fassung 5: Stoffkarte (`shared/stoffkarte.js`) oder `null`. */
+  #stoff;
+  #stoffAmKrater = 0;
   #tick = 0;
   #nacharbeit = [];
   #partikel = [];
@@ -157,7 +172,9 @@ export class Zerstoerung {
    * @param {Map<number, object>} quelle.turrets - Geschütze des Matches (`x`, `y` werden bewegt)
    * @param {number} [quelle.fassung] - Zerstörungsfassung (`config.zerstoerung`), bestimmt die Suchgrenzen
    */
-  constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE }) {
+  constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE, stoffe = null }) {
+    this.#stoff = fassung >= ZERSTOERUNG_STOFF && stoffe ? stoffe : null;
+    if (this.#stoff) terrain.setzeSchutz(stoffe);
     this.#grenzen = suchGrenzen(fassung);
     this.#fassung = fassung;
     this.#bruch = fassung >= ZERSTOERUNG_BRUCH;
@@ -195,9 +212,25 @@ export class Zerstoerung {
    */
   krater(x, y, radius, tiefe, quelle = null) {
     const art = this.#bruch ? (typeof quelle === 'number' ? charakterFuerIndex(quelle) : (quelle ?? 'sprengung')) : null;
+    let zusatz = null;
+    let nebenbrueche = 0;
+    if (this.#stoff) {
+      const stoffId = stoffAmEinschlag(this.#stoff, this.#terrain, x, y, radius);
+      const w = stoffWirkung(stoffId, art, typeof quelle === 'number' ? gruppeFuerIndex(quelle) : 'wucht');
+      const key = stoffById(stoffId).key;
+      this.#stoffAmKrater = stoffId;
+      if (Math.round(radius * w.radius) < MIN_KRATER_RADIUS) {
+        this.#events.emit('terrain_resisted', { x, y, radius, stoff: key });
+        return;
+      }
+      radius = Math.round(radius * w.radius);
+      tiefe = radius > 5 ? Math.max(40, Math.round(tiefe * w.tiefe)) : 100;
+      nebenbrueche = w.nebenbrueche;
+      zusatz = w.reaktion ? { stoff: key, reaktion: w.reaktion } : { stoff: key };
+    }
     this.#terrain.punchCrater(x, y, radius, tiefe);
-    this.#events.emit('terrain_destroyed', art ? { x, y, radius, tiefe, art } : { x, y, radius, tiefe });
-    if (art) this.#charakter(x, y, radius, art);
+    this.#events.emit('terrain_destroyed', art ? { x, y, radius, tiefe, art, ...zusatz } : { x, y, radius, tiefe });
+    if (art) this.#charakter(x, y, radius, art, nebenbrueche);
     if (radius < MIN_RADIUS_NACHRUTSCH) return;
     const letzter = this.#auftraege[this.#auftraege.length - 1];
     if (art === 'durchschlag' && letzter && letzter.art === art && letzter.tick === this.#tick) {
@@ -618,16 +651,17 @@ export class Zerstoerung {
   }
 
   /** Zerstörungscharakter am Einschlag: Splitterstreuung, Erdbeben, Rutschen der Figuren am Rand. */
-  #charakter(x, y, radius, art) {
-    if (art === 'splitter' && radius >= 12) this.#splitter(x, y, radius);
-    if (art === 'beben') this.#startBeben(x, y, radius);
+  #charakter(x, y, radius, art, nebenbrueche = 0) {
+    if (art === 'splitter' && radius >= 12) this.#splitter(x, y, radius, nebenbrueche || null);
+    else if (nebenbrueche > 0 && art === 'sprengung' && radius >= 12) this.#splitter(x, y, radius, nebenbrueche);
+    if (art === 'beben' && (!this.#stoff || bebenWirkt(this.#stoffAmKrater))) this.#startBeben(x, y, radius);
     if (radius >= RUTSCH_MIN_RADIUS) this.#rutschNach(x, y, radius);
   }
 
   /** Nebenlöcher rund um den Hauptkrater: kleine Dellen an Stellen, die wirklich Boden sind. */
-  #splitter(x, y, radius) {
+  #splitter(x, y, radius, anzahl = null) {
     const terrain = this.#terrain;
-    const n = SPLITTER_MIN + Math.floor(zufall(x, y, radius) * SPLITTER_SPANNE);
+    const n = anzahl ?? SPLITTER_MIN + Math.floor(zufall(x, y, radius) * SPLITTER_SPANNE);
     const sr = Math.max(3, Math.round(radius * 0.26));
     for (let i = 0; i < n; i++) {
       const d = radius * (1.05 + 0.55 * zufall(i, x, y));
@@ -676,7 +710,9 @@ export class Zerstoerung {
     const n = insel.zellen.length;
     const staerke = aufprallStaerke(n, dy);
     const weich = staerke >= WEICH_AB_STAERKE && dy >= WEICH_MIN_FALL && n >= WEICH_MIN_ZELLEN;
-    const bruch = !insel.gebrochen && staerke >= BRUCH_AB_STAERKE && n >= BRUCH_MIN_ZELLEN && dy >= BRUCH_MIN_FALL;
+    // Fassung 5: Eis und Kristall brechen früher (größerer Inselbruch).
+    const sproede = this.#stoff && insel.runs?.length > 1 && stoffById(stoffAm(this.#stoff, insel.runs[0], insel.runs[1])).bruechig >= 3;
+    const bruch = !insel.gebrochen && staerke >= BRUCH_AB_STAERKE * (sproede ? 0.7 : 1) && n >= BRUCH_MIN_ZELLEN * (sproede ? 0.5 : 1) && dy >= BRUCH_MIN_FALL;
     if ((!weich && !bruch) || this.#nacharbeit.length >= 16) return;
     this.#nacharbeit.push({ insel, dy, staerke, weich, bruch });
   }

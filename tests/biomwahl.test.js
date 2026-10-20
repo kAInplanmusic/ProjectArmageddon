@@ -215,7 +215,7 @@ test('Der Durchstich: Der Charakter kommt bis zur Szene durch', () => {
   for (let i = 0; i < 12; i += 1) {
     const seed = 300000 + i * 4111;
     const m = new MatchController({
-      seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom',
+      seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom: 'klassisch',
       turnDurationMs: 2000, maxRounds: 2,
     });
     m.start();

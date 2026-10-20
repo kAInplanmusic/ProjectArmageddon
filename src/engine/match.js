@@ -41,6 +41,7 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shar
 import { getWeapon } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
+import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
 import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { Zerstoerung } from './zerstoerung.js';
@@ -588,6 +589,8 @@ export class MatchController {
     /** Zerstörungsfassung (`config/zerstoerung.js`): 3 = Standard (große Schollen fallen), 2 = raue Krater + Nachrutschen bis 6000 Zellen, 1 = Altverhalten. */
     zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
+    /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
+    gelaende = GELAENDE_STANDARD, biom = null,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -617,6 +620,7 @@ export class MatchController {
     this.zerstoerung = normalisiereZerstoerung(zerstoerung);
     this.waffen = normalisiereWaffen(waffen);
     this.kisten = normalisiereKisten(kisten);
+    Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed)); // gelaende, biomWahl, sonderbiom
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
     // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
@@ -625,23 +629,10 @@ export class MatchController {
     this.width = masse.width;
     this.height = masse.height;
 
-    /**
-     * Generative Kulisse (Himmel, Wasser, Ambiente, Landmarken).
-     *
-     * Aus demselben Seed abgeleitet wie das Gelände, also reproduzierbar: ein
-     * Replay zeigt dieselbe Landschaft. Der Server muss die Kulisse deshalb NICHT
-     * mitsenden — jeder Client baut sie aus dem Seed selbst.
-     */
     /*
-     * Die Szene — hier nur die GRUNDLAGE.
-     *
-     * FUND (belegt): Die Szene hing am Gelände-Preset. Beim autonomen Generator
-     * ist `preset` gleich null, weil der Charakter es ersetzt hat — gemessen
-     * hatten drei völlig verschiedene Karten dieselbe Bodenfarbe [104,146,86].
-     *
-     * Der Charakter steht im Konstruktor aber noch NICHT fest: `#buildTerrain`
-     * läuft erst in `start()`. Deshalb wird die Szene dort neu gezogen — mit
-     * dem Biom aus dem Charakter (siehe `#waehleSzeneAusCharakter`).
+     * Generative Kulisse aus dem Seed (jeder Client baut sie selbst). Hier nur die Grundlage: Der
+     * Charakter steht erst nach `#buildTerrain` (in `start()`) fest, dort wird die Szene mit dem
+     * Biom aus Charakter oder Sonderbiom neu gezogen (`#waehleSzeneAusCharakter`).
      */
     this.scenery = pickScenery(this.#seedManager.baseSeed, preset);
     this.biomId = this.scenery.biomeId;
@@ -824,7 +815,7 @@ export class MatchController {
   #waehleSzeneAusCharakter() {
     if (!this.kartencharakter) return null;
 
-    const biomId = biomeKennungFuerCharakter(this.kartencharakter);
+    const biomId = this.sonderbiom ?? biomeKennungFuerCharakter(this.kartencharakter);
     this.biomId = biomId;
     this.scenery = pickScenery(this.#seedManager.baseSeed, this.preset, biomId);
     return this.scenery;
@@ -847,6 +838,8 @@ export class MatchController {
       height: this.height,
       kartentyp: this.kartentyp,
       preset: this.preset,
+      biom: this.sonderbiom,
+      stoffe: this.gelaende >= GELAENDE_BIOME,
       events: this.#events,
       statuses: this.#statuses,
       handleProjectileImpact: payload => this.#handleProjectileImpact(payload),
@@ -857,6 +850,7 @@ export class MatchController {
     this.#oberflaeche = new Int32Array(this.width).fill(OBERFLAECHE_UNBEKANNT);
     this.#terrain = CollisionMask.fromBitmap(this.#bitmap, this.width, this.height);
     this.#material = ergebnis.material;
+    this.stoffkarte = ergebnis.stoffkarte ?? null;
     this.kartencharakter = ergebnis.kartencharakter;
     this.kartenkennzahlen = ergebnis.kartenkennzahlen;
     this.#waterBaseY = ergebnis.waterBaseY;
@@ -866,7 +860,7 @@ export class MatchController {
 
     this.#world.services.terrain = this.#terrain;
     this.#world.services.terrainScale = 1;
-    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung });
+    if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung, stoffe: this.stoffkarte });
   }
 
   #buildWater() {

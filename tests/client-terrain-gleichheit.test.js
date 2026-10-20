@@ -178,7 +178,7 @@ test('main.js: der Snapshot wird ueber terrainQuelleFuer ausgewertet, nicht Feld
   // (c) Die private Methode muss den Kartentyp an den Generator weitergeben.
   assert.match(
     main,
-    /buildTerrainForSeed\(seed, preset, orientation, kartentyp\)/,
+    /buildTerrainForSeed\(seed, preset, orientation, kartentyp(, quelle)?\)/,
     'kartentyp muss bis buildTerrainForSeed durchgereicht werden',
   );
 

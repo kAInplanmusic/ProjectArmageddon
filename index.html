@@ -1033,6 +1033,15 @@
                 <option value="">automatisch (Bild)</option>
               </select>
             </label>
+            <label>Biom
+              <!-- Wird beim Start aus src/shared/config/biome-neu.js gefüllt. „Zufall" lässt den Seed
+                   entscheiden (rund 40 % der Seeds ziehen ein Sonderbiom); „klassisch" lässt das Biom
+                   wie früher aus der Karte folgen. Die Wahl gehört zur Match-Konfiguration (Replay-Kopf). -->
+              <select id="cfg-biom">
+                <option value="" selected>Zufall (Seed)</option>
+                <option value="klassisch">klassisch (aus der Karte)</option>
+              </select>
+            </label>
             <label>Ausrichtung
               <select id="cfg-orientation">
                 <option value="landscape" selected>Querformat</option>

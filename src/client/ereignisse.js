@@ -280,6 +280,8 @@ export const EREIGNIS_WIRKUNGEN = {
       k.renderer?.setzeRutsch(n.zuege);
     },
   },
+  /* Fassung 5: der Einschlag traf unzerstörbaren Stoff (Metall, Grundgestein) und ließ ihn stehen — nur Funken. */
+  terrain_resisted: { online: (k, n) => { k.renderer?.spawnExplosionParticles?.(n.x, n.y, Math.min(n.radius || 8, 10)); } },
   terrain_crumble: { online: (k, n) => { k.renderer?.bruchOptik(n); } },
   terrain_quake: { online: (k, n) => { k.renderer?.bebenOptik(n); } },
 

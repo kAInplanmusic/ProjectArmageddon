@@ -74,6 +74,10 @@
 import { oberflaechen } from './terrainGen2.js';
 import { TERRAIN_MATERIAL, materialById } from './config/terrain.js';
 import { gitterrauschen } from './terrainNoise.js';
+import { NEUE_BIOME } from './config/biome-neu.js';
+import { rezeptFuer } from './config/stoff-rezepte.js';
+import { biomFuerCharakter } from './biomwahl.js';
+import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -358,6 +362,38 @@ export function zieheCharakter(rng, randGewicht = 0.45) {
   };
 }
 
+/**
+ * Lenkt die Achsen eines gezogenen Charakters in die Teilbereiche eines Sonderbioms
+ * (`config/biome-neu.js`, Feld `form`). Die Lage innerhalb des Achsenbereichs bleibt
+ * erhalten (der Zug ist weiter eine Funktion des Seeds), nur der Bereich schrumpft:
+ * `min + (max - min) * t` wird zu `lo + (hi - lo) * t`. Ohne Biom: der Charakter unverändert.
+ *
+ * @param {object} charakter - aus `zieheCharakter`
+ * @param {string|null} biomId - Kennung eines Sonderbioms oder `null`
+ */
+export function formeCharakter(charakter, biomId) {
+  const form = biomId ? NEUE_BIOME[biomId]?.form : null;
+  if (!form) return charakter;
+  const geformt = { ...charakter };
+  for (const [achse, [lo, hi]] of Object.entries(form)) {
+    const bereich = CHARAKTER_ACHSEN[achse];
+    if (!bereich || !(achse in charakter)) continue;
+    const t = Math.min(1, Math.max(0, (charakter[achse] - bereich[0]) / (bereich[1] - bereich[0])));
+    geformt[achse] = lo + (hi - lo) * t;
+  }
+  return geformt;
+}
+
+/**
+ * Die Stoffkarte zu einer fertigen Karte (nur wenn verlangt, sonst `{}`): aus einem eigenen Seed-Zweig,
+ * mit dem Rezept des Sonderbioms oder — ohne Sonderbiom — des Bioms, das aus dem Charakter folgt.
+ */
+function stoffAnhang(stoffe, rng, width, height, bitmap, charakter, biom) {
+  if (!stoffe || typeof rng.fork !== 'function') return {};
+  const rezept = rezeptFuer(biom ?? biomFuerCharakter(charakter));
+  return { stoffkarte: baueStoffkarte({ rng: rng.fork(STOFF_FORK), width, height, bitmap, rezept }) };
+}
+
 /*
  * ======================================================================
  * Die Bodenmaterialien — Eis und Gummi, aus dem Seed
@@ -519,7 +555,7 @@ export function zaehleMaterialien(material) {
  * @param {number} optionen.height
  * @returns {{bitmap:Uint8Array, surface:Int32Array, wasserY:number, charakter:object, versuche:number, kennzahlen:object}}
  */
-export function erzeugeAutonomeKarte({ rng, width, height }) {
+export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe = false }) {
   if (!rng || typeof rng.next !== 'function') {
     throw new TypeError('erzeugeAutonomeKarte benötigt einen RNG mit next()');
   }
@@ -554,13 +590,13 @@ export function erzeugeAutonomeKarte({ rng, width, height }) {
   const ablehnungen = [];
 
   for (let versuch = 1; versuch <= MAX_VERSUCHE; versuch += 1) {
-    const charakter = zieheCharakter(rng);
+    const charakter = formeCharakter(zieheCharakter(rng), biom);
     const karte = baueKarte({ rng, width, height, charakter });
     const kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
 
     const urteil = pruefeSpielbarkeit(kennzahlen);
     if (urteil.ok) {
-      return { ...karte, charakter, versuche: versuch, kennzahlen, ablehnungen };
+      return { ...karte, charakter, versuche: versuch, kennzahlen, ablehnungen, ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom) };
     }
     ablehnungen.push(urteil.grund);
     letzterFehler = urteil.grund;
@@ -573,11 +609,12 @@ export function erzeugeAutonomeKarte({ rng, width, height }) {
    * sagen, wäre schlimmer als einer, der es meldet. Die Kennzahlen gehen mit,
    * damit ein Aufrufer entscheiden kann.
    */
-  const charakter = zieheCharakter(rng);
+  const charakter = formeCharakter(zieheCharakter(rng), biom);
   const karte = baueKarte({ rng, width, height, charakter });
   const kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
   return {
     ...karte,
+    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom),
     charakter,
     versuche: MAX_VERSUCHE + 1,
     kennzahlen,

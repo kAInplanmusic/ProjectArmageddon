@@ -741,6 +741,7 @@ export const ANZEIGE_EREIGNISARTEN = Object.freeze([
   'terrain_detached',
   'terrain_crumble',
   'terrain_quake',
+  'terrain_resisted',
   'hitscan',
   'special_effect',
   'fuse_armed',

@@ -693,7 +693,7 @@ export class Renderer {
     layer.height = height;
 
     // Ein Zug statt Backen + Zurücklesen + Veredeln (siehe `baueGelaendeEbene`): pixelgleich, ohne Doppelarbeit.
-    baueGelaendeEbene(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0);
+    baueGelaendeEbene(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
     this.terrainLayer = layer;
     this.#baePflanzen(bitmap, width, height);
     /** Zuletzt gebackene Karte — der GPU-Weg braucht Bitmap und Maße erneut. */
@@ -777,7 +777,7 @@ export class Renderer {
       const quelle = this.terrainSource;
       if(quelle && (quelle.width !== width || quelle.height !== height || quelle.bitmap !== bitmap)) return;
       if (path === 'gpu') {
-        veredleGelaende(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0);
+        veredleGelaende(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
         this.terrainLayer = layer;
       }
       this.gpuTerrainPath = path;

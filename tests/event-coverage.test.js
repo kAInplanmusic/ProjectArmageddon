@@ -410,6 +410,10 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'online',
     entweder: 'Fassung 4, Zustand: Setzrutsch nach einem Beben; karte.rutsch und renderer.setzeRutsch — src/client/ereignisse.js:243.',
   }],
+  ['terrain_resisted', {
+    zweig: 'online',
+    entweder: 'Fassung 5, nur Anzeige: Funken, wenn ein Einschlag unzerstörbaren Stoff trifft (renderer.spawnExplosionParticles, src/client/ereignisse.js:284); die Maske blieb unverändert.',
+  }],
   ['terrain_crumble', {
     zweig: 'online',
     entweder: 'Fassung 4, nur Anzeige: fliegende Partikel-Zellen und Staub (renderer.bruchOptik, src/client/ereignisse.js:249); ein lokales Match gibt es im Client nicht mehr.',
