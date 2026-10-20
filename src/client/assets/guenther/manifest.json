@@ -1,6 +1,6 @@
 {
- "version": 1,
- "quelle": "together FLUX.1-kontext-pro, Fotos des Auftraggebers (Hund Günther)",
+ "version": 2,
+ "quelle": "together FLUX.1-kontext-pro, Fotos des Auftraggebers (Hund Günther), zweiter Durchgang (Fellfarbe, ohne Schatten)",
  "posen": {
   "sitz": {
    "datei": "sitz.png",
@@ -84,6 +84,22 @@
   },
   "laufen": {
    "datei": "laufen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "schlafen": {
+   "datei": "schlafen.png",
+   "anker": {
+    "x": 128,
+    "y": 240
+   },
+   "blick": "rechts"
+  },
+  "schuetteln": {
+   "datei": "schuetteln.png",
    "anker": {
     "x": 128,
     "y": 240
