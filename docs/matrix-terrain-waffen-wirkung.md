@@ -248,3 +248,25 @@ Bis 2026-09-20 trugen 6 Waffen `piercing` und 2 `homing`, ohne dass ein Stück
 Motorcode sie las — die Übersicht hätte damals Wirkungen ausgewiesen, die es
 nicht gab.*
 
+## Material × Schadensart (Zerstörung Fassung 5)
+
+Faktoren auf Kraterradius/-tiefe der Fassung 4, gerechnet aus `src/shared/config/stoffe.js` (`stoffWirkung`). `0` = der Stoff hält.
+Die Stoffkarte (`src/shared/stoffkarte.js`) entsteht aus Seed + Biom und wird vom Client nachgebaut — keine Netzlast.
+
+| Stoff | Härte | Sprengung r/t | Durchschlag r | Hitze r | Kälte r | Säure r | Reaktion bei Hitze |
+|---|---|---|---|---|---|---|---|
+| Erde (`erde`) | normal | 1 / 1 | 1 | 1 | 1 | 1 | – |
+| Sand (`sand`) | weich | 1,5 / 1,21 | 1,38 | 1,29 | 1,5 | 1,5 | – |
+| Schnee (`schnee`) | weich | 1,62 / 1,26 | 1,49 | 2,17 | 1,46 | 1,62 | schmilzt |
+| Pilzgewebe (`pilz`) | weich | 1,44 / 1,21 | 1,32 | 1,73 | 1,44 | 1,66 | brennt |
+| Holz (`holz`) | normal | 0,95 / 0,9 | 0,95 | 1,19 | 0,95 | 0,95 | brennt |
+| Fels (`fels`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Obsidian (`obsidian`) | sehr_hart | 0,16 / 0,12 | 0 | 0,16 | 0,16 | 0,16 | – |
+| Eis (`eis`) | normal | 1 / 0,85 | 1 | 1,5 | 0,8 | 1 | schmilzt |
+| Kristall (`kristall`) | hart | 0,6 / 0,3 | 0,28 | 0,6 | 0,6 | 0,54 | – |
+| Metallplatte (`metall`) | unzerstoerbar | 0 / 0 | 0 | 0 | 0 | 0 | haelt |
+| Grundgestein (`grundgestein`) | unzerstoerbar | 0 / 0 | 0 | 0 | 0 | 0 | haelt |
+| Basalt (`basalt`) | hart | 0,49 / 0,25 | 0,23 | 0,44 | 0,49 | 0,54 | – |
+| Asche (`asche`) | weich | 1,56 / 1,21 | 1,43 | 1,5 | 1,56 | 1,56 | – |
+| Koralle (`koralle`) | normal | 0,95 / 0,8 | 0,95 | 0,95 | 0,95 | 1,23 | – |
+

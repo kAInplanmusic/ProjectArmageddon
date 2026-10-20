@@ -28,6 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { generateTerrain, TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 import { SeededRandom } from '../src/shared/prng.js';
+import { STOFFE, stoffWirkung } from '../src/shared/config/stoffe.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const root = resolve(hier, '..');
@@ -308,6 +309,24 @@ function baue() {
   w('Bis 2026-09-20 trugen 6 Waffen `piercing` und 2 `homing`, ohne dass ein Stück');
   w('Motorcode sie las — die Übersicht hätte damals Wirkungen ausgewiesen, die es');
   w('nicht gab.*');
+  w();
+
+  w('## Material × Schadensart (Zerstörung Fassung 5)');
+  w();
+  w('Faktoren auf Kraterradius/-tiefe der Fassung 4, gerechnet aus `src/shared/config/stoffe.js` (`stoffWirkung`). `0` = der Stoff hält.');
+  w('Die Stoffkarte (`src/shared/stoffkarte.js`) entsteht aus Seed + Biom und wird vom Client nachgebaut — keine Netzlast.');
+  w();
+  w('| Stoff | Härte | Sprengung r/t | Durchschlag r | Hitze r | Kälte r | Säure r | Reaktion bei Hitze |');
+  w('|---|---|---|---|---|---|---|---|');
+  const f2 = v => (Math.round(v * 100) / 100).toString().replace('.', ',');
+  for (const st of STOFFE) {
+    const sp = stoffWirkung(st.id, 'sprengung', 'wucht');
+    const du = stoffWirkung(st.id, 'durchschlag', 'wucht');
+    const hi = stoffWirkung(st.id, 'brand', 'hitze');
+    const ka = stoffWirkung(st.id, 'sprengung', 'kaelte');
+    const ae = stoffWirkung(st.id, 'sprengung', 'aetz');
+    w(`| ${st.label} (\`${st.key}\`) | ${st.haerte} | ${f2(sp.radius)} / ${f2(sp.tiefe)} | ${f2(du.radius)} | ${f2(hi.radius)} | ${f2(ka.radius)} | ${f2(ae.radius)} | ${hi.reaktion ?? '–'} |`);
+  }
   w();
 
   return `${zeilen.join('\n')}\n`;
