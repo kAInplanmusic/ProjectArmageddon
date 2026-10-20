@@ -585,6 +585,9 @@ test.describe('Dynamik — sieht man es? (Pixel, nicht Absicht)', () => {
         const renderer = T.renderer;
         const punkte = [...(T.inhalte.spuren.get(901) ?? [])];
         const y = 260;
+        // Die Messstelle ist eine Kartenkoordinate: die Kameraführung kann sie aus dem Bild zoomen.
+        const kam = T.spiel.kamera;
+        kam.setzeAnsicht(kam.karte.b / 2, kam.karte.h / 2, kam.zoomGanzeKarte);
         const mitte = punkte[Math.floor(punkte.length / 2)].x;
         const zustand = T.zustandMit([
           { entityId: 901, x: punkte[punkte.length - 1].x, y, fuseSeconds: 0 },
