@@ -34,8 +34,15 @@
  * @module camera
  */
 
-/** Der kleinste und größte Zoom, den die Bedienung zulässt. */
-export const ZOOM_GRENZEN = Object.freeze({ min: 0.35, max: 2 });
+/**
+ * Der kleinste und größte Zoom, den die Bedienung zulässt.
+ *
+ * Das Maximum 4 ist nötig, weil die Zeichenfläche so groß ist wie die Karte
+ * (2560 px bei „groß", 5120 px bei „Krieg"), aber nur als 1280-px-Fenster
+ * erscheint: Die Führung (`kameraRegie.js`) will rund 1400 Kartenpixel Breite
+ * zeigen, und das ist auf der Kriegskarte Zoom ≈ 3,6.
+ */
+export const ZOOM_GRENZEN = Object.freeze({ min: 0.35, max: 4 });
 
 /**
  * Wie weit die Kamera einer Bewegung folgt (0 = starr, 1 = sofort).
@@ -44,6 +51,65 @@ export const ZOOM_GRENZEN = Object.freeze({ min: 0.35, max: 2 });
  * die halbe Karte würde ein harter Schnitt den Zusammenhang verlieren lassen.
  */
 export const FOLGE_FAKTOR = 0.12;
+
+
+/**
+ * Wo im Bildschirm liegt der Fokuspunkt (`x`, `y` der Kamera)?
+ *
+ * Auf einer Achse, die scrollt, in der Mitte des FREIEN Bereichs (Fenster ohne
+ * die vom HUD verdeckten Ränder); passt die Karte auf dieser Achse ganz hinein,
+ * bleibt sie mittig (senkrecht zusätzlich um `schub` nach unten gerückt).
+ *
+ * Reine Funktion; `Camera` und `kameraZiel.js` rechnen beide damit, damit eine
+ * Zielberechnung dieselbe Klemmung sieht wie die Kamera selbst.
+ *
+ * @param {{b:number,h:number}} schirm
+ * @param {{oben:number,unten:number,links:number,rechts:number}} rand
+ * @param {number} zoom
+ * @param {{b:number,h:number}} karte
+ * @param {number} [schub]
+ */
+export function fokusImSchirm(schirm, rand, zoom, karte, schub = 0) {
+  const scrolltX = schirm.b / zoom < karte.b;
+  const scrolltY = schirm.h / zoom < karte.h;
+  return {
+    x: scrolltX ? schirm.b / 2 + (rand.links - rand.rechts) / 2 : schirm.b / 2,
+    y: scrolltY ? schirm.h / 2 + (rand.oben - rand.unten) / 2 : schirm.h / 2 + schub,
+  };
+}
+
+/**
+ * Hält eine Ansicht `{x, y, zoom}` innerhalb der Karte (Klemmung auf die
+ * Kartenfläche): Es wird nie leere Welt neben der Karte gezeigt, auch nicht
+ * bei Zoom. Passt die Karte auf einer Achse ganz hinein, wird sie mittig gehalten.
+ *
+ * @returns {{x:number,y:number,zoom:number}} eine NEUE Ansicht
+ */
+export function begrenzeAnsicht(ansicht, karte, schirm, rand, schub = 0) {
+  const { zoom } = ansicht;
+  const f = fokusImSchirm(schirm, rand, zoom, karte, schub);
+  let { x, y } = ansicht;
+  if (schirm.b / zoom >= karte.b) {
+    x = karte.b / 2;
+  } else {
+    const links = f.x / zoom;
+    const rechts = (schirm.b - f.x) / zoom;
+    x = Math.max(links, Math.min(karte.b - rechts, x));
+  }
+  if (schirm.h / zoom >= karte.h) {
+    y = karte.h / 2;
+  } else {
+    const oben = f.y / zoom;
+    const unten = (schirm.h - f.y) / zoom;
+    y = Math.max(oben, Math.min(karte.h - unten, y));
+  }
+  return { x, y, zoom };
+}
+
+/** Der Zoom, bei dem die Karte vollständig in den Schirm passt. */
+export function zoomGanzeKarte(karte, schirm) {
+  return Math.min(schirm.b / karte.b, schirm.h / karte.h);
+}
 
 /**
  * Eine Kamera über einer Karte.
@@ -93,6 +159,15 @@ export class Camera {
   #schub = 0;
 
   #schubZiel = 0;
+
+  /**
+   * Kurzer Bildschub (Bildschirmpixel) nach einem Einschlag. Er liegt NUR in der
+   * Transformation, nicht in `x`/`y`, und wird auf die Kartenfläche geklemmt
+   * (siehe `transformation`): Er zeigt nie leere Welt.
+   */
+  #stossX = 0;
+
+  #stossY = 0;
 
   constructor({ mapBreite, mapHoehe, schirmBreite, schirmHoehe, zoom = null } = {}) {
     this.#mapBreite = mapBreite;
@@ -224,17 +299,16 @@ export class Camera {
   }
 
   /** Bildschirmmitte der Achse: bei Scrollen die Mitte des freien Bereichs. */
-  #mitteX() {
-    return this.scrolltHorizontal
-      ? this.#schirmBreite / 2 + (this.#rand.links - this.#rand.rechts) / 2
-      : this.#schirmBreite / 2;
+  #fokus() {
+    return fokusImSchirm(
+      { b: this.#schirmBreite, h: this.#schirmHoehe }, this.#rand, this.#zoom,
+      { b: this.#mapBreite, h: this.#mapHoehe }, this.#schub,
+    );
   }
 
-  #mitteY() {
-    return this.scrolltVertikal
-      ? this.#schirmHoehe / 2 + (this.#rand.oben - this.#rand.unten) / 2
-      : this.#schirmHoehe / 2 + this.#schub;
-  }
+  #mitteX() { return this.#fokus().x; }
+
+  #mitteY() { return this.#fokus().y; }
 
   /**
    * Verschiebt die Kamera direkt um eine Strecke (Ziehen mit der Maus).
@@ -257,23 +331,15 @@ export class Camera {
    * „aufhören", was wie ein Fehler aussähe.
    */
   #begrenze() {
-    // Ist die Karte schmaler als der Ausschnitt, wird sie mittig gehalten.
-    if (this.sichtbareBreite >= this.#mapBreite) {
-      this.#x = this.#mapBreite / 2;
-    } else {
-      // Linke Schirmkante liegt bei x - mitte/zoom und muss >= 0 sein usw.
-      const links = this.#mitteX() / this.#zoom;
-      const rechts = (this.#schirmBreite - this.#mitteX()) / this.#zoom;
-      this.#x = Math.max(links, Math.min(this.#mapBreite - rechts, this.#x));
-    }
-
-    if (this.sichtbareHoehe >= this.#mapHoehe) {
-      this.#y = this.#mapHoehe / 2;
-    } else {
-      const oben = this.#mitteY() / this.#zoom;
-      const unten = (this.#schirmHoehe - this.#mitteY()) / this.#zoom;
-      this.#y = Math.max(oben, Math.min(this.#mapHoehe - unten, this.#y));
-    }
+    const a = begrenzeAnsicht(
+      { x: this.#x, y: this.#y, zoom: this.#zoom },
+      { b: this.#mapBreite, h: this.#mapHoehe },
+      { b: this.#schirmBreite, h: this.#schirmHoehe },
+      this.#rand,
+      this.#schub,
+    );
+    this.#x = a.x;
+    this.#y = a.y;
   }
 
   /**
@@ -285,12 +351,20 @@ export class Camera {
    *
    * @returns {{skalierung:number, versatzX:number, versatzY:number}}
    */
-  transformation() {
-    return {
-      skalierung: this.#zoom,
-      versatzX: this.#mitteX() - this.#x * this.#zoom,
-      versatzY: this.#mitteY() - this.#y * this.#zoom,
-    };
+  transformation({ ohneStoss = false } = {}) {
+    const f = this.#fokus();
+    let versatzX = f.x - this.#x * this.#zoom;
+    let versatzY = f.y - this.#y * this.#zoom;
+    if (!ohneStoss && (this.#stossX !== 0 || this.#stossY !== 0)) {
+      // Auf die Kartenfläche geklemmt: Auch der Schub zeigt keine leere Welt.
+      if (this.scrolltHorizontal) {
+        versatzX = Math.max(this.#schirmBreite - this.#mapBreite * this.#zoom, Math.min(0, versatzX + this.#stossX));
+      }
+      if (this.scrolltVertikal) {
+        versatzY = Math.max(this.#schirmHoehe - this.#mapHoehe * this.#zoom, Math.min(0, versatzY + this.#stossY));
+      }
+    }
+    return { skalierung: this.#zoom, versatzX, versatzY };
   }
 
   /**
@@ -307,6 +381,76 @@ export class Camera {
       x: (schirmX - t.versatzX) / t.skalierung,
       y: (schirmY - t.versatzY) / t.skalierung,
     };
+  }
+
+  /**
+   * Setzt die Ansicht (Mitte und Zoom) in einem Schritt — für die Kameraführung.
+   *
+   * Der Zoom bleibt zwischen „ganze Karte" und `ZOOM_GRENZEN.max`; die Position
+   * wird auf die Kartenfläche geklemmt. Ein Zoom unter „ganze Karte" würde leere
+   * Welt neben der Karte zeigen und ist deshalb nicht möglich.
+   */
+  setzeAnsicht(x, y, zoom) {
+    if (![x, y, zoom].every(Number.isFinite)) return false;
+    const min = Math.max(ZOOM_GRENZEN.min, this.#zoomFuerGanzeKarte());
+    this.#zoom = Math.max(min, Math.min(ZOOM_GRENZEN.max, zoom));
+    this.#x = x;
+    this.#y = y;
+    this.#zielX = this.#x;
+    this.#zielY = this.#y;
+    this.#begrenze();
+    this.#zielX = this.#x;
+    this.#zielY = this.#y;
+    return true;
+  }
+
+  /** Die aktuelle Ansicht `{x, y, zoom}` (ohne Schub). */
+  ansicht() { return { x: this.#x, y: this.#y, zoom: this.#zoom }; }
+
+  /** Zoom, bei dem die ganze Karte sichtbar ist (untere Grenze der Führung). */
+  get zoomGanzeKarte() { return this.#zoomFuerGanzeKarte(); }
+
+  /** Aktuell gesetzter Rand des HUD (Bildschirmpixel). */
+  get rand() { return { ...this.#rand }; }
+
+  /** Kartenmaße. */
+  get karte() { return { b: this.#mapBreite, h: this.#mapHoehe }; }
+
+  /** Bildschirmmaße. */
+  get schirm() { return { b: this.#schirmBreite, h: this.#schirmHoehe }; }
+
+  /**
+   * Zoomt um den Faktor `faktor` und hält dabei den Kartenpunkt unter
+   * (`schirmX`, `schirmY`) fest (Mausrad, Pinch). Untergrenze ist „ganze Karte",
+   * Obergrenze `ZOOM_GRENZEN.max`.
+   */
+  zoomUm(faktor, schirmX = this.#schirmBreite / 2, schirmY = this.#schirmHoehe / 2) {
+    if (!(faktor > 0)) return false;
+    const vor = this.transformation({ ohneStoss: true });
+    const punktX = (schirmX - vor.versatzX) / vor.skalierung;
+    const punktY = (schirmY - vor.versatzY) / vor.skalierung;
+    const min = Math.max(ZOOM_GRENZEN.min, this.#zoomFuerGanzeKarte());
+    const neu = Math.max(min, Math.min(ZOOM_GRENZEN.max, this.#zoom * faktor));
+    if (neu === this.#zoom) return false;
+    this.#zoom = neu;
+    this.#zoomFest = true;
+    // Der Punkt soll unter dem Zeiger bleiben: x so wählen, dass
+    // fokus.x + (punkt - x)·zoom = schirmX.
+    const f = this.#fokus();
+    this.#x = punktX - (schirmX - f.x) / neu;
+    this.#y = punktY - (schirmY - f.y) / neu;
+    this.#zielX = this.#x;
+    this.#zielY = this.#y;
+    this.#begrenze();
+    this.#zielX = this.#x;
+    this.#zielY = this.#y;
+    return true;
+  }
+
+  /** Bildschub in Bildschirmpixeln (`0, 0` = keiner); siehe `transformation`. */
+  setzeStoss(x, y) {
+    this.#stossX = Number.isFinite(x) ? x : 0;
+    this.#stossY = Number.isFinite(y) ? y : 0;
   }
 
   /**
