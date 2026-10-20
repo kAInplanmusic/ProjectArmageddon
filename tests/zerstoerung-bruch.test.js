@@ -87,10 +87,10 @@ function nachbau(bitmap, maske) {
 
 test('Fassung 4: Marke, Standard und Normalisierung', () => {
   assert.equal(ZERSTOERUNG_BRUCH, 4);
-  assert.equal(ZERSTOERUNG_STANDARD, 6);
-  for (const f of [1, 2, 3, 4, 5, 6]) assert.equal(normalisiereZerstoerung(f), f);
-  assert.equal(normalisiereZerstoerung(undefined), 6);
-  assert.equal(normalisiereZerstoerung(7), 6);
+  assert.equal(ZERSTOERUNG_STANDARD, 7);
+  for (const f of [1, 2, 3, 4, 5, 6, 7]) assert.equal(normalisiereZerstoerung(f), f);
+  assert.equal(normalisiereZerstoerung(undefined), 7);
+  assert.equal(normalisiereZerstoerung(8), 7);
 });
 
 test('Aufprallstärke: Masse und Fallhöhe, geklemmt auf 0..1', () => {

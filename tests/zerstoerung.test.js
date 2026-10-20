@@ -178,7 +178,7 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
   assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_STANDARD);
-  assert.equal(ZERSTOERUNG_STANDARD, 6);
+  assert.equal(ZERSTOERUNG_STANDARD, 7);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
   assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_STANDARD);
@@ -192,7 +192,7 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
   assert.equal(playReplay(ReplayRecorder.fromJSON(zwei.serialize())).match.zerstoerung, ZERSTOERUNG_GELAENDE);
 
   assert.equal(normalisiereZerstoerung(undefined), ZERSTOERUNG_STANDARD);
-  assert.equal(normalisiereZerstoerung(7), ZERSTOERUNG_STANDARD);
+  assert.equal(normalisiereZerstoerung(8), ZERSTOERUNG_STANDARD);
   assert.equal(normalisiereZerstoerung(1), ZERSTOERUNG_ALT);
 });
 

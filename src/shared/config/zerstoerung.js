@@ -40,6 +40,12 @@
  *     Client lässt Pflanzen, die auf einer gerutschten Zelle stehen, abbrechen. Fassung 1–5
  *     bleiben Bit für Bit.
  *
+ *   - `ZERSTOERUNG_FEIN` (7): wie 6, dazu die feingetunte Tabelle Stoff × Schadensart
+ *     (`STOFF_FEIN` in `config/stoffe.js`): Obsidian ist nicht mehr praktisch unzerstörbar
+ *     (Kraterfaktor 0,16 auf 0,22), nasser Schnee packt (0,9), Säure frisst Holz (1,1),
+ *     Kristall springt bei Kälte (1,1), Erde brennt sich fest (Hitze 0,95). Sonst nichts.
+ *     Fassung 1–6 bleiben Bit für Bit.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/zerstoerung
@@ -51,12 +57,13 @@ export const ZERSTOERUNG_SCHOLLEN = 3;
 export const ZERSTOERUNG_BRUCH = 4;
 export const ZERSTOERUNG_STOFF = 5;
 export const ZERSTOERUNG_HANG = 6;
-export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_HANG;
+export const ZERSTOERUNG_FEIN = 7;
+export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_FEIN;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereZerstoerung(fassung) {
   return fassung === ZERSTOERUNG_ALT || fassung === ZERSTOERUNG_GELAENDE || fassung === ZERSTOERUNG_SCHOLLEN
-    || fassung === ZERSTOERUNG_BRUCH || fassung === ZERSTOERUNG_STOFF || fassung === ZERSTOERUNG_HANG ? fassung : ZERSTOERUNG_STANDARD;
+    || fassung === ZERSTOERUNG_BRUCH || fassung === ZERSTOERUNG_STOFF || fassung === ZERSTOERUNG_HANG || fassung === ZERSTOERUNG_FEIN ? fassung : ZERSTOERUNG_STANDARD;
 }
 
 /**

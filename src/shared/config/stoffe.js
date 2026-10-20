@@ -157,6 +157,21 @@ export const CHARAKTER_FAKTOR = Object.freeze({
   beben: Object.freeze({ weich: [1.15, 1.2], normal: [0.9, 0.9], hart: [0.45, 0.4], sehr_hart: [0.2, 0.2] }),
 });
 
+/**
+ * Feintuning der Tabelle (Zerstörungsfassung 7, `config/zerstoerung.js`): Nur diese Werte weichen von der
+ * Fassung 6 ab. `radius` ersetzt den Grundfaktor des Stoffes, `anfaellig` ergänzt/ersetzt je Wirkgruppe.
+ * Begründung (gemessen mit `stoffWirkung` über den Waffenkatalog, Krater 0,6 × Sprengradius, Median
+ * 29 px): Obsidian stanzte bei 0,16 nur 4,6 px große Löcher, ein Faktor 3 unter Fels; die übrigen Werte
+ * schließen Lücken der Tabelle, in denen ein Stoff auf eine Schadensart gar nicht reagierte.
+ */
+export const STOFF_FEIN = Object.freeze({
+  obsidian: Object.freeze({ radius: 0.55 }),
+  schnee: Object.freeze({ anfaellig: Object.freeze({ nass: 0.9 }) }),
+  holz: Object.freeze({ anfaellig: Object.freeze({ aetz: 1.1 }) }),
+  kristall: Object.freeze({ anfaellig: Object.freeze({ kaelte: 1.1 }) }),
+  erde: Object.freeze({ anfaellig: Object.freeze({ hitze: 0.95 }) }),
+});
+
 /** Ab dieser Härte wirkt ein Erdbeben nicht mehr (Setzrutsch nur auf weichem und normalem Boden). */
 export const BEBEN_NUR_BIS_HAERTE = 'normal';
 
@@ -169,11 +184,14 @@ export const MIN_KRATER_RADIUS = 2;
  * @param {number} stoffId - dominanter Stoff am Einschlag
  * @param {string} charakter - `sprengung|splitter|brand|durchschlag|beben`
  * @param {string} gruppe - Wirkgruppe (`wirkgruppe(damageType)`)
+ * @param {boolean} [fein] - Zerstörungsfassung 7: feingetunte Tabelle (`STOFF_FEIN`)
  * @returns {{radius:number, tiefe:number, unzerstoerbar:boolean, reaktion:string|null, nebenbrueche:number}}
  *   `radius` und `tiefe` sind Faktoren auf den Krater der Fassung 4.
  */
-export function stoffWirkung(stoffId, charakter = 'sprengung', gruppe = 'wucht') {
-  const stoff = stoffById(stoffId);
+export function stoffWirkung(stoffId, charakter = 'sprengung', gruppe = 'wucht', fein = false) {
+  let stoff = stoffById(stoffId);
+  const aenderung = fein ? STOFF_FEIN[stoff.key] : null;
+  if (aenderung) stoff = { ...stoff, ...aenderung, anfaellig: { ...stoff.anfaellig, ...aenderung.anfaellig } };
   if (stoff.haerte === 'unzerstoerbar') {
     return { radius: 0, tiefe: 0, unzerstoerbar: true, reaktion: 'haelt', nebenbrueche: 0 };
   }
@@ -217,4 +235,4 @@ export function unzerstoerbar(stoffId) {
   return stoffById(stoffId).haerte === 'unzerstoerbar';
 }
 
-export default { STOFF, STOFFE, HAERTEN, WIRKGRUPPEN, CHARAKTER_FAKTOR, stoffById, stoffWirkung, wirkgruppe, bebenWirkt, unzerstoerbar };
+export default { STOFF, STOFFE, STOFF_FEIN, HAERTEN, WIRKGRUPPEN, CHARAKTER_FAKTOR, stoffById, stoffWirkung, wirkgruppe, bebenWirkt, unzerstoerbar };
