@@ -275,3 +275,76 @@ export const LEGENDARY_WEIGHTS = Object.freeze({
 });
 
 export default GUENTHER_IDENTITY;
+
+/*
+ * ============================================================================
+ * Fassung 2: Günthers Aktionen (Versionsmarke `config.guenther`, AGENTS.md §2)
+ * ============================================================================
+ *
+ * Günther kann mehr, als zu laufen, zu pinkeln und zu kacken: Er frisst Kisten,
+ * hüpft, zieht am Seil, wühlt, kuschelt, lässt sich den Rücken kraulen, macht
+ * Sitz und Platz und dreht gelegentlich durch. Das ändert den Verlauf jeder
+ * Partie, in der er auftritt — deshalb trägt der Replay-Kopf `config.guenther`:
+ *
+ *   - `GUENTHER_ALT` (1): nur Laufen, Pinkeln, Kacken, Glücksrad. Das Feld FEHLT
+ *     in jeder Aufzeichnung aus der Zeit davor; `ReplayRecorder.fromJSON` setzt
+ *     dann diesen Wert. Bit für Bit das alte Verhalten.
+ *   - `GUENTHER_AKTIONEN` (2): wie 1, dazu die Aktionen unten. Sie würfeln mit
+ *     einem EIGENEN Teilgenerator (`GUENTHER_AKTION`), der Zufallsstrom der
+ *     Fassung 1 bleibt unberührt.
+ *
+ * Neue Aufzeichnungen tragen IMMER das Feld.
+ */
+export const GUENTHER_ALT = 1;
+export const GUENTHER_AKTIONEN = 2;
+/** Fassung NEUER Partien (Server und Client geben sie ausdrücklich mit). */
+export const GUENTHER_FASSUNG_STANDARD = GUENTHER_AKTIONEN;
+
+/**
+ * Fehlende oder unbekannte Werte sind `GUENTHER_ALT`: Wer die Marke nicht trägt,
+ * spielt wie vorher. (Anders als bei `kisten` gilt das schon im Konstruktor von
+ * `MatchController` und `ReplayRecorder`: Ein Match ohne Angabe bleibt Bit für Bit
+ * das alte.)
+ */
+export function normalisiereGuenther(fassung) {
+  return fassung === GUENTHER_AKTIONEN ? GUENTHER_AKTIONEN : GUENTHER_ALT;
+}
+
+/**
+ * Posen, die der Client als Sprite zeichnet. Die Reihenfolge ist das Drahtformat
+ * (Index in den Flag-Bits 1–5 des Günther-Blocks) — nur hinten anhängen.
+ */
+export const GUENTHER_POSEN = Object.freeze([
+  'stehen', 'laufen', 'sitz', 'platz', 'huepfen', 'essen', 'kacken', 'wuehlen',
+  'ziehen', 'kuscheln', 'rueckenlage', 'bellen', 'schlafen', 'schuetteln',
+]);
+
+/**
+ * Die Aktionen (Fassung 2).
+ *
+ * `gewicht`: Auswahlgewicht. `ticks`: Dauer. `wirkung`: Tick (vom Start gezählt),
+ * an dem die Wirkung eintritt. `pose`: Sprite. `braucht`: Bedingung
+ * (`kiste`: Kiste in `reichweite`; `spieler`: Spieler in `reichweite`).
+ * `ruhig`: Pinkel- und Kack-Uhr stehen, solange die Aktion läuft (Sitz, Platz).
+ */
+export const GUENTHER_AKTION_REGELN = Object.freeze({
+  /** Wartezeit zwischen zwei Aktionen. */
+  intervalTicks: [150, 280],
+  /** Zwei Aktionen nie unmittelbar hintereinander dieselbe. */
+  essen: Object.freeze({ gewicht: 3, ticks: 70, wirkung: 35, pose: 'essen', braucht: 'kiste', reichweite: 150, heilung: 20, heilReichweite: 180 }),
+  huepfen: Object.freeze({ gewicht: 3, ticks: 50, wirkung: 25, pose: 'huepfen' }),
+  ziehen: Object.freeze({ gewicht: 2, ticks: 70, wirkung: 35, pose: 'ziehen', braucht: 'spieler', reichweite: 260, zugX: 4.5, zugY: -2.5 }),
+  wuehlen: Object.freeze({ gewicht: 3, ticks: 80, wirkung: 40, pose: 'wuehlen', kraterRadius: 11, kraterTiefe: 70, fundChance: 0.35 }),
+  kuscheln: Object.freeze({ gewicht: 4, ticks: 90, wirkung: 80, pose: 'kuscheln', braucht: 'spieler', reichweite: 90, heilung: 15 }),
+  kraulen: Object.freeze({ gewicht: 2, ticks: 100, wirkung: 90, pose: 'rueckenlage', braucht: 'spieler', reichweite: 70, heilung: 28}),
+  sitz: Object.freeze({ gewicht: 2, ticks: 90, wirkung: 90, pose: 'sitz', ruhig: true }),
+  platz: Object.freeze({ gewicht: 2, ticks: 120, wirkung: 120, pose: 'platz', ruhig: true }),
+  /** Wildes Bellen: Chaos — Spieler in `radius` werden alle `takt` Ticks aufgescheucht. */
+  chaos: Object.freeze({ gewicht: 1.5, ticks: 150, wirkung: 0, pose: 'bellen', radius: 260, takt: 30, stossX: 3.2, stossY: -3, tempo: 2.2 }),
+});
+
+/** Reihenfolge der Auswahl (feste Reihenfolge = deterministisch). */
+export const GUENTHER_AKTION_IDS = Object.freeze(Object.keys(GUENTHER_AKTION_REGELN).filter(k => k !== 'intervalTicks'));
+
+/** Wie lange die Pose „kacken" beim Ablegen eines Haufens steht. */
+export const GUENTHER_KACK_POSE_TICKS = 36;

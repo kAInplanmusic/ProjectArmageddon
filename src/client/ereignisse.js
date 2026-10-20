@@ -710,6 +710,75 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   /*
+   * Günthers Aktionen (Fassung 2) und Cookie — in beiden Betriebsarten gleich:
+   * Der Server schickt jedes Motorereignis, die Pose steht im Snapshot. Hier nur
+   * Protokollzeile und Klang.
+   */
+  guenther_aktion: beide((k, n) => {
+    const text = {
+      essen: 'Günther frisst eine Kiste', huepfen: 'Günther hüpft vor Freude', ziehen: 'Günther zieht am Seil',
+      wuehlen: 'Günther wühlt im Boden', kuscheln: 'Günther will kuscheln', kraulen: 'Günther liegt auf dem Rücken — kraul ihn!',
+      sitz: 'Günther macht Sitz', platz: 'Günther macht Platz', chaos: 'Günther dreht durch!',
+    }[n.aktion];
+    if (text) k.hud?.log(text, n.aktion === 'chaos' ? 'danger' : 'neutral');
+    const klang = { essen: 'fressen', huepfen: 'bellen', ziehen: 'bellen', chaos: 'bellen', kuscheln: 'winseln', kraulen: 'winseln' }[n.aktion];
+    if (klang) k.sound?.verarbeite({ type: klang, x: n.x, y: n.y });
+  }),
+
+  guenther_aktion_wirkung: beide((k, n) => {
+    if (n.fund) {
+      k.hud?.log('Günther hat etwas ausgegraben', 'good');
+      k.sound?.verarbeite({ type: 'kiste', x: n.x, y: n.y });
+    } else if (n.amount > 0 && n.playerId != null) {
+      k.hud?.log(`${k.nameOf?.(n.playerId)} fühlt sich besser (+${n.amount})`, 'good');
+    } else if (n.aktion === 'ziehen' && n.playerId != null) {
+      k.hud?.log(`${k.nameOf?.(n.playerId)} wird am Seil gezogen`, 'neutral');
+    }
+    if (n.aktion === 'chaos') k.sound?.verarbeite({ type: 'bellen', x: n.x, y: n.y, pegel: 0.8 });
+  }),
+
+  cookie_miau: beide((k, n) => {
+    // Die Lautstärke IST die Dringlichkeit: leise, laut, Hungerwut.
+    k.sound?.verarbeite({ type: `miau_${n.stufe === 'wut' ? 'wut' : n.stufe}`, x: n.x, y: n.y, pegel: n.pegel });
+    if (n.stufe === 'laut' || n.stufe === 'wut') k.hud?.log(`Cookie miaut ${n.stufe === 'wut' ? 'in Hungerwut' : 'laut'} (Hunger ${n.hunger})`, n.stufe === 'wut' ? 'danger' : 'neutral');
+  }),
+
+  cookie_gefuettert: beide((k, n) => {
+    k.hud?.log(n.playerId != null ? `${k.nameOf?.(n.playerId)} füttert Cookie` : 'Cookie frisst eine Kiste', 'good');
+    k.sound?.verarbeite({ type: 'fressen', x: n.x, y: n.y });
+  }),
+
+  cookie_kuschelt: beide((k, n) => {
+    k.hud?.log(`${k.nameOf?.(n.playerId)} kuschelt mit Cookie (+${n.amount})`, 'good');
+  }),
+
+  cookie_tobt: beide((k, n) => {
+    k.hud?.log('Cookie tobt vor Hunger und zerstört alles!', 'danger');
+    k.sound?.verarbeite({ type: 'miau_wut', x: n.x, y: n.y, pegel: 1 });
+  }),
+
+  cookie_erschoepft: beide((k) => {
+    k.hud?.log('Cookie bricht erschöpft zusammen', 'neutral');
+  }),
+
+  cookie_zerstoert: beide(() => {
+    // Der Krater kommt als `terrain_destroyed` an und hat seinen eigenen Klang.
+  }),
+
+  cookie_schlag: beide((k, n) => {
+    k.hud?.log(`Cookie erwischt ${k.nameOf?.(n.playerId)} (−${n.amount})`, 'danger');
+  }),
+
+  cookie_spielt: beide((k) => {
+    k.hud?.log('Cookie will spielen …', 'neutral');
+  }),
+
+  cookie_schockwelle: beide((k, n) => {
+    k.hud?.log('Kosmische Schockwelle! Cookie hat gespielt.', 'danger');
+    k.sound?.verarbeite({ type: 'schockwelle', x: n.x, y: n.y });
+  }),
+
+  /*
    * Sprung — in BEIDEN Betriebsarten.
    *
    * Lokal entsteht das Ereignis im eigenen Motor, online kommt es vom Server

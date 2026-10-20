@@ -59,7 +59,7 @@ const begrenze01 = wert => Math.max(0, Math.min(1, Number(wert) || 0));
 
 const leereZaehler = () => ({
   explosion: 0, schuss: 0, treffer: 0, donner: 0, einschlag: 0, wasser: 0, truemmer: 0,
-  landung: 0, tod: 0, kiste: 0, ui: 0, ticken: 0,
+  landung: 0, tod: 0, kiste: 0, ui: 0, ticken: 0, tier: 0,
 });
 
 /** Abstand-Fenster, in dem zwei Meldungen als EIN Klang gelten (s). */
@@ -516,6 +516,15 @@ export class SoundMixer {
         return this.#einfach('tod', 'tod', 'tod', { x, y });
       case 'kiste':
         return this.#einfach('kiste', 'kiste', 'kiste', { x, y });
+      case 'bellen':
+      case 'winseln':
+      case 'fressen':
+      case 'miau_leise':
+      case 'miau_laut':
+      case 'miau_wut':
+      case 'schockwelle':
+        // Tier-NPCs: der Pegel kommt vom Ereignis (bei Cookie die Dringlichkeit).
+        return this.#einfach('tier', 'tier', ereignis.type, { x, y, pegel: Number(ereignis.pegel ?? 1), laufzeit: ereignis.type === 'schockwelle' });
       case 'ticken':
         return this.#einfach('ticken', 'ticken', 'ticken', { x, y });
       case 'waffenwechsel':

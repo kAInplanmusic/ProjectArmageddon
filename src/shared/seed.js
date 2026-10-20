@@ -33,6 +33,10 @@ export const SEED_OFFSETS = Object.freeze({
    * diese EINE Ziehung keinen anderen Zufallsstrom verschiebt.
    */
   VALHALLA: 6_000_000,
+  /** Günthers Aktionen (Fassung 2) — eigener Zweig, der Strom der Fassung 1 bleibt unberührt. */
+  GUENTHER_AKTION: 7_000_000,
+  /** Cookie, der Kater des Weltuntergangs (Fassung 2). */
+  COOKIE: 8_000_000,
 });
 
 /**

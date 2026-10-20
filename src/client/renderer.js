@@ -12,6 +12,8 @@ import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
+import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
+import { holeTierPose, ladeTierPosenVor } from './tierBilder.js';
 import { prefersReducedMotion } from './dom.js';
 import {
   erzeugePartikel, schreitePartikelFort,
@@ -2032,6 +2034,64 @@ export class Renderer {
   }
 
   /**
+   * Zeichnet ein Tier-NPC als Pose-Sprite (Günther, Cookie).
+   *
+   * @returns {boolean} false, wenn das Bild noch nicht geladen ist
+   */
+  #zeichneTier(art, tier) {
+    if (!this.#tierPosenAngefordert?.has(art)) {
+      (this.#tierPosenAngefordert ??= new Set()).add(art);
+      ladeTierPosenVor(art);
+    }
+    const eintrag = holeTierPose(art, tier.pose);
+    if (!eintrag) return false;
+    const k = eintrag.kante / 256;
+    const richtung = (tier.richtung >= 0 ? 1 : -1) * (eintrag.spiegeln ? -1 : 1);
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(tier.x, tier.y);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(0, 1, eintrag.kante * 0.3, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.scale(richtung, 1);
+    ctx.drawImage(eintrag.bild, -eintrag.anker.x * k, -eintrag.anker.y * k, 256 * k, 256 * k);
+    ctx.restore();
+    return true;
+  }
+
+  #tierPosenAngefordert = null;
+
+  /** Cookie, der Kater des Weltuntergangs: Sprite je Pose, darüber Name und Hungerbalken. */
+  #drawCookie(cookie) {
+    if (!cookie?.aktiv) return;
+    const ctx = this.ctx;
+    if (!this.#zeichneTier('cookie', cookie)) {
+      // Rückfall bis das Bild da ist: ein schlichter Körper.
+      ctx.save();
+      ctx.fillStyle = 'rgb(120,90,70)';
+      ctx.beginPath();
+      ctx.ellipse(cookie.x, cookie.y - 14, 22, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    const stufe = cookieStufe(cookie.hunger ?? 0);
+    const breite = 46;
+    const x = cookie.x - breite / 2;
+    const y = cookie.y - 92;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(x - 1, y - 1, breite + 2, 7);
+    ctx.fillStyle = stufe === 'wut' ? '#e5484d' : stufe === 'laut' ? '#f0a020' : stufe === 'leise' ? '#d8c24a' : '#5aa86a';
+    ctx.fillRect(x, y, breite * Math.min(1, (cookie.hunger ?? 0) / COOKIE_HUNGER.max), 5);
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Cookie', cookie.x, y - 4);
+    ctx.restore();
+  }
+
+  /**
    * Zeichnet Günther als Kleinspitz.
    *
    * Prozedural statt als Bild: Der Hund ist klein, bewegt sich und muss zu
@@ -2043,6 +2103,8 @@ export class Renderer {
    */
   #drawGuenther(guenther) {
     if (!guenther?.aktiv) return;
+    // Fassung 2 trägt eine Pose: dann zeichnet das Sprite (geladen) — sonst der Hund unten.
+    if (guenther.pose && this.#zeichneTier('guenther', guenther)) return;
     const { coat, coatDark, belly, nose, height, length } = GUENTHER_IDENTITY;
     const richtung = guenther.richtung >= 0 ? 1 : -1;
     const x = guenther.x - length / 2;
@@ -2530,6 +2592,7 @@ export class Renderer {
     this.#drawFaelle();
     this.#drawFigurEffekte();
     this.#drawGuenther(state.guenther);
+    this.#drawCookie(state.cookie);
     this.#drawProjectiles(state.projectiles ?? [], state.entities ?? []);
     this.#drawWiederholung(wiederholung);
     /*

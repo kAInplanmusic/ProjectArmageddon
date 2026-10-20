@@ -53,7 +53,7 @@ function rekorder(name, sink) {
 }
 
 const nutzlast = () => new Proxy(
-  { runs: [1, 2, 3, 4, 5, 6, 7, 8], zellen: [1, 2], zuege: [1, 2, 3, 4], teile: [], x: 10, y: 20, radius: 20, hit: true, target: 1, amount: 5, damage: 10 },
+  { aktion: 'essen', stufe: 'leise', runs: [1, 2, 3, 4, 5, 6, 7, 8], zellen: [1, 2], zuege: [1, 2, 3, 4], teile: [], x: 10, y: 20, radius: 20, hit: true, target: 1, amount: 5, damage: 10 },
   { get: (t, p) => (p in t ? t[p] : (typeof p === 'string' ? 3 : undefined)) },
 );
 
@@ -75,9 +75,17 @@ test('Ausgeführt: jede Wirkung löst nur die im Katalog genannten Klänge und B
           assert.ok(anim.has(methode), `${art} (${zweig}): Bildwirkung "${methode}" fehlt im Katalog`);
         }
       };
-      for (let i = 0; i < 4; i += 1) {
-        try { wirkung[zweig](rekorder('k', sink), nutzlast()); } catch (fehler) {
-          if (fehler?.name === 'AssertionError') throw fehler;
+      // Dynamische Klangarten hängen an Feldern der Nutzlast (`aktion`, `stufe`): alle bekannten Werte durchspielen.
+      const varianten = [{}];
+      for (const aktion of ['essen', 'huepfen', 'ziehen', 'chaos', 'kuscheln', 'kraulen']) varianten.push({ aktion });
+      for (const stufe of ['leise', 'laut', 'wut']) varianten.push({ stufe });
+      for (const variante of varianten) {
+        for (let i = 0; i < 2; i += 1) {
+          const n = nutzlast();
+          Object.assign(n, variante);
+          try { wirkung[zweig](rekorder('k', sink), n); } catch (fehler) {
+            if (fehler?.name === 'AssertionError') throw fehler;
+          }
         }
       }
     }

@@ -33,16 +33,17 @@ test.describe('Hilfe-Bereich', () => {
     await oeffneHilfe(page);
 
     const reiter = page.locator('#hilfe-tabs button');
-    // Sechs Themen: Klassen, Sidegrades, Counterplay, Loot, Karte, Ton. Aus der
+    // Sieben Themen: Klassen, Sidegrades, Counterplay, Loot, Karte, Ton, Günther und Cookie. Aus der
     // Anzeige gelesen, nicht aus dem Code — ein Test gegen die eigene Konstante
     // würde nichts belegen.
-    await expect(reiter).toHaveCount(6);
+    await expect(reiter).toHaveCount(7);
     await expect(reiter.nth(0)).toHaveText(/Klassen/);
     await expect(reiter.nth(1)).toHaveText(/Sidegrades/);
     await expect(reiter.nth(2)).toHaveText(/Counterplay/);
     await expect(reiter.nth(3)).toHaveText(/Loot/);
     await expect(reiter.nth(4)).toHaveText(/Karte/);
     await expect(reiter.nth(5)).toHaveText(/Ton und Musik/);
+    await expect(reiter.nth(6)).toHaveText(/Günther und Cookie/);
 
     // Der erste Reiter ist ausgewählt (aria-selected, wie in der Kader-Ansicht).
     await expect(reiter.nth(0)).toHaveAttribute('aria-selected', 'true');

@@ -38,7 +38,8 @@ import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
-import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
+import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD, GUENTHER_AKTION_REGELN } from '../shared/config/guenther.js';
+import { COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT } from '../shared/config/cookie.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
 import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
@@ -1078,6 +1079,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom,
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, // neue Partien: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1769,6 +1771,7 @@ class Game {
        * (`?.aktiv`, `?? []`) — dieselbe Absicherung wie lokal.
        */
       guenther: snapshot.guenther ?? null,
+      cookie: snapshot.cookie ?? null,
       terrainWidth: this.remoteTerrain?.width ?? this.renderer.width,
       terrainHeight: this.remoteTerrain?.height ?? this.renderer.height,
     };
@@ -3650,6 +3653,7 @@ function buildHilfeView() {
     { id: 'loot', label: 'Loot und Seltenheiten', zeichne: zeichneLoot },
     { id: 'karte', label: 'Karte und Gelände', zeichne: zeichneKarte },
     { id: 'ton', label: 'Ton und Musik', zeichne: zeichneTon },
+    { id: 'tiere', label: 'Günther und Cookie', zeichne: zeichneTiere },
   ];
 
   let gewaehlt = seiten[0].id;
@@ -3683,6 +3687,47 @@ function buildHilfeView() {
   });
 
   if (behaelter?.open) zeichnen();
+}
+
+/**
+ * Reiter „Günther und Cookie" — die Tier-NPCs. Alle Zahlen stammen aus der Config
+ * (`config/guenther.js`, `config/cookie.js`), die auch der Motor liest; es gibt
+ * hier keine zweite Fassung der Werte.
+ */
+function zeichneTiere(container) {
+  const R = GUENTHER_AKTION_REGELN;
+  const sek = ticks => `${Math.round(ticks / 6) / 10} s`;
+  container.append(textEl('p', 'Zwei neutrale Tiere laufen oder liegen auf der Karte. Sie gehören keinem Team und lassen sich nicht besiegen.', 'h-einleitung'));
+
+  container.append(textEl('h3', 'Günther, der Kleinspitz'));
+  container.append(textEl('p', 'Er erscheint im Schnitt zweimal pro Spiel, pinkelt an, hinterlässt Häufchen (Schaden und Verlangsamung) und löst bei Berührung das Glücksrad aus. Dazu kommen seine Aktionen:'));
+  const liste = document.createElement('ul');
+  for (const [text, regel] of [
+    [`Essen: frisst eine Kiste in der Nähe und heilt den nächsten Spieler um ${R.essen.heilung}.`, R.essen],
+    ['Hüpfen: reine Freude, ohne Folgen.', R.huepfen],
+    ['Ziehen (Seil): zieht einen Spieler in der Nähe zu sich heran.', R.ziehen],
+    [`Wühlen: reißt ein kleines Loch ins Gelände und gräbt mit ${Math.round(R.wuehlen.fundChance * 100)} % Chance eine Kiste aus.`, R.wuehlen],
+    [`Kuscheln: stillstehen lohnt sich, +${R.kuscheln.heilung} Leben.`, R.kuscheln],
+    [`Rücken kraulen: liegt er auf dem Rücken, gibt es +${R.kraulen.heilung} Leben (Bonus).`, R.kraulen],
+    ['Sitz und Platz: er hält still und pinkelt und kackt in dieser Zeit nicht.', R.sitz],
+    [`Wildes Bellen: er dreht durch und scheucht alle im Umkreis von ${R.chaos.radius} px auf (Chaos).`, R.chaos],
+  ]) {
+    liste.append(textEl('li', `${text} (${sek(regel.ticks)})`));
+  }
+  container.append(liste);
+
+  container.append(textEl('h3', 'Cookie, der Kater des Weltuntergangs'));
+  container.append(textEl('p', 'Cookie schläft oder frisst. Sein Hunger wächst stetig, und je größer er wird, desto lauter miaut er: leise, laut, Hungerwut. Die Lautstärke zeigt, wie dringend es ist.'));
+  const st = COOKIE_HUNGER.stufen;
+  const hunger = document.createElement('ul');
+  hunger.append(
+    textEl('li', `Hunger ab ${st.leise}: leises Miauen. Ab ${st.laut}: lautes Miauen. Ab ${st.wut}: Hungerwut.`),
+    textEl('li', `Füttern: im Laufen an ihn herangehen (−${COOKIE_PFLEGE.fuetternHunger} Hunger) oder eine Kiste in seine Nähe legen (Futternapf, −${COOKIE_PFLEGE.napfHunger}).`),
+    textEl('li', `Kuscheln: still neben ihm stehen (−${COOKIE_PFLEGE.kuschelnHunger} Hunger, +${COOKIE_PFLEGE.kuschelnHeilung} Leben).`),
+    textEl('li', `Verhungert er fast, tobt er: Er reißt Löcher ins Gelände, zerstört Kisten und schlägt Figuren (${COOKIE_WUT.schlagSchaden} Schaden).`),
+    textEl('li', 'Extrem selten will er spielen: Das löst eine kosmische Schockwelle aus.'),
+  );
+  container.append(hunger);
 }
 
 /** Kleiner Helfer: ein Element mit Textinhalt. */
