@@ -52,6 +52,11 @@ test('Günther wird gezeichnet, wenn er aktiv ist', async ({ page }) => {
     const breite = 90;
     const hoehe = 55;
 
+    // Die Messung liest Kartenpixel: Ohne Kamera zeichnet der Renderer 1:1. Mit der
+    // Kameraführung (Zoom, Ausschnitt um die Figuren) läge das Fenster woanders.
+    const kamera = renderer.kamera;
+    renderer.setKamera(null);
+
     // Mit Günther zeichnen.
     renderer.render(zustand, { aim: null, water: api.game.water, blastRadius: 0 });
     const mitHund = ctx.getImageData(links, oben, breite, hoehe).data;
@@ -61,6 +66,7 @@ test('Günther wird gezeichnet, wenn er aktiv ist', async ({ page }) => {
     // baut bei jedem Aufruf ein neues Objekt.
     renderer.render({ ...zustand, guenther: null }, { aim: null, water: api.game.water, blastRadius: 0 });
     const ohneHund = ctx.getImageData(links, oben, breite, hoehe).data;
+    renderer.setKamera(kamera);
 
     let unterschiede = 0;
     for (let i = 0; i < mitHund.length; i += 4) {

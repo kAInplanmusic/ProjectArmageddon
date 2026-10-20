@@ -183,6 +183,10 @@ test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
     const festeZeit = echteUhr();
     performance.now = () => festeZeit;
     let mitHund; let ohneHundEins; let ohneHundZwei;
+    // Ohne Kamera zeichnet der Renderer die ganze Karte 1:1 — mit der Kameraführung
+    // (Zoom um die Figuren) kann Günther außerhalb des Ausschnitts stehen.
+    const kamera = renderer.kamera;
+    renderer.setKamera(null);
     try {
       const uhr = 777;
       mitHund = zeichne(zustand, uhr);
@@ -190,6 +194,7 @@ test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
       ohneHundZwei = zeichne({ ...zustand, guenther: null }, uhr);
     } finally {
       performance.now = echteUhr;
+      renderer.setKamera(kamera);
     }
 
     const unterschied = (a, b) => {
