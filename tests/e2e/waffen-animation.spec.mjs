@@ -159,6 +159,44 @@ test.describe('Waffen-Animation', () => {
     expect(fehler).toEqual([]);
   });
 
+  test('Kachel-Waffen: Orb (Zauber-Darstellung) oder herausgelöstes Motiv, nie die gerahmte Karte', async ({ page }) => {
+    const fehler = await matchStarten(page);
+    // pa_118 Feuerwesen: Orb; pa_034 Magischer Geschosszauber: Motiv ohne Rahmen
+    const spieler = await waffeWaehlen(page, 'pa_118');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_118', spieler, { timeout: 15000 });
+    const orb = (await waffenZustand(page)).posen[spieler];
+    expect(orb.kachel).toBe('orb');
+    expect(orb.orb).toBe(true);
+    await page.waitForTimeout(300);
+    await ablegen(page, 'waffen-animation-kachel-orb');
+
+    await waffeWaehlen(page, 'pa_034');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_034', spieler, { timeout: 15000 });
+    const motiv = (await waffenZustand(page)).posen[spieler];
+    expect(motiv.kachel).toBe('motiv');
+    expect(motiv.orb).toBe(false);
+    await page.waitForTimeout(300);
+    await ablegen(page, 'waffen-animation-kachel-motiv');
+    expect(fehler).toEqual([]);
+  });
+
+  test('Lage und Figurtyp: Rucksack-Waffen hinter dem Körper, Nahkampf davor, Hand je Figurtyp', async ({ page }) => {
+    const fehler = await matchStarten(page);
+    const spieler = await waffeWaehlen(page, 'pa_112');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_112', spieler, { timeout: 15000 });
+    const jetpack = (await waffenZustand(page)).posen[spieler];
+    expect(jetpack.lage).toBe('hinter');
+    expect(['humanoid', 'tier', 'fahrzeug', 'schweber', 'wesen']).toContain(jetpack.figurTyp);
+    await waffeWaehlen(page, 'pa_001');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_001', spieler, { timeout: 15000 });
+    expect((await waffenZustand(page)).posen[spieler].lage).toBe('vor');
+    expect(fehler).toEqual([]);
+  });
+
   test('Ohne Atlas: Rückfall auf das Icon, das Spiel läuft weiter', async ({ page }) => {
     await page.route('**/weapon-sprites/atlas_*.png*', route => route.abort());
     const fehler = await matchStarten(page);

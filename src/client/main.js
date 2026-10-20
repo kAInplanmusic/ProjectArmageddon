@@ -2256,7 +2256,7 @@ class Game {
       shooter.y,
       payload.hitX,
       payload.hitY,
-      { hit: Boolean(payload.hit) },
+      { hit: Boolean(payload.hit), waffeId: payload.weaponId },
     );
   }
 

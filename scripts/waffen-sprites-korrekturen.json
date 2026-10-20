@@ -8,7 +8,11 @@
    895,
    28
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "orb",
+   "grund": "Motiv zerfaellt (Flammen, Truemmer): Zauber-Orb mit Kachelbild"
+  }
  },
  "pa_141": {
   "rect": [
@@ -18,7 +22,13 @@
    911,
    10
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_142": {
   "rect": [
@@ -28,7 +38,13 @@
    895,
    40
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_144": {
   "rect": [
@@ -38,7 +54,13 @@
    909,
    60
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_145": {
   "rect": [
@@ -48,7 +70,13 @@
    918,
    60
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_146": {
   "rect": [
@@ -58,7 +86,13 @@
    870,
    30
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_147": {
   "rect": [
@@ -68,7 +102,13 @@
    973,
    30
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_148": {
   "rect": [
@@ -78,7 +118,13 @@
    905,
    80
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.12,
+   "schwelle": 60,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_149": {
   "rect": [
@@ -88,7 +134,13 @@
    920,
    55
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_150": {
   "rect": [
@@ -98,10 +150,17 @@
    905,
    300
   ],
-  "form": "kachel"
+  "form": "kachel",
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
  },
  "pa_012": {
-  "ringAbstand": 40
+  "ringAbstand": 40,
+  "schwelle": 60
  },
  "pa_054": {
   "ringAbstand": 90
@@ -122,16 +181,26 @@
   "keineDrehung": true
  },
  "pa_043": {
-  "keineDrehung": true
+  "keineDrehung": true,
+  "art": "geraet"
  },
  "pa_053": {
-  "keineDrehung": true
+  "keineDrehung": true,
+  "art": "wurf"
  },
  "pa_061": {
   "keineDrehung": true
  },
  "pa_002": {
-  "umkehren": true
+  "umkehren": true,
+  "grip": [
+   26,
+   64
+  ],
+  "muzzle": [
+   108,
+   58
+  ]
  },
  "pa_005": {
   "umkehren": true
@@ -140,13 +209,23 @@
   "umkehren": true
  },
  "pa_008": {
-  "umkehren": true
+  "umkehren": true,
+  "schwelle": 60
  },
  "pa_018": {
-  "umkehren": true
+  "umkehren": true,
+  "schwelle": 60
  },
  "pa_019": {
-  "umkehren": true
+  "umkehren": true,
+  "grip": [
+   25,
+   68
+  ],
+  "muzzle": [
+   100,
+   56
+  ]
  },
  "pa_021": {
   "umkehren": true
@@ -161,7 +240,8 @@
   "umkehren": true
  },
  "pa_033": {
-  "umkehren": true
+  "umkehren": true,
+  "art": "stab"
  },
  "pa_040": {
   "umkehren": true
@@ -178,10 +258,12 @@
   "muzzle": [
    112,
    56
-  ]
+  ],
+  "drehen": 8
  },
  "pa_063": {
-  "umkehren": true
+  "umkehren": true,
+  "art": "geraet"
  },
  "pa_039": {
   "grip": [
@@ -211,6 +293,227 @@
   "muzzle": [
    106,
    62
+  ]
+ },
+ "pa_034": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.12,
+   "schwelle": 60,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_035": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.12,
+   "schwelle": 100,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_071": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.09,
+   "schwelle": 60,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_073": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_074": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_076": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_080": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_081": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_086": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.12,
+   "schwelle": 60,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_087": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_092": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_093": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_103": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_105": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_107": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_116": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.12,
+   "schwelle": 60,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_134": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.12,
+   "schwelle": 60,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_135": {
+  "kachel": {
+   "modus": "motiv",
+   "innen": 0.07,
+   "schwelle": 45,
+   "grund": "Motiv aus der Kachel herausgeloest"
+  }
+ },
+ "pa_139": {
+  "drehen": -18,
+  "art": "geraet"
+ },
+ "pa_059": {
+  "art": "geraet",
+  "drehen": -30
+ },
+ "pa_067": {
+  "art": "geraet"
+ },
+ "pa_064": {
+  "art": "geraet"
+ },
+ "pa_140": {
+  "art": "geraet"
+ },
+ "pa_037": {
+  "art": "geraet"
+ },
+ "pa_113": {
+  "art": "geraet"
+ },
+ "pa_030": {
+  "art": "geraet"
+ },
+ "pa_049": {
+  "art": "wurf",
+  "grip": [
+   60,
+   56
+  ],
+  "muzzle": [
+   106,
+   66
+  ]
+ },
+ "pa_058": {
+  "art": "bogen"
+ },
+ "pa_082": {
+  "art": "stab"
+ },
+ "pa_137": {
+  "art": "stab"
+ },
+ "pa_138": {
+  "art": "stab"
+ },
+ "pa_020": {
+  "art": "stab"
+ },
+ "pa_101": {
+  "art": "schild"
+ },
+ "pa_011": {
+  "schwelle": 60
+ },
+ "pa_009": {
+  "schwelle": 60
+ },
+ "pa_001": {
+  "schwelle": 60
+ },
+ "pa_017": {
+  "schwelle": 60
+ },
+ "pa_056": {
+  "grip": [
+   26,
+   56
+  ],
+  "muzzle": [
+   120,
+   44
   ]
  }
 }

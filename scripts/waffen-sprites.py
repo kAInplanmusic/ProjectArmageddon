@@ -202,6 +202,50 @@ def freistellen(img, rect=None, schwelle=SCHWELLE, abstand=0):
     return fg, diff
 
 
+def motiv_maske(img, kachel, par):
+    """Motiv einer Kachel (Zauber-/Ultimate-Bild mit Rahmen): Maske des Bildes innerhalb des Rahmens.
+
+    Innerhalb der Kachel (Rand `innen` als Anteil der Breite abgezogen) wird der Hintergrund aus dem
+    Randring der inneren Region per quadratischem Flaechenfit geschaetzt; alles, was um mehr als
+    `schwelle` abweicht, gehoert zum Motiv.  Danach: Oeffnen, groesste Komponenten behalten,
+    Schliessen, Loecher fuellen.  Gibt `None` zurueck, wenn nichts Brauchbares uebrig bleibt."""
+    ys, xs = np.nonzero(kachel)
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    t = int(par.get("innen", 0.07) * (x1 - x0))
+    inner = np.zeros_like(kachel)
+    inner[y0 + t:y1 - t, x0 + t:x1 - t] = True
+    inner &= kachel
+    ring = inner & ~ndi.binary_erosion(inner, iterations=8)
+    h, wd, _ = img.shape
+    yy, xx = np.mgrid[0:h, 0:wd].astype(np.float32)
+    sx, sy = (x1 - x0) / 2, (y1 - y0) / 2
+    x = (xx - (x0 + x1) / 2) / sx
+    y = (yy - (y0 + y1) / 2) / sy
+    basis = np.stack([np.ones_like(x), x, y, x * x, x * y, y * y], -1)
+    a = basis[ring]
+    modell = np.zeros_like(img)
+    for c in range(3):
+        v = img[..., c][ring]
+        nutz = np.ones(len(v), bool)
+        koef = None
+        for _ in range(4):
+            koef, *_ = np.linalg.lstsq(a[nutz], v[nutz], rcond=None)
+            res = np.abs(a @ koef - v)
+            nutz = res < max(8.0, float(np.percentile(res, 75)))
+        modell[..., c] = basis @ koef
+    diff = np.abs(img - modell).max(2)
+    m = (diff > par.get("schwelle", 45)) & inner
+    m = ndi.binary_opening(m, iterations=2)
+    lab, n = ndi.label(m)
+    if n == 0:
+        return None
+    fl = np.bincount(lab.ravel())
+    fl[0] = 0
+    m = (fl > 0.05 * fl.max())[lab]
+    m = ndi.binary_fill_holes(ndi.binary_closing(m, iterations=6))
+    return m
+
+
 def rgba_aus(img, maske):
     """Defringe (1 px erodieren), Farben nach aussen verlaengern, RGBA-Bild (1024) bauen."""
     kern = ndi.binary_erosion(maske, iterations=1)
@@ -264,7 +308,10 @@ def ausrichten(bild, korr):
         flip = bool(korr.get("spiegeln") or korr.get("umkehren"))
         if flip:
             bild = bild.transpose(Image.FLIP_LEFT_RIGHT)
-        info.update(drehung=0.0, gespiegelt=flip, kompakt=True)
+        dreh = float(korr.get("drehen", 0.0))        # Dreiviertelansicht waagerecht kippen (Grad, gegen den Uhrzeigersinn)
+        if dreh:
+            bild = bild.rotate(dreh, resample=Image.BICUBIC, expand=True)
+        info.update(drehung=dreh, gespiegelt=flip, kompakt=True)
         return bild, info
     if abs(phi) < 8:
         phi = 0.0
@@ -317,27 +364,70 @@ def in_zelle(bild, groesse, fuellung=FUELLUNG):
     return zelle, skala, (ox, oy)
 
 
-def anker(zelle, kat, kompakt):
+def _mitte_y(a, x, breite=3):
+    """Mitte der Maske in der Spalte x (+-breite); liegt sie nicht in der Maske, der naechste Maskenpunkt."""
+    band = a[:, max(x - breite, 0):x + breite + 1]
+    zeilen = np.nonzero(band.any(axis=1))[0]
+    if len(zeilen) == 0:
+        ys, _ = np.nonzero(a)
+        return float(ys.mean())
+    mitte = (zeilen.min() + zeilen.max()) / 2.0
+    if not band[int(round(mitte))].any():
+        mitte = float(zeilen[np.abs(zeilen - mitte).argmin()])
+    return float(mitte)
+
+
+def _schwerpunkt(a, x_von, x_bis):
+    ys, xs = np.nonzero(a[:, x_von:x_bis + 1])
+    if len(xs) == 0:
+        ys, xs = np.nonzero(a)
+        return float(xs.mean()), float(ys.mean())
+    return float(xs.mean() + x_von), float(ys.mean())
+
+
+def anker(zelle, kat, kompakt, art="auto"):
+    """Griff- und Muendungsanker der held-Zelle (Spitze zeigt nach rechts).
+
+    Griff = Schwerpunkt des hinteren Drittels des Objekts (Nahkampf, Gewehre, Stab: Schaft/Kolben),
+    liegt auf der Hauptachse (Spaltenmitte).  Muendung = Spitze entlang der Hauptachse (rechter Rand).
+    Eigene Regeln je `art`: bogen (Griff am Mittelstueck), stab (Griff im unteren Drittel),
+    schild (Griff in der Mitte), wurf (Schwerpunkt: Granaten, Baelle, Wesen), geraet (hinteres
+    Drittel auch bei kompakten Bildern: Werfer, Kanonen).  Standard: Objekte = hinteres Drittel,
+    kompakte Bilder und Kacheln = Schwerpunkt.  Gibt (grip, muzzle, quelle) zurueck."""
     a = np.asarray(zelle)[..., 3] > 100
     ys, xs = np.nonzero(a)
-    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    x0, x1, y0, y1 = int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
     laenge = x1 - x0 + 1
-    if kompakt:
-        return ({"x": int(round(x0 + 0.40 * laenge)), "y": int(round((y0 + y1) / 2))},
-                {"x": int(x1), "y": int(round((y0 + y1) / 2))}, "standard")
-    spalte = a[:, max(x1 - 3, 0):x1 + 1]
-    my = np.nonzero(spalte.any(axis=1))[0]
-    muendung = {"x": int(x1), "y": int(round(my.mean()))}
-    gx = int(round(x0 + 0.30 * laenge))
-    band = a[:, max(gx - 3, 0):gx + 4]
-    gy_s = np.nonzero(band.any(axis=1))[0]
-    if len(gy_s) == 0:
-        return ({"x": gx, "y": int(round((y0 + y1) / 2))}, muendung, "standard")
-    if kat in ("ranged", "heavy_ranged", "tech"):
-        gy = gy_s.max() - 0.30 * (gy_s.max() - gy_s.min())      # Griff haengt unten
-    else:
-        gy = (gy_s.max() + gy_s.min()) / 2
-    return {"x": gx, "y": int(round(gy))}, muendung, "geometrie"
+    if art == "auto":
+        art = "wurf" if kompakt else "schaft"
+    cx, cy = _schwerpunkt(a, x0, x1)
+    mx_y = _mitte_y(a, x1, 4) if not kompakt else (y0 + y1) / 2.0
+    muendung = {"x": x1, "y": int(round(mx_y))}
+    if art in ("wurf", "schild", "wesen"):
+        gx = int(round(cx))
+        gy = int(round(cy)) if kompakt else int(round(_mitte_y(a, gx)))
+    elif art == "bogen":
+        gx = int(round(cx))
+        gy = int(round(_mitte_y(a, gx)))
+    elif art == "stab":
+        gx = int(round(x0 + 0.34 * laenge))
+        gy = int(round(_mitte_y(a, gx)))
+    else:   # schaft, geraet
+        hinten = int(x0 + 0.34 * laenge)
+        gxf, gyf = _schwerpunkt(a, x0, hinten)
+        gx = int(round(gxf))
+        gy = int(round(gyf if kompakt or art == "geraet" else _mitte_y(a, gx)))
+    if not a[min(max(gy, 0), a.shape[0] - 1), min(max(gx, 0), a.shape[1] - 1)]:
+        zeilen = np.nonzero(a[:, gx])[0]
+        if len(zeilen):
+            gy = int(zeilen[np.abs(zeilen - gy).argmin()])
+        else:
+            gx, gy = int(round(cx)), int(round(cy))
+    # Die Spitze liegt auf der Waagerechten durch den Griff (die Waffe zeigt ohne Neigung auf den Zielstrahl);
+    # sonst am naechsten Maskenpunkt der Spitzenspalten.
+    zeilen = np.nonzero(a[:, max(x1 - 3, 0):x1 + 1].any(axis=1))[0]
+    muendung = {"x": x1, "y": int(zeilen[np.abs(zeilen - gy).argmin()])}
+    return {"x": gx, "y": gy}, muendung, "geometrie"
 
 
 def flash_farbe(zelle):
@@ -392,6 +482,9 @@ GESCHOSS_ART = {
     "pa_104": "plasma", "pa_133": "ding", "pa_140": "plasma", "pa_142": "zauber",
     "pa_144": "ding", "pa_145": "stein", "pa_146": "ding", "pa_147": "feuer",
     "pa_150": "zauber",
+    # Platzierungs-/Selbstwirkungs-Waffen mit Projektil-Lieferung: Fluggeschoss statt Rueckfallkreis
+    "pa_032": "rakete", "pa_076": "zauber", "pa_079": "zauber", "pa_105": "zauber", "pa_124": "plasma",
+    "pa_141": "zauber", "pa_143": "zauber", "pa_148": "zauber", "pa_149": "zauber",
 }
 DREHEND = {"pa_049", "pa_050", "pa_051"}      # Wurfwaffen, die im Flug rotieren (Melee kommt hinzu)
 
@@ -549,11 +642,25 @@ def verarbeite(w, korr, ctx):
     k = korr.get(wid, {})
     img, quelle = lade_quelle(w["icon"])
     maske, _ = freistellen(img, k.get("rect"), k.get("schwelle", SCHWELLE), k.get("ringAbstand", 0))
-    bild = rgba_aus(img, maske)
-    ausricht, info = ausrichten(bild, k)
+    bild = rgba_aus(img, maske)                      # ganze Kachel / Waffe (Icon-Atlas)
+    kachel = k.get("form") == "kachel" or ist_kachel(maske)
+    kachel_info = None
+    held_quelle = bild
+    k_aus = k
+    if kachel:
+        kk = k.get("kachel", {})
+        modus = kk.get("modus", "orb")
+        if modus == "motiv":
+            mm = motiv_maske(img, maske, kk)
+            if mm is None:
+                raise SystemExit(f"{wid}: Motiv-Maske leer")
+            held_quelle = rgba_aus(img, mm)
+            k_aus = dict(k, keineDrehung=True)
+        kachel_info = {"modus": modus, "grund": kk.get("grund", "")}
+    ausricht, info = ausrichten(held_quelle, k_aus)
     held, skala, off = in_zelle(ausricht, ZELLE)
     icon, _, _ = in_zelle(bild, ZELLE)
-    gr, mu, ank_quelle = anker(held, w["category"], info["kompakt"])
+    gr, mu, ank_quelle = anker(held, w["category"], info["kompakt"], k.get("art", "auto"))
     if "grip" in k:
         gr, ank_quelle = {"x": k["grip"][0], "y": k["grip"][1]}, "korrektur"
     if "muzzle" in k:
@@ -561,24 +668,23 @@ def verarbeite(w, korr, ctx):
     a = np.asarray(held)[..., 3] > 100
     ys, xs = np.nonzero(a)
     inhalt = {"x": int(xs.min()), "y": int(ys.min()), "w": int(xs.max() - xs.min() + 1), "h": int(ys.max() - ys.min() + 1)}
-    flash = flash_farbe(held)
-    form = "kachel" if (info["kompakt"] and (k.get("form") == "kachel" or ist_kachel(maske))) else (
-        "kompakt" if info["kompakt"] else "objekt")
+    flash = flash_farbe(icon if kachel else held)
+    form = "kachel" if (info["kompakt"] and kachel) else ("kompakt" if info["kompakt"] else "objekt")
     k2 = dict(k)
     k2["form_ist_kachel"] = form == "kachel"
     proj, pmeta = projektil(w, held, flash, w["category"], k2)
-    return {
-        "w": w, "held": held, "icon": icon, "sil": silhouette(held), "proj": proj,
-        "meta": {
-            "id": wid, "name": w["name"], "category": w["category"], "subcategory": w["subcategory"],
-            "rarity": w["rarity"], "delivery": w["delivery"], "form": form,
-            "quelle": {"datei": quelle, "aufloesung": int(img.shape[0])},
-            "rotation": info["drehung"], "gespiegelt": info["gespiegelt"],
-            "streckung": info["streckung"], "content": inhalt,
-            "anchor": {"grip": gr, "muzzle": mu, "source": ank_quelle},
-            "projectile": pmeta, "flashColor": flash, "korrektur": bool(k),
-        },
+    meta = {
+        "id": wid, "name": w["name"], "category": w["category"], "subcategory": w["subcategory"],
+        "rarity": w["rarity"], "delivery": w["delivery"], "form": form,
+        "quelle": {"datei": quelle, "aufloesung": int(img.shape[0])},
+        "rotation": info["drehung"], "gespiegelt": info["gespiegelt"],
+        "streckung": info["streckung"], "content": inhalt,
+        "anchor": {"grip": gr, "muzzle": mu, "source": ank_quelle},
+        "projectile": pmeta, "flashColor": flash, "korrektur": bool(k),
     }
+    if kachel_info:
+        meta["kachel"] = kachel_info
+    return {"w": w, "held": held, "icon": icon, "sil": silhouette(held), "proj": proj, "meta": meta}
 
 
 def ist_kachel(maske):

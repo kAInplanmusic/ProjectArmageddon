@@ -11,9 +11,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { WEAPONS } from '../src/shared/config/weapons.js';
+import { CHARACTERS } from '../src/shared/config/factions.js';
 import {
   KATEGORIEN, PARAMETER, KORREKTUREN, waffenParameter, parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
   geschossDarstellung, geschossWinkel, flugWinkel, SchweifRing, SCHWEIF_LAENGE, GeschossLagen,
+  FIGUR_TYP, FIGURTYPEN, FIGUR_OFFSETS, FIGURTYP_STANDARD, figurHand,
 } from '../src/client/waffenAnimation.js';
 import { erzeugeWaffenSprites, zellenFuer } from '../src/client/waffenSprites.js';
 
@@ -522,4 +524,65 @@ test('Lader: unbekannte Waffe und null sind sicher', async () => {
   assert.equal(sprites.hole({ id: 'pa_nichtda', category: 'melee' }), null);
   await tick(); await tick();
   assert.equal(sprites.hole({ id: 'pa_nichtda', category: 'melee' }), null);
+});
+
+// ------------------------------------------------------------------ Figurtypen und Handoffsets
+
+test('Handoffset-Tabelle: jede der 81 Figuren hat einen gültigen Figurtyp, Korrekturen betreffen nur bekannte Figuren', () => {
+  assert.equal(CHARACTERS.length, 81);
+  for (const c of CHARACTERS) {
+    const typ = FIGUR_TYP[c.id];
+    assert.ok(typ && FIGURTYPEN[typ], `${c.id}: kein Figurtyp in FIGUR_TYP`);
+  }
+  const ids = new Set(CHARACTERS.map(c => c.id));
+  for (const id of Object.keys(FIGUR_TYP)) assert.ok(ids.has(id), `FIGUR_TYP: unbekannte Figur ${id}`);
+  for (const id of Object.keys(FIGUR_OFFSETS)) assert.ok(ids.has(id), `FIGUR_OFFSETS: unbekannte Figur ${id}`);
+  for (const [name, t] of Object.entries(FIGURTYPEN)) {
+    assert.ok(t.handAnteil > 0.15 && t.handAnteil < 0.7, `${name}: handAnteil ${t.handAnteil}`);
+    assert.equal(typeof t.aufbau, 'boolean');
+    assert.ok(t.skala > 0.5 && t.skala < 1.5);
+  }
+  // Alle fünf Typen kommen vor.
+  const benutzt = new Set(Object.values(FIGUR_TYP));
+  for (const name of Object.keys(FIGURTYPEN)) assert.ok(benutzt.has(name), `Figurtyp ${name} wird nie verwendet`);
+});
+
+test('figurHand: Standard ist der Humanoide; Typ und Feinkorrektur wirken auf den Handpunkt', () => {
+  assert.equal(figurHand(undefined).typ, FIGURTYP_STANDARD);
+  assert.equal(figurHand('gibt-es-nicht').typ, 'humanoid');
+  assert.equal(figurHand('captain-sven'), figurHand('captain-sven'), 'Ergebnis wird gemerkt');
+  const par = waffenParameter('ranged', 'x');
+  const mensch = handPunkt(par, 1, 52, 10, { x: 0, y: 0 }, figurHand('captain-sven'));
+  assert.ok(Math.abs(mensch.y - -7.25) < 1e-9, 'Humanoide: wie bisher');
+  const tier = handPunkt(par, 1, 52, 10, { x: 0, y: 0 }, figurHand('pikamon'));
+  assert.ok(tier.x < mensch.x, 'Tiere tragen die Waffe weiter hinten auf dem Rücken');
+  const tank = figurHand('heavy-battery-moerser-bot');
+  assert.equal(tank.typ, 'fahrzeug');
+  assert.equal(tank.aufbau, true);
+  const links = handPunkt(par, -1, 52, 10, { x: 0, y: 0 }, figurHand('pikamon'));
+  assert.equal(links.x, -tier.x, 'Spiegelung bei Blick nach links');
+  // Feinkorrektur überschreibt den Typ
+  assert.equal(figurHand('storm-talon').handAnteil, FIGUR_OFFSETS['storm-talon'].handAnteil);
+});
+
+test('Kachel-Waffen: Orb oder Motiv je nach Manifest, Rücken-Waffen liegen hinter dem Körper', () => {
+  const orb = waffenParameter('utility', 'pa_118', false, 'kachel', false, 'orb');
+  const motiv = waffenParameter('utility', 'pa_118', false, 'kachel', false, 'motiv');
+  assert.equal(orb.orb, true);
+  assert.equal(motiv.orb, false);
+  assert.ok(motiv.zelle > orb.zelle, 'Motiv wird größer gezeichnet als der Orb');
+  const sp = { form: 'kachel', kachel: 'orb', projektilInfo: null };
+  assert.equal(parameterFuerWaffe(WEAPONS.find(w => w.id === 'pa_118'), sp).orb, true);
+  assert.equal(waffenParameter('utility', 'pa_112', false, 'kompakt').lage, 'hinter');
+  assert.equal(waffenParameter('melee', 'pa_001', false, 'objekt').lage, 'vor', 'Nahkampf liegt vor dem Körper');
+  // Kompakte Sprites werden etwas vor dem Körper gehalten.
+  assert.ok(waffenParameter('ranged', 'pa_zzz', false, 'kompakt').handVor > PARAMETER.ranged.handVor);
+});
+
+test('Manifest: Waffen mit Kachel-Modus orb brauchen keine Motiv-Maske, alle 28 haben einen Modus', () => {
+  const kacheln = Object.values(MANIFEST.waffen).filter(w => w.form === 'kachel');
+  assert.equal(kacheln.length, 28);
+  for (const w of kacheln) assert.ok(['motiv', 'orb'].includes(w.kachel.modus), w.id);
+  const z = zellenFuer(MANIFEST, kacheln[0].id);
+  assert.ok(['motiv', 'orb'].includes(z.kachel));
 });

@@ -27,7 +27,7 @@ import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inse
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
-  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, zeichneAuraRing, zeichneNamensschild,
+  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, handFarbeFuer, zeichneAuraRing, zeichneNamensschild,
   figurSkalaFuer, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
 } from './figuren.js';
 import { bereichInKarte } from './sichtbereich.js';
@@ -35,7 +35,7 @@ import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
-  parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
+  parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt, figurHand,
   GeschossLagen, geschossDarstellung, geschossWinkel,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
@@ -405,7 +405,10 @@ export class Renderer {
    * Rein visuell: hat keinen Einfluss auf die Simulation.
    */
   addBeam(fromX, fromY, toX, toY, optionen = {}) {
-    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, optionen));
+    // Farbe der Waffe: Strahl und Glühen in ihrer Blitzfarbe (aus dem Sprite-Manifest), sonst Gelb.
+    const waffe = optionen.waffeId ? WEAPONS_BY_ID[optionen.waffeId] : null;
+    const farbe = waffe ? holeWaffenSprite(waffe)?.flashColor : null;
+    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, farbe ? { ...optionen, color: farbe } : optionen));
   }
 
   /** Fügt einen Explosionsblitz an einer Stelle hinzu. */
@@ -499,17 +502,21 @@ export class Renderer {
       const alpha = Math.max(0, Math.min(1, effect.life));
       if (effect.kind === 'beam') {
         this.ctx.save();
-        // Kernstrahl
-        this.ctx.globalAlpha = alpha;
+        // Strahl in der Farbe der Waffe: breites Glühen, Farbkern, heller Kern.
+        this.ctx.lineCap = 'round';
         this.ctx.strokeStyle = effect.color;
-        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
         this.ctx.moveTo(effect.fromX, effect.fromY);
         this.ctx.lineTo(effect.toX, effect.toY);
+        this.ctx.globalAlpha = alpha * 0.3;
+        this.ctx.lineWidth = 11;
         this.ctx.stroke();
-        // Weicher Glow darum
-        this.ctx.globalAlpha = alpha * 0.35;
-        this.ctx.lineWidth = 9;
+        this.ctx.globalAlpha = alpha;
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+        this.ctx.globalAlpha = alpha * 0.9;
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 1.2;
         this.ctx.stroke();
         // Einschlagpunkt markieren
         if (effect.hit) {
@@ -1340,9 +1347,8 @@ export class Renderer {
       this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
       const fraktionId = this.fraktionVon(entity);
-      const fig = fraktionId
-        ? holeFigur(charakterFuer(fraktionId, entity.classId, entity.archetypeId))
-        : null;
+      const charakter = fraktionId ? charakterFuer(fraktionId, entity.classId, entity.archetypeId) : null;
+      const fig = charakter ? holeFigur(charakter) : null;
       const sk = fig ? S : 1;
 
       // Schatten
@@ -1392,16 +1398,23 @@ export class Renderer {
         });
         const zs = this.figurPosen.zustand(entity.entityId);
         zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0;
-        zeichneFigurSprite(this.ctx, fig, {
-          team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
-        });
-        // Gehaltene Waffe: ihre Ikone am Zielstrahl; ohne Ikone das Rohr.
+        // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
         const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
         const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
         const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
-        if (waffenSprite) {
+        const hinterKoerper = waffenSprite && parameterFuerWaffe(waffe, waffenSprite).lage === 'hinter';
+        if (hinterKoerper) {
           spriteWaffe = true;
-          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color);
+          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig);
+        }
+        zeichneFigurSprite(this.ctx, fig, {
+          team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
+        });
+        if (waffenSprite) {
+          if (!hinterKoerper) {
+            spriteWaffe = true;
+            this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig);
+          }
         } else if (ikone) {
           this.waffenStat.ikone += 1;
           const nahkampf = waffe.category === 'melee';
@@ -1471,7 +1484,7 @@ export class Renderer {
    * `waffenAnimation.js`): Pose aus den Zeiten seit Ziehen und Schuss, Hand
    * aus Sprite-Höhe und Blickrichtung, Nachladegrad aus dem Zustand.
    */
-  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color) {
+  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color, charakter, fig) {
     const ws = this.#waffenState(entity.entityId);
     const selbst = waffe.damage === 0;
     if (ws.waffeId !== waffe.id || ws.par === null) {
@@ -1488,8 +1501,12 @@ export class Renderer {
     zt.bereit = ladungAnteil(entity.cooldowns?.[waffe.id] ?? 0, waffe.cooldown);
     zt.treffer = treffer;
     const pose = waffenPose(par, zt, this.reducedMotion, this.waffenPoseTmp);
-    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp);
-    zeichneWaffeSprite(this.ctx, sp, par, pose, { winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y });
+    const hand = figurHand(charakter?.id);
+    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp, hand);
+    zeichneWaffeSprite(this.ctx, sp, par, pose, {
+      winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y, figur: hand, handFarbe: fig ? handFarbeFuer(fig, hand) : null,
+      zeit: jetzt, reduziert: this.reducedMotion,
+    });
     if (feuerLeben > 0 && !this.reducedMotion && (waffe.category === 'melee' || selbst)) {
       zeichneAuraRing(this.ctx, color, feuerLeben);
     }
@@ -1499,6 +1516,7 @@ export class Renderer {
     d.waffeId = waffe.id; d.art = par.art; d.seitSchuss = zt.seitSchuss;
     d.vor = pose.vor; d.hoch = pose.hoch; d.drehung = pose.drehung; d.glanz = pose.glanz;
     d.blitz = pose.blitz; d.blitzForm = pose.blitzForm; d.weiss = pose.weiss; d.ladung = pose.ladung;
+    d.kachel = sp.kachel; d.orb = par.orb === true && sp.kachel === 'orb'; d.lage = par.lage; d.figurTyp = hand.typ;
   }
 
   /**

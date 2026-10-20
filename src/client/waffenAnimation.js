@@ -76,6 +76,8 @@ const BASIS = Object.freeze({
   blitzForm: 'kegel',
   blitzGroesse: 11,
   blitzDauer: 0.11,
+  lage: 'vor',
+  orb: false,
 });
 
 function kategorie(werte) {
@@ -143,6 +145,10 @@ export const KORREKTUREN = Object.freeze({
   pa_050: { zelle: 29, handVor: 2.5 },
   pa_051: { zelle: 28 },
   // Feldkanone: schwere Waffe, langer Rückstoß mit Nachschwingen.
+  // Rucksack, Gleitschirm und Jetpack werden auf dem Rücken getragen: hinter dem Körper, weiter hinten.
+  pa_032: { lage: 'hinter', handVor: -5 },
+  pa_112: { lage: 'hinter', handVor: -5, handHoch: 1 },
+  pa_114: { lage: 'hinter', handVor: -5, handHoch: 2 },
   pa_039: { zelle: 32, art: 'schwer', schussDauer: 0.7, kick: 7, rueck: 0.32, wippen: 0.07, wippHz: 6, blitzForm: 'kegel', blitzGroesse: 18, blitzDauer: 0.15 },
 });
 
@@ -152,11 +158,16 @@ const SELBST = Object.freeze({
 });
 
 /**
- * Kachel-Waffen (Zauber-/Gerätekarten ohne Umriss, `form: 'kachel'` im Manifest)
- * halten sich schlecht in der Hand: kleiner gezeichnet und weiter vor der Figur,
- * als schwebe die Karte vor ihr.
+ * Kachel-Waffen (Zauber-/Gerätekarten, `form: 'kachel'` im Manifest). Je Waffe entscheidet
+ * `kachel.modus` im Manifest: `motiv` (das Motiv ist aus dem Rahmen herausgelöst und wird wie ein
+ * kompaktes Sprite gehalten) oder `orb` (Zauber-Darstellung, siehe `KACHEL_ORB`).
  */
-const KACHEL = basis => ({ zelle: basis.zelle * 0.8, handVor: basis.handVor + 4, handHoch: basis.handHoch + 1 });
+const KACHEL_MOTIV = basis => ({ zelle: basis.zelle * 0.9, handVor: basis.handVor + 3, handHoch: basis.handHoch + 0.5 });
+/** Kachel als Zauber-Darstellung: schwebender Orb (Glühen, Partikelring) mit dem Kachelbild als Mini-Icon über der Hand. */
+const KACHEL_ORB = basis => ({ zelle: basis.zelle * 0.8, handVor: basis.handVor + 1, handHoch: basis.handHoch, orb: true });
+
+/** Kompakte Sprites (Wesen, Geräte, Granaten) haben ihren Griff im Schwerpunkt und werden etwas vor dem Körper gehalten. */
+const KOMPAKT = basis => ({ handVor: basis.handVor + 3 });
 
 /** Geworfene Waffen (das Geschoss ist die Waffe selbst oder eine Granate): Wurfbewegung, kein Mündungsblitz. */
 const WURF = Object.freeze({
@@ -174,16 +185,18 @@ const parameterCache = new Map();
  * @param {boolean} [selbst] - wirkt auf den Anwender (Schaden 0)
  * @param {string} [form] - Form des Sprites laut Manifest (`kachel`, `objekt`, `kompakt`)
  * @param {boolean} [wurf] - die Waffe wird geworfen (Geschoss `ding` oder mit Zünder/Abprallern)
+ * @param {string} [kachelModus] - `motiv` oder `orb` bei Kachel-Waffen
  */
-export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false) {
-  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}`;
+export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false, kachelModus = '') {
+  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}|${kachelModus}`;
   let p = parameterCache.get(schluessel);
   if (!p) {
     const basis = PARAMETER[kat] ?? PARAMETER.ranged;
     const korr = KORREKTUREN[waffeId] ?? null;
     p = {
       ...basis, ...(wurf && !selbst ? WURF : null), ...(selbst ? SELBST : null),
-      ...(form === 'kachel' ? KACHEL(basis) : null), ...korr,
+      ...(form === 'kompakt' ? KOMPAKT(basis) : null),
+      ...(form === 'kachel' ? (kachelModus === 'motiv' ? KACHEL_MOTIV(basis) : KACHEL_ORB(basis)) : null), ...korr,
     };
     p.griff = form === 'objekt' ? (korr?.griffObjekt ?? basis.griffObjekt) : (korr?.griff ?? 0);
     Object.freeze(p);
@@ -202,7 +215,7 @@ export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wu
 export function parameterFuerWaffe(waffe, sp) {
   return waffenParameter(
     waffe.category, waffe.id, waffe.damage === 0, sp?.form ?? '',
-    sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0,
+    sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0, sp?.kachel ?? '',
   );
 }
 
@@ -234,10 +247,110 @@ function einschwingen(u) {
   return 1 + c3 * v * v * v + c1 * v * v;
 }
 
-/** Griffpunkt (Hand) der Waffe im Figurrahmen (Ursprung = Figurmitte, Weltpixel). */
-export function handPunkt(par, blick, spriteHoehe, fussAbstand, aus = { x: 0, y: 0 }) {
-  aus.x = (blick >= 0 ? 1 : -1) * par.handVor;
-  aus.y = fussAbstand - HAND_ANTEIL * spriteHoehe - par.handHoch;
+// ----------------------------------------------------------------- Figurtypen und Handpunkt
+
+/**
+ * Figurtypen: Wie eine Figur die Waffe trägt. Humanoide greifen sie mit der Hand; Tiere,
+ * Fahrzeuge und Wesen tragen sie als Aufbau (Rücken, Turm, über dem Körper), ohne Hand;
+ * Schweber halten sie schwebend vor dem Körper.
+ *
+ *   handAnteil  Höhe des Griffpunkts über den Füßen als Anteil der Sprite-Höhe
+ *   vor         Verschiebung des Griffpunkts vor die Körpermitte in Blickrichtung (Weltpixel)
+ *   aufbau      Waffe sitzt auf einer Halterung statt in der Hand (keine Hand, keine Armlinie)
+ *   skala       Faktor auf die Waffengröße (Fahrzeuge tragen größere Aufbauten)
+ */
+export const FIGURTYPEN = Object.freeze({
+  humanoid: Object.freeze({ handAnteil: HAND_ANTEIL, vor: 0, aufbau: false, skala: 1 }),
+  tier: Object.freeze({ handAnteil: 0.38, vor: -3, aufbau: true, skala: 0.95 }),
+  fahrzeug: Object.freeze({ handAnteil: 0.3, vor: -1, aufbau: true, skala: 1.12 }),
+  schweber: Object.freeze({ handAnteil: 0.4, vor: 2, aufbau: false, skala: 1 }),
+  wesen: Object.freeze({ handAnteil: 0.4, vor: 1, aufbau: true, skala: 0.95 }),
+});
+export const FIGURTYP_STANDARD = 'humanoid';
+
+/** Figurtyp je Charakter-ID (alle 81 Figuren der 9 Fraktionen; fehlende gelten als Humanoid). */
+export const FIGUR_TYP = Object.freeze({
+  // Bestien
+  pikamon: 'tier', 'shrew-quakes': 'tier', 'storm-talon': 'tier', 'flame-jaws': 'tier', 'ember-tails': 'tier',
+  'magma-plate': 'tier', 'decay-spawn': 'humanoid', 'cosmic-meditate': 'schweber', 'sonic-blossom': 'schweber',
+  // Datenkult
+  'nullpointer-exception-cult': 'humanoid', 'datapath-replicant': 'humanoid', 'chrome-code-shifter': 'wesen',
+  'quantum-qubit-knight': 'humanoid', 'synapse-streamer': 'wesen', 'arcology-agent': 'humanoid',
+  'buffer-flow-swarm': 'schweber', 'hyper-link-hound': 'tier', ethereo: 'schweber',
+  // Maschinen
+  'chassis-endo-t8': 'humanoid', 'slasher-cyber-jax': 'humanoid', 'hydra-titan-mech': 'humanoid',
+  'recon-luchs-01': 'tier', 'heavy-battery-moerser-bot': 'fahrzeug', 'ordnance-rail-viper': 'fahrzeug',
+  'grid-drifter-datastream': 'schweber', 'proxy-glitch-hack': 'humanoid', 'overlord-kernel-panic': 'humanoid',
+  // Piraten
+  'captain-sven': 'humanoid', 'swashbuckler-piet': 'humanoid', 'iron-hook-harry': 'humanoid',
+  'cannoneer-klaus': 'humanoid', 'sniper-marie': 'humanoid', 'bombard-billy': 'humanoid',
+  'voodoo-witch-morgana': 'humanoid', 'storm-schamane-hooky': 'humanoid', 'chanteyman-drake': 'humanoid',
+  // Pixel
+  'nullpointer-exception': 'tier', 'pyrofox-a': 'tier', 'pyrofox-b': 'tier', 'arcershorn-a': 'humanoid',
+  'pyrowand-a': 'tier', shieldmon: 'tier', 'phantom-mal-a': 'wesen', 'arcanus-a': 'humanoid', 'arcanus-b': 'humanoid',
+  // Nager
+  'commander-chewk': 'humanoid', 'berzerker-fang': 'humanoid', 'vanguard-captain-rix': 'humanoid',
+  'sharpshooter-quill': 'humanoid', 'grenadier-skitter': 'humanoid', 'volley-captain-spark': 'humanoid',
+  'alchemage-nibble': 'humanoid', 'technomancer-squeak': 'humanoid', 'grand-conduit-vex': 'humanoid',
+  // Shinobi
+  'shred-katana-hanzmon': 'humanoid', 'kunoichi-wind-flapper': 'humanoid', 'tetsubo-oni-brute': 'humanoid',
+  'dazzler-werner': 'humanoid', 'rauch-meister-genzi': 'fahrzeug', 'blowpipe-koga': 'wesen',
+  'ninjutsu-master-goemon': 'humanoid', 'talisman-sorcerer-jun': 'humanoid', 'vixen-kitsune': 'humanoid',
+  // Untote
+  'bone-racker-karl': 'humanoid', 'grave-zombie-kauer': 'humanoid', 'grim-reaper-silas': 'humanoid',
+  'archer-mortis': 'humanoid', 'pitcher-igor': 'humanoid', 'vessel-plague-skull': 'humanoid',
+  'lich-king-alistair': 'humanoid', 'scribe-necro-silas': 'humanoid', 'banshee-beatrice': 'schweber',
+  // Xeno
+  'sgt-acid-xeno': 'humanoid', 'stalker-predax': 'humanoid', 'vortex-grabber': 'humanoid', 'drone-theta': 'humanoid',
+  'desintegrator-kael': 'humanoid', 'plasma-maw-zorg': 'humanoid', 'harbinger-zeta': 'schweber',
+  'dark-matter-witch': 'schweber', 'null-entity-quark': 'humanoid',
+});
+
+/**
+ * Feinkorrekturen je Charakter-ID über den Figurtyp hinaus (`handAnteil`, `vor`, `skala`).
+ * Sichtprüfung: `node scripts/waffen-pruefbogen.mjs --fraktionen`.
+ */
+export const FIGUR_OFFSETS = Object.freeze({
+  'storm-talon': { handAnteil: 0.5 },
+  'hydra-titan-mech': { handAnteil: 0.38, vor: 3, skala: 1.1 },
+  'heavy-battery-moerser-bot': { handAnteil: 0.4, vor: 0 },
+  'rauch-meister-genzi': { handAnteil: 0.36 },
+  'ordnance-rail-viper': { handAnteil: 0.32, vor: 2 },
+  'cosmic-meditate': { handAnteil: 0.42 },
+});
+
+const figurCache = new Map();
+
+/**
+ * Handparameter einer Figur: Figurtyp (mit Standard) plus Feinkorrektur.
+ *
+ * @param {string} [charId] - Charakter-ID; `undefined` (klassische Figur) liefert den Humanoiden
+ * @returns {{typ:string, handAnteil:number, vor:number, aufbau:boolean, skala:number}}
+ */
+export function figurHand(charId) {
+  const schluessel = charId ?? '';
+  let f = figurCache.get(schluessel);
+  if (!f) {
+    const typ = FIGUR_TYP[schluessel] ?? FIGURTYP_STANDARD;
+    f = Object.freeze({ typ, ...FIGURTYPEN[typ], ...FIGUR_OFFSETS[schluessel] });
+    figurCache.set(schluessel, f);
+  }
+  return f;
+}
+
+/**
+ * Griffpunkt (Hand) der Waffe im Figurrahmen (Ursprung = Figurmitte, Weltpixel).
+ *
+ * @param {object} par - Parametersatz der Waffe (`handVor`, `handHoch`)
+ * @param {number} blick - Kosinus des Zielwinkels (Vorzeichen = Blickrichtung)
+ * @param {number} spriteHoehe
+ * @param {number} fussAbstand
+ * @param {{x:number,y:number}} [aus]
+ * @param {{handAnteil:number, vor:number}} [figur] - aus `figurHand`; ohne Angabe der Humanoide
+ */
+export function handPunkt(par, blick, spriteHoehe, fussAbstand, aus = { x: 0, y: 0 }, figur = FIGURTYPEN.humanoid) {
+  aus.x = (blick >= 0 ? 1 : -1) * (par.handVor + figur.vor);
+  aus.y = fussAbstand - figur.handAnteil * spriteHoehe - par.handHoch;
   return aus;
 }
 
