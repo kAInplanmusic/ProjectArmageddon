@@ -72,3 +72,34 @@ test('Geländeupdate: Neuaufbau, Krater und Inselfall werden gemessen', async ({
   expect(werte.kraterMax, 'ein Kraterupdate darf nicht hängen').toBeLessThan(200);
   expect(fehler).toEqual([]);
 });
+
+test('Sichtprüfung Fassung 4: Sprengkrater, Brandspur, Riss und Schutt (Screenshots 1280x720)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await startMatch(page);
+  const punkt = await page.evaluate(() => {
+    const r = window.__PA__.game.renderer;
+    const q = r.terrainSource;
+    // Zwei Orte nebeneinander auf dem Boden suchen.
+    const oben = x => { for (let y = 0; y < q.height; y += 1) if (q.bitmap[y * q.width + x]) return y; return 600; };
+    const x1 = Math.round(q.width * 0.35);
+    const x2 = x1 + 260;
+    r.applyCrater(x1, oben(x1) + 4, 46, 85, 'sprengung');
+    r.time += 1;
+    r.applyCrater(x2, oben(x2) + 4, 46, 85, 'brand');
+    r.time += 1;
+    // Ein Riss und Schutt am Boden daneben.
+    const x3 = x2 + 260;
+    const y3 = oben(x3) + 30;
+    const runs = [];
+    for (let i = 0; i < 40; i += 1) runs.push(x3 + (i % 2), y3 + i * 2, y3 + i * 2 + 1);
+    r.entferneZellen(runs, 'bruch');
+    const schutt = [];
+    for (let i = 0; i < 60; i += 1) schutt.push(x3 - 20 + (i * 7) % 40, oben(x3) - 1 - (i % 3));
+    r.setzeSchutt(schutt);
+    return { x1, x2, x3, y: oben(x1) };
+  });
+  await page.waitForTimeout(300);
+  const dir = process.env.PA_SHOT_DIR ?? 'test-results';
+  await page.screenshot({ path: `${dir}/zerstoerung-f4-krater-brand-schutt.png`, type: 'png' });
+  expect(punkt.x3).toBeGreaterThan(punkt.x2);
+});
