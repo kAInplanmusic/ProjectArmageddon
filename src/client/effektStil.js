@@ -10,6 +10,7 @@
  *
  * @module effektStil
  */
+import { ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { PAL, hash2 } from './stil.js';
 
 function bahn(ctx, punkte) {
@@ -219,6 +220,7 @@ const ZAHL_ART = Object.freeze({
   kritisch: { farbe: PAL.orange, groesse: 22 },
   heilung: { farbe: PAL.limette, groesse: 15 },
   schild: { farbe: PAL.cyan, groesse: 15 },
+  ...Object.fromEntries(Object.entries(ZAHL_FAMILIE).map(([familie, v]) => [`schaden-${familie}`, { farbe: v.farbe, groesse: 15 }])),
 });
 
 /**
@@ -445,6 +447,25 @@ export function zeichneGeschossSprite(ctx, sp, x, y, winkel, groesse) {
   ctx.globalAlpha = 1;
   ctx.rotate(winkel);
   ctx.drawImage(sp.projektil, -groesse / 2, -groesse / 2, groesse, groesse);
+  ctx.restore();
+}
+
+/**
+ * Startglanz des Geschosses an der Mündung: ein heller Lichtpunkt in der Blitzfarbe, der in
+ * `STARTGLANZ_DAUER` Sekunden aufgeht und verblasst (groß bei schweren Waffen, klein bei Gewehren).
+ *
+ * @param {number} alter - Sekunden seit dem Start des Geschosses
+ * @param {number} groesse - Durchmesser in Weltpixeln (`geschossDarstellung(...).start`)
+ */
+export const STARTGLANZ_DAUER = 0.16;
+export function zeichneStartGlanz(ctx, sp, x, y, alter, groesse) {
+  if (!(alter >= 0) || alter >= STARTGLANZ_DAUER || groesse <= 0) return;
+  const u = alter / STARTGLANZ_DAUER;
+  const r = groesse * (0.6 + 0.8 * u);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = 0.95 * (1 - u) * (1 - u);
+  ctx.drawImage(sp.glanz, x - r, y - r, r * 2, r * 2);
   ctx.restore();
 }
 

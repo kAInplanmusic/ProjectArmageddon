@@ -386,42 +386,7 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'online',
     entweder: 'lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition, Listenaktualisierung) — src/client/main.js:857 (`hud.log`) und :858 (`hud.update`) —, es braucht deshalb keinen Tabellenzweig. ONLINE gibt es diesen lokalen Erfolgspfad nicht: der Server führt den Abwurf aus und schickt das Ereignis; ohne den `online:`-Zweig fiele es stumm weg.',
   }],
-  ['terrain_destroyed', {
-    zweig: 'online',
-    entweder: 'lokal entsteht derselbe Krater über `explosion`: src/client/ereignisse.js:105 (applyCrater) — ein zweiter Eintrag würde zweimal graben.',
-  }],
-  ['terrain_detached', {
-    zweig: 'online',
-    entweder: 'ein lokales Match gibt es im Client nicht mehr (die Engine läuft nur auf dem Server); die Anzeige der fallenden Insel hängt allein an diesem Ereignis: src/client/ereignisse.js:217 (renderer.starteInsel).',
-  }],
-  ['terrain_settled', {
-    zweig: 'online',
-    entweder: 'wie `terrain_destroyed`: die Landung trägt Bitmap und Maske der Zielvorschau nach, src/client/ereignisse.js:221 (karte.insel) — ein lokaler Zweig würde zweimal verschieben.',
-  }],
-  ['terrain_removed', {
-    zweig: 'online',
-    entweder: 'Fassung 4, Zustand: Zellen ersatzlos weg (Riss, Abplatzer); Bitmap und Maske der Zielvorschau über karte.entfernt, die Ebene über renderer.entferneZellen — src/client/ereignisse.js:231.',
-  }],
-  ['terrain_added', {
-    zweig: 'online',
-    entweder: 'Fassung 4, Zustand: Schutt hat sich abgesetzt; karte.hinzu und renderer.setzeSchutt — src/client/ereignisse.js:237.',
-  }],
-  ['terrain_slumped', {
-    zweig: 'online',
-    entweder: 'Fassung 4, Zustand: Setzrutsch nach einem Beben; karte.rutsch und renderer.setzeRutsch — src/client/ereignisse.js:243.',
-  }],
-  ['terrain_resisted', {
-    zweig: 'online',
-    entweder: 'Fassung 5, nur Anzeige: Funken, wenn ein Einschlag unzerstörbaren Stoff trifft (renderer.spawnExplosionParticles, src/client/ereignisse.js:284); die Maske blieb unverändert.',
-  }],
-  ['terrain_crumble', {
-    zweig: 'online',
-    entweder: 'Fassung 4, nur Anzeige: fliegende Partikel-Zellen und Staub (renderer.bruchOptik, src/client/ereignisse.js:249); ein lokales Match gibt es im Client nicht mehr.',
-  }],
-  ['terrain_quake', {
-    zweig: 'online',
-    entweder: 'Fassung 4, nur Anzeige: Staub und Bildzittern (renderer.bebenOptik, src/client/ereignisse.js:250); ein lokales Match gibt es im Client nicht mehr.',
-  }],
+  // terrain_* (Krater, Inseln, Schutt, Rutsch, Beben) gelten seit der Online-Synchronisation in BEIDEN Zweigen (`beide`).
 ]);
 
 test('Der lokale Zweig behandelt den Einschlag eines Projekils', () => {

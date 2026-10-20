@@ -109,10 +109,22 @@ test.describe('Waffen-Animation', () => {
     expect(ruhe.posen[spieler].blitz).toBe(0);
     expect(ruhe.posen[spieler].vor).toBe(0);
 
-    const beob = beobachte(page, spieler, 900);
+    // Zustandsabfrage statt Abtasten: auf den registrierten Schuss warten, Pose zu festen Zeiten prüfen.
+    const vorher = ruhe.posen[spieler].schuesse ?? 0;
     await page.evaluate(() => window.__PA__.fire(Math.PI / 4, 45));
-    const erg = await beob;
-    expect(erg.proben).toBeGreaterThan(5);
+    await page.waitForFunction(
+      ({ id, n }) => (window.__PA__.waffenAnimation().posen[id]?.schuesse ?? 0) > n, { id: spieler, n: vorher });
+    const erg = await page.evaluate((id) => {
+      const api = window.__PA__;
+      const aus = { blitz: 0, form: '', vor: 0, drehung: 0 };
+      for (let t = 0; t < 0.9; t += 0.005) {
+        const p = api.waffenPoseBei(id, t);
+        if (p.blitz > aus.blitz) { aus.blitz = p.blitz; aus.form = p.blitzForm; }
+        aus.vor = Math.min(aus.vor, p.vor);
+        aus.drehung = Math.max(aus.drehung, Math.abs(p.drehung));
+      }
+      return aus;
+    }, spieler);
     expect(erg.blitz).toBeGreaterThan(0.5);
     expect(erg.form).toBe('kegel');
     expect(erg.vor).toBeLessThan(-2);
@@ -133,12 +145,34 @@ test.describe('Waffen-Animation', () => {
     await page.waitForFunction(
       id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_055', spieler, { timeout: 15000 });
     expect((await waffenZustand(page)).reduziert).toBe(true);
-    const beob = beobachte(page, spieler, 800);
+    /*
+     * Ursache der früheren Flakiness (Blitz 0,29 statt > 0,5 unter Last): Der Blitz ist ein
+     * kurzes Fenster (0,09–0,26 s), das bei seinem Beginn am hellsten ist und quadratisch
+     * abklingt. Die alte Prüfung tastete 800 ms lang die GEZEICHNETEN Bilder ab — unter Last
+     * sind die Bilder selten und spät, das erste Bild im Fenster sah nur den abgeklungenen Rest.
+     * Die Pose ist eine reine Funktion der Zeit seit dem Schuss; deshalb wird jetzt auf das
+     * Animationsereignis gewartet (der Renderer hat den Schuss registriert) und die Pose
+     * zu festen Zeitpunkten ausgewertet, nicht zu zufällig getroffenen Bildzeiten.
+     */
+    const vorher = (await waffenZustand(page)).posen[spieler].schuesse ?? 0;
     await page.evaluate(() => window.__PA__.fire(Math.PI / 4, 45));
-    const erg = await beob;
-    expect(erg.blitz).toBeGreaterThan(0.5);
-    expect(erg.vor).toBe(0);
-    expect(erg.drehung).toBe(0);
+    await page.waitForFunction(
+      ({ id, n }) => (window.__PA__.waffenAnimation().posen[id]?.schuesse ?? 0) > n, { id: spieler, n: vorher });
+    const proben = await page.evaluate((id) => {
+      const api = window.__PA__;
+      const erste = api.waffenPoseBei(id, 0);
+      const t0 = erste.aufladen;
+      const aus = { blitzAnfang: api.waffenPoseBei(id, t0 + 0.005).blitz, vor: 0, drehung: 0 };
+      for (let t = 0; t < erste.schussDauer; t += 0.005) {
+        const p = api.waffenPoseBei(id, t);
+        aus.vor = Math.min(aus.vor, p.vor);
+        aus.drehung = Math.max(aus.drehung, Math.abs(p.drehung));
+      }
+      return aus;
+    }, spieler);
+    expect(proben.blitzAnfang).toBeGreaterThan(0.5);
+    expect(proben.vor).toBe(0);
+    expect(proben.drehung).toBe(0);
     expect(fehler).toEqual([]);
   });
 
@@ -156,6 +190,44 @@ test.describe('Waffen-Animation', () => {
     expect(erg.schweif).toBeGreaterThan(2);
     expect(erg.winkelBewegt, 'der Winkel folgt der gekrümmten Flugbahn').toBe(true);
     await ablegen(page, 'waffen-animation-geschoss');
+    expect(fehler).toEqual([]);
+  });
+
+  test('Kachel-Waffen: Orb (Zauber-Darstellung) oder herausgelöstes Motiv, nie die gerahmte Karte', async ({ page }) => {
+    const fehler = await matchStarten(page);
+    // pa_118 Feuerwesen: Orb; pa_034 Magischer Geschosszauber: Motiv ohne Rahmen
+    const spieler = await waffeWaehlen(page, 'pa_118');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_118', spieler, { timeout: 15000 });
+    const orb = (await waffenZustand(page)).posen[spieler];
+    expect(orb.kachel).toBe('orb');
+    expect(orb.orb).toBe(true);
+    await page.waitForTimeout(300);
+    await ablegen(page, 'waffen-animation-kachel-orb');
+
+    await waffeWaehlen(page, 'pa_034');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_034', spieler, { timeout: 15000 });
+    const motiv = (await waffenZustand(page)).posen[spieler];
+    expect(motiv.kachel).toBe('motiv');
+    expect(motiv.orb).toBe(false);
+    await page.waitForTimeout(300);
+    await ablegen(page, 'waffen-animation-kachel-motiv');
+    expect(fehler).toEqual([]);
+  });
+
+  test('Lage und Figurtyp: Rucksack-Waffen hinter dem Körper, Nahkampf davor, Hand je Figurtyp', async ({ page }) => {
+    const fehler = await matchStarten(page);
+    const spieler = await waffeWaehlen(page, 'pa_112');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_112', spieler, { timeout: 15000 });
+    const jetpack = (await waffenZustand(page)).posen[spieler];
+    expect(jetpack.lage).toBe('hinter');
+    expect(['humanoid', 'tier', 'fahrzeug', 'schweber', 'wesen']).toContain(jetpack.figurTyp);
+    await waffeWaehlen(page, 'pa_001');
+    await page.waitForFunction(
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_001', spieler, { timeout: 15000 });
+    expect((await waffenZustand(page)).posen[spieler].lage).toBe('vor');
     expect(fehler).toEqual([]);
   });
 

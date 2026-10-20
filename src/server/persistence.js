@@ -20,6 +20,7 @@ import { ZERSTOERUNG_ALT } from '../shared/config/zerstoerung.js';
 import { WAFFEN_ALT } from '../shared/config/waffen-fassung.js';
 import { KISTEN_ALT } from '../shared/config/kisten.js';
 import { GELAENDE_ALT } from '../shared/config/gelaende.js';
+import { SCHADEN_ALT } from '../shared/config/schaden.js';
 
 export const PERSISTENCE_VERSION = 1;
 
@@ -269,6 +270,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       kisten: saved.replay.config?.kisten ?? KISTEN_ALT,
       // Alte Sicherungen ohne `gelaende`: Biom folgt der Karte, keine Stoffkarte.
       gelaende: saved.replay.config?.gelaende ?? GELAENDE_ALT,
+      // Alte Sicherungen ohne `schaden`: keine Mali je Schadensart.
+      schaden: saved.replay.config?.schaden ?? SCHADEN_ALT,
     })
     : null;
 

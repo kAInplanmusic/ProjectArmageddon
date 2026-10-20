@@ -78,18 +78,18 @@
     "datei": "IMG_9033.PNG",
     "aufloesung": 1024
    },
-   "rotation": 49.0,
+   "rotation": 48.9,
    "gespiegelt": true,
-   "streckung": 4.85,
+   "streckung": 5.14,
    "content": {
     "x": 6,
-    "y": 49,
+    "y": 50,
     "w": 115,
-    "h": 29
+    "h": 27
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 26,
      "y": 63
     },
     "muzzle": {
@@ -114,7 +114,7 @@
     "h": 32
    },
    "flashColor": "#eba364",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 0,
@@ -160,14 +160,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 26,
      "y": 64
     },
     "muzzle": {
-     "x": 120,
-     "y": 33
+     "x": 108,
+     "y": 58
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -231,12 +231,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 64
+     "x": 25,
+     "y": 72
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 67
     },
     "source": "geometrie"
    },
@@ -302,12 +302,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 62
+     "x": 26,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 60
     },
     "source": "geometrie"
    },
@@ -373,8 +373,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 65
+     "x": 25,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
@@ -444,7 +444,7 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 25,
      "y": 64
     },
     "muzzle": {
@@ -515,12 +515,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 25,
      "y": 50
     },
     "muzzle": {
      "x": 120,
-     "y": 52
+     "y": 50
     },
     "source": "geometrie"
    },
@@ -575,23 +575,23 @@
     "datei": "IMG_9043.PNG",
     "aufloesung": 1024
    },
-   "rotation": -43.6,
+   "rotation": -43.0,
    "gespiegelt": false,
-   "streckung": 2.01,
+   "streckung": 2.03,
    "content": {
     "x": 6,
-    "y": 26,
+    "y": 28,
     "w": 115,
-    "h": 75
+    "h": 72
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 62
+     "x": 25,
+     "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 56
+     "y": 61
     },
     "source": "geometrie"
    },
@@ -610,7 +610,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb7349",
+   "flashColor": "#eb7249",
    "korrektur": true,
    "held": {
     "atlas": "melee",
@@ -646,23 +646,23 @@
     "datei": "IMG_9044.PNG",
     "aufloesung": 1024
    },
-   "rotation": 43.4,
+   "rotation": 44.1,
    "gespiegelt": true,
-   "streckung": 2.31,
+   "streckung": 2.33,
    "content": {
     "x": 6,
-    "y": 24,
+    "y": 23,
     "w": 115,
-    "h": 80
+    "h": 82
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 58
+     "x": 21,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 62
     },
     "source": "geometrie"
    },
@@ -670,7 +670,7 @@
     "art": "ding",
     "size": {
      "w": 29,
-     "h": 20
+     "h": 21
     },
     "angle": 0,
     "spin": true,
@@ -682,7 +682,7 @@
     "h": 32
    },
    "flashColor": "#6ac5eb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 0,
@@ -728,12 +728,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 66
+     "x": 30,
+     "y": 69
     },
     "muzzle": {
      "x": 120,
-     "y": 72
+     "y": 69
     },
     "source": "geometrie"
    },
@@ -793,20 +793,20 @@
    "streckung": 1.04,
    "content": {
     "x": 6,
-    "y": 6,
+    "y": 7,
     "w": 115,
-    "h": 115
+    "h": 113
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 65,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 107
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -823,8 +823,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb6247",
-   "korrektur": false,
+   "flashColor": "#eb6347",
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 256,
@@ -859,19 +859,19 @@
     "datei": "IMG_9047.PNG",
     "aufloesung": 1024
    },
-   "rotation": -47.3,
+   "rotation": -47.4,
    "gespiegelt": true,
-   "streckung": 3.96,
+   "streckung": 4.04,
    "content": {
     "x": 6,
     "y": 47,
     "w": 115,
-    "h": 34
+    "h": 33
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 62
+     "x": 29,
+     "y": 58
     },
     "muzzle": {
      "x": 120,
@@ -883,7 +883,7 @@
     "art": "ding",
     "size": {
      "w": 29,
-     "h": 9
+     "h": 8
     },
     "angle": 0,
     "spin": true,
@@ -894,7 +894,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eba85c",
+   "flashColor": "#eba95a",
    "korrektur": true,
    "held": {
     "atlas": "melee",
@@ -941,14 +941,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 67,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 57
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -1012,14 +1012,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 55
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -1083,8 +1083,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 64
+     "x": 30,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
@@ -1154,12 +1154,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 63
+     "x": 30,
+     "y": 65
     },
     "muzzle": {
      "x": 119,
-     "y": 66
+     "y": 65
     },
     "source": "geometrie"
    },
@@ -1214,9 +1214,9 @@
     "datei": "IMG_9052.PNG",
     "aufloesung": 1024
    },
-   "rotation": 45.0,
+   "rotation": 45.1,
    "gespiegelt": true,
-   "streckung": 4.91,
+   "streckung": 5.2,
    "content": {
     "x": 6,
     "y": 51,
@@ -1225,12 +1225,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 26,
      "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 60
+     "y": 61
     },
     "source": "geometrie"
    },
@@ -1249,8 +1249,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb8d4d",
-   "korrektur": false,
+   "flashColor": "#eb8e4f",
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 0,
@@ -1285,19 +1285,19 @@
     "datei": "IMG_9053.PNG",
     "aufloesung": 1024
    },
-   "rotation": 46.2,
-   "gespiegelt": false,
-   "streckung": 4.93,
+   "rotation": -46.2,
+   "gespiegelt": true,
+   "streckung": 5.34,
    "content": {
-    "x": 6,
+    "x": 7,
     "y": 50,
-    "w": 115,
+    "w": 114,
     "h": 27
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 63
+     "x": 29,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
@@ -1320,7 +1320,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#43d2eb",
+   "flashColor": "#3fd5ed",
    "korrektur": true,
    "held": {
     "atlas": "melee",
@@ -1367,14 +1367,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 65
+     "x": 25,
+     "y": 68
     },
     "muzzle": {
-     "x": 120,
-     "y": 82
+     "x": 100,
+     "y": 56
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -1438,14 +1438,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 46,
+     "y": 77
     },
     "muzzle": {
      "x": 117,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -1463,7 +1463,7 @@
     "h": 32
    },
    "flashColor": "#6a82eb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 384,
@@ -1509,12 +1509,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 63
+     "x": 28,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 62
     },
     "source": "geometrie"
    },
@@ -1580,12 +1580,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 61
+     "x": 27,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 80
+     "y": 70
     },
     "source": "geometrie"
    },
@@ -1651,8 +1651,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 79
+     "x": 28,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
@@ -1722,12 +1722,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 76
+     "x": 29,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -1793,12 +1793,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 73
+     "x": 27,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -1864,12 +1864,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 76
+     "x": 27,
+     "y": 61
     },
     "muzzle": {
      "x": 117,
-     "y": 50
+     "y": 56
     },
     "source": "geometrie"
    },
@@ -1935,12 +1935,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 66
+     "x": 26,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -2006,12 +2006,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 66
+     "x": 25,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -2077,8 +2077,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 67
+     "x": 26,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
@@ -2148,14 +2148,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 29,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 53
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -2173,7 +2173,7 @@
     "h": 32
    },
    "flashColor": "#58daeb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "ranged",
     "x": 0,
@@ -2219,14 +2219,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 62,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -2290,16 +2290,30 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 63
+     "x": 28,
+     "y": 58
     },
     "muzzle": {
      "x": 120,
-     "y": 60
+     "y": 58
     },
     "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "rakete",
+    "size": {
+     "w": 29,
+     "h": 18
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ranged",
+    "x": 320,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#6079eb",
    "korrektur": false,
    "held": {
@@ -2347,12 +2361,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 65
+     "x": 45,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -2366,7 +2380,7 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 320,
+    "x": 352,
     "y": 768,
     "w": 32,
     "h": 32
@@ -2409,23 +2423,23 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.04,
+   "streckung": 1.62,
    "content": {
-    "x": 7,
-    "y": 7,
-    "w": 113,
-    "h": 114
+    "x": 8,
+    "y": 6,
+    "w": 112,
+    "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 57,
+     "y": 63
     },
     "muzzle": {
      "x": 119,
-     "y": 64
+     "y": 25
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -2437,13 +2451,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 352,
+    "x": 384,
     "y": 768,
     "w": 32,
     "h": 32
    },
    "flashColor": "#eb775e",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ranged",
     "x": 512,
@@ -2480,23 +2498,23 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.07,
    "content": {
-    "x": 7,
-    "y": 7,
-    "w": 114,
-    "h": 112
+    "x": 9,
+    "y": 6,
+    "w": 109,
+    "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 53,
+     "x": 67,
      "y": 62
     },
     "muzzle": {
-     "x": 120,
+     "x": 117,
      "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "plasma",
@@ -2508,13 +2526,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 384,
+    "x": 416,
     "y": 768,
     "w": 32,
     "h": 32
    },
    "flashColor": "#eb8c2a",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ranged",
     "x": 640,
@@ -2560,14 +2582,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 64,
      "y": 64
     },
     "muzzle": {
      "x": 120,
      "y": 64
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "rakete",
@@ -2579,7 +2601,7 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 416,
+    "x": 448,
     "y": 768,
     "w": 32,
     "h": 32
@@ -2631,12 +2653,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 75
+     "x": 30,
+     "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 61
     },
     "source": "geometrie"
    },
@@ -2650,13 +2672,13 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 448,
+    "x": 480,
     "y": 768,
     "w": 32,
     "h": 32
    },
    "flashColor": "#eb8426",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "ranged",
     "x": 896,
@@ -2702,12 +2724,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 73
+     "x": 29,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 66
+     "y": 65
     },
     "source": "geometrie"
    },
@@ -2721,7 +2743,7 @@
     "spin": false,
     "generiert": false,
     "atlas": "ranged",
-    "x": 480,
+    "x": 512,
     "y": 768,
     "w": 32,
     "h": 32
@@ -2792,7 +2814,7 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 512,
+    "x": 544,
     "y": 768,
     "w": 32,
     "h": 32
@@ -2844,12 +2866,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 47
+     "x": 30,
+     "y": 44
     },
     "muzzle": {
      "x": 120,
-     "y": 50
+     "y": 44
     },
     "source": "geometrie"
    },
@@ -2863,7 +2885,7 @@
     "spin": false,
     "generiert": true,
     "atlas": "ranged",
-    "x": 544,
+    "x": 576,
     "y": 768,
     "w": 32,
     "h": 32
@@ -2915,12 +2937,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 77
+     "x": 29,
+     "y": 73
     },
     "muzzle": {
      "x": 120,
-     "y": 66
+     "y": 71
     },
     "source": "geometrie"
    },
@@ -2986,14 +3008,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 53
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "rakete",
@@ -3057,14 +3079,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 30,
+     "y": 60
     },
     "muzzle": {
      "x": 117,
-     "y": 63
+     "y": 60
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "granate",
@@ -3128,14 +3150,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 66,
+     "y": 62
     },
     "muzzle": {
      "x": 115,
-     "y": 63
+     "y": 44
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "feuer",
@@ -3199,14 +3221,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 68,
+     "y": 58
     },
     "muzzle": {
      "x": 118,
-     "y": 63
+     "y": 58
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "rakete",
@@ -3270,14 +3292,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 55,
-     "y": 63
+     "x": 64,
+     "y": 65
     },
     "muzzle": {
      "x": 104,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -3341,14 +3363,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 54,
-     "y": 63
+     "x": 61,
+     "y": 64
     },
     "muzzle": {
      "x": 112,
-     "y": 63
+     "y": 57
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -3412,12 +3434,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 77
+     "x": 28,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -3483,14 +3505,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 68
+     "x": 60,
+     "y": 56
     },
     "muzzle": {
-     "x": 120,
-     "y": 80
+     "x": 106,
+     "y": 66
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "ding",
@@ -3508,7 +3530,7 @@
     "h": 32
    },
    "flashColor": "#eb5329",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
     "x": 0,
@@ -3554,14 +3576,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 70,
+     "y": 57
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 57
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -3625,12 +3647,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 76
+     "x": 32,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 56
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -3696,12 +3718,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 63
+     "x": 27,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 53
+     "y": 56
     },
     "source": "geometrie"
    },
@@ -3767,14 +3789,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 55,
-     "y": 63
+     "x": 63,
+     "y": 67
     },
     "muzzle": {
      "x": 103,
-     "y": 63
+     "y": 67
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -3838,12 +3860,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 68
+     "x": 25,
+     "y": 67
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 67
     },
     "source": "geometrie"
    },
@@ -3909,12 +3931,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 65
+     "x": 27,
+     "y": 52
     },
     "muzzle": {
      "x": 120,
-     "y": 56
+     "y": 53
     },
     "source": "geometrie"
    },
@@ -3980,14 +4002,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 55
+     "x": 26,
+     "y": 56
     },
     "muzzle": {
      "x": 120,
-     "y": 39
+     "y": 44
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "kugel",
@@ -4005,7 +4027,7 @@
     "h": 32
    },
    "flashColor": "#eba96a",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
     "x": 896,
@@ -4051,12 +4073,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 75
+     "x": 29,
+     "y": 70
     },
     "muzzle": {
      "x": 120,
-     "y": 73
+     "y": 70
     },
     "source": "geometrie"
    },
@@ -4122,12 +4144,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 70
+     "x": 63,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 61
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -4147,7 +4169,7 @@
     "h": 32
    },
    "flashColor": "#62aeeb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
     "x": 128,
@@ -4182,25 +4204,25 @@
     "datei": "IMG_9101.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": -30.0,
    "gespiegelt": false,
    "streckung": 1.5,
    "content": {
     "x": 6,
-    "y": 9,
+    "y": 17,
     "w": 115,
-    "h": 109
+    "h": 94
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 27,
+     "y": 70
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 53
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "pfeil",
@@ -4217,8 +4239,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb9144",
-   "korrektur": false,
+   "flashColor": "#eb9246",
+   "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
     "x": 256,
@@ -4253,14 +4275,14 @@
     "datei": "IMG_9102.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": 8.0,
    "gespiegelt": true,
    "streckung": 1.21,
    "content": {
     "x": 6,
-    "y": 12,
+    "y": 15,
     "w": 115,
-    "h": 103
+    "h": 98
    },
    "anchor": {
     "grip": {
@@ -4288,7 +4310,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb5f37",
+   "flashColor": "#eb5e36",
    "korrektur": true,
    "held": {
     "atlas": "heavy_ranged",
@@ -4335,14 +4357,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 56,
+     "y": 69
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 69
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "feuer",
@@ -4406,12 +4428,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 62
+     "x": 30,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 59
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -4477,14 +4499,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 29,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "wasser",
@@ -4548,14 +4570,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 31,
+     "y": 66
     },
     "muzzle": {
      "x": 118,
-     "y": 63
+     "y": 66
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "stein",
@@ -4573,7 +4595,7 @@
     "h": 32
    },
    "flashColor": "#eba069",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "elemental",
     "x": 384,
@@ -4619,14 +4641,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 63,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -4761,14 +4783,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 29,
+     "y": 69
     },
     "muzzle": {
      "x": 118,
-     "y": 63
+     "y": 52
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "gift",
@@ -4786,7 +4808,7 @@
     "h": 32
    },
    "flashColor": "#eb8d37",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "elemental",
     "x": 768,
@@ -4832,12 +4854,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 30,
      "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 60
+     "y": 62
     },
     "source": "geometrie"
    },
@@ -4903,8 +4925,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 56
+     "x": 28,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
@@ -4974,14 +4996,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "gift",
@@ -5045,14 +5067,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 67,
+     "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "eis",
@@ -5070,7 +5092,11 @@
     "h": 32
    },
    "flashColor": "#49a2eb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "elemental",
     "x": 256,
@@ -5116,14 +5142,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 64,
+     "y": 64
     },
     "muzzle": {
      "x": 118,
-     "y": 63
+     "y": 57
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "feuer",
@@ -5178,7 +5204,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.08,
    "content": {
     "x": 6,
     "y": 7,
@@ -5187,14 +5213,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "gift",
@@ -5212,7 +5238,11 @@
     "h": 32
    },
    "flashColor": "#ae6aeb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "elemental",
     "x": 512,
@@ -5249,7 +5279,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.03,
    "content": {
     "x": 6,
     "y": 6,
@@ -5258,14 +5288,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -5283,7 +5313,11 @@
     "h": 32
    },
    "flashColor": "#5beba2",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "elemental",
     "x": 640,
@@ -5329,14 +5363,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 65,
+     "y": 62
     },
     "muzzle": {
      "x": 116,
-     "y": 63
+     "y": 47
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -5391,7 +5425,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.0,
+   "streckung": 1.03,
    "content": {
     "x": 6,
     "y": 6,
@@ -5400,18 +5434,36 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 63,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 480,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#5f77eb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "elemental",
     "x": 896,
@@ -5457,14 +5509,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 63,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -5476,7 +5528,7 @@
     "spin": false,
     "generiert": true,
     "atlas": "elemental",
-    "x": 480,
+    "x": 512,
     "y": 768,
     "w": 32,
     "h": 32
@@ -5528,14 +5580,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 57,
-     "y": 63
+     "x": 65,
+     "y": 65
     },
     "muzzle": {
      "x": 100,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -5547,7 +5599,7 @@
     "spin": false,
     "generiert": true,
     "atlas": "elemental",
-    "x": 512,
+    "x": 544,
     "y": 768,
     "w": 32,
     "h": 32
@@ -5599,16 +5651,30 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
+     "x": 64,
      "y": 63
     },
     "muzzle": {
      "x": 119,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "elemental",
+    "x": 576,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#549feb",
    "korrektur": false,
    "held": {
@@ -5656,14 +5722,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 67,
+     "y": 61
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -5675,13 +5741,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "elemental",
-    "x": 544,
+    "x": 608,
     "y": 768,
     "w": 32,
     "h": 32
    },
    "flashColor": "#eb506d",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "elemental",
     "x": 384,
@@ -5718,27 +5788,31 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.08,
    "content": {
-    "x": 6,
+    "x": 7,
     "y": 6,
-    "w": 115,
+    "w": 113,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 61
     },
     "muzzle": {
-     "x": 120,
-     "y": 63
+     "x": 119,
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#ae69eb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 0,
@@ -5784,14 +5858,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 45,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -5809,7 +5883,7 @@
     "h": 32
    },
    "flashColor": "#f0d252",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "magic",
     "x": 128,
@@ -5855,14 +5929,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 65,
+     "y": 64
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 64
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9233",
@@ -5912,12 +5986,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 65
+     "x": 29,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 66
     },
     "source": "geometrie"
    },
@@ -5969,14 +6043,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 54,
-     "y": 63
+     "x": 62,
+     "y": 62
     },
     "muzzle": {
      "x": 109,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb6f51",
@@ -6017,27 +6091,31 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.04,
+   "streckung": 1.41,
    "content": {
-    "x": 8,
+    "x": 9,
     "y": 6,
-    "w": 111,
+    "w": 109,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 58
     },
     "muzzle": {
-     "x": 118,
-     "y": 63
+     "x": 117,
+     "y": 41
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#6aadeb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 640,
@@ -6083,18 +6161,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 65,
+     "y": 68
     },
     "muzzle": {
      "x": 118,
-     "y": 63
+     "y": 68
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#546feb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 768,
@@ -6140,14 +6222,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 63,
      "y": 63
     },
     "muzzle": {
      "x": 119,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#5b75eb",
@@ -6197,14 +6279,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 66,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 90
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#48d3eb",
@@ -6254,14 +6336,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 64,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#40ebce",
@@ -6311,14 +6393,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 63,
      "y": 63
     },
     "muzzle": {
      "x": 119,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#5da2eb",
@@ -6368,18 +6450,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 66,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#67ebcf",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 384,
@@ -6416,7 +6502,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.0,
+   "streckung": 1.09,
    "content": {
     "x": 6,
     "y": 6,
@@ -6425,18 +6511,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#6aadeb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 512,
@@ -6482,8 +6572,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 64
+     "x": 27,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
@@ -6539,8 +6629,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 63
+     "x": 29,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
@@ -6596,12 +6686,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 60
+     "x": 27,
+     "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -6653,8 +6743,8 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 71
+     "x": 29,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
@@ -6710,12 +6800,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 58
+     "x": 28,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -6767,12 +6857,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 66
+     "x": 28,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 67
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -6824,14 +6914,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
+     "x": 62,
      "y": 63
     },
     "muzzle": {
      "x": 116,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#4398eb",
@@ -6881,18 +6971,18 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 109
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#54cdeb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "magic",
     "x": 512,
@@ -6938,14 +7028,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 66,
+     "y": 65
     },
     "muzzle": {
      "x": 115,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#5ca4eb",
@@ -6986,27 +7076,31 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.03,
+   "streckung": 1.29,
    "content": {
-    "x": 9,
+    "x": 8,
     "y": 6,
-    "w": 109,
+    "w": 111,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 64,
+     "y": 68
     },
     "muzzle": {
-     "x": 117,
-     "y": 63
+     "x": 118,
+     "y": 86
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#ebcf6a",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 768,
@@ -7052,12 +7146,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 60
+     "x": 29,
+     "y": 62
     },
     "muzzle": {
      "x": 119,
-     "y": 68
+     "y": 65
     },
     "source": "geometrie"
    },
@@ -7114,27 +7208,45 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.03,
+   "streckung": 1.14,
    "content": {
     "x": 6,
-    "y": 9,
+    "y": 10,
     "w": 115,
-    "h": 109
+    "h": 108
    },
    "anchor": {
     "grip": {
-     "x": 52,
+     "x": 63,
      "y": 63
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 50
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "magic",
+    "x": 64,
+    "y": 1024,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#6ab1eb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 0,
@@ -7180,14 +7292,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 55,
-     "y": 63
+     "x": 64,
+     "y": 61
     },
     "muzzle": {
      "x": 107,
-     "y": 63
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9f45",
@@ -7228,7 +7340,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.02,
    "content": {
     "x": 7,
     "y": 6,
@@ -7237,18 +7349,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 64
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 64
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#62d1eb",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "magic",
     "x": 256,
@@ -7294,14 +7410,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 64,
+     "y": 62
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 74
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb6642",
@@ -7351,14 +7467,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 55,
-     "y": 63
+     "x": 66,
+     "y": 58
     },
     "muzzle": {
      "x": 108,
-     "y": 63
+     "y": 58
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eba865",
@@ -7408,14 +7524,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 64,
+     "y": 67
     },
     "muzzle": {
      "x": 113,
-     "y": 63
+     "y": 83
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#65a7eb",
@@ -7465,14 +7581,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 68,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#2f85eb",
@@ -7522,14 +7638,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 55,
-     "y": 63
+     "x": 64,
+     "y": 61
     },
     "muzzle": {
      "x": 108,
-     "y": 63
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9344",
@@ -7579,18 +7695,18 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 29,
      "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 62
+     "y": 60
     },
     "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb8731",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "utility",
     "x": 256,
@@ -7636,14 +7752,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 55,
-     "y": 63
+     "x": 64,
+     "y": 61
     },
     "muzzle": {
      "x": 108,
-     "y": 63
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9344",
@@ -7693,14 +7809,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 57,
-     "y": 63
+     "x": 64,
+     "y": 71
     },
     "muzzle": {
      "x": 98,
-     "y": 63
+     "y": 38
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9841",
@@ -7741,7 +7857,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.02,
+   "streckung": 1.14,
    "content": {
     "x": 7,
     "y": 6,
@@ -7750,18 +7866,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 62
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 48
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb765e",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "utility",
     "x": 640,
@@ -7807,12 +7927,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
+     "x": 28,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 72
+     "y": 71
     },
     "source": "geometrie"
    },
@@ -7864,18 +7984,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
+     "x": 64,
      "y": 63
     },
     "muzzle": {
      "x": 120,
      "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb8d39",
    "korrektur": true,
+   "kachel": {
+    "modus": "orb",
+    "grund": "Motiv zerfaellt (Flammen, Truemmer): Zauber-Orb mit Kachelbild"
+   },
    "held": {
     "atlas": "utility",
     "x": 896,
@@ -7921,14 +8045,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 67,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9244",
@@ -7978,14 +8102,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 71,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 60
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb5437",
@@ -8035,12 +8159,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 79
+     "x": 28,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 65
+     "y": 62
     },
     "source": "geometrie"
    },
@@ -8092,14 +8216,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 63,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb2f8e",
@@ -8149,14 +8273,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 60,
+     "y": 69
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 69
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#3d8feb",
@@ -8215,7 +8339,21 @@
     },
     "source": "korrektur"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "plasma",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "tech",
+    "x": 0,
+    "y": 768,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#eb893d",
    "korrektur": true,
    "held": {
@@ -8263,14 +8401,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 67
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 66
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb8a3b",
@@ -8320,14 +8458,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 86
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb8f47",
@@ -8377,14 +8515,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 63,
+     "y": 68
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 78
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#4bd2eb",
@@ -8434,14 +8572,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 63,
+     "y": 70
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 70
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#48cceb",
@@ -8491,14 +8629,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 58,
-     "y": 63
+     "x": 63,
+     "y": 66
     },
     "muzzle": {
      "x": 91,
-     "y": 63
+     "y": 95
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#62a8eb",
@@ -8548,14 +8686,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#afeb5a",
@@ -8605,12 +8743,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 77
+     "x": 29,
+     "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 74
+     "y": 70
     },
     "source": "geometrie"
    },
@@ -8662,14 +8800,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 57,
-     "y": 63
+     "x": 65,
+     "y": 64
     },
     "muzzle": {
      "x": 100,
-     "y": 63
+     "y": 110
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eba16a",
@@ -8719,14 +8857,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 62,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 53
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "ding",
@@ -8738,7 +8876,7 @@
     "spin": false,
     "generiert": false,
     "atlas": "tech",
-    "x": 0,
+    "x": 32,
     "y": 768,
     "w": 32,
     "h": 32
@@ -8781,7 +8919,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.02,
+   "streckung": 1.14,
    "content": {
     "x": 10,
     "y": 6,
@@ -8790,18 +8928,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 63,
+     "y": 61
     },
     "muzzle": {
      "x": 116,
-     "y": 63
+     "y": 52
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9a4c",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "tech",
     "x": 640,
@@ -8838,7 +8980,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.3,
    "content": {
     "x": 6,
     "y": 6,
@@ -8847,18 +8989,22 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 70,
+     "y": 58
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 58
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb8e3a",
-   "korrektur": false,
+   "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "tech",
     "x": 768,
@@ -8904,12 +9050,12 @@
    },
    "anchor": {
     "grip": {
-     "x": 40,
-     "y": 80
+     "x": 29,
+     "y": 67
     },
     "muzzle": {
      "x": 120,
-     "y": 60
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -8961,18 +9107,18 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 45,
+     "y": 64
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 42
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9746",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "tech",
     "x": 0,
@@ -9018,18 +9164,18 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 45,
+     "y": 74
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 67
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
    "flashColor": "#eb9449",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "tech",
     "x": 128,
@@ -9064,29 +9210,29 @@
     "datei": "IMG_9389.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": -18.0,
    "gespiegelt": false,
    "streckung": 1.22,
    "content": {
     "x": 6,
-    "y": 7,
+    "y": 13,
     "w": 115,
-    "h": 114
+    "h": 99
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 64
+     "x": 31,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 63
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": null,
-   "flashColor": "#eb6846",
-   "korrektur": false,
+   "flashColor": "#eb6a47",
+   "korrektur": true,
    "held": {
     "atlas": "tech",
     "x": 256,
@@ -9132,14 +9278,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 29,
+     "y": 65
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "plasma",
@@ -9151,13 +9297,13 @@
     "spin": false,
     "generiert": true,
     "atlas": "tech",
-    "x": 32,
+    "x": 64,
     "y": 768,
     "w": 32,
     "h": 32
    },
    "flashColor": "#68afeb",
-   "korrektur": false,
+   "korrektur": true,
    "held": {
     "atlas": "tech",
     "x": 384,
@@ -9194,7 +9340,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.02,
+   "streckung": 1.09,
    "content": {
     "x": 7,
     "y": 6,
@@ -9203,18 +9349,36 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 64,
+     "y": 65
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 0,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#62a7eb",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 0,
@@ -9251,7 +9415,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.02,
+   "streckung": 1.13,
    "content": {
     "x": 7,
     "y": 6,
@@ -9260,14 +9424,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 59,
+     "y": 65
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 46
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -9279,13 +9443,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ultimate",
-    "x": 0,
+    "x": 32,
     "y": 512,
     "w": 32,
     "h": 32
    },
    "flashColor": "#637ceb",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 128,
@@ -9331,16 +9499,30 @@
    },
    "anchor": {
     "grip": {
-     "x": 54,
-     "y": 63
+     "x": 63,
+     "y": 60
     },
     "muzzle": {
      "x": 109,
-     "y": 63
+     "y": 58
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 64,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#67a9eb",
    "korrektur": false,
    "held": {
@@ -9379,7 +9561,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.02,
+   "streckung": 1.07,
    "content": {
     "x": 7,
     "y": 6,
@@ -9388,14 +9570,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 66,
+     "y": 62
     },
     "muzzle": {
      "x": 119,
-     "y": 63
+     "y": 62
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -9407,13 +9589,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ultimate",
-    "x": 32,
+    "x": 96,
     "y": 512,
     "w": 32,
     "h": 32
    },
    "flashColor": "#9deb45",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 384,
@@ -9450,23 +9636,23 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.04,
+   "streckung": 1.11,
    "content": {
-    "x": 9,
-    "y": 6,
-    "w": 110,
-    "h": 115
+    "x": 6,
+    "y": 7,
+    "w": 115,
+    "h": 114
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 63,
+     "y": 67
     },
     "muzzle": {
-     "x": 118,
-     "y": 63
+     "x": 120,
+     "y": 67
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "stein",
@@ -9478,13 +9664,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ultimate",
-    "x": 64,
+    "x": 128,
     "y": 512,
     "w": 32,
     "h": 32
    },
    "flashColor": "#eb8732",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 512,
@@ -9521,23 +9711,23 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.85,
    "content": {
     "x": 7,
     "y": 6,
-    "w": 114,
+    "w": 113,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 61,
+     "y": 65
     },
     "muzzle": {
-     "x": 120,
-     "y": 63
+     "x": 119,
+     "y": 85
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -9549,13 +9739,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ultimate",
-    "x": 96,
+    "x": 160,
     "y": 512,
     "w": 32,
     "h": 32
    },
    "flashColor": "#83eb6a",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 640,
@@ -9592,7 +9786,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.0,
+   "streckung": 1.03,
    "content": {
     "x": 6,
     "y": 6,
@@ -9601,14 +9795,14 @@
    },
    "anchor": {
     "grip": {
-     "x": 52,
-     "y": 63
+     "x": 63,
+     "y": 66
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 54
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "feuer",
@@ -9620,13 +9814,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ultimate",
-    "x": 128,
+    "x": 192,
     "y": 512,
     "w": 32,
     "h": 32
    },
    "flashColor": "#eb5138",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 768,
@@ -9663,7 +9861,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.01,
+   "streckung": 1.11,
    "content": {
     "x": 7,
     "y": 6,
@@ -9672,18 +9870,36 @@
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 63,
+     "y": 60
     },
     "muzzle": {
      "x": 120,
-     "y": 63
+     "y": 60
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 224,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#58a5eb",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 896,
@@ -9720,27 +9936,45 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.03,
+   "streckung": 1.3,
    "content": {
-    "x": 8,
+    "x": 10,
     "y": 6,
-    "w": 112,
+    "w": 108,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 62,
+     "y": 71
     },
     "muzzle": {
-     "x": 119,
-     "y": 63
+     "x": 117,
+     "y": 61
     },
-    "source": "standard"
+    "source": "geometrie"
    },
-   "projectile": null,
+   "projectile": {
+    "art": "zauber",
+    "size": {
+     "w": 24,
+     "h": 24
+    },
+    "angle": 0,
+    "spin": false,
+    "generiert": true,
+    "atlas": "ultimate",
+    "x": 256,
+    "y": 512,
+    "w": 32,
+    "h": 32
+   },
    "flashColor": "#eb9e4b",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 0,
@@ -9777,23 +10011,23 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.13,
+   "streckung": 1.3,
    "content": {
-    "x": 13,
+    "x": 14,
     "y": 6,
-    "w": 101,
+    "w": 99,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 53,
-     "y": 63
+     "x": 64,
+     "y": 65
     },
     "muzzle": {
-     "x": 113,
-     "y": 63
+     "x": 112,
+     "y": 65
     },
-    "source": "standard"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "zauber",
@@ -9805,13 +10039,17 @@
     "spin": false,
     "generiert": true,
     "atlas": "ultimate",
-    "x": 160,
+    "x": 288,
     "y": 512,
     "w": 32,
     "h": 32
    },
    "flashColor": "#509feb",
    "korrektur": true,
+   "kachel": {
+    "modus": "motiv",
+    "grund": "Motiv aus der Kachel herausgeloest"
+   },
    "held": {
     "atlas": "ultimate",
     "x": 128,

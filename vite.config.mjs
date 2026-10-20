@@ -4,7 +4,8 @@ export default defineConfig({
   root: '.',
   base: './',
   server: {
-    port: 5173,
+    // PA_PORT: Ausweichport, wenn ein fremder Server 5173 belegt (siehe playwright.config.mjs).
+    port: Number(process.env.PA_PORT) || 5173,
     strictPort: true,
     host: '127.0.0.1',
   },

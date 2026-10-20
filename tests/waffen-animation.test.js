@@ -11,9 +11,12 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { WEAPONS } from '../src/shared/config/weapons.js';
+import { CHARACTERS } from '../src/shared/config/factions.js';
+import { TYP_JE_CHARAKTER as FIGUR_TYP, PARAMETER as TYP_PARAMETER } from '../src/client/figurTypen.js';
 import {
   KATEGORIEN, PARAMETER, KORREKTUREN, waffenParameter, parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
   geschossDarstellung, geschossWinkel, flugWinkel, SchweifRing, SCHWEIF_LAENGE, GeschossLagen,
+  FIGUR_OFFSETS, FIGURTYP_STANDARD, figurHand,
 } from '../src/client/waffenAnimation.js';
 import { erzeugeWaffenSprites, zellenFuer } from '../src/client/waffenSprites.js';
 
@@ -522,4 +525,143 @@ test('Lader: unbekannte Waffe und null sind sicher', async () => {
   assert.equal(sprites.hole({ id: 'pa_nichtda', category: 'melee' }), null);
   await tick(); await tick();
   assert.equal(sprites.hole({ id: 'pa_nichtda', category: 'melee' }), null);
+});
+
+// ------------------------------------------------------------------ Figurtypen und Handoffsets
+
+test('Handoffset-Tabelle: jede der 81 Figuren hat einen gültigen Figurtyp, Korrekturen betreffen nur bekannte Figuren', () => {
+  assert.equal(CHARACTERS.length, 81);
+  for (const c of CHARACTERS) {
+    const typ = FIGUR_TYP[c.id];
+    assert.ok(typ && TYP_PARAMETER[typ], `${c.id}: kein Figurtyp in FIGUR_TYP`);
+  }
+  const ids = new Set(CHARACTERS.map(c => c.id));
+  for (const id of Object.keys(FIGUR_TYP)) assert.ok(ids.has(id), `FIGUR_TYP: unbekannte Figur ${id}`);
+  for (const id of Object.keys(FIGUR_OFFSETS)) assert.ok(ids.has(id), `FIGUR_OFFSETS: unbekannte Figur ${id}`);
+  for (const [name, t] of Object.entries(TYP_PARAMETER)) {
+    assert.ok(t.handAnteil > 0.15 && t.handAnteil < 0.7, `${name}: handAnteil ${t.handAnteil}`);
+    assert.ok(t.handAufbau === 0 || t.handAufbau === 1);
+    assert.ok(t.handSkala > 0.5 && t.handSkala < 1.5);
+  }
+  // Alle Typen kommen vor.
+  const benutzt = new Set(Object.values(FIGUR_TYP));
+  for (const name of Object.keys(TYP_PARAMETER)) assert.ok(benutzt.has(name), `Figurtyp ${name} wird nie verwendet`);
+});
+
+test('figurHand: Standard ist der Humanoide; Typ und Feinkorrektur wirken auf den Handpunkt', () => {
+  assert.equal(figurHand(undefined).typ, FIGURTYP_STANDARD);
+  assert.equal(figurHand('gibt-es-nicht').typ, 'humanoid');
+  assert.equal(figurHand('captain-sven'), figurHand('captain-sven'), 'Ergebnis wird gemerkt');
+  const par = waffenParameter('ranged', 'x');
+  const mensch = handPunkt(par, 1, 52, 10, { x: 0, y: 0 }, figurHand('captain-sven'));
+  assert.ok(Math.abs(mensch.y - -7.25) < 1e-9, 'Humanoide: wie bisher');
+  const tier = handPunkt(par, 1, 52, 10, { x: 0, y: 0 }, figurHand('pikamon'));
+  assert.ok(tier.x < mensch.x, 'Tiere tragen die Waffe weiter hinten auf dem Rücken');
+  const tank = figurHand('heavy-battery-moerser-bot');
+  assert.equal(tank.typ, 'fahrzeug');
+  assert.equal(tank.aufbau, true);
+  const links = handPunkt(par, -1, 52, 10, { x: 0, y: 0 }, figurHand('pikamon'));
+  assert.equal(links.x, -tier.x, 'Spiegelung bei Blick nach links');
+  // Feinkorrektur überschreibt den Typ
+  assert.equal(figurHand('storm-talon').handAnteil, FIGUR_OFFSETS['storm-talon'].handAnteil);
+});
+
+test('Kachel-Waffen: Orb oder Motiv je nach Manifest, Rücken-Waffen liegen hinter dem Körper', () => {
+  const orb = waffenParameter('utility', 'pa_118', false, 'kachel', false, 'orb');
+  const motiv = waffenParameter('utility', 'pa_118', false, 'kachel', false, 'motiv');
+  assert.equal(orb.orb, true);
+  assert.equal(motiv.orb, false);
+  assert.ok(motiv.zelle > orb.zelle, 'Motiv wird größer gezeichnet als der Orb');
+  const sp = { form: 'kachel', kachel: 'orb', projektilInfo: null };
+  assert.equal(parameterFuerWaffe(WEAPONS.find(w => w.id === 'pa_118'), sp).orb, true);
+  assert.equal(waffenParameter('utility', 'pa_112', false, 'kompakt').lage, 'hinter');
+  assert.equal(waffenParameter('melee', 'pa_001', false, 'objekt').lage, 'vor', 'Nahkampf liegt vor dem Körper');
+  // Kompakte Sprites werden etwas vor dem Körper gehalten.
+  assert.ok(waffenParameter('ranged', 'pa_zzz', false, 'kompakt').handVor > PARAMETER.ranged.handVor);
+});
+
+test('Manifest: Waffen mit Kachel-Modus orb brauchen keine Motiv-Maske, alle 28 haben einen Modus', () => {
+  const kacheln = Object.values(MANIFEST.waffen).filter(w => w.form === 'kachel');
+  assert.equal(kacheln.length, 28);
+  for (const w of kacheln) assert.ok(['motiv', 'orb'].includes(w.kachel.modus), w.id);
+  const z = zellenFuer(MANIFEST, kacheln[0].id);
+  assert.ok(['motiv', 'orb'].includes(z.kachel));
+});
+
+// ------------------------------------------------------------------ Unterscheidbarkeit der Schüsse
+
+/** Messwerte einer Kategorie: größter Rückstoßweg, Dauer, Blitzfläche, größte Drehung (Heben/Hieb). */
+function schussMasse(kat) {
+  const par = waffenParameter(kat, 'pa_zzz', false, 'objekt');
+  let vor = 0;
+  let drehung = 0;
+  for (let t = 0; t < par.schussDauer; t += 0.004) {
+    const p = pose(par, { ...RUHE, seitSchuss: t }, false);
+    vor = Math.max(vor, -p.vor);
+    drehung = Math.max(drehung, Math.abs(p.drehung));
+  }
+  return { vor, dauer: par.schussDauer, blitz: par.blitzGroesse ** 2, drehung, koerper: par.koerper, ausfall: par.ausfall, start: par.start };
+}
+
+test('Schüsse der Kategorien unterscheiden sich messbar (Rückstoßweg, Dauer, Blitzfläche, Drehung)', () => {
+  const masse = Object.fromEntries(KATEGORIEN.map(k => [k, schussMasse(k)]));
+  const verschieden = (a, b) => (a === 0 || b === 0 ? a !== b : Math.max(a, b) / Math.min(a, b) >= 1.25);
+  for (let i = 0; i < KATEGORIEN.length; i++) {
+    for (let j = i + 1; j < KATEGORIEN.length; j++) {
+      const a = masse[KATEGORIEN[i]];
+      const b = masse[KATEGORIEN[j]];
+      const unterschiede = ['vor', 'dauer', 'blitz', 'drehung'].filter(m => verschieden(a[m], b[m]));
+      assert.ok(unterschiede.length >= 2, `${KATEGORIEN[i]} und ${KATEGORIEN[j]} unterscheiden sich nur in ${unterschiede.join(',') || 'nichts'}`);
+    }
+  }
+  // Die Grundsätze: schwere Waffen stoßen weiter, länger und blitzen größer als Gewehre.
+  assert.ok(masse.heavy_ranged.vor >= 1.8 * masse.ranged.vor, 'Rückstoßweg schwer ≥ 1,8 × Gewehr');
+  assert.ok(masse.heavy_ranged.dauer >= 2.5 * masse.ranged.dauer, 'Dauer schwer ≥ 2,5 × Gewehr');
+  assert.ok(masse.heavy_ranged.blitz >= 2.5 * masse.ranged.blitz, 'Blitzfläche schwer ≥ 2,5 × Gewehr');
+  assert.ok(masse.heavy_ranged.ausfall > 0.5 && masse.ranged.ausfall === 0, 'Ausfallschritt nur bei schweren Waffen');
+  assert.ok(masse.heavy_ranged.koerper > masse.ranged.koerper && masse.ranged.koerper > masse.magic.koerper, 'Oberkörper-Kick nimmt von schwer über Gewehr zu Magie ab');
+  assert.ok(masse.heavy_ranged.start > masse.ranged.start, 'Startglanz schwer größer');
+  assert.equal(masse.melee.start, 0);
+});
+
+test('Schnelle Schussfolgen: keine Drift, die Pose hängt nur von der Zeit seit dem letzten Schuss ab', () => {
+  for (const kat of KATEGORIEN) {
+    const par = waffenParameter(kat, 'pa_zzz', false, 'objekt');
+    const frisch = pose(par, { ...RUHE, seitSchuss: 0.05 }, false);
+    // 40 Schüsse im Abstand von 60 ms, dazwischen abgetastet: keine Zustandsreste.
+    for (let n = 0; n < 40; n++) {
+      pose(par, { ...RUHE, seitSchuss: (n % 7) * 0.06 }, false);
+    }
+    assert.deepEqual(pose(par, { ...RUHE, seitSchuss: 0.05 }, false), frisch, `${kat}: Pose hängt vom Verlauf ab`);
+    // Nach Ablauf kehrt alles in die Ruhe zurück.
+    const ende = pose(par, { ...RUHE, seitSchuss: par.schussDauer + 0.01 }, true);
+    assert.equal(ende.vor, 0);
+    assert.equal(ende.drehung, 0);
+    const p = pose(par, { ...RUHE, seitSchuss: 0.01 }, false);
+    assert.ok(Math.abs(p.vor) <= par.kick * 1.3 + 1 && Math.abs(p.drehung) <= 2.2, `${kat}: Ausschlag unbeschränkt`);
+  }
+});
+
+test('Geschoss: Startglanz je Kategorie, Oberkörper-Kick und Ausfallschritt wirken in der Figurpose', async () => {
+  const w = c => WEAPONS.find(x => x.category === c);
+  assert.ok(geschossDarstellung(w('heavy_ranged'), null).start > geschossDarstellung(w('ranged'), null).start);
+  const { FigurPosen } = await import('../src/client/figurAnimation.js');
+  const messe = (opt) => {
+    const f = new FigurPosen();
+    const e = { entityId: 1, x: 100, y: 100 };
+    const par = TYP_PARAMETER.humanoid;
+    f.pose(e, 0, { params: par, typ: 'humanoid', winkel: 0, feuer: 0 });
+    let dx = 0;
+    let sy = 1;
+    for (let i = 1; i <= 40; i++) {
+      const p = f.pose(e, i / 60, { params: par, typ: 'humanoid', winkel: 0, feuer: i === 1 ? 1 : 0.9, ...opt });
+      dx = Math.min(dx, p.dx);
+      sy = Math.min(sy, p.sy);
+    }
+    return { dx, sy };
+  };
+  const leicht = messe({ schussStaerke: 0.5, ausfall: 0 });
+  const schwer = messe({ schussStaerke: 2.4, ausfall: 1 });
+  assert.ok(schwer.dx < leicht.dx - 1, `Oberkörper-Kick schwer ${schwer.dx} gegen leicht ${leicht.dx}`);
+  assert.ok(schwer.sy < leicht.sy - 0.03, 'Ausfallschritt: Figur geht in die Knie');
 });

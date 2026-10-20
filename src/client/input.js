@@ -82,6 +82,8 @@ export class InputController {
 
   #attach() {
     this.#canvas.addEventListener('pointermove', event => {
+      // Die Zeichenfläche ändert ihre Größe mit der Karte: Maßstab nicht veraltet lassen.
+      this.#recalculateScale();
       const rect = this.#canvas.getBoundingClientRect();
       this.#pointer.x = (event.clientX - rect.left) * this.#scale.x;
       this.#pointer.y = (event.clientY - rect.top) * this.#scale.y;

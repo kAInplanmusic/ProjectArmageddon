@@ -388,6 +388,143 @@ export function zeichneWaffeInHand(ctx, ikone, p) {
 }
 
 /**
+ * Mittlere Körperfarbe an der Handhöhe einer Figur (Arm und Handschuh der Waffenhand).
+ * Wird je Figur einmal aus dem Sprite gemessen und am Eintrag gemerkt.
+ *
+ * @param {{bild: CanvasImageSource, anker?: {fussY?: number}}} fig - aus `holeFigur`
+ * @param {{handAnteil: number}} hand - aus `figurHand`
+ * @returns {string} CSS-Farbe
+ */
+export function handFarbeFuer(fig, hand) {
+  const schluessel = `_hand${hand.handAnteil}`;
+  if (fig[schluessel]) return fig[schluessel];
+  let farbe = '#c9a27e';
+  try {
+    const kante = fig.bild.width || 128;
+    const c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(kante, kante) : Object.assign(document.createElement('canvas'), { width: kante, height: kante });
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(fig.bild, 0, 0);
+    const fuss = fig.anker?.fussY ?? 0.96;
+    const mitteY = Math.round((fuss - hand.handAnteil) * kante);
+    const r = Math.round(kante * 0.07);
+    const x0 = Math.round(kante * 0.4);
+    const w = Math.round(kante * 0.2);
+    const y0 = Math.max(0, mitteY - r);
+    const daten = g.getImageData(x0, y0, w, Math.min(kante - y0, 2 * r)).data;
+    let rs = 0; let gs = 0; let bs = 0; let n = 0;
+    for (let i = 0; i < daten.length; i += 4) {
+      if (daten[i + 3] > 200) { rs += daten[i]; gs += daten[i + 1]; bs += daten[i + 2]; n += 1; }
+    }
+    // Mit hellem Hautton gemischt, damit die Faust vor dem Körper lesbar bleibt.
+    if (n > 12) farbe = `rgb(${Math.round(rs / n * 0.6 + 217 * 0.4)},${Math.round(gs / n * 0.6 + 179 * 0.4)},${Math.round(bs / n * 0.6 + 140 * 0.4)})`;
+  } catch {
+    // Messung nicht möglich (kein Lesezugriff): Standardfarbe
+  }
+  fig[schluessel] = farbe;
+  return farbe;
+}
+
+/** Arm und Griffhand (Humanoide, Schweber) bzw. Halterung (Aufbau) der Waffe; Weltrahmen der Figur. */
+function zeichneArm(ctx, p) {
+  const f = p.figur;
+  if (!f) return;
+  const links = Math.cos(p.winkel) < 0;
+  if (f.aufbau) {
+    // Halterung: kleine dunkle Lafette unter dem Griffpunkt.
+    ctx.fillStyle = '#20252b';
+    ctx.strokeStyle = KONTUR;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.ellipse(p.handX, p.handY + 2.2, 4.2, 1.7, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    return;
+  }
+  const farbe = p.handFarbe ?? '#c9a27e';
+  const sx = links ? 1.2 : -1.2;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = KONTUR;
+  ctx.lineWidth = 4.2;
+  ctx.beginPath();
+  ctx.moveTo(sx, p.handY - 4.5);
+  ctx.lineTo(p.handX, p.handY);
+  ctx.stroke();
+  ctx.strokeStyle = farbe;
+  ctx.lineWidth = 2.6;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** Die greifende Faust am Griffpunkt (Waffenrahmen, Ursprung = Griff). */
+function zeichneFaust(ctx, p) {
+  if (!p.figur || p.figur.aufbau) return;
+  ctx.fillStyle = p.handFarbe ?? '#c9a27e';
+  ctx.strokeStyle = KONTUR;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(0, 0, 2.3, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+  // Daumenlinie: die Hand umgreift den Griff
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  ctx.moveTo(-1.2, -0.2); ctx.lineTo(1.4, -0.2);
+  ctx.stroke();
+}
+
+const ORB_RADIUS = 6.2;
+
+/**
+ * Kachel-Waffe als Zauber-Darstellung: ein schwebender Orb vor der Hand mit Glühen, kreisenden
+ * Funken (Partikelring) in der Blitzfarbe und dem Kachelbild als Mini-Icon. Ursprung = Griff
+ * (Waffenrahmen); gibt über `aus` Mitte und Mündung des Orbs zurück.
+ */
+function zeichneOrb(ctx, sp, par, pose, p, aus) {
+  const R = ORB_RADIUS * (1 + 0.08 * pose.glanz);
+  const bob = p.reduziert ? 0 : Math.sin(p.zeit * 2.3) * 0.7;
+  const ox = R + 3.5;
+  const oy = -3.2 - bob;
+  aus.mx = ox + R; aus.my = oy;
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = 0.65 + 0.25 * pose.glanz;
+  ctx.drawImage(sp.glanz, ox - R * 2.1, oy - R * 2.1, R * 4.2, R * 4.2);
+  // Partikelring
+  ctx.fillStyle = sp.flashColor;
+  const n = 6;
+  const dreh = p.reduziert ? 0.4 : p.zeit * 1.5;
+  ctx.globalAlpha = 0.9;
+  for (let i = 0; i < n; i += 1) {
+    const w = dreh + (i * 2 * Math.PI) / n;
+    const rr = R + 2.4 + Math.sin(w * 2 + i) * 0.5;
+    ctx.beginPath();
+    ctx.arc(ox + Math.cos(w) * rr, oy + Math.sin(w) * rr * 0.9, i % 2 ? 0.7 : 1.05, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  // Kugel mit Kachelbild
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#0c0f14';
+  ctx.beginPath(); ctx.arc(ox, oy, R + 0.9, 0, Math.PI * 2); ctx.fill();
+  ctx.save();
+  ctx.beginPath(); ctx.arc(ox, oy, R, 0, Math.PI * 2); ctx.clip();
+  const q = 8; const qs = 64 - 2 * q;
+  ctx.drawImage(sp.held, q, q, qs, qs, ox - R, oy - R, R * 2, R * 2);
+  if (pose.dunkel > 0) {
+    ctx.globalAlpha = pose.dunkel;
+    ctx.drawImage(sp.dunkel, q, q, qs, qs, ox - R, oy - R, R * 2, R * 2);
+  }
+  if (pose.weiss > 0) {
+    ctx.globalAlpha = Math.min(1, pose.weiss) * 0.85;
+    ctx.drawImage(sp.silhouette, q, q, qs, qs, ox - R, oy - R, R * 2, R * 2);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = sp.flashColor;
+  ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.arc(ox, oy, R, 0, Math.PI * 2); ctx.stroke();
+}
+
+/**
  * Zeichnet die gehaltene Waffe als Sprite aus dem Atlas (`waffenSprites.js`).
  *
  * Der Griffanker der Waffe sitzt auf der Hand der Figur; die Waffe dreht um den
@@ -395,19 +532,27 @@ export function zeichneWaffeInHand(ctx, ikone, p) {
  * diesem Rahmen liegen die Pose (Rückstoß, Heben, Pendeln: `waffenAnimation.js`),
  * die Abdunkelung samt Füllband beim Nachladen, der weiße Treffer-/Aufnehm-Blitz
  * über der Silhouette, der Aufladeglanz und der Mündungsblitz am Mündungsanker.
+ * Hand und Arm (Humanoide) bzw. Halterung (Aufbau) gehören dazu; Kachel-Waffen
+ * erscheinen als Zauber-Orb (`kachel: 'orb'`) oder als herausgelöstes Motiv mit Glühen.
  * Keine Allokation je Bild.
  *
  * @param {CanvasRenderingContext2D} ctx - Ursprung = Figurmitte (Weltpixel)
  * @param {object} sp - Eintrag aus `holeWaffenSprite`
  * @param {object} par - Parametersatz aus `waffenParameter`
  * @param {object} pose - aus `waffenPose`
- * @param {{winkel:number, handX:number, handY:number}} p
+ * @param {{winkel:number, handX:number, handY:number, figur?:object, handFarbe?:string, zeit?:number, reduziert?:boolean}} p
  */
+const ORB_TMP = { mx: 0, my: 0 };
+
 export function zeichneWaffeSprite(ctx, sp, par, pose, p) {
   const links = Math.cos(p.winkel) < 0;
-  const k = par.zelle / 128;
+  const skalaFigur = p.figur?.skala ?? 1;
+  const zelle = par.zelle * skalaFigur;
+  const k = zelle / 128;
   const gx = (sp.grip.x + par.griff) * k;
   const gy = sp.grip.y * k;
+  const orb = par.orb === true && sp.kachel === 'orb';
+  zeichneArm(ctx, p);
   ctx.save();
   ctx.translate(p.handX, p.handY);
   ctx.rotate(-p.winkel);
@@ -416,35 +561,49 @@ export function zeichneWaffeSprite(ctx, sp, par, pose, p) {
   if (pose.drehung !== 0) ctx.rotate(-pose.drehung);
   if (pose.skala !== 1) ctx.scale(pose.skala, pose.skala);
   // Achse Griff -> Mündung auf den Zielstrahl legen (geschätzte Anker sind oft leicht geneigt).
-  if (sp.achse !== 0) ctx.rotate(-sp.achse);
+  if (sp.achse !== 0 && !orb) ctx.rotate(-sp.achse);
 
-  // Dunkler Schlagschatten hebt die Waffe vom Sprite ab.
-  ctx.globalAlpha = 0.4;
-  ctx.drawImage(sp.dunkel, -gx + 0.8, -gy + 0.8, par.zelle, par.zelle);
-  ctx.globalAlpha = 1;
-  ctx.drawImage(sp.held, -gx, -gy, par.zelle, par.zelle);
+  let mx = (sp.mx - par.griff) * k;
+  let my = sp.my * k;
+  if (orb) {
+    zeichneOrb(ctx, sp, par, pose, p, ORB_TMP);
+    mx = ORB_TMP.mx; my = ORB_TMP.my;
+  } else {
+    if (sp.kachel === 'motiv') {
+      // Herausgelöstes Motiv: weiches Glühen in der Blitzfarbe dahinter, damit es nicht als flache Karte wirkt.
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.45 + 0.2 * pose.glanz;
+      ctx.drawImage(sp.glanz, -gx + zelle * 0.1, -gy + zelle * 0.1, zelle * 0.8, zelle * 0.8);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // Dunkler Schlagschatten hebt die Waffe vom Sprite ab.
+    ctx.globalAlpha = 0.4;
+    ctx.drawImage(sp.dunkel, -gx + 0.8, -gy + 0.8, zelle, zelle);
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sp.held, -gx, -gy, zelle, zelle);
 
-  if (pose.dunkel > 0) {
-    ctx.globalAlpha = pose.dunkel;
-    ctx.drawImage(sp.dunkel, -gx, -gy, par.zelle, par.zelle);
-    // Füllband: Die Waffe füllt sich vom Griff zur Spitze in der Blitzfarbe.
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(-gx, -gy, par.zelle * pose.ladung, par.zelle);
-    ctx.clip();
-    ctx.globalAlpha = 0.6;
-    ctx.drawImage(sp.farbig, -gx, -gy, par.zelle, par.zelle);
-    ctx.restore();
+    if (pose.dunkel > 0) {
+      ctx.globalAlpha = pose.dunkel;
+      ctx.drawImage(sp.dunkel, -gx, -gy, zelle, zelle);
+      // Füllband: Die Waffe füllt sich vom Griff zur Spitze in der Blitzfarbe.
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(-gx, -gy, zelle * pose.ladung, zelle);
+      ctx.clip();
+      ctx.globalAlpha = 0.6;
+      ctx.drawImage(sp.farbig, -gx, -gy, zelle, zelle);
+      ctx.restore();
+    }
+    if (pose.weiss > 0) {
+      ctx.globalAlpha = Math.min(1, pose.weiss) * 0.85;
+      ctx.drawImage(sp.silhouette, -gx, -gy, zelle, zelle);
+    }
+    ctx.globalAlpha = 1;
   }
-  if (pose.weiss > 0) {
-    ctx.globalAlpha = Math.min(1, pose.weiss) * 0.85;
-    ctx.drawImage(sp.silhouette, -gx, -gy, par.zelle, par.zelle);
-  }
-  ctx.globalAlpha = 1;
 
-  const mx = (sp.mx - par.griff) * k;
-  const my = sp.my * k;
-  if (pose.glanz > 0) {
+  zeichneFaust(ctx, p);
+
+  if (pose.glanz > 0 && !orb) {
     // Aufladeglanz: bei Selbstwirkung um die Waffenmitte, sonst an der Mündung.
     const selbst = par.art === 'selbst';
     const r = (selbst ? 11 : 7) * (0.7 + 0.5 * pose.glanz);
@@ -495,7 +654,8 @@ export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, akt
   const text = String(label ?? '').slice(0, 12);
   const gift = extra?.gift > 0;
   const boost = extra?.boost > 1.001;
-  const icons = (gift ? 1 : 0) + (boost ? 1 : 0);
+  const mali = extra?.mali ?? [];
+  const icons = (gift ? 1 : 0) + (boost ? 1 : 0) + mali.length;
   ctx.save();
   ctx.font = 'bold 9px system-ui, sans-serif';
   ctx.textAlign = 'center';
@@ -564,6 +724,16 @@ export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, akt
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
+    ix += 10;
+  }
+  // Fassung 2: ein Zeichen in der Farbe des Malus je laufendem Nachteil (Brand, Gift, Fluch, Säure, Frost, Schock, Nass).
+  for (const m of mali) {
+    ctx.fillStyle = m.farbe;
+    ctx.strokeStyle = PAL.kontur;
+    ctx.lineWidth = 2;
+    ctx.font = 'bold 10px system-ui, sans-serif';
+    ctx.strokeText(m.symbol, ix, 6.5);
+    ctx.fillText(m.symbol, ix, 6.5);
     ix += 10;
   }
   if (boost) {

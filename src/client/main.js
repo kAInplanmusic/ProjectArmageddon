@@ -12,11 +12,14 @@
  *
  * @module main
  */
+import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
 import { Renderer } from './renderer.js';
-import { Camera } from './camera.js';
+import { Camera, ZOOM_GRENZEN } from './camera.js';
+import { KameraRegie } from './kameraRegie.js';
+import { KameraSteuerung } from './kameraSteuerung.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { zeigeToast } from './toasts.js';
@@ -37,7 +40,8 @@ import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { exposeDebugApi } from './debugApi.js';
-import { verarbeiteLokal, verarbeiteOnline } from './ereignisse.js';
+import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
+import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
 import { baueProfilAnzeige, baueErfolgsAnzeige } from './profilanzeige.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import {
@@ -137,6 +141,16 @@ class Game {
     this.figurenKarte = new FigurenKarte(document);
     // Hält Figuren und Schilder frei vom HUD (gemessene Ränder, siehe hudAusweichen.js).
     this.hudAusweichen = new HudAusweichen({ doc: document, canvas: this.canvas, renderer: this.renderer });
+    // Kameraführung (Zugübersicht, Geschossverfolgung, Einschlag) und Spielerkontrolle (Rad, Ziehen, Taste C).
+    this.kameraRegie = new KameraRegie();
+    this.kameraZeit = 0;
+    this.kameraSteuerung = new KameraSteuerung({
+      canvas: this.canvas,
+      kamera: () => this.kamera,
+      regie: this.kameraRegie,
+      knopf: document.getElementById('hud-kamera'),
+      tastaturFrei: ev => !isTextEntry(ev.target),
+    });
     // Waffenmenü: Dropdown des Besitzes (Taste E / Knopf neben der Leiste).
     this.waffenMenue = new WaffenMenue(document, {
       getFigur: () => this.#aktiveFigur(),
@@ -195,6 +209,8 @@ class Game {
      * Snapshot); hier wird nur der ÜBERGANG erkannt.
      */
     this.waterStates = new Map();
+    /** Online: jedes Anzeige-/Klangereignis genau einmal (Schlüssel Takt+Art+Ort). */
+    this.ereignisDedup = new EreignisDedup();
     this.schussAufnahme = new SchussAufnahme();
     this.zugpause = null;
 
@@ -552,7 +568,12 @@ class Game {
     const state = this.currentViewState;
     if (!state?.activePlayerId) return null;
     const active = state.entities.find(entity => entity.entityId === state.activePlayerId);
-    return active ? { x: active.x, y: active.y } : null;
+    if (!active) return null;
+    // Der Zeiger liegt in Bildschirmpixeln: Der Ursprung muss durch die Kamera (Zoom, Verschiebung).
+    const t = this.kamera?.transformation({ ohneStoss: true });
+    return t
+      ? { x: active.x * t.skalierung + t.versatzX, y: active.y * t.skalierung + t.versatzY }
+      : { x: active.x, y: active.y };
   }
 
   /** Liest die Menükonfiguration und startet das passende Match. */
@@ -1341,6 +1362,8 @@ class Game {
         + (this.eigeneSpielerIds.length > 1 ? ` (${this.eigeneSpielerIds.length} Einheiten)` : ''),
         'accent',
       );
+      // Neue Sitzung beim Server: die Takte zählen von vorn, alte Dedup-Schlüssel gelten nicht mehr.
+      if (!payload.resumed) this.ereignisDedup.zuruecksetzen();
       if (payload.seed !== null && payload.seed !== undefined) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
         // Krater, die vor dem Beitritt entstanden sind (Reconnect/Spätbeitritt).
@@ -1598,7 +1621,8 @@ class Game {
         frozenTurns: entity.frozenTurns ?? 0,
         // Die Anzeige zählt die Marken (`hud.js`), nicht ihre Inhalte — lokal
         // ist es dieselbe Zahl (`statuses[id].dots.length`).
-        dots: new Array(entity.dotsCount ?? 0).fill(null),
+        dots: new Array((entity.dotsCount ?? 0) < MALI_LEITUNGSMARKE ? (entity.dotsCount ?? 0) : 0).fill(null),
+        ...((entity.dotsCount ?? 0) >= MALI_LEITUNGSMARKE ? { mali: maskeZuMali(entity.dotsCount & ~MALI_LEITUNGSMARKE) } : {}),
         boostMultiplier: entity.boostMultiplier ?? 1,
       };
     }
@@ -2000,6 +2024,7 @@ class Game {
       renderer: this.renderer,
       hud: this.hud,
       sound: this.sound,
+      dedup: this.ereignisDedup,
       match: this.match,
       shotPredictor: this.shotPredictor,
       /*
@@ -2025,7 +2050,8 @@ class Game {
        * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
        * Werte ein Serverereignis ändern darf.
        */
-      karte: {
+      // Nur online gibt es eine nachgebaute Karte; lokal ist die Match-Maske selbst die Karte.
+      karte: this.mode !== 'online' ? null : {
         krater: (x, y, radius, tiefe = null) => applyCraterToTerrain(this.remoteTerrain, x, y, radius, tiefe),
         // Eine gelandete Geländeinsel wandert in Bitmap und Maske nach unten.
         insel: (dy, runs) => applySettleToTerrain(this.remoteTerrain, dy, runs),
@@ -2045,11 +2071,17 @@ class Game {
     };
   }
 
-  /** Untergrund für den Klang: `wasser` | `fels` | `erde`. */
+  /**
+   * Untergrund für den Klang: `wasser` | `fels` | `erde` — Ableitung, wenn das Ereignis
+   * kein `material` trägt (älterer Server). Dieselbe Funktion wie in der Engine
+   * (`shared/einschlag.js`); online aus Maske und Wasserlinie der Karte.
+   */
   #materialAn(x, y) {
-    if ((this.water?.levelAtWorld?.(x, y) ?? 0) > 0.3) return 'wasser';
-    const biom = this.match?.biomId;
-    return biom === 'caverns' || biom === 'alpine' ? 'fels' : 'erde';
+    const online = this.mode === 'online';
+    const wasser = online
+      ? wasserAusLinie(this.remoteTerrain?.mask, this.remoteTerrain?.waterLevel)
+      : this.match?.water;
+    return klassifiziereEinschlag(online ? this.remoteTerrain?.mask : this.match?.terrain, wasser, x, y, { biomId: this.match?.biomId });
   }
 
   /**
@@ -2069,6 +2101,7 @@ class Game {
 
   /** Neues Match, Replay oder Abbruch: Pause und alte Aufnahme verwerfen, Hinweis ausblenden. */
   #setzeZugpauseZurueck() {
+    this.kameraRegie?.reset();
     this.zugpause = null;
     this.schussAufnahme.verwerfe();
     const feld = document.getElementById('zugpause');
@@ -2361,7 +2394,7 @@ class Game {
       shooter.y,
       payload.hitX,
       payload.hitY,
-      { hit: Boolean(payload.hit) },
+      { hit: Boolean(payload.hit), waffeId: payload.weaponId },
     );
   }
 
@@ -2741,6 +2774,41 @@ class Game {
     this.#render();
   }
 
+  /**
+   * Die Eingabe der Kameraregie aus dem Anzeigezustand. Nur lesend: lokal, online,
+   * Replay und Zuschauer liefern denselben Zustand, deshalb gilt überall dieselbe Führung.
+   */
+  #kameraEingabe(state, wiederholung, waffe, meinZug) {
+    const kamera = this.kamera;
+    const aktiv = state.entities.find(e => e.entityId === state.activePlayerId && e.alive)
+      ?? null;
+    const t = kamera.transformation({ ohneStoss: true });
+    const masse = this.renderer.figurMasse();
+    const winkel = (meinZug && this.mode !== 'replay') ? this.aim.angle : (aktiv?.angle ?? 0);
+    const krater = this.renderer.letzterKrater;
+    return {
+      karte: kamera.karte,
+      schirm: kamera.schirm,
+      rand: this.hudAusweichen.randFuerKamera(),
+      // Grob gerundet (nach oben): Die Maße hängen schwach vom Zoom ab, und ohne Rundung
+      // schaukelte sich Zielzoom und Figurgröße gegenseitig auf.
+      pad: {
+        halb: Math.ceil(masse.halbBreite * t.skalierung / 24) * 24,
+        oben: Math.ceil(masse.oben * t.skalierung / 48) * 48,
+        unten: Math.ceil(masse.unten * t.skalierung / 24) * 24,
+      },
+      zoomMax: ZOOM_GRENZEN.max,
+      ansicht: kamera.ansicht(),
+      aktivId: state.activePlayerId,
+      aktiv: aktiv ? { x: aktiv.x, y: aktiv.y, winkel } : null,
+      gegner: state.entities.filter(e => e.alive && aktiv && e.teamId !== aktiv.teamId).map(e => ({ x: e.x, y: e.y })),
+      geschosse: (state.projectiles ?? []).slice(0, 8).map(p => ({ x: p.x, y: p.y })),
+      wiederholung: wiederholung ? { kopf: wiederholung.kopf, ursprung: wiederholung.spur[0] } : null,
+      krater: krater ? { id: krater, x: krater.x, y: krater.y, radius: krater.radius } : null,
+      waffe: waffe ? { kategorie: waffe.category, radius: waffe.blastRadius ?? 0 } : null,
+    };
+  }
+
   #render() {
     const state = this.currentState();
     if (!state) return;
@@ -2805,13 +2873,23 @@ class Game {
      * reproduzierbar, egal wohin die Kamera zeigt.
      */
     if (this.kamera) {
-      const fokus = state.entities.find(e => e.entityId === state.activePlayerId)
-        ?? state.entities.find(e => e.alive);
-      if (fokus) this.kamera.zieleAuf(fokus.x, fokus.y);
       // HUD-Ränder messen, Schilder und Schub setzen (nur Darstellung).
       this.hudAusweichen.aktualisiere(state, this.kamera);
-      // Ein Schritt Näherung je Bild: weiches Nachziehen statt harter Schnitte.
+      const jetzt = performance.now();
+      const dt = this.kameraZeit ? (jetzt - this.kameraZeit) / 1000 : 0;
+      this.kameraZeit = jetzt;
+      this.kameraRegie.setzeReduziert(this.renderer.reducedMotion);
+      const kameraAus = this.kameraRegie.schritt(dt, this.#kameraEingabe(state, wiederholung, activeWeapon, myTurn));
+      if (kameraAus) {
+        this.kamera.setzeAnsicht(kameraAus.x, kameraAus.y, kameraAus.zoom);
+        this.kamera.setzeStoss(kameraAus.stoss.x, kameraAus.stoss.y);
+        this.kameraRegie.uebernimm(this.kamera.ansicht());
+      } else {
+        this.kamera.setzeStoss(0, 0);
+      }
+      // Rest-Schritt: Schub der nicht scrollenden Achse weich annähern.
       this.kamera.schritt();
+      this.kameraSteuerung.aktualisiereKnopf();
     }
 
     this.renderer.render(state, {

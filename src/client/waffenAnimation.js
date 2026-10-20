@@ -27,6 +27,8 @@
  * @module waffenAnimation
  */
 
+import { TYP_JE_CHARAKTER, PARAMETER as TYP_PARAMETER } from './figurTypen.js';
+
 /** Die acht Katalogkategorien (`src/shared/config/weapons.js`). */
 export const KATEGORIEN = Object.freeze([
   'melee', 'ranged', 'heavy_ranged', 'elemental', 'magic', 'tech', 'utility', 'ultimate',
@@ -53,6 +55,9 @@ export const ZELLE = 128;
  *   schussDauer  Gesamtdauer der Bewegung; kick Rückstoßweg; rueck Rückdrehung; wippen/wippHz Nachwippen
  *   heben        Heben der Spitze (Zauber, Selbstwirkung); aufladen Dauer des Aufladens vor dem Schuss
  *   blitzForm    kegel | stern | ring | funke | keiner; blitzGroesse in px, blitzDauer in s
+ *   koerper      Faktor auf den Rückstoß des Oberkörpers (`figurAnimation.js`), ausfall 0..1 Ausfallschritt
+ *                (Figur geht beim Schuss in die Knie und verbreitert den Stand: schwere Waffen)
+ *   start        Startglanz des Geschosses an der Mündung in px (Geschoss-Zeichnung)
  */
 const BASIS = Object.freeze({
   zelle: 28,
@@ -76,6 +81,11 @@ const BASIS = Object.freeze({
   blitzForm: 'kegel',
   blitzGroesse: 11,
   blitzDauer: 0.11,
+  lage: 'vor',
+  orb: false,
+  koerper: 1,
+  ausfall: 0,
+  start: 10,
 });
 
 function kategorie(werte) {
@@ -96,39 +106,39 @@ function kategorie(werte) {
  */
 export const PARAMETER = Object.freeze({
   melee: kategorie({
-    zelle: 30, handVor: 2, handHoch: -1, griffObjekt: -16, art: 'hieb', schussDauer: 0.55, kick: 5,
-    ziehenDreh: 1.2, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0,
+    zelle: 30, handVor: 2, handHoch: -1, griffObjekt: -16, art: 'hieb', schussDauer: 0.6, kick: 7,
+    ziehenDreh: 1.2, blitzForm: 'keiner', blitzGroesse: 0, blitzDauer: 0, koerper: 1.6, ausfall: 0.3, start: 0,
   }),
   ranged: kategorie({
-    zelle: 28, griffObjekt: -10, art: 'kurz', schussDauer: 0.3, kick: 3.2, rueck: 0.2, wippen: 0.05, wippHz: 13,
-    blitzForm: 'kegel', blitzGroesse: 11, blitzDauer: 0.09,
+    zelle: 28, griffObjekt: -10, art: 'kurz', schussDauer: 0.26, kick: 4.6, rueck: 0.3, wippen: 0.05, wippHz: 13,
+    blitzForm: 'kegel', blitzGroesse: 14, blitzDauer: 0.09, koerper: 1, ausfall: 0, start: 10,
   }),
   heavy_ranged: kategorie({
     zelle: 34, handVor: 1.5, handHoch: 1.5, griffObjekt: -12, idleDreh: 0.018, idleAtem: 0.3, ziehenDauer: 0.3,
-    art: 'schwer', schussDauer: 0.6, kick: 6, rueck: 0.3, wippen: 0.07, wippHz: 6.5,
-    blitzForm: 'kegel', blitzGroesse: 17, blitzDauer: 0.15,
+    art: 'schwer', schussDauer: 0.8, kick: 10, rueck: 0.45, wippen: 0.09, wippHz: 5.5,
+    blitzForm: 'kegel', blitzGroesse: 26, blitzDauer: 0.18, koerper: 2.4, ausfall: 1, start: 18,
   }),
   elemental: kategorie({
-    zelle: 27, art: 'kurz', schussDauer: 0.4, kick: 3.6, rueck: 0.26, wippen: 0.05, wippHz: 9,
-    blitzForm: 'stern', blitzGroesse: 12, blitzDauer: 0.13,
+    zelle: 27, art: 'kurz', schussDauer: 0.5, kick: 3, rueck: 0.2, wippen: 0.05, wippHz: 9,
+    blitzForm: 'stern', blitzGroesse: 15, blitzDauer: 0.13, koerper: 0.8, ausfall: 0.3, start: 13,
   }),
   magic: kategorie({
-    zelle: 27, idleDreh: 0.045, idleAtem: 0.7, idleTempo: 0.35, art: 'zauber', schussDauer: 0.7,
-    kick: 2.5, rueck: 0.1, heben: 0.38, aufladen: 0.18,
-    blitzForm: 'ring', blitzGroesse: 13, blitzDauer: 0.22,
+    zelle: 27, idleDreh: 0.045, idleAtem: 0.7, idleTempo: 0.35, art: 'zauber', schussDauer: 0.85,
+    kick: 1.6, rueck: 0.1, heben: 0.55, aufladen: 0.26,
+    blitzForm: 'ring', blitzGroesse: 17, blitzDauer: 0.28, koerper: 0.5, ausfall: 0, start: 14,
   }),
   tech: kategorie({
-    zelle: 26, art: 'tech', schussDauer: 0.42, kick: 2.4, rueck: 0.12, wippen: 0.03, wippHz: 15,
-    aufladen: 0.1, blitzForm: 'funke', blitzGroesse: 12, blitzDauer: 0.1,
+    zelle: 26, art: 'tech', schussDauer: 0.34, kick: 1.8, rueck: 0.12, wippen: 0.02, wippHz: 20,
+    aufladen: 0.14, blitzForm: 'funke', blitzGroesse: 15, blitzDauer: 0.1, koerper: 0.6, ausfall: 0, start: 11,
   }),
   utility: kategorie({
     zelle: 24, idleDreh: 0.025, art: 'selbst', schussDauer: 0.5, kick: 0, heben: 0.45, aufladen: 0.2,
-    blitzForm: 'funke', blitzGroesse: 8, blitzDauer: 0.1,
+    blitzForm: 'funke', blitzGroesse: 8, blitzDauer: 0.1, koerper: 0.3, ausfall: 0, start: 9,
   }),
   ultimate: kategorie({
     zelle: 32, handVor: 2, handHoch: 1, idleDreh: 0.02, idleAtem: 0.6, idleTempo: 0.3,
-    ziehenDauer: 0.32, art: 'zauber', schussDauer: 0.95, kick: 5, rueck: 0.22, heben: 0.45,
-    aufladen: 0.3, blitzForm: 'stern', blitzGroesse: 21, blitzDauer: 0.26,
+    ziehenDauer: 0.32, art: 'zauber', schussDauer: 1.15, kick: 8, rueck: 0.22, heben: 0.6,
+    aufladen: 0.4, blitzForm: 'stern', blitzGroesse: 30, blitzDauer: 0.34, koerper: 2, ausfall: 0.8, start: 24,
   }),
 });
 
@@ -143,6 +153,10 @@ export const KORREKTUREN = Object.freeze({
   pa_050: { zelle: 29, handVor: 2.5 },
   pa_051: { zelle: 28 },
   // Feldkanone: schwere Waffe, langer Rückstoß mit Nachschwingen.
+  // Rucksack, Gleitschirm und Jetpack werden auf dem Rücken getragen: hinter dem Körper, weiter hinten.
+  pa_032: { lage: 'hinter', handVor: -5 },
+  pa_112: { lage: 'hinter', handVor: -5, handHoch: 1 },
+  pa_114: { lage: 'hinter', handVor: -5, handHoch: 2 },
   pa_039: { zelle: 32, art: 'schwer', schussDauer: 0.7, kick: 7, rueck: 0.32, wippen: 0.07, wippHz: 6, blitzForm: 'kegel', blitzGroesse: 18, blitzDauer: 0.15 },
 });
 
@@ -152,11 +166,16 @@ const SELBST = Object.freeze({
 });
 
 /**
- * Kachel-Waffen (Zauber-/Gerätekarten ohne Umriss, `form: 'kachel'` im Manifest)
- * halten sich schlecht in der Hand: kleiner gezeichnet und weiter vor der Figur,
- * als schwebe die Karte vor ihr.
+ * Kachel-Waffen (Zauber-/Gerätekarten, `form: 'kachel'` im Manifest). Je Waffe entscheidet
+ * `kachel.modus` im Manifest: `motiv` (das Motiv ist aus dem Rahmen herausgelöst und wird wie ein
+ * kompaktes Sprite gehalten) oder `orb` (Zauber-Darstellung, siehe `KACHEL_ORB`).
  */
-const KACHEL = basis => ({ zelle: basis.zelle * 0.8, handVor: basis.handVor + 4, handHoch: basis.handHoch + 1 });
+const KACHEL_MOTIV = basis => ({ zelle: basis.zelle * 0.9, handVor: basis.handVor + 3, handHoch: basis.handHoch + 0.5 });
+/** Kachel als Zauber-Darstellung: schwebender Orb (Glühen, Partikelring) mit dem Kachelbild als Mini-Icon über der Hand. */
+const KACHEL_ORB = basis => ({ zelle: basis.zelle * 0.8, handVor: basis.handVor + 1, handHoch: basis.handHoch, orb: true });
+
+/** Kompakte Sprites (Wesen, Geräte, Granaten) haben ihren Griff im Schwerpunkt und werden etwas vor dem Körper gehalten. */
+const KOMPAKT = basis => ({ handVor: basis.handVor + 3 });
 
 /** Geworfene Waffen (das Geschoss ist die Waffe selbst oder eine Granate): Wurfbewegung, kein Mündungsblitz. */
 const WURF = Object.freeze({
@@ -174,16 +193,18 @@ const parameterCache = new Map();
  * @param {boolean} [selbst] - wirkt auf den Anwender (Schaden 0)
  * @param {string} [form] - Form des Sprites laut Manifest (`kachel`, `objekt`, `kompakt`)
  * @param {boolean} [wurf] - die Waffe wird geworfen (Geschoss `ding` oder mit Zünder/Abprallern)
+ * @param {string} [kachelModus] - `motiv` oder `orb` bei Kachel-Waffen
  */
-export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false) {
-  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}`;
+export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wurf = false, kachelModus = '') {
+  const schluessel = `${kat}|${waffeId}|${selbst ? 1 : 0}|${form}|${wurf ? 1 : 0}|${kachelModus}`;
   let p = parameterCache.get(schluessel);
   if (!p) {
     const basis = PARAMETER[kat] ?? PARAMETER.ranged;
     const korr = KORREKTUREN[waffeId] ?? null;
     p = {
       ...basis, ...(wurf && !selbst ? WURF : null), ...(selbst ? SELBST : null),
-      ...(form === 'kachel' ? KACHEL(basis) : null), ...korr,
+      ...(form === 'kompakt' ? KOMPAKT(basis) : null),
+      ...(form === 'kachel' ? (kachelModus === 'motiv' ? KACHEL_MOTIV(basis) : KACHEL_ORB(basis)) : null), ...korr,
     };
     p.griff = form === 'objekt' ? (korr?.griffObjekt ?? basis.griffObjekt) : (korr?.griff ?? 0);
     Object.freeze(p);
@@ -202,7 +223,7 @@ export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wu
 export function parameterFuerWaffe(waffe, sp) {
   return waffenParameter(
     waffe.category, waffe.id, waffe.damage === 0, sp?.form ?? '',
-    sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0,
+    sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0, sp?.kachel ?? '',
   );
 }
 
@@ -234,10 +255,67 @@ function einschwingen(u) {
   return 1 + c3 * v * v * v + c1 * v * v;
 }
 
-/** Griffpunkt (Hand) der Waffe im Figurrahmen (Ursprung = Figurmitte, Weltpixel). */
-export function handPunkt(par, blick, spriteHoehe, fussAbstand, aus = { x: 0, y: 0 }) {
-  aus.x = (blick >= 0 ? 1 : -1) * par.handVor;
-  aus.y = fussAbstand - HAND_ANTEIL * spriteHoehe - par.handHoch;
+// ----------------------------------------------------------------- Figurtypen und Handpunkt
+
+// ----------------------------------------------------------------- Figurtypen und Handpunkt
+
+/*
+ * Wie eine Figur die Waffe trägt, steht in der Typ-Tabelle `figurTypen.js` (`PARAMETER[typ].hand*`,
+ * Zuordnung je Charakter `TYP_JE_CHARAKTER`): Humanoide und Schweber greifen mit der Hand; Tiere,
+ * Fahrzeuge, Wesen und Schwärme tragen die Waffe als Aufbau (Rücken, Turm, über dem Körper).
+ */
+export const FIGURTYP_STANDARD = 'humanoid';
+
+/**
+ * Feinkorrekturen je Charakter-ID über den Figurtyp hinaus (`handAnteil`, `vor`, `skala`).
+ * Sichtprüfung: `node scripts/waffen-pruefbogen.mjs --fraktionen`.
+ */
+export const FIGUR_OFFSETS = Object.freeze({
+  'storm-talon': { handAnteil: 0.5 },
+  'hydra-titan-mech': { handAnteil: 0.42, vor: 3 },
+  'heavy-battery-moerser-bot': { handAnteil: 0.4, vor: 0 },
+  'rauch-meister-genzi': { handAnteil: 0.36 },
+  'ordnance-rail-viper': { handAnteil: 0.32, vor: 2 },
+  'cosmic-meditate': { handAnteil: 0.42 },
+});
+
+const figurCache = new Map();
+const HUMANOID_HAND = Object.freeze({ typ: 'humanoid', handAnteil: HAND_ANTEIL, vor: 0, aufbau: false, skala: 1 });
+
+/**
+ * Handparameter einer Figur: Typ-Tabelle (mit Standard Humanoid) plus Feinkorrektur je Charakter-ID.
+ *
+ * @param {string} [charId] - Charakter-ID; `undefined` (klassische Figur) liefert den Humanoiden
+ * @returns {{typ:string, handAnteil:number, vor:number, aufbau:boolean, skala:number}}
+ */
+export function figurHand(charId) {
+  const schluessel = charId ?? '';
+  let f = figurCache.get(schluessel);
+  if (!f) {
+    const typ = TYP_JE_CHARAKTER[schluessel] ?? FIGURTYP_STANDARD;
+    const t = TYP_PARAMETER[typ];
+    f = Object.freeze({
+      typ, handAnteil: t.handAnteil, vor: t.handVor - t.handZurueck, aufbau: t.handAufbau === 1, skala: t.handSkala,
+      ...FIGUR_OFFSETS[schluessel],
+    });
+    figurCache.set(schluessel, f);
+  }
+  return f;
+}
+
+/**
+ * Griffpunkt (Hand) der Waffe im Figurrahmen (Ursprung = Figurmitte, Weltpixel).
+ *
+ * @param {object} par - Parametersatz der Waffe (`handVor`, `handHoch`)
+ * @param {number} blick - Kosinus des Zielwinkels (Vorzeichen = Blickrichtung)
+ * @param {number} spriteHoehe
+ * @param {number} fussAbstand
+ * @param {{x:number,y:number}} [aus]
+ * @param {{handAnteil:number, vor:number}} [figur] - aus `figurHand`; ohne Angabe der Humanoide
+ */
+export function handPunkt(par, blick, spriteHoehe, fussAbstand, aus = { x: 0, y: 0 }, figur = HUMANOID_HAND) {
+  aus.x = (blick >= 0 ? 1 : -1) * (par.handVor + figur.vor);
+  aus.y = fussAbstand - figur.handAnteil * spriteHoehe - par.handHoch;
   return aus;
 }
 
@@ -428,7 +506,7 @@ export const GESCHOSS_KORREKTUREN = Object.freeze({});
  *
  * @param {{id?:string, displayName?:string, category?:string, fuseTime?:number, bounces?:number}} waffe
  * @param {{art?:string, spin?:boolean, angle?:number}|null} proj - Eintrag `projectile` des Manifests
- * @returns {{groesse:number, spin:number, versatz:number}} `versatz`: Drehung der Zelle gegenüber der Flugrichtung (rad)
+ * @returns {{groesse:number, spin:number, versatz:number, start:number}} `versatz`: Drehung der Zelle gegenüber der Flugrichtung (rad)
  */
 export function geschossDarstellung(waffe, proj) {
   const art = GESCHOSS_ART[proj?.art] ?? GESCHOSS_ART.ding;
@@ -442,6 +520,7 @@ export function geschossDarstellung(waffe, proj) {
     groesse: korr?.groesse ?? art.groesse,
     spin: korr?.spin ?? spin,
     versatz: ((proj?.angle ?? 0) * Math.PI) / 180,
+    start: (PARAMETER[waffe?.category] ?? PARAMETER.ranged).start,
   };
 }
 

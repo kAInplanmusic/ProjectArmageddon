@@ -40,19 +40,9 @@ const STANDARD_MUENDUNG = { x: 118, y: 64 };
 export function zellenFuer(manifest, id) {
   const w = manifest?.waffen?.[id];
   if (!w?.held || !w.silhouette) return null;
-  let grip = w.anchor?.grip ?? STANDARD_GRIFF;
-  let muzzle = w.anchor?.muzzle ?? STANDARD_MUENDUNG;
-  const c = w.content;
-  if (w.form === 'objekt' && w.anchor?.source === 'geometrie' && c) {
-    /*
-     * Lange Objekte sind im Atlas schon auf ihre Hauptachse gedreht: Die Achse liegt waagerecht
-     * durch die Mitte der Umrisse. Die geschätzten Höhen der Anker streuen (Griffhöcker,
-     * Läufe) und würden die Waffe gegen den Zielstrahl neigen, deshalb liegen beide Anker auf der Mittellinie.
-     */
-    const cy = c.y + c.h / 2;
-    grip = { x: grip.x, y: cy };
-    muzzle = { x: muzzle.x, y: cy };
-  }
+  // Die Anker liegen seit der Neuberechnung (`scripts/waffen-sprites.py`) auf der Hauptachse; keine Nachkorrektur hier.
+  const grip = w.anchor?.grip ?? STANDARD_GRIFF;
+  const muzzle = w.anchor?.muzzle ?? STANDARD_MUENDUNG;
   return {
     atlas: w.held.atlas,
     held: w.held,
@@ -62,6 +52,7 @@ export function zellenFuer(manifest, id) {
     muzzle,
     flashColor: typeof w.flashColor === 'string' ? w.flashColor : '#ffd166',
     form: typeof w.form === 'string' ? w.form : '',
+    kachel: w.form === 'kachel' && typeof w.kachel?.modus === 'string' ? w.kachel.modus : '',
   };
 }
 
@@ -151,6 +142,7 @@ export function erzeugeWaffenSprites(abh) {
         my: laenge * Math.sin(winkel - achse),
         flashColor: z.flashColor,
         form: z.form,
+        kachel: z.kachel,
         faktor,
       };
       eintraege.set(id, gesamt);

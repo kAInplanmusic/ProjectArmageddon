@@ -65,6 +65,9 @@ const SNAPSHOT_INTERVAL_MS = 1000 / SNAPSHOT_HZ;
  * übereinstimmen — der Client prüft auf genau diesen Text.
  */
 const UNLIMITED_AMMO = 'unbegrenzt';
+
+/** Ereignisarten, die den Takt (`tk`) für den Dedup-Schlüssel des Clients mitbekommen. */
+const DEDUP_EREIGNISARTEN = new Set(['explosion', 'terrain_detached', 'terrain_settled']);
 /** Nach so vielen Snapshots geht wieder ein Vollsnapshot raus (Resync). */
 const FULL_SNAPSHOT_INTERVAL = SNAPSHOT_HZ * 2;
 /**
@@ -102,7 +105,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, gelaende = undefined,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -149,6 +152,7 @@ class LobbySession {
       kisten,
       gelaende,
       biom: lobby.biom ?? null,
+      schaden,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -180,6 +184,7 @@ class LobbySession {
       kisten: this.match.kisten,
       gelaende: this.match.gelaende,
       biom: lobby.biom ?? null,
+      schaden: this.match.schaden,
     });
 
     /*
@@ -400,7 +405,14 @@ class LobbySession {
         continue;
       }
       if (this.metrics) this.metrics.controlMessagesSent += 1;
-      this.#broadcastControl(event.type, { round: this.match.round, ...event.payload });
+      /*
+       * `tk` (Takt der Simulation) nur an Ereignissen mit Anzeige und Klang
+       * (Einschlag, Insel löst sich/landet): Der Client leitet daraus den
+       * Dedup-Schlüssel ab (Takt+Art+Ort), damit ein wiederholt zugestelltes
+       * Ereignis nicht doppelt blitzt und klingt. Optional — fehlt es, gilt kein Dedup.
+       */
+      const mitTakt = DEDUP_EREIGNISARTEN.has(event.type) ? { tk: takt } : null;
+      this.#broadcastControl(event.type, { round: this.match.round, ...event.payload, ...mitTakt });
     }
 
     // Netzwerk ist von der Simulation entkoppelt: Snapshots gehen mit fester
@@ -1300,6 +1312,7 @@ export class GameServer {
               waffen: options.waffen,
               kisten: options.kisten,
               gelaende: options.gelaende,
+              schaden: options.schaden,
               metrics: this.metrics,
               logger: this.logger,
             });

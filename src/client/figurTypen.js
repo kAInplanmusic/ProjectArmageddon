@@ -65,7 +65,9 @@ const P = (o) => Object.freeze(o);
  * schweb*: Schwebehöhe/-amplitude/-Hz; vib*: Motor-Vibration; puls*: Pulsieren; wusel*: Wuseln;
  * lauf*: Wippen (px), max. Neigung (rad), Wellen-Stauchung; sprung*, lande*: Streckung/Stauchung;
  * zielKipp: max. Neigung nach Zielwinkel; schuss*: Rückstoß (px), Neigung, Dauer;
- * treffer*: Zucken (px, rad); tod: Art des Sterbens; fussBreite: Faktor für Ring/Schatten.
+ * treffer*: Zucken (px, rad); tod: Art des Sterbens; fussBreite: Faktor für Ring/Schatten;
+ * hand*: Griffpunkt der Waffe (Anteil der Sprite-Höhe über den Füßen, Verschiebung vor/zurück in px,
+ * Aufbau 1 = Waffe auf Halterung statt in der Hand, Waffengröße-Faktor), siehe `waffenAnimation.js`.
  */
 export const PARAMETER = Object.freeze({
   humanoid: P({
@@ -75,6 +77,7 @@ export const PARAMETER = Object.freeze({
     sprungStreck: 0.14, sprungHocke: 0.1, landeStauch: 0.2, landeDauer: 0.24, staub: 1,
     zielKipp: 0.07, schussKick: 1.4, schussNeigung: 0.05, schussDauer: 0.42,
     trefferZuck: 2.4, trefferNeigung: 0.14, tod: 'kippen', fussBreite: 1,
+    handAnteil: 17.25 / 52, handVor: 0, handZurueck: 0, handAufbau: 0, handSkala: 1,
   }),
   tier: P({
     atemHz: 0.7, atemAmp: 0.022, atemWiegen: 0.35, mikroPeriode: 3.1, mikroAmp: 0.7,
@@ -83,6 +86,7 @@ export const PARAMETER = Object.freeze({
     sprungStreck: 0.16, sprungHocke: 0.13, landeStauch: 0.22, landeDauer: 0.22, staub: 1.1,
     zielKipp: 0.05, schussKick: 1.1, schussNeigung: 0.06, schussDauer: 0.4,
     trefferZuck: 2.8, trefferNeigung: 0.16, tod: 'kippen', fussBreite: 1.25,
+    handAnteil: 0.3800, handVor: 0, handZurueck: 3, handAufbau: 1, handSkala: 0.95,
   }),
   fahrzeug: P({
     atemHz: 0.5, atemAmp: 0.004, atemWiegen: 0, mikroPeriode: 2.4, mikroAmp: 0.25,
@@ -91,6 +95,7 @@ export const PARAMETER = Object.freeze({
     sprungStreck: 0.04, sprungHocke: 0.03, landeStauch: 0.08, landeDauer: 0.3, staub: 1.7,
     zielKipp: 0.03, schussKick: 2.2, schussNeigung: 0.035, schussDauer: 0.5,
     trefferZuck: 1.2, trefferNeigung: 0.05, tod: 'explodieren', fussBreite: 1.35,
+    handAnteil: 0.3000, handVor: 0, handZurueck: 1, handAufbau: 1, handSkala: 1.12,
   }),
   schweber: P({
     atemHz: 0.5, atemAmp: 0.006, atemWiegen: 0.4, mikroPeriode: 5.5, mikroAmp: 0.6,
@@ -99,6 +104,7 @@ export const PARAMETER = Object.freeze({
     sprungStreck: 0.06, sprungHocke: 0, landeStauch: 0.03, landeDauer: 0.2, staub: 0.3,
     zielKipp: 0.09, schussKick: 1.6, schussNeigung: 0.07, schussDauer: 0.45,
     trefferZuck: 3, trefferNeigung: 0.2, tod: 'stuerzen', fussBreite: 0.85,
+    handAnteil: 0.4000, handVor: 2, handZurueck: 0, handAufbau: 0, handSkala: 1,
   }),
   wesen: P({
     atemHz: 0.3, atemAmp: 0.01, atemWiegen: 0.2, mikroPeriode: 3.7, mikroAmp: 0.4,
@@ -107,6 +113,7 @@ export const PARAMETER = Object.freeze({
     sprungStreck: 0.18, sprungHocke: 0.12, landeStauch: 0.25, landeDauer: 0.28, staub: 0.7,
     zielKipp: 0.05, schussKick: 1.2, schussNeigung: 0.05, schussDauer: 0.45,
     trefferZuck: 2, trefferNeigung: 0.1, tod: 'zerfallen', fussBreite: 1,
+    handAnteil: 0.4000, handVor: 1, handZurueck: 0, handAufbau: 1, handSkala: 0.95,
   }),
   schwarm: P({
     atemHz: 0.9, atemAmp: 0.01, atemWiegen: 0.3, mikroPeriode: 1.7, mikroAmp: 0.6,
@@ -115,6 +122,7 @@ export const PARAMETER = Object.freeze({
     sprungStreck: 0.1, sprungHocke: 0.05, landeStauch: 0.1, landeDauer: 0.2, staub: 0.4,
     zielKipp: 0.04, schussKick: 0.8, schussNeigung: 0.04, schussDauer: 0.36,
     trefferZuck: 2.4, trefferNeigung: 0.1, tod: 'zerstieben', fussBreite: 1.1,
+    handAnteil: 0.4500, handVor: 0, handZurueck: 0, handAufbau: 1, handSkala: 0.9,
   }),
 });
 

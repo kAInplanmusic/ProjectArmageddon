@@ -21,7 +21,7 @@ import { bakeTerrainLayer, detectWebGpu } from './terrainBaker.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
-  zeichneGeschossSprite, zeichneSchweif,
+  zeichneGeschossSprite, zeichneSchweif, zeichneStartGlanz,
 } from './effektStil.js';
 import {
   materialStil, zeichneBrandspur, zeichneBohrwand, zeichneBebenRisse, loescheLaeufe, setzeSchuttZellen, verschiebeZellen,
@@ -29,9 +29,10 @@ import {
 } from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
+import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
-  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, zeichneAuraRing, zeichneNamensschild,
+  zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, handFarbeFuer, zeichneAuraRing, zeichneNamensschild,
   figurSkalaFuer, FUSS_ABSTAND, SPRITE_HOEHE, HAND_HOEHE,
 } from './figuren.js';
 import { bereichInKarte } from './sichtbereich.js';
@@ -42,7 +43,7 @@ import { PARAMETER, typFuer } from './figurTypen.js';
 import { FACTIONS } from '../shared/config/factions.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
-  parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
+  parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt, figurHand,
   GeschossLagen, geschossDarstellung, geschossWinkel,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
@@ -187,6 +188,8 @@ export class Renderer {
     /** Schwebende Schadenszahlen und die Werte des letzten Bildes (siehe `schadenszahlen.js`). */
     this.zahlen = [];
     this.zahlenWerte = new Map();
+    /** Zuletzt gemeldete Schadensart je Figur (für Farbe und Zeichen der Zahl). */
+    this.schadensArten = new Map();
     /** Treffer des LETZTEN Bildes — der Klang wird in `main.js` gespielt. */
     this.letzteTreffer = [];
     /** Narben der Krater (Brandränder) — begrenzt, siehe `NARBEN_MAX`. */
@@ -424,7 +427,10 @@ export class Renderer {
    * Rein visuell: hat keinen Einfluss auf die Simulation.
    */
   addBeam(fromX, fromY, toX, toY, optionen = {}) {
-    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, optionen));
+    // Farbe der Waffe: Strahl und Glühen in ihrer Blitzfarbe (aus dem Sprite-Manifest), sonst Gelb.
+    const waffe = optionen.waffeId ? WEAPONS_BY_ID[optionen.waffeId] : null;
+    const farbe = waffe ? holeWaffenSprite(waffe)?.flashColor : null;
+    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, farbe ? { ...optionen, color: farbe } : optionen));
   }
 
   /** Fügt einen Explosionsblitz an einer Stelle hinzu. */
@@ -445,7 +451,23 @@ export class Renderer {
    */
   addMuzzleFlash(entityId, angle) {
     this.effects.push(erzeugeMuendungsfeuer(entityId, angle));
-    this.#waffenState(entityId).schuss = performance.now() / 1000;
+    const ws = this.#waffenState(entityId);
+    ws.schuss = performance.now() / 1000;
+    ws.schuesse += 1;
+  }
+
+  /**
+   * Diagnose (Tests): die Pose der gehaltenen Waffe `seitSchuss` Sekunden nach dem Schuss,
+   * berechnet mit den Parametern der Figur und dem echten Bewegungsmodus. Die Pose ist eine
+   * reine Funktion der Zeit; so hängt die Prüfung nicht davon ab, WELCHE Zeitpunkte der
+   * Bildtakt zufällig abgetastet hat (unter Last: wenige, späte Bilder).
+   * @returns {object|null} Kopie der Pose, `null` solange die Figur noch keine Waffen-Sprite-Parameter hat
+   */
+  probePose(entityId, seitSchuss) {
+    const ws = this.waffenZustand.get(entityId);
+    if (!ws?.par) return null;
+    const zt = { idle: 0, seitZiehen: 1e9, seitSchuss, bereit: 1, treffer: 0 };
+    return { ...waffenPose(ws.par, zt, this.reducedMotion, neuePose()), aufladen: ws.par.aufladen ?? 0, schussDauer: ws.par.schussDauer };
   }
 
   /** Waffe und Flugrichtung eines neuen Geschosses (aus `projectile_spawn`) für die Sprite-Darstellung. */
@@ -457,7 +479,7 @@ export class Renderer {
   #waffenState(entityId) {
     let z = this.waffenZustand.get(entityId);
     if (!z) {
-      z = { waffeId: '', par: null, zieh: -1e9, schuss: -1e9 };
+      z = { waffeId: '', par: null, zieh: -1e9, schuss: -1e9, schuesse: 0 };
       this.waffenZustand.set(entityId, z);
     }
     return z;
@@ -485,12 +507,25 @@ export class Renderer {
    * gehalten. Die Treffer des Bildes bleiben in `letzteTreffer` stehen, bis
    * `main.js` sie abholt (`nimmTreffer`) — der Renderer spielt keinen Klang.
    */
+  /** Merkt die Schadensart des letzten Treffers einer Figur (aus dem `damage`-Ereignis) für die Zahl. */
+  merkeSchadensart(entityId, art, krit = false) {
+    if (typeof art !== 'string') return;
+    this.schadensArten.set(entityId, { name: art, krit, rest: 45 });
+    // Kam die Zahl im selben Bild vor dem Ereignis, bekommt sie Farbe und Zeichen nachträglich.
+    const familie = familieVonArt(art);
+    for (const z of this.zahlen) {
+      if (z.id !== entityId || z.life < 0.85 || z.art !== 'schaden') continue;
+      if (krit) { z.art = 'kritisch'; z.text = `${z.text}!`; } else if (familie !== 'koerper') { z.art = `schaden-${familie}`; z.text += ZAHL_FAMILIE[familie].symbol; }
+    }
+  }
+
   #ermittleTreffer(state) {
     const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
     for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke(treffer));
-    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? []);
+    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
+    for (const [id, art] of this.schadensArten) { if (art.rest-- <= 0) this.schadensArten.delete(id); }
     this.zahlenWerte = zahlen.zustand;
     this.zahlen = ergaenzeZahlen(this.zahlen, zahlen.neu);
   }
@@ -518,17 +553,21 @@ export class Renderer {
       const alpha = Math.max(0, Math.min(1, effect.life));
       if (effect.kind === 'beam') {
         this.ctx.save();
-        // Kernstrahl
-        this.ctx.globalAlpha = alpha;
+        // Strahl in der Farbe der Waffe: breites Glühen, Farbkern, heller Kern.
+        this.ctx.lineCap = 'round';
         this.ctx.strokeStyle = effect.color;
-        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
         this.ctx.moveTo(effect.fromX, effect.fromY);
         this.ctx.lineTo(effect.toX, effect.toY);
+        this.ctx.globalAlpha = alpha * 0.3;
+        this.ctx.lineWidth = 11;
         this.ctx.stroke();
-        // Weicher Glow darum
-        this.ctx.globalAlpha = alpha * 0.35;
-        this.ctx.lineWidth = 9;
+        this.ctx.globalAlpha = alpha;
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+        this.ctx.globalAlpha = alpha * 0.9;
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 1.2;
         this.ctx.stroke();
         // Einschlagpunkt markieren
         if (effect.hit) {
@@ -1501,9 +1540,15 @@ export class Renderer {
         this.ctx.translate(0, -FUSS_ABSTAND);
         const par = PARAMETER[typ];
         const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
+        // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
+        const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
+        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
+        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
+        const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive,
           feuer: feuerLeben, params: par, typ,
+          schussStaerke: waffenPar?.koerper ?? 1, ausfall: waffenPar?.ausfall ?? 0,
           neigung: this.#bodenNeigung(entity.x, fussWelt),
           hp: entity.maxHealth > 0 ? Math.max(0, Math.min(1, entity.health / entity.maxHealth)) : 0,
           ergebnis: this.sieger !== null && this.sieger >= 0 ? (this.sieger === entity.teamId ? 1 : -1) : 0,
@@ -1519,23 +1564,25 @@ export class Renderer {
             this.figurEffekte.blasen(entity.x, wy + 2, 2);
           }
         }
+        const hinterKoerper = waffenPar?.lage === 'hinter';
+        if (hinterKoerper) {
+          spriteWaffe = true;
+          this.ctx.save();
+          this.#waffeFolgtKoerper(pose);
+          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig);
+          this.ctx.restore();
+        }
         zeichneFigurSprite(this.ctx, fig, {
           team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
           px: spritePx, breite: par.fussBreite, wasserY,
         });
         // Die Waffe folgt dem Körper (Hangneigung, Neigung, Hüpfen), behält aber den echten Zielwinkel.
-        {
-          const r = pose.neigung + pose.rot;
-          const hh = FUSS_ABSTAND - HAND_HOEHE;
-          this.ctx.translate(pose.dx + hh * Math.sin(r), pose.dy - hh * (pose.sy - 1) + hh * (1 - Math.cos(r)));
-        }
-        // Gehaltene Waffe: ihre Ikone am Zielstrahl; ohne Ikone das Rohr.
-        const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
-        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
-        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
+        this.#waffeFolgtKoerper(pose);
         if (waffenSprite) {
-          spriteWaffe = true;
-          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color);
+          if (!hinterKoerper) {
+            spriteWaffe = true;
+            this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig);
+          }
         } else if (ikone) {
           this.waffenStat.ikone += 1;
           const nahkampf = waffe.category === 'melee';
@@ -1605,7 +1652,14 @@ export class Renderer {
    * `waffenAnimation.js`): Pose aus den Zeiten seit Ziehen und Schuss, Hand
    * aus Sprite-Höhe und Blickrichtung, Nachladegrad aus dem Zustand.
    */
-  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color) {
+  /** Verschiebt den Rahmen so, dass die Waffe dem Körper folgt (Hangneigung, Neigung, Hüpfen). */
+  #waffeFolgtKoerper(pose) {
+    const r = pose.neigung + pose.rot;
+    const hh = FUSS_ABSTAND - HAND_HOEHE;
+    this.ctx.translate(pose.dx + hh * Math.sin(r), pose.dy - hh * (pose.sy - 1) + hh * (1 - Math.cos(r)));
+  }
+
+  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color, charakter, fig) {
     const ws = this.#waffenState(entity.entityId);
     const selbst = waffe.damage === 0;
     if (ws.waffeId !== waffe.id || ws.par === null) {
@@ -1622,17 +1676,22 @@ export class Renderer {
     zt.bereit = ladungAnteil(entity.cooldowns?.[waffe.id] ?? 0, waffe.cooldown);
     zt.treffer = treffer;
     const pose = waffenPose(par, zt, this.reducedMotion, this.waffenPoseTmp);
-    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp);
-    zeichneWaffeSprite(this.ctx, sp, par, pose, { winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y });
+    const hand = figurHand(charakter?.id);
+    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp, hand);
+    zeichneWaffeSprite(this.ctx, sp, par, pose, {
+      winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y, figur: hand, handFarbe: fig ? handFarbeFuer(fig, hand) : null,
+      zeit: jetzt, reduziert: this.reducedMotion,
+    });
     if (feuerLeben > 0 && !this.reducedMotion && (waffe.category === 'melee' || selbst)) {
       zeichneAuraRing(this.ctx, color, feuerLeben);
     }
     this.waffenStat.sprite += 1;
     let d = this.waffenDiagnose.get(entity.entityId);
     if (!d) { d = {}; this.waffenDiagnose.set(entity.entityId, d); }
-    d.waffeId = waffe.id; d.art = par.art; d.seitSchuss = zt.seitSchuss;
+    d.waffeId = waffe.id; d.art = par.art; d.seitSchuss = zt.seitSchuss; d.schuesse = ws.schuesse;
     d.vor = pose.vor; d.hoch = pose.hoch; d.drehung = pose.drehung; d.glanz = pose.glanz;
     d.blitz = pose.blitz; d.blitzForm = pose.blitzForm; d.weiss = pose.weiss; d.ladung = pose.ladung;
+    d.kachel = sp.kachel; d.orb = par.orb === true && sp.kachel === 'orb'; d.lage = par.lage; d.figurTyp = hand.typ;
   }
 
   /**
@@ -1762,7 +1821,8 @@ export class Renderer {
       {
         verz: spriteSkala ? (this.figurPosen.zustand(entity.entityId)?.pose.hpVerz ?? ratio) : ratio,
         akzent: fraktion ? this.akzentJeFraktion.get(fraktion) : null,
-        gift: entity.dotsCount ?? 0,
+        gift: (entity.dotsCount ?? 0) < MALI_LEITUNGSMARKE ? (entity.dotsCount ?? 0) : 0,
+        mali: (entity.dotsCount ?? 0) >= MALI_LEITUNGSMARKE ? maliMarken({ mali: maskeZuMali(entity.dotsCount & ~MALI_LEITUNGSMARKE) }) : [],
         boost: entity.boostMultiplier ?? 1,
         zeit: performance.now() / 1000,
       },
@@ -1868,6 +1928,7 @@ export class Renderer {
         zeichneSchweif(this.ctx, lage.ring, sp.flashColor, lage.dar.groesse * 0.32);
         const w = geschossWinkel(lage.flug, lage.dar, jetzt - lage.t0, this.reducedMotion);
         zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
+        zeichneStartGlanz(this.ctx, sp, projectile.x, projectile.y, jetzt - lage.t0, lage.dar.start);
         lage.winkel = w;
         this.waffenStat.geschossSprites += 1;
       } else {
@@ -2365,9 +2426,15 @@ export class Renderer {
       const t = this.kamera.transformation();
       this.ctx.save();
       klammerOffen = true;
+      // Der Ruck zeigt keine leere Welt: auf Achsen, die scrollen, bleibt die Karte im Bild.
+      const k = this.kamera;
+      const ruckX = k.scrolltHorizontal
+        ? Math.max(k.schirm.b - k.karte.b * t.skalierung, Math.min(0, t.versatzX + ruck.x)) - t.versatzX : ruck.x;
+      const ruckY = k.scrolltVertikal
+        ? Math.max(k.schirm.h - k.karte.h * t.skalierung, Math.min(0, t.versatzY + ruck.y)) - t.versatzY : ruck.y;
       this.ctx.setTransform(
         t.skalierung, 0, 0, t.skalierung,
-        t.versatzX + ruck.x, t.versatzY + ruck.y,
+        t.versatzX + ruckX, t.versatzY + ruckY,
       );
     } else if (ruck.x !== 0 || ruck.y !== 0) {
       // Ohne Kamera (Replay, Testbild) wurde bisher 1:1 gezeichnet. Ein Ruck

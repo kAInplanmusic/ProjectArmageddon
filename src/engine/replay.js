@@ -23,6 +23,7 @@ import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_ALT, normalisiereZerstoerung } from '
 import { WAFFEN_STANDARD, WAFFEN_ALT, normalisiereWaffen } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, KISTEN_ALT, normalisiereKisten } from '../shared/config/kisten.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl } from '../shared/config/gelaende.js';
+import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
 
 export const REPLAY_FORMAT_VERSION = 1;
 
@@ -50,7 +51,7 @@ export class ReplayRecorder {
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
-    waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null,
+    waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -88,6 +89,8 @@ export class ReplayRecorder {
       gelaende: normalisiereGelaende(gelaende),
       // Die Biomwahl nur, wenn sie gesetzt ist (Sonderbiom oder `klassisch`); sonst entscheidet der Seed.
       ...(normalisiereBiomWahl(biom) ? { biom: normalisiereBiomWahl(biom) } : {}),
+      /* Schadensfassung (`config/schaden.js`). Wie `kisten`: eine Datei OHNE das Feld ist `SCHADEN_ALT` (keine Mali je Schadensart). */
+      schaden: normalisiereSchaden(schaden),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -259,7 +262,7 @@ export class ReplayRecorder {
     // Altdatei ohne `kit` = Klassenloadout (siehe Kommentar im Konstruktor).
     const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, kit: parsed.config?.kit ?? KIT_KLASSE,
       zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT,
-      kisten: parsed.config?.kisten ?? KISTEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT });
+      kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -349,6 +352,7 @@ export class ReplayPlayer {
       kisten: config.kisten,
       gelaende: config.gelaende,
       biom: config.biom ?? null,
+      schaden: config.schaden,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

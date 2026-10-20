@@ -20,7 +20,7 @@ import { test, expect } from '@playwright/test';
  * benennen.
  */
 async function startMitKulisse(page, { seed = 4242, preset = 'islands', backdropKey = 'maritime/calm_day' } = {}) {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.evaluate(({ s, p, key }) => {
     const api = window.__PA__;
@@ -174,7 +174,7 @@ test('Der Boden bekommt die Farbe der Kulisse', async ({ page }) => {
   // Geprüft wird die tatsächlich gezeichnete Bodenfarbe zweier gegensätzlicher
   // Kulissen: sie muss sich deutlich unterscheiden.
   const bodenfarbe = async (backdropKey) => {
-    await page.goto('http://127.0.0.1:5173/');
+    await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate((key) => {
       const api = window.__PA__;
@@ -216,7 +216,7 @@ test('Der Boden bekommt die Farbe der Kulisse', async ({ page }) => {
 });
 
 test('Eine gewählte Kulisse wird auch wirklich verwendet', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
   // Eine Kulisse wählen, die NICHT die Vorauswahl des Geländes ist: nur so ist
@@ -246,7 +246,7 @@ test('Eine gewählte Kulisse wird auch wirklich verwendet', async ({ page }) => 
 });
 
 test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
   const stand = await page.evaluate(() => {
@@ -282,7 +282,7 @@ test('Die Kulissenauswahl im Menü ist vollständig', async ({ page }) => {
 test('Ohne Wahl ist die generative Kulisse aktiv', async ({ page }) => {
   // Die generative Kulisse ist die Vorgabe: Sie passt sich jeder Kartengröße an,
   // ein Bild nicht.
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.evaluate(() => {
     const api = window.__PA__;

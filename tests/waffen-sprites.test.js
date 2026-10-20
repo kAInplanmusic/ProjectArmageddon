@@ -223,3 +223,84 @@ test('Gesamtgröße der Atlanten bleibt unter 6 MB', () => {
   summe += fs.statSync(path.join(ORDNER, 'manifest.json')).size;
   assert.ok(summe < 6 * 1024 * 1024, `${(summe / 1048576).toFixed(2)} MB`);
 });
+
+test('Griffanker liegt auf einem deckenden Pixel der Waffe, die Mündung an den Umrissen auf der Achse', () => {
+  for (const w of WEAPONS) {
+    const e = manifest.waffen[w.id];
+    const alpha = zelleAlpha(e.held);
+    const { grip, muzzle } = e.anchor;
+    assert.ok(alpha(grip.x, grip.y) > 100, `${w.id}: Griff (${grip.x},${grip.y}) liegt nicht innerhalb der Waffenumrisse`);
+    if (e.anchor.source !== 'geometrie') continue;
+    // Die Mündung ist ein Spitzenpunkt: höchstens drei Pixel neben einem deckenden Pixel.
+    let nah = false;
+    for (let dy = -3; dy <= 3 && !nah; dy++) {
+      for (let dx = -3; dx <= 0 && !nah; dx++) {
+        const x = muzzle.x + dx;
+        const y = muzzle.y + dy;
+        if (x >= 0 && y >= 0 && x < 128 && y < 128 && alpha(x, y) > 100) nah = true;
+      }
+    }
+    assert.ok(nah, `${w.id}: Mündung (${muzzle.x},${muzzle.y}) liegt nicht an den Umrissen`);
+    if (e.form === 'objekt') assert.ok(Math.abs(muzzle.y - grip.y) <= 8, `${w.id}: Spitze liegt nicht auf der Achse durch den Griff`);
+    const anteil = (grip.x - e.content.x) / e.content.w;
+    assert.ok(anteil >= 0.03 && anteil <= 0.75, `${w.id}: Griff bei ${(anteil * 100).toFixed(0)} % der Waffenlänge`);
+  }
+});
+
+test('Kachel-Waffen: Darstellung je Waffe entschieden (motiv oder orb) und begründet', () => {
+  const kacheln = WEAPONS.filter(w => manifest.waffen[w.id].form === 'kachel');
+  assert.equal(kacheln.length, 28);
+  let motiv = 0;
+  for (const w of kacheln) {
+    const k = manifest.waffen[w.id].kachel;
+    assert.ok(k && ['motiv', 'orb'].includes(k.modus), `${w.id}: kachel.modus fehlt`);
+    assert.ok(typeof k.grund === 'string' && k.grund.length > 10, `${w.id}: keine Begründung`);
+    if (k.modus === 'motiv') motiv++;
+  }
+  assert.ok(motiv >= 20, `nur ${motiv} Kacheln als Motiv herausgelöst`);
+  for (const w of WEAPONS) {
+    if (manifest.waffen[w.id].form !== 'kachel') assert.equal(manifest.waffen[w.id].kachel, undefined, `${w.id}: kachel nur bei Kachel-Form`);
+  }
+});
+
+test('Herausgelöste Motive haben keinen Rahmen: Zellecken transparent, Zelle nicht vollflächig', () => {
+  for (const w of WEAPONS) {
+    const e = manifest.waffen[w.id];
+    if (e.form !== 'kachel' || e.kachel.modus !== 'motiv') continue;
+    const alpha = zelleAlpha(e.held);
+    for (const [x, y] of [[0, 0], [127, 0], [0, 127], [127, 127]]) {
+      assert.ok(alpha(x, y) < 20, `${w.id}: Ecke (${x},${y}) nicht transparent`);
+    }
+    let deckend = 0;
+    for (let y = 0; y < 128; y++) for (let x = 0; x < 128; x++) if (alpha(x, y) > 100) deckend++;
+    assert.ok(deckend < 128 * 128 * 0.9, `${w.id}: Motiv füllt die Zelle wie eine Kachel (${deckend})`);
+  }
+});
+
+test('Korrekturtabelle: nur bekannte Waffen und Felder, Anker und Kachel-Modus stimmen mit dem Manifest überein', () => {
+  const korr = JSON.parse(fs.readFileSync(path.join(HIER, '..', 'scripts', 'waffen-sprites-korrekturen.json'), 'utf8'));
+  const felder = new Set(['rect', 'form', 'ringAbstand', 'schwelle', 'keineDrehung', 'umkehren', 'spitzeWechseln', 'winkel',
+    'spiegeln', 'nichtSpiegeln', 'grip', 'muzzle', 'geschoss', 'kachel', 'art', 'drehen']);
+  const arten = new Set(['wurf', 'geraet', 'bogen', 'stab', 'schild', 'schaft', 'wesen']);
+  const ids = new Set(WEAPONS.map(w => w.id));
+  for (const [id, k] of Object.entries(korr)) {
+    if (id.startsWith('_')) continue;
+    assert.ok(ids.has(id), `Korrektur für unbekannte Waffe ${id}`);
+    for (const feld of Object.keys(k)) assert.ok(felder.has(feld), `${id}: unbekanntes Feld ${feld}`);
+    if (k.art) assert.ok(arten.has(k.art), `${id}: unbekannte Art ${k.art}`);
+    const e = manifest.waffen[id];
+    if (k.grip) {
+      assert.deepEqual(e.anchor.grip, { x: k.grip[0], y: k.grip[1] }, `${id}: grip weicht vom Manifest ab`);
+      assert.equal(e.anchor.source, 'korrektur');
+    }
+    if (k.kachel) {
+      assert.equal(e.form, 'kachel', `${id}: kachel-Eintrag, aber Form ${e.form}`);
+      assert.equal(e.kachel.modus, k.kachel.modus);
+    }
+  }
+});
+
+test('Projektil-Sprites: jede Waffe mit Projektil-Lieferung hat ein Flugobjekt', () => {
+  const ohne = WEAPONS.filter(w => w.delivery === 'projectile' && !manifest.waffen[w.id].projectile);
+  assert.deepEqual(ohne.map(w => w.id), [], 'Waffen mit Projektil-Lieferung ohne Sprite');
+});
