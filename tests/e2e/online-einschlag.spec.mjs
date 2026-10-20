@@ -8,7 +8,8 @@
  *    (kein neuer Klang, keine neue `explosion`-/`terrain_destroyed`-Nachricht) und die Karte gleicht dem Server.
  *
  * Wasser entsteht über die Karte `autonom` mit Seed 24683: Schuss (0,5 rad, Kraft 90) trifft den See.
- * Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
+ * Das Biom ist fest `klassisch`: Ohne diese Wahl zieht der Seed seit den Sonderbiomen oft ein anderes Gelände,
+ * und der Schuss träfe nicht mehr den See. Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
  */
 import { test, expect } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
@@ -33,7 +34,7 @@ const FAELLE = [
 
 /** Rechnet den Schuss mit der Engine nach (dieselben Optionen wie die Lobby) und liefert das Material. */
 function erwartetesMaterial({ seed, winkel, kraft }) {
-  const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom' });
+  const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch' });
   m.start();
   const id = m.activePlayerId;
   m.fire(id, winkel, kraft, m.inventory.getActiveWeaponId(id));
@@ -56,7 +57,7 @@ async function oeffne(context, { lobbyId = null, name, seed }) {
   await hakeHudLog(page);
   await page.evaluate(
     o => window.__PA__.startOnline(o),
-    { serverUrl: SERVER_URL, lobbyId, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', seed, name },
+    { serverUrl: SERVER_URL, lobbyId, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch', seed, name },
   );
   await page.waitForFunction(() => window.__PA__.getNetwork()?.state === 'connected', null, { timeout: 20_000 });
   return { page, nachrichten };

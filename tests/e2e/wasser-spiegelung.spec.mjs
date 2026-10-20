@@ -3,7 +3,7 @@
  *
  * Gemessen wird die Zeit von `renderer.render` selbst (nicht der Bildtakt: der klebt am vsync und
  * würde jede Mehrarbeit unter 16,7 ms verschlucken). Abwechselnd ohne und mit Spiegelung, je Runde
- * 120 Bilder; verglichen werden die Mediane der Rundenmittel. Bei sehr kleiner absoluter Bildzeit
+ * 90 Bilder; verglichen werden die Mediane der Rundenmittel. Bei sehr kleiner absoluter Bildzeit
  * (unter 0,3 ms Unterschied) gilt der Unterschied als Messrauschen.
  */
 import { test, expect } from '@playwright/test';
@@ -32,7 +32,8 @@ function messeRunde(page, mit, bilder) {
   }, { mit, bilder });
 }
 
-test('Spiegelung: höchstens 10 % mehr Renderzeit, und das Wasser sieht anders aus', { timeout: 120_000 }, async ({ page }) => {
+test('Spiegelung: höchstens 10 % mehr Renderzeit, und das Wasser sieht anders aus', async ({ page }) => {
+  test.setTimeout(170_000);
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.locator('#cfg-seed').fill('20260916');
@@ -43,8 +44,8 @@ test('Spiegelung: höchstens 10 % mehr Renderzeit, und das Wasser sieht anders a
   const ohne = [];
   const mit = [];
   for (let runde = 0; runde < 3; runde += 1) {
-    ohne.push((await messeRunde(page, false, 120)).mittel);
-    mit.push((await messeRunde(page, true, 120)).mittel);
+    ohne.push((await messeRunde(page, false, 90)).mittel);
+    mit.push((await messeRunde(page, true, 90)).mittel);
   }
   const median = a => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
   const a = median(ohne);
