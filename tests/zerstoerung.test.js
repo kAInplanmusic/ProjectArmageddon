@@ -12,7 +12,7 @@ import {
 import { restoreLobby } from '../src/server/persistence.js';
 import { KIT_FLAECHE } from '../src/shared/config/loadouts.js';
 import { WAFFEN_ALT } from '../src/shared/config/waffen-fassung.js';
-import { KISTEN_ALT } from '../src/shared/config/kisten.js';
+import { KISTEN_ALT, KISTEN_OFT } from '../src/shared/config/kisten.js';
 import {
   applyLogEntryToTerrain, buildTerrainForSeed, bewerteTerrainHash,
 } from '../src/client/terrainPreview.js';
@@ -591,7 +591,7 @@ function gold3() {
   z.krater(360, 150, 18, 115);
   for (let i = 0; i < 200; i++) z.schritt();
   // (b) Im Match: Brett über der Figur, Pfeiler gekappt.
-  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN });
+  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN, kisten: KISTEN_OFT });
   match.start();
   const aufbau = baueBrett(match);
   match.setzung.krater(aufbau.px, aufbau.boden - 45, 14, 100);

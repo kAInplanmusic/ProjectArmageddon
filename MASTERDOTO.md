@@ -659,7 +659,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1741/1741** grün, Dateizahl **181** (Stand 2026-10-20, Kulissen-Stimmungen: +9 in `backdrops.test.js` und der neuen `kulissenZuschnitt.test.js`, dazu 2 E2E in `backdrops.spec.mjs`; davor 1707/176, Restpunkte Fassung 6: +26 in fünf neuen Testdateien `hangrutsch`, `rueckstoss-richtung`, `klang-metall`, `wasser-spiegel`, `ereigniskatalog`, dazu Fälle in `zerstoerung-optik`; E2E `einschlag-optik`, `wasser-spiegelung`, `dpr2`; davor 1677/170, Günther Fassung 2 und Cookie: +19 in der neuen `guenther-aktionen.test.js` (Goldwerte Fassung 1, Altkopf, je Aktion) und +17 in der neuen `cookie.test.js` (Hunger, Miau-Stufen, Füttern, Toben, Spielen, Protokoll); davor 1641/168, Biome und Materialien: +7 in der neuen `biome-stoffe.test.js`, dazu E2E in `biome-material.spec.mjs`; davor 1634/167, Integrationstest: +7 in der neuen `integration-ereignisablauf.test.js` (Mini-Partie Schuss → Einschlag → Schaden/Mali → Krater → Klang/Anzeige, Zuordnung und Fallback je Ereignis, zwei Läufe gleicher Hash) und +3 in der neuen `replay-altkoepfe.test.js` (alle Altmarken gleichzeitig gegen einen Goldwert, Neu-Kopf = höchste Fassung); dazu 2 E2E in `online-einschlag.spec.mjs` (Wasser/Land, zwei Clients, genau einmal, auch nach Wiedereinstieg); Krit bleibt stumm, weil die Engine `isCritical` nie setzt; davor 1624/165, Online-Synchronisation: +8 in der neuen `online-einschlag.test.js`; davor 1604/164, Schadensarten: +24 in der neuen `schadensarten.test.js`, dazu E2E in `schadensarten.spec.mjs`; davor 1580/163, Kameraführung: +13 in der neuen `kamera-ziel.test.js`, dazu 15 E2E in `kamera.spec.mjs` und 2 in `kamera-beben.spec.mjs` (Erdbebenzittern `terrain_quake`: höchstens 5 px, zeitlich begrenzt, Kamera vorher/nachher identisch, reduziert = kein Zittern; der Ruck wird jetzt auf die Kartenfläche geklemmt); davor 1567/162, Zerstörung Fassung 4: +25 in der neuen `zerstoerung-bruch.test.js` und `zerstoerung.test.js`/`comic-stil.test.js`, dazu 2 E2E in `zerstoerung-messung.spec.mjs`; davor 1542/161, Stand 2026-10-19, Figuren-Feinschliff: +15 in den neuen `figur-typen.test.js` und `figur-animation-typen.test.js`, dazu 4 E2E in `figuren-feinschliff.spec.mjs`; davor 1527/159, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1747/1747** grün, Dateizahl **182** (Stand 2026-10-20, Kistenfassung 3: +6 in der neuen `kisten-waffen.test.js`; davor 1741/181, Kulissen-Stimmungen: +9 in `backdrops.test.js` und der neuen `kulissenZuschnitt.test.js`, dazu 2 E2E in `backdrops.spec.mjs`; davor 1707/176, Restpunkte Fassung 6: +26 in fünf neuen Testdateien `hangrutsch`, `rueckstoss-richtung`, `klang-metall`, `wasser-spiegel`, `ereigniskatalog`, dazu Fälle in `zerstoerung-optik`; E2E `einschlag-optik`, `wasser-spiegelung`, `dpr2`; davor 1677/170, Günther Fassung 2 und Cookie: +19 in der neuen `guenther-aktionen.test.js` (Goldwerte Fassung 1, Altkopf, je Aktion) und +17 in der neuen `cookie.test.js` (Hunger, Miau-Stufen, Füttern, Toben, Spielen, Protokoll); davor 1641/168, Biome und Materialien: +7 in der neuen `biome-stoffe.test.js`, dazu E2E in `biome-material.spec.mjs`; davor 1634/167, Integrationstest: +7 in der neuen `integration-ereignisablauf.test.js` (Mini-Partie Schuss → Einschlag → Schaden/Mali → Krater → Klang/Anzeige, Zuordnung und Fallback je Ereignis, zwei Läufe gleicher Hash) und +3 in der neuen `replay-altkoepfe.test.js` (alle Altmarken gleichzeitig gegen einen Goldwert, Neu-Kopf = höchste Fassung); dazu 2 E2E in `online-einschlag.spec.mjs` (Wasser/Land, zwei Clients, genau einmal, auch nach Wiedereinstieg); Krit bleibt stumm, weil die Engine `isCritical` nie setzt; davor 1624/165, Online-Synchronisation: +8 in der neuen `online-einschlag.test.js`; davor 1604/164, Schadensarten: +24 in der neuen `schadensarten.test.js`, dazu E2E in `schadensarten.spec.mjs`; davor 1580/163, Kameraführung: +13 in der neuen `kamera-ziel.test.js`, dazu 15 E2E in `kamera.spec.mjs` und 2 in `kamera-beben.spec.mjs` (Erdbebenzittern `terrain_quake`: höchstens 5 px, zeitlich begrenzt, Kamera vorher/nachher identisch, reduziert = kein Zittern; der Ruck wird jetzt auf die Kartenfläche geklemmt); davor 1567/162, Zerstörung Fassung 4: +25 in der neuen `zerstoerung-bruch.test.js` und `zerstoerung.test.js`/`comic-stil.test.js`, dazu 2 E2E in `zerstoerung-messung.spec.mjs`; davor 1542/161, Stand 2026-10-19, Figuren-Feinschliff: +15 in den neuen `figur-typen.test.js` und `figur-animation-typen.test.js`, dazu 4 E2E in `figuren-feinschliff.spec.mjs`; davor 1527/159, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3325,6 +3325,54 @@ Zustands-Goldwerte in `waffen-fassung.test.js` und `zerstoerung.test.js` laufen 
 ausdrücklichem `kisten: KISTEN_ALT` (Werte unverändert). Der Hilfe-Reiter „Loot“ zeigt die
 neuen Anteile (inkl. drei Kisten) aus `LOOT_DROP_RULES`. Der Bot läuft nicht und holt keine
 Kisten; die Messung zählt deshalb Abwürfe, keine Aufnahmen.
+
+### Kistenfassung 3 (`config.kisten: 3`, Standard) — Waffen-Ökonomie 2026-10-20
+
+Auftrag: Munition, Seltenheit, Dropchance und Loot über viele Seeds messen und Auffälligkeiten
+korrigieren. Werkzeug: `npm run balance:loot` (`scripts/loot-verteilung.mjs`; 3000 Seeds x 23 Runden,
+nur der Ziehweg `rollCrateCount` -> `legeKiste` mit dem LOOT-Sub-RNG, ohne Aufheben).
+
+Befunde (alle belegt, vor der Änderung):
+
+1. **Aus Rundenkisten fiel nie eine Waffe.** `rollCrateContents` liefert `weapons`, `CRATE_TYPES`
+   kennt `weapon`: `CRATE_TYPES['weapons'] ?? empty` machte JEDE Waffenkiste leer (60 Seeds, 94 Kisten:
+   0 Waffen-, 32 Heil-, 60 leere, 2 Fallen-Kisten). Waffen kamen nur über Günther, Abwurf (Q) und
+   Nachschubwaffen. Das erklärt „Partien mit dem Start-Kit sind zäh".
+2. **Stufen verzerrt.** `pickWeaponForRarity` gewichtet JE WAFFE mit dem Stufengewicht (55/25/12/6/2 mal
+   Zahl der Waffen der Stufe): 71,8 % common, 16,6 uncommon, 10,5 rare, 1,0 epic, 0,2 legendary statt
+   der erklärten 55/25/12/6/2. Die 42 seltenen Waffen fielen halb so oft wie die 8 epischen (0,29 gegen 0,76 %).
+3. **Kistenfarbe immer `epic`** (dokumentierter Zustand seit 2026-09-27, siehe `legeKiste`).
+4. **Magazin invertiert:** Im Katalog liegen epic (Mittel 4,25 Schuss) und legendary (4,60) über common
+   (4,16): fünf Schuss der stärksten Waffen je Fund.
+5. Kein Munitionsengpass: Start-Kit = Reserve unbegrenzt + zwei Common-Würfe mit im Mittel 5,4 Schuss
+   (11 Schuss, etwa ein Schuss je Zug in einer 23-Runden-Partie). Kein Überschuss: dieselbe Waffe zweimal
+   zu finden ist selten (1/150 je Fund). Alle 150 Waffen sind ziehbar (`hasSpecialEffect`), keine fällt aus.
+
+Neu (`kisten.js`, `lootSystem.js`): Inhalt `weapons` wird eine Waffenkiste; erst die Stufe nach
+`KISTEN_STUFEN_GEWICHT` (49/25/18/6/2), dann gleichverteilt eine Waffe der Stufe; Kistenfarbe nach
+Stufe (epic und legendary teilen Gold); Magazin in der Kiste `KISTEN_MUNITION_STUFE` (rare 3, epic 2,
+legendary 1; common und uncommon voll). Günthers Funde folgen der Fassung des Matches. Raten, Obergrenze
+(6), Q-Abwurf, 150-Waffen-Auswahl und Start-Kit unverändert.
+
+| Messung (Mittel über 3000 Seeds) | Fassung 2 (vorher) | Fassung 3 (nachher) |
+|---|---|---|
+| Waffenkisten je Partie (23 Runden, ohne Aufheben) | 0 | 20,3 (18,9 verschiedene) |
+| Anteil common / uncommon / rare / epic / legendary an den Waffenkisten | — (keine Waffen); Ziehung hätte 71,8 / 16,6 / 10,5 / 1,0 / 0,2 ergeben | 49,1 / 24,9 / 17,9 / 6,1 / 2,0 |
+| Chance je Waffe und Waffenkiste: rare / epic / legendary | 0,29 / 0,76 / 0,39 % (nur theoretisch) | 0,43 / 0,76 / 0,39 % |
+| Chance, eine bestimmte Waffe der Stufe in einer Partie zu finden: common / rare / epic / legendary | 0 % | 14,7 / 8,3 / 14,3 / 7,7 % |
+| Nie erscheinende Waffen | 150 (Rundenkisten) | 0 |
+| Schuss je Fund (Mittel): rare / epic / legendary | 3,86 / 4,25 / 4,60 | 3,00 / 2,00 / 1,00 |
+| Kistenfarbe | immer Gold | nach Stufe der Waffe |
+
+Lücken je Waffe nach Ereigniskatalog (`ereigniskatalog.js`, keine zweite Tabelle): `special_effect`
+(Schild, Rüstung, Munition, Schadensschub) war stumm und ohne Bild, jetzt Klang `schild`/`bereit` und
+Blitz (`addFlash`); `crate_pickup` einer Waffe zeigt einen goldenen Blitz. Sprites: alle 150 Waffen haben
+ein Icon. `crate_pickup_blocked` bleibt ohne Klang (kein passendes Profil, kein neuer Klang erfunden).
+
+Der Hilfe-Reiter „Loot“ zeigt die fünf Stufen mit Anteil, Waffenzahl und Magazin aus `KISTEN_STUFEN_GEWICHT`/`KISTEN_MUNITION_STUFE`.
+
+Altköpfe: eine Aufzeichnung ohne `config.kisten` ist `KISTEN_ALT`, mit `2` spielt sie wie vorher
+(Zustands-Hashes Fassung 1 und 2 nach 4000 Schritten bitgleich zum Stand davor, `tests/kisten-waffen.test.js`).
 
 ### Fichten (`src/client/pflanzen.js`)
 

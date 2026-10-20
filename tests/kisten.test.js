@@ -12,7 +12,7 @@ import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { LOOT_DROP_RULES, rollCrateCount } from '../src/shared/config/loot.js';
 import {
-  KISTEN_ALT, KISTEN_OFT, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE, normalisiereKisten,
+  KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE, normalisiereKisten,
 } from '../src/shared/config/kisten.js';
 
 /** Die Ziehung vor Fassung 2, wörtlich. */
@@ -32,7 +32,7 @@ function neueMatch(seed, extra = {}) {
 }
 
 test('normalisiereKisten: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(KISTEN_STANDARD, KISTEN_OFT);
+  assert.equal(KISTEN_STANDARD, KISTEN_WAFFEN);
   assert.equal(normalisiereKisten(1), KISTEN_ALT);
   assert.equal(normalisiereKisten(2), KISTEN_OFT);
   assert.equal(normalisiereKisten(undefined), KISTEN_STANDARD);
@@ -86,7 +86,7 @@ test('Obergrenze: ohne Aufheben liegen in Fassung 2 nie mehr als die Höchstzahl
   assert.ok(lauf(KISTEN_ALT) > KISTEN_MAX_AUF_KARTE, 'Fassung 1 hat keine Obergrenze (Altverhalten)');
 });
 
-test('Replay-Kopf: Altdatei ohne `kisten` = Fassung 1, neue Aufzeichnung trägt Fassung 2', () => {
+test('Replay-Kopf: Altdatei ohne `kisten` = Fassung 1, neue Aufzeichnung trägt den Standard', () => {
   const alt = {
     format: 1, createdAt: 0, seed: 4242,
     config: { teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, turnDurationMs: 30000, kit: 3, zerstoerung: 3, waffen: 2 },
@@ -96,11 +96,11 @@ test('Replay-Kopf: Altdatei ohne `kisten` = Fassung 1, neue Aufzeichnung trägt 
   assert.equal(match.kisten, KISTEN_ALT);
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.kisten, KISTEN_OFT);
+  assert.equal(neu.toJSON().config.kisten, KISTEN_STANDARD);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(zurueck.config.kisten, KISTEN_OFT);
-  assert.equal(playReplay(zurueck).match.kisten, KISTEN_OFT);
+  assert.equal(zurueck.config.kisten, KISTEN_STANDARD);
+  assert.equal(playReplay(zurueck).match.kisten, KISTEN_STANDARD);
 });
 
 test('Wiedergabe gleicht der Live-Partie in beiden Kistenfassungen (Altkopf ohne Feld = Fassung 1)', () => {

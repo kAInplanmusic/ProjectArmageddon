@@ -4,6 +4,7 @@
  * Fassung 1 bleibt bitgleich (Goldhashes, gemessen auf main, Stand 1273330 + Merge);
  * Fassung 2 ist deterministisch, rundlaufend im Replay und hält die Obergrenzen ein.
  */
+import { KISTEN_OFT } from '../src/shared/config/kisten.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -20,7 +21,7 @@ import { findeZahlen } from '../src/client/schadenszahlen.js';
 
 function aufbau(fassung = SCHADEN_STATUS, extra = {}) {
   const match = new MatchController({
-    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung,
+    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung, kisten: KISTEN_OFT,
     loadouts: [0, 1].map(() => ({ classId: 'scout', archetypeId: 'brawler' })), ...extra,
   });
   match.start();

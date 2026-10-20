@@ -11,8 +11,8 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import {
   weightedRarity, rollCrateCount, rollCrateContents, LOOT_DROP_RULES,
 } from '../../shared/config/loot.js';
-import { KISTEN_ALT, KISTEN_STANDARD } from '../../shared/config/kisten.js';
-import { pickWeaponForRarity, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
+import { KISTEN_ALT, KISTEN_OFT, KISTEN_STANDARD, KISTEN_WAFFEN, KISTEN_MUNITION_STUFE, KISTEN_STUFEN_GEWICHT } from '../../shared/config/kisten.js';
+import { pickWeaponForRarity, hasSpecialEffect, WEAPONS, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -89,6 +89,28 @@ export const CRATE_TYPES = Object.freeze({ weapon: 0, sustain: 1, empty: 2, trap
 export const RARITY_IDS = LOOT_DROP_RULES.rarities;
 export const RARITY_WEIGHTS = Object.freeze({ common: 55, uncommon: 25, rare: 12, epic: 6, legendary: 2 });
 
+/** Stufen in aufsteigender Folge; die Kistenfarbe (`RARITY_IDS`) kennt nur vier davon. */
+export const STUFEN = Object.freeze(['common', 'uncommon', 'rare', 'epic', 'legendary']);
+const STUFE_ZU_FARBE = Object.freeze({ common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 3 });
+const STUFEN_POOL = new Map(STUFEN.map(s => [s, WEAPONS.filter(w => w.powerTier === s && hasSpecialEffect(w))]));
+
+/**
+ * Fassung 3: erst die Stufe nach Gewicht (`KISTEN_STUFEN_GEWICHT`), dann gleichverteilt eine Waffe der
+ * Stufe. Zwei Ziehungen (`next()`), unabhängig von der Zahl der Waffen je Stufe.
+ */
+export function waehleWaffeNachStufe(rng, gewichte = KISTEN_STUFEN_GEWICHT) {
+  const stufen = STUFEN.filter(s => (gewichte[s] ?? 0) > 0 && STUFEN_POOL.get(s).length);
+  const summe = stufen.reduce((a, s) => a + gewichte[s], 0);
+  let rest = rng.next() * summe;
+  let stufe = stufen[stufen.length - 1];
+  for (const s of stufen) {
+    rest -= gewichte[s];
+    if (rest < 0) { stufe = s; break; }
+  }
+  const pool = STUFEN_POOL.get(stufe);
+  return pool[Math.min(pool.length - 1, Math.floor(rng.next() * pool.length))];
+}
+
 /** Waffen-IDs nach Index (1-basiert) fuer die projektion in Int32-Felder. */
 const WEAPON_ID_BY_INDEX = new Map();
 for (const weapon of Object.values(WEAPONS_BY_ID)) {
@@ -104,8 +126,9 @@ export function weaponIdFromIndex(index) {
  *
  * Gemeinsam für Rundenkisten und Günthers Fund beim Wühlen (Fassung 2).
  */
-export function legeKiste(world, rng, x, y) {
+export function legeKiste(world, rng, x, y, kisten = KISTEN_OFT) {
   const contents = rollCrateContents(rng);
+  if (kisten >= KISTEN_WAFFEN) return legeKiste3(world, rng, x, y, contents);
   const crateType = CRATE_TYPES[contents] ?? CRATE_TYPES.empty;
   /*
    * BEWUSSTER ZUSTAND (gemessen, 2026-09-27) — NICHT versehentlich aendern.
@@ -156,6 +179,26 @@ export function legeKiste(world, rng, x, y) {
   return entityId;
 }
 
+/** Kistenfassung 3 (`config/kisten.js`): Inhalt `weapons` wird eine Waffenkiste, Stufe vor Waffe, Farbe nach Stufe. */
+function legeKiste3(world, rng, x, y, contents) {
+  const crateType = CRATE_TYPES[contents === 'weapons' ? 'weapon' : contents] ?? CRATE_TYPES.empty;
+  const weapon = crateType === CRATE_TYPES.weapon ? waehleWaffeNachStufe(rng) : null;
+  const magazin = weapon ? KISTEN_MUNITION_STUFE[weapon.powerTier] : undefined;
+  const entityId = world.createEntity();
+  world.addComponent(entityId, 'Position', { x, y });
+  world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
+  world.addComponent(entityId, 'Crate', {
+    crateType, crateX: x, crateY: y,
+    rarity: weapon ? STUFE_ZU_FARBE[weapon.powerTier] : 0,
+    weaponId: weapon ? weapon.index : 0,
+    picked: 0,
+    // 0 = volles Magazin; seltene Waffen liegen mit weniger Schuss in der Kiste.
+    ammo: magazin !== undefined ? Math.min(magazin, weapon.maxAmmo || magazin) : 0,
+    inFlight: 0, flightTicks: 0,
+  });
+  return entityId;
+}
+
 export class LootSystem {
   constructor({ rng } = {}) {
     this.rng = rng ?? null;
@@ -193,7 +236,7 @@ export class LootSystem {
       const groundY = surfaceYFor(x);
       const y = (groundY > 0 ? groundY : height * 0.5) - 14;
 
-      const entityId = legeKiste(world, activeRng, x, y);
+      const entityId = legeKiste(world, activeRng, x, y, kisten);
       spawned.push(entityId);
     }
 

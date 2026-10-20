@@ -1381,7 +1381,7 @@ export class MatchController {
   #tierKontext() {
     return baueTierKontext({
       world: this.#world, terrain: this.#terrain, events: this.#events, height: this.height,
-      zerstoerung: () => this.#setzung ?? null, surfaceYAt: x => this.surfaceYAt(x),
+      zerstoerung: () => this.#setzung ?? null, surfaceYAt: x => this.surfaceYAt(x), kisten: this.kisten,
     });
   }
 

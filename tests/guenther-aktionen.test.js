@@ -7,6 +7,7 @@
  *   - Jede Aktion hat ihre Wirkung, Zufall nur über den eigenen Teilgenerator.
  *   - Der Replay-Kopf trägt die Marke; fehlt sie, gilt `GUENTHER_ALT`.
  */
+import { KISTEN_OFT } from '../src/shared/config/kisten.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -87,7 +88,7 @@ test('Fassung 1 ist bit-identisch zum Stand vor der Erweiterung (Goldwerte)', ()
   // Gemessen mit dem Stand VOR der Erweiterung (main 1f1fd54), Katalogfassung 3 festgehalten (`waffen: 3`): Zustandshash, Hash des Günther-Zustands, Ereigniszahl.
   const gold = [[11, '50235139', 3746098622, 265], [4242, '7bc6f78c', 2535208100, 266]];
   for (const [seed, hash, gHash, ereignisse] of gold) {
-    const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 999, guenther: GUENTHER_ALT, cookie: COOKIE_ALT, waffen: 3 });
+    const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 999, guenther: GUENTHER_ALT, cookie: COOKIE_ALT, waffen: 3, kisten: KISTEN_OFT });
     m.start();
     let schuesse = 0;
     let ev = 0;

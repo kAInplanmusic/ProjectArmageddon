@@ -610,6 +610,16 @@ export const EREIGNIS_WIRKUNGEN = {
   special_effect: beide((k, n) => {
     // Wirkungen auf den Schützen: Heilung, Schild, Sprung, Munition.
     k.logSpecialEffect?.(n);
+    /*
+     * Lücke je Waffe (Messung 2026-10-20): Schild-, Rüstungs- und Nachschubwaffen blieben stumm
+     * und ohne Bild. Heilung klingt über `heal`; hier nur, was kein eigenes Ereignis hat.
+     * Klänge und Blitz stehen im Ereigniskatalog (`special_effect`).
+     */
+    const klang = { shield: 'schild', armor: 'schild', ammo: 'bereit' }[n.kind];
+    if (klang) k.sound?.verarbeite({ type: klang, ...ortVon(k, n.playerId) });
+    const farbe = { shield: '#7cc4ff', armor: '#7cc4ff', damage_boost: '#ff9f43', ammo: '#ffd166' }[n.kind];
+    const ort = ortVon(k, n.playerId);
+    if (farbe && ort.x !== undefined) k.renderer?.addFlash(ort.x, ort.y, 18, { color: farbe });
   }),
 
   frozen: beide((k, n) => {
@@ -915,6 +925,10 @@ export const EREIGNIS_WIRKUNGEN = {
         : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
       k.hud?.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
       k.sound?.verarbeite({ type: 'kiste', ...ortVon(k, n.playerId) });
+      if (reward?.kind === 'weapon') {
+        const ort = ortVon(k, n.playerId);
+        if (ort.x !== undefined) k.renderer?.addFlash(ort.x, ort.y, 16, { color: '#fbbf24' });
+      }
     },
     online: (k, n) => {
       const who = k.nameOf?.(n.playerId);
@@ -926,6 +940,10 @@ export const EREIGNIS_WIRKUNGEN = {
         : `${who} öffnet eine leere Kiste`;
       k.hud?.log(text, reward?.kind === 'trap' ? 'danger' : 'good');
       k.sound?.verarbeite({ type: 'kiste', ...ortVon(k, n.playerId) });
+      if (reward?.kind === 'weapon') {
+        const ort = ortVon(k, n.playerId);
+        if (ort.x !== undefined) k.renderer?.addFlash(ort.x, ort.y, 16, { color: '#fbbf24' });
+      }
     },
   },
 

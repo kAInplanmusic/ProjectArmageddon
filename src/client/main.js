@@ -26,7 +26,7 @@ import { zeigeToast } from './toasts.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
-import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
+import { getWeapon, orderInventoryBySubcategory, WEAPONS } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
@@ -63,7 +63,8 @@ import {
 } from '../shared/config/classes.js';
 import { sidegradesForClass } from '../shared/config/sidegrades.js';
 import { LOOT_DROP_RULES } from '../shared/config/loot.js';
-import { RARITY_IDS, RARITY_WEIGHTS } from '../engine/systems/lootSystem.js';
+import { RARITY_IDS, STUFEN } from '../engine/systems/lootSystem.js';
+import { KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE } from '../shared/config/kisten.js';
 import { START_TIERS, getClassLoadoutDetail } from '../shared/config/loadouts.js';
 import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../shared/terrainGen.js';
 import { WATER_STATE, waterStateFor } from '../shared/config/water.js';
@@ -4066,18 +4067,25 @@ function zeichneLoot(container) {
   container.append(textEl('h3', 'Seltenheiten'));
   const seltenListe = document.createElement('ul');
   seltenListe.className = 'h-liste h-seltenheiten';
-  for (const stufe of RARITY_IDS) {
+  /*
+   * Fünf Stufen (der Katalog, `powerTier`), Farbe nach der Kistenfarbe (`RARITY_IDS` kennt vier:
+   * epic und legendary teilen Gold). Anteil und Magazin stammen aus der Kistenfassung 3.
+   */
+  const gesamt = Object.values(KISTEN_STUFEN_GEWICHT).reduce((a, b) => a + b, 0);
+  STUFEN.forEach((stufe, i) => {
     const li = document.createElement('li');
     const punkt = document.createElement('span');
     punkt.className = 'h-farbe';
     // Farbe aus der Config, nicht im Client gewählt: dieselbe Farbe wie im
     // Spiel, sonst wichen Liste und Waffenanzeige voneinander ab.
-    punkt.style.background = regeln.rarityColors[stufe] ?? '#888';
-    const gewicht = RARITY_WEIGHTS[stufe];
-    const gesamt = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0);
-    li.append(punkt, textEl('span', `${stufe} — ${prozent(gewicht / gesamt)} der Waffen`));
+    punkt.style.background = regeln.rarityColors[RARITY_IDS[Math.min(i, RARITY_IDS.length - 1)]] ?? '#888';
+    const anzahl = WEAPONS.filter(w => w.powerTier === stufe).length;
+    const magazin = KISTEN_MUNITION_STUFE[stufe];
+    li.append(punkt, textEl('span',
+      `${stufe} — ${prozent(KISTEN_STUFEN_GEWICHT[stufe] / gesamt)} der Waffenkisten, ${anzahl} Waffen`
+      + `${magazin ? `, in der Kiste höchstens ${magazin} Schuss` : ''}`));
     seltenListe.append(li);
-  }
+  });
   container.append(seltenListe);
 
   /*

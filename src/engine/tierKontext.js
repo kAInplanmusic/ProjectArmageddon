@@ -31,6 +31,7 @@ function liegendeKisten(world) {
  * @param {object} q.events - Ereignisse des Matches
  * @param {() => object|null} q.zerstoerung - Zerstörungsfassung (oder null)
  * @param {number} q.height - Kartenhöhe
+ * @param {number} [q.kisten] - Kistenfassung des Matches (`config/kisten.js`)
  * @param {(x:number)=>number} q.surfaceYAt
  */
 export function baueTierKontext(q) {
@@ -39,7 +40,7 @@ export function baueTierKontext(q) {
   return {
     kisten: () => liegendeKisten(world),
     kisteVerzehren: id => { if (world.isActive(id)) world.removeEntity(id); },
-    legeKiste: (rng, x, y) => legeKiste(world, rng, x, y),
+    legeKiste: (rng, x, y) => legeKiste(world, rng, x, y, q.kisten),
     heile: (id, betrag) => schaden()?.heal?.(world, id, betrag) ?? 0,
     schaden: (id, betrag) => { schaden()?.applyDamage(world, id, betrag, null); },
     /** Schaden, der nie tötet (Schockwelle): lässt mindestens 1 Leben übrig. */
