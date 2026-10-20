@@ -57,7 +57,7 @@ const GOLD_ALT = {
 
 function schussAufNachbarn(id, extra = {}) {
   const match = new MatchController({
-    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, kisten: KISTEN_ALT, ...extra,
+    seed: 31337, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, kisten: KISTEN_ALT, schaden: 1, ...extra,
   });
   match.start();
   const aktiv = match.activePlayerId;

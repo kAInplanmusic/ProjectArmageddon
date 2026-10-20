@@ -654,7 +654,8 @@ export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, akt
   const text = String(label ?? '').slice(0, 12);
   const gift = extra?.gift > 0;
   const boost = extra?.boost > 1.001;
-  const icons = (gift ? 1 : 0) + (boost ? 1 : 0);
+  const mali = extra?.mali ?? [];
+  const icons = (gift ? 1 : 0) + (boost ? 1 : 0) + mali.length;
   ctx.save();
   ctx.font = 'bold 9px system-ui, sans-serif';
   ctx.textAlign = 'center';
@@ -723,6 +724,16 @@ export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, akt
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
+    ix += 10;
+  }
+  // Fassung 2: ein Zeichen in der Farbe des Malus je laufendem Nachteil (Brand, Gift, Fluch, Säure, Frost, Schock, Nass).
+  for (const m of mali) {
+    ctx.fillStyle = m.farbe;
+    ctx.strokeStyle = PAL.kontur;
+    ctx.lineWidth = 2;
+    ctx.font = 'bold 10px system-ui, sans-serif';
+    ctx.strokeText(m.symbol, ix, 6.5);
+    ctx.fillText(m.symbol, ix, 6.5);
     ix += 10;
   }
   if (boost) {

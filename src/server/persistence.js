@@ -19,6 +19,7 @@ import { KIT_KLASSE } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_ALT } from '../shared/config/zerstoerung.js';
 import { WAFFEN_ALT } from '../shared/config/waffen-fassung.js';
 import { KISTEN_ALT } from '../shared/config/kisten.js';
+import { SCHADEN_ALT } from '../shared/config/schaden.js';
 
 export const PERSISTENCE_VERSION = 1;
 
@@ -264,6 +265,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       waffen: saved.replay.config?.waffen ?? WAFFEN_ALT,
       // Alte Sicherungen ohne `kisten`: Altrate (10/85/5 %), keine Obergrenze.
       kisten: saved.replay.config?.kisten ?? KISTEN_ALT,
+      // Alte Sicherungen ohne `schaden`: keine Mali je Schadensart.
+      schaden: saved.replay.config?.schaden ?? SCHADEN_ALT,
     })
     : null;
 

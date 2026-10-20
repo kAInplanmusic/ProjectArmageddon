@@ -472,6 +472,8 @@ export function buildEffect(weapon) {
  */
 export class StatusStore {
   #entries = new Map();
+  /** Fassung 2 (`config/schaden.js`): Abzug auf den eigenen Schaden, z. B. durch Fluch. */
+  #ausgangsFaktor = null;
 
   #entryFor(playerId) {
     let entry = this.#entries.get(playerId);
@@ -510,7 +512,25 @@ export class StatusStore {
 
   /** Schadensmultiplikator für eigene Angriffe. */
   damageMultiplier(playerId) {
-    return this.#entries.get(playerId)?.boostMultiplier ?? 1;
+    const bonus = this.#entries.get(playerId)?.boostMultiplier ?? 1;
+    return this.#ausgangsFaktor ? bonus * this.#ausgangsFaktor(playerId) : bonus;
+  }
+
+  /** Hängt den Schadensabzug der Fassung 2 ein (ohne Aufruf bleibt der Schadensbonus unverändert). */
+  setzeAusgangsFaktor(fn) {
+    this.#ausgangsFaktor = fn;
+  }
+
+  /** Mali der Fassung 2 einer Figur (Eintrag wird angelegt). Die Regeln stehen in `schadenMali.js`. */
+  maliVon(playerId) {
+    const entry = this.#entryFor(playerId);
+    entry.mali ??= {};
+    return entry.mali;
+  }
+
+  /** Lesender Zugriff auf die Mali, ohne einen Eintrag anzulegen. */
+  maliLesen(playerId) {
+    return this.#entries.get(playerId)?.mali ?? null;
   }
 
   /** Ist der Spieler aufgedeckt (Sichtbarkeit für die Anzeige)? */
@@ -673,6 +693,8 @@ export class StatusStore {
         slowTurns: entry.slowTurns,
         revealedTurns: entry.revealedTurns,
         dots: entry.dots.map(dot => ({ ...dot })),
+        // Nur Fassung 2 und nur, wenn etwas läuft: Der Hash der Fassung 1 bleibt unverändert.
+        ...(entry.mali && Object.keys(entry.mali).length > 0 ? { mali: JSON.parse(JSON.stringify(entry.mali)) } : {}),
       };
     }
     return out;

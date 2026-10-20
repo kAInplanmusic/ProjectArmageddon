@@ -12,6 +12,7 @@
  *
  * @module main
  */
+import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
@@ -1590,7 +1591,8 @@ class Game {
         frozenTurns: entity.frozenTurns ?? 0,
         // Die Anzeige zählt die Marken (`hud.js`), nicht ihre Inhalte — lokal
         // ist es dieselbe Zahl (`statuses[id].dots.length`).
-        dots: new Array(entity.dotsCount ?? 0).fill(null),
+        dots: new Array((entity.dotsCount ?? 0) < MALI_LEITUNGSMARKE ? (entity.dotsCount ?? 0) : 0).fill(null),
+        ...((entity.dotsCount ?? 0) >= MALI_LEITUNGSMARKE ? { mali: maskeZuMali(entity.dotsCount & ~MALI_LEITUNGSMARKE) } : {}),
         boostMultiplier: entity.boostMultiplier ?? 1,
       };
     }

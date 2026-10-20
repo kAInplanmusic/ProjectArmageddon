@@ -78,7 +78,7 @@ export class DamageSystem {
     const modifier = world.services?.damageModifier;
     let absorbedByShield = 0;
     if (typeof modifier === 'function' && finalDamage > 0) {
-      const adjusted = modifier(entityId, finalDamage);
+      const adjusted = modifier(entityId, finalDamage, options.damageType);
       if (adjusted && Number.isFinite(adjusted.amount)) {
         absorbedByShield = Math.max(0, finalDamage - adjusted.amount);
         finalDamage = Math.max(0, adjusted.amount);
@@ -100,6 +100,18 @@ export class DamageSystem {
     });
     if (this.#killFeed.length > 200) this.#killFeed.shift();
 
+    // Fassung 2 (`config/schaden.js`): das Ereignis trägt zusätzlich Quelle, Ziel, Ort, Krit- und Selbstschadenkennzeichen.
+    const erweitert = world.services?.schadenEreignis
+      ? {
+        sourceEntityId: attackerId,
+        targetEntityId: entityId,
+        // Kritische Treffer kennt die Motorregel nicht; das Feld ist da, damit Anzeige und Klang es nutzen können.
+        isCritical: options.isCritical === true,
+        selfDamage: attackerId !== null && attackerId === entityId,
+        x: world.getComponent(entityId, 'Position', 'x') ?? 0,
+        y: world.getComponent(entityId, 'Position', 'y') ?? 0,
+      }
+      : {};
     world.services?.events?.emit('damage', {
       entityId,
       attackerId,
@@ -108,6 +120,7 @@ export class DamageSystem {
       remaining: newHealth,
       damageType: damageTypeId(options.damageType),
       damageTypeName: damageTypeName(damageTypeId(options.damageType)),
+      ...erweitert,
     });
 
     return newHealth;
@@ -118,6 +131,8 @@ export class DamageSystem {
     if (!world.isActive(entityId) || !world.hasComponent(entityId, 'Health')) return 0;
     const max = world.getComponent(entityId, 'Health', 'max') || 0;
     const current = world.getComponent(entityId, 'Health', 'current') || 0;
+    const healModifier = world.services?.healModifier;
+    if (typeof healModifier === 'function') amount = healModifier(entityId, amount);
     const healed = Math.min(max, current + Math.max(0, amount));
     world.setComponent(entityId, 'Health', 'current', healed);
     world.services?.events?.emit('heal', { entityId, amount: healed - current });

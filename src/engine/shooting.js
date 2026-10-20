@@ -662,7 +662,7 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
       // Heilung wird begrenzt: das Schild zählt mit, sonst wäre Heilung bei
       // vollem Schild wirkungslos verpufft.
       const headroom = Math.max(0, max - health);
-      const healed = Math.min(effect.amount, headroom);
+      const healed = Math.min(quelle.heilung ? quelle.heilung(playerId, effect.amount) : effect.amount, headroom);
       if (healed > 0) quelle.world.setComponent(playerId, 'Health', 'current', health + healed);
       return { healed, amount: effect.amount };
     }
