@@ -269,4 +269,8 @@ Die Stoffkarte (`src/shared/stoffkarte.js`) entsteht aus Seed + Biom und wird vo
 | Basalt (`basalt`) | hart | 0,49 / 0,25 | 0,23 | 0,44 | 0,49 | 0,54 | – |
 | Asche (`asche`) | weich | 1,56 / 1,21 | 1,43 | 1,5 | 1,56 | 1,56 | – |
 | Koralle (`koralle`) | normal | 0,95 / 0,8 | 0,95 | 0,95 | 0,95 | 1,23 | – |
+| Beton (`beton`) | hart | 0,54 / 0,28 | 0,25 | 0,51 | 0,54 | 0,62 | – |
+| Glas (`glas`) | normal | 1,05 / 0,8 | 1,05 | 1,26 | 1,16 | 1,05 | schmilzt |
+| Regolith (`regolith`) | weich | 1,56 / 1,21 | 1,43 | 1,35 | 1,56 | 1,56 | – |
+| Magiekristall (`magiekristall`) | hart | 0,56 / 0,28 | 0,26 | 0,62 | 0,56 | 0,48 | – |
 

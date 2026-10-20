@@ -37,9 +37,10 @@ import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
-import { NEUE_BIOME, SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
+import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
 import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD, GUENTHER_AKTION_REGELN } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT } from '../shared/config/cookie.js';
+import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
 import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
@@ -1079,7 +1080,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, // neue Partien: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, // neue Partien: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });

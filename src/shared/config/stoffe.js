@@ -44,6 +44,10 @@ export const STOFF = Object.freeze({
   BASALT: 11,
   ASCHE: 12,
   KORALLE: 13,
+  BETON: 14,
+  GLAS: 15,
+  REGOLITH: 16,
+  MAGIEKRISTALL: 17,
 });
 
 export const HAERTEN = Object.freeze(['weich', 'normal', 'hart', 'sehr_hart', 'unzerstoerbar']);
@@ -132,6 +136,22 @@ export const STOFFE = Object.freeze([
   Object.freeze({
     id: 13, key: 'koralle', label: 'Koralle', haerte: 'normal', radius: 0.95, tiefe: 0.8, bruechig: 2, brennbar: false, schmelzbar: false,
     anfaellig: Object.freeze({ aetz: 1.3 }), farbe: Object.freeze([226, 128, 124]), muster: 'poroes',
+  }),
+  Object.freeze({
+    id: 14, key: 'beton', label: 'Beton', haerte: 'hart', radius: 0.72, tiefe: 0.55, bruechig: 2, brennbar: false, schmelzbar: false,
+    anfaellig: Object.freeze({ aetz: 1.15, hitze: 0.95 }), farbe: Object.freeze([142, 142, 138]), muster: 'platten',
+  }),
+  Object.freeze({
+    id: 15, key: 'glas', label: 'Glas', haerte: 'normal', radius: 1.05, tiefe: 0.8, bruechig: 5, brennbar: false, schmelzbar: true,
+    anfaellig: Object.freeze({ hitze: 1.2, kaelte: 1.1, strom: 0.9 }), farbe: Object.freeze([176, 220, 228]), muster: 'facetten',
+  }),
+  Object.freeze({
+    id: 16, key: 'regolith', label: 'Regolith', haerte: 'weich', radius: 1.3, tiefe: 1.1, bruechig: 0, brennbar: false, schmelzbar: false,
+    anfaellig: Object.freeze({ hitze: 0.9, nass: 0.9 }), farbe: Object.freeze([128, 122, 134]), muster: 'koernig',
+  }),
+  Object.freeze({
+    id: 17, key: 'magiekristall', label: 'Magiekristall', haerte: 'hart', radius: 0.75, tiefe: 0.55, bruechig: 4, brennbar: false, schmelzbar: false,
+    anfaellig: Object.freeze({ strom: 1.3, hitze: 1.1, aetz: 0.85 }), farbe: Object.freeze([190, 120, 236]), muster: 'facetten',
   }),
 ]);
 

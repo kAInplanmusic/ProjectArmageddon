@@ -48,7 +48,6 @@ import { KIT_STANDARD, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_HANG, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { Zerstoerung } from './zerstoerung.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
-import { damageTypeId } from './damageTypes.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
 import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
@@ -57,6 +56,9 @@ import { CookieSystem } from './systems/cookieSystem.js';
 import { baueTierKontext } from './tierKontext.js';
 import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared/config/guenther.js';
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
+import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
+import { FeuerSystem } from './systems/feuerSystem.js';
+import { damageTypeId } from './damageTypes.js';
 import { GUENTHER_POOP } from '../shared/config/guenther.js';
 import { loeseGuentherRad } from './guentherRad.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
@@ -494,6 +496,7 @@ export class MatchController {
   /** Günther — der frei laufende NPC. */
   #guenther = null;
   #cookie = null;
+  #feuer = null;
   /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
   #airborne = new Map();
   #maelstrom;
@@ -599,7 +602,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, // Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, // Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null,
   } = {}) {
@@ -633,6 +636,7 @@ export class MatchController {
     this.kisten = normalisiereKisten(kisten);
     this.guenther = normalisiereGuenther(guenther);
     this.cookie = normalisiereCookie(cookie);
+    this.feuer = normalisiereFeuer(feuer);
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed)); // gelaende, biomWahl, sonderbiom
     this.schaden = normalisiereSchaden(schaden);
 
@@ -889,6 +893,27 @@ export class MatchController {
     this.#world.services.terrainScale = 1;
     if (this.zerstoerung >= ZERSTOERUNG_GELAENDE) this.#world.services.zerstoerung = this.#setzung = new Zerstoerung({ terrain: this.#terrain, world: this.#world, events: this.#events, turrets: this.#turrets, fassung: this.zerstoerung, stoffe: this.stoffkarte });
     if (this.zerstoerung >= ZERSTOERUNG_HANG && this.stoffkarte) this.#world.services.stoffkarte = this.stoffkarte;
+    if (this.feuer >= FEUER_ENTFACHT && this.stoffkarte && this.#setzung) this.#baueFeuer();
+  }
+
+  /** Feuerfassung 2: Brand, Lava und Ragnarök-Eskalation (`systems/feuerSystem.js`). */
+  #baueFeuer() {
+    const welt = this.#world;
+    const lebende = () => this.#players.filter(p => p.alive).map(p => ({
+      id: p.entityId, x: welt.getComponent(p.entityId, 'Position', 'x'), y: welt.getComponent(p.entityId, 'Position', 'y'),
+      archetyp: welt.getComponent(p.entityId, 'Class', 'archetypeId'),
+    }));
+    this.#feuer = new FeuerSystem({
+      rng: this.#seedManager.getSubRng('FEUER'), karte: this.stoffkarte, terrain: this.#terrain, events: this.#events,
+      zerstoerung: this.#setzung, sonderbiom: this.sonderbiom,
+      q: {
+        figuren: lebende, waterLevelAt: (x, y) => this.waterLevelAt(x, y), surfaceYAt: x => this.surfaceYAt(x),
+        ragnarok: () => this.#maelstrom.isActive,
+        schaden: (id, betrag, art) => welt.getSystem('damage')?.applyDamage(welt, id, betrag, null, { damageType: art }),
+        mali: id => this.#mali?.wende(id, 'brand', { dmg: FEUER.brandMalusSchaden, roh: true, dauer: FEUER.brandMalusDauer }),
+      },
+    });
+    this.#setzung.setzeEinschlagHaken((x, y, r, g) => this.#feuer.einschlag(x, y, r, g));
   }
 
   #buildWater() {
@@ -1088,6 +1113,7 @@ export class MatchController {
     // sich in diesem Schritt geändert haben kann.
     this.#stepGuenther();
     this.#stepCookie();
+    this.#feuer?.update();
     // KEIN `drain()` hier: das würde die Warteschlange leeren und die
     // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
     // kann. Der Client und der Server holen sie über `consumeEvents()`; die
@@ -3128,6 +3154,9 @@ export class MatchController {
   get winnerTeamId() { return this.#winnerTeamId; }
   get seedManager() { return this.#seedManager; }
   get maelstrom() { return this.#maelstrom; }
+
+  /** Das Feuersystem (ab `config.feuer` 2) oder `null`. */
+  get feuerSystem() { return this.#feuer; }
   /** Aktuelle Zugzeit in Millisekunden (für Persistenz und Replay). */
   get turnDurationMs() { return this.#turnDurationMs; }
   get turnPauseMs() { return Math.round(this.#turnPauseTicks * 1000 / SIMULATION_HZ); }

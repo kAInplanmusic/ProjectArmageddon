@@ -136,7 +136,8 @@ export function stoffAm(karte, x, y) {
   if (!karte) return STOFF.ERDE;
   const gx = Math.max(0, Math.min(karte.spalten - 1, Math.floor(x / karte.zelle)));
   const gy = Math.max(0, Math.min(karte.zeilen - 1, Math.floor(y / karte.zelle)));
-  return karte.feld[gy * karte.spalten + gx];
+  const i = gy * karte.spalten + gx;
+  return karte.ueber?.[i] ? karte.ueber[i] - 1 : karte.feld[i];
 }
 
 /**
