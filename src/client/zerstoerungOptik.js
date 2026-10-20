@@ -12,7 +12,7 @@
  * @module zerstoerungOptik
  */
 import { kraterForm, kraterInnen } from '../engine/terrain/collisionMask.js';
-import { INSEL_GRAVITATION, INSEL_TEMPO_MAX } from '../shared/config/zerstoerung.js';
+import { INSEL_GRAVITATION, INSEL_TEMPO_MAX, aufprallStaerke as staerkeAus } from '../shared/config/zerstoerung.js';
 
 /** Obergrenze der Trümmerstücke je Ereignis. */
 export const TRUEMMER_MAX = 22;
@@ -258,9 +258,7 @@ export function inselZellen(runs) {
  * `dy` (bei 160 px voll). Nur Darstellung: Die Landung selbst bestimmt der Server.
  */
 export function aufprallStaerke(runs, dy) {
-  const masse = Math.min(1, inselZellen(runs) / 8000);
-  const fall = Math.min(1, Math.max(0, Number(dy) || 0) / 160);
-  return Math.min(1, 0.12 + 0.55 * Math.sqrt(masse) + 0.33 * fall);
+  return staerkeAus(inselZellen(runs), dy);
 }
 
 /**

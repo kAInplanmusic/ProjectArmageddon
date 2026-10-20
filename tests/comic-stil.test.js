@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
 import { veredleGelaende, baueGelaendeEbene, faerbeGelaende } from '../src/client/gelaendeStil.js';
-import { plazierePflanzen } from '../src/client/pflanzen.js';
+import { plazierePflanzen, zeichnePflanzenAusschnitt, zeichnePflanzenSchicht, entfernePflanzenImKrater } from '../src/client/pflanzen.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from '../src/client/schadenszahlen.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -129,4 +129,46 @@ test('Im Zeichencode der Comic-Optik steht kein Zufall und keine Uhr', () => {
     const text = ohneKommentare(fs.readFileSync(path.join(ROOT, 'src', 'client', `${datei}.js`), 'utf8'));
     assert.ok(!/Math\.random|Date\.now|performance\.now/.test(text), `${datei}.js benutzt Zufall oder Uhr`);
   }
+});
+
+test('Die Färbung bleibt bitgleich zum Stand vor der Optimierung (Fingerabdruck) und die Tabellen-Zwischenspeicherung ändert nichts', () => {
+  const bitmap = karte();
+  const lauf = (seed, palette) => {
+    const d = new Uint8ClampedArray(B * H * 4);
+    for (let i = 0; i < bitmap.length; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
+    faerbeGelaende(d, bitmap, B, H, palette, seed);
+    let h = 0x811c9dc5;
+    for (let k = 0; k < d.length; k += 1) h = Math.imul(h ^ d[k], 0x01000193);
+    return h >>> 0;
+  };
+  const a = lauf(7, PALETTE);
+  assert.equal(lauf(7, PALETTE), a, 'zweiter Lauf (aus dem Zwischenspeicher) gleich');
+  const anders = lauf(8, PALETTE);
+  assert.notEqual(anders, a);
+  assert.equal(lauf(7, PALETTE), a, 'nach einem anderen Seed wieder dasselbe Bild');
+  assert.equal(lauf(7, { surface: [236, 240, 250], deep: [90, 100, 120] }) === a, false, 'andere Palette, anderes Bild');
+  assert.equal(a, 1239382613, 'Fingerabdruck des Stands vor der Optimierung');
+});
+
+test('Pflanzenebene nach einem Krater: nur der Ausschnitt wird neu gezeichnet, mit denselben Pflanzen wie ein Vollaufbau', () => {
+  const bitmap = new Uint8Array(1600 * 300);
+  for (let y = 150; y < 300; y += 1) for (let x = 0; x < 1600; x += 1) bitmap[y * 1600 + x] = 1;
+  const pflanzen = plazierePflanzen(bitmap, 1600, 300, 11, 'forest');
+  assert.ok(pflanzen.length > 8, 'Testaufbau: es gibt Pflanzen');
+  const aufnahme = () => {
+    const log = [];
+    const ctx = new Proxy({}, { get: (_, name) => (name === 'canvas' ? {} : (...args) => { log.push(`${String(name)}${name === 'clearRect' || name === 'rect' ? args.join(',') : ''}`); }), set: () => true });
+    return { ctx, log };
+  };
+  const weg = [];
+  assert.equal(entfernePflanzenImKrater(pflanzen, 800, 150, 60, weg), true);
+  assert.ok(weg.length > 0 && weg.length < 8);
+  const voll = aufnahme();
+  zeichnePflanzenSchicht(voll.ctx, pflanzen, 1600, 300, { surface: [96, 138, 92], deep: [38, 54, 46] });
+  const teil = aufnahme();
+  const u = { x0: Math.min(...weg.map(p => p.x)) - 200, x1: Math.max(...weg.map(p => p.x)) + 200, y0: 0, y1: 300 };
+  zeichnePflanzenAusschnitt(teil.ctx, pflanzen, 1600, 300, { surface: [96, 138, 92], deep: [38, 54, 46] }, u);
+  assert.ok(teil.log.some(l => l.startsWith('clearRect')), 'der Ausschnitt wird geleert');
+  assert.ok(teil.log.includes('clip'), 'und beschnitten');
+  assert.ok(teil.log.length < voll.log.length, `weniger Zeichenbefehle als beim Vollaufbau (${teil.log.length} < ${voll.log.length})`);
 });

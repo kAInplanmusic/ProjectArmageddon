@@ -113,6 +113,12 @@ export function applyLogEntryToTerrain(terrain, eintrag) {
   if (eintrag[0] === 's') {
     const [, dy, ...runs] = eintrag;
     applySettleToTerrain(terrain, dy, runs);
+  } else if (eintrag[0] === 'x') {
+    applyRemoveToTerrain(terrain, eintrag.slice(1));
+  } else if (eintrag[0] === 'p') {
+    applyAddToTerrain(terrain, eintrag.slice(1));
+  } else if (eintrag[0] === 'r') {
+    applySlumpToTerrain(terrain, eintrag.slice(1));
   } else {
     const [x, y, radius, tiefe = null] = eintrag;
     applyCraterToTerrain(terrain, x, y, radius, tiefe);
@@ -137,6 +143,40 @@ export function applySettleToTerrain(terrain, dy, runs) {
   for (let i = 0; i + 2 < runs.length; i += 3) for (let y = runs[i + 1]; y <= runs[i + 2]; y++) setze(runs[i], y, false);
   for (let i = 0; i + 2 < runs.length; i += 3) for (let y = runs[i + 1]; y <= runs[i + 2]; y++) setze(runs[i], y + dy, true);
   terrain.mask?.logEintrag(['s', dy, ...runs]);
+}
+
+/** Setzt eine Zelle in Bitmap und Maske (außerhalb der Karte: nichts). */
+function setzeZelle(terrain, x, y, fest) {
+  if (x < 0 || y < 0 || x >= terrain.width || y >= terrain.height) return;
+  terrain.bitmap[y * terrain.width + x] = fest ? 1 : 0;
+  terrain.mask?.setPixel(x, y, fest);
+}
+
+/**
+ * Fassung 4, Logeintrag `['x', ...Spaltenläufe]`: Zellen sind ersatzlos weg (Riss einer
+ * gebrochenen Insel, abgeplatzte Brocken). Wie die Insel-Landung geht der Eintrag ins Log.
+ */
+export function applyRemoveToTerrain(terrain, runs) {
+  if (!terrain?.bitmap) return;
+  for (let i = 0; i + 2 < runs.length; i += 3) for (let y = runs[i + 1]; y <= runs[i + 2]; y++) setzeZelle(terrain, runs[i], y, false);
+  terrain.mask?.logEintrag(['x', ...runs]);
+}
+
+/** Fassung 4, Logeintrag `['p', x, y, ...]`: Schutt hat sich abgesetzt (Zellen werden fest). */
+export function applyAddToTerrain(terrain, zellen) {
+  if (!terrain?.bitmap) return;
+  for (let i = 0; i + 1 < zellen.length; i += 2) setzeZelle(terrain, zellen[i], zellen[i + 1], true);
+  terrain.mask?.logEintrag(['p', ...zellen]);
+}
+
+/** Fassung 4, Logeintrag `['r', x1, y1, x2, y2, ...]`: Setzrutsch, die Zelle (x1, y1) wandert nach (x2, y2), der Reihe nach. */
+export function applySlumpToTerrain(terrain, zuege) {
+  if (!terrain?.bitmap) return;
+  for (let i = 0; i + 3 < zuege.length; i += 4) {
+    setzeZelle(terrain, zuege[i], zuege[i + 1], false);
+    setzeZelle(terrain, zuege[i + 2], zuege[i + 3], true);
+  }
+  terrain.mask?.logEintrag(['r', ...zuege]);
 }
 
 /**

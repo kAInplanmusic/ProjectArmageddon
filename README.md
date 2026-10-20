@@ -183,6 +183,7 @@ ist die folgende.
 | `1`–`9` | Waffe wählen (Nummern wie in der Liste) |
 | `Q` | Aktive Waffe abwerfen |
 | `M` | Musik stumm/laut (nicht beim Tippen in ein Textfeld) |
+| `T` | Effekte (Schüsse, Einschläge, Treffer) stumm/laut |
 | `R` | Zurück zum Menü |
 
 **Musik:** Hintergrundmusik im Menü und im Match (`src/client/musik.js`, Stücke und
@@ -191,6 +192,16 @@ ist die folgende.
 `localStorage`. `?musik=0` an der Adresse schaltet die Wiedergabe ab (Tests laufen
 ohnehin ohne Musik). Einzelheiten und das Ergänzen weiterer Stücke: `MASTERDOTO.md`,
 Abschnitt „Musik-System“.
+
+**Effekte:** Schüsse, Einschläge, Treffer, Landungen, Kisten und Hinweistöne sind
+erzeugt, nicht geladen (`src/client/klangProfile.js`, `klangSynth.js`, `soundMixer.js`):
+14 Schussprofile je Waffenart (Pistole, Gewehr, schwere Waffe, Rakete, Feuer, Eis, Blitz,
+Magie, Laser, Strahl, Nahkampf, Wurf, Selbstwirkung, Ultimate) und 22 Ereignisprofile,
+Stereolage und Abstand nach der Bildposition, höchstens 24 Stimmen. Schalter „Effekte
+an/aus“ und Regler „Effekt-Lautstärke“ stehen im Menü neben der Musik (Taste `T`,
+`localStorage` `pa.ton.v1`); in Tests ist der Ausgang stumm, `?ton=1` erzwingt ihn. Die
+Offline-Messung aller Profile (Spitze, Dauer, Schwerpunkt, Spektrogramme in `docs/klang/`):
+`MASTERDOTO.md`, Abschnitt „Klang-System“.
 
 **Sprung:** Die Sprünge eines Zuges sind **unbegrenzt**. Der erste geht nur vom
 Boden, weitere in der Luft. Der Sprung beendet den Zug nicht, damit Sprungfolgen
@@ -221,9 +232,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1497 Tests in 157 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1567 Tests in 162 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
-| `npm run test:e2e` | Browser-E2E: **262 Tests in 42 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
+| `npm run test:e2e` | Browser-E2E: **279 Tests in 46 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |
@@ -590,7 +601,12 @@ Munition, damit kein Match durch leere Magazine stehenbleibt.
 - Physik liegt in `Uint32Array`-Bitmasken (32 Pixel pro Wort).
 - Krater werden über `punchCrater` in Bitmaske **und** Canvas-Ebene gestrichen —
   beide werden aus demselben Ereignisstrom geändert und können nicht divergieren.
-- Zerstörungsfassung 3 (Standard; Replay-Kopf `config.zerstoerung`, `src/engine/zerstoerung.js`):
+- Zerstörungsfassung 4 (Standard; Replay-Kopf `config.zerstoerung`): wie 3, dazu landende Inseln,
+  die am Rand zerbröseln (Brocken fliegen als Partikel-Zellen und setzen sich als Schutt ab),
+  Inseln, die bei hartem Aufprall in zwei Teile brechen, Waffencharakter (Bohrtunnel, Splitterstreuung,
+  Beben-Setzrutsch, Brandspuren als Optik) und Figuren, die am Kraterrand in den Krater rutschen.
+  Fassung 1–3 laufen Bit für Bit unverändert (Goldhashes in `tests/zerstoerung.test.js`).
+- Zerstörungsfassung 3 (Replay-Kopf `config.zerstoerung`, `src/engine/zerstoerung.js`):
   raue Kraterränder (deterministisch aus Ort, Radius und Tiefe), Tiefe nach Waffe
   (grabende Waffen tief, Sprengwaffen flach), freischwebende Geländeinseln und
   gekappte Brücken stürzen nach (Figuren, Kisten, Geschütze fahren mit), lose
