@@ -30,7 +30,7 @@
  * @module hudAusweichen
  */
 import {
-  sichererBereich, figurRechteck, ueberdecktVon, schubNachUnten, ueberlappen,
+  sichererBereich, figurRechteck, ueberdecktVon, schubNachUnten, ueberlappen, seitenRaender,
 } from './sichtbereich.js';
 
 /** Bilder zwischen zwei Messungen (bei 60 Hz alle 100 ms). */
@@ -60,7 +60,7 @@ export class HudAusweichen {
     this.renderer = renderer;
     this.zaehler = 0;
     this.bereich = null;
-    this.letzte = { bereich: null, weicht: [], schub: 0, rand: [] };
+    this.letzte = { bereich: null, weicht: [], schub: 0, rand: [], seiten: { links: 0, rechts: 0 } };
     this.schmutzig = true;
     this.letzterAktiver = undefined;
     doc.defaultView?.addEventListener('resize', () => this.markiere());
@@ -101,7 +101,7 @@ export class HudAusweichen {
     if (kamera) {
       kamera.setzeSchubZiel(this.letzte.schub);
       const b = this.letzte.bereich;
-      if (b) kamera.setzeRand({ oben: b.y0, unten: (this.canvas?.height ?? b.y1) - b.y1 });
+      if (b) kamera.setzeRand(this.randFuerKamera());
     }
   }
 
@@ -121,7 +121,7 @@ export class HudAusweichen {
 
     // Figuren in Zeichenflächenpixeln. Der Schub wird herausgerechnet, sonst
     // schaukelte sich die Regelung auf (Figur rückt, Messung rückt mit).
-    const t = kamera.transformation();
+    const t = kamera.transformation({ ohneStoss: true });
     const masse = this.renderer.figurMasse();
     const lebende = (state?.entities ?? []).filter(e => e.alive);
     const ohneSchub = { ...t, versatzY: t.versatzY - kamera.schub };
@@ -147,7 +147,18 @@ export class HudAusweichen {
       if (an) weicht.push(PANEL_IDS[i]);
     });
 
-    this.letzte = { bereich, weicht, schub, rand: raender };
+    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => PANEL_IDS[i] !== 'hud-log'));
+    this.letzte = { bereich, weicht, schub, rand: raender, seiten };
+  }
+
+  /** Vom HUD verdeckte Ränder in Zeichenflächenpixeln (für Kamera und Kameraregie). */
+  randFuerKamera() {
+    const b = this.letzte.bereich;
+    const h = this.canvas?.height ?? 0;
+    if (!b) return { oben: 0, unten: 0, links: 0, rechts: 0 };
+    return {
+      oben: b.y0, unten: Math.max(0, h - b.y1), links: this.letzte.seiten.links, rechts: this.letzte.seiten.rechts,
+    };
   }
 
   /**

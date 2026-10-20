@@ -165,3 +165,32 @@ export function schubNachUnten(hoechsterKopf, sicherOben, max) {
   if (!Number.isFinite(hoechsterKopf)) return 0;
   return Math.max(0, Math.min(max, sicherOben - hoechsterKopf));
 }
+
+/**
+ * Seitliche Ränder für die Kamera: Wie viel vom Fenster verdecken Panels links
+ * und rechts (Spielerliste, Figurenkarte)?
+ *
+ * Nur Panels, deren Mitte in der mittleren Höhenzone (20–80 %) liegt, und nur
+ * solche am linken Drittel bzw. rechten Drittel zählen; Panels am unteren Rand
+ * gehören zur Bedienleiste, mittige (Protokoll) bleiben Sache von `.hud-weicht`.
+ * Jede Seite ist auf 30 % der Breite gedeckelt, damit nie das ganze Bild
+ * als „verdeckt" gilt.
+ *
+ * @param {{b:number,h:number}} schirm
+ * @param {Array<{x:number,y:number,b:number,h:number}>} panels
+ * @returns {{links:number, rechts:number}}
+ */
+export function seitenRaender(schirm, panels = []) {
+  let links = 0;
+  let rechts = 0;
+  for (const p of panels) {
+    if (!(p.b > 0) || !(p.h > 0)) continue;
+    const mx = p.x + p.b / 2;
+    const my = p.y + p.h / 2;
+    if (my < schirm.h * 0.2 || my > schirm.h * 0.8) continue;
+    if (mx < schirm.b / 3) links = Math.max(links, p.x + p.b);
+    else if (mx > (schirm.b * 2) / 3) rechts = Math.max(rechts, schirm.b - p.x);
+  }
+  const deckel = schirm.b * 0.3;
+  return { links: Math.min(deckel, Math.max(0, links)), rechts: Math.min(deckel, Math.max(0, rechts)) };
+}
