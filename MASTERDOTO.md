@@ -659,7 +659,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1540/1540** grün, Dateizahl **160** (Stand 2026-10-20, Kameraführung: +13 in der neuen `kamera-ziel.test.js`, dazu 15 E2E in `kamera.spec.mjs`; davor 1527/159, Stand 2026-10-19, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1580/1580** grün, Dateizahl **163** (Stand 2026-10-20, Kameraführung: +13 in der neuen `kamera-ziel.test.js`, dazu 15 E2E in `kamera.spec.mjs`; davor 1567/162, Zerstörung Fassung 4: +25 in der neuen `zerstoerung-bruch.test.js` und `zerstoerung.test.js`/`comic-stil.test.js`, dazu 2 E2E in `zerstoerung-messung.spec.mjs`; davor 1542/161, Stand 2026-10-19, Figuren-Feinschliff: +15 in den neuen `figur-typen.test.js` und `figur-animation-typen.test.js`, dazu 4 E2E in `figuren-feinschliff.spec.mjs`; davor 1527/159, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -1990,12 +1990,54 @@ Wiederherstellung einer alten Sicherung.
   als Bild (`inselfall.js`), Pflanzen auf der Insel fahren mit. Das `explosion` im selben
   Bild schneidet nicht mehr zusätzlich einen Kreis mit dem Flächenradius in die Ebene
   (das Loch war größer als das der Kollisionsmaske).
-- **Offen / bewusst nicht:** Bei Landung bleibt die Insel starr (kein Zerbröckeln am
-  Hang, keine Verformung; der Aufprall ist nur Staub, Brocken und Bildzittern, siehe
-  „Optimierung" unten); in Fassung 2 fallen schwebende Massen über 6000 Zellen nicht
+- **Offen / bewusst nicht:** In Fassung 3 bleibt die Insel bei Landung starr (Fassung 4:
+  siehe „Zerstörung Fassung 4"); in Fassung 2 fallen schwebende Massen über 6000 Zellen nicht
   (Fassung 3: bis 60 000); die Sprengwirkung auf
   Pflanzen nutzt weiter den Kreisradius. `match.js` bleibt unter dem Zeilenbudget (3199);
   die Logik liegt in `src/engine/zerstoerung.js`.
+
+### Zerstörung Fassung 4 (2026-10-20, `config.zerstoerung: 4`, Standard)
+
+**Auftrag:** Terrain optimieren, Zerstörung iterieren — hinter einer Versionsmarke. Fassung 1–3
+laufen Bit für Bit weiter (Goldhashes: `tests/zerstoerung.test.js`, Fassung 3 neu mit
+`gold3()`; Altköpfe ohne Feld = Fassung 1). Neue Aufzeichnungen schreiben 4.
+
+**Mechanik (`src/engine/zerstoerung.js`, Konstanten `src/shared/config/zerstoerung.js`):**
+
+1. **Weich landen:** Eine Insel, die hart genug aufschlägt (`aufprallStaerke` aus Masse und Fallhöhe
+   ≥ 0,4, ≥ 150 Zellen, ≥ 20 px Fall), verliert am Rand kleine Brocken (höchstens 72 Zellen je
+   Landung). Sie fliegen als **Partikel-Zellen** (Schwerkraft 0,35, höchstens 400 gleichzeitig) und
+   setzen sich als Schutt wieder ab; nie in eine Figur hinein. Log: `['x', ...Läufe]` (weg),
+   `['p', x, y, ...]` (gesetzt); Ereignisse `terrain_removed`, `terrain_crumble` (Anzeige), `terrain_added`.
+2. **Bruch:** Ab Stärke ≥ 0,7, ≥ 2400 Zellen und ≥ 60 px Fall bricht die Insel einmal je Linie in zwei
+   Teile: senkrechter Riss (1–3 Zellen breit) an der Kante der Auflage; was weit genug übersteht
+   (≥ 20 px), löst sich als neue Insel und fällt weiter, sonst bleibt es beim Riss.
+3. **Waffencharakter** (`charakterDerWaffe`, `terrain_destroyed.art`): `durchschlag` (Bohrer: ein
+   Tunnel in einem Tick ist ein Suchauftrag), `splitter` (4–6 Nebenlöcher), `beben` (Ultimate mit
+   Geländeschaden ≥ 90: Setzrutsch, Log `['r', x1, y1, x2, y2, ...]`, Masse bleibt erhalten),
+   `brand` (nur Optik: verbrannte Erde, Glut/Glasur/Schmelzrand nach Bodenart in der Geländeebene).
+4. **Figuren** am Kraterrand bekommen einen Schub in den Krater (Boden fällt dorthin ab); in
+   Schutt oder Setzrutsch eingebettete Figuren werden bis 6 px angehoben.
+
+**Kosten:** Die Inselsuche bleibt bei ≤ 9000 besuchten Zellen je Tick (`suchkosten`; das Beben
+tastet nur mit dem Rest des Budgets ab). Die Nacharbeit (Riss, Brocken) ist ein Auftrag je Tick und
+kostet höchstens die Zellen der Insel (`nachkosten`, ≤ 60 000, wie das Landen selbst).
+
+**Client:** Nachbau zellengleich aus Ausgangskarte + Log (Test „Client-Nachbau", `x`/`p`/`r`/`s`);
+`schuttOptik.js`: Schutt und Staub nach Boden (Gras/Fels/Schnee/Sand/Asche), Brandspuren, Bohrwand,
+Beben-Risse. Neue Ereignisse stehen in `protocol.js` (Anzeige bzw. Zustand) und `ereignisse.js`.
+
+**Terrain-Performance (Messung, `node scripts/messe-terrain.mjs`, 2560×1440, Node):** Färbelauf
+Minimum 253 → 208 ms (−18 %, bitgleich, Fingerabdruck in `tests/comic-stil.test.js`): Zellpunkte der
+ersten Voronoi-Ebene gebündelt, Tabellen (Steine, Kacheln, Nenner) für gleichen Seed/Größe/Palette
+zwischengespeichert. Pflanzenebene nach einem Krater nur im Ausschnitt neu gezeichnet. Kraterupdate
+im Browser war schon inkrementell (Median ~1 ms, `tests/e2e/zerstoerung-messung.spec.mjs`).
+Browser-Neuaufbau (SwiftShader, ausgelasteter Rechner): vorher ~470–500 ms, nachher siehe unten.
+Web Worker wurde **nicht** gebaut: `buildTerrainLayer` ist synchron, und Krater/Inseln im Flug
+gingen beim Austausch verloren — zu riskant für den Gewinn.
+
+**Offen:** Landende Inseln rutschen/verformen sich nicht über das Zerbröckeln hinaus; Bruch nur in
+zwei Teile; Staub/Schutt nach Material sind Optik (Gras, Fels, Schnee, Sand, Asche), keine Regel.
 
 ### Optimierung: Landschaft, Zerstörung, Netz (2026-10-14, Zerstörungsfassung 3)
 
@@ -3442,6 +3484,37 @@ Posenvorgabe; Empfehlung: nicht nötig, solange nur die Seitenansicht gefragt is
 Atlasgrößen, Zellen im Atlas, echter Alpha (deckend und weiche Ränder), transparente
 Ecken, Anker in der Zelle und Mündung am rechten Rand, Projektil nur bei physischem
 Geschoss, keine Zellenüberlappung, Gesamtgröße < 6 MB.
+
+## Figuren-Darstellung: Feinschliff (2026-10-20) — GEBAUT (Teile)
+
+Reine Darstellung; Engine, Hash und Replays unverändert.
+
+- **Bildqualität:** `src/client/figurStufen.js` — Mip-Kette 64/96/128/192/256 px, je Stufe beim ersten Gebrauch
+  mehrstufig halbiert (`imageSmoothingQuality: high`), leicht geschärft (Weichzeichner nach Deckkraft gewichtet,
+  Ausschlag begrenzt: keine Säume; Alpha < 10 entfällt). `stufeFuer(fig, px)` wählt nach Sprite-Kante in Bildpunkten
+  der Zeichenfläche (`SPRITE_HOEHE · Skala · Zoom`); die Zeichenfläche selbst ist nicht DPR-skaliert, die Kante
+  enthält den Oversampling-Faktor der Karte. Tönungs-Silhouetten (Teamfarbe) je Stufe gecacht.
+- **Verankerung:** Neigung des Bodens aus der Kollisionsmaske (Gelände 7 px links/rechts), geglättet, höchstens ±12°;
+  Sprite, Fußring, Kontaktschatten (weicher Verlaufs-Cache, schrumpft beim Abheben) und die Waffe folgen dem Körper.
+  Wasser: Wasserlinie mit Wellenlinie, unterer Teil getönt/durchscheinend, Blasen beim Waten. Keine Spiegelung (nicht gebaut).
+- **Animation je Typ:** `src/client/figurTypen.js` (Tabelle je Charakter-ID für alle 81; Typen humanoid, tier,
+  fahrzeug, schweber, wesen, schwarm; Parameter für Idle, Lauf, Sprung, Zielkippen, Schuss, Treffer, Tod).
+  `figurAnimation.js`: Idle (Atmen, Mikro-Einsinken, Schweben, Motor-Vibration, Pulsieren, Wuseln), Lauf, Absprung-Hocke,
+  Scheitel, Landung mit Squash + Staubpuff, Zielkippen nach Zielwinkel, Schuss (Ausholen → Rückstoß → Erholung),
+  Treffer (Zucken in Stoßrichtung = entgegen der Blickrichtung, weißer Blitz, dann Teamfarbe), Tod je Typ
+  (kippen, explodieren, stürzen, zerfallen, zerstieben; Teilchen in Teamfarbe), Ertrinken (Sinken, Blasen),
+  Zugbeginn einmalig (Hüpfer, Ring), Sieger-Jubel/Verlierer-Sacken bei Matchende. Teilchen: `figurEffekte.js`
+  (fester Vorrat, keine Allokation je Bild). Reduzierte Bewegung: Pose neutral, nur Blitz und statische Hangneigung.
+- **Schilder:** Pille mit Teamfarb-Punkt (Akzentring der Fraktion), Lebensbalken mit hellerer Verzögerungsleiste,
+  Symbole für Gift/Brand (`dotsCount`) und Verstärkung (`boostMultiplier`); Pfeil über dem Schild wippt.
+- **Figurenkarte:** HD-Porträt (nachgeladen), Chips Kampfweise/Klasse, Lebensbalken, Waffe mit Ikone, Einblenden
+  beim Zugwechsel; ab `max-height: 520px` nur Porträt und Name.
+- **Leistung:** Figuren außerhalb des Bildes (mit Rand) werden weder animiert noch gezeichnet (`figurStat`).
+- **Prüfung:** `tests/figur-typen.test.js`, `tests/figur-animation-typen.test.js`, `tests/e2e/figuren-feinschliff.spec.mjs`;
+  Kontaktbogen `docs/bilder/figuren/kontaktbogen-schuss-tod.jpg` (links Schuss, rechts Tod; Zeilen = Typen).
+- **Nicht gebaut / offen:** Spiegelung am Wasser, Kontaktbögen für alle Animationen im Repo (nur Schuss/Tod; übrige
+  nur lokal erzeugt), Screenshots bei DPR 2, Stoßrichtung des Treffers aus dem Schaden (Zustand führt sie nicht).
+  `profiling.spec.mjs` „echter Grafikpfad" nutzt fest Port 5173 und lief hier nicht (die übrigen Profiling-Tests grün).
 
 ## Waffen-Animation: Sprite in der Hand, Rückstoß, Blitz, Geschoss (2026-10-19)
 

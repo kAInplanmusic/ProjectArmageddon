@@ -279,10 +279,18 @@ export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 
   return ergebnis.liste;
 }
 
-/** Rechenkern der Färbung: schreibt in `d` (RGBA, Deckkraft schon gesetzt). */
-export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
+/** Letzte Tabellen: Ein Neuaufbau mit gleichem Seed, gleicher Größe und gleicher Palette (Wiederverbinden, Größenänderung) rechnet sie nicht neu. */
+let tabellenCache = null;
+
+/** Alles, was nur von Seed, Kartengröße und Palette abhängt (nicht von der Maske). Wird nie verändert. */
+function baueTabellen(breite, hoehe, palette, seed) {
+  const schluessel = `${breite}x${hoehe}:${seed}:${palette.surface}:${palette.deep}`;
+  if (tabellenCache?.schluessel === schluessel) return tabellenCache.tabellen;
   const S = baueSteine(breite, hoehe, seed, palette);
   const { nx, ny, p1x, p1y, w1, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3 } = S;
+  // Zellpunkte der ersten Ebene als ein Feld [x, y, Gewicht] je Zelle: ein Speicherbereich je Nachbar statt drei.
+  const p1 = new Float64Array(p1x.length * 3);
+  for (let k = 0; k < p1x.length; k += 1) { p1[k * 3] = p1x[k]; p1[k * 3 + 1] = p1y[k]; p1[k * 3 + 2] = w1[k]; }
 
   // Verzerrung: Kanten wackeln, damit aus geraden Voronoi-Kanten Bruchkanten werden.
   const wxy = tabelle(hoehe, 31, seed + 201);
@@ -304,7 +312,6 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
   const ERDE_TIEFE = 54;
   // Steckplatz (0..8) im 3×3-Block der Zellen -> Zellindex-Versatz.
   const slotOff = Int32Array.from([-nx - 1, -nx, -nx + 1, -1, 0, 1, nx - 1, nx, nx + 1]);
-  const runStart = new Int32Array(breite).fill(-1);
 
   /*
    * Je Spalte und je Tiefe vorab, was im Pixelrumpf sonst Millionen Mal gerechnet würde.
@@ -340,6 +347,15 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
       }
     }
   }
+  const tabellen = { nx, ny, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3, p1, wxy, wxy2, mx, kachel, adern, strata, LAGE_RAND, lagen, lagenFein, art, saum, erde, ERDE_TIEFE, slotOff, vsA, vsB, lyA, lyB, vignX, tiefeT, nenner };
+  tabellenCache = { schluessel, tabellen };
+  return tabellen;
+}
+
+/** Rechenkern der Färbung: schreibt in `d` (RGBA, Deckkraft schon gesetzt). */
+export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
+  const { nx, ny, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3, p1, wxy, wxy2, mx, kachel, adern, strata, LAGE_RAND, lagen, lagenFein, art, saum, erde, ERDE_TIEFE, slotOff, vsA, vsB, lyA, lyB, vignX, tiefeT, nenner } = baueTabellen(breite, hoehe, palette, seed);
+  const runStart = new Int32Array(breite).fill(-1);
 
   for (let y = 0; y < hoehe; y += 1) {
     const verschX = (wxy[y] - 0.5) * 16 + (wxy2[y] - 0.5) * 6;
@@ -366,10 +382,10 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
       let sz1 = 0;
       const mitte = cj * nx + ci;
       for (let slot = 0; slot < 9; slot += 1) {
-        const k = mitte + slotOff[slot];
-        const dx = sx - p1x[k];
-        const dy = sy - p1y[k];
-        const dd = dx * dx + dy * dy - w1[k];
+        const k3 = (mitte + slotOff[slot]) * 3;
+        const dx = sx - p1[k3];
+        const dy = sy - p1[k3 + 1];
+        const dd = dx * dx + dy * dy - p1[k3 + 2];
         if (dd < D1) { D2 = D1; sz1 = sb; D1 = dd; sb = slot; } else if (dd < D2) { D2 = dd; sz1 = slot; }
       }
       const best = mitte + slotOff[sb];

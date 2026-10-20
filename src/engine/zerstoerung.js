@@ -40,11 +40,16 @@
  * @module zerstoerung
  */
 import { COMPONENT_SIGNATURES } from './ecs/world.js';
-import { eachCraterCell } from './terrain/collisionMask.js';
-import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
+import { eachCraterCell, mische32 } from './terrain/collisionMask.js';
+import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
+import { WEAPONS } from '../shared/config/weapons.js';
 import {
-  SUCH_BUDGET_PRO_TICK, INSEL_GRAVITATION, ZERSTOERUNG_GELAENDE, suchGrenzen,
+  SUCH_BUDGET_PRO_TICK, INSEL_GRAVITATION, ZERSTOERUNG_GELAENDE, ZERSTOERUNG_BRUCH, suchGrenzen,
   INSEL_TEMPO_MAX, INSEL_QUETSCH_SCHADEN, OBJEKT_GRAVITATION,
+  aufprallStaerke, WEICH_AB_STAERKE, WEICH_MIN_FALL, WEICH_MIN_ZELLEN, SCHUTT_MAX_JE_LANDUNG, SCHUTT_MAX_GESAMT,
+  SCHUTT_GRAVITATION, SCHUTT_LEBEN, BRUCH_AB_STAERKE, BRUCH_MIN_ZELLEN, BRUCH_MIN_FALL, BRUCH_MIN_UEBERSTAND,
+  BEBEN_MAX_RADIUS, BEBEN_MIN_RADIUS, BEBEN_RAND, BEBEN_STEILHEIT, BEBEN_MAX_ZUEGE, SPLITTER_MIN, SPLITTER_SPANNE, RUTSCH_SCHUB, RUTSCH_MIN_RADIUS,
+  charakterDerWaffe,
 } from '../shared/config/zerstoerung.js';
 
 /** Krater unter diesem Radius lösen nichts ab. */
@@ -96,6 +101,27 @@ export function spaltenlaeufe(geordnet, hoehe) {
   return lauf;
 }
 
+/** Zufall aus ganzen Zahlen (0 <= z < 1): nur `Math.imul` und Verschiebungen, überall gleich. */
+function zufall(a, b = 0, c = 0) {
+  return mische32(Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663) ^ Math.imul(c | 0, 83492791) ^ 0x5bd1e995) / 4294967296;
+}
+
+/** Zerstörungscharakter nach Waffenindex (`Projectile.weaponId`), einmal aus dem Katalog aufgebaut. */
+let charakterTabelle = null;
+export function charakterFuerIndex(index) {
+  if (!charakterTabelle) {
+    charakterTabelle = new Map();
+    for (const waffe of WEAPONS) charakterTabelle.set(waffe.index, charakterDerWaffe(waffe));
+  }
+  return charakterTabelle.get(index) ?? 'sprengung';
+}
+
+/** Richtungen der Splitterstreuung (Bildschirmkoordinaten, y nach unten): vorberechnet, keine Winkelfunktion. */
+const SPLITTER_RICHTUNGEN = [
+  [1, 0], [0.906, 0.423], [0.643, 0.766], [0.259, 0.966], [-0.259, 0.966],
+  [-0.643, 0.766], [-0.906, 0.423], [-1, 0], [0.94, -0.342], [-0.94, -0.342],
+];
+
 export class Zerstoerung {
   #terrain;
   #world;
@@ -114,6 +140,14 @@ export class Zerstoerung {
   #maskenStand = -1;
   #suchkosten = 0;
   #grenzen;
+  #fassung;
+  /** Fassung 4: Nacharbeit gelandeter Inseln, fliegender Schutt, Erdbeben-Aufträge. */
+  #bruch;
+  #tick = 0;
+  #nacharbeit = [];
+  #partikel = [];
+  #beben = [];
+  #nachkosten = 0;
 
   /**
    * @param {object} quelle
@@ -125,6 +159,8 @@ export class Zerstoerung {
    */
   constructor({ terrain, world, events, turrets, fassung = ZERSTOERUNG_GELAENDE }) {
     this.#grenzen = suchGrenzen(fassung);
+    this.#fassung = fassung;
+    this.#bruch = fassung >= ZERSTOERUNG_BRUCH;
     this.#terrain = terrain;
     this.#world = world;
     this.#events = events;
@@ -136,23 +172,50 @@ export class Zerstoerung {
   /** Besuchte Zellen der Inselsuche im letzten Tick (Kostenbudget, für Tests und Messung). */
   get suchkosten() { return this.#suchkosten; }
 
-  /** Anzahl der Inseln im Fall. Solange sie > 0 ist, weicht die Maske vom Log ab. */
-  get faellt() { return this.#inseln.length; }
+  /** Zerstörungsfassung dieser Einheit. */
+  get fassung() { return this.#fassung; }
 
-  /** Stanzt einen rauen Krater, meldet ihn und merkt die Umgebung zur Prüfung vor. */
-  krater(x, y, radius, tiefe) {
+  /** Bearbeitete Zellen der Nacharbeit (Zerbröseln, Bruch, Schutt) im letzten Tick; getrennt vom Suchbudget. */
+  get nachkosten() { return this.#nachkosten; }
+
+  /** Fliegende Partikel-Zellen (Fassung 4). */
+  get schutt() { return this.#partikel.length; }
+
+  /**
+   * Anzahl der Dinge im Fall (Inseln, ab Fassung 4 auch fliegender Schutt, wartende Nacharbeit und
+   * Erdbeben). Solange sie > 0 ist, weicht die Maske vom Log ab.
+   */
+  get faellt() { return this.#inseln.length + this.#partikel.length + this.#nacharbeit.length + this.#beben.length; }
+
+  /**
+   * Stanzt einen rauen Krater, meldet ihn und merkt die Umgebung zur Prüfung vor.
+   *
+   * @param {number|string|null} [quelle] - nur Fassung 4: Waffenindex oder Zerstörungscharakter
+   *   (`charakterDerWaffe`); ältere Fassungen ignorieren ihn.
+   */
+  krater(x, y, radius, tiefe, quelle = null) {
+    const art = this.#bruch ? (typeof quelle === 'number' ? charakterFuerIndex(quelle) : (quelle ?? 'sprengung')) : null;
     this.#terrain.punchCrater(x, y, radius, tiefe);
-    this.#events.emit('terrain_destroyed', { x, y, radius, tiefe });
+    this.#events.emit('terrain_destroyed', art ? { x, y, radius, tiefe, art } : { x, y, radius, tiefe });
+    if (art) this.#charakter(x, y, radius, art);
     if (radius < MIN_RADIUS_NACHRUTSCH) return;
+    const letzter = this.#auftraege[this.#auftraege.length - 1];
+    if (art === 'durchschlag' && letzter && letzter.art === art && letzter.tick === this.#tick) {
+      // Ein Bohrtunnel ist EIN Auftrag: Die Inselsuche startet an allen Löchern gemeinsam.
+      letzter.kreise.push({ x, y, radius, tiefe });
+      return;
+    }
     if (this.#auftraege.length >= MAX_AUFTRAEGE) this.#auftraege.shift();
-    this.#auftraege.push({ x, y, radius, tiefe });
+    this.#auftraege.push({ kreise: [{ x, y, radius, tiefe }], art, tick: this.#tick });
   }
 
   /** Ein Tick: Inselsuche (budgetiert), fallende Inseln, lose Objekte. */
   schritt() {
     this.#suchkosten = 0;
+    this.#tick += 1;
     if (this.#auftraege.length > 0 || this.#job) this.#suche();
     if (this.#inseln.length > 0) this.#bewegeInseln();
+    if (this.#bruch) this.#bruchSchritt();
     this.#objekteFallen();
   }
 
@@ -190,12 +253,27 @@ export class Zerstoerung {
   }
 
   /** Saat der Suche: feste Zellen, die an eine Kraterzelle grenzen (8er-Nachbarschaft). */
-  #neuerJob({ x, y, radius, tiefe }) {
+  #neuerJob({ kreise }) {
     const breite = this.#breite;
     const hoehe = this.#hoehe;
     const xs = [];
     const ys = [];
-    eachCraterCell(breite, hoehe, x, y, radius, (px, py) => { xs.push(px); ys.push(py); }, tiefe);
+    if (kreise.length === 1) {
+      const { x, y, radius, tiefe } = kreise[0];
+      eachCraterCell(breite, hoehe, x, y, radius, (px, py) => { xs.push(px); ys.push(py); }, tiefe);
+    } else {
+      // Mehrere Löcher (Bohrtunnel): überlappende Zellen nur einmal, in der Reihenfolge des ersten Auftretens.
+      const bekannt = new Set();
+      for (const { x, y, radius, tiefe } of kreise) {
+        eachCraterCell(breite, hoehe, x, y, radius, (px, py) => {
+          const k = schluessel(px, py, hoehe);
+          if (bekannt.has(k)) return;
+          bekannt.add(k);
+          xs.push(px);
+          ys.push(py);
+        }, tiefe);
+      }
+    }
     const saat = [];
     if (xs.length > 0) {
       let x0 = Infinity; let x1 = -Infinity; let y0 = Infinity; let y1 = -Infinity;
@@ -337,7 +415,7 @@ export class Zerstoerung {
 
   // ------------------------------------------------------------ Inselfall
 
-  #starte(roh) {
+  #starte(roh, gebrochen = false) {
     const hoehe = this.#hoehe;
     const terrain = this.#terrain;
     const feste = roh.filter(k => {
@@ -356,7 +434,7 @@ export class Zerstoerung {
     }
     const insel = {
       id: this.#naechsteId, zellen: feste, unten: Int32Array.from(unten),
-      runs: spaltenlaeufe(feste, hoehe), versatz: 0, hoehe: 0, tempo: 0, traeger,
+      runs: spaltenlaeufe(feste, hoehe), versatz: 0, hoehe: 0, tempo: 0, traeger, gebrochen,
     };
     this.#naechsteId += 1;
     for (const t of traeger) this.#getragen.add(t.name);
@@ -452,6 +530,7 @@ export class Zerstoerung {
     this.#begrabe(insel);
     if (dy > 0) terrain.logEintrag(['s', dy, ...insel.runs]);
     this.#events.emit('terrain_settled', { id: insel.id, dy, runs: insel.runs });
+    if (this.#bruch && dy > 0) this.#merkeAufprall(insel, dy);
   }
 
   /**
@@ -491,6 +570,410 @@ export class Zerstoerung {
       const fuss = Math.round(turret.y) + GESCHUETZ_FUSS;
       if (drin(Math.round(turret.x), fuss)) turret.y = hebe(Math.round(turret.x), fuss) - GESCHUETZ_FUSS;
     }
+  }
+
+  // ------------------------------------------------------- Fassung 4: Bruch
+
+  /** Ein Tick der Fassung 4: eine Nacharbeit, fliegender Schutt, Erdbeben (mit dem Rest des Suchbudgets). */
+  #bruchSchritt() {
+    this.#nachkosten = 0;
+    if (this.#nacharbeit.length > 0) this.#nachArbeit(this.#nacharbeit.shift());
+    if (this.#partikel.length > 0) this.#schuttSchritt();
+    if (this.#beben.length > 0) this.#bebenSchritt(Math.max(0, SUCH_BUDGET_PRO_TICK - this.#suchkosten));
+  }
+
+  /** Lebende Figuren als Mittelpunkte (für „nichts in eine Figur hinein setzen"). */
+  #figurBoxen() {
+    const world = this.#world;
+    const liste = [];
+    for (const id of world.getEntitiesBySignature(COMPONENT_SIGNATURES.POSITION | COMPONENT_SIGNATURES.HEALTH)) {
+      if (!world.isActive(id) || (world.getComponent(id, 'Health', 'current') ?? 0) <= 0) continue;
+      liste.push({ id, x: world.getComponent(id, 'Position', 'x') ?? 0, y: world.getComponent(id, 'Position', 'y') ?? 0 });
+    }
+    return liste;
+  }
+
+  /** Liegt die Zelle im Körper einer Figur (mit einem Pixel Rand)? */
+  #inFigur(cx, cy, boxen) {
+    for (const b of boxen) {
+      if (Math.abs(cx + 0.5 - b.x) <= PLAYER_HALF_WIDTH + 1 && cy >= b.y - PLAYER_HALF_HEIGHT - 1 && cy <= b.y + PLAYER_HALF_HEIGHT) return true;
+    }
+    return false;
+  }
+
+  /** Figuren, die in frisch gesetztem Gelände stecken, stehen wieder auf der Oberfläche (höchstens 6 px). */
+  #hebeFiguren(x0, x1) {
+    const world = this.#world;
+    const terrain = this.#terrain;
+    for (const b of this.#figurBoxen()) {
+      const spalte = Math.floor(b.x);
+      if (spalte < x0 || spalte > x1) continue;
+      let y = b.y;
+      for (let i = 0; i < 6 && terrain.isSolid(spalte, Math.floor(y + PLAYER_HALF_HEIGHT) - 1); i++) y -= 1;
+      if (y !== b.y) {
+        world.setComponent(b.id, 'Position', 'y', y);
+        world.setComponent(b.id, 'Velocity', 'y', 0);
+      }
+    }
+  }
+
+  /** Zerstörungscharakter am Einschlag: Splitterstreuung, Erdbeben, Rutschen der Figuren am Rand. */
+  #charakter(x, y, radius, art) {
+    if (art === 'splitter' && radius >= 12) this.#splitter(x, y, radius);
+    if (art === 'beben') this.#startBeben(x, y, radius);
+    if (radius >= RUTSCH_MIN_RADIUS) this.#rutschNach(x, y, radius);
+  }
+
+  /** Nebenlöcher rund um den Hauptkrater: kleine Dellen an Stellen, die wirklich Boden sind. */
+  #splitter(x, y, radius) {
+    const terrain = this.#terrain;
+    const n = SPLITTER_MIN + Math.floor(zufall(x, y, radius) * SPLITTER_SPANNE);
+    const sr = Math.max(3, Math.round(radius * 0.26));
+    for (let i = 0; i < n; i++) {
+      const d = radius * (1.05 + 0.55 * zufall(i, x, y));
+      const r = SPLITTER_RICHTUNGEN[Math.floor(zufall(i, y, x + 99) * SPLITTER_RICHTUNGEN.length)];
+      const sx = Math.round(x + r[0] * d);
+      const sy = Math.round(y + r[1] * d);
+      if (sx < 0 || sy < 0 || sx >= this.#breite || sy >= this.#hoehe || !terrain.isSolid(sx, sy)) continue;
+      terrain.punchCrater(sx, sy, sr, 100);
+      this.#events.emit('terrain_destroyed', { x: sx, y: sy, radius: sr, tiefe: 100, art: 'splitter' });
+    }
+  }
+
+  /**
+   * Figuren am Kraterrand verlieren den Halt und rutschen in den Krater: ein kleiner Schub zum
+   * Loch hin, wenn der Boden dorthin abfällt. Den Rest tut die Schwerkraft des CharacterSystems.
+   */
+  #rutschNach(x, y, radius) {
+    const world = this.#world;
+    const terrain = this.#terrain;
+    for (const b of this.#figurBoxen()) {
+      const fuss = b.y + PLAYER_HALF_HEIGHT;
+      const abstand = Math.abs(b.x - x);
+      if (abstand < radius * 0.55 || abstand > radius * 1.3) continue;
+      if (fuss < y - radius * 0.6 || fuss > y + radius * 0.4) continue;
+      const richtung = x > b.x ? 1 : -1;
+      const spalte = Math.floor(b.x);
+      const reihe = Math.floor(fuss);
+      if (!terrain.isSolid(spalte, reihe)) continue;
+      // Fällt der Boden zum Krater hin ab (4 oder 10 px weiter liegt die Oberfläche mindestens 4 px tiefer)?
+      let tiefer = -99;
+      for (const weite of [4, 10]) {
+        for (let r = reihe - 8; r < reihe + 40; r++) {
+          if (terrain.isSolid(spalte + richtung * weite, r)) { tiefer = Math.max(tiefer, r - reihe); break; }
+        }
+      }
+      if (tiefer < 4) continue;
+      const vx = world.getComponent(b.id, 'Velocity', 'x') ?? 0;
+      world.setComponent(b.id, 'Velocity', 'x', vx + richtung * RUTSCH_SCHUB * (0.6 + 0.4 * Math.min(1, radius / 50)));
+    }
+  }
+
+  // ----------------------------------------------------- Aufprall der Insel
+
+  /** Merkt eine gelandete Insel zur Nacharbeit vor, wenn sie hart genug aufgeschlagen ist. */
+  #merkeAufprall(insel, dy) {
+    const n = insel.zellen.length;
+    const staerke = aufprallStaerke(n, dy);
+    const weich = staerke >= WEICH_AB_STAERKE && dy >= WEICH_MIN_FALL && n >= WEICH_MIN_ZELLEN;
+    const bruch = !insel.gebrochen && staerke >= BRUCH_AB_STAERKE && n >= BRUCH_MIN_ZELLEN && dy >= BRUCH_MIN_FALL;
+    if ((!weich && !bruch) || this.#nacharbeit.length >= 16) return;
+    this.#nacharbeit.push({ insel, dy, staerke, weich, bruch });
+  }
+
+  /** Nimmt Zellen ersatzlos aus der Maske, loggt sie (`['x', ...]`) und meldet sie. */
+  #entferne(keys, art) {
+    const hoehe = this.#hoehe;
+    for (const k of keys) {
+      const x = Math.floor(k / hoehe);
+      this.#terrain.setPixel(x, k - x * hoehe, false);
+    }
+    const runs = spaltenlaeufe(Int32Array.from(keys).sort(), hoehe);
+    this.#terrain.logEintrag(['x', ...runs]);
+    this.#events.emit('terrain_removed', { runs, art });
+  }
+
+  #nachArbeit({ insel, dy, staerke, weich, bruch }) {
+    const runs = insel.runs;
+    this.#nachkosten += runs.length / 3;
+    if (weich) this.#zerbroesele(insel, dy, staerke);
+    if (bruch) this.#brich(insel, dy);
+  }
+
+  /**
+   * Der Rand der gelandeten Insel zerbröselt: kleine Brocken platzen ab und fliegen als einzelne
+   * Zellen davon (Partikel-Zellen), die sich am Boden als Schutt wieder absetzen. Gewählt wird nur
+   * an den äußeren Spalten (Oberkante und Fuß), deterministisch aus der Insel-Nummer.
+   */
+  #zerbroesele(insel, dy, staerke) {
+    const hoehe = this.#hoehe;
+    const terrain = this.#terrain;
+    const runs = insel.runs;
+    const platz = SCHUTT_MAX_GESAMT - this.#partikel.length;
+    const n = insel.zellen.length;
+    const ziel = Math.min(platz, SCHUTT_MAX_JE_LANDUNG, Math.round(Math.sqrt(n) * staerke * 1.1));
+    if (ziel <= 0) return;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let unterkante = 0;
+    for (let i = 0; i < runs.length; i += 3) {
+      minX = Math.min(minX, runs[i]);
+      maxX = Math.max(maxX, runs[i]);
+      unterkante = Math.max(unterkante, runs[i + 2]);
+    }
+    const band = Math.max(4, Math.round((maxX - minX + 1) * 0.18));
+    const mitte = (minX + maxX) / 2;
+    const kandidaten = [];
+    for (let i = 0; i < runs.length; i += 3) {
+      const x = runs[i];
+      if (x - minX < band || maxX - x < band || (i / 3) % 7 === 0) {
+        kandidaten.push(x, runs[i + 1] + dy, 1); // Oberkante: Brocken reichen nach unten
+        kandidaten.push(x, runs[i + 2] + dy, -1); // Fuß: Brocken reichen nach oben
+      }
+    }
+    const anzahl = kandidaten.length / 3;
+    if (anzahl === 0) return;
+    this.#nachkosten += anzahl;
+    const neu = insel.zellen.map(k => k + dy); // aufsteigend wie `zellen`
+    const weg = [];
+    const teile = [];
+    const gewaehlt = new Set();
+    for (let i = 0; weg.length < ziel && i < ziel * 3; i++) {
+      const c = Math.floor(zufall(insel.id, i, 7) * anzahl) * 3;
+      const sx = kandidaten[c];
+      const sy = kandidaten[c + 1];
+      const senkrecht = kandidaten[c + 2];
+      const seite = sx < mitte ? -1 : sx > mitte ? 1 : (i & 1 ? 1 : -1);
+      const w = 1 + Math.floor(zufall(insel.id, i, 11) * 3);
+      const h = 1 + Math.floor(zufall(insel.id, i, 13) * 3);
+      for (let a = 0; a < w && weg.length < ziel; a++) {
+        for (let b = 0; b < h && weg.length < ziel; b++) {
+          const cx = sx - seite * a;
+          const cy = sy + senkrecht * b;
+          if (cx < 0 || cy < 0 || cx >= this.#breite || cy >= hoehe) continue;
+          const k = cx * hoehe + cy;
+          if (gewaehlt.has(k) || !terrain.isSolid(cx, cy) || !enthaelt(neu, k)) continue;
+          gewaehlt.add(k);
+          weg.push(k);
+          const j = weg.length;
+          teile.push(
+            cx + 0.5, cy + 0.5,
+            seite * (0.4 + 1.6 * zufall(insel.id, j, 17)) * (0.6 + 0.8 * staerke),
+            -(0.3 + 1.9 * zufall(insel.id, j, 19)) * (0.5 + staerke) * (senkrecht > 0 ? 1 : 0.4),
+          );
+        }
+      }
+    }
+    this.#nachkosten += weg.length;
+    if (weg.length === 0) return;
+    this.#entferne(weg, 'abplatz');
+    for (let i = 0; i < teile.length; i += 4) {
+      this.#partikel.push({ x: teile[i], y: teile[i + 1], vx: teile[i + 2], vy: teile[i + 3], alter: 0 });
+    }
+    this.#events.emit('terrain_crumble', { id: insel.id, staerke, x: Math.round(mitte), y: unterkante + dy, teile });
+  }
+
+  /**
+   * Eine große Insel bricht beim harten Aufprall: ein gezackter Riss, an der Kante der Auflage.
+   * Was darüber hinausragt, löst sich (neue Insel, fällt weiter); ragt nichts weit genug über,
+   * bleibt es beim Riss. Eine schon gebrochene Insel bricht nicht noch einmal.
+   */
+  #brich(insel, dy) {
+    const hoehe = this.#hoehe;
+    const terrain = this.#terrain;
+    const runs = insel.runs;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    for (let i = 0; i < runs.length; i += 3) { minX = Math.min(minX, runs[i]); maxX = Math.max(maxX, runs[i]); }
+    let c0 = Infinity;
+    let c1 = -Infinity;
+    for (const k of insel.unten) {
+      const x = Math.floor(k / hoehe);
+      const y = k - x * hoehe + dy;
+      if (terrain.isSolid(x, y + 1)) { c0 = Math.min(c0, x); c1 = Math.max(c1, x); }
+    }
+    this.#nachkosten += insel.unten.length;
+    if (c0 > c1) return;
+    const links = c0 - minX;
+    const rechts = maxX - c1;
+    const jitter = Math.floor(zufall(insel.id, 3, 5) * 4);
+    let seite = 0;
+    let xs;
+    if (Math.max(links, rechts) >= BRUCH_MIN_UEBERSTAND) {
+      seite = links >= rechts ? -1 : 1;
+      xs = seite < 0 ? c0 - 1 - jitter : c1 + 1 + jitter;
+    } else {
+      xs = Math.floor((minX + maxX) / 2) + Math.floor(zufall(insel.id, 4, 6) * 7) - 3;
+    }
+    // Der Riss verläuft senkrecht (Spalten gehören ganz zu einem Teil, sonst verhakten sich die Hälften beim Fallen);
+    // gezackt wirkt er durch die wechselnde Breite von 1 bis 3 Zellen.
+    const lo = () => xs;
+    const breit = y => 1 + Math.floor(zufall(y >> 1, insel.id, 29) * 3);
+    const fuge = [];
+    const abfall = [];
+    const anderer = [];
+    for (let i = 0; i < runs.length; i += 3) {
+      const x = runs[i];
+      for (let y = runs[i + 1] + dy; y <= runs[i + 2] + dy; y++) {
+        if (!terrain.isSolid(x, y)) continue;
+        const l = lo();
+        const k = x * hoehe + y;
+        if (x >= l && x < l + breit(y)) fuge.push(k);
+        else if (seite === 0) (x < l ? abfall : anderer).push(k);
+        else if ((x < l) === (seite < 0)) abfall.push(k);
+        else anderer.push(k);
+      }
+    }
+    this.#nachkosten += fuge.length + abfall.length + anderer.length;
+    if (seite !== 0 ? abfall.length < 60 : Math.min(abfall.length, anderer.length) < 300) return;
+    this.#entferne(fuge, 'bruch');
+    if (seite !== 0) this.#starte(Int32Array.from(abfall), true);
+  }
+
+  // ------------------------------------------------------------- Schutt
+
+  /** Fliegende Partikel-Zellen: Schwerkraft, Flug in Einzelschritten, Landung als Schutt. */
+  #schuttSchritt() {
+    const terrain = this.#terrain;
+    const breite = this.#breite;
+    const hoehe = this.#hoehe;
+    const boxen = this.#figurBoxen();
+    const gesetzt = [];
+    const uebrig = [];
+    for (const p of this.#partikel) {
+      p.alter += 1;
+      p.vy += SCHUTT_GRAVITATION;
+      const schritte = Math.max(1, Math.ceil(Math.max(Math.abs(p.vx), Math.abs(p.vy))));
+      let lx = Math.floor(p.x);
+      let ly = Math.floor(p.y);
+      let landet = false;
+      let weg = false;
+      for (let s = 1; s <= schritte; s++) {
+        const cx = Math.floor(p.x + p.vx * s / schritte);
+        const cy = Math.floor(p.y + p.vy * s / schritte);
+        this.#nachkosten += 1;
+        if (cx < 0 || cx >= breite || cy >= hoehe) { weg = true; break; }
+        if (cy >= 0 && terrain.isSolid(cx, cy)) { landet = true; break; }
+        lx = cx;
+        ly = cy;
+      }
+      if (weg || (!landet && p.alter >= SCHUTT_LEBEN)) continue;
+      if (!landet) {
+        p.x += p.vx;
+        p.y += p.vy;
+        uebrig.push(p);
+        continue;
+      }
+      // Aufprall: Ist unter der Zelle noch Luft (Decke getroffen, Wand gestreift), fällt sie weiter statt in der Luft zu hängen.
+      if (ly + 1 < hoehe && !terrain.isSolid(lx, ly + 1)) {
+        p.x = lx + 0.5;
+        p.y = ly + 0.5;
+        p.vx *= 0.3;
+        p.vy = Math.max(0, p.vy * 0.2);
+        uebrig.push(p);
+        continue;
+      }
+      // Landung: höchstens vier Schritte die Böschung hinab (Schüttwinkel).
+      for (let rutsch = 0; rutsch < 4; rutsch++) {
+        const reihenfolge = (lx + ly) & 1 ? [-1, 1] : [1, -1];
+        let bewegt = false;
+        for (const d of reihenfolge) {
+          if (lx + d < 0 || lx + d >= breite || ly + 1 >= hoehe) continue;
+          if (!terrain.isSolid(lx + d, ly) && !terrain.isSolid(lx + d, ly + 1)) {
+            lx += d;
+            ly += 1;
+            while (ly + 1 < hoehe && !terrain.isSolid(lx, ly + 1) && ly < hoehe - 1) ly += 1;
+            bewegt = true;
+            break;
+          }
+        }
+        if (!bewegt) break;
+      }
+      this.#nachkosten += 1;
+      if (ly < 0 || terrain.isSolid(lx, ly) || this.#inFigur(lx, ly, boxen)) continue; // wird zu Staub
+      terrain.setPixel(lx, ly, true);
+      gesetzt.push(lx, ly);
+    }
+    this.#partikel = uebrig;
+    if (gesetzt.length > 0) {
+      terrain.logEintrag(['p', ...gesetzt]);
+      this.#events.emit('terrain_added', { zellen: gesetzt });
+      let x0 = Infinity;
+      let x1 = -Infinity;
+      for (let i = 0; i < gesetzt.length; i += 2) { x0 = Math.min(x0, gesetzt[i]); x1 = Math.max(x1, gesetzt[i]); }
+      this.#hebeFiguren(x0, x1);
+    }
+  }
+
+  // ------------------------------------------------------------ Erdbeben
+
+  #startBeben(x, y, radius) {
+    const r = Math.max(BEBEN_MIN_RADIUS, Math.min(BEBEN_MAX_RADIUS, Math.round(radius * 1.1)));
+    this.#events.emit('terrain_quake', { x, y, radius: r, staerke: Math.min(1, radius / 90) });
+    if (this.#beben.length >= 4) return;
+    const mx = Math.round(x);
+    this.#beben.push({ y: Math.round(y), r, x0: mx - r, spalte: 0, tops: new Int32Array(2 * r + 1).fill(-1) });
+  }
+
+  /** Oberflächen der Spalten abtasten (mit dem Rest des Suchbudgets); danach setzt sich das Gelände. */
+  #bebenSchritt(rest) {
+    const job = this.#beben[0];
+    const terrain = this.#terrain;
+    const yLo = Math.max(0, job.y - job.r - BEBEN_RAND);
+    const yHi = Math.min(this.#hoehe - 1, job.y + job.r + BEBEN_RAND);
+    while (job.spalte < job.tops.length && rest > 0) {
+      const cx = job.x0 + job.spalte;
+      let top = -1;
+      if (cx >= 1 && cx < this.#breite - 1 && !terrain.isSolid(cx, yLo)) {
+        for (let yy = yLo; yy <= yHi; yy++) {
+          rest -= 1;
+          this.#suchkosten += 1;
+          if (terrain.isSolid(cx, yy)) { top = yy; break; }
+        }
+      } else {
+        rest -= 1;
+        this.#suchkosten += 1;
+      }
+      job.tops[job.spalte] = top;
+      job.spalte += 1;
+    }
+    if (job.spalte < job.tops.length) return;
+    this.#beben.shift();
+    this.#setze(job);
+  }
+
+  /** Setzrutsch: Wo zwei Nachbarspalten steiler stehen als `BEBEN_STEILHEIT`, rutscht die oberste Zelle nach unten. */
+  #setze(job) {
+    const tops = job.tops;
+    const n = tops.length;
+    const boxen = this.#figurBoxen();
+    const zuege = [];
+    const zug = (von, nach) => {
+      const xa = job.x0 + von;
+      const xb = job.x0 + nach;
+      const ya = tops[von];
+      const yb = tops[nach] - 1;
+      if (yb < 0 || !this.#terrain.isSolid(xa, ya + 1) || this.#terrain.isSolid(xb, yb) || this.#inFigur(xb, yb, boxen)) return;
+      this.#terrain.setPixel(xa, ya, false);
+      this.#terrain.setPixel(xb, yb, true);
+      tops[von] = ya + 1;
+      tops[nach] = yb;
+      zuege.push(xa, ya, xb, yb);
+    };
+    for (let durchgang = 0; durchgang < 3; durchgang++) {
+      for (let k = 0; k < n - 1 && zuege.length < BEBEN_MAX_ZUEGE * 4; k++) {
+        const i = durchgang % 2 === 0 ? k : n - 2 - k;
+        if (tops[i] < 0 || tops[i + 1] < 0) continue;
+        const d = tops[i + 1] - tops[i];
+        if (d >= BEBEN_STEILHEIT) zug(i, i + 1);
+        else if (-d >= BEBEN_STEILHEIT) zug(i + 1, i);
+      }
+    }
+    this.#nachkosten += n * 3;
+    if (zuege.length === 0) return;
+    this.#terrain.logEintrag(['r', ...zuege]);
+    this.#events.emit('terrain_slumped', { zuege });
+    this.#hebeFiguren(job.x0, job.x0 + n);
   }
 
   // ---------------------------------------------------------- lose Objekte

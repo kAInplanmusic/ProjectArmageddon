@@ -13,6 +13,7 @@ import {
 } from './stil.js';
 import { platziereSchild } from './sichtbereich.js';
 import { zeichneMuendungsblitz } from './effektStil.js';
+import { stufeFuer, tonung } from './figurStufen.js';
 
 const KONTUR = PAL.kontur;
 const HELM = [78, 88, 60];
@@ -196,58 +197,165 @@ export function figurSkalaFuer(zoom) {
   const z = zoom > 0 ? zoom : 1;
   return Math.max(SKALA_MIN, Math.min(SKALA_MAX, ZIEL_PIXEL / (z * SPRITE_HOEHE * INHALT_ANTEIL)));
 }
-const NEUTRAL = Object.freeze({ dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0 });
+const NEUTRAL = Object.freeze({ dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1 });
+
+// ------------------------------------------------------------ Kontaktschatten
+
+let schattenBild = null;
+
+/** Weicher Kontaktschatten (einmal gebaut): Ellipse mit Verlauf statt hartem Rand. */
+function holeSchatten() {
+  if (schattenBild) return schattenBild;
+  const b = 64; const h = 20;
+  const c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(b, h) : Object.assign(document.createElement('canvas'), { width: b, height: h });
+  const x = c.getContext('2d');
+  x.translate(b / 2, h / 2);
+  x.scale(1, h / b);
+  const g = x.createRadialGradient(0, 0, 0, 0, 0, b / 2);
+  g.addColorStop(0, 'rgba(0,0,0,0.78)');
+  g.addColorStop(0.45, 'rgba(0,0,0,0.5)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = g;
+  x.fillRect(-b / 2, -b / 2, b, b);
+  schattenBild = c;
+  return c;
+}
 
 /**
  * Zeichnet eine Fraktionsfigur als Sprite.
  *
  * Ursprung = Figurmitte (wie bei `zeichneSoldat`); die Füße stehen bei
  * y = +PLAYER_HALF_HEIGHT. Das Sprite blickt je Zielrichtung nach rechts oder
- * links (Spiegelung). Teamfarbe: Fußring statt Einfärbung. Keine Allokation je
- * Bild.
+ * links (Spiegelung). Teamfarbe: Fußring statt Einfärbung. Schatten, Ring und
+ * Sprite folgen der Bodenneigung (`pose.neigung`); die Mip-Stufe richtet sich
+ * nach `p.px`. Keine Allokation je Bild.
  *
  * @param {CanvasRenderingContext2D} ctx
- * @param {{bild: CanvasImageSource, anker: {fussY: number}}} fig - aus `holeFigur`
- * @param {object} p - `team`, `winkel`, `aktiv`, `zeit`, `reduziert`, `pose` (aus `FigurPosen`), `alpha`
+ * @param {object} fig - aus `holeFigur`
+ * @param {object} p - `team`, `winkel`, `aktiv`, `zeit`, `reduziert`, `pose`, `alpha`, `px`
+ *   (Sprite-Kante in Gerätepixeln), `breite` (Fußbreite-Faktor), `wasserY` (Wasserlinie, lokal, oder undefined)
  */
 export function zeichneFigurSprite(ctx, fig, p) {
   const f = Math.cos(p.winkel) >= 0 ? 1 : -1;
   const h = SPRITE_HOEHE;
   const fuss = FUSS_ABSTAND;
   const pose = p.pose ?? NEUTRAL;
+  const alpha = p.alpha ?? 1;
+  const fb = p.breite ?? 1;
+  const stufe = p.px ? stufeFuer(fig, p.px) : fig;
+  const hover = Math.max(0, -pose.dy);
+
+  ctx.save();
+  ctx.translate(0, fuss);
+  ctx.rotate(pose.neigung);
+
+  // Weicher Kontaktschatten: schrumpft und verblasst, wenn die Figur abhebt.
+  const sw = 30 * fb * (1 - Math.min(0.4, hover * 0.03));
+  ctx.globalAlpha = Math.max(0, (0.62 - Math.min(0.35, hover * 0.035)) * alpha);
+  ctx.drawImage(holeSchatten(), -sw / 2, -sw * 0.15, sw, sw * 0.31);
 
   // Fußring in Teamfarbe (die aktive Figur pulsiert, sofern Bewegung erlaubt ist)
-  ctx.save();
   ctx.strokeStyle = p.team;
-  ctx.globalAlpha = (p.aktiv ? 0.95 : 0.7) * (p.alpha ?? 1);
+  ctx.globalAlpha = (p.aktiv ? 0.95 : 0.7) * alpha;
   ctx.lineWidth = p.aktiv ? 2.4 : 1.6;
   const puls = p.aktiv && !p.reduziert ? 1 + Math.sin(p.zeit * 5) * 0.06 : 1;
   ctx.beginPath();
-  ctx.ellipse(0, fuss, 12 * puls, 3.4 * puls, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, 12 * fb * puls, 3.4 * puls, 0, 0, Math.PI * 2);
   ctx.stroke();
   if (p.aktiv) {
     // Die Figur am Zug: zweiter, limettenfarbener Ring außen, auch ohne Namensschild erkennbar.
     ctx.strokeStyle = PAL.limette;
-    ctx.globalAlpha = 0.9 * (p.alpha ?? 1);
+    ctx.globalAlpha = 0.9 * alpha;
     ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.ellipse(0, fuss, 15.5 * puls, 4.8 * puls, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 15.5 * fb * puls, 4.8 * puls, 0, 0, Math.PI * 2);
     ctx.stroke();
+    if (pose.zug > 0) {
+      // Zugbeginn: ein Ring läuft einmal vom Fuß nach außen.
+      const u = pose.zug;
+      ctx.globalAlpha = (1 - u) * 0.9 * alpha;
+      ctx.lineWidth = 2.2 * (1 - u) + 0.6;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, (14 + u * 22) * fb, (4 + u * 6), 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
   ctx.restore();
 
+  const wasser = p.wasserY !== undefined && p.wasserY < fuss - 1;
   ctx.save();
-  if (p.alpha !== undefined && p.alpha < 1) ctx.globalAlpha = Math.max(0, p.alpha);
-  // Alle Posen drehen/strecken um den Fußpunkt, damit die Füße am Boden bleiben.
-  ctx.translate(pose.dx, fuss + pose.dy);
+  ctx.translate(0, fuss);
+  ctx.rotate(pose.neigung);
+  ctx.translate(pose.dx, pose.dy);
   if (pose.rot !== 0) ctx.rotate(pose.rot);
   ctx.scale(f * pose.sx, pose.sy);
-  ctx.drawImage(fig.bild, -h / 2, -h * fig.anker.fussY, h, h);
-  if (pose.flash > 0) {
-    // Treffer-Blitz: weiße Silhouette über dem Sprite.
-    ctx.globalAlpha = pose.flash * 0.85 * (p.alpha ?? 1);
-    ctx.drawImage(fig.hell, -h / 2, -h * fig.anker.fussY, h, h);
+  const x0 = -h / 2; const y0 = -h * fig.anker.fussY;
+  if (wasser) {
+    // Wasserlinie (im Ausgangsrahmen): oben voll, darunter getönt und durchscheinend.
+    ctx.restore();
+    ctx.save();
+    ctx.translate(0, 0);
+    zeichneImWasser(ctx, fig, stufe, p, pose, f, x0, y0, h, fuss, alpha);
+    ctx.restore();
+    return;
   }
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(stufe.bild, x0, y0, h, h);
+  zeichneBlitz(ctx, stufe, p, pose, x0, y0, h, alpha);
+  ctx.restore();
+}
+
+function zeichneBlitz(ctx, stufe, p, pose, x0, y0, h, alpha) {
+  if (pose.tint > 0 && stufe.ton) {
+    // Nach dem weißen Blitz glimmt die Silhouette kurz in Teamfarbe.
+    ctx.globalAlpha = pose.tint * alpha;
+    ctx.drawImage(tonung(stufe, p.team), x0, y0, h, h);
+  }
+  if (pose.flash > 0) {
+    ctx.globalAlpha = pose.flash * 0.85 * alpha;
+    ctx.drawImage(stufe.hell, x0, y0, h, h);
+  }
+}
+
+/** Sprite bis zur Wasserlinie: oben normal, unten getönt (Wasser davor), dazu Wellenlinie. */
+function zeichneImWasser(ctx, fig, stufe, p, pose, f, x0, y0, h, fuss, alpha) {
+  const wy = p.wasserY;
+  for (let teil = 0; teil < 2; teil += 1) {
+    ctx.save();
+    ctx.beginPath();
+    if (teil === 0) ctx.rect(-60, -140, 120, wy + 140); else ctx.rect(-60, wy, 120, 140);
+    ctx.clip();
+    ctx.translate(0, fuss);
+    ctx.rotate(pose.neigung);
+    ctx.translate(pose.dx, pose.dy);
+    if (pose.rot !== 0) ctx.rotate(pose.rot);
+    ctx.scale(f * pose.sx, pose.sy);
+    ctx.globalAlpha = (teil === 0 ? 1 : 0.55) * alpha;
+    ctx.drawImage(stufe.bild, x0, y0, h, h);
+    if (teil === 1) {
+      if (stufe.ton) {
+      ctx.globalAlpha = 0.38 * alpha;
+      ctx.drawImage(tonung(stufe, '#2d79b0'), x0, y0, h, h);
+      }
+    } else zeichneBlitz(ctx, stufe, p, pose, x0, y0, h, alpha);
+    ctx.restore();
+  }
+  // Wellenlinie an der Figur samt kleinem Ring.
+  const t = p.reduziert ? 0 : p.zeit * 3;
+  ctx.save();
+  ctx.globalAlpha = 0.75 * alpha;
+  ctx.strokeStyle = '#e8f6ff';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (let i = -13; i <= 13; i += 2) {
+    const yy = wy + Math.sin(i * 0.6 + t) * 0.9;
+    if (i === -13) ctx.moveTo(i, yy); else ctx.lineTo(i, yy);
+  }
+  ctx.stroke();
+  ctx.globalAlpha = 0.28 * alpha;
+  ctx.beginPath();
+  ctx.ellipse(0, wy + 0.5, 17, 2.4, 0, 0, Math.PI * 2);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -375,17 +483,25 @@ export function balkenFarbe(anteil) {
 }
 
 /**
- * Namensschild mit Lebensbalken: dunkle Plakette, heller Text (Kontrast über 12:1).
+ * Namensschild mit Lebensbalken: kompakte dunkle Pille mit Teamfarb-Punkt
+ * (Rand in der Akzentfarbe der Fraktion), darunter der Balken mit hellerer
+ * Verzögerungsleiste (weicher Abbau). Statussymbole (Gift/Brand, Verstärkung)
+ * sitzen rechts neben der Pille. Heller Text, Kontrast über 12:1.
  *
  * @param {CanvasRenderingContext2D} ctx - in Kartenkoordinaten
+ * @param {object} [extra] - `verz` (Verzögerungsanteil), `akzent` (Fraktionsfarbe), `gift` (Anzahl), `boost` (Faktor), `zeit` (s)
  */
-export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, aktiv, s = 1, platz = null) {
+export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, aktiv, s = 1, platz = null, extra = null) {
   const text = String(label ?? '').slice(0, 12);
+  const gift = extra?.gift > 0;
+  const boost = extra?.boost > 1.001;
+  const icons = (gift ? 1 : 0) + (boost ? 1 : 0);
   ctx.save();
   ctx.font = 'bold 9px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const breite = Math.max(30, Math.ceil(ctx.measureText(text).width) + 10);
+  const pille = Math.max(32, Math.ceil(ctx.measureText(text).width) + 18);
+  const breite = pille + icons * 10;
   /*
    * Liegt das Schild außerhalb des sicheren Bereichs (unter der Kopfleiste,
    * hinter der Seitenleiste), wird es versetzt: unter die Füße geklappt oder
@@ -399,35 +515,85 @@ export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, akt
   ctx.translate(Math.round(lage.x - (breite * s) / 2), Math.round(lage.anker - 22 * s));
   ctx.scale(s, s);
 
-  ctx.fillStyle = 'rgba(13, 15, 18, 0.88)';
-  rundRect(ctx, 0, 0, breite, 12, 3);
+  ctx.fillStyle = 'rgba(13, 15, 18, 0.9)';
+  rundRect(ctx, 0, 0, pille, 12, 5.5);
   ctx.fill();
   ctx.strokeStyle = aktiv ? PAL.limette : teamFarbe;
   ctx.lineWidth = aktiv ? 1.6 : 1.2;
   ctx.stroke();
+  // Teamfarb-Punkt mit Akzentring der Fraktion.
+  ctx.fillStyle = teamFarbe;
+  ctx.beginPath();
+  ctx.arc(6.5, 6, 2.7, 0, Math.PI * 2);
+  ctx.fill();
+  if (extra?.akzent) {
+    ctx.strokeStyle = extra.akzent;
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+  }
   ctx.fillStyle = PAL.text;
-  ctx.fillText(text, breite / 2, 6.5);
+  ctx.fillText(text, 12 + (pille - 12) / 2, 6.5);
 
-  const bb = breite - 4;
+  const bb = pille - 4;
+  const verz = extra?.verz ?? anteil;
   ctx.fillStyle = PAL.kontur;
-  ctx.fillRect(1, 13, bb + 2, 7);
+  rundRect(ctx, 1, 13, bb + 2, 7, 2.5);
+  ctx.fill();
   ctx.fillStyle = PAL.bg2;
   ctx.fillRect(2, 14, bb, 5);
+  if (verz > anteil) {
+    // Verzögerungsleiste: der verlorene Teil bleibt kurz heller stehen und schmilzt.
+    ctx.fillStyle = 'rgba(255, 245, 225, 0.85)';
+    ctx.fillRect(2, 14, Math.max(0, bb * Math.min(1, verz)), 5);
+  }
   ctx.fillStyle = balkenFarbe(anteil);
   ctx.fillRect(2, 14, Math.max(0, bb * anteil), 5);
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ctx.fillRect(2, 14, Math.max(0, bb * anteil), 1.5);
 
+  // Statussymbole rechts neben der Pille.
+  let ix = pille + 6;
+  if (gift) {
+    ctx.fillStyle = '#7fe36a';
+    ctx.strokeStyle = PAL.kontur;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ix, 2);
+    ctx.quadraticCurveTo(ix + 4, 7, ix, 10);
+    ctx.quadraticCurveTo(ix - 4, 7, ix, 2);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+    ix += 10;
+  }
+  if (boost) {
+    ctx.fillStyle = PAL.orange;
+    ctx.strokeStyle = PAL.kontur;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ix, 1.5);
+    ctx.lineTo(ix + 4, 7);
+    ctx.lineTo(ix + 1.6, 7);
+    ctx.lineTo(ix + 1.6, 10.5);
+    ctx.lineTo(ix - 1.6, 10.5);
+    ctx.lineTo(ix - 1.6, 7);
+    ctx.lineTo(ix - 4, 7);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+  }
+
   if (aktivPfeil) {
-    // Pfeil über dem Schild: die Figur am Zug.
-    const mx = breite / 2;
+    // Pfeil über dem Schild: die Figur am Zug, wippt sanft.
+    const mx = pille / 2;
+    const wipp = extra?.zeit !== undefined ? Math.sin(extra.zeit * 5) * 1.2 : 0;
     ctx.fillStyle = PAL.limette;
     ctx.strokeStyle = PAL.kontur;
     ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.moveTo(mx - 5, -8);
-    ctx.lineTo(mx + 5, -8);
-    ctx.lineTo(mx, -1.5);
+    ctx.moveTo(mx - 5, -8 + wipp);
+    ctx.lineTo(mx + 5, -8 + wipp);
+    ctx.lineTo(mx, -1.5 + wipp);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();

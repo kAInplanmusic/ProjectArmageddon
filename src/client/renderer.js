@@ -23,6 +23,10 @@ import {
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
   zeichneGeschossSprite, zeichneSchweif,
 } from './effektStil.js';
+import {
+  materialStil, zeichneBrandspur, zeichneBohrwand, zeichneBebenRisse, loescheLaeufe, setzeSchuttZellen, verschiebeZellen,
+  erzeugeFlugSchutt, schreiteFlugSchutt, zeichneFlugSchutt,
+} from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
@@ -33,17 +37,20 @@ import {
 import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
+import { FigurEffekte } from './figurEffekte.js';
+import { PARAMETER, typFuer } from './figurTypen.js';
+import { FACTIONS } from '../shared/config/factions.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
   parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
   GeschossLagen, geschossDarstellung, geschossWinkel,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
-import { FigurPosen, fallPose } from './figurAnimation.js';
+import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
-  plazierePflanzen, zeichnePflanzenSchicht, entfernePflanzenImKrater, entfernePflanzenAmRand, pflanzenStreifen,
+  plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
@@ -143,7 +150,17 @@ export class Renderer {
     // Posen der Sprites und laufende Fall-Effekte (Tod, Ertrinken).
     this.figurPosen = new FigurPosen();
     this.faelle = [];
-    this.fallPoseTmp = { dx: 0, dy: 0, rot: 0, alpha: 1 };
+    this.fallPoseTmp = { dx: 0, dy: 0, rot: 0, alpha: 1, sx: 1, sy: 1, flash: 0 };
+    /** Staub, Blasen, Splitter der Figuren (fester Vorrat) und Zeit des letzten Bildes. */
+    this.figurEffekte = new FigurEffekte();
+    this.figurZeit = 0;
+    this.sieger = null;
+    /** Zahl der in diesem Bild gezeichneten bzw. übersprungenen (außerhalb des Bildes) Figuren. */
+    this.figurStat = { gezeichnet: 0, uebersprungen: 0, stufe: 0 };
+    this.akzentJeFraktion = new Map(FACTIONS.map(f => [f.id, f.palette?.[1] ?? null]));
+    this.figurPosen.beiLandung = (x, y, staerke, typ) => {
+      this.figurEffekte.staub(x, y + FUSS_ABSTAND, staerke, (PARAMETER[typ] ?? PARAMETER.humanoid).staub);
+    };
     this.waterFrame = 0;
     this.time = 0;
     /** Vorzeichen von Valhalla (zwei Raben im Blitz): `{start, bildSeed}` oder null. */
@@ -176,6 +193,8 @@ export class Renderer {
     this.narben = [];
     /** Trümmer der Zerstörung und abgelöste, fallende Geländeinseln (nur Anzeige). */
     this.truemmer = [];
+    /** Fliegende Partikel-Zellen zerbröselnder Inseln (Fassung 4, nur Anzeige). */
+    this.flugSchutt = [];
     this.inselfall = new Inselfall();
     /** Rauch nach großen Einschlägen — der Nachhall. */
     this.rauch = [];
@@ -708,10 +727,23 @@ export class Renderer {
     this.#zeichnePflanzenNeu();
   }
 
-  #zeichnePflanzenNeu() {
+  /**
+   * Zeichnet die Pflanzenebene neu. Mit `entfernt` (Pflanzen, die gerade aus der Liste genommen wurden)
+   * nur den Ausschnitt um sie — pixelgleich, aber ohne die ganze Karte zu leeren und neu zu füllen.
+   */
+  #zeichnePflanzenNeu(entfernt = null) {
     const schicht = this.pflanzenSchicht;
     if (!schicht) return;
-    zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
+    if (entfernt?.length) {
+      let u = null;
+      for (const p of entfernt) {
+        const r = pflanzenRahmen(p, schicht.width, schicht.height);
+        u = u ? { x0: Math.min(u.x0, r.x0), x1: Math.max(u.x1, r.x1), y0: Math.min(u.y0, r.y0), y1: Math.max(u.y1, r.y1) } : r;
+      }
+      zeichnePflanzenAusschnitt(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette, u);
+    } else {
+      zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
+    }
     this.pflanzenStreifen = pflanzenStreifen(this.pflanzen, schicht.width, schicht.height);
   }
 
@@ -773,7 +805,7 @@ export class Renderer {
    * @param {number} y
    * @param {number} radius
    */
-  applyCrater(x, y, radius, tiefe = null) {
+  applyCrater(x, y, radius, tiefe = null, art = null) {
     if (!this.terrainLayer) return;
     /*
      * Zerstörungsfassung 2: `terrain_destroyed` trägt die wahre Form (`tiefe`). Das
@@ -810,7 +842,9 @@ export class Renderer {
     this.letzterKrater = { x, y, radius, tiefe, zeit: this.time };
     if (umriss) zeichneKraterRuss(ctx, umriss, x, y, this.scenery?.seed ?? 0);
     else zeichneKraterRand(ctx, x, y, radius, this.scenery?.seed ?? 0);
-    if (entfernePflanzenImKrater(this.pflanzen, x, y, radius)) this.#zeichnePflanzenNeu();
+    if (umriss && art) this.#charakterSpur(ctx, umriss, x, y, radius, art);
+    const weg = [];
+    if (entfernePflanzenImKrater(this.pflanzen, x, y, radius, weg)) this.#zeichnePflanzenNeu(weg);
 
     this.spawnExplosionParticles(x, y, radius);
     this.narben = ergaenzeNarbe(this.narben, x, y, radius);
@@ -822,10 +856,63 @@ export class Renderer {
     this.ruck = ruckFuer(radius, { reducedMotion: this.reducedMotion }) ?? this.ruck;
   }
 
-  /** Farbe der Erde für Staub und Trümmer: das Tiefenbraun der Geländepalette. */
+  /** Stil von Schutt und Staub nach Bodenart der Karte (Gras, Fels, Schnee, Sand, Asche). */
+  #materialStil() {
+    return materialStil(bodenArt(this.palette?.surface ?? [96, 138, 92]), this.palette);
+  }
+
+  /** Farbe der Erde für Staub und Trümmer: nach Material (Staub der Bodenart, bei Gras das Tiefenbraun der Geländepalette). */
   #erdfarbe() {
-    const [r, g, b] = this.palette?.deep ?? [92, 70, 52];
-    return `rgb(${r}, ${g}, ${b})`;
+    return this.#materialStil().staub;
+  }
+
+  /**
+   * Zerstörungscharakter der Waffe in der Geländeebene (Fassung 4, reine Optik): Brandspur,
+   * Bohrwand oder Beben-Risse. Splitterlöcher und gewöhnliche Sprengungen bleiben beim Kraterruß.
+   */
+  #charakterSpur(ctx, umriss, x, y, radius, art) {
+    const seed = this.scenery?.seed ?? 0;
+    if (art === 'brand') zeichneBrandspur(ctx, umriss, x, y, radius, bodenArt(this.palette?.surface ?? [96, 138, 92]), seed);
+    else if (art === 'durchschlag') zeichneBohrwand(ctx, umriss);
+    else if (art === 'beben') zeichneBebenRisse(ctx, x, y, radius, seed);
+  }
+
+  /** `terrain_removed`: Zellen sind ersatzlos weg (Riss einer gebrochenen Insel, abgeplatzte Brocken). */
+  entferneZellen(runs, art = null) {
+    if (!this.terrainLayer) return;
+    loescheLaeufe(this.terrainLayer.getContext('2d'), runs);
+    if (art === 'bruch' && !this.reducedMotion) this.#zerstoerungsOptik([], inselStaub(runs, this.#erdfarbe(), 8));
+  }
+
+  /** `terrain_added`: Schutt hat sich abgesetzt. */
+  setzeSchutt(zellen) {
+    if (!this.terrainLayer) return;
+    setzeSchuttZellen(this.terrainLayer.getContext('2d'), zellen, this.#materialStil().schutt, this.scenery?.seed ?? 0);
+  }
+
+  /** `terrain_slumped`: Setzrutsch, Pixel wandern samt Farbe. */
+  setzeRutsch(zuege) {
+    if (!this.terrainLayer) return;
+    verschiebeZellen(this.terrainLayer.getContext('2d'), this.terrainLayer, zuege);
+  }
+
+  /** `terrain_crumble`: Der Rand einer gelandeten Insel platzt ab — Zellen fliegen, Staub steigt auf. */
+  bruchOptik(n) {
+    if (this.reducedMotion || !Array.isArray(n?.teile)) return;
+    if (this.flugSchutt.length < 400) this.flugSchutt.push(...erzeugeFlugSchutt(n.teile, this.#materialStil().schutt, this.scenery?.seed ?? 0));
+    const runs = [Math.round(n.x) - 12, Math.round(n.y), Math.round(n.y), Math.round(n.x) + 12, Math.round(n.y), Math.round(n.y)];
+    this.#zerstoerungsOptik([], inselStaub(runs, this.#erdfarbe(), 3 + Math.round((n.staerke ?? 0.5) * 4)));
+  }
+
+  /** `terrain_quake`: Staubwolken entlang der Oberfläche und ein Bildzittern wie beim harten Aufprall. */
+  bebenOptik(n) {
+    const staerke = Math.min(1, Number(n?.staerke) || 0.5);
+    this.ruck = ruckAufprall(staerke, { reducedMotion: this.reducedMotion }) ?? this.ruck;
+    if (this.reducedMotion) return;
+    const r = Math.round(n.radius);
+    const runs = [];
+    for (let i = 0; i < 5; i += 1) runs.push(Math.round(n.x) - r + Math.round(i * r / 2), Math.round(n.y), Math.round(n.y));
+    this.#zerstoerungsOptik([], inselStaub(runs, this.#erdfarbe(), 5));
   }
 
   /** Trümmer und Staub aufnehmen (gedeckelt; bei „Bewegung reduzieren" entfallen sie). */
@@ -848,10 +935,10 @@ export class Renderer {
    * Mit `stumm` (Nachtrag aus dem Log) entfallen Staub und Ruck.
    */
   landeInsel(id, runs, dy, { stumm = false } = {}) {
-    if (!this.terrainLayer || !(dy > 0)) return;
+    if (!this.terrainLayer || !(dy >= 0)) return;
     if (this.inselfall.lande(this.terrainLayer, id, runs, dy, this.pflanzen)) this.#zeichnePflanzenNeu();
     const g = inselGrenzen(runs);
-    if (stumm || !g) return;
+    if (stumm || !g || dy === 0) return;
     const unten = runs.map((wert, i) => (i % 3 === 0 ? wert : wert + dy));
     // Aufprall nach Masse und Fallhöhe: Staub, Druckwellen, Brocken, Bildzittern (alles nur Darstellung).
     const aufprall = aufprallEffekt(unten, dy, this.#erdfarbe());
@@ -870,6 +957,7 @@ export class Renderer {
     this.particles = [];
     this.trefferMarken = [];
     this.figurPosen.leere();
+    this.figurEffekte.leere();
     this.faelle.length = 0;
     this.letzteWerte = new Map();
     this.zahlen = [];
@@ -878,6 +966,7 @@ export class Renderer {
     this.narben = [];
     this.rauch = [];
     this.truemmer = [];
+    this.flugSchutt = [];
     this.inselfall.zuruecksetzen();
     this.wasserFertig = false;
     this.spuren = new Map();
@@ -931,6 +1020,10 @@ export class Renderer {
   updateParticles() {
     this.particles = schreitePartikelFort(this.particles);
     this.truemmer = schreiteTruemmerFort(this.truemmer);
+    if (this.flugSchutt.length > 0) {
+      const q = this.terrainSource;
+      this.flugSchutt = schreiteFlugSchutt(this.flugSchutt, q?.bitmap, q?.width ?? this.width, q?.height ?? this.height);
+    }
     this.inselfall.schritt();
   }
 
@@ -1314,11 +1407,28 @@ export class Renderer {
     const S = this.figurSkala;
     this.waffenStat.sprite = 0;
     this.waffenStat.ikone = 0;
+    const fz = this.figurStat;
+    fz.gezeichnet = 0; fz.uebersprungen = 0;
+    const zoomK = this.kamera?.zoom ?? 1;
+    // Sprite-Kante in Bildpunkten der Zeichenfläche: bestimmt die Mip-Stufe (siehe `stufeFuer`).
+    const spritePx = SPRITE_HOEHE * S * zoomK;
+    fz.stufe = spritePx;
+    const sicht = this.#sichtfeld(SPRITE_HOEHE * S * 1.3 + 80);
+    this.figurEffekte.aktualisiere(jetzt - this.figurZeit);
+    this.figurZeit = jetzt;
     for (const entity of entities) {
       if (!entity.alive) {
         this.#figurGestorben(entity.entityId, jetzt);
         continue;
       }
+      // Nur sichtbare Figuren werden animiert und gezeichnet (die aktive immer).
+      if (sicht && entity.entityId !== activePlayerId
+        && (entity.x < sicht.x0 || entity.x > sicht.x1 || entity.y < sicht.y0 || entity.y > sicht.y1)) {
+        this.figurPosen.ueberspringe(entity, jetzt);
+        fz.uebersprungen += 1;
+        continue;
+      }
+      fz.gezeichnet += 1;
       const color = TEAM_COLORS[entity.teamId % TEAM_COLORS.length];
 
       /*
@@ -1340,16 +1450,18 @@ export class Renderer {
       this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
       const fraktionId = this.fraktionVon(entity);
-      const fig = fraktionId
-        ? holeFigur(charakterFuer(fraktionId, entity.classId, entity.archetypeId))
-        : null;
+      const charakter = fraktionId ? charakterFuer(fraktionId, entity.classId, entity.archetypeId) : null;
+      const fig = charakter ? holeFigur(charakter) : null;
       const sk = fig ? S : 1;
+      const typ = charakter ? typFuer(charakter.id) : 'humanoid';
 
-      // Schatten
-      this.ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      this.ctx.beginPath();
-      this.ctx.ellipse(0, 11, 10 * sk, 3 * Math.min(sk, 1.6), 0, 0, Math.PI * 2);
-      this.ctx.fill();
+      // Schatten der klassischen Figur (die Sprites bringen ihren weichen Kontaktschatten mit)
+      if (!fig) {
+        this.ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, 11, 10 * sk, 3 * Math.min(sk, 1.6), 0, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
 
       const isActive = entity.entityId === activePlayerId;
       const angle = isActive && aim ? aim.angle : entity.angle;
@@ -1387,14 +1499,36 @@ export class Renderer {
         this.ctx.translate(0, FUSS_ABSTAND);
         this.ctx.scale(S, S);
         this.ctx.translate(0, -FUSS_ABSTAND);
+        const par = PARAMETER[typ];
+        const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
         const pose = this.figurPosen.pose(entity, jetzt, {
-          reduziert: this.reducedMotion, treffer, rueck: -rueck, winkel: angle, aktiv: isActive,
+          reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive,
+          feuer: feuerLeben, params: par, typ,
+          neigung: this.#bodenNeigung(entity.x, fussWelt),
+          hp: entity.maxHealth > 0 ? Math.max(0, Math.min(1, entity.health / entity.maxHealth)) : 0,
+          ergebnis: this.sieger !== null && this.sieger >= 0 ? (this.sieger === entity.teamId ? 1 : -1) : 0,
         });
         const zs = this.figurPosen.zustand(entity.entityId);
-        zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0;
+        zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0; zs.typ = typ;
+        // Wasserlinie an der Figur (lokale Höhe im Figurrahmen) und Blasen beim Waten.
+        let wasserY;
+        if ((entity.waterLevel ?? 0) > 0.03) {
+          const wy = this.#wasserLinie(entity.x);
+          if (wy < fussWelt - 1) wasserY = FUSS_ABSTAND + (wy - fussWelt) / S;
+          if (wasserY !== undefined && !this.reducedMotion && (this.time + entity.entityId * 7) % 50 === 0) {
+            this.figurEffekte.blasen(entity.x, wy + 2, 2);
+          }
+        }
         zeichneFigurSprite(this.ctx, fig, {
           team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
+          px: spritePx, breite: par.fussBreite, wasserY,
         });
+        // Die Waffe folgt dem Körper (Hangneigung, Neigung, Hüpfen), behält aber den echten Zielwinkel.
+        {
+          const r = pose.neigung + pose.rot;
+          const hh = FUSS_ABSTAND - HAND_HOEHE;
+          this.ctx.translate(pose.dx + hh * Math.sin(r), pose.dy - hh * (pose.sy - 1) + hh * (1 - Math.cos(r)));
+        }
         // Gehaltene Waffe: ihre Ikone am Zielstrahl; ohne Ikone das Rohr.
         const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
         const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
@@ -1462,7 +1596,7 @@ export class Renderer {
         this.ctx.restore();
       }
 
-      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0);
+      this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0, fig ? charakter.faction : null);
     }
   }
 
@@ -1509,14 +1643,77 @@ export class Renderer {
     const z = this.figurPosen.zustand(entityId);
     if (!z) return;
     if (z.fig) {
+      const par = PARAMETER[z.typ] ?? PARAMETER.humanoid;
+      const ertrinkt = z.nass > 0.5;
       this.faelle.push({
         fig: z.fig, x: z.x, y: z.y, winkel: z.winkel, team: z.team, t0: jetzt,
-        ertrinkt: z.nass > 0.5, blick: z.blick, vx: z.vx,
+        ertrinkt, blick: z.blick, vx: z.vx, tod: par.tod, breite: par.fussBreite,
       });
+      if (!this.reducedMotion) {
+        if (ertrinkt) this.figurEffekte.blasen(z.x, z.y + FUSS_ABSTAND, 9);
+        else this.figurEffekte.tod(par.tod, z.x, z.y + 2, z.team, z.blick);
+      }
     }
     this.figurPosen.vergiss(entityId);
     this.waffenZustand.delete(entityId);
     this.waffenDiagnose.delete(entityId);
+  }
+
+  /** Pose des Fall-Effekts im Format der Sprite-Zeichnung (wiederverwendetes Objekt). */
+  fallDarstellung(pose) {
+    const d = this.fallZeichenPose ?? (this.fallZeichenPose = {
+      dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1,
+    });
+    d.dx = pose.dx; d.dy = pose.dy; d.sx = pose.sx; d.sy = pose.sy; d.rot = pose.rot; d.flash = pose.flash;
+    return d;
+  }
+
+  /** Zeichnet Staub, Blasen und Splitter der Figuren. */
+  #drawFigurEffekte() {
+    this.figurEffekte.zeichne(this.ctx);
+  }
+
+  /** Sichtbarer Kartenausschnitt (mit Rand) für das Auslassen verdeckter Figuren, `null` ohne Kamera. */
+  #sichtfeld(rand) {
+    if (!this.kamera) return null;
+    const t = this.kamera.transformation();
+    const k = t.skalierung > 0 ? t.skalierung : 1;
+    const v = this.sichtTmp ?? (this.sichtTmp = { x0: 0, x1: 0, y0: 0, y1: 0 });
+    v.x0 = -t.versatzX / k - rand; v.x1 = (this.width - t.versatzX) / k + rand;
+    v.y0 = -t.versatzY / k - rand; v.y1 = (this.height - t.versatzY) / k + rand;
+    return v;
+  }
+
+  /**
+   * Neigung des Bodens unter den Füßen (rad, höchstens ±12°) aus der Kollisionsmaske:
+   * Höhe des Geländes 7 px links und rechts der Figur. In der Luft oder ohne Gelände 0.
+   */
+  #bodenNeigung(x, fussY) {
+    const q = this.terrainSource;
+    if (!q) return 0;
+    const { bitmap, width, height } = q;
+    const hoehe = (cx) => {
+      const c = Math.round(cx);
+      if (c < 0 || c >= width) return NaN;
+      const y1 = Math.min(height - 1, Math.round(fussY) + 12);
+      for (let y = Math.max(0, Math.round(fussY) - 9); y <= y1; y += 1) if (bitmap[y * width + c]) return y;
+      return NaN;
+    };
+    const m = hoehe(x);
+    const l = hoehe(x - 7);
+    const r = hoehe(x + 7);
+    if (Number.isNaN(m) || Number.isNaN(l) || Number.isNaN(r) || m - fussY > 5) return 0;
+    const w = Math.atan2(r - l, 14);
+    return w > NEIGUNG_MAX ? NEIGUNG_MAX : w < -NEIGUNG_MAX ? -NEIGUNG_MAX : w;
+  }
+
+  /** Höhe der Wasserlinie in Kartenpixeln an Stelle `x` (`NaN`, wenn dort kein Wasser steht). */
+  #wasserLinie(x) {
+    const o = this.wasserOben;
+    if (!o || !this.wasserFertig) return NaN;
+    const c = Math.floor(x / WATER_SCALE);
+    if (c < 0 || c >= o.length || o[c] < 0) return NaN;
+    return o[c] * WATER_SCALE;
   }
 
   /** Zeichnet die auslaufenden Fall-Effekte (nach den lebenden Figuren). */
@@ -1533,8 +1730,9 @@ export class Renderer {
       this.ctx.translate(0, -FUSS_ABSTAND);
       zeichneFigurSprite(this.ctx, f.fig, {
         team: f.team, winkel: f.blick > 0 ? 0 : Math.PI, aktiv: false, zeit: jetzt, reduziert: true,
-        alpha: pose.alpha,
-        pose: { dx: pose.dx, dy: pose.dy, sx: 1, sy: 1, rot: pose.rot, flash: 0 },
+        alpha: pose.alpha, breite: f.breite,
+        px: SPRITE_HOEHE * this.figurSkala * (this.kamera?.zoom ?? 1),
+        pose: this.fallDarstellung(pose),
       });
       this.ctx.restore();
     }
@@ -1547,7 +1745,7 @@ export class Renderer {
    * Pixel, und der Balken gehört zu ihr — ein Balken, der stehen bleibt, während
    * die Figur wackelt, liest sich als zwei Dinge.
    */
-  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false, spriteSkala = 0) {
+  #drawHealthBar(entity, versatz = { dx: 0, dy: 0 }, aktiv = false, spriteSkala = 0, fraktion = null) {
     const ratio = entity.maxHealth > 0 ? Math.max(0, entity.health / entity.maxHealth) : 0;
     // Klassische Figur: Schild wie bisher. Sprite: über dem Kopf des (größeren) Sprites, mitskaliert.
     const s = spriteSkala ? Math.max(1, Math.min(2.6, spriteSkala * 0.75)) : 1;
@@ -1560,6 +1758,13 @@ export class Renderer {
       {
         grenzen: this.#sicherInKarte(),
         fuss: entity.y + versatz.dy + FUSS_ABSTAND,
+      },
+      {
+        verz: spriteSkala ? (this.figurPosen.zustand(entity.entityId)?.pose.hpVerz ?? ratio) : ratio,
+        akzent: fraktion ? this.akzentJeFraktion.get(fraktion) : null,
+        gift: entity.dotsCount ?? 0,
+        boost: entity.boostMultiplier ?? 1,
+        zeit: performance.now() / 1000,
       },
     );
   }
@@ -1910,10 +2115,8 @@ export class Renderer {
 
   #drawParticles() {
     zeichneFunken(this.ctx, this.particles);
-    if (this.truemmer.length > 0) {
-      const [r, g, b] = this.palette?.deep ?? [92, 70, 52];
-      zeichneTruemmer(this.ctx, this.truemmer, [`rgb(${r}, ${g}, ${b})`, `rgb(${r + 24}, ${g + 18}, ${b + 12})`, '#3b2f26']);
-    }
+    if (this.truemmer.length > 0) zeichneTruemmer(this.ctx, this.truemmer, this.#materialStil().truemmer);
+    if (this.flugSchutt.length > 0) zeichneFlugSchutt(this.ctx, this.flugSchutt);
   }
 
   /**
@@ -2133,6 +2336,7 @@ export class Renderer {
      * Klammer mit den Weltfunktionen, danach die Bildschirm-Anzeigen (Windpfeil,
      * Mahlstrom) wieder ohne.
      */
+    this.sieger = state.winnerTeamId ?? null;
     this.#drawSky();
 
     /*
@@ -2223,6 +2427,7 @@ export class Renderer {
     this.#drawSpuren();
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawFaelle();
+    this.#drawFigurEffekte();
     this.#drawGuenther(state.guenther);
     this.#drawProjectiles(state.projectiles ?? [], state.entities ?? []);
     this.#drawWiederholung(wiederholung);

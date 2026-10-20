@@ -15,7 +15,7 @@ const KRATER_RAUHEIT = 0.1;
 const KRATER_RAUH_AB_RADIUS = 8;
 
 /** Ganzzahl-Mischer (Murmur-Finalizer): nur `Math.imul` und Verschiebungen, überall gleich. */
-function mische32(h) {
+export function mische32(h) {
   let v = h | 0;
   v ^= v >>> 16;
   v = Math.imul(v, 0x85ebca6b);
