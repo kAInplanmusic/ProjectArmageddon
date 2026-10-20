@@ -11,6 +11,8 @@ import {
   PAL, hash2, mischeRgb, css, gruenAnteil, folge,
 } from './stil.js';
 import { bodenArt } from './gelaendeStil.js';
+import { NEUE_BIOME } from '../shared/config/biome-neu.js';
+import { NEUE_ARTEN, zeichneNeuePflanze } from './pflanzenNeu.js';
 
 const BLATT = [46, 128, 30];
 const BLATT_DUNKEL = [22, 76, 24];
@@ -35,7 +37,8 @@ const BEWUCHS = Object.freeze({
  * @returns {Array<{art:string,x:number,y:number,h:number,spiegel:boolean,seed:number}>}
  */
 export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'gras') {
-  const dichte = (BEWUCHS[biomId] ?? 0.2) * (boden === 'fels' || boden === 'asche' ? 0.5 : 1);
+  const profil = NEUE_BIOME[biomId]?.pflanzen ?? null;
+  const dichte = profil ? profil.dichte : (BEWUCHS[biomId] ?? 0.2) * (boden === 'fels' || boden === 'asche' ? 0.5 : 1);
   const rows = new Int32Array(breite).fill(-1);
   for (let x = 0; x < breite; x += 1) {
     for (let y = 0; y < hoehe; y += 1) {
@@ -53,6 +56,14 @@ export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'g
     const eben = links >= 0 && rechts >= 0 && Math.abs(links - rechts) <= 14;
     if (y >= 0 && y < hoehe * 0.8 && zufall() < dichte + 0.1) {
       const w = zufall();
+      if (profil) {
+        const wahl = profil.arten[Math.floor(w * profil.arten.length) % profil.arten.length];
+        const neu = NEUE_ARTEN[wahl];
+        const hoehe0 = neu ? neu[0] + zufall() * neu[1] : 10 + zufall() * 24;
+        liste.push({ art: wahl, x: ix, y: y + 2, h: hoehe0, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 9999) });
+        x += 40 + zufall() * 60 / Math.max(0.35, dichte);
+        continue;
+      }
       let art = !eben ? (w < 0.5 ? 'busch' : 'gras')
         : w < 0.3 ? 'palme' : w < 0.55 ? 'busch' : w < 0.8 ? 'farn' : 'gras';
       // Passend zum Boden: Tannen im Schnee, Dürrgras statt Farn auf Sand, auf nacktem Fels nur Gestrüpp.
@@ -116,12 +127,14 @@ function blatt(ctx, x0, y0, winkel, laenge, breite, haenge, fuell, kontur) {
  * @param {{art:string,x:number,y:number,h:number,spiegel:boolean,seed:number}} p
  * @param {{blatt:string,dunkel:string,hell:string,stamm:string,kontur:string|null}} f
  */
-export function zeichnePflanze(ctx, p, f) {
+export function zeichnePflanze(ctx, p, f, surface = null) {
   const s = p.spiegel ? -1 : 1;
   ctx.save();
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  if (p.art === 'palme') {
+  if (NEUE_ARTEN[p.art]) {
+    zeichneNeuePflanze(ctx, p, f, surface ?? [110, 110, 110]);
+  } else if (p.art === 'palme') {
     const neigung = (hash2(p.seed, 1, 5) - 0.5) * p.h * 0.5;
     const kx = p.x + neigung * s;
     const ky = p.y - p.h;
@@ -280,7 +293,7 @@ export function pflanzenFarben(palette) {
 export function zeichnePflanzenSchicht(ctx, liste, breite, hoehe, palette) {
   ctx.clearRect(0, 0, breite, hoehe);
   const farben = pflanzenFarben(palette);
-  for (const p of liste) zeichnePflanze(ctx, p, farben);
+  for (const p of liste) zeichnePflanze(ctx, p, farben, palette.surface);
 }
 
 /**
@@ -305,7 +318,7 @@ export function zeichnePflanzenAusschnitt(ctx, liste, breite, hoehe, palette, be
   const farben = pflanzenFarben(palette);
   for (const p of liste) {
     const r = pflanzenRahmen(p, breite, hoehe);
-    if (r.x1 > x0 && r.x0 < x1 && r.y1 > y0 && r.y0 < y1) zeichnePflanze(ctx, p, farben);
+    if (r.x1 > x0 && r.x0 < x1 && r.y1 > y0 && r.y0 < y1) zeichnePflanze(ctx, p, farben, palette.surface);
   }
   ctx.restore();
 }

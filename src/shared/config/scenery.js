@@ -25,6 +25,9 @@
  */
 import { SeededRandom } from '../prng.js';
 import { PRIMARY_BIOME_BY_PRESET } from './backdrops.js';
+import {
+  NEUE_HIMMEL, NEUE_WASSER, NEUE_AMBIENTE, NEUE_LANDMARKEN, NEUE_BIOME,
+} from './biome-neu.js';
 
 // ------------------------------------------------------------------ Himmel
 
@@ -181,6 +184,7 @@ export const SKY_KINDS = Object.freeze([
     celestial: 'dim_sun',
     ambient: ['snow', 'fog_banks'],
   },
+  ...NEUE_HIMMEL,
 ]);
 
 // ------------------------------------------------------------------ Wasser
@@ -315,6 +319,7 @@ export const WATER_KINDS = Object.freeze([
     surface: 'grain',
     hazard: null,
   },
+  ...NEUE_WASSER,
 ]);
 
 // ------------------------------------------------------------------ Ambiente
@@ -342,6 +347,7 @@ export const AMBIENT_KINDS = Object.freeze({
   bubbles: { count: [20, 45], scale: [0.3, 0.8], alpha: 0.6, drift: 0.03, band: [0.4, 1] },
   fireflies: { count: [25, 55], scale: [0.3, 0.7], alpha: 0.85, drift: 0.04, band: [0.3, 0.9] },
   debris: { count: [15, 35], scale: [0.4, 1], alpha: 0.7, drift: 0.09, band: [0.2, 1] },
+  ...NEUE_AMBIENTE,
 });
 
 // ------------------------------------------------------------------ Landmarken
@@ -354,6 +360,7 @@ export const LANDMARK_KINDS = Object.freeze([
   'mountain_ridge', 'hill_soft', 'cliff', 'city_skyline', 'forest_line',
   'palm_grove', 'cactus_field', 'ruins', 'temple', 'crystal_spires',
   'ice_peaks', 'coral_reef', 'dunes', 'mesa', 'rock_arch', 'none',
+  ...NEUE_LANDMARKEN,
 ]);
 
 // ------------------------------------------------------------------ Biome
@@ -366,6 +373,7 @@ export const LANDMARK_KINDS = Object.freeze([
  * generativen Weg sind sie an das Biom gebunden, nicht an ein einzelnes Bild.
  */
 export const SCENERY_BIOMES = Object.freeze({
+  ...NEUE_BIOME,
   maritime: {
     label: 'Maritim & Meer',
     mapPreset: 'islands',

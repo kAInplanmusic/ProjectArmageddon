@@ -147,6 +147,8 @@ export class CollisionMask {
   #words; // Uint32Array
   #dirty = false;
   #craters = [];
+  /** Unzerstörbare Stoffzellen (`stoffkarte.geschuetzt`), `null` = alles zerstörbar. */
+  #schutz = null;
   #version = 0;
 
   constructor(width, height) {
@@ -256,6 +258,14 @@ export class CollisionMask {
   }
 
   /**
+   * Ab Zerstörungsfassung 5: Zellen, die die Stoffkarte als unzerstörbar kennt, bleiben bei Kratern stehen.
+   * @param {{geschuetzt:Uint8Array|null, spalten:number}|null} karte
+   */
+  setzeSchutz(karte) {
+    this.#schutz = karte?.geschuetzt ? { feld: karte.geschuetzt, spalten: karte.spalten } : null;
+  }
+
+  /**
    * Erzeugt eine Krater-Destruktion an (x, y) mit gegebenem Radius.
    * @param {number} x - Zentrum X
    * @param {number} y - Zentrum Y
@@ -263,7 +273,11 @@ export class CollisionMask {
    * @param {number|null} [tiefe] - Tiefe in Prozent (raue Form), `null` = Kreis
    */
   punchCrater(x, y, radius, tiefe = null) {
-    eachCraterCell(this.#width, this.#height, x, y, radius, (px, py) => this.setPixel(px, py, false), tiefe);
+    const s = this.#schutz;
+    eachCraterCell(this.#width, this.#height, x, y, radius, (px, py) => {
+      if (s && s.feld[(py >> 3) * s.spalten + (px >> 3)] === 1) return;
+      this.setPixel(px, py, false);
+    }, tiefe);
     this.#craters.push(tiefe === null || tiefe === undefined ? [x, y, radius] : [x, y, radius, tiefe]);
     this.#dirty = true;
   }

@@ -37,6 +37,7 @@ import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
+import { NEUE_BIOME, SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
 import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD, GUENTHER_AKTION_REGELN } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT } from '../shared/config/cookie.js';
 import { exposeDebugApi } from './debugApi.js';
@@ -610,6 +611,8 @@ class Game {
     const kartentyp = 'autonom';
     // Gewählte Kulisse (leer = automatisch aus dem Seed).
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
+    // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
+    const biom = document.getElementById('cfg-biom')?.value || null;
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
     // Bodenberechnung: 'auto' versucht WebGPU, alles andere bleibt auf der CPU.
     const gpuWahl = document.getElementById('cfg-gpu')?.value ?? 'off';
@@ -625,11 +628,11 @@ class Game {
     if (serverUrl) {
       return this.startOnline({
         serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
-        backdropKey, orientation, sidegrades, loadouts, fraktionen,
+        backdropKey, orientation, sidegrades, loadouts, fraktionen, biom,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts, fraktionen,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts, fraktionen, biom,
     });
   }
 
@@ -1021,6 +1024,22 @@ class Game {
    * sechzig Einträgen wäre jede Änderung am Katalog sonst eine zweite, von Hand
    * nachzuziehende Liste — und die beiden würden auseinanderlaufen.
    */
+  /** Füllt die Biomauswahl im Menü aus den Sonderbiomen (`config/biome-neu.js`). */
+  fillBiomOptions() {
+    const auswahl = document.getElementById('cfg-biom');
+    if (!auswahl) return 0;
+    const feste = Array.from(auswahl.options).filter(o => o.value === '' || o.value === 'klassisch');
+    auswahl.replaceChildren(...feste);
+    for (const id of SONDERBIOM_IDS) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = NEUE_BIOME[id].label;
+      option.title = NEUE_BIOME[id].beschreibung;
+      auswahl.append(option);
+    }
+    return SONDERBIOM_IDS.length;
+  }
+
   fillBackdropOptions() {
     const auswahl = document.getElementById('cfg-backdrop');
     if (!auswahl) return 0;
@@ -1048,7 +1067,7 @@ class Game {
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '', orientation = 'landscape',
-    sidegrades = null, loadouts = null, fraktionen = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null,
   } = {}) {
     this.network?.disconnect();
     this.network = null;
@@ -1059,7 +1078,7 @@ class Game {
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
     // nach dem Start.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts,
+      seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom,
       guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, // neue Partien: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
@@ -1238,7 +1257,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null,
+    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null,
   } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
@@ -1275,7 +1294,7 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, preset, kartentyp, seed, orientation,
+            teams, preset, kartentyp, seed, orientation, ...(biom ? { biom } : {}),
             /*
              * Genau EINE der beiden Angaben — sie widersprechen sich sonst.
              *
@@ -1504,6 +1523,11 @@ class Game {
     if (!this.remoteTerrain) return;
     const urteil = bewerteTerrainHash(this.remoteTerrain, meldung, this.terrainAbweichungOffen);
     this.terrainAbweichungOffen = urteil.urteil === 'abwarten';
+    if (urteil.urteil === 'stoffe') {
+      if (!this.stoffeGemeldet) this.hud.log('Stoffkarte weicht vom Server ab — Material-Reaktionen können abweichen', 'danger');
+      this.stoffeGemeldet = true;
+      return;
+    }
     if (urteil.urteil !== 'abweichung') return;
     this.hud.log(
       `Terrain-Hash weicht ab (Client ${urteil.lokal?.toString(16)}, Server ${Number(meldung.hash).toString(16)}) — Karte wird neu aufgebaut`,
@@ -1524,7 +1548,7 @@ class Game {
   #buildRemoteTerrain(quelle) {
     const { seed, preset, orientation, kartentyp } = quelle;
     this.remoteTerrainQuelle = quelle;
-    const terrain = buildTerrainForSeed(seed, preset, orientation, kartentyp);
+    const terrain = buildTerrainForSeed(seed, preset, orientation, kartentyp, quelle);
     this.remoteTerrain = terrain;
     /*
      * Fläche und Kulisse zuerst — die Kulisse liefert die Bodenfarbe für die
@@ -1538,7 +1562,8 @@ class Game {
      * hat `kartentyp` im Snapshot bekommen und hier weggeworfen.
      */
     this.#applyOrientation(orientation, terrain.width, terrain.height);
-    this.setSceneryFromSeed(seed, preset);
+    this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
+    this.renderer.stoffkarte = terrain.stoffkarte ?? null;
     this.renderer.buildTerrainLayer(terrain.bitmap, terrain.width, terrain.height);
     this.renderer.gefuehlZuruecksetzen();
     this.hud.log(`Terrain aus Seed ${seed} rekonstruiert`, 'neutral');
@@ -2523,8 +2548,8 @@ class Game {
    * Server liefert nur Seed und Ausrichtung, die Kulisse entsteht daraus auf
    * beiden Seiten gleich.
    */
-  setSceneryFromSeed(seed, preset) {
-    const kulisse = pickScenery(seed, preset);
+  setSceneryFromSeed(seed, preset, biomId = null) {
+    const kulisse = pickScenery(seed, preset, biomId);
     this.renderer.setScenery(kulisse);
     return kulisse;
   }
@@ -2574,6 +2599,7 @@ class Game {
   }
 
   #afterWorldReady(bitmap, water) {
+    this.renderer.stoffkarte = this.match.stoffkarte ?? null;
     this.renderer.buildTerrainLayer(bitmap, this.match.width, this.match.height);
     /*
      * Neue Karte: Alles, was sich das Gefühl gemerkt hat, gehört zur ALTEN.
@@ -3573,6 +3599,7 @@ function buildRosterView() {
 if (typeof document !== 'undefined') {
   const fuelle = () => {
     game.fillBackdropOptions();
+    game.fillBiomOptions();
     // Sidegrade-Felder aus der Config füllen — im Markup steht keine Option.
     game.fillSidegradeOptions();
     // Loadout-Auswahl je Spielerplatz (Klasse und Archetyp entkoppelt).

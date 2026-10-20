@@ -26,6 +26,13 @@
  *     Logeinträge der Maske: `['x', ...Läufe]` (Zellen weg), `['p', x, y, ...]` (Schutt
  *     gesetzt), `['r', x1, y1, x2, y2, ...]` (Setzrutsch). Fassung 1–3 bleiben Bit für Bit.
  *
+ *   - `ZERSTOERUNG_STOFF` (5): wie 4, dazu wirkt die Stoffkarte (`config/stoffe.js`, nur auf Karten der
+ *     Geländefassung 2): Radius und Tiefe jedes Kraters folgen Stoff × Schadensart × Waffencharakter,
+ *     unzerstörbare Zellen bleiben stehen, brüchige Stoffe splittern, Feuer frisst Brennbares, Hitze
+ *     schmilzt Eis und Schnee, Wasser löscht, ein Erdbeben setzt nur weichen Boden, brüchige Inseln
+ *     brechen früher. Neues Ereignis `terrain_resisted`; `terrain_destroyed` trägt `stoff` und `reaktion`.
+ *     Fassung 1–4 bleiben Bit für Bit.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/zerstoerung
@@ -35,12 +42,13 @@ export const ZERSTOERUNG_ALT = 1;
 export const ZERSTOERUNG_GELAENDE = 2;
 export const ZERSTOERUNG_SCHOLLEN = 3;
 export const ZERSTOERUNG_BRUCH = 4;
-export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_BRUCH;
+export const ZERSTOERUNG_STOFF = 5;
+export const ZERSTOERUNG_STANDARD = ZERSTOERUNG_STOFF;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereZerstoerung(fassung) {
   return fassung === ZERSTOERUNG_ALT || fassung === ZERSTOERUNG_GELAENDE || fassung === ZERSTOERUNG_SCHOLLEN
-    || fassung === ZERSTOERUNG_BRUCH ? fassung : ZERSTOERUNG_STANDARD;
+    || fassung === ZERSTOERUNG_BRUCH || fassung === ZERSTOERUNG_STOFF ? fassung : ZERSTOERUNG_STANDARD;
 }
 
 /**

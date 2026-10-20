@@ -309,6 +309,8 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
   terrain_crumble: beide((k, n) => { k.renderer?.bruchOptik(n); }),
   terrain_quake: beide((k, n) => { k.renderer?.bebenOptik(n); }),
+  /* Fassung 5: der Einschlag traf unzerstörbaren Stoff (Metall, Grundgestein) und ließ ihn stehen — nur Funken. */
+  terrain_resisted: beide((k, n) => { k.renderer?.spawnExplosionParticles?.(n.x, n.y, Math.min(n.radius || 8, 10)); }),
 
   /*
    * Explosion.

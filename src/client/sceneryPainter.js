@@ -318,6 +318,27 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       break;
     }
 
+    case 'spores': {
+      const steig = ((element.phase - zeit * 0.004) % 1.1 + 1.1) % 1.1;
+      const ry = (element.y - steig * 0.25) * hoehe;
+      const wanken = Math.sin((zeit * 0.02 + element.phase * 9) * Math.PI) * 10;
+      const an = 0.4 + 0.6 * Math.abs(Math.sin((zeit * 0.015 + element.phase * 7) * Math.PI));
+      ctx.fillStyle = `rgba(214,170,255,${an * 0.55 * skala})`;
+      ctx.beginPath();
+      ctx.arc(x + wanken, ry, Math.max(1, 2.2 * skala), 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+
+    case 'glimmer': {
+      const an = Math.abs(Math.sin((zeit * 0.03 + element.phase * 13) * Math.PI));
+      ctx.fillStyle = `rgba(190,210,255,${an * 0.8 * skala})`;
+      const g = Math.max(1, 2.4 * skala);
+      ctx.fillRect(x - g / 2, y - g * 1.5, g, g * 3);
+      ctx.fillRect(x - g * 1.5, y - g / 2, g * 3, g);
+      break;
+    }
+
     case 'lightning': {
       // Nur kurz sichtbar, in unregelmäßigen Abständen: ein Gewitter, das
       // dauerblitzt, wäre eine Lichtshow.
@@ -358,7 +379,7 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
  */
 export function drawAmbient(ctx, breite, hoehe, scenery, zeit, imVordergrund) {
   const hinten = new Set(['stars', 'nebula_glow', 'aurora_bands', 'clouds_few', 'clouds_heavy',
-    'clouds_storm', 'haze', 'fog_banks', 'birds', 'lightning']);
+    'clouds_storm', 'haze', 'fog_banks', 'birds', 'lightning', 'glimmer']);
   ctx.save();
   for (const element of scenery.ambient.elemente) {
     const gehoertNachHinten = hinten.has(element.kind);
@@ -488,6 +509,69 @@ function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
           ctx.lineTo(bx, grundlinie - sh);
           ctx.lineTo(bx + sb * 0.35, grundlinie - sh * 0.75);
           ctx.lineTo(bx + sb, grundlinie);
+        }
+        break;
+      }
+      case 'volcano': {
+        // Kegel mit abgeflachtem Krater und Lavaschein an der Spitze.
+        ctx.moveTo(x - breite_ * 0.5, grundlinie);
+        ctx.lineTo(x - breite_ * 0.1, grundlinie - hoehe * 0.95);
+        ctx.lineTo(x - breite_ * 0.03, grundlinie - hoehe * 0.88);
+        ctx.lineTo(x + breite_ * 0.04, grundlinie - hoehe * 0.95);
+        ctx.lineTo(x + breite_ * 0.5, grundlinie);
+        break;
+      }
+      case 'floating_isles': {
+        // Schwebende Brocken mit spitzer Unterseite, in verschiedener Höhe.
+        for (let i = 0; i < 4; i += 1) {
+          const bx = x - breite_ / 2 + ((i + 0.5) / 4) * breite_;
+          const by = grundlinie - hoehe * (0.45 + 0.4 * Math.abs(Math.sin(i * 2.3 + 0.4)));
+          const bb = breite_ * (0.07 + 0.04 * Math.abs(Math.cos(i * 1.7)));
+          ctx.moveTo(bx - bb, by);
+          ctx.quadraticCurveTo(bx, by - bb * 0.5, bx + bb, by);
+          ctx.lineTo(bx + bb * 0.25, by + bb * 1.2);
+          ctx.lineTo(bx - bb * 0.2, by + bb * 0.8);
+        }
+        break;
+      }
+      case 'mushroom_grove': {
+        for (let i = 0; i < 5; i += 1) {
+          const bx = x - breite_ / 2 + ((i + 0.5) / 5) * breite_;
+          const bh = hoehe * (0.4 + 0.5 * Math.abs(Math.sin(i * 1.6 + 0.3)));
+          const stiel = breite_ * 0.014;
+          const hut = breite_ * (0.05 + 0.03 * Math.abs(Math.cos(i * 1.1)));
+          ctx.rect(bx - stiel, grundlinie - bh, stiel * 2, bh);
+          ctx.moveTo(bx - hut, grundlinie - bh + hut * 0.3);
+          ctx.quadraticCurveTo(bx, grundlinie - bh - hut * 1.1, bx + hut, grundlinie - bh + hut * 0.3);
+          ctx.closePath();
+        }
+        break;
+      }
+      case 'scrap_towers': {
+        // Kranausleger, Tanks und schiefe Blöcke.
+        ctx.rect(x - breite_ * 0.42, grundlinie - hoehe * 0.5, breite_ * 0.12, hoehe * 0.5);
+        ctx.rect(x - breite_ * 0.22, grundlinie - hoehe * 0.8, breite_ * 0.05, hoehe * 0.8);
+        ctx.rect(x - breite_ * 0.22, grundlinie - hoehe * 0.82, breite_ * 0.38, hoehe * 0.04);
+        ctx.rect(x + breite_ * 0.1, grundlinie - hoehe * 0.82, breite_ * 0.015, hoehe * 0.3);
+        ctx.rect(x + breite_ * 0.22, grundlinie - hoehe * 0.4, breite_ * 0.2, hoehe * 0.4);
+        break;
+      }
+      case 'glacier_wall': {
+        ctx.moveTo(x - breite_ / 2, grundlinie);
+        for (let i = 0; i <= 12; i += 1) {
+          const t = i / 12;
+          ctx.lineTo(x - breite_ / 2 + t * breite_, grundlinie - hoehe * (0.55 + 0.25 * Math.abs(Math.sin(i * 2.7))));
+        }
+        ctx.lineTo(x + breite_ / 2, grundlinie);
+        break;
+      }
+      case 'kelp_forest': {
+        for (let i = 0; i < 9; i += 1) {
+          const bx = x - breite_ / 2 + ((i + 0.5) / 9) * breite_;
+          const bh = hoehe * (0.4 + 0.5 * Math.abs(Math.sin(i * 1.9)));
+          ctx.moveTo(bx - 2, grundlinie);
+          ctx.quadraticCurveTo(bx + 14, grundlinie - bh * 0.5, bx - 4, grundlinie - bh);
+          ctx.quadraticCurveTo(bx + 20, grundlinie - bh * 0.5, bx + 4, grundlinie);
         }
         break;
       }

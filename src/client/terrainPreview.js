@@ -14,6 +14,9 @@ import { generateTerrain } from '../shared/terrainGen.js';
 import { erzeugeAutonomeKarte } from '../shared/terrainGen3.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { MAP_SIZES, mapSizeFor } from '../engine/match.js';
+import { GELAENDE_ALT, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
+import { ZERSTOERUNG_STOFF } from '../shared/config/zerstoerung.js';
+import { geschuetztAm, stoffHash } from '../shared/stoffkarte.js';
 
 /**
  * Die Naht, an der ein `lobby_snapshot` in Terrain-Eingaben uebersetzt wird.
@@ -35,7 +38,8 @@ import { MAP_SIZES, mapSizeFor } from '../engine/match.js';
  *
  * @param {object} payload - der `lobby_snapshot` (oder ein Teil davon)
  * @param {object} [rueckfall] - Werte, die fuer fehlende Felder gelten
- * @returns {{seed: *, preset: string, orientation: string, kartentyp: string|null}}
+ * @returns {{seed: *, preset: string, orientation: string, kartentyp: string|null, gelaende: number, biom: string|null, zerstoerung: number|null}}
+ *   `gelaende`, `biom` (aufgelöstes Sonderbiom oder Wahl) und `zerstoerung` fehlen bei älteren Servern: dann gilt Fassung 1.
  */
 export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
   const {
@@ -48,6 +52,9 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
     preset: payload.preset ?? presetRueckfall,
     orientation: payload.orientation ?? orientationRueckfall,
     kartentyp: payload.kartentyp ?? kartentypRueckfall,
+    gelaende: payload.gelaende ?? GELAENDE_ALT,
+    biom: payload.biom ?? null,
+    zerstoerung: payload.zerstoerung ?? null,
   };
 }
 
@@ -56,8 +63,9 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
  * @param {string} [preset='hills']
  * @param {string} [orientation='landscape'] - 'landscape' oder 'portrait'
  * @param {string|null} [kartentyp=null] - 'autonom' waehlt den Server-Generator
+ * @param {{gelaende?:number, biom?:string|null, zerstoerung?:number|null}} [fassung] - Geländefassung, Biomwahl und Zerstörungsfassung des Servers
  */
-export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'landscape', kartentyp = null) {
+export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'landscape', kartentyp = null, fassung = {}) {
   const masse = mapSizeFor(orientation);
   const manager = new MatchSeedManager(seed);
   /*
@@ -74,14 +82,23 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
   const rng = manager.getSubRng('TERRAIN');
   const gebaut = kartentyp === 'autonom'
     ? (() => {
-      const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height });
-      return { bitmap: k.bitmap, waterLevel: k.wasserY };
+      const g = loeseGelaende(fassung.gelaende ?? GELAENDE_ALT, fassung.biom ?? null, seed);
+      const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height, biom: g.sonderbiom, stoffe: g.gelaende >= GELAENDE_BIOME });
+      return { bitmap: k.bitmap, waterLevel: k.wasserY, stoffkarte: k.stoffkarte ?? null, sonderbiom: g.sonderbiom };
     })()
     : generateTerrain({ rng, width: masse.width, height: masse.height, preset });
   const { bitmap, waterLevel } = gebaut;
+  const mask = CollisionMask.fromBitmap(bitmap, masse.width, masse.height);
+  const stoffkarte = gebaut.stoffkarte ?? null;
+  // Wie der Server: unzerstörbare Zellen schützt erst Zerstörungsfassung 5.
+  const schutz = (fassung.zerstoerung ?? 0) >= ZERSTOERUNG_STOFF ? stoffkarte : null;
+  mask.setzeSchutz(schutz);
   return {
     bitmap,
-    mask: CollisionMask.fromBitmap(bitmap, masse.width, masse.height),
+    mask,
+    stoffkarte,
+    schutz,
+    sonderbiom: gebaut.sonderbiom ?? null,
     waterLevel,
     width: masse.width,
     height: masse.height,
@@ -99,6 +116,7 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
 export function applyCraterToTerrain(terrain, x, y, radius, tiefe = null) {
   if (!terrain?.bitmap) return;
   eachCraterCell(terrain.width, terrain.height, x, y, radius, (px, py) => {
+    if (terrain.schutz && geschuetztAm(terrain.schutz, px, py)) return;
     terrain.bitmap[py * terrain.width + px] = 0;
   }, tiefe);
   terrain.mask?.punchCrater(x, y, radius, tiefe);
@@ -218,6 +236,10 @@ export function terrainHash(terrain) {
  */
 export function bewerteTerrainHash(terrain, meldung, wartet = false) {
   const lokal = terrainHash(terrain);
+  // Die Stoffkarte ändert sich im Spiel nie: ein Unterschied ist immer eine Abweichung des Nachbaus.
+  if (terrain?.stoffkarte && meldung.stoffe !== undefined && stoffHash(terrain.stoffkarte) !== meldung.stoffe) {
+    return { urteil: 'stoffe', lokal };
+  }
   // Inseln im Fall stehen in der Server-Maske nicht: Der Vergleich wäre bis zur Landung falsch.
   if (lokal === null || lokal === meldung.hash || meldung.faellt > 0) return { urteil: 'gleich', lokal };
   const standGleich = terrain.mask.craterCount === meldung.craters

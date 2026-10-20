@@ -73,6 +73,7 @@ export function baueTerrain(quelle) {
   let kartencharakter = null;
   let kartenkennzahlen = null;
   let material = null;
+  let stoffkarte = null;
 
   if (quelle.kartentyp === 'autonom') {
     /*
@@ -88,9 +89,12 @@ export function baueTerrain(quelle) {
       rng: terrainRng,
       width: quelle.width,
       height: quelle.height,
+      biom: quelle.biom ?? null,
+      stoffe: Boolean(quelle.stoffe),
     });
     bitmap = k.bitmap;
     waterLevel = k.wasserY;
+    stoffkarte = k.stoffkarte ?? null;
     kartencharakter = k.charakter;
     kartenkennzahlen = k.kennzahlen;
     material = k.material ?? null;
@@ -133,6 +137,7 @@ export function baueTerrain(quelle) {
   return {
     bitmap,
     material,
+    stoffkarte,
     waterBaseY: waterLevel,
     kartencharakter,
     kartenkennzahlen,

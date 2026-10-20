@@ -131,3 +131,45 @@ if (haeufigstes && haeufigstes[1] / ANZAHL > 0.6) {
   console.log('  Die Schwellen sind so gesetzt, dass eine Landschaft dominiert.');
   console.log('  Für mehr Abwechslung müssten sie sinken.');
 }
+
+/*
+ * Sonderbiome (config.gelaende 2): Jede Biom-Konfiguration muss eine spielbare Karte liefern.
+ * 30 Seed×Biom-Karten über alle Sonderbiome: Spawnpunkte erreichbar, Wasseranteil im Rahmen,
+ * Stoffkarte vorhanden und Server/Client gleich.
+ */
+const { MatchController } = await import('../src/engine/match.js');
+const { NEUE_BIOME, SONDERBIOM_IDS } = await import('../src/shared/config/biome-neu.js');
+const { stoffHash, zaehleStoffe } = await import('../src/shared/stoffkarte.js');
+const { buildTerrainForSeed } = await import('../src/client/terrainPreview.js');
+
+console.log('');
+console.log('DIE SONDERBIOME — IST JEDE KONFIGURATION SPIELBAR?');
+console.log('');
+let fehler = 0;
+const proBiom = new Map();
+for (let i = 0; i < 30; i += 1) {
+  const biom = SONDERBIOM_IDS[i % SONDERBIOM_IDS.length];
+  const seed = 700000 + i * 7607;
+  const fassung = { gelaende: 2, zerstoerung: 5 };
+  const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, turnDurationMs: 2000, ...fassung });
+  m.start();
+  m.consumeEvents();
+  const c = buildTerrainForSeed(seed, 'hills', 'landscape', 'autonom', { ...fassung, biom });
+  const wasser = 1 - c.waterLevel / m.height;
+  const probleme = [];
+  if (!m.erreichbarkeit?.ok) probleme.push(`Spawn nicht erreichbar: ${m.erreichbarkeit?.grund}`);
+  if (wasser < 0 || wasser > 0.6) probleme.push(`Wasseranteil ${(wasser * 100).toFixed(0)} %`);
+  if (!m.stoffkarte) probleme.push('keine Stoffkarte');
+  else if (stoffHash(m.stoffkarte) !== stoffHash(c.stoffkarte)) probleme.push('Client weicht ab');
+  const anzahl = m.stoffkarte ? zaehleStoffe(m.stoffkarte, c.bitmap).size : 0;
+  if (anzahl < 2) probleme.push('nur ein Stoff');
+  const z = proBiom.get(biom) ?? { n: 0, wasser: 0, stoffe: 0 };
+  proBiom.set(biom, { n: z.n + 1, wasser: z.wasser + wasser, stoffe: z.stoffe + anzahl });
+  if (probleme.length) { fehler += 1; console.log(`  FEHLER ${biom} Seed ${seed}: ${probleme.join('; ')}`); }
+}
+for (const [biom, z] of proBiom) {
+  console.log(`  ${biom.padEnd(15)} ${String(z.n).padStart(2)} Karten  Wasser Ø ${(z.wasser / z.n * 100).toFixed(0).padStart(2)} %  Stoffe Ø ${(z.stoffe / z.n).toFixed(1)}  ${NEUE_BIOME[biom].label}`);
+}
+console.log('');
+console.log(fehler ? `  ${fehler} Karten fehlerhaft` : `  Alle ${SONDERBIOM_IDS.length} Sonderbiome: 30 Karten ohne Fehler.`);
+if (fehler) process.exitCode = 1;

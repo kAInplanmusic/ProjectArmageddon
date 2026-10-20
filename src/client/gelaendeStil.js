@@ -12,6 +12,7 @@
  *
  * @module gelaendeStil
  */
+import { tinteStoffe } from './stoffOptik.js';
 import {
   PAL, hash2, rauschen1, mischeRgb, hexRgb, gruenAnteil, css,
 } from './stil.js';
@@ -247,10 +248,10 @@ function tabelle(laenge, skala, seed) {
  * @param {number} [seed]
  * @returns {Array<{x:number,y:number,h:number}>} Grasbüschel-Positionen (für den Aufrufer ohne Belang)
  */
-export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0) {
+export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null) {
   const ctx = layer.getContext('2d');
   const bild = ctx.getImageData(0, 0, breite, hoehe);
-  const buescheln = faerbeGelaende(bild.data, bitmap, breite, hoehe, palette, seed);
+  const buescheln = faerbeGelaende(bild.data, bitmap, breite, hoehe, palette, seed, stoffkarte);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, buescheln.liste, buescheln.saum, seed);
   return buescheln.liste;
@@ -268,12 +269,12 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0)
  * @param {{getContext:function}} layer - leere Ebene in Kartengröße
  * @returns {Array<{x:number,y:number,h:number}>} Grasbüschel-Positionen
  */
-export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 0) {
+export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null) {
   const ctx = layer.getContext('2d');
   const bild = ctx.createImageData(breite, hoehe);
   const d = bild.data;
   for (let i = 0, n = breite * hoehe; i < n; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
-  const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed);
+  const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed, stoffkarte);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);
   return ergebnis.liste;
@@ -353,7 +354,7 @@ function baueTabellen(breite, hoehe, palette, seed) {
 }
 
 /** Rechenkern der Färbung: schreibt in `d` (RGBA, Deckkraft schon gesetzt). */
-export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
+export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null) {
   const { nx, ny, n2, p2x, p2y, n3, p3x, p3y, lcx, lcy, lsz, lr, lg, lb, lflag, lang, inv2, inv3, p1, wxy, wxy2, mx, kachel, adern, strata, LAGE_RAND, lagen, lagenFein, art, saum, erde, ERDE_TIEFE, slotOff, vsA, vsB, lyA, lyB, vignX, tiefeT, nenner } = baueTabellen(breite, hoehe, palette, seed);
   const runStart = new Int32Array(breite).fill(-1);
 
@@ -541,6 +542,7 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0) {
   const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);
   zeichneRand(d, bitmap, breite, hoehe, art);
   zeichneKontur(d, bitmap, breite, hoehe);
+  if (stoffkarte) tinteStoffe(d, bitmap, breite, hoehe, stoffkarte, seed);
   return { liste: buescheln, saum };
 }
 

@@ -34,6 +34,7 @@ import {
 import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { MATCH_RULES } from '../shared/config/match.js';
+import { stoffHash } from '../shared/stoffkarte.js';
 
 /** Zugpause vor jedem Zug (siehe `MATCH_RULES.turnPauseSeconds`). */
 // `PA_ZUGPAUSE_SEKUNDEN` überschreibt die Vorgabe (Tests und Lasttests spielen ohne Pause).
@@ -106,7 +107,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -151,6 +152,8 @@ class LobbySession {
       zerstoerung,
       waffen,
       kisten,
+      gelaende,
+      biom: lobby.biom ?? null,
       schaden,
       guenther,
       cookie,
@@ -183,6 +186,8 @@ class LobbySession {
       zerstoerung: this.match.zerstoerung,
       waffen: this.match.waffen,
       kisten: this.match.kisten,
+      gelaende: this.match.gelaende,
+      biom: lobby.biom ?? null,
       schaden: this.match.schaden,
       guenther: this.match.guenther,
       cookie: this.match.cookie,
@@ -541,6 +546,11 @@ class LobbySession {
     this.onEmpty?.(this.lobby.id);
   }
 
+  /** Geländefassung, aufgelöstes Biom und Zerstörungsfassung: Der Client baut Karte und Stoffkarte damit nach. */
+  gelaendeFelder() {
+    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, zerstoerung: this.match.zerstoerung };
+  }
+
   /** Fügt einen Client hinzu und schickt ihm den Startzustand. */
   attach(token, socket) {
     this.syncSeats();
@@ -555,6 +565,7 @@ class LobbySession {
       preset: this.lobby.preset,
       kartentyp: this.lobby.kartentyp ?? null,
       orientation: this.lobby.orientation ?? 'landscape',
+      ...this.gelaendeFelder(),
       entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
       // Alle Figuren dieses Beitrags (Matcharten: ein ganzes Team).
       entityIds: this.lobby.seats
@@ -600,6 +611,7 @@ class LobbySession {
       preset: this.lobby.preset,
       kartentyp: this.lobby.kartentyp ?? null,
       orientation: this.lobby.orientation ?? 'landscape',
+      ...this.gelaendeFelder(),
       laeuft: this.laeuft,
       teams: this.lobby.teams,
       besetzteTeams: new Set(
@@ -1027,6 +1039,7 @@ class LobbySession {
       inset: this.match.maelstrom?.inset ?? 0,
       // Inseln im Fall stehen nicht in der Maske: Der Client darf dann nicht vergleichen.
       faellt: this.match.setzung?.faellt ?? 0,
+      ...(this.match.stoffkarte ? { stoffe: stoffHash(this.match.stoffkarte) } : {}),
     };
     if (mitKratern) stand.craters = terrain.craterLog;
     return stand;
@@ -1304,6 +1317,7 @@ export class GameServer {
               zerstoerung: options.zerstoerung,
               waffen: options.waffen,
               kisten: options.kisten,
+              gelaende: options.gelaende,
               schaden: options.schaden,
               guenther: options.guenther,
               cookie: options.cookie,
@@ -1547,6 +1561,7 @@ export class GameServer {
           preset: body.preset ?? 'hills',
           // Leerstring und fehlend sind gleichbedeutend: „der bewährte Generator".
           kartentyp: body.kartentyp || null,
+          biom: typeof body.biom === 'string' ? body.biom : null,
           orientation: body.orientation ?? 'landscape',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',

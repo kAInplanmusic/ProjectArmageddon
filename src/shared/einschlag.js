@@ -23,6 +23,7 @@
  *
  * @module shared/einschlag
  */
+import { materialAn } from './stoffkarte.js';
 
 /** Kantenlänge einer Wasserzelle in Weltpixeln (gleich `WATER_SCALE` in `engine/match.js`; Test prüft das). */
 export const WASSER_ZELLE = 4;
@@ -107,4 +108,14 @@ const GUELTIG = Object.freeze(['wasser', 'fels', 'erde']);
 export function materialAusEreignis(nutzlast) {
   const m = nutzlast?.material;
   return GUELTIG.includes(m) ? m : null;
+}
+
+/**
+ * Einhaken der Stoffkarte (`shared/stoffkarte.js`): der Materialschlüssel am Einschlag
+ * ('erde', 'fels', 'metall', ...) oder `null` ohne Karte. NUR der Schlüssel — ein
+ * stoffabhängiger Klang (z. B. Metall) ist bewusst nicht gebaut; `klassifiziereEinschlag`
+ * bleibt bei wasser/fels/erde.
+ */
+export function stoffSchluesselAmEinschlag(stoffkarte, x, y) {
+  return stoffkarte ? (materialAn(stoffkarte, x, y)?.key ?? null) : null;
 }

@@ -21,6 +21,7 @@ import { WAFFEN_ALT } from '../shared/config/waffen-fassung.js';
 import { KISTEN_ALT } from '../shared/config/kisten.js';
 import { GUENTHER_ALT } from '../shared/config/guenther.js';
 import { COOKIE_ALT } from '../shared/config/cookie.js';
+import { GELAENDE_ALT } from '../shared/config/gelaende.js';
 import { SCHADEN_ALT } from '../shared/config/schaden.js';
 
 export const PERSISTENCE_VERSION = 1;
@@ -154,6 +155,7 @@ export function serializeLobby(lobby, session) {
     orientation: lobby.orientation ?? 'landscape',
     // Ohne diese Felder entstand nach einem Neustart eine andere Karte/Besetzung (Audit 2026-10-13).
     kartentyp: lobby.kartentyp ?? null,
+    biom: lobby.biom ?? null,
     unitsPerPlayer: lobby.unitsPerPlayer ?? null,
     sidegrades: Array.isArray(lobby.sidegrades) ? lobby.sidegrades : null,
     loadouts: Array.isArray(lobby.loadouts) ? lobby.loadouts : null,
@@ -227,6 +229,7 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
     preset: saved.preset,
     orientation: saved.orientation ?? 'landscape',
     kartentyp: saved.kartentyp ?? saved.replay?.config?.kartentyp ?? null,
+    biom: saved.biom ?? saved.replay?.config?.biom ?? null,
     unitsPerPlayer: saved.unitsPerPlayer ?? null,
     sidegrades: saved.sidegrades ?? null,
     loadouts: saved.loadouts ?? null,
@@ -267,6 +270,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       waffen: saved.replay.config?.waffen ?? WAFFEN_ALT,
       // Alte Sicherungen ohne `kisten`: Altrate (10/85/5 %), keine Obergrenze.
       kisten: saved.replay.config?.kisten ?? KISTEN_ALT,
+      // Alte Sicherungen ohne `gelaende`: Biom folgt der Karte, keine Stoffkarte.
+      gelaende: saved.replay.config?.gelaende ?? GELAENDE_ALT,
       // Alte Sicherungen ohne `schaden`: keine Mali je Schadensart.
       schaden: saved.replay.config?.schaden ?? SCHADEN_ALT,
       // Alte Sicherungen ohne `guenther`/`cookie`: nur die alten Günther-Regeln, kein Cookie.
