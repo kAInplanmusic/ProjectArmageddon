@@ -31,7 +31,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ziel", default=os.path.join(WURZEL, "artifacts", "waffen-anker"))
     ap.add_argument("--atlas", default=ATLAS)
-    ap.add_argument("--mass", type=float, default=1.5)
+    ap.add_argument("--mass", type=float, default=1.0)
     ap.add_argument("--icons", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.ziel, exist_ok=True)
@@ -70,7 +70,7 @@ def main():
                     dr.line((gx, gy, mx, my), fill=(255, 220, 60), width=1)
                 dr.text((x + 3, y + z + 1), f"{w['id'][3:]} {w['name'][:18]}", fill=(235, 235, 235), font=font)
                 dr.text((x + 3, y + z + 13), f"{w['form']} {w['anchor']['source']}", fill=(160, 170, 190), font=font)
-            sheet.save(os.path.join(args.ziel, f"{art[0]}_{kat}.jpg"), quality=82, optimize=True)
+            sheet.save(os.path.join(args.ziel, f"{art[0]}_{kat}.jpg"), quality=72, optimize=True)
     print("fertig:", args.ziel)
 
 

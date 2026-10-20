@@ -301,7 +301,7 @@ async function zeichneMatrix({ waffenIds, figurIds, titel }) {
       }
     }
   }
-  return c.toDataURL('image/jpeg', 0.72);
+  return c.toDataURL('image/jpeg', 0.5);
 }
 
 async function main() {

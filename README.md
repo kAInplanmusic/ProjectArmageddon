@@ -120,13 +120,13 @@ in 8 Kategorie-Atlanten (`atlas_<kategorie>.png`: held, silhouette, projectile) 
 Projektil, flashColor) unter `src/client/assets/weapon-sprites/` (rund 5,1 MB).
 Handkorrekturen in `scripts/waffen-sprites-korrekturen.json`; Verfahren, Pilot mit
 KI-Bildern und Kostenhochrechnung in `MASTERDOTO.md`, Prüfung in
-`tests/waffen-sprites.test.js`. Im Spiel hält die Figur die Waffe als Sprite
+`tests/waffen-sprites.test.js` (Kachel-Waffen: Motiv herausgelöst oder Zauber-Orb; Anker aus dem Schwerpunkt; Hand je Figurtyp). Im Spiel hält die Figur die Waffe als Sprite
 (`src/client/waffenSprites.js` lädt Manifest und Kategorie-Atlanten lazy,
 `src/client/waffenAnimation.js` rechnet Pendeln, Ziehen, Rückstoß, Aufladeglanz und
 Mündungsblitz je Kategorie); Geschosse fliegen als Sprite mit Schweif. Fehlt ein Atlas,
 bleibt das alte Icon. Tabelle, Anker-Korrekturen und Feinjustierung stehen in
 `MASTERDOTO.md` („Waffen-Animation“), die Prüfbögen unter
-`docs/bilder/waffen-pruefboegen/`.
+`docs/bilder/waffen-pruefboegen/` (Anker je Kategorie, Matrix je Fraktion und Figurtyp).
 
 **Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
 „Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
@@ -232,7 +232,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests: **1542 Tests in 161 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests: **1551 Tests in 161 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **277 Tests in 45 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
