@@ -21,7 +21,7 @@ import { bakeTerrainLayer, detectWebGpu } from './terrainBaker.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
-  zeichneGeschossSprite, zeichneSchweif,
+  zeichneGeschossSprite, zeichneSchweif, zeichneStartGlanz,
 } from './effektStil.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
@@ -1429,9 +1429,15 @@ export class Renderer {
         this.ctx.translate(0, -FUSS_ABSTAND);
         const par = PARAMETER[typ];
         const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
+        // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
+        const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
+        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
+        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
+        const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive,
           feuer: feuerLeben, params: par, typ,
+          schussStaerke: waffenPar?.koerper ?? 1, ausfall: waffenPar?.ausfall ?? 0,
           neigung: this.#bodenNeigung(entity.x, fussWelt),
           hp: entity.maxHealth > 0 ? Math.max(0, Math.min(1, entity.health / entity.maxHealth)) : 0,
           ergebnis: this.sieger !== null && this.sieger >= 0 ? (this.sieger === entity.teamId ? 1 : -1) : 0,
@@ -1447,11 +1453,7 @@ export class Renderer {
             this.figurEffekte.blasen(entity.x, wy + 2, 2);
           }
         }
-        // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
-        const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
-        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
-        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
-        const hinterKoerper = waffenSprite && parameterFuerWaffe(waffe, waffenSprite).lage === 'hinter';
+        const hinterKoerper = waffenPar?.lage === 'hinter';
         if (hinterKoerper) {
           spriteWaffe = true;
           this.ctx.save();
@@ -1814,6 +1816,7 @@ export class Renderer {
         zeichneSchweif(this.ctx, lage.ring, sp.flashColor, lage.dar.groesse * 0.32);
         const w = geschossWinkel(lage.flug, lage.dar, jetzt - lage.t0, this.reducedMotion);
         zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
+        zeichneStartGlanz(this.ctx, sp, projectile.x, projectile.y, jetzt - lage.t0, lage.dar.start);
         lage.winkel = w;
         this.waffenStat.geschossSprites += 1;
       } else {

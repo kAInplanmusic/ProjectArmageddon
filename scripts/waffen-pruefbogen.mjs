@@ -11,7 +11,7 @@
  * Zielstrahl in Weltpixeln.
  *
  * Aufruf:
- *   node scripts/waffen-pruefbogen.mjs [--modus anker|fraktionen|typen] [--kategorie melee] [--ids pa_001,pa_002]
+ *   node scripts/waffen-pruefbogen.mjs [--modus anker|fraktionen|typen|sequenz] [--kategorie melee] [--ids pa_001,pa_002]
  *        [--out ordner] [--pro-bogen 12] [--port 5188]
  *
  * Startet einen eigenen Vite-Server (Port 5188, nicht 5173) und beendet ihn
@@ -44,7 +44,7 @@ const ids = arg('ids') ? arg('ids').split(',') : null;
 const ausgabe = path.resolve(arg('out', path.join(WURZEL, 'docs', 'bilder', 'waffen-pruefboegen')));
 const proBogen = Number(arg('pro-bogen', 12));
 const port = Number(arg('port', 5188));
-const modus = arg('modus', 'anker'); // anker | fraktionen | typen
+const modus = arg('modus', 'anker'); // anker | fraktionen | typen | sequenz
 const proKategorie = Number(arg('waffen-je-kategorie', 6));
 
 /** Je eine Figur aus jeder der 9 Fraktionen (erste Figur jeder Reihe). */
@@ -304,6 +304,111 @@ async function zeichneMatrix({ waffenIds, figurIds, titel }) {
   return c.toDataURL('image/jpeg', 0.5);
 }
 
+/**
+ * Läuft im Browser: Schuss-Sequenz je Kategorie. Zeile = eine Waffe der Kategorie, Spalten =
+ * Zeitpunkte seit dem Schuss; mit Körperpose (Rückstoß, Ausfallschritt), Waffenpose und Blitz in der
+ * Spielgröße (~80 px Figurenhöhe). Zeigt, wie unterscheidbar die Schüsse der Kategorien sind.
+ */
+async function zeichneSequenz({ waffenIds, zeiten, titel }) {
+  const [{ WEAPONS_BY_ID }, { holeWaffenSprite }, anim, figuren, { holeFigur }, { CHARACTERS }, { FigurPosen }, typen] = await Promise.all([
+    import('/src/shared/config/weapons.js'),
+    import('/src/client/waffenSprites.js'),
+    import('/src/client/waffenAnimation.js'),
+    import('/src/client/figuren.js'),
+    import('/src/client/figurenBilder.js'),
+    import('/src/shared/config/factions.js'),
+    import('/src/client/figurAnimation.js'),
+    import('/src/client/figurTypen.js'),
+  ]);
+  const F = 1.55;
+  const ZW = 118;
+  const ZH = 112;
+  const kopf = 30;
+  const rand = 96;
+  const c = document.createElement('canvas');
+  c.width = rand + zeiten.length * ZW;
+  c.height = kopf + waffenIds.length * ZH;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#20242b';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#e8ecf1';
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.fillText(titel, 8, 14);
+  ctx.font = '10px system-ui, sans-serif';
+  ctx.fillStyle = '#9aa4b2';
+  zeiten.forEach((t, i) => ctx.fillText(`${(t * 1000).toFixed(0)} ms`, rand + i * ZW + 6, 26));
+  const warte = async (f) => {
+    for (let i = 0; i < 200; i += 1) {
+      const v = f();
+      if (v) return v;
+      await new Promise(r => setTimeout(r, 25));
+    }
+    return null;
+  };
+  const char = CHARACTERS.find(x => x.id === 'captain-sven');
+  const fig = await warte(() => holeFigur(char));
+  const fh = anim.figurHand(char.id);
+  const winkel = 0.2;
+  const hand = { x: 0, y: 0 };
+  const pose = anim.neuePose();
+  const zeit = anim.neueZeiten();
+  const ende = Math.max(...zeiten);
+  for (let r = 0; r < waffenIds.length; r += 1) {
+    const waffe = WEAPONS_BY_ID[waffenIds[r]];
+    const sp = await warte(() => holeWaffenSprite(waffe));
+    const par = anim.parameterFuerWaffe(waffe, sp);
+    const sy = kopf + r * ZH;
+    ctx.fillStyle = '#e8ecf1';
+    ctx.font = 'bold 10px system-ui, sans-serif';
+    ctx.fillText(waffe.category, 4, sy + 14);
+    ctx.fillStyle = '#9aa4b2';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.fillText(waffe.displayName.slice(0, 16), 4, sy + 27);
+    ctx.fillText(`Art: ${par.art}`, 4, sy + 40);
+    // Körper über die Zeit mit der echten Figurpose treiben (60 Hz), Zeitpunkte abgreifen.
+    const posen = new FigurPosen();
+    const e = { entityId: 1, x: 100, y: 100 };
+    const opt = { params: typen.PARAMETER.humanoid, typ: 'humanoid', winkel, schussStaerke: par.koerper, ausfall: par.ausfall };
+    posen.pose(e, 0, { ...opt, feuer: 0 });
+    const proben = new Map();
+    const schritt = 1 / 120;
+    for (let t = schritt; t <= ende + 1e-6; t += schritt) {
+      const p = posen.pose(e, t, { ...opt, feuer: t <= schritt * 1.5 ? 1 : 0.8 });
+      zeiten.forEach((z) => { if (!proben.has(z) && t >= z) proben.set(z, { ...p }); });
+    }
+    for (let n = 0; n < zeiten.length; n += 1) {
+      const bp = proben.get(zeiten[n]) ?? { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, neigung: 0 };
+      const ox = rand + n * ZW + ZW / 2 - 10;
+      const oy = sy + 76;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.strokeRect(rand + n * ZW + 0.5, sy + 0.5, ZW - 1, ZH - 1);
+      ctx.beginPath(); ctx.rect(rand + n * ZW, sy, ZW, ZH); ctx.clip();
+      ctx.translate(ox, oy);
+      ctx.scale(F, F);
+      if (fig && sp) {
+        zeit.idle = 0; zeit.seitZiehen = Infinity; zeit.bereit = 1; zeit.treffer = 0;
+        zeit.seitSchuss = zeiten[n] + 0.001;
+        anim.waffenPose(par, zeit, false, pose);
+        anim.handPunkt(par, Math.cos(winkel), 52, 10, hand, fh);
+        const daten = { winkel, handX: hand.x, handY: hand.y, figur: fh, handFarbe: figuren.handFarbeFuer(fig, fh), zeit: 0.6, reduziert: false };
+        const hinten = par.lage === 'hinter';
+        const folge = () => {
+          const rr = bp.neigung + bp.rot;
+          const hh = 10 + 7.25;
+          ctx.translate(bp.dx + hh * Math.sin(rr), bp.dy - hh * (bp.sy - 1) + hh * (1 - Math.cos(rr)));
+        };
+        if (hinten) { ctx.save(); folge(); figuren.zeichneWaffeSprite(ctx, sp, par, pose, daten); ctx.restore(); }
+        figuren.zeichneFigurSprite(ctx, fig, { team: '#4cc9f0', winkel, aktiv: false, zeit: 0, reduziert: true, pose: bp });
+        folge();
+        if (!hinten) figuren.zeichneWaffeSprite(ctx, sp, par, pose, daten);
+      }
+      ctx.restore();
+    }
+  }
+  return c.toDataURL('image/jpeg', 0.55);
+}
+
 async function main() {
   const server = await createServer({
     root: WURZEL,
@@ -339,6 +444,15 @@ async function main() {
           console.log(datei);
         }
       }
+    } else if (modus === 'sequenz') {
+      const waffenIds = ids ?? ['pa_001', 'pa_040', 'pa_041', 'pa_062', 'pa_104', 'pa_121', 'pa_111', 'pa_141'];
+      const zeiten = [0, 0.03, 0.07, 0.12, 0.2, 0.32, 0.5, 0.8];
+      const titel = 'Schuss-Sequenz je Kategorie (Zeit seit dem Schuss, Spielgröße ~80 px)';
+      const url = await seite.evaluate(zeichneSequenz, { waffenIds, zeiten, titel });
+      const datei = path.join(ausgabe, 'sequenz.jpg');
+      writeFileSync(datei, Buffer.from(url.split(',')[1], 'base64'));
+      ergebnisse.push(datei);
+      console.log(datei);
     } else {
       // Matrix: Figuren (Zeilen) x gleichmäßig gewählte Waffen der Kategorie (Spalten), je Stand und Schuss.
       const figurIds = modus === 'typen' ? TYP_FIGUREN : FRAKTIONS_FIGUREN;

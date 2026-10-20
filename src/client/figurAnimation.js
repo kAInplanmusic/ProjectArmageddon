@@ -78,7 +78,7 @@ export class FigurPosen {
    * @param {number} jetzt - Zeit in Sekunden (monoton)
    * @param {{reduziert?: boolean, treffer?: number, haerte?: number, rueck?: number, winkel?: number,
    *   aktiv?: boolean, feuer?: number, params?: object, typ?: string, neigung?: number, hp?: number,
-   *   ergebnis?: number}} opt
+   *   ergebnis?: number, schussStaerke?: number, ausfall?: number}} opt
    * @returns {{dx:number,dy:number,sx:number,sy:number,rot:number,flash:number,tint:number,neigung:number,zug:number,hpVerz:number}} wiederverwendet!
    */
   pose(entity, jetzt, opt) {
@@ -225,9 +225,16 @@ export class FigurPosen {
     if (z.schussT < par.schussDauer) {
       const s = schussKurve(z.schussT / par.schussDauer);
       const cw = Math.cos(winkel);
-      p.dx -= cw * par.schussKick * s;
-      p.rot -= cw * par.schussNeigung * s;
+      const m = opt.schussStaerke ?? 1;
+      p.dx -= cw * par.schussKick * s * m;
+      p.rot -= cw * par.schussNeigung * s * m;
       p.sy *= 1 - 0.012 * s;
+      // Ausfallschritt schwerer Waffen: in die Knie, breiterer Stand (nur der Rückstoßteil der Kurve).
+      const aus = opt.ausfall ?? 0;
+      if (aus > 0 && s > 0) {
+        p.sy *= 1 - 0.07 * aus * s;
+        p.sx *= 1 + 0.04 * aus * s;
+      }
     } else if ((opt.rueck ?? 0) !== 0 && opt.feuer === undefined) {
       p.dx -= Math.cos(winkel) * opt.rueck * 0.6;
       p.rot -= Math.cos(winkel) * opt.rueck * 0.02;

@@ -659,7 +659,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1551/1551** grün, Dateizahl **161** (Stand 2026-10-20, Waffen-Feinschliff: +9 in `waffen-sprites.test.js` (+5) und `waffen-animation.test.js` (+4), dazu 2 E2E in `waffen-animation.spec.mjs`; davor 1542/161, 2026-10-19, Figuren-Feinschliff: +15 in den neuen `figur-typen.test.js` und `figur-animation-typen.test.js`, dazu 4 E2E in `figuren-feinschliff.spec.mjs`; davor 1527/159, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1554/1554** grün, Dateizahl **161** (Stand 2026-10-20, Waffen-Feinschliff: +9 in `waffen-sprites.test.js` (+5) und `waffen-animation.test.js` (+4), dazu 2 E2E in `waffen-animation.spec.mjs`; davor 1542/161, 2026-10-19, Figuren-Feinschliff: +15 in den neuen `figur-typen.test.js` und `figur-animation-typen.test.js`, dazu 4 E2E in `figuren-feinschliff.spec.mjs`; davor 1527/159, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3515,8 +3515,8 @@ den Griff, `skala`, `glanz`, `blitz`, `weiss`, `dunkel`, `ladung`.
 - **Hand:** Griffanker auf `(±(handVor + Typ.vor), Fuß − Typ.handAnteil · Sprite-Höhe − handHoch)`;
   für den Humanoiden (17,25/52) ist das die frühere Handhöhe (−7,25 px). Das Vorzeichen folgt der
   Blickrichtung. Die Figurtypen sind die aus `figurTypen.js` (`TYP_JE_CHARAKTER`, 6 Typen); die
-  Handtabelle `FIGURTYPEN` in `waffenAnimation.js` gibt je Typ `handAnteil`, `vor`, `aufbau`, `skala`,
-  `FIGUR_OFFSETS` Feinkorrekturen je Charakter-ID (`figurHand(id)`, Standard Humanoid).
+  Handwerte `PARAMETER[typ].hand*` in `figurTypen.js` gibt je Typ `handAnteil`, `handVor`/`handZurueck`, `handAufbau`, `handSkala`,
+  `FIGUR_OFFSETS` (`waffenAnimation.js`) Feinkorrekturen je Charakter-ID (`figurHand(id)`, Standard Humanoid).
 - **Achse:** Liegt die Mündung im Atlas nicht auf der Höhe des Griffs, wird die Waffe um
   den Griff so gedreht, dass die Mündung auf dem Zielstrahl liegt (bis ±57°, `achse` im
   Lader). Bei langen Objekt-Waffen (`form: objekt`, Anker aus der Geometrie) liegen beide
@@ -3546,16 +3546,29 @@ den Griff, `skala`, `glanz`, `blitz`, `weiss`, `dunkel`, `ladung`.
 
 **Parameter je Kategorie** (`PARAMETER`; `zelle` = Weltpixel je 128er-Zelle, Zeiten in s, Wege in px)
 
-| Kategorie | zelle | Schussart | Dauer | Kick | Rückdrehung | Heben | Aufladen | Blitz (Größe) | Griff (Objekt) |
-|---|---|---|---|---|---|---|---|---|---|
-| melee | 30 | `hieb`: Ausholen 0,06, Hieb in einem Bogen bis −1,5 rad, Rückschwung | 0,55 | 5 | – | – | – | keiner (Nahkampf) | −16 |
-| ranged | 28 | `kurz`: sofort voller Kick, quadratisches Abklingen, kleines Nachwippen (13 Hz) | 0,30 | 3,2 | 0,20 | – | – | Kegel (11) | −10 |
-| heavy_ranged | 34 | `schwer`: 40 ms Anlauf, lang, Nachschwingen (6,5 Hz) | 0,60 | 6 | 0,30 | – | – | Kegel (17) | −12 |
-| elemental | 27 | `kurz`, etwas länger | 0,40 | 3,6 | 0,26 | – | – | Stern (12) | −8 |
-| magic | 27 | `zauber`: Heben und Aufladeglanz in `flashColor`, dann Freigabe mit Stoß | 0,70 | 2,5 | 0,10 | 0,38 | 0,18 | Ring (13) nach dem Aufladen | −8 |
-| tech | 26 | `tech`: Aufladen mit Zittern, dann kurzer scharfer Stoß | 0,42 | 2,4 | 0,12 | – | 0,10 | Funkenfächer (12) | −8 |
-| utility | 24 | `selbst`: Heben und Puls, Glanz um die Waffenmitte | 0,50 | 0 | – | 0,45 | 0,20 | Funke (8), bei Selbstwirkung keiner | −8 |
-| ultimate | 32 | `zauber`, groß und langsam | 0,95 | 5 | 0,22 | 0,45 | 0,30 | Stern (21) | −8 |
+| Kategorie | zelle | Schussart | Dauer | Kick | Rückdrehung | Heben | Aufladen | Blitz (Größe) | Oberkörper (× / Ausfall) | Startglanz | Griff (Objekt) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| melee | 30 | `hieb`: Ausholen 0,06, Hieb in einem Bogen bis −1,5 rad, Rückschwung | 0,60 | 7 | – | – | – | keiner (Nahkampf) | 1,6 / 0,3 | – | −16 |
+| ranged | 28 | `kurz`: sofort voller Kick, quadratisches Abklingen, kleines Nachwippen (13 Hz) | 0,26 | 4,6 | 0,30 | – | – | Kegel (14) | 1 / 0 | 10 | −10 |
+| heavy_ranged | 34 | `schwer`: 40 ms Anlauf, lang, Nachschwingen (5,5 Hz) | 0,80 | 10 | 0,45 | – | – | Kegel (26) | 2,4 / 1 | 18 | −12 |
+| elemental | 27 | `kurz`, etwas länger | 0,50 | 3 | 0,20 | – | – | Stern (15) | 0,8 / 0,3 | 13 | −8 |
+| magic | 27 | `zauber`: Heben und Aufladeglanz in `flashColor`, dann Freigabe mit Stoß | 0,85 | 1,6 | 0,10 | 0,55 | 0,26 | Ring (17) nach dem Aufladen | 0,5 / 0 | 14 | −8 |
+| tech | 26 | `tech`: Aufladen mit Zittern, dann kurzer scharfer Stoß (20 Hz) | 0,34 | 1,8 | 0,12 | – | 0,14 | Funkenfächer (15) | 0,6 / 0 | 11 | −8 |
+| utility | 24 | `selbst`: Heben und Puls, Glanz um die Waffenmitte | 0,50 | 0 | – | 0,45 | 0,20 | Funke (8), bei Selbstwirkung keiner | 0,3 / 0 | 9 | −8 |
+| ultimate | 32 | `zauber`, groß und langsam | 1,15 | 8 | 0,22 | 0,60 | 0,40 | Stern (30) | 2 / 0,8 | 24 | −8 |
+
+**Unterscheidbarkeit (Zug „Schüsse deutlich unterscheiden", 2026-10-20):** Die Kategorien
+unterscheiden sich in Weg, Dauer, Nachschwingen und Blitzfläche (`tests/waffen-animation.test.js`:
+je zwei Kategorien weichen in mindestens zwei von vier Maßen um ≥ 25 % ab; schwer gegen Gewehr:
+Rückstoßweg ≥ 1,8×, Dauer ≥ 2,5×, Blitzfläche ≥ 2,5×). Neu: `koerper` skaliert den Rückstoß des
+Oberkörpers (`FigurPosen.pose`, Option `schussStaerke`), `ausfall` lässt schwere Waffen die Figur in
+die Knie gehen und den Stand verbreitern (`sy` −7 %, `sx` +4 % beim Rückstoßteil), `start` ist der
+Startglanz des Geschosses an der Mündung (`zeichneStartGlanz`, 0,16 s, `lighter`). Die Pose ist eine
+reine Funktion der Zeit seit dem Schuss: schnelle Schussfolgen driften nicht (Test: 40 Schüsse,
+identische Pose, Ruhe nach Ablauf). Beleg: `docs/bilder/waffen-pruefboegen/sequenz.jpg`
+(`node scripts/waffen-pruefbogen.mjs --modus sequenz`: je Kategorie eine Waffe, acht Zeitpunkte
+0–800 ms, Spielgröße ~80 px, mit der echten Körper- und Waffenpose). Die Handpunkte je Figurtyp
+stehen in der Typ-Tabelle `figurTypen.js` (`PARAMETER[typ].hand*`), keine zweite Tabelle.
 
 **Wurfwaffen** (Geschoss `ding` = die Waffe selbst fliegt, oder Zünder `fuseTime > 0`: Granaten,
 Bomben, Bumerang, Wurfklingen, Handtuch …) bekommen statt Rückstoß und Blitz eine Wurfbewegung
@@ -3647,7 +3660,7 @@ Achsenausrichtung; Standardanker (94) sitzen bei kompakten Sprites hinter der Mi
 tragen die Waffe sichtbar vor dem Körper. Von Hand zu korrigieren waren nur die vier
 Geschütze oben.
 
-**Prüfung:** `tests/waffen-animation.test.js` (35; neu: Handtabelle vollständig für alle 81 Figuren, `figurHand`, Kachel-Orb/Motiv und Lage; vorher 31): Parameter für alle acht Kategorien und
+**Prüfung:** `tests/waffen-animation.test.js` (38; neu: Handwerte vollständig für alle 81 Figuren, `figurHand`, Kachel-Orb/Motiv und Lage, Unterscheidbarkeit, schnelle Schussfolgen, Startglanz/Ausfallschritt; vorher 31): Parameter für alle acht Kategorien und
 alle Katalogkategorien, Unterschiede je Kategorie, deterministischer Zeitverlauf,
 Rückkehr in die Ruhe, Stetigkeit (kein Sprung), Rückstoß kurz gegen schwer, Hieb-Bogen,
 Heben/Glanz/Blitz bei Magie, Tech und Selbstwirkung, Ziehen, Idle, Bildratenunabhängigkeit,
