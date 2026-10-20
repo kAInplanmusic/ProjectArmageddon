@@ -70,7 +70,7 @@ function freieLinie(match, dist) {
 }
 
 function aufbau(seed, dist, waffe) {
-  const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000 });
+  const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, schaden: 1 });
   match.start();
   const z = match.getState();
   const schuetze = z.entities.find(e => e.entityId === match.activePlayerId);

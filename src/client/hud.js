@@ -7,6 +7,7 @@
  *
  * @module hud
  */
+import { maliMarken } from '../shared/config/schaden.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import {
   getWeapon,
@@ -313,6 +314,7 @@ export class Hud {
         if (zustand.shield > 0) teile.push(`S${Math.round(zustand.shield)}`);
         if (zustand.frozenTurns > 0) teile.push(`❄${zustand.frozenTurns}`);
         if (zustand.dots?.length > 0) teile.push(`☠${zustand.dots.length}`);
+        for (const m of maliMarken(zustand)) teile.push(m.text);
         if (zustand.boostMultiplier > 1) teile.push('↑');
       }
       // Wasser gehört in dieselbe Signatur: Steigt der Pegel durch Verdrängung,
@@ -383,6 +385,7 @@ export class Hud {
       if (zustand?.shield > 0) marken.push({ text: `🛡 ${Math.round(zustand.shield)}`, color: '#4cc9f0' });
       if (zustand?.frozenTurns > 0) marken.push({ text: `❄ ${zustand.frozenTurns}`, color: '#7fd8ff' });
       if (zustand?.dots?.length > 0) marken.push({ text: `☠ ${zustand.dots.length}`, color: '#90be6d' });
+      for (const m of maliMarken(zustand)) marken.push({ text: m.text, color: m.farbe, title: `${m.label}${m.turns > 0 ? ` (${m.turns} Zug/Züge)` : ''}: ${m.kurz}` });
       if (zustand?.boostMultiplier > 1) marken.push({ text: '↑', color: '#ffb703' });
 
       // Wasser: Der Füllstand ist eine Zahl zwischen 0 und 1 und für den Spieler

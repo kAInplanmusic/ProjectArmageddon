@@ -29,6 +29,7 @@ import {
 } from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
+import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
   zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, zeichneAuraRing, zeichneNamensschild,
@@ -187,6 +188,8 @@ export class Renderer {
     /** Schwebende Schadenszahlen und die Werte des letzten Bildes (siehe `schadenszahlen.js`). */
     this.zahlen = [];
     this.zahlenWerte = new Map();
+    /** Zuletzt gemeldete Schadensart je Figur (für Farbe und Zeichen der Zahl). */
+    this.schadensArten = new Map();
     /** Treffer des LETZTEN Bildes — der Klang wird in `main.js` gespielt. */
     this.letzteTreffer = [];
     /** Narben der Krater (Brandränder) — begrenzt, siehe `NARBEN_MAX`. */
@@ -501,12 +504,25 @@ export class Renderer {
    * gehalten. Die Treffer des Bildes bleiben in `letzteTreffer` stehen, bis
    * `main.js` sie abholt (`nimmTreffer`) — der Renderer spielt keinen Klang.
    */
+  /** Merkt die Schadensart des letzten Treffers einer Figur (aus dem `damage`-Ereignis) für die Zahl. */
+  merkeSchadensart(entityId, art, krit = false) {
+    if (typeof art !== 'string') return;
+    this.schadensArten.set(entityId, { name: art, krit, rest: 45 });
+    // Kam die Zahl im selben Bild vor dem Ereignis, bekommt sie Farbe und Zeichen nachträglich.
+    const familie = familieVonArt(art);
+    for (const z of this.zahlen) {
+      if (z.id !== entityId || z.life < 0.85 || z.art !== 'schaden') continue;
+      if (krit) { z.art = 'kritisch'; z.text = `${z.text}!`; } else if (familie !== 'koerper') { z.art = `schaden-${familie}`; z.text += ZAHL_FAMILIE[familie].symbol; }
+    }
+  }
+
   #ermittleTreffer(state) {
     const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
     for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke(treffer));
-    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? []);
+    const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
+    for (const [id, art] of this.schadensArten) { if (art.rest-- <= 0) this.schadensArten.delete(id); }
     this.zahlenWerte = zahlen.zustand;
     this.zahlen = ergaenzeZahlen(this.zahlen, zahlen.neu);
   }
@@ -1778,7 +1794,8 @@ export class Renderer {
       {
         verz: spriteSkala ? (this.figurPosen.zustand(entity.entityId)?.pose.hpVerz ?? ratio) : ratio,
         akzent: fraktion ? this.akzentJeFraktion.get(fraktion) : null,
-        gift: entity.dotsCount ?? 0,
+        gift: (entity.dotsCount ?? 0) < MALI_LEITUNGSMARKE ? (entity.dotsCount ?? 0) : 0,
+        mali: (entity.dotsCount ?? 0) >= MALI_LEITUNGSMARKE ? maliMarken({ mali: maskeZuMali(entity.dotsCount & ~MALI_LEITUNGSMARKE) }) : [],
         boost: entity.boostMultiplier ?? 1,
         zeit: performance.now() / 1000,
       },

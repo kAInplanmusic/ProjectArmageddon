@@ -104,7 +104,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -149,6 +149,7 @@ class LobbySession {
       zerstoerung,
       waffen,
       kisten,
+      schaden,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -178,6 +179,7 @@ class LobbySession {
       zerstoerung: this.match.zerstoerung,
       waffen: this.match.waffen,
       kisten: this.match.kisten,
+      schaden: this.match.schaden,
     });
 
     /*
@@ -1296,6 +1298,7 @@ export class GameServer {
               zerstoerung: options.zerstoerung,
               waffen: options.waffen,
               kisten: options.kisten,
+              schaden: options.schaden,
               metrics: this.metrics,
               logger: this.logger,
             });

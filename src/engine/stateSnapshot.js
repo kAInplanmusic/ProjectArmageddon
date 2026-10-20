@@ -27,6 +27,7 @@
  * steht damit an EINER Stelle statt verstreut im Zustandsaufbau.
  */
 
+import { MALI_LEITUNGSMARKE, maliMaske } from '../shared/config/schaden.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 
 /**
@@ -117,7 +118,10 @@ export function baueAnsichtszustand(quelle) {
        * „☠ N\" und „↑\" konnten dort also NIE erscheinen, obwohl Leben verloren
        * bzw. dazugewonnen wurde. `docs/verkabelung.md` §C führt das als Defekt.
        */
-      dotsCount: alive ? (quelle.statuses?.[entry.entityId]?.dots?.length ?? 0) : 0,
+      // Fassung 2 (`config/schaden.js`): Bit 7 + Bitfeld der Mali statt der Anzahl der Einträge.
+      dotsCount: alive ? (quelle.statuses?.[entry.entityId]?.mali
+        ? MALI_LEITUNGSMARKE | maliMaske(quelle.statuses[entry.entityId].mali)
+        : (quelle.statuses?.[entry.entityId]?.dots?.length ?? 0)) : 0,
       boostMultiplier: alive
         ? Number((quelle.statuses?.[entry.entityId]?.boostMultiplier ?? 1).toFixed(3))
         : 1,

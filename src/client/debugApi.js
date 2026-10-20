@@ -108,6 +108,8 @@ export function exposeDebugApi(game) {
         );
       },
       getMatch: () => game.match,
+      /** Schwebende Schadenszahlen (Text und Art) — für die Prüfung von Farbe und Zeichen je Schadensart. */
+      schadenszahlen: () => game.renderer.zahlen.map(z => ({ text: z.text, art: z.art })),
       getNetwork: () => game.network,
       getState: () => game.currentState(),
       /** Sicherer Bereich, Figurenrechtecke und ausweichende Panels (CSS-Pixel). */

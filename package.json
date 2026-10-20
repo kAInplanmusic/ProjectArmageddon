@@ -50,6 +50,7 @@
     "balance": "node scripts/balance-report.mjs",
     "balance:sweep": "node scripts/balance-report.mjs --sweep",
     "balance:waffen": "node scripts/waffen-balance.mjs",
+    "balance:schaden": "PA_ZUGPAUSE_SEKUNDEN=0 node scripts/balance-schaden.mjs",
     "balance:kisten": "node scripts/kisten-zaehlung.mjs",
     "balance:bot": "node scripts/bot-partien.mjs",
     "server": "node scripts/server.mjs",
