@@ -5678,6 +5678,20 @@ Agenten nachgeprüft** (zwei erwiesen sich als Fehlalarm):
 seinen Bericht schrieb. Die übrigen zwei Audits (Code, User-Flow/Spaßfaktor)
 laufen noch; ihre Ergebnisse kommen in einem eigenen Durchgang.
 
+## Online-Synchronisation von Einschlägen
+
+`klassifiziereEinschlag` (`src/shared/einschlag.js`) ordnet einen Einschlag lokal und online gleich ein
+(Wasser, Fels, Erde). Die Engine trägt das Material im Ereignis `explosion`, der Server nur den Takt `tk`;
+es entsteht keine zusätzliche Netzlast. Klang- und Anzeigeereignisse werden über `tk` dedupliziert und wirken
+genau einmal; `terrain_*` (Einsturz) gilt in beiden Betriebsarten gleich. Tests: `tests/online-einschlag.test.js`.
+
+## Testumgebung (PA_PORT)
+
+E2E läuft standardmäßig auf Port 5173. Ist er belegt (andere Agenten/Worktrees), setzt `PA_PORT=<port>` den
+Dev-Server-Port in `playwright.config.mjs` und `vite.config.mjs`; Specs lesen den Port aus der Config
+(kein hartcodiertes 5173). Flaky-Specs (Waffen-Animation, Günther online) prüfen über Zustandsabfragen
+(`waffenPoseBei`, angehaltene Uhr) statt über Timeouts.
+
 ## Bekannte Grenzen (bewusst dokumentiert)
 
 - **Nahkampfwaffen waren wirkungslos — BEHOBEN (58 von 59 Waffen).**

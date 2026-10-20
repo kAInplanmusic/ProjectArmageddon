@@ -171,10 +171,26 @@ test('Der Renderer zeichnet Günther auch online', async ({ page }) => {
       return ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     };
 
-    const uhr = 777;
-    const mitHund = zeichne(zustand, uhr);
-    const ohneHundEins = zeichne({ ...zustand, guenther: null }, uhr);
-    const ohneHundZwei = zeichne({ ...zustand, guenther: null }, uhr);
+    /*
+     * Auch die Wanduhr wird angehalten. Figuren-, Waffen- und Geschossanimation lesen
+     * `performance.now()` (renderer.js). Ohne Last vergehen zwischen zwei Aufrufen ein paar
+     * Millisekunden und kein Pixel ändert sich; unter Last dauert ein Aufruf 100 ms und mehr,
+     * die Figuren stehen dann in anderer Pose (gemessen: 6 von 6 Läufen mit 8509 Pixeln
+     * „Grundrauschen"). Mit festgehaltener Uhr ist der Vergleich unter jeder Last exakt —
+     * die Zusicherungen (Rauschen = 0, Spur > 300) bleiben unverändert.
+     */
+    const echteUhr = performance.now.bind(performance);
+    const festeZeit = echteUhr();
+    performance.now = () => festeZeit;
+    let mitHund; let ohneHundEins; let ohneHundZwei;
+    try {
+      const uhr = 777;
+      mitHund = zeichne(zustand, uhr);
+      ohneHundEins = zeichne({ ...zustand, guenther: null }, uhr);
+      ohneHundZwei = zeichne({ ...zustand, guenther: null }, uhr);
+    } finally {
+      performance.now = echteUhr;
+    }
 
     const unterschied = (a, b) => {
       let n = 0;

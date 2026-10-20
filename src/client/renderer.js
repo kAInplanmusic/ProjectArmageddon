@@ -445,7 +445,23 @@ export class Renderer {
    */
   addMuzzleFlash(entityId, angle) {
     this.effects.push(erzeugeMuendungsfeuer(entityId, angle));
-    this.#waffenState(entityId).schuss = performance.now() / 1000;
+    const ws = this.#waffenState(entityId);
+    ws.schuss = performance.now() / 1000;
+    ws.schuesse += 1;
+  }
+
+  /**
+   * Diagnose (Tests): die Pose der gehaltenen Waffe `seitSchuss` Sekunden nach dem Schuss,
+   * berechnet mit den Parametern der Figur und dem echten Bewegungsmodus. Die Pose ist eine
+   * reine Funktion der Zeit; so hängt die Prüfung nicht davon ab, WELCHE Zeitpunkte der
+   * Bildtakt zufällig abgetastet hat (unter Last: wenige, späte Bilder).
+   * @returns {object|null} Kopie der Pose, `null` solange die Figur noch keine Waffen-Sprite-Parameter hat
+   */
+  probePose(entityId, seitSchuss) {
+    const ws = this.waffenZustand.get(entityId);
+    if (!ws?.par) return null;
+    const zt = { idle: 0, seitZiehen: 1e9, seitSchuss, bereit: 1, treffer: 0 };
+    return { ...waffenPose(ws.par, zt, this.reducedMotion, neuePose()), aufladen: ws.par.aufladen ?? 0, schussDauer: ws.par.schussDauer };
   }
 
   /** Waffe und Flugrichtung eines neuen Geschosses (aus `projectile_spawn`) für die Sprite-Darstellung. */
@@ -457,7 +473,7 @@ export class Renderer {
   #waffenState(entityId) {
     let z = this.waffenZustand.get(entityId);
     if (!z) {
-      z = { waffeId: '', par: null, zieh: -1e9, schuss: -1e9 };
+      z = { waffeId: '', par: null, zieh: -1e9, schuss: -1e9, schuesse: 0 };
       this.waffenZustand.set(entityId, z);
     }
     return z;
@@ -1630,7 +1646,7 @@ export class Renderer {
     this.waffenStat.sprite += 1;
     let d = this.waffenDiagnose.get(entity.entityId);
     if (!d) { d = {}; this.waffenDiagnose.set(entity.entityId, d); }
-    d.waffeId = waffe.id; d.art = par.art; d.seitSchuss = zt.seitSchuss;
+    d.waffeId = waffe.id; d.art = par.art; d.seitSchuss = zt.seitSchuss; d.schuesse = ws.schuesse;
     d.vor = pose.vor; d.hoch = pose.hoch; d.drehung = pose.drehung; d.glanz = pose.glanz;
     d.blitz = pose.blitz; d.blitzForm = pose.blitzForm; d.weiss = pose.weiss; d.ladung = pose.ladung;
   }
