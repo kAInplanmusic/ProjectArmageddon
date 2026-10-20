@@ -831,7 +831,7 @@ export class MatchController {
     if (!this.kartencharakter) return null;
 
     const biomId = biomeKennungFuerCharakter(this.kartencharakter);
-    this.biomId = biomId;
+    this.biomId = this.#world.services.match.biomId = biomId; // auch für den Einschlagklang (shared/einschlag.js)
     this.scenery = pickScenery(this.#seedManager.baseSeed, this.preset, biomId);
     return this.scenery;
   }

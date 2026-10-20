@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test';
 
 /** Startet ein Match und wartet, bis Günther aktiv ist. */
 async function startMitGuenther(page, { maxSeeds = 120 } = {}) {
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
 
   const gefunden = await page.evaluate(async (grenze) => {

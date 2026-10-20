@@ -39,7 +39,8 @@ import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { GUENTHER_WHEEL } from '../shared/config/guenther.js';
 import { exposeDebugApi } from './debugApi.js';
-import { verarbeiteLokal, verarbeiteOnline } from './ereignisse.js';
+import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
+import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
 import { baueProfilAnzeige, baueErfolgsAnzeige } from './profilanzeige.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import {
@@ -207,6 +208,8 @@ class Game {
      * Snapshot); hier wird nur der ÜBERGANG erkannt.
      */
     this.waterStates = new Map();
+    /** Online: jedes Anzeige-/Klangereignis genau einmal (Schlüssel Takt+Art+Ort). */
+    this.ereignisDedup = new EreignisDedup();
     this.schussAufnahme = new SchussAufnahme();
     this.zugpause = null;
 
@@ -1340,6 +1343,8 @@ class Game {
         + (this.eigeneSpielerIds.length > 1 ? ` (${this.eigeneSpielerIds.length} Einheiten)` : ''),
         'accent',
       );
+      // Neue Sitzung beim Server: die Takte zählen von vorn, alte Dedup-Schlüssel gelten nicht mehr.
+      if (!payload.resumed) this.ereignisDedup.zuruecksetzen();
       if (payload.seed !== null && payload.seed !== undefined) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
         // Krater, die vor dem Beitritt entstanden sind (Reconnect/Spätbeitritt).
@@ -1994,6 +1999,7 @@ class Game {
       renderer: this.renderer,
       hud: this.hud,
       sound: this.sound,
+      dedup: this.ereignisDedup,
       match: this.match,
       shotPredictor: this.shotPredictor,
       /*
@@ -2019,7 +2025,8 @@ class Game {
        * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
        * Werte ein Serverereignis ändern darf.
        */
-      karte: {
+      // Nur online gibt es eine nachgebaute Karte; lokal ist die Match-Maske selbst die Karte.
+      karte: this.mode !== 'online' ? null : {
         krater: (x, y, radius, tiefe = null) => applyCraterToTerrain(this.remoteTerrain, x, y, radius, tiefe),
         // Eine gelandete Geländeinsel wandert in Bitmap und Maske nach unten.
         insel: (dy, runs) => applySettleToTerrain(this.remoteTerrain, dy, runs),
@@ -2039,11 +2046,17 @@ class Game {
     };
   }
 
-  /** Untergrund für den Klang: `wasser` | `fels` | `erde`. */
+  /**
+   * Untergrund für den Klang: `wasser` | `fels` | `erde` — Ableitung, wenn das Ereignis
+   * kein `material` trägt (älterer Server). Dieselbe Funktion wie in der Engine
+   * (`shared/einschlag.js`); online aus Maske und Wasserlinie der Karte.
+   */
   #materialAn(x, y) {
-    if ((this.water?.levelAtWorld?.(x, y) ?? 0) > 0.3) return 'wasser';
-    const biom = this.match?.biomId;
-    return biom === 'caverns' || biom === 'alpine' ? 'fels' : 'erde';
+    const online = this.mode === 'online';
+    const wasser = online
+      ? wasserAusLinie(this.remoteTerrain?.mask, this.remoteTerrain?.waterLevel)
+      : this.match?.water;
+    return klassifiziereEinschlag(online ? this.remoteTerrain?.mask : this.match?.terrain, wasser, x, y, { biomId: this.match?.biomId });
   }
 
   /**

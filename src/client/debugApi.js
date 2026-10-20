@@ -156,6 +156,8 @@ export function exposeDebugApi(game) {
           id, waffeId: g.waffeId, sprite: Boolean(g.sp), winkel: g.winkel, flug: g.flug, schweif: g.ring.anzahl,
         })),
       }),
+      /** Pose der gehaltenen Waffe `seitSchuss` s nach dem Schuss (reine Funktion der Zeit, siehe `Renderer#probePose`). */
+      waffenPoseBei: (entityId, seitSchuss) => game.renderer.probePose(entityId, seitSchuss),
       /** Waffenmenü (für Tests). */
       waffenMenue: () => game.waffenMenue,
       /** Waffe abwerfen (Position wie in der Liste). */

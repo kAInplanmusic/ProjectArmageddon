@@ -22,6 +22,7 @@ import {
 } from '../../shared/ballistics.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
 import { kraterTiefeProzent } from '../../shared/config/zerstoerung.js';
+import { klassifiziereEinschlag } from '../../shared/einschlag.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -390,6 +391,9 @@ export class ProjectileSystem {
     // wirkt auch im Radius als Feuer.
     const damageType = world.getComponent(entityId, 'Projectile', 'damageType');
 
+    // Untergrund des Einschlags — VOR Krater und Wasserverdrängung gemessen (shared/einschlag.js).
+    const material = klassifiziereEinschlag(terrain, services.water ?? null, x, y, { biomId: match.biomId });
+
     // Krater: expliziter Terrain-Schaden hat Vorrang, sonst leitet sich der
     // Radius aus der Flaechenwirkung ab. Reine Direktschusswaffen graben nur
     // ein minimales Loch, damit Einschlaege sichtbar bleiben.
@@ -453,7 +457,7 @@ export class ProjectileSystem {
 
     if (events) {
       events.emit('explosion', {
-        x, y, radius: blastRadius, damage, owner, projectile: entityId, damageType,
+        x, y, radius: blastRadius, damage, owner, projectile: entityId, damageType, material,
       });
     }
 
