@@ -63,6 +63,7 @@ import { fileURLToPath } from 'node:url';
 
 import { MatchController } from '../src/engine/match.js';
 import { EREIGNIS_WIRKUNGEN, verarbeiteLokal, verarbeiteOnline } from '../src/client/ereignisse.js';
+import { EREIGNIS_KATALOG } from '../src/shared/ereigniskatalog.js';
 // Der Draht: belegt, dass ein v7-Snapshot Günther trägt (siehe Test unten).
 import {
   encodeSnapshot,
@@ -189,49 +190,10 @@ function ereignisseDerEngine() {
  * Was maschinell prüfbar ist (Zweig vorhanden: ja/nein), prüfen die Tests
  * unten.
  */
-const bewusstStumm = new Set([
-  // --- Darstellung läuft über ein anderes Element, nicht über das Protokoll
-  'turn_start',        // Rundenanzeige im HUD
-  'turn_end',          // dito, plus Zugwechsel im Spielerfeld
-  'entity_in_water',   // Wasserstand steht als Marke am Spielernamen
-                       // (seit 2026-09-27 GEDROSSELT: im Snapshot redundant)
-  'damage',            // Lebensbalken sinkt sichtbar
-                       // (seit 2026-09-27 GEDROSSELT: im Snapshot redundant)
-  'dot_applied',       // Zustandsmarke am Spielernamen
-
-  // --- Dient der Steuerung, nicht der Anzeige
-  'shot',              // löst die Vorhersage auf (shotPredictor.resolve)
-  'weapon_cooldown',   // die Waffenliste zeigt den Nachladezustand
-  'crate_landed',      // lokaler Zweig hat einen Fall; online übernimmt es
-                       // die Kistenliste
-  /*
-   * `weapon_dropped` stand hier bis O8 mit der Begründung „`dropWeapon()` meldet
-   * das Ergebnis direkt im Log". Die gilt NUR für den lokalen Zweig. Seit O8 gibt
-   * es das Abwerfen online, und dort meldet kein lokaler `dropWeapon()`-Pfad —
-   * das Ereignis hat deshalb einen `online`-Zweig bekommen (`ereignisse.js`) und
-   * gehört NICHT mehr in diese Menge: Hier bedeutet ein Eintrag „es gibt KEINEN
-   * Zweig". Eine veraltete Begründung wäre genau der stille Fehler, den diese
-   * Liste verhindern soll.
-   */
-
-  // --- Wird bewusst zusammengefasst gemeldet
-  /*
-   * `drowning` — die Begründung, die hier bis 2026-09-27 stand, war sachlich
-   * FALSCH: „bis zu 60x/s: nur beim ÜBERGANG gemeldet (#trackWater)". Sie
-   * vermischte die ANZEIGE mit dem SERVER. `Main#trackWater` notiert nur den
-   * Übergang — der Motor dagegen meldet es JEDEN Takt, solange die Figur tief
-   * genug unter Wasser ist (gemessen 15092 von 15092 Takten). Der Eintrag bleibt
-   * richtig, die Begründung ist ersetzt: `drowning` hat KEINEN Zweig (`{}` in
-   * `EREIGNIS_WIRKUNGEN`) und ist seit 2026-09-27 gedrosselt, weil sein Wert im
-   * Snapshot nachgerechnet redundant ist (`GEDROSSELTE_EREIGNISARTEN`, Gruppe 2;
-   * Messreihen in `docs/ereignis-info-gehalt.md`).
-   */
-  'drowning',
-  'round_crates',      // Buchführung; die Anzahl steht im HUD
-  'projectile_expired', // ein verfallenes Geschoss ist kein Ereignis für den
-                        // Spieler — es hat nichts getroffen
-  'water_pushed',      // der Wasserstand am Ziel ist die sichtbare Wirkung
-]);
+// Die Begründung je Art steht im Ereigniskatalog (`src/shared/ereigniskatalog.js`, Feld `stumm`): eine Quelle.
+const bewusstStumm = new Set(
+  Object.keys(EREIGNIS_KATALOG).filter(art => EREIGNIS_KATALOG[art].stumm !== undefined),
+);
 
 /**
  * Die 27 Ereignisse, die `docs/audit-tief.md` (Abschnitt 11) am 2026-09-26 als
@@ -361,33 +323,10 @@ const AUDIT_LISTE_2026_09_26 = [
  * die Menge der einzweigigen Tabelleneinträge sein — sonst fällt der Test um,
  * damit ein neuer halber Zweig nicht unbemerkt entsteht.
  */
-const EINZWEIG_BELEGT = new Map([
-  /*
-   * --- nur lokal behandelt (im Online-Betrieb kommt das Ereignis an und fällt)
-   *
-   * O2 nachgezogen (2026-09-27): `crate_pickup`, `fall_damage`, `landed` und
-   * `toxic_rain` hatten bis dahin nur einen `lokal:`-Zweig, obwohl der Server
-   * sie sendet (`src/server/gameServer.js:246-248`). Sie haben jetzt einen
-   * `online:`-Zweig (`src/client/ereignisse.js`) und sind KEINE Einzweig-Fälle
-   * mehr — deshalb stehen sie hier nicht mehr.
-   *
-   * O8 nachgezogen (2026-09-27): `jumped` hatte nur einen `lokal:`-Zweig (online
-   * sprang niemand). Seit es den Online-Sprung gibt, ist es `beide(fn)` und damit
-   * kein Einzweig-Fall mehr — der Eintrag ist hier entfernt. `crate_landed`
-   * bleibt einzweigig; sein Online-Beleg ist die Kistenliste aus dem Snapshot.
-   */
-  ['crate_landed', {
-    zweig: 'lokal',
-    entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:1143 (crates) → src/client/renderer.js:1201 (#drawCrates)',
-  }],
-
-  // --- nur online behandelt (lokal kommt es aus einem anderen Weg)
-  ['weapon_dropped', {
-    zweig: 'online',
-    entweder: 'lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition, Listenaktualisierung) — src/client/main.js:857 (`hud.log`) und :858 (`hud.update`) —, es braucht deshalb keinen Tabellenzweig. ONLINE gibt es diesen lokalen Erfolgspfad nicht: der Server führt den Abwurf aus und schickt das Ereignis; ohne den `online:`-Zweig fiele es stumm weg.',
-  }],
-  // terrain_* (Krater, Inseln, Schutt, Rutsch, Beben) gelten seit der Online-Synchronisation in BEIDEN Zweigen (`beide`).
-]);
+// Die Belege stehen im Ereigniskatalog (Feld `einzweig`): eine Quelle, keine Tabelle in diesem Test.
+const EINZWEIG_BELEGT = new Map(
+  Object.entries(EREIGNIS_KATALOG).filter(([, e]) => e.einzweig).map(([art, e]) => [art, e.einzweig]),
+);
 
 test('Der lokale Zweig behandelt den Einschlag eines Projekils', () => {
   /*

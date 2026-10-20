@@ -53,6 +53,7 @@ import { toWireWaterLevel, fromWireWaterLevel } from './config/water.js';
 // Ebenso die Kackhaufen-Obergrenze: Sie steht in der Config, aus der die
 // Simulation sie liest — ein zweiter Deckel hier wäre die nächste doppelte Regel.
 import { GUENTHER_POOP } from './config/guenther.js';
+import { KATALOG_ANZEIGE, KATALOG_ZUSTAND, KATALOG_GEDROSSELT } from './ereigniskatalog.js';
 
 /**
  * Version des Drahtformats.
@@ -729,28 +730,11 @@ export function controlMessage(type, payload = {}) {
  * Jede dieser Arten steht in genau EINER der beiden Mengen; die Vollständigkeit
  * prüft `tests/event-coverage.test.js` gegen die tatsächlich emittierten Arten,
  * damit die Einteilung nicht still veraltet.
+ *
+ * Abgeleitet aus `shared/ereigniskatalog.js` (dort steht jede Art genau einmal, Feld `klasse`); das
+ * gilt ebenso für `ZUSTANDSEREIGNISARTEN` und `GEDROSSELTE_EREIGNISARTEN` (Feld `drossel`).
  */
-export const ANZEIGE_EREIGNISARTEN = Object.freeze([
-  'landed',
-  'jumped',
-  'crate_landed',
-  'projectile_impact',
-  'projectile_expired',
-  'projectile_pierced',
-  'explosion',
-  'terrain_detached',
-  'terrain_crumble',
-  'terrain_quake',
-  'terrain_resisted',
-  'hitscan',
-  'special_effect',
-  'fuse_armed',
-  'fuse_expired',
-  'guenther_wheel',
-  'guenther_pee',
-  'guenther_poop',
-  'guenther_poop_hit',
-]);
+export const ANZEIGE_EREIGNISARTEN = KATALOG_ANZEIGE;
 
 /**
  * Ereignisarten, die ZUSTAND tragen — sie werden grundsätzlich nicht gefiltert.
@@ -769,49 +753,7 @@ export const ANZEIGE_EREIGNISARTEN = Object.freeze([
  * Wer diese Liste liest, um „kommt immer an" anzunehmen, muss
  * `GEDROSSELTE_EREIGNISARTEN` mitlesen (Gruppe 2, mit Nachweis und Vorbehalt).
  */
-export const ZUSTANDSEREIGNISARTEN = Object.freeze([
-  'crate_pickup',
-  'crate_pickup_blocked',
-  'damage',
-  'death',
-  'dot_applied',
-  'dot_tick',
-  'malus_abgewehrt',
-  'malus_angewendet',
-  'malus_beendet',
-  'malus_leitung',
-  'drowning',
-  'entity_in_water',
-  'fall_damage',
-  'frozen',
-  'heal',
-  'karte_unerreichbar',
-  'loot_error',
-  'maelstrom_contract',
-  'match_over',
-  'projectile_spawn',
-  'pulled',
-  'round_crates',
-  'round_start',
-  'shield_absorbed',
-  'shot',
-  'terrain_destroyed',
-  'terrain_settled',
-  'terrain_removed',
-  'terrain_added',
-  'terrain_slumped',
-  'toxic_rain',
-  'turn_end',
-  'turn_skipped',
-  'turn_start',
-  'turret_deployed',
-  'turret_expired',
-  'turret_fired',
-  'valhalla_omen',
-  'water_pushed',
-  'weapon_cooldown',
-  'weapon_dropped',
-]);
+export const ZUSTANDSEREIGNISARTEN = KATALOG_ZUSTAND;
 
 /**
  * Die gedrosselten Arten — was sich nachweislich wiederholt, OHNE neue
@@ -909,15 +851,7 @@ export const ZUSTANDSEREIGNISARTEN = Object.freeze([
  * Eingaben auf, keine Ereignisse — Determinismus und Wiedergabegleichheit können
  * hier nicht hängen. `tests/event-coverage.test.js` weist das nach.
  */
-export const GEDROSSELTE_EREIGNISARTEN = Object.freeze([
-  // Gruppe 1: Bodenkontakte (Bounce-Artefakt einer stehenden Figur).
-  'landed',
-  'crate_landed',
-  // Gruppe 2: Dauer meldende Zustandsarten — im Snapshot nachgerechnet redundant.
-  'damage',
-  'entity_in_water',
-  'drowning',
-]);
+export const GEDROSSELTE_EREIGNISARTEN = KATALOG_GEDROSSELT;
 
 /**
  * Länge des Wiederholungsfensters in Takten (60 Hz ⇒ 30 Takte = 0,5 s).

@@ -106,10 +106,11 @@ pruefe(
 
 /* ── 6. Wächter: Begründung wird GELESEN (mit/ohne Kommentar) ─────────────── */
 const waechterProbe = [
-  "const bewusstStumm = new Set([",
-  "  'hat_grund',        // sichtbar über die Lebensleiste",
-  "  'ohne_grund',",
-  "]);",
+  "export const EREIGNIS_KATALOG = Object.freeze({",
+  "  hat_grund: { klasse: 'zustand', stumm: 'sichtbar über die Lebensleiste' },",
+  "  ohne_grund: { klasse: 'zustand', stumm: '' },",
+  "  mit_wirkung: { klasse: 'anzeige' },",
+  "});",
 ].join('\n');
 const gelesen = leseBewusstStumm(waechterProbe).begruendungen;
 pruefe(
@@ -118,7 +119,7 @@ pruefe(
   `hat_grund = ${JSON.stringify(gelesen.get('hat_grund'))} · ohne_grund = ${JSON.stringify(gelesen.get('ohne_grund'))}`,
   gelesen.get('hat_grund') === 'sichtbar über die Lebensleiste' && gelesen.get('ohne_grund') === null,
 );
-const fehlenderWaechter = leseBewusstStumm('// Datei ohne bewusstStumm-Menge');
+const fehlenderWaechter = leseBewusstStumm('// Datei ohne Ereigniskatalog');
 pruefe(
   '6b) Wächter nicht lesbar → keine Begründungen (fail-safe: alles gilt als undokumentiert)',
   'vorhanden = false, Einträge = 0',

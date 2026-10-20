@@ -6137,7 +6137,7 @@ Das `damage`-Ereignis trägt `damageType`, `isCritical`, `sourceEntityId`, `targ
 Krit und Selbstschaden lösen im Client `treffer_krit` bzw. `treffer_selbst` aus. Die Engine kennt keinen
 Krit-Mechanismus: `isCritical` ist immer `false` (die Anzeige ist vorbereitet).
 
-### Biome und Materialien (Stand 2026-10-20, `config.gelaende: 2`, Zerstörung Fassung 5)
+### Biome und Materialien (Stand 2026-10-20, `config.gelaende: 2`, Zerstörung Fassung 5; Fassung 6 siehe unten)
 
 **Auftrag:** Neun Sonderbiome, eine Materialkarte je Karte, Zerstörbarkeit und Anfälligkeit je Material.
 Hinter Versionsmarken: Köpfe ohne `gelaende` sind `GELAENDE_ALT` (Biom folgt der Karte, keine Stoffkarte);
@@ -6148,9 +6148,22 @@ Hinter Versionsmarken: Köpfe ohne `gelaende` sind `GELAENDE_ALT` (Biom folgt de
 - **Darstellung:** `client/stoffOptik.js` zeichnet je Material Farbe und Muster in die Gelände-Ebene.
 - **Wirkung** (`config/stoffe.js`, `stoffWirkung`): Material × Schadensart (Sprengung, Splitter, Brand, Durchschlag, Beben) und Wirkgruppe (Wucht, Hitze, Kälte, Säure, Strom, Nass) ergeben Radius-/Tiefenfaktor; unzerstörbar = Krater entfällt (Ereignis `terrain_resisted`), brüchig = Nebenbrüche, brennbar/schmelzbar = Reaktion.
 - **Prüfung:** `tests/biome-stoffe.test.js`, `npm run check:biome` (30 Seed×Biom-Karten: Spawn erreichbar, Wasseranteil, Stoffkarte Server = Client), E2E `biome-material.spec.mjs`, Matrix `docs/matrix-terrain-waffen-wirkung.md` (Abschnitt Material × Schadensart).
-- **Offen:** Hangrutsch je Material, stoffabhängiger Klang.
+- **Erledigt danach:** Hangrutsch je Material und stoffabhängiger Klang, siehe „Restpunkte Zerstörung Fassung 6“ weiter unten.
 
 ![Kontaktbogen der Sonderbiome](docs/bilder/biome-kontaktbogen.jpg)
+
+### Restpunkte Zerstörung Fassung 6 (Stand 2026-10-20)
+
+Hinter der Versionsmarke `config.zerstoerung: 6` (`ZERSTOERUNG_HANG`, neuer Standard); Köpfe mit 1–5 laufen bitgleich
+(`tests/replay-altkoepfe.test.js`, `tests/zerstoerung*.test.js`).
+
+- **Hangrutsch je Material** (`engine/zerstoerung.js#startHang`, `tests/hangrutsch.test.js`): Nach einem Krater ab Radius 12 setzt sich Sand (Steilheit 2), Asche (2) und Schnee (3) wie beim Erdbeben-Setzrutsch (`['r', ...]`, `terrain_slumped`, Masse bleibt erhalten); Fels, Metall, Grundgestein, Obsidian und Erde bleiben stehen. Kisten und Geschütze rutschen mit, weil ihnen die Auflage fehlt (`#objekteFallen`); Pflanzen auf gerutschten Zellen brechen im Client ab (`pflanzen.js#entfernePflanzenAufRutsch`).
+- **Risse und Geröll** (reine Client-Optik, kein Netz-Mehrverkehr, `schuttOptik.js#kraterRisse/geroellZellen`, ab Kraterradius 14): Haarrisse am Kraterrand und Geröllzellen in der unteren Hälfte, nur mit `source-atop` auf vorhandenes Gelände gemalt. E2E `einschlag-optik.spec.mjs` prüft im echten Canvas, dass kein deckendes Pixel im Freien entsteht; Bilder: `docs/bilder/einschlag-vorher.jpg`, `docs/bilder/einschlag-nachher.jpg`.
+- **Rückstoß:** Die Engine stößt weg vom Einschlag (`dx / dist`, `tests/rueckstoss-richtung.test.js`: links, rechts, oben, unten). Das Zucken der getroffenen Figur im Client folgte starr der Blickrichtung (`-f`); jetzt zeigt es mit `gefuehl.js#stossRichtung` (nächster junger Einschlag, `renderer.merkeEinschlag`) von dem Einschlag weg.
+- **Metall-Klangprofil** (`klangProfile.js`: `einschlag_metall`, `explosion_metall`): nur bei Stoff `metall`; Wasser hat Vorrang. Die Engine trägt den Schlüssel als Feld `stoff` im Ereignis `explosion` (nur Fassung 6 mit Stoffkarte, `stoffSchluesselAmEinschlag`), sonst leitet der Client ihn aus der eigenen Stoffkarte ab — lokal und online dieselbe Funktion. `docs/klang/auswertung.json` neu gemessen (38 Profile).
+- **Wasserspiegelung** (`client/wasserSpiegel.js`, Summand im Wasserdurchlauf des Renderers, keine zusätzliche Ebene): Himmelsfarbe am Horizont in den obersten 22 Zellen. `tests/e2e/wasser-spiegelung.spec.mjs` misst die Renderzeit mit und ohne (gemessen +1,6 %, Grenze +10 %).
+- **DPR 2:** `tests/e2e/dpr2.spec.mjs` (`deviceScaleFactor: 2`), Sichtprüfung `docs/bilder/dpr2-hud.jpg`, `docs/bilder/dpr2-figuren.jpg`: HUD und Figuren scharf und im Bild.
+- **Ereigniskatalog** (`src/shared/ereigniskatalog.js`): EINE Quelle je Ereignisart (Klasse Anzeige/Zustand, Drossel, Stummbegründung, Einzweig-Beleg, Klang, Bildwirkung). `ANZEIGE_/ZUSTANDS-/GEDROSSELTE_EREIGNISARTEN` in `protocol.js` sind daraus abgeleitet, die Tabellen `bewusstStumm`/`EINZWEIG_BELEGT` im Wächtertest und die Leselogik von `tools/audit-mcp` lesen den Katalog. `tests/ereigniskatalog.test.js` führt jede Wirkung aus und prüft, dass sie nur die im Katalog genannten Klänge und Bildwirkungen auslöst.
 
 #### Biom → Parameter
 

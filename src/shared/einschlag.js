@@ -118,5 +118,5 @@ export function materialAusEreignis(nutzlast) {
  * `klassifiziereEinschlag` bleibt bei wasser/fels/erde.
  */
 export function stoffSchluesselAmEinschlag(stoffkarte, x, y) {
-  return stoffkarte ? (materialAn(stoffkarte, x, y)?.key ?? null) : null;
+  return stoffkarte?.feld ? (materialAn(stoffkarte, x, y)?.key ?? null) : null;
 }

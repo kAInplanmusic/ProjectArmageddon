@@ -785,27 +785,25 @@ export function pfadAufloesung() {
 }
 
 /**
- * Liest die Menge `bewusstStumm` SAMT Begründung aus dem Wächter-Quelltext.
+ * Liest die stummen Ereignisse SAMT Begründung aus dem Ereigniskatalog
+ * (`src/shared/ereigniskatalog.js`, Feld `stumm`, eine Zeile je Art).
  *
- * Ergebnis: Name → Begründungstext oder `null`, wenn der Eintrag keinen
- * Begründungskommentar hat. Ausgelagert (und damit prüfbar), weil genau daran
+ * Ergebnis: Name → Begründungstext oder `null`, wenn der Eintrag keine
+ * Begründung hat (`stumm: ''`). Ausgelagert (und damit prüfbar), weil genau daran
  * der zweite fest verdrahtete Satz hing: Der Bericht behauptete „jedes stumme
  * Ereignis ist mit Begründung gelistet", während hier nur die Zugehörigkeit zur
  * Menge geprüft wurde. Wer gelistet ist, aber keine Begründung hat, ist OFFEN.
+ *
+ * Früher stand die Menge als `bewusstStumm` im Wächtertest; seit der Vereinheitlichung der
+ * Ereignistabellen ist der Katalog die einzige Quelle.
  */
-export function leseBewusstStumm(waechterText = '') {
-  const block = waechterText.match(/bewusstStumm\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
+export function leseBewusstStumm(katalogText = '') {
   const begruendungen = new Map();
-  if (!block) return { vorhanden: false, begruendungen };
-  block[1].split('\n').forEach(zeile => {
-    const mitGrund = zeile.match(/'([a-z0-9_]+)'\s*,?\s*\/\/\s*(\S.*)$/i);
-    if (mitGrund) {
-      begruendungen.set(mitGrund[1], mitGrund[2].trim());
-      return;
-    }
-    // Gelistet, aber ohne Begründung auf derselben Zeile → bleibt `null`.
-    const ohneGrund = zeile.match(/'([a-z0-9_]+)'/i);
-    if (ohneGrund && !begruendungen.has(ohneGrund[1])) begruendungen.set(ohneGrund[1], null);
+  if (!/EREIGNIS_KATALOG\s*=/.test(katalogText)) return { vorhanden: false, begruendungen };
+  katalogText.split('\n').forEach(zeile => {
+    const art = zeile.match(/^\s*([a-z0-9_]+):\s*\{.*\bstumm:\s*'((?:[^'\\]|\\.)*)'/i);
+    if (!art) return;
+    begruendungen.set(art[1], art[2].trim() === '' ? null : art[2].replace(/\\'/g, "'").trim());
   });
   return { vorhanden: true, begruendungen };
 }
@@ -873,11 +871,10 @@ export function ereignisAbdeckung() {
   const schluessel = new Set([...clientText.matchAll(/^\s*([a-z0-9_]{3,})\s*:/gmi)].map(m => m[1]));
   const behandelt = new Set([...emittiert.keys()].filter(n => zitate.has(n) || schluessel.has(n)));
 
-  // Die dokumentierte Absicht — aus dem Wächter, nicht aus einer zweiten Liste.
-  // Gelesen werden Name UND Begründung (der `// …`-Kommentar hinter dem Namen,
-  // `tests/event-coverage.test.js:248-267`). Ohne Begründungstext ist der
-  // Eintrag kein Nachweis von Absicht.
-  const waechter = read(path.join(ROOT, 'tests', 'event-coverage.test.js')) ?? '';
+  // Die dokumentierte Absicht — aus dem Ereigniskatalog, nicht aus einer zweiten Liste.
+  // Gelesen werden Name UND Begründung (Feld `stumm`, `src/shared/ereigniskatalog.js`).
+  // Ohne Begründungstext ist der Eintrag kein Nachweis von Absicht.
+  const waechter = read(path.join(ROOT, 'src', 'shared', 'ereigniskatalog.js')) ?? '';
   const { vorhanden: waechterVorhanden, begruendungen } = leseBewusstStumm(waechter);
 
   const stumm = [];
