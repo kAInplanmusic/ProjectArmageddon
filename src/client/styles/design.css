@@ -821,6 +821,10 @@ select option { background: #14181d; color: var(--ink); }
 .musik-lautstaerke input[type="range"] { width: 120px; min-height: 44px; accent-color: var(--accent); touch-action: manipulation; }
 .musik-titel { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: none; }
 .musik-titel:empty { display: none; }
+/* Menükarte: kein Scroll-Anchoring. Ändert sich beim ersten Klick Text im Menü (Musiktitel), verschob
+   Chrome die Karte mitten im Klick um einige Pixel; der Knopf wanderte unter dem Zeiger weg (Mouseup
+   auf anderem Element, „Match starten" blieb ohne Wirkung — sichtbar in niedrigen Fenstern). */
+#menu-overlay .overlay-card { overflow-anchor: none; }
 #musik-hud {
   pointer-events: auto; margin: 0; padding: 4px 10px; min-width: 0; text-align: left;
   flex-wrap: nowrap; gap: 8px; align-self: stretch;
