@@ -27,6 +27,8 @@
  * @module waffenAnimation
  */
 
+import { TYP_JE_CHARAKTER } from './figurTypen.js';
+
 /** Die acht Katalogkategorien (`src/shared/config/weapons.js`). */
 export const KATEGORIEN = Object.freeze([
   'melee', 'ranged', 'heavy_ranged', 'elemental', 'magic', 'tech', 'utility', 'ultimate',
@@ -250,7 +252,7 @@ function einschwingen(u) {
 // ----------------------------------------------------------------- Figurtypen und Handpunkt
 
 /**
- * Figurtypen: Wie eine Figur die Waffe trägt. Humanoide greifen sie mit der Hand; Tiere,
+ * Figurtypen (Zuordnung je Charakter: `figurTypen.js`, `TYP_JE_CHARAKTER`): Wie eine Figur die Waffe trägt. Humanoide greifen sie mit der Hand; Tiere,
  * Fahrzeuge und Wesen tragen sie als Aufbau (Rücken, Turm, über dem Körper), ohne Hand;
  * Schweber halten sie schwebend vor dem Körper.
  *
@@ -265,46 +267,9 @@ export const FIGURTYPEN = Object.freeze({
   fahrzeug: Object.freeze({ handAnteil: 0.3, vor: -1, aufbau: true, skala: 1.12 }),
   schweber: Object.freeze({ handAnteil: 0.4, vor: 2, aufbau: false, skala: 1 }),
   wesen: Object.freeze({ handAnteil: 0.4, vor: 1, aufbau: true, skala: 0.95 }),
+  schwarm: Object.freeze({ handAnteil: 0.45, vor: 0, aufbau: true, skala: 0.9 }),
 });
 export const FIGURTYP_STANDARD = 'humanoid';
-
-/** Figurtyp je Charakter-ID (alle 81 Figuren der 9 Fraktionen; fehlende gelten als Humanoid). */
-export const FIGUR_TYP = Object.freeze({
-  // Bestien
-  pikamon: 'tier', 'shrew-quakes': 'tier', 'storm-talon': 'tier', 'flame-jaws': 'tier', 'ember-tails': 'tier',
-  'magma-plate': 'tier', 'decay-spawn': 'humanoid', 'cosmic-meditate': 'schweber', 'sonic-blossom': 'schweber',
-  // Datenkult
-  'nullpointer-exception-cult': 'humanoid', 'datapath-replicant': 'humanoid', 'chrome-code-shifter': 'wesen',
-  'quantum-qubit-knight': 'humanoid', 'synapse-streamer': 'wesen', 'arcology-agent': 'humanoid',
-  'buffer-flow-swarm': 'schweber', 'hyper-link-hound': 'tier', ethereo: 'schweber',
-  // Maschinen
-  'chassis-endo-t8': 'humanoid', 'slasher-cyber-jax': 'humanoid', 'hydra-titan-mech': 'humanoid',
-  'recon-luchs-01': 'tier', 'heavy-battery-moerser-bot': 'fahrzeug', 'ordnance-rail-viper': 'fahrzeug',
-  'grid-drifter-datastream': 'schweber', 'proxy-glitch-hack': 'humanoid', 'overlord-kernel-panic': 'humanoid',
-  // Piraten
-  'captain-sven': 'humanoid', 'swashbuckler-piet': 'humanoid', 'iron-hook-harry': 'humanoid',
-  'cannoneer-klaus': 'humanoid', 'sniper-marie': 'humanoid', 'bombard-billy': 'humanoid',
-  'voodoo-witch-morgana': 'humanoid', 'storm-schamane-hooky': 'humanoid', 'chanteyman-drake': 'humanoid',
-  // Pixel
-  'nullpointer-exception': 'tier', 'pyrofox-a': 'tier', 'pyrofox-b': 'tier', 'arcershorn-a': 'humanoid',
-  'pyrowand-a': 'tier', shieldmon: 'tier', 'phantom-mal-a': 'wesen', 'arcanus-a': 'humanoid', 'arcanus-b': 'humanoid',
-  // Nager
-  'commander-chewk': 'humanoid', 'berzerker-fang': 'humanoid', 'vanguard-captain-rix': 'humanoid',
-  'sharpshooter-quill': 'humanoid', 'grenadier-skitter': 'humanoid', 'volley-captain-spark': 'humanoid',
-  'alchemage-nibble': 'humanoid', 'technomancer-squeak': 'humanoid', 'grand-conduit-vex': 'humanoid',
-  // Shinobi
-  'shred-katana-hanzmon': 'humanoid', 'kunoichi-wind-flapper': 'humanoid', 'tetsubo-oni-brute': 'humanoid',
-  'dazzler-werner': 'humanoid', 'rauch-meister-genzi': 'fahrzeug', 'blowpipe-koga': 'wesen',
-  'ninjutsu-master-goemon': 'humanoid', 'talisman-sorcerer-jun': 'humanoid', 'vixen-kitsune': 'humanoid',
-  // Untote
-  'bone-racker-karl': 'humanoid', 'grave-zombie-kauer': 'humanoid', 'grim-reaper-silas': 'humanoid',
-  'archer-mortis': 'humanoid', 'pitcher-igor': 'humanoid', 'vessel-plague-skull': 'humanoid',
-  'lich-king-alistair': 'humanoid', 'scribe-necro-silas': 'humanoid', 'banshee-beatrice': 'schweber',
-  // Xeno
-  'sgt-acid-xeno': 'humanoid', 'stalker-predax': 'humanoid', 'vortex-grabber': 'humanoid', 'drone-theta': 'humanoid',
-  'desintegrator-kael': 'humanoid', 'plasma-maw-zorg': 'humanoid', 'harbinger-zeta': 'schweber',
-  'dark-matter-witch': 'schweber', 'null-entity-quark': 'humanoid',
-});
 
 /**
  * Feinkorrekturen je Charakter-ID über den Figurtyp hinaus (`handAnteil`, `vor`, `skala`).
@@ -312,7 +277,7 @@ export const FIGUR_TYP = Object.freeze({
  */
 export const FIGUR_OFFSETS = Object.freeze({
   'storm-talon': { handAnteil: 0.5 },
-  'hydra-titan-mech': { handAnteil: 0.38, vor: 3, skala: 1.1 },
+  'hydra-titan-mech': { handAnteil: 0.42, vor: 3 },
   'heavy-battery-moerser-bot': { handAnteil: 0.4, vor: 0 },
   'rauch-meister-genzi': { handAnteil: 0.36 },
   'ordnance-rail-viper': { handAnteil: 0.32, vor: 2 },
@@ -331,7 +296,7 @@ export function figurHand(charId) {
   const schluessel = charId ?? '';
   let f = figurCache.get(schluessel);
   if (!f) {
-    const typ = FIGUR_TYP[schluessel] ?? FIGURTYP_STANDARD;
+    const typ = TYP_JE_CHARAKTER[schluessel] ?? FIGURTYP_STANDARD;
     f = Object.freeze({ typ, ...FIGURTYPEN[typ], ...FIGUR_OFFSETS[schluessel] });
     figurCache.set(schluessel, f);
   }

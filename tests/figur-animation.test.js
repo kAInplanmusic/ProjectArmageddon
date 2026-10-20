@@ -17,7 +17,7 @@ const lauf = (posen, schritte, dt, f, opt = {}) => {
 test('Ohne Bewegungsanimation bleibt die Pose neutral (nur der Blitz wirkt)', () => {
   const p = new FigurPosen();
   const { pose } = lauf(p, 120, 1 / 60, (i, t) => figur(100 + t * 80, 50 + Math.sin(t * 9) * 30), { reduziert: true, treffer: 0.5 });
-  assert.deepEqual({ ...pose }, { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0.5 });
+  assert.deepEqual({ ...pose }, { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0.5, tint: 0, neigung: 0, zug: 0, hpVerz: 1 });
 });
 
 test('Im Stand atmet die Figur, beim Laufen neigt sie sich in Laufrichtung', () => {
