@@ -29,7 +29,7 @@ import {
 } from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
-import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken } from '../shared/config/schaden.js';
+import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
   zeichneSoldat, zeichneRohr, zeichneFigurSprite, zeichneWaffeInHand, zeichneWaffeSprite, zeichneAuraRing, zeichneNamensschild,
@@ -490,7 +490,14 @@ export class Renderer {
    */
   /** Merkt die Schadensart des letzten Treffers einer Figur (aus dem `damage`-Ereignis) für die Zahl. */
   merkeSchadensart(entityId, art, krit = false) {
-    if (typeof art === 'string') this.schadensArten.set(entityId, { name: art, krit, rest: 45 });
+    if (typeof art !== 'string') return;
+    this.schadensArten.set(entityId, { name: art, krit, rest: 45 });
+    // Kam die Zahl im selben Bild vor dem Ereignis, bekommt sie Farbe und Zeichen nachträglich.
+    const familie = familieVonArt(art);
+    for (const z of this.zahlen) {
+      if (z.id !== entityId || z.life < 0.85 || z.art !== 'schaden') continue;
+      if (krit) { z.art = 'kritisch'; z.text = `${z.text}!`; } else if (familie !== 'koerper') { z.art = `schaden-${familie}`; z.text += ZAHL_FAMILIE[familie].symbol; }
+    }
   }
 
   #ermittleTreffer(state) {

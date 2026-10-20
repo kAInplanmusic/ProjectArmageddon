@@ -49,8 +49,8 @@ export function findeZahlen(bisher, entities, arten = null) {
       const meldung = arten?.get(e.entityId);
       const familie = meldung?.name ? familieVonArt(meldung.name) : 'koerper';
       const zeichen = ZAHL_FAMILIE[familie]?.symbol ?? '';
-      if (kritisch || meldung?.krit) neu.push({ x, y: y - 26, text: `${diff}!`, art: 'kritisch' });
-      else neu.push({ x, y: y - 26, text: `${diff}${zeichen}`, art: familie === 'koerper' ? 'schaden' : `schaden-${familie}` });
+      if (kritisch || meldung?.krit) neu.push({ x, y: y - 26, text: `${diff}!`, art: 'kritisch', id: e.entityId });
+      else neu.push({ x, y: y - 26, text: `${diff}${zeichen}`, art: familie === 'koerper' ? 'schaden' : `schaden-${familie}`, id: e.entityId });
     } else if (diff > 0 && lebt) {
       neu.push({ x, y: y - 26, text: `+${diff}`, art: 'heilung' });
     }

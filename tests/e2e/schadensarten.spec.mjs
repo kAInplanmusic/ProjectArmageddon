@@ -39,17 +39,23 @@ test('Malus erscheint als Marke mit Titel und im Protokoll', async ({ page }) =>
 
 test('Schadenszahl trägt Farbe und Zeichen der Schadensart', async ({ page }) => {
   await boot(page, 777);
-  const zahlen = await page.evaluate(() => {
+  await page.evaluate(() => {
     const match = window.__PA__.getMatch();
     const aktiv = match.activePlayerId;
     const ziel = match.getState().entities.find(e => e.entityId !== aktiv).entityId;
-    const system = match.world.getSystem('damage');
+    window.__gesehen = [];
+    setInterval(() => window.__gesehen.push(...window.__PA__.schadenszahlen()), 16);
+    match.world.getSystem('damage').applyDamage(match.world, ziel, 12, aktiv, { damageType: 11 });
+    // Das Ereignis erreicht die Anzeige im Simulationsschritt; danach zeichnet die Schleife die Zahl.
     window.__PA__.advance(1);
-    system.applyDamage(match.world, ziel, 12, aktiv, { damageType: 11 });
-    window.__PA__.advance(2);
-    return window.__PA__.schadenszahlen();
+    window.__PA__.setAutoLoop(true);
   });
-  expect(zahlen.some(z => z.art === 'schaden-feuer' && z.text.includes('♨'))).toBe(true);
+  const gesehen = await page.waitForFunction(
+    () => window.__gesehen.some(z => z.art === 'schaden-feuer' && z.text.includes('♨')),
+    null, { timeout: 5000, polling: 30 },
+  ).then(() => true, () => false);
+  const alle = await page.evaluate(() => window.__gesehen.slice(0, 5));
+  expect(gesehen, JSON.stringify(alle)).toBe(true);
 });
 
 test('Dauerbetäubung ist ausgeschlossen: nach einer Betäubung folgt ein Schutzzug', async ({ page }) => {
