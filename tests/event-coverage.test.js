@@ -398,6 +398,26 @@ const EINZWEIG_BELEGT = new Map([
     zweig: 'online',
     entweder: 'wie `terrain_destroyed`: die Landung trägt Bitmap und Maske der Zielvorschau nach, src/client/ereignisse.js:221 (karte.insel) — ein lokaler Zweig würde zweimal verschieben.',
   }],
+  ['terrain_removed', {
+    zweig: 'online',
+    entweder: 'Fassung 4, Zustand: Zellen ersatzlos weg (Riss, Abplatzer); Bitmap und Maske der Zielvorschau über karte.entfernt, die Ebene über renderer.entferneZellen — src/client/ereignisse.js:231.',
+  }],
+  ['terrain_added', {
+    zweig: 'online',
+    entweder: 'Fassung 4, Zustand: Schutt hat sich abgesetzt; karte.hinzu und renderer.setzeSchutt — src/client/ereignisse.js:237.',
+  }],
+  ['terrain_slumped', {
+    zweig: 'online',
+    entweder: 'Fassung 4, Zustand: Setzrutsch nach einem Beben; karte.rutsch und renderer.setzeRutsch — src/client/ereignisse.js:243.',
+  }],
+  ['terrain_crumble', {
+    zweig: 'online',
+    entweder: 'Fassung 4, nur Anzeige: fliegende Partikel-Zellen und Staub (renderer.bruchOptik, src/client/ereignisse.js:249); ein lokales Match gibt es im Client nicht mehr.',
+  }],
+  ['terrain_quake', {
+    zweig: 'online',
+    entweder: 'Fassung 4, nur Anzeige: Staub und Bildzittern (renderer.bebenOptik, src/client/ereignisse.js:250); ein lokales Match gibt es im Client nicht mehr.',
+  }],
 ]);
 
 test('Der lokale Zweig behandelt den Einschlag eines Projekils', () => {

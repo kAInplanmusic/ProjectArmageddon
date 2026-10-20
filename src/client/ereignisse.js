@@ -232,7 +232,7 @@ export const EREIGNIS_WIRKUNGEN = {
     online: (k, n) => {
       // `tiefe` fehlt bei Altfassung (runder Krater), sonst Teil der Kraterform.
       const tiefe = n.tiefe ?? null;
-      k.renderer?.applyCrater(n.x, n.y, n.radius || 12, tiefe);
+      k.renderer?.applyCrater(n.x, n.y, n.radius || 12, tiefe, n.art ?? null);
       // Auch die Karte, gegen die die Zielvorschau rechnet — nicht nur das Bild.
       k.karte?.krater(n.x, n.y, n.radius || 12, tiefe);
     },
@@ -256,6 +256,32 @@ export const EREIGNIS_WIRKUNGEN = {
       k.sound?.verarbeite({ type: 'insel_gelandet', ...inselMitte(n.runs, n.dy) });
     },
   },
+
+  /*
+   * Zerstörung Fassung 4. Zustand (Karte UND Bild): Zellen weg (`terrain_removed`), Schutt
+   * abgesetzt (`terrain_added`), Setzrutsch (`terrain_slumped`). Nur Anzeige: Brocken fliegen
+   * (`terrain_crumble`), Erdbeben (`terrain_quake`). Alle nur online — die Engine läuft auf dem Server.
+   */
+  terrain_removed: {
+    online: (k, n) => {
+      k.karte?.entfernt(n.runs);
+      k.renderer?.entferneZellen(n.runs, n.art);
+    },
+  },
+  terrain_added: {
+    online: (k, n) => {
+      k.karte?.hinzu(n.zellen);
+      k.renderer?.setzeSchutt(n.zellen);
+    },
+  },
+  terrain_slumped: {
+    online: (k, n) => {
+      k.karte?.rutsch(n.zuege);
+      k.renderer?.setzeRutsch(n.zuege);
+    },
+  },
+  terrain_crumble: { online: (k, n) => { k.renderer?.bruchOptik(n); } },
+  terrain_quake: { online: (k, n) => { k.renderer?.bebenOptik(n); } },
 
   /*
    * Explosion.

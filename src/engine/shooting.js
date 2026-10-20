@@ -414,7 +414,7 @@ function bohre(quelle, effekt, winkel, hit) {
     const radius = i === 0 ? effekt.entryRadius : effekt.radius;
     const zerstoerung = quelle.world?.services?.zerstoerung;
     if (zerstoerung) {
-      zerstoerung.krater(x, y, radius, 100);
+      zerstoerung.krater(x, y, radius, 100, 'durchschlag');
     } else {
       quelle.terrain.punchCrater(x, y, radius);
       quelle.events.emit('terrain_destroyed', { x, y, radius });

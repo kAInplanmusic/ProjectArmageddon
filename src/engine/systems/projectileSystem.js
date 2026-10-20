@@ -402,7 +402,8 @@ export class ProjectileSystem {
       const zerstoerung = services.zerstoerung ?? null;
       if (zerstoerung) {
         // Zerstörungsfassung 2: raue Form, Tiefe nach Waffe, Nachrutschen (engine/zerstoerung.js).
-        zerstoerung.krater(x, y, radius, kraterTiefeProzent(terrainDamage, blastRadius, radius));
+        // Ab Fassung 4 reist die Waffe mit: Ihr Zerstörungscharakter (Durchschlag, Streuung, Beben, Brand) wirkt am Einschlag.
+        zerstoerung.krater(x, y, radius, kraterTiefeProzent(terrainDamage, blastRadius, radius), world.getComponent(entityId, 'Projectile', 'weaponId'));
       } else {
         terrain.punchCrater(x, y, radius);
         if (events) events.emit('terrain_destroyed', { x, y, radius });

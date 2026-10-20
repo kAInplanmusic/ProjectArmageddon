@@ -69,13 +69,16 @@ export function plazierePflanzen(bitmap, breite, hoehe, seed, biomId, boden = 'g
 }
 
 /** Entfernt Pflanzen, deren Wurzel in einen Krater fällt. Gibt true zurück, wenn sich etwas änderte. */
-export function entfernePflanzenImKrater(liste, cx, cy, radius) {
+export function entfernePflanzenImKrater(liste, cx, cy, radius, entfernt = null) {
   const vorher = liste.length;
   for (let i = liste.length - 1; i >= 0; i -= 1) {
     const p = liste[i];
     const dx = p.x - cx;
     const dy = p.y - cy;
-    if (dx * dx + dy * dy < (radius + 8) * (radius + 8)) liste.splice(i, 1);
+    if (dx * dx + dy * dy < (radius + 8) * (radius + 8)) {
+      const [weg] = liste.splice(i, 1);
+      if (entfernt) entfernt.push(weg);
+    }
   }
   return liste.length !== vorher;
 }
@@ -278,6 +281,33 @@ export function zeichnePflanzenSchicht(ctx, liste, breite, hoehe, palette) {
   ctx.clearRect(0, 0, breite, hoehe);
   const farben = pflanzenFarben(palette);
   for (const p of liste) zeichnePflanze(ctx, p, farben);
+}
+
+/**
+ * Zeichnet nur einen Ausschnitt der Pflanzenebene neu: das Rechteck wird geleert und alle Pflanzen,
+ * deren Rahmen es berühren, werden (in Listenreihenfolge, auf das Rechteck beschnitten) gezeichnet.
+ * Das Ergebnis ist pixelgleich zu `zeichnePflanzenSchicht` über die ganze Ebene, kostet aber nur
+ * die Fläche des Ausschnitts — ein Krater lässt ein paar Pflanzen verschwinden, nicht die ganze Karte neu entstehen.
+ *
+ * @param {{x0:number,x1:number,y0:number,y1:number}} bereich
+ */
+export function zeichnePflanzenAusschnitt(ctx, liste, breite, hoehe, palette, bereich) {
+  const x0 = Math.max(0, Math.floor(bereich.x0));
+  const y0 = Math.max(0, Math.floor(bereich.y0));
+  const x1 = Math.min(breite, Math.ceil(bereich.x1));
+  const y1 = Math.min(hoehe, Math.ceil(bereich.y1));
+  if (x1 <= x0 || y1 <= y0) return;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x0, y0, x1 - x0, y1 - y0);
+  ctx.clip();
+  ctx.clearRect(x0, y0, x1 - x0, y1 - y0);
+  const farben = pflanzenFarben(palette);
+  for (const p of liste) {
+    const r = pflanzenRahmen(p, breite, hoehe);
+    if (r.x1 > x0 && r.x0 < x1 && r.y1 > y0 && r.y0 < y1) zeichnePflanze(ctx, p, farben);
+  }
+  ctx.restore();
 }
 
 /**

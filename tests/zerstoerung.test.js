@@ -164,7 +164,7 @@ test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Go
   }
 });
 
-test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (3), Fassung 2 bleibt Fassung 2', () => {
+test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (4), Fassung 2 und 3 bleiben erhalten', () => {
   const alt = {
     format: 1, createdAt: 0, seed: 4242,
     config: { teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, turnDurationMs: 30000, kit: 3 },
@@ -177,11 +177,14 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
   assert.equal(match.setzung, null);
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_SCHOLLEN);
-  assert.equal(ZERSTOERUNG_STANDARD, ZERSTOERUNG_SCHOLLEN);
+  assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_STANDARD);
+  assert.equal(ZERSTOERUNG_STANDARD, 4);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_SCHOLLEN);
+  assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_STANDARD);
+  const drei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_SCHOLLEN });
+  drei.finalize(300);
+  assert.equal(playReplay(ReplayRecorder.fromJSON(drei.serialize())).match.zerstoerung, ZERSTOERUNG_SCHOLLEN);
 
   // Eine Aufzeichnung der Zwischenzeit (Fassung 2) behält ihre Fassung und damit ihre Grenzen.
   const zwei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_GELAENDE });
@@ -568,4 +571,35 @@ test('Im Match: eine liegende Kiste fällt in den Krater unter ihr und bleibt li
   const y1 = danach.y;
   for (let i = 0; i < 60; i++) { match.step(); match.consumeEvents(); }
   assert.equal(match.getState().crates.find(c => c.entityId === kiste.entityId).y, y1, 'sie liegt jetzt fest');
+});
+
+/* ------------------------------------------- Goldwerte Fassung 3 (Stand vor Fassung 4) */
+
+/** FNV-1a über einen Text — ein kurzer Fingerabdruck für Ereignislisten. */
+function fingerabdruck(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return h >>> 0;
+}
+
+function gold3() {
+  // (a) Reiner Rechenkern: eine Scholle über 6000 Zellen und zwei Krater in Folge.
+  const maske = maskeMitScholle(120, 90);
+  const { z, ereignisse } = bauEinheit(maske, new Map(), ZERSTOERUNG_SCHOLLEN);
+  z.krater(315, 90 + 100 + 120, 20, 100);
+  for (let i = 0; i < 80; i++) z.schritt();
+  z.krater(360, 150, 18, 115);
+  for (let i = 0; i < 200; i++) z.schritt();
+  // (b) Im Match: Brett über der Figur, Pfeiler gekappt.
+  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN });
+  match.start();
+  const aufbau = baueBrett(match);
+  match.setzung.krater(aufbau.px, aufbau.boden - 45, 14, 100);
+  for (let i = 0; i < 200; i++) { match.step(); match.consumeEvents(); }
+  return [maske.hash(), maske.craterCount, fingerabdruck(JSON.stringify(ereignisse)), match.terrain.hash(), match.stateHash(), match.terrain.craterCount];
+}
+
+test('Fassung 3 bleibt Bit für Bit: Scholle, Krater und Brett (Goldwerte, gemessen vor Einführung von Fassung 4)', () => {
+  assert.deepEqual(gold3(), [3282633924, 3, 927077047, 2643580672, 'c81f0a06', 2]);
+  assert.deepEqual(gold3(), gold3(), 'zwei Läufe, gleiche Werte');
 });
