@@ -659,7 +659,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1527/1527** grün, Dateizahl **159** (Stand 2026-10-19, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1542/1542** grün, Dateizahl **161** (Stand 2026-10-19, Figuren-Feinschliff: +15 in den neuen `figur-typen.test.js` und `figur-animation-typen.test.js`, dazu 4 E2E in `figuren-feinschliff.spec.mjs`; davor 1527/159, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →
@@ -3442,6 +3442,37 @@ Posenvorgabe; Empfehlung: nicht nötig, solange nur die Seitenansicht gefragt is
 Atlasgrößen, Zellen im Atlas, echter Alpha (deckend und weiche Ränder), transparente
 Ecken, Anker in der Zelle und Mündung am rechten Rand, Projektil nur bei physischem
 Geschoss, keine Zellenüberlappung, Gesamtgröße < 6 MB.
+
+## Figuren-Darstellung: Feinschliff (2026-10-20) — GEBAUT (Teile)
+
+Reine Darstellung; Engine, Hash und Replays unverändert.
+
+- **Bildqualität:** `src/client/figurStufen.js` — Mip-Kette 64/96/128/192/256 px, je Stufe beim ersten Gebrauch
+  mehrstufig halbiert (`imageSmoothingQuality: high`), leicht geschärft (Weichzeichner nach Deckkraft gewichtet,
+  Ausschlag begrenzt: keine Säume; Alpha < 10 entfällt). `stufeFuer(fig, px)` wählt nach Sprite-Kante in Bildpunkten
+  der Zeichenfläche (`SPRITE_HOEHE · Skala · Zoom`); die Zeichenfläche selbst ist nicht DPR-skaliert, die Kante
+  enthält den Oversampling-Faktor der Karte. Tönungs-Silhouetten (Teamfarbe) je Stufe gecacht.
+- **Verankerung:** Neigung des Bodens aus der Kollisionsmaske (Gelände 7 px links/rechts), geglättet, höchstens ±12°;
+  Sprite, Fußring, Kontaktschatten (weicher Verlaufs-Cache, schrumpft beim Abheben) und die Waffe folgen dem Körper.
+  Wasser: Wasserlinie mit Wellenlinie, unterer Teil getönt/durchscheinend, Blasen beim Waten. Keine Spiegelung (nicht gebaut).
+- **Animation je Typ:** `src/client/figurTypen.js` (Tabelle je Charakter-ID für alle 81; Typen humanoid, tier,
+  fahrzeug, schweber, wesen, schwarm; Parameter für Idle, Lauf, Sprung, Zielkippen, Schuss, Treffer, Tod).
+  `figurAnimation.js`: Idle (Atmen, Mikro-Einsinken, Schweben, Motor-Vibration, Pulsieren, Wuseln), Lauf, Absprung-Hocke,
+  Scheitel, Landung mit Squash + Staubpuff, Zielkippen nach Zielwinkel, Schuss (Ausholen → Rückstoß → Erholung),
+  Treffer (Zucken in Stoßrichtung = entgegen der Blickrichtung, weißer Blitz, dann Teamfarbe), Tod je Typ
+  (kippen, explodieren, stürzen, zerfallen, zerstieben; Teilchen in Teamfarbe), Ertrinken (Sinken, Blasen),
+  Zugbeginn einmalig (Hüpfer, Ring), Sieger-Jubel/Verlierer-Sacken bei Matchende. Teilchen: `figurEffekte.js`
+  (fester Vorrat, keine Allokation je Bild). Reduzierte Bewegung: Pose neutral, nur Blitz und statische Hangneigung.
+- **Schilder:** Pille mit Teamfarb-Punkt (Akzentring der Fraktion), Lebensbalken mit hellerer Verzögerungsleiste,
+  Symbole für Gift/Brand (`dotsCount`) und Verstärkung (`boostMultiplier`); Pfeil über dem Schild wippt.
+- **Figurenkarte:** HD-Porträt (nachgeladen), Chips Kampfweise/Klasse, Lebensbalken, Waffe mit Ikone, Einblenden
+  beim Zugwechsel; ab `max-height: 520px` nur Porträt und Name.
+- **Leistung:** Figuren außerhalb des Bildes (mit Rand) werden weder animiert noch gezeichnet (`figurStat`).
+- **Prüfung:** `tests/figur-typen.test.js`, `tests/figur-animation-typen.test.js`, `tests/e2e/figuren-feinschliff.spec.mjs`;
+  Kontaktbogen `docs/bilder/figuren/kontaktbogen-schuss-tod.jpg` (links Schuss, rechts Tod; Zeilen = Typen).
+- **Nicht gebaut / offen:** Spiegelung am Wasser, Kontaktbögen für alle Animationen im Repo (nur Schuss/Tod; übrige
+  nur lokal erzeugt), Screenshots bei DPR 2, Stoßrichtung des Treffers aus dem Schaden (Zustand führt sie nicht).
+  `profiling.spec.mjs` „echter Grafikpfad" nutzt fest Port 5173 und lief hier nicht (die übrigen Profiling-Tests grün).
 
 ## Waffen-Animation: Sprite in der Hand, Rückstoß, Blitz, Geschoss (2026-10-19)
 
