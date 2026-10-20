@@ -761,7 +761,19 @@ function zeichneFelswand(ctx, x, y, b, h, zufall, farbe, kante) {
  * Gelände: je ferner, desto heller und blauer (Luftperspektive), je näher, desto
  * dunkler. Alles statisch — gezeichnet wird einmal in die gecachte Kulissenebene.
  */
+/** Kammbewuchs der fernen Hügel je Biom: Bäume gibt es nicht überall (Abnahme 2026-10-20: Palmen im Asteroidenfeld). */
+const KAMM_ZACKEN = new Set(['kosmos', 'cosmos', 'surreal', 'abstract', 'caverns']);
+const KAMM_MASTEN = new Set(['fabrik', 'urban', 'noir', 'hyperreal']);
+const KAMM_TANNEN = new Set(['alpine', 'burg', 'fantasy']);
+export function kammArt(biomeId) {
+  if (KAMM_ZACKEN.has(biomeId)) return 'zacken';
+  if (KAMM_MASTEN.has(biomeId)) return 'masten';
+  if (KAMM_TANNEN.has(biomeId)) return 'tannen';
+  return 'baeume';
+}
+
 function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
+  const kamm = kammArt(scenery.biomeId);
   const seed = scenery.seed ?? 0;
   const stufen = scenery.sky?.colors ?? [];
   const dunst = stufen.length ? mix(parseCss(stufen[stufen.length - 1]), [92, 112, 120], 0.45) : [80, 104, 112];
@@ -829,7 +841,19 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
     while (x < breite - 6) {
       const h = ebene.baumH[0] + zufall() * ebene.baumH[1];
       const art = zufall();
-      if (art < 0.5) zeichneTanne(ctx, x, profil(x) + 3, h * 1.25, h * 0.55);
+      if (kamm === 'zacken') {
+        // Kosmos, Surreal, Kristallhöhle: Kristall- und Felsspitzen statt Bäumen.
+        ctx.beginPath();
+        ctx.moveTo(x - h * 0.12, profil(x) + 3);
+        ctx.lineTo(x + (art - 0.5) * h * 0.2, profil(x) - h * 0.9);
+        ctx.lineTo(x + h * 0.12, profil(x) + 3);
+        ctx.closePath();
+        ctx.fill();
+      } else if (kamm === 'masten') {
+        // Fabrik, Stadt: Schornsteine und Masten.
+        const b = 3 + art * 4;
+        ctx.fillRect(x - b / 2, profil(x) - h * (0.7 + art * 0.6), b, h * (0.7 + art * 0.6) + 4);
+      } else if (art < 0.5 || kamm === 'tannen') zeichneTanne(ctx, x, profil(x) + 3, h * 1.25, h * 0.55);
       else if (art < 0.8) {
         zeichnePflanze(ctx, { art: 'palme', x, y: profil(x) + 3, h, spiegel: zufall() < 0.5, seed: Math.floor(zufall() * 999) },
           { blatt: farbe, dunkel: farbe, hell: farbe, stamm: farbe, kontur: null });

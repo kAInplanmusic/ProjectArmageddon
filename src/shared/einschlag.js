@@ -120,3 +120,20 @@ export function materialAusEreignis(nutzlast) {
 export function stoffSchluesselAmEinschlag(stoffkarte, x, y) {
   return stoffkarte?.feld ? (materialAn(stoffkarte, x, y)?.key ?? null) : null;
 }
+
+/**
+ * Klangfarbe nach Schadensart: dieselbe Antwort lokal und online, ohne zusätzliches Feld im Netz —
+ * das Ereignis `explosion` trägt die Art ohnehin (`damageType`, Kennung; `damageTypeName` ergänzt der Client).
+ * Die Zuordnung folgt den Mali in `config/schaden.js` (Brand/Feuer, Gift, Säure, Frost/Eis, Schock/Elektro);
+ * alles andere (Wucht, Magie, Energie ...) behält den Grundklang.
+ *
+ * @param {string|null|undefined} artName Schadensart-Name (`fire`, `poison`, ...)
+ * @returns {'feuer'|'gift'|'eis'|'saeure'|'elektro'|null}
+ */
+export function klassifiziereSchadensklang(artName) {
+  return KLANG_ART_VON_SCHADENSART[artName] ?? null;
+}
+
+export const KLANG_ART_VON_SCHADENSART = Object.freeze({
+  fire: 'feuer', dragon: 'feuer', poison: 'gift', acid: 'saeure', ice: 'eis', electric: 'elektro',
+});

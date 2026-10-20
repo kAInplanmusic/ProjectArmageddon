@@ -74,7 +74,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   cookie_spielt: { klasse: 'anzeige' },
   cookie_schockwelle: { klasse: 'anzeige', klang: ['schockwelle'] },
   crate_pickup: { klasse: 'zustand', klang: ['kiste'], anim: ['addFlash'] },
-  crate_pickup_blocked: { klasse: 'zustand' },
+  crate_pickup_blocked: { klasse: 'zustand', klang: ['kiste_voll'] },
   damage: { klasse: 'zustand', drossel: 'zustand', stumm: 'Lebensbalken sinkt sichtbar (seit 2026-09-27 gedrosselt: im Snapshot redundant)', anim: ['merkeSchadensart'] },
   death: { klasse: 'zustand', klang: ['tod'] },
   dot_applied: { klasse: 'zustand', stumm: 'Zustandsmarke am Spielernamen' },

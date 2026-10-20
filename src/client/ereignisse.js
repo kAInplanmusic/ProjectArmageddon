@@ -34,7 +34,8 @@
  */
 import { MALUS } from '../shared/config/schaden.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { materialAusEreignis, stoffSchluesselAmEinschlag } from '../shared/einschlag.js';
+import { materialAusEreignis, stoffSchluesselAmEinschlag, klassifiziereSchadensklang } from '../shared/einschlag.js';
+import { damageTypeName } from '../engine/damageTypes.js';
 
 /**
  * Eine Wirkung: bekommt den Kontext und die Nutzlast, gibt nichts zurück.
@@ -228,6 +229,8 @@ const einschlagKlang = (k, n) => {
     material: materialAusEreignis(n) ?? k.material?.(n.x, n.y) ?? 'erde',
     // Stoff der Karte (nur Metall ändert den Klang): aus dem Ereignis, sonst aus der eigenen Stoffkarte.
     stoff: n.stoff ?? stoffSchluesselAmEinschlag(k.renderer?.stoffkarte ?? null, n.x, n.y),
+    // Klangfarbe der Schadensart: das Ereignis trägt die Kennung ohnehin (kein Mehr an Netzdaten).
+    art: klassifiziereSchadensklang(n.damageTypeName ?? (Number.isInteger(n.damageType) ? damageTypeName(n.damageType) : n.damageType)),
   });
 };
 
@@ -915,9 +918,10 @@ export const EREIGNIS_WIRKUNGEN = {
    * Online-Text ohne Handlung ließe den Spieler mit vollem Vorrat ohne Ausweg
    * zurück.
    */
-  crate_pickup_blocked: beide((k) => {
+  crate_pickup_blocked: beide((k, n) => {
     // Der Vorrat ist voll: das ist der Moment, in dem Abwerfen nötig wird.
     k.hud?.log('Vorrat voll — erst eine Waffe abwerfen (Q)', 'danger');
+    k.sound?.verarbeite({ type: 'kiste_voll', ...ortVon(k, n.playerId) });
   }),
 
   /*

@@ -264,7 +264,7 @@ Abschnitt „Musik-System“.
 **Effekte:** Schüsse, Einschläge, Treffer, Landungen, Kisten und Hinweistöne sind
 erzeugt, nicht geladen (`src/client/klangProfile.js`, `klangSynth.js`, `soundMixer.js`):
 14 Schussprofile je Waffenart (Pistole, Gewehr, schwere Waffe, Rakete, Feuer, Eis, Blitz,
-Magie, Laser, Strahl, Nahkampf, Wurf, Selbstwirkung, Ultimate) und 22 Ereignisprofile,
+Magie, Laser, Strahl, Nahkampf, Wurf, Selbstwirkung, Ultimate) und 56 Ereignisprofile (darunter Einschlag je Schadensart: Feuer, Gift, Eis, Säure, Elektro; Tiere; `kiste_voll`),
 Stereolage und Abstand nach der Bildposition, höchstens 24 Stimmen. Schalter „Effekte
 an/aus“ und Regler „Effekt-Lautstärke“ stehen im Menü neben der Musik (Taste `T`,
 `localStorage` `pa.ton.v1`); in Tests ist der Ausgang stumm, `?ton=1` erzwingt ihn. Die
@@ -300,9 +300,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1760 Tests in 183 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1766 Tests in 184 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
-| `npm run test:e2e` | Browser-E2E: **310 Tests in 54 Spezifikationen**, ~50 min unter Last (Stand 2026-10-20: **308 grün, 0 rot, 2 übersprungen**, Gesamtlauf plus gezielte Nachläufe der danach behobenen Specs; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
+| `npm run test:e2e` | Browser-E2E: **311 Tests in 55 Spezifikationen**, ~50 min unter Last (Stand 2026-10-20: **308 grün, 0 rot, 2 übersprungen**, Gesamtlauf plus gezielte Nachläufe der danach behobenen Specs; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |

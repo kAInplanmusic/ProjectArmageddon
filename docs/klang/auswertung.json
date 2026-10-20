@@ -1,5 +1,5 @@
 {
-  "profilHash": "15f7a3759b6337e3",
+  "profilHash": "caaecb519848dfb7",
   "samplerate": 48000,
   "profile": {
     "pistole": {
@@ -317,6 +317,15 @@
       "endpegelDb": -180,
       "nan": false
     },
+    "kiste_voll": {
+      "bus": "ui",
+      "dauer": 0.41,
+      "peakDb": -12.5,
+      "rmsDb": -42.7,
+      "schwerpunkt": 246,
+      "endpegelDb": -180,
+      "nan": false
+    },
     "bellen": {
       "bus": "umgebung",
       "dauer": 0.65,
@@ -487,6 +496,141 @@
       "schwerpunkt": 1803,
       "endpegelDb": -180,
       "nan": false
+    },
+    "explosion_feuer_klein": {
+      "bus": "treffer",
+      "dauer": 0.9,
+      "peakDb": -8.1,
+      "rmsDb": -33,
+      "schwerpunkt": 363,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_feuer_mittel": {
+      "bus": "treffer",
+      "dauer": 1.16,
+      "peakDb": -5.5,
+      "rmsDb": -28.1,
+      "schwerpunkt": 234,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_feuer_gross": {
+      "bus": "treffer",
+      "dauer": 1.56,
+      "peakDb": -4.7,
+      "rmsDb": -24.5,
+      "schwerpunkt": 168,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_gift_klein": {
+      "bus": "treffer",
+      "dauer": 0.85,
+      "peakDb": -6.5,
+      "rmsDb": -31.9,
+      "schwerpunkt": 4948,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_gift_mittel": {
+      "bus": "treffer",
+      "dauer": 1.01,
+      "peakDb": -5,
+      "rmsDb": -28.3,
+      "schwerpunkt": 3122,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_gift_gross": {
+      "bus": "treffer",
+      "dauer": 1.23,
+      "peakDb": -3.9,
+      "rmsDb": -24.8,
+      "schwerpunkt": 1917,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_eis_klein": {
+      "bus": "treffer",
+      "dauer": 0.87,
+      "peakDb": -4.4,
+      "rmsDb": -31.8,
+      "schwerpunkt": 1964,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_eis_mittel": {
+      "bus": "treffer",
+      "dauer": 1.01,
+      "peakDb": -3.1,
+      "rmsDb": -28,
+      "schwerpunkt": 1447,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_eis_gross": {
+      "bus": "treffer",
+      "dauer": 1.13,
+      "peakDb": -2.6,
+      "rmsDb": -24.8,
+      "schwerpunkt": 1025,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_saeure_klein": {
+      "bus": "treffer",
+      "dauer": 0.91,
+      "peakDb": -6.6,
+      "rmsDb": -31.9,
+      "schwerpunkt": 6516,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_saeure_mittel": {
+      "bus": "treffer",
+      "dauer": 1.24,
+      "peakDb": -4.6,
+      "rmsDb": -28.2,
+      "schwerpunkt": 4640,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_saeure_gross": {
+      "bus": "treffer",
+      "dauer": 1.61,
+      "peakDb": -2.6,
+      "rmsDb": -24.9,
+      "schwerpunkt": 3102,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_elektro_klein": {
+      "bus": "treffer",
+      "dauer": 0.84,
+      "peakDb": -4.3,
+      "rmsDb": -34.5,
+      "schwerpunkt": 1155,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_elektro_mittel": {
+      "bus": "treffer",
+      "dauer": 1.01,
+      "peakDb": -3.5,
+      "rmsDb": -28.6,
+      "schwerpunkt": 442,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_elektro_gross": {
+      "bus": "treffer",
+      "dauer": 1.12,
+      "peakDb": -3.5,
+      "rmsDb": -24.9,
+      "schwerpunkt": 246,
+      "endpegelDb": -180,
+      "nan": false
     }
   },
   "kategorien": {
@@ -539,5 +683,5 @@
   },
   "minAbstandVerhaeltnis": 1.31,
   "schussProfile": 14,
-  "profileGesamt": 54
+  "profileGesamt": 70
 }

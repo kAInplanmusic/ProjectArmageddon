@@ -152,7 +152,7 @@ export const SCHUSS_PROFILE = Object.freeze({
 const ex = (pegel, hall, schichten) => P('treffer', pegel, hall, schichten, { ton: 0.04, filter: 0.1, pegel: 0.06 });
 const schutt = o => K({ n: 8, fenster: 0.5, fmin: 300, fmax: 1500, q: 1.5, start: 0.15, ab: 0.06, pegel: 0.25, farbe: 'braun', ...o });
 
-export const EREIGNIS_PROFILE = Object.freeze({
+const EREIGNIS_BASIS = {
   explosion_klein: ex(0.9, 0.2, [
     R({ farbe: 'braun', filter: 'lowpass', f0: 1800, f1: 200, sweep: 0.25, an: 0.006, ab: 0.3, pegel: 0.9 }),
     T({ f0: 120, f1: 45, gleit: 0.25, ab: 0.3, pegel: 0.8 }),
@@ -265,6 +265,14 @@ export const EREIGNIS_PROFILE = Object.freeze({
     R({ filter: 'highpass', f0: 3000, an: 0.001, ab: 0.04, pegel: 0.25 }),
     T({ f0: 220, f1: 160, gleit: 0.05, ab: 0.06, pegel: 0.4 }),
   ]),
+  /*
+   * Vorrat voll (`crate_pickup_blocked`): zwei dumpfe, fallende Töne wie ein verschlossener Deckel —
+   * nur aus vorhandenen Bausteinen, bewusst tiefer und trockener als das helle `kiste`.
+   */
+  kiste_voll: P('ui', 0.6, 0.04, [0, 0.11].flatMap(start => [
+    T({ welle: 'triangle', f0: 240, f1: 170, gleit: 0.08, start, an: 0.003, ab: 0.1, pegel: 0.45 }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 500, start, an: 0.002, ab: 0.05, pegel: 0.3 }),
+  ]), { ton: 0.03, filter: 0.08, pegel: 0.05 }),
   /* Tier-NPCs: Günther (Bellen, Winseln, Fressen) und Cookie (Miauen in drei Stufen, Schockwelle). */
   bellen: P('umgebung', 0.8, 0.12, [0, 0.16].flatMap(start => [
     T({ welle: 'sawtooth', f0: 720, f1: 380, gleit: 0.07, start, an: 0.004, ab: 0.09, pegel: 0.35, partiale: [[2, 0.3]] }),
@@ -353,9 +361,64 @@ export const EREIGNIS_PROFILE = Object.freeze({
     R({ f0: 3000, q: 6, start, an: 0.001, ab: 0.02, pegel: 0.5 }),
     T({ f0: 1800, start, an: 0.001, ab: 0.015, pegel: 0.3 }),
   ]), { ton: 0.02, filter: 0.05, pegel: 0.05 }),
-});
+};
 
 /** Alle Profile unter einem Namen. */
+
+/**
+ * Einschlag nach Schadensart (`klassifiziereSchadensklang`, shared/einschlag.js): dieselben
+ * Grundklänge wie `explosion_*`, dazu eine Signatur der Art aus vorhandenen Bausteinen.
+ * Namen: `explosion_<art>_<klein|mittel|gross>`.
+ */
+export const KLANG_ARTEN = Object.freeze(['feuer', 'gift', 'eis', 'saeure', 'elektro']);
+
+const ART_SIGNATUR = {
+  // Fauchen und Knistern der Flammen.
+  feuer: g => [
+    R({ farbe: 'braun', filter: 'lowpass', f0: 900, f1: 300, sweep: 0.5, an: 0.04, ab: 0.5 * g, pegel: 0.5 }),
+    K({ n: 8 + 4 * g, fenster: 0.6 * g, fmin: 1500, fmax: 5000, q: 3, start: 0.1, ab: 0.03, pegel: 0.3 }),
+  ],
+  // Blubbern: langsames Gluckern mit Zischen.
+  gift: g => [
+    T({ f0: 260, f1: 520, gleit: 0.3, an: 0.02, ab: 0.4 * g, pegel: 0.35, vibrato: { hz: 11, tiefe: 60 } }),
+    K({ n: 6 + 3 * g, fenster: 0.5 * g, fmin: 300, fmax: 1100, q: 6, start: 0.05, ab: 0.05, pegel: 0.3, farbe: 'braun' }),
+  ],
+  // Klirrendes Splittern mit hellem Nachklang.
+  eis: g => [
+    T({ f0: 2600, f1: 2500, gleit: 0.2, partiale: [[1, 1], [2.76, 0.5], [5.4, 0.3]], an: 0.001, ab: 0.35 * g, pegel: 0.3 }),
+    K({ n: 6 + 2 * g, fenster: 0.25, fmin: 3500, fmax: 9000, q: 10, ab: 0.025, pegel: 0.35 }),
+  ],
+  // Langes, scharfes Zischen (ätzend).
+  saeure: g => [
+    R({ filter: 'highpass', f0: 3500, an: 0.01, ab: 0.6 * g, pegel: 0.4 }),
+    K({ n: 7 + 2 * g, fenster: 0.7 * g, fmin: 2000, fmax: 6000, q: 5, start: 0.05, ab: 0.04, pegel: 0.3 }),
+  ],
+  // Knackender Funke mit Netzbrummen.
+  elektro: g => [
+    R({ filter: 'highpass', f0: 4500, an: 0.001, ab: 0.08, pegel: 0.5 }),
+    T({ welle: 'sawtooth', f0: 100, f1: 90, gleit: 0.2, an: 0.003, ab: 0.25 * g, pegel: 0.25 }),
+    K({ n: 5 + 2 * g, fenster: 0.3 * g, fmin: 3000, fmax: 8000, q: 12, start: 0.02, ab: 0.02, pegel: 0.4 }),
+  ],
+};
+
+const GROESSE_BASIS = Object.freeze({ klein: 'explosion_klein', mittel: 'explosion_mittel', gross: 'explosion_gross' });
+
+function artVarianten() {
+  const aus = {};
+  for (const art of KLANG_ARTEN) {
+    for (const [gr, basisName] of Object.entries(GROESSE_BASIS)) {
+      const basis = EREIGNIS_BASIS[basisName];
+      const faktor = gr === 'klein' ? 1 : gr === 'mittel' ? 1.4 : 2;
+      aus[`explosion_${art}_${gr}`] = P(basis.bus, basis.pegel, basis.nachhall,
+        [...basis.schichten.map(sch => ({ ...sch, pegel: sch.pegel * 0.8 })), ...ART_SIGNATUR[art](faktor)],
+        basis.streuung);
+    }
+  }
+  return aus;
+}
+
+export const EREIGNIS_PROFILE = Object.freeze({ ...EREIGNIS_BASIS, ...artVarianten() });
+
 export const ALLE_PROFILE = Object.freeze({ ...SCHUSS_PROFILE, ...EREIGNIS_PROFILE });
 
 /** Dauer eines Profils ohne Hall (s). */
@@ -474,16 +537,32 @@ export function explosionKlasse(radius) {
   return 'riesig';
 }
 
-/** Profilname für einen Einschlag. */
-export function einschlagProfil({ radius = 0, material = 'erde', stoff = null } = {}) {
+/**
+ * Profilname für einen Einschlag. `art` (aus `klassifiziereSchadensklang`) färbt den Klang nach der
+ * Schadensart; Wasser hat Vorrang (Platscher), danach die Art, dann Metall, dann Erde/Fels.
+ */
+export function einschlagProfil({ radius = 0, material = 'erde', stoff = null, art = null } = {}) {
   const k = explosionKlasse(radius);
   if (material === 'wasser') return k === 'gross' || k === 'riesig' ? 'platscher_gross' : 'platscher_klein';
+  if (art && KLANG_ARTEN.includes(art)) {
+    const gr = k === 'einschlag' || k === 'klein' ? 'klein' : k === 'mittel' ? 'mittel' : 'gross';
+    return `explosion_${art}_${gr}`;
+  }
   if (stoff === 'metall') return k === 'einschlag' || k === 'klein' ? 'einschlag_metall' : 'explosion_metall';
   if (k === 'einschlag') return material === 'fels' ? 'einschlag_fels' : 'einschlag_erde';
   return `explosion_${k}`;
 }
 
 /** Profilname für einen Treffer an einer Figur. */
+/*
+ * Krit-Entscheidung (2026-10-20): `treffer_krit` bleibt als VORBEREITETES Profil. Die Engine kennt
+ * keinen kritischen Treffer: `damageSystem` setzt `isCritical` nur, wenn der Aufrufer es übergibt,
+ * und das tut keine Regel (belegt in tests/integration-ereignisablauf.test.js). Ein echtes Krit
+ * wäre eine Regeländerung (Trefferchance, Balance, neue Schadensfassung hinter `config.schaden`
+ * mit Messung der Waffenwerte) und gehört nicht in einen Klang-Feinschliff. Das Profil kostet
+ * nichts, solange das Ereignisfeld false ist; kommt eine Krit-Regel, klingt sie ohne weitere
+ * Client-Arbeit (`ereignisse.js` reicht `isCritical` schon durch).
+ */
 export function trefferProfil({ schaden = 0, maxHealth = 100, kritisch = false, selbst = false } = {}) {
   if (selbst) return 'treffer_selbst';
   const nenner = Number.isFinite(maxHealth) && maxHealth > 0 ? maxHealth : 100;

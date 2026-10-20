@@ -876,3 +876,40 @@ select option { background: #14181d; color: var(--ink); }
   #tier-hud .tier-hunger i { transition: none; }
 }
 @media (max-width: 640px) { #tier-hud { top: 64px; } #tier-hud .tier-hunger { width: 56px; } }
+
+/* ======================================================= Schmale Bühne (Hochformat am Telefon, <= 520 px)
+ * Abnahme 2026-10-20: Bei 390 px Breite sprengten die Mindestspalten (2 x 210 px) und die Kopfzeile die Bühne
+ * (Status, FEUER und Waffenleiste lagen außerhalb, Zählwerk und Protokoll über Liste und Leiste).
+ * Nur Darstellung: Kopfzeile bricht um, die Waffenleiste bekommt eine eigene Zeile, Wählrad und FEUER teilen sich die letzte.
+ */
+@media (max-width: 520px) {
+  #hud { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; gap: 6px; padding: 6px; }
+  #hud-top { flex-wrap: wrap; justify-content: flex-start; gap: 4px; }
+  #hud-top > .stat { flex: 1 1 auto; min-width: 0; padding: 2px 6px; }
+  #hud-top .stat .value { font-size: 17px; }
+  #hud-top .stat .label, #hud-top .stat > span:first-child { font-size: 9px; letter-spacing: 0.06em; }
+  #hud-connection, #hud-top > .stat:has(#hud-connection) { display: none; }
+  #musik-hud { flex: 0 0 auto; }
+  #musik-hud .musik-lautstaerke { display: none; }
+  #hud-left { grid-column: 1; max-width: 150px; font-size: 11px; }
+  #hud-figur-bild { width: 36px; height: 36px; }
+  #hud-right.panel { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; max-width: 100%; }
+  #weapon-list .weapon-item { width: 48px; height: 48px; }
+  #weapon-list .weapon-item .weapon-icon { width: 34px; height: 34px; }
+  #hud-dial { grid-column: 1; grid-row: 4; width: 72px; height: 72px; }
+  #hud-dial .dial-wert { font-size: 24px; }
+  #hud-fire { grid-column: 2; grid-row: 4; min-width: 0; width: 100%; max-width: 220px; height: 56px; padding: 4px 8px 0; }
+  #hud-fire .fire-text { font-size: 30px; }
+  #hud-aim.panel { grid-column: 2; grid-row: 2; justify-self: end; margin-bottom: 4px; font-size: 12px; padding: 2px 8px; }
+  #hud-log { left: 6px !important; right: 6px !important; bottom: 262px !important; max-height: 40px; font-size: 11px; }
+  #zugpause { top: 50%; padding: 6px 14px; }
+  #zugpause .zugpause-titel { font-size: 12px; white-space: nowrap; }
+  #zugpause .zugpause-zahl { font-size: 44px; }
+  #touch-aktionen:not([hidden]) { bottom: 196px !important; left: 6px !important; }
+  #hud-aim, #hud-aim.panel { transform: none; }
+  #touch-aktionen button { min-width: 52px !important; font-size: 11px !important; padding: 4px 6px !important; }
+  #tier-hud { top: 176px; left: auto; right: 6px; transform: none; align-items: flex-end; max-width: calc(100vw - 170px); }
+  #tier-hud .tier-zeile { padding: 2px 8px; font-size: 11px; }
+  #tier-hud .tier-hunger { width: 48px; }
+  #tier-hud .tier-stufe { min-width: 0; }
+}
