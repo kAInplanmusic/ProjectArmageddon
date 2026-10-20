@@ -28,10 +28,13 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 
 ## Sonderbiome und Materialien
 
-Neun Sonderbiome (Vulkan, Kristallhöhlen, Dschungel, Eiswüste, Dünen, Schrottplatz, Kristall-Archipel, Riff, Pilzwald)
+Dreizehn Sonderbiome (Vulkan, Kristallhöhlen, Dschungel, Eiswüste, Dünen, Schrottplatz, Kristall-Archipel, Riff, Pilzwald
+und seit `config.gelaende: 3` die Themenbiome Asteroidenfeld, Surreale Schwebewelt, Fabrik und Burgfelsen)
 mit eigener Geländeform, Palette, Kulisse, Pflanzen und Wetter; Menü „Biom". Dazu eine Materialkarte aus Seed und Biom
-(14 Stoffe); mit `config.zerstoerung: 5` bestimmt sie, wie tief und wie weit ein Krater ausfällt. Tabellen in `MASTERDOTO.md`
-(„Biome und Materialien").
+(18 Stoffe); mit `config.zerstoerung: 5` bestimmt sie, wie tief und wie weit ein Krater ausfällt. Mit `config.feuer: 2`
+brennen Holz und Pilz (Ausbreitung, Asche, Wasser löscht), im Vulkan brechen Lavaströme aus (erstarren zu Basalt oder
+Obsidian), und ab Valhalla kommen Flammenwände und Lavarisse (Ragnarök). Die Hilfe (Reiter „Karte und Gelände") zeigt die
+Tabelle Material × Schadensart aus der Config. Tabellen in `MASTERDOTO.md` („Biome und Materialien", „Feuer, Lava und Themenbiome").
 
 ## Kulissen
 
@@ -282,7 +285,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1716 Tests in 177 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1741 Tests in 181 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **307 Tests in 54 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

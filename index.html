@@ -745,6 +745,12 @@
     .h-liste { list-style: none; margin: 0.2rem 0 0; padding: 0; }
     .h-liste li { padding: 0.15rem 0; border-top: 1px solid #232f3d; }
     .h-liste li:first-child { border-top: none; }
+    .h-tabelle { display: block; overflow-x: auto; border-collapse: collapse; font-size: 0.8rem; font-variant-numeric: tabular-nums; margin: 0.4rem 0 0.8rem; }
+    .h-tabelle th, .h-tabelle td { padding: 0.2rem 0.45rem; border-top: 1px solid #232f3d; text-align: right; white-space: nowrap; }
+    .h-tabelle th:first-child, .h-tabelle td:first-child { text-align: left; }
+    .h-tabelle .h-z-mehr { color: #ff9b6a; font-weight: 600; }
+    .h-tabelle .h-z-weniger { color: #7fc8ff; }
+    .h-tabelle .h-z-haelt { color: #8ba0b4; font-style: italic; }
     /* Wertbalken: Anteil am Gruppenmaximum, Zahl steht daneben. */
     .h-wert { display: grid; grid-template-columns: 4.5rem 1fr 2.6rem; align-items: center; gap: 0.4rem; margin: 0.2rem 0; }
     .h-wert-label { color: #8ba0b4; font-size: 0.78rem; }

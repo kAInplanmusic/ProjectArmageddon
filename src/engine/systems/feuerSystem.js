@@ -275,7 +275,7 @@ export class FeuerSystem {
       const betrag = (lava ? FEUER.schadenLava : FEUER.schadenFlamme) * feuerfestFaktor(ARCHETYPE_IDS[f.archetyp ?? 0]);
       this.#q.schaden(f.id, betrag, FEUER_ART);
       this.#q.mali(f.id);
-      this.#events.emit('feuer_verbrennt', { playerId: f.id, lava, betrag: Math.round(betrag * 10) / 10 });
+      this.#events.emit('feuer_verbrennt', { playerId: f.id, lava, betrag: Math.round(betrag * 10) / 10, x: Math.round(f.x), y: Math.round(f.y) });
     }
   }
 

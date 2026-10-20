@@ -297,6 +297,20 @@ export const EREIGNIS_PROFILE = Object.freeze({
     R({ farbe: 'braun', filter: 'lowpass', f0: 1200, f1: 60, sweep: 1.2, an: 0.01, ab: 1.2, pegel: 0.8 }),
     T({ welle: 'sine', f0: 1760, f1: 440, gleit: 0.8, start: 0.05, an: 0.01, ab: 0.9, pegel: 0.15 }),
   ]),
+  /* Feuer und Lava (Ereigniskatalog: lava_ausbruch, flammenwand, feuer_verbrennt, lava_erstarrt, feuer_schmilzt). */
+  lava_grollen: P('umgebung', 0.9, 0.4, [
+    T({ f0: 70, f1: 32, gleit: 0.9, an: 0.02, ab: 1.0, pegel: 0.8 }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 500, f1: 80, sweep: 0.9, an: 0.05, ab: 1.0, pegel: 0.7 }),
+    K({ n: 10, fenster: 0.8, fmin: 300, fmax: 1800, q: 2, ab: 0.06, pegel: 0.25 }),
+  ]),
+  flammen: P('umgebung', 0.7, 0.2, [
+    R({ farbe: 'braun', filter: 'lowpass', f0: 900, f1: 300, sweep: 0.5, an: 0.08, ab: 0.7, pegel: 0.6 }),
+    K({ n: 14, fenster: 0.9, fmin: 1500, fmax: 6000, q: 3, ab: 0.03, pegel: 0.3 }),
+  ]),
+  zischen: P('umgebung', 0.6, 0.1, [
+    R({ f0: 2400, f1: 4200, sweep: 0.5, q: 0.9, an: 0.01, ab: 0.6, pegel: 0.5 }),
+    K({ n: 8, fenster: 0.4, fmin: 1500, fmax: 5000, q: 4, ab: 0.02, pegel: 0.2 }),
+  ]),
   /* Wirkungen auf Figuren (Ereigniskatalog: heal, frozen, shield_absorbed, pulled, turret_fired). */
   heilung: P('treffer', 0.5, 0.35, [
     T({ f0: 660, f1: 990, gleit: 0.18, an: 0.02, ab: 0.35, pegel: 0.35 }),

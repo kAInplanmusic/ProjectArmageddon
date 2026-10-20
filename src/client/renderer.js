@@ -32,6 +32,8 @@ import {
 } from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
+import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
+import { STOFF } from '../shared/config/stoffe.js';
 import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
 import {
@@ -208,6 +210,8 @@ export class Renderer {
     /** Fliegende Partikel-Zellen zerbröselnder Inseln (Fassung 4, nur Anzeige). */
     this.flugSchutt = [];
     this.inselfall = new Inselfall();
+    /** Feuer, Lava und Ragnarök-Glut (Feuerfassung 2): Optik aus Ereignissen und Stoffkarte. */
+    this.feuerOptik = new FeuerOptik();
     /** Rauch nach großen Einschlägen — der Nachhall. */
     this.rauch = [];
     /** Flugspuren je Projektil (`entityId` → Punkte). */
@@ -1039,6 +1043,7 @@ export class Renderer {
     this.truemmer = [];
     this.flugSchutt = [];
     this.inselfall.zuruecksetzen();
+    this.feuerOptik.leere();
     this.wasserFertig = false;
     this.spuren = new Map();
     this.waffenZustand.clear();
@@ -1096,6 +1101,8 @@ export class Renderer {
       this.flugSchutt = schreiteFlugSchutt(this.flugSchutt, q?.bitmap, q?.width ?? this.width, q?.height ?? this.height);
     }
     this.inselfall.schritt();
+    this.feuerOptik.reduziert = this.reducedMotion;
+    this.feuerOptik.fortschreiben();
   }
 
   /**
@@ -2317,6 +2324,55 @@ export class Renderer {
     zeichneFunken(this.ctx, this.particles);
     if (this.truemmer.length > 0) zeichneTruemmer(this.ctx, this.truemmer, this.#materialStil().truemmer);
     if (this.flugSchutt.length > 0) zeichneFlugSchutt(this.ctx, this.flugSchutt);
+    this.feuerOptik.zeichne(this.ctx);
+  }
+
+  /** Überdeckt Zellen auf dem Gelände und merkt sich den neuen Stoff in der Stoffkarte des Clients (nur Anzeige). */
+  #stoffZellen(indizes, stoff) {
+    const k = this.stoffkarte;
+    if (!k || indizes.length === 0) return;
+    if (!k.ueber) k.ueber = new Uint8Array(k.feld.length);
+    for (const idx of indizes) k.ueber[idx] = stoff + 1;
+    faerbeZellen(this.terrainLayer?.getContext('2d'), indizes, k.spalten, ZELLFARBE[stoff]);
+  }
+
+  #feuerKarte() {
+    this.feuerOptik.setzeKarte(this.stoffkarte, this.width, this.height);
+  }
+
+  /** `feuer_schritt`: Flammen entstehen und erlöschen, Ausgebranntes wird Asche. */
+  feuerSchritt(n) {
+    this.#feuerKarte();
+    this.feuerOptik.schritt(n);
+    this.#stoffZellen(n.asche ?? [], STOFF.ASCHE);
+  }
+
+  /** `feuer_lava`: Lavazellen ruhen oder fließen weiter. */
+  feuerLava(n) {
+    this.#feuerKarte();
+    this.feuerOptik.lavaStand(n);
+  }
+
+  /** `lava_erstarrt`: Lava wird Basalt oder Obsidian. */
+  lavaErstarrt(n) {
+    this.#feuerKarte();
+    for (let i = 0; i < n.zellen.length; i += 2) {
+      this.feuerOptik.lava.delete(n.zellen[i]);
+      this.#stoffZellen([n.zellen[i]], n.zellen[i + 1]);
+    }
+  }
+
+  /** `lava_ausbruch` und `flammenwand`: Fontäne, Funken, Glut. */
+  feuerAusbruch(n, wand) {
+    this.#feuerKarte();
+    if (wand) this.feuerOptik.wand(n); else this.feuerOptik.ausbruch(n);
+    this.ruck = ruckFuer(wand ? 18 : 30, { reducedMotion: this.reducedMotion }) ?? this.ruck;
+  }
+
+  /** `ragnarok_beginnt`: ab jetzt Funkenflug über der ganzen Karte. */
+  startRagnarok() {
+    this.feuerOptik.ragnarok = true;
+    this.feuerOptik.glut = 1;
   }
 
   /**

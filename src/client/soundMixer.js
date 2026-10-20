@@ -533,6 +533,9 @@ export class SoundMixer {
       case 'schild':
       case 'heranziehen':
       case 'geschuetz':
+      case 'lava_grollen':
+      case 'flammen':
+      case 'zischen':
         // Wirkungen auf Figuren und Geschütze: ein Klang je Wirkung, Profil gleichnamig.
         return this.#einfach(ereignis.type, 'wirkung', ereignis.type, { x, y });
       case 'waffenwechsel':

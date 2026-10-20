@@ -241,6 +241,23 @@ test.describe('Hilfe-Bereich', () => {
     }
   });
 
+  test('Der Karten-Reiter zeigt die Zerstörungstabelle aus der Config und die Feuerregeln', async ({ page }) => {
+    await oeffneHilfe(page);
+    await page.locator('#hilfe-tabs button').nth(4).click();
+    const tabelle = page.locator('#hilfe-inhalt table.h-zerstoerung');
+    await expect(tabelle).toBeVisible();
+
+    const erwartet = await page.evaluate(async () => {
+      const m = await import('/src/shared/zerstoerungsTabelle.js');
+      const zeile = m.zerstoerungsTabelle().find(z => z.key === 'schnee');
+      return { stoffe: m.zerstoerungsTabelle().length, schneeHitze: Math.round(zeile.spalten.find(s => s.gruppe === 'hitze').faktor * 100) };
+    });
+    await expect(tabelle.locator('tr[data-stoff]')).toHaveCount(erwartet.stoffe);
+    await expect(tabelle.locator('tr[data-stoff="schnee"] td').nth(2)).toContainText(`${erwartet.schneeHitze} %`);
+    await expect(tabelle.locator('tr[data-stoff="metall"] td.h-z-haelt').first()).toHaveText('hält');
+    await expect(page.locator('#hilfe-inhalt').getByRole('heading', { name: 'Feuer, Lava und Ragnarök' })).toBeVisible();
+  });
+
   test('Das Umschalten der Reiter wechselt den Inhalt', async ({ page }) => {
     // Ohne diese Prüfung könnte der Reiterwechsel wirkungslos sein, und alle
     // Tests oben hätten trotzdem den ersten Reiter gesehen.

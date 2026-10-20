@@ -41,6 +41,7 @@ import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../share
 import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD, GUENTHER_AKTION_REGELN } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD, COOKIE_HUNGER, COOKIE_PFLEGE, COOKIE_WUT } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
+import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
 import { klassifiziereEinschlag, wasserAusLinie } from '../shared/einschlag.js';
@@ -4114,6 +4115,8 @@ function zeichneKarte(container) {
     raster.append(karte);
   }
   container.append(raster);
+  zeichneZerstoerungsTabelle(container);
+  zeichneFeuerRegeln(container);
 }
 
 /** Hilfe-Seite „Ton und Musik": Bedienung der Hintergrundmusik. */
