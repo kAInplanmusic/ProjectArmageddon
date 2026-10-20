@@ -54,6 +54,7 @@ import {
   plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
+import { SPIEGEL_TIEFE, spiegelFarbe, spiegelGewicht } from './wasserSpiegel.js';
 import {
   erzeugeMuendungsfeuer, muendungsfeuer, rueckstossVersatz, ROHR_LAENGE,
   fadenkreuzSegmente, pulsFaktor, blitzPuls, ladungAnteil,
@@ -123,6 +124,8 @@ export class Renderer {
     /** Ob die Wasserebene schon berechnet wurde (sonst muss `#drawWater` rechnen). */
     this.wasserFertig = false;
     this.wasserRahmen = null;
+    /** Spiegelung des Himmels im Wasser (Optik); abschaltbar für Messungen. */
+    this.spiegelung = true;
     /** Streifen der Pflanzenebene, die tatsächlich aufgelegt werden. */
     this.pflanzenStreifen = [];
     this.waterLayer = document.createElement('canvas');
@@ -1275,6 +1278,7 @@ export class Renderer {
     const alphaArt = art?.alpha ?? 1;
     const phase = this.reducedMotion ? 0 : this.time * 0.05;
     const ufer = this.#uferMaske();
+    const spiegel = this.spiegelung ? spiegelFarbe(this.scenery) : null;
     const lauf = this.wasserLauf?.length === bg ? this.wasserLauf : (this.wasserLauf = new Int16Array(bg));
     const oben = this.wasserOben?.length === bg ? this.wasserOben : (this.wasserOben = new Int16Array(bg));
     lauf.fill(-1);
@@ -1318,6 +1322,10 @@ export class Renderer {
               a += (255 - a) * sf * 0.7;
             }
           }
+        }
+        if (spiegel && k < SPIEGEL_TIEFE) {
+          const w = spiegelGewicht(x, k, phase);
+          r += (spiegel[0] - r) * w; g += (spiegel[1] - g) * w; b += (spiegel[2] - b) * w;
         }
         const index = i * 4;
         data[index] = r < 0 ? 0 : r > 255 ? 255 : r;
