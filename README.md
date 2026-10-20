@@ -35,7 +35,14 @@ mit eigener Geländeform, Palette, Kulisse, Pflanzen und Wetter; Menü „Biom".
 
 ## Kulissen
 
-Sechzig KI-erzeugte Hintergrundbilder aus zwölf Biomen mit je fünf Varianten.
+160 KI-erzeugte Hintergrundbilder aus sechzehn Biomen mit je zehn Varianten:
+fünf Basis-Varianten (Tabelle) und fünf Stimmungen (Heller Himmel, Sternennacht,
+Höhlenblick, Ragnarök, Ragnarök – Walhalla brennt). Stimmungsbilder haben wechselnde
+Formate und werden per cover-Zuschnitt ohne Stauchen mit horizontalem Parallax
+gezeichnet; bei Hochformat nimmt der Renderer die Hochkant-Fassung (`_h`, bei
+Ragnarök 2 die von Ragnarök). Es wird nur das gewählte Bild geladen; die
+automatische Wahl nimmt nie eine Stimmung. Bei Ragnarök steigert sich ein Glutfilter
+mit den Runden (nur Optik).
 Die Kulisse liegt hinter dem prozeduralen Gelände und bestimmt dessen Bodenfarbe.
 
 | Biom | Varianten |
@@ -275,7 +282,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1707 Tests in 176 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1716 Tests in 177 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **307 Tests in 54 Spezifikationen**, ~18 min (Stand 2026-10-13: **203 grün, 0 rot, 2 übersprungen**, vollständiger serieller Gesamtlauf in 17,4 min; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`: 205 gegenüber den früher genannten 193). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

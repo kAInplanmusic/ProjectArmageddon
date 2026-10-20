@@ -319,3 +319,80 @@ test('Ein gewähltes Bild schlägt die generative Kulisse', async ({ page }) => 
   // Bei einem Bild darf keine generative Kulisse dazwischenfunken.
   expect(stand.hatKulisse).toBe(false);
 });
+
+// ------------------------------------------------------------------ Stimmungen
+
+test('Jede Stimmung ist wählbar, lädt und wird gezeichnet', async ({ page }) => {
+  test.setTimeout(240000);
+  await page.goto('/');
+  await page.waitForFunction(() => Boolean(window.__PA__));
+  const keys = await page.evaluate(async () => {
+    const m = await import('/src/shared/config/backdrops.js');
+    return m.ALL_BACKDROPS.filter(b => b.stimmung).map(b => b.key);
+  });
+  expect(keys.length).toBeGreaterThanOrEqual(80);
+  // Das Menü bietet jede Stimmung an.
+  const imMenue = await page.evaluate(() => [...document.querySelectorAll('#cfg-backdrop option')].map(o => o.value));
+  for (const key of keys) expect(imMenue, key).toContain(key);
+
+  for (const key of keys) {
+    const ergebnis = await page.evaluate(async (k) => {
+      const api = window.__PA__;
+      api.setAutoLoop(false);
+      api.startMatch({ seed: 11, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k });
+      api.setAutoLoop(false);
+      const r = api.game.renderer;
+      for (let i = 0; i < 300 && !(r.backdropKey === k && r.backdropReady); i++) {
+        await new Promise(res => setTimeout(res, 50));
+      }
+      return { ok: r.backdropKey === k && r.backdropReady, img: r.backdropImage?.naturalWidth ?? 0 };
+    }, key);
+    expect(ergebnis.ok, `${key} lädt nicht`).toBe(true);
+    expect(ergebnis.img, key).toBeGreaterThan(600);
+  }
+});
+
+test('Stimmungsbilder werden in Quer-, Hoch- und Quadratformat unverzerrt gezeichnet', async ({ page }, testInfo) => {
+  const formate = { quer: [1600, 700], hoch: [600, 1000], quadrat: [800, 800] };
+  const bilder = ['maritime/stimmung_hell', 'alpine/stimmung_ragnarok2', 'cosmos/stimmung_dunkel'];
+  await page.goto('/');
+  await page.waitForFunction(() => Boolean(window.__PA__));
+  for (const [name, [b, h]] of Object.entries(formate)) {
+    await page.setViewportSize({ width: b, height: h });
+    for (const key of bilder) {
+      await page.evaluate(({ k, o }) => {
+        const api = window.__PA__;
+        api.setAutoLoop(false);
+        api.startMatch({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k, orientation: o });
+        api.setAutoLoop(false);
+      }, { k: key, o: name === 'hoch' ? 'portrait' : 'landscape' });
+      await page.waitForFunction(
+        (k) => window.__PA__.game.renderer.backdropKey === k && window.__PA__.game.renderer.backdropReady,
+        key, { timeout: 15000 },
+      );
+      const bildInfo = await page.evaluate(() => {
+        const r = window.__PA__.game.renderer;
+        const c = document.querySelector('canvas');
+        r.render(window.__PA__.getState(), { aim: null, water: window.__PA__.game.water, blastRadius: 0 });
+        // Himmel oben: farbreich, d. h. das Bild ist sichtbar (nicht leer, nicht einfarbig).
+        const d = c.getContext('2d').getImageData(0, 0, c.width, Math.round(c.height * 0.2)).data;
+        const farben = new Set();
+        for (let i = 0; i < d.length; i += 40) farben.add((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
+        return { farben: farben.size, hochkant: r.width < r.height };
+      });
+      expect(bildInfo.farben, `${name} ${key}`).toBeGreaterThan(60);
+      expect(bildInfo.hochkant, `${name}: Kartenformat`).toBe(name === 'hoch');
+      if (name === 'hoch') {
+        // Hochformat nimmt die Hochkant-Fassung (sobald geladen).
+        await page.waitForFunction(
+          () => window.__PA__.game.renderer.backdropHochBild?.bereit === true, null, { timeout: 15000 });
+        const hoch = await page.evaluate(() => {
+          const b = window.__PA__.game.renderer.backdropHochBild;
+          return { w: b.bild.naturalWidth, h: b.bild.naturalHeight };
+        });
+        expect(hoch.h).toBeGreaterThan(hoch.w);
+      }
+      await page.screenshot({ path: testInfo.outputPath(`${name}_${key.replace('/', '_')}.png`) });
+    }
+  }
+});

@@ -150,8 +150,12 @@ export function kulisseFuerBiom({ seed, biome }) {
    * `Math.abs` fängt negative Seeds ab, `Math.floor` Nachkommastellen — ein
    * Seed von 4242.7 soll nicht anders fallen als 4242.
    */
-  const index = Math.abs(Math.floor(Number(seed) || 0)) % biome.variants.length;
-  const variante = biome.variants[index];
+  // Stimmungs-Varianten gibt es nur auf ausdrückliche Wahl: So behalten
+  // bestehende Seeds ihre Kulisse.
+  const basis = biome.variants.filter(v => !v.stimmung);
+  const pool = basis.length > 0 ? basis : biome.variants;
+  const index = Math.abs(Math.floor(Number(seed) || 0)) % pool.length;
+  const variante = pool[index];
 
   return {
     ...variante,

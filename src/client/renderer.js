@@ -10,6 +10,7 @@
  */
 import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
+import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
@@ -103,7 +104,7 @@ import { CRATE_TYPES } from '../engine/systems/lootSystem.js';
  * ein leerer Hintergrund. Der Selbsttest in `tests/backdrops.test.js` prüft die
  * Anzahl deshalb gegen die Dateien auf der Platte.
  */
-const BACKDROP_URLS = import.meta.glob('./assets/backdrops/*.jpg', {
+const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.jpg', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -1148,6 +1149,19 @@ export class Renderer {
     this.ctx.drawImage(c.bewegt.canvas, 0, 0, c.bewegt.canvas.width, c.bewegt.canvas.height, 0, 0, this.width, oben);
   }
 
+  /** Lädt die Hochkant-Fassung der Kulisse einmalig und nur bei Bedarf. */
+  #ladeHochBild(backdrop) {
+    if (this.backdropHochBild?.key === backdrop.key) return;
+    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.fileHoch}`];
+    const eintrag = { key: backdrop.key, bild: null, bereit: false };
+    this.backdropHochBild = eintrag;
+    if (!url) return;
+    const bild = new Image();
+    bild.decoding = 'async';
+    bild.onload = () => { eintrag.bild = bild; eintrag.bereit = true; };
+    bild.src = url;
+  }
+
   #drawSky() {
     // Generative Kulisse hat Vorrang: sie passt sich jeder Kartengröße an.
     if (this.scenery) {
@@ -1158,7 +1172,36 @@ export class Renderer {
     // Kulisse, sobald geladen. Sie liegt HINTER dem Terrain: der Boden wird
     // danach darübergezeichnet und verdeckt die untere Bildhälfte.
     if (this.backdropReady && this.backdropImage) {
-      this.ctx.drawImage(this.backdropImage, 0, 0, this.width, this.height);
+      if (this.backdrop?.stimmung) {
+        // Stimmungsbilder haben wechselnde Formate: cover-Zuschnitt, kein Stauchen.
+        let img = this.backdropImage;
+        // Hochformat (Seitenverhältnis < 1): die Hochkant-Fassung, sobald geladen (lazy).
+        if (this.width < this.height && this.backdrop.fileHoch) {
+          this.#ladeHochBild(this.backdrop);
+          if (this.backdropHochBild?.key === this.backdrop.key && this.backdropHochBild.bereit) {
+            img = this.backdropHochBild.bild;
+          }
+        }
+        let pan = 0.5;
+        const k = this.kamera;
+        if (k?.scrolltHorizontal) {
+          const t = k.transformation({ ohneStoss: true });
+          const spanne = k.karte.b * t.skalierung - k.schirm.b;
+          if (spanne > 0) pan = -t.versatzX / spanne;
+        }
+        const z = coverZuschnitt(img.naturalWidth || img.width, img.naturalHeight || img.height, this.width, this.height, pan);
+        this.ctx.drawImage(img, z.sx, z.sy, z.sb, z.sh, 0, 0, this.width, this.height);
+        if (String(this.backdrop.id).includes('ragnarok')) {
+          // Rein optisch: Glut steigert sich mit dem Rundenverlauf.
+          const glut = glutStaerke(this.rundeFuerKulisse);
+          if (glut > 0) {
+            this.ctx.fillStyle = `rgba(255,70,20,${glut.toFixed(3)})`;
+            this.ctx.fillRect(0, 0, this.width, this.height);
+          }
+        }
+      } else {
+        this.ctx.drawImage(this.backdropImage, 0, 0, this.width, this.height);
+      }
 
       /**
        * Abdunkelung nach unten.
@@ -2494,6 +2537,7 @@ export class Renderer {
      * Mahlstrom) wieder ohne.
      */
     this.sieger = state.winnerTeamId ?? null;
+    this.rundeFuerKulisse = state.round ?? 1;
     this.#drawSky();
 
     /*

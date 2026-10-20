@@ -1,7 +1,9 @@
 /**
  * Kulissen (Hintergrundbilder) für die Kampfkarte.
  *
- * Aufbau: Zwölf Biome, je fünf Varianten. Die Variante bestimmt die Stimmung,
+ * Aufbau: Sechzehn Biome, je fünf Basis-Varianten (1280x720) und fünf
+ * Stimmungs-Varianten (hell, dunkel, Höhle, Ragnarök, Ragnarök 2; Dateien unter
+ * `stimmung/`, Formate wechselnd, gezeichnet per cover-Zuschnitt). Die Variante bestimmt die Stimmung,
  * nicht das Gelände — „Maritim" gibt es als ruhige See, als Sturm, als Polarmeer,
  * als Kriegshafen und als asiatische Karstküste. Das Gelände selbst bleibt
  * prozedural und zerstörbar; die Kulisse liegt dahinter.
@@ -40,7 +42,7 @@ export const TERRAIN_COVERAGE = 0.47;
  *
  * `file` ist der Dateiname unter `src/client/assets/backdrops/`.
  */
-export const BACKDROP_BIOMES = Object.freeze([
+const BASIS_BIOME = ([
   {
     id: 'maritime',
     label: 'Maritim & Meer',
@@ -685,6 +687,55 @@ export const BACKDROP_BIOMES = Object.freeze([
   },
 ]);
 
+/**
+ * Stimmungen: fünf zusätzliche Varianten je Biom (`stimmung: true`).
+ *
+ * Die Bilder haben wechselnde Formate (breit, hoch, quadratisch) und werden vom
+ * Renderer per cover-Zuschnitt mit horizontalem Parallax gezeichnet, nie
+ * gestaucht. Die automatische Wahl (`pickBackdrop`, `kulisseFuerBiom`) nimmt nur
+ * Basis-Varianten, damit bestehende Seeds dieselbe Kulisse behalten.
+ */
+export const STIMMUNGEN = Object.freeze([
+  { id: 'hell', label: 'Heller Himmel', licht: 'bright clear daylight, luminous open sky, crisp long view' },
+  { id: 'dunkel', label: 'Sternennacht', licht: 'deep night under a dense field of stars, cold moonlight, dark silhouettes' },
+  { id: 'hoehle', label: 'Höhlenblick', licht: 'seen from inside a dark cave mouth, rock framing the view, daylight glowing beyond' },
+  { id: 'ragnarok', label: 'Ragnarök', licht: 'the end of the world, blood-red burning sky, falling embers, giant fire silhouettes' },
+  { id: 'ragnarok2', label: 'Ragnarök – Walhalla brennt', licht: 'Valhalla burning on the horizon, golden halls aflame, storm of sparks, crimson clouds' },
+]);
+
+const BIOM_MOTIV = Object.freeze({
+  maritime: 'open sea with cliffs and ships', island: 'tropical island chain with palms and lagoons',
+  alpine: 'snowy alpine peaks and glacier valleys', forest: 'dense old forest with clearings',
+  urban: 'dense city skyline with towers', cosmos: 'planets, nebulae and floating space debris',
+  abstract: 'abstract geometric dreamscape', caverns: 'vast cavern chambers with crystals',
+  fantasy: 'fantasy kingdom with castles and spires', hyperreal: 'photoreal futuristic research landscape',
+  western: 'dusty frontier town and mesas', noir: 'film noir cityscape with hard shadows',
+  deluge: 'flooded land with drowned ruins', open: 'wide open plains with distant ridges',
+  spires: 'tall rock spires and needles', warren: 'burrowed hillside warren with trenches and mounds',
+});
+
+/** Mischt zwei RGB-Werte (Anteil t des zweiten). */
+function mische(a, b, t) {
+  return a.map((v, i) => Math.max(0, Math.min(255, Math.round(v * (1 - t) + b[i] * t))));
+}
+
+BASIS_BIOME.forEach(biome => {
+  for (const st of STIMMUNGEN) {
+    biome.variants.push({
+      id: `stimmung_${st.id}`,
+      label: st.label,
+      file: `stimmung/${biome.id}_${st.id}.jpg`,
+      stimmung: true,
+      // Hochkant-Fassung (9:21) für Fenster/Karten mit Seitenverhältnis < 1;
+      // Ragnarök 2 hat keine eigene und nimmt die von Ragnarök.
+      fileHoch: `stimmung/${biome.id}_${st.id === 'ragnarok2' ? 'ragnarok' : st.id}_h.jpg`,
+      prompt: `Hyperreal wide ${st.id === 'hoehle' ? 'cave-mouth' : 'panoramic'} view of ${BIOM_MOTIV[biome.id]}: ${st.licht}. Horizon low in frame, no text, no watermark.`,
+    });
+  }
+});
+
+export const BACKDROP_BIOMES = Object.freeze(BASIS_BIOME);
+
 /** Alle Varianten als flache Liste. */
 export const ALL_BACKDROPS = Object.freeze(
   BACKDROP_BIOMES.flatMap(biome => biome.variants.map(variant => ({
@@ -695,6 +746,8 @@ export const ALL_BACKDROPS = Object.freeze(
     label: variant.label,
     file: variant.file,
     prompt: variant.prompt,
+    stimmung: Boolean(variant.stimmung),
+    fileHoch: variant.fileHoch ?? null,
     /** Eindeutiger Schlüssel: „biome/variante". */
     key: `${biome.id}/${variant.id}`,
   }))),
@@ -742,7 +795,7 @@ export function pickBackdrop(seed, preset = null) {
   // `mapPreset` gehört mit ins Ergebnis: daran erkennt der Aufrufer, zu welchem
   // Gelände die Kulisse passt.
   const auswahl = biome
-    ? biome.variants.map(v => ({
+    ? biome.variants.filter(v => !v.stimmung).map(v => ({
       ...v,
       biomeId: biome.id,
       biomeLabel: biome.label,
@@ -750,7 +803,8 @@ export function pickBackdrop(seed, preset = null) {
       key: `${biome.id}/${v.id}`,
     }))
     : (preset ? backdropsForPreset(preset) : []);
-  const pool = auswahl.length > 0 ? auswahl : ALL_BACKDROPS;
+  const basisAuswahl = auswahl.filter(b => !b.stimmung);
+  const pool = basisAuswahl.length > 0 ? basisAuswahl : ALL_BACKDROPS.filter(b => !b.stimmung);
   const index = Math.abs(Math.floor(Number(seed) || 0)) % pool.length;
   return pool[index];
 }
@@ -766,7 +820,7 @@ export function pickBackdrop(seed, preset = null) {
  * Die Werte sind auf die jeweilige Kulisse abgestimmt: Eis und Schnee hell, Lava
  * und Basalt dunkel, Wüste sandig, Noir entsättigt.
  */
-export const TERRAIN_PALETTES = Object.freeze({
+const BASIS_PALETTEN = {
   // Maritim
   'maritime/calm_day': { surface: [110, 140, 120], deep: [45, 62, 60] },
   'maritime/storm_night': { surface: [70, 85, 95], deep: [28, 38, 48] },
@@ -914,7 +968,32 @@ export const TERRAIN_PALETTES = Object.freeze({
   'noir/smoky_bar': { surface: [80, 78, 76], deep: [32, 30, 30] },
   'noir/wet_road_chase': { surface: [70, 72, 78], deep: [28, 30, 34] },
   'noir/rooftop_silhouette': { surface: [72, 74, 80], deep: [28, 30, 36] },
-});
+};
+
+/**
+ * Bodenfarben der Stimmungen: aus der ersten Basis-Variante des Bioms abgeleitet
+ * (hell etwas heller, dunkel/Höhle abgedunkelt, Ragnarök in Glutrot gemischt).
+ * Die Tiefe bleibt dabei immer dunkler als die Oberfläche.
+ */
+const STIMMUNGS_FAERBUNG = {
+  hell: (s, d) => [mische(s, [255, 255, 255], 0.12), d],
+  dunkel: (s, d) => [mische(s, [10, 14, 30], 0.55), mische(d, [4, 6, 14], 0.55)],
+  hoehle: (s, d) => [mische(s, [18, 16, 20], 0.65), mische(d, [6, 6, 8], 0.65)],
+  ragnarok: (s, d) => [mische(s, [92, 38, 28], 0.6), mische(d, [30, 10, 8], 0.7)],
+  ragnarok2: (s, d) => [mische(s, [120, 52, 24], 0.65), mische(d, [38, 12, 6], 0.75)],
+};
+
+const ABGELEITETE_PALETTEN = {};
+for (const biome of BASIS_BIOME) {
+  const basis = BASIS_PALETTEN[`${biome.id}/${biome.variants[0].id}`];
+  if (!basis) continue;
+  for (const st of STIMMUNGEN) {
+    const [surface, deep] = STIMMUNGS_FAERBUNG[st.id](basis.surface, basis.deep);
+    ABGELEITETE_PALETTEN[`${biome.id}/stimmung_${st.id}`] = { surface, deep };
+  }
+}
+
+export const TERRAIN_PALETTES = Object.freeze({ ...BASIS_PALETTEN, ...ABGELEITETE_PALETTEN });
 
 /** Bodenfarben, wenn keine Kulisse gesetzt ist (der bisherige grüne Boden). */
 export const DEFAULT_TERRAIN_PALETTE = Object.freeze({
