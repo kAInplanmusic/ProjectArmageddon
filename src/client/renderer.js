@@ -2365,9 +2365,15 @@ export class Renderer {
       const t = this.kamera.transformation();
       this.ctx.save();
       klammerOffen = true;
+      // Der Ruck zeigt keine leere Welt: auf Achsen, die scrollen, bleibt die Karte im Bild.
+      const k = this.kamera;
+      const ruckX = k.scrolltHorizontal
+        ? Math.max(k.schirm.b - k.karte.b * t.skalierung, Math.min(0, t.versatzX + ruck.x)) - t.versatzX : ruck.x;
+      const ruckY = k.scrolltVertikal
+        ? Math.max(k.schirm.h - k.karte.h * t.skalierung, Math.min(0, t.versatzY + ruck.y)) - t.versatzY : ruck.y;
       this.ctx.setTransform(
         t.skalierung, 0, 0, t.skalierung,
-        t.versatzX + ruck.x, t.versatzY + ruck.y,
+        t.versatzX + ruckX, t.versatzY + ruckY,
       );
     } else if (ruck.x !== 0 || ruck.y !== 0) {
       // Ohne Kamera (Replay, Testbild) wurde bisher 1:1 gezeichnet. Ein Ruck

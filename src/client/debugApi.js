@@ -14,6 +14,7 @@
  * Die Klasse bleibt die Fassade: `#exposeDebugApi() { exposeDebugApi(this); }`.
  */
 import { MAP_WIDTH, MAP_HEIGHT, WATER_SCALE } from '../engine/match.js';
+import { ruckVersatz } from './gefuehl.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import { WEAPONS, getWeapon } from '../shared/config/weapons.js';
 import { buildEffect } from '../engine/specials.js';
@@ -117,6 +118,10 @@ export function exposeDebugApi(game) {
         uebersteuert: game.kameraRegie.uebersteuert, ganzeKarte: game.kamera.zoomGanzeKarte,
         stoss: game.kamera.transformation().versatzX - game.kamera.transformation({ ohneStoss: true }).versatzX,
       } : null),
+      /** Aktueller Bildruck (Erdbeben, Aufprall, Krater) in Bildschirmpixeln. */
+      ruck: () => ruckVersatz(game.renderer.ruck, { bild: game.renderer.time, reducedMotion: game.renderer.reducedMotion }),
+      /** Erdbeben-Optik wie das Ereignis `terrain_quake` (nur Anzeige; für Tests lokal auslösbar). */
+      beben: nutzlast => game.renderer.bebenOptik(nutzlast),
       /** Bildschirmpunkt (Zeichenflächenpixel) eines Kartenpunkts bei aktueller Kamera. */
       kartePunktImSchirm: (x, y) => {
         const t = game.kamera.transformation();
