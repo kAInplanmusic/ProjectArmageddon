@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
 import { veredleGelaende, baueGelaendeEbene, faerbeGelaende } from '../src/client/gelaendeStil.js';
-import { plazierePflanzen } from '../src/client/pflanzen.js';
+import { plazierePflanzen, zeichnePflanzenAusschnitt, zeichnePflanzenSchicht, entfernePflanzenImKrater } from '../src/client/pflanzen.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from '../src/client/schadenszahlen.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -148,4 +148,27 @@ test('Die Färbung bleibt bitgleich zum Stand vor der Optimierung (Fingerabdruck
   assert.equal(lauf(7, PALETTE), a, 'nach einem anderen Seed wieder dasselbe Bild');
   assert.equal(lauf(7, { surface: [236, 240, 250], deep: [90, 100, 120] }) === a, false, 'andere Palette, anderes Bild');
   assert.equal(a, 1239382613, 'Fingerabdruck des Stands vor der Optimierung');
+});
+
+test('Pflanzenebene nach einem Krater: nur der Ausschnitt wird neu gezeichnet, mit denselben Pflanzen wie ein Vollaufbau', () => {
+  const bitmap = new Uint8Array(1600 * 300);
+  for (let y = 150; y < 300; y += 1) for (let x = 0; x < 1600; x += 1) bitmap[y * 1600 + x] = 1;
+  const pflanzen = plazierePflanzen(bitmap, 1600, 300, 11, 'forest');
+  assert.ok(pflanzen.length > 8, 'Testaufbau: es gibt Pflanzen');
+  const aufnahme = () => {
+    const log = [];
+    const ctx = new Proxy({}, { get: (_, name) => (name === 'canvas' ? {} : (...args) => { log.push(`${String(name)}${name === 'clearRect' || name === 'rect' ? args.join(',') : ''}`); }), set: () => true });
+    return { ctx, log };
+  };
+  const weg = [];
+  assert.equal(entfernePflanzenImKrater(pflanzen, 800, 150, 60, weg), true);
+  assert.ok(weg.length > 0 && weg.length < 8);
+  const voll = aufnahme();
+  zeichnePflanzenSchicht(voll.ctx, pflanzen, 1600, 300, { surface: [96, 138, 92], deep: [38, 54, 46] });
+  const teil = aufnahme();
+  const u = { x0: Math.min(...weg.map(p => p.x)) - 200, x1: Math.max(...weg.map(p => p.x)) + 200, y0: 0, y1: 300 };
+  zeichnePflanzenAusschnitt(teil.ctx, pflanzen, 1600, 300, { surface: [96, 138, 92], deep: [38, 54, 46] }, u);
+  assert.ok(teil.log.some(l => l.startsWith('clearRect')), 'der Ausschnitt wird geleert');
+  assert.ok(teil.log.includes('clip'), 'und beschnitten');
+  assert.ok(teil.log.length < voll.log.length, `weniger Zeichenbefehle als beim Vollaufbau (${teil.log.length} < ${voll.log.length})`);
 });

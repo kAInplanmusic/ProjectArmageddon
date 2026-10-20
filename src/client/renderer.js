@@ -23,6 +23,10 @@ import {
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
   zeichneGeschossSprite, zeichneSchweif,
 } from './effektStil.js';
+import {
+  materialStil, zeichneBrandspur, zeichneBohrwand, zeichneBebenRisse, loescheLaeufe, setzeSchuttZellen, verschiebeZellen,
+  erzeugeFlugSchutt, schreiteFlugSchutt, zeichneFlugSchutt,
+} from './schuttOptik.js';
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
@@ -43,7 +47,7 @@ import { FigurPosen, fallPose } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import {
-  plazierePflanzen, zeichnePflanzenSchicht, entfernePflanzenImKrater, entfernePflanzenAmRand, pflanzenStreifen,
+  plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
@@ -176,6 +180,8 @@ export class Renderer {
     this.narben = [];
     /** Trümmer der Zerstörung und abgelöste, fallende Geländeinseln (nur Anzeige). */
     this.truemmer = [];
+    /** Fliegende Partikel-Zellen zerbröselnder Inseln (Fassung 4, nur Anzeige). */
+    this.flugSchutt = [];
     this.inselfall = new Inselfall();
     /** Rauch nach großen Einschlägen — der Nachhall. */
     this.rauch = [];
@@ -708,10 +714,23 @@ export class Renderer {
     this.#zeichnePflanzenNeu();
   }
 
-  #zeichnePflanzenNeu() {
+  /**
+   * Zeichnet die Pflanzenebene neu. Mit `entfernt` (Pflanzen, die gerade aus der Liste genommen wurden)
+   * nur den Ausschnitt um sie — pixelgleich, aber ohne die ganze Karte zu leeren und neu zu füllen.
+   */
+  #zeichnePflanzenNeu(entfernt = null) {
     const schicht = this.pflanzenSchicht;
     if (!schicht) return;
-    zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
+    if (entfernt?.length) {
+      let u = null;
+      for (const p of entfernt) {
+        const r = pflanzenRahmen(p, schicht.width, schicht.height);
+        u = u ? { x0: Math.min(u.x0, r.x0), x1: Math.max(u.x1, r.x1), y0: Math.min(u.y0, r.y0), y1: Math.max(u.y1, r.y1) } : r;
+      }
+      zeichnePflanzenAusschnitt(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette, u);
+    } else {
+      zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
+    }
     this.pflanzenStreifen = pflanzenStreifen(this.pflanzen, schicht.width, schicht.height);
   }
 
@@ -773,7 +792,7 @@ export class Renderer {
    * @param {number} y
    * @param {number} radius
    */
-  applyCrater(x, y, radius, tiefe = null) {
+  applyCrater(x, y, radius, tiefe = null, art = null) {
     if (!this.terrainLayer) return;
     /*
      * Zerstörungsfassung 2: `terrain_destroyed` trägt die wahre Form (`tiefe`). Das
@@ -810,7 +829,9 @@ export class Renderer {
     this.letzterKrater = { x, y, radius, tiefe, zeit: this.time };
     if (umriss) zeichneKraterRuss(ctx, umriss, x, y, this.scenery?.seed ?? 0);
     else zeichneKraterRand(ctx, x, y, radius, this.scenery?.seed ?? 0);
-    if (entfernePflanzenImKrater(this.pflanzen, x, y, radius)) this.#zeichnePflanzenNeu();
+    if (umriss && art) this.#charakterSpur(ctx, umriss, x, y, radius, art);
+    const weg = [];
+    if (entfernePflanzenImKrater(this.pflanzen, x, y, radius, weg)) this.#zeichnePflanzenNeu(weg);
 
     this.spawnExplosionParticles(x, y, radius);
     this.narben = ergaenzeNarbe(this.narben, x, y, radius);
@@ -822,10 +843,63 @@ export class Renderer {
     this.ruck = ruckFuer(radius, { reducedMotion: this.reducedMotion }) ?? this.ruck;
   }
 
-  /** Farbe der Erde für Staub und Trümmer: das Tiefenbraun der Geländepalette. */
+  /** Stil von Schutt und Staub nach Bodenart der Karte (Gras, Fels, Schnee, Sand, Asche). */
+  #materialStil() {
+    return materialStil(bodenArt(this.palette?.surface ?? [96, 138, 92]), this.palette);
+  }
+
+  /** Farbe der Erde für Staub und Trümmer: nach Material (Staub der Bodenart, bei Gras das Tiefenbraun der Geländepalette). */
   #erdfarbe() {
-    const [r, g, b] = this.palette?.deep ?? [92, 70, 52];
-    return `rgb(${r}, ${g}, ${b})`;
+    return this.#materialStil().staub;
+  }
+
+  /**
+   * Zerstörungscharakter der Waffe in der Geländeebene (Fassung 4, reine Optik): Brandspur,
+   * Bohrwand oder Beben-Risse. Splitterlöcher und gewöhnliche Sprengungen bleiben beim Kraterruß.
+   */
+  #charakterSpur(ctx, umriss, x, y, radius, art) {
+    const seed = this.scenery?.seed ?? 0;
+    if (art === 'brand') zeichneBrandspur(ctx, umriss, x, y, radius, bodenArt(this.palette?.surface ?? [96, 138, 92]), seed);
+    else if (art === 'durchschlag') zeichneBohrwand(ctx, umriss);
+    else if (art === 'beben') zeichneBebenRisse(ctx, x, y, radius, seed);
+  }
+
+  /** `terrain_removed`: Zellen sind ersatzlos weg (Riss einer gebrochenen Insel, abgeplatzte Brocken). */
+  entferneZellen(runs, art = null) {
+    if (!this.terrainLayer) return;
+    loescheLaeufe(this.terrainLayer.getContext('2d'), runs);
+    if (art === 'bruch' && !this.reducedMotion) this.#zerstoerungsOptik([], inselStaub(runs, this.#erdfarbe(), 8));
+  }
+
+  /** `terrain_added`: Schutt hat sich abgesetzt. */
+  setzeSchutt(zellen) {
+    if (!this.terrainLayer) return;
+    setzeSchuttZellen(this.terrainLayer.getContext('2d'), zellen, this.#materialStil().schutt, this.scenery?.seed ?? 0);
+  }
+
+  /** `terrain_slumped`: Setzrutsch, Pixel wandern samt Farbe. */
+  setzeRutsch(zuege) {
+    if (!this.terrainLayer) return;
+    verschiebeZellen(this.terrainLayer.getContext('2d'), this.terrainLayer, zuege);
+  }
+
+  /** `terrain_crumble`: Der Rand einer gelandeten Insel platzt ab — Zellen fliegen, Staub steigt auf. */
+  bruchOptik(n) {
+    if (this.reducedMotion || !Array.isArray(n?.teile)) return;
+    if (this.flugSchutt.length < 400) this.flugSchutt.push(...erzeugeFlugSchutt(n.teile, this.#materialStil().schutt, this.scenery?.seed ?? 0));
+    const runs = [Math.round(n.x) - 12, Math.round(n.y), Math.round(n.y), Math.round(n.x) + 12, Math.round(n.y), Math.round(n.y)];
+    this.#zerstoerungsOptik([], inselStaub(runs, this.#erdfarbe(), 3 + Math.round((n.staerke ?? 0.5) * 4)));
+  }
+
+  /** `terrain_quake`: Staubwolken entlang der Oberfläche und ein Bildzittern wie beim harten Aufprall. */
+  bebenOptik(n) {
+    const staerke = Math.min(1, Number(n?.staerke) || 0.5);
+    this.ruck = ruckAufprall(staerke, { reducedMotion: this.reducedMotion }) ?? this.ruck;
+    if (this.reducedMotion) return;
+    const r = Math.round(n.radius);
+    const runs = [];
+    for (let i = 0; i < 5; i += 1) runs.push(Math.round(n.x) - r + Math.round(i * r / 2), Math.round(n.y), Math.round(n.y));
+    this.#zerstoerungsOptik([], inselStaub(runs, this.#erdfarbe(), 5));
   }
 
   /** Trümmer und Staub aufnehmen (gedeckelt; bei „Bewegung reduzieren" entfallen sie). */
@@ -848,10 +922,10 @@ export class Renderer {
    * Mit `stumm` (Nachtrag aus dem Log) entfallen Staub und Ruck.
    */
   landeInsel(id, runs, dy, { stumm = false } = {}) {
-    if (!this.terrainLayer || !(dy > 0)) return;
+    if (!this.terrainLayer || !(dy >= 0)) return;
     if (this.inselfall.lande(this.terrainLayer, id, runs, dy, this.pflanzen)) this.#zeichnePflanzenNeu();
     const g = inselGrenzen(runs);
-    if (stumm || !g) return;
+    if (stumm || !g || dy === 0) return;
     const unten = runs.map((wert, i) => (i % 3 === 0 ? wert : wert + dy));
     // Aufprall nach Masse und Fallhöhe: Staub, Druckwellen, Brocken, Bildzittern (alles nur Darstellung).
     const aufprall = aufprallEffekt(unten, dy, this.#erdfarbe());
@@ -878,6 +952,7 @@ export class Renderer {
     this.narben = [];
     this.rauch = [];
     this.truemmer = [];
+    this.flugSchutt = [];
     this.inselfall.zuruecksetzen();
     this.wasserFertig = false;
     this.spuren = new Map();
@@ -931,6 +1006,10 @@ export class Renderer {
   updateParticles() {
     this.particles = schreitePartikelFort(this.particles);
     this.truemmer = schreiteTruemmerFort(this.truemmer);
+    if (this.flugSchutt.length > 0) {
+      const q = this.terrainSource;
+      this.flugSchutt = schreiteFlugSchutt(this.flugSchutt, q?.bitmap, q?.width ?? this.width, q?.height ?? this.height);
+    }
     this.inselfall.schritt();
   }
 
@@ -1910,10 +1989,8 @@ export class Renderer {
 
   #drawParticles() {
     zeichneFunken(this.ctx, this.particles);
-    if (this.truemmer.length > 0) {
-      const [r, g, b] = this.palette?.deep ?? [92, 70, 52];
-      zeichneTruemmer(this.ctx, this.truemmer, [`rgb(${r}, ${g}, ${b})`, `rgb(${r + 24}, ${g + 18}, ${b + 12})`, '#3b2f26']);
-    }
+    if (this.truemmer.length > 0) zeichneTruemmer(this.ctx, this.truemmer, this.#materialStil().truemmer);
+    if (this.flugSchutt.length > 0) zeichneFlugSchutt(this.ctx, this.flugSchutt);
   }
 
   /**

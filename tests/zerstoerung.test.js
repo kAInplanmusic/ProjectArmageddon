@@ -164,7 +164,7 @@ test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Go
   }
 });
 
-test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (3), Fassung 2 bleibt Fassung 2', () => {
+test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die Standardfassung (4), Fassung 2 und 3 bleiben erhalten', () => {
   const alt = {
     format: 1, createdAt: 0, seed: 4242,
     config: { teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, turnDurationMs: 30000, kit: 3 },
@@ -177,11 +177,14 @@ test('Replay-Kopf: Altdatei ohne Feld = Altfassung, neue Aufzeichnung trägt die
   assert.equal(match.setzung, null);
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_SCHOLLEN);
-  assert.equal(ZERSTOERUNG_STANDARD, ZERSTOERUNG_SCHOLLEN);
+  assert.equal(neu.toJSON().config.zerstoerung, ZERSTOERUNG_STANDARD);
+  assert.equal(ZERSTOERUNG_STANDARD, 4);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_SCHOLLEN);
+  assert.equal(playReplay(zurueck).match.zerstoerung, ZERSTOERUNG_STANDARD);
+  const drei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_SCHOLLEN });
+  drei.finalize(300);
+  assert.equal(playReplay(ReplayRecorder.fromJSON(drei.serialize())).match.zerstoerung, ZERSTOERUNG_SCHOLLEN);
 
   // Eine Aufzeichnung der Zwischenzeit (Fassung 2) behält ihre Fassung und damit ihre Grenzen.
   const zwei = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, zerstoerung: ZERSTOERUNG_GELAENDE });

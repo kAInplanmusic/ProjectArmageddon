@@ -22,7 +22,7 @@ import { Hud } from './hud.js';
 import { zeigeToast } from './toasts.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
-import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
+import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
@@ -1421,6 +1421,12 @@ class Game {
       applyLogEntryToTerrain(this.remoteTerrain, eintrag);
       if (eintrag[0] === 's') {
         this.renderer.landeInsel(null, eintrag.slice(2), eintrag[1], { stumm: true });
+      } else if (eintrag[0] === 'x') {
+        this.renderer.entferneZellen(eintrag.slice(1));
+      } else if (eintrag[0] === 'p') {
+        this.renderer.setzeSchutt(eintrag.slice(1));
+      } else if (eintrag[0] === 'r') {
+        this.renderer.setzeRutsch(eintrag.slice(1));
       } else {
         this.renderer.applyCrater(eintrag[0], eintrag[1], eintrag[2], eintrag[3] ?? null);
       }
@@ -1962,6 +1968,10 @@ class Game {
         krater: (x, y, radius, tiefe = null) => applyCraterToTerrain(this.remoteTerrain, x, y, radius, tiefe),
         // Eine gelandete Geländeinsel wandert in Bitmap und Maske nach unten.
         insel: (dy, runs) => applySettleToTerrain(this.remoteTerrain, dy, runs),
+        // Zerstörung Fassung 4: Zellen weg, Schutt abgesetzt, Setzrutsch (Bitmap und Maske).
+        entfernt: runs => applyRemoveToTerrain(this.remoteTerrain, runs),
+        hinzu: zellen => applyAddToTerrain(this.remoteTerrain, zellen),
+        rutsch: zuege => applySlumpToTerrain(this.remoteTerrain, zuege),
         // Der Mahlstrom trägt Bitmap und Maske ab, nicht nur die Zeichenfläche.
         einschnitt: inset => applyInsetToTerrain(this.remoteTerrain, inset),
       },
