@@ -169,6 +169,123 @@ Musik hängen von den Bedingungen/dem Tarif des Erzeugungsdienstes zum Zeitpunkt
 einen Nachweis dazu bei den Projektunterlagen ablegen. Nicht gehört: die Zuordnung der
 Stimmungen sollte der Auftraggeber einmal gegenprüfen.
 
+## Klang-System: Schuss- und Treffer-Sounds (2026-10-19) — GEBAUT
+
+Effekte sind weiter rein synthetisch (WebAudio, keine Audiodateien, 0 Byte Assets); Engine, Seed
+und Replays sind unberührt (nur Darstellung).
+
+**Dateien**
+- `src/client/klangProfile.js` (rein, getestet): Profiltabellen als Schichten (`rausch`, `ton`,
+  `knistern`), `schussProfilFuer(waffe)` (Korrekturtabelle `PROFIL_KORREKTUR` je Waffen-ID, dann
+  Selbstwirkung, Raketen-Specials, Zünder = Wurf, Kategorie und Schadensart), `einschlagProfil`,
+  `trefferProfil`, `raeumlich` (Stereolage, Abstandspegel, Dunkelheit, Schalllaufzeit),
+  `StimmenVerwalter` (24 Stimmen, Ältestes wird gekappt), `tonErlaubt`.
+- `src/client/klangSynth.js`: `baueKlangGraph` (vier Busse `schuss`/`treffer`/`umgebung`/`ui`,
+  Ausgang = Effekt-Lautstärke, Kompressor, weicher Begrenzer mit Spitze ≤ 0,98, gemeinsamer Hall,
+  EIN Rauschpuffer 5 s: erste Hälfte braun, zweite weiß) und `spieleProfil` (zufällige Streuung je
+  Klang für Tonhöhe, Filter und Pegel).
+- `src/client/soundMixer.js`: wählt Profil, Raum und Stimme; Schalter/Regler/Speicher
+  (`pa.ton.v1`); Zähler; `zustand` für `window.__PA__.sound()`. `src/client/soundBedienung.js`:
+  Schalter „Effekte an/aus“, Regler „Effekt-Lautstärke“ (Vorgabe 80), Taste T; `index.html`
+  (Menü, neben dem Musikblock); Hilfe-Reiter „Ton und Musik“ um die Effekte ergänzt.
+- `ereignisse.js`/`main.js`: Schuss mit Waffe und Ort, Explosion mit Radius, Ort und Material
+  (`main.js#materialAn`: Wasser über `water.levelAtWorld`, Fels in Höhle/Gebirge, sonst Erde),
+  Landung, Sturzschaden, Tod, Kiste, Zünder-Ticken, Geländeeinsturz (`terrain_detached` /
+  `terrain_settled`, nur online wie die Anzeige), Wasser-Platscher (`#trackWater`), Waffenwechsel,
+  Nachladen fertig (`#pruefeNachladen`), Treffer aus dem Zustand mit Schadensanteil und Ort.
+
+**Profile:** 14 Schussprofile (pistole, gewehr, schwer, rakete, feuer, eis, blitz, magie, laser,
+strahl, nahkampf, wurf, selbst, ultimate) und 22 Ereignisprofile (Explosion klein/mittel/groß/riesig
+mit Schutt und Echo, Einschlag Erde/Fels, Platscher klein/groß, Figurtreffer klein/mittel/groß/Krit/
+Selbstschaden, Landung Figur/Insel, harter Aufprall, Trümmer, Tod, Kiste, Waffenwechsel, Nachladen,
+Ticken). Die Kategorien verteilen sich über die 150 Waffen so: nahkampf 28, selbst 29, magie 25,
+wurf 16, rakete 11, ultimate 10, feuer 8, schwer 8, laser 7, gewehr 3, pistole 2, eis 1, strahl 1,
+blitz 1. Hitscan-Energiewaffen klingen als `strahl`.
+
+**Zusammenfassen und Staffeln:** `shot` und `hitscan` desselben Schützen innerhalb 150 ms sind ein
+Knall; Explosionen am selben Ort (< 70 px) innerhalb 60 ms ein Einschlag; höchstens drei Treffer je
+50 ms (die weiteren leiser/verworfen, Zähler `zusammengefasst`); ein Geschoss ohne Sprengradius, das
+eine Figur trifft, spielt nur den Treffer. Der Einschlag klingt erst, wenn die Engine ihn meldet
+(nach der Flugzeit), weit entfernte Einschläge zusätzlich mit Schalllaufzeit bis 0,4 s; der Treffer
+eines Hitscans folgt 50 ms nach dem Schuss.
+
+**Stumm in Tests:** `navigator.webdriver` oder `?ton=0`: der Ausgang steht auf null, Klänge und
+Zähler laufen wie sonst; `?ton=1` erzwingt den hörbaren Ausgang. „Effekte aus“ erzeugt keinen
+Klang (Zähler `stumm`).
+
+**Prüfung ohne Gehör:** `node tools/klang-auswertung.mjs [--wav <ordner>]` rendert jedes Profil in
+Chromium mit einem OfflineAudioContext durch dieselbe Kette wie im Spiel (Hilfsmodule
+`tests/helfer/klangRender.mjs`, `klangAnalyse.js`), misst in Node und schreibt
+`docs/klang/auswertung.json` und je Profil ein Spektrogramm `docs/klang/spektrogramm-<profil>.png`
+(Zeit nach rechts, 0–12 kHz nach oben). Dauer ist die Zeit bis −60 dB unter der Spitze, der
+Schwerpunkt der leistungsgewichtete Mittelwert des Spektrums. Stresstest: 24 und 48 laute Stimmen
+gleichzeitig, Spitze −1,26 / −0,88 dBFS (kein Clipping). Kleinster Abstand der acht
+Kategorie-Schwerpunkte: ×1.31.
+
+| Profil | Bus | Dauer (s) | Spitze (dBFS) | RMS (dBFS) | Schwerpunkt (Hz) |
+|---|---|---:|---:|---:|---:|
+| `pistole` | schuss | 0.86 | -5.6 | -39.3 | 3374 |
+| `gewehr` | schuss | 0.91 | -4.4 | -35.3 | 1257 |
+| `schwer` | schuss | 1.11 | -3.1 | -27 | 200 |
+| `rakete` | schuss | 0.96 | -9.4 | -34.2 | 843 |
+| `feuer` | schuss | 0.89 | -10.3 | -34.2 | 617 |
+| `eis` | schuss | 0.91 | -9 | -38.4 | 3665 |
+| `blitz` | schuss | 0.80 | -5.4 | -36.4 | 3492 |
+| `magie` | schuss | 1.10 | -3.2 | -27.9 | 1371 |
+| `laser` | schuss | 0.73 | -8.9 | -40.1 | 5678 |
+| `strahl` | schuss | 0.80 | -9.1 | -35.5 | 1202 |
+| `nahkampf` | schuss | 0.63 | -4.3 | -35.5 | 1045 |
+| `wurf` | schuss | 0.53 | -14.1 | -42.2 | 1224 |
+| `selbst` | schuss | 0.88 | -9.2 | -34.7 | 2276 |
+| `ultimate` | schuss | 1.45 | -2.8 | -21.6 | 465 |
+| `explosion_klein` | treffer | 0.85 | -6.5 | -32.8 | 347 |
+| `explosion_mittel` | treffer | 1.01 | -4.5 | -27.7 | 199 |
+| `explosion_gross` | treffer | 1.23 | -3.9 | -23.8 | 147 |
+| `explosion_riesig` | treffer | 1.41 | -3.1 | -21.3 | 111 |
+| `einschlag_erde` | treffer | 0.69 | -12.4 | -39.5 | 118 |
+| `einschlag_fels` | treffer | 0.70 | -12.8 | -43.6 | 496 |
+| `platscher_klein` | treffer | 0.67 | -15.9 | -43 | 1020 |
+| `platscher_gross` | treffer | 1.01 | -7.1 | -29.8 | 212 |
+| `treffer_figur_klein` | treffer | 0.48 | -16 | -47 | 321 |
+| `treffer_figur_mittel` | treffer | 0.60 | -10.8 | -38.6 | 181 |
+| `treffer_figur_gross` | treffer | 0.84 | -7 | -31.1 | 121 |
+| `treffer_krit` | treffer | 0.87 | -5.4 | -31.4 | 451 |
+| `treffer_selbst` | treffer | 0.51 | -10.2 | -37.7 | 172 |
+| `landung_figur` | umgebung | 0.33 | -16.4 | -46.5 | 99 |
+| `aufprall_hart` | treffer | 0.74 | -8.1 | -33.2 | 109 |
+| `landung_insel` | umgebung | 1.04 | -6.6 | -26.4 | 74 |
+| `truemmer` | umgebung | 0.83 | -16.2 | -43.1 | 211 |
+| `tod` | treffer | 1.02 | -5.9 | -32.1 | 237 |
+| `kiste` | umgebung | 0.78 | -12.1 | -38.8 | 1070 |
+| `waffenwechsel` | ui | 0.09 | -21.7 | -56.2 | 1250 |
+| `bereit` | ui | 0.78 | -18.6 | -43.4 | 1618 |
+| `ticken` | umgebung | 1.05 | -14.4 | -50.1 | 1803 |
+
+| Kategorie | Profil | Schwerpunkt (Hz) |
+|---|---|---:|
+| melee | `nahkampf` | 1045 |
+| ranged | `pistole` | 3374 |
+| heavy_ranged | `schwer` | 200 |
+| elemental | `feuer` | 617 |
+| magic | `magie` | 1371 |
+| tech | `laser` | 5678 |
+| utility | `selbst` | 2276 |
+| ultimate | `ultimate` | 465 |
+
+Die Tabelle gilt für die Rendering-Zufallsfolge 1 (Seed); im Spiel streut jeder Klang um ±6 %
+Tonhöhe, ±12 % Filter, ±8 % Pegel. Der Hall verlängert die Klänge bis `Dauer + 1,4 s`, alle liegen
+unter 3 s (Endpegel < −60 dB). Die Aussagen zum Klang selbst („klingt gut“) sind nicht gehört,
+sondern über Pegel, Spektrum und Spektrogramm abgesichert; die Feinabstimmung nach Gehör steht aus.
+
+**Tests:** `tests/klang-profile.test.js` (12: Tabelle, Waffe → Profil für alle 150 Waffen, Einschlag/
+Treffer, Panning und Abstand, Stimmenlimit, `tonErlaubt`, Auswertung gegen die Tabelle),
+`tests/klang-mixer.test.js` (18: Graph, Zusammenfassung, Zähler, Schalter, Speicher, Busse),
+`tests/e2e/ton.spec.mjs` (9: Zustand, Schuss je Kategorie, Treffer, Explosionsgröße, Taste T,
+Bedienung samt Speicher, `?ton`, Hilfe), `tests/e2e/ton-offline.spec.mjs` (2: Messung live in
+Chromium: Spitze, Ausklang, NaN, Dauer, Schwerpunkt-Abstand, Variation). Ändert sich die
+Profiltabelle, schlägt der Hash-Vergleich in `klang-profile.test.js` an: `node tools/klang-auswertung.mjs`
+neu laufen lassen und die Ergebnisdateien einchecken.
+
 ## Netcode-/Determinismus-Audit (2026-10-09) — offene Punkte
 
 Auftrag: Gesamtaudit (Code, Tests, Architektur, Performance) mit Fokus Determinismus,
@@ -542,7 +659,7 @@ von ihnen **Zusagen ohne Wirkung** (der Motor las sie nirgends).
 | `targeting` | 11 Widersprüche zur Wirkung | **150/150 deckungsgleich** (0 Widersprüche), Feld reist im `shot`-Ereignis mit |
 
 Verifikation dieses Zuges in der aktuellen Messung (2026-10-02; Zahlen am 2026-10-09 auf 1287/135 nachgezogen, +4 Prüfungen in `replay-waffenwahl` und `krater-nachlieferung`, +6 in `mahlstrom-terrainhash`):
-**1510/1510** grün, Dateizahl **158** (Stand 2026-10-20, Kameraführung: +13 in der neuen `kamera-ziel.test.js`, dazu 15 E2E in `kamera.spec.mjs`; davor 1497/157, Stand 2026-10-19, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
+**1540/1540** grün, Dateizahl **160** (Stand 2026-10-20, Kameraführung: +13 in der neuen `kamera-ziel.test.js`, dazu 15 E2E in `kamera.spec.mjs`; davor 1527/159, Stand 2026-10-19, Effekt-Klänge: +12 in der neuen `klang-profile.test.js`, +18 in der neuen `klang-mixer.test.js`, dazu E2E in `ton.spec.mjs` und `ton-offline.spec.mjs`; davor 1497/157, Waffen-Animation: +31 in der neuen `waffen-animation.test.js`, dazu 5 E2E in `waffen-animation.spec.mjs`; davor 1466/156, Musik: +20 in der neuen `musik.test.js`, dazu 7 E2E in `musik.spec.mjs`; davor 1444/155, Waffen-Sprites: +7 in der neuen `waffen-sprites.test.js`; davor 1437/154, Stand 2026-10-15, HUD-Layout: +18 in der neuen `sichtbereich.test.js`, dazu 12 E2E in `hud-layout.spec.mjs`; davor 1419/153, Seitenansichten Stufe 1: +1 in `seitenansichten.test.js`, +1 in `portraets.test.js`; davor 1417/153, Figuren sichtbar: +2 in `darstellung.test.js`, +2 in der neuen `figuren-skala.test.js`; davor 1413/152, Seitenansichten: +4 in der neuen `seitenansichten.test.js`; davor 1409/151, Fraktionsdarstellung: +4 in der neuen `darstellung.test.js`, +5 in `figur-animation.test.js`; davor 1400/149, Porträts: +4 in der neuen `portraets.test.js`; davor 1396/148, Restpunkte 2: +14 (`kisten.test.js` 7, `tanne.test.js` 4, `waffen-fassung.test.js` +3); davor 1382/146, Stand 2026-10-14, Balance: +12 in der neuen `waffen-fassung.test.js` (Katalogfassung, Kit 4, Werkzeuge); davor 1370/145, Optimierung: +9 in `zerstoerung.test.js` (+4: Fassung-2-Gold, Schollen, Fels, Fortsetzen), `zerstoerung-optik.test.js` (+4: Aufprall, Ruck, Pflanzenstreifen) und `comic-stil.test.js` (+1: Ein-Zug-Aufbau); davor +25 in den neuen `zerstoerung.test.js` (20) und `zerstoerung-optik.test.js` (5); vorher 1336/143: +3 in `start-kit`, +7 in der neuen `waffen-effekte.test.js`; davor 1326/142 mit den zwei Prüfungen in
 `tests/status-marke-online.test.js`, Protokoll v9: Gift- und Bonusmarke online).
 Der vorige Stand desselben Abschnitts (2026-09-25, sechs Züge vorher): `npm test` **1230/1230** grün
 Die Zahl ist seither sechsmal gewachsen (983 → 1122 → 1218 → 1223 → 1226 →

@@ -1110,6 +1110,19 @@
             </label>
             <span class="musik-titel" data-musik-titel></span>
           </div>
+          <!--
+            Effekte (src/client/soundMixer.js, soundBedienung.js): Schuss-, Treffer- und
+            Umgebungsklänge. Taste T schaltet sie überall; Zustand in localStorage (`pa.ton.v1`).
+          -->
+          <div class="musik-regler ton-regler" role="group" aria-label="Effekte">
+            <button type="button" class="secondary musik-schalter" data-ton-schalter aria-pressed="true"
+                    title="Effekte an/aus (T)">
+              <span aria-hidden="true">&#128266;</span> <span data-ton-schalter-text>Effekte an</span>
+            </button>
+            <label class="musik-lautstaerke">Effekt-Lautstärke
+              <input type="range" data-ton-regler min="0" max="100" step="5" value="80" />
+            </label>
+          </div>
           <details id="lobby-browser">
             <summary>Offene Lobbys anzeigen</summary>
             <div class="field-row">

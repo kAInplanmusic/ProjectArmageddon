@@ -1,0 +1,381 @@
+{
+  "profilHash": "01d2b7efebdc1bf0",
+  "samplerate": 48000,
+  "profile": {
+    "pistole": {
+      "bus": "schuss",
+      "dauer": 0.86,
+      "peakDb": -5.6,
+      "rmsDb": -39.3,
+      "schwerpunkt": 3374,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "gewehr": {
+      "bus": "schuss",
+      "dauer": 0.91,
+      "peakDb": -4.4,
+      "rmsDb": -35.3,
+      "schwerpunkt": 1257,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "schwer": {
+      "bus": "schuss",
+      "dauer": 1.11,
+      "peakDb": -3.1,
+      "rmsDb": -27,
+      "schwerpunkt": 200,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "rakete": {
+      "bus": "schuss",
+      "dauer": 0.96,
+      "peakDb": -9.4,
+      "rmsDb": -34.2,
+      "schwerpunkt": 843,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "feuer": {
+      "bus": "schuss",
+      "dauer": 0.89,
+      "peakDb": -10.3,
+      "rmsDb": -34.2,
+      "schwerpunkt": 617,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "eis": {
+      "bus": "schuss",
+      "dauer": 0.91,
+      "peakDb": -9,
+      "rmsDb": -38.4,
+      "schwerpunkt": 3665,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "blitz": {
+      "bus": "schuss",
+      "dauer": 0.8,
+      "peakDb": -5.4,
+      "rmsDb": -36.4,
+      "schwerpunkt": 3492,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "magie": {
+      "bus": "schuss",
+      "dauer": 1.1,
+      "peakDb": -3.2,
+      "rmsDb": -27.9,
+      "schwerpunkt": 1371,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "laser": {
+      "bus": "schuss",
+      "dauer": 0.73,
+      "peakDb": -8.9,
+      "rmsDb": -40.1,
+      "schwerpunkt": 5678,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "strahl": {
+      "bus": "schuss",
+      "dauer": 0.8,
+      "peakDb": -9.1,
+      "rmsDb": -35.5,
+      "schwerpunkt": 1202,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "nahkampf": {
+      "bus": "schuss",
+      "dauer": 0.63,
+      "peakDb": -4.3,
+      "rmsDb": -35.5,
+      "schwerpunkt": 1045,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "wurf": {
+      "bus": "schuss",
+      "dauer": 0.53,
+      "peakDb": -14.1,
+      "rmsDb": -42.2,
+      "schwerpunkt": 1224,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "selbst": {
+      "bus": "schuss",
+      "dauer": 0.88,
+      "peakDb": -9.2,
+      "rmsDb": -34.7,
+      "schwerpunkt": 2276,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "ultimate": {
+      "bus": "schuss",
+      "dauer": 1.45,
+      "peakDb": -2.8,
+      "rmsDb": -21.6,
+      "schwerpunkt": 465,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_klein": {
+      "bus": "treffer",
+      "dauer": 0.85,
+      "peakDb": -6.5,
+      "rmsDb": -32.8,
+      "schwerpunkt": 347,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_mittel": {
+      "bus": "treffer",
+      "dauer": 1.01,
+      "peakDb": -4.5,
+      "rmsDb": -27.7,
+      "schwerpunkt": 199,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_gross": {
+      "bus": "treffer",
+      "dauer": 1.23,
+      "peakDb": -3.9,
+      "rmsDb": -23.8,
+      "schwerpunkt": 147,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "explosion_riesig": {
+      "bus": "treffer",
+      "dauer": 1.41,
+      "peakDb": -3.1,
+      "rmsDb": -21.3,
+      "schwerpunkt": 111,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "einschlag_erde": {
+      "bus": "treffer",
+      "dauer": 0.69,
+      "peakDb": -12.4,
+      "rmsDb": -39.5,
+      "schwerpunkt": 118,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "einschlag_fels": {
+      "bus": "treffer",
+      "dauer": 0.7,
+      "peakDb": -12.8,
+      "rmsDb": -43.6,
+      "schwerpunkt": 496,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "platscher_klein": {
+      "bus": "treffer",
+      "dauer": 0.67,
+      "peakDb": -15.9,
+      "rmsDb": -43,
+      "schwerpunkt": 1020,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "platscher_gross": {
+      "bus": "treffer",
+      "dauer": 1.01,
+      "peakDb": -7.1,
+      "rmsDb": -29.8,
+      "schwerpunkt": 212,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "treffer_figur_klein": {
+      "bus": "treffer",
+      "dauer": 0.48,
+      "peakDb": -16,
+      "rmsDb": -47,
+      "schwerpunkt": 321,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "treffer_figur_mittel": {
+      "bus": "treffer",
+      "dauer": 0.6,
+      "peakDb": -10.8,
+      "rmsDb": -38.6,
+      "schwerpunkt": 181,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "treffer_figur_gross": {
+      "bus": "treffer",
+      "dauer": 0.84,
+      "peakDb": -7,
+      "rmsDb": -31.1,
+      "schwerpunkt": 121,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "treffer_krit": {
+      "bus": "treffer",
+      "dauer": 0.87,
+      "peakDb": -5.4,
+      "rmsDb": -31.4,
+      "schwerpunkt": 451,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "treffer_selbst": {
+      "bus": "treffer",
+      "dauer": 0.51,
+      "peakDb": -10.2,
+      "rmsDb": -37.7,
+      "schwerpunkt": 172,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "landung_figur": {
+      "bus": "umgebung",
+      "dauer": 0.33,
+      "peakDb": -16.4,
+      "rmsDb": -46.5,
+      "schwerpunkt": 99,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "aufprall_hart": {
+      "bus": "treffer",
+      "dauer": 0.74,
+      "peakDb": -8.1,
+      "rmsDb": -33.2,
+      "schwerpunkt": 109,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "landung_insel": {
+      "bus": "umgebung",
+      "dauer": 1.04,
+      "peakDb": -6.6,
+      "rmsDb": -26.4,
+      "schwerpunkt": 74,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "truemmer": {
+      "bus": "umgebung",
+      "dauer": 0.83,
+      "peakDb": -16.2,
+      "rmsDb": -43.1,
+      "schwerpunkt": 211,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "tod": {
+      "bus": "treffer",
+      "dauer": 1.02,
+      "peakDb": -5.9,
+      "rmsDb": -32.1,
+      "schwerpunkt": 237,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "kiste": {
+      "bus": "umgebung",
+      "dauer": 0.78,
+      "peakDb": -12.1,
+      "rmsDb": -38.8,
+      "schwerpunkt": 1070,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "waffenwechsel": {
+      "bus": "ui",
+      "dauer": 0.09,
+      "peakDb": -21.7,
+      "rmsDb": -56.2,
+      "schwerpunkt": 1250,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "bereit": {
+      "bus": "ui",
+      "dauer": 0.78,
+      "peakDb": -18.6,
+      "rmsDb": -43.4,
+      "schwerpunkt": 1618,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "ticken": {
+      "bus": "umgebung",
+      "dauer": 1.05,
+      "peakDb": -14.4,
+      "rmsDb": -50.1,
+      "schwerpunkt": 1803,
+      "endpegelDb": -180,
+      "nan": false
+    }
+  },
+  "kategorien": {
+    "melee": {
+      "profil": "nahkampf",
+      "schwerpunkt": 1045
+    },
+    "ranged": {
+      "profil": "pistole",
+      "schwerpunkt": 3374
+    },
+    "heavy_ranged": {
+      "profil": "schwer",
+      "schwerpunkt": 200
+    },
+    "elemental": {
+      "profil": "feuer",
+      "schwerpunkt": 617
+    },
+    "magic": {
+      "profil": "magie",
+      "schwerpunkt": 1371
+    },
+    "tech": {
+      "profil": "laser",
+      "schwerpunkt": 5678
+    },
+    "utility": {
+      "profil": "selbst",
+      "schwerpunkt": 2276
+    },
+    "ultimate": {
+      "profil": "ultimate",
+      "schwerpunkt": 465
+    }
+  },
+  "stress": {
+    "stimmenMax": {
+      "stimmen": 24,
+      "peakDb": -1.26,
+      "ueber0dB": false,
+      "nan": false
+    },
+    "doppelt": {
+      "stimmen": 48,
+      "peakDb": -0.88,
+      "ueber0dB": false,
+      "nan": false
+    }
+  },
+  "minAbstandVerhaeltnis": 1.31,
+  "schussProfile": 14,
+  "profileGesamt": 36
+}
