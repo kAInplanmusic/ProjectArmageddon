@@ -297,6 +297,30 @@ export const EREIGNIS_PROFILE = Object.freeze({
     R({ farbe: 'braun', filter: 'lowpass', f0: 1200, f1: 60, sweep: 1.2, an: 0.01, ab: 1.2, pegel: 0.8 }),
     T({ welle: 'sine', f0: 1760, f1: 440, gleit: 0.8, start: 0.05, an: 0.01, ab: 0.9, pegel: 0.15 }),
   ]),
+  /* Wirkungen auf Figuren (Ereigniskatalog: heal, frozen, shield_absorbed, pulled, turret_fired). */
+  heilung: P('treffer', 0.5, 0.35, [
+    T({ f0: 660, f1: 990, gleit: 0.18, an: 0.02, ab: 0.35, pegel: 0.35 }),
+    T({ f0: 1320, f1: 1760, gleit: 0.18, start: 0.09, an: 0.02, ab: 0.4, pegel: 0.28 }),
+    R({ filter: 'highpass', f0: 6000, an: 0.08, ab: 0.3, pegel: 0.05 }),
+  ], { ton: 0.03, filter: 0.05, pegel: 0.05 }),
+  einfrieren: P('treffer', 0.6, 0.25, [
+    T({ f0: 2600, f1: 1500, gleit: 0.15, partiale: [[1, 1], [2.76, 0.5], [5.4, 0.25]], an: 0.001, ab: 0.45, pegel: 0.35 }),
+    K({ n: 7, fenster: 0.3, fmin: 3500, fmax: 9000, q: 12, ab: 0.03, pegel: 0.3 }),
+    R({ filter: 'highpass', f0: 5000, an: 0.001, ab: 0.06, pegel: 0.35 }),
+  ]),
+  schild: P('treffer', 0.6, 0.2, [
+    T({ welle: 'triangle', f0: 520, f1: 260, gleit: 0.12, partiale: [[1, 1], [1.5, 0.5]], an: 0.002, ab: 0.28, pegel: 0.55 }),
+    R({ f0: 3500, q: 4, an: 0.001, ab: 0.04, pegel: 0.45 }),
+  ]),
+  heranziehen: P('treffer', 0.55, 0.1, [
+    R({ f0: 200, f1: 1400, sweep: 0.22, q: 0.7, an: 0.1, ab: 0.15, pegel: 0.8 }),
+    T({ welle: 'sawtooth', f0: 90, f1: 220, gleit: 0.22, an: 0.1, ab: 0.12, pegel: 0.3 }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 600, start: 0.24, an: 0.001, ab: 0.1, pegel: 0.6 }),
+  ]),
+  geschuetz: P('schuss', 0.55, 0.05, [
+    R({ f0: 1900, q: 1.2, an: 0.001, ab: 0.05, pegel: 0.8 }),
+    T({ welle: 'square', f0: 240, f1: 110, gleit: 0.06, an: 0.001, ab: 0.09, pegel: 0.35 }),
+  ], { ton: 0.05, filter: 0.1, pegel: 0.08 }),
   waffenwechsel: P('ui', 0.6, 0, [
     R({ f0: 2500, q: 3, an: 0.001, ab: 0.015, pegel: 1 }),
     R({ f0: 1800, q: 3, start: 0.045, an: 0.001, ab: 0.02, pegel: 0.7 }),

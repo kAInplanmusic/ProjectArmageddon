@@ -59,7 +59,7 @@ const begrenze01 = wert => Math.max(0, Math.min(1, Number(wert) || 0));
 
 const leereZaehler = () => ({
   explosion: 0, schuss: 0, treffer: 0, donner: 0, einschlag: 0, wasser: 0, truemmer: 0,
-  landung: 0, tod: 0, kiste: 0, ui: 0, ticken: 0, tier: 0,
+  landung: 0, tod: 0, kiste: 0, ui: 0, ticken: 0, tier: 0, wirkung: 0,
 });
 
 /** Abstand-Fenster, in dem zwei Meldungen als EIN Klang gelten (s). */
@@ -472,6 +472,7 @@ export class SoundMixer {
    *   `damage`       → Treffer
    *   `landed`/`aufprall`/`tod`/`kiste`/`truemmer`/`insel_gelandet`/`platscher`
    *   `waffenwechsel`/`bereit`/`ticken` → Oberfläche und Umgebung
+   *   `heilung`/`einfrieren`/`schild`/`heranziehen`/`geschuetz` → Wirkung auf Figuren und Geschütze
    *
    * @param {object} ereignis - mit `type`, optional `x`, `y`
    * @returns {boolean} ob ein Klang erzeugt wurde
@@ -527,6 +528,13 @@ export class SoundMixer {
         return this.#einfach('tier', 'tier', ereignis.type, { x, y, pegel: Number(ereignis.pegel ?? 1), laufzeit: ereignis.type === 'schockwelle' });
       case 'ticken':
         return this.#einfach('ticken', 'ticken', 'ticken', { x, y });
+      case 'heilung':
+      case 'einfrieren':
+      case 'schild':
+      case 'heranziehen':
+      case 'geschuetz':
+        // Wirkungen auf Figuren und Geschütze: ein Klang je Wirkung, Profil gleichnamig.
+        return this.#einfach(ereignis.type, 'wirkung', ereignis.type, { x, y });
       case 'waffenwechsel':
         return this.#einfach('waffenwechsel', 'ui', 'waffenwechsel');
       case 'bereit':

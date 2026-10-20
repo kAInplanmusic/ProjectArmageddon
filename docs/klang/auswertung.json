@@ -1,5 +1,5 @@
 {
-  "profilHash": "5204b7e47d5a53a1",
+  "profilHash": "af8c1eefa07a6b96",
   "samplerate": 48000,
   "profile": {
     "pistole": {
@@ -380,6 +380,51 @@
       "endpegelDb": -180,
       "nan": false
     },
+    "heilung": {
+      "bus": "treffer",
+      "dauer": 1,
+      "peakDb": -12.1,
+      "rmsDb": -35.3,
+      "schwerpunkt": 1279,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "einfrieren": {
+      "bus": "treffer",
+      "dauer": 1.01,
+      "peakDb": -9.2,
+      "rmsDb": -32.6,
+      "schwerpunkt": 2631,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "schild": {
+      "bus": "treffer",
+      "dauer": 0.86,
+      "peakDb": -8.9,
+      "rmsDb": -34.4,
+      "schwerpunkt": 473,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "heranziehen": {
+      "bus": "treffer",
+      "dauer": 0.58,
+      "peakDb": -9.9,
+      "rmsDb": -40.1,
+      "schwerpunkt": 684,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "geschuetz": {
+      "bus": "schuss",
+      "dauer": 0.47,
+      "peakDb": -16.7,
+      "rmsDb": -48.1,
+      "schwerpunkt": 761,
+      "endpegelDb": -180,
+      "nan": false
+    },
     "waffenwechsel": {
       "bus": "ui",
       "dauer": 0.09,
@@ -458,5 +503,5 @@
   },
   "minAbstandVerhaeltnis": 1.31,
   "schussProfile": 14,
-  "profileGesamt": 45
+  "profileGesamt": 50
 }

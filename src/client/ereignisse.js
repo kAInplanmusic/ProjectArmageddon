@@ -567,9 +567,11 @@ export const EREIGNIS_WIRKUNGEN = {
   turret_fired: {
     lokal: (k, n) => {
       k.renderer?.addFlash(n.x, n.y, 12, { color: '#d9b44a' });
+      k.sound?.verarbeite({ type: 'geschuetz', x: n.x, y: n.y });
     },
-    online: (k) => {
+    online: (k, n) => {
       k.hud?.log('Das Geschütz feuert', 'neutral');
+      k.sound?.verarbeite({ type: 'geschuetz', x: n.x, y: n.y });
     },
   },
 
@@ -590,6 +592,7 @@ export const EREIGNIS_WIRKUNGEN = {
   frozen: beide((k, n) => {
     const was = n.grund ? 'betäubt' : 'eingefroren';
     k.hud?.log(`${k.nameOf?.(n.playerId)} ist ${was} (${n.turns} Zug/Züge)`, 'accent');
+    if (!n.grund) k.sound?.verarbeite({ type: 'einfrieren', ...ortVon(k, n.playerId) });
   }),
 
   damage: beide((k, n) => {
@@ -650,12 +653,17 @@ export const EREIGNIS_WIRKUNGEN = {
       const geschuetzt = k.findEntity?.(n.playerId);
       if (geschuetzt) k.renderer?.addFlash(geschuetzt.x, geschuetzt.y, 16, { color: '#4cc9f0' });
       schildMeldung(k, n);
+      k.sound?.verarbeite({ type: 'schild', ...ortVon(k, n.playerId) });
     },
-    online: schildMeldung,
+    online: (k, n) => {
+      schildMeldung(k, n);
+      k.sound?.verarbeite({ type: 'schild', ...ortVon(k, n.playerId) });
+    },
   },
 
   pulled: beide((k, n) => {
     k.hud?.log(`${k.nameOf?.(n.playerId)} wurde herangezogen`, 'accent');
+    k.sound?.verarbeite({ type: 'heranziehen', ...ortVon(k, n.playerId) });
   }),
 
   /*
@@ -906,9 +914,11 @@ export const EREIGNIS_WIRKUNGEN = {
   heal: {
     lokal: (k, n) => {
       k.hud?.log(`+${Math.round(n.amount)} Heilung für ${k.nameOf?.(n.entityId)}`, 'good');
+      k.sound?.verarbeite({ type: 'heilung', ...ortVon(k, n.entityId) });
     },
     online: (k, n) => {
       k.hud?.log(`+${Math.round(n.amount)} Heilung`, 'good');
+      k.sound?.verarbeite({ type: 'heilung', ...ortVon(k, n.entityId) });
     },
   },
 

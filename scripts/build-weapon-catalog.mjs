@@ -278,6 +278,59 @@ export const BALANCE_KORREKTUREN_3 = Object.freeze({
 });
 
 /**
+ * Balance-Korrekturen der Katalogfassung 4 (`config.waffen: 4`), ZUSÄTZLICH zu denen
+ * der Fassungen 2 und 3. Gemessen mit `npm run balance:waffen` (Stufenmedian common 17,5,
+ * uncommon 24,3; zu schwach < 0,5x, zu stark > 2x):
+ *  - zu stark gesenkt: Goldene Hand (50 gegen Median 24,3),
+ *    Quantengewehr (68,5), dazu die beiden stärksten Strahlwaffen
+ *    Höllenkanone (102) und Feuerwesen (72).
+ *  - zu schwach angehoben: Plasma-Gewehr, Armbrust, Minigun, Raketenkanone, Rakete
+ *    (Bestwert 8 bis 13,7 gegen Median 24,3 / 48).
+ */
+export const BALANCE_KORREKTUREN_4 = Object.freeze({
+  pa_083: { damage: 46 }, // Goldene Hand
+  pa_104: { damage: 56 }, // Quantengewehr
+  pa_139: { damage: 68 }, // Höllenkanone
+  pa_118: { damage: 46 }, // Feuerwesen
+  pa_068: { damage: 54 }, // Plasma-Gewehr
+  pa_059: { damage: 66 }, // Armbrust
+  pa_060: { damage: 34 }, // Minigun
+  pa_069: { damage: 56 }, // Raketenkanone
+  pa_038: { damage: 58 }, // Rakete
+});
+
+/**
+ * Flugprofile der Katalogfassung 4 (`config.waffen: 4`): 22 Wurf- und Schusswaffen der Art
+ * `direct_hit` flogen in nur zwei Bahnen (10 Klingen: 40,8 / 1,15 / 1 Abpraller; 12 Schusswaffen:
+ * 70 / 1 / 0), fühlten sich also gleich an. Jetzt hat jede eine eigene Bahn (Tempo, Schwerkraft,
+ * Abpraller, Rückstoß); Schaden, Magazin und Stufe bleiben (`tests/waffen-fassung.test.js`).
+ * Muster: schwere Klingen kurz und hart, Degen und Messer flach und schnell, Handtuch lasch,
+ * Granate und Axt mit Abprallern.
+ */
+export const FLUGPROFILE_4 = Object.freeze({
+  pa_011: { projectileSpeed: 46, gravityScale: 1.1, knockback: 24 }, // Zwillingskatanas
+  pa_012: { projectileSpeed: 44, gravityScale: 1.05, bounces: 0, knockback: 20 }, // Katana
+  pa_014: { projectileSpeed: 45, gravityScale: 1.0, knockback: 30 }, // Taschenmesser
+  pa_015: { gravityScale: 1.0, knockback: 38 }, // Runenschwert
+  pa_016: { projectileSpeed: 45, gravityScale: 1.0, bounces: 0, knockback: 10 }, // Rapier
+  pa_019: { projectileSpeed: 34, gravityScale: 1.3, bounces: 2, knockback: 44 }, // Doppelaxt
+  pa_020: { projectileSpeed: 38, gravityScale: 1.2, bounces: 0, knockback: 40 }, // Kriegssense
+  pa_021: { projectileSpeed: 42, gravityScale: 0.9, bounces: 3, knockback: 22 }, // Gebogene Klinge
+  pa_024: { projectileSpeed: 78, gravityScale: 0.9, knockback: 10 }, // Mittelfinger
+  pa_025: { projectileSpeed: 58, gravityScale: 1.25, knockback: 20 }, // Handtuch
+  pa_027: { projectileSpeed: 64, gravityScale: 1.1, bounces: 1, knockback: 14 }, // Fackel
+  pa_033: { projectileSpeed: 66, gravityScale: 1.05, knockback: 40 }, // Magischer Kampfstock
+  pa_034: { projectileSpeed: 80, gravityScale: 0.9, knockback: 8 }, // Magischer Geschosszauber
+  pa_036: { projectileSpeed: 62, gravityScale: 0.9, knockback: 45 }, // Raketenhandschuh
+  pa_042: { projectileSpeed: 52, gravityScale: 0.9, knockback: 12 }, // Feuerwerks-Salve
+  pa_043: { projectileSpeed: 84, gravityScale: 0.95, knockback: 36 }, // Kampfgeschütz
+  pa_045: { projectileSpeed: 74, gravityScale: 0.9, knockback: 24 }, // Raketen-Salve
+  pa_047: { projectileSpeed: 56, gravityScale: 1.2, bounces: 2, knockback: 28 }, // Handgranate
+  pa_050: { projectileSpeed: 54, gravityScale: 1.25, bounces: 1, knockback: 40 }, // Doppelkopf-Axt
+  pa_051: { projectileSpeed: 90, gravityScale: 0.95, knockback: 6 }, // Wurfklingen
+});
+
+/**
  * Abgeleitete Felder, die trotz geändertem Schaden bleiben (Fassung 3): Die Ableitung
  * würde sonst die Abklingzeit der Flammenklinge streichen und die Abschwächung
  * teilweise aufheben. Die Reichweite folgt dagegen dem Schaden (Ableitungstest).
@@ -1077,6 +1130,9 @@ const weapons = raw.weapons.map(entry => {
   // Katalogfassung 3: weitere Korrekturen, ebenfalls VOR den Ableitungen.
   const korrektur3 = BALANCE_KORREKTUREN_3[entry.id];
   if (korrektur3) Object.assign(weapon, korrektur3);
+  // Katalogfassung 4: weitere Korrekturen, ebenfalls VOR den Ableitungen.
+  const korrektur4 = BALANCE_KORREKTUREN_4[entry.id];
+  if (korrektur4) Object.assign(weapon, korrektur4);
 
   // Anflugart aus dem Wirkungsnamen ableiten.
   if (STRIKE_FROM_SKY.has(weapon.special)) weapon.strikeStyle = 'sky';
@@ -1175,6 +1231,9 @@ const weapons = raw.weapons.map(entry => {
      */
     weapon.delivery = 'projectile';
   }
+
+  // Katalogfassung 4: eigene Flugbahn je Wurf-/Schusswaffe, NACH der Wurfableitung der Nahkämpfer.
+  if (FLUGPROFILE_4[entry.id]) Object.assign(weapon, FLUGPROFILE_4[entry.id]);
 
   /*
    * ZIELSUCHE BRAUCHT FLUG (`homing` ⇒ Projektil).
