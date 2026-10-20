@@ -582,6 +582,13 @@
       font-size: 13px;
     }
 
+    #hud-kamera {
+      font: inherit; color: inherit; cursor: pointer; pointer-events: auto;
+      border: 1px solid var(--panel-edge); background: transparent; border-radius: 6px; padding: 1px 8px; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center;
+    }
+    #hud-kamera[data-modus="frei"] { border-color: var(--accent); color: var(--accent); }
+    #hud-kamera:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #hud-kamera kbd { opacity: 0.6; font-size: 0.85em; }
     #hud-aim .value { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
 
     #hud-connection { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); }
@@ -936,6 +943,10 @@
           <span>Kraft <span class="value" id="hud-power">55</span></span>
           <span>Radius <span class="value" id="hud-blast">—</span></span>
           <span id="hud-active">—</span>
+          <!-- Kamera folgt/frei (Taste C); Mausrad zoomt, Ziehen mit mittlerer/rechter Taste verschiebt (src/client/kameraSteuerung.js). -->
+          <button type="button" id="hud-kamera" aria-pressed="true" title="Kamera folgt / frei (C)">
+            <span data-kamera-text>Kamera folgt</span> <kbd aria-hidden="true">C</kbd>
+          </button>
         </div>
 
         <div id="hud-log" class="panel">
@@ -1281,6 +1292,7 @@
             <span><b>Q</b> Waffe abwerfen</span>
             <span><b>E</b> Waffenmenü (Besitz als Auswahl)</span>
             <span><b>M</b> Musik stumm/laut</span>
+            <span><b>C</b> Kamera folgt/frei · <b>Mausrad</b> Zoom · <b>Mitteltaste/Rechtsziehen</b> verschieben</span>
             <span><b>R</b> Match verlassen</span>
           </div>
         </div>
