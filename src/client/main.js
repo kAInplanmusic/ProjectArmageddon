@@ -36,6 +36,7 @@ import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
+import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
 import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
@@ -117,10 +118,13 @@ const MAX_STEPS_PER_FRAME = 8;
  * Musikdateien: Vite vergibt im Build gehashte URLs; hier wird Dateiname → URL
  * daraus. Nur eine Zuordnung — geladen (gestreamt) wird erst beim Abspielen.
  */
-const MUSIK_URLEN = Object.fromEntries(
-  Object.entries(import.meta.glob('./assets/music/*.mp3', { query: '?url', import: 'default', eager: true }))
+const MUSIK_URLEN = Object.fromEntries([
+  ...Object.entries(import.meta.glob('./assets/music/*.mp3', { query: '?url', import: 'default', eager: true }))
     .map(([pfad, url]) => [pfad.split('/').pop(), url]),
-);
+  // Fraktionshymnen: Schlüssel `fraktionen/<datei>` (siehe musikListe.hymnenStueck).
+  ...Object.entries(import.meta.glob('./assets/music/fraktionen/*.mp3', { query: '?url', import: 'default', eager: true }))
+    .map(([pfad, url]) => [`fraktionen/${pfad.split('/').pop()}`, url]),
+]);
 
 class Game {
   constructor() {
@@ -191,6 +195,8 @@ class Game {
     this.musik = new Musik({
       manifest: MUSIK_MANIFEST,
       urls: MUSIK_URLEN,
+      hymnen: HYMNEN_MANIFEST,
+      hymnenNamen: Object.fromEntries(FACTIONS.map(f => [f.id, f.name])),
       mischer: this.sound,
       aktiv: wiedergabeErlaubt({
         suche: globalThis.location?.search ?? '',
@@ -346,6 +352,15 @@ class Game {
     for (const art of ['pointerup', 'touchend', 'click']) {
       window.addEventListener(art, () => { void this.musik.freigeben(); }, { passive: true });
     }
+    /*
+     * Fraktionshymne: Wählt der Spieler im Menü eine Fraktion an, spielt deren
+     * Hymne; „Automatisch/Klassisch" oder das Verlassen des Menüs beenden sie.
+     * Ein delegierter Hörer, weil `fillFraktionOptions` die Felder neu baut.
+     */
+    document.getElementById('fraktion-felder')?.addEventListener('change', event => {
+      const wert = event.target?.value ?? '';
+      this.musik.setzeHymne(FACTIONS.some(f => f.id === wert) ? wert : null);
+    });
     document.addEventListener('visibilitychange', () => this.musik.setzeVersteckt(document.hidden));
   }
 
