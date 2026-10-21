@@ -1,901 +1,901 @@
 {
- "version": 1,
- "size": 256,
- "groundY": 240,
- "facing": "right",
- "source": "together",
- "model": "black-forest-labs/FLUX.1.1-pro",
- "figures": {
-  "beasts/00_pikamon.png": {
-   "file": "beasts/00_pikamon.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 152,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/01_shrew-quakes.png": {
-   "file": "beasts/01_shrew-quakes.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 123,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/02_storm-talon.png": {
-   "file": "beasts/02_storm-talon.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 154,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/10_flame-jaws.png": {
-   "file": "beasts/10_flame-jaws.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 87,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/11_ember-tails.png": {
-   "file": "beasts/11_ember-tails.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 174,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/12_magma-plate.png": {
-   "file": "beasts/12_magma-plate.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 88,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/20_decay-spawn.png": {
-   "file": "beasts/20_decay-spawn.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 113,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "beasts/21_cosmic-meditate.png": {
-   "file": "beasts/21_cosmic-meditate.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 111,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "beasts/22_sonic-blossom.png": {
-   "file": "beasts/22_sonic-blossom.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 98,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/00_nullpointer-exception.png": {
-   "file": "datacult/00_nullpointer-exception.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 107,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/01_datapath-replicant.png": {
-   "file": "datacult/01_datapath-replicant.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 143,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/02_chrome-code-shifter.png": {
-   "file": "datacult/02_chrome-code-shifter.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 177,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/10_quantum-qubit-knight.png": {
-   "file": "datacult/10_quantum-qubit-knight.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 113,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/11_synapse-streamer.png": {
-   "file": "datacult/11_synapse-streamer.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 112,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/12_arcology-agent.png": {
-   "file": "datacult/12_arcology-agent.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 130,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/20_buffer-flow-swarm.png": {
-   "file": "datacult/20_buffer-flow-swarm.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 118,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/21_hyper-link-hound.png": {
-   "file": "datacult/21_hyper-link-hound.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 97,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "datacult/22_ethereo.png": {
-   "file": "datacult/22_ethereo.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 103,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/00_chassis-endo-t8.png": {
-   "file": "machina/00_chassis-endo-t8.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 90,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/01_slasher-cyber-jax.png": {
-   "file": "machina/01_slasher-cyber-jax.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 151,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/02_hydra-titan-mech.png": {
-   "file": "machina/02_hydra-titan-mech.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 99,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/10_recon-luchs-01.png": {
-   "file": "machina/10_recon-luchs-01.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 147,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/11_heavy-battery-moerser-bot.png": {
-   "file": "machina/11_heavy-battery-moerser-bot.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 114,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "porträt",
-   "model": null
-  },
-  "machina/12_ordnance-rail-viper.png": {
-   "file": "machina/12_ordnance-rail-viper.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 95,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/20_grid-drifter-datastream.png": {
-   "file": "machina/20_grid-drifter-datastream.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 107,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/21_proxy-glitch-hack.png": {
-   "file": "machina/21_proxy-glitch-hack.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 138,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "machina/22_overlord-kernel-panic.png": {
-   "file": "machina/22_overlord-kernel-panic.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 158,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/00_captain-sven.png": {
-   "file": "pirates/00_captain-sven.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 121,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/01_swashbuckler-piet.png": {
-   "file": "pirates/01_swashbuckler-piet.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 129,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/02_iron-hook-harry.png": {
-   "file": "pirates/02_iron-hook-harry.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 99,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/10_cannoneer-klaus.png": {
-   "file": "pirates/10_cannoneer-klaus.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 109,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/11_sniper-marie.png": {
-   "file": "pirates/11_sniper-marie.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 105,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/12_bombard-billy.png": {
-   "file": "pirates/12_bombard-billy.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 121,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/20_voodoo-witch-morgana.png": {
-   "file": "pirates/20_voodoo-witch-morgana.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 132,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "pirates/21_storm-schamane-hooky.png": {
-   "file": "pirates/21_storm-schamane-hooky.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 135,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pirates/22_chanteyman-drake.png": {
-   "file": "pirates/22_chanteyman-drake.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 104,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "pixel/00_nullpointer-exception.png": {
-   "file": "pixel/00_nullpointer-exception.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 155,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/01_pyrofox-a.png": {
-   "file": "pixel/01_pyrofox-a.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 160,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/02_pyrofox-b.png": {
-   "file": "pixel/02_pyrofox-b.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 121,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/10_arcershorn-a.png": {
-   "file": "pixel/10_arcershorn-a.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 112,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/11_pyrowand-a.png": {
-   "file": "pixel/11_pyrowand-a.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 156,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/12_shieldmon.png": {
-   "file": "pixel/12_shieldmon.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 128,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/20_phantomal-a.png": {
-   "file": "pixel/20_phantomal-a.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 141,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/21_arcanus-a.png": {
-   "file": "pixel/21_arcanus-a.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 114,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "pixel/22_arcanus-b.png": {
-   "file": "pixel/22_arcanus-b.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 112,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/00_commander-chewk.png": {
-   "file": "rodentia/00_commander-chewk.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 131,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/01_berzerker-fang.png": {
-   "file": "rodentia/01_berzerker-fang.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 129,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/02_vanguard-captain-rix.png": {
-   "file": "rodentia/02_vanguard-captain-rix.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 105,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/10_sharpshooter-quill.png": {
-   "file": "rodentia/10_sharpshooter-quill.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 107,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/11_grenadier-skitter.png": {
-   "file": "rodentia/11_grenadier-skitter.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 121,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/12_volley-captain-spark.png": {
-   "file": "rodentia/12_volley-captain-spark.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 105,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/20_alchemage-nibble.png": {
-   "file": "rodentia/20_alchemage-nibble.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 128,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/21_technomancer-squeak.png": {
-   "file": "rodentia/21_technomancer-squeak.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 121,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "rodentia/22_grand-conduit-vex.png": {
-   "file": "rodentia/22_grand-conduit-vex.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 82,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/00_shred-katana-hanzmon.png": {
-   "file": "shinobi/00_shred-katana-hanzmon.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 126,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/01_kunoichi-wind-flapper.png": {
-   "file": "shinobi/01_kunoichi-wind-flapper.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 117,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/02_tetsubo-oni-brute.png": {
-   "file": "shinobi/02_tetsubo-oni-brute.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 138,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/10_dazzler-werner.png": {
-   "file": "shinobi/10_dazzler-werner.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 89,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/11_rauch-meister-genzi.png": {
-   "file": "shinobi/11_rauch-meister-genzi.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 126,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/12_blowpipe-koga.png": {
-   "file": "shinobi/12_blowpipe-koga.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 83,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/20_ninjutsu-master-goemon.png": {
-   "file": "shinobi/20_ninjutsu-master-goemon.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 111,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/21_talisman-sorcerer-jun.png": {
-   "file": "shinobi/21_talisman-sorcerer-jun.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 116,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "shinobi/22_vixen-kitsune.png": {
-   "file": "shinobi/22_vixen-kitsune.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 161,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "undead/00_bone-racker-karl.png": {
-   "file": "undead/00_bone-racker-karl.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 162,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "undead/01_grave-zombie-kauer.png": {
-   "file": "undead/01_grave-zombie-kauer.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 115,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "undead/02_grim-reaper-silas.png": {
-   "file": "undead/02_grim-reaper-silas.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 113,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "undead/10_archer-mortis.png": {
-   "file": "undead/10_archer-mortis.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 124,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "undead/11_pitcher-igor.png": {
-   "file": "undead/11_pitcher-igor.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 103,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "undead/12_vessel-plague-skull.png": {
-   "file": "undead/12_vessel-plague-skull.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 102,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "undead/20_lich-king-alistair.png": {
-   "file": "undead/20_lich-king-alistair.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 136,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "undead/21_scribe-necro-silas.png": {
-   "file": "undead/21_scribe-necro-silas.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 119,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together",
-   "model": "black-forest-labs/FLUX.1.1-pro"
-  },
-  "undead/22_banshee-beatrice.png": {
-   "file": "undead/22_banshee-beatrice.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 132,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/00_sgt-acid-xeno.png": {
-   "file": "xeno/00_sgt-acid-xeno.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 85,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/01_stalker-predax.png": {
-   "file": "xeno/01_stalker-predax.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 85,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/02_vortex-grabber.png": {
-   "file": "xeno/02_vortex-grabber.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 102,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/10_drone-theta.png": {
-   "file": "xeno/10_drone-theta.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 75,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "porträt",
-   "model": null
-  },
-  "xeno/11_desintegrator-kael.png": {
-   "file": "xeno/11_desintegrator-kael.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 109,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/12_plasma-maw-zorg.png": {
-   "file": "xeno/12_plasma-maw-zorg.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 173,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/20_harbinger-zeta.png": {
-   "file": "xeno/20_harbinger-zeta.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 139,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/21_dark-matter-witch.png": {
-   "file": "xeno/21_dark-matter-witch.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 136,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
-  },
-  "xeno/22_null-entity-quark.png": {
-   "file": "xeno/22_null-entity-quark.png",
-   "hasSide": true,
-   "anchor": {
-    "x": 109,
-    "y": 240
-   },
-   "facing": "right",
-   "source": "together-kontext",
-   "model": "black-forest-labs/FLUX.1-kontext-pro"
+  "version": 1,
+  "size": 256,
+  "groundY": 240,
+  "facing": "right",
+  "source": "together",
+  "model": "black-forest-labs/FLUX.1.1-pro",
+  "figures": {
+    "beasts/00_pikamon.png": {
+      "file": "beasts/00_pikamon.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 152,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/01_shrew-quakes.png": {
+      "file": "beasts/01_shrew-quakes.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 123,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/02_storm-talon.png": {
+      "file": "beasts/02_storm-talon.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 154,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/10_flame-jaws.png": {
+      "file": "beasts/10_flame-jaws.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 87,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/11_ember-tails.png": {
+      "file": "beasts/11_ember-tails.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 174,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/12_magma-plate.png": {
+      "file": "beasts/12_magma-plate.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 88,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/20_decay-spawn.png": {
+      "file": "beasts/20_decay-spawn.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 113,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "beasts/21_cosmic-meditate.png": {
+      "file": "beasts/21_cosmic-meditate.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 111,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "beasts/22_sonic-blossom.png": {
+      "file": "beasts/22_sonic-blossom.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 98,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/00_nullpointer-exception.png": {
+      "file": "datacult/00_nullpointer-exception.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 107,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/01_datapath-replicant.png": {
+      "file": "datacult/01_datapath-replicant.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 143,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/02_chrome-code-shifter.png": {
+      "file": "datacult/02_chrome-code-shifter.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 177,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/10_quantum-qubit-knight.png": {
+      "file": "datacult/10_quantum-qubit-knight.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 113,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/11_synapse-streamer.png": {
+      "file": "datacult/11_synapse-streamer.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 112,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/12_arcology-agent.png": {
+      "file": "datacult/12_arcology-agent.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 130,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/20_buffer-flow-swarm.png": {
+      "file": "datacult/20_buffer-flow-swarm.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 118,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/21_hyper-link-hound.png": {
+      "file": "datacult/21_hyper-link-hound.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 97,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "datacult/22_ethereo.png": {
+      "file": "datacult/22_ethereo.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 127,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/flux-kontext-pro (Replicate), Neuentwurf 2026-10-22"
+    },
+    "machina/00_chassis-endo-t8.png": {
+      "file": "machina/00_chassis-endo-t8.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 90,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/01_slasher-cyber-jax.png": {
+      "file": "machina/01_slasher-cyber-jax.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 151,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/02_hydra-titan-mech.png": {
+      "file": "machina/02_hydra-titan-mech.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 99,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/10_recon-luchs-01.png": {
+      "file": "machina/10_recon-luchs-01.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 147,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/11_heavy-battery-moerser-bot.png": {
+      "file": "machina/11_heavy-battery-moerser-bot.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 114,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "porträt",
+      "model": null
+    },
+    "machina/12_ordnance-rail-viper.png": {
+      "file": "machina/12_ordnance-rail-viper.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 95,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/20_grid-drifter-datastream.png": {
+      "file": "machina/20_grid-drifter-datastream.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 107,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/21_proxy-glitch-hack.png": {
+      "file": "machina/21_proxy-glitch-hack.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 138,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "machina/22_overlord-kernel-panic.png": {
+      "file": "machina/22_overlord-kernel-panic.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 158,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/00_captain-sven.png": {
+      "file": "pirates/00_captain-sven.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 121,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/01_swashbuckler-piet.png": {
+      "file": "pirates/01_swashbuckler-piet.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 129,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/02_iron-hook-harry.png": {
+      "file": "pirates/02_iron-hook-harry.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 99,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/10_cannoneer-klaus.png": {
+      "file": "pirates/10_cannoneer-klaus.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 109,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/11_sniper-marie.png": {
+      "file": "pirates/11_sniper-marie.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 105,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/12_bombard-billy.png": {
+      "file": "pirates/12_bombard-billy.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 121,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/20_voodoo-witch-morgana.png": {
+      "file": "pirates/20_voodoo-witch-morgana.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 132,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "pirates/21_storm-schamane-hooky.png": {
+      "file": "pirates/21_storm-schamane-hooky.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 135,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pirates/22_chanteyman-drake.png": {
+      "file": "pirates/22_chanteyman-drake.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 104,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "pixel/00_nullpointer-exception.png": {
+      "file": "pixel/00_nullpointer-exception.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 155,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/01_pyrofox-a.png": {
+      "file": "pixel/01_pyrofox-a.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 160,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/02_pyrofox-b.png": {
+      "file": "pixel/02_pyrofox-b.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 121,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/10_arcershorn-a.png": {
+      "file": "pixel/10_arcershorn-a.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 112,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/11_pyrowand-a.png": {
+      "file": "pixel/11_pyrowand-a.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 156,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/12_shieldmon.png": {
+      "file": "pixel/12_shieldmon.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 128,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/20_phantomal-a.png": {
+      "file": "pixel/20_phantomal-a.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 141,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/21_arcanus-a.png": {
+      "file": "pixel/21_arcanus-a.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 114,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "pixel/22_arcanus-b.png": {
+      "file": "pixel/22_arcanus-b.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 112,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/00_commander-chewk.png": {
+      "file": "rodentia/00_commander-chewk.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 131,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/01_berzerker-fang.png": {
+      "file": "rodentia/01_berzerker-fang.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 129,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/02_vanguard-captain-rix.png": {
+      "file": "rodentia/02_vanguard-captain-rix.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 105,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/10_sharpshooter-quill.png": {
+      "file": "rodentia/10_sharpshooter-quill.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 107,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/11_grenadier-skitter.png": {
+      "file": "rodentia/11_grenadier-skitter.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 121,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/12_volley-captain-spark.png": {
+      "file": "rodentia/12_volley-captain-spark.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 105,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/20_alchemage-nibble.png": {
+      "file": "rodentia/20_alchemage-nibble.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 128,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/21_technomancer-squeak.png": {
+      "file": "rodentia/21_technomancer-squeak.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 121,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "rodentia/22_grand-conduit-vex.png": {
+      "file": "rodentia/22_grand-conduit-vex.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 82,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/00_shred-katana-hanzmon.png": {
+      "file": "shinobi/00_shred-katana-hanzmon.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 126,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/01_kunoichi-wind-flapper.png": {
+      "file": "shinobi/01_kunoichi-wind-flapper.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 117,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/02_tetsubo-oni-brute.png": {
+      "file": "shinobi/02_tetsubo-oni-brute.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 138,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/10_dazzler-werner.png": {
+      "file": "shinobi/10_dazzler-werner.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 89,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/11_rauch-meister-genzi.png": {
+      "file": "shinobi/11_rauch-meister-genzi.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 126,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/12_blowpipe-koga.png": {
+      "file": "shinobi/12_blowpipe-koga.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 83,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/20_ninjutsu-master-goemon.png": {
+      "file": "shinobi/20_ninjutsu-master-goemon.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 111,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/21_talisman-sorcerer-jun.png": {
+      "file": "shinobi/21_talisman-sorcerer-jun.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 116,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "shinobi/22_vixen-kitsune.png": {
+      "file": "shinobi/22_vixen-kitsune.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 161,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "undead/00_bone-racker-karl.png": {
+      "file": "undead/00_bone-racker-karl.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 162,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "undead/01_grave-zombie-kauer.png": {
+      "file": "undead/01_grave-zombie-kauer.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 115,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "undead/02_grim-reaper-silas.png": {
+      "file": "undead/02_grim-reaper-silas.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 113,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "undead/10_archer-mortis.png": {
+      "file": "undead/10_archer-mortis.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 124,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "undead/11_pitcher-igor.png": {
+      "file": "undead/11_pitcher-igor.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 103,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "undead/12_vessel-plague-skull.png": {
+      "file": "undead/12_vessel-plague-skull.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 102,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "undead/20_lich-king-alistair.png": {
+      "file": "undead/20_lich-king-alistair.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 136,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "undead/21_scribe-necro-silas.png": {
+      "file": "undead/21_scribe-necro-silas.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 119,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together",
+      "model": "black-forest-labs/FLUX.1.1-pro"
+    },
+    "undead/22_banshee-beatrice.png": {
+      "file": "undead/22_banshee-beatrice.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 132,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/00_sgt-acid-xeno.png": {
+      "file": "xeno/00_sgt-acid-xeno.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 85,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/01_stalker-predax.png": {
+      "file": "xeno/01_stalker-predax.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 85,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/02_vortex-grabber.png": {
+      "file": "xeno/02_vortex-grabber.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 102,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/10_drone-theta.png": {
+      "file": "xeno/10_drone-theta.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 75,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "porträt",
+      "model": null
+    },
+    "xeno/11_desintegrator-kael.png": {
+      "file": "xeno/11_desintegrator-kael.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 109,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/12_plasma-maw-zorg.png": {
+      "file": "xeno/12_plasma-maw-zorg.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 173,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/20_harbinger-zeta.png": {
+      "file": "xeno/20_harbinger-zeta.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 139,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/21_dark-matter-witch.png": {
+      "file": "xeno/21_dark-matter-witch.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 136,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    },
+    "xeno/22_null-entity-quark.png": {
+      "file": "xeno/22_null-entity-quark.png",
+      "hasSide": true,
+      "anchor": {
+        "x": 109,
+        "y": 240
+      },
+      "facing": "right",
+      "source": "together-kontext",
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
+    }
   }
- }
 }
