@@ -6691,3 +6691,19 @@ Schlüssel liegen als Umgebungsvariablen der Sitzung (nie in Dateien oder Commit
 ### 7. Bekannte offene Punkte (kurz)
 
 Magische Peitsche und Tesla-Turm messen 0 Schaden (Messgrenze?); Rolling-Waffen ohne eigene Flugmarke; kein Hymnen-Einsatz bei Zugbeginn; Seen im Planeten-Biom fehlen; Kills fehlen in den Statistiken; Laufknöpfe im Hochformat überlappen die Kraftanzeige leicht; Feuer-/Lava-Zellen liegen nicht im Snapshot (Spätbeitritt sieht bestehende Flammen verzögert).
+
+### Waffen mit eigener Bewegung: Animations-Sprites (Auftraggeber-Frage, Stand 2026-10-22)
+
+**Ist-Stand (geprüft).** Alle 150 Waffen haben im Atlas drei Zellen (`held` in der Hand, `silhouette`, `icon`) und eine kleine `projectile`-Zelle (32 px) als Flugbild, dazu die prozedurale Animation je Kategorie (`waffenAnimation.js`). Es gibt keine mehrbildigen Animationen für Waffen, die selbst laufen, fliegen oder als Wesen auftreten; sie fliegen als ruhiges Geschossbild oder erscheinen über Effekt-Sheets/Optik.
+
+**Betroffene Waffen** (Feld `special` im Katalog; 96 Projektil-, 54 Sofortwaffen): 
+- *Laufende Wesen/Bots:* `guided_sheep` (Lenk-Schaf), `delayed_bot` (Roboterbombe), `fire_minion`, `summon_warrior`, `void_knight`, `summon_mount`, `guardian`, `guardian_ultimate`, `fire_entity`, `tentacle_zone`.
+- *Fliegende/rotierende Geschosse mit Körper:* `flight`, `banana_split` und `cosmic_banana` (Bananen), `returning_projectile` (Bumerang), `phoenix_strike`, `dragon_ultimate`, `rocket`/`drill_rocket`/`rocket_punch` (Raketenflamme), `old_lady_strike`, `loop`.
+- *Luftangriffe:* `air_strike`, `meteor_rain`, `meteor_impact` (Flugzeug/Meteor von oben).
+Das sind etwa 25 Waffen; sie sind der Ort, an dem Animations-Sheets sichtbar etwas bringen. Die übrigen etwa 125 bleiben mit Atlas-Zelle plus prozeduraler Bewegung (Rotation, Flammenspur, Rauch) gut abgedeckt.
+
+**Plan.** 
+1. Je Wesen und Geschoss ein Sheet mit 8 Frames (4×2, grüner Hintergrund, wie bei den Figuren): *Lauf-/Flugzyklus* bei Wesen (Schaf, Roboter, Krieger, Reittier, Wächter), *Flügelschlag/Rotation* bei Phönix, Drache, Bumerang, Banane; Raketenflamme als 4-Frame-Schleife. Rezept: `scripts/sprites-erzeugen/` (Replicate, flux-kontext-pro, Eingabe die Atlas-Zelle `held`), Kosten etwa 25 Bilder × 0,04 USD = 1 USD.
+2. Manifest `weapon-sprites/manifest.json` um `anim: {frames, fps, ankerAnimation}` ergänzen; `waffenAnimation.js` spielt die Frames über der prozeduralen Bewegung, mit Rückfall auf die Atlas-Zelle.
+3. Reine Darstellung, keine Versionsmarke.
+**Aufwand** M; **Risiko** KI-Sheets brauchen Sichtprüfung wie bei den Figuren.
