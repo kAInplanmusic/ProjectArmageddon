@@ -18,8 +18,6 @@ import { STOFF } from '../shared/config/stoffe.js';
 export const MAX_TEILCHEN = 280;
 export const BUDGET_JE_BILD = 14;
 const ZELLE = 8;
-/** Mehr Glühstempel je Bild als dieser Wert lässt den Canvas einbrechen (gemessen: 6 ms bei 4000, 400 ms bei 7000); darüber wird ausgedünnt. */
-const GLUEH_MAX = 3500;
 
 const FLAMME = 0;
 const FUNKE = 1;
@@ -254,8 +252,8 @@ export class FeuerOptik {
       if (this.lavaGluehen) {
         ctx.globalCompositeOperation = 'lighter';
         ctx.globalAlpha = 0.5;
-        const schritt = Math.ceil(this.lava.size / GLUEH_MAX);
-        const gr = 40 * Math.min(2, Math.sqrt(schritt));
+        const schritt = 1;
+        const gr = 40;
         let n = 0;
         for (const idx of this.lava) {
           if (n++ % schritt) continue;
@@ -269,8 +267,8 @@ export class FeuerOptik {
     ctx.globalCompositeOperation = 'lighter';
     if (this.gluehen) {
       ctx.globalAlpha = 0.6 * puls;
-      const schritt = Math.ceil(this.flammen.size / GLUEH_MAX);
-      const gr = 28 * Math.min(2, Math.sqrt(schritt));
+      const schritt = 1;
+      const gr = 28;
       let n = 0;
       for (const idx of this.flammen.keys()) {
         if (n++ % schritt) continue;
