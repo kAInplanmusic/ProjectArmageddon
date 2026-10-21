@@ -6704,7 +6704,7 @@ Das sind etwa 25 Waffen; sie sind der Ort, an dem Animations-Sheets sichtbar etw
 
 **Plan.** 
 1. Je Wesen und Geschoss ein Sheet mit 8 Frames (4×2, grüner Hintergrund, wie bei den Figuren): *Lauf-/Flugzyklus* bei Wesen (Schaf, Roboter, Krieger, Reittier, Wächter), *Flügelschlag/Rotation* bei Phönix, Drache, Bumerang, Banane; Raketenflamme als 4-Frame-Schleife. Rezept: `scripts/sprites-erzeugen/` (Replicate, flux-kontext-pro, Eingabe die Atlas-Zelle `held`), Kosten etwa 25 Bilder × 0,04 USD = 1 USD.
-2. Manifest `weapon-sprites/manifest.json` um `anim: {frames, fps, ankerAnimation}` ergänzen; `waffenAnimation.js` spielt die Frames über der prozeduralen Bewegung, mit Rückfall auf die Atlas-Zelle.
+2. **Stand: 26 Sheets erzeugt und im Repo** (`weapon-sprites/anim/<id>.webp` mit `manifest.json`, 8 Frames 4×2, Zelle 256; Rückfall prüfen, einige Sheets sind unsauber). Einbau: Manifest `weapon-sprites/manifest.json` um `anim: {frames, fps, ankerAnimation}` ergänzen; `waffenAnimation.js` spielt die Frames über der prozeduralen Bewegung, mit Rückfall auf die Atlas-Zelle.
 3. Reine Darstellung, keine Versionsmarke.
 **Aufwand** M; **Risiko** KI-Sheets brauchen Sichtprüfung wie bei den Figuren.
 
@@ -6745,3 +6745,7 @@ Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, St
 2. **Projektil-Reflexion:** nur Energiewaffen (`damageType` energetisch/Laser/Plasma laut Katalog). Marke `config.reflexion`; reflektierend sind nur markierte Flächen (Kristall, Spiegelwand), nicht jeder Kristall.
 3. **Wasser als Medium:** ja. Wasserflächen ändern `drag` und setzen den Windfaktor auf 0 (abgestimmt mit dem Aerodynamik-Block, Marke `config.waffen` 6 bzw. `config.wind` 2); Schussbahn und Explosion unter Wasser eigene Regeln; kein Flächenbrand unter Wasser.
 4. **Reihenfolge:** wie empfohlen: BS-1 → BS-2 → BS-4 (Daten und Pipeline), dann einfache Biome (4 Eiswüste, 5 Dünen, 13 Burg, 14 Planeten), dann Objekte (BS-6) und Medien (BS-7) mit den Biomen, die sie brauchen.
+
+### Biom-Beispielbilder (realistisch)
+
+`docs/bilder/biome-realistisch/`: je Sonderbiom (20 Stück inkl. Planetenarten) `<id>_spiel.jpg` (Spielkarte ohne HUD, Querformat) und `<id>.jpg` (Replicate flux-kontext-pro: fotorealistische Fassung derselben Landschaft). Dienen als Referenz für Kulissen, Stoff-Texturen und die SSOT-Umsetzung (BS-11); die Fotoversion ist KI-Interpretation, kein Spielbild.

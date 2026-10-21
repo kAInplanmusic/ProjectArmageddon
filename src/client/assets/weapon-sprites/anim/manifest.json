@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "hinweis": "8 Frames (4x2, Zelle 256), Blick rechts, Schleife; erzeugt mit Replicate flux-kontext-pro aus dem Icon der Waffe. Noch nicht in waffenAnimation.js eingebunden.",
+ "waffen": {
+  "pa_032": {
+   "datei": "pa_032.webp",
+   "special": "flight",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_038": {
+   "datei": "pa_038.webp",
+   "special": "rocket",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_044": {
+   "datei": "pa_044.webp",
+   "special": "phoenix_strike",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_048": {
+   "datei": "pa_048.webp",
+   "special": "banana_split",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_049": {
+   "datei": "pa_049.webp",
+   "special": "returning_projectile",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_053": {
+   "datei": "pa_053.webp",
+   "special": "delayed_bot",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_061": {
+   "datei": "pa_061.webp",
+   "special": "fire_entity",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_065": {
+   "datei": "pa_065.webp",
+   "special": "meteor_impact",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_073": {
+   "datei": "pa_073.webp",
+   "special": "tentacle_zone",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_112": {
+   "datei": "pa_112.webp",
+   "special": "flight",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_114": {
+   "datei": "pa_114.webp",
+   "special": "flight",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_115": {
+   "datei": "pa_115.webp",
+   "special": "guardian",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_118": {
+   "datei": "pa_118.webp",
+   "special": "fire_minion",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_121": {
+   "datei": "pa_121.webp",
+   "special": "rocket_punch",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_122": {
+   "datei": "pa_122.webp",
+   "special": "loop",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_132": {
+   "datei": "pa_132.webp",
+   "special": "old_lady_strike",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_133": {
+   "datei": "pa_133.webp",
+   "special": "guided_sheep",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_134": {
+   "datei": "pa_134.webp",
+   "special": "air_strike",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_135": {
+   "datei": "pa_135.webp",
+   "special": "meteor_rain",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_136": {
+   "datei": "pa_136.webp",
+   "special": "drill_rocket",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_141": {
+   "datei": "pa_141.webp",
+   "special": "summon_warrior",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_142": {
+   "datei": "pa_142.webp",
+   "special": "void_knight",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_143": {
+   "datei": "pa_143.webp",
+   "special": "summon_mount",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_144": {
+   "datei": "pa_144.webp",
+   "special": "cosmic_banana",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_147": {
+   "datei": "pa_147.webp",
+   "special": "dragon_ultimate",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  },
+  "pa_148": {
+   "datei": "pa_148.webp",
+   "special": "guardian_ultimate",
+   "frames": 8,
+   "spalten": 4,
+   "zelle": 256
+  }
+ }
+}
