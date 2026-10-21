@@ -11,2017 +11,1092 @@
   "beasts/00_pikamon": {
    "aktion": "beasts/00_pikamon__aktion.webp",
    "walk": "beasts/00_pikamon__walk.webp",
+   "zustand": "beasts/00_pikamon__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/00_pikamon__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/01_shrew-quakes": {
    "aktion": "beasts/01_shrew-quakes__aktion.webp",
    "walk": "beasts/01_shrew-quakes__walk.webp",
+   "zustand": "beasts/01_shrew-quakes__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/01_shrew-quakes__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/02_storm-talon": {
    "aktion": "beasts/02_storm-talon__aktion.webp",
    "walk": "beasts/02_storm-talon__walk.webp",
+   "zustand": "beasts/02_storm-talon__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/02_storm-talon__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/10_flame-jaws": {
    "aktion": "beasts/10_flame-jaws__aktion.webp",
    "walk": "beasts/10_flame-jaws__walk.webp",
+   "zustand": "beasts/10_flame-jaws__zustand.webp",
    "rollen": {
-    "idle": [
-     4,
-     5
-    ],
+    "idle": [4, 5],
     "luft": 2,
     "tod": 7,
     "treffer": 6
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/10_flame-jaws__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/11_ember-tails": {
    "aktion": "beasts/11_ember-tails__aktion.webp",
    "walk": "beasts/11_ember-tails__walk.webp",
+   "zustand": "beasts/11_ember-tails__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     4
-    ],
+    "idle": [0, 4],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/11_ember-tails__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/12_magma-plate": {
    "aktion": "beasts/12_magma-plate__aktion.webp",
    "walk": "beasts/12_magma-plate__walk.webp",
+   "zustand": "beasts/12_magma-plate__zustand.webp",
    "rollen": {
     "hocke": 1,
-    "idle": [
-     0,
-     4
-    ],
+    "idle": [0, 4],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/12_magma-plate__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/20_decay-spawn": {
    "aktion": "beasts/20_decay-spawn__aktion.webp",
    "walk": "beasts/20_decay-spawn__walk.webp",
+   "zustand": "beasts/20_decay-spawn__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/20_decay-spawn__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/21_cosmic-meditate": {
    "aktion": "beasts/21_cosmic-meditate__aktion.webp",
    "walk": "beasts/21_cosmic-meditate__walk.webp",
+   "zustand": "beasts/21_cosmic-meditate__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/21_cosmic-meditate__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "beasts/22_sonic-blossom": {
    "aktion": "beasts/22_sonic-blossom__aktion.webp",
    "walk": "beasts/22_sonic-blossom__walk.webp",
+   "zustand": "beasts/22_sonic-blossom__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "beasts/22_sonic-blossom__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/00_nullpointer-exception": {
    "aktion": "datacult/00_nullpointer-exception__aktion.webp",
    "walk": "datacult/00_nullpointer-exception__walk.webp",
+   "zustand": "datacult/00_nullpointer-exception__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "datacult/00_nullpointer-exception__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/01_datapath-replicant": {
    "aktion": "datacult/01_datapath-replicant__aktion.webp",
    "walk": "datacult/01_datapath-replicant__walk.webp",
+   "zustand": "datacult/01_datapath-replicant__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "datacult/01_datapath-replicant__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/02_chrome-code-shifter": {
    "aktion": "datacult/02_chrome-code-shifter__aktion.webp",
    "walk": "datacult/02_chrome-code-shifter__walk.webp",
+   "zustand": "datacult/02_chrome-code-shifter__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
-   },
-   "zustand": "datacult/02_chrome-code-shifter__zustand.webp"
+   }
   },
   "datacult/10_quantum-qubit-knight": {
    "aktion": "datacult/10_quantum-qubit-knight__aktion.webp",
    "walk": "datacult/10_quantum-qubit-knight__walk.webp",
+   "zustand": "datacult/10_quantum-qubit-knight__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "datacult/10_quantum-qubit-knight__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/11_synapse-streamer": {
    "aktion": "datacult/11_synapse-streamer__aktion.webp",
    "walk": "datacult/11_synapse-streamer__walk.webp",
+   "zustand": "datacult/11_synapse-streamer__zustand.webp",
    "rollen": {
     "tod": 7
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    3,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 7,
-   "zustand": "datacult/11_synapse-streamer__zustand.webp"
+   "gehen": [0, 1, 2, 3, 3, 5, 6, 7],
+   "gehenOk": 7
   },
   "datacult/12_arcology-agent": {
    "aktion": "datacult/12_arcology-agent__aktion.webp",
    "walk": "datacult/12_arcology-agent__walk.webp",
+   "zustand": "datacult/12_arcology-agent__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "datacult/12_arcology-agent__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/20_buffer-flow-swarm": {
    "aktion": "datacult/20_buffer-flow-swarm__aktion.webp",
    "walk": "datacult/20_buffer-flow-swarm__walk.webp",
+   "zustand": "datacult/20_buffer-flow-swarm__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     4
-    ],
+    "idle": [0, 4],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "datacult/20_buffer-flow-swarm__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/21_hyper-link-hound": {
    "aktion": "datacult/21_hyper-link-hound__aktion.webp",
    "walk": "datacult/21_hyper-link-hound__walk.webp",
+   "zustand": "datacult/21_hyper-link-hound__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
-   },
-   "zustand": "datacult/21_hyper-link-hound__zustand.webp"
+   }
   },
   "datacult/22_ethereo": {
    "aktion": "datacult/22_ethereo__aktion.webp",
    "walk": "datacult/22_ethereo__walk.webp",
-   "rollen": {},
-   "zustand": "datacult/22_ethereo__zustand.webp"
+   "zustand": "datacult/22_ethereo__zustand.webp",
+   "rollen": {
+    "hocke": 6,
+    "idle": [0, 1],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/00_chassis-endo-t8": {
    "aktion": "machina/00_chassis-endo-t8__aktion.webp",
    "walk": "machina/00_chassis-endo-t8__walk.webp",
+   "zustand": "machina/00_chassis-endo-t8__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/00_chassis-endo-t8__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/01_slasher-cyber-jax": {
    "aktion": "machina/01_slasher-cyber-jax__aktion.webp",
    "walk": "machina/01_slasher-cyber-jax__walk.webp",
+   "zustand": "machina/01_slasher-cyber-jax__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/01_slasher-cyber-jax__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/02_hydra-titan-mech": {
    "aktion": "machina/02_hydra-titan-mech__aktion.webp",
    "walk": "machina/02_hydra-titan-mech__walk.webp",
+   "zustand": "machina/02_hydra-titan-mech__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/02_hydra-titan-mech__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/10_recon-luchs-01": {
    "aktion": "machina/10_recon-luchs-01__aktion.webp",
    "walk": "machina/10_recon-luchs-01__walk.webp",
+   "zustand": "machina/10_recon-luchs-01__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/10_recon-luchs-01__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/11_heavy-battery-moerser-bot": {
    "aktion": "machina/11_heavy-battery-moerser-bot__aktion.webp",
    "walk": "machina/11_heavy-battery-moerser-bot__walk.webp",
+   "zustand": "machina/11_heavy-battery-moerser-bot__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 6
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/11_heavy-battery-moerser-bot__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/12_ordnance-rail-viper": {
    "aktion": "machina/12_ordnance-rail-viper__aktion.webp",
    "walk": "machina/12_ordnance-rail-viper__walk.webp",
+   "zustand": "machina/12_ordnance-rail-viper__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/12_ordnance-rail-viper__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/20_grid-drifter-datastream": {
    "aktion": "machina/20_grid-drifter-datastream__aktion.webp",
    "walk": "machina/20_grid-drifter-datastream__walk.webp",
+   "zustand": "machina/20_grid-drifter-datastream__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/20_grid-drifter-datastream__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/21_proxy-glitch-hack": {
    "aktion": "machina/21_proxy-glitch-hack__aktion.webp",
    "walk": "machina/21_proxy-glitch-hack__walk.webp",
+   "zustand": "machina/21_proxy-glitch-hack__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/21_proxy-glitch-hack__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "machina/22_overlord-kernel-panic": {
    "aktion": "machina/22_overlord-kernel-panic__aktion.webp",
    "walk": "machina/22_overlord-kernel-panic__walk.webp",
+   "zustand": "machina/22_overlord-kernel-panic__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "machina/22_overlord-kernel-panic__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/00_captain-sven": {
    "aktion": "pirates/00_captain-sven__aktion.webp",
    "walk": "pirates/00_captain-sven__walk.webp",
+   "zustand": "pirates/00_captain-sven__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/00_captain-sven__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/01_swashbuckler-piet": {
    "aktion": "pirates/01_swashbuckler-piet__aktion.webp",
    "walk": "pirates/01_swashbuckler-piet__walk.webp",
+   "zustand": "pirates/01_swashbuckler-piet__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/01_swashbuckler-piet__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/02_iron-hook-harry": {
    "aktion": "pirates/02_iron-hook-harry__aktion.webp",
    "walk": "pirates/02_iron-hook-harry__walk.webp",
+   "zustand": "pirates/02_iron-hook-harry__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/02_iron-hook-harry__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/10_cannoneer-klaus": {
    "aktion": "pirates/10_cannoneer-klaus__aktion.webp",
    "walk": "pirates/10_cannoneer-klaus__walk.webp",
+   "zustand": "pirates/10_cannoneer-klaus__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/10_cannoneer-klaus__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/11_sniper-marie": {
    "aktion": "pirates/11_sniper-marie__aktion.webp",
    "walk": "pirates/11_sniper-marie__walk.webp",
+   "zustand": "pirates/11_sniper-marie__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/11_sniper-marie__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/12_bombard-billy": {
    "aktion": "pirates/12_bombard-billy__aktion.webp",
    "walk": "pirates/12_bombard-billy__walk.webp",
+   "zustand": "pirates/12_bombard-billy__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/12_bombard-billy__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/20_voodoo-witch-morgana": {
    "aktion": "pirates/20_voodoo-witch-morgana__aktion.webp",
    "walk": "pirates/20_voodoo-witch-morgana__walk.webp",
+   "zustand": "pirates/20_voodoo-witch-morgana__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/20_voodoo-witch-morgana__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/21_storm-schamane-hooky": {
    "aktion": "pirates/21_storm-schamane-hooky__aktion.webp",
    "walk": "pirates/21_storm-schamane-hooky__walk.webp",
+   "zustand": "pirates/21_storm-schamane-hooky__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    5,
-    7
-   ],
-   "gehenOk": 7,
-   "zustand": "pirates/21_storm-schamane-hooky__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 5, 7],
+   "gehenOk": 7
   },
   "pirates/22_chanteyman-drake": {
    "aktion": "pirates/22_chanteyman-drake__aktion.webp",
    "walk": "pirates/22_chanteyman-drake__walk.webp",
+   "zustand": "pirates/22_chanteyman-drake__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pirates/22_chanteyman-drake__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/00_nullpointer-exception": {
    "aktion": "pixel/00_nullpointer-exception__aktion.webp",
    "walk": "pixel/00_nullpointer-exception__walk.webp",
+   "zustand": "pixel/00_nullpointer-exception__zustand.webp",
    "rollen": {
     "tod": 7
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/00_nullpointer-exception__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/01_pyrofox-a": {
    "aktion": "pixel/01_pyrofox-a__aktion.webp",
    "walk": "pixel/01_pyrofox-a__walk.webp",
+   "zustand": "pixel/01_pyrofox-a__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/01_pyrofox-a__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/02_pyrofox-b": {
    "aktion": "pixel/02_pyrofox-b__aktion.webp",
    "walk": "pixel/02_pyrofox-b__walk.webp",
+   "zustand": "pixel/02_pyrofox-b__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/02_pyrofox-b__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/10_arcershorn-a": {
    "aktion": "pixel/10_arcershorn-a__aktion.webp",
    "walk": "pixel/10_arcershorn-a__walk.webp",
+   "zustand": "pixel/10_arcershorn-a__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     4
-    ],
+    "idle": [0, 4],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/10_arcershorn-a__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/11_pyrowand-a": {
    "aktion": "pixel/11_pyrowand-a__aktion.webp",
    "walk": "pixel/11_pyrowand-a__walk.webp",
+   "zustand": "pixel/11_pyrowand-a__zustand.webp",
    "rollen": {},
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    5,
-    7
-   ],
-   "gehenOk": 7,
-   "zustand": "pixel/11_pyrowand-a__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 5, 7],
+   "gehenOk": 7
   },
   "pixel/12_shieldmon": {
    "aktion": "pixel/12_shieldmon__aktion.webp",
    "walk": "pixel/12_shieldmon__walk.webp",
+   "zustand": "pixel/12_shieldmon__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/12_shieldmon__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/20_phantomal-a": {
    "aktion": "pixel/20_phantomal-a__aktion.webp",
    "walk": "pixel/20_phantomal-a__walk.webp",
+   "zustand": "pixel/20_phantomal-a__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/20_phantomal-a__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/21_arcanus-a": {
    "aktion": "pixel/21_arcanus-a__aktion.webp",
    "walk": "pixel/21_arcanus-a__walk.webp",
+   "zustand": "pixel/21_arcanus-a__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/21_arcanus-a__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/22_arcanus-b": {
    "aktion": "pixel/22_arcanus-b__aktion.webp",
    "walk": "pixel/22_arcanus-b__walk.webp",
+   "zustand": "pixel/22_arcanus-b__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "pixel/22_arcanus-b__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/00_commander-chewk": {
    "aktion": "rodentia/00_commander-chewk__aktion.webp",
    "walk": "rodentia/00_commander-chewk__walk.webp",
+   "zustand": "rodentia/00_commander-chewk__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/00_commander-chewk__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/01_berzerker-fang": {
    "aktion": "rodentia/01_berzerker-fang__aktion.webp",
    "walk": "rodentia/01_berzerker-fang__walk.webp",
+   "zustand": "rodentia/01_berzerker-fang__zustand.webp",
    "rollen": {
     "hocke": 6,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/01_berzerker-fang__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/02_vanguard-captain-rix": {
    "aktion": "rodentia/02_vanguard-captain-rix__aktion.webp",
    "walk": "rodentia/02_vanguard-captain-rix__walk.webp",
+   "zustand": "rodentia/02_vanguard-captain-rix__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/02_vanguard-captain-rix__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/10_sharpshooter-quill": {
    "aktion": "rodentia/10_sharpshooter-quill__aktion.webp",
    "walk": "rodentia/10_sharpshooter-quill__walk.webp",
+   "zustand": "rodentia/10_sharpshooter-quill__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/10_sharpshooter-quill__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/11_grenadier-skitter": {
    "aktion": "rodentia/11_grenadier-skitter__aktion.webp",
    "walk": "rodentia/11_grenadier-skitter__walk.webp",
+   "zustand": "rodentia/11_grenadier-skitter__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/11_grenadier-skitter__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/12_volley-captain-spark": {
    "aktion": "rodentia/12_volley-captain-spark__aktion.webp",
    "walk": "rodentia/12_volley-captain-spark__walk.webp",
+   "zustand": "rodentia/12_volley-captain-spark__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/12_volley-captain-spark__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/20_alchemage-nibble": {
    "aktion": "rodentia/20_alchemage-nibble__aktion.webp",
    "walk": "rodentia/20_alchemage-nibble__walk.webp",
+   "zustand": "rodentia/20_alchemage-nibble__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/20_alchemage-nibble__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/21_technomancer-squeak": {
    "aktion": "rodentia/21_technomancer-squeak__aktion.webp",
    "walk": "rodentia/21_technomancer-squeak__walk.webp",
+   "zustand": "rodentia/21_technomancer-squeak__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/21_technomancer-squeak__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "rodentia/22_grand-conduit-vex": {
    "aktion": "rodentia/22_grand-conduit-vex__aktion.webp",
    "walk": "rodentia/22_grand-conduit-vex__walk.webp",
+   "zustand": "rodentia/22_grand-conduit-vex__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "rodentia/22_grand-conduit-vex__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/00_shred-katana-hanzmon": {
    "aktion": "shinobi/00_shred-katana-hanzmon__aktion.webp",
    "walk": "shinobi/00_shred-katana-hanzmon__walk.webp",
+   "zustand": "shinobi/00_shred-katana-hanzmon__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/00_shred-katana-hanzmon__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/01_kunoichi-wind-flapper": {
    "aktion": "shinobi/01_kunoichi-wind-flapper__aktion.webp",
    "walk": "shinobi/01_kunoichi-wind-flapper__walk.webp",
+   "zustand": "shinobi/01_kunoichi-wind-flapper__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/01_kunoichi-wind-flapper__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/02_tetsubo-oni-brute": {
    "aktion": "shinobi/02_tetsubo-oni-brute__aktion.webp",
    "walk": "shinobi/02_tetsubo-oni-brute__walk.webp",
+   "zustand": "shinobi/02_tetsubo-oni-brute__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/02_tetsubo-oni-brute__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/10_dazzler-werner": {
    "aktion": "shinobi/10_dazzler-werner__aktion.webp",
    "walk": "shinobi/10_dazzler-werner__walk.webp",
+   "zustand": "shinobi/10_dazzler-werner__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/10_dazzler-werner__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/11_rauch-meister-genzi": {
    "aktion": "shinobi/11_rauch-meister-genzi__aktion.webp",
    "walk": "shinobi/11_rauch-meister-genzi__walk.webp",
+   "zustand": "shinobi/11_rauch-meister-genzi__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/11_rauch-meister-genzi__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/12_blowpipe-koga": {
    "aktion": "shinobi/12_blowpipe-koga__aktion.webp",
    "walk": "shinobi/12_blowpipe-koga__walk.webp",
+   "zustand": "shinobi/12_blowpipe-koga__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/12_blowpipe-koga__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/20_ninjutsu-master-goemon": {
    "aktion": "shinobi/20_ninjutsu-master-goemon__aktion.webp",
    "walk": "shinobi/20_ninjutsu-master-goemon__walk.webp",
+   "zustand": "shinobi/20_ninjutsu-master-goemon__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/20_ninjutsu-master-goemon__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/21_talisman-sorcerer-jun": {
    "aktion": "shinobi/21_talisman-sorcerer-jun__aktion.webp",
    "walk": "shinobi/21_talisman-sorcerer-jun__walk.webp",
+   "zustand": "shinobi/21_talisman-sorcerer-jun__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/21_talisman-sorcerer-jun__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "shinobi/22_vixen-kitsune": {
    "aktion": "shinobi/22_vixen-kitsune__aktion.webp",
    "walk": "shinobi/22_vixen-kitsune__walk.webp",
+   "zustand": "shinobi/22_vixen-kitsune__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "shinobi/22_vixen-kitsune__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/00_bone-racker-karl": {
    "aktion": "undead/00_bone-racker-karl__aktion.webp",
    "walk": "undead/00_bone-racker-karl__walk.webp",
+   "zustand": "undead/00_bone-racker-karl__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/00_bone-racker-karl__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/01_grave-zombie-kauer": {
    "aktion": "undead/01_grave-zombie-kauer__aktion.webp",
    "walk": "undead/01_grave-zombie-kauer__walk.webp",
+   "zustand": "undead/01_grave-zombie-kauer__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/01_grave-zombie-kauer__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/02_grim-reaper-silas": {
    "aktion": "undead/02_grim-reaper-silas__aktion.webp",
    "walk": "undead/02_grim-reaper-silas__walk.webp",
+   "zustand": "undead/02_grim-reaper-silas__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/02_grim-reaper-silas__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/10_archer-mortis": {
    "aktion": "undead/10_archer-mortis__aktion.webp",
    "walk": "undead/10_archer-mortis__walk.webp",
+   "zustand": "undead/10_archer-mortis__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     4
-    ],
+    "idle": [0, 4],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/10_archer-mortis__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/11_pitcher-igor": {
    "aktion": "undead/11_pitcher-igor__aktion.webp",
    "walk": "undead/11_pitcher-igor__walk.webp",
+   "zustand": "undead/11_pitcher-igor__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/11_pitcher-igor__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/12_vessel-plague-skull": {
    "aktion": "undead/12_vessel-plague-skull__aktion.webp",
    "walk": "undead/12_vessel-plague-skull__walk.webp",
+   "zustand": "undead/12_vessel-plague-skull__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/12_vessel-plague-skull__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/20_lich-king-alistair": {
    "aktion": "undead/20_lich-king-alistair__aktion.webp",
    "walk": "undead/20_lich-king-alistair__walk.webp",
+   "zustand": "undead/20_lich-king-alistair__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/20_lich-king-alistair__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/21_scribe-necro-silas": {
    "aktion": "undead/21_scribe-necro-silas__aktion.webp",
    "walk": "undead/21_scribe-necro-silas__walk.webp",
+   "zustand": "undead/21_scribe-necro-silas__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/21_scribe-necro-silas__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "undead/22_banshee-beatrice": {
    "aktion": "undead/22_banshee-beatrice__aktion.webp",
    "walk": "undead/22_banshee-beatrice__walk.webp",
+   "zustand": "undead/22_banshee-beatrice__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "undead/22_banshee-beatrice__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/00_sgt-acid-xeno": {
    "aktion": "xeno/00_sgt-acid-xeno__aktion.webp",
    "walk": "xeno/00_sgt-acid-xeno__walk.webp",
+   "zustand": "xeno/00_sgt-acid-xeno__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/00_sgt-acid-xeno__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/01_stalker-predax": {
    "aktion": "xeno/01_stalker-predax__aktion.webp",
    "walk": "xeno/01_stalker-predax__walk.webp",
+   "zustand": "xeno/01_stalker-predax__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/01_stalker-predax__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/02_vortex-grabber": {
    "aktion": "xeno/02_vortex-grabber__aktion.webp",
    "walk": "xeno/02_vortex-grabber__walk.webp",
+   "zustand": "xeno/02_vortex-grabber__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     4
-    ],
+    "idle": [0, 4],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/02_vortex-grabber__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/10_drone-theta": {
    "aktion": "xeno/10_drone-theta__aktion.webp",
    "walk": "xeno/10_drone-theta__walk.webp",
+   "zustand": "xeno/10_drone-theta__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/10_drone-theta__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/11_desintegrator-kael": {
    "aktion": "xeno/11_desintegrator-kael__aktion.webp",
    "walk": "xeno/11_desintegrator-kael__walk.webp",
+   "zustand": "xeno/11_desintegrator-kael__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/11_desintegrator-kael__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/12_plasma-maw-zorg": {
    "aktion": "xeno/12_plasma-maw-zorg__aktion.webp",
    "walk": "xeno/12_plasma-maw-zorg__walk.webp",
+   "zustand": "xeno/12_plasma-maw-zorg__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/12_plasma-maw-zorg__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/20_harbinger-zeta": {
    "aktion": "xeno/20_harbinger-zeta__aktion.webp",
    "walk": "xeno/20_harbinger-zeta__walk.webp",
+   "zustand": "xeno/20_harbinger-zeta__zustand.webp",
    "rollen": {
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/20_harbinger-zeta__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/21_dark-matter-witch": {
    "aktion": "xeno/21_dark-matter-witch__aktion.webp",
    "walk": "xeno/21_dark-matter-witch__walk.webp",
+   "zustand": "xeno/21_dark-matter-witch__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/21_dark-matter-witch__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "xeno/22_null-entity-quark": {
    "aktion": "xeno/22_null-entity-quark__aktion.webp",
    "walk": "xeno/22_null-entity-quark__walk.webp",
+   "zustand": "xeno/22_null-entity-quark__zustand.webp",
    "rollen": {
     "hocke": 3,
-    "idle": [
-     0,
-     1
-    ],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-   ],
-   "gehenOk": 8,
-   "zustand": "xeno/22_null-entity-quark__zustand.webp"
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   }
  },
  "klassifikation": "abgeleitet von scripts/sprite-sheets-klassifizieren.py (Alpha-Bounding-Boxen); fehlende Rolle = prozedurale Animation"
