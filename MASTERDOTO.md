@@ -6503,16 +6503,98 @@ Zerstörungstabelle in der Hilfe. Alles hinter Versionsmarken, Altköpfe laufen 
 
 ## Backlog vom Auftraggeber (Stand 2026-10-22): Spielgefühl nach Worms-Vorbild
 
-Geprüft gegen den Code; Aufwand in S (klein), M (mittel), L (groß). Jede Regeländerung braucht eine Versionsmarke im Replay-Kopf, reine Darstellung nicht.
+Drei Themenblöcke. Je Block: Ziel, Ist-Stand im Code (geprüft), Soll, Arbeitspakete, Regeln für Replay und Versionsmarken, Tests, Aufwand (S klein, M mittel, L groß) und Risiken. Grundregel: Was die Simulation ändert, bekommt eine Versionsmarke im Replay-Kopf (§2 in AGENTS.md); reine Darstellung im Client braucht keine und darf Zustands-Hash, Replay und Netzprotokoll nicht berühren.
 
-| Punkt | Befund | Aufwand | Empfehlung |
-|---|---|---|---|
-| **Aerodynamik leichter Projektile** (Bazooka, Brandwaffen: Wind lenkt sie, Kurvenschüsse um Ecken) | Die Engine kann es: `projectileSystem.js` und `ballistics.js` kennen `windFactor` und Luftwiderstand je Projektil. Im Katalog setzt aber keine der 150 Waffen einen eigenen `windFactor` oder `drag` – alle fliegen mit Standardwert. | M (Katalogwerte je Waffenklasse, Zielhilfe/Bahnvorschau anpassen, neue `config.waffen`-Fassung, Balance-Messung) | Zuerst Bazooka-/Raketen-/Brandklasse mit hohem Windfaktor, schwere Granaten und Klingen niedrig; Vorschau-Linie muss den Wind zeigen. |
-| **Backflip / doppelter Sprung nach hinten** | Vorhanden: Backspace = Rückwärtssalto (hoher Sprung), Enter = Sprung, Doppelsprung (Bewegungsfassung 2). | – | Fertig; Animation der Salto-Pose prüfen. |
-| **Zielen: Kopf/Waffe rotiert in den Zielwinkel** | Teilweise: Oberkörper neigt sich mit dem Zielwinkel (`figurAnimation.js`), Waffen-Sprite folgt dem Winkel. Kein getrennter Kopf, der in den Zielwinkel dreht. | M (Kopf als eigene Schicht aus den Sprite-Sheets, Sheet-Rolle „Kopf" oder Rotation der oberen Bildhälfte) | Mit den Zustands-Sheets zusammen machen. |
-| **Ängstliche Figuren nahe einer Granate** | Fehlt. | M (Client-Reaktion aus Ereignis „Geschoss landet", Sheet-Rolle „Angst" aus dem Zustands-Sheet, Radius und Wartezeit aus Config) | Reine Darstellung, keine Marke nötig. |
-| **Grabsteine und Tod-Epilog** („Och nö!", kurze Szene vor der Detonation, Grabstein bleibt) | Fehlt (nur Textbeschreibungen in Config). | M–L (Todesablauf: kurze Verzögerung, Spruch/Sprechblase je Fraktion, Explosion mit Kleinradius, Grabstein als Gelände-Dekoobjekt/Hindernis; gewinnt als Regel eine Marke, wenn der Grabstein Terrain/Hindernis ist) | Zuerst reine Darstellung (Epilog und Grabstein-Optik), Regelwirkung optional. |
-| **Smooth Screen-Shake bei schweren Detonationen** | Vorhanden (`kamera-beben`, Beben nach Einschlagstärke). | – | Stärke/Dämpfung feinjustieren. |
-| **Action-Zoom bei knappen Schüssen, Zeitlupe bei Kettenreaktionen und Wassersturz** | Zoom/Verfolgung vorhanden (`kameraRegie.js`), aber kein Knapp-vorbei-Zoom und keine Zeitlupe. | M (Knapp-vorbei-Erkennung im Client aus Geschossbahn und Figurabstand; Zeitlupe nur als Darstellung: Renderzeit dehnen, nicht die Simulation) | Reine Darstellung; Simulation und Replay bleiben unberührt. |
+### Block 2 — Aerodynamik: Wind lenkt leichte Projektile (Kurvenschüsse um Ecken)
 
-Die Grabstein-Epilog- und Angst-Posen lassen sich über die neuen Zustands-Sheets (Replicate) mit zusätzlichen Frames abdecken.
+**Ziel.** Leichte Geschosse (Bazooka/Raketen, Brandwaffen, Papierflieger-artige Waffen) werden spürbar vom Wind getrieben, schwere (Granaten, Wurfäxte, Klingen) kaum. Ergebnis: kunstvolle Bogen- und Kurvenschüsse um Hindernisse, wie bei der Bazooka im Vorbild.
+
+**Ist-Stand (belegt).**
+- `src/shared/ballistics.js` `integrateStep`: je Tick `vy += gravity·gravityScale`, `vx += wind·windFactor`, dann `vx,vy *= drag`; der Wind ist eine Beschleunigung, die vor dem Drag addiert wird. `PROJECTILE_DRAG = 0.995`.
+- Der Motor (`projectileSystem.js`) liest `windFactor` und `drag` je Projektil aus der Komponente `Projectile`.
+- **Der Haken:** Ein nicht gesetzter oder 0 gelesener `windFactor` gilt als 1 (Kommentar in `integrateStep`: bewusst, kein Aufräumen). Im Katalog (`scripts/build-weapon-catalog.mjs`, Tabellen je Waffe) steht je Waffe nur `gravityScale`, `projectileSpeed`, `bounces`, `knockback`; ein eigener `windFactor` oder `drag` ist bei keiner der 150 Waffen gesetzt. Alle Waffen werden also gleich stark vom Wind getrieben. Ein „kein Wind"-Wert (echte 0) ist mit der heutigen Konvention nicht ausdrückbar.
+- Wind steht im Matchzustand (`match.wind`), das HUD zeigt ihn als Pfeil und Betrag (`hud.js`), und die Schussvorhersage (`shotPrediction.js`) nimmt `wind` als Parameter.
+
+**Soll.**
+1. Neue Waffenwerte `windFactor` (0 bis 2,5, wobei ein ausdrücklicher Wert 0 „windfrei" heißt) und optional `drag` je Waffe. Richtwerte nach Klasse: Raketen/Bazooka 1,6–2,2; Brand- und Flüssigkeitswaffen 1,3–1,8; Standardgeschosse 1,0; Granaten und Bomben 0,5–0,8; schwere Wurfwaffen 0,3–0,6; Klingen und Äxte 0,2–0,5; Hitscan/Strahlen 0.
+2. Windanzeige im HUD wird zur Hilfe: Pfeil mit Stärke (Segmente), farbig nach Betrag, und die Zielhilfe/Bahnvorschau zeichnet die Flugbahn mit dem Wind der gewählten Waffe (also mit deren `windFactor`), sonst sind Kurvenschüsse Glückssache.
+3. Windböen: optional ein sanft wechselnder Wind innerhalb eines Zuges (nur wenn die Replay-Reproduzierbarkeit bleibt: Böen aus dem Seed-Sub-RNG, nach Tick-Plan).
+4. Waffenbeschreibung/Hilfe nennt „Windanfälligkeit" (leicht, mittel, schwer).
+
+**Arbeitspakete.**
+- A1 (S) Konvention klären: Explizite 0 vs. „nicht gesetzt" (z. B. `undefined/null` = 1, `0` = windfrei) in `integrateStep` und allen Lesestellen (Engine, `shotPrediction.js`, `turret.js`, `gameServer.js`, `match.js`); Test, dass alle Altwerte gleich bleiben.
+- A2 (M) Katalogwerte je Waffenklasse in `build-weapon-catalog.mjs` als neue Fassung (`config.waffen` 6; Fassungen 1–5 bitgleich, Prüfsumme/Goldwerte wie bei Fassung 4/5), `weapons.js` neu erzeugen.
+- A3 (M) Bahnvorschau/Zielhilfe mit Wind (Client, aus `integrateStep` mit Waffenfaktor); Anzeige im HUD in Segmenten.
+- A4 (M) Balance-Messung mit `scripts/waffen-balance.mjs`: Streuung der Trefferquote bei Wind (Sollwert: bei maximalem Wind verfehlt ein unkorrigierter Raketenschuss 4–8 Gelände-Einheiten pro Wind-Einheit, Granate kaum), Selbstschaden-Fallen (Rückkehr der Rakete zum Schützen bei Gegenwind) prüfen (`waffen-selbstschaden.mjs`).
+- A5 (S) Hilfe-Reiter „Waffen": Spalte Windanfälligkeit; MASTERDOTO-Tabelle je Klasse.
+- A6 (S) Bots: Bot-Zielrechnung berücksichtigt den Windfaktor (`scripts/bot-partien.mjs`, Bot-Logik), sonst werden Bot-Partien schlechter.
+
+**Replay/Marken.** Neue Fassung `config.waffen: 6` für die Werte; falls die Konvention „0 = windfrei" die Engine berührt, eigene Marke `config.aerodynamik: 2`. Altköpfe laufen bitgleich (Goldwerte aus `tests/waffen-fassung.test.js`, `tests/replay-altkoepfe.test.js`).
+
+**Tests.** Unit: `integrateStep` mit Windfaktor 0, 1, 2; Katalog Fassung 1–5 bitgleich, Fassung 6 plausibel (Windfaktor-Bänder je Klasse); Bahnvorschau gleich Engine-Flug (Differenz < 1 px nach 3 s); Replay-Rundlauf. E2E: HUD-Windpfeil, Vorschau-Linie krümmt sich mit Wind.
+
+**Aufwand M–L. Risiken:** Balance (Raketen bei Gegenwind), Bot-Qualität, Zielhilfe muss exakt zur Engine passen (Determinismus). **Reihenfolge:** A1, A2 und A3 zuerst; sie sind der größte Spielwert dieser Liste.
+
+### Block 3 — Lebhaftere Figuren: Mikro-Interaktionen und Persönlichkeit
+
+**Ziel.** Die Figuren zeigen Haltung und Gefühl: Sie zielen sichtbar, erschrecken, sterben mit einem kleinen Epilog. Das bindet den Spieler emotional ans Spielgeschehen.
+
+**Ist-Stand (belegt).**
+- **Backflip:** vorhanden. Backspace = Rückwärtssalto (hoher, weiter Sprung entgegen der Blickrichtung), Enter = Sprung, zweiter Druck in der Luft = Doppelsprung (`input.js`, `bewegungSystem.js`, Bewegungsfassung 2). Offen ist nur die Salto-Optik: Es gibt kein Drehbild; der Renderer nutzt die Luft-Pose. Eine Rotation der Luft-Pose um den Körperschwerpunkt (0 bis 360° über die Flugzeit) wäre eine reine Darstellung (S).
+- **Zielen:** Der Oberkörper neigt sich mit dem Zielwinkel (`figurAnimation.js`, `zielKipp` je Figurtyp in `figurTypen.js`), das Waffen-Sprite folgt dem Winkel am Handanker. Ein getrennter Kopf, der in den Zielwinkel dreht, fehlt.
+- **Angst:** fehlt. Es gibt keine Reaktion auf ein nahes Geschoss (kein Ereignis „Geschoss in Nähe").
+- **Tod:** `figurTypen.js` kennt vier Todesarten je Figurtyp: `kippen`, `explodieren`, `stuerzen`, `zerfallen`. Es gibt keinen Epilog, keinen Spruch und keinen Grabstein. In Config stehen Grabstein-Wörter nur in Fraktionstexten.
+- Sprite-Sheets (neu): je Figur Gehzyklus und Aktionsblatt (Idle, Hocke, Luft, Treffer, Tod). Zustands-Sheets (Hocke, Fallen, Schwimmen, Ertrinken, Siegerjubel, Winken, Posieren) sind in Erzeugung (Replicate, 1 Sheet je Figur).
+
+**Soll.**
+1. **Zielen:** Kopf und Waffe drehen in den Zielwinkel. Technisch zwei Wege: (a) Sheet-Rolle „Kopf" (Kopf als eigene Schicht, aus den Frames ausgeschnitten) oder (b) die obere Bildhälfte der Idle-Frame um den Halsanker rotieren. (b) ist billig und reicht für den Anfang.
+2. **Angst-Reaktion:** Wenn ein Geschoss mit Flächenwirkung (Granate, Rakete, Bombe) landet oder in der Luft in Reichweite eines Radius (Config, Standard 150 px) ist, wechseln Figuren in der Nähe für 1–1,5 s in die Angst-Pose (Hocke mit Händen vor dem Gesicht, aus dem Zustands-Sheet oder Fallback Treffer-Frame leicht geduckt). Auslöser rein clientseitig aus vorhandenen Ereignissen (`explosion`, Geschossposition aus dem Snapshot); keine neue Netznachricht.
+3. **Tod-Epilog:** Beim Tod (Leben 0) kurze Szene: Figur ruft einen Spruch („Och nö!", je Fraktion eine kleine Liste, Sprechblase), 0,6–0,9 s Verzögerung, dann Explosion mit kleinem Radius (Optik, optional Schaden an Umstehenden) und ein **Grabstein** bleibt. Zweistufig: **Stufe 1 (reine Darstellung):** Spruch, Verzögerung (Renderzeit), Detonations-Effekt, Grabstein als Deko-Sprite auf der Geländeoberfläche, verschwindet bei Terrain-Zerstörung darunter. **Stufe 2 (Regel, Marke nötig):** Grabstein als Hindernis/Deckung mit Lebenspunkten und Gewicht (Hangrutsch), Tote Figur hinterlässt Kiste oder Gegenstand.
+4. **Weitere Mikro-Animationen** (billig, Darstellung): Blinzeln im Idle, Schulterzucken bei Fehlschuss, Jubel nach Treffer, Zittern bei niedrigen Leben (≤ 20 %), Winken beim Sieg (Zustands-Sheet), Schwimmen im Wasser.
+5. **Backflip-Optik:** Rotation der Luft-Pose, Rückwärtssalto mit Drehung und Landehocke.
+
+**Arbeitspakete.**
+- B1 (S) Zustands-Sheets klassifizieren und in `figurSheets.js` als Rollen anbinden (hocke_angst, fallen, schwimmen, ertrinken, jubeln, winken, posieren); Fallback auf Prozedur.
+- B2 (S–M) Zielen mit Kopf/Oberkörper-Rotation (`figurAnimation.js`, `figuren.js`), Spiegelung bei Blick links.
+- B3 (M) Angst-Auslöser (Geschoss-Näherung, Landung) im Client; Cooldown, Radius, Dauer aus einer Config (`client/figurReaktion.js`).
+- B4 (M) Tod-Epilog Stufe 1: Sprüche-Tabelle je Fraktion (Deutsch, in `factions.js` oder eigener Config; keine zweite Figurtyp-Tabelle), Sprechblasen-Renderer (gibt es für Tiere: `tierBuehne.js` wiederverwenden), Detonations-Effekt, Grabstein-Sprite (neu, KI-Bild oder Prozedur), Zeitplan der Darstellung ohne Einfluss auf die Simulation (die Figur ist simulatorisch schon tot; die Anzeige verzögert nur die Sterbe-Pose).
+- B5 (L, später) Grabstein als Regelobjekt (Stufe 2) mit Versionsmarke `config.grabstein: 2`.
+- B6 (S) Backflip-Rotation.
+
+**Replay/Marken.** Stufe 1 und alle Mikro-Animationen: keine Marke (Client). Grabstein als Regelobjekt (B5): Marke, eigene Systemdatei (`match.js` hat nur ~125 Zeilen Reserve), Golden-Tests alt.
+
+**Tests.** Unit: Rollen aus dem Manifest; Reaktionsauswahl (Radius, Cooldown, Fallback); Spruch-Tabelle vollständig für 9 Fraktionen. E2E: Figur zielt (Kopfwinkel ändert sich), Angst-Pose erscheint bei naher Detonation, Tod zeigt Epilog und hinterlässt Grabstein; Screenshots Quer und Hoch. **Aufwand M–L. Risiken:** Sheets sind KI-erzeugt, die Rollen sind nicht immer verlässlich (Fallbacks sind Pflicht); Epilog darf Zugfluss nicht verlangsamen (Obergrenze 1,2 s, überspringbar mit der Taste für die Zugpause).
+
+### Block 4 — Hollywood-Kameraführung (Cinematic Tracking)
+
+**Ziel.** Das Auge ist immer dort, wo die spannendste Aktion läuft; schwere Momente fühlen sich schwer an; epische Momente bekommen Zeit.
+
+**Ist-Stand (belegt).** `kameraRegie.js` kennt die Phasen `uebersicht`, `verfolgung` (folgt dem fliegenden Geschoss), `einschlag` (hält auf dem Einschlag) und `tier` (Auftritt von Günther/Cookie, mit Beben); `kameraZiel.js` und `kameraSteuerung.js` setzen Zoom und Ziel; Beben nach Einschlagstärke ist da (`kamera-beben`-Spec), reduzierte Bewegung wird respektiert (`#reduziert`). Fehlt: Zoom bei knappen Fehlschüssen, Zeitlupe, Wasser-Sturz-Moment, Kettenreaktions-Erkennung.
+
+**Soll.**
+1. **Smooth Screen-Shake:** Stärke und Dauer nach Einschlagstärke und Entfernung zur Kamera, weich (Dämpfung, keine Zitterspitzen), Kamera-Rotation optional ±0,3°; Obergrenze und Schalter in den Einstellungen („Bildschüttler: aus/leicht/stark"), aus bei reduzierter Bewegung.
+2. **Action-Zoom bei knappen Schüssen:** Client erkennt „knapp vorbei": Geschoss passiert eine Figur innerhalb von X px (Standard 40) ohne Treffer. Kamera zoomt sanft auf die Szene (1,15×–1,4×) für 0,6–0,9 s und lässt wieder los. Reine Darstellung aus Geschossbahn und Figurposition.
+3. **Zeitlupe:** (a) Kettenreaktion: ≥ 3 Explosionen oder ≥ 2 Figuren-Treffer innerhalb 1,5 s. (b) Sturz einer Figur ins Wasser. (c) Tödlicher Treffer. Zeitlupe nur als **Darstellung**: Der Renderer dehnt die Anzeigezeit (Faktor 0,35–0,5 für 0,8–1,2 s, mit weichem Ein- und Ausstieg); die Simulation läuft unverändert mit 60 Hz weiter, die Anzeige interpoliert aus dem Snapshot-Puffer. Online bleibt der Server unberührt; kein Spieler hat einen Zeit- oder Eingabevorteil, weil die Eingabe weiter in der echten Zeit gilt.
+4. **Cinematic Tracking:** Kamera führt sanft mit Vorhalt (schaut leicht in Flugrichtung voraus), Übergabe zwischen Geschoss und Einschlag ohne Sprünge, Rückkehr zur Übersicht mit Ease-Out; im Zugwechsel auf den neuen Spieler schwenken.
+5. **Einstellungen und Barrierefreiheit:** „Kameraeffekte: aus / ruhig / filmisch" als Menüoption (Client-localStorage), „aus" entspricht reduzierter Bewegung.
+
+**Arbeitspakete.**
+- C1 (S) Beben-Feinschliff: Dämpfungskurve, Entfernung, Obergrenze, Einstellung.
+- C2 (M) Knapp-vorbei-Erkennung und Zoom-Phase `knapp` in `kameraRegie.js` (Test: Geschoss passiert Figur bei 25 px → Phase wird gesetzt; bei 200 px nicht).
+- C3 (M) Zeitlupen-Controller im Renderer: Zeitfaktor aus Auslösern (Ketten, Wasser, Tod), Interpolation aus Snapshot-Puffer, Audio-Tonhöhe leicht absenken (Effekt-Lautstärke bleibt), Schalter.
+- C4 (S) Wasser-Sturz-Moment: Ereignis „Figur im Wasser" (vorhanden) löst Zoom und Zeitlupe aus.
+- C5 (S) Kettenreaktions-Zähler im Client aus dem Ereignisstrom.
+- C6 (S) Einstellungs-Menü „Kameraeffekte".
+
+**Replay/Marken.** Keine (reine Darstellung). Replays lassen sich mit denselben Effekten abspielen, weil sie aus dem Ereignisstrom entstehen. Zeitlupe darf nicht in `match.js` oder `world` Zeitabläufe ändern.
+
+**Tests.** Unit: Knapp-vorbei-Erkennung, Kettenzähler, Zeitfaktor-Kurve (monoton, endet bei 1,0). E2E: `kamera.spec` und `kamera-beben.spec` bleiben grün; neue Specs für Zoom bei knappem Schuss und Zeitlupe (Render-Zeit gedehnt, Zustands-Hash gleich). Frame-Zeit nicht schlechter (`scripts/render-profil.mjs`). **Aufwand M. Risiken:** Übelkeit/Reizüberflutung (darum Einstellung und Obergrenzen), Online-Latenzgefühl (Zeitlupe darf Eingaben nicht verzögern), Kamera-Sprünge bei Phasenwechsel.
+
+### Reihenfolge und Abhängigkeiten
+
+1. Block 2 Aerodynamik (A1–A3) — größter Spielwert, braucht eine Fassung und Balance-Messung.
+2. Block 4 Kamera (C1–C6) — unabhängig, reine Darstellung, gut parallel zu Block 2 machbar (andere Dateien).
+3. Block 3 Figuren (B1–B4) — hängt an den Zustands-Sheets (Replicate-Serie läuft) und am UI-Umbau (Sprechblasen/HUD-Stil).
+4. Block 3 Stufe 2 (Grabstein als Regelobjekt) und Windböen nur nach Entscheidung des Auftraggebers.
+
+Offene Entscheidungen des Auftraggebers: (a) Soll der Grabstein ein Hindernis sein (Regel) oder nur Optik? (b) Soll es Windböen innerhalb eines Zuges geben? (c) Soll die Zeitlupe immer an sein oder nur in den Einstellungen („filmisch")?
