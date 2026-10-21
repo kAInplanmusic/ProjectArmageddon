@@ -33,7 +33,7 @@ verlauf.push({ role: 'user', content: `${A.aufgabe}\n\nDateien:\n${kontext}` });
 async function frage() {
   const r = await fetch(A.anbieter.url, {
     method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: A.anbieter.modell, messages: verlauf, temperature: 0.2, max_tokens: 16000, response_format: { type: 'json_object' } }),
+    body: JSON.stringify({ model: A.anbieter.modell, messages: verlauf, temperature: 0.2, max_tokens: 16000, ...(A.anbieter.json === false ? {} : { response_format: { type: 'json_object' } }) }),
   });
   if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
   return (await r.json()).choices[0].message.content;
