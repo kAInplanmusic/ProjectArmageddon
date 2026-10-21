@@ -9,9 +9,11 @@ def zellen(path):
             x0,y0=round(c*cw)+8,round(r*ch)+8; x1,y1=round((c+1)*cw)-8,round((r+1)*ch)-8
             out.append(im.crop((x0,y0,x1,y1)))
     return out
+STRENG=False
 def frei(cell,mehr=False):
     a=np.asarray(cell).astype(float); r,g,b=a[...,0],a[...,1],a[...,2]
     gruen=(g>r*1.3)&(g>b*1.3)&(g>80)
+    if STRENG: gruen=(g>215)&(r<90)&(b<90)
     fg=~gruen
     # dünne dunkle Linien (Gitter, Bodenlinie) entfernen: Öffnung
     fg=ndi.binary_opening(fg,structure=np.ones((6,3)),iterations=1)
@@ -56,3 +58,49 @@ if __name__=='__main__':
     import sys
     for n in ['t_walk','t_aktion']:
         o=blatt(n+'.png'); bg=Image.new('RGBA',o.size,(80,80,120,255)); bg.alpha_composite(o); bg.convert('RGB').resize((o.width//2,o.height//2)).save(f'/tmp/{n}_k.jpg',quality=85)
+
+def frei_flut(cell, tol=70):
+    """Freistellen per Flutfüllung vom Rand: nur Hintergrund, der mit dem Rand zusammenhängt und der Eckfarbe ähnelt (für grüne Figuren)."""
+    cell = cell.convert('RGB').crop((12, 12, cell.width - 12, cell.height - 12))
+    a = np.asarray(cell).astype(float)
+    h, w, _ = a.shape
+    ecken = np.array([a[2, 2], a[2, w - 3], a[h - 3, 2], a[h - 3, w - 3]])
+    bg = np.median(ecken, axis=0)
+    nah = np.sqrt(((a - bg) ** 2).sum(-1)) < tol
+    lab, k = ndi.label(nah)
+    rand = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    hg = np.isin(lab, list(rand))
+    # Schatten unter der Figur: dunkelgrün, mit Hintergrund verbunden -> mitnehmen
+    fg = ~hg
+    fg = ndi.binary_opening(fg, structure=np.ones((3, 3)))
+    lab2, k2 = ndi.label(fg)
+    if k2 == 0: return None
+    sz = ndi.sum(fg, lab2, range(1, k2 + 1)); keep = [i + 1 for i, v in enumerate(sz) if v >= 0.02 * sz.max()]
+    m = np.isin(lab2, keep); m = ndi.binary_fill_holes(m)
+    al = ndi.gaussian_filter(m.astype(float), 0.6)
+    return Image.fromarray(np.dstack([a, np.clip(al * 255, 0, 255)]).astype(np.uint8), 'RGBA')
+
+def frei_sauber(cell, mehr=False):
+    t = frei_flut(cell, 75)
+    if t is None: return None
+    a = np.asarray(t).copy(); rgb = a[..., :3].astype(float)
+    bg = np.array([0, 255, 0], float); rest = np.sqrt(((rgb - bg) ** 2).sum(-1)) < 60
+    a[rest, 3] = 0
+    return Image.fromarray(a, 'RGBA')
+
+def frei_magenta(cell, mehr=False):
+    t = frei_flut(cell, 75)
+    if t is None: return None
+    a = np.asarray(t).copy()
+    rest = np.sqrt(((a[..., :3].astype(float) - np.array([255, 0, 255.])) ** 2).sum(-1)) < 110
+    a[rest, 3] = 0
+    m = a[..., 3] > 40
+    lab, k = ndi.label(ndi.binary_dilation(m, iterations=3))
+    if k > 1:
+        h, w = m.shape
+        sz = ndi.sum(m, lab, range(1, k + 1)); gross = sz.max()
+        for i, sl in enumerate(ndi.find_objects(lab)):
+            rand = sl[1].start <= 1 or sl[1].stop >= w - 1
+            if rand and sz[i] < 0.5 * gross:
+                a[(lab == i + 1) & m, 3] = 0
+    return Image.fromarray(a, 'RGBA')
