@@ -6500,3 +6500,19 @@ Zerstörungstabelle in der Hilfe. Alles hinter Versionsmarken, Altköpfe laufen 
 - Offen: pa_108 (Magische Peitsche) und pa_129 (Tesla-Turm) messen 0 Schaden (Spezialwirkung, vermutlich
   Messgrenze des Schusses ohne Sondereffekt).
 - Gruppenmarken im Flug (`geschossGruppe`, nur Client): Streu, Lenk, Teleport, Abpraller.
+
+## Backlog vom Auftraggeber (Stand 2026-10-22): Spielgefühl nach Worms-Vorbild
+
+Geprüft gegen den Code; Aufwand in S (klein), M (mittel), L (groß). Jede Regeländerung braucht eine Versionsmarke im Replay-Kopf, reine Darstellung nicht.
+
+| Punkt | Befund | Aufwand | Empfehlung |
+|---|---|---|---|
+| **Aerodynamik leichter Projektile** (Bazooka, Brandwaffen: Wind lenkt sie, Kurvenschüsse um Ecken) | Die Engine kann es: `projectileSystem.js` und `ballistics.js` kennen `windFactor` und Luftwiderstand je Projektil. Im Katalog setzt aber keine der 150 Waffen einen eigenen `windFactor` oder `drag` – alle fliegen mit Standardwert. | M (Katalogwerte je Waffenklasse, Zielhilfe/Bahnvorschau anpassen, neue `config.waffen`-Fassung, Balance-Messung) | Zuerst Bazooka-/Raketen-/Brandklasse mit hohem Windfaktor, schwere Granaten und Klingen niedrig; Vorschau-Linie muss den Wind zeigen. |
+| **Backflip / doppelter Sprung nach hinten** | Vorhanden: Backspace = Rückwärtssalto (hoher Sprung), Enter = Sprung, Doppelsprung (Bewegungsfassung 2). | – | Fertig; Animation der Salto-Pose prüfen. |
+| **Zielen: Kopf/Waffe rotiert in den Zielwinkel** | Teilweise: Oberkörper neigt sich mit dem Zielwinkel (`figurAnimation.js`), Waffen-Sprite folgt dem Winkel. Kein getrennter Kopf, der in den Zielwinkel dreht. | M (Kopf als eigene Schicht aus den Sprite-Sheets, Sheet-Rolle „Kopf" oder Rotation der oberen Bildhälfte) | Mit den Zustands-Sheets zusammen machen. |
+| **Ängstliche Figuren nahe einer Granate** | Fehlt. | M (Client-Reaktion aus Ereignis „Geschoss landet", Sheet-Rolle „Angst" aus dem Zustands-Sheet, Radius und Wartezeit aus Config) | Reine Darstellung, keine Marke nötig. |
+| **Grabsteine und Tod-Epilog** („Och nö!", kurze Szene vor der Detonation, Grabstein bleibt) | Fehlt (nur Textbeschreibungen in Config). | M–L (Todesablauf: kurze Verzögerung, Spruch/Sprechblase je Fraktion, Explosion mit Kleinradius, Grabstein als Gelände-Dekoobjekt/Hindernis; gewinnt als Regel eine Marke, wenn der Grabstein Terrain/Hindernis ist) | Zuerst reine Darstellung (Epilog und Grabstein-Optik), Regelwirkung optional. |
+| **Smooth Screen-Shake bei schweren Detonationen** | Vorhanden (`kamera-beben`, Beben nach Einschlagstärke). | – | Stärke/Dämpfung feinjustieren. |
+| **Action-Zoom bei knappen Schüssen, Zeitlupe bei Kettenreaktionen und Wassersturz** | Zoom/Verfolgung vorhanden (`kameraRegie.js`), aber kein Knapp-vorbei-Zoom und keine Zeitlupe. | M (Knapp-vorbei-Erkennung im Client aus Geschossbahn und Figurabstand; Zeitlupe nur als Darstellung: Renderzeit dehnen, nicht die Simulation) | Reine Darstellung; Simulation und Replay bleiben unberührt. |
+
+Die Grabstein-Epilog- und Angst-Posen lassen sich über die neuen Zustands-Sheets (Replicate) mit zusätzlichen Frames abdecken.
