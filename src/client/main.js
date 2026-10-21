@@ -133,11 +133,19 @@ const STOFF_TEXTUR_URLEN = Object.fromEntries(
     .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url]),
 );
 
+/** Sprite-Atlanten der Effekte (Einschlag, Glut, Feuerring, Leuchtgeschosse): Name → URL. */
+const EFFEKT_SHEET_URLEN = Object.fromEntries(
+  Object.entries(import.meta.glob('./assets/effekt-sheets/*.webp', { query: '?url', import: 'default', eager: true }))
+    .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.webp$/, ''), url]),
+);
+
 class Game {
   constructor() {
     void ladeStoffTexturen(STOFF_TEXTUR_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
+    this.renderer.sheets.setzeUrls(EFFEKT_SHEET_URLEN);
+    this.renderer.sheets.vorladen();
 
     /*
      * Die Kamera zeigt einen Ausschnitt der Karte.

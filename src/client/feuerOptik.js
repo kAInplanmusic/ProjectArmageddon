@@ -17,6 +17,8 @@ import { STOFF } from '../shared/config/stoffe.js';
 
 export const MAX_TEILCHEN = 280;
 export const BUDGET_JE_BILD = 14;
+/** Animierte Flammenringe (Sprite-Atlas) je Bild; zählt zu den Sprite-Effekten, nicht zu den Teilchen. */
+export const MAX_RINGE = 6;
 const ZELLE = 8;
 
 const FLAMME = 0;
@@ -86,6 +88,8 @@ export class FeuerOptik {
     this.gluehen = null;
     this.lavaGluehen = null;
     this.glut = 0;
+    /** Sprite-Atlas (`effektSheets.SheetEffekte`) für animierte Flammenringe; fehlt er, bleibt es beim Glühen. */
+    this.ringe = null;
   }
 
   /** Gelände der Karte: Zellraster der Stoffkarte und Bildgröße. */
@@ -225,6 +229,16 @@ export class FeuerOptik {
         const [x, y] = this.#mitte(idx);
         ctx.drawImage(this.gluehen, x - 14, y - 16, 28, 28);
       }
+    }
+    if (this.ringe && !this.reduziert && this.flammen.size > 0) {
+      // Höchstens `MAX_RINGE` animierte Flammenringe, gleichmäßig über die brennenden Zellen verteilt.
+      const ids = [...this.flammen.keys()];
+      const schritt = Math.max(1, Math.floor(ids.length / MAX_RINGE));
+      for (let k = 0, n = 0; k < ids.length && n < MAX_RINGE; k += schritt, n += 1) {
+        const [x, y] = this.#mitte(ids[k]);
+        this.ringe.zeichneFeuerring(ctx, x, y - 4, 26, this.takt + k * 5);
+      }
+      ctx.globalCompositeOperation = 'lighter';
     }
     for (let i = 0; i < MAX_TEILCHEN; i += 1) {
       if (this.rest[i] <= 0) continue;

@@ -340,6 +340,7 @@ export const EREIGNIS_WIRKUNGEN = {
   lava_ausbruch: beide((k, n) => {
     k.renderer?.feuerAusbruch(n, false);
     k.renderer?.addFlash?.(n.x, n.y, 40);
+    k.renderer?.sheetGlut?.(n.x, n.y, 90);
     k.sound?.verarbeite({ type: 'lava_grollen', x: n.x, y: n.y });
   }),
   flammenwand: beide((k, n) => {
@@ -381,6 +382,7 @@ export const EREIGNIS_WIRKUNGEN = {
      */
     k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
     k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
+    k.renderer?.sheetEinschlag?.(n.x, n.y, n.radius || 12);
     k.renderer?.merkeEinschlag?.(n.x, n.y);
     /*
      * Der Klang zum Einschlag. Der Mischer entscheidet selbst, ob er etwas tut — ist der
