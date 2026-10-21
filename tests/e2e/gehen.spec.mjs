@@ -89,6 +89,7 @@ test('Gehen: Leertaste ODER Shift gehalten lädt auf, erst das Loslassen feuert;
   const schuesse = () => page.evaluate(() => window.__PA__.getState().projectiles.length);
   for (const taste of [' ', 'Shift']) {
     expect(await schuesse()).toBe(0);
+    const schuetze = await page.evaluate(() => window.__PA__.getState().activePlayerId);
     await page.keyboard.down(taste);
     await page.waitForTimeout(250);
     expect(await page.evaluate(() => window.__PA__.game.input.isCharging), `${taste} lädt`).toBe(true);
@@ -98,6 +99,8 @@ test('Gehen: Leertaste ODER Shift gehalten lädt auf, erst das Loslassen feuert;
     // Nächster Zug: warten bis das Geschoss verbraucht ist und die Figur steht.
     await expect.poll(() => page.evaluate(() => window.__PA__.getState().projectiles.length), { timeout: 30000 }).toBe(0);
     await expect.poll(() => page.evaluate(() => window.__PA__.isGrounded()), { timeout: 15000 }).toBe(true);
+    // Zugregeln 2: Nach dem Schuss läuft die Rückzugsfrist (5 s); erst danach ist der nächste Spieler dran.
+    await expect.poll(() => page.evaluate(() => window.__PA__.getState().activePlayerId), { timeout: 20000 }).not.toBe(schuetze);
   }
 
   // Sprung (Enter, mit D seitlich) und Rückwärtssalto (Rück): Höhe und Weite am echten Spiel gemessen.

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { CONTROL, controlMessage, parseControlMessage } from '../../src/shared/protocol.js';
@@ -43,7 +44,7 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
-const SERVER_PORT = 3229;
+const SERVER_PORT = await freierPort(); // frei vom Betriebssystem (früher fest 3229): parallele Läufe kollidieren nicht
 const SERVER_URL = `http://127.0.0.1:${SERVER_PORT}`;
 const SEED = 5;
 

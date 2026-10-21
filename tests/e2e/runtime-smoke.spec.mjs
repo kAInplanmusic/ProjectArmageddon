@@ -115,7 +115,8 @@ test('Schuss erzeugt ein Projektil und beendet den Zug', async ({ page }) => {
   const withProjectile = await page.evaluate(() => window.__PA__.getState());
   expect(withProjectile.projectiles.length).toBeGreaterThan(0);
 
-  await page.evaluate(() => window.__PA__.advance(240));
+  // 240 Takte Flug und Einschlag, dazu die Rückzugsfrist nach dem Schuss (Zugregeln 2: 5 s = 300 Takte).
+  await page.evaluate(() => window.__PA__.advance(240 + 300 + 10));
 
   const after = await page.evaluate(() => window.__PA__.getState());
   expect(after.activePlayerId).not.toBe(before.activePlayerId);

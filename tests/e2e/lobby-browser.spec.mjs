@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { freierPort } from './helfer/freier-port.mjs';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -14,7 +15,7 @@ import { dirname, resolve } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
-const SERVER_PORT = 3211;
+const SERVER_PORT = await freierPort(); // frei vom Betriebssystem (früher fest 3211): parallele Läufe kollidieren nicht
 const SERVER_URL = `http://127.0.0.1:${SERVER_PORT}`;
 
 let serverProcess = null;

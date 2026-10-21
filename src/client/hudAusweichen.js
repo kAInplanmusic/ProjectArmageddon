@@ -42,7 +42,8 @@ const RAND_SELEKTOREN = [
 ];
 
 /** Seitliche Panels, die bei Überdeckung `.hud-weicht` bekommen (lesbar, nicht durchscheinend). */
-const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim'];
+/* `touch-laufen`: die Lauf-/Salto-/Passen-Knöpfe (Touch) liegen im Querformat in Bildmitte rechts und decken sonst eine Figur. */
+const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim', 'touch-laufen'];
 
 /** Größter Schub nach unten, als Anteil der Fensterhöhe. */
 const SCHUB_MAX_ANTEIL = 0.15;
@@ -147,7 +148,8 @@ export class HudAusweichen {
       if (an) weicht.push(PANEL_IDS[i]);
     });
 
-    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => PANEL_IDS[i] !== 'hud-log'));
+    // Protokoll (mittig) und Touch-Knöpfe (unten rechts, kein Seitenpanel) rahmen die Kamera nicht ein; sie weichen nur aus.
+    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => PANEL_IDS[i] !== 'hud-log' && PANEL_IDS[i] !== 'touch-laufen'));
     this.letzte = { bereich, weicht, schub, rand: raender, seiten };
   }
 

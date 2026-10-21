@@ -563,6 +563,20 @@ export class NetworkClient {
     return true;
   }
 
+  /** Zug ohne Schuss beenden (Zugregeln 2); der Server prüft Spieler, Zugpause und die Folgegrenze. */
+  sendSkipTurn() {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.SKIP_TURN, {}));
+    return true;
+  }
+
+  /** Aufgeben (Zugregeln 2): gilt nur für den eigenen Sitz, die Identität kommt vom Token. */
+  sendSurrender() {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.SURRENDER, {}));
+    return true;
+  }
+
   /** Fordert Krater und Einschnitt neu an (Antwort: Ereignis `terrain_state`). */
   requestTerrain() {
     if (!this.isConnected || !this.#socket) return false;

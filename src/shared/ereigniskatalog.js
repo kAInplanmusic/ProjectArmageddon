@@ -94,6 +94,8 @@ export const EREIGNIS_KATALOG = Object.freeze({
   match_over: { klasse: 'zustand' },
   projectile_spawn: { klasse: 'zustand', anim: ['merkeGeschoss'] },
   pulled: { klasse: 'zustand', klang: ['heranziehen'] },
+  rueckzug: { klasse: 'zustand', stumm: 'Rückzugsfrist: Zugzeit-Anzeige im HUD, Protokollzeile' },
+  aufgegeben: { klasse: 'zustand', stumm: 'Protokollzeile; Sieger-Ermittlung wie bei jedem Tod' },
   round_crates: { klasse: 'zustand', stumm: 'Buchführung; die Anzahl steht im HUD' },
   round_start: { klasse: 'zustand' },
   shield_absorbed: { klasse: 'zustand', klang: ['schild'], anim: ['addFlash'] },

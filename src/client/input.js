@@ -164,6 +164,7 @@ export class InputController {
    *   Leertaste ODER Shift (gehalten)  Schuss aufladen, beim Loslassen feuern
    *   Enter     Sprung (mit gehaltenem A/D seitlich; in der Luft Doppelsprung)
    *   Rück      Rückwärtssalto: hoher, weiter Sprung entgegen der Blickrichtung
+   *   P         Zug überspringen (passen; höchstens zweimal in Folge)
    *   1–9 Waffe · E Waffenmenü · Q Waffe abwerfen · Maus: zielen und halten = aufladen
    *
    * Warum Enter = Sprung und Rück = Salto: Beide Tasten liegen rechts, weit weg von den Lauf- und Zieltasten der linken
@@ -184,6 +185,10 @@ export class InputController {
     if (key === 'enter') {
       event.preventDefault();
       this.#handlers.onJump?.(this.#laufRichtung(), false);
+      return;
+    }
+    if (key === 'p') {
+      this.#handlers.onSkipTurn?.();
       return;
     }
     if (key === 'backspace') {

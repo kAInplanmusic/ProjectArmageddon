@@ -246,9 +246,14 @@ export class Hud {
       el.wind.style.color = Math.abs(wind) > 0.03 ? '#ef476f' : '#e8eef5';
     }
     if (el.timer) {
-      const remaining = Math.max(0, (state.turnDurationMs - state.turnElapsedMs) / 1000);
-      el.timer.textContent = remaining.toFixed(0);
-      el.timer.style.color = remaining < 6 ? '#ef476f' : '#e8eef5';
+      // Rückzugsfrist nach dem Schuss (Zugregeln 2): die Zahl zählt die Frist, in Blau und mit eigener Beschriftung.
+      const rueckzug = (state.rueckzugMs ?? 0) > 0;
+      const remaining = rueckzug ? state.rueckzugMs / 1000 : Math.max(0, (state.turnDurationMs - state.turnElapsedMs) / 1000);
+      el.timer.textContent = rueckzug ? String(Math.ceil(remaining)) : remaining.toFixed(0);
+      el.timer.style.color = rueckzug ? '#4cc9f0' : remaining < 6 ? '#ef476f' : '#e8eef5';
+      el.timer.dataset.rueckzug = rueckzug ? '1' : '0';
+      const beschriftung = el.timer.previousElementSibling;
+      if (beschriftung) beschriftung.textContent = rueckzug ? 'Rückzug' : 'Zugzeit';
     }
     if (el.status) {
       el.status.textContent = state.status === 'gameover'

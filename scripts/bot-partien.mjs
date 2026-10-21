@@ -15,7 +15,7 @@
  *  - wählt die Waffe mit dem besten Ergebnis; Munition aufgebraucht -> Reserve.
  *
  * Aufruf:
- *   node scripts/bot-partien.mjs [--seeds=24] [--kit=4] [--json] [--fehler=0.02] [--denkzeit=8]
+ *   node scripts/bot-partien.mjs [--seeds=24] [--kit=4] [--json] [--fehler=0.02] [--denkzeit=8] [--zugregeln=2]
  *                                [--waffen=1]
  *                                [--teams=2] [--pro-team=2]
  */
@@ -33,6 +33,8 @@ const TEAMS = Number(args.teams ?? 2);
 const PRO_TEAM = Number(args['pro-team'] ?? 2);
 const KITS = args.kit ? [Number(args.kit)] : [3, 4];
 const WAFFEN = args.waffen ? Number(args.waffen) : undefined;
+/** Zugregelfassung der Partien: 1 = alt (Vorgabe, die dokumentierten Messwerte), 2 = mit Rückzugsfrist (`--zugregeln=2`). */
+const ZUGREGELN = args.zugregeln ? Number(args.zugregeln) : undefined;
 
 /** Kleiner deterministischer Strom (Werkzeug, nicht Engine). */
 function strom(seed) {
@@ -85,7 +87,7 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
   const FEHLER = fehler;
   const match = new MatchController({
     seed, teams, playersPerTeam: proTeam, preset: 'hills', kit, waffen,
-    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...extra,
+    turnDurationMs: zugSek * 1000, turnPauseTicks: 0, ...(ZUGREGELN ? { zugregeln: ZUGREGELN, bewegung: 2 } : {}), ...extra,
   });
   // Messwerkzeuge (Tier-Verteilung): jede Ereignisliste (ein Schritt) geht durch `ereignis(liste, match)`; ohne Haken bleibt alles wie vorher.
   const ev = () => { const liste = match.consumeEvents(); if (ereignis && liste.length) ereignis(liste, match); return liste; };
@@ -136,6 +138,14 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
           let w = 0;
           while (match.activeProjectileCount > 0 && w < 900) { match.step(); ev(); w += 1; }
           for (let i = 0; i < 12; i += 1) { match.step(); ev(); }
+          // Zugregeln 2: Rückzug — der Bot läuft vom Gegner weg, bis der Zug wechselt (Schutzgrenze: Soft-Lock ausgeschlossen).
+          if (match.zug) {
+            const weg = ziel.e.x > aktiv.x ? -1 : 1;
+            for (let r = 0; r < 1200 && match.status === 'playing' && match.activePlayerId === aktiv.entityId; r += 1) {
+              if (r % 30 === 0) match.gehen?.setzeRichtung(aktiv.entityId, weg);
+              match.step(); ev();
+            }
+          }
           const nach = match.getState().entities.filter(e => e.teamId !== aktiv.teamId);
           const lebenNach = nach.reduce((s, e) => s + Math.max(0, e.alive ? e.health : 0), 0);
           const schaden = Math.max(0, lebenVor - lebenNach);
@@ -151,7 +161,8 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
     }
     if (match.status !== 'playing') break;
     if (!match.getState().entities.length) break;
-    match.endTurn();
+    // Mit Rückzug endet der Zug von selbst; nur wer nicht geschossen hat (und noch dran ist) beendet ihn hier.
+    if (!match.zug || match.activePlayerId === aktiv?.entityId) match.endTurn();
     match.step();
     ev();
   }

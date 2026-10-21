@@ -678,7 +678,19 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   turn_skipped: beide((k, n) => {
-    k.hud?.log(`${k.nameOf?.(n.playerId)} setzt aus — eingefroren`, 'danger');
+    k.hud?.log(n.reason === 'passt'
+      ? `${k.nameOf?.(n.playerId)} überspringt den Zug`
+      : `${k.nameOf?.(n.playerId)} setzt aus — eingefroren`, n.reason === 'passt' ? 'accent' : 'danger');
+  }),
+
+  /* Rückzugsfrist nach dem Schuss (Zugregeln 2): nur Anzeige, die Sperre des zweiten Schusses liegt in der Engine. */
+  rueckzug: beide((k, n) => {
+    k.starteRueckzug?.(n);
+    k.hud?.log(`${k.nameOf?.(n.playerId)}: Rückzug (${Math.round((n.ms ?? 0) / 1000)} s — nur Laufen und Springen)`, 'accent');
+  }),
+
+  aufgegeben: beide((k, n) => {
+    k.hud?.log(`${k.nameOf?.(n.playerId)} gibt auf`, 'danger');
   }),
 
   dot_tick: beide((k, n) => {

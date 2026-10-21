@@ -26,6 +26,7 @@ import { GUENTHER_ALT, normalisiereGuenther } from '../shared/config/guenther.js
 import { COOKIE_ALT, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG_ALT, normalisiereBewegung } from '../shared/config/bewegung.js';
+import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
 
@@ -56,7 +57,7 @@ export class ReplayRecorder {
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null,
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT,
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -103,6 +104,8 @@ export class ReplayRecorder {
       feuer: normalisiereFeuer(feuer),
       /* Bewegungsfassung (`config/bewegung.js`). Wie `feuer`: eine Datei OHNE das Feld ist `BEWEGUNG_ALT` (kein Gehen). */
       bewegung: normalisiereBewegung(bewegung),
+      /* Zugregelfassung (`config/zugregeln.js`): Rückzug, Überspringen, Aufgeben. Eine Datei OHNE das Feld ist `ZUGREGELN_ALT`. */
+      zugregeln: normalisiereZugregeln(zugregeln),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -180,7 +183,7 @@ export class ReplayRecorder {
    * @param {number} [entry.power] - Kraft (bei Schüssen)
    * @param {string|null} [entry.weaponId] - Waffentyp (bei Schüssen UND beim Abwurf)
    * @param {number} [entry.seitlich] - Richtung des Sprungs (−1, 0, 1)
-   * @param {'shot'|'jump'|'move'|'drop'|'select'|'skip_pause'} [entry.kind='shot'] - Art der Eingabe
+   * @param {'shot'|'jump'|'move'|'drop'|'select'|'skip_pause'|'skip_turn'|'surrender'} [entry.kind='shot'] - Art der Eingabe
    *   (`select` = Waffenwahl; sie ist Zustand und entscheidet über spätere Schüsse)
    */
   recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, richtung = 0, salto = false, kind = 'shot' }) {
@@ -219,7 +222,7 @@ export class ReplayRecorder {
     } else if (kind === 'move') {
       // Gehabsicht (Bewegungsfassung 2): nur die Richtung −1/0/1.
       eintrag.richtung = Math.max(-1, Math.min(1, Math.trunc(richtung) || 0));
-    } else if (kind === 'skip_pause') {
+    } else if (kind === 'skip_pause' || kind === 'skip_turn' || kind === 'surrender') {
       // nur Zeitpunkt und Spieler
     } else if (kind === 'drop' || kind === 'select') {
       eintrag.weaponId = weaponId ?? null;
@@ -282,7 +285,7 @@ export class ReplayRecorder {
       zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT,
       kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT,
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
-      bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT });
+      bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -377,6 +380,7 @@ export class ReplayPlayer {
       cookie: config.cookie,
       feuer: config.feuer,
       bewegung: config.bewegung,
+      zugregeln: config.zugregeln,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),
@@ -488,6 +492,8 @@ export class ReplayPlayer {
     }
     if (entry.kind === 'move') return this.match.gehen?.setzeRichtung(entry.playerId, entry.richtung ?? 0) ?? { ok: false, errors: ['Gehen ist in dieser Fassung nicht vorhanden'] };
     if (entry.kind === 'skip_pause') return this.match.skipTurnPause();
+    if (entry.kind === 'skip_turn') return this.match.zug?.ueberspringen(entry.playerId) ?? { ok: false, errors: ['Zugregeln 2 fehlen in dieser Partie'] };
+    if (entry.kind === 'surrender') return this.match.zug?.aufgeben(entry.playerId) ?? { ok: false, errors: ['Zugregeln 2 fehlen in dieser Partie'] };
     if (entry.kind === 'drop') {
       return this.match.dropWeapon(entry.playerId, entry.weaponId);
     }

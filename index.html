@@ -297,8 +297,13 @@
        */
       pointer-events: auto;
     }
-    #hud-abort:hover { border-color: var(--danger); color: var(--danger); }
-    #hud-abort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #hud-aufgeben {
+      font: inherit; color: inherit; cursor: pointer; pointer-events: auto;
+      border: 1px solid var(--panel-edge); background: var(--panel); border-radius: 8px;
+      transition: border-color 120ms ease, color 120ms ease;
+    }
+    #hud-abort:hover, #hud-aufgeben:hover { border-color: var(--danger); color: var(--danger); }
+    #hud-abort:focus-visible, #hud-aufgeben:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .stat .label {
       display: block;
@@ -568,7 +573,7 @@
       .stat { padding: 3px 8px; min-width: 52px; }
       .stat .value { font-size: 14px; }
       .stat .label, .stat > span:first-child { font-size: 9px; }
-      #hud-abort .value, #hud-abort { font-size: 12px; }
+      #hud-abort .value, #hud-abort, #hud-aufgeben .value, #hud-aufgeben { font-size: 12px; }
       #roster, #weapon-list { padding: 4px; gap: 3px; }
       .roster-item { font-size: 11px; padding: 2px 4px; }
       #hud-left, #hud-right { max-height: calc(100vh - 96px); font-size: 11px; }
@@ -828,7 +833,7 @@
         width="1280"
         height="720"
         tabindex="0"
-        aria-label="Spielfeld: rundenbasiertes Artillerie-Spiel. Mit A und D laufen, mit W und S nach oben und unten zielen, mit Leertaste oder Shift halten laden und beim Loslassen feuern, mit Enter springen."
+        aria-label="Spielfeld: rundenbasiertes Artillerie-Spiel. Mit A und D oder den Pfeiltasten laufen, mit W und S nach oben und unten zielen, mit Leertaste oder Shift halten laden und beim Loslassen feuern, mit Enter springen, mit P den Zug überspringen."
       ></canvas>
 
       <!--
@@ -861,6 +866,7 @@
         <button type="button" data-laufen="links" aria-label="Nach links laufen (gedrückt halten)">◀ Gehen</button>
         <button type="button" data-laufen="rechts" aria-label="Nach rechts laufen (gedrückt halten)">Gehen ▶</button>
         <button type="button" data-aktion="salto" aria-label="Rückwärtssalto: hoher Sprung nach hinten">Salto</button>
+        <button type="button" data-aktion="passen" aria-label="Zug überspringen (höchstens zweimal hintereinander)">Passen</button>
       </div>
       <div id="zugpause" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span class="zugpause-titel"></span>
@@ -916,6 +922,11 @@
           <button type="button" id="hud-abort" class="stat panel" hidden title="Match verlassen (R)">
             <span class="label">Match</span>
             <span class="value">verlassen</span>
+          </button>
+          <!-- Aufgeben (Zugregeln 2): eigene Figuren zählen als besiegt; fragt nach, R bleibt „Match verlassen“. -->
+          <button type="button" id="hud-aufgeben" class="stat panel" hidden title="Aufgeben (mit Rückfrage)">
+            <span class="label">Match</span>
+            <span class="value">aufgeben</span>
           </button>
           <!-- Musik im HUD: Schalter, Regler, Titel (gleiche Bedienung wie im Menü, Taste M). -->
           <div id="musik-hud" class="stat panel musik-regler" role="group" aria-label="Musik">
@@ -1337,12 +1348,14 @@
             <span><b>W / S</b> oder <b>↑ / ↓</b> Nach oben / unten zielen</span>
             <span><b>Enter</b> Springen (mit A/D seitlich, in der Luft doppelt)</span>
             <span><b>Rück</b> Rückwärtssalto (hoch und weit nach hinten)</span>
+            <span><b>Nach dem Schuss</b> Rückzug: 5 Sekunden nur Laufen und Springen (blaue Zahl statt Zugzeit); Schaden an dir beendet ihn früher</span>
+            <span><b>P</b> Zug überspringen (höchstens zweimal hintereinander)</span>
             <span><b>1–9</b> Waffe wählen</span>
             <span><b>Q</b> Waffe abwerfen</span>
             <span><b>E</b> Waffenmenü (Besitz als Auswahl)</span>
             <span><b>M</b> Musik stumm/laut</span>
             <span><b>C</b> Kamera folgt/frei · <b>Mausrad</b> Zoom · <b>Mitteltaste/Rechtsziehen</b> verschieben</span>
-            <span><b>R</b> Match verlassen</span>
+            <span><b>R</b> Match verlassen (gibt nicht auf — das tut der Knopf „Aufgeben“ im Kopf, mit Rückfrage)</span>
           </div>
         </div>
       </section>

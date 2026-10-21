@@ -807,8 +807,15 @@ select option { background: #14181d; color: var(--ink); }
 #hud-log.hud-weicht #log-list, #hud-left.hud-weicht .roster-item,
 #hud-left.hud-weicht .hud-figur-text span, #hud-log.hud-weicht #log-list li { color: #f2f5f9; }
 #hud-aim.hud-weicht #hud-active { color: #b8ff5c; }
+/* Touch-Lauf-Knöpfe: Steht eine Figur dahinter, werden die Knöpfe heller und lassen sie als Silhouette erkennen; sie bleiben bedienbar. */
+#touch-laufen button { transition: background-color 0.18s ease, border-color 0.18s ease; }
+#touch-laufen.hud-weicht button {
+  background: rgba(38, 45, 53, 0.72);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #f2f5f9;
+}
 @media (prefers-reduced-motion: reduce) {
-  #hud-left, #hud-log, #hud-aim { transition: none; }
+  #hud-left, #hud-log, #hud-aim, #touch-laufen button { transition: none; }
 }
 
 /* ---- Musik (Schalter, Regler, Titelanzeige) — Menü und HUD ---- */
@@ -908,7 +915,9 @@ select option { background: #14181d; color: var(--ink); }
   #touch-aktionen:not([hidden]) { bottom: 196px !important; left: 6px !important; }
   #hud-aim, #hud-aim.panel { transform: none; }
   #touch-laufen:not([hidden]) { bottom: 196px !important; right: 6px !important; }
-  #touch-aktionen button, #touch-laufen button { min-width: 52px !important; font-size: 11px !important; padding: 4px 6px !important; }
+  /* Vier Knöpfe rechts (Gehen ×2, Salto, Passen) und drei links müssen nebeneinander in 390 px passen: Mindestbreite 46 px (Berührfläche ≥ 44), kleine Lücken. */
+  #touch-aktionen button, #touch-laufen button { min-width: 46px !important; font-size: 11px !important; padding: 4px 4px !important; }
+  #touch-aktionen, #touch-laufen { gap: 4px !important; }
   #tier-hud { top: 176px; left: auto; right: 6px; transform: none; align-items: flex-end; max-width: calc(100vw - 170px); }
   #tier-hud .tier-zeile { padding: 2px 8px; font-size: 11px; }
   #tier-hud .tier-hunger { width: 48px; }

@@ -9,6 +9,7 @@
  * zeigt erst dieser Lauf.
  */
 import { test, expect } from '@playwright/test';
+import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
@@ -17,7 +18,7 @@ import {
 } from './helfer/online-match.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const PORT = 3230;
+const PORT = await freierPort(); // frei vom Betriebssystem (früher fest 3230): parallele Läufe kollidieren nicht
 const SERVER_URL = `http://127.0.0.1:${PORT}`;
 
 let server = null;

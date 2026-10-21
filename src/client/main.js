@@ -48,6 +48,7 @@ import { TierHud } from './tierHud.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
+import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
 import { LaufVorhersage } from './laufVorhersage.js';
 import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { exposeDebugApi } from './debugApi.js';
@@ -252,6 +253,7 @@ class Game {
     this.ereignisDedup = new EreignisDedup();
     this.schussAufnahme = new SchussAufnahme();
     this.zugpause = null;
+    this.rueckzug = null; // Rückzugsfrist online (Wanduhr ab Ereignis `rueckzug`); lokal trägt der Engine-Zustand sie
 
     /**
      * Zählerstand des Mischers beim letzten geprüften Bild.
@@ -324,6 +326,7 @@ class Game {
       if (aktion === 'sprung-links') this.jump(-1);
       else if (aktion === 'sprung-rechts') this.jump(1);
       else if (aktion === 'salto') this.jump(-this.input.blickrichtung, true);
+      else if (aktion === 'passen') this.ueberspringeZug();
       else if (aktion === 'abwurf') this.dropWeapon(this.#activeDisplayPosition());
     });
     // FEUER-Knopf: Halten lädt auf, Loslassen schießt — wie Leertaste/Maus auf dem Spielfeld.
@@ -375,6 +378,8 @@ class Game {
       onJump: (seitlich, salto) => this.jump(seitlich, salto),
       // Gehen (A/D, Pfeile links/rechts, Touch-Knöpfe): Absicht −1/0/1, solange die Taste gehalten wird erneuert.
       onWalk: richtung => this.walk(richtung),
+      // Zug überspringen (P).
+      onSkipTurn: () => this.ueberspringeZug(),
     });
 
     this.#bindMenu();
@@ -443,6 +448,7 @@ class Game {
      * stand im Menü.
      */
     this.abortButton = document.getElementById('hud-abort');
+    this.aufgebenButton = document.getElementById('hud-aufgeben');
     this.#zeigeAbbruch(false);
     this.winnerText = document.getElementById('winner-text');
     document.getElementById('end-menu-button')?.addEventListener('click', () => this.#verlasseMatch());
@@ -549,6 +555,7 @@ class Game {
      * ein Eintrag in der Tastaturliste des Menüs.
      */
     this.abortButton?.addEventListener('click', () => this.abortMatch());
+    this.aufgebenButton?.addEventListener('click', () => this.gibAuf());
   }
 
   /**
@@ -628,6 +635,7 @@ class Game {
    */
   #zeigeAbbruch(sichtbar) {
     if (this.abortButton) this.abortButton.hidden = !sichtbar;
+    if (this.aufgebenButton) this.aufgebenButton.hidden = !sichtbar;
   }
 
   #origin() {
@@ -1205,7 +1213,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1879,6 +1887,7 @@ class Game {
       wind: snapshot.wind,
       tick: snapshot.tick,
       turnElapsedMs: Math.max(0, turnDurationMs - remaining),
+      rueckzugMs: this.#rueckzugRest(snapshot.activePlayerId),
       turnDurationMs,
       activePlayerId: snapshot.activePlayerId,
       winnerTeamId: this.remoteWinner ?? null,
@@ -2140,6 +2149,39 @@ class Game {
     return result;
   }
 
+  /**
+   * Zug überspringen (Taste P, Touch-Knopf): beendet den eigenen Zug ohne Schuss (Zugregeln 2).
+   * Online entscheidet der Server (aktiver Spieler, höchstens zweimal in Folge); lokal der Motor.
+   */
+  ueberspringeZug() {
+    if (this.mode === 'replay') return { ok: false, errors: ['Replay läuft'] };
+    if (this.mode === 'online') {
+      if (!this.network?.isMyTurn) { this.hud.log('Nur am eigenen Zug kann übersprungen werden', 'notice'); return { ok: false }; }
+      return this.network.sendSkipTurn() ? { ok: true, pending: true } : { ok: false };
+    }
+    const id = this.match?.activePlayerId;
+    if (!this.match?.zug || id === null || id === undefined) return { ok: false };
+    const ergebnis = this.match.zug.ueberspringen(id);
+    if (!ergebnis.ok) this.hud.log(ergebnis.errors.join(', '), 'notice');
+    return ergebnis;
+  }
+
+  /**
+   * Aufgeben (HUD-Knopf „Aufgeben", nur mit Bestätigung): Die eigenen Figuren zählen als besiegt, das Match endet
+   * wie sonst. Online gilt es nur für den eigenen Sitz (Token); lokal für das Team der Figur am Zug. Die Taste R
+   * bleibt „Match verlassen" und gibt nie still auf.
+   */
+  gibAuf({ frage = true } = {}) {
+    if (this.mode === 'replay' || (!this.match && this.mode !== 'online')) return false;
+    if (frage && typeof globalThis.confirm === 'function' && !globalThis.confirm('Aufgeben? Deine Figuren zählen als besiegt.')) return false;
+    if (this.mode === 'online') return this.network?.sendSurrender() === true;
+    const zustand = this.match.getState();
+    const aktiv = zustand.entities.find(e => e.entityId === zustand.activePlayerId);
+    if (!aktiv || !this.match.zug) return false;
+    for (const e of zustand.entities) if (e.teamId === aktiv.teamId && e.alive !== false) this.match.zug.aufgeben(e.entityId);
+    return true;
+  }
+
   /** Beendet die Zugpause vorzeitig (lokal direkt, online per Nachricht; im Replay nie). */
   #ueberspringeZugpause() {
     if (this.mode === 'replay') return { ok: false, errors: ['Replay läuft'] };
@@ -2231,6 +2273,7 @@ class Game {
       showGuentherWheel: nutzlast => this.showGuentherWheel(nutzlast),
       showEndScreen: sieger => this.#showEndScreen(sieger),
       starteZugpause: nutzlast => this.#starteZugpause(nutzlast),
+      starteRueckzug: nutzlast => { this.rueckzug = { start: performance.now(), dauerMs: Number(nutzlast?.ms) || 0, playerId: nutzlast?.playerId }; },
       /*
        * Der Online-Zustand gehört dem Client. Statt das Modul Felder schreiben
        * zu lassen, bekommt es vier benannte Zugänge — so steht HIER, welche
@@ -2285,11 +2328,21 @@ class Game {
     };
   }
 
+  /** Verbleibende Rückzugsfrist online in ms (Wanduhr ab `rueckzug`); endet mit dem Zugwechsel. */
+  #rueckzugRest(aktiv) {
+    const r = this.rueckzug;
+    if (!r) return 0;
+    const rest = r.dauerMs - (performance.now() - r.start);
+    if (rest <= 0 || aktiv !== r.playerId) { this.rueckzug = null; return 0; }
+    return rest;
+  }
+
   /** Neues Match, Replay oder Abbruch: Pause und alte Aufnahme verwerfen, Hinweis ausblenden. */
   #setzeZugpauseZurueck() {
     this.kameraRegie?.reset();
     this.renderer?.tierBuehne?.reset();
     this.zugpause = null;
+    this.rueckzug = null;
     this.schussAufnahme.verwerfe();
     const feld = document.getElementById('zugpause');
     if (feld) feld.hidden = true;

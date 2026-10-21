@@ -577,9 +577,27 @@ test('Ein Client kann nicht mehrfach im selben Zug schießen', { timeout: 30_000
     a.drainErrors();
     a.sendRaw(JSON.stringify({ t: CONTROL.INPUT, angle: 0.4, power: 70, tick: snap.tick }));
     await new Promise(r => setTimeout(r, 900));
-    const nachErstem = await warteAufSnapshot(a);
+
+    // Zugregeln 2: Nach dem Schuss läuft die Rückzugsfrist (5 s) bei A. Ein zweiter Schuss muss auch dort scheitern.
+    const imRueckzug = await warteAufSnapshot(a);
+    assert.equal(imRueckzug.activePlayerId, welcomeA.entityId, 'In der Rückzugsfrist bleibt der Zug bei A');
+    a.drainErrors();
+    for (let i = 0; i < 9; i += 1) {
+      a.sendRaw(JSON.stringify({ t: CONTROL.INPUT, angle: 0.3 + i * 0.02, power: 70, tick: imRueckzug.tick }));
+      await new Promise(r => setTimeout(r, 30));
+    }
+    const imRueckzugFehler = await a.sammleFehler(600);
+    assert.ok(imRueckzugFehler.length >= 9, `Im Rückzug wurden nur ${imRueckzugFehler.length} von 9 Schüssen abgelehnt`);
+    assert.match(imRueckzugFehler.map(m => (m.errors ?? []).join(' ')).join(' | '), /bereits geschossen/i);
+
+    // Nach der Frist liegt der Zug bei B (B ist verbunden und tut nichts).
+    let nachErstem = await warteAufSnapshot(a);
+    for (let i = 0; i < 40 && nachErstem.activePlayerId !== welcomeB.entityId; i += 1) {
+      await new Promise(r => setTimeout(r, 250));
+      nachErstem = await warteAufSnapshot(a);
+    }
     assert.equal(nachErstem.activePlayerId, welcomeB.entityId,
-      'Nach dem Schuss muss der Zug bei Spieler B liegen — B ist verbunden und tut nichts');
+      'Nach dem Schuss und der Rückzugsfrist muss der Zug bei Spieler B liegen — B ist verbunden und tut nichts');
 
     // Jetzt neun weitere Schüsse von A: Alle müssen abgelehnt werden.
     a.drainErrors();

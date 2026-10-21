@@ -322,7 +322,9 @@ test('Jede Lesestelle benutzt die benannte Funktion', () => {
   assert.match(motor, /launchSpeedMultiplier\({[\s\S]*?kartenbreite: this\.width[\s\S]*?}\)/,
     'der Spielerschuss muss seine Kartenbreite an launchSpeedMultiplier geben');
 
-  assert.match(motor, /maxWurfweite\({[\s\S]*?}\) \* weitenFaktor\(this\.width\)/,
+  // Die Erreichbarkeitsprüfung wohnt seit dem Zeilenbudget-Umbau in `engine/karteStart.js` (`m` = das Match).
+  const karteStart = ohneKommentare(quelle('src/engine/karteStart.js'));
+  assert.match(karteStart, /maxWurfweite\({[\s\S]*?}\) \* weitenFaktor\(m\.width\)/,
     'die Erreichbarkeitsprüfung muss mit dem WEITENfaktor rechnen');
 
   /*

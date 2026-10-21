@@ -15,15 +15,12 @@ import { TERRAIN_MATERIAL, RUECKPRALL_MINDESTTEMPO } from '../shared/config/terr
 import { baueAnsichtszustand, hashState } from './stateSnapshot.js';
 import { erzeugeSpieler } from './spawnManager.js';
 import { baueTerrain } from './terrainBuilder.js';
-import {
-  pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
-} from '../shared/erreichbarkeit.js';
 import { reichweitenFaktor, geschwindigkeitsFaktor, weitenFaktor } from '../shared/reichweite.js';
 import { MatchSeedManager } from '../shared/seed.js';
 import { EventBus } from './events.js';
 import { WaterField } from './waterField.js';
 import { ProjectileSystem } from './systems/projectileSystem.js';
-import { DEFAULT_PROJECTILE_GRAVITY, DEFAULT_PROJECTILE_DRAG } from './systems/projectileSystem.js';
+import { DEFAULT_PROJECTILE_DRAG } from './systems/projectileSystem.js';
 import { CharacterSystem } from './systems/characterSystem.js';
 import { MaelstromSystem } from './systems/maelstromSystem.js';
 import { LootSystem } from './systems/lootSystem.js';
@@ -58,7 +55,10 @@ import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
+import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
+import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
+import { ZugSystem } from './systems/zugSystem.js';
 import { FeuerSystem } from './systems/feuerSystem.js';
 import { damageTypeId } from './damageTypes.js';
 import { guentherWerte } from '../shared/config/guenther.js';
@@ -604,7 +604,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, // Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, // Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null,
   } = {}) {
@@ -641,6 +641,8 @@ export class MatchController {
     this.feuer = normalisiereFeuer(feuer);
     this.bewegung = normalisiereBewegung(bewegung);
     this.gehen = this.bewegung >= BEWEGUNG_GEHEN ? new BewegungSystem(this) : null; // Gehen am Boden (`systems/bewegungSystem.js`)
+    this.zugregeln = normalisiereZugregeln(zugregeln);
+    this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed)); // gelaende, biomWahl, sonderbiom
     this.schaden = normalisiereSchaden(schaden);
 
@@ -756,68 +758,7 @@ export class MatchController {
   get bitmap() { return this.#bitmap; }
 
   #pruefeErreichbarkeit() {
-    if (this.kartentyp !== 'autonom') return;
-
-    /*
-     * Die Standpositionen holen.
-     *
-     * FUND (belegt, eigener Fehler): Ein erster Anlauf rief
-     * `getComponent(id, 'Position')` ohne Feldnamen — das wirft
-     * `Cannot read properties of undefined`. Die Komponente wird im ECS
-     * **feldweise** abgefragt (`getComponent(id, 'Position', 'x')`), so wie es
-     * an allen anderen Stellen im Modul geschieht.
-     */
-    const figuren = [];
-    for (const eintrag of this.#players) {
-      if (!eintrag.alive) continue;
-      const x = this.#world.getComponent(eintrag.entityId, 'Position', 'x');
-      const y = this.#world.getComponent(eintrag.entityId, 'Position', 'y');
-      if (typeof x !== 'number' || typeof y !== 'number') continue;
-      figuren.push({ x, y, teamId: eintrag.teamId });
-    }
-    if (figuren.length < 2) return;
-
-    /*
-     * Die größte Wurfweite — aus den Werten, die der Motor wirklich nutzt.
-     *
-     * Geholt statt gesetzt: `POWER_TO_SPEED` (die Umrechnung Kraft →
-     * Geschwindigkeit) und `DEFAULT_PROJECTILE_GRAVITY` (die Schwerkraft des
-     * Projektilsystems). Die Höchstkraft ist 100 — sie steht im Client
-     * (`Math.min(100, ...)` in `main.js`) und im Turm. Ein fest eingetragener
-     * Wert hier würde bei einer Änderung still falsch.
-     */
-    const wurfweite = maxWurfweite({
-      powerToSpeed: POWER_TO_SPEED,
-      maxPower: HOHECHSTE_KRAFT,
-      gravity: DEFAULT_PROJECTILE_GRAVITY,
-    }) * weitenFaktor(this.width);
-
-    const urteil = pruefeErreichbarkeit({
-      bitmap: this.#bitmap, width: this.width, height: this.height, figuren, wurfweite,
-    });
-
-    /*
-     * Die Abstände zum nächsten Gegner gehen mit in den Zustand.
-     *
-     * Sie sind die Zahl, die über Spielbarkeit entscheidet — nicht der Abstand
-     * der äußersten Figuren. Wer am Zug ist, schlägt auf den NÄCHSTEN Gegner;
-     * ob der in Reichweite liegt, ist die Frage.
-     */
-    const abstaende = abstandZumNaechstenGegner(figuren);
-    const weiteste = abstaende.filter(d => Number.isFinite(d));
-
-    this.erreichbarkeit = {
-      ok: urteil.ok,
-      grund: urteil.grund,
-      wurfweite,
-      naechsterGegner: weiteste.length > 0 ? Math.max(...weiteste) : null,
-    };
-    if (!urteil.ok) {
-      this.#events.emit('karte_unerreichbar', {
-        grund: urteil.grund,
-        figuren: figuren.length,
-      });
-    }
+    pruefeKartenErreichbarkeit({ m: this, players: this.#players, world: this.#world, bitmap: this.#bitmap, events: this.#events, maxPower: HOHECHSTE_KRAFT });
   }
 
   /**
@@ -975,74 +916,6 @@ export class MatchController {
     this.#world.services.maelstrom = this.#maelstrom;
   }
 
-  /**
-   * Sucht eine Startposition auf festem, nicht überflutetem Grund.
-   *
-   * Gesucht wird abwechselnd nach rechts und links vom Wunschpunkt, in festen
-   * Schritten. Die Reihenfolge ist festgelegt (rechts vor links, kleine vor
-   * großen Abständen), damit die Platzierung bei gleichem Seed dieselbe bleibt —
-   * der Determinismus des Matches hängt daran.
-   *
-   * Maßstab ist `WET_LEVEL`: Eine Figur, die nur „nass" startet, ist spielbar;
-   * eine untergetauchte ertrinkt, bevor der erste Zug beginnt.
-   *
-   * Wird nichts gefunden, bleibt es beim Wunschpunkt. Ein schlechter Platz ist
-   * besser als gar keiner — und ein Fehlen wird im Test auffallen.
-   *
-   * @param {number} idealX
-   * @returns {number} x-Position mit festem, trockenem Boden
-   */
-  #drySpawnX(idealX, belegt = []) {
-    const frei = x => belegt.every(b => Math.abs(b - x) >= 2 * PLAYER_HALF_WIDTH + 8); // keine Stapelung
-    const trocken = x => {
-      if (!frei(x)) return false;
-      if (x < PLAYER_HALF_WIDTH + 2 || x > this.width - PLAYER_HALF_WIDTH - 2) return false;
-      const boden = this.surfaceYAt(x);
-      if (boden <= 0) return false;
-      if (this.waterLevelAt(x, boden) >= WET_LEVEL) return false;
-      /*
-       * Der KÖRPER steht höher als die Füße.
-       *
-       * FUND (belegt, gemessen 2026-09-19): Geprüft wurde nur der Fußpunkt. Bei
-       * flachem Wasser meldet er „trocken", während der Körper bis zur Schulter
-       * unter Wasser steht — die Figur startete untergetaucht (gemessen über den
-       * Menüweg: 19 von 60 Seeds mit `waterLevel = 1`; über den API-Weg ohne
-       * `kartentyp` kein einziger Fall). Beispiel Seed 5, Figur 0: Wasser am
-       * Fußpunkt 0, am Körper 1.
-       */
-      const kopf = boden - PLAYER_HALF_HEIGHT - 2;
-      if (this.waterLevelAt(x, kopf) >= WET_LEVEL) return false;
-      /*
-       * FUND (belegt, 2026-10-13, Menüweg `kartentyp: 'autonom'`): Fuß- und Kopfpunkt
-       * allein übersehen ein flaches Becken dazwischen. Seed 1, Figur P5: Wasser
-       * von y = 959 bis 969 (11 px), Boden bei 970, Kopf bei 958 — beide Punkte
-       * „trocken", die Körpermitte (die für Ertrinken zählt) bei Füllstand 1,0. Die
-       * Figur fiel 4 px und stand untergetaucht. Deshalb auch die Mitte und die
-       * Zeile über dem Boden prüfen.
-       */
-      return this.waterLevelAt(x, boden - 1) < WET_LEVEL
-        && this.waterLevelAt(x, boden - PLAYER_HALF_HEIGHT) < WET_LEVEL;
-    };
-
-    if (trocken(idealX)) return idealX;
-    /*
-     * Über die ganze Kartenbreite suchen, nicht nur bis zur Mitte.
-     *
-     * Auf einer Karte mit viel Wasser (Form `flooded`: rund 45 % Wasser) liegt
-     * die nächste trockene Stelle unter Umständen weit entfernt. Mit einer
-     * Begrenzung auf die halbe Breite blieb gemessen 1 von 480 Figuren
-     * (40 Seeds × 12 Figuren) im Wasser — mit der vollen Breite keine.
-     *
-     * Die Suche läuft nur, wenn der Wunschplatz nass ist, und die Prüfung ist
-     * ein Höhenprofil-Zugriff. Beim Matchstart fällt das nicht ins Gewicht.
-     */
-    const grenze = this.width - PLAYER_HALF_WIDTH - 2;
-    for (let abstand = 8; abstand < grenze; abstand += 8) {
-      if (trocken(idealX + abstand)) return idealX + abstand;
-      if (trocken(idealX - abstand)) return idealX - abstand;
-    }
-    return idealX;
-  }
 
   /**
    * Stellt die Spieler auf — ein reiner Delegator.
@@ -1131,7 +1004,9 @@ export class MatchController {
     this.#checkVictory();
 
     const projectilesActive = this.activeProjectileCount > 0;
-    if (this.#turnElapsed >= this.#turnDurationMs || (this.#hasFired && !projectilesActive) || !this.isPlayerAlive(this.activePlayerId)) {
+    const zeitUm = this.#turnElapsed >= this.#turnDurationMs;
+    const ende = this.zug ? this.zug.zugEnde(!projectilesActive, zeitUm) : zeitUm || (this.#hasFired && !projectilesActive);
+    if (ende || !this.isPlayerAlive(this.activePlayerId)) {
       this.endTurn();
     }
     return this.getState();
@@ -2603,6 +2478,7 @@ export class MatchController {
     if (this.#status !== 'playing') return;
     const previous = this.activePlayerId;
     this.#turnElapsed = 0;
+    this.zug?.neuerZug(previous, this.#hasFired);
     this.#hatteSchuss ||= this.#hasFired;
     this.#hasFired = false;
 
@@ -2870,7 +2746,7 @@ export class MatchController {
       playersPerTeam: this.playersPerTeam,
       width: this.width,
       height: this.height,
-      drySpawnX: (idealX, belegt) => this.#drySpawnX(idealX, belegt),
+      drySpawnX: (idealX, belegt) => trockenerStartX(this, idealX, belegt),
       surfaceYAt: x => this.surfaceYAt(x),
       world: this.#world,
       inventory: this.#inventory,
@@ -3064,6 +2940,7 @@ export class MatchController {
       wind: this.#wind,
       turnElapsedMs: this.#turnElapsed,
       turnPauseMs: this.turnPauseMs,
+      rueckzugMs: this.zug?.rueckzugMs ?? 0,
       turnDurationMs: this.#turnDurationMs,
       activePlayerId: this.activePlayerId,
       winnerTeamId: this.#winnerTeamId,

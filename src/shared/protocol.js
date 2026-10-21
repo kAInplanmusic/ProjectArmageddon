@@ -108,6 +108,10 @@ export const CONTROL = Object.freeze({
   DROP_WEAPON: 'drop_weapon',
   /** Zugpause vorzeitig beenden (nur der Spieler, der gleich dran ist). */
   SKIP_PAUSE: 'skip_pause',
+  /** Zug ohne Schuss beenden (Zugregeln 2); nur der aktive Spieler, begrenzt in Folge. */
+  SKIP_TURN: 'skip_turn',
+  /** Aufgeben (Zugregeln 2): nur der eigene Sitz. */
+  SURRENDER: 'surrender',
   RESUME: 'resume',
   ERROR: 'error',
   PING: 'ping',

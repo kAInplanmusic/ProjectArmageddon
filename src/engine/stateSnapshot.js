@@ -182,6 +182,7 @@ export function baueAnsichtszustand(quelle) {
     tick: quelle.world.tickCount,
     turnElapsedMs: quelle.turnElapsedMs,
     turnPauseMs: quelle.turnPauseMs ?? 0,
+    rueckzugMs: quelle.rueckzugMs ?? 0, // Rückzugsfrist nach dem Schuss (Zugregeln 2), nur Anzeige
     turnDurationMs: quelle.turnDurationMs,
     activePlayerId: quelle.activePlayerId,
     winnerTeamId: quelle.winnerTeamId,

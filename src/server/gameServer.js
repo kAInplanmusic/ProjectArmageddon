@@ -50,6 +50,7 @@ import { GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD, BEWEGUNG } from '../shared/config/bewegung.js';
+import { ZUGREGELN_STANDARD, ZUGREGELN } from '../shared/config/zugregeln.js';
 
 /*
  * Der Simulationstakt kommt aus `src/shared/config/network.js` — dort steht er
@@ -99,6 +100,7 @@ class LobbySession {
   #finished = false;
   /** Geh-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleMove`. */
   #gehGrenzen = new Map();
+  #zugAktionZeit = new Map();
 
   /**
    * @param {object} lobby
@@ -111,7 +113,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -163,6 +165,7 @@ class LobbySession {
       cookie,
       feuer,
       bewegung,
+      zugregeln,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -199,6 +202,7 @@ class LobbySession {
       cookie: this.match.cookie,
       feuer: this.match.feuer,
       bewegung: this.match.bewegung,
+      zugregeln: this.match.zugregeln,
     });
 
     /*
@@ -315,6 +319,14 @@ class LobbySession {
     }
     if (entry.kind === 'skip_pause') {
       this.match.skipTurnPause();
+      return;
+    }
+    if (entry.kind === 'skip_turn') {
+      this.match.zug?.ueberspringen(entry.playerId);
+      return;
+    }
+    if (entry.kind === 'surrender') {
+      this.match.zug?.aufgeben(entry.playerId);
       return;
     }
     if (entry.kind === 'drop') {
@@ -889,6 +901,45 @@ class LobbySession {
     return { ok: result.ok, errors: result.errors ?? [] };
   }
 
+  /**
+   * Zug überspringen (Zugregeln 2): nur der aktive Spieler, höchstens zweimal in Folge (Engine), und je Sitz
+   * höchstens eine Nachricht je `ZUGREGELN.nachrichtenAbstandMs`. Die Identität kommt aus dem TOKEN.
+   */
+  handleSkipTurn(token) { return this.#zugAktion(token, 'skip_turn', (zug, seat) => [zug.ueberspringen(seat.entityId)], seat => [seat.entityId]); }
+
+  /** Aufgeben (Zugregeln 2): nur der EIGENE Sitz (Token), jederzeit; die Figur zählt als besiegt. */
+  handleSurrender(token) {
+    // Im Teammodus gehören einem Token mehrere Figuren: alle eigenen geben auf.
+    const eigene = this.lobby.seats.filter(e => e.token === token && e.entityId !== null).map(e => e.entityId);
+    return this.#zugAktion(token, 'surrender', zug => eigene.map(id => zug.aufgeben(id)), () => eigene);
+  }
+
+  #zugAktion(token, kind, fuehreAus, ids) {
+    const result = this.#zugAktionPruefen(token, kind, fuehreAus, ids);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  #zugAktionPruefen(token, kind, fuehreAus, ids) {
+    const seat = this.#platzFuer(token);
+    if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
+    if (!this.match.zug) return { ok: false, errors: ['Diese Partie kennt weder Überspringen noch Aufgeben'] };
+    const jetzt = Date.now();
+    const letzte = this.#zugAktionZeit.get(seat.entityId) ?? 0;
+    if (jetzt - letzte < ZUGREGELN.nachrichtenAbstandMs) return { ok: false, errors: ['Zu schnell hintereinander'] };
+    this.#zugAktionZeit.set(seat.entityId, jetzt);
+    const ergebnisse = fuehreAus(this.match.zug, seat);
+    const betroffen = ids(seat);
+    ergebnisse.forEach((r, i) => {
+      if (r.ok) this.recorder.recordInput({ tick: this.match.world.tickCount, playerId: betroffen[i], kind });
+    });
+    const ok = ergebnisse.some(r => r.ok);
+    return { ok, errors: ok ? [] : (ergebnisse[0]?.errors ?? ['Abgelehnt']) };
+  }
+
   /** Zugpause vorzeitig beenden: nur der Spieler, der gleich dran ist. */
   handleSkipPause(token) {
     const seat = this.#platzFuer(token);
@@ -1397,6 +1448,7 @@ export class GameServer {
               cookie: options.cookie,
               feuer: options.feuer,
               bewegung: options.bewegung,
+              zugregeln: options.zugregeln,
               metrics: this.metrics,
               logger: this.logger,
             });
@@ -2133,6 +2185,15 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleSkipPause(context.token);
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
+            break;
+          }
+
+          case CONTROL.SKIP_TURN:
+          case CONTROL.SURRENDER: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = message.t === CONTROL.SURRENDER ? session.handleSurrender(context.token) : session.handleSkipTurn(context.token);
             if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }

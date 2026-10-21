@@ -12,6 +12,7 @@
  * und der Schuss träfe nicht mehr den See. Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
  */
 import { test, expect } from '@playwright/test';
+import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { MatchController } from '../../src/engine/match.js';
@@ -20,7 +21,7 @@ import {
 } from './helfer/online-match.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const PORT = 3231;
+const PORT = await freierPort(); // frei vom Betriebssystem (früher fest 3231): parallele Läufe kollidieren nicht
 const SERVER_URL = `http://127.0.0.1:${PORT}`;
 
 let server = null;

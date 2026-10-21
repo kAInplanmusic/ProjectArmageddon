@@ -252,19 +252,30 @@ ist die folgende.
 | `Enter` | Springen (mit gehaltenem `A`/`D` seitlich; in der Luft Doppelsprung) |
 | `Rück` (Backspace) | Rückwärtssalto: hoher, weiter Sprung entgegen der Blickrichtung |
 | `1`–`9` | Waffe wählen (Nummern wie in der Liste) |
+| `P` | Zug überspringen (ohne Schuss; höchstens zweimal hintereinander) |
 | `Q` | Aktive Waffe abwerfen |
 | `M` | Musik stumm/laut (nicht beim Tippen in ein Textfeld) |
 | `T` | Effekte (Schüsse, Einschläge, Treffer) stumm/laut |
-| `R` | Zurück zum Menü |
+| `R` | Match verlassen (zurück zum Menü, mit Rückfrage am Knopf; gibt nicht auf) |
 
 **Gehen (Bewegungsfassung 2, `config.bewegung`):** Die Figur am Zug läuft mit `A`/`D` (72 px/s, mal
 Klassenfaktor 0,6–1,4 aus der Beweglichkeit, gebremst von Verlangsamung). Sie folgt Hängen und Stufen bis
 `BEWEGUNG.maxStufe` (3 px je Schritt), eine höhere Kante ist eine Wand, ein tieferer Absatz lässt sie fallen
-(Fallschaden-Regel und Wasser wie bisher). Nach dem Schuss wird nicht mehr gegangen. Online geht die Absicht als
+(Fallschaden-Regel und Wasser wie bisher). Solange ein Geschoss fliegt, wird nicht gegangen; danach beginnt der Rückzug (siehe unten). Online geht die Absicht als
 `move` an den Server (höchstens 12 Nachrichten/s je Sitz, Absicht verfällt nach 1,5 s ohne Erneuerung); der Client
 läuft sofort mit (`laufVorhersage.js`) und gleitet auf den Serverstand zurück. Die Marke steht im Replay-Kopf;
 Aufzeichnungen ohne `bewegung` spielen unverändert ohne Gehen. Touch (Hochformat): Knöpfe „Gehen“ links/rechts
 (gehalten), Sprung links/rechts, Salto, Abwurf.
+
+**Zugregeln (Fassung 2, `config.zugregeln`):** Nach dem Schuss bleibt der Zug für die **Rückzugsfrist** aktiv
+(`ZUGREGELN.rueckzugSekunden`, 5 s): Laufen und Springen gehen, ein zweiter Schuss nicht. Die Zugzeit-Anzeige zeigt die
+Frist blau und als „Rückzug“. Sie endet früher, wenn die aktive Figur Schaden nimmt oder stirbt, und der Zug endet erst,
+wenn nichts mehr fliegt. **Zug überspringen** (`P`, Touch „Passen“): beendet den eigenen Zug ohne Schuss, höchstens
+zweimal hintereinander (ein Schuss setzt den Zähler zurück), nicht in der Zugpause; der Server prüft Token, aktiven
+Spieler und je Sitz einen Mindestabstand. **Aufgeben** (Knopf „aufgeben“ im Kopf, mit Rückfrage): die eigenen Figuren
+zählen als besiegt, das Match endet wie sonst; online nur für den eigenen Sitz. Die Taste `R` bleibt „Match
+verlassen“ und gibt nie still auf. Die Marke `zugregeln` steht im Replay-Kopf (`skip_turn`, `surrender` als Eingaben);
+Aufzeichnungen ohne sie spielen unverändert (Zug endet gleich nach dem Schuss).
 
 **Musik:** Hintergrundmusik im Menü und im Match (`src/client/musik.js`, Stücke und
 `manifest.json` in `src/client/assets/music/`). Schalter „Musik an/aus“ und Regler
@@ -312,7 +323,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1810 Tests in 190 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1825 Tests in 192 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **321 Tests in 58 Spezifikationen**, ~40 min seriell (Stand 2026-10-21: **309 grün, 0 rot, 2 übersprungen**, Gesamtlauf in 7 Blöcken à 8 Specs auf dem Endstand aa28a29, eigener Port, ohne Nachläufe; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
