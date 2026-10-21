@@ -830,6 +830,16 @@ class LobbySession {
    * @param {string} weaponId
    * @returns {{ok:boolean, errors?:string[]}}
    */
+  handleDropWeapon(token, weaponId) {
+    const result = this.#handleDropWeapon(token, weaponId);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  /** Zugpause vorzeitig beenden: nur der Spieler, der gleich dran ist. */
   handleSkipPause(token) {
     const seat = this.#platzFuer(token);
     if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
@@ -844,15 +854,6 @@ class LobbySession {
       else this.metrics.commandsRejected += 1;
     }
     return { ok: result.ok, errors: result.errors ?? [] };
-  }
-
-  handleDropWeapon(token, weaponId) {
-    const result = this.#handleDropWeapon(token, weaponId);
-    if (this.metrics) {
-      if (result.ok) this.metrics.commandsAccepted += 1;
-      else this.metrics.commandsRejected += 1;
-    }
-    return result;
   }
 
   #handleDropWeapon(token, weaponId) {
