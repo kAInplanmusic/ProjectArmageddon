@@ -41,6 +41,7 @@ test('Planeten im Menü: Wahl „Planet“ und die sechs Arten starten spielbar,
   const optionen = await page.locator('#cfg-biom option').evaluateAll(o => o.map(x => x.value));
   for (const id of ['planet', 'planet_eis', 'planet_lava', 'planet_sand', 'planet_dschungel', 'planet_rost', 'planet_stein']) expect(optionen).toContain(id);
   for (const [i, wahl] of ['planet', 'planet_stein'].entries()) {
+    if (!(await page.locator('#cfg-erweitert').evaluate(d => d.open))) await page.locator('#cfg-erweitert > summary').click();
     await page.locator('#cfg-biom').selectOption(wahl);
     await page.locator('#cfg-seed').fill(String(6150 + i));
     await page.getByRole('button', { name: 'Match starten' }).click();
