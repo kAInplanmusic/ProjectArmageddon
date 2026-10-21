@@ -6598,3 +6598,9 @@ Drei Themenblöcke. Je Block: Ziel, Ist-Stand im Code (geprüft), Soll, Arbeitsp
 4. Block 3 Stufe 2 (Grabstein als Regelobjekt) und Windböen nur nach Entscheidung des Auftraggebers.
 
 Offene Entscheidungen des Auftraggebers: (a) Soll der Grabstein ein Hindernis sein (Regel) oder nur Optik? (b) Soll es Windböen innerhalb eines Zuges geben? (c) Soll die Zeitlupe immer an sein oder nur in den Einstellungen („filmisch")?
+
+### Entscheidungen des Auftraggebers (2026-10-22) zu den offenen Fragen
+
+1. **Grabstein:** kein Hindernis, nur Optik (Block 3 Stufe 2 entfällt; B5 gestrichen).
+2. **Wind:** immer zufällig, zu jedem Zeitpunkt (neu gewürfelter Wind, auch innerhalb eines Zuges möglich); Würfe aus dem Seed-Sub-RNG nach festem Tick-Plan, damit Replays reproduzierbar bleiben. Neue Marke (z. B. `config.wind: 2`); Anzeige und Bahnvorschau folgen dem aktuellen Wind.
+3. **Zeitlupe:** nur bei einem Schuss mit mindestens 250 Gesamtschaden oder mit mindestens 3 getöteten Einheiten (nicht bei jedem Treffer, nicht in den Einstellungen als Dauerzustand). Reine Darstellung; Auslöser wird aus den Ereignissen eines Schusses aufsummiert (Schaden je Schuss-ID, Tode je Schuss-ID).
