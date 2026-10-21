@@ -6749,3 +6749,7 @@ Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, St
 ### Biom-Beispielbilder (realistisch)
 
 `docs/bilder/biome-realistisch/`: je Sonderbiom (20 Stück inkl. Planetenarten) `<id>_spiel.jpg` (Spielkarte ohne HUD, Querformat) und `<id>.jpg` (Replicate flux-kontext-pro: fotorealistische Fassung derselben Landschaft). Dienen als Referenz für Kulissen, Stoff-Texturen und die SSOT-Umsetzung (BS-11); die Fotoversion ist KI-Interpretation, kein Spielbild.
+
+### Stand der E2E-Prüfung (Gesamtlauf in Blöcken, Port 5691, 2026-10-22)
+
+Blöcke 0–5 von 10 gelaufen: grün bis auf **vier zu prüfende Fälle**, die noch einzeln auf frischem Server und ohne Dateiänderungen im Arbeitsverzeichnis wiederholt werden müssen: `drop-cooldown.spec:69` („abgeworfene Waffe fliegt und landet aufhebbar"), `dynamik.spec:580` („Flugspur liegt hinter dem Geschoss"), `emblem.spec:145` („unbekannter Erfolg verfälscht das Emblem nicht") — alle drei liefen, während Sprite-Dateien im selben Arbeitsverzeichnis geändert wurden (Vite lud neu) — und **`prediction-online.spec:283`** („Online wird der Klang GERUFEN — der Mischer zählt …"), noch nicht eingeordnet (möglicherweise Folge der neuen Tastenbelegung/Zugregeln oder der Schadensart-Klänge; zuerst einzeln mit `--workers=1` wiederholen). Block 6–9 stehen aus. Der Block-Läufer liegt als Muster in Abschnitt „Übergabe und Fahrplan", Abschnitt 5.
