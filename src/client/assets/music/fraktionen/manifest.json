@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "urheber": "Patrick Hilf",
+  "hinweis": "Fraktionshymnen, je eine Datei pro Fraktion-ID (factions.js). Noch nicht im Spiel verdrahtet.",
+  "fraktionen": {
+    "beasts": {
+      "datei": "beasts.mp3",
+      "dauer": 33.4
+    },
+    "datacult": {
+      "datei": "datacult.mp3",
+      "dauer": 72.0
+    },
+    "machina": {
+      "datei": "machina.mp3",
+      "dauer": 72.0
+    },
+    "pirates": {
+      "datei": "pirates.mp3",
+      "dauer": 30.1
+    },
+    "pixel": {
+      "datei": "pixel.mp3",
+      "dauer": 22.1
+    },
+    "rodentia": {
+      "datei": "rodentia.mp3",
+      "dauer": 77.0
+    },
+    "shinobi": {
+      "datei": "shinobi.mp3",
+      "dauer": 48.1
+    },
+    "undead": {
+      "datei": "undead.mp3",
+      "dauer": 74.8
+    },
+    "xeno": {
+      "datei": "xeno.mp3",
+      "dauer": 72.2
+    }
+  }
+}
