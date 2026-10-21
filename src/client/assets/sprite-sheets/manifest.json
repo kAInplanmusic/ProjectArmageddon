@@ -208,15 +208,17 @@
    "aktion": "datacult/21_hyper-link-hound__aktion.webp",
    "walk": "datacult/21_hyper-link-hound__walk.webp",
    "rollen": {
-    "tod": 7
+    "hocke": 3,
+    "idle": [0, 1],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
    }
   },
   "datacult/22_ethereo": {
    "aktion": "datacult/22_ethereo__aktion.webp",
    "walk": "datacult/22_ethereo__walk.webp",
-   "rollen": {
-    "tod": 7
-   }
+   "rollen": {}
   },
   "machina/00_chassis-endo-t8": {
    "aktion": "machina/00_chassis-endo-t8__aktion.webp",
@@ -499,9 +501,7 @@
   "pixel/11_pyrowand-a": {
    "aktion": "pixel/11_pyrowand-a__aktion.webp",
    "walk": "pixel/11_pyrowand-a__walk.webp",
-   "rollen": {
-    "tod": 7
-   },
+   "rollen": {},
    "gehen": [0, 1, 2, 3, 4, 5, 5, 7],
    "gehenOk": 7
   },
