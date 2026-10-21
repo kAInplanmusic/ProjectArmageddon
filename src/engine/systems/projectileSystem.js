@@ -439,7 +439,12 @@ export class ProjectileSystem {
         if (dist > blastRadius) continue;
 
         const falloff = Math.max(0.25, 1 - dist / blastRadius);
-        const applied = damage * falloff;
+        let applied = damage * falloff;
+        // Waffenfassung 5: ein eigener Schuss nimmt dem Schützen höchstens `selbstschadenGrenze` seiner Höchstgesundheit.
+        const grenze = match.selbstschadenGrenze || 0;
+        if (grenze > 0 && victimId === owner) {
+          applied = Math.min(applied, (world.getComponent(victimId, 'Health', 'max') || 0) * grenze);
+        }
         const damageSystem = world.getSystem('damage');
         if (damageSystem) {
           damageSystem.applyDamage(world, victimId, applied, owner, { damageType });

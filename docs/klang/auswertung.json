@@ -1,5 +1,5 @@
 {
-  "profilHash": "caaecb519848dfb7",
+  "profilHash": "ec92a3ebddec1226",
   "samplerate": 48000,
   "profile": {
     "pistole": {
@@ -71,6 +71,24 @@
       "peakDb": -3.2,
       "rmsDb": -27.9,
       "schwerpunkt": 1371,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "dunkel": {
+      "bus": "schuss",
+      "dauer": 1.02,
+      "peakDb": -3.6,
+      "rmsDb": -28.2,
+      "schwerpunkt": 311,
+      "endpegelDb": -180,
+      "nan": false
+    },
+    "natur": {
+      "bus": "schuss",
+      "dauer": 0.79,
+      "peakDb": -10.1,
+      "rmsDb": -38.4,
+      "schwerpunkt": 9547,
       "endpegelDb": -180,
       "nan": false
     },
@@ -682,6 +700,6 @@
     }
   },
   "minAbstandVerhaeltnis": 1.31,
-  "schussProfile": 14,
-  "profileGesamt": 70
+  "schussProfile": 16,
+  "profileGesamt": 72
 }

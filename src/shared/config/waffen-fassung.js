@@ -14,7 +14,9 @@
  *     `WAFFEN_F3_WERTE` auf den Katalog, Fassung 2 zusätzlich `WAFFEN_F2_WERTE`.
  *   - `WAFFEN_FEIN` (4): neun Ausreißer des Stufenvergleichs nachgezogen
  *     (`BALANCE_KORREKTUREN_4`) und 20 gleich fliegende Wurf-/Schusswaffen differenziert
- *     (`FLUGPROFILE_4`, Standard). Der Katalog selbst trägt diese Fassung.
+ *     (`FLUGPROFILE_4`). Der Katalog selbst trägt diese Fassung.
+ *   - `WAFFEN_FAIR` (5, Standard): Selbstschaden eigener Flächenwirkung gedeckelt
+ *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *
  * `WAFFEN_ALT_WERTE` hält je geänderter Waffe die Altwerte jener Felder, die sich
  * durch die Korrektur geändert haben (`damage` und der daraus abgeleitete
@@ -30,12 +32,21 @@ export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
 export const WAFFEN_KORREKTUR = 3;
 export const WAFFEN_FEIN = 4;
-export const WAFFEN_STANDARD = WAFFEN_FEIN;
+export const WAFFEN_FAIR = 5;
+export const WAFFEN_STANDARD = WAFFEN_FAIR;
+
+/**
+ * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
+ * Höchstgesundheit des Schützen: Ein einzelner eigener Schuss nimmt nie mehr als dieses Maß
+ * (Messung: `scripts/waffen-selbstschaden.mjs`). Wer sich selbst trifft, verliert viel, stirbt
+ * aber nicht aus voller Gesundheit durch einen Zufallstreffer. Fassung 4 und älter: keine Grenze.
+ */
+export const SELBSTSCHADEN_GRENZE = 0.4;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR ? fassung : WAFFEN_STANDARD;
 }
 
 /**
