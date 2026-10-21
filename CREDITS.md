@@ -29,3 +29,9 @@ pixel = Paraxod Glitchers, datacult = Neon Syndicate 2099.
 Im Spiel verwendet (verkleinert, Quelle bleibt unter `material-texturen/`): `assets/stoff-texturen/` (Stoff-Optik des Geländes),
 `assets/effekt-sheets/` (Einschlag, Glut, Feuerring, Leuchtgeschosse), `assets/planeten-kulisse/` (Planetenkugeln und
 Exoplanet-Szene für das Biom Planet).
+
+## Design-Vorlagen und Intro
+
+Die UI-Vorlagen unter `docs/design-vorlagen/`, das Logo „Ananas-Granate" und das Intro-Video
+(`src/client/assets/design/`) stammen vom Auftraggeber Patrick Hilf (mit KI-Werkzeugen erzeugt, frei verwendbar,
+sein Eigentum). Das Video trägt unten rechts ein kleines Werkzeug-Zeichen, das beim Einbau abgeschnitten wird.
