@@ -108,6 +108,12 @@ export const WAFFEN_ALT_WERTE = Object.freeze({
   pa_140: Object.freeze({ damage: 72, powerScore: 73.36 }),
 });
 
+/**
+ * Werte der Fassung 5 über dem Katalog (der Katalog bleibt Fassung 4): je Waffe die Felder, die
+ * die Messung `scripts/waffen-balance.mjs` nachgezogen hat. Ältere Fassungen sehen sie nicht.
+ */
+export const WAFFEN_F5_WERTE = Object.freeze({});
+
 const zwischenspeicher = new Map();
 
 /**
@@ -121,7 +127,16 @@ const zwischenspeicher = new Map();
  */
 export function getWaffe(id, fassung = WAFFEN_STANDARD) {
   const waffe = getWeapon(id);
-  if (!waffe || fassung === WAFFEN_FEIN) return waffe;
+  if (!waffe) return waffe;
+  if (fassung >= WAFFEN_FAIR) {
+    const f5 = WAFFEN_F5_WERTE[id];
+    if (!f5) return waffe;
+    const schluessel5 = `${fassung}:${id}`;
+    let kopie5 = zwischenspeicher.get(schluessel5);
+    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5 }); zwischenspeicher.set(schluessel5, kopie5); }
+    return kopie5;
+  }
+  if (fassung === WAFFEN_FEIN) return waffe;
   const f3 = WAFFEN_F3_WERTE[id];
   const f2 = fassung <= WAFFEN_BALANCE ? WAFFEN_F2_WERTE[id] : null;
   const alt = fassung === WAFFEN_ALT ? WAFFEN_ALT_WERTE[id] : null;
