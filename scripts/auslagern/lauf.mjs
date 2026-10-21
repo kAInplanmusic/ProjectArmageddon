@@ -26,7 +26,7 @@ const regeln = fs.readFileSync(path.join(wt, 'AGENTS.md'), 'utf8');
 const sys = `Du bist ein erfahrener JavaScript-Entwickler (reines ESM, kein TypeScript) in einem Repo mit diesen Regeln:\n${regeln}\n` +
   'Antworte AUSSCHLIESSLICH mit JSON: {"hinweis":"kurz","dateien":[{"pfad":"relativ","inhalt":"VOLLSTÄNDIGER neuer Dateiinhalt"}]}. ' +
   'Nur geänderte oder neue Dateien liefern. Kommentare und Texte deutsch, Stil und Dichte der umgebenden Dateien übernehmen. Keine Tests abschwächen oder löschen.';
-let verlauf = [{ role: 'system', content: sys }];
+const verlauf = [{ role: 'system', content: sys }];
 const kontext = A.dateien.map(p => `=== ${p} ===\n${lies(p) ?? '(neu)'}`).join('\n\n');
 verlauf.push({ role: 'user', content: `${A.aufgabe}\n\nDateien:\n${kontext}` });
 
