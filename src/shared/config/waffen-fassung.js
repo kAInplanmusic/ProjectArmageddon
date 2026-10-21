@@ -112,7 +112,18 @@ export const WAFFEN_ALT_WERTE = Object.freeze({
  * Werte der Fassung 5 über dem Katalog (der Katalog bleibt Fassung 4): je Waffe die Felder, die
  * die Messung `scripts/waffen-balance.mjs` nachgezogen hat. Ältere Fassungen sehen sie nicht.
  */
-export const WAFFEN_F5_WERTE = Object.freeze({});
+export const WAFFEN_F5_WERTE = Object.freeze({
+  pa_026: Object.freeze({ damage: 36 }),
+  pa_041: Object.freeze({ damage: 48 }),
+  pa_055: Object.freeze({ damage: 42 }),
+  pa_059: Object.freeze({ damage: 41 }),
+  pa_063: Object.freeze({ damage: 32 }),
+  pa_071: Object.freeze({ damage: 55 }),
+  pa_075: Object.freeze({ damage: 45 }),
+  pa_097: Object.freeze({ damage: 30 }),
+  pa_104: Object.freeze({ damage: 45 }),
+  pa_140: Object.freeze({ damage: 47 }),
+});
 
 const zwischenspeicher = new Map();
 

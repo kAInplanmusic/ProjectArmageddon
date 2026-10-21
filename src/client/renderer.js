@@ -50,7 +50,7 @@ import { FACTIONS } from '../shared/config/factions.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
   parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt, figurHand,
-  GeschossLagen, geschossDarstellung, geschossWinkel,
+  GeschossLagen, geschossDarstellung, geschossWinkel, zeichneGruppenmarke,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
@@ -2054,6 +2054,7 @@ export class Renderer {
         zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
         zeichneStartGlanz(this.ctx, sp, projectile.x, projectile.y, jetzt - lage.t0, lage.dar.start);
         lage.winkel = w;
+        if (lage.dar.gruppe) zeichneGruppenmarke(this.ctx, lage.dar.gruppe, projectile.x, projectile.y, jetzt - lage.t0, this.reducedMotion);
         this.waffenStat.geschossSprites += 1;
       } else {
         zeichneGeschoss(this.ctx, projectile.x, projectile.y);
