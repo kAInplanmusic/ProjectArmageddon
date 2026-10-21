@@ -6739,9 +6739,9 @@ Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, St
 | BS-12 | **Hilfe und Doku** | Hilfe-Reiter „Karte und Gelände": Tabelle Material × Einwirkung aus der Config (nicht von Hand), Objekte und Trigger je Biom, Regeln der Pipeline; `docs/biome-ssot.md` und `biome-uebersicht.md` bleiben konsistent (Skript `scripts/biome-uebersicht.mjs` erweitern: Abgleich SSOT ↔ Code, Liste der Lücken). | M | laufend |
 | BS-13 | **Tests und Balance-Messung** | Unit: Materialeigenschaften einheitlich (Metall leitet überall), Pipeline-Reihenfolge, Strukturgraph, Objektzustände deterministisch, Replay-Rundlauf je Biom, Golden-Köpfe alt bitgleich. E2E: je Biom starten, Material sichtbar, Objekt reagiert, Einsturz. Messung: Tickzeit mit vielen Objekten/Medien, Netzlast unverändert. | L | alle |
 
-### Offene Entscheidungen (Auftraggeber)
+### Entscheidungen des Auftraggebers (2026-10-22) zur Biom-SSOT
 
-1. **Gravitation/Trägheit (Biom 10, 19):** echte Physikänderung in der Engine (andere Schwerkraft pro Zone) oder nur Darstellung? Empfehlung: Zonen mit eigenem `gravityScale`-Faktor im Fall- und Geschossmodell, Marke nötig.
-2. **Projektil-Reflexion (Kristalle, Spiegelwände):** Regel für alle Geschosse oder nur markierte Energiewaffen? Empfehlung: nur Waffen mit `damageType` energetisch/Laser, Marke `config.reflexion`.
-3. **Wasser als Medium (Riff, Tiefsee):** getrennte Schussbahn (Drag und Windfaktor im Wasser anders) – Empfehlung ja, Wasserfläche ändert `drag` und senkt Windfaktor auf 0 (passt zu Block 2 Aerodynamik).
-4. **Reihenfolge der Biome:** Empfehlung BS-1 → BS-2 → BS-4 zuerst (Daten und Pipeline), dann die einfachen Biome, dann Objekte (BS-6) und Medien (BS-7) mit den Biomen, die sie brauchen.
+1. **Gravitation/Trägheit (Biom 10, 19):** echte Zone mit eigener Physik. Umsetzung: Zonen mit eigenem `gravityScale`-Faktor (und optional Richtung/Trägheit) im Fall-, Sprung- und Geschossmodell der Engine; Zonen sind Kartenobjekte (BS-6), kein Material; Marke `config.zonen` 2; Bahnvorschau und Zielhilfe nutzen dieselbe Funktion wie die Engine (`ballistics.js`).
+2. **Projektil-Reflexion:** nur Energiewaffen (`damageType` energetisch/Laser/Plasma laut Katalog). Marke `config.reflexion`; reflektierend sind nur markierte Flächen (Kristall, Spiegelwand), nicht jeder Kristall.
+3. **Wasser als Medium:** ja. Wasserflächen ändern `drag` und setzen den Windfaktor auf 0 (abgestimmt mit dem Aerodynamik-Block, Marke `config.waffen` 6 bzw. `config.wind` 2); Schussbahn und Explosion unter Wasser eigene Regeln; kein Flächenbrand unter Wasser.
+4. **Reihenfolge:** wie empfohlen: BS-1 → BS-2 → BS-4 (Daten und Pipeline), dann einfache Biome (4 Eiswüste, 5 Dünen, 13 Burg, 14 Planeten), dann Objekte (BS-6) und Medien (BS-7) mit den Biomen, die sie brauchen.
