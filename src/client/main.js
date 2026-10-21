@@ -47,6 +47,8 @@ import { zeichneTiere } from './hilfeTiere.js';
 import { TierHud } from './tierHud.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
+import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
+import { LaufVorhersage } from './laufVorhersage.js';
 import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { exposeDebugApi } from './debugApi.js';
 import { verarbeiteLokal, verarbeiteOnline, EreignisDedup } from './ereignisse.js';
@@ -313,12 +315,15 @@ class Game {
     this.eigenerSpielerId = null;
     this.eigeneSpielerIds = [];
     this.profil = this.#ladeProfil();
+    /** Anzeige-Vorhersage für das Gehen im Netzspiel (`laufVorhersage.js`). */
+    this.laufVorhersage = new LaufVorhersage();
 
     // Touch-Aktionen (Sprung links/rechts, Abwurf): rufen dieselben Wege wie Shift+A/D und Q.
-    document.getElementById('touch-aktionen')?.addEventListener('click', ereignis => {
+    for (const feld of ['touch-aktionen', 'touch-laufen']) document.getElementById(feld)?.addEventListener('click', ereignis => {
       const aktion = ereignis.target?.closest?.('button')?.dataset?.aktion;
       if (aktion === 'sprung-links') this.jump(-1);
       else if (aktion === 'sprung-rechts') this.jump(1);
+      else if (aktion === 'salto') this.jump(-this.input.blickrichtung, true);
       else if (aktion === 'abwurf') this.dropWeapon(this.#activeDisplayPosition());
     });
     // FEUER-Knopf: Halten lädt auf, Loslassen schießt — wie Leertaste/Maus auf dem Spielfeld.
@@ -340,6 +345,19 @@ class Game {
         if (ereignis.key === 'Enter' || ereignis.key === ' ') { ereignis.preventDefault(); ereignis.stopPropagation(); loslassen(); }
       });
     }
+    // Laufen per Touch: gehaltene Knöpfe (Hochformat) — dieselbe Absicht wie A/D.
+    const laufKnoepfe = document.getElementById('touch-laufen');
+    const laufStopp = () => this.input?.setzeLaufen(0);
+    laufKnoepfe?.addEventListener('pointerdown', ereignis => {
+      const knopf = ereignis.target?.closest?.('button');
+      const richtung = knopf?.dataset?.laufen === 'links' ? -1 : knopf?.dataset?.laufen === 'rechts' ? 1 : 0;
+      if (!richtung || ereignis.button !== 0) return;
+      ereignis.preventDefault();
+      try { knopf.setPointerCapture?.(ereignis.pointerId); } catch { /* Zeiger schon weg: der Stopp kommt über pointerup/-cancel */ }
+      this.input.setzeLaufen(richtung);
+    });
+    laufKnoepfe?.addEventListener('pointerup', laufStopp);
+    laufKnoepfe?.addEventListener('pointercancel', laufStopp);
     this.input = new InputController(this.canvas, {
       getOrigin: () => this.#origin(),
       onAim: (angle, power) => { this.aim = { angle, power }; },
@@ -354,7 +372,9 @@ class Game {
       onWeaponMenu: () => this.waffenMenue.toggle(),
       // Springen (SHIFT), mit A/D als Richtung. NICHT die Leertaste — die lädt
       // den Schuss auf (siehe `input.js`).
-      onJump: seitlich => this.jump(seitlich),
+      onJump: (seitlich, salto) => this.jump(seitlich, salto),
+      // Gehen (A/D, Pfeile links/rechts, Touch-Knöpfe): Absicht −1/0/1, solange die Taste gehalten wird erneuert.
+      onWalk: richtung => this.walk(richtung),
     });
 
     this.#bindMenu();
@@ -1185,7 +1205,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, // neue Partien: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1253,8 +1273,9 @@ class Game {
    * bei `SPRUENGE_UNBEGRENZT` in `src/engine/match.js`.
    *
    * @param {number} [seitlich] - -1 links, 0 gerade, 1 rechts
+   * @param {boolean} [salto] - Rückwärtssalto/hoher Sprung (Bewegungsfassung 2)
    */
-  jump(seitlich = 0) {
+  jump(seitlich = 0, salto = false) {
     /*
      * ONLINE: eigener Befehl an den Server — und KEINE eigene Meldung.
      *
@@ -1272,21 +1293,41 @@ class Game {
         this.hud.log('Nur am eigenen Zug kann gesprungen werden', 'notice');
         return null;
       }
-      this.network.sendJump(seitlich);
+      this.network.sendJump(seitlich, salto);
       return { ok: true, pending: true };
     }
     if (!this.match || this.mode !== 'local') return null;
     const playerId = this.match.activePlayerId;
     if (playerId === null) return null;
 
-    const ergebnis = this.match.jump(playerId, seitlich);
+    const ergebnis = this.match.jump(playerId, seitlich, salto);
     if (!ergebnis.ok) {
       // Kein Grund zur Beunruhigung: eine Meldung genügt.
       this.hud.log(ergebnis.errors.join(', '), 'notice');
       return ergebnis;
     }
-    this.hud.log(ergebnis.double ? 'Doppelsprung' : 'Sprung', 'accent');
+    this.hud.log(salto ? 'Rückwärtssalto' : (ergebnis.double ? 'Doppelsprung' : 'Sprung'), 'accent');
     return ergebnis;
+  }
+
+  /**
+   * Gehen: setzt/erneuert/löscht die Gehabsicht der Figur am Zug (Bewegungsfassung 2).
+   *
+   * Online geht die Absicht als `move` an den Server (er entscheidet), lokal direkt in den Motor. Die Anzeige
+   * des Netzspiels läuft über `LaufVorhersage` sofort mit. Ein Stopp (0) wird immer durchgereicht.
+   *
+   * @param {-1|0|1} richtung
+   */
+  walk(richtung) {
+    if (this.mode === 'online') {
+      this.laufVorhersage.setzeRichtung(this.network?.isMyTurn ? richtung : 0);
+      if (!this.network?.isConnected || (richtung !== 0 && !this.network.isMyTurn)) return null;
+      this.network.sendMove(richtung);
+      return { ok: true, pending: true };
+    }
+    if (!this.match || this.mode !== 'local' || !this.match.gehen) return null;
+    const playerId = this.match.activePlayerId;
+    return playerId === null ? null : this.match.gehen.setzeRichtung(playerId, richtung);
   }
 
   /**
@@ -1813,6 +1854,23 @@ class Game {
       ammo: this.remoteLoadouts?.[entity.entityId]?.ammo ?? {},
       cooldowns: this.remoteLoadouts?.[entity.entityId]?.cooldowns ?? {},
     }));
+
+    /*
+     * Laufvorhersage (nur Anzeige): Die eigene Figur am Zug läuft zwischen zwei Snapshots mit und gleitet nach dem
+     * Stopp weich auf den Serverstand zurück (`laufVorhersage.js`). Der Server entscheidet weiterhin allein.
+     */
+    const amZug = entities.find(figur => figur.entityId === snapshot.activePlayerId);
+    if (amZug && amZug.alive && this.network.isMyTurn && this.remoteTerrain?.bitmap) {
+      const terrain = this.remoteTerrain;
+      const pos = this.laufVorhersage.anzeige(amZug, {
+        isSolid: (x, y) => (x < 0 || x >= terrain.width || y >= terrain.height ? true : y < 0 ? false : Boolean(terrain.bitmap[y * terrain.width + x])),
+        breite: terrain.width, jetzt: performance.now(), snapshotAt: this.network.letzterSnapshotMs,
+      });
+      amZug.x = pos.x;
+      amZug.y = pos.y;
+    } else {
+      this.laufVorhersage.zuruecksetzen();
+    }
 
     return {
       status: this.remoteStatus ?? 'playing',
@@ -2866,6 +2924,7 @@ class Game {
     let delta = timestamp - this.lastFrameTime;
     this.lastFrameTime = timestamp;
     if (delta > 250) delta = FIXED_TIMESTEP; // Tab war inaktiv: nicht nachholen
+    this.input?.update(delta, timestamp); // gehaltenes Zielen, Erneuerung der Gehabsicht
     this.accumulator += delta;
 
     let steps = 0;
@@ -2961,6 +3020,8 @@ class Game {
     // Touch-Aktionen nur am eigenen Zug im lokalen/Online-Spiel (nicht im Replay, nicht im Menü).
     const touchFeld = document.getElementById('touch-aktionen');
     if (touchFeld) touchFeld.hidden = !(myTurn && this.mode !== 'replay');
+    const laufFeld = document.getElementById('touch-laufen');
+    if (laufFeld) laufFeld.hidden = !(myTurn && this.mode !== 'replay');
     const laedt = this.input.isCharging;
     const ladeAnteil = laedt ? this.input.chargeRatio : null;
     const ladeKraft = laedt ? kraftAusLadung(ladeAnteil) : null;

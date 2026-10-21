@@ -81,11 +81,17 @@ test.describe('Waffenmenü (Desktop)', () => {
     await matchStarten(page);
     const winkel = () => page.evaluate(() => window.__PA__.game.aim.angle);
     const a0 = await winkel();
+    const x0 = await page.evaluate(() => window.__PA__.getState().entities.find(e => e.entityId === window.__PA__.getState().activePlayerId).x);
     await page.keyboard.press('e');
     await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('ArrowUp');
-    await page.keyboard.press('a');
+    // Gehaltene Tasten (Zielen W/S/Pfeile, Laufen A/D) dürfen bei offenem Menü nichts tun.
+    await page.keyboard.down('ArrowUp');
+    await page.keyboard.down('a');
+    await page.waitForTimeout(400);
+    await page.keyboard.up('a');
+    await page.keyboard.up('ArrowUp');
     expect(await winkel()).toBe(a0);
+    expect(await page.evaluate(() => window.__PA__.getState().entities.find(e => e.entityId === window.__PA__.getState().activePlayerId).x)).toBe(x0);
     expect(await page.evaluate(() => window.__PA__.getState().projectiles.length)).toBe(0);
   });
 

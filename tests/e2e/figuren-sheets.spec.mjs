@@ -61,9 +61,9 @@ test('Sheets: Sprung zeigt Luft/Hocke, Treffer den Treffer-Frame, Tod die liegen
   await page.setViewportSize(FORMATE[0].viewport);
   const fehler = await oeffne(page);
   await expect.poll(async () => (await zustaende(page)).length, { timeout: 15000 }).toBeGreaterThan(0);
-  // Sprung (A/D + Umschalt): Luft- und Hocke-Frame; Gehen kommt beim Rutschen/Rückstoß vor (Einheitentest).
+  // Sprung (A/D + Enter): Luft- und Hocke-Frame; der Gehzyklus selbst steht in gehen.spec.mjs.
   await page.keyboard.down('d');
-  await page.keyboard.press('Shift');
+  await page.keyboard.press('Enter');
   const rollen = new Set();
   for (let i = 0; i < 60; i += 1) {
     await page.waitForTimeout(40);

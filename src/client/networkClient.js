@@ -145,6 +145,7 @@ export class NetworkClient {
   #snapshotsReceived = 0;
   /** Empfangszeitpunkt des jüngsten Snapshots (für `referenzTick`). */
   #letzterSnapshotAt = 0;
+  #letzterSnapshotMs = 0;
   #fullSnapshots = 0;
   /** Letzter dekodierter Snapshot — Basis für das Delta-Encoding. */
   #lastDecoded = null;
@@ -375,6 +376,7 @@ export class NetworkClient {
       this.#snapshotsReceived += 1;
       // Zeitpunkt merken: Der Tick einer Eingabe wird daraus fortgeschrieben.
       this.#letzterSnapshotAt = Date.now();
+      this.#letzterSnapshotMs = performance.now();
       if (snapshot.isFull) this.#fullSnapshots += 1;
       this.#emit('snapshot', snapshot);
       return;
@@ -516,11 +518,27 @@ export class NetworkClient {
    * @param {number} [seitlich=0] - -1 links, 0 gerade, 1 rechts
    * @returns {boolean} ob die Nachricht abgeschickt wurde
    */
-  sendJump(seitlich = 0) {
+  sendJump(seitlich = 0, salto = false) {
     if (!this.isConnected || !this.#socket) return false;
-    this.#socket.send(controlMessage(CONTROL.JUMP, { seitlich }));
+    this.#socket.send(controlMessage(CONTROL.JUMP, salto ? { seitlich, salto: true } : { seitlich }));
     return true;
   }
+
+  /**
+   * Meldet die Gehabsicht an den Server (−1 links, 0 Stopp, 1 rechts). Eigene Nachricht, kein `tick`:
+   * Der Server wendet sie sofort an, wie den Sprung.
+   *
+   * @param {-1|0|1} richtung
+   * @returns {boolean} ob die Nachricht abgeschickt wurde
+   */
+  sendMove(richtung = 0) {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.MOVE, { richtung }));
+    return true;
+  }
+
+  /** Zeitpunkt (`performance.now`) des jüngsten Snapshots — Bezug der Laufvorhersage. */
+  get letzterSnapshotMs() { return this.#letzterSnapshotMs; }
 
   /**
    * Meldet einen Waffenabwurf an den Server.

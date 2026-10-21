@@ -907,7 +907,8 @@ select option { background: #14181d; color: var(--ink); }
   #zugpause .zugpause-zahl { font-size: 44px; }
   #touch-aktionen:not([hidden]) { bottom: 196px !important; left: 6px !important; }
   #hud-aim, #hud-aim.panel { transform: none; }
-  #touch-aktionen button { min-width: 52px !important; font-size: 11px !important; padding: 4px 6px !important; }
+  #touch-laufen:not([hidden]) { bottom: 196px !important; right: 6px !important; }
+  #touch-aktionen button, #touch-laufen button { min-width: 52px !important; font-size: 11px !important; padding: 4px 6px !important; }
   #tier-hud { top: 176px; left: auto; right: 6px; transform: none; align-items: flex-end; max-width: calc(100vw - 170px); }
   #tier-hud .tier-zeile { padding: 2px 8px; font-size: 11px; }
   #tier-hud .tier-hunger { width: 48px; }

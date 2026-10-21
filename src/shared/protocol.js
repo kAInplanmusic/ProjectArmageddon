@@ -103,6 +103,8 @@ export const CONTROL = Object.freeze({
   INPUT: 'input',
   SELECT_WEAPON: 'select_weapon',
   JUMP: 'jump',
+  /** Gehabsicht (Bewegungsfassung 2): `{richtung: -1|0|1}`, wird bei gehaltener Taste erneuert. */
+  MOVE: 'move',
   DROP_WEAPON: 'drop_weapon',
   /** Zugpause vorzeitig beenden (nur der Spieler, der gleich dran ist). */
   SKIP_PAUSE: 'skip_pause',

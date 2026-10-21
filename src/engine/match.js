@@ -57,6 +57,8 @@ import { baueTierKontext } from './tierKontext.js';
 import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared/config/guenther.js';
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
+import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
+import { BewegungSystem } from './systems/bewegungSystem.js';
 import { FeuerSystem } from './systems/feuerSystem.js';
 import { damageTypeId } from './damageTypes.js';
 import { guentherWerte } from '../shared/config/guenther.js';
@@ -602,7 +604,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, // Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, // Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null,
   } = {}) {
@@ -637,6 +639,8 @@ export class MatchController {
     this.guenther = normalisiereGuenther(guenther);
     this.cookie = normalisiereCookie(cookie);
     this.feuer = normalisiereFeuer(feuer);
+    this.bewegung = normalisiereBewegung(bewegung);
+    this.gehen = this.bewegung >= BEWEGUNG_GEHEN ? new BewegungSystem(this) : null; // Gehen am Boden (`systems/bewegungSystem.js`)
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed)); // gelaende, biomWahl, sonderbiom
     this.schaden = normalisiereSchaden(schaden);
 
@@ -1102,6 +1106,7 @@ export class MatchController {
      * Der Zustand von vorher ist die einzige Quelle für „wie schnell war die
      * Figur wirklich".
      */
+    this.gehen?.schritt();
     this.#merkeBewegung();
     this.#world.step();
     this.#setzung?.schritt();
@@ -1243,10 +1248,12 @@ export class MatchController {
    *
    * @param {number} playerId
    * @param {number} [horizontal] - seitliche Richtung: -1, 0 oder 1
+   * @param {boolean} [salto] - Rückwärtssalto/hoher Sprung (Bewegungsfassung 2): höher und weiter, nur vom Boden
    * @returns {{ok:boolean, jumpsLeft?:null, double?:boolean, impulse?:number, errors?:string[]}}
    */
-  jump(playerId, horizontal = 0) {
+  jump(playerId, horizontal = 0, salto = false) {
     const errors = [];
+    salto = salto === true && this.gehen !== null; // Rückwärtssalto/hoher Sprung: nur ab Bewegungsfassung 2, nur vom Boden
     if (this.#status !== 'playing') errors.push('Match läuft nicht');
     if (this.#turnPauseTicks > 0) errors.push('Zugpause: der Zug beginnt gleich');
     if (playerId !== this.activePlayerId) errors.push('Nur der aktive Spieler kann springen');
@@ -1268,7 +1275,7 @@ export class MatchController {
      * Der Zähler wird weiterhin beim Zugbeginn zurückgesetzt: Die Regel gilt je
      * Zug, nicht je Flugphase.
      */
-    if (!grounded && verbraucht === 0) {
+    if (!grounded && (verbraucht === 0 || salto)) {
       return { ok: false, errors: ['In der Luft ist kein erster Sprung möglich'] };
     }
     // Die frühere Grenze `if (verbraucht >= 2) return 'Keine Sprünge mehr …'`
@@ -1293,13 +1300,13 @@ export class MatchController {
      */
     const beweglichkeit = this.#mobilityFactor(playerId);
 
-    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1) * langsam * beweglichkeit;
+    const impuls = JUMP_IMPULSE * (istDoppel ? DOUBLE_JUMP_FACTOR : 1) * langsam * beweglichkeit * (salto ? BEWEGUNG.saltoHoehe : 1);
     const richtung = Math.max(-1, Math.min(1, Number(horizontal) || 0));
 
     this.#world.setComponent(playerId, 'Velocity', 'y', -impuls);
     if (richtung !== 0) {
       const vxAlt = this.#world.getComponent(playerId, 'Velocity', 'x') ?? 0;
-      this.#world.setComponent(playerId, 'Velocity', 'x', vxAlt + richtung * JUMP_SIDE_IMPULSE);
+      this.#world.setComponent(playerId, 'Velocity', 'x', vxAlt + richtung * JUMP_SIDE_IMPULSE * (salto ? BEWEGUNG.saltoSeite : 1));
     }
 
     this.#jumpsUsed.set(playerId, verbraucht + 1);

@@ -95,7 +95,7 @@ test.describe('Schussvorhersage', () => {
   test('Lokal läuft keine Vorhersage — der Schuss ist ohnehin sofort da', async ({ page }) => {
     await starteLokalesMatch(page);
     // Feuern: Der Schuss geht in die lokale Simulation, nicht durchs Netz.
-    await page.keyboard.press('Enter');
+    await page.keyboard.press(' ');
     await page.waitForTimeout(120);
 
     const zustand = await page.evaluate(() => window.__PA__.prediction());
@@ -150,7 +150,7 @@ test.describe('Tastatur feuert', () => {
       };
     });
 
-    await page.keyboard.press('Enter');
+    await page.keyboard.press(' ');
     await page.waitForTimeout(150);
 
     /*

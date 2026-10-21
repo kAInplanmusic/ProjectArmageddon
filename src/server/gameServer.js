@@ -49,6 +49,7 @@ import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js
 import { GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
+import { BEWEGUNG_STANDARD, BEWEGUNG } from '../shared/config/bewegung.js';
 
 /*
  * Der Simulationstakt kommt aus `src/shared/config/network.js` — dort steht er
@@ -96,6 +97,8 @@ const PRUNE_INTERVAL_MS = 5_000;
 class LobbySession {
   /** Wurde das Match-Ende schon gemeldet? Siehe #finish. */
   #finished = false;
+  /** Geh-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleMove`. */
+  #gehGrenzen = new Map();
 
   /**
    * @param {object} lobby
@@ -108,7 +111,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -159,6 +162,7 @@ class LobbySession {
       guenther,
       cookie,
       feuer,
+      bewegung,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -194,6 +198,7 @@ class LobbySession {
       guenther: this.match.guenther,
       cookie: this.match.cookie,
       feuer: this.match.feuer,
+      bewegung: this.match.bewegung,
     });
 
     /*
@@ -301,7 +306,11 @@ class LobbySession {
    */
   #applyReplayEntry(entry) {
     if (entry.kind === 'jump') {
-      this.match.jump(entry.playerId, entry.seitlich ?? 0);
+      this.match.jump(entry.playerId, entry.seitlich ?? 0, entry.salto === true);
+      return;
+    }
+    if (entry.kind === 'move') {
+      this.match.gehen?.setzeRichtung(entry.playerId, entry.richtung ?? 0);
       return;
     }
     if (entry.kind === 'skip_pause') {
@@ -806,12 +815,14 @@ class LobbySession {
       return { ok: false, errors: ['seitlich muss -1, 0 oder 1 sein'] };
     }
 
-    const result = this.match.jump(seat.entityId, seitlich);
+    const salto = message.salto === true;
+    if (message.salto !== undefined && typeof message.salto !== 'boolean') return { ok: false, errors: ['salto muss true oder false sein'] };
+    const result = this.match.jump(seat.entityId, seitlich, salto);
     if (result.ok) {
       this.recorder.recordInput({
         tick: this.match.world.tickCount,
         playerId: seat.entityId,
-        seitlich,
+        seitlich, salto,
         kind: 'jump',
       });
     }
@@ -837,6 +848,45 @@ class LobbySession {
       else this.metrics.commandsRejected += 1;
     }
     return result;
+  }
+
+  /**
+   * Gehabsicht setzen, erneuern oder löschen (Bewegungsfassung 2).
+   *
+   * Eigene Steuernachricht `move` mit `richtung` (−1|0|1), streng typgeprüft. Die Identität kommt aus dem
+   * TOKEN. Neben der Mengengrenze je Verbindung (`TokenBucket` in `#handleConnection`) hat jeder Sitz eine
+   * eigene, engere Grenze (`BEWEGUNG.nachrichtenProSekunde`): Wechsel und Erneuerung genügen, mehr ist Missbrauch.
+   * Jede angenommene Nachricht wird aufgezeichnet — die Haltedauer der Absicht hängt an ihrem Takt.
+   */
+  handleMove(token, message = {}) {
+    const result = this.#handleMove(token, message);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  #handleMove(token, message) {
+    const seat = this.#platzFuer(token);
+    if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
+    if (!this.match.gehen) return { ok: false, errors: ['Gehen ist in dieser Partie nicht vorhanden'] };
+    const richtung = message.richtung ?? 0;
+    if (typeof richtung !== 'number' || !Number.isInteger(richtung) || richtung < -1 || richtung > 1) {
+      return { ok: false, errors: ['richtung muss -1, 0 oder 1 sein'] };
+    }
+    let eimer = this.#gehGrenzen.get(seat.entityId);
+    if (!eimer) {
+      eimer = new TokenBucket({ rate: BEWEGUNG.nachrichtenProSekunde, stoss: BEWEGUNG.nachrichtenProSekunde });
+      this.#gehGrenzen.set(seat.entityId, eimer);
+    }
+    // „Stopp" (0) wird nie gedrosselt: Eine verlorene Stopp-Nachricht ließe die Figur laufen.
+    if (richtung !== 0 && !eimer.erlaube()) return { ok: false, errors: ['Zu viele Geh-Nachrichten'] };
+    const result = this.match.gehen.setzeRichtung(seat.entityId, richtung);
+    if (result.ok) {
+      this.recorder.recordInput({ tick: this.match.world.tickCount, playerId: seat.entityId, richtung, kind: 'move' });
+    }
+    return { ok: result.ok, errors: result.errors ?? [] };
   }
 
   /** Zugpause vorzeitig beenden: nur der Spieler, der gleich dran ist. */
@@ -1346,6 +1396,7 @@ export class GameServer {
               guenther: options.guenther,
               cookie: options.cookie,
               feuer: options.feuer,
+              bewegung: options.bewegung,
               metrics: this.metrics,
               logger: this.logger,
             });
@@ -2066,6 +2117,14 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleJump(context.token, message);
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
+            break;
+          }
+
+          case CONTROL.MOVE: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = session.handleMove(context.token, message);
             if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }

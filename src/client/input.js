@@ -8,6 +8,19 @@
  * @module input
  */
 import { isTextEntry } from './dom.js';
+import { BEWEGUNG } from '../shared/config/bewegung.js';
+
+/** Zieltempo der gehaltenen Zieltasten in rad/s. */
+const ZIELTEMPO = 1.2;
+const LINKS = new Set(['a', 'arrowleft']);
+const RECHTS = new Set(['d', 'arrowright']);
+const OBEN = new Set(['w', 'arrowup']);
+const UNTEN = new Set(['s', 'arrowdown']);
+
+/** Normierter Tastenname: Buchstaben klein, damit Shift+A und A dieselbe Taste sind. */
+function taste(key) {
+  return typeof key === 'string' ? key.toLowerCase() : '';
+}
 
 /** Kraft eines getippten Schusses (Ladefortschritt 0). */
 export const MIN_KRAFT = 30;
@@ -58,6 +71,11 @@ export class InputController {
   #chargeStart = 0;
   #pointer = { x: 0, y: 0 };
   #scale = { x: 1, y: 1 };
+  #lauf = 0;
+  #ladenPerTaste = false;
+  #touchLauf = 0;
+  #laufGesendet = 0;
+  #blick = 1;
 
   /**
    * @param {HTMLCanvasElement} canvas
@@ -114,60 +132,75 @@ export class InputController {
       // Ohne diese Prüfung würde z. B. der Seed "2026" den Winkel verändern,
       // die Leertaste feuern und "r" das Match neu starten.
       if (isTextEntry(event.target)) return;
-      this.#keys.add(event.key);
+      this.#keys.add(taste(event.key));
       this.#onKeyDown(event);
     });
 
     window.addEventListener('keyup', event => {
-      this.#keys.delete(event.key);
-      if (event.key === ' ' && this.#charging) this.#releaseCharge();
+      const key = taste(event.key);
+      this.#keys.delete(key);
+      if (key === ' ' || key === 'shift') {
+        // Geladen wird mit Leertaste ODER Shift: erst wenn keine der beiden mehr gehalten wird, fällt der Schuss.
+        if (this.#charging && this.#ladenPerTaste && !this.#keys.has(' ') && !this.#keys.has('shift')) this.#releaseCharge();
+      }
+      this.#syncLaufen();
+    });
+
+    // Fokusverlust: ein verlorenes „Taste los" darf die Figur nicht weiterlaufen lassen.
+    window.addEventListener('blur', () => {
+      this.#keys.clear();
+      this.#charging = false;
+      this.#syncLaufen();
     });
 
     window.addEventListener('resize', () => this.#recalculateScale());
   }
 
+  /*
+   * TASTENBELEGUNG (verbindlich, Auftraggeber 2026-10-21):
+   *
+   *   A / ←     links laufen (gehalten)       D / →     rechts laufen (gehalten)
+   *   W / ↑     nach oben zielen (gehalten)   S / ↓     nach unten zielen (gehalten)
+   *   Leertaste ODER Shift (gehalten)  Schuss aufladen, beim Loslassen feuern
+   *   Enter     Sprung (mit gehaltenem A/D seitlich; in der Luft Doppelsprung)
+   *   Rück      Rückwärtssalto: hoher, weiter Sprung entgegen der Blickrichtung
+   *   1–9 Waffe · E Waffenmenü · Q Waffe abwerfen · Maus: zielen und halten = aufladen
+   *
+   * Warum Enter = Sprung und Rück = Salto: Beide Tasten liegen rechts, weit weg von den Lauf- und Zieltasten der linken
+   * Hand, und die rechte Hand kann springen, während die linke läuft (A/D + Enter ist die Worms-Geste). Enter feuerte
+   * früher sofort ohne Aufladen; dieser Weg entfällt, der Schuss läuft nur noch über Aufladen (Tippen = schwacher Schuss).
+   * Shift kann nicht mehr springen: Es lädt jetzt wie die Leertaste. Pfeile und WASD sind gleichwertig.
+   * Kraft stellt keine Taste mehr ein — sie ergibt sich allein aus der Haltedauer (`kraftAusLadung`).
+   */
   #onKeyDown(event) {
-    const key = event.key;
+    const key = taste(event.key);
 
-    if (key === ' ') {
-      event.preventDefault();
+    if (key === ' ' || key === 'shift') {
+      if (key === ' ') event.preventDefault();
+      if (!this.#charging) this.#ladenPerTaste = true;
       this.#beginCharge();
       return;
     }
-    /*
-     * Enter feuert — sofort, ohne Aufladen.
-     *
-     * Fund (belegt): Enter stand in der Aufzählung der „ignorierten" Tasten
-     * (`if (... || key === 'Enter' || ...) return;`) und wurde damit STUMM
-     * verworfen. Das README dokumentierte aber „`Enter` | Feuern", und kein
-     * Test hat es je geprüft — die Steuerungstabelle war also eine Behauptung.
-     *
-     * Aufgefallen ist es erst, als die Schussvorhersage einen Test brauchte,
-     * der ohne Maus feuert (ein Klick würde den Winkel mitverändern).
-     *
-     * Die Leertaste lädt auf (Klick-Verhalten), Enter schießt mit der
-     * eingestellten Kraft — damit gibt es beide Wege, und keiner ist eine
-     * Attrappe.
-     */
-    if (key === 'Enter') {
+    if (key === 'enter') {
       event.preventDefault();
-      this.#handlers.onFire?.();
+      this.#handlers.onJump?.(this.#laufRichtung(), false);
       return;
     }
-    if (key === 'a' || key === 'A' || key === 'ArrowLeft') {
-      this.setAngle(this.#aim.angle + 0.012);
+    if (key === 'backspace') {
+      // Backspace würde in manchen Browsern „Seite zurück" auslösen.
+      event.preventDefault();
+      this.#handlers.onJump?.(-this.#blick, true);
       return;
     }
-    if (key === 'd' || key === 'D' || key === 'ArrowRight') {
-      this.setAngle(this.#aim.angle - 0.012);
+    if (LINKS.has(key) || RECHTS.has(key)) {
+      if (key.startsWith('arrow')) event.preventDefault();
+      this.#syncLaufen();
       return;
     }
-    if (key === 'w' || key === 'W' || key === 'ArrowUp') {
-      this.setPower(this.#aim.power + 1);
-      return;
-    }
-    if (key === 's' || key === 'S' || key === 'ArrowDown') {
-      this.setPower(this.#aim.power - 1);
+    if (OBEN.has(key) || UNTEN.has(key)) {
+      if (key.startsWith('arrow')) event.preventDefault();
+      // Ein Tipp zielt sofort ein Stück; Halten läuft über `update` weiter.
+      this.#ziele(OBEN.has(key) ? 1 : -1, 0.012);
       return;
     }
     if (/^[1-9]$/.test(key)) {
@@ -176,38 +209,71 @@ export class InputController {
     }
     // Q wirft die gerade gewählte Waffe ab. Bewusst eine eigene Taste: Abwerfen
     // ist eine Entscheidung, kein Nebenprodukt einer anderen Handlung.
-    if (key === 'q' || key === 'Q') {
+    if (key === 'q') {
       this.#handlers.onWeaponDrop?.();
       return;
     }
     // E öffnet/schließt das Waffenmenü (Dropdown des Besitzes).
-    if (key === 'e' || key === 'E') {
+    if (key === 'e') {
       this.#handlers.onWeaponMenu?.();
-      return;
     }
-    /*
-     * Springen liegt auf SHIFT — nicht auf der Leertaste.
-     *
-     * FUND (belegt, 2026-09-20): Hier stand ein Sprung auf
-     * `event.code === 'Space'`. Er war NIE erreichbar: Die Leertaste beginnt
-     * weiter oben das Aufladen und kehrt zurück. Damit hatte der Sprung GAR
-     * KEINEN Auslöser — er war nur über die Debug-API (`__PA__.jump`) erreichbar,
-     * während README und Hilfe ihn als Spielereingabe nannten. Ein Test, der
-     * `__PA__.jump()` aufrief, konnte das nie bemerken.
-     *
-     * Die Leertaste bleibt das Aufladen (festgehalten von
-     * `prediction-gpu.spec.mjs`, „Die Leertaste lädt weiterhin auf …"), Enter
-     * feuert sofort. Für den Sprung bleibt damit eine eigene Taste: SHIFT.
-     *
-     * Mit A/D wird die Richtung mitgegeben, damit man über Kanten kommt; der
-     * zweite Druck in der Luft ist der Doppelsprung. Die Pfeiltasten sind oben
-     * schon für Winkel und Kraft vergeben und tun hier bewusst nichts.
-     */
-    if (key === 'Shift') {
-      const seitlich = this.#keys.has('a') || this.#keys.has('A') || this.#keys.has('ArrowLeft')
-        ? -1
-        : (this.#keys.has('d') || this.#keys.has('D') || this.#keys.has('ArrowRight') ? 1 : 0);
-      this.#handlers.onJump?.(seitlich);
+  }
+
+  /** Richtung der gehaltenen Lauftasten (Touch-Knopf eingeschlossen): −1, 0, 1. */
+  #laufRichtung() {
+    const links = [...LINKS].some(k => this.#keys.has(k));
+    const rechts = [...RECHTS].some(k => this.#keys.has(k));
+    const tasten = (rechts ? 1 : 0) - (links ? 1 : 0);
+    return tasten !== 0 ? tasten : this.#touchLauf;
+  }
+
+  /** Meldet den Laufzustand, wenn er sich geändert hat; wer läuft, blickt in Laufrichtung (Winkel spiegelt). */
+  #syncLaufen() {
+    const richtung = this.#laufRichtung();
+    if (richtung === this.#lauf) return;
+    this.#lauf = richtung;
+    this.#laufGesendet = performance.now();
+    if (richtung !== 0 && richtung !== this.#blick) {
+      this.#blick = richtung;
+      this.setAngle(Math.PI - this.#aim.angle);
+    }
+    this.#handlers.onWalk?.(richtung);
+  }
+
+  /** Touch-Knopf „Laufen" (Hochformat): gleiche Absicht wie A/D. */
+  setzeLaufen(richtung) {
+    this.#touchLauf = richtung;
+    this.#syncLaufen();
+  }
+
+  /** Blickrichtung der Figur: 1 = rechts, −1 = links (folgt dem Zielwinkel und dem Laufen). */
+  get blickrichtung() { return this.#blick; }
+
+  /**
+   * Nach oben (+1) oder unten (−1) zielen. „Oben" ist zur Senkrechten hin: nach rechts blickend wächst der Winkel,
+   * nach links blickend sinkt er. Über die Senkrechte geht es per Taste nicht hinaus — das Umdrehen ist das Laufen.
+   */
+  #ziele(vorzeichen, schritt) {
+    const hoch = vorzeichen * this.#blick;
+    const neu = this.#aim.angle + hoch * schritt;
+    const grenze = Math.PI / 2;
+    this.setAngle(this.#blick > 0 ? Math.min(neu, Math.max(grenze, this.#aim.angle)) : Math.max(neu, Math.min(grenze, this.#aim.angle)));
+  }
+
+  /**
+   * Pro Bild aufrufen: gehaltenes Zielen und Erneuerung der Gehabsicht.
+   *
+   * @param {number} dtMs - Millisekunden seit dem letzten Aufruf
+   * @param {number} [jetzt] - `performance.now()`
+   */
+  update(dtMs, jetzt = performance.now()) {
+    const dt = Math.min(100, Math.max(0, dtMs)) / 1000;
+    const hoch = [...OBEN].some(k => this.#keys.has(k));
+    const runter = [...UNTEN].some(k => this.#keys.has(k));
+    if (hoch !== runter) this.#ziele(hoch ? 1 : -1, ZIELTEMPO * dt);
+    if (this.#lauf !== 0 && jetzt - this.#laufGesendet >= BEWEGUNG.erneuernMs) {
+      this.#laufGesendet = jetzt;
+      this.#handlers.onWalk?.(this.#lauf);
     }
   }
 
@@ -251,6 +317,7 @@ export class InputController {
   #releaseCharge() {
     const kraft = kraftAusLadung(this.chargeRatio);
     this.#charging = false;
+    this.#ladenPerTaste = false;
     this.#handlers.onFire?.(kraft);
   }
 
@@ -267,6 +334,8 @@ export class InputController {
 
   setAngle(angle) {
     this.#aim.angle = Math.max(0.02, Math.min(Math.PI - 0.02, angle));
+    const c = Math.cos(this.#aim.angle);
+    if (Math.abs(c) > 0.02) this.#blick = c > 0 ? 1 : -1;
     this.#handlers.onAim?.(this.#aim.angle, this.#aim.power);
   }
 

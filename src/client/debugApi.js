@@ -199,7 +199,9 @@ export function exposeDebugApi(game) {
       fillBackdropOptions: () => game.fillBackdropOptions(),
       fillBiomOptions: () => game.fillBiomOptions(),
       /** Springen (seitlich: -1, 0, 1). */
-      jump: seitlich => game.jump(seitlich ?? 0),
+      jump: (seitlich, salto) => game.jump(seitlich ?? 0, salto === true),
+      /** Gehabsicht setzen (−1 links, 0 Stopp, 1 rechts); wie A/D. */
+      walk: richtung => game.walk(richtung ?? 0),
       /** Steht die Figur am Zug auf festem Grund? */
       isGrounded: () => game.match ? game.match.isGrounded(game.match.activePlayerId) : false,
       /**

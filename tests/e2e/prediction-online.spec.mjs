@@ -177,7 +177,7 @@ test.describe('Schussvorhersage online', () => {
         return eintrag;
       };
     });
-    await page.keyboard.press('Enter');
+    await page.keyboard.press(' ');
 
     /*
      * Geprüft wird der Zustand BEIM ABSCHUSS, nicht eine Uhrzeit.
@@ -272,7 +272,7 @@ test.describe('Schussvorhersage online', () => {
     const istAmZug = await page.evaluate(() => window.__PA__.game.network.isMyTurn);
     test.skip(istAmZug, 'Der Client ist bereits am Zug — Ablehnung nicht auslösbar');
 
-    await page.keyboard.press('Enter');
+    await page.keyboard.press(' ');
     await page.waitForTimeout(600);
 
     const zustand = await page.evaluate(() => window.__PA__.prediction());
@@ -326,7 +326,7 @@ test.describe('Schussvorhersage online', () => {
 
       const vorher = await page.evaluate(() => window.__PA__.game.sound.gezaehlt);
 
-      await page.keyboard.press('Enter');
+      await page.keyboard.press(' ');
 
       // Auf den ZUWACHS warten — der Zähler ist der Beleg, nicht eine Frist.
       await page.waitForFunction(

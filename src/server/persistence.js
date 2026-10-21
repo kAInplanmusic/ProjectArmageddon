@@ -21,6 +21,7 @@ import { WAFFEN_ALT } from '../shared/config/waffen-fassung.js';
 import { KISTEN_ALT } from '../shared/config/kisten.js';
 import { GUENTHER_ALT } from '../shared/config/guenther.js';
 import { COOKIE_ALT } from '../shared/config/cookie.js';
+import { BEWEGUNG_ALT } from '../shared/config/bewegung.js';
 import { FEUER_ALT } from '../shared/config/feuer.js';
 import { GELAENDE_ALT } from '../shared/config/gelaende.js';
 import { SCHADEN_ALT } from '../shared/config/schaden.js';
@@ -279,6 +280,7 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       guenther: saved.replay.config?.guenther ?? GUENTHER_ALT,
       cookie: saved.replay.config?.cookie ?? COOKIE_ALT,
       feuer: saved.replay.config?.feuer ?? FEUER_ALT,
+      bewegung: saved.replay.config?.bewegung ?? BEWEGUNG_ALT,
     })
     : null;
 

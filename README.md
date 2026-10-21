@@ -243,17 +243,28 @@ ist die folgende.
 
 | Taste | Wirkung |
 |---|---|
-| `Maus` | Zielen (Winkel und Kraft am Zeiger) |
-| `Klick` / `Leertaste` | Aufladen und beim Loslassen feuern (halten = mehr Kraft) |
-| `Enter` | Sofort feuern (mit der eingestellten Kraft) |
-| `Shift` | Springen (mit `A`/`D` seitlich; in der Luft Doppelsprung) |
-| `A` / `D` | Winkel feinjustieren |
-| `W` / `S` | Kraft erhöhen / senken |
+| `A` / `←` | Nach links laufen (gehalten; Stufen und Hänge bis 3 px je Schritt, an Kanten fällt die Figur) |
+| `D` / `→` | Nach rechts laufen (gehalten) |
+| `W` / `↑` | Nach oben zielen (gehalten; zur Senkrechten hin) |
+| `S` / `↓` | Nach unten zielen (gehalten) |
+| `Leertaste` oder `Shift` | Gehalten: Schuss aufladen; beim Loslassen feuern (Kraft = Haltedauer, Tippen = schwacher Schuss) |
+| `Maus` | Zielen am Zeiger; Klick halten = aufladen, loslassen = feuern |
+| `Enter` | Springen (mit gehaltenem `A`/`D` seitlich; in der Luft Doppelsprung) |
+| `Rück` (Backspace) | Rückwärtssalto: hoher, weiter Sprung entgegen der Blickrichtung |
 | `1`–`9` | Waffe wählen (Nummern wie in der Liste) |
 | `Q` | Aktive Waffe abwerfen |
 | `M` | Musik stumm/laut (nicht beim Tippen in ein Textfeld) |
 | `T` | Effekte (Schüsse, Einschläge, Treffer) stumm/laut |
 | `R` | Zurück zum Menü |
+
+**Gehen (Bewegungsfassung 2, `config.bewegung`):** Die Figur am Zug läuft mit `A`/`D` (72 px/s, mal
+Klassenfaktor 0,6–1,4 aus der Beweglichkeit, gebremst von Verlangsamung). Sie folgt Hängen und Stufen bis
+`BEWEGUNG.maxStufe` (3 px je Schritt), eine höhere Kante ist eine Wand, ein tieferer Absatz lässt sie fallen
+(Fallschaden-Regel und Wasser wie bisher). Nach dem Schuss wird nicht mehr gegangen. Online geht die Absicht als
+`move` an den Server (höchstens 12 Nachrichten/s je Sitz, Absicht verfällt nach 1,5 s ohne Erneuerung); der Client
+läuft sofort mit (`laufVorhersage.js`) und gleitet auf den Serverstand zurück. Die Marke steht im Replay-Kopf;
+Aufzeichnungen ohne `bewegung` spielen unverändert ohne Gehen. Touch (Hochformat): Knöpfe „Gehen“ links/rechts
+(gehalten), Sprung links/rechts, Salto, Abwurf.
 
 **Musik:** Hintergrundmusik im Menü und im Match (`src/client/musik.js`, Stücke und
 `manifest.json` in `src/client/assets/music/`). Schalter „Musik an/aus“ und Regler
@@ -301,9 +312,9 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1802 Tests in 189 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1810 Tests in 190 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
-| `npm run test:e2e` | Browser-E2E: **314 Tests in 56 Spezifikationen**, ~40 min seriell (Stand 2026-10-21: **309 grün, 0 rot, 2 übersprungen**, Gesamtlauf in 7 Blöcken à 8 Specs auf dem Endstand aa28a29, eigener Port, ohne Nachläufe; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
+| `npm run test:e2e` | Browser-E2E: **321 Tests in 58 Spezifikationen**, ~40 min seriell (Stand 2026-10-21: **309 grün, 0 rot, 2 übersprungen**, Gesamtlauf in 7 Blöcken à 8 Specs auf dem Endstand aa28a29, eigener Port, ohne Nachläufe; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |
 | `npm run lint` | ESLint (CI-Gate, bricht bei Fehlern ab) |
 | `npm run smoke` | Headless-Match bis Spielende |

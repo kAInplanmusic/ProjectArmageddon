@@ -166,7 +166,7 @@
     #game-canvas { touch-action: none; }
 
     /* Touch-Aktionen: nur mit grobem Zeiger sichtbar; große Trefferflächen (≥ 44 px). */
-    #touch-aktionen { display: none; }
+    #touch-aktionen, #touch-laufen { display: none; }
     @media (pointer: coarse) {
       #touch-aktionen:not([hidden]) {
         display: flex;
@@ -176,10 +176,18 @@
         z-index: 6;
         gap: 8px;
       }
+      #touch-laufen:not([hidden]) {
+        display: flex;
+        position: absolute;
+        right: 12px;
+        bottom: 66px;
+        z-index: 6;
+        gap: 8px;
+      }
       /* Platz links unten für die Tasten: Das Protokoll rückt nach rechts. */
       #hud-log { left: 250px !important; }
       #hud-aim { transform: translateX(125px); }
-      #touch-aktionen button {
+      #touch-aktionen button, #touch-laufen button {
         min-width: 62px;
         min-height: 46px;
         padding: 4px 8px;
@@ -191,7 +199,7 @@
         border-radius: 6px;
         touch-action: manipulation;
       }
-      #touch-aktionen button:active { background: rgba(244, 162, 97, 0.35); }
+      #touch-aktionen button:active, #touch-laufen button:active { background: rgba(244, 162, 97, 0.35); }
       /* Waffenzeilen: größere Trefferfläche (vorher 22 px hoch). */
       .weapon-item { min-height: 36px; }
     }
@@ -820,7 +828,7 @@
         width="1280"
         height="720"
         tabindex="0"
-        aria-label="Spielfeld: rundenbasiertes Artillerie-Spiel. Mit den Pfeiltasten oder A und D den Winkel ändern, mit W und S die Kraft, mit der Leertaste feuern."
+        aria-label="Spielfeld: rundenbasiertes Artillerie-Spiel. Mit A und D laufen, mit W und S nach oben und unten zielen, mit Leertaste oder Shift halten laden und beim Loslassen feuern, mit Enter springen."
       ></canvas>
 
       <!--
@@ -841,16 +849,23 @@
       </section>
 
       <!-- Touch-Aktionen (nur bei grobem Zeiger, z. B. Handy): Sprung links/rechts und Abwurf — vorher gab es dafür
-           nur Tastatur (Shift, A/D, Q). Zielen und Schießen laufen weiter über Ziehen/Halten auf dem Spielfeld. -->
+           nur Tastatur (A/D, Enter, Rück, Q). Zielen und Schießen laufen weiter über Ziehen/Halten auf dem Spielfeld. -->
       <div id="touch-aktionen" role="group" aria-label="Aktionen" hidden>
         <button type="button" data-aktion="sprung-links" aria-label="Nach links springen">⤴ Links</button>
         <button type="button" data-aktion="sprung-rechts" aria-label="Nach rechts springen">Rechts ⤴</button>
         <button type="button" data-aktion="abwurf" aria-label="Aktive Waffe abwerfen">Abwurf</button>
       </div>
+      <!-- Touch-Bewegung (rechts, über dem FEUER-Knopf): Laufen links/rechts gehalten und Rückwärtssalto. Eigene Gruppe,
+           damit die linke Aktionsleiste schmal bleibt und das Waffenmenü nicht verdeckt. -->
+      <div id="touch-laufen" role="group" aria-label="Bewegung" hidden>
+        <button type="button" data-laufen="links" aria-label="Nach links laufen (gedrückt halten)">◀ Gehen</button>
+        <button type="button" data-laufen="rechts" aria-label="Nach rechts laufen (gedrückt halten)">Gehen ▶</button>
+        <button type="button" data-aktion="salto" aria-label="Rückwärtssalto: hoher Sprung nach hinten">Salto</button>
+      </div>
       <div id="zugpause" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span class="zugpause-titel"></span>
         <span class="zugpause-zahl" aria-hidden="true"></span>
-        <span class="zugpause-hinweis" aria-hidden="true">Leertaste oder Enter überspringt</span>
+        <span class="zugpause-hinweis" aria-hidden="true">Leertaste oder Shift überspringt</span>
       </div>
       <!-- Tier-Leiste: Cookies Hunger und Miau-Pegel, Günthers Sprechblase (src/client/tierHud.js); nur sichtbar, wenn es etwas zu zeigen gibt. -->
       <div id="tier-hud" aria-hidden="true" hidden>
@@ -1317,11 +1332,11 @@
                     </div>
           <div class="keymap">
             <span><b>Maus</b> Zielen</span>
-            <span><b>Klick / Leertaste</b> Aufladen und feuern</span>
-            <span><b>Enter</b> Sofort feuern</span>
-            <span><b>Shift</b> Springen (mit A/D seitlich, in der Luft doppelt)</span>
-            <span><b>A / D</b> Winkel feinjustieren</span>
-            <span><b>W / S</b> Kraft ändern</span>
+            <span><b>Klick / Leertaste / Shift</b> Halten lädt den Schuss auf, Loslassen feuert (Kraft = Haltedauer)</span>
+            <span><b>A / D</b> oder <b>← / →</b> Laufen (gehalten)</span>
+            <span><b>W / S</b> oder <b>↑ / ↓</b> Nach oben / unten zielen</span>
+            <span><b>Enter</b> Springen (mit A/D seitlich, in der Luft doppelt)</span>
+            <span><b>Rück</b> Rückwärtssalto (hoch und weit nach hinten)</span>
             <span><b>1–9</b> Waffe wählen</span>
             <span><b>Q</b> Waffe abwerfen</span>
             <span><b>E</b> Waffenmenü (Besitz als Auswahl)</span>

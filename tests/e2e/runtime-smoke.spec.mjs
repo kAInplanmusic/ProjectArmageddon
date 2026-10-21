@@ -239,7 +239,7 @@ test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-AP
    * solcher Test konnte den fehlenden Auslöser nicht bemerken. README und Hilfe
    * nannten derweil „Leertaste: Springen", während die Leertaste auflädt.
    *
-   * Geprüft wird deshalb über die TASTATUR: Shift drücken → die Figur springt.
+   * Geprüft wird deshalb über die TASTATUR: Enter drücken → die Figur springt.
    *
    * NACHGEZOGEN 2026-09-27: Hier stand `jumpsLeft` als sofortiges Signal
    * („sinkt SOFORT"). Seit die Sprünge je Zug UNBEGRENZT sind
@@ -268,7 +268,7 @@ test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-AP
   // prüfte der Test die Bodenregel statt den Auslöser.
   expect(vorher.steht, 'Die Figur steht nicht auf dem Boden').toBe(true);
 
-  await page.keyboard.press('Shift');
+  await page.keyboard.press('Enter');
 
   // SOFORTIGES Signal: der Sprung erscheint als Ereignis. Es entsteht beim
   // Tastendruck und wird beim nächsten Simulationsschritt eingesammelt.
@@ -276,7 +276,7 @@ test('Der Sprung ist mit einer TASTE erreichbar — nicht nur über die Debug-AP
     window.__PA__.advance(1);
     return window.__PA__.events().map(e => e.type);
   });
-  expect(ereignisarten, 'Shift hat den Sprung nicht ausgelöst').toContain('jumped');
+  expect(ereignisarten, 'Enter hat den Sprung nicht ausgelöst').toContain('jumped');
 
   const nachTicks = await page.evaluate(() => {
     window.__PA__.advance(8);
