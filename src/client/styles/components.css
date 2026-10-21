@@ -1,0 +1,131 @@
+/*
+ * KOMPONENTEN (wiederverwendbare Bausteine nach der UI-Vorlage; Klassen mit Präfix „pa-“).
+ * Nur Werte aus tokens.css. Die Bausteine ergänzen die ID-Stile in design.css, ersetzen sie nicht.
+ *
+ *   Knöpfe   .pa-btn + .pa-btn--primaer | --sekundaer | --gefahr   (deaktiviert: [disabled] / aria-disabled)
+ *   Tabs     .pa-tabs > .pa-tab[aria-selected]
+ *   Toggle   label.pa-toggle > input[type=checkbox] + .pa-toggle__spur
+ *   Regler   input.pa-slider[type=range]
+ *   Balken   .pa-balken.pa-balken--leben|ruestung|xp > .pa-balken__fuell(style --anteil) + .pa-balken__zahl
+ *   Karte    .pa-karte (+ --lime|--orange|--cyan|--violet|--rot als Rahmenton)
+ *   Dialog   .pa-dialog (+ --sieg|--erfolg|--gefahr), .pa-dialog__titel
+ *   Toast    .pa-toast (+ data-ton), Status  .pa-status[data-status] (online|match|abwesend|offline|bereit|nicht-bereit|laedt|speichert)
+ */
+
+/* ------------------------------------------------------------ Knöpfe */
+.pa-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--abstand-2);
+  font-family: var(--font-display); font-size: var(--fs-l); letter-spacing: var(--spur); text-transform: uppercase;
+  padding: 10px var(--abstand-4); min-height: 44px;
+  color: var(--ink); background: var(--verlauf-sekundaer);
+  border: 1px solid var(--panel-hi); border-radius: var(--radius-s);
+  box-shadow: var(--glanz), var(--schatten-s);
+  cursor: pointer; touch-action: manipulation;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.06s;
+}
+.pa-btn:hover:not(:disabled):not([aria-disabled='true']) { border-color: var(--lime-dim); filter: brightness(1.12); }
+.pa-btn:active:not(:disabled):not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--glanz); }
+.pa-btn:focus-visible { outline: var(--fokus-breite) solid var(--fokus-farbe); outline-offset: var(--fokus-abstand); }
+.pa-btn--primaer {
+  color: var(--ink-on-accent); background: var(--verlauf-primaer); border-color: #c8ff7a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 1px #2a4d00, 0 3px 0 #2f5a00, var(--leuchten-lime), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.pa-btn--primaer:hover:not(:disabled) { background: var(--verlauf-primaer-hover); border-color: #c8ff7a; }
+/* Fadenkreuz-Zeichen des Primärknopfs (Vorlage): reines CSS, kein Bild. */
+.pa-btn--fadenkreuz::after {
+  content: ''; width: 1em; height: 1em; flex: 0 0 auto; border-radius: 50%;
+  border: 2px solid currentColor;
+  background:
+    linear-gradient(currentColor, currentColor) center / 2px 140% no-repeat,
+    linear-gradient(currentColor, currentColor) center / 140% 2px no-repeat;
+}
+.pa-btn--sekundaer { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border-color: var(--panel-edge); }
+.pa-btn--gefahr { color: #fff; background: var(--verlauf-gefahr); border-color: #ff9a6b; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45); }
+/* Hinweis: #fff auf #ff4d00 hat nur ~3,4:1 — groß (>= 19 px, Bebas Neue) gilt AA für große Schrift. */
+.pa-btn:disabled, .pa-btn[aria-disabled='true'] {
+  color: var(--muted); background: var(--panel); border-color: var(--panel-2); box-shadow: none; text-shadow: none;
+  cursor: not-allowed; opacity: 0.7;
+}
+
+/* ------------------------------------------------------------ Tabs */
+.pa-tabs { display: flex; flex-wrap: wrap; gap: var(--abstand-1); }
+.pa-tab {
+  font-family: var(--font-display); font-size: var(--fs-l); letter-spacing: var(--spur);
+  padding: 6px var(--abstand-3); border-radius: var(--radius-s);
+  color: var(--muted); background: var(--panel); border: 1px solid var(--panel-edge); box-shadow: none; cursor: pointer;
+}
+.pa-tab[aria-selected='true'], .pa-tab.is-aktiv {
+  color: var(--lime); border-color: var(--lime); background: linear-gradient(180deg, #2d3d1c, #1d2812);
+}
+.pa-tab:hover:not([aria-selected='true']) { color: var(--ink); border-color: var(--lime-dim); }
+
+/* ------------------------------------------------------------ Toggle (Schalter) */
+.pa-toggle { display: inline-flex; align-items: center; gap: var(--abstand-2); cursor: pointer; }
+.pa-toggle > input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pa-toggle__spur {
+  position: relative; flex: 0 0 auto; width: 44px; height: 24px; border-radius: var(--radius-rund);
+  background: var(--panel-2); border: 1px solid var(--panel-edge); transition: background 0.15s, border-color 0.15s;
+}
+.pa-toggle__spur::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--ink); transition: transform 0.15s;
+}
+.pa-toggle > input:checked + .pa-toggle__spur { background: var(--lime-dim); border-color: var(--lime); }
+.pa-toggle > input:checked + .pa-toggle__spur::after { transform: translateX(20px); background: var(--ink-on-accent); }
+.pa-toggle > input:focus-visible + .pa-toggle__spur { outline: var(--fokus-breite) solid var(--fokus-farbe); outline-offset: var(--fokus-abstand); }
+
+/* ------------------------------------------------------------ Regler */
+.pa-slider { accent-color: var(--lime); height: 24px; cursor: pointer; }
+.pa-slider:focus-visible { outline: var(--fokus-breite) solid var(--fokus-farbe); outline-offset: var(--fokus-abstand); }
+
+/* ------------------------------------------------------------ Balken */
+.pa-balken { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--abstand-2); --balken-farbe: var(--balken-leben); }
+.pa-balken--ruestung { --balken-farbe: var(--balken-ruestung); }
+.pa-balken--xp { --balken-farbe: var(--balken-xp); }
+.pa-balken__spur { height: 8px; border-radius: var(--radius-rund); background: var(--bg); border: 1px solid var(--panel-edge); overflow: hidden; }
+.pa-balken__fuell { display: block; height: 100%; width: calc(var(--anteil, 1) * 100%); background: var(--balken-farbe); border-radius: inherit; box-shadow: 0 0 8px var(--balken-farbe); }
+.pa-balken__zahl { font-family: var(--font-display); font-size: var(--fs-m); letter-spacing: var(--spur); color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------ Karte */
+.pa-karte {
+  --karte-ton: var(--panel-edge);
+  position: relative; padding: var(--abstand-3); border-radius: var(--radius-m);
+  background: var(--verlauf-flaeche); border: 1px solid var(--karte-ton); box-shadow: var(--schatten-m);
+}
+.pa-karte--lime { --karte-ton: var(--lime); }
+.pa-karte--orange { --karte-ton: var(--orange); }
+.pa-karte--cyan { --karte-ton: var(--cyan); }
+.pa-karte--violet { --karte-ton: var(--violet); }
+.pa-karte--rot { --karte-ton: var(--red); }
+
+/* ------------------------------------------------------------ Dialog */
+.pa-dialog { --dialog-ton: var(--lime); }
+.pa-dialog.panel, .pa-dialog.pa-karte { border-color: var(--dialog-ton); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 28px color-mix(in srgb, var(--dialog-ton) 28%, transparent), var(--schatten-m); }
+.pa-dialog--erfolg { --dialog-ton: var(--violet); }
+.pa-dialog--gefahr { --dialog-ton: var(--red); }
+.pa-dialog__titel { font-family: var(--font-display); letter-spacing: 0.08em; color: var(--dialog-ton); margin: 0; text-align: center; }
+
+/* ------------------------------------------------------------ Toast / Benachrichtigungskarte */
+.pa-toast { border-left: 4px solid var(--toast-farbe, var(--cyan)); border-radius: var(--radius-m); }
+
+/* ------------------------------------------------------------ Statuspunkte */
+.pa-status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--ink); --status-farbe: var(--muted); }
+.pa-status::before { content: ''; width: 10px; height: 10px; border-radius: 2px; background: var(--status-farbe); box-shadow: 0 0 6px color-mix(in srgb, var(--status-farbe) 60%, transparent); flex: 0 0 auto; }
+.pa-status[data-status='online'] { --status-farbe: var(--lime); }
+.pa-status[data-status='match'] { --status-farbe: var(--red); }
+.pa-status[data-status='abwesend'] { --status-farbe: var(--orange); }
+.pa-status[data-status='offline'] { --status-farbe: var(--panel-hi); }
+.pa-status[data-status='bereit'] { --status-farbe: var(--lime); }
+.pa-status[data-status='bereit']::before { border-radius: 50%; }
+.pa-status[data-status='nicht-bereit'] { --status-farbe: var(--red); }
+.pa-status[data-status='nicht-bereit']::before { border-radius: 50%; background: transparent; border: 2px solid var(--status-farbe); box-shadow: none; }
+.pa-status[data-status='laedt']::before, .pa-status[data-status='speichert']::before {
+  border-radius: 50%; background: transparent; border: 2px solid var(--panel-hi); border-top-color: var(--cyan); box-shadow: none; animation: pa-dreh 0.9s linear infinite;
+}
+@keyframes pa-dreh { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-btn, .pa-toggle__spur, .pa-toggle__spur::after { transition: none; }
+  .pa-status[data-status='laedt']::before, .pa-status[data-status='speichert']::before { animation: none; }
+}

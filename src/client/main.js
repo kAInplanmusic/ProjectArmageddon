@@ -992,7 +992,7 @@ class Game {
     if (status) status.textContent = `${offen.length} offene Lobby(s)`;
     list.replaceChildren(...offen.map(lobby => {
       const item = document.createElement('li');
-      item.className = 'lobby-karte';
+      item.className = 'lobby-karte pa-karte';
 
       /*
        * Gezählt werden BEITRETENDE, nicht Figuren.
@@ -3837,6 +3837,7 @@ function buildRosterView() {
   for (const fraktion of fraktionen) {
     const knopf = document.createElement('button');
     knopf.type = 'button';
+    knopf.className = 'pa-tab';
     knopf.textContent = fraktion.name;
     knopf.dataset.fraktion = fraktion.id;
     knopf.setAttribute('role', 'tab');
@@ -3930,6 +3931,7 @@ function buildHilfeView() {
   for (const seite of seiten) {
     const knopf = document.createElement('button');
     knopf.type = 'button';
+    knopf.className = 'pa-tab';
     knopf.textContent = seite.label;
     knopf.dataset.hilfe = seite.id;
     knopf.setAttribute('role', 'tab');

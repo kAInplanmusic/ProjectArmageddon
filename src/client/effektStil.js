@@ -217,9 +217,9 @@ export function zeichneFunken(ctx, teilchen) {
 
 const ZAHL_ART = Object.freeze({
   schaden: { farbe: '#FF3B3B', groesse: 15 },
-  kritisch: { farbe: PAL.orange, groesse: 22 },
+  kritisch: { farbe: '#FFE14A', groesse: 22 },
   heilung: { farbe: PAL.limette, groesse: 15 },
-  schild: { farbe: PAL.cyan, groesse: 15 },
+  schild: { farbe: '#4AA3FF', groesse: 15 },
   ...Object.fromEntries(Object.entries(ZAHL_FAMILIE).map(([familie, v]) => [`schaden-${familie}`, { farbe: v.farbe, groesse: 15 }])),
 });
 
@@ -232,7 +232,7 @@ export function zeichneSchadenszahl(ctx, z) {
   const art = ZAHL_ART[z.art] ?? ZAHL_ART.schaden;
   ctx.save();
   ctx.globalAlpha = Math.min(1, z.life * 2.2);
-  ctx.font = `900 ${art.groesse}px Impact, "Arial Black", system-ui, sans-serif`;
+  ctx.font = `900 ${art.groesse}px "Bebas Neue", Impact, "Arial Black", system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';

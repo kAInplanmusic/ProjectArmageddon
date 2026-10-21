@@ -1,0 +1,96 @@
+/*
+ * DESIGN-TOKENS (UI-Vorlage des Auftraggebers: Stil-Leitfaden, „Turn. Aim. Destroy.“)
+ *
+ * Einzige Quelle für Farben, Radien, Schatten, Schriftgrößen, Abstände und den Fokus-Ring.
+ * design.css und components.css benutzen nur diese Werte (var(--…)); neue Farbwerte gehören hierher.
+ * Kontrast (WCAG AA) der Text-/Hintergrund-Paare prüft tests/design-tokens.test.js.
+ */
+:root {
+  /* Oberfläche, dunkel → hell */
+  --bg: #0d0f12;
+  --panel: #1b1f24;
+  --panel-2: #2b3138;
+  --panel-edge: #3e444d;
+  --panel-hi: #60666e;
+  --ink: #d9dee7;
+  --ink-strong: #f2f5f9;
+  --muted: #8b95a3;
+  --ink-on-accent: #10210a;
+
+  /* Akzente */
+  --lime: #7cfc00;
+  --lime-dim: #4f9e00;
+  --orange: #ffb800;
+  --red: #ff4d00;
+  --cyan: #00e0ff;
+  --violet: #b84dff;
+  --gelb: #ffe14a;
+  --blau: #4aa3ff;
+  --accent: var(--lime);
+  --accent-2: var(--cyan);
+  --danger: var(--red);
+  --ok: var(--lime);
+
+  /* Zahlen im Spiel (Schadensanzeige) */
+  --zahl-schaden: #ff3b3b;
+  --zahl-krit: var(--gelb);
+  --zahl-heilung: var(--lime);
+  --zahl-schild: var(--blau);
+
+  /* Balken */
+  --balken-leben: var(--lime);
+  --balken-ruestung: var(--cyan);
+  --balken-xp: var(--orange);
+
+  /* Verläufe */
+  --verlauf-primaer: linear-gradient(180deg, #a6ff3d 0%, #7cfc00 45%, #5bc200 100%);
+  --verlauf-primaer-hover: linear-gradient(180deg, #b9ff63 0%, #8dff1f 45%, #66d100 100%);
+  --verlauf-sekundaer: linear-gradient(180deg, #343b43, #22272d);
+  --verlauf-gefahr: linear-gradient(180deg, #ff7a3d 0%, #ff4d00 50%, #d93e00 100%);
+  --verlauf-flaeche: linear-gradient(180deg, rgba(43, 49, 56, 0.96), rgba(27, 31, 36, 0.96));
+
+  /* Radien */
+  --radius-s: 4px;
+  --radius-m: 6px;
+  --radius-l: 10px;
+  --radius-rund: 999px;
+
+  /* Schatten */
+  --schatten-s: 0 2px 0 rgba(0, 0, 0, 0.5);
+  --schatten-m: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --schatten-l: 0 24px 80px rgba(0, 0, 0, 0.65);
+  --glanz: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --leuchten-lime: 0 8px 22px rgba(124, 252, 0, 0.28);
+
+  /* Schrift */
+  --font: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', 'Impact', 'Arial Narrow', sans-serif;
+  --fs-xs: 11.5px;
+  --fs-s: 13px;
+  --fs-m: 15px;
+  --fs-l: 19px;
+  --fs-xl: 30px;
+  --spur: 0.06em;
+
+  /* Abstände */
+  --abstand-1: 4px;
+  --abstand-2: 8px;
+  --abstand-3: 12px;
+  --abstand-4: 18px;
+  --abstand-5: 28px;
+
+  /* Fokus-Ring (Tastatur) */
+  --fokus-farbe: var(--lime);
+  --fokus-breite: 2px;
+  --fokus-abstand: 2px;
+}
+
+/* Hochkontrast (System- oder Spieleinstellung): kräftigere Ränder und Text, gleicher Aufbau. */
+@media (prefers-contrast: more) {
+  :root {
+    --ink: #ffffff;
+    --muted: #c4ccd6;
+    --panel-edge: #8b95a3;
+    --fokus-breite: 3px;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Project Armageddon",
+  "short_name": "Armageddon",
+  "description": "Rundenbasiertes 2D-Artillerie-Taktikspiel mit zerstörbarem Terrain. Turn. Aim. Destroy.",
+  "lang": "de",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0d0f12",
+  "theme_color": "#0d0f12",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

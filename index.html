@@ -9,9 +9,12 @@
     einen 404 — bei jedem Besuch. Die Datei liegt in public/, damit Vite sie im
     Build mitkopiert.
   -->
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <title>Project Armageddon</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0d0f12" />
+  <title>Project Armageddon – Turn. Aim. Destroy.</title>
   <style>
     :root {
       --bg: #0b0f14;
@@ -934,7 +937,7 @@
               <span aria-hidden="true">&#9835;</span> <span data-musik-schalter-text>Musik an</span>
             </button>
             <label class="musik-lautstaerke"><span class="musik-lautstaerke-text">Musik-Lautstärke</span>
-              <input type="range" data-musik-regler min="0" max="100" step="5" value="35" />
+              <input class="pa-slider" type="range" data-musik-regler min="0" max="100" step="5" value="35" />
             </label>
             <span class="musik-titel" data-musik-titel data-musik-kurz></span>
           </div>
@@ -981,7 +984,7 @@
         <div id="hud-dial" aria-hidden="true"><span class="dial-wert">45°</span><span class="dial-name">WINKEL</span></div>
         <button type="button" id="hud-fire" aria-label="Feuern: halten zum Aufladen, loslassen zum Schießen">
           <span class="fire-text">FEUER</span>
-          <span class="fire-unter">HALTEN ZUM LADEN</span>
+          <span class="fire-unter">HALTEN ZUM AUFLADEN</span>
           <span class="fire-ladung" aria-hidden="true"></span>
         </button>
         <div id="hud-aim" class="panel">
@@ -1147,7 +1150,7 @@
             </label>
           </div>
           <div class="start-zeile">
-            <button id="start-button" type="button">Match starten</button>
+            <button id="start-button" type="button" class="pa-btn pa-btn--primaer pa-btn--fadenkreuz">Match starten</button>
             <button id="ueberrasch-button" type="button" class="secondary" title="Würfelt Biom, Kulisse und Fraktionen und startet sofort">Überrasch mich</button>
           </div>
           <p id="ueberrasch-status" class="field-hint" role="status" aria-live="polite"></p>
@@ -1168,7 +1171,7 @@
               <span aria-hidden="true">&#9835;</span> <span data-musik-schalter-text>Musik an</span>
             </button>
             <label class="musik-lautstaerke">Musik-Lautstärke
-              <input type="range" data-musik-regler min="0" max="100" step="5" value="35" />
+              <input class="pa-slider" type="range" data-musik-regler min="0" max="100" step="5" value="35" />
             </label>
             <span class="musik-titel" data-musik-titel></span>
           </div>
@@ -1182,7 +1185,7 @@
               <span aria-hidden="true">&#128266;</span> <span data-ton-schalter-text>Effekte an</span>
             </button>
             <label class="musik-lautstaerke">Effekt-Lautstärke
-              <input type="range" data-ton-regler min="0" max="100" step="5" value="80" />
+              <input class="pa-slider" type="range" data-ton-regler min="0" max="100" step="5" value="80" />
             </label>
           </div>
           <details id="lobby-browser">
@@ -1290,12 +1293,12 @@
             </div>
             <div class="field-row">
               <label for="replay-speed">Tempo</label>
-              <input id="replay-speed" type="range" min="0.25" max="4" step="0.25" value="1" />
+              <input id="replay-speed" class="pa-slider" type="range" min="0.25" max="4" step="0.25" value="1" />
               <span id="replay-speed-value" class="muted">1×</span>
             </div>
             <div class="field-row">
               <label for="replay-seek">Stelle</label>
-              <input id="replay-seek" type="range" min="0" max="1000" step="1" value="0" disabled />
+              <input id="replay-seek" class="pa-slider" type="range" min="0" max="1000" step="1" value="0" disabled />
             </div>
             <progress id="replay-progress" max="1000" value="0" aria-label="Fortschritt der Wiedergabe"></progress>
             <p id="replay-status" class="muted" role="status" aria-live="polite">Keine Aufzeichnung geladen.</p>
@@ -1361,7 +1364,7 @@
       </section>
 
       <section id="end-overlay" class="overlay" hidden aria-label="Spielende">
-        <div class="overlay-card panel">
+        <div class="overlay-card panel pa-dialog">
           <h1>Match <span class="accent">beendet</span></h1>
           <!-- Siegerzeichen (Entwurf „VICTORY!“): reine Dekoration. -->
           <svg class="sieg-schaedel" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
@@ -1380,8 +1383,8 @@
           <div id="match-kennzahlen" class="profil-werte" aria-label="Kennzahlen dieser Partie"></div>
           <table id="match-tabelle" class="match-tabelle" aria-label="Beitrag aller Spieler"></table>
           <div class="end-knoepfe">
-            <button id="rematch-button" type="button">Revanche</button>
-            <button id="end-menu-button" type="button" class="secondary">Zum Menü</button>
+            <button id="rematch-button" type="button" class="pa-btn pa-btn--primaer">Revanche</button>
+            <button id="end-menu-button" type="button" class="secondary pa-btn pa-btn--sekundaer">Zum Menü</button>
           </div>
         </div>
       </section>
