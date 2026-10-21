@@ -84,7 +84,9 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // Mit gesetztem PA_PORT nie einen fremden Server wiederverwenden (parallele Agenten teilen sonst
+    // Server mit falscher Zugpause); belegter Port gibt dann einen klaren Fehler statt falscher Ergebnisse.
+    reuseExistingServer: !process.env.CI && !process.env.PA_PORT,
     timeout: 90_000,
     stdout: 'pipe',
     stderr: 'pipe',

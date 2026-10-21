@@ -498,6 +498,53 @@ const SPIN_STANDARD = 9;
 /** Granaten und Bomben (Zünder oder Abpraller) trudeln; Geschützgranaten fliegen gerade. */
 const SPIN_GRANATE = 8;
 
+/** Waffengruppen mit eigener Flugmarke (Fassung 5): zerfallend, lenkend, teleportierend, abprallend. */
+export const GESCHOSS_GRUPPEN = Object.freeze({
+  cluster: Object.freeze({ farbe: '#fbbf24', name: 'Streu' }),
+  lenk: Object.freeze({ farbe: '#f472b6', name: 'Lenk' }),
+  teleport: Object.freeze({ farbe: '#a78bfa', name: 'Teleport' }),
+  abpraller: Object.freeze({ farbe: '#34d399', name: 'Abpraller' }),
+});
+
+/** Gruppe eines Geschosses aus den Katalogwerten (keine zweite Tabelle); `null` für gewöhnliche. */
+export function geschossGruppe(waffe) {
+  if (!waffe || waffe.delivery === 'hitscan') return null;
+  if (waffe.special === 'fragmentation' || waffe.special === 'banana_split' || waffe.special === 'spread_shot') return 'cluster';
+  if ((waffe.homing ?? 0) > 0) return 'lenk';
+  if (/teleport|portal/.test(waffe.special ?? '')) return 'teleport';
+  if ((waffe.bounces ?? 0) > 0) return 'abpraller';
+  return null;
+}
+
+/** Kleine Marke neben dem Geschoss: Punkte (Streu), Fadenkreuz (Lenk), Raute (Teleport), Bogen (Abpraller). */
+export function zeichneGruppenmarke(ctx, gruppe, x, y, alter, reduziert = false) {
+  const g = GESCHOSS_GRUPPEN[gruppe];
+  if (!g) return;
+  const r = 12 + (reduziert ? 0 : Math.sin(alter * 6) * 1.5);
+  ctx.save();
+  ctx.strokeStyle = g.farbe;
+  ctx.fillStyle = g.farbe;
+  ctx.lineWidth = 1.5;
+  ctx.globalAlpha = 0.9;
+  ctx.beginPath();
+  if (gruppe === 'cluster') {
+    for (let i = 0; i < 3; i += 1) { const a = (i / 3) * Math.PI * 2 - Math.PI / 2; ctx.moveTo(x + Math.cos(a) * r + 2, y + Math.sin(a) * r); ctx.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, 2, 0, Math.PI * 2); }
+    ctx.fill();
+  } else if (gruppe === 'lenk') {
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.moveTo(x - r - 3, y); ctx.lineTo(x - r + 4, y); ctx.moveTo(x + r - 4, y); ctx.lineTo(x + r + 3, y);
+    ctx.moveTo(x, y - r - 3); ctx.lineTo(x, y - r + 4); ctx.moveTo(x, y + r - 4); ctx.lineTo(x, y + r + 3);
+    ctx.stroke();
+  } else if (gruppe === 'teleport') {
+    ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath();
+    ctx.stroke();
+  } else {
+    ctx.arc(x, y + r * 0.4, r, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 /** Korrekturen je Waffen-ID für die Flugdarstellung: `groesse`, `spin`. */
 export const GESCHOSS_KORREKTUREN = Object.freeze({});
 
@@ -521,6 +568,7 @@ export function geschossDarstellung(waffe, proj) {
     spin: korr?.spin ?? spin,
     versatz: ((proj?.angle ?? 0) * Math.PI) / 180,
     start: (PARAMETER[waffe?.category] ?? PARAMETER.ranged).start,
+    gruppe: geschossGruppe(waffe),
   };
 }
 

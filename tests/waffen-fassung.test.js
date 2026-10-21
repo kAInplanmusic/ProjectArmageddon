@@ -18,7 +18,7 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
 import {
-  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
+  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
 } from '../src/shared/config/waffen-fassung.js';
 import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
@@ -125,11 +125,12 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_FEIN);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_FAIR);
   assert.equal(normalisiereWaffen(1), WAFFEN_ALT);
   assert.equal(normalisiereWaffen(2), WAFFEN_BALANCE);
   assert.equal(normalisiereWaffen(3), WAFFEN_KORREKTUR);
   assert.equal(normalisiereWaffen(4), WAFFEN_FEIN);
+  assert.equal(normalisiereWaffen(5), WAFFEN_FAIR);
   assert.equal(normalisiereWaffen(undefined), WAFFEN_STANDARD);
   assert.equal(normalisiereWaffen(7), WAFFEN_STANDARD);
 });
@@ -167,7 +168,7 @@ test('Fassung 3 bleibt bitgleich: Katalog + Fassung-3-Werte = Katalog von 09664f
 
 test('Fassung 4: die neun Waffen wirken wie gemessen, Stufe und Abklingzeit bleiben, Richtung stimmt', () => {
   for (const [id, gold] of Object.entries(GOLD_F4)) {
-    const r = schussAufNachbarn(id);
+    const r = schussAufNachbarn(id, { waffen: WAFFEN_FEIN });
     assert.equal(r.hash, gold.hash, `${id}: Zustandshash Fassung 4`);
     assert.ok(Math.abs(r.verloren - gold.verloren) < 0.1, `${id}: ${r.verloren}`);
     const neu = WEAPONS_BY_ID[id];
@@ -258,12 +259,12 @@ test('Replay-Kopf: Altdatei ohne `waffen` = Fassung 1, neue Aufzeichnung trägt 
   assert.equal(match.kit, 3, 'Altkopf behält auch das Start-Kit der Zeit');
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.waffen, WAFFEN_FEIN);
+  assert.equal(neu.toJSON().config.waffen, WAFFEN_FAIR);
   assert.equal(neu.toJSON().config.kit, KIT_STANDARD);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(zurueck.config.waffen, WAFFEN_FEIN);
-  assert.equal(playReplay(zurueck).match.waffen, WAFFEN_FEIN);
+  assert.equal(zurueck.config.waffen, WAFFEN_FAIR);
+  assert.equal(playReplay(zurueck).match.waffen, WAFFEN_FAIR);
 });
 
 test('Altkopf-Aufzeichnung mit Schüssen: Wiedergabe gleicht der Live-Partie in Fassung 1 und in Fassung 2', () => {

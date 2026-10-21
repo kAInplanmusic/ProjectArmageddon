@@ -41,6 +41,8 @@ const args = Object.fromEntries(process.argv.slice(2).filter(a => a.startsWith('
 export const ENTFERNUNGEN = Object.freeze([40, 90, 150, 300, 500, 800, 1200, 1700]);
 export const STUFEN = Object.freeze(['common', 'uncommon', 'rare', 'epic', 'legendary']);
 const ZIEL_LEBEN = 1000;
+/** Strahl- und Strike-Waffen: dichte kleine Winkel (die Trefferfläche ist 20 px hoch, der Strahl lang). */
+const HITSCAN_WINKEL = Object.freeze([0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.15]);
 /** Ab diesem Anteil des Bestwerts zählt eine Entfernung als wirksam. */
 const WIRKSAM_ANTEIL = 0.25;
 export const ZU_SCHWACH = 0.5;
@@ -63,7 +65,9 @@ function freieLinie(match, dist) {
         const s = match.surfaceYAt(x + o);
         if (s < 0 || s <= lineY) { frei = false; break; }
       }
-      if (frei) return { x, grundY, dist: d };
+      // Das Ziel muss auf festem Boden stehen: Wird es in die Luft gesetzt, fällt es, und die Messung
+      // zielt auf die falsche Höhe (maß dann nur Fallschaden statt des Treffers).
+      if (frei && Math.abs(match.surfaceYAt(x + d) - grundY) <= 2) return { x, grundY, dist: d };
     }
   }
   return null;
@@ -85,9 +89,18 @@ function aufbau(seed, dist, waffe) {
   w.setComponent(ziel.entityId, 'Position', 'y', linie.grundY);
   w.setComponent(ziel.entityId, 'Health', 'max', ZIEL_LEBEN);
   w.setComponent(ziel.entityId, 'Health', 'current', ZIEL_LEBEN);
+  // Figuren setzen sich erst nach ein paar Takten auf den Boden (Fallschaden, Lagekorrektur).
+  // Ohne Beruhigung zielte die Messung auf die alte Höhe und verfehlte die Trefferfläche um
+  // wenige Pixel: Projektilwaffen maßen dann nur den Fallschaden des Ziels, nicht ihren Treffer.
+  for (let i = 0; i < 12; i += 1) { match.step(); match.consumeEvents(); }
+  w.setComponent(ziel.entityId, 'Health', 'current', ZIEL_LEBEN);
+  w.setComponent(schuetze.entityId, 'Health', 'current', w.getComponent(schuetze.entityId, 'Health', 'max'));
   match.inventory.register(schuetze.entityId, [waffe.id]);
   match.inventory.selectWeapon(schuetze.entityId, waffe.id);
-  return { match, schuetzeId: schuetze.entityId, zielId: ziel.entityId, dist: linie.dist, zielX: linie.x + linie.dist, zielY: linie.grundY };
+  // Die Trefferfläche liegt um die Position der Figur (siehe `PLAYER_HALF_HEIGHT`).
+  const zx = w.getComponent(ziel.entityId, 'Position', 'x');
+  const zy = w.getComponent(ziel.entityId, 'Position', 'y');
+  return { match, schuetzeId: schuetze.entityId, zielId: ziel.entityId, dist: linie.dist, zielX: zx, zielY: zy };
 }
 
 function schiesse(seed, dist, waffe, winkel, kraft) {
@@ -112,7 +125,7 @@ function zielloesung(seed, dist, waffe) {
     // Kleinster Abstand der ganzen Bahn zum Ziel: Direkttreffer-Geschosse fliegen in der
     // Vorschau durch die Figur hindurch (ohne `hitTest`); der Endpunkt allein wäre falsch.
     let abstand = Infinity;
-    for (const p of bahn) abstand = Math.min(abstand, Math.hypot(p.x - a.zielX, p.y - (a.zielY - 10)));
+    for (const p of bahn) abstand = Math.min(abstand, Math.hypot(p.x - a.zielX, p.y - a.zielY));
     return abstand;
   };
   const kand = [];
@@ -145,7 +158,7 @@ export function messeWaffe(waffe, index) {
     if (waffe.delivery === 'hitscan' || (waffe.strikeStyle ?? 'self') !== 'self') {
       // Etwas Erhebung probieren: Sichtlinienwaffen werden am Hang bei 0 rad abgelehnt.
       ergebnis = null;
-      for (const winkel of [0, 0.03, 0.06, 0.1, 0.15]) {
+      for (const winkel of HITSCAN_WINKEL) {
         const r = schiesse(seed, dist, waffe, winkel, 100);
         if (r && (!ergebnis || r.schaden > ergebnis.schaden || (!ergebnis.ok && r.ok))) ergebnis = r;
       }

@@ -90,6 +90,9 @@ export class FeuerOptik {
     this.glut = 0;
     /** Sprite-Atlas (`effektSheets.SheetEffekte`) für animierte Flammenringe; fehlt er, bleibt es beim Glühen. */
     this.ringe = null;
+    this.ids = [];
+    this.idsStand = 0;
+    this.idsGeaendert = true;
   }
 
   /** Gelände der Karte: Zellraster der Stoffkarte und Bildgröße. */
@@ -102,6 +105,7 @@ export class FeuerOptik {
   /** Alles vergessen (neue Partie). */
   leere() {
     this.flammen.clear();
+    this.idsGeaendert = true;
     this.lava.clear();
     this.ragnarok = false;
     this.aktiv = 0;
@@ -116,10 +120,33 @@ export class FeuerOptik {
     return [(idx % this.spalten) * ZELLE + ZELLE / 2, Math.floor(idx / this.spalten) * ZELLE + ZELLE / 2];
   }
 
+  /** Flammenzellen als Liste: wird nur bei Änderung neu gebaut (kein Feldaufbau je Bild). */
+  #flammenIds() {
+    if (this.idsStand !== this.flammen.size || this.idsGeaendert) {
+      this.ids = [...this.flammen.keys()];
+      this.idsStand = this.flammen.size;
+      this.idsGeaendert = false;
+    }
+    return this.ids;
+  }
+
+  /** Sichtbarer Weltausschnitt aus der aktuellen Transformation (mit Rand), sonst null (alles zeichnen). */
+  #sicht(ctx, rand) {
+    if (typeof ctx.getTransform !== 'function' || !ctx.canvas) return null;
+    const m = ctx.getTransform();
+    if (!m.a || !m.d || m.b || m.c) return null;
+    const x0 = (0 - m.e) / m.a;
+    const x1 = (ctx.canvas.width - m.e) / m.a;
+    const y0 = (0 - m.f) / m.d;
+    const y1 = (ctx.canvas.height - m.f) / m.d;
+    return { x0: Math.min(x0, x1) - rand, x1: Math.max(x0, x1) + rand, y0: Math.min(y0, y1) - rand, y1: Math.max(y0, y1) + rand };
+  }
+
   /** `feuer_schritt`: neue, gelöschte und ausgebrannte Zellen. */
   schritt({ neu = [], aus = [], asche = [] }) {
     for (const idx of neu) this.flammen.set(idx, 1);
     for (const idx of aus) this.flammen.delete(idx);
+    this.idsGeaendert = true;
     for (const idx of asche) {
       this.flammen.delete(idx);
       if (!this.reduziert && this.spalten) {
@@ -181,7 +208,7 @@ export class FeuerOptik {
     const flammenZellen = this.flammen.size;
     if (flammenZellen > 0) {
       const wunsch = Math.min(budget, Math.max(1, Math.ceil(flammenZellen / 6)));
-      const ids = [...this.flammen.keys()];
+      const ids = this.#flammenIds();
       for (let k = 0; k < wunsch; k += 1) {
         this.rundlauf = (this.rundlauf + 7) % ids.length;
         const [x, y] = this.#mitte(ids[this.rundlauf]);
@@ -211,31 +238,57 @@ export class FeuerOptik {
     if (!this.lavaGluehen) this.lavaGluehen = baueGluehen(40, 'rgba(255,150,40,0.85)', 'rgba(220,40,10,0)');
     ctx.save();
     const puls = 0.8 + 0.2 * Math.sin(this.takt * 0.12);
-    for (const idx of this.lava) {
-      const [x, y] = this.#mitte(idx);
+    // Nur was im Bild liegt wird gemalt (Rand = Glühradius): gleiches Bild, Kosten nach Sichtfläche statt nach Zellenzahl.
+    const sicht = this.#sicht(ctx, 24);
+    const sp = this.spalten;
+    if (this.lava.size > 0) {
+      // Lavafüllung: eine Farbe je Bild, alle Zellen in einem Pfad (Zellen liegen auf ganzen Pixeln, daher pixelgleich zu Einzelfüllungen).
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = `rgb(${Math.round(236 * puls)}, ${Math.round(88 + 50 * puls)}, 20)`;
-      ctx.fillRect(x - ZELLE / 2, y - ZELLE / 2, ZELLE, ZELLE);
+      ctx.beginPath();
+      for (const idx of this.lava) {
+        const x = (idx % sp) * ZELLE + ZELLE / 2;
+        const y = Math.floor(idx / sp) * ZELLE + ZELLE / 2;
+        if (sicht && (x < sicht.x0 || x > sicht.x1 || y < sicht.y0 || y > sicht.y1)) continue;
+        ctx.rect(x - ZELLE / 2, y - ZELLE / 2, ZELLE, ZELLE);
+      }
+      ctx.fill();
       if (this.lavaGluehen) {
         ctx.globalCompositeOperation = 'lighter';
         ctx.globalAlpha = 0.5;
-        ctx.drawImage(this.lavaGluehen, x - 20, y - 22, 40, 40);
+        const schritt = 1;
+        const gr = 40;
+        let n = 0;
+        for (const idx of this.lava) {
+          if (n++ % schritt) continue;
+          const x = (idx % sp) * ZELLE + ZELLE / 2;
+          const y = Math.floor(idx / sp) * ZELLE + ZELLE / 2;
+          if (sicht && (x < sicht.x0 || x > sicht.x1 || y < sicht.y0 || y > sicht.y1)) continue;
+          ctx.drawImage(this.lavaGluehen, x - gr / 2, y - gr / 2 - 2, gr, gr);
+        }
       }
     }
     ctx.globalCompositeOperation = 'lighter';
     if (this.gluehen) {
       ctx.globalAlpha = 0.6 * puls;
+      const schritt = 1;
+      const gr = 28;
+      let n = 0;
       for (const idx of this.flammen.keys()) {
-        const [x, y] = this.#mitte(idx);
-        ctx.drawImage(this.gluehen, x - 14, y - 16, 28, 28);
+        if (n++ % schritt) continue;
+        const x = (idx % sp) * ZELLE + ZELLE / 2;
+        const y = Math.floor(idx / sp) * ZELLE + ZELLE / 2;
+        if (sicht && (x < sicht.x0 || x > sicht.x1 || y < sicht.y0 || y > sicht.y1)) continue;
+        ctx.drawImage(this.gluehen, x - gr / 2, y - gr / 2 - 2, gr, gr);
       }
     }
     if (this.ringe && !this.reduziert && this.flammen.size > 0) {
       // Höchstens `MAX_RINGE` animierte Flammenringe, gleichmäßig über die brennenden Zellen verteilt.
-      const ids = [...this.flammen.keys()];
+      const ids = this.#flammenIds();
       const schritt = Math.max(1, Math.floor(ids.length / MAX_RINGE));
       for (let k = 0, n = 0; k < ids.length && n < MAX_RINGE; k += schritt, n += 1) {
         const [x, y] = this.#mitte(ids[k]);
+        if (sicht && (x < sicht.x0 || x > sicht.x1 || y < sicht.y0 || y > sicht.y1)) continue;
         this.ringe.zeichneFeuerring(ctx, x, y - 4, 26, this.takt + k * 5);
       }
       ctx.globalCompositeOperation = 'lighter';

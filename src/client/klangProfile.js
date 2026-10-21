@@ -109,6 +109,18 @@ export const SCHUSS_PROFILE = Object.freeze({
     T({ welle: 'triangle', f0: 990, f1: 2640, gleit: 0.5, start: 0.08, an: 0.05, ab: 0.6, pegel: 0.25 }),
     R({ filter: 'highpass', f0: 6000, an: 0.1, ab: 0.7, pegel: 0.12 }),
   ]),
+  // Dunkle Zauber (Dunkel, Leere, Chaos, Psyche): tiefes, verstimmtes Grollen statt hellem Glockenton.
+  dunkel: P('schuss', 0.75, 0.6, [
+    T({ welle: 'sawtooth', f0: 140, f1: 55, gleit: 0.6, an: 0.04, ab: 0.8, pegel: 0.45, vibrato: { hz: 4, tiefe: 0.04 }, partiale: [[1.01, 0.5], [0.99, 0.5], [1.414, 0.3]] }),
+    R({ farbe: 'braun', filter: 'lowpass', f0: 600, f1: 120, sweep: 0.5, an: 0.05, ab: 0.7, pegel: 0.55 }),
+    T({ welle: 'triangle', f0: 880, f1: 330, gleit: 0.5, start: 0.05, an: 0.05, ab: 0.5, pegel: 0.15 }),
+  ]),
+  // Natur und Elemente ohne Feuer und Eis (Wind, Wasser, Gift, Säure): Rauschen, Zischen, Plätschern.
+  natur: P('schuss', 0.7, 0.3, [
+    R({ f0: 500, f1: 2400, sweep: 0.35, q: 1.2, an: 0.08, ab: 0.4, pegel: 0.8 }),
+    K({ n: 6, fenster: 0.35, fmin: 1200, fmax: 4200, q: 6, start: 0.05, ab: 0.05, pegel: 0.35 }),
+    R({ filter: 'highpass', f0: 4500, an: 0.05, ab: 0.35, pegel: 0.25 }),
+  ]),
   laser: P('schuss', 0.7, 0.15, [
     T({ welle: 'sawtooth', f0: 4200, f1: 500, gleit: 0.25, ab: 0.3, pegel: 0.45 }),
     T({ welle: 'square', f0: 3000, f1: 600, gleit: 0.2, ab: 0.2, pegel: 0.25 }),
@@ -482,6 +494,8 @@ function nachSchadensart(w, vorgabe) {
     case 'energy': case 'magnetic': return w.delivery === 'hitscan' ? 'strahl' : 'laser';
     case 'explosive': return (w.blastRadius ?? 0) > 0 || w.fuseTime > 0 ? 'rakete' : vorgabe;
     case 'impact': return 'schwer';
+    case 'dark': case 'void': case 'chaos': case 'psychic': return vorgabe === 'magie' ? 'dunkel' : vorgabe;
+    case 'wind': case 'water': case 'poison': case 'acid': return vorgabe === 'magie' ? 'natur' : vorgabe;
     default: return vorgabe;
   }
 }

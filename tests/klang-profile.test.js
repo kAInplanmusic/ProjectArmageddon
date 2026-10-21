@@ -35,7 +35,7 @@ test('Jede Waffe des Katalogs bekommt ein vorhandenes Schussprofil', () => {
   for (const name of Object.keys(SCHUSS_PROFILE)) {
     assert.ok(benutzt.has(name), `kein einziger Schuss nutzt das Profil ${name}`);
   }
-  assert.ok(Object.keys(SCHUSS_PROFILE).length >= 8 && Object.keys(SCHUSS_PROFILE).length <= 14);
+  assert.ok(Object.keys(SCHUSS_PROFILE).length >= 8 && Object.keys(SCHUSS_PROFILE).length <= 16);
 });
 
 test('Die Korrekturtabelle nennt nur echte Waffen und echte Profile', () => {

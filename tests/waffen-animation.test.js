@@ -15,7 +15,7 @@ import { CHARACTERS } from '../src/shared/config/factions.js';
 import { TYP_JE_CHARAKTER as FIGUR_TYP, PARAMETER as TYP_PARAMETER } from '../src/client/figurTypen.js';
 import {
   KATEGORIEN, PARAMETER, KORREKTUREN, waffenParameter, parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt,
-  geschossDarstellung, geschossWinkel, flugWinkel, SchweifRing, SCHWEIF_LAENGE, GeschossLagen,
+  geschossGruppe, GESCHOSS_GRUPPEN, geschossDarstellung, geschossWinkel, flugWinkel, SchweifRing, SCHWEIF_LAENGE, GeschossLagen,
   FIGUR_OFFSETS, FIGURTYP_STANDARD, figurHand,
 } from '../src/client/waffenAnimation.js';
 import { erzeugeWaffenSprites, zellenFuer } from '../src/client/waffenSprites.js';
@@ -664,4 +664,16 @@ test('Geschoss: Startglanz je Kategorie, Oberkörper-Kick und Ausfallschritt wir
   const schwer = messe({ schussStaerke: 2.4, ausfall: 1 });
   assert.ok(schwer.dx < leicht.dx - 1, `Oberkörper-Kick schwer ${schwer.dx} gegen leicht ${leicht.dx}`);
   assert.ok(schwer.sy < leicht.sy - 0.03, 'Ausfallschritt: Figur geht in die Knie');
+});
+
+test('Geschossgruppen: Streu, Lenk, Teleport und Abpraller sind aus dem Katalog unterscheidbar', async () => {
+  const { WEAPONS } = await import('../src/shared/config/weapons.js');
+  const zaehler = {};
+  for (const w of WEAPONS) {
+    const g = geschossGruppe(w);
+    if (g) { assert.ok(GESCHOSS_GRUPPEN[g], g); zaehler[g] = (zaehler[g] ?? 0) + 1; }
+  }
+  for (const g of Object.keys(GESCHOSS_GRUPPEN)) assert.ok(zaehler[g] > 0, `Gruppe ${g} ist leer`);
+  assert.equal(geschossGruppe({ delivery: 'hitscan', bounces: 3 }), null);
+  assert.equal(geschossGruppe({ delivery: 'projectile' }), null);
 });
