@@ -6613,3 +6613,81 @@ Offene Entscheidungen des Auftraggebers: (a) Soll der Grabstein ein Hindernis se
 1. **Grabstein:** kein Hindernis, nur Optik (Block 3 Stufe 2 entfällt; B5 gestrichen).
 2. **Wind:** immer zufällig, zu jedem Zeitpunkt (neu gewürfelter Wind, auch innerhalb eines Zuges möglich); Würfe aus dem Seed-Sub-RNG nach festem Tick-Plan, damit Replays reproduzierbar bleiben. Neue Marke (z. B. `config.wind: 2`); Anzeige und Bahnvorschau folgen dem aktuellen Wind.
 3. **Zeitlupe:** nur bei einem Schuss mit mindestens 250 Gesamtschaden oder mit mindestens 3 getöteten Einheiten (nicht bei jedem Treffer, nicht in den Einstellungen als Dauerzustand). Reine Darstellung; Auslöser wird aus den Ereignissen eines Schusses aufsummiert (Schaden je Schuss-ID, Tode je Schuss-ID).
+
+## Übergabe und Fahrplan (Stand 2026-10-22)
+
+Dieser Abschnitt ist die Einstiegsseite für jeden, der (Mensch oder Agent) weitermacht. Erst `AGENTS.md` lesen, dann hier die Reihenfolge. Zahlen und Prüfwerkzeuge stehen weiter oben und in `README.md`.
+
+### 1. Stand in einem Satz
+
+Spiel, Engine, Server, 150 Waffen, 22 Biome (9+4 Sonder-, Planet, 5 klassische Karten), 160 Kulissen, Material-Texturen, Günther und Cookie, Gehen, Rückzug/Passen/Aufgeben, Feuer/Lava, 81 Figuren mit Gehzyklus und Aktionsblatt, Musik und Hymnen sind auf `main`. Die neue UI (Tokens, Komponenten, Logo) ist teilweise umgesetzt. Offen sind: der Rest der UI nach den Vorlagen, Zustands-Sheets im Renderer, Aerodynamik/Wind, Kamera-Effekte, Mikro-Animationen, Ladezeit, ein kompletter grüner E2E-Lauf auf dem Endstand.
+
+### 2. Reihenfolge (Fahrplan)
+
+| # | Paket | Wo steht die Anleitung | Typ |
+|---|---|---|---|
+| 1 | Kompletter E2E-Lauf auf dem Endstand, Fehler beheben | Abschnitt 5 | Prüfen |
+| 2 | UI-Rest nach den Vorlagen: Endscreen/Rangliste, hohe Lobby-Karten mit Podest und Statusfarbe, Home-Bildschirm, Eckleisten mit Porträt, Hochformat-HUD unter echter Hochformat-Einstellung, Intro-Splash, alte Inline-Styles in `index.html` auf Tokens | Abschnitt 3 | Client |
+| 3 | Zustands-Sheets (8 Posen je Figur) schneiden, Rollen klassifizieren, im Renderer anbinden (Hocke, Fallen, Schwimmen, Ertrinken, Jubeln, Winken, Posieren, Angst) | Abschnitt 4 | Client + Bilder |
+| 4 | Block 2 Aerodynamik und zufälliger Wind (Marken `config.waffen` 6, `config.wind` 2) | „Backlog … Block 2" | Regel |
+| 5 | Block 4 Kamera: Beben-Feinschliff, Knapp-vorbei-Zoom, Zeitlupe ab 250 Schaden oder 3 Toten pro Schuss | „Backlog … Block 4" | Client |
+| 6 | Block 3 Figuren: Zielen mit Kopfdrehung, Angst, Tod-Epilog und Grabstein (nur Optik), Backflip-Rotation | „Backlog … Block 3" | Client |
+| 7 | Ladezeit: Lazy-Loading (144 JS-Dateien/13 MB beim Start), Terrain-Neuaufbau, Hocke-Lücken | Abschnitt 6 | Performance |
+| 8 | Terrain im Comic-Stil prüfen/entscheiden (Vorlagen liegen unter `src/client/assets/terrain-vorlagen/`) | Abschnitt 3 | Entscheidung |
+
+### 3. Auftraggeber-Assets: wo sie liegen, was damit passieren soll
+
+Alles stammt von Patrick Hilf (frei verwendbar, `CREDITS.md`).
+
+| Asset | Ablage | Status | Hinweis/Anweisung |
+|---|---|---|---|
+| UI-Vorlagen (Menü, Lobby, HUD, Waffenfenster, Endscreen, Studie, Icon-System) | `docs/design-vorlagen/` | Tokens/Komponenten umgesetzt, Rest offen | Texte bleiben deutsch; Platzhalter (Pineapple, Boarhunter, Battle Pass, Shop, XP, Medaillen) nicht einbauen. Endscreen nur mit vorhandenen Werten (`stats.js`: Siege, Schaden, Trefferquote; Kills gibt es nicht). IDs und Selektoren der E2E-Tests bleiben. |
+| Logo, App-Icons | `public/logo.webp`, `src/client/assets/design/` | eingebaut | Das hohe Logo `logo-ananas-granate-hoch.jpg` für Hochformat-Menü nutzen. |
+| Intro-Video | `src/client/assets/design/intro-granate.mp4` | nicht eingebaut | Als überspringbarer Splash, nur einmal pro Sitzung, aus bei reduzierter Bewegung und in Playwright; Rand unten rechts abschneiden. |
+| Material-Texturen (nahtlos 1024) | `src/client/assets/material-texturen/` (Originale), `stoff-texturen/` (verkleinert, eingebaut) | 9 von 15 verwendet | Nicht verwendet: gras, lava-glut, lava-risse, normalmap, hecke-kontrast. Lava-Texturen erst nutzen, wenn ein Lava-Stoff existiert (Feuer 2 hat Lava-Zellen). |
+| Planetenkugeln, Exoplanet-Szene | `material-texturen/planeten/` | Kulisse Planet nutzt sie | Weitere Kugeln als Kosmos-Deko möglich. |
+| Effekt-Sheets | `material-texturen/effekte/`, `assets/effekt-sheets/` (WebP) | Einschlag-Bildfolge, Glut, Flammenringe, Leuchtgeschosse eingebaut | Ringe/Blasen, Wirbel, Funken-Sheet noch ohne Auslöser. |
+| Terrain-Kacheln (Comic) | `src/client/assets/terrain-vorlagen/` | Referenz, nicht eingebaut | Stilfrage: Comic-Kacheln passen nicht zu den fotorealistischen Stoff-Texturen. **Entscheidung des Auftraggebers nötig.** |
+| Ninja-Sheet | `material-texturen/figuren/` | nur Referenz | Maßstab für Sheet-Qualität, nicht einbauen. |
+| Fraktionshymnen (9) | `assets/music/fraktionen/` | eingebaut (Menü-Anwahl) | Hymnen-Einsatz bei Zugbeginn bewusst nicht gebaut. |
+| Kulissen (160) | `assets/backdrops/`, `backdrops/stimmung/` | eingebaut | Einzige Bildlücke: Alpine-Ragnarök wurde ersetzt; bei Bedarf weitere Hochformat-Varianten. |
+
+### 4. Bilder erzeugen: Zugänge, Preise, Rezepte
+
+Schlüssel liegen als Umgebungsvariablen der Sitzung (nie in Dateien oder Commits schreiben).
+
+| Dienst | Zustand | Nutzen |
+|---|---|---|
+| Replicate (`REPLICATE_API_TOKEN`) | funktioniert (flux-kontext-pro, etwa 0,04 USD/Bild) | Hauptweg für Sprites. Guthaben nicht abfragbar; Lauf bricht bei leerem Konto mit „KREDIT" ab. |
+| kie.ai (`KIE_API_KEY`) | funktioniert, Guthaben ~4,6 Credits (aufgebraucht) | flux-kontext-pro; 5 Credits je Bild. Aufladen nötig. |
+| Together (`TOGETHER_API_KEY`) | kein Guthaben (402) | nur mit neuem Guthaben. |
+| NVIDIA (`NVIDIA_TOKEN`) | Schlüssel gültig, Modelle meist abgeschaltet/404 | flux.1-kontext-dev braucht Upload-Weg (Fehler „Expected: example_id"); nicht genutzt. |
+| RunPod, FreeLLMAPI-Router | nicht erreichbar (Schlüssel 401; Router nur im Tailnet) | siehe `AGENTS.md` §5/§7 vor jeder Miete. |
+| DeepSeek, Mistral, Groq, Cerebras, Cohere, PublicAI | nur Chat | Auslagern von Code hat nicht zuverlässig funktioniert (`scripts/auslagern/`, Befund: ändert Tests/erfindet Ereignisnamen). |
+
+**Sprite-Rezept (bewährt).** Eingabe: Seitenbild der Figur aus `assets/characters-side/`, auf grünem Hintergrund (#00FF00), 768 px. Aufträge: `scripts/`-Muster in `/tmp/.../sprites/prompts.py` (nicht im Repo; Prompts sind in diesem Abschnitt beschrieben): „unarmed, 4×2 Raster gleich große Zellen, grüner Hintergrund, keine Schatten, kein Text, Figur gleich groß, Füße auf einer Grundlinie, alle acht Zellen gefüllt". Sheet **walk**: 8 Frames Gehzyklus. Sheet **aktion**: Idle, Idle, Hocke, Luft, Landung, Treffer, Taumeln, Niedergestreckt. Sheet **zustand**: Hocke, Fallen, Schwimmen A/B, Ertrinken, Jubeln, Winken, Posieren (Hinweis „no water, no ripples, no ground shadows"). Ein Bild je Sheet gelingt zuverlässig nicht in jeder Zelle; immer Kontaktbogen ansehen, schwache Sheets mit anderem Seed neu erzeugen. Freistellen: Grün-Maske (g > 1,3·r und 1,3·b), Öffnung mit (6×3)-Struktur gegen Gitterlinien, Teile ≥ 3 % der größten Fläche behalten, fill_holes, gemeinsame Skala je Figur, Füße auf y = 240 in 256-px-Zellen, WebP 88. Danach `python3 scripts/sprite-sheets-klassifizieren.py` (schreibt Rollen ins Manifest).
+
+**Offene Bildlücken:** 29 Figuren ohne Hocke; fünf Figuren mit zerstückelten Zellen (Ethereo bleibt inhärent zerstückelt); Zustands-Sheets (Replicate-Lauf: 63 von 81 erzeugt, Ergebnisse unter `scratchpad/sprites/roh3`, nicht im Repo — bei Sitzungsende gehen sie verloren; deshalb sofort schneiden und committen).
+
+### 5. Prüfen: Läufe und Fallen
+
+- Reihenfolge vor jeder Übergabe: `npm test`, `npm run check:docs`, `npm run matrix:check`, eslint, `match.js` ≤ 3199 (aktuell etwa 3074), betroffene E2E mit eigenem `PA_PORT` und `--workers=1`.
+- **Gesamtlauf** (313 Tests, über 50 Minuten): in Blöcken zu je 6 Specs mit fortsetzbarem Skript (Muster: `split` der Specliste, je Block `npx playwright test <specs> --workers=1`, Fortschritt in einer Datei). Hintergrundprozesse sterben bei Worker-Neustarts; deshalb nur fortsetzbare Läufe. Letzter Stand: Block 0–3 durchgelaufen (Fehler: ein Spec für Planeten, behoben; Block 1 mit drei Fehlern, vermutlich Dateiänderung während des Laufs), Block 4–9 offen.
+- **Fallen:** (a) `PA_PORT` setzen, die Konfiguration nimmt dann keinen fremden Server mehr (sonst falsche Zugpause und 403 für Schriften); (b) im Worktree echtes `node_modules`, kein Symlink; (c) Dateien im Arbeitsbaum während eines Laufs nicht ändern (Vite lädt neu); (d) nie `pkill -f`; (e) die Online-Specs nutzen freie Ports (`tests/e2e/helfer/freier-port.mjs`); (f) `profiling.spec` ist nur mit Software-Rasterung aktiv, `prediction-online:263` bedingt übersprungen.
+- Neue Menü-Auswahl liegt hinter „Erweitert" (`#cfg-erweitert`): Specs müssen den Block zuerst öffnen.
+
+### 6. Hinweise für Agenten (Auftragsvorlage)
+
+1. Eigener Worktree und Branch, am Ende Fast-Forward nach `main` und pushen; früh Zwischenstand committen und pushen (Limit/Neustart).
+2. Jede Regeländerung braucht eine Versionsmarke im Replay-Kopf; reine Darstellung nicht. Goldwerte alter Köpfe müssen bitgleich bleiben.
+3. `match.js` hat wenig Reserve: Logik in eigene Systemdateien.
+4. Kein Test wird abgeschwächt, übersprungen oder gelöscht. Passt sich eine Erwartung bewusst an (z. B. Tastenbelegung), bleibt die Aussagekraft.
+5. Sichtprüfung ist Pflicht für UI und Sprites: Screenshots Quer 1280×720, Hoch 390×844, DPR 2 ansehen.
+6. Keine Mieten ohne `AGENTS.md` §5/§7; Kosten für Bildserien vorher nennen (Preis je Bild × Anzahl).
+7. Berichte kurz: was ist auf `main`, was nicht, was wurde nicht geprüft.
+
+**Ladezeit (Paket 7):** Hauptbündel 927 KB, 144 JS-Dateien (13 MB) werden beim Start geladen, bis Menü Median 3,5 s, bis spielbar 5,6 s. Hebel: Lazy-Import der Hilfe-Reiter, Tier-/Feuer-/Effekt-Module, Sprite-Sheets und Musik erst bei Bedarf; Messung `scripts/lade-profil.mjs`.
+
+### 7. Bekannte offene Punkte (kurz)
+
+Magische Peitsche und Tesla-Turm messen 0 Schaden (Messgrenze?); Rolling-Waffen ohne eigene Flugmarke; kein Hymnen-Einsatz bei Zugbeginn; Seen im Planeten-Biom fehlen; Kills fehlen in den Statistiken; Laufknöpfe im Hochformat überlappen die Kraftanzeige leicht; Feuer-/Lava-Zellen liegen nicht im Snapshot (Spätbeitritt sieht bestehende Flammen verzögert).
