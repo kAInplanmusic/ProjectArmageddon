@@ -36,6 +36,7 @@ import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
+import { ladeStoffTexturen } from './stoffTexturen.js';
 import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
@@ -126,8 +127,15 @@ const MUSIK_URLEN = Object.fromEntries([
     .map(([pfad, url]) => [`fraktionen/${pfad.split('/').pop()}`, url]),
 ]);
 
+/** Material-Texturen der Stoffe (Client-Optik): Name → URL, geladen beim Start. */
+const STOFF_TEXTUR_URLEN = Object.fromEntries(
+  Object.entries(import.meta.glob('./assets/stoff-texturen/*.jpg', { query: '?url', import: 'default', eager: true }))
+    .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url]),
+);
+
 class Game {
   constructor() {
+    void ladeStoffTexturen(STOFF_TEXTUR_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
 
