@@ -850,6 +850,7 @@
       <div id="zugpause" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span class="zugpause-titel"></span>
         <span class="zugpause-zahl" aria-hidden="true"></span>
+        <span class="zugpause-hinweis" aria-hidden="true">Leertaste oder Enter überspringt</span>
       </div>
       <!-- Tier-Leiste: Cookies Hunger und Miau-Pegel, Günthers Sprechblase (src/client/tierHud.js); nur sichtbar, wenn es etwas zu zeigen gibt. -->
       <div id="tier-hud" aria-hidden="true" hidden>
@@ -1009,7 +1010,7 @@
           </p>
           </div>
           <div class="menu-konfig">
-          <div class="field-row">
+          <div class="field-row drei">
             <label>Teams
               <!-- Ein Team = ein Mensch. Die Zahl der Teams ist damit die Zahl
                    der Mitspielenden. EINE BOT-KI GIBT ES NICHT: Ein freies Team
@@ -1037,10 +1038,6 @@
               Der einzige Hebel ist der SEED — und der ist keine Formung,
               sondern eine Wiederholung: Derselbe Seed ergibt dieselbe Karte.
             -->
-            <p class="field-hint">
-              Die Karte entsteht aus dem Seed — Form, Höhlen und Wasser werden
-              gezogen, nicht gewählt. Zwei Seeds, zwei Welten.
-            </p>
             <label>Einheiten je Spieler
               <!-- Ein Mensch führt ein ganzes TEAM — es gibt keinen Modus mit
                    einer Einheit je Spieler. Die Zahlen stammen aus den
@@ -1050,32 +1047,6 @@
                 <option value="3" selected>3 — klein</option>
                 <option value="4">4 — groß</option>
                 <option value="5">5 — Krieg</option>
-              </select>
-            </label>
-          </div>
-          <div class="field-row">
-            <label>Kulisse
-              <!-- Wird beim Start aus dem Katalog in src/shared/config/backdrops.js
-                   gefüllt. Die erste Auswahl „automatisch" überlässt die Wahl dem
-                   Seed; damit bleibt ein Match reproduzierbar. -->
-              <select id="cfg-backdrop">
-                <option value="generativ" selected>generativ (empfohlen)</option>
-                <option value="">automatisch (Bild)</option>
-              </select>
-            </label>
-            <label>Biom
-              <!-- Wird beim Start aus src/shared/config/biome-neu.js gefüllt. „Zufall" lässt den Seed
-                   entscheiden (rund 40 % der Seeds ziehen ein Sonderbiom); „klassisch" lässt das Biom
-                   wie früher aus der Karte folgen. Die Wahl gehört zur Match-Konfiguration (Replay-Kopf). -->
-              <select id="cfg-biom">
-                <option value="" selected>Zufall (Seed)</option>
-                <option value="klassisch">klassisch (aus der Karte)</option>
-              </select>
-            </label>
-            <label>Ausrichtung
-              <select id="cfg-orientation">
-                <option value="landscape" selected>Querformat</option>
-                <option value="portrait">Hochformat</option>
               </select>
             </label>
             <!--
@@ -1098,6 +1069,36 @@
                 Wert steht nach dem Start im Protokoll.
               </small>
             </label>
+          </div>
+          <details id="cfg-erweitert" class="cfg-erweitert">
+            <summary>Erweitert — Kulisse, Biom, Format</summary>
+            <p class="field-hint">Alles hier hat gute Vorgaben (Kulisse „generativ“, Biom „Zufall“). Du kannst auch einfach „Überrasch mich“ drücken.</p>
+            <div class="field-row">
+            <label>Kulisse (nach Biom gruppiert)
+              <input id="cfg-backdrop-suche" type="search" placeholder="Kulisse suchen …" autocomplete="off" aria-label="Kulisse suchen" />
+              <!-- Wird beim Start aus dem Katalog in src/shared/config/backdrops.js
+                   gefüllt. Die erste Auswahl „automatisch" überlässt die Wahl dem
+                   Seed; damit bleibt ein Match reproduzierbar. -->
+              <select id="cfg-backdrop">
+                <option value="generativ" selected>generativ (empfohlen)</option>
+                <option value="">automatisch (Bild aus dem Seed)</option>
+              </select>
+            </label>
+            <label>Biom
+              <!-- Wird beim Start aus src/shared/config/biome-neu.js gefüllt. „Zufall" lässt den Seed
+                   entscheiden (rund 40 % der Seeds ziehen ein Sonderbiom); „klassisch" lässt das Biom
+                   wie früher aus der Karte folgen. Die Wahl gehört zur Match-Konfiguration (Replay-Kopf). -->
+              <select id="cfg-biom">
+                <option value="" selected>Zufall (Seed entscheidet)</option>
+                <option value="klassisch">klassisch (aus der Karte)</option>
+              </select>
+            </label>
+            <label>Ausrichtung
+              <select id="cfg-orientation">
+                <option value="landscape" selected>Querformat</option>
+                <option value="portrait">Hochformat</option>
+              </select>
+            </label>
             <!--
               WebGPU ist eine WAHL, keine Vorgabe. Der CPU-Weg ist der geprüfte
               Hauptpfad; die GPU beschleunigt nur das Backen der Bodenfläche.
@@ -1109,16 +1110,21 @@
                 <option value="auto">WebGPU, wenn verfügbar</option>
               </select>
             </label>
-          </div>
+            </div>
+          </details>
           <div class="field-row">
-            <label>Server (leer = lokal)
+            <label>Online: Server (leer = lokal)
               <input id="cfg-server" type="text" placeholder="http://127.0.0.1:3000" />
             </label>
             <label>Lobby-ID (optional)
               <input id="cfg-lobby" type="text" placeholder="z. B. a1b2c3d4" />
             </label>
           </div>
-          <button id="start-button" type="button">Match starten</button>
+          <div class="start-zeile">
+            <button id="start-button" type="button">Match starten</button>
+            <button id="ueberrasch-button" type="button" class="secondary" title="Würfelt Biom, Kulisse und Fraktionen und startet sofort">Überrasch mich</button>
+          </div>
+          <p id="ueberrasch-status" class="field-hint" role="status" aria-live="polite"></p>
           </div>
           <div class="menu-weitere">
 

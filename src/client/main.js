@@ -1042,6 +1042,7 @@ class Game {
       option.title = NEUE_BIOME[id].beschreibung;
       auswahl.append(option);
     }
+    auswahl.value = ''; // Vorgabe „Zufall (Seed)": replaceChildren verliert das `selected` aus dem Markup
     return SONDERBIOM_IDS.length;
   }
 
@@ -1066,7 +1067,56 @@ class Game {
       }
       auswahl.append(gruppe);
     }
+    auswahl.value = 'generativ'; // Vorgabe laut Markup („empfohlen"); replaceChildren verliert das `selected`
     return anzahl;
+  }
+
+  /** Kulissen-Suche: blendet Einträge und Gruppen aus, die den Suchtext nicht enthalten. */
+  filterBackdropOptions(text) {
+    const auswahl = document.getElementById('cfg-backdrop');
+    if (!auswahl) return 0;
+    const q = String(text ?? '').trim().toLowerCase();
+    let sichtbar = 0;
+    for (const gruppe of auswahl.querySelectorAll('optgroup')) {
+      const gruppeTrifft = q === '' || gruppe.label.toLowerCase().includes(q);
+      let imGruppe = 0;
+      for (const o of gruppe.querySelectorAll('option')) {
+        const trifft = gruppeTrifft || o.textContent.toLowerCase().includes(q);
+        o.hidden = !trifft;
+        if (trifft) imGruppe += 1;
+      }
+      gruppe.hidden = imGruppe === 0;
+      sichtbar += imGruppe;
+    }
+    return sichtbar;
+  }
+
+  /**
+   * „Überrasch mich": würfelt Biom, Kulisse und Fraktionen (reine Menüwahl, der Zufall steckt danach
+   * in der Match-Konfiguration/im Replay-Kopf). Math.random ist im Client erlaubt (nicht Engine/Shared).
+   */
+  ueberraschMich() {
+    const wahl = liste => liste[Math.floor(Math.random() * liste.length)];
+    const teile = [];
+    const biom = document.getElementById('cfg-biom');
+    if (biom) {
+      const o = wahl(Array.from(biom.options).filter(x => x.value !== '' && x.value !== 'klassisch'));
+      if (o) { biom.value = o.value; teile.push(`Biom ${o.textContent}`); }
+    }
+    const kulisse = document.getElementById('cfg-backdrop');
+    if (kulisse) {
+      const o = wahl(Array.from(kulisse.querySelectorAll('optgroup option')));
+      if (o) { kulisse.value = o.value; teile.push(`Kulisse ${o.parentElement.label} / ${o.textContent}`); }
+    }
+    const teams = Number(document.getElementById('cfg-teams')?.value ?? 2);
+    for (let t = 0; t < teams; t += 1) {
+      const f = document.getElementById(`cfg-fraktion-${t}`);
+      if (f) f.value = wahl(FACTIONS).id;
+    }
+    teile.push('Fraktionen gemischt');
+    const status = document.getElementById('ueberrasch-status');
+    if (status) status.textContent = `Gewürfelt: ${teile.join(' · ')}`;
+    return teile;
   }
 
   startMatch({
@@ -1927,6 +1977,10 @@ class Game {
     if (!state) return { ok: false, errors: ['Kein laufendes Match'] };
     if (state.status !== 'playing') return { ok: false, errors: ['Match ist beendet'] };
 
+    // In der Zugpause beendet jeder Feuer-Tastendruck die Pause (Überspringen), statt zu schießen.
+    const inPause = this.mode === 'online' ? Boolean(this.zugpause) : (state.turnPauseMs ?? 0) > 0;
+    if (inPause) return this.#ueberspringeZugpause();
+
     // Die aufgeladene Kraft gilt in BEIDEN Betriebsarten — der Server rechnet
     // mit derselben Zahl, die die Anzeige während des Ladens gezeigt hat.
     const power = Number.isFinite(geladen)
@@ -1975,6 +2029,20 @@ class Game {
       this.hud.log(`Schuss abgegeben (${Math.round(power)} Kraft)`, 'accent');
     }
     return result;
+  }
+
+  /** Beendet die Zugpause vorzeitig (lokal direkt, online per Nachricht; im Replay nie). */
+  #ueberspringeZugpause() {
+    if (this.mode === 'replay') return { ok: false, errors: ['Replay läuft'] };
+    if (this.mode === 'online') {
+      if (!this.network?.isMyTurn || !this.network.sendSkipPause()) return { ok: false, errors: ['Nicht am Zug'] };
+    } else if (!this.match?.skipTurnPause().ok) {
+      return { ok: false, errors: ['Keine Zugpause'] };
+    }
+    this.zugpause = null;
+    const feld = document.getElementById('zugpause');
+    if (feld) feld.hidden = true;
+    return { ok: true, uebersprungen: true };
   }
 
   /** Ein lokaler Simulationsschritt inklusive Ereignisverarbeitung. */
@@ -3628,6 +3696,8 @@ if (typeof document !== 'undefined') {
     // Loadout-Auswahl je Spielerplatz (Klasse und Archetyp entkoppelt).
     game.fillLoadoutOptions();
     game.fillFraktionOptions();
+    document.getElementById('cfg-backdrop-suche')?.addEventListener('input', e => game.filterBackdropOptions(e.target.value));
+    document.getElementById('ueberrasch-button')?.addEventListener('click', () => { game.ueberraschMich(); game.startFromMenu(); });
 
     /*
      * Die Loadout-Felder richten sich nach „Teams" und „Spieler pro Team" —

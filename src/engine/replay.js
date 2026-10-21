@@ -177,7 +177,7 @@ export class ReplayRecorder {
    * @param {number} [entry.power] - Kraft (bei Schüssen)
    * @param {string|null} [entry.weaponId] - Waffentyp (bei Schüssen UND beim Abwurf)
    * @param {number} [entry.seitlich] - Richtung des Sprungs (−1, 0, 1)
-   * @param {'shot'|'jump'|'drop'|'select'} [entry.kind='shot'] - Art der Eingabe
+   * @param {'shot'|'jump'|'drop'|'select'|'skip_pause'} [entry.kind='shot'] - Art der Eingabe
    *   (`select` = Waffenwahl; sie ist Zustand und entscheidet über spätere Schüsse)
    */
   recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, kind = 'shot' }) {
@@ -212,6 +212,8 @@ export class ReplayRecorder {
        * liegen.
        */
       eintrag.seitlich = Math.max(-1, Math.min(1, Math.trunc(seitlich) || 0));
+    } else if (kind === 'skip_pause') {
+      // nur Zeitpunkt und Spieler
     } else if (kind === 'drop' || kind === 'select') {
       eintrag.weaponId = weaponId ?? null;
     } else {
@@ -475,6 +477,7 @@ export class ReplayPlayer {
     if (entry.kind === 'jump') {
       return this.match.jump(entry.playerId, entry.seitlich ?? 0);
     }
+    if (entry.kind === 'skip_pause') return this.match.skipTurnPause();
     if (entry.kind === 'drop') {
       return this.match.dropWeapon(entry.playerId, entry.weaponId);
     }

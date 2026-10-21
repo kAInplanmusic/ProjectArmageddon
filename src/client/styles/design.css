@@ -913,3 +913,24 @@ select option { background: #14181d; color: var(--ink); }
   #tier-hud .tier-hunger { width: 48px; }
   #tier-hud .tier-stufe { min-width: 0; }
 }
+
+/* ======================================================= Menü: Schnellstart und „Erweitert" */
+#menu-overlay .field-row.drei { grid-template-columns: 1fr 1fr 1.3fr; }
+#menu-overlay .cfg-erweitert > .field-row { padding-bottom: 6px; }
+#menu-overlay .cfg-erweitert > .field-hint { margin: 0 0 8px; }
+#menu-overlay .start-zeile { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: stretch; }
+#menu-overlay .start-zeile .secondary { font-size: 18px; padding-inline: 18px; }
+#menu-overlay #ueberrasch-status:empty { display: none; }
+#cfg-backdrop-suche { margin-bottom: 4px; }
+/* Schmal und hochkant: Das Menü nutzt das ganze Fenster statt der 16:9-Bühne (sonst bleiben ~200 px Höhe). */
+@media (max-aspect-ratio: 1/1) {
+  #menu-overlay { position: fixed; inset: 0; z-index: 50; place-items: start center; overflow-y: auto; }
+  #menu-overlay .overlay-card { width: calc(100% - 16px); max-height: none; margin: 8px 0; padding: 14px 12px; }
+  #menu-overlay .field-row, #menu-overlay .field-row.drei { grid-template-columns: 1fr; }
+  #menu-overlay .menu-logo { width: min(100%, 84px); }
+  #menu-overlay .menu-konfig .field-row small.field-hint { display: none; }
+  #menu-overlay .menu-konfig { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+  #menu-overlay .start-zeile { grid-template-columns: 1fr; }
+  #menu-overlay .subtitle { display: none; }
+  #menu-overlay .keymap { grid-template-columns: 1fr; }
+}

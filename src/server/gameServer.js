@@ -304,6 +304,10 @@ class LobbySession {
       this.match.jump(entry.playerId, entry.seitlich ?? 0);
       return;
     }
+    if (entry.kind === 'skip_pause') {
+      this.match.skipTurnPause();
+      return;
+    }
     if (entry.kind === 'drop') {
       this.match.dropWeapon(entry.playerId, entry.weaponId);
       return;
@@ -826,6 +830,22 @@ class LobbySession {
    * @param {string} weaponId
    * @returns {{ok:boolean, errors?:string[]}}
    */
+  handleSkipPause(token) {
+    const seat = this.#platzFuer(token);
+    if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
+    // Nur wer gleich dran ist, darf die Pause beenden (der Gegner sieht sonst die Wiederholung nicht zu Ende).
+    if (seat.entityId !== this.match.activePlayerId) return { ok: false, errors: ['Pause überspringen nur, wenn du gleich dran bist'] };
+    const result = this.match.skipTurnPause();
+    if (result.ok) {
+      this.recorder.recordInput({ tick: this.match.world.tickCount, playerId: seat.entityId, kind: 'skip_pause' });
+    }
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return { ok: result.ok, errors: result.errors ?? [] };
+  }
+
   handleDropWeapon(token, weaponId) {
     const result = this.#handleDropWeapon(token, weaponId);
     if (this.metrics) {
@@ -2045,6 +2065,14 @@ export class GameServer {
             const session = this.#sessions.get(context.lobbyId);
             if (!session) throw new Error('Keine aktive Sitzung');
             const result = session.handleJump(context.token, message);
+            if (!result.ok) this.#fehlerSenden(socket, result.errors);
+            break;
+          }
+
+          case CONTROL.SKIP_PAUSE: {
+            const session = this.#sessions.get(context.lobbyId);
+            if (!session) throw new Error('Keine aktive Sitzung');
+            const result = session.handleSkipPause(context.token);
             if (!result.ok) this.#fehlerSenden(socket, result.errors);
             break;
           }

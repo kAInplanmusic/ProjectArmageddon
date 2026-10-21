@@ -2580,6 +2580,16 @@ export class MatchController {
     return launchOrigin(this.#schussQuelle(), playerId, angle);
   }
 
+  /**
+   * Beendet den Rest der Zugpause (Taste „Leertaste/Enter" in der Pause). Spielzustand: ohne Eintrag im
+   * Replay liefe die Wiedergabe länger als das Original — Aufrufer zeichnen es als `skip_pause` auf.
+   */
+  skipTurnPause() {
+    if (this.#status !== 'playing' || this.#turnPauseTicks <= 0) return { ok: false, errors: ['Keine Zugpause'] };
+    this.#turnPauseTicks = 0;
+    return { ok: true };
+  }
+
   endTurn() {
     if (this.#status !== 'playing') return;
     const previous = this.activePlayerId;

@@ -104,6 +104,8 @@ export const CONTROL = Object.freeze({
   SELECT_WEAPON: 'select_weapon',
   JUMP: 'jump',
   DROP_WEAPON: 'drop_weapon',
+  /** Zugpause vorzeitig beenden (nur der Spieler, der gleich dran ist). */
+  SKIP_PAUSE: 'skip_pause',
   RESUME: 'resume',
   ERROR: 'error',
   PING: 'ping',

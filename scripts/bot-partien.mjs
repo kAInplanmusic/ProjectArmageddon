@@ -159,6 +159,7 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
   bilanz.tick = ende.tick;
   bilanz.minuten = ende.tick / 3600;
   bilanz.runden = ende.round;
+  bilanz.siegerTeam = ende.winnerTeamId ?? null;
   bilanz.valhallaMinuten = match.valhallaTick / 3600;
   bilanz.ausgang = match.status === 'playing' ? 'offen' : (ende.winnerTeamId === null ? 'unentschieden' : 'sieg');
   // Valhalla (Mahlstrom) beginnt nach `valhallaTick` Ticks; die Bedenkzeit läuft als Spielzeit mit.

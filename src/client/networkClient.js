@@ -532,6 +532,12 @@ export class NetworkClient {
    * @param {string} weaponId
    * @returns {boolean} ob die Nachricht abgeschickt wurde
    */
+  sendSkipPause() {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.SKIP_PAUSE, {}));
+    return true;
+  }
+
   sendDropWeapon(weaponId) {
     if (!this.isConnected || !this.#socket) return false;
     this.#socket.send(controlMessage(CONTROL.DROP_WEAPON, { weaponId }));

@@ -16,6 +16,7 @@ test('Menü bietet alle Sonderbiome; gewählte Biome starten mit Stoffkarte', { 
     const optionen = await page.locator('#cfg-biom option').evaluateAll(o => o.map(x => x.value));
     expect(optionen).toContain(biom);
     expect(optionen.length).toBeGreaterThanOrEqual(8);
+    await page.locator('#cfg-erweitert > summary').click();
     await page.locator('#cfg-biom').selectOption(biom);
     await page.locator('#cfg-seed').fill(String(5150 + i));
     await page.getByRole('button', { name: 'Match starten' }).click();
