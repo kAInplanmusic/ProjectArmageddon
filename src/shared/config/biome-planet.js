@@ -75,7 +75,7 @@ const boden = (surface, deep) => ({ surface, deep });
 /** Gemeinsame Felder aller Arten (Kulisse: Kosmos-Himmel mit Planetenkugeln). */
 const GEMEINSAM = {
   mapPreset: 'islands',
-  sky: ['kosmos_planet'],
+  sky: ['kosmos_planet', 'kosmos_planet_blau', 'kosmos_planet_rot'],
   water: ['void'],
   landmarks: ['none'],
   ambient: ['stars', 'nebula_glow', 'glimmer'],
@@ -180,10 +180,15 @@ export const PLANET_BIOME = Object.freeze({
   },
 });
 
-/** Himmel der Kulisse: Kosmos mit Planetenkugeln (gezeichnet von `client/planetenKulisse.js`). */
-export const PLANET_HIMMEL = Object.freeze({
-  id: 'kosmos_planet', label: 'Exoplanet im All', colors: ['#04040c', '#0a0a22', '#1a1038'], light: 0.35, celestial: 'planet', ambient: ['stars', 'nebula_glow'],
-});
+/**
+ * Himmel der Kulisse: Kosmos mit Planetenkugeln (gezeichnet von `client/planetenKulisse.js`). Alle drei haben den
+ * Himmelskörper `planet`; die Farben bestimmen den Verlauf unter der Szene und das Ambiente.
+ */
+export const PLANET_HIMMEL = Object.freeze([
+  { id: 'kosmos_planet', label: 'Exoplanet im All', colors: ['#04040c', '#0a0a22', '#1a1038'], light: 0.35, celestial: 'planet', ambient: ['stars', 'nebula_glow'] },
+  { id: 'kosmos_planet_blau', label: 'Exoplanet, blaue Sterne', colors: ['#02060e', '#06122c', '#10286a'], light: 0.4, celestial: 'planet', ambient: ['stars', 'glimmer'] },
+  { id: 'kosmos_planet_rot', label: 'Exoplanet, roter Zwerg', colors: ['#0c0406', '#220a14', '#4a1424'], light: 0.4, celestial: 'planet', ambient: ['stars', 'nebula_glow'] },
+]);
 
 /**
  * Löst die Wahl `planet` zu einer Art auf (aus der Ziehung `t` in [0,1)).

@@ -38,7 +38,7 @@ export const NEUE_HIMMEL = Object.freeze([
   {
     id: 'abyss', label: 'Tiefsee', colors: ['#04182c', '#0a3c5e', '#1a7a8a'], light: 0.5, celestial: null, ambient: ['bubbles', 'haze'],
   },
-  PLANET_HIMMEL,
+  ...PLANET_HIMMEL,
 ]);
 
 export const NEUE_WASSER = Object.freeze([
