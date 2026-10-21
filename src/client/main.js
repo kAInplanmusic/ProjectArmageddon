@@ -1042,7 +1042,6 @@ class Game {
       option.title = NEUE_BIOME[id].beschreibung;
       auswahl.append(option);
     }
-    auswahl.value = ''; // Vorgabe „Zufall (Seed)": replaceChildren verliert das `selected` aus dem Markup
     return SONDERBIOM_IDS.length;
   }
 
@@ -1067,7 +1066,6 @@ class Game {
       }
       auswahl.append(gruppe);
     }
-    auswahl.value = 'generativ'; // Vorgabe laut Markup („empfohlen"); replaceChildren verliert das `selected`
     return anzahl;
   }
 
