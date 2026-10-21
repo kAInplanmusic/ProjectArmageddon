@@ -22,6 +22,7 @@ export const STOFF_TEXTUR = Object.freeze({
   erde: 'erde',
   sand: 'kies',
   schnee: 'schnee',
+  eis: 'schnee',
   pilz: 'moos',
   holz: 'hecke',
   fels: 'fels',

@@ -37,9 +37,11 @@ import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { ladeStoffTexturen } from './stoffTexturen.js';
+import { planetenBilder } from './planetenKulisse.js';
 import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
 import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
+import { PLANET_BIOM_IDS, PLANET_WAHL } from '../shared/config/biome-planet.js';
 import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
 import { zeichneTiere } from './hilfeTiere.js';
 import { TierHud } from './tierHud.js';
@@ -139,8 +141,15 @@ const EFFEKT_SHEET_URLEN = Object.fromEntries(
     .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.webp$/, ''), url]),
 );
 
+/** Bilder der Planeten-Kulisse (Szene und Kugeln): Name → URL; geladen erst, wenn eine Planetenkarte sie braucht. */
+const PLANETEN_KULISSE_URLEN = Object.fromEntries(
+  Object.entries(import.meta.glob('./assets/planeten-kulisse/*.{webp,jpg}', { query: '?url', import: 'default', eager: true }))
+    .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.(webp|jpg)$/, ''), url]),
+);
+
 class Game {
   constructor() {
+    planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
     void ladeStoffTexturen(STOFF_TEXTUR_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
@@ -1073,7 +1082,20 @@ class Game {
       option.title = NEUE_BIOME[id].beschreibung;
       auswahl.append(option);
     }
-    return SONDERBIOM_IDS.length;
+    // Planeten (Geländefassung 4): `planet` lässt den Seed die Art ziehen, die Arten sind auch einzeln wählbar.
+    const planet = document.createElement('option');
+    planet.value = PLANET_WAHL;
+    planet.textContent = 'Planet (Art nach Seed)';
+    planet.title = 'Scheibenwelt im All mit Kratern und Tunneln; der Seed zieht Eis, Lava, Wüste, Dschungel, Rost oder Stein.';
+    auswahl.append(planet);
+    for (const id of PLANET_BIOM_IDS) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = NEUE_BIOME[id].label;
+      option.title = NEUE_BIOME[id].beschreibung;
+      auswahl.append(option);
+    }
+    return SONDERBIOM_IDS.length + 1 + PLANET_BIOM_IDS.length;
   }
 
   fillBackdropOptions() {
@@ -4037,6 +4059,16 @@ function zeichneCounterplay(container) {
     'Die Kartengunst ist eine Empfehlung, kein Bonus: Sie ändert keine Werte. '
     + 'Wer die begünstigte Klasse wählt, spielt ihre Stärke aus — mehr nicht.'));
   container.append(kartenHinweis);
+
+  // Sonderbiom Planet (Geländefassung 4): eine Zeile je Art, aus der Config.
+  container.append(textEl('h3', 'Planeten (Biom „Planet“)'));
+  container.append(textEl('p',
+    'Eine Scheibenwelt im All: ein gewölbter Planet mit Kraterkranz, Terrassen und Tunnelbögen, '
+    + 'umgeben von der tödlichen Leere. Die Art zieht der Seed; im Menü unter „Biom“ ist sie auch wählbar.'));
+  const planetenListe = document.createElement('ul');
+  planetenListe.className = 'h-liste';
+  for (const id of PLANET_BIOM_IDS) planetenListe.append(textEl('li', `${NEUE_BIOME[id].label}: ${NEUE_BIOME[id].beschreibung}`));
+  container.append(planetenListe);
 }
 
 /** Reiter „Loot und Seltenheiten" — die Verteilung, in Spielerprosa. */

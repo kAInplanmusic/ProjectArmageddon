@@ -19,6 +19,7 @@
 
 import { PAL, folge, rauschen1, hexRgb, hash2 } from './stil.js';
 import { zeichnePflanze } from './pflanzen.js';
+import { zeichnePlanetenHimmel } from './planetenKulisse.js';
 
 const BG0 = hexRgb(PAL.bg0);
 const BG1 = hexRgb(PAL.bg1);
@@ -74,6 +75,12 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
   });
   ctx.fillStyle = verlauf;
   ctx.fillRect(0, 0, breite, hoehe);
+
+  // Planeten-Biom: Kosmos mit Exoplanet-Szene und Kugeln statt Dunst und Sonne (`planetenKulisse.js`).
+  if (scenery.celestial?.kind === 'planet') {
+    zeichnePlanetenHimmel(ctx, breite, hoehe, scenery);
+    return;
+  }
 
   const dunst = ctx.createLinearGradient(0, hoehe * 0.22, 0, hoehe * 0.62);
   dunst.addColorStop(0, 'rgba(60, 88, 92, 0)');
@@ -605,6 +612,8 @@ function zeichneLandmarke(ctx, landmarke, breite, grundlinie, scenery) {
  * @param {number} grundlinie - y der Horizontlinie in Pixeln
  */
 export function drawLandmarks(ctx, breite, hoehe, scenery, grundlinie) {
+  // Planeten-Kulisse: der Raum hat keinen Horizont, keine Berge und keine Hügel hinter dem Gelände.
+  if (scenery.celestial?.kind === 'planet') return;
   zeichneHorizontLicht(ctx, breite, scenery, grundlinie);
   zeichneFelsmassive(ctx, breite, hoehe, scenery, grundlinie);
   if (scenery.landmarks?.length) {

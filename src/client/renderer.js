@@ -35,6 +35,7 @@ import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inse
 import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
 import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
+import { planetenBilder } from './planetenKulisse.js';
 import { STOFF } from '../shared/config/stoffe.js';
 import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
@@ -331,6 +332,11 @@ export class Renderer {
    */
   setScenery(scenery) {
     this.scenery = scenery ?? null;
+    if (scenery?.celestial?.kind === 'planet') {
+      // Planeten-Kulisse: Bilder erst jetzt laden; kommt eines an, wird die Himmelsebene neu gezeichnet.
+      this.planetBereit ??= () => { this.kulissenSchicht = null; };
+      planetenBilder.vorladen(this.planetBereit);
+    }
     if (scenery?.ground) {
       this.palette = { surface: scenery.ground.surface, deep: scenery.ground.deep };
     }

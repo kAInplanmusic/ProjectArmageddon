@@ -23,6 +23,8 @@
  * @module config/biome-neu
  */
 
+import { PLANET_BIOME, PLANET_HIMMEL, PLANET_WAHL } from './biome-planet.js';
+
 export const NEUE_HIMMEL = Object.freeze([
   {
     id: 'ember_sky', label: 'Glutnacht', colors: ['#1a0a0a', '#5a1a0e', '#c0521a'], light: 0.5, celestial: 'dim_sun', ambient: ['embers', 'ash', 'haze'],
@@ -36,6 +38,7 @@ export const NEUE_HIMMEL = Object.freeze([
   {
     id: 'abyss', label: 'Tiefsee', colors: ['#04182c', '#0a3c5e', '#1a7a8a'], light: 0.5, celestial: null, ambient: ['bubbles', 'haze'],
   },
+  PLANET_HIMMEL,
 ]);
 
 export const NEUE_WASSER = Object.freeze([
@@ -230,8 +233,8 @@ const BIOME_FASSUNG_2 = Object.freeze({
   },
 });
 
-/** Alle Sonderbiome: die neun der Fassung 2 und die vier Themenbiome (`biome-themen.js`, ab Fassung 3). */
-export const NEUE_BIOME = Object.freeze({ ...BIOME_FASSUNG_2, ...THEMEN_BIOME });
+/** Alle Sonderbiome: die neun der Fassung 2, die vier Themenbiome (`biome-themen.js`, ab Fassung 3) und die sechs Planetenarten (`biome-planet.js`, ab Fassung 4). */
+export const NEUE_BIOME = Object.freeze({ ...BIOME_FASSUNG_2, ...THEMEN_BIOME, ...PLANET_BIOME });
 
 /** Die Kennungen der neun Sonderbiome der Geländefassung 2 in fester Reihenfolge (Zug aus dem Seed, Menü). */
 export const SONDERBIOM_IDS = Object.freeze(Object.keys(BIOME_FASSUNG_2));
@@ -241,3 +244,10 @@ export const THEMEN_BIOM_IDS = Object.freeze(Object.keys(THEMEN_BIOME));
 
 /** Alle Kennungen ab Geländefassung 3: erst die neun, dann die Themenbiome (die Reihenfolge ist Teil des Seed-Zugs). */
 export const SONDERBIOM_IDS_FASSUNG_3 = Object.freeze([...SONDERBIOM_IDS, ...THEMEN_BIOM_IDS]);
+
+/**
+ * Alle Wahlen ab Geländefassung 4: die dreizehn der Fassung 3 und `planet` (Planet, die Art zieht der Seed).
+ * Die Planetenarten selbst (`PLANET_BIOM_IDS`) sind eigene Sonderbiome in `NEUE_BIOME`, aber keine eigenen Ziehplätze.
+ * Die Reihenfolge ist Teil des Seed-Zugs.
+ */
+export const SONDERBIOM_IDS_FASSUNG_4 = Object.freeze([...SONDERBIOM_IDS_FASSUNG_3, PLANET_WAHL]);

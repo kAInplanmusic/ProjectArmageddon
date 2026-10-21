@@ -78,6 +78,8 @@ import { NEUE_BIOME } from './config/biome-neu.js';
 import { rezeptFuer } from './config/stoff-rezepte.js';
 import { biomFuerCharakter } from './biomwahl.js';
 import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
+import { istPlanetBiom } from './config/biome-planet.js';
+import { baueGelaendePlanet } from './terrainPlanet.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -575,6 +577,8 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
    * wird **geprüft und neu gezogen**. Der RNG läuft dabei weiter — der
    * nächste Versuch ist ebenso deterministisch wie der erste.
    */
+  if (istPlanetBiom(biom)) return erzeugePlanetKarte({ rng, width, height, biom, stoffe });
+
   const MAX_VERSUCHE = 8;
   let letzterFehler = null;
   /**
@@ -621,6 +625,51 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
     ablehnungen,
     warnung: `Keine spielbare Karte nach ${MAX_VERSUCHE} Versuchen (zuletzt: ${letzterFehler})`,
   };
+}
+
+/**
+ * Die Karte eines Planeten-Bioms (`terrainPlanet.js`): dieselbe Prüfung wie bei den anderen Karten
+ * (bis zu acht Ziehungen), Ergebnis in derselben Form. Der Charakter steht in der Mitte jeder Achse,
+ * die Hohlraum-Kennzahl zählt nur die Luft IM Körper (die Leere um die Scheibe ist kein Loch).
+ */
+function erzeugePlanetKarte({ rng, width, height, biom, stoffe }) {
+  const charakter = { planet: biom };
+  for (const [achse, [lo, hi]] of Object.entries(CHARAKTER_ACHSEN)) charakter[achse] = (lo + hi) / 2;
+  const ablehnungen = [];
+  let karte = null;
+  let kennzahlen = null;
+  let versuch = 1;
+  for (; versuch <= 8; versuch += 1) {
+    karte = baueGelaendePlanet({ rng, width, height, biom });
+    const surface = oberflaechen(karte.bitmap, width, height);
+    kennzahlen = { ...messe(karte.bitmap, surface, width, height, karte.wasserY), hohlraum: hohlraumImKoerper(karte.bitmap, surface, width, height, karte.wasserY) };
+    karte.surface = surface;
+    const urteil = pruefeSpielbarkeit(kennzahlen);
+    if (urteil.ok) break;
+    ablehnungen.push(urteil.grund);
+  }
+  const ok = versuch <= 8;
+  const material = typeof rng.fork === 'function' ? baueMaterialfeld(rng.fork(MATERIAL_FORK), width, height, karte.bitmap) : null;
+  return {
+    bitmap: karte.bitmap, surface: karte.surface, wasserY: karte.wasserY, material, planet: karte.planet,
+    charakter, versuche: ok ? versuch : 9, kennzahlen, ablehnungen,
+    ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
+    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom),
+  };
+}
+
+/** Anteil der Luft unter der Oberfläche, nur zwischen Oberkante und letzter Festzelle der Spalte (Luft IM Körper). */
+function hohlraumImKoerper(bitmap, surface, width, height, wasserY) {
+  let koerper = 0;
+  let leer = 0;
+  for (let x = 0; x < width; x += 1) {
+    if (surface[x] < 0) continue;
+    let letzte = -1;
+    for (let y = Math.min(height, wasserY) - 1; y >= surface[x]; y -= 1) if (bitmap[y * width + x]) { letzte = y; break; }
+    if (letzte < 0) continue;
+    for (let y = surface[x]; y <= letzte; y += 1) { koerper += 1; if (!bitmap[y * width + x]) leer += 1; }
+  }
+  return koerper === 0 ? 0 : leer / koerper;
 }
 
 /**
