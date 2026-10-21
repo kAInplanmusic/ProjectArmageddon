@@ -38,7 +38,7 @@
  * @module musik
  */
 
-import { pruefeManifest, stueckeFuer, waehleNaechstes } from './musikListe.js';
+import { pruefeManifest, stueckeFuer, waehleNaechstes, hymnenStueck } from './musikListe.js';
 
 export const MUSIK_SCHLUESSEL = 'pa.musik.v1';
 export const STANDARD_LAUTSTAERKE = 0.35;
@@ -89,6 +89,9 @@ export class Musik {
   #audioBauer;
   #zufall;
   #setTimeout;
+  #hymnen;
+  #hymnenNamen;
+  #hymne = null;
 
   #an = true;
   #lautstaerke = STANDARD_LAUTSTAERKE;
@@ -116,10 +119,12 @@ export class Musik {
    * @param {{lies: Function, schreibe: Function}} [optionen.speicher]
    * @param {Function} [optionen.audioBauer] - liefert ein Audio-Element
    * @param {() => number} [optionen.zufall]
+   * @param {{fraktionen: object}} [optionen.hymnen] - Hymnen-Manifest (Fraktions-ID → Datei)
+   * @param {Record<string,string>} [optionen.hymnenNamen] - Fraktions-ID → Anzeigename
    */
   constructor({
     manifest, urls = {}, mischer, aktiv = true, speicher = null, audioBauer = null,
-    zufall = Math.random, setTimeoutFn = null,
+    zufall = Math.random, setTimeoutFn = null, hymnen = null, hymnenNamen = {},
   }) {
     this.#manifest = manifest;
     this.#urls = urls;
@@ -127,6 +132,8 @@ export class Musik {
     this.#speicher = speicher ?? standardSpeicher();
     this.#audioBauer = audioBauer ?? (() => new globalThis.Audio());
     this.#zufall = zufall;
+    this.#hymnen = hymnen;
+    this.#hymnenNamen = hymnenNamen;
     this.#setTimeout = setTimeoutFn ?? ((fn, ms) => globalThis.setTimeout(fn, ms));
     this.#aktiv = Boolean(aktiv) && pruefeManifest(manifest).length === 0;
     this.#ladeZustand();
@@ -147,6 +154,7 @@ export class Musik {
       an: this.#an,
       lautstaerke: this.#lautstaerke,
       stimmung: this.#stimmung,
+      hymne: this.#hymne,
       id: this.#aktuell?.id ?? null,
       titel: this.titel,
       gestartet: this.#gestartet,
@@ -223,8 +231,27 @@ export class Musik {
   setzeStimmung(stimmung) {
     if (stimmung === this.#stimmung && this.#aktuell) return this;
     this.#stimmung = stimmung;
+    if (stimmung !== 'menu') this.#hymne = null; // Match-Start: Hymne klingt über das Stück der neuen Stimmung aus
     this.#sicher(() => {
       if (this.#gestartet && this.#an && !this.#versteckt) this.#spieleNaechstes();
+    });
+    this.#melde();
+    return this;
+  }
+
+  /**
+   * Fraktionshymne im Menü: spielt die Hymne der angewählten Fraktion (nur
+   * eine zugleich, Überblendung wie bei Stücken) oder `null` = zurück zur
+   * normalen Menümusik. Unbekannte IDs zählen als `null`. Folgt Schalter und
+   * Regler der Musik (läuft über denselben Bus). Lädt nur die gewählte Datei.
+   * @param {string|null} id - Fraktions-ID
+   */
+  setzeHymne(id) {
+    const neu = id && hymnenStueck(this.#hymnen, id, this.#hymnenNamen[id] ?? id) ? id : null;
+    if (neu === this.#hymne) return this;
+    this.#hymne = neu;
+    this.#sicher(() => {
+      if (this.#gestartet && this.#an && !this.#versteckt && this.#stimmung === 'menu') this.#spieleNaechstes();
     });
     this.#melde();
     return this;
@@ -333,6 +360,10 @@ export class Musik {
   /** Wählt das nächste Stück der Stimmung und blendet dorthin über. */
   #spieleNaechstes() {
     if (!this.#aktiv || !this.#bus || this.#aufgegeben) return;
+    if (this.#hymne && this.#stimmung === 'menu') {
+      const h = hymnenStueck(this.#hymnen, this.#hymne, this.#hymnenNamen[this.#hymne] ?? this.#hymne);
+      if (h) { this.#starteStueck(h); return; }
+    }
     const kandidaten = stueckeFuer(this.#manifest, this.#stimmung);
     let runde = this.#runde.filter(id => kandidaten.some(k => k.id === id));
     if (runde.length >= kandidaten.length) runde = [];
@@ -411,6 +442,11 @@ export class Musik {
   /** Datei lädt nicht: still weiter, nach einer vollen Runde ohne Erfolg aufgeben. */
   #ueberspringe(stueck) {
     this.#zaehler.fehler += 1;
+    if (stueck?.hymne) { // Hymne lädt nicht: still zur normalen Musik zurück
+      this.#hymne = null;
+      this.#spieleNaechstes();
+      return;
+    }
     this.#fehlversuche += 1;
     const gesamt = this.#manifest.stuecke.length;
     if (this.#fehlversuche >= gesamt) {
@@ -442,7 +478,8 @@ export class Musik {
   #setzeFort() {
     const slot = this.#slots[this.#aktuellerSlot];
     const passt = slot?.stueck
-      && stueckeFuer(this.#manifest, this.#stimmung).some(s => s.id === slot.stueck.id);
+      && (slot.stueck.hymne ? slot.stueck.hymne === this.#hymne : true)
+      && (slot.stueck.hymne || stueckeFuer(this.#manifest, this.#stimmung).some(s => s.id === slot.stueck.id));
     if (!passt) { this.#spieleNaechstes(); return; }
     slot.belegung += 1;
     const p = slot.el.play();

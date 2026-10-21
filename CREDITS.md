@@ -25,3 +25,7 @@ Neun Stücke unter `src/client/assets/music/fraktionen/` (Urheber und Rechteinha
 xeno = Cosmic Slime Guards, rodentia = Gnaw Alliance, pirates = Dread Pirate Marauders, machina = Mecha Goblin Syndicate,
 undead = Crypt Walker Legion, shinobi = Shadow Clan Assassins, beasts = Pocket Mon-Mon Chumpions,
 pixel = Paraxod Glitchers, datacult = Neon Syndicate 2099.
+
+Im Spiel verwendet (verkleinert, Quelle bleibt unter `material-texturen/`): `assets/stoff-texturen/` (Stoff-Optik des Geländes),
+`assets/effekt-sheets/` (Einschlag, Glut, Feuerring, Leuchtgeschosse), `assets/planeten-kulisse/` (Planetenkugeln und
+Exoplanet-Szene für das Biom Planet).

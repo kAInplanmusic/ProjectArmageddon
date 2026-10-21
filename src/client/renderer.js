@@ -34,6 +34,8 @@ import {
 import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inselGrenzen, inselStaub, inselTruemmer, aufprallEffekt } from './zerstoerungOptik.js';
 import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
+import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
+import { planetenBilder } from './planetenKulisse.js';
 import { STOFF } from '../shared/config/stoffe.js';
 import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 import { findeZahlen, ergaenzeZahlen, schreiteZahlenFort } from './schadenszahlen.js';
@@ -50,7 +52,7 @@ import { FACTIONS } from '../shared/config/factions.js';
 import { holeWaffenSprite } from './waffenSprites.js';
 import {
   parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt, figurHand,
-  GeschossLagen, geschossDarstellung, geschossWinkel,
+  GeschossLagen, geschossDarstellung, geschossWinkel, zeichneGruppenmarke,
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
@@ -213,6 +215,9 @@ export class Renderer {
     this.inselfall = new Inselfall();
     /** Feuer, Lava und Ragnarök-Glut (Feuerfassung 2): Optik aus Ereignissen und Stoffkarte. */
     this.feuerOptik = new FeuerOptik();
+    /** Sprite-Atlanten für Einschlag, Feuerring und Leuchtgeschosse (Bildfolgen, nur Anzeige). */
+    this.sheets = new SheetEffekte();
+    this.feuerOptik.ringe = this.sheets;
     /** Rauch nach großen Einschlägen — der Nachhall. */
     this.rauch = [];
     /** Flugspuren je Projektil (`entityId` → Punkte). */
@@ -327,6 +332,11 @@ export class Renderer {
    */
   setScenery(scenery) {
     this.scenery = scenery ?? null;
+    if (scenery?.celestial?.kind === 'planet') {
+      // Planeten-Kulisse: Bilder erst jetzt laden; kommt eines an, wird die Himmelsebene neu gezeichnet.
+      this.planetBereit ??= () => { this.kulissenSchicht = null; };
+      planetenBilder.vorladen(this.planetBereit);
+    }
     if (scenery?.ground) {
       this.palette = { surface: scenery.ground.surface, deep: scenery.ground.deep };
     }
@@ -445,6 +455,16 @@ export class Renderer {
     const waffe = optionen.waffeId ? WEAPONS_BY_ID[optionen.waffeId] : null;
     const farbe = waffe ? holeWaffenSprite(waffe)?.flashColor : null;
     this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, farbe ? { ...optionen, color: farbe } : optionen));
+  }
+
+  /** Einschlag als Sprite-Bildfolge (Sheet `explosion`, bei großem Radius mit Nachglühen). */
+  sheetEinschlag(x, y, radius) {
+    return this.sheets.einschlag(x, y, radius);
+  }
+
+  /** Lava-Ausbruch/Flammenwand: Nachglühen als Bildfolge (Sheet `glut`). */
+  sheetGlut(x, y, groesse) {
+    return this.sheets.starte('glut', x, y, groesse);
   }
 
   /** Fügt einen Explosionsblitz an einer Stelle hinzu. */
@@ -1045,6 +1065,7 @@ export class Renderer {
     this.flugSchutt = [];
     this.inselfall.zuruecksetzen();
     this.feuerOptik.leere();
+    this.sheets.leere();
     this.wasserFertig = false;
     this.spuren = new Map();
     this.waffenZustand.clear();
@@ -1104,6 +1125,8 @@ export class Renderer {
     this.inselfall.schritt();
     this.feuerOptik.reduziert = this.reducedMotion;
     this.feuerOptik.fortschreiben();
+    this.sheets.reduziert = this.reducedMotion;
+    this.sheets.fortschreiben();
   }
 
   /**
@@ -2054,8 +2077,12 @@ export class Renderer {
         zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
         zeichneStartGlanz(this.ctx, sp, projectile.x, projectile.y, jetzt - lage.t0, lage.dar.start);
         lage.winkel = w;
+        if (lage.dar.gruppe) zeichneGruppenmarke(this.ctx, lage.dar.gruppe, projectile.x, projectile.y, jetzt - lage.t0, this.reducedMotion);
         this.waffenStat.geschossSprites += 1;
       } else {
+        // Ohne Waffen-Sprite: Leuchtgeschoss-Komet (Farbe nach Schadensart) hinter dem Glutkern.
+        const art = WEAPONS_BY_ID[lage?.waffeId]?.damageType;
+        this.sheets.zeichneKomet(this.ctx, LEUCHT_FARBE[art] ?? 'gelb', projectile.x, projectile.y, lage?.flug ?? 0, 34);
         zeichneGeschoss(this.ctx, projectile.x, projectile.y);
       }
 
@@ -2758,6 +2785,7 @@ export class Renderer {
      */
     this.#drawTreffer();
     this.#drawEffects();
+    this.sheets.zeichne(this.ctx);
     for (const zahl of this.zahlen) zeichneSchadenszahl(this.ctx, zahl);
     this.#drawHeimdall();
     this.#updateEffects();

@@ -138,7 +138,10 @@ if (haeufigstes && haeufigstes[1] / ANZAHL > 0.6) {
  * Stoffkarte vorhanden und Server/Client gleich.
  */
 const { MatchController } = await import('../src/engine/match.js');
-const { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3: SONDERBIOM_IDS } = await import('../src/shared/config/biome-neu.js');
+const { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 } = await import('../src/shared/config/biome-neu.js');
+const { PLANET_BIOM_IDS } = await import('../src/shared/config/biome-planet.js');
+// Die dreizehn der Fassung 3 und die sechs Planetenarten (Fassung 4): jede Art mit je drei Seeds.
+const SONDERBIOM_IDS = [...SONDERBIOM_IDS_FASSUNG_3, ...PLANET_BIOM_IDS];
 const { stoffHash, zaehleStoffe } = await import('../src/shared/stoffkarte.js');
 const { buildTerrainForSeed } = await import('../src/client/terrainPreview.js');
 const { WET_LEVEL } = await import('../src/shared/config/water.js');
@@ -201,7 +204,7 @@ const proBiom = new Map();
 for (let i = 0; i < SONDERBIOM_IDS.length * 3; i += 1) {
   const biom = SONDERBIOM_IDS[i % SONDERBIOM_IDS.length];
   const seed = 700000 + i * 7607;
-  const fassung = { gelaende: 3, zerstoerung: 5 };
+  const fassung = { gelaende: PLANET_BIOM_IDS.includes(biom) ? 4 : 3, zerstoerung: 5 };
   const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, turnDurationMs: 2000, ...fassung });
   m.start();
   m.consumeEvents();

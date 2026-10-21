@@ -73,3 +73,42 @@ export function waehleNaechstes(kandidaten, letzteId, runde = [], zufall = Math.
   const index = Math.min(pool.length - 1, Math.floor(zufall() * pool.length));
   return pool[index];
 }
+
+/**
+ * Prüft das Hymnen-Manifest (`assets/music/fraktionen/manifest.json`) gegen die
+ * Fraktions-IDs aus `shared/config/factions.js` (die einzige Quelle der IDs):
+ * jede Fraktion hat genau eine Hymne, es gibt keine fremden Einträge.
+ * @param {unknown} manifest
+ * @param {string[]} fraktionIds
+ * @returns {string[]} Fehlertexte (leer = in Ordnung)
+ */
+export function pruefeHymnen(manifest, fraktionIds) {
+  const fehler = [];
+  const h = manifest?.fraktionen;
+  if (!h || typeof h !== 'object') return ['fraktionen fehlt'];
+  for (const id of fraktionIds) {
+    const e = h[id];
+    if (!e) { fehler.push(`${id}: Hymne fehlt`); continue; }
+    if (typeof e.datei !== 'string' || !/^[\w-]+\.(mp3|ogg|opus)$/.test(e.datei)) fehler.push(`${id}: datei ungültig`);
+    if (!(Number(e.dauer) > 0)) fehler.push(`${id}: dauer fehlt`);
+  }
+  for (const id of Object.keys(h)) if (!fraktionIds.includes(id)) fehler.push(`${id}: unbekannte Fraktion`);
+  return fehler;
+}
+
+/**
+ * Macht aus einem Hymnen-Eintrag ein abspielbares „Stück" (für die Zwei-Slot-
+ * Wiedergabe in `musik.js`). Die URL-Zuordnung läuft über `fraktionen/<datei>`.
+ * @param {{fraktionen: Record<string, {datei: string, dauer: number}>}} manifest
+ * @param {string} id - Fraktions-ID
+ * @param {string} name - Anzeigename der Fraktion
+ * @returns {object|null}
+ */
+export function hymnenStueck(manifest, id, name) {
+  const e = manifest?.fraktionen?.[id];
+  if (!e) return null;
+  return {
+    id: `hymne-${id}`, hymne: id, titel: `Hymne: ${name}`,
+    datei: `fraktionen/${e.datei}`, dauer: e.dauer, stimmung: ['menu'],
+  };
+}

@@ -14,7 +14,9 @@
  *     `WAFFEN_F3_WERTE` auf den Katalog, Fassung 2 zusätzlich `WAFFEN_F2_WERTE`.
  *   - `WAFFEN_FEIN` (4): neun Ausreißer des Stufenvergleichs nachgezogen
  *     (`BALANCE_KORREKTUREN_4`) und 20 gleich fliegende Wurf-/Schusswaffen differenziert
- *     (`FLUGPROFILE_4`, Standard). Der Katalog selbst trägt diese Fassung.
+ *     (`FLUGPROFILE_4`). Der Katalog selbst trägt diese Fassung.
+ *   - `WAFFEN_FAIR` (5, Standard): Selbstschaden eigener Flächenwirkung gedeckelt
+ *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *
  * `WAFFEN_ALT_WERTE` hält je geänderter Waffe die Altwerte jener Felder, die sich
  * durch die Korrektur geändert haben (`damage` und der daraus abgeleitete
@@ -30,12 +32,21 @@ export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
 export const WAFFEN_KORREKTUR = 3;
 export const WAFFEN_FEIN = 4;
-export const WAFFEN_STANDARD = WAFFEN_FEIN;
+export const WAFFEN_FAIR = 5;
+export const WAFFEN_STANDARD = WAFFEN_FAIR;
+
+/**
+ * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
+ * Höchstgesundheit des Schützen: Ein einzelner eigener Schuss nimmt nie mehr als dieses Maß
+ * (Messung: `scripts/waffen-selbstschaden.mjs`). Wer sich selbst trifft, verliert viel, stirbt
+ * aber nicht aus voller Gesundheit durch einen Zufallstreffer. Fassung 4 und älter: keine Grenze.
+ */
+export const SELBSTSCHADEN_GRENZE = 0.4;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -97,6 +108,23 @@ export const WAFFEN_ALT_WERTE = Object.freeze({
   pa_140: Object.freeze({ damage: 72, powerScore: 73.36 }),
 });
 
+/**
+ * Werte der Fassung 5 über dem Katalog (der Katalog bleibt Fassung 4): je Waffe die Felder, die
+ * die Messung `scripts/waffen-balance.mjs` nachgezogen hat. Ältere Fassungen sehen sie nicht.
+ */
+export const WAFFEN_F5_WERTE = Object.freeze({
+  pa_026: Object.freeze({ damage: 36 }),
+  pa_041: Object.freeze({ damage: 48 }),
+  pa_055: Object.freeze({ damage: 42 }),
+  pa_059: Object.freeze({ damage: 41 }),
+  pa_063: Object.freeze({ damage: 32 }),
+  pa_071: Object.freeze({ damage: 55 }),
+  pa_075: Object.freeze({ damage: 45 }),
+  pa_097: Object.freeze({ damage: 30 }),
+  pa_104: Object.freeze({ damage: 45 }),
+  pa_140: Object.freeze({ damage: 47 }),
+});
+
 const zwischenspeicher = new Map();
 
 /**
@@ -110,7 +138,16 @@ const zwischenspeicher = new Map();
  */
 export function getWaffe(id, fassung = WAFFEN_STANDARD) {
   const waffe = getWeapon(id);
-  if (!waffe || fassung === WAFFEN_FEIN) return waffe;
+  if (!waffe) return waffe;
+  if (fassung >= WAFFEN_FAIR) {
+    const f5 = WAFFEN_F5_WERTE[id];
+    if (!f5) return waffe;
+    const schluessel5 = `${fassung}:${id}`;
+    let kopie5 = zwischenspeicher.get(schluessel5);
+    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5 }); zwischenspeicher.set(schluessel5, kopie5); }
+    return kopie5;
+  }
+  if (fassung === WAFFEN_FEIN) return waffe;
   const f3 = WAFFEN_F3_WERTE[id];
   const f2 = fassung <= WAFFEN_BALANCE ? WAFFEN_F2_WERTE[id] : null;
   const alt = fassung === WAFFEN_ALT ? WAFFEN_ALT_WERTE[id] : null;

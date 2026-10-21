@@ -152,4 +152,31 @@ test.describe('Musik', () => {
     expect(fehler).toEqual([]);
     await page.evaluate(() => localStorage.removeItem('pa.musik.v1'));
   });
+
+  test('Fraktionshymne im Menü: Anwahl spielt sie, Wechsel tauscht, Match-Start blendet aus', async ({ page }) => {
+    await page.goto('/?musik=1');
+    await page.evaluate(() => localStorage.removeItem('pa.musik.v1'));
+    await page.reload();
+    await page.mouse.click(5, 5);
+    await expect.poll(async () => (await zustand(page)).gestartet).toBe(true);
+    await page.locator('#fraktion-auswahl > summary').click();
+    const feld = page.locator('#cfg-fraktion-0');
+    await feld.selectOption('xeno');
+    await expect.poll(async () => (await zustand(page)).id).toBe('hymne-xeno');
+    await expect(page.locator('#menu-overlay [data-musik-titel]')).toContainText('Hymne: ');
+    await feld.selectOption('pirates');
+    await expect.poll(async () => (await zustand(page)).id).toBe('hymne-pirates');
+    // Höchstens eine Hymne zugleich: ein Audio-Element spielt, höchstens zwei existieren.
+    expect(await page.evaluate(() => document.querySelectorAll('audio').length)).toBeLessThanOrEqual(2);
+    await feld.selectOption('');
+    await expect.poll(async () => (await zustand(page)).hymne).toBe(null);
+    await feld.selectOption('pixel');
+    await expect.poll(async () => (await zustand(page)).hymne).toBe('pixel');
+    await starteMatch(page);
+    await expect.poll(async () => (await zustand(page)).hymne).toBe(null);
+    const z = await zustand(page);
+    expect(z.stimmung).toBe('match');
+    expect(z.id).not.toMatch(/^hymne-/);
+    await page.evaluate(() => localStorage.removeItem('pa.musik.v1'));
+  });
 });

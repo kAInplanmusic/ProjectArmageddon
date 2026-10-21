@@ -1,7 +1,7 @@
 {
   "version": 1,
   "urheber": "Patrick Hilf",
-  "hinweis": "Fraktionshymnen, je eine Datei pro Fraktion-ID (factions.js). Noch nicht im Spiel verdrahtet.",
+  "hinweis": "Fraktionshymnen, je eine Datei pro Fraktion-ID (factions.js). Im Menü der Fraktionswahl abgespielt (Musik.setzeHymne).",
   "fraktionen": {
     "beasts": {
       "datei": "beasts.mp3",
