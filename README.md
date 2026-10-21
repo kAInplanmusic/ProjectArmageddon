@@ -86,6 +86,7 @@ Neun Fraktionen zu je neun Charakteren — **81 insgesamt**. Die Inhalte stehen 
 | `assets/fraktionen/team 1..9.png` | Quellbögen (3×3, Zeile = Klasse) |
 | `scripts/extract_factions.py` | schneidet die 81 Figuren frei |
 | `scripts/namen.py` | Positions- und Namensliste der Bögen |
+| `scripts/sprite-sheets-klassifizieren.py` | leitet aus den Sprite-Sheets (`assets/sprite-sheets/`, Gehzyklus + Aktionen je Figur) die Rollen der Zellen ab und schreibt sie ins Manifest |
 | `src/shared/config/factions.js` | Katalog: Namen, Biografien, Waffen, Profile |
 | `src/client/roster.js` | lädt die Bilder, ordnet sie dem Katalog zu |
 
@@ -300,7 +301,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run check:targeting` | Prüft die Zielart (`targeting`) gegen die Wirkung — 0 Widersprüche erwartet |
 | `npm run check:damage-types` | Prüft Schadensart und Sichtlinie aller 150 Waffen |
 | `npm run checks` | **Alle 21 Prüfwerkzeuge in einem Lauf** (~52 s); Exit-Code 1, sobald eines fehlschlägt |
-| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1789 Tests in 187 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
+| `npm test` | Unit- und Integrationstests (Integrationstest: `tests/integration-ereignisablauf.test.js` Mini-Partie Schuss bis Klang, `tests/replay-altkoepfe.test.js` Altmarken, E2E `online-einschlag.spec.mjs`): **1802 Tests in 189 Dateien**, ~2 min (Stand 2026-10-15: alle grün; setzt `PA_ZUGPAUSE_SEKUNDEN=0`, damit die Server-Tests ohne Zugpause laufen). Ältere Messreihen und die Zugänge je Datum stehen in `MASTERDOTO.md`. |
 | `npm run test:unit` | Nur PRNG/Seed/Loot (schneller Rauchtest) |
 | `npm run test:e2e` | Browser-E2E: **311 Tests in 55 Spezifikationen**, ~40 min seriell (Stand 2026-10-21: **309 grün, 0 rot, 2 übersprungen**, Gesamtlauf in 7 Blöcken à 8 Specs auf dem Endstand aa28a29, eigener Port, ohne Nachläufe; die zwei Übersprünge sind Selbstschutz der Tests: `prediction-online` „abgelehnter Schuss“ (Client bereits am Zug) und `profiling` „Bildzeiten auf dem echten Grafikpfad“ (nur SwiftShader-Software-Rasterung). Zahl über `npx playwright test --list`). 7 davon messen Bildzeiten; sie sind LASTempfindlich — parallel zu schreibenden Arbeitern werden sie rot, ohne dass etwas kaputt ist (gemessen: 900 ms längstes Bild gegen ein 500-ms-Limit). Siehe `docs/testgrenzen.md` |
 | `npm run test:all` | Tests und E2E hintereinander |

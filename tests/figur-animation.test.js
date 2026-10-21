@@ -67,3 +67,11 @@ test('Fall-Effekt endet nach FALL_DAUER; Ertrinken sinkt ohne Drehung', () => {
   const still = fallPose(fall, FALL_DAUER * 0.5, true);
   assert.equal(still.rot, 0);
 });
+
+test('fallPose mit liegendem Sheet-Frame: nicht drehen, kurz rutschen, dann ausblenden', () => {
+  const f = { t0: 0, ertrinkt: false, blick: 1, vx: 0, tod: 'kippen', liegt: true };
+  const mitte = fallPose(f, FALL_DAUER * 0.5, false);
+  assert.equal(mitte.rot, 0);
+  assert.ok(mitte.dx > 0 && mitte.alpha === 1);
+  assert.ok(fallPose(f, FALL_DAUER * 0.9, false).alpha < 1);
+});

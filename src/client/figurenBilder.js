@@ -19,12 +19,16 @@
 
 import { iconUrlFor } from '../shared/config/weapons.js';
 import { STUFEN, stufeBauen } from './figurStufen.js';
+import { blattBauen } from './figurSheets.js';
 
 export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
 
 const PORTRAETS = import.meta.glob('./assets/characters/*/*.png', { query: '?url', import: 'default' });
 const SEITEN = import.meta.glob('./assets/characters-side/*/*.png', { query: '?url', import: 'default' });
 const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { eager: true, import: 'default' });
+// Sprite-Sheets (Gehzyklus, Aktionen): Manifest samt Rollen eager (klein), die Bilder lazy je Figur.
+const BLATT_MANIFEST = import.meta.glob('./assets/sprite-sheets/manifest.json', { eager: true, import: 'default' });
+const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*.webp', { query: '?url', import: 'default' });
 
 /** Kantenlänge der Standardstufe (Quelle: 256 px). */
 const CACHE_KANTE = 128;
@@ -62,14 +66,34 @@ async function lade(eintraege, charakter) {
       bild: null,
       hell: null,
       seite: Boolean(seitenLader),
+      blatt: null,
       anker: seitenLader ? ankerAusManifest(charakter.faction, charakter.sprite) : standard,
     };
     const std = stufeBauen(fig, CACHE_KANTE);
     fig.stufen[STUFEN.indexOf(CACHE_KANTE)] = std;
     fig.bild = std.bild; fig.hell = std.hell;
     eintraege.set(datei, fig);
+    ladeBlatt(fig, charakter);
   } catch {
     eintraege.set(datei, 'fehlt');
+  }
+}
+
+/**
+ * Lädt die Sheets einer Figur (nur der Figuren, die im Spiel vorkommen) und setzt `fig.blatt`.
+ * Fehlt etwas oder schlägt das Laden fehl, bleibt `fig.blatt` `null` — das Seitenbild gilt weiter.
+ */
+async function ladeBlatt(fig, charakter) {
+  try {
+    const m = Object.values(BLATT_MANIFEST)[0];
+    const e = m?.figuren?.[`${charakter.faction}/${charakter.sprite.replace(/\.png$/, '')}`];
+    if (!e) return;
+    const urls = [BLATT_BILDER[`./assets/sprite-sheets/${e.walk}`], BLATT_BILDER[`./assets/sprite-sheets/${e.aktion}`]];
+    const [walk, aktion] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
+    const blatt = blattBauen(e, walk, aktion);
+    if (blatt.walk || blatt.idle) fig.blatt = blatt;
+  } catch {
+    fig.blatt = null;
   }
 }
 
@@ -78,7 +102,7 @@ async function lade(eintraege, charakter) {
  * Aufruf stößt das Laden an).
  *
  * @param {object|null} charakter - Eintrag aus CHARACTERS
- * @returns {{bild: CanvasImageSource, hell: CanvasImageSource, seite: boolean, anker: object}|null}
+ * @returns {{bild: CanvasImageSource, hell: CanvasImageSource, seite: boolean, anker: object, blatt: object|null}|null}
  */
 export function holeFigur(charakter) {
   if (!charakter) return null;

@@ -15,7 +15,7 @@ abgeleitet (Verfahren siehe MASTERDOTO, „Seitenansichten“).
 ## Texturen, Planeten, Effekt-Sheets, Bildmaterial
 
 Alle unter `src/client/assets/material-texturen/` abgelegten Texturen, Planetenkugeln, Effekt- und
-Figuren-Sheets sowie die Kulissen und Sprites in `src/client/assets/backdrops/stimmung/`, `guenther/` und
+Figuren-Sheets (auch `src/client/assets/sprite-sheets/`: Gehzyklus und Aktionen je Figur) sowie die Kulissen und Sprites in `src/client/assets/backdrops/stimmung/`, `guenther/` und
 `cookie/` stammen vom Auftraggeber Patrick Hilf bzw. wurden in seinem Auftrag erzeugt. Er bestätigt:
 alles frei verwendbar und sein Eigentum.
 

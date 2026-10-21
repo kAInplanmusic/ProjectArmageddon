@@ -1694,7 +1694,7 @@ export class Renderer {
         const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss,
-          feuer: feuerLeben, params: par, typ,
+          feuer: feuerLeben, params: par, typ, blatt: fig.blatt,
           schussStaerke: waffenPar?.koerper ?? 1, ausfall: waffenPar?.ausfall ?? 0,
           neigung: this.#bodenNeigung(entity.x, fussWelt),
           hp: entity.maxHealth > 0 ? Math.max(0, Math.min(1, entity.health / entity.maxHealth)) : 0,
@@ -1721,7 +1721,7 @@ export class Renderer {
         }
         zeichneFigurSprite(this.ctx, fig, {
           team: color, winkel: angle, aktiv: isActive, pose, zeit: jetzt, reduziert: this.reducedMotion,
-          px: spritePx, breite: par.fussBreite, wasserY,
+          px: spritePx, breite: par.fussBreite, wasserY, frame: zs.frame ?? undefined,
         });
         // Die Waffe folgt dem Körper (Hangneigung, Neigung, Hüpfen), behält aber den echten Zielwinkel.
         this.#waffeFolgtKoerper(pose);
@@ -1854,6 +1854,8 @@ export class Renderer {
       this.faelle.push({
         fig: z.fig, x: z.x, y: z.y, winkel: z.winkel, team: z.team, t0: jetzt,
         ertrinkt, blick: z.blick, vx: z.vx, tod: par.tod, breite: par.fussBreite,
+        // Niedergestreckt-Frame aus dem Sheet (nur beim Umkippen; Fahrzeuge, Wesen usw. behalten ihren Effekt).
+        liegt: !ertrinkt && par.tod === 'kippen' && Boolean(z.fig.blatt?.tod),
       });
       if (!this.reducedMotion) {
         if (ertrinkt) this.figurEffekte.blasen(z.x, z.y + FUSS_ABSTAND, 9);
@@ -1872,6 +1874,13 @@ export class Renderer {
     });
     d.dx = pose.dx; d.dy = pose.dy; d.sx = pose.sx; d.sy = pose.sy; d.rot = pose.rot; d.flash = pose.flash;
     return d;
+  }
+
+  /** Frame des Fall-Effekts: kurz der Treffer-Frame (Aufprall), dann die liegende Figur aus dem Sheet. */
+  #fallFrame(fall, jetzt) {
+    if (!fall.liegt) return undefined;
+    const bl = fall.fig.blatt;
+    return jetzt - fall.t0 < 0.1 && bl.treffer ? bl.treffer : bl.tod;
   }
 
   /** Zeichnet Staub, Blasen und Splitter der Figuren. */
@@ -1939,6 +1948,7 @@ export class Renderer {
         alpha: pose.alpha, breite: f.breite,
         px: SPRITE_HOEHE * this.figurSkala * (this.kamera?.zoom ?? 1),
         pose: this.fallDarstellung(pose),
+        frame: this.#fallFrame(f, jetzt),
       });
       this.ctx.restore();
     }

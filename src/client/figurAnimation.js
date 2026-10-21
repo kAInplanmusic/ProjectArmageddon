@@ -16,6 +16,7 @@
  * @module figurAnimation
  */
 import { PARAMETER } from './figurTypen.js';
+import { MODUS, waehleRolle, frameFuer } from './figurSheets.js';
 
 /** Geschwindigkeit (px/s), ab der die Figur als laufend gilt. */
 const LAUF_SCHWELLE = 18;
@@ -26,6 +27,8 @@ const LANDE_SCHWELLE = 140;
 /** Größte Hangneigung der Darstellung (12 Grad). */
 export const NEIGUNG_MAX = 12 * Math.PI / 180;
 const TREFFER_DAUER = 0.4;
+/** Dauer, in der der Treffer-Frame gezeigt wird (kürzer als das Zucken). */
+const TREFFER_FRAME_DAUER = 0.32;
 const ZUG_DAUER = 0.7;
 const TWO_PI = Math.PI * 2;
 
@@ -57,6 +60,7 @@ function neuerZustand(x, y, jetzt) {
     x, y, t: jetzt, vx: 0, vy: 0, vyVorher: 0, vyMax: 0, faellt: false, lande: 0, phase: 0, blick: 1,
     landeDauer: 0.22, absprungT: 99, inLuft: false,
     schussT: 99, feuerVorher: 0, trefferVorher: 0, hitT: 99, hitDir: 1, hitHaerte: 0.5,
+    modi: 0, rolle: null, frame: null,
     aktivVorher: false, zugT: 99, kipp: 0, neig: 0, zielBlick: 0, drehT: 99,
     hpVerz: -1, hpLetzt: -1, hpHalt: 0, ergebnisT: 0,
     pose: { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1 },
@@ -78,7 +82,9 @@ export class FigurPosen {
    * @param {number} jetzt - Zeit in Sekunden (monoton)
    * @param {{reduziert?: boolean, treffer?: number, haerte?: number, rueck?: number, winkel?: number,
    *   aktiv?: boolean, feuer?: number, params?: object, typ?: string, neigung?: number, hp?: number,
-   *   ergebnis?: number, schussStaerke?: number, ausfall?: number, stoss?: number}} opt
+   *   ergebnis?: number, schussStaerke?: number, ausfall?: number, stoss?: number, blatt?: object|null}} opt
+   *   (`blatt`: Frames der Figur aus `figurSheets.js`; damit setzt der Zustand `modi`, `rolle` und `frame`,
+   * abrufbar über `zustand(id)` — die Pose selbst bleibt unverändert)
    * @returns {{dx:number,dy:number,sx:number,sy:number,rot:number,flash:number,tint:number,neigung:number,zug:number,hpVerz:number}} wiederverwendet!
    */
   pose(entity, jetzt, opt) {
@@ -151,6 +157,8 @@ export class FigurPosen {
     p.neigung = z.neig;
 
     p.dx = 0; p.dy = 0; p.sx = 1; p.sy = 1; p.rot = 0; p.tint = 0; p.zug = 0;
+    z.modi = 0; z.rolle = null; z.frame = null;
+    const blatt = opt.blatt ?? null;
     p.flash = clamp(opt.treffer ?? 0, 0, 1);
 
     if (opt.reduziert) return p;
@@ -159,31 +167,35 @@ export class FigurPosen {
     const lauf = !luft && Math.abs(z.vx) > LAUF_SCHWELLE;
     const ph = jetzt + id * 1.9;
     if (luft) {
-      const s = clamp(Math.abs(z.vy) / 500, 0, par.sprungStreck);
+      // Mit Sprung-Frame im Blatt bleibt von der Streckung nur ein Rest (die Pose liefert das Bild).
+      const bk = blatt?.luft ? 0.35 : 1;
+      const s = clamp(Math.abs(z.vy) / 500, 0, par.sprungStreck) * bk;
       if (Math.abs(z.vy) < 70) {
         // Scheitelpunkt: kurz rund, schwebend.
-        p.sy = 1 - par.sprungStreck * 0.1; p.sx = 1 + par.sprungStreck * 0.25;
+        p.sy = 1 - par.sprungStreck * 0.1 * bk; p.sx = 1 + par.sprungStreck * 0.25 * bk;
       } else {
         p.sy = 1 + s; p.sx = 1 - s * 0.7;
       }
       p.rot = clamp(z.vx / 900, -0.25, 0.25) * (par.sprungStreck > 0.05 ? 1 : 0.6);
       if (z.absprungT < 0.1 && par.sprungHocke > 0) {
-        const h = Math.sin(Math.PI * z.absprungT / 0.1) * par.sprungHocke;
+        const h = Math.sin(Math.PI * z.absprungT / 0.1) * par.sprungHocke * (blatt?.hocke ? 0.3 : 1);
         p.sy -= h; p.sx += h * 0.8;
       }
     } else if (lauf) {
+      // Mit Gehzyklus im Blatt tragen die Frames Beinarbeit und Wippen; die Prozedur bleibt nur als Hauch.
+      const bk = blatt?.walk ? 0.3 : 1;
       const sp = Math.sin(z.phase);
-      p.dy = -Math.abs(sp) * par.laufWippen;
-      p.rot = clamp(z.vx / 500, -par.laufNeigung, par.laufNeigung);
-      const w = Math.sin(z.phase * 2) * par.laufWelle;
+      p.dy = -Math.abs(sp) * par.laufWippen * bk;
+      p.rot = clamp(z.vx / 500, -par.laufNeigung, par.laufNeigung) * (blatt?.walk ? 0.6 : 1);
+      const w = Math.sin(z.phase * 2) * par.laufWelle * bk;
       p.sy = 1 + w; p.sx = 1 - w * 0.8;
       if (par.wuselAmp > 0) p.dx += Math.sin(z.phase * 3) * 0.5;
     } else {
-      p.sy = 1 + Math.sin(ph * TWO_PI * par.atemHz) * par.atemAmp;
+      p.sy = 1 + Math.sin(ph * TWO_PI * par.atemHz) * par.atemAmp * (blatt?.idle ? 0.35 : 1);
       p.dx += Math.sin(ph * TWO_PI * par.atemHz * 0.5) * par.atemWiegen;
     }
     if (z.lande > 0) {
-      const s = z.lande * z.lande * par.landeStauch * (z.landeStaerke ?? 1);
+      const s = z.lande * z.lande * par.landeStauch * (z.landeStaerke ?? 1) * (blatt?.hocke ? 0.3 : 1);
       p.sy *= 1 - s; p.sx *= 1 + s * 0.8;
     }
 
@@ -243,8 +255,9 @@ export class FigurPosen {
     // Treffer: Zucken in Stoßrichtung, weißer Blitz, danach Teamfarbe.
     if (z.hitT < TREFFER_DAUER) {
       const k = trefferKurve(z.hitT) * (0.5 + 0.5 * z.hitHaerte);
-      p.dx += z.hitDir * par.trefferZuck * k;
-      p.rot += z.hitDir * par.trefferNeigung * k;
+      const bk = blatt?.treffer ? 0.6 : 1;
+      p.dx += z.hitDir * par.trefferZuck * k * bk;
+      p.rot += z.hitDir * par.trefferNeigung * k * bk;
       p.flash = Math.max(p.flash, clamp(1 - z.hitT / 0.14, 0, 1));
       p.tint = clamp(1 - z.hitT / TREFFER_DAUER, 0, 1) * 0.75;
     }
@@ -270,6 +283,21 @@ export class FigurPosen {
       p.rot += Math.sin(a * 0.5) * 0.05;
     } else if (erg < 0) {
       p.sy *= 0.955; p.dy += 0.5; p.rot += f * 0.05;
+    }
+
+    // Sheet-Frame zum Zustand: Treffer, Luft (Sprung), Hocke (Absprung/Landung), Gehen, sonst Stehen.
+    if (blatt) {
+      let modi = 0;
+      if (z.hitT < TREFFER_FRAME_DAUER) modi |= MODUS.TREFFER;
+      if (luft) modi |= MODUS.LUFT;
+      else if (z.lande > 0 || z.absprungT < 0.1) modi |= MODUS.HOCKE;
+      else if (lauf) modi |= MODUS.GEHEN;
+      z.modi = modi;
+      z.rolle = waehleRolle(blatt, modi);
+      // Läuft die Figur rückwärts zur Blickrichtung, läuft der Zyklus rückwärts (kein Moonwalk).
+      let zyk = z.phase / TWO_PI;
+      if (z.vx * f < 0) zyk = -zyk;
+      z.frame = frameFuer(blatt, z.rolle, zyk, Math.sin(ph * TWO_PI * par.atemHz) > 0 ? 1 : 0);
     }
     return p;
   }
@@ -301,7 +329,8 @@ export const FALL_DAUER = 1;
 /**
  * Pose eines sterbenden/ertrinkenden Sprites (je Typ der Figur).
  *
- * @param {{t0:number, ertrinkt:boolean, blick:number, vx:number, tod?:string}} fall
+ * @param {{t0:number, ertrinkt:boolean, blick:number, vx:number, tod?:string, liegt?:boolean}} fall
+ *   (`liegt`: Das Bild zeigt schon die liegende Figur aus dem Sheet, `kippen` dreht dann nicht)
  * @param {number} jetzt
  * @returns {{dx:number,dy:number,rot:number,alpha:number,sx:number,sy:number,flash:number}|null} `null`, wenn vorbei
  */
@@ -345,6 +374,14 @@ export function fallPose(fall, jetzt, reduziert, aus = { dx: 0, dy: 0, rot: 0, a
         break;
       }
       default: {
+        if (fall.liegt) {
+          // Mit „Niedergestreckt“-Frame im Blatt: Das Bild liegt schon, es rutscht nur kurz nach hinten.
+          const k = clamp(a / 0.25, 0, 1);
+          aus.dx = b * 4 * ausOut(k);
+          aus.alpha = 1 - clamp((a - 0.7) / 0.3, 0, 1);
+          aus.flash = clamp(0.4 - a * 3, 0, 0.4);
+          break;
+        }
         // Kippen: nach hinten/vorn umfallen, kleines Aufsetzen, dann ausblenden.
         const kipp = clamp(a / 0.45, 0, 1);
         aus.rot = b * (Math.PI / 2.1) * kipp * kipp + b * 0.07 * Math.sin(clamp((a - 0.45) / 0.2, 0, 1) * Math.PI);

@@ -8,7 +8,7 @@
  * mit der größten Eigenzeit. Reine Messung, ändert kein Spielverhalten.
  *
  * Aufruf: PA_URL=http://127.0.0.1:5624/ node scripts/render-profil.mjs
- *           [--frames=400] [--seed=N] [--preset=hills] [--key=deluge/stimmung_hell] [--json] [--top=18]
+ *           [--frames=400] [--seed=N] [--preset=hills] [--key=deluge/stimmung_hell] [--ohne-blatt] [--json] [--top=18]
  */
 import { chromium } from '@playwright/test';
 
@@ -28,6 +28,10 @@ await page.goto(process.env.PA_URL ?? 'http://127.0.0.1:5173/', { waitUntil: 'do
 await page.waitForFunction(() => Boolean(window.__PA__));
 await page.evaluate(({ seed, preset, key }) => window.__PA__.startMatch({ seed, teams: 2, playersPerTeam: 2, preset, backdropKey: key }), { seed, preset, key });
 await page.waitForTimeout(1500);
+if (args['ohne-blatt']) {
+  // Vergleichslauf ohne Sprite-Sheets (Seitenbild + Prozedur wie vor den Sheets).
+  await page.evaluate(() => { for (const z of window.__PA__.game.renderer.figurPosen.zustaende.values()) if (z.fig) z.fig.blatt = null; });
+}
 
 await page.evaluate(() => {
   const r = window.__PA__.game.renderer;

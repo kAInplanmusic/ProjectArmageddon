@@ -232,7 +232,7 @@ function holeSchatten() {
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {object} fig - aus `holeFigur`
- * @param {object} p - `team`, `winkel`, `aktiv`, `zeit`, `reduziert`, `pose`, `alpha`, `px`
+ * @param {object} p - `team`, `winkel`, `aktiv`, `zeit`, `reduziert`, `pose`, `alpha`, `px`, `frame` (Sheet-Frame oder fehlend)
  *   (Sprite-Kante in Gerätepixeln), `breite` (Fußbreite-Faktor), `wasserY` (Wasserlinie, lokal, oder undefined)
  */
 export function zeichneFigurSprite(ctx, fig, p) {
@@ -242,7 +242,9 @@ export function zeichneFigurSprite(ctx, fig, p) {
   const pose = p.pose ?? NEUTRAL;
   const alpha = p.alpha ?? 1;
   const fb = p.breite ?? 1;
-  const stufe = p.px ? stufeFuer(fig, p.px) : fig;
+  // Ein Sheet-Frame (`p.frame`) ersetzt das Seitenbild; Mip-Stufen wie beim Seitenbild.
+  const quelle = p.frame ?? fig;
+  const stufe = p.px ? stufeFuer(quelle, p.px) : (quelle.bild ? quelle : fig);
   const hover = Math.max(0, -pose.dy);
 
   ctx.save();
