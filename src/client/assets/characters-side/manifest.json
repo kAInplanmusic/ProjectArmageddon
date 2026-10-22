@@ -202,7 +202,7 @@
       },
       "facing": "right",
       "source": "together-kontext",
-      "model": "black-forest-labs/flux-kontext-pro (Replicate), Neuentwurf 2026-10-22"
+      "model": "black-forest-labs/FLUX.1-kontext-pro"
     },
     "machina/00_chassis-endo-t8.png": {
       "file": "machina/00_chassis-endo-t8.png",

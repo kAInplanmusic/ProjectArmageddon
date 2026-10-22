@@ -39,9 +39,9 @@ hills, mountains, islands, caverns, flooded, open, spires, warren (`src/shared/c
 
 erde.jpg, fels.jpg, hecke.jpg, kies.jpg, kohle.jpg, moos.jpg, schnee.jpg
 
-### Neue Stoff-Texturen für die SSOT-Materialien (noch nicht eingebaut) (`src/client/assets/stoff-texturen-neu`, 0)
+### Neue Stoff-Texturen für die SSOT-Materialien (noch nicht eingebaut) (`src/client/assets/stoff-texturen-neu`, 29)
 
-–
+alienharz.jpg, bimsstein.jpg, firn.jpg, glas.webp, hydrothermal.jpg, instabiler_boden.jpg, kalkstein.jpg, keramik.jpg, kolossholz.jpg, koralle.webp, kristall.webp, lavaglas.jpg, leuchtalgen.jpg, magiekristall.webp, magnetgestein.jpg, mauerwerk.jpg, metall.webp, moos.jpg, myzel.jpg, rostmetall.jpg, salzkruste.jpg, schlacke.jpg, schwefelkruste.jpg, teer.jpg, tempelstein.jpg, tiefseeschlamm.jpg, treibsand.jpg, versteinertes_holz.jpg, wolkenstein.jpg
 
 ### Originale Auftraggeber-Texturen (1024 px) (`src/client/assets/material-texturen`, 21)
 
@@ -63,9 +63,9 @@ explosion.webp, feuerring.webp, glut.webp, leuchtgeschosse.webp
 
 terrain-kacheln-vorlage-1.webp, terrain-kacheln-vorlage-2.webp
 
-### Objekt-Sheets je Biom (SSOT, noch nicht eingebaut) (`src/client/assets/biom-objekte`, 0)
+### Objekt-Sheets je Biom (SSOT, noch nicht eingebaut) (`src/client/assets/biom-objekte`, 19)
 
-–
+01.webp, 02.webp, 03.webp, 04.webp, 05.webp, 06.webp, 07.webp, 08.webp, 09.webp, 10.webp, 11.webp, 12.webp, 13.webp, 15.webp, 16.webp, 17.webp, 18.webp, 19.webp, 20.webp
 
 ### Kulissen der Planeten (`src/client/assets/planeten-kulisse`, 9)
 
