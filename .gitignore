@@ -30,3 +30,4 @@ artifacts/
 .DS_Store
 *.log
 npm-debug.log*
+WORKER-REPORT.md
