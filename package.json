@@ -37,6 +37,9 @@
     "test": "PA_ZUGPAUSE_SEKUNDEN=0 node --test tests/*.test.js --test-reporter=spec",
     "test:unit": "node tests/prng.test.js && node tests/seed.test.js && node tests/loot.test.js",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/e2e/a11y.spec.mjs",
+    "test:visuell": "playwright test tests/e2e/visuell.spec.mjs",
+    "check:ux": "node scripts/check-ux.mjs",
     "test:all": "npm run test && npm run test:e2e",
     "lint": "eslint .",
     "checks": "node scripts/checks.mjs",
@@ -76,6 +79,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.63.0",
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
