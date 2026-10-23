@@ -479,10 +479,15 @@ export const EREIGNIS_WIRKUNGEN = {
       k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0);
       k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
     },
-    // Bestätigung eines Schusses ohne Bahn (Selbstwirkung) — nichts zu
-    // zeichnen, aber die Vorhersage ist damit erledigt und der Schuss zu hören.
+    /*
+     * Bestätigung eines Schusses — der Server schickt `playerId` und `angle`
+     * mit. Neben dem Klang gehört das MÜNDUNGSFEUER dazu: Ohne diesen Aufruf
+     * stand der Schütze online optisch still, obwohl der Schuss zu hören war
+     * (Befundregister A-3). Lokal und online zeichnen deshalb dieselbe Wirkung.
+     */
     online: (k, n) => {
       k.shotPredictor?.resolve();
+      k.renderer?.addMuzzleFlash(n?.playerId, n?.angle ?? 0);
       k.sound?.verarbeite({ type: 'shot', weaponId: n?.weaponId, playerId: n?.playerId, ...ortVon(k, n?.playerId) });
     },
   },

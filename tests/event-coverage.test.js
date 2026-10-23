@@ -401,11 +401,13 @@ test('Die Klangebene gilt ONLINE genauso wie lokal — Schuss, Explosion, Treffe
    * Sendefilter): 74 Klang-Anlässe = **1,8 je Sekunde**.
    */
   const gehoert = { lokal: [], online: [] };
+  const muendung = { lokal: [], online: [] };
   const kontext = zweig => ({
     sound: { verarbeite: ereignis => gehoert[zweig].push(ereignis.type) },
     hud: { log: () => {} },
     renderer: {
-      applyCrater() {}, addFlash() {}, spawnExplosionParticles() {}, addMuzzleFlash() {},
+      applyCrater() {}, addFlash() {}, spawnExplosionParticles() {},
+      addMuzzleFlash: (entityId, angle) => muendung[zweig].push([entityId, angle]),
     },
     shotPredictor: { resolve() {} },
     drawHitscanBeam() {},
@@ -434,6 +436,16 @@ test('Die Klangebene gilt ONLINE genauso wie lokal — Schuss, Explosion, Treffe
     `Der lokale Klangweg ist nicht der erwartete: ${JSON.stringify(gehoert.lokal)}`);
   assert.deepEqual(gehoert.online, gehoert.lokal,
     'ONLINE muss dieselbe Tonfolge erzeugen wie lokal — sonst ist die Klangebene dort wieder stumm');
+  /*
+   * Das Mündungsfeuer ist die SICHTBARE Hälfte desselben Befunds: A-3 nannte
+   * „Schuss, Explosion, Mündungsfeuer". Der Online-Zweig zog die Vorhersage auf
+   * und spielte den Klang — die Figur selbst blieb ohne Blitz. Gemessen wird
+   * deshalb die Wirkung, nicht der Aufruf: Schütze und Winkel müssen ankommen.
+   */
+  assert.deepEqual(muendung.lokal, [[1, 0.5]],
+    `Der lokale Schuss muss ein Mündungsfeuer am Schützen auslösen: ${JSON.stringify(muendung.lokal)}`);
+  assert.deepEqual(muendung.online, muendung.lokal,
+    'ONLINE muss dasselbe Mündungsfeuer zeichnen wie lokal — sonst schießt die Figur dort unsichtbar');
 });
 
 test('Die Engine sendet den Einschlag wirklich', () => {
