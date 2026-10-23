@@ -16,6 +16,12 @@ const ROOT = path.join(HIER, '..');
  * Wachstum sichtbar machen, nicht den Bestand abwürgen. Wird eines gerissen,
  * ist das ein Auftrag zum Zerlegen — nicht zum Erhöhen ohne Begründung.
  *
+ * Genau das ist am 2026-10-23 passiert: Nach dem Zusammenführen der beiden
+ * Linien stand `main.js` bei 4492 und `renderer.js` bei 2844 Zeilen. Die Zahlen
+ * sind NICHT erhöht worden; ausgezogen sind zwei Module:
+ * `client/kaderansicht.js` (Kader- und Hilfeansicht, ~720 Zeilen) und
+ * `client/kulisseUndWasser.js` (Himmel/Kulisse und Wasserebene, ~390 Zeilen).
+ *
  * `weapons.js` ist GENERIERT (`npm run weapons:build`) und wird hier bewusst
  * NICHT budgetiert; Handarbeit dort geht beim nächsten Lauf verloren.
  */

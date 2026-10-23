@@ -11,7 +11,6 @@ const wurzel = new URL('..', import.meta.url).pathname;
 const verz = p => fs.existsSync(wurzel + p) ? fs.readdirSync(wurzel + p) : [];
 const nutzung = {};
 const merke = (stoff, biom) => { (nutzung[stoff] ??= new Set()).add(biom); };
-const aus = r => { if (!r) return; for (const [s] of r.deck || []) merke(s, null); };
 const alle = {};
 for (const [id, b] of Object.entries(NEUE_BIOME)) alle[id] = b.stoffe;
 for (const [id, r] of Object.entries(ALTE_REZEPTE)) alle[id] = r;

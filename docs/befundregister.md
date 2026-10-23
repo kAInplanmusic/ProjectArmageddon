@@ -81,7 +81,7 @@ ich im Code selbst gelesen:
 | C-6 | „Bot-KI" in 22 Kommentaren als Begründung, obwohl `server/index.js:33` sie verneint | Bericht | C | ✅ 2026-10-19 — durchgesehen (18 Fundstellen): Historische Belege („Bot-KI ist entfallen") sind korrekt; zwei Gegenwarts-Aussagen in `shotPrediction.js` korrigiert. Wächter `tests/audit-2026-10-09-fixes.test.js` |
 | C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ✅ 2026-10-19 — die 14 wortgleichen Zeilen zwischen Client- und Server-Barrel sind durch `export * from '../shared/index.js'` ersetzt (eine Quelle). Wächter `tests/audit-2026-10-09-fixes.test.js` |
 | C-8 | `gameServer.js:1145` 282 Z. / 26 `this.`; `guentherSystem.update` 66 `this.` in 169 Z. | Bericht | C | ⬜ |
-| C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ✅ 2026-10-19 — `tests/zeilenbudget.test.js` budgetiert die sechs größten handgepflegten Dateien (Stand 2026-10-19: main 3555, gameServer 2168, terrainGen3 1830, renderer 1766, protocol 1106; match 3200 wie bisher). `weapons.js` ist generiert und bleibt bewusst ohne Budget |
+| C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ✅ 2026-10-19 — `tests/zeilenbudget.test.js` budgetiert die sechs größten handgepflegten Dateien (Stand 2026-10-19: main 3555, gameServer 2168, terrainGen3 1830, renderer 1766, protocol 1106; match 3200 wie bisher). `weapons.js` ist generiert und bleibt bewusst ohne Budget. **2026-10-23:** Nach dem Zusammenführen beider Linien rissen main (4492) und renderer (2844). Die Grenzen blieben, ausgezogen wurden `client/kaderansicht.js` und `client/kulisseUndWasser.js` — main 3801, renderer 2485 |
 
 ---
 

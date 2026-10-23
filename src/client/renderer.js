@@ -10,7 +10,6 @@
  */
 import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
-import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
@@ -22,6 +21,7 @@ import {
   erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
 } from './effects.js';
 import { bakeTerrainLayer, detectWebGpu } from './terrainBaker.js';
+import { zeichneHimmel, zeichneWasser } from './kulisseUndWasser.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
@@ -57,31 +57,20 @@ import {
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
-import { mischeRgb as mischeFarbe } from './stil.js';
 import {
   plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
-import { SPIEGEL_TIEFE, spiegelFarbe, spiegelGewicht } from './wasserSpiegel.js';
 import {
   erzeugeMuendungsfeuer, muendungsfeuer, rueckstossVersatz, ROHR_LAENGE,
   fadenkreuzSegmente, pulsFaktor, blitzPuls, ladungAnteil,
 } from './weaponAnimation.js';
-import {
-  drawSky as drawGenerativeSky,
-  drawAmbient,
-  drawLandmarks,
-  drawWaterSurface,
-} from './sceneryPainter.js';
+import { drawAmbient } from './sceneryPainter.js';
 
 /** Darstellungsgröße des Soldaten gegenüber dem 14 × 20 Pixel großen Körper (nur Anzeige). */
 const FIGUR_SKALA = 1.5;
 const FIGUR_HOCH = -5;
 
-/** Die hintere Kulisse wird nur jedes n-te Bild neu gezeichnet (siehe `#drawKulisse`). */
-const KULISSE_BILDER = 3;
-/** Anteil der Bildhöhe (von oben), in dem das bewegte Ambiente liegt; nur dieser Streifen wird aufgelegt. */
-const KULISSE_BEWEGT_ANTEIL = 0.7;
 import {
   findeTreffer, trefferMarke, zuckVersatz, stossRichtung,
   ruckFuer, ruckAufprall, altereRuck, ruckVersatz,
@@ -115,8 +104,6 @@ const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.jpg', {
   import: 'default',
 });
 
-const SKY_TOP = '#0d1b2a';
-const SKY_BOTTOM = '#1b3a4b';
 const CRATE_COLORS = ['#dcdcdc', '#4cc9f0', '#a855f7', '#fbbf24'];
 const RARITY_COLORS = ['#e8eef5', '#4cc9f0', '#a855f7', '#fbbf24'];
 
@@ -1127,352 +1114,6 @@ export class Renderer {
     this.feuerOptik.fortschreiben();
     this.sheets.reduziert = this.reducedMotion;
     this.sheets.fortschreiben();
-  }
-
-  /**
-   * Die hintere Kulisse (Himmel, Himmelskörper, Ambiente hinten, Landmarken) wird nur jedes
-   * `KULISSE_BILDER`-te Bild neu gezeichnet und sonst als fertiges Bild aufgelegt.
-   *
-   * Messung (Audit 2026-10-13, Software-Rendering 1280×720, Canvas 2560×1440): `fill()` 43 ms und `fillRect`
-   * 14 ms je Bild bei ~187 Aufrufen — fast alles aus dem Ambiente (Sterne, Wolken, Regen). Wolken und
-   * Funkeln ändern sich langsam; mit jedem 2. Bild sieht man keinen Unterschied. Ohne `document`
-   * (Tests) oder bei Größen-/Kulissenwechsel wird direkt gezeichnet bzw. neu aufgebaut.
-   */
-  #drawKulisse() {
-    const horizont = this.height * 0.47;
-    const direkt = ctx => {
-      drawGenerativeSky(ctx, this.width, this.height, this.scenery, this.time);
-      drawAmbient(ctx, this.width, this.height, this.scenery, this.time, false);
-      drawLandmarks(ctx, this.width, this.height, this.scenery, horizont);
-    };
-    if (typeof document === 'undefined') { direkt(this.ctx); return; }
-    const schicht = (maßstab = 1, anteil = 1) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(this.width * maßstab);
-      canvas.height = Math.ceil(this.height * anteil * maßstab);
-      const ctx = canvas.getContext('2d');
-      return ctx ? { canvas, ctx } : null;
-    };
-    let c = this.kulissenSchicht;
-    const neu = !c || c.scenery !== this.scenery || c.w !== this.width || c.h !== this.height;
-    if (neu) {
-      // Statisch: Himmel UND Silhouetten in EINER Ebene (ein Blit je Bild statt zwei). Bewegtes (Wolken, Sterne,
-      // Dunst) liegt darüber in der zweiten — nur im oberen Teil des Bildes, dort liegt das ganze Ambiente hinten.
-      const himmel = schicht();
-      // Das bewegte Ambiente (weiche Wolken, Sterne, Dunst) in halber Auflösung und nur im oberen Streifen:
-      // ein Fünftel der Pixel; beim Auflegen wird hochskaliert. Gemessen: das Auflegen kostete vorher 27 ms je Bild.
-      const bewegt = schicht(0.5, KULISSE_BEWEGT_ANTEIL);
-      if (!himmel || !bewegt) { direkt(this.ctx); return; }
-      drawGenerativeSky(himmel.ctx, this.width, this.height, this.scenery, 0);
-      drawLandmarks(himmel.ctx, this.width, this.height, this.scenery, horizont);
-      c = this.kulissenSchicht = { himmel, bewegt, scenery: this.scenery, w: this.width, h: this.height, zeit: -Infinity };
-    }
-    if (neu || this.time - c.zeit >= KULISSE_BILDER || this.time < c.zeit) {
-      c.bewegt.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      c.bewegt.ctx.clearRect(0, 0, c.bewegt.canvas.width, c.bewegt.canvas.height);
-      c.bewegt.ctx.setTransform(0.5, 0, 0, 0.5, 0, 0);
-      drawAmbient(c.bewegt.ctx, c.w, c.h, this.scenery, this.time, false);
-      c.bewegt.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      c.zeit = this.time;
-    }
-    this.ctx.drawImage(c.himmel.canvas, 0, 0, this.width, this.height);
-    const oben = Math.ceil(this.height * KULISSE_BEWEGT_ANTEIL);
-    this.ctx.drawImage(c.bewegt.canvas, 0, 0, c.bewegt.canvas.width, c.bewegt.canvas.height, 0, 0, this.width, oben);
-  }
-
-  /** Lädt die Hochkant-Fassung der Kulisse einmalig und nur bei Bedarf. */
-  #ladeHochBild(backdrop) {
-    if (this.backdropHochBild?.key === backdrop.key) return;
-    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.fileHoch}`];
-    const eintrag = { key: backdrop.key, bild: null, bereit: false };
-    this.backdropHochBild = eintrag;
-    if (!url) return;
-    const bild = new Image();
-    bild.decoding = 'async';
-    bild.onload = () => { eintrag.bild = bild; eintrag.bereit = true; };
-    bild.src = url;
-  }
-
-  /**
-   * Die fertig zugeschnittene Kulisse (Bild, Glut, Abdunkelung nach unten) als eigene Zeichenfläche.
-   *
-   * Vorher wurde das Bild jedes Bild neu auf Fenstergröße skaliert und zweimal überfüllt
-   * (Glut, Abdunkelung): in Software-Rasterung rund 20 ms je Bild. Der Verlauf ist in x
-   * gleichförmig, deshalb kann er in die (breitere) Fläche eingebacken werden; die Kamera
-   * schiebt nur den Ausschnitt (`pan`). Neu gebaut wird nur bei anderem Bild, anderer Größe
-   * oder anderer Glutstufe (ändert sich einmal je Runde).
-   *
-   * @returns {{canvas: HTMLCanvasElement, breite: number}}
-   */
-  #kulissenBild(img, stimmung, glut) {
-    const w = this.width;
-    const h = this.height;
-    const glutKey = glut > 0 ? glut.toFixed(3) : '';
-    const c = this.kulissenCache;
-    if (c && c.img === img && c.w === w && c.h === h && c.stimmung === stimmung && c.glutKey === glutKey) return c;
-
-    const bw = img.naturalWidth || img.width;
-    const bh = img.naturalHeight || img.height;
-    const z = stimmung ? coverZuschnitt(bw, bh, w, h, 0) : null;
-    const breite = z ? Math.max(w, Math.ceil(bw * (w / z.sb))) : w;
-    const canvas = c?.canvas ?? document.createElement('canvas');
-    canvas.width = breite;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (z) ctx.drawImage(img, 0, z.sy, bw, z.sh, 0, 0, breite, h);
-    else ctx.drawImage(img, 0, 0, w, h);
-    if (glut > 0) {
-      ctx.fillStyle = `rgba(255,70,20,${glutKey})`;
-      ctx.fillRect(0, 0, breite, h);
-    }
-    /*
-     * Abdunkelung nach unten.
-     *
-     * Ohne sie verschwinden Figuren, Lebensbalken und Munitionsanzeige vor
-     * hellen Kulissen (Schnee, Wüste, Sonnenuntergang) — das Spiel wäre dort
-     * spielbar, aber nicht lesbar. Der Verlauf ist unten am stärksten, weil
-     * dort die Figuren stehen, und oben fast durchsichtig, damit die Kulisse
-     * sichtbar bleibt.
-     */
-    const daempfung = ctx.createLinearGradient(0, h * 0.35, 0, h);
-    daempfung.addColorStop(0, 'rgba(8,14,24,0)');
-    daempfung.addColorStop(0.55, 'rgba(8,14,24,0.28)');
-    daempfung.addColorStop(1, 'rgba(8,14,24,0.55)');
-    ctx.fillStyle = daempfung;
-    ctx.fillRect(0, 0, breite, h);
-    return (this.kulissenCache = { img, w, h, stimmung, glutKey, canvas, breite });
-  }
-
-  #drawSky() {
-    // Generative Kulisse hat Vorrang: sie passt sich jeder Kartengröße an.
-    if (this.scenery) {
-      this.#drawKulisse();
-      return;
-    }
-
-    // Kulisse, sobald geladen. Sie liegt HINTER dem Terrain: der Boden wird
-    // danach darübergezeichnet und verdeckt die untere Bildhälfte.
-    if (this.backdropReady && this.backdropImage) {
-      let img = this.backdropImage;
-      const stimmung = Boolean(this.backdrop?.stimmung);
-      let pan = 0.5;
-      let glut = 0;
-      if (stimmung) {
-        // Stimmungsbilder haben wechselnde Formate: cover-Zuschnitt, kein Stauchen.
-        // Hochformat (Seitenverhältnis < 1): die Hochkant-Fassung, sobald geladen (lazy).
-        if (this.width < this.height && this.backdrop.fileHoch) {
-          this.#ladeHochBild(this.backdrop);
-          if (this.backdropHochBild?.key === this.backdrop.key && this.backdropHochBild.bereit) {
-            img = this.backdropHochBild.bild;
-          }
-        }
-        const k = this.kamera;
-        if (k?.scrolltHorizontal) {
-          const t = k.transformation({ ohneStoss: true });
-          const spanne = k.karte.b * t.skalierung - k.schirm.b;
-          if (spanne > 0) pan = -t.versatzX / spanne;
-        }
-        // Rein optisch: Glut der Ragnarök-Stimmungen steigert sich mit dem Rundenverlauf.
-        if (String(this.backdrop.id).includes('ragnarok')) glut = glutStaerke(this.rundeFuerKulisse);
-      }
-      // Zuschnitt, Glut und Abdunkelung sind je Bild gleich: einmal vorgerechnet, je Bild nur ein 1:1-Ausschnitt.
-      const fertig = this.#kulissenBild(img, stimmung, glut);
-      const sx = Math.round(Math.max(0, fertig.breite - this.width) * Math.min(1, Math.max(0, pan)));
-      this.ctx.drawImage(fertig.canvas, sx, 0, this.width, this.height, 0, 0, this.width, this.height);
-      return;
-    }
-
-    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
-    gradient.addColorStop(0, SKY_TOP);
-    gradient.addColorStop(1, SKY_BOTTOM);
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, this.width, this.height);
-
-    // Deterministische Sternpunkte als statischer Hintergrund.
-    this.ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    for (let i = 0; i < 60; i++) {
-      const x = (i * 137) % this.width;
-      const y = (i * 71) % Math.round(this.height * 0.5);
-      this.ctx.fillRect(x, y, 1, 1);
-    }
-  }
-
-  /**
-   * Farbe des Wassers an einer Stelle.
-   * Ohne Kulisse bleibt es beim bisherigen Blau.
-   */
-  #wasserFarbe(tiefe) {
-    const art = this.scenery?.water;
-    if (!art) return [42, 122, 176];
-    const flach = art.shallow;
-    const tief = art.body;
-    // Zur dunklen Palette hin abgedunkelt (#0D0F12), Tönung bleibt.
-    const dunkel = (kanal, ziel) => Math.round(kanal + (ziel - kanal) * 0.35);
-    return [
-      dunkel(Math.round(flach[0] + (tief[0] - flach[0]) * tiefe), 13),
-      dunkel(Math.round(flach[1] + (tief[1] - flach[1]) * tiefe), 15),
-      dunkel(Math.round(flach[2] + (tief[2] - flach[2]) * tiefe), 18),
-    ];
-  }
-
-  /**
-   * Uferkarte des Wassers: je Wasserzelle, ob dort Gelände steht.
-   *
-   * Aus der gebackenen Geländeebene (der sichtbaren Wahrheit, mit allen Kratern) auf Wassergröße
-   * verkleinert. Neu gebaut wird nur, wenn sich die Ebene oder der letzte Krater geändert hat
-   * (oder alle 120 Bilder für den Mahlstrom-Rand) — nie jedes Bild.
-   */
-  #uferMaske() {
-    const schicht = this.terrainLayer;
-    if (!schicht || typeof document === 'undefined') return null;
-    const w = this.waterLayer.width;
-    const h = this.waterLayer.height;
-    let u = this.uferStand;
-    if (!u || u.schicht !== schicht || u.krater !== this.letzterKrater || u.w !== w || u.h !== h || this.time - u.zeit > 120) {
-      const c = u?.canvas && u.w === w && u.h === h ? u.canvas : document.createElement('canvas');
-      c.width = w;
-      c.height = h;
-      const cx = c.getContext('2d', { willReadFrequently: true });
-      if (!cx) return null;
-      cx.drawImage(schicht, 0, 0, w, h);
-      const daten = cx.getImageData(0, 0, w, h).data;
-      const maske = u?.maske?.length === w * h ? u.maske : new Uint8Array(w * h);
-      for (let i = 0; i < maske.length; i += 1) maske[i] = daten[i * 4 + 3] > 110 ? 1 : 0;
-      u = { schicht, krater: this.letzterKrater, w, h, zeit: this.time, canvas: c, maske };
-      this.uferStand = u;
-    }
-    return u.maske;
-  }
-
-  /**
-   * Wasser zeichnen.
-   *
-   * Die Wasserebene (Farben, Wellen, Schaum) wird nur alle paar Bilder neu BERECHNET (`neu`), aber
-   * JEDES Bild aufgelegt. Zuvor kam `water` nur in jedem vierten Bild an und alles andere übersprang
-   * das Zeichnen — das Wasser blinkte mit 15 Hz (belegt: 4 `putImageData` auf 16 Bilder).
-   *
-   * @param {object|null} water - WaterField des Matches
-   * @param {boolean} neu - Ebene neu berechnen (sonst die zuletzt berechnete auflegen)
-   */
-  #drawWater(water, neu = true) {
-    if (!water) return;
-    if (!neu && this.wasserFertig) {
-      this.#legeWasserAuf();
-      return;
-    }
-    this.wasserFertig = true;
-    this.waterCtx.clearRect(0, 0, this.waterLayer.width, this.waterLayer.height);
-    // Der Puffer wird wiederverwendet (statt je Neuberechnung ~Megabytes neu anzulegen); nasse Zellen
-    // überschreiben alle vier Kanäle, trockene müssen durchsichtig sein.
-    let image = this.wasserBild;
-    if (image?.width !== this.waterLayer.width || image.height !== this.waterLayer.height) {
-      image = this.wasserBild = this.waterCtx.createImageData(this.waterLayer.width, this.waterLayer.height);
-    } else {
-      image.data.fill(0);
-    }
-    const data = image.data;
-    const levels = water.levels;
-    const bg = this.waterLayer.width;
-    const hg = this.waterLayer.height;
-
-    /*
-     * Ein Durchlauf, der alles Wasser-Aussehen mitnimmt (keine zusätzliche Ebene):
-     *  - Tiefenverlauf: je Spalte zählt `lauf` die Zellen unter dem Spiegel; flach hell, tief dunkel.
-     *  - Glanz und sanfte Wellen in den obersten Zellen (Phase aus Zeit und Spalte).
-     *  - Schaum dort, wo am Spiegel Gelände neben dem Wasser steht (Uferkarte).
-     * Die Farbstufen je Tiefe sind einmal je Bild vorgerechnet, nicht je Zelle.
-     */
-    const art = this.scenery?.water ?? null;
-    const STUFEN = 26;
-    const stufen = new Array(STUFEN);
-    for (let k = 0; k < STUFEN; k += 1) stufen[k] = this.#wasserFarbe(Math.min(1, k / (STUFEN - 1)));
-    const glanz = art ? mischeFarbe(art.shallow, [255, 255, 255], 0.8) : [226, 244, 255];
-    const schaum = art ? mischeFarbe(art.shallow, [255, 255, 255], 0.82) : [240, 248, 255];
-    const alphaArt = art?.alpha ?? 1;
-    const phase = this.reducedMotion ? 0 : this.time * 0.05;
-    const ufer = this.#uferMaske();
-    const spiegel = this.spiegelung ? spiegelFarbe(this.scenery) : null;
-    const lauf = this.wasserLauf?.length === bg ? this.wasserLauf : (this.wasserLauf = new Int16Array(bg));
-    const oben = this.wasserOben?.length === bg ? this.wasserOben : (this.wasserOben = new Int16Array(bg));
-    lauf.fill(-1);
-    oben.fill(-1);
-    // Umschließendes Rechteck der nassen Zellen: Nur dieses Stück wird später aufgelegt.
-    let nx0 = bg; let nx1 = -1; let ny0 = hg; let ny1 = -1;
-
-    for (let y = 0; y < hg; y += 1) {
-      const zeile = y * bg;
-      for (let x = 0; x < bg; x += 1) {
-        const i = zeile + x;
-        const level = levels[i];
-        if (level <= 0.02) { lauf[x] = -1; continue; }
-        const k = lauf[x] + 1;
-        if (x < nx0) nx0 = x;
-        if (x > nx1) nx1 = x;
-        if (y < ny0) ny0 = y;
-        if (y > ny1) ny1 = y;
-        if (k === 0) { if (oben[x] < 0) oben[x] = y; }
-        lauf[x] = k;
-        const f = stufen[k < STUFEN ? k : STUFEN - 1];
-        let r = f[0];
-        let g = f[1];
-        let b = f[2];
-        let a = Math.round(Math.min(0.72, level) * 210 * alphaArt);
-        if (k < 14) {
-          // Sanfte Wellen: Helligkeit schwingt mit Spalte, Tiefe und Zeit, nach unten abklingend.
-          const m = Math.sin(x * 0.42 + k * 0.85 + phase) * 0.075 * (1 - k / 14);
-          r += r * m; g += g * m; b += b * m;
-          if (k < 5) {
-            // Glanz am Spiegel, in der Spalte unruhig.
-            const gl = (5 - k) / 5 * (0.5 + 0.4 * Math.sin(x * 0.9 - phase * 1.7));
-            r += (glanz[0] - r) * gl; g += (glanz[1] - g) * gl; b += (glanz[2] - b) * gl;
-            a += (255 - a) * gl * 0.4;
-          }
-          if (ufer && k < 9 && (ufer[i - 1] || ufer[i + 1] || (k < 4 && (ufer[i - bg] || ufer[i - 2 * bg])))) {
-            // Schaumsaum am Ufer: stärker am Spiegel, mit Brandung (die Breite pulsiert leicht).
-            const sf = (1 - k / 9) * (0.62 + 0.3 * Math.sin(x * 0.2 + phase * 2.3));
-            if (sf > 0) {
-              r += (schaum[0] - r) * sf; g += (schaum[1] - g) * sf; b += (schaum[2] - b) * sf;
-              a += (255 - a) * sf * 0.7;
-            }
-          }
-        }
-        if (spiegel && k < SPIEGEL_TIEFE) {
-          const w = spiegelGewicht(x, k, phase);
-          r += (spiegel[0] - r) * w; g += (spiegel[1] - g) * w; b += (spiegel[2] - b) * w;
-        }
-        const index = i * 4;
-        data[index] = r < 0 ? 0 : r > 255 ? 255 : r;
-        data[index + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
-        data[index + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
-        data[index + 3] = a > 255 ? 255 : a;
-      }
-    }
-    this.waterCtx.putImageData(image, 0, 0);
-    // Zwei Zellen Rand: Das Hochskalieren der Ebene blendet an der Kante in Transparent aus.
-    this.wasserRahmen = nx1 < 0 ? null : {
-      x0: Math.max(0, nx0 - 2), y0: Math.max(0, ny0 - 2), x1: Math.min(bg, nx1 + 3), y1: Math.min(hg, ny1 + 3),
-    };
-    this.#legeWasserAuf();
-  }
-
-  /** Legt die berechnete Wasserebene samt Oberflächenstruktur auf das Bild. */
-  #legeWasserAuf() {
-    const r = this.wasserRahmen;
-    if (r) {
-      this.ctx.save();
-      this.ctx.globalAlpha = 0.88;
-      // Nur das Rechteck mit Wasser (die Ebene ist sonst durchsichtig, aber ein ganzes Bild groß).
-      const sx = this.width / this.waterLayer.width;
-      const sy = this.height / this.waterLayer.height;
-      this.ctx.drawImage(this.waterLayer, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, r.x0 * sx, r.y0 * sy, (r.x1 - r.x0) * sx, (r.y1 - r.y0) * sy);
-      this.ctx.restore();
-    }
-
-    // Struktur der Wasserart NACH der Fläche: Kruste, Wellen, Blasen und Sterne
-    // liegen auf dem Wasser, nicht darunter — an den Spiegel der Spalten geheftet.
-    if (this.scenery) {
-      drawWaterSurface(this.ctx, this.width, this.height, this.scenery, this.time, { oben: this.wasserOben, skala: WATER_SCALE });
-    }
   }
 
   /**
@@ -2677,7 +2318,7 @@ export class Renderer {
      */
     this.sieger = state.winnerTeamId ?? null;
     this.rundeFuerKulisse = state.round ?? 1;
-    this.#drawSky();
+    zeichneHimmel(this);
 
     /*
      * DER KAMERA-RUCK.
@@ -2745,7 +2386,7 @@ export class Renderer {
      */
     this.#drawNarben();
 
-    this.#drawWater(water, wasserNeu);
+    zeichneWasser(this, water, wasserNeu);
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);
