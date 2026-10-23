@@ -373,7 +373,7 @@ export function zieheCharakter(rng, randGewicht = 0.45) {
  * @param {object} charakter - aus `zieheCharakter`
  * @param {string|null} biomId - Kennung eines Sonderbioms oder `null`
  */
-export function formeCharakter(charakter, biomId) {
+function formeCharakter(charakter, biomId) {
   const form = biomId ? NEUE_BIOME[biomId]?.form : null;
   if (!form) return charakter;
   const geformt = { ...charakter };

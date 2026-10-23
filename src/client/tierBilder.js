@@ -22,7 +22,7 @@ const MANIFESTE = {
 };
 
 /** Darstellung je Tier: Ordner und Zeichenhöhe in Kartenpixeln (Sprite-Kante). */
-export const TIER_ANSICHT = Object.freeze({
+const TIER_ANSICHT = Object.freeze({
   guenther: Object.freeze({ ordner: 'guenther', kante: 76 }),
   cookie: Object.freeze({ ordner: 'cookie', kante: 104 }),
 });
@@ -40,7 +40,7 @@ function ladeBild(url) {
 }
 
 /** Anker (Pixel im 256er Bild) und Dateiname einer Pose aus dem Manifest. */
-export function poseEintrag(art, pose) {
+function poseEintrag(art, pose) {
   const manifest = Object.values(MANIFESTE[art] ?? {})[0];
   const e = manifest?.posen?.[pose];
   return e ? { datei: e.datei, anker: { x: e.anker?.x ?? 128, y: e.anker?.y ?? 240 }, spiegeln: e.blick === 'links' } : null;

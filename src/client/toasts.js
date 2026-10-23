@@ -12,8 +12,8 @@
  * erneuert. Ein Klick (Tippfläche ≥ 44 px) schließt den Toast.
  */
 
-export const TOAST_MAX = 4;
-export const TOAST_DAUER_MS = Object.freeze({ danger: 7000, notice: 5000, good: 3500, info: 4000 });
+const TOAST_MAX = 4;
+const TOAST_DAUER_MS = Object.freeze({ danger: 7000, notice: 5000, good: 3500, info: 4000 });
 
 const TOENE = Object.freeze({
   danger: { symbol: '!', rolle: 'Fehler' },

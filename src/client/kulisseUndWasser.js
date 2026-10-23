@@ -49,7 +49,7 @@ const KULISSE_BEWEGT_ANTEIL = 0.7;
    * Funkeln ändern sich langsam; mit jedem 2. Bild sieht man keinen Unterschied. Ohne `document`
    * (Tests) oder bei Größen-/Kulissenwechsel wird direkt gezeichnet bzw. neu aufgebaut.
    */
-export function zeichneKulisse(r) {
+function zeichneKulisse(r) {
     const horizont = r.height * 0.47;
     const direkt = ctx => {
       drawGenerativeSky(ctx, r.width, r.height, r.scenery, r.time);
@@ -92,7 +92,7 @@ export function zeichneKulisse(r) {
   }
 
   /** Lädt die Hochkant-Fassung der Kulisse einmalig und nur bei Bedarf. */
-export function ladeHochBild(r, backdrop) {
+function ladeHochBild(r, backdrop) {
     if (r.backdropHochBild?.key === backdrop.key) return;
     const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.fileHoch}`];
     const eintrag = { key: backdrop.key, bild: null, bereit: false };
@@ -115,7 +115,7 @@ export function ladeHochBild(r, backdrop) {
    *
    * @returns {{canvas: HTMLCanvasElement, breite: number}}
    */
-export function kulissenBild(r, img, stimmung, glut) {
+function kulissenBild(r, img, stimmung, glut) {
     const w = r.width;
     const h = r.height;
     const glutKey = glut > 0 ? glut.toFixed(3) : '';
@@ -212,7 +212,7 @@ export function zeichneHimmel(r) {
    * Farbe des Wassers an einer Stelle.
    * Ohne Kulisse bleibt es beim bisherigen Blau.
    */
-export function wasserFarbe(r, tiefe) {
+function wasserFarbe(r, tiefe) {
     const art = r.scenery?.water;
     if (!art) return [42, 122, 176];
     const flach = art.shallow;
@@ -233,7 +233,7 @@ export function wasserFarbe(r, tiefe) {
    * verkleinert. Neu gebaut wird nur, wenn sich die Ebene oder der letzte Krater geändert hat
    * (oder alle 120 Bilder für den Mahlstrom-Rand) — nie jedes Bild.
    */
-export function uferMaske(r) {
+function uferMaske(r) {
     const schicht = r.terrainLayer;
     if (!schicht || typeof document === 'undefined') return null;
     const w = r.waterLayer.width;
@@ -367,7 +367,7 @@ export function zeichneWasser(r, water, neu = true) {
   }
 
   /** Legt die berechnete Wasserebene samt Oberflächenstruktur auf das Bild. */
-export function legeWasserAuf(r) {
+function legeWasserAuf(r) {
     const rahmen = r.wasserRahmen;
     if (rahmen) {
       r.ctx.save();

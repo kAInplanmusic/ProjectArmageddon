@@ -17,7 +17,7 @@
 import { BUSSE, HALL_DAUER, profilDauer, streue, mulberry } from './klangProfile.js';
 
 /** Grundpegel der Busse. */
-export const BUS_PEGEL = Object.freeze({ schuss: 0.9, treffer: 1, umgebung: 0.85, ui: 0.7 });
+const BUS_PEGEL = Object.freeze({ schuss: 0.9, treffer: 1, umgebung: 0.85, ui: 0.7 });
 
 /** Länge je Rauschart im gemeinsamen Puffer (s). */
 const RAUSCH_TEIL = 2.5;
@@ -30,7 +30,7 @@ const SPITZE = 0.98;
  * Ein einziger Rauschpuffer: erste Hälfte braun (wie `sound.js#erzeugeRauschen`),
  * zweite Hälfte weiß. So kostet das Rauschen genau eine Allokation.
  */
-export function erzeugeRauschSatz(ctx, zufall = Math.random) {
+function erzeugeRauschSatz(ctx, zufall = Math.random) {
   const teil = Math.floor(ctx.sampleRate * RAUSCH_TEIL);
   const puffer = ctx.createBuffer(1, teil * 2, ctx.sampleRate);
   const daten = puffer.getChannelData(0);

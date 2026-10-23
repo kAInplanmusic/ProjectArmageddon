@@ -85,10 +85,65 @@ const EINSTIEG_QUELLEN = ['package.json', 'index.html', 'vite.config.mjs', 'play
  * folgenlos.
  */
 export function streicheKommentare(text = '') {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  /*
+   * Zeichenweise statt per Regex (belegt 2026-10-23): `/*` in einer
+   * Zeichenkette — etwa im Glob-Muster `'./assets/music/*.mp3'` — begann
+   * vorher einen Scheinkommentar und verschluckte den folgenden Code. Genau
+   * dadurch meldete die Sonde in `src/client/main.js` drei Konstanten als
+   * „ohne Leser", obwohl sie im Konstruktor gelesen werden. In Zeichenketten
+   * (einfach, doppelt, Template) und nach `\\` wird deshalb nichts entfernt.
+   *
+   * Zeilenumbrüche von Block-/HTML-Kommentaren bleiben als leere Zeilen
+   * stehen, damit die gemeldeten Zeilennummern zum Original passen.
+   */
+  let aus = '';
+  let zustand = 'code';
+  let anfuehrung = '';
+  for (let i = 0; i < text.length;) {
+    const c = text[i];
+    const d = text[i + 1];
+    if (zustand === 'code') {
+      if (c === '/' && d === '*') { zustand = 'block'; i += 2; continue; }
+      if (c === '/' && d === '/') {
+        i += 2;
+        while (i < text.length && text[i] !== '\n') i++;
+        continue;
+      }
+      if (c === '<' && text.startsWith('<!--', i)) { zustand = 'html'; i += 4; continue; }
+      if (c === '"' || c === "'" || c === '`') {
+        zustand = 'zeichenkette';
+        anfuehrung = c;
+        aus += c;
+        i++;
+        continue;
+      }
+      aus += c;
+      i++;
+      continue;
+    }
+    if (zustand === 'block') {
+      if (c === '*' && d === '/') { zustand = 'code'; i += 2; continue; }
+      if (c === '\n') aus += '\n';
+      i++;
+      continue;
+    }
+    if (zustand === 'html') {
+      if (c === '-' && text.startsWith('-->', i)) { zustand = 'code'; i += 3; continue; }
+      if (c === '\n') aus += '\n';
+      i++;
+      continue;
+    }
+    // zustand === 'zeichenkette'
+    aus += c;
+    if (c === '\\') {
+      if (i + 1 < text.length) aus += text[i + 1];
+      i += 2;
+      continue;
+    }
+    if (c === anfuehrung) zustand = 'code';
+    i++;
+  }
+  return aus;
 }
 
 /** Alle Projektdateien (ohne die üblichen Ausschlüsse). */
@@ -667,12 +722,30 @@ function istKommentar(zeile) {
 }
 
 /**
+ * Begründete Ausnahmen für `nichtdeterminismus()`.
+ *
+ * Schlüssel: `<datei> | <Zeile ohne Einrückung>`. Damit bleibt ein Freispruch
+ * nur gültig, solange genau diese Anweisung dort steht; ändert sich der Code,
+ * wird der Treffer wieder gemeldet (fail-safe statt Freispruch auf Vorrat).
+ */
+export const ZEIT_AUSNAHMEN = new Map([
+  [
+    'src/engine/replay.js | this.#startedAt = Date.now();',
+    'Nur Metadatum: `#startedAt` wird ausschließlich über `toJSON()` als '
+      + '`createdAt` gespeichert („wann aufgenommen"). `fromJSON` übernimmt es '
+      + 'nicht, und der Zustandshash liest es nicht — der Zeitwert fließt nie '
+      + 'in die Simulation. Wächter: `tests/replay-uhr.test.js`.',
+  ],
+]);
+
+/**
  * Nichtdeterminismus im Simulationspfad.
  *
  * Geprüft wird unter `src/engine/`. Treffer werden NICHT verurteilt, sondern
  * eingeordnet: Seed-Erzeugung und Anzeige sind legitim, alles andere ist ein
  * Determinismus-Risiko. Die Einordnung ist heuristisch und muss am Code
  * nachgelesen werden — sie steht hier als Vorarbeit, nicht als Urteil.
+ * Begründete Fälle aus `ZEIT_AUSNAHMEN` werden ausgelassen.
  *
  * Kommentarzeilen sind ausdrücklich ausgenommen: Eine Zeile, die `Math.random`
  * nur ERWÄHNT („bewusst NICHT Math.random"), ist kein Treffer. Ohne diesen
@@ -680,7 +753,7 @@ function istKommentar(zeile) {
  * Kommentare zählt, ist ein Werkzeug, dem niemand glaubt (belegt im ersten
  * Lauf dieses MCP: 3 von 3 Treffern waren Kommentare).
  */
-export function nichtdeterminismus() {
+export function nichtdeterminismus({ ausnahmen = ZEIT_AUSNAHMEN } = {}) {
   const dateien = walk(path.join(ROOT, 'src', 'engine'), { endungen: QUELTEXT });
   const befunde = [];
   for (const datei of dateien) {
@@ -688,6 +761,8 @@ export function nichtdeterminismus() {
     text.split('\n').forEach((zeile, i) => {
       if (istKommentar(zeile)) return;
       if (/\bMath\.random\b|\bDate\.now\b|performance\.now/.test(zeile)) {
+        const schluessel = `${rel(datei)} | ${zeile.trim()}`;
+        if (ausnahmen.has(schluessel)) return;
         befunde.push({
           datei: rel(datei),
           zeile: i + 1,

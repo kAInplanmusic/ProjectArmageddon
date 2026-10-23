@@ -34,7 +34,7 @@ import {
 } from './sichtbereich.js';
 
 /** Bilder zwischen zwei Messungen (bei 60 Hz alle 100 ms). */
-export const MESS_INTERVALL = 6;
+const MESS_INTERVALL = 6;
 
 /** Elemente, die den Rand bilden (Kopfleiste, Bedienleiste). */
 const RAND_SELEKTOREN = [

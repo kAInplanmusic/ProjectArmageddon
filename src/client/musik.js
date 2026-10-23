@@ -40,14 +40,14 @@
 
 import { pruefeManifest, stueckeFuer, waehleNaechstes, hymnenStueck } from './musikListe.js';
 
-export const MUSIK_SCHLUESSEL = 'pa.musik.v1';
-export const STANDARD_LAUTSTAERKE = 0.35;
+const MUSIK_SCHLUESSEL = 'pa.musik.v1';
+const STANDARD_LAUTSTAERKE = 0.35;
 /** Dauer der Überblendung in Sekunden. */
-export const UEBERBLENDUNG_S = 2;
+const UEBERBLENDUNG_S = 2;
 /** Ducken: Faktor (0,5 = −6 dB), Haltezeit und Rückkehr in Sekunden. */
 export const DUCK_FAKTOR = 0.5;
-export const DUCK_HALTEN_S = 0.4;
-export const DUCK_ERHOLUNG_S = 0.35;
+const DUCK_HALTEN_S = 0.4;
+const DUCK_ERHOLUNG_S = 0.35;
 
 /**
  * Ist die Wiedergabe erlaubt?

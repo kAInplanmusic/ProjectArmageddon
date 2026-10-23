@@ -26,9 +26,9 @@ import { gitterrauschen } from './terrainNoise.js';
 import { stoffByKey, stoffById, unzerstoerbar, STOFF } from './config/stoffe.js';
 
 /** Kantenlänge einer Stoffzelle in Pixeln. */
-export const STOFF_ZELLE = 8;
+const STOFF_ZELLE = 8;
 /** Zellreihen am Kartenboden, die Grundgestein sind. */
-export const BODEN_ZELLEN = 3;
+const BODEN_ZELLEN = 3;
 /** Seed-Zweig der Stoffkarte (relativ zum Seed des Zweigs, „STO"). */
 export const STOFF_FORK = 0x53544F;
 

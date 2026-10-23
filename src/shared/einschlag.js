@@ -29,7 +29,7 @@ import { materialAn } from './stoffkarte.js';
 export const WASSER_ZELLE = 4;
 
 /** Ab diesem Füllstand zählt eine Zelle als Wasser (wie bisher im Client). */
-export const WASSER_SCHWELLE = 0.3;
+const WASSER_SCHWELLE = 0.3;
 
 /**
  * Sonde über dem Einschlagpunkt (Weltpixel). Ein Geschoss, das im See auf dem

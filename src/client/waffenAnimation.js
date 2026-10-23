@@ -546,7 +546,7 @@ export function zeichneGruppenmarke(ctx, gruppe, x, y, alter, reduziert = false)
 }
 
 /** Korrekturen je Waffen-ID für die Flugdarstellung: `groesse`, `spin`. */
-export const GESCHOSS_KORREKTUREN = Object.freeze({});
+const GESCHOSS_KORREKTUREN = Object.freeze({});
 
 /**
  * Wie ein Geschoss gezeichnet wird.

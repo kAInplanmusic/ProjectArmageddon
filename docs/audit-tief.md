@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-23T15:55:41.580Z · **Commit:** `c81b31b` (main) · **Node:** v22.23.3
+**Erzeugt:** 2026-10-23T16:40:59.753Z · **Commit:** `cf2a08c` (bg/totcode) · **Node:** v22.23.3
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -15,13 +15,13 @@
 | ereignisse | 🟢 gruen | 6 stumme Ereignisse — alle im Wächter mit Begründung gelistet (6 gelesene Begründungen) |
 | toteDateien | 🟢 gruen | 0 Dateien ohne Importeur |
 | toteDaten | 🟢 gruen | 0 von 10 Datendateien (.json) unter src/ haben keinen Leser |
-| unbenutzteKonstanten | 🟠 gelb | 5 definiert, nie gelesen |
+| unbenutzteKonstanten | 🟢 gruen | 0 definiert, nie gelesen |
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
-| zufall | 🟠 gelb | 1 Zeit-/Zufallstreffer im Simulationspfad |
-| pfade | 🔴 rot | 1 Stelle(n) benutzen .pathname statt fileURLToPath (79 machen es richtig). Bei einem Sonderzeichen im Pfad scheitert dort jeder spawn mit ENOENT. |
+| zufall | 🟢 gruen | 0 Zeit-/Zufallstreffer im Simulationspfad |
+| pfade | 🟢 gruen | Alle 80 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
 | doppelregeln | 🟠 gelb | 28 OFFEN (nicht in der Ausnahmeliste): ZELLE, boden, CACHE_KANTE, ladeBild, MAX_TEILCHEN, aufprallStaerke, BACKDROP_URLS, begrenze, begrenze01, BILDER, cache, el, FNV_BASIS, glatt, KATEGORIEN, KONTUR, LUFT_SCHWELLE, mische, neueLeinwand, P, PARAMETER, standard, STIMMUNGEN, STUFEN, tabelle, TOENE, TWO_PI, zufall |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
-| perf | 🟢 gruen | Budget eingehalten: kein Tick über 16,7 ms. |
+| perf | 🟠 gelb | 274 von 15019 Ticks über Budget. |
 
 ## 0. Während dieses Audits behoben
 
@@ -37,7 +37,7 @@ Er ist **repariert** — und, soweit dieser Lauf es messen kann, nachgemessen:
 `/home/patrick/AnunnakiTools%20Projekte/laufende%20Projekte/ProjectArmageddon/` — und `fs.existsSync` darauf ist `false`.
 Jeder `spawn` mit diesem `cwd` scheitert dann mit ENOENT.
 
-**Reichweite, in DIESEM Lauf gemessen:** 79 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **1** noch nicht (`scripts/terrain-inventar.mjs:10`).
+**Reichweite, in DIESEM Lauf gemessen:** 80 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **keine** mehr.
 Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `0d571d8` (2026-09-26) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
 die nach jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
 
@@ -50,21 +50,21 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 170 | 66525 |
+| src | 170 | 66512 |
 | tests | 263 | 60475 |
-| scripts | 63 | 12205 |
-| tools | 14 | 5253 |
+| scripts | 63 | 12206 |
+| tools | 14 | 5328 |
 
-Ungetrackte Änderungen beim Lauf: **0**
+Ungetrackte Änderungen beim Lauf: **37**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 6.2 s | – |
-| validate | 🟢 bestanden | 0.3 s | – |
+| lint | 🟢 bestanden | 112.3 s | – |
+| validate | 🟢 bestanden | 4.8 s | – |
 
-**2/2 bestanden** · Gesamtdauer 6.5 s
+**2/2 bestanden** · Gesamtdauer 117.1 s
 
 ## 3. Determinismus
 
@@ -173,10 +173,10 @@ die Form liefert immer dasselbe.
 
 Züge 150 · Schüsse 106 · gemessene Ticks 15019
 
-Tick-Kosten: mittel **0.0416 ms** · p95 0.0524 ms · p99 0.0834 ms · max 3.1598 ms
-Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
+Tick-Kosten: mittel **0.6662 ms** · p95 0.1465 ms · p99 24.9083 ms · max 59.3960 ms
+Budget 16,6667 ms → **274 Ticks über Budget** (2 %)
 
-Budget eingehalten: kein Tick über 16,7 ms.
+274 von 15019 Ticks über Budget.
 
 ## 10. Statische Befunde
 
@@ -204,13 +204,7 @@ Keine: alle 10 `.json` unter `src/` werden von irgendwo im CODE gelesen.
 
 ### 10.2 Konstanten ohne Leser
 
-| Konstante | Ort |
-|---|---|
-| `STOFF_TEXTUR_URLEN` | src/client/main.js:91 |
-| `EFFEKT_SHEET_URLEN` | src/client/main.js:93 |
-| `PLANETEN_KULISSE_URLEN` | src/client/main.js:95 |
-| `COOKIE_REFERENZ_BREITE` | src/shared/config/cookie.js:23 |
-| `BETAEUBUNG` | src/shared/config/schaden.js:52 |
+Keine — jede definierte Konstante unter `src/` wird irgendwo gelesen.
 
 ### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)
 
@@ -259,9 +253,7 @@ Gemessen: **28** · davon aus der Ausnahmeliste begründet: **0** · OFFEN: **28
 
 ### 10.6 Zufall und Zeit im Simulationspfad
 
-| Ort | Art | Zeile |
-|---|---|---|
-| src/engine/replay.js:140 | Zeit | `this.#startedAt = Date.now();` |
+Keine Treffer unter `src/engine/`.
 
 Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **21** Treffer.
 
@@ -286,13 +278,9 @@ Davon **6 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-co
 
 ## 12. Pfad-Auflösung (`fileURLToPath` statt `.pathname`)
 
-**79** Stellen lösen den Modulpfad korrekt auf · **1** falsch.
+**80** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
 
-| Datei | Zeile | Code |
-|---|---|---|
-| `scripts/terrain-inventar.mjs` | 10 | `const wurzel = new URL('..', import.meta.url).pathname;` |
-
-1 Stelle(n) benutzen .pathname statt fileURLToPath (79 machen es richtig). Bei einem Sonderzeichen im Pfad scheitert dort jeder spawn mit ENOENT.
+Alle 80 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
 
 ## 13. Server-Autorität und Secrets
 
@@ -324,11 +312,11 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ## 15. Auswertung
 
-**Rot:** pfade
+**Rot:** keine
 
-**Gelb:** unbenutzteKonstanten, zufall, doppelregeln
+**Gelb:** doppelregeln, perf
 
-**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, marker, secrets, perf
+**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, unbenutzteKonstanten, marker, zufall, pfade, secrets
 
 ### Was schon belegt gut funktioniert
 
@@ -339,14 +327,12 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Kein Secret in getrackten Dateien.**
 - **Ereignis-Abdeckung ist sauber:** 75 von 81 Ereignisarten behandelt, die 6 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
 - **OFFENE Doppelregeln (28):** `ZELLE` (src/engine/systems/feuerSystem.js:36 · src/client/feuerOptik.js:22 · src/client/figurSheets.js:16 · src/client/waffenAnimation.js:41 · src/client/waffenSprites.js:25), `boden` (src/shared/config/biome-neu.js:68 · src/shared/config/biome-planet.js:73 · src/shared/config/biome-themen.js:21), `CACHE_KANTE` (src/client/figurStufen.js:11 · src/client/figurenBilder.js:34 · src/client/waffenSprites.js:22), `ladeBild` (src/client/figurenBilder.js:47 · src/client/tierBilder.js:33 · src/client/waffenSprites.js:253), `MAX_TEILCHEN` (src/client/feuerOptik.js:18 · src/client/figurEffekte.js:13 · src/client/tierBuehne.js:19), `aufprallStaerke` (src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260), `BACKDROP_URLS` (src/client/kulisseUndWasser.js:28 · src/client/renderer.js:101), `begrenze` (src/client/musik.js:66 · src/client/valhallaOmen.js:49), `begrenze01` (src/client/gefuehl.js:57 · src/client/soundMixer.js:58), `BILDER` (src/client/roster.js:20 · src/client/tierBilder.js:15), `cache` (src/client/figurenBilder.js:45 · src/client/tierBilder.js:31), `el` (src/client/hilfeTiere.js:128 · src/client/hilfeZerstoerung.js:15), `FNV_BASIS` (src/shared/stoffkarte.js:35 · src/engine/terrain/collisionMask.js:141), `glatt` (src/client/gelaendeStil.js:80 · src/client/waffenAnimation.js:244), `KATEGORIEN` (src/client/klangProfile.js:26 · src/client/waffenAnimation.js:33), `KONTUR` (src/client/figuren.js:18 · src/client/gelaendeStil.js:27), `LUFT_SCHWELLE` (src/client/figurAnimation.js:24 · src/client/hoehlenSchatten.js:86), `mische` (src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105), `neueLeinwand` (src/client/figurStufen.js:15 · src/client/waffenSprites.js:246), `P` (src/client/figurTypen.js:59 · src/client/klangProfile.js:53), `PARAMETER` (src/client/figurTypen.js:72 · src/client/waffenAnimation.js:107), `standard` (src/client/figurenBilder.js:35 · src/client/waffenSprites.js:263), `STIMMUNGEN` (src/shared/config/backdrops.js:698 · src/client/musikListe.js:13), `STUFEN` (src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:13), `tabelle` (src/client/gelaendeStil.js:233 · src/client/stoffOptik.js:22), `TOENE` (src/client/gelaendeStil.js:31 · src/client/toasts.js:18), `TWO_PI` (src/client/figurAnimation.js:33 · src/client/figurEffekte.js:200), `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:38). Diese Definitionen steht in mehr als einer Datei und ist NICHT in der Ausnahmeliste `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` begründet — nach der Projektregel „eine Regel, eine Stelle" ein offener Befund, kein Freispruch. Ein Freispruch wird ab hier GELESEN, nicht behauptet: Wer ihn will, trägt den Namen mit Begründung und Orten in die Liste ein.
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 60475 Zeilen Tests gegen 66525 Zeilen Quelltext (Verhältnis 0.91).
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 60475 Zeilen Tests gegen 66512 Zeilen Quelltext (Verhältnis 0.91).
 - **Der Waffenkatalog ist kein Datenmüll:** 136 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
 
 1. 6 stumme Engine-Ereignisse (6 mit Begründung gelistet, 0 OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.
-2. Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.
-3. 5 Konstanten ohne Leser — Werte, die eine Wirkung versprechen, die es nicht gibt.
 
 ## 16. Nicht messbar in dieser Umgebung
 
@@ -371,30 +357,10 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
 
 ## 17. TODO
 
-56 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+30 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
-### KRITISCH (1)
+### MITTEL (29)
 
-- [ ] Prozent-kodierte Wurzel: scripts/terrain-inventar.mjs:10
-      `const wurzel = new URL('..', import.meta.url).pathname;` — `.pathname` liefert bei Sonderzeichen im Pfad `%20`; jeder spawn mit diesem cwd scheitert mit ENOENT. Ersetzen durch `fileURLToPath(new URL(...))`.
-
-### HOCH (1)
-
-- [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:140
-      this.#startedAt = Date.now();
-
-### MITTEL (33)
-
-- [ ] Konstante ohne Leser: STOFF_TEXTUR_URLEN
-      src/client/main.js:91
-- [ ] Konstante ohne Leser: EFFEKT_SHEET_URLEN
-      src/client/main.js:93
-- [ ] Konstante ohne Leser: PLANETEN_KULISSE_URLEN
-      src/client/main.js:95
-- [ ] Konstante ohne Leser: COOKIE_REFERENZ_BREITE
-      src/shared/config/cookie.js:23
-- [ ] Konstante ohne Leser: BETAEUBUNG
-      src/shared/config/schaden.js:52
 - [ ] Offene Doppelregel: ZELLE
       src/engine/systems/feuerSystem.js:36 · src/client/feuerOptik.js:22 · src/client/figurSheets.js:16 · src/client/waffenAnimation.js:41 · src/client/waffenSprites.js:25 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
 - [ ] Offene Doppelregel: boden
@@ -451,52 +417,14 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
       src/client/figurAnimation.js:33 · src/client/figurEffekte.js:200 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
 - [ ] Offene Doppelregel: zufall
       src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:38 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] 274 Ticks über dem 16,7-ms-Budget
+      274 von 15019 Ticks über Budget.
 
-### NIEDRIG (21)
+### NIEDRIG (1)
 
-- [ ] Export ohne Leser: STARTGLANZ_DAUER
-      src/client/effektStil.js
-- [ ] Export ohne Leser: ART
-      src/client/figurEffekte.js
-- [ ] Export ohne Leser: balkenFarbe
-      src/client/figuren.js
-- [ ] Export ohne Leser: ZEILEN
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: BLATT_B
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: BLATT_H
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: frameAusZelle
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: blattMassOk
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: AUFPRALL_RUCK_SCHWELLE
-      src/client/gefuehl.js
-- [ ] Export ohne Leser: MESS_INTERVALL
-      src/client/hudAusweichen.js
-- [ ] Export ohne Leser: RAD_FAKTOR
-      src/client/kameraSteuerung.js
-- [ ] Export ohne Leser: SICHT_BREITE
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: SICHT_HOEHE
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: ZIEL_ANTEIL
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: GEGNER_REICHWEITE
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: GEGNER_NAH
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: GEGNER_MAX
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: VORAUS_SEKUNDEN
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: kartenPunktImSchirm
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: umschliessend
-      src/client/kameraZiel.js
 - [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
       0 von 5 Partien endeten VOR Runde 8
 
 ---
 
-Erzeugt von `tools/audit-mcp` v1.0.0 · Repo `/home/patrick/projectArmageddon`
+Erzeugt von `tools/audit-mcp` v1.0.0 · Repo `/home/patrick/pa-wt/totcode`

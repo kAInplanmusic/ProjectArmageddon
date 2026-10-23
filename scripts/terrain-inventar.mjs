@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /** Erzeugt docs/terrain-inventar.md: alle Stoffe mit Eigenschaften, Textur, Biomen, Texturdateien, Planeten, Kulissen-Zahlen. */
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { STOFFE } from '../src/shared/config/stoffe.js';
 import { STOFF_TEXTUR } from '../src/client/stoffTexturen.js';
 import { NEUE_BIOME } from '../src/shared/config/biome-neu.js';
 import { ALTE_REZEPTE } from '../src/shared/config/stoff-rezepte.js';
 import { TERRAIN_MATERIALS } from '../src/shared/config/terrain.js';
 
-const wurzel = new URL('..', import.meta.url).pathname;
+const wurzel = fileURLToPath(new URL('..', import.meta.url));
 const verz = p => fs.existsSync(wurzel + p) ? fs.readdirSync(wurzel + p) : [];
 const nutzung = {};
 const merke = (stoff, biom) => { (nutzung[stoff] ??= new Set()).add(biom); };

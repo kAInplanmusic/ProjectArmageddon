@@ -21,7 +21,7 @@
 /** Kantenlänge der gecachten Waffenzellen (Atlas: 128 px; für die Anzeige genügt die Hälfte). */
 export const CACHE_KANTE = 64;
 /** Kantenlänge der Geschosszellen im Atlas und im Cache. */
-export const GESCHOSS_KANTE = 32;
+const GESCHOSS_KANTE = 32;
 const ZELLE = 128;
 const GLANZ_KANTE = 32;
 
@@ -279,11 +279,6 @@ const standard = erzeugeWaffenSprites({
  */
 export function holeWaffenSprite(waffe) {
   return standard.hole(waffe);
-}
-
-/** Lädt die Sprites vorab (z. B. beim Matchstart für das Loadout). */
-export function ladeWaffenSpritesVor(waffen) {
-  standard.ladeVor(waffen);
 }
 
 /** Zustand des Laders (Diagnose). */
