@@ -15,6 +15,29 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Sprite-Prüfung 2026-10-23 (Vollständigkeit + Sichtprüfung) — OFFEN
+
+Vollständig (gemessen): 9 Fraktionen × 9 Figuren × 3 Blätter (aktion/walk/zustand) = 243 Blätter, alle 1024×512,
+4×2 Zellen à 256 px, 1944 Zellen alle gefüllt, keine Figur am Zellrand abgeschnitten. Emotions-Blätter 9×9 vorhanden.
+Waffen: 150/150 im Manifest, jede mit held/silhouette/icon(/projektil) und Deckung ≥ 3 %, keine doppelte Quelle;
+25 Waffen mit Eigenanimation. Günther 14, Cookie 14 Posen.
+
+- [ ] **SPR-1 datacult/11_synapse-streamer zerstückelt:** Kopf und Glieder als getrennte Teile (aktion; zustand ebenso
+  auffällig) — neu erzeugen.
+- [ ] **SPR-2 pixel/00_nullpointer-exception:** gleicher Name wie datacult/00, Figur zerfasert/zerstückelt — falsche
+  Zuordnung oder defekt; neu erzeugen bzw. umbenennen.
+- [ ] **SPR-3 pixel/11_pyrowand-a:** Silhouette löchrig/fragmentiert, schlecht lesbar.
+- [ ] **SPR-4 Fraktion „pixel“ uneinheitlich:** Füchse (pyrofox-a/-b) gleichen den Beasts-Füchsen, ethereo flach-neongrün,
+  shieldmon Igel — kein gemeinsamer Fraktionsstil; Leitbild festlegen.
+- [ ] **SPR-5 shinobi:** senkrechte dünne Linie durch alle Frames (mind. eine Figur, auch im Liegen stehend) — Stab oder
+  Artefakt prüfen.
+- [ ] **SPR-6 Kontrast:** datacult-Figuren (v. a. 20_buffer-flow-swarm, 00/10) sehr dunkel grau auf dunklem Gelände —
+  Randlicht/Umriss prüfen.
+- [ ] **SPR-7 Automatische Auffälligkeit (Teilprüfung, Zusammenhangskomponenten):** datacult/20 zustand, datacult/21 walk,
+  undead/00 zustand, undead/12 zustand — sichten.
+- [ ] **SPR-8 Stilbruch Haustiere:** Günther/Cookie flach-cartoonig gegenüber den gemalten Figuren — bewusst lassen oder angleichen.
+- [ ] **SPR-9 Wächter:** Prüfung als `scripts/check-sprites.mjs` (Zellen gefüllt, Rand, Fragmente, Namensdubletten) ins Repo.
+
 ## Audit 2026-10-23 (Hermes, sparsam: Gates + checks + audit:bericht) — OFFEN
 
 Stand main @ c81b31b, lokal == origin. Belegt: `npm test` 1857/1857 grün, `eslint .` sauber, `vite build` ok
