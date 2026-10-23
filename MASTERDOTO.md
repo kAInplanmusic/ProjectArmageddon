@@ -21,11 +21,14 @@ Stand main @ c81b31b, lokal == origin. Belegt: `npm test` 1857/1857 grün, `esli
 (nach `npm install` — node_modules war veraltet, `@fontsource/bebas-neue` fehlte), `npm audit` 0 Lücken.
 Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Archiv (Test darin rot gegen heutigen Code).
 
-- [ ] **AU-1 `check:achievements` ROT:** 3 Erfolge praktisch unerreichbar (300 Schaden/Partie: erreicht 32;
-  Trefferquote 50 %: 0,02; 20 Schaden/min: 0,22). Schwellen senken oder Messung (Bot-Simulation) prüfen.
-- [ ] **AU-2 `check:camera` ROT:** 5 Zeichenfunktionen nicht als Welt/Bildschirm eingeordnet:
-  `#drawFaelle #drawFigurEffekte #drawCookie #drawWiederholung #drawOmen`.
-- [ ] **AU-3 `npm run checks` ROT** — Folge aus AU-1/AU-2.
+- [x] **AU-1 `check:achievements` GRÜN:** Messung war fehlerhaft — der Bot feuerte in feste Winkel ohne zu zielen
+  (~2 % Treffer, 32 Schaden/Partie). Jetzt zielt er per `aimPreview` und feuert mit der aktiven Figur:
+  gemessen 172 Schaden/Partie, 39 % Trefferquote (über alle Partien), 17 Schaden/min — alle drei
+  „in Reichweite", Schwellen unverändert.
+- [x] **AU-2 `check:camera` GRÜN:** 5 Zeichenfunktionen eingeordnet —
+  `#drawFaelle`, `#drawFigurEffekte`, `#drawCookie`, `#drawWiederholung` = Welt
+  (Kartenkoordinaten), `#drawOmen` = Bildschirm (füllt das Fenster, nach der Kameraklammer).
+- [x] **AU-3 `npm run checks` GRÜN** — Folge aus AU-1/AU-2 behoben.
 - [ ] **AU-4 Pfade (audit rot):** `scripts/terrain-inventar.mjs:10` nutzt `.pathname` statt `fileURLToPath`.
 - [ ] **AU-5 Determinismus (gelb):** `src/engine/replay.js:140` `Date.now()` im Simulationspfad — prüfen, ob nur Metadatum.
 - [ ] **AU-6 Tote Konstanten:** `STOFF_TEXTUR_URLEN`, `EFFEKT_SHEET_URLEN`, `PLANETEN_KULISSE_URLEN` (main.js:91-95),
