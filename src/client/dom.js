@@ -65,4 +65,44 @@ export function prefersReducedMotion(win = globalThis) {
 
 export { REDUCED_MOTION_QUERY };
 
-export default { isTextEntry, prefersReducedMotion, REDUCED_MOTION_QUERY };
+/**
+ * Baut ein Element mit optionaler Klasse und Textinhalt.
+ * @param {string} tag @param {string} [text] @param {string} [className]
+ * @returns {HTMLElement}
+ */
+export function el(tag, text, className) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+/**
+ * Lädt ein Bild als Promise. Ein Ladefehler wird zu einer Ablehnung, nie zu einem hängenden Promise.
+ * @param {string} url @param {string} [fehlerText]
+ * @returns {Promise<HTMLImageElement>}
+ */
+export function ladeBild(url, fehlerText = 'Bild nicht ladbar') {
+  return new Promise((ok, fehler) => {
+    const img = new Image();
+    img.onload = () => ok(img);
+    img.onerror = () => fehler(new Error(fehlerText));
+    img.src = url;
+  });
+}
+
+/**
+ * Legt eine Zeichenfläche an — bevorzugt ohne DOM (`OffscreenCanvas`).
+ * @param {number} b @param {number} h
+ * @returns {OffscreenCanvas|HTMLCanvasElement}
+ */
+export function neueLeinwand(b, h) {
+  if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(b, h);
+  const c = document.createElement('canvas');
+  c.width = b; c.height = h;
+  return c;
+}
+
+export default {
+  isTextEntry, prefersReducedMotion, REDUCED_MOTION_QUERY, el, ladeBild, neueLeinwand,
+};

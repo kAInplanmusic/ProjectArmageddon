@@ -13,6 +13,7 @@
  * @module gelaendeStil
  */
 import { tinteStoffe } from './stoffOptik.js';
+import { glatt } from './mathe.js';
 import {
   PAL, hash2, rauschen1, mischeRgb, hexRgb, gruenAnteil, css,
 } from './stil.js';
@@ -75,11 +76,6 @@ function saumFuer(art, palette) {
       };
     }
   }
-}
-
-function glatt(a, b, x) {
-  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
 }
 
 /**

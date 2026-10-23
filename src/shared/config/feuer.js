@@ -37,6 +37,12 @@ export const FEUER_ALT = 1;
 export const FEUER_ENTFACHT = 2;
 export const FEUER_STANDARD = FEUER_ENTFACHT;
 
+/**
+ * Kantenlänge einer Feuerzelle in Pixeln. Der Motor rechnet Brand und Lava in diesem Raster,
+ * der Client zeichnet dieselben Zellindizes — beide Seiten müssen dieselbe Zahl lesen.
+ */
+export const FEUER_ZELLE = 8;
+
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereFeuer(fassung) {
   return fassung === FEUER_ALT || fassung === FEUER_ENTFACHT ? fassung : FEUER_STANDARD;

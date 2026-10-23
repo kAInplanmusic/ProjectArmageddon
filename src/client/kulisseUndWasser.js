@@ -14,6 +14,7 @@
  * @module kulisseUndWasser
  */
 import { WATER_SCALE } from '../engine/match.js';
+import { BACKDROP_URLS } from './kulissenUrls.js';
 import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import { SPIEGEL_TIEFE, spiegelFarbe, spiegelGewicht } from './wasserSpiegel.js';
@@ -23,13 +24,6 @@ import {
   drawLandmarks,
   drawWaterSurface,
 } from './sceneryPainter.js';
-
-/** Kulissen-URLs, von Vite aufgelöst (gleiche Dateien wie im Renderer). */
-const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.jpg', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
 
 /** Himmel über dem generativen Bild, wenn keine Kulisse geladen ist. */
 const SKY_TOP = '#0d1b2a';

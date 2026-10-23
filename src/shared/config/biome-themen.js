@@ -17,8 +17,7 @@
  * @module config/biome-themen
  */
 
-/** Kurzform für eine Bodenvariante. */
-const boden = (surface, deep) => ({ surface, deep });
+import { boden } from './biome-boden.js';
 
 export const THEMEN_BIOME = Object.freeze({
   kosmos: {

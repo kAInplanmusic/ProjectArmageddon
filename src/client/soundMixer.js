@@ -33,6 +33,7 @@
  * @module soundMixer
  */
 
+import { begrenze01 } from './mathe.js';
 import { donner } from './sound.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { baueKlangGraph, spieleProfil } from './klangSynth.js';
@@ -54,8 +55,6 @@ export function tonSpeicher() {
     },
   };
 }
-
-const begrenze01 = wert => Math.max(0, Math.min(1, Number(wert) || 0));
 
 const leereZaehler = () => ({
   explosion: 0, schuss: 0, treffer: 0, donner: 0, einschlag: 0, wasser: 0, truemmer: 0,

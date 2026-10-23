@@ -18,6 +18,7 @@ import {
 import {
   COOKIE_STANDARD, COOKIE_SPIELEN, COOKIE_IDENTITY, cookieHunger, cookiePflege, cookieWut,
 } from '../shared/config/cookie.js';
+import { el } from './dom.js';
 
 const sek = ticks => `${(Math.round(ticks / 6) / 10).toLocaleString('de-DE')} s`;
 const spanne = ([a, b]) => `${sek(a)} bis ${sek(b)}`;
@@ -123,13 +124,6 @@ export function baueTierTabellen(guentherFassung = GUENTHER_FASSUNG_STANDARD, co
     ],
   });
   return tabellen;
-}
-
-function el(tag, text, className) {
-  const e = document.createElement(tag);
-  if (className) e.className = className;
-  if (text !== undefined) e.textContent = text;
-  return e;
 }
 
 /** Setzt die Tabellen in den Hilfe-Behälter. */

@@ -378,10 +378,12 @@ test('Das Lade-Muster im Renderer trifft die Bilder wirklich', () => {
   // Diese Prüfung existiert wegen eines echten Fehlers: Das Glob-Muster stand als
   // `../assets/backdrops/*.jpg` im Renderer. Von `src/client/` aus zeigt `../`
   // auf `src/` — das Muster fand nichts und lieferte stillschweigend eine leere
-  // Liste. Kein Fehler, kein Bild, kein Hinweis.
-  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
+  // Liste. Kein Fehler, kein Bild, kein Hinweis. Das Muster stand bis zur
+  // Zusammenführung der Doppelregel in `renderer.js`; jetzt liegt es in
+  // `kulissenUrls.js` (gleicher Ordner, gleiche Auflösung).
+  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'kulissenUrls.js'), 'utf8');
   const treffer = /import\.meta\.glob\(\s*'([^']+)'/.exec(quelle);
-  assert.ok(treffer, 'Kein Glob-Muster im Renderer gefunden');
+  assert.ok(treffer, 'Kein Glob-Muster in kulissenUrls.js gefunden');
   // `**/` schließt den Unterordner `stimmung/` ein; zum Auflösen des Ordners entfällt es.
   const muster = treffer[1].replace('/**/', '/');
 
@@ -407,11 +409,12 @@ test('Der Renderer bildet den Nachschlage-Schlüssel wie Vite ihn vergibt', () =
   // Vite vergibt die Schlüssel MIT dem Präfix aus dem Muster (also
   // „./assets/backdrops/..."). Ein anderer Schlüssel beim Nachschlagen trifft
   // nichts und der Hintergrund bleibt leer.
-  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
-  const globMuster = /import\.meta\.glob\(\s*'([^']+)'/.exec(quelle)[1].replace('/**/', '/');
+  const globQuelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'kulissenUrls.js'), 'utf8');
+  const rendererQuelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
+  const globMuster = /import\.meta\.glob\(\s*'([^']+)'/.exec(globQuelle)[1].replace('/**/', '/');
   const praefix = globMuster.slice(0, globMuster.lastIndexOf('/') + 1);
 
-  const nachschlagen = /BACKDROP_URLS\[`([^`]+)`\]/.exec(quelle);
+  const nachschlagen = /BACKDROP_URLS\[`([^`]+)`\]/.exec(rendererQuelle);
   assert.ok(nachschlagen, 'Kein Nachschlagen der Kulissen-URL gefunden');
   const schluesselMuster = nachschlagen[1];
   assert.ok(schluesselMuster.startsWith(praefix),

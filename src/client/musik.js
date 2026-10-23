@@ -38,6 +38,7 @@
  * @module musik
  */
 
+import { begrenze } from './mathe.js';
 import { pruefeManifest, stueckeFuer, waehleNaechstes, hymnenStueck } from './musikListe.js';
 
 export const MUSIK_SCHLUESSEL = 'pa.musik.v1';
@@ -61,11 +62,6 @@ export function wiedergabeErlaubt({ suche = '', webdriver = false } = {}) {
   if (wert === '0' || wert === 'aus') return false;
   if (wert === '1' || wert === 'an') return true;
   return !webdriver;
-}
-
-function begrenze(wert, min, max) {
-  const n = Number(wert);
-  return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : min;
 }
 
 /** Speicher mit try/catch — ohne localStorage läuft alles weiter. */

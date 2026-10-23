@@ -28,11 +28,10 @@
  */
 
 import { TYP_JE_CHARAKTER, PARAMETER as TYP_PARAMETER } from './figurTypen.js';
+import { glatt01 } from './mathe.js';
 
 /** Die acht Katalogkategorien (`src/shared/config/weapons.js`). */
-export const KATEGORIEN = Object.freeze([
-  'melee', 'ranged', 'heavy_ranged', 'elemental', 'magic', 'tech', 'utility', 'ultimate',
-]);
+export { KATEGORIEN } from '../shared/config/waffenKategorien.js';
 
 /** Höhe der Hand über den Füßen als Anteil der Sprite-Höhe (Hand bei 17,25 px über den Füßen, Sprite 52 px). */
 const HAND_ANTEIL = 17.25 / 52;
@@ -241,7 +240,6 @@ export function neueZeiten() {
 }
 
 const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
-const glatt = u => { const c = clamp01(u); return c * c * (3 - 2 * c); };
 /** Abklingfenster: 1 bei u=0, genau 0 ab u>=1. */
 const fenster = u => (u >= 1 ? 0 : u <= 0 ? 1 : (1 - u) * (1 - u));
 
@@ -331,7 +329,7 @@ function schussBewegung(par, t, aus) {
     }
     case 'schwer': {
       // Anlauf über 40 ms (die schwere Waffe braucht einen Moment), langes Ausklingen, Nachschwingen.
-      const e = Math.pow(fenster(u), 1.5) * glatt(t / 0.04);
+      const e = Math.pow(fenster(u), 1.5) * glatt01(t / 0.04);
       aus.vor -= par.kick * e;
       aus.drehung += par.rueck * e;
       aus.drehung += Math.sin(t * par.wippHz * 2 * Math.PI) * par.wippen * fenster(u);
@@ -340,18 +338,18 @@ function schussBewegung(par, t, aus) {
     case 'hieb': {
       // Ausholen (Spitze hoch), Hieb in einem Bogen nach unten, Rückschwung in die Ruhe.
       if (t < 0.06) {
-        const w = glatt(t / 0.06);
+        const w = glatt01(t / 0.06);
         aus.drehung += 0.45 * w;
         aus.vor -= 1.2 * w;
       } else if (t < 0.22) {
         const v = (t - 0.06) / 0.16;
-        const g = glatt(v);
+        const g = glatt01(v);
         aus.drehung += 0.45 - 1.95 * g;
         aus.vor += -1.2 + (par.kick + 1.2) * Math.sin(Math.PI * Math.min(1, v * 1.15) * 0.5) * (1 - 0.3 * v);
         aus.hoch += Math.sin(Math.PI * v) * 1.2;
       } else {
         const v = (t - 0.22) / (par.schussDauer - 0.22);
-        const g = 1 - glatt(v);
+        const g = 1 - glatt01(v);
         aus.drehung += -1.5 * g;
         aus.vor += (-1.2 + (par.kick + 1.2) * 0.7) * g * g;
       }
@@ -360,7 +358,7 @@ function schussBewegung(par, t, aus) {
     case 'zauber': {
       // Heben und Aufladen, dann Freigabe mit Stoß nach vorn.
       if (t < par.aufladen) {
-        const w = glatt(t / par.aufladen);
+        const w = glatt01(t / par.aufladen);
         aus.drehung += par.heben * w;
         aus.hoch += 2.2 * w;
         aus.skala += 0.04 * w;
@@ -369,7 +367,7 @@ function schussBewegung(par, t, aus) {
         const e = fenster(v);
         aus.drehung += par.heben * e - par.rueck * Math.sin(Math.PI * Math.min(1, v * 3)) * (1 - v);
         aus.hoch += 2.2 * e;
-        aus.vor += par.kick * Math.pow(1 - v, 3) * glatt(v * 6);
+        aus.vor += par.kick * Math.pow(1 - v, 3) * glatt01(v * 6);
         aus.skala += 0.04 * e;
       }
       break;
@@ -377,12 +375,12 @@ function schussBewegung(par, t, aus) {
     case 'tech': {
       // Aufladen mit feinem Zittern, dann kurzer scharfer Stoß.
       if (t < par.aufladen) {
-        const w = glatt(t / par.aufladen);
+        const w = glatt01(t / par.aufladen);
         aus.hoch += Math.sin(t * 150) * 0.35 * w;
         aus.skala += 0.03 * w;
       } else {
         const v = (t - par.aufladen) / (par.schussDauer - par.aufladen);
-        const e = fenster(v) * fenster(v) * glatt((t - par.aufladen) / 0.02);
+        const e = fenster(v) * fenster(v) * glatt01((t - par.aufladen) / 0.02);
         aus.vor -= par.kick * e;
         aus.drehung += par.rueck * e;
         aus.drehung += Math.sin((t - par.aufladen) * par.wippHz * 2 * Math.PI) * par.wippen * fenster(v);
@@ -405,7 +403,7 @@ function schussBewegung(par, t, aus) {
 function glanzVerlauf(par, t) {
   if (par.art !== 'zauber' && par.art !== 'tech' && par.art !== 'selbst') return 0;
   if (par.art === 'selbst') return Math.sin(Math.PI * clamp01(t / par.schussDauer));
-  if (t < par.aufladen) return glatt(t / par.aufladen);
+  if (t < par.aufladen) return glatt01(t / par.aufladen);
   const v = (t - par.aufladen) / Math.max(1e-6, par.schussDauer - par.aufladen);
   return fenster(v);
 }
