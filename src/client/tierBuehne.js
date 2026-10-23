@@ -18,16 +18,16 @@
 /** Höchstzahl gleichzeitiger Teilchen (jeder Eintrag kostet im Bild einen kleinen Pfad). */
 export const MAX_TEILCHEN = 90;
 /** Kleinster Abstand zwischen zwei Auftritten der Kamera in Sekunden (kein Dauerzucken). */
-export const AUFTRITT_PAUSE = 4;
+const AUFTRITT_PAUSE = 4;
 
 /** Text der Sprechblase je Günther-Aktion. */
-export const GUENTHER_BLASEN = Object.freeze({
+const GUENTHER_BLASEN = Object.freeze({
   essen: 'Mampf!', huepfen: 'Wuff!', ziehen: 'Grrr, komm!', wuehlen: 'Buddel buddel', kuscheln: 'Kuschel mich!',
   kraulen: 'Kraul mich!', sitz: 'Sitz!', platz: 'Platz …', chaos: 'WUFF WUFF WUFF!',
 });
 
 /** Text der Miau-Blase je Stufe und wie laut sie wirkt (Pegel = Dringlichkeit). */
-export const MIAU_BLASEN = Object.freeze({ leise: 'miau', laut: 'MIAU!', wut: 'MIAUUUU!!' });
+const MIAU_BLASEN = Object.freeze({ leise: 'miau', laut: 'MIAU!', wut: 'MIAUUUU!!' });
 
 const SCHWACH = 0.35;
 

@@ -20,8 +20,8 @@
  *     gemäßigt). Fassung 2 bleibt Bit für Bit, was sie war.
  *
  * Alle Zeitangaben in Ticks (60 Hz), Strecken in Kartenpixeln der
- * Referenzbreite 1280 (`COOKIE_REFERENZ_BREITE`); Tempo und Reichweiten wachsen
- * mit der Kartenbreite wie bei Günther.
+ * Referenzbreite 1280; Tempo und Reichweiten wachsen mit der Kartenbreite wie
+ * bei Günther.
  *
  * @module config/cookie
  */
@@ -45,8 +45,6 @@ export const COOKIE_IDENTITY = Object.freeze({
   height: 30,
   length: 44,
 });
-
-export const COOKIE_REFERENZ_BREITE = 1280;
 
 /**
  * Posen (= Sprites in `assets/cookie/`). Die Reihenfolge ist das Drahtformat

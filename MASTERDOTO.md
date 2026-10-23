@@ -26,11 +26,11 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
 - [ ] **AU-2 `check:camera` ROT:** 5 Zeichenfunktionen nicht als Welt/Bildschirm eingeordnet:
   `#drawFaelle #drawFigurEffekte #drawCookie #drawWiederholung #drawOmen`.
 - [ ] **AU-3 `npm run checks` ROT** — Folge aus AU-1/AU-2.
-- [ ] **AU-4 Pfade (audit rot):** `scripts/terrain-inventar.mjs:10` nutzt `.pathname` statt `fileURLToPath`.
-- [ ] **AU-5 Determinismus (gelb):** `src/engine/replay.js:140` `Date.now()` im Simulationspfad — prüfen, ob nur Metadatum.
-- [ ] **AU-6 Tote Konstanten:** `STOFF_TEXTUR_URLEN`, `EFFEKT_SHEET_URLEN`, `PLANETEN_KULISSE_URLEN` (main.js:91-95),
+- [x] **AU-4 Pfade (audit rot):** `scripts/terrain-inventar.mjs:10` nutzt `.pathname` statt `fileURLToPath`. — auf `fileURLToPath(new URL('..', import.meta.url))` umgestellt.
+- [x] **AU-5 Determinismus (gelb):** `src/engine/replay.js:140` `Date.now()` im Simulationspfad — prüfen, ob nur Metadatum. — nur Metadatum (`createdAt`), in `ZEIT_AUSNAHMEN` begründet.
+- [x] **AU-6 Tote Konstanten:** `STOFF_TEXTUR_URLEN`, `EFFEKT_SHEET_URLEN`, `PLANETEN_KULISSE_URLEN` (main.js:91-95),
   `COOKIE_REFERENZ_BREITE` (config/cookie.js:23), `BETAEUBUNG` (config/schaden.js:52); dazu 20 Exporte ohne Leser
-  (v. a. `kameraZiel.js`, `figurSheets.js`) — `npm run audit:bericht`, Abschnitt todo.
+  (v. a. `kameraZiel.js`, `figurSheets.js`) — `npm run audit:bericht`, Abschnitt todo. — `streicheKommentare` (Glob-`/*`) repariert, tote Konstanten entfernt, überflüssige `export` abgeräumt; Sonden leer.
 - [ ] **AU-7 Doppelregeln:** 28 wertgleiche Konstanten in mehreren Dateien ohne Ausnahmeeintrag
   (`ZELLE, boden, CACHE_KANTE, ladeBild, MAX_TEILCHEN, …`) — zusammenführen oder in Ausnahmeliste begründen.
 - [ ] **AU-8 Design:** 0 von 5 Partien enden vor Mahlstrom-Runde 8 — Matchdauer vs. Breakpoint prüfen.

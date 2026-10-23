@@ -17,11 +17,11 @@ import { INSEL_GRAVITATION, INSEL_TEMPO_MAX, aufprallStaerke as staerkeAus } fro
 /** Obergrenze der Trümmerstücke je Ereignis. */
 export const TRUEMMER_MAX = 22;
 /** Alterung der Trümmer je Bild (1,0 = frisch). */
-export const TRUEMMER_ABNAHME = 0.016;
+const TRUEMMER_ABNAHME = 0.016;
 /** Fallbeschleunigung der Trümmer je Bild. */
-export const TRUEMMER_GRAVITATION = 0.22;
+const TRUEMMER_GRAVITATION = 0.22;
 /** Staub: Lebensdauer in Bildern. */
-export const STAUB_BILDER = 110;
+const STAUB_BILDER = 110;
 /** Erst ab diesem Kraterradius entsteht Staub. */
 export const STAUB_SCHWELLE = 8;
 

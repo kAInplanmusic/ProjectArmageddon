@@ -121,7 +121,7 @@ function mische(seed, platz, salz) {
  * Waffe mit Nachladezeit (der erste Zug bleibt unkompliziert) und keine ohne
  * eigenen Motor-Handler (nur `ranged`-Projektile, `tech`-Strahlwaffen).
  */
-export function getStarterWaffen(seed, platz) {
+function getStarterWaffen(seed, platz) {
   const taugt = w => w.powerTier === 'common' && w.id !== FALLBACK_WEAPON_ID
     && !w.requiresLineOfSight && w.maxAmmo >= 2 && w.damage > 0 && w.cooldown === 0;
   const wurf = WEAPONS.filter(w => taugt(w) && w.delivery === 'projectile' && w.category === 'ranged');
@@ -134,7 +134,7 @@ export function getStarterWaffen(seed, platz) {
  * Die zwei Common-Startwaffen der Fassung 4: zwei verschiedene schadenmachende Würfe
  * (derselbe Mischer; der erste Wurf ist derselbe wie in Fassung 2 und 3).
  */
-export function getStarterWaffenScharf(seed, platz) {
+function getStarterWaffenScharf(seed, platz) {
   const wurf = WEAPONS.filter(w => w.powerTier === 'common' && w.id !== FALLBACK_WEAPON_ID
     && !w.requiresLineOfSight && w.maxAmmo >= 2 && w.damage > 0 && w.cooldown === 0
     && w.delivery === 'projectile' && w.category === 'ranged');

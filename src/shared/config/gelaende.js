@@ -44,9 +44,9 @@ export function normalisiereGelaende(fassung) {
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */
-export const SONDER_ANTEIL = 0.4;
+const SONDER_ANTEIL = 0.4;
 /** Wahl „kein Sonderbiom": das Biom folgt der Karte wie in Fassung 1. */
-export const BIOM_KLASSISCH = 'klassisch';
+const BIOM_KLASSISCH = 'klassisch';
 /** Seed-Zweig der Biomziehung („BIO"). */
 const BIOM_FORK = 0x42494F;
 

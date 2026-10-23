@@ -12,18 +12,18 @@
 import { gehSchritt, klassenTempo } from '../engine/systems/bewegungSystem.js';
 
 /** Höchstens so viele Takte (200 ms) wird vorausgerechnet — bei Funkstille nicht ins Leere laufen. */
-export const MAX_VORAUS_TAKTE = 12;
+const MAX_VORAUS_TAKTE = 12;
 /** Zeitkonstante der Rückführung auf die Serverposition (ms). */
-export const GLAETTUNG_MS = 70;
+const GLAETTUNG_MS = 70;
 /** Ab diesem Abstand (px) springt die Anzeige, statt zu gleiten (Teleport, Stoß, Sturz). */
-export const SPRUNG_PX = 40;
+const SPRUNG_PX = 40;
 
 /**
  * Rechnet `takte` Geh-Schritte ab (x, y) vor. Hört an Wänden und Kanten auf (den Sturz rechnet der Server).
  *
  * @returns {{x:number, y:number}}
  */
-export function extrapoliereGehen({ isSolid, breite, x, y, richtung, tempo, takte }) {
+function extrapoliereGehen({ isSolid, breite, x, y, richtung, tempo, takte }) {
   const terrain = { isSolid, width: breite };
   let punkt = { x, y };
   const n = Math.max(0, Math.min(MAX_VORAUS_TAKTE, Math.floor(takte)));

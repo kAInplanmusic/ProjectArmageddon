@@ -113,7 +113,7 @@ function zufall(a, b = 0, c = 0) {
 let charakterTabelle = null;
 /** Wirkgruppe (Feuer, Eis, Säure ...) nach Waffenindex. */
 let gruppeTabelle = null;
-export function gruppeFuerIndex(index) {
+function gruppeFuerIndex(index) {
   if (!gruppeTabelle) {
     gruppeTabelle = new Map();
     for (const waffe of WEAPONS) gruppeTabelle.set(waffe.index, wirkgruppe(waffe.damageType));

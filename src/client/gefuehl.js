@@ -277,7 +277,7 @@ export function ruckFuer(radius, { reducedMotion = false } = {}) {
 }
 
 /** Ab dieser Aufprallstärke (0..1) einer landenden Geländeinsel ruckt das Bild. */
-export const AUFPRALL_RUCK_SCHWELLE = 0.3;
+const AUFPRALL_RUCK_SCHWELLE = 0.3;
 /** Lebensdauer des Aufprall-Rucks in Bildern: länger als der Kraterruck, weil Fels nachbebt (Zweierpotenz). */
 export const AUFPRALL_RUCK_BILDER = 16;
 
