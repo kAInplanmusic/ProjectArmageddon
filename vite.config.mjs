@@ -18,6 +18,8 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     target: 'es2022',
-    sourcemap: true,
+    // Auftragswarteschlange 3.4: Die Sourcemap ist ein Entwicklungs-Artefakt
+    // (~2 MB im dist/) und gehört nicht in die Auslieferung.
+    sourcemap: false,
   },
 });

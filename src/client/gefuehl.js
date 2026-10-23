@@ -298,10 +298,15 @@ export function ruckAufprall(staerke, { reducedMotion = false } = {}) {
   };
 }
 
-/** Altert den Ruck um ein Bild; gibt `null` zurück, wenn er verklungen ist. */
-export function altereRuck(ruck) {
+/**
+ * Altert den Ruck um einen Zeitschritt; gibt `null` zurück, wenn er verklungen ist.
+ *
+ * @param {object|null} ruck
+ * @param {number} [dt=1] - Zeitschritt in 60-Hz-Einheiten (Audit 2026-10-09, B-3).
+ */
+export function altereRuck(ruck, dt = 1) {
   if (!ruck) return null;
-  const life = ruck.life - ruck.decay;
+  const life = ruck.life - ruck.decay * dt;
   return life > 0 ? { ...ruck, life } : null;
 }
 
@@ -476,16 +481,21 @@ export function rauchWolke(x, y, radius) {
   return liste;
 }
 
-/** Ein Bild Rauch: steigen, auseinandertreiben, altern, aufräumen. */
-export function schreiteRauchFort(wolken) {
+/**
+ * Ein Zeitschritt Rauch: steigen, auseinandertreiben, altern, aufräumen.
+ *
+ * @param {Array} wolken
+ * @param {number} [dt=1] - Zeitschritt in 60-Hz-Einheiten (Audit 2026-10-09, B-3).
+ */
+export function schreiteRauchFort(wolken, dt = 1) {
   const ueberlebende = [];
   for (const w of wolken) {
-    const life = w.life - w.decay;
+    const life = w.life - w.decay * dt;
     if (life <= 0) continue;
     ueberlebende.push({
       ...w,
-      x: w.x + w.vx,
-      y: w.y + w.vy,
+      x: w.x + w.vx * dt,
+      y: w.y + w.vy * dt,
       life,
     });
   }

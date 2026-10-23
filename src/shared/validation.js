@@ -72,7 +72,18 @@ export function normalizeInput(raw = {}) {
   const result = { angle, power, type: raw.type ?? 'fire', weaponId: raw.weaponId ?? null };
 
   const errors = [];
-  if (!NETWORK_RULES.clientValidatedInputs.includes('angle') === false && !isValidAngle(angle)) {
+  /*
+   * FUND (belegt, Audit 2026-10-09, B-1): Hier stand
+   * `!NETWORK_RULES.clientValidatedInputs.includes('angle') === false && …` —
+   * eine doppelte Verneinung, die genau verkehrt herum wirkte: Die Prüfung lief
+   * nur, solange 'angle' als client-validiert markiert war, und entfiel, wenn der
+   * Client die Prüfung gerade NICHT übernahm. Eine stille Sicherheitslücke, die
+   * auf einer Zeichensetzung beruhte.
+   *
+   * Der Server ist die Source of Truth (siehe Modulkopf): Er prüft den Winkel
+   * immer, unabhängig davon, was der Client bereits validiert hat.
+   */
+  if (!isValidAngle(angle)) {
     errors.push(`angle muss zwischen ${INPUT_LIMITS.angleMin} und ${INPUT_LIMITS.angleMax} liegen`);
   }
   if (!isValidPower(power)) {

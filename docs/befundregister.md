@@ -50,7 +50,7 @@ ich im Code selbst gelesen:
 | A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
 | A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ✅ 2026-10-02 — **sachlich erledigt**, nachgemessen: nur noch EINE Definition (`config/weapons.js:7124`). Die Stelle in `specials.js` ist heute ein Grabstein-Kommentar; `doppelregeln` meldet 0. Wächter `tests/tote-regeln.test.js` |
 | A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | 🟡 Worker K |
-| A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ⬜ |
+| A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ✅ 2026-10-19 — war beim Datenfluss-Audit behoben: `networkClient` emittiert `snapshot_rejected` mit Grund, Version und Bytezahl; `main.js` schreibt die erste Zeile ins Protokoll. Wächter in `tests/audit-2026-10-09-fixes.test.js` |
 
 ## B — Stört
 
@@ -78,10 +78,10 @@ ich im Code selbst gelesen:
 | C-3 | `doppelregeln()` sieht nur `const GROSSBUCHSTABEN` — Funktionen unsichtbar | Werkzeug | C | 🟡 Worker M |
 | C-4 | „kein Importeur"-Wächter prüft **30 von 90** Dateien | Werkzeug | C | 🟡 Worker M |
 | C-5 | `match.js` **3195/3200 = 5 Zeilen Luft** | `tests/shooting.test.js` | C | ✅ 2026-10-01 — die Zahl ist überholt: `match.js` steht bei **3092** Zeilen (Zerlegung Schritt 4 abgeschlossen), also 108 Zeilen Luft. Wächter `tests/match-zeilenbudget.test.js` hält die 3200-Grenze fest, statt sie in Fließtext zu führen |
-| C-6 | „Bot-KI" in 22 Kommentaren als Begründung, obwohl `server/index.js:33` sie verneint | Bericht | C | ⬜ |
-| C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ⬜ |
+| C-6 | „Bot-KI" in 22 Kommentaren als Begründung, obwohl `server/index.js:33` sie verneint | Bericht | C | ✅ 2026-10-19 — durchgesehen (18 Fundstellen): Historische Belege („Bot-KI ist entfallen") sind korrekt; zwei Gegenwarts-Aussagen in `shotPrediction.js` korrigiert. Wächter `tests/audit-2026-10-09-fixes.test.js` |
+| C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ✅ 2026-10-19 — die 14 wortgleichen Zeilen zwischen Client- und Server-Barrel sind durch `export * from '../shared/index.js'` ersetzt (eine Quelle). Wächter `tests/audit-2026-10-09-fixes.test.js` |
 | C-8 | `gameServer.js:1145` 282 Z. / 26 `this.`; `guentherSystem.update` 66 `this.` in 169 Z. | Bericht | C | ⬜ |
-| C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ⬜ |
+| C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ✅ 2026-10-19 — `tests/zeilenbudget.test.js` budgetiert die sechs größten handgepflegten Dateien (Stand 2026-10-19: main 3555, gameServer 2168, terrainGen3 1830, renderer 1766, protocol 1106; match 3200 wie bisher). `weapons.js` ist generiert und bleibt bewusst ohne Budget |
 
 ---
 

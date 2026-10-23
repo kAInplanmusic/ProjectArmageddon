@@ -127,7 +127,13 @@ export class InputController {
     });
 
     window.addEventListener('keydown', event => {
-      if (event.repeat) return;
+      // UX-3 (Warteschlange): Halten der Krafttasten (W/S bzw. Pfeile
+      // hoch/runter) wirkt fortlaufend — die System-Wiederholung wird nur für
+      // sie durchgelassen. Alle anderen Tasten bleiben einmalig.
+      const krafttaste = event.key === 'w' || event.key === 'W'
+        || event.key === 'ArrowUp' || event.key === 's' || event.key === 'S'
+        || event.key === 'ArrowDown';
+      if (event.repeat && !krafttaste) return;
       // Nicht die Spielfigur steuern, während der Nutzer in ein Textfeld tippt.
       // Ohne diese Prüfung würde z. B. der Seed "2026" den Winkel verändern,
       // die Leertaste feuern und "r" das Match neu starten.

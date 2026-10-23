@@ -186,7 +186,11 @@ function ereignisseDerEngine() {
  * auseinanderläuft.
  *
  * **Grenze dieses Belegs:** Die Fundstelle der „anderen Wirkung" steht je
- * Eintrag als Begründung hier — geprüft, aber nicht maschinell nachgerechnet.
+ * Eintrag als Begründung hier — geprüft und seit 2026-10-23 auch maschinell
+ * nachgerechnet: `Jede Fundstelle eines Einzweig-Belegs zeigt wirklich auf ihren
+ * Anker` öffnet die genannte Datei und verlangt den genannten Bezeichner IN der
+ * genannten Zeile. Vorher stand hier nur, dass das nicht geschieht — und die vier
+ * Fundstellen der beiden Einzweigigen zeigten inzwischen alle ins Leere.
  * Was maschinell prüfbar ist (Zweig vorhanden: ja/nein), prüfen die Tests
  * unten.
  */
@@ -612,6 +616,67 @@ test('Ereignisse mit nur EINEM Zweig sind einzeln belegt', () => {
         `${typ}: auch ein \`offen\` braucht die Fundstelle der ausbleibenden Wirkung`);
     }
   }
+});
+
+// ------------------------------------------- Die Fundstelle wird nachgeschlagen
+
+/*
+ * Der Test oben prüft die FORM des Belegs (`datei.js:Zeile`). Eine Form ist
+ * erfüllt, sobald eine Zahl dasteht — auch wenn die Zeile inzwischen auf ganz
+ * anderen Code zeigt.
+ *
+ * Gemessen am 2026-10-23: alle vier Fundstellen der beiden Einzweigigen zeigten
+ * ins Leere. `main.js:1143` war die GPU-Erkennung (`disableGpu`), `main.js:857`
+ * ein `<option>`-Element für Fraktionen, `renderer.js:1201` ein Kommentar über
+ * eingebackene Verläufe. Der Wächter blieb grün, weil `:1143` wie ein Beleg
+ * aussieht. Das ist die Fehlerklasse „fest verdrahtetes Urteil unter live
+ * gemessenen Zahlen" aus `bgworker-todo.json` → `_meta`.
+ *
+ * Diese Prüfung öffnet die genannte Datei und verlangt den genannten Bezeichner
+ * IN der genannten Zeile: `datei.js:123 (bezeichner)`. Jede Fundstelle braucht
+ * diese Form — eine nackte Zeilennummer wird gezählt und abgelehnt, damit sie
+ * nicht stillschweigend an der Prüfung vorbeifällt.
+ */
+test('Jede Fundstelle eines Einzweig-Belegs zeigt wirklich auf ihren Anker', () => {
+  const FUNDSTELLE = /([\w./-]+\.(?:js|mjs)):(\d+)\s*\(([A-Za-z_$#][\w$.#]*)\)/g;
+  const ZEILE_OHNE_ANKER = /\b[\w./-]+\.(?:js|mjs):\d+/g;
+
+  // Jede Datei einmal lesen, nicht je Fundstelle.
+  const gelesen = new Map();
+  const zeileVon = (relativ, nummer) => {
+    if (!gelesen.has(relativ)) {
+      const pfad = path.join(ROOT, relativ);
+      assert.ok(fs.existsSync(pfad),
+        `${relativ} gibt es nicht — die Fundstelle zeigt auf eine fehlende Datei`);
+      gelesen.set(relativ, fs.readFileSync(pfad, 'utf8').split('\n'));
+    }
+    return gelesen.get(relativ)[nummer - 1];
+  };
+
+  let geprueft = 0;
+  for (const [typ, eintrag] of EINZWEIG_BELEGT) {
+    if (!eintrag.entweder) continue;
+    const text = eintrag.entweder;
+
+    const fundstellen = [...text.matchAll(FUNDSTELLE)];
+    const nackteZeilen = [...text.matchAll(ZEILE_OHNE_ANKER)];
+    assert.equal(fundstellen.length, nackteZeilen.length,
+      `${typ}: jede Fundstelle braucht die Form \`datei.js:Zeile (bezeichner)\` — `
+      + 'eine Zeilennummer ohne Anker ist eine Behauptung, kein Beleg');
+
+    for (const [, datei, nummer, anker] of fundstellen) {
+      const inhalt = zeileVon(datei, Number(nummer));
+      assert.ok(inhalt !== undefined,
+        `${typ}: ${datei}:${nummer} liegt hinter dem Dateiende — die Datei ist kürzer geworden`);
+      assert.ok(inhalt.includes(anker),
+        `${typ}: ${datei}:${nummer} enthält nicht \`${anker}\` — dort steht `
+        + `${JSON.stringify(inhalt.trim())}. Die Fundstelle ist veraltet, die Aussage damit unbelegt`);
+      geprueft++;
+    }
+  }
+
+  // Gegenprobe gegen einen stillen Durchlauf: ohne Fundstelle prüft der Test nichts.
+  assert.ok(geprueft > 0, 'Vorbedingung: es gibt mindestens eine Fundstelle zu prüfen');
 });
 
 // ------------------------------------------- Günthers Anschluss im Online-Betrieb

@@ -241,7 +241,6 @@ class Game {
     this.running = false;
     this.autoLoop = true;
     this.aim = { angle: Math.PI / 4, power: 55 };
-    this.waterFrame = 0;
     this.lastEvents = [];
     /**
      * Letzter bekannter Wasserzustand je Figur — für die Meldungen im Protokoll.
@@ -498,6 +497,24 @@ class Game {
     });
 
     /*
+     * Klangschalter (UX-7, Warteschlange): `SoundMixer#setzeAn` existierte,
+     * war aber von außen nicht erreichbar. Der Schalter im Menü reicht den
+     * Wunsch an den Mischer weiter.
+     */
+    const soundToggle = document.getElementById('cfg-sound');
+    soundToggle?.addEventListener('change', () => {
+      this.sound?.setzeAn(soundToggle.checked);
+      this.hud.log(soundToggle.checked ? 'Klang an' : 'Klang aus', 'neutral');
+    });
+
+    /*
+     * Fortsetzen nach Neuladen (Warteschlange 3.7): Der Token liegt im
+     * sessionStorage und holt denselben Platz zurück.
+     */
+    document.getElementById('resume-button')?.addEventListener('click', () => this.#setzeSitzungFort());
+    this.#aktualisiereSitzungsKnopf();
+
+    /*
      * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei.
      *
      * Der Ablauf ist bewusst der eines Downloads/Uploads und nicht der eines
@@ -535,7 +552,17 @@ class Game {
        * Ein Tastendruck ist eine solche Interaktion. Sie steht bewusst VOR der
        * Formularprüfung: Auch wer in ein Textfeld tippt, hat interagiert.
        */
-      void this.sound?.starte();
+      /*
+       * UX-7 (Warteschlange): Bleibt der Mischer stumm, weil der Browser
+       * keinen AudioContext hergibt, wird das EINMAL gemeldet — vorher blieb
+       * es still ohne Fehlermeldung, was die Suche unnötig schwer macht.
+       */
+      void this.sound?.starte().then(bereit => {
+        if (!bereit && this.sound?.an && !this.klangBlockiertGemeldet) {
+          this.klangBlockiertGemeldet = true;
+          this.hud.log('Klang blockiert — der Browser hat keinen AudioContext freigegeben', 'warn');
+        }
+      });
       void this.musik?.freigeben();
 
       // Der Abbruch darf nicht ausgelöst werden, während in ein Formularfeld
@@ -584,9 +611,9 @@ class Game {
    * Verlässt das laufende Match und kehrt ins Menü zurück.
    *
    * Beide Wege (Taste `R` und der HUD-Knopf) laufen hier zusammen — es gibt
-   * nur EINE Umsetzung. Der Unterschied liegt allein in der Rückfrage: Ein
-   * Tastendruck kann ein Fehlgriff sein, ein Klick auf einen beschrifteten
-   * Knopf ist eine Absicht. Deshalb fragt nur der Knopf nach.
+   * nur EINE Umsetzung. Beide Wege fragen nach: Ein Tastendruck kann ein
+   * Fehlgriff sein, und auch ein Klick soll die Partie nicht ohne Rückfrage
+   * beenden (UX-4).
    *
    * @param {{frage?: boolean}} [optionen] - `frage: true` verlangt eine
    *   Bestätigung, bevor abgebrochen wird.
@@ -621,6 +648,40 @@ class Game {
     this.endOverlay.hidden = true;
     this.menuOverlay.hidden = false;
     this.#zeigeAbbruch(false);
+    // Wer bewusst verlässt, braucht keine Fortsetzen-Sitzung mehr (3.7).
+    try {
+      sessionStorage.removeItem('pa-sitzung');
+    } catch { /* nicht verfügbar */ }
+    this.#aktualisiereSitzungsKnopf();
+  }
+
+  /** Blendet den Fortsetzen-Knopf ein, wenn eine Sitzung gespeichert ist. */
+  #aktualisiereSitzungsKnopf() {
+    const knopf = document.getElementById('resume-button');
+    if (!knopf) return;
+    try {
+      knopf.hidden = !sessionStorage.getItem('pa-sitzung');
+    } catch {
+      knopf.hidden = true;
+    }
+  }
+
+  /** Setzt die letzte Sitzung aus dem sessionStorage fort. */
+  #setzeSitzungFort() {
+    try {
+      const roh = sessionStorage.getItem('pa-sitzung');
+      if (!roh) return;
+      const sitzung = JSON.parse(roh);
+      this.startOnline({
+        serverUrl: sitzung.serverUrl,
+        lobbyId: sitzung.lobbyId,
+        token: sitzung.token,
+        name: sitzung.name ?? 'Spieler',
+      });
+    } catch {
+      try { sessionStorage.removeItem('pa-sitzung'); } catch { /* still */ }
+      this.#aktualisiereSitzungsKnopf();
+    }
   }
 
   /**
@@ -1412,7 +1473,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null,
+    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null, token = null,
   } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
@@ -1489,7 +1550,7 @@ class Game {
     const client = new NetworkClient({
       url: wsUrl,
       lobbyId: targetLobby,
-      token: hostToken,
+      token: token ?? hostToken,
       playerName: name,
       seed: resolvedSeed,
       preset,
@@ -1502,8 +1563,28 @@ class Game {
     // Ohne Fraktionsangabe des Servers leitet jeder Client dieselbe Anzeige aus der Lobby-ID ab.
     this.renderer.fraktionJeTeam = loeseFraktionen(null, 8, targetLobby);
 
+    // A-10 (Befundregister): Solange kein `joined` eingetroffen ist, ist ein
+    // `server_error` ein BEITRITTSfehler (Lobby voll, läuft schon) — der führt
+    // zurück ins Menü, nicht ins leere Spiel.
+    let beigetreten = false;
+
     client.on('hello', () => this.hud.log('Handshake abgeschlossen', 'good'));
     client.on('joined', payload => {
+      beigetreten = true;
+      /*
+       * Warteschlange 3.7: Der Sitzplatz-Token lebte nur im Tab. Er wird jetzt
+       * im sessionStorage abgelegt, damit „Letzte Sitzung fortsetzen" nach
+       * einem Neuladen denselben Platz zurückholt (JOIN_LOBBY mit Token).
+       */
+      try {
+        sessionStorage.setItem('pa-sitzung', JSON.stringify({
+          serverUrl,
+          lobbyId: client.lobbyId,
+          token: payload.token ?? token ?? hostToken ?? null,
+          name,
+        }));
+        this.#aktualisiereSitzungsKnopf();
+      } catch { /* sessionStorage nicht verfügbar — Fortsetzen entfällt still */ }
       /*
        * Im Modus der Matcharten führt ein Mensch ein ganzes TEAM (3–5 Einheiten).
        * `entityIds` nennt alle; `entityId` bleibt die erste Figur. Beide werden
@@ -1602,6 +1683,15 @@ class Game {
       this.shotPredictor.discard(text);
       this.hud.log(`Server: ${text}`, 'danger');
       zeigeToast(`Server: ${text}`, 'danger');
+      /*
+       * A-10 (Befundregister): Ein abgelehnter BEITRITT (Lobby voll, läuft
+       * schon) ließ den Spieler vor einem geschlossenen Menü zurück — nur eine
+       * Protokollzeile, kein Rückweg. Solange kein `joined` kam, ist der Fehler
+       * ein Beitrittsfehler: aufräumen und ins Menü zurück.
+       */
+      if (!beigetreten && this.mode === 'online') {
+        this.#verlasseMatch();
+      }
     });
     client.on('game_event', message => this.#handleRemoteEvent(message));
     /*
@@ -3012,7 +3102,7 @@ class Game {
       this.#setReplayStatus();
     }
 
-    this.#render();
+    this.#render(delta / FIXED_TIMESTEP);
   }
 
   /**
@@ -3051,7 +3141,7 @@ class Game {
     };
   }
 
-  #render() {
+  #render(dt = 1) {
     const state = this.currentState();
     if (!state) return;
 
@@ -3089,7 +3179,13 @@ class Game {
       ? this.match.aimPreview(playerId, this.aim.angle, ladeKraft ?? this.aim.power)
       : null;
 
-    this.waterFrame = (this.waterFrame + 1) % 4;
+    /*
+     * FUND (belegt, Audit 2026-10-09, B-2): Hier stand
+     * `this.waterFrame = (this.waterFrame + 1) % 4`, und der Renderer bekam das
+     * Wasser nur in jedem vierten Bild. Da der Bildschirm jeden Frame geleert
+     * wird, war Wasser in drei von vier Bildern unsichtbar. Das Wasser geht jetzt
+     * in JEDEM Bild an den Renderer (siehe unten, `water:`).
+     */
 
     /*
      * Die laufende Schussvorhersage wird ZUSÄTZLICH als Aim-Vorschau
@@ -3132,10 +3228,10 @@ class Game {
       // HUD-Ränder messen, Schilder und Schub setzen (nur Darstellung).
       this.hudAusweichen.aktualisiere(state, this.kamera);
       const jetzt = performance.now();
-      const dt = this.kameraZeit ? (jetzt - this.kameraZeit) / 1000 : 0;
+      const dtSek = this.kameraZeit ? (jetzt - this.kameraZeit) / 1000 : 0;
       this.kameraZeit = jetzt;
       this.kameraRegie.setzeReduziert(this.renderer.reducedMotion);
-      const kameraAus = this.kameraRegie.schritt(dt, this.#kameraEingabe(state, wiederholung, activeWeapon, myTurn));
+      const kameraAus = this.kameraRegie.schritt(dtSek, this.#kameraEingabe(state, wiederholung, activeWeapon, myTurn));
       // Beben der Tiere (Cookie tobt, Schockwelle, wildes Bellen) kommt als Versatz obendrauf; 0 bei Bewegungsreduktion.
       const beben = this.renderer.tierBuehne.versatz();
       if (kameraAus) {
@@ -3162,6 +3258,7 @@ class Game {
       water: this.mode === 'online' ? null : this.match.water,
       wasserNeu: this.waterFrame === 0,
       blastRadius: activeWeapon?.blastRadius ?? 0,
+      dt,
     });
     this.#trackWater(state);
     this.#pruefeNachladen(state);

@@ -227,6 +227,16 @@ test('Die entfernten Doppel-Engines sind nicht zurückgekehrt', () => {
     'src/engine/terrainEngine/index.js',
     'src/engine/weaponEngine/index.js',
     'src/engine/weapons/projectArmageddonWorldAdapter.js',
+    // Audit 2026-10-09, C-1c: terrainSync.js hatte keinen Produktaufrufer
+    // mehr (nur Re-Exporte in engine/index.js und client/index.js). Die
+    // Krater-Spiegelung läuft über den Produktivpfad in match.js.
+    'src/engine/terrain/terrainSync.js',
+    // Auftragswarteschlange 2.7: ballisticsWasm.js war ein Stub, der nur
+    // ballistics.js re-exportierte; isWasmSupported hatte 0 Aufrufer.
+    'src/engine/physics/ballisticsWasm.js',
+    // Auftragswarteschlange 3.9: ProjectilePool war eine tote Umsetzung der
+    // lebenden Projektil-Logik (projectileSystem.js) — nur Re-Exporte.
+    'src/engine/pooling/projectilePool.js',
   ];
 
   for (const relat of verboten) {
@@ -244,12 +254,12 @@ test('Die lebenden Terrain-Bausteine sind weiterhin da', () => {
    * versehentlich die lebenden Nachbarn mitnehmen können — sie liegen im
    * selben Verzeichnis (`src/engine/terrain/`) und tragen ähnliche Namen.
    *
-   * `match.js` nutzt `collisionMask` (Zeile 383); `terrainSync` und
-   * `terrainLoader` werden von Client und Server gebraucht.
+   * `match.js` nutzt `collisionMask` (Zeile 383); `terrainLoader` wird beim
+   * Kartenaufbau gebraucht. `terrainSync` dagegen ist entfernt (Audit
+   * 2026-10-09, C-1c) — es hatte keinen Produktaufrufer.
    */
   for (const relat of [
     'src/engine/terrain/collisionMask.js',
-    'src/engine/terrain/terrainSync.js',
     'src/engine/terrain/terrainLoader.js',
   ]) {
     assert.ok(fs.existsSync(path.join(ROOT, relat)),

@@ -340,10 +340,16 @@ class LobbySession {
     this.match.fire(entry.playerId, entry.angle, entry.power, entry.weaponId ?? null);
   }
 
-  /** Momentaufnahme für die Persistenz. */
+  /**
+   * Momentaufnahme für die Persistenz.
+   *
+   * Warteschlange 3.6: Hier stand eine zweite, handgebauten Fassung von
+   * `serializeLobby` (`recorder.toJSON()` + `tickCount`). Es gibt jetzt genau
+   * EINE Fassung: `serializeLobby` in persistence.js.
+   */
   toPersisted() {
-    this.recorder.finalize(this.match.world.tickCount);
-    return { replay: this.recorder.toJSON(), tick: this.match.world.tickCount };
+    const voll = serializeLobby(this.lobby, this);
+    return { replay: voll.replay, tick: voll.tick };
   }
 
   /**
@@ -732,7 +738,24 @@ class LobbySession {
       }
     );
 
-    if (!command.valid) return { ok: false, errors: command.errors };
+    if (!command.valid) {
+      /*
+       * UX-9 (Warteschlange): „Spieler ist nicht am Zug" allein lässt den
+       * Spieler raten, wann er wieder darf. Die Restzugzeit steht im Zustand
+       * und wird in die Ablehnung geschrieben.
+       */
+      if (command.errors.includes('Spieler ist nicht am Zug')) {
+        const zustand = this.match.getState();
+        const restMs = Math.max(0, (zustand.turnDurationMs ?? 0) - (zustand.turnElapsedMs ?? 0));
+        return {
+          ok: false,
+          errors: command.errors.map(fehler => (fehler === 'Spieler ist nicht am Zug'
+            ? `${fehler} (noch ${Math.ceil(restMs / 1000)} s Zugzeit)`
+            : fehler)),
+        };
+      }
+      return { ok: false, errors: command.errors };
+    }
 
     /*
      * Die Waffe wird VOR dem Schuss aufgelöst und so aufgezeichnet.
@@ -1307,7 +1330,18 @@ export class GameServer {
         }
       });
     });
-    this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 65_536 });
+    /*
+     * FUND (belegt, Audit 2026-10-09, A-1/C-1a): Hier stand
+     * `new WebSocketServer({ server, path: '/ws' })`. Der ws-Standard puffert
+     * bis 100 MiB, BEVOR die 512-Byte-Prüfung aus `validation.js` greift —
+     * die Anwendungsgrenze war also eine Absicht ohne Wirkung.
+     *
+     * 64 KiB deckeln den Puffer um Faktor ~1500 und lassen der App-Prüfung
+     * trotzdem den Vortritt: Nachrichten bis 64 KiB bekommen die LESBARE
+     * Ablehnung „Nachricht zu groß" (512-Byte-Regel), erst echter Missbrauch
+     * darüber wird auf Protokollebene gekappt.
+     */
+        this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 65_536 });
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
      * `error`-Ereignisse mit.
@@ -1338,6 +1372,20 @@ export class GameServer {
       this.logger.debug('client_connected', 'WebSocket-Verbindung geöffnet', {
         connections: this.metrics.connections,
       });
+      /*
+       * FUND (belegt, Audit 2026-10-09, A-1): Dieser Listener fehlte. Die
+       * Bibliothek `ws` emittiert `error` bei Protokollfehlern (z. B. ungültiges
+       * UTF-8 in einem Textrahmen). Ohne Listener ist das eine unbehandelte
+       * Ausnahme — 4 Bytes beendeten den GESAMTEN Spielserver. Die kaputte
+       * Verbindung wird kontrolliert beendet; der Rest läuft weiter.
+       */
+      socket.on('error', fehler => {
+        this.logger.warn('socket_error', 'WebSocket-Verbindung meldet einen Fehler und wird beendet', {
+          code: fehler?.code ?? null,
+          message: fehler?.message ?? String(fehler),
+        });
+        socket.terminate();
+      });
       socket.once('close', () => {
         this.metrics.disconnections += 1;
         this.logger.debug('client_disconnected', 'WebSocket-Verbindung geschlossen', {
@@ -1346,6 +1394,28 @@ export class GameServer {
       });
       this.#handleConnection(socket);
     });
+  }
+
+  /**
+   * Startet die Sitzung, sobald alle Teams besetzt sind.
+   *
+   * Warteschlange 3.8: Diese Prüfung stand zweimal im Server (JOIN-Pfad und
+   * START_MATCH), nur der JOIN-Pfad lief im Livebetrieb. Es gibt jetzt genau
+   * EINE Stelle für die Prüfung und den Start.
+   *
+   * Bewusst NICHT hier: `markRunning`. Ob eine durch den letzten Beitritt
+   * gestartete Lobby „open" oder „running" trägt, ist eine offene
+   * Produktentscheidung (siehe den ZUSTANDS-PIN in
+   * tests/server-beitritt-und-trennung.test.js) — sie bleibt beim jeweiligen
+   * Aufrufer.
+   *
+   * @returns {boolean} true, wenn das Match GERADE gestartet wurde
+   */
+  #starteMatchFallsVoll(lobbyId, session) {
+    if (!this.#lobbies.alleTeamsBesetzt(lobbyId)) return false;
+    if (session.laeuft) return false;
+    session.start();
+    return true;
   }
 
   /**
@@ -2079,9 +2149,8 @@ export class GameServer {
              * `start()` und `attach()` nicht feuern — beide laufen im selben
              * synchronen Durchgang.
              */
-            const alleBesetzt = this.#lobbies.alleTeamsBesetzt(lobbyId);
-            if (!session.laeuft && alleBesetzt) {
-              session.start();
+            const gestartet = this.#starteMatchFallsVoll(lobbyId, session);
+            if (gestartet) {
               this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
                 lobbyId,
                 teams: lobby.teams,
@@ -2137,14 +2206,15 @@ export class GameServer {
              *
              * Ohne diese Prüfung ließe sich ein Match starten, in dem auf der
              * gegnerischen Seite niemand ist. Vorher füllte der Bot solche Teams
-             * — es gibt aber keine Bot-KI.
+             * — es gibt aber keine Bot-KI. Die Prüfung selbst lebt in
+             * `#starteMatchFallsVoll` (Warteschlange 3.8: eine Stelle).
              */
-            if (!this.#lobbies.alleTeamsBesetzt(context.lobbyId)) {
+            const gestartet = this.#starteMatchFallsVoll(context.lobbyId, session);
+            if (!gestartet && !session.laeuft) {
               this.#fehlerSenden(socket, 'Warte auf Mitspieler: Jedes Team braucht einen Menschen.');
               break;
             }
             this.#lobbies.markRunning(context.lobbyId);
-            if (!session.laeuft) session.start();
             session.broadcastSnapshot();
             break;
           }

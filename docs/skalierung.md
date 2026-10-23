@@ -117,7 +117,7 @@ der die Grundlage von Replays und Persistenz ist (siehe `docs/betrieb.md`).
 | Video-/Trailer-Erzeugung | Gelegenheit | Einmalig, nicht im Betrieb |
 
 **Kostenmodell:** RunPod rechnet sekundengenau ab. Eine A100-Stunde liegt bei
-rund 1,50 €. **Für einen Batch-Lauf von 60 Kulissen sind das wenige Cent** — die
+rund 1,50 €. **Für einen Batch-Lauf von 80 Kulissen sind das wenige Cent** — die
 GPU ist damit ein **Werkzeug**, kein Betriebsmittel.
 
 ### Hetzner (CPU) — **für den Betrieb richtig**

@@ -37,10 +37,10 @@
 /** Obergrenze je Explosion: Ein großer Krater darf nicht beliebig kosten. */
 export const MAX_PARTIKEL = 26;
 
-/** Lebensdauer-Abnahme je Bild (1,0 = frisch). */
+/** Lebensdauer-Abnahme je Zeitschritt bei 60 Hz (1,0 = frisch). */
 export const PARTIKEL_ABNAHME = 0.035;
 
-/** Fallbeschleunigung je Bild. */
+/** Fallbeschleunigung je Zeitschritt bei 60 Hz. */
 export const PARTIKEL_GRAVITATION = 0.18;
 
 /** Farben der Splitter — aus der Palette des Spiels. */
@@ -103,18 +103,21 @@ export function erzeugePartikel(x, y, radius) {
  * nach vielen Explosionen auffiele.
  *
  * @param {Array} partikel - wird NICHT verändert
+ * @param {number} [dt=1] - Zeitschritt in 60-Hz-Einheiten. Die Darstellung soll
+ *   bildratenunabhängig altern (Audit 2026-10-09, B-3): Auf 144 Hz ist dt ~0,42,
+ *   auf 60 Hz ~1,0 — die Effekte altern damit in echter Zeit statt je Bild.
  * @returns {Array} eine neue Liste der überlebenden Partikel
  */
-export function schreitePartikelFort(partikel) {
+export function schreitePartikelFort(partikel, dt = 1) {
   const ueberlebende = [];
 
   for (const p of partikel) {
     const neu = {
       ...p,
-      x: p.x + p.vx,
-      y: p.y + p.vy,
-      vy: p.vy + PARTIKEL_GRAVITATION,
-      life: p.life - PARTIKEL_ABNAHME,
+      x: p.x + p.vx * dt,
+      y: p.y + p.vy * dt,
+      vy: p.vy + PARTIKEL_GRAVITATION * dt,
+      life: p.life - PARTIKEL_ABNAHME * dt,
     };
     if (neu.life > 0) ueberlebende.push(neu);
   }
@@ -143,11 +146,16 @@ export function erzeugeBlitz(x, y, radius, { color = '#f4a261' } = {}) {
   return { kind: 'flash', x, y, radius, color, life: 1, decay: 0.09 };
 }
 
-/** Ein Zeitschritt für die Effekte — altert sie und räumt die abgelaufenen weg. */
-export function schreiteEffekteFort(effekte) {
+/**
+ * Ein Zeitschritt für die Effekte — altert sie und räumt die abgelaufenen weg.
+ *
+ * @param {Array} effekte
+ * @param {number} [dt=1] - Zeitschritt in 60-Hz-Einheiten (Audit 2026-10-09, B-3).
+ */
+export function schreiteEffekteFort(effekte, dt = 1) {
   const ueberlebende = [];
   for (const e of effekte) {
-    const neu = { ...e, life: e.life - e.decay };
+    const neu = { ...e, life: e.life - e.decay * dt };
     if (neu.life > 0) ueberlebende.push(neu);
   }
   return ueberlebende;

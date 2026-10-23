@@ -81,12 +81,12 @@ Terrain-Budget — dort jeweils behoben, hier zum dritten Mal.
 
 | Nr. | Punkt | Aufwand |
 |---|---|---|
-| UX-1 | Steuerungsliste nach oben (heute unter neun Blöcken und dem Startknopf) — **der erste Blick verrät nicht, wie man spielt** | klein |
-| UX-3 | `W`/`S` halten-fähig machen (heute 45 Tipps für 45 Kraftpunkte, `event.repeat` wird verworfen) | klein |
-| UX-4 | Rückfrage-Widerspruch `abortMatch` (Kommentar „nur der Knopf fragt" — beide Aufrufer fragen) | klein |
-| UX-6 | „Revanche" startet nicht, sondern öffnet nur das Menü | klein–mittel |
-| UX-7 | **Es gibt keinen Klangschalter**, obwohl `SoundMixer#setzeAn` existiert; bei blockiertem AudioContext bleibt alles stumm **ohne Meldung** | mittel |
-| UX-9 | Ablehnungsmeldung ohne Restzugzeit | klein |
+| UX-1 | Steuerungsliste nach oben (heute unter neun Blöcken und dem Startknopf) — **der erste Blick verrät nicht, wie man spielt** | ✅ 2026-10-19 — keymap steht jetzt direkt unter dem Startknopf, vor den details-Blöcken |
+| UX-3 | `W`/`S` halten-fähig machen (heute 45 Tipps für 45 Kraftpunkte, `event.repeat` wird verworfen) | ✅ 2026-10-19 — Krafttasten wirken beim Halten fortlaufend |
+| UX-4 | Rückfrage-Widerspruch `abortMatch` (Kommentar „nur der Knopf fragt" — beide Aufrufer fragen) | ✅ 2026-10-19 — Kommentar korrigiert: beide Wege fragen |
+| UX-6 | „Revanche" startet nicht, sondern öffnet nur das Menü | ✅ (Entscheidung) — Revanche trägt den Seed ins Menü ein; der Kommentar in `main.js` begründet, warum sie nicht direkt startet (Spieler sieht/löscht die Karte) |
+| UX-7 | **Es gibt keinen Klangschalter**, obwohl `SoundMixer#setzeAn` existiert; bei blockiertem AudioContext bleibt alles stumm **ohne Meldung** | ✅ 2026-10-19 — Schalter im Menü (`cfg-sound`), blockierter Klang wird einmalig gemeldet |
+| UX-9 | Ablehnungsmeldung ohne Restzugzeit | ✅ 2026-10-19 — „Spieler ist nicht am Zug" nennt die Restzugzeit |
 | **UX-Testlücken** | **Maus** (0 Treffer `page.mouse`), **Touch** (0), **Hochformat** (0), kleines Fenster (0), `W`/`S`-Wirkung (0), Onboarding-E2E (0) | mittel je Punkt |
 
 > Vom Auftraggeber als **Content-/Designfrage** zu entscheiden: UX-10

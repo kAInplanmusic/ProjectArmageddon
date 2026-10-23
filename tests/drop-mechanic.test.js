@@ -203,6 +203,10 @@ test('Die Kiste landet auf festem Boden innerhalb der Karte', () => {
     if (!waffe) continue;
     match.inventory.register(spieler, [waffe.id]);
 
+    // Seit Audit 2026-10-09 (A-2) darf nur der AKTIVE Spieler abwerfen —
+    // vorher verbrauchte ein Abwurf fremder Spieler den Zufallsstrom.
+    while (match.activePlayerId !== spieler) match.endTurn();
+
     const ergebnis = match.dropWeapon(spieler, waffe.id);
     assert.equal(ergebnis.ok, true, `Abwurf für ${spieler} abgelehnt`);
 
@@ -482,6 +486,9 @@ test('Der Abwurf über die Anzeigeposition trifft eine abwerfbare Waffe', () => 
     const inventar = frisch.inventory.getWeapons(spieler.entityId);
     const reihenfolge = orderInventoryBySubcategory(inventar);
     const waffe = inventar[reihenfolge[0]];
+
+    // Nur der aktive Spieler darf abwerfen (Audit 2026-10-09, A-2).
+    while (frisch.activePlayerId !== spieler.entityId) frisch.endTurn();
 
     const ergebnis = frisch.dropWeapon(spieler.entityId, waffe);
     assert.equal(ergebnis.ok, true,

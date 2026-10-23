@@ -22,7 +22,7 @@ vorliegt.
 
 ### 1. Kulissen vorab — **bereits erledigt, ohne Laufzeit-KI**
 
-Der Punkt ist erfüllt: 60 Kulissen (12 Biome à 5 Varianten) wurden **vorab** per
+Der Punkt ist erfüllt: 80 Kulissen (16 Biome à 5 Varianten) wurden **vorab** per
 Bildmodell erzeugt und liegen als Bilder im Projekt. Dazu ein generativer
 Baukasten aus Himmel, Wasser, Ambiente und Landmarken, der sich jeder
 Kartengröße anpasst.
