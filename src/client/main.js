@@ -497,15 +497,12 @@ class Game {
     });
 
     /*
-     * Klangschalter (UX-7, Warteschlange): `SoundMixer#setzeAn` existierte,
-     * war aber von außen nicht erreichbar. Der Schalter im Menü reicht den
-     * Wunsch an den Mischer weiter.
+     * Klangschalter (UX-7, Warteschlange): Der Schalter im Menü und im HUD
+     * hängt an `[data-ton-schalter]` und wird von `soundBedienung.js`
+     * verdrahtet (siehe `#bindeTon`). Hier steht bewusst KEIN zweiter Weg über
+     * ein eigenes Kästchen: Zwei Bedienelemente für denselben Mischer wären
+     * zwei Wahrheiten über denselben Zustand.
      */
-    const soundToggle = document.getElementById('cfg-sound');
-    soundToggle?.addEventListener('change', () => {
-      this.sound?.setzeAn(soundToggle.checked);
-      this.hud.log(soundToggle.checked ? 'Klang an' : 'Klang aus', 'neutral');
-    });
 
     /*
      * Fortsetzen nach Neuladen (Warteschlange 3.7): Der Token liegt im
@@ -3180,11 +3177,13 @@ class Game {
       : null;
 
     /*
-     * FUND (belegt, Audit 2026-10-09, B-2): Hier stand
-     * `this.waterFrame = (this.waterFrame + 1) % 4`, und der Renderer bekam das
-     * Wasser nur in jedem vierten Bild. Da der Bildschirm jeden Frame geleert
-     * wird, war Wasser in drei von vier Bildern unsichtbar. Das Wasser geht jetzt
-     * in JEDEM Bild an den Renderer (siehe unten, `water:`).
+     * FUND (belegt, Audit 2026-10-09, B-2): Hier stand ein Bildzähler mit
+     * Rest 4 (`(zaehler + 1) % 4`), und der Renderer bekam das Wasser nur in
+     * jedem vierten Bild. Da der Bildschirm jeden Frame geleert wird, war
+     * Wasser in drei von vier Bildern unsichtbar. Das Wasser geht jetzt in
+     * JEDEM Bild an den Renderer (siehe unten, `water:`), und die Ebene wird
+     * auch in jedem Bild neu berechnet (`wasserNeu: true`) — der Puffer dafür
+     * wird wiederverwendet, es entsteht also kein Müll je Bild.
      */
 
     /*
@@ -3254,9 +3253,14 @@ class Game {
       aim: ladeKraft === null ? this.aim : { angle: this.aim.angle, power: ladeKraft },
       ladeAnteil,
       wiederholung,
-      // Das Wasser wird JEDES Bild aufgelegt, aber nur alle vier Bilder neu berechnet.
+      /*
+       * Das Wasser wird JEDES Bild berechnet und aufgelegt (B-2). Der Aufwand
+       * ist ein Durchlauf über die Wassermaske in ein wiederverwendetes
+       * ImageData; die teure Uferkarte hat ihre eigene Drosselung
+       * (`Renderer#uferMaske`, nur bei geänderter Geländeebene).
+       */
       water: this.mode === 'online' ? null : this.match.water,
-      wasserNeu: this.waterFrame === 0,
+      wasserNeu: true,
       blastRadius: activeWeapon?.blastRadius ?? 0,
       dt,
     });

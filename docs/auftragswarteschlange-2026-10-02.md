@@ -85,7 +85,7 @@ Terrain-Budget — dort jeweils behoben, hier zum dritten Mal.
 | UX-3 | `W`/`S` halten-fähig machen (heute 45 Tipps für 45 Kraftpunkte, `event.repeat` wird verworfen) | ✅ 2026-10-19 — Krafttasten wirken beim Halten fortlaufend |
 | UX-4 | Rückfrage-Widerspruch `abortMatch` (Kommentar „nur der Knopf fragt" — beide Aufrufer fragen) | ✅ 2026-10-19 — Kommentar korrigiert: beide Wege fragen |
 | UX-6 | „Revanche" startet nicht, sondern öffnet nur das Menü | ✅ (Entscheidung) — Revanche trägt den Seed ins Menü ein; der Kommentar in `main.js` begründet, warum sie nicht direkt startet (Spieler sieht/löscht die Karte) |
-| UX-7 | **Es gibt keinen Klangschalter**, obwohl `SoundMixer#setzeAn` existiert; bei blockiertem AudioContext bleibt alles stumm **ohne Meldung** | ✅ 2026-10-19 — Schalter im Menü (`cfg-sound`), blockierter Klang wird einmalig gemeldet |
+| UX-7 | **Es gibt keinen Klangschalter**, obwohl `SoundMixer#setzeAn` existiert; bei blockiertem AudioContext bleibt alles stumm **ohne Meldung** | ✅ 2026-10-19 — Schalter im Menü, blockierter Klang wird einmalig gemeldet. 2026-10-23 nachgezogen: Das Kästchen `cfg-sound` ist entfallen, weil die Effekt-Bedienung (`soundBedienung.js`, `[data-ton-schalter]` in Menü und HUD, Taste T) denselben Mischer bedient; der Wächter prüft jetzt diesen Weg |
 | UX-9 | Ablehnungsmeldung ohne Restzugzeit | ✅ 2026-10-19 — „Spieler ist nicht am Zug" nennt die Restzugzeit |
 | **UX-Testlücken** | **Maus** (0 Treffer `page.mouse`), **Touch** (0), **Hochformat** (0), kleines Fenster (0), `W`/`S`-Wirkung (0), Onboarding-E2E (0) | mittel je Punkt |
 

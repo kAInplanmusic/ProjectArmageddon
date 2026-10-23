@@ -399,13 +399,23 @@ test('UX-7: Es gibt einen Klangschalter, und ein blockierter Klang wird gemeldet
   /*
    * Warteschlange UX-7: `SoundMixer#setzeAn` existierte, war aber von außen
    * nicht erreichbar; ein blockierter AudioContext blieb stumm ohne Meldung.
-   * Jetzt gibt es einen Schalter im Menü und eine einmalige Meldung, wenn der
-   * Browser keinen AudioContext freigibt.
+   *
+   * Der Schalter, der am 2026-10-19 dafür gebaut wurde (`cfg-sound` im Menü),
+   * ist am 2026-10-21 durch die gemeinsame Effekt-Bedienung ersetzt worden:
+   * `soundBedienung.js` verdrahtet `[data-ton-schalter]` (Menü UND HUD), den
+   * Regler und die Taste T, und `#bindeTon` hängt sie an denselben Mischer.
+   * Der Wächter prüft deshalb den Weg, nicht mehr das alte Kästchen: Es gibt
+   * einen Schalter im Markup, er ist an den Mischer gebunden, und ein
+   * blockierter Klang wird gemeldet.
    */
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const mainRoh = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
-  assert.ok(html.includes('id="cfg-sound"'), 'Das Menü braucht einen Klangschalter');
-  assert.ok(mainRoh.includes('setzeAn(soundToggle.checked)'), 'Der Schalter muss setzeAn rufen');
+  const bedienung = fs.readFileSync(path.join(ROOT, 'src', 'client', 'soundBedienung.js'), 'utf8');
+  assert.ok(html.includes('data-ton-schalter'), 'Das Menü braucht einen Klangschalter');
+  assert.ok(mainRoh.includes('bindeTonBedienung(document, this.sound)'),
+    'Der Schalter muss an den Mischer gebunden werden');
+  assert.ok(bedienung.includes('mischer.schalte()'),
+    'Der Schalter muss den Mischer umschalten');
   assert.ok(mainRoh.includes('Klang blockiert'), 'Ein blockierter Klang muss gemeldet werden');
 });
 
