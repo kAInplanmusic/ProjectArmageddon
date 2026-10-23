@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-09-27T15:28:19.936Z · **Commit:** `686a85f` (main) · **Node:** v22.23.2
+**Erzeugt:** 2026-10-23T15:55:41.580Z · **Commit:** `c81b31b` (main) · **Node:** v22.23.3
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -12,33 +12,34 @@
 |---|---|---|
 | gates | 🟢 gruen | alle gefahrenen Gates bestanden |
 | determinismus | 🟢 gruen | Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene Hashes. |
-| ereignisse | 🟠 gelb | 28 UNDOKUMENTIERT stumme Ereignisse: crate_pickup, crate_pickup_blocked, death, dot_tick, fall_damage, frozen, fuse_armed, fuse_expired, jumped, karte_unerreichbar, landed, loot_error, maelstrom_contract, match_over, projectile_impact, projectile_pierced, projectile_spawn, pulled, round_start, shield_absorbed, special_effect, terrain_destroyed, toxic_rain, turn_skipped, turret_deployed, turret_expired, turret_fired, weapon_dropped |
+| ereignisse | 🟢 gruen | 6 stumme Ereignisse — alle im Wächter mit Begründung gelistet (6 gelesene Begründungen) |
 | toteDateien | 🟢 gruen | 0 Dateien ohne Importeur |
-| unbenutzteKonstanten | 🟢 gruen | 0 definiert, nie gelesen |
-| pfade | 🟢 gruen | Alle 54 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
-| doppelregeln | 🟢 gruen | 0 Bezeichner in 2+ Dateien definiert |
+| toteDaten | 🟢 gruen | 0 von 10 Datendateien (.json) unter src/ haben keinen Leser |
+| unbenutzteKonstanten | 🟠 gelb | 5 definiert, nie gelesen |
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
 | zufall | 🟠 gelb | 1 Zeit-/Zufallstreffer im Simulationspfad |
+| pfade | 🔴 rot | 1 Stelle(n) benutzen .pathname statt fileURLToPath (79 machen es richtig). Bei einem Sonderzeichen im Pfad scheitert dort jeder spawn mit ENOENT. |
+| doppelregeln | 🟠 gelb | 28 OFFEN (nicht in der Ausnahmeliste): ZELLE, boden, CACHE_KANTE, ladeBild, MAX_TEILCHEN, aufprallStaerke, BACKDROP_URLS, begrenze, begrenze01, BILDER, cache, el, FNV_BASIS, glatt, KATEGORIEN, KONTUR, LUFT_SCHWELLE, mische, neueLeinwand, P, PARAMETER, standard, STIMMUNGEN, STUFEN, tabelle, TOENE, TWO_PI, zufall |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
 | perf | 🟢 gruen | Budget eingehalten: kein Tick über 16,7 ms. |
 
 ## 0. Während dieses Audits behoben
 
 Ein Befund dieses Audits war kein Berichtspunkt, sondern ein Defekt, der die Prüfung selbst lahmlegte.
-Er ist **repariert und nachgemessen** — nicht nur beschrieben:
+Er ist **repariert** — und, soweit dieser Lauf es messen kann, nachgemessen:
 
 | Was | Beleg | Zustand |
 |---|---|---|
-| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — jetzt **4 von 4 in 26,8 s** |
+| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — Das Gate `smoke:fast` war in DIESEM Lauf nicht dabei (gefahren: lint, validate) — die historische Zahl ist hier NICHT nachgemessen (letzter Commit an der Datei: `0d571d8`, 2026-09-26) |
 
 **Ursache (eine Zeile, zwei Umstände):** `const ROOT = new URL('..', import.meta.url).pathname;`
 `.pathname` liefert den Pfad prozent-kodiert. Das Projektverzeichnis enthält Leerzeichen, also wurde daraus
 `/home/patrick/AnunnakiTools%20Projekte/laufende%20Projekte/ProjectArmageddon/` — und `fs.existsSync` darauf ist `false`.
 Jeder `spawn` mit diesem `cwd` scheitert dann mit ENOENT.
 
-**Reichweite, gemessen:** 38 Stellen im Projekt benutzen das korrekte `fileURLToPath`, genau **1** nicht —
-`scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die, die nach
-jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
+**Reichweite, in DIESEM Lauf gemessen:** 79 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **1** noch nicht (`scripts/terrain-inventar.mjs:10`).
+Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `0d571d8` (2026-09-26) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
+die nach jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
 
 **Zweiter Defekt in derselben Datei:** `laufe()` hängte keinen `error`-Handler an den `spawn`. Ein Startfehler
 wurde deshalb als unbehandeltes Ereignis GEWORFEN und riss den Lauf mit einem Stacktrace ab, statt als sauberer
@@ -49,29 +50,29 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 92 | 43181 |
-| tests | 155 | 43865 |
-| scripts | 44 | 9514 |
-| tools | 12 | 4991 |
+| src | 170 | 66525 |
+| tests | 263 | 60475 |
+| scripts | 63 | 12205 |
+| tools | 14 | 5253 |
 
-Ungetrackte Änderungen beim Lauf: **2**
+Ungetrackte Änderungen beim Lauf: **0**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 7.2 s | – |
-| validate | 🟢 bestanden | 0.4 s | – |
+| lint | 🟢 bestanden | 6.2 s | – |
+| validate | 🟢 bestanden | 0.3 s | – |
 
-**2/2 bestanden** · Gesamtdauer 7.6 s
+**2/2 bestanden** · Gesamtdauer 6.5 s
 
 ## 3. Determinismus
 
 | Lauf | Seed | Zustandshash | Status | Runde |
 |---|---|---|---|---|
-| 1 | 4242 | `7ef3d6ed` | playing | 3 |
-| 2 | 4242 | `7ef3d6ed` | playing | 3 |
-| 3 | 9999 | `95e928a` | playing | 3 |
+| 1 | 4242 | `f76026b` | playing | 3 |
+| 2 | 4242 | `f76026b` | playing | 3 |
+| 3 | 9999 | `e68d04e6` | playing | 3 |
 
 Derselbe Seed → derselbe Hash: **JA** · Verschiedene Seeds → verschiedene Hashes: **JA**
 
@@ -81,14 +82,14 @@ Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene 
 
 | Seed | Runden | Züge | Schüsse | Ticks | Spielzeit (s) | Status |
 |---|---|---|---|---|---|---|
-| 101 | 25 | 62 | 53 | 3747 | 62.5 | gameover |
-| 202 | 26 | 61 | 51 | 3591 | 59.9 | gameover |
-| 303 | 25 | 62 | 52 | 3509 | 58.5 | gameover |
-| 404 | 25 | 73 | 57 | 3930 | 65.5 | gameover |
-| 505 | 31 | 79 | 59 | 4807 | 80.1 | gameover |
+| 101 | 95 | 317 | 186 | 35587 | 593.1 | gameover |
+| 202 | 106 | 323 | 192 | 36306 | 605.1 | gameover |
+| 303 | 124 | 389 | 223 | 44170 | 736.2 | gameover |
+| 404 | 127 | 394 | 226 | 44612 | 743.5 | gameover |
+| 505 | 145 | 351 | 204 | 39592 | 659.9 | gameover |
 
-**Mittel:** 26.4 Runden · 67.4 Züge · 54.4 Schüsse · 65.3 s Simulationszeit
-**Spanne:** Runden 25–31 · Spielzeit 58.5–80.1 s
+**Mittel:** 119.4 Runden · 354.8 Züge · 206.2 Schüsse · 667.6 s Simulationszeit
+**Spanne:** Runden 95–145 · Spielzeit 593.1–743.5 s
 
 Mahlstrom greift ab Runde **8**. Davor beendet: **0 von 5**.
 
@@ -97,25 +98,25 @@ konservativ mit **0 s** angesetzt, die echte Partie ist also länger.
 
 ## 5. Ballistik (gemessen, nicht gerechnet)
 
-Karte (Default): 2560×1440 px · Abstand zum nächsten Gegner ≈ 640 px · Geschoss-Lebensdauer 135 Ticks
+Karte (Default): 2560×1440 px · Abstand zum nächsten Gegner ≈ 640 px · Geschoss-Lebensdauer 109.5 Ticks
 
 | Winkel | Kraft | Bahnpunkte | Horizontale Weite | Endhöhe |
 |---|---|---|---|---|
-| 20° | 30 | 9 | 71.8 px | -56.6 px |
-| 20° | 60 | 13 | 232 px | -118.9 px |
-| 20° | 100 | 13 | 382.8 px | -42.2 px |
-| 35° | 30 | 10 | 68 px | -53.3 px |
-| 35° | 60 | 16 | 230.7 px | -118.5 px |
-| 35° | 100 | 16 | 406.5 px | 7.6 px |
-| 45° | 30 | 10 | 58.8 px | -46.5 px |
-| 45° | 60 | 18 | 209.2 px | -120.7 px |
-| 45° | 100 | 19 | 407.3 px | 10 px |
-| 60° | 30 | 10 | 38 px | -32.8 px |
-| 60° | 60 | 19 | 141.7 px | -109.3 px |
-| 60° | 100 | 27 | 333.7 px | -101.2 px |
-| 75° | 30 | 10 | 12.8 px | -21.8 px |
-| 75° | 60 | 18 | 48.5 px | -39.4 px |
-| 75° | 100 | 29 | 122.3 px | -96.9 px |
+| 20° | 30 | 7 | 41.4 px | -34.3 px |
+| 20° | 60 | 12 | 160.9 px | -118.1 px |
+| 20° | 100 | 14 | 315 px | -111.1 px |
+| 35° | 30 | 8 | 39.7 px | -33.2 px |
+| 35° | 60 | 14 | 153.2 px | -115.1 px |
+| 35° | 100 | 17 | 324.6 px | -106.8 px |
+| 45° | 30 | 8 | 34.7 px | -30.7 px |
+| 45° | 60 | 15 | 133.4 px | -104.7 px |
+| 45° | 100 | 20 | 302.6 px | -115.1 px |
+| 60° | 30 | 8 | 22.8 px | -25.1 px |
+| 60° | 60 | 15 | 84.9 px | -66.3 px |
+| 60° | 100 | 23 | 212.9 px | -120.6 px |
+| 75° | 30 | 8 | 7.4 px | -20.3 px |
+| 75° | 60 | 14 | 29 px | -27.8 px |
+| 75° | 100 | 23 | 75 px | -59.4 px |
 
 ## 6. Waffenkatalog
 
@@ -123,13 +124,13 @@ Karte (Default): 2560×1440 px · Abstand zum nächsten Gegner ≈ 640 px · Ges
 
 | Kennzahl | min | Median | max | verschiedene Werte |
 |---|---|---|---|---|
-| damage | 0 | 39 | 110 | 51 / 150 |
+| damage | 0 | 38 | 110 | 51 / 150 |
 | blastRadius | 0 | 0 | 90 | 23 / 150 |
-| knockback | 0 | 0 | 96 | 18 / 150 |
+| knockback | 0 | 0 | 96 | 28 / 150 |
 | cooldown | 0 | 1 | 3 | 4 / 150 |
-| maxRange | 110 | 565 | 1062 | 63 / 150 |
-| projectileSpeed | 0 | 40.8 | 100 | 25 / 150 |
-| powerScore | 0 | 56.34 | 463.82 | 133 / 150 |
+| maxRange | 110 | 532 | 1062 | 80 / 150 |
+| projectileSpeed | 0 | 46 | 100 | 40 / 150 |
+| powerScore | 0 | 57.86 | 463.82 | 136 / 150 |
 | terrainDamage | 0 | 0 | 95 | 16 / 150 |
 | fuseTime | 0 | 0 | 5 | 5 / 150 |
 
@@ -170,9 +171,9 @@ die Form liefert immer dasselbe.
 
 ## 9. Leistung
 
-Züge 86 · Schüsse 65 · gemessene Ticks 5036
+Züge 150 · Schüsse 106 · gemessene Ticks 15019
 
-Tick-Kosten: mittel **0.0592 ms** · p95 0.0933 ms · p99 0.1383 ms · max 0.6806 ms
+Tick-Kosten: mittel **0.0416 ms** · p95 0.0524 ms · p99 0.0834 ms · max 3.1598 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -181,15 +182,70 @@ Budget eingehalten: kein Tick über 16,7 ms.
 
 ### 10.1 Dateien ohne Importeur
 
-Keine. Der Wächter `tests/no-dead-code.test.js` hält diese Zahl bei 0.
+Keine. Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`).
+
+#### Die Freisprüche dieser Prüfung — mit Beleg
+
+Ein Einstiegspunkt ist hier kein NAME, sondern ein BELEG: die Datei muss Code
+haben UND in einem Manifest außerhalb `src/` namentlich genannt sein (`package.json`, `index.html`, `vite.config.mjs`, `playwright.config.mjs`).
+Wer nur so heißt, wird geprüft — bis 2026-09-27 galt das Gegenteil, und `src/shared/data/index.js` war damit still freigesprochen.
+
+| Einstiegspunkt | Beleg |
+|---|---|
+| src/client/index.js | namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt und nicht leer |
+| src/client/main.js | namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt und nicht leer |
+| src/engine/index.js | namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt und nicht leer |
+| src/server/index.js | namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt und nicht leer |
+| src/shared/index.js | namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt und nicht leer |
+
+### 10.1b Datendateien ohne Leser
+
+Keine: alle 10 `.json` unter `src/` werden von irgendwo im CODE gelesen.
 
 ### 10.2 Konstanten ohne Leser
 
-Keine — jede definierte Konstante unter `src/` wird irgendwo gelesen.
+| Konstante | Ort |
+|---|---|
+| `STOFF_TEXTUR_URLEN` | src/client/main.js:91 |
+| `EFFEKT_SHEET_URLEN` | src/client/main.js:93 |
+| `PLANETEN_KULISSE_URLEN` | src/client/main.js:95 |
+| `COOKIE_REFERENZ_BREITE` | src/shared/config/cookie.js:23 |
+| `BETAEUBUNG` | src/shared/config/schaden.js:52 |
 
 ### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)
 
-Keine.
+Gemessen: **28** · davon aus der Ausnahmeliste begründet: **0** · OFFEN: **28**. Das Urteil wird aus `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` gelesen; ohne Eintrag dort gilt eine Doppelregel als offen (fail-safe in Richtung des lauteren Fehlers).
+
+| Name | Orte | Urteil |
+|---|---|---|
+| `ZELLE` | src/engine/systems/feuerSystem.js:36 · src/client/feuerOptik.js:22 · src/client/figurSheets.js:16 · src/client/waffenAnimation.js:41 · src/client/waffenSprites.js:25 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `boden` | src/shared/config/biome-neu.js:68 · src/shared/config/biome-planet.js:73 · src/shared/config/biome-themen.js:21 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `CACHE_KANTE` | src/client/figurStufen.js:11 · src/client/figurenBilder.js:34 · src/client/waffenSprites.js:22 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `ladeBild` | src/client/figurenBilder.js:47 · src/client/tierBilder.js:33 · src/client/waffenSprites.js:253 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `MAX_TEILCHEN` | src/client/feuerOptik.js:18 · src/client/figurEffekte.js:13 · src/client/tierBuehne.js:19 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `aufprallStaerke` | src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `BACKDROP_URLS` | src/client/kulisseUndWasser.js:28 · src/client/renderer.js:101 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `begrenze` | src/client/musik.js:66 · src/client/valhallaOmen.js:49 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `begrenze01` | src/client/gefuehl.js:57 · src/client/soundMixer.js:58 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `BILDER` | src/client/roster.js:20 · src/client/tierBilder.js:15 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `cache` | src/client/figurenBilder.js:45 · src/client/tierBilder.js:31 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `el` | src/client/hilfeTiere.js:128 · src/client/hilfeZerstoerung.js:15 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `FNV_BASIS` | src/shared/stoffkarte.js:35 · src/engine/terrain/collisionMask.js:141 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `glatt` | src/client/gelaendeStil.js:80 · src/client/waffenAnimation.js:244 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `KATEGORIEN` | src/client/klangProfile.js:26 · src/client/waffenAnimation.js:33 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `KONTUR` | src/client/figuren.js:18 · src/client/gelaendeStil.js:27 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `LUFT_SCHWELLE` | src/client/figurAnimation.js:24 · src/client/hoehlenSchatten.js:86 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `mische` | src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `neueLeinwand` | src/client/figurStufen.js:15 · src/client/waffenSprites.js:246 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `P` | src/client/figurTypen.js:59 · src/client/klangProfile.js:53 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `PARAMETER` | src/client/figurTypen.js:72 · src/client/waffenAnimation.js:107 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `standard` | src/client/figurenBilder.js:35 · src/client/waffenSprites.js:263 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `STIMMUNGEN` | src/shared/config/backdrops.js:698 · src/client/musikListe.js:13 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `STUFEN` | src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:13 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `tabelle` | src/client/gelaendeStil.js:233 · src/client/stoffOptik.js:22 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `TOENE` | src/client/gelaendeStil.js:31 · src/client/toasts.js:18 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `TWO_PI` | src/client/figurAnimation.js:33 · src/client/figurEffekte.js:200 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
+| `zufall` | src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:38 | **OFFEN** — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen |
 
 ### 10.4 Marker im Quelltext
 
@@ -205,92 +261,42 @@ Keine.
 
 | Ort | Art | Zeile |
 |---|---|---|
-| src/engine/replay.js:85 | Zeit | `this.#startedAt = Date.now();` |
+| src/engine/replay.js:140 | Zeit | `this.#startedAt = Date.now();` |
 
-Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **3** Treffer.
-
-> **GEPRÜFT 2026-10-01 — der Treffer ist ein FEHLALARM, und zwar ein gemessener.**
->
-> `#startedAt` hat **genau EINEN Leser**: `toJSON()` schreibt den Wert als
-> `createdAt` in den Kopf der Aufzeichnung („wann wurde das aufgenommen"). Der
-> Weg, den JEDE Wiedergabe geht — `fromJSON()` — liest `createdAt` nicht einmal;
-> `ReplayPlayer` setzt seinen eigenen Stempel. Der Zustandshash kennt keinen
-> Zeitstempel.
->
-> Belegt durch `tests/replay-uhr.test.js` (**8 Prüfungen**), darunter die
-> Gegenprobe mit einer VERSTELLTEN Wanduhr: Aufzeichnung und Wiedergabe ändern
-> sich dadurch nicht. Der Detektor schlägt an, weil die Datei unter `src/engine/`
-> liegt — er kann nicht wissen, dass der Wert das Simulationspfad-Feld nie
-> erreicht.
->
-> **Bewusst NICHT geändert:** Das Modul umzubauen, damit diese Heuristik grün
-> wird, hieße eine getestete und begründete Konstruktion einer Faustregel
-> zuliebe zu verschieben — und dabei die acht Wächter zu schwächen, die genau
-> diese Zusage festhalten. Der Befund bleibt deshalb sichtbar („benannte Lücke
-> statt stille Lüge"), ist aber mit Messung beantwortet.
->
-> *Wenn die Wanduhr ganz aus `src/engine/` verschwinden soll, ist der saubere
-> Weg: `ReplayRecorder` bekommt `createdAt` als Konstruktor-Option, und der
-> AUFRUFER (Server, Aufzeichnungswerkzeug) stempelt. Das ist eine eigene Aufgabe
-> mit eigenem Belegweg — sie steht in MASTERDOTO.*
+Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **21** Treffer.
 
 ## 11. Ereignis-Abdeckung
 
-**43** emittierte Ereignisarten · **6** im Client behandelt · **37** stumm.
+**81** emittierte Ereignisarten (`emit(` UND `melde(`) · **75** im Client behandelt · **6** stumm.
 
-Davon **9 dokumentiert** als bewusst stumm (Wächter `tests/event-coverage.test.js`), **28 undokumentiert**.
+*Methode und ihre Belegstärke (Textsuche, kein Aufrufgraph):* Ein Ereignis gilt als behandelt, wenn sein Name unter `src/client/` als Zeichenkette oder als UNQUOTIERTER Tabellenschlüssel vorkommt. Davon **54 nur über einen Schlüssel** belegt — der schwächere Beleg; ein solcher Name kann theoretisch ein fremder Schlüssel sein. Bis 2026-09-26 zählte das Werkzeug nur Zeichenketten und meldete dadurch Namen als „UNDOKUMENTIERT", die im Client einen Zweig haben (`tests/event-coverage.test.js:218-232`). Ein „stumm" aus dieser Tabelle ist ein PRÜFAUFTRAG, kein Urteil.
 
-| Ereignis | emittiert in | Urteil |
-|---|---|---|
-| `crate_landed` | src/engine/match.js:2330 | bewusst stumm (dokumentiert) |
-| `crate_pickup` | src/engine/systems/lootSystem.js:231 | **UNDOKUMENTIERT** |
-| `crate_pickup_blocked` | src/engine/systems/lootSystem.js:220 | **UNDOKUMENTIERT** |
-| `death` | src/engine/systems/damageSystem.js:135 | **UNDOKUMENTIERT** |
-| `dot_applied` | src/engine/match.js:2442 | bewusst stumm (dokumentiert) |
-| `dot_tick` | src/engine/match.js:2816 | **UNDOKUMENTIERT** |
-| `entity_in_water` | src/engine/systems/characterSystem.js:226 | bewusst stumm (dokumentiert) |
-| `fall_damage` | src/engine/systems/characterSystem.js:200 | **UNDOKUMENTIERT** |
-| `frozen` | src/engine/match.js:2426 | **UNDOKUMENTIERT** |
-| `fuse_armed` | src/engine/systems/projectileSystem.js:223 | **UNDOKUMENTIERT** |
-| `fuse_expired` | src/engine/systems/projectileSystem.js:202 | **UNDOKUMENTIERT** |
-| `jumped` | src/engine/match.js:1347 | **UNDOKUMENTIERT** |
-| `karte_unerreichbar` | src/engine/match.js:755 | **UNDOKUMENTIERT** |
-| `landed` | src/engine/match.js:1407 | **UNDOKUMENTIERT** |
-| `loot_error` | src/engine/match.js:1102 | **UNDOKUMENTIERT** |
-| `maelstrom_contract` | src/engine/systems/maelstromSystem.js:69 | **UNDOKUMENTIERT** |
-| `match_over` | src/engine/match.js:2777, src/engine/match.js:2858 | **UNDOKUMENTIERT** |
-| `projectile_expired` | src/engine/systems/projectileSystem.js:324, src/engine/systems/projectileSystem.js:335 | bewusst stumm (dokumentiert) |
-| `projectile_impact` | src/engine/systems/projectileSystem.js:275 | **UNDOKUMENTIERT** |
-| `projectile_pierced` | src/engine/systems/projectileSystem.js:265 | **UNDOKUMENTIERT** |
-| `projectile_spawn` | src/engine/match.js:2113, src/engine/shooting.js:344 | **UNDOKUMENTIERT** |
-| `pulled` | src/engine/match.js:2436 | **UNDOKUMENTIERT** |
-| `round_crates` | src/engine/systems/lootSystem.js:181 | bewusst stumm (dokumentiert) |
-| `round_start` | src/engine/match.js:2736 | **UNDOKUMENTIERT** |
-| `shield_absorbed` | src/engine/match.js:873 | **UNDOKUMENTIERT** |
-| `special_effect` | src/engine/shooting.js:228 | **UNDOKUMENTIERT** |
-| `terrain_destroyed` | src/engine/systems/projectileSystem.js:402 | **UNDOKUMENTIERT** |
-| `toxic_rain` | src/engine/systems/maelstromSystem.js:96 | **UNDOKUMENTIERT** |
-| `turn_end` | src/engine/match.js:2701 | bewusst stumm (dokumentiert) |
-| `turn_skipped` | src/engine/match.js:2826 | **UNDOKUMENTIERT** |
-| `turn_start` | src/engine/match.js:2833 | bewusst stumm (dokumentiert) |
-| `turret_deployed` | src/engine/match.js:1896 | **UNDOKUMENTIERT** |
-| `turret_expired` | src/engine/match.js:1935 | **UNDOKUMENTIERT** |
-| `turret_fired` | src/engine/match.js:2118 | **UNDOKUMENTIERT** |
-| `water_pushed` | src/engine/match.js:2487 | bewusst stumm (dokumentiert) |
-| `weapon_cooldown` | src/engine/match.js:2392 | bewusst stumm (dokumentiert) |
-| `weapon_dropped` | src/engine/match.js:2193 | **UNDOKUMENTIERT** |
+Davon **6 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-coverage.test.js`), **0 undokumentiert**.
 
-*Befund:* Die undokumentierten brauchen eine Begründung oder einen Client-Zweig.
+| Ereignis | emittiert in | Urteil | Begründung (aus dem Wächter) |
+|---|---|---|---|
+| `dot_applied` | src/engine/match.js:2244 | bewusst stumm (begründet) | Zustandsmarke am Spielernamen |
+| `entity_in_water` | src/engine/systems/characterSystem.js:226 | bewusst stumm (begründet) | Wasserstand steht als Marke am Spielernamen (seit 2026-09-27 gedrosselt: im Snapshot redundant) |
+| `round_crates` | src/engine/systems/lootSystem.js:243 | bewusst stumm (begründet) | Buchführung; die Anzahl steht im HUD |
+| `turn_end` | src/engine/match.js:2503 | bewusst stumm (begründet) | Rundenanzeige im HUD, plus Zugwechsel im Spielerfeld |
+| `water_pushed` | src/engine/match.js:2289 | bewusst stumm (begründet) | der Wasserstand am Ziel ist die sichtbare Wirkung |
+| `weapon_cooldown` | src/engine/match.js:2190 | bewusst stumm (begründet) | die Waffenliste zeigt den Nachladezustand |
+
+*Keine Lücke:* Jedes stumme Ereignis ist im Wächter MIT Begründung gelistet — der Begründungstext wird in dieser Spalte einzeln gezeigt. Geprüft ist damit, dass eine Begründung HINGESCHRIEBEN wurde; ob sie stichhaltig ist, ist eine Einzelprüfung und keine Messung.
 
 ## 12. Pfad-Auflösung (`fileURLToPath` statt `.pathname`)
 
-**54** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
+**79** Stellen lösen den Modulpfad korrekt auf · **1** falsch.
 
-Alle 54 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
+| Datei | Zeile | Code |
+|---|---|---|
+| `scripts/terrain-inventar.mjs` | 10 | `const wurzel = new URL('..', import.meta.url).pathname;` |
+
+1 Stelle(n) benutzen .pathname statt fileURLToPath (79 machen es richtig). Bei einem Sonderzeichen im Pfad scheitert dort jeder spawn mit ENOENT.
 
 ## 13. Server-Autorität und Secrets
 
-Identity aus dem Token: **2** Fundstellen
+Identity aus dem Token: **3** Fundstellen
 `Number()` auf Drahtwerten: **0** Fundstellen
 Direkt gelesene Kennungen aus der Nachricht: **0** Fundstellen
 
@@ -318,170 +324,179 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ## 15. Auswertung
 
-**Rot:** keine
+**Rot:** pfade
 
-**Gelb:** ereignisse, zufall
+**Gelb:** unbenutzteKonstanten, zufall, doppelregeln
 
-**Grün:** gates, determinismus, toteDateien, unbenutzteKonstanten, pfade, doppelregeln, marker, secrets, perf
+**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, marker, secrets, perf
 
 ### Was schon belegt gut funktioniert
 
-- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (7ef3d6ed), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
-- **Kein TODO/FIXME im Quelltext.** Die offene Arbeit steht in der SSOT (MASTERDOTO), nicht verstreut im Code.
-- **Keine Datei ohne Importeur.** Der Wächter hält die 974 toten Zeilen von damals bei 0.
+- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (f76026b), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
+- **Kein TODO/FIXME im Quelltext.** Gemessen: 0 Treffer (Abschnitt 10.4). Wo die offene Arbeit steht (SSOT/MASTERDOTO), prüft dieser Bericht nicht — das ist eine Vereinbarung, keine Messung.
+- **Keine Datendatei ohne Leser.** Gemessen: alle 10 `.json` unter `src/` werden im Code genannt (Abschnitt 10.1b). Bis 2026-09-27 war diese Zahl gar nicht messbar — `QUELTEXT` kannte kein `.json`.
+- **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht.
 - **Kein Secret in getrackten Dateien.**
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 43865 Zeilen Tests gegen 43181 Zeilen Quelltext (Verhältnis 1.02).
-- **Der Waffenkatalog ist kein Datenmüll:** 133 verschiedene powerScore-Werte bei 150 Waffen.
+- **Ereignis-Abdeckung ist sauber:** 75 von 81 Ereignisarten behandelt, die 6 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
+- **OFFENE Doppelregeln (28):** `ZELLE` (src/engine/systems/feuerSystem.js:36 · src/client/feuerOptik.js:22 · src/client/figurSheets.js:16 · src/client/waffenAnimation.js:41 · src/client/waffenSprites.js:25), `boden` (src/shared/config/biome-neu.js:68 · src/shared/config/biome-planet.js:73 · src/shared/config/biome-themen.js:21), `CACHE_KANTE` (src/client/figurStufen.js:11 · src/client/figurenBilder.js:34 · src/client/waffenSprites.js:22), `ladeBild` (src/client/figurenBilder.js:47 · src/client/tierBilder.js:33 · src/client/waffenSprites.js:253), `MAX_TEILCHEN` (src/client/feuerOptik.js:18 · src/client/figurEffekte.js:13 · src/client/tierBuehne.js:19), `aufprallStaerke` (src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260), `BACKDROP_URLS` (src/client/kulisseUndWasser.js:28 · src/client/renderer.js:101), `begrenze` (src/client/musik.js:66 · src/client/valhallaOmen.js:49), `begrenze01` (src/client/gefuehl.js:57 · src/client/soundMixer.js:58), `BILDER` (src/client/roster.js:20 · src/client/tierBilder.js:15), `cache` (src/client/figurenBilder.js:45 · src/client/tierBilder.js:31), `el` (src/client/hilfeTiere.js:128 · src/client/hilfeZerstoerung.js:15), `FNV_BASIS` (src/shared/stoffkarte.js:35 · src/engine/terrain/collisionMask.js:141), `glatt` (src/client/gelaendeStil.js:80 · src/client/waffenAnimation.js:244), `KATEGORIEN` (src/client/klangProfile.js:26 · src/client/waffenAnimation.js:33), `KONTUR` (src/client/figuren.js:18 · src/client/gelaendeStil.js:27), `LUFT_SCHWELLE` (src/client/figurAnimation.js:24 · src/client/hoehlenSchatten.js:86), `mische` (src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105), `neueLeinwand` (src/client/figurStufen.js:15 · src/client/waffenSprites.js:246), `P` (src/client/figurTypen.js:59 · src/client/klangProfile.js:53), `PARAMETER` (src/client/figurTypen.js:72 · src/client/waffenAnimation.js:107), `standard` (src/client/figurenBilder.js:35 · src/client/waffenSprites.js:263), `STIMMUNGEN` (src/shared/config/backdrops.js:698 · src/client/musikListe.js:13), `STUFEN` (src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:13), `tabelle` (src/client/gelaendeStil.js:233 · src/client/stoffOptik.js:22), `TOENE` (src/client/gelaendeStil.js:31 · src/client/toasts.js:18), `TWO_PI` (src/client/figurAnimation.js:33 · src/client/figurEffekte.js:200), `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:38). Diese Definitionen steht in mehr als einer Datei und ist NICHT in der Ausnahmeliste `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` begründet — nach der Projektregel „eine Regel, eine Stelle" ein offener Befund, kein Freispruch. Ein Freispruch wird ab hier GELESEN, nicht behauptet: Wer ihn will, trägt den Namen mit Begründung und Orten in die Liste ein.
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 60475 Zeilen Tests gegen 66525 Zeilen Quelltext (Verhältnis 0.91).
+- **Der Waffenkatalog ist kein Datenmüll:** 136 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
 
-1. 37 stumme Engine-Ereignisse — unsichtbare Lücken in der Anzeige.
+1. 6 stumme Engine-Ereignisse (6 mit Begründung gelistet, 0 OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.
 2. Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.
+3. 5 Konstanten ohne Leser — Werte, die eine Wirkung versprechen, die es nicht gibt.
 
 ## 16. Nicht messbar in dieser Umgebung
 
 - **Visuelle Qualität des Renderings.** Braucht einen echten Browser; dieses MCP misst die Simulation, nicht das Bild.
 - **Echter WebGPU-Pfad.** Ohne GPU-Adapter fällt die Umgebung auf CPU zurück.
 - **Netzwerklatenz unter realen Bedingungen.** Nur simulierbar (`tests/e2e/network-conditions.spec.mjs`).
-- **Der volle E2E-Lauf (27 Dateien, ~10 min).** Plan über `audit_e2e_plan`; bekannte vorbestehende Fehler: profiling-Specs ohne GPU.
+- **Der volle E2E-Lauf (28 Dateien, ~10 min).** Plan über `audit_e2e_plan`; bekannte vorbestehende Fehler: profiling-Specs ohne GPU.
 - **Menschenzeit statt Simulationszeit.** Die Umrechnung braucht eine Bedenkzeit-Annahme und ist deshalb ausgewiesen, nicht gemessen.
+
+### 16.1 Was die statischen Sonden NICHT sehen
+
+Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JEDER Antwort des Werkzeugs `audit_deadcode` ausgegeben — eine Meldung, die ihre Lücke nennt, ist mehr wert als eine stille Null:
+
+- *quelltext:* Dateifilter Quelltext: .js/.mjs/.cjs/.ts/.tsx — .json/.html/.css/.yml/.md gelten NICHT als Quelltext (in ihnen gibt es keinen Export, keinen Import, keine Doppelregel).
+- *daten:* Dateifilter Daten: .json NUR unter src/ — .json ausserhalb src/ (z. B. project_armageddon_weapons_v1.json, bgworker-todo.json, .pa-state/lobbies.json) wird NICHT erfasst.
+- *leser:* Leser-Suche: nur CODE (.js/.mjs/.cjs/.ts/.tsx/.html) ohne Kommentare — ein Dateiname in Doku (.md) zaehlt NICHT als Leser. Eine Pfad-NENNUNG im Code ist dagegen schon ein Leser: wer den Namen in einem Test, einer Probe oder einer Zeichenkette erwaehnt, spricht die Datei frei (belegt an dieser Stelle selbst: eine kopierte Probe im Pruefgebiet hat ihre eigenen synthetischen Dateien freigesprochen — probe-blindstellen.mjs).
+- *importe:* Import-Erkennung: Textsuche nach `from '…'` und `import('…')` — mehrzeilig geprueft (probe-blindstellen.mjs). Ein Pfad, der erst zur Laufzeit gebaut wird (Variable, Template-String, `import.meta.glob`), ist NICHT erkennbar.
+- *doppelregeln:* Doppelregeln: nur Definitionen auf MODUL-Ebene (Spalte 0) unter src/ — lokale Namen in Funktionsruempfen zaehlen NICHT (gemessen: 391 „Doppelnamen", davon 2 echte Regeln); Definitionen in scripts/, tests/ und tools/ werden NICHT erfasst.
+- *exporte:* unbenutzteExporte zaehlt NAMEN, nicht BINDUNGEN: Steht derselbe Name in einer zweiten Datei als Export, gilt er als gelesen — die tote Fassung bleibt unsichtbar (belegt: hasSpecialEffect in src/engine/specials.js:234, maskiert durch den gleichnamigen Export in src/shared/config/weapons.js:7128; gemeldet werden nur 5 „Exporte ohne externen Leser"). AUSSERDEM unsichtbar als Leser: der Default-Export-Block (`export default { foo, bar }`). Ein Name, der NUR dort steht, gilt als ungelesen — gemessen an src/engine/shooting.js (`resolveStrike`, `fuseTicksFor`, `applySelfEffect`), die ueber `shootingModule.resolveStrike` erreichbar sind und deshalb KEINE toten Exporte sind. Drei falsch gemeldete Namen.
+- *einstieg:* Einstiegspunkte: nur mit BELEG (namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt UND nicht codeleer) — sonst wird geprueft.
+- *ausgeschlossen:* Nicht durchsucht (SKIP_DIRS aus repo.mjs): node_modules, .git, dist, build, artifacts, test-results, playwright-report, .pa-state, coverage, .vite, uploaded.
 
 ## 17. TODO
 
-35 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+56 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+
+### KRITISCH (1)
+
+- [ ] Prozent-kodierte Wurzel: scripts/terrain-inventar.mjs:10
+      `const wurzel = new URL('..', import.meta.url).pathname;` — `.pathname` liefert bei Sonderzeichen im Pfad `%20`; jeder spawn mit diesem cwd scheitert mit ENOENT. Ersetzen durch `fileURLToPath(new URL(...))`.
 
 ### HOCH (1)
 
-- [x] Zufall/Zeit im Simulationspfad: src/engine/replay.js:85
-      `this.#startedAt = Date.now();`
-      → **2026-10-01 GEPRÜFT: Fehlalarm, mit Messung beantwortet.** Genau EIN
-      Leser (`toJSON` → `createdAt`), `fromJSON` übernimmt ihn nicht, der
-      Zustandshash kennt keinen Zeitstempel; 8 Wächter in
-      `tests/replay-uhr.test.js`, darunter eine verstellte Wanduhr als
-      Gegenprobe. Begründung und der Weg zu einer echten Entkopplung stehen
-      in §10.6.
+- [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:140
+      this.#startedAt = Date.now();
 
-### MITTEL (28)
+### MITTEL (33)
 
-> **Nachprüfung 2026-10-13:** Alle 28 Ereignisse einzeln gegen den heutigen Code
-> geprüft — alle werden emittiert, alle haben einen Eintrag in
-> `EREIGNIS_WIRKUNGEN` (`src/client/ereignisse.js`), keines ist unbehandelt
-> stumm. Die Liste entstand am LESER des Werkzeugs (unquotierte Schlüssel der
-> Tabelle), siehe `tests/event-coverage.test.js:48-57`; die Zeilenangaben des
-> Audits sind überholt. Die „Emittiert in"-Stellen unten sind die heutigen.
-> Gegenprobe: `tests/event-coverage.test.js` (Wächter „Audit-Meldung").
+- [ ] Konstante ohne Leser: STOFF_TEXTUR_URLEN
+      src/client/main.js:91
+- [ ] Konstante ohne Leser: EFFEKT_SHEET_URLEN
+      src/client/main.js:93
+- [ ] Konstante ohne Leser: PLANETEN_KULISSE_URLEN
+      src/client/main.js:95
+- [ ] Konstante ohne Leser: COOKIE_REFERENZ_BREITE
+      src/shared/config/cookie.js:23
+- [ ] Konstante ohne Leser: BETAEUBUNG
+      src/shared/config/schaden.js:52
+- [ ] Offene Doppelregel: ZELLE
+      src/engine/systems/feuerSystem.js:36 · src/client/feuerOptik.js:22 · src/client/figurSheets.js:16 · src/client/waffenAnimation.js:41 · src/client/waffenSprites.js:25 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: boden
+      src/shared/config/biome-neu.js:68 · src/shared/config/biome-planet.js:73 · src/shared/config/biome-themen.js:21 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: CACHE_KANTE
+      src/client/figurStufen.js:11 · src/client/figurenBilder.js:34 · src/client/waffenSprites.js:22 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: ladeBild
+      src/client/figurenBilder.js:47 · src/client/tierBilder.js:33 · src/client/waffenSprites.js:253 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: MAX_TEILCHEN
+      src/client/feuerOptik.js:18 · src/client/figurEffekte.js:13 · src/client/tierBuehne.js:19 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: aufprallStaerke
+      src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: BACKDROP_URLS
+      src/client/kulisseUndWasser.js:28 · src/client/renderer.js:101 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: begrenze
+      src/client/musik.js:66 · src/client/valhallaOmen.js:49 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: begrenze01
+      src/client/gefuehl.js:57 · src/client/soundMixer.js:58 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: BILDER
+      src/client/roster.js:20 · src/client/tierBilder.js:15 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: cache
+      src/client/figurenBilder.js:45 · src/client/tierBilder.js:31 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: el
+      src/client/hilfeTiere.js:128 · src/client/hilfeZerstoerung.js:15 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: FNV_BASIS
+      src/shared/stoffkarte.js:35 · src/engine/terrain/collisionMask.js:141 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: glatt
+      src/client/gelaendeStil.js:80 · src/client/waffenAnimation.js:244 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: KATEGORIEN
+      src/client/klangProfile.js:26 · src/client/waffenAnimation.js:33 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: KONTUR
+      src/client/figuren.js:18 · src/client/gelaendeStil.js:27 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: LUFT_SCHWELLE
+      src/client/figurAnimation.js:24 · src/client/hoehlenSchatten.js:86 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: mische
+      src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: neueLeinwand
+      src/client/figurStufen.js:15 · src/client/waffenSprites.js:246 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: P
+      src/client/figurTypen.js:59 · src/client/klangProfile.js:53 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: PARAMETER
+      src/client/figurTypen.js:72 · src/client/waffenAnimation.js:107 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: standard
+      src/client/figurenBilder.js:35 · src/client/waffenSprites.js:263 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: STIMMUNGEN
+      src/shared/config/backdrops.js:698 · src/client/musikListe.js:13 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: STUFEN
+      src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:13 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: tabelle
+      src/client/gelaendeStil.js:233 · src/client/stoffOptik.js:22 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: TOENE
+      src/client/gelaendeStil.js:31 · src/client/toasts.js:18 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: TWO_PI
+      src/client/figurAnimation.js:33 · src/client/figurEffekte.js:200 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
+- [ ] Offene Doppelregel: zufall
+      src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:38 — nicht in der Ausnahmeliste tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) — gilt als offen
 
-- [x] Ereignis „crate_pickup" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/lootSystem.js:231; Zuordnung `src/client/ereignisse.js:655` (lokal+online): Protokollzeile je Beuteart. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „crate_pickup_blocked" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/lootSystem.js:220; Zuordnung `src/client/ereignisse.js:641` (beide): „Vorrat voll — erst eine Waffe abwerfen (Q)". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „death" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/damageSystem.js:135; Zuordnung `src/client/ereignisse.js:722` (lokal+online): Protokoll „… ausgeschaltet". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „dot_tick" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2688; Zuordnung `src/client/ereignisse.js:481` (beide): Protokoll mit Schaden und Elementen. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „fall_damage" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/characterSystem.js:200; Zuordnung `src/client/ereignisse.js:739` (beide): Protokoll „Sturzschaden: N". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „frozen" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2298; Zuordnung `src/client/ereignisse.js:473` (beide): Protokoll „… ist eingefroren". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „fuse_armed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/projectileSystem.js:223; Zuordnung `src/client/ereignisse.js:407` (beide): Protokoll plus Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „fuse_expired" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/projectileSystem.js:202; Zuordnung `src/client/ereignisse.js:412` (beide): Protokoll plus Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „jumped" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:1218; Zuordnung `src/client/ereignisse.js:586` (beide): Protokoll „… springt". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „karte_unerreichbar" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:760; Zuordnung `src/client/ereignisse.js:799` (beide): Protokoll-Warnung (seit 2026-10-01 auch lokal, docs/befundregister.md:70). Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „landed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:1278; Zuordnung `src/client/ereignisse.js:599` (beide): Protokoll „… ist gelandet". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „loot_error" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:973; Zuordnung `src/client/ereignisse.js:390` (beide): Protokoll „Beute konnte nicht verteilt werden". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „maelstrom_contract" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/maelstromSystem.js:68; Zuordnung `src/client/ereignisse.js:704` (lokal+online): Kontraktion plus Protokoll. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „match_over" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2649, src/engine/match.js:2730; Zuordnung `src/client/ereignisse.js:758` (lokal+online): lokal Protokoll, online Endbildschirm. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „projectile_impact" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/projectileSystem.js:275; Zuordnung `src/client/ereignisse.js:362` (beide): Blitz am Einschlagort. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „projectile_pierced" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/projectileSystem.js:265; Zuordnung `src/client/ereignisse.js:373` (beide): Blitz am Opfer. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „projectile_spawn" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:1985, src/engine/shooting.js:344; Zuordnung `src/client/ereignisse.js:339` (nur online (bewusst)): online löst es die Vorhersage auf; lokal gibt es keine Vorhersage (tests/event-coverage.test.js:389-392). Wächter: tests/event-coverage.test.js:385-396 (`EINZWEIG_BELEGT`).
-- [x] Ereignis „pulled" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2308; Zuordnung `src/client/ereignisse.js:506` (beide): Protokoll „… wurde herangezogen". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „round_start" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2608; Zuordnung `src/client/ereignisse.js:743` (beide): Protokoll „Runde N — Wind …". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „shield_absorbed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/terrainBuilder.js:161 (vormals match.js:873); Zuordnung `src/client/ereignisse.js:497` (lokal+online): Protokoll, lokal zusätzlich Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „special_effect" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/shooting.js:228; Zuordnung `src/client/ereignisse.js:468` (beide): Meldung über logSpecialEffect. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „terrain_destroyed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/projectileSystem.js:402; Zuordnung `src/client/ereignisse.js:191` (nur online (bewusst)): lokal entsteht der Krater aus `explosion` (tests/event-coverage.test.js:393-396). Wächter: tests/event-coverage.test.js:385-396 (`EINZWEIG_BELEGT`).
-- [x] Ereignis „toxic_rain" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/systems/maelstromSystem.js:95; Zuordnung `src/client/ereignisse.js:754` (beide): Protokoll „Toxischer Regen trifft die Zone". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „turn_skipped" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2698; Zuordnung `src/client/ereignisse.js:477` (beide): Protokoll „… setzt aus". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „turret_deployed" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:1767; Zuordnung `src/client/ereignisse.js:426` (lokal+online): Protokoll, lokal zusätzlich Blitz. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „turret_expired" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:1806; Zuordnung `src/client/ereignisse.js:459` (beide): Protokoll „Geschütz abgelaufen". Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „turret_fired" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:1990; Zuordnung `src/client/ereignisse.js:450` (lokal+online): lokal Blitz, online Protokollzeile. Wächter: tests/event-coverage.test.js:267-293 (`AUDIT_LISTE_2026_09_26`).
-- [x] Ereignis „weapon_dropped" — **A: behandelt, nicht stumm** (Nachprüfung 2026-10-13)
-      Emittiert in src/engine/match.js:2065; Zuordnung `src/client/ereignisse.js:621` (nur online (bewusst)): lokal meldet `Main#dropWeapon` direkt (tests/event-coverage.test.js:385-388). Wächter: tests/event-coverage.test.js:385-396 (`EINZWEIG_BELEGT`).
+### NIEDRIG (21)
 
-### NIEDRIG (6)
-
-- [x] Export ohne Leser: resolveStrike *[erledigt 2026-10-13: Default-Export-Block entfernt]*
-      src/engine/shooting.js — war nur noch im Block `export default { … }` (Z. 738–747) sichtbar; `rg` findet
-      keinen Importeur des Default-Exports, `match.js:52-54` und `tests/shooting.test.js:28` importieren nur
-      benannte Exporte (`fire`, `projectileLifetime`, `aimPreview`, `hasLineOfSight`, `launchOrigin`). Die Funktion
-      bleibt (intern gerufen, `shooting.js:246`); nur der leserlose Block ist gefallen
-- [x] Export ohne Leser: fuseTicksFor *[erledigt 2026-10-13: wie `resolveStrike`]*
-      src/engine/shooting.js — intern gelesen `shooting.js:338` und `:432`; Default-Export-Block entfernt
-- [x] Export ohne Leser: GERAETE_SCHLUESSEL *[erledigt — `export` fehlt schon]*
-      src/shared/identity.js:42 ist seit `dd30534` kein Export mehr (`const`); intern gelesen `:102`/`:106`
-- [x] Export ohne Leser: isValidAngle *[erledigt — `export` fehlt schon]*
-      src/shared/validation.js:39 ist seit `dd30534` kein Export mehr; intern gelesen `validation.js:75`
-- [x] Export ohne Leser: isValidPower *[erledigt — `export` fehlt schon]*
-      src/shared/validation.js:43 ist seit `dd30534` kein Export mehr; intern gelesen `validation.js:78`
-- [x] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen — **ENTSCHIEDEN 2026-10-13**: Match läuft bis zur Entscheidung (kein Rundenlimit), Valhalla beginnt zufällig nach 6–12 min Spielzeit; siehe MASTERDOTO
+- [ ] Export ohne Leser: STARTGLANZ_DAUER
+      src/client/effektStil.js
+- [ ] Export ohne Leser: ART
+      src/client/figurEffekte.js
+- [ ] Export ohne Leser: balkenFarbe
+      src/client/figuren.js
+- [ ] Export ohne Leser: ZEILEN
+      src/client/figurSheets.js
+- [ ] Export ohne Leser: BLATT_B
+      src/client/figurSheets.js
+- [ ] Export ohne Leser: BLATT_H
+      src/client/figurSheets.js
+- [ ] Export ohne Leser: frameAusZelle
+      src/client/figurSheets.js
+- [ ] Export ohne Leser: blattMassOk
+      src/client/figurSheets.js
+- [ ] Export ohne Leser: AUFPRALL_RUCK_SCHWELLE
+      src/client/gefuehl.js
+- [ ] Export ohne Leser: MESS_INTERVALL
+      src/client/hudAusweichen.js
+- [ ] Export ohne Leser: RAD_FAKTOR
+      src/client/kameraSteuerung.js
+- [ ] Export ohne Leser: SICHT_BREITE
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: SICHT_HOEHE
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: ZIEL_ANTEIL
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: GEGNER_REICHWEITE
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: GEGNER_NAH
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: GEGNER_MAX
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: VORAUS_SEKUNDEN
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: kartenPunktImSchirm
+      src/client/kameraZiel.js
+- [ ] Export ohne Leser: umschliessend
+      src/client/kameraZiel.js
+- [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
       0 von 5 Partien endeten VOR Runde 8
-
-      **Messung (2026-10-13)** — `npm run check:maelstrom` (6 Partien) und `npm run check:time` (4 Partien je Wert),
-      dazu eine eigene Messung mit 8 Seeds je Figurenzahl (Skript nicht eingecheckt; gleiche Bot-Logik wie
-      `check-maelstrom.mjs`: feste Winkel, Kraft 80, Standardwaffe; Simulation 60 Hz, Rundenzähler = ein voller
-      Umlauf der Zugreihenfolge; `maxRounds = 30`, Rundengrenze greift bei Runde 31).
-      Mahlstrom: `suddenDeath.roundBreakpoint = 8`, `terrainContractionPixelsPerRound = 32`.
-
-      | Figuren | Bots | Runden (Ø) | Züge (Ø) | Sim-Ticks (Ø) | Dauer bei 20 s/Zug | bei 30 s/Zug | vor Runde 8 zu Ende | Ausschaltung |
-      |---|---|---|---|---|---|---|---|---|
-      | 2 | nur Team 0 | 28,6 | 31 | 1184 (20 s) | 10,4 min | 15,6 min | 0/8 | 1/8 |
-      | 4 | nur Team 0 | 29,4 | 68 | 1755 (29 s) | 22,8 min | 34,2 min | 0/8 | 2/8 |
-      | 8 | nur Team 0 | 31,0 | 131 | 2248 (37 s) | 43,6 min | 65,4 min | 0/8 | 0/8 |
-      | 2 | beide Teams | 28,6 | 30 | 1148 (19 s) | 9,8 min | 14,8 min | 0/8 | 1/8 |
-      | 4 | beide Teams | 29,6 | 57 | 1974 (33 s) | 19,0 min | 28,6 min | 0/8 | 5/8 |
-      | 8 | beide Teams | 31,0 | 99 | 3676 (61 s) | 33,0 min | 49,6 min | 0/8 | 0/8 |
-
-      Repo-Werkzeuge (4 Figuren): `check:maelstrom` — Endrunden 24, 25, 31, 31, 31, 31, 0 von 6 vor Runde 8, Ø 20,8 von
-      28,8 Runden (72 %) unter Sturm. `check:time` — Ø 29,5 Runden, 68,8 Züge, 22,9 min bei 20 s/Zug, 1 von 4
-      Ausschaltungen (bei Startgesundheit 60: 18,3 min, 3 von 4).
-
-      Lesart: Der Mahlstrom wird in JEDER gemessenen Partie erreicht (Spiel endet nie vor Runde 8; Ausschaltung
-      selten, meist Rundengrenze). Er trägt rund 70–75 % der Partie. Die reine Rechenzeit ist klein (20–61 s
-      Simulation); die Matchdauer wird von der Zugzeit bestimmt und wächst linear mit der Figurenzahl: 8 Figuren
-      brauchen bei 20 s/Zug rund 33–44 min — mehr als doppelt so lang wie 4 Figuren — der Breakpoint liegt aber
-      bei allen Größen an derselben Rundenzahl, also relativ zur Gesamtdauer gleich früh.
-      Grenzen der Messung: Die Bots zielen nicht; echte Spieler treffen und beenden Partien früher. Die Dauer in
-      Minuten setzt voraus, dass jeder Zug die volle Zugzeit nutzt (Obergrenze, nicht Durchschnitt).
-
-      **Empfehlung (keine Entscheidung):** Breakpoint 8 beibehalten, solange die Messung mit zielenden Spielern
-      nicht das Gegenteil zeigt (Beleg: Partien enden hier nie davor, der Mahlstrom ist also kein toter Code).
-      Alternativen, falls 8-Figuren-Partien zu lang geraten: (a) Breakpoint nach Figurenzahl staffeln
-      (z. B. 2 Figuren: 8, 4: 8, 8: 6) — gleicher Spannungsbogen, kürzere Wartezeit; (b) Breakpoint als Anteil der
-      Rundengrenze statt fester Zahl; (c) `maxRounds` je Matchart senken (große Partien enden früher per
-      Rundengrenze), ohne den Mahlstrom anzufassen; (d) Zugzeit bei 8 Figuren kürzen. Jede Variante ändert
-      Spielgefühl und braucht eine Messung mit zielenden Spielern.
-      Status: **wartet auf Entscheidung des Auftraggebers.**
 
 ---
 
-Erzeugt von `tools/audit-mcp` v1.0.0 · Repo `/home/patrick/AnunnakiTools Projekte/laufende Projekte/ProjectArmageddon`
+Erzeugt von `tools/audit-mcp` v1.0.0 · Repo `/home/patrick/projectArmageddon`
