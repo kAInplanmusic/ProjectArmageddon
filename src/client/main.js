@@ -3055,6 +3055,21 @@ class Game {
     if (this.lastFrameTime === 0) this.lastFrameTime = timestamp;
     let delta = timestamp - this.lastFrameTime;
     this.lastFrameTime = timestamp;
+    /*
+     * Die Zeit läuft nicht rückwärts (FUND 2026-10-23, gemessen).
+     *
+     * Nach dem Matchstart kam hier ein negativer Sprung an (rund -670 ms,
+     * `renderer.time` stand danach bei -40,8 Bildern und kroch 40 Bilder lang
+     * zurück). Ein negativer Zeitschritt rechnet den Akkumulator herunter und
+     * lässt Effekte, Partikel und die Wasserebene ALTERN, statt zu wachsen —
+     * die Wasserspiegel-Ringe bekamen dadurch negative Radien und die
+     * Canvas-API warf `IndexSizeError`. Gemessen ist der negative Sprung
+     * selbst; WORAUS der kleinere Zeitstempel kommt, ist nicht belegt (der
+     * Startpfad setzt `lastFrameTime` zurück und wartet auf den nächsten
+     * rAF-Takt). Ein Zeitschritt unter null hat fachlich keine Bedeutung,
+     * deshalb wird er hier auf 0 geklemmt — unabhängig von der Ursache.
+     */
+    if (delta < 0) delta = 0;
     if (delta > 250) delta = FIXED_TIMESTEP; // Tab war inaktiv: nicht nachholen
     this.input?.update(delta, timestamp); // gehaltenes Zielen, Erneuerung der Gehabsicht
     this.accumulator += delta;

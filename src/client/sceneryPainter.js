@@ -1023,7 +1023,14 @@ export function drawWaterSurface(ctx, breite, hoehe, scenery, zeit, oberflaeche 
       spiegelLinie(1, zeit * 0.03, 1, 0.3, 3);
       for (let x = 1; x < n; x += 4) {
         if (oben[x] < 0 || hash2(x, 16, seed) < 0.6) continue;
-        const alter = (zeit * 0.01 + hash2(x, 17, seed)) % 1;
+        /*
+         * `% 1` allein ist kein Zyklus für negative Zahlen: Bei negativer Zeit
+         * (FUND 2026-10-23, nach einem Zeitsprung von rund -670 ms) wurde
+         * `alter` negativ, `rw` damit negativ, und die Canvas-API warf
+         * `IndexSizeError` — das Wasser blieb an dieser Stelle ungezeichnet.
+         * Der doppelte Rest (%) bildet auch negative Werte auf 0–1 ab.
+         */
+        const alter = (((zeit * 0.01 + hash2(x, 17, seed)) % 1) + 1) % 1;
         const rw = 4 + alter * 20;
         ctx.globalAlpha = 1 - alter;
         ctx.beginPath();
