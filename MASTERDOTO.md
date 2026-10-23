@@ -6782,3 +6782,12 @@ Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, St
 ### Stand der E2E-Prüfung (Gesamtlauf in Blöcken, Port 5691, 2026-10-22)
 
 **Vollständiger E2E-Lauf am 2026-10-22: 322 Tests, 321 grün, 1 bewusst übersprungen** (`prediction-online.spec:274`, Bedingung „Client ist bereits am Zug“). Die vier früher offenen Fälle (`drop-cooldown:69`, `dynamik:580`, `emblem:145`, `prediction-online:283`) laufen grün. Ein Lauf über alle Specs in einem Zug füllt die gemeinsame, git-ignorierte Datei `.pa-state/lobbies.json` bis zur Lobby-Grenze (500, `PA_MAX_LOBBYS`); danach antwortet der Server mit 503 und alle Online-Specs scheitern mit „Verbindung nicht zustande gekommen“ (29 Fälle, kein Spielfehler). Vor einem vollständigen Lauf `.pa-state/lobbies.json` löschen oder die Online-Specs getrennt laufen lassen; beim Wiederholen mit leerem Zustand waren alle 29 grün. Aufruf: `PA_PORT=<freier Port> npx playwright test --workers=2`.
+
+## Gelände-Look nach Auftraggeber-Vorlage (Stand 2026-10-23)
+
+Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-quelle/`. Reine Client-Optik, ohne Einfluss auf Maske, Hash oder Netz.
+
+- [x] **LOOK-1 Kacheln des Auftraggebers als Stofftexturen.** Beleg: `scripts/kacheln-schneiden.mjs` erkennt das Raster automatisch (4 Zeilen, 7 Spalten), schneidet A3/A7/A9/A10/A11/A16/A21/A22 mit 12 % Innenrand, blendet sie über 50-%-Rollen und weiche Kreuzmaske nahtlos und schreibt 512-px-JPEG (Qualität 82, 19–33 KB) nach `src/client/assets/stoff-texturen/`; `STOFF_TEXTUR` nutzt sand/basalt/eis/pilz/holz/beton/obsidian/regolith, Übersicht `assets/gelaende-quelle/kontrolle.jpg`, `tests/stoff-texturen.test.js` grün.
+- [ ] **LOOK-2 Tiefenstaffel.** Drei Ebenen wie in den Referenzkarten: entsättigte Hintergrund-Kulisse, scharfes Spielgelände, Vordergrundpartikel.
+- [ ] **LOOK-3 Lava-Glühen.** Lava als glühender Stoff mit warmen Lichtakzenten nach `ref-3-vulkanschmiede-hud`, keine flache Füllung.
+- [ ] **LOOK-4 Innenräume.** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine`.

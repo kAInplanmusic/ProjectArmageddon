@@ -20,18 +20,18 @@ export const TEXTUR_GROESSE = 512;
  */
 export const STOFF_TEXTUR = Object.freeze({
   erde: 'erde',
-  sand: 'kies',
+  sand: 'sand',
   schnee: 'schnee',
-  eis: 'schnee',
-  pilz: 'moos',
-  holz: 'hecke',
+  eis: 'eis',
+  pilz: 'pilz',
+  holz: 'holz',
   fels: 'fels',
   grundgestein: 'fels',
-  basalt: 'kohle',
-  obsidian: 'kohle',
+  basalt: 'basalt',
+  obsidian: 'obsidian',
   asche: 'kohle',
-  regolith: 'kies',
-  beton: 'kies',
+  regolith: 'regolith',
+  beton: 'beton',
 });
 
 /** Namen der Dateien (ohne Endung), die ausgeliefert werden. */
