@@ -625,7 +625,77 @@ export const DOPPELREGEL_AUSNAHMEN_QUELLE =
  * findet, ist offen.
  */
 export const DOPPELREGEL_AUSNAHMEN = new Map([
-  // (leer — bewusst: kein Freispruch auf Vorrat)
+  // Jeder Eintrag nennt die gemessenen Orte und den fachlichen Grund, warum es
+  // keine gemeinsame Regel ist. Echte Duplikate stehen NICHT hier, sondern sind
+  // in eine gemeinsame Quelle zusammengeführt.
+  ['MAX_TEILCHEN', {
+    begruendung: 'Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.',
+    orte: ['src/client/feuerOptik.js:19', 'src/client/figurEffekte.js:15', 'src/client/tierBuehne.js:19'],
+  }],
+  ['aufprallStaerke', {
+    begruendung: 'Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel.',
+    orte: ['src/shared/config/zerstoerung.js:125', 'src/client/zerstoerungOptik.js:260'],
+  }],
+  ['BILDER', {
+    begruendung: 'Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.',
+    orte: ['src/client/roster.js:20', 'src/client/tierBilder.js:17'],
+  }],
+  ['cache', {
+    begruendung: 'Zwei getrennte Caches für verschiedene Daten (Figurenbilder bzw. Tierposen); gemeinsamer Name, keine gemeinsame Regel.',
+    orte: ['src/client/figurenBilder.js:44', 'src/client/tierBilder.js:33'],
+  }],
+  ['CACHE_KANTE', {
+    begruendung: 'figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches.',
+    orte: ['src/client/figurStufen.js:13', 'src/client/waffenSprites.js:25'],
+  }],
+  ['KONTUR', {
+    begruendung: 'figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert.',
+    orte: ['src/client/figuren.js:18', 'src/client/gelaendeStil.js:28'],
+  }],
+  ['LUFT_SCHWELLE', {
+    begruendung: 'figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung.',
+    orte: ['src/client/figurAnimation.js:25', 'src/client/hoehlenSchatten.js:86'],
+  }],
+  ['mische', {
+    begruendung: 'backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren.',
+    orte: ['src/shared/config/backdrops.js:718', 'src/shared/config/loadouts.js:105'],
+  }],
+  ['P', {
+    begruendung: 'figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion.',
+    orte: ['src/client/figurTypen.js:59', 'src/client/klangProfile.js:51'],
+  }],
+  ['PARAMETER', {
+    begruendung: 'figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen.',
+    orte: ['src/client/figurTypen.js:72', 'src/client/waffenAnimation.js:106'],
+  }],
+  ['standard', {
+    begruendung: 'figurenBilder.js ist die Standard-Ankertabelle, waffenSprites.js die Standardverdrahtung des Laders — gleicher Name, andere Bedeutung.',
+    orte: ['src/client/figurenBilder.js:34', 'src/client/waffenSprites.js:249'],
+  }],
+  ['STIMMUNGEN', {
+    begruendung: 'backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung.',
+    orte: ['src/shared/config/backdrops.js:698', 'src/client/musikListe.js:13'],
+  }],
+  ['STUFEN', {
+    begruendung: 'lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung.',
+    orte: ['src/engine/systems/lootSystem.js:93', 'src/client/figurStufen.js:15'],
+  }],
+  ['tabelle', {
+    begruendung: 'gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate.',
+    orte: ['src/client/gelaendeStil.js:229', 'src/client/stoffOptik.js:22'],
+  }],
+  ['TOENE', {
+    begruendung: 'gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.',
+    orte: ['src/client/gelaendeStil.js:32', 'src/client/toasts.js:18'],
+  }],
+  ['ZELLE', {
+    begruendung: 'figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.',
+    orte: ['src/client/figurSheets.js:16', 'src/client/waffenAnimation.js:40'],
+  }],
+  ['zufall', {
+    begruendung: 'engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.',
+    orte: ['src/engine/zerstoerung.js:108', 'src/client/valhallaOmen.js:40'],
+  }],
 ]);
 
 /**

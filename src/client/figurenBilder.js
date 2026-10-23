@@ -18,8 +18,9 @@
  */
 
 import { iconUrlFor } from '../shared/config/weapons.js';
-import { STUFEN, stufeBauen } from './figurStufen.js';
+import { CACHE_KANTE, STUFEN, stufeBauen } from './figurStufen.js';
 import { blattBauen } from './figurSheets.js';
+import { ladeBild } from './dom.js';
 
 export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
 
@@ -30,8 +31,6 @@ const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { ea
 const BLATT_MANIFEST = import.meta.glob('./assets/sprite-sheets/manifest.json', { eager: true, import: 'default' });
 const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*.webp', { query: '?url', import: 'default' });
 
-/** Kantenlänge der Standardstufe (Quelle: 256 px). */
-const CACHE_KANTE = 128;
 const standard = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
 
 /** Ankerpunkte je Figur aus dem Manifest der Seitenansichten (Anteile 0..1). */
@@ -43,15 +42,6 @@ function ankerAusManifest(fraktion, datei) {
 
 // fraktion -> datei -> Eintrag | 'laedt' | 'fehlt' (zweistufig: Nachschlag je Bild ohne Zeichenkettenbau)
 const cache = new Map();
-
-function ladeBild(url) {
-  return new Promise((ok, fehler) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => fehler(new Error('Bild nicht ladbar'));
-    img.src = url;
-  });
-}
 
 async function lade(eintraege, charakter) {
   const datei = charakter.sprite;

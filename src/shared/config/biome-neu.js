@@ -63,9 +63,7 @@ export const NEUE_LANDMARKEN = Object.freeze([
 ]);
 
 import { THEMEN_BIOME } from './biome-themen.js';
-
-/** Kurzform für eine Bodenvariante. */
-const boden = (surface, deep) => ({ surface, deep });
+import { boden } from './biome-boden.js';
 
 const BIOME_FASSUNG_2 = Object.freeze({
   vulkan: {

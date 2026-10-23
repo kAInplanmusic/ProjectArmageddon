@@ -9,15 +9,9 @@
 import { zerstoerungsTabelle, biomStoffe, GRUPPEN_LABEL, MEHR_AB, WENIGER_BIS } from '../shared/zerstoerungsTabelle.js';
 import { stoffByKey } from '../shared/config/stoffe.js';
 import { FEUER, FEUERFEST } from '../shared/config/feuer.js';
+import { el } from './dom.js';
 
 const URTEIL_TEXT = Object.freeze({ mehr: 'mehr', normal: 'normal', weniger: 'weniger', haelt: 'hält' });
-
-function el(tag, text, klasse) {
-  const e = document.createElement(tag);
-  if (klasse) e.className = klasse;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
 
 /** Die Tabelle Material × Schadensart. */
 export function zeichneZerstoerungsTabelle(container) {

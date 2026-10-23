@@ -21,6 +21,8 @@
  * @module config/biome-planet
  */
 
+import { boden } from './biome-boden.js';
+
 /** Die sechs Arten in fester Reihenfolge (die Ziehung aus dem Seed indiziert sie). */
 export const PLANET_ARTEN = Object.freeze(['eis', 'lava', 'sand', 'dschungel', 'rost', 'stein']);
 
@@ -68,9 +70,6 @@ export const PLANET_FORM = Object.freeze({
   schacht: Object.freeze({ breite: 56, anzahl: [0, 2] }),
   wasser: Object.freeze({ abstand: 24 }),
 });
-
-/** Kurzform für eine Bodenvariante. */
-const boden = (surface, deep) => ({ surface, deep });
 
 /** Gemeinsame Felder aller Arten (Kulisse: Kosmos-Himmel mit Planetenkugeln). */
 const GEMEINSAM = {

@@ -98,11 +98,7 @@ import { CRATE_TYPES } from '../engine/systems/lootSystem.js';
  * ein leerer Hintergrund. Der Selbsttest in `tests/backdrops.test.js` prüft die
  * Anzahl deshalb gegen die Dateien auf der Platte.
  */
-const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.jpg', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+import { BACKDROP_URLS } from './kulissenUrls.js';
 
 const CRATE_COLORS = ['#dcdcdc', '#4cc9f0', '#a855f7', '#fbbf24'];
 const RARITY_COLORS = ['#e8eef5', '#4cc9f0', '#a855f7', '#fbbf24'];

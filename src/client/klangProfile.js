@@ -23,9 +23,7 @@
  * @module klangProfile
  */
 
-export const KATEGORIEN = Object.freeze([
-  'melee', 'ranged', 'heavy_ranged', 'elemental', 'magic', 'tech', 'utility', 'ultimate',
-]);
+export { KATEGORIEN } from '../shared/config/waffenKategorien.js';
 
 export const BUSSE = Object.freeze(['schuss', 'treffer', 'umgebung', 'ui']);
 

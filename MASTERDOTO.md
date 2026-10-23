@@ -57,8 +57,13 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
 - [x] **AU-6 Tote Konstanten:** `STOFF_TEXTUR_URLEN`, `EFFEKT_SHEET_URLEN`, `PLANETEN_KULISSE_URLEN` (main.js:91-95),
   `COOKIE_REFERENZ_BREITE` (config/cookie.js:23), `BETAEUBUNG` (config/schaden.js:52); dazu 20 Exporte ohne Leser
   (v. a. `kameraZiel.js`, `figurSheets.js`) — `npm run audit:bericht`, Abschnitt todo. — `streicheKommentare` (Glob-`/*`) repariert, tote Konstanten entfernt, überflüssige `export` abgeräumt; Sonden leer.
-- [ ] **AU-7 Doppelregeln:** 28 wertgleiche Konstanten in mehreren Dateien ohne Ausnahmeeintrag
+- [x] **AU-7 Doppelregeln:** 28 wertgleiche Konstanten in mehreren Dateien ohne Ausnahmeeintrag
   (`ZELLE, boden, CACHE_KANTE, ladeBild, MAX_TEILCHEN, …`) — zusammenführen oder in Ausnahmeliste begründen.
+  Belegt: 11 echte Duplikate zusammengeführt (boden→`config/biome-boden.js`, FNV→`shared/fnv.js`,
+  KATEGORIEN→`config/waffenKategorien.js`, BACKDROP_URLS→`client/kulissenUrls.js`, el/ladeBild/neueLeinwand→`client/dom.js`,
+  begrenze/begrenze01/TWO_PI/glatt→`client/mathe.js`, ZELLE Feuer→`config/feuer.js`, ZELLE Waffe→`client/waffenAnimation.js`,
+  CACHE_KANTE Figur→`client/figurStufen.js`), 17 begründete Ausnahmen in `DOPPELREGEL_AUSNAHMEN`;
+  `audit:bericht`: doppelregeln 17/17 begründet, 0 offen.
 - [ ] **AU-8 Design:** 0 von 5 Partien enden vor Mahlstrom-Runde 8 — Matchdauer vs. Breakpoint prüfen.
 - [x] **AU-9 Register veraltet:** `docs/befundregister.md` führte A-1…A-13, B-1…B-3, C-1…C-4 als „🟡 beauftragt“
   (Stand 09-27) — gegen Code verifiziert und Status nachgezogen (2026-10-23): alle A/B/C-Befunde außer C-8

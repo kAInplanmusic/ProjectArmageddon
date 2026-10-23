@@ -17,6 +17,7 @@
  */
 import { PARAMETER } from './figurTypen.js';
 import { MODUS, waehleRolle, frameFuer } from './figurSheets.js';
+import { TWO_PI } from './mathe.js';
 
 /** Geschwindigkeit (px/s), ab der die Figur als laufend gilt. */
 const LAUF_SCHWELLE = 18;
@@ -30,7 +31,6 @@ const TREFFER_DAUER = 0.4;
 /** Dauer, in der der Treffer-Frame gezeigt wird (kürzer als das Zucken). */
 const TREFFER_FRAME_DAUER = 0.32;
 const ZUG_DAUER = 0.7;
-const TWO_PI = Math.PI * 2;
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const ausOut = u => 1 - (1 - u) * (1 - u) * (1 - u);

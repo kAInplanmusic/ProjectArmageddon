@@ -36,7 +36,10 @@ const pruefe = (titel, erwartet, gemessen, ok) => {
  * Keine Datei im Projekt wird für diese Probe verändert; gemessen wird der
  * Ist-Zustand gegen die (leere) Ausnahmeliste. */
 const echteMessung = doppelregeln();
-const echtUrteil = beurteileDoppelregeln(echteMessung);
+// Die echte Ausnahmeliste ist inzwischen gefüllt (AU-7); diese Probe will den
+// Fail-safe-Richtungsfall „keine Ausnahme gelistet“ prüfen und übergibt deshalb
+// ausdrücklich eine LEERE Liste statt der Standardliste.
+const echtUrteil = beurteileDoppelregeln(echteMessung, new Map());
 const echteSaetze = doppelregelSaetze(echtUrteil);
 pruefe(
   '1) Echter Baum, keine Ausnahme gelistet → jede Doppelregel ist OFFEN',
@@ -95,7 +98,7 @@ pruefe(
 );
 
 /* ── 5. Leere Messung → KEIN Satz ────────────────────────────────────────── */
-const leeresUrteil = beurteileDoppelregeln([]);
+const leeresUrteil = beurteileDoppelregeln([], new Map());
 const leereSaetze = doppelregelSaetze(leeresUrteil);
 pruefe(
   '5) Keine Doppelregel gemessen → kein Satz über Doppelregeln',

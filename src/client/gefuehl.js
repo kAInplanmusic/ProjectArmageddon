@@ -53,8 +53,7 @@
  * @module gefuehl
  */
 
-/** Obergrenze für einen Zahlenwert auf [0, 1]. */
-const begrenze01 = wert => Math.max(0, Math.min(1, Number.isFinite(wert) ? wert : 0));
+import { begrenze01 } from './mathe.js';
 
 /* ======================================================================
  * 1. Treffer erkennen

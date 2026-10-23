@@ -7,6 +7,8 @@
  * @module CollisionMask
  */
 
+import { FNV_BASIS, FNV_PRIM } from '../../shared/fnv.js';
+
 /** Stützstellen der Randrauheit rund um den Krater. */
 const KRATER_SEGMENTE = 16;
 /** Größte Abweichung des Randes vom Kreis (Anteil des Radius). */
@@ -137,9 +139,6 @@ export function eachInsetCell(width, height, inset, fn) {
     }
   }
 }
-
-const FNV_BASIS = 0x811c9dc5;
-const FNV_PRIMZAHL = 0x01000193;
 
 export class CollisionMask {
   #width;
@@ -312,10 +311,10 @@ export class CollisionMask {
    */
   hash() {
     let h = FNV_BASIS;
-    h = Math.imul(h ^ this.#width, FNV_PRIMZAHL);
-    h = Math.imul(h ^ this.#height, FNV_PRIMZAHL);
+    h = Math.imul(h ^ this.#width, FNV_PRIM);
+    h = Math.imul(h ^ this.#height, FNV_PRIM);
     const w = this.#words;
-    for (let i = 0; i < w.length; i++) h = Math.imul(h ^ w[i], FNV_PRIMZAHL);
+    for (let i = 0; i < w.length; i++) h = Math.imul(h ^ w[i], FNV_PRIM);
     return h >>> 0;
   }
 

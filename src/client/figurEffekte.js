@@ -10,6 +10,8 @@
  * @module figurEffekte
  */
 
+import { TWO_PI } from './mathe.js';
+
 export const MAX_TEILCHEN = 192;
 
 /** Arten */
@@ -197,4 +199,3 @@ export class FigurEffekte {
   }
 }
 
-const TWO_PI = Math.PI * 2;

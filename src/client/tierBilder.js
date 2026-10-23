@@ -12,6 +12,8 @@
  * @module tierBilder
  */
 
+import { ladeBild } from './dom.js';
+
 const BILDER = {
   guenther: import.meta.glob('./assets/guenther/*.png', { query: '?url', import: 'default' }),
   cookie: import.meta.glob('./assets/cookie/*.png', { query: '?url', import: 'default' }),
@@ -29,15 +31,6 @@ const TIER_ANSICHT = Object.freeze({
 
 // art -> pose -> Eintrag | 'laedt' | 'fehlt'
 const cache = new Map();
-
-function ladeBild(url) {
-  return new Promise((ok, fehler) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => fehler(new Error('Bild nicht ladbar'));
-    img.src = url;
-  });
-}
 
 /** Anker (Pixel im 256er Bild) und Dateiname einer Pose aus dem Manifest. */
 function poseEintrag(art, pose) {
