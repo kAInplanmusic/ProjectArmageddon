@@ -15,6 +15,16 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Abschluss 2026-10-23 (Hermes, Budget erschöpft) — Stand und Rest
+
+main @ Merge bg/doppel: 1857/1857 Tests grün, eslint sauber, Build ok, check:achievements/check:camera grün,
+Doppelregeln 11 zusammengeführt + 17 begründet. Erledigt: AU-1..AU-7, AU-9, LOOK-1 (Kacheln), UX-Werkzeuge
+(`test:a11y`, `test:visuell`, `check:ux` gebaut — Funde noch NICHT ausgewertet).
+- [ ] **REST-1** `npm run test:a11y` und `npm run check:ux` laufen lassen, Funde als UX-n eintragen.
+- [ ] **REST-2** AU-8 (Matchdauer vs. Mahlstrom), AU-9a (C-8 Zerlegung), SPR-1..SPR-9, LOOK-n offen.
+- [ ] **REST-3** Ältere offene Punkte (P1/P2/P3-Abschnitte) nicht abgearbeitet — Worker-Lauf scheiterte am Prompt-Pfad.
+- Worker-Werkzeug: `~/.pa-worker.sh <name> <ABSOLUTER promptpfad>` (opencode, freellmapi/auto; DeepSeek-Guthaben leer).
+
 ## Sprite-Prüfung 2026-10-23 (Vollständigkeit + Sichtprüfung) — OFFEN
 
 Vollständig (gemessen): 9 Fraktionen × 9 Figuren × 3 Blätter (aktion/walk/zustand) = 243 Blätter, alle 1024×512,
