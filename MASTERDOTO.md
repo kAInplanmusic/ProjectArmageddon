@@ -27,7 +27,7 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
   `#drawFaelle #drawFigurEffekte #drawCookie #drawWiederholung #drawOmen`.
 - [ ] **AU-3 `npm run checks` ROT** — Folge aus AU-1/AU-2.
 - [ ] **AU-4 Pfade (audit rot):** `scripts/terrain-inventar.mjs:10` nutzt `.pathname` statt `fileURLToPath`.
-- [ ] **AU-5 Determinismus (gelb):** `src/engine/replay.js:140` `Date.now()` im Simulationspfad — prüfen, ob nur Metadatum.
+- [x] **AU-5 Determinismus (grün):** `src/engine/replay.js:140` `Date.now()` geprüft; es ist ein reines Metadatum (`createdAt`), das nur bei der Serialisierung (`toJSON`) geschrieben wird und den Zustandshash nicht beeinflusst (Beleg: `tests/replay-uhr.test.js`).
 - [ ] **AU-6 Tote Konstanten:** `STOFF_TEXTUR_URLEN`, `EFFEKT_SHEET_URLEN`, `PLANETEN_KULISSE_URLEN` (main.js:91-95),
   `COOKIE_REFERENZ_BREITE` (config/cookie.js:23), `BETAEUBUNG` (config/schaden.js:52); dazu 20 Exporte ohne Leser
   (v. a. `kameraZiel.js`, `figurSheets.js`) — `npm run audit:bericht`, Abschnitt todo.
