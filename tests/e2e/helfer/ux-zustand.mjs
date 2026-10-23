@@ -15,6 +15,10 @@ import { expect } from '@playwright/test';
 
 export const FORMATE = {
   '1280x720': { width: 1280, height: 720 },
+<<<<<<< HEAD
+=======
+  '390x844': { width: 390, height: 844 },
+>>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
 };
 
 /** Feste Lobby-Antwort: gleiche IDs, gleiche Belegung, gleicher Text. */
@@ -48,8 +52,11 @@ export async function oeffneMenue(page) {
   }));
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
+<<<<<<< HEAD
   // Das Intro (Ladebild) deckt das Menü kurz ab; ein Bild davor zeigt das Ladebild statt des Menüs.
   await page.locator('#intro-splash').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
+=======
+>>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
   // Webfonts müssen stehen, sonst verschiebt sich das Menü zwischen zwei Läufen.
   await page.evaluate(() => document.fonts.ready.then(() => true));
@@ -71,10 +78,17 @@ export async function starteHud(page, optionen = {}) {
   const konfiguration = {
     seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', ...optionen,
   };
+<<<<<<< HEAD
   await page.evaluate(async (options) => {
     const api = window.__PA__;
     api.setAutoLoop(false);
     await api.startMatch(options);
+=======
+  await page.evaluate((options) => {
+    const api = window.__PA__;
+    api.setAutoLoop(false);
+    api.startMatch(options);
+>>>>>>> 97085048 (feat(ux): a11y und visuelle regression checks)
     api.setAutoLoop(false);
     api.advance(2);
   }, konfiguration);
