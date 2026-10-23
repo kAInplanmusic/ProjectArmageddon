@@ -34,7 +34,8 @@
  * Gemessen wird gegen eine KOPIE unter `/tmp` (wie `probe-stand.mjs`): der echte
  * Baum wird nicht angefasst, weil parallel andere Worker in `src/` schreiben.
  * Fall B stellt den belegten Zustand AUS DER GIT-HISTORIE wieder her
- * (`git show HEAD:src/engine/specials.js`) und zeigt, dass der neue Detektor ihn
+ * (`git show <commit>:src/engine/specials.js`, jüngste Fassung mit der Funktion)
+ * und zeigt, dass der neue Detektor ihn
  * findet — unabhängig davon, ob der Fall im Baum inzwischen repariert ist.
  *
  * Fall F misst den ECHTEN Baum und ist absichtlich in BEIDE Richtungen
@@ -160,8 +161,25 @@ pruefe(
  * B. Der belegte Gegenstand aus der GIT-HISTORIE: hasSpecialEffect
  * ─────────────────────────────────────────────────────────────────────────── */
 const b = baueProjekt('blind-b');
-const headFassung = execFileSync('git', ['show', 'HEAD:src/engine/specials.js'],
-  { cwd: PROJEKT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+/*
+ * Die Fassung MIT der zweiten Definition aus der Geschichte holen, nicht aus
+ * HEAD: Seit dem Fix ist HEAD bereits sauber, und die Probe verlor damit ihren
+ * Gegenstand (gemessen 2026-10-23: B1/B2 rot, obwohl der Detektor richtig
+ * arbeitet). Gesucht wird der jüngste Stand, in dem die Funktion noch CODE ist
+ * — Kommentare zählen nicht, sonst fände die Suche den Grabstein.
+ */
+const specialsHistorie = execFileSync('git', ['log', '--all', '--format=%H', '--', 'src/engine/specials.js'],
+  { cwd: PROJEKT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim().split('\n').filter(Boolean);
+let headFassung = '';
+for (const commit of specialsHistorie) {
+  const fassung = execFileSync('git', ['show', `${commit}:src/engine/specials.js`],
+    { cwd: PROJEKT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (/^\s*export\s+function\s+hasSpecialEffect\s*\(/m.test(fassung)) {
+    headFassung = fassung;
+    break;
+  }
+}
+if (!headFassung) throw new Error('Keine historische Fassung mit hasSpecialEffect gefunden');
 schreibe(b, 'src/engine/specials.js', headFassung);
 fs.mkdirSync(path.join(b, 'src', 'shared', 'config'), { recursive: true });
 fs.copyFileSync(path.join(PROJEKT, 'src', 'shared', 'config', 'weapons.js'),
@@ -171,7 +189,7 @@ const bDoppelt = messeIn(b, 'S.doppelregeln()');
 const bTreffer = bDoppelt.find(d => d.name === 'hasSpecialEffect') ?? null;
 const bOrte = bTreffer?.orte ?? [];
 pruefe(
-  'B1) Der Detektor FINDET `hasSpecialEffect` an ZWEI Orten (HEAD-Fassung, zwei unvereinbare Regeln)',
+  'B1) Der Detektor FINDET `hasSpecialEffect` an ZWEI Orten (historische Fassung, zwei unvereinbare Regeln)',
   'ein Eintrag hasSpecialEffect mit je einem Ort in specials.js und weapons.js',
   bTreffer ? `orte: ${bOrte.join(' · ')} · dateien: ${bTreffer.dateien}` : 'KEIN Treffer',
   Boolean(bTreffer)

@@ -1,5 +1,8 @@
 # Befundregister — Prüfrunde 2026-09-27
 
+**Status nachgezogen:** 2026-10-23 — jeder Befund gegen den aktuellen Code geprüft.
+A-1…A-13, B-1…B-3 und C-1…C-4 sind ✅ (Beleg je Zeile); offen bleibt nur C-8 (Zerlegung, groß).
+
 **Zweck:** Jeder Befund aus den vier Prüfberichten an EINER Stelle, mit Beleg, Schwere,
 Stand und Zuständigkeit. Die Berichte selbst bleiben die Beweisquelle; hier steht nur,
 was daraus folgt und wer es hat.
@@ -37,28 +40,28 @@ ich im Code selbst gelesen:
 
 | # | Befund | Beleg | Schwere | Stand |
 |---|---|---|---|---|
-| A-1 | **Aufladen wirkt nicht** („halten = mehr Kraft" ist unwahr) | `input.js:178-181`, `main.js:1351-1354`, README ~142, `index.html` ~1028 | A | 🟡 Worker J |
-| A-2 | **Keine Ladeanzeige** — `chargeRatio` existiert, niemand zeichnet ihn | Getter in `input.js`, 0 Treffer in renderer/hud | A | 🟡 Worker J |
-| A-3 | **Online stumm** — Schuss, Explosion, Mündungsfeuer fehlen | `ereignisse.js:216/236/245/293` vs. `:296-299` | A | 🟡 Worker J |
-| A-4 | **Protokoll unsichtbar** — 4–5 Zeilen statt 60 | `index.html:257` | A | 🟡 Worker J |
-| A-5 | **Todesmeldungen verdrängen die Aussage** — 26 `danger` gegen Budget 20 | Messung im Bericht | A | 🟡 Worker J |
-| A-6 | **Mahlstrom online 7 Runden unsichtbar** — Motor 8, Client 15 | `main.js:1194`, `renderer.js:1117` | A | 🟡 Worker K |
-| A-7 | **Sidegrad erreicht den Client nie** — Bahn ±335 px | `main.js:1607` | A | 🟡 Worker K |
-| A-8 | **Fallschaden bremst nicht** — 633 px Sturz, 0 Schaden | Schwelle 11 gegen Aufprall 9,62 | A | 🟡 Worker L |
+| A-1 | **Aufladen wirkt nicht** („halten = mehr Kraft" ist unwahr) | `input.js:178-181`, `main.js:1351-1354`, README ~142, `index.html` ~1028 | A | ✅ 2026-10-23 — `input.js#kraftAusLadung` + `#releaseCharge` lesen die Ladung VOR dem Feuern; E2E `prediction-gpu.spec.mjs` |
+| A-2 | **Keine Ladeanzeige** — `chargeRatio` existiert, niemand zeichnet ihn | Getter in `input.js`, 0 Treffer in renderer/hud | A | ✅ 2026-10-23 — `renderer.js#drawLadeanzeige` zeichnet `chargeRatio`; `main.js` übergibt `ladeAnteil` |
+| A-3 | **Online stumm** — Schuss, Explosion, Mündungsfeuer fehlen | `ereignisse.js:216/236/245/293` vs. `:296-299` | A | ✅ 2026-10-23 — Online-Zweige rufen den Mischer (Schuss/Explosion/Treffer) und zeichnen das Mündungsfeuer aus demselben `shot`-Ereignis; Wächter `event-coverage.test.js` (Klangfolge UND Mündungsfeuer lokal = online) |
+| A-4 | **Protokoll unsichtbar** — 4–5 Zeilen statt 60 | `index.html:257` | A | ✅ 2026-10-23 — `#hud-log` aus dem HUD-Raster gelöst (`position: absolute`, `max-height: clamp(108px, 22vh, 340px)`); E2E `grosse-teams.spec.mjs` misst ≥8 sichtbare Zeilen auf der Spielfläche |
+| A-5 | **Todesmeldungen verdrängen die Aussage** — 26 `danger` gegen Budget 20 | Messung im Bericht | A | ✅ 2026-10-23 — Vorrang-/Rauschbudget in `hud.js`; Wächter `hud-vorrang.test.js` |
+| A-6 | **Mahlstrom online 7 Runden unsichtbar** — Motor 8, Client 15 | `main.js:1194`, `renderer.js:1117` | A | ✅ 2026-10-23 — Client liest `remoteInset` vom Server statt hart `>= 15`; `main.js#onlineViewState` + `renderer#drawMaelstrom`; Wächter `valhalla.test.js`, `mahlstrom-terrainhash.test.js` |
+| A-7 | **Sidegrad erreicht den Client nie** — Bahn ±335 px | `main.js:1607` | A | ✅ 2026-10-23 — `main.js` liest `remoteLoadouts[..].sidegradeId` statt `eigene.sidegradeId`; Wächter `sidegrade-maxhealth-zuender.test.js` |
+| A-8 | **Fallschaden bremst nicht** — 633 px Sturz, 0 Schaden | Schwelle 11 gegen Aufprall 9,62 | A | ✅ 2026-10-23 — `config/fallschaden.js` + `characterSystem#ersteSolideZeile`; Wächter `fallschaden-bremse.test.js` |
 | A-9 | **Abbruchknopf online nicht erreichbar** | `main.js:774`, `index.html:400` (`[hidden]` unüberstimmbar) | A | ✅ 2026-10-01 — `startOnline` blendet `#zeigeAbbruch(true)` ein; Fehlschlag-Pfad blendet aus. Wächter `tests/abort-knopf.test.js` (Online-Zweig geprüft, Gegenprobe gefahren) |
-| A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `menuOverlay.hidden` an `:816/:957/:2335`, Server `gameServer.js:1170` + `lobby.js:355/369` | A | ⬜ |
-| A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | 🟡 Worker K |
+| A-10 | **Abgelehnter Online-Beitritt hat keinen Rückweg** — nur eine Protokollzeile, kein Timeout | `menuOverlay.hidden` an `:816/:957/:2335`, Server `gameServer.js:1170` + `lobby.js:355/369` | A | ✅ 2026-10-23 — `main.js` `server_error` ohne `joined` ruft `#verlasseMatch()`; Wächter `audit-2026-10-09-fixes.test.js` + `server-ablehnungen.test.js` |
+| A-11 | **Trefferquote immer 1,0** — Taktwert wird nie fortgeschrieben | Fenster `240` immer durchlässig | A | ✅ 2026-10-23 — `MatchStats#feedAll(events, tick)`; Wächter `stats-trefferfenster.test.js` |
 | A-12 | **`hasSpecialEffect` zweimal, zwei unvereinbare Regeln** (Bericht sagte „viermal" — korrigiert) | `engine/specials.js:234` (**0 Leser**, von mir bestätigt) vs. `config/weapons.js:7128` | A | ✅ 2026-10-02 — **sachlich erledigt**, nachgemessen: nur noch EINE Definition (`config/weapons.js:7124`). Die Stelle in `specials.js` ist heute ein Grabstein-Kommentar; `doppelregeln` meldet 0. Wächter `tests/tote-regeln.test.js` |
-| A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | 🟡 Worker K |
+| A-13 | **Revanche ergibt eine andere Karte** — Seed fehlt | baseSeed → anderer Hash | A | ✅ 2026-10-23 — `main.js#seedFuerRevanche` nutzt `seedManager.baseSeed`; Wächter `wiederaufbau-seed-und-takt.test.js` + E2E `sieg-dialog.spec.mjs` |
 | A-14 | **Versionsabweichung = schwarzes Bild ohne Meldung** | `decodeSnapshot` → `null` → `return` | A | ✅ 2026-10-19 — war beim Datenfluss-Audit behoben: `networkClient` emittiert `snapshot_rejected` mit Grund, Version und Bytezahl; `main.js` schreibt die erste Zeile ins Protokoll. Wächter in `tests/audit-2026-10-09-fixes.test.js` |
 
 ## B — Stört
 
 | # | Befund | Beleg | Schwere | Stand |
 |---|---|---|---|---|
-| B-1 | Lebensbalken online mit fester 100; 32 echte Werte 48–195, **100 kommt nicht vor** | `main.js:1168`, `hud.js:365` | B | 🟡 Worker K |
-| B-2 | Der Restore läuft einen Takt zu weit — alle Figuren 8 px tiefer, Kommentar „exakt derselbe Zustand" widerlegt | `gameServer.js:167/169` | B | 🟡 Worker K |
-| B-3 | Zünder-Countdown online immer 0 | `renderer.js:820` | B | 🟡 Worker K |
+| B-1 | Lebensbalken online mit fester 100; 32 echte Werte 48–195, **100 kommt nicht vor** | `main.js:1168`, `hud.js:365` | B | ✅ 2026-10-23 — `hud.js` liest `entity.maxHealth`; Online-Leben kommt als `maxHealth` (`main.js`); Wächter `sidegrade-maxhealth-zuender.test.js` |
+| B-2 | Der Restore läuft einen Takt zu weit — alle Figuren 8 px tiefer, Kommentar „exakt derselbe Zustand" widerlegt | `gameServer.js:167/169` | B | ✅ 2026-10-23 — `gameServer.js#restoreFromReplay` stoppt am gesicherten Takt; Wächter `wiederaufbau-seed-und-takt.test.js` (Takt und Hash) |
+| B-3 | Zünder-Countdown online immer 0 | `renderer.js:820` | B | ✅ 2026-10-23 — `protocol.js#toWireFuse` überträgt `fuseSeconds` (Protokoll v8); `renderer.js` liest ihn; Wächter `sidegrade-maxhealth-zuender.test.js` |
 | B-4 | `onJump`/`onWeaponDrop` an `hud.update` übergeben und dort **nie gelesen** | 0 Treffer | B | ✅ 2026-10-01 — tote Parameter aus dem `hud.update`-Aufruf entfernt; Eingabe läuft über `InputController`. Wächter `tests/hud-verdrahtung.test.js` (je Schlüssel genau 1 Feld in `main.js`; Gegenprobe gefahren) |
 | B-5 | `☠`/`↑`-Marken online fest auf leer/1 | Bericht | B | ✅ 2026-10-01 — Online-Status-Mapping im `onlineViewState` repariert: Jede Figur bekommt JEDEZ Takt einen vollständigen Status-Eintrag (`shield`/`frozenTurns`/`dots`/`boostMultiplier`). DOTS/Boost bleiben leer, weil sie NICHT über das Wire-Format übertragen werden — aber sie bleiben nicht mehr irrtümlich hängen. Wächter `tests/status-marke-online.test.js` (Abdeckung dokumentiert). |
 | B-6 | Kader ohne Überlaufschutz bei 30–40 Figuren | Bericht | B | ✅ 2026-10-01 — `#hud-left`/`#hud-right` bekommen `align-self: stretch; min-height: 0; overflow-y: auto`; der Kader scrollt statt über die Spielfläche zu ragen. E2E `grosse-teams.spec.mjs` (Geometrie gemessen, Gegenprobe gefahren) |
@@ -73,14 +76,14 @@ ich im Code selbst gelesen:
 
 | # | Befund | Beleg | Schwere | Stand |
 |---|---|---|---|---|
-| C-1 | `QUELTEXT` kennt kein `.json` — 2 Dateien / 169 178 Byte mit 0 Lesern unentdeckt | Werkzeug | C | 🟡 Worker M |
-| C-2 | `EINSTIEG` fängt jedes `index.js` (auch das leere) | Werkzeug | C | 🟡 Worker M |
-| C-3 | `doppelregeln()` sieht nur `const GROSSBUCHSTABEN` — Funktionen unsichtbar | Werkzeug | C | 🟡 Worker M |
-| C-4 | „kein Importeur"-Wächter prüft **30 von 90** Dateien | Werkzeug | C | 🟡 Worker M |
+| C-1 | `QUELTEXT` kennt kein `.json` — 2 Dateien / 169 178 Byte mit 0 Lesern unentdeckt | Werkzeug | C | ✅ 2026-10-23 — `statisch.mjs` `DATEN_ENDUNGEN` + `toteDaten()`; Gegenprobe `probe-blindstellen.mjs` (Fall C) |
+| C-2 | `EINSTIEG` fängt jedes `index.js` (auch das leere) | Werkzeug | C | ✅ 2026-10-23 — `statisch.mjs#einstiegspunkt` verlangt Code + Manifest-Nennung; Gegenprobe Fall D |
+| C-3 | `doppelregeln()` sieht nur `const GROSSBUCHSTABEN` — Funktionen unsichtbar | Werkzeug | C | ✅ 2026-10-23 — `statisch.mjs#modulDefinitionen` erfasst const/let/var/function/class; Gegenprobe `probe-blindstellen.mjs` Fall A/B (grün) |
+| C-4 | „kein Importeur"-Wächter prüft **30 von 90** Dateien | Werkzeug | C | ✅ 2026-10-23 — `no-dead-code.test.js` prüft ganz `src/`; Wächter „deckt JEDE Schicht" |
 | C-5 | `match.js` **3195/3200 = 5 Zeilen Luft** | `tests/shooting.test.js` | C | ✅ 2026-10-01 — die Zahl ist überholt: `match.js` steht bei **3092** Zeilen (Zerlegung Schritt 4 abgeschlossen), also 108 Zeilen Luft. Wächter `tests/match-zeilenbudget.test.js` hält die 3200-Grenze fest, statt sie in Fließtext zu führen |
 | C-6 | „Bot-KI" in 22 Kommentaren als Begründung, obwohl `server/index.js:33` sie verneint | Bericht | C | ✅ 2026-10-19 — durchgesehen (18 Fundstellen): Historische Belege („Bot-KI ist entfallen") sind korrekt; zwei Gegenwarts-Aussagen in `shotPrediction.js` korrigiert. Wächter `tests/audit-2026-10-09-fixes.test.js` |
 | C-7 | 4 Barrels / 137 Zeilen ohne Produktkonsument, mit 14 wortgleichen Kopien | Bericht | C | ✅ 2026-10-19 — die 14 wortgleichen Zeilen zwischen Client- und Server-Barrel sind durch `export * from '../shared/index.js'` ersetzt (eine Quelle). Wächter `tests/audit-2026-10-09-fixes.test.js` |
-| C-8 | `gameServer.js:1145` 282 Z. / 26 `this.`; `guentherSystem.update` 66 `this.` in 169 Z. | Bericht | C | ⬜ |
+| C-8 | `gameServer.js:1145` 282 Z. / 26 `this.`; `guentherSystem.update` 66 `this.` in 169 Z. | Bericht | C | ⬜ 2026-10-23 — weiterhin offen (Zahlen als Momentaufnahme): `GameServer#handleConnection` 438 Z. / 69 `this.`, `GuentherSystem#update` 186 Z. / 92 `this.`. Reiner Umbau ohne erzwungenes Zeilenbudget, groß — als AU-9a in `MASTERDOTO.md` vermerkt. |
 | C-9 | Kein Zeilenbudget außer für `match.js`; größte unbewachte Datei 7358 Z. | Bericht | C | ✅ 2026-10-19 — `tests/zeilenbudget.test.js` budgetiert die sechs größten handgepflegten Dateien (Stand 2026-10-19: main 3555, gameServer 2168, terrainGen3 1830, renderer 1766, protocol 1106; match 3200 wie bisher). `weapons.js` ist generiert und bleibt bewusst ohne Budget. **2026-10-23:** Nach dem Zusammenführen beider Linien rissen main (4492) und renderer (2844). Die Grenzen blieben, ausgezogen wurden `client/kaderansicht.js` und `client/kulisseUndWasser.js` — main 3801, renderer 2485 |
 
 ---

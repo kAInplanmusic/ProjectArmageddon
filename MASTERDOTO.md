@@ -37,8 +37,12 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
 - [ ] **AU-7 Doppelregeln:** 28 wertgleiche Konstanten in mehreren Dateien ohne Ausnahmeeintrag
   (`ZELLE, boden, CACHE_KANTE, ladeBild, MAX_TEILCHEN, …`) — zusammenführen oder in Ausnahmeliste begründen.
 - [ ] **AU-8 Design:** 0 von 5 Partien enden vor Mahlstrom-Runde 8 — Matchdauer vs. Breakpoint prüfen.
-- [ ] **AU-9 Register veraltet:** `docs/befundregister.md` führt A-1…A-13, B-1…B-3, C-1…C-4 als „🟡 beauftragt“
-  (Stand 09-27) — gegen Code verifizieren und Status nachziehen; C-8 offen.
+- [x] **AU-9 Register veraltet:** `docs/befundregister.md` führte A-1…A-13, B-1…B-3, C-1…C-4 als „🟡 beauftragt“
+  (Stand 09-27) — gegen Code verifiziert und Status nachgezogen (2026-10-23): alle A/B/C-Befunde außer C-8
+  sind im Code behoben und mit Wächtern belegt (Belege je Zeile in `docs/befundregister.md`).
+  - [ ] **AU-9a C-8 bleibt offen:** `GameServer#handleConnection` 438 Z. / 69 `this.`, `GuentherSystem#update`
+    186 Z. / 92 `this.` (Stand 2026-10-23). Reiner Umbau ohne erzwungenes Zeilenbudget — groß, zurückgestellt;
+    kein Bug, nur Ordnung. Details in `docs/befundregister.md`.
 
 ## Standardmechaniken (Audit 2026-10-21) — Gehen GEBAUT, Rest als Liste
 
