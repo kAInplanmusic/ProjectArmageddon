@@ -45,7 +45,7 @@ main @ Merge bg/doppel: 1857/1857 Tests grün, eslint sauber, Build ok, check:ac
 Doppelregeln 11 zusammengeführt + 17 begründet. Erledigt: AU-1..AU-7, AU-9, LOOK-1 (Kacheln), UX-Werkzeuge
 (`test:a11y`, `test:visuell`, `check:ux` gebaut — Funde noch NICHT ausgewertet).
 - [x] **REST-1** `npm run test:a11y` und `npm run check:ux` gelaufen 2026-10-24, Funde als UX-1..UX-5 eingetragen.
-- [ ] **REST-2** AU-8 (Matchdauer vs. Mahlstrom), AU-9a (C-8 Zerlegung), SPR-1..SPR-9, LOOK-n offen.
+- [ ] **REST-2** AU-9a (C-8 Zerlegung), SPR-1..SPR-8 (Bilddefekte, brauchen Bildgenerierung), LOOK-n offen; AU-8 beantwortet, SPR-9 gebaut.
 - [ ] **REST-3** Ältere offene Punkte (P1/P2/P3-Abschnitte) nicht abgearbeitet — Worker-Lauf scheiterte am Prompt-Pfad.
 - Worker-Werkzeug: `~/.pa-worker.sh <name> <ABSOLUTER promptpfad>` (opencode, freellmapi/auto; DeepSeek-Guthaben leer).
 
@@ -107,7 +107,17 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
   begrenze/begrenze01/TWO_PI/glatt→`client/mathe.js`, ZELLE Feuer→`config/feuer.js`, ZELLE Waffe→`client/waffenAnimation.js`,
   CACHE_KANTE Figur→`client/figurStufen.js`), 17 begründete Ausnahmen in `DOPPELREGEL_AUSNAHMEN`;
   `audit:bericht`: doppelregeln 17/17 begründet, 0 offen.
-- [ ] **AU-8 Design:** 0 von 5 Partien enden vor Mahlstrom-Runde 8 — Matchdauer vs. Breakpoint prüfen.
+- [x] **AU-8 Design — beantwortet (2026-10-24, Messung statt Sichturteil):** Der Befund „0 von 5 Partien enden
+  vor Mahlstrom-Runde 8" beschreibt eine Fassung, die es nicht mehr gibt. Der Mahlstrom beginnt seit der
+  Entscheidung vom 2026-10-13 **zeitbasiert**: `MATCH_RULES.suddenDeath.valhallaMinSeconds/MaxSeconds` =
+  360–720 s (6–12 min), gezogen je Partie, wirksam zur nächsten Runde, Omen 1–60 s vorher. Begründung steht
+  im Code (`src/shared/config/match.js:82`): eine feste Runde ist als Einheit unbrauchbar — Runde 8 dauert
+  bei vielen Figuren über 20 Minuten, bei zwei knapp vier.
+  Nachgemessen mit `node scripts/bot-partien.mjs --seeds=24 --kit=4 --zugregeln=2`: **24/24 Partien enden
+  von selbst**, Median **10,0 min** (p90 12,1 · max 14,1), Median **Runde 12**, **7 von 24 (29 %) enden VOR
+  dem Sturm**, die übrigen währenddessen; 0 Partien im Rundenlimit-Netz. Die Lage ist damit gesund: der
+  Sturm ist die Bremse für lange Partien, nicht die einzige Möglichkeit zu enden. **Keine Codeänderung** —
+  die Designfrage ist durch die Zeitbasis entschieden, nicht offen.
 - [x] **AU-9 Register veraltet:** `docs/befundregister.md` führte A-1…A-13, B-1…B-3, C-1…C-4 als „🟡 beauftragt“
   (Stand 09-27) — gegen Code verifiziert und Status nachgezogen (2026-10-23): alle A/B/C-Befunde außer C-8
   sind im Code behoben und mit Wächtern belegt (Belege je Zeile in `docs/befundregister.md`).
