@@ -31,9 +31,11 @@ Absichtserklärungen.
 - [x] **UX-4 Lighthouse Performance 64/100 (`check:ux`):** FCP 2,8 s, LCP 3,9 s, ungenutztes JS 152 KiB,
   render-blocking 450 ms, Bilder 63 KiB, fehlende Source Maps. Offen als eigenes Arbeitspaket
   (Code-Splitting/Rolldown, Preload, WebP/AVIF) — braucht Messreihen, nicht nur CSS.
-- [x] **UX-5 INEFFECTIVE_DYNAMIC_IMPORT (Build):** 94+ Character-Assets werden in `figurenBilder.js`
-  dynamisch und in `roster.js` statisch importiert; Vite kann nicht splitten. Offen (ein Umbau von
-  `roster.js` auf `import.meta.glob`).
+- [x] **UX-5 INEFFECTIVE_DYNAMIC_IMPORT (Build) — behoben:** `figurenBilder.js` führte einen zweiten,
+  lazily `import.meta.glob` auf dieselben 81 Porträts, die `roster.js` bereits eager einbindet. Vite kann
+  ein Modul nicht statisch **und** dynamisch einbinden — das Lazy-Laden fand nie statt, der Build warnte
+  81-mal. Jetzt eine Quelle: `spriteUrl()` aus `roster.js`. **Build: 0 Warnungen** (vorher 81),
+  Hauptbündel 1.030,7 → 1.017,7 kB (gzip 288,1 → 284,9 kB).
 - [x] **AU-10 Export ohne Leser `GESCHOSS_KANTE`** (`src/client/waffenSprites.js`): war nur intern in
   Gebrauch — `export` entfernt (Commit „fix(client): ungenutzten Export GESCHOSS_KANTE entfernt").
 
