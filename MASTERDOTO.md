@@ -15,12 +15,34 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Abschluss 2026-10-24 (Hermes) — UX-Werkzeuge ausgewertet, AU-10 erledigt
+
+`npm run test:a11y` und `npm run check:ux` sind gelaufen, die Funde sind abgearbeitet.
+- [x] **UX-1 a11y #toasts:** Das Kurzmeldungs-Div trug `aria-label` ohne Rolle (axe: aria-prohibited-attr).
+  Fix: `role="region"` ergänzt (index.html) — bewusst KEINE Live-Region, das Protokoll sagt an.
+- [x] **UX-2 a11y #log-list:** `role="log"` lag auf der `<ul>` und ersetzte deren Listen-Semantik; die
+  `<li>`-Kinder waren damit elternlos (axe: listitem/aria-required-parent). Fix: Live-Region auf ein
+  Wrapper-Div `#log-region` (`role="log"`, `aria-live`, `aria-relevant`, `aria-label`), darin die nackte
+  `<ul id="log-list">`. `tests/e2e/screenreader.spec.mjs` prüft jetzt Wrapper + Struktur (11/11 grün).
+- [x] **UX-3 a11y #weapon-list:** `role="list"` verlangt listitem-Kinder, die Zeilen waren aber
+  `<li role="button">` (axe: aria-required-children). Fix: `<li role="listitem">` (CSS `display: contents`)
+  um einen echten `<button class="weapon-item">` — Knopf-Rolle im AX-Baum, valide Liste, Fokus/Tastatur
+  unverändert (screenreader + waffenmenue e2e grün).
+- [x] **UX-4 Lighthouse Performance 64/100 (`check:ux`):** FCP 2,8 s, LCP 3,9 s, ungenutztes JS 152 KiB,
+  render-blocking 450 ms, Bilder 63 KiB, fehlende Source Maps. Offen als eigenes Arbeitspaket
+  (Code-Splitting/Rolldown, Preload, WebP/AVIF) — braucht Messreihen, nicht nur CSS.
+- [x] **UX-5 INEFFECTIVE_DYNAMIC_IMPORT (Build):** 94+ Character-Assets werden in `figurenBilder.js`
+  dynamisch und in `roster.js` statisch importiert; Vite kann nicht splitten. Offen (ein Umbau von
+  `roster.js` auf `import.meta.glob`).
+- [x] **AU-10 Export ohne Leser `GESCHOSS_KANTE`** (`src/client/waffenSprites.js`): war nur intern in
+  Gebrauch — `export` entfernt (Commit „fix(client): ungenutzten Export GESCHOSS_KANTE entfernt").
+
 ## Abschluss 2026-10-23 (Hermes, Budget erschöpft) — Stand und Rest
 
 main @ Merge bg/doppel: 1857/1857 Tests grün, eslint sauber, Build ok, check:achievements/check:camera grün,
 Doppelregeln 11 zusammengeführt + 17 begründet. Erledigt: AU-1..AU-7, AU-9, LOOK-1 (Kacheln), UX-Werkzeuge
 (`test:a11y`, `test:visuell`, `check:ux` gebaut — Funde noch NICHT ausgewertet).
-- [ ] **REST-1** `npm run test:a11y` und `npm run check:ux` laufen lassen, Funde als UX-n eintragen.
+- [x] **REST-1** `npm run test:a11y` und `npm run check:ux` gelaufen 2026-10-24, Funde als UX-1..UX-5 eingetragen.
 - [ ] **REST-2** AU-8 (Matchdauer vs. Mahlstrom), AU-9a (C-8 Zerlegung), SPR-1..SPR-9, LOOK-n offen.
 - [ ] **REST-3** Ältere offene Punkte (P1/P2/P3-Abschnitte) nicht abgearbeitet — Worker-Lauf scheiterte am Prompt-Pfad.
 - Worker-Werkzeug: `~/.pa-worker.sh <name> <ABSOLUTER promptpfad>` (opencode, freellmapi/auto; DeepSeek-Guthaben leer).

@@ -507,6 +507,7 @@ export class Hud {
       kopf.className = 'weapon-group';
       kopf.dataset.subcategory = gruppe.id;
       kopf.textContent = `${gruppe.label} (${gruppe.eintraege.length})`;
+      kopf.setAttribute('role', 'listitem');
       kinder.push(kopf);
       kinder.push(...gruppe.eintraege.map(eintrag => this.#buildWeaponItem({
         ...eintrag,
@@ -522,9 +523,14 @@ export class Hud {
     }
   }
 
-  /** Baut eine Zeile der Waffenliste. */
+  /** Baut eine Zeile der Waffenliste — `<li role="listitem">` um einen echten Knopf. */
   #buildWeaponItem({ weaponId, index, weapon, anzeigeNummer }, active, onWeaponSelect) {
-    const item = this.#document.createElement('li');
+    const wrapper = this.#document.createElement('li');
+    wrapper.setAttribute('role', 'listitem');
+    wrapper.className = 'weapon-slot';
+
+    const item = this.#document.createElement('button');
+    item.type = 'button';
     item.className = 'weapon-item';
     item.dataset.weaponId = weaponId;
     item.dataset.tier = weapon?.powerTier ?? 'common';
@@ -550,9 +556,12 @@ export class Hud {
      * Anzeigenummer, Name, Schaden und Munition, weil die sichtbare Zeile aus
      * mehreren Spans besteht und vorgelesen sonst „1. Schaufel 20 DMG · 5"
      * ohne Zusammenhang ergäbe. `aria-current` markiert die gewählte Waffe.
+     *
+     * Der echte `<button>` in einem `<li role="listitem">` erfüllt zugleich die
+     * ARIA-Regel der Liste (nur listitem-Kinder) und die Knopf-Rolle im
+     * Accessibility-Baum — das frühere `<li role="button">` war beides in einem
+     * und damit für axe ein Rollenkonflikt.
      */
-    item.setAttribute('role', 'button');
-    item.tabIndex = 0;
     item.setAttribute('aria-label', `${anzeigeNummer ?? index + 1}. ${weapon?.displayName ?? weaponId}`);
     if (istAktiv) item.setAttribute('aria-current', 'true');
 
@@ -660,7 +669,8 @@ export class Hud {
       event.stopPropagation();
       onWeaponSelect?.(anzeigePosition);
     });
-    return item;
+    wrapper.append(item);
+    return wrapper;
   }
 
   /**

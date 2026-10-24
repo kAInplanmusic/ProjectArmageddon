@@ -966,7 +966,7 @@
             <span class="wm-knopf-text">Waffen</span>
             <span class="wm-knopf-taste" aria-hidden="true">E</span>
           </button>
-          <ul id="weapon-list" aria-label="Waffen und Munition"></ul>
+          <ul id="weapon-list" role="list" aria-label="Waffen und Munition"></ul>
         </div>
 
         <!-- Waffenmenü: zeigt den Besitz, gruppiert nach Kategorie (src/client/waffenMenue.js). -->
@@ -1020,13 +1020,15 @@
             sich im Sekundentakt. Ein Screenreader würde pausenlos reden und
             alles andere übertönen. Wer sie wissen will, liest sie im HUD.
           -->
-          <ul id="log-list" aria-label="Ereignisprotokoll" role="log"
-              aria-live="polite" aria-relevant="additions"></ul>
+          <div id="log-region" role="log" aria-label="Ereignisprotokoll"
+               aria-live="polite" aria-relevant="additions">
+            <ul id="log-list"></ul>
+          </div>
         </div>
       </section>
 
       <!-- Kurzmeldungen (src/client/toasts.js): bewusst KEINE Live-Region, das Protokoll sagt an. -->
-      <div id="toasts" aria-label="Kurzmeldungen"></div>
+      <div id="toasts" role="region" aria-label="Kurzmeldungen"></div>
 
       <section id="menu-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Hauptmenü">
         <div class="overlay-card panel">
