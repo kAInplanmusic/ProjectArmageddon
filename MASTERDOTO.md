@@ -68,7 +68,16 @@ Waffen: 150/150 im Manifest, jede mit held/silhouette/icon(/projektil) und Decku
 - [ ] **SPR-7 Automatische Auffälligkeit (Teilprüfung, Zusammenhangskomponenten):** datacult/20 zustand, datacult/21 walk,
   undead/00 zustand, undead/12 zustand — sichten.
 - [ ] **SPR-8 Stilbruch Haustiere:** Günther/Cookie flach-cartoonig gegenüber den gemalten Figuren — bewusst lassen oder angleichen.
-- [ ] **SPR-9 Wächter:** Prüfung als `scripts/check-sprites.mjs` (Zellen gefüllt, Rand, Fragmente, Namensdubletten) ins Repo.
+- [x] **SPR-9 Wächter gebaut (2026-10-24):** `scripts/check-sprites.mjs` (`npm run check:sprites`) misst
+  Vollständigkeit, Zellfüllung, Randberührung, Zerfaserung (zusammenhängende Flächen), Namensdubletten,
+  Emotions-Blätter, Waffen-Atlasregionen (Deckung ≥ 3 %, doppelte Quellen) und die Haustier-Posen.
+  Bericht: `docs/sprite-pruefung.json`, Exit 1 bei Befund. Erster Lauf: 81 Figuren, **243/243 Blätter**,
+  **1944/1944 Zellen gefüllt**, 81/81 Emotions-Blätter, 150 Waffen (450 Regionen, mittlere Deckung 42,6 %),
+  Günther/Cookie 14/14 — **0 leere Zellen, 0 Randberührungen**, 43 Befunde:
+  Zerfaserung in **9 Figuren** (34 Zellen) und eine Namensdublette. Die Funde decken sich mit der
+  Sichtprüfung: `datacult/11_synapse-streamer` (SPR-1), `pixel/11_pyrowand-a` (SPR-3),
+  `datacult/20_buffer-flow-swarm__zustand` und `undead/12_vessel-plague-skull__zustand` (SPR-7),
+  `pixel`/`datacult` `00_nullpointer-exception` (SPR-2).
 
 ## Audit 2026-10-23 (Hermes, sparsam: Gates + checks + audit:bericht) — OFFEN
 
