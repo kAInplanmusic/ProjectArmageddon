@@ -24,7 +24,7 @@ import { ZELLE } from './waffenAnimation.js';
 /** Kantenlänge der gecachten Waffenzellen (Atlas: 128 px; für die Anzeige genügt die Hälfte). */
 export const CACHE_KANTE = 64;
 /** Kantenlänge der Geschosszellen im Atlas und im Cache. */
-export const GESCHOSS_KANTE = 32;
+const GESCHOSS_KANTE = 32;
 const GLANZ_KANTE = 32;
 
 /** Größte Neigung (Radiant), die ausgerichtet wird; stärker geneigte Anker gelten als Fehlschätzung. */

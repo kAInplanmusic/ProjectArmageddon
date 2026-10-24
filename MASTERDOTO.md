@@ -81,6 +81,7 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
   - [ ] **AU-9a C-8 bleibt offen:** `GameServer#handleConnection` 438 Z. / 69 `this.`, `GuentherSystem#update`
     186 Z. / 92 `this.` (Stand 2026-10-23). Reiner Umbau ohne erzwungenes Zeilenbudget — groß, zurückgestellt;
     kein Bug, nur Ordnung. Details in `docs/befundregister.md`.
+- [x] **AU-10 Export `GESCHOSS_KANTE` (audit):** Export in `src/client/waffenSprites.js` entfernt, da nur intern genutzt (belegt durch `grep -r`).
 
 ## Standardmechaniken (Audit 2026-10-21) — Gehen GEBAUT, Rest als Liste
 
