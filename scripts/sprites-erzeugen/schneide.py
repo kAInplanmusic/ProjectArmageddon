@@ -53,7 +53,30 @@ def blatt(path,hoehe_ref=None,zelle=256,boden=240,mehr=False):
         cell=Image.new('RGBA',(zelle,zelle),(0,0,0,0))
         cell.paste(t,((zelle-t.width)//2,boden-t.height),t)
         out.paste(cell,((i%4)*zelle,(i//4)*zelle))
-    return out
+    return _ohne_streifen(out)
+
+def _ohne_streifen(blatt):
+    """Nachputzen: Gitterstriche, die die Öffnung oben nicht erwischt hat.
+
+    Die Öffnung mit np.ones((6,3)) entfernt einen freistehenden Strich, aber
+    nicht den Teil, der durch die Figur läuft — dort ist die Maske breiter als
+    das Strukturelement. Ergebnis waren senkrechte schwarze Linien über die
+    ganze Zelle (SPR-5: shinobi/11_rauch-meister-genzi__aktion in allen acht
+    Zellen, undead/10_archer-mortis__aktion Zelle 3, xeno/12_plasma-maw-zorg__walk
+    Zellen 5 und 7). `streifen-entfernen.py` erkennt genau diese Signatur und
+    räumt sie auf. Fehlt das Werkzeug, bleibt das Blatt unverändert.
+    """
+    import importlib.util, os
+    pfad = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'streifen-entfernen.py')
+    if not os.path.exists(pfad):
+        return blatt
+    spec = importlib.util.spec_from_file_location('streifen_entfernen', pfad)
+    modul = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modul)
+    neu, anzahl = modul.entferne(blatt)
+    if anzahl:
+        print(f'  {anzahl} Gitterstrich(e) nachgeputzt')
+    return neu
 if __name__=='__main__':
     import sys
     for n in ['t_walk','t_aktion']:
