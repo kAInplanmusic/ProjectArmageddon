@@ -292,6 +292,27 @@ export class GuentherSystem {
 
     if (this.#kontaktSperre > 0) this.#kontaktSperre -= 1;
 
+    this.#pinkeln(world, kontext, schaden, melde);
+
+    this.#kacken(melde);
+
+    this.#haufenPruefen(world, kontext, haufenGetroffen, melde);
+
+    this.#beruehrung(world, aktiverSpieler, radAufloesen, melde);
+
+    if (this.#fassung >= GUENTHER_AKTIONEN) this.#aktionSchritt(world, kontext);
+
+    this.#positionenMerken(world, kontext);
+  }
+
+  /**
+   * Anpinkeln ---------------------------------------------------------.
+   *
+   * Aus `update()` herausgezogen (AU-9a/C-8). Der Rumpf ist zeichengleich
+   * uebernommen, und die Ziehungen von `this.#rng` stehen in derselben
+   * Reihenfolge wie vorher — der Zustands-Hash bleibt damit gleich.
+   */
+  #pinkeln(world, kontext, schaden, melde) {
     // --- Anpinkeln ---------------------------------------------------------
     if (!this.#ruhig()) this.#pinkelTimer -= 1;
     if (this.#pinkelTimer <= 0) {
@@ -318,7 +339,16 @@ export class GuentherSystem {
         });
       }
     }
+  }
 
+  /**
+   * Kackhaufen --------------------------------------------------------.
+   *
+   * Aus `update()` herausgezogen (AU-9a/C-8). Der Rumpf ist zeichengleich
+   * uebernommen, und die Ziehungen von `this.#rng` stehen in derselben
+   * Reihenfolge wie vorher — der Zustands-Hash bleibt damit gleich.
+   */
+  #kacken(melde) {
     // --- Kackhaufen --------------------------------------------------------
     if (!this.#ruhig()) this.#kackTimer -= 1;
     if (this.#kackTimer <= 0) {
@@ -338,7 +368,16 @@ export class GuentherSystem {
       if (this.#fassung >= GUENTHER_AKTIONEN) this.#kurzPose = { name: 'kacken', ticks: GUENTHER_KACK_POSE_TICKS };
       melde('guenther_poop', { x: this.#position.x, y: this.#position.y });
     }
+  }
 
+  /**
+   * Haufen prüfen -----------------------------------------------------.
+   *
+   * Aus `update()` herausgezogen (AU-9a/C-8). Der Rumpf ist zeichengleich
+   * uebernommen, und die Ziehungen von `this.#rng` stehen in derselben
+   * Reihenfolge wie vorher — der Zustands-Hash bleibt damit gleich.
+   */
+  #haufenPruefen(world, kontext, haufenGetroffen, melde) {
     // --- Haufen prüfen -----------------------------------------------------
     for (const haufen of this.#haufen) {
       for (const spielerId of kontext.spielerIds ?? []) {
@@ -362,7 +401,16 @@ export class GuentherSystem {
         }
       }
     }
+  }
 
+  /**
+   * Berührung ---------------------------------------------------------.
+   *
+   * Aus `update()` herausgezogen (AU-9a/C-8). Der Rumpf ist zeichengleich
+   * uebernommen, und die Ziehungen von `this.#rng` stehen in derselben
+   * Reihenfolge wie vorher — der Zustands-Hash bleibt damit gleich.
+   */
+  #beruehrung(world, aktiverSpieler, radAufloesen, melde) {
     // --- Berührung ---------------------------------------------------------
     if (this.#kontaktSperre === 0 && aktiverSpieler !== null && world.isActive(aktiverSpieler)) {
       const x = world.getComponent(aktiverSpieler, 'Position', 'x') ?? 0;
@@ -379,9 +427,16 @@ export class GuentherSystem {
         melde('guenther_wheel', { playerId: aktiverSpieler, ...ergebnis });
       }
     }
+  }
 
-    if (this.#fassung >= GUENTHER_AKTIONEN) this.#aktionSchritt(world, kontext);
-
+  /**
+   * Positionen GANZ AM ENDE fortschreiben.
+   *
+   * Aus `update()` herausgezogen (AU-9a/C-8). Der Rumpf ist zeichengleich
+   * uebernommen, und die Ziehungen von `this.#rng` stehen in derselben
+   * Reihenfolge wie vorher — der Zustands-Hash bleibt damit gleich.
+   */
+  #positionenMerken(world, kontext) {
     // Positionen GANZ AM ENDE fortschreiben.
     //
     // Die Reihenfolge ist entscheidend: Würde sie vor der Berührungsprüfung
