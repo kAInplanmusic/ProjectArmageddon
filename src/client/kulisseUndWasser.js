@@ -109,6 +109,66 @@ function ladeHochBild(r, backdrop) {
    *
    * @returns {{canvas: HTMLCanvasElement, breite: number}}
    */
+/**
+ * LOOK-2 (2026-10-25), Tiefenstaffel: Die Kulisse tritt zurück, damit das
+ * scharfe Spielgelände die vorderste Ebene bleibt.
+ *
+ * Gemessen am 2026-10-25 über `src/client/assets/backdrops/*.jpg`: die mittlere
+ * Sättigung liegt zwischen 0,28 (Kloster) und 0,87 (abstrakt-psychedelisch).
+ * Die hohen Werte konkurrieren mit dem Gelände. Deshalb wird NICHT pauschal
+ * entsättigt (das macht Fotokulissen tot), sondern nur so weit, bis der Deckel
+ * erreicht ist — Faktor 1,0 für Bilder, die schon darunter liegen.
+ */
+const SAETTIGUNG_DECKEL = 0.45;
+const SAETTIGUNGS_FAKTOR = new WeakMap();
+
+/** Sättigungsfaktor je Bild, einmal aus einer 64×36-Probe gerechnet. */
+function saettigungsFaktor(img) {
+  const bekannt = SAETTIGUNGS_FAKTOR.get(img);
+  if (bekannt !== undefined) return bekannt;
+  let faktor = 1;
+  try {
+    const probe = document.createElement('canvas');
+    probe.width = 64;
+    probe.height = 36;
+    const g = probe.getContext('2d', { willReadFrequently: true });
+    if (g) {
+      g.drawImage(img, 0, 0, 64, 36);
+      const daten = g.getImageData(0, 0, 64, 36).data;
+      let summe = 0;
+      let n = 0;
+      for (let i = 0; i < daten.length; i += 4) {
+        const r = daten[i] / 255;
+        const gg = daten[i + 1] / 255;
+        const b = daten[i + 2] / 255;
+        const max = Math.max(r, gg, b);
+        const min = Math.min(r, gg, b);
+        if (max <= 0.05) continue;
+        summe += (max - min) / max;
+        n += 1;
+      }
+      const s = n > 0 ? summe / n : 0;
+      if (s > SAETTIGUNG_DECKEL) faktor = SAETTIGUNG_DECKEL / s;
+    }
+  } catch {
+    // Ohne Bilddaten (z. B. Canvas gesperrt) bleibt die Kulisse unverändert.
+    faktor = 1;
+  }
+  SAETTIGUNGS_FAKTOR.set(img, faktor);
+  return faktor;
+}
+
+/**
+ * Baut (und merkt sich) die fertige Kulissenfläche: Zuschnitt für Stimmungsbilder,
+ * Sättigungsdeckel (LOOK-2), Glut der Ragnarök-Stimmungen und Abdunkelung nach unten.
+ * Neu gebaut wird nur bei anderem Bild, anderer Größe oder anderer Glutstufe.
+ *
+ * @param {object} r Renderer (Breite, Höhe, Cache)
+ * @param {HTMLImageElement} img geladene Kulisse
+ * @param {boolean} stimmung Stimmungsbild (cover-Zuschnitt) oder Vollbild
+ * @param {number} glut Glutstärke 0…1
+ * @returns {{canvas: HTMLCanvasElement, breite: number}}
+ */
 function kulissenBild(r, img, stimmung, glut) {
     const w = r.width;
     const h = r.height;
@@ -124,8 +184,12 @@ function kulissenBild(r, img, stimmung, glut) {
     canvas.width = breite;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
+    // LOOK-2: Kulisse hinter das Gelände legen (Sättigungsdeckel, s. o.).
+    const saettigung = saettigungsFaktor(img);
+    if (saettigung < 1) ctx.filter = `saturate(${saettigung.toFixed(3)})`;
     if (z) ctx.drawImage(img, 0, z.sy, bw, z.sh, 0, 0, breite, h);
     else ctx.drawImage(img, 0, 0, w, h);
+    ctx.filter = 'none';
     if (glut > 0) {
       ctx.fillStyle = `rgba(255,70,20,${glutKey})`;
       ctx.fillRect(0, 0, breite, h);

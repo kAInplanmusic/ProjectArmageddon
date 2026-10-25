@@ -6909,7 +6909,17 @@ Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, St
 Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-quelle/`. Reine Client-Optik, ohne Einfluss auf Maske, Hash oder Netz.
 
 - [x] **LOOK-1 Kacheln des Auftraggebers als Stofftexturen.** Beleg: `scripts/kacheln-schneiden.mjs` erkennt das Raster automatisch (4 Zeilen, 7 Spalten), schneidet A3/A7/A9/A10/A11/A16/A21/A22 mit 12 % Innenrand, blendet sie über 50-%-Rollen und weiche Kreuzmaske nahtlos und schreibt 512-px-JPEG (Qualität 82, 19–33 KB) nach `src/client/assets/stoff-texturen/`; `STOFF_TEXTUR` nutzt sand/basalt/eis/pilz/holz/beton/obsidian/regolith, Übersicht `assets/gelaende-quelle/kontrolle.jpg`, `tests/stoff-texturen.test.js` grün.
-- [ ] **LOOK-2 Tiefenstaffel.** Drei Ebenen wie in den Referenzkarten: entsättigte Hintergrund-Kulisse, scharfes Spielgelände, Vordergrundpartikel.
+- [x] **LOOK-2 Tiefenstaffel — EBENE 1 UMGESETZT (2026-10-25):** Gemessen über alle Kulissenbilder
+  (`src/client/assets/backdrops/*.jpg`): mittlere Sättigung 0,28 (Kloster) bis 0,87 (abstrakt-psychedelisch).
+  Die hohen Werte konkurrierten mit dem Gelände. Umgesetzt ist ein **Sättigungsdeckel 0,45**, bedarfsgerecht:
+  Bilder darunter bleiben unangetastet (Faktor 1,0), nur zu bunte werden gezogen — eine pauschale
+  Entsättigung hätte Fotokulissen tot gemacht. Der Faktor wird EINMAL je Bild aus einer 64×36-Probe
+  gerechnet (WeakMap) und im ohnehin vorhandenen Vorrechen-Canvas angewendet, kostet also nichts je Bild.
+  Belege: Lint grün, `backdrops.spec.mjs` **12/12 im echten Browser** (u. a. „Jede Stimmung ist wählbar,
+  lädt und wird gezeichnet"). **Grenzen:** Ebene 2 (scharfes Gelände) war bereits erfüllt; Ebene 3
+  (Vordergrundpartikel als eigene Ebene) ist NICHT gebaut — Funken, Rauch und Glut liegen als Effekte vor,
+  aber keine eigene Vordergrundschicht. Und die generative Kulisse (`zeichneKulisse`) hat den Deckel nicht;
+  sie ist ohne Bildwahl aktiv.
 - [x] **LOOK-3 Lava-Glühen — UMGESETZT (2026-10-25), mit Ehrlichkeit zum Ist-Stand:** Ein additives radiales
   Glühen je Lavazelle gab es bereits (`FeuerOptik.zeichne`, Sprite `lavaGluehen`, `lighter`, Alpha 0,5).
   Neu: Die Füllung war pro Bild EIN Farbton (eine gleichförmige Platte) und ist jetzt dreistufig aus einem
