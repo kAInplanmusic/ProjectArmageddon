@@ -27,6 +27,30 @@ import { ReplayRecorder } from '../../src/engine/replay.js';
  * Vergleichsbilder gehoeren zum Dossier und muessen mit der Doku mitwandern.
  */
 
+/*
+ * NUR LOKAL — wie die Bildvergleiche (`visuell.spec.mjs`), aus demselben
+ * Grund: Die Bilder haengen an der Render-Umgebung (Schriftmetriken,
+ * Rasterung), nicht nur am Code. Gemessen am 2026-10-25 im Volllauf: 27
+ * Bilder aenderten sich, ohne dass sich eine Zeile Produktcode aenderte —
+ * derselbe Code, ein anderer Lauf.
+ *
+ * Diese Spezifikation VERGLEICHT nicht, sie ERZEUGT die Bilder des
+ * Vergleichsdossiers und ueberschreibt dabei getrackte Dateien. In der CI
+ * entstuenden Bilder einer fremden Maschine, die niemand committen will.
+ * Deshalb setzt die CI `PA_OHNE_BILDVERGLEICH=1`; die Tests verschwinden
+ * dabei NICHT stillschweigend, sondern erscheinen als uebersprungen MIT
+ * dieser Begruendung. Lokal (Variable nicht gesetzt) laufen sie und erneuern
+ * das Dossier bewusst.
+ *
+ * Die Mindestzusagen dieser Spezifikation (Seite laedt, Menue oeffnet, HUD
+ * steht, keine Seitenfehler) deckt die uebrige E2E-Batterie in der CI weiter
+ * ab — dort ohne den Bilder-Zweig.
+ */
+const OHNE_BILDVERGLEICH = process.env.PA_OHNE_BILDVERGLEICH === '1';
+
+test.skip(OHNE_BILDVERGLEICH,
+  'Dossier-Bilder nur auf dem Rechner erzeugen, auf dem sie entstanden sind — siehe docs/testgrenzen.md');
+
 const OUT_DIR = fileURLToPath(
   new URL('../../docs/vergleich-alternativspiele-2026-10-19/eigene/', import.meta.url),
 );

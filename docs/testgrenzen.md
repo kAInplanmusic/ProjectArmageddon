@@ -234,3 +234,22 @@ Wer die Strecke künftig auf einem **anderen** Knoten laufen lässt, bekommt
 dieselben zwei Vergleiche dort rot. Sauber wäre ein umgebungsunabhängiger
 Vergleich (etwa Kanten statt Pixel). Das ist eine eigene Aufgabe und steht als
 solche in `docs/offene-punkte.md`.
+
+### Die Dossier-Bilder: kein Vergleich, aber dieselbe Grenze
+
+`tests/e2e/vergleich-screenshots.spec.mjs` erzeugt die Bilder für
+`docs/vergleich-alternativspiele-2026-10-19/` und **überschreibt dabei
+getrackte Dateien**. Diese Spezifikation vergleicht nichts — sie hängt aber an
+derselben Render-Umgebung wie die Baselines.
+
+Gemessen am **2026-10-25**: Ein Volllauf änderte **27 Bilder**, ohne dass sich
+eine Zeile Produktcode änderte (derselbe Code, ein anderer Lauf; Dateigrößen
+zum Teil deutlich anders). Ein CI-Lauf würde also Bilder einer fremden Maschine
+in das Dossier schreiben, die niemand committen will.
+
+Deshalb gilt dieselbe Regel: Die CI setzt `PA_OHNE_BILDVERGLEICH=1`, die
+Spezifikation meldet sich dann als **übersprungen mit Begründung**. Lokal läuft
+sie und erneuert das Dossier — bewusst, nicht als Nebenwirkung jedes Laufs.
+Der Bilder-Zweig fällt damit in der CI weg; die Mindestzusagen (Seite lädt,
+Menü öffnet, HUD steht, keine Seitenfehler) decken die übrigen Spezifikationen
+dort weiter ab.
