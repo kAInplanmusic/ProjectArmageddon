@@ -23,7 +23,45 @@ test('TokenBucket: Stoß erlaubt, danach Dauerrate, Auffüllen mit der Zeit', ()
   assert.ok(RATE_PRO_SEKUNDE >= 20 && RATE_STOSS >= 30, 'Standardgrenze lässt normales Spiel unberührt');
 });
 
-test('Eine Nachrichtenflut erzeugt höchstens einen Stoß an Antworten', { timeout: 30_000 }, async () => {
+/*
+ * FLAKE-1 (Fund 2026-10-25): Der Test unten wartete 1500 ms und zählte die
+ * Fehlerantworten; er verglich sie mit dem blanken Stoß (60). Das kann nicht
+ * halten. Ein Token-Bucket füllt während des Wartens auf — 30/s über 1,5 s sind
+ * 45 weitere Nachrichten. Der beobachtete Fehlschlag (61–70 statt ≤ 60) war
+ * deshalb kein Serverfehler, sondern eine falsch gerechnete Schranke im Test:
+ * je langsamer die Maschine, desto mehr Auffüllung, desto sicherer rot.
+ *
+ * Diese Prüfung belegt die Schranke ohne Uhr und ohne Last: über ein Fenster
+ * der Länge T dürfen Stoß + Rate·T durch, und der Stoß allein wird dabei
+ * zwangsläufig überschritten.
+ */
+test('Über ein Messfenster T gehen Stoß + Rate·T durch, nicht nur der Stoß', () => {
+  const fensterMs = 1500;
+  const versuche = 3000;
+  let zeit = 0;
+  const eimer = new TokenBucket({ jetzt: () => zeit });
+  let angenommen = 0;
+  for (let i = 0; i < versuche; i++) {
+    // gleichmäßig über das Fenster verteilt, wie eine Flut in der Ereignisschleife
+    zeit = (i / (versuche - 1)) * fensterMs;
+    if (eimer.erlaube()) angenommen += 1;
+  }
+
+  const schranke = RATE_STOSS + RATE_PRO_SEKUNDE * (fensterMs / 1000);
+
+  // Der alte Vergleich (<= RATE_STOSS) müsste hier scheitern — genau das war der Flake.
+  assert.ok(
+    angenommen > RATE_STOSS,
+    `über ${fensterMs} ms gehen ${angenommen} durch, also mehr als der Stoß ${RATE_STOSS}`,
+  );
+  // Die richtige Schranke hält, mit einer Nachricht Luft für die letzte Auffüllung.
+  assert.ok(
+    angenommen <= schranke + 1,
+    `${angenommen} <= ${schranke} + 1 (Stoß ${RATE_STOSS} + ${RATE_PRO_SEKUNDE}/s über ${fensterMs} ms)`,
+  );
+});
+
+test('Eine Nachrichtenflut erzeugt höchstens Stoß + Auffüllung an Antworten', { timeout: 30_000 }, async () => {
   const server = new GameServer();
   const { port, url } = await server.listen(0);
   try {
@@ -43,9 +81,18 @@ test('Eine Nachrichtenflut erzeugt höchstens einen Stoß an Antworten', { timeo
     await new Promise(r => setTimeout(r, 300));
     const vorher = fehler;
     const nachricht = controlMessage(CONTROL.INPUT, { angle: 1, power: 50, tick: 0 });
+    const start = performance.now();
     for (let i = 0; i < 3000; i++) socket.send(nachricht);
     await new Promise(r => setTimeout(r, 1500));
-    assert.ok(fehler - vorher <= RATE_STOSS, `Antworten ${fehler - vorher} <= Stoß ${RATE_STOSS}`);
+    // FLAKE-1: die Schranke muss die Auffüllung WÄHREND des Fensters mitrechnen.
+    // Das Fenster wird gemessen, nicht angenommen — auf einer ausgelasteten
+    // Maschine dauert es länger, und dann dürfen auch mehr Antworten kommen.
+    const fensterMs = performance.now() - start;
+    const schranke = RATE_STOSS + RATE_PRO_SEKUNDE * (fensterMs / 1000) + 1;
+    assert.ok(
+      fehler - vorher <= schranke,
+      `Antworten ${fehler - vorher} <= ${schranke.toFixed(1)} (Stoß ${RATE_STOSS} + ${RATE_PRO_SEKUNDE}/s über ${fensterMs.toFixed(0)} ms)`,
+    );
     assert.ok(server.metrics.messagesRateLimited > 1000, 'verworfene Nachrichten werden gezählt');
     socket.close();
   } finally {
