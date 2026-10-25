@@ -96,7 +96,6 @@ test('Der Neustart-Hinweis steht bereit, die ASCII-Fassung ist ohne Umlaute', ()
   assert.equal(ALT_CODE_MELDUNG_ASCII, ALT_CODE_MELDUNG
     .replaceAll('ä', 'ae').replaceAll('ö', 'oe').replaceAll('ü', 'ue')
     .replaceAll('—', '-'));
-  // eslint-disable-next-line no-control-regex
   assert.ok(!/[^\x00-\x7F]/.test(ALT_CODE_MELDUNG_ASCII));
 });
 
