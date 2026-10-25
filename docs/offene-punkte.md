@@ -52,9 +52,24 @@ Bildzeit-Messungen lastempfindlich sind:
 | Bildvergleiche, Barrierefreiheit, Screenreader | 5 | 55 grün, 2 rot → **nach `VIS-1` behoben: 6/6 grün, zweimal** |
 | Mehrspieler, Online, Zugpause, Effekte, Replay, Sieg | 10 | **54 grün, 1 übersprungen** (6,7 min) |
 
-Zusammen **161 grün, 2 rot, 1 übersprungen** über 25 von 61 Specs. Der eine
-Übersprung ist der dokumentierte Selbstschutz in `prediction-online`
-(„abgelehnter Schuss", Client bereits am Zug).
+Danach der **vollständige** Lauf über alle 61 Specs (`--workers=1`, 59,5 min):
+
+**356 grün, 1 rot, 1 übersprungen.** Der eine rote war `dynamik` „Ein Treffer im
+selben Bild klingt NICHT zweimal" — und er war **kein** Produktivfehler, sondern
+ein Reihenfolgefehler im Test: `applyDamage` stand VOR `advance(1)`, und der
+Schritt setzt das Gefühls-Gedächtnis des Renderers zurück (`gefuehlZuruecksetzen`
+leert `letzteWerte` und `trefferMarken`). Der Schaden konnte so nie als Änderung
+gesehen werden. Behoben mit Begründung im Code; danach 7/7 grün, dreimal.
+
+Damit der Test nicht nur „grün" ist, sondern etwas prüft, wurde die Sperre in
+`main.js#spieleTrefferklang` testweise entfernt: dann erscheinen **zwei** Klänge
+`[1, 0.956]` und der Test wird rot. `main.js` blieb unverändert.
+
+Der eine Übersprung ist der dokumentierte Selbstschutz in `prediction-online`
+(„abgelehnter Schuss", Client bereits am Zug). `profiling` („Bildzeiten auf dem
+echten Grafikpfad") läuft auf dieser Maschine auf **echter GPU** (ANGLE, Intel HD
+3000) und ist grün — der Übersprung aus dem Messlauf vom 2026-10-21 gilt hier
+also nicht.
 
 Die 36 nicht gelaufenen Specs betreffen HUD, Kamera, Kulissen, Terrain, Ton,
 Erfolge und Bedienung — Bereiche, die von den Änderungen dieser Sitzung nicht
