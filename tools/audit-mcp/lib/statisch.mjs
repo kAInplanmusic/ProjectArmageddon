@@ -640,10 +640,9 @@ export const DOPPELREGEL_AUSNAHMEN = new Map([
     begruendung: 'Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.',
     orte: ['src/client/roster.js:20', 'src/client/tierBilder.js:17'],
   }],
-  ['cache', {
-    begruendung: 'Zwei getrennte Caches für verschiedene Daten (Figurenbilder bzw. Tierposen); gemeinsamer Name, keine gemeinsame Regel.',
-    orte: ['src/client/figurenBilder.js:44', 'src/client/tierBilder.js:33'],
-  }],
+  // `cache` entfällt: die beiden Caches heißen seit 2026-10-25 `bildCache`
+  // (figurenBilder.js) und `tierCache` (tierBilder.js). Ein gemeinsamer Name war
+  // die Doppelregel — nicht zwei Caches an sich.
   ['CACHE_KANTE', {
     begruendung: 'figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches.',
     orte: ['src/client/figurStufen.js:13', 'src/client/waffenSprites.js:25'],
@@ -668,10 +667,8 @@ export const DOPPELREGEL_AUSNAHMEN = new Map([
     begruendung: 'figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen.',
     orte: ['src/client/figurTypen.js:72', 'src/client/waffenAnimation.js:106'],
   }],
-  ['standard', {
-    begruendung: 'figurenBilder.js ist die Standard-Ankertabelle, waffenSprites.js die Standardverdrahtung des Laders — gleicher Name, andere Bedeutung.',
-    orte: ['src/client/figurenBilder.js:34', 'src/client/waffenSprites.js:249'],
-  }],
+  // `standard` entfällt: heißt seit 2026-10-25 `STANDARD_ANKER`
+  // (figurenBilder.js) bzw. `waffenSpritesLader` (waffenSprites.js).
   ['STIMMUNGEN', {
     begruendung: 'backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung.',
     orte: ['src/shared/config/backdrops.js:698', 'src/client/musikListe.js:13'],

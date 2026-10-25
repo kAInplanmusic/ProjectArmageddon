@@ -32,6 +32,7 @@ davon ist stillschweigend verschwunden.
 | `AU-9a` / `C-8` | Umbau | `GameServer#handleConnection`: **438 → 37 Zeilen**, 69 → 3 `this.`. `GuentherSystem#update`: **185 → 88 Zeilen**, 92 → 43 `this.`. Rümpfe zeichengleich verschoben, Zustands-Hash unverändert. | `1ec2600`, `cc4cc4e` |
 | `REST-3` | Prüfauftrag | Nachgezählt: die Abschnitte P1 Gameplay (4), P1 Netcode (3), P2 Client & UX (9), P3 Betrieb (5) sind **21 von 21 erledigt, 0 offen**. Der Punkt war überholt. | diese Datei |
 | `O10` | Werkzeug | Fingerabdruck-Wächter des Audit-MCP-Servers bewiesen (10 Fälle). | `ade48d3` |
+| `Doppelregeln` | Ordnung | Die zwei offenen Doppelregeln `cache` und `standard` durch sprechende Namen aufgelöst (`bildCache`, `tierCache`, `STANDARD_ANKER`, `waffenSpritesLader`); die veralteten Ausnahmen entfernt. Gate von gelb auf **grün**. | `3096467` |
 
 Nebenbei aufgeräumt (keine offenen Punkte, nur Ordnung): `.gitignore` griff nicht
 für `node_modules`-Symlinks (`afcf41d`), zwei Werkzeug-Stummel eingecheckt
@@ -76,16 +77,29 @@ Strich-Nachlauf) und `scripts/sprite-sheets-klassifizieren.py` laufen lassen.
 | :-- | :-- | :-- |
 | `Z579` / `P2` | Rendering auf CPU-Hardware messen. In der Sandbox (Software-Rasterung, headless) liegt ein Frame bei 50–83 ms; der Profiler zeigt nur ~4 % JavaScript, 96 % native Rasterarbeit. Für eine belastbare Zahl fehlt ein echter Grafikpfad auf Zielhardware. | MASTERDOTO Z579 |
 
-## 7. Zwei Befunde, die weiterhin offen sind (aus dem Tiefen-Audit)
+## 7. Statische Gates des Tiefen-Audits — alle grün
 
-| Gate | Stand | Anmerkung |
+Beim Einsammeln stand im **zusammengeführten** `docs/audit-tief.md` noch
+`pfade` rot und `zufall` gelb. Beides war **veraltet**: der Bericht stammte aus
+der Linie `bg/doppel` (`Commit: 0e96f8b`) und beschrieb einen älteren Baum.
+Am 2026-10-25 auf `main` nachgemessen und den Bericht mit dem eigenen Werkzeug
+neu erzeugt:
+
+| Gate | Stand | Kennzahl |
 | :-- | :-- | :-- |
-| `pfade` | **rot** | Eine Stelle nutzt `.pathname` statt `fileURLToPath`. Bei einem Sonderzeichen im Pfad scheitert dort jeder `spawn` mit ENOENT. Reproduzierbar ohne Bild und ohne Hardware — **das ist ein codeseitiger Punkt und gehört als nächstes auf den Tisch.** |
-| `zufall` | gelb | Ein Zeit-/Zufallstreffer im Simulationspfad. |
+| `marker` | 🟢 grün | 0 TODO/FIXME im Quelltext |
+| `zufall` | 🟢 grün | 0 Zeit-/Zufallstreffer im Simulationspfad |
+| `pfade` | 🟢 grün | **alle 84** Pfad-Auflösungen nutzen `fileURLToPath` |
+| `doppelregeln` | 🟢 grün | 15 Doppelregeln, **alle 15** begründet, 0 offen |
+| `secrets` | 🟢 grün | 0 Fundstellen in getrackten Dateien |
+| `perf` | 🟢 grün | kein Tick über 16,7 ms |
 
-`pfade` steht hier ausdrücklich als **offen und codeseitig lösbar**, weil er beim
-Einsammeln nicht als Checkbox vorlag, sondern als Gate-Ergebnis im erzeugten
-Bericht.
+Die zwei offenen Doppelregeln (`cache`, `standard`) sind aufgelöst — nicht durch
+eine Ausnahme, sondern durch sprechende Namen: `bildCache`/`tierCache` und
+`STANDARD_ANKER`/`waffenSpritesLader`. Die beiden zugehörigen Einträge in
+`DOPPELREGEL_AUSNAHMEN` sind entfernt, weil eine Ausnahme, die nichts mehr
+abdeckt, selbst zu einer falschen Aussage wird (`doppelregeln` meldete das
+prompt: „2 Ausnahme(n) in der Liste greifen nicht").
 
 ## 8. Zusagen, die beim Nachprüfen aufgefallen sind
 
@@ -96,3 +110,6 @@ Bericht.
   als Feldänderung geschrieben.
 - Der Rauchtest war dauerhaft rot (FLAKE-2). Eine Ampel, die immer rot zeigt,
   wird ignoriert — und dann fällt der echte Defekt nicht mehr auf.
+- Der versionierte Tiefen-Audit behauptete `pfade` rot, während der Code längst
+  sauber war. Ein Bericht, der nie neu erzeugt wird, ist eine Aussage über die
+  Vergangenheit, die wie eine über die Gegenwart aussieht.

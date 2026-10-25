@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-25T03:24:56.905Z · **Commit:** `d118f79` (main) · **Node:** v22.23.4
+**Erzeugt:** 2026-10-25T03:31:11.529Z · **Commit:** `3096467` (main) · **Node:** v22.23.4
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -19,7 +19,7 @@
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
 | zufall | 🟢 gruen | 0 Zeit-/Zufallstreffer im Simulationspfad |
 | pfade | 🟢 gruen | Alle 84 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
-| doppelregeln | 🟠 gelb | 2 OFFEN (nicht in der Ausnahmeliste): cache, standard |
+| doppelregeln | 🟢 gruen | 15 Doppelregel(n), jede in tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) begründet: MAX_TEILCHEN, aufprallStaerke, BILDER, CACHE_KANTE, KONTUR, LUFT_SCHWELLE, mische, P, PARAMETER, STIMMUNGEN, STUFEN, tabelle, TOENE, ZELLE, zufall |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
 | perf | 🟢 gruen | Budget eingehalten: kein Tick über 16,7 ms. |
 
@@ -53,9 +53,9 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 | src | 175 | 66693 |
 | tests | 267 | 60970 |
 | scripts | 66 | 13264 |
-| tools | 14 | 5419 |
+| tools | 14 | 5416 |
 
-Ungetrackte Änderungen beim Lauf: **0**
+Ungetrackte Änderungen beim Lauf: **2**
 
 ## 2. Gate-Batterie
 
@@ -173,7 +173,7 @@ die Form liefert immer dasselbe.
 
 Züge 150 · Schüsse 106 · gemessene Ticks 15019
 
-Tick-Kosten: mittel **0.0798 ms** · p95 0.0907 ms · p99 0.1425 ms · max 5.0522 ms
+Tick-Kosten: mittel **0.0831 ms** · p95 0.1066 ms · p99 0.1695 ms · max 4.9730 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -208,21 +208,19 @@ Keine — jede definierte Konstante unter `src/` wird irgendwo gelesen.
 
 ### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)
 
-Gemessen: **17** · davon aus der Ausnahmeliste begründet: **15** · OFFEN: **2**. Das Urteil wird aus `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` gelesen; ohne Eintrag dort gilt eine Doppelregel als offen (fail-safe in Richtung des lauteren Fehlers).
+Gemessen: **15** · davon aus der Ausnahmeliste begründet: **15** · OFFEN: **0**. Das Urteil wird aus `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` gelesen; ohne Eintrag dort gilt eine Doppelregel als offen (fail-safe in Richtung des lauteren Fehlers).
 
 | Name | Orte | Urteil |
 |---|---|---|
 | `MAX_TEILCHEN` | src/client/feuerOptik.js:19 · src/client/figurEffekte.js:15 · src/client/tierBuehne.js:19 | bewusst, begründet: Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel. |
 | `aufprallStaerke` | src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260 | bewusst, begründet: Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel. |
 | `BILDER` | src/client/roster.js:20 · src/client/tierBilder.js:17 | bewusst, begründet: Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein. |
-| `cache` | src/client/figurenBilder.js:57 · src/client/tierBilder.js:33 | **OFFEN** — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:44 · src/client/tierBilder.js:33 | gemessen: src/client/figurenBilder.js:57 · src/client/tierBilder.js:33) — gilt als offen |
 | `CACHE_KANTE` | src/client/figurStufen.js:13 · src/client/waffenSprites.js:25 | bewusst, begründet: figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches. |
 | `KONTUR` | src/client/figuren.js:18 · src/client/gelaendeStil.js:28 | bewusst, begründet: figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert. |
 | `LUFT_SCHWELLE` | src/client/figurAnimation.js:25 · src/client/hoehlenSchatten.js:86 | bewusst, begründet: figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung. |
 | `mische` | src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105 | bewusst, begründet: backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren. |
 | `P` | src/client/figurTypen.js:59 · src/client/klangProfile.js:51 | bewusst, begründet: figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion. |
 | `PARAMETER` | src/client/figurTypen.js:72 · src/client/waffenAnimation.js:106 | bewusst, begründet: figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen. |
-| `standard` | src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249 | **OFFEN** — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:34 · src/client/waffenSprites.js:249 | gemessen: src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249) — gilt als offen |
 | `STIMMUNGEN` | src/shared/config/backdrops.js:698 · src/client/musikListe.js:13 | bewusst, begründet: backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung. |
 | `STUFEN` | src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:15 | bewusst, begründet: lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung. |
 | `tabelle` | src/client/gelaendeStil.js:229 · src/client/stoffOptik.js:22 | bewusst, begründet: gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate. |
@@ -303,9 +301,9 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 **Rot:** keine
 
-**Gelb:** doppelregeln
+**Gelb:** keine
 
-**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, unbenutzteKonstanten, marker, zufall, pfade, secrets, perf
+**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, unbenutzteKonstanten, marker, zufall, pfade, doppelregeln, secrets, perf
 
 ### Was schon belegt gut funktioniert
 
@@ -315,7 +313,6 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht.
 - **Kein Secret in getrackten Dateien.**
 - **Ereignis-Abdeckung ist sauber:** 75 von 81 Ereignisarten behandelt, die 6 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
-- **OFFENE Doppelregeln (2):** `cache` (src/client/figurenBilder.js:57 · src/client/tierBilder.js:33), `standard` (src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249). Diese Definitionen steht in mehr als einer Datei und ist NICHT in der Ausnahmeliste `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` begründet — nach der Projektregel „eine Regel, eine Stelle" ein offener Befund, kein Freispruch. Ein Freispruch wird ab hier GELESEN, nicht behauptet: Wer ihn will, trägt den Namen mit Begründung und Orten in die Liste ein.
 - **Bewusst und begründet (15):** `MAX_TEILCHEN` (src/client/feuerOptik.js:19 · src/client/figurEffekte.js:15 · src/client/tierBuehne.js:19) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.
 - **Bewusst und begründet (15):** `aufprallStaerke` (src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel.
 - **Bewusst und begründet (15):** `BILDER` (src/client/roster.js:20 · src/client/tierBilder.js:17) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.
@@ -361,14 +358,7 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
 
 ## 17. TODO
 
-3 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
-
-### MITTEL (2)
-
-- [ ] Offene Doppelregel: cache
-      src/client/figurenBilder.js:57 · src/client/tierBilder.js:33 — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:44 · src/client/tierBilder.js:33 | gemessen: src/client/figurenBilder.js:57 · src/client/tierBilder.js:33) — gilt als offen
-- [ ] Offene Doppelregel: standard
-      src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249 — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:34 · src/client/waffenSprites.js:249 | gemessen: src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249) — gilt als offen
+1 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
 ### NIEDRIG (1)
 
