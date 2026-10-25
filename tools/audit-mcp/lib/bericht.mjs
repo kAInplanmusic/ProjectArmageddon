@@ -147,7 +147,29 @@ export function todoAus(d) {
   for (const w of d.waffen.wirkungsloseFelder.konstantBool) {
     add(`Feld „${w.feld}" ist bei allen ${d.waffen.anzahl} Waffen konstant (${w.wert})`, 'Verdrahten oder entfernen — Balance-Entscheidung.', 'niedrig', 'design');
   }
-  add('Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen', `${d.spielverlauf.vorMahlstromBeendet} von ${d.spielverlauf.parteien.length} Partien endeten VOR Runde ${d.spielverlauf.mahlstromAb}`, 'niedrig', 'design');
+  /*
+   * Mahlstrom: KEIN fester Breakpoint mehr.
+   *
+   * Bis 2026-10-25 stand hier "Partien endeten VOR Runde 8" — gegen eine
+   * Konstante, die seit dem 2026-10-13 nicht mehr gilt (Valhalla zieht seither
+   * eine zufaellige Spielzeit, gemessen Runde 76-129 bei diesen Seeds). Der Fund
+   * war damit zwangslaeufig immer rot und sagte nichts ueber das Spiel.
+   *
+   * Jetzt wird jede Partie mit IHREM gemessenen Sturmbeginn verglichen. Erst
+   * wenn KEINE Partie vor ihrem Sturm endet, ist der Sturm kein Netz fuer zaehe
+   * Partien mehr, sondern Regelbetrieb — das ist der meldenswerte Fall.
+   */
+  const sv = d.spielverlauf;
+  const sturmRunden = sv.sturmRunden.filter(r => r != null);
+  const sturmText = sturmRunden.length
+    ? `Sturmbeginn Runde ${Math.min(...sturmRunden)}-${Math.max(...sturmRunden)}`
+    : 'kein Sturm aktiv';
+  if (sv.vorMahlstromBeendet === 0 && sv.parteien.length > 0) {
+    add('Jede Partie laeuft in ihren Mahlstrom hinein',
+      `0 von ${sv.parteien.length} Partien endeten vor ihrem eigenen Sturmbeginn (${sturmText}; Laenge ${sv.spanne.runden[0]}-${sv.spanne.runden[1]} Runden). `
+      + 'Der Sturm ist damit kein Netz fuer zaehe Partien, sondern Regelbetrieb. Design-Entscheidung: Sturmbeginn spaeter, Partien kuerzer — oder bewusst so lassen.',
+      'niedrig', 'design');
+  }
 
   return todo.sort((a, b) => {
     const rang = { kritisch: 0, hoch: 1, mittel: 2, niedrig: 3 };
@@ -271,7 +293,7 @@ export function berichtMarkdown(d, todo) {
   push(`**Mittel:** ${d.spielverlauf.mittel.runden} Runden · ${d.spielverlauf.mittel.zuge} Züge · ${d.spielverlauf.mittel.schuesse} Schüsse · ${d.spielverlauf.mittel.spielzeitSekunden} s Simulationszeit`);
   push(`**Spanne:** Runden ${d.spielverlauf.spanne.runden[0]}–${d.spielverlauf.spanne.runden[1]} · Spielzeit ${d.spielverlauf.spanne.spielzeitSekunden[0]}–${d.spielverlauf.spanne.spielzeitSekunden[1]} s`);
   push('');
-  push(`Mahlstrom greift ab Runde **${d.spielverlauf.mahlstromAb}**. Davor beendet: **${d.spielverlauf.vorMahlstromBeendet} von ${d.spielverlauf.parteien.length}**.`);
+  push(`Mahlstrom greift je Partie zu einer **eigenen** Runde (gemessen: ${d.spielverlauf.sturmRunden.map(r => r ?? '—').join(', ')}). Davor beendet: **${d.spielverlauf.vorMahlstromBeendet} von ${d.spielverlauf.parteien.length}** (Anteil ${d.spielverlauf.anteilVorMahlstrom}).`);
   push('');
   push('*Annahme:* Die Spielzeit ist Simulationszeit. Ein Mensch braucht zusätzlich Bedenkzeit — sie ist hier');
   push('konservativ mit **0 s** angesetzt, die echte Partie ist also länger.');

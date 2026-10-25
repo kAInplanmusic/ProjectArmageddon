@@ -109,8 +109,16 @@ export function spielverlauf({ seeds = [101, 202, 303, 404, 505], teams = 2, pla
     let schuesse = 0;
     const ereigniszahl = {};
     let ticks = 0;
+    // Wann der Mahlstrom DIESER Partie beginnt. Seit 2026-10-13 zieht Valhalla
+    // eine zufaellige Spielzeit (6-12 min) statt einer festen Runde — der
+    // Beginn muss also gemessen werden, nicht angenommen.
+    let sturmRunde = null;
 
     while (m.status === 'playing' && zuge < zugeMax) {
+      if (sturmRunde === null) {
+        const zustand = m.getState();
+        if (zustand.maelstrom?.active) sturmRunde = zustand.round;
+      }
       const { geschossen } = spieleZug(m, zuge);
       if (geschossen) schuesse += 1;
       sammle(m, ereigniszahl);
@@ -128,14 +136,12 @@ export function spielverlauf({ seeds = [101, 202, 303, 404, 505], teams = 2, pla
       spielzeitSekunden: Number((ticks / 60).toFixed(1)),
       sieger: m.winnerTeamId,
       ereignisse: ereigniszahl,
+      sturmRunde,
     });
   }
 
   const mittel = feld => Number((parteien.reduce((s, p) => s + p[feld], 0) / parteien.length).toFixed(1));
-  // ACHTUNG: Valhalla beginnt seit 2026-10-13 zufällig nach 6–12 Minuten Spielzeit, nicht
-  // mehr ab einer festen Runde. Die Runde 8 ist hier nur noch eine NÄHERUNG für die
-  // Kennzahl "vor dem Mahlstrom beendet" dieses älteren Audit-Werkzeugs.
-  const abbruch = 8;
+  const vorSturm = zaehleVorSturm(parteien);
   return {
     konfiguration: { teams, playersPerTeam, preset },
     parteien,
@@ -152,9 +158,41 @@ export function spielverlauf({ seeds = [101, 202, 303, 404, 505], teams = 2, pla
         Math.max(...parteien.map(p => p.spielzeitSekunden)),
       ],
     },
-    mahlstromAb: abbruch,
-    vorMahlstromBeendet: parteien.filter(p => p.runden < abbruch).length,
-    durchAusschaltung: parteien.filter(p => p.status === 'gameover' && p.runden < abbruch).length,
+    // Kein fester Breakpoint mehr: siehe `zaehleVorSturm`.
+    sturmRunden: parteien.map(p => p.sturmRunde),
+    vorMahlstromBeendet: vorSturm.vorSturm,
+    anteilVorMahlstrom: vorSturm.anteil,
+    durchAusschaltung: parteien.filter(p => p.status === 'gameover'
+      && (p.sturmRunde == null || p.runden < p.sturmRunde)).length,
+  };
+}
+
+/**
+ * Zaehlt, welche Partien VOR IHREM EIGENEN Mahlstrom zu Ende waren.
+ *
+ * **Warum das nicht mehr ueber eine feste Runde geht:** Bis 2026-10-25 stand
+ * hier `const abbruch = 8`. Valhalla beginnt aber seit 2026-10-13 zu einer
+ * ZUFAELLIGEN Spielzeit (6-12 min), gemessen in Runde 15 bis 20
+ * (`npm run check:maelstrom`). Gegen Runde 8 verglichen konnte praktisch keine
+ * Partie „vorher" enden — der Bericht meldete daraus den Fund „0 von 5 Partien
+ * endeten VOR Runde 8", was ueber das Spiel nichts aussagte, sondern nur ueber
+ * die stehengebliebene Konstante.
+ *
+ * Jede Partie wird deshalb mit ihrem GEMESSENEN Sturmbeginn verglichen
+ * (`sturmRunde`). Kam der Sturm nie (`null`), hat die Partie ihn nicht erlebt
+ * und zaehlt als „vor dem Sturm".
+ *
+ * @param {Array<{runden: number, sturmRunde: number|null}>} parteien
+ * @returns {{vorSturm: number, nachSturm: number, gesamt: number, anteil: number}}
+ */
+export function zaehleVorSturm(parteien = []) {
+  const gesamt = parteien.length;
+  const vorSturm = parteien.filter(p => p.sturmRunde === null || p.sturmRunde === undefined || p.runden < p.sturmRunde).length;
+  return {
+    vorSturm,
+    nachSturm: gesamt - vorSturm,
+    gesamt,
+    anteil: gesamt === 0 ? 0 : Number((vorSturm / gesamt).toFixed(2)),
   };
 }
 

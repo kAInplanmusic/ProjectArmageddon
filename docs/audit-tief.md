@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-25T03:31:11.529Z · **Commit:** `3096467` (main) · **Node:** v22.23.4
+**Erzeugt:** 2026-10-25T05:06:18.568Z · **Commit:** `4477c55` (main) · **Node:** v22.23.4
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -51,20 +51,20 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 | Bereich | Dateien | Zeilen |
 |---|---|---|
 | src | 175 | 66693 |
-| tests | 267 | 60970 |
+| tests | 268 | 61093 |
 | scripts | 66 | 13264 |
-| tools | 14 | 5416 |
+| tools | 14 | 5476 |
 
-Ungetrackte Änderungen beim Lauf: **2**
+Ungetrackte Änderungen beim Lauf: **3**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 10.6 s | – |
-| validate | 🟢 bestanden | 0.4 s | – |
+| lint | 🟢 bestanden | 10.7 s | – |
+| validate | 🟢 bestanden | 0.5 s | – |
 
-**2/2 bestanden** · Gesamtdauer 11 s
+**2/2 bestanden** · Gesamtdauer 11.2 s
 
 ## 3. Determinismus
 
@@ -91,7 +91,7 @@ Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene 
 **Mittel:** 119.4 Runden · 354.8 Züge · 206.2 Schüsse · 667.6 s Simulationszeit
 **Spanne:** Runden 95–145 · Spielzeit 593.1–743.5 s
 
-Mahlstrom greift ab Runde **8**. Davor beendet: **0 von 5**.
+Mahlstrom greift je Partie zu einer **eigenen** Runde (gemessen: 78, 76, 107, 97, 129). Davor beendet: **0 von 5** (Anteil 0).
 
 *Annahme:* Die Spielzeit ist Simulationszeit. Ein Mensch braucht zusätzlich Bedenkzeit — sie ist hier
 konservativ mit **0 s** angesetzt, die echte Partie ist also länger.
@@ -173,7 +173,7 @@ die Form liefert immer dasselbe.
 
 Züge 150 · Schüsse 106 · gemessene Ticks 15019
 
-Tick-Kosten: mittel **0.0831 ms** · p95 0.1066 ms · p99 0.1695 ms · max 4.9730 ms
+Tick-Kosten: mittel **0.0822 ms** · p95 0.0978 ms · p99 0.1441 ms · max 5.2302 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -328,7 +328,7 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Bewusst und begründet (15):** `TOENE` (src/client/gelaendeStil.js:32 · src/client/toasts.js:18) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.
 - **Bewusst und begründet (15):** `ZELLE` (src/client/figurSheets.js:16 · src/client/waffenAnimation.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.
 - **Bewusst und begründet (15):** `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 60970 Zeilen Tests gegen 66693 Zeilen Quelltext (Verhältnis 0.91).
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 61093 Zeilen Tests gegen 66693 Zeilen Quelltext (Verhältnis 0.92).
 - **Der Waffenkatalog ist kein Datenmüll:** 136 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
@@ -362,8 +362,8 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
 
 ### NIEDRIG (1)
 
-- [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
-      0 von 5 Partien endeten VOR Runde 8
+- [ ] Jede Partie laeuft in ihren Mahlstrom hinein *[Offen — Design-Entscheidung]*
+      0 von 5 Partien endeten vor ihrem eigenen Sturmbeginn (Sturmbeginn Runde 76-129; Laenge 95-145 Runden). Der Sturm ist damit kein Netz fuer zaehe Partien, sondern Regelbetrieb. Design-Entscheidung: Sturmbeginn spaeter, Partien kuerzer — oder bewusst so lassen.
 
 ---
 

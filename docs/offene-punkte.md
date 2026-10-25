@@ -146,6 +146,13 @@ git checkout -- docs/vergleich-alternativspiele-2026-10-19/
 | `LOOK-3` | Lava-Glühen als glühender Stoff mit warmen Lichtakzenten nach `ref-3-vulkanschmiede-hud` | MASTERDOTO Z6874 |
 | `LOOK-4` | Begehbare Innenräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine` | MASTERDOTO Z6875 |
 | `Z246` | Erste Probe der Abschaltsicherung **auf dem Knoten** (`--trocken`, dann echt, dann `systemctl stop` und Journalzeile); Cloud-Ebene ist nicht gegen echtes Hetzner getestet. Nach AGENTS.md §5/§7 entscheidet und führt das der Auftraggeber aus — ein Agent mietet oder startet nichts. | MASTERDOTO Z246 |
+| `MAHL-1` | **Jede Partie läuft in ihren Mahlstrom hinein.** Gemessen (Audit-Seeds 101…505, 2v2, hills): Sturmbeginn Runde **76–129**, Partien enden nach **95–145** Runden — **0 von 5** enden vor ihrem eigenen Sturm. Der Mahlstrom ist damit kein Netz für zähe Partien, sondern Regelbetrieb. Drei Wege: Sturm später, Partien kürzer, oder bewusst so lassen. **Keine Zahl geändert** — das ist eine Spielgefühls-Entscheidung, und der Vorläufer vom 2026-09-20 (`check:time`, „100 LEBEN BLEIBEN") zeigt, dass dieses Haus so etwas nicht nebenbei entscheidet. | Tiefen-Audit §17 |
+
+Hinweis zur Messung: `npm run check:maelstrom` misst mit anderen Seeds/Bots Partien
+von **11–46** Runden und einem Sturmbeginn bei Runde 15–20. Die beiden Zahlen
+widersprechen sich nicht, sie messen unterschiedliche Bot-Partien — für eine
+Balance-Entscheidung sollte man wissen, welche der beiden dem Spielerbetrieb
+näher liegt.
 
 ## 6. Offen — braucht echte Hardware
 
