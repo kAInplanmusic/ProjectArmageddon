@@ -104,21 +104,36 @@ und wird benutzt von
 In Höhlen benutzen diese vier die **Oberfläche** statt des Innenbodens — Haustiere,
 Einschläge und Geschütztürme verhalten sich dort falsch, sobald jemand drinnen ist.
 
-**Befund 4 (noch offen): Der Stand der Figur selbst ist nicht belegt.**
-`src/engine/systems/bewegungSystem.js` enthält keinen Geländezugriff, und `surfaceYAt`
-wird dort nicht benutzt — der Weg der Figur zum Boden läuft über den `terrain`-Dienst
-des ECS. Welche Abfrage dort greift (Bitmap mit y oder Spaltenoberfläche), ist die
-**nächste Messung**; erst danach ist entscheidbar, ob Stufe 1 ein Umbau der Abfrage ist
-oder nur die vier x-only-Stellen nachziehen muss.
+**Befund 4 (belegt): Die Figur steht y-fähig — Innenböden sind begehbar.**
+Der Weg der Figur zum Boden läuft über den `terrain`-Dienst des ECS, und der fragt
+**pixelgenau mit y**: `terrain.isSolid(x, y)` in
+`src/engine/systems/bewegungSystem.js:48/54/57` (Laufen) und
+`src/engine/systems/characterSystem.js:239` (Treffer) sowie `:270-272` (Fall/Suche nach
+dem Boden). `surfaceYAt` kommt in der Figurenphysik nicht vor.
 
-**Arbeitsliste für Stufe 1 (aus diesen Befunden):**
-1. Bodenabfrage der Figur belegen (eine Messung, wie oben beschrieben).
-2. Falls sie y-fähig ist: die vier x-only-Stellen auf `materialAt(x, y)` umstellen —
-   jeweils mit Test (Haustier auf Innenboden, Einschlag auf Innenboden, Turm in der Höhle).
-3. Falls sie es nicht ist: Standabfrage auf `materialAt(x, y)` erweitern (ein Punkt,
-   `MatchController.materialAt`), dann dieselben vier Stellen nachziehen.
-4. Erst danach Ruinen mit 1–2 Räumen als Kartentyp-Variante prüfen — die Hohlräume
-   selbst müssen nicht mehr erfunden werden.
+Messung am tiefsten Innenboden (Seed 7, `kavernen`, x = 228): Band von y = 1279 bis 1355,
+Oberfläche dort 516 (also 763 px darüber). Am Punkt:
+
+| Abfrage | Ergebnis | Bedeutung |
+| :-- | :-- | :-- |
+| `isSolid(228, 1279)` | **true** | der Innenboden ist fest |
+| `isSolid(228, 1274)` | false | 5 px über dem Boden ist Luft (Platz für die Figur) |
+| `isSolid(228, 1359)` | false | unter dem Band ist Luft (echter Hohlraum) |
+
+Damit ist der Umbau der Standabfrage **nicht nötig**: Ein Figurenkörper, der bei
+y ≈ 1279 steht, hat festen Grund unter sich und Luft um sich. Abgesichert durch
+`tests/innenraeume.test.js` (drei Prüfungen: Innenböden zählen — kavernen > 1000,
+huegel exakt 0; Maske am Innenboden fest/Luft/Luft; niemand startet unter der
+Oberfläche).
+
+**Arbeitsliste für Stufe 1 (Stand 2026-10-25):**
+1. ~~Bodenabfrage der Figur belegen~~ — **erledigt** (Befund 4: y-fähig über `isSolid`).
+2. **Offen:** die vier x-only-Stellen auf eine y-fähige Abfrage umstellen, jeweils mit
+   Test — Haustier auf Innenboden (`guentherSystem` 290/598, `cookieSystem` 325/346),
+   Einschlagpunkt (`shooting.js` 801), Turm-Ballistik (`turret.js`). Das ist der eigentliche
+   Rest von Stufe 1: die Figuren können drinnen stehen, die vier Systeme wissen es noch nicht.
+3. Erst danach Ruinen als eigene Kartentyp-Variante prüfen — die Hohlräume selbst müssen
+   nicht mehr erfunden werden.
 
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
