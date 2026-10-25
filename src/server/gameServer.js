@@ -1917,7 +1917,9 @@ export class GameServer {
   }
 
   #handleConnection(socket) {
-    let context = { lobbyId: null, token: null };
+    // Der Aufrufer haelt dieses Objekt; die Nachrichtenstrecke setzt nur seine
+    // Felder (`context.lobbyId` / `context.token`), sie ersetzt es nicht.
+    const context = { lobbyId: null, token: null };
     // Ohne diesen Zuhörer beendet ein Socket-Fehler (z. B. zu große Nachricht, `maxPayload`) als UNBEHANDELTE
     // Ausnahme den ganzen Prozess. `ws` schließt die Verbindung danach selbst (1009).
     socket.on('error', error => {
@@ -1926,414 +1928,7 @@ export class GameServer {
 
     const mengenGrenze = new TokenBucket();
     socket.on('message', (raw, isBinary) => {
-      /*
-       * Mengenbegrenzung VOR allem anderen — auch vor dem Parsen. Verworfene
-       * Nachrichten bekommen KEINE Antwort (sonst wäre die Fehlermeldung die
-       * Verstärkung); sichtbar wird es über Zähler und Log. Wer dauerhaft
-       * überzieht, wird getrennt.
-       */
-      if (!mengenGrenze.erlaube()) {
-        if (this.metrics) this.metrics.messagesRateLimited += 1;
-        if (mengenGrenze.verworfeneInFolge === 1) {
-          this.logger.warn('rate_limited', 'Nachrichten über der Mengengrenze verworfen', {
-            lobbyId: context.lobbyId,
-          });
-        }
-        if (mengenGrenze.verworfeneInFolge >= RATE_TRENNEN_NACH) {
-          this.logger.warn('rate_limit_disconnect', 'Verbindung wegen Dauerüberlast getrennt', {
-            lobbyId: context.lobbyId,
-          });
-          socket.close(1008, 'Zu viele Nachrichten');
-        }
-        return;
-      }
-      /*
-       * Binärrahmen vom Client werden verworfen — GRUND und Vermerk.
-       *
-       * Die Richtung Client → Server ist ausschließlich JSON-Kontrolle (siehe
-       * `protocol.js`); Snapshots laufen nur Server → Client. Ein Client, der
-       * hier binär sendet, hat einen Fehler — und bekam bisher GAR KEINE
-       * Antwort: gemessen (Sonde 2026-09-27) blieb der Socket 700 ms lang still,
-       * ohne Fehlermeldung, ohne Log-Zeile. Genau die Klasse „Ablehnung ohne
-       * Rückweg".
-       *
-       * Warum trotzdem KEINE Fehlermeldung auf die Leitung geht: Das wäre eine
-       * Verstärkung (1 Byte hinein, ~100 Byte hinaus) und damit eine Einladung,
-       * den Server mit Müll zuzustellen. Die Sichtbarkeit stellt stattdessen die
-       * Log-Zeile her — dieselbe Entscheidung wie bei der Nutzlastgrenze, die
-       * ebenfalls protokolliert und abweist.
-       */
-      if (isBinary) {
-        this.logger.warn('binary_message_rejected', 'Binärrahmen vom Client verworfen — diese Richtung ist JSON', {
-          bytes: raw?.byteLength ?? raw?.length ?? null,
-        });
-        return;
-      }
-
-      /*
-       * Nutzlastgrenze VOR dem Parsen.
-       *
-       * Fund (belegt): `INPUT_LIMITS.maxPayloadBytes` war definiert, aber
-       * nirgends verwendet — `parseControlMessage` rief `JSON.parse` auf
-       * beliebig große Eingaben auf. Gemessen: Eine Nachricht mit 1 MB Füllsel
-       * wurde angenommen und geparst.
-       *
-       * Die Prüfung steht hier und nicht im gemeinsamen Parser, weil sie nur für
-       * die Richtung CLIENT → SERVER gilt: Die Waffenbestände aller Spieler gehen
-       * als EINE Nachricht an den Client und dürfen größer sein.
-       *
-       * Geprüft wird die BYTES, nicht die Zeichen: Ein Byte kann im JSON als
-       * Escape-Sequenz stehen (`\u00e4`), und `raw.length` wäre dann zu klein.
-       */
-      const nutzlastBytes = typeof raw === 'string'
-        ? Buffer.byteLength(raw, 'utf8')
-        : (raw?.byteLength ?? 0);
-      if (nutzlastBytes > INPUT_LIMITS.maxPayloadBytes) {
-        this.logger.warn('payload_rejected', 'Nachricht über der Nutzlastgrenze abgewiesen', {
-          bytes: nutzlastBytes,
-          limit: INPUT_LIMITS.maxPayloadBytes,
-        });
-        this.#fehlerSenden(
-          socket,
-          `Nachricht zu groß (${nutzlastBytes} Byte, erlaubt ${INPUT_LIMITS.maxPayloadBytes})`,
-        );
-        return;
-      }
-
-      const message = parseControlMessage(raw);
-      if (!message) {
-        this.#fehlerSenden(socket, 'Ungültige Nachricht');
-        return;
-      }
-
-      try {
-        switch (message.t) {
-          case CONTROL.HELLO:
-            socket.send(controlMessage(CONTROL.WELCOME, {
-              protocol: PROTOCOL_VERSION,
-              message: 'Verbunden',
-            }));
-            break;
-
-          case CONTROL.JOIN_LOBBY: {
-            const lobbyId = message.lobbyId;
-            /*
-             * VOR der Belegungsprüfung die Verwaltungsrunde nachziehen.
-             *
-             * Ein Platz, dessen Reconnect-Fenster abgelaufen ist, ist frei —
-             * auch wenn die Runde ihn noch nicht weggeräumt hat (Vorgabe: alle
-             * 5 s). Ohne diese Zeile hinge die Entscheidung „Team frei oder
-             * nicht" davon ab, ob zufällig gerade eine Runde lief: Der nächste
-             * Mensch bekäme „Alle Teams sind besetzt — kein Platz frei", obwohl
-             * seit Minuten niemand mehr da ist. Sie ist billig (wenige Lobbys,
-             * wenige Plätze) und macht das Versprechen aus `disconnect` an der
-             * Stelle wahr, an der es zählt.
-             */
-            // Ein zweiter Beitritt auf demselben Socket löst die alte Zuordnung (Audit 2026-10-13: der alte
-            // Platz blieb sonst „verbunden" und hielt sein Match am Laufen).
-            if (context.lobbyId && context.token) {
-              const alt = this.#sessions.get(context.lobbyId);
-              if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
-              this.#lobbies.disconnect(context.lobbyId, context.token);
-              context = { lobbyId: null, token: null };
-            }
-            this.pruneLobbies();
-            const lobby = this.#lobbies.get(lobbyId);
-            /*
-             * Die Kennung gehört in die Meldung.
-             *
-             * Der Client wiederholt den Beitritt bei jeder Wiederverbindung mit
-             * derselben ID; ohne sie lautet die Frage im Fehlerbericht „Lobby
-             * nicht gefunden" — mit ihr „…: 8f3a1c2d" und der Fall ist
-             * nachvollziehbar. Fehlt das Feld ganz, wird das eigens gesagt:
-             * „keine Kennung" ist eine andere Ursache als „falsche Kennung".
-             */
-            if (!lobby) {
-              throw new Error(`Lobby nicht gefunden: ${lobbyId ?? '(keine Kennung)'}`);
-            }
-            this.logger.info('lobby_join', 'Spieler tritt einer Lobby bei', {
-              lobbyId,
-              seats: lobby.seats.length,
-              capacity: lobby.capacity,
-              // Nur DASS ein Token mitkam, nicht der Token selbst.
-              hasToken: Boolean(message.token),
-            });
-            const seat = this.#lobbies.join(lobbyId, { name: message.name ?? 'Spieler', token: message.token ?? null });
-            context = { lobbyId, token: seat.token };
-            let session = this.#sessions.get(lobbyId);
-            if (!session) {
-              /*
-               * Die Sitzung entsteht beim ersten Beitritt — aber sie LÄUFT erst,
-               * wenn alle Teams von Menschen besetzt sind.
-               *
-               * Vorher lief sie sofort, und der Server-Bot spielte die freien
-               * Teams. Das war falsch: **Es gibt keine Bot-KI.** Teams werden
-               * ausschließlich von Menschen gespielt; ein unbesetztes Team ist
-               * kein Bot-Team. Bis der letzte Mensch da ist, wartet die Lobby —
-               * die Simulation läuft nicht, damit niemand ins Leere zieht.
-               */
-              session = new LobbySession(lobby, {
-                onEmpty: id => this.#sessions.delete(id),
-                ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
-                metrics: this.metrics,
-                logger: this.logger,
-              });
-              this.#sessions.set(lobbyId, session);
-              /*
-               * ============ ENTSCHEIDUNG (Fund W5): Status nachziehen ============
-               *
-               * *Der Befund (gemessen in `tests/server-integration.test.js`):*
-               * Beim Match-Ende löscht die Sitzung sich selbst (`#finish` →
-               * `onEmpty`); die Lobby und ihre Plätze bleiben stehen. Ein
-               * späterer Beitritt mit Token findet keine Sitzung mehr und legt
-               * HIER eine neue an — das Match beginnt bei Runde 1. Die Lobby trug
-               * dabei weiter „finished" (= entschieden), WÄHREND in ihr gespielt
-               * wurde: „es ist vorbei" und „es läuft" zugleich. Wer die Lobby
-               * liest, sah eine erledigte Lobby, in der gespielt wird.
-               *
-               * *Die Entscheidung:* Der Status wird beim Wiederanlauf
-               * nachgezogen. Die Lobby ist ein WIEDERSPIEL-Gefäß, kein einmaliges
-               * Match. Sie trägt „open", solange kein Match in ihr unterwegs ist,
-               * „running", sobald eines unterwegs ist, und „finished", sobald ihr
-               * Match entschieden und die Sitzung weg ist. Damit ist der Zustand
-               * widerspruchsfrei: „finished" und „es wird gespielt" schließen
-               * sich aus.
-               *
-               * *Warum „running" und nicht „open":* „running" ändert fast
-               * nichts — `LobbyManager.join` lehnt ohnehin alles außer „open" ab,
-               * also kommt in die wiederbelebte Lobby weiterhin kein fremder
-               * Client (beim laufenden Match sind zusätzlich alle Teams besetzt).
-               * Genau dieselbe Kennzeichnung trägt eine Lobby, deren Match per
-               * `START_MATCH` gestartet wurde. „open" wäre die GRÖSSERE Änderung:
-               * Es öffnete die Tür für neue Spieler und stellte die Lobby zurück
-               * in den Lobby-Browser (der Client zeigt nur `status === 'open'`) —
-               * ein Eintrag, der beim Klick abgelehnt wird, also eine Sackgasse.
-               *
-               * *„running" meint die MATCHPHASE, nicht die Tick-Schleife:* Auch
-               * ein per `START_MATCH` gestartetes Match steht auf „running",
-               * während es auf einen Wiederverbinder wartet (`session.laeuft` ist
-               * dann `false`, siehe den Socket-`close`-Handler unten). Ein Status,
-               * der die Tick-Schleife abbildet, flackerte bei jedem
-               * Verbindungsabbruch zwischen „open" und „running" — und ein „open"
-               * mitten im Match wäre die nächste Tür, die nicht aufgeht.
-               *
-               * *Die Gegenprobe steht im selben Test:* „finished" bleibt, wo es
-               * hingehört (entschieden, keine Sitzung, niemand da) — und in ein
-               * laufendes Match kommt kein fremder Client.
-               */
-              if (lobby.status === LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId);
-            }
-            /*
-             * ============ ENTSCHEIDUNG: erst starten, DANN anmelden ============
-             *
-             * FUND (belegt, Sonde 2026-09-27): Hier stand `attach` VOR der
-             * Startprüfung. `attach` sendet die `lobby_state`-Nachricht MIT
-             * `laeuft: this.laeuft` — und in diesem Augenblick lief die Sitzung
-             * noch nicht. Gemessen (zwei Teams, je ein Platz, zwei Menschen):
-             *
-             *     1. Beitritt   → laeuft=false besetzteTeams=1/2
-             *     2. Beitritt   → laeuft=false besetzteTeams=2/2   ← DER LETZTE
-             *     danach: alleTeamsBesetzt=true, Session läuft=true
-             *
-             * Genau der letzte Beitretende — der, mit dem das Match beginnt —
-             * las damit „Warte auf Mitspieler: 2/2 Teams besetzt", also eine
-             * volle Lobby als wartende. Die Anzeige widersprach der Lage.
-             *
-             * Die Reihenfolge heilt das ohne neue Nachricht: Ist das Match mit
-             * diesem Beitritt vollständig, läuft die Sitzung, BEVOR `attach`
-             * seinen Zustand meldet — und `laeuft` ist wahr. Der erste
-             * Beitretende (Teams noch frei) bekommt weiterhin `false` und damit
-             * den ehrlichen Wartehinweis.
-             *
-             * Die andere Richtung ist ausgeschlossen: Ein Timer kann zwischen
-             * `start()` und `attach()` nicht feuern — beide laufen im selben
-             * synchronen Durchgang.
-             */
-            const gestartet = this.#starteMatchFallsVoll(lobbyId, session);
-            if (gestartet) {
-              this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
-                lobbyId,
-                teams: lobby.teams,
-                unitsPerPlayer: lobby.playersPerTeam,
-              });
-            }
-            session.attach(seat.token, socket);
-            if (!session.laeuft) {
-              this.logger.info('lobby_waiting', 'Warte auf weitere Spieler', {
-                lobbyId,
-                teams: lobby.teams,
-                besetzt: new Set(lobby.seats.map(entry => entry.teamId)).size,
-              });
-            }
-            // Die Live-Sitzung hat den Plätzen gerade Entity-IDs zugewiesen.
-            // Der Rückgabewert von join() ist eine Kopie und daher veraltet —
-            // gelesen wird aus `lobby.seats`.
-            /*
-             * Alle Figuren dieses Beitrags melden — nicht nur die erste.
-             *
-             * Im Modus der Matcharten gehören demselben Token MEHRERE Figuren
-             * (ein ganzes Team). Mit nur einer `entityId` hielte der Client jede
-             * andere eigene Figur für fremd: „Du bist nicht am Zug", kein
-             * Waffenzugriff, keine Kennzahlen. `entityId` bleibt für ältere
-             * Clients erhalten und nennt die erste Figur.
-             */
-            const eigeneSeats = lobby.seats.filter(entry => entry.token === seat.token);
-            socket.send(controlMessage(CONTROL.WELCOME, {
-              protocol: PROTOCOL_VERSION,
-              lobbyId,
-              seed: session.match.seedManager.baseSeed,
-              preset: lobby.preset,
-              token: seat.token,
-              seatIndex: seat.seatIndex,
-              entityId: eigeneSeats[0]?.entityId ?? seat.entityId,
-              entityIds: eigeneSeats.map(entry => entry.entityId).filter(id => id !== null),
-              unitsPerPlayer: lobby.unitsPerPlayer ?? null,
-              resumed: seat.resumed,
-              // Bisherige Krater: Wer später beitritt oder wieder verbindet,
-              // baut das Gelände aus dem Seed und braucht die Löcher dazu.
-              craters: session.match.terrain?.craterLog ?? [],
-              // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
-              inset: session.match.maelstrom?.inset ?? 0,
-            }));
-            break;
-          }
-
-          case CONTROL.START_MATCH: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            /*
-             * Starten darf man erst, wenn ALLE Teams besetzt sind.
-             *
-             * Ohne diese Prüfung ließe sich ein Match starten, in dem auf der
-             * gegnerischen Seite niemand ist. Vorher füllte der Bot solche Teams
-             * — es gibt aber keine Bot-KI. Die Prüfung selbst lebt in
-             * `#starteMatchFallsVoll` (Warteschlange 3.8: eine Stelle).
-             */
-            const gestartet = this.#starteMatchFallsVoll(context.lobbyId, session);
-            if (!gestartet && !session.laeuft) {
-              this.#fehlerSenden(socket, 'Warte auf Mitspieler: Jedes Team braucht einen Menschen.');
-              break;
-            }
-            this.#lobbies.markRunning(context.lobbyId);
-            session.broadcastSnapshot();
-            break;
-          }
-
-          case CONTROL.INPUT: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = session.handleInput(context.token, message);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.SELECT_WEAPON: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = session.handleWeaponSelect(context.token, message.weaponId);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.JUMP: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = session.handleJump(context.token, message);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.MOVE: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = session.handleMove(context.token, message);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.SKIP_PAUSE: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = session.handleSkipPause(context.token);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.SKIP_TURN:
-          case CONTROL.SURRENDER: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = message.t === CONTROL.SURRENDER ? session.handleSurrender(context.token) : session.handleSkipTurn(context.token);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.DROP_WEAPON: {
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            const result = session.handleDropWeapon(context.token, message.weaponId);
-            if (!result.ok) this.#fehlerSenden(socket, result.errors);
-            break;
-          }
-
-          case CONTROL.TERRAIN_REQUEST: {
-            // Der Client hat eine Abweichung gemessen und baut die Karte neu.
-            const session = this.#sessions.get(context.lobbyId);
-            if (!session) throw new Error('Keine aktive Sitzung');
-            socket.send(controlMessage(CONTROL.TERRAIN_STATE, session.terrainStand(true)));
-            break;
-          }
-
-          case CONTROL.PING:
-            socket.send(Buffer.from([MAGIC[0], MAGIC[1], PROTOCOL_VERSION, MESSAGE_TYPE.PONG]));
-            /*
-             * Ist das Match längst entschieden, dem Client das erneut mitteilen.
-             *
-             * Fund (belegt): Nach dem Ende ruft die Sitzung `stop()` auf und
-             * sendet keine Snapshots mehr; die einzige Nachricht über das Ende
-             * ist ein einmaliges `match_over`. Verpasst ein Client sie — etwa
-             * weil sein Socket im Moment der Aussendung nicht offen war
-             * (`broadcastSnapshot` überspringt solche Clients still) —, sitzt er
-             * dauerhaft auf einem laufenden Spiel fest: Der Zustand steht auf
-             * „playing", es kommt nichts mehr, und die Anzeige behauptet
-             * weiter, es laufe.
-             *
-             * Der Client fragt ohnehin alle zwei Sekunden per PING nach. Diese
-             * Antwort ist der natürliche Ort für die Wiederholung: kein neuer
-             * Nachrichtentyp, kein neues Feld im Drahtformat, und die
-             * Wiederholung ist folgenlos, weil der Client sie erkennt.
-             */
-            if (context.lobbyId) {
-              const fertigeSitzung = this.#sessions.get(context.lobbyId);
-              if (fertigeSitzung?.match?.status === 'gameover') {
-                socket.send(controlMessage('match_over', {
-                  winnerTeamId: fertigeSitzung.match.winnerTeamId,
-                  rounds: fertigeSitzung.match.round,
-                }));
-              }
-            }
-            break;
-
-          default:
-            this.#fehlerSenden(socket, `Unbekannter Nachrichtentyp: ${String(message.t)}`);
-        }
-      } catch (error) {
-        this.metrics.errors += 1;
-        this.logger.error('ws_command_failed', 'Kommando über WebSocket fehlgeschlagen', {
-          lobbyId: context.lobbyId,
-          // Der Token wird NICHT mitgeschrieben (der Logger redigiert ihn ohnehin,
-          // aber ein Feld dafür anzulegen wäre die falsche Gewohnheit).
-          messageType: parseControlMessage(raw)?.t ?? null,
-          error,
-        });
-        /*
-         * Der Grund geht so raus, dass der Client ihn zeigen kann — auch
-         * hier: Das Feldpaar `{error, errors}` entsteht in EINER Stelle
-         * (`#fehlerNutzlast`), damit eine neue Ablehnung nicht wieder die
-         * Form wählt. Siehe die Begründung dort.
-         */
-        this.#fehlerSenden(socket, error?.message ?? String(error));
-      }
+      this.#nachrichtBehandeln(socket, raw, isBinary, context, mengenGrenze);
     });
 
     socket.on('close', () => {
@@ -2355,7 +1950,441 @@ export class GameServer {
     });
   }
 
-  /** Startet den Server auf dem angegebenen Port. */
+  /**
+   * Die Nachrichtenstrecke EINER Verbindung — Waechter, Auswertung, Weiterreichen.
+   *
+   * Aus `#handleConnection` herausgezogen (AU-9a/C-8): der Zuhoerer war 410 der 440
+   * Zeilen jener Methode, und `#handleConnection` vermischte drei Aufgaben —
+   * Verbindung verdrahten, Nachrichten pruefen, Befehle ausfuehren.
+   *
+   * Die Reihenfolge der Waechter ist Absicht und bleibt: Mengengrenze VOR dem
+   * Parsen, Nutzlastgrenze VOR dem Parsen, dann erst `parseControlMessage`.
+   *
+   * @param {object} socket - Die WebSocket-Verbindung
+   * @param {Buffer|string} raw - Der rohe Rahmen
+   * @param {boolean} isBinary - Ob der Rahmen binaer kam
+   * @param {{lobbyId: string|null, token: string|null}} context - Wird hier GEFUELLT
+   * @param {TokenBucket} mengenGrenze - Eimer dieser Verbindung
+   */
+  #nachrichtBehandeln(socket, raw, isBinary, context, mengenGrenze) {
+    /*
+     * Mengenbegrenzung VOR allem anderen — auch vor dem Parsen. Verworfene
+     * Nachrichten bekommen KEINE Antwort (sonst wäre die Fehlermeldung die
+     * Verstärkung); sichtbar wird es über Zähler und Log. Wer dauerhaft
+     * überzieht, wird getrennt.
+     */
+    if (!mengenGrenze.erlaube()) {
+      if (this.metrics) this.metrics.messagesRateLimited += 1;
+      if (mengenGrenze.verworfeneInFolge === 1) {
+        this.logger.warn('rate_limited', 'Nachrichten über der Mengengrenze verworfen', {
+          lobbyId: context.lobbyId,
+        });
+      }
+      if (mengenGrenze.verworfeneInFolge >= RATE_TRENNEN_NACH) {
+        this.logger.warn('rate_limit_disconnect', 'Verbindung wegen Dauerüberlast getrennt', {
+          lobbyId: context.lobbyId,
+        });
+        socket.close(1008, 'Zu viele Nachrichten');
+      }
+      return;
+    }
+    /*
+     * Binärrahmen vom Client werden verworfen — GRUND und Vermerk.
+     *
+     * Die Richtung Client → Server ist ausschließlich JSON-Kontrolle (siehe
+     * `protocol.js`); Snapshots laufen nur Server → Client. Ein Client, der
+     * hier binär sendet, hat einen Fehler — und bekam bisher GAR KEINE
+     * Antwort: gemessen (Sonde 2026-09-27) blieb der Socket 700 ms lang still,
+     * ohne Fehlermeldung, ohne Log-Zeile. Genau die Klasse „Ablehnung ohne
+     * Rückweg".
+     *
+     * Warum trotzdem KEINE Fehlermeldung auf die Leitung geht: Das wäre eine
+     * Verstärkung (1 Byte hinein, ~100 Byte hinaus) und damit eine Einladung,
+     * den Server mit Müll zuzustellen. Die Sichtbarkeit stellt stattdessen die
+     * Log-Zeile her — dieselbe Entscheidung wie bei der Nutzlastgrenze, die
+     * ebenfalls protokolliert und abweist.
+     */
+    if (isBinary) {
+      this.logger.warn('binary_message_rejected', 'Binärrahmen vom Client verworfen — diese Richtung ist JSON', {
+        bytes: raw?.byteLength ?? raw?.length ?? null,
+      });
+      return;
+    }
+
+    /*
+     * Nutzlastgrenze VOR dem Parsen.
+     *
+     * Fund (belegt): `INPUT_LIMITS.maxPayloadBytes` war definiert, aber
+     * nirgends verwendet — `parseControlMessage` rief `JSON.parse` auf
+     * beliebig große Eingaben auf. Gemessen: Eine Nachricht mit 1 MB Füllsel
+     * wurde angenommen und geparst.
+     *
+     * Die Prüfung steht hier und nicht im gemeinsamen Parser, weil sie nur für
+     * die Richtung CLIENT → SERVER gilt: Die Waffenbestände aller Spieler gehen
+     * als EINE Nachricht an den Client und dürfen größer sein.
+     *
+     * Geprüft wird die BYTES, nicht die Zeichen: Ein Byte kann im JSON als
+     * Escape-Sequenz stehen (`\u00e4`), und `raw.length` wäre dann zu klein.
+     */
+    const nutzlastBytes = typeof raw === 'string'
+      ? Buffer.byteLength(raw, 'utf8')
+      : (raw?.byteLength ?? 0);
+    if (nutzlastBytes > INPUT_LIMITS.maxPayloadBytes) {
+      this.logger.warn('payload_rejected', 'Nachricht über der Nutzlastgrenze abgewiesen', {
+        bytes: nutzlastBytes,
+        limit: INPUT_LIMITS.maxPayloadBytes,
+      });
+      this.#fehlerSenden(
+        socket,
+        `Nachricht zu groß (${nutzlastBytes} Byte, erlaubt ${INPUT_LIMITS.maxPayloadBytes})`,
+      );
+      return;
+    }
+
+    const message = parseControlMessage(raw);
+    if (!message) {
+      this.#fehlerSenden(socket, 'Ungültige Nachricht');
+      return;
+    }
+
+    try {
+      switch (message.t) {
+        case CONTROL.HELLO:
+          socket.send(controlMessage(CONTROL.WELCOME, {
+            protocol: PROTOCOL_VERSION,
+            message: 'Verbunden',
+          }));
+          break;
+
+        case CONTROL.JOIN_LOBBY: {
+          const lobbyId = message.lobbyId;
+          /*
+           * VOR der Belegungsprüfung die Verwaltungsrunde nachziehen.
+           *
+           * Ein Platz, dessen Reconnect-Fenster abgelaufen ist, ist frei —
+           * auch wenn die Runde ihn noch nicht weggeräumt hat (Vorgabe: alle
+           * 5 s). Ohne diese Zeile hinge die Entscheidung „Team frei oder
+           * nicht" davon ab, ob zufällig gerade eine Runde lief: Der nächste
+           * Mensch bekäme „Alle Teams sind besetzt — kein Platz frei", obwohl
+           * seit Minuten niemand mehr da ist. Sie ist billig (wenige Lobbys,
+           * wenige Plätze) und macht das Versprechen aus `disconnect` an der
+           * Stelle wahr, an der es zählt.
+           */
+          // Ein zweiter Beitritt auf demselben Socket löst die alte Zuordnung (Audit 2026-10-13: der alte
+          // Platz blieb sonst „verbunden" und hielt sein Match am Laufen).
+          if (context.lobbyId && context.token) {
+            const alt = this.#sessions.get(context.lobbyId);
+            if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
+            this.#lobbies.disconnect(context.lobbyId, context.token);
+            // Felder setzen statt das Objekt zu ersetzen: `context` gehoert dem
+            // Aufrufer (#handleConnection) und wird dort vom close-Zuhoerer
+            // gelesen. Ein `context = {...}` wuerde hier nur den Parameter
+            // umbiegen (AU-9a/C-8, beim Ausziehen aufgefallen).
+            context.lobbyId = null;
+            context.token = null;
+          }
+          this.pruneLobbies();
+          const lobby = this.#lobbies.get(lobbyId);
+          /*
+           * Die Kennung gehört in die Meldung.
+           *
+           * Der Client wiederholt den Beitritt bei jeder Wiederverbindung mit
+           * derselben ID; ohne sie lautet die Frage im Fehlerbericht „Lobby
+           * nicht gefunden" — mit ihr „…: 8f3a1c2d" und der Fall ist
+           * nachvollziehbar. Fehlt das Feld ganz, wird das eigens gesagt:
+           * „keine Kennung" ist eine andere Ursache als „falsche Kennung".
+           */
+          if (!lobby) {
+            throw new Error(`Lobby nicht gefunden: ${lobbyId ?? '(keine Kennung)'}`);
+          }
+          this.logger.info('lobby_join', 'Spieler tritt einer Lobby bei', {
+            lobbyId,
+            seats: lobby.seats.length,
+            capacity: lobby.capacity,
+            // Nur DASS ein Token mitkam, nicht der Token selbst.
+            hasToken: Boolean(message.token),
+          });
+          const seat = this.#lobbies.join(lobbyId, { name: message.name ?? 'Spieler', token: message.token ?? null });
+          // Felder setzen statt Objekt ersetzen — siehe die Anmerkung beim
+          // Verlassen der Lobby oben. Der Aufrufer haelt dasselbe Objekt.
+          context.lobbyId = lobbyId;
+          context.token = seat.token;
+          let session = this.#sessions.get(lobbyId);
+          if (!session) {
+            /*
+             * Die Sitzung entsteht beim ersten Beitritt — aber sie LÄUFT erst,
+             * wenn alle Teams von Menschen besetzt sind.
+             *
+             * Vorher lief sie sofort, und der Server-Bot spielte die freien
+             * Teams. Das war falsch: **Es gibt keine Bot-KI.** Teams werden
+             * ausschließlich von Menschen gespielt; ein unbesetztes Team ist
+             * kein Bot-Team. Bis der letzte Mensch da ist, wartet die Lobby —
+             * die Simulation läuft nicht, damit niemand ins Leere zieht.
+             */
+            session = new LobbySession(lobby, {
+              onEmpty: id => this.#sessions.delete(id),
+              ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
+              metrics: this.metrics,
+              logger: this.logger,
+            });
+            this.#sessions.set(lobbyId, session);
+            /*
+             * ============ ENTSCHEIDUNG (Fund W5): Status nachziehen ============
+             *
+             * *Der Befund (gemessen in `tests/server-integration.test.js`):*
+             * Beim Match-Ende löscht die Sitzung sich selbst (`#finish` →
+             * `onEmpty`); die Lobby und ihre Plätze bleiben stehen. Ein
+             * späterer Beitritt mit Token findet keine Sitzung mehr und legt
+             * HIER eine neue an — das Match beginnt bei Runde 1. Die Lobby trug
+             * dabei weiter „finished" (= entschieden), WÄHREND in ihr gespielt
+             * wurde: „es ist vorbei" und „es läuft" zugleich. Wer die Lobby
+             * liest, sah eine erledigte Lobby, in der gespielt wird.
+             *
+             * *Die Entscheidung:* Der Status wird beim Wiederanlauf
+             * nachgezogen. Die Lobby ist ein WIEDERSPIEL-Gefäß, kein einmaliges
+             * Match. Sie trägt „open", solange kein Match in ihr unterwegs ist,
+             * „running", sobald eines unterwegs ist, und „finished", sobald ihr
+             * Match entschieden und die Sitzung weg ist. Damit ist der Zustand
+             * widerspruchsfrei: „finished" und „es wird gespielt" schließen
+             * sich aus.
+             *
+             * *Warum „running" und nicht „open":* „running" ändert fast
+             * nichts — `LobbyManager.join` lehnt ohnehin alles außer „open" ab,
+             * also kommt in die wiederbelebte Lobby weiterhin kein fremder
+             * Client (beim laufenden Match sind zusätzlich alle Teams besetzt).
+             * Genau dieselbe Kennzeichnung trägt eine Lobby, deren Match per
+             * `START_MATCH` gestartet wurde. „open" wäre die GRÖSSERE Änderung:
+             * Es öffnete die Tür für neue Spieler und stellte die Lobby zurück
+             * in den Lobby-Browser (der Client zeigt nur `status === 'open'`) —
+             * ein Eintrag, der beim Klick abgelehnt wird, also eine Sackgasse.
+             *
+             * *„running" meint die MATCHPHASE, nicht die Tick-Schleife:* Auch
+             * ein per `START_MATCH` gestartetes Match steht auf „running",
+             * während es auf einen Wiederverbinder wartet (`session.laeuft` ist
+             * dann `false`, siehe den Socket-`close`-Handler unten). Ein Status,
+             * der die Tick-Schleife abbildet, flackerte bei jedem
+             * Verbindungsabbruch zwischen „open" und „running" — und ein „open"
+             * mitten im Match wäre die nächste Tür, die nicht aufgeht.
+             *
+             * *Die Gegenprobe steht im selben Test:* „finished" bleibt, wo es
+             * hingehört (entschieden, keine Sitzung, niemand da) — und in ein
+             * laufendes Match kommt kein fremder Client.
+             */
+            if (lobby.status === LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId);
+          }
+          /*
+           * ============ ENTSCHEIDUNG: erst starten, DANN anmelden ============
+           *
+           * FUND (belegt, Sonde 2026-09-27): Hier stand `attach` VOR der
+           * Startprüfung. `attach` sendet die `lobby_state`-Nachricht MIT
+           * `laeuft: this.laeuft` — und in diesem Augenblick lief die Sitzung
+           * noch nicht. Gemessen (zwei Teams, je ein Platz, zwei Menschen):
+           *
+           *     1. Beitritt   → laeuft=false besetzteTeams=1/2
+           *     2. Beitritt   → laeuft=false besetzteTeams=2/2   ← DER LETZTE
+           *     danach: alleTeamsBesetzt=true, Session läuft=true
+           *
+           * Genau der letzte Beitretende — der, mit dem das Match beginnt —
+           * las damit „Warte auf Mitspieler: 2/2 Teams besetzt", also eine
+           * volle Lobby als wartende. Die Anzeige widersprach der Lage.
+           *
+           * Die Reihenfolge heilt das ohne neue Nachricht: Ist das Match mit
+           * diesem Beitritt vollständig, läuft die Sitzung, BEVOR `attach`
+           * seinen Zustand meldet — und `laeuft` ist wahr. Der erste
+           * Beitretende (Teams noch frei) bekommt weiterhin `false` und damit
+           * den ehrlichen Wartehinweis.
+           *
+           * Die andere Richtung ist ausgeschlossen: Ein Timer kann zwischen
+           * `start()` und `attach()` nicht feuern — beide laufen im selben
+           * synchronen Durchgang.
+           */
+          const gestartet = this.#starteMatchFallsVoll(lobbyId, session);
+          if (gestartet) {
+            this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
+              lobbyId,
+              teams: lobby.teams,
+              unitsPerPlayer: lobby.playersPerTeam,
+            });
+          }
+          session.attach(seat.token, socket);
+          if (!session.laeuft) {
+            this.logger.info('lobby_waiting', 'Warte auf weitere Spieler', {
+              lobbyId,
+              teams: lobby.teams,
+              besetzt: new Set(lobby.seats.map(entry => entry.teamId)).size,
+            });
+          }
+          // Die Live-Sitzung hat den Plätzen gerade Entity-IDs zugewiesen.
+          // Der Rückgabewert von join() ist eine Kopie und daher veraltet —
+          // gelesen wird aus `lobby.seats`.
+          /*
+           * Alle Figuren dieses Beitrags melden — nicht nur die erste.
+           *
+           * Im Modus der Matcharten gehören demselben Token MEHRERE Figuren
+           * (ein ganzes Team). Mit nur einer `entityId` hielte der Client jede
+           * andere eigene Figur für fremd: „Du bist nicht am Zug", kein
+           * Waffenzugriff, keine Kennzahlen. `entityId` bleibt für ältere
+           * Clients erhalten und nennt die erste Figur.
+           */
+          const eigeneSeats = lobby.seats.filter(entry => entry.token === seat.token);
+          socket.send(controlMessage(CONTROL.WELCOME, {
+            protocol: PROTOCOL_VERSION,
+            lobbyId,
+            seed: session.match.seedManager.baseSeed,
+            preset: lobby.preset,
+            token: seat.token,
+            seatIndex: seat.seatIndex,
+            entityId: eigeneSeats[0]?.entityId ?? seat.entityId,
+            entityIds: eigeneSeats.map(entry => entry.entityId).filter(id => id !== null),
+            unitsPerPlayer: lobby.unitsPerPlayer ?? null,
+            resumed: seat.resumed,
+            // Bisherige Krater: Wer später beitritt oder wieder verbindet,
+            // baut das Gelände aus dem Seed und braucht die Löcher dazu.
+            craters: session.match.terrain?.craterLog ?? [],
+            // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
+            inset: session.match.maelstrom?.inset ?? 0,
+          }));
+          break;
+        }
+
+        case CONTROL.START_MATCH: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          /*
+           * Starten darf man erst, wenn ALLE Teams besetzt sind.
+           *
+           * Ohne diese Prüfung ließe sich ein Match starten, in dem auf der
+           * gegnerischen Seite niemand ist. Vorher füllte der Bot solche Teams
+           * — es gibt aber keine Bot-KI. Die Prüfung selbst lebt in
+           * `#starteMatchFallsVoll` (Warteschlange 3.8: eine Stelle).
+           */
+          const gestartet = this.#starteMatchFallsVoll(context.lobbyId, session);
+          if (!gestartet && !session.laeuft) {
+            this.#fehlerSenden(socket, 'Warte auf Mitspieler: Jedes Team braucht einen Menschen.');
+            break;
+          }
+          this.#lobbies.markRunning(context.lobbyId);
+          session.broadcastSnapshot();
+          break;
+        }
+
+        case CONTROL.INPUT: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = session.handleInput(context.token, message);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.SELECT_WEAPON: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = session.handleWeaponSelect(context.token, message.weaponId);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.JUMP: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = session.handleJump(context.token, message);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.MOVE: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = session.handleMove(context.token, message);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.SKIP_PAUSE: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = session.handleSkipPause(context.token);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.SKIP_TURN:
+        case CONTROL.SURRENDER: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = message.t === CONTROL.SURRENDER ? session.handleSurrender(context.token) : session.handleSkipTurn(context.token);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.DROP_WEAPON: {
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          const result = session.handleDropWeapon(context.token, message.weaponId);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.TERRAIN_REQUEST: {
+          // Der Client hat eine Abweichung gemessen und baut die Karte neu.
+          const session = this.#sessions.get(context.lobbyId);
+          if (!session) throw new Error('Keine aktive Sitzung');
+          socket.send(controlMessage(CONTROL.TERRAIN_STATE, session.terrainStand(true)));
+          break;
+        }
+
+        case CONTROL.PING:
+          socket.send(Buffer.from([MAGIC[0], MAGIC[1], PROTOCOL_VERSION, MESSAGE_TYPE.PONG]));
+          /*
+           * Ist das Match längst entschieden, dem Client das erneut mitteilen.
+           *
+           * Fund (belegt): Nach dem Ende ruft die Sitzung `stop()` auf und
+           * sendet keine Snapshots mehr; die einzige Nachricht über das Ende
+           * ist ein einmaliges `match_over`. Verpasst ein Client sie — etwa
+           * weil sein Socket im Moment der Aussendung nicht offen war
+           * (`broadcastSnapshot` überspringt solche Clients still) —, sitzt er
+           * dauerhaft auf einem laufenden Spiel fest: Der Zustand steht auf
+           * „playing", es kommt nichts mehr, und die Anzeige behauptet
+           * weiter, es laufe.
+           *
+           * Der Client fragt ohnehin alle zwei Sekunden per PING nach. Diese
+           * Antwort ist der natürliche Ort für die Wiederholung: kein neuer
+           * Nachrichtentyp, kein neues Feld im Drahtformat, und die
+           * Wiederholung ist folgenlos, weil der Client sie erkennt.
+           */
+          if (context.lobbyId) {
+            const fertigeSitzung = this.#sessions.get(context.lobbyId);
+            if (fertigeSitzung?.match?.status === 'gameover') {
+              socket.send(controlMessage('match_over', {
+                winnerTeamId: fertigeSitzung.match.winnerTeamId,
+                rounds: fertigeSitzung.match.round,
+              }));
+            }
+          }
+          break;
+
+        default:
+          this.#fehlerSenden(socket, `Unbekannter Nachrichtentyp: ${String(message.t)}`);
+      }
+    } catch (error) {
+      this.metrics.errors += 1;
+      this.logger.error('ws_command_failed', 'Kommando über WebSocket fehlgeschlagen', {
+        lobbyId: context.lobbyId,
+        // Der Token wird NICHT mitgeschrieben (der Logger redigiert ihn ohnehin,
+        // aber ein Feld dafür anzulegen wäre die falsche Gewohnheit).
+        messageType: parseControlMessage(raw)?.t ?? null,
+        error,
+      });
+      /*
+       * Der Grund geht so raus, dass der Client ihn zeigen kann — auch
+       * hier: Das Feldpaar `{error, errors}` entsteht in EINER Stelle
+       * (`#fehlerNutzlast`), damit eine neue Ablehnung nicht wieder die
+       * Form wählt. Siehe die Begründung dort.
+       */
+      this.#fehlerSenden(socket, error?.message ?? String(error));
+    }
+  }
+
   listen(port = 3000, host = '127.0.0.1') {
     return new Promise((resolve, reject) => {
       this.#httpServer.once('error', reject);
