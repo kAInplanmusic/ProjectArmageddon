@@ -129,9 +129,21 @@ Oberfläche).
 **Arbeitsliste für Stufe 1 (Stand 2026-10-25):**
 1. ~~Bodenabfrage der Figur belegen~~ — **erledigt** (Befund 4: y-fähig über `isSolid`).
 2. **Offen:** die vier x-only-Stellen auf eine y-fähige Abfrage umstellen, jeweils mit
-   Test — Haustier auf Innenboden (`guentherSystem` 290/598, `cookieSystem` 325/346),
-   Einschlagpunkt (`shooting.js` 801), Turm-Ballistik (`turret.js`). Das ist der eigentliche
-   Rest von Stufe 1: die Figuren können drinnen stehen, die vier Systeme wissen es noch nicht.
+   Test. Das ist der eigentliche Rest von Stufe 1: die Figuren können drinnen stehen, die
+   vier Systeme wissen es noch nicht. Nachgesehen am 2026-10-25:
+
+   | Stelle | Was sie mit `surfaceYAt(x)` macht | Folge im Hohlraum |
+   | :-- | :-- | :-- |
+   | `shooting.js:801` in `shiftPlayer` | **Rückstoß** setzt `Position.y = surfaceYAt(zielX)` | die Figur wird auf die **Oberfläche gerissen** statt im Hohlraum zu bleiben |
+   | `guentherSystem.js:290/598` | Haustier-Günther sucht seinen Boden | läuft über dem Hohlraum auf der Oberfläche |
+   | `cookieSystem.js:325/346` | Cookie-Krater und Cookie-Boden | Krater und Standort am falschen Ort |
+   | `turret.js` | Ballistik bricht am Gelände ab | Turm schießt durch die Höhlendecke hindurch statt zu treffen |
+
+   Die **Rückstoß-Stelle ist die schlimmste**, weil sie eine Figur versetzt (nicht nur
+   zeichnet). Ein y-fähiger Ersatz ist denkbar (Suche nach dem nächsten Boden um die
+   bisherige Höhe, Rückfall auf `surfaceYAt`), wurde aber **nicht** gebaut: Der Fehler
+   braucht erst einen Test, der ihn reproduziert (Figur im Hohlraum, Rückstoß, Höhe
+   vorher/nachher) — ohne diesen Test wäre die Änderung ein Blindflug an der Physik.
 3. Erst danach Ruinen als eigene Kartentyp-Variante prüfen — die Hohlräume selbst müssen
    nicht mehr erfunden werden.
 
