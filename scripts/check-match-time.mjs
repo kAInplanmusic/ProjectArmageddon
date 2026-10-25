@@ -35,8 +35,8 @@ const args = new Map(process.argv.slice(2).map(a => {
 }));
 const ANZAHL = Number(args.get('seeds') ?? 4);
 const ZUGZEIT = MATCH_RULES.turnTimers.fourPlayerSeconds.seconds;
-const VALHALLA_MIN = MATCH_RULES.suddenDeath.valhallaMinSeconds / 60;
-const VALHALLA_MAX = MATCH_RULES.suddenDeath.valhallaMaxSeconds / 60;
+const VALHALLA_MIN = MATCH_RULES.suddenDeath.valhallaMinRound;
+const VALHALLA_MAX = MATCH_RULES.suddenDeath.valhallaMaxRound;
 
 /**
  * Spielt eine Partie mit einer bestimmten Startgesundheit.
@@ -103,7 +103,7 @@ function spiele(seed, basis) {
 const KANDIDATEN = [BASE_HEALTH, 80, 70, 60].filter((v, i, a) => a.indexOf(v) === i);
 
 console.log('Startgesundheit und Matchdauer');
-console.log(`  Mahlstrom zufällig ${VALHALLA_MIN}–${VALHALLA_MAX} min Spielzeit | Zugzeit ${ZUGZEIT} s | ${ANZAHL} Partien je Wert`);
+console.log(`  Mahlstrom zufällig Runde ${VALHALLA_MIN}–${VALHALLA_MAX} | Zugzeit ${ZUGZEIT} s | ${ANZAHL} Partien je Wert`);
 console.log('');
 console.log(`${'Basis'.padStart(7)}${'Leben'.padStart(8)}${'Runden (Ø)'.padStart(13)}${'Züge (Ø)'.padStart(11)}${'Dauer (Ø)'.padStart(12)}${'Ausschaltung'.padStart(14)}`);
 console.log('-'.repeat(65));

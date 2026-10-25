@@ -78,22 +78,34 @@ export const MATCH_RULES = Object.freeze({
     /*
      * Valhalla: wann der Mahlstrom beginnt.
      *
-     * Entscheidung des Auftraggebers (2026-10-13): ZUFÄLLIG zwischen 6 und 12
-     * Minuten Spielzeit — nicht mehr ab einer festen Runde (vorher Runde 8). Mit
-     * der Rundenzahl hing der Beginn von der Zahl der Figuren ab (bei 8 Figuren
-     * dauert Runde 8 über 20 Minuten, bei 2 knapp vier); die Spielzeit gilt für
-     * jede Matchgröße gleich.
+     * Entscheidung des Auftraggebers (2026-10-25, ersetzt die zeitbasierte
+     * Fassung vom 2026-10-13): ZUFAELLIG zwischen RUNDE 8 und 14; bei grossen
+     * Partien (mehr als 8 Spieler — dort ist die Karte die Stufe „gross" oder
+     * „krieg") zwischen RUNDE 12 und 20.
      *
-     * - ZUFÄLLIG, aber nicht würfelnd: Der Zeitpunkt wird einmal aus dem Match-Seed
-     *   gezogen (eigener Zweig `VALHALLA`). Derselbe Seed ergibt denselben
-     *   Zeitpunkt — Replays und Wiederherstellung bleiben exakt.
-     * - SPIELZEIT = Simulationszeit seit Matchbeginn (Ticks / 60), nicht die Uhr.
-     * - Der Beginn wird zu Beginn der nächsten RUNDE wirksam (die Karte zieht sich
-     *   pro Runde zusammen). Verspätung also höchstens eine Rundenlänge.
+     * Warum zurueck auf die Runde: Die Runde ist die Groesse, die der Spieler
+     * erlebt. Gemessen am 2026-10-25 traf die zeitbasierte Fassung je nach
+     * Spielweise ganz verschiedene Runden (Sturm ab Runde 9–11 bei
+     * schusslastigen Bot-Partien, 15–20 bei Partien mit vollen Zuegen) — und
+     * bei schusslastigen Partien schob sie den Sturm in Runden hinaus, weil
+     * jeder Schuss den Zug vorzeitig beendet.
+     *
+     * Die alte Sorge (2026-10-13: „Runde 8 dauert bei 8 Figuren ueber 20
+     * Minuten") faengt das weitere Fenster fuer grosse Partien ab.
+     *
+     * - ZUFAELLIG, aber nicht wuerfelnd: Der Zeitpunkt wird einmal aus dem
+     *   Match-Seed gezogen (eigener Zweig `VALHALLA`). Derselbe Seed ergibt
+     *   dieselbe Runde — Replays und Wiederherstellung bleiben exakt.
+     * - Wirksam zu Beginn der gezogenen Runde (die Karte zieht sich pro Runde
+     *   zusammen). Die Aktivierung vergleicht RUNDEN, nicht Ticks: sonst
+     *   schoeben schusslastige Partien den Sturm wieder in Runden hinaus.
      * - Die Spieler erfahren den Zeitpunkt nicht vorher; die Ziehung ist geheim.
      */
-    valhallaMinSeconds: 360,
-    valhallaMaxSeconds: 720,
+    valhallaMinRound: 8,
+    valhallaMaxRound: 14,
+    /** Grossen Partien (Karte „gross"/„krieg", mehr als 8 Spieler) brauchen laenger. */
+    valhallaMinRoundGross: 12,
+    valhallaMaxRoundGross: 20,
     /*
      * Das Vorzeichen (Omen): Zufällig zwischen 60 und 1 Sekunde VOR Valhalla
      * erscheinen zwei Raben im Blitz am Himmel und schauen auf das Schlachtfeld
@@ -122,18 +134,40 @@ export const MATCH_RULES = Object.freeze({
 });
 
 /**
- * Zeitpunkt (in Ticks seit Matchbeginn), zu dem Valhalla beginnt.
+ * Die Runde, zu der Valhalla beginnt.
  *
- * Gleichverteilt über ganze Sekunden zwischen `valhallaMinSeconds` und
- * `valhallaMaxSeconds` (beide eingeschlossen).
+ * Gleichverteilt zwischen den Rundengrenzen (beide eingeschlossen). `gross`
+ * waehlt das weitere Fenster fuer grosse Partien (Karte „gross"/„krieg",
+ * mehr als 8 Spieler).
  *
  * @param {{nextInt:(min:number, max:number)=>number}} rng - der Zweig `VALHALLA`
- * @param {object} [rules=MATCH_RULES.suddenDeath]
+ * @param {{gross?: boolean, rules?: object}} [optionen]
+ * @returns {number} Runde (1-basiert)
+ */
+export function drawValhallaRound(rng, { gross = false, rules = MATCH_RULES.suddenDeath } = {}) {
+  return rng.nextInt(
+    gross ? rules.valhallaMinRoundGross : rules.valhallaMinRound,
+    gross ? rules.valhallaMaxRoundGross : rules.valhallaMaxRound,
+  );
+}
+
+/**
+ * Der Tick, zu dem die gegebene Runde BEGINNT — geschaetzt aus Spielerzahl und
+ * Zugzeit.
+ *
+ * Nur fuer das Vorzeichen (Omen) noetig: Die Aktivierung selbst vergleicht
+ * RUNDEN (`MatchController`). Ein Omen ist eine Anzeige 1–60 s vorher; die
+ * Schaetzung darf danebenliegen, ohne dass sich der Sturmbeginn verschiebt.
+ *
+ * @param {number} runde
+ * @param {{spieler?: number, ticksJeZug?: number}} [optionen]
  * @returns {number} Ticks
  */
-export function drawValhallaTick(rng, rules = MATCH_RULES.suddenDeath) {
-  const sekunden = rng.nextInt(rules.valhallaMinSeconds, rules.valhallaMaxSeconds);
-  return sekunden * SIMULATION_HZ;
+export function valhallaTickForRound(runde, { spieler = 4, ticksJeZug = 1200 } = {}) {
+  const r = Math.max(1, Math.floor(Number(runde) || 1));
+  const s = Math.max(2, Math.floor(Number(spieler) || 2));
+  const t = Math.max(1, Math.floor(Number(ticksJeZug) || 1));
+  return (r - 1) * s * t;
 }
 
 /**

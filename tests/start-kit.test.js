@@ -32,8 +32,10 @@ const OHNE_HANDLER = [
 ];
 
 function neuesMatch(extra = {}) {
+  // Sturm ausser Reichweite: Hier werden Kits und Waffen gemessen, nicht der
+  // Mahlstrom (seit 2026-10-25 rundenbasiert, ab Runde 8).
   const match = new MatchController({
-    seed: 20261014, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, ...extra,
+    seed: 20261014, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, valhallaRound: 999, ...extra,
   });
   match.start();
   return match;

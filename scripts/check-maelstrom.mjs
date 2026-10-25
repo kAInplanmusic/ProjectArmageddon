@@ -32,8 +32,8 @@ const args = new Map(process.argv.slice(2).map(a => {
   return [k, v ?? true];
 }));
 const ANZAHL = Number(args.get('seeds') ?? 6);
-const MIN_S = MATCH_RULES.suddenDeath.valhallaMinSeconds;
-const MAX_S = MATCH_RULES.suddenDeath.valhallaMaxSeconds;
+const MIN_RUNDE = MATCH_RULES.suddenDeath.valhallaMinRound;
+const MAX_RUNDE = MATCH_RULES.suddenDeath.valhallaMaxRound;
 
 /** Spielt eine Partie (nur Team 0 schießt) und protokolliert Beginn und Ende des Sturms. */
 function spiele(seed) {
@@ -70,6 +70,7 @@ function spiele(seed) {
     status: match.status,
     endrunde: ende.round,
     minuten: ticks / SIMULATION_HZ / 60,
+    gezogeneRunde: match.valhallaRound,
     gezogenMin: match.valhallaTick / SIMULATION_HZ / 60,
     sturmRunde,
     sturmMin: sturmTick === null ? null : sturmTick / SIMULATION_HZ / 60,
@@ -77,7 +78,7 @@ function spiele(seed) {
   };
 }
 
-console.log(`Mahlstrom-Prüfung: ${ANZAHL} Partien (Valhalla zufällig ${MIN_S / 60}–${MAX_S / 60} min Spielzeit)`);
+console.log(`Mahlstrom-Prüfung: ${ANZAHL} Partien (Valhalla zufällig Runde ${MIN_RUNDE}–${MAX_RUNDE})`);
 console.log('');
 console.log('Seed    gezogen   Sturm ab (Min / Runde)   Endrunde   Dauer (min)   Status');
 console.log('-'.repeat(78));
@@ -87,19 +88,25 @@ for (let i = 0; i < ANZAHL; i += 1) {
   const r = spiele(1000 + i * 137);
   ergebnisse.push(r);
   console.log(
-    `${String(r.seed).padStart(4)}   ${r.gezogenMin.toFixed(2).padStart(7)}   `
+    `${String(r.seed).padStart(4)}   ${String(r.gezogeneRunde).padStart(7)}   `
     + `${(r.sturmMin === null ? '—' : r.sturmMin.toFixed(2)).padStart(10)} / ${String(r.sturmRunde ?? '—').padEnd(6)}   `
     + `${String(r.endrunde).padStart(8)}   ${r.minuten.toFixed(1).padStart(11)}   ${r.status}`,
   );
 }
 
-const imFenster = ergebnisse.every(e => e.gezogenMin >= MIN_S / 60 && e.gezogenMin <= MAX_S / 60);
+const imFenster = ergebnisse.every(e => e.gezogeneRunde >= MIN_RUNDE && e.gezogeneRunde <= MAX_RUNDE);
+// Der Sturm beginnt GENAU in der gezogenen Runde — oder gar nicht, dann endete die
+// Partie vorher. Beides ist pruefbar, also wird beides geprueft.
+const sturmPasst = ergebnisse.every(e => (e.sturmRunde === null
+  ? e.endrunde < e.gezogeneRunde
+  : e.sturmRunde === e.gezogeneRunde));
 const alleEnden = ergebnisse.every(e => e.status === 'gameover');
 const netz = ergebnisse.filter(e => e.endrunde > MATCH_RULES.roundLimitBackstop).length;
-const verschieden = new Set(ergebnisse.map(e => e.gezogenMin.toFixed(2))).size;
+const verschieden = new Set(ergebnisse.map(e => e.gezogeneRunde)).size;
 
 console.log('');
-console.log(`Gezogener Zeitpunkt in ${MIN_S / 60}–${MAX_S / 60} min:  ${imFenster ? 'ja' : 'NEIN'}   (${verschieden} verschiedene Werte bei ${ANZAHL} Partien)`);
+console.log(`Gezogene Runde in ${MIN_RUNDE}–${MAX_RUNDE}:  ${imFenster ? 'ja' : 'NEIN'}   (${verschieden} verschiedene Werte bei ${ANZAHL} Partien)`);
+console.log(`Sturm beginnt genau in der gezogenen Runde (oder die Partie endet vorher):  ${sturmPasst ? 'ja' : 'NEIN'}`);
 console.log(`Alle Partien enden von selbst:  ${alleEnden ? 'ja' : 'NEIN'}`);
 console.log(`Rundenlimit-Netz (${MATCH_RULES.roundLimitBackstop}) erreicht:  ${netz} von ${ANZAHL}`);
-process.exit(imFenster && alleEnden && netz === 0 ? 0 : 1);
+process.exit(imFenster && sturmPasst && alleEnden && netz === 0 ? 0 : 1);

@@ -116,6 +116,9 @@ Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Arc
   dem Sturm**, die übrigen währenddessen; 0 Partien im Rundenlimit-Netz. Die Lage ist damit gesund: der
   Sturm ist die Bremse für lange Partien, nicht die einzige Möglichkeit zu enden. **Keine Codeänderung** —
   die Designfrage ist durch die Zeitbasis entschieden, nicht offen.
+  *Nachtrag (2026-10-25):* Der Auftraggeber hat die Zeitbasis abgelöst — Valhalla beginnt jetzt zufällig in
+  **Runde 8–14** (groß 12–20); Begründung, Umsetzung und Belege stehen im Eintrag vom 2026-10-25 unter
+  „Mahlstrom-Tempo".
 - [x] **AU-9 Register veraltet:** `docs/befundregister.md` führte A-1…A-13, B-1…B-3, C-1…C-4 als „🟡 beauftragt“
   (Stand 09-27) — gegen Code verifiziert und Status nachgezogen (2026-10-23): alle A/B/C-Befunde außer C-8
   sind im Code behoben und mit Wächtern belegt (Belege je Zeile in `docs/befundregister.md`).
@@ -785,6 +788,27 @@ unten sind in einer 4-Kern-Sandbox gemessen, nicht auf der Zielhardware.
   ob der Beginn vorher irgendwie angedeutet werden soll (Warnung), und die
   Mahlstrom-Kontraktion dauert bei Karte 2560 px bis zu 40 Runden — bei gleichzeitig
   sehr langen Matches (8 Figuren) wäre eine schnellere Kontraktion zu prüfen.
+
+- [x] **ENTSCHIEDEN UND UMGESETZT (2026-10-25): Valhalla wieder RUNDENBASIERT —
+  Runde 8–14, bei großen Partien (Karte „gross"/„krieg", mehr als 8 Spieler)
+  Runde 12–20.** Auftraggeber-Entscheidung; ersetzt Teil (1) des Eintrags vom
+  2026-10-13. Grund (gemessen 2026-10-25): Die zeitbasierte Fassung traf je nach
+  Spielweise ganz verschiedene Runden — mit dem ehrlich gestellten Audit-Bot
+  (nur Team 0 schießt, übrige Züge laufen voll) Sturm ab Runde 9–11, mit
+  volle-Zeit-Bots Runde 15–20. Ein Schuss beendet den Zug nach ~30 Ticks; die
+  Zeitbasis schob den Sturm bei schusslastigen Partien also in Runden hinaus.
+  Die Runde ist die Größe, die der Spieler erlebt.
+  Umsetzung: `MATCH_RULES.suddenDeath.valhallaMinRound/MaxRound/…Gross`;
+  Ziehung `drawValhallaRound` (derselbe Seed = dieselbe Runde); Aktivierung
+  vergleicht RUNDEN (`#onRoundStart`), der Tick dient nur der Omen-Schätzung
+  (`valhallaTickForRound`). Konstruktor-Option `valhallaRound` setzt für
+  Messungen eine feste Runde — die sechs Goldwert-Messungen für
+  Günther/Krater/Kits/Zerstörung nutzen `999`, sonst erreichte der Sturm sie
+  bei kurzen Testzügen schon ab Runde 8. Belege: `check:maelstrom` (gezogene
+  Runde 8–14, Sturm exakt in der gezogenen Runde, 0 Netzfälle), `npm test`
+  1878/1878, `tests/valhalla.test.js` 16/16. **Grenze:** Aufzeichnungen von vor
+  dem 2026-10-25 simulieren beim Abspielen einen anderen Sturmbeginn —
+  Replay-Format bleibt 1, die Grenze steht als Kommentar in `replay.js`.
 
 **Abgleich der Auftragsdateien (2026-10-13).** Die 31 offenen Abnahmekriterien in
 `docs/auftraege/online-sprung-und-abwurf.md` (18), `zerlegung-schritt3-ereignisse.md`

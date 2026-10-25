@@ -33,7 +33,8 @@ import {
   EFFECT_KIND,
 } from './specials.js';
 import { SIMULATION_HZ } from '../shared/config/network.js';
-import { MATCH_RULES, drawValhallaTick, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
+import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
+import { getTurnDurationForPlayerCount } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, WAFFEN_FAIR, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
@@ -436,7 +437,9 @@ export class MatchController {
   #events = new EventBus();
   #terrain;
   #bitmap;
-  /** Tick, ab dessen nächstem Rundenbeginn der Mahlstrom greift (Valhalla). */
+  /** Runde, zu der der Mahlstrom greift (Valhalla, Entscheidung 2026-10-25). */
+  #valhallaRound = 0;
+  /** Geschätzter Tick des Rundenbeginns — nur für das Vorzeichen (Omen). */
   #valhallaTick = 0;
   /** Vorzeichen: `{tick, vorlaufSekunden, bildSeed}`; `#omenGezeigt` merkt, dass es schon kam. */
   #valhallaOmen = null;
@@ -566,6 +569,17 @@ export class MatchController {
     kartentyp = null,
     maxRounds = MATCH_RULES.roundLimitBackstop,
     turnDurationMs = null,
+    /**
+     * Feste Valhalla-Runde statt der Ziehung aus dem Seed.
+     *
+     * Für Messungen, die NICHT den Sturm prüfen: Seit dem 2026-10-25 beginnt
+     * Valhalla in Runde 8–14; bei den kurzen Zugzeiten der Haus-Tests (600–
+     * 2000 ms) ist das nach wenigen Tausend Ticks erreicht. Eine Messung, die
+     * andere Merkmale prüft, legt den Sturm mit `valhallaRound: 999` außer
+     * Reichweite — dieselbe Haltung wie `turnDurationMs`/`baseHealth`:
+     * Konfiguration statt Sonderpfad im Motor.
+     */
+    valhallaRound = null,
     turnPauseTicks = 0,
     turnReplayTicks = 0,
     orientation = 'landscape',
@@ -612,9 +626,22 @@ export class MatchController {
       ? MatchSeedManager.createRandom()
       : new MatchSeedManager(seed);
     this.#rng = this.#seedManager.getSubRng('MATCH_BASE');
-    // Valhalla: Zeitpunkt (Ticks seit Matchbeginn) einmal aus dem Seed gezogen.
+    /*
+     * Valhalla: RUNDE einmal aus dem Seed gezogen (Entscheidung 2026-10-25:
+     * Runde 8–14, bei großen Partien 12–20 — siehe `MATCH_RULES.suddenDeath`).
+     * Der Tick wird nur für die Schätzung des Vorzeichens gebraucht; aktiviert
+     * wird über den RUNDENVERGLEICH in `#onRoundStart`, damit schusslastige
+     * Partien den Sturm nicht in Runden hinausschieben.
+     */
     const valhallaRng = this.#seedManager.getSubRng('VALHALLA');
-    this.#valhallaTick = drawValhallaTick(valhallaRng);
+    const spielerzahl = Math.max(2, teams * playersPerTeam);
+    const ticksJeZug = Math.max(1, Math.round(
+      (turnDurationMs ?? getTurnDurationForPlayerCount(spielerzahl)) / 1000 * SIMULATION_HZ,
+    ));
+    this.#valhallaRound = Number.isFinite(valhallaRound) && valhallaRound >= 1
+      ? Math.floor(valhallaRound)
+      : drawValhallaRound(valhallaRng, { gross: spielerzahl > 8 });
+    this.#valhallaTick = valhallaTickForRound(this.#valhallaRound, { spieler: spielerzahl, ticksJeZug });
     // Das Vorzeichen (zwei Raben im Blitz) kommt zufällig 1–60 s vorher — aus demselben Zweig,
     // NACH der ersten Ziehung, damit der Beginn unverändert bleibt.
     this.#valhallaOmen = drawValhallaOmen(valhallaRng, this.#valhallaTick);
@@ -2525,8 +2552,9 @@ export class MatchController {
 
     const lebend = this.#players.filter(p => p.alive).length;
     // Valhalla: einmal gestartet, bleibt der Mahlstrom an. Der Beginn hängt an der
-    // SPIELZEIT (Ticks), nicht an der Rundenzahl — siehe MATCH_RULES.suddenDeath.
-    if (this.#maelstrom.isActive || this.#world.tickCount >= this.#valhallaTick) {
+    // RUNDE (Entscheidung 2026-10-25) — ein Tick-Vergleich verschöbe ihn bei
+    // schusslastigen Partien in Runden hinaus, weil jeder Schuss den Zug beendet.
+    if (this.#maelstrom.isActive || this.#round >= this.#valhallaRound) {
       if (!this.#maelstrom.isActive) this.#maelstrom.activate();
       const gefallene = Math.max(0, (this.#lebendZuRundenbeginn ?? lebend) - lebend);
       this.#maelstrom.contract(this.#world, computeContractionSteps(gefallene));
@@ -3044,7 +3072,9 @@ export class MatchController {
   get water() { return this.#water; }
   get events() { return this.#events; }
   get inventory() { return this.#inventory; }
-  /** Tick, ab dem Valhalla beginnt (für Werkzeuge und Tests; die Spieler erfahren ihn nicht). */
+  /** Runde, zu der Valhalla beginnt (für Werkzeuge und Tests; die Spieler erfahren sie nicht). */
+  get valhallaRound() { return this.#valhallaRound; }
+  /** Geschätzter Tick des Rundenbeginns — nur für das Omen. */
   get valhallaTick() { return this.#valhallaTick; }
   /** Zeitpunkt des Vorzeichens (für Werkzeuge und Tests). */
   get valhallaOmenTick() { return this.#valhallaOmen.tick; }

@@ -4,81 +4,99 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MatchController } from '../src/engine/match.js';
-import { MATCH_RULES, computeMaelstromDamage, drawValhallaTick, drawValhallaOmen } from '../src/shared/config/match.js';
+import { MATCH_RULES, computeMaelstromDamage, drawValhallaRound, valhallaTickForRound, drawValhallaOmen } from '../src/shared/config/match.js';
 import { SIMULATION_HZ } from '../src/shared/config/network.js';
 import { MatchSeedManager } from '../src/shared/seed.js';
 import { omenZustand, OMEN_DAUER } from '../src/client/valhallaOmen.js';
 import { EreignisSendefilter } from '../src/shared/protocol.js';
 
 /**
- * Valhalla (Entscheidung des Auftraggebers, 2026-10-13):
- *   - der Mahlstrom beginnt ZUFÄLLIG zwischen 6 und 12 Minuten Spielzeit,
+ * Valhalla (Entscheidung des Auftraggebers, 2026-10-25):
+ *   - der Mahlstrom beginnt ZUFÄLLIG in Runde 8–14,
+ *   - in großen Partien (mehr als 8 Spieler, Karte „gross"/„krieg") Runde 12–20,
  *   - das Match läuft, bis es entschieden ist (kein Rundenlimit im Spiel).
  */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const MIN = MATCH_RULES.suddenDeath.valhallaMinSeconds * SIMULATION_HZ;
-const MAX = MATCH_RULES.suddenDeath.valhallaMaxSeconds * SIMULATION_HZ;
+const MIN_RUNDE = MATCH_RULES.suddenDeath.valhallaMinRound;
+const MAX_RUNDE = MATCH_RULES.suddenDeath.valhallaMaxRound;
 
-test('Die Konfiguration nennt 6 bis 12 Minuten', () => {
-  assert.equal(MATCH_RULES.suddenDeath.valhallaMinSeconds, 6 * 60);
-  assert.equal(MATCH_RULES.suddenDeath.valhallaMaxSeconds, 12 * 60);
-  assert.equal(MATCH_RULES.suddenDeath.roundBreakpoint, undefined, 'die feste Runde ist entfallen');
+test('Die Konfiguration nennt Runde 8 bis 14, für große Partien 12 bis 20', () => {
+  assert.equal(MIN_RUNDE, 8);
+  assert.equal(MAX_RUNDE, 14);
+  assert.equal(MATCH_RULES.suddenDeath.valhallaMinRoundGross, 12);
+  assert.equal(MATCH_RULES.suddenDeath.valhallaMaxRoundGross, 20);
+  assert.equal(MATCH_RULES.suddenDeath.roundBreakpoint, undefined, 'keine feste Runde');
+  assert.equal(MATCH_RULES.suddenDeath.valhallaMinSeconds, undefined, 'die zeitbasierte Fassung ist abgelöst');
 });
 
-test('Der gezogene Zeitpunkt liegt immer in 6–12 min, ist breit gestreut und je Seed fest', () => {
-  const zeiten = [];
+test('Die gezogene Runde liegt im Fenster, ist breit gestreut und je Seed fest', () => {
+  const runden = [];
   for (let seed = 1; seed <= 400; seed += 1) {
-    const tick = drawValhallaTick(new MatchSeedManager(seed).getSubRng('VALHALLA'));
-    assert.ok(tick >= MIN && tick <= MAX, `Seed ${seed}: ${tick} liegt außerhalb`);
-    assert.equal(tick % SIMULATION_HZ, 0, 'ganze Sekunden');
-    // Derselbe Seed -> derselbe Zeitpunkt (Replay und Wiederherstellung bleiben exakt).
-    assert.equal(tick, drawValhallaTick(new MatchSeedManager(seed).getSubRng('VALHALLA')));
-    zeiten.push(tick / SIMULATION_HZ / 60);
+    const runde = drawValhallaRound(new MatchSeedManager(seed).getSubRng('VALHALLA'));
+    assert.ok(runde >= MIN_RUNDE && runde <= MAX_RUNDE, `Seed ${seed}: Runde ${runde} liegt außerhalb`);
+    // Derselbe Seed -> dieselbe Runde (Replay und Wiederherstellung bleiben exakt).
+    assert.equal(runde, drawValhallaRound(new MatchSeedManager(seed).getSubRng('VALHALLA')));
+    runden.push(runde);
   }
-  assert.ok(Math.min(...zeiten) < 6.5 && Math.max(...zeiten) > 11.5, 'beide Ränder des Fensters werden genutzt');
-  assert.ok(new Set(zeiten.map(z => z.toFixed(1))).size > 40, 'wirklich zufällig, nicht fast konstant');
-  const mittel = zeiten.reduce((a, b) => a + b, 0) / zeiten.length;
-  assert.ok(mittel > 8.5 && mittel < 9.5, `Mittel ${mittel.toFixed(2)} min liegt nahe 9`);
+  assert.equal(Math.min(...runden), MIN_RUNDE, 'die untere Grenze wird genutzt');
+  assert.equal(Math.max(...runden), MAX_RUNDE, 'die obere Grenze wird genutzt');
+  assert.equal(new Set(runden).size, MAX_RUNDE - MIN_RUNDE + 1, 'jede Runde des Fensters kommt vor');
+  const mittel = runden.reduce((a, b) => a + b, 0) / runden.length;
+  assert.ok(mittel > 10.2 && mittel < 11.8, `Mittel ${mittel.toFixed(2)} liegt nahe 11`);
+});
+
+test('Große Partien ziehen aus dem weiteren Fenster 12–20', () => {
+  const gross = [];
+  for (let seed = 1; seed <= 400; seed += 1) {
+    const runde = drawValhallaRound(new MatchSeedManager(seed).getSubRng('VALHALLA'), { gross: true });
+    assert.ok(runde >= 12 && runde <= 20, `Seed ${seed}: Runde ${runde} liegt außerhalb`);
+    gross.push(runde);
+  }
+  assert.equal(Math.min(...gross), 12, 'die untere Grenze wird genutzt');
+  assert.equal(Math.max(...gross), 20, 'die obere Grenze wird genutzt');
 });
 
 test('Die Ziehung verschiebt keinen anderen Zufallsstrom', () => {
   const a = new MatchSeedManager(4242);
   const b = new MatchSeedManager(4242);
-  drawValhallaTick(a.getSubRng('VALHALLA'));
+  drawValhallaRound(a.getSubRng('VALHALLA'));
   assert.equal(a.getSubRng('LOOT').next(), b.getSubRng('LOOT').next());
   assert.equal(a.getSubRng('GUENTHER').next(), b.getSubRng('GUENTHER').next());
 });
 
-test('Der Motor startet den Sturm zum ersten Rundenbeginn NACH dem gezogenen Zeitpunkt', () => {
+test('Der Motor startet den Sturm genau in der gezogenen Runde', () => {
   let geprueft = 0;
   for (const seed of [11, 4242, 20260927, 99, 31337]) {
     const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, turnDurationMs: 20_000 });
     match.start();
     const rundenbeginne = [];
-    let aktivAb = null;
+    let sturmAbRunde = null;
     let ticks = 0;
-    while (match.status === 'playing' && aktivAb === null && ticks < 60 * 3600) {
+    while (match.status === 'playing' && sturmAbRunde === null && ticks < 60 * 3600) {
       match.step();
       ticks += 1;
       for (const e of match.consumeEvents()) {
-        if (e.type === 'round_start') rundenbeginne.push({ tick: match.world.tickCount, aktiv: match.getState().maelstrom.active });
+        if (e.type === 'round_start') {
+          rundenbeginne.push({ runde: match.getState().round, aktiv: match.getState().maelstrom.active });
+        }
       }
-      if (match.getState().maelstrom.active) aktivAb = match.world.tickCount;
+      if (match.getState().maelstrom.active) sturmAbRunde = match.getState().round;
     }
     // Ein Match ohne Schüsse kann vor Valhalla entschieden sein (Wasser, Günther): dann
-    // gibt es nichts zu prüfen — aber es muss VOR dem gezogenen Zeitpunkt geendet haben.
-    if (aktivAb === null) {
+    // gibt es nichts zu prüfen — es muss aber VOR der gezogenen Runde geendet haben.
+    if (sturmAbRunde === null) {
       assert.equal(match.status, 'gameover');
-      assert.ok(match.world.tickCount < match.valhallaTick + 60 * 600, `Seed ${seed}: Ende ohne Sturm trotz später Zeit`);
+      assert.ok(match.getState().round < match.valhallaRound,
+        `Seed ${seed}: ohne Sturm in Runde ${match.getState().round} geendet, gezogen war ${match.valhallaRound}`);
       continue;
     }
     geprueft += 1;
-    assert.ok(aktivAb >= match.valhallaTick, `Seed ${seed}: nicht vor dem Zeitpunkt (${aktivAb} < ${match.valhallaTick})`);
-    const erster = rundenbeginne.find(r => r.tick >= match.valhallaTick);
-    assert.ok(erster?.aktiv, `Seed ${seed}: der erste Rundenbeginn danach startet den Sturm`);
-    assert.equal(aktivAb, erster.tick);
-    for (const r of rundenbeginne.filter(r => r.tick < match.valhallaTick)) {
-      assert.equal(r.aktiv, false, `Seed ${seed}: vor dem Zeitpunkt (Tick ${r.tick}) ist der Sturm aus`);
+    assert.equal(sturmAbRunde, match.valhallaRound,
+      `Seed ${seed}: Sturm ab Runde ${sturmAbRunde}, gezogen war ${match.valhallaRound}`);
+    const erster = rundenbeginne.find(r => r.runde >= match.valhallaRound);
+    assert.ok(erster?.aktiv, `Seed ${seed}: der Rundenbeginn der gezogenen Runde startet den Sturm`);
+    for (const r of rundenbeginne.filter(r => r.runde < match.valhallaRound)) {
+      assert.equal(r.aktiv, false, `Seed ${seed}: vor der gezogenen Runde (Runde ${r.runde}) ist der Sturm aus`);
     }
   }
   assert.ok(geprueft >= 2, `mindestens zwei Seeds müssen den Sturm erreichen (waren ${geprueft})`);
@@ -112,7 +130,8 @@ test('Das Match wird nicht mehr nach einer festen Rundenzahl abgebrochen', () =>
 });
 
 test('Ein Match ohne jeden Schuss endet durch den Sturm — das Netz greift nicht', { timeout: 120_000 }, () => {
-  // Seed 5: ohne Schüsse hält die Partie bis weit nach Valhalla (gemessen 29,5 min, Runde 45).
+  // Seed 5: ohne Schüsse entscheidet die Partie erst der Sturm (früher: 29,5 min, Runde 45;
+  // seit der Rundenregel greift er in Runde 8–14).
   const match = new MatchController({ seed: 5, teams: 2, playersPerTeam: 1, turnDurationMs: 2_000 });
   match.start();
   let grund = null;
@@ -123,8 +142,8 @@ test('Ein Match ohne jeden Schuss endet durch den Sturm — das Netz greift nich
     t += 1;
   }
   assert.equal(match.status, 'gameover', 'das Match endet von selbst');
-  assert.equal(match.world.services.maelstrom.isActive, true, 'der Sturm lief, als es endete');
-  assert.ok(match.world.tickCount > match.valhallaTick);
+  assert.ok(match.world.services.maelstrom.isActive, true, 'der Sturm lief, als es endete');
+  assert.ok(match.getState().round >= match.valhallaRound, 'der Sturm begann in der gezogenen Runde');
   assert.notEqual(grund, 'round_limit', 'nicht über das Notnetz');
   assert.ok(match.getState().round < MATCH_RULES.roundLimitBackstop);
 });
@@ -154,7 +173,8 @@ test('Vorzeichen: 1–60 s vor Valhalla, je Seed fest, beide Ränder genutzt', (
   for (let seed = 1; seed <= 400; seed += 1) {
     const mk = () => {
       const rng = new MatchSeedManager(seed).getSubRng('VALHALLA');
-      const tick = drawValhallaTick(rng);
+      const runde = drawValhallaRound(rng);
+      const tick = valhallaTickForRound(runde, { spieler: 4, ticksJeZug: 1200 });
       return { tick, omen: drawValhallaOmen(rng, tick) };
     };
     const { tick, omen } = mk();

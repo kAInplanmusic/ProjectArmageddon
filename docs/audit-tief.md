@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-25T12:57:17.103Z · **Commit:** `3179fca` (main) · **Node:** v22.23.4
+**Erzeugt:** 2026-10-25T13:40:53.615Z · **Commit:** `eceed22` (main) · **Node:** v22.23.4
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -50,21 +50,21 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 175 | 66693 |
-| tests | 268 | 61192 |
-| scripts | 66 | 13264 |
+| src | 175 | 66768 |
+| tests | 268 | 61244 |
+| scripts | 66 | 13271 |
 | tools | 14 | 5509 |
 
-Ungetrackte Änderungen beim Lauf: **3**
+Ungetrackte Änderungen beim Lauf: **13**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 10.5 s | – |
+| lint | 🟢 bestanden | 11.1 s | – |
 | validate | 🟢 bestanden | 0.4 s | – |
 
-**2/2 bestanden** · Gesamtdauer 10.9 s
+**2/2 bestanden** · Gesamtdauer 11.5 s
 
 ## 3. Determinismus
 
@@ -85,13 +85,13 @@ Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene 
 | 101 | 39 | 127 | 46 | 148730 | 2478.8 | gameover |
 | 202 | 15 | 49 | 25 | 43211 | 720.2 | gameover |
 | 303 | 11 | 32 | 17 | 26631 | 443.9 | gameover |
-| 404 | 25 | 70 | 30 | 73102 | 1218.4 | gameover |
+| 404 | 26 | 73 | 31 | 76605 | 1276.8 | gameover |
 | 505 | 12 | 33 | 18 | 26663 | 444.4 | gameover |
 
-**Mittel:** 20.4 Runden · 62.2 Züge · 27.2 Schüsse · 1061.1 s Simulationszeit
+**Mittel:** 20.6 Runden · 62.8 Züge · 27.4 Schüsse · 1072.8 s Simulationszeit
 **Spanne:** Runden 11–39 · Spielzeit 443.9–2478.8 s
 
-Mahlstrom greift je Partie zu einer **eigenen** Runde (gemessen: 10, 9, —, 11, —). Davor beendet: **2 von 5** (Anteil 0.4).
+Mahlstrom greift je Partie zu einer **eigenen** Runde (gemessen: 10, 9, —, 12, 12). Davor beendet: **1 von 5** (Anteil 0.2).
 
 *Annahme:* Die Spielzeit ist Simulationszeit. Ein Mensch braucht zusätzlich Bedenkzeit — sie ist hier
 konservativ mit **0 s** angesetzt, die echte Partie ist also länger.
@@ -171,9 +171,9 @@ die Form liefert immer dasselbe.
 
 ## 9. Leistung
 
-Züge 150 · Schüsse 106 · gemessene Ticks 15019
+Züge 136 · Schüsse 100 · gemessene Ticks 13917
 
-Tick-Kosten: mittel **0.0818 ms** · p95 0.0942 ms · p99 0.1651 ms · max 7.0796 ms
+Tick-Kosten: mittel **0.1212 ms** · p95 0.0981 ms · p99 1.7256 ms · max 15.7172 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -254,12 +254,12 @@ Davon **6 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-co
 
 | Ereignis | emittiert in | Urteil | Begründung (aus dem Wächter) |
 |---|---|---|---|
-| `dot_applied` | src/engine/match.js:2244 | bewusst stumm (begründet) | Zustandsmarke am Spielernamen |
+| `dot_applied` | src/engine/match.js:2271 | bewusst stumm (begründet) | Zustandsmarke am Spielernamen |
 | `entity_in_water` | src/engine/systems/characterSystem.js:226 | bewusst stumm (begründet) | Wasserstand steht als Marke am Spielernamen (seit 2026-09-27 gedrosselt: im Snapshot redundant) |
 | `round_crates` | src/engine/systems/lootSystem.js:243 | bewusst stumm (begründet) | Buchführung; die Anzahl steht im HUD |
-| `turn_end` | src/engine/match.js:2503 | bewusst stumm (begründet) | Rundenanzeige im HUD, plus Zugwechsel im Spielerfeld |
-| `water_pushed` | src/engine/match.js:2289 | bewusst stumm (begründet) | der Wasserstand am Ziel ist die sichtbare Wirkung |
-| `weapon_cooldown` | src/engine/match.js:2190 | bewusst stumm (begründet) | die Waffenliste zeigt den Nachladezustand |
+| `turn_end` | src/engine/match.js:2530 | bewusst stumm (begründet) | Rundenanzeige im HUD, plus Zugwechsel im Spielerfeld |
+| `water_pushed` | src/engine/match.js:2316 | bewusst stumm (begründet) | der Wasserstand am Ziel ist die sichtbare Wirkung |
+| `weapon_cooldown` | src/engine/match.js:2217 | bewusst stumm (begründet) | die Waffenliste zeigt den Nachladezustand |
 
 *Keine Lücke:* Jedes stumme Ereignis ist im Wächter MIT Begründung gelistet — der Begründungstext wird in dieser Spalte einzeln gezeigt. Geprüft ist damit, dass eine Begründung HINGESCHRIEBEN wurde; ob sie stichhaltig ist, ist eine Einzelprüfung und keine Messung.
 
@@ -328,7 +328,7 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Bewusst und begründet (15):** `TOENE` (src/client/gelaendeStil.js:32 · src/client/toasts.js:18) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.
 - **Bewusst und begründet (15):** `ZELLE` (src/client/figurSheets.js:16 · src/client/waffenAnimation.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.
 - **Bewusst und begründet (15):** `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 61192 Zeilen Tests gegen 66693 Zeilen Quelltext (Verhältnis 0.92).
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 61244 Zeilen Tests gegen 66768 Zeilen Quelltext (Verhältnis 0.92).
 - **Der Waffenkatalog ist kein Datenmüll:** 136 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen

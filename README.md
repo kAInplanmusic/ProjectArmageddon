@@ -650,8 +650,9 @@ Dazu drei Archetypen (Brawler, Artillerist, Okkultist) mit eigenen Prozent-Modif
 
 ### Mahlstrom / Sudden Death
 
-**Valhalla** beginnt zufällig zwischen **6 und 12 Minuten Spielzeit** (aus dem Match-Seed
-gezogen, den Spielern nicht angekündigt; wirksam zum nächsten Rundenbeginn). Danach zieht
+**Valhalla** beginnt zufällig zwischen **Runde 8 und 14** (bei großen Partien — mehr als
+8 Spieler, Karte „gross"/„krieg" — zwischen **Runde 12 und 20**), aus dem Match-Seed gezogen
+und den Spielern nicht angekündigt; wirksam zu Beginn der gezogenen Runde. Danach zieht
 sich die sichere Zone zusammen: Terrain wird in jedem Schritt um 32 px von außen abgetragen (1–4 Schritte je Runde, s. u.),
 außerhalb der Zone wirkt toxischer Regen (15 % Max-HP pro Zug) und der Knockback aller
 Waffen steigt um 100 %. Ein Match läuft, **bis es entschieden ist** — es gibt kein

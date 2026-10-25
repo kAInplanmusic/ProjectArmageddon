@@ -30,6 +30,17 @@ import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
 
+/*
+ * Format 1 bleibt: Die Aufzeichnung ist ein BEHÄLTER, und die Fassungsmarken
+ * im Kopf (guenther, cookie, kit, waffen …) tragen die Verhaltensunterschiede.
+ *
+ * BEWUSSTE GRENZE (2026-10-25): Mit der Rückkehr auf rundenbasiertes Valhalla
+ * (Runde 8–14 statt 6–12 min Spielzeit) simuliert eine Aufzeichnung von VOR
+ * diesem Datum einen anderen Sturmbeginn. Sie wird NICHT abgewiesen — die
+ * Kompatibilitätssuite dieses Hauses prüft bewusst alte Köpfe unter Format 1.
+ * Wer eine alte Aufzeichnung abspielt, sieht also möglicherweise einen anderen
+ * Sturm als damals aufgezeichnet.
+ */
 export const REPLAY_FORMAT_VERSION = 1;
 
 export class ReplayRecorder {

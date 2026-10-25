@@ -9,7 +9,11 @@ import { applyLogEntryToTerrain, buildTerrainForSeed } from '../src/client/terra
  * UNZERSTÖRTE Landschaft (nach 9 Kratern wichen 3 082 Zellen vom Server ab).
  */
 function spieleMitKratern() {
-  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills' });
+  // Sturm ausser Reichweite: Diese Messung gilt den Kratern. Seit dem
+  // 2026-10-25 beginnt Valhalla in Runde 8 — bei schusslastigen Partien ist
+  // das nach wenigen hundert Ticks erreicht, und die Kontraktion veraenderte
+  // die Karte, die hier verglichen wird.
+  const match = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 1, preset: 'hills', valhallaRound: 999 });
   match.start();
   let schuesse = 0;
   for (let tick = 0; tick < 6000; tick++) {
