@@ -863,11 +863,29 @@ test.describe('Dynamik — der Klang', () => {
         };
 
         const match = spiel.match;
+        /*
+         * REIHENFOLGE IST HIER BEDEUTEND — der Grund war ein dauerhaft roter
+         * Test (2026-10-25, auch auf `cfc6785`, also nicht durch eine Änderung
+         * entstanden):
+         *
+         * `advance(1)` führt `game.step()` aus, und ein Schritt setzt das
+         * Gefühls-Gedächtnis des Renderers zurück (`gefuehlZuruecksetzen` leert
+         * `letzteWerte` UND `trefferMarken`). Stand der Schaden VOR dem Schritt,
+         * war er für `findeTreffer` nie eine ÄNDERUNG: der nächste Bildlauf setzte
+         * nur die neue Grundlinie, und die Markenliste war gerade geleert worden.
+         * Ergebnis: `Treffermarken 0`, der Test konnte die Sperre gar nicht
+         * prüfen — gemeldet wurde aber „der Zustandsweg muss den Treffer gesehen
+         * haben".
+         *
+         * Deshalb: erst den Schritt, dann den Schaden. Danach ist der Rückgang
+         * der Gesundheit eine echte Änderung gegenüber der Grundlinie, und der
+         * Zustandsweg erzeugt seine Marke.
+         */
+        window.__PA__.advance(1);
         const figuren = window.__PA__.getState().entities.filter(f => f.alive);
         match.world.getSystem('damage').applyDamage(
           match.world, figuren[0].entityId, 25, figuren[1]?.entityId ?? null, {},
         );
-        window.__PA__.advance(1);
 
         // Der Ereigniszweig: ein Klang, wie ihn der Hitscan-Zweig spielt.
         spiel.sound.spieleTreffer(1);
