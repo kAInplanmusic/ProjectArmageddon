@@ -13,6 +13,40 @@ import { FORMATE, oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustan
  *
  * Mit `PA_UX_LOOK=1` legt der Lauf zusätzlich die Desktop-Bilder unter
  * `test-results/ux-look/` ab (nicht versioniert, Beleg für den UX-Audit).
+ *
+ * ## Wenn ein Vergleich rot wird — erst messen, dann nachziehen
+ *
+ * Die abgelegten Bilder hängen an der RENDER-UMGEBUNG (Schriftmetriken,
+ * Rasterung), nicht nur am Code. Der Dateiname trägt nur `-chromium-linux`; zwei
+ * verschiedene Linux-Rechner landen also auf demselben Namen. Am 2026-10-25
+ * waren `lobby-390x844` und `hud-390x844` aus genau diesem Grund rot: 0,04
+ * Abweichung gegen 0,02 Toleranz, obwohl der Code nichts geändert hatte.
+ *
+ * `--update-snapshots` ist deshalb **kein Reflex**. Erst diese drei Messungen,
+ * zusammen etwa zwei Minuten:
+ *
+ * 1. **Läuft es stabil?** Denselben Test dreimal laufen lassen und die Bilder
+ *    vergleichen (`PA_UX_LOOK=1` schreibt sie nach `test-results/ux-look/`).
+ *    Streuen die Läufe untereinander nur um wenige Pixel, ist der Zustand
+ *    eingefroren und der Fehler echt — kein Flake.
+ * 2. **Hat der Code es verursacht?** Denselben Test auf dem Stand VOR dem
+ *    verdächtigen Commit laufen lassen. Kommt dasselbe Bild heraus, liegt es
+ *    nicht am Code, sondern an der Umgebung.
+ * 3. **Passt ein Versatz?** Verschiebt das Bild um ±2 px: halbiert das den
+ *    Fehler, ist es ein Layout-Versatz (meist Schriftmetriken), kein
+ *    Inhaltsunterschied.
+ *
+ * Erst wenn 1–3 gegen „Code" sprechen, ist das Nachziehen richtig — und dann
+ * **nur die roten Dateien**, nicht der ganze Satz:
+ *
+ *     npx playwright test tests/e2e/visuell.spec.mjs \
+ *       -g "Lobby 390x844|HUD 390x844" --update-snapshots
+ *
+ * Danach zweimal vollständig laufen lassen. Ein einzelnes Grün beweist nichts —
+ * eine Basis, die nur zufällig einmal passt, ist keine Basis.
+ *
+ * Was NICHT in Frage kommt: `maxDiffPixelRatio` hochsetzen, damit es grün wird.
+ * Dann prüft der Vergleich nichts mehr und meldet trotzdem Erfolg.
  */
 
 const OPTIONEN = {

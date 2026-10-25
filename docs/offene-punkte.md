@@ -49,7 +49,7 @@ Bildzeit-Messungen lastempfindlich sind:
 | Gruppe | Specs | Ergebnis |
 | :-- | :-- | :-- |
 | Figuren, Waffen, Günther, Kader, Profil | 10 | **52 grün** (7,5 min) |
-| Bildvergleiche, Barrierefreiheit, Screenreader | 5 | 55 grün, **2 rot** (siehe `VIS-1`) |
+| Bildvergleiche, Barrierefreiheit, Screenreader | 5 | 55 grün, 2 rot → **nach `VIS-1` behoben: 6/6 grün, zweimal** |
 | Mehrspieler, Online, Zugpause, Effekte, Replay, Sieg | 10 | **54 grün, 1 übersprungen** (6,7 min) |
 
 Zusammen **161 grün, 2 rot, 1 übersprungen** über 25 von 61 Specs. Der eine
@@ -81,44 +81,44 @@ Strich-Nachlauf) und `scripts/sprite-sheets-klassifizieren.py` laufen lassen.
 | `SPR-6` | `datacult`-Figuren (v. a. `20_buffer-flow-swarm`, `00`, `10`) sehr dunkel auf dunklem Gelände — Randlicht/Umriss nötig | MASTERDOTO Z68 |
 | `SPR-7` | Automatisch als auffällig gemeldet (Zusammenhangskomponenten): `datacult/20` zustand, `datacult/21` walk, `undead/00` zustand, `undead/12` zustand — noch **nicht gesichtet** | MASTERDOTO Z70 |
 
-## 4a. `VIS-1` — zwei Bildvergleiche passen nicht zur abgelegten Basis
+## 4a. `VIS-1` — **gelöst**: zwei Bildvergleiche passten nicht zur abgelegten Basis
 
-**Befund (2026-10-25, beim Prüfen der E2E-Strecke):** `tests/e2e/visuell.spec.mjs`
-meldet zwei von sechs Vergleichen rot:
+**Befund (2026-10-25):** `tests/e2e/visuell.spec.mjs` meldete zwei von sechs
+Vergleichen rot — `Lobby 390x844` und `HUD 390x844`, 11.712 Pixel (Anteil 0,04)
+gegen eine Toleranz von 0,02.
 
-```
-Lobby 390x844  und  HUD 390x844
-11712 Pixel (Anteil 0,04) weichen ab — Toleranz ist maxDiffPixelRatio 0.02
-```
+**Ursachenklärung in drei Messungen.** Die erste Vermutung war falsch und wurde
+verworfen, bevor irgendetwas geändert wurde (eine Basis „nachzuziehen", weil man
+den Grund zu kennen glaubt, ist genau der Fehler):
 
-**Eingegrenzt, nicht geraten:**
+| Messung | Ergebnis | Was daraus folgt |
+| :-- | :-- | :-- |
+| Derselbe Test dreimal | Läufe unterscheiden sich um **1–3 Pixel** | Der Zustand ist eingefroren; kein Flake. |
+| Alter Stand `cfc6785` gegen jetzt | **3 Pixel** Abweichung | Der Code ist nicht die Ursache. Meine Hypothese „die a11y-Umstellung vom 2026-10-24" war falsch. |
+| Beide gegen die Basis | je **104.130 Pixel** (31,6 %), identisch | Die Basis passt zur Umgebung nicht, unabhängig vom Code. |
+| Bester Versatz gesucht | dy = **+2 px** halbiert den Fehler (10,9 → 5,3) | Es ist ein kleiner Layout-Versatz durch Schriftmetriken plus Rasterung — kein Inhaltsunterschied. |
 
-- Dieselben zwei Vergleiche scheitern **auch auf `cfc6785`**, also dem Stand
-  VOR der Arbeit dieser Sitzung. Sie kommen nicht aus den Umbenennungen oder
-  dem Umbau.
-- Sie scheitern auf diesem Rechner **deterministisch** (mehrfach, gleiche zwei).
-- Die vier übrigen Vergleiche (Menü/Lobby/HUD in 1280x720 sowie Menü 390x844)
-  sind grün.
-- Erwartetes und tatsächliches Bild sind **mit dem Auge nicht zu unterscheiden**.
-  Die Abweichung liegt auf Textkanten und Rasterung, nicht auf fehlenden oder
-  verschobenen Bausteinen.
+**Ursache:** Die Baselines wurden auf einem anderen Rechner erzeugt. Der
+Dateiname trägt nur `-chromium-linux`; zwei verschiedene Linux-Knoten landen auf
+demselben Namen. Playwright 1.63 und Chromium-1234 sind seit der Anlage
+unverändert — es ist die Render-Umgebung, nicht ein Versionssprung.
 
-**Deutung:** Die abgelegten Bilder (`tests/e2e/visuell.spec.mjs-snapshots/*.png`)
-sind auf einem anderen Rechner entstanden. Der Dateiname trägt nur
-`-chromium-linux`, also dieselbe Endung für beide Linux-Knoten — Schrift- und
-Rasterunterschiede zwischen ihnen schlagen voll durch, und bei 390 px Breite
-reicht das für 4 % der Pixel.
+**Behebung:** Die zwei roten Baselines wurden auf diesem Rechner neu erzeugt
+(**nur** diese zwei, nicht der ganze Satz), danach lief die Spec **zweimal
+vollständig mit 6/6 grün**. Dass das Nachziehen berechtigt war, ist durch
+Messung 2 belegt: der Code erzeugt dasselbe Bild wie vor der Sitzung, es gibt
+also keine ungesehene Änderung, die damit zugedeckt würde.
 
-**Das ist eine Entscheidung, keine Reparatur.** Zwei Wege:
+**Damit es nicht wieder still verrottet:** Das Prüfverfahren (stabil? / Code? /
+Versatz?) steht jetzt als Kommentarblock im Kopf von `visuell.spec.mjs`, samt
+dem Befehl, der nur die roten Dateien nachzieht, und dem ausdrücklichen Hinweis,
+dass das Hochsetzen von `maxDiffPixelRatio` keine Lösung ist.
 
-1. **Basis auf dem Rechner neu erzeugen, der künftig prüft** (`--update-snapshots`)
-   — dann prüft der Vergleich wieder etwas, aber nur dort.
-2. **Vergleich von der Umgebung lösen** — etwa Toleranz je Format, oder die
-   Textstellen aus dem Vergleich nehmen.
-
-Was **nicht** in Frage kommt: die Toleranz pauschal hochsetzen, damit es grün
-wird. Dann prüft der Vergleich nichts mehr und meldet trotzdem Erfolg. Die
-Bilder wurden deshalb **unverändert gelassen**.
+**Restrisiko, offen und bewusst:** Die Baselines bleiben an diese
+Render-Umgebung gebunden. Läuft die Strecke künftig auf einem anderen Knoten,
+werden dieselben zwei Vergleiche dort rot. Sauber wäre ein Vergleich, der von
+der Umgebung unabhängig ist (etwa Kanten- statt Pixelvergleich, oder Toleranz je
+Format). Das ist eine eigene Aufgabe und steht hier als solche.
 
 ## 4b. Betriebsnotiz: der Vergleichs-Sweep schreibt in versionierte Dateien
 
