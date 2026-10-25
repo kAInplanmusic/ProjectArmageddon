@@ -76,6 +76,50 @@ Das bleibt die erste Prüfung in Stufe 1 (Testgelände mit einem künstlichen Ho
   Innenraum), sonst ist das Paket spielerisch wertlos.
 - Referenzbilder: `ref-6-hochhaus-schnitt` (Etagen im Schnitt) und `ref-4-turmruine` (offene Räume).
 
+### Stufe 1 — Messung (2026-10-25, ohne Produktivcode)
+
+**Befund 1: Die Hohlräume gibt es längst.** `src/shared/terrainGen2.js` kennt
+`KARTENTYPEN` mit Hohlraumanteil, und die Produktion läuft mit `kartentyp: 'autonom'`:
+
+| Typ | Hohlraumanteil | Innenböden (gemessen, Seed 7, 2560×1440) | tiefster Boden unter der Oberfläche |
+| :-- | :-- | :-- | :-- |
+| `kavernen` | 0,45 | **3 495** | **839 px** |
+| `hoehlen` | 0,30 | 2 657 | 825 px |
+| `schwebe` | 0,20 | (nicht gemessen) | — |
+| `huegel` | 0,00 | 0 | 0 |
+
+Gezählt als feste Bänder mit Luft darunter, alle 2 Spalten abgetastet (`bitmap` ist
+`Uint8Array` der Länge Breite×Höhe; `huegel` hat als Gegenprobe exakt 0).
+
+**Befund 2: Niemand startet in einer Höhle.** In drei Kartentypen standen alle Spieler
+auf der Oberfläche (`y ≈ surfaceYAt(x) − 10`, `isGrounded = true`); 0 von 12 Figuren
+unterirdisch. Die Platzvergabe setzt also auf die Oberfläche — kein eingesperrter Start.
+
+**Befund 3: Vier Systeme fragen den Boden nur nach x.** `surfaceYAt(x)` ist einwertig
+und wird benutzt von
+`src/engine/systems/guentherSystem.js` (Zeilen 290, 598),
+`src/engine/systems/cookieSystem.js` (325, 346),
+`src/engine/shooting.js` (801: Einschlagpunkt) und
+`src/engine/turret.js` (Ballistik bricht am Gelände ab).
+In Höhlen benutzen diese vier die **Oberfläche** statt des Innenbodens — Haustiere,
+Einschläge und Geschütztürme verhalten sich dort falsch, sobald jemand drinnen ist.
+
+**Befund 4 (noch offen): Der Stand der Figur selbst ist nicht belegt.**
+`src/engine/systems/bewegungSystem.js` enthält keinen Geländezugriff, und `surfaceYAt`
+wird dort nicht benutzt — der Weg der Figur zum Boden läuft über den `terrain`-Dienst
+des ECS. Welche Abfrage dort greift (Bitmap mit y oder Spaltenoberfläche), ist die
+**nächste Messung**; erst danach ist entscheidbar, ob Stufe 1 ein Umbau der Abfrage ist
+oder nur die vier x-only-Stellen nachziehen muss.
+
+**Arbeitsliste für Stufe 1 (aus diesen Befunden):**
+1. Bodenabfrage der Figur belegen (eine Messung, wie oben beschrieben).
+2. Falls sie y-fähig ist: die vier x-only-Stellen auf `materialAt(x, y)` umstellen —
+   jeweils mit Test (Haustier auf Innenboden, Einschlag auf Innenboden, Turm in der Höhle).
+3. Falls sie es nicht ist: Standabfrage auf `materialAt(x, y)` erweitern (ein Punkt,
+   `MatchController.materialAt`), dann dieselben vier Stellen nachziehen.
+4. Erst danach Ruinen mit 1–2 Räumen als Kartentyp-Variante prüfen — die Hohlräume
+   selbst müssen nicht mehr erfunden werden.
+
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
 | Größe | Erwartung |
