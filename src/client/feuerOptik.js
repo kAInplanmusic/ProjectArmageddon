@@ -237,22 +237,42 @@ export class FeuerOptik {
     if (!this.gluehen) this.gluehen = baueGluehen(32, 'rgba(255,190,80,0.9)', 'rgba(255,90,20,0)');
     if (!this.lavaGluehen) this.lavaGluehen = baueGluehen(40, 'rgba(255,150,40,0.85)', 'rgba(220,40,10,0)');
     ctx.save();
-    const puls = 0.8 + 0.2 * Math.sin(this.takt * 0.12);
+    /*
+     * LOOK-3 (2026-10-25): Bei „reduzierte Bewegung" steht die Glut still —
+     * wie Partikel, Ringe und Rauch in dieser Datei. Vorher pulsierte die
+     * Lavafüllung auch dann.
+     */
+    const puls = this.reduziert ? 0.9 : 0.8 + 0.2 * Math.sin(this.takt * 0.12);
     // Nur was im Bild liegt wird gemalt (Rand = Glühradius): gleiches Bild, Kosten nach Sichtfläche statt nach Zellenzahl.
     const sicht = this.#sicht(ctx, 24);
     const sp = this.spalten;
     if (this.lava.size > 0) {
-      // Lavafüllung: eine Farbe je Bild, alle Zellen in einem Pfad (Zellen liegen auf ganzen Pixeln, daher pixelgleich zu Einzelfüllungen).
+      /*
+       * LOOK-3: Die Fläche war pro Bild EIN Farbton — eine gleichförmige
+       * Platte. Jetzt drei Stufen aus einem festen Zell-Hash: Basaltkruste,
+       * glühender Stoff, heiße Ader. Der Hash hängt nur an der Zellnummer,
+       * also flackert nichts und dieselbe Karte sieht immer gleich aus; die
+       * Zeit steckt allein im gemeinsamen Puls. Drei Pfade statt drei
+       * Durchläufe — die Zellen werden weiterhin nur EINMAL besucht.
+       */
       ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = `rgb(${Math.round(236 * puls)}, ${Math.round(88 + 50 * puls)}, 20)`;
-      ctx.beginPath();
+      const stufen = [
+        `rgb(${Math.round(150 * puls)}, ${Math.round(52 + 26 * puls)}, 14)`,
+        `rgb(${Math.round(236 * puls)}, ${Math.round(88 + 50 * puls)}, 20)`,
+        `rgb(${Math.round(255 * puls)}, ${Math.round(170 + 40 * puls)}, 60)`,
+      ];
+      const wege = [new Path2D(), new Path2D(), new Path2D()];
       for (const idx of this.lava) {
         const x = (idx % sp) * ZELLE + ZELLE / 2;
         const y = Math.floor(idx / sp) * ZELLE + ZELLE / 2;
         if (sicht && (x < sicht.x0 || x > sicht.x1 || y < sicht.y0 || y > sicht.y1)) continue;
-        ctx.rect(x - ZELLE / 2, y - ZELLE / 2, ZELLE, ZELLE);
+        const stufe = ((idx * 2654435761) >>> 0) % 3;
+        wege[stufe].rect(x - ZELLE / 2, y - ZELLE / 2, ZELLE, ZELLE);
       }
-      ctx.fill();
+      for (let i = 0; i < wege.length; i += 1) {
+        ctx.fillStyle = stufen[i];
+        ctx.fill(wege[i]);
+      }
       if (this.lavaGluehen) {
         ctx.globalCompositeOperation = 'lighter';
         ctx.globalAlpha = 0.5;

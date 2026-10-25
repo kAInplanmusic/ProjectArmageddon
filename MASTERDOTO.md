@@ -6910,5 +6910,14 @@ Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-que
 
 - [x] **LOOK-1 Kacheln des Auftraggebers als Stofftexturen.** Beleg: `scripts/kacheln-schneiden.mjs` erkennt das Raster automatisch (4 Zeilen, 7 Spalten), schneidet A3/A7/A9/A10/A11/A16/A21/A22 mit 12 % Innenrand, blendet sie über 50-%-Rollen und weiche Kreuzmaske nahtlos und schreibt 512-px-JPEG (Qualität 82, 19–33 KB) nach `src/client/assets/stoff-texturen/`; `STOFF_TEXTUR` nutzt sand/basalt/eis/pilz/holz/beton/obsidian/regolith, Übersicht `assets/gelaende-quelle/kontrolle.jpg`, `tests/stoff-texturen.test.js` grün.
 - [ ] **LOOK-2 Tiefenstaffel.** Drei Ebenen wie in den Referenzkarten: entsättigte Hintergrund-Kulisse, scharfes Spielgelände, Vordergrundpartikel.
-- [ ] **LOOK-3 Lava-Glühen.** Lava als glühender Stoff mit warmen Lichtakzenten nach `ref-3-vulkanschmiede-hud`, keine flache Füllung.
+- [x] **LOOK-3 Lava-Glühen — UMGESETZT (2026-10-25), mit Ehrlichkeit zum Ist-Stand:** Ein additives radiales
+  Glühen je Lavazelle gab es bereits (`FeuerOptik.zeichne`, Sprite `lavaGluehen`, `lighter`, Alpha 0,5).
+  Neu: Die Füllung war pro Bild EIN Farbton (eine gleichförmige Platte) und ist jetzt dreistufig aus einem
+  festen Zell-Hash — Basaltkruste, glühender Stoff, heiße Ader. Der Hash hängt nur an der Zellnummer, also
+  flackert nichts und dieselbe Karte sieht immer gleich aus; drei Pfade in EINEM Durchlauf über die Zellen.
+  Zweite Korrektur: Bei „reduzierte Bewegung“ pulsierte die Lavafüllung weiter — jetzt steht sie still, wie
+  Partikel, Ringe und Rauch derselben Datei. Belege: `tests/feuer.test.js` 13/13, Lint grün,
+  `biome-material.spec.mjs` 2/2 im echten Browser (Smoke). **Grenze:** Ein Bildvergleich gegen
+  `ref-3-vulkanschmiede-hud` wurde in dieser Sitzung NICHT gemacht — die Zellen entstehen erst durch
+  Lavazellen-Ereignisse, ein Prüfbild mit gefüllter Lava steht noch aus.
 - [ ] **LOOK-4 Innenräume.** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine`.
