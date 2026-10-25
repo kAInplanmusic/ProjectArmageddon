@@ -12,6 +12,8 @@
  * @module tierBilder
  */
 
+import { ladeBild } from './dom.js';
+
 const BILDER = {
   guenther: import.meta.glob('./assets/guenther/*.png', { query: '?url', import: 'default' }),
   cookie: import.meta.glob('./assets/cookie/*.png', { query: '?url', import: 'default' }),
@@ -22,7 +24,7 @@ const MANIFESTE = {
 };
 
 /** Darstellung je Tier: Ordner und Zeichenhöhe in Kartenpixeln (Sprite-Kante). */
-export const TIER_ANSICHT = Object.freeze({
+const TIER_ANSICHT = Object.freeze({
   guenther: Object.freeze({ ordner: 'guenther', kante: 76 }),
   cookie: Object.freeze({ ordner: 'cookie', kante: 104 }),
 });
@@ -30,17 +32,8 @@ export const TIER_ANSICHT = Object.freeze({
 // art -> pose -> Eintrag | 'laedt' | 'fehlt'
 const cache = new Map();
 
-function ladeBild(url) {
-  return new Promise((ok, fehler) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => fehler(new Error('Bild nicht ladbar'));
-    img.src = url;
-  });
-}
-
 /** Anker (Pixel im 256er Bild) und Dateiname einer Pose aus dem Manifest. */
-export function poseEintrag(art, pose) {
+function poseEintrag(art, pose) {
   const manifest = Object.values(MANIFESTE[art] ?? {})[0];
   const e = manifest?.posen?.[pose];
   return e ? { datei: e.datei, anker: { x: e.anker?.x ?? 128, y: e.anker?.y ?? 240 }, spiegeln: e.blick === 'links' } : null;

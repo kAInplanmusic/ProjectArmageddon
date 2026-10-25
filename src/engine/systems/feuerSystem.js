@@ -26,14 +26,13 @@
  * @module FeuerSystem
  */
 import { STOFF, stoffById } from '../../shared/config/stoffe.js';
-import { FEUER, feuerfestFaktor } from '../../shared/config/feuer.js';
+import { FEUER, FEUER_ZELLE as ZELLE, feuerfestFaktor } from '../../shared/config/feuer.js';
 import { WET_LEVEL } from '../../shared/config/water.js';
 import { ARCHETYPE_IDS } from '../../shared/config/classes.js';
 import { geschuetztAm } from '../../shared/stoffkarte.js';
 import { damageTypeId } from '../damageTypes.js';
 
 const FEUER_ART = damageTypeId('fire');
-const ZELLE = 8;
 
 /** Nachbarn (dx, dy, Faktor auf die Ausbreitung); oben ist y kleiner. */
 const NACHBARN = Object.freeze([

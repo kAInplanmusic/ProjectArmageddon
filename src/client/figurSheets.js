@@ -15,10 +15,10 @@
 
 export const ZELLE = 256;
 export const SPALTEN = 4;
-export const ZEILEN = 2;
+const ZEILEN = 2;
 /** Blattgröße in Pixeln. */
-export const BLATT_B = ZELLE * SPALTEN;
-export const BLATT_H = ZELLE * ZEILEN;
+const BLATT_B = ZELLE * SPALTEN;
+const BLATT_H = ZELLE * ZEILEN;
 
 /** Zustandsbits der Pose (mehrere gleichzeitig möglich; die Rollenwahl nimmt die wichtigste mit Frame). */
 export const MODUS = Object.freeze({ TREFFER: 1, LUFT: 2, HOCKE: 4, GEHEN: 8 });
@@ -34,14 +34,14 @@ function standardLeinwand(b, h) {
 }
 
 /** Schneidet Zelle `i` (Leserichtung) aus einem Blatt als eigenständigen Frame. */
-export function frameAusZelle(bild, i, neueLeinwand = standardLeinwand) {
+function frameAusZelle(bild, i, neueLeinwand = standardLeinwand) {
   const z = neueLeinwand(ZELLE, ZELLE);
   z.getContext('2d').drawImage(bild, (i % SPALTEN) * ZELLE, Math.floor(i / SPALTEN) * ZELLE, ZELLE, ZELLE, 0, 0, ZELLE, ZELLE);
   return { quelle: z, stufen: new Array(STUFEN_ANZAHL).fill(null), bild: null, hell: null };
 }
 
 /** Gültiges Zellenmaß eines Blatts? */
-export function blattMassOk(bild) {
+function blattMassOk(bild) {
   const b = bild?.naturalWidth || bild?.width;
   const h = bild?.naturalHeight || bild?.height;
   return b === BLATT_B && h === BLATT_H;

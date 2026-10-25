@@ -639,7 +639,7 @@ export function zeichneAuraRing(ctx, farbe, anteil) {
 }
 
 /** Lebensbalken-Farbe nach Füllstand (Palette des Entwurfs). */
-export function balkenFarbe(anteil) {
+function balkenFarbe(anteil) {
   return anteil > 0.6 ? PAL.limette : anteil > 0.3 ? PAL.orange : PAL.rotorange;
 }
 

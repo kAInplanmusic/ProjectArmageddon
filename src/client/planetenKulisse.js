@@ -17,7 +17,7 @@ import { PLANET_BIOME } from '../shared/config/biome-planet.js';
 /** Zweite Kugel neben der Hauptkugel: nach dem Zug der Kulisse eine der beiden bunten. */
 const NEBENKUGELN = Object.freeze(['bunt', 'blaurost']);
 
-export class PlanetenBilder {
+class PlanetenBilder {
   constructor() {
     this.urls = {};
     this.bilder = new Map();

@@ -18,11 +18,13 @@
  * @module waffenSprites
  */
 
+import { ladeBild, neueLeinwand } from './dom.js';
+import { ZELLE } from './waffenAnimation.js';
+
 /** Kantenlänge der gecachten Waffenzellen (Atlas: 128 px; für die Anzeige genügt die Hälfte). */
 export const CACHE_KANTE = 64;
 /** Kantenlänge der Geschosszellen im Atlas und im Cache. */
-export const GESCHOSS_KANTE = 32;
-const ZELLE = 128;
+const GESCHOSS_KANTE = 32;
 const GLANZ_KANTE = 32;
 
 /** Größte Neigung (Radiant), die ausgerichtet wird; stärker geneigte Anker gelten als Fehlschätzung. */
@@ -243,22 +245,6 @@ export function erzeugeWaffenSprites(abh) {
 
 // ---------------------------------------------------------- Standardverdrahtung
 
-function neueLeinwand(b, h) {
-  if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(b, h);
-  const c = document.createElement('canvas');
-  c.width = b; c.height = h;
-  return c;
-}
-
-function ladeBild(url) {
-  return new Promise((ok, fehler) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => fehler(new Error('Atlas nicht ladbar'));
-    img.src = url;
-  });
-}
-
 /** Der Lader des Spiels. */
 const standard = erzeugeWaffenSprites({
   // Das Manifest ist ein eigener, lazy geladener Chunk; die Atlanten werden je Kategorie erst bei Bedarf geholt.
@@ -269,7 +255,7 @@ const standard = erzeugeWaffenSprites({
     if (!f) throw new Error(`Atlas fehlt: ${datei}`);
     return f();
   },
-  ladeBild,
+  ladeBild: url => ladeBild(url, 'Atlas nicht ladbar'),
   neueLeinwand,
 });
 
@@ -279,11 +265,6 @@ const standard = erzeugeWaffenSprites({
  */
 export function holeWaffenSprite(waffe) {
   return standard.hole(waffe);
-}
-
-/** Lädt die Sprites vorab (z. B. beim Matchstart für das Loadout). */
-export function ladeWaffenSpritesVor(waffen) {
-  standard.ladeVor(waffen);
 }
 
 /** Zustand des Laders (Diagnose). */

@@ -106,7 +106,7 @@ export const INSEL_MAX_ZELLEN_SCHOLLEN = 60000;
 /** Besuchte Zellen je Tick für die Inselsuche (Kostenbudget; die Suche setzt im nächsten Tick fort). */
 export const SUCH_BUDGET_PRO_TICK = 9000;
 /** Gesamtbudget einer Krater-Analyse in Vielfachen von `INSEL_MAX_ZELLEN`; der Rest gilt als verankert. */
-export const SUCH_BUDGET_FAKTOR = 4;
+const SUCH_BUDGET_FAKTOR = 4;
 /** Fallbeschleunigung einer Insel (px/Tick²) und Höchsttempo (px/Tick). */
 export const INSEL_GRAVITATION = 0.45;
 export const INSEL_TEMPO_MAX = 10;

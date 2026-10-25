@@ -7,17 +7,12 @@
  * @module figurStufen
  */
 
+import { neueLeinwand } from './dom.js';
+
 /** Kantenlänge der Standardstufe (Quelle: 256 px). */
-const CACHE_KANTE = 128;
+export const CACHE_KANTE = 128;
 /** Vorskalierte Stufen (Mip-Kette); die größte ist das Original. */
 export const STUFEN = Object.freeze([64, 96, 128, 192, 256]);
-
-function neueLeinwand(b, h) {
-  if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(b, h);
-  const c = document.createElement('canvas');
-  c.width = b; c.height = h;
-  return c;
-}
 
 /**
  * Leichte Schärfung samt Randsäuberung (einmal je Stufe, nie je Bild).

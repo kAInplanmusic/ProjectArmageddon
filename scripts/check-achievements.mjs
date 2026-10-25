@@ -35,6 +35,7 @@
  *     node scripts/check-achievements.mjs --partien=20   # längere Historie
  */
 import { MatchController } from '../src/engine/match.js';
+import { getWeapon } from '../src/shared/config/weapons.js';
 import { ACHIEVEMENTS, kennzahlen } from '../src/shared/achievements.js';
 
 const args = new Map(process.argv.slice(2).map(a => {
@@ -56,20 +57,62 @@ const SEEDS = Number(args.get('seeds') ?? 4);
  *
  * Jetzt wird nach jedem Schuss der Zug abgegeben — das entspricht dem Spiel mit
  * sehr kurzer Bedenkzeit und bringt die Partie zuverlässig voran.
+ *
+ * ## Der Schütze zielt (FUND, belegt beim Audit 2026-10-23)
+ *
+ * Ein früherer Stand feuerte in feste Winkel (0,5–1,2 rad, Kraft 80), ohne auf
+ * den Gegner zu zielen — die Trefferquote lag bei ~2 %, der Schaden bei ~32 je
+ * Partie. Das maß keinen Spieler, sondern einen Bot, der daneben schießt. Seit
+ * dieser Fassung zielt der Schütze wie ein Mensch: Er sucht auf einem Raster aus
+ * Winkel × Kraft die Bahn, die dem nächsten Gegner am nächsten einschlägt
+ * (`aimPreview`, dieselbe Vorschau, die der Client zeichnet), und feuert mit der
+ * aktiven Figur — nicht mehr mit der zuerst gefundenen Team-0-Figur.
  */
+
+/** Raster für die Zielsuche (wie in `scripts/bot-partien.mjs`). */
+const WINKEL = Array.from({ length: 37 }, (_, i) => (i / 36) * Math.PI);
+const KRAEFTE = [35, 50, 65, 80, 100];
+
+/** Der lebende Gegner, der dem Schützen am nächsten steht. */
+function naechsterGegner(zustand, aktiv) {
+  let best = null;
+  for (const e of zustand.entities) {
+    if (!e.alive || e.teamId === aktiv.teamId) continue;
+    const d = Math.hypot(e.x - aktiv.x, e.y - aktiv.y);
+    if (!best || d < best.d) best = { e, d };
+  }
+  return best;
+}
+
+/** Bester Schuss einer Waffe: { winkel, kraft } mit kleinstem Abstand zum Gegner. */
+function planeSchuss(match, aktiv, gegner, waffe) {
+  const dx = gegner.x - aktiv.x;
+  const dy = gegner.y - aktiv.y;
+  if (waffe.delivery === 'hitscan') {
+    return { winkel: Math.atan2(-dy, dx), kraft: 100 };
+  }
+  let beste = null;
+  for (const winkel of WINKEL) {
+    for (const kraft of KRAEFTE) {
+      const bahn = match.aimPreview(aktiv.entityId, winkel, kraft, 300, waffe);
+      const ende = bahn[bahn.length - 1];
+      if (!ende) continue;
+      const fehl = Math.hypot(ende.x - gegner.x, ende.y - gegner.y);
+      if (!beste || fehl < beste.fehl) beste = { winkel, kraft, fehl };
+    }
+  }
+  return beste;
+}
+
 function spielePartie(seed) {
   const match = new MatchController({
     seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 60_000,
   });
   match.start();
 
-  const eigener = match.getState().entities.find(e => e.teamId === 0);
-  const WINKEL = [0.6, 0.75, 0.9, 1.05, 1.2, 0.5, 0.8, 1.0];
-
   let schuesse = 0;
   let treffer = 0;
   let schaden = 0;
-  let runde = 0;
   let schutz = 0;
 
   while (match.status === 'playing' && schutz < 4000) {
@@ -78,13 +121,19 @@ function spielePartie(seed) {
     if (!aktiv?.alive) { match.endTurn(); schutz += 1; continue; }
 
     if (aktiv.teamId === 0) {
-      const waffe = match.inventory?.getActiveWeaponId?.(eigener.entityId);
+      const waffeId = match.inventory.getActiveWeaponId(aktiv.entityId);
+      const waffe = waffeId ? getWeapon(waffeId) : null;
+      const ziel = naechsterGegner(zustand, aktiv);
+      const plan = ziel && waffe ? planeSchuss(match, aktiv, ziel.e, waffe) : null;
+
       const vorher = new Map(
         zustand.entities.filter(e => e.teamId === 1).map(e => [e.entityId, e.health]),
       );
 
-      const ergebnis = match.fire(eigener.entityId, WINKEL[runde % WINKEL.length], 80, waffe);
-      if (ergebnis.ok) { schuesse += 1; runde += 1; }
+      if (plan) {
+        const ergebnis = match.fire(aktiv.entityId, plan.winkel, plan.kraft, waffeId);
+        if (ergebnis.ok) schuesse += 1;
+      }
 
       // Einschlag abwarten, dann den Zug beenden.
       let s2 = 0;

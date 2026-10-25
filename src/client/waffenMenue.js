@@ -36,7 +36,7 @@ const STUFEN_NAMEN = Object.freeze({
  * @returns {{weaponId:string, weapon:object|null, nummer:number, ammo:number,
  *   maxAmmo:number, unbegrenzt:boolean, cooldown:number, aktiv:boolean, waehlbar:boolean, gruppe:string}[]}
  */
-export function bestandVon(figur) {
+function bestandVon(figur) {
   const ids = Array.isArray(figur?.inventory) ? figur.inventory : [];
   return orderInventoryBySubcategory(ids).map((index, position) => {
     const weaponId = ids[index];

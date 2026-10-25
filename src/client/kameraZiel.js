@@ -27,19 +27,19 @@
 import { begrenzeAnsicht, fokusImSchirm, ZOOM_GRENZEN } from './camera.js';
 
 /** Kartenpixel Breite, die die Standardführung zeigen will (Reichweiten sind Kartenpixel). */
-export const SICHT_BREITE = 1400;
+const SICHT_BREITE = 1400;
 /** Kartenpixel Höhe, die die Standardführung zeigen will. */
-export const SICHT_HOEHE = 790;
+const SICHT_HOEHE = 790;
 /** Wie weit die Zielrichtung im Bild gezeigt wird, als Anteil der bevorzugten Sichtbreite. */
-export const ZIEL_ANTEIL = 0.32;
+const ZIEL_ANTEIL = 0.32;
 /** Gegner innerhalb dieser Entfernung (Kartenpixel) in Schussrichtung kommen mit ins Bild. */
-export const GEGNER_REICHWEITE = 950;
+const GEGNER_REICHWEITE = 950;
 /** Gegner innerhalb dieser Entfernung kommen auch entgegen der Schussrichtung ins Bild. */
-export const GEGNER_NAH = 320;
+const GEGNER_NAH = 320;
 /** Höchstzahl der Gegner, die den Ausschnitt mitbestimmen. */
-export const GEGNER_MAX = 2;
+const GEGNER_MAX = 2;
 /** Sekunden Vorausschau beim Folgen eines Geschosses. */
-export const VORAUS_SEKUNDEN = 0.28;
+const VORAUS_SEKUNDEN = 0.28;
 
 /** Rand um den Ausschnitt als Anteil der Schirmhöhe. */
 const RAND_ANTEIL = 0.05;
@@ -91,7 +91,7 @@ export function glaette(wert, tempo, ziel, glaettZeit, dt) {
 }
 
 /** Bildschirmposition eines Kartenpunkts bei einer Ansicht. */
-export function kartenPunktImSchirm(punkt, ansicht, karte, schirm, rand, schub = 0) {
+function kartenPunktImSchirm(punkt, ansicht, karte, schirm, rand, schub = 0) {
   const f = fokusImSchirm(schirm, rand, ansicht.zoom, karte, schub);
   return {
     x: f.x + (punkt.x - ansicht.x) * ansicht.zoom,
@@ -134,7 +134,7 @@ export function gegnerImSchussweg(aktiv, winkel, gegner = []) {
 }
 
 /** Das Rechteck, das Punkte (Kartenpixel) umschließt. */
-export function umschliessend(punkte) {
+function umschliessend(punkte) {
   let x0 = Infinity; let y0 = Infinity; let x1 = -Infinity; let y1 = -Infinity;
   for (const p of punkte) {
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
@@ -149,7 +149,7 @@ export function umschliessend(punkte) {
  * `pad`) bei diesem Zoom innerhalb des sicheren Rechtecks steht. Ist das
  * unmöglich (Bereich kleiner als die Figur), bleibt die Mitte unverändert.
  */
-export function figurMitte(mitte, figur, zoom, karte, schirm, rand, pad, innen = 0) {
+function figurMitte(mitte, figur, zoom, karte, schirm, rand, pad, innen = 0) {
   const f = fokusImSchirm(schirm, rand, zoom, karte);
   const klemme = (m, fig, lo, hi, fo) => {
     if (hi < lo) return m;
@@ -309,15 +309,15 @@ export function bogenZoom(zoomZiel, abstand, schirmBreite, zoomUnten) {
 }
 
 /** Multiplikator der Stoßstärke je Waffenkategorie. */
-export const STOSS_KATEGORIE = Object.freeze({
+const STOSS_KATEGORIE = Object.freeze({
   melee: 0.4, ranged: 0.8, heavy_ranged: 1.2, ultimate: 1.4,
   magic: 1, elemental: 1, tech: 1, utility: 0.5,
 });
 
 /** Kleinster Bildschub in Bildschirmpixeln, unterhalb dessen gar nichts geschieht. */
-export const STOSS_MIN = 1.5;
+const STOSS_MIN = 1.5;
 /** Größter Bildschub in Bildschirmpixeln (Lesbarkeit: die Zielhilfe bleibt lesbar). */
-export const STOSS_MAX = 14;
+const STOSS_MAX = 14;
 
 /**
  * Der Bildschub nach einem Einschlag: Stärke und Dauer nach Explosionsradius

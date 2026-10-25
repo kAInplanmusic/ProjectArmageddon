@@ -1,0 +1,250 @@
+{
+  "werkzeug": "check-sprites",
+  "zeit": "2026-10-24T12:55:16.140Z",
+  "dauerSekunden": 13.1,
+  "figuren": {
+    "figuren": 81,
+    "fraktionen": 9,
+    "erwartet": 243,
+    "gemessen": 243,
+    "zellenGefuellt": 1944,
+    "zellenGesamt": 1944
+  },
+  "emotionen": {
+    "geprueft": 81,
+    "erwartet": 81,
+    "zellenGefuellt": 648,
+    "zellenGesamt": 648
+  },
+  "waffen": {
+    "waffen": 150,
+    "ohneFeld": 0,
+    "deckungZuKlein": 0,
+    "gepruefteBilder": 450,
+    "atlanten": 9,
+    "deckungMittel": 42.59
+  },
+  "haustiere": {
+    "guenther": 14,
+    "cookie": 14
+  },
+  "befunde": [
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/11_synapse-streamer__zustand.webp Zelle 1",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/11_synapse-streamer__zustand.webp Zelle 2",
+      "detail": "8 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/11_synapse-streamer__zustand.webp Zelle 4",
+      "detail": "14 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/11_synapse-streamer__zustand.webp Zelle 5",
+      "detail": "5 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/11_synapse-streamer__zustand.webp Zelle 6",
+      "detail": "10 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/11_synapse-streamer__zustand.webp Zelle 7",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 0",
+      "detail": "11 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 1",
+      "detail": "12 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 2",
+      "detail": "14 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 3",
+      "detail": "9 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 4",
+      "detail": "8 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 5",
+      "detail": "8 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 6",
+      "detail": "23 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/20_buffer-flow-swarm__zustand.webp Zelle 7",
+      "detail": "22 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/21_hyper-link-hound__walk.webp Zelle 0",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/21_hyper-link-hound__walk.webp Zelle 2",
+      "detail": "5 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/21_hyper-link-hound__walk.webp Zelle 4",
+      "detail": "13 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/21_hyper-link-hound__walk.webp Zelle 5",
+      "detail": "10 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/21_hyper-link-hound__walk.webp Zelle 6",
+      "detail": "10 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: datacult/21_hyper-link-hound__zustand.webp Zelle 1",
+      "detail": "9 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/10_arcershorn-a__zustand.webp Zelle 0",
+      "detail": "6 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/10_arcershorn-a__zustand.webp Zelle 4",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/11_pyrowand-a__aktion.webp Zelle 0",
+      "detail": "6 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/11_pyrowand-a__aktion.webp Zelle 1",
+      "detail": "5 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/11_pyrowand-a__aktion.webp Zelle 2",
+      "detail": "9 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/11_pyrowand-a__aktion.webp Zelle 3",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: pixel/11_pyrowand-a__aktion.webp Zelle 4",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/00_bone-racker-karl__zustand.webp Zelle 3",
+      "detail": "6 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/00_bone-racker-karl__zustand.webp Zelle 4",
+      "detail": "8 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/00_bone-racker-karl__zustand.webp Zelle 5",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/00_bone-racker-karl__zustand.webp Zelle 6",
+      "detail": "8 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/00_bone-racker-karl__zustand.webp Zelle 7",
+      "detail": "9 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/10_archer-mortis__zustand.webp Zelle 5",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/10_archer-mortis__zustand.webp Zelle 7",
+      "detail": "4 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 0",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 1",
+      "detail": "8 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 2",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 3",
+      "detail": "10 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 4",
+      "detail": "11 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 5",
+      "detail": "6 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 6",
+      "detail": "7 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "figuren",
+      "titel": "Zerfasert: undead/12_vessel-plague-skull__zustand.webp Zelle 7",
+      "detail": "6 zusammenhängende Flächen (normal ≤ 3)"
+    },
+    {
+      "bereich": "namensdublette",
+      "titel": "Figurenname 00_nullpointer-exception in 2 Fraktionen",
+      "detail": "datacult/00_nullpointer-exception · pixel/00_nullpointer-exception"
+    }
+  ],
+  "hinweise": [],
+  "ampel": "rot"
+}

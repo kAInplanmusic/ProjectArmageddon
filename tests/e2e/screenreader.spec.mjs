@@ -98,12 +98,18 @@ test('Das Ereignisprotokoll ist eine Live-Region für laufende Meldungen', async
   await matchStarten(page);
 
   const merkmal = await page.evaluate(() => {
+    // Seit dem ARIA-Fix liegt die Live-Region auf dem Wrapper um die Liste:
+    // `role="log"` auf der <ul> hätte ihre Listen-Semantik ersetzt und die
+    // <li>-Kinder elternlos gemacht (axe: listitem/aria-required-parent).
     const liste = document.getElementById('log-list');
+    const region = document.getElementById('log-region');
     return {
-      rolle: liste.getAttribute('role'),
-      live: liste.getAttribute('aria-live'),
-      relevant: liste.getAttribute('aria-relevant'),
-      name: liste.getAttribute('aria-label'),
+      rolle: region.getAttribute('role'),
+      live: region.getAttribute('aria-live'),
+      relevant: region.getAttribute('aria-relevant'),
+      name: region.getAttribute('aria-label'),
+      listeInRegion: Boolean(region.querySelector('#log-list')),
+      listeKinderSindLi: [...liste.children].every(k => k.tagName === 'LI'),
     };
   });
 
@@ -113,12 +119,13 @@ test('Das Ereignisprotokoll ist eine Live-Region für laufende Meldungen', async
   // und eine Meldung über Entfernungen wäre Lärm.
   expect(merkmal.relevant).toBe('additions');
   expect(merkmal.name).toBeTruthy();
+  expect(merkmal.listeInRegion).toBe(true);
+  expect(merkmal.listeKinderSindLi).toBe(true);
 
   // Und der Browser führt die Region tatsächlich als Live-Bereich.
   const knoten = await page.evaluate(() => {
-    // Über die Eigenschaften des Elements prüfen, die der Browser pflegt.
-    const liste = document.getElementById('log-list');
-    return { ariaLive: liste.ariaLive, role: liste.getAttribute('role') };
+    const region = document.getElementById('log-region');
+    return { ariaLive: region.ariaLive, role: region.getAttribute('role') };
   });
   expect(knoten.ariaLive).toBe('polite');
 });
@@ -164,10 +171,11 @@ test('Das Protokoll wird oben begrenzt und meldet keine Entfernung', async ({ pa
 
   const befund = await page.evaluate(() => {
     const liste = document.getElementById('log-list');
+    const region = document.getElementById('log-region');
     for (let i = 0; i < 80; i += 1) window.__PA__.game.hud.log(`Füllzeile ${i}`);
     return {
       anzahl: liste.children.length,
-      relevant: liste.getAttribute('aria-relevant'),
+      relevant: region.getAttribute('aria-relevant'),
       ersteTexte: [...liste.children].slice(0, 3).map(li => li.textContent),
     };
   });

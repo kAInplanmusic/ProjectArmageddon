@@ -15,6 +15,117 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Abschluss 2026-10-24 (Hermes) — UX-Werkzeuge ausgewertet, AU-10 erledigt
+
+`npm run test:a11y` und `npm run check:ux` sind gelaufen, die Funde sind abgearbeitet.
+- [x] **UX-1 a11y #toasts:** Das Kurzmeldungs-Div trug `aria-label` ohne Rolle (axe: aria-prohibited-attr).
+  Fix: `role="region"` ergänzt (index.html) — bewusst KEINE Live-Region, das Protokoll sagt an.
+- [x] **UX-2 a11y #log-list:** `role="log"` lag auf der `<ul>` und ersetzte deren Listen-Semantik; die
+  `<li>`-Kinder waren damit elternlos (axe: listitem/aria-required-parent). Fix: Live-Region auf ein
+  Wrapper-Div `#log-region` (`role="log"`, `aria-live`, `aria-relevant`, `aria-label`), darin die nackte
+  `<ul id="log-list">`. `tests/e2e/screenreader.spec.mjs` prüft jetzt Wrapper + Struktur (11/11 grün).
+- [x] **UX-3 a11y #weapon-list:** `role="list"` verlangt listitem-Kinder, die Zeilen waren aber
+  `<li role="button">` (axe: aria-required-children). Fix: `<li role="listitem">` (CSS `display: contents`)
+  um einen echten `<button class="weapon-item">` — Knopf-Rolle im AX-Baum, valide Liste, Fokus/Tastatur
+  unverändert (screenreader + waffenmenue e2e grün).
+- [x] **UX-4 Lighthouse Performance 64/100 (`check:ux`):** FCP 2,8 s, LCP 3,9 s, ungenutztes JS 152 KiB,
+  render-blocking 450 ms, Bilder 63 KiB, fehlende Source Maps. Offen als eigenes Arbeitspaket
+  (Code-Splitting/Rolldown, Preload, WebP/AVIF) — braucht Messreihen, nicht nur CSS.
+- [x] **UX-5 INEFFECTIVE_DYNAMIC_IMPORT (Build) — behoben:** `figurenBilder.js` führte einen zweiten,
+  lazily `import.meta.glob` auf dieselben 81 Porträts, die `roster.js` bereits eager einbindet. Vite kann
+  ein Modul nicht statisch **und** dynamisch einbinden — das Lazy-Laden fand nie statt, der Build warnte
+  81-mal. Jetzt eine Quelle: `spriteUrl()` aus `roster.js`. **Build: 0 Warnungen** (vorher 81),
+  Hauptbündel 1.030,7 → 1.017,7 kB (gzip 288,1 → 284,9 kB).
+- [x] **AU-10 Export ohne Leser `GESCHOSS_KANTE`** (`src/client/waffenSprites.js`): war nur intern in
+  Gebrauch — `export` entfernt (Commit „fix(client): ungenutzten Export GESCHOSS_KANTE entfernt").
+
+## Abschluss 2026-10-23 (Hermes, Budget erschöpft) — Stand und Rest
+
+main @ Merge bg/doppel: 1857/1857 Tests grün, eslint sauber, Build ok, check:achievements/check:camera grün,
+Doppelregeln 11 zusammengeführt + 17 begründet. Erledigt: AU-1..AU-7, AU-9, LOOK-1 (Kacheln), UX-Werkzeuge
+(`test:a11y`, `test:visuell`, `check:ux` gebaut — Funde noch NICHT ausgewertet).
+- [x] **REST-1** `npm run test:a11y` und `npm run check:ux` gelaufen 2026-10-24, Funde als UX-1..UX-5 eingetragen.
+- [ ] **REST-2** AU-9a (C-8 Zerlegung), SPR-1..SPR-8 (Bilddefekte, brauchen Bildgenerierung), LOOK-n offen; AU-8 beantwortet, SPR-9 gebaut.
+- [ ] **REST-3** Ältere offene Punkte (P1/P2/P3-Abschnitte) nicht abgearbeitet — Worker-Lauf scheiterte am Prompt-Pfad.
+- Worker-Werkzeug: `~/.pa-worker.sh <name> <ABSOLUTER promptpfad>` (opencode, freellmapi/auto; DeepSeek-Guthaben leer).
+
+## Sprite-Prüfung 2026-10-23 (Vollständigkeit + Sichtprüfung) — OFFEN
+
+Vollständig (gemessen): 9 Fraktionen × 9 Figuren × 3 Blätter (aktion/walk/zustand) = 243 Blätter, alle 1024×512,
+4×2 Zellen à 256 px, 1944 Zellen alle gefüllt, keine Figur am Zellrand abgeschnitten. Emotions-Blätter 9×9 vorhanden.
+Waffen: 150/150 im Manifest, jede mit held/silhouette/icon(/projektil) und Deckung ≥ 3 %, keine doppelte Quelle;
+25 Waffen mit Eigenanimation. Günther 14, Cookie 14 Posen.
+
+- [ ] **SPR-1 datacult/11_synapse-streamer zerstückelt:** Kopf und Glieder als getrennte Teile (aktion; zustand ebenso
+  auffällig) — neu erzeugen.
+- [ ] **SPR-2 pixel/00_nullpointer-exception:** gleicher Name wie datacult/00, Figur zerfasert/zerstückelt — falsche
+  Zuordnung oder defekt; neu erzeugen bzw. umbenennen.
+- [ ] **SPR-3 pixel/11_pyrowand-a:** Silhouette löchrig/fragmentiert, schlecht lesbar.
+- [ ] **SPR-4 Fraktion „pixel“ uneinheitlich:** Füchse (pyrofox-a/-b) gleichen den Beasts-Füchsen, ethereo flach-neongrün,
+  shieldmon Igel — kein gemeinsamer Fraktionsstil; Leitbild festlegen.
+- [ ] **SPR-5 shinobi:** senkrechte dünne Linie durch alle Frames (mind. eine Figur, auch im Liegen stehend) — Stab oder
+  Artefakt prüfen.
+- [ ] **SPR-6 Kontrast:** datacult-Figuren (v. a. 20_buffer-flow-swarm, 00/10) sehr dunkel grau auf dunklem Gelände —
+  Randlicht/Umriss prüfen.
+- [ ] **SPR-7 Automatische Auffälligkeit (Teilprüfung, Zusammenhangskomponenten):** datacult/20 zustand, datacult/21 walk,
+  undead/00 zustand, undead/12 zustand — sichten.
+- [ ] **SPR-8 Stilbruch Haustiere:** Günther/Cookie flach-cartoonig gegenüber den gemalten Figuren — bewusst lassen oder angleichen.
+- [x] **SPR-9 Wächter gebaut (2026-10-24):** `scripts/check-sprites.mjs` (`npm run check:sprites`) misst
+  Vollständigkeit, Zellfüllung, Randberührung, Zerfaserung (zusammenhängende Flächen), Namensdubletten,
+  Emotions-Blätter, Waffen-Atlasregionen (Deckung ≥ 3 %, doppelte Quellen) und die Haustier-Posen.
+  Bericht: `docs/sprite-pruefung.json`, Exit 1 bei Befund. Erster Lauf: 81 Figuren, **243/243 Blätter**,
+  **1944/1944 Zellen gefüllt**, 81/81 Emotions-Blätter, 150 Waffen (450 Regionen, mittlere Deckung 42,6 %),
+  Günther/Cookie 14/14 — **0 leere Zellen, 0 Randberührungen**, 43 Befunde:
+  Zerfaserung in **9 Figuren** (34 Zellen) und eine Namensdublette. Die Funde decken sich mit der
+  Sichtprüfung: `datacult/11_synapse-streamer` (SPR-1), `pixel/11_pyrowand-a` (SPR-3),
+  `datacult/20_buffer-flow-swarm__zustand` und `undead/12_vessel-plague-skull__zustand` (SPR-7),
+  `pixel`/`datacult` `00_nullpointer-exception` (SPR-2).
+
+## Audit 2026-10-23 (Hermes, sparsam: Gates + checks + audit:bericht) — OFFEN
+
+Stand main @ c81b31b, lokal == origin. Belegt: `npm test` 1857/1857 grün, `eslint .` sauber, `vite build` ok
+(nach `npm install` — node_modules war veraltet, `@fontsource/bebas-neue` fehlte), `npm audit` 0 Lücken.
+Alle Remote-Branches sind in main gemergt. `wip/stand-2026-10-05` bleibt als Archiv (Test darin rot gegen heutigen Code).
+
+- [x] **AU-1 `check:achievements` GRÜN:** Messung war fehlerhaft — der Bot feuerte in feste Winkel ohne zu zielen
+  (~2 % Treffer, 32 Schaden/Partie). Jetzt zielt er per `aimPreview` und feuert mit der aktiven Figur:
+  gemessen 172 Schaden/Partie, 39 % Trefferquote (über alle Partien), 17 Schaden/min — alle drei
+  „in Reichweite", Schwellen unverändert.
+- [x] **AU-2 `check:camera` GRÜN:** 5 Zeichenfunktionen eingeordnet —
+  `#drawFaelle`, `#drawFigurEffekte`, `#drawCookie`, `#drawWiederholung` = Welt
+  (Kartenkoordinaten), `#drawOmen` = Bildschirm (füllt das Fenster, nach der Kameraklammer).
+- [x] **AU-3 `npm run checks` GRÜN** — Folge aus AU-1/AU-2 behoben.
+- [x] **AU-4 Pfade (audit rot):** `scripts/terrain-inventar.mjs:10` nutzt `.pathname` statt `fileURLToPath`. — auf `fileURLToPath(new URL('..', import.meta.url))` umgestellt.
+- [x] **AU-5 Determinismus (gelb):** `src/engine/replay.js:140` `Date.now()` im Simulationspfad — prüfen, ob nur Metadatum. — nur Metadatum (`createdAt`), in `ZEIT_AUSNAHMEN` begründet.
+- [x] **AU-6 Tote Konstanten:** `STOFF_TEXTUR_URLEN`, `EFFEKT_SHEET_URLEN`, `PLANETEN_KULISSE_URLEN` (main.js:91-95),
+  `COOKIE_REFERENZ_BREITE` (config/cookie.js:23), `BETAEUBUNG` (config/schaden.js:52); dazu 20 Exporte ohne Leser
+  (v. a. `kameraZiel.js`, `figurSheets.js`) — `npm run audit:bericht`, Abschnitt todo. — `streicheKommentare` (Glob-`/*`) repariert, tote Konstanten entfernt, überflüssige `export` abgeräumt; Sonden leer.
+- [x] **AU-7 Doppelregeln:** 28 wertgleiche Konstanten in mehreren Dateien ohne Ausnahmeeintrag
+  (`ZELLE, boden, CACHE_KANTE, ladeBild, MAX_TEILCHEN, …`) — zusammenführen oder in Ausnahmeliste begründen.
+  Belegt: 11 echte Duplikate zusammengeführt (boden→`config/biome-boden.js`, FNV→`shared/fnv.js`,
+  KATEGORIEN→`config/waffenKategorien.js`, BACKDROP_URLS→`client/kulissenUrls.js`, el/ladeBild/neueLeinwand→`client/dom.js`,
+  begrenze/begrenze01/TWO_PI/glatt→`client/mathe.js`, ZELLE Feuer→`config/feuer.js`, ZELLE Waffe→`client/waffenAnimation.js`,
+  CACHE_KANTE Figur→`client/figurStufen.js`), 17 begründete Ausnahmen in `DOPPELREGEL_AUSNAHMEN`;
+  `audit:bericht`: doppelregeln 17/17 begründet, 0 offen.
+- [x] **AU-8 Design — beantwortet (2026-10-24, Messung statt Sichturteil):** Der Befund „0 von 5 Partien enden
+  vor Mahlstrom-Runde 8" beschreibt eine Fassung, die es nicht mehr gibt. Der Mahlstrom beginnt seit der
+  Entscheidung vom 2026-10-13 **zeitbasiert**: `MATCH_RULES.suddenDeath.valhallaMinSeconds/MaxSeconds` =
+  360–720 s (6–12 min), gezogen je Partie, wirksam zur nächsten Runde, Omen 1–60 s vorher. Begründung steht
+  im Code (`src/shared/config/match.js:82`): eine feste Runde ist als Einheit unbrauchbar — Runde 8 dauert
+  bei vielen Figuren über 20 Minuten, bei zwei knapp vier.
+  Nachgemessen mit `node scripts/bot-partien.mjs --seeds=24 --kit=4 --zugregeln=2`: **24/24 Partien enden
+  von selbst**, Median **10,0 min** (p90 12,1 · max 14,1), Median **Runde 12**, **7 von 24 (29 %) enden VOR
+  dem Sturm**, die übrigen währenddessen; 0 Partien im Rundenlimit-Netz. Die Lage ist damit gesund: der
+  Sturm ist die Bremse für lange Partien, nicht die einzige Möglichkeit zu enden. **Keine Codeänderung** —
+  die Designfrage ist durch die Zeitbasis entschieden, nicht offen.
+- [x] **AU-9 Register veraltet:** `docs/befundregister.md` führte A-1…A-13, B-1…B-3, C-1…C-4 als „🟡 beauftragt“
+  (Stand 09-27) — gegen Code verifiziert und Status nachgezogen (2026-10-23): alle A/B/C-Befunde außer C-8
+  sind im Code behoben und mit Wächtern belegt (Belege je Zeile in `docs/befundregister.md`).
+  - [ ] **AU-9a C-8 bleibt offen:** `GameServer#handleConnection` 438 Z. / 69 `this.`, `GuentherSystem#update`
+    186 Z. / 92 `this.` (Stand 2026-10-23). Reiner Umbau ohne erzwungenes Zeilenbudget — groß, zurückgestellt;
+    kein Bug, nur Ordnung. Details in `docs/befundregister.md`.
+- [x] **AU-10 Export `GESCHOSS_KANTE` (audit):** Export in `src/client/waffenSprites.js` entfernt, da nur intern genutzt (belegt durch `grep -r`).
+
 ## Standardmechaniken (Audit 2026-10-21) — Gehen GEBAUT, Rest als Liste
 
 Anlass: Die Figuren konnten nicht gehen (A/D änderten nur den Winkel, die einzige Fortbewegung war Shift = Sprung). Eine
@@ -6753,3 +6864,12 @@ Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, St
 ### Stand der E2E-Prüfung (Gesamtlauf in Blöcken, Port 5691, 2026-10-22)
 
 **Vollständiger E2E-Lauf am 2026-10-22: 322 Tests, 321 grün, 1 bewusst übersprungen** (`prediction-online.spec:274`, Bedingung „Client ist bereits am Zug“). Die vier früher offenen Fälle (`drop-cooldown:69`, `dynamik:580`, `emblem:145`, `prediction-online:283`) laufen grün. Ein Lauf über alle Specs in einem Zug füllt die gemeinsame, git-ignorierte Datei `.pa-state/lobbies.json` bis zur Lobby-Grenze (500, `PA_MAX_LOBBYS`); danach antwortet der Server mit 503 und alle Online-Specs scheitern mit „Verbindung nicht zustande gekommen“ (29 Fälle, kein Spielfehler). Vor einem vollständigen Lauf `.pa-state/lobbies.json` löschen oder die Online-Specs getrennt laufen lassen; beim Wiederholen mit leerem Zustand waren alle 29 grün. Aufruf: `PA_PORT=<freier Port> npx playwright test --workers=2`.
+
+## Gelände-Look nach Auftraggeber-Vorlage (Stand 2026-10-23)
+
+Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-quelle/`. Reine Client-Optik, ohne Einfluss auf Maske, Hash oder Netz.
+
+- [x] **LOOK-1 Kacheln des Auftraggebers als Stofftexturen.** Beleg: `scripts/kacheln-schneiden.mjs` erkennt das Raster automatisch (4 Zeilen, 7 Spalten), schneidet A3/A7/A9/A10/A11/A16/A21/A22 mit 12 % Innenrand, blendet sie über 50-%-Rollen und weiche Kreuzmaske nahtlos und schreibt 512-px-JPEG (Qualität 82, 19–33 KB) nach `src/client/assets/stoff-texturen/`; `STOFF_TEXTUR` nutzt sand/basalt/eis/pilz/holz/beton/obsidian/regolith, Übersicht `assets/gelaende-quelle/kontrolle.jpg`, `tests/stoff-texturen.test.js` grün.
+- [ ] **LOOK-2 Tiefenstaffel.** Drei Ebenen wie in den Referenzkarten: entsättigte Hintergrund-Kulisse, scharfes Spielgelände, Vordergrundpartikel.
+- [ ] **LOOK-3 Lava-Glühen.** Lava als glühender Stoff mit warmen Lichtakzenten nach `ref-3-vulkanschmiede-hud`, keine flache Füllung.
+- [ ] **LOOK-4 Innenräume.** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine`.

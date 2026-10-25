@@ -457,7 +457,7 @@ export function zeichneGeschossSprite(ctx, sp, x, y, winkel, groesse) {
  * @param {number} alter - Sekunden seit dem Start des Geschosses
  * @param {number} groesse - Durchmesser in Weltpixeln (`geschossDarstellung(...).start`)
  */
-export const STARTGLANZ_DAUER = 0.16;
+const STARTGLANZ_DAUER = 0.16;
 export function zeichneStartGlanz(ctx, sp, x, y, alter, groesse) {
   if (!(alter >= 0) || alter >= STARTGLANZ_DAUER || groesse <= 0) return;
   const u = alter / STARTGLANZ_DAUER;

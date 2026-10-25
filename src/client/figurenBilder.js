@@ -18,20 +18,32 @@
  */
 
 import { iconUrlFor } from '../shared/config/weapons.js';
-import { STUFEN, stufeBauen } from './figurStufen.js';
+import { spriteUrl } from './roster.js';
+import { CACHE_KANTE, STUFEN, stufeBauen } from './figurStufen.js';
 import { blattBauen } from './figurSheets.js';
+import { ladeBild } from './dom.js';
 
 export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
 
-const PORTRAETS = import.meta.glob('./assets/characters/*/*.png', { query: '?url', import: 'default' });
+/*
+ * Die Porträts kommen aus `roster.js` (dort EAGER per `import.meta.glob`), nicht
+ * aus einem zweiten, lazily Glob hier.
+ *
+ * FUND (belegt, `npm run build`): Beide Globs zeigten auf dieselben 81 Dateien —
+ * `roster.js` eager, diese Datei lazy. Vite kann ein Modul nicht gleichzeitig
+ * statisch und dynamisch einbinden; der Build meldete das 81-mal als
+ * `INEFFECTIVE_DYNAMIC_IMPORT` („dynamically imported by figurenBilder.js but
+ * also statically imported by roster.js, dynamic import will not move module
+ * into another chunk"). Das Lazy-Laden fand also NIE statt, kostete aber eine
+ * zweite Glob-Definition derselben Dateimenge. Jetzt gibt es genau eine Quelle:
+ * `spriteUrl()` liefert die fertige URL, `ladeBild` holt sie wie zuvor.
+ */
 const SEITEN = import.meta.glob('./assets/characters-side/*/*.png', { query: '?url', import: 'default' });
 const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { eager: true, import: 'default' });
 // Sprite-Sheets (Gehzyklus, Aktionen): Manifest samt Rollen eager (klein), die Bilder lazy je Figur.
 const BLATT_MANIFEST = import.meta.glob('./assets/sprite-sheets/manifest.json', { eager: true, import: 'default' });
 const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*.webp', { query: '?url', import: 'default' });
 
-/** Kantenlänge der Standardstufe (Quelle: 256 px). */
-const CACHE_KANTE = 128;
 const standard = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
 
 /** Ankerpunkte je Figur aus dem Manifest der Seitenansichten (Anteile 0..1). */
@@ -44,22 +56,14 @@ function ankerAusManifest(fraktion, datei) {
 // fraktion -> datei -> Eintrag | 'laedt' | 'fehlt' (zweistufig: Nachschlag je Bild ohne Zeichenkettenbau)
 const cache = new Map();
 
-function ladeBild(url) {
-  return new Promise((ok, fehler) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => fehler(new Error('Bild nicht ladbar'));
-    img.src = url;
-  });
-}
-
 async function lade(eintraege, charakter) {
   const datei = charakter.sprite;
   try {
     const seitenLader = SEITEN[`./assets/characters-side/${charakter.faction}/${charakter.sprite}`];
-    const lader = seitenLader ?? PORTRAETS[`./assets/characters/${charakter.faction}/${charakter.sprite}`];
-    if (!lader) { eintraege.set(datei, 'fehlt'); return; }
-    const img = await ladeBild(await lader());
+    // Porträt-URL kommt eager aus roster.js (siehe Kommentar bei SEITEN oben).
+    const portraitUrl = seitenLader ? null : spriteUrl(charakter);
+    if (!seitenLader && !portraitUrl) { eintraege.set(datei, 'fehlt'); return; }
+    const img = await ladeBild(seitenLader ? await seitenLader() : portraitUrl);
     const fig = {
       quelle: img,
       stufen: new Array(STUFEN.length).fill(null),

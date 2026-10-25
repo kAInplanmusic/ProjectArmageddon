@@ -193,7 +193,7 @@ export const STOFF_FEIN = Object.freeze({
 });
 
 /** Ab dieser Härte wirkt ein Erdbeben nicht mehr (Setzrutsch nur auf weichem und normalem Boden). */
-export const BEBEN_NUR_BIS_HAERTE = 'normal';
+const BEBEN_NUR_BIS_HAERTE = 'normal';
 
 /** Kleinste Radiusgröße (px), die noch als Krater gestanzt wird. */
 export const MIN_KRATER_RADIUS = 2;

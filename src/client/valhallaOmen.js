@@ -19,6 +19,8 @@
  * @module valhallaOmen
  */
 
+import { begrenze } from './mathe.js';
+
 /** Gesamtdauer in Sekunden (Blitze, Verweilen, Ausblenden). */
 export const OMEN_DAUER = 7;
 
@@ -46,7 +48,6 @@ function zufall(seed) {
   };
 }
 
-const begrenze = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 const sanft = x => { const t = begrenze(x, 0, 1); return t * t * (3 - 2 * t); };
 
 /**

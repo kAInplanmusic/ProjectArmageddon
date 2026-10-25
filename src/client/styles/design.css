@@ -281,6 +281,8 @@ label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
   background: linear-gradient(180deg, rgba(43, 49, 56, 0.9), rgba(20, 23, 27, 0.92));
 }
 #weapon-list { display: flex; flex-wrap: nowrap; gap: 6px; padding: 0; max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+/* <li role="listitem"> ist nur der ARIA-Träger; die Kachel selbst ist der <button>. */
+#weapon-list > li.weapon-slot { display: contents; }
 #weapon-list .weapon-group { display: none; }
 #weapon-list .weapon-item {
   position: relative;

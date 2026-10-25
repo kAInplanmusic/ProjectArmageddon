@@ -85,10 +85,65 @@ const EINSTIEG_QUELLEN = ['package.json', 'index.html', 'vite.config.mjs', 'play
  * folgenlos.
  */
 export function streicheKommentare(text = '') {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  /*
+   * Zeichenweise statt per Regex (belegt 2026-10-23): `/*` in einer
+   * Zeichenkette — etwa im Glob-Muster `'./assets/music/*.mp3'` — begann
+   * vorher einen Scheinkommentar und verschluckte den folgenden Code. Genau
+   * dadurch meldete die Sonde in `src/client/main.js` drei Konstanten als
+   * „ohne Leser", obwohl sie im Konstruktor gelesen werden. In Zeichenketten
+   * (einfach, doppelt, Template) und nach `\\` wird deshalb nichts entfernt.
+   *
+   * Zeilenumbrüche von Block-/HTML-Kommentaren bleiben als leere Zeilen
+   * stehen, damit die gemeldeten Zeilennummern zum Original passen.
+   */
+  let aus = '';
+  let zustand = 'code';
+  let anfuehrung = '';
+  for (let i = 0; i < text.length;) {
+    const c = text[i];
+    const d = text[i + 1];
+    if (zustand === 'code') {
+      if (c === '/' && d === '*') { zustand = 'block'; i += 2; continue; }
+      if (c === '/' && d === '/') {
+        i += 2;
+        while (i < text.length && text[i] !== '\n') i++;
+        continue;
+      }
+      if (c === '<' && text.startsWith('<!--', i)) { zustand = 'html'; i += 4; continue; }
+      if (c === '"' || c === "'" || c === '`') {
+        zustand = 'zeichenkette';
+        anfuehrung = c;
+        aus += c;
+        i++;
+        continue;
+      }
+      aus += c;
+      i++;
+      continue;
+    }
+    if (zustand === 'block') {
+      if (c === '*' && d === '/') { zustand = 'code'; i += 2; continue; }
+      if (c === '\n') aus += '\n';
+      i++;
+      continue;
+    }
+    if (zustand === 'html') {
+      if (c === '-' && text.startsWith('-->', i)) { zustand = 'code'; i += 3; continue; }
+      if (c === '\n') aus += '\n';
+      i++;
+      continue;
+    }
+    // zustand === 'zeichenkette'
+    aus += c;
+    if (c === '\\') {
+      if (i + 1 < text.length) aus += text[i + 1];
+      i += 2;
+      continue;
+    }
+    if (c === anfuehrung) zustand = 'code';
+    i++;
+  }
+  return aus;
 }
 
 /** Alle Projektdateien (ohne die üblichen Ausschlüsse). */
@@ -570,7 +625,77 @@ export const DOPPELREGEL_AUSNAHMEN_QUELLE =
  * findet, ist offen.
  */
 export const DOPPELREGEL_AUSNAHMEN = new Map([
-  // (leer — bewusst: kein Freispruch auf Vorrat)
+  // Jeder Eintrag nennt die gemessenen Orte und den fachlichen Grund, warum es
+  // keine gemeinsame Regel ist. Echte Duplikate stehen NICHT hier, sondern sind
+  // in eine gemeinsame Quelle zusammengeführt.
+  ['MAX_TEILCHEN', {
+    begruendung: 'Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.',
+    orte: ['src/client/feuerOptik.js:19', 'src/client/figurEffekte.js:15', 'src/client/tierBuehne.js:19'],
+  }],
+  ['aufprallStaerke', {
+    begruendung: 'Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel.',
+    orte: ['src/shared/config/zerstoerung.js:125', 'src/client/zerstoerungOptik.js:260'],
+  }],
+  ['BILDER', {
+    begruendung: 'Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.',
+    orte: ['src/client/roster.js:20', 'src/client/tierBilder.js:17'],
+  }],
+  ['cache', {
+    begruendung: 'Zwei getrennte Caches für verschiedene Daten (Figurenbilder bzw. Tierposen); gemeinsamer Name, keine gemeinsame Regel.',
+    orte: ['src/client/figurenBilder.js:44', 'src/client/tierBilder.js:33'],
+  }],
+  ['CACHE_KANTE', {
+    begruendung: 'figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches.',
+    orte: ['src/client/figurStufen.js:13', 'src/client/waffenSprites.js:25'],
+  }],
+  ['KONTUR', {
+    begruendung: 'figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert.',
+    orte: ['src/client/figuren.js:18', 'src/client/gelaendeStil.js:28'],
+  }],
+  ['LUFT_SCHWELLE', {
+    begruendung: 'figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung.',
+    orte: ['src/client/figurAnimation.js:25', 'src/client/hoehlenSchatten.js:86'],
+  }],
+  ['mische', {
+    begruendung: 'backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren.',
+    orte: ['src/shared/config/backdrops.js:718', 'src/shared/config/loadouts.js:105'],
+  }],
+  ['P', {
+    begruendung: 'figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion.',
+    orte: ['src/client/figurTypen.js:59', 'src/client/klangProfile.js:51'],
+  }],
+  ['PARAMETER', {
+    begruendung: 'figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen.',
+    orte: ['src/client/figurTypen.js:72', 'src/client/waffenAnimation.js:106'],
+  }],
+  ['standard', {
+    begruendung: 'figurenBilder.js ist die Standard-Ankertabelle, waffenSprites.js die Standardverdrahtung des Laders — gleicher Name, andere Bedeutung.',
+    orte: ['src/client/figurenBilder.js:34', 'src/client/waffenSprites.js:249'],
+  }],
+  ['STIMMUNGEN', {
+    begruendung: 'backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung.',
+    orte: ['src/shared/config/backdrops.js:698', 'src/client/musikListe.js:13'],
+  }],
+  ['STUFEN', {
+    begruendung: 'lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung.',
+    orte: ['src/engine/systems/lootSystem.js:93', 'src/client/figurStufen.js:15'],
+  }],
+  ['tabelle', {
+    begruendung: 'gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate.',
+    orte: ['src/client/gelaendeStil.js:229', 'src/client/stoffOptik.js:22'],
+  }],
+  ['TOENE', {
+    begruendung: 'gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.',
+    orte: ['src/client/gelaendeStil.js:32', 'src/client/toasts.js:18'],
+  }],
+  ['ZELLE', {
+    begruendung: 'figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.',
+    orte: ['src/client/figurSheets.js:16', 'src/client/waffenAnimation.js:40'],
+  }],
+  ['zufall', {
+    begruendung: 'engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.',
+    orte: ['src/engine/zerstoerung.js:108', 'src/client/valhallaOmen.js:40'],
+  }],
 ]);
 
 /**
@@ -667,12 +792,30 @@ function istKommentar(zeile) {
 }
 
 /**
+ * Begründete Ausnahmen für `nichtdeterminismus()`.
+ *
+ * Schlüssel: `<datei> | <Zeile ohne Einrückung>`. Damit bleibt ein Freispruch
+ * nur gültig, solange genau diese Anweisung dort steht; ändert sich der Code,
+ * wird der Treffer wieder gemeldet (fail-safe statt Freispruch auf Vorrat).
+ */
+export const ZEIT_AUSNAHMEN = new Map([
+  [
+    'src/engine/replay.js | this.#startedAt = Date.now();',
+    'Nur Metadatum: `#startedAt` wird ausschließlich über `toJSON()` als '
+      + '`createdAt` gespeichert („wann aufgenommen"). `fromJSON` übernimmt es '
+      + 'nicht, und der Zustandshash liest es nicht — der Zeitwert fließt nie '
+      + 'in die Simulation. Wächter: `tests/replay-uhr.test.js`.',
+  ],
+]);
+
+/**
  * Nichtdeterminismus im Simulationspfad.
  *
  * Geprüft wird unter `src/engine/`. Treffer werden NICHT verurteilt, sondern
  * eingeordnet: Seed-Erzeugung und Anzeige sind legitim, alles andere ist ein
  * Determinismus-Risiko. Die Einordnung ist heuristisch und muss am Code
  * nachgelesen werden — sie steht hier als Vorarbeit, nicht als Urteil.
+ * Begründete Fälle aus `ZEIT_AUSNAHMEN` werden ausgelassen.
  *
  * Kommentarzeilen sind ausdrücklich ausgenommen: Eine Zeile, die `Math.random`
  * nur ERWÄHNT („bewusst NICHT Math.random"), ist kein Treffer. Ohne diesen
@@ -680,7 +823,7 @@ function istKommentar(zeile) {
  * Kommentare zählt, ist ein Werkzeug, dem niemand glaubt (belegt im ersten
  * Lauf dieses MCP: 3 von 3 Treffern waren Kommentare).
  */
-export function nichtdeterminismus() {
+export function nichtdeterminismus({ ausnahmen = ZEIT_AUSNAHMEN } = {}) {
   const dateien = walk(path.join(ROOT, 'src', 'engine'), { endungen: QUELTEXT });
   const befunde = [];
   for (const datei of dateien) {
@@ -688,6 +831,8 @@ export function nichtdeterminismus() {
     text.split('\n').forEach((zeile, i) => {
       if (istKommentar(zeile)) return;
       if (/\bMath\.random\b|\bDate\.now\b|performance\.now/.test(zeile)) {
+        const schluessel = `${rel(datei)} | ${zeile.trim()}`;
+        if (ausnahmen.has(schluessel)) return;
         befunde.push({
           datei: rel(datei),
           zeile: i + 1,

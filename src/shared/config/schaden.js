@@ -87,12 +87,6 @@ export const MALUS = Object.freeze({
 
 export const MALUS_SCHLUESSEL = Object.freeze(Object.keys(MALUS));
 
-/** Betäubung (Aussetzen) ist kein Eintrag im Speicher, sondern `frozenTurns` — mit eigener Marke. */
-export const BETAEUBUNG = Object.freeze({
-  label: 'Betäubung', symbol: '✖', farbe: '#7fd8ff', dauer: 1,
-  kurz: 'setzt einen Zug aus; danach ein Zug Schutz',
-});
-
 /** Obergrenzen gegen Stapel-Exploits. */
 export const OBERGRENZEN = Object.freeze({
   /** Gleichzeitige Mali (ohne Nass): ein vierter ersetzt den mit der kürzesten Restdauer. */
@@ -193,13 +187,13 @@ export const ART_REGEL = Object.freeze({
  * gilt. Jede Klasse hat eine Stärke und eine Schwäche, ungefähr ±10-15 %.
  * `dauer`: Abzug in Zügen auf die Dauer des genannten Malus (nie unter `mindestDauer`).
  */
-export const RESISTENZ_KLASSE = Object.freeze({
+const RESISTENZ_KLASSE = Object.freeze({
   scout: Object.freeze({ gift: 0.85, energie: 1.1 }),
   heavy: Object.freeze({ koerper: 0.9, elektro: 1.15 }),
   artillery: Object.freeze({ feuer: 0.9, magie: 1.1 }),
 });
 
-export const RESISTENZ_ARCHETYP = Object.freeze({
+const RESISTENZ_ARCHETYP = Object.freeze({
   brawler: Object.freeze({ faktor: Object.freeze({}), dauer: Object.freeze({ gift: 1, saeure: 1 }) }),
   artillerist: Object.freeze({ faktor: Object.freeze({}), dauer: Object.freeze({ brand: 1 }) }),
   occultist: Object.freeze({ faktor: Object.freeze({ magie: 0.9, schatten: 0.9 }), dauer: Object.freeze({ fluch: 1 }) }),

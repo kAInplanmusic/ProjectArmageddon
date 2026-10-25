@@ -16,8 +16,8 @@
 import { familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
 
 /** Ab diesem Schaden (absolut) oder Anteil an der Maximalgesundheit gilt ein Treffer als schwer. */
-export const KRITISCH_ABSOLUT = 80;
-export const KRITISCH_ANTEIL = 0.5;
+const KRITISCH_ABSOLUT = 80;
+const KRITISCH_ANTEIL = 0.5;
 
 const LEBEN_ABNAHME = 0.016;
 const MAX_ZAHLEN = 24;

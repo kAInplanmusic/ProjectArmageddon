@@ -13,13 +13,13 @@
  *
  * @module feuerOptik
  */
+import { FEUER_ZELLE as ZELLE } from '../shared/config/feuer.js';
 import { STOFF } from '../shared/config/stoffe.js';
 
 export const MAX_TEILCHEN = 280;
 export const BUDGET_JE_BILD = 14;
 /** Animierte Flammenringe (Sprite-Atlas) je Bild; zählt zu den Sprite-Effekten, nicht zu den Teilchen. */
 export const MAX_RINGE = 6;
-const ZELLE = 8;
 
 const FLAMME = 0;
 const FUNKE = 1;

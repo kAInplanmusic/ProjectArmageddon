@@ -13,7 +13,7 @@
  */
 
 /** Zoomfaktor je Rastschritt des Mausrads. */
-export const RAD_FAKTOR = 1.12;
+const RAD_FAKTOR = 1.12;
 
 export class KameraSteuerung {
   /**

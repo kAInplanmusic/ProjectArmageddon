@@ -53,8 +53,7 @@
  * @module gefuehl
  */
 
-/** Obergrenze für einen Zahlenwert auf [0, 1]. */
-const begrenze01 = wert => Math.max(0, Math.min(1, Number.isFinite(wert) ? wert : 0));
+import { begrenze01 } from './mathe.js';
 
 /* ======================================================================
  * 1. Treffer erkennen
@@ -277,7 +276,7 @@ export function ruckFuer(radius, { reducedMotion = false } = {}) {
 }
 
 /** Ab dieser Aufprallstärke (0..1) einer landenden Geländeinsel ruckt das Bild. */
-export const AUFPRALL_RUCK_SCHWELLE = 0.3;
+const AUFPRALL_RUCK_SCHWELLE = 0.3;
 /** Lebensdauer des Aufprall-Rucks in Bildern: länger als der Kraterruck, weil Fels nachbebt (Zweierpotenz). */
 export const AUFPRALL_RUCK_BILDER = 16;
 

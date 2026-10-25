@@ -73,6 +73,24 @@ const EINORDNUNG = {
   '#fuehreSpuren': 'keins',
   /* Rechnet nur Zustände fort — zeichnet nichts, gehört in keine Schicht. */
   '#updateEffects': 'keins',
+  /*
+   * Die Fünf aus dem Audit 2026-10-23. „Welt" zeichnet in Kartenkoordinaten
+   * (Figurenpositionen, Flugbahnen), „Bildschirm" füllt das Fenster:
+   *
+   * - `#drawFaelle`        auslaufende Fall-Effekte toter Figuren → `f.x/f.y` = Karte.
+   * - `#drawFigurEffekte`  Staub/Blasen/Splitter der Figuren → `FigurEffekte` sagt
+   *                        selbst „Weltkoordinaten" (`figurEffekte.js#zeichne`).
+   * - `#drawCookie`        der Kater an `cookie.x/cookie.y` → Karte.
+   * - `#drawWiederholung`  Flugspur des letzten Schusses (`w.spur`) → Karte.
+   * - `#drawOmen`          Valhalla-Vorzeichen: Raben + Blitze über das GANZE Bild
+   *                        (`zeichneOmen(ctx, width, height, …)`), steht in `render()`
+   *                        NACH dem Schließen der Kameraklammer → Bildschirm.
+   */
+  '#drawFaelle': 'welt',
+  '#drawFigurEffekte': 'welt',
+  '#drawCookie': 'welt',
+  '#drawWiederholung': 'welt',
+  '#drawOmen': 'bildschirm',
 };
 
 /** Alle Zeichenfunktionen, die `render()` aufruft. */
