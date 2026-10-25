@@ -76,6 +76,12 @@ export class CookieSystem {
   get stufe() { return this.#stufe; }
   get pose() { return this.#pose; }
   get position() { return { x: this.#x, y: this.#y }; }
+
+  /** Setzt Cookie an eine Stelle — nur für Messungen und Tests (LOOK-4). */
+  setzePosition(x, y) {
+    this.#x = x;
+    this.#y = y;
+  }
   get tobt() { return this.#wutTicks > 0; }
 
   /** Rundenwechsel: hier wird (extrem selten) gespielt. */
@@ -322,7 +328,9 @@ export class CookieSystem {
     for (const faktor of COOKIE_SPIELEN.ringe) {
       const x = this.#x + faktor * COOKIE_SPIELEN.kraterRadius;
       if (x < 0 || x >= this.width) continue;
-      kontext.krater?.(x, (kontext.surfaceYAt?.(Math.round(x)) ?? this.#y) + 4, COOKIE_SPIELEN.kraterRadius, COOKIE_SPIELEN.kraterTiefe);
+      const spalte = Math.round(x);
+      const boden = kontext.bodenNahe?.(spalte, this.#y) ?? kontext.surfaceYAt?.(spalte) ?? this.#y;
+      kontext.krater?.(x, boden + 4, COOKIE_SPIELEN.kraterRadius, COOKIE_SPIELEN.kraterTiefe);
     }
     let getroffen = 0;
     for (const id of ids) {
@@ -343,7 +351,13 @@ export class CookieSystem {
 
   #bodenFolgen(kontext) {
     this.#x = Math.max(40, Math.min(this.width - 40, this.#x));
-    const boden = kontext.surfaceYAt?.(Math.round(this.#x)) ?? 0;
+    const spalte = Math.round(this.#x);
+    /*
+     * LOOK-4 Stufe 1 (2026-10-25): Boden um die BISHERIGE Hoehe suchen, nicht
+     * die Oberflaeche nehmen — sonst sitzt Cookie ueber dem Hohlraum, in dem
+     * der Spieler steht. Ohne durchgereichte Abfrage bleibt es beim Alten.
+     */
+    const boden = kontext.bodenNahe?.(spalte, this.#y) ?? kontext.surfaceYAt?.(spalte) ?? 0;
     if (boden > 0) this.#y = boden;
   }
 

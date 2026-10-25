@@ -151,6 +151,17 @@ export class GuentherSystem {
   get plan() { return [...this.#plan]; }
   get aktiv() { return this.#aktivBisRunde >= this.#runde; }
   get position() { return { ...this.#position }; }
+
+  /**
+   * Setzt Günther an eine Stelle — nur für Messungen und Tests (LOOK-4).
+   *
+   * Ohne diesen Zugriff lässt sich nicht prüfen, ob er auf einem Innenboden
+   * stehen bleibt: Seine Position entsteht sonst allein aus seiner eigenen
+   * Bewegung, ein Test könnte ihn nie in einen Hohlraum stellen.
+   */
+  setzePosition(x, y) {
+    this.#position = { x, y };
+  }
   get haufen() { return this.#haufen.map(h => ({ x: h.x, y: h.y })); }
   #runde = 0;
 
@@ -286,8 +297,14 @@ export class GuentherSystem {
       }
     }
 
-    // Er läuft AUF der Oberfläche, nicht durch sie hindurch.
-    const boden = surfaceYAt(Math.round(this.#position.x));
+    /*
+     * Er läuft AUF dem Boden, nicht durch ihn hindurch. Seit LOOK-4 Stufe 1
+     * (2026-10-25) ist das der Boden NAHE seiner Hoehe — in einem Hohlraum
+     * bleibt er damit beim Spieler, statt nach oben auf die Oberfläche gesetzt
+     * zu werden. Ohne durchgereichte Abfrage bleibt es bei der Oberfläche.
+     */
+    const spalte = Math.round(this.#position.x);
+    const boden = kontext.bodenNahe ? kontext.bodenNahe(spalte, this.#position.y) : surfaceYAt(spalte);
     if (boden > 0) this.#position.y = boden;
 
     if (this.#kontaktSperre > 0) this.#kontaktSperre -= 1;

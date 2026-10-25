@@ -11,6 +11,7 @@ import { createGameWorld, SYSTEM_PRIORITIES } from './init.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
 import { materialAmPunkt } from '../shared/terrainGen3.js';
+import { bodenNaheHoehe } from './boden.js';
 import { TERRAIN_MATERIAL, RUECKPRALL_MINDESTTEMPO } from '../shared/config/terrain.js';
 import { baueAnsichtszustand, hashState } from './stateSnapshot.js';
 import { erzeugeSpieler } from './spawnManager.js';
@@ -500,7 +501,13 @@ export class MatchController {
   #jumpsUsed = new Map();
   /** Günther — der frei laufende NPC. */
   #guenther = null;
+
+  /** Günther-System (nur lesend/ fuer Messungen und Tests). */
+  get guentherSystem() { return this.#guenther; }
   #cookie = null;
+
+  /** Cookie-System (nur lesend/ fuer Messungen und Tests). */
+  get cookieSystem() { return this.#cookie; }
   #feuer = null;
   /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
   #airborne = new Map();
@@ -1293,7 +1300,8 @@ export class MatchController {
   #tierKontext() {
     return baueTierKontext({
       world: this.#world, terrain: this.#terrain, events: this.#events, height: this.height,
-      zerstoerung: () => this.#setzung ?? null, surfaceYAt: x => this.surfaceYAt(x), kisten: this.kisten,
+      zerstoerung: () => this.#setzung ?? null, surfaceYAt: x => this.surfaceYAt(x),
+      bodenNahe: (x, y) => this.bodenNahe(x, y), kisten: this.kisten,
     });
   }
 
@@ -1339,6 +1347,21 @@ export class MatchController {
    */
   materialAt(x, y) {
     return materialAmPunkt(this.#material, x, y);
+  }
+
+  /**
+   * Boden NAHE der bisherigen Hoehe — kennt Hohlraeume (LOOK-4 Stufe 1).
+   *
+   * Auf und ueber der Oberflaeche dasselbe Ergebnis wie `surfaceYAt`, unter
+   * Tage der naechste feste Boden. Die Tiere und der Rueckstoss nutzen diese
+   * eine Abfrage, damit niemand mehr versehentlich die Oberflaeche nimmt.
+   *
+   * @param {number} x Spalte
+   * @param {number} vonY bisherige Standhoehe (Fuesse)
+   * @returns {number} Bodenhoehe oder -1
+   */
+  bodenNahe(x, vonY) {
+    return bodenNaheHoehe({ surfaceYAt: sx => this.surfaceYAt(sx), terrain: this.#terrain }, x, vonY);
   }
 
   /** Das Materialfeld dieser Karte — für Werkzeuge, `null` bei 1D-Gelände. */

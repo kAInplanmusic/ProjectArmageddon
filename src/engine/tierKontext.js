@@ -38,6 +38,14 @@ export function baueTierKontext(q) {
   const { world } = q;
   const schaden = () => world.getSystem('damage');
   return {
+    /**
+     * Boden nahe der bisherigen Hoehe (LOOK-4 Stufe 1, 2026-10-25).
+     *
+     * Kennt Hohlraeume und Kratersohlen; ohne durchgereichte Abfrage bleibt es
+     * beim alten Verhalten (Oberflaeche), damit aeltere Aufrufer unveraendert
+     * laufen.
+     */
+    bodenNahe: (x, y) => q.bodenNahe?.(x, y) ?? q.surfaceYAt?.(x) ?? 0,
     kisten: () => liegendeKisten(world),
     kisteVerzehren: id => { if (world.isActive(id)) world.removeEntity(id); },
     legeKiste: (rng, x, y) => legeKiste(world, rng, x, y, q.kisten),

@@ -180,9 +180,12 @@ alte.
 und `cookieSystem.js:346` (`#bodenFolgen`). In einem Hohlraum werden sie damit nach oben
 gesetzt, also vom Spieler getrennt.
 
-**Warum hier KEIN Code steht (TDD-Grenze):** Der Fix ist mit dem Muster aus
-`shooting.js` klar (Boden um die bisherige Höhe suchen). Aber es gibt keinen Test, der ihn
-zuerst rot zeigt:
+**Umgesetzt am 2026-10-25.** Der Weg dorthin war eine TDD-Grenze, die erst überwunden
+werden musste — sie ist unten als Lehrstück stehengelassen:
+
+**Warum zuerst KEIN Code ging (TDD-Grenze, inzwischen aufgelöst):** Der Fix ist mit dem
+Muster aus `shooting.js` klar (Boden um die bisherige Höhe suchen). Aber es gab keinen
+Test, der ihn zuerst rot zeigt:
 
 1. Die Position der Tiere liegt privat (`#position`), es gibt nur einen Leser
    (`get position()`), **keine Setz-API**. Ein Test kann das Tier also nicht in einen
@@ -194,16 +197,19 @@ zuerst rot zeigt:
    `terrain`. Der Fix braucht also eine durchgereichte `bodenNahe(x, vonY)`-Abfrage —
    dieselbe, die `shooting.js` seit dem 2026-10-25 lokal hat.
 
-**Nächste Schritte, in dieser Reihenfolge:**
-1. `bodenNaheHoehe` aus `shooting.js` in ein eigenes Modul ziehen (z. B.
-   `src/engine/boden.js`), damit Motor, Schuss und Tiere dieselbe Abfrage nutzen.
-2. `MatchController.bodenNahe(x, y)` als öffentliche Methode + Weitergabe in die Kontexte
-   von Günther und Cookie (neben `surfaceYAt`).
-3. Dem Tier eine **Test-Setz-API** geben (`setzePosition(x, y)` o. ä.) — damit ist der
-   rote Test überhaupt erst schreibbar: Tier in die Kaverne setzen, einen Schritt laufen,
-   Höhe prüfen. Ohne diese Stufe bleibt der Fix ein Blindflug.
-4. Erst dann der eigentliche Fix in beiden Systemen, Goldwerte wie beim Rückstoß prüfen
-   (Tier-Positionen stehen im Zustand, ein Versatz ist wahrscheinlich).
+**Alle vier Stufen sind erledigt (2026-10-25):**
+1. **Gemeinsame Abfrage:** `src/engine/boden.js` mit `bodenNaheHoehe(quelle, x, vonY)` —
+   `shooting.js` und der Motor nutzen sie jetzt beide (kein zweiter Rechenweg).
+2. **Motor:** `MatchController.bodenNahe(x, vonY)` ist öffentlich; `#tierKontext()` reicht sie
+   als `bodenNahe` an beide Tiere weiter (`tierKontext.js` fällt ohne sie auf `surfaceYAt`
+   zurück, damit ältere Aufrufer unverändert laufen).
+3. **Testbarkeit:** `setzePosition(x, y)` an Günther und Cookie, dazu die Zugriffe
+   `guentherSystem` und `cookieSystem` am Motor.
+4. **Fix + Beleg:** `guentherSystem` (Zeile ~290) und `cookieSystem` (`#bodenFolgen` und der
+   Schockwellen-Krater) fragen jetzt `bodenNahe` mit der bisherigen Höhe.
+   Test `tests/innenraeume.test.js` war rot (Cookie: y = 516 = Oberfläche statt 1279 im
+   Hohlraum) und ist grün. **Goldwerte bleiben unverändert** — die Krater-Läufe laufen auf
+   `preset: 'hills'` ohne Hohlräume, dort liefert `bodenNahe` genau die Oberfläche.
 
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 

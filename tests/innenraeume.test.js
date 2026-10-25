@@ -149,3 +149,34 @@ test('Ein Bewegungsspezial reisst die Figur nicht aus dem Hohlraum', () => {
   assert.ok(y > m.surfaceYAt(Math.round(x)) + 400,
     `Figur muss tief unter der Oberflaeche bleiben: y=${Math.round(y)}, Oberflaeche=${Math.round(m.surfaceYAt(Math.round(x)))}`);
 });
+
+/*
+ * Haustiere im Hohlraum (Entscheidung 2026-10-25: sie sollen folgen).
+ *
+ * Cookie hängt in `#bodenFolgen` an `surfaceYAt` — gemessen: in eine Kaverne
+ * gesetzt (y=1279, Oberfläche 516) stand er nach 10 Ticks auf 516, also auf der
+ * Oberfläche über der Höhle. Der Fix läuft über die gemeinsame Abfrage
+ * `bodenNahe(x, vonY)` aus `src/engine/boden.js`; Günther nutzt denselben
+ * Kontext-Zugang (`#tierKontext`), wird hier aber nicht geprüft, weil er selbst
+ * wandert und damit keine feste Spalte hat.
+ */
+test('Cookie bleibt auf einem Innenboden', () => {
+  const breite = 2560;
+  const m = new MatchController({
+    seed: 7, teams: 2, playersPerTeam: 2, kartentyp: 'kavernen',
+    turnDurationMs: 20000, valhallaRound: 999, cookie: 2,
+  });
+  m.start();
+  const hoehe = m.bitmap.length / breite;
+  const boeden = innenboeden(m.bitmap, breite, hoehe).map(b => ({ ...b, tiefe: b.unten - Math.round(m.surfaceYAt(b.x)) }));
+  const tiefster = boeden.reduce((a, b) => (b.tiefe > a.tiefe ? b : a), boeden[0]);
+  assert.ok(tiefster.tiefe > 400, `Testszenario braucht einen tiefen Hohlraum, tiefster: ${tiefster.tiefe} px`);
+
+  m.cookieSystem.setzePosition(tiefster.x, tiefster.oben);
+  for (let i = 0; i < 10; i += 1) m.step();
+
+  const p = m.cookieSystem.position;
+  const oberflaeche = Math.round(m.surfaceYAt(Math.round(p.x)));
+  assert.ok(p.y > oberflaeche + 200,
+    `Cookie wurde auf die Oberfläche gesetzt: y=${Math.round(p.y)}, Oberfläche=${oberflaeche} (Hohlraum war ${tiefster.oben})`);
+});
