@@ -6930,4 +6930,9 @@ Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-que
   `biome-material.spec.mjs` 2/2 im echten Browser (Smoke). **Grenze:** Ein Bildvergleich gegen
   `ref-3-vulkanschmiede-hud` wurde in dieser Sitzung NICHT gemacht — die Zellen entstehen erst durch
   Lavazellen-Ereignisse, ein Prüfbild mit gefüllter Lava steht noch aus.
-- [ ] **LOOK-4 Innenräume.** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine`.
+- [ ] **LOOK-4 Innenräume.** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und
+  `ref-4-turmruine`. **Entwurf liegt vor (2026-10-25): `docs/auftraege/look4-innenraeume.md`** —
+  Ist-Stand mit Fundstellen, vier Stufen (Prüfung → Hohlräume → Etagen/Treppen → Lesbarkeit),
+  vorab festgelegte Gates und die drei Entscheidungen, die davor nötig sind (Decken durchschlagbar?
+  Röntgen-Schnitt oder aufhellender Innenraum? Ruinen oder Hochhäuser?). Umgesetzt ist nichts —
+  bewusst, weil das Paket Geländeerzeugung, Standabfrage und Bildzeit gleichzeitig berührt.
