@@ -26,10 +26,23 @@ gleichzeitig. Deshalb eigenes Paket mit eigener Abnahme, nicht als Beifang.
 - **Physik/Stand:** Die Standabfrage läuft über die Physik (`src/engine/physics/ballistics.js` und
   die Systeme unter `src/engine/systems/`); Figuren stehen auf dem obersten festen Pixel ihrer Spalte.
 
-**Offene Annahme für Stufe 0:** Ob die Standabfrage wirklich nur „oberstes festes Pixel je Spalte"
-nimmt oder bereits beliebige feste Bereiche, ist aus dem Code allein nicht abschließend belegt
-(kein Höhenfeld-Modul gefunden, aber die Abfrage ist über Systeme verteilt). Das ist die **erste
-Messung** des Pakets, nicht eine Vermutung, auf der gebaut wird.
+**Stufe 0 — Ergebnis (2026-10-25, belegt):** Die Materialabfrage
+`materialAmPunkt(material, x, y)` (`src/shared/terrainGen3.js:520`) nimmt NICHT die Geländeoberfläche
+der Spalte, sondern klettert von der gefragten Stelle **aufwärts bis zur Oberkante des
+zusammenhängenden Felsblocks** in derselben Spalte:
+
+```js
+while (py > 0 && material.bitmap[(py - 1) * material.breite + px]) py -= 1;
+```
+
+Das heißt: Ein Bodenband INNERHALB eines Hohlraums löst bereits auf sein eigenes Material auf — die
+Abfrage kennt mehrere feste Bereiche je Spalte. Die in §2 notierte Annahme ist damit **widerlegt**;
+für Ruinen mit einem Boden muss die Standabfrage nicht umgebaut werden. Der Motor reicht sie über
+`MatchController.materialAt(x, y)` (`src/engine/match.js:1341`) durch — die eine Lesestelle.
+
+**Was daraus NICHT folgt:** Dass Figuren auf einem Innenboden auch *stehen bleiben*, ist damit noch
+nicht bewiesen — die Stand-/Falllogik sitzt in den Systemen und wurde in Stufe 0 nicht gemessen.
+Das bleibt die erste Prüfung in Stufe 1 (Testgelände mit einem künstlichen Hohlraum).
 
 ## 3. Entwurf in vier Stufen
 
@@ -73,14 +86,19 @@ Messung** des Pakets, nicht eine Vermutung, auf der gebaut wird.
 | Determinismus | gleicher Seed → gleiches Bitmap, gleiche Hohlräume, gleicher Hash |
 | Replay | Aufzeichnungen ohne Hohlräume bleiben abspielbar (Format nicht anfassen) |
 
-## 5. Entscheidungen, die der Auftraggeber treffen muss
+## 5. Entscheidungen (getroffen am 2026-10-25)
 
-1. **Decken:** Sollen Projektile Decken durchschlagen (Zerstörung von Etagen) oder prallen sie ab?
-   Durchschlagen ist realistischer, kostet aber Statik: eine Etage, die wegfällt, muss die darüber
-   stehenden Figuren fallen lassen.
-2. **Sichtbarkeit:** Röntgen-Schnitt (Figur durchscheinend, wenn hinter Wand) oder aufhellender
-   Innenraum (Wände transparent, wenn die Figur drin ist)?
-3. **Umfang:** Nur Ruinen mit 1–2 Räumen (klein, schnell) oder Hochhäuser mit echten Etagen (groß)?
+1. **Decken sind unzerstörbar.** Projektile prallen ab; Innenräume sind reine Deckung. Kein
+   Statikaufwand, keine Fallregeln für Figuren auf einbrechenden Etagen. Ein späterer Durchschlag
+   wäre eine eigene Stufe und braucht dann Statik.
+2. **Röntgen-Schnitt.** Die Figur wird halbtransparent, wenn eine Wand oder Decke davor liegt —
+   nicht der ganze Raum. Ein aufhellender Innenraum ist damit vom Tisch (weniger Renderer-Arbeit,
+   bewährtes Muster aus 2D-Spielen).
+3. **Stufenweise beides: erst Ruinen mit 1–2 Räumen, dann Hochhäuser mit Etagen.** Gemeinsamer
+   Entwurf, getrennte Abnahme. Stufe 1 ist damit die Ruine ohne Treppen.
+
+**Folge für Stufe 2:** Etagen/Treppen bleiben im Plan, aber erst nach der Ruinen-Abnahme — und mit
+der dann gewonnenen Erkenntnis, ob eine Figur auf einem Innenboden wirklich stehen bleibt.
 
 ## 6. Aufwand (grobe Ordnung)
 

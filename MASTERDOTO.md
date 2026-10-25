@@ -60,7 +60,10 @@ Waffen: 150/150 im Manifest, jede mit held/silhouette/icon(/projektil) und Decku
   auffällig) — neu erzeugen. *Stand 2026-10-25:* Das Basisbild ist geräumt (Splitter 6→1 Teil, Nadelstiche 75→6);
   die Zellen der Animationsblätter (`sprite-sheets/datacult/11_synapse-streamer__zustand.webp`, 6 Zellen) zeigen
   jedoch abgelöste Körperteile — Post-Processing brückt solche Abstände nicht, ohne Naht zu erfinden.
-  **Braucht neu erzeugte Blätter** (kostenpflichtige Bild-API, Keys liegen hier nicht).
+  **Braucht neu erzeugte Blätter.** *Freigabe erteilt (2026-10-25), aber beide Anbieter lehnen ab:*
+  kie.ai antwortet `code 402 „Credits insufficient“` (Guthaben **4,58** Credits, ein kontext-pro-Bild
+  kostet mehr), Replicate `HTTP 402 Payment Required`. Treiber `scripts/sprites-erzeugen/neu-erzeugen.py`
+  ist fertig (Pilot/Masse, beide Anbieter, überspringt Vorhandenes) — nach dem Aufladen `--pilot` laufen lassen.
 - [x] **SPR-2 pixel/00_nullpointer-exception:** Der Namens-Teil ist erledigt (2026-10-25). Die Zuordnung war weder falsch noch doppelt: es sind zwei verschiedene Figuren (pixel = `tier`, datacult = `humanoid`), die Bilder unterscheiden sich messbar (44.914 B / `6f768df2` gegen 69.400 B / `4ffdcfbe`). Gefunden wurde etwas anderes — der Verweis `nameConflict` der pixel-Figur zeigte auf `datacult/nullpointer-exception`, diese Kennung gibt es nicht (richtig: `…-cult`), und er traf beim Auflösen die Figur selbst. Richtiggestellt und mit einem Wächter versehen (`c7cb2e7`). **Offen bleibt der Bilddefekt** (Figur zerfasert) — dafür braucht es ein neu erzeugtes Blatt.
 - [ ] **SPR-3 pixel/11_pyrowand-a:** Silhouette löchrig/fragmentiert, schlecht lesbar. *Stand 2026-10-25:*
   Basisbild geräumt (Inseln 18→9, Löcher 22→2; die verbleibenden neun Teile sind Zauberstäbe und Kugeln —
@@ -6936,3 +6939,7 @@ Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-que
   vorab festgelegte Gates und die drei Entscheidungen, die davor nötig sind (Decken durchschlagbar?
   Röntgen-Schnitt oder aufhellender Innenraum? Ruinen oder Hochhäuser?). Umgesetzt ist nichts —
   bewusst, weil das Paket Geländeerzeugung, Standabfrage und Bildzeit gleichzeitig berührt.
+  **Entschieden (2026-10-25):** Decken unzerstörbar · Röntgen-Schnitt · stufenweise erst Ruinen,
+  dann Hochhäuser. **Stufe 0 erledigt:** `materialAmPunkt` klettert bis zur Oberkante des
+  zusammenhängenden Felsblocks (nicht zur Geländeoberfläche) — Innenböden lösen also schon richtig
+  auf; offen bleibt, ob Figuren darauf stehen bleiben (Stufe 1).
