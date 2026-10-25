@@ -159,14 +159,14 @@ Ablauf, ehrlich protokolliert:
    `16bd8499`; Terrain-Hashes unverändert). Ursache ist dieselbe Fehlerklasse: In einem
    Lauf mit 30 Kratern stehen Figuren IM Krater, also unter der Oberfläche — dort greift die
    neue Suche und verschiebt Positionen.
-4. **Warum trotzdem zurück:** Ein Fix, der aufgezeichnete Goldwerte verschiebt, braucht eine
-   **bewusste Neubasierung** (welche Hashes, welche Seeds, mit welcher Begründung) — das ist
-   eine eigene Entscheidung und nicht als Nebenwirkung zu erledigen. Solange sie aussteht,
-   bleibt der Fehler offen und der Test sichtbar übersprungen (Grund im Testkopf).
+4. **Neubasiert und wieder eingesetzt (2026-10-25, Entscheidung des Auftraggebers):** Die
+   Goldwerte der Krater-Läufe in `tests/zerstoerung.test.js` sind bewusst nachgezogen —
+   **drei von vier Seeds** (4242, 606, 31; Seed 9001 unverändert), jeweils Zustands- **und**
+   Terrain-Hash, mit Begründung im Testkopf. Der Fix ist damit im Baum, der Test scharf.
 
-**Nächster Schritt (Entscheidung nötig):** Goldwerte für die Krater-Läufe neu basieren
-(dokumentiert, wie bei den anderen Nachträgen) und den Fix wieder einsetzen — dann mit
-demselben Test rot → grün.
+**Stand:** `npm test` 1882/1882 grün, 0 übersprungen. Der Rückstoß kann eine Figur nicht
+mehr aus einem Hohlraum oder Krater reißen; über Tage bleibt das Verhalten Bit für Bit das
+alte.
 3. Erst danach Ruinen als eigene Kartentyp-Variante prüfen — die Hohlräume selbst müssen
    nicht mehr erfunden werden.
 

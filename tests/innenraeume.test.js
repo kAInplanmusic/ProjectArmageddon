@@ -108,14 +108,14 @@ test('Niemand startet unter der Oberflaeche', () => {
  * der Hoehle gerissen. Ein Bewegungsspezial darf eine Figur nicht aus dem
  * Hohlraum teleportieren.
  */
-// BEKANNTER FEHLER, Fix vorbereitet und wieder zurueckgezogen (2026-10-25):
+// Behoben am 2026-10-25 (LOOK-4 Stufe 1) — Goldwerte im Krater-Lauf bewusst nachgezogen:
 // Mit einer Bodensuche um die bisherige Hoehe (statt surfaceYAt) wird dieser Test
 // gruen — aber die Goldwert-Pruefungen in tests/zerstoerung.test.js aendern ihre
 // Zustands-Hashes (Seed 4242: 85bd9975 -> 1fefacd8, 30 Krater, Figuren stehen im
 // Krater). Diesen Fehler anzufassen heisst: Goldwerte bewusst neu basieren. Das ist
 // eine eigene Entscheidung, keine Nebenwirkung. Bis dahin bleibt der Test sichtbar
 // uebersprungen — er beschreibt den Fehler und ist mit dem Fix sofort nutzbar.
-test('Ein Bewegungsspezial reisst die Figur nicht aus dem Hohlraum', { skip: 'bekannter Fehler: Fix aendert Goldwerte (Krater), Neubasierung noetig' }, () => {
+test('Ein Bewegungsspezial reisst die Figur nicht aus dem Hohlraum', () => {
   const breite = 2560;
   const m = new MatchController({
     seed: 7, teams: 2, playersPerTeam: 2, kartentyp: 'kavernen', turnDurationMs: 20000, valhallaRound: 999,

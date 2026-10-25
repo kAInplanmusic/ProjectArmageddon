@@ -113,10 +113,27 @@ test('Determinismus: zwei Läufe gleichen Seeds ergeben dieselbe Maske, Log und 
 });
 
 test('Fassung 2 (Zwischenstand): Zustands- und Maskenhash bleiben Bit für Bit wie auf main (Goldwerte, gemessen am Stand e350c29)', () => {
+  /*
+   * NACHGEZOGEN 2026-10-25 (LOOK-4 Stufe 1, bewusste Neubasierung):
+   * Drei von vier Seeds verschieben sich (4242, 606, 31), Seed 9001 bleibt.
+   * Dass AUCH die Terrain-Hashes abweichen, ist die Folge und nicht die Ursache:
+   * andere Positionen → andere Schüsse → andere Krater.
+   *
+   * Grund: `shiftPlayer` (Bewegungsspezial) setzte die Figur auf die
+   * einwertige Oberfläche `surfaceYAt(zielX)`. Wer unter der Oberfläche stand,
+   * wurde dabei nach oben gerissen — in einem Hohlraum gemessen (Kavernen,
+   * Seed 7: y 1279 → 638 bei Oberfläche 516). Neu sucht `bodenNaheHoehe()`
+   * einen Boden um die bisherige Höhe; auf und über der Oberfläche bleibt das
+   * alte Verhalten Bit für Bit.
+   *
+   * In DIESEM Lauf sprengen 30 Krater den Boden: Figuren stehen danach IM
+   * Krater, also unter der Oberfläche, und werden beim Bewegungsspezial nicht
+   * mehr hinausgerissen. Genau das verschiebt den Zustands-Hash.
+   */
   const gold = [
-    { seed: 4242, stateHash: '85bd9975', terrainHash: 2599208668, krater: 30 },
-    { seed: 606, stateHash: 'e331aaaa', terrainHash: 1925442896, krater: 31 },
-    { seed: 31, stateHash: 'e22f0a55', terrainHash: 2205927199, krater: 31 },
+    { seed: 4242, stateHash: '1fefacd8', terrainHash: 2948223506, krater: 30 },
+    { seed: 606, stateHash: 'bce2cc09', terrainHash: 4113726919, krater: 31 },
+    { seed: 31, stateHash: '8ac0073c', terrainHash: 3727640262, krater: 31 },
     { seed: 9001, stateHash: 'afa508f1', terrainHash: 3786376531, krater: 32 },
   ];
   for (const g of gold) {
@@ -140,9 +157,10 @@ test('Fassung 2 (Zwischenstand): Zustands- und Maskenhash bleiben Bit für Bit w
 test('Altfassung: ohne Marke läuft das Match Bit für Bit wie vor dem Umbau (Goldwerte von main)', () => {
   // Zustandshash und Maskenhash, gemessen mit dem Stand VOR dieser Änderung (git main, 2026-10-14).
   const gold = [
-    { seed: 4242, stateHash: 'eb0d7904', terrainHash: 3975346680, krater: 30 },
-    { seed: 606, stateHash: '560554f0', terrainHash: 1850661404, krater: 31 },
-    { seed: 31, stateHash: '80a1308e', terrainHash: 2433242960, krater: 31 },
+    // 2026-10-25 nachgezogen (LOOK-4 Stufe 1, wie oben dokumentiert).
+    { seed: 4242, stateHash: '16bd8499', terrainHash: 2894427864, krater: 30 },
+    { seed: 606, stateHash: '1bf123c0', terrainHash: 3665912362, krater: 31 },
+    { seed: 31, stateHash: '58bcf048', terrainHash: 2834655781, krater: 31 },
   ];
   for (const g of gold) {
     const m = new MatchController({ seed: g.seed, teams: 2, playersPerTeam: 2, preset: 'hills', valhallaRound: 999, zerstoerung: ZERSTOERUNG_ALT, kit: KIT_FLAECHE, waffen: WAFFEN_ALT, kisten: KISTEN_ALT, schaden: 1 });

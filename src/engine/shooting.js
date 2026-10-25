@@ -789,6 +789,39 @@ function restoreAmmo(quelle, playerId, amount) {
  *
  * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
  */
+/** Wie weit um die bisherige Höhe nach einem Boden gesucht wird (px). */
+const BODEN_SUCHE = 480;
+
+/**
+ * Boden NAHE der bisherigen Höhe (LOOK-4 Stufe 1, 2026-10-25).
+ *
+ * Vorher wurde die Figur auf `surfaceYAt(zielX)` gesetzt — die einwertige
+ * Geländeoberfläche. In einem Hohlraum (oder in einem Krater) riss das
+ * Bewegungsspezial sie damit nach oben (gemessen in einer Kaverne: y 1279 → 638,
+ * Oberfläche 516). Gesucht wird deshalb um die BISHERIGE Höhe: erst nach unten,
+ * dann nach oben, höchstens `BODEN_SUCHE` px. Ein Boden zählt nur, wenn dort
+ * Platz für den Körper ist (`PLAYER_HALF_HEIGHT` über dem Boden frei) und unter
+ * den Füßen etwas Festes liegt.
+ *
+ * Steht die Figur auf oder über der Oberfläche, bleibt es Bit für Bit beim
+ * alten Verhalten — der Rückfall auf `surfaceYAt` ist der Normalfall, die Suche
+ * greift nur unter Tage.
+ *
+ * @returns {number} Bodenhöhe (Füße) oder −1
+ */
+function bodenNaheHoehe(quelle, x, vonY) {
+  const oberflaeche = quelle.surfaceYAt(x);
+  if (!(oberflaeche > 0) || vonY <= oberflaeche + PLAYER_HALF_HEIGHT * 2) return oberflaeche;
+  const spalte = Math.floor(x);
+  const steht = (y) => !quelle.terrain.isSolid(spalte, Math.floor(y - PLAYER_HALF_HEIGHT))
+    && quelle.terrain.isSolid(spalte, Math.floor(y + 1));
+  for (let dy = 0; dy <= BODEN_SUCHE; dy += 2) {
+    if (steht(vonY + dy)) return vonY + dy;
+    if (dy > 0 && steht(vonY - dy)) return vonY - dy;
+  }
+  return -1;
+}
+
 function shiftPlayer(quelle, playerId, distance) {
   const startX = quelle.world.getComponent(playerId, 'Position', 'x') ?? 0;
   const startY = quelle.world.getComponent(playerId, 'Position', 'y') ?? 0;
@@ -798,7 +831,7 @@ function shiftPlayer(quelle, playerId, distance) {
   const candidates = [startX + distance, startX - distance];
   for (const targetX of candidates) {
     if (targetX < PLAYER_HALF_WIDTH || targetX > quelle.width - PLAYER_HALF_WIDTH) continue;
-    const surface = quelle.surfaceYAt(Math.round(targetX));
+    const surface = bodenNaheHoehe(quelle, Math.round(targetX), startY);
     if (surface < 0) continue;
     // Kein Platz für eine stehende Figur (z. B. Wand): nächster Kandidat.
     if (quelle.terrain.isSolid(Math.floor(targetX), Math.floor(surface - PLAYER_HALF_HEIGHT))) continue;
