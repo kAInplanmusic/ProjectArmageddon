@@ -57,17 +57,32 @@ Waffen: 150/150 im Manifest, jede mit held/silhouette/icon(/projektil) und Decku
 25 Waffen mit Eigenanimation. Günther 14, Cookie 14 Posen.
 
 - [ ] **SPR-1 datacult/11_synapse-streamer zerstückelt:** Kopf und Glieder als getrennte Teile (aktion; zustand ebenso
-  auffällig) — neu erzeugen.
+  auffällig) — neu erzeugen. *Stand 2026-10-25:* Das Basisbild ist geräumt (Splitter 6→1 Teil, Nadelstiche 75→6);
+  die Zellen der Animationsblätter (`sprite-sheets/datacult/11_synapse-streamer__zustand.webp`, 6 Zellen) zeigen
+  jedoch abgelöste Körperteile — Post-Processing brückt solche Abstände nicht, ohne Naht zu erfinden.
+  **Braucht neu erzeugte Blätter** (kostenpflichtige Bild-API, Keys liegen hier nicht).
 - [x] **SPR-2 pixel/00_nullpointer-exception:** Der Namens-Teil ist erledigt (2026-10-25). Die Zuordnung war weder falsch noch doppelt: es sind zwei verschiedene Figuren (pixel = `tier`, datacult = `humanoid`), die Bilder unterscheiden sich messbar (44.914 B / `6f768df2` gegen 69.400 B / `4ffdcfbe`). Gefunden wurde etwas anderes — der Verweis `nameConflict` der pixel-Figur zeigte auf `datacult/nullpointer-exception`, diese Kennung gibt es nicht (richtig: `…-cult`), und er traf beim Auflösen die Figur selbst. Richtiggestellt und mit einem Wächter versehen (`c7cb2e7`). **Offen bleibt der Bilddefekt** (Figur zerfasert) — dafür braucht es ein neu erzeugtes Blatt.
-- [ ] **SPR-3 pixel/11_pyrowand-a:** Silhouette löchrig/fragmentiert, schlecht lesbar.
-- [ ] **SPR-4 Fraktion „pixel“ uneinheitlich:** Füchse (pyrofox-a/-b) gleichen den Beasts-Füchsen, ethereo flach-neongrün,
-  shieldmon Igel — kein gemeinsamer Fraktionsstil; Leitbild festlegen.
+- [ ] **SPR-3 pixel/11_pyrowand-a:** Silhouette löchrig/fragmentiert, schlecht lesbar. *Stand 2026-10-25:*
+  Basisbild geräumt (Inseln 18→9, Löcher 22→2; die verbleibenden neun Teile sind Zauberstäbe und Kugeln —
+  Sichtung des Kontaktbogens). Die Aktion-Zellen (`__aktion.webp`, 5 Zellen) zeigen abgelösten Kopf/Körper;
+  **braucht neu erzeugte Blätter** wie SPR-1.
+- [x] **SPR-4 Fraktion „pixel“ uneinheitlich — ENTSCHIEDEN UND UMGESETZT (2026-10-25): Neon-Linie.**
+  Auftraggeber-Entscheidung: ethereo ist das Leitbild. Umgesetzt mit `scripts/sprites-erzeugen/stil-pass.py --neon`
+  (Farbzug Hue 140°, Zug 0,70, Sättigung ×1,35) auf den drei gemalten Ausreißern (01_pyrofox-a, 02_pyrofox-b,
+  12_shieldmon), Standard- und HD-Fassung. Pixelierung und Paletten-Reduktion wurden gebaut, gesichtet und
+  VERWORFEN — sie zerstörten Fell und Stacheln (Vorschau vorher/nachher).
 - [x] **SPR-5 shinobi:** Frage beantwortet (2026-10-25) — **Artefakt, kein Stab.** Die Figur `shinobi/11_rauch-meister-genzi` hat in allen acht Zellen ihres Aktionsblatts eine 1–3 px breite, fast schwarze Linie (RGB 0..9 gegen Rüstung 29/31/19), und sie steht auch im liegenden Frame senkrecht — bei bloßen Fäusten. Ebenso `undead/10_archer-mortis__aktion` Zelle 3 und `xeno/12_plasma-maw-zorg__walk` Zellen 5 und 7: **11 Zellen von 243 Blättern**. Ursache: die Öffnung `binary_opening(fg, ones((6,3)))` in `schneide.py` entfernt einen freistehenden Gitterstrich, aber nicht den Teil, der durch die Figur läuft. Werkzeug `scripts/sprites-erzeugen/streifen-entfernen.py` gebaut, `schneide.py` ruft es jetzt auf. **Die Blätter selbst sind unverändert** — ein Probelauf räumt die Linie aus dem leeren Raum, hinterlässt aber dort, wo sie durch die Figur lief, eine erfundene helle Naht. Aufruf für den Auftraggeber: `python3 scripts/sprites-erzeugen/streifen-entfernen.py`; sauber ist es erst mit neu erzeugten Blättern. (`ad8a804`)
-- [ ] **SPR-6 Kontrast:** datacult-Figuren (v. a. 20_buffer-flow-swarm, 00/10) sehr dunkel grau auf dunklem Gelände —
-  Randlicht/Umriss prüfen.
-- [ ] **SPR-7 Automatische Auffälligkeit (Teilprüfung, Zusammenhangskomponenten):** datacult/20 zustand, datacult/21 walk,
-  undead/00 zustand, undead/12 zustand — sichten.
-- [ ] **SPR-8 Stilbruch Haustiere:** Günther/Cookie flach-cartoonig gegenüber den gemalten Figuren — bewusst lassen oder angleichen.
+- [x] **SPR-6 Kontrast — UMGESETZT (2026-10-25):** `stil-pass.py --randlicht` hellt die Außenkante der Silhouette
+  1 px auf und zieht sie ins Fraktionsgrün (Helligkeit 70); angewendet auf alle neun datacult-Figuren, Standard
+  und HD. Innen bleibt die Figur unverändert — kein Neokolor, nur Kante.
+- [x] **SPR-7 Automatische Auffälligkeit — GESICHTET (2026-10-25), Befund je Blatt:** `check:sprites` meldet 43
+  Zerfaserungs-Funde, alle in Animationsblättern (`sprite-sheets/*/__zustand|__aktion|__walk.webp`).
+  Gemessen und gesichtet: undead/00 (1 Teil, sauber), undead/12 (97 % größter Teil), datacult/21 (100 %) sind in
+  Ordnung; `datacult/20_buffer-flow-swarm` ist als Schwarm bauartbedingt vielteilig (31 % größter Teil) — kein
+  Defekt. Echt defekt sind `datacult/11_synapse-streamer__zustand` und `pixel/11_pyrowand-a__aktion` (abgelöste
+  Körperteile, siehe SPR-1/SPR-3). **Die Gate-Ampel bleibt rot**, bis diese Blätter neu erzeugt sind.
+- [x] **SPR-8 Stilbruch Haustiere — ENTSCHIEDEN (2026-10-25): bewusst lassen.** Auftraggeber-Entscheidung:
+  Der Bruch ist ihr Charakter (Comedy-Figuren). Keine Änderung, keine Arbeit.
 - [x] **SPR-9 Wächter gebaut (2026-10-24):** `scripts/check-sprites.mjs` (`npm run check:sprites`) misst
   Vollständigkeit, Zellfüllung, Randberührung, Zerfaserung (zusammenhängende Flächen), Namensdubletten,
   Emotions-Blätter, Waffen-Atlasregionen (Deckung ≥ 3 %, doppelte Quellen) und die Haustier-Posen.
