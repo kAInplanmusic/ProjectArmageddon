@@ -39,6 +39,27 @@ für `node_modules`-Symlinks (`afcf41d`), zwei Werkzeug-Stummel eingecheckt
 (`94f61bd`), Doku-Zahlen nachgezogen, `brain`-Arbeit aus fünf Worktrees
 committet.
 
+### E2E-Prüfung der Änderungen (2026-10-25)
+
+Die Umbenennungen greifen in den Zeichenpfad, der Umbau in den Serverpfad —
+beides ist mit Unit-Tests allein nicht belegt. Deshalb nach AGENTS.md §3 die
+betroffenen Browser-Specs laufen lassen, seriell (`--workers=1`), weil die
+Bildzeit-Messungen lastempfindlich sind:
+
+| Gruppe | Specs | Ergebnis |
+| :-- | :-- | :-- |
+| Figuren, Waffen, Günther, Kader, Profil | 10 | **52 grün** (7,5 min) |
+| Bildvergleiche, Barrierefreiheit, Screenreader | 5 | 55 grün, **2 rot** (siehe `VIS-1`) |
+| Mehrspieler, Online, Zugpause, Effekte, Replay, Sieg | 10 | **54 grün, 1 übersprungen** (6,7 min) |
+
+Zusammen **161 grün, 2 rot, 1 übersprungen** über 25 von 61 Specs. Der eine
+Übersprung ist der dokumentierte Selbstschutz in `prediction-online`
+(„abgelehnter Schuss", Client bereits am Zug).
+
+Die 36 nicht gelaufenen Specs betreffen HUD, Kamera, Kulissen, Terrain, Ton,
+Erfolge und Bedienung — Bereiche, die von den Änderungen dieser Sitzung nicht
+berührt werden.
+
 ## 3. Offen — im Code lösbar
 
 **Nichts.** Alle codeseitig lösbaren Punkte sind abgearbeitet. Was übrig ist,
@@ -59,6 +80,61 @@ Strich-Nachlauf) und `scripts/sprite-sheets-klassifizieren.py` laufen lassen.
 | `SPR-5` (Bilder) | Die 11 Zellen aus dem Befund tragen die Gitterlinie noch. Werkzeug und Aufruf stehen bereit: `python3 scripts/sprites-erzeugen/streifen-entfernen.py`. Das räumt sie weg, hinterlässt aber dort, wo der Strich durch die Figur lief, eine dünne helle Naht — die verdeckten Pixel sind nicht rekonstruierbar. Sauber ist es erst mit neu erzeugten Blättern. | MASTERDOTO Z66 |
 | `SPR-6` | `datacult`-Figuren (v. a. `20_buffer-flow-swarm`, `00`, `10`) sehr dunkel auf dunklem Gelände — Randlicht/Umriss nötig | MASTERDOTO Z68 |
 | `SPR-7` | Automatisch als auffällig gemeldet (Zusammenhangskomponenten): `datacult/20` zustand, `datacult/21` walk, `undead/00` zustand, `undead/12` zustand — noch **nicht gesichtet** | MASTERDOTO Z70 |
+
+## 4a. `VIS-1` — zwei Bildvergleiche passen nicht zur abgelegten Basis
+
+**Befund (2026-10-25, beim Prüfen der E2E-Strecke):** `tests/e2e/visuell.spec.mjs`
+meldet zwei von sechs Vergleichen rot:
+
+```
+Lobby 390x844  und  HUD 390x844
+11712 Pixel (Anteil 0,04) weichen ab — Toleranz ist maxDiffPixelRatio 0.02
+```
+
+**Eingegrenzt, nicht geraten:**
+
+- Dieselben zwei Vergleiche scheitern **auch auf `cfc6785`**, also dem Stand
+  VOR der Arbeit dieser Sitzung. Sie kommen nicht aus den Umbenennungen oder
+  dem Umbau.
+- Sie scheitern auf diesem Rechner **deterministisch** (mehrfach, gleiche zwei).
+- Die vier übrigen Vergleiche (Menü/Lobby/HUD in 1280x720 sowie Menü 390x844)
+  sind grün.
+- Erwartetes und tatsächliches Bild sind **mit dem Auge nicht zu unterscheiden**.
+  Die Abweichung liegt auf Textkanten und Rasterung, nicht auf fehlenden oder
+  verschobenen Bausteinen.
+
+**Deutung:** Die abgelegten Bilder (`tests/e2e/visuell.spec.mjs-snapshots/*.png`)
+sind auf einem anderen Rechner entstanden. Der Dateiname trägt nur
+`-chromium-linux`, also dieselbe Endung für beide Linux-Knoten — Schrift- und
+Rasterunterschiede zwischen ihnen schlagen voll durch, und bei 390 px Breite
+reicht das für 4 % der Pixel.
+
+**Das ist eine Entscheidung, keine Reparatur.** Zwei Wege:
+
+1. **Basis auf dem Rechner neu erzeugen, der künftig prüft** (`--update-snapshots`)
+   — dann prüft der Vergleich wieder etwas, aber nur dort.
+2. **Vergleich von der Umgebung lösen** — etwa Toleranz je Format, oder die
+   Textstellen aus dem Vergleich nehmen.
+
+Was **nicht** in Frage kommt: die Toleranz pauschal hochsetzen, damit es grün
+wird. Dann prüft der Vergleich nichts mehr und meldet trotzdem Erfolg. Die
+Bilder wurden deshalb **unverändert gelassen**.
+
+## 4b. Betriebsnotiz: der Vergleichs-Sweep schreibt in versionierte Dateien
+
+`tests/e2e/vergleich-screenshots.spec.mjs` erzeugt bei **jedem** Lauf die 27
+Bilder unter `docs/vergleich-alternativspiele-2026-10-19/eigene/` neu. Das ist
+Absicht (der Kopf der Datei begründet ausdrücklich, warum nicht `artifacts/`),
+hat aber eine Folge, die man kennen muss: **nach einem E2E-Lauf ist der
+Arbeitsbaum schmutzig.** Wer das nicht weiß, checkt 27 geänderte Binärbilder als
+„Änderung" ein.
+
+Vor dem Weiterarbeiten daher:
+
+```bash
+git checkout -- docs/vergleich-alternativspiele-2026-10-19/
+```
+
 
 ## 5. Offen — braucht eine Entscheidung des Auftraggebers
 
