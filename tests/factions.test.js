@@ -120,6 +120,41 @@ test('Namenskonflikte zwischen Fraktionen sind erfasst', () => {
   }
 });
 
+/*
+ * SPR-2 (Fund 2026-10-25): Neben `NAMING_CONFLICTS` trug jede der beiden
+ * Figuren zusätzlich ein Feld `nameConflict`. Niemand las es, und der Verweis
+ * der pixel-Figur zeigte auf `datacult/nullpointer-exception` — diese Kennung
+ * gibt es nicht, die Figur heißt `nullpointer-exception-cult`. Ein toter
+ * Verweis, der wie eine geprüfte Aussage aussieht, ist schlimmer als keiner:
+ * die Prüfung unten macht ihn entweder wahr oder sichtbar.
+ */
+test('Jeder nameConflict-Verweis zeigt auf eine existierende Figur und zurück', () => {
+  const mitVerweis = CHARACTERS.filter(c => c.nameConflict);
+
+  for (const c of mitVerweis) {
+    const [fraktion, id] = String(c.nameConflict).split('/');
+    const ziel = CHARACTERS.find(z => z.id === id);
+
+    assert.ok(ziel, `${c.faction}/${c.id}: nameConflict „${c.nameConflict}" zeigt ins Leere`);
+    assert.equal(ziel.faction, fraktion,
+      `${c.faction}/${c.id}: nameConflict nennt Fraktion „${fraktion}", die Figur steht in „${ziel.faction}"`);
+    assert.notEqual(ziel.id, c.id, `${c.faction}/${c.id}: nameConflict zeigt auf sich selbst`);
+    assert.equal(ziel.nameConflict, `${c.faction}/${c.id}`,
+      `${c.faction}/${c.id} und ${fraktion}/${id}: der Verweis ist nicht gegenseitig`);
+  }
+
+  // Beide Figuren mit gleichem Namen müssen den Verweis tragen, sonst ist die
+  // Hälfte der Abmachung wieder tot.
+  const namen = CHARACTERS.map(c => c.name);
+  const doppelt = [...new Set(namen.filter((n, i) => namen.indexOf(n) !== i))];
+  for (const name of doppelt) {
+    const betroffen = CHARACTERS.filter(c => c.name === name);
+    for (const c of betroffen) {
+      assert.ok(c.nameConflict, `${c.faction}/${c.id}: doppelter Name ohne nameConflict-Verweis`);
+    }
+  }
+});
+
 // ------------------------------------------------------------------ Inhalt
 
 test('Jeder Charakter hat Superwaffe, Biografie und Profil', () => {

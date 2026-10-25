@@ -680,7 +680,7 @@ export const CHARACTERS = Object.freeze([
   {
     id: 'nullpointer-exception', name: 'Nullpointer Exception', faction: 'pixel', role: 'melee', slot: 0,
     sprite: '00_nullpointer-exception.png',
-    nameConflict: 'datacult/nullpointer-exception',
+    nameConflict: 'datacult/nullpointer-exception-cult',
     superWeapon: { name: 'Sprungbefehl', description: 'Ein Sturmangriff, der eine Lücke in der Reihe hinterlässt.' },
     bio: 'Ein vierbeiniger Rahmen aus kantigen Platten, der sich selbst als Fehler führt. Die Brut hat ihn nie korrigiert, weil er funktioniert.',
     strengths: ['Robust und schnell zugleich', 'Verursacht großen Geländeschaden'],
