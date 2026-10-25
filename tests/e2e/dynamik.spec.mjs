@@ -862,24 +862,41 @@ test.describe('Dynamik — der Klang', () => {
           return original(haerte);
         };
 
+        /*
+         * Gezählt wird an der echten Schnittstelle des Zustandswegs:
+         * `#spieleTrefferklang` holt jeden erkannten Treffer mit
+         * `renderer.nimmTreffer()` ab. Der Zähler altert nicht — anders als die
+         * Treffermarke (siehe den Kommentar zur Reihenfolge oben).
+         */
+        window.__GESEHEN__ = 0;
+        const nimmOriginal = spiel.renderer.nimmTreffer.bind(spiel.renderer);
+        spiel.renderer.nimmTreffer = () => {
+          const treffer = nimmOriginal();
+          window.__GESEHEN__ += treffer.length;
+          return treffer;
+        };
+
         const match = spiel.match;
         /*
-         * REIHENFOLGE IST HIER BEDEUTEND — der Grund war ein dauerhaft roter
-         * Test (2026-10-25, auch auf `cfc6785`, also nicht durch eine Änderung
-         * entstanden):
+         * REIHENFOLGE IST HIER BEDEUTEND — gemessen (2026-10-25, auch auf
+         * `cfc6785`): Schaden VOR dem Schritt blieb dauerhaft rot, diese
+         * Reihenfolge (erst Schritt, dann Schaden) ist grün. Was den Unterschied
+         * im Einzelnen macht, ist hier nicht der Punkt; gesichert ist nur: Ein
+         * Schritt rendert nicht und setzt das Gefühls-Gedächtnis NICHT zurück —
+         * `gefuehlZuruecksetzen` läuft ausschließlich beim Kartenaufbau
+         * (`main.js`, zwei Aufrufer, beide `build*`-Pfade).
          *
-         * `advance(1)` führt `game.step()` aus, und ein Schritt setzt das
-         * Gefühls-Gedächtnis des Renderers zurück (`gefuehlZuruecksetzen` leert
-         * `letzteWerte` UND `trefferMarken`). Stand der Schaden VOR dem Schritt,
-         * war er für `findeTreffer` nie eine ÄNDERUNG: der nächste Bildlauf setzte
-         * nur die neue Grundlinie, und die Markenliste war gerade geleert worden.
-         * Ergebnis: `Treffermarken 0`, der Test konnte die Sperre gar nicht
-         * prüfen — gemeldet wurde aber „der Zustandsweg muss den Treffer gesehen
-         * haben".
-         *
-         * Deshalb: erst den Schritt, dann den Schaden. Danach ist der Rückgang
-         * der Gesundheit eine echte Änderung gegenüber der Grundlinie, und der
-         * Zustandsweg erzeugt seine Marke.
+         * DER BEWEIS „der Zustandsweg hat den Treffer gesehen" war bis hierher
+         * die TREFFERMARKE. Die altert aber mit der Wandzeit: `dt` je Bild ist
+         * `delta / FIXED_TIMESTEP` (bis zu 15 bei geklemmten 250 ms), die Marke
+         * lebt 16 Einheiten — unter Last (Volllauf mit `--workers=1`) war sie
+         * zwischen Erkennung und Ablesen bereits vergangen. Gemessen im selben
+         * Lauf: Der Nachbartest erzeugte seinen Klang über den Zustandsweg
+         * (Zähler 0 → 1), seine Marken standen beim Ablesen auf 0. Deshalb zählt
+         * der Test die Treffer jetzt ÜBER DIE ECHTE SCHNITTSTELLE
+         * (`renderer.nimmTreffer` — genau der Weg, den `#spieleTrefferklang`
+         * benutzt): ein Zähler altert nicht. Die Marken bleiben in der Meldung
+         * als Anzeige, werden aber nicht mehr bewertet.
          */
         window.__PA__.advance(1);
         const figuren = window.__PA__.getState().entities.filter(f => f.alive);
@@ -898,6 +915,7 @@ test.describe('Dynamik — der Klang', () => {
 
       const nachher = await page.evaluate(() => ({
         aufrufe: [...window.__AUFRUFE__],
+        gesehen: window.__GESEHEN__,
         marken: window.__PA__.game.renderer.trefferMarken.length,
         zaehler: window.__PA__.game.sound.gezaehlt.treffer,
       }));
@@ -905,15 +923,17 @@ test.describe('Dynamik — der Klang', () => {
     });
 
     console.log(`DYNAMIK [Sperre] Aufrufe gesamt ${JSON.stringify(befund.nachher.aufrufe)} `
-      + `(erwartet: 1 aus dem nachgebildeten Ereignisweg), Treffermarken `
-      + `${befund.nachher.marken}, AudioContext bereit: ${befund.vorher.bereit}`);
+      + `(erwartet: 1 aus dem nachgebildeten Ereignisweg), vom Zustandsweg gesehen: `
+      + `${befund.nachher.gesehen}, Treffermarken (nur Anzeige) ${befund.nachher.marken}, `
+      + `AudioContext bereit: ${befund.vorher.bereit}`);
     test.info().annotations.push({
       type: 'Klangsperre',
-      description: `${befund.nachher.aufrufe.length} Aufruf(e) bei `
-        + `${befund.nachher.marken} Treffermarken, Context ${befund.vorher.bereit}`,
+      description: `${befund.nachher.aufrufe.length} Aufruf(e); Zustandsweg sah `
+        + `${befund.nachher.gesehen} Treffer (Marken ${befund.nachher.marken}), `
+        + `Context ${befund.vorher.bereit}`,
     });
 
-    expect(befund.nachher.marken, 'der Zustandsweg muss den Treffer gesehen haben')
+    expect(befund.nachher.gesehen, 'der Zustandsweg muss den Treffer gesehen haben')
       .toBeGreaterThan(0);
     if (befund.vorher.bereit) {
       expect(befund.nachher.aufrufe.length,
