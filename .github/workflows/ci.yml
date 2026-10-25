@@ -78,4 +78,15 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: E2E-Tests
+        # Bildvergleiche sind hier ABSICHTLICH aus: ihre Baselines hängen an der
+        # Render-Umgebung (Schriftmetriken, Rasterung), nicht nur am Code.
+        # Gemessen am 2026-10-25: derselbe Code auf einem anderen Rechner ergab
+        # 104.130 abweichende Pixel (31,6 %). Ein Vergleich auf einem fremden
+        # Runner prüft den Unterschied zwischen zwei Rechnern, nicht das Spiel.
+        #
+        # Die Tests verschwinden dabei nicht: sie werden als ÜBERSPRUNGEN mit
+        # Begründung gemeldet. Lokal (Variable nicht gesetzt) laufen sie und sind
+        # dort das Gate. Einzelheiten: docs/testgrenzen.md.
+        env:
+          PA_OHNE_BILDVERGLEICH: '1'
         run: npm run test:e2e

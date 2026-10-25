@@ -178,3 +178,59 @@ Scouts — daraus wird ein Urteil, sobald du sagst, was du willst.
 **Und die zweite Grenze:** Bei Gestaltung (Namen, Lore, Aufbau der Karten,
 Sound) hört die Messung ganz auf. Dort hilft kein Werkzeug — dort hilft nur,
 dass jemand entscheidet.
+
+---
+
+## Bildvergleiche: ein Gate für EINEN Rechner, nicht für die CI
+
+`tests/e2e/visuell.spec.mjs` vergleicht Menü, Lobby und HUD gegen abgelegte
+Bilder (`tests/e2e/visuell.spec.mjs-snapshots/`), Toleranz
+`maxDiffPixelRatio: 0.02`. Das ist ein gutes Gate — aber nur dort, wo die Bilder
+entstanden sind.
+
+### Warum es nicht in die CI gehört
+
+Die Bilder hängen an der **Render-Umgebung**: Schriftmetriken, Hinting,
+Rasterung. Der Dateiname trägt nur `-chromium-linux`; zwei verschiedene
+Linux-Rechner landen auf demselben Namen und überschreiben sich gegenseitig.
+
+Gemessen am **2026-10-25**, und zwar so, dass die Ursache belegt ist und nicht
+vermutet:
+
+| Messung | Ergebnis | Aussage |
+|---|---|---|
+| Derselbe Test dreimal auf einem Rechner | Läufe unterscheiden sich um **1–3 Pixel** | Der Zustand ist eingefroren, kein Flake |
+| Alter Commit gegen neuen Commit | **3 Pixel** | Der Code ist nicht die Ursache |
+| Beide gegen die abgelegten Bilder | je **104.130 Pixel** (31,6 %) | Der Abstand hängt an der Umgebung |
+| Bester Versatz gesucht | dy = **+2 px** halbiert den Fehler | Layout-Versatz aus Schriftmetriken, kein Inhaltsunterschied |
+
+Ein Vergleich auf einem fremden Runner prüft also **den Unterschied zwischen zwei
+Rechnern**, nicht das Spiel. Und eine Ampel, die auf fremder Hardware dauerhaft
+rot steht, wird nach zwei Tagen ignoriert — dann fällt auch ein echter
+Bildfehler nicht mehr auf.
+
+### Die Regel
+
+- **Lokal** (Variable nicht gesetzt): Bildvergleiche laufen und **sind** das Gate.
+  Vor dem Übergeben laufen lassen.
+- **In der CI** setzt `.github/workflows/ci.yml` `PA_OHNE_BILDVERGLEICH=1`. Die
+  Tests werden dann als **übersprungen mit Begründung** gemeldet — sie
+  verschwinden nicht stillschweigend.
+
+### Wenn ein Vergleich rot wird
+
+`--update-snapshots` ist **kein Reflex**. Erst die drei Messungen aus der Tabelle
+oben (stabil? / Code? / Versatz?) — sie stehen mit Befehlen im Kopf von
+`visuell.spec.mjs`. Erst wenn sie gegen „Code" sprechen, ist das Nachziehen
+richtig, und dann **nur die roten Dateien**, nicht der ganze Satz. Danach zweimal
+vollständig laufen lassen; ein einzelnes Grün beweist nichts.
+
+**Was nicht in Frage kommt:** `maxDiffPixelRatio` hochsetzen, damit es grün wird.
+Dann prüft der Vergleich nichts mehr und meldet trotzdem Erfolg.
+
+### Bekannte Grenze, bewusst offen
+
+Wer die Strecke künftig auf einem **anderen** Knoten laufen lässt, bekommt
+dieselben zwei Vergleiche dort rot. Sauber wäre ein umgebungsunabhängiger
+Vergleich (etwa Kanten statt Pixel). Das ist eine eigene Aufgabe und steht als
+solche in `docs/offene-punkte.md`.

@@ -140,7 +140,15 @@ export function spielverlauf({ seeds = [101, 202, 303, 404, 505], teams = 2, pla
     });
   }
 
-  const mittel = feld => Number((parteien.reduce((s, p) => s + p[feld], 0) / parteien.length).toFixed(1));
+  // Leere Messung: frueher teilte das hier durch 0 und lieferte NaN/Infinity —
+  // im JSON des Berichts als `null` sichtbar. Ein Werkzeug, das bei leerer
+  // Eingabe Zahlen erfindet, taugt nicht als Gate.
+  const mittel = feld => (parteien.length === 0
+    ? 0
+    : Number((parteien.reduce((s, p) => s + p[feld], 0) / parteien.length).toFixed(1)));
+  const spanneVon = feld => (parteien.length === 0
+    ? [0, 0]
+    : [Math.min(...parteien.map(p => p[feld])), Math.max(...parteien.map(p => p[feld]))]);
   const vorSturm = zaehleVorSturm(parteien);
   return {
     konfiguration: { teams, playersPerTeam, preset },
@@ -152,18 +160,13 @@ export function spielverlauf({ seeds = [101, 202, 303, 404, 505], teams = 2, pla
       spielzeitSekunden: mittel('spielzeitSekunden'),
     },
     spanne: {
-      runden: [Math.min(...parteien.map(p => p.runden)), Math.max(...parteien.map(p => p.runden))],
-      spielzeitSekunden: [
-        Math.min(...parteien.map(p => p.spielzeitSekunden)),
-        Math.max(...parteien.map(p => p.spielzeitSekunden)),
-      ],
+      runden: spanneVon('runden'),
+      spielzeitSekunden: spanneVon('spielzeitSekunden'),
     },
     // Kein fester Breakpoint mehr: siehe `zaehleVorSturm`.
     sturmRunden: parteien.map(p => p.sturmRunde),
     vorMahlstromBeendet: vorSturm.vorSturm,
     anteilVorMahlstrom: vorSturm.anteil,
-    durchAusschaltung: parteien.filter(p => p.status === 'gameover'
-      && (p.sturmRunde == null || p.runden < p.sturmRunde)).length,
   };
 }
 

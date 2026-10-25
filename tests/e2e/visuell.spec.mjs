@@ -55,6 +55,23 @@ const OPTIONEN = {
   maxDiffPixelRatio: 0.02,
 };
 
+/*
+ * NUR LOKAL — der Grund steht in `docs/testgrenzen.md`, Abschnitt „Bildvergleiche".
+ *
+ * Die abgelegten Bilder hängen an der Render-Umgebung (Schriftmetriken,
+ * Rasterung), nicht nur am Code. Gemessen am 2026-10-25: derselbe Code auf einem
+ * anderen Rechner ergab 104.130 abweichende Pixel (31,6 %). Ein Vergleich, der
+ * auf einer fremden Maschine läuft, prüft also nicht das Spiel, sondern den
+ * Unterschied zwischen zwei Rechnern.
+ *
+ * Deshalb setzt die CI `PA_OHNE_BILDVERGLEICH=1`. Die Tests verschwinden dabei
+ * NICHT stillschweigend, sondern erscheinen als übersprungen MIT dieser
+ * Begründung — ein Gate, das man nicht sieht, ist keines.
+ *
+ * Lokal (Variable nicht gesetzt) laufen sie normal und sind das Gate.
+ */
+const OHNE_BILDVERGLEICH = process.env.PA_OHNE_BILDVERGLEICH === '1';
+
 const LOOK_DIR = fileURLToPath(new URL('../../test-results/ux-look/', import.meta.url));
 
 /** Schreibt das aktuelle Bild nur auf Wunsch als Audit-Beleg. */
@@ -67,6 +84,11 @@ async function merkeLook(page, name) {
 for (const [formatName, viewport] of Object.entries(FORMATE)) {
   test.describe(`Format ${formatName}`, () => {
     test.use({ viewport });
+
+    // In der CI übersprungen, mit sichtbarer Begründung (siehe oben und
+    // docs/testgrenzen.md). Lokal ist diese Zeile wirkungslos.
+    test.skip(OHNE_BILDVERGLEICH,
+      'Bildvergleiche nur auf dem Rechner, auf dem die Baselines entstanden sind — siehe docs/testgrenzen.md');
 
     test(`Menü ${formatName}`, async ({ page }) => {
       const fehler = await oeffneMenue(page);

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { zaehleVorSturm } from '../tools/audit-mcp/lib/dynamisch.mjs';
+import { spielverlauf, zaehleVorSturm } from '../tools/audit-mcp/lib/dynamisch.mjs';
 
 /*
  * Der Audit-Bericht meldete bis 2026-10-25 den Fund
@@ -85,4 +85,24 @@ test('Anteil ist auf zwei Nachkommastellen gerundet', () => {
 
   assert.equal(ergebnis.gesamt, 3);
   assert.equal(ergebnis.anteil, 0.67);
+});
+
+/*
+ * Randfall aus der Codepruefung 2026-10-25: `spielverlauf({ seeds: [] })` teilte
+ * durch `parteien.length` und durch `Math.min(...[])`. Ergebnis waren `NaN` und
+ * `Infinity` — im JSON des Berichts als `null` sichtbar. Ein Werkzeug, das bei
+ * leerer Eingabe Zahlen erfindet, taugt nicht als Gate.
+ */
+test('Leere Seed-Liste liefert Nullen statt NaN und Infinity', () => {
+  const e = spielverlauf({ seeds: [] });
+
+  assert.equal(e.parteien.length, 0);
+  for (const [feld, wert] of Object.entries(e.mittel)) {
+    assert.ok(Number.isFinite(wert), `mittel.${feld} ist ${wert}, erwartet eine endliche Zahl`);
+  }
+  for (const [feld, werte] of Object.entries(e.spanne)) {
+    assert.ok(werte.every(Number.isFinite), `spanne.${feld} ist ${JSON.stringify(werte)}, erwartet endliche Zahlen`);
+  }
+  assert.equal(e.vorMahlstromBeendet, 0);
+  assert.equal(e.anteilVorMahlstrom, 0);
 });
