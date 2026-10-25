@@ -4,7 +4,11 @@ terrain_engine/terrain_build/weapon_engine_v1_0/dist/
 dist/
 
 # Dependencies
-node_modules/
+# Ohne Schraegstrich: `node_modules/` matcht nur ein VERZEICHNIS. In den
+# Worktrees unter /home/patrick/pa-wt ist node_modules ein SYMLINK auf die
+# Installation des Hauptbaums — ein Symlink ist kein Verzeichnis, das Muster
+# griff dort nicht und die Verlinkung erschien als unversionierte Datei.
+node_modules
 
 # Generated files
 *.zip
