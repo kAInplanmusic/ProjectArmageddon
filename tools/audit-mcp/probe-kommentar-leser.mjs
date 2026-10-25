@@ -41,6 +41,7 @@ const PROJEKT = path.resolve(HIER, '..', '..');
 const NAME_NUR_IM_KOMMENTAR = 'NurImKommentarExport';
 const NAME_ECHTER_IMPORT = 'EchterImportExport';
 const NAME_ECHTE_KONSTANTE = 'ECHTE_KONSTANTE_IM_TEST';
+const NAME_UEBER_DEFAULT = 'UeberDefaultExport';
 
 let fehler = 0;
 const pruefe = (titel, erwartet, gemessen, ok) => {
@@ -115,6 +116,19 @@ schreibe(w, 'src/a/echte-konstante.js', [
   `export const nutzer = () => ${NAME_ECHTE_KONSTANTE} + 1;`,
 ].join('\n'));
 
+/*
+ * Fall (c) — der DEFAULT-EXPORT-Block zählt als Leser (Fund 2026-10-25).
+ *
+ * `export default { foo }` stellt `foo` über das Default-Objekt bereit
+ * (`modul.foo`). Vorher zählte nur ein NAMENSVORKOMMEN in einer FREMDEN Datei
+ * als Leser; so galten `resolveStrike`, `fuseTicksFor` und `applySelfEffect`
+ * (src/engine/shooting.js) als tot, obwohl sie erreichbar sind.
+ */
+schreibe(w, 'src/a/default-export.js', [
+  `export function ${NAME_UEBER_DEFAULT}() { return 3; }`,
+  `export default { ${NAME_UEBER_DEFAULT} };`,
+].join('\n'));
+
 const exporte = messeIn(w, 'S.unbenutzteExporte()');
 const konstanten = messeIn(w, 'S.unbenutzteKonstanten()');
 
@@ -153,6 +167,16 @@ pruefe(
   `${NAME_ECHTE_KONSTANTE} nicht in der Liste`,
   konstGefunden ? `FAHLALARM: ${konstGefunden.datei}:${konstGefunden.name}` : 'nicht gelistet (richtig)',
   !konstGefunden,
+);
+
+const ueberDefaultGefunden = exporte.find(e => e.name === NAME_UEBER_DEFAULT);
+pruefe(
+  'c) Name NUR im Default-Export-Block: gilt als gelesen',
+  `${NAME_UEBER_DEFAULT} ist NICHT in den unbenutzten Exporten`,
+  ueberDefaultGefunden
+    ? `FAHLALARM: ${ueberDefaultGefunden.datei}:${ueberDefaultGefunden.name} (Default-Block zählte nicht)`
+    : 'nicht gelistet (richtig)',
+  !ueberDefaultGefunden,
 );
 
 console.log(`\n${fehler === 0 ? 'Alle Erwartungen erfüllt.' : `${fehler} Erwartung(en) verletzt.`}`);

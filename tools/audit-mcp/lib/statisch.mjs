@@ -294,7 +294,7 @@ export function sichtgrenzen() {
     leser: `Leser-Suche: nur CODE (${LESER_ENDUNGEN.join('/')}) ohne Kommentare — ein Dateiname in Doku (.md) zaehlt NICHT als Leser. Eine Pfad-NENNUNG im Code ist dagegen schon ein Leser: wer den Namen in einem Test, einer Probe oder einer Zeichenkette erwaehnt, spricht die Datei frei (belegt an dieser Stelle selbst: eine kopierte Probe im Pruefgebiet hat ihre eigenen synthetischen Dateien freigesprochen — probe-blindstellen.mjs).`,
     importe: "Import-Erkennung: Textsuche nach `from '…'` und `import('…')` — mehrzeilig geprueft (probe-blindstellen.mjs). Ein Pfad, der erst zur Laufzeit gebaut wird (Variable, Template-String, `import.meta.glob`), ist NICHT erkennbar.",
     doppelregeln: 'Doppelregeln: nur Definitionen auf MODUL-Ebene (Spalte 0) unter src/ — lokale Namen in Funktionsruempfen zaehlen NICHT (gemessen: 391 „Doppelnamen", davon 2 echte Regeln); Definitionen in scripts/, tests/ und tools/ werden NICHT erfasst.',
-    exporte: 'unbenutzteExporte zaehlt NAMEN, nicht BINDUNGEN: Steht derselbe Name in einer zweiten Datei als Export, gilt er als gelesen — die tote Fassung bleibt unsichtbar (belegt: hasSpecialEffect in src/engine/specials.js:234, maskiert durch den gleichnamigen Export in src/shared/config/weapons.js:7128; gemeldet werden nur 5 „Exporte ohne externen Leser"). AUSSERDEM unsichtbar als Leser: der Default-Export-Block (`export default { foo, bar }`). Ein Name, der NUR dort steht, gilt als ungelesen — gemessen an src/engine/shooting.js (`resolveStrike`, `fuseTicksFor`, `applySelfEffect`), die ueber `shootingModule.resolveStrike` erreichbar sind und deshalb KEINE toten Exporte sind. Drei falsch gemeldete Namen.',
+    exporte: 'unbenutzteExporte zaehlt NAMEN, nicht BINDUNGEN: Steht derselbe Name in einer zweiten Datei als Export, gilt er als gelesen — die tote Fassung bleibt unsichtbar (belegt: hasSpecialEffect in src/engine/specials.js:234, maskiert durch den gleichnamigen Export in src/shared/config/weapons.js:7128). Der Default-Export-Block (`export default { foo, bar }`) zaehlt seit 2026-10-25 als Leser — vorher galten `resolveStrike`, `fuseTicksFor` und `applySelfEffect` (src/engine/shooting.js) faelschlich als tot, obwohl sie ueber `shootingModule.*` erreichbar sind.',
     einstieg: `Einstiegspunkte: nur mit BELEG (namentlich in ${EINSTIEG_QUELLEN.join(' / ')} genannt UND nicht codeleer) — sonst wird geprueft.`,
     ausgeschlossen: 'Nicht durchsucht (SKIP_DIRS aus repo.mjs): node_modules, .git, dist, build, artifacts, test-results, playwright-report, .pa-state, coverage, .vite, uploaded.',
   };
@@ -418,7 +418,26 @@ export function unbenutzteExporte({ nurUnter = 'src/' } = {}) {
         if (name && /^[A-Za-z_$][\w$]*$/.test(name)) namen.add(name);
       }
     }
+    /*
+     * NAMEN AUS DEM DEFAULT-EXPORT SIND GELESEN (Fund 2026-10-25, drei
+     * Fehlmeldungen): `export default { resolveStrike, fuseTicksFor,
+     * applySelfEffect }` in `src/engine/shooting.js` stellt diese Bindungen
+     * über `shootingModule.resolveStrike` bereit. Die Lesersuche zählt aber
+     * nur NAMENSVORKOMMEN in anderen Dateien — die stehen dort nicht, also
+     * galten alle drei als tot. Deshalb: Wer im Default-Objekt der eigenen
+     * Datei steht, ist exportiert und gilt als gelesen.
+     */
+    const ueberDefault = new Set();
+    for (const m of text.matchAll(/export\s+default\s*\{([\s\S]*?)\}/g)) {
+      for (const teil of m[1].split(',')) {
+        const ohne = teil.trim();
+        if (!ohne) continue;
+        const wert = (ohne.includes(':') ? ohne.split(':').pop() : ohne).trim();
+        if (/^[A-Za-z_$][\w$]*$/.test(wert)) ueberDefault.add(wert);
+      }
+    }
     for (const name of namen) {
+      if (ueberDefault.has(name)) continue;
       const re = new RegExp(`\\b${name.replace(/\$/g, '\\$')}\\b`, 'g');
       let ausserhalb = 0;
       for (const [f, t] of alleTexte) {

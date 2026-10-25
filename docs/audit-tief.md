@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-25T13:40:53.615Z · **Commit:** `eceed22` (main) · **Node:** v22.23.4
+**Erzeugt:** 2026-10-25T13:44:39.310Z · **Commit:** `28f7782` (main) · **Node:** v22.23.4
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -53,18 +53,18 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 | src | 175 | 66768 |
 | tests | 268 | 61244 |
 | scripts | 66 | 13271 |
-| tools | 14 | 5509 |
+| tools | 14 | 5552 |
 
-Ungetrackte Änderungen beim Lauf: **13**
+Ungetrackte Änderungen beim Lauf: **2**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 11.1 s | – |
+| lint | 🟢 bestanden | 10.8 s | – |
 | validate | 🟢 bestanden | 0.4 s | – |
 
-**2/2 bestanden** · Gesamtdauer 11.5 s
+**2/2 bestanden** · Gesamtdauer 11.2 s
 
 ## 3. Determinismus
 
@@ -173,7 +173,7 @@ die Form liefert immer dasselbe.
 
 Züge 136 · Schüsse 100 · gemessene Ticks 13917
 
-Tick-Kosten: mittel **0.1212 ms** · p95 0.0981 ms · p99 1.7256 ms · max 15.7172 ms
+Tick-Kosten: mittel **0.1233 ms** · p95 0.1073 ms · p99 1.6866 ms · max 15.7829 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -352,7 +352,7 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
 - *leser:* Leser-Suche: nur CODE (.js/.mjs/.cjs/.ts/.tsx/.html) ohne Kommentare — ein Dateiname in Doku (.md) zaehlt NICHT als Leser. Eine Pfad-NENNUNG im Code ist dagegen schon ein Leser: wer den Namen in einem Test, einer Probe oder einer Zeichenkette erwaehnt, spricht die Datei frei (belegt an dieser Stelle selbst: eine kopierte Probe im Pruefgebiet hat ihre eigenen synthetischen Dateien freigesprochen — probe-blindstellen.mjs).
 - *importe:* Import-Erkennung: Textsuche nach `from '…'` und `import('…')` — mehrzeilig geprueft (probe-blindstellen.mjs). Ein Pfad, der erst zur Laufzeit gebaut wird (Variable, Template-String, `import.meta.glob`), ist NICHT erkennbar.
 - *doppelregeln:* Doppelregeln: nur Definitionen auf MODUL-Ebene (Spalte 0) unter src/ — lokale Namen in Funktionsruempfen zaehlen NICHT (gemessen: 391 „Doppelnamen", davon 2 echte Regeln); Definitionen in scripts/, tests/ und tools/ werden NICHT erfasst.
-- *exporte:* unbenutzteExporte zaehlt NAMEN, nicht BINDUNGEN: Steht derselbe Name in einer zweiten Datei als Export, gilt er als gelesen — die tote Fassung bleibt unsichtbar (belegt: hasSpecialEffect in src/engine/specials.js:234, maskiert durch den gleichnamigen Export in src/shared/config/weapons.js:7128; gemeldet werden nur 5 „Exporte ohne externen Leser"). AUSSERDEM unsichtbar als Leser: der Default-Export-Block (`export default { foo, bar }`). Ein Name, der NUR dort steht, gilt als ungelesen — gemessen an src/engine/shooting.js (`resolveStrike`, `fuseTicksFor`, `applySelfEffect`), die ueber `shootingModule.resolveStrike` erreichbar sind und deshalb KEINE toten Exporte sind. Drei falsch gemeldete Namen.
+- *exporte:* unbenutzteExporte zaehlt NAMEN, nicht BINDUNGEN: Steht derselbe Name in einer zweiten Datei als Export, gilt er als gelesen — die tote Fassung bleibt unsichtbar (belegt: hasSpecialEffect in src/engine/specials.js:234, maskiert durch den gleichnamigen Export in src/shared/config/weapons.js:7128). Der Default-Export-Block (`export default { foo, bar }`) zaehlt seit 2026-10-25 als Leser — vorher galten `resolveStrike`, `fuseTicksFor` und `applySelfEffect` (src/engine/shooting.js) faelschlich als tot, obwohl sie ueber `shootingModule.*` erreichbar sind.
 - *einstieg:* Einstiegspunkte: nur mit BELEG (namentlich in package.json / index.html / vite.config.mjs / playwright.config.mjs genannt UND nicht codeleer) — sonst wird geprueft.
 - *ausgeschlossen:* Nicht durchsucht (SKIP_DIRS aus repo.mjs): node_modules, .git, dist, build, artifacts, test-results, playwright-report, .pa-state, coverage, .vite, uploaded.
 
