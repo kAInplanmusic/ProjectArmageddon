@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { spielverlauf, zaehleVorSturm } from '../tools/audit-mcp/lib/dynamisch.mjs';
+import { getTurnDurationForPlayerCount } from '../src/engine/systems/turnSystem.js';
 
 /*
  * Der Audit-Bericht meldete bis 2026-10-25 den Fund
@@ -105,4 +106,22 @@ test('Leere Seed-Liste liefert Nullen statt NaN und Infinity', () => {
   }
   assert.equal(e.vorMahlstromBeendet, 0);
   assert.equal(e.anteilVorMahlstrom, 0);
+});
+
+/*
+ * 2026-10-25: `spieleZug` gab den Zug sofort ab (`endTurn()`) und ließ JEDEN
+ * Spieler schießen — ein Schuss beendet den Zug nach ~30 Schritten, die
+ * Zugzeit verging also nie. Der Mahlstrom hängt an der SPIELZEIT; der Bericht
+ * meldete deshalb Sturmbeginn Runde 76–129, während `check:maelstrom` mit
+ * laufender Zugzeit Runde 15–20 misst. Jetzt schießt nur Team 0 (wie in
+ * `check:maelstrom`), und die übrigen Züge spielen ihre volle Zugzeit aus:
+ * bei 2v2 (4 Spieler) sind das 20 s, also 1200 Schritte bei 60 Hz. Zwei Züge
+ * decken beide Fälle ab: erst ein Schuss-Zug (Team 0), dann ein Warte-Zug.
+ */
+test('Ein Zug ohne Schuss laesst die Zugzeit vergehen (kein vorzeitiges endTurn)', () => {
+  const soll = Math.round(getTurnDurationForPlayerCount(4) / 1000 * 60);
+  const e = spielverlauf({ seeds: [101], zugeMax: 2 });
+
+  assert.ok(e.parteien[0].ticks >= soll,
+    `ticks ${e.parteien[0].ticks}: ein Warte-Zug muss seine Zugzeit ausspielen (>= ${soll})`);
 });

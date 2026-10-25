@@ -14,34 +14,64 @@ import { CLASS_IDS, ARCHETYPE_IDS, combatProfile } from '../../../src/shared/con
 import { TERRAIN_PRESETS, generateTerrain } from '../../../src/shared/terrainGen.js';
 import { createRng } from '../../../src/shared/prng.js';
 
-/** Baut ein Match mit fester Konfiguration. */
-function match({ seed, teams = 2, playersPerTeam = 2, preset = 'hills', turnDurationMs = 60000 }) {
+/** Baut ein Match mit fester Konfiguration. Zugzeit wie im echten Spiel (Engine-Regel), außer explizit gesetzt. */
+function match({ seed, teams = 2, playersPerTeam = 2, preset = 'hills', turnDurationMs = null }) {
   const m = new MatchController({ seed, teams, playersPerTeam, preset, turnDurationMs });
   m.start();
   return m;
 }
 
-/** Spielt genau EINEN Zug: feuern, Zug abgeben, Geschoss ausfliegen lassen. */
+/**
+ * Spielt genau EINEN Zug: feuern (nur Team 0), Zugzeit vergehen lassen,
+ * Geschoss ausfliegen lassen.
+ *
+ * Zwei Fehler sind hier behoben (gemessen 2026-10-25):
+ *
+ *  1. KEIN vorzeitiges `endTurn()`: Damit wäre die Zugzeit nie vergangen —
+ *     genau der Fehler, vor dem `katalog.mjs` (Methode `spielverlauf`) warnt.
+ *  2. NICHT jeder Spieler schießt: Ein Schuss beendet den Zug nach ~30
+ *     Schritten (`zugSystem`), die Zugzeit verginge also auch ohne `endTurn`
+ *     kaum. `npm run check:maelstrom` lässt nur Team 0 schießen; die Züge der
+ *     anderen laufen ihre volle Zeit (gemessen: 1200 Schritte bei 20 s).
+ *
+ * Der alte Bericht meldete mit den falschen Zügen Sturmbeginn Runde 76–129
+ * und Längen 95–145; `check:maelstrom` misst Sturmbeginn Runde 15–20 und
+ * Längen 11–46. Dieser Bot spielt jetzt wie `check:maelstrom`, damit beide
+ * Werkzeuge dieselbe Partie messen.
+ *
+ * Die Simulation läuft je Zug, bis die Turnuhr den Zug abgibt (aktiver
+ * Spieler wechselt) UND die Geschosse ruhen. Das Fenster deckt eine volle
+ * Zugzeit plus Flugreserve.
+ */
 function spieleZug(m, tick, winkelSpannweite = 40) {
   const zustand = m.getState();
   const aktiv = zustand.entities.find(e => e.entityId === zustand.activePlayerId);
   let geschossen = false;
-  if (aktiv?.alive && m.isPlayerAlive(aktiv.entityId)) {
+  if (aktiv?.alive && m.isPlayerAlive(aktiv.entityId) && aktiv.teamId === 0) {
     const waffe = m.inventory?.getActiveWeaponId?.(aktiv.entityId) ?? null;
     const winkel = 0.55 + ((tick % winkelSpannweite) / 100);
     const kraft = 65 + (tick % 35);
     const schuss = m.fire(aktiv.entityId, winkel, kraft, waffe);
     geschossen = Boolean(schuss?.ok);
   }
-  m.endTurn();
-  // Ausklingen lassen: Geschosse fliegen, Physik läuft, Zugwechsel passiert.
+  const zugDauerMs = zustand.turnDurationMs ?? 30000;
+  const fenster = Math.ceil(zugDauerMs / (1000 / 60)) + 600;
+  // Der aktive Spieler kann beim Spielstart noch null sein (kein Zug
+  // eroeffnet). Der erste Aktive EROEFFNET den Zug; erst sein Wechsel ist der
+  // Zugwechsel, auf den gewartet wird.
+  let turnAktiv = m.activePlayerId;
   let ruhe = 0;
-  for (let i = 0; i < 600; i += 1) {
+  for (let i = 0; i < fenster && m.status === 'playing'; i += 1) {
     m.step();
     m.consumeEvents();
     const ruhend = m.activeProjectileCount === 0;
     ruhe = ruhend ? ruhe + 1 : 0;
-    if (ruhe >= 30) break;
+    const jetztAktiv = m.activePlayerId;
+    if (turnAktiv === null) {
+      turnAktiv = jetztAktiv;
+    } else if (ruhe >= 30 && jetztAktiv !== turnAktiv) {
+      break;
+    }
   }
   return { geschossen, ticksVerbraucht: 0 };
 }

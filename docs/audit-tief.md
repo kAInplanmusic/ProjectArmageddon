@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-25T05:06:18.568Z · **Commit:** `4477c55` (main) · **Node:** v22.23.4
+**Erzeugt:** 2026-10-25T12:57:17.103Z · **Commit:** `3179fca` (main) · **Node:** v22.23.4
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -51,9 +51,9 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 | Bereich | Dateien | Zeilen |
 |---|---|---|
 | src | 175 | 66693 |
-| tests | 268 | 61093 |
+| tests | 268 | 61192 |
 | scripts | 66 | 13264 |
-| tools | 14 | 5476 |
+| tools | 14 | 5509 |
 
 Ungetrackte Änderungen beim Lauf: **3**
 
@@ -61,18 +61,18 @@ Ungetrackte Änderungen beim Lauf: **3**
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 10.7 s | – |
-| validate | 🟢 bestanden | 0.5 s | – |
+| lint | 🟢 bestanden | 10.5 s | – |
+| validate | 🟢 bestanden | 0.4 s | – |
 
-**2/2 bestanden** · Gesamtdauer 11.2 s
+**2/2 bestanden** · Gesamtdauer 10.9 s
 
 ## 3. Determinismus
 
 | Lauf | Seed | Zustandshash | Status | Runde |
 |---|---|---|---|---|
-| 1 | 4242 | `f76026b` | playing | 3 |
-| 2 | 4242 | `f76026b` | playing | 3 |
-| 3 | 9999 | `e68d04e6` | playing | 3 |
+| 1 | 4242 | `faf7c4fa` | playing | 3 |
+| 2 | 4242 | `faf7c4fa` | playing | 3 |
+| 3 | 9999 | `e3c4be92` | playing | 3 |
 
 Derselbe Seed → derselbe Hash: **JA** · Verschiedene Seeds → verschiedene Hashes: **JA**
 
@@ -82,16 +82,16 @@ Bestanden: gleicher Seed → gleicher Hash, verschiedene Seeds → verschiedene 
 
 | Seed | Runden | Züge | Schüsse | Ticks | Spielzeit (s) | Status |
 |---|---|---|---|---|---|---|
-| 101 | 95 | 317 | 186 | 35587 | 593.1 | gameover |
-| 202 | 106 | 323 | 192 | 36306 | 605.1 | gameover |
-| 303 | 124 | 389 | 223 | 44170 | 736.2 | gameover |
-| 404 | 127 | 394 | 226 | 44612 | 743.5 | gameover |
-| 505 | 145 | 351 | 204 | 39592 | 659.9 | gameover |
+| 101 | 39 | 127 | 46 | 148730 | 2478.8 | gameover |
+| 202 | 15 | 49 | 25 | 43211 | 720.2 | gameover |
+| 303 | 11 | 32 | 17 | 26631 | 443.9 | gameover |
+| 404 | 25 | 70 | 30 | 73102 | 1218.4 | gameover |
+| 505 | 12 | 33 | 18 | 26663 | 444.4 | gameover |
 
-**Mittel:** 119.4 Runden · 354.8 Züge · 206.2 Schüsse · 667.6 s Simulationszeit
-**Spanne:** Runden 95–145 · Spielzeit 593.1–743.5 s
+**Mittel:** 20.4 Runden · 62.2 Züge · 27.2 Schüsse · 1061.1 s Simulationszeit
+**Spanne:** Runden 11–39 · Spielzeit 443.9–2478.8 s
 
-Mahlstrom greift je Partie zu einer **eigenen** Runde (gemessen: 78, 76, 107, 97, 129). Davor beendet: **0 von 5** (Anteil 0).
+Mahlstrom greift je Partie zu einer **eigenen** Runde (gemessen: 10, 9, —, 11, —). Davor beendet: **2 von 5** (Anteil 0.4).
 
 *Annahme:* Die Spielzeit ist Simulationszeit. Ein Mensch braucht zusätzlich Bedenkzeit — sie ist hier
 konservativ mit **0 s** angesetzt, die echte Partie ist also länger.
@@ -173,7 +173,7 @@ die Form liefert immer dasselbe.
 
 Züge 150 · Schüsse 106 · gemessene Ticks 15019
 
-Tick-Kosten: mittel **0.0822 ms** · p95 0.0978 ms · p99 0.1441 ms · max 5.2302 ms
+Tick-Kosten: mittel **0.0818 ms** · p95 0.0942 ms · p99 0.1651 ms · max 7.0796 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -307,7 +307,7 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ### Was schon belegt gut funktioniert
 
-- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (f76026b), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
+- **Determinismus hält.** Derselbe Seed ergibt über echte Züge mit Schüssen denselben Zustandshash (faf7c4fa), verschiedene Seeds verschiedene. Das ist das Kernversprechen des Spiels und es ist gemessen.
 - **Kein TODO/FIXME im Quelltext.** Gemessen: 0 Treffer (Abschnitt 10.4). Wo die offene Arbeit steht (SSOT/MASTERDOTO), prüft dieser Bericht nicht — das ist eine Vereinbarung, keine Messung.
 - **Keine Datendatei ohne Leser.** Gemessen: alle 10 `.json` unter `src/` werden im Code genannt (Abschnitt 10.1b). Bis 2026-09-27 war diese Zahl gar nicht messbar — `QUELTEXT` kannte kein `.json`.
 - **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht.
@@ -328,7 +328,7 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Bewusst und begründet (15):** `TOENE` (src/client/gelaendeStil.js:32 · src/client/toasts.js:18) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.
 - **Bewusst und begründet (15):** `ZELLE` (src/client/figurSheets.js:16 · src/client/waffenAnimation.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.
 - **Bewusst und begründet (15):** `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 61093 Zeilen Tests gegen 66693 Zeilen Quelltext (Verhältnis 0.92).
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 61192 Zeilen Tests gegen 66693 Zeilen Quelltext (Verhältnis 0.92).
 - **Der Waffenkatalog ist kein Datenmüll:** 136 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
@@ -358,12 +358,7 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
 
 ## 17. TODO
 
-1 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
-
-### NIEDRIG (1)
-
-- [ ] Jede Partie laeuft in ihren Mahlstrom hinein *[Offen — Design-Entscheidung]*
-      0 von 5 Partien endeten vor ihrem eigenen Sturmbeginn (Sturmbeginn Runde 76-129; Laenge 95-145 Runden). Der Sturm ist damit kein Netz fuer zaehe Partien, sondern Regelbetrieb. Design-Entscheidung: Sturmbeginn spaeter, Partien kuerzer — oder bewusst so lassen.
+0 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
 ---
 

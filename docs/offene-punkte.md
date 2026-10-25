@@ -161,13 +161,16 @@ git checkout -- docs/vergleich-alternativspiele-2026-10-19/
 | `LOOK-3` | Lava-Glühen als glühender Stoff mit warmen Lichtakzenten nach `ref-3-vulkanschmiede-hud` | MASTERDOTO Z6874 |
 | `LOOK-4` | Begehbare Innenräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine` | MASTERDOTO Z6875 |
 | `Z246` | Erste Probe der Abschaltsicherung **auf dem Knoten** (`--trocken`, dann echt, dann `systemctl stop` und Journalzeile); Cloud-Ebene ist nicht gegen echtes Hetzner getestet. Nach AGENTS.md §5/§7 entscheidet und führt das der Auftraggeber aus — ein Agent mietet oder startet nichts. | MASTERDOTO Z246 |
-| `MAHL-1` | **Jede Partie läuft in ihren Mahlstrom hinein.** Gemessen (Audit-Seeds 101…505, 2v2, hills): Sturmbeginn Runde **76–129**, Partien enden nach **95–145** Runden — **0 von 5** enden vor ihrem eigenen Sturm. Der Mahlstrom ist damit kein Netz für zähe Partien, sondern Regelbetrieb. Drei Wege: Sturm später, Partien kürzer, oder bewusst so lassen. **Keine Zahl geändert** — das ist eine Spielgefühls-Entscheidung, und der Vorläufer vom 2026-09-20 (`check:time`, „100 LEBEN BLEIBEN") zeigt, dass dieses Haus so etwas nicht nebenbei entscheidet. | Tiefen-Audit §17 |
+| `MAHL-1` | **Jede Partie läuft in ihren Mahlstrom hinein — dieser Befund beruhte auf einem Werkzeugfehler (behoben 2026-10-25).** Neu gemessen (Audit-Seeds 101…505, 2v2, hills, nur Team 0 schießt, volle Zugzeit): Partien enden nach **11–39** Runden, Sturmbeginn **9–11** Runden — **2 von 5** enden VOR ihrem eigenen Sturm. `check:maelstrom` (Seeds 1000…1685): Längen **11–46**, Sturmbeginn **15–20**, eine Partie ohne Sturm. Der Sturm trifft also die meisten, aber nicht jede Partie. Drei Wege bleiben: Sturm früher, Partien kürzer, oder bewusst so lassen. **Keine Zahl geändert** — das ist eine Spielgefühls-Entscheidung, und der Vorläufer vom 2026-09-20 (`check:time`, „100 LEBEN BLEIBEN") zeigt, dass dieses Haus so etwas nicht nebenbei entscheidet. | Tiefen-Audit §17 |
 
-Hinweis zur Messung: `npm run check:maelstrom` misst mit anderen Seeds/Bots Partien
-von **11–46** Runden und einem Sturmbeginn bei Runde 15–20. Die beiden Zahlen
-widersprechen sich nicht, sie messen unterschiedliche Bot-Partien — für eine
-Balance-Entscheidung sollte man wissen, welche der beiden dem Spielerbetrieb
-näher liegt.
+Hinweis zur Messung (2026-10-25 korrigiert): Die früheren Audit-Zahlen (Sturm
+76–129, Längen 95–145) waren ein Werkzeugfehler — `spieleZug` gab den Zug
+sofort ab (`endTurn()`) und ließ jeden Spieler schießen; die Zugzeit verging
+nie, und der spielzeit-abhängige Mahlstrom kam erst in Runden, die es im
+echten Spiel nicht gibt. Das Werkzeug spielt jetzt wie `check:maelstrom`
+(nur Team 0 schießt, die übrigen Züge laufen ihre volle Zugzeit); beide
+Messungen liegen beieinander. Ein Regressionstest hält das fest
+(`tests/audit-spielverlauf.test.js`).
 
 ## 6. Offen — braucht echte Hardware
 
