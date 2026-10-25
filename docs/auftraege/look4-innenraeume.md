@@ -211,6 +211,31 @@ Test, der ihn zuerst rot zeigt:
    Hohlraum) und ist grün. **Goldwerte bleiben unverändert** — die Krater-Läufe laufen auf
    `preset: 'hills'` ohne Hohlräume, dort liefert `bodenNahe` genau die Oberfläche.
 
+### Stufe 2 — Etagen (umgesetzt 2026-10-25, Teil 2a)
+
+**Neu:** Kartentyp `etagen` in `src/shared/terrainGen2.js` — ein Massiv mit drei
+Stockwerken: je Etage ein Deckenband (8 px), darunter ein Raum (46 px lichte Höhe), der
+Boden des Raums ist die nächste Decke, die unterste Etage steht auf dem Kartenboden.
+Schächte (18 px breit, alle 320 px) stanzen Löcher **von der Oberfläche** durch alle
+Decken — dort fällt eine Figur hinunter und landet auf dem nächsten Boden.
+
+**Zwei Messungen haben den Entwurf korrigiert (beide belegt):**
+
+1. **Erster Anlauf: 9,8 % Land** auf 640×360 — die durchgehenden Räume nahmen 38 % der
+   Karte weg, unter der Schwelle des bestehenden Land-Tests (15 %). Der Test hat den
+   Fehler gefunden, nicht ich.
+2. **Pfeiler eingebaut** (60 px fest je 140 px): Land **24,7 %** auf 640×360, 40,3 % auf
+   1280×720, 44,6 % auf 2560×1440 — alle Größen über der Schwelle.
+
+**Masse sind Pixelwerte, keine Kartenanteile** — dieselbe Lehre wie bei den Höhlen (dort
+ergab ein Anteil auf kleiner Karte 11 % Land, auf großer 27 %).
+
+**Grenze (Stufe 2b, offen):** Figuren können in einen Schacht **fallen**, aber nicht
+hinaufsteigen — dafür braucht es eine Regel (Sprung­höhe gegen Schachttiefe) oder Leitern.
+Solange sie fehlt, sind die unteren Etagen nur von oben erreichbar. Die Tests behaupten
+deshalb keine Erreichbarkeit, sondern nur: Determinismus, Decken vorhanden, Schacht
+vorhanden, Ränder und Boden versiegelt.
+
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
 | Größe | Erwartung |

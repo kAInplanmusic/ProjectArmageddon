@@ -104,6 +104,35 @@ export const KARTENTYPEN = Object.freeze({
     gitterweite: 300,
     beschreibung: 'Inseln in der Luft mit Lücken darunter — Sturzgefahr.',
   }),
+  etagen: Object.freeze({
+    name: 'Etagen',
+    grundlinie: 0.5,
+    amplitude: 0.3,
+    hoehlenAnteil: 0.0,
+    gitterweite: 240,
+    /*
+     * LOOK-4 Stufe 2 (2026-10-25): Stockwerke in FESTEN PIXELMASSEN.
+     *
+     * Deckenstaerke, lichte Hoehe und Schachtbreite haengen bewusst nicht an
+     * der Kartengroesse — dieselbe Lehre wie bei den Hoehlen, wo ein Anteil auf
+     * kleiner Karte 11 % und auf grosser 27 % Land ergab. Der Typ beschreibt
+     * die Absicht in Pixeln: so hoch ist eine Etage, so dick ist die Decke.
+     */
+    etagen: 3,
+    etagenDecke: 8,
+    etagenRaum: 46,
+    /*
+     * Pfeiler: Die Raeume werden NICHT ueber die ganze Breite gestanzt.
+     * Gemessen am 2026-10-25 auf 640x360: drei durchgehende Raeume nahmen 38 %
+     * der Karte weg, es blieben 9,8 % Land — unter der Schwelle des
+     * Land-Tests (15 %). Mit Pfeilern bleibt der Untergrund tragfaehig.
+     */
+    pfeilerAbstand: 140,
+    pfeilerBreite: 60,
+    schachtBreite: 18,
+    schachtAbstand: 320,
+    beschreibung: 'Ein Massiv mit Stockwerken — Decken, begehbare Boeden und Schaechte.',
+  }),
   kavernen: Object.freeze({
     name: 'Kavernen',
     grundlinie: 0.5,
@@ -279,6 +308,39 @@ export function erzeugeKarte({ rng, width, height, typ = 'huegel' }) {
         if (hohl > 1 - typDef.hoehlenAnteil) {
           bitmap[y * width + x] = 0;
         }
+      }
+    }
+  }
+
+  /*
+   * Die Stockwerke.
+   *
+   * Aufbau je Etage: ein Deckenband, darunter ein Hohlraum. Der Boden des
+   * Hohlraums ist die Decke der naechsten Etage; die unterste Etage steht auf
+   * dem versiegelten Kartenboden. Schaechte stanzen senkrechte Loecher von der
+   * OBERFLAECHE durch alle Decken — dort kann eine Figur hinunterfallen und
+   * landet auf dem naechsten Boden. (Hinauf kommt sie ohne Sprungregel nicht;
+   * das ist Stufe 2b und steht im Entwurf.)
+   */
+  if (typDef.etagen > 0) {
+    const tiefe = typDef.etagenDecke + typDef.etagenRaum;
+    const start = Math.min(...oberflaeche) + 24;
+    for (let i = 0; i < typDef.etagen; i += 1) {
+      const deckenY = start + i * tiefe;
+      if (deckenY + tiefe >= height - 2) break;
+      for (let x = 1; x < width - 1; x += 1) {
+        for (let y = deckenY; y < deckenY + typDef.etagenDecke; y += 1) bitmap[y * width + x] = 1;
+        // Pfeiler stehen lassen — sie tragen die Decken und halten Land in der Karte.
+        const pfeiler = x % typDef.pfeilerAbstand < typDef.pfeilerBreite;
+        if (pfeiler) continue;
+        for (let y = deckenY + typDef.etagenDecke; y < deckenY + tiefe; y += 1) bitmap[y * width + x] = 0;
+      }
+    }
+    for (let x = typDef.schachtAbstand; x < width - 1; x += typDef.schachtAbstand) {
+      for (let dx = 0; dx < typDef.schachtBreite; dx += 1) {
+        const sx = x + dx;
+        if (sx <= 0 || sx >= width - 1) continue;
+        for (let y = oberflaeche[sx]; y < height - 1; y += 1) bitmap[y * width + sx] = 0;
       }
     }
   }
