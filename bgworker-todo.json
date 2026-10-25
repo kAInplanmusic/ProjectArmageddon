@@ -284,13 +284,15 @@
       "id": "O10",
       "titel": "WERKZEUGFALLE — ein langlaufender MCP-Server meldet nach eigener Codeaenderung die ALTE Welt",
       "phase": 3,
-      "status": "offen — bewiesen, Ursache des Geisterbefunds '27 stumme Ereignisse'",
+      "status": "erledigt — Waechter gebaut und geprueft (2026-10-23)",
       "prioritaet": "P1",
       "warum": "Der MCP-Server `audit` ist ein LANGLAUFENDER Prozess und haelt seine Module im Speicher. Nachdem ein Worker `tools/audit-mcp/lib/statisch.mjs` repariert hatte (der Detektor suchte Ereignisnamen nur als ZITIERTE Zeichenkette, die Zuordnungstabelle benutzt aber unquotierte Schluessel), lieferte der MCP weiter das alte Ergebnis.",
       "beleg": "GLEICHE Frage, ZWEI Codestaende, direkt gegenuebergestellt: MCP `audit_events` -> gesamt 43, gedeckt 6, stumm 37, undokumentiert 27, Urteil '27 stumme Ereignisse sind NICHT dokumentiert'. CLI frisch gestartet (`node tools/audit-mcp/server.mjs --ruf audit_events`) -> gesamt 47, gedeckt 39, stumm 8, undokumentiert 0, Urteil 'keine Luecke'.",
       "folge": "Das erklaert den Geisterbefund, der diese Sitzung einen ganzen Worker-Durchgang gekostet hat: Die '27 undokumentiert stummen Ereignisse' waren NIE ein Produktmangel. Das Werkzeug meldete die Welt von vor seiner eigenen Reparatur — mit voller Ueberzeugung und gruener Ampel.",
       "regel": "Jede Aussage eines MCP-Servers ueber den Code muss gegen einen FRISCH gestarteten Lauf desselben Werkzeugs geprueft werden, bevor sie als Befund gilt. Ein MCP-Ergebnis ist ein Zeitpunkt, kein Zustand — genau wie eine verzogert eintreffende Background-Meldung.",
-      "art": "werkzeug"
+      "art": "werkzeug",
+      "beleg_neu": "tools/audit-mcp/lib/stand.mjs haengt seit dem 2026-09-26 einen SHA-256 ueber lib/*.mjs + server.mjs an JEDE Antwort (mitStand in server.mjs, Werkzeug audit_stand). Beweis, dass der Vergleich wirklich anschlaegt, war offen; tests/audit-mcp-stand.test.js (10 Faelle) prueft geaenderte, neue, geloeschte und unlesbare Datei (fail-safe) sowie die ASCII-Fassung der Warnung.",
+      "beleg_frisch": "node --test tests/audit-mcp-stand.test.js -> 10/10 gruen; npm run audit:status zeigt veraltet=false"
     }
   ]
 }
