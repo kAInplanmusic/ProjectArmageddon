@@ -170,6 +170,41 @@ alte.
 3. Erst danach Ruinen als eigene Kartentyp-Variante prüfen — die Hohlräume selbst müssen
    nicht mehr erfunden werden.
 
+### Tiere im Hohlraum (Entscheidung 2026-10-25: sie sollen folgen)
+
+**Entschieden:** Günther und Cookie sollen dem Spieler auch in einen Hohlraum folgen
+(nicht auf der Oberfläche zurückbleiben).
+
+**Ist-Stand (belegt):** Beide hängen an der einwertigen Oberfläche —
+`guentherSystem.js:290` (`const boden = surfaceYAt(...); if (boden > 0) this.#position.y = boden;`)
+und `cookieSystem.js:346` (`#bodenFolgen`). In einem Hohlraum werden sie damit nach oben
+gesetzt, also vom Spieler getrennt.
+
+**Warum hier KEIN Code steht (TDD-Grenze):** Der Fix ist mit dem Muster aus
+`shooting.js` klar (Boden um die bisherige Höhe suchen). Aber es gibt keinen Test, der ihn
+zuerst rot zeigt:
+
+1. Die Position der Tiere liegt privat (`#position`), es gibt nur einen Leser
+   (`get position()`), **keine Setz-API**. Ein Test kann das Tier also nicht in einen
+   Hohlraum stellen.
+2. Der Umweg über das Spiel (Spieler in die Kaverne setzen, Tier laufen lassen, bis es
+   ankommt) ist ein langlaufender Simulationstest mit unsicherem Zeitpunkt — kein
+   verlässliches Rot.
+3. Das Gelände steckt nicht im Kontext der Tiere: Sie bekommen `surfaceYAt`, aber kein
+   `terrain`. Der Fix braucht also eine durchgereichte `bodenNahe(x, vonY)`-Abfrage —
+   dieselbe, die `shooting.js` seit dem 2026-10-25 lokal hat.
+
+**Nächste Schritte, in dieser Reihenfolge:**
+1. `bodenNaheHoehe` aus `shooting.js` in ein eigenes Modul ziehen (z. B.
+   `src/engine/boden.js`), damit Motor, Schuss und Tiere dieselbe Abfrage nutzen.
+2. `MatchController.bodenNahe(x, y)` als öffentliche Methode + Weitergabe in die Kontexte
+   von Günther und Cookie (neben `surfaceYAt`).
+3. Dem Tier eine **Test-Setz-API** geben (`setzePosition(x, y)` o. ä.) — damit ist der
+   rote Test überhaupt erst schreibbar: Tier in die Kaverne setzen, einen Schritt laufen,
+   Höhe prüfen. Ohne diese Stufe bleibt der Fix ein Blindflug.
+4. Erst dann der eigentliche Fix in beiden Systemen, Goldwerte wie beim Rückstoß prüfen
+   (Tier-Positionen stehen im Zustand, ein Versatz ist wahrscheinlich).
+
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
 | Größe | Erwartung |
