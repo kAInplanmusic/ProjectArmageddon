@@ -164,12 +164,19 @@ const TURRET_MAX_MISS = 22;
  * Match reicht Kartenbreite und die beiden Terrainfragen hinein; damit ist die
  * Platzwahl ohne Match prüfbar (`tests/turret-zerlegung.test.js`).
  *
+ * Seit LOOK-4 Stufe 1 (2026-10-25) fragt die Platzsuche, wenn vorhanden,
+ * zusätzlich `bodenNahe(x, vonY)` mit der Höhe der Figur: In einem Hohlraum
+ * stand das Geschütz sonst ÜBER der Figur auf der Oberfläche. Ohne diese
+ * Abfrage bleibt es beim alten Verhalten.
+ *
  * @param {{breite:number, surfaceYAt:(x:number)=>number,
+ *   bodenNahe?:(x:number,y:number)=>number,
  *   waterLevelAt:(x:number,y:number)=>number}} quelle
  * @param {number} startX - Standort der Figur
+ * @param {number|null} [startY] - Höhe der Figur (für `bodenNahe`)
  * @returns {{x:number, y:number}|null} `null`, wenn kein Platz frei ist
  */
-export function freierPlatz(quelle, startX) {
+export function freierPlatz(quelle, startX, startY = null) {
   // Abwechselnd rechts und links suchen — feste Reihenfolge, damit die
   // Platzwahl bei gleichem Seed dieselbe bleibt (Determinismus).
   const kandidaten = [startX];
@@ -180,7 +187,9 @@ export function freierPlatz(quelle, startX) {
   for (const x of kandidaten) {
     const gerundet = Math.round(x);
     if (gerundet < PLAYER_HALF_WIDTH || gerundet > quelle.breite - PLAYER_HALF_WIDTH) continue;
-    const boden = quelle.surfaceYAt(gerundet);
+    const boden = quelle.bodenNahe && startY !== null
+      ? quelle.bodenNahe(gerundet, startY)
+      : quelle.surfaceYAt(gerundet);
     // Festes Gelände über dem Wasser: Ein Geschütz im Hochwasser wäre weg.
     if (boden <= 0 || quelle.waterLevelAt(gerundet, boden) >= WET_LEVEL) continue;
     return { x: gerundet, y: boden - 6 };

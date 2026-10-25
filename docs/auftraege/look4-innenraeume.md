@@ -137,7 +137,7 @@ Oberfläche).
    | `shooting.js:801` in `shiftPlayer` | **Rückstoß** setzt `Position.y = surfaceYAt(zielX)` | die Figur wird auf die **Oberfläche gerissen** statt im Hohlraum zu bleiben |
    | `guentherSystem.js:290/598` | Haustier-Günther sucht seinen Boden | läuft über dem Hohlraum auf der Oberfläche |
    | `cookieSystem.js:325/346` | Cookie-Krater und Cookie-Boden | Krater und Standort am falschen Ort |
-   | `turret.js` | Ballistik bricht am Gelände ab | Turm schießt durch die Höhlendecke hindurch statt zu treffen |
+   | `turret.js` | **Platzsuche** (`freierPlatz`) nimmt `surfaceYAt(x)` | das Geschütz steht ÜBER der Figur auf der Oberfläche statt neben ihr — **behoben 2026-10-25** |
 
    Die **Rückstoß-Stelle ist die schlimmste**, weil sie eine Figur versetzt (nicht nur
    zeichnet).

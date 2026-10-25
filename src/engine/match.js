@@ -1712,8 +1712,9 @@ export class MatchController {
     const platz = freierPlatz({
       breite: this.width,
       surfaceYAt: x => this.surfaceYAt(x),
+      bodenNahe: (x, y) => this.bodenNahe(x, y),
       waterLevelAt: (x, y) => this.waterLevelAt(x, y),
-    }, startX);
+    }, startX, this.#world.getComponent(playerId, 'Position', 'y') ?? null);
     if (!platz) return null;
 
     const entityId = this.#nextTurretId();

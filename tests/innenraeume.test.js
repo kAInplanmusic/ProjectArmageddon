@@ -180,3 +180,36 @@ test('Cookie bleibt auf einem Innenboden', () => {
   assert.ok(p.y > oberflaeche + 200,
     `Cookie wurde auf die Oberfläche gesetzt: y=${Math.round(p.y)}, Oberfläche=${oberflaeche} (Hohlraum war ${tiefster.oben})`);
 });
+
+/*
+ * Geschuetz im Hohlraum (LOOK-4 Stufe 1, 2026-10-25).
+ *
+ * `freierPlatz` (src/engine/turret.js) suchte den Aufstellplatz mit
+ * `surfaceYAt(x)` — also auf der Geländeoberfläche. Ein Spieler, der in einer
+ * Kaverne steht und ein Geschütz aufstellt, bekam es damit ÜBER sich auf der
+ * Oberfläche. Geprüft wird die reine Funktion mit dem echten Gelände einer
+ * Hohlraumkarte (ohne Match, so wie es der Modulkopf vorsieht).
+ */
+test('Ein Geschuetz wird neben der Figur im Hohlraum aufgestellt, nicht auf der Oberflaeche', async () => {
+  const { freierPlatz } = await import('../src/engine/turret.js');
+  const breite = 2560;
+  const m = new MatchController({
+    seed: 7, teams: 2, playersPerTeam: 2, kartentyp: 'kavernen', turnDurationMs: 20000, valhallaRound: 999,
+  });
+  m.start();
+  const hoehe = m.bitmap.length / breite;
+  const boeden = innenboeden(m.bitmap, breite, hoehe).map(b => ({ ...b, tiefe: b.unten - Math.round(m.surfaceYAt(b.x)) }));
+  const tiefster = boeden.reduce((a, b) => (b.tiefe > a.tiefe ? b : a), boeden[0]);
+  assert.ok(tiefster.tiefe > 400, `Testszenario braucht einen tiefen Hohlraum, tiefster: ${tiefster.tiefe} px`);
+
+  const platz = freierPlatz({
+    breite,
+    surfaceYAt: x => m.surfaceYAt(x),
+    bodenNahe: (x, y) => m.bodenNahe(x, y),
+    waterLevelAt: () => -999,
+  }, tiefster.x, tiefster.oben);
+  assert.ok(platz, 'es muss ein Platz gefunden werden');
+  const oberflaeche = Math.round(m.surfaceYAt(platz.x));
+  assert.ok(platz.y > oberflaeche + 200,
+    `Geschuetz steht auf der Oberflaeche (y=${Math.round(platz.y)}, Oberflaeche=${oberflaeche}) statt im Hohlraum (${tiefster.oben})`);
+});
