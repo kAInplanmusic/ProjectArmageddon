@@ -246,7 +246,7 @@ export function erzeugeWaffenSprites(abh) {
 // ---------------------------------------------------------- Standardverdrahtung
 
 /** Der Lader des Spiels. */
-const standard = erzeugeWaffenSprites({
+const waffenSpritesLader = erzeugeWaffenSprites({
   // Das Manifest ist ein eigener, lazy geladener Chunk; die Atlanten werden je Kategorie erst bei Bedarf geholt.
   ladeManifest: () => import('./assets/weapon-sprites/manifest.json').then(m => m.default),
   atlasUrl: async (datei) => {
@@ -264,10 +264,10 @@ const standard = erzeugeWaffenSprites({
  * (nicht geladen oder nicht vorhanden: dann das Icon).
  */
 export function holeWaffenSprite(waffe) {
-  return standard.hole(waffe);
+  return waffenSpritesLader.hole(waffe);
 }
 
 /** Zustand des Laders (Diagnose). */
 export function waffenSpritesZustand() {
-  return standard.zustand();
+  return waffenSpritesLader.zustand();
 }

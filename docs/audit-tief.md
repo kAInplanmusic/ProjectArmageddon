@@ -1,6 +1,6 @@
 # Tiefen-Audit — ProjectArmageddon (Spiel und Engine)
 
-**Erzeugt:** 2026-10-23T16:55:46.010Z · **Commit:** `0e96f8b` (bg/doppel) · **Node:** v22.23.3
+**Erzeugt:** 2026-10-25T03:24:56.905Z · **Commit:** `d118f79` (main) · **Node:** v22.23.4
 **Werkzeug:** `tools/audit-mcp` (Audit-MCP) — statische Analyse, laufende Engine, Gate-Batterie.
 
 > Jede Aussage in diesem Bericht ist eine Messung oder eine Fundstelle. Zahlen, die eine Annahme sind,
@@ -15,11 +15,11 @@
 | ereignisse | 🟢 gruen | 6 stumme Ereignisse — alle im Wächter mit Begründung gelistet (6 gelesene Begründungen) |
 | toteDateien | 🟢 gruen | 0 Dateien ohne Importeur |
 | toteDaten | 🟢 gruen | 0 von 10 Datendateien (.json) unter src/ haben keinen Leser |
-| unbenutzteKonstanten | 🟠 gelb | 5 definiert, nie gelesen |
+| unbenutzteKonstanten | 🟢 gruen | 0 definiert, nie gelesen |
 | marker | 🟢 gruen | 0 TODO/FIXME im Quelltext |
-| zufall | 🟠 gelb | 1 Zeit-/Zufallstreffer im Simulationspfad |
-| pfade | 🔴 rot | 1 Stelle(n) benutzen .pathname statt fileURLToPath (79 machen es richtig). Bei einem Sonderzeichen im Pfad scheitert dort jeder spawn mit ENOENT. |
-| doppelregeln | 🟢 gruen | 17 Doppelregel(n), jede in tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN) begründet: MAX_TEILCHEN, aufprallStaerke, BILDER, cache, CACHE_KANTE, KONTUR, LUFT_SCHWELLE, mische, P, PARAMETER, standard, STIMMUNGEN, STUFEN, tabelle, TOENE, ZELLE, zufall |
+| zufall | 🟢 gruen | 0 Zeit-/Zufallstreffer im Simulationspfad |
+| pfade | 🟢 gruen | Alle 84 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel. |
+| doppelregeln | 🟠 gelb | 2 OFFEN (nicht in der Ausnahmeliste): cache, standard |
 | secrets | 🟢 gruen | 0 Fundstellen in getrackten Dateien |
 | perf | 🟢 gruen | Budget eingehalten: kein Tick über 16,7 ms. |
 
@@ -30,15 +30,15 @@ Er ist **repariert** — und, soweit dieser Lauf es messen kann, nachgemessen:
 
 | Was | Beleg | Zustand |
 |---|---|---|
-| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — Das Gate `smoke:fast` war in DIESEM Lauf nicht dabei (gefahren: lint, validate) — die historische Zahl ist hier NICHT nachgemessen (letzter Commit an der Datei: `0d571d8`, 2026-09-26) |
+| `scripts/smoke-fast.mjs` war vollständig funktionsunfähig | `spawn npm ENOENT`, **0 von 4 Schritten** gemeldet, Stacktrace statt FEHLER-Zeile | **behoben** — Das Gate `smoke:fast` war in DIESEM Lauf nicht dabei (gefahren: lint, validate) — die historische Zahl ist hier NICHT nachgemessen (letzter Commit an der Datei: `e7cdf51`, 2026-10-25) |
 
 **Ursache (eine Zeile, zwei Umstände):** `const ROOT = new URL('..', import.meta.url).pathname;`
 `.pathname` liefert den Pfad prozent-kodiert. Das Projektverzeichnis enthält Leerzeichen, also wurde daraus
 `/home/patrick/AnunnakiTools%20Projekte/laufende%20Projekte/ProjectArmageddon/` — und `fs.existsSync` darauf ist `false`.
 Jeder `spawn` mit diesem `cwd` scheitert dann mit ENOENT.
 
-**Reichweite, in DIESEM Lauf gemessen:** 79 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **1** noch nicht (`scripts/terrain-inventar.mjs:10`).
-Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `0d571d8` (2026-09-26) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
+**Reichweite, in DIESEM Lauf gemessen:** 84 Stellen im Projekt benutzen das korrekte `fileURLToPath`, **keine** mehr.
+Damals — **historische Zahl, in diesem Lauf nicht messbar**, Beleg: Commit `e7cdf51` (2026-10-25) — war es genau **1** Stelle: `scripts/smoke-fast.mjs:31`. Es war die Datei, die den schnellen Rückkopplungszyklus trägt: die,
 die nach jeder Änderung laufen soll. Sie ist damit seit dem Umzug des Repos in dieses Verzeichnis stumm gewesen.
 
 **Zweiter Defekt in derselben Datei:** `laufe()` hängte keinen `error`-Handler an den `spawn`. Ein Startfehler
@@ -50,21 +50,21 @@ FEHLER-Schritt zu erscheinen. Beides ist behoben; die Ursache steht als Kommenta
 
 | Bereich | Dateien | Zeilen |
 |---|---|---|
-| src | 175 | 66593 |
-| tests | 263 | 60478 |
-| scripts | 63 | 12205 |
-| tools | 14 | 5323 |
+| src | 175 | 66693 |
+| tests | 267 | 60970 |
+| scripts | 66 | 13264 |
+| tools | 14 | 5419 |
 
-Ungetrackte Änderungen beim Lauf: **2**
+Ungetrackte Änderungen beim Lauf: **0**
 
 ## 2. Gate-Batterie
 
 | Gate | Ergebnis | Dauer | Kennzahlen |
 |---|---|---|---|
-| lint | 🟢 bestanden | 34.5 s | – |
-| validate | 🟢 bestanden | 1.3 s | – |
+| lint | 🟢 bestanden | 10.6 s | – |
+| validate | 🟢 bestanden | 0.4 s | – |
 
-**2/2 bestanden** · Gesamtdauer 35.8 s
+**2/2 bestanden** · Gesamtdauer 11 s
 
 ## 3. Determinismus
 
@@ -173,7 +173,7 @@ die Form liefert immer dasselbe.
 
 Züge 150 · Schüsse 106 · gemessene Ticks 15019
 
-Tick-Kosten: mittel **0.0603 ms** · p95 0.0749 ms · p99 0.1349 ms · max 5.7333 ms
+Tick-Kosten: mittel **0.0798 ms** · p95 0.0907 ms · p99 0.1425 ms · max 5.0522 ms
 Budget 16,6667 ms → **0 Ticks über Budget** (0 %)
 
 Budget eingehalten: kein Tick über 16,7 ms.
@@ -204,31 +204,25 @@ Keine: alle 10 `.json` unter `src/` werden von irgendwo im CODE gelesen.
 
 ### 10.2 Konstanten ohne Leser
 
-| Konstante | Ort |
-|---|---|
-| `STOFF_TEXTUR_URLEN` | src/client/main.js:91 |
-| `EFFEKT_SHEET_URLEN` | src/client/main.js:93 |
-| `PLANETEN_KULISSE_URLEN` | src/client/main.js:95 |
-| `COOKIE_REFERENZ_BREITE` | src/shared/config/cookie.js:23 |
-| `BETAEUBUNG` | src/shared/config/schaden.js:52 |
+Keine — jede definierte Konstante unter `src/` wird irgendwo gelesen.
 
 ### 10.3 Doppelregeln (derselbe Name in 2+ Dateien)
 
-Gemessen: **17** · davon aus der Ausnahmeliste begründet: **17** · OFFEN: **0**. Das Urteil wird aus `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` gelesen; ohne Eintrag dort gilt eine Doppelregel als offen (fail-safe in Richtung des lauteren Fehlers).
+Gemessen: **17** · davon aus der Ausnahmeliste begründet: **15** · OFFEN: **2**. Das Urteil wird aus `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` gelesen; ohne Eintrag dort gilt eine Doppelregel als offen (fail-safe in Richtung des lauteren Fehlers).
 
 | Name | Orte | Urteil |
 |---|---|---|
 | `MAX_TEILCHEN` | src/client/feuerOptik.js:19 · src/client/figurEffekte.js:15 · src/client/tierBuehne.js:19 | bewusst, begründet: Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel. |
 | `aufprallStaerke` | src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260 | bewusst, begründet: Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel. |
 | `BILDER` | src/client/roster.js:20 · src/client/tierBilder.js:17 | bewusst, begründet: Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein. |
-| `cache` | src/client/figurenBilder.js:44 · src/client/tierBilder.js:33 | bewusst, begründet: Zwei getrennte Caches für verschiedene Daten (Figurenbilder bzw. Tierposen); gemeinsamer Name, keine gemeinsame Regel. |
+| `cache` | src/client/figurenBilder.js:57 · src/client/tierBilder.js:33 | **OFFEN** — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:44 · src/client/tierBilder.js:33 | gemessen: src/client/figurenBilder.js:57 · src/client/tierBilder.js:33) — gilt als offen |
 | `CACHE_KANTE` | src/client/figurStufen.js:13 · src/client/waffenSprites.js:25 | bewusst, begründet: figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches. |
 | `KONTUR` | src/client/figuren.js:18 · src/client/gelaendeStil.js:28 | bewusst, begründet: figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert. |
 | `LUFT_SCHWELLE` | src/client/figurAnimation.js:25 · src/client/hoehlenSchatten.js:86 | bewusst, begründet: figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung. |
 | `mische` | src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105 | bewusst, begründet: backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren. |
 | `P` | src/client/figurTypen.js:59 · src/client/klangProfile.js:51 | bewusst, begründet: figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion. |
 | `PARAMETER` | src/client/figurTypen.js:72 · src/client/waffenAnimation.js:106 | bewusst, begründet: figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen. |
-| `standard` | src/client/figurenBilder.js:34 · src/client/waffenSprites.js:249 | bewusst, begründet: figurenBilder.js ist die Standard-Ankertabelle, waffenSprites.js die Standardverdrahtung des Laders — gleicher Name, andere Bedeutung. |
+| `standard` | src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249 | **OFFEN** — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:34 · src/client/waffenSprites.js:249 | gemessen: src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249) — gilt als offen |
 | `STIMMUNGEN` | src/shared/config/backdrops.js:698 · src/client/musikListe.js:13 | bewusst, begründet: backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung. |
 | `STUFEN` | src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:15 | bewusst, begründet: lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung. |
 | `tabelle` | src/client/gelaendeStil.js:229 · src/client/stoffOptik.js:22 | bewusst, begründet: gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate. |
@@ -248,9 +242,7 @@ Gemessen: **17** · davon aus der Ausnahmeliste begründet: **17** · OFFEN: **0
 
 ### 10.6 Zufall und Zeit im Simulationspfad
 
-| Ort | Art | Zeile |
-|---|---|---|
-| src/engine/replay.js:140 | Zeit | `this.#startedAt = Date.now();` |
+Keine Treffer unter `src/engine/`.
 
 Außerhalb des Simulationspfads (meist legitim — Seed-Erzeugung, Anzeige): **21** Treffer.
 
@@ -275,13 +267,9 @@ Davon **6 mit Begründung als bewusst stumm gelistet** (Wächter `tests/event-co
 
 ## 12. Pfad-Auflösung (`fileURLToPath` statt `.pathname`)
 
-**79** Stellen lösen den Modulpfad korrekt auf · **1** falsch.
+**84** Stellen lösen den Modulpfad korrekt auf · **0** falsch.
 
-| Datei | Zeile | Code |
-|---|---|---|
-| `scripts/terrain-inventar.mjs` | 10 | `const wurzel = new URL('..', import.meta.url).pathname;` |
-
-1 Stelle(n) benutzen .pathname statt fileURLToPath (79 machen es richtig). Bei einem Sonderzeichen im Pfad scheitert dort jeder spawn mit ENOENT.
+Alle 84 Pfad-Auflösungen benutzen fileURLToPath — keine prozent-kodierte Wurzel.
 
 ## 13. Server-Autorität und Secrets
 
@@ -313,11 +301,11 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 
 ## 15. Auswertung
 
-**Rot:** pfade
+**Rot:** keine
 
-**Gelb:** unbenutzteKonstanten, zufall
+**Gelb:** doppelregeln
 
-**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, marker, doppelregeln, secrets, perf
+**Grün:** gates, determinismus, ereignisse, toteDateien, toteDaten, unbenutzteKonstanten, marker, zufall, pfade, secrets, perf
 
 ### Was schon belegt gut funktioniert
 
@@ -327,31 +315,28 @@ Abrufbar über das Werkzeug `audit_checklist` (filterbar nach Thema, Quelle, Fre
 - **Keine Datei ohne Importeur.** In diesem Lauf gemessen: 0 (die 974 toten Zeilen sind die historische Zahl der ersten Messung). Wächter `tests/no-dead-code.test.js`: vorhanden — ob er diese Zahl hält, zeigt nur sein eigener Lauf (`npm test`), nicht dieser Bericht.
 - **Kein Secret in getrackten Dateien.**
 - **Ereignis-Abdeckung ist sauber:** 75 von 81 Ereignisarten behandelt, die 6 stummen sind im Wächter `tests/event-coverage.test.js` EINZELN mit Begründung gelistet — der Text wird gelesen, nicht unterstellt (Abschnitt 11).
-- **Bewusst und begründet (17):** `MAX_TEILCHEN` (src/client/feuerOptik.js:19 · src/client/figurEffekte.js:15 · src/client/tierBuehne.js:19) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.
-- **Bewusst und begründet (17):** `aufprallStaerke` (src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel.
-- **Bewusst und begründet (17):** `BILDER` (src/client/roster.js:20 · src/client/tierBilder.js:17) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.
-- **Bewusst und begründet (17):** `cache` (src/client/figurenBilder.js:44 · src/client/tierBilder.js:33) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Zwei getrennte Caches für verschiedene Daten (Figurenbilder bzw. Tierposen); gemeinsamer Name, keine gemeinsame Regel.
-- **Bewusst und begründet (17):** `CACHE_KANTE` (src/client/figurStufen.js:13 · src/client/waffenSprites.js:25) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches.
-- **Bewusst und begründet (17):** `KONTUR` (src/client/figuren.js:18 · src/client/gelaendeStil.js:28) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert.
-- **Bewusst und begründet (17):** `LUFT_SCHWELLE` (src/client/figurAnimation.js:25 · src/client/hoehlenSchatten.js:86) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung.
-- **Bewusst und begründet (17):** `mische` (src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren.
-- **Bewusst und begründet (17):** `P` (src/client/figurTypen.js:59 · src/client/klangProfile.js:51) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion.
-- **Bewusst und begründet (17):** `PARAMETER` (src/client/figurTypen.js:72 · src/client/waffenAnimation.js:106) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen.
-- **Bewusst und begründet (17):** `standard` (src/client/figurenBilder.js:34 · src/client/waffenSprites.js:249) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurenBilder.js ist die Standard-Ankertabelle, waffenSprites.js die Standardverdrahtung des Laders — gleicher Name, andere Bedeutung.
-- **Bewusst und begründet (17):** `STIMMUNGEN` (src/shared/config/backdrops.js:698 · src/client/musikListe.js:13) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung.
-- **Bewusst und begründet (17):** `STUFEN` (src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:15) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung.
-- **Bewusst und begründet (17):** `tabelle` (src/client/gelaendeStil.js:229 · src/client/stoffOptik.js:22) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate.
-- **Bewusst und begründet (17):** `TOENE` (src/client/gelaendeStil.js:32 · src/client/toasts.js:18) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.
-- **Bewusst und begründet (17):** `ZELLE` (src/client/figurSheets.js:16 · src/client/waffenAnimation.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.
-- **Bewusst und begründet (17):** `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.
-- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 60478 Zeilen Tests gegen 66593 Zeilen Quelltext (Verhältnis 0.91).
+- **OFFENE Doppelregeln (2):** `cache` (src/client/figurenBilder.js:57 · src/client/tierBilder.js:33), `standard` (src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249). Diese Definitionen steht in mehr als einer Datei und ist NICHT in der Ausnahmeliste `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)` begründet — nach der Projektregel „eine Regel, eine Stelle" ein offener Befund, kein Freispruch. Ein Freispruch wird ab hier GELESEN, nicht behauptet: Wer ihn will, trägt den Namen mit Begründung und Orten in die Liste ein.
+- **Bewusst und begründet (15):** `MAX_TEILCHEN` (src/client/feuerOptik.js:19 · src/client/figurEffekte.js:15 · src/client/tierBuehne.js:19) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Drei getrennte Bild-Budgets: Feuer-, Figuren- und Tier-Effekte begrenzen jeweils ihre eigenen Teilchen; die Werte 280/192/90 sind je Renderer verschieden, keine gemeinsame Regel.
+- **Bewusst und begründet (15):** `aufprallStaerke` (src/shared/config/zerstoerung.js:125 · src/client/zerstoerungOptik.js:260) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Der Client rechnet Spaltenläufe in Zellen um und ruft die gemeinsame Formel aus shared/config/zerstoerung.js — ein Adapter, keine zweite Formel.
+- **Bewusst und begründet (15):** `BILDER` (src/client/roster.js:20 · src/client/tierBilder.js:17) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: Verschiedene Vite-Globs: Figurenporträts in roster.js, Tierposen in tierBilder.js; nur der Bezeichner stimmt überein.
+- **Bewusst und begründet (15):** `CACHE_KANTE` (src/client/figurStufen.js:13 · src/client/waffenSprites.js:25) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurStufen.js meint die Kantenlänge der Figuren-Mip-Stufe (128), waffenSprites.js die gecachte Waffenzelle (64) — zwei verschiedene Caches.
+- **Bewusst und begründet (15):** `KONTUR` (src/client/figuren.js:18 · src/client/gelaendeStil.js:28) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figuren.js hält die Konturfarbe als RGB-Tripel aus PAL, gelaendeStil.js als hexRgb-Fassung desselben Palettenwerts — verschiedene Darstellungen, kein geteilter Wert.
+- **Bewusst und begründet (15):** `LUFT_SCHWELLE` (src/client/figurAnimation.js:25 · src/client/hoehlenSchatten.js:86) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurAnimation.js meint die Vertikalgeschwindigkeit (px/s), ab der eine Figur fliegt; hoehlenSchatten.js die Helligkeitsschwelle einer Kavernenkarte — gleicher Name, andere Einheit und Bedeutung.
+- **Bewusst und begründet (15):** `mische` (src/shared/config/backdrops.js:718 · src/shared/config/loadouts.js:105) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: backdrops.js mischt zwei RGB-Farben, loadouts.js ist ein Ganzzahl-Hash — gleicher Name, verschiedene Verfahren.
+- **Bewusst und begründet (15):** `P` (src/client/figurTypen.js:59 · src/client/klangProfile.js:51) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurTypen.js ist eine Kurzform für Object.freeze, klangProfile.js eine Profilfabrik mit eigener Signatur — gleicher Ein-Buchstaben-Name, andere Funktion.
+- **Bewusst und begründet (15):** `PARAMETER` (src/client/figurTypen.js:72 · src/client/waffenAnimation.js:106) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurTypen.js beschreibt Bewegungsparameter je Figurentyp, waffenAnimation.js Animationsparameter je Waffenkategorie — zwei getrennte Tabellen.
+- **Bewusst und begründet (15):** `STIMMUNGEN` (src/shared/config/backdrops.js:698 · src/client/musikListe.js:13) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: backdrops.js listet Kulissen-Stimmungen (hell/dunkel/…), musikListe.js Einsatzorte eines Musikstücks (menu/match/intensiv) — gleicher Name, andere Bedeutung.
+- **Bewusst und begründet (15):** `STUFEN` (src/engine/systems/lootSystem.js:93 · src/client/figurStufen.js:15) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: lootSystem.js meint Seltenheitsstufen, figurStufen.js die Mip-Kantenlängen der Figurensprites — gleicher Name, andere Bedeutung.
+- **Bewusst und begründet (15):** `tabelle` (src/client/gelaendeStil.js:229 · src/client/stoffOptik.js:22) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js baut eine Rausch-Tabelle für Verzerrung, stoffOptik.js eine Texturtabelle — verschiedene Daten und Formate.
+- **Bewusst und begründet (15):** `TOENE` (src/client/gelaendeStil.js:32 · src/client/toasts.js:18) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: gelaendeStil.js meint Steintöne (RGB), toasts.js die Toene-Symbole und Rollen der Hinweise — gleicher Name, andere Bedeutung.
+- **Bewusst und begründet (15):** `ZELLE` (src/client/figurSheets.js:16 · src/client/waffenAnimation.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: figurSheets.js meint die 256-px-Zelle der Figurensprite-Sheets, waffenAnimation.js die 128-px-Zelle der Waffenatlanten; die Feuer- und Waffensprite-Fassungen sind bereits zusammengeführt, die Atlanten bleiben verschieden.
+- **Bewusst und begründet (15):** `zufall` (src/engine/zerstoerung.js:108 · src/client/valhallaOmen.js:40) — Ausnahme laut `tools/audit-mcp/lib/statisch.mjs (DOPPELREGEL_AUSNAHMEN)`: engine/zerstoerung.js ist ein reiner Ganzzahl-Hash, valhallaOmen.js ein mulberry32-Zustandsgenerator für Blitze — verschiedene Verfahren.
+- **Der Gate-Apparat ist erheblich:** 2 Gates in diesem Lauf, 60970 Zeilen Tests gegen 66693 Zeilen Quelltext (Verhältnis 0.91).
 - **Der Waffenkatalog ist kein Datenmüll:** 136 verschiedene powerScore-Werte bei 150 Waffen.
 
 ### Die größten Bremsen
 
 1. 6 stumme Engine-Ereignisse (6 mit Begründung gelistet, 0 OHNE Begründung) — jeder stumme Pfad ist in der Anzeige unsichtbar.
-2. Zeit-/Zufallstreffer im Simulationspfad gefährden den Determinismus.
-3. 5 Konstanten ohne Leser — Werte, die eine Wirkung versprechen, die es nicht gibt.
 
 ## 16. Nicht messbar in dieser Umgebung
 
@@ -376,76 +361,20 @@ Die Sichtgrenzen stammen aus `lib/statisch.mjs#sichtgrenzen()` und werden mit JE
 
 ## 17. TODO
 
-28 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
+3 Punkte, nach Schwere sortiert. **Design-Entscheidungen sind nicht getroffen** — sie stehen als solche markiert und brauchen einen Beschluss.
 
-### KRITISCH (1)
+### MITTEL (2)
 
-- [ ] Prozent-kodierte Wurzel: scripts/terrain-inventar.mjs:10
-      `const wurzel = new URL('..', import.meta.url).pathname;` — `.pathname` liefert bei Sonderzeichen im Pfad `%20`; jeder spawn mit diesem cwd scheitert mit ENOENT. Ersetzen durch `fileURLToPath(new URL(...))`.
+- [ ] Offene Doppelregel: cache
+      src/client/figurenBilder.js:57 · src/client/tierBilder.js:33 — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:44 · src/client/tierBilder.js:33 | gemessen: src/client/figurenBilder.js:57 · src/client/tierBilder.js:33) — gilt als offen
+- [ ] Offene Doppelregel: standard
+      src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249 — gelistet, aber die gemessenen Orte weichen von den dokumentierten ab (dokumentiert: src/client/figurenBilder.js:34 · src/client/waffenSprites.js:249 | gemessen: src/client/figurenBilder.js:47 · src/client/waffenSprites.js:249) — gilt als offen
 
-### HOCH (1)
+### NIEDRIG (1)
 
-- [ ] Zufall/Zeit im Simulationspfad: src/engine/replay.js:140
-      this.#startedAt = Date.now();
-
-### MITTEL (5)
-
-- [ ] Konstante ohne Leser: STOFF_TEXTUR_URLEN
-      src/client/main.js:91
-- [ ] Konstante ohne Leser: EFFEKT_SHEET_URLEN
-      src/client/main.js:93
-- [ ] Konstante ohne Leser: PLANETEN_KULISSE_URLEN
-      src/client/main.js:95
-- [ ] Konstante ohne Leser: COOKIE_REFERENZ_BREITE
-      src/shared/config/cookie.js:23
-- [ ] Konstante ohne Leser: BETAEUBUNG
-      src/shared/config/schaden.js:52
-
-### NIEDRIG (21)
-
-- [ ] Export ohne Leser: STARTGLANZ_DAUER
-      src/client/effektStil.js
-- [ ] Export ohne Leser: ART
-      src/client/figurEffekte.js
-- [ ] Export ohne Leser: balkenFarbe
-      src/client/figuren.js
-- [ ] Export ohne Leser: ZEILEN
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: BLATT_B
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: BLATT_H
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: frameAusZelle
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: blattMassOk
-      src/client/figurSheets.js
-- [ ] Export ohne Leser: AUFPRALL_RUCK_SCHWELLE
-      src/client/gefuehl.js
-- [ ] Export ohne Leser: MESS_INTERVALL
-      src/client/hudAusweichen.js
-- [ ] Export ohne Leser: RAD_FAKTOR
-      src/client/kameraSteuerung.js
-- [ ] Export ohne Leser: SICHT_BREITE
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: SICHT_HOEHE
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: ZIEL_ANTEIL
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: GEGNER_REICHWEITE
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: GEGNER_NAH
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: GEGNER_MAX
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: VORAUS_SEKUNDEN
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: kartenPunktImSchirm
-      src/client/kameraZiel.js
-- [ ] Export ohne Leser: umschliessend
-      src/client/kameraZiel.js
 - [ ] Matchdauer im Verhältnis zum Mahlstrom-Breakpoint prüfen *[Offen — Design-Entscheidung]*
       0 von 5 Partien endeten VOR Runde 8
 
 ---
 
-Erzeugt von `tools/audit-mcp` v1.0.0 · Repo `/home/patrick/pa-wt/doppel`
+Erzeugt von `tools/audit-mcp` v1.0.0 · Repo `/home/patrick/AnunnakiTools Projekte/laufende Projekte/ProjectArmageddon`

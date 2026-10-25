@@ -30,7 +30,7 @@ const TIER_ANSICHT = Object.freeze({
 });
 
 // art -> pose -> Eintrag | 'laedt' | 'fehlt'
-const cache = new Map();
+const tierCache = new Map();
 
 /** Anker (Pixel im 256er Bild) und Dateiname einer Pose aus dem Manifest. */
 function poseEintrag(art, pose) {
@@ -44,8 +44,8 @@ function poseEintrag(art, pose) {
  * Der erste Aufruf einer Pose stößt das Laden an.
  */
 export function holeTierPose(art, pose) {
-  let poses = cache.get(art);
-  if (!poses) cache.set(art, poses = new Map());
+  let poses = tierCache.get(art);
+  if (!poses) tierCache.set(art, poses = new Map());
   const stand = poses.get(pose);
   if (stand && typeof stand === 'object') return stand;
   if (stand) return null;

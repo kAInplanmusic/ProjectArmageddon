@@ -44,17 +44,17 @@ const MANIFEST = import.meta.glob('./assets/characters-side/manifest.json', { ea
 const BLATT_MANIFEST = import.meta.glob('./assets/sprite-sheets/manifest.json', { eager: true, import: 'default' });
 const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*.webp', { query: '?url', import: 'default' });
 
-const standard = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
+const STANDARD_ANKER = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
 
 /** Ankerpunkte je Figur aus dem Manifest der Seitenansichten (Anteile 0..1). */
 function ankerAusManifest(fraktion, datei) {
   const m = Object.values(MANIFEST)[0];
   const e = m?.figuren?.[`${fraktion}/${datei}`];
-  return e ? { ...standard, ...e.anker } : standard;
+  return e ? { ...STANDARD_ANKER, ...e.anker } : STANDARD_ANKER;
 }
 
 // fraktion -> datei -> Eintrag | 'laedt' | 'fehlt' (zweistufig: Nachschlag je Bild ohne Zeichenkettenbau)
-const cache = new Map();
+const bildCache = new Map();
 
 async function lade(eintraege, charakter) {
   const datei = charakter.sprite;
@@ -71,7 +71,7 @@ async function lade(eintraege, charakter) {
       hell: null,
       seite: Boolean(seitenLader),
       blatt: null,
-      anker: seitenLader ? ankerAusManifest(charakter.faction, charakter.sprite) : standard,
+      anker: seitenLader ? ankerAusManifest(charakter.faction, charakter.sprite) : STANDARD_ANKER,
     };
     const std = stufeBauen(fig, CACHE_KANTE);
     fig.stufen[STUFEN.indexOf(CACHE_KANTE)] = std;
@@ -110,8 +110,8 @@ async function ladeBlatt(fig, charakter) {
  */
 export function holeFigur(charakter) {
   if (!charakter) return null;
-  let eintraege = cache.get(charakter.faction);
-  if (!eintraege) { eintraege = new Map(); cache.set(charakter.faction, eintraege); }
+  let eintraege = bildCache.get(charakter.faction);
+  if (!eintraege) { eintraege = new Map(); bildCache.set(charakter.faction, eintraege); }
   const e = eintraege.get(charakter.sprite);
   if (e === undefined) {
     eintraege.set(charakter.sprite, 'laedt');
