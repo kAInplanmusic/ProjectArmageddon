@@ -58,11 +58,23 @@ function freierPort() {
   });
 }
 
-/** Führt einen Befehl aus und liefert Ausgabe und Dauer. */
-function laufe(befehl, argumente, fristMs) {
+/**
+ * Führt einen Befehl aus und liefert Ausgabe und Dauer.
+ *
+ * `umgebung` wird über `process.env` gelegt. Nötig für `PA_ZUGPAUSE_SEKUNDEN=0`:
+ * `npm test` setzt die Variable in `package.json`, ein direkt aufgerufenes
+ * `node --test` bekommt sie NICHT. Der Rauchtest rief die Kern-Tests direkt auf
+ * und stand damit dauerhaft auf rot (8 von 70 Faellen, gemessen 2026-10-25),
+ * obwohl der Baum gesund war — eine Ampel, die immer rot zeigt, wird ignoriert.
+ */
+function laufe(befehl, argumente, fristMs, umgebung = {}) {
   return new Promise(resolve => {
     const start = performance.now();
-    const p = spawn(befehl, argumente, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    const p = spawn(befehl, argumente, {
+      cwd: ROOT,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, ...umgebung },
+    });
     let ausgabe = '';
     // Vorab deklariert, damit der `error`-Zweig die Frist aufräumen kann, ohne
     // von der zeitlichen Reihenfolge der Zuweisung abzuhängen.
@@ -165,7 +177,9 @@ await schritt('Kern-Tests (Match, Replay, Waffen)', async () => {
   for (const datei of KERN_TESTDATEIEN) {
     if (fs.existsSync(path.join(ROOT, datei))) vorhanden.push(datei);
   }
-  const r = await laufe('node', ['--test', ...vorhanden], 90_000);
+  // `PA_ZUGPAUSE_SEKUNDEN=0` wie in `npm test`: ohne sie laufen die
+  // Servertests mit Zugpause und schlagen fehl, obwohl nichts kaputt ist.
+  const r = await laufe('node', ['--test', ...vorhanden], 90_000, { PA_ZUGPAUSE_SEKUNDEN: '0' });
   const treffer = /# fail (\d+)/.exec(r.ausgabe);
   const fehler = treffer ? Number(treffer[1]) : -1;
   const pass = /# pass (\d+)/.exec(r.ausgabe);
