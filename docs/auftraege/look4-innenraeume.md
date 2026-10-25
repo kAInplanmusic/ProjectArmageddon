@@ -140,10 +140,33 @@ Oberfläche).
    | `turret.js` | Ballistik bricht am Gelände ab | Turm schießt durch die Höhlendecke hindurch statt zu treffen |
 
    Die **Rückstoß-Stelle ist die schlimmste**, weil sie eine Figur versetzt (nicht nur
-   zeichnet). Ein y-fähiger Ersatz ist denkbar (Suche nach dem nächsten Boden um die
-   bisherige Höhe, Rückfall auf `surfaceYAt`), wurde aber **nicht** gebaut: Der Fehler
-   braucht erst einen Test, der ihn reproduziert (Figur im Hohlraum, Rückstoß, Höhe
-   vorher/nachher) — ohne diesen Test wäre die Änderung ein Blindflug an der Physik.
+   zeichnet).
+
+**Der Fix ist gebaut, gemessen — und wieder zurückgezogen (2026-10-25).**
+
+Ablauf, ehrlich protokolliert:
+
+1. **Reproduziert:** Figur auf einem Innenboden (Seed 7, `kavernen`, y = 1279, Oberfläche
+   516), Bewegungswaffe `pa_087` (Teleport) feuern → die Figur stand danach bei **y = 638**,
+   also 641 px nach oben aus der Höhle gerissen. Test dazu: `tests/innenraeume.test.js`,
+   Fall „Ein Bewegungsspezial reisst die Figur nicht aus dem Hohlraum".
+2. **Behoben:** `bodenNaheHoehe()` in `shooting.js` sucht den Boden um die BISHERIGE Höhe
+   (±480 px, erst nach unten) statt die einwertige Oberfläche zu nehmen; auf der Oberfläche
+   bleibt das alte Verhalten (Schwelle: mehr als ein Körpermaß unter der Oberfläche).
+   Ergebnis: Test **grün** (rot → grün belegt).
+3. **Zurückgezogen:** Die Goldwert-Prüfungen in `tests/zerstoerung.test.js` ändern ihre
+   **Zustands-Hashes** (Seed 4242: `85bd9975` → `1fefacd8`; Altfassung `eb0d7904` →
+   `16bd8499`; Terrain-Hashes unverändert). Ursache ist dieselbe Fehlerklasse: In einem
+   Lauf mit 30 Kratern stehen Figuren IM Krater, also unter der Oberfläche — dort greift die
+   neue Suche und verschiebt Positionen.
+4. **Warum trotzdem zurück:** Ein Fix, der aufgezeichnete Goldwerte verschiebt, braucht eine
+   **bewusste Neubasierung** (welche Hashes, welche Seeds, mit welcher Begründung) — das ist
+   eine eigene Entscheidung und nicht als Nebenwirkung zu erledigen. Solange sie aussteht,
+   bleibt der Fehler offen und der Test sichtbar übersprungen (Grund im Testkopf).
+
+**Nächster Schritt (Entscheidung nötig):** Goldwerte für die Krater-Läufe neu basieren
+(dokumentiert, wie bei den anderen Nachträgen) und den Fix wieder einsetzen — dann mit
+demselben Test rot → grün.
 3. Erst danach Ruinen als eigene Kartentyp-Variante prüfen — die Hohlräume selbst müssen
    nicht mehr erfunden werden.
 
