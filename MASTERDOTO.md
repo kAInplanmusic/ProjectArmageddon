@@ -15,6 +15,73 @@ Absichtserklärungen.
 > gelöscht; ihre noch offenen Punkte stehen unten unter
 > **„Übernommen aus der alten todo.md"**. Maßgeblich ist allein diese Datei.
 
+## Performance-Messung 2026-10-26 — gemessen, eine Optimierung VERWORFEN
+
+Auftrag: „Performance" nach Optik und Code-Klarheit. Erst gemessen, dann gehandelt.
+
+### 1. Simulation ist kein Thema (belegt)
+
+`node scripts/perf-profile.mjs --ticks=6000`: **0,154 ms mittlere Tick-Dauer** bei
+**16,67 ms Budget** (5129 Ticks/s, 1 Tick über Budget = 0,02 %, Heap 40 MB).
+Ein Umbau der Simulation wäre Aufwand ohne Wirkung.
+
+### 2. Bildzeit ist auf DIESER Maschine nicht zurechenbar (belegt)
+
+`node scripts/browser-perf.mjs --frames=400` (Dev-Server auf 5173):
+
+| Messung | Wert |
+| :-- | :-- |
+| Mittel / p50 über 400 Frames | 109,0 / 116,6 ms |
+| Über Budget (16,7 ms) | 400 von 400 (100 %) |
+| WebGPU | Schnittstelle vorhanden, **Gerät: nein** |
+| Rechenweg des Backens | `cpu` |
+
+116,6 ms **flach** über alle Frames und „kein Gerät" heißen: Headless-Chromium
+rastert hier in Software. Die Zahl beschreibt den Renderer des Browsers, nicht
+den Spielcode — als Optimierungsziel ist sie wertlos. Was daraus folgt, steht in
+der Entscheidung zur Hardware (`npm run perf:browser` auf echter Hardware).
+
+### 3. Der eine große Posten: Terrain-Backen beim Kartenaufbau (gemessen je Stufe)
+
+2560×1440 = 3,69 Mio. Pixel, Karte `kavernen`, Median aus 5 Läufen:
+
+| Stufe | Zeit | Anteil |
+| :-- | --: | --: |
+| Deckkraft aus der Maske | 10,1 ms | 2 % |
+| `faerbeGelaende` (Steine, Lagen, Kantenlicht) | **400,6 ms** | **72 %** |
+| `fuelleHoehlenluft` (LOOK-4) | 120,1 ms | 22 % |
+| `daempfeInnenkanten` (LOOK-4) | 23,6 ms | 4 % |
+| **Summe CPU** | **554,4 ms** | |
+
+Im Browser meldet das Werkzeug 915,5 ms für denselben Vorgang — die Differenz ist
+`putImageData` (14,7 MB) auf einer Canvas ohne GPU. Auf 1280×720 sind es 141,8 ms
+CPU. Der Aufbau läuft EINMAL je Karte (Kartenaufbau, Resize, Online-Rekonstruktion),
+nicht je Bild.
+
+### 4. Verworfene Optimierung (Zahlen, damit sie nicht wiederholt wird)
+
+Zwei Änderungen an den LOOK-4-Passes wurden gebaut und **wieder verworfen**:
+
+| Idee | Vorher → Nachher (beide Passes) | Urteil |
+| :-- | :-- | :-- |
+| Puffer der Flutfüllung wiederverwenden statt je Aufruf anlegen | 2560×1440: 86 → 82 ms | **verworfen** — 5 %, dafür zwei Modul-Puffer (bis 7,4 MB) als verborgener Zustand |
+| Oberfläche zeilenweise statt spaltenweise suchen | 86 → 89 ms | **verworfen** — nicht schneller; die Cache-Erwartung hielt nicht |
+
+Beide zusammen: 86 → 84 ms (2 %) auf 915 ms Backen — **Rauschen**. Genau das ist
+der Fall, in dem eine Änderung nach der Messung zurückgeht statt liegenzubleiben.
+Ebenfalls gemessen und verworfen: `Math.floor`/Modulo der Flutfüllung durch zwei
+Stapel ersetzen (7,69 statt 7,82 ms = nichts) und ein Zeilen-Lauf-Verfahren, das
+nur nach unten läuft (**nicht** äquivalent: eine Höhle ist auch über einen Weg
+erreichbar, der erst hinab- und dann hinaufführt).
+
+### 5. Was eine echte Verbesserung wäre (nicht gebaut, bewusst)
+
+`faerbeGelaende` mit 72 % ist der einzige Posten, der zählt — ein Voronoi-Kern mit
+drei Ebenen je Pixel. Eine Halbierung ist ohne Änderung des Aussehens nur über
+eine andere Rechenart zu haben (GPU-Weg, der ohne Gerät nicht läuft, oder
+Vektorisierung), nicht über Mikro-Optimierung. Das ist ein eigener Auftrag mit
+eigenem Bildvergleich, kein Nebeneffekt.
+
 ## Abschluss 2026-10-24 (Hermes) — UX-Werkzeuge ausgewertet, AU-10 erledigt
 
 `npm run test:a11y` und `npm run check:ux` sind gelaufen, die Funde sind abgearbeitet.
