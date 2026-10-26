@@ -39,6 +39,13 @@ const LANDANTEIL = {
   hoehle: [0.5, 0.8],
   hoehleInsel: [0.5, 0.8],
   hochkant: [0.3, 0.6],
+  schlucht: [0.4, 0.65],
+  archipel: [0.08, 0.25],
+  vulkan: [0.18, 0.4],
+  ruinenstadt: [0.18, 0.4],
+  pyramide: [0.25, 0.45],
+  planet: [0.1, 0.3],
+  unmoeglich: [0.18, 0.4],
 };
 
 test('Komposition: jede Kartenart ist deterministisch, trägt ihren Namen und hält ihren Landanteil', () => {
@@ -60,5 +67,32 @@ test('Komposition: Hochformat wählt ohne Angabe „hochkant“, Querformat nie'
   assert.equal(erzeugeKompositionsKarte({ rng: createRng(5), width: 720, height: 1280 }).art, 'hochkant');
   for (let seed = 1; seed <= 30; seed += 1) {
     assert.notEqual(erzeugeKompositionsKarte({ rng: createRng(seed), width: B, height: H }).art, 'hochkant');
+  }
+});
+
+test('Komposition: „unmöglich“ verlangt den Umlauf und ist an der Naht so glatt wie im Inneren', () => {
+  for (let seed = 1; seed <= 20; seed += 1) {
+    const k = erzeugeKompositionsKarte({ rng: createRng(seed * 131), width: B, height: H, art: 'unmoeglich' });
+    assert.equal(k.umlauf, true);
+    const unterschied = (x1, x2) => {
+      let n = 0;
+      for (let y = 0; y < H; y += 1) if (k.bitmap[y * B + x1] !== k.bitmap[y * B + x2]) n += 1;
+      return n;
+    };
+    let summe2 = 0;
+    for (let x = 0; x < B - 1; x += 1) summe2 += unterschied(x, x + 1);
+    const mittel = summe2 / (B - 1);
+    assert.ok(unterschied(B - 1, 0) <= 1.5 * mittel + 4, `Seed ${seed}: Naht ist ein Sprung`);
+  }
+  for (const art of KARTENARTEN.filter((a) => a !== 'unmoeglich')) {
+    const [b, h] = art === 'hochkant' ? [720, 1280] : [B, H];
+    assert.equal(erzeugeKompositionsKarte({ rng: createRng(3), width: b, height: h, art }).umlauf, false, art);
+  }
+});
+
+test('Komposition: nur der Planet ist rund', () => {
+  for (const art of KARTENARTEN) {
+    const [b, h] = art === 'hochkant' ? [720, 1280] : [B, H];
+    assert.equal(erzeugeKompositionsKarte({ rng: createRng(3), width: b, height: h, art }).rund, art === 'planet', art);
   }
 });

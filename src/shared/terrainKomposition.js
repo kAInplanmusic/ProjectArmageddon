@@ -31,6 +31,14 @@ class Maske {
     this.breite = breite;
     this.hoehe = hoehe;
     this.bitmap = new Uint8Array(breite * hoehe);
+    /** Rechts hinaus, links hinein: Spalten außerhalb laufen modulo der Breite um. */
+    this.umlauf = false;
+    this.rund = false;
+  }
+
+  spalte(x) {
+    if (this.umlauf) return ((x % this.breite) + this.breite) % this.breite;
+    return x >= 0 && x < this.breite ? x : -1;
   }
 
   setze(x, y, wert) {
@@ -39,17 +47,24 @@ class Maske {
   }
 
   rechteck(x0, y0, x1, y1, wert = 1) {
+    const xa = Math.floor(x0);
+    const xb = Math.ceil(x1);
     for (let y = Math.max(0, Math.floor(y0)); y < Math.min(this.hoehe, Math.ceil(y1)); y += 1) {
-      for (let x = Math.max(0, Math.floor(x0)); x < Math.min(this.breite, Math.ceil(x1)); x += 1) this.bitmap[y * this.breite + x] = wert;
+      for (let x = xa; x < xb; x += 1) {
+        const c = this.spalte(x);
+        if (c >= 0) this.bitmap[y * this.breite + c] = wert;
+      }
     }
   }
 
   ellipse(cx, cy, rx, ry, wert = 1) {
     for (let y = Math.max(0, Math.floor(cy - ry)); y <= Math.min(this.hoehe - 1, Math.ceil(cy + ry)); y += 1) {
-      for (let x = Math.max(0, Math.floor(cx - rx)); x <= Math.min(this.breite - 1, Math.ceil(cx + rx)); x += 1) {
+      for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x += 1) {
         const u = (x - cx) / rx;
         const v = (y - cy) / ry;
-        if (u * u + v * v <= 1) this.bitmap[y * this.breite + x] = wert;
+        if (u * u + v * v > 1) continue;
+        const c = this.spalte(x);
+        if (c >= 0) this.bitmap[y * this.breite + c] = wert;
       }
     }
   }
@@ -60,12 +75,13 @@ class Maske {
  * @returns {{x0:number,x1:number,obenY:(x:number)=>number,untenY:(x:number)=>number}}
  */
 function platte(maske, rng, x0, x1, yMitte, dicke) {
-  const welleO = baueRauschen(rng, maske.breite, zwischen(rng, 60, 140));
-  const welleU = baueRauschen(rng, maske.breite, zwischen(rng, 30, 70));
-  const zapfen = baueRauschen(rng, maske.breite, zwischen(rng, 14, 28));
-  const obenY = (x) => yMitte + welleO(x) * dicke * 0.18;
-  const untenY = (x) => yMitte + dicke * (0.7 + 0.25 * welleU(x) + 0.35 * Math.max(0, zapfen(x)) ** 2);
   const lang = x1 - x0;
+  const welleO = baueRauschen(rng, lang + 4, zwischen(rng, 60, 140));
+  const welleU = baueRauschen(rng, lang + 4, zwischen(rng, 30, 70));
+  const zapfen = baueRauschen(rng, lang + 4, zwischen(rng, 14, 28));
+  const lokal = (x) => Math.min(lang, Math.max(0, x - x0));
+  const obenY = (x) => yMitte + welleO(lokal(x)) * dicke * 0.18;
+  const untenY = (x) => yMitte + dicke * (0.7 + 0.25 * welleU(lokal(x)) + 0.35 * Math.max(0, zapfen(lokal(x))) ** 2);
   for (let x = Math.floor(x0); x < Math.ceil(x1); x += 1) {
     // Enden verjüngen sich zur Rundung.
     const rand = Math.min(x - x0, x1 - x) / Math.max(1, Math.min(lang * 0.5, dicke * 1.4));
@@ -121,7 +137,7 @@ function bruecke(maske, x0, x1, y0, y1) {
 }
 
 /** Die Kartenarten; der Seed zieht eine, bei Hochformat gilt `hochkant`. */
-export const KARTENARTEN = Object.freeze(['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'hochkant']);
+export const KARTENARTEN = Object.freeze(['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'planet', 'unmoeglich', 'hochkant']);
 
 function neuesStat() {
   return { platten: 0, pfeiler: 0, bruecken: 0, tuerme: 0, boegen: 0, hoehlen: 0 };
@@ -250,6 +266,233 @@ function karteHoehle(maske, rng, B, H, stat, mitInsel = false) {
   return Math.round(H * 0.92);
 }
 
+/** Zwei Hochebenen mit tiefem Einschnitt, Absätzen darin und einer Brücke. */
+function karteSchlucht(maske, rng, B, H, stat) {
+  const spalt = B * zwischen(rng, 0.22, 0.3);
+  const xl = (B - spalt) / 2 + zwischen(rng, -B * 0.06, B * 0.06);
+  const xr = xl + spalt;
+  const obenL = H * zwischen(rng, 0.3, 0.42);
+  const obenR = H * zwischen(rng, 0.3, 0.42);
+  const wandL = baueRauschen(rng, H, 70);
+  const wandR = baueRauschen(rng, H, 70);
+  const kanteL = baueRauschen(rng, B, 90);
+  const kanteR = baueRauschen(rng, B, 90);
+  for (let y = 0; y < H; y += 1) {
+    const a = xl + wandL(y) * 28;
+    const b = xr + wandR(y) * 28;
+    if (y >= obenL) maske.rechteck(0, y, a, y + 1);
+    if (y >= obenR) maske.rechteck(b, y, B, y + 1);
+  }
+  for (let x = 0; x < xl; x += 1) maske.rechteck(x, obenL - 1 - Math.max(0, kanteL(x)) * 10, x + 1, obenL);
+  for (let x = Math.floor(xr); x < B; x += 1) maske.rechteck(x, obenR - 1 - Math.max(0, kanteR(x)) * 10, x + 1, obenR);
+  stat.platten += 2;
+  const absaetze = 4 + Math.floor(rng.next() * 3);
+  let links = rng.next() < 0.5;
+  for (let i = 0; i < absaetze; i += 1) {
+    const y = H * (0.45 + (0.38 * i) / Math.max(1, absaetze - 1));
+    const l = spalt * zwischen(rng, 0.35, 0.55);
+    const p = links ? platte(maske, rng, xl - 10, xl + l, y, zwischen(rng, 34, 60)) : platte(maske, rng, xr - l, xr + 10, y, zwischen(rng, 34, 60));
+    void p;
+    stat.platten += 1;
+    links = !links;
+  }
+  if (spalt < B * 0.3 && rng.next() < 0.7) {
+    bruecke(maske, xl - 8, xr + 8, obenL, obenR);
+    stat.bruecken += 1;
+  }
+  const pl = { x0: 0, x1: xl, obenY: () => obenL };
+  const pr = { x0: xr, x1: B, obenY: () => obenR };
+  bauteileAufPlatte(maske, rng, pl, stat, 1);
+  bauteileAufPlatte(maske, rng, pr, stat, 1);
+  return Math.round(H * 0.9);
+}
+
+/** Viele kleine Inseln, dicht gestreut, mit Felsnadeln dazwischen. */
+function karteArchipel(maske, rng, B, H, stat) {
+  const ziel = 8 + Math.floor(rng.next() * 4);
+  const inseln = [];
+  for (let versuch = 0; versuch < ziel * 8 && inseln.length < ziel; versuch += 1) {
+    const breite = zwischen(rng, 110, 260);
+    const x = zwischen(rng, breite / 2 + 10, B - breite / 2 - 10);
+    const y = H * zwischen(rng, 0.34, 0.76);
+    if (inseln.some((i) => Math.abs(i.mitte - x) < (i.breite + breite) * 0.55 && Math.abs(i.y - y) < 110)) continue;
+    const p = platte(maske, rng, x - breite / 2, x + breite / 2, y, zwischen(rng, 56, 120));
+    inseln.push({ mitte: x, breite, y, p });
+    stat.platten += 1;
+    if (breite > 200 && rng.next() < 0.5) bauteileAufPlatte(maske, rng, p, stat, 1);
+  }
+  inseln.sort((a, b) => a.mitte - b.mitte);
+  for (let i = 0; i + 1 < inseln.length; i += 1) {
+    const a = inseln[i];
+    const b = inseln[i + 1];
+    const luecke = b.p.x0 - a.p.x1;
+    if (luecke > 10 && luecke < 170 && rng.next() < 0.5) {
+      bruecke(maske, a.p.x1 - 6, b.p.x0 + 6, a.p.obenY(a.p.x1 - 6), b.p.obenY(b.p.x0 + 6));
+      stat.bruecken += 1;
+    }
+  }
+  return Math.round(H * 0.9);
+}
+
+/** Ein Kegel mit Krater, Magaschacht und Lavakammer; kleine Inseln seitlich. */
+function karteVulkan(maske, rng, B, H, stat) {
+  const cx = B * zwischen(rng, 0.42, 0.58);
+  const spitzeY = H * zwischen(rng, 0.24, 0.32);
+  const fussY = H * 0.9;
+  const basis = B * zwischen(rng, 0.62, 0.76);
+  const hangRauschen = baueRauschen(rng, H, 36);
+  for (let y = Math.floor(spitzeY); y < fussY; y += 1) {
+    const t = (y - spitzeY) / (fussY - spitzeY);
+    const halb = B * 0.07 + (basis / 2 - B * 0.07) * t ** 0.9 + hangRauschen(y) * 12;
+    maske.rechteck(cx - halb, y, cx + halb, y + 1);
+  }
+  maske.ellipse(cx, spitzeY + 6, B * 0.055, 46, 0);
+  gang(maske, cx, spitzeY + 30, cx, H * 0.66, 18);
+  kammer(maske, cx, H * 0.7, B * 0.1, 56);
+  stat.hoehlen += 2;
+  for (const seite of [-1, 1]) {
+    const x = cx + seite * B * zwischen(rng, 0.38, 0.46);
+    if (x < 90 || x > B - 90) continue;
+    const p = platte(maske, rng, x - 80, x + 80, H * zwischen(rng, 0.55, 0.7), 60);
+    void p;
+    stat.platten += 1;
+  }
+  stat.platten += 1;
+  return Math.round(H * 0.93);
+}
+
+/** Zerfallende Stadt: Grundplatte, Türme verschiedener Höhe mit Brüchen, Brücken und Bögen. */
+function karteRuinenstadt(maske, rng, B, H, stat) {
+  const bodenY = H * 0.8;
+  const wellig = baueRauschen(rng, B, 80);
+  for (let x = 0; x < B; x += 1) maske.rechteck(x, bodenY + wellig(x) * 8, x + 1, H);
+  stat.platten += 1;
+  const n = 6 + Math.floor(rng.next() * 4);
+  const tuerme = [];
+  for (let i = 0; i < n; i += 1) {
+    const breite = zwischen(rng, 62, 110);
+    const x = (B - breite) * ((i + zwischen(rng, 0.1, 0.9)) / n);
+    const hoehe = zwischen(rng, 110, 330);
+    turm(maske, rng, x, bodenY + 2, breite, hoehe);
+    maske.ellipse(x + zwischen(rng, 0.2, 0.8) * breite, bodenY - hoehe + 4, zwischen(rng, 16, 40), zwischen(rng, 14, 34), 0);
+    tuerme.push({ x, breite, hoehe });
+    stat.tuerme += 1;
+  }
+  for (let i = 0; i + 1 < tuerme.length; i += 1) {
+    const a = tuerme[i];
+    const b = tuerme[i + 1];
+    const luecke = b.x - (a.x + a.breite);
+    if (luecke > 20 && luecke < 260 && rng.next() < 0.6) {
+      const y = bodenY - Math.min(a.hoehe, b.hoehe) * 0.6;
+      bruecke(maske, a.x + a.breite - 4, b.x + 4, y, y);
+      stat.bruecken += 1;
+    } else if (luecke > 90 && rng.next() < 0.4) {
+      bogen(maske, a.x + a.breite + 20, bodenY, Math.min(luecke - 40, 130), 70);
+      stat.boegen += 1;
+    }
+  }
+  return Math.round(H * 0.92);
+}
+
+/** Stufenpyramide mit Kammer und Gang, Dünen davor, eine kleine zweite am Rand. */
+function kartePyramide(maske, rng, B, H, stat) {
+  const bodenY = H * 0.8;
+  const duene = baueRauschen(rng, B, 160);
+  for (let x = 0; x < B; x += 1) maske.rechteck(x, bodenY + duene(x) * 16, x + 1, H);
+  stat.platten += 1;
+  const baue = (cx, basis, stufen, sh) => {
+    for (let i = 0; i < stufen; i += 1) {
+      const halb = (basis / 2) * (1 - (i / stufen) * 0.9);
+      const y = bodenY - (i + 1) * sh;
+      maske.rechteck(cx - halb, y, cx + halb, y + sh + 2);
+    }
+    return basis / 2;
+  };
+  const cx = B * zwischen(rng, 0.42, 0.58);
+  const stufen = 7 + Math.floor(rng.next() * 4);
+  const sh = H * 0.058;
+  const halb = baue(cx, B * zwischen(rng, 0.4, 0.5), stufen, sh);
+  kammer(maske, cx, bodenY - sh * 2.4, halb * 0.28, sh * 1.3);
+  gang(maske, cx - halb + 6, bodenY - sh * 0.9, cx - halb * 0.2, bodenY - sh * 2, 16);
+  stat.hoehlen += 1;
+  const seite = cx < B / 2 ? 1 : -1;
+  const kx = cx + seite * B * 0.34;
+  if (kx > 110 && kx < B - 110) baue(kx, B * 0.17, 5, sh * 0.8);
+  stat.tuerme += 1;
+  return Math.round(H * 0.95);
+}
+
+/** Runder Körper mit Kratern, Kernhöhle mit Schächten und kleinen Monden. */
+function kartePlanet(maske, rng, B, H, stat) {
+  maske.rund = true;
+  const cx = B * zwischen(rng, 0.46, 0.54);
+  const cy = H * 0.52;
+  const R = H * zwischen(rng, 0.3, 0.36);
+  const wellen = [3, 5, 8, 13].map((k) => ({ k, a: zwischen(rng, 0.012, 0.035), ph: zwischen(rng, 0, Math.PI * 2) }));
+  const flaeche = (w) => R * (1 + wellen.reduce((sum, f) => sum + f.a * Math.sin(f.k * w + f.ph), 0));
+  for (let y = Math.floor(cy - R * 1.2); y <= cy + R * 1.2; y += 1) {
+    for (let x = Math.floor(cx - R * 1.2); x <= cx + R * 1.2; x += 1) {
+      if (Math.hypot(x - cx, y - cy) <= flaeche(Math.atan2(y - cy, x - cx))) maske.setze(x, y, 1);
+    }
+  }
+  const krater = 3 + Math.floor(rng.next() * 3);
+  for (let i = 0; i < krater; i += 1) {
+    const w = zwischen(rng, -Math.PI * 0.9, -Math.PI * 0.1);
+    const r = flaeche(w);
+    maske.ellipse(cx + Math.cos(w) * r, cy + Math.sin(w) * r, zwischen(rng, 22, 46), zwischen(rng, 18, 34), 0);
+  }
+  maske.ellipse(cx, cy, R * 0.22, R * 0.18, 0);
+  for (const w of [zwischen(rng, -2.6, -2.0), zwischen(rng, -1.1, -0.5)]) {
+    gang(maske, cx, cy, cx + Math.cos(w) * R * 0.96, cy + Math.sin(w) * R * 0.96, 18);
+  }
+  stat.hoehlen += 3;
+  const monde = 2 + Math.floor(rng.next() * 2);
+  for (let i = 0; i < monde; i += 1) {
+    const w = zwischen(rng, -Math.PI, 0) + (i % 2 ? 0.8 : -0.8);
+    const d = R * zwischen(rng, 1.45, 1.75);
+    const mx = cx + Math.cos(w) * d * 1.5;
+    const my = cy + Math.sin(w) * d * 0.9;
+    if (mx > 70 && mx < B - 70 && my > 70 && my < H - 120) maske.ellipse(mx, my, zwischen(rng, 38, 70), zwischen(rng, 26, 46), 1);
+  }
+  stat.platten += 1;
+  return Math.round(H * 0.995);
+}
+
+/** Der Rand ist keiner: rechts hinaus, links hinein. Platten laufen über die Naht. */
+function karteUnmoeglich(maske, rng, B, H, stat) {
+  maske.umlauf = true;
+  const ebenen = [];
+  for (let e = 0; e < 3; e += 1) {
+    const yMitte = H * (0.76 - e * 0.25) + zwischen(rng, -14, 14);
+    const anzahl = 2 + Math.floor(rng.next() * 2);
+    const start = zwischen(rng, 0, B);
+    const platten = [];
+    for (let i = 0; i < anzahl; i += 1) {
+      const x0 = start + (B / anzahl) * i;
+      const x1 = x0 + (B / anzahl) * zwischen(rng, 0.6, 0.85);
+      platten.push(platte(maske, rng, x0, x1, yMitte, zwischen(rng, 70, 110)));
+      stat.platten += 1;
+    }
+    ebenen.push({ yMitte, platten });
+  }
+  const enthaelt = (q, x) => {
+    const lang = q.x1 - q.x0;
+    const u = (((x - q.x0) % B) + B) % B;
+    return u > 30 && u < lang - 30;
+  };
+  for (let e = 1; e < ebenen.length; e += 1) {
+    for (const p of ebenen[e].platten) {
+      const x = zwischen(rng, p.x0 + (p.x1 - p.x0) * 0.2, p.x1 - (p.x1 - p.x0) * 0.2);
+      const stuetze = ebenen[e - 1].platten.find((q) => enthaelt(q, x));
+      if (!stuetze) continue;
+      pfeiler(maske, rng, x, p.untenY(x) - 4, ebenen[e - 1].yMitte, zwischen(rng, 34, 56));
+      stat.pfeiler += 1;
+    }
+  }
+  for (const eb of ebenen) for (const p of eb.platten) bauteileAufPlatte(maske, rng, p, stat, 1);
+  return Math.round(H * 0.9);
+}
+
 /** Hochformat: Steilwände links und rechts, abwechselnd angesetzte Felsbänder, Mittelpfeiler. */
 function karteHochkant(maske, rng, B, H, stat) {
   const wand = B * zwischen(rng, 0.12, 0.18);
@@ -283,18 +526,18 @@ function karteHochkant(maske, rng, B, H, stat) {
  * @param {number} o.width
  * @param {number} o.height
  * @param {string} [o.art] - eine Kartenart aus `KARTENARTEN`; ohne Angabe zieht der Seed (Hochformat: `hochkant`)
- * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string}}
+ * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean}} `umlauf`: die Karte verlangt die Regel „rechts hinaus, links hinein“; `rund`: Körper mit Radialform
  */
 export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
   const maske = new Maske(width, height);
   const gezogen = KARTENARTEN[Math.floor(rng.next() * (KARTENARTEN.length - 1))];
   const wahl = KARTENARTEN.includes(art) ? art : (height > width * 1.2 ? 'hochkant' : gezogen);
   const stat = neuesStat();
-  const sonder = { insel: karteInsel, inselgruppe: karteInselgruppe, hoehle: karteHoehle, hoehleInsel: (m, r, b, h, st) => karteHoehle(m, r, b, h, st, true), hochkant: karteHochkant }[wahl];
+  const sonder = { insel: karteInsel, inselgruppe: karteInselgruppe, hoehle: karteHoehle, hoehleInsel: (m, r, b, h, st) => karteHoehle(m, r, b, h, st, true), hochkant: karteHochkant, schlucht: karteSchlucht, archipel: karteArchipel, vulkan: karteVulkan, ruinenstadt: karteRuinenstadt, pyramide: kartePyramide, planet: kartePlanet, unmoeglich: karteUnmoeglich }[wahl];
   if (sonder) {
     const wy = sonder(maske, rng, width, height, stat);
     maske.rechteck(0, wy + 30, width, height);
-    return { bitmap: maske.bitmap, wasserY: wy, bauteile: stat, art: wahl };
+    return { bitmap: maske.bitmap, wasserY: wy, bauteile: stat, art: wahl, umlauf: maske.umlauf, rund: maske.rund };
   }
   const wasserY = Math.round(height * 0.9);
   const ebenenZahl = width / height > 1.6 ? 3 : 4;
@@ -378,5 +621,5 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
 
   // Wasserbecken: unterhalb der Wasserlinie ist der Boden massiv (Grund), davor Wasser.
   maske.rechteck(0, wasserY + 40, width, height);
-  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: wahl };
+  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: wahl, umlauf: false, rund: false };
 }
