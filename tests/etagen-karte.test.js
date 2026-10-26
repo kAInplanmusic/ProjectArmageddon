@@ -96,3 +96,39 @@ test('Raender und Kartenboden sind versiegelt', () => {
     assert.equal(k.bitmap[(k.height - 1) * k.width + x], 1, 'Kartenboden muss fest sein (Spalte ' + x + ')');
   }
 });
+
+/*
+ * Stufe 2b (2026-10-25): Der Schacht muss ERSTEIGBAR sein.
+ *
+ * Gemessen (nicht geschätzt): ein normaler Sprung erreicht 117 px, ein Salto
+ * 139 px. Ein reiner Schacht wäre damit nutzlos — man springt hoch und fällt
+ * wieder hinunter. Deshalb trägt der Schacht versetzte Trittbretter; der
+ * Höhenabstand zwischen zwei aufeinanderfolgenden Brettern muss unter der
+ * Sprunghöhe liegen (hier mit Reserve: höchstens 100 px).
+ */
+test('Die Trittbretter im Schacht liegen innerhalb der Sprunghoehe', () => {
+  const def = KARTENTYPEN.etagen;
+  const SPRUNGHOEHE_GEMESSEN = 117;
+  const HOECHSTER_ABSTAND = 100; // Reserve unter der gemessenen Sprunghoehe
+  assert.ok(HOECHSTER_ABSTAND < SPRUNGHOEHE_GEMESSEN, 'Reserve muss unter der Sprunghoehe liegen');
+
+  const k = karte('etagen');
+  const sx = def.schachtAbstand;
+  // Alle festen Pixel im Schacht sammeln, die NICHT zu einem Deckenband gehoeren.
+  const bretter = [];
+  for (let y = 1; y < k.height - 2; y += 1) {
+    for (let dx = 0; dx < def.schachtBreite; dx += 1) {
+      const x = sx + dx;
+      if (!k.bitmap[y * k.width + x]) continue;
+      const obenFrei = !k.bitmap[(y - 1) * k.width + x];
+      const untenFrei = !k.bitmap[(y + 1) * k.width + x];
+      if (obenFrei && untenFrei) { bretter.push(y); break; }
+    }
+  }
+  assert.ok(bretter.length >= 3, `zu wenige Trittbretter im Schacht: ${bretter.length}`);
+  for (let i = 1; i < bretter.length; i += 1) {
+    const abstand = bretter[i] - bretter[i - 1];
+    assert.ok(abstand <= HOECHSTER_ABSTAND,
+      `Abstand zwischen Trittbrettern zu gross: ${abstand} px bei y=${bretter[i - 1]} (Grenze ${HOECHSTER_ABSTAND})`);
+  }
+});

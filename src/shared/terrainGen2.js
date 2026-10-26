@@ -129,8 +129,19 @@ export const KARTENTYPEN = Object.freeze({
      */
     pfeilerAbstand: 140,
     pfeilerBreite: 60,
-    schachtBreite: 18,
+    /*
+     * Schacht und Trittbretter (Stufe 2b, 2026-10-25).
+     *
+     * Gemessen: ein normaler Sprung erreicht 117 px, ein Salto 139 px. Ein
+     * reiner Schacht waere damit NICHT ersteigbar — man springt hoch und faellt
+     * wieder hinunter. Deshalb bekommt der Schacht versetzte Trittbretter:
+     * links, rechts, links ... mit 40 px Hoehenabstand, deutlich unter der
+     * Sprunghoehe, und 26 px Tiefe fuer einen Figurenkoerper (14 px breit).
+     */
+    schachtBreite: 56,
     schachtAbstand: 320,
+    stufenHoehe: 40,
+    stufenBreite: 26,
     beschreibung: 'Ein Massiv mit Stockwerken — Decken, begehbare Boeden und Schaechte.',
   }),
   kavernen: Object.freeze({
@@ -336,12 +347,26 @@ export function erzeugeKarte({ rng, width, height, typ = 'huegel' }) {
         for (let y = deckenY + typDef.etagenDecke; y < deckenY + tiefe; y += 1) bitmap[y * width + x] = 0;
       }
     }
+    let schachtNr = 0;
     for (let x = typDef.schachtAbstand; x < width - 1; x += typDef.schachtAbstand) {
+      // Erst den ganzen Schacht ausstanzen ...
       for (let dx = 0; dx < typDef.schachtBreite; dx += 1) {
         const sx = x + dx;
         if (sx <= 0 || sx >= width - 1) continue;
         for (let y = oberflaeche[sx]; y < height - 1; y += 1) bitmap[y * width + sx] = 0;
       }
+      // ... dann die Trittbretter stehen lassen: links, rechts, links ...
+      const seite = schachtNr % 2 === 0 ? 0 : typDef.schachtBreite - typDef.stufenBreite;
+      for (let y = oberflaeche[x] + typDef.stufenHoehe, stufe = 0; y < height - 1; y += typDef.stufenHoehe, stufe += 1) {
+        if (stufe % 2 !== 0) continue; // nur jedes zweite Band als Tritt
+        const versatz = ((stufe / 2) | 0) % 2 === 0 ? seite : typDef.schachtBreite - typDef.stufenBreite - seite;
+        for (let dx = 0; dx < typDef.stufenBreite; dx += 1) {
+          const sx = x + Math.max(0, Math.min(typDef.schachtBreite - 1, versatz + dx));
+          if (sx <= 0 || sx >= width - 1) continue;
+          bitmap[y * width + sx] = 1;
+        }
+      }
+      schachtNr += 1;
     }
   }
 

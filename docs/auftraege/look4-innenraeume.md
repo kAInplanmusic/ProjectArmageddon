@@ -230,11 +230,23 @@ Decken — dort fällt eine Figur hinunter und landet auf dem nächsten Boden.
 **Masse sind Pixelwerte, keine Kartenanteile** — dieselbe Lehre wie bei den Höhlen (dort
 ergab ein Anteil auf kleiner Karte 11 % Land, auf großer 27 %).
 
-**Grenze (Stufe 2b, offen):** Figuren können in einen Schacht **fallen**, aber nicht
-hinaufsteigen — dafür braucht es eine Regel (Sprung­höhe gegen Schachttiefe) oder Leitern.
-Solange sie fehlt, sind die unteren Etagen nur von oben erreichbar. Die Tests behaupten
-deshalb keine Erreichbarkeit, sondern nur: Determinismus, Decken vorhanden, Schacht
-vorhanden, Ränder und Boden versiegelt.
+**Stufe 2b — Aufstieg (umgesetzt 2026-10-25).** Der Schacht ist jetzt **ersteigbar**:
+Er ist 56 px breit und trägt versetzte **Trittbretter** (26 px tief, alle 40 px Höhe,
+abwechselnd links und rechts).
+
+Entscheidende Messung vor dem Bau: Ein **normaler Sprung erreicht 117 px**, ein Salto
+139 px (gemessen im Motor, `bewegung: 2`). Ein reiner Schacht wäre damit nutzlos gewesen —
+man springt hoch und fällt wieder hinunter. Der Höhenabstand der Trittbretter (40 px bzw.
+80 px bis zum nächsten Brett der anderen Seite) liegt deutlich darunter; der Test fordert
+höchstens 100 px und damit Reserve.
+
+**Belegt:** `tests/etagen-karte.test.js` prüft, dass mindestens drei Trittbretter im
+Schacht liegen und **kein** Abstand über 100 px liegt. Rot-Seite belegt: mit
+`stufenHoehe: 160` fällt der Test (5 von 6 grün), mit 40 ist er grün.
+
+**Was weiterhin NICHT geprüft ist:** Ein echter Kletterlauf (Figur springt Brett für Brett
+nach oben). Die Prüfung ist geometrisch (Abstände gegen die gemessene Sprunghöhe), nicht
+motorisch — ein End-to-End-Klettertest steht noch aus.
 
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
