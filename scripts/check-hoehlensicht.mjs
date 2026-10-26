@@ -1,131 +1,169 @@
 #!/usr/bin/env node
 /**
- * Prüft die Sichtbarkeit der Höhlen.
+ * Prüft, ob Höhlen im Bild als RÄUME ankommen.
  *
- * ## Warum dieses Werkzeug existiert
+ * ## Warum dieses Werkzeug umgebaut wurde (2026-10-26)
  *
- * Der neue Kartengenerator (`terrainGen2`) erzeugt 2D-Masken mit Höhlen. Zwei
- * Fehler auf dem Weg dorthin wurden gemessen und behoben:
+ * Es maß bis hierher den EINFACHEN Boden (`fillGroundPixels` aus dem am
+ * 2026-10-26 entfernten `terrainBaker.js`) — den baut der Renderer nicht. Sichtbar ist die Ebene aus
+ * `baueGelaendeEbene`, und mit LOOK-4 ist die Frage eine andere geworden:
  *
- *   1. Der **Baker** malte von der Oberfläche bis zum Kartenboden und fragte die
- *      Maske nie — bei einem Höhenfeld richtig, bei einer 2D-Maske fatal: Die
- *      Hohlräume wurden zugemalt. Belegt mit `isSolid` an fünf Spalten (die
- *      Kollision HATTE die Löcher) und einem Screenshot (man SAH sie nicht).
- *   2. Derselbe Fehler stand im **GPU-Shader**.
+ * Früher lautete sie „sind die Löcher überhaupt durchsichtig?", und die offene
+ * Aufgabe war: „Ein Loch zeigt den Himmel — eine Höhle müsste dunkel sein."
+ * Seit LOOK-4 füllt `fuelleHoehlenluft` eingeschlossene Luft deckend dunkel,
+ * und `daempfeInnenkanten` dunkelt die Felsränder ab.
  *
- * Beide sind behoben. Dieses Werkzeug prüft, ob die Löcher im Gerenderten
- * ankommen — und ob sie als Höhle oder als Fehler wirken.
+ * Damit sind zwei Regeln prüfbar geworden:
+ *
+ *   a) eingeschlossene Luft  →  deckend dunkel (Raum)
+ *   b) offene Luft           →  NICHT mit der Höhlenfarbe gefüllt (Himmel bleibt Himmel)
+ *
+ * Beides wird getrennt gerechnet: `fuelleHoehlenluft` bestimmt auf einem leeren
+ * Puffer, WELCHE Pixel eingeschlossen sind; die gebaute Ebene wird danach
+ * daraufhin geprüft, ob sie diese Pixel dunkel gefüllt und alle übrigen
+ * Luftpixel unangetastet gelassen hat.
+ *
+ * ## Warum nicht „offene Luft muss durchsichtig sein"
+ *
+ * FUND (eigener Messfehler, 2026-10-26): Ein erster Anlauf verlangte genau das
+ * und meldete auf JEDER Karte 2.600–3.200 Verstöße — auch auf Hügeln, wo es
+ * gar keine Höhle gibt. Die Ursache war kein Fehler im Bild: `baueGelaendeEbene`
+ * zeichnet **Grasbüschel** auf dieselbe Ebene, und die liegen legitim in der
+ * Luft. Deshalb prüft Regel b) die FARBE (nicht die Deckung allein) und meldet
+ * nur, wenn die Höhlenfüllung selbst im Himmel landet.
+ *
+ * ## Was hier NICHT behauptet wird
+ *
+ * Ob eine Höhle schön aussieht, sagt diese Messung nicht — nur, dass sie als
+ * Raum und nicht als Loch im Himmel erscheint.
  *
  * ## Aufruf
  *
  *     node scripts/check-hoehlensicht.mjs
+ *
+ * Exit 1, sobald ein Kartentyp eine der beiden Regeln verletzt.
  */
 import { erzeugeKarte, KARTENTYPEN } from '../src/shared/terrainGen2.js';
 import { SeededRandom } from '../src/shared/prng.js';
-import { fillGroundPixels, surfaceRows } from '../src/client/terrainBaker.js';
+import { baueGelaendeEbene, fuelleHoehlenluft } from '../src/client/gelaendeStil.js';
 
 const BREITE = 1280;
 const HOEHE = 720;
+const SEED = 4242;
 const PALETTE = { surface: [86, 148, 74], deep: [34, 66, 32] };
 
-/** Zählt die durchsichtigen Pixel innerhalb der Erdmasse. */
-function durchsichtigeLoecher(daten) {
-  let loecher = 0;
-  for (let i = 3; i < daten.length; i += 4) {
-    if (daten[i] === 0) loecher += 1;
-  }
-  return loecher;
+/** Alpha der Höhlenluft-Füllung in `fuelleHoehlenluft` (siehe dort). */
+const HOEHLEN_ALPHA = 235;
+/** Farbe dieser Füllung (dunkle Höhlenluft). */
+const HOEHLEN_FARBE = [16, 18, 22];
+/** Ab dieser Helligkeit gilt ein gefüllter Pixel als dunkel (Raum, nicht Gestein). */
+const DUNKEL_MAX = 40;
+/** Toleranz in Promille — einzelne Pixel dürfen durch Rundung danebenliegen. */
+const TOLERANZ_PROMILLE = 1;
+
+const noop = () => {};
+
+/** Leinwand-Attrappe, die die fertigen Pixel hält (kein Browser nötig). */
+function leinwandAttrappe() {
+  let geschrieben = null;
+  const ctx = {
+    createImageData: (b, h) => ({ data: new Uint8ClampedArray(b * h * 4), width: b, height: h }),
+    putImageData: (bild) => { geschrieben = bild.data; },
+    getImageData: () => ({ data: geschrieben, width: BREITE, height: HOEHE }),
+    save: noop, restore: noop, beginPath: noop, moveTo: noop, lineTo: noop,
+    quadraticCurveTo: noop, closePath: noop, fill: noop, stroke: noop, arc: noop, fillRect: noop,
+  };
+  return { layer: { getContext: () => ctx }, daten: () => geschrieben };
 }
 
-/**
- * Zählt durchsichtige Pixel, die TIEF liegen — mindestens 5 px unter der
- * Oberfläche ihrer Spalte.
- *
- * ## Warum nicht „von Land umschlossen"
- *
- * FUND (belegt, eigener Messfehler): Ein erster Anlauf prüfte, ob alle vier
- * Nachbarn Land sind. Das ergab **0** — auch bei einer Karte mit 141.766
- * Hohlraumpixeln. Der Grund: Eine Höhle ist ein großer zusammenhängender
- * Bereich; nur ihre unmittelbaren Randpixel haben Land auf allen Seiten, und
- * die sind ein Bruchteil.
- *
- * Die Tiefe ist das bessere Maß: Alles über der Oberfläche ist Himmel, alles
- * darunter sollte Land sein. Ist es das nicht, ist es ein Hohlraum — und
- * sichtbar, wenn der Baker die Maske fragt.
- */
-function tiefeLoecher(daten, rows, breite, hoehe, mindestTiefe = 5) {
-  let tief = 0;
-  for (let x = 0; x < breite; x += 1) {
-    if (rows[x] < 0) continue;
-    for (let y = rows[x] + mindestTiefe; y < hoehe; y += 1) {
-      if (daten[(y * breite + x) * 4 + 3] === 0) tief += 1;
-    }
-  }
-  return tief;
+const helligkeit = (d, i) => 0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2];
+
+/** Trägt dieser Pixel die Höhlenluft-Füllung (Farbe UND Deckung)? */
+function istHoehlenfuellung(d, i) {
+  return d[i * 4 + 3] >= HOEHLEN_ALPHA - 10
+    && Math.abs(d[i * 4] - HOEHLEN_FARBE[0]) <= 6
+    && Math.abs(d[i * 4 + 1] - HOEHLEN_FARBE[1]) <= 6
+    && Math.abs(d[i * 4 + 2] - HOEHLEN_FARBE[2]) <= 6;
 }
 
-console.log('Höhlensichtbarkeit im Gerenderten');
+console.log('Höhlen als Räume: eingeschlossene Luft dunkel, Himmel bleibt Himmel');
 console.log('');
-console.log(`${'Typ'.padEnd(20)}${'Hohlraum'.padStart(11)}${'durchsichtig'.padStart(14)}${'tief (sichtbar)'.padStart(16)}`);
-console.log('-'.repeat(61));
+console.log(`  Karte: ${BREITE}×${HOEHE}, Seed ${SEED}`);
+console.log('');
+console.log(
+  `${'Typ'.padEnd(20)}${'eingeschl.'.padStart(11)}${'als Raum'.padStart(10)}`
+  + `${'nicht gefüllt'.padStart(14)}${'im Himmel'.padStart(11)}  Urteil`,
+);
+console.log('-'.repeat(68));
+
+const verstoesse = [];
 
 for (const [schluessel, def] of Object.entries(KARTENTYPEN)) {
-  const k = erzeugeKarte({
-    rng: new SeededRandom(4242), width: BREITE, height: HOEHE, typ: schluessel,
+  const karte = erzeugeKarte({
+    rng: new SeededRandom(SEED), width: BREITE, height: HOEHE, typ: schluessel,
   });
+  const bitmap = karte.bitmap;
 
-  // Wie der Renderer es macht: Maske → Pixel.
-  const daten = new Uint8ClampedArray(BREITE * HOEHE * 4);
-  const rows = surfaceRows(k.bitmap, k.width, k.height);
-  fillGroundPixels(daten, k.bitmap, k.width, k.height, PALETTE, rows);
+  // 1. Die sichtbare Ebene bauen — genau wie der Renderer.
+  const attrappe = leinwandAttrappe();
+  baueGelaendeEbene(attrappe.layer, bitmap, BREITE, HOEHE, PALETTE, 7);
+  const bild = attrappe.daten();
+  if (!bild) throw new Error(`Für ${schluessel} wurde keine Ebene geschrieben`);
 
-  // Der Hohlraum in der Maske.
-  let unterOberflaeche = 0;
-  let leer = 0;
-  for (let x = 0; x < BREITE; x += 1) {
-    if (rows[x] < 0) continue;
-    for (let y = rows[x]; y < HOEHE; y += 1) {
-      unterOberflaeche += 1;
-      if (!k.bitmap[y * BREITE + x]) leer += 1;
+  // 2. Unabhängig bestimmen, WELCHE Luft eingeschlossen ist.
+  const probe = new Uint8ClampedArray(BREITE * HOEHE * 4);
+  const eingeschlossen = fuelleHoehlenluft(probe, bitmap, BREITE, HOEHE);
+
+  // 3. Die beiden Regeln prüfen.
+  let alsRaum = 0;
+  let nichtGefuellt = 0;
+  let imHimmel = 0;
+  for (let i = 0; i < BREITE * HOEHE; i += 1) {
+    if (bitmap[i]) continue;
+    const gefuellt = istHoehlenfuellung(bild, i);
+    if (probe[i * 4 + 3] === HOEHLEN_ALPHA) {
+      // Regel a): eingeschlossene Luft muss ein dunkler Raum sein.
+      if (gefuellt && helligkeit(bild, i) < DUNKEL_MAX) alsRaum += 1;
+      else nichtGefuellt += 1;
+    } else if (gefuellt) {
+      // Regel b): offene Luft darf die Höhlenfarbe nicht tragen.
+      imHimmel += 1;
     }
   }
-  const hohlraum = unterOberflaeche === 0 ? 0 : leer / unterOberflaeche;
 
-  const durchsichtig = durchsichtigeLoecher(daten);
-  const innen = tiefeLoecher(daten, rows, BREITE, HOEHE);
+  const grenzeA = Math.max(1, Math.round(eingeschlossen * TOLERANZ_PROMILLE / 1000));
+  const grenzeB = Math.max(1, Math.round((alsRaum + imHimmel) * TOLERANZ_PROMILLE / 1000));
+  const ok = nichtGefuellt <= grenzeA && imHimmel <= grenzeB;
+  if (nichtGefuellt > grenzeA) {
+    verstoesse.push(`${def.name}: ${nichtGefuellt} eingeschlossene Luftpixel sind kein dunkler Raum (Grenze ${grenzeA})`);
+  }
+  if (imHimmel > grenzeB) {
+    verstoesse.push(`${def.name}: ${imHimmel} Luftpixel tragen die Höhlenfarbe, obwohl sie offen sind (Grenze ${grenzeB})`);
+  }
 
   console.log(
-    `${def.name.padEnd(20)}${`${(hohlraum * 100).toFixed(0)} %`.padStart(11)}`
-    + `${String(durchsichtig).padStart(14)}${String(innen).padStart(14)}`,
+    `${def.name.padEnd(20)}`
+    + `${String(eingeschlossen).padStart(11)}`
+    + `${String(alsRaum).padStart(10)}`
+    + `${String(nichtGefuellt).padStart(14)}`
+    + `${String(imHimmel).padStart(11)}  ${ok ? 'ok' : 'FEHLT'}`,
   );
 }
 
 console.log('');
-console.log('WAS DIE ZAHLEN SAGEN');
+console.log('  eingeschl.    = Luftpixel, die `fuelleHoehlenluft` als eingeschlossen bestimmt');
+console.log('  als Raum      = davon deckend dunkel in der Ebene (Regel a erfüllt)');
+console.log('  nicht gefüllt = davon NICHT dunkel gefüllt — eine Höhle, die wie Himmel aussieht');
+console.log('  im Himmel     = offene Luft, die die Höhlenfarbe trägt — der Himmel wäre schwarz');
 console.log('');
-console.log('  „durchsichtig" sind die Pixel, die der Baker NICHT gefüllt hat. Bei den');
-console.log('  Höhlentypen müssen das deutlich mehr sein als die Fläche über dem Land');
-console.log('  — sonst werden die Hohlräume wieder zugemalt.');
+console.log('  Grasbüschel liegen legitim über der Luft; sie tragen weder die Höhlenfarbe');
+console.log('  noch deren Deckung und stören deshalb keine der beiden Regeln.');
 console.log('');
-console.log('  „tief (sichtbar)" sind durchsichtige Pixel mindestens 5 px unter der');
-console.log('  Oberfläche. Das ist das Maß für sichtbare HÖHLEN: Bei den Höhlentypen');
-console.log('  muss diese Zahl deutlich über 0 liegen — sonst malt der Baker die');
-console.log('  Hohlräume wieder zu, und man sieht im Bild eine massive Erdmasse.');
-console.log('');
-console.log('DIE OFFENE AUFGABE');
-console.log('');
-console.log('  Ein Blick auf das Gerenderte (Browser, 2026-09-17) zeigte: Die Löcher');
-console.log('  sind sichtbar, aber sie wirken wie ein FEHLER, nicht wie eine Höhle.');
-console.log('  Beobachtung im Wortlaut:');
-console.log('');
-console.log('    „Die Ränder der Löcher sind hart abgeschnitten. Es gibt keinen');
-console.log('     Farbübergang, keine Schattierung. Das verstärkt den Eindruck eines');
-console.log('     Grafikfehlers statt eines gestalteten Höhlensystems."');
-console.log('');
-console.log('  Der Grund ist benennbar: Ein Loch zeigt den Himmel — dieselbe Farbe wie');
-console.log('  über dem Gelände. Eine Höhle müsste dagegen DUNKEL sein (sie liegt im');
-console.log('  Schatten des Gesteins).');
-console.log('');
-console.log('  Was fehlt, ist eine Innenschattierung: An einer Wand, die nach innen');
-console.log('  zeigt, müsste der Baker abdunkeln — nach Tiefe und Blickrichtung.');
-console.log('  Das ist die nächste Aufgabe am Generator.');
+
+if (verstoesse.length > 0) {
+  console.log('ERGEBNIS: FEHLGESCHLAGEN');
+  for (const grund of verstoesse) console.log(`  - ${grund}`);
+  process.exitCode = 1;
+} else {
+  console.log(`ERGEBNIS: alle ${Object.keys(KARTENTYPEN).length} Kartentypen halten beide Regeln.`);
+}

@@ -1,10 +1,11 @@
 /**
  * Comic-Optik des Geländes: Bruchstein, Moos-Kante, Kontur, Kraterränder.
  *
- * Die Funktionen laufen NACH dem Backen der Geländeebene (`terrainBaker.js`)
- * und verändern nur Farben — nie die Maske. Kollision und Sichtbarkeit bleiben
- * damit ein und dieselbe Wahrheit; der Pixelvergleich CPU/GPU im Baker bleibt
- * unberührt.
+ * `baueGelaendeEbene` baut die sichtbare Ebene in EINEM Zug: Deckkraft aus der
+ * Maske, Färbung, ein `putImageData`. Es gibt keine Vorstufe mehr — der frühere
+ * einfache Baker (`terrainBaker.js`) ist am 2026-10-26 entfallen, weil das Spiel
+ * ihn nie gezeigt hat. Die Funktionen verändern nur Farben, nie die Maske;
+ * Kollision und Sichtbarkeit bleiben damit dieselbe Wahrheit.
  *
  * Alles ist deterministisch: Stein-, Moos- und Rissmuster entstehen aus
  * Position und Seed (`hash2`), nie aus Zufall. Die Ebene wird gecacht und nur

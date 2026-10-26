@@ -10,7 +10,7 @@
  * Der Audit schlug zwei Wege vor: einen Vite-Testläufer einführen ODER die
  * testbare Logik in ein eigenes Modul ziehen. Gewählt wurde der zweite — er
  * folgt dem Muster, das im Projekt schon zweimal angewandt ist
- * (`terrainBaker.js`, `shotPrediction.js`).
+ * (`gelaendeStil.js`, `shotPrediction.js`).
  *
  * ## Was hier geprüft wird
  *

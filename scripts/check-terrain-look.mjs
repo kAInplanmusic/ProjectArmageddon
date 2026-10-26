@@ -4,8 +4,8 @@
  *
  * ## Warum dieses Werkzeug umgebaut wurde (2026-10-26)
  *
- * Es maß bis hierher `edgeLightColor()` und `drawSurfaceEdge()` aus
- * `terrainBaker.js` — also den EINFACHEN Boden. Den zeigt das Spiel nicht: Der
+ * Es maß bis hierher `edgeLightColor()` und `drawSurfaceEdge()` aus dem
+ * damaligen `terrainBaker.js` (am 2026-10-26 entfernt) — den EINFACHEN Boden. Den zeigt das Spiel nicht: Der
  * Renderer baut die Geländeebene mit `baueGelaendeEbene` in einem Zug (Maske →
  * `faerbeGelaende` → ein `putImageData`). Ein Gate, das eine Fläche absegnet,
  * die nie auf dem Bildschirm steht, kann grün sein und trotzdem nichts über das

@@ -21,7 +21,7 @@
  * Aussage über die Richtigkeit).
  *
  * Diese Trennung folgt dem Muster, das das Projekt bereits an zwei Stellen
- * anwendet: `terrainBaker.js` (Rechenkern getrennt vom Zeichnen) und
+ * anwendet: `gelaendeStil.js` (Rechenkern getrennt vom Zeichnen) und
  * `shotPrediction.js` (Vorhersage getrennt vom Renderer).
  *
  * ## Determinismus

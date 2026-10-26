@@ -689,16 +689,11 @@ export class Renderer {
   /**
    * Baut die Terrain-Ebene aus dem Terrain-Bitmap auf.
    *
-   * Der Rechenkern liegt in `terrainBaker.js` — dort ist er als reine Funktion
-   * prüfbar und kann wahlweise auf der GPU laufen. Diese Methode bleibt als
-   * SYNCHRONE Schnittstelle erhalten, weil der Renderer sie an mehreren Stellen
-   * ohne `await` aufruft (Kartenaufbau, Resize, Online-Rekonstruktion) und ein
-   * Umbau auf asynchron dort nichts gewönne: Der GPU-Weg ist beim ersten Bild
-   * ohnehin noch nicht bereit.
-   *
-   * Ist ein Gerät vorhanden, wird der GPU-Weg angestoßen und die Ebene danach
-   * ausgetauscht (`#applyGpuTerrain`). Bis dahin steht das CPU-Ergebnis —also
-   * nie ein leeres Bild.
+   * Der Rechenkern ist `baueGelaendeEbene` aus `gelaendeStil.js`: ein Zug von
+   * der Maske bis zum fertigen Bild, ohne Zwischenweg über den Rasterer.
+   * Die Methode bleibt SYNCHRON, weil der Renderer sie an mehreren Stellen ohne
+   * `await` aufruft (Kartenaufbau, Resize, Online-Rekonstruktion) — es gibt
+   * keinen zweiten Weg, auf den man warten müsste.
    *
    * @param {Uint8Array} bitmap
    * @param {number} width
