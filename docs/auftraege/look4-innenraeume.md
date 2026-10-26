@@ -248,6 +248,35 @@ Schacht liegen und **kein** Abstand über 100 px liegt. Rot-Seite belegt: mit
 nach oben). Die Prüfung ist geometrisch (Abstände gegen die gemessene Sprunghöhe), nicht
 motorisch — ein End-to-End-Klettertest steht noch aus.
 
+### Stufe 3 — Sichtbarkeit: die Prämisse stimmt nicht (geprüft 2026-10-25)
+
+Der Plan sagte „Röntgen-Schnitt: Figur wird halbtransparent, wenn eine Wand oder Decke
+davor liegt". **Eine Wand kann nicht davor liegen.** Belegt im Renderer:
+
+| Zeile | Was dort passiert |
+| :-- | :-- |
+| `renderer.js:2375` | `this.ctx.drawImage(this.terrainLayer, 0, 0)` — die Geländeschicht wird **zuerst** gezeichnet |
+| `renderer.js:2412` | `#drawEntities(...)` — die Figuren kommen **danach** und liegen damit immer oben |
+| `renderer.js:883-895` | Krater stanzen mit `globalCompositeOperation = 'destination-out'` — **Luft ist transparent** |
+
+Folgen:
+
+1. **Ein Röntgen-Schnitt hat keinen Fall.** Es gibt keine Verdeckung, gegen die er arbeiten
+   müsste; die Figur ist in der Höhle genauso sichtbar wie auf freiem Feld. Der geplante
+   Renderer-Eingriff entfällt — gut, dass er nicht gebaut wurde.
+2. **Was wirklich fehlt, ist Lesbarkeit, nicht Sichtbarkeit.** Weil Luft transparent ist,
+   sieht ein Hohlraum wie offener Himmel aus: Der Spieler erkennt nicht, dass die Figur in
+   einem Raum steht und nicht im Freien.
+
+**Vorschlag (nicht gebaut, eigene Entscheidung):** „Innenkanten-Abdunkelung" — im
+Gelände-Layer werden feste Zellen, die an Luft grenzen UND unter der Oberfläche liegen,
+leicht abgedunkelt. Das kostet nichts je Bild (einmal beim Aufbau der Schicht gerechnet),
+braucht keine neue Ebene und macht Räume als Räume lesbar. Alternativ eine dünne Kontur um
+die Figur, solange sie unter Tage steht — billiger, aber weniger deutlich.
+
+**Entscheidung des Auftraggebers nötig:** Abdunkelung der Innenkanten (Empfehlung), Kontur
+an der Figur, oder bewusst nichts (Höhlen bleiben offen wie bisher).
+
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
 | Größe | Erwartung |
