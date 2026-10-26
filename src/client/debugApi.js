@@ -37,21 +37,6 @@ export function exposeDebugApi(game) {
       musik: () => game.musik?.zustand ?? null,
       /** Effekte: Schalter, Zähler pro Klangart/Kategorie/Profil, Stimmen, letzter Klang. */
       sound: () => game.sound?.zustand ?? null,
-      /**
-       * Rechenweg des Bodens (Diagnose und Tests).
-       *
-       * Meldet, WELCHER Weg zuletzt benutzt wurde und WARUM. Ohne diese
-       * Auskunft wäre „WebGPU ist an" eine Behauptung — der Rückfall auf die
-       * CPU sieht im Bild identisch aus.
-       */
-      terrainPath: () => ({
-        device: Boolean(game.renderer.gpuDevice),
-        path: game.renderer.gpuTerrainPath,
-        reason: game.renderer.gpuTerrainReason,
-        attempted: game.renderer.gpuAttempted,
-      }),
-      /** Fordert WebGPU an (wie die Menüwahl „automatisch"). */
-      enableGpu: () => game.renderer.enableGpu(),
       /** Laufende Schussvorhersage (Diagnose und Tests). */
       prediction: () => ({
         active: game.shotPredictor.active,

@@ -6,12 +6,10 @@
  * Bestandsnachricht vom Server. Ein Unit-Test kann die Rechnung prüfen, nicht
  * das Zusammenspiel.
  *
- * Der WebGPU-Teil prüft bewusst NICHT, dass die GPU benutzt wird: In dieser
- * Umgebung gibt es kein WebGPU (gemessen: `navigator.gpu` fehlt im
- * System-Chrome, auch mit `--enable-unsafe-swiftshader`). Geprüft wird, was
- * stimmen muss — dass die Wahl korrekt gemeldet wird und der Rückfall
- * vollständige Pixel liefert. Eine Behauptung „GPU läuft" wäre hier nicht
- * belegbar und wird deshalb auch nicht aufgestellt.
+ * Der frühere WebGPU-Teil ist am 2026-10-26 entfallen, zusammen mit dem
+ * GPU-Weg für das Gelände: Er erzeugte nur den einfachen Boden, die sichtbare
+ * Färbung lief ohnehin auf der CPU, und der Rückweg über `getImageData` machte
+ * ihn zwangsläufig langsamer als der einteilige CPU-Aufbau.
  */
 import { test, expect } from '@playwright/test';
 
@@ -24,72 +22,6 @@ async function starteLokalesMatch(page, seed = '20260916') {
   // Ein paar Bilder laufen lassen, damit Terrain und Kulisse stehen.
   await page.waitForTimeout(400);
 }
-
-test.describe('Boden-Rechenweg (WebGPU-Auswahl)', () => {
-  test('In dieser Umgebung ist WebGPU nicht verfügbar — der Rückfall nennt den Grund', async ({ page }) => {
-    await page.goto('/');
-    const ergebnis = await page.evaluate(() => window.__PA__.enableGpu());
-    expect(ergebnis.available).toBe(false);
-    /*
-     * Der Grund ist konkret, nicht „unbekannt".
-     *
-     * Gemessen in dieser Umgebung: `navigator.gpu` IST vorhanden, aber
-     * `requestAdapter()` liefert `null` — der Kopf ist da, die Hardware nicht.
-     * Genau deshalb prüft die Erkennung bis zum GERÄT und nicht nur die
-     * Schnittstelle: Eine Prüfung auf `'gpu' in navigator` hätte hier
-     * fälschlich „verfügbar" gemeldet.
-     */
-    expect(typeof ergebnis.reason).toBe('string');
-    expect(ergebnis.reason.length).toBeGreaterThan(0);
-    expect(ergebnis.reason).not.toMatch(/unknown|undefined/);
-  });
-
-  test('Nach der Anfrage ist der Weg ausgewiesen und liefert trotzdem Pixel', async ({ page }) => {
-    await starteLokalesMatch(page);
-    await page.evaluate(() => window.__PA__.enableGpu());
-
-    const pfad = await page.evaluate(() => window.__PA__.terrainPath());
-    expect(pfad.attempted).toBe(true);
-    // Ohne nutzbares Gerät MUSS der Weg die CPU sein. Das ist die eigentliche
-    // Aussage dieses Tests.
-    expect(pfad.path).toBe('cpu');
-    expect(pfad.device).toBe(false);
-    expect(pfad.reason).toBeTruthy();
-
-    /*
-     * Und die Bodenfläche ist wirklich gefüllt — nicht nur „kein Fehler".
-     *
-     * Gemessen wird am Canvas: Die Geländeschicht liegt als erstes Bild auf der
-     * Zeichenfläche. Ein Pixel deutlich unter der Oberfläche muss die
-     * Bodenfarbe tragen, kein Schwarz und kein Alpha-Null.
-     */
-    const gefuellt = await page.evaluate(() => {
-      const game = window.__PA__.game;
-      const layer = game.renderer.terrainLayer;
-      if (!layer) return { error: 'keine Geländeschicht' };
-      const ctx = layer.getContext('2d');
-      const bild = ctx.getImageData(0, 0, layer.width, layer.height).data;
-      let undurchsichtig = 0;
-      for (let i = 3; i < bild.length; i += 4) {
-        if (bild[i] > 0) undurchsichtig += 1;
-      }
-      return { undurchsichtig, gesamt: layer.width * layer.height };
-    });
-
-    expect(gefuellt.error).toBeUndefined();
-    // Auf einer Hügelkarte liegt ein erheblicher Teil unter der Oberfläche.
-    expect(gefuellt.undurchsichtig).toBeGreaterThan(gefuellt.gesamt * 0.2);
-  });
-
-  test('Die Vorgabe ist die CPU — ohne Wahl wird kein Gerät angefordert', async ({ page }) => {
-    await starteLokalesMatch(page);
-    const pfad = await page.evaluate(() => window.__PA__.terrainPath());
-    // `attempted` bleibt false: Wer die Option nicht wählt, bekommt keinen
-    // stillen GPU-Versuch. Das ist der Unterschied zwischen „Wahl" und „Zwang".
-    expect(pfad.attempted).toBe(false);
-    expect(pfad.device).toBe(false);
-  });
-});
 
 test.describe('Schussvorhersage', () => {
   test('Lokal läuft keine Vorhersage — der Schuss ist ohnehin sofort da', async ({ page }) => {

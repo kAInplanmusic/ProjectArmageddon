@@ -737,9 +737,6 @@ class Game {
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
-    // Bodenberechnung: 'auto' versucht WebGPU, alles andere bleibt auf der CPU.
-    const gpuWahl = document.getElementById('cfg-gpu')?.value ?? 'off';
-    this.#waehleBodenpfad(gpuWahl);
     const rawSeed = document.getElementById('cfg-seed')?.value?.trim();
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';
@@ -1112,31 +1109,6 @@ class Game {
       return item;
     }));
     return { ok: true, count: offen.length };
-  }
-
-  /**
-   * Wählt den Rechenweg für den Boden anhand der Menüwahl.
-   *
-   * „auto" ist eine Absichtserklärung, keine Garantie: Ist kein WebGPU
-   * vorhanden, bleibt es beim CPU-Weg und der Grund steht im Protokoll. Ein
-   * stiller Rückfall wäre nicht von „hat funktioniert" zu unterscheiden — und
-   * genau diese Verwechslung soll vermieden werden.
-   *
-   * Das Ergebnis wird gemeldet, nicht verschwiegen: Wer die Option wählt, soll
-   * erfahren, ob sie gegriffen hat.
-   */
-  async #waehleBodenpfad(wahl) {
-    if (wahl !== 'auto') {
-      this.renderer.disableGpu();
-      return { available: false, reason: 'CPU gewählt' };
-    }
-    const ergebnis = await this.renderer.enableGpu();
-    if (ergebnis.available) {
-      this.hud.log('Bodenberechnung: WebGPU', 'good');
-    } else {
-      this.hud.log(`Bodenberechnung: CPU (${ergebnis.reason})`, 'neutral');
-    }
-    return ergebnis;
   }
 
   /** Lokales Match im Browser. */

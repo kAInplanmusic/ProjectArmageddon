@@ -20,7 +20,6 @@ import {
   erzeugePartikel, schreitePartikelFort,
   erzeugeStrahl, erzeugeBlitz, schreiteEffekteFort,
 } from './effects.js';
-import { bakeTerrainLayer, detectWebGpu } from './terrainBaker.js';
 import { zeichneHimmel, zeichneWasser } from './kulisseUndWasser.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
@@ -56,7 +55,7 @@ import {
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
-import { veredleGelaende, baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
+import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import {
   plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
 } from './pflanzen.js';
@@ -250,59 +249,13 @@ export class Renderer {
     /** Zwischenbild der hinteren Kulisse (siehe `#drawKulisse`). */
     this.kulissenSchicht = null;
 
-    /*
-     * WebGPU: Gerät, wenn vorhanden — sonst `null`.
-     *
-     * Die Erkennung läuft asynchron (`enableGpu()`), weil `requestAdapter` ein
-     * Promise ist. Bis dahin arbeitet der Renderer auf der CPU; es gibt also
-     * keinen Moment ohne Darstellung. Ein fehlendes Gerät ist KEIN Fehler: Es
-     * ist der Regelfall in Umgebungen ohne GPU (headless, ältere Browser), und
-     * dieser Weg ist der geprüfte Hauptpfad.
+    /**
+     * Zuletzt gebackene Karte — Messwerkzeuge (`perf:browser`, E2E-Profil) bauen
+     * damit dieselbe Karte erneut und messen den Aufbau.
      */
-    this.gpuDevice = null;
-    this.gpuAttempted = false;
-    /** Beim letzten Backen benutzter Weg ('gpu' | 'cpu') — für Diagnose/Tests. */
-    this.gpuTerrainPath = null;
-    this.gpuTerrainReason = null;
-    /** Zuletzt gebackene Karte (für die GPU-Nachbesserung). */
     this.terrainSource = null;
   }
 
-  /**
-   * Fordert ein WebGPU-Gerät an und backt die aktuelle Karte damit neu.
-   *
-   * Bewusst OPTIONAL: Wer die GPU nicht will oder hat, ruft sie nicht auf. Wird
-   * sie nicht aufgerufen, bleibt `gpuDevice` null und alles läuft wie zuvor auf
-   * der CPU — es gibt keinen Zwang und keine Warnung.
-   *
-   * @returns {Promise<{available:boolean, reason:string}>}
-   */
-  async enableGpu() {
-    if (this.gpuAttempted) {
-      return { available: Boolean(this.gpuDevice), reason: this.gpuTerrainReason ?? 'bereits versucht' };
-    }
-    this.gpuAttempted = true;
-
-    const erkennung = await detectWebGpu();
-    this.gpuTerrainReason = erkennung.reason;
-    if (!erkennung.available) {
-      return { available: false, reason: erkennung.reason };
-    }
-
-    this.gpuDevice = erkennung.device;
-    // Die bereits gebackene Karte noch einmal rechnen — sonst bliebe sie bis
-    // zum nächsten Kartenaufbau auf der CPU.
-    const quelle = this.terrainSource;
-    if (quelle) await this.#applyGpuTerrain(quelle.width, quelle.height, quelle.bitmap);
-    return { available: true, reason: 'bereit' };
-  }
-
-  /** Gibt das GPU-Gerät frei (Betriebsartwechsel, Matchende). */
-  disableGpu() {
-    this.gpuDevice = null;
-    this.gpuTerrainPath = null;
-    this.gpuAttempted = false;
-  }
 
   /**
    * Setzt die generative Kulisse (Himmel, Wasser, Ambiente, Landmarken).
@@ -760,24 +713,8 @@ export class Renderer {
     baueGelaendeEbene(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
     this.terrainLayer = layer;
     this.#baePflanzen(bitmap, width, height);
-    /** Zuletzt gebackene Karte — der GPU-Weg braucht Bitmap und Maße erneut. */
+    /** Bitmap und Maße für Messwerkzeuge, die den Aufbau erneut messen. */
     this.terrainSource = { bitmap, width, height };
-    /*
-     * Der benutzte Weg wird IMMER vermerkt, auch wenn gar kein Gerät da ist.
-     *
-     * Fund (belegt): Zuerst stand hier nur die Zuweisung im GPU-Zweig. Wer ohne
-     * Gerät nach dem Weg fragte, bekam `null` — also keine Auskunft, obwohl die
-     * CPU eindeutig der benutzte Weg war. Eine Diagnose, die im Normalfall
-     * schweigt, ist keine.
-     */
-    this.gpuTerrainPath = 'cpu';
-    if (!this.gpuTerrainReason) this.gpuTerrainReason = 'WebGPU nicht angefordert';
-
-    // GPU-Nachbesserung anstoßen, falls ein Gerät bereitsteht. Sie ist NICHT
-    // Voraussetzung für die Anzeige: Ohne Gerät, ohne Browser-Unterstützung
-    // oder bei einem Fehler bleibt es beim CPU-Ergebnis.
-    if (this.gpuDevice) this.#applyGpuTerrain(width, height, bitmap);
-
     return layer;
   }
 
@@ -809,47 +746,6 @@ export class Renderer {
       zeichnePflanzenSchicht(schicht.getContext('2d'), this.pflanzen, schicht.width, schicht.height, this.palette);
     }
     this.pflanzenStreifen = pflanzenStreifen(this.pflanzen, schicht.width, schicht.height);
-  }
-
-  /**
-   * Backt die Terrain-Ebene auf der GPU und tauscht sie ein.
-   *
-   * Bewusst asynchron und fehlertolerant: Ein GPU-Fehler darf das Spiel nicht
-   * anhalten. Schlägt der Weg fehl, bleibt die CPU-Ebene stehen — der Spieler
-   * sieht keinen Unterschied außer der Rechenzeit.
-   */
-  async #applyGpuTerrain(width, height, bitmap) {
-    try {
-      const { layer, path, reason } = await bakeTerrainLayer({
-        bitmap,
-        width,
-        height,
-        palette: this.palette,
-        device: this.gpuDevice,
-        createCanvas: (w, h) => {
-          const c = document.createElement('canvas');
-          c.width = w;
-          c.height = h;
-          return c;
-        },
-      });
-      /*
-       * Nur übernehmen, wenn die Karte noch dieselbe ist: Ein Resize während
-       * des Backens hätte sonst eine veraltete Ebene eingesetzt — das Terrain
-       * wäre um die neue Größe versetzt.
-       */
-      const quelle = this.terrainSource;
-      if(quelle && (quelle.width !== width || quelle.height !== height || quelle.bitmap !== bitmap)) return;
-      if (path === 'gpu') {
-        veredleGelaende(layer, bitmap, width, height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
-        this.terrainLayer = layer;
-      }
-      this.gpuTerrainPath = path;
-      this.gpuTerrainReason = reason;
-    } catch (error) {
-      this.gpuTerrainPath = 'cpu';
-      this.gpuTerrainReason = `GPU-Weg nicht möglich: ${error.message}`;
-    }
   }
 
   /**

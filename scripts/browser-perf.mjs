@@ -132,7 +132,7 @@ async function main() {
       renderer.buildTerrainLayer(quelle.bitmap, quelle.width, quelle.height);
       messungen.push(performance.now() - start);
     }
-    return { messungen, width: quelle.width, height: quelle.height, path: renderer.gpuTerrainPath };
+    return { messungen, width: quelle.width, height: quelle.height };
   });
 
   // Vor dem Messen ein paar Bilder laufen lassen, damit Vite fertig lädt.
@@ -192,11 +192,7 @@ async function main() {
   const browserInfo = await page.evaluate(() => ({
     ua: navigator.userAgent,
     hardwareConcurrency: navigator.hardwareConcurrency ?? null,
-    // WebGPU-Verfügbarkeit mitberichten: Sie erklärt, welcher Bodenpfad lief.
-    hasWebGpu: 'gpu' in navigator,
   }));
-
-  const terrainPath = await page.evaluate(() => window.__PA__.terrainPath());
 
   await browser.close();
 
@@ -219,9 +215,7 @@ async function main() {
       runs: bakeZeiten.length,
       width: terrainBake?.width ?? null,
       height: terrainBake?.height ?? null,
-      path: terrainBake?.path ?? terrainPath?.path ?? null,
     },
-    webgpu: terrainPath,
     pageErrors: seitenfehler,
   };
 
@@ -251,8 +245,6 @@ async function main() {
   console.log('');
   console.log(`  Terrain-Backen : ${ms(bericht.terrainBakeMs.mean)} (max ${ms(bericht.terrainBakeMs.max)}, ${bericht.terrainBakeMs.runs} Läufe)`);
   console.log(`    Fläche       : ${bericht.terrainBakeMs.width}×${bericht.terrainBakeMs.height} = ${(bericht.terrainBakeMs.width * bericht.terrainBakeMs.height / 1e6).toFixed(2)} Mio Pixel`);
-  console.log(`    Rechenweg    : ${bericht.terrainBakeMs.path} (${terrainPath?.reason ?? '—'})`);
-  console.log(`  WebGPU         : ${browserInfo.hasWebGpu ? 'Schnittstelle vorhanden' : 'nicht vorhanden'} — Gerät: ${terrainPath?.device ? 'ja' : 'nein'}`);
   if (seitenfehler.length > 0) {
     console.log('');
     console.log(`  SEITENFEHLER (${seitenfehler.length}):`);

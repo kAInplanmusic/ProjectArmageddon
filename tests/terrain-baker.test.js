@@ -12,6 +12,16 @@
  * Konstanten), dass der Puffer-Umlauf des GPU-Wegs die Zeilenausrichtung
  * beachtet, und dass ein fehlendes oder fehlerhaftes Gerät sauber auf die CPU
  * zurückfällt.
+/**
+ * Tests der Terrain-Grundbausteine (Oberflächenzeilen, Grundfarbe, Kantenlicht).
+ *
+ * Der Modulkopf von `terrainBaker.js` begründet, warum der WebGPU-Weg am
+ * 2026-10-26 entfernt wurde: Er erzeugte nur den einfachen Boden, die sichtbare
+ * Färbung läuft ohnehin auf der CPU, und der Rückweg über `getImageData` machte
+ * ihn zwangsläufig langsamer als der einteilige CPU-Aufbau.
+ *
+ * Der erste Test hier hält die Entfernung fest. Die übrigen prüfen, was bleibt:
+ * dass die Bausteine das liefern, was ihre Namen versprechen.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,12 +32,32 @@ import {
   fillGroundPixels,
   edgeLightColor,
   drawSurfaceEdge,
-  detectWebGpu,
-  bakeTerrainLayer,
   bakeTerrainLayerCpu,
   DEPTH_REACH_PX,
-  GROUND_SHADER_WGSL,
 } from '../src/client/terrainBaker.js';
+
+test('Der Geländeaufbau kennt keinen GPU-Weg mehr', async () => {
+  /*
+   * ENTFERNT am 2026-10-26 — und zwar aus einem gemessenen Grund:
+   *
+   * Der Shader erzeugte nur den EINFACHEN Boden (`fillGroundPixels`). Das Spiel
+   * zeigt aber `faerbeGelaende` (Voronoi-Steine, Lagen, Kantenlicht, Moos).
+   * Damit der Look stimmte, musste nach dem GPU-Backen `veredleGelaende`
+   * laufen: 14,7 MB zurücklesen, den 400-ms-Kern auf der CPU rechnen, 14,7 MB
+   * hochladen — also genau die Ebene, die der CPU-Weg in EINEM Zug liefert
+   * (gemessen 2560x1440: Summe CPU 554 ms, davon 401 ms dieser Kern). Der
+   * GPU-Weg war damit Doppelarbeit mit zwei zusätzlichen Kopien und konnte nur
+   * langsamer sein als gar kein GPU-Weg.
+   *
+   * Dieser Test hält die Entfernung fest: Wer den Weg zurückholt, muss zuerst
+   * belegen, dass der Shader den VOLLEN Look liefert.
+   */
+  const modul = await import('../src/client/terrainBaker.js');
+  for (const name of ['detectWebGpu', 'bakeTerrainLayer', 'GROUND_SHADER_WGSL']) {
+    assert.equal(modul[name], undefined,
+      `${name} darf nicht mehr existieren — der GPU-Weg war Doppelarbeit`);
+  }
+});
 
 /** Ein Canvas-Ersatz, der die Pixel wirklich hält (kein Browser nötig). */
 function fakeCanvasFactory() {
@@ -205,102 +235,6 @@ test('drawSurfaceEdge setzt die Composite-Regel zurück', () => {
   }
 });
 
-test('Ohne navigator.gpu meldet die Erkennung den Grund statt zu werfen', async () => {
-  const ohne = await detectWebGpu({ navigatorObj: {} });
-  assert.equal(ohne.available, false);
-  assert.equal(ohne.device, null);
-  assert.match(ohne.reason, /navigator\.gpu fehlt/);
-
-  const garNichts = await detectWebGpu({ navigatorObj: null });
-  assert.equal(garNichts.available, false);
-});
-
-test('Ein fehlender Adapter ist kein Fehler, sondern ein Rückfallgrund', async () => {
-  const ergebnis = await detectWebGpu({
-    navigatorObj: { gpu: { requestAdapter: async () => null } },
-  });
-  assert.equal(ergebnis.available, false);
-  assert.equal(ergebnis.reason, 'kein Adapter');
-});
-
-test('Ein werfender Adapter wird abgefangen', async () => {
-  const ergebnis = await detectWebGpu({
-    navigatorObj: { gpu: { requestAdapter: async () => { throw new Error('kein Backend'); } } },
-  });
-  assert.equal(ergebnis.available, false);
-  assert.match(ergebnis.reason, /Adapter-Fehler: kein Backend/);
-});
-
-test('Ein Adapter ohne Gerät gilt als nicht verfügbar', async () => {
-  /*
-   * Ein Adapter allein genügt nicht: Ohne Gerät ließe sich kein einziger Befehl
-   * absetzen. Würde hier „verfügbar" gemeldet, fiele die Anzeige mitten im
-   * Aufbau auf einen Weg zurück, den sie schon verlassen hat.
-   */
-  const ergebnis = await detectWebGpu({
-    navigatorObj: { gpu: { requestAdapter: async () => ({ requestDevice: async () => null }) } },
-  });
-  assert.equal(ergebnis.available, false);
-  assert.equal(ergebnis.reason, 'kein Gerät');
-});
-
-test('Ein vollständiger Adapter samt Gerät gilt als verfügbar', async () => {
-  const device = { marker: true };
-  const ergebnis = await detectWebGpu({
-    navigatorObj: { gpu: { requestAdapter: async () => ({ requestDevice: async () => device }) } },
-  });
-  assert.equal(ergebnis.available, true);
-  assert.equal(ergebnis.device, device);
-});
-
-test('Ohne Gerät backt bakeTerrainLayer auf der CPU und nennt den Grund', async () => {
-  const bitmap = testBitmap(4, 8);
-  const ergebnis = await bakeTerrainLayer({
-    bitmap, width: 4, height: 8, palette: PALETTE,
-    device: null,
-    createCanvas: fakeCanvasFactory(),
-  });
-  assert.equal(ergebnis.path, 'cpu');
-  assert.match(ergebnis.reason, /nicht verfügbar/);
-  // Und es sind wirklich Pixel entstanden.
-  assert.equal(ergebnis.layer._pixels.data[(2 * 4 + 0) * 4 + 3], 255);
-});
-
-test('Ein werfendes Gerät fällt auf die CPU zurück, statt das Spiel anzuhalten', async () => {
-  /*
-   * Der wichtigste Test dieses Moduls: Ein Fehler im GPU-Weg darf nicht nach
-   * außen dringen. Das Spiel muss weiterlaufen — sichtbar langsamer, aber
-   * vollständig.
-   *
-   * Gemessen: Der Fehler tritt noch VOR dem Aufruf der Gerätemethode auf, weil
-   * `renderGroundOnGpu` die globale Konstante `GPUTextureUsage` braucht, die es
-   * ohne WebGPU nicht gibt. Genau deshalb steht der GPU-Weg vollständig in
-   * einem `try` — die Stelle des Fehlers ist nicht vorhersagbar, das Ergebnis
-   * muss es sein.
-   */
-  const bitmap = testBitmap(4, 8);
-  const kaputtesGerät = {
-    createTexture: () => { throw new Error('Gerät verloren'); },
-  };
-  const ergebnis = await bakeTerrainLayer({
-    bitmap, width: 4, height: 8, palette: PALETTE,
-    device: kaputtesGerät,
-    createCanvas: fakeCanvasFactory(),
-  });
-  assert.equal(ergebnis.path, 'cpu', 'ohne GPU muss der CPU-Weg das Ergebnis liefern');
-  assert.match(ergebnis.reason, /^GPU-Weg fehlgeschlagen: /,
-    `der Grund muss den GPU-Weg nennen, war: ${ergebnis.reason}`);
-  // Die Ebene ist trotzdem vollständig gefüllt.
-  assert.equal(ergebnis.layer._pixels.data[(2 * 4 + 0) * 4 + 3], 255);
-});
-
-test('bakeTerrainLayer ohne createCanvas wirft verständlich', async () => {
-  await assert.rejects(
-    () => bakeTerrainLayer({ bitmap: testBitmap(), width: 4, height: 8, palette: PALETTE }),
-    /createCanvas/,
-  );
-});
-
 test('Der CPUsweg und der reine Rechenkern liefern identische Pixel', () => {
   /*
    * Der CPU-Weg darf keine eigene Rechnung haben: Er muss exakt das erzeugen,
@@ -316,21 +250,6 @@ test('Der CPUsweg und der reine Rechenkern liefern identische Pixel', () => {
   bakeTerrainLayerCpu({ layer, ctx, bitmap, width: 4, height: 8, palette: PALETTE });
 
   assert.deepEqual([...layer._pixels.data], [...direkt]);
-});
-
-test('Der Shader rechnet mit denselben Konstanten wie der CPU-Kern', () => {
-  /*
-   * Ein anderer Wert im Shader ergäbe einen sichtbar anderen Verlauf — und
-   * niemand würde es bemerken, weil beide Wege für sich plausibel aussehen.
-   * Deshalb wird hier der übertragene Wert geprüft, nicht nur das Vorhandensein.
-   */
-  assert.match(GROUND_SHADER_WGSL, /fn main\(/);
-  assert.match(GROUND_SHADER_WGSL, /surfaceRow/);
-  assert.match(GROUND_SHADER_WGSL, /depthReach/);
-  // Die Tiefenreichweite wird als Uniform übergeben und stammt aus derselben
-  // Konstante wie der CPU-Kern.
-  assert.equal(typeof DEPTH_REACH_PX, 'number');
-  assert.ok(DEPTH_REACH_PX > 0);
 });
 
 test('Die Bäckerei ist deterministisch: zweimal dasselbe Bitmap ergibt dieselben Pixel', () => {

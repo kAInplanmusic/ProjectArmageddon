@@ -195,8 +195,7 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
    * Spalte die Oberfläche suchen und jedes Pixel darunter einfärben, bei
    * 1280×720 rund 900 000 Pixel. Er fällt nur beim Kartenaufbau an und ginge in
    * einem Bilddurchschnitt unter — deshalb eigener Wert. Gemessen wird der
-   * echte Renderer-Pfad (GPU, wenn ein Gerät da ist, sonst Canvas 2D); welcher
-   * es war, steht in `gpuTerrainPath`.
+   * echte Renderer-Pfad (`buildTerrainLayer`, einteiliger CPU-Aufbau).
    *
    * Neben der Zeit wird die Prüfsumme der erzeugten Fläche mitgenommen: Sie
    * belegt, dass der Neuaufbau wirklich etwas gebaut hat.
@@ -236,7 +235,6 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
       laeufe: zeiten.length,
       mittel: zeiten.reduce((a, b) => a + b, 0) / zeiten.length,
       max: Math.max(...zeiten),
-      pfad: renderer.gpuTerrainPath ?? null,
       pruefsumme,
     };
   });
@@ -262,7 +260,6 @@ async function messen(page, { form, bilder = BILDER, feuern = false, still = fal
       ua: navigator.userAgent,
       kerne: navigator.hardwareConcurrency ?? null,
       webgpuSchnittstelle: 'gpu' in navigator,
-      terrainPfad: window.__PA__.terrainPath?.() ?? null,
       rendered,
       /*
        * Die LEINWANDMAßE gehören dazu: Sie entscheiden, wie viel der Rasterer je
