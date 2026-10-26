@@ -1,7 +1,7 @@
 # Gelände: Materialoptik → Zerstörbarkeit → Bewegung
 
 **Stand:** 2026-10-26 · **Status:** Entwurf zur Freigabe
-**Auftraggeber:** „es muss besser aussehen, mehr Diversifikation haben" · „+ generator" · „wirksam" · „optik → zerstörbarkeit → bewegung"
+**Auftraggeber:** „es muss besser aussehen, mehr Diversifikation haben" · „+ generator" · „wirksam" · „optik → zerstörbarkeit → bewegung" · „die karte muss details haben, prozedural sein, dynamisch wirken und agieren" · „zoombarkeit ermöglichen (bildausschnitt)" · „die karten sind nicht groß genug" · „lava unterwasser formt eine neue insel"
 **Vorgabe-Bilder:** `assets/gelaende-quelle/sheet-c-querschnitt.jpg` (Maßstab), `sheet-a-sidecut.jpg` (26 Kacheln), `kontrolle.jpg` (was heute läuft), `docs/design-vorlagen/look-vorgabe-gelaende.md`
 
 ---
@@ -48,69 +48,107 @@ Probe-Shader mit dem Muster von `faerbeGelaende` (9 Kandidatenzellen je Pixel), 
 
 ## 4. Ziele
 
-1. **Optik:** Materialien sehen aus wie in `sheet-a`/`sheet-c` — dicht, materialtypisch, ohne sichtbare Kachelwiederholung.
-2. **Zerstörbarkeit sichtbar:** Ein Treffer zerlegt das Gelände **je Material** verschieden (Holz splittert, Beton bricht in Platten, Glas/Kristall zersplittert, Sand rieselt).
-3. **Bewegung:** Der Boden greift je Material anders (Eis rutschig, Asche/Sand bremsen, Geröll stolpert).
+1. **Optik:** Materialien sehen aus wie in `sheet-a`/`sheet-c` — dicht, materialtypisch, ohne sichtbare Kachelwiederholung, prozedural aus Position und Seed.
+2. **Maßstab und Zoom:** Die Karte wird zur *Welt*, nicht zum Bild. Gezeigt wird ein **Ausschnitt** (1 Bildschirmpixel = 1 Kartenpixel), zoombar hinein und heraus.
+3. **Formate:** freie Seitenverhältnisse — 16:5 bis 5:16, quadratisch, 4:3/3:4 und alles dazwischen — bei **gleichem Flächenbudget** (§8.1).
+4. **Dynamik (Stoffumwandlung):** Material verändert sich im Spiel — Lava unter Wasser erstarrt zu neuem Land, Schnee deckt zu, Vulkanasche fällt.
+5. **Zerstörbarkeit sichtbar:** ein Treffer zerlegt das Gelände je Material verschieden (Holz splittert, Beton bricht in Platten, Glas/Kristall zersplittert, Sand rieselt).
+6. **Bewegung:** der Boden greift je Material anders (Eis rutscht, Asche/Sand bremsen, Geröll stolpert).
 
 ## 5. Nicht-Ziele
 
 - **Keine Änderung an Kollision, Maske oder Netcode.** Die 8-px-Stoffkarte bleibt die Wahrheit für Spiel, Hash und Replay.
-- **Kein Umbau der Simulation** auf einen anderen Tick oder andere Determinismus-Regeln.
+- **Keine Reichweitenskalierung der 150 Waffen.** Entscheidung des Auftraggebers: die Waffen bleiben, die Karte wird zu mehr Gelände. Einzelne Waffen nachzuskalieren bleibt ein **eigener** Auftrag (mit eigener Balance-Messung), nicht Teil dieses Projekts.
 - **Kein WebGPU-Weg** (in dieser Umgebung nicht lauffähig; siehe §3).
-- **Kein neues Kartenformat** — Materialkarte und Rezepte bleiben, wie sie sind.
+- **Kein Umbau der Simulation** auf einen anderen Tick oder andere Determinismus-Regeln.
 
 ## 6. Anti-Ziele (woran dieses Projekt scheitern würde)
 
 - Das Gelände sieht **anders, aber nicht besser** aus (mehr Rauschen statt mehr Struktur).
-- Die Optik wird teurer als der Gewinn: Rückfall auf eine Kantenlänge, bei der Figuren nicht mehr lesbar sind.
-- Zerstörbarkeit verändert die **Balance** unbemerkt (30-Partien-Gates, Bot-Verhalten).
+- Details, die nur im Zoom existieren und bei Spielgröße wie Schmutz wirken.
+- Große Karten, die **leer** sind — mehr Fläche ohne mehr Material und Form.
+- Zerstörbarkeit oder Umwandlung verändern die **Balance** unbemerkt (30-Partien-Gates, Bot-Verhalten).
 - Zwei Wege (CPU/GPU) liefern so unterschiedliche Bilder, dass ein Screenshot nicht mehr sagt, was der Spieler sieht.
 
 ## 7. Entscheidungen des Auftraggebers
 
-| Entscheidung | Wortlaut |
+| Entscheidung | Wortlaut / Inhalt |
 | :-- | :-- |
 | Reihenfolge | **Optik → Zerstörbarkeit → Bewegung** |
 | Herkunft der Vielfalt | **aus dem Generator** (echte Materialadern je Karte) |
 | Materialien sollen wirken | **wirksam**, nicht nur Farbe |
 | Ladezeit | **zweitrangig** |
-| Maßstab | die gelieferten Bildvorlagen (§ Kopf) |
+| Maßstab | „die karte muss details haben, prozedural sein, dynamisch wirken und agieren … nach der waffen-/zielmechanik eins der wichtigsten elemente" |
+| Zoom | „zoombarkeit ermöglichen (bildausschnitt)" |
+| Formate | 16:5 · 5:16 · quadratisch/rund · 4:3 · 3:4 — „und alles dazwischen" |
+| Größere Karten | Waffen bleiben, Fläche wächst; „wobei man das balancing und bestimmte waffen nochmal nachskalieren kann" |
+| Stoffumwandlung | „ja fände ich stark": Lava unter Wasser → neue Insel, Schnee bedeckt, Vulkanasche fällt |
 
 ## 8. Entscheidungen des Bauers (meine, nicht Ihre — prüfen Sie sie)
 
-1. **WebGL2-Shader statt CPU-Ausbau.** Der Kern von `faerbeGelaende` wird für Material und Detail auf die GPU verlagert; der CPU-Weg bleibt als Rückfall (Kopf, Tests, kein WebGL2) und liefert dieselbe Karte in flacherer Malerei.
-2. **Der Shader verzerrt nur den Blick, nicht die Daten.** Die 8-px-Zellkanten werden im Shader per Domain-Warp gebrochen; die Stoffkarte selbst bleibt unangetastet. Damit wird die Optik organisch, **ohne** Netcode, Hash oder Determinismus anzufassen.
-3. **Acht Materialien bekommen eigenen Detail-Code**, die übrigen erben das ähnlichste: Erde (Wurzeln, Körnung), Fels (Platten, Risse), Sand (Dünen, Körner), Eis (Bruchkanten, Blaustich), Basalt (Säulen, Poren), Kristall (Facetten, Strahlkern), Holz (Fasern, Jahresringe), Beton (Platten, freiliegende Ziegel). Die acht decken `sheet-a` Nr. 1, 3, 5, 7, 9, 11, 13, 16 ab.
-4. **Dark-Contour an Materialgrenzen** wie in der Vorlage: eine dunkle Ader dort, wo zwei Stoffe aufeinandertreffen — billig im Shader, prägend im Bild.
-5. **Glut und Licht** bleiben lokal (Lava/Kristall/Magiekristall) und werden nicht zu einer globalen Beleuchtung ausgebaut.
-6. **Zerstörbarkeit** nutzt die vorhandenen Felder `haerte`, `bruechig`, `brennbar`, `schmelzbar` — es kommen **keine neuen Materialdaten** dazu, nur sichtbare Folgen.
-7. **Bewegung** bekommt genau **einen** neuen Wert je Stoff (Reibung) statt eines Physik-Umbaus.
+1. **Flächenbudget statt Kantenlänge.** Alle Formate bekommen dieselbe Pixelzahl; das Seitenverhältnis ist frei. Damit kostet ein 16:5-Panorama genau so viel wie ein Quadrat.
+
+   | Format | Beispielmaße | Fläche |
+   | :-- | :-- | --: |
+   | heute | 2560×1440 | 3,69 Mio |
+   | 16:5 | 3200×1000 | 3,20 Mio |
+   | 4:3 | 2000×1500 | 3,00 Mio |
+   | 1:1 | 1800×1800 | 3,24 Mio |
+   | 5:16 | 1000×3200 | 3,20 Mio |
+   | **Zielstufe 1** | Budget **6 Mio** (≈ 1,6× heute) | 6,00 Mio |
+   | **Zielstufe 2** | Budget **14 Mio** (≈ 3,8× heute) | 14,00 Mio |
+
+   Tempo: je Mio Pixel rund 12 ms auf der GPU (gemessen, §3) → 6 Mio ≈ 75 ms, 14 Mio ≈ 180 ms Backen.
+2. **Zoom ist ein Ausschnitt, keine Skalierung.** 1 Bildschirmpixel = 1 Kartenpixel; gezoomt wird durch kleineren Ausschnitt, nicht durch Schrumpfen des Bildes. Dadurch bleibt die Detaildichte bei jedem Kartenmaß gleich — und eine 4K-Karte wird nicht auf ein Drittel verkleinert (das war der Befund von `check:map`).
+3. **WebGL2-Shader statt CPU-Ausbau.** Material und Detail laufen auf der GPU; der CPU-Weg bleibt als Rückfall (Kopf, Tests, kein WebGL2).
+4. **Der Shader verzerrt nur den Blick, nicht die Daten.** Die 8-px-Zellkanten werden per Domain-Warp gebrochen; die Stoffkarte selbst bleibt unangetastet — kein Eingriff in Netcode, Hash oder Determinismus.
+5. **Acht Materialien bekommen eigenen Detail-Code**, die übrigen erben das ähnlichste: Erde (Wurzeln, Körnung), Fels (Platten, Risse), Sand (Dünen, Körner), Eis (Bruchkanten, Blaustich), Basalt (Säulen, Poren), Kristall (Facetten, Strahlkern), Holz (Fasern, Jahresringe), Beton (Platten, freiliegende Ziegel) — `sheet-a` Nr. 1, 3, 5, 7, 9, 11, 13, 16.
+6. **Dark-Contour an Materialgrenzen** wie in der Vorlage: eine dunkle Ader dort, wo zwei Stoffe aufeinandertreffen.
+7. **Glut und Licht** bleiben lokal (Kristall, Magiekristall) und werden keine globale Beleuchtung.
+8. **Zerstörbarkeit und Umwandlung** nutzen die vorhandenen Felder `haerte`, `bruechig`, `brennbar`, `schmelzbar` — es kommen **keine neuen Materialdaten** dazu.
+9. **Bewegung** bekommt genau **einen** neuen Wert je Stoff (Reibung) statt eines Physik-Umbaus.
+10. **Der CPU-Rückfall bleibt flacher.** Ohne WebGL2 sieht das Gelände schlichter aus als heute. Sie haben die Frage nicht beantwortet — das ist deshalb meine Entscheidung, und sie ist umkehrbar.
 
 ## 9. Phasen mit Abnahmekriterien
 
-### P1 — Optik (der eigentliche Auftrag)
+### P1 — Materialoptik (der eigentliche Auftrag)
 
-- WebGL2-Modul `gelaendeGpu.js`: Materialkarte + Tabellen als Texturen, Fragment-Shader mit acht Materialschemata, Domain-Warp, Kontur, Glut.
+- WebGL2-Modul `gelaendeGpu.js`: Stoffkarte + Tabellen als Texturen, Fragment-Shader mit acht Materialschemata, Domain-Warp, Kontur, lokale Glut.
 - Einbau in `baueGelaendeEbene` mit Rückfall auf den heutigen CPU-Weg.
 - **Abnahme:**
-  - Screenshot 2560×1440 mit vier Biompaletten liegt vor; ich beschreibe, was gegen `sheet-c` noch fehlt.
-  - **Kachelmuster messbar weg:** Autokorrelation der Helligkeit bei Versatz 512 px liegt unter der bei Versatz 511/513 px (heute: deutlich darüber).
-  - Material ist im Bild erkennbar: acht Stoffe, je eigene Struktur, in einem Ausschnitt von 400×300 px mindestens drei Materialien sichtbar.
+  - Screenshots in Spielgröße **und** im Zoom liegen vor; ich beschreibe, was gegen `sheet-c` noch fehlt.
+  - **Kachelmuster messbar weg:** Autokorrelation der Helligkeit bei Versatz 512 px liegt unter der bei Versatz 511/513 px (heute deutlich darüber).
+  - In einem Ausschnitt von 400×300 px sind mindestens drei Materialien unterscheidbar, jedes mit eigener Struktur.
   - `npm test`, `npm run checks` (21 Gates), `check:docs` grün; `check:terrain` und `check:hoehlensicht` weiter grün.
-  - Ladezeit dokumentiert (vorher/nachher), aber **nicht** Abnahmekriterium.
+  - Ladezeit dokumentiert, aber **nicht** Abnahmekriterium.
 
-### P2 — Zerstörbarkeit sichtbar
+### P2 — Ausschnitt, Zoom, Kartenmaße, Formate
 
-- Trefferfolgen je Material: Holz splittert in lange Fasern, Beton in Platten, Glas/Kristall in Scherben, Sand rieselt, Metall bleibt ganz (heute schon `unzerstoerbar`).
-- **Abnahme:** ein Test je Materialfamilie (Form und Anzahl der Bruchstücke), `check:zerstoerung`-Gates und die Goldwerte der Krater-Läufe neu basiert **mit Begründung im Testkopf**, Bot-Partien und Balance-Gates unverändert grün.
+- Kamera: Ausschnitt-Rendering mit 1:1-Pixeln, Zoom etwa 0,75×–2×, Grenzen so, dass nie außerhalb der Karte geschaut wird.
+- Generator und Kartenmaße auf **Flächenbudget** statt fester Kantenlänge (§8.1); Seitenverhältnis frei.
+- **Abnahme:**
+  - Formattabelle 16:5 · 4:3 · 1:1 · 3:4 · 5:16 spielbar, je ein Screenshot.
+  - `check:erreichbarkeit` (30 Partien) für **jedes** Format grün.
+  - Bildzeit mit `perf:browser --use-angle=gl` gemessen; Rückgang der Bildzeit oder mindestens Gleichstand gegen heute.
+  - `check:map` und `check:sizes` auf die neue Regel umgestellt, mit Messung im Kopf.
 
-### P3 — Bewegung
+### P3 — Zerstörbarkeit sichtbar
+
+- Trefferfolgen je Material: Holz splittert in Fasern, Beton in Platten, Glas/Kristall in Scherben, Sand rieselt, Metall bleibt ganz.
+- **Abnahme:** ein Test je Materialfamilie (Form und Anzahl der Bruchstücke); Goldwerte der Krater-Läufe neu basiert **mit Begründung im Testkopf**; Bot-Partien und Balance-Gates unverändert grün.
+
+### P4 — Stoffumwandlung (Dynamik)
+
+- Regeln: Lava + Wasser → erstarrtes Gestein (neue Insel), Hitze schmilzt Eis, Brand wandelt Holz zu Asche, fallende Asche/Schnee legt sich auf die Oberfläche.
+- **Abnahme:** je Regel ein Test mit Vorher/Nachher-Bild und Zellprüfung; Determinismus über zwei Läufe gleicher Hash; Umwandlung ist im Bild sichtbar (Screenshot), nicht nur im Feld.
+
+### P5 — Bewegung
 
 - Ein Reibungswert je Stoff; Eis rutscht, Sand/Asche bremsen, Geröll stolpert.
-- **Abnahme:** Messung der Rutschstrecke je Material auf gleicher Steigung, Bot-Partien bleiben grün (keine unerreichbaren Figuren), `check:erreichbarkeit` und `check:autonom` unverändert.
+- **Abnahme:** Rutschstrecke je Material auf gleicher Steigung gemessen; Bot-Partien grün; `check:erreichbarkeit` und `check:autonom` unverändert.
 
-## 10. Offene Punkte (Ihre Entscheidung, nicht meine)
+## 10. Offene Punkte (Ihre Entscheidung)
 
-1. **Figurenmaßstab:** In `sheet-c` sind die Figuren winzig vor dem Terrain. Im Spiel sind sie groß. Soll das Terrain feiner werden (mehr Pixel je Materialdetail) oder bleibt der Maßstab?
-2. **Zerstörbarkeit in P2:** Soll ein Treffer auch **Stoff umwandeln** (Lava verbrennt Holz zu Asche, Hitze schmilzt Eis zu Wasser)? Die Felder `brennbar`/`schmelzbar` gibt es schon — das wäre eine Mechanik, keine Optik.
-3. **Rückfall-Optik:** Ist es hinnehmbar, dass ohne WebGL2 (Kopf, alte Rechner) das Gelände flacher aussieht als heute — oder muss der CPU-Weg mitwachsen?
+1. **„rund"** — heißt das nur „quadratisches Bild" (1:1), oder soll die Karte eine **kreisförmige Grundfläche** haben (Rand fällt ins Nichts)?
+2. **Auflösungsdecke** — reicht Zielstufe 2 (14 Mio Pixel ≈ 3,8× heute), oder soll es weiter gehen (z. B. 33 Mio = 8192×4096, dann ≈ 400 ms Backen auf der GPU)?
+
