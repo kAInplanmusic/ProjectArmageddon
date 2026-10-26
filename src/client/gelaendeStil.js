@@ -293,19 +293,24 @@ export function fuelleHoehlenluft(d, bitmap, breite, hoehe, farbe = [16, 18, 22]
   const offen = new Uint8Array(breite * hoehe);
   const stapel = new Int32Array(breite * hoehe);
   let oben = 0;
+  /** Merkt ein Luftpixel als „vom Himmel erreichbar" vor — einmal geprüft, einmal geschrieben. */
+  const merke = (i) => {
+    if (bitmap[i] || offen[i]) return;
+    offen[i] = 1;
+    stapel[oben] = i;
+    oben += 1;
+  };
   // Nur der obere Kartenrand ist „Himmel" — die Seiten sind versiegelt.
-  for (let x = 0; x < breite; x += 1) {
-    if (!bitmap[x] && !offen[x]) { offen[x] = 1; stapel[oben] = x; oben += 1; }
-  }
+  for (let x = 0; x < breite; x += 1) merke(x);
   while (oben > 0) {
     oben -= 1;
     const i = stapel[oben];
     const x = i % breite;
     const y = (i - x) / breite;
-    if (x > 0) { const j = i - 1; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
-    if (x < breite - 1) { const j = i + 1; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
-    if (y > 0) { const j = i - breite; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
-    if (y < hoehe - 1) { const j = i + breite; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
+    if (x > 0) merke(i - 1);
+    if (x < breite - 1) merke(i + 1);
+    if (y > 0) merke(i - breite);
+    if (y < hoehe - 1) merke(i + breite);
   }
 
   let gefuellt = 0;

@@ -59,7 +59,7 @@ test('Derselbe Seed ergibt dieselbe Karte, ein anderer eine andere', () => {
 test('Jede Spalte hat die Decken und dazwischen Luft', () => {
   const def = KARTENTYPEN.etagen;
   const k = karte('etagen');
-  const geprueft = [200, 500, 900, 1200].filter(x => k.bitmap.every((_, i) => i % k.width !== x || true));
+  const geprueft = [200, 500, 900, 1200];
   let spaltenMitDecken = 0;
   for (const x of geprueft) {
     const b = baender(k, x);
