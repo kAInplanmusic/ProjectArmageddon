@@ -1,214 +1,209 @@
 #!/usr/bin/env node
 /**
- * Misst die Sichtbarkeit des Kantenlichts am Boden.
+ * Prüft das Kantenlicht am SICHTBAREN Gelände.
  *
- * ## Der Befund
+ * ## Warum dieses Werkzeug umgebaut wurde (2026-10-26)
  *
- * Die Aufgabe „Terrain optisch aufwerten" verlangt eine Entscheidung über
- * Stil. Bevor Stil entschieden wird, ist eine Frage MESSBAR: **Sieht man das
- * Kantenlicht überhaupt?**
+ * Es maß bis hierher `edgeLightColor()` und `drawSurfaceEdge()` aus
+ * `terrainBaker.js` — also den EINFACHEN Boden. Den zeigt das Spiel nicht: Der
+ * Renderer baut die Geländeebene mit `baueGelaendeEbene` in einem Zug (Maske →
+ * `faerbeGelaende` → ein `putImageData`). Ein Gate, das eine Fläche absegnet,
+ * die nie auf dem Bildschirm steht, kann grün sein und trotzdem nichts über das
+ * Bild sagen.
  *
- * Eine Sichtprüfung im Browser ergab: Der Boden hat Körnung und Farbabstufung,
- * das Kantenlicht ist aber ein einzelner Saum von 1–2 px. Das ist die
- * schmale Grenze zwischen „Kante betont" und „nicht wahrnehmbar".
+ * Gemessen wird deshalb auf den PIXELN der Ebene, die der Renderer wirklich
+ * baut: Attrappe statt Browser, echte `faerbeGelaende`-Ausgabe.
  *
- * NACHTRAG (belegt, 2026-09-18): Der Saum ist behoben — `KANTEN_STUFEN = 3`
- * (src/client/terrainBaker.js) malt je Spalte drei Stufen mit fallendem Alpha
- * (0,22 → 0,11 → 0,073). Die Messung unten lautet jetzt „192 Striche, 64 von 64
- * Spalten mit mehr als einer Stufe" statt „64 Striche, 0 mehrfach". Der Schluss
- * dieses Werkzeugs wird deshalb aus der Messung gebildet und nicht mehr als
- * fester Text ausgegeben.
+ * ## Die zwei geprüften Größen
  *
- * ## Was gemessen wird
+ * 1. **Oberflächenkante** — Helligkeit des obersten festen Pixels einer Spalte
+ *    gegen das Gestein 4 px darunter. Unter etwa 8 Stufen (Rec. 709) ist der
+ *    Unterschied bei 8 Bit je Kanal kaum zu sehen; das ist die Schwelle.
+ * 2. **Struktur** — Anteil der Gesteinspixel, deren Helligkeit sich vom Pixel
+ *    darüber um mindestens 12 Stufen unterscheidet. Das ist die Lesbarkeit der
+ *    Steinkanten; ohne sie wirkt auch ein heller Boden flach.
  *
- * `edgeLightColor()` liefert die Farbe, `drawSurfaceEdge()` malt sie. Gemessen
- * wird der **Helligkeitsunterschied** zwischen der Oberkante und dem Boden
- * direkt darunter — und wie viele Pixel die Kante breit ist.
- *
- * Ein Unterschied unter ~8 Stufen ist bei 8 Bit je Kanal kaum zu sehen; ab ~20
- * ist er deutlich.
+ * Die **Tiefenwirkung** (Oberfläche gegen 60 px darunter) wird BERICHNET, aber
+ * nicht bewertet: Bei dunklen Paletten liegt sie gemessen bei 5,6 Stufen
+ * (Basalt) — dort trägt die Struktur die Tiefe, nicht der Verlauf. Eine
+ * Schwelle darauf wäre eine Geschmacksentscheidung, keine Reparatur.
  *
  * ## Aufruf
  *
  *     node scripts/check-terrain-look.mjs
+ *
+ * Exit 1, sobald eine Palette die Kante oder die Struktur verfehlt.
  */
-import {
-  edgeLightColor, drawSurfaceEdge, groundColorAt, DEPTH_REACH_PX, KANTEN_STUFEN, kantenStufe,
-} from '../src/client/terrainBaker.js';
+import { erzeugeKarte } from '../src/shared/terrainGen2.js';
+import { SeededRandom } from '../src/shared/prng.js';
+import { baueGelaendeEbene } from '../src/client/gelaendeStil.js';
 
-/** Ein Canvas-Ersatz, der die Aufrufe mitschreibt — kein Browser nötig. */
-function malAttrappe() {
-  const striche = [];
-  return {
-    striche,
-    globalCompositeOperation: 'source-over',
-    fillStyle: '',
-    fillRect(x, y, w, h) { striche.push({ x, y, w, h, farbe: this.fillStyle }); },
+const BREITE = 320;
+const HOEHE = 240;
+const SEED = 20260916;
+const KARTENTYP = 'huegel';
+
+/** Ab hier ist ein Helligkeitsunterschied bei 8 Bit je Kanal sichtbar. */
+const KANTE_MIN = 8;
+/** Ab hier gilt das Gestein als strukturiert (Steinkanten lesbar). */
+const STRUKTUR_MIN_PROZENT = 5;
+/** Abstand unter der Oberfläche, an dem die Kante gemessen wird. */
+const KANTE_TIEFE_PX = 4;
+/** Abstand, in dem der Tiefenverlauf berichtet wird. */
+const TIEFE_PX = 60;
+/** Schwelle, ab der zwei übereinanderliegende Pixel als Kante gelten. */
+const STRUKTUR_SCHWELLE = 12;
+
+const PALETTEN = [
+  { name: 'Wiese', palette: { surface: [86, 148, 74], deep: [34, 66, 32] } },
+  { name: 'Sand', palette: { surface: [214, 190, 130], deep: [120, 96, 60] } },
+  { name: 'Eis', palette: { surface: [188, 214, 226], deep: [90, 120, 140] } },
+  { name: 'Basalt', palette: { surface: [72, 72, 82], deep: [28, 28, 34] } },
+  { name: 'Schnee', palette: { surface: [232, 236, 240], deep: [130, 140, 150] } },
+];
+
+const noop = () => {};
+
+/**
+ * Eine Leinwand-Attrappe, die die fertigen Pixel wirklich hält.
+ *
+ * `baueGelaendeEbene` schreibt genau einmal über `putImageData`; alles andere
+ * sind Zeichenaufrufe für die Grasbüschel, die für diese Messung nichts tun
+ * müssen.
+ */
+function leinwandAttrappe() {
+  let geschrieben = null;
+  const ctx = {
+    createImageData: (b, h) => ({ data: new Uint8ClampedArray(b * h * 4), width: b, height: h }),
+    putImageData: (bild) => { geschrieben = bild.data; },
+    getImageData: () => ({ data: geschrieben, width: BREITE, height: HOEHE }),
+    save: noop,
+    restore: noop,
+    beginPath: noop,
+    moveTo: noop,
+    lineTo: noop,
+    quadraticCurveTo: noop,
+    closePath: noop,
+    fill: noop,
+    stroke: noop,
+    arc: noop,
+    fillRect: noop,
   };
+  return { layer: { getContext: () => ctx }, daten: () => geschrieben };
+}
+
+/** Wahrgenommene Helligkeit eines Pixels (Rec. 709). */
+function helligkeit(daten, index) {
+  return 0.2126 * daten[index * 4] + 0.7152 * daten[index * 4 + 1] + 0.0722 * daten[index * 4 + 2];
+}
+
+/** Erste feste Zeile je Spalte, -1 bei leerer Spalte. */
+function oberflaechen(bitmap) {
+  const oben = new Int32Array(BREITE).fill(-1);
+  for (let x = 0; x < BREITE; x += 1) {
+    for (let y = 0; y < HOEHE; y += 1) {
+      if (bitmap[y * BREITE + x]) { oben[x] = y; break; }
+    }
+  }
+  return oben;
 }
 
 /**
- * Zerlegt eine Farbe in Zahlen.
+ * Misst die drei Größen an einer gebauten Ebene.
  *
- * Nimmt BEIDE Formen: `rgba(r, g, b, a)` von `edgeLightColor` und `r,g,b` von
- * `groundColorAt`. Die Funktionen liefern unterschiedliche Formate — das ist
- * Absicht (die eine malt, die andere rechnet), aber ein Messwerkzeug muss
- * beides lesen können.
+ * Spalten ohne genug Gestein darunter werden übersprungen — dort gibt es keine
+ * Kante zu beurteilen, und ein Mittelwert über angebrochene Spalten wäre still
+ * falsch.
  */
-function zerlege(farbe) {
-  if (Array.isArray(farbe)) return farbe;
-  const treffer = /(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(String(farbe));
-  if (!treffer) throw new Error(`Farbe nicht lesbar: ${farbe}`);
-  return [Number(treffer[1]), Number(treffer[2]), Number(treffer[3])];
+function messe(daten, bitmap, oben) {
+  let kanteSumme = 0;
+  let tiefeSumme = 0;
+  let spalten = 0;
+  let kanteGut = 0;
+
+  for (let x = 0; x < BREITE; x += 1) {
+    const start = oben[x];
+    if (start < 0 || start + TIEFE_PX + 2 >= HOEHE) continue;
+    spalten += 1;
+    const obenIdx = start * BREITE + x;
+    const kante = helligkeit(daten, obenIdx) - helligkeit(daten, obenIdx + KANTE_TIEFE_PX * BREITE);
+    kanteSumme += kante;
+    if (kante >= KANTE_MIN) kanteGut += 1;
+    tiefeSumme += helligkeit(daten, obenIdx + KANTE_TIEFE_PX * BREITE)
+      - helligkeit(daten, obenIdx + TIEFE_PX * BREITE);
+  }
+
+  let struktur = 0;
+  let fest = 0;
+  for (let y = 1; y < HOEHE; y += 1) {
+    for (let x = 0; x < BREITE; x += 1) {
+      if (!bitmap[y * BREITE + x]) continue;
+      fest += 1;
+      const hier = helligkeit(daten, y * BREITE + x);
+      const drueber = helligkeit(daten, (y - 1) * BREITE + x);
+      if (Math.abs(hier - drueber) >= STRUKTUR_SCHWELLE) struktur += 1;
+    }
+  }
+
+  return {
+    spalten,
+    kante: kanteSumme / Math.max(1, spalten),
+    anteilGut: (kanteGut / Math.max(1, spalten)) * 100,
+    tiefe: tiefeSumme / Math.max(1, spalten),
+    struktur: (struktur / Math.max(1, fest)) * 100,
+  };
 }
 
-/** Wahrgenommene Helligkeit (Rec. 709). */
-const helligkeit = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+const karte = erzeugeKarte({ rng: new SeededRandom(SEED), width: BREITE, height: HOEHE, typ: KARTENTYP });
+const oben = oberflaechen(karte.bitmap);
 
-/** Die Bodenfarben aus der Palette — typische Vertreter. */
-const BOEDEN = [
-  { name: 'Wiese', farbe: [86, 148, 74] },
-  { name: 'Sand', farbe: [214, 190, 130] },
-  { name: 'Eis', farbe: [188, 214, 226] },
-  { name: 'Basalt', farbe: [72, 72, 82] },
-  { name: 'Schnee', farbe: [232, 236, 240] },
-];
-
-console.log('Kantenlicht: Helligkeitsunterschied zur Bodenfarbe');
+console.log('Kantenlicht am SICHTBAREN Gelände (baueGelaendeEbene, echte Pixel)');
 console.log('');
-console.log(`${'Boden'.padEnd(10)}${'Bodenfarbe'.padStart(16)}${'Kante'.padStart(18)}${'Δ Helligkeit'.padStart(15)}  Urteil`);
-console.log('-'.repeat(76));
+console.log(`  Karte   : ${BREITE}×${HOEHE} ${KARTENTYP}, Seed ${SEED}`);
+console.log(`  Schwelle: Kante ≥ ${KANTE_MIN} Stufen, Struktur ≥ ${STRUKTUR_MIN_PROZENT} %`);
+console.log('');
+console.log(
+  `${'Palette'.padEnd(9)}${'Kante Δ'.padStart(9)}${'Spalten ≥'.padStart(11)}`
+  + `${'Struktur'.padStart(10)}${'Tiefe Δ'.padStart(10)}  Urteil`,
+);
+console.log('-'.repeat(64));
 
-for (const boden of BOEDEN) {
-  const kante = edgeLightColor(boden.farbe);
-  const kanteRgb = zerlege(kante);
-  const delta = helligkeit(kanteRgb) - helligkeit(boden.farbe);
+const fehlschlaege = [];
 
-  const urteil = delta < 8 ? 'KAUM SICHTBAR'
-    : delta < 20 ? 'schwach'
-      : 'deutlich';
+for (const { name, palette } of PALETTEN) {
+  const attrappe = leinwandAttrappe();
+  baueGelaendeEbene(attrappe.layer, karte.bitmap, BREITE, HOEHE, palette, 7);
+  const daten = attrappe.daten();
+  if (!daten) throw new Error(`Die Ebene wurde für ${name} nie geschrieben — die Attrappe hätte greifen müssen`);
 
+  const m = messe(daten, karte.bitmap, oben);
+
+  const kanteOk = m.kante >= KANTE_MIN;
+  const strukturOk = m.struktur >= STRUKTUR_MIN_PROZENT;
+  if (!kanteOk) fehlschlaege.push(`${name}: Kante Δ ${m.kante.toFixed(1)} < ${KANTE_MIN}`);
+  if (!strukturOk) fehlschlaege.push(`${name}: Struktur ${m.struktur.toFixed(1)} % < ${STRUKTUR_MIN_PROZENT} %`);
+
+  const urteil = kanteOk && strukturOk ? 'ok' : 'FEHLT';
   console.log(
-    `${boden.name.padEnd(10)}`
-    + `${`${boden.farbe.join(',')}`.padStart(16)}`
-    + `${`${kanteRgb.join(',')}`.padStart(18)}`
-    + `${delta.toFixed(1).padStart(15)}  ${urteil}`,
+    `${name.padEnd(9)}`
+    + `${m.kante.toFixed(1).padStart(9)}`
+    + `${`${m.anteilGut.toFixed(0)} %`.padStart(11)}`
+    + `${`${m.struktur.toFixed(1)} %`.padStart(10)}`
+    + `${m.tiefe.toFixed(1).padStart(10)}  ${urteil}`,
   );
 }
 
 console.log('');
-console.log('Die Kante wird mit Alpha 0,22 aufgetragen. Der wirksame Unterschied ist');
-console.log('daher nur etwa ein Fünftel des hier gezeigten Werts:');
+console.log('  Kante Δ  = Oberfläche gegen Gestein 4 px darunter (Mittel über alle Spalten)');
+console.log('  Struktur = Gesteinspixel mit ≥ 12 Stufen Unterschied zum Pixel darüber');
+console.log('  Tiefe Δ  = Oberfläche gegen 60 px darunter — nur Bericht, keine Schwelle:');
+console.log('             bei dunklen Paletten trägt die Struktur die Tiefe, nicht der Verlauf.');
 console.log('');
 
-for (const boden of BOEDEN) {
-  const kante = zerlege(edgeLightColor(boden.farbe));
-  const delta = helligkeit(kante) - helligkeit(boden.farbe);
-  const wirksam = delta * 0.22;
-  const urteil = wirksam < 4 ? 'KAUM SICHTBAR'
-    : wirksam < 8 ? 'schwach'
-      : 'deutlich';
-  console.log(`  ${boden.name.padEnd(8)} wirksam Δ ${wirksam.toFixed(1).padStart(5)}  ${urteil}`);
-}
-
-console.log('');
-console.log('BREITE DER KANTE');
-console.log('');
-
-/*
- * Die Kante wird als `fillRect(x, y, 1, 2)` gemalt — 1 px breit, 2 px hoch.
- * Gemessen wird, wie viele Striche je Spalte entstehen: genau einer.
- */
-const breite = 64;
-const hoehe = 32;
-const bitmap = new Uint8Array(breite * hoehe);
-// Eine flache Oberfläche bei y = 16.
-for (let x = 0; x < breite; x += 1) {
-  for (let y = 16; y < hoehe; y += 1) bitmap[y * breite + x] = 1;
-}
-
-const ctx = malAttrappe();
-drawSurfaceEdge(ctx, bitmap, breite, hoehe, BOEDEN[0].farbe);
-
-const jeSpalte = new Map();
-for (const strich of ctx.striche) {
-  jeSpalte.set(strich.x, (jeSpalte.get(strich.x) ?? 0) + 1);
-}
-
-const spalten = [...jeSpalte.keys()].length;
-const mehrfach = [...jeSpalte.values()].filter(v => v > 1).length;
-
-console.log(`  Gemalte Striche:  ${ctx.striche.length}`);
-console.log(`  betroffene Spalten: ${spalten} von ${breite}`);
-console.log(`  Spalten mit mehr als einem Strich: ${mehrfach}`);
-console.log('');
-
-if (mehrfach === 0) {
-  console.log('BEFUND: Die Kante ist überall ein EINZELNER Strich von 1 px Breite.');
-  console.log('  Es gibt keinen Verlauf und keine zweite Stufe — die Kante ist damit');
-  console.log('  eine Linie, kein Licht. Für eine Tiefenwirkung bräuchte es mehrere');
-  console.log('  Stufen mit abnehmender Helligkeit.');
+if (fehlschlaege.length > 0) {
+  console.log('ERGEBNIS: FEHLGESCHLAGEN');
+  for (const grund of fehlschlaege) console.log(`  - ${grund}`);
+  process.exitCode = 1;
 } else {
-  console.log(`Die Kante hat an ${mehrfach} Spalten mehr als eine Stufe.`);
+  console.log(`ERGEBNIS: alle ${PALETTEN.length} Paletten tragen eine sichtbare Kante und Struktur.`);
 }
-
-console.log('');
-console.log('TIEFENWIRKUNG: Wie dunkel wird der Boden nach unten?');
-console.log('');
-console.log(`  (gemessen über groundColorAt, Reichweite ${DEPTH_REACH_PX} px)`);
-console.log('');
-console.log(`${'Boden'.padEnd(10)}${'oben'.padStart(16)}${'unten'.padStart(16)}${'Δ Helligkeit'.padStart(15)}  Urteil`);
-console.log('-'.repeat(76));
-
-for (const boden of BOEDEN) {
-  const tief = [Math.round(boden.farbe[0] * 0.45), Math.round(boden.farbe[1] * 0.45), Math.round(boden.farbe[2] * 0.45)];
-  const oben = zerlege(groundColorAt(boden.farbe, tief, 0));
-  const unten = zerlege(groundColorAt(boden.farbe, tief, 1));
-  const delta = helligkeit(oben) - helligkeit(unten);
-  const urteil = delta < 20 ? 'flach' : delta < 50 ? 'deutlich' : 'stark';
-  console.log(
-    `${boden.name.padEnd(10)}${`${oben.join(',')}`.padStart(16)}`
-    + `${`${unten.join(',')}`.padStart(16)}${delta.toFixed(1).padStart(15)}  ${urteil}`,
-  );
-}
-
-console.log('');
-console.log('WAS DARAUS FOLGT');
-console.log('');
-
-/*
- * Der Schluss wird aus der MESSUNG gebildet, nicht aus festem Text.
- *
- * FUND (belegt, 2026-09-18): Hier stand über die gesamte Projektlaufzeit die
- * Aussage „Die Kante ist EINE Stufe von 1 px" — auch noch, nachdem `KANTEN_STUFEN`
- * eingeführt und der Verlauf umgesetzt war. Die Messung oben meldete währenddessen
- * „192 Striche, 64 von 64 Spalten mit mehr als einer Stufe". Ein Werkzeug, dessen
- * Fazit seiner eigenen Messung widerspricht, ist irreführender als kein Fazit.
- */
-const stufenAlphas = Array.from({ length: KANTEN_STUFEN }, (_, stufe) => {
-  const treffer = /,\s*([\d.]+)\)$/.exec(kantenStufe(BOEDEN[0].farbe, stufe));
-  return treffer ? treffer[1] : '?';
-});
-
-console.log(`  Kantenlicht: ${KANTEN_STUFEN} Stufen je Spalte — gezeichnet wurden `
-  + `${ctx.striche.length} Striche auf ${spalten} Spalten.`);
-console.log(`  Alpha je Stufe: ${stufenAlphas.join(' → ')} `
-  + `(Stufe 0 = Oberfläche, jede weitere dunkler und durchscheinender).`);
-console.log('');
-
-if (mehrfach === 0) {
-  console.log('  BEFUND: KEINE Spalte hat mehr als eine Stufe. Die Kante ist damit');
-  console.log('  eine Linie, kein Licht — der offene Punkt „Terrain optisch aufwerten"');
-  console.log('  ist NICHT erledigt.');
-} else {
-  console.log(`  BEFUND: ${mehrfach} von ${spalten} Spalten haben mehr als eine Stufe —`);
-  console.log('  der Verlauf ist vorhanden (der frühere Zustand war 0 von 64).');
-}
-console.log('');
-console.log('  Tiefenwirkung: siehe Tabelle oben — der Helligkeitsunterschied liegt bei');
-console.log('  allen Böden über 40 Stufen, also deutlich bis stark.');
-console.log('');
-console.log('  Offen bleibt allein die GESTALTUNGSFRAGE, wie stark die Kante hervortreten');
-console.log(`  soll. Die Stellschrauben dafür stehen in src/client/terrainBaker.js:`);
-console.log('  `KANTEN_STUFEN` (Zahl der Stufen) und die Alpha-Rampe in `kantenStufe()`.');
-console.log('  Eine Änderung dort ist eine Geschmacksentscheidung, keine Reparatur.');
