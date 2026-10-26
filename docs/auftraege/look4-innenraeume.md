@@ -319,6 +319,32 @@ Ebenenaufbau, kein DOM, kein Zufall.
 Pixel-Vergleich zeigte 4,2 % Änderung. Zwei ähnlich aussehende Bilder sind kein Beweis —
 die Zahl ist einer.
 
+### Optik-Prüfung des Typs `etagen` (Screenshot 2026-10-25) — zwei Befunde
+
+**Befund A — der Typ ist (noch) nicht im Spiel.** `src/engine/terrainBuilder.js:78` schickt
+`kartentyp === 'autonom'` an `erzeugeAutonomeKarte` (`terrainGen3.js`), einen **Typ-String**
+dagegen an `erzeugeKarte` (`terrainGen2.js`, `KARTENTYPEN`). Das normale Spiel läuft mit
+`kartentyp = 'autonom'` (`src/client/main.js:734`). **`etagen` ist damit über Werkzeuge,
+Tests und Screenshots erreichbar — nicht in einer normalen Partie.** Wer Stockwerke im Spiel
+will, muss sie im autonomen Generator (gen3) bauen oder den Typ wählbar machen; das ist eine
+Produktentscheidung, keine Nebenwirkung.
+
+**Befund B — auf flachen Plateaus kollidieren die Startplätze.** Gemessen (Seed 4242,
+`kartentyp: 'etagen'`, 4 Spieler): x = **872, 952, 928, 904** — drei Figuren stehen nur
+**24 px** auseinander, bei 14 px Körperbreite also übereinander. Im Screenshot sah man vier
+Figuren als Knäuel in der Bildmitte. Ursache: Die Oberfläche ist auf diesem Typ ein flaches
+Plateau; die Platzvergabe verteilt über die vorhandene Oberflächenform, und die ist hier
+gleichförmig.
+
+**Folge:** Der Typ bleibt als Werkzeug-/Testkarte nutzbar (Determinismus, Decken, Schächte
+sind geprüft), ist aber **nicht abnahmereif für eine Partie**. Bevor er spielbar werden soll:
+Startplatzvergabe für flache Oberflächen spreizen (feste Mindestabstände statt Nudging) —
+eigener Arbeitsschritt mit eigenem Test.
+
+**Zweiter Optik-Eindruck (nicht repariert):** Die drei Deckenbänder laufen über die ganze
+Kartenbreite und wirken wie drei graue Streifen; die Pfeiler sind im Bild kaum zu erkennen.
+Für den Werkzeug-Status ist das hinnehmbar, für eine spielbare Karte nicht.
+
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
 | Größe | Erwartung |
