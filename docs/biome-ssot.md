@@ -110,11 +110,13 @@ Befestigte Felsen, Mauern, Türme, Zugbrücken, Kerker, Magiekristalle (Energies
 - **Objekte/Trigger:** Burgmauern, Türme, Kerker, Magiekristalle, Zugbrücken, Fallgitter, Thronsaal, Mauerbruch-Trigger, Kristallüberlastungs-Trigger.
 - **Karten:** Burg auf Plateau mit zerstörbarer Hauptbrücke; mehrstöckige Festung; Belagerungskarte; Kristallkammer unter der Burg; asymmetrische Burg mit Turmeinsturz.
 
-### 14 Planeten (6 Varianten)
+### 14 Planet (eine Variante)
+**Entscheidung des Auftraggebers (2026-10-26): es gibt nur einen Planeten, nicht sechs.** Die sechs Materialmixe unten sind kein Variantensatz mehr, sondern Vorrat für Zonen dieses einen Planeten; wie sie verteilt werden, ist offen. Im Code existieren noch sechs `planet_*`-Kennungen; sie auf eine zu verringern ändert alte Replays und braucht eine neue Gelände-Fassung (Versionsmarke).
+
 Übergeordnetes System: Eis, Lava, Wüste, Dschungel, Rost, Stein; gleiche technische Grundstruktur, eigener Materialmix und eigene Umwelt; Varianten ergänzen Sonderreaktionen, widersprechen der globalen Matrix nicht.
 - **Eis:** Schnee, Firn, Eis, Fels, Kristall · **Lava:** Asche, Basalt, Obsidian, Schlacke, Magmaadern · **Wüste:** Sand, Sandstein, Salzkruste, Teer · **Dschungel:** Humus, Holz, Wurzeln, Pilze, Fels · **Rost:** Rostmetall, Metall, Schrott, Beton, Korrosion · **Stein:** Geröll, Fels, Obsidian, Kristalladern.
 - **Objekte je Variante:** Eisbrücken/Lawinenhänge/gefrorene Wasserfälle/Windzonen · Lavaseen/Magmarisse/Dampfventile/Lavarampen · Treibsandlöcher/Wanderdünen/Monumente/Oasen · Rankenaufzüge/Wurzeln/Sporen/Wasserstandsschalter · Metallplatten/Giftfässer/Pressen/korrodierte Träger · Stalaktiten/Kristalle/Geröllhänge/Felsbrücken; dazu Ereignis-Trigger je Variante und Materialwechsel-Trigger.
-- **Karten:** sechs Planetenkarten mit gleichem Aufbau; Planet mit mehreren Regionen; Übergangslevel mit zwei Segmenten; Kraterplanet mit Höhenringen; modulare Kartenserie.
+- **Karten:** eine Planetenkarte (früher: sechs mit gleichem Aufbau); Planet mit mehreren Regionen; Übergangslevel mit zwei Segmenten; Kraterplanet mit Höhenringen; modulare Kartenserie.
 
 ### 15 Vulkanische Schlackeschmiede (neu)
 Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Metallkräne, Dampfkammern auf Schlacke und Basalt.
