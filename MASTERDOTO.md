@@ -7120,6 +7120,8 @@ Das sind etwa 25 Waffen; sie sind der Ort, an dem Animations-Sheets sichtbar etw
 
 Quelle der Wahrheit für Inhalte: `docs/biome-ssot.md` (20 Biome, Leitregeln, Standardreaktionen). Dieser Abschnitt übersetzt sie in Arbeitspakete. Ausgangslage (geprüft): Biom 1–14 existieren als Sonderbiome (13 + Planet mit 6 Arten, `biome-neu.js`, `biome-themen.js`, 18 Stoffe in `stoffe.js`, Feuer/Lava in `feuerSystem.js`, Hangrutsch, 7 Schadensarten in `schaden.js`, Material×Schadensart-Matrix). Neu sind Biom 15–20. **Nicht vorhanden** sind: ein Objekt-/Trigger-System (Dampfventile, Druckkessel, Förderbänder, Portale, Lawinenhänge, Myzelnetze …), Gase/Flüssigkeiten als eigene Medien (Dampf, Sporen, Giftnebel, Strömung, Strömungskorridore), Trägheit/Gravitationssenken, zeitabhängige Plattformen und Reflexion von Projektilen. Das sind die großen Brocken (L).
 
+**Biom-Dateien (2026-10-26):** je Biom eine Datei unter `docs/biome/` (Beschreibung, Materialien, Objekte, Trigger, Sonderwirkung, Kartenformen, Einzigartiges) und `docs/biome/gesamtliste.md` mit allen 115 Materialien, 111 Objekten und 32 Triggern. Jeder Eintrag wird einzeln gebaut und mit den drei Eigenschaften Optik, Zerstörbarkeit und Bewegung belegt; die Spalten stehen auf „offen“, wo es noch keinen Wert gibt. Erzeugt mit `node scripts/biome-dateien.mjs` aus der SSOT, nicht von Hand ändern. Planet zählt als **ein** Biom (Entscheidung des Auftraggebers).
+
 ### Grundprinzipien für jede Aufgabe
 
 1. Drei Dinge trennen: **Zerstörung**, **Zustandsänderung**, **Wirkung** (Daten und Code getrennt; Tabellen statt `if` je Biom).
