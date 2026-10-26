@@ -32,7 +32,6 @@ import {
   fillGroundPixels,
   edgeLightColor,
   drawSurfaceEdge,
-  bakeTerrainLayerCpu,
   DEPTH_REACH_PX,
 } from '../src/client/terrainBaker.js';
 
@@ -53,32 +52,11 @@ test('Der Geländeaufbau kennt keinen GPU-Weg mehr', async () => {
    * belegen, dass der Shader den VOLLEN Look liefert.
    */
   const modul = await import('../src/client/terrainBaker.js');
-  for (const name of ['detectWebGpu', 'bakeTerrainLayer', 'GROUND_SHADER_WGSL']) {
+  for (const name of ['detectWebGpu', 'bakeTerrainLayer', 'GROUND_SHADER_WGSL', 'bakeTerrainLayerCpu']) {
     assert.equal(modul[name], undefined,
       `${name} darf nicht mehr existieren — der GPU-Weg war Doppelarbeit`);
   }
 });
-
-/** Ein Canvas-Ersatz, der die Pixel wirklich hält (kein Browser nötig). */
-function fakeCanvasFactory() {
-  return (w, h) => {
-    const canvas = { width: w, height: h, _pixels: null };
-    canvas.getContext = () => ({
-      createImageData: (width, height) => ({
-        width,
-        height,
-        data: new Uint8ClampedArray(width * height * 4),
-      }),
-      putImageData: (image) => { canvas._pixels = image; },
-      fillRect: () => {},
-      set globalCompositeOperation(v) { canvas._gco = v; },
-      get globalCompositeOperation() { return canvas._gco ?? 'source-over'; },
-      set fillStyle(v) { canvas._fill = v; },
-      get fillStyle() { return canvas._fill; },
-    });
-    return canvas;
-  };
-}
 
 /** Ein einfaches Test-Bitmap: links fest ab Zeile 2, rechts fest ab Zeile 4. */
 function testBitmap(width = 4, height = 8) {
@@ -233,23 +211,6 @@ test('drawSurfaceEdge setzt die Composite-Regel zurück', () => {
     assert.deepEqual(spalteNull[i], [0, 2 + i, 1, 1],
       `Stufe ${i} der Kante in Spalte 0 liegt falsch`);
   }
-});
-
-test('Der CPUsweg und der reine Rechenkern liefern identische Pixel', () => {
-  /*
-   * Der CPU-Weg darf keine eigene Rechnung haben: Er muss exakt das erzeugen,
-   * was `fillGroundPixels` liefert. Sonst gäbe es zwei Formeln — und die GPU
-   * müsste sich für eine entscheiden.
-   */
-  const bitmap = testBitmap(4, 8);
-  const direkt = new Uint8ClampedArray(4 * 8 * 4);
-  fillGroundPixels(direkt, bitmap, 4, 8, PALETTE);
-
-  const layer = fakeCanvasFactory()(4, 8);
-  const ctx = layer.getContext('2d');
-  bakeTerrainLayerCpu({ layer, ctx, bitmap, width: 4, height: 8, palette: PALETTE });
-
-  assert.deepEqual([...layer._pixels.data], [...direkt]);
 });
 
 test('Die Bäckerei ist deterministisch: zweimal dasselbe Bitmap ergibt dieselben Pixel', () => {

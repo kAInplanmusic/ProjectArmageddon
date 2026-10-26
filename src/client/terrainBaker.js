@@ -26,8 +26,6 @@
  *
  * @module terrainBaker
  */
-import { schattiereHoehlen } from './hoehlenSchatten.js';
-
 /**
  * Oberflächenzeile je Spalte: die erste feste Zeile von oben.
  *
@@ -277,80 +275,3 @@ export function drawSurfaceEdge(ctx, bitmap, width, height, surface) {
   }
   ctx.globalCompositeOperation = 'source-over';
 }
-
-/**
- * Der CPU-Weg — identisch zum bisherigen Verhalten des Renderers.
- *
- * @returns {{layer:object, path:'cpu', reason:string}}
- */
-export function bakeTerrainLayerCpu({ layer, ctx, bitmap, width, height, palette, reason = 'CPU' }) {
-  const image = ctx.createImageData(width, height);
-  fillGroundPixels(image.data, bitmap, width, height, palette);
-
-  /*
-   * Die Höhlenschattierung — NUR wenn die Karte Höhlen hat.
-   *
-   * ## Warum die Prüfung
-   *
-   * Bei einem Höhenfeld gibt es keine Hohlräume: Unter der Oberfläche ist alles
-   * fest. Die Schattierung fände dort nichts zu tun, kostete aber Rechenzeit —
-   * gemessen rund 190 ms für 640×360, also etwa eine Sekunde bei 1280×720. Das
-   * wäre bei jedem Kartenaufbau zu spüren, ohne dass man etwas sähe.
-   *
-   * Geprüft wird deshalb, ob es überhaupt Hohlräume gibt. Die Suche bricht beim
-   * ersten Fund ab und kostet fast nichts.
-   */
-  if (hatHohlraeume(bitmap, width, height)) {
-    /*
-     * Die Oberflächenfarbe der Palette geht mit: Die Höhlenwand wird zu ihr
-     * hingezogen (aufgehellt), nicht weiter abgedunkelt. Eine Höhle liegt tief
-     * im Gestein, und tief ist bereits die dunkelste Farbe — Abdunkeln wäre
-     * Schwarz auf Schwarz.
-     */
-    schattiereHoehlen(image.data, bitmap, width, height, palette.surface);
-  }
-
-  ctx.putImageData(image, 0, 0);
-  drawSurfaceEdge(ctx, bitmap, width, height, palette.surface);
-  return { layer, path: 'cpu', reason };
-}
-
-/**
- /**
-  * Gibt es überhaupt Hohlräume in dieser Maske?
-  *
-  * ## Was ein Hohlraum ist — und was nicht
-  *
-  * Ein Hohlraum ist Luft, die **von Land überdacht** ist. Reine Luft über dem
-  * Gelände zählt nicht — dort ist der Himmel.
-  *
-  * FUND (belegt, eigener Fehler): Ein erster Anlauf prüfte je Spalte, ob nach
-  * dem ersten Land von unten wieder Luft kommt. Das meldete bei einer einfachen
-  * Hügelkarte **true** — denn wo das Gelände eine Stufe hat, liegt über dem
-  * tieferen Land Luft. Gemeint war aber ein Innenraum.
-  *
-  * ## Die Prüfung
-  *
-  * Gesucht wird ein **Überhang**: Land, unter dem eine Lücke klafft, unter der
-  * wieder Land liegt. In einer ganzzahligen Maske sieht das so aus:
-  *
-  *     y-1: Land
-  *     y  : Luft      ← überdacht
-  *     y+1: Land
-  *
-  * Diese drei Pixel sind der kleinste mögliche Überhang. Findet sich einer,
-  * gibt es Höhlen — und die Schattierung lohnt sich.
-  *
-  * @returns {boolean}
-  */
-  function hatHohlraeume(bitmap, width, height) {
-   for (let x = 0; x < width; x += 1) {
-     for (let y = 1; y < height - 1; y += 1) {
-       const überdacht = bitmap[(y - 1) * width + x] === 1;
-       const luft = bitmap[y * width + x] === 0;
-       const boden = bitmap[(y + 1) * width + x] === 1;
-       if (überdacht && luft && boden) return true;
-     }
-   }
-   return false;
- }
