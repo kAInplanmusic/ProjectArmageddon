@@ -268,14 +268,30 @@ Folgen:
    sieht ein Hohlraum wie offener Himmel aus: Der Spieler erkennt nicht, dass die Figur in
    einem Raum steht und nicht im Freien.
 
-**Vorschlag (nicht gebaut, eigene Entscheidung):** „Innenkanten-Abdunkelung" — im
-Gelände-Layer werden feste Zellen, die an Luft grenzen UND unter der Oberfläche liegen,
-leicht abgedunkelt. Das kostet nichts je Bild (einmal beim Aufbau der Schicht gerechnet),
-braucht keine neue Ebene und macht Räume als Räume lesbar. Alternativ eine dünne Kontur um
-die Figur, solange sie unter Tage steht — billiger, aber weniger deutlich.
+**Umgesetzt statt nur vorgeschlagen (2026-10-25): Innenkanten-Abdunkelung.**
 
-**Entscheidung des Auftraggebers nötig:** Abdunkelung der Innenkanten (Empfehlung), Kontur
-an der Figur, oder bewusst nichts (Höhlen bleiben offen wie bisher).
+Neue reine Funktion `daempfeInnenkanten(d, bitmap, breite, hoehe, staerke = 0.82)` in
+`src/client/gelaendeStil.js`, aufgerufen beim **Aufbau** der Geländeebene
+(`baueGelaendeEbene`, direkt vor `putImageData`). Sie dunkelt einen festen Pixel ab, wenn
+
+1. er **tiefer** liegt als die erste feste Stelle seiner Spalte (Oberfläche selbst und die
+   Zeile darunter bleiben unberührt — sonst wirkt jede Karte wie ein Keller), und
+2. mindestens ein Nachbar **Luft** ist (er also an einem Hohlraum liegt).
+
+Reine Rechnung auf Maske und Pixelfeld: kein Zufall, keine Zeit, kein DOM. Läuft einmal je
+Ebenenaufbau, kostet also nichts je Bild — und braucht keine neue Ebene, weil sie im
+vorhandenen Gelände-Layer arbeitet.
+
+**Belege:** `tests/innenkanten.test.js` (5 Fälle, zuerst rot: „does not provide an export"):
+Kammerdecke, Kammboden und beide Kammerwände werden dunkler; tiefes Inneres ohne
+Luftnachbar und die Oberfläche bleiben **exakt** hell; ohne Hohlraum ändert sich nichts
+(Rückgabe 0). Dazu: `npm test` 1895/1895, **`npm run checks` 21 Gates 0 fehlgeschlagen**
+(inkl. `check:erreichbarkeit`: 30 Partien ohne unerreichbare Figur), Browser-Smoke
+`biome-material.spec.mjs` 2/2.
+
+**Grenze:** Ein Bildvergleich gegen die Referenzkarten (`ref-6-hochhaus-schnitt`,
+`ref-4-turmruine`) steht noch aus — geprüft ist, dass die Kanten genau innen liegen und
+außen nichts verändert wird, nicht die Wirkung im Auge.
 
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 

@@ -265,12 +265,66 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0,
  * @param {{getContext:function}} layer - leere Ebene in Kartengröße
  * @returns {Array<{x:number,y:number,h:number}>} Grasbüschel-Positionen
  */
+/**
+ * Dämpft die Kanten INNEN im Gelände (LOOK-4 Stufe 3, 2026-10-25).
+ *
+ * Warum: Luft ist im Gelände-Layer transparent (Krater stanzen mit
+ * `destination-out`). Ein Hohlraum sieht damit wie offener Himmel aus — der
+ * Spieler erkennt nicht, dass eine Figur in einem Raum steht und nicht im
+ * Freien.
+ *
+ * Abgedunkelt wird ein fester Pixel nur, wenn
+ *  - er TIEFER liegt als die erste feste Stelle seiner Spalte (die Oberfläche
+ *    selbst und die Zeile darunter bleiben unberührt — sonst wirkt jede Karte
+ *    wie ein Keller), und
+ *  - mindestens ein Nachbar Luft ist (er also an einem Hohlraum liegt).
+ *
+ * Reine Rechnung auf Maske und Pixelfeld: kein Zufall, keine Zeit, kein DOM.
+ * Läuft EINMAL beim Aufbau der Geländeebene, kostet also nichts je Bild.
+ *
+ * @param {Uint8ClampedArray} d Pixelfeld (RGBA), wird verändert
+ * @param {Uint8Array} bitmap Maske (1 = fest)
+ * @param {number} breite
+ * @param {number} hoehe
+ * @param {number} [staerke] Faktor für die Kantenfarbe (0.82 = 18 % dunkler)
+ * @returns {number} Zahl der abgedunkelten Pixel
+ */
+export function daempfeInnenkanten(d, bitmap, breite, hoehe, staerke = 0.82) {
+  // Oberfläche je Spalte: erste feste Stelle von oben.
+  const oberflaeche = new Int32Array(breite).fill(-1);
+  for (let x = 0; x < breite; x += 1) {
+    for (let y = 0; y < hoehe; y += 1) {
+      if (bitmap[y * breite + x]) { oberflaeche[x] = y; break; }
+    }
+  }
+
+  let betroffen = 0;
+  for (let y = 2; y < hoehe - 1; y += 1) {
+    for (let x = 1; x < breite - 1; x += 1) {
+      const idx = y * breite + x;
+      if (!bitmap[idx]) continue;
+      if (oberflaeche[x] < 0 || y <= oberflaeche[x] + 1) continue;
+      const anLuft = !bitmap[idx - 1] || !bitmap[idx + 1] || !bitmap[idx - breite] || !bitmap[idx + breite];
+      if (!anLuft) continue;
+      const o = idx * 4;
+      if (d[o + 3] === 0) continue;
+      d[o] *= staerke;
+      d[o + 1] *= staerke;
+      d[o + 2] *= staerke;
+      betroffen += 1;
+    }
+  }
+  return betroffen;
+}
+
 export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 0, stoffkarte = null) {
   const ctx = layer.getContext('2d');
   const bild = ctx.createImageData(breite, hoehe);
   const d = bild.data;
   for (let i = 0, n = breite * hoehe; i < n; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
   const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed, stoffkarte);
+  // Hohlräume als Räume lesbar machen (LOOK-4 Stufe 3): Kanten innen abdunkeln.
+  daempfeInnenkanten(d, bitmap, breite, hoehe);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);
   return ergebnis.liste;
