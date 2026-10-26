@@ -266,6 +266,62 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0,
  * @returns {Array<{x:number,y:number,h:number}>} Grasbüschel-Positionen
  */
 /**
+ * Füllt EINGESCHLOSSENE Luft dunkel (LOOK-4 Optik-Nachtrag, 2026-10-25).
+ *
+ * Befund aus dem Screenshot einer Kavernenkarte: Weil Luft im Gelände-Layer
+ * transparent ist, sah man durch jeden Hohlraum den HELLEN HIMMEL — die Kaverne
+ * wirkte wie ein Loch ins Freie, nicht wie ein Raum. Die Kanten-Abdämpelung
+ * allein konnte das nicht lösen, denn sie färbt nur Fels.
+ *
+ * Deshalb: Luft, die vom oberen Kartenrand aus NICHT erreichbar ist, gilt als
+ * eingeschlossen und wird deckend dunkel gefüllt. Offener Himmel und Schächte,
+ * die nach oben führen, bleiben transparent — sonst wäre der halbe Himmel
+ * schwarz und jede Karte ein Keller.
+ *
+ * Reine Rechnung auf Maske und Pixelfeld (Flutfüllung mit eigenem Stapel, kein
+ * Rekursionsrisiko), läuft EINMAL je Aufbau der Geländeebene.
+ *
+ * @param {Uint8ClampedArray} d Pixelfeld (RGBA), wird verändert
+ * @param {Uint8Array} bitmap Maske (1 = fest)
+ * @param {number} breite
+ * @param {number} hoehe
+ * @param {[number,number,number]} [farbe] dunkle Höhlenluft
+ * @param {number} [deckkraft] Alpha der Füllung (0…255)
+ * @returns {number} Zahl der gefüllten Pixel
+ */
+export function fuelleHoehlenluft(d, bitmap, breite, hoehe, farbe = [16, 18, 22], deckkraft = 235) {
+  const offen = new Uint8Array(breite * hoehe);
+  const stapel = new Int32Array(breite * hoehe);
+  let oben = 0;
+  // Nur der obere Kartenrand ist „Himmel" — die Seiten sind versiegelt.
+  for (let x = 0; x < breite; x += 1) {
+    if (!bitmap[x] && !offen[x]) { offen[x] = 1; stapel[oben] = x; oben += 1; }
+  }
+  while (oben > 0) {
+    oben -= 1;
+    const i = stapel[oben];
+    const x = i % breite;
+    const y = (i - x) / breite;
+    if (x > 0) { const j = i - 1; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
+    if (x < breite - 1) { const j = i + 1; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
+    if (y > 0) { const j = i - breite; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
+    if (y < hoehe - 1) { const j = i + breite; if (!bitmap[j] && !offen[j]) { offen[j] = 1; stapel[oben] = j; oben += 1; } }
+  }
+
+  let gefuellt = 0;
+  for (let i = 0; i < breite * hoehe; i += 1) {
+    if (bitmap[i] || offen[i]) continue;
+    const o = i * 4;
+    d[o] = farbe[0];
+    d[o + 1] = farbe[1];
+    d[o + 2] = farbe[2];
+    d[o + 3] = deckkraft;
+    gefuellt += 1;
+  }
+  return gefuellt;
+}
+
+/**
  * Dämpft die Kanten INNEN im Gelände (LOOK-4 Stufe 3, 2026-10-25).
  *
  * Warum: Luft ist im Gelände-Layer transparent (Krater stanzen mit
@@ -323,7 +379,9 @@ export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 
   const d = bild.data;
   for (let i = 0, n = breite * hoehe; i < n; i += 1) if (bitmap[i]) d[i * 4 + 3] = 255;
   const ergebnis = faerbeGelaende(d, bitmap, breite, hoehe, palette, seed, stoffkarte);
-  // Hohlräume als Räume lesbar machen (LOOK-4 Stufe 3): Kanten innen abdunkeln.
+  // Hohlräume als Räume lesbar machen (LOOK-4 Stufe 3): erst eingeschlossene Luft
+  // dunkel füllen (sonst scheint der Himmel durch), dann die Fels-Kanten abdunkeln.
+  fuelleHoehlenluft(d, bitmap, breite, hoehe);
   daempfeInnenkanten(d, bitmap, breite, hoehe);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);

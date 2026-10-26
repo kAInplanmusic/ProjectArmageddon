@@ -1,12 +1,16 @@
 /**
  * Erzeugt einen Screenshot des laufenden Spiels für die visuelle Prüfung.
- * Aufruf: node scripts/screenshot.mjs [seed] [ausgabe]
+ * Aufruf: node scripts/screenshot.mjs [seed] [ausgabe] [kartentyp]
+ *   kartentyp: leer = altes Höhenfeld (preset hills), sonst ein Typ aus
+ *   KARTENTYPEN (z. B. kavernen, hoehlen, etagen) — für die Sichtprüfung von
+ *   Hohlräumen und Stockwerken (LOOK-4).
  * Erwartet einen laufenden Dev-Server (npm run dev).
  */
 import { chromium } from 'playwright';
 
 const seed = Number(process.argv[2] ?? 20260910);
 const output = process.argv[3] ?? 'artifacts/game-view.png';
+const kartentyp = process.argv[4] ?? null;
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -14,7 +18,7 @@ const errors = [];
 page.on('pageerror', error => errors.push(String(error)));
 
 await page.goto('http://127.0.0.1:5173/');
-await page.evaluate(options => window.__PA__.startMatch(options), { seed, teams: 2, playersPerTeam: 2, preset: 'hills' });
+await page.evaluate(options => window.__PA__.startMatch(options), { seed, teams: 2, playersPerTeam: 2, preset: 'hills', kartentyp });
 await page.evaluate(() => window.__PA__.setAutoLoop(false));
 
 // Ein paar Schüsse und Bewegung, damit Projektile, Krater und HUD gefüllt sind.

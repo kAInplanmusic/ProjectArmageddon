@@ -293,6 +293,32 @@ Luftnachbar und die Oberfläche bleiben **exakt** hell; ohne Hohlraum ändert si
 `ref-4-turmruine`) steht noch aus — geprüft ist, dass die Kanten genau innen liegen und
 außen nichts verändert wird, nicht die Wirkung im Auge.
 
+### Optik-Nachtrag: der Himmel schien durch die Höhle (2026-10-25, per Screenshot gefunden)
+
+**Wie gefunden:** `scripts/screenshot.mjs` wurde um ein viertes Argument erweitert
+(`kartentyp`), damit sich Hohlraumkarten überhaupt abbilden lassen. Der erste Schnappschuss
+einer `kavernen`-Karte zeigte den Fehler, den keine Messung gemeldet hatte: Weil Luft im
+Gelände-Layer **transparent** ist, sah man durch jeden Hohlraum den **hellen Himmel** — die
+Kaverne wirkte wie ein Loch ins Freie statt wie ein Raum.
+
+**Was gebaut wurde:** `fuelleHoehlenluft(d, bitmap, breite, hoehe)` in
+`src/client/gelaendeStil.js` — eine Flutfüllung vom **oberen Kartenrand** aus; was NICHT
+erreichbar ist, gilt als eingeschlossen und wird deckend dunkel (`[16,18,22]`, Alpha 235)
+gefüllt. Offener Himmel und Schächte nach oben bleiben transparent. Läuft einmal je
+Ebenenaufbau, kein DOM, kein Zufall.
+
+**Belege (zwei Ebenen, weil der Augenschein trog):**
+
+| Prüfung | Ergebnis |
+| :-- | :-- |
+| Pixel im Browser (`game.renderer.terrainLayer`, eingeschlossene Luft) | `[16, 18, 22, 235]` — gefüllt |
+| Bildvergleich vorher/nachher (Kamera-Sicht) | **54 414 Pixel = 4,2 %** geändert, Flächen deckungsgleich mit den Hohlraum-Silhouetten (Diff-Bild) |
+| Anteil eingeschlossener Luft je Typ | kavernen 27,0 %, etagen 29,7 %, hoehlen 10,0 % |
+
+**Wichtige Lehre:** Der erste Blick auf „vorher/nachher" sagte „unverändert". Erst der
+Pixel-Vergleich zeigte 4,2 % Änderung. Zwei ähnlich aussehende Bilder sind kein Beweis —
+die Zahl ist einer.
+
 ## 4. Messgrößen und Gates (vor dem Bau festgelegt)
 
 | Größe | Erwartung |
