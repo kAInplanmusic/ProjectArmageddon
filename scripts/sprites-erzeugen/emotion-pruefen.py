@@ -23,6 +23,13 @@ SEITE = 'src/client/assets/characters-side/'
 EMO = 'src/client/assets/sprite-sheets-emotion/'
 SPIELRAUM = 0.035
 OBERGRENZE = 0.45
+# Sichtprüfung am Kontaktbogen (2026-10-27) für neu erzeugte Zellen (emotion-neu.py): Ersatz für die Farbprüfung dieser Zellen.
+# Die Zellennummern gelten als gültig (Freigabe) bzw. werden gesperrt (Sperre), sonst entscheidet das Farbhistogramm.
+SICHTPRUEFUNG = {
+    'beasts/01_shrew-quakes': {'frei': [1, 3, 4], 'sperre': [5, 6]},
+    'beasts/02_storm-talon': {'frei': [1, 3], 'sperre': [4, 5, 6]},
+    'beasts/12_magma-plate': {'frei': [1, 3], 'sperre': []},
+}
 
 
 def hist(bild):
@@ -57,6 +64,9 @@ def main():
         gemessen = [d for d in abstand if d is not None]
         beste = min(gemessen) if gemessen else 1
         gueltig = [c for c, d in enumerate(abstand) if d is not None and d <= beste + SPIELRAUM and d <= OBERGRENZE]
+        sicht = SICHTPRUEFUNG.get(f'{fak}/{name}')
+        if sicht:
+            gueltig = sorted((set(gueltig) | set(sicht['frei'])) - set(sicht['sperre']))
         figuren[f'{fak}/{name}'] = {'datei': f'{fak}/{name}__emotion.webp', 'gueltig': gueltig, 'abstand': abstand}
     pfad = EMO + 'manifest.json'
     m = json.load(open(pfad))
