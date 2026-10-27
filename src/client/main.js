@@ -30,6 +30,7 @@ import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
+import { SONDER_KULISSEN, sonderKulisseFuer } from './sonderKulissen.js';
 import { SoundMixer, tonSpeicher } from './soundMixer.js';
 import { tonErlaubt } from './klangProfile.js';
 import { bindeTonBedienung } from './soundBedienung.js';
@@ -1271,7 +1272,7 @@ class Game {
     // wäre die Auswahl im Menü wirkungslos.
     // Menü-Vorgabe seit 2026-10-27 ist 'automatisch': gemaltes Bild passend zum Kartencharakter; Sonderbiome (Planet, Kosmos, ...)
     // behalten ihre generative Szene. 'generativ' und der leere Wert (API ohne Angabe) bleiben generativ.
-    const bildWahl = backdropKey && backdropKey !== 'generativ' && !(backdropKey === 'automatisch' && this.match.sonderbiom);
+    const bildWahl = backdropKey && backdropKey !== 'generativ' && !(backdropKey === 'automatisch' && this.match.sonderbiom && !SONDER_KULISSEN[this.match.sonderbiom]);
     if (bildWahl) {
       this.renderer.setScenery(null);
       this.#applyBackdrop(this.match.seedManager.baseSeed, preset, backdropKey);
@@ -1787,9 +1788,9 @@ class Game {
      */
     this.#applyOrientation(orientation, terrain.width, terrain.height);
     // Vorgabe 'automatisch': auch online das gemalte Bild passend zum Kartencharakter (Sonderbiome bleiben generativ).
-    if (this.gewaehlteKulisse === 'automatisch' && !terrain.sonderbiom && terrain.charakter) {
+    if (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter) {
       this.renderer.setScenery(null);
-      this.#applyBackdrop(seed, preset, 'automatisch', terrain.charakter);
+      this.#applyBackdrop(seed, preset, 'automatisch', terrain.charakter, terrain.sonderbiom ?? null);
     } else {
       this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
     }
@@ -2866,7 +2867,7 @@ class Game {
     return kulisse;
   }
 
-  #applyBackdrop(seed, preset, gewaehlt = null, charakter = this.match?.kartencharakter ?? null) {
+  #applyBackdrop(seed, preset, gewaehlt = null, charakter = this.match?.kartencharakter ?? null, sonder = this.match?.sonderbiom ?? null) {
     // Ohne ausdrücklichen Wert gilt die im Menü getroffene Wahl. Nötig, weil der
     // Online-Weg das Gelände erst nach dem Verbindungsaufbau aufbaut und die Wahl
     // sonst verloren ginge.
@@ -2893,6 +2894,11 @@ class Game {
      * Szene": Eine durchlöcherte Kaverne mit grünem Gras darauf wäre nicht
      * hässlich, sondern falsch.
      */
+    // Sonderbiome (Schrott, Riff, Kristallhöhle, ...) haben passende gemalte Bilder (`sonderKulissen.js`).
+    if (!kulisse && sonder && SONDER_KULISSEN[sonder] && !gewaehlt?.includes?.('/')) {
+      const [b, v] = String(sonderKulisseFuer(sonder, seed)).split('/');
+      kulisse = getBackdrop(b, v);
+    }
     if (!kulisse && charakter) {
       const biomId = biomFuerCharakter(charakter);
       const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
