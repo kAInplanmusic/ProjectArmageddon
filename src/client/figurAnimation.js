@@ -16,7 +16,7 @@
  * @module figurAnimation
  */
 import { PARAMETER } from './figurTypen.js';
-import { MODUS, waehleRolle, frameFuer } from './figurSheets.js';
+import { MODUS, waehleRolle, frameFuer, waehleEmotion } from './figurSheets.js';
 import { TWO_PI } from './mathe.js';
 
 /** Geschwindigkeit (px/s), ab der die Figur als laufend gilt. */
@@ -157,7 +157,7 @@ export class FigurPosen {
     p.neigung = z.neig;
 
     p.dx = 0; p.dy = 0; p.sx = 1; p.sy = 1; p.rot = 0; p.tint = 0; p.zug = 0;
-    z.modi = 0; z.rolle = null; z.frame = null;
+    z.modi = 0; z.rolle = null; z.frame = null; z.emotion = null;
     const blatt = opt.blatt ?? null;
     p.flash = clamp(opt.treffer ?? 0, 0, 1);
 
@@ -298,6 +298,12 @@ export class FigurPosen {
       let zyk = z.phase / TWO_PI;
       if (z.vx * f < 0) zyk = -zyk;
       z.frame = frameFuer(blatt, z.rolle, zyk, Math.sin(ph * TWO_PI * par.atemHz) > 0 ? 1 : 0);
+      // Emotionen (Sheet `sprite-sheets-emotion`): nur im Stand, nur wenn das Blatt geladen ist.
+      if (z.rolle === 'idle' && blatt.emotion) {
+        const name = waehleEmotion({ ergebnis: erg, hp, aktiv, winkelSin: Math.sin(winkel), zeit: jetzt, id });
+        const emotion = name ? blatt.emotion[name] : null;
+        if (emotion) { z.frame = emotion; z.emotion = name; }
+      }
     }
     return p;
   }

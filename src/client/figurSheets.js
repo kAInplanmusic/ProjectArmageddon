@@ -86,6 +86,44 @@ export function blattBauen(eintrag, walkBild, aktionBild, neueLeinwand = standar
 }
 
 /**
+ * Die acht Posen des Emotions-Sheets in Zellenreihenfolge (`sprite-sheets-emotion/`, 4 x 2 Zellen à 256 px):
+ * Angst, Blinzeln (Augen zu), Schulterzucken, Jubel, Zittern, Kopf hoch, Kopf runter, Waffenwechsel.
+ */
+export const EMOTIONEN = Object.freeze(['angst', 'blinzeln', 'schulterzucken', 'jubel', 'zittern', 'blickHoch', 'blickRunter', 'waffenwechsel']);
+
+/** Frames des Emotions-Sheets je Name; `null`, wenn das Blatt fehlt oder das falsche Maß hat. */
+export function emotionBauen(bild, neueLeinwand = standardLeinwand) {
+  if (!bild || !blattMassOk(bild)) return null;
+  return Object.fromEntries(EMOTIONEN.map((name, i) => [name, frameAusZelle(bild, i, neueLeinwand)]));
+}
+
+/** Blinzeln: alle `BLINZEL_ABSTAND` Sekunden für `BLINZEL_DAUER` (je Figur um `id` versetzt). */
+const BLINZEL_ABSTAND = 4.4;
+const BLINZEL_DAUER = 0.14;
+/** Sinus des Zielwinkels, ab dem der Kopf hoch (≈ 53°, der Standardwinkel von 45° bleibt neutral) bzw. runter (≈ −15°) geht. */
+const BLICK_HOCH = 0.8;
+const BLICK_RUNTER = -0.26;
+/** Lebensanteil, ab dem die Figur zittert. */
+const ZITTERN_AB = 0.25;
+
+/**
+ * Welche Emotion zeigt eine STEHENDE Figur? `null` = keine (dann gilt der Idle-Frame).
+ * Reihenfolge: Jubel (Sieger) vor Zittern (Verlierer, wenig Leben) vor Blick beim Zielen vor Blinzeln.
+ *
+ * @param {{ergebnis:number, hp:number, aktiv:boolean, winkelSin:number, zeit:number, id:number}} z
+ * @returns {string|null} Name aus `EMOTIONEN`
+ */
+export function waehleEmotion({ ergebnis, hp, aktiv, winkelSin, zeit, id }) {
+  if (ergebnis > 0) return 'jubel';
+  if (ergebnis < 0) return 'zittern';
+  if (hp > 0 && hp <= ZITTERN_AB) return 'zittern';
+  if (aktiv && winkelSin > BLICK_HOCH) return 'blickHoch';
+  if (aktiv && winkelSin < BLICK_RUNTER) return 'blickRunter';
+  const t = (zeit + id * 0.73) % BLINZEL_ABSTAND;
+  return t >= 0 && t < BLINZEL_DAUER ? 'blinzeln' : null;
+}
+
+/**
  * Rolle für die Zustandsbits: Treffer vor Luft vor Hocke vor Gehen, jeweils nur, wenn das Blatt dafür
  * einen Frame hat; sonst Stehen (Idle) oder `null` (Seitenbild + prozedurale Animation).
  *

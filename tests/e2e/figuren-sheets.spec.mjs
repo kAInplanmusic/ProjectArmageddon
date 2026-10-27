@@ -36,7 +36,8 @@ const zustaende = page => page.evaluate(() => {
   for (const [id, z] of r.figurPosen.zustaende) {
     const b = z.fig?.blatt;
     if (!b) continue;
-    const passt = z.rolle === 'idle' ? b.idle.includes(z.frame)
+    // Im Stand ist es der Idle-Frame oder — wenn gerade eine Emotion läuft (Blinzeln, Jubel …) — genau deren Frame.
+    const passt = z.rolle === 'idle' ? (b.idle.includes(z.frame) || Boolean(z.emotion && b.emotion?.[z.emotion] === z.frame))
       : z.rolle === 'walk' ? b.walk.includes(z.frame)
         : z.rolle ? z.frame === b[z.rolle] : z.frame === null;
     aus.push({ id, rolle: z.rolle, passt });
