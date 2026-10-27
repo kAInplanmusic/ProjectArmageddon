@@ -273,4 +273,112 @@ Die Stoffkarte (`src/shared/stoffkarte.js`) entsteht aus Seed + Biom und wird vo
 | Glas (`glas`) | normal | 1,05 / 0,8 | 1,05 | 1,26 | 1,16 | 1,05 | schmilzt |
 | Regolith (`regolith`) | weich | 1,56 / 1,21 | 1,43 | 1,35 | 1,56 | 1,56 | – |
 | Magiekristall (`magiekristall`) | hart | 0,56 / 0,28 | 0,26 | 0,62 | 0,56 | 0,48 | – |
+| Alienharz (`alienharz`) | weich | 1,38 / 1,1 | 1,26 | 1,72 | 1,38 | 1,52 | brennt |
+| Asteroidenbasalt (`asteroidenbasalt`) | hart | 0,49 / 0,25 | 0,23 | 0,44 | 0,49 | 0,54 | – |
+| Betonreste (`betonreste`) | normal | 1 / 0,9 | 1 | 1 | 1 | 1,15 | – |
+| Bimsstein (`bimsstein`) | weich | 1,44 / 1,16 | 1,32 | 1,24 | 1,44 | 1,44 | – |
+| Burgfelsen (`burgfelsen`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Dampfkammer (`dampfkammer`) | weich | 1,92 / 0,33 | 1,76 | 1,84 | 1,54 | 1,92 | – |
+| Druckkammer (`druckkammer`) | sehr_hart | 0,16 / 0,12 | 0 | 0,16 | 0,16 | 0,18 | – |
+| Eisader (`eisader`) | normal | 0,95 / 0,8 | 0,95 | 1,33 | 0,76 | 0,95 | schmilzt |
+| Erdüberzug (`erdueberzug`) | weich | 1,32 / 0,88 | 1,21 | 1,26 | 1,32 | 1,32 | – |
+| Feinsand (`feinsand`) | weich | 1,5 / 1,21 | 1,38 | 1,29 | 1,5 | 1,5 | – |
+| Feuchte Erde (`feuchte_erde`) | weich | 1,32 / 1,1 | 1,21 | 1,14 | 1,32 | 1,32 | – |
+| Firnschnee (`firnschnee`) | weich | 1,5 / 1,21 | 1,38 | 2,01 | 1,35 | 1,5 | schmilzt |
+| Gefrorene Wurzeln (`gefrorene_wurzeln`) | normal | 0,95 / 0,85 | 0,95 | 1,05 | 0,86 | 0,95 | brennt |
+| gehärtetes Glas (`gehaertetes_glas`) | hart | 0,56 / 0,28 | 0,26 | 0,51 | 0,51 | 0,56 | schmilzt |
+| Geröll (`geroell`) | weich | 1,38 / 1,1 | 1,26 | 1,32 | 1,38 | 1,38 | – |
+| Giftablagerungen (`giftablagerungen`) | weich | 1,44 / 1,16 | 1,32 | 1,38 | 1,44 | 1,15 | – |
+| Giftnebel (`giftnebel`) | weich | 1,92 / 0,33 | 1,76 | 1,84 | 1,92 | 1,54 | – |
+| Glasfassade (`glasfassade`) | normal | 0,95 / 0,75 | 0,95 | 1,14 | 1,05 | 0,95 | schmilzt |
+| Glasfragmente (`glasfragmente`) | weich | 1,56 / 1,1 | 1,43 | 1,79 | 1,72 | 1,56 | schmilzt |
+| Glasplatten (`glasplatten`) | normal | 1 / 0,8 | 1 | 1,2 | 1,1 | 1 | schmilzt |
+| Gletschereis (`gletschereis`) | hart | 0,6 / 0,35 | 0,28 | 0,84 | 0,48 | 0,6 | schmilzt |
+| Holzaufbauten (`holzaufbauten`) | normal | 0,95 / 0,9 | 0,95 | 1,19 | 0,95 | 0,95 | brennt |
+| Holzreste (`holzreste`) | weich | 1,32 / 1,1 | 1,21 | 1,64 | 1,32 | 1,32 | brennt |
+| Humus (`humus`) | weich | 1,38 / 1,16 | 1,26 | 1,45 | 1,38 | 1,38 | brennt |
+| Hydrothermalablagerungen (`hydrothermalablagerungen`) | normal | 0,9 / 0,75 | 0,9 | 0,81 | 0,9 | 1,08 | – |
+| Industriemagma (`industriemagma`) | weich | 1,92 / 0,33 | 1,76 | 1,84 | 1,92 | 1,92 | – |
+| Instabiler Boden (`instabiler_boden`) | weich | 1,56 / 1,32 | 1,43 | 1,5 | 1,56 | 1,56 | – |
+| Kalkstein (`kalkstein`) | normal | 0,9 / 0,7 | 0,9 | 0,9 | 0,86 | 1,26 | – |
+| Keramik (`keramik`) | hart | 0,6 / 0,3 | 0,28 | 0,42 | 0,63 | 0,6 | – |
+| Kerkergewölbe (`kerkergewoelbe`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Klareis (`klareis`) | normal | 1 / 0,85 | 1 | 1,5 | 0,8 | 1 | schmilzt |
+| Klareiskristall (`klareiskristall`) | hart | 0,6 / 0,3 | 0,28 | 0,84 | 0,48 | 0,6 | schmilzt |
+| Kolossstamm (`kolossstamm`) | hart | 0,49 / 0,28 | 0,23 | 0,54 | 0,49 | 0,49 | brennt |
+| Kontaminierte Ablagerungen (`kontaminierte_ablagerungen`) | weich | 1,38 / 1,1 | 1,26 | 1,32 | 1,38 | 1,17 | – |
+| Kontaminierte Erde (`kontaminierte_erde`) | normal | 1 / 1 | 1 | 1 | 1 | 1,1 | – |
+| korrodiertes Metall (`korrodiertes_metall`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,52 | 0,73 | – |
+| Korrosion (`korrosion`) | weich | 1,44 / 1,1 | 1,32 | 1,38 | 1,44 | 1,73 | – |
+| Kristalladern (`kristalladern`) | hart | 0,6 / 0,3 | 0,28 | 0,6 | 0,6 | 0,54 | – |
+| Kristallblätter (`kristallblaetter`) | normal | 1 / 0,7 | 1 | 1 | 1 | 0,9 | – |
+| Kristallfelsen (`kristallfelsen`) | hart | 0,56 / 0,28 | 0,26 | 0,56 | 0,56 | 0,62 | – |
+| Lavaglas (`lavaglas`) | hart | 0,52 / 0,25 | 0,24 | 0,63 | 0,58 | 0,52 | schmilzt |
+| lebende Koralle (`lebende_koralle`) | normal | 0,95 / 0,75 | 0,95 | 1,05 | 0,95 | 1,33 | – |
+| lehmige Erde (`lehmige_erde`) | normal | 0,95 / 0,95 | 0,95 | 0,95 | 0,95 | 0,95 | – |
+| Leuchtalgen (`leuchtalgen`) | weich | 1,5 / 1,21 | 1,38 | 1,73 | 1,5 | 1,8 | – |
+| Leuchtkristall (`leuchtkristall`) | hart | 0,6 / 0,3 | 0,28 | 0,6 | 0,6 | 0,54 | – |
+| Leuchtpilzgewebe (`leuchtpilzgewebe`) | weich | 1,44 / 1,21 | 1,32 | 1,73 | 1,44 | 1,66 | brennt |
+| Magmaadern (`magmaadern`) | hart | 0,52 / 0,25 | 0,24 | 0,47 | 0,63 | 0,52 | schmilzt |
+| Magnetgestein (`magnetgestein`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,52 | 0,52 | – |
+| Massivfels (`massivfels`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Mauerwerk (`mauerwerk`) | hart | 0,55 / 0,28 | 0,26 | 0,53 | 0,55 | 0,64 | – |
+| Metallader (`metallader`) | sehr_hart | 0,18 / 0,14 | 0 | 0,18 | 0,18 | 0,18 | – |
+| Metallfragmente (`metallfragmente`) | normal | 1 / 0,8 | 1 | 1 | 1 | 1 | – |
+| Metallgitter (`metallgitter`) | normal | 0,9 / 0,7 | 0,9 | 0,9 | 0,9 | 0,9 | – |
+| Metallplatten (`metallplatten`) | sehr_hart | 0,18 / 0,12 | 0 | 0,18 | 0,18 | 0,18 | – |
+| Metallschienen (`metallschienen`) | hart | 0,49 / 0,23 | 0,23 | 0,49 | 0,49 | 0,49 | – |
+| Metallträger (`metalltraeger`) | sehr_hart | 0,18 / 0,12 | 0 | 0,18 | 0,18 | 0,18 | – |
+| Metalltrümmer (`metalltruemmer`) | normal | 1 / 0,8 | 1 | 1 | 1 | 1 | – |
+| Meteoritenfels (`meteoritenfels`) | sehr_hart | 0,2 / 0,14 | 0 | 0,2 | 0,2 | 0,2 | – |
+| Moos (`moos`) | weich | 1,56 / 1,16 | 1,43 | 1,79 | 1,56 | 1,56 | brennt |
+| Mutterboden (`mutterboden`) | weich | 1,38 / 1,16 | 1,26 | 1,32 | 1,38 | 1,38 | – |
+| Myzelmatte (`myzelmatte`) | weich | 1,44 / 1,21 | 1,32 | 1,73 | 1,44 | 1,66 | brennt |
+| Nickel-Eisen (`nickel_eisen`) | sehr_hart | 0,18 / 0,14 | 0 | 0,18 | 0,18 | 0,18 | – |
+| Organische Riffablagerungen (`organische_riffablagerungen`) | weich | 1,44 / 1,1 | 1,32 | 1,38 | 1,44 | 1,87 | – |
+| Organische Tragwurzeln (`organische_tragwurzeln`) | normal | 0,95 / 0,9 | 0,95 | 1,19 | 0,95 | 0,95 | brennt |
+| Phasen-Fels (`phasen_fels`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Pilzbrücke (`pilzbruecke`) | normal | 1 / 0,85 | 1 | 1,25 | 1 | 1,15 | brennt |
+| Pilze (`pilze`) | weich | 1,44 / 1,21 | 1,32 | 1,73 | 1,44 | 1,66 | brennt |
+| Pilzmyzel (`pilzmyzel`) | weich | 1,44 / 1,21 | 1,32 | 1,73 | 1,44 | 1,66 | brennt |
+| Poröser Beton (`poroeser_beton`) | hart | 0,64 / 0,33 | 0,3 | 0,64 | 0,64 | 0,8 | – |
+| Poröser Fels (`poroeser_fels`) | hart | 0,64 / 0,3 | 0,3 | 0,64 | 0,64 | 0,8 | – |
+| Pulverschnee (`pulverschnee`) | weich | 1,68 / 1,32 | 1,54 | 2,25 | 1,51 | 1,68 | schmilzt |
+| Rankgitter (`rankgitter`) | weich | 1,32 / 0,99 | 1,21 | 1,64 | 1,32 | 1,52 | brennt |
+| Raumanker (`raumanker`) | unzerstoerbar | 0 / 0 | 0 | 0 | 0 | 0 | haelt |
+| Regolith-Staub (`regolith_staub`) | weich | 1,56 / 1,21 | 1,43 | 1,35 | 1,56 | 1,56 | – |
+| Riff-Kalkstein (`riff_kalkstein`) | normal | 0,95 / 0,8 | 0,95 | 0,95 | 0,95 | 1,28 | – |
+| Risszone (`risszone`) | weich | 1,87 / 1,21 | 1,72 | 1,5 | 1,56 | 1,56 | – |
+| Rohrleitungen (`rohrleitungen`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,52 | 0,63 | – |
+| Rostmetall (`rostmetall`) | hart | 0,56 / 0,28 | 0,26 | 0,56 | 0,56 | 0,79 | – |
+| Salzkruste (`salzkruste`) | normal | 1 / 0,85 | 1 | 1 | 1 | 1,1 | – |
+| Sandstein (`sandstein`) | normal | 0,9 / 0,75 | 0,9 | 0,9 | 0,9 | 1,03 | – |
+| Säureablagerungen (`saeureablagerungen`) | weich | 1,38 / 1,1 | 1,26 | 1,32 | 1,38 | 0,83 | – |
+| Säureboden (`saeureboden`) | weich | 1,44 / 1,16 | 1,32 | 1,38 | 1,44 | 0,86 | – |
+| Schlacke (`schlacke`) | normal | 0,9 / 0,75 | 0,9 | 1,08 | 0,99 | 0,9 | schmilzt |
+| Schrott (`schrott`) | normal | 0,95 / 0,8 | 0,95 | 0,95 | 0,95 | 1,14 | – |
+| Schwebende Plattformen (`schwebende_plattformen`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Schwefelkruste (`schwefelkruste`) | normal | 1 / 0,85 | 1 | 1,3 | 1 | 1,05 | brennt |
+| Seegras (`seegras`) | weich | 1,44 / 1,1 | 1,32 | 1,79 | 1,44 | 1,58 | brennt |
+| Stabilisatormaterial (`stabilisatormaterial`) | unzerstoerbar | 0 / 0 | 0 | 0 | 0 | 0 | haelt |
+| Stahlbeton (`stahlbeton`) | sehr_hart | 0,2 / 0,14 | 0 | 0,19 | 0,2 | 0,22 | – |
+| Stalaktiten (`stalaktiten`) | normal | 1,2 / 0,8 | 1,2 | 1 | 1 | 1,3 | – |
+| Teer (`teer`) | weich | 1,32 / 1,1 | 1,21 | 1,64 | 1,32 | 1,32 | brennt |
+| Tempelstein (`tempelstein`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,52 | 0,6 | – |
+| Tiefenfels (`tiefenfels`) | sehr_hart | 0,2 / 0,14 | 0 | 0,2 | 0,19 | 0,22 | – |
+| Tiefseebasalt (`tiefseebasalt`) | hart | 0,49 / 0,25 | 0,23 | 0,44 | 0,49 | 0,54 | – |
+| Tiefseeschlamm (`tiefseeschlamm`) | weich | 1,56 / 1,21 | 1,43 | 1,5 | 1,56 | 1,56 | – |
+| Totholz & Knochen (`totholz_knochen`) | normal | 0,95 / 0,9 | 0,95 | 1,19 | 0,95 | 0,95 | brennt |
+| Traumgestein (`traumgestein`) | hart | 0,56 / 0,28 | 0,26 | 0,56 | 0,56 | 0,62 | – |
+| Treibsand (`treibsand`) | weich | 1,5 / 1,21 | 1,38 | 1,29 | 1,5 | 1,5 | – |
+| Unterwasserfels (`unterwasserfels`) | hart | 0,52 / 0,25 | 0,24 | 0,52 | 0,5 | 0,63 | – |
+| Unterwassersand (`unterwassersand`) | weich | 1,5 / 1,21 | 1,38 | 1,29 | 1,5 | 1,5 | – |
+| Verdichteter Sand (`verdichteter_sand`) | normal | 1 / 0,9 | 1 | 0,9 | 1 | 1 | – |
+| Versteinerte Wurzeln (`versteinerte_wurzeln`) | hart | 0,56 / 0,28 | 0,26 | 0,56 | 0,56 | 0,62 | – |
+| Versteinertes Holz (`versteinertes_holz`) | hart | 0,56 / 0,28 | 0,26 | 0,56 | 0,56 | 0,62 | – |
+| Wasser (`wasser`) | weich | 1,34 / 1,32 | 1,23 | 1,61 | 2,02 | 1,68 | – |
+| Wasserader (`wasserader`) | weich | 1,44 / 1,1 | 1,32 | 1,38 | 1,73 | 1,44 | – |
+| Wolkenstein (`wolkenstein`) | weich | 1,38 / 1,1 | 1,26 | 1,32 | 1,38 | 1,38 | – |
+| Wurzeln (`wurzeln`) | normal | 1 / 0,9 | 1 | 1,2 | 1 | 1 | brennt |
+| Zeitkristall (`zeitkristall`) | hart | 0,6 / 0,3 | 0,28 | 0,6 | 0,6 | 0,54 | – |
 
