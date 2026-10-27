@@ -1165,7 +1165,7 @@ class Game {
 
     // Erste Option bleibt „automatisch" (leerer Wert).
     // Die ersten beiden Einträge (generativ, automatisches Bild) bleiben.
-    const feste = Array.from(auswahl.options).filter(o => o.value === 'generativ' || o.value === '');
+    const feste = Array.from(auswahl.options).filter(o => o.value === 'generativ' || o.value === 'automatisch' || o.value === '');
     auswahl.replaceChildren(...feste);
     let anzahl = 0;
     for (const biome of BACKDROP_BIOMES) {
@@ -1265,7 +1265,10 @@ class Game {
     // Vorgabe ist die GENERATIVE Kulisse: sie passt sich jeder Kartengröße an,
     // ein Bild nicht. Wer ausdrücklich ein Bild wählt, bekommt das Bild — sonst
     // wäre die Auswahl im Menü wirkungslos.
-    if (backdropKey && backdropKey !== 'generativ') {
+    // Menü-Vorgabe seit 2026-10-27 ist 'automatisch': gemaltes Bild passend zum Kartencharakter; Sonderbiome (Planet, Kosmos, ...)
+    // behalten ihre generative Szene. 'generativ' und der leere Wert (API ohne Angabe) bleiben generativ.
+    const bildWahl = backdropKey && backdropKey !== 'generativ' && !(backdropKey === 'automatisch' && this.match.sonderbiom);
+    if (bildWahl) {
       this.renderer.setScenery(null);
       this.#applyBackdrop(this.match.seedManager.baseSeed, preset, backdropKey);
     } else {
@@ -2857,7 +2860,8 @@ class Game {
     // Ohne ausdrücklichen Wert gilt die im Menü getroffene Wahl. Nötig, weil der
     // Online-Weg das Gelände erst nach dem Verbindungsaufbau aufbaut und die Wahl
     // sonst verloren ginge.
-    const auswahl = gewaehlt ?? this.gewaehlteKulisse ?? '';
+    const wahl = gewaehlt ?? this.gewaehlteKulisse ?? '';
+    const auswahl = wahl === 'automatisch' ? '' : wahl; // 'automatisch': kein fester Schlüssel, der Kartencharakter entscheidet
     // Eine ausdrückliche Wahl des Spielers schlägt die Ableitung aus dem Seed.
     // Sonst könnte man die Kulisse im Menü wählen und bekäme trotzdem eine andere.
     let kulisse = null;
