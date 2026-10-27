@@ -11,9 +11,9 @@ Dunkles Unterwassergebiet: Basaltgräben, versunkene Gebäude, Druckkammern, Kor
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Tiefseeschlamm | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Basalt | SSOT | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Basalt | SSOT | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Koralle | beide | – | ja (koralle, normal) | ja | offen | normal | offen | 8 Korallenriff |
-| Metall | SSOT | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante); 17 Bio-Alien-Tempelstadt |
+| Metall | SSOT | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
 | Leuchtkristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
 | Hydrothermalablagerungen | SSOT | – | fehlt | ähnlich: hydrothermal.jpg | offen | offen | offen | **einzigartig** |
 | Druckkammer | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |

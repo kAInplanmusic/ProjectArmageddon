@@ -96,3 +96,16 @@ test('Komposition: nur der Planet ist rund', () => {
     assert.equal(erzeugeKompositionsKarte({ rng: createRng(3), width: b, height: h, art }).rund, art === 'planet', art);
   }
 });
+
+import { PLANET_BIOM_IDS } from '../src/shared/config/biome-planet.js';
+
+test('Komposition: der Planet zieht seine Art aus den sechs Arten, alle kommen vor, andere Karten haben keine', () => {
+  const gesehen = new Set();
+  for (let seed = 1; seed <= 60; seed += 1) {
+    const k = erzeugeKompositionsKarte({ rng: createRng(seed * 17), width: B, height: H, art: 'planet' });
+    assert.ok(PLANET_BIOM_IDS.includes(k.planetenart), `Seed ${seed}: ${k.planetenart}`);
+    gesehen.add(k.planetenart);
+  }
+  assert.equal(gesehen.size, PLANET_BIOM_IDS.length, `gesehen: ${[...gesehen].join(', ')}`);
+  assert.equal(erzeugeKompositionsKarte({ rng: createRng(3), width: B, height: H, art: 'insel' }).planetenart, null);
+});

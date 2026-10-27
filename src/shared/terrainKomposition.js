@@ -34,6 +34,7 @@ class Maske {
     /** Rechts hinaus, links hinein: Spalten außerhalb laufen modulo der Breite um. */
     this.umlauf = false;
     this.rund = false;
+    this.planetenart = null;
   }
 
   spalte(x) {
@@ -135,6 +136,8 @@ function bruecke(maske, x0, x1, y0, y1) {
     maske.rechteck(x0 + i, y, x0 + i + 1, y + 9);
   }
 }
+
+import { planetArtAusZug } from './config/biome-planet.js';
 
 /** Die Kartenarten; der Seed zieht eine, bei Hochformat gilt `hochkant`. */
 export const KARTENARTEN = Object.freeze(['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'planet', 'unmoeglich', 'hochkant']);
@@ -425,6 +428,8 @@ function kartePyramide(maske, rng, B, H, stat) {
 /** Runder Körper mit Kratern, Kernhöhle mit Schächten und kleinen Monden. */
 function kartePlanet(maske, rng, B, H, stat) {
   maske.rund = true;
+  // Die Art (Eis, Lava, Sand, Dschungel, Rost, Stein) zieht der Seed; Materialien folgen aus ihr.
+  maske.planetenart = planetArtAusZug(rng.next());
   const cx = B * zwischen(rng, 0.46, 0.54);
   const cy = H * 0.52;
   const R = H * zwischen(rng, 0.3, 0.36);
@@ -526,7 +531,7 @@ function karteHochkant(maske, rng, B, H, stat) {
  * @param {number} o.width
  * @param {number} o.height
  * @param {string} [o.art] - eine Kartenart aus `KARTENARTEN`; ohne Angabe zieht der Seed (Hochformat: `hochkant`)
- * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean}} `umlauf`: die Karte verlangt die Regel „rechts hinaus, links hinein“; `rund`: Körper mit Radialform
+ * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean}} `umlauf`: die Karte verlangt die Regel „rechts hinaus, links hinein“; `rund`: Körper mit Radialform; `planetenart`: nur beim Planeten die vom Seed gezogene Art (`planet_*`)
  */
 export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
   const maske = new Maske(width, height);
@@ -537,7 +542,7 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
   if (sonder) {
     const wy = sonder(maske, rng, width, height, stat);
     maske.rechteck(0, wy + 30, width, height);
-    return { bitmap: maske.bitmap, wasserY: wy, bauteile: stat, art: wahl, umlauf: maske.umlauf, rund: maske.rund };
+    return { bitmap: maske.bitmap, wasserY: wy, bauteile: stat, art: wahl, umlauf: maske.umlauf, rund: maske.rund, planetenart: maske.planetenart };
   }
   const wasserY = Math.round(height * 0.9);
   const ebenenZahl = width / height > 1.6 ? 3 : 4;
@@ -621,5 +626,5 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
 
   // Wasserbecken: unterhalb der Wasserlinie ist der Boden massiv (Grund), davor Wasser.
   maske.rechteck(0, wasserY + 40, width, height);
-  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: wahl, umlauf: false, rund: false };
+  return { bitmap: maske.bitmap, wasserY, bauteile: stat, art: wahl, umlauf: false, rund: false, planetenart: null };
 }

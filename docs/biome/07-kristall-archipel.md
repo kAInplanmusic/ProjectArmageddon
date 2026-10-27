@@ -12,8 +12,8 @@ Schwebende Inseln mit tragenden Kernen und Verbindungen; Zerstörung kann Inselt
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Erdauflage | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Wolkenstein | SSOT | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
 | Glasplatten | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
 | Magnetgestein | SSOT | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |

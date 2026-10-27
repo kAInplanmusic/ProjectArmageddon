@@ -11,16 +11,16 @@ Schnee, Firn, Gletschereis, Spalten; rutschig; Eisbrücken brechen; Lawinen; Tau
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Pulverschnee | SSOT | – | ähnlich: schnee | ähnlich: schnee.jpg | offen | offen | offen | **einzigartig** |
-| Firn | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Variante); 16 Kristallines Schwebearchipel |
+| Firn | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
 | Gletschereis | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Klareiskristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 16 Kristallines Schwebearchipel |
 | Gefrorene Wurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Schnee | Manifest | – | ja (schnee, weich) | ja | offen | weich | offen | 14 Planet (eine Variante); 16 Kristallines Schwebearchipel |
+| Schnee | Manifest | – | ja (schnee, weich) | ja | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
 | Klareis | Manifest | – | fehlt | fehlt | offen | offen | offen | 16 Kristallines Schwebearchipel |
 | Tiefenfels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
-| Eis | Manifest | – | ja (eis, normal) | ja | offen | normal | offen | 14 Planet (eine Variante); 16 Kristallines Schwebearchipel |
-| Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Eis | Manifest | – | ja (eis, normal) | ja | offen | normal | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
+| Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)
 
@@ -47,9 +47,9 @@ Schnee, Firn, Gletschereis, Spalten; rutschig; Eisbrücken brechen; Lawinen; Tau
 
 | Objekt | Zustände | Auslöser | Folgen | Auch in |
 | :-- | :-- | :-- | :-- | :-- |
-| Eisbrücken | offen | offen | offen | 14 Planet (eine Variante); 16 Kristallines Schwebearchipel |
-| Lawinenhänge | offen | offen | offen | 14 Planet (eine Variante) |
-| gefrorene Wasserfälle | offen | offen | offen | 14 Planet (eine Variante) |
+| Eisbrücken | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
+| Lawinenhänge | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
+| gefrorene Wasserfälle | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Windturbinen | offen | offen | offen | 7 Kristall-Archipel; 16 Kristallines Schwebearchipel |
 | Schneehöhlen | offen | offen | offen | **einzigartig** |
 | Wetterfahnen | offen | offen | offen | **einzigartig** |

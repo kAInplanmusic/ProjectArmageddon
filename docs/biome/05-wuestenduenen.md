@@ -12,13 +12,13 @@ Lose Dünen, Sandstein, Salzkrusten, Treibsand, alte Bauwerke; Wind formt um; Sa
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Loser Sand | SSOT | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | **einzigartig** |
 | Verdichteter Sand | SSOT | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | **einzigartig** |
-| Sandstein | beide | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 14 Planet (eine Variante) |
-| Salzkruste | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Variante) |
+| Sandstein | beide | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Salzkruste | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Treibsand | beide | – | ähnlich: sand | ja | offen | offen | offen | **einzigartig** |
-| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante) |
+| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
 | Totholz & Knochen | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
 | Feinsand | Manifest | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 8 Korallenriff |
-| Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | versteinertes Holz | Manifest | – | ähnlich: holz | ja | offen | offen | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
@@ -47,12 +47,12 @@ Lose Dünen, Sandstein, Salzkrusten, Treibsand, alte Bauwerke; Wind formt um; Sa
 
 | Objekt | Zustände | Auslöser | Folgen | Auch in |
 | :-- | :-- | :-- | :-- | :-- |
-| Wanderdünen | offen | offen | offen | 14 Planet (eine Variante) |
-| Treibsandlöcher | offen | offen | offen | 14 Planet (eine Variante) |
+| Wanderdünen | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Treibsandlöcher | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Teergruben | offen | offen | offen | **einzigartig** |
 | Knochengerippe | offen | offen | offen | **einzigartig** |
 | Sandsteinmonumente | offen | offen | offen | **einzigartig** |
-| Oasen | offen | offen | offen | 14 Planet (eine Variante) |
+| Oasen | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 
 ## Trigger
 

@@ -10,10 +10,10 @@ Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Met
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante) |
-| Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall) |
+| Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
 | Metallschienen | beide | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Obsidian | SSOT | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Variante) |
+| Obsidian | SSOT | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall) |
 | Keramik | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Dampfkammer | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Lavaglas | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
@@ -45,7 +45,7 @@ Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Met
 | Objekt | Zustände | Auslöser | Folgen | Auch in |
 | :-- | :-- | :-- | :-- | :-- |
 | Förderplattformen | offen | offen | offen | **einzigartig** |
-| Dampfventile | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante) |
+| Dampfventile | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall) |
 | Metallkräne | offen | offen | offen | **einzigartig** |
 | Druckkessel | offen | offen | offen | 1 Vulkan & Lavafeld |
 | Lavaglaswände | offen | offen | offen | **einzigartig** |

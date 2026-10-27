@@ -10,7 +10,7 @@
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Humus | beide | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante) |
+| Humus | beide | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall) |
 | Tempelstein | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Alienharz | beide | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf |
 | Metallplatten | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | 12 Fabrik & Hochhausruine |
@@ -18,7 +18,7 @@
 | Rankgitter | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Säureablagerungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Organische Tragwurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Metall | Manifest | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Metall | Manifest | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
 | Myzel | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
@@ -48,7 +48,7 @@
 | :-- | :-- | :-- | :-- | :-- |
 | Alien-Totems | offen | offen | offen | **einzigartig** |
 | Sporenschwämme | offen | offen | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf |
-| Rankenaufzüge | offen | offen | offen | 3 Dschungel & Sumpf; 14 Planet (eine Variante) |
+| Rankenaufzüge | offen | offen | offen | 3 Dschungel & Sumpf; 14 Planet (eine Karte, Art per Zufall) |
 | Säurebecken | offen | offen | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf |
 | Generatoren | offen | offen | offen | 12 Fabrik & Hochhausruine |
 | Wurzelherzen | offen | offen | offen | 3 Dschungel & Sumpf |

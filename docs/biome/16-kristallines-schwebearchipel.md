@@ -10,9 +10,9 @@ Schwebende Eis- und Felsinseln, Kristalladern, Windbrücken, Schneedecken, Magne
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Schnee | SSOT | – | ja (schnee, weich) | ja | offen | weich | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Variante) |
-| Firn | SSOT | – | fehlt | ja | offen | offen | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Variante) |
-| Eis | SSOT | – | ja (eis, normal) | ja | offen | normal | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Variante) |
+| Schnee | SSOT | – | ja (schnee, weich) | ja | offen | weich | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Karte, Art per Zufall) |
+| Firn | SSOT | – | fehlt | ja | offen | offen | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Karte, Art per Zufall) |
+| Eis | SSOT | – | ja (eis, normal) | ja | offen | normal | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Karte, Art per Zufall) |
 | Klarer Kristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
 | Magnetgestein | beide | – | fehlt | ja | offen | offen | offen | 7 Kristall-Archipel |
 | Glas | SSOT | – | ja (glas, normal) | ja | offen | normal | offen | 11 Surreale Schwebewelt; 19 Dimensionsriss / Zeit-Chaosebene |
@@ -49,7 +49,7 @@ Schwebende Eis- und Felsinseln, Kristalladern, Windbrücken, Schneedecken, Magne
 | :-- | :-- | :-- | :-- | :-- |
 | Schwebende Kristalle | offen | offen | offen | 7 Kristall-Archipel; 11 Surreale Schwebewelt |
 | Windturbinen | offen | offen | offen | 4 Eiswüste & Gletscher; 7 Kristall-Archipel |
-| Eisbrücken | offen | offen | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Variante) |
+| Eisbrücken | offen | offen | offen | 4 Eiswüste & Gletscher; 14 Planet (eine Karte, Art per Zufall) |
 | Magnetkräne | offen | offen | offen | 7 Kristall-Archipel |
 | Spiegelwände | offen | offen | offen | 7 Kristall-Archipel; 11 Surreale Schwebewelt |
 | Observatorien | offen | offen | offen | 7 Kristall-Archipel |

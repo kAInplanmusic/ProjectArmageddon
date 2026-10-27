@@ -18,7 +18,7 @@ Befestigte Felsen, Mauern, Türme, Zugbrücken, Kerker, Magiekristalle (Energies
 | Erdaufschüttung | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Kerkergewölbe | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Mutterboden | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)
 

@@ -20,7 +20,7 @@ Asteroiden als Geländeinseln, Regolith, Metalltrümmer, Kristall, Eisadern; Tr�
 | Regolith-Staub | Manifest | – | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen | **einzigartig** |
 | Meteoritenfels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
 | Nickel-Eisen | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)
 

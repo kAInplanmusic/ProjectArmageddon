@@ -13,14 +13,14 @@ Weiches Erdreich, Wurzeln, Ranken, Wasserbecken, morsches Holz, Ruinen; Sumpf br
 | Erde/Humus | SSOT | – | ähnlich: erde | ähnlich: erde.jpg | offen | offen | offen | **einzigartig** |
 | Holz/Wurzeln | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
 | Pilzgewebe | SSOT | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | 9 Pilzwald & Säuresumpf |
-| Fels | beide | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Fels | beide | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Moos | SSOT | – | fehlt | ja | offen | offen | offen | 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Alienharz | SSOT | – | fehlt | ja | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
 | Säureboden | SSOT | – | fehlt | fehlt | offen | offen | offen | 9 Pilzwald & Säuresumpf |
-| Humus | Manifest | – | fehlt | fehlt | offen | offen | offen | 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante); 17 Bio-Alien-Tempelstadt |
+| Humus | Manifest | – | fehlt | fehlt | offen | offen | offen | 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
 | Erde | Manifest | – | ja (erde, normal) | ja | offen | normal | offen | **einzigartig** |
 | lehmige Erde | Manifest | – | ähnlich: erde | ähnlich: erde.jpg | offen | offen | offen | **einzigartig** |
-| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Pilz | Manifest | – | ja (pilz, weich) | ja | offen | weich | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
@@ -49,7 +49,7 @@ Weiches Erdreich, Wurzeln, Ranken, Wasserbecken, morsches Holz, Ruinen; Sumpf br
 | Objekt | Zustände | Auslöser | Folgen | Auch in |
 | :-- | :-- | :-- | :-- | :-- |
 | Sporenschwämme | offen | offen | offen | 9 Pilzwald & Säuresumpf; 17 Bio-Alien-Tempelstadt |
-| Rankenaufzüge | offen | offen | offen | 14 Planet (eine Variante); 17 Bio-Alien-Tempelstadt |
+| Rankenaufzüge | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
 | Säurebecken | offen | offen | offen | 9 Pilzwald & Säuresumpf; 17 Bio-Alien-Tempelstadt |
 | Tempelbrücken | offen | offen | offen | **einzigartig** |
 | Wurzelherzen | offen | offen | offen | 17 Bio-Alien-Tempelstadt |

@@ -11,13 +11,13 @@ Steile Basaltwände, Lavazungen, Magmakanäle, poröse Asche; Lava ist ein eigen
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Vulkanasche | SSOT | – | ähnlich: asche | fehlt | offen | offen | offen | **einzigartig** |
-| Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Magmaader | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Schwefelkruste | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Asche | Manifest | – | ja (asche, weich) | fehlt | offen | weich | offen | 14 Planet (eine Variante) |
-| Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Asche | Manifest | – | ja (asche, weich) | fehlt | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)
 
@@ -44,8 +44,8 @@ Steile Basaltwände, Lavazungen, Magmakanäle, poröse Asche; Lava ist ein eigen
 
 | Objekt | Zustände | Auslöser | Folgen | Auch in |
 | :-- | :-- | :-- | :-- | :-- |
-| Lavaseen | offen | offen | offen | 14 Planet (eine Variante) |
-| Dampfventile | offen | offen | offen | 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Lavaseen | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Dampfventile | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Druckkessel | offen | offen | offen | 15 Vulkanische Schlackeschmiede |
 | Obsidianstelen | offen | offen | offen | **einzigartig** |
 | Schmiedeöfen | offen | offen | offen | **einzigartig** |

@@ -1,10 +1,10 @@
-# Biom 14: Planet (eine Variante)
+# Biom 14: Planet (eine Karte, Art per Zufall)
 
 > Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
-**Entscheidung des Auftraggebers (2026-10-26): es gibt nur einen Planeten, nicht sechs.** Die sechs Materialmixe unten sind kein Variantensatz mehr, sondern Vorrat für Zonen dieses einen Planeten; wie sie verteilt werden, ist offen. Im Code existieren noch sechs `planet_*`-Kennungen; sie auf eine zu verringern ändert alte Replays und braucht eine neue Gelände-Fassung (Versionsmarke). Übergeordnetes System: Eis, Lava, Wüste, Dschungel, Rost, Stein; gleiche technische Grundstruktur, eigener Materialmix und eigene Umwelt; Varianten ergänzen Sonderreaktionen, widersprechen der globalen Matrix nicht.
+**Entscheidung des Auftraggebers (2026-10-26/27): Planet ist ein Biom und eine Karte; der Seed zieht die Planetenart zufällig aus sechs (Eis, Lava, Wüste, Dschungel, Rost, Stein).** Im Code ist das die Wahl `planet`: `planetArtAusZug` wählt eine der Kennungen `planet_eis`, `planet_lava`, `planet_sand`, `planet_dschungel`, `planet_rost`, `planet_stein`; es ist keine Änderung am Code nötig. Die sechs Materialmixe unten sind die sechs möglichen Arten. Übergeordnetes System: Eis, Lava, Wüste, Dschungel, Rost, Stein; gleiche technische Grundstruktur, eigener Materialmix und eigene Umwelt; Varianten ergänzen Sonderreaktionen, widersprechen der globalen Matrix nicht.
 
 ## Materialien (Terrain)
 
@@ -93,7 +93,7 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Kartenformen
 
-- eine Planetenkarte (früher: sechs mit gleichem Aufbau)
+- eine Planetenkarte, deren Art der Seed zieht
 - Planet mit mehreren Regionen
 - Übergangslevel mit zwei Segmenten
 - Kraterplanet mit Höhenringen
