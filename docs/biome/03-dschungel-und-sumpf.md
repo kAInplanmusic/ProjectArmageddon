@@ -10,18 +10,17 @@ Weiches Erdreich, Wurzeln, Ranken, Wasserbecken, morsches Holz, Ruinen; Sumpf br
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Erde/Humus | SSOT | – | ähnlich: erde | ähnlich: erde.jpg | offen | offen | offen | **einzigartig** |
-| Holz/Wurzeln | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
+| Erde | beide | – | ja (erde, normal) | ja | offen | normal | offen | **einzigartig** |
+| Humus | beide | – | fehlt | fehlt | offen | offen | offen | 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
+| Holz | beide | – | ja (holz, normal) | ja | offen | normal | offen | 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Wurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Pilzgewebe | SSOT | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | 9 Pilzwald & Säuresumpf |
 | Fels | beide | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Moos | SSOT | – | fehlt | ja | offen | offen | offen | 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Alienharz | SSOT | – | fehlt | ja | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
 | Säureboden | SSOT | – | fehlt | fehlt | offen | offen | offen | 9 Pilzwald & Säuresumpf |
-| Humus | Manifest | – | fehlt | fehlt | offen | offen | offen | 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
-| Erde | Manifest | – | ja (erde, normal) | ja | offen | normal | offen | **einzigartig** |
 | lehmige Erde | Manifest | – | ähnlich: erde | ähnlich: erde.jpg | offen | offen | offen | **einzigartig** |
-| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Pilz | Manifest | – | ja (pilz, weich) | ja | offen | weich | offen | **einzigartig** |
+| Pilze | Manifest | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 
 ## Bodenschichten (Manifest)
 
@@ -74,5 +73,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Erde/Humus, Holz/Wurzeln, Erde, lehmige Erde, Pilz
+- **Materialien (2):** Erde, lehmige Erde
 - **Objekte (1):** Tempelbrücken

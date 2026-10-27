@@ -10,8 +10,8 @@ Fels, Kristalladern, Stalaktiten, unterirdische Wasserläufe; Kristalle reflekti
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Kristallader | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 10 Asteroidenfeld; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristalladern | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 10 Asteroidenfeld; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Kalkstein | beide | – | fehlt | ja | offen | offen | offen | 8 Korallenriff |
 | Wasserader | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |

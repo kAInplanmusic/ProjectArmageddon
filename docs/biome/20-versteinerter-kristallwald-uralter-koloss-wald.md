@@ -11,11 +11,11 @@ Versteinerte Baumriesen mit Härtegraden, Kristallzweige (spröde, reflektierend
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Moos | beide | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf |
-| Versteinertes Holz | beide | – | ähnlich: holz | ja | offen | offen | offen | **einzigartig** |
-| Kristallader | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 10 Asteroidenfeld |
+| Versteinertes Holz | beide | – | ähnlich: holz | ja | offen | offen | offen | 5 Wüstendünen |
+| Kristalladern | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 10 Asteroidenfeld; 14 Planet (eine Karte, Art per Zufall) |
 | Kristallblätter | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
 | Versteinerte Wurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
+| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
 | Kolossstamm | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Leuchtpilzgewebe | SSOT | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
 | Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall) |
@@ -33,7 +33,7 @@ Versteinerte Baumriesen mit Härtegraden, Kristallzweige (spröde, reflektierend
 ## Wasser / Fluid (Manifest)
 
 - Binnensee
-- Abgrund
+- Abgrund — **Abgrund**
 
 ## Spezial-Items und Begebenheiten (Manifest)
 
@@ -75,5 +75,5 @@ Lichtimpuls (aktiviert definierte Kristallflächen)
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Versteinertes Holz, Kristallblätter, Versteinerte Wurzeln, Kolossstamm, Leuchtpilzgewebe
+- **Materialien (4):** Kristallblätter, Versteinerte Wurzeln, Kolossstamm, Leuchtpilzgewebe
 - **Objekte (5):** Versteinerte Baumriesen, Kristallblätter, Versteinerte Wurzeln, Kolossstämme, Moosfelsen

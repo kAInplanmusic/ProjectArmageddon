@@ -11,7 +11,7 @@ Zerbrochene Landschaft aus instabilem Fels, Zeitkristallen, schwebenden Fragment
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Instabiler Boden | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Zeitkristall | beide | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
 | Glasfragmente | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
 | Metallfragmente | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
@@ -31,7 +31,7 @@ Zerbrochene Landschaft aus instabilem Fels, Zeitkristallen, schwebenden Fragment
 
 ## Wasser / Fluid (Manifest)
 
-- Zeit-Vortex
+- Zeit-Vortex — **Abgrund**
 
 ## Spezial-Items und Begebenheiten (Manifest)
 

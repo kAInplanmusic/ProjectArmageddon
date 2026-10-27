@@ -10,16 +10,15 @@ Lose Dünen, Sandstein, Salzkrusten, Treibsand, alte Bauwerke; Wind formt um; Sa
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Loser Sand | SSOT | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | **einzigartig** |
+| Feinsand | beide | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 8 Korallenriff |
 | Verdichteter Sand | SSOT | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | **einzigartig** |
 | Sandstein | beide | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Salzkruste | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Treibsand | beide | – | ähnlich: sand | ja | offen | offen | offen | **einzigartig** |
 | Teer | SSOT | – | fehlt | ja | offen | offen | offen | 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
 | Totholz & Knochen | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
-| Feinsand | Manifest | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 8 Korallenriff |
 | Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| versteinertes Holz | Manifest | – | ähnlich: holz | ja | offen | offen | offen | **einzigartig** |
+| Versteinertes Holz | Manifest | – | ähnlich: holz | ja | offen | offen | offen | 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)
 
@@ -72,5 +71,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Loser Sand, Verdichteter Sand, Treibsand, Totholz & Knochen, versteinertes Holz
+- **Materialien (3):** Verdichteter Sand, Treibsand, Totholz & Knochen
 - **Objekte (3):** Teergruben, Knochengerippe, Sandsteinmonumente

@@ -4,14 +4,40 @@
 
 Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschaften belegt wird: **Optik**, **Zerstörbarkeit**, **Bewegung** (Reihenfolge laut Auftraggeber). „Biome“ nennt die Nummern aus der SSOT.
 
-**Stand:** 20 Biome · 143 Materialien (63 ohne Katalogeintrag) · 111 Objekte · 32 Trigger. Quellen: docs/biome-ssot.md und docs/biome-manifest.md (Spalte „Quelle“).
+**Stand:** 20 Biome · 124 Materialien (56 ohne Katalogeintrag) · 111 Objekte · 32 Trigger. Quellen: docs/biome-ssot.md und docs/biome-manifest.md (Spalte „Quelle“).
+
+## Vereinheitlichte Namen
+
+Diese Schreibweisen wurden zusammengelegt (links der frühere Name, rechts der gültige):
+
+| Früher | Gilt |
+| :-- | :-- |
+| Erde/Humus | Erde und Humus |
+| Holz/Wurzeln | Holz und Wurzeln |
+| Erdauflage | Erdüberzug |
+| Erdaufschüttung | Erdüberzug |
+| Loser Sand | Feinsand |
+| Firn | Firnschnee |
+| Klarer Kristall | Klareiskristall |
+| Massiver Fels | Massivfels |
+| kontaminierte Erde | Kontaminierte Erde |
+| versteinertes Holz | Versteinertes Holz |
+| Magmaader | Magmaadern |
+| Kristallader | Kristalladern |
+| Pilz | Pilze |
+| Myzel | Pilzmyzel |
+| Stahlträger | Metallträger |
+| Regolith | Regolith-Staub |
+| Nebelstein | Wolkenstein |
+| Vulkanasche | Asche |
+| Intaktes Metall | Metall |
 
 ## Materialien
 
 | Material | Quelle | Biome | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Alienharz | SSOT/beide | 3, 17 | fehlt | ja | offen | offen | offen |
-| Asche | Manifest/SSOT | 1, 14 | ja (asche, weich) | fehlt | offen | weich | offen |
+| Asche | beide/SSOT | 1, 14 | ja (asche, weich) | fehlt | offen | weich | offen |
 | Asteroidenbasalt | SSOT | 10 | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen |
 | Basalt | beide/SSOT | 1, 14, 15, 18 | ja (basalt, hart) | ja | offen | hart | offen |
 | Beton | Manifest/beide/SSOT | 6, 12, 14 | ja (beton, hart) | ja | offen | hart | offen |
@@ -22,16 +48,12 @@ Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschafte
 | Druckkammer | SSOT | 18 | fehlt | fehlt | offen | offen | offen |
 | Eis | Manifest/SSOT | 4, 14, 16 | ja (eis, normal) | ja | offen | normal | offen |
 | Eisader | SSOT | 10 | fehlt | fehlt | offen | offen | offen |
-| Erdauflage | SSOT | 7 | fehlt | fehlt | offen | offen | offen |
-| Erdaufschüttung | SSOT | 13 | fehlt | fehlt | offen | offen | offen |
-| Erde | Manifest | 3 | ja (erde, normal) | ja | offen | normal | offen |
-| Erde/Humus | SSOT | 3 | ähnlich: erde | ähnlich: erde.jpg | offen | offen | offen |
-| Erdüberzug | Manifest | 7 | fehlt | fehlt | offen | offen | offen |
-| Feinsand | Manifest | 5, 8 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
+| Erde | beide | 3 | ja (erde, normal) | ja | offen | normal | offen |
+| Erdüberzug | beide/SSOT | 7, 13 | fehlt | fehlt | offen | offen | offen |
+| Feinsand | beide/Manifest | 5, 8 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
 | Fels | Manifest/beide/SSOT | 1, 2, 3, 5, 6, 9, 14, 20 | ja (fels, hart) | ja | offen | hart | offen |
 | Feuchte Erde | SSOT | 9 | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen |
-| Firn | SSOT | 4, 14, 16 | fehlt | ja | offen | offen | offen |
-| Firnschnee | Manifest | 16 | ähnlich: schnee | ähnlich: firn.jpg | offen | offen | offen |
+| Firnschnee | SSOT/beide | 4, 14, 16 | ähnlich: schnee | ähnlich: firn.jpg | offen | offen | offen |
 | Gefrorene Wurzeln | SSOT | 4 | fehlt | fehlt | offen | offen | offen |
 | gehärtetes Glas | Manifest | 11 | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen |
 | Geröll | SSOT | 14 | fehlt | fehlt | offen | offen | offen |
@@ -42,31 +64,26 @@ Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschafte
 | Glasfragmente | SSOT | 19 | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen |
 | Glasplatten | SSOT | 7 | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen |
 | Gletschereis | SSOT | 4 | fehlt | fehlt | offen | offen | offen |
-| Holz | Manifest/SSOT | 3, 6, 9, 13, 14, 20 | ja (holz, normal) | ja | offen | normal | offen |
-| Holz/Wurzeln | SSOT | 3 | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen |
+| Holz | beide/Manifest/SSOT | 3, 6, 9, 13, 14, 20 | ja (holz, normal) | ja | offen | normal | offen |
 | Holzaufbauten | SSOT | 13 | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen |
 | Holzreste | SSOT | 6, 9 | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen |
-| Humus | Manifest/SSOT/beide | 3, 9, 14, 17 | fehlt | fehlt | offen | offen | offen |
+| Humus | beide/Manifest/SSOT | 3, 9, 14, 17 | fehlt | fehlt | offen | offen | offen |
 | Hydrothermalablagerungen | SSOT | 18 | fehlt | ähnlich: hydrothermal.jpg | offen | offen | offen |
 | Industriemagma | Manifest | 15 | fehlt | fehlt | offen | offen | offen |
 | Instabiler Boden | beide | 19 | fehlt | ja | offen | offen | offen |
-| Intaktes Metall | SSOT | 6 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Kalkstein | beide/SSOT | 2, 8 | fehlt | ja | offen | offen | offen |
 | Keramik | beide | 15 | fehlt | ja | offen | offen | offen |
 | Kerkergewölbe | SSOT | 13 | fehlt | fehlt | offen | offen | offen |
 | Klareis | Manifest | 4, 16 | fehlt | fehlt | offen | offen | offen |
-| Klareiskristall | SSOT/Manifest | 4, 16 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
-| Klarer Kristall | SSOT | 16 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
+| Klareiskristall | SSOT/beide | 4, 16 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
 | Kolossstamm | SSOT | 20 | fehlt | fehlt | offen | offen | offen |
 | Kontaminierte Ablagerungen | SSOT | 12 | fehlt | fehlt | offen | offen | offen |
-| kontaminierte Erde | Manifest | 9 | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen |
-| Kontaminierte Erde | beide | 6 | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen |
+| Kontaminierte Erde | beide/Manifest | 6, 9 | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen |
 | Koralle | beide | 8, 18 | ja (koralle, normal) | ja | offen | normal | offen |
 | korrodiertes Metall | Manifest | 18 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Korrosion | SSOT | 14 | fehlt | fehlt | offen | offen | offen |
 | Kristall | Manifest/beide/SSOT | 2, 4, 7, 10, 11, 14, 20 | ja (kristall, hart) | ja | offen | hart | offen |
-| Kristallader | SSOT | 2, 10, 20 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
-| Kristalladern | SSOT | 14 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
+| Kristalladern | SSOT | 2, 10, 14, 20 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
 | Kristallblätter | SSOT | 20 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
 | Kristallfelsen | Manifest | 7 | ähnlich: fels | ähnlich: kristall.webp | offen | offen | offen |
 | Lavaglas | SSOT | 15 | ähnlich: glas | ja | offen | offen | offen |
@@ -75,45 +92,38 @@ Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschafte
 | Leuchtalgen | SSOT | 18 | fehlt | ja | offen | offen | offen |
 | Leuchtkristall | SSOT | 18 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
 | Leuchtpilzgewebe | SSOT | 20 | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen |
-| Loser Sand | SSOT | 5 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
 | Magiekristall | beide | 13 | ja (magiekristall, hart) | ja | offen | hart | offen |
-| Magmaader | SSOT | 1 | fehlt | fehlt | offen | offen | offen |
-| Magmaadern | SSOT | 14 | fehlt | fehlt | offen | offen | offen |
+| Magmaadern | SSOT | 1, 14 | fehlt | fehlt | offen | offen | offen |
 | Magnetgestein | SSOT/beide | 7, 16 | fehlt | ja | offen | offen | offen |
-| Massiver Fels | SSOT | 2, 4, 7, 11, 16, 19, 20 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
-| Massivfels | Manifest | 16 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
+| Massivfels | SSOT/beide | 2, 4, 7, 11, 16, 19, 20 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
 | Mauerwerk | beide | 13 | fehlt | ja | offen | offen | offen |
-| Metall | Manifest/SSOT | 6, 12, 14, 17, 18 | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen |
+| Metall | beide/Manifest/SSOT | 6, 12, 14, 17, 18 | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen |
 | Metallader | SSOT | 10 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Metallfragmente | SSOT | 19 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Metallgitter | SSOT | 13 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Metallplatten | SSOT | 12, 17 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Metallschienen | beide | 15 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metallträger | Manifest | 12 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
+| Metallträger | beide | 12 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Metalltrümmer | SSOT | 10 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
 | Meteoritenfels | Manifest | 10 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
 | Moos | SSOT/beide | 3, 20 | fehlt | ja | offen | offen | offen |
 | Mutterboden | Manifest | 13 | fehlt | fehlt | offen | offen | offen |
-| Myzel | Manifest | 17 | fehlt | ja | offen | offen | offen |
 | Myzelmatte | SSOT | 9 | fehlt | ähnlich: myzel.jpg | offen | offen | offen |
-| Nebelstein | SSOT | 11 | fehlt | fehlt | offen | offen | offen |
 | Nickel-Eisen | Manifest | 10 | fehlt | fehlt | offen | offen | offen |
 | Obsidian | beide/SSOT | 1, 2, 7, 14, 15 | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen |
 | Organische Riffablagerungen | SSOT | 8 | fehlt | fehlt | offen | offen | offen |
 | Organische Tragwurzeln | SSOT | 17 | fehlt | fehlt | offen | offen | offen |
 | Phasen-Fels | Manifest | 19 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
-| Pilz | Manifest | 3 | ja (pilz, weich) | ja | offen | weich | offen |
 | Pilzbrücke | SSOT | 9 | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen |
-| Pilze | SSOT | 14 | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen |
+| Pilze | Manifest/SSOT | 3, 14 | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen |
 | Pilzgewebe | SSOT/beide | 3, 9 | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen |
-| Pilzmyzel | Manifest/SSOT | 9, 17 | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen |
+| Pilzmyzel | Manifest/beide | 9, 17 | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen |
 | Poröser Beton | Manifest | 12 | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen |
 | Poröser Fels | SSOT | 10 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
 | Pulverschnee | SSOT | 4 | ähnlich: schnee | ähnlich: schnee.jpg | offen | offen | offen |
 | Rankgitter | SSOT | 17 | fehlt | fehlt | offen | offen | offen |
 | Raumanker | SSOT | 11 | fehlt | fehlt | offen | offen | offen |
-| Regolith | SSOT | 10 | ja (regolith, weich) | ja | offen | weich | offen |
-| Regolith-Staub | Manifest | 10 | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen |
+| Regolith-Staub | beide | 10 | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen |
 | Riff-Kalkstein | Manifest | 8 | fehlt | ähnlich: kalkstein.jpg | offen | offen | offen |
 | Risszone | SSOT | 19 | fehlt | fehlt | offen | offen | offen |
 | Rohrleitungen | SSOT | 12 | fehlt | fehlt | offen | offen | offen |
@@ -131,7 +141,6 @@ Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschafte
 | Seegras | SSOT | 8 | fehlt | fehlt | offen | offen | offen |
 | Stabilisatormaterial | SSOT | 19 | fehlt | fehlt | offen | offen | offen |
 | Stahlbeton | Manifest | 12 | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen |
-| Stahlträger | SSOT | 12 | fehlt | fehlt | offen | offen | offen |
 | Stalaktiten | SSOT | 2 | fehlt | fehlt | offen | offen | offen |
 | Teer | SSOT | 5, 6, 11, 12, 14 | fehlt | ja | offen | offen | offen |
 | Tempelstein | beide | 17 | fehlt | ja | offen | offen | offen |
@@ -145,13 +154,11 @@ Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschafte
 | Unterwassersand | SSOT | 8 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
 | Verdichteter Sand | SSOT | 5 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
 | Versteinerte Wurzeln | SSOT | 20 | fehlt | fehlt | offen | offen | offen |
-| versteinertes Holz | Manifest | 5 | ähnlich: holz | ja | offen | offen | offen |
-| Versteinertes Holz | beide | 20 | ähnlich: holz | ja | offen | offen | offen |
-| Vulkanasche | SSOT | 1 | ähnlich: asche | fehlt | offen | offen | offen |
+| Versteinertes Holz | Manifest/beide | 5, 20 | ähnlich: holz | ja | offen | offen | offen |
 | Wasser | SSOT | 8 | fehlt | fehlt | offen | offen | offen |
 | Wasserader | SSOT | 2 | fehlt | fehlt | offen | offen | offen |
-| Wolkenstein | SSOT | 7, 16 | fehlt | ja | offen | offen | offen |
-| Wurzeln | SSOT | 14 | fehlt | fehlt | offen | offen | offen |
+| Wolkenstein | SSOT | 7, 11, 16 | fehlt | ja | offen | offen | offen |
+| Wurzeln | SSOT | 3, 14 | fehlt | fehlt | offen | offen | offen |
 | Zeitkristall | beide | 19 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
 
 ## Objekte
@@ -307,36 +314,36 @@ Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschafte
 | Wurzelspannungs-Trigger | 3 |
 | Zeitablauf-Trigger | 19 |
 
-## Wasser / Fluide (Manifest)
+## Wasser / Fluide und Abgründe (Manifest)
 
-| Fluid | Biome |
-| :-- | :-- |
-| Abgrund | 20 |
-| Ätzende Säure | 9 |
-| Binnensee | 20 |
-| Bio-Säurewasser (ätzend) | 17 |
-| Bodenlose Leere (Abgrund) | 7 |
-| Burggraben | 13 |
-| Eiskalte Tiefsee | 4 |
-| Eiswasser-Abgrund | 16 |
-| Industriegift | 12 |
-| Industriemagma (tödlich) | 15 |
-| kein Wasser | 1, 7, 10 |
-| Lava (tödlich) | 1 |
-| Oasen | 5 |
-| Raumriss | 11 |
-| Säure (ätzend) | 3 |
-| Schmelzwasser | 2, 4 |
-| Strömung | 8 |
-| Sumpfschlamm | 3 |
-| Teer | 5, 11 |
-| Tiefsee | 8 |
-| Tiefseegraben | 18 |
-| Toxischer Schlamm | 6 |
-| Treibsand | 5 |
-| Variabel | 14 |
-| Weltraum-Leere | 10 |
-| Zeit-Vortex | 19 |
+| Fluid | Art | Biome |
+| :-- | :-- | :-- |
+| Abgrund | Abgrund | 20 |
+| Ätzende Säure | Fluid | 9 |
+| Binnensee | Fluid | 20 |
+| Bio-Säurewasser (ätzend) | Fluid | 17 |
+| Bodenlose Leere (Abgrund) | Abgrund | 7 |
+| Burggraben | Fluid | 13 |
+| Eiskalte Tiefsee | Fluid | 4 |
+| Eiswasser-Abgrund | Abgrund | 16 |
+| Industriegift | Fluid | 12 |
+| Industriemagma (tödlich) | Fluid | 15 |
+| kein Wasser | Fluid | 1, 7, 10 |
+| Lava (tödlich) | Fluid | 1 |
+| Oasen | Fluid | 5 |
+| Raumriss | Abgrund | 11 |
+| Säure (ätzend) | Fluid | 3 |
+| Schmelzwasser | Fluid | 2, 4 |
+| Strömung | Fluid | 8 |
+| Sumpfschlamm | Fluid | 3 |
+| Teer | Fluid | 5, 11 |
+| Tiefsee | Fluid | 8 |
+| Tiefseegraben | Abgrund | 18 |
+| Toxischer Schlamm | Fluid | 6 |
+| Treibsand | Fluid | 5 |
+| Variabel | Fluid | 14 |
+| Weltraum-Leere | Abgrund | 10 |
+| Zeit-Vortex | Abgrund | 19 |
 
 ## Spezial-Items und Begebenheiten (Manifest)
 

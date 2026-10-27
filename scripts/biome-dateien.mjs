@@ -21,6 +21,22 @@ const TEXTUR_ORDNER = ['src/client/assets/stoff-texturen-neu', 'src/client/asset
 
 const norm = (s) => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z]/g, '');
 const slug = (s) => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/&/g, 'und').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/**
+ * Einheitliche Namen (Auftraggeber 2026-10-27: „auf einen Namen einigen“). Gilt die Schreibweise des
+ * Manifests; ein Eintrag mit mehreren Zielen (Liste) steht in der SSOT für mehrere Materialien.
+ */
+const NAMEN = {
+  'Erde/Humus': ['Erde', 'Humus'], 'Holz/Wurzeln': ['Holz', 'Wurzeln'],
+  Erdauflage: 'Erdüberzug', Erdaufschüttung: 'Erdüberzug', 'Loser Sand': 'Feinsand', Firn: 'Firnschnee',
+  'Klarer Kristall': 'Klareiskristall', 'Massiver Fels': 'Massivfels', 'kontaminierte Erde': 'Kontaminierte Erde',
+  'versteinertes Holz': 'Versteinertes Holz', Magmaader: 'Magmaadern', Kristallader: 'Kristalladern', Pilz: 'Pilze',
+  Myzel: 'Pilzmyzel', Stahlträger: 'Metallträger', Regolith: 'Regolith-Staub', Nebelstein: 'Wolkenstein',
+  Vulkanasche: 'Asche', 'Intaktes Metall': 'Metall',
+};
+const ALIAS = new Map(Object.entries(NAMEN).map(([k, v]) => [norm(k), v]));
+const kanon = (n) => { const a = ALIAS.get(norm(n)); return a ? [].concat(a) : [n]; };
+/** Abgründe statt Fluide: Leere, Risse, Gräben. */
+const ABGRUND = /Raumriss|Zeit-Vortex|Weltraum-Leere|Bodenlose Leere|Abgrund|Tiefseegraben/i;
 const bereinige = (s) => s.trim().replace(/\.$/, '').trim();
 const liste = (s, trenner = ',') => s.split(trenner).map(bereinige).filter(Boolean);
 
@@ -50,8 +66,8 @@ function lies() {
       } else felder.set(m[1], m[2]);
     }
     const material = new Map();
-    for (const n of liste(felder.get('Terrain') ?? '')) material.set(n, '');
-    for (const [v, t] of varianten) for (const n of liste(t)) if (!material.has(n)) material.set(n, v);
+    for (const n of liste(felder.get('Terrain') ?? '').flatMap(kanon)) material.set(n, '');
+    for (const [v, t] of varianten) for (const n of liste(t).flatMap(kanon)) if (!material.has(n)) material.set(n, v);
     const objektText = felder.get('Objekte/Trigger') ?? '';
     const objekte = [];
     const trigger = [];
@@ -95,7 +111,7 @@ function fuehreZusammen(biome, manifest) {
     b.manifest = mf ?? null;
     if (!mf) continue;
     const vorhanden = new Map([...b.material.keys()].map((n) => [norm(n), n]));
-    for (const n of mf.materialien) {
+    for (const n of mf.materialien.flatMap(kanon)) {
       const schluessel = vorhanden.get(norm(n));
       if (schluessel) b.quelle.set(schluessel, 'beide');
       else {
@@ -152,7 +168,7 @@ function schreibeBiom(b, biome, vm, vo, vt, info) {
   if (b.manifest) {
     const mf = b.manifest;
     z.push('', '## Bodenschichten (Manifest)', '', '| Schicht | Material |', '| :-- | :-- |', `| Deck | ${mf.deck} |`, `| Kern | ${mf.kern} |`, `| Adern und Einschlüsse | ${mf.adern} |`);
-    z.push('', '## Wasser / Fluid (Manifest)', '', ...mf.fluid.map((f) => `- ${f}`));
+    z.push('', '## Wasser / Fluid (Manifest)', '', ...mf.fluid.map((f) => `- ${f}${ABGRUND.test(f) ? ' — **Abgrund**' : ''}`));
     z.push('', '## Spezial-Items und Begebenheiten (Manifest)', '', ...mf.spezial.map((f) => `- ${f}`));
   }
   z.push('', '## Objekte', '', '| Objekt | Zustände | Auslöser | Folgen | Auch in |', '| :-- | :-- | :-- | :-- | :-- |');
@@ -179,6 +195,7 @@ function schreibeGesamt(biome, vm, vo, vt, info) {
     'Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschaften belegt wird: **Optik**, **Zerstörbarkeit**, **Bewegung** (Reihenfolge laut Auftraggeber). „Biome“ nennt die Nummern aus der SSOT.', ''];
   const fehlend = [...vm.keys()].filter((n) => info(n).katalog === 'fehlt').length;
   z.push(`**Stand:** ${biome.length} Biome · ${vm.size} Materialien (${fehlend} ohne Katalogeintrag) · ${vo.size} Objekte · ${vt.size} Trigger. Quellen: docs/biome-ssot.md und docs/biome-manifest.md (Spalte „Quelle“).`, '');
+  z.push('## Vereinheitlichte Namen', '', 'Diese Schreibweisen wurden zusammengelegt (links der frühere Name, rechts der gültige):', '', '| Früher | Gilt |', '| :-- | :-- |', ...Object.entries(NAMEN).map(([k, v]) => `| ${k} | ${[].concat(v).join(' und ')} |`), '');
   z.push('## Materialien', '', '| Material | Quelle | Biome | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung |', '| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |');
   for (const n of [...vm.keys()].sort((a, b) => a.localeCompare(b, 'de'))) {
     const i = info(n);
@@ -194,8 +211,8 @@ function schreibeGesamt(biome, vm, vo, vt, info) {
     for (const f of b.manifest?.fluid ?? []) fluide.set(f, [...(fluide.get(f) ?? []), b.nr]);
     for (const f of b.manifest?.spezial ?? []) spezial.set(f, [...(spezial.get(f) ?? []), b.nr]);
   }
-  z.push('', '## Wasser / Fluide (Manifest)', '', '| Fluid | Biome |', '| :-- | :-- |');
-  for (const n of [...fluide.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${nrs(fluide.get(n))} |`);
+  z.push('', '## Wasser / Fluide und Abgründe (Manifest)', '', '| Fluid | Art | Biome |', '| :-- | :-- | :-- |');
+  for (const n of [...fluide.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${ABGRUND.test(n) ? 'Abgrund' : 'Fluid'} | ${nrs(fluide.get(n))} |`);
   z.push('', '## Spezial-Items und Begebenheiten (Manifest)', '', '| Eintrag | Biome | Optik | Zerstörbarkeit | Bewegung |', '| :-- | :-- | :-- | :-- | :-- |');
   for (const n of [...spezial.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${nrs(spezial.get(n))} | offen | offen | offen |`);
   z.push('', '## Sonderwirkungen', '', '| Biom | Sonderwirkung |', '| :-- | :-- |');

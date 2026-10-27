@@ -31,7 +31,7 @@ Dunkles Unterwassergebiet: Basaltgräben, versunkene Gebäude, Druckkammern, Kor
 
 ## Wasser / Fluid (Manifest)
 
-- Tiefseegraben
+- Tiefseegraben — **Abgrund**
 
 ## Spezial-Items und Begebenheiten (Manifest)
 

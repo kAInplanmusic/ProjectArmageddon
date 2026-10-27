@@ -15,7 +15,7 @@ Befestigte Felsen, Mauern, Türme, Zugbrücken, Kerker, Magiekristalle (Energies
 | Holzaufbauten | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
 | Magiekristall | beide | – | ja (magiekristall, hart) | ja | offen | hart | offen | **einzigartig** |
 | Metallgitter | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Erdaufschüttung | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Erdüberzug | SSOT | – | fehlt | fehlt | offen | offen | offen | 7 Kristall-Archipel |
 | Kerkergewölbe | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Mutterboden | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
@@ -71,5 +71,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (8):** Burgfelsen, Mauerwerk, Holzaufbauten, Magiekristall, Metallgitter, Erdaufschüttung, Kerkergewölbe, Mutterboden
+- **Materialien (7):** Burgfelsen, Mauerwerk, Holzaufbauten, Magiekristall, Metallgitter, Kerkergewölbe, Mutterboden
 - **Objekte (7):** Burgmauern, Türme, Kerker, Magiekristalle, Zugbrücken, Fallgitter, Thronsaal

@@ -18,7 +18,7 @@ Riesenpilze, Myzelmatten (Netzwerk, Kaskaden), Sporenkammern, Säurepfützen, Pi
 | Fels | SSOT | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Pilzbrücke | SSOT | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
 | Humus | Manifest | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
-| kontaminierte Erde | Manifest | – | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen | **einzigartig** |
+| Kontaminierte Erde | Manifest | – | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen | 6 Schrottplatz |
 | Pilzmyzel | Manifest | – | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
 | Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 13 Burgfelsen & Magiekristall; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
@@ -72,5 +72,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (4):** Feuchte Erde, Myzelmatte, Pilzbrücke, kontaminierte Erde
+- **Materialien (3):** Feuchte Erde, Myzelmatte, Pilzbrücke
 - **Objekte (3):** Riesenpilze, Myzelnetze, Pilzbrücken

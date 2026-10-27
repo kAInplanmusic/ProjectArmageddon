@@ -11,9 +11,9 @@ Nicht-euklidisch, aber normale Zerstörungs-/Schwerkraftregeln; definierte Sonde
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Glas | beide | – | ja (glas, normal) | ja | offen | normal | offen | 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
-| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Nebelstein | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Wolkenstein | SSOT | – | fehlt | ja | offen | offen | offen | 7 Kristall-Archipel; 16 Kristallines Schwebearchipel |
 | Teer | SSOT | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
 | Giftnebel | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Raumanker | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
@@ -30,7 +30,7 @@ Nicht-euklidisch, aber normale Zerstörungs-/Schwerkraftregeln; definierte Sonde
 
 ## Wasser / Fluid (Manifest)
 
-- Raumriss
+- Raumriss — **Abgrund**
 - Teer
 
 ## Spezial-Items und Begebenheiten (Manifest)
@@ -72,5 +72,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Nebelstein, Giftnebel, Raumanker, Traumgestein, gehärtetes Glas
+- **Materialien (4):** Giftnebel, Raumanker, Traumgestein, gehärtetes Glas
 - **Objekte (4):** Glasinseln, Nebelbrücken, Teerseen, Traumportale

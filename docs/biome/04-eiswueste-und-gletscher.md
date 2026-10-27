@@ -11,9 +11,9 @@ Schnee, Firn, Gletschereis, Spalten; rutschig; Eisbrücken brechen; Lawinen; Tau
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Pulverschnee | SSOT | – | ähnlich: schnee | ähnlich: schnee.jpg | offen | offen | offen | **einzigartig** |
-| Firn | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
+| Firnschnee | SSOT | – | ähnlich: schnee | ähnlich: firn.jpg | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
 | Gletschereis | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Klareiskristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 16 Kristallines Schwebearchipel |
 | Gefrorene Wurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Schnee | Manifest | – | ja (schnee, weich) | ja | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |

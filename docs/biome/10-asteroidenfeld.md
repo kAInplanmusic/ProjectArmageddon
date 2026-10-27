@@ -10,14 +10,13 @@ Asteroiden als Geländeinseln, Regolith, Metalltrümmer, Kristall, Eisadern; Tr�
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Regolith | SSOT | – | ja (regolith, weich) | ja | offen | weich | offen | **einzigartig** |
+| Regolith-Staub | beide | – | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen | **einzigartig** |
 | Asteroidenbasalt | SSOT | – | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen | **einzigartig** |
 | Metallader | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Kristallader | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristalladern | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Eisader | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Poröser Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
 | Metalltrümmer | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Regolith-Staub | Manifest | – | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen | **einzigartig** |
 | Meteoritenfels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
 | Nickel-Eisen | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
@@ -32,7 +31,7 @@ Asteroiden als Geländeinseln, Regolith, Metalltrümmer, Kristall, Eisadern; Tr�
 
 ## Wasser / Fluid (Manifest)
 
-- Weltraum-Leere
+- Weltraum-Leere — **Abgrund**
 - kein Wasser
 
 ## Spezial-Items und Begebenheiten (Manifest)
@@ -73,5 +72,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (9):** Regolith, Asteroidenbasalt, Metallader, Eisader, Poröser Fels, Metalltrümmer, Regolith-Staub, Meteoritenfels, Nickel-Eisen
+- **Materialien (8):** Regolith-Staub, Asteroidenbasalt, Metallader, Eisader, Poröser Fels, Metalltrümmer, Meteoritenfels, Nickel-Eisen
 - **Objekte (5):** Schwebende Asteroiden, Metalltrümmer, Eisadern, Satellitenwracks, Gravitationssenken
