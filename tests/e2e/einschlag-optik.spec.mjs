@@ -15,7 +15,7 @@ async function starte(page) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   await page.evaluate(() => window.__PA__.setAutoLoop(false));
-  await page.locator('#cfg-seed').fill('1234');
+  await page.locator('#cfg-seed').fill('20260921');
   await page.locator('#start-button').click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
   // Eine Waffe mit großem Krater wählen, die der Schütze führt.
