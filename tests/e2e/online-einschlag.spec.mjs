@@ -29,7 +29,7 @@ test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoR
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
 const FAELLE = [
-  { name: 'Wasser', seed: 115, winkel: 0.5, kraft: 60, material: 'wasser', zaehler: 'wasser' },
+  { name: 'Wasser', seed: 377, winkel: 0.9, kraft: 90, material: 'wasser', zaehler: 'wasser' },
   { name: 'Land', seed: 24681, winkel: 0.5, kraft: 30, material: 'erde', zaehler: 'explosion' },
 ];
 
