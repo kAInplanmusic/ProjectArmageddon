@@ -569,12 +569,23 @@ function fbm2(rng, B, H, basis, stufen = 5) {
 }
 
 /** Weiche Ellipsen-„Landmasse“: positiv innen, Null am Rand (Pixelmaß `radius`); flache Oberseite, spitzer Sockel. */
-function masse(cx, cy, rx, ryOben, ryUnten, radius) {
+function masse(cx, cy, rx, ryOben, ryUnten, radius, pOben = 2, pUnten = 2) {
+  // Überellipse: Exponent 2 = Ellipse, größer = klotziger (steile Flanken), kleiner = spitzer (Kegel, Zapfen).
   return (x, y) => {
-    const u = (x - cx) / rx;
-    const v = (y - cy) / (y < cy ? ryOben : ryUnten);
-    return (1 - Math.sqrt(u * u + v * v)) * radius;
+    const oben = y < cy;
+    const u = Math.abs(x - cx) / rx;
+    const v = Math.abs(y - cy) / (oben ? ryOben : ryUnten);
+    const e = oben ? pOben : pUnten;
+    return (1 - (u ** e + v ** e) ** (1 / e)) * radius;
   };
+}
+
+/** Zieht Form und Exponenten einer Insel aus dem Seed: Schüssel, Klotz oder Kegel. */
+function inselForm(rng) {
+  const w = rng.next();
+  if (w < 0.34) return { pOben: 2, pUnten: 2 }; // Schüssel
+  if (w < 0.68) return { pOben: 3.4, pUnten: 3.2 }; // Klotz mit steilen Wänden
+  return { pOben: 2.6, pUnten: 1.35 }; // Kegel nach unten
 }
 
 /**
@@ -672,7 +683,8 @@ function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
     const x = archipel ? zwischen(rng, rx, B - rx) : B * ((teile.length + 0.5) / n) + zwischen(rng, -B * 0.03, B * 0.03);
     const y = H * zwischen(rng, 0.34, archipel ? 0.74 : 0.68);
     if (teile.some((t) => Math.abs(t.x - x) < (t.rx + rx) * 0.9 && Math.abs(t.y - y) < 150)) continue;
-    teile.push({ x, y, rx, f: masse(x, y, rx, rx * 0.3, rx * zwischen(rng, 0.45, 0.9), rx * 1.0) });
+    const form = inselForm(rng);
+    teile.push({ x, y, rx, f: masse(x, y, rx, rx * 0.3, rx * zwischen(rng, 0.45, 0.9), rx * 1.0, form.pOben, form.pUnten) });
   }
   ausDichte(maske, rng, (x, y) => Math.max(...teile.map((t) => t.f(x, y))) + rauschen(x, y) * 230);
   stat.platten += teile.length;
@@ -806,7 +818,7 @@ function dichteEbenen(maske, rng, B, H, stat) {
       teile.push({ x: Math.max(rx * 0.8, Math.min(B - rx * 0.8, x)), y: y + zwischen(rng, -30, 30), rx, e });
     }
   }
-  const platten = teile.map((t) => masse(t.x, t.y, t.rx, t.rx * 0.16, t.rx * zwischen(rng, 0.25, 0.4), t.rx * 0.8));
+  const platten = teile.map((t) => { const form = inselForm(rng); return masse(t.x, t.y, t.rx, t.rx * 0.16, t.rx * zwischen(rng, 0.25, 0.4), t.rx * 0.8, form.pOben, form.pUnten); });
   const pfeiler = [];
   for (const t of teile.filter((q) => q.e > 0)) {
     const stuetze = teile.find((q) => q.e === t.e - 1 && Math.abs(q.x - t.x) < q.rx * 0.8);
