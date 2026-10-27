@@ -45,6 +45,8 @@ const BLATT_MANIFEST = import.meta.glob('./assets/sprite-sheets/manifest.json', 
 const BLATT_BILDER = import.meta.glob('./assets/sprite-sheets/*/*.webp', { query: '?url', import: 'default' });
 /** Emotions-Sheets (`<fraktion>/<figur>__emotion.webp`): kommen nach dem Hauptblatt dazu, ihr Fehlen ändert nichts. */
 const EMOTION_BILDER = import.meta.glob('./assets/sprite-sheets-emotion/*/*.webp', { query: '?url', import: 'default' });
+/** Prüfergebnis je Emotions-Sheet (`gueltig` = Zellen mit passender Identität). */
+const EMOTION_MANIFEST = import.meta.glob('./assets/sprite-sheets-emotion/manifest.json', { eager: true, import: 'default' });
 
 const STANDARD_ANKER = { fussY: 0.96, muendungX: 0.9, muendungY: 0.45 };
 
@@ -98,9 +100,12 @@ async function ladeBlatt(fig, charakter) {
     const [walk, aktion] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
     const blatt = blattBauen(e, walk, aktion);
     if (blatt.walk || blatt.idle) fig.blatt = blatt;
-    const emotion = EMOTION_BILDER[`./assets/sprite-sheets-emotion/${charakter.faction}/${charakter.sprite.replace(/\.png$/, '')}__emotion.webp`];
-    if (fig.blatt && emotion) {
-      void emotion().then(ladeBild).then((bild) => { fig.blatt.emotion = emotionBauen(bild); }).catch(() => {});
+    // Nur Figuren mit Prüfergebnis im Manifest und mindestens einer gültigen Zelle bekommen Emotionen.
+    const name = charakter.sprite.replace(/\.png$/, '');
+    const pruefung = Object.values(EMOTION_MANIFEST)[0]?.figuren?.[`${charakter.faction}/${name}`];
+    const emotion = EMOTION_BILDER[`./assets/sprite-sheets-emotion/${charakter.faction}/${name}__emotion.webp`];
+    if (fig.blatt && emotion && pruefung?.gueltig?.length) {
+      void emotion().then(ladeBild).then((bild) => { fig.blatt.emotion = emotionBauen(bild, undefined, pruefung.gueltig); }).catch(() => {});
     }
   } catch {
     fig.blatt = null;

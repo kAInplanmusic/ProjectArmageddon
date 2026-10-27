@@ -91,10 +91,17 @@ export function blattBauen(eintrag, walkBild, aktionBild, neueLeinwand = standar
  */
 export const EMOTIONEN = Object.freeze(['angst', 'blinzeln', 'schulterzucken', 'jubel', 'zittern', 'blickHoch', 'blickRunter', 'waffenwechsel']);
 
-/** Frames des Emotions-Sheets je Name; `null`, wenn das Blatt fehlt oder das falsche Maß hat. */
-export function emotionBauen(bild, neueLeinwand = standardLeinwand) {
+/**
+ * Frames des Emotions-Sheets je Name; `null`, wenn das Blatt fehlt, das falsche Maß hat oder keine Zelle gültig ist.
+ * `gueltig`: Zellen, die laut Prüfung (`scripts/sprites-erzeugen/emotion-pruefen.py`) noch die Figur zeigen und nicht
+ * einen Menschen oder ein anderes Wesen; nur sie werden gebaut. `null` = alle (Tests).
+ */
+export function emotionBauen(bild, neueLeinwand = standardLeinwand, gueltig = null) {
   if (!bild || !blattMassOk(bild)) return null;
-  return Object.fromEntries(EMOTIONEN.map((name, i) => [name, frameAusZelle(bild, i, neueLeinwand)]));
+  const erlaubt = (i) => gueltig === null || (Array.isArray(gueltig) && gueltig.includes(i));
+  const frames = Object.fromEntries(EMOTIONEN.map((name, i) => [name, i]).filter(([, i]) => erlaubt(i))
+    .map(([name, i]) => [name, frameAusZelle(bild, i, neueLeinwand)]));
+  return Object.keys(frames).length > 0 ? frames : null;
 }
 
 /** Blinzeln: alle `BLINZEL_ABSTAND` Sekunden für `BLINZEL_DAUER` (je Figur um `id` versetzt). */

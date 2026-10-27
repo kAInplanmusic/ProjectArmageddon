@@ -1,87 +1,1541 @@
 {
- "version": 1,
- "hinweis": "8 Posen (4x2, Zelle 256): Angst, Blinzeln, Schulterzucken, Jubel, Zittern, Kopf hoch, Kopf runter, Waffenwechsel (Reihenfolge der KI nicht garantiert, Rollen prüfen). Noch nicht im Renderer.",
- "figuren": [
-  "beasts/00_pikamon__emotion.webp",
-  "beasts/01_shrew-quakes__emotion.webp",
-  "beasts/02_storm-talon__emotion.webp",
-  "beasts/10_flame-jaws__emotion.webp",
-  "beasts/11_ember-tails__emotion.webp",
-  "beasts/12_magma-plate__emotion.webp",
-  "beasts/20_decay-spawn__emotion.webp",
-  "beasts/21_cosmic-meditate__emotion.webp",
-  "beasts/22_sonic-blossom__emotion.webp",
-  "datacult/00_nullpointer-exception__emotion.webp",
-  "datacult/01_datapath-replicant__emotion.webp",
-  "datacult/02_chrome-code-shifter__emotion.webp",
-  "datacult/10_quantum-qubit-knight__emotion.webp",
-  "datacult/11_synapse-streamer__emotion.webp",
-  "datacult/12_arcology-agent__emotion.webp",
-  "datacult/20_buffer-flow-swarm__emotion.webp",
-  "datacult/21_hyper-link-hound__emotion.webp",
-  "datacult/22_ethereo__emotion.webp",
-  "machina/00_chassis-endo-t8__emotion.webp",
-  "machina/01_slasher-cyber-jax__emotion.webp",
-  "machina/02_hydra-titan-mech__emotion.webp",
-  "machina/10_recon-luchs-01__emotion.webp",
-  "machina/11_heavy-battery-moerser-bot__emotion.webp",
-  "machina/12_ordnance-rail-viper__emotion.webp",
-  "machina/20_grid-drifter-datastream__emotion.webp",
-  "machina/21_proxy-glitch-hack__emotion.webp",
-  "machina/22_overlord-kernel-panic__emotion.webp",
-  "pirates/00_captain-sven__emotion.webp",
-  "pirates/01_swashbuckler-piet__emotion.webp",
-  "pirates/02_iron-hook-harry__emotion.webp",
-  "pirates/10_cannoneer-klaus__emotion.webp",
-  "pirates/11_sniper-marie__emotion.webp",
-  "pirates/12_bombard-billy__emotion.webp",
-  "pirates/20_voodoo-witch-morgana__emotion.webp",
-  "pirates/21_storm-schamane-hooky__emotion.webp",
-  "pirates/22_chanteyman-drake__emotion.webp",
-  "pixel/00_nullpointer-exception__emotion.webp",
-  "pixel/01_pyrofox-a__emotion.webp",
-  "pixel/02_pyrofox-b__emotion.webp",
-  "pixel/10_arcershorn-a__emotion.webp",
-  "pixel/11_pyrowand-a__emotion.webp",
-  "pixel/12_shieldmon__emotion.webp",
-  "pixel/20_phantomal-a__emotion.webp",
-  "pixel/21_arcanus-a__emotion.webp",
-  "pixel/22_arcanus-b__emotion.webp",
-  "rodentia/00_commander-chewk__emotion.webp",
-  "rodentia/01_berzerker-fang__emotion.webp",
-  "rodentia/02_vanguard-captain-rix__emotion.webp",
-  "rodentia/10_sharpshooter-quill__emotion.webp",
-  "rodentia/11_grenadier-skitter__emotion.webp",
-  "rodentia/12_volley-captain-spark__emotion.webp",
-  "rodentia/20_alchemage-nibble__emotion.webp",
-  "rodentia/21_technomancer-squeak__emotion.webp",
-  "rodentia/22_grand-conduit-vex__emotion.webp",
-  "shinobi/00_shred-katana-hanzmon__emotion.webp",
-  "shinobi/01_kunoichi-wind-flapper__emotion.webp",
-  "shinobi/02_tetsubo-oni-brute__emotion.webp",
-  "shinobi/10_dazzler-werner__emotion.webp",
-  "shinobi/11_rauch-meister-genzi__emotion.webp",
-  "shinobi/12_blowpipe-koga__emotion.webp",
-  "shinobi/20_ninjutsu-master-goemon__emotion.webp",
-  "shinobi/21_talisman-sorcerer-jun__emotion.webp",
-  "shinobi/22_vixen-kitsune__emotion.webp",
-  "undead/00_bone-racker-karl__emotion.webp",
-  "undead/01_grave-zombie-kauer__emotion.webp",
-  "undead/02_grim-reaper-silas__emotion.webp",
-  "undead/10_archer-mortis__emotion.webp",
-  "undead/11_pitcher-igor__emotion.webp",
-  "undead/12_vessel-plague-skull__emotion.webp",
-  "undead/20_lich-king-alistair__emotion.webp",
-  "undead/21_scribe-necro-silas__emotion.webp",
-  "undead/22_banshee-beatrice__emotion.webp",
-  "xeno/00_sgt-acid-xeno__emotion.webp",
-  "xeno/01_stalker-predax__emotion.webp",
-  "xeno/02_vortex-grabber__emotion.webp",
-  "xeno/10_drone-theta__emotion.webp",
-  "xeno/11_desintegrator-kael__emotion.webp",
-  "xeno/12_plasma-maw-zorg__emotion.webp",
-  "xeno/20_harbinger-zeta__emotion.webp",
-  "xeno/21_dark-matter-witch__emotion.webp",
-  "xeno/22_null-entity-quark__emotion.webp"
- ]
+ "version": 2,
+ "hinweis": "8 Posen (4x2, Zelle 256): Angst, Blinzeln, Schulterzucken, Jubel, Zittern, Kopf hoch, Kopf runter, Waffenwechsel. \"gueltig\" = Zellen, deren Farbverteilung zum Seitenbild der Figur passt (Identität, nicht Pose); erzeugt mit scripts/sprites-erzeugen/emotion-pruefen.py",
+ "figuren": {
+  "beasts/00_pikamon": {
+   "datei": "beasts/00_pikamon__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    7
+   ],
+   "abstand": [
+    0.18,
+    0.2,
+    0.214,
+    0.156,
+    0.169,
+    0.204,
+    0.235,
+    0.153
+   ]
+  },
+  "beasts/01_shrew-quakes": {
+   "datei": "beasts/01_shrew-quakes__emotion.webp",
+   "gueltig": [
+    0,
+    7
+   ],
+   "abstand": [
+    0.048,
+    0.233,
+    0.23,
+    0.22,
+    0.186,
+    0.207,
+    0.202,
+    0.065
+   ]
+  },
+  "beasts/02_storm-talon": {
+   "datei": "beasts/02_storm-talon__emotion.webp",
+   "gueltig": [
+    6
+   ],
+   "abstand": [
+    0.109,
+    0.286,
+    0.292,
+    0.245,
+    0.188,
+    0.191,
+    0.032,
+    0.098
+   ]
+  },
+  "beasts/10_flame-jaws": {
+   "datei": "beasts/10_flame-jaws__emotion.webp",
+   "gueltig": [
+    0,
+    4,
+    7
+   ],
+   "abstand": [
+    0.139,
+    0.177,
+    0.186,
+    0.207,
+    0.159,
+    0.193,
+    0.214,
+    0.149
+   ]
+  },
+  "beasts/11_ember-tails": {
+   "datei": "beasts/11_ember-tails__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    7
+   ],
+   "abstand": [
+    0.176,
+    0.224,
+    0.229,
+    0.144,
+    0.22,
+    0.196,
+    0.185,
+    0.154
+   ]
+  },
+  "beasts/12_magma-plate": {
+   "datei": "beasts/12_magma-plate__emotion.webp",
+   "gueltig": [
+    0,
+    7
+   ],
+   "abstand": [
+    0.128,
+    0.208,
+    0.167,
+    0.197,
+    0.192,
+    0.21,
+    0.179,
+    0.156
+   ]
+  },
+  "beasts/20_decay-spawn": {
+   "datei": "beasts/20_decay-spawn__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.404,
+    0.396,
+    0.397,
+    0.413,
+    0.404,
+    0.408,
+    0.411,
+    0.41
+   ]
+  },
+  "beasts/21_cosmic-meditate": {
+   "datei": "beasts/21_cosmic-meditate__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.309,
+    0.328,
+    0.329,
+    0.294,
+    0.309,
+    0.311,
+    0.275,
+    0.287
+   ]
+  },
+  "beasts/22_sonic-blossom": {
+   "datei": "beasts/22_sonic-blossom__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.207,
+    0.252,
+    0.19,
+    0.25,
+    0.201,
+    0.235,
+    0.21,
+    0.182
+   ]
+  },
+  "datacult/00_nullpointer-exception": {
+   "datei": "datacult/00_nullpointer-exception__emotion.webp",
+   "gueltig": [
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.286,
+    0.297,
+    0.33,
+    0.335,
+    0.241,
+    0.284,
+    0.233,
+    0.258
+   ]
+  },
+  "datacult/01_datapath-replicant": {
+   "datei": "datacult/01_datapath-replicant__emotion.webp",
+   "gueltig": [
+    1,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.146,
+    0.126,
+    0.164,
+    0.152,
+    0.156,
+    0.095,
+    0.102,
+    0.126
+   ]
+  },
+  "datacult/02_chrome-code-shifter": {
+   "datei": "datacult/02_chrome-code-shifter__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    3,
+    4
+   ],
+   "abstand": [
+    0.408,
+    0.454,
+    0.435,
+    0.422,
+    0.423,
+    0.446,
+    0.449,
+    0.522
+   ]
+  },
+  "datacult/10_quantum-qubit-knight": {
+   "datei": "datacult/10_quantum-qubit-knight__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    3,
+    4,
+    5,
+    6
+   ],
+   "abstand": [
+    0.371,
+    0.374,
+    0.382,
+    0.352,
+    0.343,
+    0.341,
+    0.341,
+    0.384
+   ]
+  },
+  "datacult/11_synapse-streamer": {
+   "datei": "datacult/11_synapse-streamer__emotion.webp",
+   "gueltig": [],
+   "abstand": [
+    0.546,
+    0.56,
+    0.572,
+    0.554,
+    0.577,
+    0.56,
+    0.614,
+    0.612
+   ]
+  },
+  "datacult/12_arcology-agent": {
+   "datei": "datacult/12_arcology-agent__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "abstand": [
+    0.29,
+    0.292,
+    0.277,
+    0.261,
+    0.285,
+    0.281,
+    0.312,
+    0.307
+   ]
+  },
+  "datacult/20_buffer-flow-swarm": {
+   "datei": "datacult/20_buffer-flow-swarm__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.366,
+    0.363,
+    0.365,
+    0.341,
+    0.358,
+    0.364,
+    0.372,
+    0.375
+   ]
+  },
+  "datacult/21_hyper-link-hound": {
+   "datei": "datacult/21_hyper-link-hound__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.317,
+    0.389,
+    0.32,
+    0.367,
+    0.328,
+    0.331,
+    0.324,
+    0.314
+   ]
+  },
+  "datacult/22_ethereo": {
+   "datei": "datacult/22_ethereo__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    5,
+    7
+   ],
+   "abstand": [
+    0.159,
+    0.863,
+    0.201,
+    0.124,
+    0.13,
+    0.125,
+    0.167,
+    0.151
+   ]
+  },
+  "machina/00_chassis-endo-t8": {
+   "datei": "machina/00_chassis-endo-t8__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.191,
+    0.215,
+    0.209,
+    0.174,
+    0.198,
+    0.205,
+    0.183,
+    0.165
+   ]
+  },
+  "machina/01_slasher-cyber-jax": {
+   "datei": "machina/01_slasher-cyber-jax__emotion.webp",
+   "gueltig": [
+    1,
+    5
+   ],
+   "abstand": [
+    0.201,
+    0.161,
+    0.214,
+    0.214,
+    0.21,
+    0.168,
+    0.267,
+    0.217
+   ]
+  },
+  "machina/02_hydra-titan-mech": {
+   "datei": "machina/02_hydra-titan-mech__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.137,
+    0.163,
+    0.135,
+    0.202,
+    0.147,
+    0.16,
+    0.16,
+    0.163
+   ]
+  },
+  "machina/10_recon-luchs-01": {
+   "datei": "machina/10_recon-luchs-01__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "abstand": [
+    0.147,
+    0.165,
+    0.142,
+    0.159,
+    0.136,
+    0.156,
+    0.156,
+    0.172
+   ]
+  },
+  "machina/11_heavy-battery-moerser-bot": {
+   "datei": "machina/11_heavy-battery-moerser-bot__emotion.webp",
+   "gueltig": [
+    7
+   ],
+   "abstand": [
+    0.377,
+    0.404,
+    0.523,
+    0.402,
+    0.401,
+    0.412,
+    0.395,
+    0.316
+   ]
+  },
+  "machina/12_ordnance-rail-viper": {
+   "datei": "machina/12_ordnance-rail-viper__emotion.webp",
+   "gueltig": [
+    0,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.137,
+    0.248,
+    0.167,
+    0.156,
+    0.137,
+    0.145,
+    0.11,
+    0.104
+   ]
+  },
+  "machina/20_grid-drifter-datastream": {
+   "datei": "machina/20_grid-drifter-datastream__emotion.webp",
+   "gueltig": [
+    4,
+    6
+   ],
+   "abstand": [
+    0.247,
+    0.305,
+    0.296,
+    0.293,
+    0.239,
+    0.285,
+    0.204,
+    0.252
+   ]
+  },
+  "machina/21_proxy-glitch-hack": {
+   "datei": "machina/21_proxy-glitch-hack__emotion.webp",
+   "gueltig": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.202,
+    0.189,
+    0.158,
+    0.173,
+    0.181,
+    0.202,
+    0.158,
+    0.176
+   ]
+  },
+  "machina/22_overlord-kernel-panic": {
+   "datei": "machina/22_overlord-kernel-panic__emotion.webp",
+   "gueltig": [
+    2,
+    4,
+    6
+   ],
+   "abstand": [
+    0.192,
+    0.235,
+    0.149,
+    0.214,
+    0.178,
+    0.193,
+    0.176,
+    0.191
+   ]
+  },
+  "pirates/00_captain-sven": {
+   "datei": "pirates/00_captain-sven__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    4
+   ],
+   "abstand": [
+    0.147,
+    0.144,
+    0.139,
+    0.192,
+    0.112,
+    0.185,
+    0.172,
+    0.182
+   ]
+  },
+  "pirates/01_swashbuckler-piet": {
+   "datei": "pirates/01_swashbuckler-piet__emotion.webp",
+   "gueltig": [
+    7
+   ],
+   "abstand": [
+    0.186,
+    0.201,
+    0.151,
+    0.16,
+    0.178,
+    0.233,
+    0.173,
+    0.11
+   ]
+  },
+  "pirates/02_iron-hook-harry": {
+   "datei": "pirates/02_iron-hook-harry__emotion.webp",
+   "gueltig": [
+    0,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.098,
+    0.145,
+    0.13,
+    0.139,
+    0.115,
+    0.132,
+    0.102,
+    0.092
+   ]
+  },
+  "pirates/10_cannoneer-klaus": {
+   "datei": "pirates/10_cannoneer-klaus__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    5,
+    6
+   ],
+   "abstand": [
+    0.197,
+    0.225,
+    0.22,
+    0.193,
+    0.191,
+    0.179,
+    0.193,
+    0.219
+   ]
+  },
+  "pirates/11_sniper-marie": {
+   "datei": "pirates/11_sniper-marie__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4
+   ],
+   "abstand": [
+    0.06,
+    0.106,
+    0.165,
+    0.07,
+    0.069,
+    0.119,
+    0.097,
+    0.143
+   ]
+  },
+  "pirates/12_bombard-billy": {
+   "datei": "pirates/12_bombard-billy__emotion.webp",
+   "gueltig": [
+    0,
+    6,
+    7
+   ],
+   "abstand": [
+    0.119,
+    0.212,
+    0.204,
+    0.222,
+    0.165,
+    0.182,
+    0.11,
+    0.128
+   ]
+  },
+  "pirates/20_voodoo-witch-morgana": {
+   "datei": "pirates/20_voodoo-witch-morgana__emotion.webp",
+   "gueltig": [
+    6,
+    7
+   ],
+   "abstand": [
+    0.247,
+    0.298,
+    0.334,
+    0.241,
+    0.246,
+    0.223,
+    0.143,
+    0.152
+   ]
+  },
+  "pirates/21_storm-schamane-hooky": {
+   "datei": "pirates/21_storm-schamane-hooky__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.104,
+    0.139,
+    0.169,
+    0.163,
+    0.149,
+    0.124,
+    0.124,
+    0.118
+   ]
+  },
+  "pirates/22_chanteyman-drake": {
+   "datei": "pirates/22_chanteyman-drake__emotion.webp",
+   "gueltig": [
+    6,
+    7
+   ],
+   "abstand": [
+    0.206,
+    0.222,
+    0.2,
+    0.232,
+    0.234,
+    0.204,
+    0.186,
+    0.155
+   ]
+  },
+  "pixel/00_nullpointer-exception": {
+   "datei": "pixel/00_nullpointer-exception__emotion.webp",
+   "gueltig": [
+    7
+   ],
+   "abstand": [
+    0.305,
+    0.332,
+    0.328,
+    0.282,
+    0.305,
+    0.275,
+    0.268,
+    0.223
+   ]
+  },
+  "pixel/01_pyrofox-a": {
+   "datei": "pixel/01_pyrofox-a__emotion.webp",
+   "gueltig": [
+    2,
+    4,
+    6
+   ],
+   "abstand": [
+    0.246,
+    0.321,
+    0.235,
+    0.285,
+    0.224,
+    0.256,
+    0.201,
+    0.262
+   ]
+  },
+  "pixel/02_pyrofox-b": {
+   "datei": "pixel/02_pyrofox-b__emotion.webp",
+   "gueltig": [
+    1,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.272,
+    0.232,
+    0.329,
+    0.275,
+    0.245,
+    0.23,
+    0.235,
+    0.244
+   ]
+  },
+  "pixel/10_arcershorn-a": {
+   "datei": "pixel/10_arcershorn-a__emotion.webp",
+   "gueltig": [
+    0,
+    2
+   ],
+   "abstand": [
+    0.324,
+    0.363,
+    0.359,
+    0.383,
+    0.367,
+    0.364,
+    0.384,
+    0.402
+   ]
+  },
+  "pixel/11_pyrowand-a": {
+   "datei": "pixel/11_pyrowand-a__emotion.webp",
+   "gueltig": [
+    2,
+    6,
+    7
+   ],
+   "abstand": [
+    0.473,
+    0.475,
+    0.352,
+    0.396,
+    0.448,
+    0.444,
+    0.34,
+    0.349
+   ]
+  },
+  "pixel/12_shieldmon": {
+   "datei": "pixel/12_shieldmon__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    4,
+    5
+   ],
+   "abstand": [
+    0.19,
+    0.251,
+    0.201,
+    0.232,
+    0.167,
+    0.194,
+    0.213,
+    0.206
+   ]
+  },
+  "pixel/20_phantomal-a": {
+   "datei": "pixel/20_phantomal-a__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.152,
+    0.228,
+    0.127,
+    0.16,
+    0.201,
+    0.123,
+    0.144,
+    0.133
+   ]
+  },
+  "pixel/21_arcanus-a": {
+   "datei": "pixel/21_arcanus-a__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.179,
+    0.199,
+    0.194,
+    0.18,
+    0.168,
+    0.174,
+    0.145,
+    0.165
+   ]
+  },
+  "pixel/22_arcanus-b": {
+   "datei": "pixel/22_arcanus-b__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "abstand": [
+    0.169,
+    0.225,
+    0.148,
+    0.149,
+    0.163,
+    0.16,
+    0.172,
+    0.19
+   ]
+  },
+  "rodentia/00_commander-chewk": {
+   "datei": "rodentia/00_commander-chewk__emotion.webp",
+   "gueltig": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.324,
+    0.345,
+    0.279,
+    0.289,
+    0.297,
+    0.309,
+    0.285,
+    0.309
+   ]
+  },
+  "rodentia/01_berzerker-fang": {
+   "datei": "rodentia/01_berzerker-fang__emotion.webp",
+   "gueltig": [
+    6,
+    7
+   ],
+   "abstand": [
+    0.232,
+    0.232,
+    0.168,
+    0.224,
+    0.27,
+    0.236,
+    0.13,
+    0.142
+   ]
+  },
+  "rodentia/02_vanguard-captain-rix": {
+   "datei": "rodentia/02_vanguard-captain-rix__emotion.webp",
+   "gueltig": [
+    2,
+    7
+   ],
+   "abstand": [
+    0.202,
+    0.199,
+    0.169,
+    0.176,
+    0.197,
+    0.181,
+    0.19,
+    0.139
+   ]
+  },
+  "rodentia/10_sharpshooter-quill": {
+   "datei": "rodentia/10_sharpshooter-quill__emotion.webp",
+   "gueltig": [
+    3,
+    7
+   ],
+   "abstand": [
+    0.163,
+    0.19,
+    0.193,
+    0.148,
+    0.162,
+    0.192,
+    0.164,
+    0.117
+   ]
+  },
+  "rodentia/11_grenadier-skitter": {
+   "datei": "rodentia/11_grenadier-skitter__emotion.webp",
+   "gueltig": [
+    6,
+    7
+   ],
+   "abstand": [
+    0.157,
+    0.251,
+    0.175,
+    0.15,
+    0.171,
+    0.242,
+    0.113,
+    0.148
+   ]
+  },
+  "rodentia/12_volley-captain-spark": {
+   "datei": "rodentia/12_volley-captain-spark__emotion.webp",
+   "gueltig": [
+    0,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.106,
+    0.164,
+    0.175,
+    0.169,
+    0.122,
+    0.129,
+    0.103,
+    0.088
+   ]
+  },
+  "rodentia/20_alchemage-nibble": {
+   "datei": "rodentia/20_alchemage-nibble__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.167,
+    0.174,
+    0.177,
+    0.177,
+    0.186,
+    0.205,
+    0.198,
+    0.201
+   ]
+  },
+  "rodentia/21_technomancer-squeak": {
+   "datei": "rodentia/21_technomancer-squeak__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    5
+   ],
+   "abstand": [
+    0.105,
+    0.092,
+    0.133,
+    0.188,
+    0.122,
+    0.085,
+    0.124,
+    0.135
+   ]
+  },
+  "rodentia/22_grand-conduit-vex": {
+   "datei": "rodentia/22_grand-conduit-vex__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    4,
+    6
+   ],
+   "abstand": [
+    0.109,
+    0.145,
+    0.142,
+    0.21,
+    0.132,
+    0.149,
+    0.137,
+    0.186
+   ]
+  },
+  "shinobi/00_shred-katana-hanzmon": {
+   "datei": "shinobi/00_shred-katana-hanzmon__emotion.webp",
+   "gueltig": [
+    1,
+    2,
+    7
+   ],
+   "abstand": [
+    0.23,
+    0.167,
+    0.171,
+    0.209,
+    0.215,
+    0.216,
+    0.208,
+    0.187
+   ]
+  },
+  "shinobi/01_kunoichi-wind-flapper": {
+   "datei": "shinobi/01_kunoichi-wind-flapper__emotion.webp",
+   "gueltig": [
+    4
+   ],
+   "abstand": [
+    0.146,
+    0.174,
+    0.146,
+    0.148,
+    0.107,
+    0.148,
+    0.146,
+    0.149
+   ]
+  },
+  "shinobi/02_tetsubo-oni-brute": {
+   "datei": "shinobi/02_tetsubo-oni-brute__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.146,
+    0.138,
+    0.14,
+    0.122,
+    0.151,
+    0.159,
+    0.127,
+    0.121
+   ]
+  },
+  "shinobi/10_dazzler-werner": {
+   "datei": "shinobi/10_dazzler-werner__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    6,
+    7
+   ],
+   "abstand": [
+    0.111,
+    0.181,
+    0.178,
+    0.122,
+    0.141,
+    0.143,
+    0.117,
+    0.091
+   ]
+  },
+  "shinobi/11_rauch-meister-genzi": {
+   "datei": "shinobi/11_rauch-meister-genzi__emotion.webp",
+   "gueltig": [
+    1,
+    4,
+    5
+   ],
+   "abstand": [
+    0.294,
+    0.212,
+    0.287,
+    0.326,
+    0.208,
+    0.231,
+    0.296,
+    0.291
+   ]
+  },
+  "shinobi/12_blowpipe-koga": {
+   "datei": "shinobi/12_blowpipe-koga__emotion.webp",
+   "gueltig": [
+    7
+   ],
+   "abstand": [
+    0.187,
+    0.274,
+    0.267,
+    0.194,
+    0.177,
+    0.225,
+    0.251,
+    0.108
+   ]
+  },
+  "shinobi/20_ninjutsu-master-goemon": {
+   "datei": "shinobi/20_ninjutsu-master-goemon__emotion.webp",
+   "gueltig": [
+    7
+   ],
+   "abstand": [
+    0.16,
+    0.249,
+    0.249,
+    0.171,
+    0.196,
+    0.204,
+    0.208,
+    0.124
+   ]
+  },
+  "shinobi/21_talisman-sorcerer-jun": {
+   "datei": "shinobi/21_talisman-sorcerer-jun__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.122,
+    0.111,
+    0.155,
+    0.15,
+    0.108,
+    0.103,
+    0.093,
+    0.127
+   ]
+  },
+  "shinobi/22_vixen-kitsune": {
+   "datei": "shinobi/22_vixen-kitsune__emotion.webp",
+   "gueltig": [
+    1,
+    2,
+    5
+   ],
+   "abstand": [
+    0.22,
+    0.176,
+    0.179,
+    0.228,
+    0.223,
+    0.189,
+    0.23,
+    0.238
+   ]
+  },
+  "undead/00_bone-racker-karl": {
+   "datei": "undead/00_bone-racker-karl__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.339,
+    0.359,
+    0.337,
+    0.338,
+    0.337,
+    0.332,
+    0.333,
+    0.333
+   ]
+  },
+  "undead/01_grave-zombie-kauer": {
+   "datei": "undead/01_grave-zombie-kauer__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.176,
+    0.15,
+    0.149,
+    0.165,
+    0.164,
+    0.162,
+    0.158,
+    0.162
+   ]
+  },
+  "undead/02_grim-reaper-silas": {
+   "datei": "undead/02_grim-reaper-silas__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    3,
+    4,
+    5
+   ],
+   "abstand": [
+    0.319,
+    0.335,
+    0.363,
+    0.341,
+    0.331,
+    0.314,
+    0.355,
+    0.354
+   ]
+  },
+  "undead/10_archer-mortis": {
+   "datei": "undead/10_archer-mortis__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    3
+   ],
+   "abstand": [
+    0.143,
+    0.178,
+    0.189,
+    0.174,
+    0.205,
+    0.208,
+    0.241,
+    0.216
+   ]
+  },
+  "undead/11_pitcher-igor": {
+   "datei": "undead/11_pitcher-igor__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.283,
+    0.276,
+    0.273,
+    0.274,
+    0.278,
+    0.28,
+    0.273,
+    0.285
+   ]
+  },
+  "undead/12_vessel-plague-skull": {
+   "datei": "undead/12_vessel-plague-skull__emotion.webp",
+   "gueltig": [],
+   "abstand": [
+    0.608,
+    0.578,
+    0.585,
+    0.589,
+    0.586,
+    0.594,
+    0.586,
+    0.595
+   ]
+  },
+  "undead/20_lich-king-alistair": {
+   "datei": "undead/20_lich-king-alistair__emotion.webp",
+   "gueltig": [
+    0,
+    6,
+    7
+   ],
+   "abstand": [
+    0.14,
+    0.242,
+    0.307,
+    0.253,
+    0.179,
+    0.273,
+    0.151,
+    0.151
+   ]
+  },
+  "undead/21_scribe-necro-silas": {
+   "datei": "undead/21_scribe-necro-silas__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    6
+   ],
+   "abstand": [
+    0.238,
+    0.423,
+    0.338,
+    0.223,
+    0.289,
+    0.267,
+    0.237,
+    0.263
+   ]
+  },
+  "undead/22_banshee-beatrice": {
+   "datei": "undead/22_banshee-beatrice__emotion.webp",
+   "gueltig": [
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "abstand": [
+    0.287,
+    0.285,
+    0.252,
+    0.243,
+    0.256,
+    0.251,
+    0.223,
+    0.35
+   ]
+  },
+  "xeno/00_sgt-acid-xeno": {
+   "datei": "xeno/00_sgt-acid-xeno__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.159,
+    0.164,
+    0.163,
+    0.164,
+    0.167,
+    0.17,
+    0.142,
+    0.147
+   ]
+  },
+  "xeno/01_stalker-predax": {
+   "datei": "xeno/01_stalker-predax__emotion.webp",
+   "gueltig": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.227,
+    0.182,
+    0.191,
+    0.193,
+    0.215,
+    0.218,
+    0.214,
+    0.201
+   ]
+  },
+  "xeno/02_vortex-grabber": {
+   "datei": "xeno/02_vortex-grabber__emotion.webp",
+   "gueltig": [
+    2,
+    4
+   ],
+   "abstand": [
+    0.212,
+    0.302,
+    0.161,
+    0.286,
+    0.166,
+    0.293,
+    0.31,
+    0.302
+   ]
+  },
+  "xeno/10_drone-theta": {
+   "datei": "xeno/10_drone-theta__emotion.webp",
+   "gueltig": [
+    0,
+    3,
+    4,
+    6,
+    7
+   ],
+   "abstand": [
+    0.18,
+    0.21,
+    0.237,
+    0.203,
+    0.174,
+    0.268,
+    0.191,
+    0.198
+   ]
+  },
+  "xeno/11_desintegrator-kael": {
+   "datei": "xeno/11_desintegrator-kael__emotion.webp",
+   "gueltig": [
+    0,
+    4
+   ],
+   "abstand": [
+    0.094,
+    0.181,
+    0.155,
+    0.155,
+    0.111,
+    0.16,
+    0.161,
+    0.145
+   ]
+  },
+  "xeno/12_plasma-maw-zorg": {
+   "datei": "xeno/12_plasma-maw-zorg__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "abstand": [
+    0.269,
+    0.266,
+    0.273,
+    0.252,
+    0.279,
+    0.271,
+    0.245,
+    0.287
+   ]
+  },
+  "xeno/20_harbinger-zeta": {
+   "datei": "xeno/20_harbinger-zeta__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    5,
+    7
+   ],
+   "abstand": [
+    0.287,
+    0.314,
+    0.306,
+    0.314,
+    0.345,
+    0.299,
+    0.33,
+    0.289
+   ]
+  },
+  "xeno/21_dark-matter-witch": {
+   "datei": "xeno/21_dark-matter-witch__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    7
+   ],
+   "abstand": [
+    0.237,
+    0.31,
+    0.271,
+    0.302,
+    0.291,
+    0.32,
+    0.273,
+    0.268
+   ]
+  },
+  "xeno/22_null-entity-quark": {
+   "datei": "xeno/22_null-entity-quark__emotion.webp",
+   "gueltig": [
+    0,
+    2,
+    7
+   ],
+   "abstand": [
+    0.157,
+    0.259,
+    0.189,
+    0.199,
+    0.196,
+    0.234,
+    0.247,
+    0.185
+   ]
+  }
+ }
 }

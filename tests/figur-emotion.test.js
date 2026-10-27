@@ -65,3 +65,38 @@ test('Pose: Laufen und Springen behalten ihre Frames, ohne Emotionsblatt bleibt 
   assert.equal(z.rolle, 'luft');
   assert.equal(z.frame, b.luft, 'in der Luft gilt der Luft-Frame, nicht die Emotion');
 });
+
+import fs from 'node:fs';
+
+test('emotionBauen: nur gültige Zellen werden gebaut, ohne gültige Zelle gibt es keine Emotionen', () => {
+  const e = emotionBauen(blattBild, leinwand, [1, 3]);
+  assert.deepEqual(Object.keys(e), ['blinzeln', 'jubel']);
+  assert.equal(emotionBauen(blattBild, leinwand, []), null);
+  assert.equal(emotionBauen(blattBild, leinwand, null) !== null, true, 'null = alle (Tests)');
+});
+
+test('Pose: fehlt die Emotion im Blatt (ungültige Zelle), bleibt der Idle-Frame', () => {
+  const b = blattBauen(eintrag, blattBild, blattBild, leinwand);
+  b.emotion = emotionBauen(blattBild, leinwand, [1]);
+  const posen = new FigurPosen();
+  let z;
+  for (let i = 0; i < 20; i += 1) { posen.pose(figur(100, 50), i / 60, { blatt: b, ergebnis: 1 }); z = posen.zustand(7); }
+  assert.ok(b.idle.includes(z.frame), 'Jubel-Zelle gesperrt: Idle');
+  assert.equal(z.emotion, null);
+});
+
+test('Manifest der Emotions-Sheets: 81 geprüfte Figuren, gültige Zellen liegen in 0–7, die Verwandlungen sind gesperrt', () => {
+  const pfad = new URL('../src/client/assets/sprite-sheets-emotion/', import.meta.url);
+  const m = JSON.parse(fs.readFileSync(new URL('manifest.json', pfad), 'utf8'));
+  const figuren = Object.entries(m.figuren);
+  assert.equal(figuren.length, 81);
+  for (const [k, e] of figuren) {
+    assert.ok(fs.existsSync(new URL(e.datei, pfad)), `${k}: Datei fehlt`);
+    assert.ok(e.gueltig.every((c) => Number.isInteger(c) && c >= 0 && c < 8), `${k}: gueltig`);
+    assert.equal(e.abstand.length, 8, `${k}: abstand`);
+  }
+  // Bekannte Verwandlungen (Tier -> Mensch, gesehen am Kontaktbogen 2026-10-27): die Menschenzellen müssen gesperrt sein.
+  assert.deepEqual(m.figuren['beasts/01_shrew-quakes'].gueltig.filter((c) => c >= 1 && c <= 6), []);
+  assert.deepEqual(m.figuren['beasts/12_magma-plate'].gueltig.filter((c) => [1, 3, 4, 5].includes(c)), []);
+  assert.ok(m.figuren['beasts/02_storm-talon'].gueltig.every((c) => c === 6 || c === 0 || c === 7));
+});
