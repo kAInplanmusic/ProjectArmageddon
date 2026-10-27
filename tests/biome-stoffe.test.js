@@ -51,7 +51,8 @@ test('Materialtabelle vollständig: jeder Stoff hat Härte, Schlüssel und Fakto
       assert.ok(Number.isFinite(w.radius) && Number.isFinite(w.tiefe), `${s.key}/${art}`);
     }
   }
-  assert.equal(ids.size, Object.keys(STOFF).length);
+  // Die benannten Kennungen (STOFF) sind der Basiskatalog; die Biom-Materialien hängen dahinter (stoffe.js, tests/stoffe-katalog.test.js).
+  assert.ok(ids.size >= Object.keys(STOFF).length);
   const rezepte = { ...ALTE_REZEPTE, ...Object.fromEntries(SONDERBIOM_IDS.map(id => [id, rezeptFuer(id)])) };
   for (const [biom, r] of Object.entries(rezepte)) {
     const keys = [...r.deck.map(d => d[0]), r.kern, ...(r.adern ?? []).map(a => a.stoff), ...(r.platten ? [r.platten.stoff] : [])];

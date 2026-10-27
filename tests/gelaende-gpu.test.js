@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { packeStofffeld, erkenneWebGl2, STOFF_SHADER_GLSL, stoffFarben } from '../src/client/gelaendeGpu.js';
+import { packeStofffeld, erkenneWebGl2, STOFF_SHADER_GLSL, stoffFarben, GPU_STOFFE } from '../src/client/gelaendeGpu.js';
 import { STOFFE } from '../src/shared/config/stoffe.js';
 
 test('Das Stofffeld wird mit Überlagerung gepackt', () => {
@@ -88,8 +88,8 @@ test('Der Shader enthält für jedes ausgebaute Material ein eigenes Schema', ()
 
 test('Die Materialfarben stammen aus dem Katalog', () => {
   const farben = stoffFarben();
-  assert.equal(farben.length, STOFFE.length * 3, 'je Stoff drei Kanäle');
-  for (let id = 0; id < STOFFE.length; id += 1) {
+  assert.equal(farben.length, GPU_STOFFE * 3, 'je Stoff drei Kanäle');
+  for (let id = 0; id < GPU_STOFFE; id += 1) {
     const st = STOFFE[id];
     if (!st) continue;
     assert.equal(farben[id * 3], st.farbe[0], `Rot von ${st.key}`);

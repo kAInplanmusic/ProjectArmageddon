@@ -35,6 +35,13 @@
  */
 import { STOFFE } from '../shared/config/stoffe.js';
 
+/**
+ * Größe der Farbpalette im Shader. Der Katalog hat mehr Stoffe (Biom-Materialien ab Kennung 18), aber
+ * kein Gelände nutzt sie bisher; ein Uniform-Array dieser Größe würde auf schwachen Handy-GPUs die
+ * Uniform-Grenze sprengen. Sobald Rezepte höhere Kennungen nutzen, gehört die Palette in eine Textur.
+ */
+export const GPU_STOFFE = Math.min(STOFFE.length, 32);
+
 /** Kantenlänge einer Stoffzelle in Pixeln (`STOFF_ZELLE` in `shared/stoffkarte.js`). */
 export const STOFF_ZELLE = 8;
 
@@ -97,8 +104,8 @@ export function erkenneWebGl2(dom = globalThis.document) {
  * @returns {Float32Array}
  */
 export function stoffFarben() {
-  const farben = new Float32Array(STOFFE.length * 3);
-  for (let id = 0; id < STOFFE.length; id += 1) {
+  const farben = new Float32Array(GPU_STOFFE * 3);
+  for (let id = 0; id < GPU_STOFFE; id += 1) {
     const st = STOFFE[id];
     if (!st || !st.farbe) continue;
     farben[id * 3] = st.farbe[0];
@@ -136,7 +143,7 @@ uniform sampler2D uBild;        // CPU-gemaltes Gelände (Steine, Lagen, Kantenl
 uniform highp usampler2D uStoffe; // Stoffkarte, ein Byte je Zelle (Ganzzahl-Sampler braucht eigene Präzision)
 uniform vec2 uAufloesung;       // Karte in Pixeln
 uniform vec2 uZellen;           // Stoffkarte in Zellen
-uniform vec3 uFarben[${STOFFE.length}];
+uniform vec3 uFarben[${GPU_STOFFE}];
 uniform float uSeed;
 uniform float uDeckung;         // wie stark das Material die Gesteinsfarbe überlagert
 
@@ -297,7 +304,7 @@ void main() {
 
   ivec2 zelle = zelleAn(p);
   int id = int(texelFetch(uStoffe, zelle, 0).r);
-  if (id < 0 || id >= ${STOFFE.length}) id = 0;
+  if (id < 0 || id >= ${GPU_STOFFE}) id = 0;
 
   vec3 stoffFarbe = uFarben[id];
   float detail = stoffDetail(p, id);

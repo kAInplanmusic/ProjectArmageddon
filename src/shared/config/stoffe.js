@@ -29,6 +29,8 @@
  * @module config/stoffe
  */
 
+import { MATERIALIEN_BIOME } from './stoffe-biome/index.js';
+
 export const STOFF = Object.freeze({
   ERDE: 0,
   SAND: 1,
@@ -80,7 +82,7 @@ export function wirkgruppe(damageType) {
  *   anfaellig      Faktor auf den Radius je Wirkgruppe (fehlt = 1)
  *   farbe, muster  Darstellung (Client): Grundton und Struktur
  */
-export const STOFFE = Object.freeze([
+const STOFFE_BASIS = Object.freeze([
   Object.freeze({
     id: 0, key: 'erde', label: 'Erde', haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: false,
     anfaellig: Object.freeze({ nass: 1.1 }), farbe: Object.freeze([120, 92, 64]), muster: 'koernig',
@@ -153,6 +155,26 @@ export const STOFFE = Object.freeze([
     id: 17, key: 'magiekristall', label: 'Magiekristall', haerte: 'hart', radius: 0.75, tiefe: 0.55, bruechig: 4, brennbar: false, schmelzbar: false,
     anfaellig: Object.freeze({ strom: 1.3, hitze: 1.1, aetz: 0.85 }), farbe: Object.freeze([190, 120, 236]), muster: 'facetten',
   }),
+]);
+
+/*
+ * Biom-Materialien (`stoffe-biome/`, Spezifikation `docs/biome/material-spezifikation.md`): die ersten
+ * 18 Kennungen bleiben der Basiskatalog, alle weiteren Materialien hängen mit fortlaufenden Kennungen
+ * dahinter. Die Reihenfolge ist festgeschrieben (`tests/stoffe-katalog.test.js`) — eine neue Kennung
+ * gehört ans Ende. Keine Rezeptur nutzt die neuen Kennungen, solange sie nicht eine eigene Gelände-
+ * Fassung dafür vorsieht; alte Karten und Replays bleiben unverändert.
+ * Die Basisstoffe behalten ihre Zerstörungswerte und bekommen nur die neuen Optik- und Bewegungsfelder.
+ */
+const BIOM_NACH_KEY = new Map(MATERIALIEN_BIOME.map(m => [m.key, m]));
+const ZUSATZ_FELDER = ['glanz', 'textur', 'kontur', 'bruch', 'leitfaehig', 'reibung', 'bremst', 'traegt', 'versinkt'];
+const zusatz = (m) => Object.fromEntries(ZUSATZ_FELDER.filter(f => m && f in m).map(f => [f, m[f]]));
+const BASIS_KEYS = new Set(STOFFE_BASIS.map(s => s.key));
+
+export const STOFFE = Object.freeze([
+  ...STOFFE_BASIS.map(s => Object.freeze({ ...s, ...zusatz(BIOM_NACH_KEY.get(s.key)) })),
+  ...MATERIALIEN_BIOME.filter(m => !BASIS_KEYS.has(m.key)).map((m, i) => Object.freeze({
+    ...m, id: STOFFE_BASIS.length + i, anfaellig: Object.freeze({ ...m.anfaellig }), farbe: Object.freeze([...m.farbe]),
+  })),
 ]);
 
 /** Stoff nach Kennung; Unbekanntes fällt auf Erde (die Vorgabe) zurück. */
