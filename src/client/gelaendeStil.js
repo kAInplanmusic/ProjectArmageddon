@@ -70,10 +70,11 @@ function saumFuer(art, palette) {
     }
     default: {
       const gm = gruenAnteil(o);
-      const tint = c => mischeRgb(o, c, gm);
+      // Düster: das Grün zieht zusätzlich 30 % zum Nachtton (kein Neon), `gm` bleibt die Biomfärbung.
+      const tint = c => mischeRgb(mischeRgb(o, c, gm), [12, 18, 10], 0.3);
       return {
-        hell: tint([168, 255, 52]), mittel: tint(mischeRgb(MOOS_LIMETTE, [40, 130, 10], 0.3)), tief: tint([34, 96, 16]),
-        basis: 9, amp: 9, tropf: 0.1, kruste: 0.5, bueschel: [mischeRgb(o, [110, 230, 24], gm), mischeRgb(o, [176, 255, 70], gm)],
+        hell: tint([132, 184, 58]), mittel: tint(mischeRgb(MOOS_LIMETTE, [34, 96, 14], 0.55)), tief: tint([26, 62, 16]),
+        basis: 9, amp: 9, tropf: 0.1, kruste: 0.5, bueschel: [mischeRgb(o, [70, 138, 28], gm), mischeRgb(o, [118, 176, 54], gm)],
       };
     }
   }

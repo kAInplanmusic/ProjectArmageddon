@@ -150,7 +150,8 @@ test('Die Färbung bleibt bitgleich zum Stand vor der Optimierung (Fingerabdruck
   // Bewusst neu gesetzt am 2026-10-27 (vorher 1239382613, Stand vor der Optimierung): Das Gelände dunkelt jetzt nach Tiefe ab
   // (`dunkleNachTiefe`) und die Stoffe laufen vor Saum, Kantenlicht und Kontur. Auftraggeber: düsterer und realer. Mit dem
   // Zwischenspeicher und den Seeds bleibt die Eigenschaft dieselbe: gleiche Eingabe, gleiches Bild.
-  assert.equal(a, 2561716384, 'Fingerabdruck der Färbung (Stand 2026-10-27: Tiefe und Stoffe vor Saum)');
+  // Gleicher Tag, zweiter Schritt (vorher 2561716384): das Gras am Saum ist dunkler und ohne Neon (30 % zum Nachtton).
+  assert.equal(a, 4079594140, 'Fingerabdruck der Färbung (Stand 2026-10-27: Tiefe, Stoffe vor Saum, dunkles Gras)');
 });
 
 test('Pflanzenebene nach einem Krater: nur der Ausschnitt wird neu gezeichnet, mit denselben Pflanzen wie ein Vollaufbau', () => {
