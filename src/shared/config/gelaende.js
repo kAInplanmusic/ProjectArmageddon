@@ -24,6 +24,9 @@
  *     Rost, Stein). Die Ziehung läuft über vierzehn Kennungen; die Fassungen 1 bis 3 kennen `planet` nicht und
  *     bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_KOMPOSITION` (6): Die Karte entsteht aus Bauteilen (`terrainKomposition.js`); die Kartenart zieht der
+ *     Seed. Die Fassungen 1 bis 5 bleiben Bit für Bit gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -38,11 +41,13 @@ export const GELAENDE_THEMEN = 3;
 export const GELAENDE_PLANET = 4;
 /** Fassung 5: die Biome nutzen die Biom-Materialien (`config/stoff-rezepte-material.js`); Form und Zufall bleiben wie in 4. */
 export const GELAENDE_MATERIAL = 5;
-export const GELAENDE_STANDARD = GELAENDE_MATERIAL;
+/** Fassung 6: Karten aus Bauteilen (`terrainKomposition.js`: Insel, Höhle, Schlucht, Archipel, Vulkan, Ruinenstadt, Pyramide, Hochkant, Ebenen) statt Hügelfeld; Planet bleibt wie in 4. */
+export const GELAENDE_KOMPOSITION = 6;
+export const GELAENDE_STANDARD = GELAENDE_KOMPOSITION;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

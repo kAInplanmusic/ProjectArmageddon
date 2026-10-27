@@ -413,6 +413,13 @@ export class NetworkClient {
             seatIndex: message.seatIndex,
             resumed: message.resumed,
             seed: this.#seed,
+            // Karte aus Seed UND Fassung bauen (sonst fällt der Client auf Fassung 1 zurück).
+            preset: message.preset,
+            kartentyp: message.kartentyp,
+            orientation: message.orientation,
+            gelaende: message.gelaende,
+            biom: message.biom,
+            zerstoerung: message.zerstoerung,
             craters: Array.isArray(message.craters) ? message.craters : [],
             inset: Number(message.inset) || 0,
           });

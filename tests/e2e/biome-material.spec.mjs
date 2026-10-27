@@ -57,7 +57,7 @@ test('Planeten im Menü: Wahl „Planet“ und die sechs Arten starten spielbar,
     expect(befund.status).toBe('playing');
     expect(befund.biom).toMatch(/^planet_/);
     if (wahl !== 'planet') expect(befund.biom).toBe(wahl);
-    expect(befund.gelaende).toBe(5);
+    expect(befund.gelaende).toBe(6);
     expect(befund.himmel).toBe('planet');
     expect(befund.wasser).toBe('void');
     expect(befund.ok).toBe(true);

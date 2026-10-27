@@ -88,7 +88,8 @@ test('Sheets: Sprung zeigt Luft/Hocke, Treffer den Treffer-Frame, Tod die liegen
     };
     await new Promise(res => setTimeout(res, 300));
     const out = [];
-    for (const z of r.figurPosen.zustaende.values()) if (z.fig?.blatt?.treffer) out.push(z.frame === z.fig.blatt.treffer);
+    // Nur Figuren, die der Renderer in diesem Zeitraum posiert hat (hitT wurde gesetzt): auf Bauteilkarten liegen manche außerhalb des Kamerabilds.
+    for (const z of r.figurPosen.zustaende.values()) if (z.fig?.blatt?.treffer && z.hitT < 1) out.push(z.frame === z.fig.blatt.treffer);
     return out;
   });
   expect(treffer.length).toBeGreaterThan(0);

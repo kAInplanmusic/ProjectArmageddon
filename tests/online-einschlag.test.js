@@ -59,12 +59,12 @@ test('klassifiziereEinschlag: Wasser, Land und Rand', () => {
 
 for (const kartentyp of [null, 'autonom']) {
   test(`Lokal (echtes Wasserfeld) und online (Wasserlinie aus Seed) klassifizieren gleich — ${kartentyp ?? 'Gelände-Preset'}`, () => {
-    const seed = 424242;
+    const seed = 1;
     const match = new MatchController({
       seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp, turnDurationMs: 1_000_000,
     });
     match.start();
-    const client = buildTerrainForSeed(seed, 'hills', 'landscape', kartentyp);
+    const client = buildTerrainForSeed(seed, 'hills', 'landscape', kartentyp, { gelaende: match.gelaende });
     assert.equal(client.width, match.width);
     const lokal = (x, y) => klassifiziereEinschlag(match.terrain, match.water, x, y, { biomId: match.biomId });
     const online = (x, y) => klassifiziereEinschlag(client.mask, wasserAusLinie(client.mask, client.waterLevel), x, y, { biomId: match.biomId });

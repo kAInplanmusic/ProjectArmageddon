@@ -2232,6 +2232,10 @@ export class GameServer {
             lobbyId,
             seed: session.match.seedManager.baseSeed,
             preset: lobby.preset,
+            // Der Client baut die Karte aus Seed UND Fassung: ohne diese Felder fiele er auf Fassung 1 zurück (Hash-Abweichung).
+            kartentyp: lobby.kartentyp ?? null,
+            orientation: lobby.orientation ?? 'landscape',
+            ...session.gelaendeFelder(),
             token: seat.token,
             seatIndex: seat.seatIndex,
             entityId: eigeneSeats[0]?.entityId ?? seat.entityId,

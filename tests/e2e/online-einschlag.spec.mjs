@@ -29,8 +29,8 @@ test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoR
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
 const FAELLE = [
-  { name: 'Wasser', seed: 24683, winkel: 0.5, kraft: 90, material: 'wasser', zaehler: 'wasser' },
-  { name: 'Land', seed: 24680, winkel: 0.5, kraft: 30, material: 'erde', zaehler: 'explosion' },
+  { name: 'Wasser', seed: 24701, winkel: 0.5, kraft: 90, material: 'wasser', zaehler: 'wasser' },
+  { name: 'Land', seed: 24681, winkel: 0.5, kraft: 30, material: 'erde', zaehler: 'explosion' },
 ];
 
 /** Rechnet den Schuss mit der Engine nach (dieselben Optionen wie die Lobby) und liefert das Material. */

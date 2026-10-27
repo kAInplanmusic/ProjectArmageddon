@@ -80,6 +80,8 @@ import { biomFuerCharakter } from './biomwahl.js';
 import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
+import { erzeugeKompositionsKarte } from './terrainKomposition.js';
+import { GELAENDE_KOMPOSITION } from './config/gelaende.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -579,6 +581,8 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
    */
   if (istPlanetBiom(biom)) return erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung });
 
+  if (fassung >= GELAENDE_KOMPOSITION) return erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung });
+
   const MAX_VERSUCHE = 8;
   let letzterFehler = null;
   /**
@@ -656,6 +660,55 @@ function erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung = 0 }) {
     ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
     ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),
   };
+}
+
+/** Kartenarten ohne Sonderregel der Engine (kein Umlauf, keine Radialform). */
+const BAUTEIL_ARTEN = ['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'hochkant'];
+
+/** Welche Achse die Kartenart auslenkt, damit das Biom (`biomFuerCharakter`) zur Karte passt. */
+const BAUTEIL_CHARAKTER = {
+  hoehle: { hoehlung: 0.21 }, hoehleInsel: { hoehlung: 0.21 }, schlucht: { hoehlung: 0.21 },
+  insel: { inseligkeit: 0.5 }, inselgruppe: { inseligkeit: 0.5 }, archipel: { inseligkeit: 0.5 },
+  vulkan: { steilheit: 0.5 }, pyramide: { steilheit: 0.5 }, hochkant: { steilheit: 0.5 },
+};
+
+/**
+ * Fassung 6: die Karte aus Bauteilen (`terrainKomposition.js`), dieselbe Prüfung und Ergebnisform wie bei den
+ * anderen Karten (bis zu acht Ziehungen). Der Seed zieht die Art; der Charakter steht in der Mitte jeder Achse.
+ */
+function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung }) {
+  const charakter = { kartenart: null };
+  for (const [achse, [lo, hi]] of Object.entries(CHARAKTER_ACHSEN)) charakter[achse] = (lo + hi) / 2;
+  const ablehnungen = [];
+  let karte = null;
+  let kennzahlen = null;
+  let versuch = 1;
+  for (; versuch <= 8; versuch += 1) {
+    const art = height > width * 1.2 ? 'hochkant' : BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)];
+    karte = erzeugeKompositionsKarte({ rng, width, height, art });
+    karte.surface = oberflaechen(karte.bitmap, width, height);
+    kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
+    const urteil = pruefeBauteilKarte(kennzahlen);
+    if (urteil.ok) break;
+    ablehnungen.push(`${karte.art}: ${urteil.grund}`);
+  }
+  const ok = versuch <= 8;
+  charakter.kartenart = karte.art;
+  Object.assign(charakter, BAUTEIL_CHARAKTER[karte.art] ?? {});
+  const material = typeof rng.fork === 'function' ? baueMaterialfeld(rng.fork(MATERIAL_FORK), width, height, karte.bitmap) : null;
+  return {
+    bitmap: karte.bitmap, surface: karte.surface, wasserY: karte.wasserY, material, kartenart: karte.art, bauteile: karte.bauteile,
+    charakter, versuche: ok ? versuch : 9, kennzahlen, ablehnungen,
+    ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
+    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),
+  };
+}
+
+/** Bauteilkarten haben Bänder und Lücken: nur Land-Anteil und Höhennutzung zählen (nicht Steilheit/Hohlraum des Hügelfelds). */
+function pruefeBauteilKarte(k) {
+  if (k.landAnteil < 0.08) return { ok: false, grund: `zu wenig Land (${(k.landAnteil * 100).toFixed(0)} %)` };
+  if (k.landAnteil > 0.75) return { ok: false, grund: `zu viel Land (${(k.landAnteil * 100).toFixed(0)} %)` };
+  return { ok: true };
 }
 
 /** Anteil der Luft unter der Oberfläche, nur zwischen Oberkante und letzter Festzelle der Spalte (Luft IM Körper). */
