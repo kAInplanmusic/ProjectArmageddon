@@ -3,7 +3,7 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { wetterAus, findeLichter, blitzZustand, zeichneWetterHinten, zeichneWetterVorn } from '../src/client/wetterLicht.js';
+import { wetterAus, findeLichter, blitzZustand, zeichneWetterHinten, zeichneWetterVorn, zeichneWetterWelt } from '../src/client/wetterLicht.js';
 import { ALL_BACKDROPS } from '../src/shared/config/backdrops.js';
 
 const kulisse = key => ALL_BACKDROPS.find(b => b.key === key);
@@ -112,4 +112,59 @@ test('Zeichnen: Regen und Blitz im Sturm, nichts bei reduzierter Bewegung, nicht
   zeichneWetterVorn(schnee.r, 1);
   assert.ok(schnee.aufrufe.filter(a => a === 'arc').length > 50, 'Schneeflocken');
   assert.doesNotThrow(() => zeichneWetterHinten(sturm.r));
+});
+
+test('Donner: jeder Blitz meldet sich genau einmal mit Verzug, der Verzug hängt vom Blitz ab und liegt zwischen 0,4 und 2,3 s', () => {
+  const sturm = fakeRenderer('maritime/storm_night');
+  const meldungen = [];
+  sturm.r.beiBlitz = (verzug, x) => meldungen.push([verzug, x]);
+  let blitze = 0;
+  let zuletzt = -1;
+  for (let t = 0; t < 60; t += 0.04) {
+    sturm.r.time = t * 60;
+    zeichneWetterHinten(sturm.r);
+    const bl = blitzZustand(t, sturm.r.backdropKey.length);
+    if (bl.zacken && bl.id !== zuletzt) { blitze += 1; zuletzt = bl.id; }
+  }
+  assert.equal(meldungen.length, blitze, 'ein Donner je Blitz');
+  assert.ok(blitze >= 4);
+  for (const [v, x] of meldungen) assert.ok(v >= 0.4 && v <= 2.3 && x > 0 && x < 1);
+  assert.ok(new Set(meldungen.map(m => m[0].toFixed(3))).size > 1, 'unterschiedliche Entfernungen');
+  // Reduzierte Bewegung: kein Blitz, kein Donner.
+  const still = fakeRenderer('maritime/storm_night', { reducedMotion: true });
+  const stumm = [];
+  still.r.beiBlitz = () => stumm.push(1);
+  for (let t = 0; t < 30; t += 0.04) { still.r.time = t * 60; zeichneWetterHinten(still.r); }
+  assert.equal(stumm.length, 0);
+});
+
+test('Regen am Gelände: Spritzer im sichtbaren Ausschnitt, Pfützen nur auf flachen Stellen, nichts ohne Regen oder reduzierte Bewegung', () => {
+  const b = 1000; const h = 400;
+  const bitmap = new Uint8Array(b * h);
+  // Flache Fläche bei y = 300 von x = 100 bis 400, ein steiler Hang danach.
+  for (let x = 0; x < b; x += 1) {
+    const y = x < 400 ? 300 : 300 + (x - 400);
+    for (let yy = Math.min(h - 1, y); yy < h; yy += 1) bitmap[yy * b + x] = 1;
+  }
+  const mit = (key, extra = {}) => {
+    const f = fakeRenderer(key, { terrainSource: { bitmap, width: b, height: h }, width: b, height: h, ...extra });
+    return f;
+  };
+  const regen = mit('deluge/monsoon');
+  zeichneWetterWelt(regen.r, 1);
+  assert.ok(regen.aufrufe.filter(a => a === 'arc').length > 5, 'Tropfen der Spritzer');
+  const pf = regen.r.wetterStand.pfuetzen;
+  assert.ok(pf.length > 0, 'Pfütze auf der flachen Stelle');
+  for (const p of pf) assert.ok(p.x > 40 && p.x < 410 && Math.abs(p.y - 300) <= 4, `Pfütze auf flachem Grund: ${p.x},${p.y}`);
+  const lite = mit('deluge/monsoon');
+  zeichneWetterWelt(lite.r, 0.3);
+  assert.ok(lite.aufrufe.filter(a => a === 'arc').length < regen.aufrufe.filter(a => a === 'arc').length, 'Dichte skaliert die Spritzer');
+  const trocken = mit('alpine/summer_meadow');
+  zeichneWetterWelt(trocken.r, 1);
+  assert.equal(trocken.aufrufe.length, 0, 'ohne Regen nichts');
+  const still = mit('deluge/monsoon', { reducedMotion: true });
+  zeichneWetterWelt(still.r, 1);
+  assert.equal(still.aufrufe.length, 0);
+  const ohneGelaende = fakeRenderer('deluge/monsoon');
+  assert.doesNotThrow(() => zeichneWetterWelt(ohneGelaende.r, 1));
 });

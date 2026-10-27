@@ -65,7 +65,7 @@ import {
   fadenkreuzSegmente, pulsFaktor, blitzPuls, ladungAnteil,
 } from './weaponAnimation.js';
 import { drawAmbient } from './sceneryPainter.js';
-import { zeichneWetterVorn } from './wetterLicht.js';
+import { zeichneWetterVorn, zeichneWetterWelt } from './wetterLicht.js';
 
 /** Darstellungsgröße des Soldaten gegenüber dem 14 × 20 Pixel großen Körper (nur Anzeige). */
 const FIGUR_SKALA = 1.5;
@@ -2348,6 +2348,7 @@ export class Renderer {
     this.#drawTreffer();
     this.#drawEffects();
     this.sheets.zeichne(this.ctx);
+    zeichneWetterWelt(this, this.partikelDichte);
     for (const zahl of this.zahlen) zeichneSchadenszahl(this.ctx, zahl);
     this.#drawHeimdall();
     this.#updateEffects(dt);

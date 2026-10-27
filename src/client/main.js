@@ -208,6 +208,10 @@ class Game {
       }),
       speicher: tonSpeicher(),
     });
+    // Donner nach dem Blitz der Bildkulisse (`wetterLicht.js`): verzögert nach der Entfernung des Einschlags, nur bei sichtbarem Tab.
+    this.renderer.beiBlitz = (verzug) => {
+      globalThis.setTimeout?.(() => { if (globalThis.document?.visibilityState !== 'hidden') this.sound?.spieleDonner(); }, Math.round(verzug * 1000));
+    };
     // Hörerposition für Stereolage und Abstandsdämpfung: Mitte und halbe Breite der Kamera.
     this.sound.setzeHoerer(() => {
       const k = this.kamera;

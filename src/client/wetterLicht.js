@@ -87,13 +87,13 @@ const BLITZ_DAUER = 0.55;
 
 /**
  * Der Blitz zur Zeit `t` (Sekunden): Aufhellung 0 bis 1 (zwei Pulse) und die Zacken (Lage 0 bis 1) während der ersten Pulse.
- * @returns {{hell:number, zacken:{x:number,y:number}[][]|null}}
+ * @returns {{hell:number, zacken:{x:number,y:number}[][]|null, id:number}} `id` zählt die Blitze (Zeitfenster)
  */
 export function blitzZustand(t, seed = 0) {
   const fenster = Math.floor(t / BLITZ_FENSTER);
   const start = fenster * BLITZ_FENSTER + 1 + hash2(fenster, 3, seed) * (BLITZ_FENSTER - 2 - BLITZ_DAUER);
   const d = t - start;
-  if (d < 0 || d > BLITZ_DAUER) return { hell: 0, zacken: null };
+  if (d < 0 || d > BLITZ_DAUER) return { hell: 0, zacken: null, id: fenster };
   // Zwei Pulse: ein heller, ein schwächerer nach 0,22 s.
   const puls = d < 0.12 ? 1 - d / 0.12 * 0.4 : d < 0.22 ? 0.35 : d < 0.34 ? 0.8 - (d - 0.22) / 0.12 * 0.5 : Math.max(0, 0.3 - (d - 0.34));
   const x0 = 0.12 + hash2(fenster, 5, seed) * 0.76;
@@ -118,7 +118,7 @@ export function blitzZustand(t, seed = 0) {
     }
     zacken.push(ast);
   }
-  return { hell: Math.max(0, Math.min(1, puls)), zacken };
+  return { hell: Math.max(0, Math.min(1, puls)), zacken, id: fenster };
 }
 
 /** Der Wetterzustand des Renderers (lazy): Auswahl aus der Kulisse und die aus dem Bild gelesenen Lichter. */
@@ -202,6 +202,11 @@ export function zeichneWetterHinten(r) {
 
   if (z.wetter.gewitter && !still) {
     const bl = blitzZustand(t, r.backdropKey?.length ?? 0);
+    // Donner: jeder Blitz meldet sich einmal; der Aufrufer (Main) lässt ihn nach `verzug` Sekunden grollen (Entfernung des Einschlags).
+    if (bl.zacken && bl.id !== z.donnerId) {
+      z.donnerId = bl.id;
+      r.beiBlitz?.(0.4 + hash2(bl.id, 9, 1) * 1.9, bl.zacken[0][0].x);
+    }
     if (bl.zacken && bl.hell > 0.05) {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
@@ -280,5 +285,114 @@ export function zeichneWetterVorn(r, dichte = 1) {
       ctx.fillRect(0, 0, b, h);
       ctx.restore();
     }
+  }
+}
+
+/** Oberste feste Zeile einer Spalte ab `ab` (oder -1). */
+function obenBei(src, x, ab = 0) {
+  const c = Math.round(x);
+  if (c < 0 || c >= src.width) return -1;
+  for (let y = Math.max(0, Math.floor(ab)); y < src.height; y += 1) if (src.bitmap[y * src.width + c]) return y;
+  return -1;
+}
+
+/** Flache Stellen für Pfützen: Spalten mit fast gleicher Oberkante (±4 px) über mindestens 48 px (neu bei neuem Gelände oder Krater). */
+function pfuetzen(r) {
+  const src = r.terrainSource;
+  if (!src?.bitmap) return [];
+  const marke = `${r.terrainLayer ? 1 : 0}:${r.letzterKrater?.zeit ?? 0}:${src.width}`;
+  const z = r.wetterStand;
+  if (z.pfuetzenMarke === marke) return z.pfuetzen;
+  const liste = [];
+  const schritt = 8;
+  let lauf = null;
+  const schliesse = () => {
+    if (lauf && lauf.x1 - lauf.x0 >= 48) liste.push({ x: (lauf.x0 + lauf.x1) / 2, y: lauf.y, b: Math.min(110, lauf.x1 - lauf.x0 - 8) });
+    lauf = null;
+  };
+  for (let x = 0; x < src.width; x += schritt) {
+    const y = obenBei(src, x);
+    if (y < 0 || y > src.height * 0.93) { schliesse(); continue; }
+    if (lauf && Math.abs(y - lauf.y) <= 4) lauf.x1 = x + schritt;
+    else { schliesse(); lauf = { x0: x, x1: x + schritt, y }; }
+  }
+  schliesse();
+  z.pfuetzen = liste.filter((p, i) => hash2(i, 1, 21) < 0.6).slice(0, 24);
+  z.pfuetzenMarke = marke;
+  return z.pfuetzen;
+}
+
+/**
+ * WELT (innerhalb der Kamera): Regenspritzer und Pfützen am Gelände. Nur bei Regen; Pfützen mit Ringen, die sich ausbreiten.
+ * Koordinaten sind Kartenpixel, gezeichnet wird nur im sichtbaren Ausschnitt.
+ */
+export function zeichneWetterWelt(r, dichte = 1) {
+  const ctx = r.ctx;
+  if (!ctx || !r.backdrop || r.reducedMotion) return;
+  const z = zustand(r);
+  const regen = z.wetter.regen;
+  const src = r.terrainSource;
+  if (!(regen > 0) || !src?.bitmap) return;
+  const k = r.kamera?.transformation?.();
+  const skal = k && k.skalierung > 0 ? k.skalierung : 1;
+  const x0 = k ? -k.versatzX / skal : 0;
+  const x1 = k ? (r.width - k.versatzX) / skal : r.width;
+  const y0 = k ? -k.versatzY / skal : 0;
+  const y1 = k ? (r.height - k.versatzY) / skal : r.height;
+  const t = sekunden(r);
+
+  // Pfützen: dunkle, spiegelnde Ellipse mit Rand und ausbreitenden Ringen.
+  if (regen >= 0.3) {
+    ctx.save();
+    pfuetzen(r).forEach((p, i) => {
+      if (p.x + p.b < x0 || p.x - p.b > x1 || p.y < y0 - 20 || p.y > y1 + 20) return;
+      const tief = Math.min(1, regen * 1.2);
+      ctx.fillStyle = `rgba(52, 70, 98, ${0.5 * tief})`;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y + 1.5, p.b / 2, 3.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(190, 215, 245, ${0.35 * tief})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y + 1.5, p.b / 2, 3.2, 0, Math.PI * 1.05, Math.PI * 1.95);
+      ctx.stroke();
+      for (let n = 0; n < 2; n += 1) {
+        const ph = ((t * (0.8 + 0.3 * n) + hash2(i, n, 31) * 3) % 1);
+        ctx.strokeStyle = `rgba(210, 228, 250, ${0.4 * (1 - ph) * tief})`;
+        ctx.beginPath();
+        ctx.ellipse(p.x + (hash2(i, n + 5, 31) - 0.5) * p.b * 0.5, p.y + 1.5, 2 + ph * p.b * 0.22, 0.6 + ph * 1.5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    });
+    ctx.restore();
+  }
+
+  // Spritzer: kurze Krönchen aus Tropfen, an wechselnden Stellen im sichtbaren Ausschnitt.
+  const anzahl = Math.round(34 * regen * dichte);
+  if (anzahl > 0) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(205, 222, 245, 0.75)';
+    ctx.strokeStyle = 'rgba(205, 222, 245, 0.5)';
+    ctx.lineWidth = 1;
+    const periode = 0.32;
+    for (let i = 0; i < anzahl; i += 1) {
+      const takt = Math.floor(t / periode + hash2(i, 1, 41));
+      const ph = (t / periode + hash2(i, 1, 41)) - takt; // 0 bis 1 im Takt
+      const x = x0 + hash2(i, takt, 42) * (x1 - x0);
+      const y = obenBei(src, x, y0 - 40);
+      if (y < y0 - 10 || y > y1 || y > src.height * 0.93) continue;
+      const hoehe = 6 + 9 * Math.sin(Math.PI * Math.min(1, ph * 1.4));
+      const a = 1 - ph;
+      ctx.globalAlpha = a;
+      for (let d = -1; d <= 1; d += 1) {
+        ctx.beginPath();
+        ctx.arc(x + d * ph * 9, y - hoehe * (1 - Math.abs(d) * 0.35) + ph * ph * 7, 1.7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.ellipse(x, y, ph * 9, ph * 2.2, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 }
