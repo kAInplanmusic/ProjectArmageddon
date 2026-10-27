@@ -1,6 +1,6 @@
 # Biom 17: Bio-Alien-Tempelstadt
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,16 +8,39 @@
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Humus | – | fehlt | fehlt | offen | offen | offen | 14 Planet (eine Variante) |
-| Tempelstein | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Alienharz | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf |
-| Metallplatten | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | 12 Fabrik & Hochhausruine |
-| Pilzmyzel | – | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen | **einzigartig** |
-| Rankgitter | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Säureablagerungen | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Organische Tragwurzeln | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Humus | beide | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante) |
+| Tempelstein | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Alienharz | beide | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf |
+| Metallplatten | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | 12 Fabrik & Hochhausruine |
+| Pilzmyzel | SSOT | – | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen | 9 Pilzwald & Säuresumpf |
+| Rankgitter | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Säureablagerungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Organische Tragwurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Metall | Manifest | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Myzel | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Humus/Tempelstein |
+| Kern | Tempelstein |
+| Adern und Einschlüsse | Alienharz/Metall/Myzel |
+
+## Wasser / Fluid (Manifest)
+
+- Bio-Säurewasser (ätzend)
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Alienharz
+- Myzel
+- Tempelmechanismen
+- Bio-Säure
+- Sporen
+- Wurzelherzen
 
 ## Objekte
 
@@ -50,5 +73,5 @@ Netzwerkreaktion (Verlust eines Myzelknotens trennt nur angeschlossene Verbindun
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Tempelstein, Pilzmyzel, Rankgitter, Säureablagerungen, Organische Tragwurzeln
+- **Materialien (5):** Tempelstein, Rankgitter, Säureablagerungen, Organische Tragwurzeln, Myzel
 - **Objekte (1):** Alien-Totems

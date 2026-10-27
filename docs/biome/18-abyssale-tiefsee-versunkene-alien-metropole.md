@@ -1,6 +1,6 @@
 # Biom 18: Abyssale Tiefsee / Versunkene Alien-Metropole
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,16 +8,37 @@ Dunkles Unterwassergebiet: Basaltgräben, versunkene Gebäude, Druckkammern, Kor
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Tiefseeschlamm | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Basalt | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
-| Koralle | – | ja (koralle, normal) | ja | offen | normal | offen | 8 Korallenriff |
-| Metall | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 14 Planet (eine Variante) |
-| Leuchtkristall | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
-| Hydrothermalablagerungen | – | fehlt | ähnlich: hydrothermal.jpg | offen | offen | offen | **einzigartig** |
-| Druckkammer | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Leuchtalgen | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Tiefseeschlamm | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Basalt | SSOT | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Koralle | beide | – | ja (koralle, normal) | ja | offen | normal | offen | 8 Korallenriff |
+| Metall | SSOT | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante); 17 Bio-Alien-Tempelstadt |
+| Leuchtkristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+| Hydrothermalablagerungen | SSOT | – | fehlt | ähnlich: hydrothermal.jpg | offen | offen | offen | **einzigartig** |
+| Druckkammer | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Leuchtalgen | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Tiefseebasalt | Manifest | – | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen | **einzigartig** |
+| korrodiertes Metall | Manifest | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Tiefseeschlamm |
+| Kern | Tiefseebasalt |
+| Adern und Einschlüsse | korrodiertes Metall/Koralle |
+
+## Wasser / Fluid (Manifest)
+
+- Tiefseegraben
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Korallen
+- korrodiertes Metall
+- Tiefseeströmungen
+- Druckbegebenheiten
 
 ## Objekte
 
@@ -50,5 +71,5 @@ Druckentlastung (gerichtete Wasserbewegung)
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Tiefseeschlamm, Leuchtkristall, Hydrothermalablagerungen, Druckkammer, Leuchtalgen
+- **Materialien (7):** Tiefseeschlamm, Leuchtkristall, Hydrothermalablagerungen, Druckkammer, Leuchtalgen, Tiefseebasalt, korrodiertes Metall
 - **Objekte (6):** Hydrothermalquellen, Versunkene Gebäude, Leuchtalgenfelder, Druckkammern, Alien-Artefakte, Tiefseegräben

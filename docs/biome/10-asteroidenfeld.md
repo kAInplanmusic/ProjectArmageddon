@@ -1,6 +1,6 @@
 # Biom 10: Asteroidenfeld
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,15 +8,40 @@ Asteroiden als Geländeinseln, Regolith, Metalltrümmer, Kristall, Eisadern; Tr�
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Regolith | – | ja (regolith, weich) | ja | offen | weich | offen | **einzigartig** |
-| Asteroidenbasalt | – | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen | **einzigartig** |
-| Metallader | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Kristallader | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Eisader | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Poröser Fels | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
-| Metalltrümmer | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Regolith | SSOT | – | ja (regolith, weich) | ja | offen | weich | offen | **einzigartig** |
+| Asteroidenbasalt | SSOT | – | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen | **einzigartig** |
+| Metallader | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Kristallader | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Eisader | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Poröser Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
+| Metalltrümmer | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Regolith-Staub | Manifest | – | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen | **einzigartig** |
+| Meteoritenfels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
+| Nickel-Eisen | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Regolith-Staub |
+| Kern | Meteoritenfels |
+| Adern und Einschlüsse | Nickel-Eisen/Kristall |
+
+## Wasser / Fluid (Manifest)
+
+- Weltraum-Leere
+- kein Wasser
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Asteroiden
+- Nickel-Eisen-Adern
+- Kristalle
+- Einschläge/Trümmer
+- Magnetfelder
 
 ## Objekte
 
@@ -48,5 +73,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (6):** Regolith, Asteroidenbasalt, Metallader, Eisader, Poröser Fels, Metalltrümmer
+- **Materialien (9):** Regolith, Asteroidenbasalt, Metallader, Eisader, Poröser Fels, Metalltrümmer, Regolith-Staub, Meteoritenfels, Nickel-Eisen
 - **Objekte (5):** Schwebende Asteroiden, Metalltrümmer, Eisadern, Satellitenwracks, Gravitationssenken

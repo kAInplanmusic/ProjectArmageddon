@@ -1,6 +1,6 @@
 # Biom 19: Dimensionsriss / Zeit-Chaosebene
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,16 +8,38 @@ Zerbrochene Landschaft aus instabilem Fels, Zeitkristallen, schwebenden Fragment
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Instabiler Boden | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Massiver Fels | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Zeitkristall | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
-| Glasfragmente | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
-| Metallfragmente | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Schwebende Plattformen | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Risszone | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Stabilisatormaterial | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Instabiler Boden | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Zeitkristall | beide | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+| Glasfragmente | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+| Metallfragmente | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Schwebende Plattformen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Risszone | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Stabilisatormaterial | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Phasen-Fels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
+| Glas | Manifest | – | ja (glas, normal) | ja | offen | normal | offen | 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | instabiler Boden |
+| Kern | Phasen-Fels |
+| Adern und Einschlüsse | Zeitkristall/Glas |
+
+## Wasser / Fluid (Manifest)
+
+- Zeit-Vortex
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Zeitkristalle
+- Zeitverzerrung
+- Raumrisse
+- Phasenwechsel
+- instabiler Boden
 
 ## Objekte
 
@@ -50,5 +72,5 @@ Zeitimpuls, Dimensionsimpuls (nur markierte Objekte/Verbindungen)
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (7):** Instabiler Boden, Zeitkristall, Glasfragmente, Metallfragmente, Schwebende Plattformen, Risszone, Stabilisatormaterial
+- **Materialien (8):** Instabiler Boden, Zeitkristall, Glasfragmente, Metallfragmente, Schwebende Plattformen, Risszone, Stabilisatormaterial, Phasen-Fels
 - **Objekte (7):** Zeitrisse, Schwebende Fragmente, Instabile Plattformen, Portale, Zeitkristalle, Chaospunkte, Stabilisatoren

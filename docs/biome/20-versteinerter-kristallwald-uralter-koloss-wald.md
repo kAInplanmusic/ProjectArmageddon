@@ -1,6 +1,6 @@
 # Biom 20: Versteinerter Kristallwald / Uralter Koloss-Wald
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,16 +8,40 @@ Versteinerte Baumriesen mit Härtegraden, Kristallzweige (spröde, reflektierend
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Moos | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf |
-| Versteinertes Holz | – | ähnlich: holz | ja | offen | offen | offen | **einzigartig** |
-| Kristallader | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 10 Asteroidenfeld |
-| Kristallblätter | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
-| Versteinerte Wurzeln | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Massiver Fels | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
-| Kolossstamm | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Leuchtpilzgewebe | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Moos | beide | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf |
+| Versteinertes Holz | beide | – | ähnlich: holz | ja | offen | offen | offen | **einzigartig** |
+| Kristallader | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 10 Asteroidenfeld |
+| Kristallblätter | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+| Versteinerte Wurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
+| Kolossstamm | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Leuchtpilzgewebe | SSOT | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
+| Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Variante) |
+| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 14 Planet (eine Variante) |
+| Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Variante) |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Moos/versteinertes Holz |
+| Kern | versteinertes Holz |
+| Adern und Einschlüsse | Kristall/Holz/Fels |
+
+## Wasser / Fluid (Manifest)
+
+- Binnensee
+- Abgrund
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Kristallbäume
+- versteinertes Holz
+- Moos
+- Kristalladern
+- Binnensee
 
 ## Objekte
 

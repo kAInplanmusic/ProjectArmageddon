@@ -1,6 +1,6 @@
 # Biom 12: Fabrik & Hochhausruine
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,15 +8,40 @@ Beton, Stahlträger, Förderanlagen, Aufzüge, Rohre; tragende und nicht tragend
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Beton | – | ja (beton, hart) | ja | offen | hart | offen | 14 Planet (eine Variante) |
-| Stahlträger | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Metallplatten | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
-| Glasfassade | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
-| Rohrleitungen | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Teer | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 11 Surreale Schwebewelt; 14 Planet (eine Variante) |
-| Kontaminierte Ablagerungen | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Beton | beide | – | ja (beton, hart) | ja | offen | hart | offen | 6 Schrottplatz; 14 Planet (eine Variante) |
+| Stahlträger | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Metallplatten | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
+| Glasfassade | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+| Rohrleitungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 11 Surreale Schwebewelt; 14 Planet (eine Variante) |
+| Kontaminierte Ablagerungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Poröser Beton | Manifest | – | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen | **einzigartig** |
+| Stahlbeton | Manifest | – | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen | **einzigartig** |
+| Metallträger | Manifest | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Metall | Manifest | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 14 Planet (eine Variante); 17 Bio-Alien-Tempelstadt; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | poröser Beton |
+| Kern | Stahlbeton |
+| Adern und Einschlüsse | Metallträger/Beton |
+
+## Wasser / Fluid (Manifest)
+
+- Industriegift
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Förderbänder
+- Magnetturbinen
+- Giftfässer
+- Industrieaufzüge
+- Stromleitungen
+- einsturzgefährdete Etagen
 
 ## Objekte
 
@@ -48,5 +73,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (4):** Stahlträger, Glasfassade, Rohrleitungen, Kontaminierte Ablagerungen
+- **Materialien (7):** Stahlträger, Glasfassade, Rohrleitungen, Kontaminierte Ablagerungen, Poröser Beton, Stahlbeton, Metallträger
 - **Objekte (4):** Förderbänder, Aufzüge, Schrottpressen, Dampfrohre

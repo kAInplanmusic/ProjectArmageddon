@@ -1,6 +1,6 @@
 # Biom 14: Planet (eine Variante)
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,33 +8,51 @@
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Schnee | Eis | ja (schnee, weich) | ja | offen | weich | offen | 16 Kristallines Schwebearchipel |
-| Firn | Eis | fehlt | ja | offen | offen | offen | 4 Eiswüste & Gletscher; 16 Kristallines Schwebearchipel |
-| Eis | Eis | ja (eis, normal) | ja | offen | normal | offen | 16 Kristallines Schwebearchipel |
-| Fels | Eis | ja (fels, hart) | ja | offen | hart | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf |
-| Kristall | Eis | ja (kristall, hart) | ja | offen | hart | offen | 7 Kristall-Archipel; 11 Surreale Schwebewelt |
-| Asche | Lava | ja (asche, weich) | fehlt | offen | weich | offen | **einzigartig** |
-| Basalt | Lava | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 15 Vulkanische Schlackeschmiede; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Obsidian | Lava | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 15 Vulkanische Schlackeschmiede |
-| Schlacke | Lava | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 15 Vulkanische Schlackeschmiede |
-| Magmaadern | Lava | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Sand | Wüste | ja (sand, weich) | ja | offen | weich | offen | **einzigartig** |
-| Sandstein | Wüste | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 5 Wüstendünen |
-| Salzkruste | Wüste | fehlt | ja | offen | offen | offen | 5 Wüstendünen |
-| Teer | Wüste | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine |
-| Humus | Dschungel | fehlt | fehlt | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
-| Holz | Dschungel | ja (holz, normal) | ja | offen | normal | offen | **einzigartig** |
-| Wurzeln | Dschungel | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Pilze | Dschungel | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
-| Rostmetall | Rost | ähnlich: metall | ja | offen | offen | offen | 6 Schrottplatz |
-| Metall | Rost | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Schrott | Rost | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Beton | Rost | ja (beton, hart) | ja | offen | hart | offen | 12 Fabrik & Hochhausruine |
-| Korrosion | Rost | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Geröll | Stein | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Kristalladern | Stein | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Schnee | SSOT | Eis | ja (schnee, weich) | ja | offen | weich | offen | 4 Eiswüste & Gletscher; 16 Kristallines Schwebearchipel |
+| Firn | SSOT | Eis | fehlt | ja | offen | offen | offen | 4 Eiswüste & Gletscher; 16 Kristallines Schwebearchipel |
+| Eis | SSOT | Eis | ja (eis, normal) | ja | offen | normal | offen | 4 Eiswüste & Gletscher; 16 Kristallines Schwebearchipel |
+| Fels | SSOT | Eis | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristall | SSOT | Eis | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Asche | SSOT | Lava | ja (asche, weich) | fehlt | offen | weich | offen | 1 Vulkan & Lavafeld |
+| Basalt | SSOT | Lava | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 15 Vulkanische Schlackeschmiede; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Obsidian | SSOT | Lava | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 15 Vulkanische Schlackeschmiede |
+| Schlacke | SSOT | Lava | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 15 Vulkanische Schlackeschmiede |
+| Magmaadern | SSOT | Lava | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Sand | SSOT | Wüste | ja (sand, weich) | ja | offen | weich | offen | **einzigartig** |
+| Sandstein | SSOT | Wüste | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 5 Wüstendünen |
+| Salzkruste | SSOT | Wüste | fehlt | ja | offen | offen | offen | 5 Wüstendünen |
+| Teer | SSOT | Wüste | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine |
+| Humus | SSOT | Dschungel | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf; 17 Bio-Alien-Tempelstadt |
+| Holz | SSOT | Dschungel | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Wurzeln | SSOT | Dschungel | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Pilze | SSOT | Dschungel | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
+| Rostmetall | SSOT | Rost | ähnlich: metall | ja | offen | offen | offen | 6 Schrottplatz |
+| Metall | SSOT | Rost | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 17 Bio-Alien-Tempelstadt; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Schrott | SSOT | Rost | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Beton | SSOT | Rost | ja (beton, hart) | ja | offen | hart | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine |
+| Korrosion | SSOT | Rost | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Geröll | SSOT | Stein | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Kristalladern | SSOT | Stein | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | variabel |
+| Kern | variabel |
+| Adern und Einschlüsse | variabel |
+
+## Wasser / Fluid (Manifest)
+
+- Variabel
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- 6-in-1-Planetenwechsel
+- variable Material-/Fluid-Sets
+- Übergänge/Portale
 
 ## Objekte
 
@@ -83,5 +101,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (10):** Asche, Magmaadern, Sand, Holz, Wurzeln, Pilze, Schrott, Korrosion, Geröll, Kristalladern
+- **Materialien (8):** Magmaadern, Sand, Wurzeln, Pilze, Schrott, Korrosion, Geröll, Kristalladern
 - **Objekte (13):** Windzonen, Magmarisse, Lavarampen, Monumente, Wurzeln, Sporen, Wasserstandsschalter, Pressen, korrodierte Träger, Stalaktiten, Kristalle, Geröllhänge, Felsbrücken

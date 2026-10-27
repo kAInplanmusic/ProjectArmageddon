@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Erzeugt aus `docs/biome-ssot.md` je Biom eine Datei unter `docs/biome/` und die
+ * Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` je Biom eine Datei unter `docs/biome/` und die
  * Gesamtliste aller Materialien, Objekte, Trigger und Sonderwirkungen.
  *
  * Die SSOT bleibt die eine Quelle; die erzeugten Dateien sind Auswertungen und
@@ -69,6 +69,43 @@ function lies() {
   return biome;
 }
 
+/** Das Manifest (`docs/biome-manifest.md`): Tabellenzeilen mit Nummer in der ersten Spalte. */
+function leseManifest() {
+  const text = fs.readFileSync(path.join(WURZEL, 'docs/biome-manifest.md'), 'utf8');
+  const m = new Map();
+  for (const z of text.split('\n')) {
+    const c = z.split('|').slice(1, -1).map((x) => x.trim());
+    if (c.length !== 8 || !/^\d+$/.test(c[0])) continue;
+    const variabel = /^Variabel/i.test(c[2]);
+    m.set(Number(c[0]), {
+      materialien: variabel ? [] : liste(c[2]),
+      deck: c[3], kern: c[4], adern: c[5],
+      fluid: liste(c[6], ';'),
+      spezial: liste(c[7], ';'),
+    });
+  }
+  return m;
+}
+
+/** Führt das Manifest in die Biome ein: Quelle je Material und die neuen Felder. */
+function fuehreZusammen(biome, manifest) {
+  for (const b of biome) {
+    const mf = manifest.get(b.nr);
+    b.quelle = new Map([...b.material.keys()].map((n) => [n, 'SSOT']));
+    b.manifest = mf ?? null;
+    if (!mf) continue;
+    const vorhanden = new Map([...b.material.keys()].map((n) => [norm(n), n]));
+    for (const n of mf.materialien) {
+      const schluessel = vorhanden.get(norm(n));
+      if (schluessel) b.quelle.set(schluessel, 'beide');
+      else {
+        b.material.set(n, '');
+        b.quelle.set(n, 'Manifest');
+      }
+    }
+  }
+}
+
 function katalog() {
   const eintraege = STOFFE.map((s) => ({ key: s.key, n: norm(s.key), haerte: s.haerte }));
   const dateien = [];
@@ -105,12 +142,18 @@ function schreibeBiom(b, biome, vm, vo, vt, info) {
   const namen = new Map(biome.map((x) => [x.nr, kurz(x)]));
   const geteilt = (liste_) => liste_.filter((n) => n !== b.nr).map((n) => namen.get(n)).join('; ');
   const z = [];
-  z.push(`# Biom ${b.nr}: ${b.titel}`, '', '> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.', '');
+  z.push(`# Biom ${b.nr}: ${b.titel}`, '', '> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.', '');
   z.push('## Beschreibung', '', b.kern || '(in der SSOT keine Beschreibung)', '');
-  z.push('## Materialien (Terrain)', '', '| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |', '| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |');
+  z.push('## Materialien (Terrain)', '', '| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |', '| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |');
   for (const [n, v] of b.material) {
     const i = info(n);
-    z.push(`| ${n} | ${v || '–'} | ${i.katalog} | ${i.textur} | offen | ${i.zerstoerbar} | offen | ${geteilt(vm.get(n)) || '**einzigartig**'} |`);
+    z.push(`| ${n} | ${b.quelle.get(n)} | ${v || '–'} | ${i.katalog} | ${i.textur} | offen | ${i.zerstoerbar} | offen | ${geteilt(vm.get(n)) || '**einzigartig**'} |`);
+  }
+  if (b.manifest) {
+    const mf = b.manifest;
+    z.push('', '## Bodenschichten (Manifest)', '', '| Schicht | Material |', '| :-- | :-- |', `| Deck | ${mf.deck} |`, `| Kern | ${mf.kern} |`, `| Adern und Einschlüsse | ${mf.adern} |`);
+    z.push('', '## Wasser / Fluid (Manifest)', '', ...mf.fluid.map((f) => `- ${f}`));
+    z.push('', '## Spezial-Items und Begebenheiten (Manifest)', '', ...mf.spezial.map((f) => `- ${f}`));
   }
   z.push('', '## Objekte', '', '| Objekt | Zustände | Auslöser | Folgen | Auch in |', '| :-- | :-- | :-- | :-- | :-- |');
   for (const n of b.objekte) z.push(`| ${n} | offen | offen | offen | ${geteilt(vo.get(n)) || '**einzigartig**'} |`);
@@ -128,22 +171,33 @@ function schreibeBiom(b, biome, vm, vo, vt, info) {
 }
 
 function schreibeGesamt(biome, vm, vo, vt, info) {
+  const quelleVon = (n) => [...new Set(biome.map((b) => b.quelle.get(n)).filter(Boolean))].join('/');
   const namen = new Map(biome.map((x) => [x.nr, x.nr]));
   const nrs = (l) => l.map((n) => namen.get(n)).join(', ');
   const z = ['# Gesamtliste: Materialien, Objekte, Trigger, Sonderwirkungen', '',
-    '> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern.', '',
+    '> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern.', '',
     'Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschaften belegt wird: **Optik**, **Zerstörbarkeit**, **Bewegung** (Reihenfolge laut Auftraggeber). „Biome“ nennt die Nummern aus der SSOT.', ''];
   const fehlend = [...vm.keys()].filter((n) => info(n).katalog === 'fehlt').length;
-  z.push(`**Stand:** ${biome.length} Biome · ${vm.size} Materialien (${fehlend} ohne Katalogeintrag) · ${vo.size} Objekte · ${vt.size} Trigger.`, '');
-  z.push('## Materialien', '', '| Material | Biome | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung |', '| :-- | :-- | :-- | :-- | :-- | :-- | :-- |');
+  z.push(`**Stand:** ${biome.length} Biome · ${vm.size} Materialien (${fehlend} ohne Katalogeintrag) · ${vo.size} Objekte · ${vt.size} Trigger. Quellen: docs/biome-ssot.md und docs/biome-manifest.md (Spalte „Quelle“).`, '');
+  z.push('## Materialien', '', '| Material | Quelle | Biome | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung |', '| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |');
   for (const n of [...vm.keys()].sort((a, b) => a.localeCompare(b, 'de'))) {
     const i = info(n);
-    z.push(`| ${n} | ${nrs(vm.get(n))} | ${i.katalog} | ${i.textur} | offen | ${i.zerstoerbar} | offen |`);
+    z.push(`| ${n} | ${quelleVon(n)} | ${nrs(vm.get(n))} | ${i.katalog} | ${i.textur} | offen | ${i.zerstoerbar} | offen |`);
   }
   z.push('', '## Objekte', '', '| Objekt | Biome | Zustände | Auslöser | Folgen |', '| :-- | :-- | :-- | :-- | :-- |');
   for (const n of [...vo.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${nrs(vo.get(n))} | offen | offen | offen |`);
   z.push('', '## Trigger', '', '| Trigger | Biome |', '| :-- | :-- |');
   for (const n of [...vt.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${nrs(vt.get(n))} |`);
+  const fluide = new Map();
+  const spezial = new Map();
+  for (const b of biome) {
+    for (const f of b.manifest?.fluid ?? []) fluide.set(f, [...(fluide.get(f) ?? []), b.nr]);
+    for (const f of b.manifest?.spezial ?? []) spezial.set(f, [...(spezial.get(f) ?? []), b.nr]);
+  }
+  z.push('', '## Wasser / Fluide (Manifest)', '', '| Fluid | Biome |', '| :-- | :-- |');
+  for (const n of [...fluide.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${nrs(fluide.get(n))} |`);
+  z.push('', '## Spezial-Items und Begebenheiten (Manifest)', '', '| Eintrag | Biome | Optik | Zerstörbarkeit | Bewegung |', '| :-- | :-- | :-- | :-- | :-- |');
+  for (const n of [...spezial.keys()].sort((a, b) => a.localeCompare(b, 'de'))) z.push(`| ${n} | ${nrs(spezial.get(n))} | offen | offen | offen |`);
   z.push('', '## Sonderwirkungen', '', '| Biom | Sonderwirkung |', '| :-- | :-- |');
   for (const b of biome) if (b.sonder) z.push(`| ${kurz(b)} | ${b.sonder} |`);
   z.push('');
@@ -151,6 +205,7 @@ function schreibeGesamt(biome, vm, vo, vt, info) {
 }
 
 const biome = lies();
+fuehreZusammen(biome, leseManifest());
 const info = katalog();
 const vm = verteilung(biome, 'material');
 const vo = verteilung(biome, 'objekte');

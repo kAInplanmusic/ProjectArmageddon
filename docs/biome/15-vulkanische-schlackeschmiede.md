@@ -1,6 +1,6 @@
 # Biom 15: Vulkanische Schlackeschmiede
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,16 +8,37 @@ Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Met
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Schlacke | – | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante) |
-| Basalt | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Metallschienen | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Obsidian | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Variante) |
-| Keramik | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Dampfkammer | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Lavaglas | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
-| Bimsstein | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante) |
+| Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Variante); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
+| Metallschienen | beide | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Obsidian | SSOT | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Variante) |
+| Keramik | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Dampfkammer | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Lavaglas | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
+| Bimsstein | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Industriemagma | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Schlacke/Basalt |
+| Kern | Keramik/Basalt |
+| Adern und Einschlüsse | Metallschienen/Keramik |
+
+## Wasser / Fluid (Manifest)
+
+- Industriemagma (tödlich)
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Schlackekessel
+- Dampfventile
+- Keramikschilde
+- Metallschienen
+- Hitzeschilde
 
 ## Objekte
 
@@ -50,5 +71,5 @@ Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Met
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (5):** Metallschienen, Keramik, Dampfkammer, Lavaglas, Bimsstein
+- **Materialien (6):** Metallschienen, Keramik, Dampfkammer, Lavaglas, Bimsstein, Industriemagma
 - **Objekte (5):** Förderplattformen, Metallkräne, Lavaglaswände, Keramikschilde, Schmelzöfen

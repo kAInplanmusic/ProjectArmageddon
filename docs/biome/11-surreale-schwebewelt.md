@@ -1,6 +1,6 @@
 # Biom 11: Surreale Schwebewelt
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,15 +8,39 @@ Nicht-euklidisch, aber normale Zerstörungs-/Schwerkraftregeln; definierte Sonde
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Glas | – | ja (glas, normal) | ja | offen | normal | offen | 16 Kristallines Schwebearchipel |
-| Massiver Fels | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Kristall | – | ja (kristall, hart) | ja | offen | hart | offen | 7 Kristall-Archipel; 14 Planet (eine Variante) |
-| Nebelstein | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Teer | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante) |
-| Giftnebel | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Raumanker | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Glas | beide | – | ja (glas, normal) | ja | offen | normal | offen | 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
+| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Nebelstein | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Variante) |
+| Giftnebel | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Raumanker | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Traumgestein | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| gehärtetes Glas | Manifest | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Glas/Traumgestein |
+| Kern | Traumgestein |
+| Adern und Einschlüsse | gehärtetes Glas/Kristall |
+
+## Wasser / Fluid (Manifest)
+
+- Raumriss
+- Teer
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Traumportale
+- Glasinseln
+- Spiegelwände
+- transparente Wände
+- Splitter
+- Zeitverzerrung
 
 ## Objekte
 
@@ -48,5 +72,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (3):** Nebelstein, Giftnebel, Raumanker
+- **Materialien (5):** Nebelstein, Giftnebel, Raumanker, Traumgestein, gehärtetes Glas
 - **Objekte (4):** Glasinseln, Nebelbrücken, Teerseen, Traumportale

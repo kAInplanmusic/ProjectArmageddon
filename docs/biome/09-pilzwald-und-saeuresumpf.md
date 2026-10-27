@@ -1,6 +1,6 @@
 # Biom 9: Pilzwald & Säuresumpf
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,15 +8,39 @@ Riesenpilze, Myzelmatten (Netzwerk, Kaskaden), Sporenkammern, Säurepfützen, Pi
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Feuchte Erde | – | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen | **einzigartig** |
-| Pilzgewebe | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | 3 Dschungel & Sumpf |
-| Myzelmatte | – | fehlt | ähnlich: myzel.jpg | offen | offen | offen | **einzigartig** |
-| Holzreste | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | 6 Schrottplatz |
-| Säureboden | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf |
-| Fels | – | ja (fels, hart) | ja | offen | hart | offen | 3 Dschungel & Sumpf; 14 Planet (eine Variante) |
-| Pilzbrücke | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Feuchte Erde | SSOT | – | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen | **einzigartig** |
+| Pilzgewebe | beide | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | 3 Dschungel & Sumpf |
+| Myzelmatte | SSOT | – | fehlt | ähnlich: myzel.jpg | offen | offen | offen | **einzigartig** |
+| Holzreste | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | 6 Schrottplatz |
+| Säureboden | SSOT | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf |
+| Fels | SSOT | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Pilzbrücke | SSOT | – | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen | **einzigartig** |
+| Humus | Manifest | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf; 14 Planet (eine Variante); 17 Bio-Alien-Tempelstadt |
+| kontaminierte Erde | Manifest | – | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen | **einzigartig** |
+| Pilzmyzel | Manifest | – | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
+| Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 13 Burgfelsen & Magiekristall; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Pilzgewebe/Humus |
+| Kern | kontaminierte Erde |
+| Adern und Einschlüsse | Pilzmyzel/Holz |
+
+## Wasser / Fluid (Manifest)
+
+- Ätzende Säure
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Sporenschwämme
+- Wurzelherzen
+- Insektennester
+- Säureseen
+- Schadgaswolken
 
 ## Objekte
 
@@ -48,5 +72,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (3):** Feuchte Erde, Myzelmatte, Pilzbrücke
+- **Materialien (4):** Feuchte Erde, Myzelmatte, Pilzbrücke, kontaminierte Erde
 - **Objekte (3):** Riesenpilze, Myzelnetze, Pilzbrücken

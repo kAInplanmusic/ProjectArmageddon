@@ -1,6 +1,6 @@
 # Biom 7: Kristall-Archipel
 
-> Erzeugt aus `docs/biome-ssot.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die SSOT.
+> Erzeugt aus `docs/biome-ssot.md` und `docs/biome-manifest.md` mit `node scripts/biome-dateien.mjs` — nicht von Hand ändern, sondern die Quellen.
 
 ## Beschreibung
 
@@ -8,15 +8,38 @@ Schwebende Inseln mit tragenden Kernen und Verbindungen; Zerstörung kann Inselt
 
 ## Materialien (Terrain)
 
-| Material | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Erdauflage | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Massiver Fels | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Kristall | – | ja (kristall, hart) | ja | offen | hart | offen | 11 Surreale Schwebewelt; 14 Planet (eine Variante) |
-| Obsidian | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
-| Wolkenstein | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
-| Glasplatten | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
-| Magnetgestein | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
+| Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Erdauflage | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Massiver Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Variante); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 14 Planet (eine Variante); 15 Vulkanische Schlackeschmiede |
+| Wolkenstein | SSOT | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
+| Glasplatten | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+| Magnetgestein | SSOT | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
+| Erdüberzug | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Kristallfelsen | Manifest | – | ähnlich: fels | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+
+## Bodenschichten (Manifest)
+
+| Schicht | Material |
+| :-- | :-- |
+| Deck | Erdüberzug |
+| Kern | Kristallfelsen |
+| Adern und Einschlüsse | Kristall/Obsidian |
+
+## Wasser / Fluid (Manifest)
+
+- Bodenlose Leere (Abgrund)
+- kein Wasser
+
+## Spezial-Items und Begebenheiten (Manifest)
+
+- Schwebende Kristalle
+- Prisma-Stelen
+- Kristallbrücken
+- Laserreflexion
+- +50 % Magieintensität
 
 ## Objekte
 
@@ -48,5 +71,5 @@ keine eigene; es gelten die Standardreaktionen der SSOT.
 
 ## Einzigartig in diesem Biom
 
-- **Materialien (2):** Erdauflage, Glasplatten
+- **Materialien (4):** Erdauflage, Glasplatten, Erdüberzug, Kristallfelsen
 - **Objekte (1):** Glasbrücken
