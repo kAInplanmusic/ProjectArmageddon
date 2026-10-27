@@ -31,7 +31,7 @@ function effekte(urls = { explosion: 'e', glut: 'g', feuerring: 'f', leuchtgesch
 }
 
 test('Dateien der Atlanten sind klein und vorhanden', () => {
-  for (const d of ['explosion', 'glut', 'feuerring', 'leuchtgeschosse', 'feuerball', 'pilzwolke']) {
+  for (const d of ['explosion', 'glut', 'feuerring', 'leuchtgeschosse', 'feuerball', 'pilzwolke', 'muendung']) {
     const pfad = join(ORDNER, `${d}.webp`);
     assert.ok(existsSync(pfad), `${d}.webp fehlt`);
     assert.ok(statSync(pfad).size < 600_000, `${d}.webp zu groß`);
@@ -132,4 +132,22 @@ test('Die Pilzwolke steht mit dem Fuß am Einschlagpunkt (Versatz nach oben)', (
   e.zeichne(ctx);
   const a = ctx.aufrufe[0];
   assert.equal(a[6], 200 - 50 - SHEETS.pilzwolke.versatzY * 100);
+});
+
+test('Mündungsfeuer: gedreht an die Mündung, Bild folgt dem Leben, Variante je Figur; ohne Bild oder bei reduzierter Bewegung nichts', () => {
+  const e = effekte({ explosion: 'e', glut: 'g', feuerring: 'f', leuchtgeschosse: 'l', muendung: 'm' });
+  const ctx = fakeCtx();
+  const gedreht = [];
+  ctx.rotate = w => gedreht.push(w);
+  ctx.translate = () => {};
+  assert.equal(e.zeichneMuendung(ctx, 10, 20, Math.PI / 4, 1, 7, 1), true);
+  assert.equal(gedreht[0], -Math.PI / 4);
+  const erstes = ctx.aufrufe[0];
+  assert.equal(erstes[1], 0, 'volles Leben: erstes Bild (Blitz)');
+  e.zeichneMuendung(ctx, 10, 20, 0, 0.1, 7, 1);
+  assert.equal(ctx.aufrufe[1][1], 3 * (2048 / 4), 'fast verbraucht: letztes Bild');
+  assert.equal(ctx.aufrufe[1][2], (7 % SHEETS.muendung.zeilen) * (2048 / SHEETS.muendung.zeilen), 'Variante 7 → Zeile 2');
+  e.reduziert = true;
+  assert.equal(e.zeichneMuendung(ctx, 0, 0, 0, 1, 0, 1), false);
+  assert.equal(effekte().zeichneMuendung(ctx, 0, 0, 0, 1, 0, 1), false, 'ohne geladenes Bild');
 });

@@ -1292,7 +1292,15 @@ export class Renderer {
 
       // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —
       // es wird deshalb NACH dem Zurücksetzen der Drehung gezeichnet.
-      if (muendung && !spriteWaffe) {
+      // Mündungsfeuer als gezeichnetes Bild (Sheet `muendung`) für ALLE Waffen; ohne Bild bleibt der Kegel der Fallback-Figur.
+      let feuerBild = false;
+      if (muendung) {
+        const f2 = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
+        const fx = entity.x + f2.offsetX * sk;
+        const fy = entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + f2.offsetY * sk;
+        feuerBild = this.sheets.zeichneMuendung(this.ctx, fx, fy, angle, feuerLeben, entity.entityId, sk);
+      }
+      if (muendung && !spriteWaffe && !feuerBild) {
         const feuer = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
         const mx = entity.x + feuer.offsetX * sk;
         const my = entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + feuer.offsetY * sk;

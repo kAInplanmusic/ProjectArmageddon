@@ -29,6 +29,8 @@ export const SHEETS = Object.freeze({
   feuerring: Object.freeze({ datei: 'feuerring.webp', spalten: 8, zeilen: 8, frames: reihe(0, 60), takt: 1, kern: 0.3 }),
   // Eigene Zeichnungen (`scripts/sprites-erzeugen/effekt-zeichnen.py`, 5×2 Zellen): kleiner Feuerball und Pilzwolke (Rauchring, blaue Flamme und Mündungsfeuer zeichnet das Skript auch, sie sind noch nicht eingebaut).
   // `versatzY`: Anteil der Kantenlänge, um den das Bild nach oben rückt (die Pilzwolke steht mit dem Fuß am Einschlagpunkt).
+  // Mündungsfeuer: 4 Bilder (Blitz, Blitz mit Rauch, Rauch, Verwehen) je Zeile, 5 Zeilen als Varianten; Ursprung der Mündung bei (30, 128) der 256-px-Zelle.
+  muendung: Object.freeze({ datei: 'muendung.webp', spalten: 4, zeilen: 5, frames: reihe(0, 3), takt: 6, kern: 0.4 }),
   feuerball: Object.freeze({ datei: 'feuerball.webp', spalten: 5, zeilen: 2, frames: reihe(0, 9), takt: 3, kern: 0.5 }),
   pilzwolke: Object.freeze({ datei: 'pilzwolke.webp', spalten: 5, zeilen: 2, frames: reihe(0, 8), takt: 5, kern: 0.55, versatzY: 0.34 }),
 });
@@ -163,6 +165,30 @@ export class SheetEffekte {
     ctx.globalAlpha = alpha;
     const hoch = (SHEETS[art].versatzY ?? 0) * groesse;
     ctx.drawImage(e.bild, r.sx, r.sy, r.sw, r.sh, x - groesse / 2, y - groesse / 2 - hoch, groesse, groesse);
+    return true;
+  }
+
+  /**
+   * Mündungsfeuer an der Mündung (x, y) in Schussrichtung `winkel` (0 = rechts, π/2 = oben); `leben` 1 → 0 steuert das Bild,
+   * `variante` wählt die Zeile. `skala` ist die Figurengröße. Ohne Bild: `false`.
+   */
+  zeichneMuendung(ctx, x, y, winkel, leben, variante, skala = 1) {
+    if (this.reduziert || !this.bereit('muendung')) return false;
+    const e = this.bilder.get('muendung');
+    const b = e.bild.naturalWidth ?? e.bild.width;
+    const h = e.bild.naturalHeight ?? e.bild.height;
+    const s = SHEETS.muendung;
+    const bild = Math.max(0, Math.min(s.frames.length - 1, Math.floor((1 - Math.max(0, Math.min(1, leben))) * s.frames.length)));
+    const zeile = Math.abs(Math.floor(variante)) % s.zeilen;
+    const sw = b / s.spalten;
+    const sh = h / s.zeilen;
+    const k = 0.42 * skala;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-winkel);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(e.bild, bild * sw, zeile * sh, sw, sh, -30 * k, -128 * k, 256 * k, 256 * k);
+    ctx.restore();
     return true;
   }
 
