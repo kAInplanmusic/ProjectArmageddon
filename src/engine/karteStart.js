@@ -9,6 +9,7 @@
 
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { WET_LEVEL } from '../shared/config/water.js';
+import { GELAENDE_KOMPOSITION } from '../shared/config/gelaende.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
 } from '../shared/erreichbarkeit.js';
@@ -66,6 +67,32 @@ export function trockenerStartX(m, idealX, belegt = []) {
       && m.waterLevelAt(x, boden - PLAYER_HALF_HEIGHT) < WET_LEVEL;
   };
 
+  /*
+   * Begehbar: neben dem Körper keine Wand und kein zu steiler Hang.
+   *
+   * FUND (belegt, 2026-10-27, Bauteilkarten): Auf Vulkan, Pyramide und Schlucht lag der feste Wunschplatz am Hang,
+   * 23 px vor einer Wand — die Figur stand trocken, konnte aber nicht laufen (E2E `gehen`: 4 px statt 15). Gesucht wird
+   * zuerst im Umkreis von 600 px nach einem begehbaren Platz; gibt es keinen, bleibt es beim alten Verhalten.
+   */
+  const fest = (x, y) => m.terrain?.isSolid?.(x, y) === true;
+  const begehbar = x => {
+    const boden = m.surfaceYAt(x);
+    const seite = PLAYER_HALF_WIDTH + 5;
+    for (const dx of [-seite, seite]) {
+      for (const dy of [6, PLAYER_HALF_HEIGHT, 2 * PLAYER_HALF_HEIGHT - 2]) if (fest(x + dx, boden - dy)) return false;
+    }
+    return Math.abs(m.surfaceYAt(x + 16) - m.surfaceYAt(x - 16)) <= 22;
+  };
+  // Nur auf autonomen Karten ab Geländefassung 6 (Bauteilkarten): alles Ältere setzt die Figuren wie bisher.
+  const mitBegehbar = m.kartentyp === 'autonom' && (m.gelaende ?? 0) >= GELAENDE_KOMPOSITION;
+  const gut = x => trocken(x) && (!mitBegehbar || begehbar(x));
+  if (gut(idealX)) return idealX;
+  if (mitBegehbar) {
+    for (let abstand = 8; abstand <= 600; abstand += 8) {
+      if (gut(idealX + abstand)) return idealX + abstand;
+      if (gut(idealX - abstand)) return idealX - abstand;
+    }
+  }
   if (trocken(idealX)) return idealX;
   /*
    * Über die ganze Kartenbreite suchen, nicht nur bis zur Mitte.
