@@ -174,7 +174,8 @@ test('Eine neue Geländeform startet mit einer Darstellung und ohne Fehler', asy
  * eine andere Kulisse zöge als die Karte hergibt — oder wenn das Biom aus dem
  * Seed direkt käme statt aus dem Charakter.
  */
-test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', { timeout: 180_000 }, async ({ page }) => {
+test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', async ({ page }) => {
+  test.setTimeout(300_000); // zwölf Matches (zwei Wege × sechs Seeds), das gemalte Bild lädt jeweils
   /*
    * Zuerst war die Kulisse dem PRESET zugeordnet („Flut sieht aus wie eine
    * Flut"), dann fiel sie auf `forest` zurück („eine Flut sah aus wie ein
@@ -190,35 +191,47 @@ test('Die gezeigte Kulisse ist die Ableitung des Kartencharakters', { timeout: 1
    */
   const SEEDS = [4242, 4243, 4244, 4245, 7777, 9001];
 
-  for (const seed of SEEDS) {
-    await page.goto('/');
-    await page.waitForFunction(() => Boolean(window.__PA__));
-    await page.evaluate(() => window.__PA__.setAutoLoop(false));
-    await page.locator('#cfg-seed').fill(String(seed));
-    await page.getByRole('button', { name: 'Match starten' }).click();
-    await expect(page.locator('#menu-overlay')).toBeHidden();
+  // Zwei Wege zur Kulisse: die generative Szene (Menüwahl) und das gemalte Bild (Vorgabe „automatisch“, seit 2026-10-27);
+  // beide folgen dem Charakter der Karte.
+  for (const modus of ['generativ', 'automatisch']) {
+    for (const seed of SEEDS) {
+      await page.goto('/');
+      await page.waitForFunction(() => Boolean(window.__PA__));
+      await page.evaluate(() => window.__PA__.setAutoLoop(false));
+      await page.evaluate(m => { document.getElementById('cfg-backdrop').value = m; }, modus);
+      await page.locator('#cfg-seed').fill(String(seed));
+      await page.getByRole('button', { name: 'Match starten' }).click();
+      await expect(page.locator('#menu-overlay')).toBeHidden();
 
-    const stand = await page.evaluate(async () => {
-      const modul = await import('/src/shared/biomwahl.js');
-      const match = window.__PA__.getMatch();
-      const kulisse = window.__PA__.backdrop();
-      return {
-        charakter: match.kartencharakter ?? null,
-        erwartet: modul.biomFuerCharakter(match.kartencharakter),
-        biom: kulisse.szene?.biom ?? null,
-        himmel: kulisse.szene?.himmel ?? null,
-        wasser: kulisse.szene?.wasser ?? null,
-        bildKey: kulisse.key,
-      };
-    });
+      const stand = await page.evaluate(async () => {
+        const modul = await import('/src/shared/biomwahl.js');
+        const match = window.__PA__.getMatch();
+        const kulisse = window.__PA__.backdrop();
+        return {
+          charakter: match.kartencharakter ?? null,
+          erwartet: modul.biomFuerCharakter(match.kartencharakter),
+          sonder: match.sonderbiom ?? null,
+          biom: kulisse.szene?.biom ?? null,
+          himmel: kulisse.szene?.himmel ?? null,
+          wasser: kulisse.szene?.wasser ?? null,
+          bildKey: kulisse.key,
+        };
+      });
 
-    expect(stand.charakter, `Seed ${seed}: das Match nennt keinen Kartencharakter`).toBeTruthy();
-    expect(stand.biom, `Seed ${seed}: die Kulisse folgt nicht dem Charakter`)
-      .toBe(stand.erwartet);
-    expect(stand.himmel, `Seed ${seed}: Szene ohne Himmel`).toBeTruthy();
-    expect(stand.wasser, `Seed ${seed}: Szene ohne Wasser`).toBeTruthy();
-    // Und es ist die generative Szene (die Vorgabe), keine Bildkulisse.
-    expect(stand.bildKey, `Seed ${seed}: Bildkulisse statt generativer Szene`).toBeNull();
+      expect(stand.charakter, `Seed ${seed}: das Match nennt keinen Kartencharakter`).toBeTruthy();
+      if (modus === 'generativ') {
+        expect(stand.biom, `Seed ${seed}: die Kulisse folgt nicht dem Charakter`).toBe(stand.erwartet);
+        expect(stand.himmel, `Seed ${seed}: Szene ohne Himmel`).toBeTruthy();
+        expect(stand.wasser, `Seed ${seed}: Szene ohne Wasser`).toBeTruthy();
+        expect(stand.bildKey, `Seed ${seed}: Bildkulisse statt generativer Szene`).toBeNull();
+      } else if (stand.sonder) {
+        // Sonderbiome (Planet, Kosmos, ...) behalten ihre generative Szene.
+        expect(stand.bildKey, `Seed ${seed}: Sonderbiom mit Bildkulisse`).toBeNull();
+      } else {
+        expect(stand.bildKey, `Seed ${seed}: kein gemaltes Bild`).toBeTruthy();
+        expect(String(stand.bildKey).split('/')[0], `Seed ${seed}: das Bild folgt nicht dem Charakter`).toBe(stand.erwartet);
+      }
+    }
   }
 });
 
