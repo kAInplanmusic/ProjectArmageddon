@@ -23,7 +23,7 @@ test('Komposition: Landanteil und Bauteile liegen über 40 Seeds im erwarteten R
   for (let seed = 1; seed <= 40; seed += 1) {
     const k = karte(seed * 7919);
     const anteil = summe(k.bitmap) / (B * H);
-    assert.ok(anteil > 0.15 && anteil < 0.5, `Seed ${seed}: Landanteil ${anteil.toFixed(2)}`);
+    assert.ok(anteil > 0.15 && anteil < 0.62, `Seed ${seed}: Landanteil ${anteil.toFixed(2)}`);
     assert.ok(k.bauteile.platten >= 3, `Seed ${seed}: weniger als eine Platte je Ebene`);
     assert.ok(k.wasserY > 0 && k.wasserY < H, `Seed ${seed}: Wasserlinie`);
   }
@@ -31,19 +31,19 @@ test('Komposition: Landanteil und Bauteile liegen über 40 Seeds im erwarteten R
 
 import { KARTENARTEN } from '../src/shared/terrainKomposition.js';
 
-// Gemessen über 20 Seeds (2026-10-26): Landanteil je Art; die Schranken lassen Luft nach beiden Seiten.
+// Gemessen über 40 Seeds (2026-10-27, Dichtefeld-Generator, 1280×720 bzw. 720×1280): Landanteil je Art; die Schranken lassen Luft nach beiden Seiten.
 const LANDANTEIL = {
-  ebenen: [0.18, 0.4],
-  insel: [0.15, 0.35],
-  inselgruppe: [0.08, 0.25],
-  hoehle: [0.5, 0.8],
-  hoehleInsel: [0.5, 0.8],
-  hochkant: [0.3, 0.6],
-  schlucht: [0.4, 0.65],
-  archipel: [0.08, 0.25],
-  vulkan: [0.18, 0.4],
-  ruinenstadt: [0.18, 0.4],
-  pyramide: [0.25, 0.45],
+  ebenen: [0.28, 0.62],
+  insel: [0.18, 0.45],
+  inselgruppe: [0.03, 0.4],
+  hoehle: [0.4, 0.65],
+  hoehleInsel: [0.4, 0.66],
+  hochkant: [0.3, 0.72],
+  schlucht: [0.47, 0.7],
+  archipel: [0.15, 0.58],
+  vulkan: [0.3, 0.53],
+  ruinenstadt: [0.33, 0.6],
+  pyramide: [0.27, 0.42],
   planet: [0.1, 0.3],
   unmoeglich: [0.18, 0.4],
 };

@@ -2,9 +2,11 @@
  * Kartengenerator „Komposition": Karten aus Bauteilen statt aus einem Höhenfeld.
  *
  * Das Höhenfeld (`terrainGen3`) kennt je Spalte eine Oberfläche; schwebende
- * Ebenen, Brücken, Türme und Räume sind damit nicht darstellbar. Hier legt der
- * Seed stattdessen mehrere Ebenen aus Platten, verbindet sie mit Pfeilern,
- * Rampen und Brücken und setzt Bauten (Turm, Bogen, Mauer) und Hohlräume dazu.
+ * Massen, Überhänge, Tunnel und Räume sind damit nicht darstellbar. Hier
+ * beschreibt je Kartenart ein Dichtefeld (große Formen plus mehrstufiges
+ * Rauschen von 600 bis 40 px) die Landmassen; Tunnel, Kammern, Brücken und
+ * Burgruinen kommen als Bauteile dazu. Planet, „Unmögliches“ und Pyramide
+ * bauen noch aus Rechtecken und Ellipsen.
  *
  * Reiner Seed-Zufall (`rng.next()`), kein `Math.random`. Diese Fassung liefert
  * nur die Maske; Stoffe kommen später aus dem Biom-Rezept.
@@ -525,6 +527,357 @@ function karteHochkant(maske, rng, B, H, stat) {
   return Math.round(H * 0.94);
 }
 
+
+/* ====================================================================
+ * Dichtefeld-Karten: große, zusammenhängende Landmassen statt dünner Platten
+ * ==================================================================== */
+
+/** Weiches 2D-Wertrauschen in [-1, 1] auf einem Gitter der Zellgröße `s` Pixel. */
+function rausch2(rng, B, H, s) {
+  const sx = Math.ceil(B / s) + 3;
+  const sy = Math.ceil(H / s) + 3;
+  const g = new Float32Array(sx * sy);
+  for (let i = 0; i < g.length; i += 1) g[i] = rng.next() * 2 - 1;
+  return (x, y) => {
+    const u = Math.max(0, x) / s;
+    const v = Math.max(0, y) / s;
+    const i = Math.floor(u);
+    const j = Math.floor(v);
+    const tu = u - i;
+    const tv = v - j;
+    const a = tu * tu * (3 - 2 * tu);
+    const b = tv * tv * (3 - 2 * tv);
+    const k = j * sx + i;
+    return (g[k] * (1 - a) + g[k + 1] * a) * (1 - b) + (g[k + sx] * (1 - a) + g[k + sx + 1] * a) * b;
+  };
+}
+
+/** Mehrstufiges Rauschen (Wellenlänge `basis` px, je Stufe halb so lang und halb so stark), Wert in [-1, 1]. */
+function fbm2(rng, B, H, basis, stufen = 5) {
+  const felder = [];
+  let summe = 0;
+  for (let i = 0; i < stufen; i += 1) {
+    const amp = 0.5 ** i;
+    felder.push({ f: rausch2(rng, B, H, Math.max(8, basis / 2 ** i)), amp });
+    summe += amp;
+  }
+  return (x, y) => {
+    let w = 0;
+    for (const { f, amp } of felder) w += f(x, y) * amp;
+    return w / summe;
+  };
+}
+
+/** Weiche Ellipsen-„Landmasse“: positiv innen, Null am Rand (Pixelmaß `radius`); flache Oberseite, spitzer Sockel. */
+function masse(cx, cy, rx, ryOben, ryUnten, radius) {
+  return (x, y) => {
+    const u = (x - cx) / rx;
+    const v = (y - cy) / (y < cy ? ryOben : ryUnten);
+    return (1 - Math.sqrt(u * u + v * v)) * radius;
+  };
+}
+
+/**
+ * Wandelt ein Dichtefeld in die Maske: Raster 4 px, bilinear aufgelöst, dazu feines Rauschen (6 px) an den Kanten.
+ * `d(x, y) > 0` ist fest.
+ */
+function ausDichte(maske, rng, d, fein = 5) {
+  const B = maske.breite;
+  const H = maske.hoehe;
+  const G = 4;
+  const gw = Math.ceil(B / G) + 2;
+  const gh = Math.ceil(H / G) + 2;
+  const feld = new Float32Array(gw * gh);
+  for (let j = 0; j < gh; j += 1) for (let i = 0; i < gw; i += 1) feld[j * gw + i] = d(i * G, j * G);
+  const Z = 11;
+  const nw = Math.ceil(B / Z) + 2;
+  const nh = Math.ceil(H / Z) + 2;
+  const n = new Float32Array(nw * nh);
+  for (let i = 0; i < n.length; i += 1) n[i] = (rng.next() - 0.5) * 2 * fein;
+  const bm = maske.bitmap;
+  for (let y = 0; y < H; y += 1) {
+    const j = Math.floor(y / G);
+    const tv = (y - j * G) / G;
+    const jn = Math.floor(y / Z);
+    const sv = (y - jn * Z) / Z;
+    for (let x = 0; x < B; x += 1) {
+      const i = Math.floor(x / G);
+      const tu = (x - i * G) / G;
+      const k = j * gw + i;
+      const w = (feld[k] * (1 - tu) + feld[k + 1] * tu) * (1 - tv) + (feld[k + gw] * (1 - tu) + feld[k + gw + 1] * tu) * tv;
+      const inx = Math.floor(x / Z);
+      const su = (x - inx * Z) / Z;
+      const m = jn * nw + inx;
+      const r = (n[m] * (1 - su) + n[m + 1] * su) * (1 - sv) + (n[m + nw] * (1 - su) + n[m + nw + 1] * su) * sv;
+      bm[y * B + x] = w + r > 0 ? 1 : 0;
+    }
+  }
+}
+
+/** Oberste feste Zeile einer Spalte (oder -1). */
+function oben(maske, x) {
+  const c = Math.max(0, Math.min(maske.breite - 1, Math.round(x)));
+  for (let y = 0; y < maske.hoehe; y += 1) if (maske.bitmap[y * maske.breite + c]) return y;
+  return -1;
+}
+
+/** Dicke, zerbrochene Burgruine: massiver Block, ein Raum mit Tor, schmale Fenster, gezackte Krone. */
+function ruine(maske, rng, x, bodenY, breite, hoehe) {
+  maske.rechteck(x, bodenY - hoehe, x + breite, bodenY + 4);
+  const raumH = Math.min(100, hoehe * 0.4);
+  maske.rechteck(x + 36, bodenY - raumH - 8, x + breite - 36, bodenY - 8, 0);
+  maske.rechteck(x + breite * 0.4, bodenY - 84, x + breite * 0.4 + 54, bodenY + 2, 0);
+  const fenster = Math.floor(hoehe / 130);
+  for (let i = 1; i <= fenster; i += 1) {
+    const fy = bodenY - raumH - i * 100;
+    maske.rechteck(x + breite * 0.5 - 12, fy - 54, x + breite * 0.5 + 12, fy, 0);
+  }
+  for (let z = x; z < x + breite; z += 16) {
+    const ab = rng.next() * 80;
+    if (ab > 14) maske.rechteck(z, bodenY - hoehe - 2, z + 16, bodenY - hoehe + ab, 0);
+  }
+}
+
+function dichteInsel(maske, rng, B, H, stat) {
+  const rauschen = fbm2(rng, B, H, 620, 5);
+  const wurm = fbm2(rng, B, H, 300, 3);
+  const cx = B * zwischen(rng, 0.46, 0.54);
+  const cy = H * 0.44;
+  const haupt = masse(cx, cy, B * zwischen(rng, 0.3, 0.36), H * 0.12, H * zwischen(rng, 0.3, 0.38), 430);
+  const kleine = [-1, 1].map((s) => masse(cx + s * B * zwischen(rng, 0.38, 0.45), H * zwischen(rng, 0.5, 0.66), B * 0.1, H * 0.06, H * 0.16, 300));
+  const d = (x, y) => {
+    let w = Math.max(haupt(x, y), ...kleine.map((k) => k(x, y))) + rauschen(x, y) * 190;
+    // Gewundene Tunnel im Inneren.
+    if (y > cy + 60 && w > 60) w = Math.min(w, (Math.abs(wurm(x, y)) - 0.035) * 900);
+    return w;
+  };
+  ausDichte(maske, rng, d);
+  stat.platten += 1;
+  for (let i = 0; i < 2; i += 1) {
+    const x = cx + zwischen(rng, -B * 0.16, B * 0.16);
+    const y = oben(maske, x);
+    if (y > 0) { ruine(maske, rng, x, y + 6, zwischen(rng, 130, 190), zwischen(rng, 170, 300)); stat.tuerme += 1; }
+  }
+  return Math.round(H * 0.92);
+}
+
+function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
+  const rauschen = fbm2(rng, B, H, 480, 5);
+  const n = archipel ? 9 + Math.floor(rng.next() * 5) : 3 + Math.floor(rng.next() * 3);
+  const teile = [];
+  for (let versuch = 0; versuch < n * 12 && teile.length < n; versuch += 1) {
+    const rx = archipel ? zwischen(rng, 140, 380) : (B / n) * zwischen(rng, 0.5, 0.7);
+    const x = archipel ? zwischen(rng, rx, B - rx) : B * ((teile.length + 0.5) / n) + zwischen(rng, -B * 0.03, B * 0.03);
+    const y = H * zwischen(rng, 0.34, archipel ? 0.74 : 0.68);
+    if (teile.some((t) => Math.abs(t.x - x) < (t.rx + rx) * 0.9 && Math.abs(t.y - y) < 150)) continue;
+    teile.push({ x, y, rx, f: masse(x, y, rx, rx * 0.3, rx * zwischen(rng, 0.45, 0.9), rx * 1.0) });
+  }
+  ausDichte(maske, rng, (x, y) => Math.max(...teile.map((t) => t.f(x, y))) + rauschen(x, y) * 230);
+  stat.platten += teile.length;
+  teile.sort((a, b) => a.x - b.x);
+  for (let i = 0; i < teile.length; i += 1) {
+    const t = teile[i];
+    if (t.rx > 200 && rng.next() < 0.6) {
+      const x = t.x + zwischen(rng, -t.rx * 0.4, t.rx * 0.2);
+      const y = oben(maske, x);
+      if (y > 0) { ruine(maske, rng, x, y + 6, zwischen(rng, 120, 170), zwischen(rng, 150, 260)); stat.tuerme += 1; }
+    }
+    const nach = teile[i + 1];
+    if (nach && nach.x - nach.rx - (t.x + t.rx) < 320 && rng.next() < 0.7) {
+      const xa = t.x + t.rx * 0.8;
+      const xb = nach.x - nach.rx * 0.8;
+      const ya = oben(maske, xa);
+      const yb = oben(maske, xb);
+      if (ya > 0 && yb > 0 && xb > xa) { bruecke(maske, xa, xb, ya + 4, yb + 4); stat.bruecken += 1; }
+    }
+  }
+  return Math.round(H * 0.92);
+}
+
+function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
+  const rauschen = fbm2(rng, B, H, 500, 5);
+  const kante = rausch2(rng, B, H, 380);
+  const wurmA = fbm2(rng, B, H, 340, 3);
+  const wurmB = fbm2(rng, B, H, 240, 3);
+  const y0 = (x) => H * 0.2 + kante(x, 0) * H * 0.07;
+  const d = (x, y) => {
+    let w = y - y0(x) + rauschen(x, y) * 110;
+    if (y > y0(x) + 110) {
+      w = Math.min(w, (Math.abs(wurmA(x, y)) - 0.05) * 900);
+      if (y > H * 0.55) w = Math.min(w, (Math.abs(wurmB(x, y)) - 0.03) * 900);
+    }
+    return w;
+  };
+  ausDichte(maske, rng, d);
+  const kammern = 4 + Math.floor(rng.next() * 3);
+  const punkte = [];
+  for (let i = 0; i < kammern; i += 1) {
+    const x = B * ((i + 0.5) / kammern) + zwischen(rng, -B * 0.04, B * 0.04);
+    punkte.push({ x, y: H * zwischen(rng, 0.5, 0.82), rx: zwischen(rng, 120, 210), ry: zwischen(rng, 70, 120) });
+  }
+  for (let i = 0; i + 1 < punkte.length; i += 1) gang(maske, punkte[i].x, punkte[i].y + punkte[i].ry * 0.3, punkte[i + 1].x, punkte[i + 1].y + punkte[i + 1].ry * 0.3, 34);
+  for (const k of punkte) { kammer(maske, k.x, k.y, k.rx, k.ry); stat.hoehlen += 1; }
+  for (let i = 0; i < 3; i += 1) {
+    const k = punkte[Math.floor(rng.next() * punkte.length)];
+    gang(maske, k.x + zwischen(rng, -30, 30), k.y - k.ry * 0.5, k.x + zwischen(rng, -90, 90), y0(k.x) - 30, 36);
+  }
+  if (mitInsel) {
+    for (const k of punkte.slice(1, -1)) {
+      maske.ellipse(k.x, k.y + k.ry * 0.1, k.rx * 0.45, k.ry * 0.3, 1);
+      stat.platten += 1;
+    }
+  }
+  stat.platten += 1;
+  return Math.round(H * 0.94);
+}
+
+function dichteSchlucht(maske, rng, B, H, stat) {
+  const rauschen = fbm2(rng, B, H, 500, 5);
+  const wegX = rausch2(rng, B, H, 520);
+  const boden = H * 0.9;
+  const y0 = H * zwischen(rng, 0.3, 0.4);
+  const mitte = (y) => B / 2 + wegX(0, y) * B * 0.09;
+  const halb = (y) => B * (0.115 + 0.07 * (1 - (y - y0) / (boden - y0)));
+  const d = (x, y) => {
+    const wand = Math.abs(x - mitte(y)) - halb(y);
+    return Math.max(Math.min(wand, y - y0), y - boden) + rauschen(x, y) * 120;
+  };
+  ausDichte(maske, rng, d);
+  // Absätze: breite Felsbänder, die aus den Wänden wachsen.
+  const n = 4 + Math.floor(rng.next() * 3);
+  for (let i = 0; i < n; i += 1) {
+    const y = H * (0.46 + (0.38 * i) / Math.max(1, n - 1));
+    const links = i % 2 === 0;
+    const wx = mitte(y) + (links ? -1 : 1) * halb(y);
+    maske.ellipse(wx + (links ? 1 : -1) * 20, y, B * zwischen(rng, 0.07, 0.11), zwischen(rng, 38, 58), 1);
+    stat.platten += 1;
+  }
+  if (rng.next() < 0.7) {
+    const xa = mitte(y0) - halb(y0) - 20;
+    const xb = mitte(y0) + halb(y0) + 20;
+    bruecke(maske, xa, xb, oben(maske, xa) + 6, oben(maske, xb) + 6);
+    stat.bruecken += 1;
+  }
+  for (const x of [B * 0.12, B * 0.88]) {
+    const y = oben(maske, x);
+    if (y > 0) { ruine(maske, rng, x - 80, y + 6, 160, zwischen(rng, 160, 260)); stat.tuerme += 1; }
+  }
+  return Math.round(H * 0.93);
+}
+
+function dichteVulkan(maske, rng, B, H, stat) {
+  const rauschen = fbm2(rng, B, H, 520, 5);
+  const cx = B * zwischen(rng, 0.44, 0.56);
+  const spitze = H * zwischen(rng, 0.2, 0.28);
+  const grund = H * 0.84;
+  const halb = (y) => B * 0.06 + B * zwischen(rng, 0.32, 0.38) * (Math.max(0, y - spitze) / (grund - spitze)) ** 0.8;
+  const breite = halb(grund);
+  const d = (x, y) => {
+    const kegel = Math.min((y < spitze ? -1 : 1) * 1e3, (breite * 0 + (B * 0.06 + (breite - B * 0.06) * ((y - spitze) / (grund - spitze)) ** 0.8)) - Math.abs(x - cx));
+    return Math.max(kegel, y - grund) + rauschen(x, y) * 150;
+  };
+  ausDichte(maske, rng, d);
+  maske.ellipse(cx, spitze + 20, B * 0.07, 70, 0);
+  gang(maske, cx, spitze + 60, cx, H * 0.66, 26);
+  kammer(maske, cx, H * 0.7, B * 0.12, 70);
+  stat.hoehlen += 2;
+  for (const s of [-1, 1]) {
+    const x = cx + s * B * zwischen(rng, 0.42, 0.47);
+    if (x < 120 || x > B - 120) continue;
+    maske.ellipse(x, H * zwischen(rng, 0.52, 0.66), 150, 60, 1);
+    stat.platten += 1;
+  }
+  stat.platten += 1;
+  return Math.round(H * 0.92);
+}
+
+function dichteEbenen(maske, rng, B, H, stat) {
+  const rauschen = fbm2(rng, B, H, 420, 5);
+  const ebenen = width3(B, H) ? 4 : 3;
+  const teile = [];
+  for (let e = 0; e < ebenen; e += 1) {
+    const y = H * (0.74 - e * (0.44 / Math.max(1, ebenen - 1)));
+    const anzahl = e === 0 ? 2 : 1 + Math.floor(rng.next() * 2);
+    for (let i = 0; i < anzahl; i += 1) {
+      const rx = (B / (anzahl + 0.6)) * zwischen(rng, 0.38, 0.5);
+      const x = B * ((i + 0.5 + (e % 2 ? 0.15 : -0.1)) / anzahl) + zwischen(rng, -B * 0.04, B * 0.04);
+      teile.push({ x: Math.max(rx * 0.8, Math.min(B - rx * 0.8, x)), y: y + zwischen(rng, -30, 30), rx, e });
+    }
+  }
+  const platten = teile.map((t) => masse(t.x, t.y, t.rx, t.rx * 0.16, t.rx * zwischen(rng, 0.25, 0.4), t.rx * 0.8));
+  const pfeiler = [];
+  for (const t of teile.filter((q) => q.e > 0)) {
+    const stuetze = teile.find((q) => q.e === t.e - 1 && Math.abs(q.x - t.x) < q.rx * 0.8);
+    if (stuetze) pfeiler.push({ x: t.x + zwischen(rng, -t.rx * 0.4, t.rx * 0.4), y0: t.y, y1: stuetze.y, b: zwischen(rng, 60, 96) });
+  }
+  const d = (x, y) => {
+    let w = Math.max(...platten.map((p) => p(x, y)));
+    for (const p of pfeiler) if (y > p.y0 && y < p.y1) w = Math.max(w, p.b / 2 - Math.abs(x - p.x) + rauschen(x * 2, y) * 25);
+    return Math.max(w + rauschen(x, y) * 200, y - H * 0.9);
+  };
+  ausDichte(maske, rng, d);
+  stat.platten += teile.length;
+  stat.pfeiler += pfeiler.length;
+  for (const t of teile) {
+    if (t.rx > 260 && rng.next() < 0.6) {
+      const x = t.x + zwischen(rng, -t.rx * 0.5, t.rx * 0.3);
+      const y = oben(maske, x);
+      if (y > 0) { ruine(maske, rng, x, y + 6, zwischen(rng, 120, 170), Math.min(zwischen(rng, 150, 250), y - 30)); stat.tuerme += 1; }
+    }
+  }
+  return Math.round(H * 0.92);
+}
+
+function width3(B, H) { return B / H > 1.6; }
+
+function dichteRuinenstadt(maske, rng, B, H, stat) {
+  const rauschen = fbm2(rng, B, H, 700, 5);
+  const huegel = rausch2(rng, B, H, 600);
+  const y0 = (x) => H * 0.74 + huegel(x, 0) * H * 0.06;
+  ausDichte(maske, rng, (x, y) => y - y0(x) + rauschen(x, y) * 70);
+  const n = 5 + Math.floor(rng.next() * 3);
+  const tuerme = [];
+  for (let i = 0; i < n; i += 1) {
+    const breite = zwischen(rng, 120, 200);
+    const x = (B - breite) * ((i + zwischen(rng, 0.15, 0.85)) / n);
+    const hoehe = zwischen(rng, 200, 440);
+    ruine(maske, rng, x, y0(x + breite / 2) + 8, breite, hoehe);
+    tuerme.push({ x, breite, hoehe, y: y0(x + breite / 2) });
+    stat.tuerme += 1;
+  }
+  for (let i = 0; i + 1 < tuerme.length; i += 1) {
+    const a = tuerme[i];
+    const b = tuerme[i + 1];
+    const luecke = b.x - (a.x + a.breite);
+    if (luecke > 30 && luecke < 330 && rng.next() < 0.65) {
+      const y = a.y - Math.min(a.hoehe, b.hoehe) * 0.55;
+      bruecke(maske, a.x + a.breite - 4, b.x + 4, y, y);
+      stat.bruecken += 1;
+    }
+  }
+  return Math.round(H * 0.93);
+}
+
+function dichteHochkant(maske, rng, B, H, stat) {
+  const rauschen = fbm2(rng, B, H, 600, 5);
+  const wand = B * zwischen(rng, 0.08, 0.13);
+  const n = 6 + Math.floor(rng.next() * 3);
+  const baender = [];
+  let links = rng.next() < 0.5;
+  for (let i = 0; i < n; i += 1) {
+    const y = H * (0.18 + (0.7 * i) / (n - 1));
+    const rx = B * zwischen(rng, 0.3, 0.42);
+    baender.push(masse(links ? wand * 0.5 : B - wand * 0.5, y, rx, 50, zwischen(rng, 90, 140), rx * 0.42));
+    links = !links;
+  }
+  const brocken = [0.3, 0.62].map((f) => masse(B * zwischen(rng, 0.4, 0.6), H * f, B * 0.1, 50, 120, 200));
+  const d = (x, y) => Math.max(wand - x, x - (B - wand), ...baender.map((b) => b(x, y)), ...brocken.map((b) => b(x, y)), y - H * 0.94) + rauschen(x, y) * 60;
+  ausDichte(maske, rng, d);
+  stat.platten += n;
+  stat.pfeiler += 1;
+  return Math.round(H * 0.94);
+}
+
 /**
  * @param {object} o
  * @param {{next:function():number}} o.rng - Seed-Zweig des Geländes
@@ -538,10 +891,10 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
   const gezogen = KARTENARTEN[Math.floor(rng.next() * (KARTENARTEN.length - 1))];
   const wahl = KARTENARTEN.includes(art) ? art : (height > width * 1.2 ? 'hochkant' : gezogen);
   const stat = neuesStat();
-  const sonder = { insel: karteInsel, inselgruppe: karteInselgruppe, hoehle: karteHoehle, hoehleInsel: (m, r, b, h, st) => karteHoehle(m, r, b, h, st, true), hochkant: karteHochkant, schlucht: karteSchlucht, archipel: karteArchipel, vulkan: karteVulkan, ruinenstadt: karteRuinenstadt, pyramide: kartePyramide, planet: kartePlanet, unmoeglich: karteUnmoeglich }[wahl];
+  const sonder = { ebenen: dichteEbenen, insel: dichteInsel, inselgruppe: dichteGruppe, hoehle: dichteHoehle, hoehleInsel: (m, r, b, h, st) => dichteHoehle(m, r, b, h, st, true), hochkant: dichteHochkant, schlucht: dichteSchlucht, archipel: (m, r, b, h, st) => dichteGruppe(m, r, b, h, st, true), vulkan: dichteVulkan, ruinenstadt: dichteRuinenstadt, pyramide: kartePyramide, planet: kartePlanet, unmoeglich: karteUnmoeglich }[wahl];
   if (sonder) {
     const wy = sonder(maske, rng, width, height, stat);
-    maske.rechteck(0, wy + 30, width, height);
+    maske.rechteck(0, wy + 60, width, height);
     return { bitmap: maske.bitmap, wasserY: wy, bauteile: stat, art: wahl, umlauf: maske.umlauf, rund: maske.rund, planetenart: maske.planetenart };
   }
   const wasserY = Math.round(height * 0.9);
