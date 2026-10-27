@@ -57,9 +57,12 @@ function parseCss(css) {
  * Dunkelt eine Himmelsfarbe in Richtung der Palette ab: Der Entwurf ist nächtlich,
  * auch wenn das Biom einen hellen Tag vorsieht. Die Farbtönung bleibt erhalten.
  */
+/** Wie stark die Himmelsfarben zur Grundfarbe hin abgedunkelt werden (1 = wie bisher, 0 = Palette unverändert). */
+const HIMMEL_ABDUNKELUNG = 0.55;
+
 function naechtlich(farbe, tiefe) {
   const hell = luma(farbe) / 255;
-  const menge = 0.5 + 0.38 * hell + 0.08 * tiefe;
+  const menge = (0.5 + 0.38 * hell + 0.08 * tiefe) * HIMMEL_ABDUNKELUNG;
   return mix(farbe, BG0, Math.min(0.92, menge));
 }
 
@@ -84,7 +87,7 @@ export function drawSky(ctx, breite, hoehe, scenery, zeit) {
 
   const dunst = ctx.createLinearGradient(0, hoehe * 0.22, 0, hoehe * 0.62);
   dunst.addColorStop(0, 'rgba(60, 88, 92, 0)');
-  dunst.addColorStop(0.7, 'rgba(60, 88, 92, 0.22)');
+  dunst.addColorStop(0.7, 'rgba(60, 88, 92, 0.1)');
   dunst.addColorStop(1, 'rgba(60, 88, 92, 0)');
   ctx.fillStyle = dunst;
   ctx.fillRect(0, hoehe * 0.22, breite, hoehe * 0.4);
@@ -788,10 +791,11 @@ function zeichneHuegel(ctx, breite, hoehe, scenery, grundlinie) {
   const dunst = stufen.length ? mix(parseCss(stufen[stufen.length - 1]), [92, 112, 120], 0.45) : [80, 104, 112];
   const boden = scenery.ground.surface;
   const gruen = [30, 72, 30];
-  const f0 = mix(dunst, BG0, 0.42);
-  const f1 = mix(mix(boden, dunst, 0.4), BG0, 0.66);
-  const f2 = mix(mix(boden, dunst, 0.15), BG0, 0.76);
-  const f_1 = mix(dunst, BG0, 0.3);
+  // Abdunkelung der Hügelketten zur Grundfarbe: weniger als zuvor (0,42/0,66/0,76/0,3), damit die Biomfarbe bleibt.
+  const f0 = mix(dunst, BG0, 0.3);
+  const f1 = mix(mix(boden, dunst, 0.4), BG0, 0.5);
+  const f2 = mix(mix(boden, dunst, 0.15), BG0, 0.6);
+  const f_1 = mix(dunst, BG0, 0.2);
   const lichtFarbe = mix(dunst, [255, 244, 220], 0.45);
   const ebenen = [
     // Fernste Kette: hell und dunstig, kleine Wälder, kaum Kontrast zum Himmel (Luftperspektive).
