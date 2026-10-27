@@ -36,7 +36,7 @@ function pruefe(e) {
     assert.ok(zahl(e.radius, 0.3, 1.6), `${name}: radius`);
     assert.ok(zahl(e.tiefe, 0.3, 1.4), `${name}: tiefe`);
   }
-  assert.ok(Number.isInteger(e.bruechig) && e.bruechig >= 0 && e.bruechig <= 4, `${name}: bruechig`);
+  assert.ok(Number.isInteger(e.bruechig) && e.bruechig >= 0 && e.bruechig <= 5, `${name}: bruechig`);
   for (const f of ['brennbar', 'schmelzbar', 'leitfaehig', 'traegt', 'versinkt']) assert.equal(typeof e[f], 'boolean', `${name}: ${f}`);
   for (const [g, v] of Object.entries(e.anfaellig)) {
     assert.ok(GRUPPEN.includes(g), `${name}: anfaellig.${g}`);

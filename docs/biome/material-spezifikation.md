@@ -23,7 +23,7 @@ Gilt für jedes Material aus `docs/biome/gesamtliste.md` (Namen laut `docs/biome
 | `kontur` | Optik | `dunkel` · `hell` · `keine` (Linie an der Materialgrenze) |
 | `haerte` | Zerstörbarkeit | `weich` · `normal` · `hart` · `sehr_hart` · `unzerstoerbar` |
 | `radius`, `tiefe` | Zerstörbarkeit | Zahl; Radius 0,3–1,6, Tiefe 0,3–1,4; bei `unzerstoerbar` beide `0` |
-| `bruechig` | Zerstörbarkeit | ganze Zahl 0–4 (Nebenbrüche bei Wucht) |
+| `bruechig` | Zerstörbarkeit | ganze Zahl 0–5 (Nebenbrüche bei Wucht; Katalog-Höchstwert: Glas = 5) |
 | `brennbar`, `schmelzbar` | Zerstörbarkeit | boolesch |
 | `leitfaehig` | Zerstörbarkeit | boolesch (leitet Strom) |
 | `anfaellig` | Zerstörbarkeit | Objekt: Wirkgruppen `wucht`, `hitze`, `kaelte`, `aetz`, `strom`, `nass` → Faktor 0,5–1,8 (fehlt = 1) |
