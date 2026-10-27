@@ -57,7 +57,7 @@ import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import {
-  plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen,
+  plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen, pflanzenWiegen,
 } from './pflanzen.js';
 import { omenZustand, zeichneOmen } from './valhallaOmen.js';
 import {
@@ -2255,8 +2255,16 @@ export class Renderer {
 
     if (this.pflanzenSchicht) {
       // Nur die Streifen um die Pflanzen: die Ebene ist sonst leer (siehe `pflanzenStreifen`).
+      // Wiegen im Wind: Scherung je Streifen, unten im Boden verankert (die Pflanzenebene liegt unter dem Gelände).
+      const wiegen = !this.reducedMotion;
       for (const r of this.pflanzenStreifen) {
+        const scher = wiegen ? pflanzenWiegen(this.time / 60, (r.x0 + r.x1) / 2, state.wind) : 0;
+        if (scher !== 0) {
+          this.ctx.save();
+          this.ctx.transform(1, 0, scher, 1, -scher * r.y1, 0);
+        }
         this.ctx.drawImage(this.pflanzenSchicht, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+        if (scher !== 0) this.ctx.restore();
       }
     }
     if (this.terrainLayer) {

@@ -357,6 +357,23 @@ export function pflanzenRahmen(p, breite, hoehe) {
 }
 
 /**
+ * Wiegen im Wind: Scherung (Spitze gegen Wurzel) für einen Pflanzenstreifen an der Stelle `x`.
+ * Zwei Wellen unterschiedlicher Schnelligkeit und Phase je Ort, dazu ein Anteil des Windes der Partie:
+ * Starker Wind legt die Pflanzen in seine Richtung. Bleibt klein (höchstens ±0,13), weil die Wurzel
+ * hinter dem Gelände liegt und nur die Spitze sich bewegen soll.
+ *
+ * @param {number} zeit - Sekunden
+ * @param {number} x - Ort in Kartenpixeln
+ * @param {number} [wind] - Wind der Partie (HUD-Wert, etwa −0,05 bis 0,05)
+ * @returns {number} Scherung (x' = x + scher · (y − Wurzel))
+ */
+export function pflanzenWiegen(zeit, x, wind = 0) {
+  const wellen = 0.05 * Math.sin(zeit * 1.3 + x * 0.011) + 0.03 * Math.sin(zeit * 2.9 + x * 0.031);
+  const druck = Math.max(-1, Math.min(1, (Number(wind) || 0) / 0.05)) * 0.05;
+  return wellen - druck;
+}
+
+/**
  * Die Pflanzenebene ist so groß wie die Karte, aber fast leer. Statt sie jedes Bild
  * ganz aufzulegen (die Karte hat bis zu 3,7 Mio. Pixel), genügen Streifen um die Pflanzen:
  * überlappende Rahmen werden zu SENKRECHTEN Streifen ohne Überlappung verschmolzen
