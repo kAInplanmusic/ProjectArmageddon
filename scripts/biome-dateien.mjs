@@ -231,4 +231,8 @@ fs.mkdirSync(AUS, { recursive: true });
 for (const f of fs.readdirSync(AUS)) if (/^\d\d-.*\.md$/.test(f)) fs.unlinkSync(path.join(AUS, f));
 for (const b of biome) fs.writeFileSync(path.join(AUS, `${String(b.nr).padStart(2, '0')}-${slug(b.titel)}.md`), schreibeBiom(b, biome, vm, vo, vt, info));
 fs.writeFileSync(path.join(AUS, 'gesamtliste.md'), schreibeGesamt(biome, vm, vo, vt, info));
+// Arbeitspakete für die Materialwerte: alphabetisch in drei Teile (je Teil ein Worker, eine Datei).
+const alle = [...vm.keys()].sort((a, b) => a.localeCompare(b, 'de'));
+const drittel = Math.ceil(alle.length / 3);
+fs.writeFileSync(path.join(AUS, 'materialien-teile.json'), `${JSON.stringify({ teil1: alle.slice(0, drittel), teil2: alle.slice(drittel, 2 * drittel), teil3: alle.slice(2 * drittel) }, null, 1)}\n`);
 console.log(`${biome.length} Biome, ${vm.size} Materialien, ${vo.size} Objekte, ${vt.size} Trigger`);
