@@ -658,6 +658,7 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stof
   // (bis 94 %) Moos und Kantenlicht, und das Gelände hat innen dieselbe Helligkeit wie am Rand.
   if (stoffkarte) tinteStoffe(d, bitmap, breite, hoehe, stoffkarte, seed);
   dunkleNachTiefe(d, bitmap, breite, hoehe);
+  toeneNachPalette(d, bitmap, breite, hoehe, palette);
   const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);
   zeichneRand(d, bitmap, breite, hoehe, art);
   zeichneKontur(d, bitmap, breite, hoehe);
@@ -703,6 +704,26 @@ export function dunkleNachTiefe(d, bitmap, breite, hoehe, tiefe = 130, rest = 0.
     const f = tabelle[abst[i]];
     const o = i * 4;
     d[o] *= f; d[o + 1] *= f; d[o + 2] *= f;
+  }
+}
+
+/**
+ * Färbt das Gestein zur Kulisse hin: Jeder feste Pixel behält seine Helligkeit und rückt um `staerke` in Richtung des Farbtons
+ * der Palette (Mischung aus Oberfläche und Tiefe). So passen Stoffe und Bildkulisse zusammen (Schnee kühl, Lava warm, Höhle braun),
+ * ohne dass ein Stoff seine Struktur verliert.
+ */
+export function toeneNachPalette(d, bitmap, breite, hoehe, palette, staerke = 0.34) {
+  const ziel = mischeRgb(palette.surface, palette.deep, 0.55);
+  const zl = 0.299 * ziel[0] + 0.587 * ziel[1] + 0.114 * ziel[2] || 1;
+  const fr = ziel[0] / zl; const fg = ziel[1] / zl; const fb = ziel[2] / zl;
+  const n = breite * hoehe;
+  for (let i = 0; i < n; i += 1) {
+    if (!bitmap[i]) continue;
+    const o = i * 4;
+    const l = 0.299 * d[o] + 0.587 * d[o + 1] + 0.114 * d[o + 2];
+    d[o] += (l * fr - d[o]) * staerke;
+    d[o + 1] += (l * fg - d[o + 1]) * staerke;
+    d[o + 2] += (l * fb - d[o + 2]) * staerke;
   }
 }
 

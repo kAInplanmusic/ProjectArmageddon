@@ -151,7 +151,8 @@ test('Die Färbung bleibt bitgleich zum Stand vor der Optimierung (Fingerabdruck
   // (`dunkleNachTiefe`) und die Stoffe laufen vor Saum, Kantenlicht und Kontur. Auftraggeber: düsterer und realer. Mit dem
   // Zwischenspeicher und den Seeds bleibt die Eigenschaft dieselbe: gleiche Eingabe, gleiches Bild.
   // Gleicher Tag, zweiter Schritt (vorher 2561716384): das Gras am Saum ist dunkler und ohne Neon (30 % zum Nachtton).
-  assert.equal(a, 4079594140, 'Fingerabdruck der Färbung (Stand 2026-10-27: Tiefe, Stoffe vor Saum, dunkles Gras)');
+  // Dritter Schritt (vorher 4079594140): das Gestein wird zur Palette der Kulisse hin getönt (`toeneNachPalette`, Helligkeit bleibt).
+  assert.equal(a, 868038621, 'Fingerabdruck der Färbung (Stand 2026-10-27: Tiefe, Stoffe vor Saum, dunkles Gras, Palettentönung)');
 });
 
 test('Pflanzenebene nach einem Krater: nur der Ausschnitt wird neu gezeichnet, mit denselben Pflanzen wie ein Vollaufbau', () => {
