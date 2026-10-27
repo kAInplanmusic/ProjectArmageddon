@@ -38,7 +38,7 @@ export const GELAENDE_THEMEN = 3;
 export const GELAENDE_PLANET = 4;
 /** Fassung 5: die Biome nutzen die Biom-Materialien (`config/stoff-rezepte-material.js`); Form und Zufall bleiben wie in 4. */
 export const GELAENDE_MATERIAL = 5;
-export const GELAENDE_STANDARD = GELAENDE_PLANET;
+export const GELAENDE_STANDARD = GELAENDE_MATERIAL;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
