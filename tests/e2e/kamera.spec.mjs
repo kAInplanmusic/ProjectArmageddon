@@ -3,7 +3,7 @@
  * Geschossverfolgung hält das Geschoss im Bild, die Kamera verlässt nie die
  * Kartenfläche, Spielerkontrolle (Mausrad, Taste C).
  *
- * Formate: 1280x720, 800x400, Touch 844x390. Seeds: 20260921, 77, 5, 123.
+ * Formate: 1280x720, 800x400, Touch 844x390. Seeds: 20260921, 80, 5, 123.
  * Mit `PA_SHOTS=<Ordner>` werden Bilder abgelegt.
  */
 import { test, expect } from '@playwright/test';
@@ -13,7 +13,7 @@ const FORMATE = [
   { name: 'd800', viewport: { width: 800, height: 400 } },
   { name: 'touch844', viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true },
 ];
-const SEEDS = ['20260921', '77', '5', '123'];
+const SEEDS = ['20260921', '80', '5', '123'];
 
 async function oeffne(page, seed) {
   const fehler = [];
