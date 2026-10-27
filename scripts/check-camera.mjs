@@ -91,6 +91,8 @@ const EINORDNUNG = {
   '#drawCookie': 'welt',
   '#drawWiederholung': 'welt',
   '#drawOmen': 'bildschirm',
+  /* Vignette (2026-10-27): dunkle Ränder über dem ganzen Bild, nach der Kameraklammer, mit Einheitstransformation. */
+  '#drawVignette': 'bildschirm',
 };
 
 /** Alle Zeichenfunktionen, die `render()` aufruft. */

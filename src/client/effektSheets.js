@@ -27,6 +27,10 @@ export const SHEETS = Object.freeze({
   explosion: Object.freeze({ datei: 'explosion.webp', spalten: 8, zeilen: 8, frames: reihe(1, 55), takt: 1, kern: 0.4 }),
   glut: Object.freeze({ datei: 'glut.webp', spalten: 8, zeilen: 8, frames: reihe(2, 63), takt: 2, kern: 0.35 }),
   feuerring: Object.freeze({ datei: 'feuerring.webp', spalten: 8, zeilen: 8, frames: reihe(0, 60), takt: 1, kern: 0.3 }),
+  // Eigene Zeichnungen (`scripts/sprites-erzeugen/effekt-zeichnen.py`, 5×2 Zellen): kleiner Feuerball und Pilzwolke (Rauchring, blaue Flamme und Mündungsfeuer zeichnet das Skript auch, sie sind noch nicht eingebaut).
+  // `versatzY`: Anteil der Kantenlänge, um den das Bild nach oben rückt (die Pilzwolke steht mit dem Fuß am Einschlagpunkt).
+  feuerball: Object.freeze({ datei: 'feuerball.webp', spalten: 5, zeilen: 2, frames: reihe(0, 9), takt: 3, kern: 0.5 }),
+  pilzwolke: Object.freeze({ datei: 'pilzwolke.webp', spalten: 5, zeilen: 2, frames: reihe(0, 8), takt: 5, kern: 0.55, versatzY: 0.34 }),
 });
 
 /** Kometen im Bogen `leuchtgeschosse.webp` (Pixel): Farbe → Rechteck; die Längsachse steht senkrecht. */
@@ -119,6 +123,14 @@ export class SheetEffekte {
    * Der Frame ist größer als der Feuerball (`kern`): Die Kantenlänge folgt dem Explosionsradius.
    */
   einschlag(x, y, radius) {
+    // Kleine Einschläge: gezeichneter Feuerball; sehr große: Pilzwolke; dazwischen die Bildfolge `explosion`.
+    if (radius <= 22 && this.bereit('feuerball')) {
+      return this.starte('feuerball', x, y, Math.max(48, radius * 2 / SHEETS.feuerball.kern));
+    }
+    if (radius >= 80 && this.bereit('pilzwolke')) {
+      const gp = Math.max(160, radius * 2 / SHEETS.pilzwolke.kern);
+      return this.starte('pilzwolke', x, y, gp);
+    }
     const g = Math.max(40, radius * 2 / SHEETS.explosion.kern);
     const ok = this.starte('explosion', x, y, g);
     if (ok && radius >= 30) this.starte('glut', x, y + radius * 0.15, g * 0.7, { verzoegerung: 20, alpha: 0.85 });
@@ -149,7 +161,8 @@ export class SheetEffekte {
     const r = frameRechteck(art, index, e.bild.naturalWidth ?? e.bild.width, e.bild.naturalHeight ?? e.bild.height);
     if (!r) return false;
     ctx.globalAlpha = alpha;
-    ctx.drawImage(e.bild, r.sx, r.sy, r.sw, r.sh, x - groesse / 2, y - groesse / 2, groesse, groesse);
+    const hoch = (SHEETS[art].versatzY ?? 0) * groesse;
+    ctx.drawImage(e.bild, r.sx, r.sy, r.sw, r.sh, x - groesse / 2, y - groesse / 2 - hoch, groesse, groesse);
     return true;
   }
 

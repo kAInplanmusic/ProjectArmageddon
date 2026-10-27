@@ -31,7 +31,7 @@ function effekte(urls = { explosion: 'e', glut: 'g', feuerring: 'f', leuchtgesch
 }
 
 test('Dateien der Atlanten sind klein und vorhanden', () => {
-  for (const d of ['explosion', 'glut', 'feuerring', 'leuchtgeschosse']) {
+  for (const d of ['explosion', 'glut', 'feuerring', 'leuchtgeschosse', 'feuerball', 'pilzwolke']) {
     const pfad = join(ORDNER, `${d}.webp`);
     assert.ok(existsSync(pfad), `${d}.webp fehlt`);
     assert.ok(statSync(pfad).size < 600_000, `${d}.webp zu groß`);
@@ -105,4 +105,31 @@ test('FeuerOptik zeichnet mit Atlas höchstens MAX_RINGE Flammenringe und läuft
   f.zeichne(ctx);
   const ringe = ctx.aufrufe.length;
   assert.ok(ringe > 0 && ringe <= 6, `${ringe} Ringe`);
+});
+
+test('Einschlag wählt nach Radius: kleiner Feuerball, Bildfolge dazwischen, Pilzwolke', () => {
+  const alle = { explosion: 'e', glut: 'g', feuerring: 'f', leuchtgeschosse: 'l', feuerball: 'b', pilzwolke: 'p' };
+  let e = effekte(alle);
+  assert.equal(e.einschlag(10, 10, 14), true);
+  assert.deepEqual(e.liste.map(q => q.art), ['feuerball']);
+  e = effekte(alle);
+  e.einschlag(10, 10, 50);
+  assert.deepEqual(e.liste.map(q => q.art), ['explosion', 'glut']);
+  e = effekte(alle);
+  e.einschlag(10, 10, 100);
+  assert.deepEqual(e.liste.map(q => q.art), ['pilzwolke']);
+  // Ohne die neuen Bilder bleibt es bei der bisherigen Bildfolge.
+  e = effekte();
+  e.einschlag(10, 10, 100);
+  assert.equal(e.liste[0].art, 'explosion');
+});
+
+test('Die Pilzwolke steht mit dem Fuß am Einschlagpunkt (Versatz nach oben)', () => {
+  const e = effekte({ explosion: 'e', glut: 'g', feuerring: 'f', leuchtgeschosse: 'l', pilzwolke: 'p' });
+  e.starte('pilzwolke', 100, 200, 100);
+  e.fortschreiben();
+  const ctx = fakeCtx();
+  e.zeichne(ctx);
+  const a = ctx.aufrufe[0];
+  assert.equal(a[6], 200 - 50 - SHEETS.pilzwolke.versatzY * 100);
 });

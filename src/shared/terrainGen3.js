@@ -81,6 +81,7 @@ import { baueStoffkarte, STOFF_FORK } from './stoffkarte.js';
 import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
 import { erzeugeKompositionsKarte } from './terrainKomposition.js';
+import { pruefeErreichbarkeit } from './erreichbarkeit.js';
 import { GELAENDE_KOMPOSITION } from './config/gelaende.js';
 
 /**
@@ -688,7 +689,8 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung }) {
     karte = erzeugeKompositionsKarte({ rng, width, height, art });
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
-    const urteil = pruefeBauteilKarte(kennzahlen);
+    let urteil = pruefeBauteilKarte(kennzahlen);
+    if (urteil.ok && !spawnErreichbar(karte.bitmap, width, height, karte.art)) urteil = { ok: false, grund: 'Spawnspalten erreichen einander nicht' };
     if (urteil.ok) break;
     ablehnungen.push(`${karte.art}: ${urteil.grund}`);
   }
@@ -702,6 +704,30 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung }) {
     ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
     ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),
   };
+}
+
+/**
+ * Erreichen sich die Figuren an den Standard-Spawnspalten (sechs Figuren, Teams abwechselnd, Spalte i·B/7)? Dieselbe Prüfung wie
+ * `erreichbarkeit.pruefeErreichbarkeit`, auf einem Viertel der Auflösung gerechnet (Kosten). Hochformat und Karten ohne Boden an
+ * einer Spalte zählen als erreichbar (dort gilt die Prüfung des Matches).
+ */
+function spawnErreichbar(bitmap, width, height, art = '') {
+  if (height > width) return true;
+  const S = 4;
+  const w = Math.floor(width / S);
+  const h = Math.floor(height / S);
+  const klein = new Uint8Array(w * h);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) klein[y * w + x] = bitmap[(y * S + 2) * width + x * S + 2];
+  const figuren = [];
+  for (let i = 0; i < 6; i += 1) {
+    const x = Math.round((width * (i + 1)) / 7);
+    let y = 0;
+    while (y < height && !bitmap[y * width + x]) y += 1;
+    if (y < height) figuren.push({ x: x / S, y: y / S, teamId: i % 2 });
+  }
+  const urteil = pruefeErreichbarkeit({ bitmap: klein, width: w, height: h, figuren, wurfweite: (0.3668 * width) / S });
+  // Höhlenkarten zerfallen in Brocken: eine abgesprengte Figur ist dort erlaubt (der Grund beginnt mit ihrer Zahl), sonst neue Ziehung.
+  return urteil.ok || (art.startsWith('hoehle') && Number.parseInt(urteil.grund, 10) <= 1);
 }
 
 /** Bauteilkarten haben Bänder und Lücken: nur Land-Anteil und Höhennutzung zählen (nicht Steilheit/Hohlraum des Hügelfelds). */

@@ -72,7 +72,7 @@ export function trockenerStartX(m, idealX, belegt = []) {
    *
    * FUND (belegt, 2026-10-27, Bauteilkarten): Auf Vulkan, Pyramide und Schlucht lag der feste Wunschplatz am Hang,
    * 23 px vor einer Wand — die Figur stand trocken, konnte aber nicht laufen (E2E `gehen`: 4 px statt 15). Gesucht wird
-   * zuerst im Umkreis von 600 px nach einem begehbaren Platz; gibt es keinen, bleibt es beim alten Verhalten.
+   * im Umkreis von 600 px nach einem begehbaren Platz; gibt es keinen, bleibt es beim alten Verhalten. Dass die Spawnspalten einander erreichen, stellt der Kartengenerator sicher (`terrainGen3.spawnErreichbar`).
    */
   const fest = (x, y) => m.terrain?.isSolid?.(x, y) === true;
   const begehbar = x => {

@@ -666,7 +666,9 @@ function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
   const n = archipel ? 9 + Math.floor(rng.next() * 5) : 3 + Math.floor(rng.next() * 3);
   const teile = [];
   for (let versuch = 0; versuch < n * 12 && teile.length < n; versuch += 1) {
-    const rx = archipel ? zwischen(rng, 140, 380) : (B / n) * zwischen(rng, 0.5, 0.7);
+    // Die erste Insel ist die Hauptinsel (mindestens 0,16·B Radius): auf ihr spielt die Mehrzahl der Figuren.
+    const haupt = teile.length === 0;
+    const rx = Math.max(haupt ? B * 0.16 : 0, archipel ? zwischen(rng, 140, 380) : (B / n) * zwischen(rng, 0.5, 0.7));
     const x = archipel ? zwischen(rng, rx, B - rx) : B * ((teile.length + 0.5) / n) + zwischen(rng, -B * 0.03, B * 0.03);
     const y = H * zwischen(rng, 0.34, archipel ? 0.74 : 0.68);
     if (teile.some((t) => Math.abs(t.x - x) < (t.rx + rx) * 0.9 && Math.abs(t.y - y) < 150)) continue;
