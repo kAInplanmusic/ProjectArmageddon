@@ -1782,7 +1782,13 @@ class Game {
      * hat `kartentyp` im Snapshot bekommen und hier weggeworfen.
      */
     this.#applyOrientation(orientation, terrain.width, terrain.height);
-    this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
+    // Vorgabe 'automatisch': auch online das gemalte Bild passend zum Kartencharakter (Sonderbiome bleiben generativ).
+    if (this.gewaehlteKulisse === 'automatisch' && !terrain.sonderbiom && terrain.charakter) {
+      this.renderer.setScenery(null);
+      this.#applyBackdrop(seed, preset, 'automatisch', terrain.charakter);
+    } else {
+      this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
+    }
     this.renderer.stoffkarte = terrain.stoffkarte ?? null;
     this.renderer.buildTerrainLayer(terrain.bitmap, terrain.width, terrain.height);
     this.renderer.gefuehlZuruecksetzen();
@@ -2856,7 +2862,7 @@ class Game {
     return kulisse;
   }
 
-  #applyBackdrop(seed, preset, gewaehlt = null) {
+  #applyBackdrop(seed, preset, gewaehlt = null, charakter = this.match?.kartencharakter ?? null) {
     // Ohne ausdrücklichen Wert gilt die im Menü getroffene Wahl. Nötig, weil der
     // Online-Weg das Gelände erst nach dem Verbindungsaufbau aufbaut und die Wahl
     // sonst verloren ginge.
@@ -2883,8 +2889,8 @@ class Game {
      * Szene": Eine durchlöcherte Kaverne mit grünem Gras darauf wäre nicht
      * hässlich, sondern falsch.
      */
-    if (!kulisse && this.match?.kartencharakter) {
-      const biomId = biomFuerCharakter(this.match.kartencharakter);
+    if (!kulisse && charakter) {
+      const biomId = biomFuerCharakter(charakter);
       const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
       kulisse = kulisseFuerBiom({ seed, biome: biom });
     }

@@ -84,7 +84,7 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
     ? (() => {
       const g = loeseGelaende(fassung.gelaende ?? GELAENDE_ALT, fassung.biom ?? null, seed);
       const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height, biom: g.sonderbiom, stoffe: g.gelaende >= GELAENDE_BIOME, fassung: g.gelaende });
-      return { bitmap: k.bitmap, waterLevel: k.wasserY, stoffkarte: k.stoffkarte ?? null, sonderbiom: g.sonderbiom };
+      return { bitmap: k.bitmap, waterLevel: k.wasserY, stoffkarte: k.stoffkarte ?? null, sonderbiom: g.sonderbiom, charakter: k.charakter ?? null };
     })()
     : generateTerrain({ rng, width: masse.width, height: masse.height, preset });
   const { bitmap, waterLevel } = gebaut;
@@ -99,6 +99,7 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
     stoffkarte,
     schutz,
     sonderbiom: gebaut.sonderbiom ?? null,
+    charakter: gebaut.charakter ?? null,
     waterLevel,
     width: masse.width,
     height: masse.height,
