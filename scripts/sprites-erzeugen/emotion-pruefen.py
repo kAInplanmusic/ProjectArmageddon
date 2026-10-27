@@ -26,9 +26,28 @@ OBERGRENZE = 0.45
 # Sichtprüfung am Kontaktbogen (2026-10-27) für neu erzeugte Zellen (emotion-neu.py): Ersatz für die Farbprüfung dieser Zellen.
 # Die Zellennummern gelten als gültig (Freigabe) bzw. werden gesperrt (Sperre), sonst entscheidet das Farbhistogramm.
 SICHTPRUEFUNG = {
+    'beasts/00_pikamon': {'frei': [1, 6], 'sperre': []},
     'beasts/01_shrew-quakes': {'frei': [1, 3, 4], 'sperre': [5, 6]},
     'beasts/02_storm-talon': {'frei': [1, 3], 'sperre': [4, 5, 6]},
+    'beasts/10_flame-jaws': {'frei': [1, 3, 5, 6], 'sperre': []},
+    'beasts/11_ember-tails': {'frei': [1, 4, 5], 'sperre': []},
     'beasts/12_magma-plate': {'frei': [1, 3], 'sperre': []},
+    'beasts/22_sonic-blossom': {'frei': [1, 3, 5], 'sperre': []},
+    'datacult/00_nullpointer-exception': {'frei': [1, 3, 5], 'sperre': []},
+    'datacult/01_datapath-replicant': {'frei': [3, 4], 'sperre': []},
+    'datacult/11_synapse-streamer': {'frei': [4], 'sperre': []},
+    'datacult/12_arcology-agent': {'frei': [6], 'sperre': []},
+    'datacult/22_ethereo': {'frei': [1, 6], 'sperre': []},
+    'machina/00_chassis-endo-t8': {'frei': [1, 5], 'sperre': []},
+    'machina/01_slasher-cyber-jax': {'frei': [6], 'sperre': []},
+    'machina/20_grid-drifter-datastream': {'frei': [1, 3, 5], 'sperre': []},
+    'machina/21_proxy-glitch-hack': {'frei': [5], 'sperre': []},
+    'machina/22_overlord-kernel-panic': {'frei': [1, 5], 'sperre': []},
+    'pirates/00_captain-sven': {'frei': [5, 6], 'sperre': []},
+    'pirates/01_swashbuckler-piet': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
+    'pirates/02_iron-hook-harry': {'frei': [1, 5], 'sperre': []},
+    'pirates/10_cannoneer-klaus': {'frei': [1], 'sperre': []},
+    'pirates/11_sniper-marie': {'frei': [1, 5], 'sperre': []},
 }
 
 
