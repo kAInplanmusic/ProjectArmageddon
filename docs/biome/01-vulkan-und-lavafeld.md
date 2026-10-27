@@ -10,10 +10,10 @@ Steile Basaltwände, Lavazungen, Magmakanäle, poröse Asche; Lava ist ein eigen
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Asche | beide | – | ja (asche, weich) | fehlt | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Asche | beide | – | ja (asche, weich) | ja | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
 | Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
-| Magmaadern | SSOT | – | fehlt | fehlt | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Magmaadern | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Schlacke | beide | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Schwefelkruste | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |

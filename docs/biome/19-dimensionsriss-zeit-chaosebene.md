@@ -13,12 +13,12 @@ Zerbrochene Landschaft aus instabilem Fels, Zeitkristallen, schwebenden Fragment
 | Instabiler Boden | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Zeitkristall | beide | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
-| Glasfragmente | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+| Glasfragmente | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
 | Metallfragmente | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
 | Schwebende Plattformen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Risszone | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Stabilisatormaterial | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Phasen-Fels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
+| Phasen-Fels | Manifest | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
 | Glas | Manifest | – | ja (glas, normal) | ja | offen | normal | offen | 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel |
 
 ## Bodenschichten (Manifest)

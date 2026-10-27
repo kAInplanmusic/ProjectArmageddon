@@ -12,12 +12,12 @@ Schnee, Firn, Gletschereis, Spalten; rutschig; Eisbrücken brechen; Lawinen; Tau
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Pulverschnee | SSOT | – | ähnlich: schnee | ähnlich: schnee.jpg | offen | offen | offen | **einzigartig** |
 | Firnschnee | SSOT | – | ähnlich: schnee | ähnlich: firn.jpg | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
-| Gletschereis | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Gletschereis | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Klareiskristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 16 Kristallines Schwebearchipel |
-| Gefrorene Wurzeln | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Klareiskristall | SSOT | – | ähnlich: kristall | ähnlich: klareis.webp | offen | offen | offen | 16 Kristallines Schwebearchipel |
+| Gefrorene Wurzeln | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Schnee | Manifest | – | ja (schnee, weich) | ja | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
-| Klareis | Manifest | – | fehlt | fehlt | offen | offen | offen | 16 Kristallines Schwebearchipel |
+| Klareis | Manifest | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
 | Tiefenfels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
 | Eis | Manifest | – | ja (eis, normal) | ja | offen | normal | offen | 14 Planet (eine Karte, Art per Zufall); 16 Kristallines Schwebearchipel |
 | Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |

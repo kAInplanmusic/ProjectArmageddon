@@ -8,7 +8,7 @@
 export default Object.freeze([
   // Wie Erde, aber vergiftet: ätzempfindlicher; sonst Erdwerte.
   {
-    key: 'kontaminierte_erde', label: 'Kontaminierte Erde', farbe: [98, 86, 52], muster: 'koernig', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'kontaminierte_erde', label: 'Kontaminierte Erde', farbe: [98, 86, 52], muster: 'koernig', glanz: 0.05, textur: 'kontaminierte_erde', kontur: 'dunkel',
     haerte: 'normal', radius: 1, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { nass: 1.1, aetz: 1.1 }, bruch: 'rieseln', reibung: 1, bremst: 0.1, traegt: true, versinkt: false,
   },
@@ -26,7 +26,7 @@ export default Object.freeze([
   },
   // Rostschicht/Krümel (Biom Rost): weich, rieselt, Oxid leitet nicht; Textur fehlt (rostmetall meint festes Metall).
   {
-    key: 'korrosion', label: 'Korrosion', farbe: [150, 82, 44], muster: 'koernig', glanz: 0.05, textur: null, kontur: 'keine',
+    key: 'korrosion', label: 'Korrosion', farbe: [150, 82, 44], muster: 'koernig', glanz: 0.05, textur: 'korrosion', kontur: 'keine',
     haerte: 'weich', radius: 1.2, tiefe: 1, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.2, nass: 1.1 }, bruch: 'rieseln', reibung: 1.1, bremst: 0.1, traegt: true, versinkt: false,
   },
@@ -50,7 +50,7 @@ export default Object.freeze([
   },
   // Fels mit Kristallen: zwischen Fels und Kristall; Textur kristall.webp wäre reiner Kristall, daher null.
   {
-    key: 'kristallfelsen', label: 'Kristallfelsen', farbe: [126, 112, 168], muster: 'facetten', glanz: 0.4, textur: null, kontur: 'dunkel',
+    key: 'kristallfelsen', label: 'Kristallfelsen', farbe: [126, 112, 168], muster: 'facetten', glanz: 0.4, textur: 'kristallfelsen', kontur: 'dunkel',
     haerte: 'hart', radius: 0.75, tiefe: 0.55, bruechig: 3, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { strom: 1.1, aetz: 1.1 }, bruch: 'splitter', reibung: 0.8, bremst: 0, traegt: true, versinkt: false,
   },
@@ -80,13 +80,13 @@ export default Object.freeze([
   },
   // Leuchtender Kristall: Kristallwerte (hart, scherbend, glatt), hellere Farbe, mehr Glanz; Textur kristall.webp ist unbeleuchtet, daher null.
   {
-    key: 'leuchtkristall', label: 'Leuchtkristall', farbe: [170, 230, 240], muster: 'facetten', glanz: 0.9, textur: null, kontur: 'hell',
+    key: 'leuchtkristall', label: 'Leuchtkristall', farbe: [170, 230, 240], muster: 'facetten', glanz: 0.9, textur: 'leuchtkristall', kontur: 'hell',
     haerte: 'hart', radius: 0.8, tiefe: 0.6, bruechig: 4, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { strom: 1.15, aetz: 0.9 }, bruch: 'scherben', reibung: 0.6, bremst: 0, traegt: true, versinkt: false,
   },
   // Wie Pilzgewebe (Katalog pilz), nur anderer Farbton; Textur pilz.jpg wäre unpassend leuchtlos, daher null.
   {
-    key: 'leuchtpilzgewebe', label: 'Leuchtpilzgewebe', farbe: [90, 200, 190], muster: 'fasern', glanz: 0.3, textur: null, kontur: 'keine',
+    key: 'leuchtpilzgewebe', label: 'Leuchtpilzgewebe', farbe: [90, 200, 190], muster: 'fasern', glanz: 0.3, textur: 'leuchtpilzgewebe', kontur: 'keine',
     haerte: 'weich', radius: 1.2, tiefe: 1.1, bruechig: 0, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.25, aetz: 1.15 }, bruch: 'faser', reibung: 1.1, bremst: 0.15, traegt: true, versinkt: false,
   },
@@ -98,7 +98,7 @@ export default Object.freeze([
   },
   // Erstarrte/glühende Adern im Fels: schmelzen unter Hitze nicht weiter (0,9), Kälte schreckt sie ab (1,2). Zweifel: Zustand (heiß/kalt) unklar, Schaden durch Berührung ist Sache der Wirkung. Textur fehlt.
   {
-    key: 'magmaadern', label: 'Magmaadern', farbe: [214, 80, 34], muster: 'schichten', glanz: 0.5, textur: null, kontur: 'dunkel',
+    key: 'magmaadern', label: 'Magmaadern', farbe: [214, 80, 34], muster: 'schichten', glanz: 0.5, textur: 'magmaadern', kontur: 'dunkel',
     haerte: 'hart', radius: 0.7, tiefe: 0.5, bruechig: 1, brennbar: false, schmelzbar: true, leitfaehig: false,
     anfaellig: { hitze: 0.9, kaelte: 1.2 }, bruch: 'schmelzen', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
@@ -170,7 +170,7 @@ export default Object.freeze([
   },
   // Dichter Meteoritenstein (Eisen-Anteil): sehr hart, aber nicht unzerstörbar; Zweifel: Leitfähigkeit offen, daher nicht leitend. Textur fels.jpg wäre irdischer Fels, daher null.
   {
-    key: 'meteoritenfels', label: 'Meteoritenfels', farbe: [78, 70, 66], muster: 'schichten', glanz: 0.2, textur: null, kontur: 'dunkel',
+    key: 'meteoritenfels', label: 'Meteoritenfels', farbe: [78, 70, 66], muster: 'schichten', glanz: 0.2, textur: 'meteoritenfels', kontur: 'dunkel',
     haerte: 'sehr_hart', radius: 0.5, tiefe: 0.4, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: {}, bruch: 'splitter', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
@@ -182,7 +182,7 @@ export default Object.freeze([
   },
   // Fruchtbare Erde: etwas weicher als Erde, dunkel und locker; Textur fehlt (erde.jpg ist Rohboden).
   {
-    key: 'mutterboden', label: 'Mutterboden', farbe: [84, 62, 44], muster: 'koernig', glanz: 0.02, textur: null, kontur: 'keine',
+    key: 'mutterboden', label: 'Mutterboden', farbe: [84, 62, 44], muster: 'koernig', glanz: 0.02, textur: 'mutterboden', kontur: 'keine',
     haerte: 'weich', radius: 1.15, tiefe: 1.05, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { nass: 1.1 }, bruch: 'rieseln', reibung: 1.1, bremst: 0.1, traegt: true, versinkt: false,
   },
@@ -194,7 +194,7 @@ export default Object.freeze([
   },
   // Meteoriteneisen: sehr hart, leitet, glänzt; Textur fehlt.
   {
-    key: 'nickel_eisen', label: 'Nickel-Eisen', farbe: [136, 138, 144], muster: 'schichten', glanz: 0.65, textur: null, kontur: 'dunkel',
+    key: 'nickel_eisen', label: 'Nickel-Eisen', farbe: [136, 138, 144], muster: 'schichten', glanz: 0.65, textur: 'nickel_eisen', kontur: 'dunkel',
     haerte: 'sehr_hart', radius: 0.45, tiefe: 0.4, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: { strom: 1.1 }, bruch: 'ganz', reibung: 0.9, bremst: 0, traegt: true, versinkt: false,
   },
@@ -206,25 +206,25 @@ export default Object.freeze([
   },
   // Kalkige Riffreste: wie Koralle (ätzempfindlich), aber lockerer (weich, rieselt). Textur fehlt.
   {
-    key: 'organische_riffablagerungen', label: 'Organische Riffablagerungen', farbe: [200, 170, 150], muster: 'poroes', glanz: 0.05, textur: null, kontur: 'keine',
+    key: 'organische_riffablagerungen', label: 'Organische Riffablagerungen', farbe: [200, 170, 150], muster: 'poroes', glanz: 0.05, textur: 'organische_riffablagerungen', kontur: 'keine',
     haerte: 'weich', radius: 1.2, tiefe: 1, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.3 }, bruch: 'rieseln', reibung: 1, bremst: 0.1, traegt: true, versinkt: false,
   },
   // Lebendes, tragendes Wurzelwerk: wie Holz (brennbar, Faserbruch). Zweifel: "organisch" nur aus dem Namen; kolossholz.jpg meint Riesenholz, daher null.
   {
-    key: 'organische_tragwurzeln', label: 'Organische Tragwurzeln', farbe: [96, 72, 44], muster: 'fasern', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'organische_tragwurzeln', label: 'Organische Tragwurzeln', farbe: [96, 72, 44], muster: 'fasern', glanz: 0.05, textur: 'organische_tragwurzeln', kontur: 'dunkel',
     haerte: 'normal', radius: 0.95, tiefe: 0.9, bruechig: 0, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.25, nass: 0.9 }, bruch: 'faser', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
   // Wie Fels; "Phasen" steht für Zeitriss-Optik, die Werte erfinden wir nicht dazu. Farbe leicht bläulich.
   {
-    key: 'phasen_fels', label: 'Phasen-Fels', farbe: [100, 96, 140], muster: 'schichten', glanz: 0.3, textur: null, kontur: 'dunkel',
+    key: 'phasen_fels', label: 'Phasen-Fels', farbe: [100, 96, 140], muster: 'schichten', glanz: 0.3, textur: 'phasen_fels', kontur: 'dunkel',
     haerte: 'hart', radius: 0.7, tiefe: 0.5, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.2, kaelte: 0.95 }, bruch: 'platten', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
   // Pilzbrücke: tragend, wie Pilzgewebe, aber fester (normal) damit Figuren darauf stehen; brennbar.
   {
-    key: 'pilzbruecke', label: 'Pilzbrücke', farbe: [150, 96, 120], muster: 'fasern', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'pilzbruecke', label: 'Pilzbrücke', farbe: [150, 96, 120], muster: 'fasern', glanz: 0.05, textur: 'pilzbruecke', kontur: 'dunkel',
     haerte: 'normal', radius: 1, tiefe: 0.85, bruechig: 0, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.25, aetz: 1.15 }, bruch: 'faser', reibung: 1.1, bremst: 0.1, traegt: true, versinkt: false,
   },
@@ -254,7 +254,7 @@ export default Object.freeze([
   },
   // Fels mit Hohlräumen (Asteroid): wie poröser Beton gewählt, damit ähnliche Stoffe ähnliche Werte haben. Textur fels.jpg ist dichter Fels, daher null.
   {
-    key: 'poroeser_fels', label: 'Poröser Fels', farbe: [120, 116, 112], muster: 'poroes', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'poroeser_fels', label: 'Poröser Fels', farbe: [120, 116, 112], muster: 'poroes', glanz: 0.05, textur: 'poroeser_fels', kontur: 'dunkel',
     haerte: 'hart', radius: 0.85, tiefe: 0.6, bruechig: 2, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.25 }, bruch: 'rieseln', reibung: 1.05, bremst: 0, traegt: true, versinkt: false,
   },

@@ -11,14 +11,14 @@ Asteroiden als Geländeinseln, Regolith, Metalltrümmer, Kristall, Eisadern; Tr�
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Regolith-Staub | beide | – | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen | **einzigartig** |
-| Asteroidenbasalt | SSOT | – | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen | **einzigartig** |
+| Asteroidenbasalt | SSOT | – | ähnlich: basalt | ja | offen | offen | offen | **einzigartig** |
 | Metallader | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
 | Kristalladern | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Eisader | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Poröser Fels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
+| Eisader | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Poröser Fels | SSOT | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
 | Metalltrümmer | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Meteoritenfels | Manifest | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
-| Nickel-Eisen | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Meteoritenfels | Manifest | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
+| Nickel-Eisen | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)

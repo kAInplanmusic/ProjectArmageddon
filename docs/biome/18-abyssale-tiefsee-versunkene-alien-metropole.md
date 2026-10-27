@@ -14,9 +14,9 @@ Dunkles Unterwassergebiet: Basaltgräben, versunkene Gebäude, Druckkammern, Kor
 | Basalt | SSOT | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Koralle | beide | – | ja (koralle, normal) | ja | offen | normal | offen | 8 Korallenriff |
 | Metall | SSOT | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
-| Leuchtkristall | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+| Leuchtkristall | SSOT | – | ähnlich: kristall | ja | offen | offen | offen | **einzigartig** |
 | Hydrothermalablagerungen | SSOT | – | fehlt | ähnlich: hydrothermal.jpg | offen | offen | offen | **einzigartig** |
-| Druckkammer | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Druckkammer | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Leuchtalgen | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Tiefseebasalt | Manifest | – | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen | **einzigartig** |
 | korrodiertes Metall | Manifest | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |

@@ -18,7 +18,7 @@ Nicht-euklidisch, aber normale Zerstörungs-/Schwerkraftregeln; definierte Sonde
 | Giftnebel | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Raumanker | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Traumgestein | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| gehärtetes Glas | Manifest | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+| gehärtetes Glas | Manifest | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
 

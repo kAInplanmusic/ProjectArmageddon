@@ -15,10 +15,10 @@ Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Met
 | Metallschienen | beide | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
 | Obsidian | SSOT | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall) |
 | Keramik | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Dampfkammer | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Dampfkammer | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Lavaglas | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
 | Bimsstein | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Industriemagma | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Industriemagma | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
 

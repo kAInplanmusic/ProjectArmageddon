@@ -10,14 +10,14 @@ Schwebende Inseln mit tragenden Kernen und Verbindungen; Zerstörung kann Inselt
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Erdüberzug | beide | – | fehlt | fehlt | offen | offen | offen | 13 Burgfelsen & Magiekristall |
+| Erdüberzug | beide | – | fehlt | ja | offen | offen | offen | 13 Burgfelsen & Magiekristall |
 | Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
 | Wolkenstein | SSOT | – | fehlt | ja | offen | offen | offen | 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel |
-| Glasplatten | SSOT | – | ähnlich: glas | ähnlich: glas.webp | offen | offen | offen | **einzigartig** |
+| Glasplatten | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
 | Magnetgestein | SSOT | – | fehlt | ja | offen | offen | offen | 16 Kristallines Schwebearchipel |
-| Kristallfelsen | Manifest | – | ähnlich: fels | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
+| Kristallfelsen | Manifest | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
 

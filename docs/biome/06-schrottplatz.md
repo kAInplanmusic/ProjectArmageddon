@@ -10,13 +10,13 @@ Wracks, Rostmetall, kontaminierte Böden, Kabel, Giftfässer; Zerstörung durch 
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Kontaminierte Erde | beide | – | ähnlich: erde | ähnlich: teer.jpg | offen | offen | offen | 9 Pilzwald & Säuresumpf |
+| Kontaminierte Erde | beide | – | ähnlich: erde | ja | offen | offen | offen | 9 Pilzwald & Säuresumpf |
 | Rostmetall | beide | – | ähnlich: metall | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Metall | beide | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Holzreste | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | 9 Pilzwald & Säuresumpf |
-| Giftablagerungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Holzreste | SSOT | – | ähnlich: holz | ja | offen | offen | offen | 9 Pilzwald & Säuresumpf |
+| Giftablagerungen | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Teer | SSOT | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
-| Betonreste | SSOT | – | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen | **einzigartig** |
+| Betonreste | SSOT | – | ähnlich: beton | ja | offen | offen | offen | **einzigartig** |
 | Beton | Manifest | – | ja (beton, hart) | ja | offen | hart | offen | 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
 | Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 9 Pilzwald & Säuresumpf; 13 Burgfelsen & Magiekristall; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |

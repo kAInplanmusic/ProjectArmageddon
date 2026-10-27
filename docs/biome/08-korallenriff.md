@@ -15,7 +15,7 @@ Unterwasser, mehrere Tiefenebenen, Strömung, Seegras, Höhlen, Wracks; Wasser a
 | Kalkstein | SSOT | – | fehlt | ja | offen | offen | offen | 2 Kristallhöhlen |
 | Seegras | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Unterwasserfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
-| Organische Riffablagerungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Organische Riffablagerungen | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
 | Wasser | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
 | Feinsand | Manifest | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 5 Wüstendünen |
 | Riff-Kalkstein | Manifest | – | fehlt | ähnlich: kalkstein.jpg | offen | offen | offen | **einzigartig** |
