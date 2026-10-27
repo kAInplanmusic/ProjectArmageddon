@@ -91,6 +91,7 @@ export function baueTerrain(quelle) {
       height: quelle.height,
       biom: quelle.biom ?? null,
       stoffe: Boolean(quelle.stoffe),
+      fassung: quelle.gelaende ?? 0,
     });
     bitmap = k.bitmap;
     waterLevel = k.wasserY;

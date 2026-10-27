@@ -842,6 +842,7 @@ export class MatchController {
       preset: this.preset,
       biom: this.sonderbiom,
       stoffe: this.gelaende >= GELAENDE_BIOME,
+      gelaende: this.gelaende,
       events: this.#events,
       statuses: this.#statuses,
       handleProjectileImpact: payload => this.#handleProjectileImpact(payload),

@@ -390,9 +390,9 @@ function formeCharakter(charakter, biomId) {
  * Die Stoffkarte zu einer fertigen Karte (nur wenn verlangt, sonst `{}`): aus einem eigenen Seed-Zweig,
  * mit dem Rezept des Sonderbioms oder — ohne Sonderbiom — des Bioms, das aus dem Charakter folgt.
  */
-function stoffAnhang(stoffe, rng, width, height, bitmap, charakter, biom) {
+function stoffAnhang(stoffe, rng, width, height, bitmap, charakter, biom, fassung = 0) {
   if (!stoffe || typeof rng.fork !== 'function') return {};
-  const rezept = rezeptFuer(biom ?? biomFuerCharakter(charakter));
+  const rezept = rezeptFuer(biom ?? biomFuerCharakter(charakter), fassung);
   return { stoffkarte: baueStoffkarte({ rng: rng.fork(STOFF_FORK), width, height, bitmap, rezept }) };
 }
 
@@ -557,7 +557,7 @@ export function zaehleMaterialien(material) {
  * @param {number} optionen.height
  * @returns {{bitmap:Uint8Array, surface:Int32Array, wasserY:number, charakter:object, versuche:number, kennzahlen:object}}
  */
-export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe = false }) {
+export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe = false, fassung = 0 }) {
   if (!rng || typeof rng.next !== 'function') {
     throw new TypeError('erzeugeAutonomeKarte benötigt einen RNG mit next()');
   }
@@ -577,7 +577,7 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
    * wird **geprüft und neu gezogen**. Der RNG läuft dabei weiter — der
    * nächste Versuch ist ebenso deterministisch wie der erste.
    */
-  if (istPlanetBiom(biom)) return erzeugePlanetKarte({ rng, width, height, biom, stoffe });
+  if (istPlanetBiom(biom)) return erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung });
 
   const MAX_VERSUCHE = 8;
   let letzterFehler = null;
@@ -600,7 +600,7 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
 
     const urteil = pruefeSpielbarkeit(kennzahlen);
     if (urteil.ok) {
-      return { ...karte, charakter, versuche: versuch, kennzahlen, ablehnungen, ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom) };
+      return { ...karte, charakter, versuche: versuch, kennzahlen, ablehnungen, ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung) };
     }
     ablehnungen.push(urteil.grund);
     letzterFehler = urteil.grund;
@@ -618,7 +618,7 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
   const kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
   return {
     ...karte,
-    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom),
+    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),
     charakter,
     versuche: MAX_VERSUCHE + 1,
     kennzahlen,
@@ -632,7 +632,7 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
  * (bis zu acht Ziehungen), Ergebnis in derselben Form. Der Charakter steht in der Mitte jeder Achse,
  * die Hohlraum-Kennzahl zählt nur die Luft IM Körper (die Leere um die Scheibe ist kein Loch).
  */
-function erzeugePlanetKarte({ rng, width, height, biom, stoffe }) {
+function erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung = 0 }) {
   const charakter = { planet: biom };
   for (const [achse, [lo, hi]] of Object.entries(CHARAKTER_ACHSEN)) charakter[achse] = (lo + hi) / 2;
   const ablehnungen = [];
@@ -654,7 +654,7 @@ function erzeugePlanetKarte({ rng, width, height, biom, stoffe }) {
     bitmap: karte.bitmap, surface: karte.surface, wasserY: karte.wasserY, material, planet: karte.planet,
     charakter, versuche: ok ? versuch : 9, kennzahlen, ablehnungen,
     ...(ok ? {} : { warnung: `Keine spielbare Karte nach 8 Versuchen (zuletzt: ${ablehnungen.at(-1)})` }),
-    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom),
+    ...stoffAnhang(stoffe, rng, width, height, karte.bitmap, charakter, biom, fassung),
   };
 }
 

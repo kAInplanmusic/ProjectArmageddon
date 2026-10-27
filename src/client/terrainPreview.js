@@ -83,7 +83,7 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
   const gebaut = kartentyp === 'autonom'
     ? (() => {
       const g = loeseGelaende(fassung.gelaende ?? GELAENDE_ALT, fassung.biom ?? null, seed);
-      const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height, biom: g.sonderbiom, stoffe: g.gelaende >= GELAENDE_BIOME });
+      const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height, biom: g.sonderbiom, stoffe: g.gelaende >= GELAENDE_BIOME, fassung: g.gelaende });
       return { bitmap: k.bitmap, waterLevel: k.wasserY, stoffkarte: k.stoffkarte ?? null, sonderbiom: g.sonderbiom };
     })()
     : generateTerrain({ rng, width: masse.width, height: masse.height, preset });
