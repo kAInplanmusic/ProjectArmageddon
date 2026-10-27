@@ -34,8 +34,8 @@ POSEN = {
     1: ('blinzeln', 'standing relaxed in the same neutral stance as the reference, eyes closed in a blink'),
     3: ('jubel', 'cheering triumphantly: arms or forelegs raised high, mouth open, happy, a small hop'),
     4: ('zittern', 'trembling and exhausted: hunched forward, knees slightly bent, tired shaking pose, sweat drops'),
-    5: ('blickHoch', 'standing in the same stance, only the head tilted up, looking upward'),
-    6: ('blickRunter', 'standing in the same stance, only the head tilted down, looking downward'),
+    5: ('blickHoch', 'keep the exact same body posture and number of legs as the reference (a four-legged animal stays on all fours), only the head tilted up, looking upward'),
+    6: ('blickRunter', 'keep the exact same body posture and number of legs as the reference (a four-legged animal stays on all fours), only the head tilted down, looking downward'),
 }
 PROMPT = ('The exact same character as in the reference image: same species, body shape, colors, costume and art style. '
           'It must stay the same creature and must never turn into a human or any other being. '
@@ -91,10 +91,16 @@ def aufruf(schluessel, zelle, arbeit, ausgabe):
     return 0.0
 
 
+def fehlende(k):
+    """Zellen der Posen, die im Manifest noch nicht als gültig stehen."""
+    m = json.load(open(EMO + 'manifest.json'))['figuren'].get(k, {})
+    return [z for z in POSEN if z not in m.get('gueltig', [])]
+
+
 def erzeugen(arbeit, grenze, schluessel):
     summe = 0.0
     for k in schluessel:
-        for zelle in POSEN:
+        for zelle in fehlende(k):
             if summe >= grenze:
                 print('Obergrenze erreicht', round(summe, 3))
                 return
