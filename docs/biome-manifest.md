@@ -35,3 +35,18 @@
 2. **Abweichende Benennungen:** das Manifest nennt „Feinsand/Treibsand" (SSOT: „Loser Sand/Verdichteter Sand"), „Klareis" (SSOT: „Eis"/„Klarer Kristall"), „Wüsten-Dünen" (SSOT: „Wüstendünen"), „Erdüberzug", „Mutterboden", „Phasen-Fels", „Traumgestein", „Industriemagma", „Tiefseebasalt", „Meteoritenfels", „Regolith-Staub", „Nickel-Eisen" u. a. Sie gelten als eigene Einträge, bis die Namen vereinheitlicht sind (Gesamtliste, Spalte „Quelle").
 3. **„+50 % Magieintensität" (Biome 2 und 7) — entschieden (Auftraggeber, 2026-10-27):** gemeint ist die **Magie vom Magier (Klasse) und seinen Zaubern**, also deren Wirkung in diesen beiden Biomen. Im Code heißt der Magier-Archetyp vermutlich `occultist` (Archetypen: `brawler`, `artillerist`, `occultist`) und die Zauber sind die Schadensgruppe `magie` (`arcane`, `astral`, `spatial`, `temporal`, `time`, `psychic` in `schaden.js`). Zuordnung noch zu bestätigen; es ist **kein** Material- oder Biomwert, sondern ein Biom-Modifikator auf Magie.
 4. **Fluide:** Die SSOT führt Fluide nicht als eigene Liste; das Manifest ist die erste Quelle dafür. Ob „Raumriss", „Zeit-Vortex", „Weltraum-Leere" und „Bodenlose Leere" Fluide oder Abgründe sind, ist offen (hier als Fluid/Abgrund geführt).
+
+## Planet (Biom 14): Schichten und Fluide je Art — **Vorschlag, noch nicht freigegeben**
+
+Das Manifest nennt sie „variabel". Die Tabelle ist aus den sechs Materialmixen der SSOT (Biom 14) und aus dem jeweils verwandten Biom des Manifests abgeleitet (Eis ← Biom 4, Lava ← 1, Wüste ← 5, Dschungel ← 3, Rost ← 6, Stein ← 2). Der Seed zieht eine Art; die Zeile gilt dann für die ganze Karte.
+
+| Art (`planet_*`) | Materialien (SSOT) | Deck | Kern | Adern | Wasser / Fluid | Spezial (SSOT-Objekte) |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Eis (`eis`) | Schnee, Firn, Eis, Fels, Kristall | Schnee/Firn | Fels | Eis/Kristall | Schmelzwasser; Eiswasser | Eisbrücken; Lawinenhänge; gefrorene Wasserfälle; Windzonen |
+| Lava (`lava`) | Asche, Basalt, Obsidian, Schlacke, Magmaadern | Asche/Schlacke | Basalt | Obsidian/Magmaadern | Lava (tödlich); kein Wasser | Lavaseen; Magmarisse; Dampfventile; Lavarampen |
+| Wüste (`sand`) | Sand, Sandstein, Salzkruste, Teer | Sand/Salzkruste | Sandstein | Teer | Treibsand; Teer; Oasen | Treibsandlöcher; Wanderdünen; Monumente; Oasen |
+| Dschungel (`dschungel`) | Humus, Holz, Wurzeln, Pilze, Fels | Humus | Wurzeln/Fels | Holz/Pilze | Sumpfschlamm; Säure (ätzend) | Rankenaufzüge; Wurzeln; Sporen; Wasserstandsschalter |
+| Rost (`rost`) | Rostmetall, Metall, Schrott, Beton, Korrosion | Schrott/Korrosion | Rostmetall/Beton | Metall | Toxischer Schlamm | Metallplatten; Giftfässer; Pressen; korrodierte Träger |
+| Stein (`stein`) | Geröll, Fels, Obsidian, Kristalladern | Geröll | Fels | Obsidian/Kristalladern | Schmelzwasser (unterirdisch) | Stalaktiten; Kristalle; Geröllhänge; Felsbrücken |
+
+Offen: Für **Stein** nennen weder SSOT noch Manifest ein Fluid; „Schmelzwasser" ist aus den Kristallhöhlen übernommen und kann auch „keins" sein. Die Zuordnung der Schichten (Deck/Kern/Adern) ist meine Ableitung aus den Materialnamen, nicht deine Vorgabe.
