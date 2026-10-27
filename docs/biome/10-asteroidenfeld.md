@@ -10,15 +10,15 @@ Asteroiden als Geländeinseln, Regolith, Metalltrümmer, Kristall, Eisadern; Tr�
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Regolith-Staub | beide | – | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen | **einzigartig** |
-| Asteroidenbasalt | SSOT | – | ähnlich: basalt | ja | offen | offen | offen | **einzigartig** |
-| Metallader | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Kristalladern | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 2 Kristallhöhlen; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Eisader | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Poröser Fels | SSOT | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
-| Metalltrümmer | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Meteoritenfels | Manifest | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
-| Nickel-Eisen | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Regolith-Staub | beide | – | ja (regolith_staub, weich) | ähnlich: regolith.jpg | offen | weich | offen | **einzigartig** |
+| Asteroidenbasalt | SSOT | – | ja (asteroidenbasalt, hart) | ja | offen | hart | offen | **einzigartig** |
+| Metallader | SSOT | – | ja (metallader, sehr_hart) | ähnlich: metall.webp | offen | sehr_hart | offen | **einzigartig** |
+| Kristalladern | SSOT | – | ja (kristalladern, hart) | ähnlich: kristall.webp | offen | hart | offen | 2 Kristallhöhlen; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Eisader | SSOT | – | ja (eisader, normal) | ja | offen | normal | offen | **einzigartig** |
+| Poröser Fels | SSOT | – | ja (poroeser_fels, hart) | ja | offen | hart | offen | **einzigartig** |
+| Metalltrümmer | SSOT | – | ja (metalltruemmer, normal) | ähnlich: metall.webp | offen | normal | offen | **einzigartig** |
+| Meteoritenfels | Manifest | – | ja (meteoritenfels, sehr_hart) | ja | offen | sehr_hart | offen | **einzigartig** |
+| Nickel-Eisen | Manifest | – | ja (nickel_eisen, sehr_hart) | ja | offen | sehr_hart | offen | **einzigartig** |
 | Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)

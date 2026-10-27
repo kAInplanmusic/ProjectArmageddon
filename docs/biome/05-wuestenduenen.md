@@ -10,15 +10,15 @@ Lose Dünen, Sandstein, Salzkrusten, Treibsand, alte Bauwerke; Wind formt um; Sa
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Feinsand | beide | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 8 Korallenriff |
-| Verdichteter Sand | SSOT | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | **einzigartig** |
-| Sandstein | beide | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
-| Salzkruste | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
-| Treibsand | beide | – | ähnlich: sand | ja | offen | offen | offen | **einzigartig** |
-| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
-| Totholz & Knochen | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
+| Feinsand | beide | – | ja (feinsand, weich) | ähnlich: sand.jpg | offen | weich | offen | 8 Korallenriff |
+| Verdichteter Sand | SSOT | – | ja (verdichteter_sand, normal) | ähnlich: sand.jpg | offen | normal | offen | **einzigartig** |
+| Sandstein | beide | – | ja (sandstein, normal) | ja | offen | normal | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Salzkruste | SSOT | – | ja (salzkruste, normal) | ja | offen | normal | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Treibsand | beide | – | ja (treibsand, weich) | ja | offen | weich | offen | **einzigartig** |
+| Teer | SSOT | – | ja (teer, weich) | ja | offen | weich | offen | 6 Schrottplatz; 11 Surreale Schwebewelt; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
+| Totholz & Knochen | SSOT | – | ja (totholz_knochen, normal) | ja | offen | normal | offen | **einzigartig** |
 | Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Versteinertes Holz | Manifest | – | ähnlich: holz | ja | offen | offen | offen | 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Versteinertes Holz | Manifest | – | ja (versteinertes_holz, hart) | ja | offen | hart | offen | 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)
 

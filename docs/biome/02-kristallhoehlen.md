@@ -10,12 +10,12 @@ Fels, Kristalladern, Stalaktiten, unterirdische Wasserläufe; Kristalle reflekti
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Kristalladern | SSOT | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | 10 Asteroidenfeld; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Massivfels | SSOT | – | ja (massivfels, hart) | ähnlich: fels.jpg | offen | hart | offen | 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Kristalladern | SSOT | – | ja (kristalladern, hart) | ähnlich: kristall.webp | offen | hart | offen | 10 Asteroidenfeld; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
-| Kalkstein | beide | – | fehlt | ja | offen | offen | offen | 8 Korallenriff |
-| Wasserader | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Stalaktiten | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
+| Kalkstein | beide | – | ja (kalkstein, normal) | ja | offen | normal | offen | 8 Korallenriff |
+| Wasserader | SSOT | – | ja (wasserader, weich) | ja | offen | weich | offen | **einzigartig** |
+| Stalaktiten | SSOT | – | ja (stalaktiten, normal) | ja | offen | normal | offen | **einzigartig** |
 | Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Kristall | Manifest | – | ja (kristall, hart) | ja | offen | hart | offen | 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 

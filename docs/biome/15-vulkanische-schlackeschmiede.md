@@ -10,15 +10,15 @@ Industrieanlage im Vulkan: Förderplattformen, Schmelzöfen, Keramikschilde, Met
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall) |
+| Schlacke | beide | – | ja (schlacke, normal) | ja | offen | normal | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall) |
 | Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 14 Planet (eine Karte, Art per Zufall); 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Metallschienen | beide | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
+| Metallschienen | beide | – | ja (metallschienen, hart) | ähnlich: metall.webp | offen | hart | offen | **einzigartig** |
 | Obsidian | SSOT | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall) |
-| Keramik | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Dampfkammer | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Lavaglas | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
-| Bimsstein | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Industriemagma | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Keramik | beide | – | ja (keramik, hart) | ja | offen | hart | offen | **einzigartig** |
+| Dampfkammer | SSOT | – | ja (dampfkammer, weich) | ja | offen | weich | offen | **einzigartig** |
+| Lavaglas | SSOT | – | ja (lavaglas, hart) | ja | offen | hart | offen | **einzigartig** |
+| Bimsstein | SSOT | – | ja (bimsstein, weich) | ja | offen | weich | offen | **einzigartig** |
+| Industriemagma | Manifest | – | ja (industriemagma, weich) | ja | offen | weich | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
 

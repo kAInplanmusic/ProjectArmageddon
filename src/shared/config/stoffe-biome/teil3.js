@@ -9,14 +9,14 @@ export default Object.freeze([
   // Rankgitter: Organik-Technik-Gitter der Alien-Stadt (Biom 17). Dünn, pflanzlich: brennt, ätzbar, bricht in Fasern.
   // Zweifel: Name gibt nur "Gitter aus Ranken" her; keine Textur vorhanden.
   {
-    key: 'rankgitter', label: 'Rankgitter', farbe: [88, 120, 76], muster: 'fasern', glanz: 0.1, textur: null, kontur: 'dunkel',
+    key: 'rankgitter', label: 'Rankgitter', farbe: [88, 120, 76], muster: 'fasern', glanz: 0.1, textur: 'rankgitter', kontur: 'dunkel',
     haerte: 'weich', radius: 1.1, tiefe: 0.9, bruechig: 0, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.3, aetz: 1.15, nass: 0.9 }, bruch: 'faser', reibung: 0.9, bremst: 0.1, traegt: true, versinkt: false,
   },
   // Raumanker: Brückenanker der Schwebewelt (Biom 11), Raumtechnik. Massiv und stabil wie Metall, leitet, nicht zerstörbar,
   // damit die Brücken halten. Zweifel: Name gibt Zerstörbarkeit nicht her; unzerstörbar wegen der Ankerfunktion gewählt.
   {
-    key: 'raumanker', label: 'Raumanker', farbe: [120, 150, 200], muster: 'facetten', glanz: 0.6, textur: null, kontur: 'hell',
+    key: 'raumanker', label: 'Raumanker', farbe: [120, 150, 200], muster: 'facetten', glanz: 0.6, textur: 'raumanker', kontur: 'hell',
     haerte: 'unzerstoerbar', radius: 0, tiefe: 0, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: {}, bruch: 'ganz', reibung: 0.8, bremst: 0, traegt: true, versinkt: false,
   },
@@ -37,14 +37,14 @@ export default Object.freeze([
   // Risszone: Raumriss im zerbrochenen Zeit-Biom (19). Instabil, weich zu zerstören, bricht schnell; Figuren stehen noch
   // darauf (kein Abgrund, der gehört zu den Fluiden). Zweifel: Name gibt wenig her, Werte angelehnt an "instabiler Boden".
   {
-    key: 'risszone', label: 'Risszone', farbe: [96, 70, 120], muster: 'schichten', glanz: 0.2, textur: null, kontur: 'dunkel',
+    key: 'risszone', label: 'Risszone', farbe: [96, 70, 120], muster: 'schichten', glanz: 0.2, textur: 'risszone', kontur: 'dunkel',
     haerte: 'weich', radius: 1.3, tiefe: 1.1, bruechig: 3, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { wucht: 1.2, strom: 1.2 }, bruch: 'splitter', reibung: 0.8, bremst: 0, traegt: true, versinkt: false,
   },
   // Rohrleitungen: Metallrohre der Industriestadt (12). Leiten Strom, Metall, aber hohl und daher nicht unzerstörbar wie
   // die Metallplatte: hart, bricht in Platten, rostet bei Säure/Nässe.
   {
-    key: 'rohrleitungen', label: 'Rohrleitungen', farbe: [110, 116, 122], muster: 'platten', glanz: 0.55, textur: null, kontur: 'dunkel',
+    key: 'rohrleitungen', label: 'Rohrleitungen', farbe: [110, 116, 122], muster: 'platten', glanz: 0.55, textur: 'rohrleitungen', kontur: 'dunkel',
     haerte: 'hart', radius: 0.7, tiefe: 0.5, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: { strom: 1.2, aetz: 1.2 }, bruch: 'platten', reibung: 0.7, bremst: 0, traegt: true, versinkt: false,
   },
@@ -70,21 +70,21 @@ export default Object.freeze([
   // Sandstein: verfestigter Sand (Sandsteinmonumente, Biom 5/14): Fels-nah, aber weicher als Fels; Textur sand.jpg
   // meint losen Sand, daher null.
   {
-    key: 'sandstein', label: 'Sandstein', farbe: [196, 160, 108], muster: 'schichten', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'sandstein', label: 'Sandstein', farbe: [196, 160, 108], muster: 'schichten', glanz: 0.05, textur: 'sandstein', kontur: 'dunkel',
     haerte: 'normal', radius: 0.9, tiefe: 0.75, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.15, nass: 1.05 }, bruch: 'platten', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
   // Säureablagerungen: Krusten aus Säurerückständen (Alien-Stadt, 17). Spröde, ätzend-stabil: Säure schadet ihnen nicht
   // (aetz 0,6), Wasser löst sie. Zweifel: Name gibt Härte nicht her; mittlere Härte, keine Textur.
   {
-    key: 'saeureablagerungen', label: 'Säureablagerungen', farbe: [150, 190, 70], muster: 'poroes', glanz: 0.2, textur: null, kontur: 'dunkel',
+    key: 'saeureablagerungen', label: 'Säureablagerungen', farbe: [150, 190, 70], muster: 'poroes', glanz: 0.2, textur: 'saeureablagerungen', kontur: 'dunkel',
     haerte: 'weich', radius: 1.15, tiefe: 1, bruechig: 2, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 0.6, nass: 1.3 }, bruch: 'rieseln', reibung: 0.9, bremst: 0.15, traegt: true, versinkt: false,
   },
   // Säureboden: Boden aus Säuresumpf/Dschungel (3, 9). Weich wie Erde, durch Säure schon zersetzt (aetz 0,6), bremst
   // wie Schlamm leicht. Kein Fluid, begehbar; versinkt nicht (Treibsand/Schlamm sind eigene Einträge).
   {
-    key: 'saeureboden', label: 'Säureboden', farbe: [128, 150, 72], muster: 'koernig', glanz: 0.15, textur: null, kontur: 'dunkel',
+    key: 'saeureboden', label: 'Säureboden', farbe: [128, 150, 72], muster: 'koernig', glanz: 0.15, textur: 'saeureboden', kontur: 'dunkel',
     haerte: 'weich', radius: 1.2, tiefe: 1.05, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 0.6, nass: 1.1 }, bruch: 'rieseln', reibung: 0.9, bremst: 0.25, traegt: true, versinkt: false,
   },
@@ -103,14 +103,14 @@ export default Object.freeze([
   // Schrott: Metallabfall, lose und verbeult. Leitet, aber zerstörbar (weicher als Rostmetall wegen Hohlräumen),
   // kantig, rauh. Keine Textur vorhanden.
   {
-    key: 'schrott', label: 'Schrott', farbe: [104, 98, 94], muster: 'platten', glanz: 0.35, textur: null, kontur: 'dunkel',
+    key: 'schrott', label: 'Schrott', farbe: [104, 98, 94], muster: 'platten', glanz: 0.35, textur: 'schrott', kontur: 'dunkel',
     haerte: 'normal', radius: 0.95, tiefe: 0.8, bruechig: 2, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: { strom: 1.15, aetz: 1.2 }, bruch: 'splitter', reibung: 1.1, bremst: 0.1, traegt: true, versinkt: false,
   },
   // Schwebende Plattformen: Fragmente der Zeitwelt (19). Fester Fels in der Luft; tragen. Zeitmechanik gehört nicht hierher.
   // Werte wie Fels, etwas brüchiger (Fragmente). Zweifel: Material ungenau, daher Fels als Verwandter.
   {
-    key: 'schwebende_plattformen', label: 'Schwebende Plattformen', farbe: [122, 116, 140], muster: 'schichten', glanz: 0.2, textur: null, kontur: 'hell',
+    key: 'schwebende_plattformen', label: 'Schwebende Plattformen', farbe: [122, 116, 140], muster: 'schichten', glanz: 0.2, textur: 'schwebende_plattformen', kontur: 'hell',
     haerte: 'hart', radius: 0.7, tiefe: 0.5, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.2, kaelte: 0.95 }, bruch: 'platten', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
@@ -124,14 +124,14 @@ export default Object.freeze([
   // Seegras: Unterwasserpflanze (Biom 8), kein Fluid. Weich, faserig; brennt nicht unter Wasser, aber als Stoff brennbar,
   // da pflanzlich. Bremst die Figur leicht (Strömung/Halme). Trägt keine Last (Halme).
   {
-    key: 'seegras', label: 'Seegras', farbe: [60, 130, 80], muster: 'fasern', glanz: 0.1, textur: null, kontur: 'keine',
+    key: 'seegras', label: 'Seegras', farbe: [60, 130, 80], muster: 'fasern', glanz: 0.1, textur: 'seegras', kontur: 'keine',
     haerte: 'weich', radius: 1.2, tiefe: 1, bruechig: 0, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.3, aetz: 1.1 }, bruch: 'faser', reibung: 0.8, bremst: 0.3, traegt: false, versinkt: false,
   },
   // Stabilisatormaterial: stabilisiert die Zeitwelt (19). Technisches Spezialmaterial; Werte wie Metall: leitet, sehr
   // stabil. Zweifel: unzerstörbar gewählt, weil es Stabilisatoren sind, die den Rest halten; Name gibt es nicht her.
   {
-    key: 'stabilisatormaterial', label: 'Stabilisatormaterial', farbe: [150, 200, 210], muster: 'facetten', glanz: 0.55, textur: null, kontur: 'hell',
+    key: 'stabilisatormaterial', label: 'Stabilisatormaterial', farbe: [150, 200, 210], muster: 'facetten', glanz: 0.55, textur: 'stabilisatormaterial', kontur: 'hell',
     haerte: 'unzerstoerbar', radius: 0, tiefe: 0, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: {}, bruch: 'ganz', reibung: 0.8, bremst: 0, traegt: true, versinkt: false,
   },
@@ -144,7 +144,7 @@ export default Object.freeze([
   },
   // Stalaktiten: Tropfstein der Höhle (2). Kalkstein, spröde und dünn, bricht in Splittern, ätzempfindlich.
   {
-    key: 'stalaktiten', label: 'Stalaktiten', farbe: [190, 180, 160], muster: 'schichten', glanz: 0.2, textur: null, kontur: 'dunkel',
+    key: 'stalaktiten', label: 'Stalaktiten', farbe: [190, 180, 160], muster: 'schichten', glanz: 0.2, textur: 'stalaktiten', kontur: 'dunkel',
     haerte: 'normal', radius: 1, tiefe: 0.8, bruechig: 3, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.3, wucht: 1.2 }, bruch: 'splitter', reibung: 0.7, bremst: 0, traegt: true, versinkt: false,
   },
@@ -183,14 +183,14 @@ export default Object.freeze([
   // Totholz & Knochen: Mischung abgestorbenes Holz und Knochen (Biom 5). Werte von Holz (Katalog) übernommen:
   // brennbar, Fasern. Knochen sind spröder, daher leicht brüchig. Textur: null, holz.jpg meint nur das Holz.
   {
-    key: 'totholz_knochen', label: 'Totholz & Knochen', farbe: [168, 150, 120], muster: 'fasern', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'totholz_knochen', label: 'Totholz & Knochen', farbe: [168, 150, 120], muster: 'fasern', glanz: 0.05, textur: 'totholz_knochen', kontur: 'dunkel',
     haerte: 'normal', radius: 0.95, tiefe: 0.9, bruechig: 1, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.25, nass: 0.9 }, bruch: 'faser', reibung: 0.9, bremst: 0, traegt: true, versinkt: false,
   },
   // Traumgestein: Gestein der Schwebewelt (11), Kern der Inseln. Name gibt wenig her: fels-ähnlich, hart, leicht
   // glänzend/traumhaft. Zweifel: Werte von Fels, keine Textur.
   {
-    key: 'traumgestein', label: 'Traumgestein', farbe: [170, 140, 200], muster: 'facetten', glanz: 0.4, textur: null, kontur: 'hell',
+    key: 'traumgestein', label: 'Traumgestein', farbe: [170, 140, 200], muster: 'facetten', glanz: 0.4, textur: 'traumgestein', kontur: 'hell',
     haerte: 'hart', radius: 0.75, tiefe: 0.55, bruechig: 2, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.1 }, bruch: 'splitter', reibung: 0.9, bremst: 0, traegt: true, versinkt: false,
   },
@@ -221,7 +221,7 @@ export default Object.freeze([
   // Versteinerte Wurzeln: Wurzeln zu Stein geworden (Baumriesen, Biom 20): nicht mehr brennbar, hart wie Fels, Fasertextur.
   // Textur: null, versteinertes_holz meint den Stamm, nicht die Wurzeln.
   {
-    key: 'versteinerte_wurzeln', label: 'Versteinerte Wurzeln', farbe: [118, 100, 84], muster: 'fasern', glanz: 0.15, textur: null, kontur: 'dunkel',
+    key: 'versteinerte_wurzeln', label: 'Versteinerte Wurzeln', farbe: [118, 100, 84], muster: 'fasern', glanz: 0.15, textur: 'versteinerte_wurzeln', kontur: 'dunkel',
     haerte: 'hart', radius: 0.75, tiefe: 0.55, bruechig: 1, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { aetz: 1.1 }, bruch: 'splitter', reibung: 1, bremst: 0, traegt: true, versinkt: false,
   },
@@ -235,14 +235,14 @@ export default Object.freeze([
   // der nichts trägt, kaum Widerstand gegen Wucht (weich), bremst die Figur stark, leitet Strom, löscht Feuer.
   // Zweifel: Zerstörbarkeit "weich" ist nur Näherung; versinkt true, weil Figuren im Wasser nicht stehen.
   {
-    key: 'wasser', label: 'Wasser', farbe: [60, 120, 190], muster: 'poroes', glanz: 0.6, textur: null, kontur: 'keine',
+    key: 'wasser', label: 'Wasser', farbe: [60, 120, 190], muster: 'poroes', glanz: 0.6, textur: 'wasser', kontur: 'keine',
     haerte: 'weich', radius: 1.4, tiefe: 1.2, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: { strom: 1.3, kaelte: 1.2, wucht: 0.8 }, bruch: 'ganz', reibung: 0.5, bremst: 0.6, traegt: false, versinkt: true,
   },
   // Wasserader: Wasserlauf im Höhlenfels (2), als durchdringbarer Stoff: wie Wasser (leitet, bremst), aber schmaler
   // und von Gestein gefasst, daher trägt sie ebenso nicht, versinkt aber nicht (flacher Lauf).
   {
-    key: 'wasserader', label: 'Wasserader', farbe: [80, 140, 200], muster: 'schichten', glanz: 0.5, textur: null, kontur: 'dunkel',
+    key: 'wasserader', label: 'Wasserader', farbe: [80, 140, 200], muster: 'schichten', glanz: 0.5, textur: 'wasserader', kontur: 'dunkel',
     haerte: 'weich', radius: 1.2, tiefe: 1, bruechig: 0, brennbar: false, schmelzbar: false, leitfaehig: true,
     anfaellig: { strom: 1.3, kaelte: 1.2 }, bruch: 'ganz', reibung: 0.4, bremst: 0.4, traegt: true, versinkt: false,
   },
@@ -255,7 +255,7 @@ export default Object.freeze([
   // Wurzeln: lebende Wurzeln (Dschungel, 3, 14): wie Holz (Katalog) faserig und brennbar, etwas weicher und feucht.
   // Zweifel: Katalogschlüssel "holz" bleibt bei Holz; Werte nur angelehnt.
   {
-    key: 'wurzeln', label: 'Wurzeln', farbe: [110, 80, 52], muster: 'fasern', glanz: 0.05, textur: null, kontur: 'dunkel',
+    key: 'wurzeln', label: 'Wurzeln', farbe: [110, 80, 52], muster: 'fasern', glanz: 0.05, textur: 'wurzeln', kontur: 'dunkel',
     haerte: 'normal', radius: 1, tiefe: 0.9, bruechig: 0, brennbar: true, schmelzbar: false, leitfaehig: false,
     anfaellig: { hitze: 1.2, nass: 0.9 }, bruch: 'faser', reibung: 1, bremst: 0.05, traegt: true, versinkt: false,
   },

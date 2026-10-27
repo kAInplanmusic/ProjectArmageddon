@@ -4,7 +4,7 @@
 
 Jede Zeile ist ein Eintrag, der **einzeln** gebaut und mit den drei Eigenschaften belegt wird: **Optik**, **Zerstörbarkeit**, **Bewegung** (Reihenfolge laut Auftraggeber). „Biome“ nennt die Nummern aus der SSOT.
 
-**Stand:** 20 Biome · 124 Materialien (56 ohne Katalogeintrag) · 111 Objekte · 32 Trigger. Quellen: docs/biome-ssot.md und docs/biome-manifest.md (Spalte „Quelle“).
+**Stand:** 20 Biome · 124 Materialien (0 ohne Katalogeintrag) · 111 Objekte · 32 Trigger. Quellen: docs/biome-ssot.md und docs/biome-manifest.md (Spalte „Quelle“).
 
 ## Vereinheitlichte Namen
 
@@ -36,130 +36,130 @@ Diese Schreibweisen wurden zusammengelegt (links der frühere Name, rechts der g
 
 | Material | Quelle | Biome | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Alienharz | SSOT/beide | 3, 17 | fehlt | ja | offen | offen | offen |
+| Alienharz | SSOT/beide | 3, 17 | ja (alienharz, weich) | ja | offen | weich | offen |
 | Asche | beide/SSOT | 1, 14 | ja (asche, weich) | ja | offen | weich | offen |
-| Asteroidenbasalt | SSOT | 10 | ähnlich: basalt | ja | offen | offen | offen |
+| Asteroidenbasalt | SSOT | 10 | ja (asteroidenbasalt, hart) | ja | offen | hart | offen |
 | Basalt | beide/SSOT | 1, 14, 15, 18 | ja (basalt, hart) | ja | offen | hart | offen |
 | Beton | Manifest/beide/SSOT | 6, 12, 14 | ja (beton, hart) | ja | offen | hart | offen |
-| Betonreste | SSOT | 6 | ähnlich: beton | ja | offen | offen | offen |
-| Bimsstein | SSOT | 15 | fehlt | ja | offen | offen | offen |
-| Burgfelsen | SSOT | 13 | ähnlich: fels | ja | offen | offen | offen |
-| Dampfkammer | SSOT | 15 | fehlt | ja | offen | offen | offen |
-| Druckkammer | SSOT | 18 | fehlt | ja | offen | offen | offen |
+| Betonreste | SSOT | 6 | ja (betonreste, normal) | ja | offen | normal | offen |
+| Bimsstein | SSOT | 15 | ja (bimsstein, weich) | ja | offen | weich | offen |
+| Burgfelsen | SSOT | 13 | ja (burgfelsen, hart) | ja | offen | hart | offen |
+| Dampfkammer | SSOT | 15 | ja (dampfkammer, weich) | ja | offen | weich | offen |
+| Druckkammer | SSOT | 18 | ja (druckkammer, sehr_hart) | ja | offen | sehr_hart | offen |
 | Eis | Manifest/SSOT | 4, 14, 16 | ja (eis, normal) | ja | offen | normal | offen |
-| Eisader | SSOT | 10 | fehlt | ja | offen | offen | offen |
+| Eisader | SSOT | 10 | ja (eisader, normal) | ja | offen | normal | offen |
 | Erde | beide | 3 | ja (erde, normal) | ja | offen | normal | offen |
-| Erdüberzug | beide/SSOT | 7, 13 | fehlt | ja | offen | offen | offen |
-| Feinsand | beide/Manifest | 5, 8 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
+| Erdüberzug | beide/SSOT | 7, 13 | ja (erdueberzug, weich) | ja | offen | weich | offen |
+| Feinsand | beide/Manifest | 5, 8 | ja (feinsand, weich) | ähnlich: sand.jpg | offen | weich | offen |
 | Fels | Manifest/beide/SSOT | 1, 2, 3, 5, 6, 9, 14, 20 | ja (fels, hart) | ja | offen | hart | offen |
-| Feuchte Erde | SSOT | 9 | ähnlich: erde | ja | offen | offen | offen |
-| Firnschnee | SSOT/beide | 4, 14, 16 | ähnlich: schnee | ähnlich: firn.jpg | offen | offen | offen |
-| Gefrorene Wurzeln | SSOT | 4 | fehlt | ja | offen | offen | offen |
-| gehärtetes Glas | Manifest | 11 | ähnlich: glas | ja | offen | offen | offen |
-| Geröll | SSOT | 14 | fehlt | ja | offen | offen | offen |
-| Giftablagerungen | SSOT | 6 | fehlt | ja | offen | offen | offen |
-| Giftnebel | SSOT | 11 | fehlt | fehlt | offen | offen | offen |
+| Feuchte Erde | SSOT | 9 | ja (feuchte_erde, weich) | ja | offen | weich | offen |
+| Firnschnee | SSOT/beide | 4, 14, 16 | ja (firnschnee, weich) | ähnlich: firn.jpg | offen | weich | offen |
+| Gefrorene Wurzeln | SSOT | 4 | ja (gefrorene_wurzeln, normal) | ja | offen | normal | offen |
+| gehärtetes Glas | Manifest | 11 | ja (gehaertetes_glas, hart) | ja | offen | hart | offen |
+| Geröll | SSOT | 14 | ja (geroell, weich) | ja | offen | weich | offen |
+| Giftablagerungen | SSOT | 6 | ja (giftablagerungen, weich) | ja | offen | weich | offen |
+| Giftnebel | SSOT | 11 | ja (giftnebel, weich) | ja | offen | weich | offen |
 | Glas | beide/SSOT/Manifest | 11, 16, 19 | ja (glas, normal) | ja | offen | normal | offen |
-| Glasfassade | SSOT | 12 | ähnlich: glas | ja | offen | offen | offen |
-| Glasfragmente | SSOT | 19 | ähnlich: glas | ja | offen | offen | offen |
-| Glasplatten | SSOT | 7 | ähnlich: glas | ja | offen | offen | offen |
-| Gletschereis | SSOT | 4 | fehlt | ja | offen | offen | offen |
+| Glasfassade | SSOT | 12 | ja (glasfassade, normal) | ja | offen | normal | offen |
+| Glasfragmente | SSOT | 19 | ja (glasfragmente, weich) | ja | offen | weich | offen |
+| Glasplatten | SSOT | 7 | ja (glasplatten, normal) | ja | offen | normal | offen |
+| Gletschereis | SSOT | 4 | ja (gletschereis, hart) | ja | offen | hart | offen |
 | Holz | beide/Manifest/SSOT | 3, 6, 9, 13, 14, 20 | ja (holz, normal) | ja | offen | normal | offen |
-| Holzaufbauten | SSOT | 13 | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen |
-| Holzreste | SSOT | 6, 9 | ähnlich: holz | ja | offen | offen | offen |
-| Humus | beide/Manifest/SSOT | 3, 9, 14, 17 | fehlt | ja | offen | offen | offen |
-| Hydrothermalablagerungen | SSOT | 18 | fehlt | ähnlich: hydrothermal.jpg | offen | offen | offen |
-| Industriemagma | Manifest | 15 | fehlt | ja | offen | offen | offen |
-| Instabiler Boden | beide | 19 | fehlt | ja | offen | offen | offen |
-| Kalkstein | beide/SSOT | 2, 8 | fehlt | ja | offen | offen | offen |
-| Keramik | beide | 15 | fehlt | ja | offen | offen | offen |
-| Kerkergewölbe | SSOT | 13 | fehlt | ja | offen | offen | offen |
-| Klareis | Manifest | 4, 16 | fehlt | ja | offen | offen | offen |
-| Klareiskristall | SSOT/beide | 4, 16 | ähnlich: kristall | ähnlich: klareis.webp | offen | offen | offen |
-| Kolossstamm | SSOT | 20 | fehlt | fehlt | offen | offen | offen |
-| Kontaminierte Ablagerungen | SSOT | 12 | fehlt | ja | offen | offen | offen |
-| Kontaminierte Erde | beide/Manifest | 6, 9 | ähnlich: erde | ja | offen | offen | offen |
+| Holzaufbauten | SSOT | 13 | ja (holzaufbauten, normal) | ähnlich: holz.jpg | offen | normal | offen |
+| Holzreste | SSOT | 6, 9 | ja (holzreste, weich) | ja | offen | weich | offen |
+| Humus | beide/Manifest/SSOT | 3, 9, 14, 17 | ja (humus, weich) | ja | offen | weich | offen |
+| Hydrothermalablagerungen | SSOT | 18 | ja (hydrothermalablagerungen, normal) | ähnlich: hydrothermal.jpg | offen | normal | offen |
+| Industriemagma | Manifest | 15 | ja (industriemagma, weich) | ja | offen | weich | offen |
+| Instabiler Boden | beide | 19 | ja (instabiler_boden, weich) | ja | offen | weich | offen |
+| Kalkstein | beide/SSOT | 2, 8 | ja (kalkstein, normal) | ja | offen | normal | offen |
+| Keramik | beide | 15 | ja (keramik, hart) | ja | offen | hart | offen |
+| Kerkergewölbe | SSOT | 13 | ja (kerkergewoelbe, hart) | ja | offen | hart | offen |
+| Klareis | Manifest | 4, 16 | ja (klareis, normal) | ja | offen | normal | offen |
+| Klareiskristall | SSOT/beide | 4, 16 | ja (klareiskristall, hart) | ähnlich: klareis.webp | offen | hart | offen |
+| Kolossstamm | SSOT | 20 | ja (kolossstamm, hart) | fehlt | offen | hart | offen |
+| Kontaminierte Ablagerungen | SSOT | 12 | ja (kontaminierte_ablagerungen, weich) | ja | offen | weich | offen |
+| Kontaminierte Erde | beide/Manifest | 6, 9 | ja (kontaminierte_erde, normal) | ja | offen | normal | offen |
 | Koralle | beide | 8, 18 | ja (koralle, normal) | ja | offen | normal | offen |
-| korrodiertes Metall | Manifest | 18 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Korrosion | SSOT | 14 | fehlt | ja | offen | offen | offen |
+| korrodiertes Metall | Manifest | 18 | ja (korrodiertes_metall, hart) | ähnlich: metall.webp | offen | hart | offen |
+| Korrosion | SSOT | 14 | ja (korrosion, weich) | ja | offen | weich | offen |
 | Kristall | Manifest/beide/SSOT | 2, 4, 7, 10, 11, 14, 20 | ja (kristall, hart) | ja | offen | hart | offen |
-| Kristalladern | SSOT | 2, 10, 14, 20 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
-| Kristallblätter | SSOT | 20 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
-| Kristallfelsen | Manifest | 7 | ähnlich: fels | ja | offen | offen | offen |
-| Lavaglas | SSOT | 15 | ähnlich: glas | ja | offen | offen | offen |
-| lebende Koralle | Manifest | 8 | ähnlich: koralle | ähnlich: koralle.webp | offen | offen | offen |
-| lehmige Erde | Manifest | 3 | ähnlich: erde | ähnlich: erde.jpg | offen | offen | offen |
-| Leuchtalgen | SSOT | 18 | fehlt | ja | offen | offen | offen |
-| Leuchtkristall | SSOT | 18 | ähnlich: kristall | ja | offen | offen | offen |
-| Leuchtpilzgewebe | SSOT | 20 | ähnlich: pilz | ja | offen | offen | offen |
+| Kristalladern | SSOT | 2, 10, 14, 20 | ja (kristalladern, hart) | ähnlich: kristall.webp | offen | hart | offen |
+| Kristallblätter | SSOT | 20 | ja (kristallblaetter, normal) | ähnlich: kristall.webp | offen | normal | offen |
+| Kristallfelsen | Manifest | 7 | ja (kristallfelsen, hart) | ja | offen | hart | offen |
+| Lavaglas | SSOT | 15 | ja (lavaglas, hart) | ja | offen | hart | offen |
+| lebende Koralle | Manifest | 8 | ja (lebende_koralle, normal) | ähnlich: koralle.webp | offen | normal | offen |
+| lehmige Erde | Manifest | 3 | ja (lehmige_erde, normal) | ähnlich: erde.jpg | offen | normal | offen |
+| Leuchtalgen | SSOT | 18 | ja (leuchtalgen, weich) | ja | offen | weich | offen |
+| Leuchtkristall | SSOT | 18 | ja (leuchtkristall, hart) | ja | offen | hart | offen |
+| Leuchtpilzgewebe | SSOT | 20 | ja (leuchtpilzgewebe, weich) | ja | offen | weich | offen |
 | Magiekristall | beide | 13 | ja (magiekristall, hart) | ja | offen | hart | offen |
-| Magmaadern | SSOT | 1, 14 | fehlt | ja | offen | offen | offen |
-| Magnetgestein | SSOT/beide | 7, 16 | fehlt | ja | offen | offen | offen |
-| Massivfels | SSOT/beide | 2, 4, 7, 11, 16, 19, 20 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
-| Mauerwerk | beide | 13 | fehlt | ja | offen | offen | offen |
+| Magmaadern | SSOT | 1, 14 | ja (magmaadern, hart) | ja | offen | hart | offen |
+| Magnetgestein | SSOT/beide | 7, 16 | ja (magnetgestein, hart) | ja | offen | hart | offen |
+| Massivfels | SSOT/beide | 2, 4, 7, 11, 16, 19, 20 | ja (massivfels, hart) | ähnlich: fels.jpg | offen | hart | offen |
+| Mauerwerk | beide | 13 | ja (mauerwerk, hart) | ja | offen | hart | offen |
 | Metall | beide/Manifest/SSOT | 6, 12, 14, 17, 18 | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen |
-| Metallader | SSOT | 10 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metallfragmente | SSOT | 19 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metallgitter | SSOT | 13 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metallplatten | SSOT | 12, 17 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metallschienen | beide | 15 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metallträger | beide | 12 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Metalltrümmer | SSOT | 10 | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen |
-| Meteoritenfels | Manifest | 10 | ähnlich: fels | ja | offen | offen | offen |
-| Moos | SSOT/beide | 3, 20 | fehlt | ja | offen | offen | offen |
-| Mutterboden | Manifest | 13 | fehlt | ja | offen | offen | offen |
-| Myzelmatte | SSOT | 9 | fehlt | ähnlich: myzel.jpg | offen | offen | offen |
-| Nickel-Eisen | Manifest | 10 | fehlt | ja | offen | offen | offen |
+| Metallader | SSOT | 10 | ja (metallader, sehr_hart) | ähnlich: metall.webp | offen | sehr_hart | offen |
+| Metallfragmente | SSOT | 19 | ja (metallfragmente, normal) | ähnlich: metall.webp | offen | normal | offen |
+| Metallgitter | SSOT | 13 | ja (metallgitter, normal) | ähnlich: metall.webp | offen | normal | offen |
+| Metallplatten | SSOT | 12, 17 | ja (metallplatten, sehr_hart) | ähnlich: metall.webp | offen | sehr_hart | offen |
+| Metallschienen | beide | 15 | ja (metallschienen, hart) | ähnlich: metall.webp | offen | hart | offen |
+| Metallträger | beide | 12 | ja (metalltraeger, sehr_hart) | ähnlich: metall.webp | offen | sehr_hart | offen |
+| Metalltrümmer | SSOT | 10 | ja (metalltruemmer, normal) | ähnlich: metall.webp | offen | normal | offen |
+| Meteoritenfels | Manifest | 10 | ja (meteoritenfels, sehr_hart) | ja | offen | sehr_hart | offen |
+| Moos | SSOT/beide | 3, 20 | ja (moos, weich) | ja | offen | weich | offen |
+| Mutterboden | Manifest | 13 | ja (mutterboden, weich) | ja | offen | weich | offen |
+| Myzelmatte | SSOT | 9 | ja (myzelmatte, weich) | ähnlich: myzel.jpg | offen | weich | offen |
+| Nickel-Eisen | Manifest | 10 | ja (nickel_eisen, sehr_hart) | ja | offen | sehr_hart | offen |
 | Obsidian | beide/SSOT | 1, 2, 7, 14, 15 | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen |
-| Organische Riffablagerungen | SSOT | 8 | fehlt | ja | offen | offen | offen |
-| Organische Tragwurzeln | SSOT | 17 | fehlt | ja | offen | offen | offen |
-| Phasen-Fels | Manifest | 19 | ähnlich: fels | ja | offen | offen | offen |
-| Pilzbrücke | SSOT | 9 | ähnlich: pilz | ja | offen | offen | offen |
-| Pilze | Manifest/SSOT | 3, 14 | ähnlich: pilz | ähnlich: pilz.jpg | offen | offen | offen |
+| Organische Riffablagerungen | SSOT | 8 | ja (organische_riffablagerungen, weich) | ja | offen | weich | offen |
+| Organische Tragwurzeln | SSOT | 17 | ja (organische_tragwurzeln, normal) | ja | offen | normal | offen |
+| Phasen-Fels | Manifest | 19 | ja (phasen_fels, hart) | ja | offen | hart | offen |
+| Pilzbrücke | SSOT | 9 | ja (pilzbruecke, normal) | ja | offen | normal | offen |
+| Pilze | Manifest/SSOT | 3, 14 | ja (pilze, weich) | ähnlich: pilz.jpg | offen | weich | offen |
 | Pilzgewebe | SSOT/beide | 3, 9 | ähnlich: pilz | ähnlich: leuchtpilzgewebe.webp | offen | offen | offen |
-| Pilzmyzel | Manifest/beide | 9, 17 | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen |
-| Poröser Beton | Manifest | 12 | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen |
-| Poröser Fels | SSOT | 10 | ähnlich: fels | ja | offen | offen | offen |
-| Pulverschnee | SSOT | 4 | ähnlich: schnee | ähnlich: schnee.jpg | offen | offen | offen |
-| Rankgitter | SSOT | 17 | fehlt | fehlt | offen | offen | offen |
-| Raumanker | SSOT | 11 | fehlt | fehlt | offen | offen | offen |
-| Regolith-Staub | beide | 10 | ähnlich: regolith | ähnlich: regolith.jpg | offen | offen | offen |
-| Riff-Kalkstein | Manifest | 8 | fehlt | ähnlich: kalkstein.jpg | offen | offen | offen |
-| Risszone | SSOT | 19 | fehlt | fehlt | offen | offen | offen |
-| Rohrleitungen | SSOT | 12 | fehlt | fehlt | offen | offen | offen |
-| Rostmetall | beide/SSOT | 6, 14 | ähnlich: metall | ja | offen | offen | offen |
-| Salzkruste | SSOT | 5, 14 | fehlt | ja | offen | offen | offen |
+| Pilzmyzel | Manifest/beide | 9, 17 | ja (pilzmyzel, weich) | ähnlich: myzel.jpg | offen | weich | offen |
+| Poröser Beton | Manifest | 12 | ja (poroeser_beton, hart) | ähnlich: beton.jpg | offen | hart | offen |
+| Poröser Fels | SSOT | 10 | ja (poroeser_fels, hart) | ja | offen | hart | offen |
+| Pulverschnee | SSOT | 4 | ja (pulverschnee, weich) | ähnlich: schnee.jpg | offen | weich | offen |
+| Rankgitter | SSOT | 17 | ja (rankgitter, weich) | ja | offen | weich | offen |
+| Raumanker | SSOT | 11 | ja (raumanker, unzerstoerbar) | ja | offen | unzerstoerbar | offen |
+| Regolith-Staub | beide | 10 | ja (regolith_staub, weich) | ähnlich: regolith.jpg | offen | weich | offen |
+| Riff-Kalkstein | Manifest | 8 | ja (riff_kalkstein, normal) | ähnlich: kalkstein.jpg | offen | normal | offen |
+| Risszone | SSOT | 19 | ja (risszone, weich) | ja | offen | weich | offen |
+| Rohrleitungen | SSOT | 12 | ja (rohrleitungen, hart) | ja | offen | hart | offen |
+| Rostmetall | beide/SSOT | 6, 14 | ja (rostmetall, hart) | ja | offen | hart | offen |
+| Salzkruste | SSOT | 5, 14 | ja (salzkruste, normal) | ja | offen | normal | offen |
 | Sand | SSOT | 14 | ja (sand, weich) | ja | offen | weich | offen |
-| Sandstein | beide/SSOT | 5, 14 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
-| Säureablagerungen | SSOT | 17 | fehlt | fehlt | offen | offen | offen |
-| Säureboden | SSOT | 3, 9 | fehlt | fehlt | offen | offen | offen |
-| Schlacke | beide/SSOT | 1, 14, 15 | fehlt | ja | offen | offen | offen |
+| Sandstein | beide/SSOT | 5, 14 | ja (sandstein, normal) | ja | offen | normal | offen |
+| Säureablagerungen | SSOT | 17 | ja (saeureablagerungen, weich) | ja | offen | weich | offen |
+| Säureboden | SSOT | 3, 9 | ja (saeureboden, weich) | ja | offen | weich | offen |
+| Schlacke | beide/SSOT | 1, 14, 15 | ja (schlacke, normal) | ja | offen | normal | offen |
 | Schnee | Manifest/SSOT | 4, 14, 16 | ja (schnee, weich) | ja | offen | weich | offen |
-| Schrott | SSOT | 14 | fehlt | fehlt | offen | offen | offen |
-| Schwebende Plattformen | SSOT | 19 | fehlt | fehlt | offen | offen | offen |
-| Schwefelkruste | SSOT | 1 | fehlt | ja | offen | offen | offen |
-| Seegras | SSOT | 8 | fehlt | fehlt | offen | offen | offen |
-| Stabilisatormaterial | SSOT | 19 | fehlt | fehlt | offen | offen | offen |
-| Stahlbeton | Manifest | 12 | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen |
-| Stalaktiten | SSOT | 2 | fehlt | fehlt | offen | offen | offen |
-| Teer | SSOT | 5, 6, 11, 12, 14 | fehlt | ja | offen | offen | offen |
-| Tempelstein | beide | 17 | fehlt | ja | offen | offen | offen |
-| Tiefenfels | Manifest | 4 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
-| Tiefseebasalt | Manifest | 18 | ähnlich: basalt | ähnlich: basalt.jpg | offen | offen | offen |
-| Tiefseeschlamm | beide | 18 | fehlt | ja | offen | offen | offen |
-| Totholz & Knochen | SSOT | 5 | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen |
-| Traumgestein | Manifest | 11 | fehlt | fehlt | offen | offen | offen |
-| Treibsand | beide | 5 | ähnlich: sand | ja | offen | offen | offen |
-| Unterwasserfels | SSOT | 8 | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen |
-| Unterwassersand | SSOT | 8 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
-| Verdichteter Sand | SSOT | 5 | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen |
-| Versteinerte Wurzeln | SSOT | 20 | fehlt | fehlt | offen | offen | offen |
-| Versteinertes Holz | Manifest/beide | 5, 20 | ähnlich: holz | ja | offen | offen | offen |
-| Wasser | SSOT | 8 | fehlt | fehlt | offen | offen | offen |
-| Wasserader | SSOT | 2 | fehlt | fehlt | offen | offen | offen |
-| Wolkenstein | SSOT | 7, 11, 16 | fehlt | ja | offen | offen | offen |
-| Wurzeln | SSOT | 3, 14 | fehlt | ähnlich: gefrorene_wurzeln.webp | offen | offen | offen |
-| Zeitkristall | beide | 19 | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen |
+| Schrott | SSOT | 14 | ja (schrott, normal) | ja | offen | normal | offen |
+| Schwebende Plattformen | SSOT | 19 | ja (schwebende_plattformen, hart) | ja | offen | hart | offen |
+| Schwefelkruste | SSOT | 1 | ja (schwefelkruste, normal) | ja | offen | normal | offen |
+| Seegras | SSOT | 8 | ja (seegras, weich) | ja | offen | weich | offen |
+| Stabilisatormaterial | SSOT | 19 | ja (stabilisatormaterial, unzerstoerbar) | ja | offen | unzerstoerbar | offen |
+| Stahlbeton | Manifest | 12 | ja (stahlbeton, sehr_hart) | ähnlich: beton.jpg | offen | sehr_hart | offen |
+| Stalaktiten | SSOT | 2 | ja (stalaktiten, normal) | ja | offen | normal | offen |
+| Teer | SSOT | 5, 6, 11, 12, 14 | ja (teer, weich) | ja | offen | weich | offen |
+| Tempelstein | beide | 17 | ja (tempelstein, hart) | ja | offen | hart | offen |
+| Tiefenfels | Manifest | 4 | ja (tiefenfels, sehr_hart) | ähnlich: fels.jpg | offen | sehr_hart | offen |
+| Tiefseebasalt | Manifest | 18 | ja (tiefseebasalt, hart) | ähnlich: basalt.jpg | offen | hart | offen |
+| Tiefseeschlamm | beide | 18 | ja (tiefseeschlamm, weich) | ja | offen | weich | offen |
+| Totholz & Knochen | SSOT | 5 | ja (totholz_knochen, normal) | ja | offen | normal | offen |
+| Traumgestein | Manifest | 11 | ja (traumgestein, hart) | ja | offen | hart | offen |
+| Treibsand | beide | 5 | ja (treibsand, weich) | ja | offen | weich | offen |
+| Unterwasserfels | SSOT | 8 | ja (unterwasserfels, hart) | ähnlich: wasser.webp | offen | hart | offen |
+| Unterwassersand | SSOT | 8 | ja (unterwassersand, weich) | ähnlich: wasser.webp | offen | weich | offen |
+| Verdichteter Sand | SSOT | 5 | ja (verdichteter_sand, normal) | ähnlich: sand.jpg | offen | normal | offen |
+| Versteinerte Wurzeln | SSOT | 20 | ja (versteinerte_wurzeln, hart) | ja | offen | hart | offen |
+| Versteinertes Holz | Manifest/beide | 5, 20 | ja (versteinertes_holz, hart) | ja | offen | hart | offen |
+| Wasser | SSOT | 8 | ja (wasser, weich) | ja | offen | weich | offen |
+| Wasserader | SSOT | 2 | ja (wasserader, weich) | ja | offen | weich | offen |
+| Wolkenstein | SSOT | 7, 11, 16 | ja (wolkenstein, weich) | ja | offen | weich | offen |
+| Wurzeln | SSOT | 3, 14 | ja (wurzeln, normal) | ja | offen | normal | offen |
+| Zeitkristall | beide | 19 | ja (zeitkristall, hart) | ähnlich: kristall.webp | offen | hart | offen |
 
 ## Objekte
 

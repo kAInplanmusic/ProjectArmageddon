@@ -13,9 +13,9 @@ Steile Basaltwände, Lavazungen, Magmakanäle, poröse Asche; Lava ist ein eigen
 | Asche | beide | – | ja (asche, weich) | ja | offen | weich | offen | 14 Planet (eine Karte, Art per Zufall) |
 | Basalt | beide | – | ja (basalt, hart) | ja | offen | hart | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
 | Obsidian | beide | – | ja (obsidian, sehr_hart) | ja | offen | sehr_hart | offen | 2 Kristallhöhlen; 7 Kristall-Archipel; 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
-| Magmaadern | SSOT | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall) |
-| Schlacke | beide | – | fehlt | ja | offen | offen | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
-| Schwefelkruste | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Magmaadern | SSOT | – | ja (magmaadern, hart) | ja | offen | hart | offen | 14 Planet (eine Karte, Art per Zufall) |
+| Schlacke | beide | – | ja (schlacke, normal) | ja | offen | normal | offen | 14 Planet (eine Karte, Art per Zufall); 15 Vulkanische Schlackeschmiede |
+| Schwefelkruste | SSOT | – | ja (schwefelkruste, normal) | ja | offen | normal | offen | **einzigartig** |
 | Fels | Manifest | – | ja (fels, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)

@@ -10,14 +10,14 @@ Befestigte Felsen, Mauern, Türme, Zugbrücken, Kerker, Magiekristalle (Energies
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Burgfelsen | SSOT | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
-| Mauerwerk | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Holzaufbauten | SSOT | – | ähnlich: holz | ähnlich: holz.jpg | offen | offen | offen | **einzigartig** |
+| Burgfelsen | SSOT | – | ja (burgfelsen, hart) | ja | offen | hart | offen | **einzigartig** |
+| Mauerwerk | beide | – | ja (mauerwerk, hart) | ja | offen | hart | offen | **einzigartig** |
+| Holzaufbauten | SSOT | – | ja (holzaufbauten, normal) | ähnlich: holz.jpg | offen | normal | offen | **einzigartig** |
 | Magiekristall | beide | – | ja (magiekristall, hart) | ja | offen | hart | offen | **einzigartig** |
-| Metallgitter | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Erdüberzug | SSOT | – | fehlt | ja | offen | offen | offen | 7 Kristall-Archipel |
-| Kerkergewölbe | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Mutterboden | Manifest | – | fehlt | ja | offen | offen | offen | **einzigartig** |
+| Metallgitter | SSOT | – | ja (metallgitter, normal) | ähnlich: metall.webp | offen | normal | offen | **einzigartig** |
+| Erdüberzug | SSOT | – | ja (erdueberzug, weich) | ja | offen | weich | offen | 7 Kristall-Archipel |
+| Kerkergewölbe | SSOT | – | ja (kerkergewoelbe, hart) | ja | offen | hart | offen | **einzigartig** |
+| Mutterboden | Manifest | – | ja (mutterboden, weich) | ja | offen | weich | offen | **einzigartig** |
 | Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 9 Pilzwald & Säuresumpf; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)

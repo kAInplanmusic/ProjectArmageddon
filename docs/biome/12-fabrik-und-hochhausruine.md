@@ -11,14 +11,14 @@ Beton, Stahlträger, Förderanlagen, Aufzüge, Rohre; tragende und nicht tragend
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Beton | beide | – | ja (beton, hart) | ja | offen | hart | offen | 6 Schrottplatz; 14 Planet (eine Karte, Art per Zufall) |
-| Metallträger | beide | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Metallplatten | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
-| Glasfassade | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
-| Rohrleitungen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall) |
-| Kontaminierte Ablagerungen | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Poröser Beton | Manifest | – | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen | **einzigartig** |
-| Stahlbeton | Manifest | – | ähnlich: beton | ähnlich: beton.jpg | offen | offen | offen | **einzigartig** |
+| Metallträger | beide | – | ja (metalltraeger, sehr_hart) | ähnlich: metall.webp | offen | sehr_hart | offen | **einzigartig** |
+| Metallplatten | SSOT | – | ja (metallplatten, sehr_hart) | ähnlich: metall.webp | offen | sehr_hart | offen | 17 Bio-Alien-Tempelstadt |
+| Glasfassade | SSOT | – | ja (glasfassade, normal) | ja | offen | normal | offen | **einzigartig** |
+| Rohrleitungen | SSOT | – | ja (rohrleitungen, hart) | ja | offen | hart | offen | **einzigartig** |
+| Teer | SSOT | – | ja (teer, weich) | ja | offen | weich | offen | 5 Wüstendünen; 6 Schrottplatz; 11 Surreale Schwebewelt; 14 Planet (eine Karte, Art per Zufall) |
+| Kontaminierte Ablagerungen | SSOT | – | ja (kontaminierte_ablagerungen, weich) | ja | offen | weich | offen | **einzigartig** |
+| Poröser Beton | Manifest | – | ja (poroeser_beton, hart) | ähnlich: beton.jpg | offen | hart | offen | **einzigartig** |
+| Stahlbeton | Manifest | – | ja (stahlbeton, sehr_hart) | ähnlich: beton.jpg | offen | sehr_hart | offen | **einzigartig** |
 | Metall | Manifest | – | ja (metall, unzerstoerbar) | ja | offen | unzerstoerbar | offen | 6 Schrottplatz; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt; 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
 
 ## Bodenschichten (Manifest)

@@ -10,16 +10,16 @@ Riesenpilze, Myzelmatten (Netzwerk, Kaskaden), Sporenkammern, Säurepfützen, Pi
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Feuchte Erde | SSOT | – | ähnlich: erde | ja | offen | offen | offen | **einzigartig** |
+| Feuchte Erde | SSOT | – | ja (feuchte_erde, weich) | ja | offen | weich | offen | **einzigartig** |
 | Pilzgewebe | beide | – | ähnlich: pilz | ähnlich: leuchtpilzgewebe.webp | offen | offen | offen | 3 Dschungel & Sumpf |
-| Myzelmatte | SSOT | – | fehlt | ähnlich: myzel.jpg | offen | offen | offen | **einzigartig** |
-| Holzreste | SSOT | – | ähnlich: holz | ja | offen | offen | offen | 6 Schrottplatz |
-| Säureboden | SSOT | – | fehlt | fehlt | offen | offen | offen | 3 Dschungel & Sumpf |
+| Myzelmatte | SSOT | – | ja (myzelmatte, weich) | ähnlich: myzel.jpg | offen | weich | offen | **einzigartig** |
+| Holzreste | SSOT | – | ja (holzreste, weich) | ja | offen | weich | offen | 6 Schrottplatz |
+| Säureboden | SSOT | – | ja (saeureboden, weich) | ja | offen | weich | offen | 3 Dschungel & Sumpf |
 | Fels | SSOT | – | ja (fels, hart) | ja | offen | hart | offen | 1 Vulkan & Lavafeld; 2 Kristallhöhlen; 3 Dschungel & Sumpf; 5 Wüstendünen; 6 Schrottplatz; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Pilzbrücke | SSOT | – | ähnlich: pilz | ja | offen | offen | offen | **einzigartig** |
-| Humus | Manifest | – | fehlt | ja | offen | offen | offen | 3 Dschungel & Sumpf; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
-| Kontaminierte Erde | Manifest | – | ähnlich: erde | ja | offen | offen | offen | 6 Schrottplatz |
-| Pilzmyzel | Manifest | – | ähnlich: pilz | ähnlich: myzel.jpg | offen | offen | offen | 17 Bio-Alien-Tempelstadt |
+| Pilzbrücke | SSOT | – | ja (pilzbruecke, normal) | ja | offen | normal | offen | **einzigartig** |
+| Humus | Manifest | – | ja (humus, weich) | ja | offen | weich | offen | 3 Dschungel & Sumpf; 14 Planet (eine Karte, Art per Zufall); 17 Bio-Alien-Tempelstadt |
+| Kontaminierte Erde | Manifest | – | ja (kontaminierte_erde, normal) | ja | offen | normal | offen | 6 Schrottplatz |
+| Pilzmyzel | Manifest | – | ja (pilzmyzel, weich) | ähnlich: myzel.jpg | offen | weich | offen | 17 Bio-Alien-Tempelstadt |
 | Holz | Manifest | – | ja (holz, normal) | ja | offen | normal | offen | 3 Dschungel & Sumpf; 6 Schrottplatz; 13 Burgfelsen & Magiekristall; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 
 ## Bodenschichten (Manifest)

@@ -10,16 +10,16 @@ Unterwasser, mehrere Tiefenebenen, Strömung, Seegras, Höhlen, Wracks; Wasser a
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Unterwassersand | SSOT | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | **einzigartig** |
+| Unterwassersand | SSOT | – | ja (unterwassersand, weich) | ähnlich: wasser.webp | offen | weich | offen | **einzigartig** |
 | Koralle | beide | – | ja (koralle, normal) | ja | offen | normal | offen | 18 Abyssale Tiefsee / Versunkene Alien-Metropole |
-| Kalkstein | SSOT | – | fehlt | ja | offen | offen | offen | 2 Kristallhöhlen |
-| Seegras | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Unterwasserfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | **einzigartig** |
-| Organische Riffablagerungen | SSOT | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Wasser | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Feinsand | Manifest | – | ähnlich: sand | ähnlich: sand.jpg | offen | offen | offen | 5 Wüstendünen |
-| Riff-Kalkstein | Manifest | – | fehlt | ähnlich: kalkstein.jpg | offen | offen | offen | **einzigartig** |
-| lebende Koralle | Manifest | – | ähnlich: koralle | ähnlich: koralle.webp | offen | offen | offen | **einzigartig** |
+| Kalkstein | SSOT | – | ja (kalkstein, normal) | ja | offen | normal | offen | 2 Kristallhöhlen |
+| Seegras | SSOT | – | ja (seegras, weich) | ja | offen | weich | offen | **einzigartig** |
+| Unterwasserfels | SSOT | – | ja (unterwasserfels, hart) | ähnlich: wasser.webp | offen | hart | offen | **einzigartig** |
+| Organische Riffablagerungen | SSOT | – | ja (organische_riffablagerungen, weich) | ja | offen | weich | offen | **einzigartig** |
+| Wasser | SSOT | – | ja (wasser, weich) | ja | offen | weich | offen | **einzigartig** |
+| Feinsand | Manifest | – | ja (feinsand, weich) | ähnlich: sand.jpg | offen | weich | offen | 5 Wüstendünen |
+| Riff-Kalkstein | Manifest | – | ja (riff_kalkstein, normal) | ähnlich: kalkstein.jpg | offen | normal | offen | **einzigartig** |
+| lebende Koralle | Manifest | – | ja (lebende_koralle, normal) | ähnlich: koralle.webp | offen | normal | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
 

@@ -10,15 +10,15 @@ Zerbrochene Landschaft aus instabilem Fels, Zeitkristallen, schwebenden Fragment
 
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Instabiler Boden | beide | – | fehlt | ja | offen | offen | offen | **einzigartig** |
-| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Zeitkristall | beide | – | ähnlich: kristall | ähnlich: kristall.webp | offen | offen | offen | **einzigartig** |
-| Glasfragmente | SSOT | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
-| Metallfragmente | SSOT | – | ähnlich: metall | ähnlich: metall.webp | offen | offen | offen | **einzigartig** |
-| Schwebende Plattformen | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Risszone | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Stabilisatormaterial | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Phasen-Fels | Manifest | – | ähnlich: fels | ja | offen | offen | offen | **einzigartig** |
+| Instabiler Boden | beide | – | ja (instabiler_boden, weich) | ja | offen | weich | offen | **einzigartig** |
+| Massivfels | SSOT | – | ja (massivfels, hart) | ähnlich: fels.jpg | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Zeitkristall | beide | – | ja (zeitkristall, hart) | ähnlich: kristall.webp | offen | hart | offen | **einzigartig** |
+| Glasfragmente | SSOT | – | ja (glasfragmente, weich) | ja | offen | weich | offen | **einzigartig** |
+| Metallfragmente | SSOT | – | ja (metallfragmente, normal) | ähnlich: metall.webp | offen | normal | offen | **einzigartig** |
+| Schwebende Plattformen | SSOT | – | ja (schwebende_plattformen, hart) | ja | offen | hart | offen | **einzigartig** |
+| Risszone | SSOT | – | ja (risszone, weich) | ja | offen | weich | offen | **einzigartig** |
+| Stabilisatormaterial | SSOT | – | ja (stabilisatormaterial, unzerstoerbar) | ja | offen | unzerstoerbar | offen | **einzigartig** |
+| Phasen-Fels | Manifest | – | ja (phasen_fels, hart) | ja | offen | hart | offen | **einzigartig** |
 | Glas | Manifest | – | ja (glas, normal) | ja | offen | normal | offen | 11 Surreale Schwebewelt; 16 Kristallines Schwebearchipel |
 
 ## Bodenschichten (Manifest)

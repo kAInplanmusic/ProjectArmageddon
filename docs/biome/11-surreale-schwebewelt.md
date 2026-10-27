@@ -11,14 +11,14 @@ Nicht-euklidisch, aber normale Zerstörungs-/Schwerkraftregeln; definierte Sonde
 | Material | Quelle | Variante | Im Katalog | Textur | Optik | Zerstörbarkeit | Bewegung | Auch in |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | Glas | beide | – | ja (glas, normal) | ja | offen | normal | offen | 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene |
-| Massivfels | SSOT | – | ähnlich: fels | ähnlich: fels.jpg | offen | offen | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
+| Massivfels | SSOT | – | ja (massivfels, hart) | ähnlich: fels.jpg | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 16 Kristallines Schwebearchipel; 19 Dimensionsriss / Zeit-Chaosebene; 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
 | Kristall | beide | – | ja (kristall, hart) | ja | offen | hart | offen | 2 Kristallhöhlen; 4 Eiswüste & Gletscher; 7 Kristall-Archipel; 10 Asteroidenfeld; 14 Planet (eine Karte, Art per Zufall); 20 Versteinerter Kristallwald / Uralter Koloss-Wald |
-| Wolkenstein | SSOT | – | fehlt | ja | offen | offen | offen | 7 Kristall-Archipel; 16 Kristallines Schwebearchipel |
-| Teer | SSOT | – | fehlt | ja | offen | offen | offen | 5 Wüstendünen; 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
-| Giftnebel | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Raumanker | SSOT | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| Traumgestein | Manifest | – | fehlt | fehlt | offen | offen | offen | **einzigartig** |
-| gehärtetes Glas | Manifest | – | ähnlich: glas | ja | offen | offen | offen | **einzigartig** |
+| Wolkenstein | SSOT | – | ja (wolkenstein, weich) | ja | offen | weich | offen | 7 Kristall-Archipel; 16 Kristallines Schwebearchipel |
+| Teer | SSOT | – | ja (teer, weich) | ja | offen | weich | offen | 5 Wüstendünen; 6 Schrottplatz; 12 Fabrik & Hochhausruine; 14 Planet (eine Karte, Art per Zufall) |
+| Giftnebel | SSOT | – | ja (giftnebel, weich) | ja | offen | weich | offen | **einzigartig** |
+| Raumanker | SSOT | – | ja (raumanker, unzerstoerbar) | ja | offen | unzerstoerbar | offen | **einzigartig** |
+| Traumgestein | Manifest | – | ja (traumgestein, hart) | ja | offen | hart | offen | **einzigartig** |
+| gehärtetes Glas | Manifest | – | ja (gehaertetes_glas, hart) | ja | offen | hart | offen | **einzigartig** |
 
 ## Bodenschichten (Manifest)
 
