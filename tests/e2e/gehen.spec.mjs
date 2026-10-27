@@ -13,7 +13,7 @@ async function oeffne(page) {
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');
-  await page.locator('#cfg-seed').fill('20260910');
+  await page.locator('#cfg-seed').fill('20260921');
   await page.locator('#start-button').click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
   await expect.poll(() => page.evaluate(() => window.__PA__.isGrounded()), { timeout: 15000 }).toBe(true);
