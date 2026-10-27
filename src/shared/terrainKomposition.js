@@ -658,7 +658,7 @@ function dichteInsel(maske, rng, B, H, stat) {
     const y = oben(maske, x);
     if (y > 0) { ruine(maske, rng, x, y + 6, zwischen(rng, 130, 190), zwischen(rng, 170, 300)); stat.tuerme += 1; }
   }
-  return Math.round(H * 0.92);
+  return Math.round(H * 0.8);
 }
 
 function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
@@ -693,7 +693,7 @@ function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
       if (ya > 0 && yb > 0 && xb > xa) { bruecke(maske, xa, xb, ya + 4, yb + 4); stat.bruecken += 1; }
     }
   }
-  return Math.round(H * 0.92);
+  return Math.round(H * 0.8);
 }
 
 function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
@@ -815,7 +815,7 @@ function dichteEbenen(maske, rng, B, H, stat) {
   const d = (x, y) => {
     let w = Math.max(...platten.map((p) => p(x, y)));
     for (const p of pfeiler) if (y > p.y0 && y < p.y1) w = Math.max(w, p.b / 2 - Math.abs(x - p.x) + rauschen(x * 2, y) * 25);
-    return Math.max(w + rauschen(x, y) * 200, y - H * 0.9);
+    return Math.max(w + rauschen(x, y) * 200, y - H * 0.92);
   };
   ausDichte(maske, rng, d);
   stat.platten += teile.length;
@@ -827,7 +827,7 @@ function dichteEbenen(maske, rng, B, H, stat) {
       if (y > 0) { ruine(maske, rng, x, y + 6, zwischen(rng, 120, 170), Math.min(zwischen(rng, 150, 250), y - 30)); stat.tuerme += 1; }
     }
   }
-  return Math.round(H * 0.92);
+  return Math.round(H * 0.8);
 }
 
 function width3(B, H) { return B / H > 1.6; }
@@ -896,7 +896,8 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
   const sonder = { ebenen: dichteEbenen, insel: dichteInsel, inselgruppe: dichteGruppe, hoehle: dichteHoehle, hoehleInsel: (m, r, b, h, st) => dichteHoehle(m, r, b, h, st, true), hochkant: dichteHochkant, schlucht: dichteSchlucht, archipel: (m, r, b, h, st) => dichteGruppe(m, r, b, h, st, true), vulkan: dichteVulkan, ruinenstadt: dichteRuinenstadt, pyramide: kartePyramide, planet: kartePlanet, unmoeglich: karteUnmoeglich }[wahl];
   if (sonder) {
     const wy = sonder(maske, rng, width, height, stat);
-    maske.rechteck(0, wy + 60, width, height);
+    // Hoher Wasserspiegel (Inselkarten): mehr Wassertiefe, der Grund liegt tiefer.
+    maske.rechteck(0, wy + (wy < height * 0.9 ? 170 : 60), width, height);
     return { bitmap: maske.bitmap, wasserY: wy, bauteile: stat, art: wahl, umlauf: maske.umlauf, rund: maske.rund, planetenart: maske.planetenart };
   }
   const wasserY = Math.round(height * 0.9);

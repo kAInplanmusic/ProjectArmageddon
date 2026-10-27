@@ -502,7 +502,7 @@ select option { background: #14181d; color: var(--ink); }
   position: absolute; z-index: 20; pointer-events: auto;
   left: 50%; transform: translateX(-50%);
   bottom: 96px;
-  width: min(560px, calc(100% - 24px));
+  width: min(720px, calc(100% - 24px));
   max-height: min(72vh, calc(100% - 110px));
   display: flex; flex-direction: column;
   padding: 10px 12px 8px;
@@ -533,7 +533,7 @@ select option { background: #14181d; color: var(--ink); }
 #waffenmenue-leer { margin: 18px 0; text-align: center; color: var(--muted); }
 #waffenmenue-leer[hidden] { display: none; }
 
-.wm-gruppe { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 5px; margin-bottom: 10px; }
+.wm-gruppe { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; margin-bottom: 12px; }
 .wm-gruppe[hidden] { display: none; }
 .wm-kopf {
   grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px;
@@ -545,23 +545,25 @@ select option { background: #14181d; color: var(--ink); }
 .wm-kopf-zahl { margin-left: auto; font-size: 12px; color: var(--muted); }
 
 .wm-opt {
-  position: relative; display: grid; grid-template-columns: 40px 1fr auto; grid-template-rows: auto auto;
-  column-gap: 8px; align-items: center; min-height: 52px; padding: 4px 28px 4px 6px;
-  background: linear-gradient(180deg, #262c33, #181c21);
-  border: 1px solid var(--panel-edge); border-left-width: 4px; border-radius: 6px;
+  /* Kachel (Vorlage: Icon-Raster mit Namen): großes Icon, Name darunter, Munition als Marke oben rechts. */
+  position: relative; display: grid; grid-template-columns: 1fr; grid-template-rows: 76px auto;
+  row-gap: 4px; justify-items: center; align-items: center; min-height: 112px; padding: 8px 6px 7px;
+  background: radial-gradient(ellipse at 50% 35%, #323a43, #1a1e23 75%);
+  border: 1px solid var(--panel-edge); border-bottom-width: 4px; border-radius: 10px;
   cursor: pointer; user-select: none; touch-action: manipulation;
 }
 .wm-opt[hidden] { display: none; }
-.wm-opt .wm-icon { grid-row: 1 / 3; width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)); }
-.wm-opt .wm-name { grid-column: 2 / 4; font-weight: 600; font-size: 14px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #c8d3de; }
-.wm-opt .wm-munition { grid-column: 2; font-family: var(--font-display); font-size: 16px; letter-spacing: 0.04em; color: #fff; }
-.wm-opt .wm-nachladen { grid-column: 3; font-size: 12px; color: var(--orange); }
+.wm-opt .wm-icon { grid-row: 1; width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.75)); transition: transform 0.12s; }
+.wm-opt:hover .wm-icon, .wm-opt.is-fokus .wm-icon { transform: scale(1.08) rotate(-2deg); }
+.wm-opt .wm-name { grid-row: 2; max-width: 100%; text-align: center; font-weight: 600; font-size: 12.5px; line-height: 1.12; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #c8d3de; }
+.wm-opt .wm-munition { position: absolute; top: 5px; right: 6px; padding: 0 6px; min-width: 22px; text-align: center; font-family: var(--font-display); font-size: 14px; letter-spacing: 0.04em; color: #fff; background: rgba(0, 0, 0, 0.55); border-radius: 9px; }
+.wm-opt .wm-nachladen { position: absolute; top: 5px; left: 6px; font-size: 12px; color: var(--orange); }
 .wm-opt .wm-stern { position: absolute; top: 0; right: 0; width: 28px; height: 28px; display: grid; place-items: center; font-size: 16px; color: var(--muted); }
 .wm-opt .wm-stern:hover, .wm-opt.is-fav .wm-stern { color: var(--orange); }
-.wm-opt[data-tier='uncommon'] { border-left-color: var(--lime); } .wm-opt[data-tier='uncommon'] .wm-name { color: var(--lime); }
-.wm-opt[data-tier='rare'] { border-left-color: var(--cyan); } .wm-opt[data-tier='rare'] .wm-name { color: var(--cyan); }
-.wm-opt[data-tier='epic'] { border-left-color: var(--violet); } .wm-opt[data-tier='epic'] .wm-name { color: var(--violet); }
-.wm-opt[data-tier='legendary'] { border-left-color: #ffb703; } .wm-opt[data-tier='legendary'] .wm-name { color: #ffb703; }
+.wm-opt[data-tier='uncommon'] { border-bottom-color: var(--lime); } .wm-opt[data-tier='uncommon'] .wm-name { color: var(--lime); }
+.wm-opt[data-tier='rare'] { border-bottom-color: var(--cyan); } .wm-opt[data-tier='rare'] .wm-name { color: var(--cyan); }
+.wm-opt[data-tier='epic'] { border-bottom-color: var(--violet); } .wm-opt[data-tier='epic'] .wm-name { color: var(--violet); }
+.wm-opt[data-tier='legendary'] { border-bottom-color: #ffb703; } .wm-opt[data-tier='legendary'] .wm-name { color: #ffb703; }
 .wm-opt:hover { background: linear-gradient(180deg, #313943, #1f242a); }
 .wm-opt.is-aktiv { border-color: var(--lime); box-shadow: 0 0 0 1px rgba(124, 252, 0, 0.45); }
 .wm-opt.is-fokus { outline: 2px solid var(--orange); outline-offset: 1px; }
@@ -575,7 +577,7 @@ select option { background: #14181d; color: var(--ink); }
 #waffenmenue .wm-hinweis { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 
 @media (pointer: coarse) {
-  .wm-opt { min-height: 56px; }
+  .wm-opt { min-height: 116px; }
   #waffenmenue .wm-hinweis { display: none; }
 }
 /* Niedrige Querformat-Bildschirme (Handy): Menü füllt die Höhe, Detailzeile entfällt. */
@@ -588,7 +590,9 @@ select option { background: #14181d; color: var(--ink); }
   #waffenmenue .wm-titel { display: none; }
   #waffenmenue .wm-info { display: none; }
   #waffenmenue .wm-hinweis { display: none; }
-  .wm-gruppe { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .wm-gruppe { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
+  .wm-opt { min-height: 96px; grid-template-rows: 60px auto; }
+  .wm-opt .wm-icon { width: 58px; height: 58px; }
 }
 
 /* ================================================================ Lobby-Karten */
