@@ -17,6 +17,7 @@ import { WATER_SCALE } from '../engine/match.js';
 import { BACKDROP_URLS } from './kulissenUrls.js';
 import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
+import { zeichneWetterHinten } from './wetterLicht.js';
 import { SPIEGEL_TIEFE, spiegelFarbe, spiegelGewicht } from './wasserSpiegel.js';
 import {
   drawSky as drawGenerativeSky,
@@ -248,6 +249,8 @@ export function zeichneHimmel(r) {
       const fertig = kulissenBild(r, img, stimmung, glut);
       const sx = Math.round(Math.max(0, fertig.breite - r.width) * Math.min(1, Math.max(0, pan)));
       r.ctx.drawImage(fertig.canvas, sx, 0, r.width, r.height, 0, 0, r.width, r.height);
+      r.kulissenSx = sx;
+      zeichneWetterHinten(r);
       return;
     }
 
