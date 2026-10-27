@@ -126,10 +126,17 @@ const MUSIK_URLEN = Object.fromEntries([
 ]);
 
 /** Material-Texturen der Stoffe (Client-Optik): Name → URL, geladen beim Start. */
-const STOFF_TEXTUR_URLEN = Object.fromEntries(
-  Object.entries(import.meta.glob('./assets/stoff-texturen/*.jpg', { query: '?url', import: 'default', eager: true }))
-    .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url]),
-);
+const STOFF_TEXTUR_URLEN = {
+  // Biom-Materialien (`stoff-texturen-neu`), dann die Basisstoffe (gleiche Namen: die Basisstoffe gewinnen).
+  ...Object.fromEntries(
+    Object.entries(import.meta.glob('./assets/stoff-texturen-neu/*.{webp,jpg}', { query: '?url', import: 'default', eager: true }))
+      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.(webp|jpg)$/, ''), url]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(import.meta.glob('./assets/stoff-texturen/*.jpg', { query: '?url', import: 'default', eager: true }))
+      .map(([pfad, url]) => [pfad.split('/').pop().replace(/\.jpg$/, ''), url]),
+  ),
+};
 
 /** Sprite-Atlanten der Effekte (Einschlag, Glut, Feuerring, Leuchtgeschosse): Name → URL. */
 const EFFEKT_SHEET_URLEN = Object.fromEntries(

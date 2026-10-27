@@ -18,6 +18,27 @@ const DECKUNG = 0.58;
 const TEX_STAERKE = 0.85;
 const TEX_STAERKE_ERDE = 0.6;
 const TEX_MASKE = TEXTUR_GROESSE - 1;
+/** Biom-Materialien (ab dieser Kennung) mit eigener Textur zeigen deren Farbe; die Basisstoffe bleiben wie früher. */
+const ERSTER_BIOM_STOFF = 18;
+/** Wie stark die Textur eines Biom-Materials die Farbe bestimmt (0 = nur Stofffarbe, 1 = nur Textur). */
+const TEX_FARBE = 0.8;
+/** Deckkraft eines Biom-Materials mit Textur (die Gesteinsfarbe darunter scheint kaum durch). */
+const DECKUNG_TEX = 0.94;
+
+/** Weicher Wert in [0, 1]: Gitterwerte (Zellgröße sx × sy) bilinear verbunden — kein Pixelrauschen, keine Streifen. */
+function glatt(seed, x, y, sx, sy) {
+  const gx = x / sx;
+  const gy = y / sy;
+  const ix = Math.floor(gx);
+  const iy = Math.floor(gy);
+  const fx = gx - ix;
+  const fy = gy - iy;
+  const a = hash2(seed, ix, iy);
+  const b = hash2(seed, ix + 1, iy);
+  const c = hash2(seed, ix, iy + 1);
+  const d = hash2(seed, ix + 1, iy + 1);
+  return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+}
 
 function tabelle(laenge, seed, amp) {
   const t = new Int8Array(laenge);
@@ -65,11 +86,13 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
   // Texturen je Stoff (nur wenn geladen): Pixelfeld und 1/Mittelwert je Kanal.
   const texPixel = new Array(STOFFE.length).fill(null);
   const texMittel = new Float64Array(STOFFE.length * 3);
+  const texFarbe = new Uint8Array(STOFFE.length);
   let erdeTextur = false;
   for (let id = 0; id < STOFFE.length; id += 1) {
     const t = stoffTextur(STOFF_TEXTUR[STOFFE[id]?.key]);
     if (!t) continue;
     texPixel[id] = t.rgba;
+    if (id >= ERSTER_BIOM_STOFF) texFarbe[id] = 1;
     for (let c = 0; c < 3; c += 1) texMittel[id * 3 + c] = 1 / t.mittel[c];
     if (id === 0) erdeTextur = true;
   }
@@ -113,9 +136,9 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
         case 1: licht = 0.9 + 0.2 * (((y >> 2) + (x >> 7)) & 1); break;
         case 2: licht = ((x + y) % 14 < 2) ? 1.35 : (((x - y) & 15) < 3 ? 0.8 : 1); break;
         case 3: licht = ((x & 7) === 0 || (y & 7) === 0) ? 0.55 : (((x & 7) === 3 && (y & 7) === 3) ? 1.4 : 1); break;
-        case 4: licht = 0.85 + 0.3 * hash2(seed, x >> 1, (y >> 5) + 3); break;
-        case 5: licht = hash2(seed, x, y) < 0.08 ? 0.7 : 1.05; break;
-        default: licht = 0.88 + 0.24 * hash2(seed, x, y); break;
+        case 4: licht = 0.88 + 0.24 * glatt(seed + 7, x, y, 3, 36); break;
+        case 5: licht = glatt(seed + 11, x, y, 5, 5) < 0.3 ? 0.82 : 1.04; break;
+        default: licht = 0.92 + 0.16 * glatt(seed + 13, x, y, 4, 4); break;
       }
       let m0 = 1; let m1 = 1; let m2 = 1;
       if (tex) {
@@ -124,6 +147,15 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
         m0 = 1 + (tex[ti] * texMittel[k] - 1) * TEX_STAERKE;
         m1 = 1 + (tex[ti + 1] * texMittel[k + 1] - 1) * TEX_STAERKE;
         m2 = 1 + (tex[ti + 2] * texMittel[k + 2] - 1) * TEX_STAERKE;
+      }
+      if (texFarbe[id]) {
+        // Biom-Material mit Textur: deren Farbe trägt das Bild, Stofffarbe und Muster färben nur leicht nach.
+        const ti = (((y & TEX_MASKE) << 9) | (x & TEX_MASKE)) * 4;
+        const l = 0.9 + 0.1 * licht;
+        d[o] = d[o] * (1 - DECKUNG_TEX) + Math.min(255, (tex[ti] * TEX_FARBE + f0[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
+        d[o + 1] = d[o + 1] * (1 - DECKUNG_TEX) + Math.min(255, (tex[ti + 1] * TEX_FARBE + f1[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
+        d[o + 2] = d[o + 2] * (1 - DECKUNG_TEX) + Math.min(255, (tex[ti + 2] * TEX_FARBE + f2[id] * (1 - TEX_FARBE)) * l) * DECKUNG_TEX;
+        continue;
       }
       d[o] = d[o] * (1 - DECKUNG) + Math.min(255, f0[id] * licht * m0) * DECKUNG;
       d[o + 1] = d[o + 1] * (1 - DECKUNG) + Math.min(255, f1[id] * licht * m1) * DECKUNG;

@@ -285,7 +285,7 @@ const AUDIT_LISTE_2026_09_26 = [
  * Beide Hälften sind geschlossen und durch die Tests unten festgehalten:
  *
  *   - `guenther: snapshot.guenther ?? null` in der Onlinesicht
- *     (`src/client/main.js:1168`, Form wie `crates`/`turrets`),
+ *     (`src/client/main.js:1175`, Form wie `crates`/`turrets`),
  *   - die vier Streich-Arten sind `beide(fn)` (`src/client/ereignisse.js:398`
  *     ff.), `crate_pickup_blocked` ist seit O8 ebenfalls `beide(fn)` — vorher
  *     hatte es einen eigenen Online-Text ohne (Q), weil es online kein Abwerfen
@@ -297,7 +297,7 @@ const AUDIT_LISTE_2026_09_26 = [
  *
  * **Grenze dieses Belegs:** Die Onlinesicht (`Game#onlineViewState`) ist ohne
  * Browser/DOM nicht ausführbar — `import('./src/client/main.js')` bricht schon
- * am Modulkopf ab (`const game = new Game()`, `src/client/main.js:2620`; der
+ * am Modulkopf ab (`const game = new Game()`, `src/client/main.js:2627`; der
  * Import scheitert mit „(intermediate value).glob is not a function"). Deshalb
  * belegt der Test unten den ausführbaren Teil (v7-Snapshot rein → dekodiertes
  * `guenther` raus) UND den Textweg der Onlinesicht (die Durchreichung als
@@ -706,10 +706,10 @@ test('Der v7-Snapshot trägt Günther — und die Onlinesicht reicht ihn durch',
    *      liest (`src/client/networkClient.js:243`, `latestSnapshot`).
    *
    *  (2) QUELLTEXT — Was die Onlinesicht damit TUT. `Game#onlineViewState`
-   *      (`src/client/main.js:1056`) reicht `snapshot.guenther` als Feld `guenther`
+   *      (`src/client/main.js:1063`) reicht `snapshot.guenther` als Feld `guenther`
    *      durch, in der Form von `crates`/`turrets` daneben. Dieser Schritt ist
    *      hier NICHT ausführbar: `main.js` bricht schon beim Import am Modulkopf
-   *      ab (`const game = new Game()`, `src/client/main.js:2620`) — ohne
+   *      ab (`const game = new Game()`, `src/client/main.js:2627`) — ohne
    *      Browser/DOM gibt es keine Instanz von `Game`. Deshalb der
    *      Quelltextbeleg; es ist dasselbe Mittel, mit dem diese Datei oben prüft,
    *      dass `main.js` die Tabelle überhaupt benutzt (der `verarbeiteLokal`

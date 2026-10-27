@@ -18,7 +18,9 @@ export const TEXTUR_GROESSE = 512;
  * Stoff-Schlüssel (`config/stoffe.js`) → Textur. Stoffe ohne Eintrag behalten ihr Muster.
  * erde: Grundton des Geländes (Stoff 0), die Textur modelliert nur die Helligkeit.
  */
-export const STOFF_TEXTUR = Object.freeze({
+import { STOFFE } from '../shared/config/stoffe.js';
+
+const STOFF_TEXTUR_BASIS = {
   erde: 'erde',
   sand: 'sand',
   schnee: 'schnee',
@@ -32,6 +34,15 @@ export const STOFF_TEXTUR = Object.freeze({
   asche: 'kohle',
   regolith: 'regolith',
   beton: 'beton',
+};
+
+/**
+ * Dazu die Biom-Materialien: Der Katalog nennt je Stoff seine Textur (`textur`, Dateiname in
+ * `assets/stoff-texturen-neu/`); Basisstoffe behalten ihre feste Zuordnung oben.
+ */
+export const STOFF_TEXTUR = Object.freeze({
+  ...Object.fromEntries(STOFFE.filter(s => s.textur && !(s.key in STOFF_TEXTUR_BASIS)).map(s => [s.key, s.textur])),
+  ...STOFF_TEXTUR_BASIS,
 });
 
 /** Namen der Dateien (ohne Endung), die ausgeliefert werden. */
