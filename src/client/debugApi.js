@@ -130,6 +130,8 @@ export function exposeDebugApi(game) {
       selectWeapon: index => game.selectWeapon(index),
       /** Waffe über ihre ID wählen (wie im Waffenmenü). */
       selectWeaponById: weaponId => game.selectWeaponById(weaponId),
+      /** Geltende Grafikstufe (Lite/Ultra) mit Grund und Grenzen. */
+      grafik: () => ({ wahl: game.grafik?.wahl, stufe: game.grafik?.stufe, grund: game.grafik?.grund, grenzen: game.grafik?.grenzen }),
       /**
        * Waffen-Animation (Diagnose, Tests): Zustand des Sprite-Laders, Zähler des
        * letzten Bildes, die letzte Pose je Figur und die fliegenden Geschosse.

@@ -35,6 +35,7 @@ import { tonErlaubt } from './klangProfile.js';
 import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
+import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { ladeStoffTexturen } from './stoffTexturen.js';
 import { planetenBilder } from './planetenKulisse.js';
@@ -376,6 +377,8 @@ class Game {
     this.#bindMenu();
     this.#bindeMusik();
     this.#bindeTon();
+    // Grafikstufe (Lite/Ultra): Gerätewahl, gilt für alle Renderer-Grenzen (`this.grafik.grenzen`).
+    this.grafik = bindeGrafikBedienung(document, (g) => { this.grafik = g; });
     this.#exposeDebugApi();
   }
 

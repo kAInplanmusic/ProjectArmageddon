@@ -1152,6 +1152,16 @@
                 <option value="portrait">Hochformat</option>
               </select>
             </label>
+            <label>Grafik
+              <!-- Reine Geräte-Einstellung (wird im Browser gemerkt, gehört nicht zum Match): Lite für schwache
+                   Geräte, Ultra für die volle Optik. „Automatisch“ misst das Gerät; Ultra gilt nur, wenn es das schafft. -->
+              <select id="cfg-grafik">
+                <option value="auto" selected>Automatisch (empfohlen)</option>
+                <option value="lite">Lite (schwache Geräte)</option>
+                <option value="ultra">Ultra (volle Optik)</option>
+              </select>
+              <small id="cfg-grafik-info" class="field-hint" aria-live="polite"></small>
+            </label>
             </div>
           </details>
           <div class="field-row">
