@@ -147,7 +147,10 @@ test('Die Färbung bleibt bitgleich zum Stand vor der Optimierung (Fingerabdruck
   assert.notEqual(anders, a);
   assert.equal(lauf(7, PALETTE), a, 'nach einem anderen Seed wieder dasselbe Bild');
   assert.equal(lauf(7, { surface: [236, 240, 250], deep: [90, 100, 120] }) === a, false, 'andere Palette, anderes Bild');
-  assert.equal(a, 1239382613, 'Fingerabdruck des Stands vor der Optimierung');
+  // Bewusst neu gesetzt am 2026-10-27 (vorher 1239382613, Stand vor der Optimierung): Das Gelände dunkelt jetzt nach Tiefe ab
+  // (`dunkleNachTiefe`) und die Stoffe laufen vor Saum, Kantenlicht und Kontur. Auftraggeber: düsterer und realer. Mit dem
+  // Zwischenspeicher und den Seeds bleibt die Eigenschaft dieselbe: gleiche Eingabe, gleiches Bild.
+  assert.equal(a, 2561716384, 'Fingerabdruck der Färbung (Stand 2026-10-27: Tiefe und Stoffe vor Saum)');
 });
 
 test('Pflanzenebene nach einem Krater: nur der Ausschnitt wird neu gezeichnet, mit denselben Pflanzen wie ein Vollaufbau', () => {

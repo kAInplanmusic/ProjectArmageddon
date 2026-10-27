@@ -2365,6 +2365,26 @@ export class Renderer {
     if (this.scenery) {
       drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, true, this.partikelDichte);
     }
+    this.#drawVignette();
+  }
+
+  /** Dunkle Ränder über der Spielwelt (Bildschirm-Effekt, kein Spielzustand): Tiefe und Düsternis. */
+  #drawVignette() {
+    const ctx = this.ctx;
+    const b = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    if (!(b > 0) || !(h > 0)) return;
+    if (this.vignetteMass?.b !== b || this.vignetteMass?.h !== h) {
+      const g = ctx.createRadialGradient(b / 2, h * 0.55, Math.min(b, h) * 0.3, b / 2, h * 0.55, Math.hypot(b, h) * 0.52);
+      g.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      g.addColorStop(1, 'rgba(2, 4, 8, 0.55)');
+      this.vignetteMass = { b, h, g };
+    }
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = this.vignetteMass.g;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.restore();
   }
 
   /**

@@ -32,7 +32,7 @@ export default Object.freeze([
   },
   // Katalogstoff Kristall, unverändert. Glatt (reibung 0,6), leitet nicht (nur anfällig für Strom).
   {
-    key: 'kristall', label: 'Kristall', farbe: [150, 120, 220], muster: 'facetten', glanz: 0.8, textur: 'kristall', kontur: 'hell',
+    key: 'kristall', label: 'Kristall', farbe: [104, 84, 170], muster: 'facetten', glanz: 0.8, textur: 'kristall', kontur: 'hell',
     haerte: 'hart', radius: 0.8, tiefe: 0.6, bruechig: 4, brennbar: false, schmelzbar: false, leitfaehig: false,
     anfaellig: { strom: 1.15, aetz: 0.9 }, bruch: 'scherben', reibung: 0.6, bremst: 0, traegt: true, versinkt: false,
   },

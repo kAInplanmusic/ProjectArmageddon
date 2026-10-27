@@ -58,7 +58,7 @@ function parseCss(css) {
  * auch wenn das Biom einen hellen Tag vorsieht. Die Farbtönung bleibt erhalten.
  */
 /** Wie stark die Himmelsfarben zur Grundfarbe hin abgedunkelt werden (1 = wie bisher, 0 = Palette unverändert). */
-const HIMMEL_ABDUNKELUNG = 0.55;
+const HIMMEL_ABDUNKELUNG = 0.85;
 
 function naechtlich(farbe, tiefe) {
   const hell = luma(farbe) / 255;

@@ -117,7 +117,7 @@ const STOFFE_BASIS = Object.freeze([
   }),
   Object.freeze({
     id: 8, key: 'kristall', label: 'Kristall', haerte: 'hart', radius: 0.8, tiefe: 0.6, bruechig: 4, brennbar: false, schmelzbar: false,
-    anfaellig: Object.freeze({ strom: 1.15, aetz: 0.9 }), farbe: Object.freeze([150, 120, 220]), muster: 'facetten',
+    anfaellig: Object.freeze({ strom: 1.15, aetz: 0.9 }), farbe: Object.freeze([104, 84, 170]), muster: 'facetten',
   }),
   Object.freeze({
     id: 9, key: 'metall', label: 'Metallplatte', haerte: 'unzerstoerbar', radius: 0, tiefe: 0, bruechig: 0, brennbar: false, schmelzbar: false,

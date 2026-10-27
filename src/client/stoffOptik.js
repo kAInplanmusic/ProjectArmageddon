@@ -133,8 +133,8 @@ export function tinteStoffe(d, bitmap, breite, hoehe, karte, seed = 0) {
       }
       let licht = 1;
       switch (muster[id]) {
-        case 1: licht = 0.9 + 0.2 * (((y >> 2) + (x >> 7)) & 1); break;
-        case 2: licht = ((x + y) % 14 < 2) ? 1.35 : (((x - y) & 15) < 3 ? 0.8 : 1); break;
+        case 1: licht = 0.93 + 0.14 * glatt(seed + 5, x, y, 260, 24); break; // weiche Schichtbänder statt 4-px-Streifen
+        case 2: licht = ((x + y) % 14 < 2) ? 1.14 : (((x - y) & 15) < 3 ? 0.9 : 1); break;
         case 3: licht = ((x & 7) === 0 || (y & 7) === 0) ? 0.55 : (((x & 7) === 3 && (y & 7) === 3) ? 1.4 : 1); break;
         case 4: licht = 0.88 + 0.24 * glatt(seed + 7, x, y, 3, 36); break;
         case 5: licht = glatt(seed + 11, x, y, 5, 5) < 0.3 ? 0.82 : 1.04; break;

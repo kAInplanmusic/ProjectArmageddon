@@ -653,11 +653,56 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stof
     }
   }
 
+  // Reihenfolge (2026-10-27): erst Stoffe, dann Tiefe, dann Saum, Kantenlicht und Kontur — sonst überdeckt die Stofffarbe
+  // (bis 94 %) Moos und Kantenlicht, und das Gelände hat innen dieselbe Helligkeit wie am Rand.
+  if (stoffkarte) tinteStoffe(d, bitmap, breite, hoehe, stoffkarte, seed);
+  dunkleNachTiefe(d, bitmap, breite, hoehe);
   const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);
   zeichneRand(d, bitmap, breite, hoehe, art);
   zeichneKontur(d, bitmap, breite, hoehe);
-  if (stoffkarte) tinteStoffe(d, bitmap, breite, hoehe, stoffkarte, seed);
   return { liste: buescheln, saum };
+}
+
+/**
+ * Tiefe: Felsen werden nach innen dunkler (Abstand zur nächsten Luft, Schachbrett-Näherung in zwei Läufen).
+ * Am Rand bleibt die Farbe unberührt, ab etwa 130 px Tiefe sind es noch 42 %. Das gibt Masse und Düsternis,
+ * ohne die Maske anzufassen.
+ */
+export function dunkleNachTiefe(d, bitmap, breite, hoehe, tiefe = 130, rest = 0.42) {
+  const n = breite * hoehe;
+  const abst = new Uint8Array(n);
+  const kappe = 200;
+  for (let i = 0; i < n; i += 1) abst[i] = bitmap[i] ? kappe : 0;
+  for (let y = 1; y < hoehe; y += 1) {
+    const z = y * breite;
+    for (let x = 1; x < breite; x += 1) {
+      const i = z + x;
+      if (!abst[i]) continue;
+      const m = Math.min(abst[i - 1], abst[i - breite], abst[i - breite - 1], abst[i - breite + 1]) + 1;
+      if (m < abst[i]) abst[i] = m;
+    }
+  }
+  for (let y = hoehe - 2; y >= 0; y -= 1) {
+    const z = y * breite;
+    for (let x = breite - 2; x >= 0; x -= 1) {
+      const i = z + x;
+      if (!abst[i]) continue;
+      const m = Math.min(abst[i + 1], abst[i + breite], abst[i + breite + 1], abst[i + breite - 1]) + 1;
+      if (m < abst[i]) abst[i] = m;
+    }
+  }
+  // Wertetabelle statt Potenz je Pixel.
+  const tabelle = new Float32Array(kappe + 1);
+  for (let k = 0; k <= kappe; k += 1) {
+    const t = Math.min(1, k / tiefe);
+    tabelle[k] = 1 - (1 - rest) * (t ** 0.8);
+  }
+  for (let i = 0; i < n; i += 1) {
+    if (!bitmap[i]) continue;
+    const f = tabelle[abst[i]];
+    const o = i * 4;
+    d[o] *= f; d[o + 1] *= f; d[o + 2] *= f;
+  }
 }
 
 /** Moos- und Grasschicht an jeder Oberkante; schreibt direkt in die Pixel. */
