@@ -94,7 +94,7 @@ test.describe('Kamera: Geschossverfolgung und Bedienung', () => {
   test.use({ viewport: { width: 1280, height: 720 } });
 
   test('Das Geschoss bleibt im Bild, die Kamera verlässt die Karte nie', async ({ page }) => {
-    const fehler = await oeffne(page, '20260921');
+    const fehler = await oeffne(page, '20260929');
     await ruhe(page);
     await page.evaluate(() => {
       const w = window;
