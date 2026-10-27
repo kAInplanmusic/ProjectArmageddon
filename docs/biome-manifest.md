@@ -36,7 +36,7 @@
 3. **„+50 % Magieintensität" (Biome 2 und 7) — entschieden (Auftraggeber, 2026-10-27):** gemeint ist die **Magie vom Magier (Klasse) und seinen Zaubern**, also deren Wirkung in diesen beiden Biomen. Im Code heißt der Magier-Archetyp vermutlich `occultist` (Archetypen: `brawler`, `artillerist`, `occultist`) und die Zauber sind die Schadensgruppe `magie` (`arcane`, `astral`, `spatial`, `temporal`, `time`, `psychic` in `schaden.js`). Zuordnung noch zu bestätigen; es ist **kein** Material- oder Biomwert, sondern ein Biom-Modifikator auf Magie.
 4. **Fluide:** Die SSOT führt Fluide nicht als eigene Liste; das Manifest ist die erste Quelle dafür. Ob „Raumriss", „Zeit-Vortex", „Weltraum-Leere" und „Bodenlose Leere" Fluide oder Abgründe sind, ist offen (hier als Fluid/Abgrund geführt).
 
-## Planet (Biom 14): Schichten und Fluide je Art — **Vorschlag, noch nicht freigegeben**
+## Planet (Biom 14): Schichten und Fluide je Art — **freigegeben (Auftraggeber, 2026-10-27)**
 
 Das Manifest nennt sie „variabel". Die Tabelle ist aus den sechs Materialmixen der SSOT (Biom 14) und aus dem jeweils verwandten Biom des Manifests abgeleitet (Eis ← Biom 4, Lava ← 1, Wüste ← 5, Dschungel ← 3, Rost ← 6, Stein ← 2). Der Seed zieht eine Art; die Zeile gilt dann für die ganze Karte.
 
@@ -47,6 +47,6 @@ Das Manifest nennt sie „variabel". Die Tabelle ist aus den sechs Materialmixen
 | Wüste (`sand`) | Sand, Sandstein, Salzkruste, Teer | Sand/Salzkruste | Sandstein | Teer | Treibsand; Teer; Oasen | Treibsandlöcher; Wanderdünen; Monumente; Oasen |
 | Dschungel (`dschungel`) | Humus, Holz, Wurzeln, Pilze, Fels | Humus | Wurzeln/Fels | Holz/Pilze | Sumpfschlamm; Säure (ätzend) | Rankenaufzüge; Wurzeln; Sporen; Wasserstandsschalter |
 | Rost (`rost`) | Rostmetall, Metall, Schrott, Beton, Korrosion | Schrott/Korrosion | Rostmetall/Beton | Metall | Toxischer Schlamm | Metallplatten; Giftfässer; Pressen; korrodierte Träger |
-| Stein (`stein`) | Geröll, Fels, Obsidian, Kristalladern | Geröll | Fels | Obsidian/Kristalladern | Schmelzwasser (unterirdisch) | Stalaktiten; Kristalle; Geröllhänge; Felsbrücken |
+| Stein (`stein`) | Geröll, Fels, Obsidian, Kristalladern | Geröll | Fels | Obsidian/Kristalladern | Quellwasser (unterirdisch) | Stalaktiten; Kristalle; Geröllhänge; Felsbrücken |
 
-Offen: Für **Stein** nennen weder SSOT noch Manifest ein Fluid; „Schmelzwasser" ist aus den Kristallhöhlen übernommen und kann auch „keins" sein. Die Zuordnung der Schichten (Deck/Kern/Adern) ist meine Ableitung aus den Materialnamen, nicht deine Vorgabe.
+Entschieden: Das Fluid der Art **Stein** ist **Quellwasser** (unterirdisch). Die Tabelle gilt damit als freigegeben, einschließlich der Zuordnung von Deck, Kern und Adern.
