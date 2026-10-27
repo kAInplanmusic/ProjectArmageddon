@@ -385,7 +385,8 @@ class Game {
     this.#bindeMusik();
     this.#bindeTon();
     // Grafikstufe (Lite/Ultra): Gerätewahl, gilt für alle Renderer-Grenzen (`this.grafik.grenzen`).
-    this.grafik = bindeGrafikBedienung(document, (g) => { this.grafik = g; });
+    this.grafik = bindeGrafikBedienung(document, (g) => { this.grafik = g; this.renderer.partikelDichte = g.grenzen.partikelDichte; });
+    this.renderer.partikelDichte = this.grafik.grenzen.partikelDichte;
     this.#exposeDebugApi();
   }
 

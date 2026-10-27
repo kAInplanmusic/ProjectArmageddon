@@ -149,6 +149,8 @@ export class Renderer {
     this.figurEffekte = new FigurEffekte();
     this.figurZeit = 0;
     this.sieger = null;
+    /** Anteil der Umgebungspartikel (Grafikstufe: Lite 0,5, Ultra 1); `main.js` setzt ihn nach der Gerätewahl. */
+    this.partikelDichte = 1;
     /** Zahl der in diesem Bild gezeichneten bzw. übersprungenen (außerhalb des Bildes) Figuren. */
     this.figurStat = { gezeichnet: 0, uebersprungen: 0, stufe: 0 };
     this.akzentJeFraktion = new Map(FACTIONS.map(f => [f.id, f.palette?.[1] ?? null]));
@@ -2353,7 +2355,7 @@ export class Renderer {
     // Regen, Schnee, Funken und Glühwürmchen liegen VOR dem Geschehen: sie
     // ziehen zwischen Kamera und Figuren.
     if (this.scenery) {
-      drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, true);
+      drawAmbient(this.ctx, this.width, this.height, this.scenery, this.time, true, this.partikelDichte);
     }
   }
 

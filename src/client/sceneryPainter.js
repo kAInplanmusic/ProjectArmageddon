@@ -154,6 +154,42 @@ function istDunkel(scenery) {
   return wert;
 }
 
+/** Weicher Leuchtpunkt je Farbe, einmal gemalt (Verlauf von der Farbe zu durchsichtig). Ohne Browser: `null`. */
+const LEUCHT_SPRITES = new Map();
+function leuchtSprite(rgbText) {
+  let s = LEUCHT_SPRITES.get(rgbText);
+  if (s !== undefined) return s;
+  s = null;
+  if (typeof document !== 'undefined') {
+    const c = document.createElement('canvas');
+    c.width = 32;
+    c.height = 32;
+    const g = c.getContext('2d');
+    if (g) {
+      const v = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+      v.addColorStop(0, `rgba(${rgbText},1)`);
+      v.addColorStop(0.35, `rgba(${rgbText},0.4)`);
+      v.addColorStop(1, `rgba(${rgbText},0)`);
+      g.fillStyle = v;
+      g.fillRect(0, 0, 32, 32);
+      s = c;
+    }
+  }
+  LEUCHT_SPRITES.set(rgbText, s);
+  return s;
+}
+
+/** Leuchtet an (x, y): additiv gemischter Punkt mit Radius `r` und Stärke `alpha` (0 bis 1). */
+function leuchte(ctx, x, y, r, rgbText, alpha) {
+  const s = leuchtSprite(rgbText);
+  if (!s || alpha <= 0.01) return;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = Math.min(1, alpha);
+  ctx.drawImage(s, x - r, y - r, r * 2, r * 2);
+  ctx.restore();
+}
+
 /** Einzelne Ambientesorte zeichnen. */
 function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrund) {
   const x = element.x * breite;
@@ -278,9 +314,10 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       const fall = ((zeit * 0.008 + element.phase * 30) % 1.2);
       const ry = ((element.y + fall) % 1.2 - 0.1) * hoehe;
       const wanken = Math.sin((zeit * 0.02 + element.phase * 5) * Math.PI) * 6;
-      ctx.fillStyle = `rgba(250,252,255,${0.8 * skala})`;
+      leuchte(ctx, x + wanken, ry, 6 * skala, '220,235,255', 0.18);
+      ctx.fillStyle = `rgba(250,252,255,${Math.min(1, 0.9 * skala)})`;
       ctx.beginPath();
-      ctx.arc(x + wanken, ry, Math.max(1, 1.8 * skala), 0, Math.PI * 2);
+      ctx.arc(x + wanken, ry, Math.max(1.4, 2.8 * skala), 0, Math.PI * 2);
       ctx.fill();
       break;
     }
@@ -289,9 +326,12 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       const steig = ((element.phase - zeit * 0.006) % 1.2 + 1.2) % 1.2;
       const ry = (element.y - steig * 0.35) * hoehe;
       const wanken = Math.sin((zeit * 0.05 + element.phase * 9) * Math.PI) * 4;
-      ctx.fillStyle = `rgba(255,${140 + Math.round(80 * element.phase)},60,${0.75 * skala})`;
+      // Glut flackert und leuchtet; der Kern ist heller und größer als früher (1,6 px waren kaum zu sehen).
+      const flackern = 0.65 + 0.35 * Math.sin((zeit * 0.18 + element.phase * 23) * Math.PI);
+      leuchte(ctx, x + wanken, ry, 9 * skala, '255,140,50', 0.5 * flackern);
+      ctx.fillStyle = `rgba(255,${170 + Math.round(70 * element.phase)},90,${Math.min(1, 0.95 * skala)})`;
       ctx.beginPath();
-      ctx.arc(x + wanken, ry, Math.max(1, 1.6 * skala), 0, Math.PI * 2);
+      ctx.arc(x + wanken, ry, Math.max(1.4, 2.4 * skala), 0, Math.PI * 2);
       ctx.fill();
       break;
     }
@@ -303,7 +343,7 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       ctx.fillStyle = element.kind === 'ash'
         ? `rgba(120,112,104,${0.6 * skala})`
         : `rgba(96,88,80,${0.7 * skala})`;
-      const groesse = Math.max(1, 2 * skala);
+      const groesse = Math.max(1.5, 3.4 * skala);
       ctx.fillRect(drift * breite, fall * hoehe, groesse, groesse * 0.7);
       break;
     }
@@ -314,16 +354,17 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       ctx.strokeStyle = `rgba(230,255,230,${0.5 * skala})`;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(x, ry, Math.max(1, 2.4 * skala), 0, Math.PI * 2);
+      ctx.arc(x, ry, Math.max(1.5, 3.6 * skala), 0, Math.PI * 2);
       ctx.stroke();
       break;
     }
 
     case 'fireflies': {
       const an = 0.35 + 0.65 * Math.abs(Math.sin((zeit * 0.025 + element.phase * 11) * Math.PI));
-      ctx.fillStyle = `rgba(124,252,0,${an * 0.6 * skala})`;
+      leuchte(ctx, x + bewegung * 8, y + bewegung * 4, 13 * skala, '150,255,60', an * 0.7);
+      ctx.fillStyle = `rgba(210,255,140,${Math.min(1, an * 0.95 * skala)})`;
       ctx.beginPath();
-      ctx.arc(x + bewegung * 8, y + bewegung * 4, Math.max(1, 1.7 * skala), 0, Math.PI * 2);
+      ctx.arc(x + bewegung * 8, y + bewegung * 4, Math.max(1.2, 2.2 * skala), 0, Math.PI * 2);
       ctx.fill();
       break;
     }
@@ -333,9 +374,10 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
       const ry = (element.y - steig * 0.25) * hoehe;
       const wanken = Math.sin((zeit * 0.02 + element.phase * 9) * Math.PI) * 10;
       const an = 0.4 + 0.6 * Math.abs(Math.sin((zeit * 0.015 + element.phase * 7) * Math.PI));
-      ctx.fillStyle = `rgba(214,170,255,${an * 0.55 * skala})`;
+      leuchte(ctx, x + wanken, ry, 12 * skala, '214,170,255', an * 0.6);
+      ctx.fillStyle = `rgba(235,210,255,${Math.min(1, an * 0.9 * skala)})`;
       ctx.beginPath();
-      ctx.arc(x + wanken, ry, Math.max(1, 2.2 * skala), 0, Math.PI * 2);
+      ctx.arc(x + wanken, ry, Math.max(1.4, 2.8 * skala), 0, Math.PI * 2);
       ctx.fill();
       break;
     }
@@ -387,13 +429,17 @@ function zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrun
  * Zeichnet die Begleitelemente.
  * @param {boolean} imVordergrund - Regen, Schnee und Funken liegen VOR dem Spielfeld
  */
-export function drawAmbient(ctx, breite, hoehe, scenery, zeit, imVordergrund) {
+export function drawAmbient(ctx, breite, hoehe, scenery, zeit, imVordergrund, dichte = 1) {
   const hinten = new Set(['stars', 'nebula_glow', 'aurora_bands', 'clouds_few', 'clouds_heavy',
     'clouds_storm', 'haze', 'fog_banks', 'birds', 'lightning', 'glimmer']);
   ctx.save();
-  for (const element of scenery.ambient.elemente) {
+  const elemente = scenery.ambient.elemente;
+  for (let i = 0; i < elemente.length; i += 1) {
+    const element = elemente[i];
     const gehoertNachHinten = hinten.has(element.kind);
     if (gehoertNachHinten === imVordergrund) continue;
+    // Grafikstufe: bei Dichte < 1 fällt ein fester Teil der Elemente weg (jedes zehnte nach Index).
+    if (dichte < 1 && (i % 10) / 10 >= dichte) continue;
     zeichneElement(ctx, element, breite, hoehe, scenery, zeit, imVordergrund);
   }
   ctx.restore();
