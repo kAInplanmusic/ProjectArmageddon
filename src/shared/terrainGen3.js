@@ -82,7 +82,7 @@ import { istPlanetBiom } from './config/biome-planet.js';
 import { baueGelaendePlanet } from './terrainPlanet.js';
 import { erzeugeKompositionsKarte } from './terrainKomposition.js';
 import { pruefeErreichbarkeit } from './erreichbarkeit.js';
-import { GELAENDE_KOMPOSITION } from './config/gelaende.js';
+import { GELAENDE_KOMPOSITION, KARTENARTEN } from './config/gelaende.js';
 
 /**
  * Die zwölf Achsen des Charakters.
@@ -560,7 +560,7 @@ export function zaehleMaterialien(material) {
  * @param {number} optionen.height
  * @returns {{bitmap:Uint8Array, surface:Int32Array, wasserY:number, charakter:object, versuche:number, kennzahlen:object}}
  */
-export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe = false, fassung = 0 }) {
+export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe = false, fassung = 0, kartenart = null }) {
   if (!rng || typeof rng.next !== 'function') {
     throw new TypeError('erzeugeAutonomeKarte benötigt einen RNG mit next()');
   }
@@ -582,7 +582,7 @@ export function erzeugeAutonomeKarte({ rng, width, height, biom = null, stoffe =
    */
   if (istPlanetBiom(biom)) return erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung });
 
-  if (fassung >= GELAENDE_KOMPOSITION) return erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung });
+  if (fassung >= GELAENDE_KOMPOSITION) return erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, kartenart });
 
   const MAX_VERSUCHE = 8;
   let letzterFehler = null;
@@ -664,7 +664,7 @@ function erzeugePlanetKarte({ rng, width, height, biom, stoffe, fassung = 0 }) {
 }
 
 /** Kartenarten ohne Sonderregel der Engine (kein Umlauf, keine Radialform). */
-const BAUTEIL_ARTEN = ['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'hochkant'];
+const BAUTEIL_ARTEN = KARTENARTEN;
 
 /** Welche Achse die Kartenart auslenkt, damit das Biom (`biomFuerCharakter`) zur Karte passt. */
 const BAUTEIL_CHARAKTER = {
@@ -677,7 +677,7 @@ const BAUTEIL_CHARAKTER = {
  * Fassung 6: die Karte aus Bauteilen (`terrainKomposition.js`), dieselbe Prüfung und Ergebnisform wie bei den
  * anderen Karten (bis zu acht Ziehungen). Der Seed zieht die Art; der Charakter steht in der Mitte jeder Achse.
  */
-function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung }) {
+function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, kartenart = null }) {
   const charakter = { kartenart: null };
   for (const [achse, [lo, hi]] of Object.entries(CHARAKTER_ACHSEN)) charakter[achse] = (lo + hi) / 2;
   const ablehnungen = [];
@@ -685,7 +685,7 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung }) {
   let kennzahlen = null;
   let versuch = 1;
   for (; versuch <= 8; versuch += 1) {
-    const art = height > width * 1.2 ? 'hochkant' : BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)];
+    const art = height > width * 1.2 ? 'hochkant' : (kartenart ?? BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)]);
     karte = erzeugeKompositionsKarte({ rng, width, height, art });
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);

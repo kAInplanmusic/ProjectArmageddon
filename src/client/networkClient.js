@@ -419,6 +419,7 @@ export class NetworkClient {
             orientation: message.orientation,
             gelaende: message.gelaende,
             biom: message.biom,
+            kartenart: message.kartenart,
             zerstoerung: message.zerstoerung,
             craters: Array.isArray(message.craters) ? message.craters : [],
             inset: Number(message.inset) || 0,

@@ -79,10 +79,21 @@ export function normalisiereBiomWahl(wahl, fassung = GELAENDE_STANDARD) {
  *
  * @returns {{gelaende:number, biomWahl:string|null, sonderbiom:string|null}} `sonderbiom` ist nur ab Fassung 2 gesetzt
  */
-export function loeseGelaende(gelaende, biom, seed) {
+export function loeseGelaende(gelaende, biom, seed, kartenart = null) {
   const fassung = normalisiereGelaende(gelaende);
   const biomWahl = normalisiereBiomWahl(biom, fassung);
-  return { gelaende: fassung, biomWahl, sonderbiom: fassung >= GELAENDE_BIOME ? waehleSonderbiom(seed, biomWahl, fassung) : null };
+  return {
+    gelaende: fassung, biomWahl, sonderbiom: fassung >= GELAENDE_BIOME ? waehleSonderbiom(seed, biomWahl, fassung) : null,
+    kartenart: normalisiereKartenart(kartenart, fassung),
+  };
+}
+
+/** Die Kartenvorlagen (Kartenarten der Bauteilkarte, ab Fassung 6). `null` = der Seed zieht die Art. */
+export const KARTENARTEN = Object.freeze(['ebenen', 'insel', 'inselgruppe', 'hoehle', 'hoehleInsel', 'schlucht', 'archipel', 'vulkan', 'ruinenstadt', 'pyramide', 'hochkant']);
+
+/** Gültige Vorlage oder `null`; vor Fassung 6 und bei Unbekanntem gilt immer `null` (alte Karten bleiben unverändert). */
+export function normalisiereKartenart(art, fassung = GELAENDE_STANDARD) {
+  return fassung >= GELAENDE_KOMPOSITION && KARTENARTEN.includes(art) ? art : null;
 }
 
 /**

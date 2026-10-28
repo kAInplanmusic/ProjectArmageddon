@@ -11,7 +11,7 @@ import { bereinigeFraktionen } from '../shared/config/darstellung.js';
 import { randomUUID } from 'node:crypto';
 import { ORIENTATIONS, TEAM_COLORS } from '../engine/match.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
-import { normalisiereBiomWahl } from '../shared/config/gelaende.js';
+import { normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 
 export const LOBBY_STATUS = Object.freeze({
@@ -84,7 +84,7 @@ export class LobbyManager {
   create({
     teams = 2, playersPerTeam = null, unitsPerPlayer = null, preset = 'hills', kartentyp = null,
     seed = undefined, hostName = 'Host', orientation = 'landscape', sidegrades = null,
-    loadouts = null, fraktionen = null, biom = null,
+    loadouts = null, fraktionen = null, biom = null, kartenart = null,
   } = {}) {
     /*
      * Grenzen der Teamzahl.
@@ -256,6 +256,8 @@ export class LobbyManager {
       kartentyp,
       // Biomwahl (`config/gelaende.js`): Sonderbiom, `klassisch` oder `null` (der Seed entscheidet); Unbekanntes wird `null`.
       biom: normalisiereBiomWahl(biom),
+      // Kartenvorlage (ab Geländefassung 6): Unbekanntes wird `null` (der Seed zieht die Art).
+      kartenart: normalisiereKartenart(kartenart),
       // Ausrichtung gehört zur Lobby: sie bestimmt die Kartengröße und muss für
       // alle Teilnehmer dieselbe sein.
       orientation,

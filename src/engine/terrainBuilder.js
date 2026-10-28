@@ -90,6 +90,7 @@ export function baueTerrain(quelle) {
       width: quelle.width,
       height: quelle.height,
       biom: quelle.biom ?? null,
+      kartenart: quelle.kartenart ?? null,
       stoffe: Boolean(quelle.stoffe),
       fassung: quelle.gelaende ?? 0,
     });

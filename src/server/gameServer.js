@@ -160,6 +160,7 @@ class LobbySession {
       kisten,
       gelaende,
       biom: lobby.biom ?? null,
+      kartenart: lobby.kartenart ?? null,
       schaden,
       guenther,
       cookie,
@@ -197,6 +198,7 @@ class LobbySession {
       kisten: this.match.kisten,
       gelaende: this.match.gelaende,
       biom: lobby.biom ?? null,
+      kartenart: lobby.kartenart ?? null,
       schaden: this.match.schaden,
       guenther: this.match.guenther,
       cookie: this.match.cookie,
@@ -582,7 +584,7 @@ class LobbySession {
 
   /** Geländefassung, aufgelöstes Biom und Zerstörungsfassung: Der Client baut Karte und Stoffkarte damit nach. */
   gelaendeFelder() {
-    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, zerstoerung: this.match.zerstoerung };
+    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, kartenart: this.match.kartenart, zerstoerung: this.match.zerstoerung };
   }
 
   /** Fügt einen Client hinzu und schickt ihm den Startzustand. */
@@ -1760,6 +1762,7 @@ export class GameServer {
           // Leerstring und fehlend sind gleichbedeutend: „der bewährte Generator".
           kartentyp: body.kartentyp || null,
           biom: typeof body.biom === 'string' ? body.biom : null,
+          kartenart: typeof body.kartenart === 'string' ? body.kartenart : null,
           orientation: body.orientation ?? 'landscape',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',

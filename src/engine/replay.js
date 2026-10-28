@@ -27,7 +27,7 @@ import { COOKIE_ALT, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG_ALT, normalisiereBewegung } from '../shared/config/bewegung.js';
 import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
-import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl } from '../shared/config/gelaende.js';
+import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
 
 /*
@@ -67,7 +67,7 @@ export class ReplayRecorder {
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
-    waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null,
+    waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT,
   } = {}) {
     if (!Number.isInteger(seed)) {
@@ -106,6 +106,8 @@ export class ReplayRecorder {
       gelaende: normalisiereGelaende(gelaende),
       // Die Biomwahl nur, wenn sie gesetzt ist (Sonderbiom oder `klassisch`); sonst entscheidet der Seed.
       ...(normalisiereBiomWahl(biom) ? { biom: normalisiereBiomWahl(biom) } : {}),
+      // Die Kartenvorlage nur, wenn gewählt (ab Geländefassung 6); sonst zieht der Seed die Art.
+      ...(normalisiereKartenart(kartenart, normalisiereGelaende(gelaende)) ? { kartenart } : {}),
       /* Schadensfassung (`config/schaden.js`). Wie `kisten`: eine Datei OHNE das Feld ist `SCHADEN_ALT` (keine Mali je Schadensart). */
       schaden: normalisiereSchaden(schaden),
       /* Tier-NPCs (`config/guenther.js`, `config/cookie.js`). Wie `kisten`: eine Datei OHNE die Felder ist `GUENTHER_ALT` (nur Laufen, Pinkeln, Kacken, Rad) und `COOKIE_ALT` (kein Cookie). */
@@ -386,6 +388,7 @@ export class ReplayPlayer {
       kisten: config.kisten,
       gelaende: config.gelaende,
       biom: config.biom ?? null,
+      kartenart: config.kartenart ?? null,
       schaden: config.schaden,
       guenther: config.guenther,
       cookie: config.cookie,

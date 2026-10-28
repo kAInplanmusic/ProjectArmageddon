@@ -1137,6 +1137,23 @@
                 <option value="automatisch" selected>automatisch (gemaltes Bild passend zur Karte, empfohlen)</option>
               </select>
             </label>
+            <label>Kartenvorlage
+              <!-- Ab Geländefassung 6: wählt die Form der Karte; „Zufall" lässt den Seed die Art ziehen. Teil der Match-Konfiguration (Replay-Kopf). -->
+              <select id="cfg-kartenart">
+                <option value="" selected>Zufall (Seed entscheidet)</option>
+                <option value="ebenen">Ebenen und Hügel</option>
+                <option value="insel">Eine große Insel</option>
+                <option value="inselgruppe">Inselgruppe</option>
+                <option value="archipel">Archipel im Wasser</option>
+                <option value="hoehle">Höhle</option>
+                <option value="hoehleInsel">Höhleninsel</option>
+                <option value="schlucht">Schlucht</option>
+                <option value="vulkan">Vulkan</option>
+                <option value="ruinenstadt">Ruinenstadt</option>
+                <option value="pyramide">Pyramide</option>
+                <option value="hochkant">Hochkant (Turm)</option>
+              </select>
+            </label>
             <label>Tageszeit
               <!-- Reine Darstellung (Farbstimmung über dem Bild), kein Einfluss auf Spielstand oder Replay. -->
               <select id="cfg-zeit">

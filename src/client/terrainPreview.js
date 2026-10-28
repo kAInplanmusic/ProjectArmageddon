@@ -54,6 +54,7 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
     kartentyp: payload.kartentyp ?? kartentypRueckfall,
     gelaende: payload.gelaende ?? GELAENDE_ALT,
     biom: payload.biom ?? null,
+    kartenart: payload.kartenart ?? null,
     zerstoerung: payload.zerstoerung ?? null,
   };
 }
@@ -82,8 +83,8 @@ export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'lands
   const rng = manager.getSubRng('TERRAIN');
   const gebaut = kartentyp === 'autonom'
     ? (() => {
-      const g = loeseGelaende(fassung.gelaende ?? GELAENDE_ALT, fassung.biom ?? null, seed);
-      const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height, biom: g.sonderbiom, stoffe: g.gelaende >= GELAENDE_BIOME, fassung: g.gelaende });
+      const g = loeseGelaende(fassung.gelaende ?? GELAENDE_ALT, fassung.biom ?? null, seed, fassung.kartenart ?? null);
+      const k = erzeugeAutonomeKarte({ rng, width: masse.width, height: masse.height, biom: g.sonderbiom, stoffe: g.gelaende >= GELAENDE_BIOME, fassung: g.gelaende, kartenart: g.kartenart });
       return { bitmap: k.bitmap, waterLevel: k.wasserY, stoffkarte: k.stoffkarte ?? null, sonderbiom: g.sonderbiom, charakter: k.charakter ?? null };
     })()
     : generateTerrain({ rng, width: masse.width, height: masse.height, preset });

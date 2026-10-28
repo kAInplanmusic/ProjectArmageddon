@@ -627,7 +627,7 @@ export class MatchController {
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, // Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
-    gelaende = GELAENDE_STANDARD, biom = null,
+    gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
     this.#seedManager = seed === undefined
       ? MatchSeedManager.createRandom()
@@ -677,7 +677,7 @@ export class MatchController {
     this.gehen = this.bewegung >= BEWEGUNG_GEHEN ? new BewegungSystem(this) : null; // Gehen am Boden (`systems/bewegungSystem.js`)
     this.zugregeln = normalisiereZugregeln(zugregeln);
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
-    Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed)); // gelaende, biomWahl, sonderbiom
+    Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
 
     // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
@@ -841,6 +841,7 @@ export class MatchController {
       kartentyp: this.kartentyp,
       preset: this.preset,
       biom: this.sonderbiom,
+      kartenart: this.kartenart,
       stoffe: this.gelaende >= GELAENDE_BIOME,
       gelaende: this.gelaende,
       events: this.#events,

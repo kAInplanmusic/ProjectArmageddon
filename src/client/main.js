@@ -752,6 +752,7 @@ class Game {
     const backdropKey = document.getElementById('cfg-backdrop')?.value ?? '';
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
+    const kartenart = document.getElementById('cfg-kartenart')?.value || null;
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
     // Tageszeit und Wetter: nur Darstellung, nicht Teil der Match-Konfiguration.
     this.renderer.stimmung = {
@@ -769,11 +770,11 @@ class Game {
     if (serverUrl) {
       return this.startOnline({
         serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
-        backdropKey, orientation, sidegrades, loadouts, fraktionen, biom,
+        backdropKey, orientation, sidegrades, loadouts, fraktionen, biom, kartenart,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts, fraktionen, biom,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts, fraktionen, biom, kartenart,
     });
   }
 
@@ -1244,7 +1245,7 @@ class Game {
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '', orientation = 'landscape',
-    sidegrades = null, loadouts = null, fraktionen = null, biom = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
   } = {}) {
     this.network?.disconnect();
     this.network = null;
@@ -1255,7 +1256,7 @@ class Game {
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
     // nach dem Start.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom,
+      seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom, kartenart,
       guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
@@ -1458,7 +1459,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null, token = null,
+    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
   } = {}) {
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
@@ -1495,7 +1496,7 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, preset, kartentyp, seed, orientation, ...(biom ? { biom } : {}),
+            teams, preset, kartentyp, seed, orientation, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
             /*
              * Genau EINE der beiden Angaben — sie widersprechen sich sonst.
              *
