@@ -28,7 +28,7 @@
  * niedrigeren Stufe nicht übertreffen.
  *
  * Aufruf:
- *   node scripts/waffen-balance.mjs [--json] [--nur=pa_001,pa_028] [--ausreisser]
+ *   node scripts/waffen-balance.mjs [--json] [--nur=pa_001,pa_028] [--ausreisser] [--waffen=5]
  */
 import { MatchController, MAP_WIDTH, BASE_HEALTH } from '../src/engine/match.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
@@ -37,6 +37,9 @@ import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 
 const args = Object.fromEntries(process.argv.slice(2).filter(a => a.startsWith('--'))
   .map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true]; }));
+
+/** Waffenfassung der Messung (`--waffen=5` misst das Altverhalten; Vorgabe: Standardfassung des Motors). */
+const WAFFEN_FASSUNG = args.waffen !== undefined ? Number(args.waffen) : undefined;
 
 export const ENTFERNUNGEN = Object.freeze([40, 90, 150, 300, 500, 800, 1200, 1700]);
 export const STUFEN = Object.freeze(['common', 'uncommon', 'rare', 'epic', 'legendary']);
@@ -74,7 +77,7 @@ function freieLinie(match, dist) {
 }
 
 function aufbau(seed, dist, waffe) {
-  const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, schaden: 1 });
+  const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, schaden: 1, waffen: WAFFEN_FASSUNG });
   match.start();
   const z = match.getState();
   const schuetze = z.entities.find(e => e.entityId === match.activePlayerId);

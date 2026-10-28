@@ -130,3 +130,37 @@ Tests in der Kopie: Mit der Korrektur laufen elf Testdateien, die Zünder oder W
 5. Molotowcocktail, Giftwolke, Tentakelgift: nicht anfassen; sie wirken, ihr Wert hängt am Brand/Gift.
 
 Offene Entscheidung für den Auftraggeber: Armierung korrigieren (Punkt 2) und danach über +15 % für die rare-Granaten entscheiden (Punkt 3).
+
+## 7 Nach der Korrektur (Fassung 6)
+
+Umgesetzt mit der Waffenfassung 6 (`WAFFEN_ZUENDER`, Standard für neue Matches). Fassung 5 und älter verhalten sich bitgleich wie vorher (Goldwerte in `tests/zuender-armierung-gold.test.js`, gemessen am Stand e26f660).
+
+**Ursache (belegt).** `src/engine/systems/projectileSystem.js`, Zweig `if (hit && fuseTicks > 0)`: Der Treffpunkt `hit` ist der erste Abtastpunkt **im Festen** (`raycastSegment`, `src/shared/ballistics.js`). Der Zweig stellt die Granate dorthin und nullt die Geschwindigkeit. Im nächsten Takt beginnt der Strahl in dieser Zelle; `integrateStep` gibt der Geschwindigkeit wieder die Schwerkraft (`PROJECTILE_GRAVITY` 0,32 px), der erste Abtastpunkt liegt 0,32 px tiefer, ist wieder fest und wird zum neuen Treffpunkt. Je Takt rund 0,3 px Sinken, und `fuse_armed` kam in jedem Takt erneut. (Die Vermutung aus Abschnitt 2 "vermutlich, weil sie vom Treffpunkt aus startet" ist damit bestätigt.)
+
+**Korrektur.** Neues Feld `Projectile.armiert`, gesetzt beim ersten Aufprall, nur wenn `services.match.zuenderBleibtLiegen` (Fassung ≥ 6). Eine armierte Granate wird nicht mehr bewegt und nicht mehr geprüft; sie zählt den Zünder herunter und zündet an der Aufprallstelle. Der Zünder läuft gleich lang wie vorher; `fuse_armed` kommt nur einmal.
+
+**Messung** (`node scripts/waffen-balance.mjs --waffen=5` gegen `--waffen=6`, `messeWaffe` aus dem Skript, drei Seeds: Index + 0/1000/2000, Entfernungen 40 bis 1700 px; "Best" = höchster Schaden je Seed, Ziel steht still, Gesundheit 1000; "Nah" = Mittel über alle Entfernungen bis 300 px und alle drei Seeds, 12 Werte):
+
+| ID | Waffe | Stufe | Best Fassung 5 (3 Seeds) | Mittel F5 | Best Fassung 6 (3 Seeds) | Mittel F6 | Faktor | Nah F5 | Nah F6 |
+|---|---|---|---|---:|---|---:|---:|---:|---:|
+| pa_028 | Kaktusbombe | rare | 20,8 / 24,1 / 16,8 | 20,6 | 36,1 / 37,0 / 36,9 | 36,7 | 1,78 | 12,9 | 35,6 |
+| pa_029 | Pömpel | uncommon | 13,0 / 12,6 / 13,1 | 12,9 | 16,5 / 16,0 / 16,3 | 16,3 | 1,26 | 6,7 | 14,1 |
+| pa_030 | Impulsbombe | rare | 8,5 / 11,9 / 11,2 | 10,5 | 24,4 / 24,9 / 24,1 | 24,5 | 2,32 | 7,5 | 23,1 |
+| pa_046 | Splittergranate | rare | 8,3 / 7,5 / 7,4 | 7,7 | 23,0 / 23,6 / 23,8 | 23,5 | 3,03 | 5,0 | 21,8 |
+| pa_047 | Handgranate | uncommon | 10,7 / 10,7 / 10,7 | 10,7 | 26,3 / 27,6 / 26,7 | 26,9 | 2,51 | 3,6 | 19,3 |
+| pa_048 | Bananengranate | rare | 8,0 / 8,0 / 8,0 | 8,0 | 25,2 / 26,0 / 25,5 | 25,6 | 3,20 | 4,7 | 24,7 |
+| pa_052 | Molotowcocktail | rare | 32,8 / 34,5 / 34,2 | 33,8 | 36,4 / 35,9 / 37,2 | 36,5 | 1,08 | 29,7 | 35,8 |
+| pa_053 | Roboterbombe | rare | 12,4 / 12,2 / 9,4 | 11,3 | 30,8 / 30,2 / 29,6 | 30,2 | 2,66 | 7,5 | 27,6 |
+| pa_070 | Giftwolke | rare | 35,3 / 34,9 / 34,3 | 34,8 | 33,6 / 33,8 / 33,9 | 33,8 | 0,97 | 33,2 | 33,0 |
+| pa_073 | Tentakelgift | rare | 44,9 / 42,0 / 44,8 | 43,9 | 46,1 / 46,1 / 45,9 | 46,0 | 1,05 | 40,4 | 45,7 |
+| pa_144 | Kosmische Wassermelone | epic | 14,9 / 14,9 / 0,0 | 9,9 | 51,9 / 51,9 / 52,6 | 52,1 | 5,25 | 3,7 | 50,6 |
+
+Lesart: Die acht Direktschaden-Zünder gewinnen das 1,3- bis 5-Fache (Wassermelone 9,9 → 52,1, Bananengranate 8,0 → 25,6, Splittergranate 7,7 → 23,5, Handgranate 10,7 → 26,9). Molotowcocktail, Giftwolke und Tentakelgift bleiben gleich (±8 %): ihr Wert hängt am Brand/Gift, nicht an der Lage (die Giftwolke liegt 3 % darunter; die Ursache wurde nicht untersucht, vermutlich Streuung durch die andere Zündlage). Die Wassermelone in Fassung 5 hat bei Seed 2000 den Wert 0 (die Granate sank aus dem Radius), in Fassung 6 trifft sie in allen Läufen.
+
+Verhältnis zum Stufenmedian (Skript, ohne Zünder und Selbstwirkungen, Stand Abschnitt 4: uncommon 30,4, rare 46,5, epic 68,5), Mittel F6 gegen Median: Handgranate 0,88, Pömpel 0,54, Wassermelone 0,76; rare: Kaktusbombe 0,79, Roboterbombe 0,65, Bananengranate 0,55, Impulsbombe 0,53, Splittergranate 0,51, Molotowcocktail 0,78, Giftwolke 0,73, Tentakelgift 0,99. Die Grenze "zu schwach" im Skript ist 0,5 (`ZU_SCHWACH`).
+
+**Empfehlung zu +15 % `damage` (nicht umgesetzt).**
+
+1. Für die meisten Zünder **nicht nötig**: Handgranate, Wassermelone, Kaktusbombe, Molotowcocktail, Giftwolke, Tentakelgift liegen im Bereich ihrer Stufe (0,73 bis 0,99), die Roboterbombe (0,65) ist vertretbar.
+2. Offen bleiben **drei rare Granaten an der Schwäche-Grenze**: Splittergranate (0,51), Impulsbombe (0,53), Bananengranate (0,55), dazu der Pömpel (uncommon, 0,54). Wenn der Auftraggeber sie über 0,6 heben will, genügt +15 % `damage` genau für diese vier (Splittergranate 23,5 → rund 27, Impulsbombe 24,5 → rund 28, Bananengranate 25,6 → rund 29,5, Pömpel 16,3 → rund 18,7; der Gewinn skaliert linear, siehe Abschnitt 1 Punkt 3). Die Stufen bleiben (Abschnitt 4: `powerScore` Splittergranate 83,97 → 89,64, Pömpel 72,37 → 77,12 unter der rare-Schwelle 80). Das wäre eine neue Waffenfassung (7) wie `WAFFEN_F5_WERTE`, nicht Teil dieser Änderung.
+3. Vorher die Messlücke schließen: Der Medianvergleich liegt auf Skript-Medianen ohne Zünder; `findeAusreisser` führt Zünderwaffen weiter nicht (`!e.lunte`). Mit Fassung 6 messen die Zünder fair und könnten in die Ausreißerliste aufgenommen werden.
