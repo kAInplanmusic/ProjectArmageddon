@@ -240,3 +240,60 @@ Weitere Aufräumarbeiten:
   Hilfe. Das gehört nicht zu Waffen, Buffs und Zaubern und berührt viele Tests (Vorschlag in Abschnitt E).
 - Hinweis zum Allsehenden Auge (`target_scan`): Die Wirkung setzt nur eine Markierung „aufgedeckt" (Protokoll, Zustand);
   kein Motorteil liest sie (`isRevealed` wird nirgends abgefragt). Der Text sagt deshalb nur das (Vorschlag E).
+
+## E. Balance-Leseprüfung (nur Befund und Vorschläge, kein Eingriff)
+
+### E1 Messung vorher und nachher
+
+`node scripts/waffen-balance.mjs` (die Messung nutzt den Standard, Waffenfassung 5) vor Abschnitt B und nach Abschnitt D:
+alle 112 Zeilen (Schaden Best, Reichweite, Trefferquote, Munition, Nachladen, Schüsse bis zum Kill je Klasse) und die
+fünf Stufenmediane sind **identisch**. Namen, Beschreibungen und die vier Artenwechsel ändern keinen Spielwert. Median je
+Stufe: common 17,8; uncommon 30,4; rare 46,5; epic 68,5; legendary 58,8.
+
+### E2 Die zwei gemeldeten Ausreißer sind ein Messartefakt
+
+Zauberpeitsche (pa_108) und Tesla-Turm (pa_129) „ohne Schaden: 0" treffen im Spiel. Ein Schuss auf freier Karte
+(`open`, 60 und 150 px) richtet 32 beziehungsweise 48 Schaden an, genau den Katalogwert. Das Skript misst je Waffe nur
+eine Karte (Seed aus dem Katalogindex) und versucht nur Winkel von 0 bis 0,15 rad; bei Sichtlinienwaffen weist der Motor
+den Schuss auf der Hügelkarte oft ab (`ok: false`, kein freier Blick) oder der Strahl verfehlt die schmale Trefferfläche.
+Mit anderen Seeds trifft dieselbe Waffe (Zauberpeitsche mit Index 110 trifft 32, Tesla-Turm mit Index 130 trifft 48). Es
+ist kein Waffenfehler, daher kein Eingriff. Vorschlag für das Messskript: bei Sichtlinien-Strahlen mit Messwert 0 mit
+einem zweiten und dritten Seed wiederholen, bevor ein Ausreißer gemeldet wird.
+
+### E3 Eigene Leseprüfung der Messtabelle (Verhältnis Bestwert zu Stufenmedian)
+
+Deutlich stärker als die Stufe (über 1,6): Plasmagewehr 1,96 (uncommon), Haubitze 1,89 (rare), Quantenkanone 1,72, Weltendrache
+1,72 (legendary), Quantengewehr 1,69, Traumfänger 1,69 (common), Meteorbrocken 1,63 (epic). Keine liegt über der Messgrenze
+`ZU_STARK` (2), alle Fassung-5-Korrekturen greifen schon.
+
+Deutlich schwächer (unter 0,55): Boxhandschuhe, Maschinenpistole, Salvengeber, Raketenwerfer, Zauberstab (0,51 bis 0,54, knapp
+bei der Grenze `ZU_SCHWACH` 0,5), dann Kaktusbombe 0,45, Pömpel 0,43, Handgranate 0,35, Roboterbombe 0,27, Kosmische Wassermelone
+0,22, Impulsbombe 0,18, Splittergranate 0,18, Bananengranate 0,17. Die Zünderwaffen (Handgranate bis Bananengranate) sind vom
+Ausreißerbericht ausgenommen; acht von elf liegen unter 0,5. Ob das echte Schwäche oder Messverfahren ist (Ziel steht still,
+Zünder läuft nach der Landung, Trefferquote 0,4 bis 0,6), ist offen.
+
+### E4 Vorschläge (nicht umgesetzt; brauchen eine Entscheidung des Auftraggebers)
+
+1. **Leistungswert und Beute: Zielsuche.** `computePowerScore` rechnet `homing * 5` (Quellskala 0 bis 100). Fliegendes Superschaf
+   (463,8) und Phönixschlag (287,9) sind dadurch `legendary`, obwohl der gemessene Schaden zur Stufe rare/epic passt (48,3 und 58,2).
+   Mit dem Gewicht 0,5 statt 5 ergäben sich 152,0 beziehungsweise 146,1 (beide epic). Das ändert die Stufe und damit die
+   Beutegewichte (`pickWeaponForRarity` liest `powerTier` des Katalogs, ohne Fassung); alte Aufzeichnungen bräuchten dafür eine
+   Versionsmarke (AGENTS.md §2). Deshalb nicht ohne Rückfrage.
+2. **Seltenheit der Designdatei.** `rarity` folgt der Nummer (001 bis 080 common, 081 bis 120 uncommon, 121 bis 150 rare), 106 von
+   150 Waffen zeigen eine andere `powerTier`. Vorschlag: `sourceRarity` aus der Designdatei streichen oder aus `powerTier`
+   ableiten, damit zwei Seltenheiten nicht dasselbe zu sagen vorgeben.
+3. **Waffen ohne Schaden haben Stufe common** (Dimensionssprung, Dimensionsriss, Düsenrucksack, Gleitschirm, Enterhaken,
+   Munitionskiste; Leistungswert 0), obwohl ihr Nutzen hoch ist. Vorschlag: eigener Nutzwert im Leistungswert (Reichweite der
+   Versetzung, Nachladezeit, Munition).
+4. **Zünderwaffen prüfen.** Messverfahren für Zünder (bewegtes oder wartendes Ziel) klären, danach entscheiden, ob Kaktusbombe,
+   Pömpel, Roboterbombe, Impulsbombe, Splitter- und Bananengranate und die Wassermelone Schaden oder Radius brauchen.
+5. **Kategorien nach Wirkung ordnen.** Angriffswaffen in `utility` (Bohrkanone, Ananasbombe, Feuerwesen, Energiefaust) und in
+   `tech` sowie Geschütze in `elemental` beeinflussen Ersatzschaden und Strahllänge je Kategorie
+   (`DAMAGE_BY_CATEGORY`, `HITSCAN_RANGE_BY_CATEGORY`). Eine Umsortierung ist eine Balance-Änderung an mehr als einem Dutzend Waffen.
+6. **Kaktusbombe**: Elementarwert Gift 12 bei Art `physical`; mit Art `poison` löste ein Treffer zusätzlich den Malus Gift und die
+   halbe Rüstung aus (Balance-Änderung).
+7. **Handgranate**: Art `explosive`, aber Radius 0 (reiner Direkttreffer nach der Landung). Entweder Radius oder Art `physical`.
+8. **Allsehendes Auge** setzt nur eine Markierung „aufgedeckt"; `isRevealed` wird nirgends gelesen. Entweder eine Wirkung
+   (Sicht, Fadenkreuz) anbinden oder die Waffe als Platzhalter kennzeichnen.
+9. **Klassen- und Archetypnamen** (`scout`, `heavy`, `artillery`, `brawler`, `artillerist`, `occultist`) in Hilfe und Kader deutsch
+   beschriften (`label: classId` in `classes.js`); berührt Tests und E2E-Texte.
