@@ -258,9 +258,9 @@ export const BALANCE_KORREKTUREN = Object.freeze({
   pa_007: { damage: 28 }, // Tonfa (Kontakt)
   pa_009: { damage: 37 }, // Eispickel (Kontakt)
   pa_040: { damage: 18 }, // Maschinenpistole (Startwaffe, 8 Schuss)
-  pa_039: { damage: 48 }, // Feldkanone / Mörser (Luftschlag, gemessen 2x Stufenmedian)
-  pa_066: { damage: 56 }, // Artilleriegeschütz (Luftschlag, gemessen 2x Stufenmedian)
-  pa_140: { damage: 60 }, // Quantenblaster (Uncommon mit Rare-Schaden)
+  pa_039: { damage: 48 }, // Feldmörser (Luftschlag, gemessen 2x Stufenmedian)
+  pa_066: { damage: 56 }, // Haubitze (Luftschlag, gemessen 2x Stufenmedian)
+  pa_140: { damage: 60 }, // Quantenkanone (Uncommon mit Rare-Schaden)
 });
 
 /**
@@ -292,9 +292,9 @@ export const BALANCE_KORREKTUREN_4 = Object.freeze({
   pa_104: { damage: 56 }, // Quantengewehr
   pa_139: { damage: 68 }, // Höllenkanone
   pa_118: { damage: 46 }, // Feuerwesen
-  pa_068: { damage: 54 }, // Plasma-Gewehr
+  pa_068: { damage: 54 }, // Plasmagewehr
   pa_059: { damage: 66 }, // Armbrust
-  pa_060: { damage: 34 }, // Minigun
+  pa_060: { damage: 34 }, // Gatlingkanone
   pa_069: { damage: 56 }, // Raketenkanone
   pa_038: { damage: 58 }, // Rakete
 });
@@ -315,18 +315,18 @@ export const FLUGPROFILE_4 = Object.freeze({
   pa_016: { projectileSpeed: 45, gravityScale: 1.0, bounces: 0, knockback: 10 }, // Rapier
   pa_019: { projectileSpeed: 34, gravityScale: 1.3, bounces: 2, knockback: 44 }, // Doppelaxt
   pa_020: { projectileSpeed: 38, gravityScale: 1.2, bounces: 0, knockback: 40 }, // Kriegssense
-  pa_021: { projectileSpeed: 42, gravityScale: 0.9, bounces: 3, knockback: 22 }, // Gebogene Klinge
+  pa_021: { projectileSpeed: 42, gravityScale: 0.9, bounces: 3, knockback: 22 }, // Krummsäbel
   pa_024: { projectileSpeed: 78, gravityScale: 0.9, knockback: 10 }, // Mittelfinger
   pa_025: { projectileSpeed: 58, gravityScale: 1.25, knockback: 20 }, // Handtuch
   pa_027: { projectileSpeed: 64, gravityScale: 1.1, bounces: 1, knockback: 14 }, // Fackel
-  pa_033: { projectileSpeed: 66, gravityScale: 1.05, knockback: 40 }, // Magischer Kampfstock
-  pa_034: { projectileSpeed: 80, gravityScale: 0.9, knockback: 8 }, // Magischer Geschosszauber
+  pa_033: { projectileSpeed: 66, gravityScale: 1.05, knockback: 40 }, // Zauberstab
+  pa_034: { projectileSpeed: 80, gravityScale: 0.9, knockback: 8 }, // Zauberbolzen
   pa_036: { projectileSpeed: 62, gravityScale: 0.9, knockback: 45 }, // Raketenhandschuh
-  pa_042: { projectileSpeed: 52, gravityScale: 0.9, knockback: 12 }, // Feuerwerks-Salve
+  pa_042: { projectileSpeed: 52, gravityScale: 0.9, knockback: 12 }, // Feuerwerkssalve
   pa_043: { projectileSpeed: 84, gravityScale: 0.95, knockback: 36 }, // Kampfgeschütz
-  pa_045: { projectileSpeed: 74, gravityScale: 0.9, knockback: 24 }, // Raketen-Salve
+  pa_045: { projectileSpeed: 74, gravityScale: 0.9, knockback: 24 }, // Raketensalve
   pa_047: { projectileSpeed: 56, gravityScale: 1.2, bounces: 2, knockback: 28 }, // Handgranate
-  pa_050: { projectileSpeed: 54, gravityScale: 1.25, bounces: 1, knockback: 40 }, // Doppelkopf-Axt
+  pa_050: { projectileSpeed: 54, gravityScale: 1.25, bounces: 1, knockback: 40 }, // Doppelkopfaxt
   pa_051: { projectileSpeed: 90, gravityScale: 0.95, knockback: 6 }, // Wurfklingen
 });
 

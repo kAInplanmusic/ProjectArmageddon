@@ -603,7 +603,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_013",
       "index": 13,
-      "displayName": "Multifunktionsmesser",
+      "displayName": "Mehrzweckmesser",
       "internalName": "multifunktionsmesser",
       "category": "melee",
       "subcategory": "melee",
@@ -971,7 +971,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_021",
       "index": 21,
-      "displayName": "Gebogene Klinge",
+      "displayName": "Krummsäbel",
       "internalName": "gebogene_klinge",
       "category": "melee",
       "subcategory": "melee",
@@ -1017,7 +1017,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_022",
       "index": 22,
-      "displayName": "Plasma-Blaster",
+      "displayName": "Plasmawerfer",
       "internalName": "plasma_blaster",
       "category": "ranged",
       "subcategory": "guns",
@@ -1201,7 +1201,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_026",
       "index": 26,
-      "displayName": "Pneumatischer Bohrer",
+      "displayName": "Pressluftbohrer",
       "internalName": "pneumatischer_bohrer",
       "category": "ranged",
       "subcategory": "guns",
@@ -1385,7 +1385,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_030",
       "index": 30,
-      "displayName": "Cyber-Bombe",
+      "displayName": "Impulsbombe",
       "internalName": "cyber_bombe",
       "category": "ranged",
       "subcategory": "guns",
@@ -1431,7 +1431,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_031",
       "index": 31,
-      "displayName": "Power Gauntlets",
+      "displayName": "Kraftfaust",
       "internalName": "power_gauntlets",
       "category": "ranged",
       "subcategory": "guns",
@@ -1524,7 +1524,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_033",
       "index": 33,
-      "displayName": "Magischer Kampfstock",
+      "displayName": "Zauberstab",
       "internalName": "magischer_kampfstock",
       "category": "ranged",
       "subcategory": "guns",
@@ -1570,7 +1570,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_034",
       "index": 34,
-      "displayName": "Magischer Geschosszauber",
+      "displayName": "Zauberbolzen",
       "internalName": "magischer_geschosszauber",
       "category": "ranged",
       "subcategory": "guns",
@@ -1616,7 +1616,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_035",
       "index": 35,
-      "displayName": "Explosiver Energieball",
+      "displayName": "Energieball",
       "internalName": "explosiver_energieball",
       "category": "ranged",
       "subcategory": "guns",
@@ -1801,7 +1801,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_039",
       "index": 39,
-      "displayName": "Feldkanone / Mörser",
+      "displayName": "Feldmörser",
       "internalName": "feldkanone_morser",
       "category": "ranged",
       "subcategory": "guns",
@@ -1941,7 +1941,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_042",
       "index": 42,
-      "displayName": "Feuerwerks-Salve",
+      "displayName": "Feuerwerkssalve",
       "internalName": "feuerwerks_salve",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2033,7 +2033,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_044",
       "index": 44,
-      "displayName": "Phönix-Angriff",
+      "displayName": "Phönixschlag",
       "internalName": "phonix_angriff",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2079,7 +2079,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_045",
       "index": 45,
-      "displayName": "Raketen-Salve",
+      "displayName": "Raketensalve",
       "internalName": "raketen_salve",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2309,7 +2309,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_050",
       "index": 50,
-      "displayName": "Doppelkopf-Axt",
+      "displayName": "Doppelkopfaxt",
       "internalName": "doppelkopf_axt",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2539,7 +2539,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_055",
       "index": 55,
-      "displayName": "Scharfschützengewehr",
+      "displayName": "Fernbüchse",
       "internalName": "scharfschutzengewehr",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2770,7 +2770,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_060",
       "index": 60,
-      "displayName": "Minigun",
+      "displayName": "Gatlingkanone",
       "internalName": "minigun",
       "category": "heavy_ranged",
       "subcategory": "guns",
@@ -2908,7 +2908,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_063",
       "index": 63,
-      "displayName": "Wasserblaster",
+      "displayName": "Wasserwerfer",
       "internalName": "wasserblaster",
       "category": "elemental",
       "subcategory": "elemental",
@@ -3000,7 +3000,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_065",
       "index": 65,
-      "displayName": "Meteoritenbrocken",
+      "displayName": "Meteorbrocken",
       "internalName": "meteoritenbrocken",
       "category": "elemental",
       "subcategory": "elemental",
@@ -3046,7 +3046,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_066",
       "index": 66,
-      "displayName": "Artilleriegeschütz",
+      "displayName": "Haubitze",
       "internalName": "artilleriegeschutz",
       "category": "elemental",
       "subcategory": "elemental",
@@ -3138,7 +3138,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_068",
       "index": 68,
-      "displayName": "Plasma-Gewehr",
+      "displayName": "Plasmagewehr",
       "internalName": "plasma_gewehr",
       "category": "elemental",
       "subcategory": "elemental",
@@ -3414,7 +3414,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_074",
       "index": 74,
-      "displayName": "Verderbnis-Siegel",
+      "displayName": "Verderbnissiegel",
       "internalName": "verderbnis_siegel",
       "category": "elemental",
       "subcategory": "elemental",
@@ -3598,7 +3598,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_078",
       "index": 78,
-      "displayName": "Voodoo-Puppe",
+      "displayName": "Voodoopuppe",
       "internalName": "voodoo_puppe",
       "category": "elemental",
       "subcategory": "elemental",
@@ -3966,7 +3966,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_086",
       "index": 86,
-      "displayName": "Wirbelwind-Krieger",
+      "displayName": "Windkrieger",
       "internalName": "wirbelwind_krieger",
       "category": "magic",
       "subcategory": "elemental",
@@ -4106,7 +4106,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_089",
       "index": 89,
-      "displayName": "Magischer Stiefel",
+      "displayName": "Zauberstiefel",
       "internalName": "magischer_stiefel",
       "category": "magic",
       "subcategory": "elemental",
@@ -4198,7 +4198,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_091",
       "index": 91,
-      "displayName": "Astralorb",
+      "displayName": "Astralkugel",
       "internalName": "astralorb",
       "category": "magic",
       "subcategory": "elemental",
@@ -4336,7 +4336,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_094",
       "index": 94,
-      "displayName": "Heil-Injektion",
+      "displayName": "Heilspritze",
       "internalName": "heil_injektion",
       "category": "magic",
       "subcategory": "elemental",
@@ -4382,7 +4382,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_095",
       "index": 95,
-      "displayName": "Chaos-Elixier",
+      "displayName": "Chaoselixier",
       "internalName": "chaos_elixier",
       "category": "magic",
       "subcategory": "elemental",
@@ -4520,7 +4520,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_098",
       "index": 98,
-      "displayName": "Lava-Elixier",
+      "displayName": "Lavaelixier",
       "internalName": "lava_elixier",
       "category": "magic",
       "subcategory": "elemental",
@@ -4566,7 +4566,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_099",
       "index": 99,
-      "displayName": "Zeit-Sanduhr",
+      "displayName": "Sanduhr",
       "internalName": "zeit_sanduhr",
       "category": "magic",
       "subcategory": "elemental",
@@ -4750,7 +4750,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_103",
       "index": 103,
-      "displayName": "Verderbnis-Kelch",
+      "displayName": "Verderbniskelch",
       "internalName": "verderbnis_kelch",
       "category": "magic",
       "subcategory": "elemental",
@@ -4842,7 +4842,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_105",
       "index": 105,
-      "displayName": "Zauberrolle",
+      "displayName": "Spruchrolle",
       "internalName": "zauberrolle",
       "category": "magic",
       "subcategory": "elemental",
@@ -4980,7 +4980,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_108",
       "index": 108,
-      "displayName": "Magische Peitsche",
+      "displayName": "Zauberpeitsche",
       "internalName": "magische_peitsche",
       "category": "magic",
       "subcategory": "elemental",
@@ -5118,7 +5118,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_111",
       "index": 111,
-      "displayName": "Grappling Hook",
+      "displayName": "Enterhaken",
       "internalName": "grappling_hook",
       "category": "utility",
       "subcategory": "special",
@@ -5164,7 +5164,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_112",
       "index": 112,
-      "displayName": "Jetpack",
+      "displayName": "Düsenrucksack",
       "internalName": "jetpack",
       "category": "utility",
       "subcategory": "special",
@@ -5579,7 +5579,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_121",
       "index": 121,
-      "displayName": "Explosiver Punch",
+      "displayName": "Raketenfaust",
       "internalName": "explosiver_punch",
       "category": "tech",
       "subcategory": "special",
@@ -5625,7 +5625,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_122",
       "index": 122,
-      "displayName": "Infinity Loop",
+      "displayName": "Endlosschleife",
       "internalName": "infinity_loop",
       "category": "tech",
       "subcategory": "special",
@@ -5717,7 +5717,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_124",
       "index": 124,
-      "displayName": "Auto-Turret",
+      "displayName": "Wachgeschütz",
       "internalName": "auto_turret",
       "category": "tech",
       "subcategory": "special",
@@ -5763,7 +5763,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_125",
       "index": 125,
-      "displayName": "Versorgungscontainer",
+      "displayName": "Nachschubkiste",
       "internalName": "versorgungscontainer",
       "category": "tech",
       "subcategory": "special",
@@ -5855,7 +5855,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_127",
       "index": 127,
-      "displayName": "Teleport-Plattform",
+      "displayName": "Teleportplattform",
       "internalName": "teleport_plattform",
       "category": "tech",
       "subcategory": "special",
@@ -5901,7 +5901,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_128",
       "index": 128,
-      "displayName": "Hologramm-Portal",
+      "displayName": "Hologrammportal",
       "internalName": "hologramm_portal",
       "category": "tech",
       "subcategory": "special",
@@ -6361,7 +6361,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_138",
       "index": 138,
-      "displayName": "Magischer Kriegshammer",
+      "displayName": "Arkanhammer",
       "internalName": "magischer_kriegshammer",
       "category": "tech",
       "subcategory": "special",
@@ -6453,7 +6453,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_140",
       "index": 140,
-      "displayName": "Quantenblaster",
+      "displayName": "Quantenkanone",
       "internalName": "quantenblaster",
       "category": "tech",
       "subcategory": "special",
@@ -6545,7 +6545,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_142",
       "index": 142,
-      "displayName": "Void-Ritter",
+      "displayName": "Leerenritter",
       "internalName": "void_ritter",
       "category": "ultimate",
       "subcategory": "special",
@@ -6775,7 +6775,7 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_147",
       "index": 147,
-      "displayName": "Welten-Drache",
+      "displayName": "Weltendrache",
       "internalName": "welten_drache",
       "category": "ultimate",
       "subcategory": "special",

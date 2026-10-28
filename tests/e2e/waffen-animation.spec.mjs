@@ -195,7 +195,7 @@ test.describe('Waffen-Animation', () => {
 
   test('Kachel-Waffen: Orb (Zauber-Darstellung) oder herausgelöstes Motiv, nie die gerahmte Karte', async ({ page }) => {
     const fehler = await matchStarten(page);
-    // pa_118 Feuerwesen: Orb; pa_034 Magischer Geschosszauber: Motiv ohne Rahmen
+    // pa_118 Feuerwesen: Orb; pa_034 Zauberbolzen: Motiv ohne Rahmen
     const spieler = await waffeWaehlen(page, 'pa_118');
     await page.waitForFunction(
       id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_118', spieler, { timeout: 15000 });

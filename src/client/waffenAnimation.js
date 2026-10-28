@@ -147,12 +147,12 @@ export const PARAMETER = Object.freeze({
  * nach der Sichtprüfung der Prüfbögen (`docs`: „Waffen-Animation").
  */
 export const KORREKTUREN = Object.freeze({
-  // Bumerang, Doppelkopf-Axt, Wurfklingen: lange Wurfwaffen, kleiner als die Schwerwaffen-Zelle.
+  // Bumerang, Doppelkopfaxt, Wurfklingen: lange Wurfwaffen, kleiner als die Schwerwaffen-Zelle.
   pa_049: { zelle: 27 },
   pa_050: { zelle: 29, handVor: 2.5 },
   pa_051: { zelle: 28 },
-  // Feldkanone: schwere Waffe, langer Rückstoß mit Nachschwingen.
-  // Rucksack, Gleitschirm und Jetpack werden auf dem Rücken getragen: hinter dem Körper, weiter hinten.
+  // Feldmörser: schwere Waffe, langer Rückstoß mit Nachschwingen.
+  // Rucksack, Gleitschirm und Düsenrucksack werden auf dem Rücken getragen: hinter dem Körper, weiter hinten.
   pa_032: { lage: 'hinter', handVor: -5 },
   pa_112: { lage: 'hinter', handVor: -5, handHoch: 1 },
   pa_114: { lage: 'hinter', handVor: -5, handHoch: 2 },

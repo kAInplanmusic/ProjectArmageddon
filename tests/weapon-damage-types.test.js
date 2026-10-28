@@ -68,8 +68,8 @@ test('Bekannte Beispiele: Waffe und Schadensart passen zusammen', () => {
     ['Handgranate', 'explosive'],
     ['Raketenwerfer', 'explosive'],
     ['Fackel', 'fire'],
-    ['Magischer Geschosszauber', 'arcane'],
-    ['Scharfschützengewehr', 'physical'],
+    ['Zauberbolzen', 'arcane'],
+    ['Fernbüchse', 'physical'],
   ];
 
   for (const [name, erwartet] of faelle) {

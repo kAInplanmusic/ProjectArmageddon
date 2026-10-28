@@ -113,3 +113,73 @@ von `scripts/build-weapon-catalog.mjs` erzeugt (`npm run weapons:build`) und nic
 Median je Stufe (Waffen mit Schaden): common 17,8; uncommon 30,4; rare 46,5; epic 68,5; legendary 58,8.
 Gemeldete Ausreißer (2): Magische Peitsche (pa_108) und Tesla-Turm (pa_129) „ohne Schaden: 0". Beide sind
 Hitscan-Waffen mit Sichtlinie; ihre Untersuchung steht in Abschnitt E.
+
+
+## B. Maßnahmen: Namen
+
+44 Waffen haben einen neuen Anzeigenamen (nur `displayName`; `id`, `index`, `internalName` und Icons bleiben).
+Geändert wurde die Quelle `project_armageddon_weapons_v1.json`, danach `npm run weapons:build`. Dazu wurden
+das Sprite-Manifest (`src/client/assets/weapon-sprites/manifest.json`, Feld `name`), der CSV-Index und die
+README-Tabellen nachgezogen. Die acht Identitätswaffen (Raketenwerfer, Salvengeber, Maschinenpistole,
+Präzisionsgewehr, Raketenrucksack, Gleitschirm, Dimensionssprung, Dimensionsriss) stehen jetzt auch in der
+Designdatei unter ihrem Generator-Namen.
+
+Regeln: deutsch; Zusammensetzungen in einem Wort (Eigenname „Tesla-Turm" ausgenommen); Zaubergegenstände mit
+dem Vorsatz „Zauber…" oder „Arkan…" statt „Magisch…"; kein Wort über 17 Zeichen, insgesamt höchstens 24
+(Kachel des Waffenmenüs); keine Namenskollision mit den Mali. `tests/waffen-namen.test.js` hält das fest.
+
+Namenshinweise im Generator: `hasFuse` und `deriveDamageType` lesen Teile des Anzeigenamens („bombe",
+„spreng", „mine" ...). „Sprengfaust" wurde deshalb verworfen (der Name hätte der Raketenfaust einen Zünder
+gegeben, `check:fuses` schlug an) und heißt „Raketenfaust".
+
+Prüfsummen in `tests/waffen-fassung.test.js`: Sie liefen über den ganzen Katalogeintrag und damit auch über den
+Anzeigenamen. Die Projektion lässt jetzt `displayName` und `description` weg (Anzeigetexte ändern keinen Schuss).
+Die drei Sollwerte wurden aus dem Katalog und den Fassungs-Tabellen des Stands vor der Umbenennung neu berechnet;
+mit der alten Projektion ergibt derselbe Stand wieder genau die bisherigen Werte. Kein Spielwert wurde angepasst.
+
+| ID | alt | neu |
+|---|---|---|
+| pa_013 | Multifunktionsmesser | Mehrzweckmesser |
+| pa_021 | Gebogene Klinge | Krummsäbel |
+| pa_022 | Plasma-Blaster | Plasmawerfer |
+| pa_026 | Pneumatischer Bohrer | Pressluftbohrer |
+| pa_030 | Cyber-Bombe | Impulsbombe |
+| pa_031 | Power Gauntlets | Kraftfaust |
+| pa_033 | Magischer Kampfstock | Zauberstab |
+| pa_034 | Magischer Geschosszauber | Zauberbolzen |
+| pa_035 | Explosiver Energieball | Energieball |
+| pa_039 | Feldkanone / Mörser | Feldmörser |
+| pa_042 | Feuerwerks-Salve | Feuerwerkssalve |
+| pa_044 | Phönix-Angriff | Phönixschlag |
+| pa_045 | Raketen-Salve | Raketensalve |
+| pa_050 | Doppelkopf-Axt | Doppelkopfaxt |
+| pa_055 | Scharfschützengewehr | Fernbüchse |
+| pa_060 | Minigun | Gatlingkanone |
+| pa_063 | Wasserblaster | Wasserwerfer |
+| pa_065 | Meteoritenbrocken | Meteorbrocken |
+| pa_066 | Artilleriegeschütz | Haubitze |
+| pa_068 | Plasma-Gewehr | Plasmagewehr |
+| pa_074 | Verderbnis-Siegel | Verderbnissiegel |
+| pa_078 | Voodoo-Puppe | Voodoopuppe |
+| pa_086 | Wirbelwind-Krieger | Windkrieger |
+| pa_089 | Magischer Stiefel | Zauberstiefel |
+| pa_091 | Astralorb | Astralkugel |
+| pa_094 | Heil-Injektion | Heilspritze |
+| pa_095 | Chaos-Elixier | Chaoselixier |
+| pa_098 | Lava-Elixier | Lavaelixier |
+| pa_099 | Zeit-Sanduhr | Sanduhr |
+| pa_103 | Verderbnis-Kelch | Verderbniskelch |
+| pa_105 | Zauberrolle | Spruchrolle |
+| pa_108 | Magische Peitsche | Zauberpeitsche |
+| pa_111 | Grappling Hook | Enterhaken |
+| pa_112 | Jetpack | Düsenrucksack |
+| pa_121 | Explosiver Punch | Raketenfaust |
+| pa_122 | Infinity Loop | Endlosschleife |
+| pa_124 | Auto-Turret | Wachgeschütz |
+| pa_125 | Versorgungscontainer | Nachschubkiste |
+| pa_127 | Teleport-Plattform | Teleportplattform |
+| pa_128 | Hologramm-Portal | Hologrammportal |
+| pa_138 | Magischer Kriegshammer | Arkanhammer |
+| pa_140 | Quantenblaster | Quantenkanone |
+| pa_142 | Void-Ritter | Leerenritter |
+| pa_147 | Welten-Drache | Weltendrache |

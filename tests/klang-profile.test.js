@@ -52,17 +52,17 @@ test('Die Zuordnung wählt je Waffenart den vorgesehenen Klang', () => {
     pa_039: 'rakete', // Mörser
     pa_047: 'wurf', // Handgranate (Zünder)
     pa_049: 'wurf', // Bumerang
-    pa_055: 'gewehr', // Scharfschützengewehr
+    pa_055: 'gewehr', // Fernbüchse
     pa_057: 'pistole', // Revolver
     pa_043: 'schwer', // Kampfgeschütz
     pa_062: 'feuer', // Flammenwerfer
     pa_071: 'eis', // Eisschlag
     pa_129: 'blitz', // Tesla-Turm
-    pa_022: 'laser', // Plasma-Blaster
+    pa_022: 'laser', // Plasmawerfer
     pa_092: 'selbst', // Heilzauber (Selbstwirkung)
     pa_082: 'magie', // Goldene Zauberrolle
-    pa_147: 'ultimate', // Welten-Drache
-    pa_140: 'laser', // Quantenblaster
+    pa_147: 'ultimate', // Weltendrache
+    pa_140: 'laser', // Quantenkanone
   };
   for (const [id, profil] of Object.entries(soll)) {
     assert.equal(schussProfilFuer(getWeapon(id)), profil, `${id} (${getWeapon(id).displayName})`);

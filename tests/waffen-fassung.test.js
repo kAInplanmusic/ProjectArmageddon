@@ -31,15 +31,29 @@ import {
 } from '../scripts/waffen-balance.mjs';
 import { spiele } from '../scripts/bot-partien.mjs';
 
-/** SHA-256 über den Katalog mit sortierten Schlüsseln (gemessen an 573a2c6). */
-const PRUEFSUMME_ALTER_KATALOG = 'd80e28df8c274f50b434ceb1a7aeab2fded9e964aeb3ef121f9274c531f81f7f';
+/**
+ * SHA-256 über den Katalog mit sortierten Schlüsseln (gemessen an 573a2c6).
+ *
+ * ANZEIGETEXTE GEHÖREN NICHT DAZU (2026-10-28, Namens- und Beschreibungsdurchsicht): `displayName`
+ * und `description` stehen nicht in der Summe. Die Summe beweist, dass die SPIELWERTE alter
+ * Fassungen bitgleich bleiben; ein Anzeigename ändert keinen Schuss. Die drei Summen sind neu
+ * gemessen: Katalog und Fassungs-Tabelle des Stands vor der Umbenennung (6fd0a90), gleiche
+ * Projektion; mit der alten Projektion (inklusive `displayName`) ergaben dieselben Daten wieder
+ * die bisherigen Werte d80e28df…, 75ba797b… und 63914aee…. Es wurde kein Spielwert angepasst.
+ */
+const PRUEFSUMME_ALTER_KATALOG = 'ceb60ae649218406c71d9986417cc6f25c04bed8907fd8a1d20c1962836ac30a';
 
 /** SHA-256 des Katalogs in Fassung 2 (gemessen am Stand d2d65aa, vor Fassung 3). */
-const PRUEFSUMME_F2 = '75ba797b1c93ec5c484cf5faea3c869d5685acef0f17f1400e326d5befb46fe4';
+const PRUEFSUMME_F2 = 'd8b3632fc9c9a9057b6b063c4f8a26afff05e58bd3f5bc440aed357c60725411';
+
+const ANZEIGETEXTE = new Set(['displayName', 'description']);
 
 function stabil(wert) {
-  return JSON.stringify(wert, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x)
-    ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b))) : x));
+  return JSON.stringify(wert, (k, x) => {
+    if (ANZEIGETEXTE.has(k)) return undefined;
+    return x && typeof x === 'object' && !Array.isArray(x)
+      ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b))) : x;
+  });
 }
 
 /** Gold: ein Schuss jeder geänderten Waffe auf 30 px, gemessen mit dem Stand 573a2c6. */
@@ -136,7 +150,7 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */
-const PRUEFSUMME_F3 = '63914aee763ab4bc93ab23cb6b878fcb802ae9cdbbf76762e5632dddbfe349dd';
+const PRUEFSUMME_F3 = '0b587300cb451bdcd911acf05264572c252deb08e35d6423ada5802468b98d34';
 
 /** Gold: ein Schuss der neun Waffen von Fassung 4 — Fassung 3 gemessen am Stand 09664fe, Fassung 4 neu. */
 const GOLD_F3_NEUN = {

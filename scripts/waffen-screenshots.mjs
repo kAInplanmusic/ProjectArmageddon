@@ -49,7 +49,7 @@ const AUSWAHL = [
   'pa_001', 'pa_008', 'pa_010', 'pa_012', 'pa_019', // Nahkampf: Schläger, Hammer, Kettensäge, Katana, Doppelaxt
   'pa_022', 'pa_026', 'pa_032', 'pa_037', 'pa_040', // Fernkampf: Blaster, Bohrer, Rucksack (Selbst), Raketenwerfer, MP
   'pa_041', 'pa_048', 'pa_049', 'pa_054', 'pa_055', // Schwer: Salvengeber, Bananengranate, Bumerang, Schrotflinte, Scharfschütze
-  'pa_062', 'pa_064', 'pa_068', 'pa_069', // Elementar: Flammenwerfer, Plasma-Gewehr, Raketenkanone
+  'pa_062', 'pa_064', 'pa_068', 'pa_069', // Elementar: Flammenwerfer, Plasmagewehr, Raketenkanone
   'pa_081', 'pa_087', 'pa_097', 'pa_104', 'pa_110', // Magie: Zauber, Selbstwirkung, Traumfänger, Quantengewehr
   'pa_121', 'pa_126', 'pa_131', 'pa_136', // Tech: Punch, Schlauchboot, Bohrkopfrakete
   'pa_111', 'pa_117', 'pa_119', // Utility: Selbstwirkung, Ananasbombe

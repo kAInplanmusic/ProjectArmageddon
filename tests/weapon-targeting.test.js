@@ -108,9 +108,9 @@ test('Die 11 ehemals widersprüchlichen Waffen sind jetzt als selbstbezogen vers
    * oben auch grün sein, weil die WIRKUNG sich geändert hat statt der Daten.
    */
   const erwartet = [
-    'Auto-Turret', 'Blutritual', 'Chaosmagier', 'Eisschild', 'Goldene Reliktkugel',
+    'Wachgeschütz', 'Blutritual', 'Chaosmagier', 'Eisschild', 'Goldene Reliktkugel',
     'Heilzauber', 'Himmelswächter', 'Mutationselixier', 'Weltenbaum', 'Wächterstatue',
-    'Zauberrolle',
+    'Spruchrolle',
   ].sort();
 
   const gefunden = WEAPONS

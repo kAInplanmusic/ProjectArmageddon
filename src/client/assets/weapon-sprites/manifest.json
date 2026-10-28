@@ -920,7 +920,7 @@
   },
   "pa_013": {
    "id": "pa_013",
-   "name": "Multifunktionsmesser",
+   "name": "Mehrzweckmesser",
    "category": "melee",
    "subcategory": "melee",
    "rarity": "common",
@@ -1488,7 +1488,7 @@
   },
   "pa_021": {
    "id": "pa_021",
-   "name": "Gebogene Klinge",
+   "name": "Krummsäbel",
    "category": "melee",
    "subcategory": "melee",
    "rarity": "common",
@@ -1559,7 +1559,7 @@
   },
   "pa_022": {
    "id": "pa_022",
-   "name": "Plasma-Blaster",
+   "name": "Plasmawerfer",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -1843,7 +1843,7 @@
   },
   "pa_026": {
    "id": "pa_026",
-   "name": "Pneumatischer Bohrer",
+   "name": "Pressluftbohrer",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2127,7 +2127,7 @@
   },
   "pa_030": {
    "id": "pa_030",
-   "name": "Cyber-Bombe",
+   "name": "Impulsbombe",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2198,7 +2198,7 @@
   },
   "pa_031": {
    "id": "pa_031",
-   "name": "Power Gauntlets",
+   "name": "Kraftfaust",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2340,7 +2340,7 @@
   },
   "pa_033": {
    "id": "pa_033",
-   "name": "Magischer Kampfstock",
+   "name": "Zauberstab",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2411,7 +2411,7 @@
   },
   "pa_034": {
    "id": "pa_034",
-   "name": "Magischer Geschosszauber",
+   "name": "Zauberbolzen",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2486,7 +2486,7 @@
   },
   "pa_035": {
    "id": "pa_035",
-   "name": "Explosiver Energieball",
+   "name": "Energieball",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2774,7 +2774,7 @@
   },
   "pa_039": {
    "id": "pa_039",
-   "name": "Feldkanone / Mörser",
+   "name": "Feldmörser",
    "category": "ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -2987,7 +2987,7 @@
   },
   "pa_042": {
    "id": "pa_042",
-   "name": "Feuerwerks-Salve",
+   "name": "Feuerwerkssalve",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -3129,7 +3129,7 @@
   },
   "pa_044": {
    "id": "pa_044",
-   "name": "Phönix-Angriff",
+   "name": "Phönixschlag",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -3200,7 +3200,7 @@
   },
   "pa_045": {
    "id": "pa_045",
-   "name": "Raketen-Salve",
+   "name": "Raketensalve",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -3555,7 +3555,7 @@
   },
   "pa_050": {
    "id": "pa_050",
-   "name": "Doppelkopf-Axt",
+   "name": "Doppelkopfaxt",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -3910,7 +3910,7 @@
   },
   "pa_055": {
    "id": "pa_055",
-   "name": "Scharfschützengewehr",
+   "name": "Fernbüchse",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -4265,7 +4265,7 @@
   },
   "pa_060": {
    "id": "pa_060",
-   "name": "Minigun",
+   "name": "Gatlingkanone",
    "category": "heavy_ranged",
    "subcategory": "guns",
    "rarity": "common",
@@ -4478,7 +4478,7 @@
   },
   "pa_063": {
    "id": "pa_063",
-   "name": "Wasserblaster",
+   "name": "Wasserwerfer",
    "category": "elemental",
    "subcategory": "elemental",
    "rarity": "common",
@@ -4620,7 +4620,7 @@
   },
   "pa_065": {
    "id": "pa_065",
-   "name": "Meteoritenbrocken",
+   "name": "Meteorbrocken",
    "category": "elemental",
    "subcategory": "elemental",
    "rarity": "common",
@@ -4691,7 +4691,7 @@
   },
   "pa_066": {
    "id": "pa_066",
-   "name": "Artilleriegeschütz",
+   "name": "Haubitze",
    "category": "elemental",
    "subcategory": "elemental",
    "rarity": "common",
@@ -4833,7 +4833,7 @@
   },
   "pa_068": {
    "id": "pa_068",
-   "name": "Plasma-Gewehr",
+   "name": "Plasmagewehr",
    "category": "elemental",
    "subcategory": "elemental",
    "rarity": "common",
@@ -5267,7 +5267,7 @@
   },
   "pa_074": {
    "id": "pa_074",
-   "name": "Verderbnis-Siegel",
+   "name": "Verderbnissiegel",
    "category": "elemental",
    "subcategory": "elemental",
    "rarity": "common",
@@ -5559,7 +5559,7 @@
   },
   "pa_078": {
    "id": "pa_078",
-   "name": "Voodoo-Puppe",
+   "name": "Voodoopuppe",
    "category": "elemental",
    "subcategory": "elemental",
    "rarity": "common",
@@ -6079,7 +6079,7 @@
   },
   "pa_086": {
    "id": "pa_086",
-   "name": "Wirbelwind-Krieger",
+   "name": "Windkrieger",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -6258,7 +6258,7 @@
   },
   "pa_089": {
    "id": "pa_089",
-   "name": "Magischer Stiefel",
+   "name": "Zauberstiefel",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -6372,7 +6372,7 @@
   },
   "pa_091": {
    "id": "pa_091",
-   "name": "Astralorb",
+   "name": "Astralkugel",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -6551,7 +6551,7 @@
   },
   "pa_094": {
    "id": "pa_094",
-   "name": "Heil-Injektion",
+   "name": "Heilspritze",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -6608,7 +6608,7 @@
   },
   "pa_095": {
    "id": "pa_095",
-   "name": "Chaos-Elixier",
+   "name": "Chaoselixier",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -6779,7 +6779,7 @@
   },
   "pa_098": {
    "id": "pa_098",
-   "name": "Lava-Elixier",
+   "name": "Lavaelixier",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -6836,7 +6836,7 @@
   },
   "pa_099": {
    "id": "pa_099",
-   "name": "Zeit-Sanduhr",
+   "name": "Sanduhr",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -7064,7 +7064,7 @@
   },
   "pa_103": {
    "id": "pa_103",
-   "name": "Verderbnis-Kelch",
+   "name": "Verderbniskelch",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -7196,7 +7196,7 @@
   },
   "pa_105": {
    "id": "pa_105",
-   "name": "Zauberrolle",
+   "name": "Spruchrolle",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -7389,7 +7389,7 @@
   },
   "pa_108": {
    "id": "pa_108",
-   "name": "Magische Peitsche",
+   "name": "Zauberpeitsche",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -7560,7 +7560,7 @@
   },
   "pa_111": {
    "id": "pa_111",
-   "name": "Grappling Hook",
+   "name": "Enterhaken",
    "category": "utility",
    "subcategory": "special",
    "rarity": "uncommon",
@@ -7617,7 +7617,7 @@
   },
   "pa_112": {
    "id": "pa_112",
-   "name": "Jetpack",
+   "name": "Düsenrucksack",
    "category": "utility",
    "subcategory": "special",
    "rarity": "uncommon",
@@ -8138,7 +8138,7 @@
   },
   "pa_121": {
    "id": "pa_121",
-   "name": "Explosiver Punch",
+   "name": "Raketenfaust",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -8195,7 +8195,7 @@
   },
   "pa_122": {
    "id": "pa_122",
-   "name": "Infinity Loop",
+   "name": "Endlosschleife",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -8309,7 +8309,7 @@
   },
   "pa_124": {
    "id": "pa_124",
-   "name": "Auto-Turret",
+   "name": "Wachgeschütz",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -8380,7 +8380,7 @@
   },
   "pa_125": {
    "id": "pa_125",
-   "name": "Versorgungscontainer",
+   "name": "Nachschubkiste",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -8494,7 +8494,7 @@
   },
   "pa_127": {
    "id": "pa_127",
-   "name": "Teleport-Plattform",
+   "name": "Teleportplattform",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -8551,7 +8551,7 @@
   },
   "pa_128": {
    "id": "pa_128",
-   "name": "Hologramm-Portal",
+   "name": "Hologrammportal",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -9143,7 +9143,7 @@
   },
   "pa_138": {
    "id": "pa_138",
-   "name": "Magischer Kriegshammer",
+   "name": "Arkanhammer",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -9257,7 +9257,7 @@
   },
   "pa_140": {
    "id": "pa_140",
-   "name": "Quantenblaster",
+   "name": "Quantenkanone",
    "category": "tech",
    "subcategory": "special",
    "rarity": "rare",
@@ -9403,7 +9403,7 @@
   },
   "pa_142": {
    "id": "pa_142",
-   "name": "Void-Ritter",
+   "name": "Leerenritter",
    "category": "ultimate",
    "subcategory": "special",
    "rarity": "rare",
@@ -9774,7 +9774,7 @@
   },
   "pa_147": {
    "id": "pa_147",
-   "name": "Welten-Drache",
+   "name": "Weltendrache",
    "category": "ultimate",
    "subcategory": "special",
    "rarity": "rare",
