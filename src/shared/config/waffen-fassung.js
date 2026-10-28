@@ -19,7 +19,8 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_ZUENDER` (6, Standard): Die Armierung einer Zündergranate ist korrigiert. Bis
+ *   - `WAFFEN_ZUENDERPLUS` (7, Standard): wie 6, dazu `WAFFEN_F7_WERTE` (vier Zündergranaten mit etwa 15 % mehr Schaden).
+ *   - `WAFFEN_ZUENDER` (6): Die Armierung einer Zündergranate ist korrigiert. Bis
  *     Fassung 5 stellte der Motor die bereits armierte Granate JEDEN Takt neu auf den Treffpunkt
  *     (der liegt im Festen) und ließ sie so je Takt rund 0,3 px sinken; sie zündete 11 bis 82 px
  *     unter dem Aufprall, teils außerhalb des eigenen Sprengradius. Ab Fassung 6 bleibt sie am
@@ -43,7 +44,8 @@ export const WAFFEN_KORREKTUR = 3;
 export const WAFFEN_FEIN = 4;
 export const WAFFEN_FAIR = 5;
 export const WAFFEN_ZUENDER = 6;
-export const WAFFEN_STANDARD = WAFFEN_ZUENDER;
+export const WAFFEN_ZUENDERPLUS = 7;
+export const WAFFEN_STANDARD = WAFFEN_ZUENDERPLUS;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -56,7 +58,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -122,6 +124,17 @@ export const WAFFEN_ALT_WERTE = Object.freeze({
  * Werte der Fassung 5 über dem Katalog (der Katalog bleibt Fassung 4): je Waffe die Felder, die
  * die Messung `scripts/waffen-balance.mjs` nachgezogen hat. Ältere Fassungen sehen sie nicht.
  */
+/**
+ * Fassung 7: vier Zündergranaten lagen nach der Korrektur der Armierung (Fassung 6) noch an der Schwäche-Grenze von 0,5 des
+ * Stufenmedians (Messung `docs/balance-auslese/zuender-test.md`); sie bekommen etwa 15 % Schaden. Alles andere wie Fassung 6.
+ */
+export const WAFFEN_F7_WERTE = Object.freeze({
+  pa_029: Object.freeze({ damage: 37 }), // Pömpel 32
+  pa_030: Object.freeze({ damage: 48 }), // Impulsbombe 42
+  pa_046: Object.freeze({ damage: 48 }), // Splittergranate 42
+  pa_048: Object.freeze({ damage: 53 }), // Bananengranate 46
+});
+
 export const WAFFEN_F5_WERTE = Object.freeze({
   pa_026: Object.freeze({ damage: 36 }),
   pa_041: Object.freeze({ damage: 48 }),
@@ -237,10 +250,11 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
   if (!waffe) return waffe;
   if (fassung >= WAFFEN_FAIR) {
     const f5 = WAFFEN_F5_WERTE[id];
-    if (!f5) return waffe;
+    const f7 = fassung >= WAFFEN_ZUENDERPLUS ? WAFFEN_F7_WERTE[id] : null;
+    if (!f5 && !f7) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
-    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5 }); zwischenspeicher.set(schluessel5, kopie5); }
+    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7 }); zwischenspeicher.set(schluessel5, kopie5); }
     return kopie5;
   }
   const art = ARTEN_BIS_F4[id];
