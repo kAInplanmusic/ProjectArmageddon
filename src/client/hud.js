@@ -18,6 +18,7 @@ import {
 } from '../shared/config/weapons.js';
 import { WATER_STATE, waterStateFor, waterLabel, DROWN_LEVEL } from '../shared/config/water.js';
 import { ladungAnteil } from './weaponAnimation.js';
+import { statusTooltip } from '../shared/config/wirkungstexte.js';
 
 const LOG_LIMIT = 60;
 
@@ -387,11 +388,11 @@ export class Hud {
       // aussetzt oder weniger Schaden nimmt.
       const zustand = state.statuses?.[entity.entityId];
       const marken = [];
-      if (zustand?.shield > 0) marken.push({ text: `🛡 ${Math.round(zustand.shield)}`, color: '#4cc9f0' });
-      if (zustand?.frozenTurns > 0) marken.push({ text: `❄ ${zustand.frozenTurns}`, color: '#7fd8ff' });
-      if (zustand?.dots?.length > 0) marken.push({ text: `☠ ${zustand.dots.length}`, color: '#90be6d' });
+      if (zustand?.shield > 0) marken.push({ text: `🛡 ${Math.round(zustand.shield)}`, color: '#4cc9f0', title: statusTooltip('shield') });
+      if (zustand?.frozenTurns > 0) marken.push({ text: `❄ ${zustand.frozenTurns}`, color: '#7fd8ff', title: `${statusTooltip('frozen')} (noch ${zustand.frozenTurns} Zug/Züge)` });
+      if (zustand?.dots?.length > 0) marken.push({ text: `☠ ${zustand.dots.length}`, color: '#90be6d', title: statusTooltip('dots') });
       for (const m of maliMarken(zustand)) marken.push({ text: m.text, color: m.farbe, title: `${m.label}${m.turns > 0 ? ` (${m.turns} Zug/Züge)` : ''}: ${m.kurz}` });
-      if (zustand?.boostMultiplier > 1) marken.push({ text: '↑', color: '#ffb703' });
+      if (zustand?.boostMultiplier > 1) marken.push({ text: '↑', color: '#ffb703', title: statusTooltip('boost') });
 
       // Wasser: Der Füllstand ist eine Zahl zwischen 0 und 1 und für den Spieler
       // bedeutungslos — deshalb Prozent und Zustandswort. „nass" bremst nur,
@@ -422,11 +423,8 @@ export class Hud {
         badge.className = 'status-badge';
         badge.textContent = marke.text;
         badge.style.color = marke.color;
-        badge.title = marke.title ?? (zustand?.frozenTurns > 0 && marke.text.startsWith('❄')
-          ? `Eingefroren: setzt ${zustand.frozenTurns} Zug/Züge aus`
-          : marke.text.startsWith('🛡') ? 'Schild: fängt Schaden ab, bevor Gesundheit sinkt'
-            : marke.text.startsWith('☠') ? 'Schaden über Zeit: wirkt bei jedem Zugbeginn'
-              : 'Erhöhter Schaden');
+        // Alle Marken tragen ihren Tooltip selbst (Quelle: `config/wirkungstexte.js`, Mali: `MALUS.kurz`).
+        if (marke.title) badge.title = marke.title;
         item.append(badge);
       }
 

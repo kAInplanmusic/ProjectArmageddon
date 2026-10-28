@@ -1023,6 +1023,8 @@ const weapons = raw.weapons.map(entry => {
     id: entry.id,
     index: toNumber(entry.index),
     displayName: normalizeDisplayName(entry.displayName ?? entry.internalName ?? entry.id, entry.id),
+    /** Ein Satz ohne Zahlen: was die Waffe tut (Tooltip im Waffenmenü); abgeleitet aus den Daten, siehe docs/audit-waffen-2026-10-28.md. */
+    description: String(entry.description ?? '').trim(),
     internalName: entry.internalName ?? entry.id,
     category,
     /** Gruppe der Waffenauswahl (vier Gruppen, siehe WEAPON_SUBCATEGORIES). */

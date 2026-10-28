@@ -94,6 +94,7 @@ import {
   emblem,
 } from '../shared/achievements.js';
 import { buildRosterView, buildHilfeView, beschreibeWert } from './kaderansicht.js';
+import { wirkungLabel } from '../shared/config/wirkungstexte.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
 /*
@@ -2612,10 +2613,10 @@ class Game {
         this.hud.log(`${name} ist für ${payload.revealedTurns} Züge aufgedeckt`, 'accent');
         break;
       case 'random':
-        this.hud.log(`${name}: Zufallswirkung ${payload.randomKind}`, 'accent');
+        this.hud.log(`${name}: Zufallswirkung ${wirkungLabel(payload.randomKind)}`, 'accent');
         break;
       default:
-        this.hud.log(`${name} nutzt eine Wirkung (${payload.kind})`);
+        this.hud.log(`${name} setzt ${wirkungLabel(payload.kind)} ein`);
     }
   }
 

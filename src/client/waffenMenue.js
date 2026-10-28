@@ -23,6 +23,7 @@ import {
   displayGroupFor,
   displayGroupLabel,
 } from '../shared/config/weapons.js';
+import { artLabel } from '../shared/config/wirkungstexte.js';
 
 const STUFEN_NAMEN = Object.freeze({
   common: 'gewöhnlich', uncommon: 'ungewöhnlich', rare: 'selten', epic: 'episch', legendary: 'legendär',
@@ -234,7 +235,9 @@ export class WaffenMenue {
     nachladen.textContent = b.cooldown > 0 ? `⏳ ${b.cooldown}` : '';
     zeile.append(name, munition, nachladen);
 
-    const teile = [w?.displayName ?? b.weaponId,
+    // Der Satz zur Waffe erscheint als Tooltip der Kachel (auch dort, wo die Infozeile fehlt: schmale Anzeige).
+    if (w?.description) zeile.title = `${w.displayName}: ${w.description}`;
+    const teile = [w?.displayName ?? b.weaponId, ...(w?.description ? [w.description] : []),
       b.unbegrenzt ? 'unbegrenzte Munition' : b.ammo > 0 ? `Munition ${b.ammo} von ${b.maxAmmo}` : 'keine Munition'];
     if (b.cooldown > 0) teile.push(`lädt nach, noch ${b.cooldown} ${b.cooldown === 1 ? 'Zug' : 'Züge'}`);
     zeile.setAttribute('aria-label', teile.join(', '));
@@ -319,7 +322,8 @@ export class WaffenMenue {
     const w = b?.weapon;
     if (!w) { info.textContent = ''; return; }
     info.textContent = [
-      w.displayName,
+      w.description ? `${w.displayName}: ${w.description}` : w.displayName,
+      `Art ${artLabel(w.damageType)}`,
       `Schaden ${w.damage ?? 0}`,
       w.blastRadius > 0 ? `Radius ${Math.round(w.blastRadius)}` : 'kein Flächenschaden',
       `Reichweite ${w.maxRange ?? 0}`,

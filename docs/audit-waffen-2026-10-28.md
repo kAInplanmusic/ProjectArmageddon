@@ -83,8 +83,8 @@ von `scripts/build-weapon-catalog.mjs` erzeugt (`npm run weapons:build`) und nic
 - Mali (`MALUS` in `schaden.js`) haben deutsche Namen, Symbole und einen Kurztext; die Kurztexte enthalten
   Zahlen („Tempo auf 70 %"). Das ist eine zweite Quelle der Werte, sie sind aber nicht Teil der
   Hilfe-Erklärtexte (`.h-erklaerung`), für die der Test „Keine Zahlen" gilt.
-- Marken in HUD und Rangliste (`hud.js`): Schild `🛡`, Einfrieren `❄`, Schaden über Zeit `☠`, Verstärkung `↑`
-  haben keinen Tooltip; nur Mali tragen `title`.
+- Marken in der HUD-Liste (`hud.js`): Schild, Einfrieren, Schaden über Zeit und Verstärkung haben Tooltips, aber als
+  harte Textketten im Anzeigecode (eine zweite Quelle neben der Config). Mali tragen `title` aus `MALUS.kurz`.
 - Protokoll der Selbstwirkungen (`#logSpecialEffect` in `main.js`): für Wirkungen ohne eigenen Fall
   erscheint der englische Schlüssel („nutzt eine Wirkung (turret)"); die Zufallswirkung meldet
   „Zufallswirkung heal" mit englischem Schlüssel. Betroffen: turret, mount, pull, chain, drill,
@@ -214,3 +214,29 @@ Weitere Aufräumarbeiten:
   Elementarwert, die Art bleibt der Stachel).
 
 `tests/waffen-schadensarten.test.js` (7 Tests) sichert Alias, Regeln, Stichproben (44 Waffen), Waffen ohne Schaden und die Fassungen.
+
+## D. Maßnahmen: Beschreibungen und Texte
+
+- Neues Katalogfeld `description` (Quelle: Designdatei, Generator reicht es durch): ein Satz je Waffe, 150 von 150, ohne
+  Zahlen, eindeutig. Abgeleitet aus Schadensart, `special` und der Wirkungsart aus `SPECIAL_EFFECTS`, Zustellart,
+  Sichtlinie, Anflug, Zünder, Zielsuche, Durchschlag. Was der Motor nicht tut, steht nicht im Text: Beispiele sind
+  Bumerang (kehrt im Motor nicht zurück), Voodoopuppe (die Verbindung des Schadens fehlt im Motor), Pressluftbohrer
+  (nur Geländeschaden), Dimensionssprung und Dimensionsriss (gleiche Weite, sie unterscheiden sich nur in Munition und
+  Nachladezeit). `tests/waffen-beschreibungen.test.js` prüft Form und Deckung mit den Daten (Wirkungsart, Art, Sicht, Anflug,
+  Zünder, Zielsuche, Durchschlag).
+- Anzeige: Waffenmenü zeigt den Satz und die Schadensart in der Infozeile und den Satz als Tooltip der Kachel
+  (auch in der schmalen Ansicht, in der die Infozeile fehlt).
+- Neue Config `src/shared/config/wirkungstexte.js`: deutsche Bezeichnung und Erklärung für alle 27 Schadensarten, 16 Wirkungsarten,
+  7 Mali und die vier Zustandsmarken; Familien beschriftet. `tests/wirkungstexte.test.js` prüft die Vollständigkeit gegen den Motor
+  (`DAMAGE_TYPE_IDS`, `EFFECT_KIND`/`SPECIAL_EFFECTS`, `MALUS`).
+- Hilfe: neuer Reiter „Schaden und Wirkungen" (`src/client/hilfeWirkungen.js`): Schadensarten nach Familie, Nachteile durch
+  Treffer, Wirkungen der Waffen, Marken an den Figuren. Erklärtexte mit `h-erklaerung`, ohne Zahlen. E2E in `hilfe.spec.mjs`
+  (acht Reiter statt sieben, Inhalt, keine Zahl, kein englischer Schlüssel).
+- Protokoll (`main.js`): Zufallswirkung und Wirkungen ohne eigenen Fall melden den deutschen Namen („setzt Geschütz ein")
+  statt des englischen Schlüssels. Die Zeilenverweise im Ereigniskatalog wurden um eine Zeile nachgezogen.
+- HUD-Marken (`hud.js`): Tooltips für Schild, Einfrieren, Schaden über Zeit und Verstärkung kommen jetzt aus der Config
+  (`statusTooltip`); die vier Textketten im Anzeigecode entfallen.
+- Bewusst offen: Klassen- und Archetypnamen (`scout`, `heavy`, `artillery`, `brawler`, `artillerist`, `occultist`) stehen als Kennung in der
+  Hilfe. Das gehört nicht zu Waffen, Buffs und Zaubern und berührt viele Tests (Vorschlag in Abschnitt E).
+- Hinweis zum Allsehenden Auge (`target_scan`): Die Wirkung setzt nur eine Markierung „aufgedeckt" (Protokoll, Zustand);
+  kein Motorteil liest sie (`isRevealed` wird nirgends abgefragt). Der Text sagt deshalb nur das (Vorschlag E).

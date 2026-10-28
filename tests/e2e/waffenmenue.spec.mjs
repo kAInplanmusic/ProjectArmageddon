@@ -70,6 +70,12 @@ test.describe('Waffenmenü (Desktop)', () => {
     const ziel = page.locator(`#waffenmenue [role=option]:not([data-weapon-id="${vorher}"]):not(.is-leer)`).first();
     await ziel.hover();
     await expect(page.locator('#waffenmenue-info')).toContainText(/Schaden \d+/);
+    // Der Satz zur Waffe und die Schadensart stehen in der Infozeile, der Satz auch als Tooltip der Kachel.
+    await expect(page.locator('#waffenmenue-info')).toContainText(/Art [A-ZÄÖÜ]/);
+    const satz = await page.evaluate(id => import('/src/shared/config/weapons.js').then(m => m.getWeapon(id).description), await ziel.getAttribute('data-weapon-id'));
+    expect(satz.length).toBeGreaterThan(10);
+    await expect(page.locator('#waffenmenue-info')).toContainText(satz);
+    await expect(ziel).toHaveAttribute('title', new RegExp(satz.slice(0, 12)));
     await expect(page.locator('#waffenmenue-info')).toContainText(/Radius|Flächenschaden/);
     const id = await ziel.getAttribute('data-weapon-id');
     await ziel.click();

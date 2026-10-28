@@ -33,10 +33,10 @@ test.describe('Hilfe-Bereich', () => {
     await oeffneHilfe(page);
 
     const reiter = page.locator('#hilfe-tabs button');
-    // Sieben Themen: Klassen, Sidegrades, Counterplay, Loot, Karte, Ton, Günther und Cookie. Aus der
+    // Acht Themen: Klassen, Sidegrades, Counterplay, Loot, Karte, Ton, Günther und Cookie, Schaden und Wirkungen. Aus der
     // Anzeige gelesen, nicht aus dem Code — ein Test gegen die eigene Konstante
     // würde nichts belegen.
-    await expect(reiter).toHaveCount(7);
+    await expect(reiter).toHaveCount(8);
     await expect(reiter.nth(0)).toHaveText(/Klassen/);
     await expect(reiter.nth(1)).toHaveText(/Sidegrades/);
     await expect(reiter.nth(2)).toHaveText(/Counterplay/);
@@ -44,6 +44,7 @@ test.describe('Hilfe-Bereich', () => {
     await expect(reiter.nth(4)).toHaveText(/Karte/);
     await expect(reiter.nth(5)).toHaveText(/Ton und Musik/);
     await expect(reiter.nth(6)).toHaveText(/Günther und Cookie/);
+    await expect(reiter.nth(7)).toHaveText(/Schaden und Wirkungen/);
 
     // Der erste Reiter ist ausgewählt (aria-selected, wie in der Kader-Ansicht).
     await expect(reiter.nth(0)).toHaveAttribute('aria-selected', 'true');
@@ -307,6 +308,37 @@ test.describe('Hilfe-Bereich', () => {
     expect(zurueck).toMatch(/Startaufgebot/);
     expect(zurueck).toMatch(/Archetypen/);
     expect(zurueck).not.toBe(karte);
+  });
+
+  test('Der Reiter Schaden und Wirkungen nennt Arten, Mali und Wirkungen auf Deutsch, ohne Zahlen', async ({ page }) => {
+    /*
+     * Die Texte stammen aus `wirkungstexte.js`; geprüft wird, was die ANZEIGE zeigt: Jede Schadensart des
+     * Motors (ohne den stillgelegten Alias) steht genau einmal da, jeder Malus mit seinem Namen, und kein
+     * englischer Schlüssel taucht als Text auf.
+     */
+    const behaelter = await oeffneHilfe(page);
+    await behaelter.locator('#hilfe-tabs button', { hasText: 'Schaden und Wirkungen' }).click();
+    const inhalt = page.locator('#hilfe-inhalt');
+
+    const erwartet = await page.evaluate(async () => {
+      const dt = await import('/src/engine/damageTypes.js');
+      const sc = await import('/src/shared/config/schaden.js');
+      return {
+        arten: dt.DAMAGE_TYPE_IDS.filter(a => !dt.DAMAGE_TYPE_ALIASES[a]),
+        mali: Object.entries(sc.MALUS).map(([k, m]) => [k, m.label]),
+      };
+    });
+    await expect(inhalt.locator('[data-art]')).toHaveCount(erwartet.arten.length);
+    for (const art of erwartet.arten) await expect(inhalt.locator(`[data-art="${art}"]`)).toHaveCount(1);
+    for (const [schluessel, label] of erwartet.mali) await expect(inhalt.locator(`[data-malus="${schluessel}"] h3`)).toContainText(label);
+    await expect(inhalt.locator('[data-art="fire"]')).toContainText('Feuer: ');
+    await expect(inhalt.locator('[data-wirkung="turret"]')).toContainText('Geschütz');
+
+    const saetze = await inhalt.locator('.h-erklaerung').allInnerTexts();
+    expect(saetze.length).toBeGreaterThan(20);
+    for (const satz of saetze) expect(satz, `Zahl im Erklärtext: "${satz}"`).not.toMatch(/\d/);
+    const text = await inhalt.innerText();
+    expect(text).not.toMatch(/damage_boost|damage_over_time|water_push|\bphysical\b/);
   });
 
   test('Keine Zahlen im Erklärungstext der Anzeige', async ({ page }) => {
