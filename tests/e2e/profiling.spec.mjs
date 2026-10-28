@@ -862,8 +862,11 @@ test.describe('Aufschlag gegenüber leerem Bildtakt', () => {
     // Und der Aufschlag darf nicht deutlich negativ sein (dann wäre die Messung kaputt). Eine kleine
     // negative Zahl ist Rauschen: Mit Software-Rasterung schwankt der leere Takt um einige Prozent
     // (Audit 2026-10-13: -2,35 ms bei 78 ms Untergrund, nachdem die Kulisse zwischengespeichert wird).
+    // Bei langsamem Untergrund (Software-Rasterung, keine GPU) schwankt der leere Takt stärker: gemessen -5,0 ms bei 45,6 ms (11 %)
+    // , -18,2 ms bei 79,0 ms (23 %) und -13,1 ms bei 48,8 ms (27 %), auch auf dem Stand vor den Änderungen vom 2026-10-27. Dort gilt 35 %, sonst bleibt es bei 6 %.
+    // Die Obergrenze (Aufschlag unter dem 60-Hz-Budget) bleibt in jedem Fall unverändert.
     expect(befund.aufschlagMs, 'negativer Aufschlag — die Messung ist unbrauchbar')
-      .toBeGreaterThan(-Math.max(1, befund.leer.mittel * 0.06));
+      .toBeGreaterThan(-Math.max(1, befund.leer.mittel * (langsamerUntergrund ? 0.35 : 0.06)));
   });
 });
 
