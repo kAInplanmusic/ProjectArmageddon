@@ -763,40 +763,56 @@ function fuelle(bm, B, H, start, von, nach) {
 }
 
 function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
+  // Klare Bauweise statt Wurmgängen: massiver Fels mit zwei Stockwerken aus Kammern (ebener Boden), gerade Gänge dazwischen,
+  // senkrechte Schächte nach oben und unten. Das Dichtefeld liefert nur die Oberfläche und leicht welligen Fels.
   const rauschen = fbm2(rng, B, H, 500, 5);
   const kante = rausch2(rng, B, H, 380);
-  const wurmA = fbm2(rng, B, H, 460, 3);
-  const wurmB = fbm2(rng, B, H, 320, 3);
   const y0 = (x) => H * 0.2 + kante(x, 0) * H * 0.07;
-  const d = (x, y) => {
-    let w = y - y0(x) + rauschen(x, y) * 110;
-    if (y > y0(x) + 110) {
-      w = Math.min(w, (Math.abs(wurmA(x, y)) - 0.075) * 900);
-      if (y > H * 0.55) w = Math.min(w, (Math.abs(wurmB(x, y)) - 0.05) * 900);
+  ausDichte(maske, rng, (x, y) => y - y0(x) + rauschen(x, y) * 60, 2);
+  const reihe = (anzahl, yMitte) => {
+    const liste = [];
+    for (let i = 0; i < anzahl; i += 1) {
+      const x = B * ((i + 0.5) / anzahl) + zwischen(rng, -B * 0.03, B * 0.03);
+      liste.push({ x, y: H * (yMitte + zwischen(rng, -0.03, 0.03)), rx: zwischen(rng, 190, 270), ry: Math.min(H * 0.12, zwischen(rng, 125, 185)) });
     }
-    return w;
+    return liste;
   };
-  ausDichte(maske, rng, d);
-  raeumeAuf(maske);
-  const kammern = 4 + Math.floor(rng.next() * 3);
-  const punkte = [];
-  for (let i = 0; i < kammern; i += 1) {
-    const x = B * ((i + 0.5) / kammern) + zwischen(rng, -B * 0.04, B * 0.04);
-    punkte.push({ x, y: H * zwischen(rng, 0.5, 0.82), rx: zwischen(rng, 120, 210), ry: zwischen(rng, 70, 120) });
+  const oben = reihe(3, 0.43);
+  const unten = reihe(3 + Math.floor(rng.next() * 2), 0.74);
+  const boden = (k) => k.y + k.ry * 0.5; // Gänge münden knapp über dem ebenen Kammerboden
+  for (const r of [oben, unten]) {
+    for (let i = 0; i + 1 < r.length; i += 1) gang(maske, r[i].x, boden(r[i]) - 24, r[i + 1].x, boden(r[i + 1]) - 24, 42);
   }
-  for (let i = 0; i + 1 < punkte.length; i += 1) gang(maske, punkte[i].x, punkte[i].y + punkte[i].ry * 0.3, punkte[i + 1].x, punkte[i + 1].y + punkte[i + 1].ry * 0.3, 34);
-  for (const k of punkte) { kammer(maske, k.x, k.y, k.rx, k.ry); stat.hoehlen += 1; }
-  for (let i = 0; i < 3; i += 1) {
-    const k = punkte[Math.floor(rng.next() * punkte.length)];
-    gang(maske, k.x + zwischen(rng, -30, 30), k.y - k.ry * 0.5, k.x + zwischen(rng, -90, 90), y0(k.x) - 30, 36);
+  // Senkrechte Schächte zwischen den Stockwerken (mindestens zwei, an verschiedenen Kammern).
+  const schaechte = 2 + Math.floor(rng.next() * 2);
+  for (let i = 0; i < schaechte; i += 1) {
+    const k = oben[i % oben.length];
+    const naechste = unten.reduce((m, u) => (Math.abs(u.x - k.x) < Math.abs(m.x - k.x) ? u : m), unten[0]);
+    const x = (k.x + naechste.x) / 2 + zwischen(rng, -20, 20);
+    gang(maske, x, boden(k) - 20, x, naechste.y - naechste.ry * 0.6, 40);
+  }
+  // Schächte zur Oberfläche.
+  for (let i = 0; i < 2; i += 1) {
+    const k = oben[i === 0 ? 0 : oben.length - 1];
+    const x = k.x + zwischen(rng, -40, 40);
+    gang(maske, x, k.y - k.ry * 0.5, x, y0(x) - 30, 44);
+  }
+  // Jede Kammer ist ein Verbund aus zwei bis drei überlappenden Räumen mit gemeinsamem ebenem Boden (kein glatter Halbkreis).
+  for (const k of [...oben, ...unten]) {
+    kammer(maske, k.x, k.y, k.rx, k.ry);
+    for (let i = 0; i < 2; i += 1) {
+      const dx = (i === 0 ? -1 : 1) * k.rx * zwischen(rng, 0.45, 0.7);
+      kammer(maske, k.x + dx, k.y - k.ry * zwischen(rng, 0, 0.25), k.rx * zwischen(rng, 0.45, 0.65), k.ry * zwischen(rng, 0.7, 1.05));
+    }
+    stat.hoehlen += 1;
   }
   if (mitInsel) {
-    for (const k of punkte.slice(1, -1)) {
+    for (const k of unten.slice(1, -1)) {
       maske.ellipse(k.x, k.y + k.ry * 0.1, k.rx * 0.45, k.ry * 0.3, 1);
       stat.platten += 1;
     }
   }
-  raeumeAuf(maske); // Kammern, Gänge und Inseln können neue Taschen abtrennen
+  raeumeAuf(maske);
   stat.platten += 1;
   return Math.round(H * 0.94);
 }
