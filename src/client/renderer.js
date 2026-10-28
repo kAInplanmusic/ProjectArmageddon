@@ -2394,7 +2394,7 @@ export class Renderer {
       this.vignetteMass = { b, h, g };
     }
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.resetTransform(); // nicht `setTransform`: Der Ruck-Test fängt dessen Aufrufe ab
     ctx.fillStyle = this.vignetteMass.g;
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.restore();

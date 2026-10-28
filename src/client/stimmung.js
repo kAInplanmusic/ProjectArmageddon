@@ -112,7 +112,7 @@ export function zeichneStimmung(r, w, dichte = 1) {
   const schichten = STIMMUNG_SCHICHTEN[zeit];
   if (schichten) {
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.resetTransform();
     const cb = ctx.canvas?.width ?? b;
     const ch = ctx.canvas?.height ?? h;
     for (const s of schichten) {
