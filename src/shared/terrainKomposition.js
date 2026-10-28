@@ -708,21 +708,76 @@ function dichteGruppe(maske, rng, B, H, stat, archipel = false) {
   return Math.round(H * 0.8);
 }
 
+/**
+ * Räumt eine Höhlenmaske auf: Kleine abgeschlossene Lufttaschen werden zu Fels, winzige freie Felskrümel zu Luft. Übrig bleiben große
+ * Räume und Gänge — keine Perlenketten aus Blasen. Ein Lauf über die Maske (Flutfüllung mit eigenem Stapel, 4-Nachbarn).
+ */
+function raeumeAuf(maske) {
+  const B = maske.breite;
+  const H = maske.hoehe;
+  // Schwellen gelten für 2560×1440 und wachsen mit der Fläche.
+  const flaeche = (B * H) / (2560 * 1440);
+  const bm = maske.bitmap;
+  const stapel = new Int32Array(B * H);
+  // Zwei getrennte Läufe mit frischer Markierung: Das Füllen der Lufttaschen verbindet sonst Felskrümel mit dem Land,
+  // und ein veralteter Befund würde das ganze Land wegräumen.
+  for (const [art, schwelle] of [[0, 9000 * flaeche], [1, 1200 * flaeche]]) {
+    const marke = new Uint8Array(B * H);
+    for (let start = 0; start < B * H; start += 1) {
+      if (marke[start] || bm[start] !== art) continue;
+      let n = 0;
+      let oben = false;
+      let sp = 0;
+      stapel[sp++] = start;
+      marke[start] = 1;
+      while (sp > 0) {
+        const i = stapel[--sp];
+        n += 1;
+        const x = i % B;
+        const y = (i - x) / B;
+        if (y === 0) oben = true;
+        if (x > 0 && !marke[i - 1] && bm[i - 1] === art) { marke[i - 1] = 1; stapel[sp++] = i - 1; }
+        if (x < B - 1 && !marke[i + 1] && bm[i + 1] === art) { marke[i + 1] = 1; stapel[sp++] = i + 1; }
+        if (y > 0 && !marke[i - B] && bm[i - B] === art) { marke[i - B] = 1; stapel[sp++] = i - B; }
+        if (y < H - 1 && !marke[i + B] && bm[i + B] === art) { marke[i + B] = 1; stapel[sp++] = i + B; }
+      }
+      // Luft am oberen Rand ist der Himmel; Fels am Rand gehört zum Land.
+      if (!oben && n < schwelle) fuelle(bm, B, H, start, art, 1 - art);
+    }
+  }
+}
+
+/** Setzt die zusammenhängende Fläche ab `start` (Wert `von`) auf `nach`. */
+function fuelle(bm, B, H, start, von, nach) {
+  const stapel = [start];
+  bm[start] = nach;
+  while (stapel.length) {
+    const i = stapel.pop();
+    const x = i % B;
+    const y = (i - x) / B;
+    if (x > 0 && bm[i - 1] === von) { bm[i - 1] = nach; stapel.push(i - 1); }
+    if (x < B - 1 && bm[i + 1] === von) { bm[i + 1] = nach; stapel.push(i + 1); }
+    if (y > 0 && bm[i - B] === von) { bm[i - B] = nach; stapel.push(i - B); }
+    if (y < H - 1 && bm[i + B] === von) { bm[i + B] = nach; stapel.push(i + B); }
+  }
+}
+
 function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
   const rauschen = fbm2(rng, B, H, 500, 5);
   const kante = rausch2(rng, B, H, 380);
-  const wurmA = fbm2(rng, B, H, 340, 3);
-  const wurmB = fbm2(rng, B, H, 240, 3);
+  const wurmA = fbm2(rng, B, H, 460, 3);
+  const wurmB = fbm2(rng, B, H, 320, 3);
   const y0 = (x) => H * 0.2 + kante(x, 0) * H * 0.07;
   const d = (x, y) => {
     let w = y - y0(x) + rauschen(x, y) * 110;
     if (y > y0(x) + 110) {
-      w = Math.min(w, (Math.abs(wurmA(x, y)) - 0.05) * 900);
-      if (y > H * 0.55) w = Math.min(w, (Math.abs(wurmB(x, y)) - 0.03) * 900);
+      w = Math.min(w, (Math.abs(wurmA(x, y)) - 0.075) * 900);
+      if (y > H * 0.55) w = Math.min(w, (Math.abs(wurmB(x, y)) - 0.05) * 900);
     }
     return w;
   };
   ausDichte(maske, rng, d);
+  raeumeAuf(maske);
   const kammern = 4 + Math.floor(rng.next() * 3);
   const punkte = [];
   for (let i = 0; i < kammern; i += 1) {
@@ -741,6 +796,7 @@ function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
       stat.platten += 1;
     }
   }
+  raeumeAuf(maske); // Kammern, Gänge und Inseln können neue Taschen abtrennen
   stat.platten += 1;
   return Math.round(H * 0.94);
 }

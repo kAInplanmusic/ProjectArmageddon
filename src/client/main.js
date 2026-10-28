@@ -1147,25 +1147,29 @@ class Game {
     if (!auswahl) return 0;
     const feste = Array.from(auswahl.options).filter(o => o.value === '' || o.value === 'klassisch');
     auswahl.replaceChildren(...feste);
+    // Gruppiert (Biomthemen, Planeten): lange Liste, schneller zu überblicken.
+    const gruppe = (label) => { const g = document.createElement('optgroup'); g.label = label; auswahl.append(g); return g; };
+    const themen = gruppe('Biomthemen');
     for (const id of SONDERBIOM_IDS) {
       const option = document.createElement('option');
       option.value = id;
       option.textContent = NEUE_BIOME[id].label;
       option.title = NEUE_BIOME[id].beschreibung;
-      auswahl.append(option);
+      themen.append(option);
     }
     // Planeten (Geländefassung 4): `planet` lässt den Seed die Art ziehen, die Arten sind auch einzeln wählbar.
+    const planeten = gruppe('Planeten');
     const planet = document.createElement('option');
     planet.value = PLANET_WAHL;
     planet.textContent = 'Planet (Art nach Seed)';
     planet.title = 'Scheibenwelt im All mit Kratern und Tunneln; der Seed zieht Eis, Lava, Wüste, Dschungel, Rost oder Stein.';
-    auswahl.append(planet);
+    planeten.append(planet);
     for (const id of PLANET_BIOM_IDS) {
       const option = document.createElement('option');
       option.value = id;
       option.textContent = NEUE_BIOME[id].label;
       option.title = NEUE_BIOME[id].beschreibung;
-      auswahl.append(option);
+      planeten.append(option);
     }
     return SONDERBIOM_IDS.length + 1 + PLANET_BIOM_IDS.length;
   }

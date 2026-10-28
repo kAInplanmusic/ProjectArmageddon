@@ -9,6 +9,7 @@
 import { zerstoerungsTabelle, biomStoffe, GRUPPEN_LABEL, MEHR_AB, WENIGER_BIS } from '../shared/zerstoerungsTabelle.js';
 import { stoffByKey } from '../shared/config/stoffe.js';
 import { FEUER, FEUERFEST } from '../shared/config/feuer.js';
+import { bodenEigenschaften } from '../shared/materialMatrix.js';
 import { el } from './dom.js';
 
 const URTEIL_TEXT = Object.freeze({ mehr: 'mehr', normal: 'normal', weniger: 'weniger', haelt: 'hält' });
@@ -19,7 +20,7 @@ export function zeichneZerstoerungsTabelle(container) {
   container.append(el('p',
     `Zahl = Kraterradius im Vergleich zu dem, den dieselbe Waffe ohne Material stanzen würde. Ab ${Math.round(MEHR_AB * 100)} % geht ein Material `
     + `mehr kaputt, unter ${Math.round(WENIGER_BIS * 100)} % weniger, bei 0 hält es. „brennt“ und „schmilzt“ nennen die Wirkung von Hitze; `
-    + 'Unzerstörbares (Metallplatte, Grundgestein) lässt jeden Krater stehen.', 'h-erklaerung'));
+    + 'Unzerstörbares (Metallplatte, Grundgestein) lässt jeden Krater stehen. Haftung sagt, wie rutschig der Boden ist, Nachgiebigkeit, wie stark er Figuren bremst (tief) oder gar nicht trägt.', 'h-erklaerung'));
   const tabelle = el('table', undefined, 'h-tabelle h-zerstoerung');
   const kopf = el('tr');
   kopf.append(el('th', 'Material'), el('th', 'Härte'));
@@ -28,10 +29,12 @@ export function zeichneZerstoerungsTabelle(container) {
     th.dataset.gruppe = gruppe;
     kopf.append(th);
   }
+  kopf.append(el('th', 'Haftung'), el('th', 'Nachgiebigkeit'));
   tabelle.append(kopf);
   for (const zeile of zerstoerungsTabelle()) {
     const tr = el('tr');
     tr.dataset.stoff = zeile.key;
+    const boden = bodenEigenschaften(stoffByKey(zeile.key) ?? { haerte: zeile.haerte });
     tr.append(el('th', zeile.label), el('td', zeile.haerte.replace('_', ' ')));
     for (const s of zeile.spalten) {
       const zusatz = s.reaktion === 'brennt' || s.reaktion === 'schmilzt' ? ` ${s.reaktion}` : '';
@@ -39,6 +42,7 @@ export function zeichneZerstoerungsTabelle(container) {
       td.title = `${zeile.label} bei ${GRUPPEN_LABEL[s.gruppe]}: ${URTEIL_TEXT[s.urteil]} kaputt`;
       tr.append(td);
     }
+    tr.append(el('td', boden.haftung), el('td', boden.nachgiebigkeit));
     tabelle.append(tr);
   }
   container.append(tabelle);
