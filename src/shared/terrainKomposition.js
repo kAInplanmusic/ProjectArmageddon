@@ -781,7 +781,7 @@ function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
   const unten = reihe(3 + Math.floor(rng.next() * 2), 0.74);
   const boden = (k) => k.y + k.ry * 0.5; // Gänge münden knapp über dem ebenen Kammerboden
   for (const r of [oben, unten]) {
-    for (let i = 0; i + 1 < r.length; i += 1) gang(maske, r[i].x, boden(r[i]) - 24, r[i + 1].x, boden(r[i + 1]) - 24, 42);
+    for (let i = 0; i + 1 < r.length; i += 1) gang(maske, r[i].x, boden(r[i]) - 24, r[i + 1].x, boden(r[i + 1]) - 24 + zwischen(rng, -30, 30), 42);
   }
   // Senkrechte Schächte zwischen den Stockwerken (mindestens zwei, an verschiedenen Kammern).
   const schaechte = 2 + Math.floor(rng.next() * 2);
@@ -803,6 +803,15 @@ function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
     for (let i = 0; i < 2; i += 1) {
       const dx = (i === 0 ? -1 : 1) * k.rx * zwischen(rng, 0.45, 0.7);
       kammer(maske, k.x + dx, k.y - k.ry * zwischen(rng, 0, 0.25), k.rx * zwischen(rng, 0.45, 0.65), k.ry * zwischen(rng, 0.7, 1.05));
+    }
+    // Leben im Raum: flache Hügel auf dem Boden (sanft genug zum Gehen) und Zapfen an der Decke.
+    for (let i = 0; i < 3; i += 1) {
+      const x = k.x + zwischen(rng, -k.rx * 0.7, k.rx * 0.7);
+      maske.ellipse(x, k.y + k.ry * 0.5, zwischen(rng, 28, 60), zwischen(rng, 10, 20), 1);
+    }
+    for (let i = 0; i < 2; i += 1) {
+      const x = k.x + zwischen(rng, -k.rx * 0.6, k.rx * 0.6);
+      maske.ellipse(x, k.y - k.ry * 0.95, zwischen(rng, 10, 18), zwischen(rng, 22, 44), 1);
     }
     stat.hoehlen += 1;
   }
