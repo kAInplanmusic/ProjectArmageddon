@@ -97,7 +97,8 @@ test('Manifest der Emotions-Sheets: 81 geprüfte Figuren, gültige Zellen liegen
   }
   // Bekannte Verwandlungen (Tier -> Mensch, gesehen am Kontaktbogen 2026-10-27): die Menschenzellen müssen gesperrt sein.
   // Danach mit Together neu erzeugte Zellen (emotion-neu.py), per Sichtprüfung freigegeben; die übrigen bleiben gesperrt.
-  assert.deepEqual(m.figuren['beasts/01_shrew-quakes'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 3, 4]);
-  assert.deepEqual(m.figuren['beasts/12_magma-plate'].gueltig.filter((c) => [1, 3, 4, 5].includes(c)), [1, 3]);
-  assert.deepEqual(m.figuren['beasts/02_storm-talon'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 3]);
+  // 2026-10-28: Blick hoch/runter (5, 6) dieser drei Tiere sind mit dem strengeren Prompt neu erzeugt und per Sichtprüfung freigegeben.
+  assert.deepEqual(m.figuren['beasts/01_shrew-quakes'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 3, 4, 5, 6]);
+  assert.deepEqual(m.figuren['beasts/12_magma-plate'].gueltig.filter((c) => [1, 3, 4, 5].includes(c)), [1, 3, 5]);
+  assert.deepEqual(m.figuren['beasts/02_storm-talon'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 3, 5, 6]);
 });
