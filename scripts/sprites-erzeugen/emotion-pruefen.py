@@ -48,6 +48,12 @@ SICHTPRUEFUNG = {
     'pirates/02_iron-hook-harry': {'frei': [1, 5], 'sperre': []},
     'pirates/10_cannoneer-klaus': {'frei': [1], 'sperre': []},
     'pirates/11_sniper-marie': {'frei': [1, 5], 'sperre': []},
+    # Sichtprüfung 2026-10-28 (Kontaktbogen der Rohbilder): Koga verliert bei Blinzeln und Blick nach oben den Schlangenschwanz.
+    'shinobi/12_blowpipe-koga': {'frei': [3, 4], 'sperre': [1, 5]},
+    'shinobi/20_ninjutsu-master-goemon': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
+    'undead/12_vessel-plague-skull': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
+    'xeno/21_dark-matter-witch': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
+    'xeno/22_null-entity-quark': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
 }
 
 
