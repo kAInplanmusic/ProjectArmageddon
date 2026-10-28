@@ -39,6 +39,8 @@ POSEN = {
 }
 PROMPT = ('The exact same character as in the reference image: same species, body shape, colors, costume and art style. '
           'It must stay the same creature and must never turn into a human or any other being. '
+          'Keep the identical line art, shading, color palette, proportions, silhouette, number of limbs, tail and head shape; '
+          'only the pose changes. Do not add or remove any items, wings, armor or accessories. '
           'Side view facing right, full body visible, feet near the bottom, hands empty with no weapon, '
           'on a solid pure magenta (#FF00FF) background, no shadows, no text. Pose: {pose}.')
 
@@ -92,9 +94,10 @@ def aufruf(schluessel, zelle, arbeit, ausgabe):
 
 
 def fehlende(k):
-    """Zellen der Posen, die im Manifest noch nicht als gültig stehen."""
+    """Zellen der Posen, die im Manifest noch nicht als gültig stehen (Umgebung `POSEN_NUR`, z. B. `3,5,6`, schränkt ein)."""
     m = json.load(open(EMO + 'manifest.json'))['figuren'].get(k, {})
-    return [z for z in POSEN if z not in m.get('gueltig', [])]
+    nur = {int(x) for x in os.environ.get('POSEN_NUR', '').split(',') if x.strip()}
+    return [z for z in POSEN if z not in m.get('gueltig', []) and (not nur or z in nur)]
 
 
 def erzeugen(arbeit, grenze, schluessel):
