@@ -1541,8 +1541,8 @@ export class MatchController {
       // Die Schieß-Primitive: Strahl, Mündung, Spielertreffer, Abschussvektor.
       // Sie bleiben im Match (Kartenmaß bzw. Terrain-/Spielerzugriff) und werden
       // von shooting.js über die Quelle gerufen.
-      resolveHitscan: (ox, oy, angle, power, weapon, shooterId) =>
-        this.#resolveHitscan(ox, oy, angle, power, weapon, shooterId),
+      resolveHitscan: (ox, oy, angle, power, weapon, shooterId, nurZiel = false) =>
+        this.#resolveHitscan(ox, oy, angle, power, weapon, shooterId, nurZiel),
       findMuzzle: (ox, oy, dirX, dirY, shooterId) =>
         this.#findMuzzle(ox, oy, dirX, dirY, shooterId),
       playerAt: (x, y, excludeId) => this.#playerAt(x, y, excludeId),
@@ -1557,7 +1557,7 @@ export class MatchController {
    * Auflösen eines Hitscan-Schusses. Bleibt im Match (nicht in `shooting.js`),
    * weil die Strahllänge ein Kartenmaß ist — `shooting.js` ruft sie über die Quelle.
    */
-  #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null) {
+  #resolveHitscan(originX, originY, angle, power, weapon, shooterId = null, nurZiel = false) {
     const speed = power * POWER_TO_SPEED;
     /*
      * Die Strahllänge folgt der KARTE.
@@ -1608,7 +1608,7 @@ export class MatchController {
     );
 
     const target = this.#playerAt(result.hitX, result.hitY, shooterId);
-    if (target !== null) {
+    if (target !== null && !nurZiel) { // `nurZiel`: Vorstrahl eines Anflugschlags bestimmt nur den Zielpunkt (Waffenfassung 9)
       const damage = weapon.damage * this.#statuses.damageMultiplier(shooterId);
       this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId, {
         damageType: damageTypeId(weapon.damageType),

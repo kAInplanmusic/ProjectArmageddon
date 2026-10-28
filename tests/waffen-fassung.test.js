@@ -18,7 +18,7 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
 import {
-  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
+  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_VORSTRAHL, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
 } from '../src/shared/config/waffen-fassung.js';
 import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
@@ -139,7 +139,8 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_FEINTUNING);
+  assert.equal(WAFFEN_STANDARD, WAFFEN_VORSTRAHL);
+  assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
   assert.equal(WAFFEN_ZUENDER, 6);
   assert.equal(WAFFEN_ZUENDERPLUS, 7);
@@ -152,7 +153,8 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(undefined), WAFFEN_STANDARD);
   assert.equal(normalisiereWaffen(7), WAFFEN_ZUENDERPLUS);
   assert.equal(normalisiereWaffen(8), WAFFEN_FEINTUNING);
-  assert.equal(normalisiereWaffen(9), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(9), WAFFEN_VORSTRAHL);
+  assert.equal(normalisiereWaffen(10), WAFFEN_STANDARD);
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */
@@ -280,12 +282,12 @@ test('Replay-Kopf: Altdatei ohne `waffen` = Fassung 1, neue Aufzeichnung trägt 
   assert.equal(match.kit, 3, 'Altkopf behält auch das Start-Kit der Zeit');
 
   const neu = new ReplayRecorder({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5 });
-  assert.equal(neu.toJSON().config.waffen, WAFFEN_FEINTUNING);
+  assert.equal(neu.toJSON().config.waffen, WAFFEN_VORSTRAHL);
   assert.equal(neu.toJSON().config.kit, KIT_STANDARD);
   neu.finalize(300);
   const zurueck = ReplayRecorder.fromJSON(neu.serialize());
-  assert.equal(zurueck.config.waffen, WAFFEN_FEINTUNING);
-  assert.equal(playReplay(zurueck).match.waffen, WAFFEN_FEINTUNING);
+  assert.equal(zurueck.config.waffen, WAFFEN_VORSTRAHL);
+  assert.equal(playReplay(zurueck).match.waffen, WAFFEN_VORSTRAHL);
 });
 
 test('Altkopf-Aufzeichnung mit Schüssen: Wiedergabe gleicht der Live-Partie in Fassung 1 und in Fassung 2', () => {

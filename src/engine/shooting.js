@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_VORSTRAHL } from '../shared/config/waffen-fassung.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { bodenNaheHoehe } from './boden.js';
@@ -442,7 +442,8 @@ function resolveStrike(quelle, weapon, x, y, angle, power) {
   if (style === 'self') return null;
 
   // Zielpunkt über die normale Bahn bestimmen.
-  const bahn = quelle.resolveHitscan(x, y, angle, power, weapon, null);
+  // Ab Waffenfassung 9 schadenfrei: Der Vorstrahl bestimmt nur den Zielpunkt, Schaden macht allein der Einschlag.
+  const bahn = quelle.resolveHitscan(x, y, angle, power, weapon, null, quelle.waffenFassung >= WAFFEN_VORSTRAHL);
   const zielX = Number.isFinite(bahn.hitX) ? bahn.hitX : x;
   const zielY = Number.isFinite(bahn.hitY) ? bahn.hitY : y;
 

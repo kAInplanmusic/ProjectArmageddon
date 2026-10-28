@@ -19,7 +19,8 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_FEINTUNING` (8, Standard): wie 7, dazu `WAFFEN_F8_WERTE` (sechs Waffen laut Balance-Auslesen).
+ *   - `WAFFEN_VORSTRAHL` (9, Standard): wie 8; der Vorstrahl der Anflugschläge (sky/flank) macht keinen Schaden mehr (Regel im Motor).
+ *   - `WAFFEN_FEINTUNING` (8): wie 7, dazu `WAFFEN_F8_WERTE` (sechs Waffen laut Balance-Auslesen).
  *   - `WAFFEN_ZUENDERPLUS` (7): wie 6, dazu `WAFFEN_F7_WERTE` (vier Zündergranaten mit etwa 15 % mehr Schaden).
  *   - `WAFFEN_ZUENDER` (6): Die Armierung einer Zündergranate ist korrigiert. Bis
  *     Fassung 5 stellte der Motor die bereits armierte Granate JEDEN Takt neu auf den Treffpunkt
@@ -47,7 +48,8 @@ export const WAFFEN_FAIR = 5;
 export const WAFFEN_ZUENDER = 6;
 export const WAFFEN_ZUENDERPLUS = 7;
 export const WAFFEN_FEINTUNING = 8;
-export const WAFFEN_STANDARD = WAFFEN_FEINTUNING;
+export const WAFFEN_VORSTRAHL = 9;
+export const WAFFEN_STANDARD = WAFFEN_VORSTRAHL;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -60,7 +62,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL ? fassung : WAFFEN_STANDARD;
 }
 
 /**
