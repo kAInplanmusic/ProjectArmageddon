@@ -86,6 +86,10 @@ function leinwandAttrappe() {
     closePath: noop,
     fill: noop,
     stroke: noop,
+    ellipse: noop,
+    arc: noop,
+    bezierCurveTo: noop,
+    fillRect: noop,
     arc: noop,
     fillRect: noop,
   };

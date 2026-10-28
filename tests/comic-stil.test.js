@@ -38,7 +38,7 @@ function attrappe(bitmap) {
     getImageData: () => ({ data, width: B, height: H }),
     putImageData: noop,
     save: noop, restore: noop, beginPath: noop, moveTo: noop, lineTo: noop, quadraticCurveTo: noop,
-    closePath: noop, fill: noop, stroke: noop,
+    closePath: noop, fill: noop, stroke: noop, ellipse: noop, arc: noop, bezierCurveTo: noop, fillRect: noop,
   };
   return { layer: { getContext: () => ctx }, data };
 }
@@ -71,7 +71,7 @@ test('Ein-Zug-Aufbau: Ausgangsfarben zählen nicht, nur die Deckkraft — das Bi
     createImageData: (b, h) => ({ data: new Uint8ClampedArray(b * h * 4), width: b, height: h }),
     putImageData: (bild) => { geschrieben = bild.data; },
     save: noop, restore: noop, beginPath: noop, moveTo: noop, lineTo: noop, quadraticCurveTo: noop,
-    closePath: noop, fill: noop, stroke: noop,
+    closePath: noop, fill: noop, stroke: noop, ellipse: noop, arc: noop, bezierCurveTo: noop, fillRect: noop,
   };
   baueGelaendeEbene({ getContext: () => ctx }, bitmap, B, H, PALETTE, 7);
   assert.deepEqual([...geschrieben], [...alt.data]);

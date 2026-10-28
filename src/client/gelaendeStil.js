@@ -15,6 +15,7 @@
  */
 import { tinteStoffe } from './stoffOptik.js';
 import { glatt } from './mathe.js';
+import { zeichneDetails } from './gelaendeDetails.js';
 import {
   PAL, hash2, rauschen1, mischeRgb, hexRgb, gruenAnteil, css,
 } from './stil.js';
@@ -252,6 +253,7 @@ export function veredleGelaende(layer, bitmap, breite, hoehe, palette, seed = 0,
   const buescheln = faerbeGelaende(bild.data, bitmap, breite, hoehe, palette, seed, stoffkarte);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, buescheln.liste, buescheln.saum, seed);
+  zeichneDetails(ctx, bitmap, breite, hoehe, buescheln.art, buescheln.saum, palette, seed);
   return buescheln.liste;
 }
 
@@ -392,6 +394,7 @@ export function baueGelaendeEbene(layer, bitmap, breite, hoehe, palette, seed = 
   daempfeInnenkanten(d, bitmap, breite, hoehe);
   ctx.putImageData(bild, 0, 0);
   zeichneBueschel(ctx, ergebnis.liste, ergebnis.saum, seed);
+  zeichneDetails(ctx, bitmap, breite, hoehe, ergebnis.art, ergebnis.saum, palette, seed);
   return ergebnis.liste;
 }
 
@@ -662,7 +665,7 @@ export function faerbeGelaende(d, bitmap, breite, hoehe, palette, seed = 0, stof
   const buescheln = malMoos(d, bitmap, breite, hoehe, saum, seed);
   zeichneRand(d, bitmap, breite, hoehe, art);
   zeichneKontur(d, bitmap, breite, hoehe);
-  return { liste: buescheln, saum };
+  return { liste: buescheln, saum, art };
 }
 
 /**
