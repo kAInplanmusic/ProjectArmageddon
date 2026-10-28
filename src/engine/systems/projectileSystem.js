@@ -188,6 +188,31 @@ export class ProjectileSystem {
       const nextX = startX + vx;
       const nextY = startY + vy;
 
+      /*
+       * ARMIERTE GRANATE (Waffenfassung 6, `zuenderBleibtLiegen`).
+       *
+       * URSACHE des Sinkens bis Fassung 5 (belegt, `docs/balance-auslese/zuender-test.md`):
+       * Der Treffpunkt `hit` ist der erste Abtastpunkt IM Festen. Der Zweig unten stellt die
+       * Granate dorthin und nullt die Geschwindigkeit. Im nächsten Takt beginnt der Strahl in
+       * dieser Zelle; `integrateStep` gibt der Geschwindigkeit wieder die Schwerkraft (0,32 px),
+       * der erste Abtastpunkt liegt 0,32 px tiefer, ist fest, wird zum neuen Treffpunkt. So
+       * sinkt sie je Takt 0,3 px und zündet 11 bis 82 px unter dem Aufprall.
+       * Ab Fassung 6 wartet eine armierte Granate nur noch: Zünder zählen, am Ort zünden.
+       */
+      if (services.match?.zuenderBleibtLiegen && world.getComponent(entityId, 'Projectile', 'armiert')) {
+        const rest = (world.getComponent(entityId, 'Projectile', 'fuseTicks') || 0) - 1;
+        world.setComponent(entityId, 'Projectile', 'fuseTicks', Math.max(0, rest));
+        if (rest <= 0) {
+          const radius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
+          this.#explode(world, entityId, startX, startY, 0, null);
+          if (events) events.emit('fuse_expired', { entityId, x: startX, y: startY, owner });
+          services.onProjectileImpact?.({
+            projectileId: entityId, owner, x: startX, y: startY, target: null, blastRadius: radius,
+          });
+        }
+        continue;
+      }
+
       // Zünder: Eine Granate wirkt nicht beim Aufprall, sondern nach Ablauf.
       // Sie prallt ab bzw. bleibt liegen und zündet dann.
       let fuseTicks = world.getComponent(entityId, 'Projectile', 'fuseTicks') || 0;
@@ -221,6 +246,7 @@ export class ProjectileSystem {
         world.setComponent(entityId, 'Position', 'y', hit.y);
         world.setComponent(entityId, 'Velocity', 'x', 0);
         world.setComponent(entityId, 'Velocity', 'y', 0);
+        if (services.match?.zuenderBleibtLiegen) world.setComponent(entityId, 'Projectile', 'armiert', 1);
         if (events) {
           events.emit('fuse_armed', { entityId, x: hit.x, y: hit.y });
         }

@@ -340,6 +340,7 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
      * könnte). Ein Verstoß endet dort mit Exit-Code 1.
      */
     fuseTicks: fuseTicksFor(weapon),
+    armiert: 0,
     alive: 1,
   });
 

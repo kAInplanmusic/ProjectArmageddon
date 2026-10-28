@@ -81,6 +81,11 @@ export function registerDefaultComponents(componentStore) {
      * Eine Granate wirkt nicht beim Aufprall, sondern nach Ablauf des Zünders.
      */
     fuseTicks: 'Int32Array',
+    /**
+     * 1 = die Zündergranate ist armiert (Aufprall war, Zünder läuft). Nur ab Waffenfassung 6
+     * gesetzt: Dann bewegt und prüft das ProjectileSystem sie nicht mehr, sie wartet am Aufprallpunkt.
+     */
+    armiert: 'Int32Array',
     lifetime: 'Int32Array',
     alive: 'Int32Array',
     /**

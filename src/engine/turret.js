@@ -334,6 +334,7 @@ export function turretProjectile({ turret, waffe, winkel, speed }) {
       bounces: 0,
       lifetime: Math.max(30, Math.round(turret.range / Math.max(1, speed)) * 2),
       fuseTicks: 0,
+      armiert: 0,
       alive: 1,
     },
   };

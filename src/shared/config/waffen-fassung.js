@@ -19,6 +19,13 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
+ *   - `WAFFEN_ZUENDER` (6, Standard): Die Armierung einer Zündergranate ist korrigiert. Bis
+ *     Fassung 5 stellte der Motor die bereits armierte Granate JEDEN Takt neu auf den Treffpunkt
+ *     (der liegt im Festen) und ließ sie so je Takt rund 0,3 px sinken; sie zündete 11 bis 82 px
+ *     unter dem Aufprall, teils außerhalb des eigenen Sprengradius. Ab Fassung 6 bleibt sie am
+ *     Aufprallpunkt liegen und zündet dort (`services.match.zuenderBleibtLiegen`, gelesen in
+ *     `projectileSystem.js`). Die Werte entsprechen Fassung 5; gewirkt hat die Regel nur auf die
+ *     Waffen mit `fuseTime` > 0. Fassung 5 verhält sich bitgleich wie zuvor (sinkt weiter).
  *
  * `WAFFEN_ALT_WERTE` hält je geänderter Waffe die Altwerte jener Felder, die sich
  * durch die Korrektur geändert haben (`damage` und der daraus abgeleitete
@@ -35,7 +42,8 @@ export const WAFFEN_BALANCE = 2;
 export const WAFFEN_KORREKTUR = 3;
 export const WAFFEN_FEIN = 4;
 export const WAFFEN_FAIR = 5;
-export const WAFFEN_STANDARD = WAFFEN_FAIR;
+export const WAFFEN_ZUENDER = 6;
+export const WAFFEN_STANDARD = WAFFEN_ZUENDER;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -48,7 +56,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -146,7 +154,7 @@ export const ARTEN_BIS_F4 = Object.freeze({
 const zwischenspeicher = new Map();
 
 /**
- * Die Waffe in der Fassung eines Matches. Fassung 4 ist der Katalog selbst; Fassung 3
+ * Die Waffe in der Fassung eines Matches. Fassung 4 ist der Katalog selbst; ab Fassung 5 liegen die Werte aus `WAFFEN_F5_WERTE` darüber (Fassung 6 teilt sie, ihr Unterschied ist die Zünderregel des Motors); Fassung 3
  * legt `WAFFEN_F3_WERTE` darüber, Fassung 2 zusätzlich `WAFFEN_F2_WERTE`, Fassung 1 zusätzlich die Altwerte (je einmal
  * berechnet, eingefroren).
  *

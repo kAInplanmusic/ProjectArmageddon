@@ -38,7 +38,7 @@ import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen,
 import { getTurnDurationForPlayerCount } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { WAFFEN_STANDARD, WAFFEN_FAIR, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
+import { WAFFEN_STANDARD, WAFFEN_FAIR, WAFFEN_ZUENDER, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_STATUS, normalisiereSchaden } from '../shared/config/schaden.js';
@@ -728,6 +728,8 @@ export class MatchController {
         safeInset: 0,
         // Waffenfassung 5: eigene Flächenwirkung nimmt dem Schützen höchstens diesen Anteil seiner Höchstgesundheit.
         selbstschadenGrenze: this.waffen >= WAFFEN_FAIR ? SELBSTSCHADEN_GRENZE : 0,
+        // Waffenfassung 6: eine armierte Zündergranate bleibt am Aufprallpunkt liegen (sinkt nicht mehr).
+        zuenderBleibtLiegen: this.waffen >= WAFFEN_ZUENDER,
       },
     };
   }
