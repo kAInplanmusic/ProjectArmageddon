@@ -14,6 +14,7 @@ import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { RARITY_IDS, STUFEN } from '../engine/systems/lootSystem.js';
 import { NEUE_BIOME } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS } from '../shared/config/biome-planet.js';
+import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { uebersichtFuerHilfe, classCounterplay, combatProfile } from '../shared/config/classes.js';
 import { COMBAT_ROLES, classOf } from '../shared/config/factions.js';
 import { KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE } from '../shared/config/kisten.js';
@@ -160,7 +161,7 @@ export function buildRosterView() {
        * Balance behauptet, die es nicht gibt.
        */
       const klasseDesCharakters = classOf(c);
-      const beziehung = classCounterplay()[klasseDesCharakters];
+      const beziehung = classCounterplay(KLASSEN_STANDARD)[klasseDesCharakters];
       if (beziehung) {
         const cpHinweis = document.createElement('div');
         cpHinweis.className = 'r-cp';
@@ -342,8 +343,8 @@ export function beschreibeWert(art, wert) {
   // Der jeweils andere Teil bleibt auf dem Rückfallwert — die Zahlen sind
   // Eigenschaften des EINZELNEN Parameters, nicht der Kombination.
   const profil = art === 'Klasse'
-    ? combatProfile(wert, ARCHETYPE_IDS[0])
-    : combatProfile(CLASS_IDS[0], wert);
+    ? combatProfile(wert, ARCHETYPE_IDS[0], null, KLASSEN_STANDARD)
+    : combatProfile(CLASS_IDS[0], wert, null, KLASSEN_STANDARD);
 
   const zahl = n => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : '—');
 
@@ -505,7 +506,7 @@ function zeichneCounterplay(container) {
     + 'Tabelle zeigt, worauf die Werte hinauslaufen, und die Wahl entscheidet.',
     'h-einleitung'));
 
-  const beziehungen = classCounterplay();
+  const beziehungen = classCounterplay(KLASSEN_STANDARD);
 
   const raster = document.createElement('div');
   raster.className = 'h-karten';

@@ -59,6 +59,7 @@ import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/c
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
+import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { ZugSystem } from './systems/zugSystem.js';
 import { FeuerSystem } from './systems/feuerSystem.js';
@@ -625,7 +626,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, // Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, // Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
@@ -676,6 +677,7 @@ export class MatchController {
     this.bewegung = normalisiereBewegung(bewegung);
     this.gehen = this.bewegung >= BEWEGUNG_GEHEN ? new BewegungSystem(this) : null; // Gehen am Boden (`systems/bewegungSystem.js`)
     this.zugregeln = normalisiereZugregeln(zugregeln);
+    this.klassen = normalisiereKlassen(klassen);
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
@@ -1129,7 +1131,7 @@ export class MatchController {
     const player = this.#players.find(entry => entry.entityId === playerId);
     const profil = combatProfile(
       CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
-      player?.sidegradeId ?? null,
+      player?.sidegradeId ?? null, this.klassen,
     );
     const abweichung = profil.mobilityMultiplier - 1;
     const dampf = abweichung >= 0 ? JUMP_SPEED_INFLUENCE_ABOVE : JUMP_SPEED_INFLUENCE_BELOW;
@@ -1514,6 +1516,7 @@ export class MatchController {
   #schussQuelle() {
     return {
       waffenFassung: this.waffen,
+      klassen: this.klassen,
       world: this.#world,
       terrain: this.#terrain,
       events: this.#events,
@@ -1684,6 +1687,7 @@ export class MatchController {
       classId: player?.classId ?? 0,
       archetypeId: player?.archetypeId ?? 0,
       sidegradeId: player?.sidegradeId ?? null,
+      klassen: this.klassen,
       weapon,
       // Die Karte gehört in DIESE Rechnung — sonst vergisst sie eine Aufrufstelle.
       kartenbreite: this.width,
@@ -2818,6 +2822,7 @@ export class MatchController {
       loadouts: this.loadouts,
       kit: this.kit, seed: this.#seedManager.baseSeed,
       baseHealth: this.baseHealth,
+      klassen: this.klassen,
       resolveLoadout,
     };
   }

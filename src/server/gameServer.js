@@ -50,6 +50,7 @@ import { GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD, BEWEGUNG } from '../shared/config/bewegung.js';
+import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_STANDARD, ZUGREGELN } from '../shared/config/zugregeln.js';
 
 /*
@@ -113,7 +114,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -167,6 +168,7 @@ class LobbySession {
       feuer,
       bewegung,
       zugregeln,
+      klassen,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -205,6 +207,7 @@ class LobbySession {
       feuer: this.match.feuer,
       bewegung: this.match.bewegung,
       zugregeln: this.match.zugregeln,
+      klassen: this.match.klassen,
     });
 
     /*
@@ -584,7 +587,7 @@ class LobbySession {
 
   /** Geländefassung, aufgelöstes Biom und Zerstörungsfassung: Der Client baut Karte und Stoffkarte damit nach. */
   gelaendeFelder() {
-    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, kartenart: this.match.kartenart, zerstoerung: this.match.zerstoerung };
+    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, kartenart: this.match.kartenart, zerstoerung: this.match.zerstoerung, klassen: this.match.klassen };
   }
 
   /** Fügt einen Client hinzu und schickt ihm den Startzustand. */
@@ -1521,6 +1524,7 @@ export class GameServer {
               feuer: options.feuer,
               bewegung: options.bewegung,
               zugregeln: options.zugregeln,
+              klassen: options.klassen,
               metrics: this.metrics,
               logger: this.logger,
             });

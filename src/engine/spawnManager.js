@@ -42,6 +42,7 @@ import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
  * - `sidegrades` — Sidegrades je Spielerplatz
  * - `loadouts` — Loadout-Wahl je Spielerplatz
  * - `baseHealth` — Grundgesundheit
+ * - `klassen` — Klassenfassung (`config/klassen-fassung.js`); bestimmt die Klassenwerte im Kampfprofil
  * - `resolveLoadout` — Auflösung von Klasse/Archetyp je Platz
  * - `kit` — Ausrüstungsfassung (`KIT_SCHARF` = Standard: Reserve + 2 schadenmachende Common-Würfe + schwache Flächenwaffe, `KIT_FLAECHE` = Strahlplatz statt zweitem Wurf, `KIT_STARTER` = ohne Flächenwaffe, `KIT_KLASSE` = Altverhalten)
  * - `seed` — Match-Seed (für die deterministische Startwaffenwahl)
@@ -105,7 +106,7 @@ export function erzeugeSpieler(quelle) {
     const sidegradeId = quelle.sidegrades[index] ?? null;
     // Leben kommt aus dem gemeinsamen Kampfprofil (classes.js) — nicht aus
     // einer zweiten, hier nachgebauten Multiplikation.
-    const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId);
+    const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId, quelle.klassen);
     const maxHealth = Math.round(quelle.baseHealth * profile.healthMultiplier);
 
     quelle.world.addComponent(entityId, 'Position', { x: startX, y });

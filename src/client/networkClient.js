@@ -421,6 +421,7 @@ export class NetworkClient {
             biom: message.biom,
             kartenart: message.kartenart,
             zerstoerung: message.zerstoerung,
+            klassen: message.klassen,
             craters: Array.isArray(message.craters) ? message.craters : [],
             inset: Number(message.inset) || 0,
           });

@@ -49,6 +49,7 @@ import { TierHud } from './tierHud.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
+import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
 import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
@@ -1262,7 +1263,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom, kartenart,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -2678,6 +2679,7 @@ class Game {
       classId: eigene.classId,
       archetypeId: eigene.archetypeId,
       weapon: waffe,
+      klassen: zustand.klassen ?? KLASSEN_STANDARD, // Fassung des Servers (welcome), sonst Standard
       // Ohne den Sidegrade zeigte die Vorhersage eine Bahn, die der Server
       // anders rechnet — er geht in dieselbe combatProfile-Verrechnung ein.
       sidegradeId: eigene.sidegradeId ?? null,

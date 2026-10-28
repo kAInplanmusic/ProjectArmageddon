@@ -42,6 +42,7 @@
  */
 
 import { sidegradeModifiers } from './sidegrades.js';
+import { KLASSEN_ALT, KLASSEN_STANDARD, klassenWerte } from './klassen-fassung.js';
 
 /**
  * Klassen-Rohdaten. `drag`, `mass` und `speed` liest der Motor derzeit nicht.
@@ -214,6 +215,7 @@ export function resolveLoadout(index, wahl = null) {
  *   `onFallback` NICHT — anders als eine unbekannte Klasse. Grund: Ein Replay aus
  *   einer älteren Fassung oder eine Konfiguration mit Tippfehler soll spielbar
  *   bleiben, und das Fehlen eines Sidegrades ist kein Fehler.
+ * @param {number} [klassen] - Klassenfassung (`klassen-fassung.js`); ohne Angabe `KLASSEN_ALT` (die Werte der Tabelle).
  * @returns {Readonly<{
  *   classId: string,
  *   archetypeId: string,
@@ -225,10 +227,10 @@ export function resolveLoadout(index, wahl = null) {
  *   inert: Readonly<object>
  * }>}
  */
-export function combatProfile(classId, archetypeId, sidegradeId = null) {
+export function combatProfile(classId, archetypeId, sidegradeId = null, klassen = KLASSEN_ALT) {
   const fallbackKlasse = !CLASS_DEFINITIONS[classId];
   const fallbackArchetyp = !CLASS_ARCHETYPES[archetypeId];
-  const classDef = CLASS_DEFINITIONS[classId] ?? CLASS_DEFINITIONS[FALLBACK_CLASS_ID];
+  const classDef = klassenWerte(CLASS_DEFINITIONS, fallbackKlasse ? FALLBACK_CLASS_ID : classId, klassen);
   const archetype = CLASS_ARCHETYPES[archetypeId] ?? CLASS_ARCHETYPES[FALLBACK_ARCHETYPE_ID];
   const gewaehltClassId = fallbackKlasse ? FALLBACK_CLASS_ID : classId;
   const gewaehltArchetypeId = fallbackArchetyp ? FALLBACK_ARCHETYPE_ID : archetypeId;
@@ -318,9 +320,9 @@ export function allCombatProfiles() {
  *
  * @returns {{klassen: object[], archetypen: object[], inertHinweis: string}}
  */
-export function uebersichtFuerHilfe() {
+export function uebersichtFuerHilfe(fassung = KLASSEN_STANDARD) {
   const klassen = CLASS_IDS.map(classId => {
-    const def = CLASS_DEFINITIONS[classId];
+    const def = klassenWerte(CLASS_DEFINITIONS, classId, fassung);
     // Der wirksame Faktor entsteht erst mit einem Archetyp; für die Übersicht
     // wird der neutrale Fall gezeigt (Faktor 1 = kein Archetyp-Einfluss).
     // Aus der Tabelle, nicht gerechnet — sonst stünde die Rechnung zweimal da.
@@ -428,7 +430,7 @@ export function uebersichtFuerHilfe() {
  * @returns {Readonly<object>} Je Klasse die stärkere und die schwächere
  *   Gegenseite — oder `null`, wenn es keine gibt
  */
-export function classCounterplay() {
+export function classCounterplay(klassen = KLASSEN_ALT) {
   /*
    * Referenzprofile mit demselben Archetyp für alle: So wird nur der
    * KLASSEN-Anteil verglichen und der Archetyp verfälscht das Ergebnis nicht.
@@ -436,7 +438,7 @@ export function classCounterplay() {
    */
   const profile = {};
   for (const classId of CLASS_IDS) {
-    profile[classId] = combatProfile(classId, 'brawler');
+    profile[classId] = combatProfile(classId, 'brawler', null, klassen);
   }
 
   /** Die Achsen, die der Motor liest — mit dem Text für die Anzeige. */

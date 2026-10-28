@@ -28,6 +28,10 @@
 import {
   CLASS_IDS, ARCHETYPE_IDS, combatProfile,
 } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD, normalisiereKlassen } from '../src/shared/config/klassen-fassung.js';
+
+/** Klassenfassung: Standard, oder `--klassen=1` für die Werte vor der Anhebung des Scouts. */
+const KLASSEN = normalisiereKlassen(Number(process.argv.find(a => a.startsWith('--klassen='))?.slice(10)) || KLASSEN_STANDARD);
 
 /** Die vier Achsen, die der Motor tatsächlich liest. */
 const ACHSEN = [
@@ -40,7 +44,7 @@ const ACHSEN = [
 const zeilen = [];
 for (const klasse of CLASS_IDS) {
   for (const archetyp of ARCHETYPE_IDS) {
-    const p = combatProfile(klasse, archetyp);
+    const p = combatProfile(klasse, archetyp, null, KLASSEN);
     const werte = {};
     for (const achse of ACHSEN) werte[achse.id] = p[achse.feld] ?? 0;
     const summe = ACHSEN.reduce((s, a) => s + werte[a.id], 0);

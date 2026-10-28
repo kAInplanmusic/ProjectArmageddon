@@ -57,6 +57,7 @@ import {
   PROTOCOL_VERSION,
 } from '../src/shared/protocol.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 import { BASE_HEALTH, MatchController } from '../src/engine/match.js';
 import { launchSpeedMultiplier, predictTrajectory } from '../src/client/shotPrediction.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
@@ -172,6 +173,7 @@ test('Sidegrad und Höchstleben kommen über die Bestandsnachricht beim Leser an
           CLASS_IDS[spieler.classId],
           ARCHETYPE_IDS[spieler.archetypeId],
           spieler.sidegradeId,
+          KLASSEN_STANDARD, // der Server spielt neue Partien mit dem Standard (Klassenfassung 2); der Test prüft den Standard
         ).healthMultiplier,
       );
       assert.equal(

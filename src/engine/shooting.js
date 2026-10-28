@@ -181,7 +181,7 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
   const player = quelle.players.find(entry => entry.entityId === playerId);
   const profile = combatProfile(
     CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
-    player?.sidegradeId ?? null,
+    player?.sidegradeId ?? null, quelle.klassen,
   );
   const { x, y, vx, vy } = quelle.launchVector(playerId, angle, power, weapon);
 

@@ -27,6 +27,7 @@ import {
   uebersichtFuerHilfe,
 } from '../src/shared/config/classes.js';
 import { TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
+import { KLASSEN_STANDARD, klassenWerte } from '../src/shared/config/klassen-fassung.js';
 import { getClassLoadoutDetail } from '../src/shared/config/loadouts.js';
 
 test('Die Übersicht führt jede Klasse und jeden Archetyp', () => {
@@ -60,13 +61,14 @@ test('Die wirksamen Zahlen stammen aus den Configs, nicht aus einer zweiten Quel
   const u = uebersichtFuerHilfe();
 
   for (const eintrag of u.klassen) {
-    const roh = CLASS_DEFINITIONS[eintrag.id];
+    // Die Anzeige zeigt den STANDARD (Klassenfassung 2); die Tabelle liefert Fassung 1, `klassenWerte` legt Fassung 2 darauf.
+    const roh = klassenWerte(CLASS_DEFINITIONS, eintrag.id, KLASSEN_STANDARD);
     assert.equal(eintrag.wirksam.leben, roh.health,
       `${eintrag.id}: Leben weicht von CLASS_DEFINITIONS ab`);
     assert.equal(eintrag.wirksam.schaden, roh.power,
       `${eintrag.id}: Schaden weicht von CLASS_DEFINITIONS ab`);
     // Genau die drei Achsen, die der Motor liest (siehe combatProfile).
-    assert.equal(eintrag.wirksam.schaden, combatProfile(eintrag.id, 'brawler').damageMultiplier,
+    assert.equal(eintrag.wirksam.schaden, combatProfile(eintrag.id, 'brawler', null, KLASSEN_STANDARD).damageMultiplier,
       `${eintrag.id}: Schaden weicht von combatProfile ab`);
   }
 

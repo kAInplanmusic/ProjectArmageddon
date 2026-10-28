@@ -7,7 +7,8 @@
  *  - nach Trennung, Wiedereinstieg und Vollsnapshot kommt der Einschlag nicht ein zweites Mal an
  *    (kein neuer Klang, keine neue `explosion`-/`terrain_destroyed`-Nachricht) und die Karte gleicht dem Server.
  *
- * Wasser entsteht über die Karte `autonom` mit Seed 24683: Schuss (0,5 rad, Kraft 90) trifft den See.
+ * Wasser entsteht über die Karte `autonom` mit Seed 24683: Schuss (0,95 rad, Kraft 80) trifft den See.
+ * Klassenfassung 2 (Standard des Servers, Scout schießt kräftiger) verschob den Schuss; Winkel und Kraft des Wasserfalls wurden dafür nachgemessen (vorher 0,9 rad, Kraft 90).
  * Das Biom ist fest `klassisch`: Ohne diese Wahl zieht der Seed seit den Sonderbiomen oft ein anderes Gelände,
  * und der Schuss träfe nicht mehr den See. Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
  */
@@ -16,6 +17,7 @@ import { freierPort } from './helfer/freier-port.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { MatchController } from '../../src/engine/match.js';
+import { KLASSEN_STANDARD } from '../../src/shared/config/klassen-fassung.js';
 import {
   starteTestserver, stoppeTestserver, hakeHudLog, hudMeldungen, schneideServernachrichtenMit,
 } from './helfer/online-match.mjs';
@@ -29,13 +31,13 @@ test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoR
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
 const FAELLE = [
-  { name: 'Wasser', seed: 377, winkel: 0.9, kraft: 90, material: 'wasser', zaehler: 'wasser' },
+  { name: 'Wasser', seed: 377, winkel: 0.95, kraft: 80, material: 'wasser', zaehler: 'wasser' },
   { name: 'Land', seed: 24681, winkel: 0.5, kraft: 30, material: 'erde', zaehler: 'explosion' },
 ];
 
 /** Rechnet den Schuss mit der Engine nach (dieselben Optionen wie die Lobby) und liefert das Material. */
 function erwartetesMaterial({ seed, winkel, kraft }) {
-  const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch' });
+  const m = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp: 'autonom', biom: 'klassisch', klassen: KLASSEN_STANDARD });
   m.start();
   const id = m.activePlayerId;
   m.fire(id, winkel, kraft, m.inventory.getActiveWeaponId(id));
