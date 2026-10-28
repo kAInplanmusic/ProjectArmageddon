@@ -19,7 +19,8 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_ZUENDERPLUS` (7, Standard): wie 6, dazu `WAFFEN_F7_WERTE` (vier Zündergranaten mit etwa 15 % mehr Schaden).
+ *   - `WAFFEN_FEINTUNING` (8, Standard): wie 7, dazu `WAFFEN_F8_WERTE` (sechs Waffen laut Balance-Auslesen).
+ *   - `WAFFEN_ZUENDERPLUS` (7): wie 6, dazu `WAFFEN_F7_WERTE` (vier Zündergranaten mit etwa 15 % mehr Schaden).
  *   - `WAFFEN_ZUENDER` (6): Die Armierung einer Zündergranate ist korrigiert. Bis
  *     Fassung 5 stellte der Motor die bereits armierte Granate JEDEN Takt neu auf den Treffpunkt
  *     (der liegt im Festen) und ließ sie so je Takt rund 0,3 px sinken; sie zündete 11 bis 82 px
@@ -45,7 +46,8 @@ export const WAFFEN_FEIN = 4;
 export const WAFFEN_FAIR = 5;
 export const WAFFEN_ZUENDER = 6;
 export const WAFFEN_ZUENDERPLUS = 7;
-export const WAFFEN_STANDARD = WAFFEN_ZUENDERPLUS;
+export const WAFFEN_FEINTUNING = 8;
+export const WAFFEN_STANDARD = WAFFEN_FEINTUNING;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -58,7 +60,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -133,6 +135,20 @@ export const WAFFEN_F7_WERTE = Object.freeze({
   pa_030: Object.freeze({ damage: 48 }), // Impulsbombe 42
   pa_046: Object.freeze({ damage: 48 }), // Splittergranate 42
   pa_048: Object.freeze({ damage: 53 }), // Bananengranate 46
+});
+
+/**
+ * Fassung 8 (Entscheidung nach den Balance-Auslesen, `docs/balance-auslese/`): Werte, die Auslesen als eindeutig auffällig fanden.
+ * Brand deckelt bei 16 je Zug (ab Feuer 39), Eis friert in Fassung 2 nicht ein, Zahlen aus `elemental.md` Abschnitt 5.
+ * Alles andere wie Fassung 7.
+ */
+export const WAFFEN_F8_WERTE = Object.freeze({
+  pa_062: Object.freeze({ elemental: Object.freeze({ fire: 30, ice: 0, poison: 0 }) }), // Flammenwerfer: Feuer 45 lag über dem Brand-Deckel
+  pa_068: Object.freeze({ damage: 46 }), // Plasmagewehr 54
+  pa_074: Object.freeze({ damage: 34 }), // Verderbnissiegel 28
+  pa_080: Object.freeze({ cooldown: 1 }), // Psionischer Tentakel: Abklingzeit 2
+  pa_063: Object.freeze({ terrainDamage: 20 }), // Wasserwerfer: Gelände 42
+  pa_071: Object.freeze({ elemental: Object.freeze({ fire: 0, ice: 30, poison: 0 }) }), // Eisschlag: Eis 50 (friert nicht ein)
 });
 
 export const WAFFEN_F5_WERTE = Object.freeze({
@@ -251,10 +267,11 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
   if (fassung >= WAFFEN_FAIR) {
     const f5 = WAFFEN_F5_WERTE[id];
     const f7 = fassung >= WAFFEN_ZUENDERPLUS ? WAFFEN_F7_WERTE[id] : null;
-    if (!f5 && !f7) return waffe;
+    const f8 = fassung >= WAFFEN_FEINTUNING ? WAFFEN_F8_WERTE[id] : null;
+    if (!f5 && !f7 && !f8) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
-    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7 }); zwischenspeicher.set(schluessel5, kopie5); }
+    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8 }); zwischenspeicher.set(schluessel5, kopie5); }
     return kopie5;
   }
   const art = ARTEN_BIS_F4[id];
