@@ -747,6 +747,72 @@ function raeumeAuf(maske) {
   }
 }
 
+/** Vorlage „Kaverne“: ein riesiger Hauptraum mit Absätzen und Felsinseln, zwei schräge Zugänge von der Oberfläche, zwei Nebenkammern. */
+function hoehleKaverne(maske, rng, B, H, stat, y0, mitInsel) {
+  const cx = B * zwischen(rng, 0.45, 0.55);
+  const cy = H * 0.54;
+  const rx = Math.min(B * 0.34, zwischen(rng, 560, 760));
+  const ry = Math.min(H * 0.27, zwischen(rng, 260, 380));
+  // Zugänge: schräg von der Oberfläche links und rechts hinunter in den Hauptraum.
+  for (const seite of [-1, 1]) {
+    const xo = cx + seite * zwischen(rng, rx * 0.9, rx * 1.15);
+    gang(maske, xo, y0(xo) - 24, cx + seite * rx * 0.55, cy - ry * 0.2, 46);
+  }
+  maske.ellipse(cx, cy, rx, ry, 0);
+  maske.rechteck(cx - rx - 1, cy + ry * 0.55, cx + rx + 1, cy + ry + 2, 1); // ebener Boden
+  // Absätze an den Wänden und Felsinseln im Raum (Stufen zum Klettern, Deckung).
+  for (const seite of [-1, 1]) {
+    maske.ellipse(cx + seite * rx * 0.78, cy + ry * 0.3, rx * 0.2, 22, 1);
+    maske.ellipse(cx + seite * rx * 0.45, cy - ry * 0.1, rx * 0.14, 18, 1);
+    stat.platten += 2;
+  }
+  if (mitInsel) { maske.ellipse(cx, cy + ry * 0.1, rx * 0.22, 26, 1); stat.platten += 1; }
+  for (let i = 0; i < 5; i += 1) { // Zapfen an der Decke und Hügel am Boden
+    const x = cx + zwischen(rng, -rx * 0.8, rx * 0.8);
+    maske.ellipse(x, cy - ry * 0.93, zwischen(rng, 14, 26), zwischen(rng, 34, 66), 1);
+    maske.ellipse(zwischen(rng, cx - rx * 0.8, cx + rx * 0.8), cy + ry * 0.55, zwischen(rng, 34, 70), zwischen(rng, 12, 22), 1);
+  }
+  // Nebenkammern links und rechts, tiefer, mit Gang zum Hauptraum.
+  for (const seite of [-1, 1]) {
+    const nx = cx + seite * (rx + zwischen(rng, 170, 230));
+    if (nx < 120 || nx > B - 120) continue;
+    const ny = H * zwischen(rng, 0.7, 0.8);
+    gang(maske, cx + seite * rx * 0.85, cy + ry * 0.35, nx, ny, 38);
+    kammer(maske, nx, ny, zwischen(rng, 130, 190), Math.min(H * 0.1, zwischen(rng, 80, 110)));
+    stat.hoehlen += 1;
+  }
+  stat.hoehlen += 1;
+  raeumeAuf(maske);
+  stat.platten += 1;
+}
+
+/** Vorlage „Treppe“: Kammern steigen schräg ab (links oben nach rechts unten oder umgekehrt), durch schräge Gänge verbunden, mit zwei Zugängen. */
+function hoehleTreppe(maske, rng, B, H, stat, y0, mitInsel) {
+  const richtung = rng.next() < 0.5 ? 1 : -1;
+  const anzahl = 5;
+  const kammern = [];
+  for (let i = 0; i < anzahl; i += 1) {
+    const t = i / (anzahl - 1);
+    const x = B * (richtung === 1 ? 0.14 + 0.72 * t : 0.86 - 0.72 * t) + zwischen(rng, -B * 0.02, B * 0.02);
+    kammern.push({ x, y: H * (0.36 + 0.42 * t) + zwischen(rng, -H * 0.02, H * 0.02), rx: zwischen(rng, 170, 250), ry: Math.min(H * 0.1, zwischen(rng, 90, 140)) });
+  }
+  const boden = (k) => k.y + k.ry * 0.5 - 24;
+  for (let i = 0; i + 1 < kammern.length; i += 1) gang(maske, kammern[i].x, boden(kammern[i]), kammern[i + 1].x, boden(kammern[i + 1]), 42);
+  // Zugänge: oben vom ersten Raum, und ein zweiter Schacht direkt in den vierten Raum (Abkürzung).
+  const erste = kammern[0];
+  gang(maske, erste.x + zwischen(rng, -40, 40), erste.y - erste.ry * 0.5, erste.x, y0(erste.x) - 28, 44);
+  const k4 = kammern[3];
+  gang(maske, k4.x + zwischen(rng, -60, 60), k4.y - k4.ry * 0.5, k4.x, y0(k4.x) - 28, 40);
+  for (const k of kammern) {
+    kammer(maske, k.x, k.y, k.rx, k.ry);
+    for (let i = 0; i < 2; i += 1) maske.ellipse(k.x + zwischen(rng, -k.rx * 0.6, k.rx * 0.6), k.y + k.ry * 0.5, zwischen(rng, 28, 56), zwischen(rng, 10, 18), 1);
+    stat.hoehlen += 1;
+  }
+  if (mitInsel) for (const k of kammern.slice(1, -1)) { maske.ellipse(k.x, k.y + k.ry * 0.15, k.rx * 0.4, k.ry * 0.28, 1); stat.platten += 1; }
+  raeumeAuf(maske);
+  stat.platten += 1;
+}
+
 /** Setzt die zusammenhängende Fläche ab `start` (Wert `von`) auf `nach`. */
 function fuelle(bm, B, H, start, von, nach) {
   const stapel = [start];
@@ -769,6 +835,10 @@ function dichteHoehle(maske, rng, B, H, stat, mitInsel = false) {
   const kante = rausch2(rng, B, H, 380);
   const y0 = (x) => H * 0.2 + kante(x, 0) * H * 0.07;
   ausDichte(maske, rng, (x, y) => y - y0(x) + rauschen(x, y) * 60, 2);
+  // Drei Vorlagen: Stockwerke (unten), große Kaverne, Treppe aus Kammern. Der Seed wählt.
+  const vorlage = Math.floor(rng.next() * 3);
+  if (vorlage === 1) { hoehleKaverne(maske, rng, B, H, stat, y0, mitInsel); return Math.round(H * 0.94); }
+  if (vorlage === 2) { hoehleTreppe(maske, rng, B, H, stat, y0, mitInsel); return Math.round(H * 0.94); }
   const reihe = (anzahl, yMitte) => {
     const liste = [];
     for (let i = 0; i < anzahl; i += 1) {
