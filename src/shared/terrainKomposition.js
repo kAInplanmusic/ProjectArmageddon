@@ -182,30 +182,44 @@ function bauteileAufPlatte(maske, rng, p, stat, anzahlMax = 2) {
   }
 }
 
-/** Stufenpyramide mit Kammer und Gang, Dünen davor, eine kleine zweite am Rand. */
+/**
+ * Große Stufenpyramide (etwa 60 % der Kartenbreite, gut die halbe Höhe): breite Stufen als Laufflächen, oben eine ebene Plattform.
+ * Innen eine große Halle, von beiden Seiten über Gänge vom Boden aus zu betreten; Dünen davor, eine kleine zweite Pyramide daneben.
+ */
 function kartePyramide(maske, rng, B, H, stat) {
   const bodenY = H * 0.8;
   const duene = baueRauschen(rng, B, 160);
   for (let x = 0; x < B; x += 1) maske.rechteck(x, bodenY + duene(x) * 16, x + 1, H);
   stat.platten += 1;
-  const baue = (cx, basis, stufen, sh) => {
+  const baue = (cx, basis, stufen, sh, einzug = 0.84) => {
     for (let i = 0; i < stufen; i += 1) {
-      const halb = (basis / 2) * (1 - (i / stufen) * 0.9);
+      const halb = (basis / 2) * (1 - (i / stufen) * einzug);
       const y = bodenY - (i + 1) * sh;
-      maske.rechteck(cx - halb, y, cx + halb, y + sh + 2);
+      maske.rechteck(cx - halb, y, cx + halb, i === 0 ? bodenY + 24 : y + sh + 2); // Sockel bis in die Dünen: kein Spalt zum Boden
     }
     return basis / 2;
   };
   const cx = B * zwischen(rng, 0.42, 0.58);
-  const stufen = 7 + Math.floor(rng.next() * 4);
-  const sh = H * 0.058;
-  const halb = baue(cx, B * zwischen(rng, 0.4, 0.5), stufen, sh);
-  kammer(maske, cx, bodenY - sh * 2.4, halb * 0.28, sh * 1.3);
-  gang(maske, cx - halb + 6, bodenY - sh * 0.9, cx - halb * 0.2, bodenY - sh * 2, 16);
-  stat.hoehlen += 1;
+  const stufen = 8 + Math.floor(rng.next() * 2);
+  const sh = H * 0.064;
+  const halb = baue(cx, B * zwischen(rng, 0.56, 0.62), stufen, sh);
+  // Ein Eingang: Gang vom Boden in die Halle, von dort eine Rampe zu einer Kammer auf der Gegenseite (Sackgasse). Gäbe es einen
+  // zweiten Ausgang auf der anderen Seite, zerschnitte der Hohlraum den Körper vom Boden: zusammenhängende Wände bleiben Pflicht.
+  const tor = rng.next() < 0.5 ? -1 : 1;
+  const halleRy = sh * 1.7;
+  const gangR = 26;
+  const kammerRy = sh * 0.9;
+  const kammerX = cx - tor * halb * 0.3;
+  const kammerBoden = bodenY - sh * 3;
+  kammer(maske, cx, bodenY - halleRy * 0.5, halb * 0.26, halleRy);
+  gang(maske, cx + tor * (halb + 4), bodenY - gangR * 0.85, cx + tor * halb * 0.1, bodenY - gangR * 0.85, gangR);
+  kammer(maske, kammerX, kammerBoden - kammerRy * 0.5, halb * 0.16, kammerRy);
+  gang(maske, cx - tor * halb * 0.12, bodenY - gangR * 0.9, kammerX + tor * halb * 0.06, kammerBoden - gangR * 0.9, gangR);
+  stat.hoehlen += 2;
+  const kleinHalb = B * 0.09;
   const seite = cx < B / 2 ? 1 : -1;
-  const kx = cx + seite * B * 0.34;
-  if (kx > 110 && kx < B - 110) baue(kx, B * 0.17, 5, sh * 0.8);
+  const kx = cx + seite * (halb + kleinHalb + 36);
+  if (kx - kleinHalb > 30 && kx + kleinHalb < B - 30) baue(kx, kleinHalb * 2, 5, sh * 0.8, 0.7);
   stat.tuerme += 1;
   return Math.round(H * 0.95);
 }

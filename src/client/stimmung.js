@@ -78,12 +78,12 @@ export const STIMMUNG_SCHICHTEN = Object.freeze({
     { modus: 'source-over', farbe: [255, 168, 120], alpha: 0.24, verlauf: 'oben' },
   ]),
   abend: Object.freeze([
-    { modus: 'multiply', farbe: [255, 156, 98], alpha: 0.5 },
+    { modus: 'multiply', farbe: [255, 156, 98], alpha: 0.44 },
     { modus: 'source-over', farbe: [255, 110, 40], alpha: 0.16, verlauf: 'unten' },
   ]),
   nacht: Object.freeze([
-    { modus: 'multiply', farbe: [60, 80, 150], alpha: 0.72 },
-    { modus: 'source-over', farbe: [4, 8, 26], alpha: 0.2 },
+    { modus: 'multiply', farbe: [70, 92, 160], alpha: 0.62 },
+    { modus: 'source-over', farbe: [4, 8, 26], alpha: 0.16 },
   ]),
   herbst: Object.freeze([
     { modus: 'multiply', farbe: [255, 188, 104], alpha: 0.44 },
@@ -162,7 +162,7 @@ export function zeichneStimmung(r, w, dichte = 1) {
       const atem = still ? 1 : 0.7 + 0.3 * Math.sin(t * 0.35 + i * 1.3);
       const winkel = 0.35 + i * 0.17;
       const breite = (0.05 + hash2(i, 1, 12) * 0.05) * b;
-      ctx.fillStyle = `rgba(255, 240, 200, ${0.065 * atem})`;
+      ctx.fillStyle = `rgba(255, 240, 200, ${0.05 * atem})`;
       ctx.beginPath();
       ctx.moveTo(sx, sy);
       ctx.lineTo(sx + Math.cos(winkel) * b * 1.5 - breite, sy + Math.sin(winkel) * b * 1.5);
