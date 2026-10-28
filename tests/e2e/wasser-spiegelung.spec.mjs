@@ -36,7 +36,9 @@ test('Spiegelung: höchstens 10 % mehr Renderzeit, und das Wasser sieht anders a
   test.setTimeout(170_000);
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
-  await page.locator('#cfg-seed').fill('20260916');
+  // Seed 99: Die Bauteilkarten (Geländefassung 6) haben nicht überall Wasser im Bild; gemessen über neun Seeds zeigt Seed 99
+  // viel Wasser (Unterschied 13909 Pixel). Der alte Seed 20260916 hat auf der neuen Standardkarte keines (Unterschied 0).
+  await page.locator('#cfg-seed').fill('99');
   await page.locator('#start-button').click();
   await expect(page.locator('#menu-overlay')).toBeHidden();
   await page.waitForTimeout(800);
