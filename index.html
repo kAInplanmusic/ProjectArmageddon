@@ -1137,6 +1137,29 @@
                 <option value="automatisch" selected>automatisch (gemaltes Bild passend zur Karte, empfohlen)</option>
               </select>
             </label>
+            <label>Tageszeit
+              <!-- Reine Darstellung (Farbstimmung über dem Bild), kein Einfluss auf Spielstand oder Replay. -->
+              <select id="cfg-zeit">
+                <option value="auto" selected>automatisch (wie die Kulisse)</option>
+                <option value="tag">Tag</option>
+                <option value="morgen">Morgen</option>
+                <option value="abend">Abend</option>
+                <option value="nacht">Nacht</option>
+                <option value="herbst">Herbstgold</option>
+              </select>
+            </label>
+            <label>Wetter
+              <select id="cfg-wetter">
+                <option value="auto" selected>automatisch (wie die Kulisse)</option>
+                <option value="klar">klar</option>
+                <option value="sonne">Sonne</option>
+                <option value="regen">Regen</option>
+                <option value="sturm">Sturm</option>
+                <option value="schnee">Schnee</option>
+                <option value="nebel">Nebel</option>
+                <option value="laub">Laubfall</option>
+              </select>
+            </label>
             <label>Biom
               <!-- Wird beim Start aus src/shared/config/biome-neu.js gefüllt. „Zufall" lässt den Seed
                    entscheiden (rund 40 % der Seeds ziehen ein Sonderbiom); „klassisch" lässt das Biom

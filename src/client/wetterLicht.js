@@ -12,6 +12,7 @@
  * @module wetterLicht
  */
 import { hash2 } from './stil.js';
+import { wetterMit, zeichneStimmung } from './stimmung.js';
 
 /** Kulissen ohne Himmel und Wetter (Höhle, Weltraum, Abstraktes). */
 const OHNE_WETTER = /^(caverns|cosmos|abstract)$/;
@@ -123,8 +124,14 @@ export function blitzZustand(t, seed = 0) {
 
 /** Der Wetterzustand des Renderers (lazy): Auswahl aus der Kulisse und die aus dem Bild gelesenen Lichter. */
 function zustand(r) {
-  if (!r.wetterStand || r.wetterStand.key !== r.backdropKey) {
-    r.wetterStand = { key: r.backdropKey ?? null, wetter: wetterAus(r.backdrop), lichter: null };
+  const wahl = `${r.stimmung?.zeit ?? 'auto'}/${r.stimmung?.wetter ?? 'auto'}`;
+  if (!r.wetterStand || r.wetterStand.key !== r.backdropKey || r.wetterStand.wahl !== wahl) {
+    r.wetterStand = {
+      key: r.backdropKey ?? null,
+      wahl,
+      wetter: wetterMit(wetterAus(r.backdrop), r.stimmung?.wetter, r.stimmung?.zeit),
+      lichter: null,
+    };
   }
   const z = r.wetterStand;
   // Die Lichter stammen aus dem fertig zugeschnittenen Kulissenbild (`kulissenCache`), nicht aus der Rohdatei: Zuschnitt und
@@ -229,9 +236,15 @@ export function zeichneWetterHinten(r) {
 /** VORN: Regen, Schnee und die Aufhellung des Blitzes über dem ganzen Bild. */
 export function zeichneWetterVorn(r, dichte = 1) {
   const ctx = r.ctx;
-  if (!ctx || !r.backdrop) return;
+  if (!ctx) return;
   const z = zustand(r);
   const w = z.wetter;
+  zeichneVorn(r, w, dichte);
+  zeichneStimmung(r, w, dichte);
+}
+
+function zeichneVorn(r, w, dichte) {
+  const ctx = r.ctx;
   if (!(w.regen > 0 || w.schnee > 0 || w.gewitter)) return;
   const b = r.width;
   const h = r.height;
@@ -246,7 +259,7 @@ export function zeichneWetterVorn(r, dichte = 1) {
     ctx.strokeStyle = `rgba(190, 205, 225, ${0.16 + 0.14 * w.regen})`;
     ctx.lineWidth = 1.4 * m;
     ctx.beginPath();
-    const neigung = 0.16;
+    const neigung = 0.16 + 0.25 * (w.wind ?? 0);
     for (let i = 0; i < n; i += 1) {
       const lauf = 0.55 + hash2(i, 1, 3) * 0.45;
       const y = ((hash2(i, 2, 3) * h) + t * h * (0.9 + 0.6 * w.regen) * lauf) % (h + 60 * m) - 30 * m;

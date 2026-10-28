@@ -30,7 +30,7 @@ import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
-import { SONDER_KULISSEN, sonderKulisseFuer } from './sonderKulissen.js';
+import { SONDER_KULISSEN, sonderKulisseFuer } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
 import { SoundMixer, tonSpeicher } from './soundMixer.js';
 import { tonErlaubt } from './klangProfile.js';
 import { bindeTonBedienung } from './soundBedienung.js';
@@ -753,6 +753,11 @@ class Game {
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
     const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
+    // Tageszeit und Wetter: nur Darstellung, nicht Teil der Match-Konfiguration.
+    this.renderer.stimmung = {
+      zeit: normalisiereWahl(document.getElementById('cfg-zeit')?.value, ZEITEN),
+      wetter: normalisiereWahl(document.getElementById('cfg-wetter')?.value, WETTER_WAHL),
+    };
     const rawSeed = document.getElementById('cfg-seed')?.value?.trim();
     const seed = rawSeed === '' || rawSeed === undefined ? undefined : Number(rawSeed);
     const serverUrl = document.getElementById('cfg-server')?.value?.trim() ?? '';

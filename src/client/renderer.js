@@ -152,6 +152,8 @@ export class Renderer {
     this.sieger = null;
     /** Anteil der Umgebungspartikel (Grafikstufe: Lite 0,5, Ultra 1); `main.js` setzt ihn nach der Gerätewahl. */
     this.partikelDichte = 1;
+    /** Gewählte Tageszeit/Wetter (siehe `stimmung.js`); „auto" folgt der Kulisse. */
+    this.stimmung = { zeit: 'auto', wetter: 'auto' };
     /** Zahl der in diesem Bild gezeichneten bzw. übersprungenen (außerhalb des Bildes) Figuren. */
     this.figurStat = { gezeichnet: 0, uebersprungen: 0, stufe: 0 };
     this.akzentJeFraktion = new Map(FACTIONS.map(f => [f.id, f.palette?.[1] ?? null]));
