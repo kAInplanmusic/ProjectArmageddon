@@ -47,13 +47,29 @@ export const DAMAGE_TYPE_IDS = Object.freeze([
   'poison',     // 18
   'psychic',    // 19
   'spatial',    // 20
-  'temporal',   // 21
+  'temporal',   // 21 — stillgelegter Alias von 'time' (siehe DAMAGE_TYPE_ALIASES), kein Katalogeintrag trägt ihn mehr
   'time',       // 22
   'utility',    // 23
   'void',       // 24
   'water',      // 25
   'wind',       // 26
 ]);
+
+/**
+ * Stillgelegte Namen: alt → gültig.
+ *
+ * `temporal` und `time` waren dieselbe Art (Zeitmagie) unter zwei Namen, in `schaden.js` gleich
+ * geregelt. Der Katalog nennt nur noch `time` (Endlosschleife und Sanduhr). Die Kennung 21 bleibt
+ * belegt, weil die Liste oben nie umgeordnet wird; sie liest sich weiter, damit Aufzeichnungen der
+ * Waffenfassungen 1 bis 4 (`ARTEN_BIS_F4` in `config/waffen-fassung.js`) unverändert laufen.
+ * `npm run check:damage-types` meldet jede Waffe, die einen Alias trägt.
+ */
+export const DAMAGE_TYPE_ALIASES = Object.freeze({ temporal: 'time' });
+
+/** Der gültige Name einer Art (Aliasse werden aufgelöst). */
+export function canonicalDamageType(name) {
+  return DAMAGE_TYPE_ALIASES[name] ?? name;
+}
 
 /** Der Rückfallwert, wenn eine Waffe keine (bekannte) Art nennt. */
 export const DEFAULT_DAMAGE_TYPE_ID = 0;

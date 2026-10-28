@@ -25,7 +25,7 @@
  * Exit-Code 1 bei jedem Verstoß.
  */
 import { WEAPONS } from '../src/shared/config/weapons.js';
-import { DAMAGE_TYPE_IDS, isKnownDamageType } from '../src/engine/damageTypes.js';
+import { DAMAGE_TYPE_IDS, DAMAGE_TYPE_ALIASES, isKnownDamageType } from '../src/engine/damageTypes.js';
 import { LINE_OF_SIGHT_SPECIALS } from './build-weapon-catalog.mjs';
 
 const fehler = [];
@@ -44,6 +44,11 @@ for (const waffe of WEAPONS) {
       `${name}: unbekannte Schadensart "${waffe.damageType}" — `
       + `bekannt sind ${DAMAGE_TYPE_IDS.length} Arten (src/engine/damageTypes.js)`,
     );
+  }
+
+  // 1b. Kein stillgelegter Alias (temporal → time)?
+  if (DAMAGE_TYPE_ALIASES[waffe.damageType]) {
+    fehler.push(`${name}: Schadensart "${waffe.damageType}" ist ein stillgelegter Alias von "${DAMAGE_TYPE_ALIASES[waffe.damageType]}"`);
   }
 
   // 2. Sichtlinie passt zur Feuerart?

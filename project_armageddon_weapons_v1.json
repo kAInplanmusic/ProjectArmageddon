@@ -1376,7 +1376,7 @@
         "homing": 0,
         "piercing": 0,
         "aoe": false,
-        "damage_type": "physical",
+        "damage_type": "utility",
         "base_damage": 0,
         "special": "flight"
       },
@@ -3680,7 +3680,7 @@
         "homing": 0,
         "piercing": 0,
         "aoe": false,
-        "damage_type": "arcane",
+        "damage_type": "astral",
         "base_damage": 0,
         "special": "buff"
       },
@@ -5376,7 +5376,7 @@
         "homing": 0,
         "piercing": 0,
         "aoe": false,
-        "damage_type": "temporal",
+        "damage_type": "time",
         "base_damage": 0,
         "special": "loop"
       },

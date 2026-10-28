@@ -17,6 +17,8 @@
  *     (`FLUGPROFILE_4`). Der Katalog selbst trägt diese Fassung.
  *   - `WAFFEN_FAIR` (5, Standard): Selbstschaden eigener Flächenwirkung gedeckelt
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
+ *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
+ *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
  *
  * `WAFFEN_ALT_WERTE` hält je geänderter Waffe die Altwerte jener Felder, die sich
  * durch die Korrektur geändert haben (`damage` und der daraus abgeleitete
@@ -125,6 +127,22 @@ const WAFFEN_F5_WERTE = Object.freeze({
   pa_140: Object.freeze({ damage: 47 }),
 });
 
+/**
+ * Schadensarten der Fassungen 1 bis 4 (Namens- und Artendurchsicht 2026-10-28).
+ *
+ * Im Katalog stehen seitdem die zutreffenderen Arten: Raketenrucksack `utility` (Fluggerät, wie
+ * Jetpack und Gleitschirm), Salvengeber `explosive` (kleine Rakete mit Sprengradius), Astraltrank
+ * `astral` (heißt Astral, gleiche Familie `magie`) und Endlosschleife `time` (das alte `temporal`
+ * war dieselbe Art wie `time`). Aufzeichnungen der Fassungen 1 bis 4 laufen mit der alten Art
+ * weiter (AGENTS.md §2); erst die Fassung 5 liest die neue.
+ */
+export const ARTEN_BIS_F4 = Object.freeze({
+  pa_032: Object.freeze({ damageType: 'physical' }),
+  pa_041: Object.freeze({ damageType: 'physical' }),
+  pa_084: Object.freeze({ damageType: 'arcane' }),
+  pa_122: Object.freeze({ damageType: 'temporal' }),
+});
+
 const zwischenspeicher = new Map();
 
 /**
@@ -147,15 +165,16 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
     if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5 }); zwischenspeicher.set(schluessel5, kopie5); }
     return kopie5;
   }
-  if (fassung === WAFFEN_FEIN) return waffe;
-  const f3 = WAFFEN_F3_WERTE[id];
+  const art = ARTEN_BIS_F4[id];
+  if (fassung === WAFFEN_FEIN && !art) return waffe;
+  const f3 = fassung === WAFFEN_FEIN ? null : WAFFEN_F3_WERTE[id];
   const f2 = fassung <= WAFFEN_BALANCE ? WAFFEN_F2_WERTE[id] : null;
   const alt = fassung === WAFFEN_ALT ? WAFFEN_ALT_WERTE[id] : null;
-  if (!f3 && !f2 && !alt) return waffe;
+  if (!f3 && !f2 && !alt && !art) return waffe;
   const schluessel = `${fassung}:${id}`;
   let kopie = zwischenspeicher.get(schluessel);
   if (!kopie) {
-    kopie = Object.freeze({ ...waffe, ...f3, ...f2, ...alt });
+    kopie = Object.freeze({ ...waffe, ...f3, ...f2, ...alt, ...art });
     zwischenspeicher.set(schluessel, kopie);
   }
   return kopie;

@@ -165,7 +165,7 @@ export const HANG_MAX_WIRKRADIUS = 60;
 /** Mindesthöhenunterschied zweier Nachbarspalten, ab dem der Stoff (Schlüssel aus `config/stoffe.js`) rutscht; fehlt der Stoff, hält er. */
 export const HANG_STEILHEIT = Object.freeze({ sand: 2, asche: 2, schnee: 3 });
 
-const BRAND_ARTEN = new Set(['fire', 'plasma', 'energy', 'dragon']);
+const BRAND_ARTEN = new Set(['fire', 'energy', 'dragon']);
 const BOHR_SPECIALS = new Set(['drill', 'drill_cannon', 'drill_rocket']);
 const SPLITTER_SPECIALS = new Set(['fragmentation', 'spread_shot', 'banana_split', 'cosmic_banana']);
 

@@ -61,7 +61,7 @@ export const HAERTEN = Object.freeze(['weich', 'normal', 'hart', 'sehr_hart', 'u
 export const WIRKGRUPPEN = Object.freeze(['wucht', 'hitze', 'kaelte', 'aetz', 'strom', 'nass']);
 
 const GRUPPE_VON_ART = Object.freeze({
-  fire: 'hitze', dragon: 'hitze', energy: 'hitze', plasma: 'hitze',
+  fire: 'hitze', dragon: 'hitze', energy: 'hitze',
   ice: 'kaelte',
   acid: 'aetz', poison: 'aetz',
   electric: 'strom', magnetic: 'strom',

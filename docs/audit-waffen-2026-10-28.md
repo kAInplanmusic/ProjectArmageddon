@@ -183,3 +183,34 @@ mit der alten Projektion ergibt derselbe Stand wieder genau die bisherigen Werte
 | pa_140 | Quantenblaster | Quantenkanone |
 | pa_142 | Void-Ritter | Leerenritter |
 | pa_147 | Welten-Drache | Weltendrache |
+
+## C. Maßnahmen: Schadensarten
+
+Geändert (Quelle `project_armageddon_weapons_v1.json`, `stats.damage_type`; Katalog neu gebaut):
+
+| ID | Waffe | alt | neu | Grund |
+|---|---|---|---|---|
+| pa_122 | Endlosschleife | `temporal` | `time` | Dublette von `time` (Sanduhr), in `schaden.js` gleich geregelt |
+| pa_032 | Raketenrucksack | `physical` | `utility` | Fluggerät ohne Schaden, wie Düsenrucksack und Gleitschirm |
+| pa_084 | Astraltrank | `arcane` | `astral` | heißt Astral; gleiche Familie `magie`, gleiche Regel |
+| pa_041 | Salvengeber | `physical` (abgeleitet) | `explosive` (abgeleitet) | kleine Rakete mit Sprengradius; Namenshinweis `salve` im Generator ergänzt |
+
+Weitere Aufräumarbeiten:
+
+- `src/engine/damageTypes.js`: `DAMAGE_TYPE_ALIASES` (`temporal` → `time`) und `canonicalDamageType`. Die Kennung 21 bleibt
+  belegt (die Liste wird nie umgeordnet), `ART_REGEL` und `FAMILIE_VON_ART` führen den Alias weiter, damit alte Daten lesbar bleiben.
+- `npm run check:damage-types` meldet jede Waffe mit Alias als Fehler.
+- Toter Schlüssel `plasma` aus `GRUPPE_VON_ART` (`stoffe.js`) und `BRAND_ARTEN` (`zerstoerung.js`) entfernt; keine Waffe trug ihn,
+  das Verhalten ändert sich nicht.
+- AGENTS.md §2: Die Änderungen der Arten würden alte Aufzeichnungen verändern. `ARTEN_BIS_F4` in `config/waffen-fassung.js` legt
+  die alten Arten über die Waffenfassungen 1 bis 4; die Fassung 5 (Standard) liest die neuen. Die Prüfsummen der Fassungen 1 bis 3
+  in `tests/waffen-fassung.test.js` bleiben damit unverändert gültig.
+- Zerstörungstabelle (`zerstoerungsTabelle`), `docs/terrain-matrix.md` (mit `node scripts/terrain-matrix-schreiben.mjs` neu
+  geschrieben: unverändert) und Wirkgruppen sind nicht betroffen: alle vier Waffen wirken in beiden Arten als Wucht.
+- Klang: Der Salvengeber klingt jetzt wie eine Rakete (`explosive` mit Sprengradius, `klangProfile.js`) statt wie ein schweres
+  Geschütz; die übrigen drei Waffen klangen schon über `damage === 0` oder den Vorgabewert gleich.
+- Bewusst nicht geändert: `utility`, `defense`, `medical` (verschiedene Selbstwirkungen mit eigener Regel), `energy`/`arcane`/`astral`/`void`
+  (verschiedene Familien mit verschiedener Wirkung), Kaktusbombe (`physical` mit Giftanteil 12: der Giftanteil wirkt über den
+  Elementarwert, die Art bleibt der Stachel).
+
+`tests/waffen-schadensarten.test.js` (7 Tests) sichert Alias, Regeln, Stichproben (44 Waffen), Waffen ohne Schaden und die Fassungen.

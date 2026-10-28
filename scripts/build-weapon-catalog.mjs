@@ -476,7 +476,7 @@ export function resolveDamage(stats) {
  * passende Hinweis gewinnt.
  */
 const DAMAGE_TYPE_BY_NAME_HINT = Object.freeze([
-  ['explosive', ['raketen', 'granate', 'feuerwerk', 'geschütz', 'spreng', 'bombe', 'mine']],
+  ['explosive', ['raketen', 'granate', 'feuerwerk', 'geschütz', 'spreng', 'bombe', 'mine', 'salve']],
   ['fire', ['fackel', 'feuer', 'flamme', 'brand', 'lava', 'glut']],
   ['electric', ['blitz', 'strom', 'elektro', 'tesla', 'plasma']],
   ['arcane', ['magisch', 'zauber', 'rune', 'arkana']],

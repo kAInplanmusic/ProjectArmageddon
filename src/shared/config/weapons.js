@@ -1499,7 +1499,7 @@ export const WEAPONS = Object.freeze(
       "homing": 0,
       "piercing": 0,
       "aoe": false,
-      "damageType": "physical",
+      "damageType": "utility",
       "elemental": {
         "fire": 0,
         "ice": 0,
@@ -1916,7 +1916,7 @@ export const WEAPONS = Object.freeze(
       "homing": 0,
       "piercing": 0,
       "aoe": true,
-      "damageType": "physical",
+      "damageType": "explosive",
       "elemental": {
         "fire": 0,
         "ice": 0,
@@ -3896,7 +3896,7 @@ export const WEAPONS = Object.freeze(
       "homing": 0,
       "piercing": 0,
       "aoe": false,
-      "damageType": "arcane",
+      "damageType": "astral",
       "elemental": {
         "fire": 0,
         "ice": 0,
@@ -5647,7 +5647,7 @@ export const WEAPONS = Object.freeze(
       "homing": 0,
       "piercing": 0,
       "aoe": false,
-      "damageType": "temporal",
+      "damageType": "time",
       "elemental": {
         "fire": 0,
         "ice": 0,
