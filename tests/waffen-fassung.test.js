@@ -133,7 +133,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
     assert.ok(faktor >= 1.19 && faktor <= 1.30, `${id}: ${faktor.toFixed(2)}`);
   }
   for (const id of ['pa_039', 'pa_066', 'pa_140']) {
-    const faktor = WEAPONS_BY_ID[id].damage / WAFFEN_ALT_WERTE[id].damage;
+    const faktor = getWaffe(id, WAFFEN_FEIN).damage / WAFFEN_ALT_WERTE[id].damage;
     assert.ok(faktor >= 0.80 && faktor < 1, `${id}: ${faktor.toFixed(2)}`);
   }
 });
@@ -187,7 +187,8 @@ test('Fassung 4: die neun Waffen wirken wie gemessen, Stufe und Abklingzeit blei
     const r = schussAufNachbarn(id, { waffen: WAFFEN_FEIN });
     assert.equal(r.hash, gold.hash, `${id}: Zustandshash Fassung 4`);
     assert.ok(Math.abs(r.verloren - gold.verloren) < 0.1, `${id}: ${r.verloren}`);
-    const neu = WEAPONS_BY_ID[id];
+    // Fassung 4 liest die Katalogwerte vor der Auslese (2026-10-28), nicht den angeglichenen Katalog.
+    const neu = getWaffe(id, WAFFEN_FEIN);
     const f3 = getWaffe(id, WAFFEN_KORREKTUR);
     assert.equal(neu.damage, BALANCE_KORREKTUREN_4[id].damage);
     assert.equal(neu.powerTier, f3.powerTier, `${id}: Stufe bleibt`);
@@ -195,8 +196,8 @@ test('Fassung 4: die neun Waffen wirken wie gemessen, Stufe und Abklingzeit blei
     assert.equal(neu.maxAmmo, f3.maxAmmo, `${id}: Magazin bleibt`);
   }
   // Gesenkt: die drei Strahlwaffen über dem Stufenmedian; angehoben: die fünf Schwachen.
-  for (const id of ['pa_083', 'pa_104', 'pa_118', 'pa_139']) assert.ok(WEAPONS_BY_ID[id].damage < getWaffe(id, WAFFEN_KORREKTUR).damage, id);
-  for (const id of ['pa_038', 'pa_059', 'pa_060', 'pa_068', 'pa_069']) assert.ok(WEAPONS_BY_ID[id].damage > getWaffe(id, WAFFEN_KORREKTUR).damage, id);
+  for (const id of ['pa_083', 'pa_104', 'pa_118', 'pa_139']) assert.ok(getWaffe(id, WAFFEN_FEIN).damage < getWaffe(id, WAFFEN_KORREKTUR).damage, id);
+  for (const id of ['pa_038', 'pa_059', 'pa_060', 'pa_068', 'pa_069']) assert.ok(getWaffe(id, WAFFEN_FEIN).damage > getWaffe(id, WAFFEN_KORREKTUR).damage, id);
 });
 
 test('Altfassung (waffen: 1): jede geänderte Waffe wirkt Bit für Bit wie auf 573a2c6', () => {

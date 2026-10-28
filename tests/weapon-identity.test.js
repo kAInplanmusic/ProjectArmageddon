@@ -7,6 +7,7 @@ import {
   WEAPON_IDENTITIES,
   identityFor,
 } from '../src/shared/config/weapons.js';
+import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
 import {
   hasFuse,
   derivePlaceholderDamage,
@@ -109,7 +110,8 @@ test('Keine „Mk"-Kennung ohne Gegenstück', () => {
 
 test('Waffen ohne Designwert haben unterschiedliche, abgeleitete Schäden', () => {
   const abgeleitet = WEAPONS.filter(w => w.damageSource === 'derived');
-  assert.ok(abgeleitet.length >= 40, `Zu wenige abgeleitete Werte: ${abgeleitet.length}`);
+  // 45 abgeleitete, abzüglich der sieben Selbstwirkungen, deren Schaden die Auslese vom 2026-10-28 auf 0 setzte ('none').
+  assert.ok(abgeleitet.length >= 38, `Zu wenige abgeleitete Werte: ${abgeleitet.length}`);
 
   // Kein Einheitswert mehr.
   const werte = new Set(abgeleitet.map(w => w.damage));
@@ -128,7 +130,8 @@ test('Waffen ohne Designwert haben unterschiedliche, abgeleitete Schäden', () =
 test('Die Ableitung folgt der Kategorie und ist reproduzierbar', () => {
   for (const w of WEAPONS) {
     if (w.damageSource !== 'derived') continue;
-    assert.equal(derivePlaceholderDamage(w), w.damage, `${w.id}: nicht reproduzierbar`);
+    // Der Katalog trägt bei Traumfänger den Spielwert der Fassung 5 (30); abgeleitet wurde 38 (Sicht vor der Auslese).
+    assert.equal(derivePlaceholderDamage(w), waffeVorAuslese(w).damage, `${w.id}: nicht reproduzierbar`);
     const basis = DAMAGE_BY_CATEGORY[w.category];
     assert.ok(basis, `${w.id}: keine Kategoriebasis für ${w.category}`);
     // Streuung ±18 % um die Basis.

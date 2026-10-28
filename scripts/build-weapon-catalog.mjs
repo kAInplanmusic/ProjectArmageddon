@@ -339,6 +339,59 @@ export const FESTE_ABLEITUNGEN_3 = Object.freeze({
   pa_137: { cooldown: 1 },
 });
 
+/**
+ * Auslese-Angleichung (2026-10-28, `docs/balance-auslese/*.md`, Abschnitt "Umgesetzt (Auslese)" in
+ * `docs/audit-waffen-2026-10-28.md`): Katalogwerte, die der Motor nicht liest, bzw. die vom Spielwert der
+ * Fassung 5 abweichen, auf den gespielten Wert gebracht. Sie werden NACH allen Ableitungen (Reichweite,
+ * Abklingzeit, Zünder, Aufruf-Art) und VOR `powerScore`/`powerTier` angewandt: Nur Leistungswert, Stufe
+ * (Beutegewicht) und Anzeige ändern sich, nicht, was der Motor spielt. Die Fassungen 1 bis 4 sehen weiter
+ * die alten Katalogwerte (`WAFFEN_F4_WERTE` in `src/shared/config/waffen-fassung.js`).
+ *
+ * (a) Spielwert der Fassung 5 (`WAFFEN_F5_WERTE` dort; Test `tests/waffen-auslese.test.js` hält beide gleich).
+ * (b) Selbstwirkungen: der Schaden fließt nirgends ein (Munition, Rüstung, Verschiebung; Wächterstatue heilt
+ *     über die Untergrenze 35). Nicht beim Wachgeschütz (der Katalogschaden speist das Geschütz) und nicht
+ *     beim Blutritual (Heilung 60 = 1,2 x Schaden 50).
+ * (c) Strahlwaffen (`delivery: hitscan`): `#resolveHitscan` wendet nur Schaden, Schadensart und Zielwirkung an;
+ *     Radius, Fläche, Rückstoß und Geländeschaden bleiben unwirksam und zählen nicht mehr im Leistungswert.
+ */
+export const KATALOG_F5_SCHADEN = Object.freeze({
+  pa_026: 36, pa_041: 48, pa_055: 42, pa_059: 41, pa_063: 32, pa_071: 55, pa_075: 45, pa_097: 30, pa_104: 45, pa_140: 47,
+});
+export const AUSLESE_KORREKTUREN = Object.freeze({
+  // (b) Selbstwirkungen ohne Schaden
+  pa_115: { damage: 0 }, // Wächterstatue
+  pa_122: { damage: 0 }, // Endlosschleife
+  pa_125: { damage: 0 }, // Nachschubkiste
+  pa_126: { damage: 0, terrainDamage: 0 }, // Bunker
+  pa_127: { damage: 0 }, // Teleportplattform
+  pa_128: { damage: 0 }, // Hologrammportal
+  pa_130: { damage: 0 }, // Tarnnetz
+  pa_131: { damage: 0 }, // Schlauchboot
+  pa_116: { blastRadius: 0, aoe: false, elemental: { poison: 0 } }, // Blutritual (Heilung bleibt)
+  // (c) Strahlwaffen: Umkreisfelder, die der Strahl nicht liest
+  pa_121: { blastRadius: 0, knockback: 0, aoe: false }, // Raketenfaust
+  pa_123: { blastRadius: 0, knockback: 0, aoe: false }, // Magnetkanone
+  pa_132: { blastRadius: 0, knockback: 0, aoe: false }, // Alte Dame
+  pa_134: { blastRadius: 0, aoe: false }, // Luftangriff
+  pa_135: { blastRadius: 0, aoe: false }, // Meteorregen
+  pa_138: { blastRadius: 0, knockback: 0, aoe: false }, // Arkanhammer
+  pa_129: { blastRadius: 0, aoe: false }, // Tesla-Turm
+  pa_136: { blastRadius: 0, terrainDamage: 0, aoe: false }, // Bohrkopfrakete
+  pa_113: { terrainDamage: 0 }, // Bohrkanone
+  pa_139: { blastRadius: 0, aoe: false }, // Höllenkanone (Brand bleibt)
+  pa_081: { blastRadius: 0, aoe: false }, // Zauberbuch der Leere
+  pa_085: { blastRadius: 0, aoe: false }, // Chaosmagier
+  pa_086: { blastRadius: 0, knockback: 0, aoe: false }, // Windkrieger
+  pa_090: { blastRadius: 0, aoe: false }, // Giftpilz
+  pa_091: { blastRadius: 0, aoe: false }, // Astralkugel
+  pa_098: { blastRadius: 0, aoe: false }, // Lavaelixier
+  pa_102: { blastRadius: 0, aoe: false }, // Gedankensturm
+  pa_103: { blastRadius: 0, aoe: false }, // Verderbniskelch
+  pa_106: { blastRadius: 0, aoe: false }, // Sonnenamulett
+  pa_083: { knockback: 0 }, // Goldene Hand
+  pa_108: { knockback: 0 }, // Zauberpeitsche
+});
+
 /** Identität einer Waffe (oder null). */
 export function identityFor(weaponId) {
   return WEAPON_IDENTITIES[weaponId] ?? null;
@@ -594,7 +647,7 @@ export function computePowerScore(weapon) {
     + weapon.knockback * 0.12
     + (weapon.aoe ? 12 : 0)
     + weapon.piercing * 6
-    + weapon.homing * 5
+    + weapon.homing * 0.5 // bis 2026-10-28: 5 (175 und 350 Punkte allein aus Zielsuche, Auslese melee-utility)
     + weapon.bounces * 3
     + elemental * 0.5;
 
@@ -1286,6 +1339,16 @@ const weapons = raw.weapons.map(entry => {
 
   // Abgeleitete Einstufung: erweitert die Quelle um epic/legendary, ohne Werte
   // zu erfinden — reine Funktion der oben gemappten Statistiken.
+  // Auslese-Angleichung (nach allen Ableitungen, vor dem Leistungswert): siehe `AUSLESE_KORREKTUREN`.
+  if (KATALOG_F5_SCHADEN[entry.id] !== undefined) weapon.damage = KATALOG_F5_SCHADEN[entry.id];
+  const auslese = AUSLESE_KORREKTUREN[entry.id];
+  if (auslese) {
+    const { elemental, ...felder } = auslese;
+    Object.assign(weapon, felder);
+    if (elemental) weapon.elemental = { ...weapon.elemental, ...elemental };
+    if (felder.damage === 0) weapon.damageSource = 'none';
+  }
+
   weapon.powerScore = computePowerScore(weapon);
   weapon.powerTier = tierForScore(weapon.powerScore);
   weapon.iconPath = iconPathFor(weapon.icon);

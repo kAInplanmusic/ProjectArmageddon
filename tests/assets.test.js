@@ -3,6 +3,7 @@ import test from 'node:test';
 import { existsSync, readdirSync, statSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
+import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
 import {
   computePowerScore,
   tierForScore,
@@ -205,7 +206,9 @@ test('Quelldaten-Felder sind korrekt priorisiert (snake_case vor camelCase)', ()
   for (const [id, korrektur] of Object.entries(BALANCE_KORREKTUREN)) {
     const quelle = raw.weapons.find(entry => entry.id === id);
     const soll = BALANCE_KORREKTUREN_3[id]?.damage ?? korrektur.damage;
-    assert.equal(WEAPONS_BY_ID[id].damage, soll, `${id}: Korrektur steht im Katalog`);
+    // Der Katalog zeigt seit der Auslese (2026-10-28) den Spielwert der Fassung 5; die Korrekturen der Fassungen 2 bis 4
+    // stehen unverändert in der Sicht vor der Auslese (`WAFFEN_F4_WERTE`).
+    assert.equal(waffeVorAuslese(WEAPONS_BY_ID[id]).damage, soll, `${id}: Korrektur steht im Katalog`);
     assert.ok(quelle, `${id}: steht in der Quelldatei`);
   }
 });
@@ -285,7 +288,8 @@ test('Die Herkunft des Schadenswerts ist nachvollziehbar', () => {
   assert.ok(nachHerkunft.source > 80, `Zu wenige Waffen mit echtem Designwert: ${nachHerkunft.source}`);
   // 48 Waffen hatten in der Quelldatei keinen Designwert und bekamen einen
   // abgeleiteten — vorher trugen sie alle den Einheitswert 25.
-  assert.ok(nachHerkunft.derived >= 40, `Zu wenige abgeleitete Werte: ${nachHerkunft.derived}`);
+  // (45 abgeleitete, abzüglich der sieben Selbstwirkungen, deren Schaden die Auslese vom 2026-10-28 auf 0 setzte: dort 'none'.)
+  assert.ok(nachHerkunft.derived >= 38, `Zu wenige abgeleitete Werte: ${nachHerkunft.derived}`);
   assert.ok(nachHerkunft.none > 0, 'Es gibt Nutzwaffen ganz ohne Schadenswert');
 });
 
@@ -308,7 +312,7 @@ test('Der Katalog kennzeichnet abgeleitete Werte, statt sie zu verstecken', () =
   // Vorher war es ein Einheitswert von 25 für alle — der ließ sich nicht von
   // einem Designwert unterscheiden.
   const abgeleitet = WEAPONS.filter(weapon => weapon.damageSource === 'derived');
-  assert.ok(abgeleitet.length >= 40, `Zu wenige abgeleitete Werte: ${abgeleitet.length}`);
+  assert.ok(abgeleitet.length >= 38, `Zu wenige abgeleitete Werte: ${abgeleitet.length}`); // 45 minus sieben Selbstwirkungen (Auslese)
 
   // Und keine Waffe darf einen Schaden ohne Herkunft tragen.
   const widerspruch = WEAPONS.filter(w => w.damage > 0 && w.damageSource === 'none');

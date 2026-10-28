@@ -7,6 +7,7 @@ import {
   speedFactorFor,
   HITSCAN_RANGE_BY_CATEGORY,
 } from '../src/shared/config/weapons.js';
+import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import {
   simulateProjectileReach,
@@ -194,9 +195,12 @@ test('Hitscan-Reichweiten folgen der Kategorie und dem Schaden', () => {
     const basis = HITSCAN_RANGE_BY_CATEGORY[weapon.category];
     assert.ok(basis, `${weapon.id}: keine Kategoriebasis für ${weapon.category}`);
     // Schaden skaliert die Basis (0.6 bis 2.0), dann Begrenzung.
-    const erwartet = Math.round(Math.min(1400, Math.max(110, basis * Math.min(2, Math.max(0.6, weapon.damage / 45)))));
+    // Die Reichweite folgt dem Schaden vor der Auslese (2026-10-28): Selbstwirkungen und Traumfänger tragen im
+    // Katalog heute den Spielwert (0 bzw. 30), ihre Reichweite bleibt, damit das Gefecht gleich bleibt.
+    const schaden = waffeVorAuslese(weapon).damage;
+    const erwartet = Math.round(Math.min(1400, Math.max(110, basis * Math.min(2, Math.max(0.6, schaden / 45)))));
     assert.equal(weapon.maxRange, erwartet,
-      `${weapon.id} (${weapon.category}, dmg ${weapon.damage}): ${weapon.maxRange} statt ${erwartet}`);
+      `${weapon.id} (${weapon.category}, dmg ${schaden}): ${weapon.maxRange} statt ${erwartet}`);
   }
 });
 

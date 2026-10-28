@@ -12,19 +12,19 @@ Regel, die der Motor benutzt. `npm run matrix:check` schlägt fehl, wenn die
 | Kategorie | Waffen | Schaden min–max | Flächenwirkung | Krater | Zünder | Durchschlag | Zielsuche |
 |---|---|---|---|---|---|---|---|
 | elemental | 20 | 18–75 | 14 | 4–50 px | 2 | 1 | 0 |
-| heavy_ranged | 20 | 22–66 | 6 | 4–33 px | 5 | 2 | 1 |
-| magic | 30 | 18–58 | 9 | 4–36 px | 0 | 1 | 0 |
+| heavy_ranged | 20 | 30–65 | 6 | 4–33 px | 5 | 2 | 1 |
+| magic | 30 | 18–58 | 0 | 4–4 px | 0 | 1 | 0 |
 | melee | 21 | 24–52 | 0 | 4–35 px | 0 | 1 | 0 |
-| ranged | 19 | 18–62 | 7 | 4–80 px | 3 | 0 | 0 |
-| tech | 20 | 27–68 | 10 | 4–65 px | 0 | 1 | 1 |
+| ranged | 19 | 20–62 | 7 | 4–80 px | 3 | 0 | 0 |
+| tech | 20 | 33–68 | 1 | 4–24 px | 0 | 1 | 1 |
 | ultimate | 10 | 55–110 | 7 | 4–95 px | 1 | 0 | 0 |
-| utility | 10 | 28–50 | 3 | 4–85 px | 0 | 0 | 0 |
-| **gesamt** | **150** | | 56 | | 11 | 6 | 2 |
+| utility | 10 | 30–50 | 2 | 4–27 px | 0 | 0 | 0 |
+| **gesamt** | **150** | | 37 | | 11 | 6 | 2 |
 
 **Zustellart:** 96 Projektile · 54 Hitscan. Ein Hitscan erzeugt kein Geschoss — Flug, Zünder, Durchschlag und Zielsuche
 können bei ihm nicht wirken. `npm run check:effects` hält das fest.
 
-**Wirkung OHNE Schaden (6):** Dimensionssprung (teleport), Dimensionsriss (teleport), Enterhaken (grapple), Düsenrucksack (flight), Gleitschirm (flight), Munitionskiste (ammo_drop)
+**Wirkung OHNE Schaden (14):** Dimensionssprung (teleport), Dimensionsriss (teleport), Enterhaken (grapple), Düsenrucksack (flight), Gleitschirm (flight), Wächterstatue (guardian), Munitionskiste (ammo_drop), Endlosschleife (loop), Nachschubkiste (supply_drop), Bunker (bunker), Teleportplattform (teleport_platform), Hologrammportal (hologram_portal), Tarnnetz (camouflage), Schlauchboot (water_mobility)
 
 Diese Waffen bewegen, schützen oder versorgen — sie graben nichts und treffen niemanden. Ihr Nutzen liegt im Spezialeffekt.
 
@@ -36,13 +36,13 @@ sonst ein Mindestloch von 4 px, damit ein Einschlag sichtbar bleibt.
 
 | Grad | Kraterfläche | Waffen | stärkste Waffe |
 |---|---|---|---|
-| 1 · Kratzer | 50–50 px² | 83 | Feuerfaust (50 px²) |
-| 2 · Loch | 201–1018 px² | 7 | Morgenstern (1018 px²) |
-| 3 · Trichter | 1257–4778 px² | 49 | Luftangriff (4778 px²) |
-| 4 · Krater | 5542–13273 px² | 7 | Bohrkopfrakete (13273 px²) |
-| 5 · Großkrater | 20106–28353 px² | 4 | Erdspalter (28353 px²) |
+| 1 · Kratzer | 50–50 px² | 104 | Feuerfaust (50 px²) |
+| 2 · Loch | 201–1018 px² | 6 | Morgenstern (1018 px²) |
+| 3 · Trichter | 1257–4778 px² | 31 | Giftige Weltenflasche (4778 px²) |
+| 4 · Krater | 5542–9503 px² | 6 | Raketenwerfer (9503 px²) |
+| 5 · Großkrater | 20106–28353 px² | 3 | Erdspalter (28353 px²) |
 
-Von 150 Waffen graben **68** Gelände weg; **82** tun es nicht (Hitscan ohne Flächenwirkung oder Wirkung nur auf Figuren).
+Von 150 Waffen graben **47** Gelände weg; **103** tun es nicht (Hitscan ohne Flächenwirkung oder Wirkung nur auf Figuren).
 
 ## 3. Terrain-Arten (gemessen, Seed 4242, 640×360)
 
@@ -94,7 +94,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 23 | Boxhandschuhe | ranged | 20 | — | 4 px | 1 | 96 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 24 | Mittelfinger | ranged | 24 | — | 4 px | 1 | 10 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 25 | Handtuch | ranged | 31 | — | 4 px | 1 | 20 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 26 | Pressluftbohrer | ranged | 18 | — | 80 px | 5 | 30 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 26 | Pressluftbohrer | ranged | 36 | — | 80 px | 5 | 30 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 27 | Fackel | ranged | 23 | — | 4 px | 1 | 14 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 28 | Kaktusbombe | ranged | 48 | 48 | 29 px | 3 | 30 | Gift 12 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß), Zustand (Element) |
 | 29 | Pömpel | ranged | 32 | 30 | 18 px | 2 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
@@ -109,7 +109,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 38 | Rakete | ranged | 58 | 38 | 23 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 39 | Feldmörser | ranged | 48 | 45 | 27 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 40 | Maschinenpistole | ranged | 21 | — | 4 px | 1 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
-| 41 | Salvengeber | heavy_ranged | 22 | 16 | 18 px | 2 | 8 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 41 | Salvengeber | heavy_ranged | 48 | 16 | 18 px | 2 | 8 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 42 | Feuerwerkssalve | heavy_ranged | 58 | — | 4 px | 1 | 12 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 43 | Kampfgeschütz | heavy_ranged | 50 | — | 4 px | 1 | 36 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 44 | Phönixschlag | heavy_ranged | 65 | 55 | 33 px | 3 | 30 | Feuer 35 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß), Ziel (suchend), Zustand (Element) |
@@ -123,15 +123,15 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 52 | Molotowcocktail | heavy_ranged | 36 | 42 | 25 px | 3 | 30 | Feuer 32 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß), Zustand (Element) |
 | 53 | Roboterbombe | heavy_ranged | 52 | 45 | 27 px | 3 | 30 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 54 | Schrotflinte | heavy_ranged | 44 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 55 | Fernbüchse | heavy_ranged | 65 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Figur (Durchschlag 1×) |
+| 55 | Fernbüchse | heavy_ranged | 42 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Figur (Durchschlag 1×) |
 | 56 | Präzisionsgewehr | heavy_ranged | 55 | — | 20 px | 3 | 12 | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 57 | Revolver | heavy_ranged | 38 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 58 | Kampfbogen | heavy_ranged | 42 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 59 | Armbrust | heavy_ranged | 66 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Figur (Durchschlag 1×) |
+| 59 | Armbrust | heavy_ranged | 41 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Figur (Durchschlag 1×) |
 | 60 | Gatlingkanone | heavy_ranged | 34 | — | 4 px | 1 | 30 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 61 | Feuerdämon | elemental | 58 | 44 | 26 px | 3 | — | Feuer 38 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 62 | Flammenwerfer | elemental | 48 | — | 4 px | 1 | — | Feuer 45 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
-| 63 | Wasserwerfer | elemental | 18 | — | 42 px | 4 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
+| 63 | Wasserwerfer | elemental | 32 | — | 42 px | 4 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
 | 64 | Katapult | elemental | 68 | 48 | 29 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 65 | Meteorbrocken | elemental | 74 | 50 | 50 px | 4 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 66 | Haubitze | elemental | 56 | 48 | 29 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
@@ -139,76 +139,76 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 68 | Plasmagewehr | elemental | 54 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
 | 69 | Raketenkanone | elemental | 56 | 40 | 24 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 70 | Giftwolke | elemental | 18 | 58 | 35 px | 3 | — | Gift 45 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 71 | Eisschlag | elemental | 42 | 35 | 21 px | 3 | — | Eis 50 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
+| 71 | Eisschlag | elemental | 55 | 35 | 21 px | 3 | — | Eis 50 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 72 | Feuerball | elemental | 48 | 34 | 20 px | 3 | — | Feuer 30 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 73 | Tentakelgift | elemental | 32 | 44 | 26 px | 3 | — | Gift 55 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 74 | Verderbnissiegel | elemental | 28 | 46 | 28 px | 3 | — | Gift 20 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 75 | Tornado | elemental | 18 | 60 | 36 px | 3 | 88 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 75 | Tornado | elemental | 45 | 60 | 36 px | 3 | 88 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 76 | Portalring | elemental | 35 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 77 | Schwarzes Loch | elemental | 75 | 72 | 43 px | 4 | 80 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
 | 78 | Voodoopuppe | elemental | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 79 | Kosmisches Portal | elemental | 20 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 80 | Psionischer Tentakel | elemental | 44 | 52 | 31 px | 3 | 60 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 81 | Zauberbuch der Leere | magic | 55 | 48 | 29 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
+| 81 | Zauberbuch der Leere | magic | 55 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 82 | Goldene Zauberrolle | magic | 44 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 83 | Goldene Hand | magic | 46 | — | 4 px | 1 | 70 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 83 | Goldene Hand | magic | 46 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 84 | Astraltrank | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 85 | Chaosmagier | magic | 45 | 45 | 27 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 86 | Windkrieger | magic | 42 | 46 | 28 px | 3 | 78 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 85 | Chaosmagier | magic | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 86 | Windkrieger | magic | 42 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 87 | Dimensionssprung | magic | — | — | 4 px | 1 | — | — | — |
 | 88 | Dimensionsriss | magic | — | — | 4 px | 1 | — | — | — |
 | 89 | Zauberstiefel | magic | 36 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 90 | Giftpilz | magic | 18 | 38 | 23 px | 3 | — | Gift 50 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 91 | Astralkugel | magic | 58 | 55 | 33 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
+| 90 | Giftpilz | magic | 18 | — | 4 px | 1 | — | Gift 50 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
+| 91 | Astralkugel | magic | 58 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 92 | Heilzauber | magic | 35 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 93 | Engelssegen | magic | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 94 | Heilspritze | magic | 39 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 95 | Chaoselixier | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 96 | Mutationselixier | magic | 29 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 97 | Traumfänger | magic | 38 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 98 | Lavaelixier | magic | 50 | 50 | 30 px | 3 | — | Feuer 45 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
+| 97 | Traumfänger | magic | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 98 | Lavaelixier | magic | 50 | — | 4 px | 1 | — | Feuer 45 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
 | 99 | Sanduhr | magic | 28 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 100 | Würfel des Chaos | magic | 36 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 101 | Eisschild | magic | 32 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 102 | Gedankensturm | magic | 52 | 60 | 36 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 103 | Verderbniskelch | magic | 30 | 48 | 29 px | 3 | — | Gift 30 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 104 | Quantengewehr | magic | 56 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
+| 102 | Gedankensturm | magic | 52 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 103 | Verderbniskelch | magic | 30 | — | 4 px | 1 | — | Gift 30 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
+| 104 | Quantengewehr | magic | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
 | 105 | Spruchrolle | magic | 48 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 106 | Sonnenamulett | magic | 38 | 40 | 24 px | 3 | — | Feuer 25 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
+| 106 | Sonnenamulett | magic | 38 | — | 4 px | 1 | — | Feuer 25 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
 | 107 | Allsehendes Auge | magic | 29 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 108 | Zauberpeitsche | magic | 32 | — | 4 px | 1 | 55 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
+| 108 | Zauberpeitsche | magic | 32 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 109 | Weltenbaum | magic | 33 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 110 | Dimensionskugel | magic | 28 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 111 | Enterhaken | utility | — | — | 4 px | 1 | — | — | — |
 | 112 | Düsenrucksack | utility | — | — | 4 px | 1 | — | — | — |
-| 113 | Bohrkanone | utility | 30 | — | 85 px | 5 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
+| 113 | Bohrkanone | utility | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 114 | Gleitschirm | utility | — | — | 4 px | 1 | — | — | — |
-| 115 | Wächterstatue | utility | 28 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 116 | Blutritual | utility | 50 | 55 | 33 px | 3 | — | Gift 35 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
+| 115 | Wächterstatue | utility | — | — | 4 px | 1 | — | — | — |
+| 116 | Blutritual | utility | 50 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 117 | Ananasbombe | utility | 48 | 45 | 27 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 118 | Feuerwesen | utility | 46 | 42 | 25 px | 3 | — | Feuer 40 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 119 | Munitionskiste | utility | — | — | 4 px | 1 | — | — | — |
 | 120 | Energiefaust | utility | 48 | — | 4 px | 1 | 78 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
-| 121 | Raketenfaust | tech | 58 | 35 | 21 px | 3 | 88 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 122 | Endlosschleife | tech | 32 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 123 | Magnetkanone | tech | 40 | 45 | 27 px | 3 | 95 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 121 | Raketenfaust | tech | 58 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 122 | Endlosschleife | tech | — | — | 4 px | 1 | — | — | — |
+| 123 | Magnetkanone | tech | 40 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 124 | Wachgeschütz | tech | 38 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 125 | Nachschubkiste | tech | 31 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 126 | Bunker | tech | 27 | — | 20 px | 3 | — | — | Figur (direkt), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar) |
-| 127 | Teleportplattform | tech | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 128 | Hologrammportal | tech | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 129 | Tesla-Turm | tech | 48 | 52 | 31 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 130 | Tarnnetz | tech | 33 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 131 | Schlauchboot | tech | 29 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 132 | Alte Dame | tech | 55 | 30 | 18 px | 2 | 82 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
+| 125 | Nachschubkiste | tech | — | — | 4 px | 1 | — | — | — |
+| 126 | Bunker | tech | — | — | 4 px | 1 | — | — | — |
+| 127 | Teleportplattform | tech | — | — | 4 px | 1 | — | — | — |
+| 128 | Hologrammportal | tech | — | — | 4 px | 1 | — | — | — |
+| 129 | Tesla-Turm | tech | 48 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 130 | Tarnnetz | tech | — | — | 4 px | 1 | — | — | — |
+| 131 | Schlauchboot | tech | — | — | 4 px | 1 | — | — | — |
+| 132 | Alte Dame | tech | 55 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 133 | Fliegendes Superschaf | tech | 60 | 40 | 24 px | 3 | — | Feuer 25 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Ziel (suchend), Zustand (Element) |
-| 134 | Luftangriff | tech | 62 | 65 | 39 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 135 | Meteorregen | tech | 68 | 55 | 33 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
-| 136 | Bohrkopfrakete | tech | 64 | 48 | 65 px | 4 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
+| 134 | Luftangriff | tech | 62 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 135 | Meteorregen | tech | 68 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 136 | Bohrkopfrakete | tech | 64 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 137 | Flammenklinge | tech | 33 | — | 4 px | 1 | 55 | Feuer 30 | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß), Zustand (Element) |
-| 138 | Arkanhammer | tech | 68 | 45 | 27 px | 3 | 78 | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Stellung (Rückstoß) |
-| 139 | Höllenkanone | tech | 68 | 58 | 35 px | 3 | — | Feuer 48 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 140 | Quantenkanone | tech | 60 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
+| 138 | Arkanhammer | tech | 68 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 139 | Höllenkanone | tech | 68 | — | 4 px | 1 | — | Feuer 48 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
+| 140 | Quantenkanone | tech | 47 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
 | 141 | Astralkrieger | ultimate | 70 | 55 | 33 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 142 | Leerenritter | ultimate | 82 | — | 4 px | 1 | 75 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
 | 143 | Astralross | ultimate | 65 | — | 4 px | 1 | 70 | — | Figur (direkt), Kisten (zerstörbar), Stellung (Rückstoß) |
@@ -230,7 +230,7 @@ mit der Summe der Elementpunkte.
 
 **Eis** (2): Eisschlag 50, Eispickel 25
 
-**Gift** (9): Giftige Weltenflasche 80, Tentakelgift 55, Giftpilz 50, Giftwolke 45, Blutritual 35, Verderbniskelch 30, Säurekanone 28, Verderbnissiegel 20, … (1 weitere)
+**Gift** (8): Giftige Weltenflasche 80, Tentakelgift 55, Giftpilz 50, Giftwolke 45, Verderbniskelch 30, Säurekanone 28, Verderbnissiegel 20, Kaktusbombe 12
 
 ## 6. Woher die Zahlen kommen
 

@@ -93,5 +93,6 @@ test('Waffenfassungen 1 bis 4 behalten die alten Arten, Fassung 5 liest die neue
   assert.equal(getWaffe('pa_028', WAFFEN_FEIN), WEAPONS_BY_ID.pa_028);
   assert.equal(getWaffe('pa_028', WAFFEN_ALT).damageType, WEAPONS_BY_ID.pa_028.damageType);
   // Fassung 4 trägt von Fassung 3 weiterhin keine Werte (nur die Art wird überlagert).
-  assert.equal(getWaffe('pa_041', WAFFEN_FEIN).damage, WEAPONS_BY_ID.pa_041.damage);
+  // (Katalog: Spielwert 48 der Fassung 5 seit der Auslese; Fassung 4 sieht den Altwert 22 aus `WAFFEN_F4_WERTE`.)
+  assert.equal(getWaffe('pa_041', WAFFEN_FEIN).damage, 22);
 });

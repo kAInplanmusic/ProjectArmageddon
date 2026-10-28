@@ -10,7 +10,7 @@
       "id": "pa_001",
       "index": 1,
       "displayName": "Baseballschläger",
-      "description": "Wuchtiger Schlag auf kurze Distanz, der den Gegner weit zurückstößt.",
+      "description": "Wuchtiger Schlag auf kurze Distanz mit hohem Schaden.",
       "internalName": "baseballschlager",
       "category": "melee",
       "icon": {
@@ -849,7 +849,7 @@
       "id": "pa_020",
       "index": 20,
       "displayName": "Kriegssense",
-      "description": "Lange Sense mit weitem Hieb auf mittlere Distanz.",
+      "description": "Lange Sense für einen kräftigen Hieb auf kurze Distanz.",
       "internalName": "kriegssense",
       "category": "melee",
       "icon": {
@@ -2042,7 +2042,7 @@
       "id": "pa_047",
       "index": 47,
       "displayName": "Handgranate",
-      "description": "Wurfgranate mit Zünder, die abprallt, bevor sie zündet.",
+      "description": "Wurfgranate mit Zünder, die nach dem ersten Aufprall liegen bleibt, bevor sie zündet.",
       "internalName": "handgranate",
       "category": "heavy_ranged",
       "icon": {
@@ -2085,7 +2085,7 @@
       "id": "pa_048",
       "index": 48,
       "displayName": "Bananengranate",
-      "description": "Granate mit Zünder, die abprallt und beim Zünden in Splitter zerfällt.",
+      "description": "Bananenförmige Granate, die nach dem Aufprall mit Verzögerung zündet.",
       "internalName": "bananengranate",
       "category": "heavy_ranged",
       "icon": {
@@ -2310,7 +2310,7 @@
       "id": "pa_053",
       "index": 53,
       "displayName": "Roboterbombe",
-      "description": "Kleiner Roboter mit Sprengladung, der nach kurzer Verzögerung explodiert.",
+      "description": "Bombe in Form eines kleinen Roboters, die nach kurzer Verzögerung explodiert.",
       "internalName": "roboterbombe",
       "category": "heavy_ranged",
       "icon": {
@@ -2537,7 +2537,7 @@
       "id": "pa_058",
       "index": 58,
       "displayName": "Kampfbogen",
-      "description": "Bogen für Pfeile in flacher Bahn, der freie Sicht braucht.",
+      "description": "Bogen für gezielte Pfeile, der freie Sicht braucht.",
       "internalName": "kampfbogen",
       "category": "heavy_ranged",
       "icon": {
@@ -2675,7 +2675,7 @@
       "id": "pa_061",
       "index": 61,
       "displayName": "Feuerdämon",
-      "description": "Beschworener Feuerdämon, der im Umkreis wütet und in Brand setzt.",
+      "description": "Feuerdämon, der im Umkreis wütet und in Brand setzt.",
       "internalName": "feuerdamon",
       "category": "elemental",
       "icon": {
@@ -2860,7 +2860,7 @@
       "id": "pa_065",
       "index": 65,
       "displayName": "Meteorbrocken",
-      "description": "Glühender Brocken, der von oben einschlägt und das Gelände aufreißt.",
+      "description": "Brocken, der von oben einschlägt und das Gelände aufreißt.",
       "internalName": "meteoritenbrocken",
       "category": "elemental",
       "icon": {
@@ -3141,7 +3141,7 @@
       "id": "pa_071",
       "index": 71,
       "displayName": "Eisschlag",
-      "description": "Eisbrocken, der im Umkreis einschlägt und den Gegner einfriert.",
+      "description": "Eisbrocken, der im Umkreis einschlägt, den Gegner verlangsamt und beim zweiten Treffer betäubt.",
       "internalName": "eisschlag",
       "category": "elemental",
       "icon": {
@@ -3603,7 +3603,7 @@
       "id": "pa_081",
       "index": 81,
       "displayName": "Zauberbuch der Leere",
-      "description": "Zauberbuch, das die Leere entfesselt: Schaden im Umkreis und anhaltender Schaden über Zeit.",
+      "description": "Zauberbuch, das die Leere entfesselt: Schaden am getroffenen Gegner und anhaltender Schaden über Zeit.",
       "internalName": "zauberbuch_der_leere",
       "category": "magic",
       "icon": {
@@ -3831,7 +3831,7 @@
       "id": "pa_086",
       "index": 86,
       "displayName": "Windkrieger",
-      "description": "Krieger im Wirbelwind, der Gegner im Umkreis zum Schützen heranzieht.",
+      "description": "Krieger im Wirbelwind, der den getroffenen Gegner zum Schützen heranzieht.",
       "internalName": "wirbelwind_krieger",
       "category": "magic",
       "icon": {
@@ -4012,7 +4012,7 @@
       "id": "pa_090",
       "index": 90,
       "displayName": "Giftpilz",
-      "description": "Giftiger Pilz, der im Umkreis vergiftet.",
+      "description": "Giftiger Pilz, der den getroffenen Gegner vergiftet.",
       "internalName": "giftpilz",
       "category": "magic",
       "icon": {
@@ -4060,7 +4060,7 @@
       "id": "pa_091",
       "index": 91,
       "displayName": "Astralkugel",
-      "description": "Kugel aus Astralenergie, die unmittelbar im Umkreis einschlägt.",
+      "description": "Kugel aus Astralenergie, die den getroffenen Gegner unmittelbar trifft.",
       "internalName": "astralorb",
       "category": "magic",
       "icon": {
@@ -4376,7 +4376,7 @@
       "id": "pa_098",
       "index": 98,
       "displayName": "Lavaelixier",
-      "description": "Flüssige Lava, die im Umkreis in Brand setzt und Schaden über Zeit anrichtet.",
+      "description": "Flüssige Lava, die den getroffenen Gegner in Brand setzt und Schaden über Zeit anrichtet.",
       "internalName": "lava_elixier",
       "category": "magic",
       "icon": {
@@ -4559,7 +4559,7 @@
       "id": "pa_102",
       "index": 102,
       "displayName": "Gedankensturm",
-      "description": "Mentaler Sturm, der im Umkreis unmittelbar Schaden anrichtet.",
+      "description": "Mentaler Sturm, der dem getroffenen Gegner unmittelbar Schaden anrichtet.",
       "internalName": "gedankensturm",
       "category": "magic",
       "icon": {
@@ -4605,7 +4605,7 @@
       "id": "pa_103",
       "index": 103,
       "displayName": "Verderbniskelch",
-      "description": "Kelch, dessen Verderbnis im Umkreis Schaden über Zeit anrichtet und verflucht.",
+      "description": "Kelch, dessen Verderbnis dem getroffenen Gegner Schaden über Zeit anrichtet und ihn verflucht.",
       "internalName": "verderbnis_kelch",
       "category": "magic",
       "icon": {
@@ -4744,7 +4744,7 @@
       "id": "pa_106",
       "index": 106,
       "displayName": "Sonnenamulett",
-      "description": "Amulett, das Sonnenlicht im Umkreis bündelt und Verfluchte härter trifft.",
+      "description": "Amulett, das Sonnenlicht bündelt, den Gegner in Brand setzt und Verfluchte härter trifft.",
       "internalName": "sonnenamulett",
       "category": "magic",
       "icon": {
@@ -5244,7 +5244,7 @@
       "id": "pa_117",
       "index": 117,
       "displayName": "Ananasbombe",
-      "description": "Ananasförmige Granate mit Sprengwirkung im Umkreis und Splitterlöchern im Gelände.",
+      "description": "Ananasförmige Granate, die das getroffene Ziel unmittelbar sprengt.",
       "internalName": "ananasbombe",
       "category": "utility",
       "icon": {
@@ -5291,7 +5291,7 @@
       "id": "pa_118",
       "index": 118,
       "displayName": "Feuerwesen",
-      "description": "Feuerwesen, das im Umkreis Brand legt.",
+      "description": "Feuerwesen, das den getroffenen Gegner in Brand setzt.",
       "internalName": "feuerwesen",
       "category": "utility",
       "icon": {
@@ -5428,7 +5428,7 @@
       "id": "pa_121",
       "index": 121,
       "displayName": "Raketenfaust",
-      "description": "Faustschlag mit Raketenantrieb, der im Umkreis explodiert.",
+      "description": "Faustschlag mit Raketenantrieb, der das getroffene Ziel unmittelbar trifft.",
       "internalName": "explosiver_punch",
       "category": "tech",
       "icon": {
@@ -5519,7 +5519,7 @@
       "id": "pa_123",
       "index": 123,
       "displayName": "Magnetkanone",
-      "description": "Magnet, der Gegner im Umkreis zum Schützen heranzieht.",
+      "description": "Magnet, der den getroffenen Gegner zum Schützen heranzieht.",
       "internalName": "magnetkanone",
       "category": "tech",
       "icon": {
@@ -5928,7 +5928,7 @@
       "id": "pa_132",
       "index": 132,
       "displayName": "Alte Dame",
-      "description": "Erstaunlich schlagkräftige Dame, deren Hieb auch auf große Distanz im Umkreis wirkt.",
+      "description": "Erstaunlich schlagkräftige Dame, deren Hieb auch auf große Distanz trifft.",
       "internalName": "alte_dame",
       "category": "tech",
       "icon": {
@@ -6114,7 +6114,7 @@
       "id": "pa_136",
       "index": 136,
       "displayName": "Bohrkopfrakete",
-      "description": "Rakete mit Bohrkopf und großer Sprengwirkung.",
+      "description": "Rakete mit Bohrkopf, die das getroffene Ziel unmittelbar trifft.",
       "internalName": "bohrkopfrakete",
       "category": "tech",
       "icon": {
@@ -6207,7 +6207,7 @@
       "id": "pa_138",
       "index": 138,
       "displayName": "Arkanhammer",
-      "description": "Hammer aus arkaner Kraft, der im Umkreis einschlägt und freie Sicht braucht.",
+      "description": "Hammer aus arkaner Kraft, der unmittelbar einschlägt und freie Sicht braucht.",
       "internalName": "magischer_kriegshammer",
       "category": "tech",
       "icon": {
@@ -6253,7 +6253,7 @@
       "id": "pa_139",
       "index": 139,
       "displayName": "Höllenkanone",
-      "description": "Kanone, deren Feuerstrahl von der Seite im Umkreis einschlägt.",
+      "description": "Kanone, deren Feuerstrahl von der Seite einschlägt und in Brand setzt.",
       "internalName": "hollenkanone",
       "category": "tech",
       "icon": {

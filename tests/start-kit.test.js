@@ -25,6 +25,15 @@ import {
 import { RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { MAX_WEAPONS } from '../src/engine/inventory.js';
+import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
+
+/**
+ * Die Waffe, wie die Start-Kits sie lesen: Katalogwerte VOR der Auslese vom 2026-10-28 (Stufe, Schaden,
+ * Radius). Der Katalog zeigt den Salvengeber seitdem als `rare` mit Schaden 48 (Spielwert der Fassung 5);
+ * das Kit wählt ihn weiter als schwache Uncommon-Flächenwaffe, damit alte Aufzeichnungen dieselben
+ * Startwaffen bekommen (`tests/waffen-auslese.test.js`).
+ */
+const kitWaffe = id => waffeVorAuslese(WEAPONS.find(x => x.id === id));
 
 /** Die sieben Waffen, die im Motor keinen eigenen Handler haben (Stand 2026-10-14). */
 const OHNE_HANDLER = [
@@ -83,15 +92,15 @@ test('Start (Fassung 3, alt): Reserve + zwei Common voll geladen + eine knappe U
     assert.equal(waffen.length, 4);
     assert.ok(waffen.includes(FALLBACK_WEAPON_ID));
     assert.equal(match.inventory.getAmmo(spieler.entityId, FALLBACK_WEAPON_ID), Infinity);
-    const uncommon = waffen.filter(id => WEAPONS.find(x => x.id === id).powerTier === 'uncommon');
+    const uncommon = waffen.filter(id => kitWaffe(id).powerTier === 'uncommon');
     assert.equal(uncommon.length, 1, 'genau eine Uncommon-Startwaffe');
     for (const id of waffen.filter(w => w !== FALLBACK_WEAPON_ID && !uncommon.includes(w))) {
-      const w = WEAPONS.find(x => x.id === id);
+      const w = kitWaffe(id);
       assert.equal(w.powerTier, 'common', id);
       assert.equal(match.inventory.getAmmo(spieler.entityId, id), Math.max(1, w.maxAmmo));
     }
     // Die Flächenwaffe: schwach, mit Geländeabtrag, wenig Munition.
-    const flaeche = WEAPONS.find(x => x.id === uncommon[0]);
+    const flaeche = kitWaffe(uncommon[0]);
     assert.ok(flaeche.blastRadius > 0 && flaeche.terrainDamage > 0, 'Flächenwirkung mit Geländeabtrag');
     assert.ok(flaeche.damage <= 25, 'schwach');
     assert.equal(match.inventory.getAmmo(spieler.entityId, flaeche.id), STARTER_FLAECHE_MUNITION);
@@ -120,7 +129,7 @@ test('Fassung 3 hat zu Beginn eine Flächenwaffe, Fassung 2 nicht (keine Common-
 test('Fassung 3: der erste Schuss mit der Flächenwaffe gräbt ein Loch ins Gelände', () => {
   const match = neuesMatch();
   const id = match.activePlayerId;
-  const flaeche = match.inventory.getWeapons(id).find(w => WEAPONS.find(x => x.id === w).powerTier === 'uncommon');
+  const flaeche = match.inventory.getWeapons(id).find(w => kitWaffe(w).powerTier === 'uncommon');
   match.inventory.selectWeapon(id, flaeche);
   assert.equal(match.fire(id, Math.PI / 4, 60, flaeche).ok, true);
   let schutz = 0;

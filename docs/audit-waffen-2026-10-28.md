@@ -297,3 +297,183 @@ Zünder läuft nach der Landung, Trefferquote 0,4 bis 0,6), ist offen.
    (Sicht, Fadenkreuz) anbinden oder die Waffe als Platzhalter kennzeichnen.
 9. **Klassen- und Archetypnamen** (`scout`, `heavy`, `artillery`, `brawler`, `artillerist`, `occultist`) in Hilfe und Kader deutsch
    beschriften (`label: classId` in `classes.js`); berührt Tests und E2E-Texte.
+
+## F. Umgesetzt (Auslese)
+
+Auftrag des Auftraggebers (2026-10-28): die eindeutigen Punkte der Balance-Auslesen `docs/balance-auslese/*.md`
+(Abschnitte „Sofort umsetzbar") umsetzen. Sie ändern Leistungswert, Stufe (Beutegewicht) und Texte, **nicht den Gefechtsablauf**.
+Quelle der Werte ist der Generator `scripts/build-weapon-catalog.mjs` (Tabellen `KATALOG_F5_SCHADEN` und
+`AUSLESE_KORREKTUREN`, angewandt nach allen Ableitungen und vor `powerScore`), die Texte stehen in
+`project_armageddon_weapons_v1.json`; `src/shared/config/weapons.js` ist wie immer erzeugt (`npm run weapons:build`).
+
+### F1 Was geändert wurde
+
+1. **`homing`-Gewicht im Leistungswert 5 → 0,5** (`computePowerScore`): Fliegendes Superschaf (463,82 → 151,97) und Phönixschlag
+   (287,87 → 146,12) sind jetzt `epic` statt `legendary`.
+2. **Katalogschaden = Spielwert der Fassung 5** (`WAFFEN_F5_WERTE`) bei zehn Waffen: pa_026, 041, 055, 059, 063, 071, 075, 097,
+   104, 140. Der Katalog-Leistungswert passt damit wieder zu dem, was der Motor spielt. Reichweite, Abklingzeit und alle übrigen
+   Ableitungen bleiben auf dem Schaden von vorher (sie sind Spielwerte, `getWaffe` ändert sie in Fassung 5 nie).
+3. **Selbstwirkungen ohne Schaden** (`damage` → 0): Wächterstatue, Endlosschleife, Nachschubkiste, Bunker (zusätzlich
+   `terrainDamage` → 0), Teleportplattform, Hologrammportal, Tarnnetz, Schlauchboot; Blutritual (`blastRadius` 55 → 0, `aoe` →
+   falsch, Gift 35 → 0; Schaden 50 bleibt, die Heilung 60 = 1,2 × 50 hängt daran). Wächterstatue heilt weiter 35 (Untergrenze).
+   Das Wachgeschütz bleibt (der Katalogschaden speist das Geschütz: 23 = 38 × 0,6). Die Wirkung (`buildEffect`) jeder der 150
+   Waffen ist vor und nach der Änderung gleich (Test).
+4. **Strahlwaffen ohne Umkreis, den der Strahl nicht liest** (`#resolveHitscan` wendet nur Schaden, Schadensart und
+   Zielwirkung an; `fire()` verlässt Strahlwaffen vor `resolveStrike`): Radius, Fläche, Rückstoß (und Gelände) → 0 bei Raketenfaust,
+   Magnetkanone, Alte Dame, Arkanhammer, Windkrieger; Radius und Fläche → 0 bei Luftangriff, Meteorregen, Tesla-Turm, Höllenkanone
+   (Brand 48 bleibt), Zauberbuch der Leere, Chaosmagier, Giftpilz, Astralkugel, Lavaelixier, Gedankensturm, Verderbniskelch,
+   Sonnenamulett; Radius, Fläche und Gelände → 0 bei Bohrkopfrakete; Gelände → 0 bei Bohrkanone; Rückstoß → 0 bei Goldener Hand und
+   Zauberpeitsche. 21 Waffen, alle `delivery: hitscan` (Test).
+5. **Beschreibungen**: 25 Texte, wo sie Unwahres versprachen (Tabelle unten). Die Textprüfungen in
+   `tests/waffen-beschreibungen.test.js` bleiben unverändert und grün.
+
+Alt → neu je Waffe (Katalog):
+
+| Kennung | Waffe | alt → neu |
+|---|---|---|
+| pa_026 | Pressluftbohrer | Schaden 18 → 36; Leistungswert 76,56 → 96,36; Stufe uncommon → rare |
+| pa_041 | Salvengeber | Schaden 22 → 48; Leistungswert 68,26 → 98,16; Stufe uncommon → rare |
+| pa_044 | Phönixschlag | Leistungswert 287,87 → 146,12; Stufe legendary → epic |
+| pa_055 | Fernbüchse | Schaden 65 → 42; Leistungswert 63,78 → 44,12; Stufe uncommon → common |
+| pa_059 | Armbrust | Schaden 66 → 41; Leistungswert 64,64 → 43,26; Stufe uncommon → common |
+| pa_063 | Wasserwerfer | Schaden 18 → 32; Leistungswert 43,2 → 57,2; Stufe common → uncommon |
+| pa_071 | Eisschlag | Schaden 42 → 55; Leistungswert 97,88 → 109,58 |
+| pa_075 | Tornado | Schaden 18 → 45; Leistungswert 82,4 → 106,7 |
+| pa_081 | Zauberbuch der Leere | Radius 48 → 0; Fläche ja → nein; Leistungswert 97,02 → 49,5; Stufe rare → uncommon |
+| pa_083 | Goldene Hand | Rückstoß 70 → 0; Leistungswert 48,96 → 41,4; Stufe uncommon → common |
+| pa_085 | Chaosmagier | Radius 45 → 0; Fläche ja → nein; Leistungswert 85,73 → 40,5; Stufe rare → common |
+| pa_086 | Windkrieger | Radius 46 → 0; Rückstoß 78 → 0; Fläche ja → nein; Leistungswert 92,21 → 37,8; Stufe rare → common |
+| pa_090 | Giftpilz | Radius 38 → 0; Fläche ja → nein; Leistungswert 78,57 → 38,7; Stufe uncommon → common |
+| pa_091 | Astralkugel | Radius 55 → 0; Fläche ja → nein; Leistungswert 105,08 → 52,2; Stufe rare → uncommon |
+| pa_097 | Traumfänger | Schaden 38 → 30; Leistungswert 34,2 → 27 |
+| pa_098 | Lavaelixier | Radius 50 → 0; Fläche ja → nein; Leistungswert 114,3 → 65,25; Stufe rare → uncommon |
+| pa_102 | Gedankensturm | Radius 60 → 0; Fläche ja → nein; Leistungswert 103,5 → 46,8; Stufe rare → uncommon |
+| pa_103 | Verderbniskelch | Radius 48 → 0; Fläche ja → nein; Leistungswert 88,02 → 40,5; Stufe rare → common |
+| pa_104 | Quantengewehr | Schaden 56 → 45; Leistungswert 53,01 → 43,6; Stufe uncommon → common |
+| pa_106 | Sonnenamulett | Radius 40 → 0; Fläche ja → nein; Leistungswert 86,85 → 45,45; Stufe rare → uncommon |
+| pa_108 | Zauberpeitsche | Rückstoß 55 → 0; Leistungswert 33 → 27,36 |
+| pa_113 | Bohrkanone | Gelände 85 → 0; Leistungswert 89,1 → 33; Stufe rare → common |
+| pa_115 | Wächterstatue | Schaden 28 → 0; Schadensherkunft source → none; Leistungswert 30,8 → 0 |
+| pa_116 | Blutritual | Radius 55 → 0; Fläche ja → nein; Gift 35 → 0; Leistungswert 124,99 → 49,5; Stufe rare → uncommon |
+| pa_121 | Raketenfaust | Radius 35 → 0; Rückstoß 88 → 0; Fläche ja → nein; Leistungswert 109,21 → 57,42; Stufe rare → uncommon |
+| pa_122 | Endlosschleife | Schaden 32 → 0; Schadensherkunft derived → none; Leistungswert 35,2 → 0 |
+| pa_123 | Magnetkanone | Radius 45 → 0; Rückstoß 95 → 0; Fläche ja → nein; Leistungswert 100,63 → 39,6; Stufe rare → common |
+| pa_125 | Nachschubkiste | Schaden 31 → 0; Schadensherkunft derived → none; Leistungswert 34,1 → 0 |
+| pa_126 | Bunker | Schaden 27 → 0; Gelände 20 → 0; Schadensherkunft derived → none; Leistungswert 42,9 → 0 |
+| pa_127 | Teleportplattform | Schaden 34 → 0; Schadensherkunft derived → none; Leistungswert 37,4 → 0 |
+| pa_128 | Hologrammportal | Schaden 30 → 0; Schadensherkunft derived → none; Leistungswert 33 → 0 |
+| pa_129 | Tesla-Turm | Radius 52 → 0; Fläche ja → nein; Leistungswert 98 → 45,14; Stufe rare → uncommon |
+| pa_130 | Tarnnetz | Schaden 33 → 0; Schadensherkunft derived → none; Leistungswert 36,3 → 0 |
+| pa_131 | Schlauchboot | Schaden 29 → 0; Schadensherkunft derived → none; Leistungswert 31,9 → 0 |
+| pa_132 | Alte Dame | Radius 30 → 0; Rückstoß 82 → 0; Fläche ja → nein; Leistungswert 101,32 → 54,45; Stufe rare → uncommon |
+| pa_133 | Fliegendes Superschaf | Leistungswert 463,82 → 151,97; Stufe legendary → epic |
+| pa_134 | Luftangriff | Radius 65 → 0; Fläche ja → nein; Leistungswert 127,96 → 61,38; Stufe rare → uncommon |
+| pa_135 | Meteorregen | Radius 55 → 0; Fläche ja → nein; Leistungswert 125,48 → 67,32; Stufe rare → uncommon |
+| pa_136 | Bohrkopfrakete | Radius 48 → 0; Gelände 65 → 0; Fläche ja → nein; Leistungswert 154,24 → 63,36; Stufe epic → uncommon |
+| pa_138 | Arkanhammer | Radius 45 → 0; Rückstoß 78 → 0; Fläche ja → nein; Leistungswert 120,02 → 63,95; Stufe rare → uncommon |
+| pa_139 | Höllenkanone | Radius 58 → 0; Fläche ja → nein; Leistungswert 151,77 → 91,08; Stufe epic → rare |
+| pa_140 | Quantenkanone | Schaden 60 → 47; Leistungswert 62,07 → 49,85 |
+
+Beschreibungen alt → neu:
+
+| Kennung | Waffe | alt | neu |
+|---|---|---|---|
+| pa_001 | Baseballschläger | Wuchtiger Schlag auf kurze Distanz, der den Gegner weit zurückstößt. | Wuchtiger Schlag auf kurze Distanz mit hohem Schaden. |
+| pa_020 | Kriegssense | Lange Sense mit weitem Hieb auf mittlere Distanz. | Lange Sense für einen kräftigen Hieb auf kurze Distanz. |
+| pa_047 | Handgranate | Wurfgranate mit Zünder, die abprallt, bevor sie zündet. | Wurfgranate mit Zünder, die nach dem ersten Aufprall liegen bleibt, bevor sie zündet. |
+| pa_048 | Bananengranate | Granate mit Zünder, die abprallt und beim Zünden in Splitter zerfällt. | Bananenförmige Granate, die nach dem Aufprall mit Verzögerung zündet. |
+| pa_053 | Roboterbombe | Kleiner Roboter mit Sprengladung, der nach kurzer Verzögerung explodiert. | Bombe in Form eines kleinen Roboters, die nach kurzer Verzögerung explodiert. |
+| pa_058 | Kampfbogen | Bogen für Pfeile in flacher Bahn, der freie Sicht braucht. | Bogen für gezielte Pfeile, der freie Sicht braucht. |
+| pa_061 | Feuerdämon | Beschworener Feuerdämon, der im Umkreis wütet und in Brand setzt. | Feuerdämon, der im Umkreis wütet und in Brand setzt. |
+| pa_065 | Meteorbrocken | Glühender Brocken, der von oben einschlägt und das Gelände aufreißt. | Brocken, der von oben einschlägt und das Gelände aufreißt. |
+| pa_071 | Eisschlag | Eisbrocken, der im Umkreis einschlägt und den Gegner einfriert. | Eisbrocken, der im Umkreis einschlägt, den Gegner verlangsamt und beim zweiten Treffer betäubt. |
+| pa_081 | Zauberbuch der Leere | Zauberbuch, das die Leere entfesselt: Schaden im Umkreis und anhaltender Schaden über Zeit. | Zauberbuch, das die Leere entfesselt: Schaden am getroffenen Gegner und anhaltender Schaden über Zeit. |
+| pa_086 | Windkrieger | Krieger im Wirbelwind, der Gegner im Umkreis zum Schützen heranzieht. | Krieger im Wirbelwind, der den getroffenen Gegner zum Schützen heranzieht. |
+| pa_090 | Giftpilz | Giftiger Pilz, der im Umkreis vergiftet. | Giftiger Pilz, der den getroffenen Gegner vergiftet. |
+| pa_091 | Astralkugel | Kugel aus Astralenergie, die unmittelbar im Umkreis einschlägt. | Kugel aus Astralenergie, die den getroffenen Gegner unmittelbar trifft. |
+| pa_098 | Lavaelixier | Flüssige Lava, die im Umkreis in Brand setzt und Schaden über Zeit anrichtet. | Flüssige Lava, die den getroffenen Gegner in Brand setzt und Schaden über Zeit anrichtet. |
+| pa_102 | Gedankensturm | Mentaler Sturm, der im Umkreis unmittelbar Schaden anrichtet. | Mentaler Sturm, der dem getroffenen Gegner unmittelbar Schaden anrichtet. |
+| pa_103 | Verderbniskelch | Kelch, dessen Verderbnis im Umkreis Schaden über Zeit anrichtet und verflucht. | Kelch, dessen Verderbnis dem getroffenen Gegner Schaden über Zeit anrichtet und ihn verflucht. |
+| pa_106 | Sonnenamulett | Amulett, das Sonnenlicht im Umkreis bündelt und Verfluchte härter trifft. | Amulett, das Sonnenlicht bündelt, den Gegner in Brand setzt und Verfluchte härter trifft. |
+| pa_117 | Ananasbombe | Ananasförmige Granate mit Sprengwirkung im Umkreis und Splitterlöchern im Gelände. | Ananasförmige Granate, die das getroffene Ziel unmittelbar sprengt. |
+| pa_118 | Feuerwesen | Feuerwesen, das im Umkreis Brand legt. | Feuerwesen, das den getroffenen Gegner in Brand setzt. |
+| pa_121 | Raketenfaust | Faustschlag mit Raketenantrieb, der im Umkreis explodiert. | Faustschlag mit Raketenantrieb, der das getroffene Ziel unmittelbar trifft. |
+| pa_123 | Magnetkanone | Magnet, der Gegner im Umkreis zum Schützen heranzieht. | Magnet, der den getroffenen Gegner zum Schützen heranzieht. |
+| pa_132 | Alte Dame | Erstaunlich schlagkräftige Dame, deren Hieb auch auf große Distanz im Umkreis wirkt. | Erstaunlich schlagkräftige Dame, deren Hieb auch auf große Distanz trifft. |
+| pa_136 | Bohrkopfrakete | Rakete mit Bohrkopf und großer Sprengwirkung. | Rakete mit Bohrkopf, die das getroffene Ziel unmittelbar trifft. |
+| pa_138 | Arkanhammer | Hammer aus arkaner Kraft, der im Umkreis einschlägt und freie Sicht braucht. | Hammer aus arkaner Kraft, der unmittelbar einschlägt und freie Sicht braucht. |
+| pa_139 | Höllenkanone | Kanone, deren Feuerstrahl von der Seite im Umkreis einschlägt. | Kanone, deren Feuerstrahl von der Seite einschlägt und in Brand setzt. |
+
+### F2 Was bewusst nicht geändert wurde
+
+- **Luftangriff und Meteorregen: „von oben"**, **Höllenkanone: „von der Seite"** bleiben im Text. `tests/waffen-beschreibungen.test.js`
+  verlangt den Anflug im Text, solange `strikeStyle` `sky`/`flank` ist, und `tests/weapon-identity.test.js` hält `strikeStyle`
+  gleich der Ableitung. Wahr wird der Satz erst durch die Entscheidung Strahl gegen Projektil (Abschnitt E4); dort steht sie.
+- **Spruchrolle** `delivery` projectile → hitscan (magic.md): ändert das Zustellfeld, das Kit-Pools und Filter lesen; nicht in der
+  Liste des Auftrags, nicht umgesetzt.
+- **Astralkugel und Gedankensturm** Abklingzeit 3 → 2 (magic.md, Variante A): Spielwert, Entscheidung.
+- **Portalring und Kosmisches Portal** `damage` → 0, **Giftwolke, Tentakelgift, Flammenwerfer** Elementarwerte auf den Deckel,
+  **Rückstoß der Zug-Waffen** (Tornado, Schwarzes Loch, Psionischer Tentakel): in elemental.md „sofort", aber nicht in der
+  Liste des Auftrags; die Portale sind laut elemental.md zugleich eine offene Entscheidung (Zusammenführen oder unterscheiden).
+- **Energiefaust und Flammenklinge** (Strahlwaffen mit Rückstoß 78 und 55, den der Strahl nicht liest), **Ananasbombe und Feuerwesen**
+  (Strahlwaffen mit Radius 45 und 42): nicht in der Liste; bei Ananasbombe und Feuerwesen wurde nur der Text angeglichen
+  (melee-utility.md). Ihr Radius und Rückstoß zählen weiter im Leistungswert.
+- **Bohrkopfrakete** `drill_rocket` auf `DRILL` abbilden, **Handgranate** `bounces` 2 → 0: Entscheidung bzw. nicht in der Liste.
+- Nicht umgesetzt, Entscheidung beim Auftraggeber: Zünder im Motor, Rückstoß der Nahkämpfer, Himmels-/Flankenschlag-Doppeltreffer,
+  Schadenswerte (Flammenwerfer, Plasmagewehr …), Zünder +15 %.
+
+### F3 Warum das Gefecht gleich bleibt (Beleg)
+
+Die Fassungen 1 bis 4 lesen den Katalog selbst (Fernbüchse 65, Alte Dame Radius 30). Damit ihre Aufzeichnungen Bit für Bit gelten,
+legt `getWaffe` für sie als unterste Schicht `WAFFEN_F4_WERTE` über den Katalog: die Altwerte genau der Felder, die diese Auslese
+bewegt (Schaden, Radius, Rückstoß, Fläche, Gelände, Gift des Blutrituals, Schadensherkunft, `powerScore`, `powerTier`). Die drei
+Prüfsummen in `tests/waffen-fassung.test.js` (Fassung 1, 2, 3) sind **unverändert** und stimmen. Fassung 5 liest den neuen Katalog.
+
+Gemessen vor und nach der Änderung (Skript im Scratchpad, nicht im Repo): je ein Schuss jeder der 150 Waffen in jeder Fassung 1 bis 5
+(dreimal, andere Winkel und Abstände, `open`-Karte, Seed 31337): 2250 von 2250 Zustandshashes, Schäden und Selbstschäden
+**identisch**. Die 252 Schüsse der 42 geänderten Waffen in Fassung 4 und 5 stehen als Goldhash in `tests/waffen-auslese.test.js`.
+
+**Start-Kits.** Die Kit-Pools (`loadouts.js`) lesen Stufe, Schaden, Radius und Abklingzeit des Katalogs. Ohne Gegenmaßnahme hätten
+sich die Startwaffen geändert: sieben Selbstwirkungen mit Schaden 0 fallen aus den Pools der Kits 2 und 3 (Strahlwaffe der Kategorie
+`tech`), der Salvengeber (jetzt `rare`, Schaden 48) aus `getStarterFlaeche`. Die Kits lesen deshalb `waffeVorAuslese`, die Sicht
+auf den Katalog vor der Auslese. Belegt: 4800 Plätze (Kits 1 bis 4, 300 Seeds, 4 Plätze) und 12 Klassen-Loadouts wählen dieselben
+Waffen wie vorher (Goldhash im Test).
+
+**Beute (Beutegewichte), erwartet und ausdrücklich beauftragt.** Die Stufe des Katalogs ist das Beutegewicht
+(`pickWeaponForRarity`, `waehleWaffeNachStufe` lesen `powerTier` ohne Fassung). 29 Waffen wechseln die Stufe; die Waffen je Stufe
+(Kistenfassung 3, `npm run balance:loot`):
+
+| Stufe | Waffen vorher | Waffen nachher | Chance je Waffe und Waffenkiste vorher | nachher |
+|---|---|---|---|---|
+| common | 63 | 72 | 0,779 % | 0,681 % |
+| uncommon | 32 | 39 | 0,780 % | 0,640 % |
+| rare | 42 | 28 | 0,425 % | 0,637 % |
+| epic | 8 | 8 | 0,766 % | 0,766 % |
+| legendary | 5 | 3 | 0,406 % | 0,676 % |
+
+Der Anteil je Stufe an den Waffenkisten bleibt (49,1 / 25 / 17,8 / 6,1 / 2 %), nur die Verteilung innerhalb der Stufe ändert sich:
+seltene Waffen werden einzeln häufiger (rare 0,425 → 0,637 %, legendary 0,406 → 0,676 %), gewöhnliche seltener. Alle 150 Waffen
+werden weiter gezogen (`nieGezogen` leer).
+
+**Folge für alte Aufzeichnungen (zur Entscheidung).** Weil `lootSystem.js` den Katalog liest, fallen in Aufzeichnungen mit Waffenkisten
+andere Waffen als vorher; die Gefechtsregeln sind gleich, der Kisteninhalt nicht. Sichtbar wurde das in
+`tests/tiere-feinschliff.test.js` („Altköpfe laufen Bit für Bit"): alle fünf Läufe (Günther 1 und 2, Cookie 1 und 2) ergeben
+andere Zustandshashes, etwa Seed 7 mit `guenther` 1 `bdcd6ab5` statt `d6881995` (Ereignisse und Runden gleich); mit dem Katalog von
+vorher ergibt derselbe Code alle fünf alten Hashes wieder. Die Festwerte wurden nachgezogen und im Test begründet. Wer die Beute alter Aufzeichnungen erhalten will, braucht eine Versionsmarke `kisten` 4 mit
+eingefrorenen Stufen (AGENTS.md §2); sie wurde auf Anweisung („Fassung nicht ohne Rückfrage erhöhen") **nicht** gesetzt.
+
+### F4 Messung (`npm run balance:waffen`) vorher und nachher
+
+112 Zeilen (Waffen mit gemessenem Schaden): **Bestwert, Reichweite, Trefferquote, Munition, Nachladen und Schüsse bis zum Kill
+sind in allen 112 Zeilen identisch.** Es ändern sich nur die Spalte „Kat-Sch." (zehn Waffen, Katalogschaden = Spielwert) und die
+Stufe (27 von 112 Zeilen; 29 im Katalog, zwei ohne Messzeile).
+
+| Stufenmedian (Waffen mit Schaden) | vorher | nachher |
+|---|---|---|
+| common | n=30, Schaden 17,8, Reichweite 150 | n=38, Schaden 19,6, Reichweite 300 |
+| uncommon | n=28, 30,4, 300 | n=33, 36,4, 300 |
+| rare | n=30, 46,5, 300 | n=19, 33,4, 300 |
+| epic | n=6, 68,5, 400 | n=6, 53,3, 300 |
+| legendary | n=5, 58,8, 300 | n=3, 70, 300 |
+
+Die Mediane verschieben sich nur, weil die Waffen anders auf die Stufen verteilt sind; kein Gefechtswert hat sich bewegt.

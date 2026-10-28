@@ -59,7 +59,16 @@
  * Waffenreihenfolge im Katalog.
  */
 
-import { WEAPONS, getDefaultLoadout, FALLBACK_WEAPON_ID } from './weapons.js';
+import { WEAPONS as KATALOG, getDefaultLoadout, FALLBACK_WEAPON_ID } from './weapons.js';
+import { waffeVorAuslese } from './waffen-fassung.js';
+
+/**
+ * Die Pools der Start-Kits (Fassung 1 bis 4) lesen Stufe, Schaden, Radius und Abklingzeit des Katalogs.
+ * Seit der Auslese vom 2026-10-28 trägt der Katalog angeglichene Werte (Selbstwirkungen ohne Schaden, andere
+ * Stufen); die Kits lesen deshalb die eingefrorene Sicht vor der Auslese, damit ein Spiel mit `kit` 1 bis 4
+ * dieselben Startwaffen bekommt wie vorher (Beleg: `tests/waffen-auslese.test.js`).
+ */
+const WEAPONS = Object.freeze(KATALOG.map(waffeVorAuslese));
 
 /*
  * START-KIT (Worms-Stil) — Stand 2026-10-14.

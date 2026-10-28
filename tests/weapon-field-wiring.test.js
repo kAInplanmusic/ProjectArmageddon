@@ -211,7 +211,8 @@ test('Die fuenf Versprechen des Lastenhefts sind an Daten gebunden', () => {
   const mitStufe = WEAPONS.filter(waffe => Boolean(waffe.powerTier)).length;
 
   assert.equal(mitMunition, 150, 'Munition: jede Waffe braucht einen Munitionsvorrat');
-  assert.equal(mitExplosion, 56, 'Explosion: 56 Waffen tragen einen Radius');
+  // 56 bis zur Auslese vom 2026-10-28; seitdem tragen 19 Strahlwaffen und das Blutritual keinen Radius mehr (der Motor las ihn nie).
+  assert.equal(mitExplosion, 37, 'Explosion: 37 Waffen tragen einen Radius');
   assert.equal(mitGadget, 150, 'Gadget: jede Waffe braucht eine Wirkung (special)');
   assert.equal(mitRarity, 150, 'Rarity: jede Waffe traegt die Quell-Raritaet');
   assert.equal(mitStufe, 150, 'Drop-Stufe: jede Waffe traegt eine abgeleitete powerTier');

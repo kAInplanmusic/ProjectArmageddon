@@ -122,7 +122,7 @@ export const WAFFEN_ALT_WERTE = Object.freeze({
  * Werte der Fassung 5 über dem Katalog (der Katalog bleibt Fassung 4): je Waffe die Felder, die
  * die Messung `scripts/waffen-balance.mjs` nachgezogen hat. Ältere Fassungen sehen sie nicht.
  */
-const WAFFEN_F5_WERTE = Object.freeze({
+export const WAFFEN_F5_WERTE = Object.freeze({
   pa_026: Object.freeze({ damage: 36 }),
   pa_041: Object.freeze({ damage: 48 }),
   pa_055: Object.freeze({ damage: 42 }),
@@ -134,6 +134,76 @@ const WAFFEN_F5_WERTE = Object.freeze({
   pa_104: Object.freeze({ damage: 45 }),
   pa_140: Object.freeze({ damage: 47 }),
 });
+
+/**
+ * Katalogwerte der Fassungen 1 bis 4 für die Felder, die die Auslese vom 2026-10-28 im Katalog verändert hat
+ * (`AUSLESE_KORREKTUREN`, `KATALOG_F5_SCHADEN` und das `homing`-Gewicht in `scripts/build-weapon-catalog.mjs`;
+ * Liste je Waffe alt -> neu in `docs/audit-waffen-2026-10-28.md`, Abschnitt "Umgesetzt (Auslese)").
+ *
+ * Die Auslese gleicht den KATALOG an das an, was der Motor in Fassung 5 liest (Spielwert, Strahlfelder,
+ * Selbstwirkungen); sie ändert kein Gefecht. Die Fassungen 1 bis 4 lesen aber den Katalog selbst (Schaden der
+ * Fernbüchse 65 statt 42, Radius der Alten Dame 30 statt 0): Sie bekommen diese Altwerte als unterste Schicht
+ * zurück, damit ihre Aufzeichnungen und die Prüfsummen in `tests/waffen-fassung.test.js` Bit für Bit gelten.
+ * Dazu gehören `powerScore` und `powerTier` (Anzeige und Beute lesen den Katalog, nicht diese Schicht).
+ */
+export const WAFFEN_F4_WERTE = Object.freeze({
+  pa_026: Object.freeze({ damage: 18, powerScore: 76.56, powerTier: 'uncommon' }), // Pressluftbohrer
+  pa_041: Object.freeze({ damage: 22, powerScore: 68.26, powerTier: 'uncommon' }), // Salvengeber
+  pa_044: Object.freeze({ powerScore: 287.87, powerTier: 'legendary' }), // Phönixschlag
+  pa_055: Object.freeze({ damage: 65, powerScore: 63.78, powerTier: 'uncommon' }), // Fernbüchse
+  pa_059: Object.freeze({ damage: 66, powerScore: 64.64, powerTier: 'uncommon' }), // Armbrust
+  pa_063: Object.freeze({ damage: 18, powerScore: 43.2, powerTier: 'common' }), // Wasserwerfer
+  pa_071: Object.freeze({ damage: 42, powerScore: 97.88 }), // Eisschlag
+  pa_075: Object.freeze({ damage: 18, powerScore: 82.4 }), // Tornado
+  pa_081: Object.freeze({ blastRadius: 48, aoe: true, powerScore: 97.02, powerTier: 'rare' }), // Zauberbuch der Leere
+  pa_083: Object.freeze({ knockback: 70, powerScore: 48.96, powerTier: 'uncommon' }), // Goldene Hand
+  pa_085: Object.freeze({ blastRadius: 45, aoe: true, powerScore: 85.73, powerTier: 'rare' }), // Chaosmagier
+  pa_086: Object.freeze({ blastRadius: 46, knockback: 78, aoe: true, powerScore: 92.21, powerTier: 'rare' }), // Windkrieger
+  pa_090: Object.freeze({ blastRadius: 38, aoe: true, powerScore: 78.57, powerTier: 'uncommon' }), // Giftpilz
+  pa_091: Object.freeze({ blastRadius: 55, aoe: true, powerScore: 105.08, powerTier: 'rare' }), // Astralkugel
+  pa_097: Object.freeze({ damage: 38, powerScore: 34.2 }), // Traumfänger
+  pa_098: Object.freeze({ blastRadius: 50, aoe: true, powerScore: 114.3, powerTier: 'rare' }), // Lavaelixier
+  pa_102: Object.freeze({ blastRadius: 60, aoe: true, powerScore: 103.5, powerTier: 'rare' }), // Gedankensturm
+  pa_103: Object.freeze({ blastRadius: 48, aoe: true, powerScore: 88.02, powerTier: 'rare' }), // Verderbniskelch
+  pa_104: Object.freeze({ damage: 56, powerScore: 53.01, powerTier: 'uncommon' }), // Quantengewehr
+  pa_106: Object.freeze({ blastRadius: 40, aoe: true, powerScore: 86.85, powerTier: 'rare' }), // Sonnenamulett
+  pa_108: Object.freeze({ knockback: 55, powerScore: 33 }), // Zauberpeitsche
+  pa_113: Object.freeze({ terrainDamage: 85, powerScore: 89.1, powerTier: 'rare' }), // Bohrkanone
+  pa_115: Object.freeze({ damage: 28, damageSource: 'source', powerScore: 30.8 }), // Wächterstatue
+  pa_116: Object.freeze({ blastRadius: 55, aoe: true, elemental: Object.freeze({ fire: 0, ice: 0, poison: 35 }), powerScore: 124.99, powerTier: 'rare' }), // Blutritual
+  pa_121: Object.freeze({ blastRadius: 35, knockback: 88, aoe: true, powerScore: 109.21, powerTier: 'rare' }), // Raketenfaust
+  pa_122: Object.freeze({ damage: 32, damageSource: 'derived', powerScore: 35.2 }), // Endlosschleife
+  pa_123: Object.freeze({ blastRadius: 45, knockback: 95, aoe: true, powerScore: 100.63, powerTier: 'rare' }), // Magnetkanone
+  pa_125: Object.freeze({ damage: 31, damageSource: 'derived', powerScore: 34.1 }), // Nachschubkiste
+  pa_126: Object.freeze({ damage: 27, damageSource: 'derived', terrainDamage: 20, powerScore: 42.9 }), // Bunker
+  pa_127: Object.freeze({ damage: 34, damageSource: 'derived', powerScore: 37.4 }), // Teleportplattform
+  pa_128: Object.freeze({ damage: 30, damageSource: 'derived', powerScore: 33 }), // Hologrammportal
+  pa_129: Object.freeze({ blastRadius: 52, aoe: true, powerScore: 98, powerTier: 'rare' }), // Tesla-Turm
+  pa_130: Object.freeze({ damage: 33, damageSource: 'derived', powerScore: 36.3 }), // Tarnnetz
+  pa_131: Object.freeze({ damage: 29, damageSource: 'derived', powerScore: 31.9 }), // Schlauchboot
+  pa_132: Object.freeze({ blastRadius: 30, knockback: 82, aoe: true, powerScore: 101.32, powerTier: 'rare' }), // Alte Dame
+  pa_133: Object.freeze({ powerScore: 463.82, powerTier: 'legendary' }), // Fliegendes Superschaf
+  pa_134: Object.freeze({ blastRadius: 65, aoe: true, powerScore: 127.96, powerTier: 'rare' }), // Luftangriff
+  pa_135: Object.freeze({ blastRadius: 55, aoe: true, powerScore: 125.48, powerTier: 'rare' }), // Meteorregen
+  pa_136: Object.freeze({ blastRadius: 48, terrainDamage: 65, aoe: true, powerScore: 154.24, powerTier: 'epic' }), // Bohrkopfrakete
+  pa_138: Object.freeze({ blastRadius: 45, knockback: 78, aoe: true, powerScore: 120.02, powerTier: 'rare' }), // Arkanhammer
+  pa_139: Object.freeze({ blastRadius: 58, aoe: true, powerScore: 151.77, powerTier: 'epic' }), // Höllenkanone
+  pa_140: Object.freeze({ damage: 60, powerScore: 62.07 }), // Quantenkanone
+});
+
+/**
+ * Die Waffe mit den Katalogwerten VOR der Auslese (Stand der Fassung 4, ohne die Schadensarten von
+ * `ARTEN_BIS_F4`). Die Start-Kits lesen Stufe, Schaden und Radius direkt aus dem Katalog, um ihre Pools zu
+ * bilden (`loadouts.js`); damit eine Aufzeichnung mit `kit` 1 bis 4 dieselben Startwaffen bekommt wie vorher,
+ * lesen sie diese eingefrorene Sicht und nicht den angeglichenen Katalog.
+ *
+ * @param {object} waffe - Katalogeintrag
+ * @returns {object}
+ */
+export function waffeVorAuslese(waffe) {
+  const alt = WAFFEN_F4_WERTE[waffe.id];
+  return alt ? { ...waffe, ...alt } : waffe;
+}
 
 /**
  * Schadensarten der Fassungen 1 bis 4 (Namens- und Artendurchsicht 2026-10-28).
@@ -174,15 +244,16 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
     return kopie5;
   }
   const art = ARTEN_BIS_F4[id];
-  if (fassung === WAFFEN_FEIN && !art) return waffe;
+  const f4 = WAFFEN_F4_WERTE[id];
+  if (fassung === WAFFEN_FEIN && !art && !f4) return waffe;
   const f3 = fassung === WAFFEN_FEIN ? null : WAFFEN_F3_WERTE[id];
   const f2 = fassung <= WAFFEN_BALANCE ? WAFFEN_F2_WERTE[id] : null;
   const alt = fassung === WAFFEN_ALT ? WAFFEN_ALT_WERTE[id] : null;
-  if (!f3 && !f2 && !alt && !art) return waffe;
+  if (!f4 && !f3 && !f2 && !alt && !art) return waffe;
   const schluessel = `${fassung}:${id}`;
   let kopie = zwischenspeicher.get(schluessel);
   if (!kopie) {
-    kopie = Object.freeze({ ...waffe, ...f3, ...f2, ...alt, ...art });
+    kopie = Object.freeze({ ...waffe, ...f4, ...f3, ...f2, ...alt, ...art });
     zwischenspeicher.set(schluessel, kopie);
   }
   return kopie;

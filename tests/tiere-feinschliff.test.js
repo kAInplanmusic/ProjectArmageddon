@@ -42,11 +42,16 @@ function lauf(seed, guenther, cookie) {
 }
 
 test('Altköpfe laufen Bit für Bit wie vorher (guenther 1 und 2, cookie 1 und 2)', () => {
-  assert.deepEqual(lauf(7, 1, 1), ['d6881995', 161, 12]);
-  assert.deepEqual(lauf(7, 2, 1), ['df35ca4e', 164, 13]);
-  assert.deepEqual(lauf(7, 2, 2), ['df35ca4e', 176, 13]);
-  assert.deepEqual(lauf(4242, 2, 2), ['6f1cf455', 47, 10]);
-  assert.deepEqual(lauf(99, 2, 2), ['7f26068a', 61, 10]);
+  // Festwerte bis zur Auslese vom 2026-10-28: 'd6881995', 'df35ca4e', 'df35ca4e', '6f1cf455', '7f26068a'. Die Auslese verschiebt
+  // Stufen im Katalog, und die Waffenkisten ziehen nach `powerTier` (`lootSystem.js`): Die Kisteninhalte sind andere, daher
+  // wandern die Hashes. Ereignisse und Runden sind in allen fünf Läufen gleich geblieben. Belegt: mit dem Katalog von vor der
+  // Auslese ergibt derselbe Code alle fünf alten Hashes wieder (docs/audit-waffen-2026-10-28.md, Abschnitt F3). Eine Versionsmarke
+  // `kisten` für die Beute alter Aufzeichnungen wurde nicht gesetzt (Entscheidung des Auftraggebers).
+  assert.deepEqual(lauf(7, 1, 1), ['bdcd6ab5', 161, 12]);
+  assert.deepEqual(lauf(7, 2, 1), ['26e7700c', 164, 13]);
+  assert.deepEqual(lauf(7, 2, 2), ['26e7700c', 176, 13]);
+  assert.deepEqual(lauf(4242, 2, 2), ['ff59b21b', 47, 10]);
+  assert.deepEqual(lauf(99, 2, 2), ['606c5a8d', 61, 10]);
 });
 
 test('Fassung 3 läuft, ist deterministisch und weicht von Fassung 2 ab', () => {

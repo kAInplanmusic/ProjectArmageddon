@@ -10,6 +10,7 @@ import {
   MOVE_SPECIALS,
 } from '../src/shared/config/loadouts.js';
 import { WEAPONS, WEAPONS_BY_ID, getDefaultLoadout, FALLBACK_WEAPON_ID } from '../src/shared/config/weapons.js';
+import { waffeVorAuslese } from '../src/shared/config/waffen-fassung.js';
 import { KIT_KLASSE } from '../src/shared/config/loadouts.js';
 import { EFFECT_KIND, SPECIAL_EFFECTS } from '../src/engine/specials.js';
 
@@ -96,9 +97,11 @@ test('Die Klassen unterscheiden sich in der Wahl der Mittel', () => {
 });
 
 test('Die Kür ist klassenprägend', () => {
-  const kuer = klasse => WEAPONS_BY_ID[
+  // Die Kits lesen die Katalogwerte vor der Auslese (2026-10-28); der Heavy-Kür fehlt im Katalog heute der Radius,
+  // den der Strahl ohnehin nicht liest.
+  const kuer = klasse => waffeVorAuslese(WEAPONS_BY_ID[
     getClassLoadoutDetail(klasse).find(e => e.role === 'kuer').weaponId
-  ];
+  ]);
 
   // Scout: ein Bewegungsmittel — er schießt am schwächsten und muss über
   // Stellung spielen.
