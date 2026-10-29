@@ -69,6 +69,7 @@ test('Die genannten Werte stimmen mit dem Motor überein', async ({ page }) => {
 
   const befund = await page.evaluate(async () => {
     const klassen = await import('/src/shared/config/classes.js');
+    const { KLASSEN_STANDARD } = await import('/src/shared/config/klassen-fassung.js');
     const optionen = [...document.querySelectorAll('#cfg-loadout-klasse-0 option')]
       .filter(o => o.value);
     const archetypen = [...document.querySelectorAll('#cfg-loadout-archetyp-0 option')]
@@ -78,7 +79,7 @@ test('Die genannten Werte stimmen mit dem Motor überein', async ({ page }) => {
 
     return {
       klassen: optionen.map(o => {
-        const profil = klassen.combatProfile(o.value, klassen.ARCHETYPE_IDS[0]);
+        const profil = klassen.combatProfile(o.value, klassen.ARCHETYPE_IDS[0], null, KLASSEN_STANDARD);
         return {
           text: o.textContent,
           leben: zahl(profil.healthMultiplier),
@@ -86,7 +87,7 @@ test('Die genannten Werte stimmen mit dem Motor überein', async ({ page }) => {
         };
       }),
       archetypen: archetypen.map(o => {
-        const profil = klassen.combatProfile(klassen.CLASS_IDS[0], o.value);
+        const profil = klassen.combatProfile(klassen.CLASS_IDS[0], o.value, null, KLASSEN_STANDARD);
         return { text: o.textContent, tempo: zahl(profil.launchSpeedMultiplier) };
       }),
     };
