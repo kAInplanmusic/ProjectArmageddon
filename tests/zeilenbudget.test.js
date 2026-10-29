@@ -27,7 +27,7 @@ const ROOT = path.join(HIER, '..');
  */
 const BUDGETS = new Map([
   ['src/client/main.js', 4000],
-  ['src/engine/match.js', 3200], // bestehendes Budget, hier gebündelt
+  ['src/engine/match.js', 2790], // 2638 Zeilen nach der Zerlegung (Kisten, Zielwirkungen, Wasser), rund 150 Luft
   ['src/server/gameServer.js', 3000],
   ['src/shared/terrainGen3.js', 2500],
   ['src/client/renderer.js', 2500],

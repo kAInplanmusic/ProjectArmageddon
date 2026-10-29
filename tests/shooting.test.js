@@ -15,7 +15,7 @@
  *   2. **Der Delegator** — `fire()` ruft `fire(quelle, …)` und nichts sonst.
  *   3. **Die Schnittstelle** — der Schieß-Ablauf läuft über die Quelle, nicht
  *      über `this`. Ein Aufruf mit einer schlichten Attrappe muss genügen.
- *   4. **Die Größe** — `match.js` bleibt unter 3200 Zeilen (der Beleg, dass der
+ *   4. **Die Größe** — `match.js` bleibt unter 2790 Zeilen (der Beleg, dass der
  *      Rumpf wirklich draußen ist).
  */
 import { test } from 'node:test';
@@ -57,14 +57,14 @@ test('shooting.js enthält kein `this`', () => {
     + 'über die Quelle (Parameter) laufen, nicht über die Instanz');
 });
 
-test('match.js bleibt unter 3200 Zeilen', () => {
+test('match.js bleibt unter 2790 Zeilen', () => {
   /*
    * Der Beleg, dass der Rumpf WIRKLICH draußen ist. Eine Auslagerung, die
    * nichts entfernt, wäre ein Umzug ohne Umzug.
    */
   const zeilen = quelle('src/engine/match.js').split('\n').length;
-  assert.ok(zeilen < 3200,
-    `match.js hat ${zeilen} Zeilen — erwartet werden unter 3200`);
+  assert.ok(zeilen < 2790,
+    `match.js hat ${zeilen} Zeilen — erwartet werden unter 2790`);
 });
 
 test('fire() ist ein reiner Delegator', () => {
