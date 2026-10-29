@@ -7,8 +7,9 @@
  *  - nach Trennung, Wiedereinstieg und Vollsnapshot kommt der Einschlag nicht ein zweites Mal an
  *    (kein neuer Klang, keine neue `explosion`-/`terrain_destroyed`-Nachricht) und die Karte gleicht dem Server.
  *
- * Wasser entsteht über die Karte `autonom` mit Seed 24683: Schuss (0,95 rad, Kraft 80) trifft den See.
+ * Wasser entsteht über die Karte `autonom` mit Seed 24683: Schuss (0,65 rad, Kraft 50) trifft den See.
  * Klassenfassung 2 (Standard des Servers, Scout schießt kräftiger) verschob den Schuss; Winkel und Kraft des Wasserfalls wurden dafür nachgemessen (vorher 0,9 rad, Kraft 90).
+ * Waffenfassung 11 (Standard; Start-Waffe und Munition geändert) verschob den Schuss erneut: Gemessen mit der Engine über Winkel 0,3 bis 1,3 und Kraft 40 bis 100 trifft Seed 377 den See bei 0,65 rad, Kraft 50 (Nachbarwerte 0,6 und 0,7 bei Kraft 50 ebenfalls).
  * Das Biom ist fest `klassisch`: Ohne diese Wahl zieht der Seed seit den Sonderbiomen oft ein anderes Gelände,
  * und der Schuss träfe nicht mehr den See. Die Messwerte werden vorab mit der Engine nachgerechnet (Abweichung = klarer Fehler, kein Rätselraten).
  */
@@ -31,7 +32,7 @@ test.beforeAll(async () => { server = await starteTestserver({ port: PORT, repoR
 test.afterAll(async () => { await stoppeTestserver(server?.process); });
 
 const FAELLE = [
-  { name: 'Wasser', seed: 377, winkel: 0.95, kraft: 80, material: 'wasser', zaehler: 'wasser' },
+  { name: 'Wasser', seed: 377, winkel: 0.65, kraft: 50, material: 'wasser', zaehler: 'wasser' },
   { name: 'Land', seed: 24681, winkel: 0.5, kraft: 30, material: 'erde', zaehler: 'explosion' },
 ];
 
