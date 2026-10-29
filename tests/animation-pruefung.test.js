@@ -70,3 +70,22 @@ test('Figuren: Sheets vorhanden, Emotionen mit mindestens einer freigegebenen Ze
     assert.ok(emotion[k].gueltig.length >= 1, `${k}: keine gültige Emotionszelle`);
   }
 });
+
+test('Gestaffelte Dubletten (Waffenfassung 10) haben unterscheidbare Posenparameter', () => {
+  const gruppen = [
+    ['pa_084', 'pa_095', 'pa_099', 'pa_109'], // Verstärkungen
+    ['pa_085', 'pa_105', 'pa_100', 'pa_096'], // Zufall
+    ['pa_101', 'pa_093'], // Schilde
+    ['pa_089', 'pa_087', 'pa_110', 'pa_088'], // Versetzer
+    ['pa_092', 'pa_094'], // Heilung
+  ];
+  const schluessel = id => {
+    const w = WEAPONS.find(x => x.id === id);
+    const p = waffenParameter(w.category, w.id, w.damage === 0, '', false);
+    return JSON.stringify([p.blitzForm, p.blitzGroesse, p.blitzDauer, p.heben, p.aufladen, p.idleTempo, p.idleAtem, p.schussDauer]);
+  };
+  for (const g of gruppen) {
+    const werte = g.map(schluessel);
+    assert.equal(new Set(werte).size, g.length, `Gruppe ${g.join(', ')}: gleiche Posenparameter`);
+  }
+});

@@ -156,6 +156,28 @@ export const KORREKTUREN = Object.freeze({
   pa_032: { lage: 'hinter', handVor: -5 },
   pa_112: { lage: 'hinter', handVor: -5, handHoch: 1 },
   pa_114: { lage: 'hinter', handVor: -5, handHoch: 2 },
+  // Waffenfassung 10: gestaffelte Dubletten bekommen unterscheidbare Posen (Aufladen, Glanzform, Größe, Takt).
+  // Verstärkungen: Glut kräftig und kurz, Sturm unruhig, Frost langsam mit großem Ring, Gift ruhig atmend.
+  pa_084: { heben: 0.7, aufladen: 0.35, blitzForm: 'stern', blitzGroesse: 20 },
+  pa_095: { idleTempo: 0.6, blitzForm: 'funke', blitzGroesse: 17 },
+  pa_099: { idleTempo: 0.2, aufladen: 0.3, blitzForm: 'ring', blitzGroesse: 20, blitzDauer: 0.4 },
+  pa_109: { idleAtem: 1, blitzForm: 'ring', blitzGroesse: 13, blitzDauer: 0.36 },
+  // Zufallswaffen: je Element eine eigene Glanzform.
+  pa_085: { blitzForm: 'stern', blitzGroesse: 18 },
+  pa_105: { blitzForm: 'ring', blitzGroesse: 16 },
+  pa_100: { idleTempo: 0.7, blitzForm: 'funke', blitzGroesse: 18, blitzDauer: 0.08 },
+  pa_096: { idleAtem: 1, blitzForm: 'ring', blitzGroesse: 14 },
+  // Schilde: Eis mit langem Ring, Funken kurz und scharf.
+  pa_101: { heben: 0.35, aufladen: 0.35, blitzForm: 'ring', blitzGroesse: 22, blitzDauer: 0.45 },
+  pa_093: { blitzForm: 'funke', blitzGroesse: 20, blitzDauer: 0.12 },
+  // Versetzer: je weiter der Sprung, desto größer und länger der Glanz.
+  pa_089: { schussDauer: 0.4, heben: 0.3, blitzForm: 'funke', blitzGroesse: 12 },
+  pa_087: { blitzForm: 'ring', blitzGroesse: 18 },
+  pa_110: { blitzForm: 'stern', blitzGroesse: 16, blitzDauer: 0.22 },
+  pa_088: { aufladen: 0.35, blitzForm: 'stern', blitzGroesse: 26, blitzDauer: 0.3 },
+  // Heilung: Zauber mit Ring, Spritze kurz.
+  pa_092: { heben: 0.5, blitzForm: 'ring', blitzGroesse: 15, blitzDauer: 0.3 },
+  pa_094: { schussDauer: 0.3, kick: 1, blitzForm: 'funke', blitzGroesse: 10 },
   pa_039: { zelle: 32, art: 'schwer', schussDauer: 0.7, kick: 7, rueck: 0.32, wippen: 0.07, wippHz: 6, blitzForm: 'kegel', blitzGroesse: 18, blitzDauer: 0.15 },
 });
 
