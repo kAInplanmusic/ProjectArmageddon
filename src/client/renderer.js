@@ -399,8 +399,8 @@ export class Renderer {
   }
 
   /** Einschlag als Sprite-Bildfolge (Sheet `explosion`, bei großem Radius mit Nachglühen). */
-  sheetEinschlag(x, y, radius) {
-    return this.sheets.einschlag(x, y, radius);
+  sheetEinschlag(x, y, radius, art = null) {
+    return this.sheets.einschlag(x, y, radius, art);
   }
 
   /** Lava-Ausbruch/Flammenwand: Nachglühen als Bildfolge (Sheet `glut`). */

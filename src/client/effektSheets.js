@@ -15,6 +15,7 @@
  *
  * @module effektSheets
  */
+import { damageTypeName } from '../engine/damageTypes.js';
 
 /** Gleichzeitige Bildfolgen; bleibt unter `MAX_PARTIKEL` (26). */
 export const MAX_SHEET_EFFEKTE = 12;
@@ -33,7 +34,14 @@ export const SHEETS = Object.freeze({
   muendung: Object.freeze({ datei: 'muendung.webp', spalten: 4, zeilen: 5, frames: reihe(0, 3), takt: 6, kern: 0.4 }),
   feuerball: Object.freeze({ datei: 'feuerball.webp', spalten: 5, zeilen: 2, frames: reihe(0, 9), takt: 3, kern: 0.5 }),
   pilzwolke: Object.freeze({ datei: 'pilzwolke.webp', spalten: 5, zeilen: 2, frames: reihe(0, 8), takt: 5, kern: 0.55, versatzY: 0.34 }),
+  // Rauchring (9 Bilder: Ballen, Ring, Zerfall) nach mittleren Einschlägen; blaue Flamme (16 Bilder) nach Energie-, Plasma- und Arkanschaden.
+  rauchring: Object.freeze({ datei: 'rauchring.webp', spalten: 5, zeilen: 2, frames: reihe(0, 8), takt: 5, kern: 0.6 }),
+  flamme: Object.freeze({ datei: 'flamme.webp', spalten: 8, zeilen: 2, frames: reihe(0, 15), takt: 3, kern: 0.35, versatzY: 0.3 }),
 });
+
+/** Schadensarten, nach denen eine blaue Flamme steht (Name oder Kennung aus dem Ereignis `explosion`). */
+const BLAUE_ARTEN = new Set(['energy', 'plasma', 'arcane', 'astral', 'electric', 'magnetic']);
+const artName = (art) => (typeof art === 'number' ? damageTypeName(art) : art);
 
 /** Kometen im Bogen `leuchtgeschosse.webp` (Pixel): Farbe → Rechteck; die Längsachse steht senkrecht. */
 export const LEUCHT_KOMETEN = Object.freeze({
@@ -124,7 +132,7 @@ export class SheetEffekte {
    * Einschlag einer Explosion: Feuerball-Bildfolge, bei großem Radius mit verzögertem Nachglühen.
    * Der Frame ist größer als der Feuerball (`kern`): Die Kantenlänge folgt dem Explosionsradius.
    */
-  einschlag(x, y, radius) {
+  einschlag(x, y, radius, art = null) {
     // Kleine Einschläge: gezeichneter Feuerball; sehr große: Pilzwolke; dazwischen die Bildfolge `explosion`.
     if (radius <= 22 && this.bereit('feuerball')) {
       return this.starte('feuerball', x, y, Math.max(48, radius * 2 / SHEETS.feuerball.kern));
@@ -136,6 +144,8 @@ export class SheetEffekte {
     const g = Math.max(40, radius * 2 / SHEETS.explosion.kern);
     const ok = this.starte('explosion', x, y, g);
     if (ok && radius >= 30) this.starte('glut', x, y + radius * 0.15, g * 0.7, { verzoegerung: 20, alpha: 0.85 });
+    if (ok && radius >= 36) this.starte('rauchring', x, y - radius * 0.2, Math.max(90, radius * 2 / SHEETS.rauchring.kern), { verzoegerung: 14, alpha: 0.9 });
+    if (ok && BLAUE_ARTEN.has(artName(art))) this.starte('flamme', x, y + radius * 0.4, Math.max(64, radius * 2 / SHEETS.flamme.kern), { verzoegerung: 10, alpha: 0.95 });
     return ok;
   }
 

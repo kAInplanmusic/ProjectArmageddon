@@ -382,7 +382,7 @@ export const EREIGNIS_WIRKUNGEN = {
      */
     k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
     k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
-    k.renderer?.sheetEinschlag?.(n.x, n.y, n.radius || 12);
+    k.renderer?.sheetEinschlag?.(n.x, n.y, n.radius || 12, n.damageType);
     k.renderer?.merkeEinschlag?.(n.x, n.y);
     /*
      * Der Klang zum Einschlag. Der Mischer entscheidet selbst, ob er etwas tut — ist der
