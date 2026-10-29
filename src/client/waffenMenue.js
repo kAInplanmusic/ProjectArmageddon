@@ -24,6 +24,7 @@ import {
   displayGroupLabel,
 } from '../shared/config/weapons.js';
 import { artLabel } from '../shared/config/wirkungstexte.js';
+import { getWaffe } from '../shared/config/waffen-fassung.js';
 
 const STUFEN_NAMEN = Object.freeze({
   common: 'gewöhnlich', uncommon: 'ungewöhnlich', rare: 'selten', epic: 'episch', legendary: 'legendär',
@@ -324,7 +325,7 @@ export class WaffenMenue {
     if (!w) { info.textContent = ''; return; }
     info.textContent = [
       w.description ? `${w.displayName}: ${w.description}` : w.displayName,
-      `Art ${artLabel(w.damageType)}`,
+      `Art ${artLabel(getWaffe(w.weaponId ?? w.id)?.damageType ?? w.damageType)}`,
       `Schaden ${w.damage ?? 0}`,
       w.blastRadius > 0 ? `Radius ${Math.round(w.blastRadius)}` : 'kein Flächenschaden',
       `Reichweite ${w.maxRange ?? 0}`,

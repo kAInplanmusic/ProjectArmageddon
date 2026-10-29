@@ -23,6 +23,8 @@
  * @module klangProfile
  */
 
+import { getWaffe } from '../shared/config/waffen-fassung.js';
+
 export { KATEGORIEN } from '../shared/config/waffenKategorien.js';
 
 export const BUSSE = Object.freeze(['schuss', 'treffer', 'umgebung', 'ui']);
@@ -485,7 +487,8 @@ export const PROFIL_KORREKTUR = Object.freeze({
 });
 
 function nachSchadensart(w, vorgabe) {
-  switch (w.damageType) {
+  // Schadensart der Waffenfassung im Standard (Fassung 10 gibt den Elementwaffen ihr Element), sonst die des Katalogs.
+  switch (w.id ? (getWaffe(w.id)?.damageType ?? w.damageType) : w.damageType) {
     case 'fire': return 'feuer';
     case 'ice': return 'eis';
     case 'electric': return 'blitz';

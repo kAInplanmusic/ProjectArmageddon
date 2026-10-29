@@ -53,7 +53,7 @@ import {
   parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt, figurHand,
   GeschossLagen, geschossDarstellung, geschossWinkel, zeichneGruppenmarke,
 } from './waffenAnimation.js';
-import { WEAPONS_BY_ID } from '../shared/config/weapons.js';
+import { WEAPONS_BY_ID } from '../shared/config/weapons.js'; import { getWaffe } from '../shared/config/waffen-fassung.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
 import {
@@ -1632,7 +1632,7 @@ export class Renderer {
         this.waffenStat.geschossSprites += 1;
       } else {
         // Ohne Waffen-Sprite: Leuchtgeschoss-Komet (Farbe nach Schadensart) hinter dem Glutkern.
-        const art = WEAPONS_BY_ID[lage?.waffeId]?.damageType;
+        const art = getWaffe(lage?.waffeId)?.damageType ?? WEAPONS_BY_ID[lage?.waffeId]?.damageType;
         this.sheets.zeichneKomet(this.ctx, LEUCHT_FARBE[art] ?? 'gelb', projectile.x, projectile.y, lage?.flug ?? 0, 34);
         zeichneGeschoss(this.ctx, projectile.x, projectile.y);
       }
