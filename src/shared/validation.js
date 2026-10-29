@@ -94,7 +94,7 @@ export function normalizeInput(raw = {}) {
   }
   if (result.weaponId !== null && typeof result.weaponId !== 'string') {
     errors.push('weaponId muss eine Zeichenkette oder null sein');
-  } else if (result.weaponId !== null && !WEAPONS_BY_ID[result.weaponId]) {
+  } else if (result.weaponId !== null && !Object.hasOwn(WEAPONS_BY_ID, result.weaponId)) {
     errors.push(`Unbekannte Waffe: ${result.weaponId}`);
   }
 
