@@ -7,7 +7,7 @@
 
 Zwei Arten fester Objekte auf der Karte, die Taktik jenseits des direkten Schusses geben:
 
-- **Mine:** wird von einer Figur gelegt, bleibt liegen und löst aus, wenn eine Figur in ihre Nähe kommt.
+- **Mine:** kommt auf drei Wegen auf die Karte (abgeworfen, abgelegt, liegend vom Kartenaufbau), bleibt liegen und löst aus, sobald eine Figur in ihre Nähe kommt. **Sie ist immer sofort scharf**, gleich auf welchem Weg.
 - **Fass:** liegt von Anfang an (oder wird durch Kisten/Ereignisse gesetzt), explodiert bei Treffer und
   löst dabei Nachbarfässer aus (Kettenreaktion).
 
@@ -30,12 +30,21 @@ Neue Regeln, die alte Replays verändern würden, bekommen eine **Versionsmarke*
 
 ## 3. Entscheidungen (Auftraggeber, 2026-10-29: Empfehlungen angenommen, Friendly Fire AN)
 
-Bestätigt sind die Punkte 1 bis 5 wie empfohlen. **Friendly Fire gilt: Minen und Fässer treffen auch die eigenen Figuren** (auch den Werfer, deshalb die Scharfschaltzeit von einem Zug).
+Bestätigt sind die Punkte 1 bis 5 wie empfohlen. **Friendly Fire gilt: Minen und Fässer treffen auch die eigenen Figuren** (auch den Werfer; es gibt keine Scharfschaltzeit, siehe Punkt 2).
 
 1. **Wer legt Minen?** *Als Waffe aus dem Katalog* (passt zu Waffenwahl, Munition, Kisten) — nicht als eigene
-   Taste. Wirkung: nutzt `inventory.js` und Waffenmenü ohne neue Bedienung.
-2. **Auslöser der Mine:** Nähe einer **fremden oder eigenen** Figur (Radius klein, z. B. 24 px) nach einer
-   **Scharfschaltung** von einem Zug (sonst legt der Werfer sich selbst fest). Friendly Fire: **an** (entschieden).
+   Taste. Wirkung: nutzt `inventory.js` und Waffenmenü ohne neue Bedienung. „Abgeworfen“ ist dieselbe Mine als Wurfgeschoss, die beim Aufkommen liegen bleibt; „liegend“ sind Minen, die der Kartenaufbau aus dem Seed setzt (Anzahl und Platzierung: im Bauschritt festlegen, dieselben Sperrzonen wie bei Fässern).
+2. **Auslöser der Mine — ENTSCHIEDEN (2026-10-29):** Nähe einer **fremden oder eigenen** Figur (Radius klein,
+   z. B. 24 px). **Keine Scharfschaltzeit:** abgeworfen, abgelegt oder liegend, jede Mine ist sofort scharf.
+   Friendly Fire: **an**. Folge: Der Werfer ist nicht geschützt. Wird eine Mine vor die eigenen Füße gelegt,
+   geht sie sofort hoch. Vorschlag, bitte bestätigen: Das Ablegen setzt die Mine mit Mindestabstand vor die
+   Figur (größer als der Auslöseradius), damit „ablegen“ nicht gleich „sich selbst sprengen“ heißt.
+   **Zufall je Auslösung (entschieden):** 80 % normale Explosion, **5 % Superexplosion mit doppeltem Schaden**,
+   **15 % Blindgänger** (explodiert nicht). Annahmen, bitte bestätigen: Der Wurf gilt je Auslösung (nicht bei
+   Anlage der Mine) und kommt aus einem eigenen Seed-Sub-RNG der Bodenobjekte, in fester Reihenfolge nach
+   Objekt-ID gezogen — dadurch bleibt der Zustandshash reproduzierbar und der Ausgang ist vorher nicht
+   sichtbar. „Doppelter Schaden“ betrifft nur den Schaden; Radius und Krater bleiben gleich. Ein Blindgänger
+   bleibt als wirkungsloses Objekt liegen und löst nicht noch einmal aus.
 3. **Sichtbarkeit:** Minen für alle sichtbar (Spielgleichheit, keine versteckte Information). Verdeckte Minen
    bräuchten pro Spieler gefilterte Zustände und sind **nicht** Teil dieses Entwurfs.
 4. **Fässer:** Zufällig aus dem Seed gesetzt (gehört zum Kartenaufbau) oder nur als Kiste-Variante? Empfehlung:
@@ -47,8 +56,8 @@ Bestätigt sind die Punkte 1 bis 5 wie empfohlen. **Friendly Fire gilt: Minen un
 0. **Prüfung:** Welche Katalogwaffen heißen „Mine“? Gibt es schon ein Ereignis `mine_*`? (`grep`, `events.js`,
    `ereigniskatalog.test.js`.) Ergebnis ins Ticket, vor jedem Code.
 1. **Konfiguration:** `config/bodenobjekte.js` (Marke, `normalisiereBodenobjekte`, Werte: Radius, Schaden,
-   Kettenabstand, Scharfschaltzeit). Reine Daten, kein Zufall, keine Uhr.
-2. **Engine:** `systems/bodenobjektSystem.js`: Liste der Objekte im Zustand (`stateSnapshot.js`), Scharfschalten,
+   Kettenabstand, Wahrscheinlichkeiten 80/5/15 %, Mindestabstand beim Ablegen). Reine Daten, kein Zufall, keine Uhr.
+2. **Engine:** `systems/bodenobjektSystem.js`: Liste der Objekte im Zustand (`stateSnapshot.js`), Auslösen,
    Auslösen, Kettenreaktion in fester Reihenfolge (nach Objekt-ID, damit der Zustandshash stabil bleibt),
    Aufruf von Krater und Schaden über die vorhandenen Funktionen.
 3. **Aufzeichnung:** Eingabeart `lege_mine` in `replay.js` und `persistence.js`; Kopfmarke `bodenobjekte`.
@@ -69,7 +78,8 @@ Bestätigt sind die Punkte 1 bis 5 wie empfohlen. **Friendly Fire gilt: Minen un
 
 - [ ] Replay mit Marke 1 ergibt exakt den bisherigen Zustandshash (Goldwert unverändert).
 - [ ] Zwei Läufe mit gleichem Seed und gleicher Eingabefolge ergeben dieselbe Kettenreaktion (Hash gleich).
-- [ ] Mine löst aus: im Radius ja, außerhalb nein, vor Scharfschaltung nein.
+- [ ] Mine löst aus: im Radius ja, außerhalb nein, sofort nach dem Ablegen/Aufkommen/Kartenaufbau scharf (kein Wartezustand).
+- [ ] Ausgang je Auslösung: über viele Seeds nahe 80 / 5 / 15 % (Messung mit Toleranz), Blindgänger löst nicht erneut aus, Superexplosion macht genau den doppelten Schaden bei gleichem Krater.
 - [ ] Kettenreaktion von drei Fässern endet (keine Endlosschleife), Reihenfolge fest.
 - [ ] Server lehnt `lege_mine` ab: nicht am Zug, ohne Munition, auf belegtem Platz, bei stehender Simulation.
 - [ ] `npm test`, `npm run checks`, `eslint .` grün; `match.js` ≤ 2790 Zeilen.

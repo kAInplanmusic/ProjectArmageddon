@@ -1,91 +1,48 @@
-# Auftrag: Seil (Ninja-Rope)
+# Auftrag: Seil — das Ninja Rope aus Worms, eins zu eins
 
-*Stand: 2026-10-29 · Status: **Bedienung entschieden, Schritt 0 gemessen, sonst nichts gebaut** · Quelle: MASTERDOTO, „Standardmechaniken":
-„Seil/Ninja-Rope — FEHLT, Aufwand groß (Pendelphysik, Terrain-Anker)".*
+*Stand: 2026-10-29 · Status: **nichts gebaut.** Vorgabe des Auftraggebers: gleiche Physik, gleiche Handhabung wie
+Worms. Eigene Ausdenkereien (Pendelmodell, Messskript, Tastenvorschläge) sind verworfen und gelöscht.*
 
-## 1. Ziel
+## 1. Was belegt ist (Quellen: Worms Knowledge Base `worms2d.info/BattyRope`, Worms Wiki Fandom)
 
-Die aktive Figur kann ein Seil an das Gelände schießen, daran pendeln, es verkürzen/verlängern und loslassen.
-Das gibt Beweglichkeit, die Gehen und Springen nicht liefern (Höhen, Lücken, Inseln).
+- Das Ninja Rope ist ein Bewegungswerkzeug: Es wird an einen Punkt geschossen und zieht die Figur dorthin.
+- **Maximale Länge je Kraftstufe** (Worms Armageddon): Stufe 1 = 294–297 px, 2 = 336–339, 3 = 378–381,
+  4 = 420–423, 5 = 462–465 (unbegrenzte Neuwürfe).
+- **Neu schwingen:** Mit der Feuertaste lösen, in der Luft erneut feuern, ohne weitere Munition. Wer den Boden
+  berührt, verliert nicht genutzte Neuwürfe. Stufe 1 = 1 Schuss, 2 und 3 = 2, 4 = 3, 5 = unbegrenzt.
+- **Handhabung:** Feuertaste schießt; Pfeiltasten ziehen bzw. geben Schwung; Feuertaste löst das Seil.
+- **Waffen vom Seil:** Jede Waffe außer Nahkampf und Selbstmordbomber ist einsetzbar; Auswahl und Enter feuert.
+  Bomben (Dynamit, Mine) lassen sich mit der Sprungtaste im Schwung fallen lassen.
+- Kürzeres Seil = stärkerer Schwung (Worms Wiki, „Tips & Tricks“).
+- Rope Knocking (anderen Wurm durch Anrempeln bewegen) existiert; Voreinstellung offline aus.
 
-## 2. Ausgangslage (am Code geprüft)
+## 2. Was NICHT belegt ist — und deshalb nicht erfunden wird
 
-| Baustein | Fundstelle | Folge |
-|---|---|---|
-| Versionsmarke | `config/bewegung.js` (`BEWEGUNG_ALT`/`BEWEGUNG_GEHEN`), `replay.js`, `match.js:610` | Neue Marke `config.seil` (1 = kein Seil, 2 = Seil) |
-| Figurenbewegung | `systems/bewegungSystem.js` (141 Zeilen, Gehen mit Hang- und Stufenregel), `systems/characterSystem.js`, `systems/physicsSystem.js` | Seil als eigener Zustand der Figur; solange es hält, ersetzt es Schwerkraft und Gehen durch Pendelregeln |
-| Boden/Anker | `engine/boden.js` (`bodenNaheHoehe`, `isSolid`) | Anker = erster fester Pixel auf dem Strahl; derselbe Festigkeitsbegriff wie Standabfrage |
-| Fallschaden | `config/fallschaden.js`, Luftsprünge kosten über Fallschaden (Entscheidung 2026-09-27) | Loslassen im Schwung zählt als Fall; Schwelle bleibt die Bremse |
-| Zugregeln | `systems/zugSystem.js`, `config/zugregeln.js` | Seil ist nur im eigenen Zug und zählt zur Zugzeit; Rückzugszeit erlaubt Seil? (Entscheidung) |
-| Eingaben, Server | `replay.js` (`kind`), `validation.js`, `gameServer.js` (`#laufendeSitzung`) | Eingabearten `seil_schiessen`, `seil_laenge`, `seil_loesen`; Server prüft aktiven Spieler und Grenzen |
-| Gelände ändert sich | `zerstoerung.js`, Krater | Wird der Ankerpixel weggesprengt, reißt das Seil (Regel festlegen, deterministisch) |
-| Zeilenbudget | `match.js` ≤ 2790 (jetzt 2638) | Logik in `systems/seilSystem.js` |
+Die Zahlen, die das Gefühl ausmachen, standen in keiner erreichbaren Quelle (die Seiten mit den Physikdaten sind
+für mich gesperrt; Worms Armageddon ist nicht quelloffen):
 
-## 3. Entscheidungen vor dem Bauen (Empfehlung zuerst)
+- Geschwindigkeit, mit der das Seil verkürzt/verlängert wird,
+- Beschleunigung des Schwungs durch die Pfeiltasten,
+- Dämpfung, Schwerkraft im Verhältnis zu den Figuren, Verhalten beim Wickeln um Gelände,
+- Abwurfwinkel des Seils (die Tabelle nennt 45° bzw. 90° als größtes Zielfenster je Stufe, gemessen von senkrecht
+  nach oben),
+- Fallschaden beim Loslassen.
 
-1. **Modell:** Starres Pendel mit fester Länge zwischen Anker und Figur, Länge über Tasten verstellbar
-   (Worms-Stil), Dämpfung klein. Verworfen: Federseil — mehr Parameter, schwerer reproduzierbar.
-2. **Ganzzahlig oder Gleitkomma?** Der Motor muss über Maschinen hinweg denselben Hash liefern. Empfehlung:
-   dieselbe Zahlenart und Rundung wie `integrateStep` (`shared/ballistics.js`) und `bewegungSystem.js`; keine
-   `Math.sin/cos` mit maschinenabhängiger Genauigkeit im Zustandspfad ohne Rundung auf feste Schritte.
-3. **Reichweite und Zeit:** Maximale Seillänge (px), Schussfrist, wie oft je Zug. Werte kommen aus einer Messung,
-   nicht aus dem Gefühl (siehe Schritt 6).
-4. **Fallschaden beim Loslassen:** Bleibt wie heute (Bremse), kein Sonderfall.
-5. **Bedienung (Auftraggeber, 2026-10-29): keine neue Taste.** Das Seil ist ein Werkzeug im vorhandenen
-   Waffenmenü (Kachelraster mit Kategorien, Untermenü mit Waffen; `waffenMenue.js`), gewählt wie jede Waffe. Es
-   braucht deshalb einen Katalogeintrag (im Generator `scripts/build-weapon-catalog.mjs`, nicht in `weapons.js`)
-   und eine Kategorie bzw. Gruppe im Menü (heute u. a. „Gadgets“). Für die Handhabung wird NUR Bestehendes
-   benutzt (Vorschlag, bitte bestätigen): Schießen wie jede Waffe (Leertaste/Shift gehalten, Loslassen feuert),
-   im Seilzustand W/S = Seil kürzen/verlängern (statt Zielwinkel), Enter = Loslassen (Sprung), A/D = Schwung
-   (statt Gehen). Touch: die vorhandenen Knöpfe (FEUER, Sprung, Gehen). Die Tastenbelegung (MASTERDOTO,
-   „Tastenbelegung") bleibt unverändert.
+**Ohne diese Werte ist „eins zu eins“ nicht herstellbar.** Möglichkeiten, sie zu bekommen: Messung an einer
+installierten Worms-Armageddon-Version (Replays oder Einzelbildmessung) durch den Auftraggeber, oder eine
+Quelle mit den Konstanten. Erst dann wird gebaut.
 
-## 4. Arbeitsschritte
+## 3. Einbau (am Code geprüft)
 
-0. **Machbarkeitsmessung — ERLEDIGT (2026-10-29), `scripts/seil-pendel-messung.mjs`:** ortsbasiertes Pendel
-   (Verlet mit Längenzwang), nur `+ − · /` und `Math.sqrt` (IEEE-exakt; bewusst kein `sin/cos/hypot`).
-   Gemessen über 10 000 Takte, vier Fälle (Länge 120–400 px, Start 45–80°, mit und ohne Dämpfung): **jeweils
-   zwei Läufe mit gleichem Hash**; **Energiegewinn 0,0 %** in allen Fällen; ein einmaliger Verlust von 13–54 %
-   des Hubs beim Start aus der Ruhelage am Kreisrand (die Figur „fällt“ im ersten Takt vom Kreis und wird
-   zurückgeführt), danach stabil (Energie nach 3600 und nach 10 000 Takten gleich). **Aussage:** Determinismus
-   und „kein Energiegewinn“ sind machbar. **Nicht belegt:** Übereinstimmung zwischen verschiedenen Maschinen
-   (hier nur eine); die Wahl von `sqrt` statt Trigonometrie ist der Grund, warum sie zu erwarten ist. Den
-   Startverlust mildert ein Start mit Anfangsgeschwindigkeit der Figur (ihre Sprunggeschwindigkeit beim
-   Schuss); das ist im Bauschritt zu messen.
-1. `config/seil.js` (Marke, `normalisiereSeil`, Werte: Länge min/max, Dämpfung, Schussfrist, Zugstärke).
-2. `systems/seilSystem.js`: Schuss → Anker suchen; Pendeln; Längenänderung; Loslassen übergibt Geschwindigkeit an die
-   Figurenphysik; Seilriss bei Verlust des Ankers oder Treffer (Regel festlegen).
-3. Aufzeichnung (`replay.js`, `persistence.js`), Kopfmarke.
-4. Server-Nachrichten und Validierung.
-5. Client: Seillinie, Anker, Figurenpose (`figurAnimation.js`), Online-Vorhersage (`laufVorhersage.js` kennt
-   Gehen; das Seil braucht eine eigene Fortschreibung oder bewusst keine Vorhersage).
-6. Balance und Reichweite messen (`scripts/bot-partien.mjs` kann Seil nicht nutzen: Messung im Skript).
+| Baustein | Fundstelle |
+|---|---|
+| Versionsmarke im Replay-Kopf | `config/bewegung.js`, `config/zugregeln.js`, `replay.js`, `match.js:610` |
+| Figurenbewegung | `systems/bewegungSystem.js`, `characterSystem.js`, `physicsSystem.js` |
+| Festes Gelände | `engine/boden.js` (`bodenNaheHoehe`, `isSolid`) |
+| Zugregeln | `systems/zugSystem.js` |
+| Eingaben, Server | `replay.js` (`kind`), `shared/validation.js`, `server/gameServer.js` |
+| Menü | Waffenmenü mit Kategorien und Untermenü (Auftraggeber: Seil dort wählbar); Katalog nur über `scripts/build-weapon-catalog.mjs` |
+| Zeilenbudget | `match.js` ≤ 2790 Zeilen (jetzt 2638) |
 
-## 5. Einschränkungen
-
-Keine Wanduhr/`Math.random` in `engine`/`shared`; Altreplays bit-identisch; keine neue Abhängigkeit;
-Server prüft jede Eingabe; Seil darf die Erreichbarkeitsprüfung der Karten nicht entwerten (eher neue Wege:
-`pruefeErreichbarkeit` bleibt konservativ).
-
-## 6. Akzeptanzkriterien
-
-- [ ] Altmarke: Goldwert-Hash unverändert.
-- [ ] Gleiche Eingaben → gleicher Hash (zweimal, zwei Seeds).
-- [ ] Anker liegt auf festem Gelände; kein Anker in Luft und in Wasser.
-- [ ] Pendel gewinnt keine Energie (Messung über 10 000 Takte, Drift unter festgelegter Grenze).
-- [ ] Wegsprengen des Ankers löst das Seil zum festgelegten Takt.
-- [ ] Server lehnt ab: nicht am Zug, Simulation steht, Länge außerhalb der Grenzen.
-- [ ] `npm test`, `npm run checks`, `eslint .` grün; `match.js` ≤ 2790 Zeilen.
-- [ ] E2E mit zwei Clients; Sichtprüfung der Bewegung durch den Auftraggeber.
-
-## 7. Testanforderungen
-
-Unit (Konfiguration, Anker, Pendel, Hash), Integration (Server, Replay), E2E (zwei Clients), manuell (Gefühl,
-Kamera folgt der Figur im Schwung — `kameraRegie.js`).
-
-## 8. Risiken
-
-- Das Gefühl der Steuerung ist nicht automatisch prüfbar; es braucht Spieltests beim Auftraggeber.
-- Gleitkomma-Abweichungen zwischen Maschinen ändern den Hash (der Motor ist dafür bisher bewusst gebaut):
-  Schritt 0 entscheidet, ob das Seil überhaupt sicher determinierbar ist.
-- Kamera und Bildzeit bei schneller Bewegung (Terrain-Streaming, Kulisse).
+Regeln: keine Wanduhr/`Math.random` in `engine`/`shared`; alte Replays bit-identisch (Versionsmarke); Server prüft
+jede Eingabe.
