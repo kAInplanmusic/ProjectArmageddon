@@ -12,7 +12,7 @@ import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { LOOT_DROP_RULES, rollCrateCount } from '../src/shared/config/loot.js';
 import {
-  KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE, normalisiereKisten,
+  KISTEN_ALT, KISTEN_OFT, KISTEN_MUNITION, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE, normalisiereKisten,
 } from '../src/shared/config/kisten.js';
 
 /** Die Ziehung vor Fassung 2, wörtlich. */

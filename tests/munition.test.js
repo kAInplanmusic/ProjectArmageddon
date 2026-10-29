@@ -12,7 +12,7 @@ import {
   munitionsKlasse, MUNITION_OBERGRENZE, MUNITION_FUND_MAX, STARTWAFFEN_POOL,
 } from '../src/shared/config/munition.js';
 import { getStartWaffen, KIT_SCHARF } from '../src/shared/config/loadouts.js';
-import { KISTEN_STANDARD, KISTEN_MUNITION, KISTEN_WAFFEN } from '../src/shared/config/kisten.js';
+import { KISTEN_STANDARD, KISTEN_MUNITION } from '../src/shared/config/kisten.js';
 import { WAFFEN_STANDARD, WAFFEN_MUNITION } from '../src/shared/config/waffen-fassung.js';
 import { legeKiste, CRATE_TYPES } from '../src/engine/systems/lootSystem.js';
 

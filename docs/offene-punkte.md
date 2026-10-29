@@ -155,13 +155,18 @@ sie durchließe, würde auch fehlende Knöpfe durchlassen.
 
 **Was bleibt offen:** Ob die CI-Runner wie dieser Rechner rendern, ist nicht
 gemessen, deshalb bleibt `PA_OHNE_BILDVERGLEICH=1` in der CI gesetzt. Ein Lauf
-dort entscheidet. Fällt er rot aus, ist die Ursache vermutlich die Schrift: die
-Ersatzkette von `--font` in `index.html` nennt Chakra Petch und Rajdhani, die
-nirgends gebündelt sind; `tokens.css` setzt zwar Exo 2 vorn, gebündelt ist aber
-nur, was `design.css` importiert. Eine feste, gebündelte Schrift wäre die
-Wurzelbehebung. Dazu ist eine Entscheidung nötig, weil sie das Aussehen ändert.
-Außerdem wartet das Bild jetzt vor der Aufnahme auf `document.fonts.ready` und
-zwei Bildläufe, weil Schriftschnitte beim Aufklappen der Lobby erst nachladen.
+dort entscheidet.
+
+**Berichtigung (2026-10-29, gemessen):** Die frühere Vermutung, die Schrift sei nicht
+gebündelt, war falsch. Im Browser gilt `--font: 'Exo 2', 'Segoe UI', …` (aus
+`tokens.css`), geladen sind Bebas Neue 400 und Exo 2 400/600/700 — alle aus
+`@fontsource`. Die Kette mit Chakra Petch in `index.html` wird überstimmt und ist
+toter Text. Die Breitenunterschiede des fremden Rechners müssen also von etwas
+anderem kommen: einem Bild, das vor dem Nachladen eines Schriftschnitts entstand
+(Fettdruck wird erst beim Aufklappen der Lobby geladen), oder von Hinting und
+Teilpixel-Positionierung. Deshalb wartet das Bild jetzt vor der Aufnahme auf
+`document.fonts.ready` und zwei Bildläufe. Ob das den Umbruch behebt, ist nur auf
+dem fremden Rechner (oder in der CI) zu messen.
 
 ## 4b. Betriebsnotiz: der Vergleichs-Sweep schreibt in versionierte Dateien
 
