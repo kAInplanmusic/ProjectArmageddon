@@ -127,7 +127,7 @@ test('Eine abgeworfene Waffe ändert den Hash', () => {
   const anzahlVorher = m.getState().entities[0].inventory.length;
   const vorher = m.stateHash();
 
-  const zweite = m.getState().entities[0].inventory[1];
+  const zweite = spieler.inventory.find(w => spieler.ammo[w] !== 'unbegrenzt'); // Waffenfassung 11: Startwaffen sind unendlich und nicht abwerfbar
   assert.ok(zweite, 'Testannahme: es gibt eine zweite Waffe zum Abwerfen');
 
   const ergebnis = m.dropWeapon(spieler.entityId, zweite);

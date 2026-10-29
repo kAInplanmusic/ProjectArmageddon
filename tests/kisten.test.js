@@ -12,7 +12,7 @@ import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { SeededRandom } from '../src/shared/prng.js';
 import { LOOT_DROP_RULES, rollCrateCount } from '../src/shared/config/loot.js';
 import {
-  KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE, normalisiereKisten,
+  KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_STANDARD, KISTEN_MAX_AUF_KARTE, normalisiereKisten,
 } from '../src/shared/config/kisten.js';
 
 /** Die Ziehung vor Fassung 2, wörtlich. */
@@ -32,7 +32,7 @@ function neueMatch(seed, extra = {}) {
 }
 
 test('normalisiereKisten: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(KISTEN_STANDARD, KISTEN_WAFFEN);
+  assert.equal(KISTEN_STANDARD, KISTEN_MUNITION); // Fassung 4 (Waffenfassung 11): Munitionskisten statt leerer Kisten
   assert.equal(normalisiereKisten(1), KISTEN_ALT);
   assert.equal(normalisiereKisten(2), KISTEN_OFT);
   assert.equal(normalisiereKisten(undefined), KISTEN_STANDARD);

@@ -20,7 +20,7 @@ const GOLD_F1 = 'b8bfca73';
 const KOPF = { seed: 4242, teams: 2, playersPerTeam: 3, preset: 'hills', turnDurationMs: 1_000_000, maxRounds: 99 };
 
 function spiele(extra = {}) {
-  const m = new MatchController({ ...KOPF, ...extra });
+  const m = new MatchController({ ...KOPF, waffen: 10, kisten: 3, ...extra }); // Goldwert gilt für Waffenfassung 10 und Kistenfassung 3 (Fassung 11 ändert Inventar und Kisten)
   m.start();
   for (let i = 0; i < 3; i += 1) {
     m.fire(m.activePlayerId, Math.PI / 4 + i * 0.1, 30);

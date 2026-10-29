@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { MatchSeedManager } from '../src/shared/seed.js';
 import { MatchController } from '../src/engine/match.js';
 import { legeKiste, waehleWaffeNachStufe, CRATE_TYPES, weaponIdFromIndex } from '../src/engine/systems/lootSystem.js';
-import { KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_STANDARD, KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE, normalisiereKisten } from '../src/shared/config/kisten.js';
+import { KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_STANDARD, KISTEN_STUFEN_GEWICHT, KISTEN_MUNITION_STUFE, normalisiereKisten } from '../src/shared/config/kisten.js';
 import { WEAPONS, WEAPONS_BY_ID, hasSpecialEffect } from '../src/shared/config/weapons.js';
 
 function welt() {
@@ -15,10 +15,10 @@ function welt() {
   return { kisten, createEntity: () => kisten.push({}) - 1, addComponent: (id, n, w) => { if (n === 'Crate') kisten[id] = w; } };
 }
 
-test('Standard ist Fassung 3; Fassung 1 bis 3 bleiben gültig', () => {
-  assert.equal(KISTEN_STANDARD, KISTEN_WAFFEN);
-  for (const f of [KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN]) assert.equal(normalisiereKisten(f), f);
-  assert.equal(normalisiereKisten(99), KISTEN_WAFFEN);
+test('Standard ist Fassung 4; Fassung 1 bis 4 bleiben gültig', () => {
+  assert.equal(KISTEN_STANDARD, KISTEN_MUNITION); // Fassung 4 (Waffenfassung 11) ist Standard; Fassung 3 bleibt gültig (Beleg: Munition-Test)
+  for (const f of [KISTEN_ALT, KISTEN_OFT, KISTEN_WAFFEN, KISTEN_MUNITION]) assert.equal(normalisiereKisten(f), f);
+  assert.equal(normalisiereKisten(99), KISTEN_MUNITION);
 });
 
 test('Fassung 2 bleibt wie aufgezeichnet: aus Rundenkisten fällt nie eine Waffe', () => {
@@ -78,7 +78,7 @@ test('Altköpfe bitgleich: Zustands-Hash nach 4000 Schritten, Fassung 1 und 2 (G
   const gold = { 1: ['9ac2e336', 'c55fa9df', 'ac3f29fa'], 2: ['bc7c33c3', '68e15549', 'f3a90fee'] };
   for (const kisten of [KISTEN_ALT, KISTEN_OFT]) {
     gold[kisten].forEach((erwartet, i) => {
-      const m = new MatchController({ seed: i + 1, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 2000, kisten, maxRounds: 6 });
+      const m = new MatchController({ seed: i + 1, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 2000, kisten, maxRounds: 6, waffen: 10 }); // Goldwerte: Waffenfassung 10 (Fassung 11 ändert das Inventar)
       m.start();
       for (let n = 0; n < 4000 && m.getState().status === 'playing'; n += 1) m.step();
       assert.equal(m.stateHash(), erwartet, `Fassung ${kisten}, Seed ${i + 1}`);

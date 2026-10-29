@@ -771,7 +771,7 @@ function restoreAmmo(quelle, playerId, amount) {
     const current = quelle.inventory.getAmmo(playerId, weaponId);
     if (!Number.isFinite(current)) continue; // unbegrenzt: nichts aufzufüllen
 
-    const capacity = Math.max(1, weapon.maxAmmo || 1);
+    const capacity = quelle.inventory.kapazitaet?.(weaponId) ?? Math.max(1, weapon.maxAmmo || 1);
     const fehlt = Math.max(0, capacity - current);
     const give = Math.min(remaining, fehlt);
     if (give <= 0) continue;

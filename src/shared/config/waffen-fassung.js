@@ -19,7 +19,9 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_SPREIZUNG` (10, Standard): wie 9, dazu `WAFFEN_F10_WERTE`: die Dubletten der Selbstwirkungen (Verstärkung, Zufall,
+ *   - `WAFFEN_MUNITION` (11, Standard): wie 10, dazu vier Munitionsklassen (unendlich, 1, 2, 3 Schuss; `config/munition.js`),
+ *     Obergrenze 5 und Munitionskisten (Kistenfassung 4); weitere Teile (Rückstoß, Elemente, Schilde) stehen unten in `WAFFEN_F11_WERTE`.
+ *   - `WAFFEN_SPREIZUNG` (10): wie 9, dazu `WAFFEN_F10_WERTE`: die Dubletten der Selbstwirkungen (Verstärkung, Zufall,
  *     Versetzen, Schild, Heilung, Fliegen, Haken, Munition, Rüstung) sind in Stärke, Dauer und Abklingzeit gestaffelt, und jede
  *     Verstärkung, jeder Zufallspool und jedes Schild trägt ein Element (Feuer, Eis, Blitz, Gift) mit echter Wirkung (Feld `wirkung`,
  *     gelesen in `buildEffect`, `StatusStore` und `MaliRegeln`). Alte Fassungen sehen das Feld nicht und verlaufen bitgleich.
@@ -54,7 +56,8 @@ export const WAFFEN_ZUENDERPLUS = 7;
 export const WAFFEN_FEINTUNING = 8;
 export const WAFFEN_VORSTRAHL = 9;
 export const WAFFEN_SPREIZUNG = 10;
-export const WAFFEN_STANDARD = WAFFEN_SPREIZUNG;
+export const WAFFEN_MUNITION = 11;
+export const WAFFEN_STANDARD = WAFFEN_MUNITION;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -67,7 +70,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION ? fassung : WAFFEN_STANDARD;
 }
 
 /**

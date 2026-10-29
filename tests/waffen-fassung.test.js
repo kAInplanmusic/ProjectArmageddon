@@ -140,7 +140,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_SPREIZUNG);
+  assert.equal(WAFFEN_STANDARD, 11); // Waffenfassung 11 (Munition, Rückstoß, Elemente, Schilde); Fassung 10 bleibt gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);

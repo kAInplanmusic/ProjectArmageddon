@@ -21,6 +21,9 @@
  *       3. Die Kistenfarbe war immer `epic`; jetzt die Stufe der enthaltenen Waffe.
  *     Dazu `KISTEN_MUNITION_STUFE`: seltene Waffen liegen mit kleinerem Magazin in der Kiste.
  *     Auch Günthers Funde beim Wühlen folgen der Fassung des Matches.
+ *   - `KISTEN_MUNITION` (4, Standard): wie 3, aber die Kiste mit dem Inhalt `empty` (10 %) ist eine MUNITIONSKISTE: sie füllt 1 bis 5 Schuss
+ *     (gleichverteilt) in EINE zufällige begrenzte Waffe des Aufhebenden. Die Gewichte der Waffenkisten bleiben, Waffenkisten tragen kein
+ *     Teilmagazin mehr (die Munitionsklasse der Waffenfassung 11 entscheidet, `config/munition.js`). Es gibt keine leeren Kisten mehr.
  *
  * @module config/kisten
  */
@@ -28,7 +31,8 @@
 export const KISTEN_ALT = 1;
 export const KISTEN_OFT = 2;
 export const KISTEN_WAFFEN = 3;
-export const KISTEN_STANDARD = KISTEN_WAFFEN;
+export const KISTEN_MUNITION = 4;
+export const KISTEN_STANDARD = KISTEN_MUNITION;
 
 /**
  * Gewicht je Stufe bei der Ziehung der Fassung 3 (Summe 100, Anteil der Waffenkisten). Gegenüber
@@ -48,5 +52,5 @@ export const KISTEN_MAX_AUF_KARTE = 6;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereWaffen`). */
 export function normalisiereKisten(fassung) {
-  return fassung === KISTEN_ALT || fassung === KISTEN_OFT || fassung === KISTEN_WAFFEN ? fassung : KISTEN_STANDARD;
+  return fassung === KISTEN_ALT || fassung === KISTEN_OFT || fassung === KISTEN_WAFFEN || fassung === KISTEN_MUNITION ? fassung : KISTEN_STANDARD;
 }

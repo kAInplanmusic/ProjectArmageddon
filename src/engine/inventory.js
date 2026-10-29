@@ -9,6 +9,7 @@
  */
 import { getWeapon, WEAPONS_BY_ID } from '../shared/config/weapons.js';
 import { FALLBACK_WEAPON_ID } from '../shared/config/weapons.js';
+import { munitionsKlasse, MUNITION_OBERGRENZE } from '../shared/config/munition.js';
 
 /**
  * Obergrenze gleichzeitig geführter Waffen.
@@ -21,6 +22,25 @@ export const MAX_WEAPONS = 6;
 
 export class PlayerInventory {
   #players = new Map();
+  /** Waffenfassung 11: Munitionsklassen, Obergrenze 5, unbegrenzte Startwaffen (`config/munition.js`). */
+  #munition = false;
+
+  /** Schaltet die Munitionsklassen der Waffenfassung 11 ein (vor `register`). */
+  setzeMunition(an) { this.#munition = Boolean(an); }
+
+  get munition() { return this.#munition; }
+
+  /** Höchstvorrat einer Waffe: Fassung 11 für alle 5, davor `maxAmmo`. */
+  kapazitaet(weaponId) {
+    if (this.#munition) return MUNITION_OBERGRENZE;
+    return Math.max(1, WEAPONS_BY_ID[weaponId]?.maxAmmo || 1);
+  }
+
+  /** Munition einer frisch erhaltenen Waffe: Fassung 11 die Klasse (kann `Infinity` sein), davor `maxAmmo`. */
+  fundMunition(weaponId) {
+    const weapon = WEAPONS_BY_ID[weaponId];
+    return this.#munition ? munitionsKlasse(weapon) : Math.max(1, weapon?.maxAmmo || 1);
+  }
 
   /** Legt einen Spieler mit Startlastout an. */
   register(playerId, weaponIds = [], { ammoPerWeapon = null, ammoCaps = null } = {}) {
@@ -31,6 +51,13 @@ export class PlayerInventory {
     for (const id of weaponIds) {
       const weapon = getWeapon(id);
       if (!weapon) continue;
+      if (this.#munition && ammoPerWeapon === null) {
+        // Fassung 11: die Startwaffen tragen ihre Klasse; die Standard-Startwaffen sind unendlich, die Flächenwaffe des Kits begrenzt.
+        const klasse = this.fundMunition(id);
+        ammo.set(id, klasse);
+        if (!Number.isFinite(klasse)) unlimited.add(id);
+        continue;
+      }
       const voll = ammoPerWeapon ?? Math.max(1, weapon.maxAmmo || 1);
       ammo.set(id, ammoCaps?.[id] ? Math.min(voll, ammoCaps[id]) : voll);
     }
@@ -107,8 +134,22 @@ export class PlayerInventory {
     // `ammo` erlaubt das Aufheben einer abgeworfenen Waffe mit genau dem Vorrat,
     // den sie beim Abwerfen hatte. Ohne Angabe gilt das volle Magazin.
     const menge = ammo === null || ammo === undefined
-      ? Math.max(1, weapon.maxAmmo || 1)
+      ? this.fundMunition(weaponId)
       : (ammo < 0 ? Infinity : Math.max(0, ammo));
+
+    if (this.#munition && (ammo === null || ammo === undefined)) {
+      // Fassung 11: ein Fund ist voll geladen mit der Klasse der Waffe; mehr als 3 gibt nur die Munitionskiste.
+      if (entry.ammo.has(weaponId)) {
+        const jetzt = entry.ammo.get(weaponId);
+        if (Number.isFinite(jetzt) && Number.isFinite(menge)) entry.ammo.set(weaponId, Math.max(jetzt, menge));
+      } else {
+        entry.ammo.set(weaponId, menge);
+        entry.weapons.push(weaponId);
+        if (!Number.isFinite(menge)) entry.unlimited.add(weaponId);
+      }
+      entry.activeWeaponId ??= weaponId;
+      return true;
+    }
 
     if (entry.ammo.has(weaponId)) {
       entry.ammo.set(weaponId, entry.ammo.get(weaponId) + (Number.isFinite(menge) ? menge : 0));
@@ -135,7 +176,7 @@ export class PlayerInventory {
     const entry = this.#players.get(playerId);
     if (!weapon || !entry || !entry.ammo.has(weaponId)) return 0;
 
-    const capacity = Math.max(1, weapon.maxAmmo || 1);
+    const capacity = this.kapazitaet(weaponId);
     const current = entry.ammo.get(weaponId);
     // Unbegrenzte Waffen haben nichts aufzufüllen.
     if (!Number.isFinite(current)) return 0;
@@ -144,6 +185,26 @@ export class PlayerInventory {
     if (give <= 0) return 0;
     entry.ammo.set(weaponId, current + give);
     return give;
+  }
+
+  /** Waffen, die eine Munitionskiste füllen kann: begrenzt und unter der Kapazität (in Inventarreihenfolge). */
+  fuellbareWaffen(playerId) {
+    const entry = this.#players.get(playerId);
+    if (!entry) return [];
+    return entry.weapons.filter(id => !entry.unlimited.has(id)
+      && Number.isFinite(entry.ammo.get(id)) && entry.ammo.get(id) < this.kapazitaet(id));
+  }
+
+  /**
+   * Munitionskiste: füllt EINE Waffe (Auswahl `wahl` modulo Zahl der füllbaren) um `menge`, begrenzt auf die Kapazität.
+   * @returns {{weaponId:string, amount:number}|null} null, wenn nichts zu füllen ist
+   */
+  fuelleMunitionskiste(playerId, wahl, menge) {
+    const kandidaten = this.fuellbareWaffen(playerId);
+    if (!kandidaten.length) return null;
+    const weaponId = kandidaten[Math.abs(Math.floor(wahl)) % kandidaten.length];
+    const amount = this.grantAmmo(playerId, weaponId, menge);
+    return { weaponId, amount };
   }
 
   /**

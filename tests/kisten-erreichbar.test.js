@@ -156,7 +156,7 @@ test('Die abgeworfene Waffe landet AUSSERHALB des Aufheberadius', () => {
     const spieler = match.getState().entities[0];
     match.consumeEvents();
 
-    const wurf = match.dropWeapon(id, spieler.inventory[1]);
+    const wurf = match.dropWeapon(id, spieler.inventory.find(w => spieler.ammo[w] !== 'unbegrenzt')); // Waffenfassung 11: Startwaffen sind unendlich und nicht abwerfbar
     assert.ok(wurf.ok, `Abwurf abgelehnt: ${wurf.errors}`);
 
     let gelandet = null;

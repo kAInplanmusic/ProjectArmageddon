@@ -28,7 +28,7 @@ import { KameraRegie } from '../src/client/kameraRegie.js';
 function lauf(seed, guenther, cookie) {
   // Sturm ausser Reichweite: Diese Festwerte messen Guenther/Cookie, nicht den
   // Mahlstrom (seit 2026-10-25 rundenbasiert, ab Runde 8).
-  const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, turnPauseTicks: 0, valhallaRound: 999, guenther, cookie });
+  const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', turnDurationMs: 1_000_000, turnPauseTicks: 0, valhallaRound: 999, guenther, cookie, waffen: 10, kisten: 3 }); // Festwerte: Waffenfassung 10, Kistenfassung 3 (Fassung 11 ändert Inventar und Kisten)
   m.start();
   let ereignisse = 0;
   for (let z = 0; z < 36; z += 1) {

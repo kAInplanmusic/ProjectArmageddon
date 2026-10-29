@@ -52,7 +52,7 @@ export function loeseGuentherRad(q, playerId) {
              * meldete — nachdem eine Änderung an Günthers Beweidung den
              * betroffenen Zweig häufiger erreichte.
              */
-            q.inventory.grantAmmo(playerId, waffe.id, 3);
+            if (q.inventory.munition) q.inventory.grantWeapon(playerId, waffe.id); else q.inventory.grantAmmo(playerId, waffe.id, 3); // Fassung 11: nur auf die Klasse füllen (4 und 5 gibt nur die Munitionskiste)
           }
           ergebnis.weaponId = waffe.id;
           ergebnis.weaponName = waffe.displayName;
@@ -87,7 +87,7 @@ export function loeseGuentherRad(q, playerId) {
             q.inventory.grantWeapon(playerId, waffe.id);
           } else {
             // Wie oben: `refill` existiert nicht — `grantAmmo` ist gemeint.
-            q.inventory.grantAmmo(playerId, waffe.id, 99);
+            if (q.inventory.munition) q.inventory.grantWeapon(playerId, waffe.id); else q.inventory.grantAmmo(playerId, waffe.id, 99);
           }
           ergebnis.weaponId = waffe.id;
           ergebnis.weaponName = waffe.displayName;

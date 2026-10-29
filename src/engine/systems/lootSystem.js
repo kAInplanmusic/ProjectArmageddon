@@ -11,7 +11,8 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import {
   weightedRarity, rollCrateCount, rollCrateContents, LOOT_DROP_RULES,
 } from '../../shared/config/loot.js';
-import { KISTEN_ALT, KISTEN_OFT, KISTEN_STANDARD, KISTEN_WAFFEN, KISTEN_MUNITION_STUFE, KISTEN_STUFEN_GEWICHT } from '../../shared/config/kisten.js';
+import { KISTEN_ALT, KISTEN_OFT, KISTEN_STANDARD, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_MUNITION_STUFE, KISTEN_STUFEN_GEWICHT } from '../../shared/config/kisten.js';
+import { MUNITION_KISTE_MIN, MUNITION_KISTE_MAX } from '../../shared/config/munition.js';
 import { pickWeaponForRarity, hasSpecialEffect, WEAPONS, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
 /*
@@ -79,7 +80,8 @@ import { pickWeaponForRarity, hasSpecialEffect, WEAPONS, WEAPONS_BY_ID } from '.
  */
 export const PICKUP_RADIUS = 110;
 
-export const CRATE_TYPES = Object.freeze({ weapon: 0, sustain: 1, empty: 2, trap: 3 });
+/** `ammo`: Munitionskiste (Kistenfassung 4); `weaponId` trägt dort die Zufallswahl, `ammo` die Menge 1 bis 5. */
+export const CRATE_TYPES = Object.freeze({ weapon: 0, sustain: 1, empty: 2, trap: 3, ammo: 4 });
 /*
  * Die Seltenheits-Namen sind KEINE zweite Liste: sie kommen aus dem Katalog.
  * FUND (belegt, 2026-09-27): Hier stand dasselbe Vierfach-Literal ein zweites
@@ -128,7 +130,7 @@ export function weaponIdFromIndex(index) {
  */
 export function legeKiste(world, rng, x, y, kisten = KISTEN_OFT) {
   const contents = rollCrateContents(rng);
-  if (kisten >= KISTEN_WAFFEN) return legeKiste3(world, rng, x, y, contents);
+  if (kisten >= KISTEN_WAFFEN) return legeKiste3(world, rng, x, y, contents, kisten);
   const crateType = CRATE_TYPES[contents] ?? CRATE_TYPES.empty;
   /*
    * BEWUSSTER ZUSTAND (gemessen, 2026-09-27) — NICHT versehentlich aendern.
@@ -180,10 +182,11 @@ export function legeKiste(world, rng, x, y, kisten = KISTEN_OFT) {
 }
 
 /** Kistenfassung 3 (`config/kisten.js`): Inhalt `weapons` wird eine Waffenkiste, Stufe vor Waffe, Farbe nach Stufe. */
-function legeKiste3(world, rng, x, y, contents) {
+function legeKiste3(world, rng, x, y, contents, kisten = KISTEN_WAFFEN) {
+  if (kisten >= KISTEN_MUNITION && contents === 'empty') return legeMunitionskiste(world, rng, x, y);
   const crateType = CRATE_TYPES[contents === 'weapons' ? 'weapon' : contents] ?? CRATE_TYPES.empty;
   const weapon = crateType === CRATE_TYPES.weapon ? waehleWaffeNachStufe(rng) : null;
-  const magazin = weapon ? KISTEN_MUNITION_STUFE[weapon.powerTier] : undefined;
+  const magazin = weapon && kisten < KISTEN_MUNITION ? KISTEN_MUNITION_STUFE[weapon.powerTier] : undefined;
   const entityId = world.createEntity();
   world.addComponent(entityId, 'Position', { x, y });
   world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
@@ -195,6 +198,23 @@ function legeKiste3(world, rng, x, y, contents) {
     // 0 = volles Magazin; seltene Waffen liegen mit weniger Schuss in der Kiste.
     ammo: magazin !== undefined ? Math.min(magazin, weapon.maxAmmo || magazin) : 0,
     inFlight: 0, flightTicks: 0,
+  });
+  return entityId;
+}
+
+/**
+ * Munitionskiste (Kistenfassung 4): Menge 1 bis 5 gleichverteilt (`ammo`) und eine Zufallswahl 1 bis 1000 (`weaponId`),
+ * aus der das Aufheben deterministisch EINE begrenzte Waffe des Spielers wählt (kein Zufall beim Aufheben nötig).
+ */
+function legeMunitionskiste(world, rng, x, y) {
+  const menge = MUNITION_KISTE_MIN + rng.nextIntBelow(MUNITION_KISTE_MAX - MUNITION_KISTE_MIN + 1);
+  const wahl = 1 + rng.nextIntBelow(1000);
+  const entityId = world.createEntity();
+  world.addComponent(entityId, 'Position', { x, y });
+  world.addComponent(entityId, 'Velocity', { x: 0, y: 0 });
+  world.addComponent(entityId, 'Crate', {
+    crateType: CRATE_TYPES.ammo, crateX: x, crateY: y, rarity: 0,
+    weaponId: wahl, picked: 0, ammo: menge, inFlight: 0, flightTicks: 0,
   });
   return entityId;
 }
@@ -288,6 +308,9 @@ export class LootSystem {
           break;
         }
 
+        // Munitionskiste: bleibt liegen, solange der Spieler keine Waffe hat, die sich füllen lässt.
+        if (crateType === CRATE_TYPES.ammo && !inventory?.fuellbareWaffen?.(playerId)?.length) continue;
+
         world.setComponent(crateId, 'Crate', 'picked', 1);
         const reward = this.#applyPickup(world, playerId, crateType, weaponIndex, damageSystem, inventory, crateId);
         events?.emit('crate_pickup', { crateId, playerId, crateType, reward });
@@ -309,6 +332,12 @@ export class LootSystem {
           inventory.grantWeapon(playerId, weaponId, uebergeben);
         }
         return { kind: 'weapon', weaponId, ammo: kistenMunition };
+      }
+      case CRATE_TYPES.ammo: {
+        const menge = world.getComponent(crateId, 'Crate', 'ammo') || 0;
+        const wahl = world.getComponent(crateId, 'Crate', 'weaponId') || 0;
+        const gefuellt = inventory?.fuelleMunitionskiste?.(playerId, wahl, menge) ?? null;
+        return { kind: 'ammo', weaponId: gefuellt?.weaponId ?? null, amount: gefuellt?.amount ?? 0 };
       }
       case CRATE_TYPES.sustain: {
         const amount = 25;

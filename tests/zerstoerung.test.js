@@ -609,7 +609,7 @@ function gold3() {
   z.krater(360, 150, 18, 115);
   for (let i = 0; i < 200; i++) z.schritt();
   // (b) Im Match: Brett über der Figur, Pfeiler gekappt.
-  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN, kisten: KISTEN_OFT });
+  const match = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', zerstoerung: ZERSTOERUNG_SCHOLLEN, kisten: KISTEN_OFT, waffen: 10 }); // Goldwerte gelten für Waffenfassung 10 (Fassung 11 ändert das Inventar und damit den Hash)
   match.start();
   const aufbau = baueBrett(match);
   match.setzung.krater(aufbau.px, aufbau.boden - 45, 14, 100);

@@ -35,7 +35,7 @@ export function messe(kisten) {
   const stufe = Object.fromEntries(STUFEN.map(s => [s, 0]));
   const je = new Map();
   let waffenKisten = 0; let alle = 0; let proPartieSumme = 0; let verschiedenSumme = 0;
-  let kistenOhne = 0; const verteilung = {};
+  let kistenOhne = 0; let munitionskisten = 0; const verteilung = {};
   for (let seed = 1; seed <= SEEDS; seed += 1) {
     const rng = new MatchSeedManager(seed * 7919).getSubRng('LOOT');
     const gesehen = new Set(); let waffen = 0;
@@ -47,6 +47,7 @@ export function messe(kisten) {
         legeKiste(welt, rng, 0, 0, kisten);
         const k = welt.kisten[0]; k.ammo ??= 0;
         alle += 1;
+        if (k.crateType === CRATE_TYPES.ammo) munitionskisten += 1;
         if (k.crateType !== CRATE_TYPES.weapon) continue;
         const w = WEAPONS_BY_ID[weaponIdFromIndex(k.weaponId)];
         waffenKisten += 1; waffen += 1; stufe[w.powerTier] += 1;
@@ -67,7 +68,7 @@ export function messe(kisten) {
   const proPartie = Object.fromEntries(STUFEN.map(s => [s, +(100 * (1 - Math.pow(1 - (proWaffe[s] / 100), proPartieSumme / SEEDS))).toFixed(1)]));
   return {
     kisten, kistenJeRunde: +(alle / SEEDS / RUNDEN).toFixed(2), rundenOhneKiste: +(kistenOhne / SEEDS / RUNDEN * 100).toFixed(1),
-    waffenkistenJePartie: +(proPartieSumme / SEEDS).toFixed(1), verschiedeneJePartie: +(verschiedenSumme / SEEDS).toFixed(1),
+    waffenkistenJePartie: +(proPartieSumme / SEEDS).toFixed(1), munitionskistenJePartie: +(munitionskisten / SEEDS).toFixed(1), verschiedeneJePartie: +(verschiedenSumme / SEEDS).toFixed(1),
     anteilStufeProzent: anteil, katalogJeStufe: katalog, prozentJeWaffeProKiste: proWaffe,
     chanceEineWaffePartieProzent: proPartie, nieGezogen: nie,
     partienMitWeniger3Waffen: +(100 * Object.entries(verteilung).filter(([k]) => Number(k) < 3).reduce((a, [, v]) => a + v, 0) / SEEDS).toFixed(1),

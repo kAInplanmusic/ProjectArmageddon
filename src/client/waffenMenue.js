@@ -25,6 +25,7 @@ import {
 } from '../shared/config/weapons.js';
 import { artLabel } from '../shared/config/wirkungstexte.js';
 import { getWaffe } from '../shared/config/waffen-fassung.js';
+import { munitionsKlasse } from '../shared/config/munition.js';
 
 const STUFEN_NAMEN = Object.freeze({
   common: 'gewöhnlich', uncommon: 'ungewöhnlich', rare: 'selten', epic: 'episch', legendary: 'legendär',
@@ -51,7 +52,7 @@ function bestandVon(figur) {
       weapon,
       nummer: position + 1,
       ammo,
-      maxAmmo: unbegrenzt ? Infinity : Math.max(weapon?.maxAmmo ?? 0, ammo),
+      maxAmmo: unbegrenzt ? Infinity : Math.max(munitionsKlasse(weapon), ammo), // Waffenfassung 11: Klasse der Waffe (1 bis 3), Kisten füllen bis 5
       unbegrenzt,
       cooldown: Math.max(0, Number(figur?.cooldowns?.[weaponId]) || 0),
       aktiv: weaponId === figur?.activeWeaponId,

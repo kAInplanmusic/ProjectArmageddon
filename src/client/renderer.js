@@ -1094,6 +1094,7 @@ export class Renderer {
           this.ctx.arc(0, 0, halb - 3, 0, Math.PI * 2);
           this.ctx.stroke();
           break;
+        case CRATE_TYPES.ammo: for (const dx of [-3, 0, 3]) this.ctx.strokeRect(dx - 0.5, -halb + 3, 1, size - 6); break; // Patronen
         case CRATE_TYPES.trap: {
           // Warndreieck — die einzige Art, die man NICHT öffnen will.
           this.ctx.beginPath();

@@ -958,6 +958,7 @@ export const EREIGNIS_WIRKUNGEN = {
       const reward = n.reward;
       const text = reward?.kind === 'weapon'
         ? `${who?.label ?? 'Spieler'} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
+        : reward?.kind === 'ammo' ? `${who?.label ?? 'Spieler'} füllt ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'} um ${reward.amount} Munition`
         : reward?.kind === 'heal' ? `${who?.label ?? 'Spieler'} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who?.label ?? 'Spieler'} löst eine Sprengfalle aus`
         : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
@@ -973,6 +974,7 @@ export const EREIGNIS_WIRKUNGEN = {
       const reward = n.reward;
       const text = reward?.kind === 'weapon'
         ? `${who} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
+        : reward?.kind === 'ammo' ? `${who} füllt ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'} um ${reward.amount} Munition`
         : reward?.kind === 'heal' ? `${who} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who} löst eine Sprengfalle aus`
         : `${who} öffnet eine leere Kiste`;
