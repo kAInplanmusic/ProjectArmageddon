@@ -112,7 +112,7 @@ export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = 
     if (aktiv?.alive) {
       const ziel = naechsterGegner(z, aktiv);
       const ids = match.inventory.getWeapons(aktiv.entityId)
-        .filter(id => match.inventory.getAmmo(aktiv.entityId, id) > 0);
+        .filter(id => match.inventory.getAmmo(aktiv.entityId, id) > 0 && !(match.cooldownFor(aktiv.entityId, id) > 0));
       if (ziel && ids.length) {
         const kandidaten = [];
         for (const id of ids) {
