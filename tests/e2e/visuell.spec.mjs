@@ -1,68 +1,97 @@
 import { test, expect } from '@playwright/test';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { FORMATE, oeffneMenue, oeffneLobby, starteHud } from './helfer/ux-zustand.mjs';
+import { vergleicheStruktur, GRENZEN } from './helfer/struktur-vergleich.mjs';
 
 /**
  * Visuelle Baselines für Menü, Lobby und HUD.
  *
- * Zwei Formate: Desktop 1280x720 und Hochformat 390x844. Der Vergleich läuft
- * über `toHaveScreenshot` mit `maxDiffPixelRatio: 0.02`; Animationen sind
+ * Zwei Formate: Desktop 1280x720 und Hochformat 390x844. Animationen sind
  * abgeschaltet, das HUD wird mit festem Seed und eingefrorener Renderer-Zeit
  * gezeichnet.
  *
- * Mit `PA_UX_LOOK=1` legt der Lauf zusätzlich die Desktop-Bilder unter
+ * ## Wie verglichen wird (seit 2026-10-29: Struktur statt Pixel)
+ *
+ * Bis dahin zählte `toHaveScreenshot` abweichende Pixel (`maxDiffPixelRatio` 0,02).
+ * Das hing an der Render-Umgebung: Schriftmetriken und Rasterung verschieben Text
+ * um 1–2 px, und am 2026-10-25 waren zwei Vergleiche rot (0,04 gegen 0,02), obwohl
+ * der Code nichts geändert hatte (VIS-1, `docs/offene-punkte.md`).
+ *
+ * Jetzt vergleicht `helfer/struktur-vergleich.mjs`: Kanten mit Spielraum (±8 px),
+ * Flächenfarben mit Spielraum und die örtliche Häufung fehlender Kanten. Versatz
+ * und anders geglättete Buchstaben fallen heraus; ein fehlender Knopf, ein neues
+ * Element, eine andere Flächenfarbe oder ein anderes Layout nicht. Empfindlichkeit
+ * UND Unempfindlichkeit sind in `tests/struktur-vergleich.test.js` gemessen.
+ *
+ * **Grenze, ehrlich:** Der Vergleich deckt Rasterung und kleinen Versatz ab, NICHT
+ * einen Rechner mit anderer Schriftbreite, auf dem Zeilen anders umbrechen — das
+ * ist eine Layoutänderung, und von einem fehlenden Element strukturell nicht zu
+ * unterscheiden. Gegen die Altbilder des fremden Rechners (VIS-1) besteht das
+ * HUD, die Lobby nicht (7,8 % Kanten, Umbruch der Zeile „Fraktion je Team“).
+ *
+ * Mit `PA_UX_LOOK=1` legt der Lauf zusätzlich die Bilder unter
  * `test-results/ux-look/` ab (nicht versioniert, Beleg für den UX-Audit).
  *
- * ## Wenn ein Vergleich rot wird — erst messen, dann nachziehen
+ * ## Wenn ein Vergleich rot wird
  *
- * Die abgelegten Bilder hängen an der RENDER-UMGEBUNG (Schriftmetriken,
- * Rasterung), nicht nur am Code. Der Dateiname trägt nur `-chromium-linux`; zwei
- * verschiedene Linux-Rechner landen also auf demselben Namen. Am 2026-10-25
- * waren `lobby-390x844` und `hud-390x844` aus genau diesem Grund rot: 0,04
- * Abweichung gegen 0,02 Toleranz, obwohl der Code nichts geändert hatte.
+ * Die Meldung nennt, WAS abweicht (Kanten, Farben, Häufung); das aktuelle Bild
+ * hängt am Testbericht. Dann erst messen, dann nachziehen:
  *
- * `--update-snapshots` ist deshalb **kein Reflex**. Erst diese drei Messungen,
- * zusammen etwa zwei Minuten:
+ * 1. **Stabil?** Dreimal laufen lassen; streuen die Läufe nur minimal, ist der
+ *    Zustand eingefroren und die Abweichung echt.
+ * 2. **Code?** Auf dem Stand VOR dem verdächtigen Commit laufen lassen. Kommt
+ *    dasselbe Bild heraus, liegt es an der Umgebung.
  *
- * 1. **Läuft es stabil?** Denselben Test dreimal laufen lassen und die Bilder
- *    vergleichen (`PA_UX_LOOK=1` schreibt sie nach `test-results/ux-look/`).
- *    Streuen die Läufe untereinander nur um wenige Pixel, ist der Zustand
- *    eingefroren und der Fehler echt — kein Flake.
- * 2. **Hat der Code es verursacht?** Denselben Test auf dem Stand VOR dem
- *    verdächtigen Commit laufen lassen. Kommt dasselbe Bild heraus, liegt es
- *    nicht am Code, sondern an der Umgebung.
- * 3. **Passt ein Versatz?** Verschiebt das Bild um ±2 px: halbiert das den
- *    Fehler, ist es ein Layout-Versatz (meist Schriftmetriken), kein
- *    Inhaltsunterschied.
+ * Erst wenn beides gegen „Code" spricht, ist das Nachziehen richtig, und dann nur
+ * die roten Bilder:
  *
- * Erst wenn 1–3 gegen „Code" sprechen, ist das Nachziehen richtig — und dann
- * **nur die roten Dateien**, nicht der ganze Satz:
+ *     PA_BILDER_NEU=1 npx playwright test tests/e2e/visuell.spec.mjs \
+ *       -g "Lobby 390x844"
  *
- *     npx playwright test tests/e2e/visuell.spec.mjs \
- *       -g "Lobby 390x844|HUD 390x844" --update-snapshots
- *
- * Danach zweimal vollständig laufen lassen. Ein einzelnes Grün beweist nichts —
- * eine Basis, die nur zufällig einmal passt, ist keine Basis.
- *
- * Was NICHT in Frage kommt: `maxDiffPixelRatio` hochsetzen, damit es grün wird.
- * Dann prüft der Vergleich nichts mehr und meldet trotzdem Erfolg.
+ * Danach zweimal vollständig laufen lassen. Was NICHT in Frage kommt: die Grenzen
+ * in `GRENZEN` hochsetzen, damit es grün wird — dann prüft der Vergleich nichts mehr.
  */
 
-const OPTIONEN = {
-  animations: 'disabled',
-  caret: 'hide',
-  maxDiffPixelRatio: 0.02,
-};
+const BILDER = fileURLToPath(new URL('./visuell.spec.mjs-snapshots/', import.meta.url));
+const NEU_ERZEUGEN = process.env.PA_BILDER_NEU === '1';
+
+/**
+ * Prüft das aktuelle Bild gegen die abgelegte Basis.
+ *
+ * Wartet vorher auf die Webfonts und zwei Bildläufe: Der Menü-Zustand lädt
+ * Schriftschnitte erst beim ersten Gebrauch nach (z. B. Exo 2 in Fettdruck beim
+ * Aufklappen der Lobby). Ein Bild, das davor entsteht, trägt eine Ersatzschrift
+ * und ist eine Zufallsmessung.
+ */
+async function pruefeBild(page, name) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  });
+  const ist = await page.screenshot({ animations: 'disabled', caret: 'hide' });
+  const pfad = `${BILDER}${name}-chromium-linux.png`;
+  if (NEU_ERZEUGEN) {
+    mkdirSync(BILDER, { recursive: true });
+    writeFileSync(pfad, ist);
+    return;
+  }
+  expect(existsSync(pfad), `Keine Basis ${name}. Anlegen mit PA_BILDER_NEU=1`).toBe(true);
+  const urteil = vergleicheStruktur(readFileSync(pfad), ist, GRENZEN);
+  if (!urteil.ok) {
+    await test.info().attach(`${name}-ist.png`, { body: ist, contentType: 'image/png' });
+  }
+  expect(urteil.ok, `${name}: ${urteil.grund}`).toBe(true);
+}
 
 /*
  * NUR LOKAL — der Grund steht in `docs/testgrenzen.md`, Abschnitt „Bildvergleiche".
  *
- * Die abgelegten Bilder hängen an der Render-Umgebung (Schriftmetriken,
- * Rasterung), nicht nur am Code. Gemessen am 2026-10-25: derselbe Code auf einem
- * anderen Rechner ergab 104.130 abweichende Pixel (31,6 %). Ein Vergleich, der
- * auf einer fremden Maschine läuft, prüft also nicht das Spiel, sondern den
- * Unterschied zwischen zwei Rechnern.
+ * Die abgelegten Bilder entstanden auf einem Rechner. Der Strukturvergleich (oben)
+ * verträgt Rasterung und kleinen Versatz, aber NICHT andere Schriftbreiten mit
+ * anderem Zeilenumbruch: gegen die Altbilder des fremden Rechners besteht von zwei
+ * Bildern eines (siehe Kopf). Ob die CI-Runner gleich rendern, ist NICHT gemessen;
+ * erst ein Lauf dort kann die Sperre aufheben.
  *
  * Deshalb setzt die CI `PA_OHNE_BILDVERGLEICH=1`. Die Tests verschwinden dabei
  * NICHT stillschweigend, sondern erscheinen als übersprungen MIT dieser
@@ -95,7 +124,7 @@ for (const [formatName, viewport] of Object.entries(FORMATE)) {
       await expect(page.locator('#menu-overlay')).toBeVisible();
       await page.locator('#menu-overlay .overlay-card').evaluate(el => { el.scrollTop = 0; });
       await merkeLook(page, `menue-${formatName}`);
-      await expect(page).toHaveScreenshot(`menue-${formatName}.png`, OPTIONEN);
+      await pruefeBild(page, `menue-${formatName}`);
       expect(fehler).toEqual([]);
     });
 
@@ -104,7 +133,7 @@ for (const [formatName, viewport] of Object.entries(FORMATE)) {
       const lobby = await oeffneLobby(page);
       await lobby.evaluate(el => el.scrollIntoView({ block: 'start' }));
       await merkeLook(page, `lobby-${formatName}`);
-      await expect(page).toHaveScreenshot(`lobby-${formatName}.png`, OPTIONEN);
+      await pruefeBild(page, `lobby-${formatName}`);
       expect(fehler).toEqual([]);
     });
 
@@ -112,7 +141,7 @@ for (const [formatName, viewport] of Object.entries(FORMATE)) {
       const fehler = await oeffneMenue(page);
       await starteHud(page);
       await merkeLook(page, `hud-${formatName}`);
-      await expect(page).toHaveScreenshot(`hud-${formatName}.png`, OPTIONEN);
+      await pruefeBild(page, `hud-${formatName}`);
       expect(fehler).toEqual([]);
     });
   });

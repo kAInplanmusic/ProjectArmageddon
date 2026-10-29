@@ -135,6 +135,34 @@ werden dieselben zwei Vergleiche dort rot. Sauber wäre ein Vergleich, der von
 der Umgebung unabhängig ist (etwa Kanten- statt Pixelvergleich, oder Toleranz je
 Format). Das ist eine eigene Aufgabe und steht hier als solche.
 
+**Teilweise gelöst (2026-10-29): Strukturvergleich statt Pixelvergleich.**
+`tests/e2e/helfer/struktur-vergleich.mjs` vergleicht Kanten und Flächenfarben mit
+Spielraum (±8 px) sowie die örtliche Häufung fehlender Kanten; `visuell.spec.mjs`
+nutzt ihn statt `toHaveScreenshot`. Empfindlichkeit und Unempfindlichkeit sind in
+`tests/struktur-vergleich.test.js` an den echten Baselines gemessen (27 Tests):
+Versatz bis 3 px und gleiche Bilder bestehen; fehlende Karte, Knopf, Etikett oder
+Chip, andere Flächenfarbe, 40 px Versatz und andere Seiten schlagen an. Im
+Browser belegt: blendet man die „Beitreten“-Knöpfe aus, wird `Lobby 390x844` rot
+(48 Zellen gehäuft, 10,5 % Kanten fehlen).
+
+**Gegen den echten fremden Rechner geprüft** (die Altbilder aus `4477c55^`, auf
+denen 31,6 % der Pixel abwichen): `HUD 390x844` besteht (1,4 % Kanten),
+`Lobby 390x844` **besteht nicht** (8 % Kanten). Grund: Dort ist die Schrift
+breiter, die Zeile „Fraktion je Team — Aussehen der Figuren“ bricht um, alles
+darunter rutscht eine Zeile nach unten. Das ist eine Layoutänderung und von
+einem fehlenden Element strukturell nicht zu unterscheiden; ein Vergleich, der
+sie durchließe, würde auch fehlende Knöpfe durchlassen.
+
+**Was bleibt offen:** Ob die CI-Runner wie dieser Rechner rendern, ist nicht
+gemessen, deshalb bleibt `PA_OHNE_BILDVERGLEICH=1` in der CI gesetzt. Ein Lauf
+dort entscheidet. Fällt er rot aus, ist die Ursache vermutlich die Schrift: die
+Ersatzkette von `--font` in `index.html` nennt Chakra Petch und Rajdhani, die
+nirgends gebündelt sind; `tokens.css` setzt zwar Exo 2 vorn, gebündelt ist aber
+nur, was `design.css` importiert. Eine feste, gebündelte Schrift wäre die
+Wurzelbehebung. Dazu ist eine Entscheidung nötig, weil sie das Aussehen ändert.
+Außerdem wartet das Bild jetzt vor der Aufnahme auf `document.fonts.ready` und
+zwei Bildläufe, weil Schriftschnitte beim Aufklappen der Lobby erst nachladen.
+
 ## 4b. Betriebsnotiz: der Vergleichs-Sweep schreibt in versionierte Dateien
 
 `tests/e2e/vergleich-screenshots.spec.mjs` erzeugt bei **jedem** Lauf die 27
