@@ -54,6 +54,8 @@ import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
+import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
+import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
@@ -491,6 +493,8 @@ export class MatchController {
   /** Cookie-System (nur lesend/ fuer Messungen und Tests). */
   get cookieSystem() { return this.#cookie; }
   #feuer = null;
+  /** Minen (Bodenobjektfassung 2, `systems/bodenobjektSystem.js`); `null` ohne die Marke. */
+  #bodenobjekte = null;
   /** 1 = die Figur war im letzten Schritt in der Luft (für das Lande-Ereignis). */
   #airborne = new Map();
   #maelstrom;
@@ -607,7 +611,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, // Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, // Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
@@ -660,6 +664,7 @@ export class MatchController {
     this.gehen = this.bewegung >= BEWEGUNG_GEHEN ? new BewegungSystem(this) : null; // Gehen am Boden (`systems/bewegungSystem.js`)
     this.zugregeln = normalisiereZugregeln(zugregeln);
     this.klassen = normalisiereKlassen(klassen);
+    this.bodenobjekte = normalisiereBodenobjekte(bodenobjekte);
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
@@ -738,6 +743,7 @@ export class MatchController {
     this.#world.services.match.wind = this.#rollWind();
     this.#wind = this.#world.services.match.wind;
     this.#spawnRoundLoot();
+    this.#baueBodenobjekte();
     this.#status = 'playing';
     this.#beginTurn(0);
     return this;
@@ -960,6 +966,31 @@ export class MatchController {
     this.#turnOrder.push(...eintraege.map(eintrag => eintrag.entityId));
   }
 
+  /**
+   * Minen (Bodenobjektfassung 2): das System anlegen und die liegenden Minen aus dem Seed setzen.
+   * Steht NACH dem Aufstellen der Figuren (Mindestabstand zu den Startplätzen) und nach den Kisten
+   * (eigene Zufallsströme: die Kisten bleiben unberührt).
+   */
+  #baueBodenobjekte() {
+    if (this.bodenobjekte < BODENOBJEKTE_MINEN) return;
+    this.#bodenobjekte = new BodenobjektSystem({
+      rng: this.#seedManager.getSubRng('BODENOBJEKTE'),
+      world: this.#world,
+      events: this.#events,
+      q: {
+        breite: this.width,
+        surfaceYAt: x => this.surfaceYAt(x),
+        bodenNahe: (x, y) => this.bodenNahe(x, y),
+        waterLevelAt: (x, y) => this.waterLevelAt(x, y),
+        startplaetze: () => this.#players.map(p => ({
+          x: this.#world.getComponent(p.entityId, 'Position', 'x') ?? 0,
+          y: this.#world.getComponent(p.entityId, 'Position', 'y') ?? 0,
+        })),
+      },
+    });
+    this.#bodenobjekte.setzeLiegende();
+  }
+
   #spawnRoundLoot() {
     try {
       this.#loot.spawnRoundCrates(this.#world, {
@@ -1016,6 +1047,7 @@ export class MatchController {
     this.#stepGuenther();
     this.#stepCookie();
     this.#feuer?.update();
+    this.#bodenobjekte?.update();
     // KEIN `drain()` hier: das würde die Warteschlange leeren und die
     // Ereignisse an die Push-Handler verteilen, bevor der Konsument sie lesen
     // kann. Der Client und der Server holen sie über `consumeEvents()`; die
@@ -2516,6 +2548,8 @@ export class MatchController {
       },
       // Aufgestellte Geschütze — schlichte Einträge, keine ECS-Entities.
       turrets: [...this.#turrets.values()],
+      // Minen: nur mit Bodenobjektfassung 2 (sonst bleibt der Schlüsselsatz alter Partien gleich).
+      bodenobjekte: this.#bodenobjekte ? this.#bodenobjekte.snapshot() : null,
       // Kartengröße und Ausrichtung (für die Anzeige und die Umrechnung).
       terrainWidth: this.width,
       terrainHeight: this.height,
@@ -2618,6 +2652,8 @@ export class MatchController {
 
   /** Das Feuersystem (ab `config.feuer` 2) oder `null`. */
   get feuerSystem() { return this.#feuer; }
+  /** Das Minensystem (`null` ohne Bodenobjektfassung 2). */
+  get bodenobjektSystem() { return this.#bodenobjekte; }
   /** Aktuelle Zugzeit in Millisekunden (für Persistenz und Replay). */
   get turnDurationMs() { return this.#turnDurationMs; }
   get turnPauseMs() { return Math.round(this.#turnPauseTicks * 1000 / SIMULATION_HZ); }

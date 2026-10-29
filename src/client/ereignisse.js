@@ -626,6 +626,33 @@ export const EREIGNIS_WIRKUNGEN = {
   }),
 
   /*
+   * Minen (Bodenobjektfassung 2). Der Zustand lebt im Match (lokal: `getState().bodenobjekte`) bzw. in der
+   * Minenliste des Online-Clients (`k.fernzustand.minen()`), die diese Ereignisse fortschreiben; die Explosion
+   * selbst kommt als `explosion` (Krater, Blitz, Klang) wie bei jedem Einschlag.
+   */
+  mine_placed: beide((k, n) => {
+    k.fernzustand?.minen?.()?.set(n.mineId, { id: n.mineId, x: n.x, y: n.y, ownerId: n.ownerId ?? null, teamId: n.teamId ?? null, art: n.art, blindgaenger: false, ausgeloest: false });
+    // Liegende Minen des Kartenaufbaus melden sich nicht im Protokoll (sie liegen von Anfang an).
+    if (n.art !== 'liegend') {
+      k.hud?.log(n.art === 'abgeworfen' ? 'Mine abgeworfen' : 'Mine abgelegt', 'accent');
+      k.renderer?.addFlash(n.x, n.y, 10, { color: '#c9503f' });
+    }
+  }),
+
+  mine_exploded: beide((k, n) => {
+    k.fernzustand?.minen?.()?.delete(n.mineId);
+    k.hud?.log(n.ausgang === 'super' ? 'Superexplosion! Eine Mine macht doppelten Schaden' : 'Eine Mine explodiert', n.ausgang === 'super' ? 'danger' : 'accent');
+    if (n.ausgang === 'super') k.renderer?.addFlash(n.x, n.y, 70, { color: '#ffd24a' });
+  }),
+
+  mine_dud: beide((k, n) => {
+    const mine = k.fernzustand?.minen?.()?.get(n.mineId);
+    if (mine) mine.blindgaenger = true;
+    k.hud?.log('Blindgänger! Die Mine explodiert nicht', 'neutral');
+    k.renderer?.addFlash(n.x, n.y, 8, { color: '#8a8f98' });
+  }),
+
+  /*
    * Wirkungen und Zustände kommen im Online-Modus als Serverereignisse.
    * Sie werden über dieselben Helfer gemeldet wie lokal, damit die
    * Meldungen in beiden Betriebsarten gleich lauten.

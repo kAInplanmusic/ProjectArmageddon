@@ -43,6 +43,7 @@ const EINORDNUNG = {
   '#drawPoopPiles': 'welt',
   '#drawCrates': 'welt',
   '#drawTurrets': 'welt',
+  '#drawMinen': 'welt',
   '#drawMaelstrom': 'bildschirm',
   '#drawAimPreview': 'welt',
   '#drawPrediction': 'welt',

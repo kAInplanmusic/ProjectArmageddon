@@ -50,6 +50,7 @@ import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
+import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
 import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
 import { LaufVorhersage } from './laufVorhersage.js';
 import { exposeDebugApi } from './debugApi.js';
@@ -1263,7 +1264,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom, kartenart,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1607,6 +1608,8 @@ class Game {
     client.on('terrain_hash', meldung => this.#pruefeTerrainHash(meldung));
     client.on('terrain_state', stand => this.#baueKarteNeu(stand));
     client.on('lobby_state', payload => {
+      // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
+      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }]));
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
       }
@@ -2016,6 +2019,8 @@ class Game {
        * Besitzer hätte einen unsichtbaren Angreifer.
        */
       turrets: snapshot.turrets ?? [],
+      // Minen: nicht im binären Snapshot, sondern aus dem Beitrittszustand und den Ereignissen `mine_*`.
+      bodenobjekte: [...(this.remoteMinen?.values() ?? [])],
       /*
        * Günther aus dem Snapshot (Protokoll v7).
        *
@@ -2384,6 +2389,8 @@ class Game {
         setzeStatus: wert => { this.remoteStatus = wert; },
         setzeSieger: wert => { this.remoteWinner = wert; },
         setzeEinschnitt: wert => { this.remoteInset = wert; },
+        // Minen (Bodenobjektfassung 2): Online führen die Ereignisse `mine_*` diese Liste fort.
+        minen: () => (this.remoteMinen ??= new Map()),
       },
     };
   }

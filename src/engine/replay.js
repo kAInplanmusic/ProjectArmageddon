@@ -27,6 +27,7 @@ import { COOKIE_ALT, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG_ALT, normalisiereBewegung } from '../shared/config/bewegung.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
+import { BODENOBJEKTE_ALT, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
@@ -72,7 +73,7 @@ export class ReplayRecorder {
     maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT,
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT,
     erstelltAm = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
@@ -126,6 +127,8 @@ export class ReplayRecorder {
       zugregeln: normalisiereZugregeln(zugregeln),
       /* Klassenfassung (`config/klassen-fassung.js`): Scout angehoben. Eine Datei OHNE das Feld ist `KLASSEN_ALT`. */
       klassen: normalisiereKlassen(klassen),
+      /* Bodenobjektfassung (`config/bodenobjekte.js`): Minen. Eine Datei OHNE das Feld ist `BODENOBJEKTE_ALT` (keine Minen). */
+      bodenobjekte: normalisiereBodenobjekte(bodenobjekte),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -309,7 +312,8 @@ export class ReplayRecorder {
       zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT,
       kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT,
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
-      bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT, klassen: parsed.config?.klassen ?? KLASSEN_ALT });
+      bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT, klassen: parsed.config?.klassen ?? KLASSEN_ALT,
+      bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -407,6 +411,7 @@ export class ReplayPlayer {
       bewegung: config.bewegung,
       zugregeln: config.zugregeln,
       klassen: config.klassen,
+      bodenobjekte: config.bodenobjekte,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

@@ -1025,6 +1025,38 @@ export class Renderer {
    * Die Restrunden stehen als kleine Punkte über dem Sockel: Wer ein Geschütz
    * sieht, soll einschätzen können, wie lange es noch feuert.
    */
+  /**
+   * Minen (Bodenobjektfassung 2): kleine, dunkle Scheibe mit Stachel und rotem Lämpchen; ein Blindgänger ist
+   * grau und blinkt nicht. Reine Darstellung, kein Spielzustand.
+   */
+  #drawMinen(minen) {
+    for (const mine of minen) {
+      const blind = Boolean(mine.blindgaenger);
+      const farbe = mine.teamId === null || mine.teamId === undefined ? '#7d8590' : TEAM_COLORS[mine.teamId % TEAM_COLORS.length];
+      this.ctx.save();
+      this.ctx.translate(mine.x, mine.y);
+      this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      this.ctx.beginPath();
+      this.ctx.ellipse(1, 3, 9, 3, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.fillStyle = blind ? '#4a4f57' : '#2b3038';
+      this.ctx.strokeStyle = farbe;
+      this.ctx.lineWidth = 1.5;
+      this.ctx.beginPath();
+      this.ctx.ellipse(0, 0, 8, 4, 0, Math.PI, 0);
+      this.ctx.closePath();
+      this.ctx.fill();
+      this.ctx.stroke();
+      // Lämpchen: blinkt (zwei Hertz) und steht bei „reduzierte Bewegung" still; ein Blindgänger leuchtet nicht.
+      const an = !blind && (this.reducedMotion || Math.floor(this.time / 30) % 2 === 0);
+      this.ctx.fillStyle = an ? '#ff4d3d' : '#5a2a28';
+      this.ctx.beginPath();
+      this.ctx.arc(0, -4.5, 1.6, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+  }
+
   #drawTurrets(turrets) {
     for (const turret of turrets) {
       const farbe = TEAM_COLORS[(turret.teamId ?? 0) % TEAM_COLORS.length];
@@ -2311,6 +2343,7 @@ export class Renderer {
      * Kiste (die man aufheben kann) wichtiger als das Geschütz.
      */
     this.#drawTurrets(state.turrets ?? []);
+    this.#drawMinen(state.bodenobjekte ?? []);
     this.#drawAimPreview(aimPreview);
     /*
      * Die Schussvorhersage liegt VOR der Zielhilfe und in eigener Farbe.

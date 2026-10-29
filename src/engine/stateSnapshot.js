@@ -220,6 +220,8 @@ export function baueAnsichtszustand(quelle) {
     guenther: quelle.guenther,
     // Cookie nur, wenn es ihn gibt (`config.cookie` 2): Zustände alter Partien behalten ihren Schlüsselsatz.
     ...(quelle.cookie ? { cookie: quelle.cookie } : {}),
+    // Minen nur mit Bodenobjektfassung 2: Zustände alter Partien behalten ihren Schlüsselsatz (Hashes bleiben gleich).
+    ...(quelle.bodenobjekte ? { bodenobjekte: quelle.bodenobjekte } : {}),
     // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
     // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
     // und den Tests.
@@ -309,6 +311,10 @@ export function hashState(state) {
         c.rarity ?? null,
         c.weaponId ?? null,
       ]),
+      // Minen nur mit Bodenobjektfassung 2 im Hash (sonst bleibt der Schlüsselsatz und damit jeder alte Hash gleich).
+      ...(state.bodenobjekte
+        ? { bodenobjekte: state.bodenobjekte.map(m => [m.id, Math.round(m.x), Math.round(m.y), m.ownerId ?? null, m.art, m.blindgaenger, m.ausgeloest]) }
+        : {}),
     });
 
     let hash = 2166136261;

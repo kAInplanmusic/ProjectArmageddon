@@ -1,7 +1,40 @@
 # Auftrag: Minen und Fässer als Bodenobjekte
 
-*Stand: 2026-10-29 · Status: **Entscheidungen getroffen (2026-10-29), noch nichts gebaut** · Quelle: MASTERDOTO, „Standardmechaniken":
+*Stand: 2026-10-29 · Status: **Minen-Kern gebaut (siehe Abschnitt 0), Waffe und Fässer offen** · Quelle: MASTERDOTO, „Standardmechaniken":
 „Minen / Fässer als Bodenobjekte — FEHLT, Aufwand groß (neue Entität, Auslöser, Replay)".*
+
+## 0. Umsetzungsstand (2026-10-29)
+
+**Gebaut und geprüft (`npm test` 2107/2107 grün):**
+
+| Teil | Wo |
+|---|---|
+| Marke `config.bodenobjekte` (1 = keine Minen, 2 = Minen), im Replay-Kopf, in der Sicherung, im Server; neue Partien tragen 2 | `shared/config/bodenobjekte.js`, `engine/replay.js`, `server/persistence.js`, `server/gameServer.js`, `client/main.js` |
+| Seed-Zweig `BODENOBJEKTE` | `shared/seed.js` |
+| Explosionswirkung aus dem Geschoss herausgezogen, EINE Stelle für Geschoss und Mine (verhaltensgleich: alle Goldwerte unverändert) | `engine/explosion.js`, `engine/systems/projectileSystem.js` |
+| Minensystem: sofort scharf, Auslöseradius 24 px, Friendly Fire, 80 % normal / 5 % Super (doppelter Schaden) / 15 % Blindgänger, Kettenreaktion (höchstens 16 je Takt), Obergrenze 64 | `engine/systems/bodenobjektSystem.js` |
+| Liegende Minen aus dem Seed (0–4 je Karte, Abstand zu Startplätzen 140 px, untereinander 90 px, nur trocken) | `BodenobjektSystem#setzeLiegende`, aufgerufen in `match.js#baueBodenobjekte` |
+| Zustand und Hash nur mit Marke 2 (alte Hashes bitgleich) | `engine/stateSnapshot.js`, `match.js#getState` |
+| Ereignisse `mine_placed`, `mine_exploded`, `mine_dud` (Katalog, Sendefilter, lokale und Online-Behandlung), Online-Minenliste aus Beitrittszustand und Ereignissen | `shared/ereigniskatalog.js`, `client/ereignisse.js`, `client/main.js` |
+| Zeichnung (Scheibe mit Lämpchen, Blindgänger grau; „reduzierte Bewegung“ ohne Blinken) | `client/renderer.js#drawMinen` |
+| Tests (17): Ausgangsverteilung über 6000 Auslösungen, Superschaden genau doppelt, Blindgänger, Kette, Grenzen, Determinismus, Altmarke, Replay-Kopf | `tests/minen.test.js` |
+
+**Nicht geprüft:** Aussehen und Klang (kein Blick auf das fertige Bild, kein Gehör), Balance (die Werte 50 Schaden,
+Radius 48, Rückstoß 35 sind ein erster Ansatz in der Größenordnung der Wurfbomben), Verhalten in echten Online-Partien
+über die E2E-Auswahl hinaus.
+
+**Noch nicht gebaut und warum:**
+
+1. **Die Waffe „Mine“ (abgeworfen, abgelegt).** Der Waffenkatalog hat keine Mine. Ein 151. Katalogeintrag zieht nach
+   sich: (a) Er fällt in den Beutetopf (`pickWeaponForRarity` nimmt ALLE Waffen), das verändert die Kisteninhalte JEDES
+   Seeds und damit die Hashes bestehender Partien; das braucht eine Fassungsmarke oder einen Ausschluss aus dem Topf.
+   (b) 150 ist an mehreren Stellen festgenagelt (Katalog-, Munitions-, Animationsprüfung, README, Matrix).
+   (c) Icon, Held-/Silhouetten-Zellen und Geschossbild fehlen; ein Rückfall aufs Icon existiert, das Icon selbst nicht.
+   **Entscheidung nötig: Wie kommt ein Spieler an Minen?** (Kistenfund, Startausrüstung, eigene Kiste?) Ohne diese Antwort
+   wird nichts gebaut, das die Kisten anfasst.
+2. **Fässer.** Entwurf unverändert (Abschnitt 3 Punkt 4); noch nicht begonnen.
+3. **Server-Eingabe zum Ablegen** (`lege_mine` mit Prüfung aktiver Spieler, Munition, Platz, laufende Sitzung): hängt an der
+   Waffe. `BodenobjektSystem#legeAb` und `#lege` stehen bereit.
 
 ## 1. Ziel
 

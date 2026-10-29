@@ -23,6 +23,7 @@ import { GUENTHER_ALT } from '../shared/config/guenther.js';
 import { COOKIE_ALT } from '../shared/config/cookie.js';
 import { BEWEGUNG_ALT } from '../shared/config/bewegung.js';
 import { KLASSEN_ALT } from '../shared/config/klassen-fassung.js';
+import { BODENOBJEKTE_ALT } from '../shared/config/bodenobjekte.js';
 import { ZUGREGELN_ALT } from '../shared/config/zugregeln.js';
 import { FEUER_ALT } from '../shared/config/feuer.js';
 import { GELAENDE_ALT } from '../shared/config/gelaende.js';
@@ -285,6 +286,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       bewegung: saved.replay.config?.bewegung ?? BEWEGUNG_ALT,
       zugregeln: saved.replay.config?.zugregeln ?? ZUGREGELN_ALT,
       klassen: saved.replay.config?.klassen ?? KLASSEN_ALT,
+      // Alte Sicherungen ohne `bodenobjekte`: keine Minen.
+      bodenobjekte: saved.replay.config?.bodenobjekte ?? BODENOBJEKTE_ALT,
     })
     : null;
 

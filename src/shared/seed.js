@@ -39,6 +39,8 @@ export const SEED_OFFSETS = Object.freeze({
   COOKIE: 8_000_000,
   /** Brand, Lava und Ragnarök (Feuerfassung 2) — eigener Zweig, alle übrigen Ströme bleiben unberührt. */
   FEUER: 9_000_000,
+  /** Minen (Bodenobjektfassung 2): Auslöseausgang und liegende Minen — eigener Zweig, alle übrigen Ströme bleiben unberührt. */
+  BODENOBJEKTE: 10_000_000,
 });
 
 /**
