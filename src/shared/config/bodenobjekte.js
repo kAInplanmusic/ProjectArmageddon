@@ -10,6 +10,7 @@
  *     trägt dann keinen Schlüssel `bodenobjekte` (Hashes bleiben bitgleich).
  *   - `BODENOBJEKTE_MINEN` (2): `BodenobjektSystem` (`engine/systems/bodenobjektSystem.js`) mit eigenem
  *     Seed-Zweig `BODENOBJEKTE`.
+ *   - `BODENOBJEKTE_ABWURF` (4): wie 3, dazu fallen Fässer wie Kisten vom Himmel (je Runde mit `FAESSER.abwurfChance`, Flugzeit `FAESSER.flugTicks`).
  *   - `BODENOBJEKTE_FAESSER` (3): wie 2, dazu Fässer (siehe `FAESSER`): liegen von Anfang an auf der Karte, explodieren bei einer
  *     Explosion in der Nähe (auch einer anderen Mine oder eines Fasses, Kettenreaktion) und lösen dabei Minen mit aus.
  *
@@ -34,11 +35,12 @@
 export const BODENOBJEKTE_ALT = 1;
 export const BODENOBJEKTE_MINEN = 2;
 export const BODENOBJEKTE_FAESSER = 3;
-export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_FAESSER;
+export const BODENOBJEKTE_ABWURF = 4;
+export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_ABWURF;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBodenobjekte(fassung) {
-  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER ? fassung : BODENOBJEKTE_STANDARD;
+  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER || fassung === BODENOBJEKTE_ABWURF ? fassung : BODENOBJEKTE_STANDARD;
 }
 
 /** Ausgang einer Auslösung. */
@@ -102,6 +104,14 @@ export const FAESSER = Object.freeze({
   /** Fässer, die der Kartenaufbau liegen lässt (Anzahl aus dem Seed, einschließlich Grenzen). */
   liegendMin: 0,
   liegendMax: 4,
+  /** Bodenobjektfassung 4: Wahrscheinlichkeit, dass in einer Runde ein Fass wie eine Kiste vom Himmel fällt. */
+  abwurfChance: 0.4,
+  /** Flugzeit eines abgeworfenen Fasses in Takten (2,5 s); in dieser Zeit ist es noch nicht sprengbar. */
+  flugTicks: 150,
+  /** Abstand zum Kartenrand beim Abwurf (Pixel). */
+  abwurfRand: 120,
+  /** Höchstzahl Fässer auf der Karte (liegend, fallend und abgeworfen zusammen). */
+  maximum: 6,
 });
 
 /**

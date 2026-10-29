@@ -1061,7 +1061,13 @@ export class Renderer {
   /** Ein Sprengstofffass: rotbrauner Zylinder mit Reifen und gelb-schwarzem Warnstreifen. Reine Darstellung. */
   #drawFass(fass) {
     this.ctx.save();
-    this.ctx.translate(fass.x, fass.y);
+    // Fallendes Fass (Abwurf): von oben auf den Landeplatz, mit Wanduhr statt Simulationstakt (nur Anzeige).
+    let hoehe = 0;
+    if (fass.fallend && fass.abwurfBeginn) {
+      const anteil = Math.min(1, Math.max(0, (Date.now() - fass.abwurfBeginn) / (fass.flugMs || 1)));
+      hoehe = (1 - anteil * anteil) * Math.max(240, fass.y);
+    }
+    this.ctx.translate(fass.x, fass.y - hoehe);
     this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
     this.ctx.beginPath();
     this.ctx.ellipse(1, 2, 11, 3, 0, 0, Math.PI * 2);

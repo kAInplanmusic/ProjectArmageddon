@@ -41,6 +41,7 @@ export class BodenobjektSystem {
   #events;
   #q;
   #faesser;
+  #abwurf;
   #minen = new Map();
   #naechsteId = 1;
 
@@ -49,12 +50,14 @@ export class BodenobjektSystem {
    * @param {object} optionen.rng - Seed-Zweig `BODENOBJEKTE`
    * @param {object} optionen.world - ECS-Welt (für Figuren und Explosionswirkung)
    * @param {object} optionen.events - Ereigniswarteschlange des Matches
+   * @param {boolean} [optionen.abwurf=false] - Bodenobjektfassung 4: Fässer fallen wie Kisten vom Himmel (`rundenWurf`)
    * @param {boolean} [optionen.faesser=false] - Bodenobjektfassung 3: liegende Fässer und Explosionsketten über Fässer
    * @param {object} optionen.q - Abfragen: `breite`, `surfaceYAt(x)`, `bodenNahe(x, y)`, `waterLevelAt(x, y)`,
    *   `startplaetze()` → [{x, y}] (Mindestabstand zu liegenden Minen)
    */
-  constructor({ rng, world, events, q, faesser = false }) {
+  constructor({ rng, world, events, q, faesser = false, abwurf = false }) {
     this.#faesser = faesser;
+    this.#abwurf = abwurf;
     this.#rng = rng;
     this.#world = world;
     this.#events = events;
@@ -96,7 +99,7 @@ export class BodenobjektSystem {
       .sort((a, b) => a.id - b.id)
       .map(m => ({
         id: m.id, typ: m.typ, x: m.x, y: m.y, ownerId: m.ownerId, teamId: m.teamId, art: m.art,
-        blindgaenger: m.blindgaenger, ausgeloest: m.ausgeloest,
+        blindgaenger: m.blindgaenger, ausgeloest: m.ausgeloest, fallend: Boolean(m.fallend),
       }));
   }
 
@@ -105,15 +108,17 @@ export class BodenobjektSystem {
    *
    * @returns {object|null} der Eintrag, `null` bei voller Karte
    */
-  lege(x, y, { ownerId = null, teamId = null, art = MINEN_ART.ABGELEGT, typ = OBJEKT_TYP.MINE } = {}) {
+  lege(x, y, { ownerId = null, teamId = null, art = MINEN_ART.ABGELEGT, typ = OBJEKT_TYP.MINE, landetBeiTick = null } = {}) {
     if (this.#minen.size >= MINEN.maximum) return null;
     const mine = {
       id: this.#naechsteId, typ, x: Math.round(x), y: Math.round(y), ownerId, teamId, art,
-      blindgaenger: false, ausgeloest: false,
+      blindgaenger: false, ausgeloest: false, fallend: landetBeiTick !== null, landetBeiTick,
     };
     this.#naechsteId += 1;
     this.#minen.set(mine.id, mine);
-    if (typ === OBJEKT_TYP.FASS) {
+    if (typ === OBJEKT_TYP.FASS && landetBeiTick !== null) {
+      this.#events.emit('fass_abgeworfen', { fassId: mine.id, x: mine.x, y: mine.y, flugTicks: FAESSER.flugTicks });
+    } else if (typ === OBJEKT_TYP.FASS) {
       this.#events.emit('fass_placed', { fassId: mine.id, x: mine.x, y: mine.y });
     } else {
       this.#events.emit('mine_placed', {
@@ -130,7 +135,7 @@ export class BodenobjektSystem {
    */
   explosionBei(x, y, radius) {
     for (const objekt of this.#minen.values()) {
-      if (objekt.blindgaenger || objekt.ausgeloest) continue;
+      if (objekt.blindgaenger || objekt.ausgeloest || objekt.fallend) continue; // ein fliegendes Fass ist nicht sprengbar
       if (objekt.typ === OBJEKT_TYP.FASS && !this.#faesser) continue;
       const reichweite = radius + (objekt.typ === OBJEKT_TYP.FASS ? FAESSER.halbeBreite : 0);
       if (Math.hypot(objekt.x - x, objekt.y - y) <= reichweite) objekt.ausgeloest = true;
@@ -193,9 +198,42 @@ export class BodenobjektSystem {
     }
   }
 
-  /** Ein Takt: Figuren im Auslöseradius lösen aus; die Kette läuft in fester Reihenfolge ab. */
+  /**
+   * Abwurf (Bodenobjektfassung 4): je Runde mit `FAESSER.abwurfChance` fällt ein Fass wie eine Kiste vom Himmel.
+   * Aufgerufen zum Rundenbeginn. Der Landeplatz steht sofort fest (freier, trockener Boden); bis zur Landung
+   * (`FAESSER.flugTicks`) ist das Fass nicht sprengbar. Zwei Ziehungen je Runde, unabhängig vom Erfolg (fester Zufallsstrom).
+   */
+  rundenWurf() {
+    if (!this.#abwurf) return;
+    const chance = this.#rng.next();
+    const zufallX = this.#rng.next();
+    if (chance >= FAESSER.abwurfChance) return;
+    if ([...this.#minen.values()].filter(o => o.typ === OBJEKT_TYP.FASS).length >= FAESSER.maximum) return;
+    const links = FAESSER.abwurfRand;
+    const x = Math.round(links + zufallX * (this.#q.breite - 2 * links));
+    const platz = freierPlatz({
+      breite: this.#q.breite,
+      surfaceYAt: sx => this.#q.surfaceYAt(sx),
+      bodenNahe: null,
+      waterLevelAt: (sx, sy) => this.#q.waterLevelAt(sx, sy),
+    }, x, null);
+    if (!platz) return;
+    this.lege(platz.x, platz.y, {
+      art: MINEN_ART.LIEGEND, typ: OBJEKT_TYP.FASS, landetBeiTick: this.#world.tickCount + FAESSER.flugTicks,
+    });
+  }
+
+  /** Ein Takt: Landungen, dann Figuren im Auslöseradius; die Kette läuft in fester Reihenfolge ab. */
   update() {
     if (this.#minen.size === 0) return;
+
+    // 0. Abgeworfene Fässer, deren Flugzeit um ist, stehen jetzt (sprengbar ab diesem Takt).
+    for (const objekt of this.#sortierte()) {
+      if (objekt.fallend && this.#world.tickCount >= objekt.landetBeiTick) {
+        objekt.fallend = false;
+        this.#events.emit('fass_gelandet', { fassId: objekt.id, x: objekt.x, y: objekt.y });
+      }
+    }
 
     // 1. Neue Auslösungen durch Figuren (Mine nach Kennung, Figur nach Entity-ID).
     const figuren = this.#figuren();

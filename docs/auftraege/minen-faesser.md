@@ -149,3 +149,9 @@ E2E: ein Online-Match mit Mine. Manuell: Optik und Klang.
 - Zustandshash: Jede neue Liste im Zustand ändert den Hash — nur hinter der Marke.
 - Kettenreaktionen können Gelände in einem Takt stark verändern (Bildzeit, Netzlast): Obergrenze je Takt festlegen.
 - Erreichbarkeit: Fässer dürfen Spawn und Wege nicht blockieren (`pruefeErreichbarkeit`).
+
+## Fass-Abwurf (Bodenobjektfassung 4)
+
+- Zu jedem Rundenbeginn (nicht beim Matchstart) fällt mit 40 % (`FAESSER.abwurfChance`) ein Fass wie eine Kiste vom Himmel; Landeplatz sofort fest (trockener Boden, x ≥ 120 vom Rand), Flugzeit 150 Takte, höchstens 6 Fässer.
+- Fliegende Fässer sind nicht sprengbar; Ereignisse `fass_abgeworfen` / `fass_gelandet`. Stehende Fässer bleiben unverändert (Fassung 3). Explosionsradius unverändert (64).
+- Verifiziert: Unit-/Match-Tests (Chance, Nicht-Sprengbarkeit im Flug, Determinismus), Lint, Kamera-Gate, Gesamtlauf 2123/2123. Optik des Falls (Wanduhr-Animation) nur im Code geprüft, nicht visuell.

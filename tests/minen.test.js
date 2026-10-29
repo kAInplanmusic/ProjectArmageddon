@@ -397,9 +397,8 @@ function baueFassSystem(figuren, seed = 1) {
   return { system, ...a };
 }
 
-test('Marke 3: Fässer sind die neue Standardfassung, ältere Marken bleiben gültig', () => {
+test('Marke 3: Fässer, ältere Marken bleiben gültig', () => {
   assert.equal(BODENOBJEKTE_FAESSER, 3);
-  assert.equal(BODENOBJEKTE_STANDARD, BODENOBJEKTE_FAESSER);
   assert.equal(normalisiereBodenobjekte(2), BODENOBJEKTE_MINEN);
   assert.equal(normalisiereBodenobjekte(3), BODENOBJEKTE_FAESSER);
 });
@@ -492,4 +491,82 @@ test('Im Match: Marke 3 legt Fässer aus dem Seed, Marke 2 keine, und ein Gescho
     for (const e of m.consumeEvents()) if (e.type === 'fass_exploded') explodiert = true;
   }
   assert.ok(explodiert, 'eine Explosion in der Nähe des Fasses hat es gesprengt');
+});
+
+// ---------------------------------------------------------------- Fass-Abwurf (Bodenobjektfassung 4)
+import { BODENOBJEKTE_ABWURF } from '../src/shared/config/bodenobjekte.js';
+
+function baueAbwurfSystem(seed = 1) {
+  const a = baueAttrappe([{ id: 1, x: 100, y: 790 }]);
+  a.welt.tickCount = 0;
+  const system = new BodenobjektSystem({
+    rng: new SeededRandom(seed + SEED_OFFSETS.BODENOBJEKTE), world: a.welt, events: a.welt.services.events, faesser: true, abwurf: true,
+    q: { breite: 2560, surfaceYAt: () => 800, bodenNahe: () => 800, waterLevelAt: () => 0, startplaetze: () => [] },
+  });
+  a.welt.services.bodenobjekte = system;
+  return { system, ...a };
+}
+
+test('Marke 4: Abwurf ist Standard, Marke 3 bleibt gültig', () => {
+  assert.equal(BODENOBJEKTE_ABWURF, 4);
+  assert.equal(BODENOBJEKTE_STANDARD, BODENOBJEKTE_ABWURF);
+  assert.equal(normalisiereBodenobjekte(3), BODENOBJEKTE_FAESSER);
+  assert.equal(normalisiereBodenobjekte(4), BODENOBJEKTE_ABWURF);
+});
+
+test('Abwurf: Chance trifft ungefähr abwurfChance, Fass fällt und ist bis zur Landung nicht sprengbar', () => {
+  let abwuerfe = 0;
+  for (let seed = 1; seed <= 100; seed += 1) {
+    const { system, welt, ereignisse } = baueAbwurfSystem(seed);
+    system.rundenWurf();
+    const abgeworfen = ereignisse.filter(e => e.typ === 'fass_abgeworfen');
+    if (abgeworfen.length === 0) continue;
+    abwuerfe += 1;
+    const fass = system.snapshot()[0];
+    assert.equal(fass.fallend, true);
+    system.explosionBei(fass.x, fass.y, 200);
+    welt.tickCount = FAESSER.flugTicks - 1;
+    system.update();
+    assert.equal(ereignisse.some(e => e.typ === 'fass_exploded'), false, 'fliegendes Fass ist nicht sprengbar');
+    assert.equal(system.snapshot()[0].fallend, true);
+    welt.tickCount = FAESSER.flugTicks;
+    system.update();
+    assert.equal(ereignisse.filter(e => e.typ === 'fass_gelandet').length, 1);
+    assert.equal(system.snapshot()[0].fallend, false);
+    system.explosionBei(fass.x, fass.y, 20);
+    system.update();
+    assert.equal(ereignisse.filter(e => e.typ === 'fass_exploded').length, 1, 'nach der Landung sprengbar');
+  }
+  assert.ok(abwuerfe >= 25 && abwuerfe <= 55, `${abwuerfe} Abwürfe von 100 (erwartet ~40)`);
+});
+
+test('Abwurf: ohne Marke 4 passiert nichts, Zufallsverbrauch je Aufruf ist fest, Maximum wird eingehalten', () => {
+  const a = baueAttrappe([]);
+  a.welt.tickCount = 0;
+  const aus = new BodenobjektSystem({
+    rng: new SeededRandom(5), world: a.welt, events: a.welt.services.events, faesser: true,
+    q: { breite: 2560, surfaceYAt: () => 800, bodenNahe: () => 800, waterLevelAt: () => 0, startplaetze: () => [] },
+  });
+  aus.rundenWurf();
+  assert.equal(aus.anzahl, 0);
+
+  const { system } = baueAbwurfSystem(3);
+  for (let i = 0; i < 200; i += 1) system.rundenWurf();
+  assert.ok(system.anzahl <= FAESSER.maximum);
+});
+
+test('Abwurf im echten Match: gleicher Seed → gleicher Hash; Marke 3 ohne Abwurf', () => {
+  const lauf = (marke) => {
+    const m = new MatchController({ seed: 77, teams: 2, playersPerTeam: 1, preset: 'hills', bodenobjekte: marke, turnDurationMs: 1000 });
+    m.start();
+    let abwuerfe = 0;
+    for (let i = 0; i < 40 * 60 * 25 && m.round < 40; i += 1) { // Zugzeit 25 s läuft ab → Runden schreiten voran
+      m.step();
+      for (const e of m.consumeEvents()) if (e.type === 'fass_abgeworfen') abwuerfe += 1;
+    }
+    return { abwuerfe, hash: m.getState().bodenobjekte?.length };
+  };
+  assert.deepEqual(lauf(4), lauf(4));
+  assert.ok(lauf(4).abwuerfe > 0, 'in 40 Runden fällt mindestens ein Fass');
+  assert.equal(lauf(3).abwuerfe, 0);
 });

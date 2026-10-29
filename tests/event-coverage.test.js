@@ -270,7 +270,7 @@ const AUDIT_LISTE_2026_09_26 = [
  *   - Die Onlinesicht führte kein `guenther`-Feld (die Felder des
  *     Online-Zustands in `src/client/main.js`, damals :1119–:1143), obwohl der
  *     Renderer Günther und seine Haufen GENAU daraus zeichnet
- *     (`src/client/renderer.js:1220` `#drawGuenther(state.guenther)`, `:1200`
+ *     (`src/client/renderer.js:1226` `#drawGuenther(state.guenther)`, `:1200`
  *     `#drawPoopPiles(state.guenther?.haufen ?? [])`). Lokal reichte
  *     `src/engine/stateSnapshot.js:201` (`guenther: quelle.guenther`) es durch.
  *   - Keiner der vier Streich-Arten hatte einen Online-Zweig
@@ -639,7 +639,7 @@ test('Ereignisse mit nur EINEM Zweig sind einzeln belegt', () => {
  *
  * Gemessen am 2026-10-23: alle vier Fundstellen der beiden Einzweigigen zeigten
  * ins Leere. `main.js:1143` war die GPU-Erkennung (`disableGpu`), `main.js:857`
- * ein `<option>`-Element für Fraktionen, `renderer.js:1201` ein Kommentar über
+ * ein `<option>`-Element für Fraktionen, `renderer.js:1207` ein Kommentar über
  * eingebackene Verläufe. Der Wächter blieb grün, weil `:1143` wie ein Beleg
  * aussieht. Das ist die Fehlerklasse „fest verdrahtetes Urteil unter live
  * gemessenen Zahlen" aus `bgworker-todo.json` → `_meta`.

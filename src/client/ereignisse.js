@@ -650,6 +650,21 @@ export const EREIGNIS_WIRKUNGEN = {
     k.fernzustand?.minen?.()?.set(n.fassId, { id: n.fassId, typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false, ausgeloest: false });
   }),
 
+  // Abwurf (Bodenobjektfassung 4): das Fass fällt wie eine Kiste; die Landung steht sofort fest, gezeichnet wird der Fall.
+  fass_abgeworfen: beide((k, n) => {
+    k.fernzustand?.minen?.()?.set(n.fassId, {
+      id: n.fassId, typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false,
+      ausgeloest: false, fallend: true, abwurfBeginn: Date.now(), flugMs: Math.round(n.flugTicks * 1000 / 60),
+    });
+    k.hud?.log('Ein Fass wird abgeworfen', 'neutral');
+  }),
+
+  fass_gelandet: beide((k, n) => {
+    const fass = k.fernzustand?.minen?.()?.get(n.fassId);
+    if (fass) fass.fallend = false;
+    k.renderer?.addFlash(n.x, n.y, 10, { color: '#c9b79c' });
+  }),
+
   fass_exploded: beide((k, n) => {
     k.fernzustand?.minen?.()?.delete(n.fassId);
     k.hud?.log('Ein Fass explodiert', 'accent');
