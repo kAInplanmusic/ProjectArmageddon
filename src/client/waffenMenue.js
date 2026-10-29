@@ -209,6 +209,7 @@ export class WaffenMenue {
     zeile.setAttribute('aria-selected', b.aktiv ? 'true' : 'false');
     zeile.dataset.weaponId = b.weaponId;
     zeile.dataset.tier = w?.powerTier ?? 'common';
+    if (w?.gadget) zeile.dataset.gadget = '1';
     if (b.aktiv) zeile.classList.add('is-aktiv');
     if (b.cooldown > 0) zeile.classList.add('is-cooling');
     if (!b.waehlbar) { zeile.classList.add('is-leer'); zeile.setAttribute('aria-disabled', 'true'); }

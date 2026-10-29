@@ -63,8 +63,8 @@ const KATALOG = join(ROOT, 'src', 'shared', 'config', 'weapons.js');
 /**
  * Die Feldnamen des Katalogs — dokumentierte Erwartung.
  *
- * 42 Namen; eine Waffe traegt 41 davon, die acht Waffen mit eigener Identitaet
- * 42 (`concept`). `description` (2026-10-28, ein Satz je Waffe) liest das Waffenmenue. Diese Liste ist die Gegenprobe gegen ein durchgereichtes
+ * 43 Namen (seit 2026-10-29 mit `gadget`); eine Waffe traegt 42 davon, die acht Waffen mit eigener Identitaet
+ * 43 (`concept`). `description` (2026-10-28, ein Satz je Waffe) liest das Waffenmenue. Diese Liste ist die Gegenprobe gegen ein durchgereichtes
  * Fremdfeld: Was hier nicht steht, darf nicht im Katalog stehen.
  */
 const KATALOG_FELDER = [
@@ -74,7 +74,7 @@ const KATALOG_FELDER = [
   'iconPath', 'id', 'index', 'internalName', 'knockback', 'maxAmmo', 'maxRange', 'piercing',
   'powerScore', 'powerTier', 'projectileSpeed', 'rarity', 'requiresLineOfSight',
   'requiresLineOfSightSource', 'sourceRarity', 'special', 'speedFactor', 'strikeStyle',
-  'subcategory', 'targeting', 'terrainDamage',
+  'subcategory', 'gadget', 'targeting', 'terrainDamage',
 ];
 
 /** Alle JS-Dateien unter `verzeichnis` (rekursiv). */
@@ -119,14 +119,14 @@ test('Der Katalog traegt genau die dokumentierten Feldnamen', () => {
     + 'Ein durchgereichtes Fremdfeld (Beispiel: `cooldownTurns`) faellt hier auf.');
 });
 
-test('Jede Waffe traegt 41 oder 42 Felder — keines fehlt', () => {
+test('Jede Waffe traegt 42 oder 43 Felder (seit dem Feld gadget) — keines fehlt', () => {
   for (const waffe of WEAPONS) {
     const anzahl = Object.keys(waffe).length;
-    assert.ok(anzahl === 41 || anzahl === 42,
-      `${waffe.id} (${waffe.displayName}) traegt ${anzahl} Felder statt 41/42`);
+    assert.ok(anzahl === 42 || anzahl === 43,
+      `${waffe.id} (${waffe.displayName}) traegt ${anzahl} Felder statt 42/43`);
     // `concept` ist der einzige ungleiche Feldname: nur die acht Identitaeten.
     const hatConcept = Object.prototype.hasOwnProperty.call(waffe, 'concept');
-    assert.equal(hatConcept, anzahl === 42,
+    assert.equal(hatConcept, anzahl === 43,
       `${waffe.id}: concept und Feldzahl passen nicht zusammen`);
   }
 });

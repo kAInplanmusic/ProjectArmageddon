@@ -404,7 +404,7 @@ function zeichneKlassen(container) {
       const waffe = getWeapon(platz.weaponId);
       const li = document.createElement('li');
       li.append(textEl('b', `${platz.roleLabel}: `));
-      li.append(document.createTextNode(waffe?.displayName ?? platz.weaponId));
+      li.append(document.createTextNode(`${waffe?.displayName ?? platz.weaponId}${waffe?.gadget ? ' (Gadget)' : ''}`));
       liste.append(li);
     }
     karte.append(liste);

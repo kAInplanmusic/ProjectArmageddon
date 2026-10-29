@@ -46,7 +46,8 @@ const PRUEFSUMME_ALTER_KATALOG = 'ceb60ae649218406c71d9986417cc6f25c04bed8907fd8
 /** SHA-256 des Katalogs in Fassung 2 (gemessen am Stand d2d65aa, vor Fassung 3). */
 const PRUEFSUMME_F2 = 'd8b3632fc9c9a9057b6b063c4f8a26afff05e58bd3f5bc440aed357c60725411';
 
-const ANZEIGETEXTE = new Set(['displayName', 'description']);
+// `gadget` (2026-10-29) ist ebenfalls reine Anzeige (Gruppe im Waffenmenü); kein Motor, keine Beute und kein Kit liest es.
+const ANZEIGETEXTE = new Set(['displayName', 'description', 'gadget']);
 
 function stabil(wert) {
   return JSON.stringify(wert, (k, x) => {

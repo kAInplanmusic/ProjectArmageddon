@@ -504,6 +504,21 @@ export function subcategoryFor(category) {
   return treffer?.id ?? null;
 }
 
+/**
+ * Gadgets: Selbst- und Hilfsmittel, die keine Waffen sind (Fluggeräte, Haken, Plattformen, Kisten, Tarnung, Schutz).
+ * Das Feld `gadget` ersetzt NICHT die Kategorie: Loadouts, Kits, Start-Kits, Beute und Tests lesen weiter `category`.
+ * Es trägt nur die Anzeige (Waffenmenü, Liste, Hilfe: Gruppe "Gadgets") und die Ordnung der Zifferntasten.
+ * Entscheidung je Eintrag (Kategorie `utility` mit zehn Einträgen plus die Hilfsmittel aus `ranged` und `tech`):
+ *   Gadget: Raketenrucksack, Düsenrucksack, Gleitschirm (Fliegen), Enterhaken (Haken zum Versetzen), Wächterstatue (heilt),
+ *   Munitionskiste, Nachschubkiste, Endlosschleife (Munition), Bunker, Tarnnetz (Rüstung), Teleportplattform,
+ *   Hologrammportal, Schlauchboot (Versetzen). Alle sind Selbstwirkung ohne Schaden am Ziel.
+ *   Waffe bleibt: Bohrkanone (gräbt, schadet), Blutritual (Schaden), Ananasbombe, Feuerwesen, Energiefaust (Schaden),
+ *   Wachgeschütz (schießt selbst; ein Geschütz ist eine Waffe).
+ */
+export const GADGET_IDS = Object.freeze([
+  'pa_032', 'pa_111', 'pa_112', 'pa_114', 'pa_115', 'pa_119', 'pa_122', 'pa_125', 'pa_126', 'pa_127', 'pa_128', 'pa_130', 'pa_131',
+]);
+
 export function resolveDamage(stats) {
   const fromSource = toNumber(stats.base_damage);
   if (fromSource > 0) return { damage: fromSource, damageSource: 'source' };
@@ -1082,6 +1097,8 @@ const weapons = raw.weapons.map(entry => {
     category,
     /** Gruppe der Waffenauswahl (vier Gruppen, siehe WEAPON_SUBCATEGORIES). */
     subcategory: subcategoryFor(category),
+    /** Selbst-/Hilfsmittel statt Waffe (siehe GADGET_IDS): nur Anzeige und Ordnung, die Kategorie bleibt. */
+    gadget: GADGET_IDS.includes(entry.id),
     icon: entry.icon?.file ?? null,
     rarity: sourceRarity,
     /** Rarität aus den Quelldaten (nur common/uncommon/rare). */
@@ -1536,9 +1553,11 @@ export function iconUrlFor(weapon) {
 export function orderInventoryBySubcategory(weaponIds) {
   const rang = weaponId => {
     const kategorie = getWeapon(weaponId)?.category;
+    // Gadgets bilden hinter den vier Gruppen eine eigene Gruppe (vor den unbekannten Kategorien).
+    if (getWeapon(weaponId)?.gadget) return WEAPON_SUBCATEGORIES.length;
     const stelle = WEAPON_SUBCATEGORIES.findIndex(gruppe => gruppe.categories.includes(kategorie));
     // Unbekannte Kategorien ans Ende, statt sie zu verlieren.
-    return stelle < 0 ? WEAPON_SUBCATEGORIES.length : stelle;
+    return stelle < 0 ? WEAPON_SUBCATEGORIES.length + 1 : stelle;
   };
 
   return weaponIds
@@ -1598,12 +1617,14 @@ export function orderInventoryBySubcategory(weaponIds) {
  */
 export function displayGroupFor(weaponId) {
   if (isReserveWeapon(weaponId)) return 'reserve';
+  if (getWeapon(weaponId)?.gadget) return 'gadgets';
   return getWeapon(weaponId)?.subcategory ?? 'special';
 }
 
-/** Beschriftung einer Anzeigegruppe (auch der Reserve-Gruppe). */
+/** Beschriftung einer Anzeigegruppe (auch der Reserve- und der Gadget-Gruppe). */
 export function displayGroupLabel(groupId) {
   if (groupId === 'reserve') return 'Reserve (unbegrenzt)';
+  if (groupId === 'gadgets') return 'Gadgets';
   return subcategoryLabel(groupId);
 }
 

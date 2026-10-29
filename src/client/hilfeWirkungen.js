@@ -47,7 +47,8 @@ export function zeichneWirkungen(container) {
 
   container.append(el('p',
     'Jede Waffe trägt eine Schadensart. Sie entscheidet, welchen Nachteil ein Treffer auslöst, wie Rüstung '
-    + 'und Schild reagieren und wie das Gelände zerfällt. Was eine einzelne Waffe tut, steht im Waffenmenü.',
+    + 'und Schild reagieren und wie das Gelände zerfällt. Was eine einzelne Waffe tut, steht im Waffenmenü. Gadgets (Fluggeräte, Haken, Kisten, Schutz) sind keine Waffen: '
+    + 'Sie stehen dort in einer eigenen Gruppe.',
     'h-einleitung'));
 
   container.append(el('h3', 'Schadensarten'));

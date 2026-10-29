@@ -574,17 +574,19 @@ test('Jede Waffe hat eine Anzeigegruppe, die Reserve eine eigene', () => {
     // Eine echte Waffe darf NICHT in der Reserve-Gruppe landen.
     if (waffe.id !== FALLBACK_WEAPON_ID) {
       assert.notEqual(id, 'reserve', `${waffe.id} wurde als Reserve eingeordnet`);
-      assert.equal(id, waffe.subcategory, `${waffe.id}: Gruppe weicht von der Unterkategorie ab`);
+      // Gadgets (Feld `gadget`, seit 2026-10-29) bilden eine eigene Anzeigegruppe; die Unterkategorie bleibt die der Kategorie.
+      assert.equal(id, waffe.gadget ? 'gadgets' : waffe.subcategory, `${waffe.id}: Gruppe weicht von der Unterkategorie ab`);
     }
     gruppen.add(id);
   }
 
-  // Die vier Unterkategorien plus die Reserve-Gruppe.
-  assert.deepEqual([...gruppen].sort(), ['elemental', 'guns', 'melee', 'reserve', 'special']);
+  // Die vier Unterkategorien plus die Gadget- und die Reserve-Gruppe.
+  assert.deepEqual([...gruppen].sort(), ['elemental', 'gadgets', 'guns', 'melee', 'reserve', 'special']);
   assert.equal(displayGroupLabel('reserve'), 'Reserve (unbegrenzt)');
   // Und die bestehenden Beschriftungen bleiben unverändert.
   assert.equal(displayGroupLabel('melee'), 'Nahkampf');
   assert.equal(displayGroupLabel('guns'), 'Schusswaffen');
+  assert.equal(displayGroupLabel('gadgets'), 'Gadgets');
 });
 
 test('Die Anzeigeordnung ist für alle Klassen deterministisch', () => {
