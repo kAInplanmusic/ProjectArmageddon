@@ -109,7 +109,7 @@ test('Die 11 ehemals widersprüchlichen Waffen sind jetzt als selbstbezogen vers
    */
   const erwartet = [
     'Wachgeschütz', 'Blutritual', 'Feuermagier', 'Eisschild', 'Goldene Reliktkugel',
-    'Heilzauber', 'Himmelswächter', 'Mutationselixier', 'Giftbaum', 'Wächterstatue',
+    'Heilzauber', 'Feuerschild', 'Mutationselixier', 'Giftbaum', 'Wächterstatue',
     'Frostrolle',
   ].sort();
 

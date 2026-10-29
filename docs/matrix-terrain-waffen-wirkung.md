@@ -216,7 +216,7 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 145 | Erdspalter | ultimate | 95 | 75 | 95 px | 5 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 146 | Giftige Weltenflasche | ultimate | 55 | 65 | 39 px | 3 | — | Gift 80 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
 | 147 | Weltendrache | ultimate | 100 | 80 | 48 px | 4 | — | Feuer 75 | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze), Zustand (Element) |
-| 148 | Himmelswächter | ultimate | 70 | 60 | 36 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
+| 148 | Feuerschild | ultimate | 70 | 60 | 36 px | 3 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 | 149 | Goldene Reliktkugel | ultimate | 78 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 150 | Kosmischer Kern | ultimate | 110 | 90 | 90 px | 5 | — | — | Figur (direkt), Figuren (Fläche), Terrain (Krater), Wasser (verdrängt), Kisten (zerstörbar), NPCs (Günther, Geschütze) |
 

@@ -522,3 +522,39 @@ Verstärkung zählt wie bisher in Zügen; der Wurf kostet den eigenen Zug, die W
 Nicht umgesetzt: Elemente für Versetzer, Flieger und Heiler (bräuchten eigene Motorwirkung wie Spuren oder Aufprallschaden), ein dritter
 Schild (Feuerschild) ohne Dublette, Staffelung der Munition (Katalogfeld, würde Kits und Beute ändern), und die Anzeige der
 Fassung-10-Werte im Waffenmenü (der Client liest den Katalog).
+
+## Fassung 11 (2026-10-29): Munition, drei Schilde, Rückstoß, Elemente
+
+Auftrag des Auftraggebers (Spracheingabe, sinngemäß), Umsetzung in vier Schritten (`src/shared/config/waffen-fassung.js`, `waffen-f11.js`, `munition.js`).
+Fassung 10 und älter bitgleich; die Fassung ist der neue Standard.
+
+### Schritt A: Munition (vier Klassen)
+
+Klasse je Waffe nach Stufe und Spielwert (`munitionsKlasse` in `src/shared/config/munition.js`):
+
+| Klasse | Regel | Waffen |
+|---|---|---|
+| unendlich | Reserve `pa_028` und die acht Standard-Startwaffen (Pool des Start-Kits: `pa_023`, `pa_024`, `pa_025`, `pa_027`, `pa_033`, `pa_034`, `pa_036`, `pa_040`) | 9 |
+| 3 Schuss | schwach: Spielwert unter 50 | 73 (64 common, 9 uncommon) |
+| 2 Schuss | mittel: Spielwert 50 bis unter 100 | 48 (30 uncommon, 18 rare) |
+| 1 Schuss | stark: Spielwert ab 100, dazu alle epischen und legendären | 20 (9 rare, 8 epic, 3 legendary) |
+
+Ein Fund (Kiste, Günther) ist immer voll geladen mit der Klasse, also höchstens 3; ein zweiter Fund füllt nur bis zur Klasse. Obergrenze für alle
+Waffen ist 5. Mehr als 3 gibt es nur über Munitionskisten: In Kistenfassung 4 ist die frühere leere Kiste (10 % der Kisten) eine Munitionskiste, sie füllt
+1 bis 5 Schuss (gleichverteilt) in EINE zufällig gewählte begrenzte Waffe des Spielers. Gewichte der Waffenkisten unverändert; Messung
+`npm run balance:loot -- --kisten=3` gegen `--kisten=4`: common 49,1 zu 48,8, uncommon 25,0 zu 25,2, rare 17,8 zu 18,0, epic 6,1 zu 6,0, legendary 2,0 zu 2,0 Prozent;
+20,2 zu 20,3 Waffenkisten je Partie, dazu 3,6 Munitionskisten; keine Waffe unerreichbar.
+
+### Schritt B: drei Schilde
+
+Es gibt genau drei Schild-Waffen (Wirkung `shield`); `id`, `internalName`, Katalogzahl 150 und Beute bleiben.
+
+| Schild | Waffe | Charakter | Schildmenge | Pause | Wirkung auf den Angreifer |
+|---|---|---|---|---|---|
+| Eisschild | `pa_101` | fest, Schadensart Eis | 55 | 2 | Frost |
+| Funkenschild | `pa_093` (`internalName` engelssegen) | magisch, Schadensart Blitz | 40 | 1 | Schock |
+| Feuerschild | `pa_148` (`internalName` himmelswachter, früher "Himmelswächter") | normal, Schadensart Feuer | 75 | 3 | Brand |
+
+Deutung: Der "Feuerschild" ist kein 151. Eintrag, sondern die bisherige dritte Schildwirkung (`guardian_ultimate`, Himmelswächter, episch) mit
+neuem Namen, neuer Beschreibung und der Schicht `WAFFEN_F11_WERTE` (Schadensart Feuer, Element Feuer, `gegen` Feuer). Das Bild des Waffensymbols
+bleibt (nur der Name im Sprite-Manifest folgt).

@@ -45,6 +45,7 @@
  * @module config/waffen-fassung
  */
 import { getWeapon } from './weapons.js';
+import { WAFFEN_F11_WERTE } from './waffen-f11.js';
 
 export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
@@ -333,10 +334,11 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
     const f7 = fassung >= WAFFEN_ZUENDERPLUS ? WAFFEN_F7_WERTE[id] : null;
     const f8 = fassung >= WAFFEN_FEINTUNING ? WAFFEN_F8_WERTE[id] : null;
     const f10 = fassung >= WAFFEN_SPREIZUNG ? WAFFEN_F10_WERTE[id] : null;
-    if (!f5 && !f7 && !f8 && !f10) return waffe;
+    const f11 = fassung >= WAFFEN_MUNITION ? WAFFEN_F11_WERTE[id] : null;
+    if (!f5 && !f7 && !f8 && !f10 && !f11) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
-    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10 }); zwischenspeicher.set(schluessel5, kopie5); }
+    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11 }); zwischenspeicher.set(schluessel5, kopie5); }
     return kopie5;
   }
   const art = ARTEN_BIS_F4[id];

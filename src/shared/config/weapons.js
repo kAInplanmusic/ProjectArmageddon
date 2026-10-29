@@ -7115,8 +7115,8 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_148",
       "index": 148,
-      "displayName": "Himmelswächter",
-      "description": "Himmlischer Wächter, der dem Schützen einen Schild verleiht.",
+      "displayName": "Feuerschild",
+      "description": "Schild aus Glut um den Eigenen: Wer es trifft, geht selbst in Flammen auf.",
       "internalName": "himmelswachter",
       "category": "ultimate",
       "subcategory": "special",

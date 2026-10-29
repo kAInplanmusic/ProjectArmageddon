@@ -170,6 +170,8 @@ export const KORREKTUREN = Object.freeze({
   // Schilde: Eis mit langem Ring, Funken kurz und scharf.
   pa_101: { heben: 0.35, aufladen: 0.35, blitzForm: 'ring', blitzGroesse: 22, blitzDauer: 0.45 },
   pa_093: { blitzForm: 'funke', blitzGroesse: 20, blitzDauer: 0.12 },
+  // Waffenfassung 11: der dritte Schild (Feuer) ist groß und warm, ein Flammenstern.
+  pa_148: { heben: 0.55, aufladen: 0.45, blitzForm: 'stern', blitzGroesse: 28, blitzDauer: 0.4 },
   // Versetzer: je weiter der Sprung, desto größer und länger der Glanz.
   pa_089: { schussDauer: 0.4, heben: 0.3, blitzForm: 'funke', blitzGroesse: 12 },
   pa_087: { blitzForm: 'ring', blitzGroesse: 18 },
