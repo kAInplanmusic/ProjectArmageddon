@@ -1031,6 +1031,7 @@ export class Renderer {
    */
   #drawMinen(minen) {
     for (const mine of minen) {
+      if (mine.typ === 'fass') { this.#drawFass(mine); continue; }
       const blind = Boolean(mine.blindgaenger);
       const farbe = mine.teamId === null || mine.teamId === undefined ? '#7d8590' : TEAM_COLORS[mine.teamId % TEAM_COLORS.length];
       this.ctx.save();
@@ -1055,6 +1056,34 @@ export class Renderer {
       this.ctx.fill();
       this.ctx.restore();
     }
+  }
+
+  /** Ein Sprengstofffass: rotbrauner Zylinder mit Reifen und gelb-schwarzem Warnstreifen. Reine Darstellung. */
+  #drawFass(fass) {
+    this.ctx.save();
+    this.ctx.translate(fass.x, fass.y);
+    this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(1, 2, 11, 3, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.fillStyle = '#8a3b2a';
+    this.ctx.strokeStyle = '#3a1710';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.rect(-9, -20, 18, 22);
+    this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.strokeStyle = '#c9a23a';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(-9, -15); this.ctx.lineTo(9, -15);
+    this.ctx.moveTo(-9, -5); this.ctx.lineTo(9, -5);
+    this.ctx.stroke();
+    this.ctx.fillStyle = '#f2c230';
+    this.ctx.fillRect(-9, -12, 18, 5);
+    this.ctx.fillStyle = '#1b1b1b';
+    for (let i = -9; i < 9; i += 6) this.ctx.fillRect(i, -12, 3, 5);
+    this.ctx.restore();
   }
 
   #drawTurrets(turrets) {

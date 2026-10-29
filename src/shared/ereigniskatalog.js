@@ -37,7 +37,7 @@
 export const EREIGNIS_KATALOG = Object.freeze({
   landed: { klasse: 'anzeige', drossel: 'boden', klang: ['landed'] },
   jumped: { klasse: 'anzeige' },
-  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:2015 (crates) → src/client/renderer.js:2340 (#drawCrates)' } },
+  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:2015 (crates) → src/client/renderer.js:2369 (#drawCrates)' } },
   projectile_impact: { klasse: 'anzeige', anim: ['addFlash'] },
   projectile_expired: { klasse: 'anzeige', stumm: 'ein verfallenes Geschoss ist kein Ereignis für den Spieler, es hat nichts getroffen' },
   projectile_pierced: { klasse: 'anzeige', anim: ['addFlash'] },
@@ -112,6 +112,8 @@ export const EREIGNIS_KATALOG = Object.freeze({
   mine_placed: { klasse: 'zustand', anim: ['addFlash'] },
   mine_exploded: { klasse: 'zustand', anim: ['addFlash'] },
   mine_dud: { klasse: 'zustand', anim: ['addFlash'] },
+  fass_placed: { klasse: 'zustand', stumm: 'liegende Fässer melden sich nicht im Protokoll; die Liste steht im Zustand' },
+  fass_exploded: { klasse: 'zustand', anim: ['addFlash'] },
   turret_deployed: { klasse: 'zustand', anim: ['addFlash'] },
   turret_expired: { klasse: 'zustand' },
   turret_fired: { klasse: 'zustand', klang: ['geschuetz'], anim: ['addFlash'] },

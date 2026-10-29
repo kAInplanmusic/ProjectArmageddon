@@ -34,9 +34,19 @@ behalten die Teleportplattform. (Ein früherer Ansatz mit der Impulsbombe `pa_03
   „abgeworfen“. **Das ist ein Platzieren, kein Flug über eine Bahn** (ein Wurf mit Flugbahn wäre ein eigenes Projekt).
 - Sie beendet den Zug und verbraucht Munition wie jede Selbstwirkung. Ohne Bodenobjektfassung 2 legt sie nichts und meldet es.
 
+**Fässer (gebaut, 2026-10-29, Bodenobjektfassung 3, `config.bodenobjekte` 3):**
+- 0–4 liegende Fässer je Karte aus dem Seed (Abstand 140 px zu Startplätzen, 90 px zu anderen Objekten, nur trocken).
+- Ein Fass löst NICHT durch eine Figur aus, nur durch eine **Explosion in der Nähe** (Geschoss, Mine, anderes Fass): `engine/explosion.js` meldet
+  jede Explosion an `BodenobjektSystem#explosionBei`. Damit lösen auch Geschosse Minen aus, und Fässer und Minen bilden Ketten.
+- Es explodiert IMMER, ohne Zufall (kein Blindgänger, keine Superexplosion): Schaden 60, Radius 64, Rückstoß 45, Krater 36 (erster Ansatz,
+  `FAESSER` in `config/bodenobjekte.js`, nicht balanciert).
+- Anzeige: rotbrauner Zylinder mit Warnstreifen; Ereignisse `fass_placed`, `fass_exploded`.
+- Marke 3 ist die neue Standardfassung für neue Partien; Marke 2 (nur Minen) und 1 (nichts) laufen unverändert weiter.
+
 **Noch nicht gebaut:**
 
-1. **Fässer.** Entwurf unverändert (Abschnitt 3 Punkt 4); noch nicht begonnen.
+1. **Fässer** außer den liegenden: keine Fässer als Kiste oder Wurf; kein Auslösen durch Direkttreffer eines Geschosses ohne Explosionsradius
+   (es zählt der Einschlagpunkt mit mindestens 12 px Reichweite).
 2. **Eine Flugbahn für die geworfene Mine** (falls gewünscht).
 3. **Bild und Klang der Mine im Spiel** nicht geprüft: Das Waffenmenü zeigt das vorhandene Icon der Teleportplattform; die
    Zeichnung der liegenden Mine ist eine einfache Scheibe mit Lämpchen (`renderer.js#drawMinen`), nicht das Gerätebild.

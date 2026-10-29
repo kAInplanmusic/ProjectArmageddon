@@ -313,7 +313,7 @@ export function hashState(state) {
       ]),
       // Minen nur mit Bodenobjektfassung 2 im Hash (sonst bleibt der Schlüsselsatz und damit jeder alte Hash gleich).
       ...(state.bodenobjekte
-        ? { bodenobjekte: state.bodenobjekte.map(m => [m.id, Math.round(m.x), Math.round(m.y), m.ownerId ?? null, m.art, m.blindgaenger, m.ausgeloest]) }
+        ? { bodenobjekte: state.bodenobjekte.map(m => [m.id, m.typ ?? 'mine', Math.round(m.x), Math.round(m.y), m.ownerId ?? null, m.art, m.blindgaenger, m.ausgeloest]) }
         : {}),
     });
 

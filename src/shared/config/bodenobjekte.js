@@ -10,6 +10,8 @@
  *     trägt dann keinen Schlüssel `bodenobjekte` (Hashes bleiben bitgleich).
  *   - `BODENOBJEKTE_MINEN` (2): `BodenobjektSystem` (`engine/systems/bodenobjektSystem.js`) mit eigenem
  *     Seed-Zweig `BODENOBJEKTE`.
+ *   - `BODENOBJEKTE_FAESSER` (3): wie 2, dazu Fässer (siehe `FAESSER`): liegen von Anfang an auf der Karte, explodieren bei einer
+ *     Explosion in der Nähe (auch einer anderen Mine oder eines Fasses, Kettenreaktion) und lösen dabei Minen mit aus.
  *
  * ## Regeln (Entscheidung des Auftraggebers, 2026-10-29)
  *
@@ -31,11 +33,12 @@
 
 export const BODENOBJEKTE_ALT = 1;
 export const BODENOBJEKTE_MINEN = 2;
-export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_MINEN;
+export const BODENOBJEKTE_FAESSER = 3;
+export const BODENOBJEKTE_STANDARD = BODENOBJEKTE_FAESSER;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereBewegung`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereBodenobjekte(fassung) {
-  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN ? fassung : BODENOBJEKTE_STANDARD;
+  return fassung === BODENOBJEKTE_ALT || fassung === BODENOBJEKTE_MINEN || fassung === BODENOBJEKTE_FAESSER ? fassung : BODENOBJEKTE_STANDARD;
 }
 
 /** Ausgang einer Auslösung. */
@@ -80,6 +83,25 @@ export const MINEN = Object.freeze({
   /** Wurfweite in Pixeln je Kraftpunkt (Kraft 0 bis 100) und Obergrenze der Entfernung. */
   wurfWeite: 2.4,
   wurfMax: 240,
+});
+
+/**
+ * Fässer (Bodenobjektfassung 3). Sie explodieren, sobald in ihrer Nähe etwas explodiert (Geschoss, Mine, anderes Fass); es gibt keinen
+ * Zufall je Explosion (kein Blindgänger, keine Superexplosion) — das Fass ist berechenbar. Werte: erster Ansatz, NICHT balanciert.
+ */
+export const FAESSER = Object.freeze({
+  /** Schaden in der Mitte der Explosion (fällt nach außen bis auf 25 % ab). */
+  schaden: 60,
+  /** Radius der Wirkung in Pixeln (größer als bei der Mine). */
+  radius: 64,
+  rueckstoss: 45,
+  gelaendeSchaden: 36,
+  schadensart: 'explosive',
+  /** Halbe Breite des Fasses: Eine Explosion trifft es, wenn ihr Radius diesen Abstand zur Fassmitte erreicht. */
+  halbeBreite: 10,
+  /** Fässer, die der Kartenaufbau liegen lässt (Anzahl aus dem Seed, einschließlich Grenzen). */
+  liegendMin: 0,
+  liegendMax: 4,
 });
 
 /**

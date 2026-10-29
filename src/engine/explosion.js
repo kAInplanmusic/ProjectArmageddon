@@ -34,6 +34,8 @@ import { klassifiziereEinschlag } from '../shared/einschlag.js';
 export function wendeExplosionAn(world, p) {
   const { x, y, damage, blastRadius, knockback, terrainDamage, owner, damageType, weaponId, hitTarget = null } = p;
   const services = world.services ?? {};
+  // Bodenobjekte (Minen, Fässer) in Reichweite lösen mit aus (nur mit Bodenobjektfassung; sonst gibt es den Dienst nicht).
+  services.bodenobjekte?.explosionBei(x, y, blastRadius > 0 ? blastRadius : Math.max(terrainDamage, 12));
   const events = services.events ?? null;
   const match = services.match ?? { knockbackMultiplier: 1 };
   const terrain = services.terrain ?? null;

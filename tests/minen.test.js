@@ -81,6 +81,7 @@ function baueSystem(figuren, seed = 1, rng = null) {
       startplaetze: () => figuren.map(f => ({ x: f.x, y: f.y })),
     },
   });
+  a.welt.services.bodenobjekte = system; // wie im Match: jede Explosion meldet sich beim Bodenobjektsystem (Kette)
   return { system, ...a };
 }
 
@@ -378,4 +379,117 @@ test('Ohne Bodenobjektfassung wird nichts gelegt und das Ergebnis sagt es', () =
 test('Waffenfassung 11: dieselbe Waffe ist weiter die Teleportplattform und legt keine Mine', () => {
   const r = legeMine({ waffen: WAFFEN_MUNITION, bodenobjekte: 2, kraft: 60 });
   assert.equal(r.ereignisse.filter(e => e.type === 'mine_placed' && e.payload.art !== 'liegend').length, 0);
+});
+
+
+// ----------------------------------------------------------------- Fässer (Bodenobjektfassung 3)
+
+import { FAESSER, BODENOBJEKTE_FAESSER } from '../src/shared/config/bodenobjekte.js';
+import { OBJEKT_TYP } from '../src/engine/systems/bodenobjektSystem.js';
+
+function baueFassSystem(figuren, seed = 1) {
+  const a = baueAttrappe(figuren);
+  const system = new BodenobjektSystem({
+    rng: new SeededRandom(seed + SEED_OFFSETS.BODENOBJEKTE), world: a.welt, events: a.welt.services.events, faesser: true,
+    q: { breite: 2560, surfaceYAt: () => 800, bodenNahe: () => 800, waterLevelAt: () => 0, startplaetze: () => figuren.map(f => ({ x: f.x, y: f.y })) },
+  });
+  a.welt.services.bodenobjekte = system;
+  return { system, ...a };
+}
+
+test('Marke 3: Fässer sind die neue Standardfassung, ältere Marken bleiben gültig', () => {
+  assert.equal(BODENOBJEKTE_FAESSER, 3);
+  assert.equal(BODENOBJEKTE_STANDARD, BODENOBJEKTE_FAESSER);
+  assert.equal(normalisiereBodenobjekte(2), BODENOBJEKTE_MINEN);
+  assert.equal(normalisiereBodenobjekte(3), BODENOBJEKTE_FAESSER);
+});
+
+test('Ein Fass löst NICHT durch eine Figur aus, nur durch eine Explosion in der Nähe', () => {
+  const { system, ereignisse } = baueFassSystem([{ id: 1, x: 500, y: 790 }]);
+  system.lege(500, 800, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND });
+  for (let i = 0; i < 20; i += 1) system.update();
+  assert.equal(ereignisse.some(e => e.typ === 'fass_exploded'), false, 'eine Figur allein sprengt kein Fass');
+  system.explosionBei(500 + FAESSER.halbeBreite + 5, 800, 8); // Treffer in Reichweite
+  system.update();
+  assert.equal(ereignisse.filter(e => e.typ === 'fass_exploded').length, 1);
+  assert.equal(system.anzahl, 0);
+});
+
+test('Ein Fass explodiert immer und macht festen Schaden (kein Zufall)', () => {
+  const alle = new Set();
+  for (let seed = 1; seed <= 12; seed += 1) {
+    const { system, ereignisse, schaden } = baueFassSystem([{ id: 1, x: 500, y: 790 }], seed);
+    system.lege(500, 800, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND });
+    system.explosionBei(500, 800, 10);
+    system.update();
+    assert.equal(ereignisse.filter(e => e.typ === 'fass_exploded').length, 1, `Seed ${seed}`);
+    alle.add(schaden.find(s => s.id === 1).betrag);
+  }
+  assert.equal(alle.size, 1, 'immer derselbe Schaden');
+});
+
+test('Kette: Fass → Fass → Mine, in Reichweite explodieren alle, in der Ferne bleibt die Mine liegen', () => {
+  let geprueft = false;
+  for (let seed = 1; seed <= 40 && !geprueft; seed += 1) {
+    const { system, ereignisse } = baueFassSystem([{ id: 1, x: 100, y: 790 }], seed);
+    const a = system.lege(1000, 800, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND });
+    const b = system.lege(1000 + FAESSER.radius - 10, 800, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND });
+    const mine = system.lege(1000 + 2 * FAESSER.radius - 30, 800, { art: MINEN_ART.LIEGEND });
+    const weit = system.lege(1700, 800, { art: MINEN_ART.LIEGEND });
+    system.explosionBei(1000, 800, 20); // ein Geschoss trifft das erste Fass
+    system.update();
+    const fass = ereignisse.filter(e => e.typ === 'fass_exploded').map(e => e.fassId);
+    assert.deepEqual(fass, [a.id, b.id], 'beide Fässer, in fester Reihenfolge');
+    const mineAus = ereignisse.some(e => (e.typ === 'mine_exploded' || e.typ === 'mine_dud') && e.mineId === mine.id);
+    assert.ok(mineAus, 'die Mine in Reichweite des zweiten Fasses wurde mit ausgelöst');
+    assert.ok(system.snapshot().some(m => m.id === weit.id), 'die weit entfernte Mine liegt noch');
+    geprueft = true;
+  }
+  assert.ok(geprueft);
+});
+
+test('Ohne Bodenobjektfassung 3 reagieren Fässer nicht auf Explosionen', () => {
+  const a = baueAttrappe([{ id: 1, x: 100, y: 790 }]);
+  const system = new BodenobjektSystem({
+    rng: new SeededRandom(1), world: a.welt, events: a.welt.services.events, faesser: false,
+    q: { breite: 2560, surfaceYAt: () => 800, bodenNahe: () => 800, waterLevelAt: () => 0, startplaetze: () => [] },
+  });
+  a.welt.services.bodenobjekte = system;
+  system.lege(1000, 800, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND });
+  system.explosionBei(1000, 800, 50);
+  system.update();
+  assert.equal(a.ereignisse.some(e => e.typ === 'fass_exploded'), false);
+});
+
+test('Im Match: Marke 3 legt Fässer aus dem Seed, Marke 2 keine, und ein Geschoss in der Nähe sprengt ein Fass', () => {
+  let mitFass = 0;
+  for (let seed = 1; seed <= 24; seed += 1) {
+    const m3 = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', bodenobjekte: 3 });
+    m3.start();
+    const faesser = m3.getState().bodenobjekte.filter(o => o.typ === 'fass');
+    assert.ok(faesser.length <= FAESSER.liegendMax, `Seed ${seed}: ${faesser.length} Fässer`);
+    if (faesser.length > 0) mitFass += 1;
+    for (const f of faesser) for (const e of m3.getState().entities) assert.ok(Math.abs(e.x - f.x) >= MINEN.liegendAbstandStart);
+    const m2 = new MatchController({ seed, teams: 2, playersPerTeam: 2, preset: 'hills', bodenobjekte: 2 });
+    m2.start();
+    assert.equal(m2.getState().bodenobjekte.filter(o => o.typ === 'fass').length, 0, `Seed ${seed}: Marke 2 hat keine Fässer`);
+  }
+  assert.ok(mitFass >= 12, `nur ${mitFass} von 24 Seeds mit Fass`);
+
+  const m = new MatchController({ seed: 31, teams: 2, playersPerTeam: 1, preset: 'hills', bodenobjekte: 3, turnDurationMs: 1_000_000 });
+  m.start(); m.consumeEvents();
+  const fass = m.bodenobjektSystem.lege(1200, m.surfaceYAt(1200) - 4, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND });
+  const schuetze = m.activePlayerId;
+  m.inventory.register(schuetze, ['pa_038']); // Rakete: Explosion am Aufprallpunkt
+  // Das Fass direkt vor die Figur stellen, damit der Einschlag in Reichweite liegt.
+  m.world.setComponent(schuetze, 'Position', 'x', 1100);
+  m.world.setComponent(schuetze, 'Position', 'y', m.surfaceYAt(1100) - 10);
+  void fass;
+  assert.ok(m.fire(schuetze, 0.0, 45, 'pa_038').ok);
+  let explodiert = false;
+  for (let i = 0; i < 900 && !explodiert; i += 1) {
+    m.step();
+    for (const e of m.consumeEvents()) if (e.type === 'fass_exploded') explodiert = true;
+  }
+  assert.ok(explodiert, 'eine Explosion in der Nähe des Fasses hat es gesprengt');
 });

@@ -631,7 +631,7 @@ export const EREIGNIS_WIRKUNGEN = {
    * selbst kommt als `explosion` (Krater, Blitz, Klang) wie bei jedem Einschlag.
    */
   mine_placed: beide((k, n) => {
-    k.fernzustand?.minen?.()?.set(n.mineId, { id: n.mineId, x: n.x, y: n.y, ownerId: n.ownerId ?? null, teamId: n.teamId ?? null, art: n.art, blindgaenger: false, ausgeloest: false });
+    k.fernzustand?.minen?.()?.set(n.mineId, { id: n.mineId, typ: 'mine', x: n.x, y: n.y, ownerId: n.ownerId ?? null, teamId: n.teamId ?? null, art: n.art, blindgaenger: false, ausgeloest: false });
     // Liegende Minen des Kartenaufbaus melden sich nicht im Protokoll (sie liegen von Anfang an).
     if (n.art !== 'liegend') {
       k.hud?.log(n.art === 'abgeworfen' ? 'Mine abgeworfen' : 'Mine abgelegt', 'accent');
@@ -643,6 +643,17 @@ export const EREIGNIS_WIRKUNGEN = {
     k.fernzustand?.minen?.()?.delete(n.mineId);
     k.hud?.log(n.ausgang === 'super' ? 'Superexplosion! Eine Mine macht doppelten Schaden' : 'Eine Mine explodiert', n.ausgang === 'super' ? 'danger' : 'accent');
     if (n.ausgang === 'super') k.renderer?.addFlash(n.x, n.y, 70, { color: '#ffd24a' });
+  }),
+
+  // Fässer (Bodenobjektfassung 3): liegen von Anfang an; die Explosion kommt als `explosion` (Krater, Blitz, Klang).
+  fass_placed: beide((k, n) => {
+    k.fernzustand?.minen?.()?.set(n.fassId, { id: n.fassId, typ: 'fass', x: n.x, y: n.y, ownerId: null, teamId: null, art: 'liegend', blindgaenger: false, ausgeloest: false });
+  }),
+
+  fass_exploded: beide((k, n) => {
+    k.fernzustand?.minen?.()?.delete(n.fassId);
+    k.hud?.log('Ein Fass explodiert', 'accent');
+    k.renderer?.addFlash(n.x, n.y, 30, { color: '#ff9a3d' });
   }),
 
   mine_dud: beide((k, n) => {

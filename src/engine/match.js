@@ -54,7 +54,7 @@ import { GUENTHER_ALT, GUENTHER_AKTIONEN, normalisiereGuenther } from '../shared
 import { COOKIE_ALT, COOKIE_KATER, normalisiereCookie } from '../shared/config/cookie.js';
 import { FEUER_ALT, FEUER_ENTFACHT, FEUER, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG, BEWEGUNG_ALT, BEWEGUNG_GEHEN, normalisiereBewegung } from '../shared/config/bewegung.js';
-import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
+import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
@@ -978,6 +978,7 @@ export class MatchController {
       rng: this.#seedManager.getSubRng('BODENOBJEKTE'),
       world: this.#world,
       events: this.#events,
+      faesser: this.bodenobjekte >= BODENOBJEKTE_FAESSER,
       q: {
         breite: this.width,
         surfaceYAt: x => this.surfaceYAt(x),
@@ -989,6 +990,7 @@ export class MatchController {
         })),
       },
     });
+    this.#world.services.bodenobjekte = this.#bodenobjekte;
     this.#bodenobjekte.setzeLiegende();
   }
 
