@@ -11,7 +11,7 @@
  *
  * Jede Zahl darin wird GERECHNET, nicht geschrieben:
  *   - Schaden, Radius, Rückstoß, Durchschlag, Zielsuche, Elemente ← Waffenkatalog
- *   - Kraterradius ← DIESELBE Regel wie `projectileSystem.#explode`
+ *   - Kraterradius ← DIESELBE Regel wie `engine/explosion.js` (`wendeExplosionAn`, von `projectileSystem.#explode` und den Minen aufgerufen)
  *     (`terrainDamage > 0 ? terrainDamage : blastRadius * 0,6 : 4`)
  *   - Terrain-Kennzahlen ← `generateTerrain` mit festem Seed, echt gemessen
  *
@@ -41,7 +41,7 @@ const KARTE = { breite: 2560, hoehe: 1440 };
  * Kraterradius EINER Waffe — dieselbe Regel wie im Motor.
  *
  * Steht hier als Funktion, damit ein Auseinanderlaufen auffällt: `tests/matrix.test.js`
- * vergleicht sie mit dem, was `projectileSystem` tatsächlich tut.
+ * vergleicht sie mit dem, was `engine/explosion.js` tatsächlich tut.
  */
 export function kraterRadius(waffe) {
   if (waffe.terrainDamage > 0) return Math.max(2, Math.round(waffe.terrainDamage));
@@ -204,7 +204,7 @@ function baue() {
   /* ------------------------------------------------- 2. Zerstörungsgrad */
   w('## 2. Zerstörungsgrad');
   w();
-  w('Der Krater folgt EINER Regel (`projectileSystem.#explode`):');
+  w('Der Krater folgt EINER Regel (`engine/explosion.js`, `wendeExplosionAn`):');
   w('`terrainDamage > 0` → Radius = `terrainDamage`, sonst `blastRadius × 0,6`,');
   w('sonst ein Mindestloch von 4 px, damit ein Einschlag sichtbar bleibt.');
   w();
@@ -299,7 +299,7 @@ function baue() {
   w('| Größe | Quelle |');
   w('|---|---|');
   w('| Schaden, Radius, Rückstoß, Elemente, Durchschlag, Zielsuche | `src/shared/config/weapons.js` (erzeugt aus `project_armageddon_weapons_v1.json`) |');
-  w('| Kraterradius | `src/engine/systems/projectileSystem.js`, `#explode` — hier nachgebildet und im Test verglichen |');
+  w('| Kraterradius | `src/engine/explosion.js`, `wendeExplosionAn` — hier nachgebildet und im Test verglichen |');
   w('| Flächenwirkung auf Figuren | Falloff `max(0,25, 1 − Abstand/Radius)` je Figur im Radius |');
   w('| Wasser | `water.displace(x, y, craterRadius, 0,65)` bei jedem Krater |');
   w('| Kisten und NPCs | Sie tragen `Position`+`Health` und werden vom Flächenschaden mitgetroffen |');

@@ -30,7 +30,7 @@ Diese Waffen bewegen, schützen oder versorgen — sie graben nichts und treffen
 
 ## 2. Zerstörungsgrad
 
-Der Krater folgt EINER Regel (`projectileSystem.#explode`):
+Der Krater folgt EINER Regel (`engine/explosion.js`, `wendeExplosionAn`):
 `terrainDamage > 0` → Radius = `terrainDamage`, sonst `blastRadius × 0,6`,
 sonst ein Mindestloch von 4 px, damit ein Einschlag sichtbar bleibt.
 
@@ -237,7 +237,7 @@ mit der Summe der Elementpunkte.
 | Größe | Quelle |
 |---|---|
 | Schaden, Radius, Rückstoß, Elemente, Durchschlag, Zielsuche | `src/shared/config/weapons.js` (erzeugt aus `project_armageddon_weapons_v1.json`) |
-| Kraterradius | `src/engine/systems/projectileSystem.js`, `#explode` — hier nachgebildet und im Test verglichen |
+| Kraterradius | `src/engine/explosion.js`, `wendeExplosionAn` — hier nachgebildet und im Test verglichen |
 | Flächenwirkung auf Figuren | Falloff `max(0,25, 1 − Abstand/Radius)` je Figur im Radius |
 | Wasser | `water.displace(x, y, craterRadius, 0,65)` bei jedem Krater |
 | Kisten und NPCs | Sie tragen `Position`+`Health` und werden vom Flächenschaden mitgetroffen |

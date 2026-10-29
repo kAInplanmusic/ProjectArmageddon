@@ -21,8 +21,8 @@ import {
   raycastSegment,
 } from '../../shared/ballistics.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
-import { kraterTiefeProzent } from '../../shared/config/zerstoerung.js';
-import { klassifiziereEinschlag, stoffSchluesselAmEinschlag } from '../../shared/einschlag.js';
+import { stoffSchluesselAmEinschlag } from '../../shared/einschlag.js';
+import { wendeExplosionAn } from '../explosion.js';
 import { wendeStossAn, stossSeite } from '../stoss.js';
 
 /*
@@ -412,7 +412,6 @@ export class ProjectileSystem {
     const services = world.services ?? {};
     const events = services.events ?? null;
     const match = services.match ?? { knockbackMultiplier: 1 };
-    const terrain = services.terrain ?? null;
 
     const damage = world.getComponent(entityId, 'Projectile', 'damage') || 0;
     const blastRadius = world.getComponent(entityId, 'Projectile', 'blastRadius') || 0;
@@ -424,74 +423,11 @@ export class ProjectileSystem {
     // wirkt auch im Radius als Feuer.
     const damageType = world.getComponent(entityId, 'Projectile', 'damageType');
 
-    // Untergrund des Einschlags — VOR Krater und Wasserverdrängung gemessen (shared/einschlag.js).
-    const material = klassifiziereEinschlag(terrain, services.water ?? null, x, y, { biomId: match.biomId });
-
-    // Krater: expliziter Terrain-Schaden hat Vorrang, sonst leitet sich der
-    // Radius aus der Flaechenwirkung ab. Reine Direktschusswaffen graben nur
-    // ein minimales Loch, damit Einschlaege sichtbar bleiben.
-    const craterRadius = terrainDamage > 0
-      ? terrainDamage
-      : blastRadius > 0 ? blastRadius * 0.6 : 4;
-
-    if (terrain && craterRadius > 0) {
-      const radius = Math.max(2, Math.round(craterRadius));
-      const zerstoerung = services.zerstoerung ?? null;
-      if (zerstoerung) {
-        // Zerstörungsfassung 2: raue Form, Tiefe nach Waffe, Nachrutschen (engine/zerstoerung.js).
-        // Ab Fassung 4 reist die Waffe mit: Ihr Zerstörungscharakter (Durchschlag, Streuung, Beben, Brand) wirkt am Einschlag.
-        zerstoerung.krater(x, y, radius, kraterTiefeProzent(terrainDamage, blastRadius, radius), world.getComponent(entityId, 'Projectile', 'weaponId'));
-      } else {
-        terrain.punchCrater(x, y, radius);
-        if (events) events.emit('terrain_destroyed', { x, y, radius });
-      }
-    }
-
-    // Wasser verdrängen: Explosionen drücken das Wasser im Radius nach außen.
-    const water = services.water ?? null;
-    if (water && typeof water.displace === 'function' && craterRadius > 0) {
-      water.displace(x, y, craterRadius, 0.65);
-    }
-
-    if (damage > 0 && blastRadius <= 0 && hitTarget !== null && world.isActive(hitTarget)) {
-      // Waffe ohne Flaechenwirkung: voller Schaden nur auf das getroffene Ziel.
-      world.getSystem('damage')?.applyDamage(world, hitTarget, damage, owner, { damageType });
-    }
-
-    if (blastRadius > 0 && damage > 0) {
-      const victimIds = world.getEntitiesBySignature(
-        COMPONENT_SIGNATURES.POSITION | COMPONENT_SIGNATURES.HEALTH
-      );
-      for (const victimId of victimIds) {
-        if (!world.isActive(victimId)) continue;
-        const vx = world.getComponent(victimId, 'Position', 'x') || 0;
-        const vy = world.getComponent(victimId, 'Position', 'y') || 0;
-        const dx = vx - x;
-        const dy = vy - y;
-        const dist = Math.hypot(dx, dy);
-        if (dist > blastRadius) continue;
-
-        const falloff = Math.max(0.25, 1 - dist / blastRadius);
-        let applied = damage * falloff;
-        // Waffenfassung 5: ein eigener Schuss nimmt dem Schützen höchstens `selbstschadenGrenze` seiner Höchstgesundheit.
-        const grenze = match.selbstschadenGrenze || 0;
-        if (grenze > 0 && victimId === owner) {
-          applied = Math.min(applied, (world.getComponent(victimId, 'Health', 'max') || 0) * grenze);
-        }
-        const damageSystem = world.getSystem('damage');
-        if (damageSystem) {
-          damageSystem.applyDamage(world, victimId, applied, owner, { damageType });
-        }
-
-        if (knockback > 0 && dist > 0.0001) {
-          const impulse = knockback * falloff * (match.knockbackMultiplier || 1) * 0.02;
-          const currentVx = world.getComponent(victimId, 'Velocity', 'x') || 0;
-          const currentVy = world.getComponent(victimId, 'Velocity', 'y') || 0;
-          world.setComponent(victimId, 'Velocity', 'x', currentVx + (dx / dist) * impulse);
-          world.setComponent(victimId, 'Velocity', 'y', currentVy + (dy / dist) * impulse);
-        }
-      }
-    }
+    // Krater, Wasser, Schaden mit Abfall, Rückstoß: dieselbe Wirkung wie bei Minen (`engine/explosion.js`).
+    const material = wendeExplosionAn(world, {
+      x, y, damage, blastRadius, knockback, terrainDamage, owner, damageType,
+      weaponId: world.getComponent(entityId, 'Projectile', 'weaponId'), hitTarget,
+    });
 
     // Waffenfassung 11: gerichteter Rückstoß des Direkttreffers (Nahkampf, Faust, Strahl-Wurf), Stärke und Richtung je Waffe.
     const stossKraft = world.getComponent(entityId, 'Projectile', 'stossKraft') || 0;

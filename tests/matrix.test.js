@@ -41,9 +41,10 @@ test('Die Übersicht nennt jede Waffe — und keine erfundene', () => {
 });
 
 test('Der Krater der Übersicht ist der Krater des Motors', () => {
-  const quelle = readFileSync(
-    join(root, 'src', 'engine', 'systems', 'projectileSystem.js'), 'utf8',
-  );
+  // Die Regel steht seit 2026-10-29 in `engine/explosion.js` (Geschoss UND Minen rufen sie auf), nicht mehr im Geschoss.
+  const quelle = readFileSync(join(root, 'src', 'engine', 'explosion.js'), 'utf8');
+  assert.match(readFileSync(join(root, 'src', 'engine', 'systems', 'projectileSystem.js'), 'utf8'), /wendeExplosionAn\(world,/,
+    'Das Geschoss muss die gemeinsame Explosionswirkung aufrufen'); 
   /*
    * Die Regel steht EINMAL im Motor. Weicht die Übersicht ab, nennt sie Zahlen,
    * die niemand erlebt — genau der Fehler, den diese Datei verhindern soll.
