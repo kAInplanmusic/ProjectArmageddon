@@ -9863,10 +9863,10 @@
    "gespiegelt": false,
    "streckung": 1.11,
    "content": {
-    "x": 7,
-    "y": 6,
-    "w": 114,
-    "h": 115
+    "x": 19,
+    "y": 7,
+    "w": 89,
+    "h": 114
    },
    "anchor": {
     "grip": {
@@ -9874,7 +9874,7 @@
      "y": 60
     },
     "muzzle": {
-     "x": 120,
+     "x": 107,
      "y": 60
     },
     "source": "geometrie"
@@ -9894,7 +9894,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#58a5eb",
+   "flashColor": "#eb8a2e",
    "korrektur": true,
    "kachel": {
     "modus": "motiv",
