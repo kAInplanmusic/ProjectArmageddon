@@ -1,6 +1,6 @@
 # Auftrag: Seil (Ninja-Rope)
 
-*Stand: 2026-10-29 · Status: **Entwurf zur Freigabe**, nichts gebaut · Quelle: MASTERDOTO, „Standardmechaniken":
+*Stand: 2026-10-29 · Status: **Bedienung entschieden, Schritt 0 gemessen, sonst nichts gebaut** · Quelle: MASTERDOTO, „Standardmechaniken":
 „Seil/Ninja-Rope — FEHLT, Aufwand groß (Pendelphysik, Terrain-Anker)".*
 
 ## 1. Ziel
@@ -31,13 +31,27 @@ Das gibt Beweglichkeit, die Gehen und Springen nicht liefern (Höhen, Lücken, I
 3. **Reichweite und Zeit:** Maximale Seillänge (px), Schussfrist, wie oft je Zug. Werte kommen aus einer Messung,
    nicht aus dem Gefühl (siehe Schritt 6).
 4. **Fallschaden beim Loslassen:** Bleibt wie heute (Bremse), kein Sonderfall.
-5. **Bedienung:** Taste und Touch-Knopf festlegen; bisherige Belegung ist verbindlich (siehe MASTERDOTO,
-   „Tastenbelegung"): frei sind nur wenige Tasten — vor dem Bauen mit dem Auftraggeber klären.
+5. **Bedienung (Auftraggeber, 2026-10-29): keine neue Taste.** Das Seil ist ein Werkzeug im vorhandenen
+   Waffenmenü (Kachelraster mit Kategorien, Untermenü mit Waffen; `waffenMenue.js`), gewählt wie jede Waffe. Es
+   braucht deshalb einen Katalogeintrag (im Generator `scripts/build-weapon-catalog.mjs`, nicht in `weapons.js`)
+   und eine Kategorie bzw. Gruppe im Menü (heute u. a. „Gadgets“). Für die Handhabung wird NUR Bestehendes
+   benutzt (Vorschlag, bitte bestätigen): Schießen wie jede Waffe (Leertaste/Shift gehalten, Loslassen feuert),
+   im Seilzustand W/S = Seil kürzen/verlängern (statt Zielwinkel), Enter = Loslassen (Sprung), A/D = Schwung
+   (statt Gehen). Touch: die vorhandenen Knöpfe (FEUER, Sprung, Gehen). Die Tastenbelegung (MASTERDOTO,
+   „Tastenbelegung") bleibt unverändert.
 
 ## 4. Arbeitsschritte
 
-0. **Machbarkeitsmessung:** Prototyp der Pendelrechnung in einem Skript, 10 000 Takte, Hash zweimal
-   vergleichen (Determinismus), Energie driftet nicht auf. Ohne dieses Ergebnis wird nicht weitergebaut.
+0. **Machbarkeitsmessung — ERLEDIGT (2026-10-29), `scripts/seil-pendel-messung.mjs`:** ortsbasiertes Pendel
+   (Verlet mit Längenzwang), nur `+ − · /` und `Math.sqrt` (IEEE-exakt; bewusst kein `sin/cos/hypot`).
+   Gemessen über 10 000 Takte, vier Fälle (Länge 120–400 px, Start 45–80°, mit und ohne Dämpfung): **jeweils
+   zwei Läufe mit gleichem Hash**; **Energiegewinn 0,0 %** in allen Fällen; ein einmaliger Verlust von 13–54 %
+   des Hubs beim Start aus der Ruhelage am Kreisrand (die Figur „fällt“ im ersten Takt vom Kreis und wird
+   zurückgeführt), danach stabil (Energie nach 3600 und nach 10 000 Takten gleich). **Aussage:** Determinismus
+   und „kein Energiegewinn“ sind machbar. **Nicht belegt:** Übereinstimmung zwischen verschiedenen Maschinen
+   (hier nur eine); die Wahl von `sqrt` statt Trigonometrie ist der Grund, warum sie zu erwarten ist. Den
+   Startverlust mildert ein Start mit Anfangsgeschwindigkeit der Figur (ihre Sprunggeschwindigkeit beim
+   Schuss); das ist im Bauschritt zu messen.
 1. `config/seil.js` (Marke, `normalisiereSeil`, Werte: Länge min/max, Dämpfung, Schussfrist, Zugstärke).
 2. `systems/seilSystem.js`: Schuss → Anker suchen; Pendeln; Längenänderung; Loslassen übergibt Geschwindigkeit an die
    Figurenphysik; Seilriss bei Verlust des Ankers oder Treffer (Regel festlegen).

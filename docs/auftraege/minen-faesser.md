@@ -1,6 +1,6 @@
 # Auftrag: Minen und Fässer als Bodenobjekte
 
-*Stand: 2026-10-29 · Status: **Entwurf zur Freigabe**, nichts gebaut · Quelle: MASTERDOTO, „Standardmechaniken":
+*Stand: 2026-10-29 · Status: **Entscheidungen getroffen (2026-10-29), noch nichts gebaut** · Quelle: MASTERDOTO, „Standardmechaniken":
 „Minen / Fässer als Bodenobjekte — FEHLT, Aufwand groß (neue Entität, Auslöser, Replay)".*
 
 ## 1. Ziel
@@ -28,14 +28,14 @@ Neue Regeln, die alte Replays verändern würden, bekommen eine **Versionsmarke*
 | Katalog | `weapons.js` wird von `scripts/build-weapon-catalog.mjs` erzeugt | Änderungen am Katalog NUR im Generator oder in `project_armageddon_weapons_v1.json` (nicht in `weapons.js`) |
 | Namensprüfung | `weapons.js:7412` prüft Waffennamen auf „mine“ | Schritt 0: prüfen, welche Katalogwaffen damit gemeint sind, bevor etwas doppelt gebaut wird |
 
-## 3. Entscheidungen, die vor dem Bauen nötig sind
+## 3. Entscheidungen (Auftraggeber, 2026-10-29: Empfehlungen angenommen, Friendly Fire AN)
 
-Empfehlung jeweils zuerst.
+Bestätigt sind die Punkte 1 bis 5 wie empfohlen. **Friendly Fire gilt: Minen und Fässer treffen auch die eigenen Figuren** (auch den Werfer, deshalb die Scharfschaltzeit von einem Zug).
 
 1. **Wer legt Minen?** *Als Waffe aus dem Katalog* (passt zu Waffenwahl, Munition, Kisten) — nicht als eigene
    Taste. Wirkung: nutzt `inventory.js` und Waffenmenü ohne neue Bedienung.
 2. **Auslöser der Mine:** Nähe einer **fremden oder eigenen** Figur (Radius klein, z. B. 24 px) nach einer
-   **Scharfschaltung** von einem Zug (sonst legt der Werfer sich selbst fest). Offen: Friendly Fire an oder aus.
+   **Scharfschaltung** von einem Zug (sonst legt der Werfer sich selbst fest). Friendly Fire: **an** (entschieden).
 3. **Sichtbarkeit:** Minen für alle sichtbar (Spielgleichheit, keine versteckte Information). Verdeckte Minen
    bräuchten pro Spieler gefilterte Zustände und sind **nicht** Teil dieses Entwurfs.
 4. **Fässer:** Zufällig aus dem Seed gesetzt (gehört zum Kartenaufbau) oder nur als Kiste-Variante? Empfehlung:
