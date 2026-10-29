@@ -37,7 +37,6 @@ import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { getTurnDurationForPlayerCount } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
-import { getWeapon } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
@@ -50,7 +49,7 @@ import { Zerstoerung } from './zerstoerung.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { pickScenery } from '../shared/config/scenery.js';
 import { biomFuerCharakter as biomeKennungFuerCharakter } from '../shared/biomwahl.js';
-import { WET_LEVEL, clampWaterLevel } from '../shared/config/water.js';
+import { clampWaterLevel } from '../shared/config/water.js';
 import { GuentherSystem } from './systems/guentherSystem.js';
 import { CookieSystem } from './systems/cookieSystem.js';
 import { baueTierKontext } from './tierKontext.js';
@@ -67,7 +66,8 @@ import { FeuerSystem } from './systems/feuerSystem.js';
 import { damageTypeId } from './damageTypes.js';
 import { guentherWerte } from '../shared/config/guenther.js';
 import { loeseGuentherRad } from './guentherRad.js';
-import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
+import { getWeapon } from '../shared/config/weapons.js';
+import { wirfWaffe, schrittFliegendeKisten } from './kistenWurf.js';
 import { ccdRaycast } from './physics/ballistics.js';
 import { POWER_TO_SPEED, PROJECTILE_GRAVITY, integrateStep } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
@@ -303,13 +303,6 @@ const GUENTHER_PLANUNGSHORIZONT = 30;
 const OBERFLAECHE_UNBEKANNT = -2;
 const GRAVITY = PROJECTILE_GRAVITY;
 const MAX_WIND = 0.05;
-/** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
-const CRATE_GRAVITY = 0.30;
-/**
- * Mindest-Flugzeit eines Wurfs in Ticks (0,75 s bei 60 Hz).
- * Die Kiste landet erst danach — auch wenn sie vorher aufsetzen würde.
- */
-const CRATE_FLIGHT_TICKS = 45;
 
 /** Absprunggeschwindigkeit (px pro Tick), negativ = nach oben. */
 const JUMP_IMPULSE = 9.2;
@@ -1012,7 +1005,7 @@ export class MatchController {
     }
     // Fliegende Kisten bewegen sich VOR dem Physikschritt: sie sollen im selben
     // Tick landen, in dem sie den Boden berühren.
-    this.#stepFlyingCrates();
+    schrittFliegendeKisten(this.#kistenQuelle());
     /*
      * Bodenmaterial, Teil 1: den Bewegungszustand VOR dem Schritt merken.
      *
@@ -1986,238 +1979,31 @@ export class MatchController {
   }
 
   /**
-   * Wirft eine Waffe ab und legt sie als aufhebbare Kiste in der Nähe ab.
+   * Wirft eine Waffe ab; die Kiste wird geschleudert (Regeln in `kistenWurf.js`).
+   * Dünner Delegator: Aufrufer in `main.js`, Server und Tests bleiben unverändert.
    *
-   * Die Mechanik unterstützt den Spielablauf an der Stelle, an der er sonst
-   * stockt: Ist der Waffenvorrat voll, muss man sich von etwas trennen, um etwas
-   * Neues zu nehmen.
-   *
-   * Entscheidungen:
-   *  - Die Landestelle wird ZUFÄLLIG gewählt, aber geprüft: innerhalb der Karte,
-   *    auf festem Boden und AUSSERHALB des Aufhebe-Radius. Sonst würde der
-   *    Werfer seine eigene Waffe im nächsten Schritt wieder einsammeln und die
-   *    Handlung wäre wirkungslos.
-   *  - Der Zufall kommt aus dem Match-Generator, ist also reproduzierbar.
-   *  - Die verbleibende Munition reist mit: Abwerfen und Aufheben darf kein
-   *    Munitionstrick sein.
-   *  - Die Reservewaffe ist geschützt (siehe Inventar).
-   *
-   * @param {number} playerId
-   * @param {string} weaponId
    * @returns {{ok:boolean, crateId?:number, x?:number, y?:number, ammo?:number, errors?:string[]}}
    */
   dropWeapon(playerId, weaponId) {
-    const errors = [];
-    if (this.#status !== 'playing') errors.push('Match läuft nicht');
-    if (!this.isPlayerAlive(playerId)) errors.push('Spieler ist nicht mehr aktiv');
-    /*
-     * FUND (belegt, Audit 2026-10-09, A-2): Diese Prüfung fehlte. Ein Spieler,
-     * der nicht am Zug ist, konnte Kisten werfen und dabei den gemeinsamen
-     * Zufallsstrom konsumieren — ein Determinismus-Bruch. Dieselbe Prüfung steht
-     * im Sprung (`jump`) und gehört an jede Eingabe, die den Zufallsgenerator
-     * berührt.
-     */
-    if (playerId !== this.activePlayerId) errors.push('Nur der aktive Spieler kann eine Waffe abwerfen');
-    if (errors.length > 0) return { ok: false, errors };
+    return wirfWaffe(this.#kistenQuelle(), playerId, weaponId);
+  }
 
-    const weapon = getWeapon(weaponId);
-    if (!weapon) return { ok: false, errors: ['Unbekannte Waffe'] };
-
-    const entfernt = this.#inventory.removeWeapon(playerId, weaponId);
-    if (!entfernt.ok) return { ok: false, errors: [entfernt.reason] };
-
-    // Die Kiste wird GESCHLEUDERT, nicht abgelegt: sie fliegt mit zufälliger
-    // Anfangsgeschwindigkeit heraus, unterliegt Schwerkraft und Wind und landet
-    // nach einer Flugzeit. Landung im Wasser ist ausgeschlossen (siehe
-    // #stepCrate) — das ist die einzige harte Regel.
-    const startX = this.#world.getComponent(playerId, 'Position', 'x') ?? 0;
-    const startY = this.#world.getComponent(playerId, 'Position', 'y') ?? 0;
-    const wurf = this.#rollDropThrow();
-
-    const crateId = this.#world.createEntity();
-    this.#world.addComponent(crateId, 'Position', { x: startX, y: startY - 14 });
-    this.#world.addComponent(crateId, 'Velocity', { x: wurf.vx, y: wurf.vy });
-    this.#world.addComponent(crateId, 'Crate', {
-      crateType: CRATE_TYPES.weapon,
-      crateX: startX,
-      crateY: startY - 14,
-      // BEWUSSTER ZUSTAND: Index liegt bei allen 150 Waffen auf 0 (Namensräume
-      // powerTier/rarity) — Begründung an der Ziehung in `systems/lootSystem.js`.
-      rarity: Math.max(0, RARITY_IDS.indexOf(weapon.rarity)),
-      weaponId: weapon.index,
-      picked: 0,
-      ammo: entfernt.ammo,
-      inFlight: 1,
-      flightTicks: CRATE_FLIGHT_TICKS,
-    });
-
-    // Eine abgeworfene Waffe ist keine Nachladezeit mehr wert: die Pause gehört
-    // zur Waffe, und die liegt jetzt am Boden.
-    this.#cooldowns.delete(`${playerId}:${weaponId}`);
-
-    this.#events.emit('weapon_dropped', {
-      playerId, weaponId, crateId,
-      x: startX, y: startY - 14,
-      vx: wurf.vx, vy: wurf.vy,
-      ammo: entfernt.ammo,
-    });
-
-    // x/y sind hier der ABWURFPUNKT. Die Landestelle steht erst nach dem Flug
-    // fest und ist danach über die Kiste im Zustand abfragbar.
+  /** Die Quelle für `kistenWurf.js` — genau die Werte, die das Modul liest. */
+  #kistenQuelle() {
     return {
-      ok: true, crateId, x: startX, y: startY - 14,
-      vx: wurf.vx, vy: wurf.vy, ammo: entfernt.ammo,
+      status: this.#status,
+      activePlayerId: this.activePlayerId,
+      isPlayerAlive: id => this.isPlayerAlive(id),
+      width: this.width,
+      world: this.#world,
+      inventory: this.#inventory,
+      getWeapon,
+      rng: this.#rng,
+      events: this.#events,
+      cooldownLoeschen: schluessel => this.#cooldowns.delete(schluessel),
+      surfaceYAt: x => this.surfaceYAt(x),
+      waterLevelAt: (x, y) => this.waterLevelAt(x, y),
     };
-  }
-
-  /**
-   * Sucht eine zufällige, gültige Landestelle für eine abgeworfene Waffe.
-   *
-   * Bedingungen: innerhalb der Karte, mindestens `DROP_MIN_DISTANCE` und
-   * höchstens `DROP_MAX_DISTANCE` entfernt, und der Punkt muss über festem
-   * Boden liegen. Gibt `null` zurück, wenn kein Platz gefunden wurde.
-   *
-   * @returns {{x:number, y:number}|null}
-   */
-  /**
-   * Schleudert eine abgeworfene Waffe fort.
-   *
-   * Bewusst physikalisch statt „geprüft danebenlegen": Die Waffe fliegt mit
-   * einer zufälligen Anfangsgeschwindigkeit heraus, unterliegt der Schwerkraft,
-   * wird vom Wind getrieben und landet erst nach einer Flugzeit. Das wirkt wie
-   * ein Wurf und nicht wie ein Ablegen.
-   *
-   * Die EINZIGE harte Regel: Die Kiste darf nicht im Wasser landen. Wasser
-   * würde sie unerreichbar machen bzw. die Waffe versinken lassen — das wäre
-   * ein Verlust ohne Gegenwert. Trifft sie auf Wasser, fliegt sie weiter, bis
-   * sie festen Boden erreicht.
-   *
-   * @returns {{vx:number, vy:number}} Anfangsgeschwindigkeit für die Kiste
-   */
-  #rollDropThrow() {
-    const richtung = this.#rng.nextBoolean() ? -1 : 1;
-    /*
-     * Die Weite wird aus der ZIELDISTANZ gerechnet, nicht geschätzt.
-     *
-     * FUND (belegt, gemessen 2026-09-19): Hier stand `vx: richtung * rng(1,2 … 2,8)`.
-     * Über die Flugzeit (`CRATE_FLIGHT_TICKS`) und den Luftwiderstand ergibt das
-     * 48–113 px — gemessen 74 px. Damit landete die Kiste INNERHALB des
-     * Aufhebe-Radius (`PICKUP_RADIUS = 110` in `systems/lootSystem.js`), wurde im
-     * SELBEN Takt wieder aufgenommen und verschwand: `crate_landed` und
-     * `crate_pickup` fielen zusammen, der Abwurf war wirkungslos.
-     *
-     * Der Mechaniktext verlangt ausdrücklich das Gegenteil: die Landestelle muss
-     * AUSSERHALB des Aufhebe-Radius liegen, sonst sammelt der Werfer seine eigene
-     * Waffe im nächsten Schritt wieder ein.
-     *
-     * Gerechnet wird die nötige Anfangsgeschwindigkeit für die gezogene
-     * Zieldistanz: Die zurückgelegte Strecke ist `vx0 × Σ drag^i` über die
-     * Flugticks (der Wind kommt als kleine Zugabe hinzu und wird nicht
-     * eingerechnet — er darf die Landestelle nur nach außen verschieben).
-     */
-    const zielWeite = this.#rng.nextFloat(PICKUP_RADIUS * 1.4, PICKUP_RADIUS * 3);
-    let abklingen = 0;
-    let faktor = 1;
-    for (let tick = 0; tick < CRATE_FLIGHT_TICKS; tick += 1) {
-      faktor *= DEFAULT_PROJECTILE_DRAG;
-      abklingen += faktor;
-    }
-    return {
-      // Kräftig nach oben und zur Seite. Die Werte zielen auf eine Flugzeit von
-      // etwa einer halben bis anderthalb Sekunden: kurz genug, um den Zug nicht
-      // aufzuhalten, lang genug, um den Wurf als Wurf zu erkennen.
-      vx: richtung * (zielWeite / Math.max(1, abklingen)),
-      vy: -this.#rng.nextFloat(9, 14),
-    };
-  }
-
-  /**
-   * Bewegt eine fliegende Kiste einen Schritt weiter.
-   *
-   * Läuft im Simulationsschritt (siehe #stepFlyingCrates) und nutzt dieselben
-   * Kräfte wie ein Geschoss: Schwerkraft, Luftwiderstand, Wind. Der Unterschied
-   * ist der Aufprall: Eine Kiste bleibt liegen statt zu explodieren, und sie
-   * darf nicht ins Wasser geraten.
-   *
-   * @returns {boolean} true, wenn die Kiste gelandet ist
-   */
-  #stepCrate(crateId) {
-    const world = this.#world;
-    if (!world.isActive(crateId)) return false;
-    // Nur fliegende Kisten bewegen sich (fliegend = Flag gesetzt).
-    if (world.getComponent(crateId, 'Crate', 'inFlight') !== 1) return false;
-
-    const x = world.getComponent(crateId, 'Position', 'x') ?? 0;
-    const y = world.getComponent(crateId, 'Position', 'y') ?? 0;
-    let vx = world.getComponent(crateId, 'Velocity', 'x') ?? 0;
-    let vy = world.getComponent(crateId, 'Velocity', 'y') ?? 0;
-
-    const wind = this.#world.services.match?.wind ?? 0;
-    // Restliche Flugzeit. Die Kiste landet erst, wenn sie abgelaufen ist —
-    // eine abgeworfene Waffe soll sichtbar fliegen und nicht im nächsten Hügel
-    // hängen bleiben.
-    let restFlug = world.getComponent(crateId, 'Crate', 'flightTicks') ?? 0;
-    if (restFlug > 0) restFlug -= 1;
-    world.setComponent(crateId, 'Crate', 'flightTicks', restFlug);
-    const flugVorbei = restFlug <= 0;
-
-    // Eigene Fallbeschleunigung für Kisten: schwächer als bei Geschossen, damit
-    // der Wurf sichtbar dauert. Ein Geschoss soll schnell ans Ziel, eine
-    // abgeworfene Waffe soll fliegen.
-    vy += CRATE_GRAVITY;
-    vx += wind * 0.8;
-    vx *= DEFAULT_PROJECTILE_DRAG;
-    vy *= DEFAULT_PROJECTILE_DRAG;
-
-    const nextX = x + vx;
-    const nextY = y + vy;
-
-    // Aus der Karte geflogen: zurück an den Rand holen.
-    const begrenztX = Math.min(this.width - 12, Math.max(12, nextX));
-
-    const boden = this.surfaceYAt(Math.round(begrenztX));
-
-    // Wasser an der Landestelle? Dann NICHT landen, sondern weiterfliegen.
-    // Das ist die einzige harte Regel des Abwurfs.
-    const wasser = this.waterLevelAt(begrenztX, Math.max(0, boden));
-    const ueberWasser = wasser > WET_LEVEL;
-
-    // Gelände getroffen und trockener Boden: landen — aber erst nach Ablauf der
-    // Mindestflugzeit.
-    if (flugVorbei && boden > 0 && nextY >= boden && !ueberWasser) {
-      world.setComponent(crateId, 'Position', 'x', begrenztX);
-      world.setComponent(crateId, 'Position', 'y', boden);
-      world.setComponent(crateId, 'Velocity', 'x', 0);
-      world.setComponent(crateId, 'Velocity', 'y', 0);
-      world.setComponent(crateId, 'Crate', 'crateX', begrenztX);
-      world.setComponent(crateId, 'Crate', 'crateY', boden);
-      world.setComponent(crateId, 'Crate', 'inFlight', 0);
-      this.#events.emit('crate_landed', {
-        crateId, x: begrenztX, y: boden, flightTicks: CRATE_FLIGHT_TICKS,
-      });
-      return true;
-    }
-
-    // Sonst weiterfliegen. Über Wasser wird die Sinkgeschwindigkeit gedämpft,
-    // damit die Kiste nicht untergeht, sondern weitergetragen wird.
-    if (ueberWasser && nextY >= boden) vy = Math.min(vy, 0.4);
-
-    world.setComponent(crateId, 'Position', 'x', begrenztX);
-    world.setComponent(crateId, 'Position', 'y', Math.max(0, nextY));
-    world.setComponent(crateId, 'Velocity', 'x', vx);
-    world.setComponent(crateId, 'Velocity', 'y', vy);
-    world.setComponent(crateId, 'Crate', 'crateX', begrenztX);
-    world.setComponent(crateId, 'Crate', 'crateY', Math.max(0, nextY));
-    return false;
-  }
-
-  /** Bewegt alle fliegenden Kisten. Läuft vor dem Physikschritt. */
-  #stepFlyingCrates() {
-    for (const crateId of this.#world.getEntitiesBySignature(
-      COMPONENT_SIGNATURES.CRATE | COMPONENT_SIGNATURES.VELOCITY,
-    )) {
-      this.#stepCrate(crateId);
-    }
   }
 
   /**
