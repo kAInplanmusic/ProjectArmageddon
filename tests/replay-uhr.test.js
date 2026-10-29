@@ -13,6 +13,13 @@
  * Seed kommen. Ein `Date.now()` im Simulationspfad wäre deshalb ein
  * Determinismus-Fehler.
  *
+ * ## Stand 2026-10-29: die Uhr kommt von außen
+ *
+ * AGENTS.md §2 verbietet `Date.now` in `src/engine` buchstäblich. `ReplayRecorder` liest die Wanduhr
+ * deshalb nicht mehr selbst; der Server übergibt den Zeitpunkt als `erstelltAm`. Ohne Übergabe steht
+ * `createdAt: null` im Kopf. Die Wächter unten pinnen jetzt: KEIN Wanduhr-Zugriff in `replay.js`,
+ * `#startedAt` weiterhin nur als Metadatum im Kopf.
+ *
  * ## Die Einordnung (Fall b: Metadaten, keine Wirkung — aber eine Falle)
  *
  * Gemessen, nicht geschlossen:
@@ -80,6 +87,8 @@ function zeichneAuf() {
   const recorder = new ReplayRecorder({
     seed, teams: 2, playersPerTeam: 1, preset: 'hills',
     maxRounds: match.maxRounds, turnDurationMs: match.turnDurationMs,
+    // Die Uhr kommt von außen, wie im Server; hier die (im Test verstellbare) Wanduhr.
+    erstelltAm: Date.now(),
   });
 
   let schuesse = 0;
@@ -124,12 +133,15 @@ test('Der Zeitstempel steht als `createdAt` im Kopf — sonst nirgends', () => {
    */
   const SENTINEL = 1_234_567_890_123;
 
-  const json = mitUhr(SENTINEL, () => {
-    const recorder = new ReplayRecorder({ seed: 5, teams: 2, playersPerTeam: 1 });
-    // Über die Serialisierung prüfen, nicht über den internen Zustand: Genau
-    // die Datei ist das, was aufbewahrt wird.
-    return JSON.parse(recorder.serialize());
-  });
+  const recorder = new ReplayRecorder({ seed: 5, teams: 2, playersPerTeam: 1, erstelltAm: SENTINEL });
+  // Über die Serialisierung prüfen, nicht über den internen Zustand: Genau
+  // die Datei ist das, was aufbewahrt wird.
+  const json = JSON.parse(recorder.serialize());
+
+  // Ohne Übergabe liest der Recorder KEINE Uhr: `createdAt` ist `null`, nicht „jetzt".
+  const ohneUhr = mitUhr(SENTINEL, () => JSON.parse(new ReplayRecorder({ seed: 5, teams: 2, playersPerTeam: 1 }).serialize()));
+  assert.equal(ohneUhr.createdAt, null,
+    'Der Recorder darf die Wanduhr nicht selbst lesen — auch nicht als Rückfall');
 
   assert.equal(json.createdAt, SENTINEL,
     '`createdAt` muss der Zeitstempel der Aufzeichnung sein');
@@ -168,7 +180,7 @@ test('`createdAt` verändert den Zustandshash der Wiedergabe nicht', () => {
   }
 });
 
-test('Die Wiedergabe übernimmt `createdAt` nicht — sie stempelt selbst', () => {
+test('Die Wiedergabe übernimmt `createdAt` nicht — sie stempelt nichts', () => {
   /*
    * Der zweite Teil des Belegs: `fromJSON` liest das Feld nicht einmal. Ein
    * Replay trägt damit keinen fremden Zeitstempel weiter — die Uhr der
@@ -181,10 +193,9 @@ test('Die Wiedergabe übernimmt `createdAt` nicht — sie stempelt selbst', () =
   const spieler = new ReplayPlayer(dokument);
   const kopf = spieler.recorder.toJSON();
 
-  assert.notEqual(kopf.createdAt, 0,
+  assert.equal(kopf.createdAt, null,
     '`fromJSON` darf `createdAt` nicht übernehmen — das Feld beschreibt den '
-    + 'Aufzeichnungszeitpunkt, nicht den Abspielzeitpunkt');
-  assert.ok(Number.isFinite(kopf.createdAt), 'die Wiedergabe stempelt einen gültigen Wert');
+    + 'Aufzeichnungszeitpunkt, nicht den Abspielzeitpunkt — und liest selbst keine Uhr');
 });
 
 // ---------------------------------------------------------------- verstellte Uhr
@@ -252,7 +263,7 @@ test('Eine verstellte Wanduhr ändert Aufzeichnung und Wiedergabe nicht', () => 
  */
 const ERLAUBTE_ZEILEN = [
   /^#startedAt;$/,
-  /^this\.#startedAt = Date\.now\(\);$/,
+  /^this\.#startedAt = Number\.isFinite\(erstelltAm\) \? erstelltAm : null;$/,
   /^createdAt: this\.#startedAt,$/,
 ];
 
@@ -299,7 +310,7 @@ test('Der Wächter greift wirklich — ein Leser im Simulationspfad schlägt an'
    */
   const gekapert = [
     '  #startedAt;',
-    '    this.#startedAt = Date.now();',
+    '    this.#startedAt = Number.isFinite(erstelltAm) ? erstelltAm : null;',
     '  step() {',
     '    const versatz = this.#startedAt;',
     '  }',
@@ -312,22 +323,18 @@ test('Der Wächter greift wirklich — ein Leser im Simulationspfad schlägt an'
   assert.match(verstoesse[0], /const versatz = this\.#startedAt;/);
 });
 
-test('Es gibt genau EINEN Wanduhr-Zugriff in replay.js', () => {
+test('Es gibt KEINEN Wanduhr-Zugriff in replay.js', () => {
   /*
-   * Die andere Hälfte der Absicherung: `#startedAt` könnte sauber bleiben, während
-   * daneben ein zweites `Date.now()` (oder `performance.now()`) in den Ablauf
-   * gerät. Der Wächter zählt die Zugriffe.
+   * AGENTS.md §2: keine `Date.now` in `src/engine`. Der Zeitstempel kommt als `erstelltAm` von außen;
+   * der Wächter zählt Wanduhr-Zugriffe (`Date.now`, `performance.now`, `new Date()`) in Code-Zeilen.
    */
   const treffer = fs.readFileSync(REPLAY_QUELLE, 'utf8')
     .split('\n')
     .map((zeile, index) => ({ text: zeile.trim(), zeile: index + 1 }))
-    .filter(e => !istKommentar(e.text) && /Date\.now\s*\(|performance\.now\s*\(/.test(e.text));
+    .filter(e => !istKommentar(e.text) && /Date\.now\s*\(|performance\.now\s*\(|new Date\s*\(/.test(e.text));
 
-  assert.equal(treffer.length, 1,
-    `Erwartet wird genau EIN Wanduhr-Zugriff (der Metadaten-Stempel), gefunden: `
-    + JSON.stringify(treffer));
-  assert.match(treffer[0].text, /^this\.#startedAt = Date\.now\(\);$/,
-    'Der einzige Wanduhr-Zugriff muss der Metadaten-Stempel sein');
+  assert.deepEqual(treffer, [],
+    'replay.js darf die Wanduhr nicht selbst lesen — der Zeitpunkt wird als `erstelltAm` übergeben');
 });
 
 test('Die Begründung an der Fundstelle nennt die Falle und diesen Test', () => {

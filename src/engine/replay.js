@@ -60,6 +60,9 @@ export class ReplayRecorder {
    * @param {string} [options.preset]
    * @param {number} [options.maxRounds]
    * @param {number} [options.turnDurationMs]
+   * @param {number|null} [options.erstelltAm] - Aufnahmezeitpunkt in ms (Metadatum `createdAt`).
+   *   Kommt von AUSSEN (der Server übergibt seine Uhr): `src/engine` greift nicht selbst auf die
+   *   Wanduhr zu (AGENTS.md §2). Fehlt er, steht `createdAt: null` im Kopf.
    * @param {string[]} [options.sidegrades] - Sidegrade je Spielerplatz. Gehört in
    *   den Kopf, weil er den Verlauf beeinflusst: Ohne ihn spielte die Wiedergabe
    *   ein anderes Match als die Aufzeichnung.
@@ -70,6 +73,7 @@ export class ReplayRecorder {
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT,
+    erstelltAm = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
       throw new TypeError('ReplayRecorder benötigt einen ganzzahligen Seed');
@@ -133,7 +137,11 @@ export class ReplayRecorder {
       ...(hatLoadouts ? { loadouts: loadouts.map(l => (l ? { ...l } : null)) } : {}),
     };
     /*
-     * METADATEN — der EINZIGE Wanduhr-Zugriff dieser Datei.
+     * METADATEN — ein Zeitstempel von AUSSEN, kein Wanduhr-Zugriff dieser Datei.
+     *
+     * Bis 2026-10-29 las diese Stelle selbst `Date.now()`; das verletzte die Regel „keine
+     * `Date.now` in `src/engine`" (AGENTS.md §2) dem Buchstaben nach, auch wenn der Wert nie in die
+     * Simulation floss. Jetzt übergibt der Aufrufer ihn als `erstelltAm`.
      *
      * `#startedAt` ist ein PRODUKTIONSZEITSTEMPEL und landet ausschließlich über
      * `toJSON()` als `createdAt` in der Aufzeichnung („wann wurde das
@@ -153,7 +161,7 @@ export class ReplayRecorder {
      * die Wirkungslosigkeit in `tests/replay-uhr.test.js`; dort schlägt auch der
      * Wächter an, sobald ein zweiter Leser dazukommt.
      */
-    this.#startedAt = Date.now();
+    this.#startedAt = Number.isFinite(erstelltAm) ? erstelltAm : null;
   }
 
   get seed() { return this.#seed; }

@@ -13,7 +13,6 @@
  * @module prng
  */
 
-const UINT32_MASK = 0xFFFFFFFF;
 
 /**
  * Mulberry32-Algorithmus — schneller, seedbarer PRNG.
@@ -138,18 +137,24 @@ export class SeededRandom {
  * Utility-Funktion: Erzeugt einen kryptographisch starken 32-Bit-Seed.
  * Nur für die Erzeugung des Match-Seeds verwenden — nicht im Simulationspfad!
  *
+ * Ohne `crypto.getRandomValues` (heute in Node ≥ 22 und jedem Browser vorhanden) gibt es KEINEN stillen
+ * Rückfall auf Wanduhr und `Math.random`: AGENTS.md §2 verbietet beides in `src/shared`. Wer eine solche
+ * Umgebung bedient, übergibt die Zufallsquelle von außen.
+ *
+ * @param {object} [optionen]
+ * @param {() => number} [optionen.ersatzquelle] - nur ohne `crypto`: liefert eine Zahl, deren untere
+ *   32 Bit als Seed dienen (der Aufrufer verantwortet die Güte)
  * @returns {number} - 32-Bit-Seed-Wert
+ * @throws {Error} ohne `crypto` und ohne `ersatzquelle`
  */
-export function generateSeed() {
+export function generateSeed({ ersatzquelle = null } = {}) {
   if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.getRandomValues) {
     const buffer = new Uint32Array(1);
     globalThis.crypto.getRandomValues(buffer);
     return buffer[0];
   }
-
-  const timeSeed = Date.now() & UINT32_MASK;
-  const randSeed = Math.floor(Math.random() * UINT32_MASK);
-  return (timeSeed ^ randSeed) >>> 0;
+  if (typeof ersatzquelle === 'function') return ersatzquelle() >>> 0;
+  throw new Error('generateSeed: kein crypto.getRandomValues verfügbar — Zufallsquelle als `ersatzquelle` übergeben');
 }
 
 /**
