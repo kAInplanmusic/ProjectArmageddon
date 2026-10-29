@@ -40,6 +40,7 @@ import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shar
 import { getWeapon } from '../shared/config/weapons.js';
 import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
+import { wendeStossAn } from './stoss.js';
 import { GELAENDE_STANDARD, GELAENDE_BIOME, loeseGelaende } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_STATUS, normalisiereSchaden } from '../shared/config/schaden.js';
 import { MaliRegeln } from './schadenMali.js';
@@ -1617,6 +1618,10 @@ export class MatchController {
       this.#world.getSystem('damage')?.applyDamage(this.#world, target, damage, shooterId, {
         damageType: damageTypeId(weapon.damageType),
       });
+      // Waffenfassung 11: gerichteter Rückstoß des Strahltreffers (Stärke und Richtung der Waffe, `engine/stoss.js`).
+      if (weapon.stossRichtung !== undefined && shooterId !== null) {
+        wendeStossAn(this.#world, target, weapon.knockback, weapon.stossRichtung, Math.cos(angle) < 0 ? -1 : 1, this.#world.services.match.knockbackMultiplier || 1);
+      }
 
       // Wirkung über den Schaden hinaus (Einfrieren, Schaden über Zeit).
       // Fällt die Waffe nicht in SPECIAL_EFFECTS, greift die Ableitung aus dem

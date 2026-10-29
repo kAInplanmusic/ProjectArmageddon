@@ -300,7 +300,10 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
      */
     blastRadius: weapon.blastRadius
       || (weapon.category === 'melee' ? 0 : 24),
-    knockback: weapon.knockback,
+    // Waffenfassung 11: Waffen mit Richtung (`stossRichtung`) stoßen den Direkttreffer gerichtet (`engine/stoss.js`), nicht radial.
+    knockback: weapon.stossRichtung === undefined ? weapon.knockback : 0,
+    stossKraft: weapon.stossRichtung === undefined ? 0 : weapon.knockback,
+    stossGrad: weapon.stossRichtung ?? 0,
     drag: 0.995,
     gravityScale: weapon.gravityScale || 1,
     windFactor: 1,

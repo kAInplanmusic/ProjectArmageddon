@@ -558,3 +558,50 @@ Es gibt genau drei Schild-Waffen (Wirkung `shield`); `id`, `internalName`, Katal
 Deutung: Der "Feuerschild" ist kein 151. Eintrag, sondern die bisherige dritte Schildwirkung (`guardian_ultimate`, Himmelswächter, episch) mit
 neuem Namen, neuer Beschreibung und der Schicht `WAFFEN_F11_WERTE` (Schadensart Feuer, Element Feuer, `gegen` Feuer). Das Bild des Waffensymbols
 bleibt (nur der Name im Sprite-Manifest folgt).
+
+### Schritt C: Rückstoß der Nahkämpfer und passender Waffen
+
+Auftrag: Ein Nahkampftreffer stößt das Ziel zurück, je Waffe verschieden. Bisher stieß nur eine Waffe mit Sprengradius (radial vom Einschlag). Fassung 11 legt über 35 Waffen
+(alle 21 Nahkämpfer, Fäuste und Handschuhe, Hämmer, Flammenwerfer und Flammenklinge, Wasserwerfer, Windkrieger, Haken, Peitsche, Magnet) die Felder `knockback` (Stärke; Stärke mal 0,02 gleich px je Tick,
+der Betrag ist bei 6 gedeckelt) und `stossRichtung` (Grad über der Waagerechten in Schussrichtung: 0 vorn, 45 schräg, 90 oben, über 90 zum Schützen hin). Regeln in `src/engine/stoss.js`:
+Seite nach der Flugrichtung (Strahl: Schusswinkel), Rechnung rein deterministisch (Winkel, Stärke, Sturm-Faktor), nur lebende Ziele, Geschwindigkeit je Achse auf 6 begrenzt. Das Gelände hält die Figur
+auf (die Figurenphysik prüft jeden Schritt gegen das Terrain und deckelt die waagerechte Geschwindigkeit); Kante, Wasser und Absturz als Folge sind gewollt. Waffen mit Sprengradius stoßen unverändert radial.
+Deutung: "weit" gleich Stärke 260 bis 300, "mittel" gleich 110 bis 190, "hoch" gleich Richtung ab 65 Grad; die Haken, die Peitsche und der Magnet ziehen (Beschreibung "zieht heran").
+
+| Waffe | Kennung | Schaden | Katalog-Rückstoß | Stärke (Fassung 11) | Richtung (Grad) | Charakter |
+|---|---|---|---|---|---|---|
+| Baseballschläger | pa_001 | 35 | 82 | 300 | 15 (nach vorn, leicht angehoben) | nach vorn, weit |
+| Feuerfaust | pa_002 | 34 | 55 | 190 | 30 (schräg nach oben) | Faustschlag, mittel, schräg nach oben |
+| Hakenklinge | pa_003 | 30 | 45 | 110 | 160 (zum Schützen hin) | zieht den Gegner ein Stück heran |
+| Piratenhaken | pa_004 | 24 | 40 | 150 | 165 (zum Schützen hin) | zieht den Gegner weit heran |
+| Morgenstern | pa_005 | 50 | 70 | 230 | 40 (schräg nach oben) | schwer, schräg nach oben |
+| Schaufel | pa_006 | 25 | 30 | 150 | 25 (nach vorn, leicht angehoben) | mittel nach vorn |
+| Tonfa | pa_007 | 28 | 35 | 110 | 10 (nach vorn, leicht angehoben) | kurz nach vorn |
+| Kriegshammer | pa_008 | 45 | 65 | 220 | 70 (nach oben) | stark nach oben |
+| Eispickel | pa_009 | 37 | 30 | 100 | 75 (nach oben) | kurz nach oben |
+| Kettensäge | pa_010 | 52 | 35 | 70 | 0 (waagerecht nach vorn) | schwach nach vorn |
+| Zwillingskatanas | pa_011 | 25 | 24 | 70 | 20 (nach vorn, leicht angehoben) | leicht |
+| Katana | pa_012 | 32 | 20 | 60 | 20 (nach vorn, leicht angehoben) | leicht |
+| Mehrzweckmesser | pa_013 | 28 | 30 | 55 | 15 (nach vorn, leicht angehoben) | leicht |
+| Taschenmesser | pa_014 | 35 | 30 | 40 | 15 (nach vorn, leicht angehoben) | sehr leicht |
+| Runenschwert | pa_015 | 31 | 38 | 120 | 45 (schräg nach oben) | magisch, schräg nach oben |
+| Rapier | pa_016 | 27 | 10 | 30 | 0 (waagerecht nach vorn) | sticht, kaum Stoß |
+| Kampfmesser | pa_017 | 34 | 30 | 50 | 15 (nach vorn, leicht angehoben) | leicht |
+| Energieschwert | pa_018 | 42 | 45 | 130 | 30 (schräg nach oben) | mittel, schräg |
+| Doppelaxt | pa_019 | 26 | 44 | 140 | 20 (nach vorn, leicht angehoben) | mittel nach vorn |
+| Kriegssense | pa_020 | 33 | 40 | 130 | 35 (schräg nach oben) | mittel, schräg nach oben |
+| Krummsäbel | pa_021 | 29 | 22 | 60 | 20 (nach vorn, leicht angehoben) | leicht |
+| Boxhandschuhe | pa_023 | 20 | 96 | 200 | 20 (nach vorn, leicht angehoben) | Faustschlag nach vorn |
+| Kraftfaust | pa_031 | 48 | 60 | 250 | 25 (nach vorn, leicht angehoben) | sehr stark nach vorn |
+| Raketenhandschuh | pa_036 | 31 | 45 | 200 | 30 (schräg nach oben) | stark, schräg nach oben |
+| Goldene Hand | pa_083 | 46 | 0 | 180 | 30 (schräg nach oben) | Schlag, schräg nach oben |
+| Energiefaust | pa_120 | 48 | 78 | 240 | 20 (nach vorn, leicht angehoben) | Energiestoß nach vorn |
+| Arkanhammer | pa_138 | 68 | 0 | 260 | 75 (nach oben) | sehr stark nach oben |
+| Flammenwerfer | pa_062 | 48 | 0 | 150 | 70 (nach oben) | mittel, nach oben |
+| Flammenklinge | pa_137 | 33 | 55 | 110 | 55 (schräg nach oben) | mittel, schräg nach oben |
+| Wasserwerfer | pa_063 | 32 | 0 | 170 | 10 (nach vorn, leicht angehoben) | Strahl drückt nach vorn |
+| Windkrieger | pa_086 | 42 | 0 | 260 | 20 (nach vorn, leicht angehoben) | Windstoß, weit nach vorn |
+| Handtuch | pa_025 | 31 | 20 | 60 | 10 (nach vorn, leicht angehoben) | leichter Hieb |
+| Pressluftbohrer | pa_026 | 36 | 30 | 140 | 15 (nach vorn, leicht angehoben) | Druckstoß nach vorn |
+| Zauberpeitsche | pa_108 | 32 | 0 | 90 | 150 (zum Schützen hin) | zieht den Gegner heran |
+| Magnetkanone | pa_123 | 40 | 0 | 160 | 175 (zum Schützen hin) | zieht den Gegner an |

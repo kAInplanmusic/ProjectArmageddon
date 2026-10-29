@@ -23,6 +23,7 @@ import {
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
 import { kraterTiefeProzent } from '../../shared/config/zerstoerung.js';
 import { klassifiziereEinschlag, stoffSchluesselAmEinschlag } from '../../shared/einschlag.js';
+import { wendeStossAn, stossSeite } from '../stoss.js';
 
 /*
  * Die Ausführungsreihenfolge steht in `engine/init.js` (`SYSTEM_PRIORITIES`).
@@ -490,6 +491,17 @@ export class ProjectileSystem {
           world.setComponent(victimId, 'Velocity', 'y', currentVy + (dy / dist) * impulse);
         }
       }
+    }
+
+    // Waffenfassung 11: gerichteter Rückstoß des Direkttreffers (Nahkampf, Faust, Strahl-Wurf), Stärke und Richtung je Waffe.
+    const stossKraft = world.getComponent(entityId, 'Projectile', 'stossKraft') || 0;
+    if (stossKraft > 0 && hitTarget !== null && hitTarget !== owner && world.isActive(hitTarget)) {
+      const seite = stossSeite(
+        world.getComponent(entityId, 'Velocity', 'x') || 0,
+        world.getComponent(owner, 'Position', 'x') || 0,
+        world.getComponent(hitTarget, 'Position', 'x') || 0,
+      );
+      wendeStossAn(world, hitTarget, stossKraft, world.getComponent(entityId, 'Projectile', 'stossGrad') || 0, seite, match.knockbackMultiplier || 1);
     }
 
     if (events) {

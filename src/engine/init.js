@@ -71,6 +71,9 @@ export function registerDefaultComponents(componentStore) {
     damage: 'Float32Array',
     blastRadius: 'Float32Array',
     knockback: 'Float32Array',
+    /** Waffenfassung 11: Rückstoß des Direkttreffers in Stärke und Richtung (Grad, siehe `engine/stoss.js`); 0 = kein gerichteter Stoß. */
+    stossKraft: 'Float32Array',
+    stossGrad: 'Float32Array',
     drag: 'Float32Array',
     gravityScale: 'Float32Array',
     windFactor: 'Float32Array',
