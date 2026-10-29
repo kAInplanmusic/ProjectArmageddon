@@ -1434,8 +1434,13 @@ export const WEAPONS = Object.freeze(
   ${indented}.map(Object.freeze)
 );
 
+/*
+ * Ohne Prototyp (Audit 2026-10-29): Auf einem gewöhnlichen Objekt lieferte WEAPONS_BY_ID['constructor']
+ * die Funktion Object — vom Client gesendete Kennungen wie "constructor" oder "toString" galten
+ * als bekannte Waffen. So gibt es für Kennungen, die keine Waffen sind, ausnahmslos undefined.
+ */
 export const WEAPONS_BY_ID = Object.freeze(
-  Object.fromEntries(WEAPONS.map(weapon => [weapon.id, weapon]))
+  Object.assign(Object.create(null), Object.fromEntries(WEAPONS.map(weapon => [weapon.id, weapon])))
 );
 
 export const WEAPON_RARITIES = Object.freeze(['common', 'uncommon', 'rare', 'epic', 'legendary']);
@@ -1629,7 +1634,7 @@ export function displayGroupLabel(groupId) {
 }
 
 export function getWeapon(id) {
-  return WEAPONS_BY_ID[id] ?? null;
+  return Object.hasOwn(WEAPONS_BY_ID, id) ? WEAPONS_BY_ID[id] : null;
 }
 
 export function getWeaponsByCategory(category) {
