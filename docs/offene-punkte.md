@@ -196,8 +196,8 @@ git checkout -- docs/vergleich-alternativspiele-2026-10-19/
 
 | ID | Frage | Quelle |
 | :-- | :-- | :-- |
-| `SPR-4` | Fraktion „pixel" hat keinen gemeinsamen Stil (Füchse gleichen den `beasts`-Füchsen, `ethereo` flach neongrün, `shieldmon` ein Igel). **Leitbild festlegen** — das ist keine Codefrage. | MASTERDOTO Z64 |
-| `SPR-8` | Stilbruch Haustiere: Günther/Cookie flach-cartoonig gegen gemalte Figuren. Bewusst lassen oder angleichen? | MASTERDOTO Z72 |
+| `SPR-4` | **Entschieden und umgesetzt (2026-10-25): Neon-Linie**, `ethereo` ist das Leitbild. Pixelierung und Paletten-Reduktion (8-Bit-Look) wurden gebaut, gesichtet und verworfen: sie zerstörten Fell und Stacheln. Am 2026-10-29 vom Auftraggeber als „8bit?“ erneut angesprochen; ob neu bewertet wird, ist offen. | MASTERDOTO SPR-4 |
+| `SPR-8` | **Entschieden: bewusst lassen** (2026-10-25, am 2026-10-29 bestätigt). Günther und Cookie bleiben, wie sie sind. | MASTERDOTO SPR-8 |
 | `LOOK-2` | Tiefenstaffel: Ebene 1 (Sättigungsdeckel der Bildkulissen) und Ebene 3 (Vordergrundschicht aus `drawAmbient` und `zeichneWetterVorn`) sind gebaut. Offen nur: Sättigungsdeckel für die GENERATIVE Kulisse, eine Sichtfrage (Messwerte in MASTERDOTO, LOOK-2-Nachtrag). | MASTERDOTO LOOK-2 |
 | `LOOK-3` | Lava-Glühen ist umgesetzt (dreistufige Füllung, additives Glühen). Offen nur: ein Prüfbild mit gefüllter Lava gegen `ref-3-vulkanschmiede-hud` — die Zellen entstehen nur bei aktiver Feuerfassung 2, in einer Sonde war `spalten` 0. | MASTERDOTO LOOK-3 |
 | `LOOK-4` | **Erledigt** (alle vier Stufen, 2026-10-25): Hohlräume, Etagen, ersteigbarer Schacht, Innenlesbarkeit. Nur das Kästchen in MASTERDOTO war nicht nachgezogen. | `docs/auftraege/look4-innenraeume.md` |
