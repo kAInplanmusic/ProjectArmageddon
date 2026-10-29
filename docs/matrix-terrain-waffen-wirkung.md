@@ -152,8 +152,8 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 81 | Zauberbuch der Leere | magic | 55 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 82 | Goldene Zauberrolle | magic | 44 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 83 | Goldene Hand | magic | 46 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 84 | Astraltrank | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 85 | Chaosmagier | magic | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 84 | Glutelixier | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 85 | Feuermagier | magic | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 86 | Windkrieger | magic | 42 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 87 | Dimensionssprung | magic | — | — | 4 px | 1 | — | — | — |
 | 88 | Dimensionsriss | magic | — | — | 4 px | 1 | — | — | — |
@@ -161,23 +161,23 @@ einen Durchgang, derselbe Krater in `open` ist ein Loch im Boden.*
 | 90 | Giftpilz | magic | 18 | — | 4 px | 1 | — | Gift 50 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
 | 91 | Astralkugel | magic | 58 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 92 | Heilzauber | magic | 35 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 93 | Engelssegen | magic | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 93 | Funkenschild | magic | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 94 | Heilspritze | magic | 39 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 95 | Chaoselixier | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 95 | Sturmelixier | magic | 34 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 96 | Mutationselixier | magic | 29 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 97 | Traumfänger | magic | 30 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 98 | Lavaelixier | magic | 50 | — | 4 px | 1 | — | Feuer 45 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
-| 99 | Sanduhr | magic | 28 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 100 | Würfel des Chaos | magic | 36 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 99 | Frostsanduhr | magic | 28 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 100 | Blitzwürfel | magic | 36 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 101 | Eisschild | magic | 32 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 102 | Gedankensturm | magic | 52 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 103 | Verderbniskelch | magic | 30 | — | 4 px | 1 | — | Gift 30 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
 | 104 | Quantengewehr | magic | 45 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar), Figur (Durchschlag 1×) |
-| 105 | Spruchrolle | magic | 48 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 105 | Frostrolle | magic | 48 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 106 | Sonnenamulett | magic | 38 | — | 4 px | 1 | — | Feuer 25 | Figur (direkt), Kisten (zerstörbar), Zustand (Element) |
 | 107 | Allsehendes Auge | magic | 29 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 108 | Zauberpeitsche | magic | 32 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
-| 109 | Weltenbaum | magic | 33 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
+| 109 | Giftbaum | magic | 33 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 110 | Dimensionskugel | magic | 28 | — | 4 px | 1 | — | — | Figur (direkt), Kisten (zerstörbar) |
 | 111 | Enterhaken | utility | — | — | 4 px | 1 | — | — | — |
 | 112 | Düsenrucksack | utility | — | — | 4 px | 1 | — | — | — |

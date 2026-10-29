@@ -477,3 +477,48 @@ Stufe (27 von 112 Zeilen; 29 im Katalog, zwei ohne Messzeile).
 | legendary | n=5, 58,8, 300 | n=3, 70, 300 |
 
 Die Mediane verschieben sich nur, weil die Waffen anders auf die Stufen verteilt sind; kein Gefechtswert hat sich bewegt.
+
+## Fassung 10 (2026-10-29): Dubletten gestaffelt, mit Element
+
+Auftrag des Auftraggebers (Spracheingabe): "auseinanderskillen", "Werte auseinanderziehen", "ein Element hinein: Feuer, Eis, Blitz, Gift".
+Umsetzung: `WAFFEN_F10_WERTE` in `src/shared/config/waffen-fassung.js` (Waffenfassung 10, Standard); Fassung 9 und älter bitgleich.
+Die Spalte alt gilt für Fassung 9 und älter (Standardwerte `SPECIAL_DEFAULTS`). Munition (`maxAmmo`) bleibt unverändert: Inventar und
+Start-Kits lesen den Katalog, die Staffelung läuft über Stärke, Dauer, Weite und Abklingzeit.
+
+**Gadgets** (Katalogfeld `gadget`, Schritt 1): Raketenrucksack, Düsenrucksack, Gleitschirm, Enterhaken, Wächterstatue, Munitionskiste,
+Nachschubkiste, Endlosschleife, Bunker, Tarnnetz, Teleportplattform, Hologrammportal, Schlauchboot. Waffen bleiben Bohrkanone, Blutritual,
+Ananasbombe, Feuerwesen, Energiefaust (Schaden am Ziel) und das Wachgeschütz (schießt selbst).
+
+| Gruppe | Waffe | alt | neu (Fassung 10) | Element / Wirkung |
+|---|---|---|---|---|
+| Verstärkung | Glutelixier (vorher Astraltrank) | ×1,5, 2 Züge, Pause 1 | ×1,7, 2 Züge (ein Schuss), Pause 2 | Feuer: Brand auf jedem Treffer |
+| Verstärkung | Sturmelixier (vorher Chaoselixier) | ×1,5, 2 Züge, Pause 1 | ×1,3, 3 Züge (zwei Schüsse), Pause 1 | Blitz: Schock |
+| Verstärkung | Frostsanduhr (vorher Sanduhr) | ×1,5, 2 Züge, Pause 1 | ×1,2, 4 Züge (drei Schüsse), Pause 1 | Eis: Frost |
+| Verstärkung | Giftbaum (vorher Weltenbaum) | ×1,5, 2 Züge, Pause 1 | ×1,15, 5 Züge (vier Schüsse), Pause 1 | Gift |
+| Zufall | Feuermagier (vorher Chaosmagier) | sechs Arten, Pause 2 | Verstärkung, Rüstung, Munition; Pause 2 | Feuer: Verstärkung mit Brand |
+| Zufall | Frostrolle (vorher Spruchrolle) | sechs Arten, Pause 1 | Schild, Heilung, Rüstung; Pause 1 | Eis: Schild mit Frost |
+| Zufall | Blitzwürfel (vorher Würfel des Chaos) | sechs Arten, Pause 1 | Verstärkung, Sprung, Munition; Pause 1 | Blitz: Verstärkung mit Schock |
+| Zufall | Mutationselixier | sechs Arten, Pause 1 | Heilung, Sprung, Verstärkung; Pause 1 | Gift: Verstärkung mit Gift |
+| Versetzen | Zauberstiefel | 60 px, Pause 1 | 40 px, Pause 0 | - |
+| Versetzen | Dimensionssprung | 60 px, Pause 0 | 80 px, Pause 0 | - |
+| Versetzen | Dimensionskugel | 60 px, Pause 1 | 110 px, Pause 1 | - |
+| Versetzen | Dimensionsriss | 60 px, Pause 2 | 165 px, Pause 2 | - |
+| Schild | Eisschild | 40, Pause 1 | 55, Pause 2 | Eis: Frost auf den Angreifer |
+| Schild | Funkenschild (vorher Engelssegen) | 40, Pause 1 | 40, Pause 1 | Blitz: Schock auf den Angreifer |
+| Heilung | Heilzauber | 42, Pause 1 | 40, Pause 0 | - |
+| Heilung | Heilspritze | 47, Pause 1 | 70, Pause 2 | - |
+| Fliegen/Haken (Gadgets) | Enterhaken | 60 px | 45 px | - |
+| | Düsenrucksack | 60 px | 70 px | - |
+| | Raketenrucksack | 60 px, Pause 0 | 100 px, Pause 1 | - |
+| | Gleitschirm | 60 px, Pause 2 | 160 px, Pause 2 | - |
+| Haken | Hakenklinge | zieht 90 px | zieht 60 px (mehr Schaden 30) | - |
+| | Piratenhaken | zieht 90 px | zieht 150 px, Pause 1 (Schaden 24) | - |
+| weitere Gadgets | Schlauchboot / Hologrammportal / Teleportplattform | je 60 px | 50 px / 90 px / 120 px mit Pause 1 | - |
+| | Munitionskiste / Endlosschleife / Nachschubkiste | je 3 Ladungen | 2 / 3 / 4 mit Pause 1 | - |
+| | Tarnnetz / Bunker | je 30 % Rüstung | 20 % / 35 % | - |
+
+Wirkung des Elements, nur mit vorhandenen Mali (`config/schaden.js`): Brand (Feuer), Frost (Eis), Schock (Blitz), Gift. Die Dauer der
+Verstärkung zählt wie bisher in Zügen; der Wurf kostet den eigenen Zug, die Wirkung hält `Dauer - 1` eigene Züge.
+Nicht umgesetzt: Elemente für Versetzer, Flieger und Heiler (bräuchten eigene Motorwirkung wie Spuren oder Aufprallschaden), ein dritter
+Schild (Feuerschild) ohne Dublette, Staffelung der Munition (Katalogfeld, würde Kits und Beute ändern), und die Anzeige der
+Fassung-10-Werte im Waffenmenü (der Client liest den Katalog).

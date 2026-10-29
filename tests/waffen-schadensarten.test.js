@@ -59,11 +59,11 @@ test('Waffe und Schadensart passen zusammen (Stichproben aus allen Gruppen)', ()
     Tesla: 'electric', Impulsbombe: 'electric', Magnetkanone: 'magnetic', Plasmawerfer: 'energy',
     Energiefaust: 'energy', Raketenwerfer: 'explosive', Salvengeber: 'explosive', Handgranate: 'explosive',
     Haubitze: 'explosive', Luftangriff: 'explosive', Meteorregen: 'impact', Erdspalter: 'impact',
-    Runenschwert: 'arcane', Zauberbolzen: 'arcane', Astralkugel: 'astral', Astraltrank: 'astral',
-    Astralkrieger: 'astral', Sanduhr: 'time', Endlosschleife: 'time', Portalring: 'spatial',
+    Runenschwert: 'arcane', Zauberbolzen: 'arcane', Astralkugel: 'astral', Glutelixier: 'astral',
+    Astralkrieger: 'astral', Frostsanduhr: 'time', Endlosschleife: 'time', Portalring: 'spatial',
     Dimensionssprung: 'spatial', Raketenrucksack: 'utility', Düsenrucksack: 'utility',
     Gleitschirm: 'utility', Enterhaken: 'utility', Bunker: 'defense', Heilzauber: 'holy',
-    Heilspritze: 'medical', Weltenbaum: 'nature', Tornado: 'wind', Weltendrache: 'dragon',
+    Heilspritze: 'medical', Giftbaum: 'nature', Tornado: 'wind', Weltendrache: 'dragon',
     Baseballschläger: 'physical', Katana: 'physical', Schrotflinte: 'physical',
   };
   for (const [name, art] of Object.entries(erwartet)) {

@@ -31,6 +31,9 @@ import { damageTypeId, damageTypeName } from './damageTypes.js';
 /** Mali, die zum Limit zählen (Nässe ist ein Zustand der Umgebung, kein Nachteil). */
 const LIMIT_MALI = Object.freeze(MALUS_SCHLUESSEL.filter(k => k !== 'nass'));
 
+/** Element einer Verstärkung oder eines Schilds (Waffenfassung 10) und der Malus, den es auslöst. */
+const MALUS_VON_ELEMENT = Object.freeze({ fire: 'brand', ice: 'frost', electric: 'schock', poison: 'gift' });
+
 /** Mali mit Schaden über Zeit, in der Reihenfolge der Abrechnung. */
 const DOT_MALI = Object.freeze(['brand', 'gift', 'fluch']);
 
@@ -314,6 +317,12 @@ export class MaliRegeln {
       const standard = regel.malus === 'brand' || regel.malus === 'gift' ? { dmg: SPECIAL_DEFAULTS.dotDamagePerTurn } : {};
       nimm(regel.malus, standard);
     }
+
+    // Waffenfassung 10: Eine Verstärkung mit Element gibt jedem Treffer des Schützen den Nachteil des Elements dazu.
+    const zusatz = MALUS_VON_ELEMENT[this.#q.statuses.boostElementOf(schuetzeId) ?? ''];
+    if (zusatz && !angewendet.has(zusatz)) {
+      nimm(zusatz, zusatz === 'brand' || zusatz === 'gift' ? { dmg: SPECIAL_DEFAULTS.dotDamagePerTurn } : {});
+    }
     return ergebnisse.filter(Boolean);
   }
 
@@ -442,7 +451,7 @@ export class MaliRegeln {
    * @param {number|undefined} artKennung - Kennung der Schadensart (`undefined` = Umwelt)
    * @returns {{amount:number}}
    */
-  schaden(id, betrag, artKennung) {
+  schaden(id, betrag, artKennung, schuetzeId = null) {
     const statuses = this.#q.statuses;
     const art = artKennung === undefined ? null : damageTypeName(artKennung);
     const regel = art === null ? null : artRegel(art);
@@ -455,8 +464,15 @@ export class MaliRegeln {
       if (familieVonArt(art) === 'heilig' && this.hat(id, 'fluch')) danach *= WECHSELWIRKUNG.heiligGegenFluch;
     }
     const anteil = regel?.schild ?? 1;
+    const gegenElement = statuses.shieldGegenOf(id); // vor dem Auffangen lesen: ein leergeschlagenes Schild verliert sein Element
     const { absorbed, rest } = statuses.absorbWithShield(id, danach * anteil);
     if (absorbed > 0) this.#melde('shield_absorbed', { playerId: id, absorbed });
+    // Waffenfassung 10: Ein Elementschild gibt dem Angreifer, dessen Treffer es auffängt, den Nachteil des Elements.
+    const gegen = MALUS_VON_ELEMENT[gegenElement ?? ''] ?? null;
+    if (absorbed > 0 && gegen && schuetzeId !== null && schuetzeId !== id && this.#lebt(schuetzeId)
+        && this.#spieler(schuetzeId)?.teamId !== this.#spieler(id)?.teamId) {
+      this.wende(schuetzeId, gegen, { by: id, ...(gegen === 'brand' || gegen === 'gift' ? { dmg: SPECIAL_DEFAULTS.dotDamagePerTurn } : {}) });
+    }
     return { amount: rest + danach * (1 - anteil) };
   }
 }

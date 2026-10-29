@@ -57,8 +57,8 @@ export const FAMILIE_LABEL = Object.freeze({
 /** Wirkungen der Waffen (`EFFECT_KIND` in `engine/specials.js`): Bezeichnung und Erklärung. */
 export const WIRKUNG_TEXT = Object.freeze({
   heal: Object.freeze({ label: 'Heilung', text: 'Stellt Leben wieder her, nie über das Maximum.' }),
-  shield: Object.freeze({ label: 'Schild', text: 'Fängt Schaden ab, bevor das Leben sinkt.' }),
-  damage_boost: Object.freeze({ label: 'Verstärkung', text: 'Der eigene Schaden steigt für einige Züge.' }),
+  shield: Object.freeze({ label: 'Schild', text: 'Fängt Schaden ab, bevor das Leben sinkt; ein Schild mit Element belegt den Angreifer mit dessen Nachteil.' }),
+  damage_boost: Object.freeze({ label: 'Verstärkung', text: 'Der eigene Schaden steigt für einige Züge; eine Verstärkung mit Element legt dem Getroffenen dessen Nachteil auf.' }),
   armor: Object.freeze({ label: 'Rüstung', text: 'Mindert den erlittenen Schaden für einige Züge.' }),
   freeze: Object.freeze({ label: 'Einfrieren und Betäuben', text: 'Der getroffene Gegner setzt aus.' }),
   damage_over_time: Object.freeze({ label: 'Schaden über Zeit', text: 'Der Betroffene verliert zu Beginn seiner Züge weiter Leben.' }),
@@ -68,7 +68,7 @@ export const WIRKUNG_TEXT = Object.freeze({
   pull: Object.freeze({ label: 'Heranziehen', text: 'Zieht den Getroffenen zum Schützen.' }),
   turret: Object.freeze({ label: 'Geschütz', text: 'Stellt ein Geschütz oder einen Kämpfer auf, der in den folgenden Runden selbst feuert.' }),
   water_push: Object.freeze({ label: 'Wasserschub', text: 'Drückt den Getroffenen weg und hebt das Wasser an seiner Stelle.' }),
-  random: Object.freeze({ label: 'Zufallswirkung', text: 'Wählt eine Selbstwirkung nach dem Zufall des Matches.' }),
+  random: Object.freeze({ label: 'Zufallswirkung', text: 'Wählt eine Selbstwirkung aus dem Pool der Waffe nach dem Zufall des Matches.' }),
   chain: Object.freeze({ label: 'Kettenblitz', text: 'Springt auf nahe Gegner über, mit abnehmender Wirkung.' }),
   mount: Object.freeze({ label: 'Reittier', text: 'Trägt den Schützen weiter als ein gewöhnlicher Sprung.' }),
   drill: Object.freeze({ label: 'Bohrstrahl', text: 'Gräbt einen Tunnel durchs Gelände.' }),

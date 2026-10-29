@@ -671,12 +671,12 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
     }
 
     case EFFECT_KIND.SHIELD: {
-      const shield = quelle.statuses.addShield(playerId, effect.amount);
+      const shield = quelle.statuses.addShield(playerId, effect.amount, effect.gegen ?? null);
       return { shield, amount: effect.amount };
     }
 
     case EFFECT_KIND.DAMAGE_BOOST: {
-      const multiplier = quelle.statuses.addBoost(playerId, effect.multiplier, 2);
+      const multiplier = quelle.statuses.addBoost(playerId, effect.multiplier, effect.turns ?? 2, effect.element ?? null);
       return { multiplier };
     }
 
@@ -716,7 +716,7 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
       // reproduzierbar.
       const pool = effect.pool?.length ? effect.pool : RANDOM_EFFECT_POOL;
       const gewaehlt = pool[quelle.rng.nextIntBelow(pool.length)];
-      const unterEffekt = buildSubEffect(gewaehlt, weapon);
+      const unterEffekt = buildSubEffect(gewaehlt, weapon, effect.element ?? null);
       const outcome = applySelfEffect(quelle, unterEffekt, playerId, weapon);
       return { randomKind: gewaehlt, ...outcome };
     }
@@ -730,15 +730,15 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
  * Baut den konkreten Effekt für eine gewählte Wirkungsart.
  * Nötig für Zufallswaffen, deren Ziel erst beim Auslösen feststeht.
  */
-function buildSubEffect(kind, weapon) {
+function buildSubEffect(kind, weapon, element = null) {
   const schaden = weapon?.damage ?? 0;
   switch (kind) {
     case EFFECT_KIND.HEAL:
       return { kind, amount: Math.max(SPECIAL_HEAL_MIN, Math.round(schaden * 1.2)) };
     case EFFECT_KIND.SHIELD:
-      return { kind, amount: Math.max(SPECIAL_SHIELD_MIN, Math.round(schaden * 1.1)) };
+      return { kind, amount: Math.max(SPECIAL_SHIELD_MIN, Math.round(schaden * 1.1)), ...(element ? { gegen: element } : {}) };
     case EFFECT_KIND.DAMAGE_BOOST:
-      return { kind, multiplier: 1.5 };
+      return { kind, multiplier: 1.5, ...(element ? { element } : {}) };
     case EFFECT_KIND.ARMOR:
       return { kind, reduction: 0.3 };
     case EFFECT_KIND.AMMO:

@@ -348,6 +348,11 @@ export function buildEffect(weapon) {
   const ice = weapon.elemental?.ice ?? 0;
   const poison = weapon.elemental?.poison ?? 0;
   const elementalSum = fire + ice + poison;
+  /*
+   * Waffenfassung 10 (`WAFFEN_F10_WERTE`): `wirkung` trägt die gestaffelten Zahlen und das Element der Selbstwirkungen.
+   * Der Katalog hat das Feld nicht; ältere Fassungen sehen daher nur die Standardwerte (bitgleich).
+   */
+  const w = weapon.wirkung ?? null;
 
   switch (base.kind) {
     case EFFECT_KIND.HEAL:
@@ -355,13 +360,14 @@ export function buildEffect(weapon) {
       // heilen mehr, ohne dass ein Wert frei gewählt wird.
       return {
         kind: base.kind,
-        amount: Math.max(SPECIAL_DEFAULTS.healAmount, Math.round((weapon.damage || 0) * 1.2)),
+        amount: w?.amount ?? Math.max(SPECIAL_DEFAULTS.healAmount, Math.round((weapon.damage || 0) * 1.2)),
       };
 
     case EFFECT_KIND.SHIELD:
       return {
         kind: base.kind,
-        amount: Math.max(SPECIAL_DEFAULTS.shieldAmount, Math.round((weapon.damage || 0) * 1.1)),
+        amount: w?.amount ?? Math.max(SPECIAL_DEFAULTS.shieldAmount, Math.round((weapon.damage || 0) * 1.1)),
+        ...(w?.gegen ? { gegen: w.gegen } : {}),
       };
 
     case EFFECT_KIND.TURRET:
@@ -380,10 +386,15 @@ export function buildEffect(weapon) {
       };
 
     case EFFECT_KIND.DAMAGE_BOOST:
-      return { kind: base.kind, multiplier: SPECIAL_DEFAULTS.boostMultiplier };
+      return {
+        kind: base.kind,
+        multiplier: w?.multiplier ?? SPECIAL_DEFAULTS.boostMultiplier,
+        ...(w?.turns ? { turns: w.turns } : {}),
+        ...(w?.element ? { element: w.element } : {}),
+      };
 
     case EFFECT_KIND.ARMOR:
-      return { kind: base.kind, reduction: SPECIAL_DEFAULTS.armorReduction };
+      return { kind: base.kind, reduction: w?.reduction ?? SPECIAL_DEFAULTS.armorReduction };
 
     case EFFECT_KIND.FREEZE:
       // Mehr Elementarschaden friert länger ein, maximal die Obergrenze.
@@ -404,17 +415,17 @@ export function buildEffect(weapon) {
       };
 
     case EFFECT_KIND.AMMO:
-      return { kind: base.kind, amount: SPECIAL_DEFAULTS.ammoAmount };
+      return { kind: base.kind, amount: w?.amount ?? SPECIAL_DEFAULTS.ammoAmount };
 
     case EFFECT_KIND.MOVE:
-      return { kind: base.kind, distance: SPECIAL_DEFAULTS.moveDistance };
+      return { kind: base.kind, distance: w?.distance ?? SPECIAL_DEFAULTS.moveDistance };
 
     case EFFECT_KIND.MOUNT:
       return { kind: base.kind, distance: SPECIAL_DEFAULTS.mountDistance };
 
     case EFFECT_KIND.PULL:
       // Nahkampf-Enterhaken ziehen kürzer als ein Sprung weit ist.
-      return { kind: base.kind, distance: SPECIAL_DEFAULTS.pullDistance };
+      return { kind: base.kind, distance: w?.distance ?? SPECIAL_DEFAULTS.pullDistance };
 
     case EFFECT_KIND.WATER_PUSH:
       /*
@@ -455,7 +466,7 @@ export function buildEffect(weapon) {
     case EFFECT_KIND.RANDOM:
       // Der Würfel trägt nur die Auswahlliste; die Wahl fällt erst beim
       // Auslösen, weil er den Zufallsgenerator des Matches braucht.
-      return { kind: base.kind, pool: [...RANDOM_EFFECT_POOL] };
+      return { kind: base.kind, pool: [...(w?.pool ?? RANDOM_EFFECT_POOL)], ...(w?.element ? { element: w.element } : {}) };
 
     default:
       return null;
@@ -538,11 +549,28 @@ export class StatusStore {
     return (this.#entries.get(playerId)?.revealedTurns ?? 0) > 0;
   }
 
-  /** Fügt Schild hinzu, begrenzt auf die Obergrenze. */
-  addShield(playerId, amount) {
+  /**
+   * Fügt Schild hinzu, begrenzt auf die Obergrenze. `gegen` (Waffenfassung 10): Element des Schilds
+   * (`ice`, `electric` ...); wer es trifft, bekommt den Nachteil des Elements. Ohne Angabe bleibt ein laufendes
+   * Elementschild bestehen; ein leergeschlagenes Schild verliert sein Element.
+   */
+  addShield(playerId, amount, gegen = null) {
     const entry = this.#entryFor(playerId);
     entry.shield = Math.min(SPECIAL_DEFAULTS.maxShield, entry.shield + Math.max(0, amount));
+    if (gegen) entry.shieldGegen = gegen;
     return entry.shield;
+  }
+
+  /** Element des laufenden Schilds (Waffenfassung 10) oder null. */
+  shieldGegenOf(playerId) {
+    const entry = this.#entries.get(playerId);
+    return entry && entry.shield > 0 ? entry.shieldGegen ?? null : null;
+  }
+
+  /** Element der laufenden Verstärkung (Waffenfassung 10) oder null. */
+  boostElementOf(playerId) {
+    const entry = this.#entries.get(playerId);
+    return entry && entry.boostTurns > 0 ? entry.boostArt ?? null : null;
   }
 
   /** Setzt Schadensreduktion (der stärkere Wert gewinnt). */
@@ -553,10 +581,11 @@ export class StatusStore {
   }
 
   /** Setzt einen Schadensbonus für eine Anzahl Züge. */
-  addBoost(playerId, multiplier, turns = 2) {
+  addBoost(playerId, multiplier, turns = 2, element = null) {
     const entry = this.#entryFor(playerId);
     entry.boostMultiplier = Math.max(entry.boostMultiplier, Math.max(1, multiplier));
     entry.boostTurns = Math.max(entry.boostTurns, Math.min(SPECIAL_DEFAULTS.maxTurns, turns));
+    if (element) entry.boostArt = element; // Waffenfassung 10: Element der Verstärkung (der jüngste Wurf gilt)
     return entry.boostMultiplier;
   }
 
@@ -628,6 +657,7 @@ export class StatusStore {
     }
     const absorbed = Math.min(entry.shield, amount);
     entry.shield -= absorbed;
+    if (entry.shield <= 0) delete entry.shieldGegen;
     return { absorbed, rest: amount - absorbed };
   }
 
@@ -646,7 +676,7 @@ export class StatusStore {
 
     if (entry.boostTurns > 0) {
       entry.boostTurns -= 1;
-      if (entry.boostTurns === 0) entry.boostMultiplier = 1;
+      if (entry.boostTurns === 0) { entry.boostMultiplier = 1; delete entry.boostArt; }
     }
     if (entry.revealedTurns > 0) entry.revealedTurns -= 1;
 
@@ -693,6 +723,9 @@ export class StatusStore {
         slowTurns: entry.slowTurns,
         revealedTurns: entry.revealedTurns,
         dots: entry.dots.map(dot => ({ ...dot })),
+        // Nur Waffenfassung 10 und nur, wenn ein Element läuft: Der Hash älterer Fassungen bleibt unverändert.
+        ...(entry.boostArt ? { boostArt: entry.boostArt } : {}),
+        ...(entry.shieldGegen ? { shieldGegen: entry.shieldGegen } : {}),
         // Nur Fassung 2 und nur, wenn etwas läuft: Der Hash der Fassung 1 bleibt unverändert.
         ...(entry.mali && Object.keys(entry.mali).length > 0 ? { mali: JSON.parse(JSON.stringify(entry.mali)) } : {}),
       };

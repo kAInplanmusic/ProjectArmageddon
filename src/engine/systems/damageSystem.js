@@ -78,7 +78,7 @@ export class DamageSystem {
     const modifier = world.services?.damageModifier;
     let absorbedByShield = 0;
     if (typeof modifier === 'function' && finalDamage > 0) {
-      const adjusted = modifier(entityId, finalDamage, options.damageType);
+      const adjusted = modifier(entityId, finalDamage, options.damageType, attackerId);
       if (adjusted && Number.isFinite(adjusted.amount)) {
         absorbedByShield = Math.max(0, finalDamage - adjusted.amount);
         finalDamage = Math.max(0, adjusted.amount);

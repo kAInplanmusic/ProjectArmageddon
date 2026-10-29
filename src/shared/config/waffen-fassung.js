@@ -19,7 +19,11 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_VORSTRAHL` (9, Standard): wie 8; der Vorstrahl der Anflugschläge (sky/flank) macht keinen Schaden mehr (Regel im Motor).
+ *   - `WAFFEN_SPREIZUNG` (10, Standard): wie 9, dazu `WAFFEN_F10_WERTE`: die Dubletten der Selbstwirkungen (Verstärkung, Zufall,
+ *     Versetzen, Schild, Heilung, Fliegen, Haken, Munition, Rüstung) sind in Stärke, Dauer und Abklingzeit gestaffelt, und jede
+ *     Verstärkung, jeder Zufallspool und jedes Schild trägt ein Element (Feuer, Eis, Blitz, Gift) mit echter Wirkung (Feld `wirkung`,
+ *     gelesen in `buildEffect`, `StatusStore` und `MaliRegeln`). Alte Fassungen sehen das Feld nicht und verlaufen bitgleich.
+ *   - `WAFFEN_VORSTRAHL` (9): wie 8; der Vorstrahl der Anflugschläge (sky/flank) macht keinen Schaden mehr (Regel im Motor).
  *   - `WAFFEN_FEINTUNING` (8): wie 7, dazu `WAFFEN_F8_WERTE` (sechs Waffen laut Balance-Auslesen).
  *   - `WAFFEN_ZUENDERPLUS` (7): wie 6, dazu `WAFFEN_F7_WERTE` (vier Zündergranaten mit etwa 15 % mehr Schaden).
  *   - `WAFFEN_ZUENDER` (6): Die Armierung einer Zündergranate ist korrigiert. Bis
@@ -49,7 +53,8 @@ export const WAFFEN_ZUENDER = 6;
 export const WAFFEN_ZUENDERPLUS = 7;
 export const WAFFEN_FEINTUNING = 8;
 export const WAFFEN_VORSTRAHL = 9;
-export const WAFFEN_STANDARD = WAFFEN_VORSTRAHL;
+export const WAFFEN_SPREIZUNG = 10;
+export const WAFFEN_STANDARD = WAFFEN_SPREIZUNG;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -62,7 +67,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -151,6 +156,60 @@ export const WAFFEN_F8_WERTE = Object.freeze({
   pa_080: Object.freeze({ cooldown: 1 }), // Psionischer Tentakel: Abklingzeit 2
   pa_063: Object.freeze({ terrainDamage: 20 }), // Wasserwerfer: Gelände 42
   pa_071: Object.freeze({ elemental: Object.freeze({ fire: 0, ice: 30, poison: 0 }) }), // Eisschlag: Eis 50 (friert nicht ein)
+});
+
+/**
+ * Fassung 10 (Entscheidung des Auftraggebers vom 2026-10-29: "Werte auseinanderziehen" und "ein Element hinein"):
+ * Die Dubletten der Selbstwirkungen bekommen je einen eigenen Zweck. Das Feld `wirkung` (nur in dieser Schicht, nie im Katalog)
+ * trägt, was `buildEffect` sonst aus festen Standardwerten nimmt:
+ *   - `multiplier`, `turns`: Verstärkung (Dauer in Zügen; die Wirkung hält `turns - 1` eigene Züge, der Wurf selbst kostet den Zug)
+ *   - `amount`: Heilung, Schild, Munition; `reduction`: Rüstung; `distance`: Versetzen und Haken; `pool`: Zufallswirkungen
+ *   - `element`: `fire`, `ice`, `electric` oder `poison`. Verstärkung: jeder Treffer setzt zusätzlich Brand, Frost, Schock oder Gift.
+ *     Schild: wer das Schild trifft, bekommt den Nachteil des Elements ab (`gegen`). Zufall: Verstärkungen und Schilde des Pools tragen es.
+ * `cooldown` ist das Katalogfeld, das der Motor aus der Fassung liest (wie in Fassung 8). `damageType` folgt dem Element.
+ * Munition (`maxAmmo`) bleibt im Katalog: Inventar und Start-Kits lesen sie fassungsunabhängig.
+ * Werte in Zügen, Pixeln und Anteilen; die Staffelung steht in `docs/audit-waffen-2026-10-28.md` (Abschnitt "Fassung 10").
+ */
+const wirk = (wirkung, rest = {}) => Object.freeze({ ...rest, wirkung: Object.freeze(wirkung) });
+export const WAFFEN_F10_WERTE = Object.freeze({
+  // Verstärkung: kurz und stark gegen lang und schwach; jede mit einem Element
+  pa_084: wirk({ multiplier: 1.7, turns: 2, element: 'fire' }, { cooldown: 2, damageType: 'fire' }), // Glutelixier: ein Schuss, Brand
+  pa_095: wirk({ multiplier: 1.3, turns: 3, element: 'electric' }, { cooldown: 1, damageType: 'electric' }), // Sturmelixier: zwei Züge, Schock
+  pa_099: wirk({ multiplier: 1.2, turns: 4, element: 'ice' }, { cooldown: 1, damageType: 'ice' }), // Frostsanduhr: drei Züge, Frost
+  pa_109: wirk({ multiplier: 1.15, turns: 5, element: 'poison' }, { cooldown: 1, damageType: 'poison' }), // Giftbaum: vier Züge, Gift
+  // Zufall: vier getrennte Pools
+  pa_085: wirk({ element: 'fire', pool: ['damage_boost', 'armor', 'ammo'] }, { cooldown: 2, damageType: 'fire' }), // Feuermagier: Angriff
+  pa_105: wirk({ element: 'ice', pool: ['shield', 'heal', 'armor'] }, { cooldown: 1, damageType: 'ice' }), // Frostrolle: Verteidigung
+  pa_100: wirk({ element: 'electric', pool: ['damage_boost', 'move', 'ammo'] }, { cooldown: 1, damageType: 'electric' }), // Blitzwürfel: Tempo
+  pa_096: wirk({ element: 'poison', pool: ['heal', 'move', 'damage_boost'] }, { cooldown: 1, damageType: 'poison' }), // Mutationselixier: Wandlung
+  // Versetzen: klein und oft gegen weit und selten
+  pa_089: wirk({ distance: 40 }, { cooldown: 0 }), // Zauberstiefel
+  pa_087: wirk({ distance: 80 }), // Dimensionssprung (Pause 0, Munition 5)
+  pa_110: wirk({ distance: 110 }), // Dimensionskugel (Pause 1)
+  pa_088: wirk({ distance: 165 }), // Dimensionsriss (Pause 2, Munition 2)
+  // Schild: Gegenwirkung auf den Angreifer
+  pa_101: wirk({ amount: 55, element: 'ice', gegen: 'ice' }, { cooldown: 2, damageType: 'ice' }), // Eisschild: viel, Frost auf den Angreifer
+  pa_093: wirk({ amount: 40, element: 'electric', gegen: 'electric' }, { cooldown: 1, damageType: 'electric' }), // Funkenschild: weniger, Schock
+  // Heilung
+  pa_092: wirk({ amount: 40 }, { cooldown: 0 }), // Heilzauber: wenig, jeden Zug
+  pa_094: wirk({ amount: 70 }, { cooldown: 2 }), // Heilspritze: viel, selten
+  // Fliegen und Haken
+  pa_111: wirk({ distance: 45 }), // Enterhaken: kurzer Zug
+  pa_112: wirk({ distance: 70 }), // Düsenrucksack: mittlerer Sprung
+  pa_032: wirk({ distance: 100 }, { cooldown: 1 }), // Raketenrucksack: weit, mit Pause
+  pa_114: wirk({ distance: 160 }), // Gleitschirm: am weitesten (Pause 2, Munition 3)
+  pa_003: wirk({ distance: 60 }), // Hakenklinge: kurzer Zug, mehr Schaden
+  pa_004: wirk({ distance: 150 }, { cooldown: 1 }), // Piratenhaken: weiter Zug, weniger Schaden
+  // Weitere Versetzer unter den Gadgets
+  pa_131: wirk({ distance: 50 }), // Schlauchboot
+  pa_128: wirk({ distance: 90 }), // Hologrammportal
+  pa_127: wirk({ distance: 120 }, { cooldown: 1 }), // Teleportplattform
+  // Munition und Rüstung
+  pa_119: wirk({ amount: 2 }), // Munitionskiste: klein
+  pa_122: wirk({ amount: 3 }), // Endlosschleife
+  pa_125: wirk({ amount: 4 }, { cooldown: 1 }), // Nachschubkiste: groß, mit Pause
+  pa_130: wirk({ reduction: 0.2 }), // Tarnnetz: leichter Schutz
+  pa_126: wirk({ reduction: 0.35 }), // Bunker: starker Schutz
 });
 
 export const WAFFEN_F5_WERTE = Object.freeze({
@@ -270,10 +329,11 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
     const f5 = WAFFEN_F5_WERTE[id];
     const f7 = fassung >= WAFFEN_ZUENDERPLUS ? WAFFEN_F7_WERTE[id] : null;
     const f8 = fassung >= WAFFEN_FEINTUNING ? WAFFEN_F8_WERTE[id] : null;
-    if (!f5 && !f7 && !f8) return waffe;
+    const f10 = fassung >= WAFFEN_SPREIZUNG ? WAFFEN_F10_WERTE[id] : null;
+    if (!f5 && !f7 && !f8 && !f10) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
-    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8 }); zwischenspeicher.set(schluessel5, kopie5); }
+    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10 }); zwischenspeicher.set(schluessel5, kopie5); }
     return kopie5;
   }
   const art = ARTEN_BIS_F4[id];

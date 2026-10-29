@@ -102,7 +102,7 @@
       "id": "pa_003",
       "index": 3,
       "displayName": "Hakenklinge",
-      "description": "Kurzer Hieb mit dem Haken, der den getroffenen Gegner zum Schützen heranzieht.",
+      "description": "Kurzer Hieb mit dem Haken, der den getroffenen Gegner ein kurzes Stück heranzieht.",
       "internalName": "hakenklinge",
       "category": "melee",
       "icon": {
@@ -147,7 +147,7 @@
       "id": "pa_004",
       "index": 4,
       "displayName": "Piratenhaken",
-      "description": "Eiserner Haken, der den getroffenen Gegner zum Schützen heranzieht.",
+      "description": "Eiserner Haken, der den getroffenen Gegner weit heranzieht, mit Nachladezeit.",
       "internalName": "piratenhaken",
       "category": "melee",
       "icon": {
@@ -1384,7 +1384,7 @@
       "id": "pa_032",
       "index": 32,
       "displayName": "Raketenrucksack",
-      "description": "Raketenstoß, der den Schützen ein Stück versetzt und oft einsetzbar ist.",
+      "description": "Raketenstoß, der den Schützen weit versetzt und danach Pause braucht.",
       "internalName": "raketenrucksack",
       "category": "ranged",
       "icon": {
@@ -3739,8 +3739,8 @@
     {
       "id": "pa_084",
       "index": 84,
-      "displayName": "Astraltrank",
-      "description": "Trank aus Astralstaub, der den eigenen Schaden verstärkt.",
+      "displayName": "Glutelixier",
+      "description": "Glutroter Trank, der den eigenen Schaden kurz stark verstärkt und Treffer in Brand setzt.",
       "internalName": "astraltrank",
       "category": "magic",
       "icon": {
@@ -3784,8 +3784,8 @@
     {
       "id": "pa_085",
       "index": 85,
-      "displayName": "Chaosmagier",
-      "description": "Löst eine zufällige Selbstwirkung aus, etwa Heilung, Schild, Verstärkung oder Sprung.",
+      "displayName": "Feuermagier",
+      "description": "Feuerzauber mit zufälliger Wirkung aus dem Angriffspool: Brandverstärkung, Rüstung oder Munition.",
       "internalName": "chaosmagier",
       "category": "magic",
       "icon": {
@@ -3922,7 +3922,7 @@
       "id": "pa_088",
       "index": 88,
       "displayName": "Dimensionsriss",
-      "description": "Riss in der Dimension, der den Schützen versetzt, mit wenig Munition und Nachladezeit.",
+      "description": "Riss in der Dimension, der den Schützen am weitesten versetzt, mit wenig Munition und Nachladezeit.",
       "internalName": "dimensionssprung_ii",
       "category": "magic",
       "icon": {
@@ -3967,7 +3967,7 @@
       "id": "pa_089",
       "index": 89,
       "displayName": "Zauberstiefel",
-      "description": "Verzauberte Stiefel, die den Schützen ein Stück versetzen.",
+      "description": "Verzauberte Stiefel, die den Schützen nur ein kleines Stück versetzen, dafür jeden Zug.",
       "internalName": "magischer_stiefel",
       "category": "magic",
       "icon": {
@@ -4106,7 +4106,7 @@
       "id": "pa_092",
       "index": 92,
       "displayName": "Heilzauber",
-      "description": "Heilt den Schützen.",
+      "description": "Heilt den Schützen ein wenig und ist jeden Zug nutzbar.",
       "internalName": "heilzauber",
       "category": "magic",
       "icon": {
@@ -4150,8 +4150,8 @@
     {
       "id": "pa_093",
       "index": 93,
-      "displayName": "Engelssegen",
-      "description": "Segen, der dem Schützen einen Schild verleiht.",
+      "displayName": "Funkenschild",
+      "description": "Schild unter Strom: Wer es trifft, wird geschockt.",
       "internalName": "engelssegen",
       "category": "magic",
       "icon": {
@@ -4196,7 +4196,7 @@
       "id": "pa_094",
       "index": 94,
       "displayName": "Heilspritze",
-      "description": "Spritze, die den Schützen sofort heilt.",
+      "description": "Spritze, die den Schützen kräftig heilt und danach Pause braucht.",
       "internalName": "heil_injektion",
       "category": "magic",
       "icon": {
@@ -4240,8 +4240,8 @@
     {
       "id": "pa_095",
       "index": 95,
-      "displayName": "Chaoselixier",
-      "description": "Elixier, das den eigenen Schaden verstärkt.",
+      "displayName": "Sturmelixier",
+      "description": "Geladenes Elixier, das den eigenen Schaden für zwei Züge verstärkt und Treffer schockt.",
       "internalName": "chaos_elixier",
       "category": "magic",
       "icon": {
@@ -4286,7 +4286,7 @@
       "id": "pa_096",
       "index": 96,
       "displayName": "Mutationselixier",
-      "description": "Elixier mit zufälliger Wirkung auf den Schützen.",
+      "description": "Elixier mit zufälliger Wirkung aus dem Giftpool: Heilung, Sprung oder Giftverstärkung.",
       "internalName": "mutationselixier",
       "category": "magic",
       "icon": {
@@ -4423,8 +4423,8 @@
     {
       "id": "pa_099",
       "index": 99,
-      "displayName": "Sanduhr",
-      "description": "Sanduhr, die die Zeit beugt und den eigenen Schaden verstärkt.",
+      "displayName": "Frostsanduhr",
+      "description": "Sanduhr aus Eis, die den eigenen Schaden mehrere Züge lang leicht verstärkt und mit Frost bremst.",
       "internalName": "zeit_sanduhr",
       "category": "magic",
       "icon": {
@@ -4468,8 +4468,8 @@
     {
       "id": "pa_100",
       "index": 100,
-      "displayName": "Würfel des Chaos",
-      "description": "Würfel mit zufälliger Wirkung auf den Schützen.",
+      "displayName": "Blitzwürfel",
+      "description": "Würfel mit zufälliger Wirkung aus dem Tempopool: Schockverstärkung, Sprung oder Munition.",
       "internalName": "wurfel_des_chaos",
       "category": "magic",
       "icon": {
@@ -4514,7 +4514,7 @@
       "id": "pa_101",
       "index": 101,
       "displayName": "Eisschild",
-      "description": "Schild aus Eis für den Schützen.",
+      "description": "Dickes Schild aus Eis: Wer es trifft, wird mit Frost gebremst.",
       "internalName": "eisschild",
       "category": "magic",
       "icon": {
@@ -4697,8 +4697,8 @@
     {
       "id": "pa_105",
       "index": 105,
-      "displayName": "Spruchrolle",
-      "description": "Rolle mit einem zufälligen Zauber für den Schützen.",
+      "displayName": "Frostrolle",
+      "description": "Rolle mit zufälligem Eiszauber aus dem Schutzpool: Eisschild, Heilung oder Rüstung.",
       "internalName": "zauberrolle",
       "category": "magic",
       "icon": {
@@ -4880,8 +4880,8 @@
     {
       "id": "pa_109",
       "index": 109,
-      "displayName": "Weltenbaum",
-      "description": "Kraft des Weltenbaums, die den eigenen Schaden verstärkt.",
+      "displayName": "Giftbaum",
+      "description": "Giftiger Baum, der den eigenen Schaden lange, aber schwach verstärkt und Treffer vergiftet.",
       "internalName": "weltenbaum",
       "category": "magic",
       "icon": {
@@ -5016,7 +5016,7 @@
       "id": "pa_112",
       "index": 112,
       "displayName": "Düsenrucksack",
-      "description": "Düsenantrieb, der den Schützen ein Stück versetzt.",
+      "description": "Düsenantrieb, der den Schützen ein mittleres Stück versetzt.",
       "internalName": "jetpack",
       "category": "utility",
       "icon": {
@@ -5107,7 +5107,7 @@
       "id": "pa_114",
       "index": 114,
       "displayName": "Gleitschirm",
-      "description": "Schirm für einen Gleitflug, der den Schützen versetzt und eine Nachladezeit hat.",
+      "description": "Schirm für einen Gleitflug, der den Schützen am weitesten versetzt, mit Nachladezeit.",
       "internalName": "raketenrucksack_mk_iii",
       "category": "utility",
       "icon": {
