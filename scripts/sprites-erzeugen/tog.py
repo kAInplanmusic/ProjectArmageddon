@@ -26,15 +26,19 @@ def tog_gen(prompt, src, out, breite=1024, hoehe=768, modell=MODELL, steps=28, s
     schluessel = os.environ.get("TOGETHER_API_KEY")
     if not schluessel:
         return "ERR TOGETHER_API_KEY nicht gesetzt"
-    # Wie `rep.py`: Figur auf gruenem Grund (Chromakey), damit der Zuschnitt sie spaeter freistellt.
-    im = Image.open(src).convert("RGBA")
-    grund = Image.new("RGBA", im.size, (0, 255, 0, 255))
-    grund.alpha_composite(im)
-    puffer = io.BytesIO()
-    grund.convert("RGB").resize((768, 768)).save(puffer, "PNG")
+    # Kontext verlangt eine OEFFENTLICHE Bild-URL (Data-URIs werden stillschweigend ignoriert: Pilot 2026-10-30
+    # machte aus einer Spinne einen Soldaten). Das Repo ist oeffentlich; Quellbilder im Repo gehen per raw-URL.
+    from pathlib import Path
+    pfad = Path(src).resolve()
+    wurzel = Path(__file__).resolve().parent.parent.parent
+    try:
+        rel = pfad.relative_to(wurzel).as_posix()
+    except ValueError:
+        return "ERR Quellbild liegt nicht im Repo; fuer Kontext ist eine oeffentliche URL noetig"
+    bild_url = "https://raw.githubusercontent.com/kAInplanmusic/ProjectArmageddon/main/" + rel
     body = {
         "model": modell, "prompt": prompt, "width": breite, "height": hoehe, "steps": steps, "seed": seed,
-        "image_url": "data:image/png;base64," + base64.b64encode(puffer.getvalue()).decode(),
+        "image_url": bild_url,
     }
     req = urllib.request.Request(
         ENDPUNKT, json.dumps(body).encode(),
