@@ -99,7 +99,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   round_crates: { klasse: 'zustand', stumm: 'Buchführung; die Anzahl steht im HUD' },
   round_start: { klasse: 'zustand' },
   shield_absorbed: { klasse: 'zustand', klang: ['schild'], anim: ['addFlash'] },
-  shot: { klasse: 'zustand', stumm: 'löst die Vorhersage auf (shotPredictor.resolve)', klang: ['shot'], anim: ['addMuzzleFlash'] },
+  shot: { klasse: 'zustand', stumm: 'löst die Vorhersage auf (shotPredictor.resolve)', klang: ['shot'], anim: ['addMuzzleFlash', 'merkeSchuss'] },
   terrain_destroyed: { klasse: 'zustand', anim: ['applyCrater'] },
   terrain_settled: { klasse: 'zustand', klang: ['insel_gelandet'], anim: ['landeInsel'] },
   terrain_removed: { klasse: 'zustand', anim: ['entferneZellen'] },
