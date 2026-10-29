@@ -338,7 +338,12 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
     if (!f5 && !f7 && !f8 && !f10 && !f11) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
-    if (!kopie5) { kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11 }); zwischenspeicher.set(schluessel5, kopie5); }
+    if (!kopie5) {
+      // `wirkung` der Fassung 11 ergänzt die der Fassung 10 (Weite, Menge, Pause bleiben), ersetzt sie nicht.
+      const wirkung = f10?.wirkung && f11?.wirkung ? { wirkung: Object.freeze({ ...f10.wirkung, ...f11.wirkung }) } : {};
+      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...wirkung });
+      zwischenspeicher.set(schluessel5, kopie5);
+    }
     return kopie5;
   }
   const art = ARTEN_BIS_F4[id];

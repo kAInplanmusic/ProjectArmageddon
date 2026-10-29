@@ -361,6 +361,8 @@ export function buildEffect(weapon) {
       return {
         kind: base.kind,
         amount: w?.amount ?? Math.max(SPECIAL_DEFAULTS.healAmount, Math.round((weapon.damage || 0) * 1.2)),
+        // Waffenfassung 11: nimmt zusätzlich diese Mali (`MaliRegeln.entferne`).
+        ...(w?.reinigt ? { reinigt: [...w.reinigt] } : {}),
       };
 
     case EFFECT_KIND.SHIELD:
@@ -418,7 +420,8 @@ export function buildEffect(weapon) {
       return { kind: base.kind, amount: w?.amount ?? SPECIAL_DEFAULTS.ammoAmount };
 
     case EFFECT_KIND.MOVE:
-      return { kind: base.kind, distance: w?.distance ?? SPECIAL_DEFAULTS.moveDistance };
+      // Waffenfassung 11: Element und Spur der Bewegung (`engine/elementSpur.js`).
+      return { kind: base.kind, distance: w?.distance ?? SPECIAL_DEFAULTS.moveDistance, ...(w?.element ? { element: w.element, spur: w.spur ?? 'ziel', ...(w.radius ? { radius: w.radius } : {}) } : {}) };
 
     case EFFECT_KIND.MOUNT:
       return { kind: base.kind, distance: SPECIAL_DEFAULTS.mountDistance };

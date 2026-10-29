@@ -56,6 +56,7 @@ import { bodenNaheHoehe } from './boden.js';
 import { raycastSegment, simulateFlight } from '../shared/ballistics.js';
 import { weitenFaktor } from '../shared/reichweite.js';
 import { damageTypeId } from './damageTypes.js';
+import { wendeElementAn } from './elementSpur.js';
 import {
   buildEffect, SELF_TARGET_KINDS, EFFECT_KIND, RANDOM_EFFECT_POOL,
 } from './specials.js';
@@ -670,6 +671,8 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
       const headroom = Math.max(0, max - health);
       const healed = Math.min(quelle.heilung ? quelle.heilung(playerId, effect.amount) : effect.amount, headroom);
       if (healed > 0) quelle.world.setComponent(playerId, 'Health', 'current', health + healed);
+      // Waffenfassung 11: die Heilung nimmt zusätzlich die genannten Mali (Heilzauber Frost, Heilspritze Schock).
+      for (const malus of effect.reinigt ?? []) quelle.mali?.entferne(playerId, malus, 'heilung');
       return { healed, amount: effect.amount };
     }
 
@@ -695,8 +698,13 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
 
     case EFFECT_KIND.MOVE:
     case EFFECT_KIND.MOUNT: {
+      const von = { x: quelle.world.getComponent(playerId, 'Position', 'x') ?? 0, y: quelle.world.getComponent(playerId, 'Position', 'y') ?? 0 };
       const moved = shiftPlayer(quelle, playerId, effect.distance);
-      return { moved };
+      // Waffenfassung 11: Element der Bewegung (Feuerspur, Frostboden, Schock am Ziel), nur wenn sich die Figur bewegt hat.
+      const element = effect.element && (moved.dx !== 0 || moved.dy !== 0)
+        ? wendeElementAn(quelle, playerId, effect, von, { x: von.x + moved.dx, y: von.y + moved.dy })
+        : null;
+      return element ? { moved, element } : { moved };
     }
 
     case EFFECT_KIND.TURRET: {

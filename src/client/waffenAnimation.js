@@ -154,8 +154,8 @@ export const KORREKTUREN = Object.freeze({
   // Feldmörser: schwere Waffe, langer Rückstoß mit Nachschwingen.
   // Rucksack, Gleitschirm und Düsenrucksack werden auf dem Rücken getragen: hinter dem Körper, weiter hinten.
   pa_032: { lage: 'hinter', handVor: -5 },
-  pa_112: { lage: 'hinter', handVor: -5, handHoch: 1 },
-  pa_114: { lage: 'hinter', handVor: -5, handHoch: 2 },
+  pa_112: { lage: 'hinter', handVor: -5, handHoch: 1, blitzForm: 'kegel', blitzGroesse: 14, blitzDauer: 0.2 },
+  pa_114: { lage: 'hinter', handVor: -5, handHoch: 2, blitzForm: 'ring', blitzGroesse: 26, blitzDauer: 0.5 },
   // Waffenfassung 10: gestaffelte Dubletten bekommen unterscheidbare Posen (Aufladen, Glanzform, Größe, Takt).
   // Verstärkungen: Glut kräftig und kurz, Sturm unruhig, Frost langsam mit großem Ring, Gift ruhig atmend.
   pa_084: { heben: 0.7, aufladen: 0.35, blitzForm: 'stern', blitzGroesse: 20 },
@@ -173,10 +173,12 @@ export const KORREKTUREN = Object.freeze({
   // Waffenfassung 11: der dritte Schild (Feuer) ist groß und warm, ein Flammenstern.
   pa_148: { heben: 0.55, aufladen: 0.45, blitzForm: 'stern', blitzGroesse: 28, blitzDauer: 0.4 },
   // Versetzer: je weiter der Sprung, desto größer und länger der Glanz.
-  pa_089: { schussDauer: 0.4, heben: 0.3, blitzForm: 'funke', blitzGroesse: 12 },
-  pa_087: { blitzForm: 'ring', blitzGroesse: 18 },
-  pa_110: { blitzForm: 'stern', blitzGroesse: 16, blitzDauer: 0.22 },
-  pa_088: { aufladen: 0.35, blitzForm: 'stern', blitzGroesse: 26, blitzDauer: 0.3 },
+  pa_089: { schussDauer: 0.4, heben: 0.3, blitzForm: 'stern', blitzGroesse: 14 },
+  pa_087: { blitzForm: 'funke', blitzGroesse: 22, blitzDauer: 0.1 },
+  pa_110: { blitzForm: 'ring', blitzGroesse: 16, blitzDauer: 0.22 },
+  pa_088: { aufladen: 0.35, blitzForm: 'funke', blitzGroesse: 30, blitzDauer: 0.3 },
+  // Waffenfassung 11: Elemente der Versetzer und Flieger (Feuer Kegel und Stern, Eis Ring, Blitz Funke); Enterhaken: kurzer Schock beim Einschlag.
+  pa_111: { blitzForm: 'funke', blitzGroesse: 12, blitzDauer: 0.1 },
   // Heilung: Zauber mit Ring, Spritze kurz.
   pa_092: { heben: 0.5, blitzForm: 'ring', blitzGroesse: 15, blitzDauer: 0.3 },
   pa_094: { schussDauer: 0.3, kick: 1, blitzForm: 'funke', blitzGroesse: 10 },

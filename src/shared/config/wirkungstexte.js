@@ -56,14 +56,14 @@ export const FAMILIE_LABEL = Object.freeze({
 
 /** Wirkungen der Waffen (`EFFECT_KIND` in `engine/specials.js`): Bezeichnung und Erklärung. */
 export const WIRKUNG_TEXT = Object.freeze({
-  heal: Object.freeze({ label: 'Heilung', text: 'Stellt Leben wieder her, nie über das Maximum.' }),
+  heal: Object.freeze({ label: 'Heilung', text: 'Stellt Leben wieder her, nie über das Maximum; löst Brand, Gift, Säure und Fluch, manche Heilung auch Frost oder Schock.' }),
   shield: Object.freeze({ label: 'Schild', text: 'Fängt Schaden ab, bevor das Leben sinkt; ein Schild mit Element belegt den Angreifer mit dessen Nachteil.' }),
   damage_boost: Object.freeze({ label: 'Verstärkung', text: 'Der eigene Schaden steigt für einige Züge; eine Verstärkung mit Element legt dem Getroffenen dessen Nachteil auf.' }),
   armor: Object.freeze({ label: 'Rüstung', text: 'Mindert den erlittenen Schaden für einige Züge.' }),
   freeze: Object.freeze({ label: 'Einfrieren und Betäuben', text: 'Der getroffene Gegner setzt aus.' }),
   damage_over_time: Object.freeze({ label: 'Schaden über Zeit', text: 'Der Betroffene verliert zu Beginn seiner Züge weiter Leben.' }),
   ammo: Object.freeze({ label: 'Nachschub', text: 'Füllt Ladungen auf, bis zur Kapazität.' }),
-  move: Object.freeze({ label: 'Versetzen', text: 'Versetzt den Schützen auf festes Gelände.' }),
+  move: Object.freeze({ label: 'Versetzen', text: 'Versetzt den Schützen auf festes Gelände; ein Element setzt Figuren auf dem Weg in Brand, vereist den Landepunkt oder schockt am Zielpunkt.' }),
   reveal: Object.freeze({ label: 'Aufdecken', text: 'Der Schütze gilt für einige Züge als aufgedeckt.' }),
   pull: Object.freeze({ label: 'Heranziehen', text: 'Zieht den Getroffenen zum Schützen.' }),
   turret: Object.freeze({ label: 'Geschütz', text: 'Stellt ein Geschütz oder einen Kämpfer auf, der in den folgenden Runden selbst feuert.' }),

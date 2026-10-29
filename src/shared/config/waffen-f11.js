@@ -78,5 +78,28 @@ const SCHILDE = Object.freeze({
   pa_148: wirk({ amount: 75, element: 'fire', gegen: 'fire' }, { damageType: 'fire' }), // Feuerschild: Brand auf den Angreifer
 });
 
-/** Alle Werte der Fassung 11 je Waffe; `getWaffe` legt sie über Fassung 10. */
-export const WAFFEN_F11_WERTE = Object.freeze({ ...RUECKSTOSS, ...SCHILDE });
+/**
+ * Teil D, ELEMENTE für Versetzer und Flieger (Entscheidung des Auftraggebers: Feuerspur, Frostboden, Blitz). Das Feld `wirkung` wird mit dem der
+ * Fassung 10 zusammengeführt (Weite und Pause bleiben); `element`, `spur` und `radius` liest `buildEffect`, die Wirkung steht in `engine/elementSpur.js`:
+ * Feuer entzündet am Weg (`weg`) oder Start (`start`) und gibt den Figuren dort Brand, Eis friert am Landepunkt (`ziel`) und gibt Frost, Blitz
+ * schockt am Zielpunkt. Die Schadensart folgt dem Element (Animation, Klang, Anzeige).
+ */
+const ELEMENTE = Object.freeze({
+  pa_032: wirk({ element: 'fire', spur: 'weg', radius: 30 }, { damageType: 'fire' }), // Raketenrucksack: Feuerspur auf dem ganzen Weg
+  pa_112: wirk({ element: 'fire', spur: 'start', radius: 36 }, { damageType: 'fire' }), // Düsenrucksack: Düsenabgas am Startpunkt
+  pa_089: wirk({ element: 'fire', spur: 'weg', radius: 22 }, { damageType: 'fire' }), // Zauberstiefel: schmale Feuerspur
+  pa_114: wirk({ element: 'ice', spur: 'ziel', radius: 56 }, { damageType: 'ice' }), // Gleitschirm: weiter Frostboden bei der Landung
+  pa_110: wirk({ element: 'ice', spur: 'ziel', radius: 40 }, { damageType: 'ice' }), // Dimensionskugel: Frostboden am Landepunkt
+  pa_087: wirk({ element: 'electric', spur: 'ziel', radius: 36 }, { damageType: 'electric' }), // Dimensionssprung: Blitz beim Aufprall
+  pa_088: wirk({ element: 'electric', spur: 'ziel', radius: 52 }, { damageType: 'electric' }), // Dimensionsriss: großer Blitz am Zielpunkt
+  pa_111: wirk({ element: 'electric', spur: 'ziel', radius: 30 }, { damageType: 'electric' }), // Enterhaken: Schock beim Einschlag
+});
+
+/** Heiler: die Heilung nimmt zusätzlich ein Malus (die Heilung löst Brand, Gift, Säure und Fluch schon über `MaliRegeln.heilung`). */
+const HEILER = Object.freeze({
+  pa_092: wirk({ reinigt: Object.freeze(['frost']) }), // Heilzauber: das Licht wärmt vom Frost frei
+  pa_094: wirk({ reinigt: Object.freeze(['schock']) }), // Heilspritze: löst den Schock
+});
+
+/** Alle Werte der Fassung 11 je Waffe; `getWaffe` legt sie über Fassung 10 (das Feld `wirkung` wird mit dem der Fassung 10 zusammengeführt). */
+export const WAFFEN_F11_WERTE = Object.freeze({ ...RUECKSTOSS, ...SCHILDE, ...ELEMENTE, ...HEILER });

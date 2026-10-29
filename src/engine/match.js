@@ -1524,6 +1524,7 @@ export class MatchController {
       events: this.#events,
       inventory: this.#inventory,
       statuses: this.#statuses,
+      mali: this.#mali, feuerSystem: () => this.#feuer, // Element der Bewegung (Waffenfassung 11, `engine/elementSpur.js`)
       players: this.#players,
       turnOrder: this.#turnOrder,
       shotsInFlight: this.#shotsInFlight,

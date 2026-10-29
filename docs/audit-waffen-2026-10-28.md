@@ -605,3 +605,25 @@ Deutung: "weit" gleich Stärke 260 bis 300, "mittel" gleich 110 bis 190, "hoch" 
 | Pressluftbohrer | pa_026 | 36 | 30 | 140 | 15 (nach vorn, leicht angehoben) | Druckstoß nach vorn |
 | Zauberpeitsche | pa_108 | 32 | 0 | 90 | 150 (zum Schützen hin) | zieht den Gegner heran |
 | Magnetkanone | pa_123 | 40 | 0 | 160 | 175 (zum Schützen hin) | zieht den Gegner an |
+
+### Schritt D: Elemente für Versetzer, Flieger und Heiler
+
+Die Elemente laufen über vorhandene Regeln (`src/engine/elementSpur.js`): Figuren in der Fläche (ohne den Schützen) bekommen den Malus des Elements (`MaliRegeln.wende`: Feuer gleich Brand,
+Eis gleich Frost, Blitz gleich Schock, mit allen Wechselwirkungen aus `config/schaden.js`); Feuer entzündet zusätzlich brennbare Zellen auf dem Weg (`FeuerSystem.einschlag`, Gruppe `hitze`), Eis löscht dort Brand (`kaelte`).
+Spur `weg`: entlang der Strecke von Start zu Landepunkt (Feuerspur), `start`: am Startpunkt, `ziel`: am Landepunkt. Weite und Pause bleiben die der Fassung 10; die Schadensart folgt dem Element.
+
+| Waffe | Kennung | Element | Spur | Reichweite der Fläche (px) | Wirkung |
+|---|---|---|---|---|---|
+| Raketenrucksack | pa_032 | Feuer | Weg | 30 | Feuerspur auf dem ganzen Flug, Brand |
+| Düsenrucksack | pa_112 | Feuer | Start | 36 | Düsenabgas am Startpunkt, Brand |
+| Zauberstiefel | pa_089 | Feuer | Weg | 22 | schmale Feuerspur, Brand |
+| Gleitschirm | pa_114 | Eis | Ziel | 56 | weiter Frostboden bei der Landung, Frost |
+| Dimensionskugel | pa_110 | Eis | Ziel | 40 | Frostboden am Landepunkt, Frost |
+| Dimensionssprung | pa_087 | Blitz | Ziel | 36 | Blitz beim Aufprall, Schock |
+| Dimensionsriss | pa_088 | Blitz | Ziel | 52 | großer Blitz am Zielpunkt, Schock |
+| Enterhaken | pa_111 | Blitz | Ziel | 30 | Schock beim Einschlag |
+
+Heiler: Die Heilung löst Brand, Gift, Säure und Fluch schon über `MaliRegeln.heilung` (ab Heilwert 20 bzw. 40). Fassung 11 ergänzt je Waffe ein Malus (Feld `reinigt`, `MaliRegeln.entferne`):
+Heilzauber (Licht) nimmt zusätzlich Frost, Heilspritze nimmt zusätzlich Schock. Ein Element im Sinn von Spur oder Aufprall bekommen die Heiler nicht: Heilen ist Selbstwirkung ohne Weg und ohne Ziel,
+die Mali-Reinigung ist die saubere Lösung mit vorhandenen Regeln.
+Beschreibungen, Wirkungstexte und Animationen (Feuer Stern/Kegel, Eis Ring, Blitz Funke, `KORREKTUREN` in `src/client/waffenAnimation.js`) sind nachgezogen.
