@@ -36,14 +36,16 @@ SICHTPRUEFUNG = {
     'beasts/22_sonic-blossom': {'frei': [1, 3, 5], 'sperre': []},
     'datacult/00_nullpointer-exception': {'frei': [1, 3, 5, 6], 'sperre': []},
     'datacult/01_datapath-replicant': {'frei': [3, 4], 'sperre': []},
-    'datacult/11_synapse-streamer': {'frei': [4], 'sperre': [3, 5, 6]},
+    'datacult/02_chrome-code-shifter': {'frei': [5, 6], 'sperre': []},
+    'datacult/11_synapse-streamer': {'frei': [4, 5, 6], 'sperre': [3]},
     'datacult/12_arcology-agent': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'datacult/21_hyper-link-hound': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'datacult/22_ethereo': {'frei': [1, 6], 'sperre': []},
     'machina/00_chassis-endo-t8': {'frei': [1, 5], 'sperre': []},
     'machina/01_slasher-cyber-jax': {'frei': [3, 6], 'sperre': []},
     'machina/02_hydra-titan-mech': {'frei': [3], 'sperre': []},
-    'machina/12_ordnance-rail-viper': {'frei': [], 'sperre': [3, 5]},
+    'machina/11_heavy-battery-moerser-bot': {'frei': [5, 6], 'sperre': []},
+    'machina/12_ordnance-rail-viper': {'frei': [5], 'sperre': [3]},
     'machina/20_grid-drifter-datastream': {'frei': [1, 3, 5], 'sperre': []},
     'machina/21_proxy-glitch-hack': {'frei': [5], 'sperre': []},
     'machina/22_overlord-kernel-panic': {'frei': [1, 3, 5], 'sperre': []},
@@ -76,7 +78,7 @@ SICHTPRUEFUNG = {
     'shinobi/02_tetsubo-oni-brute': {'frei': [5], 'sperre': []},
     'shinobi/10_dazzler-werner': {'frei': [1, 4, 5], 'sperre': []},
     'shinobi/11_rauch-meister-genzi': {'frei': [], 'sperre': [3, 5, 6]},
-    'shinobi/12_blowpipe-koga': {'frei': [3, 4], 'sperre': [1, 5, 6]},
+    'shinobi/12_blowpipe-koga': {'frei': [3, 4, 5, 6], 'sperre': [1]},
     'shinobi/20_ninjutsu-master-goemon': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'shinobi/21_talisman-sorcerer-jun': {'frei': [3], 'sperre': []},
     'shinobi/22_vixen-kitsune': {'frei': [3, 6], 'sperre': []},
@@ -88,11 +90,18 @@ SICHTPRUEFUNG = {
     'undead/22_banshee-beatrice': {'frei': [1], 'sperre': []},
     'xeno/01_stalker-predax': {'frei': [5], 'sperre': [4]},
     'xeno/02_vortex-grabber': {'frei': [1, 3, 5, 6], 'sperre': []},
-    'xeno/10_drone-theta': {'frei': [], 'sperre': [1, 5]},
+    'xeno/10_drone-theta': {'frei': [5], 'sperre': [1]},
     'xeno/11_desintegrator-kael': {'frei': [1, 3, 5, 6], 'sperre': []},
     'xeno/20_harbinger-zeta': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'xeno/21_dark-matter-witch': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'xeno/22_null-entity-quark': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
+}
+
+
+# Zellen, die `blick-aus-teilen.py` aus dem Seitenbild dreht (Blick hoch 5, Blick runter 6).
+AUS_TEILEN = {
+    'datacult/02_chrome-code-shifter': (5, 6), 'machina/11_heavy-battery-moerser-bot': (5, 6), 'machina/12_ordnance-rail-viper': (5,),
+    'shinobi/12_blowpipe-koga': (5, 6), 'xeno/10_drone-theta': (5,), 'datacult/11_synapse-streamer': (5, 6),
 }
 
 
@@ -125,10 +134,13 @@ def main():
         for c in range(8):
             h = hist(zelle(sheet, c))
             abstand.append(None if h is None else round(1 - float(np.minimum(h, basis).sum()), 3))
-        gemessen = [d for d in abstand if d is not None]
+        sicht = SICHTPRUEFUNG.get(f'{fak}/{name}')
+        # Zellen aus Teilen des Seitenbilds (`blick-aus-teilen.py`) liegen dem Seitenbild so nahe, dass sie `beste` auf nahe 0 ziehen und
+        # alle KI-Zellen aus dem Spielraum drängen: Für `beste` zählen nur die übrigen Zellen.
+        teile = AUS_TEILEN.get(f'{fak}/{name}', ())
+        gemessen = [d for c, d in enumerate(abstand) if d is not None and c not in teile]
         beste = min(gemessen) if gemessen else 1
         gueltig = [c for c, d in enumerate(abstand) if d is not None and d <= beste + SPIELRAUM and d <= OBERGRENZE]
-        sicht = SICHTPRUEFUNG.get(f'{fak}/{name}')
         if sicht:
             gueltig = sorted((set(gueltig) | set(sicht['frei'])) - set(sicht['sperre']))
         figuren[f'{fak}/{name}'] = {'datei': f'{fak}/{name}__emotion.webp', 'gueltig': gueltig, 'abstand': abstand}
