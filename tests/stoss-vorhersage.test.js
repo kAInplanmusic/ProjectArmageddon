@@ -25,3 +25,12 @@ test('Seite folgt dem Schusswinkel, Richtung der Waffe (zum Schützen hin kehrt 
     if (Math.abs(vorn) > 0.01) assert.equal(rechts, Math.sign(vorn), `${w.id} Vorzeichen`);
   }
 });
+
+test('Stärke des Zuckens wächst mit der Rückstoßstärke und bleibt in 0 bis 1', async () => {
+  const { vorhergesagteStaerke } = await import('../src/client/gefuehl.js');
+  assert.equal(vorhergesagteStaerke(null), 0);
+  for (const w of mitStoss) {
+    const s = vorhergesagteStaerke({ weaponId: w.id, angle: 0 });
+    assert.ok(s >= 0 && s <= 1, w.id);
+  }
+});

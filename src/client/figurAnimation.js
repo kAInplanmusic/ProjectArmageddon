@@ -59,7 +59,7 @@ function neuerZustand(x, y, jetzt) {
   return {
     x, y, t: jetzt, vx: 0, vy: 0, vyVorher: 0, vyMax: 0, faellt: false, lande: 0, phase: 0, blick: 1,
     landeDauer: 0.22, absprungT: 99, inLuft: false,
-    schussT: 99, feuerVorher: 0, trefferVorher: 0, hitT: 99, hitDir: 1, hitHaerte: 0.5,
+    schussT: 99, feuerVorher: 0, trefferVorher: 0, hitT: 99, hitDir: 1, hitHaerte: 0.5, hitStaerke: 0,
     modi: 0, rolle: null, frame: null,
     aktivVorher: false, zugT: 99, kipp: 0, neig: 0, zielBlick: 0, drehT: 99,
     hpVerz: -1, hpLetzt: -1, hpHalt: 0, ergebnisT: 0,
@@ -134,7 +134,7 @@ export class FigurPosen {
     z.feuerVorher = feuer;
     const treffer = clamp(opt.treffer ?? 0, 0, 1.2);
     if (treffer > z.trefferVorher + 0.3) {
-      z.hitT = 0; z.hitDir = Math.sign(opt.stoss ?? 0) || -f; z.hitHaerte = clamp(opt.haerte ?? 0.5, 0.2, 1);
+      z.hitT = 0; z.hitDir = Math.sign(opt.stoss ?? 0) || -f; z.hitHaerte = clamp(opt.haerte ?? 0.5, 0.2, 1); z.hitStaerke = clamp(opt.stossStaerke ?? 0, 0, 1);
     }
     z.trefferVorher = treffer;
     const aktiv = Boolean(opt.aktiv);
@@ -256,7 +256,7 @@ export class FigurPosen {
     if (z.hitT < TREFFER_DAUER) {
       const k = trefferKurve(z.hitT) * (0.5 + 0.5 * z.hitHaerte);
       const bk = blatt?.treffer ? 0.6 : 1;
-      p.dx += z.hitDir * par.trefferZuck * k * bk;
+      p.dx += z.hitDir * par.trefferZuck * k * bk * (1 + 1.5 * z.hitStaerke);
       p.rot += z.hitDir * par.trefferNeigung * k * bk;
       p.flash = Math.max(p.flash, clamp(1 - z.hitT / 0.14, 0, 1));
       p.tint = clamp(1 - z.hitT / TREFFER_DAUER, 0, 1) * 0.75;

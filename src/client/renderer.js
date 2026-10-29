@@ -72,7 +72,7 @@ const FIGUR_SKALA = 1.5;
 const FIGUR_HOCH = -5;
 
 import {
-  findeTreffer, trefferMarke, zuckVersatz, stossRichtung, vorhergesagterStoss,
+  findeTreffer, trefferMarke, zuckVersatz, stossRichtung, vorhergesagterStoss, vorhergesagteStaerke,
   ruckFuer, ruckAufprall, altereRuck, ruckVersatz,
   ergaenzeNarbe, verlaengereSpur,
   rauchWolke, schreiteRauchFort, rauchDarstellung,
@@ -510,7 +510,7 @@ export class Renderer {
     const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
-    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) || vorhergesagterStoss(this.juengsteSchuesse.at(-1)) }));
+    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) || vorhergesagterStoss(this.juengsteSchuesse.at(-1)), stossStaerke: vorhergesagteStaerke(this.juengsteSchuesse.at(-1)) }));
     for (const e of this.einschlaege) e.rest -= 1; this.juengsteSchuesse = this.juengsteSchuesse.filter(x => (x.rest -= 1) > 0);
     this.einschlaege = this.einschlaege.filter(e => e.rest > 0);
     const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
@@ -1233,7 +1233,7 @@ export class Renderer {
         const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
         const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
-          reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss,
+          reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss, stossStaerke: marke?.stossStaerke,
           feuer: feuerLeben, params: par, typ, blatt: fig.blatt,
           schussStaerke: waffenPar?.koerper ?? 1, ausfall: waffenPar?.ausfall ?? 0,
           neigung: this.#bodenNeigung(entity.x, fussWelt),

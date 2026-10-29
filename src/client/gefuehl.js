@@ -187,6 +187,7 @@ export function trefferMarke(treffer) {
     haerte: haerteAusTreffer(treffer?.schaden, treffer?.maxHealth),
     toedlich: Boolean(treffer?.toedlich),
     stoss: Math.sign(Number(treffer?.stoss)) || 0,
+    stossStaerke: begrenze01(Number(treffer?.stossStaerke)),
     life: 1,
     decay: 1 / TREFFER_BILDER,
   };
@@ -537,4 +538,9 @@ export function vorhergesagterStoss(schuss) {
   if (!waffe || waffe.stossRichtung === undefined || !(waffe.knockback > 0)) return 0;
   const seite = Math.cos(schuss.angle ?? 0) < 0 ? -1 : 1;
   return Math.sign(stossVektor(waffe.knockback, waffe.stossRichtung, seite).x);
+}
+
+/** Stärke des vorhergesagten Rückstoßes für das Zucken (0 bis 1; 100 Punkte Katalogstärke = 1). */
+export function vorhergesagteStaerke(schuss) {
+  return vorhergesagterStoss(schuss) === 0 ? 0 : begrenze01((getWaffe(schuss.weaponId).knockback ?? 0) / 100);
 }
