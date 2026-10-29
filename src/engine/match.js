@@ -12,7 +12,6 @@ import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { CollisionMask } from './terrain/collisionMask.js';
 import { materialAmPunkt } from '../shared/terrainGen3.js';
 import { bodenNaheHoehe } from './boden.js';
-import { TERRAIN_MATERIAL, RUECKPRALL_MINDESTTEMPO } from '../shared/config/terrain.js';
 import { baueAnsichtszustand, hashState } from './stateSnapshot.js';
 import { erzeugeSpieler } from './spawnManager.js';
 import { baueTerrain } from './terrainBuilder.js';
@@ -31,7 +30,6 @@ import {
   buildEffect,
   elementalEffectFor,
   SELF_TARGET_KINDS,
-  EFFECT_KIND,
 } from './specials.js';
 import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
@@ -68,6 +66,7 @@ import { guentherWerte } from '../shared/config/guenther.js';
 import { loeseGuentherRad } from './guentherRad.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { wirfWaffe, schrittFliegendeKisten } from './kistenWurf.js';
+import { wendeZielwirkungAn, wendeBodenmaterialAn } from './zieleffekte.js';
 import { ccdRaycast } from './physics/ballistics.js';
 import { POWER_TO_SPEED, PROJECTILE_GRAVITY, integrateStep } from '../shared/ballistics.js';
 import { launchSpeedMultiplier } from '../shared/launchSpeed.js';
@@ -414,16 +413,6 @@ const JUMP_SPEED_INFLUENCE_BELOW = 0.25;
  * Zahlen für denselben Körper: Wer eine ändert, verschiebt entweder die Figur
  * oder das Feld, das sie treffen soll.
  */
-/**
- * Größter Höhenunterschied, den eine Verschiebung (Ziehen oder Schub)
- * überwinden darf.
- *
- * Ohne Grenze setzte die Verankerung auf der Geländeoberfläche das Ziel auf den
- * nächsten Hügel — ein Ziehen oder Schub wurde dadurch zum Teleport auf eine
- * Klippe. 16 px entsprechen etwa eineinhalb Figurenhöhen: ein Absatz, den man
- * hinaufgestoßen werden kann, aber keine Wand.
- */
-const MAX_SHIFT_SLOPE = 16;
 /** Wie weit entlang der Schussrichtung nach freiem Feld gesucht wird. */
 const MUZZLE_SEARCH_DISTANCE = 48;
 
@@ -1022,7 +1011,7 @@ export class MatchController {
     // Doppelsprung wieder zur Verfügung steht.
     this.#updateGroundedState();
     // Bodenmaterial, Teil 2: DIE EINE Stelle, an der es gelesen und angewandt wird.
-    this.#wendeBodenmaterialAn();
+    wendeBodenmaterialAn(this.#wirkungsQuelle());
 
     // Günther bewegt sich nach der Physik: Er läuft auf der Oberfläche, die
     // sich in diesem Schritt geändert haben kann.
@@ -1377,67 +1366,6 @@ export class MatchController {
         vy: this.#world.getComponent(entry.entityId, 'Velocity', 'y') ?? 0,
         grounded: this.isGrounded(entry.entityId),
       });
-    }
-  }
-
-  /**
-   * Wendet die Physik des Bodenmaterials an — beim Aufsetzen und beim Bewegen.
-   *
-   * EIS rutscht (die Bodenreibung des Schritts wird anteilig zurückgenommen,
-   * nie über den gemerkten Wert hinaus — Eis beschleunigt nicht). GUMMI federt
-   * (ein Teil des Aufpralltempos kommt als senkrechter Impuls zurück, ab
-   * `RUECKPRALL_MINDESTTEMPO`, damit das Federn ausklingt). Beides ohne Zufall
-   * und ohne Uhr.
-   *
-   * ## Warum es dazu KEIN Ereignis gibt
-   *
-   * Naheliegend wären `boden_rutschig`/`boden_rueckprall`. Sie unterbleiben
-   * bewusst: `tests/event-coverage.test.js` verlangt, dass JEDES
-   * Engine-Ereignis einen Behandlungszweig in der Anzeige hat — ein Ereignis
-   * ohne Zweig wäre eine stumme Stelle, genau der Fehler, den jener Test
-   * festhält. Die Anzeige zu erweitern stand hier nicht zur Verfügung, also
-   * wird auch nichts gemeldet. Der Boden ist über Position und Geschwindigkeit
-   * der Figur sichtbar; ein eigenes Ereignis braucht er nicht.
-   */
-  #wendeBodenmaterialAn() {
-    for (const entry of this.#players) {
-      if (!entry.alive) continue;
-      const vorher = this.#bewegung.get(entry.entityId);
-      if (!vorher) continue;
-
-      const x = this.#world.getComponent(entry.entityId, 'Position', 'x') ?? 0;
-      const y = this.#world.getComponent(entry.entityId, 'Position', 'y') ?? 0;
-      /*
-       * Gelesen wird die BODENZEILE, nicht die Fußlinie.
-       *
-       * FUND (belegt, eigener Fehler): Zuerst stand hier `y`. Das ist die
-       * Fußlinie — und die schwankt im Betrieb um einige Pixel (das
-       * CharacterSystem setzt eine landende Figur auf `Oberfläche − halbe
-       * Höhe`, die Schwerkraft zieht sie im nächsten Schritt wieder herunter).
-       * Gemessen lag eine Figur dabei abwechselnd bei y=702 und y=711; bei
-       * einer Materialzelle von 64 px fiel sie damit von einer Zelle in die
-       * nächste, und derselbe Boden meldete einmal „Gummi" und einmal „Eis".
-       *
-       * `y + PLAYER_HALF_HEIGHT` ist der tiefste Punkt des Körpers — dort
-       * berührt er den Grund. Diese Zeile ist über die ganze Schwankung
-       * dieselbe.
-       */
-      const material = this.materialAt(x, y + PLAYER_HALF_HEIGHT);
-      if (material.id === TERRAIN_MATERIAL.NORMAL) continue;
-
-      const stehtJetzt = this.isGrounded(entry.entityId);
-
-      if (material.rutschigkeit > 0 && stehtJetzt) {
-        const vx = this.#world.getComponent(entry.entityId, 'Velocity', 'x') ?? 0;
-        const neu = vx + (vorher.vx - vx) * material.rutschigkeit;
-        this.#world.setComponent(entry.entityId, 'Velocity', 'x', neu);
-      }
-
-      if (material.rueckprall > 0 && !vorher.grounded && stehtJetzt
-        && vorher.vy > RUECKPRALL_MINDESTTEMPO) {
-        const impuls = vorher.vy * material.rueckprall;
-        this.#world.setComponent(entry.entityId, 'Velocity', 'y', -impuls);
-      }
     }
   }
 
@@ -2060,184 +1988,31 @@ export class MatchController {
   }
 
   /**
-   * Wendet eine Wirkung auf ein getroffenes Ziel an (Einfrieren, Schaden über Zeit).
-   * Wirkt nur auf Gegner — eigene Einheiten bleiben verschont.
+   * Wendet eine Wirkung auf ein getroffenes Ziel an (Regeln in `zieleffekte.js`).
+   * Dünner Delegator; wirkt nur auf Gegner.
    */
   #applyTargetEffect(effect, targetId, attackerId, weapon = null) {
-    const ziel = this.#players.find(entry => entry.entityId === targetId);
-    const schuetze = this.#players.find(entry => entry.entityId === attackerId);
-    if (!ziel || !this.isPlayerAlive(targetId)) return null;
-    if (schuetze && ziel.teamId === schuetze.teamId) return null;
-    if (this.#mali) {
-      // Fassung 2: Schaden über Zeit und Einfrieren laufen über die Mali der Schadensart.
-      const mali = this.#mali.treffer(effect, weapon, targetId, attackerId);
-      if (!effect || effect.kind === EFFECT_KIND.DAMAGE_OVER_TIME || effect.kind === EFFECT_KIND.FREEZE) return mali;
-    }
-
-    switch (effect.kind) {
-      case EFFECT_KIND.FREEZE: {
-        const turns = this.#statuses.freeze(targetId, effect.turns);
-        this.#events.emit('frozen', { playerId: targetId, turns, by: attackerId });
-        return { kind: effect.kind, turns };
-      }
-
-      case EFFECT_KIND.PULL: {
-        // Das Ziel wird in Richtung des Schützen versetzt, auf festem Gelände
-        // verankert. Wirkt nur, wenn es sich tatsächlich bewegt hat — sonst
-        // wäre die Wirkung bei einer Wand dazwischen eine stille Nullnummer.
-        const versetzt = this.#pullToward(targetId, attackerId, effect.distance);
-        if (versetzt.dx === 0 && versetzt.dy === 0) return null;
-        this.#events.emit('pulled', { playerId: targetId, by: attackerId, ...versetzt });
-        return { kind: effect.kind, ...versetzt };
-      }
-
-      case EFFECT_KIND.DAMAGE_OVER_TIME: {
-        this.#statuses.addDot(targetId, effect);
-        this.#events.emit('dot_applied', {
-          playerId: targetId,
-          element: effect.element,
-          damagePerTurn: effect.damagePerTurn,
-          turns: effect.turns,
-          by: attackerId,
-        });
-        return { kind: effect.kind, ...effect };
-      }
-
-      case EFFECT_KIND.WATER_PUSH: {
-        /*
-         * Wasserschub: erst wegstoßen, dann fluten.
-         *
-         * Die Reihenfolge ist wesentlich. Der Wasserstand wird an der NEUEN
-         * Position angehoben — würde zuerst geflutet, läge das Wasser auf der
-         * alten Zelle und das Ziel stünde daneben im Trockenen. Die Waffe würde
-         * dann sichtbar nichts bewirken.
-         *
-         * Der Wasserstand wird auf den vorhandenen Wert AUFgesetzt, nicht
-         * gesetzt: Ein Schuss in eine schon geflutete Mulde macht sie tiefer,
-         * statt sie auf den Wert der Waffe zurückzusetzen.
-         */
-        const versetzt = this.#pushAway(targetId, attackerId, effect.distance);
-
-        const neueX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
-        const neueY = this.#world.getComponent(targetId, 'Position', 'y') ?? 0;
-        const vorher = this.waterLevelAt(neueX, neueY);
-        const nachher = clampWaterLevel(vorher + effect.raise);
-        /*
-         * Einen BEREICH fluten, nicht eine Zelle — sonst meldet der Zustand der
-         * Figur weiter 0, weil sie mit ihrem Zentrum zehn Pixel über der
-         * gefluteten Bodenzelle steht (siehe `floodArea`).
-         */
-        const geflutet = this.floodArea(neueX, neueY, nachher);
-
-        /*
-         * Wenn weder Bewegung noch Flutung stattfand, ist die Wirkung eine
-         * stille Nullnummer (z. B. Wand hinter dem Ziel und bereits geflutete
-         * Zelle). Dann `null` zurückgeben — der Aufrufer zählt die Wirkung sonst
-         * als Erfolg, obwohl nichts geschehen ist.
-         */
-        const bewegt = versetzt.dx !== 0 || versetzt.dy !== 0;
-        if (!bewegt && geflutet.zellen === 0) return null;
-
-        this.#events.emit('water_pushed', {
-          playerId: targetId,
-          by: attackerId,
-          dx: versetzt.dx,
-          dy: versetzt.dy,
-          waterBefore: vorher,
-          waterAfter: nachher,
-          cellsFlooded: geflutet.zellen,
-        });
-        return {
-          kind: effect.kind,
-          ...versetzt,
-          waterBefore: vorher,
-          waterAfter: nachher,
-        };
-      }
-
-      default:
-        return null;
-    }
+    return wendeZielwirkungAn(this.#wirkungsQuelle(), effect, targetId, attackerId, weapon);
   }
 
-  /**
-   * Versetzt ein Ziel in Richtung eines Angreifers.
-   *
-   * Die Bewegung ist auf ein Stück pro Anwendung begrenzt und wird auf der
-   * Geländeoberfläche verankert: ein Ziehen durch massives Terrain wäre ein
-   * Fehler, kein Effekt. Der Schütze selbst bewegt sich nicht.
-   *
-   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
-   */
-  #pullToward(targetId, attackerId, distance) {
-    const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
-    const schuetzeX = this.#world.getComponent(attackerId, 'Position', 'x') ?? 0;
-    return this.#shiftToward(targetId, Math.sign(schuetzeX - zielX), distance);
-  }
-
-  /**
-   * Versetzt ein Ziel vom Angreifer WEG — der Gegenpol zu `#pullToward`.
-   *
-   * Beide benutzen dieselbe Schrittsuche: Die Verschiebung wird in Zehn-Pixel-
-   * Schritten geprüft und darf nicht durch massives Gelände führen. Ein Ziel
-   * durch eine Wand zu schieben wäre ein Fehler, kein Effekt.
-   *
-   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
-   */
-  #pushAway(targetId, attackerId, distance) {
-    const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
-    const schuetzeX = this.#world.getComponent(attackerId, 'Position', 'x') ?? 0;
-    return this.#shiftToward(targetId, Math.sign(zielX - schuetzeX), distance);
-  }
-
-  /**
-   * Verschiebt ein Ziel waagerecht um `distance`, verankert auf der
-   * Geländeoberfläche.
-   *
-   * @param {number} richtung - -1 oder 1; 0 bedeutet keine Bewegung
-   * @returns {{dx:number, dy:number}} tatsächliche Verschiebung
-   */
-  #shiftToward(targetId, richtung, distance) {
-    const zielX = this.#world.getComponent(targetId, 'Position', 'x') ?? 0;
-    const zielY = this.#world.getComponent(targetId, 'Position', 'y') ?? 0;
-    if (richtung === 0) return { dx: 0, dy: 0 };
-
-    // In kleinen Schritten prüfen, damit das Ziel nicht durch eine Wand springt.
-    const schritt = 10;
-    let erreicht = 0;
-    for (let d = schritt; d <= distance; d += schritt) {
-      const kandidatX = zielX + richtung * d;
-      if (kandidatX < PLAYER_HALF_WIDTH || kandidatX > this.width - PLAYER_HALF_WIDTH) break;
-      const surface = this.surfaceYAt(Math.round(kandidatX));
-      if (surface < 0) break;
-      /*
-       * Kein Sprung auf eine Klippe.
-       *
-       * Fund (belegt): Die Verschiebung verankert das Ziel auf der
-       * Geländeoberfläche der neuen Stelle. Stand dort ein Hügel, wurde das Ziel
-       * katapultiert statt geschoben — gemessen: 120 px seitwärts und **115 px
-       * nach oben** in einem Schritt, mitten auf einen Berggipfel. Ein Erdstoß,
-       * der jemanden auf eine Klippe setzt, ist kein Effekt, sondern ein Fehler.
-       *
-       * Der Höhenunterschied wird deshalb begrenzt: Die Verschiebung endet, wo
-       * der Boden mehr als `MAX_SCHUB_STEIGUNG` über der Fußposition liegt.
-       * Bezugspunkt ist die FUSSPOSITION (`zielY + PLAYER_HALF_HEIGHT`), weil
-       * dort der Bodenkontakt stattfindet.
-       */
-      if (Math.abs(surface - (zielY + PLAYER_HALF_HEIGHT)) > MAX_SHIFT_SLOPE) break;
-      if (this.#terrain.isSolid(Math.floor(kandidatX), Math.floor(surface - PLAYER_HALF_HEIGHT))) break;
-      erreicht = d;
-    }
-
-    if (erreicht === 0) return { dx: 0, dy: 0 };
-
-    const neueX = zielX + richtung * erreicht;
-    const neueY = this.surfaceYAt(Math.round(neueX));
-    this.#world.setComponent(targetId, 'Position', 'x', neueX);
-    this.#world.setComponent(targetId, 'Position', 'y', neueY);
-    this.#world.setComponent(targetId, 'Velocity', 'x', 0);
-    this.#world.setComponent(targetId, 'Velocity', 'y', 0);
-    return { dx: neueX - zielX, dy: neueY - zielY };
+  /** Die Quelle für `zieleffekte.js` — genau die Werte, die das Modul liest. */
+  #wirkungsQuelle() {
+    return {
+      players: this.#players,
+      isPlayerAlive: id => this.isPlayerAlive(id),
+      mali: this.#mali,
+      statuses: this.#statuses,
+      events: this.#events,
+      world: this.#world,
+      width: this.width,
+      surfaceYAt: x => this.surfaceYAt(x),
+      isSolid: (x, y) => this.#terrain.isSolid(x, y),
+      waterLevelAt: (x, y) => this.waterLevelAt(x, y),
+      floodArea: (x, y, level) => this.floodArea(x, y, level),
+      bewegung: this.#bewegung,
+      materialAt: (x, y) => this.materialAt(x, y),
+      isGrounded: id => this.isGrounded(id),
+    };
   }
 
   /**
