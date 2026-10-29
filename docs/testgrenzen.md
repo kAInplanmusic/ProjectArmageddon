@@ -181,14 +181,23 @@ dass jemand entscheidet.
 
 ---
 
-## Bildvergleiche: ein Gate für EINEN Rechner, nicht für die CI
+## Bildvergleiche
 
-`tests/e2e/visuell.spec.mjs` vergleicht Menü, Lobby und HUD gegen abgelegte
+**Stand 2026-10-29: `visuell.spec` läuft auch in der CI.** Es vergleicht nicht mehr
+Pixel, sondern Struktur (`tests/e2e/helfer/struktur-vergleich.mjs`: Kanten und
+Flächenfarben mit Spielraum, Häufung fehlender Kanten). Auf einem GitHub-Runner
+bestand es zweimal 6/6 gegen die auf einem Entwicklungsrechner erzeugten Bilder.
+Belege und Grenzen: `docs/offene-punkte.md` §4a. Gesperrt bleibt in der CI nur
+`vergleich-screenshots.spec` (es erzeugt Bilder und überschreibt getrackte Dateien).
+
+Der Rest dieses Abschnitts ist der **Stand vom 2026-10-25** und erklärt, warum das
+frühere Pixelverfahren in der CI nicht trug.
+
+### Warum das Pixelverfahren nicht in die CI gehörte (historisch)
+
+`tests/e2e/visuell.spec.mjs` verglich Menü, Lobby und HUD damals gegen abgelegte
 Bilder (`tests/e2e/visuell.spec.mjs-snapshots/`), Toleranz
-`maxDiffPixelRatio: 0.02`. Das ist ein gutes Gate — aber nur dort, wo die Bilder
-entstanden sind.
-
-### Warum es nicht in die CI gehört
+`maxDiffPixelRatio: 0.02`.
 
 Die Bilder hängen an der **Render-Umgebung**: Schriftmetriken, Hinting,
 Rasterung. Der Dateiname trägt nur `-chromium-linux`; zwei verschiedene
@@ -213,9 +222,9 @@ Bildfehler nicht mehr auf.
 
 - **Lokal** (Variable nicht gesetzt): Bildvergleiche laufen und **sind** das Gate.
   Vor dem Übergeben laufen lassen.
-- **In der CI** setzt `.github/workflows/ci.yml` `PA_OHNE_BILDVERGLEICH=1`. Die
-  Tests werden dann als **übersprungen mit Begründung** gemeldet — sie
-  verschwinden nicht stillschweigend.
+- **In der CI** setzt `.github/workflows/ci.yml` `PA_OHNE_BILDVERGLEICH=1` — seit
+  2026-10-29 nur noch für `vergleich-screenshots.spec`; die Tests werden dann als
+  **übersprungen mit Begründung** gemeldet. `visuell.spec` läuft dort mit.
 
 ### Wenn ein Vergleich rot wird
 

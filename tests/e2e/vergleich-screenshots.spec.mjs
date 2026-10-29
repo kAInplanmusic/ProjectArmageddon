@@ -28,9 +28,9 @@ import { ReplayRecorder } from '../../src/engine/replay.js';
  */
 
 /*
- * NUR LOKAL — wie die Bildvergleiche (`visuell.spec.mjs`), aus demselben
- * Grund: Die Bilder haengen an der Render-Umgebung (Schriftmetriken,
- * Rasterung), nicht nur am Code. Gemessen am 2026-10-25 im Volllauf: 27
+ * NUR LOKAL. (`visuell.spec.mjs` laeuft seit 2026-10-29 auch in der CI; hier
+ * bleibt die Sperre, weil diese Spezifikation Bilder ERZEUGT.) Die Bilder
+ * haengen an der Render-Umgebung (Schriftmetriken, Rasterung), nicht nur am Code. Gemessen am 2026-10-25 im Volllauf: 27
  * Bilder aenderten sich, ohne dass sich eine Zeile Produktcode aenderte —
  * derselbe Code, ein anderer Lauf.
  *

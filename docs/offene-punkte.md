@@ -154,8 +154,16 @@ einem fehlenden Element strukturell nicht zu unterscheiden; ein Vergleich, der
 sie durchließe, würde auch fehlende Knöpfe durchlassen.
 
 **Was bleibt offen:** Ob die CI-Runner wie dieser Rechner rendern, ist nicht
-gemessen, deshalb bleibt `PA_OHNE_BILDVERGLEICH=1` in der CI gesetzt. Ein Lauf
-dort entscheidet.
+gemessen.
+
+**Gemessen auf der CI (2026-10-29):** Ein Probe-Workflow auf einem eigenen Branch
+ließ `visuell.spec` auf einem GitHub-Runner (`ubuntu-latest`) OHNE Sperre gegen die
+auf dem Entwicklungsrechner erzeugten Baselines laufen: **6 von 6 grün, zweimal**
+(auch die Lobby, die gegen die Altbilder des früheren fremden Rechners rot war).
+Daraufhin ist die Sperre für `visuell.spec` aufgehoben; `PA_OHNE_BILDVERGLEICH=1`
+sperrt in der CI nur noch `vergleich-screenshots.spec`, das Bilder erzeugt. Zwei
+Läufe sind eine kleine Stichprobe: Wird die Spec auf einem Runner rot, zuerst messen
+(stabil? Code? Versatz?, siehe Kopf von `visuell.spec.mjs`), nicht die Grenzen lockern.
 
 **Berichtigung (2026-10-29, gemessen):** Die frühere Vermutung, die Schrift sei nicht
 gebündelt, war falsch. Im Browser gilt `--font: 'Exo 2', 'Segoe UI', …` (aus
@@ -190,9 +198,9 @@ git checkout -- docs/vergleich-alternativspiele-2026-10-19/
 | :-- | :-- | :-- |
 | `SPR-4` | Fraktion „pixel" hat keinen gemeinsamen Stil (Füchse gleichen den `beasts`-Füchsen, `ethereo` flach neongrün, `shieldmon` ein Igel). **Leitbild festlegen** — das ist keine Codefrage. | MASTERDOTO Z64 |
 | `SPR-8` | Stilbruch Haustiere: Günther/Cookie flach-cartoonig gegen gemalte Figuren. Bewusst lassen oder angleichen? | MASTERDOTO Z72 |
-| `LOOK-2` | Tiefenstaffel: drei Ebenen (entsättigte Kulisse, scharfes Gelände, Vordergrundpartikel) nach den Referenzkarten | MASTERDOTO Z6873 |
-| `LOOK-3` | Lava-Glühen als glühender Stoff mit warmen Lichtakzenten nach `ref-3-vulkanschmiede-hud` | MASTERDOTO Z6874 |
-| `LOOK-4` | Begehbare Innenräume und Etagen nach `ref-6-hochhaus-schnitt` und `ref-4-turmruine` | MASTERDOTO Z6875 |
+| `LOOK-2` | Tiefenstaffel: Ebene 1 (Sättigungsdeckel der Bildkulissen) und Ebene 3 (Vordergrundschicht aus `drawAmbient` und `zeichneWetterVorn`) sind gebaut. Offen nur: Sättigungsdeckel für die GENERATIVE Kulisse, eine Sichtfrage (Messwerte in MASTERDOTO, LOOK-2-Nachtrag). | MASTERDOTO LOOK-2 |
+| `LOOK-3` | Lava-Glühen ist umgesetzt (dreistufige Füllung, additives Glühen). Offen nur: ein Prüfbild mit gefüllter Lava gegen `ref-3-vulkanschmiede-hud` — die Zellen entstehen nur bei aktiver Feuerfassung 2, in einer Sonde war `spalten` 0. | MASTERDOTO LOOK-3 |
+| `LOOK-4` | **Erledigt** (alle vier Stufen, 2026-10-25): Hohlräume, Etagen, ersteigbarer Schacht, Innenlesbarkeit. Nur das Kästchen in MASTERDOTO war nicht nachgezogen. | `docs/auftraege/look4-innenraeume.md` |
 | `Z246` | Erste Probe der Abschaltsicherung **auf dem Knoten** (`--trocken`, dann echt, dann `systemctl stop` und Journalzeile); Cloud-Ebene ist nicht gegen echtes Hetzner getestet. Nach AGENTS.md §5/§7 entscheidet und führt das der Auftraggeber aus — ein Agent mietet oder startet nichts. | MASTERDOTO Z246 |
 **`MAHL-1` — ENTSCHIEDEN UND UMGESETZT (2026-10-25).** Valhalla beginnt jetzt zufaellig in **Runde 8-14**, bei grossen Partien (mehr als 8 Spieler, Karte „gross“/„krieg“) in **Runde 12-20** — wieder rundenbasiert, wie vor dem 2026-10-13. Nachmessung: Audit-Seeds 101…505 Sturm ab Runde 9-12, **1 von 5** Partien endet vorher; `check:maelstrom` (Seeds 1000…1685) Sturm **exakt in der gezogenen Runde**, 0 Netzfaelle. Begruendung, Umsetzung und Belege: `MASTERDOTO.md`, Eintrag „Mahlstrom-Tempo“ vom 2026-10-25.
 

@@ -30,6 +30,11 @@ import { vergleicheStruktur, GRENZEN } from './helfer/struktur-vergleich.mjs';
  * unterscheiden. Gegen die Altbilder des fremden Rechners (VIS-1) besteht das
  * HUD, die Lobby nicht (7,8 % Kanten, Umbruch der Zeile „Fraktion je Team“).
  *
+ * **Läuft überall, auch in der CI** (seit 2026-10-29). Belegt: Die Baselines entstanden auf
+ * einem Entwicklungsrechner; zwei Läufe auf einem GitHub-Runner (Branch
+ * `ci/bildvergleich-probe`, ohne Sperre) ergaben je 6 von 6 grün. Das alte
+ * Pixelverfahren war dort nicht tragfähig (VIS-1).
+ *
  * Mit `PA_UX_LOOK=1` legt der Lauf zusätzlich die Bilder unter
  * `test-results/ux-look/` ab (nicht versioniert, Beleg für den UX-Audit).
  *
@@ -84,23 +89,6 @@ async function pruefeBild(page, name) {
   expect(urteil.ok, `${name}: ${urteil.grund}`).toBe(true);
 }
 
-/*
- * NUR LOKAL — der Grund steht in `docs/testgrenzen.md`, Abschnitt „Bildvergleiche".
- *
- * Die abgelegten Bilder entstanden auf einem Rechner. Der Strukturvergleich (oben)
- * verträgt Rasterung und kleinen Versatz, aber NICHT andere Schriftbreiten mit
- * anderem Zeilenumbruch: gegen die Altbilder des fremden Rechners besteht von zwei
- * Bildern eines (siehe Kopf). Ob die CI-Runner gleich rendern, ist NICHT gemessen;
- * erst ein Lauf dort kann die Sperre aufheben.
- *
- * Deshalb setzt die CI `PA_OHNE_BILDVERGLEICH=1`. Die Tests verschwinden dabei
- * NICHT stillschweigend, sondern erscheinen als übersprungen MIT dieser
- * Begründung — ein Gate, das man nicht sieht, ist keines.
- *
- * Lokal (Variable nicht gesetzt) laufen sie normal und sind das Gate.
- */
-const OHNE_BILDVERGLEICH = process.env.PA_OHNE_BILDVERGLEICH === '1';
-
 const LOOK_DIR = fileURLToPath(new URL('../../test-results/ux-look/', import.meta.url));
 
 /** Schreibt das aktuelle Bild nur auf Wunsch als Audit-Beleg. */
@@ -113,11 +101,6 @@ async function merkeLook(page, name) {
 for (const [formatName, viewport] of Object.entries(FORMATE)) {
   test.describe(`Format ${formatName}`, () => {
     test.use({ viewport });
-
-    // In der CI übersprungen, mit sichtbarer Begründung (siehe oben und
-    // docs/testgrenzen.md). Lokal ist diese Zeile wirkungslos.
-    test.skip(OHNE_BILDVERGLEICH,
-      'Bildvergleiche nur auf dem Rechner, auf dem die Baselines entstanden sind — siehe docs/testgrenzen.md');
 
     test(`Menü ${formatName}`, async ({ page }) => {
       const fehler = await oeffneMenue(page);

@@ -7254,6 +7254,13 @@ Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-que
   (Vordergrundpartikel als eigene Ebene) ist NICHT gebaut — Funken, Rauch und Glut liegen als Effekte vor,
   aber keine eigene Vordergrundschicht. Und die generative Kulisse (`zeichneKulisse`) hat den Deckel nicht;
   sie ist ohne Bildwahl aktiv.
+  *Nachtrag 2026-10-29 (Ist-Stand nachgeprüft):* Die Vordergrundschicht GIBT ES: `Renderer#draw` zeichnet am
+  Ende `drawAmbient(…, imVordergrund = true)` (Regen, Schnee, Funken, Glühwürmchen) und `zeichneWetterVorn`
+  VOR der Vignette, also zwischen Kamera und Figuren; Ebene 3 ist damit erfüllt. Offen bleibt allein der
+  Sättigungsdeckel für die generative Kulisse. Gemessen (HSV-Sättigung der Himmelsverläufe in `SKY_KINDS`):
+  mittlere Sättigung 0,09 (Nebel) bis 0,87 (Abgrund), 13 von 21 Himmeln über dem Deckel 0,45 der Bildkulissen;
+  das sind aber dunkle Verläufe, deren Sättigungswert hoch, deren Helligkeit niedrig ist. Ob ein Deckel besser
+  aussieht, ist eine Sichtfrage; ohne Vergleichsbilder wird er nicht gebaut.
 - [x] **LOOK-3 Lava-Glühen — UMGESETZT (2026-10-25), mit Ehrlichkeit zum Ist-Stand:** Ein additives radiales
   Glühen je Lavazelle gab es bereits (`FeuerOptik.zeichne`, Sprite `lavaGluehen`, `lighter`, Alpha 0,5).
   Neu: Die Füllung war pro Bild EIN Farbton (eine gleichförmige Platte) und ist jetzt dreistufig aus einem
@@ -7264,7 +7271,7 @@ Quelle: `docs/design-vorlagen/look-vorgabe-gelaende.md` und `assets/gelaende-que
   `biome-material.spec.mjs` 2/2 im echten Browser (Smoke). **Grenze:** Ein Bildvergleich gegen
   `ref-3-vulkanschmiede-hud` wurde in dieser Sitzung NICHT gemacht — die Zellen entstehen erst durch
   Lavazellen-Ereignisse, ein Prüfbild mit gefüllter Lava steht noch aus.
-- [ ] **LOOK-4 Innenräume.** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und
+- [x] **LOOK-4 Innenräume — ALLE STUFEN ERLEDIGT (2026-10-25, Kästchen am 2026-10-29 nachgezogen; Belege in `docs/auftraege/look4-innenraeume.md`).** Begehbare Hohlräume und Etagen nach `ref-6-hochhaus-schnitt` und
   `ref-4-turmruine`. **Entwurf liegt vor (2026-10-25): `docs/auftraege/look4-innenraeume.md`** —
   Ist-Stand mit Fundstellen, vier Stufen (Prüfung → Hohlräume → Etagen/Treppen → Lesbarkeit),
   vorab festgelegte Gates und die drei Entscheidungen, die davor nötig sind (Decken durchschlagbar?

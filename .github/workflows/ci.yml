@@ -78,15 +78,14 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: E2E-Tests
-        # Bildvergleiche sind hier ABSICHTLICH aus: ihre Baselines hängen an der
-        # Render-Umgebung (Schriftmetriken, Rasterung), nicht nur am Code.
-        # Gemessen am 2026-10-25: derselbe Code auf einem anderen Rechner ergab
-        # 104.130 abweichende Pixel (31,6 %). Ein Vergleich auf einem fremden
-        # Runner prüft den Unterschied zwischen zwei Rechnern, nicht das Spiel.
+        # `visuell.spec` (Menü, Lobby, HUD) läuft hier MIT: Der Strukturvergleich
+        # (tests/e2e/helfer/struktur-vergleich.mjs) bestand auf diesem Runner zweimal
+        # 6/6 gegen die auf einem Entwicklungsrechner erzeugten Baselines.
         #
-        # Die Tests verschwinden dabei nicht: sie werden als ÜBERSPRUNGEN mit
-        # Begründung gemeldet. Lokal (Variable nicht gesetzt) laufen sie und sind
-        # dort das Gate. Einzelheiten: docs/testgrenzen.md.
+        # Die Variable sperrt nur noch `vergleich-screenshots.spec`: Es ERZEUGT die
+        # Bilder des Vergleichsdossiers und überschreibt getrackte Dateien — auf einem
+        # Runner entstünden Bilder einer fremden Maschine. Einzelheiten:
+        # docs/testgrenzen.md.
         env:
           PA_OHNE_BILDVERGLEICH: '1'
         run: npm run test:e2e
