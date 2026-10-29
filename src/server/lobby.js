@@ -73,6 +73,11 @@ export const MAX_LOBBY_FIGURES = 40;
  */
 export const MAX_PLAYERS_PER_TEAM = 6;
 
+/** Längste erlaubte Zeichenkette für Namen und Kennungen aus Clientnachrichten. */
+export const NAME_MAX_ZEICHEN = 64;
+/** Längster erlaubter Token (der Server vergibt UUIDs mit 36 Zeichen). */
+export const TOKEN_MAX_ZEICHEN = 128;
+
 export class LobbyManager {
   #lobbies = new Map();
   #reconnectWindowMs;
@@ -104,8 +109,8 @@ export class LobbyManager {
       throw new Error('seed muss eine ganze Zahl von 0 bis 4294967295 sein');
     }
     for (const [feld, wert] of [['preset', preset], ['kartentyp', kartentyp], ['hostName', hostName]]) {
-      if (wert !== null && wert !== undefined && (typeof wert !== 'string' || wert.length > 64)) {
-        throw new Error(`${feld} muss eine Zeichenkette mit höchstens 64 Zeichen sein`);
+      if (wert !== null && wert !== undefined && (typeof wert !== 'string' || wert.length > NAME_MAX_ZEICHEN)) {
+        throw new Error(`${feld} muss eine Zeichenkette mit höchstens ${NAME_MAX_ZEICHEN} Zeichen sein`);
       }
     }
     for (const [feld, wert] of [['playersPerTeam', playersPerTeam], ['unitsPerPlayer', unitsPerPlayer]]) {
@@ -376,6 +381,18 @@ export class LobbyManager {
   join(lobbyId, { name = 'Spieler', token = null } = {}) {
     const lobby = this.get(lobbyId);
     if (!lobby) throw new Error('Lobby nicht gefunden');
+    /*
+     * Eingaben des Clients prüfen (AGENTS.md §6). Fund (Audit 2026-10-29): `name` kam ungeprüft aus der
+     * Nachricht; ein Objekt oder 400 Zeichen landeten in `seat.name`, in `describe()`, in der Sicherung
+     * und auf den Bildschirmen der Mitspieler. Dieselbe Grenze wie bei `create` (`hostName`).
+     */
+    if (name === null) name = 'Spieler'; // `create` lässt `hostName: null` zu
+    if (typeof name !== 'string' || name.length > NAME_MAX_ZEICHEN) {
+      throw new Error(`name muss eine Zeichenkette mit höchstens ${NAME_MAX_ZEICHEN} Zeichen sein`);
+    }
+    if (token !== null && (typeof token !== 'string' || token.length > TOKEN_MAX_ZEICHEN)) {
+      throw new Error('token muss eine Zeichenkette oder null sein');
+    }
 
     // Wiederverbindung: bekannter Token holt ALLE seine Plätze zurück.
     if (token) {

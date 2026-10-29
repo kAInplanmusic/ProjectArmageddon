@@ -10,7 +10,7 @@
  */
 import { createServer as createHttpServer } from 'node:http';
 import { readFileSync, statSync } from 'node:fs';
-import { extname, resolve } from 'node:path';
+import { extname, resolve, sep } from 'node:path';
 import { WebSocketServer } from 'ws';
 import { MatchController } from '../engine/match.js';
 import { LobbyManager, LOBBY_STATUS } from './lobby.js';
@@ -178,6 +178,8 @@ class LobbySession {
 
     /** Aufzeichnung für Persistenz und Replay. */
     this.recorder = new ReplayRecorder({
+      // Uhr von außen: `src/engine` liest die Wanduhr nicht selbst (AGENTS.md §2).
+      erstelltAm: Date.now(),
       seed: this.match.seedManager.baseSeed,
       teams: lobby.teams,
       playersPerTeam: lobby.playersPerTeam,
@@ -1207,6 +1209,9 @@ class LobbySession {
 }
 
 export class GameServer {
+  /** Obergrenze der Adressen im Verlauf der Lobby-Anlegungen (siehe `#createVerlaufBeschneiden`). */
+  static MAX_CREATE_ADRESSEN = 5000;
+
   #httpServer;
   #wsServer;
   #sessions = new Map();
@@ -1508,7 +1513,7 @@ export class GameServer {
              * niemand ein: Es gibt keine Bot-KI.
              */
             const session = new LobbySession(target, {
-              onEmpty: id => this.#sessions.delete(id),
+              onEmpty: id => this.#sitzungBeendet(id),
               replayEntries: options.replayEntries,
               replayTotalTicks: options.replayTotalTicks,
               turnPauseTicks: options.turnPauseTicks,
@@ -1528,7 +1533,7 @@ export class GameServer {
               metrics: this.metrics,
               logger: this.logger,
             });
-            this.#sessions.set(target.id, session);
+            this.#sitzungRegistrieren(target.id, session);
             return session;
           },
         });
@@ -1645,12 +1650,58 @@ export class GameServer {
       if (now - seit < this.lobbyLeerTtlMs) continue;
       session?.stop();
       this.#sessions.delete(lobby.id);
+      this.#beendeteMatches.delete(lobby.id);
       this.#lobbies.close(lobby.id);
       this.#leerBeobachtet.delete(lobby.id);
       this.logger.info('lobby_verwaist_entfernt', 'Lobby ohne Verbindung entfernt', { lobbyId: lobby.id });
     }
     for (const id of this.#leerBeobachtet.keys()) if (!sichtbar.has(id)) this.#leerBeobachtet.delete(id);
+    for (const id of this.#beendeteMatches.keys()) if (!sichtbar.has(id)) this.#beendeteMatches.delete(id);
     return entfernt;
+  }
+
+  /**
+   * Die Sitzung für ein SPIELKOMMANDO — nur wenn die Simulation läuft.
+   *
+   * Fund (Audit 2026-10-29): Die Kommandos prüften nur, DASS eine Sitzung existiert. Sie entsteht aber
+   * schon beim ersten Beitritt und tickt erst, wenn alle Teams besetzt sind (nach einem Neustart: wenn
+   * alle wieder verbunden sind). Davor wurden Schüsse, Züge und Aufgaben angenommen und aufgezeichnet,
+   * während die Zeit stand — der Gegner sah nichts, das Replay enthielt sie trotzdem.
+   *
+   * @returns {LobbySession|null} `null`, wenn die Ablehnung schon gesendet wurde
+   * @throws {Error} wenn es gar keine Sitzung gibt
+   */
+  #laufendeSitzung(socket, context) {
+    const session = this.#sessions.get(context.lobbyId);
+    if (!session) throw new Error('Keine aktive Sitzung');
+    if (!session.laeuft) {
+      this.#fehlerSenden(socket, ['Das Match läuft noch nicht — es fehlen verbundene Mitspieler']);
+      return null;
+    }
+    return session;
+  }
+
+  /** Gehört der Token inzwischen einem ANDEREN Socket als `socket`? Dann ist `socket` veraltet. */
+  #neuerSocketBesitztToken(session, token, socket) {
+    return Boolean(session) && session.clients.has(token) && session.clients.get(token) !== socket;
+  }
+
+  /**
+   * Die Sitzung hat sich beendet (`onEmpty`): Ergebnis merken, Sitzung entfernen.
+   * @param {string} id - Lobby-ID
+   */
+  #sitzungBeendet(id) {
+    const session = this.#sessions.get(id);
+    if (session?.match?.status === 'gameover') {
+      this.#beendeteMatches.set(id, { winnerTeamId: session.match.winnerTeamId, rounds: session.match.round });
+    }
+    this.#sessions.delete(id);
+  }
+
+  /** Neue Sitzung für diese Lobby: ein früheres Ergebnis gilt nicht mehr. */
+  #sitzungRegistrieren(id, session) {
+    this.#beendeteMatches.delete(id);
+    this.#sessions.set(id, session);
   }
 
   get lobbyManager() {
@@ -1679,6 +1730,15 @@ export class GameServer {
 
   #createVerlauf;
   #leerBeobachtet;
+  /**
+   * Ergebnis entschiedener Matches je Lobby-ID (`{ winnerTeamId, rounds }`).
+   *
+   * Beim Match-Ende löscht die Sitzung sich selbst (`#finish` → `onEmpty`). Ohne diese Ablage
+   * wüsste der Server danach nicht mehr, wie das Match ausging, und könnte einem Client, der
+   * `match_over` verpasst hat, das Ende nicht erneut melden (siehe `CONTROL.PING`).
+   * Aufgeräumt wird zusammen mit der Lobby (`pruneLobbies`).
+   */
+  #beendeteMatches = new Map();
 
   async #handleHttp(request, response) {
     const url = new URL(request.url, 'http://localhost');
@@ -1810,11 +1870,31 @@ export class GameServer {
   /** Höchstens `maxLobbyAnlegenProMinute` neue Lobbys je Adresse und Minute. */
   #createErlaubt(adresse, now = Date.now()) {
     const fenster = (this.#createVerlauf.get(adresse) ?? []).filter(t => now - t < 60_000);
-    if (fenster.length >= this.maxLobbyAnlegenProMinute) { this.#createVerlauf.set(adresse, fenster); return false; }
+    if (fenster.length >= this.maxLobbyAnlegenProMinute) { this.#createVerlauf.delete(adresse); this.#createVerlauf.set(adresse, fenster); return false; }
     fenster.push(now);
+    // Löschen + Setzen hält die Map nach „zuletzt benutzt" geordnet (älteste Adresse zuerst).
+    this.#createVerlauf.delete(adresse);
     this.#createVerlauf.set(adresse, fenster);
-    if (this.#createVerlauf.size > 5000) this.#createVerlauf.clear();
+    if (this.#createVerlauf.size > GameServer.MAX_CREATE_ADRESSEN) this.#createVerlaufBeschneiden(now);
     return true;
+  }
+
+  /**
+   * Hält den Verlauf der Lobby-Anlegungen klein, OHNE Kontingente zu verschenken.
+   *
+   * Fund (Audit 2026-10-29): `clear()` bei mehr als 5000 Adressen gab JEDER Adresse — auch der
+   * des Angreifers, der die Grenze erst ausgelöst hatte — sofort ein frisches Kontingent. Jetzt
+   * fallen zuerst Adressen ohne Eintrag im Minutenfenster weg (sie haben ohnehin kein Kontingent
+   * verbraucht), danach nur die am längsten unbenutzten.
+   */
+  #createVerlaufBeschneiden(now) {
+    for (const [adresse, zeiten] of this.#createVerlauf) {
+      if (!zeiten.some(t => now - t < 60_000)) this.#createVerlauf.delete(adresse);
+    }
+    for (const adresse of this.#createVerlauf.keys()) {
+      if (this.#createVerlauf.size <= GameServer.MAX_CREATE_ADRESSEN) break;
+      this.#createVerlauf.delete(adresse);
+    }
   }
 
   #readBody(request) {
@@ -1857,7 +1937,12 @@ export class GameServer {
           method: request.method,
           error: error.message,
         });
-        resolve({});
+        // Unvollständig gelesen: ablehnen, nicht still durch einen Standard-Body ersetzen.
+        resolve(null);
+      });
+      // Abgebrochene Anfrage ohne `end`: sonst bliebe das Versprechen offen.
+      request.on('close', () => {
+        if (!request.complete) resolve(null);
       });
     });
   }
@@ -1942,7 +2027,7 @@ export class GameServer {
       if (!context.lobbyId || !context.token) return;
       const session = this.#sessions.get(context.lobbyId);
       // Hat dieser Token inzwischen einen NEUEREN Socket, ist dies ein veraltetes close (Audit 2026-10-13).
-      if (session && session.clients.get(context.token) !== socket && session.clients.has(context.token)) return;
+      if (this.#neuerSocketBesitztToken(session, context.token, socket)) return;
       session?.detach(context.token);
       this.#lobbies.disconnect(context.lobbyId, context.token);
       // B-9: Verbliebene Spieler müssen erfahren, dass ein Mitspieler getrennt ist.
@@ -1982,12 +2067,13 @@ export class GameServer {
      */
     if (!mengenGrenze.erlaube()) {
       if (this.metrics) this.metrics.messagesRateLimited += 1;
-      if (mengenGrenze.verworfeneInFolge === 1) {
+      // Nur beim Eintritt in die Überlast melden (Überhang 0 → 1), nicht bei jedem Verwurf der Flut.
+      if (mengenGrenze.ueberhang === 1) {
         this.logger.warn('rate_limited', 'Nachrichten über der Mengengrenze verworfen', {
           lobbyId: context.lobbyId,
         });
       }
-      if (mengenGrenze.verworfeneInFolge >= RATE_TRENNEN_NACH) {
+      if (mengenGrenze.ueberhang >= RATE_TRENNEN_NACH) {
         this.logger.warn('rate_limit_disconnect', 'Verbindung wegen Dauerüberlast getrennt', {
           lobbyId: context.lobbyId,
         });
@@ -2081,8 +2167,16 @@ export class GameServer {
           // Platz blieb sonst „verbunden" und hielt sein Match am Laufen).
           if (context.lobbyId && context.token) {
             const alt = this.#sessions.get(context.lobbyId);
-            if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
-            this.#lobbies.disconnect(context.lobbyId, context.token);
+            /*
+             * Fund (Audit 2026-10-29): `disconnect` lief bedingungslos. Hat der Token inzwischen einen
+             * NEUEREN Socket (Wiederverbindung), trennte der veraltete Socket mit seinem zweiten JOIN
+             * den Platz des aktiven Spielers. Wie im `close`-Zuhörer darf nur trennen, wem der Token
+             * noch gehört.
+             */
+            if (!this.#neuerSocketBesitztToken(alt, context.token, socket)) {
+              if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
+              this.#lobbies.disconnect(context.lobbyId, context.token);
+            }
             // Felder setzen statt das Objekt zu ersetzen: `context` gehoert dem
             // Aufrufer (#handleConnection) und wird dort vom close-Zuhoerer
             // gelesen. Ein `context = {...}` wuerde hier nur den Parameter
@@ -2129,12 +2223,12 @@ export class GameServer {
              * die Simulation läuft nicht, damit niemand ins Leere zieht.
              */
             session = new LobbySession(lobby, {
-              onEmpty: id => this.#sessions.delete(id),
+              onEmpty: id => this.#sitzungBeendet(id),
               ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
               metrics: this.metrics,
               logger: this.logger,
             });
-            this.#sessions.set(lobbyId, session);
+            this.#sitzungRegistrieren(lobbyId, session);
             /*
              * ============ ENTSCHEIDUNG (Fund W5): Status nachziehen ============
              *
@@ -2280,40 +2374,40 @@ export class GameServer {
         }
 
         case CONTROL.INPUT: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = session.handleInput(context.token, message);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
         }
 
         case CONTROL.SELECT_WEAPON: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = session.handleWeaponSelect(context.token, message.weaponId);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
         }
 
         case CONTROL.JUMP: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = session.handleJump(context.token, message);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
         }
 
         case CONTROL.MOVE: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = session.handleMove(context.token, message);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
         }
 
         case CONTROL.SKIP_PAUSE: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = session.handleSkipPause(context.token);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
@@ -2321,16 +2415,16 @@ export class GameServer {
 
         case CONTROL.SKIP_TURN:
         case CONTROL.SURRENDER: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = message.t === CONTROL.SURRENDER ? session.handleSurrender(context.token) : session.handleSkipTurn(context.token);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
         }
 
         case CONTROL.DROP_WEAPON: {
-          const session = this.#sessions.get(context.lobbyId);
-          if (!session) throw new Error('Keine aktive Sitzung');
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
           const result = session.handleDropWeapon(context.token, message.weaponId);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
@@ -2364,11 +2458,20 @@ export class GameServer {
            * Wiederholung ist folgenlos, weil der Client sie erkennt.
            */
           if (context.lobbyId) {
-            const fertigeSitzung = this.#sessions.get(context.lobbyId);
-            if (fertigeSitzung?.match?.status === 'gameover') {
+            /*
+             * Fund (Audit 2026-10-29): `#finish` löscht die Sitzung über `onEmpty` im selben Schritt;
+             * die Abfrage auf `#sessions` fand nach dem Ende nie etwas, die Wiederholung lief nie.
+             * Das Ergebnis liegt deshalb in `#beendeteMatches`. Gibt es eine NEUE Sitzung
+             * (Wiederspiel), gilt ihr Zustand, nicht das alte Ergebnis.
+             */
+            const live = this.#sessions.get(context.lobbyId);
+            const ergebnis = live
+              ? (live.match?.status === 'gameover' ? { winnerTeamId: live.match.winnerTeamId, rounds: live.match.round } : null)
+              : (this.#beendeteMatches.get(context.lobbyId) ?? null);
+            if (ergebnis) {
               socket.send(controlMessage('match_over', {
-                winnerTeamId: fertigeSitzung.match.winnerTeamId,
-                rounds: fertigeSitzung.match.round,
+                winnerTeamId: ergebnis.winnerTeamId,
+                rounds: ergebnis.rounds,
               }));
             }
           }
@@ -2466,11 +2569,24 @@ function createDistHandler(distDir = 'dist') {
   return (request, response, url) => {
     if (request.method !== 'GET' && request.method !== 'HEAD') return false;
 
-    const relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    let relative;
+    try {
+      relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    } catch {
+      return false; // fehlerhafte Prozentkodierung (URIError) ist keine Datei
+    }
+    if (relative.includes('\0')) return false;
     const candidate = resolve(root, relative === '' ? 'index.html' : relative);
 
-    // Pfadausbruch verhindern.
-    if (!candidate.startsWith(root)) return false;
+    /*
+     * Pfadausbruch verhindern.
+     *
+     * Fund (Audit 2026-10-29): `candidate.startsWith(root)` ohne Trenner ließ
+     * `<cwd>/dist-old/…` durch, weil `<cwd>/dist` ein Präfix davon ist; ein
+     * kodiertes `..%2Fdist-old%2Fgeheim.json` wird erst NACH dem Parsen der URL zu `../`.
+     * Erlaubt ist nur das Wurzelverzeichnis selbst oder ein Pfad darunter.
+     */
+    if (candidate !== root && !candidate.startsWith(root + sep)) return false;
 
     let filePath = candidate;
     try {
