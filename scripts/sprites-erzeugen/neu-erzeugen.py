@@ -10,7 +10,7 @@ Blaetter unter `src/client/assets/` werden erst nach Sichtung und Zuschnitt
 (`schneide.py`) ersetzt.
 
 Schluessel kommen ausschliesslich aus der Umgebung (KIE_API_KEY,
-REPLICATE_API_TOKEN). Dieses Werkzeug liest, druckt und speichert keine Keys.
+REPLICATE_API_TOKEN, TOGETHER_API_KEY). Dieses Werkzeug liest, druckt und speichert keine Keys.
 
 Aufruf:
     # Pilot: eine Figur, ein Blatt, beide Anbieter
@@ -19,8 +19,9 @@ Aufruf:
     # Volle Runde: alle sechs Figuren, drei Blaetter, beide Anbieter
     python3 scripts/sprites-erzeugen/neu-erzeugen.py --ziel /tmp/pa-neu --anbieter beide
 
-    # Nur ein Anbieter
+    # Nur ein Anbieter (kie, rep oder tog = Together AI, FLUX.1 Kontext pro)
     python3 scripts/sprites-erzeugen/neu-erzeugen.py --ziel /tmp/pa-neu --anbieter kie
+    TOGETHER_API_KEY=... python3 scripts/sprites-erzeugen/neu-erzeugen.py --ziel /tmp/pa-neu --anbieter tog --pilot
 """
 import argparse
 import json
@@ -58,19 +59,24 @@ def erzeuge_kie(prompt, quelle, ziel):
     return ergebnis
 
 
+def erzeuge_tog(prompt, quelle, ziel):
+    from tog import tog_gen
+    return tog_gen(prompt, str(quelle), str(ziel))
+
+
 def erzeuge_rep(prompt, quelle, ziel):
     from rep import rep_gen
     ergebnis = rep_gen(prompt, str(quelle), str(ziel))
     return ergebnis
 
 
-ANBIETER = {"kie": erzeuge_kie, "rep": erzeuge_rep}
+ANBIETER = {"kie": erzeuge_kie, "rep": erzeuge_rep, "tog": erzeuge_tog}
 
 
 def main():
     p = argparse.ArgumentParser(description="Figurenblaetter neu erzeugen")
     p.add_argument("--ziel", required=True, help="Zielverzeichnis fuer die Rohblaetter")
-    p.add_argument("--anbieter", default="beide", choices=["kie", "rep", "beide"])
+    p.add_argument("--anbieter", default="beide", choices=["kie", "rep", "tog", "beide"])
     p.add_argument("--figuren", default="", help="Komma-Liste fraktion/figur (leer = alle)")
     p.add_argument("--blaetter", default="", help="Komma-Liste walk,aktion,zustand (leer = alle)")
     p.add_argument("--pilot", action="store_true", help="nur eine Figur, ein Blatt, alle Anbieter")
