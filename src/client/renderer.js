@@ -72,7 +72,7 @@ const FIGUR_SKALA = 1.5;
 const FIGUR_HOCH = -5;
 
 import {
-  findeTreffer, trefferMarke, zuckVersatz, stossRichtung,
+  findeTreffer, trefferMarke, zuckVersatz, stossRichtung, vorhergesagterStoss,
   ruckFuer, ruckAufprall, altereRuck, ruckVersatz,
   ergaenzeNarbe, verlaengereSpur,
   rauchWolke, schreiteRauchFort, rauchDarstellung,
@@ -181,7 +181,7 @@ export class Renderer {
      */
     /** Marken der Treffer (Ring, Zucken, Blitz) — altern wie die Effekte. */
     this.trefferMarken = [];
-    this.einschlaege = [];
+    this.einschlaege = []; this.juengsteSchuesse = [];
     /** Zähler der Einschlagsoptik (Risse, Geröllzellen) für die Prüfung. */
     this.optik = { risse: 0, geroell: 0, letzte: [] };
     /** Letzte Gesundheit je Figur — die Grundlage der Trefferkennung. */
@@ -500,12 +500,18 @@ export class Renderer {
     if (this.einschlaege.length > 8) this.einschlaege.shift();
   }
 
+  /** Merkt einen Schuss für wenige Bilder, damit der Rückstoß eines Direkttreffers vorhergesagt werden kann. */
+  merkeSchuss(playerId, weaponId, angle) {
+    this.juengsteSchuesse.push({ playerId, weaponId, angle, rest: 120 });
+    if (this.juengsteSchuesse.length > 6) this.juengsteSchuesse.shift();
+  }
+
   #ermittleTreffer(state) {
     const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
-    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) }));
-    for (const e of this.einschlaege) e.rest -= 1;
+    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) || vorhergesagterStoss(this.juengsteSchuesse.at(-1)) }));
+    for (const e of this.einschlaege) e.rest -= 1; this.juengsteSchuesse = this.juengsteSchuesse.filter(x => (x.rest -= 1) > 0);
     this.einschlaege = this.einschlaege.filter(e => e.rest > 0);
     const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
     for (const [id, art] of this.schadensArten) { if (art.rest-- <= 0) this.schadensArten.delete(id); }

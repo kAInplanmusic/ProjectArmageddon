@@ -66,6 +66,9 @@ import { begrenze01 } from './mathe.js';
  * periodisch: die Marke lebte ein Bild länger als angekündigt (dieselbe Falle,
  * die in `weaponAnimation.js` dokumentiert ist). 16 ist exakt darstellbar.
  */
+import { stossVektor } from '../engine/stoss.js';
+import { getWaffe } from '../shared/config/waffen-fassung.js';
+
 export const TREFFER_BILDER = 16;
 
 /** Größter Radius des Trefferrings (px). Kleine Treffer bekommen einen kleinen. */
@@ -519,4 +522,19 @@ export function rauchDarstellung(wolke) {
     // Unter 0,34 Deckkraft: mehr wäre eine Wolke, die die halbe Karte verdeckt.
     alpha: 0.34 * lebensanteil,
   };
+}
+
+/**
+ * Vorhersage des Rückstoßes (Waffenfassung 11): Trifft ein Schuss einer Waffe mit `stossRichtung` und gibt es keinen
+ * Einschlag, zeigt das Zucken schon jetzt die Richtung, die der Server dem Ziel gibt (Seite nach dem Schusswinkel,
+ * Betrag und Richtung aus `engine/stoss.js`). Der Server bleibt maßgeblich; die Lage der Figur kommt aus dem Snapshot.
+ *
+ * @param {{weaponId:string, angle:number}|null|undefined} schuss
+ * @returns {number} +1 nach rechts, -1 nach links, 0 wenn keine Waagerechte vorhergesagt wird
+ */
+export function vorhergesagterStoss(schuss) {
+  const waffe = schuss ? getWaffe(schuss.weaponId) : null;
+  if (!waffe || waffe.stossRichtung === undefined || !(waffe.knockback > 0)) return 0;
+  const seite = Math.cos(schuss.angle ?? 0) < 0 ? -1 : 1;
+  return Math.sign(stossVektor(waffe.knockback, waffe.stossRichtung, seite).x);
 }

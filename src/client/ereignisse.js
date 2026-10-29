@@ -476,7 +476,7 @@ export const EREIGNIS_WIRKUNGEN = {
        * derselben Stelle — die Regel „wer spielt, entscheidet der Mischer"
        * gilt unverändert.
        */
-      k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0);
+      k.renderer?.addMuzzleFlash(n.playerId, n.angle ?? 0); k.renderer?.merkeSchuss?.(n.playerId, n.weaponId, n.angle);
       k.sound?.verarbeite({ type: 'shot', weaponId: n.weaponId, playerId: n.playerId, ...ortVon(k, n.playerId) });
     },
     /*
@@ -487,7 +487,7 @@ export const EREIGNIS_WIRKUNGEN = {
      */
     online: (k, n) => {
       k.shotPredictor?.resolve();
-      k.renderer?.addMuzzleFlash(n?.playerId, n?.angle ?? 0);
+      k.renderer?.addMuzzleFlash(n?.playerId, n?.angle ?? 0); k.renderer?.merkeSchuss?.(n?.playerId, n?.weaponId, n?.angle);
       k.sound?.verarbeite({ type: 'shot', weaponId: n?.weaponId, playerId: n?.playerId, ...ortVon(k, n?.playerId) });
     },
   },

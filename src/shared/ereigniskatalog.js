@@ -37,7 +37,7 @@
 export const EREIGNIS_KATALOG = Object.freeze({
   landed: { klasse: 'anzeige', drossel: 'boden', klang: ['landed'] },
   jumped: { klasse: 'anzeige' },
-  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:2012 (crates) → src/client/renderer.js:2302 (#drawCrates)' } },
+  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:2012 (crates) → src/client/renderer.js:2308 (#drawCrates)' } },
   projectile_impact: { klasse: 'anzeige', anim: ['addFlash'] },
   projectile_expired: { klasse: 'anzeige', stumm: 'ein verfallenes Geschoss ist kein Ereignis für den Spieler, es hat nichts getroffen' },
   projectile_pierced: { klasse: 'anzeige', anim: ['addFlash'] },

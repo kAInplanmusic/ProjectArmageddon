@@ -18,3 +18,10 @@ test('Standardfassung: Elementwaffen tragen ihr Element, ältere Fassungen den K
     assert.equal(getWaffe(id, WAFFEN_ZUENDERPLUS).damageType, WEAPONS_BY_ID[id].damageType, `${id} in Fassung 7`);
   }
 });
+
+test('Menü liest Schaden und Rückstoß aus der Standardfassung', async () => {
+  const quelle = (await import('node:fs')).readFileSync(new URL('../src/client/waffenMenue.js', import.meta.url), 'utf8');
+  assert.match(quelle, /\.\.\.getWaffe\(/, 'Menü mischt die Fassungswerte ein');
+  assert.match(quelle, /Rückstoß/);
+  assert.notEqual(getWaffe('pa_029').damage, WEAPONS_BY_ID.pa_029.damage, 'Fassung 11 weicht vom Katalog ab');
+});

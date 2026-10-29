@@ -322,14 +322,16 @@ export class WaffenMenue {
     const info = this.#info;
     if (!info) return;
     const b = this.#eintraege.find(x => x.weaponId === id);
-    const w = b?.weapon;
-    if (!w) { info.textContent = ''; return; }
+    if (!b?.weapon) { info.textContent = ''; return; }
+    // Werte der geltenden Waffenfassung statt der Katalogzahlen (Stärke, Rückstoß, Art …).
+    const w = { ...b.weapon, ...getWaffe(b.weapon.weaponId ?? b.weapon.id) };
     info.textContent = [
       w.description ? `${w.displayName}: ${w.description}` : w.displayName,
-      `Art ${artLabel(getWaffe(w.weaponId ?? w.id)?.damageType ?? w.damageType)}`,
+      `Art ${artLabel(w.damageType)}`,
       `Schaden ${w.damage ?? 0}`,
       w.blastRadius > 0 ? `Radius ${Math.round(w.blastRadius)}` : 'kein Flächenschaden',
       `Reichweite ${w.maxRange ?? 0}`,
+      w.knockback > 0 ? `Rückstoß ${w.knockback}${Number.isFinite(w.stossRichtung) ? ` (${Math.round(w.stossRichtung)}°)` : ''}` : '',
       w.cooldown > 0 ? `Nachladen ${w.cooldown} ${w.cooldown === 1 ? 'Zug' : 'Züge'}` : 'kein Nachladen',
       `Munition ${b.unbegrenzt ? '∞' : `${zahl(b.ammo)}/${zahl(b.maxAmmo)}`}`,
       STUFEN_NAMEN[w.powerTier] ?? '',
