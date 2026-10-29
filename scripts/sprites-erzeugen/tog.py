@@ -38,7 +38,7 @@ def tog_gen(prompt, src, out, breite=1024, hoehe=768, modell=MODELL, steps=28, s
     }
     req = urllib.request.Request(
         ENDPUNKT, json.dumps(body).encode(),
-        {"Authorization": "Bearer " + schluessel, "Content-Type": "application/json"},
+        {"Authorization": "Bearer " + schluessel, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0"},
     )
     try:
         antwort = json.load(urllib.request.urlopen(req, timeout=300))
