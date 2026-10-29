@@ -19,7 +19,9 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_MUNITION` (11, Standard): wie 10, dazu vier Munitionsklassen (unendlich, 1, 2, 3 Schuss; `config/munition.js`),
+ *   - `WAFFEN_MINE` (12, Standard): wie 11, dazu `WAFFEN_F12_WERTE`: die Impulsbombe (`pa_030`) ist die Mine (Wurf oder Ablegen, bleibt liegen,
+ *     sofort scharf; Wirkung in `systems/bodenobjektSystem.js`, nur mit Bodenobjektfassung 2). Katalogzahl und Beutetopf bleiben.
+ *   - `WAFFEN_MUNITION` (11): wie 10, dazu vier Munitionsklassen (unendlich, 1, 2, 3 Schuss; `config/munition.js`),
  *     Obergrenze 5 und Munitionskisten (Kistenfassung 4); weitere Teile (Rückstoß, Elemente, Schilde) stehen unten in `WAFFEN_F11_WERTE`.
  *   - `WAFFEN_SPREIZUNG` (10): wie 9, dazu `WAFFEN_F10_WERTE`: die Dubletten der Selbstwirkungen (Verstärkung, Zufall,
  *     Versetzen, Schild, Heilung, Fliegen, Haken, Munition, Rüstung) sind in Stärke, Dauer und Abklingzeit gestaffelt, und jede
@@ -46,6 +48,7 @@
  */
 import { getWeapon } from './weapons.js';
 import { WAFFEN_F11_WERTE } from './waffen-f11.js';
+import { WAFFEN_F12_WERTE } from './waffen-f12.js';
 
 export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
@@ -58,7 +61,8 @@ export const WAFFEN_FEINTUNING = 8;
 export const WAFFEN_VORSTRAHL = 9;
 export const WAFFEN_SPREIZUNG = 10;
 export const WAFFEN_MUNITION = 11;
-export const WAFFEN_STANDARD = WAFFEN_MUNITION;
+export const WAFFEN_MINE = 12;
+export const WAFFEN_STANDARD = WAFFEN_MINE;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -71,7 +75,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -335,13 +339,14 @@ export function getWaffe(id, fassung = WAFFEN_STANDARD) {
     const f8 = fassung >= WAFFEN_FEINTUNING ? WAFFEN_F8_WERTE[id] : null;
     const f10 = fassung >= WAFFEN_SPREIZUNG ? WAFFEN_F10_WERTE[id] : null;
     const f11 = fassung >= WAFFEN_MUNITION ? WAFFEN_F11_WERTE[id] : null;
-    if (!f5 && !f7 && !f8 && !f10 && !f11) return waffe;
+    const f12 = fassung >= WAFFEN_MINE ? WAFFEN_F12_WERTE[id] : null;
+    if (!f5 && !f7 && !f8 && !f10 && !f11 && !f12) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
     if (!kopie5) {
       // `wirkung` der Fassung 11 ergänzt die der Fassung 10 (Weite, Menge, Pause bleiben), ersetzt sie nicht.
       const wirkung = f10?.wirkung && f11?.wirkung ? { wirkung: Object.freeze({ ...f10.wirkung, ...f11.wirkung }) } : {};
-      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...wirkung });
+      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...f12, ...wirkung });
       zwischenspeicher.set(schluessel5, kopie5);
     }
     return kopie5;

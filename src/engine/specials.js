@@ -50,6 +50,11 @@ export const EFFECT_KIND = Object.freeze({
    */
   TURRET: 'turret',
   /**
+   * Mine legen (Waffenfassung 12, `config/waffen-f12.js`): setzt am Boden vor der Figur eine Mine ab (Entfernung nach der Kraft).
+   * Selbstwirkung wie das Geschütz — es wird kein Geschoss verschossen.
+   */
+  MINE: 'mine',
+  /**
    * Wasserschub: stößt das ZIEL vom Schützen weg und hebt den Wasserstand an
    * seiner Position.
    *
@@ -111,6 +116,8 @@ export const SELF_TARGET_KINDS = Object.freeze(new Set([
   EFFECT_KIND.RANDOM,
   // Das Geschütz wird am EIGENEN Standort aufgestellt — kein Projektil.
   EFFECT_KIND.TURRET,
+  // Die Mine entsteht am EIGENEN Standort vor der Figur — kein Projektil.
+  EFFECT_KIND.MINE,
 ]));
 
 /** Standardwerte, wenn eine Waffe keine eigenen Zahlen mitbringt. */
@@ -205,6 +212,8 @@ export const SPECIAL_EFFECTS = Object.freeze({
   portal_field: { kind: EFFECT_KIND.MOVE },
   hologram_portal: { kind: EFFECT_KIND.MOVE },
   teleport_platform: { kind: EFFECT_KIND.MOVE },
+  // Nur in Waffenfassung 12 (`pa_127` heißt dort Mine); ältere Fassungen tragen den Namen `special` nicht.
+  mine: { kind: EFFECT_KIND.MINE },
   dimension_orb: { kind: EFFECT_KIND.MOVE },
   dimensionssprung: { kind: EFFECT_KIND.MOVE },
   hook_pull: { kind: EFFECT_KIND.PULL },
@@ -470,6 +479,10 @@ export function buildEffect(weapon) {
       // Der Würfel trägt nur die Auswahlliste; die Wahl fällt erst beim
       // Auslösen, weil er den Zufallsgenerator des Matches braucht.
       return { kind: base.kind, pool: [...(w?.pool ?? RANDOM_EFFECT_POOL)], ...(w?.element ? { element: w.element } : {}) };
+
+    case EFFECT_KIND.MINE:
+      // Die Zahlen der Mine stehen in `config/bodenobjekte.js` (`MINEN`), nicht in der Waffe.
+      return { kind: base.kind };
 
     default:
       return null;

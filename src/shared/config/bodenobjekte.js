@@ -77,6 +77,9 @@ export const MINEN = Object.freeze({
   liegendAbstandUntereinander: 90,
   /** Mindestabstand beim Ablegen vor die Figur (größer als der Auslöseradius). */
   ablegeAbstand: 40,
+  /** Wurfweite in Pixeln je Kraftpunkt (Kraft 0 bis 100) und Obergrenze der Entfernung. */
+  wurfWeite: 2.4,
+  wurfMax: 240,
 });
 
 /**

@@ -13,7 +13,7 @@ import {
 } from '../src/shared/config/munition.js';
 import { getStartWaffen, KIT_SCHARF } from '../src/shared/config/loadouts.js';
 import { KISTEN_STANDARD, KISTEN_MUNITION } from '../src/shared/config/kisten.js';
-import { WAFFEN_STANDARD, WAFFEN_MUNITION } from '../src/shared/config/waffen-fassung.js';
+import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_MINE } from '../src/shared/config/waffen-fassung.js';
 import { legeKiste, CRATE_TYPES } from '../src/engine/systems/lootSystem.js';
 
 function welt() {
@@ -23,8 +23,9 @@ function welt() {
 
 const ohneStart = () => WEAPONS.filter(w => munitionsKlasse(w) !== Infinity);
 
-test('Standard ist Waffenfassung 11 und Kistenfassung 4', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_MUNITION);
+test('Standard ist Waffenfassung 12 (Mine) und Kistenfassung 4; Fassung 11 bleibt gültig', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_MINE);
+  assert.ok(WAFFEN_MUNITION < WAFFEN_STANDARD);
   assert.equal(KISTEN_STANDARD, KISTEN_MUNITION);
 });
 

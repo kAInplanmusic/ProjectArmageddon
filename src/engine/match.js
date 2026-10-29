@@ -80,6 +80,7 @@ import {
   TURRET_WEAPON, TURRET_WEAPON_ID, TURRET_PATH_STEPS,
 } from './turret.js';
 
+
 /**
  * Kartenmaße je Ausrichtung.
  *
@@ -1488,6 +1489,8 @@ export class MatchController {
       cooldownFor: (id, weaponId) => this.cooldownFor(id, weaponId),
       surfaceYAt: x => this.surfaceYAt(x),
       deployTurret: (id, effect) => this.#deployTurret(id, effect),
+      // Waffenfassung 12: die Mine (`config/waffen-f12.js`); `null` ohne Bodenobjektfassung 2.
+      legeMine: (id, schuss) => this.#legeMine(id, schuss),
       rng: this.#rng,
       applyTargetEffect: (effect, target, attacker) => this.#applyTargetEffect(effect, target, attacker),
       applyCooldown: (id, weapon) => this.#applyCooldown(id, weapon),
@@ -1665,6 +1668,22 @@ export class MatchController {
    *
    * @returns {object|null} der Eintrag oder null, wenn kein Platz frei ist
    */
+  /**
+   * Die Mine der Waffenfassung 12: vor der Figur auf den Boden, Entfernung nach der Kraft.
+   *
+   * @returns {object|null} der Eintrag, `null` ohne Minensystem, ohne Platz oder bei voller Karte
+   */
+  #legeMine(playerId, { angle, power }) {
+    if (!this.#bodenobjekte) return null;
+    const spieler = this.#players.find(entry => entry.entityId === playerId);
+    if (!spieler?.alive) return null;
+    return this.#bodenobjekte.wirf(
+      this.#world.getComponent(playerId, 'Position', 'x') ?? 0,
+      this.#world.getComponent(playerId, 'Position', 'y') ?? 0,
+      Math.cos(angle) < 0 ? -1 : 1, power, { ownerId: playerId, teamId: spieler.teamId },
+    );
+  }
+
   #deployTurret(playerId, effect) {
     const spieler = this.#players.find(entry => entry.entityId === playerId);
     if (!spieler?.alive) return null;

@@ -67,6 +67,7 @@ export const WIRKUNG_TEXT = Object.freeze({
   reveal: Object.freeze({ label: 'Aufdecken', text: 'Der Schütze gilt für einige Züge als aufgedeckt.' }),
   pull: Object.freeze({ label: 'Heranziehen', text: 'Zieht den Getroffenen zum Schützen.' }),
   turret: Object.freeze({ label: 'Geschütz', text: 'Stellt ein Geschütz oder einen Kämpfer auf, der in den folgenden Runden selbst feuert.' }),
+  mine: Object.freeze({ label: 'Mine', text: 'Legt eine Mine auf den Boden, näher bei kleiner, weiter bei großer Kraft. Sie ist sofort scharf, auch für dich; selten ein Blindgänger, selten doppelt stark.' }),
   water_push: Object.freeze({ label: 'Wasserschub', text: 'Drückt den Getroffenen weg und hebt das Wasser an seiner Stelle.' }),
   random: Object.freeze({ label: 'Zufallswirkung', text: 'Wählt eine Selbstwirkung aus dem Pool der Waffe nach dem Zufall des Matches.' }),
   chain: Object.freeze({ label: 'Kettenblitz', text: 'Springt auf nahe Gegner über, mit abnehmender Wirkung.' }),

@@ -57,6 +57,33 @@ export class BodenobjektSystem {
 
   get anzahl() { return this.#minen.size; }
 
+  /**
+   * Die Mine der Waffenfassung 12: vor die Figur legen oder weiter weg werfen (Entfernung nach der Kraft).
+   *
+   * Entfernung = `kraft * MINEN.wurfWeite`, mindestens `MINEN.ablegeAbstand` und höchstens `MINEN.wurfMax`. Sie ist
+   * größer als der Auslöseradius, damit „ablegen“ nicht „sich selbst sprengen“ heißt. Der Ort ist der Boden an dieser Stelle
+   * (freier, trockener Platz in der Nähe, wie beim Geschütz); es gibt keine Flugbahn.
+   *
+   * @param {number} figurX
+   * @param {number} figurY
+   * @param {number} seite - −1 links, 1 rechts
+   * @param {number} kraft - Schusskraft in Punkten (0 bis 100)
+   * @returns {object|null} der Eintrag, `null` ohne freien Platz oder bei voller Karte
+   */
+  wirf(figurX, figurY, seite, kraft, { ownerId = null, teamId = null } = {}) {
+    const abstand = Math.min(MINEN.wurfMax, Math.max(MINEN.ablegeAbstand, (Number(kraft) || 0) * MINEN.wurfWeite));
+    const platz = freierPlatz({
+      breite: this.#q.breite,
+      surfaceYAt: x => this.#q.surfaceYAt(x),
+      bodenNahe: (x, y) => this.#q.bodenNahe(x, y),
+      waterLevelAt: (x, y) => this.#q.waterLevelAt(x, y),
+    }, figurX + (seite < 0 ? -1 : 1) * abstand, figurY);
+    if (!platz) return null;
+    return this.lege(platz.x, platz.y, {
+      ownerId, teamId, art: abstand > MINEN.ablegeAbstand ? MINEN_ART.ABGEWORFEN : MINEN_ART.ABGELEGT,
+    });
+  }
+
   /** Zustand für Anzeige, Hash und Netz: feste Reihenfolge (Kennung aufsteigend), nur Zahlen und Kennworte. */
   snapshot() {
     return [...this.#minen.values()]
@@ -84,24 +111,6 @@ export class BodenobjektSystem {
       mineId: mine.id, x: mine.x, y: mine.y, ownerId, teamId, art,
     });
     return mine;
-  }
-
-  /**
-   * Eine Mine vor die Figur ablegen (Mindestabstand `MINEN.ablegeAbstand`, damit „ablegen“ nicht „sich selbst
-   * sprengen“ heißt). Blickrichtung `seite` ist −1 (links) oder 1 (rechts).
-   *
-   * @returns {object|null} der Eintrag, `null` ohne freien Platz oder bei voller Karte
-   */
-  legeAb(figurX, figurY, seite, { ownerId = null, teamId = null } = {}) {
-    const richtung = seite < 0 ? -1 : 1;
-    const platz = freierPlatz({
-      breite: this.#q.breite,
-      surfaceYAt: x => this.#q.surfaceYAt(x),
-      bodenNahe: (x, y) => this.#q.bodenNahe(x, y),
-      waterLevelAt: (x, y) => this.#q.waterLevelAt(x, y),
-    }, figurX + richtung * MINEN.ablegeAbstand, figurY);
-    if (!platz) return null;
-    return this.lege(platz.x, platz.y, { ownerId, teamId, art: MINEN_ART.ABGELEGT });
   }
 
   /**

@@ -17,24 +17,29 @@
 | Zustand und Hash nur mit Marke 2 (alte Hashes bitgleich) | `engine/stateSnapshot.js`, `match.js#getState` |
 | Ereignisse `mine_placed`, `mine_exploded`, `mine_dud` (Katalog, Sendefilter, lokale und Online-Behandlung), Online-Minenliste aus Beitrittszustand und Ereignissen | `shared/ereigniskatalog.js`, `client/ereignisse.js`, `client/main.js` |
 | Zeichnung (Scheibe mit Lämpchen, Blindgänger grau; „reduzierte Bewegung“ ohne Blinken) | `client/renderer.js#drawMinen` |
-| Tests (17): Ausgangsverteilung über 6000 Auslösungen, Superschaden genau doppelt, Blindgänger, Kette, Grenzen, Determinismus, Altmarke, Replay-Kopf | `tests/minen.test.js` |
+| Tests (23): Ausgangsverteilung über 6000 Auslösungen, Superschaden genau doppelt, Blindgänger, Kette, Grenzen, Determinismus, Altmarke, Replay-Kopf | `tests/minen.test.js` |
 
 **Nicht geprüft:** Aussehen und Klang (kein Blick auf das fertige Bild, kein Gehör), Balance (die Werte 50 Schaden,
 Radius 48, Rückstoß 35 sind ein erster Ansatz in der Größenordnung der Wurfbomben), Verhalten in echten Online-Partien
 über die E2E-Auswahl hinaus.
 
-**Noch nicht gebaut und warum:**
+**Die Waffe (Entscheidung des Auftraggebers, 2026-10-29): keine neue Waffe, sondern die Teleportplattform (`pa_127`) wird zur Mine.**
+Ihr Bild (graue Gerätekiste mit blauer Linse auf einer Plattform) ist das Bild der Mine. Umgesetzt als Waffenfassung 12
+(`shared/config/waffen-f12.js`, Standard für neue Partien): Name „Mine“, Beschreibung, `special: 'mine'`. Katalogzahl 150, Beutetopf,
+Munitionsklasse (5), Seltenheit (rare) und Gadget-Gruppe bleiben, deshalb ändern sich Kisteninhalte nicht. Fassung 11 und älter
+behalten die Teleportplattform. (Ein früherer Ansatz mit der Impulsbombe `pa_030` ist verworfen.)
 
-1. **Die Waffe „Mine“ (abgeworfen, abgelegt).** Der Waffenkatalog hat keine Mine. Ein 151. Katalogeintrag zieht nach
-   sich: (a) Er fällt in den Beutetopf (`pickWeaponForRarity` nimmt ALLE Waffen), das verändert die Kisteninhalte JEDES
-   Seeds und damit die Hashes bestehender Partien; das braucht eine Fassungsmarke oder einen Ausschluss aus dem Topf.
-   (b) 150 ist an mehreren Stellen festgenagelt (Katalog-, Munitions-, Animationsprüfung, README, Matrix).
-   (c) Icon, Held-/Silhouetten-Zellen und Geschossbild fehlen; ein Rückfall aufs Icon existiert, das Icon selbst nicht.
-   **Entscheidung nötig: Wie kommt ein Spieler an Minen?** (Kistenfund, Startausrüstung, eigene Kiste?) Ohne diese Antwort
-   wird nichts gebaut, das die Kisten anfasst.
-2. **Fässer.** Entwurf unverändert (Abschnitt 3 Punkt 4); noch nicht begonnen.
-3. **Server-Eingabe zum Ablegen** (`lege_mine` mit Prüfung aktiver Spieler, Munition, Platz, laufende Sitzung): hängt an der
-   Waffe. `BodenobjektSystem#legeAb` und `#lege` stehen bereit.
+- **Selbstwirkung wie das Wachgeschütz** (`EFFECT_KIND.MINE`, `engine/specials.js`, `engine/shooting.js`): kein Geschoss; die Mine entsteht
+  am Boden in Blickrichtung des Zielwinkels. Entfernung = Kraft × 2,4 px, mindestens 40 px, höchstens 240 px. Kurz = „abgelegt“, weit =
+  „abgeworfen“. **Das ist ein Platzieren, kein Flug über eine Bahn** (ein Wurf mit Flugbahn wäre ein eigenes Projekt).
+- Sie beendet den Zug und verbraucht Munition wie jede Selbstwirkung. Ohne Bodenobjektfassung 2 legt sie nichts und meldet es.
+
+**Noch nicht gebaut:**
+
+1. **Fässer.** Entwurf unverändert (Abschnitt 3 Punkt 4); noch nicht begonnen.
+2. **Eine Flugbahn für die geworfene Mine** (falls gewünscht).
+3. **Bild und Klang der Mine im Spiel** nicht geprüft: Das Waffenmenü zeigt das vorhandene Icon der Teleportplattform; die
+   Zeichnung der liegenden Mine ist eine einfache Scheibe mit Lämpchen (`renderer.js#drawMinen`), nicht das Gerätebild.
 
 ## 1. Ziel
 

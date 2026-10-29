@@ -140,7 +140,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, 11); // Waffenfassung 11 (Munition, Rückstoß, Elemente, Schilde); Fassung 10 bleibt gültig und bitgleich
+  assert.equal(WAFFEN_STANDARD, 12); // Waffenfassung 12 (Mine statt Teleportplattform); Fassung 11 und 10 bleiben gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
@@ -157,7 +157,8 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(8), WAFFEN_FEINTUNING);
   assert.equal(normalisiereWaffen(9), WAFFEN_VORSTRAHL);
   assert.equal(normalisiereWaffen(10), WAFFEN_SPREIZUNG);
-  assert.equal(normalisiereWaffen(11), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(11), 11);
+  assert.equal(normalisiereWaffen(12), WAFFEN_STANDARD);
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */

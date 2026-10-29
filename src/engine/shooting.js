@@ -35,7 +35,7 @@
  *   world, terrain, events, inventory, statuses, players, turnOrder,
  *   shotsInFlight, width, height, status, activePlayerId, rng,
  *   isPlayerAlive(id), cooldownFor(id, weaponId), surfaceYAt(x),
- *   deployTurret(id, effect), applyTargetEffect(effect, target, attacker),
+ *   deployTurret(id, effect), legeMine(id, {angle, power}), applyTargetEffect(effect, target, attacker),
  *   applyCooldown(id, weapon),
  *   hasFired() -> boolean, markFired(id), endTurn(),
  *   resolveHitscan(ox, oy, angle, power, weapon, shooterId),
@@ -228,7 +228,7 @@ export function fire(quelle, playerId, angle, power, weaponId = null) {
   // auszulösen, wäre im Spiel irreführend.
   const special = buildEffect(weapon);
   if (special && SELF_TARGET_KINDS.has(special.kind)) {
-    const outcome = applySelfEffect(quelle, special, playerId, weapon);
+    const outcome = applySelfEffect(quelle, special, playerId, weapon, { angle, power });
     quelle.events.emit('special_effect', {
       playerId, weaponId: weapon.id, kind: special.kind, ...outcome,
     });
@@ -661,7 +661,7 @@ export function launchOrigin(quelle, playerId, angle) {
  * @param {object} effect - aus buildEffect()
  * @returns {object} Beschreibung des tatsächlichen Ergebnisses
  */
-function applySelfEffect(quelle, effect, playerId, weapon) {
+function applySelfEffect(quelle, effect, playerId, weapon, schuss = null) {
   switch (effect.kind) {
     case EFFECT_KIND.HEAL: {
       const health = quelle.world.getComponent(playerId, 'Health', 'current') ?? 0;
@@ -714,6 +714,14 @@ function applySelfEffect(quelle, effect, playerId, weapon) {
       return turret
         ? { turretId: turret.entityId, x: turret.x, y: turret.y, rounds: turret.roundsLeft }
         : { turretId: null, reason: 'kein Platz für ein Geschütz' };
+    }
+
+    case EFFECT_KIND.MINE: {
+      // Ohne Minensystem (Bodenobjektfassung 1) oder ohne Platz wird nichts gelegt; der Aufrufer meldet das.
+      const mine = quelle.legeMine ? quelle.legeMine(playerId, schuss ?? { angle: 0, power: 0 }) : null;
+      return mine
+        ? { mineId: mine.id, x: mine.x, y: mine.y, art: mine.art }
+        : { mineId: null, reason: 'keine Mine gelegt: kein Platz oder kein Minensystem' };
     }
 
     case EFFECT_KIND.REVEAL: {

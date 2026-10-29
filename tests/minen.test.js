@@ -218,9 +218,9 @@ test('Obergrenze der Minen auf der Karte', () => {
   assert.equal(system.lege(100, 800, { art: MINEN_ART.LIEGEND }), null);
 });
 
-test('Ablegen setzt die Mine mit Mindestabstand vor die Figur', () => {
+test('Ablegen (Kraft 0) setzt die Mine mit Mindestabstand vor die Figur', () => {
   const { system } = baueSystem([{ id: 1, x: 1000, y: 790 }]);
-  const mine = system.legeAb(1000, 790, 1, { ownerId: 1, teamId: 0 });
+  const mine = system.wirf(1000, 790, 1, 0, { ownerId: 1, teamId: 0 });
   assert.ok(mine);
   assert.ok(mine.x - 1000 >= MINEN.ablegeAbstand - 1, `Abstand ${mine.x - 1000}`);
   assert.ok(MINEN.ablegeAbstand > MINEN.ausloeseRadius, 'ablegen darf nicht sofort sich selbst sprengen');
@@ -306,4 +306,76 @@ test('Replay: ohne Feld ist die Datei ALT, mit Marke 2 trägt der Kopf sie', () 
   assert.equal(geladen.toJSON().config.bodenobjekte, BODENOBJEKTE_ALT, 'eine Datei aus der Zeit davor spielt ohne Minen');
   const rund = ReplayRecorder.fromJSON(neu.serialize());
   assert.equal(rund.toJSON().config.bodenobjekte, 2);
+});
+
+// ----------------------------------------------------------------- die Mine als Waffe (Waffenfassung 12)
+
+import { WAFFEN_MINE, WAFFEN_MUNITION, getWaffe } from '../src/shared/config/waffen-fassung.js';
+import { MINEN_WAFFE_ID } from '../src/shared/config/waffen-f12.js';
+
+/** Setzt die Mine ein und sammelt die Ereignisse des Zuges. */
+function legeMine({ waffen, bodenobjekte, kraft, winkel = 0.1, seed = 4242 }) {
+  const match = new MatchController({
+    seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, waffen, bodenobjekte,
+  });
+  match.start();
+  match.consumeEvents();
+  const schuetze = match.activePlayerId;
+  match.inventory.register(schuetze, [MINEN_WAFFE_ID]);
+  const schuss = match.fire(schuetze, winkel, kraft, MINEN_WAFFE_ID);
+  assert.equal(schuss.ok, true, `Schuss abgelehnt: ${schuss.errors?.join(', ')}`);
+  match.step();
+  const ereignisse = match.consumeEvents();
+  return { match, schuss, ereignisse, schuetze, schuetzeX: match.world.getComponent(schuetze, 'Position', 'x') };
+}
+
+test('Fassung 12: die Teleportplattform ist die Mine, ältere Fassungen behalten sie', () => {
+  const neu = getWaffe(MINEN_WAFFE_ID, WAFFEN_MINE);
+  assert.equal(neu.displayName, 'Mine');
+  assert.equal(neu.special, 'mine');
+  const alt = getWaffe(MINEN_WAFFE_ID, WAFFEN_MUNITION);
+  assert.equal(alt.displayName, 'Teleportplattform', 'Fassung 11 bleibt unverändert');
+  assert.equal(alt.special, 'teleport_platform');
+  assert.equal(neu.maxAmmo, alt.maxAmmo, 'Munitionsklasse bleibt');
+  assert.equal(neu.iconPath, alt.iconPath, 'Das Bild der Teleportplattform ist das Bild der Mine');
+  assert.equal(MINEN_WAFFE_ID, 'pa_127');
+});
+
+test('Weit gelegt (große Kraft): die Mine liegt als „abgeworfen“ in Wurfweite, es fliegt kein Geschoss', () => {
+  const r = legeMine({ waffen: WAFFEN_MINE, bodenobjekte: 2, kraft: 80 });
+  assert.equal(r.schuss.projectileId, null, 'Selbstwirkung: kein Geschoss');
+  const platziert = r.ereignisse.filter(e => e.type === 'mine_placed' && e.payload.art === 'abgeworfen');
+  assert.equal(platziert.length, 1);
+  const mine = r.match.getState().bodenobjekte.find(m => m.art === 'abgeworfen');
+  assert.ok(mine);
+  assert.equal(mine.ownerId, r.schuetze, 'dem Werfer zugerechnet');
+  const abstand = Math.abs(mine.x - r.schuetzeX);
+  assert.ok(abstand > MINEN.ablegeAbstand && abstand <= MINEN.wurfMax + 70, `Abstand ${abstand}`);
+});
+
+test('Kurz gelegt (kleine Kraft): „abgelegt“ vor den Füßen, außerhalb des Auslöseradius', () => {
+  const r = legeMine({ waffen: WAFFEN_MINE, bodenobjekte: 2, kraft: 5 });
+  const mine = r.match.getState().bodenobjekte.find(m => m.art === 'abgelegt');
+  assert.ok(mine, 'abgelegte Mine im Zustand');
+  const abstand = Math.abs(mine.x - r.schuetzeX);
+  assert.ok(abstand > MINEN.ausloeseRadius, `Abstand ${abstand}: ablegen darf nicht sofort sich selbst sprengen`);
+});
+
+test('Der Wurf endet den Zug und verbraucht Munition wie jede Selbstwirkung', () => {
+  const r = legeMine({ waffen: WAFFEN_MINE, bodenobjekte: 2, kraft: 50 });
+  assert.ok(r.ereignisse.some(e => e.type === 'special_effect' && e.payload.kind === 'mine'));
+  assert.ok(r.ereignisse.some(e => e.type === 'mine_placed'));
+});
+
+test('Ohne Bodenobjektfassung wird nichts gelegt und das Ergebnis sagt es', () => {
+  const r = legeMine({ waffen: WAFFEN_MINE, bodenobjekte: 1, kraft: 60 });
+  assert.equal(r.ereignisse.some(e => e.type === 'mine_placed'), false);
+  const se = r.ereignisse.find(e => e.type === 'special_effect');
+  assert.equal(se.payload.mineId, null);
+  assert.match(se.payload.reason, /keine Mine/);
+});
+
+test('Waffenfassung 11: dieselbe Waffe ist weiter die Teleportplattform und legt keine Mine', () => {
+  const r = legeMine({ waffen: WAFFEN_MUNITION, bodenobjekte: 2, kraft: 60 });
+  assert.equal(r.ereignisse.filter(e => e.type === 'mine_placed' && e.payload.art !== 'liegend').length, 0);
 });

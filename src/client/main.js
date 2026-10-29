@@ -2617,6 +2617,9 @@ class Game {
       case 'move':
         this.hud.log(`${name} versetzt sich um ${Math.round(Math.hypot(payload.moved?.dx ?? 0, payload.moved?.dy ?? 0))} px`, 'accent');
         break;
+      case 'mine':
+        // Das Ereignis `mine_placed` meldet die Mine selbst (Protokoll und Blitz); hier keine zweite Zeile.
+        break;
       case 'reveal':
         this.hud.log(`${name} ist für ${payload.revealedTurns} Züge aufgedeckt`, 'accent');
         break;
