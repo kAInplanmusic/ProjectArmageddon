@@ -29,6 +29,7 @@ import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, appl
 import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
+import { getBackdropNeu } from '../shared/config/backdrops-neu.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
 import { SONDER_KULISSEN, sonderKulisseFuer } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
 import { SoundMixer, tonSpeicher } from './soundMixer.js';
@@ -42,7 +43,7 @@ import { ladeStoffTexturen } from './stoffTexturen.js';
 import { planetenBilder } from './planetenKulisse.js';
 import HYMNEN_MANIFEST from './assets/music/fraktionen/manifest.json';
 import { pickScenery } from '../shared/config/scenery.js';
-import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS } from '../shared/config/biome-neu.js';
+import { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 as SONDERBIOM_IDS, BIOM_IDS_FASSUNG_7 } from '../shared/config/biome-neu.js';
 import { PLANET_BIOM_IDS, PLANET_WAHL } from '../shared/config/biome-planet.js';
 import { GUENTHER_WHEEL, GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
 import { TierHud } from './tierHud.js';
@@ -1174,7 +1175,16 @@ class Game {
       option.title = NEUE_BIOME[id].beschreibung;
       planeten.append(option);
     }
-    return SONDERBIOM_IDS.length + 1 + PLANET_BIOM_IDS.length;
+    // Biome 15 bis 20 der SSOT (Geländefassung 7, der Standard).
+    const neue = gruppe('Neue Biome 15 bis 20');
+    for (const id of BIOM_IDS_FASSUNG_7) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = NEUE_BIOME[id].label;
+      option.title = NEUE_BIOME[id].beschreibung;
+      neue.append(option);
+    }
+    return SONDERBIOM_IDS.length + 1 + PLANET_BIOM_IDS.length + BIOM_IDS_FASSUNG_7.length;
   }
 
   fillBackdropOptions() {
@@ -2920,7 +2930,7 @@ class Game {
     // Sonderbiome (Schrott, Riff, Kristallhöhle, ...) haben passende gemalte Bilder (`sonderKulissen.js`).
     if (!kulisse && sonder && SONDER_KULISSEN[sonder] && !gewaehlt?.includes?.('/')) {
       const [b, v] = String(sonderKulisseFuer(sonder, seed)).split('/');
-      kulisse = getBackdrop(b, v);
+      kulisse = getBackdrop(b, v) ?? getBackdropNeu(b, v);
     }
     if (!kulisse && charakter) {
       const biomId = biomFuerCharakter(charakter);

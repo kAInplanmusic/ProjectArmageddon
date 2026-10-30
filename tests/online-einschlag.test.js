@@ -59,7 +59,8 @@ test('klassifiziereEinschlag: Wasser, Land und Rand', () => {
 
 for (const kartentyp of [null, 'autonom']) {
   test(`Lokal (echtes Wasserfeld) und online (Wasserlinie aus Seed) klassifizieren gleich — ${kartentyp ?? 'Gelände-Preset'}`, () => {
-    const seed = 1;
+    // Seed 10: Karte mit Wasser UND Land unter der Vorgabe-Geländefassung (Seed 1 zieht seit Fassung 7 den fast trockenen Kristallwald).
+    const seed = 10;
     const match = new MatchController({
       seed, teams: 2, playersPerTeam: 1, preset: 'hills', kartentyp, turnDurationMs: 1_000_000,
     });

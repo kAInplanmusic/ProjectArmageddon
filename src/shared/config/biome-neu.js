@@ -63,6 +63,7 @@ export const NEUE_LANDMARKEN = Object.freeze([
 ]);
 
 import { THEMEN_BIOME } from './biome-themen.js';
+import { BIOME_FASSUNG_7 } from './biome-fassung-7.js';
 import { boden } from './biome-boden.js';
 
 const BIOME_FASSUNG_2 = Object.freeze({
@@ -231,8 +232,12 @@ const BIOME_FASSUNG_2 = Object.freeze({
   },
 });
 
-/** Alle Sonderbiome: die neun der Fassung 2, die vier Themenbiome (`biome-themen.js`, ab Fassung 3) und die sechs Planetenarten (`biome-planet.js`, ab Fassung 4). */
-export const NEUE_BIOME = Object.freeze({ ...BIOME_FASSUNG_2, ...THEMEN_BIOME, ...PLANET_BIOME });
+/**
+ * Alle Sonderbiome: die neun der Fassung 2, die vier Themenbiome (`biome-themen.js`, ab Fassung 3), die sechs
+ * Planetenarten (`biome-planet.js`, ab Fassung 4) und die sechs Biome 15 bis 20 (`biome-fassung-7.js`, ab Fassung 7).
+ * Der Eintrag allein macht ein Biom nicht erreichbar: Gezogen und gewählt wird nur aus den Listen unten.
+ */
+export const NEUE_BIOME = Object.freeze({ ...BIOME_FASSUNG_2, ...THEMEN_BIOME, ...PLANET_BIOME, ...BIOME_FASSUNG_7 });
 
 /** Die Kennungen der neun Sonderbiome der Geländefassung 2 in fester Reihenfolge (Zug aus dem Seed, Menü). */
 export const SONDERBIOM_IDS = Object.freeze(Object.keys(BIOME_FASSUNG_2));
@@ -249,3 +254,13 @@ export const SONDERBIOM_IDS_FASSUNG_3 = Object.freeze([...SONDERBIOM_IDS, ...THE
  * Die Reihenfolge ist Teil des Seed-Zugs.
  */
 export const SONDERBIOM_IDS_FASSUNG_4 = Object.freeze([...SONDERBIOM_IDS_FASSUNG_3, PLANET_WAHL]);
+
+/** Die Biome 15 bis 20 (ab Geländefassung 7). */
+export const BIOM_IDS_FASSUNG_7 = Object.freeze(Object.keys(BIOME_FASSUNG_7));
+
+/**
+ * Alle Wahlen ab Geländefassung 7: die vierzehn der Fassung 4 und die Biome 15 bis 20 (zwanzig Ziehplätze, `planet` zählt
+ * einmal). Die Fassungen 1 bis 6 kennen die sechs neuen nicht; ihre Ziehung läuft weiter über `SONDERBIOM_IDS_FASSUNG_4`.
+ * Die Reihenfolge ist Teil des Seed-Zugs.
+ */
+export const SONDERBIOM_IDS_FASSUNG_7 = Object.freeze([...SONDERBIOM_IDS_FASSUNG_4, ...BIOM_IDS_FASSUNG_7]);

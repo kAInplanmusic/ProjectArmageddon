@@ -35,6 +35,11 @@ const args = new Map(process.argv.slice(2).map(a => {
   return [k, v ?? true];
 }));
 const ANZAHL = Number(args.get('karten') ?? 30);
+// `--fassung=7`: alle Sonderbiome mit dieser Geländefassung prüfen (Vorgabe: je Biom die Fassung, ab der es existiert).
+// `--pro=N` Karten je Biom (Vorgabe 3), `--nur=a,b` nur diese Biome.
+const PRO_BIOM = Number(args.get('pro') ?? 3);
+const NUR = args.get('nur') ? String(args.get('nur')).split(',') : null;
+const FASSUNG_ERZWUNGEN = args.get('fassung') ? Number(args.get('fassung')) : null;
 
 console.log(`Kulissenwahl aus dem Kartencharakter (${ANZAHL} Karten)`);
 console.log('');
@@ -138,10 +143,10 @@ if (haeufigstes && haeufigstes[1] / ANZAHL > 0.6) {
  * Stoffkarte vorhanden und Server/Client gleich.
  */
 const { MatchController } = await import('../src/engine/match.js');
-const { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3 } = await import('../src/shared/config/biome-neu.js');
+const { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3, BIOM_IDS_FASSUNG_7 } = await import('../src/shared/config/biome-neu.js');
 const { PLANET_BIOM_IDS } = await import('../src/shared/config/biome-planet.js');
-// Die dreizehn der Fassung 3 und die sechs Planetenarten (Fassung 4): jede Art mit je drei Seeds.
-const SONDERBIOM_IDS = [...SONDERBIOM_IDS_FASSUNG_3, ...PLANET_BIOM_IDS];
+// Die dreizehn der Fassung 3, die sechs Planetenarten (Fassung 4) und die sechs Biome 15 bis 20 (Fassung 7): jede Art mit je drei Seeds.
+const SONDERBIOM_IDS = [...SONDERBIOM_IDS_FASSUNG_3, ...PLANET_BIOM_IDS, ...BIOM_IDS_FASSUNG_7].filter((id) => !NUR || NUR.includes(id));
 const { stoffHash, zaehleStoffe } = await import('../src/shared/stoffkarte.js');
 const { buildTerrainForSeed } = await import('../src/client/terrainPreview.js');
 const { WET_LEVEL } = await import('../src/shared/config/water.js');
@@ -201,10 +206,10 @@ console.log('');
 const KISTEN_MINDESTANTEIL = 0.5;
 let fehler = 0;
 const proBiom = new Map();
-for (let i = 0; i < SONDERBIOM_IDS.length * 3; i += 1) {
+for (let i = 0; i < SONDERBIOM_IDS.length * PRO_BIOM; i += 1) {
   const biom = SONDERBIOM_IDS[i % SONDERBIOM_IDS.length];
   const seed = 700000 + i * 7607;
-  const fassung = { gelaende: PLANET_BIOM_IDS.includes(biom) ? 4 : 3, zerstoerung: 5 };
+  const fassung = { gelaende: FASSUNG_ERZWUNGEN ?? (BIOM_IDS_FASSUNG_7.includes(biom) ? 7 : (PLANET_BIOM_IDS.includes(biom) ? 4 : 3)), zerstoerung: 5 };
   const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, turnDurationMs: 2000, ...fassung });
   m.start();
   m.consumeEvents();
@@ -230,7 +235,7 @@ for (const [biom, z] of proBiom) {
   console.log(`  ${biom.padEnd(15)} ${String(z.n).padStart(2)} Karten  Wasser Ø ${(z.wasser / z.n * 100).toFixed(0).padStart(2)} %  Stoffe Ø ${(z.stoffe / z.n).toFixed(1)}  Kisten ${z.trocken ? (z.kisten / z.trocken * 100).toFixed(0) : '--'} % erreichbar, ohne Wasser ${z.ohne}  ${NEUE_BIOME[biom].label}`);
 }
 console.log('');
-console.log(fehler ? `  ${fehler} Karten fehlerhaft` : `  Alle ${SONDERBIOM_IDS.length} Sonderbiome: ${SONDERBIOM_IDS.length * 3} Karten ohne Fehler.`);
+console.log(fehler ? `  ${fehler} Karten fehlerhaft` : `  Alle ${SONDERBIOM_IDS.length} Sonderbiome: ${SONDERBIOM_IDS.length * PRO_BIOM} Karten ohne Fehler.`);
 if (fehler) process.exitCode = 1;
 
 /*

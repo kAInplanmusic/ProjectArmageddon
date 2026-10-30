@@ -14,7 +14,7 @@
  * @module kulisseUndWasser
  */
 import { WATER_SCALE } from '../engine/match.js';
-import { BACKDROP_URLS } from './kulissenUrls.js';
+import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
 import { coverZuschnitt, glutStaerke } from './kulissenZuschnitt.js';
 import { mischeRgb as mischeFarbe } from './stil.js';
 import { zeichneWetterHinten } from './wetterLicht.js';
@@ -89,7 +89,7 @@ function zeichneKulisse(r) {
   /** Lädt die Hochkant-Fassung der Kulisse einmalig und nur bei Bedarf. */
 function ladeHochBild(r, backdrop) {
     if (r.backdropHochBild?.key === backdrop.key) return;
-    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.fileHoch}`];
+    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.fileHoch}`] ?? kulissenUrlNeu(backdrop.fileHoch);
     const eintrag = { key: backdrop.key, bild: null, bereit: false };
     r.backdropHochBild = eintrag;
     if (!url) return;

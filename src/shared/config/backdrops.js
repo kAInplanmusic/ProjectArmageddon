@@ -19,6 +19,7 @@
  *
  * @module backdrops
  */
+import { PALETTEN_NEU } from './backdrops-neu.js';
 
 /**
  * Technischer Zusatz für jede Erzeugung.
@@ -1007,7 +1008,7 @@ export const DEFAULT_TERRAIN_PALETTE = Object.freeze({
  */
 export function paletteFor(backdrop) {
   if (!backdrop?.key) return DEFAULT_TERRAIN_PALETTE;
-  return TERRAIN_PALETTES[backdrop.key] ?? DEFAULT_TERRAIN_PALETTE;
+  return TERRAIN_PALETTES[backdrop.key] ?? PALETTEN_NEU[backdrop.key] ?? DEFAULT_TERRAIN_PALETTE;
 }
 
 /**

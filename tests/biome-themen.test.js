@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { NEUE_BIOME, SONDERBIOM_IDS, THEMEN_BIOM_IDS, SONDERBIOM_IDS_FASSUNG_3 } from '../src/shared/config/biome-neu.js';
 import {
-  GELAENDE_BIOME, GELAENDE_THEMEN, GELAENDE_MATERIAL, GELAENDE_KOMPOSITION, GELAENDE_STANDARD, normalisiereGelaende, normalisiereBiomWahl, waehleSonderbiom, loeseGelaende,
+  GELAENDE_BIOME, GELAENDE_THEMEN, GELAENDE_MATERIAL, GELAENDE_KOMPOSITION, GELAENDE_BIOME_20, GELAENDE_STANDARD, normalisiereGelaende, normalisiereBiomWahl, waehleSonderbiom, loeseGelaende,
 } from '../src/shared/config/gelaende.js';
 import { stoffByKey } from '../src/shared/config/stoffe.js';
 import { BACKDROP_BIOMES } from '../src/shared/config/backdrops.js';
@@ -14,11 +14,12 @@ import { MatchController } from '../src/engine/match.js';
 import { stoffHash } from '../src/shared/stoffkarte.js';
 import { buildTerrainForSeed } from '../src/client/terrainPreview.js';
 
-test('Vier Themenbiome, Fassung 6 (Bauteilkarten) ist der Standard, Fassung 3 bleibt gültig, Fassung 2 kennt nur die neun', () => {
+test('Vier Themenbiome, Fassung 7 (Biome 15 bis 20, auf Fassung 6 mit Bauteilkarten) ist der Standard, Fassung 3 bleibt gültig, Fassung 2 kennt nur die neun', () => {
   assert.deepEqual([...THEMEN_BIOM_IDS], ['kosmos', 'surreal', 'fabrik', 'burg']);
   assert.equal(SONDERBIOM_IDS.length, 9);
   assert.equal(SONDERBIOM_IDS_FASSUNG_3.length, 13);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_KOMPOSITION);
+  assert.equal(GELAENDE_STANDARD, GELAENDE_BIOME_20);
+  assert.equal(normalisiereGelaende(GELAENDE_KOMPOSITION), GELAENDE_KOMPOSITION);
   assert.equal(normalisiereGelaende(GELAENDE_MATERIAL), GELAENDE_MATERIAL);
   assert.equal(normalisiereGelaende(GELAENDE_THEMEN), GELAENDE_THEMEN);
   assert.equal(normalisiereGelaende(GELAENDE_BIOME), GELAENDE_BIOME);

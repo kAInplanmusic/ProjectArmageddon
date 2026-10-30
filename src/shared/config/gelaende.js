@@ -27,12 +27,17 @@
  *   - `GELAENDE_KOMPOSITION` (6): Die Karte entsteht aus Bauteilen (`terrainKomposition.js`); die Kartenart zieht der
  *     Seed. Die Fassungen 1 bis 5 bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_BIOME_20` (7): Zusätzlich ziehen (und wählen) die Biome 15 bis 20 der Biom-SSOT (Schlackeschmiede,
+ *     Schwebearchipel, Tempelstadt, Tiefsee, Dimensionsriss, Kristallwald; `config/biome-fassung-7.js`, Rezepte in
+ *     `config/stoff-rezepte-material.js`). Die Ziehung läuft über zwanzig Kennungen; die Fassungen 1 bis 6 kennen die
+ *     sechs nicht und bleiben Bit für Bit gleich. Zufall nur aus dem Seed-Zweig „BIO“ (unverändert).
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
  */
 import { SeededRandom } from '../prng.js';
-import { SONDERBIOM_IDS, SONDERBIOM_IDS_FASSUNG_3, SONDERBIOM_IDS_FASSUNG_4 } from './biome-neu.js';
+import { SONDERBIOM_IDS, SONDERBIOM_IDS_FASSUNG_3, SONDERBIOM_IDS_FASSUNG_4, SONDERBIOM_IDS_FASSUNG_7 } from './biome-neu.js';
 import { PLANET_WAHL, PLANET_BIOM_IDS, planetArtAusZug } from './biome-planet.js';
 
 export const GELAENDE_ALT = 1;
@@ -43,11 +48,13 @@ export const GELAENDE_PLANET = 4;
 export const GELAENDE_MATERIAL = 5;
 /** Fassung 6: Karten aus Bauteilen (`terrainKomposition.js`: Insel, Höhle, Schlucht, Archipel, Vulkan, Ruinenstadt, Pyramide, Hochkant, Ebenen) statt Hügelfeld; Planet bleibt wie in 4. */
 export const GELAENDE_KOMPOSITION = 6;
-export const GELAENDE_STANDARD = GELAENDE_KOMPOSITION;
+/** Fassung 7: die Biome 15 bis 20 sind spielbar (`config/biome-fassung-7.js`); Karten und Rezepte der Biome 1 bis 14 bleiben wie in 6, nur die Ziehung läuft über zwanzig statt vierzehn Plätze. */
+export const GELAENDE_BIOME_20 = 7;
+export const GELAENDE_STANDARD = GELAENDE_BIOME_20;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */
@@ -59,6 +66,7 @@ const BIOM_FORK = 0x42494F;
 
 /** Die Kennungen, die eine Fassung ziehen und wählen kann. */
 function idsFuer(fassung) {
+  if (fassung >= GELAENDE_BIOME_20) return SONDERBIOM_IDS_FASSUNG_7;
   if (fassung >= GELAENDE_PLANET) return SONDERBIOM_IDS_FASSUNG_4;
   return fassung >= GELAENDE_THEMEN ? SONDERBIOM_IDS_FASSUNG_3 : SONDERBIOM_IDS;
 }

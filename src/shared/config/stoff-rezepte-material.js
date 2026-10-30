@@ -3,9 +3,9 @@
  * (`docs/biome-manifest.md`, Spalten Deck, Kern, Adern). Tiefen, Dichten und Plattenstreifen stammen aus den
  * Rezepten der Fassungen 2–4; ersetzt werden die Stoffe, damit sich die Form der Karte nicht ändert.
  *
- * Nur für die Sonderbiome und Planetenarten, die es im Spiel gibt. Die sechs neuen Biome der SSOT
- * (Schlackeschmiede, Schwebearchipel, Tempelstadt, Tiefsee, Dimensionsriss, Kristallwald) haben noch keine
- * Spieldefinition und damit auch kein Rezept hier.
+ * Nur für die Sonderbiome und Planetenarten, die es im Spiel gibt. Die sechs Biome 15 bis 20 der SSOT
+ * (Schlackeschmiede, Schwebearchipel, Tempelstadt, Tiefsee, Dimensionsriss, Kristallwald) stehen ganz unten; sie gibt es
+ * erst ab Gelände-Fassung 7 (`config/biome-fassung-7.js`), ihr Rezept hier gilt wie das der anderen ab Fassung 5.
  *
  * @module config/stoff-rezepte-material
  */
@@ -39,4 +39,12 @@ export const REZEPTE_MATERIAL = Object.freeze({
   planet_dschungel: ableiten('planet_dschungel', { deck: [['humus', 24]], kern: 'fels', adern: [{ stoff: 'wurzeln', dichte: 0.1, ab: 10, groesse: 4 }, { stoff: 'holz', dichte: 0.06, ab: 8, groesse: 4 }, { stoff: 'pilze', dichte: 0.12, ab: 20, groesse: 5 }] }),
   planet_rost: ableiten('planet_rost', { deck: [['schrott', 8], ['korrosion', 8]], kern: 'rostmetall', adern: [{ stoff: 'metall', dichte: 0.08, ab: 14, groesse: 4 }, { stoff: 'beton', dichte: 0.06, ab: 24, groesse: 6 }] }),
   planet_stein: ableiten('planet_stein', { deck: [['geroell', 26]], kern: 'fels', adern: [{ stoff: 'obsidian', dichte: 0.04, ab: 50 }, { stoff: 'kristalladern', dichte: 0.06, ab: 30, groesse: 5 }] }),
+  // Biome 15 bis 20 (Gelände-Fassung 7): Deck, Kern und Adern nach `docs/biome-manifest.md`. Wo das Manifest zwei Kernstoffe nennt
+  // (Schlackeschmiede: Keramik/Basalt), steht der eine als Kern und der andere als Ader; Metallschienen sind waagerechte Plattenstreifen.
+  schlackeschmiede: ableiten('schlackeschmiede', { deck: [['schlacke', 14], ['basalt', 46]], kern: 'basalt', adern: [{ stoff: 'keramik', dichte: 0.14, ab: 20, groesse: 5 }, { stoff: 'bimsstein', dichte: 0.07, ab: 12, groesse: 4 }, { stoff: 'obsidian', dichte: 0.05, ab: 50 }], platten: { stoff: 'metallschienen' } }),
+  kristallarchipel: ableiten('kristallarchipel', { deck: [['firnschnee', 14], ['klareis', 40]], kern: 'massivfels', adern: [{ stoff: 'klareiskristall', dichte: 0.2, ab: 16, groesse: 6 }, { stoff: 'magnetgestein', dichte: 0.07, ab: 30, groesse: 4 }] }),
+  tempelstadt: ableiten('tempelstadt', { deck: [['humus', 10], ['tempelstein', 26]], kern: 'tempelstein', adern: [{ stoff: 'alienharz', dichte: 0.12, ab: 16, groesse: 5 }, { stoff: 'pilzmyzel', dichte: 0.14, ab: 20, groesse: 4 }, { stoff: 'organische_tragwurzeln', dichte: 0.08, ab: 10, groesse: 5 }, { stoff: 'metallplatten', dichte: 0.05, ab: 24, groesse: 4 }] }),
+  tiefsee: ableiten('tiefsee', { deck: [['tiefseeschlamm', 16]], kern: 'tiefseebasalt', adern: [{ stoff: 'korrodiertes_metall', dichte: 0.08, ab: 14, groesse: 4 }, { stoff: 'koralle', dichte: 0.14, ab: 8, groesse: 5 }, { stoff: 'leuchtkristall', dichte: 0.05, ab: 30, groesse: 4 }, { stoff: 'hydrothermalablagerungen', dichte: 0.05, ab: 36, groesse: 4 }] }),
+  dimensionsriss: ableiten('dimensionsriss', { deck: [['instabiler_boden', 12]], kern: 'phasen_fels', adern: [{ stoff: 'zeitkristall', dichte: 0.14, ab: 12, groesse: 5 }, { stoff: 'glasfragmente', dichte: 0.12, ab: 10, groesse: 4 }, { stoff: 'metallfragmente', dichte: 0.05, ab: 20, groesse: 3 }, { stoff: 'stabilisatormaterial', dichte: 0.04, ab: 40, groesse: 3 }] }),
+  kristallwald: ableiten('kristallwald', { deck: [['moos', 14], ['versteinertes_holz', 22]], kern: 'versteinertes_holz', adern: [{ stoff: 'kristalladern', dichte: 0.14, ab: 14, groesse: 5 }, { stoff: 'kristallblaetter', dichte: 0.08, ab: 10, groesse: 4 }, { stoff: 'versteinerte_wurzeln', dichte: 0.1, ab: 20, groesse: 5 }, { stoff: 'leuchtpilzgewebe', dichte: 0.06, ab: 12, groesse: 4 }, { stoff: 'massivfels', dichte: 0.08, ab: 50 }] }),
 });

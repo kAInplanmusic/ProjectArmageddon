@@ -3,7 +3,7 @@
  *
  * Reine Darstellung. Aus der Liste zieht der Seed ein Bild; `planet` fehlt absichtlich (eigene generative Szene mit
  * Kosmos und Kugeln, `planetenKulisse.js`). Jeder Eintrag ist ein Schlüssel des Katalogs `config/backdrops.js`
- * (Prüfung in `tests/sonder-kulissen.test.js`).
+ * oder, für die Biome 15 bis 20, von `config/backdrops-neu.js` (Prüfung in `tests/sonder-kulissen.test.js`).
  *
  * @module sonderKulissen
  */
@@ -23,6 +23,14 @@ export const SONDER_KULISSEN = Object.freeze({
   surreal: Object.freeze(['abstract/surreal', 'abstract/vaporwave', 'abstract/psychedelic']),
   fabrik: Object.freeze(['urban/industrial_ruins', 'urban/neon_night']),
   burg: Object.freeze(['fantasy/castle_siege', 'alpine/war_ruins', 'fantasy/dragon_peak']),
+  // Biome 15 bis 20 (Geländefassung 7): Schlüssel aus `config/backdrops-neu.js` („biom/stimmung“). „Ragnarök“ ist im Katalog,
+  // kommt aber wie bei den klassischen Kulissen nicht in die automatische Wahl.
+  schlackeschmiede: Object.freeze(['schlackeschmiede/hell', 'schlackeschmiede/dunkel', 'schlackeschmiede/hoehle']),
+  kristallarchipel: Object.freeze(['kristallarchipel/hell', 'kristallarchipel/dunkel', 'kristallarchipel/hoehle']),
+  tempelstadt: Object.freeze(['tempelstadt/hell', 'tempelstadt/dunkel', 'tempelstadt/hoehle']),
+  tiefsee: Object.freeze(['tiefsee/hell', 'tiefsee/dunkel', 'tiefsee/hoehle']),
+  dimensionsriss: Object.freeze(['dimensionsriss/hell', 'dimensionsriss/dunkel', 'dimensionsriss/hoehle']),
+  kristallwald: Object.freeze(['kristallwald/hell', 'kristallwald/dunkel', 'kristallwald/hoehle']),
 });
 
 /**

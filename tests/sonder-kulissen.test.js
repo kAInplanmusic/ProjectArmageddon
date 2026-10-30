@@ -5,11 +5,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { SONDER_KULISSEN, sonderKulisseFuer } from '../src/client/sonderKulissen.js';
-import { SONDERBIOM_IDS_FASSUNG_4 } from '../src/shared/config/biome-neu.js';
+import { SONDERBIOM_IDS_FASSUNG_7 } from '../src/shared/config/biome-neu.js';
 import { ALL_BACKDROPS } from '../src/shared/config/backdrops.js';
+import { BACKDROPS_NEU } from '../src/shared/config/backdrops-neu.js';
 
 test('Jeder Schlüssel der Zuordnung ist eine Kulisse des Katalogs', () => {
-  const keys = new Set(ALL_BACKDROPS.map(b => b.key));
+  // Katalog der klassischen Kulissen plus der Biome 15 bis 20 (`config/backdrops-neu.js`, Fassung 7).
+  const keys = new Set([...ALL_BACKDROPS, ...BACKDROPS_NEU].map(b => b.key));
   for (const [biom, liste] of Object.entries(SONDER_KULISSEN)) {
     assert.ok(liste.length >= 2, `${biom}: mindestens zwei Bilder zur Auswahl`);
     for (const k of liste) assert.ok(keys.has(k), `${biom}: ${k} fehlt im Katalog`);
@@ -17,7 +19,7 @@ test('Jeder Schlüssel der Zuordnung ist eine Kulisse des Katalogs', () => {
 });
 
 test('Alle Sonderbiome haben Bilder, nur der Planet behält seine generative Szene', () => {
-  for (const id of SONDERBIOM_IDS_FASSUNG_4) {
+  for (const id of SONDERBIOM_IDS_FASSUNG_7) {
     if (id === 'planet') assert.equal(SONDER_KULISSEN[id], undefined);
     else assert.ok(SONDER_KULISSEN[id], `${id} ohne gemalte Kulisse`);
   }

@@ -24,7 +24,7 @@ test('Fassung 5 ist eine gültige Fassung und nicht die Vorgabe', () => {
 });
 
 test('Rezepte: jeder Stoff steht im Katalog, jede Schicht hat eine Tiefe, jedes Rezept nutzt neue Stoffe', () => {
-  assert.equal(IDS.length, 19);
+  assert.equal(IDS.length, 25); // 13 Sonderbiome + 6 Planetenarten + die Biome 15 bis 20 (Fassung 7)
   for (const id of IDS) {
     const r = REZEPTE_MATERIAL[id];
     for (const k of schluessel(r)) assert.ok(stoffByKey(k), `${id}: unbekannter Stoff ${k}`);

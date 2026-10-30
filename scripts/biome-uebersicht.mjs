@@ -18,7 +18,7 @@ const zeile = (id, b) => `| \`${id}\` | ${b.label ?? id} | ${b.mapPreset ?? '–
 const kopf = '| ID | Name | Kartenform | Wasser | Landmarken | Stoffe | Form (Bereiche) |\n|---|---|---|---|---|---|---|';
 
 let md = '# Biome und Gelände — Übersicht\n\n*Erzeugt mit `node scripts/biome-uebersicht.mjs` aus den Configs. Zahlen in Klammern: Tiefe der Deckschicht in Pixeln.*\n\n';
-md += `## Sonderbiome (Gelände-Fassung 2–4)\n\n${kopf}\n`;
+md += `## Sonderbiome (Gelände-Fassung 2–4 und 7)\n\n${kopf}\n`;
 for (const [id, b] of Object.entries(NEUE_BIOME)) if (!(id in THEMEN_BIOME)) md += zeile(id, b) + '\n';
 md += `\n## Themenbiome (Gelände-Fassung 3)\n\n${kopf}\n`;
 for (const [id, b] of Object.entries(THEMEN_BIOME)) md += zeile(id, b) + '\n';

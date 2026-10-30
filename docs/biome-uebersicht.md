@@ -2,7 +2,7 @@
 
 *Erzeugt mit `node scripts/biome-uebersicht.mjs` aus den Configs. Zahlen in Klammern: Tiefe der Deckschicht in Pixeln.*
 
-## Sonderbiome (Gelände-Fassung 2–4)
+## Sonderbiome (Gelände-Fassung 2–4 und 7)
 
 | ID | Name | Kartenform | Wasser | Landmarken | Stoffe | Form (Bereiche) |
 |---|---|---|---|---|---|---|
@@ -21,6 +21,12 @@
 | `planet_dschungel` | Planet: Dschungel | islands | void | none | Deck: erde (24); Kern: erde; Adern: holz 8 %, pilz 12 %, fels 8 % |  |
 | `planet_rost` | Planet: Rost | islands | void | none | Deck: regolith (16); Kern: fels; Adern: metall 8 %, beton 10 % |  |
 | `planet_stein` | Planet: Stein | islands | void | none | Deck: fels (26); Kern: fels; Adern: kristall 6 %, obsidian 4 % |  |
+| `schlackeschmiede` | Vulkanische Schlackeschmiede | mountains | lava | volcano, scrap_towers, mountain_ridge, cliff | Deck: asche (12), basalt (60); Kern: basalt; Adern: obsidian 5 %, fels 8 % | terrassen 0.45–0.85, steilheit 0.42–0.58, lippen 0.3–0.65, zerklueftung 1.1–1.7, wasser 0.1–0.24, hoehlung 0.02–0.1, landanteil 0.36–0.5, kessel 0.4–0.9 |
+| `kristallarchipel` | Kristallines Schwebearchipel | islands | void | floating_isles, ice_peaks, crystal_spires | Deck: schnee (14), eis (40); Kern: fels; Adern: kristall 20 %, obsidian 3 % | inseligkeit 0.32–0.45, landanteil 0.3–0.42, wasser 0–0.08, zusammenhaengung 0.4–0.6, kessel 0–0.3, steilheit 0.34–0.54, terrassen 0.1–0.5 |
+| `tempelstadt` | Bio-Alien-Tempelstadt | spires | acid, swamp_sludge | temple, ruins, forest_line, mushroom_grove | Deck: erde (14); Kern: fels; Adern: pilz 14 %, holz 12 %, metall 5 % | terrassen 0.4–0.8, steilheit 0.4–0.58, hoehlung 0.06–0.16, wasser 0.06–0.2, lippen 0.2–0.6, kessel 0.2–0.6, zerklueftung 1–1.6 |
+| `tiefsee` | Abyssale Tiefsee | flooded | deep_sea | kelp_forest, coral_reef, rock_arch, ruins | Deck: sand (16); Kern: basalt; Adern: koralle 14 %, metall 5 %, kristall 5 % | wasser 0.2–0.3, steilheit 0.34–0.54, hoehlung 0.04–0.14, landanteil 0.34–0.48, terrassen 0.3–0.7, zerklueftung 1–1.6, inseligkeit 0.05–0.25 |
+| `dimensionsriss` | Dimensionsriss | islands | void | floating_isles, crystal_spires, rock_arch, ruins | Deck: fels (10); Kern: fels; Adern: kristall 16 %, glas 12 %, obsidian 5 % | inseligkeit 0.3–0.45, zusammenhaengung 0.35–0.5, bruchstelle 0.5–0.7, kessel 0–0.4, zerklueftung 1.3–1.8, steilheit 0.4–0.58, wasser 0–0.08, landanteil 0.3–0.44 |
+| `kristallwald` | Versteinerter Kristallwald | hills | shallow_lake, void | forest_line, crystal_spires, rock_arch, mountain_ridge | Deck: erde (20); Kern: fels; Adern: holz 12 %, kristall 14 %, pilz 7 % | steilheit 0.3–0.5, landanteil 0.4–0.55, wasser 0.04–0.16, terrassen 0.2–0.6, zerklueftung 1–1.5, hoehlung 0.02–0.1, lippen 0.1–0.4 |
 
 ## Themenbiome (Gelände-Fassung 3)
 

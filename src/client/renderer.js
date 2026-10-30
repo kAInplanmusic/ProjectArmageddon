@@ -98,7 +98,7 @@ import { CRATE_TYPES } from '../engine/systems/lootSystem.js';
  * ein leerer Hintergrund. Der Selbsttest in `tests/backdrops.test.js` prüft die
  * Anzahl deshalb gegen die Dateien auf der Platte.
  */
-import { BACKDROP_URLS } from './kulissenUrls.js';
+import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
 
 const CRATE_COLORS = ['#dcdcdc', '#4cc9f0', '#a855f7', '#fbbf24'];
 const RARITY_COLORS = ['#e8eef5', '#4cc9f0', '#a855f7', '#fbbf24'];
@@ -356,7 +356,7 @@ export class Renderer {
     // Der Schlüssel muss dem des Glob-Musters entsprechen: `./assets/backdrops/...`
     // — nicht `../`, und nicht nur der Dateiname. Bei einem abweichenden
     // Schlüssel bleibt die Liste leer und es wird still kein Bild geladen.
-    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.file}`];
+    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.file}`] ?? kulissenUrlNeu(backdrop.file);
     if (!url) {
       // Fehlt die Datei, ist der Katalog und die Ablage auseinandergelaufen.
       // Der Farbverlauf bleibt stehen, damit das Spiel spielbar bleibt.
