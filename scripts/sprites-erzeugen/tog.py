@@ -19,7 +19,9 @@ import urllib.request
 from PIL import Image
 
 ENDPUNKT = "https://api.together.ai/v1/images/generations"
-MODELL = "black-forest-labs/FLUX.1-kontext-pro"
+# Pilot 2026-10-30: Kontext ignorierte die Vorlage bzw. lieferte keine Animation; flash-image-3.1 machte aus der Spinne
+# einen Humanoiden; gpt-image-2 (Referenz per `reference_images`) lieferte treue Figur, 4x2 Felder, verschiedene Posen.
+MODELL = "openai/gpt-image-2"
 
 
 def tog_gen(prompt, src, out, breite=1024, hoehe=768, modell=MODELL, steps=28, seed=5):
@@ -36,10 +38,13 @@ def tog_gen(prompt, src, out, breite=1024, hoehe=768, modell=MODELL, steps=28, s
     except ValueError:
         return "ERR Quellbild liegt nicht im Repo; fuer Kontext ist eine oeffentliche URL noetig"
     bild_url = "https://raw.githubusercontent.com/kAInplanmusic/ProjectArmageddon/main/" + rel
-    body = {
-        "model": modell, "prompt": prompt, "width": breite, "height": hoehe, "steps": steps, "seed": seed,
-        "image_url": bild_url,
-    }
+    if "kontext" in modell:
+        body = {
+            "model": modell, "prompt": prompt, "width": breite, "height": hoehe, "steps": steps, "seed": seed,
+            "image_url": bild_url,
+        }
+    else:
+        body = {"model": modell, "prompt": prompt, "reference_images": [bild_url], "size": "1024x1024", "n": 1}
     req = urllib.request.Request(
         ENDPUNKT, json.dumps(body).encode(),
         {"Authorization": "Bearer " + schluessel, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0"},

@@ -87,7 +87,9 @@ def main():
     blaetter = BLAETTER
     if args.figuren:
         gewaehlt = {t.strip() for t in args.figuren.split(",") if t.strip()}
-        figuren = [f for f in FIGUREN if f"{f[0]}/{f[1]}" in gewaehlt or f[1] in gewaehlt]
+        # Beliebige Figuren als fraktion/figur zulassen (nicht nur die sechs Standardfiguren).
+        figuren = [tuple(t.split("/", 1)) for t in sorted(gewaehlt) if "/" in t] or \
+            [f for f in FIGUREN if f[1] in gewaehlt]
     if args.blaetter:
         gewaehlt = {t.strip() for t in args.blaetter.split(",") if t.strip()}
         blaetter = [b for b in BLAETTER if b[0] in gewaehlt]
