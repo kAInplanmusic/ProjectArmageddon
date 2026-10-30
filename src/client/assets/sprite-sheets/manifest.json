@@ -27,9 +27,10 @@
    "walk": "beasts/01_shrew-quakes__walk.webp",
    "zustand": "beasts/01_shrew-quakes__zustand.webp",
    "rollen": {
-    "hocke": 3,
+    "hocke": 4,
     "idle": [0, 1],
     "luft": 2,
+    "tod": 7,
     "treffer": 5
    },
    "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
@@ -40,6 +41,7 @@
    "walk": "beasts/02_storm-talon__walk.webp",
    "zustand": "beasts/02_storm-talon__zustand.webp",
    "rollen": {
+    "hocke": 6,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
@@ -80,8 +82,8 @@
    "walk": "beasts/12_magma-plate__walk.webp",
    "zustand": "beasts/12_magma-plate__zustand.webp",
    "rollen": {
-    "hocke": 1,
-    "idle": [0, 4],
+    "hocke": 4,
+    "idle": [0, 3],
     "luft": 2,
     "tod": 7,
     "treffer": 5
@@ -163,11 +165,14 @@
    "walk": "datacult/02_chrome-code-shifter__walk.webp",
    "zustand": "datacult/02_chrome-code-shifter__zustand.webp",
    "rollen": {
+    "hocke": 4,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
-   }
+   },
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/10_quantum-qubit-knight": {
    "aktion": "datacult/10_quantum-qubit-knight__aktion.webp",
@@ -188,10 +193,14 @@
    "walk": "datacult/11_synapse-streamer__walk.webp",
    "zustand": "datacult/11_synapse-streamer__zustand.webp",
    "rollen": {
-    "tod": 7
+    "hocke": 3,
+    "idle": [0, 1],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 3, 5, 6, 7],
-   "gehenOk": 7
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/12_arcology-agent": {
    "aktion": "datacult/12_arcology-agent__aktion.webp",
@@ -212,7 +221,7 @@
    "walk": "datacult/20_buffer-flow-swarm__walk.webp",
    "zustand": "datacult/20_buffer-flow-swarm__zustand.webp",
    "rollen": {
-    "idle": [0, 4],
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
@@ -225,19 +234,21 @@
    "walk": "datacult/21_hyper-link-hound__walk.webp",
    "zustand": "datacult/21_hyper-link-hound__zustand.webp",
    "rollen": {
-    "hocke": 3,
+    "hocke": 4,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
-   }
+   },
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "datacult/22_ethereo": {
    "aktion": "datacult/22_ethereo__aktion.webp",
    "walk": "datacult/22_ethereo__walk.webp",
    "zustand": "datacult/22_ethereo__zustand.webp",
    "rollen": {
-    "hocke": 6,
+    "hocke": 3,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
@@ -307,11 +318,10 @@
    "walk": "machina/11_heavy-battery-moerser-bot__walk.webp",
    "zustand": "machina/11_heavy-battery-moerser-bot__zustand.webp",
    "rollen": {
-    "hocke": 3,
     "idle": [0, 1],
     "luft": 2,
     "tod": 7,
-    "treffer": 6
+    "treffer": 5
    },
    "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
    "gehenOk": 8
@@ -478,8 +488,8 @@
     "tod": 7,
     "treffer": 5
    },
-   "gehen": [0, 1, 2, 3, 4, 5, 5, 7],
-   "gehenOk": 7
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pirates/22_chanteyman-drake": {
    "aktion": "pirates/22_chanteyman-drake__aktion.webp",
@@ -500,7 +510,11 @@
    "walk": "pixel/00_nullpointer-exception__walk.webp",
    "zustand": "pixel/00_nullpointer-exception__zustand.webp",
    "rollen": {
-    "tod": 7
+    "hocke": 4,
+    "idle": [0, 1],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
    },
    "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
    "gehenOk": 8
@@ -537,8 +551,8 @@
    "walk": "pixel/10_arcershorn-a__walk.webp",
    "zustand": "pixel/10_arcershorn-a__zustand.webp",
    "rollen": {
-    "hocke": 3,
-    "idle": [0, 4],
+    "hocke": 6,
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
@@ -550,9 +564,15 @@
    "aktion": "pixel/11_pyrowand-a__aktion.webp",
    "walk": "pixel/11_pyrowand-a__walk.webp",
    "zustand": "pixel/11_pyrowand-a__zustand.webp",
-   "rollen": {},
-   "gehen": [0, 1, 2, 3, 4, 5, 5, 7],
-   "gehenOk": 7
+   "rollen": {
+    "hocke": 6,
+    "idle": [0, 1],
+    "luft": 2,
+    "tod": 7,
+    "treffer": 5
+   },
+   "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
+   "gehenOk": 8
   },
   "pixel/12_shieldmon": {
    "aktion": "pixel/12_shieldmon__aktion.webp",
@@ -790,6 +810,7 @@
    "rollen": {
     "idle": [0, 1],
     "luft": 2,
+    "tod": 7,
     "treffer": 5
    },
    "gehen": [0, 1, 2, 3, 4, 5, 6, 7],
@@ -898,7 +919,8 @@
    "walk": "undead/10_archer-mortis__walk.webp",
    "zustand": "undead/10_archer-mortis__zustand.webp",
    "rollen": {
-    "idle": [0, 4],
+    "hocke": 3,
+    "idle": [0, 1],
     "luft": 2,
     "tod": 7,
     "treffer": 5
