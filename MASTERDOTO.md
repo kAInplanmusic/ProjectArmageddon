@@ -6982,6 +6982,14 @@ Auftrag des Auftraggebers (Spracheingabe) in vier Schritten, jeder ein eigener C
   Heiler: Heilzauber nimmt zusätzlich Frost, Heilspritze Schock (`reinigt`); ein Element mit Spur ist dort nicht sinnvoll. Namen, Beschreibungen, Wirkungstexte und Animationen nachgezogen; Fassung 10 sieht nichts davon.
 
 
+### Waffenfassung 13 (`config.waffen: 13`, Standard, 2026-11-02)
+
+EREIGNIS-1: Zauberpeitsche (`pa_108`) und Tesla-Turm (`pa_129`) maßen in `npm run balance:waffen` 0 Schaden. Ursache: `hasLineOfSight`
+(`src/engine/shooting.js`) prüfte die Zielgerade über die volle Reichweite der Waffe, nicht bis zum Ziel; ein Hang HINTER dem Gegner
+sperrte den Schuss, obwohl der Strahl am Gegner endet. Ab Fassung 13 endet die Gerade an der ersten Figur (dieselbe Haltestelle wie
+`resolveHitscan`). Keine Katalogwerte geändert; Fassung 12 und älter prüfen wie bisher (bitgleich). Messung danach: Zauberpeitsche 32,
+Tesla-Turm 48 (Katalogwerte), Ausreißer 0. Test: `tests/sichtlinie-fassung13.test.js`.
+
 ## UI-Design (Stand 2026-10-21, Vorlage des Auftraggebers)
 
 - `src/client/styles/tokens.css`: einzige Quelle für Farben, Radien, Schatten, Schriftgrößen, Abstände, Fokus-Ring (Hochkontrast über `prefers-contrast: more`); `design.css` bindet sie ein und enthält keine eigene Palette.

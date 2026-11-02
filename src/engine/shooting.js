@@ -49,7 +49,7 @@
  */
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
-import { getWaffe, WAFFEN_VORSTRAHL } from '../shared/config/waffen-fassung.js';
+import { getWaffe, WAFFEN_VORSTRAHL, WAFFEN_SICHT } from '../shared/config/waffen-fassung.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { bodenNaheHoehe } from './boden.js';
@@ -620,10 +620,17 @@ export function hasLineOfSight(quelle, playerId, angle, power, weapon = null) {
   else if (dirY > 1e-6) laenge = Math.min(laenge, (quelle.height - 1 - start.y) / dirY);
   if (!Number.isFinite(laenge) || laenge <= 1) return false;
 
+  /*
+   * Waffenfassung 13 (EREIGNIS-1): Die Gerade endet an der ersten Figur — dort endet auch der Strahl
+   * (`resolveHitscan` hält an Gestein ODER Figur). Bis Fassung 12 lief sie über das Ziel hinaus bis
+   * zur vollen Reichweite; ein Hang HINTER dem Gegner sperrte den Schuss (bitgleich erhalten).
+   */
+  const bisZurFigur = quelle.waffenFassung >= WAFFEN_SICHT;
   const blocker = raycastSegment(start.x, start.y, start.x + dirX * laenge, start.y + dirY * laenge, {
     isSolid: (x, y) => quelle.terrain.isSolid(x, y),
+    hitTest: bisZurFigur ? (x, y) => quelle.playerAt(x, y, playerId) !== null : null, // Kennung 0 ist eine Figur
   });
-  return blocker === null;
+  return blocker === null || (bisZurFigur && blocker.terrain === false);
 }
 
 /**
