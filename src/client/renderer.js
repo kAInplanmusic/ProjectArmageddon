@@ -82,7 +82,9 @@ import {
  * Motor (`CRATE_TYPES`); hier gelesen, nicht als zweite Zahlenliste geführt —
  * sonst zeigte die Anzeige irgendwann eine andere Kiste als die, die dort liegt.
  */
-import { CRATE_TYPES } from '../engine/systems/lootSystem.js';
+import { CRATE_TYPES, RARITY_IDS } from '../engine/systems/lootSystem.js';
+import { LOOT_DROP_RULES } from '../shared/config/loot.js';
+import { KISTE_KANTE } from '../shared/config/kisten.js';
 
 /**
  * Kulissen-URLs, von Vite aufgelöst.
@@ -100,8 +102,12 @@ import { CRATE_TYPES } from '../engine/systems/lootSystem.js';
  */
 import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
 
-const CRATE_COLORS = ['#dcdcdc', '#4cc9f0', '#a855f7', '#fbbf24'];
-const RARITY_COLORS = ['#e8eef5', '#4cc9f0', '#a855f7', '#fbbf24'];
+/*
+ * Seltenheitsfarbe einer Kiste: aus `LOOT_DROP_RULES.rarityColors` (config/loot.js), dieselbe Tabelle
+ * wie in der Kaderansicht (ENG-3, Duplikate-Bericht Fund 12). Hier standen zwei eigene Listen
+ * (Kistentyp- und Seltenheitsfarben), schon zur Hälfte von der Config abgedriftet.
+ */
+const kistenFarbe = stufe => LOOT_DROP_RULES.rarityColors[RARITY_IDS[stufe]] ?? LOOT_DROP_RULES.rarityColors.standard;
 
 export class Renderer {
   constructor(canvas) {
@@ -1130,8 +1136,8 @@ export class Renderer {
 
   #drawCrates(crates) {
     for (const crate of crates) {
-      const color = RARITY_COLORS[crate.rarity] ?? CRATE_COLORS[0];
-      const size = 14;
+      const color = kistenFarbe(crate.rarity);
+      const size = KISTE_KANTE;
       this.ctx.save();
       this.ctx.translate(crate.x, crate.y);
       this.ctx.fillStyle = 'rgba(0,0,0,0.35)';

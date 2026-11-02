@@ -11,7 +11,7 @@ import { COMPONENT_SIGNATURES } from '../ecs/world.js';
 import {
   weightedRarity, rollCrateCount, rollCrateContents, LOOT_DROP_RULES,
 } from '../../shared/config/loot.js';
-import { KISTEN_ALT, KISTEN_OFT, KISTEN_STANDARD, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_MUNITION_STUFE, KISTEN_STUFEN_GEWICHT } from '../../shared/config/kisten.js';
+import { KISTEN_ALT, KISTEN_OFT, KISTEN_STANDARD, KISTEN_WAFFEN, KISTEN_MUNITION, KISTEN_MUNITION_STUFE, KISTEN_STUFEN_GEWICHT, KISTE_KANTE } from '../../shared/config/kisten.js';
 import { MUNITION_KISTE_MIN, MUNITION_KISTE_MAX } from '../../shared/config/munition.js';
 import { pickWeaponForRarity, hasSpecialEffect, WEAPONS, WEAPONS_BY_ID } from '../../shared/config/weapons.js';
 
@@ -254,7 +254,7 @@ export class LootSystem {
     for (let i = 0; i < amount; i++) {
       const x = Math.round(activeRng.nextFloat(width * 0.08, width * 0.92));
       const groundY = surfaceYFor(x);
-      const y = (groundY > 0 ? groundY : height * 0.5) - 14;
+      const y = (groundY > 0 ? groundY : height * 0.5) - KISTE_KANTE;
 
       const entityId = legeKiste(world, activeRng, x, y, kisten);
       spawned.push(entityId);
