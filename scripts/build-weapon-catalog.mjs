@@ -208,14 +208,11 @@ export const WEAPON_IDENTITIES = Object.freeze({
     displayName: 'Gleitschirm',
     concept: 'Weiter, aber mit Pause',
     /*
-     * ACHTUNG — „weiter" ist heute NICHT eingeloest. Das Konzept steht am
-     * `effectMagnitude` (150 gegen 64 beim Raketenrucksack), aber
-     * `buildEffect` in `src/engine/specials.js` liest diesen Wert nicht: Beide
-     * Geraete springen 60 px (SPECIAL_DEFAULTS.moveDistance). Unterschiedlich
-     * sind nur Munition (3 gegen 6) und Abklingzeit (2 gegen 0) — das traegt
-     * „mit Pause", nicht „weiter". Die Luecke steht in
-     * `FELDER_OHNE_PRODUKTLESER_OFFEN` weiter unten; der Leser gehoert nach
-     * `src/engine/specials.js`.
+     * „Weiter" loest seit Waffenfassung 10 die Wirkdistanz ein (`WAFFEN_F10_WERTE`:
+     * Gleitschirm 160 px gegen Raketenrucksack 100 px), nicht `effectMagnitude`.
+     * Bis Fassung 9 springen beide 60 px (SPECIAL_DEFAULTS.moveDistance); das bleibt
+     * so, damit alte Aufzeichnungen bitgleich laufen. `effectMagnitude` ist die
+     * Design-Kennzahl der Identitaet, siehe `FELDER_OHNE_PRODUKTLESER_BEWUSST`.
      */
     overrides: { damage: 0, effectMagnitude: 150, maxAmmo: 3, cooldownTurns: 2 },
   },
@@ -784,6 +781,12 @@ export const FELDER_OHNE_PRODUKTLESER_BEWUSST = Object.freeze({
   sourceRarity: 'Unveraenderte Raritaet der Designdatei (common/uncommon/rare) neben dem '
     + 'abgeleiteten `powerTier`. `npm run balance` berichtet beide, um die Ableitung pruefbar '
     + 'zu halten.',
+  effectMagnitude: 'Design-Kennzahl der Weite bei den vier Flug-/Sprunggeraeten (64/72/150/165), '
+    + 'Adressat ist die Identitaetspruefung (`tests/weapon-identity.test.js`: Abwaegung je Paar). '
+    + 'Der Motor liest sie bewusst NICHT: Die gespielte Weite steht seit Waffenfassung 10 in '
+    + '`wirkung.distance` (`WAFFEN_F10_WERTE`, Raketenrucksack 100, Gleitschirm 160, '
+    + 'Dimensionssprung 80, Dimensionsriss 165); ein Leser im Katalogpfad haette die Fassungen '
+    + '1 bis 9 veraendert (dort springen alle vier 60 px). ENG-8, entschieden 2026-11-02.',
 });
 
 /**
@@ -794,14 +797,7 @@ export const FELDER_OHNE_PRODUKTLESER_BEWUSST = Object.freeze({
  * einloesen muesste, ist nicht da. Nachgetragen wird er in `src/` — nicht hier.
  */
 export const FELDER_OHNE_PRODUKTLESER_OFFEN = Object.freeze({
-  effectMagnitude: 'Wirkungsstaerke fuer Verschiebungen (Sprung, Teleport): Werte 64/72/150/165 '
-    + 'bei den vier Flug-/Sprunggeraeten. GEMESSEN (2026-09-27): `buildEffect` in '
-    + '`src/engine/specials.js` setzt fuer MOVE/PULL `distance: SPECIAL_DEFAULTS.moveDistance` '
-    + '(60) — die Waffe wird NICHT befragt. Folge in Zahlen: Raketenrucksack (64) und '
-    + 'Gleitschirm (150) springen beide exakt 60 px, obwohl die Identitaeten „kurzer, haeufiger '
-    + 'Satz" gegen „weit, aber mit Pause" zusagen. Sie unterscheiden sich nur ueber Munition '
-    + 'und Abklingzeit. Der Leser gehoert in den MOVE-Zweig von `buildEffect`; '
-    + '`src/engine/specials.js` ist nicht Teil dieses Auftrags (sieben andere Arbeiter).',
+  // Leer seit 2026-11-02: `effectMagnitude` ist begruendet (siehe BEWUSST), die Weite kommt aus Fassung 10.
 });
 
 const SPECIAL_WITHOUT_DAMAGE = new Set([

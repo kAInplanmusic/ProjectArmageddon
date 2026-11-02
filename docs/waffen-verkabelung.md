@@ -154,6 +154,14 @@ Leser, das dort nicht steht, lässt den Test rot werden.**
 
 ### 3b. Offene Lücke (1) — Leser fehlt, gemeldet
 
+> **Nachtrag 2026-11-02 (ENG-8, entschieden):** Die Lücke ist geschlossen, aber nicht über diesen
+> Leser. Seit Waffenfassung 10 trägt `wirkung.distance` (`WAFFEN_F10_WERTE`) die gespielte Weite:
+> Raketenrucksack 100, Gleitschirm 160, Dimensionssprung 80, Dimensionsriss 165 px. `effectMagnitude`
+> steht deshalb jetzt in `FELDER_OHNE_PRODUKTLESER_BEWUSST` (Design-Kennzahl für
+> `tests/weapon-identity.test.js`); `FELDER_OHNE_PRODUKTLESER_OFFEN` ist leer. Ein Leser im
+> Katalogpfad hätte die Fassungen 1 bis 9 verändert, dort springen alle vier weiter 60 px.
+> Regressionstest: `tests/engine-dubletten.test.js` (ENG-8). Der Text unten ist der Stand vom 2026-09-27.
+
 | Feld | Waffen mit Wert | Befund |
 |---|---:|---|
 | `effectMagnitude` | 4 (64 / 72 / 150 / 165) | **Der Motor befragt den Wert nicht.** `buildEffect` (`src/engine/specials.js`) setzt für `MOVE`/`PULL` `distance: SPECIAL_DEFAULTS.moveDistance` = **60** für alle. Gemessen: Raketenrucksack (`pa_032`, 64) und Gleitschirm (`pa_114`, 150) springen **beide exakt 60 px** — die zugesagte Abgrenzung „kurzer, häufiger Satz" gegen „weit, aber mit Pause" existiert im Spiel **nicht**; die beiden unterscheiden sich nur über Munition (6/3) und Abklingzeit (0/2). Dasselbe gilt für Dimensionssprung (72) / Dimensionsriss (165). |
@@ -320,8 +328,8 @@ deshalb nicht getan.
 
 ## 8. Offene Punkte — Vorschläge, nicht ausgeführt
 
-1. **`effectMagnitude` verdrahten** (`src/engine/specials.js`, `MOVE`/`PULL`) —
-   sonst bleibt „weit" ein Wort (Abschnitt 3b).
+1. ~~**`effectMagnitude` verdrahten**~~ — erledigt anders: Weite aus Waffenfassung 10
+   (`wirkung.distance`), Feld begründet ohne Leser (Abschnitt 3b, Nachtrag 2026-11-02).
 2. **Kisten-Rarität abwerfen: `match.js:2179`** bildet drei Waffennamen auf vier
    Kistennamen ab und trifft deshalb immer 0 (Abschnitt 5).
 3. **`targeting` bekommt einen Verbraucher** — oder wird als Prüfbasis ohne
