@@ -15,6 +15,14 @@ Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Beri
 - Hetzner-Probeserver (Z246): bis etwa 25 €/Monat, ohne GPU, Auto-Shutdown nach 15 Minuten ohne eingeloggten Nutzer, vor dem Abschalten immer Snapshot; Token liegt nicht in der Sitzung.
 - Z579 (Rendermessung): Zielgerät iPhone 18 Pro oder Asus-Laptop; der Auftraggeber führt keine Befehle aus, es muss automatisiert gehen.
 - Waffenmenü: Kacheln mit Dropdown nach Kategorien, Untermenü mit Waffen, keine freien Tasten.
+- 2026-11-02: Gelände je Biom unterscheidbarer bauen (N-29, neue Geländefassung, erst Kontaktbogen 3 Seeds/Biom).
+- 2026-11-02: Name/Bild-Brüche der Waffen (N-06) durch neu erzeugte Bilder lösen, Namen bleiben.
+- 2026-11-02: Sprite-Neuerzeugung (N-01, SPR-1 bis SPR-5) mit Budget bis 15 USD (Together gpt-image-2).
+- 2026-11-02: Emotionen der Nicht-Humanoiden: Pilot über 3-D-Modell aus dem Seitenbild an einer Figur.
+- 2026-11-02: Seed (UI-5): jede Partie eine neue Karte, keine zweimal; das Feld bleibt leer (keine Vorbelegung).
+- 2026-11-02: Es gibt kein lokales Spiel; eine Pause (STDMECH-1) wird nicht gebaut.
+- 2026-11-02: Technische Doppelungen entscheidet der Agent: `sourceRarity` streichen (ENG-10), Lobby nach Auto-Start `running` (SRV-3), ungültiges JSON → HTTP 400 (HTTP-1).
+- 2026-11-02: Seil (SEIL-1): Der Auftraggeber misst die Konstanten selbst in Worms Armageddon.
 
 ## Anhang-Hinweis: Referenzwissen bleibt als Dokument erhalten
 Spezifikationen, Betriebs- und Biom-Dokus, Balance-Daten und alles, was Tests/Skripte per Pfad lesen, bleiben bestehen (Liste am Ende, Abschnitt 5).
