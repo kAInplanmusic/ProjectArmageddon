@@ -21,11 +21,17 @@ jobs:
 
       - run: npm ci
 
+      # Verkabelung (BLD-2): lädt die vier Einstiegspunkte (shared, engine, server, client) einmal.
+      # ~2 s; fällt sofort, wenn ein Import ins Leere zeigt, noch bevor Lint und Tests laufen.
+      - name: Verkabelung (validate)
+        run: npm run validate
+
       # Linting läuft zuerst: es findet Fehler schneller als die Testsuite.
       - name: Lint
         run: npm run lint
 
-      # AUDIT-BEFUND (2026-09-20): Die 19 Prüfwerkzeuge (check:fuses,
+      # AUDIT-BEFUND (2026-09-20): Die damals 19 Prüfwerkzeuge (heute mehr, Liste
+      # `GATES` in scripts/checks.mjs) (check:fuses,
       # check:effects, matrix:check, check:achievements, check:time …) liefen in
       # dieser Pipeline NICHT. Sie haben eigene Exit-Codes und sind damit Gates —
       # aber ein Gate, das niemand aufruft, ist eine Empfehlung. Genau so konnten
@@ -56,6 +62,43 @@ jobs:
       # Es schlägt fehl, wenn mehr als 5 % der Ticks über 16,7 ms liegen.
       - name: Performance-Budget
         run: npm run perf -- --ticks=12000
+
+  # Balance-Bericht (BLD-2): Messung über den ganzen Waffenkatalog, ~1,5 min, eigener Job
+  # (verlängert die Pipeline nicht). Er ist ein BERICHT, kein Gate — `balance-report.mjs`
+  # endet nur bei falschen Argumenten mit Fehler; seine Rechenwege prüft
+  # `tests/balance-report.test.js` in `npm test`. Das Ergebnis liegt als Artefakt bei jedem
+  # Lauf vor, damit Balance-Änderungen zwischen zwei Commits vergleichbar sind.
+  #
+  # `smoke:fast` läuft hier bewusst NICHT: Es ist validate + Lint + ein Ausschnitt von
+  # `npm test` + Serverstart — alles steht oben schon vollständig in der Pipeline.
+  balance:
+    name: Balance-Bericht
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Balance messen
+        shell: bash # mit pipefail: ein Abbruch vor `tee` macht den Schritt rot
+        run: |
+          npm run --silent balance | tee balance.txt
+          npm run --silent balance -- --json > balance.json
+
+      - name: Balance-Bericht ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: balance
+          path: |
+            balance.txt
+            balance.json
+          retention-days: 30
 
   e2e:
     name: Browser-Tests
