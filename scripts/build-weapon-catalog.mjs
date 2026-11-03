@@ -778,9 +778,6 @@ export const FELDER_OHNE_PRODUKTLESER_BEWUSST = Object.freeze({
   requiresLineOfSightSource: 'Herkunftsnachweis der Sichtlinie (`none`/`derived`/`source`). '
     + '`npm run check:damage-types` prueft damit, dass ein Sichtlinien-Verlangen aus der '
     + 'Designdatei stammt und nicht erfunden wurde.',
-  sourceRarity: 'Unveraenderte Raritaet der Designdatei (common/uncommon/rare) neben dem '
-    + 'abgeleiteten `powerTier`. `npm run balance` berichtet beide, um die Ableitung pruefbar '
-    + 'zu halten.',
   effectMagnitude: 'Design-Kennzahl der Weite bei den vier Flug-/Sprunggeraeten (64/72/150/165), '
     + 'Adressat ist die Identitaetspruefung (`tests/weapon-identity.test.js`: Abwaegung je Paar). '
     + 'Der Motor liest sie bewusst NICHT: Die gespielte Weite steht seit Waffenfassung 10 in '
@@ -1081,7 +1078,9 @@ const weapons = raw.weapons.map(entry => {
   const terrainDamage = pickPositive(stats, 'terrain_damage', 'terrainDamage');
   const { damage, damageSource } = resolveDamage(stats);
 
-  const sourceRarity = balance.rarity ?? 'common';
+  // ENG-10: `rarity` ist die Raritaet der Designdatei (common/uncommon/rare); die frueher daneben
+  // gefuehrte Kopie `sourceRarity` war bei allen 150 Waffen identisch und ist gestrichen.
+  const rarity = balance.rarity ?? 'common';
 
   const weapon = {
     id: entry.id,
@@ -1096,9 +1095,8 @@ const weapons = raw.weapons.map(entry => {
     /** Selbst-/Hilfsmittel statt Waffe (siehe GADGET_IDS): nur Anzeige und Ordnung, die Kategorie bleibt. */
     gadget: GADGET_IDS.includes(entry.id),
     icon: entry.icon?.file ?? null,
-    rarity: sourceRarity,
-    /** Rarität aus den Quelldaten (nur common/uncommon/rare). */
-    sourceRarity,
+    /** Rarität aus den Quelldaten (nur common/uncommon/rare); die Stufe der Stärke ist `powerTier`. */
+    rarity,
     maxAmmo: Math.max(0, toNumber(balance.maxAmmo) || 1),
     /**
      * Nachladezeit in Zügen, hergeleitet aus der Last der Waffe.

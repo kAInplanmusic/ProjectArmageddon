@@ -49,11 +49,20 @@ const PRUEFSUMME_F2 = 'd8b3632fc9c9a9057b6b063c4f8a26afff05e58bd3f5bc440aed357c6
 // `gadget` (2026-10-29) ist ebenfalls reine Anzeige (Gruppe im Waffenmenü); kein Motor, keine Beute und kein Kit liest es.
 const ANZEIGETEXTE = new Set(['displayName', 'description', 'gadget']);
 
+/*
+ * ENG-10: `sourceRarity` ist aus dem Katalog gestrichen; sie war bei allen 150 Waffen gleich `rarity`.
+ * Die Prüfsummen wurden MIT diesem Feld gemessen. Für den Vergleich wird es deshalb aus `rarity`
+ * zurückgewonnen: Stimmt die Prüfsumme weiter, ist belegt, dass die Streichung nichts anderes bewegt hat.
+ */
+const mitQuellRaritaet = x => (x && typeof x === 'object' && 'id' in x && 'rarity' in x && !('sourceRarity' in x)
+  ? { ...x, sourceRarity: x.rarity } : x);
+
 function stabil(wert) {
   return JSON.stringify(wert, (k, x) => {
     if (ANZEIGETEXTE.has(k)) return undefined;
-    return x && typeof x === 'object' && !Array.isArray(x)
-      ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b))) : x;
+    const y = mitQuellRaritaet(x);
+    return y && typeof y === 'object' && !Array.isArray(y)
+      ? Object.fromEntries(Object.entries(y).sort(([a], [b]) => a.localeCompare(b))) : y;
   });
 }
 

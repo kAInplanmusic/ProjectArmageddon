@@ -73,7 +73,7 @@ const KATALOG_FELDER = [
   'effectMagnitude', 'elemental', 'fuseIntent', 'fuseTime', 'gravityScale', 'homing', 'icon',
   'iconPath', 'id', 'index', 'internalName', 'knockback', 'maxAmmo', 'maxRange', 'piercing',
   'powerScore', 'powerTier', 'projectileSpeed', 'rarity', 'requiresLineOfSight',
-  'requiresLineOfSightSource', 'sourceRarity', 'special', 'speedFactor', 'strikeStyle',
+  'requiresLineOfSightSource', 'special', 'speedFactor', 'strikeStyle',
   'subcategory', 'gadget', 'targeting', 'terrainDamage',
 ];
 
@@ -119,14 +119,14 @@ test('Der Katalog traegt genau die dokumentierten Feldnamen', () => {
     + 'Ein durchgereichtes Fremdfeld (Beispiel: `cooldownTurns`) faellt hier auf.');
 });
 
-test('Jede Waffe traegt 42 oder 43 Felder (seit dem Feld gadget) — keines fehlt', () => {
+test('Jede Waffe traegt 41 oder 42 Felder (seit gadget, ohne die Doppelspur sourceRarity, ENG-10) — keines fehlt', () => {
   for (const waffe of WEAPONS) {
     const anzahl = Object.keys(waffe).length;
-    assert.ok(anzahl === 42 || anzahl === 43,
-      `${waffe.id} (${waffe.displayName}) traegt ${anzahl} Felder statt 42/43`);
+    assert.ok(anzahl === 41 || anzahl === 42,
+      `${waffe.id} (${waffe.displayName}) traegt ${anzahl} Felder statt 41/42`);
     // `concept` ist der einzige ungleiche Feldname: nur die acht Identitaeten.
     const hatConcept = Object.prototype.hasOwnProperty.call(waffe, 'concept');
-    assert.equal(hatConcept, anzahl === 43,
+    assert.equal(hatConcept, anzahl === 42,
       `${waffe.id}: concept und Feldzahl passen nicht zusammen`);
   }
 });
