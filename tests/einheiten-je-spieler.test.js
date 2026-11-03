@@ -102,7 +102,7 @@ test('Ein Beitritt belegt IMMER ein ganzes Team — auch ohne unitsPerPlayer', (
    * vorher, und er widersprach den Matcharten.
    */
   const manager = new LobbyManager();
-  const { lobby } = manager.create({ teams: 2, playersPerTeam: 2 });
+  const { lobby, player: host } = manager.create({ teams: 2, playersPerTeam: 2 });
 
   assert.equal(lobby.capacity, 4, 'zwei Teams × zwei Einheiten');
   assert.equal(lobby.seatsTotal, 2, 'zwei Menschen passen hinein');
@@ -121,6 +121,9 @@ test('Ein Beitritt belegt IMMER ein ganzes Team — auch ohne unitsPerPlayer', (
 
   assert.equal(manager.describe(lobby.id).occupied, 2);
   assert.equal(manager.describe(lobby.id).seatsTotal, 2);
+  // SRV-2: Der per `create` reservierte Host-Platz zählt erst mit seinem Beitritt als verbunden.
+  assert.equal(manager.alleTeamsBesetzt(lobby.id), false, 'Host noch ohne Socket');
+  manager.join(lobby.id, { name: 'Host', token: host.token });
   assert.equal(manager.alleTeamsBesetzt(lobby.id), true);
 });
 

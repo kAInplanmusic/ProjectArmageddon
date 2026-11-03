@@ -88,6 +88,13 @@ test('Verbindungen und Lobbys werden gezählt', { timeout: 30_000 }, async () =>
       body: JSON.stringify({ teams: 2, playersPerTeam: 1, seed: 4242 }),
     }).then(response => response.json());
 
+    // SRV-2: Der Host-Platz ist bis zum Beitritt mit Token nur reserviert — ohne Host-Socket startet nichts.
+    const host = new TestClient(`ws://127.0.0.1:${info.port}/ws`);
+    clients.push(host);
+    await host.opened;
+    host.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Host', token: created.player.token });
+    await host.waitFor(CONTROL.WELCOME);
+
     const client = new TestClient(`ws://127.0.0.1:${info.port}/ws`);
     clients.push(client);
     await client.opened;
@@ -98,7 +105,7 @@ test('Verbindungen und Lobbys werden gezählt', { timeout: 30_000 }, async () =>
     await new Promise(resolve => setTimeout(resolve, 600));
 
     const health = await (await fetch(`${info.url}/healthz`)).json();
-    assert.equal(health.metrics.connections, 1, 'Eine Verbindung muss gezählt sein');
+    assert.equal(health.metrics.connections, 2, 'Beide Verbindungen müssen gezählt sein');
     assert.equal(health.metrics.lobbiesCreated, 1, 'Eine Lobby muss gezählt sein');
     assert.equal(health.lobbies, 1);
     assert.equal(health.sessions, 1);
@@ -111,7 +118,7 @@ test('Verbindungen und Lobbys werden gezählt', { timeout: 30_000 }, async () =>
 
     const danach = await (await fetch(`${info.url}/healthz`)).json();
     assert.equal(danach.metrics.disconnections, 1, 'Die Trennung muss gezählt werden');
-    assert.equal(danach.metrics.connections, 1, 'Die Verbindungszahl bleibt als Gesamtzahl stehen');
+    assert.equal(danach.metrics.connections, 2, 'Die Verbindungszahl bleibt als Gesamtzahl stehen');
   } finally {
     for (const client of clients) client.close();
     await server.close();
@@ -128,6 +135,13 @@ test('Abgelehnte Kommandos werden gezählt', { timeout: 30_000 }, async () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ teams: 2, playersPerTeam: 1, seed: 99 }),
     }).then(response => response.json());
+
+    // SRV-2: Erst mit Host-Socket sind alle Teams verbunden und das Match läuft.
+    const host = new TestClient(`ws://127.0.0.1:${info.port}/ws`);
+    clients.push(host);
+    await host.opened;
+    host.send(CONTROL.JOIN_LOBBY, { lobbyId: created.lobby.id, name: 'Host', token: created.player.token });
+    await host.waitFor(CONTROL.WELCOME);
 
     const client = new TestClient(`ws://127.0.0.1:${info.port}/ws`);
     clients.push(client);
