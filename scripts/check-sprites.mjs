@@ -327,8 +327,10 @@ async function pruefeEmotionen(zellenMessen) {
     hinweis('emotionen', 'Kein Emotions-Ordner', 'sprite-sheets-emotion fehlt');
     return { geprueft: 0 };
   }
-  // Das Emotions-Manifest führt eine FLACHE Liste von Pfaden (kein Baum).
-  const eintraege = Array.isArray(figurenManifestEmotion.figuren) ? figurenManifestEmotion.figuren : [];
+  // Emotions-Manifest: Version 1 führte eine FLACHE Liste von Pfaden, Version 2 (emotion-pruefen.py) ein Wörterbuch
+  // `fraktion/figur` -> {datei, gueltig, abstand}.
+  const roh = figurenManifestEmotion.figuren;
+  const eintraege = Array.isArray(roh) ? roh : (roh && typeof roh === 'object' ? Object.values(roh).map(e => e.datei) : []);
   if (eintraege.length === 0) {
     befund('emotionen', 'Emotions-Manifest fehlt oder ist leer', 'sprite-sheets-emotion/manifest.json');
     return { geprueft: 0 };
