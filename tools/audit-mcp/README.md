@@ -24,8 +24,10 @@ node tools/audit-mcp/server.mjs --ruf audit_stand        # läuft der Prozess mi
 node tools/audit-mcp/server.mjs --ruf audit_deadcode
 node tools/audit-mcp/server.mjs --ruf 'audit_gates' '{"welche":"schnell"}'
 
-# Der bestellte Bericht (schreibt docs/audit-tief.md)
+# Der bestellte Bericht (schreibt artifacts/audit-tief.md, ungetrackt)
 npm run audit:bericht
+# Ein getrackter Zielpfad (z. B. docs/audit-tief.md) wird nur ausdrücklich überschrieben:
+node tools/audit-mcp/server.mjs --ruf audit_bericht '{"pfad":"docs/audit-tief.md","ueberschreiben":true}'
 ```
 
 Es gibt **keine Abhängigkeit**: Der Server spricht JSON-RPC 2.0 zeilenweise

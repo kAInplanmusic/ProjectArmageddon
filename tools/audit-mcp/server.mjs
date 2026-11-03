@@ -38,7 +38,7 @@ import {
 } from './lib/dynamisch.mjs';
 import { GATES, fahreGates, e2ePlan } from './lib/gates.mjs';
 import { KATALOG, themen, quellen, filtereKatalog } from './lib/katalog.mjs';
-import { schreibeBericht } from './lib/bericht.mjs';
+import { schreibeBericht, BERICHT_STANDARDPFAD } from './lib/bericht.mjs';
 import {
   PROZESS_STAND, ALT_CODE_MELDUNG, NEUSTART_HINWEIS, standFeld, standBericht,
 } from './lib/stand.mjs';
@@ -489,14 +489,15 @@ const WERKZEUGE = {
     schema: {
       type: 'object',
       properties: {
-        pfad: { type: 'string', description: 'Zielpfad relativ zum Projekt (Default docs/audit-tief.md).' },
+        pfad: { type: 'string', description: `Zielpfad relativ zum Projekt (Default ${BERICHT_STANDARDPFAD}, ungetrackt).` },
+        ueberschreiben: { type: 'boolean', description: 'Auch eine getrackte Datei überschreiben (Default false).' },
         gates: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
         seeds: { type: 'array', items: { type: 'number' } },
         terrainProForm: { type: 'number' },
       },
       additionalProperties: false,
     },
-    async ruf({ pfad = 'docs/audit-tief.md', gates = 'schnell', seeds = [101, 202, 303, 404, 505], terrainProForm = 12 } = {}) {
+    async ruf({ pfad = BERICHT_STANDARDPFAD, ueberschreiben = false, gates = 'schnell', seeds = [101, 202, 303, 404, 505], terrainProForm = 12 } = {}) {
       // Doppelregeln EINMAL messen und daraus das Urteil lesen: zwei Messungen
       // könnten bei paralleler Arbeit am Baum auseinanderlaufen, und dann stünde
       // in einem Bericht eine Zahl neben einem Urteil aus einer anderen Messung.
@@ -544,7 +545,7 @@ const WERKZEUGE = {
         checklist: { themen: themen(), quellen: quellen(), anzahl: KATALOG.length },
       };
       daten.ampel = ampel(daten);
-      const geschrieben = schreibeBericht(pfad, daten);
+      const geschrieben = schreibeBericht(pfad, daten, { ueberschreiben });
       return text({
         bericht: rel(geschrieben.pfad),
         zeilen: geschrieben.zeilen,
@@ -765,7 +766,7 @@ async function behandle(nachricht) {
       const name = params?.name;
       const args = params?.arguments ?? {};
       if (name === 'tiefenaudit') {
-        const ziel = args.pfad || 'docs/audit-tief.md';
+        const ziel = args.pfad || BERICHT_STANDARDPFAD;
         return antworte(id, {
           description: 'Tiefen-Audit fahren und Bericht schreiben',
           messages: [{
