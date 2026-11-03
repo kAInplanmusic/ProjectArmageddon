@@ -29,7 +29,7 @@ npm run server       # liefert dist/ UND /ws unter derselben Herkunft
 ## Sonderbiome und Materialien
 
 Dreizehn Sonderbiome (Vulkan, Kristallhöhlen, Dschungel, Eiswüste, Dünen, Schrottplatz, Kristall-Archipel, Riff, Pilzwald
-und seit `config.gelaende: 3` die Themenbiome Asteroidenfeld, Surreale Schwebewelt, Fabrik und Burgfelsen; seit `config.gelaende: 4` das Biom Planet in sechs Arten; seit `config.gelaende: 7` die Biome 15 bis 20 der SSOT: Schlackeschmiede, Kristallines Schwebearchipel, Bio-Alien-Tempelstadt, Abyssale Tiefsee, Dimensionsriss und Versteinerter Kristallwald, siehe `docs/biome-20.md`; damit sind alle 20 Biome der SSOT spielbar)
+und seit `config.gelaende: 3` die Themenbiome Asteroidenfeld, Surreale Schwebewelt, Fabrik und Burgfelsen; seit `config.gelaende: 4` das Biom Planet in sechs Arten; seit `config.gelaende: 7` die Biome 15 bis 20 der SSOT: Schlackeschmiede, Kristallines Schwebearchipel, Bio-Alien-Tempelstadt, Abyssale Tiefsee, Dimensionsriss und Versteinerter Kristallwald, siehe `docs/biome-20.md`; damit sind alle 20 Biome der SSOT spielbar; seit `config.gelaende: 8` (Standard, N-29) hat jedes Biom einen Leitstoff mit einer Kontrastader (`config/stoff-rezepte-klar.js`), Ruinen der Bauteilkarten tragen Schutthalden und Figuren starten nicht mehr auf losen Brocken (UI-8))
 mit eigener Geländeform, Palette, Kulisse, Pflanzen und Wetter; Menü „Biom". Dazu eine Materialkarte aus Seed und Biom
 (18 Stoffe); mit `config.zerstoerung: 5` bestimmt sie, wie tief und wie weit ein Krater ausfällt. Mit `config.feuer: 2`
 brennen Holz und Pilz (Ausbreitung, Asche, Wasser löscht), im Vulkan brechen Lavaströme aus (erstarren zu Basalt oder

@@ -145,6 +145,7 @@ if (haeufigstes && haeufigstes[1] / ANZAHL > 0.6) {
 const { MatchController } = await import('../src/engine/match.js');
 const { NEUE_BIOME, SONDERBIOM_IDS_FASSUNG_3, BIOM_IDS_FASSUNG_7 } = await import('../src/shared/config/biome-neu.js');
 const { PLANET_BIOM_IDS } = await import('../src/shared/config/biome-planet.js');
+const { GELAENDE_STANDARD } = await import('../src/shared/config/gelaende.js');
 // Die dreizehn der Fassung 3, die sechs Planetenarten (Fassung 4) und die sechs Biome 15 bis 20 (Fassung 7): jede Art mit je drei Seeds.
 const SONDERBIOM_IDS = [...SONDERBIOM_IDS_FASSUNG_3, ...PLANET_BIOM_IDS, ...BIOM_IDS_FASSUNG_7].filter((id) => !NUR || NUR.includes(id));
 const { stoffHash, zaehleStoffe } = await import('../src/shared/stoffkarte.js');
@@ -209,7 +210,9 @@ const proBiom = new Map();
 for (let i = 0; i < SONDERBIOM_IDS.length * PRO_BIOM; i += 1) {
   const biom = SONDERBIOM_IDS[i % SONDERBIOM_IDS.length];
   const seed = 700000 + i * 7607;
-  const fassung = { gelaende: FASSUNG_ERZWUNGEN ?? (BIOM_IDS_FASSUNG_7.includes(biom) ? 7 : (PLANET_BIOM_IDS.includes(biom) ? 4 : 3)), zerstoerung: 5 };
+  // Die Biome 15 bis 20 gibt es nur auf Bauteilkarten (ab Fassung 7): geprüft wird die Fassung, die heute gespielt wird
+  // (`GELAENDE_STANDARD`; ab Fassung 8 mit begehbaren Ruinen, TODO N-29). Fassung 7 bleibt für alte Aufzeichnungen unverändert.
+  const fassung = { gelaende: FASSUNG_ERZWUNGEN ?? (BIOM_IDS_FASSUNG_7.includes(biom) ? GELAENDE_STANDARD : (PLANET_BIOM_IDS.includes(biom) ? 4 : 3)), zerstoerung: 5 };
   const m = new MatchController({ seed, teams: 2, playersPerTeam: 2, kartentyp: 'autonom', biom, maxRounds: 2, turnDurationMs: 2000, ...fassung });
   m.start();
   m.consumeEvents();

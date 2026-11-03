@@ -18,7 +18,7 @@ test('Vier Themenbiome, Fassung 7 (Biome 15 bis 20, auf Fassung 6 mit Bauteilkar
   assert.deepEqual([...THEMEN_BIOM_IDS], ['kosmos', 'surreal', 'fabrik', 'burg']);
   assert.equal(SONDERBIOM_IDS.length, 9);
   assert.equal(SONDERBIOM_IDS_FASSUNG_3.length, 13);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_BIOME_20);
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_BIOME_20); // seit Fassung 8 (N-29) höher
   assert.equal(normalisiereGelaende(GELAENDE_KOMPOSITION), GELAENDE_KOMPOSITION);
   assert.equal(normalisiereGelaende(GELAENDE_MATERIAL), GELAENDE_MATERIAL);
   assert.equal(normalisiereGelaende(GELAENDE_THEMEN), GELAENDE_THEMEN);
