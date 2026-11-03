@@ -1,0 +1,32 @@
+# Einmalige Probe (Branch ci/bildvergleich-probe, nicht für main):
+# Rendern die GitHub-Runner so, dass der Strukturvergleich (tests/e2e/helfer/struktur-vergleich.mjs)
+# gegen die abgelegten Baselines besteht? Läuft NUR die Spec `visuell`, OHNE PA_OHNE_BILDVERGLEICH.
+# Ergebnis siehe docs/offene-punkte.md §4a.
+name: Bildvergleich-Probe
+
+on:
+  push:
+    branches: [ci/bildvergleich-probe]
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Bildvergleich (ohne Sperre)
+        run: npx playwright test tests/e2e/visuell.spec.mjs --workers=1 --reporter=list
+      - name: Ergebnis ablegen (auch bei Rot)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bildvergleich-ergebnis
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

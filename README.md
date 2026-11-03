@@ -146,12 +146,12 @@ bleibt das alte Icon. Tabelle, Anker-Korrekturen und Feinjustierung stehen in
 `MASTERDOTO.md` („Waffen-Animation“), die Prüfbögen unter
 `docs/bilder/waffen-pruefboegen/` (Anker je Kategorie, Matrix je Fraktion und Figurtyp).
 
-**Bekannter Inhaltsfehler.** Die Bögen 7 und 8 benennen je eine Figur
-„Nullpointer Exception" (im Bild deutlich verschieden: vierbeiniges Plattenwesen
-gegen schweren Rahmen mit Kanonenarm). Die Namen wurden unverändert aus den Bögen
-übernommen (Pixel-Bogen: „Unit A/B" statt „Einheit A/B", „Phantomal" statt
-„Phantom-Mal"; ID `phantom-mal-a` bleibt). Erfasst in `NAMING_CONFLICTS`,
-geprüft durch einen Test.
+**Namen.** Die Bögen 7 und 8 benannten je eine Figur „Nullpointer Exception“.
+Seit 2026-11-03 heißt die Datacult-Figur „Nullpointer-Kultist“ (ID
+`nullpointer-exception-cult` bleibt). Sonst wurden die Namen unverändert aus den
+Bögen übernommen (Pixel-Bogen: „Unit A/B“ statt „Einheit A/B“, „Phantomal“ statt
+„Phantom-Mal“; ID `phantom-mal-a` bleibt). Doppelte Namen müssten in
+`NAMING_CONFLICTS` stehen; ein Test prüft das.
 
 ## Günther
 

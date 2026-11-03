@@ -680,7 +680,6 @@ export const CHARACTERS = Object.freeze([
   {
     id: 'nullpointer-exception', name: 'Nullpointer Exception', faction: 'pixel', role: 'melee', slot: 0,
     sprite: '00_nullpointer-exception.png',
-    nameConflict: 'datacult/nullpointer-exception-cult',
     superWeapon: { name: 'Sprungbefehl', description: 'Ein Sturmangriff, der eine Lücke in der Reihe hinterlässt.' },
     bio: 'Ein vierbeiniger Rahmen aus kantigen Platten, der sich selbst als Fehler führt. Die Brut hat ihn nie korrigiert, weil er funktioniert.',
     strengths: ['Robust und schnell zugleich', 'Verursacht großen Geländeschaden'],
@@ -753,9 +752,8 @@ export const CHARACTERS = Object.freeze([
 
   // ------------------------------------------------------------ Der Datenkult
   {
-    id: 'nullpointer-exception-cult', name: 'Nullpointer Exception', faction: 'datacult', role: 'melee', slot: 0,
+    id: 'nullpointer-exception-cult', name: 'Nullpointer-Kultist', faction: 'datacult', role: 'melee', slot: 0,
     sprite: '00_nullpointer-exception.png',
-    nameConflict: 'pixel/nullpointer-exception',
     superWeapon: { name: 'Kanonenarm', description: 'Ein Arm, der zu einem Werfer umgebaut wurde und grüne Energie verschießt.' },
     bio: 'Ein schwerer Rahmen, der als Netzwerkknoten gebaut und als Kämpfer eingesetzt wurde. Der Kult nennt ihn den Beweis, dass jeder Fehler eine Adresse hat.',
     strengths: ['Höchste Verteidigung im Kult', 'Großer Schaden auf kurze Distanz'],
@@ -828,20 +826,13 @@ export const CHARACTERS = Object.freeze([
 ]);
 
 /**
- * Namenskonflikte.
+ * Namenskonflikte: Figuren verschiedener Fraktionen mit gleichem Anzeigenamen.
  *
- * Zwei Bögen tragen denselben Namen für verschiedene Figuren. Die Namen wurden
- * unverändert von den Bögen übernommen; ein Umbenennen wäre ein inhaltlicher
- * Eingriff. Die IDs bleiben durch die Fraktion eindeutig.
+ * Seit 2026-11-03 leer: Die Datacult-Figur, früher wie die Pixel-Figur
+ * „Nullpointer Exception“, heißt jetzt „Nullpointer-Kultist“ (Entscheidung des
+ * Auftraggebers). Die Liste bleibt, damit ein Test neue Dubletten auffängt.
  */
-export const NAMING_CONFLICTS = Object.freeze([
-  {
-    name: 'Nullpointer Exception',
-    characters: ['pixel/nullpointer-exception', 'datacult/nullpointer-exception-cult'],
-    hint: 'Beide Bögen benennen eine Figur so. Im Bild unterscheiden sie sich deutlich '
-      + '(vierbeiniges Plattenwesen gegen schweren Rahmen mit Kanonenarm).',
-  },
-]);
+export const NAMING_CONFLICTS = Object.freeze([]);
 
 // ------------------------------------------------------------------ Zugriff
 
