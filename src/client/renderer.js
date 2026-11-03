@@ -24,7 +24,7 @@ import { zeichneHimmel, zeichneWasser } from './kulisseUndWasser.js';
 import {
   zeichneZielhilfe, zeichneVorhersage, zeichneGeschoss, zeichneSpur, zeichneExplosion,
   zeichneFunken, zeichneSchadenszahl, zeichneKraterRuss, zeichneNarbe, zeichneTruemmer,
-  zeichneGeschossSprite, zeichneSchweif, zeichneStartGlanz,
+  zeichneGeschossSprite, zeichneStartGlanz,
 } from './effektStil.js';
 import {
   materialStil, zeichneBrandspur, zeichneBohrwand, zeichneBebenRisse, kraterRisse, geroellZellen, zeichneKraterRisse, zeichneGeroell, loescheLaeufe, setzeSchuttZellen, verschiebeZellen,
@@ -34,6 +34,8 @@ import { kraterUmriss, erzeugeTruemmer, schreiteTruemmerFort, erzeugeStaub, inse
 import { Inselfall } from './inselfall.js';
 import { FeuerOptik, faerbeZellen, ZELLFARBE } from './feuerOptik.js';
 import { SheetEffekte, LEUCHT_FARBE } from './effektSheets.js';
+import { strahlArt, schweifArt } from './waffenOptik.js';
+import { zeichneStrahl, zeichneFamilienSchweif, zeichneMuendungsfeuer } from './waffenOptikZeichnen.js';
 import { planetenBilder } from './planetenKulisse.js';
 import { STOFF } from '../shared/config/stoffe.js';
 import { MALI_LEITUNGSMARKE, maskeZuMali, maliMarken, familieVonArt, ZAHL_FAMILIE } from '../shared/config/schaden.js';
@@ -392,10 +394,10 @@ export class Renderer {
    * Rein visuell: hat keinen Einfluss auf die Simulation.
    */
   addBeam(fromX, fromY, toX, toY, optionen = {}) {
-    // Farbe der Waffe: Strahl und Glühen in ihrer Blitzfarbe (aus dem Sprite-Manifest), sonst Gelb.
+    // Art des Strahls nach der Waffe (`waffenOptik.strahlArt`); der Laser trägt ihre Blitzfarbe (Sprite-Manifest).
     const waffe = optionen.waffeId ? WEAPONS_BY_ID[optionen.waffeId] : null;
     const farbe = waffe ? holeWaffenSprite(waffe)?.flashColor : null;
-    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, farbe ? { ...optionen, color: farbe } : optionen));
+    this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, { ...optionen, art: strahlArt(waffe), ...(farbe ? { color: farbe } : null) }));
   }
 
   /** Einschlag als Sprite-Bildfolge (Sheet `explosion`, bei großem Radius mit Nachglühen). */
@@ -539,34 +541,8 @@ export class Renderer {
 
   #drawEffects() {
     for (const effect of this.effects) {
-      const alpha = Math.max(0, Math.min(1, effect.life));
       if (effect.kind === 'beam') {
-        this.ctx.save();
-        // Strahl in der Farbe der Waffe: breites Glühen, Farbkern, heller Kern.
-        this.ctx.lineCap = 'round';
-        this.ctx.strokeStyle = effect.color;
-        this.ctx.beginPath();
-        this.ctx.moveTo(effect.fromX, effect.fromY);
-        this.ctx.lineTo(effect.toX, effect.toY);
-        this.ctx.globalAlpha = alpha * 0.3;
-        this.ctx.lineWidth = 11;
-        this.ctx.stroke();
-        this.ctx.globalAlpha = alpha;
-        this.ctx.lineWidth = 3;
-        this.ctx.stroke();
-        this.ctx.globalAlpha = alpha * 0.9;
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 1.2;
-        this.ctx.stroke();
-        // Einschlagpunkt markieren
-        if (effect.hit) {
-          this.ctx.globalAlpha = alpha;
-          this.ctx.fillStyle = '#fff3c4';
-          this.ctx.beginPath();
-          this.ctx.arc(effect.toX, effect.toY, 4 + (1 - effect.life) * 6, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-        this.ctx.restore();
+        zeichneStrahl(this.ctx, effect, this.reducedMotion);
       } else if (effect.kind === 'flash') {
         zeichneExplosion(this.ctx, effect, this.reducedMotion);
       }
@@ -1369,40 +1345,13 @@ export class Renderer {
 
       // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —
       // es wird deshalb NACH dem Zurücksetzen der Drehung gezeichnet.
-      // Mündungsfeuer als gezeichnetes Bild (Sheet `muendung`) für ALLE Waffen; ohne Bild bleibt der Kegel der Fallback-Figur.
-      let feuerBild = false;
+      // Mündungsfeuer nach der Waffe (`waffenOptik.muendungsStil`): Bildfolge, Blitzform oder keins; ohne Bild der Kegel.
       if (muendung) {
         const f2 = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
-        const fx = entity.x + f2.offsetX * sk;
-        const fy = entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + f2.offsetY * sk;
-        feuerBild = this.sheets.zeichneMuendung(this.ctx, fx, fy, angle, feuerLeben, entity.entityId, sk);
-      }
-      if (muendung && !spriteWaffe && !feuerBild) {
-        const feuer = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
-        const mx = entity.x + feuer.offsetX * sk;
-        const my = entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + feuer.offsetY * sk;
-
-        this.ctx.save();
-        this.ctx.globalAlpha = feuer.alpha;
-        this.ctx.translate(mx, my);
-        this.ctx.rotate(-angle);
-        const verlauf = this.ctx.createLinearGradient(0, 0, feuer.length * sk, 0);
-        verlauf.addColorStop(0, muendung.farbe);
-        verlauf.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        this.ctx.fillStyle = verlauf;
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, -feuer.halfWidth * sk);
-        this.ctx.lineTo(feuer.length * sk, 0);
-        this.ctx.lineTo(0, feuer.halfWidth * sk);
-        this.ctx.closePath();
-        this.ctx.fill();
-
-        // Heller Kern an der Mündung — ohne ihn wirkt der Kegel flach.
-        this.ctx.fillStyle = '#fffbe6';
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, feuer.coreRadius * sk, 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.restore();
+        zeichneMuendungsfeuer(this.ctx, this.sheets, {
+          x: entity.x + f2.offsetX * sk, y: entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + f2.offsetY * sk, winkel: angle,
+          leben: feuerLeben, skala: sk, feuer: f2, farbe: muendung.farbe, spriteWaffe, waffe: WEAPONS_BY_ID[entity.activeWeaponId] ?? null,
+        });
       }
 
       this.#drawHealthBar(entity, zuck, entity.entityId === activePlayerId, fig ? S : 0, fig ? charakter.faction : null);
@@ -1697,7 +1646,8 @@ export class Renderer {
       const sp = lage ? this.#geschossSprite(lage, entities) : null;
       if (sp) {
         // Schweif in der Blitzfarbe, dann das Sprite in Flugrichtung (Wurfdinge drehen sich zusätzlich).
-        zeichneSchweif(this.ctx, lage.ring, sp.flashColor, lage.dar.groesse * 0.32);
+        lage.schweif ??= schweifArt(sp.projektilInfo?.art, WEAPONS_BY_ID[lage.waffeId]);
+        zeichneFamilienSchweif(this.ctx, lage.ring, lage.schweif, sp.flashColor, lage.dar.groesse * 0.32, jetzt, this.reducedMotion);
         const w = geschossWinkel(lage.flug, lage.dar, jetzt - lage.t0, this.reducedMotion);
         zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
         zeichneStartGlanz(this.ctx, sp, projectile.x, projectile.y, jetzt - lage.t0, lage.dar.start);

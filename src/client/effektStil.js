@@ -162,22 +162,28 @@ export function zeichneSpur(ctx, punkte) {
  * Ring und Funken bewegen sich und entfallen bei reduzierter Bewegung; der
  * Kern bleibt, damit der Einschlag sichtbar ist.
  */
+/** Bisherige Farben des Explosionsblitzes (Kern, Mitte, Rand). */
+const EXPLOSION_FARBEN = Object.freeze({ kern: [255, 246, 214], mitte: [255, 184, 0], rand: [255, 77, 0] });
+
 export function zeichneExplosion(ctx, e, reduziert) {
   const alpha = Math.max(0, Math.min(1, e.life));
   const alter = 1 - e.life;
   const radius = Math.max(1, e.radius * (1 + alter * 0.6));
+  // Farben nach der Familie der Schadensart (`waffenOptik.FAMILIEN_FARBEN`), sonst der orange Feuerball.
+  const f = e.farben ?? EXPLOSION_FARBEN;
+  const ton = (t, al) => `rgba(${t[0]}, ${t[1]}, ${t[2]}, ${al})`;
   ctx.save();
   const g = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, radius);
-  g.addColorStop(0, `rgba(255, 246, 214, ${alpha})`);
-  g.addColorStop(0.3, `rgba(255, 184, 0, ${alpha * 0.9})`);
-  g.addColorStop(0.65, `rgba(255, 77, 0, ${alpha * 0.55})`);
-  g.addColorStop(1, 'rgba(255, 77, 0, 0)');
+  g.addColorStop(0, ton(f.kern, alpha));
+  g.addColorStop(0.3, ton(f.mitte, alpha * 0.9));
+  g.addColorStop(0.65, ton(f.rand, alpha * 0.55));
+  g.addColorStop(1, ton(f.rand, 0));
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(e.x, e.y, radius, 0, Math.PI * 2);
   ctx.fill();
   if (!reduziert) {
-    ctx.strokeStyle = `rgba(255, 220, 150, ${alpha * 0.8})`;
+    ctx.strokeStyle = e.farben ? ton(f.kern, alpha * 0.8) : `rgba(255, 220, 150, ${alpha * 0.8})`;
     ctx.lineWidth = 3 * alpha + 0.5;
     ctx.beginPath();
     ctx.arc(e.x, e.y, e.radius * (0.7 + alter * 2.1), 0, Math.PI * 2);
@@ -189,7 +195,7 @@ export function zeichneExplosion(ctx, e, reduziert) {
       const w = (i / 12) * Math.PI * 2 + hash2(sx, sy, i) * 0.4;
       const a = e.radius * (0.5 + alter * 1.4);
       const b = a + e.radius * (0.25 + 0.5 * hash2(sy, sx, i + 40)) * alpha;
-      ctx.strokeStyle = i % 3 === 0 ? `rgba(255, 77, 0, ${alpha})` : `rgba(255, 184, 0, ${alpha})`;
+      ctx.strokeStyle = i % 3 === 0 ? ton(f.rand, alpha) : ton(f.mitte, alpha);
       ctx.lineWidth = 1.5 + alpha;
       ctx.beginPath();
       ctx.moveTo(e.x + Math.cos(w) * a, e.y + Math.sin(w) * a);

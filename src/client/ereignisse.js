@@ -36,6 +36,13 @@ import { MALUS } from '../shared/config/schaden.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { materialAusEreignis, stoffSchluesselAmEinschlag, klassifiziereSchadensklang } from '../shared/einschlag.js';
 import { damageTypeName } from '../engine/damageTypes.js';
+import { familieVonArt, FAMILIEN_FARBEN } from './waffenOptik.js';
+
+/** Farben des Explosionsblitzes nach der Schadensart (N-08); `null` heißt: der bisherige orange Ton. */
+function blitzFarben(art) {
+  const familie = familieVonArt(art);
+  return familie === 'explosiv' ? null : FAMILIEN_FARBEN[familie];
+}
 
 /**
  * Eine Wirkung: bekommt den Kontext und die Nutzlast, gibt nichts zurück.
@@ -381,7 +388,7 @@ export const EREIGNIS_WIRKUNGEN = {
      * verdoppelte sie gegenüber dem lokalen Match.
      */
     k.renderer?.applyCrater(n.x, n.y, n.radius || 12);
-    k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4);
+    k.renderer?.addFlash(n.x, n.y, (n.radius || 12) * 1.4, { farben: blitzFarben(n.damageType) });
     k.renderer?.sheetEinschlag?.(n.x, n.y, n.radius || 12, n.damageType);
     k.renderer?.merkeEinschlag?.(n.x, n.y);
     /*
