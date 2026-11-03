@@ -37,7 +37,7 @@ SICHTPRUEFUNG = {
     'datacult/00_nullpointer-exception': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'datacult/01_datapath-replicant': {'frei': [3, 4], 'sperre': []},
     'datacult/02_chrome-code-shifter': {'frei': [5, 6], 'sperre': []},
-    'datacult/11_synapse-streamer': {'frei': [4, 5, 6], 'sperre': [3]},
+    'datacult/11_synapse-streamer': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
     'datacult/12_arcology-agent': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'datacult/21_hyper-link-hound': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'datacult/22_ethereo': {'frei': [1, 6], 'sperre': []},
@@ -85,7 +85,7 @@ SICHTPRUEFUNG = {
     'shinobi/20_ninjutsu-master-goemon': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'shinobi/21_talisman-sorcerer-jun': {'frei': [3], 'sperre': []},
     'shinobi/22_vixen-kitsune': {'frei': [3, 4, 6], 'sperre': []},
-    'undead/02_grim-reaper-silas': {'frei': [1, 3, 5, 6], 'sperre': [4]},
+    'undead/02_grim-reaper-silas': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
     'undead/10_archer-mortis': {'frei': [4, 5, 6], 'sperre': []},
     'undead/12_vessel-plague-skull': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'undead/20_lich-king-alistair': {'frei': [3, 4, 5], 'sperre': [1]},
@@ -98,13 +98,18 @@ SICHTPRUEFUNG = {
     'xeno/20_harbinger-zeta': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'xeno/21_dark-matter-witch': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'xeno/22_null-entity-quark': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
+    # 2026-11-03 (N-01): ganze Blätter neu (gpt-image-2, Magenta-Grund statt Grün; die grünen Figuren waren mit dem
+    # Grün-Schlüssel in Splitter zerfallen), alle acht Zellen per Sichtprüfung freigegeben.
+    'datacult/20_buffer-flow-swarm': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
+    'undead/00_bone-racker-karl': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
+    'undead/11_pitcher-igor': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
 }
 
 
 # Zellen, die `blick-aus-teilen.py` aus dem Seitenbild dreht (Blick hoch 5, Blick runter 6).
 AUS_TEILEN = {
     'datacult/02_chrome-code-shifter': (5, 6), 'machina/11_heavy-battery-moerser-bot': (5, 6), 'machina/12_ordnance-rail-viper': (5,),
-    'shinobi/12_blowpipe-koga': (5, 6), 'xeno/10_drone-theta': (5,), 'datacult/11_synapse-streamer': (5, 6),
+    'shinobi/12_blowpipe-koga': (5, 6), 'xeno/10_drone-theta': (5,),
 }
 
 
