@@ -158,13 +158,16 @@ const PLANETEN_KULISSE_URLEN = Object.fromEntries(
 );
 
 class Game {
+  /** LADEZEIT: Stofftexturen und Effekt-Sheets sind angestoßen (einmal; siehe `#ladeMatchBilder`). */
+  #matchBilderAngestossen = false;
+
   constructor() {
     planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
-    void ladeStoffTexturen(STOFF_TEXTUR_URLEN);
     this.canvas = document.getElementById('game-canvas');
     this.renderer = new Renderer(this.canvas);
     this.renderer.sheets.setzeUrls(EFFEKT_SHEET_URLEN);
-    this.renderer.sheets.vorladen();
+    // Erst wenn der Browser nach dem Menüaufbau ruht (spätestens nach 1,5 s), sonst beim Matchstart.
+    (globalThis.requestIdleCallback ?? (f => setTimeout(f, 200)))(() => this.#ladeMatchBilder(), { timeout: 1500 });
 
     /*
      * Die Kamera zeigt einen Ausschnitt der Karte.
@@ -1274,11 +1277,25 @@ class Game {
     return teile;
   }
 
+  /**
+   * LADEZEIT: Bilder, die erst das Match braucht — rund 90 Stofftexturen (~7 MB, je Bild Dekodieren plus
+   * Pixel auslesen im Hauptfaden) und die Effekt-Sheets (~1,2 MB). Vorher luden sie im Konstruktor, also
+   * gleichzeitig mit dem Menü, das dabei schon bedienbar sein sollte. Jetzt: im Leerlauf nach dem
+   * Menüaufbau oder beim Matchstart, je nachdem, was zuerst kommt. Reine Darstellung.
+   */
+  #ladeMatchBilder() {
+    if (this.#matchBilderAngestossen) return;
+    this.#matchBilderAngestossen = true;
+    void ladeStoffTexturen(STOFF_TEXTUR_URLEN);
+    this.renderer.sheets.vorladen();
+  }
+
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
     seed = undefined, backdropKey = '', orientation = 'landscape',
     sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
   } = {}) {
+    this.#ladeMatchBilder();
     this.network?.disconnect();
     this.network = null;
     this.#setzeZugpauseZurueck();
@@ -1495,6 +1512,7 @@ class Game {
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
     orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
   } = {}) {
+    this.#ladeMatchBilder();
     this.gewaehlteKulisse = backdropKey;
     this.menuOverlay.hidden = true;
     this.endOverlay.hidden = true;

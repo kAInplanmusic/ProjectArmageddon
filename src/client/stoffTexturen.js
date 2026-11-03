@@ -71,6 +71,9 @@ export function leereStoffTexturen() { geladen.clear(); }
 /** @returns {{rgba: Uint8ClampedArray, mittel: number[]}|null} */
 export function stoffTextur(name) { return geladen.get(name) ?? null; }
 
+/** Gleichzeitig geladene Texturbilder (LADEZEIT). */
+const GLEICHZEITIG = 6;
+
 /**
  * Lädt die Texturen im Browser (Bild → Canvas → Pixel). Fehler einzelner Dateien werden
  * verschluckt: Dann fehlt nur diese Textur.
@@ -84,14 +87,25 @@ export async function ladeStoffTexturen(urls) {
   if (!ctx) return 0;
   leinwand.width = TEXTUR_GROESSE;
   leinwand.height = TEXTUR_GROESSE;
-  for (const [name, url] of Object.entries(urls)) {
-    try {
-      const bild = new globalThis.Image();
-      bild.src = url;
-      await bild.decode();
-      ctx.drawImage(bild, 0, 0, TEXTUR_GROESSE, TEXTUR_GROESSE);
-      if (registriereStoffTextur(name, ctx.getImageData(0, 0, TEXTUR_GROESSE, TEXTUR_GROESSE).data)) anzahl += 1;
-    } catch { /* Textur fehlt: Stoff behält sein Muster. */ }
-  }
+  /*
+   * LADEZEIT: mehrere Bilder gleichzeitig unterwegs statt streng nacheinander (vorher ~90 Anfragen hintereinander,
+   * gemessen 2,1 s). Die eine Leinwand reicht: Zeichnen und Auslesen laufen ohne `await` dazwischen am Stück.
+   */
+  const liste = Object.entries(urls);
+  let naechste = 0;
+  const arbeiter = async () => {
+    while (naechste < liste.length) {
+      const [name, url] = liste[naechste];
+      naechste += 1;
+      try {
+        const bild = new globalThis.Image();
+        bild.src = url;
+        await bild.decode();
+        ctx.drawImage(bild, 0, 0, TEXTUR_GROESSE, TEXTUR_GROESSE);
+        if (registriereStoffTextur(name, ctx.getImageData(0, 0, TEXTUR_GROESSE, TEXTUR_GROESSE).data)) anzahl += 1;
+      } catch { /* Textur fehlt: Stoff behält sein Muster. */ }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(GLEICHZEITIG, liste.length) }, arbeiter));
   return anzahl;
 }
