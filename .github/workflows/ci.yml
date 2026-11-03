@@ -100,10 +100,18 @@ jobs:
             balance.json
           retention-days: 30
 
+  # E2E in vier Teilen (je eigener Runner): Die Suite läuft mit einem Worker (feste Ports der
+  # Multiplayer-Tests), am Stück dauert sie zu lange. Playwright teilt die Specs mit `--shard`
+  # deterministisch auf; jeder Teil startet seinen eigenen Dev-Server und legt Bericht und
+  # Spuren unter eigenem Namen ab. `fail-fast: false`: ein roter Teil bricht die anderen nicht ab.
   e2e:
-    name: Browser-Tests
+    name: Browser-Tests (Teil ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
       - uses: actions/checkout@v4
@@ -131,4 +139,16 @@ jobs:
         # docs/testgrenzen.md.
         env:
           PA_OHNE_BILDVERGLEICH: '1'
-        run: npm run test:e2e
+        run: npx playwright test --shard=${{ matrix.shard }}/4
+
+      # Bericht und Spuren (trace: retain-on-failure) je Teil, auch wenn der Teil rot ist.
+      - name: E2E-Bericht ablegen
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-teil-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore
