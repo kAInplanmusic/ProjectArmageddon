@@ -1359,7 +1359,15 @@ export class GameServer {
     maxLobbyAnlegenProMinute = Number(process.env.PA_LOBBYS_PRO_MINUTE) || 30,
     lobbyLeerTtlMs = Number(process.env.PA_LOBBY_LEER_MS) || 15 * 60_000,
     zugPauseTicks = null,
+    erlaubteOrigins = leseErlaubteOrigins(process.env.PA_ERLAUBTE_ORIGINS),
   } = {}) {
+    /**
+     * SRV-4: Origin-Prüfung (Lobby-API und WebSocket). `null` (Standard, ohne `PA_ERLAUBTE_ORIGINS`) = wie bisher:
+     * CORS spiegelt jeden Origin, der WebSocket nimmt jeden an. Mit Liste: nur diese Origins plus der eigene
+     * (Origin = `Host` der Anfrage) bekommen CORS-Freigabe und WebSocket; Anfragen OHNE Origin (Werkzeuge,
+     * Server-zu-Server) bleiben erlaubt, denn ein Browser schickt ihn immer mit.
+     */
+    this.erlaubteOrigins = erlaubteOrigins ? new Set(erlaubteOrigins) : null;
     /** Zugpause neuer Sitzungen in Takten (`null` = Vorgabe aus Regel/Umgebung; Tests setzen sie gezielt). */
     this.zugPauseTicks = zugPauseTicks;
     this.maxLobbies = maxLobbies;
@@ -1462,7 +1470,11 @@ export class GameServer {
      * Ablehnung „Nachricht zu groß" (512-Byte-Regel), erst echter Missbrauch
      * darüber wird auf Protokollebene gekappt.
      */
-        this.#wsServer = new WebSocketServer({ server: this.#httpServer, path: '/ws', maxPayload: 65_536 });
+        this.#wsServer = new WebSocketServer({
+          server: this.#httpServer, path: '/ws', maxPayload: 65_536,
+          // SRV-4: Ohne Liste (Standard) unverändert jeder Origin; mit Liste lehnt der Handshake fremde mit 403 ab.
+          verifyClient: (info, fertig) => fertig(this.#originErlaubt(info.req), 403, 'Origin nicht erlaubt'),
+        });
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
      * `error`-Ereignisse mit.
@@ -1854,12 +1866,28 @@ export class GameServer {
    */
   #beendeteMatches = new Map();
 
+  /** SRV-4: Darf diese Anfrage (HTTP oder WebSocket-Handshake) nach ihrem Origin bedient werden? */
+  #originErlaubt(request) {
+    if (!this.erlaubteOrigins) return true;
+    const origin = request.headers.origin;
+    if (!origin) return true;
+    if (this.erlaubteOrigins.has(origin)) return true;
+    // Gleicher Origin: Der Server liefert das Spiel selbst aus (Produktion single-origin).
+    try { return new URL(origin).host === request.headers.host; } catch { return false; }
+  }
+
   async #handleHttp(request, response) {
     const url = new URL(request.url, 'http://localhost');
 
     // Der Client kann von einem anderen Origin laufen (Dev-Server, CDN).
     // Ohne diese Header blockiert der Browser die Lobby-API.
-    response.setHeader('Access-Control-Allow-Origin', request.headers.origin ?? '*');
+    // SRV-4: Mit gesetzter Liste bekommt ein fremder Origin keine Freigabe (der Browser sperrt dann die Antwort).
+    if (this.#originErlaubt(request)) {
+      response.setHeader('Access-Control-Allow-Origin', request.headers.origin ?? '*');
+    } else if (request.method === 'OPTIONS' || request.method === 'POST') {
+      response.setHeader('Vary', 'Origin');
+      return this.#json(response, 403, this.#fehlerNutzlast('Origin nicht erlaubt'));
+    }
     response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     response.setHeader('Access-Control-Allow-Headers', 'content-type');
     response.setHeader('Vary', 'Origin');
@@ -2748,6 +2776,18 @@ function createDistHandler(distDir = 'dist') {
     response.end(body);
     return true;
   };
+}
+
+/**
+ * SRV-4: `PA_ERLAUBTE_ORIGINS` (kommagetrennt, z. B. `https://spiel.example,http://127.0.0.1:5173`) als Liste;
+ * leer oder nicht gesetzt = `null` (keine Prüfung, Verhalten wie bisher).
+ *
+ * @param {string|undefined} roh
+ * @returns {string[]|null}
+ */
+export function leseErlaubteOrigins(roh) {
+  const liste = String(roh ?? '').split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean);
+  return liste.length ? liste : null;
 }
 
 /** Startet einen eigenständigen Server (siehe npm run server). */
