@@ -290,18 +290,8 @@ export const HOHECHSTE_KRAFT = 100;
  * und Kennung). Die Suche ist deshalb ausgelagert, weil sie reine Rechnung über
  * feste Listen ist und in dieser Klasse nur über eine Instanz prüfbar war.
  */
-/*
- * Die Schwerkraft der Geschosse — eine REFERENZ auf die zentrale Konstante.
- *
- * FUND (belegt, 2026-09-27): Hier stand `const GRAVITY = 0.32;` neben
- * `PROJECTILE_GRAVITY = 0.32` in `src/shared/ballistics.js`. Wertgleich, deshalb
- * unauffaellig — aber der Geschuetz-Zielpfad las die EIGENE Kopie, waehrend der
- * Erreichbarkeitspfad die geteilte Konstante nahm. Wer `PROJECTILE_GRAVITY`
- * getunt haette, haette das Geschuetz STILL falsch zielen lassen.
- */
 /** Runden, über die Günthers Auftritte verteilt werden (vorher: die Rundengrenze 30). */
 const GUENTHER_PLANUNGSHORIZONT = 30;
-const GRAVITY = PROJECTILE_GRAVITY;
 const MAX_WIND = 0.05;
 
 /** Absprunggeschwindigkeit (px pro Tick), negativ = nach oben. */
@@ -1860,7 +1850,8 @@ export class MatchController {
     let y = turret.y;
     let vx = abschuss.vx;
     let vy = abschuss.vy;
-    const gravitation = GRAVITY * (waffe.gravityScale ?? 1);
+    // Schwerkraft direkt aus `ballistics.js` (N-19: hier stand früher eine Abschrift `GRAVITY = 0.32`).
+    const gravitation = PROJECTILE_GRAVITY * (waffe.gravityScale ?? 1);
 
     // Die Wind-Quelle ist `wind` — die Größe, die auch das `ProjectileSystem`
     // liest. Der frühere Zugriff auf `currentStrength` war der eigentliche

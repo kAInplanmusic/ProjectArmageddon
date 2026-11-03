@@ -33,6 +33,7 @@ import {
   guentherWerte,
 } from '../../shared/config/guenther.js';
 import { pickWeaponForRarity } from '../../shared/config/weapons.js';
+import { KISTE_KANTE } from '../../shared/config/kisten.js';
 
 /** Zieht eine Zahl aus einer Poisson-Verteilung (Knuth). */
 function poisson(rng, mittelwert) {
@@ -613,7 +614,7 @@ export class GuentherSystem {
         // Pro Wühlen genau EIN Wurf — auch wenn nichts gefunden wird.
         if (this.#aktionRng.nextBoolean(regel.fundChance)) {
           const boden = kontext.surfaceYAt?.(Math.round(x)) ?? y;
-          kontext.legeKiste?.(this.#aktionRng, x, (boden > 0 ? boden : y) - 14);
+          kontext.legeKiste?.(this.#aktionRng, x, (boden > 0 ? boden : y) - KISTE_KANTE);
           fund = true;
         }
         break;

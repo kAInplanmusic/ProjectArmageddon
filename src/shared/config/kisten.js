@@ -47,6 +47,20 @@ export const KISTEN_STUFEN_GEWICHT = Object.freeze({ common: 49, uncommon: 25, r
  */
 export const KISTEN_MUNITION_STUFE = Object.freeze({ rare: 3, epic: 2, legendary: 1 });
 
+/**
+ * Kistenmaße (ENG-3, Duplikate-Bericht „Offen" Nr. 5): zwei VERSCHIEDENE Regeln, deshalb zwei Namen.
+ *
+ *   - `KISTE_KANTE` (14): Kantenlänge der Kiste in Weltpixeln. Der Renderer zeichnet sie so groß,
+ *     und eine abgelegte Kiste steht mit ihrem Mittelpunkt `KISTE_KANTE` über dem Boden
+ *     (Rundenkisten, Abwurf, Günthers Fund: dieselbe Ablageregel an allen drei Stellen).
+ *   - `KISTE_RANDABSTAND` (12): wie nah eine fliegende Kiste dem Kartenrand kommen darf
+ *     (`kistenWurf.js`). Eine Klemme gegen das Hinausfliegen, kein Körpermaß.
+ *
+ * Beide Zahlen standen vorher als Literale (14 an sechs Stellen, 12 an einer). Wertgleich ersetzt.
+ */
+export const KISTE_KANTE = 14;
+export const KISTE_RANDABSTAND = 12;
+
 /** Höchstzahl unaufgehobener Kisten gleichzeitig (nur Fassung 2). */
 export const KISTEN_MAX_AUF_KARTE = 6;
 

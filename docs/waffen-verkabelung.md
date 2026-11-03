@@ -72,7 +72,7 @@ Gate-Batterie (`npm run checks`) prüft dieses Feld.
 | `rarity` | 150/150 | 3 | Motor 2 (match.js, stateSnapshot.js), Client 1, geteilt 1 | — keines — |  |
 | `requiresLineOfSight` | 13/150 | 1 | Motor 1 (shooting.js) | check:damage-types |  |
 | `requiresLineOfSightSource` | 150/150 | 2 | Motor 0 | check:damage-types | JA |
-| `sourceRarity` | 150/150 | 3 | Motor 0 | balance | JA |
+| ~~`sourceRarity`~~ | 0/150 | — | gestrichen 2026-11-03 (ENG-10): war bei 150/150 gleich `rarity`; Leser lesen `rarity` | balance | — |
 | `special` | 150/150 | 118 | Motor 1 (specials.js), geteilt 1 | balance, matrix:check, check:damage-types, check:range, check:targeting |  |
 | `speedFactor` | 150/150 | 24 | Motor 1 (match.js), geteilt 2 | check:fuses, check:reichweite |  |
 | `strikeStyle` | 150/150 | 3 | Motor 1 (shooting.js) | check:damage-types |  |
@@ -150,9 +150,17 @@ Leser, das dort nicht steht, lässt den Test rot werden.**
 | `internalName` | 150 | Stabile ASCII-Kennung der Designdatei für Werkzeuge; Anzeigenamen dürfen wandern, sie nicht. |
 | `projectileSpeed` | 96 | Quellwert; der Motor liest `speedFactor` (normalisiert). Zwei Aussagen über dieselbe Größe wären der Fehler, den dieses Feld vermeidet. |
 | `requiresLineOfSightSource` | 150 | Herkunftsnachweis der Sichtlinie; `check:damage-types` prüft damit, dass das Merkmal nicht erfunden wurde. |
-| `sourceRarity` | 150 | Unveränderte Quell-Rarität neben `powerTier`; `npm run balance` berichtet beide. |
+| ~~`sourceRarity`~~ | 0 | Gestrichen (ENG-10): Doppelspur zu `rarity`. Die Quell-Rarität ist `rarity`, die Stärke-Stufe `powerTier`. |
 
 ### 3b. Offene Lücke (1) — Leser fehlt, gemeldet
+
+> **Nachtrag 2026-11-02 (ENG-8, entschieden):** Die Lücke ist geschlossen, aber nicht über diesen
+> Leser. Seit Waffenfassung 10 trägt `wirkung.distance` (`WAFFEN_F10_WERTE`) die gespielte Weite:
+> Raketenrucksack 100, Gleitschirm 160, Dimensionssprung 80, Dimensionsriss 165 px. `effectMagnitude`
+> steht deshalb jetzt in `FELDER_OHNE_PRODUKTLESER_BEWUSST` (Design-Kennzahl für
+> `tests/weapon-identity.test.js`); `FELDER_OHNE_PRODUKTLESER_OFFEN` ist leer. Ein Leser im
+> Katalogpfad hätte die Fassungen 1 bis 9 verändert, dort springen alle vier weiter 60 px.
+> Regressionstest: `tests/engine-dubletten.test.js` (ENG-8). Der Text unten ist der Stand vom 2026-09-27.
 
 | Feld | Waffen mit Wert | Befund |
 |---|---:|---|
@@ -320,8 +328,8 @@ deshalb nicht getan.
 
 ## 8. Offene Punkte — Vorschläge, nicht ausgeführt
 
-1. **`effectMagnitude` verdrahten** (`src/engine/specials.js`, `MOVE`/`PULL`) —
-   sonst bleibt „weit" ein Wort (Abschnitt 3b).
+1. ~~**`effectMagnitude` verdrahten**~~ — erledigt anders: Weite aus Waffenfassung 10
+   (`wirkung.distance`), Feld begründet ohne Leser (Abschnitt 3b, Nachtrag 2026-11-02).
 2. **Kisten-Rarität abwerfen: `match.js:2179`** bildet drei Waffennamen auf vier
    Kistennamen ab und trifft deshalb immer 0 (Abschnitt 5).
 3. **`targeting` bekommt einen Verbraucher** — oder wird als Prüfbasis ohne

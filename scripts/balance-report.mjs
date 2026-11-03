@@ -463,7 +463,7 @@ function measureAtDistance(weapon, index, dist, { proben = samples, winkel = TES
     id: weapon.id,
     name: weapon.displayName,
     tier: weapon.powerTier,
-    sourceRarity: weapon.sourceRarity,
+    sourceRarity: weapon.rarity, // ENG-10: Quell-Raritaet steht im Katalog nur noch als `rarity`
     category: weapon.category,
     delivery: weapon.delivery,
     declaredDamage: weapon.damage,

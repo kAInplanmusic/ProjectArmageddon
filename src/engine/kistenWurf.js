@@ -37,6 +37,7 @@ import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
 import { DEFAULT_PROJECTILE_DRAG } from './systems/projectileSystem.js';
 import { CRATE_TYPES, RARITY_IDS, PICKUP_RADIUS } from './systems/lootSystem.js';
 import { WET_LEVEL } from '../shared/config/water.js';
+import { KISTE_KANTE, KISTE_RANDABSTAND } from '../shared/config/kisten.js';
 
 /** Fallbeschleunigung abgeworfener Kisten (px pro Tick²). */
 const CRATE_GRAVITY = 0.30;
@@ -97,12 +98,12 @@ export function wirfWaffe(q, playerId, weaponId) {
   const wurf = rolleWurf(q);
 
   const crateId = world.createEntity();
-  world.addComponent(crateId, 'Position', { x: startX, y: startY - 14 });
+  world.addComponent(crateId, 'Position', { x: startX, y: startY - KISTE_KANTE });
   world.addComponent(crateId, 'Velocity', { x: wurf.vx, y: wurf.vy });
   world.addComponent(crateId, 'Crate', {
     crateType: CRATE_TYPES.weapon,
     crateX: startX,
-    crateY: startY - 14,
+    crateY: startY - KISTE_KANTE,
     // BEWUSSTER ZUSTAND: Index liegt bei allen 150 Waffen auf 0 (Namensräume
     // powerTier/rarity) — Begründung an der Ziehung in `systems/lootSystem.js`.
     rarity: Math.max(0, RARITY_IDS.indexOf(weapon.rarity)),
@@ -119,7 +120,7 @@ export function wirfWaffe(q, playerId, weaponId) {
 
   q.events.emit('weapon_dropped', {
     playerId, weaponId, crateId,
-    x: startX, y: startY - 14,
+    x: startX, y: startY - KISTE_KANTE,
     vx: wurf.vx, vy: wurf.vy,
     ammo: entfernt.ammo,
   });
@@ -127,7 +128,7 @@ export function wirfWaffe(q, playerId, weaponId) {
   // x/y sind hier der ABWURFPUNKT. Die Landestelle steht erst nach dem Flug
   // fest und ist danach über die Kiste im Zustand abfragbar.
   return {
-    ok: true, crateId, x: startX, y: startY - 14,
+    ok: true, crateId, x: startX, y: startY - KISTE_KANTE,
     vx: wurf.vx, vy: wurf.vy, ammo: entfernt.ammo,
   };
 }
@@ -227,7 +228,7 @@ export function schrittKiste(q, crateId) {
   const nextY = y + vy;
 
   // Aus der Karte geflogen: zurück an den Rand holen.
-  const begrenztX = Math.min(q.width - 12, Math.max(12, nextX));
+  const begrenztX = Math.min(q.width - KISTE_RANDABSTAND, Math.max(KISTE_RANDABSTAND, nextX));
 
   const boden = q.surfaceYAt(Math.round(begrenztX));
 

@@ -36,6 +36,23 @@ Zeilenbudget (`tests/match-zeilenbudget.test.js`, `tests/shooting.test.js`,
   Werte per Getter): `water`, `width`, `height`, `skala`, `waterLevelAt`, `setWaterLevelAt`.
   `surfaceYAt`, `waterLevelAt`, `setWaterLevelAt`, `floodArea` bleiben öffentlich im Match.
 
+## ZERLEG-1: `#buildTerrain()` und `#spawnPlayers()` (geprüft 2026-11-02)
+
+Beide sind bereits Delegatoren nach demselben Muster und waren es vor dieser Zerlegung (W1-4c/4d, belegt
+in `tests/zerlegung-aufbau.test.js`: kein `this`, reine Delegatoren, ein Rückgabepfad):
+
+- `#buildTerrain()` ruft `baueTerrain(quelle)` aus `src/engine/terrainBuilder.js` (reine Funktion,
+  liest nur ihr Argument; drei Generatoren, ein Rückgabepfad). Im Match bleibt nur, was private Felder
+  setzt: Kollisionsmaske aus der Bitmap (Produktivpfad der Kollision), `MaliRegeln`, `Zerstoerung`,
+  Feuer. Diese Verdrahtung auszulagern hieße, die Felder über eine Rückgabe zurückzuschreiben;
+  gemessen spart das rund 20 Zeilen bei einer Quelle von ähnlicher Länge, deshalb nicht gemacht.
+- `#spawnPlayers()` ruft `erzeugeSpieler(#spawnQuelle())` aus `src/engine/spawnManager.js` und hängt
+  die Einträge an Spielerliste und Zugfolge (drei Zeilen).
+
+`match.js` hat am 2026-11-02 **2689** Zeilen (2638 nach Schritt 3, seitdem Minen, Fässer und
+Abwurf hinzu, −11 durch N-19). Das Zeilenbudget bleibt **2790**: Zeilenzahl + 5 % wären 2823, also
+eine Lockerung; das Budget wird nur verschärft.
+
 ## Was bewusst im Match blieb
 
 - `WATER_SCALE` (wird vom Client aus `match.js` importiert) und der Geschützpfad

@@ -19,7 +19,11 @@
  *     (`SELBSTSCHADEN_GRENZE`), dazu `WAFFEN_F5_WERTE` auf dem Katalog (Messung nachgezogen).
  *     Seit 2026-10-28 tragen vier Waffen im Katalog eine zutreffendere Schadensart
  *     (`ARTEN_BIS_F4`); die Fassungen 1 bis 4 behalten ihre alte Art.
- *   - `WAFFEN_MINE` (12, Standard): wie 11, dazu `WAFFEN_F12_WERTE`: die Impulsbombe (`pa_030`) ist die Mine (Wurf oder Ablegen, bleibt liegen,
+ *   - `WAFFEN_SICHT` (13, Standard): wie 12; die Sichtlinie (`requiresLineOfSight`) endet an der ersten Figur auf der
+ *     Zielgeraden. Bis Fassung 12 prüfte sie die ganze Reichweite: Stand hinter dem Ziel ein Hang, wurde der Schuss als
+ *     „Sichtlinie versperrt" abgelehnt, obwohl der Strahl das Ziel davor getroffen hätte (EREIGNIS-1: Zauberpeitsche und
+ *     Tesla-Turm maßen deshalb 0 Schaden). Regel im Motor (`hasLineOfSight` in `engine/shooting.js`), keine Katalogwerte.
+ *   - `WAFFEN_MINE` (12): wie 11, dazu `WAFFEN_F12_WERTE`: die Impulsbombe (`pa_030`) ist die Mine (Wurf oder Ablegen, bleibt liegen,
  *     sofort scharf; Wirkung in `systems/bodenobjektSystem.js`, nur mit Bodenobjektfassung 2). Katalogzahl und Beutetopf bleiben.
  *   - `WAFFEN_MUNITION` (11): wie 10, dazu vier Munitionsklassen (unendlich, 1, 2, 3 Schuss; `config/munition.js`),
  *     Obergrenze 5 und Munitionskisten (Kistenfassung 4); weitere Teile (Rückstoß, Elemente, Schilde) stehen unten in `WAFFEN_F11_WERTE`.
@@ -62,7 +66,8 @@ export const WAFFEN_VORSTRAHL = 9;
 export const WAFFEN_SPREIZUNG = 10;
 export const WAFFEN_MUNITION = 11;
 export const WAFFEN_MINE = 12;
-export const WAFFEN_STANDARD = WAFFEN_MINE;
+export const WAFFEN_SICHT = 13;
+export const WAFFEN_STANDARD = WAFFEN_SICHT;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -75,7 +80,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT ? fassung : WAFFEN_STANDARD;
 }
 
 /**

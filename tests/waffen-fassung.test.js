@@ -49,11 +49,20 @@ const PRUEFSUMME_F2 = 'd8b3632fc9c9a9057b6b063c4f8a26afff05e58bd3f5bc440aed357c6
 // `gadget` (2026-10-29) ist ebenfalls reine Anzeige (Gruppe im Waffenmenü); kein Motor, keine Beute und kein Kit liest es.
 const ANZEIGETEXTE = new Set(['displayName', 'description', 'gadget']);
 
+/*
+ * ENG-10: `sourceRarity` ist aus dem Katalog gestrichen; sie war bei allen 150 Waffen gleich `rarity`.
+ * Die Prüfsummen wurden MIT diesem Feld gemessen. Für den Vergleich wird es deshalb aus `rarity`
+ * zurückgewonnen: Stimmt die Prüfsumme weiter, ist belegt, dass die Streichung nichts anderes bewegt hat.
+ */
+const mitQuellRaritaet = x => (x && typeof x === 'object' && 'id' in x && 'rarity' in x && !('sourceRarity' in x)
+  ? { ...x, sourceRarity: x.rarity } : x);
+
 function stabil(wert) {
   return JSON.stringify(wert, (k, x) => {
     if (ANZEIGETEXTE.has(k)) return undefined;
-    return x && typeof x === 'object' && !Array.isArray(x)
-      ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b))) : x;
+    const y = mitQuellRaritaet(x);
+    return y && typeof y === 'object' && !Array.isArray(y)
+      ? Object.fromEntries(Object.entries(y).sort(([a], [b]) => a.localeCompare(b))) : y;
   });
 }
 
@@ -140,7 +149,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, 12); // Waffenfassung 12 (Mine statt Teleportplattform); Fassung 11 und 10 bleiben gültig und bitgleich
+  assert.equal(WAFFEN_STANDARD, 13); // Waffenfassung 13 (Sichtlinie bis zur ersten Figur); Fassung 12, 11 und 10 bleiben gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
@@ -158,7 +167,9 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(9), WAFFEN_VORSTRAHL);
   assert.equal(normalisiereWaffen(10), WAFFEN_SPREIZUNG);
   assert.equal(normalisiereWaffen(11), 11);
-  assert.equal(normalisiereWaffen(12), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(12), 12);
+  assert.equal(normalisiereWaffen(13), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(14), WAFFEN_STANDARD);
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */

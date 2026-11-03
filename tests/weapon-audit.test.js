@@ -168,10 +168,12 @@ test('Loot und Anzeige verwenden dieselbe Stufe', () => {
     assert.ok(stufe in LOOT_WEIGHTS,
       `Stufe ${stufe} kommt im Katalog vor, hat aber kein Loot-Gewicht`);
   }
-  // Die Quell-Rarität bleibt als Herkunftsnachweis erhalten.
+  // Die Quell-Rarität bleibt als Herkunftsnachweis erhalten — seit ENG-10 nur noch als `rarity`
+  // (die Kopie `sourceRarity` ist gestrichen, eine Aussage, eine Quelle).
   for (const weapon of WEAPONS) {
-    assert.ok(['common', 'uncommon', 'rare'].includes(weapon.sourceRarity),
-      `${weapon.id}: unerwartete Quell-Rarität ${weapon.sourceRarity}`);
+    assert.ok(['common', 'uncommon', 'rare'].includes(weapon.rarity),
+      `${weapon.id}: unerwartete Quell-Rarität ${weapon.rarity}`);
+    assert.ok(!('sourceRarity' in weapon), `${weapon.id}: Doppelspur sourceRarity ist zurück`);
   }
 });
 

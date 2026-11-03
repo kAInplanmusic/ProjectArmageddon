@@ -743,3 +743,40 @@ Sie stehen hier, damit die naechste Runde nicht bei Null beginnt. **Was hier ste
 Ausserdem **nicht** ausgefuehrt (Auftrag: rein lesend, kein Testlauf): `npm test`, `npm run lint`,
 `npm run checks`, Playwright. Alle Aussagen ueber „kein Test schlaegt an" stuetzen sich auf das
 **Lesen** der Testdateien und auf die **Messung** in Fund 11, nicht auf einen Testlauf.
+
+---
+
+## Nachtrag 2026-11-02 — offene Punkte entschieden (ENG-2, ENG-3, ENG-4, N-19)
+
+Alle Änderungen wertgleich (Literal durch Namen ersetzt), Goldwerte und Zustandshash unverändert.
+Regressionstests: `tests/engine-dubletten.test.js`.
+
+- **Fund 3 / N-19:** `match.js` führte zuletzt `const GRAVITY = PROJECTILE_GRAVITY` (Alias, kein Wert mehr).
+  Der Alias ist entfernt, der Geschützpfad liest `PROJECTILE_GRAVITY` direkt. `RARITY_IDS` ist seit
+  Fund 10 eine Referenz auf `LOOT_DROP_RULES.rarities` (keine Kopie).
+- **Fund 12 / Offen Nr. 5 (ENG-3):** Der Renderer nimmt die Seltenheitsfarbe aus
+  `LOOT_DROP_RULES.rarityColors[RARITY_IDS[stufe]]`; beide eigenen Farblisten sind gelöscht (sichtbare
+  Folge: `standard` jetzt `#ffffff` statt `#e8eef5`, `enhanced` `#3b82f6` statt `#4cc9f0`, wie in der
+  Kaderansicht). Kistenmaße: 14 und 12 sind **zwei Regeln** (Urteil (c) zwischen ihnen, (a) innerhalb):
+  `KISTE_KANTE = 14` (Kantenlänge, Ablagehöhe des Mittelpunkts über dem Boden; sechs Stellen in
+  `kistenWurf.js`, `lootSystem.js`, `guentherSystem.js` und die Zeichengröße im Renderer) und
+  `KISTE_RANDABSTAND = 12` (Klemme der fliegenden Kiste am Kartenrand), beide in `config/kisten.js`.
+- **Fund 16 / Offen Nr. 6 (ENG-2):** Doppelt (Code UND Vorlagentext) stehen heute nur noch fünf Helfer.
+  `identityFor`, `iconUrlFor`, `subcategoryFor`: gleicher normalisierter Rumpf (Test vergleicht ihn).
+  `strikeStyleFor`, `hasFuse`: Rumpf verschieden (Set gegen Liste, Namenshinweise inline), Ergebnis für
+  alle 150 Waffen und alle Zünderabsichten gleich (Test vergleicht das Ergebnis). Die übrigen acht der
+  früher gezählten 13 existieren nur noch als Text.
+- **Offen Nr. 1:** Die Vier-Stellen-Rundung steht nur noch einmal (`#rollWind`); die übrigen Rundungen
+  (`waterField` 2 Stellen, `damageSystem` 3 Stellen, `materialMatrix`/`zerstoerungsTabelle` 2 Stellen)
+  haben andere Zwecke. Urteil (c).
+- **Offen Nr. 2:** `WATER_SCALE = 4` (Wasserraster) und `COORD_SCALE = 4` (Drahtauflösung 0,25 px):
+  verschiedene Einheiten, kein Vorkommen liest die eine für die andere. Urteil (c).
+- **Offen Nr. 3:** 48 (`MUZZLE_SEARCH_DISTANCE`) und 16 (`MAX_SHIFT_SLOPE`, jetzt `zieleffekte.js`):
+  in `src/` keine zweite Verwendung derselben Regel (der Client rechnet die Mündung über
+  `launchOrigin` des Motors). Urteil (c).
+- **Offen Nr. 4:** `PULS_TEMPO = 0.14` (Client-Animation) gegen `POWER_TO_SPEED = 0.14`: andere Größe,
+  der Client liest für die Vorhersage `POWER_TO_SPEED` selbst. Urteil (c).
+- **Offen Nr. 7 (Detektor):** Der Detektor für „fast gleich" steht jetzt im Test
+  (`fastGleicheRuempfe`: Kommentare und Leerraum weg, Zahlliterale maskiert, Mutationsprobe dabei).
+  Messung über `src/engine/**` (ohne Unterordner jenseits `systems`, `physics`, `terrain`, `ecs`) und
+  `src/shared/**` (ohne `weapons.js`): 0 Gruppen. Der Test hält das fest.
