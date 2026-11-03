@@ -37,6 +37,8 @@ class Maske {
     this.umlauf = false;
     this.rund = false;
     this.planetenart = null;
+    /** Ab Geländefassung 8: Ruinen mit Schutthalden und begehbarer Krone (`ruine`). */
+    this.begehbar = false;
   }
 
   spalte(x) {
@@ -412,9 +414,36 @@ function ruine(maske, rng, x, bodenY, breite, hoehe) {
     const fy = bodenY - raumH - i * 100;
     maske.rechteck(x + breite * 0.5 - 12, fy - 54, x + breite * 0.5 + 12, fy, 0);
   }
-  for (let z = x; z < x + breite; z += 16) {
+  // Ab Geländefassung 8 (`maske.begehbar`): Die Krone bröckelt nur in Stufen bis 2 px je Zinne (unter `config/bewegung.maxStufe` 3, die Füße schweben 1 px), damit eine Figur über sie
+  // hinweg laufen kann (Zufall wie bisher: ein Wert je Zinne). An beiden Enden läuft sie auf volle Höhe aus, dort setzt die
+  // Schutthalde an.
+  let stufe = 0;
+  const zinnen = Math.ceil(breite / 16);
+  for (let z = x, i = 0; z < x + breite; z += 16, i += 1) {
     const ab = rng.next() * 80;
-    if (ab > 14) maske.rechteck(z, bodenY - hoehe - 2, z + 16, bodenY - hoehe + ab, 0);
+    if (maske.begehbar) {
+      stufe = Math.max(stufe - 2, Math.min(stufe + 2, ab > 14 ? ab : 0, 2 * (zinnen - 1 - i)));
+      if (stufe > 0) maske.rechteck(z, bodenY - hoehe - 2, z + 16, bodenY - hoehe + stufe, 0);
+    } else if (ab > 14) maske.rechteck(z, bodenY - hoehe - 2, z + 16, bodenY - hoehe + ab, 0);
+  }
+  if (maske.begehbar) schutthalden(maske, x, bodenY, breite, hoehe);
+}
+
+/**
+ * Schutthalden an beiden Seiten einer Ruine (ab Geländefassung 8, TODO UI-8/`check:biome`): ein flacher Schuttkegel vom Fuß bis zur
+ * Mauerkrone, leicht wellig. Ohne ihn war eine Ruinenstadt zu Fuß zerschnitten (Seed 1224883: 29 % der Kistenplätze erreichbar),
+ * weil jeder Turm eine senkrechte Wand von 200 bis 440 px war. Kein Zufall: die Ziehung bleibt wie in Fassung 7.
+ */
+function schutthalden(maske, x, bodenY, breite, hoehe) {
+  const laenge = hoehe * 1.8; // Neigung etwa 0,55: so flach, dass eine Figur hinaufgeht (`begehbar` in `karteStart.js` erlaubt 22 px auf 32 px)
+  for (const seite of [-1, 1]) {
+    const kante = seite < 0 ? x : x + breite;
+    for (let d = 0; d <= laenge; d += 1) {
+      const t = d / laenge;
+      const oben = bodenY - hoehe + (hoehe + 6) * t + Math.sin(d * 0.06 + kante) * 3 * t * (1 - t);
+      const sx = kante + seite * d;
+      maske.rechteck(sx, oben, sx + 1, bodenY + 10);
+    }
   }
 }
 
@@ -812,11 +841,14 @@ function dichteHochkant(maske, rng, B, H, stat) {
  * @param {{next:function():number}} o.rng - Seed-Zweig des Geländes
  * @param {number} o.width
  * @param {number} o.height
+ * @param {number} [o.fassung] - Geländefassung (`config.gelaende`); ab 8 begehbare Ruinen
  * @param {string} [o.art] - eine Kartenart aus `KARTENARTEN`; ohne Angabe zieht der Seed (Hochformat: `hochkant`)
  * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean}} `umlauf`: die Karte verlangt die Regel „rechts hinaus, links hinein“; `rund`: Körper mit Radialform; `planetenart`: nur beim Planeten die vom Seed gezogene Art (`planet_*`)
  */
-export function erzeugeKompositionsKarte({ rng, width, height, art = null }) {
+export function erzeugeKompositionsKarte({ rng, width, height, art = null, fassung = 0 }) {
   const maske = new Maske(width, height);
+  // Geländefassung 8: begehbare Ruinen (Schutthalden, flache Krone). Ältere Fassungen bauen Bit für Bit wie bisher.
+  maske.begehbar = fassung >= 8;
   const gezogen = KARTENARTEN[Math.floor(rng.next() * (KARTENARTEN.length - 1))];
   const wahl = KARTENARTEN.includes(art) ? art : (height > width * 1.2 ? 'hochkant' : gezogen);
   const stat = neuesStat();

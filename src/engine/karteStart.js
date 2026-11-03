@@ -9,9 +9,9 @@
 
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { WET_LEVEL } from '../shared/config/water.js';
-import { GELAENDE_KOMPOSITION } from '../shared/config/gelaende.js';
+import { GELAENDE_KOMPOSITION, GELAENDE_KLAR } from '../shared/config/gelaende.js';
 import {
-  pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner,
+  pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner, findeFlaechen,
 } from '../shared/erreichbarkeit.js';
 import { weitenFaktor } from '../shared/reichweite.js';
 import { POWER_TO_SPEED } from '../shared/ballistics.js';
@@ -85,12 +85,42 @@ export function trockenerStartX(m, idealX, belegt = []) {
   };
   // Nur auf autonomen Karten ab Geländefassung 6 (Bauteilkarten): alles Ältere setzt die Figuren wie bisher.
   const mitBegehbar = m.kartentyp === 'autonom' && (m.gelaende ?? 0) >= GELAENDE_KOMPOSITION;
-  const gut = x => trocken(x) && (!mitBegehbar || begehbar(x));
+  /*
+   * Auf einer großen Landmasse (ab Geländefassung 8, TODO UI-8).
+   *
+   * FUND (belegt, 2026-11-03, `check-erreichbarkeit`): `karte_unerreichbar` bei Seed 4 eiswueste 2×1, 69 kosmos 2×2/4×2,
+   * 107 klassisch 4×2, 240 klassisch 2×1 (Fassung 7). Ursache im Kartengenerator: Die Bauteilkarten haben lose Brocken
+   * (Vulkan: Seitenplatten 300×120 px; Höhle mit Insel: Felsinseln und Absätze im Raum), die von oben sichtbar sind. Die
+   * Prüfung des Generators (`terrainGen3.spawnErreichbar`) misst nur die sechs Spalten eines 3×2-Matches (i·B/7); bei
+   * anderen Teamgrößen liegt der Wunschplatz i·B/(n+1) auf einem Brocken, weiter als eine Wurfweite vom Gegner. Deshalb
+   * gilt ab Fassung 8 als gut nur ein Platz, dessen Boden zu einer großen Landmasse gehört (`hauptflaeche`).
+   */
+  const haupt = mitBegehbar && (m.gelaende ?? 0) >= GELAENDE_KLAR ? hauptflaeche(m) : null;
+  const aufHaupt = x => {
+    if (!haupt) return true;
+    const px = Math.round(x);
+    if (px < 0 || px >= m.width) return false;
+    for (let y = Math.max(0, Math.round(m.surfaceYAt(x))); y < m.height; y += 1) {
+      const f = haupt.flaeche[y * m.width + px];
+      if (f !== -1) return haupt.gross.has(f);
+    }
+    return false;
+  };
+  const gut = x => trocken(x) && (!mitBegehbar || begehbar(x)) && aufHaupt(x);
   if (gut(idealX)) return idealX;
   if (mitBegehbar) {
     for (let abstand = 8; abstand <= 600; abstand += 8) {
       if (gut(idealX + abstand)) return idealX + abstand;
       if (gut(idealX - abstand)) return idealX - abstand;
+    }
+  }
+  if (haupt) {
+    // Kein begehbarer Platz im Umkreis: wenigstens trocken und auf einer großen Landmasse, über die ganze Breite.
+    const ok = x => trocken(x) && aufHaupt(x);
+    if (ok(idealX)) return idealX;
+    for (let abstand = 8; abstand < m.width; abstand += 8) {
+      if (ok(idealX + abstand)) return idealX + abstand;
+      if (ok(idealX - abstand)) return idealX - abstand;
     }
   }
   if (trocken(idealX)) return idealX;
@@ -111,6 +141,42 @@ export function trockenerStartX(m, idealX, belegt = []) {
     if (trocken(idealX - abstand)) return idealX - abstand;
   }
   return idealX;
+}
+
+/** Eine Fläche, die nicht die größte ist, zählt nur, wenn sie über mindestens diesem Anteil der Spalten die Oberfläche bildet. */
+const OBERFLAECHEN_ANTEIL = 0.3;
+
+/**
+ * Die großen Landmassen der Karte (einmal je Bitmap gerechnet; beim Start ändert sich die Bitmap nicht): die größte Fläche
+ * und jede, die über `OBERFLAECHEN_ANTEIL` der Breite oben liegt. Gemessen 2026-11-03: Die Deckschicht einer Höhlenkarte
+ * (15 % der Masse, über fast die ganze Breite oben) ist spielbar; schwebende Inseln (16 % der Masse, 300 bis 500 px breit),
+ * Vulkanplatten und Felsinseln sind es nicht.
+ */
+const HAUPT_CACHE = new WeakMap();
+function hauptflaeche(m) {
+  const bitmap = m.bitmap;
+  if (!bitmap) return null;
+  let h = HAUPT_CACHE.get(bitmap);
+  if (h) return h;
+  const { width: B, height: H } = m;
+  const f = findeFlaechen(bitmap, B, H);
+  const groesse = new Map();
+  for (const v of f.flaeche) if (v !== -1) groesse.set(v, (groesse.get(v) ?? 0) + 1);
+  const oben = new Map();
+  for (let x = 0; x < B; x += 1) {
+    for (let y = 0; y < H; y += 1) {
+      const v = f.flaeche[y * B + x];
+      if (v !== -1) { oben.set(v, (oben.get(v) ?? 0) + 1); break; }
+    }
+  }
+  let groesste = -1;
+  let beste = 0;
+  for (const [v, n] of groesse) if (n > beste) { beste = n; groesste = v; }
+  const gross = new Set([groesste]);
+  for (const [v, n] of oben) if (n >= B * OBERFLAECHEN_ANTEIL) gross.add(v);
+  h = { flaeche: f.flaeche, gross };
+  HAUPT_CACHE.set(bitmap, h);
+  return h;
 }
 
 export function pruefeKartenErreichbarkeit({ m, players, world, bitmap, events, maxPower }) {

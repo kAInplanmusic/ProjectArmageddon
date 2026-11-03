@@ -46,18 +46,20 @@ test('Planeten im Menü: Wahl „Planet“ und die sechs Arten starten spielbar,
     await page.locator('#cfg-seed').fill(String(6150 + i));
     await page.getByRole('button', { name: 'Match starten' }).click();
     await expect(page.locator('#menu-overlay')).toBeHidden();
-    const befund = await page.evaluate(() => {
+    const befund = await page.evaluate(async () => {
       const m = window.__PA__.getMatch();
       const r = window.__PA__.game.renderer;
       return {
-        status: window.__PA__.getState().status, biom: m.sonderbiom, gelaende: m.gelaende,
+        status: window.__PA__.getState().status, biom: m.sonderbiom, gelaende: m.gelaende, standard: (await import('/src/shared/config/gelaende.js')).GELAENDE_STANDARD,
         himmel: r.scenery?.celestial?.kind, wasser: r.scenery?.waterId, ok: m.erreichbarkeit?.ok,
       };
     });
     expect(befund.status).toBe('playing');
     expect(befund.biom).toMatch(/^planet_/);
     if (wahl !== 'planet') expect(befund.biom).toBe(wahl);
-    expect(befund.gelaende).toBe(6);
+    // Planeten laufen in der geltenden Standard-Geländefassung (früher fest 6, seit Fassung 7/8 gestiegen).
+    expect(befund.gelaende).toBe(befund.standard);
+    expect(befund.gelaende).toBeGreaterThanOrEqual(6);
     expect(befund.himmel).toBe('planet');
     expect(befund.wasser).toBe('void');
     expect(befund.ok).toBe(true);

@@ -43,9 +43,10 @@ const wurzel = resolve(import.meta.dirname, '..');
 
 test('Marke: Fassung 7 ist gültig und der Standard, 1 bis 6 bleiben gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_BIOME_20, 7);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_BIOME_20);
+  // Seit Fassung 8 (N-29, `gelaende-fassung-8.test.js`) ist der Standard höher; Fassung 7 bleibt gültig.
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_BIOME_20);
   for (const f of [1, 2, 3, 4, 5, 6, 7]) assert.equal(normalisiereGelaende(f), f);
-  assert.equal(normalisiereGelaende(8), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(9), GELAENDE_STANDARD);
   assert.equal(normalisiereGelaende(undefined), GELAENDE_STANDARD);
 });
 
@@ -315,7 +316,7 @@ test('Alter Replay (Marke 6): Kopf behält die 6, Wiedergabe endet im Goldwert v
 
 test('Neuer Replay (Marke 7): Kopf trägt die 7 und das gewählte Biom, Wiedergabe endet im Live-Hash; Kopf ohne Marke bleibt Fassung 1', () => {
   for (const biom of NEU) {
-    const r = aufzeichnenUndAbspielen({ kartentyp: 'autonom', biom });
+    const r = aufzeichnenUndAbspielen({ gelaende: GELAENDE_BIOME_20, kartentyp: 'autonom', biom });
     assert.equal(r.kopf.gelaende, GELAENDE_BIOME_20, biom);
     assert.equal(r.kopf.biom, biom);
     assert.equal(r.sonder, biom);
