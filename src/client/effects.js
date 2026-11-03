@@ -130,9 +130,9 @@ export function schreitePartikelFort(partikel, dt = 1) {
  *
  * @returns {object} der neue Effekt
  */
-export function erzeugeStrahl(fromX, fromY, toX, toY, { hit = false, color = '#ffe066' } = {}) {
+export function erzeugeStrahl(fromX, fromY, toX, toY, { hit = false, color = '#ffe066', art = 'laser' } = {}) {
   return {
-    kind: 'beam', fromX, fromY, toX, toY, hit, color,
+    kind: 'beam', fromX, fromY, toX, toY, hit, color, art,
     life: 1, decay: 0.14,
   };
 }
@@ -142,8 +142,8 @@ export function erzeugeStrahl(fromX, fromY, toX, toY, { hit = false, color = '#f
  *
  * @returns {object} der neue Effekt
  */
-export function erzeugeBlitz(x, y, radius, { color = '#f4a261' } = {}) {
-  return { kind: 'flash', x, y, radius, color, life: 1, decay: 0.09 };
+export function erzeugeBlitz(x, y, radius, { color = '#f4a261', farben = null } = {}) {
+  return { kind: 'flash', x, y, radius, color, farben, life: 1, decay: 0.09 };
 }
 
 /**

@@ -13,9 +13,17 @@
  *
  * Die Bilder laden erst bei `vorladen()` (beim ersten Match), ohne Bild bleibt alles wie vorher.
  *
+ * Einschlag nach Schadensart (N-08, `waffenOptik.familieVonArt`): Eis und Wasser bekommen einen
+ * blauen Ring, Gift einen Wirbel, Magie und Heiliges Ringe und Funken, Blitz Funken und die blaue
+ * Flamme; dazu gezeichnete Teilchen je Familie (`einschlagArten.js`). Sprengstoff und alles
+ * Physische behalten Feuerball, Explosion und Pilzwolke. `ringe`, `wirbel` und `funken` sind aus
+ * den bisher ungenutzten Vorlagen gebaut (`scripts/sprites-erzeugen/effekt-umbauen.py`).
+ *
  * @module effektSheets
  */
 import { damageTypeName } from '../engine/damageTypes.js';
+import { familieVonArt } from './waffenOptik.js';
+import { ArtEinschlaege } from './einschlagArten.js';
 
 /** Gleichzeitige Bildfolgen; bleibt unter `MAX_PARTIKEL` (26). */
 export const MAX_SHEET_EFFEKTE = 12;
@@ -30,14 +38,23 @@ export const SHEETS = Object.freeze({
   feuerring: Object.freeze({ datei: 'feuerring.webp', spalten: 8, zeilen: 8, frames: reihe(0, 60), takt: 1, kern: 0.3 }),
   // Eigene Zeichnungen (`scripts/sprites-erzeugen/effekt-zeichnen.py`, 5×2 Zellen): kleiner Feuerball und Pilzwolke (Rauchring, blaue Flamme und Mündungsfeuer zeichnet das Skript auch, sie sind noch nicht eingebaut).
   // `versatzY`: Anteil der Kantenlänge, um den das Bild nach oben rückt (die Pilzwolke steht mit dem Fuß am Einschlagpunkt).
-  // Mündungsfeuer: 4 Bilder (Blitz, Blitz mit Rauch, Rauch, Verwehen) je Zeile, 5 Zeilen als Varianten; Ursprung der Mündung bei (30, 128) der 256-px-Zelle.
+  // Mündungsfeuer: 4 Bilder (Blitz, Blitz mit Rauch, Rauch, Verwehen) je Zeile, eine Zeile je Waffenart (Pistole, Gewehr, Schwer,
+  // Schrot, Energie; `waffenOptik.MUENDUNG_ZEILE`); Ursprung der Mündung bei (30, 128) der 256-px-Zelle. Kein Frame ist angeschnitten.
   muendung: Object.freeze({ datei: 'muendung.webp', spalten: 4, zeilen: 5, frames: reihe(0, 3), takt: 6, kern: 0.4 }),
   feuerball: Object.freeze({ datei: 'feuerball.webp', spalten: 5, zeilen: 2, frames: reihe(0, 9), takt: 3, kern: 0.5 }),
   pilzwolke: Object.freeze({ datei: 'pilzwolke.webp', spalten: 5, zeilen: 2, frames: reihe(0, 8), takt: 5, kern: 0.55, versatzY: 0.34 }),
   // Rauchring (9 Bilder: Ballen, Ring, Zerfall) nach mittleren Einschlägen; blaue Flamme (16 Bilder) nach Energie-, Plasma- und Arkanschaden.
   rauchring: Object.freeze({ datei: 'rauchring.webp', spalten: 5, zeilen: 2, frames: reihe(0, 8), takt: 5, kern: 0.6 }),
   flamme: Object.freeze({ datei: 'flamme.webp', spalten: 8, zeilen: 2, frames: reihe(0, 15), takt: 3, kern: 0.35, versatzY: 0.3 }),
+  // Aus den Vorlagen umgebaut (`effekt-umbauen.py`): Ringe je Farbe (eine Zeile je Farbe, `RINGE_ZEILE`), Wirbel, Funkenkranz.
+  // `wachsen`: Anteil, um den der Frame über die Folge größer wird (die Vorlage zeigt den Ring in fester Größe).
+  ringe: Object.freeze({ datei: 'ringe.webp', spalten: 7, zeilen: 6, frames: reihe(0, 6), takt: 4, kern: 0.9, wachsen: 0.45 }),
+  wirbel: Object.freeze({ datei: 'wirbel.webp', spalten: 8, zeilen: 8, frames: reihe(0, 60), takt: 1, kern: 1 }),
+  funken: Object.freeze({ datei: 'funken.webp', spalten: 8, zeilen: 6, frames: reihe(0, 44), takt: 1, kern: 0.85 }),
 });
+
+/** Zeile im Sheet `ringe` je Farbe. */
+export const RINGE_ZEILE = Object.freeze({ gelb: 0, violett: 1, rot: 2, orange: 3, blau: 4, rosa: 5 });
 
 /** Schadensarten, nach denen eine blaue Flamme steht (Name oder Kennung aus dem Ereignis `explosion`). */
 const BLAUE_ARTEN = new Set(['energy', 'plasma', 'arcane', 'astral', 'electric', 'magnetic']);
@@ -45,10 +62,11 @@ const artName = (art) => (typeof art === 'number' ? damageTypeName(art) : art);
 
 /** Kometen im Bogen `leuchtgeschosse.webp` (Pixel): Farbe → Rechteck; die Längsachse steht senkrecht. */
 export const LEUCHT_KOMETEN = Object.freeze({
-  gruen: Object.freeze({ x: 16, y: 305, w: 50, h: 78 }),
-  gelb: Object.freeze({ x: 79, y: 314, w: 35, h: 60 }),
-  cyan: Object.freeze({ x: 139, y: 318, w: 46, h: 80 }),
-  rot: Object.freeze({ x: 208, y: 310, w: 52, h: 91 }),
+  // Rechtecke so weit, dass der Glanz am Rand ausgeklungen ist (Alpha ≤ 6; vorher bis 31, sichtbare Kante, N-05).
+  gruen: Object.freeze({ x: 10, y: 296, w: 62, h: 96 }),
+  gelb: Object.freeze({ x: 77, y: 310, w: 39, h: 68 }),
+  cyan: Object.freeze({ x: 136, y: 312, w: 52, h: 91 }),
+  rot: Object.freeze({ x: 204, y: 303, w: 60, h: 105 }),
 });
 
 /** Schadensart (`engine/damageTypes.js`) → Kometenfarbe; alles andere gelb. */
@@ -60,12 +78,14 @@ export const LEUCHT_FARBE = Object.freeze({ fire: 'rot', explosive: 'rot', poiso
  * @param {number} index - Position in `frames` (wird begrenzt)
  * @param {number} breite - Pixelbreite des geladenen Bildes
  * @param {number} hoehe
+ * @param {number} [zeile] - Zeilenversatz (Sheets mit einer Folge je Zeile, z. B. `ringe`)
  * @returns {{sx:number, sy:number, sw:number, sh:number}|null}
  */
-export function frameRechteck(art, index, breite, hoehe) {
+export function frameRechteck(art, index, breite, hoehe, zeile = 0) {
   const s = SHEETS[art];
   if (!s || !(breite > 0) || !(hoehe > 0)) return null;
-  const nr = s.frames[Math.max(0, Math.min(s.frames.length - 1, Math.floor(index)))];
+  const z = Math.max(0, Math.min(s.zeilen - 1, Math.floor(zeile)));
+  const nr = s.frames[Math.max(0, Math.min(s.frames.length - 1, Math.floor(index)))] + z * s.spalten;
   const sw = breite / s.spalten;
   const sh = hoehe / s.zeilen;
   return { sx: (nr % s.spalten) * sw, sy: Math.floor(nr / s.spalten) * sh, sw, sh };
@@ -89,6 +109,8 @@ export class SheetEffekte {
     this.reduziert = false;
     this.gestartet = 0;
     this.verworfen = 0;
+    /** Gezeichnete Teilchen je Schadensart (N-08); brauchen kein Bild. */
+    this.arten = new ArtEinschlaege();
   }
 
   /** Name (`explosion`, `glut`, `feuerring`, `leuchtgeschosse`) → URL. */
@@ -118,12 +140,13 @@ export class SheetEffekte {
    * Startet eine Bildfolge. Ohne Bild, bei reduzierter Bewegung oder voller Liste: `false`.
    * @param {keyof typeof SHEETS} art
    * @param {number} groesse - Kantenlänge des ganzen Frames in Weltpixeln
-   * @param {{verzoegerung?: number, alpha?: number}} [optionen] - Verzögerung in Bildern
+   * @param {{verzoegerung?: number, alpha?: number, zeile?: number, hell?: boolean}} [optionen] - Verzögerung in Bildern;
+   *   `zeile` wählt die Folge in Sheets mit einer Folge je Zeile; `hell` zeichnet additiv (leuchtend)
    */
-  starte(art, x, y, groesse, { verzoegerung = 0, alpha = 1 } = {}) {
+  starte(art, x, y, groesse, { verzoegerung = 0, alpha = 1, zeile = 0, hell = false } = {}) {
     if (this.reduziert || !SHEETS[art] || !this.bereit(art)) return false;
     if (this.liste.length >= MAX_SHEET_EFFEKTE) { this.verworfen += 1; return false; }
-    this.liste.push({ art, x, y, groesse, alter: -Math.max(0, verzoegerung), alpha });
+    this.liste.push({ art, x, y, groesse, alter: -Math.max(0, verzoegerung), alpha, zeile, hell });
     this.gestartet += 1;
     return true;
   }
@@ -133,6 +156,46 @@ export class SheetEffekte {
    * Der Frame ist größer als der Feuerball (`kern`): Die Kantenlänge folgt dem Explosionsradius.
    */
   einschlag(x, y, radius, art = null) {
+    if (this.reduziert) return false;
+    const familie = familieVonArt(art);
+    if (familie !== 'explosiv' && familie !== 'feuer' && familie !== 'energie') {
+      const teilchen = this.arten.starte(familie, x, y, radius);
+      return this.#artEinschlag(familie, x, y, radius) || teilchen;
+    }
+    if (familie !== 'explosiv') this.arten.starte(familie, x, y, radius);
+    const ok = this.#explosion(x, y, radius, art);
+    // Feuer glüht auch nach kleinen Einschlägen nach; Energie sprüht Funken.
+    if (ok && familie === 'feuer' && radius < 30) this.starte('glut', x, y + radius * 0.15, Math.max(40, radius * 2 / SHEETS.glut.kern) * 0.7, { verzoegerung: 12, alpha: 0.85 });
+    if (ok && familie === 'energie') this.starte('funken', x, y, Math.max(56, radius * 2 / SHEETS.funken.kern), { verzoegerung: 4, hell: true });
+    return ok;
+  }
+
+  /** Einschlag ohne Feuerball: Ringe, Wirbel, Funken und Rauch nach der Familie der Schadensart. */
+  #artEinschlag(familie, x, y, radius) {
+    const ring = Math.max(48, radius * 2 / SHEETS.ringe.kern);
+    const funken = Math.max(56, radius * 2 / SHEETS.funken.kern);
+    switch (familie) {
+      case 'eis':
+        return [this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.blau, hell: true }), this.starte('rauchring', x, y - radius * 0.1, Math.max(70, radius * 2 / SHEETS.rauchring.kern) * 0.8, { verzoegerung: 3, alpha: 0.7 })].some(Boolean);
+      case 'wasser':
+        return this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.blau, hell: true });
+      case 'gift':
+        return this.starte('wirbel', x, y - radius * 0.2, Math.max(48, radius * 2 / SHEETS.wirbel.kern), { alpha: 0.7 });
+      case 'magie':
+        return [this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.violett, hell: true }), this.starte('funken', x, y, funken, { verzoegerung: 3, hell: true })].some(Boolean);
+      case 'heilig':
+        return [this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.gelb, hell: true }), this.starte('funken', x, y, funken, { verzoegerung: 5, hell: true })].some(Boolean);
+      case 'blitz':
+        return [this.starte('funken', x, y, funken, { hell: true }), this.starte('ringe', x, y, ring * 0.8, { zeile: RINGE_ZEILE.blau, hell: true, verzoegerung: 2 })].some(Boolean);
+      case 'wind':
+        return this.starte('rauchring', x, y - radius * 0.2, Math.max(90, radius * 2 / SHEETS.rauchring.kern), { alpha: 0.75 });
+      default:
+        return false;
+    }
+  }
+
+  /** Der bisherige Einschlag (Sprengstoff, Physik, Feuer, Energie): nach Radius Feuerball, Explosion oder Pilzwolke. */
+  #explosion(x, y, radius, art) {
     // Kleine Einschläge: gezeichneter Feuerball; sehr große: Pilzwolke; dazwischen die Bildfolge `explosion`.
     if (radius <= 22 && this.bereit('feuerball')) {
       return this.starte('feuerball', x, y, Math.max(48, radius * 2 / SHEETS.feuerball.kern));
@@ -151,6 +214,7 @@ export class SheetEffekte {
 
   /** Ein Bild weiter; abgelaufene Folgen gehen. */
   fortschreiben() {
+    this.arten.fortschreiben();
     if (this.liste.length === 0) return;
     for (const e of this.liste) e.alter += 1;
     this.liste = this.liste.filter(e => e.alter < dauerBilder(e.art));
@@ -158,29 +222,36 @@ export class SheetEffekte {
 
   /** Zeichnet alle laufenden Folgen (Weltkoordinaten). */
   zeichne(ctx) {
-    if (!ctx || this.liste.length === 0) return;
+    if (!ctx) return;
+    if (!this.reduziert) this.arten.zeichne(ctx);
+    if (this.liste.length === 0) return;
     ctx.save();
     for (const e of this.liste) {
       if (e.alter < 0) continue;
-      this.#frame(ctx, e.art, Math.floor(e.alter / SHEETS[e.art].takt), e.x, e.y, e.groesse, e.alpha);
+      ctx.globalCompositeOperation = e.hell ? 'lighter' : 'source-over';
+      this.#frame(ctx, e.art, Math.floor(e.alter / SHEETS[e.art].takt), e.x, e.y, e.groesse, e.alpha, e.zeile);
     }
     ctx.restore();
   }
 
-  #frame(ctx, art, index, x, y, groesse, alpha = 1) {
+  #frame(ctx, art, index, x, y, groesse, alpha = 1, zeile = 0) {
     const e = this.bilder.get(art);
     if (!e?.bereit) return false;
-    const r = frameRechteck(art, index, e.bild.naturalWidth ?? e.bild.width, e.bild.naturalHeight ?? e.bild.height);
+    const s = SHEETS[art];
+    const r = frameRechteck(art, index, e.bild.naturalWidth ?? e.bild.width, e.bild.naturalHeight ?? e.bild.height, zeile);
     if (!r) return false;
     ctx.globalAlpha = alpha;
-    const hoch = (SHEETS[art].versatzY ?? 0) * groesse;
-    ctx.drawImage(e.bild, r.sx, r.sy, r.sw, r.sh, x - groesse / 2, y - groesse / 2 - hoch, groesse, groesse);
+    const u = s.frames.length > 1 ? Math.min(1, Math.max(0, index / (s.frames.length - 1))) : 0;
+    const g = s.wachsen ? groesse * (1 + s.wachsen * (2 * u - 1)) : groesse;
+    const hoch = (s.versatzY ?? 0) * g;
+    ctx.drawImage(e.bild, r.sx, r.sy, r.sw, r.sh, x - g / 2, y - g / 2 - hoch, g, g);
     return true;
   }
 
   /**
    * Mündungsfeuer an der Mündung (x, y) in Schussrichtung `winkel` (0 = rechts, π/2 = oben); `leben` 1 → 0 steuert das Bild,
-   * `variante` wählt die Zeile. `skala` ist die Figurengröße. Ohne Bild: `false`.
+   * `variante` wählt die Zeile (Waffenart, `waffenOptik.muendungsStil`: Pistole, Gewehr, Schwer, Schrot, Energie).
+   * `skala` ist Figurengröße mal Blitzgröße der Waffe. Ohne Bild: `false`.
    */
   zeichneMuendung(ctx, x, y, winkel, leben, variante, skala = 1) {
     if (this.reduziert || !this.bereit('muendung')) return false;
@@ -196,7 +267,8 @@ export class SheetEffekte {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(-winkel);
-    ctx.globalCompositeOperation = 'lighter';
+    // Der Plasmastoß (letzte Zeile) leuchtet; Rauch deckt (additiv würde grauer Rauch weiß).
+    ctx.globalCompositeOperation = zeile === s.zeilen - 1 ? 'lighter' : 'source-over';
     ctx.drawImage(e.bild, bild * sw, zeile * sh, sw, sh, -30 * k, -128 * k, 256 * k, 256 * k);
     ctx.restore();
     return true;
@@ -233,7 +305,7 @@ export class SheetEffekte {
     return true;
   }
 
-  leere() { this.liste = []; }
+  leere() { this.liste = []; this.arten.leere(); }
 }
 
 export default SheetEffekte;
