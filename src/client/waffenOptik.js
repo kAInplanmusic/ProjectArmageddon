@@ -133,7 +133,7 @@ export function muendungsStil(waffe, par) {
     else if ((waffe.blastRadius ?? 0) >= 30) art = 'schwer';
     else art = 'pistole';
   }
-  const skala = Math.max(0.75, Math.min(1.7, groesse / KEGEL_BEZUG));
+  const skala = Math.max(0.75, Math.min(1.4, groesse / KEGEL_BEZUG));
   return { quelle: 'sheet', zeile: MUENDUNG_ZEILE[art], skala };
 }
 

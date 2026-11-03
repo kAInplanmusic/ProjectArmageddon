@@ -49,7 +49,7 @@ export const SHEETS = Object.freeze({
   // Aus den Vorlagen umgebaut (`effekt-umbauen.py`): Ringe je Farbe (eine Zeile je Farbe, `RINGE_ZEILE`), Wirbel, Funkenkranz.
   // `wachsen`: Anteil, um den der Frame über die Folge größer wird (die Vorlage zeigt den Ring in fester Größe).
   ringe: Object.freeze({ datei: 'ringe.webp', spalten: 7, zeilen: 6, frames: reihe(0, 6), takt: 4, kern: 0.9, wachsen: 0.45 }),
-  wirbel: Object.freeze({ datei: 'wirbel.webp', spalten: 8, zeilen: 8, frames: reihe(0, 60), takt: 1, kern: 0.5 }),
+  wirbel: Object.freeze({ datei: 'wirbel.webp', spalten: 8, zeilen: 8, frames: reihe(0, 60), takt: 1, kern: 1 }),
   funken: Object.freeze({ datei: 'funken.webp', spalten: 8, zeilen: 6, frames: reihe(0, 44), takt: 1, kern: 0.85 }),
 });
 
@@ -180,13 +180,13 @@ export class SheetEffekte {
       case 'wasser':
         return this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.blau, hell: true });
       case 'gift':
-        return this.starte('wirbel', x, y - radius * 0.2, Math.max(56, radius * 2 / SHEETS.wirbel.kern), { alpha: 0.9 });
+        return this.starte('wirbel', x, y - radius * 0.2, Math.max(48, radius * 2 / SHEETS.wirbel.kern), { alpha: 0.7 });
       case 'magie':
         return [this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.violett, hell: true }), this.starte('funken', x, y, funken, { verzoegerung: 3, hell: true })].some(Boolean);
       case 'heilig':
         return [this.starte('ringe', x, y, ring, { zeile: RINGE_ZEILE.gelb, hell: true }), this.starte('funken', x, y, funken, { verzoegerung: 5, hell: true })].some(Boolean);
       case 'blitz':
-        return [this.starte('funken', x, y, funken, { hell: true }), this.starte('flamme', x, y + radius * 0.4, Math.max(64, radius * 2 / SHEETS.flamme.kern), { verzoegerung: 6, alpha: 0.9 })].some(Boolean);
+        return [this.starte('funken', x, y, funken, { hell: true }), this.starte('ringe', x, y, ring * 0.8, { zeile: RINGE_ZEILE.blau, hell: true, verzoegerung: 2 })].some(Boolean);
       case 'wind':
         return this.starte('rauchring', x, y - radius * 0.2, Math.max(90, radius * 2 / SHEETS.rauchring.kern), { alpha: 0.75 });
       default:

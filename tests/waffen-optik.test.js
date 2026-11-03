@@ -107,7 +107,7 @@ test('N-07: Mündungsfeuer hängt an der Waffe, nicht an der Figur', () => {
     if (stil === null) { keins += 1; continue; }
     if (stil.quelle === 'sheet') {
       assert.ok(Object.values(MUENDUNG_ZEILE).includes(stil.zeile), `${w.id}: Zeile ${stil.zeile}`);
-      assert.ok(stil.skala >= 0.75 && stil.skala <= 1.7);
+      assert.ok(stil.skala >= 0.75 && stil.skala <= 1.4);
       zeilen.add(stil.zeile);
     } else {
       assert.equal(stil.quelle, 'form');
@@ -161,7 +161,7 @@ test('N-08: Einschlag nach Schadensart, Explosion bleibt für Sprengstoff', () =
   assert.deepEqual(arten('poison'), { sheets: ['wirbel'], teilchen: ['gift'] });
   assert.deepEqual(arten('arcane'), { sheets: [`ringe:${RINGE_ZEILE.violett}`, 'funken'], teilchen: ['magie'] });
   assert.deepEqual(arten('holy'), { sheets: [`ringe:${RINGE_ZEILE.gelb}`, 'funken'], teilchen: ['heilig'] });
-  assert.deepEqual(arten('electric'), { sheets: ['funken', 'flamme'], teilchen: ['blitz'] });
+  assert.deepEqual(arten('electric'), { sheets: ['funken', `ringe:${RINGE_ZEILE.blau}`], teilchen: ['blitz'] });
   assert.equal(arten('fire', 14).sheets[0], 'feuerball');
   assert.ok(arten('fire', 14).sheets.includes('glut'), 'Feuer glüht auch klein nach');
   assert.deepEqual(arten('fire', 14).teilchen, ['feuer']);
