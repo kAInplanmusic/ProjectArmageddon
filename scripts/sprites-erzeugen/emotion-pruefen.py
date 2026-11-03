@@ -28,7 +28,7 @@ OBERGRENZE = 0.45
 SICHTPRUEFUNG = {
     'beasts/00_pikamon': {'frei': [1, 5, 6], 'sperre': []},
     'beasts/01_shrew-quakes': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
-    'beasts/02_storm-talon': {'frei': [1, 3, 5, 6], 'sperre': [4]},
+    'beasts/02_storm-talon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03: Zellen 2 und 4 aus Zelle 1 abgeleitet, Magenta-Schatten entfernt
     'beasts/10_flame-jaws': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'beasts/11_ember-tails': {'frei': [1, 4, 5, 6], 'sperre': []},
     'beasts/12_magma-plate': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
@@ -44,8 +44,8 @@ SICHTPRUEFUNG = {
     'machina/00_chassis-endo-t8': {'frei': [1, 5], 'sperre': []},
     'machina/01_slasher-cyber-jax': {'frei': [3, 4, 6], 'sperre': []},
     'machina/02_hydra-titan-mech': {'frei': [3], 'sperre': []},
-    'machina/11_heavy-battery-moerser-bot': {'frei': [5, 6], 'sperre': []},
-    'machina/12_ordnance-rail-viper': {'frei': [5], 'sperre': [3]},
+    'machina/11_heavy-battery-moerser-bot': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 3-D-Verfahren 2026-11-03
+    'machina/12_ordnance-rail-viper': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 3-D-Verfahren 2026-11-03
     'machina/20_grid-drifter-datastream': {'frei': [1, 3, 5], 'sperre': []},
     'machina/21_proxy-glitch-hack': {'frei': [5], 'sperre': []},
     'machina/22_overlord-kernel-panic': {'frei': [1, 3, 5], 'sperre': []},
@@ -110,7 +110,7 @@ SICHTPRUEFUNG = {
 
 # Zellen, die `blick-aus-teilen.py` aus dem Seitenbild dreht (Blick hoch 5, Blick runter 6).
 AUS_TEILEN = {
-    'datacult/02_chrome-code-shifter': (5, 6), 'machina/11_heavy-battery-moerser-bot': (5, 6), 'machina/12_ordnance-rail-viper': (5,),
+    'datacult/02_chrome-code-shifter': (5, 6),
     'shinobi/12_blowpipe-koga': (5, 6), 'xeno/10_drone-theta': (5,),
 }
 

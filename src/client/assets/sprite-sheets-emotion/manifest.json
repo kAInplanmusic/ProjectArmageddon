@@ -50,20 +50,22 @@
    "gueltig": [
     0,
     1,
+    2,
     3,
+    4,
     5,
     6,
     7
    ],
    "abstand": [
-    0.111,
-    0.127,
-    0.291,
-    0.143,
-    0.124,
-    0.103,
-    0.15,
-    0.098
+    0.116,
+    0.108,
+    0.104,
+    0.119,
+    0.114,
+    0.1,
+    0.107,
+    0.099
    ]
   },
   "beasts/10_flame-jaws": {
@@ -473,38 +475,47 @@
   "machina/11_heavy-battery-moerser-bot": {
    "datei": "machina/11_heavy-battery-moerser-bot__emotion.webp",
    "gueltig": [
+    0,
     1,
+    2,
+    3,
     4,
-    5,
-    6
-   ],
-   "abstand": [
-    0.379,
-    0.262,
-    0.518,
-    0.346,
-    0.23,
-    0.025,
-    0.021,
-    0.316
-   ]
-  },
-  "machina/12_ordnance-rail-viper": {
-   "datei": "machina/12_ordnance-rail-viper__emotion.webp",
-   "gueltig": [
     5,
     6,
     7
    ],
    "abstand": [
-    0.144,
-    0.341,
-    0.171,
-    0.37,
-    0.256,
-    0.018,
-    0.115,
-    0.093
+    0.12,
+    0.122,
+    0.118,
+    0.125,
+    0.116,
+    0.12,
+    0.127,
+    0.128
+   ]
+  },
+  "machina/12_ordnance-rail-viper": {
+   "datei": "machina/12_ordnance-rail-viper__emotion.webp",
+   "gueltig": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "abstand": [
+    0.04,
+    0.044,
+    0.053,
+    0.051,
+    0.042,
+    0.052,
+    0.043,
+    0.051
    ]
   },
   "machina/20_grid-drifter-datastream": {
