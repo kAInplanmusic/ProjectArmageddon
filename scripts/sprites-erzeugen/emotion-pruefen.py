@@ -80,7 +80,9 @@ SICHTPRUEFUNG = {
     'shinobi/01_kunoichi-wind-flapper': {'frei': [1, 3, 5, 6], 'sperre': []},
     'shinobi/02_tetsubo-oni-brute': {'frei': [5], 'sperre': []},
     'shinobi/10_dazzler-werner': {'frei': [1, 4, 5], 'sperre': []},
-    'shinobi/11_rauch-meister-genzi': {'frei': [], 'sperre': [3, 5, 6]},
+    # 2026-11-03 Pilot 3-D (N-03): Modell aus dem Seitenbild (HF-Space trellis-community/TRELLIS), acht Posen gerendert
+    # (Kippen, Stauchen, Turm nicken/heben/schwenken, Scheinwerfer aus); Panzer bleibt erkennbar, alle acht freigegeben.
+    'shinobi/11_rauch-meister-genzi': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
     'shinobi/12_blowpipe-koga': {'frei': [3, 4, 5, 6], 'sperre': [1]},
     'shinobi/20_ninjutsu-master-goemon': {'frei': [1, 3, 4, 5, 6], 'sperre': []},
     'shinobi/21_talisman-sorcerer-jun': {'frei': [3], 'sperre': []},

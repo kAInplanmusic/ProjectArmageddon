@@ -1224,18 +1224,24 @@
   "shinobi/11_rauch-meister-genzi": {
    "datei": "shinobi/11_rauch-meister-genzi__emotion.webp",
    "gueltig": [
+    0,
     1,
-    4
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
    ],
    "abstand": [
-    0.294,
-    0.213,
-    0.288,
-    0.397,
-    0.211,
-    0.321,
-    0.179,
-    0.277
+    0.222,
+    0.206,
+    0.209,
+    0.222,
+    0.185,
+    0.238,
+    0.197,
+    0.212
    ]
   },
   "shinobi/12_blowpipe-koga": {
