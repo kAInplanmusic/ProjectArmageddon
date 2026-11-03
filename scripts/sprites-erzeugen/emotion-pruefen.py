@@ -26,14 +26,14 @@ OBERGRENZE = 0.45
 # Sichtprüfung am Kontaktbogen (2026-10-27) für neu erzeugte Zellen (emotion-neu.py): Ersatz für die Farbprüfung dieser Zellen.
 # Die Zellennummern gelten als gültig (Freigabe) bzw. werden gesperrt (Sperre), sonst entscheidet das Farbhistogramm.
 SICHTPRUEFUNG = {
-    'beasts/00_pikamon': {'frei': [0, 1, 2, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'beasts/00_pikamon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'beasts/01_shrew-quakes': {'frei': [1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/02_storm-talon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03: Zellen 2 und 4 aus Zelle 1 abgeleitet, Magenta-Schatten entfernt
     'beasts/10_flame-jaws': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/11_ember-tails': {'frei': [0, 1, 2, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/12_magma-plate': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'beasts/21_cosmic-meditate': {'frei': [0, 1, 2, 4, 5], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'beasts/22_sonic-blossom': {'frei': [1, 3, 5], 'sperre': []},
+    'beasts/22_sonic-blossom': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'datacult/00_nullpointer-exception': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'datacult/01_datapath-replicant': {'frei': [0, 2, 3, 4], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'datacult/02_chrome-code-shifter': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 abgeleitet (emotion-ableiten.py)
@@ -41,7 +41,7 @@ SICHTPRUEFUNG = {
     'datacult/12_arcology-agent': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 abgeleitet (emotion-ableiten.py)
     'datacult/21_hyper-link-hound': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'datacult/22_ethereo': {'frei': [0, 1, 2, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'machina/00_chassis-endo-t8': {'frei': [1, 2, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'machina/00_chassis-endo-t8': {'frei': [0, 1, 2, 4, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'machina/01_slasher-cyber-jax': {'frei': [0, 2, 3, 4, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'machina/02_hydra-titan-mech': {'frei': [3], 'sperre': []},
     'machina/11_heavy-battery-moerser-bot': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 3-D-Verfahren 2026-11-03
@@ -54,7 +54,7 @@ SICHTPRUEFUNG = {
     'pirates/02_iron-hook-harry': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; bisher farbgeprüfte Zellen sichtgeprüft
     'pirates/10_cannoneer-klaus': {'frei': [1], 'sperre': []},
     'pirates/11_sniper-marie': {'frei': [1, 2, 5, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
-    'pirates/12_bombard-billy': {'frei': [1, 2, 3, 4, 5], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'pirates/12_bombard-billy': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'pirates/20_voodoo-witch-morgana': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'pirates/21_storm-schamane-hooky': {'frei': [1, 2, 3, 4], 'sperre': []},  # 2026-11-03 Restposen per FLUX; bisher farbgeprüfte Zellen sichtgeprüft
     'pirates/22_chanteyman-drake': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 abgeleitet (emotion-ableiten.py); bisher farbgeprüfte Zellen sichtgeprüft
@@ -68,7 +68,7 @@ SICHTPRUEFUNG = {
     'pixel/21_arcanus-a': {'frei': [0, 1, 2, 3], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'pixel/22_arcanus-b': {'frei': [1, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'rodentia/00_commander-chewk': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'rodentia/01_berzerker-fang': {'frei': [0, 1, 2, 3, 4, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'rodentia/01_berzerker-fang': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'rodentia/02_vanguard-captain-rix': {'frei': [0, 1, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'rodentia/10_sharpshooter-quill': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'rodentia/11_grenadier-skitter': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
@@ -78,7 +78,7 @@ SICHTPRUEFUNG = {
     'rodentia/22_grand-conduit-vex': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'shinobi/00_shred-katana-hanzmon': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
     'shinobi/01_kunoichi-wind-flapper': {'frei': [0, 1, 2, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'shinobi/02_tetsubo-oni-brute': {'frei': [5], 'sperre': []},
+    'shinobi/02_tetsubo-oni-brute': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'shinobi/10_dazzler-werner': {'frei': [0, 1, 2, 3, 4, 5, 6], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     # 2026-11-03 Pilot 3-D (N-03): Modell aus dem Seitenbild (HF-Space trellis-community/TRELLIS), acht Posen gerendert
     # (Kippen, Stauchen, Turm nicken/heben/schwenken, Scheinwerfer aus); Panzer bleibt erkennbar, alle acht freigegeben.
@@ -88,14 +88,14 @@ SICHTPRUEFUNG = {
     'shinobi/21_talisman-sorcerer-jun': {'frei': [2, 3], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'shinobi/22_vixen-kitsune': {'frei': [0, 3, 4, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'undead/02_grim-reaper-silas': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 ganzes Blatt neu (N-01)
-    'undead/10_archer-mortis': {'frei': [2, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
+    'undead/10_archer-mortis': {'frei': [1, 2, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'undead/12_vessel-plague-skull': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'undead/20_lich-king-alistair': {'frei': [1, 2, 3, 4, 5], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'undead/21_scribe-necro-silas': {'frei': [1, 2, 4, 5, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
+    'undead/21_scribe-necro-silas': {'frei': [1, 2, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; nach Saumentfernung farbgeprüft gefallen, sichtgeprüft
     'undead/22_banshee-beatrice': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'xeno/01_stalker-predax': {'frei': [0, 4, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
     'xeno/02_vortex-grabber': {'frei': [0, 1, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
-    'xeno/10_drone-theta': {'frei': [1, 2, 5], 'sperre': []},  # 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft; 2026-11-03 Restposen per FLUX
+    'xeno/10_drone-theta': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Nachauftrag: ganzes Blatt im 3-D-Verfahren (TRELLIS, yaw 35, Neigung 5), schwebende Drohne
     'xeno/11_desintegrator-kael': {'frei': [1, 2, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
     'xeno/20_harbinger-zeta': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'xeno/21_dark-matter-witch': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX
@@ -107,14 +107,14 @@ SICHTPRUEFUNG = {
     'undead/11_pitcher-igor': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},
     'machina/10_recon-luchs-01': {'frei': [1, 3, 5, 6, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
     'xeno/12_plasma-maw-zorg': {'frei': [0, 1, 2, 4, 5, 7], 'sperre': []},  # 2026-11-03 Restposen per FLUX; 2026-11-03 bisher farbgeprüfte Zellen sichtgeprüft
-    'datacult/10_quantum-qubit-knight': {'frei': [1, 2, 7], 'sperre': []},  # 2026-11-03 abgeleitet (emotion-ableiten.py); bisher farbgeprüfte Zellen sichtgeprüft
+    'datacult/10_quantum-qubit-knight': {'frei': [0, 1, 2, 3, 4, 5, 6, 7], 'sperre': []},  # 2026-11-03 Nachauftrag: ganzes Blatt neu, grün wie das Seitenbild (FLUX, Schwänze per Kontext-Bearbeitung entfernt)
 }
 
 
 # Zellen, die `blick-aus-teilen.py` aus dem Seitenbild dreht (Blick hoch 5, Blick runter 6).
 AUS_TEILEN = {
     'datacult/02_chrome-code-shifter': (5, 6),
-    'shinobi/12_blowpipe-koga': (5, 6), 'xeno/10_drone-theta': (5,),
+    'shinobi/12_blowpipe-koga': (5, 6),
 }
 
 

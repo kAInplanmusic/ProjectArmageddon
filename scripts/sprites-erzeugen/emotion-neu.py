@@ -51,6 +51,9 @@ ZUSATZ = {
     'datacult/21_hyper-link-hound': 'It is a four-legged robot dog with two heads: keep both heads and all four legs, stays on all fours.',
     'pixel/12_shieldmon': 'It is a four-legged porcupine with a big shield on its back: stays on all fours and keeps the shield.',
     'undead/12_vessel-plague-skull': 'It is a bare skeleton wrapped in green flames.',
+    'datacult/10_quantum-qubit-knight': 'It is a knight in dark green armor with a bright green plume on the helmet; keep these exact green colors.',
+    'xeno/10_drone-theta': 'It is a hovering robot drone: a round purple glass dome body floating in the air with purple slime tentacles '
+                           'dangling below it; the pose is shown only by tilting the dome and moving the tentacles.',
 }
 PROMPT = ('The exact same character as in the reference image: same species, body shape, colors, costume and art style. '
           'It must stay the same creature and must never turn into a human or any other being. '
@@ -124,8 +127,9 @@ def aufruf(schluessel, zelle, arbeit, ausgabe):
 
 
 def fehlende(k):
-    """Zellen der Posen, die im Manifest noch nicht als gültig stehen (Umgebung `POSEN_NUR`, z. B. `3,5,6`, schränkt ein)."""
-    m = json.load(open(EMO + 'manifest.json'))['figuren'].get(k, {})
+    """Zellen der Posen, die im Manifest noch nicht als gültig stehen (Umgebung `POSEN_NUR`, z. B. `3,5,6`, schränkt ein;
+    `ALLE=1` erzeugt auch gültige Zellen neu, für ein ganzes Blatt)."""
+    m = {} if os.environ.get('ALLE') else json.load(open(EMO + 'manifest.json'))['figuren'].get(k, {})
     nur = {int(x) for x in os.environ.get('POSEN_NUR', '').split(',') if x.strip()}
     return [z for z in POSEN if z not in m.get('gueltig', []) and (not nur or z in nur)]
 
