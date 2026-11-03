@@ -686,7 +686,7 @@ function erzeugeBauteilKarte({ rng, width, height, biom, stoffe, fassung, karten
   let versuch = 1;
   for (; versuch <= 8; versuch += 1) {
     const art = height > width * 1.2 ? 'hochkant' : (kartenart ?? BAUTEIL_ARTEN[Math.floor(rng.next() * BAUTEIL_ARTEN.length)]);
-    karte = erzeugeKompositionsKarte({ rng, width, height, art });
+    karte = erzeugeKompositionsKarte({ rng, width, height, art, fassung });
     karte.surface = oberflaechen(karte.bitmap, width, height);
     kennzahlen = messe(karte.bitmap, karte.surface, width, height, karte.wasserY);
     let urteil = pruefeBauteilKarte(kennzahlen);

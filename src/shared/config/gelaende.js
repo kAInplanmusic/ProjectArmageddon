@@ -32,6 +32,11 @@
  *     `config/stoff-rezepte-material.js`). Die Ziehung läuft über zwanzig Kennungen; die Fassungen 1 bis 6 kennen die
  *     sechs nicht und bleiben Bit für Bit gleich. Zufall nur aus dem Seed-Zweig „BIO“ (unverändert).
  *
+ *   - `GELAENDE_KLAR` (8, TODO N-29/UI-8): Jedes Biom bekommt einen Leitstoff und eine Kontrastader
+ *     (`config/stoff-rezepte-klar.js`), Ruinen der Bauteilkarten tragen Schutthalden und eine begehbare Krone
+ *     (`terrainKomposition.ruine`), und Figuren starten nur auf der Hauptlandmasse, nicht auf losen Brocken
+ *     (`engine/karteStart.trockenerStartX`). Die Ziehung bleibt wie in 7; die Fassungen 1 bis 7 bleiben Bit für Bit gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -50,11 +55,13 @@ export const GELAENDE_MATERIAL = 5;
 export const GELAENDE_KOMPOSITION = 6;
 /** Fassung 7: die Biome 15 bis 20 sind spielbar (`config/biome-fassung-7.js`); Karten und Rezepte der Biome 1 bis 14 bleiben wie in 6, nur die Ziehung läuft über zwanzig statt vierzehn Plätze. */
 export const GELAENDE_BIOME_20 = 7;
-export const GELAENDE_STANDARD = GELAENDE_BIOME_20;
+/** Fassung 8: unterscheidbare Biome (ein Leitstoff, eine Kontrastader), begehbare Ruinen, Start nur auf der Hauptlandmasse. */
+export const GELAENDE_KLAR = 8;
+export const GELAENDE_STANDARD = GELAENDE_KLAR;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

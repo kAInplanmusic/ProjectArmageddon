@@ -9,9 +9,12 @@
  */
 import { NEUE_BIOME } from './biome-neu.js';
 import { REZEPTE_MATERIAL } from './stoff-rezepte-material.js';
+import { REZEPTE_KLAR } from './stoff-rezepte-klar.js';
 
 /** Ab dieser Gelände-Fassung gelten die Rezepte mit Biom-Materialien. */
 const FASSUNG_MATERIAL = 5;
+/** Ab dieser Gelände-Fassung gilt je Biom ein Leitstoff mit einer Kontrastader (`config/stoff-rezepte-klar.js`). */
+const FASSUNG_KLAR = 8;
 
 const ERDE = { deck: [['erde', 40]], kern: 'erde', adern: [{ stoff: 'fels', dichte: 0.1, ab: 60 }] };
 
@@ -34,8 +37,9 @@ export const ALTE_REZEPTE = Object.freeze({
   warren: { deck: [['erde', 14]], kern: 'fels', adern: [{ stoff: 'basalt', dichte: 0.1, ab: 40 }] },
 });
 
-/** Rezept eines Bioms (Sonderbiom oder altes Biom); Unbekanntes bekommt das Erdrezept. Ab Fassung 5 mit Biom-Materialien, wo es welche gibt. */
+/** Rezept eines Bioms (Sonderbiom oder altes Biom); Unbekanntes bekommt das Erdrezept. Ab Fassung 5 mit Biom-Materialien, wo es welche gibt, ab Fassung 8 mit Leitstoff und Kontrastader. */
 export function rezeptFuer(biomId, fassung = 0) {
+  if (fassung >= FASSUNG_KLAR && REZEPTE_KLAR[biomId]) return REZEPTE_KLAR[biomId];
   if (fassung >= FASSUNG_MATERIAL && REZEPTE_MATERIAL[biomId]) return REZEPTE_MATERIAL[biomId];
   return NEUE_BIOME[biomId]?.stoffe ?? ALTE_REZEPTE[biomId] ?? ERDE;
 }
