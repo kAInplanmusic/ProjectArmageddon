@@ -126,8 +126,12 @@ test('WS: unbekannte Lobby und fehlende Kennung sind unterscheidbar', async () =
 test('WS: eine volle Lobby lehnt mit Grund ab', async () => {
   const { server, url, wsUrl } = await starteServer();
   try {
+    /*
+     * Der Host bleibt ohne Socket (SRV-2: reserviert, nicht verbunden): Beide Teams sind vergeben,
+     * das Match startet aber nicht. Mit Host-Socket startete der Beitritt des Zweiten das Match, und
+     * seit SRV-3 stünde die Lobby dann auf „running" — diesen Grund prüft der nächste Test.
+     */
     const erstellt = await erstelleLobby(url, { teams: 2, seed: 2020, name: 'Host' });
-    const host = await trittBei(wsUrl, erstellt.lobby.id, { name: 'Host', token: erstellt.player.token });
     const zweiter = await trittBei(wsUrl, erstellt.lobby.id, { name: 'Zweiter' });
 
     const dritter = new TestClient(wsUrl);
@@ -136,7 +140,7 @@ test('WS: eine volle Lobby lehnt mit Grund ab', async () => {
     const grund = assertLesbareAblehnung(await dritter.warte(CONTROL.ERROR), { wo: 'volle Lobby' });
     assert.match(grund, /Teams sind besetzt/);
 
-    host.client.close(); zweiter.client.close(); dritter.close();
+    zweiter.client.close(); dritter.close();
   } finally {
     await server.close();
   }

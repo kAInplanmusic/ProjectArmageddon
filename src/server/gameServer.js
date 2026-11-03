@@ -418,8 +418,51 @@ class LobbySession {
    */
   get laeuft() { return this.timer !== null; }
 
-  /** Ein Simulationsschritt — ohne Bot. Wer zieht, entscheidet der Mensch. */
+  /**
+   * Ein Takt der Zeitschleife — mit Fangnetz (SRV-6).
+   *
+   * `tick()` läuft aus `setInterval`. Eine Ausnahme aus `match.step()` (oder aus
+   * dem Senden) verließ den Zeitgeber als `uncaughtException` — Node beendet
+   * dann den GANZEN Prozess, also jede Lobby auf dem Server. Jetzt endet nur
+   * diese Sitzung: Zeitgeber aus, eine Fehlerzeile im Log, eine Meldung an die
+   * Clients, Sitzung abmelden (`onEmpty`).
+   */
   tick() {
+    try {
+      this.#takt();
+    } catch (fehler) {
+      this.#abbrechen(fehler);
+    }
+  }
+
+  /**
+   * Beendet die Sitzung nach einem Fehler in der Zeitschleife.
+   *
+   * Kein `match_over`: Das Match ist nicht entschieden, es ist abgebrochen. Die
+   * Lobby steht danach auf „finished" — wie nach einem Ende ist sie keine
+   * offene Lobby mehr; ein Wiederbeitritt mit Token legt eine neue Sitzung an.
+   */
+  #abbrechen(fehler) {
+    this.stop();
+    if (this.#finished) return;
+    this.#finished = true;
+    this.logger?.error('tick_fehler', 'Simulationsschritt warf — Sitzung abgebrochen', {
+      lobbyId: this.lobby?.id ?? null,
+      tick: this.match?.world?.tickCount ?? null,
+      error: fehler,
+    });
+    this.lobby && (this.lobby.status = LOBBY_STATUS.FINISHED);
+    try {
+      const grund = 'Interner Serverfehler — das Match wurde abgebrochen';
+      this.#broadcastControl(CONTROL.ERROR, { error: grund, errors: [grund] });
+    } catch {
+      // Senden darf das Aufräumen nicht verhindern.
+    }
+    this.onEmpty?.(this.lobby?.id);
+  }
+
+  /** Ein Simulationsschritt — ohne Bot. Wer zieht, entscheidet der Mensch. */
+  #takt() {
     const now = Date.now();
     const elapsed = Math.min(250, now - this.lastTickAt);
     this.lastTickAt = now;
@@ -513,7 +556,13 @@ class LobbySession {
       this.history.push(this.match.world.tickCount, null);
     }
     if (this.match.status === 'gameover') this.#finish();
-    return this.match.getState();
+    /*
+     * Kein Rückgabewert mehr (STATE-1/ENG-5): Hier stand `return
+     * this.match.getState()` — ein zweiter Zustandsaufbau je Takt (der erste
+     * steckte in `match.step()`), den kein Aufrufer las. Gemessen 2026-11-02:
+     * `getState()` 0,017 ms, `step()` 0,083 ms je Takt (2 Teams × 2, hills);
+     * zwei überflüssige Aufbauten waren rund 30 % der Taktkosten des Servers.
+     */
   }
 
   /*
@@ -599,6 +648,8 @@ class LobbySession {
   attach(token, socket) {
     this.syncSeats();
     this.clients.set(token, socket);
+    // Neuer Socket = neuer Empfänger: Er kennt keine Delta-Basis (SRV-9).
+    this.previousByToken.delete(token);
     // Ein neu verbundener Client braucht die Bestände sofort, nicht erst beim
     // nächsten Wechsel.
     this.syncLoadouts(true);
@@ -635,6 +686,7 @@ class LobbySession {
 
   detach(token) {
     this.clients.delete(token);
+    this.previousByToken.delete(token);
     if (this.clients.size === 0) this.emptySince = Date.now();
   }
 
@@ -1162,20 +1214,33 @@ class LobbySession {
     // Terrain-Hash zusammen mit dem Vollsnapshot (siehe CONTROL.TERRAIN_HASH).
     if (forceFull) this.#broadcastControl(CONTROL.TERRAIN_HASH, this.terrainStand(false));
 
+    /*
+     * Die Delta-Basis gilt NUR für Empfänger, die diesen Snapshot bekommen haben
+     * (SRV-9). Vorher wurde sie für jeden Token fortgeschrieben, auch wenn sein
+     * Socket nicht offen war: Der nächste Delta bezog sich dann auf einen Stand,
+     * den der Client nie sah, und das Feld blieb bis zum nächsten Vollsnapshot
+     * (bis ~2 s) falsch. Wer übersprungen wird, verliert seine Basis und
+     * bekommt beim nächsten Mal einen Vollsnapshot.
+     */
     const sent = [];
+    const empfaenger = [];
     for (const [token, socket] of this.clients.entries()) {
-      if (socket.readyState !== 1) continue;
+      if (socket.readyState !== 1) {
+        this.previousByToken.delete(token);
+        continue;
+      }
       const previous = forceFull ? null : (this.previousByToken.get(token) ?? null);
       const buffer = encodeSnapshot(state, { turnRemainingMs, previous });
       socket.send(buffer);
       if (this.metrics) this.metrics.snapshotsSent += 1;
       sent.push(buffer);
+      empfaenger.push(token);
     }
 
     // Zustand für den nächsten Vergleich fortschreiben. Der Helfer erzeugt
     // exakt die Rohform, die der Encoder erwartet.
     const nextPrevious = toDeltaBase(state);
-    for (const token of this.clients.keys()) this.previousByToken.set(token, nextPrevious);
+    for (const token of empfaenger) this.previousByToken.set(token, nextPrevious);
 
     return sent[0] ?? null;
   }
@@ -1416,11 +1481,11 @@ export class GameServer {
    * START_MATCH), nur der JOIN-Pfad lief im Livebetrieb. Es gibt jetzt genau
    * EINE Stelle für die Prüfung und den Start.
    *
-   * Bewusst NICHT hier: `markRunning`. Ob eine durch den letzten Beitritt
-   * gestartete Lobby „open" oder „running" trägt, ist eine offene
-   * Produktentscheidung (siehe den ZUSTANDS-PIN in
-   * tests/server-beitritt-und-trennung.test.js) — sie bleibt beim jeweiligen
-   * Aufrufer.
+   * Auch `markRunning` steht HIER (SRV-3, Entscheidung des Auftraggebers
+   * 2026-11-02): Vorher setzte nur `START_MATCH` die Lobby auf „running"; ein
+   * Start durch den letzten Beitritt ließ sie „open". Zwei Startwege endeten
+   * in zwei Zuständen (ein Nachrücker kam nur auf dem einen Weg hinein, die
+   * Lobby-Liste zeigte nur die eine). Jetzt enden beide gleich: „running".
    *
    * @returns {boolean} true, wenn das Match GERADE gestartet wurde
    */
@@ -1428,6 +1493,7 @@ export class GameServer {
     if (!this.#lobbies.alleTeamsBesetzt(lobbyId)) return false;
     if (session.laeuft) return false;
     session.start();
+    this.#lobbies.markRunning(lobbyId);
     return true;
   }
 
@@ -1635,11 +1701,11 @@ export class GameServer {
      * greift er. Eine Zeile, deren Wirkung sich nicht vorführen lässt, ist toter
      * Code — auch wenn sie gut gemeint ist.
      *
-     * Der verbleibende Fall ist ein anderer und älter als diese Arbeit: Ein über
-     * `POST /api/lobby/create` angelegter Host-Platz steht von Anfang an auf
-     * `connected: true`, auch wenn sich nie ein Socket anmeldet. Er verfällt
-     * nicht und hält das Match am Laufen. Das ist kein Teil dieser Reparatur und
-     * steht im Bericht (`docs/server-seite-fixes.md`) als offener Punkt.
+     * Der früher verbleibende Fall (SRV-2): Ein über `POST /api/lobby/create`
+     * angelegter Host-Platz stand von Anfang an auf `connected: true`, auch wenn
+     * sich nie ein Socket anmeldete, und verfiel nie. Behoben in
+     * `LobbyManager#create`: Der Platz ist bis zum Beitritt mit Token getrennt
+     * und verfällt hier nach dem Reconnect-Fenster.
      */
     // Verwaiste Lobbys und Sitzungen räumen (Audit 2026-10-13): Eine Lobby, an der länger als
     // `lobbyLeerTtlMs` kein einziger Socket hing — auch eine nur per HTTP angelegte —, wird samt Sitzung
@@ -1796,9 +1862,15 @@ export class GameServer {
     }
 
     if (request.method === 'POST' && url.pathname === '/api/lobby/create') {
-      const body = await this.#readBody(request);
+      /*
+       * HTTP-1 (Entscheidung des Auftraggebers 2026-11-02): Jeder fehlerhafte Body gibt 400 mit
+       * einem KURZEN Grund — ungültiges oder unvollständiges JSON, zu groß, abgebrochen, kein Objekt.
+       */
+      const gelesen = await this.#readBody(request);
+      if (gelesen.fehler) return this.#json(response, 400, this.#fehlerNutzlast(gelesen.fehler));
+      const body = gelesen.wert;
       if (body === null || typeof body !== 'object' || Array.isArray(body)) {
-        return this.#json(response, 400, this.#fehlerNutzlast('Ungültiger oder zu großer Request-Body'));
+        return this.#json(response, 400, this.#fehlerNutzlast('Request-Body muss ein JSON-Objekt sein'));
       }
       // Begrenzung (Audit 2026-10-13): Anzahl offener Lobbys und Anlegen je Adresse und Minute.
       if (this.#lobbies.size >= this.maxLobbies) {
@@ -1901,6 +1973,7 @@ export class GameServer {
     }
   }
 
+  /** Liest den Body: `{ wert }` bei Erfolg, `{ fehler }` mit kurzem Grund sonst (HTTP-1). */
   #readBody(request) {
     return new Promise(resolve => {
       let raw = '';
@@ -1919,20 +1992,20 @@ export class GameServer {
          * `catch`-Zweig (siehe §6 in docs/abnahme-bugs-2026-10-01.md).
          */
         // Zu groß oder ungültig: `null` (der Aufrufer lehnt ab), nicht still ein Standard-Body.
-        if (zuGross) { resolve(null); return; }
+        if (zuGross) { resolve({ fehler: 'Request-Body zu groß' }); return; }
         if (!raw) {
-          resolve({});
+          resolve({ wert: {} });
           return;
         }
         try {
-          resolve(JSON.parse(raw));
+          resolve({ wert: JSON.parse(raw) });
         } catch (error) {
           this.logger.warn('http_body_invalid', 'Ungültiger JSON-Request-Body', {
             path: request.url,
             method: request.method,
             error: error.message,
           });
-          resolve(null);
+          resolve({ fehler: 'Ungültiges JSON im Request-Body' });
         }
       });
       request.on('error', error => {
@@ -1942,11 +2015,11 @@ export class GameServer {
           error: error.message,
         });
         // Unvollständig gelesen: ablehnen, nicht still durch einen Standard-Body ersetzen.
-        resolve(null);
+        resolve({ fehler: 'Request-Body unvollständig' });
       });
       // Abgebrochene Anfrage ohne `end`: sonst bliebe das Versprechen offen.
       request.on('close', () => {
-        if (!request.complete) resolve(null);
+        if (!request.complete) resolve({ fehler: 'Request-Body unvollständig' });
       });
     });
   }
@@ -2598,6 +2671,13 @@ function createDistHandler(distDir = 'dist') {
     } catch {
       // SPA-Fallback: unbekannte Pfade ohne Endung erhalten index.html.
       if (relative.includes('.')) return false;
+      /*
+       * Nicht für die API (SRV-1): `GET /api/<unbekannt>` lieferte bei gebautem
+       * `dist/` 200 + index.html. Ein API-Aufrufer liest dann HTML als JSON und
+       * sieht „Erfolg" statt „gibt es nicht". Unter `/api` antwortet der Aufrufer
+       * mit 404 und der JSON-Fehlernutzlast.
+       */
+      if (relative === 'api' || relative.startsWith('api/')) return false;
       filePath = resolve(root, 'index.html');
       try {
         if (!statSync(filePath).isFile()) return false;

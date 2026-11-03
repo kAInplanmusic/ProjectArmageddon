@@ -28,12 +28,23 @@ import { starteServer, erstelleLobby, trittBei, TestClient } from './helfer/serv
 const WINDOW_MS = 150;    // Reconnect-Fenster der Prüfung (Vorgabe im Betrieb: 30 s)
 const RUHE_MS = 60;       // Intervall der Verwaltungsrunde in der Prüfung
 
-/** Lobby mit zwei Teams; Host ist der über HTTP angelegte Platz. */
-const zweiTeams = url => erstelleLobby(url, { seed: 90210, name: 'Host' });
+/*
+ * DREI Teams, zwei Menschen — die Lobby ist NICHT voll und läuft nicht.
+ *
+ * Umgestellt mit SRV-3 (Entscheidung des Auftraggebers 2026-11-02): Vorher war
+ * es eine Zwei-Team-Lobby mit zwei Menschen. Deren Match startete mit dem
+ * zweiten Beitritt, die Lobby blieb aber „open" — nur DESHALB kam ein
+ * Nachrücker in das laufende Match. Jetzt trägt ein gestartetes Match „running"
+ * (wie nach START_MATCH) und nimmt niemanden mehr auf. Geprüft wird hier die
+ * VERDRAHTUNG des Verfalls; das Versprechen „die Lobby nimmt wieder einen
+ * Menschen auf" gilt für eine Lobby, die noch auf Menschen wartet — die
+ * Prüfungen laufen deshalb in einer solchen.
+ */
+const dreiTeams = url => erstelleLobby(url, { teams: 3, seed: 90210, name: 'Host' });
 
-/** Füllt eine Zwei-Team-Lobby mit zwei MENSCHEN und gibt beide zurück. */
+/** Zwei MENSCHEN in einer Drei-Team-Lobby (wartend, „open"). */
 async function zweiMenschen(url, wsUrl) {
-  const erstellt = await zweiTeams(url);
+  const erstellt = await dreiTeams(url);
   const host = await trittBei(wsUrl, erstellt.lobby.id, { name: 'Host', token: erstellt.player.token });
   const zweiter = await trittBei(wsUrl, erstellt.lobby.id, { name: 'Zweiter' });
   return { lobbyId: erstellt.lobby.id, host, zweiter };
@@ -108,14 +119,21 @@ test('Gegenprobe: solange das Fenster läuft, ist „Alle Teams sind besetzt" ri
     zweiter.client.close();
     await new Promise(resolve => setTimeout(resolve, 250));
 
-    const dritter = new TestClient(wsUrl);
-    clients.push(dritter);
-    await dritter.open();
-    dritter.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'Dritter' });
-    const fehler = await dritter.warte(CONTROL.ERROR);
-    assert.ok(fehler, 'Der dritte Mensch kam in eine volle Lobby hinein');
+    // Der dritte Mensch bekommt das FREIE Team — nicht das des Getrennten.
+    const dritter = await trittBei(wsUrl, lobbyId, { name: 'Dritter' });
+    clients.push(dritter.client);
+    const teamVon = token => lobbyManager.get(lobbyId).seats.find(seat => seat.token === token)?.teamId;
+    assert.notEqual(teamVon(dritter.welcome.token), teamVon(zweiter.welcome.token), 'Das reservierte Team wurde vergeben');
+    assert.equal(lobbyManager.get(lobbyId).seats.length, 3, 'Innerhalb des Fensters darf nichts verfallen');
+
+    // Jetzt ist jedes Team beansprucht: Der vierte wird abgewiesen.
+    const vierter = new TestClient(wsUrl);
+    clients.push(vierter);
+    await vierter.open();
+    vierter.send(CONTROL.JOIN_LOBBY, { lobbyId, name: 'Vierter' });
+    const fehler = await vierter.warte(CONTROL.ERROR);
+    assert.ok(fehler, 'Der vierte Mensch kam in eine volle Lobby hinein');
     assert.match(fehler.error ?? '', /Teams sind besetzt/);
-    assert.equal(lobbyManager.get(lobbyId).seats.length, 2, 'Innerhalb des Fensters darf nichts verfallen');
   } finally {
     for (const client of clients) client.close();
     await server.close();

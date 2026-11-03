@@ -137,48 +137,38 @@ test('ZUSTANDS-PIN: Beim Trennen geht keine Meldung an den verbliebenen Spieler'
   }
 });
 
-test('ZUSTANDS-PIN: Die zwei Startwege hinterlassen zwei verschiedene Lobby-Zustände', async () => {
+test('Beide Startwege enden im selben Lobby-Zustand „running" (SRV-3)', async () => {
   /*
-   * OFFENER PUNKT (gemessen, nicht entschieden) — die Folgen des Versprechens
-   * aus `LobbyManager#disconnect`: „Nach dem Reconnect-Fenster verfällt sein
-   * Team und die Lobby nimmt wieder einen Menschen auf."
+   * Vorher war dies ein ZUSTANDS-PIN ohne Entscheidung: Start durch den letzten
+   * BEITRITT ließ die Lobby „open" (ein Nachrücker übernahm das verfallene Team),
+   * Start per `START_MATCH` setzte „running" (der Nachrücker wurde abgewiesen).
    *
-   * Das Verfallen gilt (siehe `server-lobby-verfall.test.js`). Ob die Lobby
-   * danach wieder JEMANDEN AUFNIMMT, hängt am LOBBY-STATUS — und der ist je nach
-   * Startweg verschieden:
-   *
-   *   Start durch den letzten BEITRITT → Status bleibt „open" (gemessen)
-   *     → der Nachrücker bekommt das freie Team und die FIGUREN des Gegangenen
-   *       (`entityId` 2, also dieselbe Einheit) — das Versprechen gilt.
-   *   Start per `START_MATCH` → Status „running" (`markRunning`)
-   *     → derselbe Nachrücker wird abgewiesen: „Lobby nimmt keine Spieler mehr
-   *       auf" — das Team bleibt für den Rest des Matches leer.
-   *
-   * Beides ist heute so und wird hier FESTGEHALTEN, damit eine spätere Änderung
-   * auffällt. Welches Verhalten gilt, ist eine Produktentscheidung (der Status
-   * steuert auch die Lobby-Liste im Client, die nur „open" zeigt) — sie gehört
-   * nicht in diese Reparatur. Siehe `docs/server-seite-fixes.md`, offener Punkt 5.
+   * ENTSCHIEDEN (Auftraggeber, 2026-11-02): Nach dem Auto-Start gilt derselbe
+   * Zustand wie nach `START_MATCH`, also „running". Der Pin hielt ausdrücklich
+   * das alte Verhalten fest und ist deshalb auf die Entscheidung umgestellt:
+   * Beide Wege werden jetzt mit DENSELBEN Erwartungen geprüft.
    */
   const lobbyManager = new LobbyManager({ reconnectWindowMs: 120 });
   const { server, url, wsUrl } = await starteServer({ lobbyManager, pruneIntervalMs: 40 });
   try {
-    // --- Weg 1: Start durch den letzten Beitritt (Status bleibt open) ---
+    // --- Weg 1: Start durch den letzten Beitritt (jetzt ebenfalls running) ---
     const erste = await erstelleLobby(url, { teams: 2, seed: 1234, name: 'Host' });
     const host1 = await trittBei(wsUrl, erste.lobby.id, { name: 'Host', token: erste.player.token });
     const zweiter1 = await trittBei(wsUrl, erste.lobby.id, { name: 'Zweiter' });
+    assert.equal(
+      lobbyManager.get(erste.lobby.id).status, 'running',
+      'Nach einem Start durch den Beitritt trägt die Lobby „running" (vorher „open")',
+    );
     zweiter1.client.close();
     await new Promise(resolve => setTimeout(resolve, 400));
-    assert.equal(
-      lobbyManager.get(erste.lobby.id).status, 'open',
-      'Nach einem Start durch den Beitritt bleibt der Status „open" (gemessen)',
-    );
-    const nachruecker = await trittBei(wsUrl, erste.lobby.id, { name: 'Nachrücker' });
-    assert.ok(nachruecker.welcome, 'Auf diesem Weg muss ein Nachrücker hineinkommen');
-    assert.equal(
-      nachruecker.welcome.entityIds.join(','), String(zweiter1.welcome.entityIds.join(',')),
-      'Der Nachrücker übernimmt die FIGUREN des Gegangenen — der Platz wurde neu belegt',
-    );
-    host1.client.close(); nachruecker.client.close();
+    assert.equal(lobbyManager.get(erste.lobby.id).status, 'running');
+    const spaeter1 = new TestClient(wsUrl);
+    await spaeter1.open();
+    spaeter1.send(CONTROL.JOIN_LOBBY, { lobbyId: erste.lobby.id, name: 'Nachrücker' });
+    const fehler1 = await spaeter1.warte(CONTROL.ERROR, 2000);
+    assert.ok(fehler1, 'Wie bei START_MATCH wird der Nachrücker abgewiesen');
+    assert.match(fehler1.error, /nimmt keine Spieler mehr auf/);
+    host1.client.close(); spaeter1.close();
 
     // --- Weg 2: Start per START_MATCH (Status wird running) ---
     const zweite = await erstelleLobby(url, { teams: 2, seed: 4321, name: 'Host' });
