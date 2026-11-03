@@ -331,6 +331,7 @@ landet als aufhebbare Kiste — nie im Wasser. Die verbleibende Munition reist m
 | `npm run smoke` | Headless-Match bis Spielende |
 | `npm run perf` | Performance-Profil mit 60-Hz-Budget-Gate |
 | `npm run balance` | Balance-Bericht über alle 150 Waffen |
+| `npm run kontaktbogen` | Kontaktbogen der Biome: je Biom N Seeds im Browser (ganze Karte, ohne HUD) auf ein PNG, `artifacts/biom-kontaktbogen.png`; Optionen `--seeds=3 --start=1 --biome=a,b --breite=320` (`scripts/biom-kontaktbogen.mjs`) |
 | `npm run replay` | Replay aufzeichnen/abspielen (`record`, `play`, `info`) |
 | `npm run icons` | Waffen-Icons erzeugen (Pillow, ohne ImageMagick) |
 | `npm run waffen:sprites` | Waffen-Sprite-Sheets + Manifest erzeugen (Pillow, numpy, scipy) |

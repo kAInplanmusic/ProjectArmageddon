@@ -573,6 +573,27 @@ test('Abwurf im echten Match: gleicher Seed → gleicher Hash; Marke 3 ohne Abwu
 
 // ---------------------------------------------------------------- Akzeptanz §6 (minen-faesser.md): Kette aus drei Fässern, Hash der Kette
 
+test('Superexplosion: doppelter Schaden bei GLEICHEM Krater und gleichem Wirkradius', () => {
+  const je = {};
+  for (let seed = 1; seed <= 400 && !(je.normal && je.super); seed += 1) {
+    const { system, ereignisse, schaden, welt } = baueSystem([{ id: 1, x: 500, y: 790 }], seed);
+    const krater = [];
+    welt.services.terrain = {}; // nur, damit ein Krater gegraben wird; die Klassifizierung liest das Gelände nicht
+    welt.services.zerstoerung = { krater: (x, y, radius, tiefe) => krater.push({ x, y, radius, tiefe }) };
+    system.lege(500, 800, { art: MINEN_ART.LIEGEND });
+    system.update();
+    const aus = ereignisse.find(e => e.typ === 'mine_exploded');
+    if (!aus || je[aus.ausgang]) continue;
+    const knall = ereignisse.find(e => e.typ === 'explosion');
+    je[aus.ausgang] = { krater, radius: knall.radius, schaden: schaden.find(s => s.id === 1)?.betrag };
+  }
+  assert.ok(je.normal && je.super, 'beide Ausgänge in 400 Seeds beobachtet');
+  assert.equal(je.normal.krater.length, 1);
+  assert.deepEqual(je.super.krater, je.normal.krater, 'gleicher Krater (Ort, Radius, Tiefe)');
+  assert.equal(je.super.radius, je.normal.radius, 'gleicher Wirkradius');
+  assert.equal(je.super.schaden, je.normal.schaden * MINEN.superFaktor, 'doppelter Schaden');
+});
+
 test('Kette aus drei Fässern: endet, alle drei explodieren genau einmal, in fester Reihenfolge', () => {
   const reihenfolgen = new Set();
   for (let seed = 1; seed <= 8; seed += 1) {
