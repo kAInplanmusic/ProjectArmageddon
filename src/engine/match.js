@@ -1430,12 +1430,7 @@ export class MatchController {
    * @returns {{ok:boolean, errors?:string[], projectileId?:number, hit?:object|null}}
    */
   fire(playerId, angle, power, weaponId = null) {
-    // Vom Seil (Seilfassung 2): alles außer Nahkampf; ein Schuss löst das Seil (der Schwung bleibt).
-    const vomSeil = this.seilSystem?.vorWaffe(playerId, weaponId ?? this.#inventory.getActiveWeaponId(playerId)) ?? null;
-    if (vomSeil && !vomSeil.ok) return vomSeil;
-    const ergebnis = fire(this.#schussQuelle(), playerId, angle, power, weaponId);
-    if (vomSeil && ergebnis.ok) this.seilSystem.loesen(playerId, 'waffe');
-    return ergebnis;
+    return fire(this.#schussQuelle(), playerId, angle, power, weaponId);
   }
 
   /**
@@ -1473,6 +1468,7 @@ export class MatchController {
    */
   #schussQuelle() {
     return {
+      seil: this.seilSystem, // Seilfassung 2: Waffen vom Seil (außer Nahkampf), der Schuss löst das Seil
       waffenFassung: this.waffen,
       klassen: this.klassen,
       world: this.#world,
