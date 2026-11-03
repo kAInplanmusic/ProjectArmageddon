@@ -128,6 +128,16 @@ test.describe('Waffenmenü (Touch, Querformat)', () => {
     const box = await knopf.boundingBox();
     expect(box.width).toBeGreaterThanOrEqual(44);
     expect(box.height).toBeGreaterThanOrEqual(44);
+    // QA-6: Die (seit dem Seil zweireihige) Touch-Aktionsleiste darf den Knopf nicht überdecken, auch nicht mit leerer Fläche.
+    for (const leiste of ['#touch-aktionen', '#touch-laufen']) {
+      const l = await page.locator(leiste).boundingBox();
+      const ueberlappt = l && l.x < box.x + box.width && box.x < l.x + l.width
+        && l.y < box.y + box.height && box.y < l.y + l.height;
+      expect(ueberlappt, `${leiste} überdeckt den WAFFEN-Knopf`).toBe(false);
+    }
+    // Ein Tipp an den linken Rand des Knopfs erreicht den Knopf selbst (keine unsichtbare Fläche darüber).
+    expect(await page.evaluate(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('#waffen-menue-knopf')),
+      { x: box.x + 4, y: box.y + box.height / 2 })).toBe(true);
     await knopf.tap();
     await expect(page.locator('#waffenmenue')).toBeVisible();
     const menue = await page.locator('#waffenmenue').boundingBox();
