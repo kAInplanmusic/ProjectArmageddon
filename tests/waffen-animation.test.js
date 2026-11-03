@@ -580,9 +580,9 @@ test('Kachel-Waffen: Orb oder Motiv je nach Manifest, Rücken-Waffen liegen hint
   assert.ok(waffenParameter('ranged', 'pa_zzz', false, 'kompakt').handVor > PARAMETER.ranged.handVor);
 });
 
-test('Manifest: Waffen mit Kachel-Modus orb brauchen keine Motiv-Maske, alle 28 haben einen Modus', () => {
+test('Manifest: Waffen mit Kachel-Modus orb brauchen keine Motiv-Maske, alle 26 haben einen Modus (pa_034/035 seit N-06 freigestellt)', () => {
   const kacheln = Object.values(MANIFEST.waffen).filter(w => w.form === 'kachel');
-  assert.equal(kacheln.length, 28);
+  assert.equal(kacheln.length, 26);
   for (const w of kacheln) assert.ok(['motiv', 'orb'].includes(w.kachel.modus), w.id);
   const z = zellenFuer(MANIFEST, kacheln[0].id);
   assert.ok(['motiv', 'orb'].includes(z.kachel));
