@@ -105,6 +105,8 @@ export const CONTROL = Object.freeze({
   JUMP: 'jump',
   /** Gehabsicht (Bewegungsfassung 2): `{richtung: -1|0|1}`, wird bei gehaltener Taste erneuert. */
   MOVE: 'move',
+  /** Seil (Seilfassung 2): `{aktion:'schuss', winkel}` | `{aktion:'loesen'}` | `{aktion:'steuer', sx, sy}` (`pruefeSeilEingabe`). */
+  SEIL: 'seil',
   DROP_WEAPON: 'drop_weapon',
   /** Zugpause vorzeitig beenden (nur der Spieler, der gleich dran ist). */
   SKIP_PAUSE: 'skip_pause',

@@ -156,4 +156,41 @@ export function validateCommand(command, { currentTick, activePlayerId, knownPla
   return { valid: true, errors: [], input: normalized.input };
 }
 
+/** Erlaubte Seilaktionen (Seilfassung 2, `engine/seil.js`). */
+export const SEIL_AKTIONEN = Object.freeze(['schuss', 'loesen', 'steuer']);
+
+/**
+ * Prüft eine Seil-Nachricht vom Client streng — Typen, Wertebereiche, keine Zusatzfelder (AGENTS.md §6).
+ *
+ *   `{aktion:'schuss', winkel}`  winkel: Zahl in [0, π] (nie unter den Horizont)
+ *   `{aktion:'loesen'}`
+ *   `{aktion:'steuer', sx, sy}`  sx, sy: Ganzzahl −1, 0 oder 1
+ *
+ * Felder des Umschlags (`t`, `tick`) sind erlaubt; alles andere wird abgelehnt.
+ *
+ * @returns {{valid:boolean, errors:string[], eingabe:object|null}}
+ */
+export function pruefeSeilEingabe(nachricht) {
+  const fehler = [];
+  if (!nachricht || typeof nachricht !== 'object' || Array.isArray(nachricht)) return { valid: false, errors: ['Seil-Nachricht fehlt'], eingabe: null };
+  const { aktion } = nachricht;
+  if (!SEIL_AKTIONEN.includes(aktion)) return { valid: false, errors: ['Unbekannte Seilaktion'], eingabe: null };
+  const erlaubt = new Set(['t', 'tick', 'aktion', ...(aktion === 'schuss' ? ['winkel'] : aktion === 'steuer' ? ['sx', 'sy'] : [])]);
+  for (const feld of Object.keys(nachricht)) if (!erlaubt.has(feld)) fehler.push(`Unerwartetes Feld: ${feld}`);
+  const eingabe = { aktion };
+  if (aktion === 'schuss') {
+    if (typeof nachricht.winkel !== 'number' || !isValidAngle(nachricht.winkel)) {
+      fehler.push(`winkel muss zwischen ${INPUT_LIMITS.angleMin} und ${INPUT_LIMITS.angleMax} liegen`);
+    }
+    eingabe.winkel = nachricht.winkel;
+  } else if (aktion === 'steuer') {
+    for (const feld of ['sx', 'sy']) {
+      const wert = nachricht[feld];
+      if (!Number.isInteger(wert) || wert < -1 || wert > 1) fehler.push(`${feld} muss -1, 0 oder 1 sein`);
+      eingabe[feld] = wert;
+    }
+  }
+  return fehler.length > 0 ? { valid: false, errors: fehler, eingabe: null } : { valid: true, errors: [], eingabe };
+}
+
 export default validateCommand;

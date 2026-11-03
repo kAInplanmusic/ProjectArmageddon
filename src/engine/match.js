@@ -58,6 +58,8 @@ import { BODENOBJEKTE_ALT, BODENOBJEKTE_MINEN, BODENOBJEKTE_FAESSER, BODENOBJEKT
 import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
+import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
+import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { ZugSystem } from './systems/zugSystem.js';
@@ -602,7 +604,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, // Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, // Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
@@ -656,6 +658,8 @@ export class MatchController {
     this.zugregeln = normalisiereZugregeln(zugregeln);
     this.klassen = normalisiereKlassen(klassen);
     this.bodenobjekte = normalisiereBodenobjekte(bodenobjekte);
+    this.seil = normalisiereSeil(seil);
+    this.seilSystem = this.seil >= SEIL_NINJA ? new SeilSystem(this, () => this.#hasFired) : null; // Seil (`engine/seil.js`)
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
@@ -1029,6 +1033,7 @@ export class MatchController {
      * Figur wirklich".
      */
     this.gehen?.schritt();
+    this.seilSystem?.schritt(); // vor dem Physikschritt: das CharacterSystem lässt die Figur am Seil aus
     this.#merkeBewegung();
     this.#world.step();
     this.#setzung?.schritt();
@@ -1425,7 +1430,12 @@ export class MatchController {
    * @returns {{ok:boolean, errors?:string[], projectileId?:number, hit?:object|null}}
    */
   fire(playerId, angle, power, weaponId = null) {
-    return fire(this.#schussQuelle(), playerId, angle, power, weaponId);
+    // Vom Seil (Seilfassung 2): alles außer Nahkampf; ein Schuss löst das Seil (der Schwung bleibt).
+    const vomSeil = this.seilSystem?.vorWaffe(playerId, weaponId ?? this.#inventory.getActiveWeaponId(playerId)) ?? null;
+    if (vomSeil && !vomSeil.ok) return vomSeil;
+    const ergebnis = fire(this.#schussQuelle(), playerId, angle, power, weaponId);
+    if (vomSeil && ergebnis.ok) this.seilSystem.loesen(playerId, 'waffe');
+    return ergebnis;
   }
 
   /**
@@ -2564,6 +2574,7 @@ export class MatchController {
       turrets: [...this.#turrets.values()],
       // Minen: nur mit Bodenobjektfassung 2 (sonst bleibt der Schlüsselsatz alter Partien gleich).
       bodenobjekte: this.#bodenobjekte ? this.#bodenobjekte.snapshot() : null,
+      seil: this.seilSystem?.snapshot() ?? null, // nur solange ein Seil hängt oder eine Serie läuft
       // Kartengröße und Ausrichtung (für die Anzeige und die Umrechnung).
       terrainWidth: this.width,
       terrainHeight: this.height,

@@ -29,6 +29,7 @@ import { FEUER_ALT, normalisiereFeuer } from '../shared/config/feuer.js';
 import { BEWEGUNG_ALT, normalisiereBewegung } from '../shared/config/bewegung.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { BODENOBJEKTE_ALT, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
+import { SEIL_ALT, normalisiereSeil } from '../shared/config/seil.js';
 import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
@@ -74,7 +75,7 @@ export class ReplayRecorder {
     maxRounds = MATCH_RULES.roundLimitBackstop, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT,
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT,
     erstelltAm = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
@@ -130,6 +131,8 @@ export class ReplayRecorder {
       klassen: normalisiereKlassen(klassen),
       /* Bodenobjektfassung (`config/bodenobjekte.js`): Minen. Eine Datei OHNE das Feld ist `BODENOBJEKTE_ALT` (keine Minen). */
       bodenobjekte: normalisiereBodenobjekte(bodenobjekte),
+      /* Seilfassung (`config/seil.js`): Ninja Rope. Eine Datei OHNE das Feld ist `SEIL_ALT` (kein Seil). */
+      seil: normalisiereSeil(seil),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -211,10 +214,11 @@ export class ReplayRecorder {
    * @param {number} [entry.power] - Kraft (bei Schüssen)
    * @param {string|null} [entry.weaponId] - Waffentyp (bei Schüssen UND beim Abwurf)
    * @param {number} [entry.seitlich] - Richtung des Sprungs (−1, 0, 1)
-   * @param {'shot'|'jump'|'move'|'drop'|'select'|'skip_pause'|'skip_turn'|'surrender'} [entry.kind='shot'] - Art der Eingabe
+   * @param {'shot'|'jump'|'move'|'seil'|'drop'|'select'|'skip_pause'|'skip_turn'|'surrender'} [entry.kind='shot'] - Art der Eingabe
+   *   (`seil` = Seilaktion der Seilfassung 2: `aktion` schuss|loesen|steuer mit `winkel` bzw. `sx`/`sy`)
    *   (`select` = Waffenwahl; sie ist Zustand und entscheidet über spätere Schüsse)
    */
-  recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, richtung = 0, salto = false, kind = 'shot' }) {
+  recordInput({ tick, playerId, angle, power, weaponId = null, seitlich = 0, richtung = 0, salto = false, aktion = null, winkel = null, sx = 0, sy = 0, kind = 'shot' }) {
     if (!Number.isInteger(tick) || tick < 0) {
       throw new TypeError('tick muss eine nichtnegative Ganzzahl sein');
     }
@@ -250,6 +254,11 @@ export class ReplayRecorder {
     } else if (kind === 'move') {
       // Gehabsicht (Bewegungsfassung 2): nur die Richtung −1/0/1.
       eintrag.richtung = Math.max(-1, Math.min(1, Math.trunc(richtung) || 0));
+    } else if (kind === 'seil') {
+      // Seilaktion: Winkel unverändert (wie beim Schuss, s. o.), Absicht als −1/0/1.
+      eintrag.aktion = aktion;
+      if (aktion === 'schuss') eintrag.winkel = winkel;
+      if (aktion === 'steuer') { eintrag.sx = Math.trunc(sx) || 0; eintrag.sy = Math.trunc(sy) || 0; }
     } else if (kind === 'skip_pause' || kind === 'skip_turn' || kind === 'surrender') {
       // nur Zeitpunkt und Spieler
     } else if (kind === 'drop' || kind === 'select') {
@@ -320,7 +329,7 @@ export class ReplayRecorder {
       kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT,
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
       bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT, klassen: parsed.config?.klassen ?? KLASSEN_ALT,
-      bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT });
+      bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT, seil: parsed.config?.seil ?? SEIL_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -419,6 +428,7 @@ export class ReplayPlayer {
       zugregeln: config.zugregeln,
       klassen: config.klassen,
       bodenobjekte: config.bodenobjekte,
+      seil: config.seil,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),
@@ -529,6 +539,7 @@ export class ReplayPlayer {
       return this.match.jump(entry.playerId, entry.seitlich ?? 0, entry.salto === true);
     }
     if (entry.kind === 'move') return this.match.gehen?.setzeRichtung(entry.playerId, entry.richtung ?? 0) ?? { ok: false, errors: ['Gehen ist in dieser Fassung nicht vorhanden'] };
+    if (entry.kind === 'seil') return this.match.seilSystem?.eingabe(entry.playerId, entry) ?? { ok: false, errors: ['Seil ist in dieser Fassung nicht vorhanden'] };
     if (entry.kind === 'skip_pause') return this.match.skipTurnPause();
     if (entry.kind === 'skip_turn') return this.match.zug?.ueberspringen(entry.playerId) ?? { ok: false, errors: ['Zugregeln 2 fehlen in dieser Partie'] };
     if (entry.kind === 'surrender') return this.match.zug?.aufgeben(entry.playerId) ?? { ok: false, errors: ['Zugregeln 2 fehlen in dieser Partie'] };

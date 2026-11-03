@@ -24,6 +24,7 @@ import { COOKIE_ALT } from '../shared/config/cookie.js';
 import { BEWEGUNG_ALT } from '../shared/config/bewegung.js';
 import { KLASSEN_ALT } from '../shared/config/klassen-fassung.js';
 import { BODENOBJEKTE_ALT } from '../shared/config/bodenobjekte.js';
+import { SEIL_ALT } from '../shared/config/seil.js';
 import { ZUGREGELN_ALT } from '../shared/config/zugregeln.js';
 import { FEUER_ALT } from '../shared/config/feuer.js';
 import { GELAENDE_ALT } from '../shared/config/gelaende.js';
@@ -288,6 +289,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       klassen: saved.replay.config?.klassen ?? KLASSEN_ALT,
       // Alte Sicherungen ohne `bodenobjekte`: keine Minen.
       bodenobjekte: saved.replay.config?.bodenobjekte ?? BODENOBJEKTE_ALT,
+      // Alte Sicherungen ohne `seil`: kein Seil.
+      seil: saved.replay.config?.seil ?? SEIL_ALT,
     })
     : null;
 

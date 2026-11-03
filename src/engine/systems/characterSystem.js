@@ -54,6 +54,13 @@ export class CharacterSystem {
    * Aufprall abgerechnet und beim Aufsetzen gestrichen.
    */
   #luftsprunge = new Map();
+  /**
+   * Seilfassung 2 (`engine/seil.js`): Figuren am Seil rechnet das `SeilSystem` selbst (hier ausgelassen); nach dem
+   * Loslassen gilt bis zur Landung die Tempogrenze des Seils statt `maxHorizontalSpeed`. Ohne Seil bleiben beide
+   * leer — alte Partien rechnen bitgleich.
+   */
+  #amSeil = new Set();
+  #freiflug = new Map();
 
   constructor({
     gravity = 0.42,
@@ -97,6 +104,16 @@ export class CharacterSystem {
     return this.#luftsprunge.get(entityId) ?? 0;
   }
 
+  /** Seil: die Figur hängt (`true`) — dann rechnet das `SeilSystem` ihre Bewegung — oder nicht mehr. */
+  setzeSeil(entityId, haengt) {
+    if (haengt) this.#amSeil.add(entityId); else this.#amSeil.delete(entityId);
+  }
+
+  /** Seil: waagerechte Tempogrenze bis zur nächsten Landung (Schwung nach dem Loslassen). */
+  setzeFreiflug(entityId, grenze) {
+    this.#freiflug.set(entityId, grenze);
+  }
+
   update(world, entities, dt) {
     const services = world.services ?? {};
     const terrain = services.terrain ?? null;
@@ -105,7 +122,7 @@ export class CharacterSystem {
     const damageSystem = world.getSystem('damage');
 
     for (const entityId of entities) {
-      if (!world.isActive(entityId)) continue;
+      if (!world.isActive(entityId) || this.#amSeil.has(entityId)) continue;
 
       const x = world.getComponent(entityId, 'Position', 'x') || 0;
       const y = world.getComponent(entityId, 'Position', 'y') || 0;
@@ -127,7 +144,8 @@ export class CharacterSystem {
         vx *= 0.995;
       }
 
-      vx = Math.max(-this.#maxHorizontalSpeed, Math.min(this.#maxHorizontalSpeed, vx));
+      const grenze = this.#freiflug.get(entityId) ?? this.#maxHorizontalSpeed;
+      vx = Math.max(-grenze, Math.min(grenze, vx));
 
       const nextX = x + vx;
       const nextY = y + vy;
@@ -206,8 +224,9 @@ export class CharacterSystem {
           });
         }
 
-        // Boden berührt: die Schuld ist beglichen oder verfallen.
+        // Boden berührt: die Schuld ist beglichen oder verfallen; der Seilschwung auch.
         this.#luftsprunge.delete(entityId);
+        this.#freiflug.delete(entityId);
 
         vy = 0;
         if (Math.abs(vx) < 0.05) vx = 0;

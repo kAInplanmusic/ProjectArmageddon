@@ -31,7 +31,7 @@ import {
   toDeltaBase,
   EreignisSendefilter,
 } from '../shared/protocol.js';
-import { validateCommand, INPUT_LIMITS } from '../shared/validation.js';
+import { validateCommand, INPUT_LIMITS, pruefeSeilEingabe } from '../shared/validation.js';
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { stoffHash } from '../shared/stoffkarte.js';
@@ -52,6 +52,7 @@ import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD, BEWEGUNG } from '../shared/config/bewegung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
+import { SEIL_STANDARD, SEIL } from '../shared/config/seil.js';
 import { ZUGREGELN_STANDARD, ZUGREGELN } from '../shared/config/zugregeln.js';
 
 /*
@@ -102,6 +103,8 @@ class LobbySession {
   #finished = false;
   /** Geh-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleMove`. */
   #gehGrenzen = new Map();
+  /** Seil-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleSeil`. */
+  #seilGrenzen = new Map();
   #zugAktionZeit = new Map();
 
   /**
@@ -115,7 +118,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD, seil = SEIL_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -171,6 +174,7 @@ class LobbySession {
       zugregeln,
       klassen,
       bodenobjekte,
+      seil,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -213,6 +217,7 @@ class LobbySession {
       zugregeln: this.match.zugregeln,
       klassen: this.match.klassen,
       bodenobjekte: this.match.bodenobjekte,
+      seil: this.match.seil,
     });
 
     /*
@@ -325,6 +330,10 @@ class LobbySession {
     }
     if (entry.kind === 'move') {
       this.match.gehen?.setzeRichtung(entry.playerId, entry.richtung ?? 0);
+      return;
+    }
+    if (entry.kind === 'seil') {
+      this.match.seilSystem?.eingabe(entry.playerId, entry);
       return;
     }
     if (entry.kind === 'skip_pause') {
@@ -987,6 +996,40 @@ class LobbySession {
   }
 
   /**
+   * Seil (Seilfassung 2): Schuss, Lösen, Schwung/Länge. Die Nachricht wird streng geprüft (`pruefeSeilEingabe`:
+   * Typen, Bereiche, keine Zusatzfelder), die Identität kommt aus dem TOKEN, der Motor prüft Zug und Lage. Je Sitz
+   * höchstens `SEIL.nachrichtenProSekunde` (ein „Stopp" der Absicht und das Lösen werden nie gedrosselt).
+   * Jede angenommene Nachricht wird aufgezeichnet (`kind: 'seil'`).
+   */
+  handleSeil(token, message = {}) {
+    const result = this.#handleSeil(token, message);
+    if (this.metrics) {
+      if (result.ok) this.metrics.commandsAccepted += 1;
+      else this.metrics.commandsRejected += 1;
+    }
+    return result;
+  }
+
+  #handleSeil(token, message) {
+    const seat = this.#platzFuer(token);
+    if (!seat || seat.entityId === null) return { ok: false, errors: ['Kein Spielerplatz'] };
+    if (!this.match.seilSystem) return { ok: false, errors: ['Das Seil ist in dieser Partie nicht vorhanden'] };
+    const geprueft = pruefeSeilEingabe(message);
+    if (!geprueft.valid) return { ok: false, errors: geprueft.errors };
+    const eingabe = geprueft.eingabe;
+    const stopp = eingabe.aktion === 'loesen' || (eingabe.aktion === 'steuer' && eingabe.sx === 0 && eingabe.sy === 0);
+    let eimer = this.#seilGrenzen.get(seat.entityId);
+    if (!eimer) {
+      eimer = new TokenBucket({ rate: SEIL.nachrichtenProSekunde, stoss: SEIL.nachrichtenProSekunde });
+      this.#seilGrenzen.set(seat.entityId, eimer);
+    }
+    if (!stopp && !eimer.erlaube()) return { ok: false, errors: ['Zu viele Seil-Nachrichten'] };
+    const result = this.match.seilSystem.eingabe(seat.entityId, eingabe);
+    if (result.ok) this.recorder.recordInput({ tick: this.match.world.tickCount, playerId: seat.entityId, ...eingabe, kind: 'seil' });
+    return { ok: result.ok, errors: result.errors ?? [] };
+  }
+
+  /**
    * Zug überspringen (Zugregeln 2): nur der aktive Spieler, höchstens zweimal in Folge (Engine), und je Sitz
    * höchstens eine Nachricht je `ZUGREGELN.nachrichtenAbstandMs`. Die Identität kommt aus dem TOKEN.
    */
@@ -1600,6 +1643,7 @@ export class GameServer {
               zugregeln: options.zugregeln,
               klassen: options.klassen,
               bodenobjekte: options.bodenobjekte,
+              seil: options.seil,
               metrics: this.metrics,
               logger: this.logger,
             });
@@ -2478,6 +2522,14 @@ export class GameServer {
           const session = this.#laufendeSitzung(socket, context);
           if (!session) break;
           const result = session.handleMove(context.token, message);
+          if (!result.ok) this.#fehlerSenden(socket, result.errors);
+          break;
+        }
+
+        case CONTROL.SEIL: {
+          const session = this.#laufendeSitzung(socket, context);
+          if (!session) break;
+          const result = session.handleSeil(context.token, message);
           if (!result.ok) this.#fehlerSenden(socket, result.errors);
           break;
         }

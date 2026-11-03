@@ -112,6 +112,10 @@ export const EREIGNIS_KATALOG = Object.freeze({
   mine_placed: { klasse: 'zustand', anim: ['addFlash'] },
   mine_exploded: { klasse: 'zustand', anim: ['addFlash'] },
   mine_dud: { klasse: 'zustand', anim: ['addFlash'] },
+  // Seil (Seilfassung 2): tragen die Drehpunkte; online führen sie die Seillinie fort (nicht im binären Snapshot).
+  seil_angeheftet: { klasse: 'zustand' },
+  seil_knick: { klasse: 'zustand', stumm: 'nur Zustand: der Knick ist in der gezeichneten Seillinie zu sehen' },
+  seil_geloest: { klasse: 'zustand' },
   fass_placed: { klasse: 'zustand', stumm: 'liegende Fässer melden sich nicht im Protokoll; die Liste steht im Zustand' },
   fass_abgeworfen: { klasse: 'zustand', stumm: 'Protokollzeile reicht; der Fall wird im Renderer gezeichnet' },
   fass_gelandet: { klasse: 'zustand', anim: ['addFlash'] },
