@@ -124,14 +124,32 @@ Bestätigt sind die Punkte 1 bis 5 wie empfohlen. **Friendly Fire gilt: Minen un
 
 ## 6. Akzeptanzkriterien
 
-- [ ] Replay mit Marke 1 ergibt exakt den bisherigen Zustandshash (Goldwert unverändert).
-- [ ] Zwei Läufe mit gleichem Seed und gleicher Eingabefolge ergeben dieselbe Kettenreaktion (Hash gleich).
-- [ ] Mine löst aus: im Radius ja, außerhalb nein, sofort nach dem Ablegen/Aufkommen/Kartenaufbau scharf (kein Wartezustand).
-- [ ] Ausgang je Auslösung: über viele Seeds nahe 80 / 5 / 15 % (Messung mit Toleranz), Blindgänger löst nicht erneut aus, Superexplosion macht genau den doppelten Schaden bei gleichem Krater.
-- [ ] Kettenreaktion von drei Fässern endet (keine Endlosschleife), Reihenfolge fest.
-- [ ] Server lehnt `lege_mine` ab: nicht am Zug, ohne Munition, auf belegtem Platz, bei stehender Simulation.
-- [ ] `npm test`, `npm run checks`, `eslint .` grün; `match.js` ≤ 2790 Zeilen.
-- [ ] E2E: eine Mine legen und auslösen, zwei Clients sehen dasselbe (`online-einschlag`-Muster).
+*Abgeglichen 2026-11-02 (MINEN-2) gegen die Tests; je Kästchen der Beleg. `t/` = `tests/`, `e2e/` = `tests/e2e/`.*
+
+- [x] Replay mit Marke 1 ergibt exakt den bisherigen Zustandshash (Goldwert unverändert).
+  Beleg: `t/replay-altkoepfe.test.js` „Bodenobjektfassung 1 ausdrücklich gesetzt …“ (Goldwert `7048db00` vom 2026-10-20, also vor den Minen),
+  dazu „Altköpfe …“ (ohne Feld = Marke 1) und `t/minen.test.js` „Altmarke: ohne Bodenobjektfassung gibt es weder System noch Schlüssel im Zustand“.
+- [x] Zwei Läufe mit gleichem Seed und gleicher Eingabefolge ergeben dieselbe Kettenreaktion (Hash gleich).
+  Beleg: `t/minen.test.js` „Gleicher Seed, gleiche Eingaben: dieselbe Kettenreaktion im Match (Ereignisfolge und Zustandshash gleich)“ (Fass → Fass → Mine → Mine),
+  „Determinismus: gleicher Seed, gleiche Takte …“, „Abwurf im echten Match: gleicher Seed → gleicher Hash“.
+- [x] Mine löst aus: im Radius ja, außerhalb nein, sofort nach dem Ablegen/Aufkommen/Kartenaufbau scharf (kein Wartezustand).
+  Beleg: `t/minen.test.js` „Sofort scharf …“ (abgeworfen, erster Takt), „Friendly Fire …“ (abgelegt, erster Takt), „Eine Mine im echten Match löst aus …“ (liegend),
+  „Außerhalb des Auslöseradius passiert nichts“, „Kurz gelegt …: außerhalb des Auslöseradius“.
+- [x] Ausgang je Auslösung: über viele Seeds nahe 80 / 5 / 15 % (Messung mit Toleranz), Blindgänger löst nicht erneut aus, Superexplosion macht genau den doppelten Schaden bei gleichem Krater.
+  Beleg: `t/minen.test.js` „Ausgang je Auslösung: Verteilung nahe 80 / 5 / 15 % …“ (6000 Auslösungen, etwa 5 Sigma), „Blindgänger: bleibt liegen, löst nie wieder aus …“,
+  „Superexplosion: doppelter Schaden bei GLEICHEM Krater und gleichem Wirkradius“.
+- [x] Kettenreaktion von drei Fässern endet (keine Endlosschleife), Reihenfolge fest.
+  Beleg: `t/minen.test.js` „Kette aus drei Fässern: endet, alle drei explodieren genau einmal, in fester Reihenfolge“, „Kettenreaktion ist je Takt begrenzt …“.
+- [x] Server lehnt `lege_mine` ab: nicht am Zug, ohne Munition, auf belegtem Platz, bei stehender Simulation.
+  Umgesetzt ohne eigene Nachricht: Die Mine ist die Selbstwirkung der Waffe `pa_127` (Fassung 12), der Client schickt einen gewöhnlichen Schuss.
+  Beleg: `t/minen-server.test.js` (echter Server, zwei Spieler): nicht am Zug → abgelehnt; ohne Munition → abgelehnt; nach dem Ende der Partie → abgelehnt;
+  volle Karte (Obergrenze 64, „kein Platz“) → keine Mine; Gegenprobe am Zug mit Munition → eine Mine. „Belegter Platz“ ist hier „kein freier
+  Platz“ (`freierPlatz` in `wirf`) bzw. die volle Karte; einen eigenen Abstandstest zu anderen Minen gibt es nicht.
+- [x] `npm test`, `npm run checks`, `eslint .` grün; `match.js` ≤ 2790 Zeilen.
+  Beleg: Lauf 2026-11-02 (siehe README, Zeile `npm test`); Zeilenbudget wacht `t/match-zerlegung.test.js`.
+- [x] E2E: eine Mine legen und auslösen, zwei Clients sehen dasselbe (`online-einschlag`-Muster).
+  Beleg: `e2e/online-mine.spec.mjs` (zwei Browser-Clients, liegende Mine aus dem Seed, der erste Schuss löst sie aus; beide sehen die Auslösung genau einmal,
+  denselben Ausgang wie die Engine und danach dieselben Bodenobjekte). Das LEGEN selbst prüft der Server-Test (ein Browser kann sich keine Minen-Munition geben).
 - [ ] Sicht- und Klangprüfung durch den Auftraggeber (nicht automatisierbar).
 
 ## 7. Testanforderungen

@@ -4,7 +4,8 @@
  *
  * ## Warum dieses Skript
  *
- * AUDIT-BEFUND (2026-09-20): Das Projekt hat **19 Prüfwerkzeuge** mit eigenem
+ * AUDIT-BEFUND (2026-09-20): Das Projekt hatte damals **19 Prüfwerkzeuge** (heute
+ * mehr: maßgeblich ist die Liste `GATES` unten, `check:docs` zählt sie) mit eigenem
  * Exit-Code — `check:fuses` (Zünder-Absicht), `check:effects` (Wirkfeld ohne
  * Leser), `matrix:check` (veraltete Übersicht), `check:achievements`
  * (unerreichbare Schwellen) und so weiter. In der CI lief **keines** davon: Die
