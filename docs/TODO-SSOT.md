@@ -22,7 +22,7 @@ Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Beri
 - 2026-11-02: Seed (UI-5): jede Partie eine neue Karte, keine zweimal; das Feld bleibt leer (keine Vorbelegung).
 - 2026-11-02: Es gibt kein lokales Spiel; eine Pause (STDMECH-1) wird nicht gebaut.
 - 2026-11-02: Technische Doppelungen entscheidet der Agent: `sourceRarity` streichen (ENG-10), Lobby nach Auto-Start `running` (SRV-3), ungültiges JSON → HTTP 400 (HTTP-1).
-- 2026-11-02: Seil (SEIL-1): Der Auftraggeber misst die Konstanten selbst in Worms Armageddon.
+- 2026-11-03: Seil (SEIL-1): ändert die Entscheidung vom 2026-11-02 — der Agent nähert die fehlenden Konstanten selbst an (Recherche, sonst begründete Schätzung, alles als Annäherung dokumentiert und in einer Datei einstellbar), Handhabung wie Worms; der Auftraggeber testet.
 
 ## Anhang-Hinweis: Referenzwissen bleibt als Dokument erhalten
 Spezifikationen, Betriebs- und Biom-Dokus, Balance-Daten und alles, was Tests/Skripte per Pfad lesen, bleiben bestehen (Liste am Ende, Abschnitt 5).
