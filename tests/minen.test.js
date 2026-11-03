@@ -570,3 +570,72 @@ test('Abwurf im echten Match: gleicher Seed → gleicher Hash; Marke 3 ohne Abwu
   assert.ok(lauf(4).abwuerfe > 0, 'in 40 Runden fällt mindestens ein Fass');
   assert.equal(lauf(3).abwuerfe, 0);
 });
+
+// ---------------------------------------------------------------- Akzeptanz §6 (minen-faesser.md): Kette aus drei Fässern, Hash der Kette
+
+test('Superexplosion: doppelter Schaden bei GLEICHEM Krater und gleichem Wirkradius', () => {
+  const je = {};
+  for (let seed = 1; seed <= 400 && !(je.normal && je.super); seed += 1) {
+    const { system, ereignisse, schaden, welt } = baueSystem([{ id: 1, x: 500, y: 790 }], seed);
+    const krater = [];
+    welt.services.terrain = {}; // nur, damit ein Krater gegraben wird; die Klassifizierung liest das Gelände nicht
+    welt.services.zerstoerung = { krater: (x, y, radius, tiefe) => krater.push({ x, y, radius, tiefe }) };
+    system.lege(500, 800, { art: MINEN_ART.LIEGEND });
+    system.update();
+    const aus = ereignisse.find(e => e.typ === 'mine_exploded');
+    if (!aus || je[aus.ausgang]) continue;
+    const knall = ereignisse.find(e => e.typ === 'explosion');
+    je[aus.ausgang] = { krater, radius: knall.radius, schaden: schaden.find(s => s.id === 1)?.betrag };
+  }
+  assert.ok(je.normal && je.super, 'beide Ausgänge in 400 Seeds beobachtet');
+  assert.equal(je.normal.krater.length, 1);
+  assert.deepEqual(je.super.krater, je.normal.krater, 'gleicher Krater (Ort, Radius, Tiefe)');
+  assert.equal(je.super.radius, je.normal.radius, 'gleicher Wirkradius');
+  assert.equal(je.super.schaden, je.normal.schaden * MINEN.superFaktor, 'doppelter Schaden');
+});
+
+test('Kette aus drei Fässern: endet, alle drei explodieren genau einmal, in fester Reihenfolge', () => {
+  const reihenfolgen = new Set();
+  for (let seed = 1; seed <= 8; seed += 1) {
+    const { system, ereignisse } = baueFassSystem([{ id: 1, x: 100, y: 790 }], seed);
+    const abstand = FAESSER.radius - 10; // jedes Fass in Reichweite des vorigen
+    const f = [0, 1, 2].map(i => system.lege(1000 + i * abstand, 800, { typ: OBJEKT_TYP.FASS, art: MINEN_ART.LIEGEND }));
+    system.explosionBei(1000, 800, 20);
+    let takte = 0;
+    while (system.anzahl > 0 && takte < 50) { system.update(); takte += 1; }
+    assert.ok(takte < 50, `Seed ${seed}: die Kette endet nicht`);
+    for (let i = 0; i < 5; i += 1) system.update(); // danach passiert nichts mehr
+    const fass = ereignisse.filter(e => e.typ === 'fass_exploded').map(e => e.fassId);
+    assert.deepEqual(fass, f.map(x => x.id), `Seed ${seed}: jedes Fass genau einmal, vom getroffenen aus`);
+    reihenfolgen.add(fass.join(','));
+  }
+  assert.equal(reihenfolgen.size, 1, 'die Reihenfolge hängt nicht vom Seed ab');
+});
+
+test('Gleicher Seed, gleiche Eingaben: dieselbe Kettenreaktion im Match (Ereignisfolge und Zustandshash gleich)', () => {
+  const lauf = () => {
+    const m = new MatchController({ seed: 31, teams: 2, playersPerTeam: 1, preset: 'hills', bodenobjekte: 3, turnDurationMs: 1_000_000 });
+    m.start(); m.consumeEvents();
+    const schuetze = m.activePlayerId;
+    m.world.setComponent(schuetze, 'Position', 'x', 1100);
+    m.world.setComponent(schuetze, 'Position', 'y', m.surfaceYAt(1100) - 10);
+    // Fass → Fass → Mine → Mine: jedes Objekt in Reichweite des vorigen.
+    const objekte = [[1200, OBJEKT_TYP.FASS], [1250, OBJEKT_TYP.FASS], [1300, OBJEKT_TYP.MINE], [1330, OBJEKT_TYP.MINE]];
+    for (const [x, typ] of objekte) m.bodenobjektSystem.lege(x, m.surfaceYAt(x) - 4, { typ, art: MINEN_ART.LIEGEND });
+    m.inventory.register(schuetze, ['pa_038']);
+    assert.ok(m.fire(schuetze, 0.0, 45, 'pa_038').ok);
+    const folge = [];
+    for (let i = 0; i < 900; i += 1) {
+      m.step();
+      for (const e of m.consumeEvents()) {
+        if (/^(fass_exploded|mine_exploded|mine_dud)$/.test(e.type)) folge.push(`${e.type}:${e.payload.fassId ?? e.payload.mineId}:${e.payload.ausgang ?? ''}`);
+      }
+    }
+    return { folge, hash: m.stateHash() };
+  };
+  const a = lauf();
+  const b = lauf();
+  assert.ok(a.folge.filter(f => f.startsWith('fass_exploded')).length >= 2, `keine Kette ausgelöst: ${a.folge.join(' | ')}`);
+  assert.deepEqual(b.folge, a.folge, 'dieselbe Kette in derselben Reihenfolge');
+  assert.equal(b.hash, a.hash, 'derselbe Zustandshash');
+});

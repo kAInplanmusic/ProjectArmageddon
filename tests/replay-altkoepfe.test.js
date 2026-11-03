@@ -92,6 +92,14 @@ test('Eine Datei ganz ohne Fassungsfelder spielt als ältester Stand und endet i
   assert.equal(match.stateHash(), GOLD_ALLE_ALT);
 });
 
+test('Bodenobjektfassung 1 ausdrücklich gesetzt: derselbe Goldwert wie vor den Minen (minen-faesser.md §6)', () => {
+  // Der Goldwert stammt vom 2026-10-20, die Minen (Fassung 2) kamen am 2026-10-29: Marke 1 darf ihn nicht verschieben.
+  const { hash, live } = aufzeichnen({ ...ALT, bodenobjekte: 1 });
+  assert.equal(live.bodenobjekte, 1);
+  assert.equal(live.bodenobjektSystem, null, 'mit Marke 1 gibt es kein Bodenobjektsystem');
+  assert.equal(hash, GOLD_ALLE_ALT, 'Goldwert unverändert');
+});
+
 test('Neu-Köpfe schreiben die jeweils neueste Fassung; sie ist zugleich der Standard', () => {
   const kopf = new ReplayRecorder({ ...KOPF }).toJSON().config;
   for (const [feld, wert] of Object.entries(NEUESTE)) assert.equal(kopf[feld], wert, `Neu-Kopf ${feld}`);
