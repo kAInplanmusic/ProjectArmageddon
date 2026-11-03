@@ -280,7 +280,24 @@ export class LobbyManager {
     this.#lobbies.set(id, lobby);
 
     const host = this.join(id, { name: hostName });
-    return { lobby: this.describe(id), player: host };
+    /*
+     * Der Host-Platz ist RESERVIERT, nicht verbunden (SRV-2).
+     *
+     * `create` läuft über HTTP (`POST /api/lobby/create`); ein Socket existiert
+     * zu diesem Zeitpunkt nicht. Vorher stand der Platz hier auf `connected: true`
+     * — ein Host, dessen Browser nie verband, verfiel nie, zählte als verbundener
+     * Mensch (`alleTeamsBesetzt`) und hielt sein Team besetzt. Jetzt beginnt sein
+     * Reconnect-Fenster mit dem Anlegen: Verbindet er sich (Beitritt mit Token),
+     * steht er auf `connected: true`; sonst verfällt das Team in
+     * `pruneDisconnected` wie bei jedem getrennten Menschen.
+     */
+    const jetzt = Date.now();
+    const hostPlaetze = lobby.seats.filter(seat => seat.token === host.token);
+    for (const seat of hostPlaetze) {
+      seat.connected = false;
+      seat.disconnectedAt = jetzt;
+    }
+    return { lobby: this.describe(id), player: this.#antwort(lobby, hostPlaetze[0], hostPlaetze, { resumed: false }) };
   }
 
   get(id) {

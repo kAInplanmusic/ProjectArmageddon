@@ -7,7 +7,6 @@
  *
  * @module validation
  */
-import { NETWORK_RULES } from './config/network.js';
 import { WEAPONS_BY_ID } from './config/weapons.js';
 
 export const INPUT_LIMITS = Object.freeze({
@@ -15,7 +14,22 @@ export const INPUT_LIMITS = Object.freeze({
   angleMax: Math.PI,
   powerMin: 0,
   powerMax: 100,
-  maxTickDrift: NETWORK_RULES.lagCompensationBufferMs * 2,
+  /**
+   * Betrugsgrenze für den Tick eines Befehls — in TICKS (400 Ticks ≈ 6,7 s bei 60 Hz).
+   *
+   * Fund (SRV-7): Hier stand `NETWORK_RULES.lagCompensationBufferMs * 2` — ein
+   * Wert in MILLISEKUNDEN (400 ms), der als Tickzahl verwendet wird
+   * (`isTickInWindow`). Die wirksame Grenze war also immer 400 Ticks, nicht
+   * 400 ms. Die Zahl bleibt (sie ist gewollt: ein langsamer Client liegt
+   * gemessen 34 Ticks zurück, `tests/anti-cheat.test.js`), nur die Einheit
+   * steht jetzt richtig da und hängt nicht mehr an einer ms-Konstante.
+   *
+   * Grenzen, die bewusst bleiben: Fehlt `tick` im Befehl, nimmt der Server den
+   * aktuellen Takt (`#handleInput`) — der Tick wird nirgends zur Trefferrechnung
+   * benutzt (`MatchController.fire` nimmt keinen entgegen), er füllt nur
+   * `interpolatedFrom` in der Antwort.
+   */
+  maxTickDrift: 400,
   /**
    * Größte zulässige Nutzlast einer Nachricht vom Client an den Server.
    *

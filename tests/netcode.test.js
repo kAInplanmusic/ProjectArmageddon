@@ -120,7 +120,8 @@ test('Lobby verwaltet Teams, Kapazität und Wiederverbindung', () => {
   assert.equal(lobby.capacity, 4, 'vier Figuren');
   assert.equal(lobby.seatsTotal, 2, 'zwei Menschen passen hinein');
   assert.equal(lobby.occupied, 1, 'ein Mensch ist da — nicht zwei Plätze');
-  assert.equal(lobby.connected, 1);
+  // SRV-2: Der über `create` (HTTP) reservierte Host-Platz ist erst mit seinem Socket verbunden.
+  assert.equal(lobby.connected, 0, 'reserviert, noch kein Socket');
   assert.equal(lobby.seatsOccupied, 2, 'er führt zwei Einheiten');
   assert.equal(lobby.preset, 'islands');
   assert.equal(player.resumed, false);

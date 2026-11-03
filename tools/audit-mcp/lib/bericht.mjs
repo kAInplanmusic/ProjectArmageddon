@@ -12,7 +12,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT } from './repo.mjs';
+import { ROOT, run } from './repo.mjs';
 import {
   beurteileDoppelregeln,
   letzterCommit,
@@ -675,11 +675,32 @@ export function berichtMarkdown(d, todo) {
   return z.join('\n');
 }
 
-/** Schreibt den Bericht und liefert Pfad + TODO. */
-export function schreibeBericht(zielPfad, d) {
+/** Vorgabe-Ziel des Berichts: ungetrackt (`artifacts/` steht in `.gitignore`). */
+export const BERICHT_STANDARDPFAD = 'artifacts/audit-tief.md';
+
+/**
+ * Liegt die Datei im Versionsindex? Dann gehört sie dem Repo, nicht dem Werkzeug.
+ * `ls-files --error-unmatch` endet mit 0 genau für getrackte Pfade.
+ */
+export function istGetrackt(voll) {
+  return run('git', ['ls-files', '--error-unmatch', '--', path.relative(ROOT, voll)], { timeoutMs: 10000 }).code === 0;
+}
+
+/**
+ * Schreibt den Bericht und liefert Pfad + TODO.
+ *
+ * WERKZEUG-1: Das Ziel war fest `docs/audit-tief.md` — eine getrackte, von Hand
+ * gepflegte Datei, die `npm run audit:bericht` ohne Rückfrage überschrieb. Jetzt
+ * ist die Vorgabe ungetrackt (`BERICHT_STANDARDPFAD`), und ein getrackter Pfad
+ * wird nur mit `ueberschreiben: true` beschrieben. Geprüft wird VOR dem Aufbau.
+ */
+export function schreibeBericht(zielPfad, d, { ueberschreiben = false } = {}) {
+  const voll = path.isAbsolute(zielPfad) ? zielPfad : path.join(ROOT, zielPfad);
+  if (!ueberschreiben && istGetrackt(voll)) {
+    throw new Error(`${path.relative(ROOT, voll)} ist eine getrackte Datei — nicht überschrieben (ueberschreiben: true erzwingt es)`);
+  }
   const todo = todoAus(d);
   const markdown = berichtMarkdown(d, todo);
-  const voll = path.isAbsolute(zielPfad) ? zielPfad : path.join(ROOT, zielPfad);
   fs.mkdirSync(path.dirname(voll), { recursive: true });
   fs.writeFileSync(voll, markdown, 'utf8');
   const datei = fullPath(voll);

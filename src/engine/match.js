@@ -1002,9 +1002,9 @@ export class MatchController {
 
   // ------------------------------------------------------------- Simulation
 
-  /** Ein Simulationsschritt mit fester Zeitschrittweite. */
+  /** Ein Simulationsschritt mit fester Zeitschrittweite; ohne Rückgabe (ENG-5: Zustand nur über `getState()`). */
   step(dt = 1000 / 60) {
-    if (this.#status !== 'playing') return this.getState();
+    if (this.#status !== 'playing') return;
 
     if (this.#turnPauseTicks > 0) this.#turnPauseTicks -= 1;
     else this.#turnElapsed += dt;
@@ -1059,7 +1059,6 @@ export class MatchController {
     if (ende || !this.isPlayerAlive(this.activePlayerId)) {
       this.endTurn();
     }
-    return this.getState();
   }
 
   /**

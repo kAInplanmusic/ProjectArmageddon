@@ -18,6 +18,7 @@
  * @module replay
  */
 import { MatchController } from './match.js';
+import { MATCH_RULES } from '../shared/config/match.js';
 import { KIT_STANDARD, KIT_KLASSE, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_ALT, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { WAFFEN_STANDARD, WAFFEN_ALT, normalisiereWaffen } from '../shared/config/waffen-fassung.js';
@@ -70,7 +71,7 @@ export class ReplayRecorder {
    */
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
-    maxRounds = 30, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
+    maxRounds = MATCH_RULES.roundLimitBackstop, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT,
@@ -308,7 +309,13 @@ export class ReplayRecorder {
       throw new Error(`Unbekanntes Replay-Format: ${parsed?.format}`);
     }
     // Altdatei ohne `kit` = Klassenloadout (siehe Kommentar im Konstruktor).
-    const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, kit: parsed.config?.kit ?? KIT_KLASSE,
+    /*
+     * REPLAY-1: Die Vorgabe für `maxRounds` war hier 30, im Motor 300 (`MATCH_RULES.roundLimitBackstop`).
+     * Neue Aufzeichnungen ohne Angabe folgen jetzt dem Motor. Eine Datei, deren Kopf das Feld nicht trägt,
+     * wurde mit der alten Vorgabe aufgenommen und spielt weiter mit 30 (AGENTS.md §2).
+     */
+    const altRunden = parsed.config?.maxRounds === undefined ? { maxRounds: 30 } : {};
+    const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, ...altRunden, kit: parsed.config?.kit ?? KIT_KLASSE,
       zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT,
       kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT,
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
