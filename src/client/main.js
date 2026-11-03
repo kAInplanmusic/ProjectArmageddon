@@ -50,6 +50,8 @@ import { TierHud } from './tierHud.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
 import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
+import { SEIL_STANDARD } from '../shared/config/seil.js';
+import { SeilSteuerung } from './seilSteuerung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
 import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
@@ -195,9 +197,12 @@ class Game {
       tastaturFrei: ev => !isTextEntry(ev.target),
     });
     // Waffenmenü: Dropdown des Besitzes (Taste E / Knopf neben der Leiste).
+    // Seil (Seilfassung 2): Wahl, Feuer/Lösen, Schwung, Länge — `seilSteuerung.js`.
+    this.seilSteuerung = new SeilSteuerung({ modus: () => this.mode, match: () => this.match, network: () => this.network, zustand: () => this.currentState(), winkel: () => this.aim.angle, log: (text, art) => this.hud.log(text, art) });
     this.waffenMenue = new WaffenMenue(document, {
       getFigur: () => this.#aktiveFigur(),
       onSelect: weaponId => this.selectWeaponById(weaponId),
+      seil: { verfuegbar: () => this.seilSteuerung.verfuegbar(), gewaehlt: () => this.seilSteuerung.gewaehlt, waehle: an => this.seilSteuerung.waehle(an) },
     });
     /*
      * Der Klangmischer.
@@ -336,7 +341,15 @@ class Game {
       else if (aktion === 'salto') this.jump(-this.input.blickrichtung, true);
       else if (aktion === 'passen') this.ueberspringeZug();
       else if (aktion === 'abwurf') this.dropWeapon(this.#activeDisplayPosition());
+      else if (aktion === 'seil') this.seilSteuerung.waehle();
     });
+    // Seil ▲/▼ per Touch: gehalten wie W/S am Seil.
+    const seilKnoepfe = document.getElementById('touch-aktionen');
+    seilKnoepfe?.addEventListener('pointerdown', ereignis => {
+      const richtung = { hoch: 1, runter: -1 }[ereignis.target?.closest?.('button')?.dataset?.seil] ?? 0;
+      if (richtung) this.input?.setzeSeilVertikal(richtung);
+    });
+    for (const art of ['pointerup', 'pointercancel']) seilKnoepfe?.addEventListener(art, () => this.input?.setzeSeilVertikal(0));
     // FEUER-Knopf: Halten lädt auf, Loslassen schießt — wie Leertaste/Maus auf dem Spielfeld.
     const feuerKnopf = document.getElementById('hud-fire');
     if (feuerKnopf) {
@@ -388,6 +401,8 @@ class Game {
       onWalk: richtung => this.walk(richtung),
       // Zug überspringen (P).
       onSkipTurn: () => this.ueberspringeZug(),
+      // Seil: F wählt; hoch/runter holen am Seil ein bzw. lassen aus (statt zu zielen).
+      onSeil: () => this.seilSteuerung.waehle(), onVertikal: richtung => this.seilSteuerung.vertikal(richtung), seilHaengt: () => this.seilSteuerung.haengt(),
     });
 
     this.#bindMenu();
@@ -1274,7 +1289,7 @@ class Game {
     // nach dem Start.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom, kartenart,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1348,6 +1363,7 @@ class Game {
    * @param {boolean} [salto] - Rückwärtssalto/hoher Sprung (Bewegungsfassung 2)
    */
   jump(seitlich = 0, salto = false) {
+    if (this.seilSteuerung.sprung()) return { ok: true, seil: true }; // am Seil: fallen lassen bzw. lösen
     /*
      * ONLINE: eigener Befehl an den Server — und KEINE eigene Meldung.
      *
@@ -1391,6 +1407,7 @@ class Game {
    * @param {-1|0|1} richtung
    */
   walk(richtung) {
+    if (this.seilSteuerung.lauf(richtung)) return { ok: true, seil: true }; // am Seil: Schwung statt Gehen
     if (this.mode === 'online') {
       this.laufVorhersage.setzeRichtung(this.network?.isMyTurn ? richtung : 0);
       if (!this.network?.isConnected || (richtung !== 0 && !this.network.isMyTurn)) return null;
@@ -1622,7 +1639,7 @@ class Game {
     client.on('terrain_state', stand => this.#baueKarteNeu(stand));
     client.on('lobby_state', payload => {
       // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
-      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }]));
+      this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null;
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
       }
@@ -2034,6 +2051,7 @@ class Game {
       turrets: snapshot.turrets ?? [],
       // Minen: nicht im binären Snapshot, sondern aus dem Beitrittszustand und den Ereignissen `mine_*`.
       bodenobjekte: [...(this.remoteMinen?.values() ?? [])],
+      ...(this.remoteSeil ? { seil: this.remoteSeil } : {}), // Seil: aus den Ereignissen `seil_*`
       /*
        * Günther aus dem Snapshot (Protokoll v7).
        *
@@ -2150,6 +2168,7 @@ class Game {
    */
   selectWeaponById(weaponId) {
     if (!weaponId || !this.#weaponIdsForActivePlayer().includes(weaponId)) return false;
+    this.seilSteuerung.waffeGewaehlt();
 
     if (this.mode === 'online') {
       // Nur die eigene Waffe wählen und nur am eigenen Zug: sonst schickte der
@@ -2204,6 +2223,7 @@ class Game {
     // In der Zugpause beendet jeder Feuer-Tastendruck die Pause (Überspringen), statt zu schießen.
     const inPause = this.mode === 'online' ? Boolean(this.zugpause) : (state.turnPauseMs ?? 0) > 0;
     if (inPause) return this.#ueberspringeZugpause();
+    if (this.mode !== 'replay' && this.seilSteuerung.feuer()) return { ok: true, seil: true }; // Seil schießen/lösen
 
     // Die aufgeladene Kraft gilt in BEIDEN Betriebsarten — der Server rechnet
     // mit derselben Zahl, die die Anzeige während des Ladens gezeigt hat.
@@ -2404,6 +2424,7 @@ class Game {
         setzeEinschnitt: wert => { this.remoteInset = wert; },
         // Minen (Bodenobjektfassung 2): Online führen die Ereignisse `mine_*` diese Liste fort.
         minen: () => (this.remoteMinen ??= new Map()),
+        setzeSeil: wert => { this.remoteSeil = wert; },
       },
     };
   }

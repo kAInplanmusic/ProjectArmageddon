@@ -222,6 +222,8 @@ export function baueAnsichtszustand(quelle) {
     ...(quelle.cookie ? { cookie: quelle.cookie } : {}),
     // Minen nur mit Bodenobjektfassung 2: Zustände alter Partien behalten ihren Schlüsselsatz (Hashes bleiben gleich).
     ...(quelle.bodenobjekte ? { bodenobjekte: quelle.bodenobjekte } : {}),
+    // Seil (Seilfassung 2) nur, solange es hängt oder Neuwürfe laufen: sonst bleibt der Schlüsselsatz gleich.
+    ...(quelle.seil ? { seil: quelle.seil } : {}),
     // Die Kulisse geht als Kennung mit, nicht als volles Objekt: der Client
     // baut sie ohnehin selbst aus dem Seed. Die Kennungen dienen der Anzeige
     // und den Tests.
@@ -314,6 +316,9 @@ export function hashState(state) {
       // Minen nur mit Bodenobjektfassung 2 im Hash (sonst bleibt der Schlüsselsatz und damit jeder alte Hash gleich).
       ...(state.bodenobjekte
         ? { bodenobjekte: state.bodenobjekte.map(m => [m.id, m.typ ?? 'mine', Math.round(m.x), Math.round(m.y), m.ownerId ?? null, m.art, m.blindgaenger, m.ausgeloest, m.fallend ?? false]) }
+        : {}),
+      ...(state.seil
+        ? { seil: [state.seil.playerId, state.seil.haengt, state.seil.punkte.map(([x, y]) => [Math.round(x), Math.round(y)]), Math.round(state.seil.laenge), state.seil.neuwuerfe] }
         : {}),
     });
 

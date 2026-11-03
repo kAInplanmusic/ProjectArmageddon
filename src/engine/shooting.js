@@ -86,6 +86,15 @@ const RANDOM_MOVE_DISTANCE = 60;
  * @returns {{ok:boolean, errors?:string[], projectileId?:number|null, hit?:object|null, special?:object}}
  */
 export function fire(quelle, playerId, angle, power, weaponId = null) {
+  // Vom Seil (Seilfassung 2, `engine/seil.js`): alles außer Nahkampf; ein Schuss löst das Seil (der Schwung bleibt).
+  const vomSeil = quelle.seil?.vorWaffe(playerId, weaponId ?? quelle.inventory.getActiveWeaponId(playerId)) ?? null;
+  if (vomSeil && !vomSeil.ok) return vomSeil;
+  const ergebnis = feuere(quelle, playerId, angle, power, weaponId);
+  if (vomSeil && ergebnis.ok) quelle.seil.loesen(playerId, 'waffe');
+  return ergebnis;
+}
+
+function feuere(quelle, playerId, angle, power, weaponId) {
   const errors = [];
   if (quelle.status !== 'playing') errors.push('Match läuft nicht');
   if ((quelle.turnPauseMs ?? 0) > 0) errors.push('Zugpause: der Zug beginnt gleich');

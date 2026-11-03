@@ -35,7 +35,9 @@ test.describe('Waffenmenü (Desktop)', () => {
     await page.keyboard.press('e');
     const optionen = page.locator('#waffenmenue [role=option]');
     const hudAnzahl = await page.locator('#weapon-list .weapon-item').count();
-    await expect(optionen).toHaveCount(hudAnzahl);
+    // Der Besitz plus genau eine Zeile „Seil" (Gruppe Werkzeuge, Seilfassung 2; kein Katalogeintrag, nicht in der Leiste).
+    await expect(optionen).toHaveCount(hudAnzahl + 1);
+    await expect(page.locator('#waffenmenue #wm-o-seil[role=option]')).toHaveCount(1);
     expect(await page.locator('#waffenmenue [role=group]').count()).toBeGreaterThan(0);
     await expect(page.locator('#waffenmenue [role=listbox]')).toBeVisible();
     for (const text of await optionen.locator('.wm-munition').allTextContents()) {

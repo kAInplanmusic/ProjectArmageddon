@@ -646,6 +646,20 @@ export const EREIGNIS_WIRKUNGEN = {
     }
   }),
 
+  // Seil (Seilfassung 2): online ist das die Quelle der Seillinie; lokal liest der Renderer den Zustand des Motors.
+  seil_angeheftet: beide((k, n) => {
+    k.fernzustand?.setzeSeil?.({ playerId: n.playerId, haengt: true, punkte: n.punkte ?? [] });
+    k.hud?.log(`${k.nameOf?.(n.playerId) ?? 'Figur'} hängt am Seil (${Math.round(n.laenge ?? 0)} px)`, 'accent');
+  }),
+  seil_knick: beide((k, n) => {
+    k.fernzustand?.setzeSeil?.({ playerId: n.playerId, haengt: true, punkte: n.punkte ?? [] });
+  }),
+  seil_geloest: beide((k, n) => {
+    k.fernzustand?.setzeSeil?.(null);
+    if (n.grund === 'anker') k.hud?.log('Der Seilanker ist weggesprengt', 'notice');
+    else if (n.grund === 'wasser') k.hud?.log('Das Seil reißt im Wasser', 'notice');
+  }),
+
   mine_exploded: beide((k, n) => {
     k.fernzustand?.minen?.()?.delete(n.mineId);
     k.hud?.log(n.ausgang === 'super' ? 'Superexplosion! Eine Mine macht doppelten Schaden' : 'Eine Mine explodiert', n.ausgang === 'super' ? 'danger' : 'accent');
