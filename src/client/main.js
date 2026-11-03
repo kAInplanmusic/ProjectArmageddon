@@ -1484,6 +1484,9 @@ class Game {
     this.hud.clearLog();
     this.hud.log('Verbinde mit Server …', 'accent');
     this.mode = 'online';
+    // UI-1: Anzeigewerte der VORIGEN Online-Partie verwerfen (Mahlstrom-Einschnitt, geschätzte Zugdauer).
+    this.remoteInset = 0;
+    this.remoteTurnDurationMs = 0;
     // Online kommt die Fraktion je Figur vom Server (Bestandsnachricht).
     this.renderer.fraktionJeTeam = null;
     this.running = true;
