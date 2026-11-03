@@ -103,6 +103,7 @@ import { KISTE_KANTE } from '../shared/config/kisten.js';
  * Anzahl deshalb gegen die Dateien auf der Platte.
  */
 import { BACKDROP_URLS, kulissenUrlNeu } from './kulissenUrls.js';
+import { zeichneSeil } from './seilZeichnen.js';
 
 /*
  * Seltenheitsfarbe einer Kiste: aus `LOOT_DROP_RULES.rarityColors` (config/loot.js), dieselbe Tabelle
@@ -2351,6 +2352,7 @@ export class Renderer {
      * geht vor.
      */
     this.#drawSpuren();
+    zeichneSeil(this.ctx, state.seil, state.entities ?? []); // Seil unter der Figur (`seilZeichnen.js`)
     this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
     this.#drawFaelle();
     this.#drawFigurEffekte();

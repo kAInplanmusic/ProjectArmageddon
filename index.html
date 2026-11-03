@@ -178,6 +178,9 @@
         bottom: 12px;
         z-index: 6;
         gap: 8px;
+        /* Zwei Reihen zu drei Knöpfen (Sprung, Abwurf / Seil, ▲, ▼): bleibt links neben dem Protokoll. */
+        flex-wrap: wrap;
+        max-width: 230px;
       }
       #touch-laufen:not([hidden]) {
         display: flex;
@@ -862,6 +865,10 @@
         <button type="button" data-aktion="sprung-links" aria-label="Nach links springen">⤴ Links</button>
         <button type="button" data-aktion="sprung-rechts" aria-label="Nach rechts springen">Rechts ⤴</button>
         <button type="button" data-aktion="abwurf" aria-label="Aktive Waffe abwerfen">Abwurf</button>
+        <!-- Seil (Seilfassung 2): wählen; FEUER schießt und löst, Gehen-Knöpfe schwingen, ▲/▼ gehalten = einholen/ausfahren. -->
+        <button type="button" data-aktion="seil" aria-label="Seil wählen (Feuer schießt das Seil, am Seil löst es)">Seil</button>
+        <button type="button" data-seil="hoch" aria-label="Seil einholen (gedrückt halten)">Seil ▲</button>
+        <button type="button" data-seil="runter" aria-label="Seil ausfahren (gedrückt halten)">Seil ▼</button>
       </div>
       <!-- Touch-Bewegung (rechts, über dem FEUER-Knopf): Laufen links/rechts gehalten und Rückwärtssalto. Eigene Gruppe,
            damit die linke Aktionsleiste schmal bleibt und das Waffenmenü nicht verdeckt. -->

@@ -546,6 +546,16 @@ export class NetworkClient {
     return true;
   }
 
+  /**
+   * Seil (Seilfassung 2): `{aktion:'schuss', winkel}` | `{aktion:'loesen'}` | `{aktion:'steuer', sx, sy}`.
+   * Der Server prüft streng (`pruefeSeilEingabe`) und entscheidet; die Seillinie kommt über die Ereignisse `seil_*`.
+   */
+  sendSeil(eingabe) {
+    if (!this.isConnected || !this.#socket) return false;
+    this.#socket.send(controlMessage(CONTROL.SEIL, eingabe));
+    return true;
+  }
+
   /** Zeitpunkt (`performance.now`) des jüngsten Snapshots — Bezug der Laufvorhersage. */
   get letzterSnapshotMs() { return this.#letzterSnapshotMs; }
 

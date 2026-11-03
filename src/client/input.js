@@ -9,6 +9,7 @@
  */
 import { isTextEntry } from './dom.js';
 import { BEWEGUNG } from '../shared/config/bewegung.js';
+import { SEIL } from '../shared/config/seil.js';
 
 /** Zieltempo der gehaltenen Zieltasten in rad/s. */
 const ZIELTEMPO = 1.2;
@@ -75,6 +76,10 @@ export class InputController {
   #ladenPerTaste = false;
   #touchLauf = 0;
   #laufGesendet = 0;
+  /** Seil: gehaltene Richtung hoch (+1) / runter (−1) und Zeitpunkt der letzten Meldung (Erneuerung wie beim Gehen). */
+  #vert = 0;
+  #touchVert = 0;
+  #vertGesendet = 0;
   #blick = 1;
 
   /**
@@ -150,6 +155,7 @@ export class InputController {
         if (this.#charging && this.#ladenPerTaste && !this.#keys.has(' ') && !this.#keys.has('shift')) this.#releaseCharge();
       }
       this.#syncLaufen();
+      this.#syncVertikal();
     });
 
     // Fokusverlust: ein verlorenes „Taste los" darf die Figur nicht weiterlaufen lassen.
@@ -157,6 +163,7 @@ export class InputController {
       this.#keys.clear();
       this.#charging = false;
       this.#syncLaufen();
+      this.#syncVertikal();
     });
 
     window.addEventListener('resize', () => this.#recalculateScale());
@@ -171,6 +178,7 @@ export class InputController {
    *   Enter     Sprung (mit gehaltenem A/D seitlich; in der Luft Doppelsprung)
    *   Rück      Rückwärtssalto: hoher, weiter Sprung entgegen der Blickrichtung
    *   P         Zug überspringen (passen; höchstens zweimal in Folge)
+   *   F         Seil wählen/abwählen; am Seil: A/D Schwung, W/S einholen/ausfahren, Feuer löst (`seilSteuerung.js`)
    *   1–9 Waffe · E Waffenmenü · Q Waffe abwerfen · Maus: zielen und halten = aufladen
    *
    * Warum Enter = Sprung und Rück = Salto: Beide Tasten liegen rechts, weit weg von den Lauf- und Zieltasten der linken
@@ -197,6 +205,11 @@ export class InputController {
       this.#handlers.onSkipTurn?.();
       return;
     }
+    // F: Seil wählen/abwählen (Seilfassung 2).
+    if (key === 'f') {
+      this.#handlers.onSeil?.();
+      return;
+    }
     if (key === 'backspace') {
       // Backspace würde in manchen Browsern „Seite zurück" auslösen.
       event.preventDefault();
@@ -210,6 +223,8 @@ export class InputController {
     }
     if (OBEN.has(key) || UNTEN.has(key)) {
       if (key.startsWith('arrow')) event.preventDefault();
+      // Am Seil holen hoch/runter das Seil ein bzw. lassen es aus, statt zu zielen.
+      if (this.#syncVertikal()) return;
       // Ein Tipp zielt sofort ein Stück; Halten läuft über `update` weiter.
       this.#ziele(OBEN.has(key) ? 1 : -1, 0.012);
       return;
@@ -251,6 +266,28 @@ export class InputController {
     this.#handlers.onWalk?.(richtung);
   }
 
+  /**
+   * Seil: meldet hoch/runter (Tasten oder Touch „Seil ▲/▼") bei Änderung; `true`, solange die Figur am Seil hängt
+   * (dann wird nicht gezielt). Die Erneuerung im Takt `SEIL.erneuernMs` läuft über `update`.
+   */
+  #syncVertikal(jetzt = performance.now(), erneuern = false) {
+    const hoch = [...OBEN].some(k => this.#keys.has(k)) || this.#touchVert > 0;
+    const runter = [...UNTEN].some(k => this.#keys.has(k)) || this.#touchVert < 0;
+    const richtung = hoch === runter ? 0 : hoch ? 1 : -1;
+    if (richtung !== this.#vert || (erneuern && richtung !== 0 && jetzt - this.#vertGesendet >= SEIL.erneuernMs)) {
+      this.#vert = richtung;
+      this.#vertGesendet = jetzt;
+      this.#handlers.onVertikal?.(richtung);
+    }
+    return this.#handlers.seilHaengt?.() === true;
+  }
+
+  /** Touch-Knöpfe „Seil ▲/▼": gleiche Absicht wie W/S am Seil. */
+  setzeSeilVertikal(richtung) {
+    this.#touchVert = richtung;
+    this.#syncVertikal();
+  }
+
   /** Touch-Knopf „Laufen" (Hochformat): gleiche Absicht wie A/D. */
   setzeLaufen(richtung) {
     this.#touchLauf = richtung;
@@ -281,7 +318,7 @@ export class InputController {
     const dt = Math.min(100, Math.max(0, dtMs)) / 1000;
     const hoch = [...OBEN].some(k => this.#keys.has(k));
     const runter = [...UNTEN].some(k => this.#keys.has(k));
-    if (hoch !== runter) this.#ziele(hoch ? 1 : -1, ZIELTEMPO * dt);
+    if (!this.#syncVertikal(jetzt, true) && hoch !== runter) this.#ziele(hoch ? 1 : -1, ZIELTEMPO * dt);
     if (this.#lauf !== 0 && jetzt - this.#laufGesendet >= BEWEGUNG.erneuernMs) {
       this.#laufGesendet = jetzt;
       this.#handlers.onWalk?.(this.#lauf);

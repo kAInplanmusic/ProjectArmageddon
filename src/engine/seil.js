@@ -174,13 +174,19 @@ export function pendelSchritt(terrain, s, werte = SEIL) {
     const tx = x + vx * i / n;
     const ty = y + vy * i / n;
     if (koerperFrei(terrain, tx, ty)) { fx = tx; fy = ty; continue; }
-    // Erst waagerecht gleiten, sonst senkrecht; die gesperrte Richtung prallt ab (am Boden: liegen bleiben).
+    // Entlang einer Achse gleiten — die mit dem größeren Tempoanteil zuerst (so hebt das Einholen die Figur auch
+    // am Hang an); die gesperrte Richtung prallt ab (am Boden: liegen bleiben).
     const yGesperrt = () => {
       if (vy > 0) { amBoden = true; vy = 0; vx *= werte.bodenReibung; } else vy = -vy * werte.abprall;
     };
-    if (koerperFrei(terrain, tx, fy)) { fx = tx; yGesperrt(); } else {
+    const xFrei = koerperFrei(terrain, tx, fy);
+    const yFrei = koerperFrei(terrain, fx, ty);
+    if (yFrei && (!xFrei || Math.abs(vy) >= Math.abs(vx))) { fy = ty; vx = -vx * werte.abprall; } else if (xFrei) {
+      fx = tx;
+      yGesperrt();
+    } else {
       vx = -vx * werte.abprall;
-      if (koerperFrei(terrain, fx, ty)) fy = ty; else yGesperrt();
+      yGesperrt();
     }
     break;
   }

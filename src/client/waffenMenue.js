@@ -65,6 +65,21 @@ function bestandVon(figur) {
 
 const zahl = wert => (wert === Infinity ? '∞' : String(wert));
 
+/**
+ * Das Seil (Seilfassung 2) als Zeile der Gruppe „Werkzeuge" — kein Katalogeintrag: Es ist ein Bewegungswerkzeug
+ * ohne Munition und gehört nicht in Beute, Kisten und Start-Kits (ein Katalogeintrag hätte deren Zufallszüge und
+ * damit alte Aufzeichnungen verändert). Steht am Ende, damit die Zifferntasten gleich bleiben.
+ */
+export const SEIL_ID = 'seil';
+function seilEintrag(gewaehlt) {
+  return {
+    weaponId: SEIL_ID,
+    weapon: { displayName: 'Seil', description: 'Ninja-Seil wie in Worms: Feuertaste schießt und löst, ←/→ schwingen, ↑/↓ einholen/ausfahren (Taste F)', gadget: true, powerTier: 'common' },
+    nummer: 99, ammo: Infinity, maxAmmo: Infinity, unbegrenzt: true, cooldown: 0, aktiv: gewaehlt, waehlbar: true,
+    gruppe: 'werkzeug', werkzeug: true,
+  };
+}
+
 export class WaffenMenue {
   #doc;
   #opts;
@@ -83,6 +98,7 @@ export class WaffenMenue {
    * @param {object} opts
    * @param {function():object|null} opts.getFigur - Figur am Zug (State-Form)
    * @param {function(string):boolean} opts.onSelect - wählt die Waffe; true = angenommen
+   * @param {{verfuegbar:function():boolean, gewaehlt:function():boolean, waehle:function(boolean):boolean}} [opts.seil] - Seil
    */
   constructor(doc, opts) {
     this.#doc = doc;
@@ -160,6 +176,12 @@ export class WaffenMenue {
 
   #render(figur) {
     const bestand = bestandVon(figur);
+    const seil = this.#opts.seil;
+    if (seil?.verfuegbar()) {
+      const gewaehlt = seil.gewaehlt();
+      if (gewaehlt) for (const b of bestand) b.aktiv = false;
+      bestand.push(seilEintrag(gewaehlt));
+    }
     const signatur = bestand
       .map(b => `${b.weaponId}:${zahl(b.ammo)}:${b.cooldown}:${b.aktiv ? 1 : 0}`).join('|');
     if (signatur === this.#signatur) return;
@@ -185,12 +207,12 @@ export class WaffenMenue {
         gruppeEl = doc.createElement('div');
         gruppeEl.className = 'wm-gruppe';
         gruppeEl.setAttribute('role', 'group');
-        gruppeEl.setAttribute('aria-label', displayGroupLabel(gruppe));
+        gruppeEl.setAttribute('aria-label', gruppe === 'werkzeug' ? 'Werkzeuge' : displayGroupLabel(gruppe));
         const kopf = doc.createElement('div');
         kopf.className = 'wm-kopf';
         kopf.setAttribute('aria-hidden', 'true');
         kopf.innerHTML = '<span class="wm-kopf-haupt"></span>';
-        kopf.firstChild.textContent = displayGroupLabel(gruppe);
+        kopf.firstChild.textContent = gruppe === 'werkzeug' ? 'Werkzeuge' : displayGroupLabel(gruppe);
         gruppeEl.append(kopf);
         kinder.push(gruppeEl);
       }
@@ -308,6 +330,10 @@ export class WaffenMenue {
   #waehle(id) {
     const b = this.#eintraege.find(x => x.weaponId === id);
     if (!b) return;
+    if (b.werkzeug) {
+      if (this.#opts.seil?.waehle(true)) this.close();
+      return;
+    }
     if (!b.waehlbar) {
       const zeile = this.#doc.getElementById(`wm-o-${id}`);
       zeile?.classList.remove('is-wackeln');
@@ -323,6 +349,7 @@ export class WaffenMenue {
     if (!info) return;
     const b = this.#eintraege.find(x => x.weaponId === id);
     if (!b?.weapon) { info.textContent = ''; return; }
+    if (b.werkzeug) { info.textContent = `${b.weapon.displayName}: ${b.weapon.description}`; info.dataset.weaponId = id; return; }
     // Werte der geltenden Waffenfassung statt der Katalogzahlen (Stärke, Rückstoß, Art …).
     const w = { ...b.weapon, ...getWaffe(b.weapon.weaponId ?? b.weapon.id) };
     info.textContent = [
