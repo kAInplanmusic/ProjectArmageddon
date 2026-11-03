@@ -45,10 +45,19 @@ POSEN = {
                          'as if grabbing something from the back, focused determined look over the shoulder (a four-legged animal stays on all fours, '
                          'looking back over its shoulder)'),
 }
+# Zusätze je Figur, wo FLUX die Gestalt verliert (2026-11-03)
+ZUSATZ = {
+    'datacult/02_chrome-code-shifter': 'It is a legless snake: no arms and no legs, it stays a coiled snake.',
+    'datacult/21_hyper-link-hound': 'It is a four-legged robot dog with two heads: keep both heads and all four legs, stays on all fours.',
+    'pixel/12_shieldmon': 'It is a four-legged porcupine with a big shield on its back: stays on all fours and keeps the shield.',
+    'undead/12_vessel-plague-skull': 'It is a bare skeleton wrapped in green flames.',
+}
 PROMPT = ('The exact same character as in the reference image: same species, body shape, colors, costume and art style. '
           'It must stay the same creature and must never turn into a human or any other being. '
-          'Keep the identical line art, shading, color palette, proportions, silhouette, number of limbs, tail and head shape; '
+          'Keep the identical line art, shading, color palette, proportions, silhouette, number of limbs and head shape; '
           'only the pose changes. Do not add or remove any items, wings, armor or accessories. '
+          'Keep exactly the same anatomy as the reference. '
+          # 2026-11-03: Jede Erwähnung von "tail" (auch verneint) gab Menschen und Robotern Schwänze; das Wort bleibt draußen.
           'Side view facing right, full body visible, feet near the bottom, hands empty with no weapon, '
           'on a solid pure magenta (#FF00FF) background, no shadows, no text. Pose: {pose}.')
 
@@ -77,7 +86,8 @@ def aufruf(schluessel, zelle, arbeit, ausgabe):
     if os.path.exists(ziel):
         return 0.0
     os.makedirs(os.path.dirname(ziel), exist_ok=True)
-    body = {'model': MODELL, 'prompt': PROMPT.format(pose=pose), 'image_url': referenz(schluessel), 'seed': 20261027 + zelle,
+    body = {'model': MODELL, 'prompt': PROMPT.format(pose=pose) + (' ' + ZUSATZ[schluessel] if schluessel in ZUSATZ else ''),
+            'image_url': referenz(schluessel), 'seed': 20261027 + zelle + int(os.environ.get('SEED_PLUS', '0')),
             'n': 1, 'response_format': 'base64', 'width': GROESSE, 'height': GROESSE}
     daten = json.dumps(body).encode()
     for versuch in range(4):

@@ -98,11 +98,15 @@ test('Manifest der Emotions-Sheets: 81 geprüfte Figuren, gültige Zellen liegen
   // Bekannte Verwandlungen (Tier -> Mensch, gesehen am Kontaktbogen 2026-10-27): die Menschenzellen müssen gesperrt sein.
   // Danach mit Together neu erzeugte Zellen (emotion-neu.py), per Sichtprüfung freigegeben; die übrigen bleiben gesperrt.
   // 2026-10-28: Blick hoch/runter (5, 6) dieser drei Tiere sind mit dem strengeren Prompt neu erzeugt und per Sichtprüfung freigegeben.
-  assert.deepEqual(m.figuren['beasts/01_shrew-quakes'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 3, 4, 5, 6]);
+  assert.deepEqual(m.figuren['beasts/01_shrew-quakes'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 2, 3, 4, 5, 6]); // 2: 2026-11-03 FLUX, sichtgeprüft
   assert.deepEqual(m.figuren['beasts/12_magma-plate'].gueltig.filter((c) => [1, 3, 4, 5].includes(c)), [1, 3, 4, 5]);
   // 2026-11-03: Schulterzucken (2) und Zittern (4) aus der Stehpose (1) abgeleitet und per Sichtprüfung freigegeben; der Junge ist ersetzt.
   assert.deepEqual(m.figuren['beasts/02_storm-talon'].gueltig.filter((c) => c >= 1 && c <= 6), [1, 2, 3, 4, 5, 6]);
   // 2026-11-03: Die beiden Kanonen (machina/11, machina/12) sind im 3-D-Verfahren neu, alle acht Zellen freigegeben.
   assert.deepEqual(m.figuren['machina/11_heavy-battery-moerser-bot'].gueltig, [0, 1, 2, 3, 4, 5, 6, 7]);
   assert.deepEqual(m.figuren['machina/12_ordnance-rail-viper'].gueltig, [0, 1, 2, 3, 4, 5, 6, 7]);
+  // 2026-11-03 (Auftrag 8/8): Restposen per FLUX, Rückfall ohne Kosten per emotion-ableiten.py, alles sichtgeprüft.
+  // Die Schlange (datacult/02) ist ganz aus dem Seitenbild abgeleitet; die grauen Menschenblöcke sind ersetzt.
+  assert.deepEqual(m.figuren['datacult/02_chrome-code-shifter'].gueltig, [0, 1, 2, 3, 4, 5, 6, 7]);
+  for (const [k, e] of figuren) assert.deepEqual(e.gueltig, [0, 1, 2, 3, 4, 5, 6, 7], `${k}: 8 von 8`);
 });
