@@ -23,6 +23,7 @@ Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Beri
 - 2026-11-02: Es gibt kein lokales Spiel; eine Pause (STDMECH-1) wird nicht gebaut.
 - 2026-11-02: Technische Doppelungen entscheidet der Agent: `sourceRarity` streichen (ENG-10), Lobby nach Auto-Start `running` (SRV-3), ungültiges JSON → HTTP 400 (HTTP-1).
 - 2026-11-03: Seil (SEIL-1): ändert die Entscheidung vom 2026-11-02 — der Agent nähert die fehlenden Konstanten selbst an (Recherche, sonst begründete Schätzung, alles als Annäherung dokumentiert und in einer Datei einstellbar), Handhabung wie Worms; der Auftraggeber testet.
+- 2026-11-03: Seil: Standardstufe 5 bleibt; Schwerkraft am Seil bleibt wie bei den Figuren (0,42), nicht das langsamere WA-Zeitmaß.
 
 ## Anhang-Hinweis: Referenzwissen bleibt als Dokument erhalten
 Spezifikationen, Betriebs- und Biom-Dokus, Balance-Daten und alles, was Tests/Skripte per Pfad lesen, bleiben bestehen (Liste am Ende, Abschnitt 5).
@@ -76,7 +77,7 @@ Spezifikationen, Betriebs- und Biom-Dokus, Balance-Daten und alles, was Tests/Sk
 
 | ID | Thema | Status | Quelle | Bereich |
 |---|---|---|---|---|
-| SEIL-1 (`docs/auftraege/seil.md`) | Seil gebaut 2026-11-03 (`config.seil` 2, `engine` + `src/shared/config/seil.js`, Bedienung F / Waffenmenü „Werkzeuge“, 22 Unit-Tests + E2E). Offen: Standardstufe (jetzt 5) festlegen; Schwerkraft am Seil (jetzt wie Figuren 0,42, WA-Zeitmaß wäre 0,1667); Annäherungen (Einholtempo, Schwung, Reibung) nach Playtest nachstellen; Zielfenster je Stufe; nicht gebaut: Rope Knocking, sichtbarer Seilflug, Online-Vorhersage; Touch-Leiste am echten Gerät prüfen | offen (Playtest/Entscheidung des Auftraggebers) | seil.md | Spiel |
+| SEIL-1 (`docs/auftraege/seil.md`) | Seil gebaut 2026-11-03 (`config.seil` 2, `engine` + `src/shared/config/seil.js`, Bedienung F / Waffenmenü „Werkzeuge“, 22 Unit-Tests + E2E). Entschieden: Stufe 5, Schwerkraft wie Figuren. Offen: Annäherungen (Einholtempo, Schwung, Reibung) nach Playtest nachstellen; Zielfenster je Stufe; nicht gebaut: Rope Knocking, sichtbarer Seilflug, Online-Vorhersage; Touch-Leiste am echten Gerät prüfen | offen (Playtest/Entscheidung des Auftraggebers) | seil.md | Spiel |
 | MINEN-1 (`docs/auftraege/minen-faesser.md` §0 "Noch nicht gebaut") | Fässer als Kiste/Wurf; Auslösen durch Geschoss-Direkttreffer ohne Radius; Flugbahn der geworfenen Mine; Bild+Klang der Mine nicht geprüft (Waffenmenü zeigt Teleportplattform-Icon, Zeichnung = einfache Scheibe); Werte (Schaden 50, Radius 48, Rückstoß 35; Fass 60/64/45/36) unbalanciert | offen / wartet auf Sicht- und Klangprüfung des Auftraggebers | minen-faesser.md | Spiel/Grafik/Audio |
 | MINEN-2 | 8 von 9 Akzeptanzkästchen mit Testbeleg abgehakt (2026-11-03); offen nur Sicht- und Klangprüfung durch den Auftraggeber | wartet auf Auftraggeber (Playtest) | minen-faesser.md §6 | QA |
 | AERO (MD Backlog Block 2, Fahrplan Nr. 4) | Windfaktor je Waffe (0-2,5, explizite 0 = windfrei), Katalog-Fassung, Bahnvorschau mit Wind der Waffe, Windanzeige in Segmenten, Bots berücksichtigen Windfaktor; Wind immer zufällig, auch innerhalb eines Zuges (Seed-Sub-RNG, neue Marke z. B. `config.wind: 2`); Wasser setzt Windfaktor 0 (A1-A6). Im Code kein `windFactor` in `config/` gefunden | offen (entschieden, nicht gebaut). Status ungeprüft | MD | Spiel |
