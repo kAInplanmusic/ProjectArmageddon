@@ -3953,8 +3953,8 @@ steht im nächsten Abschnitt „Waffen-Animation“; HUD-Leiste und Menü zeigen
 scipy, deterministisch: zweimal laufen lassen ergibt byte-gleiche Atlanten):
 
 1. **Quelle:** `assets/weapons/source/IMG_xxxx.PNG` (1024×1024, RGB, Waffe auf grauem
-   Verlauf, Wasserzeichen unten rechts), NICHT die 64-px-Icons. `IMG_9049` (pa_014)
-   liegt nur als `.heic` vor und braucht `pip install pillow-heif`; ohne das Paket
+   Verlauf, Wasserzeichen unten rechts), NICHT die 64-px-Icons. `IMG_9049` (pa_014) lag
+   bis 2026-11-03 nur als `.heic` vor (seit N-06 neu erzeugt als `.PNG`); für HEIC-Quellen gilt: ohne `pillow-heif`
    fällt das Skript auf das 64-px-Icon zurück (Warnung, im Manifest
    `quelle.datei = …icon64`). Im vorliegenden Stand ist `quelle.datei` überall echt.
 2. **Freistellen:** Hintergrund per quadratischem Flächenfit am Randring, Flood-Fill vom
@@ -4018,7 +4018,7 @@ korrektur`.
 nach `assets/weapons/source/` legen, `npm run waffen:sprites`, Kontaktbogen sichten
 (`--kontaktbogen DIR`), Korrekturen eintragen, Test anpassen (150 ist fest).
 
-**Kachel-Waffen (28, `form: "kachel"`)** sind Zauber-/Ultimate-Bilder mit Rahmen. Je Waffe steht
+**Kachel-Waffen (26, `form: "kachel"`)** sind Zauber-/Ultimate-Bilder mit Rahmen. Je Waffe steht
 in der Korrekturtabelle `kachel: {modus, innen, schwelle, grund}` und im Manifest
 `kachel: {modus, grund}`:
 - **`motiv` (27):** Das Motiv ist aus der Kachel herausgelöst (`motiv_maske`): Hintergrund aus
@@ -4121,7 +4121,7 @@ den Griff, `skala`, `glanz`, `blitz`, `weiss`, `dunkel`, `ladung`.
 - **Nachladen:** Waffe abgedunkelt (30–55 %), ein Füllband in `flashColor` wächst vom Griff
   zur Spitze mit dem Nachladegrad (`ladungAnteil(Rest, cooldown)` aus `weaponAnimation.js`).
 - **Treffer:** Trifft es die Figur, blitzt die Waffe wie die Figur weiß auf.
-- **Kachel-Waffen** (28): `orb` zeichnet einen schwebenden Orb vor der Hand (Glühen in `flashColor`,
+- **Kachel-Waffen** (26): `orb` zeichnet einen schwebenden Orb vor der Hand (Glühen in `flashColor`,
   6 kreisende Funken, Kachelbild als rundes Mini-Icon, Bob; bei reduzierter Bewegung statisch),
   `motiv` hält das herausgelöste Motiv (90 % Größe, 3 px vor) mit weichem Glühen dahinter.
 - **Figurtypen:** Humanoide und Schweber greifen mit Arm und Faust (Farbe aus dem Sprite an der

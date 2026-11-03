@@ -249,7 +249,8 @@ test('Griffanker liegt auf einem deckenden Pixel der Waffe, die Mündung an den 
 
 test('Kachel-Waffen: Darstellung je Waffe entschieden (motiv oder orb) und begründet', () => {
   const kacheln = WEAPONS.filter(w => manifest.waffen[w.id].form === 'kachel');
-  assert.equal(kacheln.length, 28);
+  // 26: pa_034 Zauberbolzen und pa_035 Energieball haben seit N-06 (2026-11-03) freigestellte Bilder statt Kacheln.
+  assert.equal(kacheln.length, 26);
   let motiv = 0;
   for (const w of kacheln) {
     const k = manifest.waffen[w.id].kachel;

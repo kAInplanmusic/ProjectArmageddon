@@ -195,7 +195,7 @@ test.describe('Waffen-Animation', () => {
 
   test('Kachel-Waffen: Orb (Zauber-Darstellung) oder herausgelöstes Motiv, nie die gerahmte Karte', async ({ page }) => {
     const fehler = await matchStarten(page);
-    // pa_118 Feuerwesen: Orb; pa_034 Zauberbolzen: Motiv ohne Rahmen
+    // pa_118 Feuerwesen: Orb; pa_071 Eisschlag: Motiv ohne Rahmen (pa_034 ist seit N-06 keine Kachel mehr)
     const spieler = await waffeWaehlen(page, 'pa_118');
     await page.waitForFunction(
       id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_118', spieler, { timeout: 15000 });
@@ -205,9 +205,9 @@ test.describe('Waffen-Animation', () => {
     await page.waitForTimeout(300);
     await ablegen(page, 'waffen-animation-kachel-orb');
 
-    await waffeWaehlen(page, 'pa_034');
+    await waffeWaehlen(page, 'pa_071');
     await page.waitForFunction(
-      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_034', spieler, { timeout: 15000 });
+      id => window.__PA__.waffenAnimation().posen[id]?.waffeId === 'pa_071', spieler, { timeout: 15000 });
     const motiv = (await waffenZustand(page)).posen[spieler];
     expect(motiv.kachel).toBe('motiv');
     expect(motiv.orb).toBe(false);

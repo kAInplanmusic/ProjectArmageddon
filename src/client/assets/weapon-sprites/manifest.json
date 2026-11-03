@@ -925,28 +925,28 @@
    "subcategory": "melee",
    "rarity": "common",
    "delivery": "projectile",
-   "form": "kompakt",
+   "form": "objekt",
    "quelle": {
     "datei": "IMG_9048.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": -35.6,
    "gespiegelt": false,
-   "streckung": 1.22,
+   "streckung": 6.57,
    "content": {
     "x": 6,
-    "y": 9,
+    "y": 51,
     "w": 115,
-    "h": 110
+    "h": 26
    },
    "anchor": {
     "grip": {
-     "x": 67,
+     "x": 26,
      "y": 64
     },
     "muzzle": {
      "x": 120,
-     "y": 57
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -954,7 +954,7 @@
     "art": "ding",
     "size": {
      "w": 29,
-     "h": 28
+     "h": 7
     },
     "angle": 0,
     "spin": true,
@@ -965,7 +965,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb1f2e",
+   "flashColor": "#6abfeb",
    "korrektur": false,
    "held": {
     "atlas": "melee",
@@ -996,28 +996,28 @@
    "subcategory": "melee",
    "rarity": "common",
    "delivery": "projectile",
-   "form": "kompakt",
+   "form": "objekt",
    "quelle": {
-    "datei": "IMG_9049.heic",
+    "datei": "IMG_9049.PNG",
     "aufloesung": 1024
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.46,
+   "streckung": 2.97,
    "content": {
-    "x": 7,
-    "y": 6,
-    "w": 113,
-    "h": 115
+    "x": 6,
+    "y": 37,
+    "w": 115,
+    "h": 54
    },
    "anchor": {
     "grip": {
-     "x": 63,
-     "y": 55
+     "x": 27,
+     "y": 72
     },
     "muzzle": {
-     "x": 119,
-     "y": 62
+     "x": 120,
+     "y": 72
     },
     "source": "geometrie"
    },
@@ -1025,7 +1025,7 @@
     "art": "ding",
     "size": {
      "w": 29,
-     "h": 29
+     "h": 14
     },
     "angle": 0,
     "spin": true,
@@ -1036,8 +1036,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#6aaaeb",
-   "korrektur": false,
+   "flashColor": "#eb9951",
+   "korrektur": true,
    "held": {
     "atlas": "melee",
     "x": 640,
@@ -2279,23 +2279,23 @@
     "datei": "IMG_9071.PNG",
     "aufloesung": 1024
    },
-   "rotation": 36.7,
-   "gespiegelt": true,
-   "streckung": 1.89,
+   "rotation": -72.3,
+   "gespiegelt": false,
+   "streckung": 1.52,
    "content": {
     "x": 6,
-    "y": 30,
+    "y": 21,
     "w": 115,
-    "h": 67
+    "h": 86
    },
    "anchor": {
     "grip": {
      "x": 28,
-     "y": 58
+     "y": 68
     },
     "muzzle": {
      "x": 120,
-     "y": 58
+     "y": 68
     },
     "source": "geometrie"
    },
@@ -2314,7 +2314,7 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#6079eb",
+   "flashColor": "#eb5043",
    "korrektur": false,
    "held": {
     "atlas": "ranged",
@@ -2416,28 +2416,28 @@
    "subcategory": "guns",
    "rarity": "common",
    "delivery": "projectile",
-   "form": "kachel",
+   "form": "objekt",
    "quelle": {
     "datei": "IMG_9073.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
-   "gespiegelt": false,
-   "streckung": 1.62,
+   "rotation": 36.5,
+   "gespiegelt": true,
+   "streckung": 4.5,
    "content": {
-    "x": 8,
-    "y": 6,
-    "w": 112,
-    "h": 115
+    "x": 6,
+    "y": 48,
+    "w": 115,
+    "h": 31
    },
    "anchor": {
     "grip": {
-     "x": 57,
-     "y": 63
+     "x": 30,
+     "y": 62
     },
     "muzzle": {
-     "x": 119,
-     "y": 25
+     "x": 120,
+     "y": 63
     },
     "source": "geometrie"
    },
@@ -2456,12 +2456,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb775e",
-   "korrektur": true,
-   "kachel": {
-    "modus": "motiv",
-    "grund": "Motiv aus der Kachel herausgeloest"
-   },
+   "flashColor": "#a757eb",
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 512,
@@ -2491,28 +2487,28 @@
    "subcategory": "guns",
    "rarity": "common",
    "delivery": "projectile",
-   "form": "kachel",
+   "form": "kompakt",
    "quelle": {
     "datei": "IMG_9074.PNG",
     "aufloesung": 1024
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.07,
+   "streckung": 1.04,
    "content": {
-    "x": 9,
-    "y": 6,
-    "w": 109,
-    "h": 115
+    "x": 6,
+    "y": 10,
+    "w": 115,
+    "h": 107
    },
    "anchor": {
     "grip": {
-     "x": 67,
-     "y": 62
+     "x": 61,
+     "y": 64
     },
     "muzzle": {
-     "x": 117,
-     "y": 62
+     "x": 120,
+     "y": 64
     },
     "source": "geometrie"
    },
@@ -2531,12 +2527,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb8c2a",
-   "korrektur": true,
-   "kachel": {
-    "modus": "motiv",
-    "grund": "Motiv aus der Kachel herausgeloest"
-   },
+   "flashColor": "#3794eb",
+   "korrektur": false,
    "held": {
     "atlas": "ranged",
     "x": 640,
@@ -2566,30 +2558,30 @@
    "subcategory": "guns",
    "rarity": "common",
    "delivery": "projectile",
-   "form": "kompakt",
+   "form": "objekt",
    "quelle": {
     "datei": "IMG_9075.PNG",
     "aufloesung": 1024
    },
-   "rotation": 0.0,
+   "rotation": -21.0,
    "gespiegelt": false,
-   "streckung": 1.12,
+   "streckung": 1.86,
    "content": {
     "x": 6,
-    "y": 11,
+    "y": 31,
     "w": 115,
-    "h": 106
+    "h": 65
    },
    "anchor": {
     "grip": {
-     "x": 64,
-     "y": 64
+     "x": 40,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 64
+     "y": 48
     },
-    "source": "geometrie"
+    "source": "korrektur"
    },
    "projectile": {
     "art": "rakete",
@@ -2606,8 +2598,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eb913b",
-   "korrektur": false,
+   "flashColor": "#eba34d",
+   "korrektur": true,
    "held": {
     "atlas": "ranged",
     "x": 768,
@@ -3991,25 +3983,25 @@
     "datei": "IMG_9098.PNG",
     "aufloesung": 1024
    },
-   "rotation": 24.1,
-   "gespiegelt": true,
-   "streckung": 1.51,
+   "rotation": -11.2,
+   "gespiegelt": false,
+   "streckung": 3.67,
    "content": {
     "x": 6,
-    "y": 20,
+    "y": 43,
     "w": 115,
-    "h": 88
+    "h": 41
    },
    "anchor": {
     "grip": {
-     "x": 26,
-     "y": 56
+     "x": 27,
+     "y": 62
     },
     "muzzle": {
      "x": 120,
-     "y": 44
+     "y": 62
     },
-    "source": "korrektur"
+    "source": "geometrie"
    },
    "projectile": {
     "art": "kugel",
@@ -4026,8 +4018,8 @@
     "w": 32,
     "h": 32
    },
-   "flashColor": "#eba96a",
-   "korrektur": true,
+   "flashColor": "#eb934d",
+   "korrektur": false,
    "held": {
     "atlas": "heavy_ranged",
     "x": 896,
@@ -5970,33 +5962,33 @@
    "subcategory": "elemental",
    "rarity": "uncommon",
    "delivery": "hitscan",
-   "form": "objekt",
+   "form": "kompakt",
    "quelle": {
     "datei": "IMG_9139.PNG",
     "aufloesung": 1024
    },
-   "rotation": -75.7,
+   "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.64,
+   "streckung": 1.45,
    "content": {
-    "x": 6,
-    "y": 27,
-    "w": 115,
-    "h": 74
+    "x": 22,
+    "y": 6,
+    "w": 83,
+    "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 29,
-     "y": 66
+     "x": 65,
+     "y": 70
     },
     "muzzle": {
-     "x": 120,
-     "y": 66
+     "x": 104,
+     "y": 70
     },
     "source": "geometrie"
    },
    "projectile": null,
-   "flashColor": "#687deb",
+   "flashColor": "#eb290d",
    "korrektur": false,
    "held": {
     "atlas": "magic",
@@ -7458,26 +7450,26 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.24,
+   "streckung": 1.36,
    "content": {
-    "x": 19,
+    "x": 15,
     "y": 6,
-    "w": 90,
+    "w": 97,
     "h": 115
    },
    "anchor": {
     "grip": {
-     "x": 66,
-     "y": 58
+     "x": 63,
+     "y": 67
     },
     "muzzle": {
-     "x": 108,
-     "y": 58
+     "x": 111,
+     "y": 64
     },
     "source": "geometrie"
    },
    "projectile": null,
-   "flashColor": "#eba865",
+   "flashColor": "#c4eb4a",
    "korrektur": false,
    "held": {
     "atlas": "magic",
@@ -7743,7 +7735,7 @@
    },
    "rotation": 0.0,
    "gespiegelt": false,
-   "streckung": 1.19,
+   "streckung": 1.24,
    "content": {
     "x": 19,
     "y": 6,
@@ -7752,17 +7744,17 @@
    },
    "anchor": {
     "grip": {
-     "x": 64,
-     "y": 61
+     "x": 66,
+     "y": 58
     },
     "muzzle": {
      "x": 108,
-     "y": 61
+     "y": 58
     },
     "source": "geometrie"
    },
    "projectile": null,
-   "flashColor": "#eb9344",
+   "flashColor": "#eba865",
    "korrektur": false,
    "held": {
     "atlas": "utility",

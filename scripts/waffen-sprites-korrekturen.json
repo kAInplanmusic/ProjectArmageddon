@@ -295,22 +295,6 @@
    62
   ]
  },
- "pa_034": {
-  "kachel": {
-   "modus": "motiv",
-   "innen": 0.12,
-   "schwelle": 60,
-   "grund": "Motiv aus der Kachel herausgeloest"
-  }
- },
- "pa_035": {
-  "kachel": {
-   "modus": "motiv",
-   "innen": 0.12,
-   "schwelle": 100,
-   "grund": "Motiv aus der Kachel herausgeloest"
-  }
- },
  "pa_071": {
   "kachel": {
    "modus": "motiv",
@@ -506,14 +490,17 @@
  "pa_017": {
   "schwelle": 60
  },
- "pa_056": {
+ "pa_014": {
+  "winkel": 0.0
+ },
+ "pa_036": {
   "grip": [
-   26,
-   56
+   40,
+   62
   ],
   "muzzle": [
    120,
-   44
+   48
   ]
  }
 }
