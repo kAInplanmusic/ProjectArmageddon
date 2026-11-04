@@ -129,6 +129,18 @@ test('baue(): Archiv mit Prüfsumme, reproduzierbar, verweigert veralteten oder 
   }
 });
 
+test('CI: Release-Paket bei Tags v*, als Artefakt, ohne Deploy-Schritt', () => {
+  const ci = readFileSync(join(WURZEL, '.github/workflows/ci.yml'), 'utf8');
+  assert.match(ci, /tags: \['v\*'\]/);
+  const job = ci.slice(ci.indexOf('  release-paket:'), ci.indexOf('\n  e2e:'));
+  assert.match(job, /if: startsWith\(github\.ref, 'refs\/tags\/v'\)/);
+  assert.match(job, /needs: test/);
+  assert.match(job, /node scripts\/release\/paket\.mjs/);
+  assert.match(job, /upload-artifact/);
+  assert.match(job, /"v\$version"/, 'Tag muss zur Version passen');
+  assert.doesNotMatch(job, /\b(ssh|scp|rsync|deploy\.sh|hcloud|docker push)\b/, 'kein Ausrollen aus der CI');
+});
+
 test('smoke.mjs gegen einen echten Server: grün, und rot bei falscher Version', async () => {
   const bauinfo = { version: '0.9.0', gitSha: '2413c4f928bc', bauzeit: null, quelle: 'dist/version.json' };
   const ordner = mkdtempSync(join(tmpdir(), 'pa-smoke-'));
