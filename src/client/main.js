@@ -3072,6 +3072,7 @@ class Game {
       if (eigener.trefferquote !== null) {
         zeilen.push(['Trefferquote', `${Math.round(eigener.trefferquote * 100)} %`]);
       }
+      zeilen.push(['Deine Kills', String(eigener.kills)]);
       zeilen.push(['Deine Züge', String(eigener.zuege)]);
       if (eigener.lieblingswaffe) zeilen.push(['Meistgenutzt', eigener.lieblingswaffe.waffeId]);
     }
@@ -3095,13 +3096,14 @@ class Game {
     // Die Tabelle aller Spieler steht daneben — sie zeigt, wer was beigetragen hat.
     const tabelle = document.getElementById('match-tabelle');
     if (tabelle) {
-      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer'];
+      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer', 'Kills'];
       // Jede EIGENE Figur ist „du" — im Modus der Matcharten sind das mehrere.
       const zeilenAlle = figuren.map(f => [
         `P${f.playerId}${this.eigeneSpielerIds.includes(f.playerId) ? ' (du)' : ''}`,
         String(f.schaden),
         String(f.schuesse),
         f.trefferquote === null ? '—' : `${Math.round(f.trefferquote * 100)} %`,
+        String(f.kills),
       ]);
       const thead = document.createElement('thead');
       const kopfZeile = document.createElement('tr');
