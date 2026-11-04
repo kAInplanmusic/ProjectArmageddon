@@ -455,6 +455,11 @@ $ npx eslint src/shared/protocol.js src/server/gameServer.js tests/event-coverag
   das wäre eine Änderung an der Simulation und würde Replays brechen (im
   Optimierungsbericht als „VERBOTEN ohne Auftrag" geführt).
 - **Die Wassertypen bleiben ungedrosselt** (Auflage des Auftrags).
+  *Nachtrag 2026-11-04 (N-45): überholt.* Seit `docs/sprung-regel.md` §5 sind
+  `damage`, `drowning` und `entity_in_water` als snapshot-redundanter Zustand
+  gedrosselt (`drossel: 'zustand'` in `src/shared/ereigniskatalog.js`; die
+  gedrosselten Arten heute: `landed`, `crate_landed`, `damage`, `drowning`,
+  `entity_in_water`).
 
 ## 9. Was offen bleibt — mit Zahl, ohne Handlung
 

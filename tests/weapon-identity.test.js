@@ -767,6 +767,13 @@ test('Der Sprung ist deterministisch', () => {
  * liegt bei 11 px/Takt. Diese Tests halten beides fest, damit die Annahme nicht
  * später wieder als Tatsache auftaucht. Rechnung und Messreihen:
  * `docs/sprung-regel.md`.
+ *
+ * Nachtrag 2026-11-04 (N-45): Für den BODENsprung gilt die Schwellenrechnung
+ * weiter (zehn Bodensprünge ohne Schaden, Absprung unter der Schwelle); die
+ * Luft-Kette unten prüft nur, dass Luft-Sprünge ANGENOMMEN werden. Bezahlt
+ * werden sie inzwischen beim Aufprall: Jeder Luft-Sprung erhöht das
+ * Aufpralltempo um `luftsprungZuschlag` (`src/shared/config/fallschaden.js`,
+ * `docs/fallschaden-bremse.md`).
  */
 
 test('Zehn Bodensprünge in EINEM Zug gehen durch — und kosten kein Leben', () => {

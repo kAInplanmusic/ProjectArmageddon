@@ -476,6 +476,12 @@ handeln will, sind das die Stellen, die dann mitmüssen:
   `crate_landed`) plus die Regel „gedrosselt ⇒ Anzeige“
   (`tests/event-coverage.test.js:816-825`) — heute stehen die drei ausdrücklich
   auf **ungedrosselt**.
+  *Nachtrag 2026-11-04 (N-45): Der Eingriff ist geschehen* (`docs/sprung-regel.md`
+  §5). Die drei tragen `drossel: 'zustand'` in `src/shared/ereigniskatalog.js`,
+  `GEDROSSELTE_EREIGNISARTEN` wird daraus abgeleitet, und die Regel lautet
+  jetzt „gedrosselt ⇒ Anzeige ODER snapshot-redundanter Zustand“
+  (`tests/event-coverage.test.js`, Test „Der Sendefilter drosselt nur Anzeige
+  oder snapshot-redundanten Zustand“).
 - `tests/event-coverage.test.js:192-218` (`bewusstStumm`) und der Test
   „`damage` kommt ungekuerzt durch“ (`:876-895`, die Prüfung selbst `:887`) —
   beide würden fallen. Anmerkung: Dieser Test begründet die Ausnahme mit
