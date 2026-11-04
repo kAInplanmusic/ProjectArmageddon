@@ -12,7 +12,7 @@ import { ReplayRecorder } from '../../src/engine/replay.js';
  * Die Spezifikation erzeugt fuer JEDEN sichtbaren Bereich des Spiels einen
  * Screenshot (Menue, Kader, Hilfe, Klassen, Sidegrades, Erfolge, Profil,
  * Replay, Lobbys, Spielansicht in allen Gelaendeformen, Kulissenbild,
- * Hochformat, grosse Teams, Zielvorschau, Schuss/Krater, Wasser, Mahlstrom,
+ * grosse Teams, Zielvorschau, Schuss/Krater, Wasser, Mahlstrom,
  * Guenther-Rad, Replay-Wiedergabe, Spielende).
  *
  * Die Bilder landen in `docs/vergleich-alternativspiele-2026-10-19/eigene/`
@@ -317,15 +317,7 @@ test.describe('Spielansicht', () => {
     expect(fehler).toEqual([]);
   });
 
-  test('Hochformat', async ({ page }) => {
-    const fehler = fehlerSammeln(page);
-    await oeffne(page);
-    await starteMatch(page, {
-      seed: 4242, teams: 2, playersPerTeam: 3, preset: 'hills', orientation: 'portrait',
-    });
-    await aufnahme(page, '19-spiel-hochformat');
-    expect(fehler).toEqual([]);
-  });
+  // „Hochformat“ (19-spiel-hochformat) entfällt seit 2026-11-04 („nur quer“); das Bild im Dossier bleibt als Stand vom 2026-10-19.
 
   test('Grosse Teams (8 Teams, 5 Figuren)', async ({ page }) => {
     const fehler = fehlerSammeln(page);

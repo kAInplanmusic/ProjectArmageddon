@@ -37,6 +37,8 @@ import { tonErlaubt } from './klangProfile.js';
 import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
+import { HudEinstellungen } from './hudEinstellungen.js';
+import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
 import { ladeStoffTexturen } from './stoffTexturen.js';
@@ -372,7 +374,7 @@ class Game {
         if (ereignis.key === 'Enter' || ereignis.key === ' ') { ereignis.preventDefault(); ereignis.stopPropagation(); loslassen(); }
       });
     }
-    // Laufen per Touch: gehaltene Knöpfe (Hochformat) — dieselbe Absicht wie A/D.
+    // Laufen per Touch: gehaltene Knöpfe — dieselbe Absicht wie A/D.
     const laufKnoepfe = document.getElementById('touch-laufen');
     const laufStopp = () => this.input?.setzeLaufen(0);
     laufKnoepfe?.addEventListener('pointerdown', ereignis => {
@@ -476,6 +478,9 @@ class Game {
      * beides fest — beim ersten Anlauf fehlte die eine Hälfte, und der Knopf
      * stand im Menü.
      */
+    // Einstellungs-Dropdown (Musik, Effekte, Verlassen, Aufgeben) und Dreh-Hinweis (nur Querformat), 2026-11-04.
+    this.einstellungen = new HudEinstellungen(document);
+    bindeDrehHinweis(document);
     this.abortButton = document.getElementById('hud-abort');
     this.aufgebenButton = document.getElementById('hud-aufgeben');
     this.#zeigeAbbruch(false);
@@ -609,7 +614,9 @@ class Game {
      * ein Eintrag in der Tastaturliste des Menüs.
      */
     this.abortButton?.addEventListener('click', () => this.abortMatch());
-    this.aufgebenButton?.addEventListener('click', () => this.gibAuf());
+    this.aufgebenButton?.addEventListener('click', () => {
+      if (this.gibAuf()) this.einstellungen?.schliesse({ fokus: false });
+    });
   }
 
   /**
@@ -724,6 +731,8 @@ class Game {
   #zeigeAbbruch(sichtbar) {
     if (this.abortButton) this.abortButton.hidden = !sichtbar;
     if (this.aufgebenButton) this.aufgebenButton.hidden = !sichtbar;
+    // Ohne Match kein offenes Einstellungs-Dropdown mit den Match-Knöpfen (z. B. nach bestätigtem Verlassen).
+    if (!sichtbar) this.einstellungen?.schliesse({ fokus: false });
   }
 
   #origin() {
@@ -775,7 +784,7 @@ class Game {
     // Biomwahl (leer = der Seed entscheidet; `klassisch` = Biom folgt der Karte; sonst ein Sonderbiom).
     const biom = document.getElementById('cfg-biom')?.value || null;
     const kartenart = document.getElementById('cfg-kartenart')?.value || null;
-    const orientation = document.getElementById('cfg-orientation')?.value ?? 'landscape';
+    // Keine Ausrichtung mehr: neue Partien sind immer Querformat (Entscheidung 2026-11-04, „nur quer").
     // Tageszeit und Wetter: nur Darstellung, nicht Teil der Match-Konfiguration.
     this.renderer.stimmung = {
       zeit: normalisiereWahl(document.getElementById('cfg-zeit')?.value, ZEITEN),
@@ -792,11 +801,11 @@ class Game {
     if (serverUrl) {
       return this.startOnline({
         serverUrl, lobbyId, teams, playersPerTeam, unitsPerPlayer, preset, kartentyp, seed,
-        backdropKey, orientation, sidegrades, loadouts, fraktionen, biom, kartenart,
+        backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
       });
     }
     return this.startMatch({
-      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, orientation, sidegrades, loadouts, fraktionen, biom, kartenart,
+      teams, playersPerTeam, preset, kartentyp, seed, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
     });
   }
 
@@ -1114,8 +1123,6 @@ class Game {
       // Konfig-Zusammenfassung als kleine Chips.
       const konfig = el('div', 'lk-konfig');
       if (lobby.teams) konfig.append(el('span', 'chip', `${lobby.teams} Teams × ${lobby.playersPerTeam ?? '?'}`));
-      // Querformat ist der Normalfall und bleibt unbeschriftet; nur die Ausnahme bekommt einen Chip.
-      if (lobby.orientation === 'portrait') konfig.append(el('span', 'chip', 'Hochformat'));
 
       // Spielerplätze: ein Feld je Platz (belegt/verbunden/getrennt/frei) plus Zahl.
       const platzZeile = el('div', 'lk-plaetze');
@@ -1292,7 +1299,7 @@ class Game {
 
   startMatch({
     teams = 2, playersPerTeam = 2, preset = 'hills', kartentyp = null,
-    seed = undefined, backdropKey = '', orientation = 'landscape',
+    seed = undefined, backdropKey = '',
     sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
   } = {}) {
     this.#ladeMatchBilder();
@@ -1303,9 +1310,10 @@ class Game {
 
     // Sidegrades gehören in die Match-Konfiguration — sie verändern das
     // Kampfprofil und müssen deshalb schon beim Aufbau bekannt sein, nicht erst
-    // nach dem Start.
+    // nach dem Start. Eine Ausrichtung gibt es nicht mehr: neue Partien sind
+    // immer Querformat (2026-11-04); Hochformat kennt nur noch die Wiedergabe alter Replays.
     this.match = new MatchController({
-      seed, teams, playersPerTeam, preset, kartentyp, orientation, sidegrades, loadouts, biom, kartenart,
+      seed, teams, playersPerTeam, preset, kartentyp, orientation: 'landscape', sidegrades, loadouts, biom, kartenart,
       guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
@@ -1320,8 +1328,8 @@ class Game {
     // Der Seed stammt aus dem Match, damit ein Replay dieselbe Karte zeigt wie
     // das aufgezeichnete Spiel.
     this.gewaehlteKulisse = backdropKey;
-    // Zeichenfläche auf die Kartengröße bringen (Hoch- oder Querformat).
-    this.#applyOrientation(this.match.orientation, this.match.width, this.match.height);
+    // Zeichenfläche auf die Kartengröße bringen.
+    this.#applyKartengroesse(this.match.width, this.match.height);
     // Vorgabe ist die GENERATIVE Kulisse: sie passt sich jeder Kartengröße an,
     // ein Bild nicht. Wer ausdrücklich ein Bild wählt, bekommt das Bild — sonst
     // wäre die Auswahl im Menü wirkungslos.
@@ -1510,7 +1518,7 @@ class Game {
   async startOnline({
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
-    orientation = 'landscape', sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
+    sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
   } = {}) {
     this.#ladeMatchBilder();
     this.gewaehlteKulisse = backdropKey;
@@ -1551,7 +1559,7 @@ class Game {
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
-            teams, preset, kartentyp, seed, orientation, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
+            teams, preset, kartentyp, seed, ...(biom ? { biom } : {}), ...(kartenart ? { kartenart } : {}),
             /*
              * Genau EINE der beiden Angaben — sie widersprechen sich sonst.
              *
@@ -1644,7 +1652,8 @@ class Game {
       // Neue Sitzung beim Server: die Takte zählen von vorn, alte Dedup-Schlüssel gelten nicht mehr.
       if (!payload.resumed) this.ereignisDedup.zuruecksetzen();
       if (payload.seed !== null && payload.seed !== undefined) {
-        this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
+        // Die Ausrichtung kommt vom Server (neue Lobbys: immer Querformat; eine wiederhergestellte alte ggf. Hochformat).
+        this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, kartentyp }));
         // Krater, die vor dem Beitritt entstanden sind (Reconnect/Spätbeitritt).
         this.#wendeKraterAn(payload.craters);
         // Mahlstrom-Einschnitt, der vor dem Beitritt entstanden ist.
@@ -1659,7 +1668,7 @@ class Game {
       // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
       this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null;
       if (payload.seed !== null && payload.seed !== undefined && !this.remoteTerrain) {
-        this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, orientation, kartentyp }));
+        this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, kartentyp }));
       }
       /*
        * Wartet die Lobby noch auf Menschen?
@@ -1849,7 +1858,7 @@ class Game {
      * gemessen 34,23 % abweichende Zellen, 106 px anderer Wasserstand. Der Client
      * hat `kartentyp` im Snapshot bekommen und hier weggeworfen.
      */
-    this.#applyOrientation(orientation, terrain.width, terrain.height);
+    this.#applyKartengroesse(terrain.width, terrain.height);
     // Vorgabe 'automatisch': auch online das gemalte Bild passend zum Kartencharakter (Sonderbiome bleiben generativ).
     if (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter) {
       this.renderer.setScenery(null);
@@ -2878,17 +2887,13 @@ class Game {
   }
 
   /**
-   * Setzt Bühnenklasse und Zeichenfläche auf die Kartenausrichtung.
+   * Bringt Zeichenfläche und Kamera auf die Kartengröße.
    *
-   * Die Bühne bekommt eine Klasse, weil die Seitenverhältnisse in CSS stehen und
-   * nicht in JavaScript — Schrift und Bedienelemente skalieren dort mit.
+   * Die Bühne ist immer 16:9 (nur Querformat seit 2026-11-04); die frühere
+   * Bühnenklasse `portrait`/`landscape` entfällt. Eine alte Hochformat-Karte aus
+   * einem Replay passt die Kamera in die Querformat-Bühne ein.
    */
-  #applyOrientation(orientation, breite, hoehe) {
-    const stage = document.getElementById('stage');
-    if (stage) {
-      stage.classList.toggle('portrait', orientation === 'portrait');
-      stage.classList.toggle('landscape', orientation !== 'portrait');
-    }
+  #applyKartengroesse(breite, hoehe) {
     this.renderer.resize(breite, hoehe);
     this.#setzeKameraGroesse(breite, hoehe);
     this.hudAusweichen?.markiere();
@@ -3467,6 +3472,8 @@ class Game {
     // „Match verlassen" wäre dort irreführend — es läuft kein Match.
     this.#zeigeAbbruch(false);
     this.hud.clearLog();
+    // Kartengröße der Aufzeichnung (alte Hochformat-Replays haben getauschte Maße; vorher blieb die Fläche der Vorpartie).
+    this.#applyKartengroesse(this.match.width, this.match.height);
     /*
      * Die Anzeige braucht Gelände und Wasser des nachgespielten Matches. Ohne
      * `#afterWorldReady` bliebe die Spielfläche leer — die Wiedergabe wäre

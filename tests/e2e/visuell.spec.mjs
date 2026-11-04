@@ -7,7 +7,7 @@ import { vergleicheStruktur, GRENZEN } from './helfer/struktur-vergleich.mjs';
 /**
  * Visuelle Baselines für Menü, Lobby und HUD.
  *
- * Zwei Formate: Desktop 1280x720 und Hochformat 390x844. Animationen sind
+ * Ein Format: Desktop 1280x720 (das Hochformat 390x844 entfiel am 2026-11-04, „nur quer"). Animationen sind
  * abgeschaltet, das HUD wird mit festem Seed und eingefrorener Renderer-Zeit
  * gezeichnet.
  *
@@ -52,7 +52,7 @@ import { vergleicheStruktur, GRENZEN } from './helfer/struktur-vergleich.mjs';
  * die roten Bilder:
  *
  *     PA_BILDER_NEU=1 npx playwright test tests/e2e/visuell.spec.mjs \
- *       -g "Lobby 390x844"
+ *       -g "Lobby 1280x720"
  *
  * Danach zweimal vollständig laufen lassen. Was NICHT in Frage kommt: die Grenzen
  * in `GRENZEN` hochsetzen, damit es grün wird — dann prüft der Vergleich nichts mehr.

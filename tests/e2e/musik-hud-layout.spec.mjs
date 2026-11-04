@@ -1,5 +1,5 @@
 /**
- * E2E: Die Musik-Kachel im HUD-Kopf ist nicht abgeschnitten und überlappt keine
+ * E2E: Die Musik-Kachel (seit 2026-11-04 im Einstellungs-Dropdown des HUD-Kopfs) ist nicht abgeschnitten und überlappt keine
  * Nachbarkachel (1280x720, 1100x700, 800x400, Touch 844x390).
  *
  * Anzeige: nur „♪ <Titel>" (Ellipsis nur beim Titel), der volle Text steht im
@@ -27,11 +27,14 @@ for (const f of FORMATE) {
     await page.locator('#start-button').click();
     await expect(page.locator('#menu-overlay')).toBeHidden();
     await page.waitForTimeout(1500);
+    await page.locator('#hud-menue-knopf').click();
+    await expect(page.locator('#musik-hud')).toBeVisible();
     const r = await page.evaluate(() => {
       const hud = document.getElementById('musik-hud');
       const m = hud.getBoundingClientRect();
       const t = hud.querySelector('.musik-titel');
-      const nachbarn = [...document.querySelectorAll('#hud-top > *')].filter(e => e !== hud)
+      // Seit 2026-11-04 steht die Kachel im Einstellungs-Dropdown: Nachbarn sind die Kopfzeilen-Kacheln und die übrigen Einträge.
+      const nachbarn = [...document.querySelectorAll('#hud-top > *, #hud-menue > *')].filter(e => e !== hud && !e.contains(hud))
         .map(e => ({ id: e.id, r: e.getBoundingClientRect() }));
       const ueberlappt = nachbarn.filter(o => o.r.width > 0
         && !(o.r.right <= m.left + 0.5 || o.r.left >= m.right - 0.5 || o.r.bottom <= m.top || o.r.top >= m.bottom))

@@ -36,6 +36,25 @@ export function isTextEntry(target) {
   return target.isContentEditable === true;
 }
 
+/**
+ * Sollen Spieltasten (Leertaste, Pfeile, Enter, Ziffern …) gerade NICHT die Figur steuern?
+ *
+ * Zwei Fälle neben der Texteingabe (2026-11-04):
+ * - Der Fokus liegt im Einstellungs-Dropdown des HUD oder auf seinem Knopf (`[data-spieltasten-aus]`):
+ *   Leertaste/Enter drücken dort den Knopf, Pfeile wandern durch die Einträge — ein Schuss nebenbei
+ *   wäre ein Fehlgriff.
+ * - Der Dreh-Hinweis deckt das Spiel ab (Telefon hochkant, `body.dreh-hinweis-aktiv`).
+ *
+ * @param {EventTarget|null} target - typischerweise `event.target`
+ * @returns {boolean} true, wenn das Spiel die Taste ignorieren soll
+ */
+export function spielTastenAus(target) {
+  if (isTextEntry(target)) return true;
+  if (typeof target?.closest === 'function' && target.closest('[data-spieltasten-aus]')) return true;
+  const body = globalThis.document?.body;
+  return Boolean(body?.classList?.contains('dreh-hinweis-aktiv'));
+}
+
 /** Die Abfrage, auf die sich `prefersReducedMotion` stützt. */
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 

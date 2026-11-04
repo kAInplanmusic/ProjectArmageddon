@@ -7,7 +7,7 @@
  * Die Rechnung steht in `sichtbereich.js` (rein, ohne Browser, getestet). Hier
  * ist der Teil, der das DOM anfasst: Die Ränder des HUD werden **gemessen**
  * (`getBoundingClientRect`), nicht als Konstanten angenommen — sie ändern sich
- * mit 800x400, Touch-Tasten, Hochformat und der Länge der Listen.
+ * mit 800x400, Touch-Tasten (Telefon quer) und der Länge der Listen.
  *
  * ## Was geschieht (alles nur Darstellung)
  *
@@ -38,12 +38,13 @@ const MESS_INTERVALL = 6;
 
 /** Elemente, die den Rand bilden (Kopfleiste, Bedienleiste). */
 const RAND_SELEKTOREN = [
-  '#hud-top > *', '#hud-right', '#hud-fire', '#hud-dial', '#touch-aktionen',
+  '#hud-top > *', '#hud-right', '#hud-fire', '#hud-dial',
 ];
 
 /** Seitliche Panels, die bei Überdeckung `.hud-weicht` bekommen (lesbar, nicht durchscheinend). */
 /* `touch-laufen`: die Lauf-/Salto-/Passen-Knöpfe (Touch) liegen im Querformat in Bildmitte rechts und decken sonst eine Figur. */
-const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim', 'touch-laufen'];
+/* `touch-aktionen` (seit 2026-11-04, Telefon quer): stehen links über dem Wählrad, also in der Bildmitte statt am unteren Rand — wie die Laufknöpfe ein Panel, kein Rand. */
+const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim', 'touch-laufen', 'touch-aktionen'];
 
 /** Größter Schub nach unten, als Anteil der Fensterhöhe. */
 const SCHUB_MAX_ANTEIL = 0.15;
@@ -148,8 +149,8 @@ export class HudAusweichen {
       if (an) weicht.push(PANEL_IDS[i]);
     });
 
-    // Protokoll (mittig) und Touch-Knöpfe (unten rechts, kein Seitenpanel) rahmen die Kamera nicht ein; sie weichen nur aus.
-    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => PANEL_IDS[i] !== 'hud-log' && PANEL_IDS[i] !== 'touch-laufen'));
+    // Protokoll (mittig) und Touch-Knöpfe (kein Seitenpanel) rahmen die Kamera nicht ein; sie weichen nur aus.
+    const seiten = seitenRaender(schirm, rechtecke.filter((_, i) => !['hud-log', 'touch-laufen', 'touch-aktionen'].includes(PANEL_IDS[i])));
     this.letzte = { bereich, weicht, schub, rand: raender, seiten };
   }
 

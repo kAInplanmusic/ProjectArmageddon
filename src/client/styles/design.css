@@ -795,14 +795,14 @@ select option { background: #14181d; color: var(--ink); }
 #hud-left.hud-weicht .hud-figur-text span, #hud-log.hud-weicht #log-list li { color: var(--ink-strong); }
 #hud-aim.hud-weicht #hud-active { color: #b8ff5c; }
 /* Touch-Lauf-Knöpfe: Steht eine Figur dahinter, werden die Knöpfe heller und lassen sie als Silhouette erkennen; sie bleiben bedienbar. */
-#touch-laufen button { transition: background-color 0.18s ease, border-color 0.18s ease; }
-#touch-laufen.hud-weicht button {
+#touch-laufen button, #touch-aktionen button { transition: background-color 0.18s ease, border-color 0.18s ease; }
+#touch-laufen.hud-weicht button, #touch-aktionen.hud-weicht button {
   background: rgba(38, 45, 53, 0.72);
   border-color: rgba(255, 255, 255, 0.28);
   color: var(--ink-strong);
 }
 @media (prefers-reduced-motion: reduce) {
-  #hud-left, #hud-log, #hud-aim, #touch-laufen button { transition: none; }
+  #hud-left, #hud-log, #hud-aim, #touch-laufen button, #touch-aktionen button { transition: none; }
 }
 
 /* ---- Musik (Schalter, Regler, Titelanzeige) — Menü und HUD ---- */
@@ -871,75 +871,6 @@ select option { background: #14181d; color: var(--ink); }
 }
 @media (max-width: 640px) { #tier-hud { top: 64px; } #tier-hud .tier-hunger { width: 56px; } }
 
-/* ======================================================= Schmale Bühne (Hochformat am Telefon, <= 520 px)
- * Abnahme 2026-10-20: Bei 390 px Breite sprengten die Mindestspalten (2 x 210 px) und die Kopfzeile die Bühne
- * (Status, FEUER und Waffenleiste lagen außerhalb, Zählwerk und Protokoll über Liste und Leiste).
- * Nur Darstellung: Kopfzeile bricht um, die Waffenleiste bekommt eine eigene Zeile, Wählrad und FEUER teilen sich die letzte.
- */
-@media (max-width: 520px) {
-  /*
-   * Zeilen 3 und 4 (Waffenleiste, Wählrad/FEUER) mit Inhaltshöhe: Der HUD liegt nur über der Spielfläche (bei 390x844
-   * rund 219 px hoch). Mit `auto` stauchte der Browser Zeile 3 auf 24 px, die 74 px hohe Waffenleiste ragte nach oben
-   * über den Musikschalter, und ein Tipp darauf traf WAFFEN (Fund 2026-11-04, seit EREIGNIS-1 die Zielanzeige aus
-   * Zeile 2 nahm). So läuft der Rest wie vorher nach unten in den freien Bereich unter der Spielfläche.
-   */
-  #hud { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) max-content max-content; gap: 6px; padding: 6px; }
-  #hud-top { flex-wrap: wrap; justify-content: flex-start; gap: 4px; }
-  #hud-top > .stat { flex: 1 1 auto; min-width: 0; padding: 2px 6px; }
-  #hud-top .stat .value { font-size: 17px; }
-  #hud-top .stat .label, #hud-top .stat > span:first-child { font-size: 9px; letter-spacing: 0.06em; }
-  #hud-connection, #hud-top > .stat:has(#hud-connection) { display: none; }
-  #musik-hud { flex: 0 0 auto; }
-  #musik-hud .musik-lautstaerke { display: none; }
-  #hud-left { grid-column: 1; max-width: 150px; font-size: 11px; }
-  #hud-figur-bild { width: 36px; height: 36px; }
-  #hud-right.panel { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; max-width: 100%; }
-  #weapon-list .weapon-item { width: 48px; height: 48px; }
-  #weapon-list .weapon-item .weapon-icon { width: 34px; height: 34px; }
-  #hud-dial { grid-column: 1; grid-row: 4; width: 72px; height: 72px; }
-  #hud-dial .dial-wert { font-size: 24px; }
-  #hud-fire { grid-column: 2; grid-row: 4; min-width: 0; width: 100%; max-width: 220px; height: 56px; padding: 4px 8px 0; }
-  #hud-fire .fire-text { font-size: 30px; }
-  /*
-   * EREIGNIS-1: Die Zielanzeige (Kraft, Radius, Zug, Kamera) lag hier in Zeile 2 rechts, unmittelbar über der
-   * Waffenleiste — genau dort, wo die Touch-Laufknöpfe (`#touch-laufen`, bottom 196 px) stehen: bei 390x844 deckten
-   * Gehen ▶/Salto/Passen die Kraftanzeige zu. Jetzt steht sie in der letzten Zeile zwischen Winkelregler und FEUER
-   * (wie im Querformat „rechts neben dem Winkelregler"); dort ist Platz, und lange Namen werden gekürzt statt sie zu verbreitern.
-   */
-  #hud-aim.panel { grid-column: 1; grid-row: 4; justify-self: end; align-self: center; margin: 0; font-size: 11px; padding: 2px 6px; max-width: calc(50vw - 96px); min-width: 0; overflow: hidden; }
-  #hud-aim.panel > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #hud-aim.panel #hud-kamera { padding: 1px 4px; gap: 3px; }
-  #hud-log { left: 6px !important; right: 6px !important; bottom: 262px !important; max-height: 40px; font-size: 11px; }
-  /* Mit Touch-Knöpfen steht das Protokoll über beiden Knopfreihen (vorher lag „P1 ist am Zug" unter Links/Rechts). */
-  @media (pointer: coarse) { #hud-log { bottom: 298px !important; max-height: 34px; } }
-  #zugpause { top: 50%; padding: 6px 14px; }
-  #zugpause .zugpause-titel { font-size: 12px; white-space: nowrap; }
-  #zugpause .zugpause-zahl { font-size: 44px; }
-  #touch-aktionen:not([hidden]) { bottom: 196px !important; left: 6px !important; }
-  #hud-aim, #hud-aim.panel { transform: none; }
-  #touch-laufen:not([hidden]) { bottom: 196px !important; right: 6px !important; }
-  /*
-   * Querformat-Karte auf dem Telefon (Fund 2026-11-04): Die Spielfläche ist dann nur rund 220–230 px hoch, und
-   * „196 px über ihrem unteren Rand" liegt in der Kopfzeile — bei 412x915 deckten die Laufknöpfe „Match verlassen"
-   * und „Match aufgeben" zu. Hier stehen beide Knopfgruppen rechts UNTER der Spielfläche (links reicht die
-   * Figurenliste nach unten) und unter der Zeile mit Wählrad und FEUER, die ebenfalls unter die Fläche ragt.
-   */
-  #stage.landscape #touch-laufen:not([hidden]) { bottom: auto !important; top: max(calc(100% + 52px), 276px) !important; }
-  #stage.landscape #touch-aktionen:not([hidden]) { bottom: auto !important; left: auto !important; right: 6px !important; top: max(calc(100% + 106px), 330px) !important; }
-  /* Vier Knöpfe rechts (Gehen ×2, Salto, Passen) und drei links müssen nebeneinander in 390 px passen: Mindestbreite 46 px (Berührfläche ≥ 44), kleine Lücken. */
-  #touch-aktionen button, #touch-laufen button { min-width: 46px !important; font-size: 11px !important; padding: 4px 4px !important; }
-  #touch-aktionen, #touch-laufen { gap: 4px !important; }
-  /* Unter 380 px (z. B. 360x780) reichten 46 px nicht: „◀ Gehen" lag über „Seil ▼". 44 px bleibt die Mindestberührfläche. */
-  @media (max-width: 380px) {
-    #touch-aktionen button, #touch-laufen button { min-width: 44px !important; font-size: 10px !important; padding: 4px 2px !important; letter-spacing: 0; }
-    #touch-aktionen, #touch-laufen { gap: 3px !important; }
-  }
-  #tier-hud { top: 176px; left: auto; right: 6px; transform: none; align-items: flex-end; max-width: calc(100vw - 170px); }
-  #tier-hud .tier-zeile { padding: 2px 8px; font-size: 11px; }
-  #tier-hud .tier-hunger { width: 48px; }
-  #tier-hud .tier-stufe { min-width: 0; }
-}
-
 /* ======================================================= Menü: Schnellstart und „Erweitert" */
 #menu-overlay .field-row.drei { grid-template-columns: 1fr 1fr 1.3fr; }
 #menu-overlay .cfg-erweitert > .field-row { padding-bottom: 6px; }
@@ -948,7 +879,7 @@ select option { background: #14181d; color: var(--ink); }
 #menu-overlay .start-zeile .secondary { font-size: 18px; padding-inline: 18px; }
 #menu-overlay #ueberrasch-status:empty { display: none; }
 #cfg-backdrop-suche { margin-bottom: 4px; }
-/* Schmal und hochkant: Das Menü nutzt das ganze Fenster statt der 16:9-Bühne (sonst bleiben ~200 px Höhe). */
+/* Schmale, fast quadratische Fenster (Desktop; ein Telefon hochkant zeigt stattdessen den Dreh-Hinweis): Das Menü nutzt das ganze Fenster statt der 16:9-Bühne. */
 @media (max-aspect-ratio: 1/1) {
   #menu-overlay { position: fixed; inset: 0; z-index: 50; place-items: start center; overflow-y: auto; }
   #menu-overlay .overlay-card { width: calc(100% - 16px); max-height: none; margin: 8px 0; padding: 14px 12px; }
@@ -959,4 +890,92 @@ select option { background: #14181d; color: var(--ink); }
   #menu-overlay .start-zeile { grid-template-columns: 1fr; }
   #menu-overlay .subtitle { display: none; }
   #menu-overlay .keymap { grid-template-columns: 1fr; }
+}
+
+/* ======================================================= Einstellungen im HUD (Dropdown, 2026-11-04)
+ * „Musikschalter und ähnliche unwichtige Buttons in Dropdown-Einstellungsmenü" (Auftraggeber). Der Knopf steht als
+ * letzte Kachel der Kopfzeile; das Dropdown liegt rechtsbündig darunter über dem Spielfeld (z-index über den
+ * Touch-Knöpfen). Berührflächen ≥ 44 px. `#hud` schaltet pointer-events ab, Knopf und Dropdown holen sie zurück.
+ */
+#hud-einstellungen { position: relative; display: flex; flex: 0 0 auto; pointer-events: auto; }
+#hud-menue-knopf {
+  font: inherit; color: inherit; cursor: pointer; pointer-events: auto; touch-action: manipulation;
+  min-height: 44px; min-width: 44px; border: 1px solid var(--panel-edge); border-radius: 8px;
+}
+#hud-menue-knopf:hover, #hud-menue-knopf[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+#hud-menue-knopf:focus-visible { outline: var(--fokus-breite) solid var(--fokus-farbe); outline-offset: 2px; }
+#hud-menue {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; pointer-events: auto;
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px;
+  width: max-content; min-width: 240px; max-width: min(340px, calc(100vw - 24px));
+  max-height: calc(100vh - 80px); overflow-y: auto; text-align: left;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+#hud-menue #musik-hud { margin: 0; flex-wrap: wrap; align-self: stretch; }
+#hud-menue > button {
+  font: inherit; font-size: 13px; color: inherit; cursor: pointer; touch-action: manipulation;
+  background: var(--panel, rgba(19, 26, 34, 0.96)); border: 1px solid var(--panel-edge); border-radius: 8px;
+  display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%;
+  min-height: 44px; min-width: 0; padding: 4px 12px; text-align: left;
+}
+#hud-menue > button .label { display: inline; }
+#hud-menue > button .value { font-size: 15px; letter-spacing: 0.04em; }
+#hud-menue > button:focus-visible { outline: var(--fokus-breite) solid var(--fokus-farbe); outline-offset: 2px; }
+@media (max-height: 520px) {
+  /* Telefon quer: Kachel so niedrig wie die Nachbarn, Berührfläche bleibt 44 px breit; Dropdown scrollt bei Bedarf. */
+  #hud-menue-knopf { min-height: 32px; padding: 3px 8px; }
+  #hud-menue-knopf .label { display: none; }
+  #hud-menue { top: calc(100% + 4px); max-height: calc(100vh - 56px); padding: 8px; gap: 6px; }
+  #hud-menue > button, #hud-menue .musik-schalter { min-height: 44px; }
+}
+
+/* ======================================================= Dreh-Hinweis (Telefon hochkant, 2026-11-04)
+ * Nur Querformat: Hochkant und schmal (≤ 900 px, Seitenverhältnis ≤ 4:5 — ein quadratisches Desktopfenster bleibt
+ * spielbar) deckt diese Fläche alles ab. Dieselbe Abfrage steht in src/client/drehHinweis.js (setzt `inert`).
+ */
+#dreh-hinweis { display: none; }
+@media (max-aspect-ratio: 4/5) and (max-width: 900px) {
+  #dreh-hinweis {
+    position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(circle at 50% 30%, #16202b 0%, var(--bg, #0b0f14) 70%); color: var(--ink, #e8eef5);
+    text-align: center; touch-action: none;
+  }
+  #dreh-hinweis .dreh-karte { max-width: 320px; }
+  #dreh-hinweis .dreh-symbol { display: block; font-size: 64px; line-height: 1; color: var(--accent, #f4a261); }
+  #dreh-hinweis .dreh-titel { margin: 16px 0 8px; font-family: var(--font-display, inherit); font-size: 26px; letter-spacing: 0.06em; }
+  #dreh-hinweis .dreh-text { margin: 0; font-size: 15px; line-height: 1.4; color: var(--muted, #9fb0c4); }
+}
+
+/* ======================================================= Telefon quer (niedrig + Touch, z. B. 844x390, 915x412)
+ * Seit 2026-11-04 die einzige Telefon-Form („nur quer"). Vorher lagen hier die Aktionsknöpfe über Wählrad und
+ * Waffenleiste, das Protokoll über allen Knöpfen, und die Kraftanzeige war ganz ausgeblendet. Aufteilung jetzt:
+ * unten Wählrad · Waffenleiste · FEUER; darüber links die Aktionsknöpfe (2 Reihen), rechts die Laufknöpfe und
+ * darüber die Kraftanzeige; das Protokoll steht oben unter der Kopfzeile rechts neben der Spielerliste.
+ * Geprüft in tests/e2e/querformat-telefon.spec.mjs (echte Rechtecke, elementFromPoint).
+ */
+@media (max-height: 520px) and (pointer: coarse) {
+  #touch-aktionen:not([hidden]) { left: 6px; bottom: 70px; gap: 4px; }
+  #touch-laufen:not([hidden]) { right: 6px; bottom: 70px; gap: 4px; }
+  #touch-aktionen button, #touch-laufen button { min-width: 56px; padding: 4px 6px; }
+  #hud-left { max-height: calc(100vh - 236px); overflow-y: auto; }
+  #hud-aim.panel {
+    display: flex; position: absolute; right: 6px; bottom: 122px; margin: 0; transform: none;
+    align-items: center; gap: 8px; padding: 2px 8px; font-size: 12px; line-height: 1.2;
+    max-width: calc(100% - 280px); min-width: 0; overflow: hidden; white-space: nowrap;
+  }
+  #hud-aim.panel > * { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #hud-aim.panel #hud-kamera { flex: none; padding: 1px 6px; }
+  #hud-log {
+    top: 48px !important; bottom: auto !important; left: 182px !important; right: 6px !important;
+    max-height: 34px; font-size: 11px;
+  }
+}
+@media (max-height: 520px) and (pointer: coarse) {
+  /* Die schwebende Beschriftung der gewählten Waffe lag hier unter den Aktions- und Laufknöpfen; der Name bleibt für
+     Vorlesehilfen im DOM und steht im Waffenmenü (E / WAFFEN). */
+  #weapon-list .weapon-item.is-active .weapon-name {
+    position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0);
+  }
+  /* Oben über dem Spielfeld: ruhiger, deckender Grund (≥ 72 %), damit zwei Zeilen auf hellem Himmel lesbar bleiben. */
+  #hud-log { max-height: 38px; line-height: 1.3; padding: 3px 8px; background: rgba(13, 15, 18, 0.8); }
 }

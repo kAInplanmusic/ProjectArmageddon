@@ -15,7 +15,6 @@ import { expect } from '@playwright/test';
 
 export const FORMATE = {
   '1280x720': { width: 1280, height: 720 },
-  '390x844': { width: 390, height: 844 },
 };
 
 /** Feste Lobby-Antwort: gleiche IDs, gleiche Belegung, gleicher Text. */

@@ -352,20 +352,21 @@ test('Jede Stimmung ist wählbar, lädt und wird gezeichnet', async ({ page }) =
   }
 });
 
-test('Stimmungsbilder werden in Quer-, Hoch- und Quadratformat unverzerrt gezeichnet', async ({ page }, testInfo) => {
-  const formate = { quer: [1600, 700], hoch: [600, 1000], quadrat: [800, 800] };
+test('Stimmungsbilder werden in Quer- und Quadratformat unverzerrt gezeichnet', async ({ page }, testInfo) => {
+  // Hochformat (600x1000, Karte portrait) entfällt seit 2026-11-04 („nur quer“): neue Partien sind immer quer.
+  const formate = { quer: [1600, 700], quadrat: [800, 800] };
   const bilder = ['maritime/stimmung_hell', 'alpine/stimmung_ragnarok2', 'cosmos/stimmung_dunkel'];
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__PA__));
   for (const [name, [b, h]] of Object.entries(formate)) {
     await page.setViewportSize({ width: b, height: h });
     for (const key of bilder) {
-      await page.evaluate(({ k, o }) => {
+      await page.evaluate(k => {
         const api = window.__PA__;
         api.setAutoLoop(false);
-        api.startMatch({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k, orientation: o });
+        api.startMatch({ seed: 3, teams: 2, playersPerTeam: 1, preset: 'hills', backdropKey: k });
         api.setAutoLoop(false);
-      }, { k: key, o: name === 'hoch' ? 'portrait' : 'landscape' });
+      }, key);
       await page.waitForFunction(
         (k) => window.__PA__.game.renderer.backdropKey === k && window.__PA__.game.renderer.backdropReady,
         key, { timeout: 15000 },
@@ -381,17 +382,7 @@ test('Stimmungsbilder werden in Quer-, Hoch- und Quadratformat unverzerrt gezeic
         return { farben: farben.size, hochkant: r.width < r.height };
       });
       expect(bildInfo.farben, `${name} ${key}`).toBeGreaterThan(60);
-      expect(bildInfo.hochkant, `${name}: Kartenformat`).toBe(name === 'hoch');
-      if (name === 'hoch') {
-        // Hochformat nimmt die Hochkant-Fassung (sobald geladen).
-        await page.waitForFunction(
-          () => window.__PA__.game.renderer.backdropHochBild?.bereit === true, null, { timeout: 15000 });
-        const hoch = await page.evaluate(() => {
-          const b = window.__PA__.game.renderer.backdropHochBild;
-          return { w: b.bild.naturalWidth, h: b.bild.naturalHeight };
-        });
-        expect(hoch.h).toBeGreaterThan(hoch.w);
-      }
+      expect(bildInfo.hochkant, `${name}: Kartenformat`).toBe(false);
       await page.screenshot({ path: testInfo.outputPath(`${name}_${key.replace('/', '_')}.png`) });
     }
   }

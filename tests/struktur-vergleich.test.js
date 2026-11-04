@@ -17,9 +17,17 @@ import {
 } from './e2e/helfer/struktur-vergleich.mjs';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
+/*
+ * Messbilder: die aktuellen Baselines und — seit dem Wegfall des Hochformats (2026-11-04, „nur quer") — die
+ * drei 390x844-Bilder als feste Messdaten unter `daten/struktur-vergleich/`. Sie sind keine Baseline mehr,
+ * bleiben aber die Prüflinge, an denen Empfindlichkeit und Unempfindlichkeit gemessen wurden.
+ */
 const BASIS = path.join(HIER, 'e2e', 'visuell.spec.mjs-snapshots');
-const dateien = fs.readdirSync(BASIS).filter(n => n.endsWith('.png')).sort();
-const lade = name => leseBild(fs.readFileSync(path.join(BASIS, name)));
+const MESSDATEN = path.join(HIER, 'daten', 'struktur-vergleich');
+const ordnerVon = new Map([MESSDATEN, BASIS].flatMap(ordner => fs.readdirSync(ordner)
+  .filter(n => n.endsWith('.png')).map(n => [n, ordner])));
+const dateien = [...ordnerVon.keys()].sort();
+const lade = name => leseBild(fs.readFileSync(path.join(ordnerVon.get(name) ?? BASIS, name)));
 const kopie = bild => ({ ...bild, rgba: Uint8Array.from(bild.rgba) });
 
 /** Verschiebt das Bild um (dx, dy) Pixel; freiwerdende Ränder bekommen die Farbe des Randpixels. */

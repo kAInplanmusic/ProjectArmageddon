@@ -106,6 +106,8 @@ test.describe('Musik', () => {
     await page.evaluate(() => localStorage.removeItem('pa.musik.v1'));
     await page.reload();
     await starteMatch(page);
+    // Seit 2026-11-04 liegt die Musik-Bedienung im Einstellungs-Dropdown der Kopfzeile: erst öffnen.
+    await page.locator('#hud-menue-knopf').click();
     const hud = page.locator('#musik-hud');
     await expect(hud).toBeVisible();
     await expect(hud.locator('[data-musik-schalter]')).toHaveAttribute('aria-pressed', 'true');

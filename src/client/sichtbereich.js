@@ -8,7 +8,7 @@
  * Fenster, das HUD liegt darüber. Die Figur ganz links saß unter Spielerliste
  * und Figurenkarte, Schilder von Figuren auf Gipfeln verschwanden unter der
  * Kopfleiste. Die Ränder des HUD sind aber keine Konstanten — sie hängen von
- * Fenstergröße, Touch (Aktionstasten), Hochformat und der Länge der Listen ab.
+ * Fenstergröße, Touch (Aktionstasten) und der Länge der Listen ab.
  *
  * Darum gibt es hier **reine Rechnung** auf gemessenen Rechtecken (`{x,y,b,h}`
  * in Bildschirmpixeln). Das Messen der DOM-Elemente macht `hudAusweichen.js`.

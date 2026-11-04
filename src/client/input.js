@@ -7,7 +7,7 @@
  *
  * @module input
  */
-import { isTextEntry } from './dom.js';
+import { spielTastenAus } from './dom.js';
 import { BEWEGUNG } from '../shared/config/bewegung.js';
 import { SEIL } from '../shared/config/seil.js';
 
@@ -142,7 +142,8 @@ export class InputController {
       // Nicht die Spielfigur steuern, während der Nutzer in ein Textfeld tippt.
       // Ohne diese Prüfung würde z. B. der Seed "2026" den Winkel verändern,
       // die Leertaste feuern und "r" das Match neu starten.
-      if (isTextEntry(event.target)) return;
+      // Ebenso nicht, solange der Fokus im Einstellungs-Dropdown liegt oder der Dreh-Hinweis das Spiel abdeckt.
+      if (spielTastenAus(event.target)) return;
       this.#keys.add(taste(event.key));
       this.#onKeyDown(event);
     });
@@ -288,7 +289,7 @@ export class InputController {
     this.#syncVertikal();
   }
 
-  /** Touch-Knopf „Laufen" (Hochformat): gleiche Absicht wie A/D. */
+  /** Touch-Knopf „Laufen": gleiche Absicht wie A/D. */
   setzeLaufen(richtung) {
     this.#touchLauf = richtung;
     this.#syncLaufen();

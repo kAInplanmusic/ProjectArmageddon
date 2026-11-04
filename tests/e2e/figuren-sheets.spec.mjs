@@ -9,7 +9,8 @@ import { test, expect } from '@playwright/test';
 
 const FORMATE = [
   { name: 'quer', viewport: { width: 1280, height: 720 } },
-  { name: 'hoch', viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true },
+  // Bis 2026-11-04 Telefon hochkant (390x844); seit „nur quer“ zeigt hochkant nur den Dreh-Hinweis, geprüft wird das Telefon quer.
+  { name: 'telefon-quer', viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true },
 ];
 
 async function oeffne(page) {

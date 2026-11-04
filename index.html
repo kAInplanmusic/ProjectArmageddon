@@ -51,16 +51,10 @@
 
     #stage {
       position: relative;
-      /* Querformat (16:9) als Vorgabe. */
+      /* Immer Querformat (16:9); ein Hochformat gibt es seit 2026-11-04 nicht mehr. */
       width: min(100vw, 177.78vh);
       height: min(56.25vw, 100vh);
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
-    }
-
-    /* Hochformat (9:16): dieselbe Fläche, getauschte Seiten. */
-    #stage.portrait {
-      width: min(100vw, 56.25vh);
-      height: min(177.78vw, 100vh);
     }
 
     #guenther-wheel {
@@ -927,34 +921,55 @@
             <span class="value" id="hud-connection">offline</span>
           </div>
           <!--
-            Abbruch im HUD.
-
-            FUND (belegt, User-Flow-Audit): Bis hier gab es nur die Taste R —
-            sie wirkt global, beendet das Match SOFORT und ohne Rückfrage. Wer
-            sie versehentlich trifft, verliert die Partie; und wer sie sucht,
-            findet sie nur in der Tastaturliste im Menü.
-
-            Der Knopf macht den Weg sichtbar. Er fragt nach: Ein begonnenes
-            Match soll nicht durch einen Fehlgriff enden.
+            Einstellungen im HUD (Entscheidung des Auftraggebers 2026-11-04: „Musikschalter und ähnliche
+            unwichtige Buttons in Dropdown-Einstellungsmenü"). Die Spielinfos (Runde, Wind, Zugzeit,
+            Status, Netz) bleiben in der Kopfzeile sichtbar; Musik, Effekte, Match verlassen und
+            Aufgeben liegen hinter dem Knopf „Menü" (src/client/hudEinstellungen.js). Die Tasten bleiben
+            (M Musik, T Effekte, R verlassen). `data-spieltasten-aus`: Solange der Fokus auf Knopf oder Dropdown
+            liegt, steuern Leertaste und Pfeile nicht die Figur (src/client/dom.js).
           -->
-          <button type="button" id="hud-abort" class="stat panel" hidden title="Match verlassen (R)">
-            <span class="label">Match</span>
-            <span class="value">verlassen</span>
-          </button>
-          <!-- Aufgeben (Zugregeln 2): eigene Figuren zählen als besiegt; fragt nach, R bleibt „Match verlassen“. -->
-          <button type="button" id="hud-aufgeben" class="stat panel" hidden title="Aufgeben (mit Rückfrage)">
-            <span class="label">Match</span>
-            <span class="value">aufgeben</span>
-          </button>
-          <!-- Musik im HUD: Schalter, Regler, Titel (gleiche Bedienung wie im Menü, Taste M). -->
-          <div id="musik-hud" class="stat panel musik-regler" role="group" aria-label="Musik">
-            <button type="button" class="musik-schalter" data-musik-schalter aria-pressed="true" title="Musik an/aus (M)">
-              <span aria-hidden="true">&#9835;</span> <span data-musik-schalter-text>Musik an</span>
+          <div id="hud-einstellungen" data-spieltasten-aus>
+            <button type="button" id="hud-menue-knopf" class="stat panel" aria-expanded="false" aria-controls="hud-menue"
+                    title="Einstellungen: Musik, Effekte, Match verlassen, Aufgeben">
+              <span class="label">Einstellungen</span>
+              <span class="value"><span aria-hidden="true">&#9881;</span> Menü</span>
             </button>
-            <label class="musik-lautstaerke"><span class="musik-lautstaerke-text">Musik-Lautstärke</span>
-              <input class="pa-slider" type="range" data-musik-regler min="0" max="100" step="5" value="35" />
-            </label>
-            <span class="musik-titel" data-musik-titel data-musik-kurz></span>
+            <div id="hud-menue" class="panel" role="group" aria-label="Einstellungen" hidden>
+              <!-- Musik im HUD: Schalter, Regler, Titel (gleiche Bedienung wie im Menü, Taste M). -->
+              <div id="musik-hud" class="stat panel musik-regler" role="group" aria-label="Musik">
+                <button type="button" class="musik-schalter" data-musik-schalter aria-pressed="true" title="Musik an/aus (M)">
+                  <span aria-hidden="true">&#9835;</span> <span data-musik-schalter-text>Musik an</span>
+                </button>
+                <label class="musik-lautstaerke"><span class="musik-lautstaerke-text">Musik-Lautstärke</span>
+                  <input class="pa-slider" type="range" data-musik-regler min="0" max="100" step="5" value="35" />
+                </label>
+                <span class="musik-titel" data-musik-titel data-musik-kurz></span>
+              </div>
+              <!-- Effekte (gleiche Bedienung wie im Menü, Taste T; src/client/soundBedienung.js). -->
+              <button type="button" id="hud-ton" class="musik-schalter" data-ton-schalter aria-pressed="true" title="Effekte an/aus (T)">
+                <span aria-hidden="true">&#128266;</span> <span data-ton-schalter-text>Effekte an</span>
+              </button>
+              <!--
+                Abbruch im HUD.
+
+                FUND (belegt, User-Flow-Audit): Bis hier gab es nur die Taste R —
+                sie wirkt global, beendet das Match SOFORT und ohne Rückfrage. Wer
+                sie versehentlich trifft, verliert die Partie; und wer sie sucht,
+                findet sie nur in der Tastaturliste im Menü.
+
+                Der Knopf macht den Weg sichtbar. Er fragt nach: Ein begonnenes
+                Match soll nicht durch einen Fehlgriff enden.
+              -->
+              <button type="button" id="hud-abort" class="stat panel" hidden title="Match verlassen (R)">
+                <span class="label">Match</span>
+                <span class="value">verlassen</span>
+              </button>
+              <!-- Aufgeben (Zugregeln 2): eigene Figuren zählen als besiegt; fragt nach, R bleibt „Match verlassen“. -->
+              <button type="button" id="hud-aufgeben" class="stat panel" hidden title="Aufgeben (mit Rückfrage)">
+                <span class="label">Match</span>
+                <span class="value">aufgeben</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1199,12 +1214,6 @@
               <select id="cfg-biom">
                 <option value="" selected>Zufall (Seed entscheidet)</option>
                 <option value="klassisch">klassisch (aus der Karte)</option>
-              </select>
-            </label>
-            <label>Ausrichtung
-              <select id="cfg-orientation">
-                <option value="landscape" selected>Querformat</option>
-                <option value="portrait">Hochformat</option>
               </select>
             </label>
             <label>Grafik
@@ -1453,6 +1462,20 @@
           </div>
         </div>
       </section>
+    </div>
+  </div>
+
+  <!--
+    Dreh-Hinweis (Entscheidung 2026-11-04: „nur quer"). Ein Telefon hochkant bekommt kein eigenes
+    Layout mehr, sondern diese Fläche über allem; das Spiel darunter wird nicht bedient (`inert`
+    an #app, gesetzt von src/client/drehHinweis.js). Sichtbarkeit allein per CSS-Medienabfrage
+    (design.css, „Dreh-Hinweis"), damit sie auch vor dem Laden des Skripts stimmt.
+  -->
+  <div id="dreh-hinweis" role="alert" aria-live="assertive">
+    <div class="dreh-karte">
+      <span class="dreh-symbol" aria-hidden="true">&#10227;</span>
+      <p class="dreh-titel">Bitte Gerät drehen</p>
+      <p class="dreh-text">ProjectArmageddon wird nur im Querformat gespielt.</p>
     </div>
   </div>
 

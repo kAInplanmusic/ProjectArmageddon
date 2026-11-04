@@ -42,6 +42,15 @@ async function starteMatch(page) {
   );
 }
 
+/**
+ * Öffnet das Einstellungs-Dropdown der Kopfzeile. Seit 2026-11-04 liegt „Match verlassen" dort
+ * (Entscheidung des Auftraggebers); geprüft wird danach dasselbe wie vorher.
+ */
+async function oeffneEinstellungen(page) {
+  await page.locator('#hud-menue-knopf').click();
+  await expect(page.locator('#hud-menue')).toBeVisible();
+}
+
 test('Der Knopf ist im Match sichtbar und im Menü nicht', async ({ page }) => {
   await page.goto('/');
 
@@ -57,6 +66,7 @@ test('Der Knopf ist im Match sichtbar und im Menü nicht', async ({ page }) => {
     .toBe(false, 'im Menü darf kein „Match verlassen" stehen');
 
   await starteMatch(page);
+  await oeffneEinstellungen(page);
 
   // Im Match: sichtbar UND bedienbar (nicht nur im DOM vorhanden).
   await expect(knopf).toBeVisible({ timeout: 10_000 });
@@ -65,6 +75,7 @@ test('Der Knopf ist im Match sichtbar und im Menü nicht', async ({ page }) => {
 
 test('Ein abgelehnter Abbruch lässt das Match weiterlaufen', async ({ page }) => {
   await starteMatch(page);
+  await oeffneEinstellungen(page);
   const knopf = page.locator('#hud-abort');
   await expect(knopf).toBeVisible();
 
@@ -85,6 +96,7 @@ test('Ein abgelehnter Abbruch lässt das Match weiterlaufen', async ({ page }) =
 
 test('Ein bestätigter Abbruch führt ins Menü', async ({ page }) => {
   await starteMatch(page);
+  await oeffneEinstellungen(page);
   const knopf = page.locator('#hud-abort');
   await expect(knopf).toBeVisible();
 
@@ -109,6 +121,7 @@ test('Die Rückfrage nennt die Folge', async ({ page }) => {
    * dass der Text sagt, was passiert.
    */
   await starteMatch(page);
+  await oeffneEinstellungen(page);
 
   let text = null;
   page.once('dialog', dialog => { text = dialog.message(); dialog.dismiss(); });
