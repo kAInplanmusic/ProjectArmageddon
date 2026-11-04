@@ -3,6 +3,19 @@
 **Stand: 2026-09-27.** Diese Datei hält EINE Entscheidung fest, die Messung, auf
 der sie steht, und die Annahme, die gemessen NICHT trägt.
 
+> **Nachtrag 2026-11-04 (N-45, gegen den Code geprüft):** §2 (Überschrift) und
+> §2.4 („es gibt heute keine Bremse") sind **überholt**. Inzwischen meldet
+> `jump()` jeden Sprung in der Luft an das Figurensystem
+> (`meldeLuftsprung`, `src/engine/match.js:1256`), und
+> `src/engine/systems/characterSystem.js:213` rechnet beim Aufprall
+> `vy + Luftsprünge · luftsprungZuschlag` gegen die Schwelle; der Zuschlag ist
+> 3 px/Takt (`src/shared/config/fallschaden.js`). Die Schuld verfällt bei
+> Bodenberührung. Ein Bodensprung bleibt damit frei (dafür gelten §2.1–§2.3
+> weiter), Luftsprünge kosten Fallschaden — der zweite Teil der Entscheidung
+> („fallschaden beendet") ist gebaut. Messung und Leiter:
+> `docs/fallschaden-bremse.md`. Die Zahlengrenze bleibt entfallen; die
+> Fundstellen in §4 und der Stand in §6 sind nachgezogen.
+
 ## 1. Die Entscheidung
 
 Auftraggeber, wörtlich:
@@ -21,7 +34,7 @@ Sie grenzt nicht die ZAHL der Sprünge ein, sondern ihren ANFANG: Ohne sie wäre
 ein Absprung mitten im Flug ein gültiger „erster" Sprung, der Bodenkontakt hätte
 für die Mechanik keine Bedeutung mehr, und jede Fallhöhe wäre ein Startplatz.
 
-## 2. Die Messung: Der Fallschaden ist KEINE Bremse
+## 2. Die Messung: Der Fallschaden ist KEINE Bremse (Stand 2026-09-27 — überholt, siehe Nachtrag oben)
 
 Die Annahme „Fallschaden beendet" wurde am **lebenden Motor** geprüft, bevor
 etwas gebaut wurde. Sie trägt nicht.
@@ -103,7 +116,9 @@ auf Anweisung des Auftraggebers nicht erfunden.
 ## 3. Was sich für den Spieler ändert
 
 - **Springen ist nicht mehr gezählt.** Nach dem Bodensprung darf beliebig oft
-  nachgesetzt werden; wer in der Luft nachsetzt, bleibt oben.
+  nachgesetzt werden; wer in der Luft nachsetzt, bleibt oben. *(Nachtrag
+  2026-11-04: und zahlt beim Aufprall den Luftsprung-Zuschlag als Fallschaden,
+  siehe Nachtrag oben.)*
 - **Die Anzeige bleibt richtig.** „Sprung" heißt weiterhin *vom Boden
   abgesprungen*, „Doppelsprung" *in der Luft abgesprungen*
   (`n.double`; `src/client/ereignisse.js`, `src/client/main.js`). Die
@@ -125,10 +140,12 @@ auf Anweisung des Auftraggebers nicht erfunden.
 
 ## 4. Änderungen im Einzelnen (Fundstellen)
 
+Zeilenangaben auf den Stand 2026-11-04 nachgezogen (N-45).
+
 | Datei | Was |
 | --- | --- |
-| `src/engine/match.js` | `SPRUENGE_UNBEGRENZT` (`:389`), `jumpsLeft()` → `null` (`:1243`), `jump()`: Grenze `verbraucht >= 2` entfernt, Bodenregel bleibt (`:1329`–`:1352`), `jumped`/Rückgabe mit `jumpsLeft: null` (`:1398`, `:1407`), Reset-Kommentar am Zugbeginn (`:2898`) |
-| `src/shared/protocol.js` | `jumped` aus `GEDROSSELTE_EREIGNISARTEN` entfernt (`:781`) |
+| `src/engine/match.js` | `SPRUENGE_UNBEGRENZT` (`:347`), `jumpsLeft()` → `null` (`:1109`), `jump()`: Grenze `verbraucht >= 2` entfernt, Bodenregel bleibt (`:1208`), `jumped`/Rückgabe mit `jumpsLeft: null` (`:1268`, `:1278`), Reset am Zugbeginn (`:2299`) |
+| `src/shared/protocol.js` | `jumped` aus `GEDROSSELTE_EREIGNISARTEN` entfernt (Begründung `:890`); die Liste wird heute aus dem Katalog abgeleitet (`:917`, `KATALOG_GEDROSSELT` in `src/shared/ereigniskatalog.js`, `jumped` ohne `drossel`) |
 | `src/client/main.js` | Doku von `Main#jump` (Grenze entfallen, `jumpsLeft` = `null`) |
 | `src/client/ereignisse.js` | `jumped`-Zweig: `jumpsLeft` wird NICHT gelesen, `double` trägt die Unterscheidung |
 | `tests/weapon-identity.test.js` | Grenze-Test umgedreht, Zug-Reset-Test neu gefasst, vier Tests für die neue Regel (zehn Sprünge ohne Schaden, Luft-Kette, Fallschaden-Schwelle, Sendefilter) |
@@ -162,21 +179,20 @@ Snapshot. Heute liest ihn niemand. Soll ihn je eine Anzeige zeigen, muss
 `damage` aus der Drossel heraus oder die Zusammenfassung je Urheber führen — der
 Satz steht als Bedingung an der Liste im Code.
 
-## 6. Noch zu ziehende Stellen (NICHT in diesem Auftrag geändert)
+## 6. Nachzuziehende Stellen — Stand 2026-11-04: erledigt (N-45)
 
-Diese Stellen behaupten noch die alte Grenze bzw. die alte Drossel-Einteilung.
-Sie liegen nicht in der Dateihoheit dieses Auftrags und wurden deshalb NICHT
-stillgelegt, sondern hier namentlich genannt:
+Diese Stellen behaupteten am 2026-09-27 noch die alte Grenze bzw. die alte
+Drossel-Einteilung. Jede ist am 2026-11-04 gegen den Code geprüft:
 
-| Fundstelle | Behauptung |
-| --- | --- |
-| `README.md:150-151` | „**Sprung:** Je Zug sind zwei Sprünge möglich — einer vom Boden, einer in der Luft." |
-| `MASTERDOTO.md:2768` | „**Doppelsprung** (zweiter Impuls, einmal je Zug)" |
-| `docs/hunter-e2e-luecke.md:187` | „zwei Sprünge je …" |
-| `docs/auftraege/online-sprung-und-abwurf.md:364`, `:933` | Grenze von zwei Sprüngen (Auftragsdokument, historischer Stand) |
-| `docs/ereigniskanal-filter.md:457` | „**Die Wassertypen bleiben ungedrosselt** (Auflage des Auftrags)" — durch die neue Drossel-Gruppe überholt |
-| `docs/ereignis-info-gehalt.md:476-478` | Regel „gedrosselt ⇒ Anzeige" (seither: „gedrosselt ⇒ Anzeige ODER snapshot-redundant") |
-| `README.md:173` / `MASTERDOTO.md` (Testzahl) | Testzahlen/Dateizahl — `tests/ereignis-kontext.test.js` ist eine NEUE Datei (`npm run check:docs` vergleicht die Dateizahl mit dem README) |
+| Fundstelle (2026-09-27) | Behauptung | Stand 2026-11-04 |
+| --- | --- | --- |
+| `README.md:150-151` | „**Sprung:** Je Zug sind zwei Sprünge möglich — einer vom Boden, einer in der Luft." | bereits nachgezogen: Abschnitt „**Sprung:**" (heute um Zeile 297) nennt die Sprünge unbegrenzt, den ersten nur vom Boden, und den Luftsprung-Zuschlag |
+| `MASTERDOTO.md:2768` | „**Doppelsprung** (zweiter Impuls, einmal je Zug)" | richtiggestellt (Abschnitt „D. Bewegung") |
+| `docs/hunter-e2e-luecke.md:187` | „zwei Sprünge je …" | Datei gelöscht (Commit `0c3a87d`, Wissen in `docs/TODO-SSOT.md` übernommen) — nichts mehr zu ziehen |
+| `docs/auftraege/online-sprung-und-abwurf.md:364`, `:933` | Grenze von zwei Sprüngen (Auftragsdokument, historischer Stand) | Datei gelöscht (Commit `0c3a87d`) — nichts mehr zu ziehen |
+| `docs/ereigniskanal-filter.md:457` | „**Die Wassertypen bleiben ungedrosselt** (Auflage des Auftrags)" | Nachtrag an der Stelle: `damage`, `drowning`, `entity_in_water` tragen `drossel: 'zustand'` |
+| `docs/ereignis-info-gehalt.md:476-478` | Regel „gedrosselt ⇒ Anzeige" | Nachtrag an der Stelle: Regel heute „Anzeige ODER snapshot-redundant" (`tests/event-coverage.test.js`) |
+| `README.md:173` / `MASTERDOTO.md` (Testzahl) | Testzahlen/Dateizahl | laufend nachgezogen, `npm run check:docs` grün |
 
 ## 7. Wie man die Messungen wiederholt
 

@@ -15,6 +15,7 @@
  */
 import { FEUER_ZELLE as ZELLE } from '../shared/config/feuer.js';
 import { STOFF } from '../shared/config/stoffe.js';
+import { leseFeuerStand } from '../shared/feuerStand.js';
 
 export const MAX_TEILCHEN = 280;
 export const BUDGET_JE_BILD = 14;
@@ -154,6 +155,26 @@ export class FeuerOptik {
         this.#teilchen(RAUCH, x, y - 2, (Math.random() - 0.5) * 0.3, -0.5 - Math.random() * 0.3, 70 + Math.random() * 40, 5);
       }
     }
+  }
+
+  /**
+   * Online-Abgleich (EREIGNIS-1): der ganze sichtbare Stand des Servers aus `terrain_hash.feuer`
+   * (`shared/feuerStand.js`). Ist er vollständig, ersetzt er Flammen und ruhende Lava — so verschwinden
+   * Zellen, deren Ereignis gekappt wurde oder nie ankam, und ein später Beitritt sieht das Feuer. Eine
+   * gekappte Liste ergänzt nur. Ungültiges oder Fehlendes ändert nichts.
+   * @param {unknown} nutzlast
+   * @param {object|null} karte - Stoffkarte (Zellenzahl für die Prüfung)
+   * @returns {boolean} true, wenn übernommen
+   */
+  uebernimmMeldung(nutzlast, karte = null) {
+    const gesamt = karte?.spalten && karte?.zeilen ? karte.spalten * karte.zeilen : Infinity;
+    const stand = leseFeuerStand(nutzlast, gesamt);
+    if (!stand) return false;
+    if (stand.voll) { this.flammen.clear(); this.lava.clear(); }
+    for (const idx of stand.brennt) this.flammen.set(idx, 1);
+    for (const idx of stand.lava) this.lava.add(idx);
+    this.idsGeaendert = true;
+    return true;
   }
 
   /** `feuer_lava`: Zellen, in denen Lava jetzt ruht / nicht mehr liegt. */

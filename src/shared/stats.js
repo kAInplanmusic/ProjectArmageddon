@@ -4,7 +4,7 @@
  * ## Woher die Zahlen kommen
  *
  * Nicht aus einer zweiten Buchführung neben dem Spiel, sondern aus den
- * EREIGNISSEN des Matches: `shot`, `damage`, `turn_start`, `match_over`. Damit
+ * EREIGNISSEN des Matches: `shot`, `damage`, `death`, `turn_start`, `match_over`. Damit
  * gibt es die Zahlen nur einmal, und sie können nicht von dem abweichen, was
  * tatsächlich geschehen ist. Wer eine neue Kennzahl braucht, braucht ein
  * Ereignis — nicht eine zusätzliche Zählung.
@@ -17,6 +17,15 @@
  * Treffer (der Schuss hat getroffen, nicht drei). Das ist die ehrliche Definition
  * für „Trefferquote" (treffende Schüsse / alle Schüsse); die Anzahl getroffener
  * Figuren wäre eine andere Zahl und steht nicht hier.
+ *
+ * ## Kills
+ *
+ * `death` trägt nur die gestorbene Figur, keinen Verursacher. Ein Kill gehört
+ * deshalb dem GEGNER, der der Figur zuletzt Schaden zugefügt hat — auch wenn
+ * sie danach ertrinkt oder abstürzt (der Stoß ins Wasser war sein Werk).
+ * Eigenschaden, Teamschaden und Umgebungsschaden ohne Angreifer ändern diese
+ * Zuordnung nicht; eine Figur, die nie von einem Gegner getroffen wurde, stirbt
+ * ohne Kill für irgendwen. Jede Figur zählt höchstens einmal.
  *
  * ## Kein Zufall, keine Zeitmessung von außen
  *
@@ -60,6 +69,10 @@ export class MatchStats {
     this.gewinnerTeamId = null;
     this.endeGrund = null;
     this.entschieden = false;
+    /** Zielfigur → letzter gegnerischer Angreifer (für die Kill-Zuordnung). */
+    this.letzterGegner = new Map();
+    /** Bereits gezählte Tode — ein doppeltes `death` zählt nicht zweimal. */
+    this.gestorben = new Set();
   }
 
   #eintrag(playerId) {
@@ -76,6 +89,8 @@ export class MatchStats {
         letzterSchuss: null,
         zuege: 0,
         rundenUeberlebt: 0,
+        /** Gegnerische Figuren, die dieser Spieler ausgeschaltet hat. */
+        kills: 0,
       });
     }
     return this.spieler.get(playerId);
@@ -167,6 +182,7 @@ export class MatchStats {
         if (teamAngreifer !== undefined && teamAngreifer === teamZiel) return false;
 
         const eintrag = this.#eintrag(angreifer);
+        this.letzterGegner.set(ziel, angreifer);
         const betrag = Number(p.amount) || 0;
         if (betrag > 0) eintrag.schaden += betrag;
         if (Number(p.absorbedByShield) > 0) eintrag.absorbierterSchaden += Number(p.absorbedByShield);
@@ -177,6 +193,16 @@ export class MatchStats {
           letzter.getroffen = true;
           eintrag.treffer += 1;
         }
+        return true;
+      }
+
+      case 'death': {
+        const ziel = p.entityId;
+        if (typeof ziel !== 'number' || this.gestorben.has(ziel)) return false;
+        this.gestorben.add(ziel);
+        const verursacher = this.letzterGegner.get(ziel);
+        if (typeof verursacher !== 'number') return true;
+        this.#eintrag(verursacher).kills += 1;
         return true;
       }
 
@@ -228,6 +254,7 @@ export class MatchStats {
       /** Treffer / Schüsse, 0..1. `null`, wenn nicht geschossen wurde. */
       trefferquote: eintrag.schuesse > 0 ? eintrag.treffer / eintrag.schuesse : null,
       zuege: eintrag.zuege,
+      kills: eintrag.kills,
       /** Häufigste Waffe (Gleichstand: die mit den meisten Schüssen, sonst erste). */
       lieblingswaffe: lieblingswaffe(eintrag.waffen),
       /** Sieg aus Sicht dieses Spielers — `null`, solange nicht entschieden. */
@@ -311,6 +338,7 @@ export class MatchStats {
       absorbierterSchaden: summe('absorbierterSchaden'),
       trefferquote: schuesse > 0 ? treffer / schuesse : null,
       zuege: summe('zuege'),
+      kills: summe('kills'),
       lieblingswaffe: lieblingswaffe(einzelne
         .map(e => e.lieblingswaffe)
         .filter(Boolean)
@@ -376,6 +404,8 @@ export class PlayerProfile {
     this.schaden = felder.schaden ?? 0;
     this.absorbierterSchaden = felder.absorbierterSchaden ?? 0;
     this.zuege = felder.zuege ?? 0;
+    /** Ausgeschaltete gegnerische Figuren, über alle Partien. */
+    this.kills = felder.kills ?? 0;
     /** Spielzeit in Sekunden, summiert über alle Partien. */
     this.spielzeitSekunden = felder.spielzeitSekunden ?? 0;
     /** Waffe → Schüsse, über alle Partien. */
@@ -411,6 +441,7 @@ export class PlayerProfile {
     this.schaden += eigener.schaden;
     this.absorbierterSchaden += eigener.absorbierterSchaden;
     this.zuege += eigener.zuege;
+    this.kills += eigener.kills ?? 0;
     this.spielzeitSekunden += partie.dauerSekunden ?? 0;
 
     if (eigener.sieg === true) {
@@ -506,6 +537,7 @@ export class PlayerProfile {
       schaden: this.schaden,
       absorbierterSchaden: this.absorbierterSchaden,
       zuege: this.zuege,
+      kills: this.kills,
       spielzeitSekunden: Math.round(this.spielzeitSekunden),
       waffen: Object.fromEntries(this.waffen),
       fraktionen: Object.fromEntries(this.fraktionen),
@@ -547,6 +579,7 @@ export function beschreibe(profil) {
     schuesse: String(profil.schuesse),
     trefferquote: prozent(profil.trefferquote),
     schaden: String(profil.schaden),
+    kills: String(profil.kills ?? 0),
     schadenProMinute: `${profil.schadenProMinute} / min`,
     spielzeit: dauer(profil.spielzeitSekunden),
     lieblingswaffe: waffe ? `${waffe.waffeId} (${waffe.anzahl}×)` : '—',

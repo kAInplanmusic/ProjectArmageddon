@@ -894,8 +894,18 @@ select option { background: #14181d; color: var(--ink); }
   #hud-dial .dial-wert { font-size: 24px; }
   #hud-fire { grid-column: 2; grid-row: 4; min-width: 0; width: 100%; max-width: 220px; height: 56px; padding: 4px 8px 0; }
   #hud-fire .fire-text { font-size: 30px; }
-  #hud-aim.panel { grid-column: 2; grid-row: 2; justify-self: end; margin-bottom: 4px; font-size: 12px; padding: 2px 8px; }
+  /*
+   * EREIGNIS-1: Die Zielanzeige (Kraft, Radius, Zug, Kamera) lag hier in Zeile 2 rechts, unmittelbar über der
+   * Waffenleiste — genau dort, wo die Touch-Laufknöpfe (`#touch-laufen`, bottom 196 px) stehen: bei 390x844 deckten
+   * Gehen ▶/Salto/Passen die Kraftanzeige zu. Jetzt steht sie in der letzten Zeile zwischen Winkelregler und FEUER
+   * (wie im Querformat „rechts neben dem Winkelregler"); dort ist Platz, und lange Namen werden gekürzt statt sie zu verbreitern.
+   */
+  #hud-aim.panel { grid-column: 1; grid-row: 4; justify-self: end; align-self: center; margin: 0; font-size: 11px; padding: 2px 6px; max-width: calc(50vw - 96px); min-width: 0; overflow: hidden; }
+  #hud-aim.panel > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #hud-aim.panel #hud-kamera { padding: 1px 4px; gap: 3px; }
   #hud-log { left: 6px !important; right: 6px !important; bottom: 262px !important; max-height: 40px; font-size: 11px; }
+  /* Mit Touch-Knöpfen steht das Protokoll über beiden Knopfreihen (vorher lag „P1 ist am Zug" unter Links/Rechts). */
+  @media (pointer: coarse) { #hud-log { bottom: 298px !important; max-height: 34px; } }
   #zugpause { top: 50%; padding: 6px 14px; }
   #zugpause .zugpause-titel { font-size: 12px; white-space: nowrap; }
   #zugpause .zugpause-zahl { font-size: 44px; }
@@ -905,6 +915,11 @@ select option { background: #14181d; color: var(--ink); }
   /* Vier Knöpfe rechts (Gehen ×2, Salto, Passen) und drei links müssen nebeneinander in 390 px passen: Mindestbreite 46 px (Berührfläche ≥ 44), kleine Lücken. */
   #touch-aktionen button, #touch-laufen button { min-width: 46px !important; font-size: 11px !important; padding: 4px 4px !important; }
   #touch-aktionen, #touch-laufen { gap: 4px !important; }
+  /* Unter 380 px (z. B. 360x780) reichten 46 px nicht: „◀ Gehen" lag über „Seil ▼". 44 px bleibt die Mindestberührfläche. */
+  @media (max-width: 380px) {
+    #touch-aktionen button, #touch-laufen button { min-width: 44px !important; font-size: 10px !important; padding: 4px 2px !important; letter-spacing: 0; }
+    #touch-aktionen, #touch-laufen { gap: 3px !important; }
+  }
   #tier-hud { top: 176px; left: auto; right: 6px; transform: none; align-items: flex-end; max-width: calc(100vw - 170px); }
   #tier-hud .tier-zeile { padding: 2px 8px; font-size: 11px; }
   #tier-hud .tier-hunger { width: 48px; }

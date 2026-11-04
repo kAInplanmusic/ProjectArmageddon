@@ -1653,8 +1653,8 @@ class Game {
     });
     // Terrain-Hash: Abgleich der eigenen Karte mit der des Servers (alle ~2 s).
     this.terrainAbweichungOffen = false;
-    client.on('terrain_hash', meldung => this.#pruefeTerrainHash(meldung));
-    client.on('terrain_state', stand => this.#baueKarteNeu(stand));
+    client.on('terrain_hash', meldung => { this.renderer.feuerOptik?.uebernimmMeldung(meldung.feuer, this.renderer.stoffkarte); this.#pruefeTerrainHash(meldung); }); // Feuer/Lava: EREIGNIS-1
+    client.on('terrain_state', stand => { this.#baueKarteNeu(stand); this.renderer.feuerOptik?.uebernimmMeldung(stand.feuer, this.renderer.stoffkarte); });
     client.on('lobby_state', payload => {
       // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
       this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null;
@@ -3072,6 +3072,7 @@ class Game {
       if (eigener.trefferquote !== null) {
         zeilen.push(['Trefferquote', `${Math.round(eigener.trefferquote * 100)} %`]);
       }
+      zeilen.push(['Deine Kills', String(eigener.kills)]);
       zeilen.push(['Deine Züge', String(eigener.zuege)]);
       if (eigener.lieblingswaffe) zeilen.push(['Meistgenutzt', eigener.lieblingswaffe.waffeId]);
     }
@@ -3095,13 +3096,14 @@ class Game {
     // Die Tabelle aller Spieler steht daneben — sie zeigt, wer was beigetragen hat.
     const tabelle = document.getElementById('match-tabelle');
     if (tabelle) {
-      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer'];
+      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer', 'Kills'];
       // Jede EIGENE Figur ist „du" — im Modus der Matcharten sind das mehrere.
       const zeilenAlle = figuren.map(f => [
         `P${f.playerId}${this.eigeneSpielerIds.includes(f.playerId) ? ' (du)' : ''}`,
         String(f.schaden),
         String(f.schuesse),
         f.trefferquote === null ? '—' : `${Math.round(f.trefferquote * 100)} %`,
+        String(f.kills),
       ]);
       const thead = document.createElement('thead');
       const kopfZeile = document.createElement('tr');

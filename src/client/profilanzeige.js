@@ -54,6 +54,7 @@ export function baueProfilAnzeige(quelle) {
     ['Schüsse', text.schuesse],
     ['Trefferquote', text.trefferquote],
     ['Schaden gesamt', text.schaden],
+    ['Kills', text.kills],
     ['Schaden', text.schadenProMinute],
     ['Spielzeit', text.spielzeit],
     ['Lieblingswaffe', text.lieblingswaffe],

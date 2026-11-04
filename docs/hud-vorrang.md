@@ -1,8 +1,8 @@
 # Vorrang im HUD-Protokoll
 
 **Betrifft:** `src/client/hud.js` (Protokollliste `#log-list`), Tests:
-`tests/hud-vorrang.test.js`.
-**Stand:** 2026-09-27.
+`tests/hud-vorrang.test.js`, `tests/hud-ablehnung-ton.test.js`.
+**Stand:** 2026-09-27; §3 und §7 nachgezogen am 2026-11-04 (N-44).
 
 ---
 
@@ -126,8 +126,11 @@ und ein Umsortieren wäre eine DOM-Verschiebung im Live-Bereich — mit
 
 ## 3 Ablehnungsbegründungen: der Ton `notice`
 
-**Der Befund.** Fünf Stellen im Client protokollieren eine ABLEHNUNG mit dem
-Vorgabeton `neutral` und landen damit im Rauschbudget:
+**Der Befund (Stand 2026-09-27).** Fünf Stellen im Client protokollierten eine
+ABLEHNUNG mit dem Vorgabeton `neutral` und landeten damit im Rauschbudget.
+**Stand 2026-11-04:** Alle fünf setzen `'notice'` (geprüft im Quelltext,
+`src/client/main.js`); der Quelltext-Wächter `tests/hud-ablehnung-ton.test.js`
+hält das fest (siehe §7.1):
 
 | Stelle | Meldung |
 | --- | --- |
@@ -286,13 +289,16 @@ sobald 20 Vorrangmeldungen anstehen (500 Anzeigemeldungen → 40 Zeilen, keine d
 
 ## 7 Offene Punkte (benannt statt verschwiegen)
 
-1. **Die fünf Aufrufstellen in `src/client/main.js` müssen den Ton setzen.**
-   Die Mechanik steht; solange die fünf Stellen `neutral` schreiben, nützt sie
-   dort nichts. Sie liegen NICHT in diesem Auftrag (andere Hand) — die
-   Schnittstelle steht in §3. Danach sollte ein Test (oder ein
-   Quelltext-Wächter) festhalten, dass keine Ablehnungsbegründung mehr mit dem
-   Vorgabeton geschrieben wird; das ist bewusst NICHT hier gebaut, weil ein
-   solcher Wächter in `main.js` greift und rot wäre, bis die Hand dort war.
+1. **Erledigt (2026-11-04, N-44): Die fünf Aufrufstellen in
+   `src/client/main.js` setzen den Ton `notice`.** Der Quelltext-Wächter
+   `tests/hud-ablehnung-ton.test.js` (5 Tests) prüft (a) die fünf Stellen aus
+   §3 namentlich, (b) JEDEN `log(`-Aufruf in `main.js` und
+   `seilSteuerung.js`, dessen Text eine Ablehnung ist (Muster wie „Nur am
+   eigenen Zug", „nicht möglich", „verweigert" oder Begründung aus `errors`),
+   auf einen Ton der Klasse `vorrang`, und (c) sich selbst an einem gekaperten
+   Text (Vorgabeton, `neutral`, fremder und berechneter Ton schlagen an). Das
+   Textmuster ist dort nur Suchhilfe des Tests, keine Regelquelle des Spiels
+   (§3, „Warum keine Texterkennung").
 2. **Per-Takt-Meldungen als Zuflussproblem.** Auf `flooded` melden `damage`,
    `entity_in_water` und `drowning` je Simulationsschritt; sie sind vom
    Sendefilter absichtlich NICHT gedrosselt (Entscheidung über Spielinformation,
@@ -304,7 +310,8 @@ sobald 20 Vorrangmeldungen anstehen (500 Anzeigemeldungen → 40 Zeilen, keine d
    (`#renderRoster`, `#renderWeapons`, `#logItem`, `document.activeElement`).
    Im Browser folgenlos (`Main` übergibt genau dieses Dokument) — außerhalb des
    Browsers machte es das HUD unprüfbar. Jetzt kommt alles aus `#document`.
-4. **`check:docs` ist rot — nicht durch diese Arbeit, aber durch neue
+4. **Erledigt (Zahlen seither laufend nachgezogen, `npm run check:docs` grün).**
+   Damals: **`check:docs` ist rot — nicht durch diese Arbeit, aber durch neue
    Testdateien:** `README.md` nennt 103 Testdateien, im Baum liegen 105 (diese
    Datei brachte eine davon, eine weitere kam parallel von anderer Hand). Die
    Zahl gehört in `README.md` nachgezogen (nicht in diesem Auftrag: `README.md`

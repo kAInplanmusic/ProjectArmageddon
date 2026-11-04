@@ -130,7 +130,9 @@ export const CONTROL = Object.freeze({
    * `{hash, craters, inset, faellt}` — FNV-1a über die Kollisionsmaske (`CollisionMask.hash`),
    * Zahl der Logeinträge (Krater und gelandete Inseln), Mahlstrom-Einschnitt und Zahl der
    * Geländeinseln im Fall (`faellt`; solange sie > 0 ist, fehlen die Inseln in der Server-Maske,
-   * und der Client vergleicht nicht).
+   * und der Client vergleicht nicht). Mit Feuerfassung 2 zusätzlich `feuer: {brennt, lava, voll}` —
+   * brennende Zellen und ruhende Lava als Abstandslisten, je höchstens 512 (`shared/feuerStand.js`,
+   * EREIGNIS-1); so sieht ein später Beitritt das Feuer, und gekappte Zellenereignisse heilen.
    *
    * WARUM EINE STEUERNACHRICHT UND KEIN FELD IM BINÄREN SNAPSHOT: Der Hash ist
    * 4 Byte alle 2 s, nicht je Takt. Ein Feld im Kopf (HEADER_SIZE) kostete alle
