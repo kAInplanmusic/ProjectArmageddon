@@ -131,10 +131,12 @@ test.describe('Waffen-Animation', () => {
     expect(erg.drehung).toBeGreaterThan(0.05);
     await ablegen(page, 'waffen-animation-schuss');
 
-    await page.waitForTimeout(400);
-    const danach = (await waffenZustand(page)).posen[spieler];
-    expect(danach.blitz).toBe(0);
-    expect(danach.vor).toBe(0);
+    // Die Pose läuft auf der Bildzeit; fest 400 ms Wanduhr reichten auf einem ausgelasteten CI-Rechner nicht
+    // (zweimal vor = -0,003/-0,007, die Schussbewegung lief noch). Gewartet wird auf die Ruhe, geprüft exakt 0.
+    await expect.poll(async () => {
+      const p = (await waffenZustand(page)).posen[spieler];
+      return [p.blitz, p.vor];
+    }, { timeout: 3000 }).toEqual([0, 0]);
     expect(fehler).toEqual([]);
   });
 
