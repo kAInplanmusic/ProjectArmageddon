@@ -137,6 +137,8 @@ label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
   padding-bottom: 8px;
 }
 #menu-overlay .menu-weitere { grid-area: weitere; display: grid; gap: 6px; align-content: start; }
+/* Versionskennung im Menü-Fuß (DEP-1, src/client/bauinfo.js): klein, gedämpft, nicht bedienbar. */
+#menu-overlay .menu-bauinfo { margin: 4px 0 0; font-size: 12px; letter-spacing: 0.04em; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* Weitere Bereiche als Menüpunkte (Entwurf: schmale Knöpfe mit Pfeil). */
 #menu-overlay details {
