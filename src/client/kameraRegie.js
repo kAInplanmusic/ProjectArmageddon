@@ -53,6 +53,7 @@ export class KameraRegie {
   #x = 0; #y = 0; #z = 1;
   #vx = 0; #vy = 0; #vz = 0;
   #ziel = null; // letztes Übersichtsziel (Totzone)
+  #pad = null; // größter Figurrand seit Beginn der Übersicht (gegen Aufschaukeln, KAMERA-1)
   #zugwechsel = false;
   #fliegt = false;
   #ursprung = null;
@@ -84,6 +85,7 @@ export class KameraRegie {
     this.#aktivId = undefined;
     this.#bilder = 0;
     this.#ziel = null;
+    this.#pad = null;
     this.#fliegt = false;
     this.#stoss = null;
     this.#uebersteuert = false;
@@ -216,7 +218,15 @@ export class KameraRegie {
         e.karte, e.schirm, e.rand);
       glaettPos = ZEIT.zielen;
     } else if (e.aktiv) {
-      const kand = zielAusschnitt({ ...optionen, aktiv: e.aktiv, gegner: e.gegner, pad: e.pad });
+      // Der Figurrand kommt in Bildschirmpixeln und hängt damit vom Zoom ab: Zoom und
+      // Rand schaukelten sich an einer Rundungsgrenze dauerhaft auf (KAMERA-1). Während
+      // der Übersicht wächst er deshalb nur; neu gemessen wird nach Zugwechsel und Flug.
+      this.#pad = wechsel || !this.#pad ? { ...e.pad } : {
+        halb: Math.max(this.#pad.halb, e.pad?.halb ?? 0),
+        oben: Math.max(this.#pad.oben, e.pad?.oben ?? 0),
+        unten: Math.max(this.#pad.unten, e.pad?.unten ?? 0),
+      };
+      const kand = zielAusschnitt({ ...optionen, aktiv: e.aktiv, gegner: e.gegner, pad: this.#pad });
       const sichtB = e.schirm.b / kand.zoom;
       const alt = this.#ziel;
       const weit = !alt || this.#zugwechsel
@@ -227,6 +237,7 @@ export class KameraRegie {
       ziel = this.#ziel;
       if (this.#zugwechsel) glaettPos = ZEIT.zugwechsel;
     }
+    if (this.#phase !== 'uebersicht') this.#pad = null;
     if (!ziel) return null;
 
     // Erste Bilder und Bewegungsreduktion: harter Schnitt.
@@ -259,6 +270,11 @@ export class KameraRegie {
       aus = { x: sx.wert, y: sy.wert, zoom: Math.exp(sz.wert) };
     }
     aus = begrenzeAnsicht(aus, e.karte, e.schirm, e.rand);
+    // Liegt das Ziel jenseits der Klemmung, erreicht die Fahrt es nie; steht die Kamera
+    // still, ist der Zugwechsel trotzdem vorbei (sonst bliebe die Totzone abgeschaltet).
+    if (this.#zugwechsel && this.#phase === 'uebersicht' && zeit > 0
+      && Math.hypot(aus.x - this.#x, aus.y - this.#y) < 0.02
+      && Math.abs(Math.log(aus.zoom / this.#z)) < 1e-4) this.#zugwechsel = false;
     this.#x = aus.x; this.#y = aus.y; this.#z = aus.zoom;
 
     let stoss = { x: 0, y: 0 };

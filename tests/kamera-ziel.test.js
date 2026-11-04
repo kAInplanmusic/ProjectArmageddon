@@ -175,3 +175,37 @@ test('Regie: Spielereingriff und Modus frei überschreiben die Automatik', () =>
   r.schalteModus();
   assert.equal(r.modus, 'folgt');
 });
+
+/*
+ * KAMERA-1 (2026-11-04): Auf 844x390 (Touch) kam die Kamera nach dem zweiten Schuss nie
+ * zur Ruhe. Der Figurrand `pad` kommt in Bildschirmpixeln, hängt also vom Zoom ab; an einer
+ * Rundungsgrenze wechselte er Bild für Bild, das Übersichtsziel sprang zwischen Zoom 1 und
+ * 1,15, und die Zugwechsel-Fahrt endete nie (Ziel jenseits der Klemmung). Werte aus dem Lauf.
+ */
+test('Regie: wechselnder Figurrand schaukelt die Übersicht nicht auf, Kamera kommt zur Ruhe', () => {
+  const lauf = {
+    karte: { b: 2560, h: 1440 }, schirm: { b: 2560, h: 1440 },
+    rand: { oben: 162.46, unten: 413.54, links: 649.85, rechts: 0 },
+    aktiv: { x: 366, y: 225, winkel: Math.PI / 4 },
+    gegner: [{ x: 859, y: 608 }, { x: 1463, y: 770 }, { x: 2194, y: 244 }],
+  };
+  const klein = { halb: 120, oben: 336, unten: 24 };
+  const gross = { halb: 144, oben: 432, unten: 24 };
+  const za = zielAusschnitt({ ...lauf, pad: klein }).zoom;
+  const zb = zielAusschnitt({ ...lauf, pad: gross }).zoom;
+  assert.ok(Math.abs(Math.log(za / zb)) > 0.08, `Voraussetzung: die Ränder geben verschiedene Ziele (${za}, ${zb})`);
+
+  const r = new KameraRegie();
+  const ein = p => eingabe({ ...lauf, aktivId: 7, pad: p });
+  for (let i = 0; i < 8; i += 1) r.schritt(1 / 20, ein(klein));
+  r.schritt(1 / 20, eingabe({ ...lauf, aktivId: 8, aktiv: { x: 2000, y: 300, winkel: 2 }, pad: klein }));
+  const verlauf = [];
+  for (let i = 0; i < 200; i += 1) {
+    const a = r.schritt(1 / 20, eingabe({ ...lauf, aktivId: 8, pad: i % 7 === 0 ? gross : klein }));
+    verlauf.push(a);
+  }
+  const rest = verlauf.slice(-40);
+  const spanne = f => Math.max(...rest.map(f)) - Math.min(...rest.map(f));
+  assert.ok(spanne(a => a.x) < 0.5, `x steht still (Spanne ${spanne(a => a.x)})`);
+  assert.ok(spanne(a => a.zoom) < 1e-3, `Zoom steht still (Spanne ${spanne(a => a.zoom)})`);
+});
