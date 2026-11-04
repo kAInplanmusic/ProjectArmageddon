@@ -979,3 +979,30 @@ select option { background: #14181d; color: var(--ink); }
   /* Oben über dem Spielfeld: ruhiger, deckender Grund (≥ 72 %), damit zwei Zeilen auf hellem Himmel lesbar bleiben. */
   #hud-log { max-height: 38px; line-height: 1.3; padding: 3px 8px; background: rgba(13, 15, 18, 0.8); }
 }
+
+/* ======================================================= Großes Touch (Tablet quer, Touch-Monitor; Höhe > 520 px)
+ * Ursache des Befunds (2026-11-04): Für grobe Zeiger gab es nur eine Regel (index.html), gebaut für das alte
+ * Telefon-Layout: Aktionsknöpfe links unten auf `bottom: 12px` — genau dort steht seit der unteren Leiste das Wählrad —,
+ * Laufknöpfe rechts auf `bottom: 66px`, also 10 px tief in FEUER (64 px hoch auf `bottom: 12px`). Telefone quer bekamen
+ * eine eigene Aufteilung (oben), große Touch-Geräte fielen auf die alte Regel zurück.
+ * Aufteilung jetzt: unten bleibt Wählrad · Zielanzeige · Waffenleiste · FEUER wie am Desktop. Die Knöpfe stehen in den
+ * unteren Ecken (Daumenreichweite) direkt darüber: links die Aktionen (2 Reihen à 3) über dem Wählrad, rechts die
+ * Bewegung (2 × 2: Gehen ◀ ▶ / Salto, Passen) über FEUER — Laufen und Feuern mit demselben Daumen. Beide Blöcke sind
+ * schmaler als die Seitenspalte (≤ 220 px), das Protokoll (ab 22 % + 22 px vom Rand) bleibt frei.
+ * Berührflächen 56 px hoch. Geprüft in tests/e2e/touch-gross.spec.mjs (1024x768 bis 1920x1080).
+ */
+@media (min-height: 521px) and (pointer: coarse) {
+  #touch-aktionen:not([hidden]) { left: 12px; bottom: 116px; gap: 8px; }
+  #touch-laufen:not([hidden]) {
+    display: grid; grid-template-columns: repeat(2, max-content); width: max-content; pointer-events: none;
+    right: 12px; bottom: 116px; gap: 8px;
+  }
+  #touch-laufen button { pointer-events: auto; }
+  #touch-aktionen button, #touch-laufen button { min-height: 56px; padding: 4px 8px; font-size: 14px; border-radius: 8px; }
+  #touch-aktionen button { min-width: 68px; }
+  #touch-laufen button { min-width: 88px; }
+  /* Die Figurenliste endet über den Aktionsknöpfen (Bühnenhöhe − Kopfzeile − Knopfblock − Leiste). */
+  #hud-left { max-height: calc(min(56.25vw, 100vh) - 330px); }
+  /* Protokoll über der Beschriftung der gewählten Waffe (die schwebt 8 px über der Leiste). */
+  #hud-log { bottom: 128px; }
+}

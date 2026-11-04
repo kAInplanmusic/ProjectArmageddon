@@ -192,9 +192,8 @@
         z-index: 6;
         gap: 8px;
       }
-      /* Platz links unten für die Tasten: Das Protokoll rückt nach rechts. */
-      #hud-log { left: 250px !important; }
-      #hud-aim { transform: translateX(125px); }
+      /* Lage der Knöpfe je Gerät: design.css („Telefon quer" bzw. „Großes Touch"). Das Protokoll muss dafür nicht mehr
+         nach rechts rücken und die Zielanzeige nicht mehr verschoben werden (vorher `left: 250px` / `translateX(125px)`). */
       #touch-aktionen button, #touch-laufen button {
         min-width: 62px;
         min-height: 46px;

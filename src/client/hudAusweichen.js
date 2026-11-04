@@ -43,7 +43,7 @@ const RAND_SELEKTOREN = [
 
 /** Seitliche Panels, die bei Überdeckung `.hud-weicht` bekommen (lesbar, nicht durchscheinend). */
 /* `touch-laufen`: die Lauf-/Salto-/Passen-Knöpfe (Touch) liegen im Querformat in Bildmitte rechts und decken sonst eine Figur. */
-/* `touch-aktionen` (seit 2026-11-04, Telefon quer): stehen links über dem Wählrad, also in der Bildmitte statt am unteren Rand — wie die Laufknöpfe ein Panel, kein Rand. */
+/* `touch-aktionen` (seit 2026-11-04, Telefon quer und großes Touch): stehen links über dem Wählrad, also über dem unteren Rand — wie die Laufknöpfe (rechts über FEUER) ein Panel, kein Rand. */
 const PANEL_IDS = ['hud-left', 'hud-log', 'hud-aim', 'touch-laufen', 'touch-aktionen'];
 
 /** Größter Schub nach unten, als Anteil der Fensterhöhe. */
