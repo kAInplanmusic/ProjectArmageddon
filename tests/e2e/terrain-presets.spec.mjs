@@ -33,7 +33,15 @@ const SEED = 4242;
  * geprüft — dort, wo er hingehört.
  */
 
-test('Mit festem Seed lässt sich über das Menü ein Match starten', { timeout: 180_000 }, async ({ page }) => {
+test('Mit festem Seed lässt sich über das Menü ein Match starten', async ({ page }) => {
+  /*
+   * Acht Seitenaufrufe mit je einem Matchstart. Gedacht waren immer 180 s; die frühere Schreibweise
+   * `test(titel, { timeout }, fn)` liest Playwright aber nicht (TestDetails kennt nur tag und
+   * annotation), wirksam waren deshalb die 60 s der Konfiguration. Schon vorher lag der Lauf mit
+   * 53,5 s knapp darunter; seit LADEZEIT (Texturen laden beim sofortigen Start parallel zum
+   * Matchaufbau, ~1 s mehr je Start) darüber. Gemessen 2026-11-04.
+   */
+  test.setTimeout(180_000);
   /*
    * Der vollständige Spielerpfad. Geprüft wird nicht nur, dass das Match läuft,
    * sondern auch dass alle Figuren auf TROCKENEM Grund stehen.
@@ -297,7 +305,8 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
  * ergibt GLEICHE Karte, VERSCHIEDENE Seeds verschiedene. Der Determinismus ist
  * damit im Browser belegt, nicht nur in Node.
  */
-test('Gleicher Seed ergibt dieselbe Karte, verschiedene Seeds verschiedene (Browser wie Node)', { timeout: 180_000 }, async ({ page }) => {
+test('Gleicher Seed ergibt dieselbe Karte, verschiedene Seeds verschiedene (Browser wie Node)', async ({ page }) => {
+  test.setTimeout(180_000); // wirksam erst so: `test(titel, { timeout }, fn)` liest Playwright nicht
   /*
    * Gegenprobe zur Unit-Messung: Die Erzeugung im Browser muss dieselbe Karte
    * ergeben wie in Node. Wäre das anders, liefe die Anzeige mit einem anderen

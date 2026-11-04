@@ -6,7 +6,8 @@ import { test, expect } from '@playwright/test';
  */
 const BIOME = ['vulkan', 'eiswueste', 'schrott'];
 
-test('Menü bietet alle Sonderbiome; gewählte Biome starten mit Stoffkarte', { timeout: 180_000 }, async ({ page }) => {
+test('Menü bietet alle Sonderbiome; gewählte Biome starten mit Stoffkarte', async ({ page }) => {
+  test.setTimeout(180_000); // wirksam erst so: `test(titel, { timeout }, fn)` liest Playwright nicht
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
   for (const [i, biom] of BIOME.entries()) {
@@ -32,7 +33,8 @@ test('Menü bietet alle Sonderbiome; gewählte Biome starten mit Stoffkarte', { 
   expect(fehler).toEqual([]);
 });
 
-test('Planeten im Menü: Wahl „Planet“ und die sechs Arten starten spielbar, Kulisse zeigt den Kosmos', { timeout: 180_000 }, async ({ page }) => {
+test('Planeten im Menü: Wahl „Planet“ und die sechs Arten starten spielbar, Kulisse zeigt den Kosmos', async ({ page }) => {
+  test.setTimeout(180_000); // wirksam erst so: `test(titel, { timeout }, fn)` liest Playwright nicht
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');

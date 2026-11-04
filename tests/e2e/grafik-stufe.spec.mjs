@@ -4,7 +4,8 @@ import { test, expect } from '@playwright/test';
  * Grafikstufe im Menü: Auswahl Automatisch/Lite/Ultra, Speichern im Browser, Anzeige mit Grund,
  * Wirkung auf die geltenden Grenzen (`window.__PA__.grafik()`).
  */
-test('Grafikstufe: Lite wählen, speichern, nach dem Neuladen wieder da; Anzeige nennt die Stufe', { timeout: 90_000 }, async ({ page }) => {
+test('Grafikstufe: Lite wählen, speichern, nach dem Neuladen wieder da; Anzeige nennt die Stufe', async ({ page }) => {
+  test.setTimeout(90_000); // wirksam erst so: `test(titel, { timeout }, fn)` liest Playwright nicht
   const fehler = [];
   page.on('pageerror', e => fehler.push(String(e)));
   await page.goto('/');
