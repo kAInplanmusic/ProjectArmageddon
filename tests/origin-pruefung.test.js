@@ -26,6 +26,8 @@ test('leseErlaubteOrigins: leer = keine Prüfung, sonst bereinigte Liste', () =>
   assert.equal(leseErlaubteOrigins(''), null);
   assert.equal(leseErlaubteOrigins(' , '), null);
   assert.deepEqual(leseErlaubteOrigins('https://a.example/, http://127.0.0.1:5173'), ['https://a.example', 'http://127.0.0.1:5173']);
+  // Review 2026-11-04: Browser schicken den Origin klein geschrieben.
+  assert.deepEqual(leseErlaubteOrigins('https://Spiel.EXAMPLE'), ['https://spiel.example']);
 });
 
 test('Standard (ohne Liste): CORS spiegelt jeden Origin, WebSocket nimmt jeden an', async () => {

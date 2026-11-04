@@ -1286,7 +1286,7 @@ class Game {
   #ladeMatchBilder() {
     if (this.#matchBilderAngestossen) return;
     this.#matchBilderAngestossen = true;
-    void ladeStoffTexturen(STOFF_TEXTUR_URLEN);
+    void ladeStoffTexturen(STOFF_TEXTUR_URLEN).then(() => this.renderer.faerbeNachTexturen()); // ggf. nachfärben
     this.renderer.sheets.vorladen();
   }
 

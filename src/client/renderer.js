@@ -57,7 +57,7 @@ import {
 } from './waffenAnimation.js';
 import { WEAPONS_BY_ID } from '../shared/config/weapons.js'; import { getWaffe } from '../shared/config/waffen-fassung.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
-import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js';
+import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js'; import { anzahlStoffTexturen } from './stoffTexturen.js';
 import {
   plazierePflanzen, zeichnePflanzenSchicht, zeichnePflanzenAusschnitt, entfernePflanzenImKrater, entfernePflanzenAufRutsch, entfernePflanzenAmRand, pflanzenStreifen, pflanzenRahmen, pflanzenWiegen,
 } from './pflanzen.js';
@@ -704,7 +704,30 @@ export class Renderer {
     this.#baePflanzen(bitmap, width, height);
     /** Bitmap und Maße für Messwerkzeuge, die den Aufbau erneut messen. */
     this.terrainSource = { bitmap, width, height };
+    this.#texturStand = anzahlStoffTexturen();
     return layer;
+  }
+
+  /** Zahl der Stofftexturen beim letzten Geländeaufbau. */
+  #texturStand = 0;
+
+  /**
+   * LADEZEIT-Nachtrag (Review 2026-11-04): Die Texturen laden erst nach dem Menü. Startet ein Match
+   * vorher (Deep-Link, Replay, schneller Klick), wurde das Gelände ohne sie gefärbt. Sind seitdem
+   * welche dazugekommen, wird die Ebene einmal aus der aktuellen Maske neu gebaut — Krater sind in
+   * der Maske, Narben und Pflanzen liegen auf eigenen Ebenen und bleiben. Reine Darstellung.
+   * @returns {boolean} ob neu gefärbt wurde
+   */
+  faerbeNachTexturen() {
+    const q = this.terrainSource;
+    if (!q || !this.terrainLayer || anzahlStoffTexturen() <= this.#texturStand) return false;
+    const layer = document.createElement('canvas');
+    layer.width = q.width;
+    layer.height = q.height;
+    baueGelaendeEbene(layer, q.bitmap, q.width, q.height, this.palette, this.scenery?.seed ?? 0, this.stoffkarte ?? null);
+    this.terrainLayer = layer;
+    this.#texturStand = anzahlStoffTexturen();
+    return true;
   }
 
   /** Setzt Pflanzen auf das Gelände und zeichnet ihre Ebene (hinter dem Gelände, gecacht). */

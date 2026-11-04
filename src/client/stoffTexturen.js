@@ -65,6 +65,9 @@ export function registriereStoffTextur(name, rgba) {
   return true;
 }
 
+/** Zahl der geladenen Texturen (Renderer: Gelände nachfärben, wenn beim Aufbau welche fehlten). */
+export function anzahlStoffTexturen() { return geladen.size; }
+
 /** Verwirft alle Texturen (Tests). */
 export function leereStoffTexturen() { geladen.clear(); }
 

@@ -1367,7 +1367,8 @@ export class GameServer {
      * (Origin = `Host` der Anfrage) bekommen CORS-Freigabe und WebSocket; Anfragen OHNE Origin (Werkzeuge,
      * Server-zu-Server) bleiben erlaubt, denn ein Browser schickt ihn immer mit.
      */
-    this.erlaubteOrigins = erlaubteOrigins ? new Set(erlaubteOrigins) : null;
+    // Origins vergleicht der Browser klein geschrieben; Einträge wie `https://Spiel.example` passen sonst nie.
+    this.erlaubteOrigins = erlaubteOrigins ? new Set(erlaubteOrigins.map(o => String(o).toLowerCase())) : null;
     /** Zugpause neuer Sitzungen in Takten (`null` = Vorgabe aus Regel/Umgebung; Tests setzen sie gezielt). */
     this.zugPauseTicks = zugPauseTicks;
     this.maxLobbies = maxLobbies;
@@ -1871,7 +1872,7 @@ export class GameServer {
     if (!this.erlaubteOrigins) return true;
     const origin = request.headers.origin;
     if (!origin) return true;
-    if (this.erlaubteOrigins.has(origin)) return true;
+    if (this.erlaubteOrigins.has(String(origin).toLowerCase())) return true;
     // Gleicher Origin: Der Server liefert das Spiel selbst aus (Produktion single-origin).
     try { return new URL(origin).host === request.headers.host; } catch { return false; }
   }
@@ -2786,7 +2787,7 @@ function createDistHandler(distDir = 'dist') {
  * @returns {string[]|null}
  */
 export function leseErlaubteOrigins(roh) {
-  const liste = String(roh ?? '').split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean);
+  const liste = String(roh ?? '').split(',').map(s => s.trim().replace(/\/+$/, '').toLowerCase()).filter(Boolean);
   return liste.length ? liste : null;
 }
 
