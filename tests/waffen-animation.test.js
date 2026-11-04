@@ -677,3 +677,22 @@ test('Geschossgruppen: Streu, Lenk, Teleport und Abpraller sind aus dem Katalog 
   assert.equal(geschossGruppe({ delivery: 'hitscan', bounces: 3 }), null);
   assert.equal(geschossGruppe({ delivery: 'projectile' }), null);
 });
+
+test('EREIGNIS-1: liegenbleibende Zünderwaffen (Rolling-Waffen) tragen die Marke Zünder, jede Zünderwaffe eine Marke', async () => {
+  const { WEAPONS } = await import('../src/shared/config/weapons.js');
+  const { zeichneGruppenmarke } = await import('../src/client/waffenAnimation.js');
+  const zuender = WEAPONS.filter(w => w.delivery !== 'hitscan' && (w.fuseTime ?? 0) > 0);
+  assert.ok(zuender.length > 0);
+  for (const w of zuender) assert.ok(geschossGruppe(w), `${w.id} ${w.displayName} ohne Flugmarke`);
+  const liegend = WEAPONS.filter(w => geschossGruppe(w) === 'zuender').map(w => w.id);
+  assert.ok(liegend.includes('pa_053'), 'Roboterbombe');
+  for (const id of liegend) assert.equal(WEAPONS.find(w => w.id === id).bounces ?? 0, 0, `${id} prallt nicht ab`);
+  // Abpraller mit Zünder bleiben Abpraller (ihre Marke zeigt das Abprallen).
+  assert.equal(geschossGruppe({ delivery: 'projectile', bounces: 2, fuseTime: 3 }), 'abpraller');
+
+  const striche = [];
+  const ctx = new Proxy({}, { get: (_, k) => (k === 'stroke' ? () => striche.push(1) : () => {}), set: () => true });
+  zeichneGruppenmarke(ctx, 'zuender', 10, 10, 0.25, false);
+  zeichneGruppenmarke(ctx, 'zuender', 10, 10, 0.25, true);
+  assert.equal(striche.length, 2, 'Uhr wird gezeichnet, auch bei reduzierter Bewegung');
+});

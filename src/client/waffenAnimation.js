@@ -522,12 +522,19 @@ const SPIN_STANDARD = 9;
 /** Granaten und Bomben (Zünder oder Abpraller) trudeln; Geschützgranaten fliegen gerade. */
 const SPIN_GRANATE = 8;
 
-/** Waffengruppen mit eigener Flugmarke (Fassung 5): zerfallend, lenkend, teleportierend, abprallend. */
+/**
+ * Waffengruppen mit eigener Flugmarke (Fassung 5): zerfallend, lenkend, teleportierend, abprallend — und seit
+ * EREIGNIS-1 die liegenbleibenden Zünderwaffen („Rolling-Waffen": Roboterbombe, Kaktusbombe, Pömpel, Impulsbombe,
+ * Molotowcocktail, Giftwolke, Tentakelgift). Sie prallen nicht ab, sondern bleiben am Aufprall liegen und zünden
+ * nach Ablauf (`projectileSystem`, `fuse_armed`/`fuse_expired`); ohne Marke sahen sie im Flug aus wie ein
+ * gewöhnliches Geschoss, das beim Aufprall wirkt. Reine Anzeige: Motor, Hash und Replays bleiben unberührt.
+ */
 export const GESCHOSS_GRUPPEN = Object.freeze({
   cluster: Object.freeze({ farbe: '#fbbf24', name: 'Streu' }),
   lenk: Object.freeze({ farbe: '#f472b6', name: 'Lenk' }),
   teleport: Object.freeze({ farbe: '#a78bfa', name: 'Teleport' }),
   abpraller: Object.freeze({ farbe: '#34d399', name: 'Abpraller' }),
+  zuender: Object.freeze({ farbe: '#fb923c', name: 'Zünder' }),
 });
 
 /** Gruppe eines Geschosses aus den Katalogwerten (keine zweite Tabelle); `null` für gewöhnliche. */
@@ -537,10 +544,11 @@ export function geschossGruppe(waffe) {
   if ((waffe.homing ?? 0) > 0) return 'lenk';
   if (/teleport|portal/.test(waffe.special ?? '')) return 'teleport';
   if ((waffe.bounces ?? 0) > 0) return 'abpraller';
+  if ((waffe.fuseTime ?? 0) > 0) return 'zuender';
   return null;
 }
 
-/** Kleine Marke neben dem Geschoss: Punkte (Streu), Fadenkreuz (Lenk), Raute (Teleport), Bogen (Abpraller). */
+/** Kleine Marke neben dem Geschoss: Punkte (Streu), Fadenkreuz (Lenk), Raute (Teleport), Bogen (Abpraller), Uhr (Zünder). */
 export function zeichneGruppenmarke(ctx, gruppe, x, y, alter, reduziert = false) {
   const g = GESCHOSS_GRUPPEN[gruppe];
   if (!g) return;
@@ -561,6 +569,13 @@ export function zeichneGruppenmarke(ctx, gruppe, x, y, alter, reduziert = false)
     ctx.stroke();
   } else if (gruppe === 'teleport') {
     ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath();
+    ctx.stroke();
+  } else if (gruppe === 'zuender') {
+    // Stoppuhr: Ring, Krone oben, ein Zeiger, der läuft (bei reduzierter Bewegung steht er).
+    const zeiger = reduziert ? -Math.PI / 2 : -Math.PI / 2 + alter * Math.PI * 2;
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.moveTo(x - 3, y - r - 3); ctx.lineTo(x + 3, y - r - 3);
+    ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(zeiger) * (r - 3), y + Math.sin(zeiger) * (r - 3));
     ctx.stroke();
   } else {
     ctx.arc(x, y + r * 0.4, r, Math.PI * 1.15, Math.PI * 1.85);
