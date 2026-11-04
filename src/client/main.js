@@ -1653,8 +1653,8 @@ class Game {
     });
     // Terrain-Hash: Abgleich der eigenen Karte mit der des Servers (alle ~2 s).
     this.terrainAbweichungOffen = false;
-    client.on('terrain_hash', meldung => this.#pruefeTerrainHash(meldung));
-    client.on('terrain_state', stand => this.#baueKarteNeu(stand));
+    client.on('terrain_hash', meldung => { this.renderer.feuerOptik?.uebernimmMeldung(meldung.feuer, this.renderer.stoffkarte); this.#pruefeTerrainHash(meldung); }); // Feuer/Lava: EREIGNIS-1
+    client.on('terrain_state', stand => { this.#baueKarteNeu(stand); this.renderer.feuerOptik?.uebernimmMeldung(stand.feuer, this.renderer.stoffkarte); });
     client.on('lobby_state', payload => {
       // Minen: Der Beitrittszustand trägt die aktuelle Liste (auch beim Wiedereinstieg); danach folgen Ereignisse.
       this.remoteMinen = new Map((payload.snapshot?.bodenobjekte ?? []).map(m => [m.id, { ...m }])); this.remoteSeil = null;

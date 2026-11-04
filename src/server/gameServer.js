@@ -35,6 +35,7 @@ import { validateCommand, INPUT_LIMITS, pruefeSeilEingabe } from '../shared/vali
 import { SIMULATION_HZ, TICK_MS } from '../shared/config/network.js';
 import { MATCH_RULES } from '../shared/config/match.js';
 import { stoffHash } from '../shared/stoffkarte.js';
+import { feuerStandNutzlast } from '../shared/feuerStand.js';
 
 /** Zugpause vor jedem Zug (siehe `MATCH_RULES.turnPauseSeconds`). */
 // `PA_ZUGPAUSE_SEKUNDEN` überschreibt die Vorgabe (Tests und Lasttests spielen ohne Pause).
@@ -1306,6 +1307,8 @@ class LobbySession {
       // Inseln im Fall stehen nicht in der Maske: Der Client darf dann nicht vergleichen.
       faellt: this.match.setzung?.faellt ?? 0,
       ...(this.match.stoffkarte ? { stoffe: stoffHash(this.match.stoffkarte) } : {}),
+      // Brennende Zellen und ruhende Lava (EREIGNIS-1): Ereignislisten sind gekappt, ein später Beitritt sah sie nie.
+      ...(this.match.feuerSystem ? { feuer: feuerStandNutzlast(this.match.feuerSystem.sichtStand()) } : {}),
     };
     if (mitKratern) stand.craters = terrain.craterLog;
     return stand;

@@ -22,6 +22,9 @@
  * Es gehen nur Änderungen als kurze Zellenlisten (`feuer_schritt`, `feuer_lava`, `lava_erstarrt`) und
  * einzelne Marken (`lava_ausbruch`, `flammenwand`, `ragnarok_riss`) hinaus; der Client baut Flammen, Rauch,
  * Funken und Lavaglühen aus diesen Ereignissen und der Stoffkarte (`client/feuerOptik.js`).
+ * Weil Ereignislisten gekappt werden (`maxZellenJeEreignis`) und ein später Beitritt sie nie sah, geht
+ * zusätzlich alle ~2 s der ganze sichtbare Stand mit (`sichtStand`, Feld `feuer` der Meldung
+ * `terrain_hash`, `shared/feuerStand.js`); der Client ersetzt damit seine Flammen- und Lavazellen.
  *
  * @module FeuerSystem
  */
@@ -104,6 +107,17 @@ export class FeuerSystem {
   /** Stand für Werkzeuge und Tests. */
   zustand() {
     return { brennt: [...this.#brennt.keys()], lava: [...this.#lava.keys()], nass: this.#nass.size };
+  }
+
+  /**
+   * Sichtbarer Stand für den Online-Abgleich (EREIGNIS-1): brennende Zellen und RUHENDE Lava (`ruhe >= 2`,
+   * genau die Zellen, die `feuer_lava.an` meldet), je aufsteigend sortiert. Liest nur: kein Zufall, keine
+   * Änderung, der Zustands-Hash bleibt gleich.
+   */
+  sichtStand() {
+    const lava = [];
+    for (const [idx, z] of this.#lava) if (z.ruhe >= 2) lava.push(idx);
+    return { brennt: [...this.#brennt.keys()].sort((a, b) => a - b), lava: lava.sort((a, b) => a - b) };
   }
 
   /* ----------------------------------------------------------- Zellen */
