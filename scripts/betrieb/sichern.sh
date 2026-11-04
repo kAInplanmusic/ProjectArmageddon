@@ -108,6 +108,11 @@ fi
 sync -- "$tmp" 2>/dev/null || sync
 mv -f -- "$tmp" "$ziel"
 ( cd "$PA_SICHERUNG_DIR" && sha256sum -- "$name" > "$tmp.sha" && mv -f -- "$tmp.sha" "$name.sha256" )
+# Als root aufgerufen (deploy.sh unter sudo): Ablage und Dateien gehören wie der Zustand dem
+# Dienstbenutzer — sonst kann ein späterer Lauf als `pa` (Timer) sie nicht aufräumen.
+if [ "$(id -u)" = "0" ]; then
+  chown --reference="$(dirname "$PA_STATE_PATH")" -- "$PA_SICHERUNG_DIR" "$ziel" "$ziel.sha256" 2>/dev/null || true
+fi
 protokoll "gesichert: $ziel ($(wc -c < "$ziel") Byte, Grund: $GRUND)"
 
 # Aufbewahrung: Namen sind Zeitstempel, also sortiert die Namensreihenfolge nach Alter.

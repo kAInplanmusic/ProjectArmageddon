@@ -3,6 +3,7 @@
  * Smoke-Test nach einem Deploy (REL-1): Lebt der Server, und ist es der richtige Build?
  *
  *     node scripts/release/smoke.mjs --url http://127.0.0.1:3000 --version 0.9.0 [--gitsha 2413c4f] [--ohne-lobby] [--frist 60]
+ *     node scripts/release/smoke.mjs --url https://<DOMAIN> --aussen --version 0.9.0   # von außen, hinter Caddy
  *
  * Prüft in dieser Reihenfolge (Abbruch beim ersten Fehler):
  *   1. `/healthz` antwortet `status: ok` und `healthy: true` — wartet dafür bis `--frist` Sekunden
@@ -68,21 +69,26 @@ export async function fuehreSmokeAus(opt) {
   };
   const ende = () => ({ ok: pruefungen.every(p => p.ok), pruefungen });
 
-  // 1. Gesundheit (mit Wartezeit)
+  // 1. Gesundheit (mit Wartezeit). Von außen (`--aussen`) ist /healthz am Proxy gesperrt;
+  //    dann zählt /version.json — derselbe Build-Stand, den der Server aus dist/ liest.
+  const pfad = opt.aussen ? '/version.json' : '/healthz';
+  const gesund = j => (opt.aussen ? typeof j?.version === 'string' : j?.status === 'ok' && j?.healthy === true);
   const bis = Date.now() + (opt.frist ?? 60) * 1000;
   let health = null;
   let letzter = '';
   while (Date.now() < bis) {
     try {
-      const r = await holeJson(`${basis}/healthz`);
-      if (r.status === 200 && r.json?.status === 'ok' && r.json?.healthy === true) { health = r.json; break; }
+      const r = await holeJson(`${basis}${pfad}`);
+      if (r.status === 200 && gesund(r.json)) { health = r.json; break; }
       letzter = `HTTP ${r.status} ${r.text.slice(0, 120)}`;
     } catch (fehler) {
       letzter = fehler.message;
     }
     await warte(500);
   }
-  if (!pruefe('healthz', Boolean(health), health ? `ok, ${health.lobbies} Lobbys, Laufzeit ${health.uptimeMs} ms` : letzter)) return ende();
+  if (opt.aussen && health) health = { ...health, build: { gitSha: health.gitSha } };
+  const beleg = health ? (opt.aussen ? `ok, ${pfad}` : `ok, ${health.lobbies} Lobbys, Laufzeit ${health.uptimeMs} ms`) : letzter;
+  if (!pruefe(opt.aussen ? 'version_json' : 'healthz', Boolean(health), beleg)) return ende();
 
   // 2. Version
   if (opt.version) {
@@ -90,7 +96,9 @@ export async function fuehreSmokeAus(opt) {
   }
   if (opt.gitSha) {
     const gemeldet = String(health.build?.gitSha ?? '');
-    if (!pruefe('gitSha', gemeldet.startsWith(opt.gitSha) || opt.gitSha.startsWith(gemeldet) && gemeldet.length >= 7,
+    // Kürzel gegen Langform in beide Richtungen; ein leerer oder zu kurzer Stand passt nie.
+    const passt = gemeldet.length >= 7 && (gemeldet.startsWith(opt.gitSha) || opt.gitSha.startsWith(gemeldet));
+    if (!pruefe('gitSha', passt,
       `erwartet ${opt.gitSha}, gemeldet ${gemeldet}`)) return ende();
   }
 
@@ -139,6 +147,7 @@ function argumente(argv) {
     else if (a === '--gitsha') opt.gitSha = argv[++i];
     else if (a === '--frist') opt.frist = Number(argv[++i]);
     else if (a === '--ohne-lobby') opt.ohneLobby = true;
+    else if (a === '--aussen') opt.aussen = true;
     else throw new Error(`Unbekannte Option: ${a}`);
   }
   return opt;

@@ -15,6 +15,16 @@
 #  `tests/release-skripte.test.js` den Ablauf ohne systemd und ohne Netz.
 # =============================================================================
 
+# Betriebsparameter des Dienstes (PORT, PA_STATE_PATH, PA_SYSTEMD_UNIT, PA_SICHERUNG_*), damit
+# deploy.sh/rollback.sh unter sudo dieselben Werte sehen wie die systemd-Einheit.
+PA_BETRIEB_ENV="${PA_BETRIEB_ENV:-/etc/projectarmageddon/betrieb.env}"
+if [ -r "$PA_BETRIEB_ENV" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$PA_BETRIEB_ENV"
+  set +a
+fi
+
 PA_BASIS="${PA_BASIS:-/opt/projectarmageddon}"
 PA_SYSTEMD_UNIT="${PA_SYSTEMD_UNIT:-projectarmageddon.service}"
 PA_SMOKE_URL="${PA_SMOKE_URL:-http://127.0.0.1:${PORT:-3000}}"

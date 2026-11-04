@@ -146,10 +146,10 @@ test('smoke.mjs gegen einen echten Server: grün, und rot bei falscher Version',
   const ordner = mkdtempSync(join(tmpdir(), 'pa-smoke-'));
   const dist = falschesDist(ordner);
   const serveStatic = (request, response, url) => {
-    if (url.pathname !== '/') return false;
-    const body = readFileSync(join(dist, 'index.html'));
-    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-    response.end(body);
+    const datei = { '/': ['index.html', 'text/html; charset=utf-8'], '/version.json': ['version.json', 'application/json'] }[url.pathname];
+    if (!datei) return false;
+    response.writeHead(200, { 'content-type': datei[1] });
+    response.end(readFileSync(join(dist, datei[0])));
     return true;
   };
   const server = new GameServer({ bauinfo, serveStatic });
@@ -167,6 +167,11 @@ test('smoke.mjs gegen einen echten Server: grün, und rot bei falscher Version',
     const ohneLobby = await fuehreSmokeAus({ url: info.url, frist: 5, ohneLobby: true, log: leise });
     assert.equal(ohneLobby.ok, true);
     assert.ok(!ohneLobby.pruefungen.some(p => p.name.startsWith('lobby')));
+
+    // Von außen (hinter Caddy ist /healthz gesperrt): Stand aus /version.json.
+    const aussen = await fuehreSmokeAus({ url: info.url, aussen: true, version: PAKET.version, gitSha: '2413c4f', frist: 5, log: leise });
+    assert.equal(aussen.ok, true, JSON.stringify(aussen.pruefungen));
+    assert.equal(aussen.pruefungen[0].name, 'version_json');
   } finally {
     await server.close();
     rmSync(ordner, { recursive: true, force: true });

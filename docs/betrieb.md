@@ -190,6 +190,7 @@ nicht als laufender Dienst:
 | systemd-Vorlagen (Dienst, Bremse, Timer) | `deploy/systemd/` |
 | Betriebsparameter (Vorlage, mit `LÜCKE`-Feldern) | `deploy/betrieb.env.example` |
 | Eintragsgerüst + Nachweisplatz | `docs/betrieb-INSTANZ.md` |
+| Release-Paket, Deploy, Rollback, Spielstand-Sicherung, Caddy, Firewall, Go/No-Go | `docs/deploy-plan.md`, `scripts/release/`, `deploy/Caddyfile.beispiel` |
 
 **Ohne gemieteten Knoten prüfbar** — und das ist die Form, in der es heute
 vorliegt:

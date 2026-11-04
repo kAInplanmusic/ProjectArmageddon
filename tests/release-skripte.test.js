@@ -77,6 +77,7 @@ function umgebung(ordner, extra = {}) {
     PA_SMOKE_BEFEHL: join(bin, 'smoke'),
     PA_STATE_PATH: join(ordner, 'state', 'lobbies.json'),
     PA_SICHERUNG_DIR: join(ordner, 'state', 'sicherungen'),
+    PA_BETRIEB_ENV: join(ordner, 'gibt-es-nicht.env'),
     DRY_RUN: '0',
     ...extra,
   };
