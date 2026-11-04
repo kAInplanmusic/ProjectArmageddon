@@ -37,6 +37,13 @@
  *     (`terrainKomposition.ruine`), und Figuren starten nur auf der Hauptlandmasse, nicht auf losen Brocken
  *     (`engine/karteStart.trockenerStartX`). Die Ziehung bleibt wie in 7; die Fassungen 1 bis 7 bleiben Bit für Bit gleich.
  *
+ *   - `GELAENDE_OHNE_SCHACHT` (9): Kein Start in einem Schacht. Das oberste Fenster einer Ruine (`terrainKomposition.ruine`)
+ *     brach durch die Mauerkrone und ließ einen 24 px breiten, rund 40 px tiefen Schacht stehen; die Startplatzwahl
+ *     (`engine/karteStart.trockenerStartX`) prüfte nur Spalten ±12 px neben der Figur, also genau die Schachtränder, und nahm
+ *     ihn als begehbar (Pilzwald Seed 2092081, 8×4 und 8×5). Ab 9 bleibt ein Fenster unter der Krone, und ein Startplatz
+ *     braucht einen zu Fuß begehbaren Abschnitt von `MIN_START_ABSCHNITT` px. Zufall und Ziehung wie in 8; die Fassungen 1 bis
+ *     8 bleiben Bit für Bit gleich.
+ *
  * Neue Aufzeichnungen tragen IMMER das Feld.
  *
  * @module config/gelaende
@@ -57,11 +64,13 @@ export const GELAENDE_KOMPOSITION = 6;
 export const GELAENDE_BIOME_20 = 7;
 /** Fassung 8: unterscheidbare Biome (ein Leitstoff, eine Kontrastader), begehbare Ruinen, Start nur auf der Hauptlandmasse. */
 export const GELAENDE_KLAR = 8;
-export const GELAENDE_STANDARD = GELAENDE_KLAR;
+/** Fassung 9: kein Start in einem Schacht (Ruinenfenster bleiben unter der Krone, Startplatz mit begehbarem Abschnitt). */
+export const GELAENDE_OHNE_SCHACHT = 9;
+export const GELAENDE_STANDARD = GELAENDE_OHNE_SCHACHT;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereZerstoerung`). */
 export function normalisiereGelaende(fassung) {
-  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR ? fassung : GELAENDE_STANDARD;
+  return fassung === GELAENDE_ALT || fassung === GELAENDE_BIOME || fassung === GELAENDE_THEMEN || fassung === GELAENDE_PLANET || fassung === GELAENDE_MATERIAL || fassung === GELAENDE_KOMPOSITION || fassung === GELAENDE_BIOME_20 || fassung === GELAENDE_KLAR || fassung === GELAENDE_OHNE_SCHACHT ? fassung : GELAENDE_STANDARD;
 }
 
 /** Anteil der Seeds, die ohne ausdrückliche Wahl ein Sonderbiom ziehen. */

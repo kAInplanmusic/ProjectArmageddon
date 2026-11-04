@@ -9,7 +9,7 @@
 
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { WET_LEVEL } from '../shared/config/water.js';
-import { GELAENDE_KOMPOSITION, GELAENDE_KLAR } from '../shared/config/gelaende.js';
+import { GELAENDE_KOMPOSITION, GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT } from '../shared/config/gelaende.js';
 import {
   pruefeErreichbarkeit, maxWurfweite, abstandZumNaechstenGegner, findeFlaechen,
 } from '../shared/erreichbarkeit.js';
@@ -106,7 +106,17 @@ export function trockenerStartX(m, idealX, belegt = []) {
     }
     return false;
   };
-  const gut = x => trocken(x) && (!mitBegehbar || begehbar(x)) && aufHaupt(x);
+  /*
+   * Kein Schacht (ab Geländefassung 9).
+   *
+   * FUND (belegt, 2026-11-04, Pilzwald Seed 2092081, 8×4 und 8×5): `begehbar` prüft feste Spalten ±12 px neben der Figur.
+   * In einem 24 px breiten Schacht (Ruinenfenster, das durch die Krone brach) sind das genau die Luftspalten an den Rändern,
+   * und der Hang über ±16 px misst Krone gegen Krone — der Schacht galt als begehbar, die Figur startete 40 px tief ohne
+   * Ausweg zu Fuß. Ab 9 braucht ein Startplatz zusätzlich einen zu Fuß begehbaren Abschnitt (Aufstieg höchstens
+   * `START_STUFE` px je Spalte, wie `check:biome`) von mindestens `MIN_START_ABSCHNITT` px Breite.
+   */
+  const ohneSchacht = mitBegehbar && (m.gelaende ?? 0) >= GELAENDE_OHNE_SCHACHT;
+  const gut = x => trocken(x) && (!mitBegehbar || begehbar(x)) && aufHaupt(x) && (!ohneSchacht || abschnittBreit(m, x));
   if (gut(idealX)) return idealX;
   if (mitBegehbar) {
     for (let abstand = 8; abstand <= 600; abstand += 8) {
@@ -141,6 +151,30 @@ export function trockenerStartX(m, idealX, belegt = []) {
     if (trocken(idealX - abstand)) return idealX - abstand;
   }
   return idealX;
+}
+
+/** Größter Aufstieg je Spalte, den der begehbare Abschnitt eines Startplatzes zulässt (wie `STUFE` in `check:biome`). */
+const START_STUFE = 10;
+/** Mindestbreite des begehbaren Abschnitts um einen Startplatz (ab Geländefassung 9): gut sechs Körperbreiten. */
+export const MIN_START_ABSCHNITT = 96;
+
+/**
+ * Reicht der zu Fuß begehbare Abschnitt um `x` (Oberfläche, Aufstieg ≤ `START_STUFE` je Spalte, Abstieg beliebig) mindestens
+ * `MIN_START_ABSCHNITT` px weit? Gezählt wird nach beiden Seiten, bis die Breite erreicht ist.
+ */
+function abschnittBreit(m, x0) {
+  const x = Math.round(x0);
+  let breite = 1;
+  for (const richtung of [-1, 1]) {
+    let y = m.surfaceYAt(x);
+    for (let nx = x + richtung; nx >= 0 && nx < m.width && breite < MIN_START_ABSCHNITT; nx += richtung) {
+      const ny = m.surfaceYAt(nx);
+      if (y - ny > START_STUFE) break;
+      y = ny;
+      breite += 1;
+    }
+  }
+  return breite >= MIN_START_ABSCHNITT;
 }
 
 /** Eine Fläche, die nicht die größte ist, zählt nur, wenn sie über mindestens diesem Anteil der Spalten die Oberfläche bildet. */

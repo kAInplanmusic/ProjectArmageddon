@@ -410,9 +410,13 @@ function ruine(maske, rng, x, bodenY, breite, hoehe) {
   maske.rechteck(x + 36, bodenY - raumH - 8, x + breite - 36, bodenY - 8, 0);
   maske.rechteck(x + breite * 0.4, bodenY - 84, x + breite * 0.4 + 54, bodenY + 2, 0);
   const fenster = Math.floor(hoehe / 130);
-  for (let i = 1; i <= fenster; i += 1) {
-    const fy = bodenY - raumH - i * 100;
-    maske.rechteck(x + breite * 0.5 - 12, fy - 54, x + breite * 0.5 + 12, fy, 0);
+  const fensterX = x + breite * 0.5 - 12;
+  // Bis Geländefassung 8 vor der Krone; ab 9 (`maske.fensterZu`) danach und nur unterhalb der Krone (siehe unten).
+  if (!maske.fensterZu) {
+    for (let i = 1; i <= fenster; i += 1) {
+      const fy = bodenY - raumH - i * 100;
+      maske.rechteck(x + breite * 0.5 - 12, fy - 54, x + breite * 0.5 + 12, fy, 0);
+    }
   }
   // Ab Geländefassung 8 (`maske.begehbar`): Die Krone bröckelt nur in Stufen bis 2 px je Zinne (unter `config/bewegung.maxStufe` 3, die Füße schweben 1 px), damit eine Figur über sie
   // hinweg laufen kann (Zufall wie bisher: ein Wert je Zinne). An beiden Enden läuft sie auf volle Höhe aus, dort setzt die
@@ -426,7 +430,40 @@ function ruine(maske, rng, x, bodenY, breite, hoehe) {
       if (stufe > 0) maske.rechteck(z, bodenY - hoehe - 2, z + 16, bodenY - hoehe + stufe, 0);
     } else if (ab > 14) maske.rechteck(z, bodenY - hoehe - 2, z + 16, bodenY - hoehe + ab, 0);
   }
+  if (maske.fensterZu) {
+    /*
+     * Fenster nur unter der Krone (ab Geländefassung 9).
+     *
+     * FUND (belegt, 2026-11-04, Pilzwald Seed 2092081, Fassung 7 und 8): Das oberste Fenster lag bei hohen Ruinen über der
+     * (gebröckelten) Krone — `hoehe` 290 gibt zwei Fenster bis 354 px über dem Fuß — und blieb als 24 px breiter, rund 40 px
+     * tiefer Schacht in der Krone offen. Eine Figur, die dort startet, kommt zu Fuß nicht heraus. Ab 9 entfällt jedes Fenster,
+     * dessen Oberkante nicht mindestens `FENSTER_DECKE` px unter der Krone über ihm liegt. Kein Zufall: Die Fenster ziehen
+     * keine Zahl, die Folge der Zufallszahlen bleibt wie in 8.
+     */
+    for (let i = 1; i <= fenster; i += 1) {
+      const fy = bodenY - raumH - i * 100;
+      // Die tiefste Kronenzeile über der Fensterbreite; eine Spalte ganz ohne Krone (-1) heißt: das Fenster läge offen.
+      let krone = 0;
+      for (let sx = Math.floor(fensterX); sx <= Math.ceil(fensterX + 24); sx += 1) {
+        const k = kroneUeber(maske, sx, bodenY - hoehe - 2, fy);
+        krone = k < 0 ? Infinity : Math.max(krone, k);
+      }
+      if (fy - 54 < krone + FENSTER_DECKE) continue;
+      maske.rechteck(x + breite * 0.5 - 12, fy - 54, x + breite * 0.5 + 12, fy, 0);
+    }
+  }
   if (maske.begehbar) schutthalden(maske, x, bodenY, breite, hoehe);
+}
+
+/** Mindestdicke der Mauer zwischen Krone und Fensteroberkante (ab Geländefassung 9). */
+const FENSTER_DECKE = 12;
+
+/** Erste feste Zeile einer Spalte zwischen `von` und `bis` (die Krone über einem Fenster), sonst -1. */
+function kroneUeber(maske, x, von, bis) {
+  const c = maske.spalte(x);
+  if (c < 0) return -1;
+  for (let y = Math.max(0, Math.round(von)); y < Math.min(maske.hoehe, bis); y += 1) if (maske.bitmap[y * maske.breite + c]) return y;
+  return -1;
 }
 
 /**
@@ -841,7 +878,7 @@ function dichteHochkant(maske, rng, B, H, stat) {
  * @param {{next:function():number}} o.rng - Seed-Zweig des Geländes
  * @param {number} o.width
  * @param {number} o.height
- * @param {number} [o.fassung] - Geländefassung (`config.gelaende`); ab 8 begehbare Ruinen
+ * @param {number} [o.fassung] - Geländefassung (`config.gelaende`); ab 8 begehbare Ruinen, ab 9 Fenster unter der Krone
  * @param {string} [o.art] - eine Kartenart aus `KARTENARTEN`; ohne Angabe zieht der Seed (Hochformat: `hochkant`)
  * @returns {{bitmap:Uint8Array, wasserY:number, bauteile:object, art:string, umlauf:boolean, rund:boolean}} `umlauf`: die Karte verlangt die Regel „rechts hinaus, links hinein“; `rund`: Körper mit Radialform; `planetenart`: nur beim Planeten die vom Seed gezogene Art (`planet_*`)
  */
@@ -849,6 +886,8 @@ export function erzeugeKompositionsKarte({ rng, width, height, art = null, fassu
   const maske = new Maske(width, height);
   // Geländefassung 8: begehbare Ruinen (Schutthalden, flache Krone). Ältere Fassungen bauen Bit für Bit wie bisher.
   maske.begehbar = fassung >= 8;
+  // Geländefassung 9: Ruinenfenster bleiben unter der Krone (kein offener Schacht).
+  maske.fensterZu = fassung >= 9;
   const gezogen = KARTENARTEN[Math.floor(rng.next() * (KARTENARTEN.length - 1))];
   const wahl = KARTENARTEN.includes(art) ? art : (height > width * 1.2 ? 'hochkant' : gezogen);
   const stat = neuesStat();

@@ -21,12 +21,13 @@ import { rezeptFuer } from '../src/shared/config/stoff-rezepte.js';
 import { stoffByKey } from '../src/shared/config/stoffe.js';
 import { WET_LEVEL } from '../src/shared/config/water.js';
 
-test('Marke: Fassung 8 ist gültig und der Standard, 7 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
+test('Marke: Fassung 8 ist gültig, 7 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_KLAR, 8);
-  assert.equal(GELAENDE_STANDARD, GELAENDE_KLAR);
+  // Seit Fassung 9 (`gelaende-fassung-9.test.js`, kein Start im Schacht) ist der Standard höher; Fassung 8 bleibt gültig.
+  assert.ok(GELAENDE_STANDARD >= GELAENDE_KLAR);
   assert.equal(normalisiereGelaende(GELAENDE_BIOME_20), GELAENDE_BIOME_20);
   assert.equal(normalisiereGelaende(8), 8);
-  assert.equal(normalisiereGelaende(9), GELAENDE_STANDARD);
+  assert.equal(normalisiereGelaende(10), GELAENDE_STANDARD);
 });
 
 /** Wo Kristall-Violett oder Grau-Fels der Leitstoff ist (N-29). */
@@ -170,7 +171,7 @@ test('Alter Replay (Marke 7): Kopf behält die 7, Wiedergabe endet im Goldwert v
 
 test('Neuer Replay (Marke 8): Kopf trägt die 8, Wiedergabe endet im Live-Hash', () => {
   for (const biom of ['schlackeschmiede', 'riff']) {
-    const r = aufzeichnenUndAbspielen({ kartentyp: 'autonom', biom });
+    const r = aufzeichnenUndAbspielen({ gelaende: GELAENDE_KLAR, kartentyp: 'autonom', biom });
     assert.equal(r.kopf.gelaende, GELAENDE_KLAR, biom);
     assert.equal(r.replay, r.live, `${biom}: Wiedergabe gegen live`);
   }
