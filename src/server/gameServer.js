@@ -1360,6 +1360,7 @@ export class GameServer {
     lobbyLeerTtlMs = Number(process.env.PA_LOBBY_LEER_MS) || 15 * 60_000,
     zugPauseTicks = null,
     erlaubteOrigins = leseErlaubteOrigins(process.env.PA_ERLAUBTE_ORIGINS),
+    eigenerOrigin = leseErlaubteOrigins(process.env.PA_EIGENER_ORIGIN)?.[0] ?? null,
   } = {}) {
     /**
      * SRV-4: Origin-Prüfung (Lobby-API und WebSocket). `null` (Standard, ohne `PA_ERLAUBTE_ORIGINS`) = wie bisher:
@@ -1369,6 +1370,13 @@ export class GameServer {
      */
     // Origins vergleicht der Browser klein geschrieben; Einträge wie `https://Spiel.example` passen sonst nie.
     this.erlaubteOrigins = erlaubteOrigins ? new Set(erlaubteOrigins.map(o => String(o).toLowerCase())) : null;
+    /**
+     * Review 2026-11-04 (DNS-Rebinding): Ohne `PA_EIGENER_ORIGIN` gilt als eigener Origin, was zum `Host`-Header
+     * passt — eine fremde Domain, die auf die Server-IP zeigt, schickt aber zueinander passende Header. Mit
+     * gesetztem eigenen Origin (z. B. `https://spiel.example`) zählt nur noch er, dem `Host`-Header wird nicht
+     * vertraut. Ohne Liste (`PA_ERLAUBTE_ORIGINS`) bleibt der Schalter wirkungslos.
+     */
+    this.eigenerOrigin = eigenerOrigin ? String(eigenerOrigin).toLowerCase().replace(/\/+$/, '') : null;
     /** Zugpause neuer Sitzungen in Takten (`null` = Vorgabe aus Regel/Umgebung; Tests setzen sie gezielt). */
     this.zugPauseTicks = zugPauseTicks;
     this.maxLobbies = maxLobbies;
@@ -1471,11 +1479,11 @@ export class GameServer {
      * Ablehnung „Nachricht zu groß" (512-Byte-Regel), erst echter Missbrauch
      * darüber wird auf Protokollebene gekappt.
      */
-        this.#wsServer = new WebSocketServer({
-          server: this.#httpServer, path: '/ws', maxPayload: 65_536,
-          // SRV-4: Ohne Liste (Standard) unverändert jeder Origin; mit Liste lehnt der Handshake fremde mit 403 ab.
-          verifyClient: (info, fertig) => fertig(this.#originErlaubt(info.req), 403, 'Origin nicht erlaubt'),
-        });
+        // Review 2026-11-04: Handshake selbst annehmen statt über das veraltete `verifyClient` (siehe `#nimmUpgrade`).
+        this.#wsServer = new WebSocketServer({ noServer: true, maxPayload: 65_536 });
+        this.#httpServer.on('upgrade', (anfrage, sock, kopf) => this.#nimmUpgrade(anfrage, sock, kopf));
+        // Mit `server:` hing der WebSocket-Server selbst an den HTTP-Fehlern; das bleibt so (Zuhörer unten).
+        this.#httpServer.on('error', fehler => this.#wsServer.emit('error', fehler));
     /*
      * Der WebSocket-Server hängt am selben HTTP-Server und bekommt dessen
      * `error`-Ereignisse mit.
@@ -1867,12 +1875,28 @@ export class GameServer {
    */
   #beendeteMatches = new Map();
 
+  /**
+   * WebSocket-Handshake (Ersatz für `path` und `verifyClient`): anderer Pfad als `/ws` → 400, fremder Origin
+   * (SRV-4, nur mit `PA_ERLAUBTE_ORIGINS`) → 403, sonst Übergabe an den WebSocket-Server.
+   */
+  #nimmUpgrade(anfrage, sock, kopf) {
+    sock.on('error', () => sock.destroy());
+    const ablehnen = (code, text) => sock.end(`HTTP/1.1 ${code} ${text}\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`);
+    let pfad = null;
+    try { pfad = new URL(anfrage.url ?? '/', 'http://localhost').pathname; } catch { /* kaputte URL */ }
+    if (pfad !== '/ws') return ablehnen(400, 'Bad Request');
+    if (!this.#originErlaubt(anfrage)) return ablehnen(403, 'Forbidden');
+    this.#wsServer.handleUpgrade(anfrage, sock, kopf, ws => this.#wsServer.emit('connection', ws, anfrage));
+  }
+
   /** SRV-4: Darf diese Anfrage (HTTP oder WebSocket-Handshake) nach ihrem Origin bedient werden? */
   #originErlaubt(request) {
     if (!this.erlaubteOrigins) return true;
     const origin = request.headers.origin;
     if (!origin) return true;
-    if (this.erlaubteOrigins.has(String(origin).toLowerCase())) return true;
+    const klein = String(origin).toLowerCase();
+    if (this.erlaubteOrigins.has(klein)) return true;
+    if (this.eigenerOrigin) return klein === this.eigenerOrigin;
     // Gleicher Origin: Der Server liefert das Spiel selbst aus (Produktion single-origin).
     try { return new URL(origin).host === request.headers.host; } catch { return false; }
   }

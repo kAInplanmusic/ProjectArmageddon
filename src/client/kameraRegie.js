@@ -40,6 +40,8 @@ export const HALTEN = 0.55;
 export const ZEIT = Object.freeze({
   zugwechsel: 0.25, zielen: 0.35, verfolgung: 0.1, einschlag: 0.2, zoomRaus: 0.3, zoomRein: 0.5, zoomReinFlug: 0.9,
 });
+/** Zoomänderung (Logarithmus, ~35 %), ab der der festgehaltene Figurrand neu gemessen wird; das Aufschaukeln lag bei ~15 %. */
+export const PAD_NEU_ZOOM = 0.3;
 /** Bilder nach einem Rücksetzen, in denen hart gesetzt wird (HUD wird erst gemessen). */
 const SNAP_BILDER = 6;
 
@@ -54,6 +56,7 @@ export class KameraRegie {
   #vx = 0; #vy = 0; #vz = 0;
   #ziel = null; // letztes Übersichtsziel (Totzone)
   #pad = null; // größter Figurrand seit Beginn der Übersicht (gegen Aufschaukeln, KAMERA-1)
+  #padZoom = 1; // Zoom beim Festhalten des Randes
   #zugwechsel = false;
   #fliegt = false;
   #ursprung = null;
@@ -219,14 +222,24 @@ export class KameraRegie {
       glaettPos = ZEIT.zielen;
     } else if (e.aktiv) {
       // Der Figurrand kommt in Bildschirmpixeln und hängt damit vom Zoom ab: Zoom und
-      // Rand schaukelten sich an einer Rundungsgrenze dauerhaft auf (KAMERA-1). Während
-      // der Übersicht wächst er deshalb nur; neu gemessen wird nach Zugwechsel und Flug.
-      this.#pad = wechsel || !this.#pad ? { ...e.pad } : {
-        halb: Math.max(this.#pad.halb, e.pad?.halb ?? 0),
-        oben: Math.max(this.#pad.oben, e.pad?.oben ?? 0),
-        unten: Math.max(this.#pad.unten, e.pad?.unten ?? 0),
-      };
-      const kand = zielAusschnitt({ ...optionen, aktiv: e.aktiv, gegner: e.gegner, pad: this.#pad });
+      // Rand schaukelten sich an einer Rundungsgrenze dauerhaft auf (KAMERA-1, Sprung
+      // um rund 15 %). Während der Übersicht wächst er deshalb nur. Ändert sich der Zoom
+      // seit dem Festhalten um mehr als PAD_NEU_ZOOM (Zielen auf ferne Gegner), wird
+      // neu gemessen, damit kein Höchstwert eines ganz anderen Zooms stehen bleibt.
+      // Neu gemessen wird außerdem nach Zugwechsel und Flug.
+      const z = this.#z > 0 ? this.#z : 1;
+      if (wechsel || !this.#pad || Math.abs(Math.log(z / this.#padZoom)) > PAD_NEU_ZOOM) {
+        this.#pad = { halb: e.pad?.halb ?? 0, oben: e.pad?.oben ?? 0, unten: e.pad?.unten ?? 0 };
+        this.#padZoom = z;
+      } else {
+        this.#pad = {
+          halb: Math.max(this.#pad.halb, e.pad?.halb ?? 0),
+          oben: Math.max(this.#pad.oben, e.pad?.oben ?? 0),
+          unten: Math.max(this.#pad.unten, e.pad?.unten ?? 0),
+        };
+      }
+      const pad = this.#pad;
+      const kand = zielAusschnitt({ ...optionen, aktiv: e.aktiv, gegner: e.gegner, pad });
       const sichtB = e.schirm.b / kand.zoom;
       const alt = this.#ziel;
       const weit = !alt || this.#zugwechsel

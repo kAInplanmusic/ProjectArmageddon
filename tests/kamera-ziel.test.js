@@ -209,3 +209,22 @@ test('Regie: wechselnder Figurrand schaukelt die Übersicht nicht auf, Kamera ko
   assert.ok(spanne(a => a.x) < 0.5, `x steht still (Spanne ${spanne(a => a.x)})`);
   assert.ok(spanne(a => a.zoom) < 1e-3, `Zoom steht still (Spanne ${spanne(a => a.zoom)})`);
 });
+
+test('Regie: festgehaltener Figurrand wird nach großem Zoomwechsel neu gemessen', () => {
+  // Gleicher Zug; erst ein naher Gegner (eng gezoomt) mit großem Rand, dann zielt die Figur auf
+  // einen fernen (weit gezoomt) und meldet einen kleinen Rand. Ohne Neumessung bliebe der große
+  // Rand stehen; das Ergebnis muss dem einer frischen Regie mit kleinem Rand entsprechen.
+  const gross = { halb: 400, oben: 600, unten: 200 };
+  const klein = { halb: 40, oben: 80, unten: 20 };
+  const nah = { aktiv: { x: 1200, y: 700, winkel: 0 }, gegner: [{ x: 1350, y: 700 }] };
+  const fern = { aktiv: { x: 300, y: 700, winkel: 0 }, gegner: [{ x: 2400, y: 700 }] };
+  const r = new KameraRegie();
+  for (let i = 0; i < 120; i += 1) r.schritt(1 / 60, eingabe({ ...nah, pad: gross }));
+  let a = null;
+  for (let i = 0; i < 400; i += 1) a = r.schritt(1 / 60, eingabe({ ...fern, pad: klein }));
+  const frisch = new KameraRegie();
+  let b = null;
+  for (let i = 0; i < 400; i += 1) b = frisch.schritt(1 / 60, eingabe({ ...fern, pad: klein }));
+  assert.ok(Math.abs(Math.log(a.zoom / b.zoom)) < 0.02, `Zoom wie mit frischem Rand (${a.zoom} gegen ${b.zoom})`);
+  assert.ok(Math.abs(a.x - b.x) < 2, `x wie mit frischem Rand (${a.x} gegen ${b.x})`);
+});

@@ -34,6 +34,7 @@ Der Server liefert zwei Dinge aus **einem** Prozess:
 | `PA_MAX_LOBBYS` | Obergrenze gleichzeitiger Lobbys (darüber: HTTP 503) | `500` |
 | `PA_LOBBYS_PRO_MINUTE` | Neue Lobbys je Adresse und Minute (darüber: HTTP 429) | `30` |
 | `PA_ERLAUBTE_ORIGINS` | Kommagetrennte Origins für Lobby-API (CORS) und WebSocket (SRV-4); der eigene Origin und Anfragen ohne Origin gehen immer, fremde bekommen 403 | leer = jeder Origin (wie bisher) |
+| `PA_EIGENER_ORIGIN` | Der eigene Origin, unter dem der Server das Spiel ausliefert (z. B. `https://spiel.example`). Nur mit `PA_ERLAUBTE_ORIGINS` wirksam: Dann zählt allein er als eigener Origin, dem `Host`-Header wird nicht vertraut (Schutz vor DNS-Rebinding). Für Server ohne festen Hostnamen empfohlen | leer = eigener Origin über den `Host`-Header |
 | `PA_LOBBY_LEER_MS` | Lobby ohne jede Verbindung wird nach dieser Zeit samt Sitzung entfernt | `900000` (15 min) |
 | `PA_ZUGPAUSE_SEKUNDEN` | Zugpause vor jedem Zug (`0` = keine; Tests setzen 0) | `3` |
 

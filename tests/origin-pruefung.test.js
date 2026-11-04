@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { request as httpAnfrage } from 'node:http';
 import WebSocket from 'ws';
 import { GameServer, leseErlaubteOrigins } from '../src/server/gameServer.js';
 
@@ -61,5 +62,45 @@ test('Mit Liste: erlaubter, eigener und fehlender Origin gehen, fremder wird abg
     assert.equal(await wsVersuch(port, 'https://spiel.example'), 'offen');
     assert.equal(await wsVersuch(port, `http://127.0.0.1:${port}`), 'offen', 'gleicher Origin');
     assert.equal(await wsVersuch(port, null), 'offen', 'ohne Origin (kein Browser)');
+  } finally { await server.close(); }
+});
+
+/*
+ * Review 2026-11-04: Mit `eigenerOrigin` (`PA_EIGENER_ORIGIN`) wird dem `Host`-Header nicht mehr vertraut.
+ * DNS-Rebinding: Eine fremde Domain zeigt auf die Server-IP und schickt `Origin` und `Host` passend
+ * zueinander — ohne Schalter ginge sie als „gleicher Origin“ durch, mit Schalter nicht.
+ */
+test('Eigener Origin gesetzt: zueinander passende fremde Origin- und Host-Header werden abgelehnt', async () => {
+  const offen = await start({ erlaubteOrigins: ['https://andere.example'] });
+  const streng = await start({ erlaubteOrigins: ['https://andere.example'], eigenerOrigin: 'https://Spiel.example/' });
+  const rebind = { origin: 'http://boese.example', host: 'boese.example' };
+  try {
+    // `fetch` setzt `Host` selbst; der Angriff braucht einen frei gewählten, darum node:http.
+    const cors = port => new Promise((resolve, reject) => {
+      const anfrage = httpAnfrage({ host: '127.0.0.1', port, path: '/healthz', headers: rebind }, res => {
+        res.resume(); resolve(res.headers['access-control-allow-origin'] ?? null);
+      });
+      anfrage.on('error', reject);
+      anfrage.end();
+    });
+    assert.equal(await cors(offen.port), 'http://boese.example', 'ohne Schalter: Host-Abgleich wie bisher');
+    assert.equal(await cors(streng.port), null, 'mit Schalter: keine Freigabe');
+    assert.equal(await wsVersuch(streng.port, 'https://spiel.example'), 'offen', 'eigener Origin (bereinigt)');
+    assert.equal(await wsVersuch(streng.port, `http://127.0.0.1:${streng.port}`), 403, 'Host-Abgleich aus');
+    assert.equal(await wsVersuch(streng.port, 'https://andere.example'), 'offen', 'Liste gilt weiter');
+  } finally { await offen.server.close(); await streng.server.close(); }
+});
+
+test('WebSocket nur unter /ws: anderer Pfad wird mit 400 abgelehnt', async () => {
+  const { server, port } = await start();
+  try {
+    const status = await new Promise(resolve => {
+      const socket = new WebSocket(`ws://127.0.0.1:${port}/anders`);
+      socket.on('open', () => { socket.close(); resolve('offen'); });
+      socket.on('unexpected-response', (_req, res) => resolve(res.statusCode));
+      socket.on('error', () => resolve('fehler'));
+    });
+    assert.equal(status, 400);
+    assert.equal(await wsVersuch(port, null), 'offen');
   } finally { await server.close(); }
 });
