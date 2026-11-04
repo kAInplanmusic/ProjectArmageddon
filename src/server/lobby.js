@@ -89,7 +89,7 @@ export class LobbyManager {
   create({
     teams = 2, playersPerTeam = null, unitsPerPlayer = null, preset = 'hills', kartentyp = null,
     seed = undefined, hostName = 'Host', orientation = 'landscape', sidegrades = null,
-    loadouts = null, fraktionen = null, biom = null, kartenart = null,
+    loadouts = null, fraktionen = null, biom = null, kartenart = null, wiederhergestellt = false,
   } = {}) {
     /*
      * Grenzen der Teamzahl.
@@ -193,6 +193,19 @@ export class LobbyManager {
       throw new Error(`Kapazität überschreitet ${MAX_LOBBY_FIGURES} Figuren`);
     }
     if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);
+    /*
+     * Nur Querformat (Entscheidung des Auftraggebers 2026-11-04: „Nimm Hochformat ganz raus").
+     *
+     * Eine NEUE Lobby mit `portrait` wird abgelehnt, nicht still auf Querformat gesetzt: Wie bei
+     * einer unbekannten Ausrichtung wäre ein stiller Ersatz eine andere Karte als bestellt. Die
+     * Engine kennt das Hochformat weiter (`MAP_SIZES.portrait`), damit alte Aufzeichnungen
+     * unverändert laufen (AGENTS.md §2). Ausnahme ist die Wiederherstellung nach einem Neustart
+     * (`persistence.js`, `wiederhergestellt: true`): Das Match lief schon vor der Entscheidung und
+     * darf zu Ende gespielt werden.
+     */
+    if (orientation !== 'landscape' && !wiederhergestellt) {
+      throw new Error('Hochformat wird nicht mehr angeboten: neue Partien nur im Querformat');
+    }
 
     /*
      * Sidegrades prüfen — aber TOLERANT.

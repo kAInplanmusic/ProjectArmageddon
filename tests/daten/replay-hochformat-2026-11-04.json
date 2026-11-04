@@ -1,0 +1,192 @@
+{
+ "format": 1,
+ "createdAt": null,
+ "seed": 4242,
+ "config": {
+  "teams": 2,
+  "playersPerTeam": 2,
+  "preset": "hills",
+  "maxRounds": 5,
+  "turnDurationMs": 30000,
+  "kit": 4,
+  "zerstoerung": 7,
+  "waffen": 13,
+  "kisten": 4,
+  "gelaende": 9,
+  "schaden": 2,
+  "guenther": 1,
+  "cookie": 1,
+  "feuer": 1,
+  "bewegung": 1,
+  "zugregeln": 1,
+  "klassen": 1,
+  "bodenobjekte": 1,
+  "seil": 1,
+  "kartentyp": "autonom",
+  "orientation": "portrait"
+ },
+ "totalTicks": 2307,
+ "entries": [
+  {
+   "tick": 0,
+   "playerId": 1,
+   "kind": "shot",
+   "angle": 0.5,
+   "power": 40,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 120,
+   "playerId": 2,
+   "kind": "shot",
+   "angle": 0.65,
+   "power": 53,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 240,
+   "playerId": 3,
+   "kind": "shot",
+   "angle": 0.8,
+   "power": 66,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 360,
+   "playerId": 4,
+   "kind": "shot",
+   "angle": 0.95,
+   "power": 79,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 480,
+   "playerId": 1,
+   "kind": "shot",
+   "angle": 1.1,
+   "power": 42,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 600,
+   "playerId": 2,
+   "kind": "shot",
+   "angle": 1.25,
+   "power": 55,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 720,
+   "playerId": 3,
+   "kind": "shot",
+   "angle": 1.4,
+   "power": 68,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 840,
+   "playerId": 4,
+   "kind": "shot",
+   "angle": 1.55,
+   "power": 81,
+   "weaponId": "pa_041"
+  },
+  {
+   "tick": 960,
+   "playerId": 1,
+   "kind": "shot",
+   "angle": 1.7,
+   "power": 44,
+   "weaponId": "pa_023"
+  },
+  {
+   "tick": 1080,
+   "playerId": 2,
+   "kind": "shot",
+   "angle": 0.5,
+   "power": 57,
+   "weaponId": "pa_033"
+  },
+  {
+   "tick": 1200,
+   "playerId": 3,
+   "kind": "shot",
+   "angle": 0.65,
+   "power": 70,
+   "weaponId": "pa_034"
+  },
+  {
+   "tick": 1320,
+   "playerId": 4,
+   "kind": "shot",
+   "angle": 0.8,
+   "power": 83,
+   "weaponId": "pa_027"
+  },
+  {
+   "tick": 1440,
+   "playerId": 1,
+   "kind": "shot",
+   "angle": 0.95,
+   "power": 46,
+   "weaponId": "pa_023"
+  },
+  {
+   "tick": 1560,
+   "playerId": 2,
+   "kind": "shot",
+   "angle": 1.1,
+   "power": 59,
+   "weaponId": "pa_033"
+  },
+  {
+   "tick": 1680,
+   "playerId": 3,
+   "kind": "shot",
+   "angle": 1.25,
+   "power": 72,
+   "weaponId": "pa_034"
+  },
+  {
+   "tick": 1800,
+   "playerId": 4,
+   "kind": "shot",
+   "angle": 1.4,
+   "power": 85,
+   "weaponId": "pa_027"
+  },
+  {
+   "tick": 1920,
+   "playerId": 1,
+   "kind": "shot",
+   "angle": 1.55,
+   "power": 48,
+   "weaponId": "pa_023"
+  },
+  {
+   "tick": 2040,
+   "playerId": 2,
+   "kind": "shot",
+   "angle": 1.7,
+   "power": 61,
+   "weaponId": "pa_033"
+  },
+  {
+   "tick": 2160,
+   "playerId": 3,
+   "kind": "shot",
+   "angle": 0.5,
+   "power": 74,
+   "weaponId": "pa_034"
+  },
+  {
+   "tick": 2280,
+   "playerId": 4,
+   "kind": "shot",
+   "angle": 0.65,
+   "power": 87,
+   "weaponId": "pa_027"
+  }
+ ],
+ "rounds": []
+}

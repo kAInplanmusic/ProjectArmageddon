@@ -242,6 +242,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
     fraktionen: saved.fraktionen ?? null,
     seed,
     hostName: saved.seats?.[0]?.name ?? 'Host',
+    // Ein gesichertes Match (ggf. noch im Hochformat von vor 2026-11-04) darf weiterlaufen.
+    wiederhergestellt: true,
   }).lobby;
 
   // Die generierte ID ersetzen, damit alte Join-Links weiter funktionieren.
