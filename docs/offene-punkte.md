@@ -176,6 +176,12 @@ Teilpixel-Positionierung. Deshalb wartet das Bild jetzt vor der Aufnahme auf
 `document.fonts.ready` und zwei Bildläufe. Ob das den Umbruch behebt, ist nur auf
 dem fremden Rechner (oder in der CI) zu messen.
 
+**Nachtrag (2026-11-04, „nur quer"):** Das Hochformat entfiel; `visuell.spec` vergleicht nur noch 1280x720
+(3 Bilder). Die drei 390x844-Bilder liegen als feste Messdaten unter `tests/daten/struktur-vergleich/`,
+weil `tests/struktur-vergleich.test.js` an ihnen Empfindlichkeit und Unempfindlichkeit misst. Die Basis
+`hud-1280x720` bildet noch die Kopfzeile VOR dem Einstellungs-Dropdown ab und wird aus dem CI-Artefakt
+nachgezogen (nicht auf einem Entwicklungsrechner, siehe oben).
+
 ## 4b. Betriebsnotiz: der Vergleichs-Sweep schreibt in versionierte Dateien
 
 `tests/e2e/vergleich-screenshots.spec.mjs` erzeugt bei **jedem** Lauf die 27
