@@ -877,7 +877,13 @@ select option { background: #14181d; color: var(--ink); }
  * Nur Darstellung: Kopfzeile bricht um, die Waffenleiste bekommt eine eigene Zeile, Wählrad und FEUER teilen sich die letzte.
  */
 @media (max-width: 520px) {
-  #hud { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; gap: 6px; padding: 6px; }
+  /*
+   * Zeilen 3 und 4 (Waffenleiste, Wählrad/FEUER) mit Inhaltshöhe: Der HUD liegt nur über der Spielfläche (bei 390x844
+   * rund 219 px hoch). Mit `auto` stauchte der Browser Zeile 3 auf 24 px, die 74 px hohe Waffenleiste ragte nach oben
+   * über den Musikschalter, und ein Tipp darauf traf WAFFEN (Fund 2026-11-04, seit EREIGNIS-1 die Zielanzeige aus
+   * Zeile 2 nahm). So läuft der Rest wie vorher nach unten in den freien Bereich unter der Spielfläche.
+   */
+  #hud { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) max-content max-content; gap: 6px; padding: 6px; }
   #hud-top { flex-wrap: wrap; justify-content: flex-start; gap: 4px; }
   #hud-top > .stat { flex: 1 1 auto; min-width: 0; padding: 2px 6px; }
   #hud-top .stat .value { font-size: 17px; }
@@ -912,6 +918,14 @@ select option { background: #14181d; color: var(--ink); }
   #touch-aktionen:not([hidden]) { bottom: 196px !important; left: 6px !important; }
   #hud-aim, #hud-aim.panel { transform: none; }
   #touch-laufen:not([hidden]) { bottom: 196px !important; right: 6px !important; }
+  /*
+   * Querformat-Karte auf dem Telefon (Fund 2026-11-04): Die Spielfläche ist dann nur rund 220–230 px hoch, und
+   * „196 px über ihrem unteren Rand" liegt in der Kopfzeile — bei 412x915 deckten die Laufknöpfe „Match verlassen"
+   * und „Match aufgeben" zu. Hier stehen beide Knopfgruppen rechts UNTER der Spielfläche (links reicht die
+   * Figurenliste nach unten) und unter der Zeile mit Wählrad und FEUER, die ebenfalls unter die Fläche ragt.
+   */
+  #stage.landscape #touch-laufen:not([hidden]) { bottom: auto !important; top: max(calc(100% + 52px), 276px) !important; }
+  #stage.landscape #touch-aktionen:not([hidden]) { bottom: auto !important; left: auto !important; right: 6px !important; top: max(calc(100% + 106px), 330px) !important; }
   /* Vier Knöpfe rechts (Gehen ×2, Salto, Passen) und drei links müssen nebeneinander in 390 px passen: Mindestbreite 46 px (Berührfläche ≥ 44), kleine Lücken. */
   #touch-aktionen button, #touch-laufen button { min-width: 46px !important; font-size: 11px !important; padding: 4px 4px !important; }
   #touch-aktionen, #touch-laufen { gap: 4px !important; }

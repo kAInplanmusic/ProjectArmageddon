@@ -16,17 +16,19 @@ for (const [breite, hoehe] of [[390, 844], [360, 780], [412, 915]]) {
   test.describe(`Hochformat ${breite}x${hoehe}`, () => {
     test.use({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
 
-    test('Laufknöpfe, Aktionsknöpfe, Kraftanzeige, Protokoll und Leiste überlappen nicht', async ({ page }) => {
+    // Hochformat-Karte und die übliche Querformat-Karte: Bei dieser ist die Spielfläche nur rund 219 px hoch, und
+    // der HUD wird gestaucht (dort lag 2026-11-04 die Waffenleiste über dem Musikschalter).
+    for (const ausrichtung of ['portrait', 'landscape']) test(`Karte ${ausrichtung}: Laufknöpfe, Aktionsknöpfe, Kraftanzeige, Protokoll und Leiste überlappen nicht`, async ({ page }) => {
       const fehler = [];
       page.on('pageerror', e => fehler.push(String(e)));
       await page.goto('/');
       await page.waitForFunction(() => Boolean(window.__PA__));
-      await page.evaluate(() => {
+      await page.evaluate(orientation => {
         const api = window.__PA__;
         api.setAutoLoop(false);
-        api.startMatch({ seed: 4711, orientation: 'portrait', kartentyp: 'autonom' });
+        api.startMatch({ seed: 4711, orientation, kartentyp: 'autonom' });
         api.setAutoLoop(false);
-      });
+      }, ausrichtung);
       await expect(page.locator('#touch-laufen')).toBeVisible();
       await expect(page.locator('#hud-power')).toBeVisible();
       await page.waitForTimeout(600);
@@ -80,6 +82,18 @@ for (const [breite, hoehe] of [[390, 844], [360, 780], [412, 915]]) {
         }).map(knopf => knopf.textContent.trim());
       });
       expect(verdecker, 'Knöpfe über der Kraftzahl').toEqual([]);
+
+      // Fund 2026-11-04: Nachdem die Zielanzeige Zeile 2 verließ, ragte die Waffenleiste über den Musikschalter
+      // der Kopfzeile; ein Tipp darauf traf WAFFEN. Jeder sichtbare Knopf der Kopfzeile muss oben liegen.
+      const verdeckteKopfknoepfe = await page.evaluate(() => [...document.querySelectorAll('#hud-top button')]
+        .filter(knopf => knopf.offsetParent !== null)
+        .filter(knopf => {
+          const r = knopf.getBoundingClientRect();
+          if (r.width === 0) return false;
+          const oben = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return oben !== knopf && !knopf.contains(oben);
+        }).map(knopf => knopf.textContent.trim()));
+      expect(verdeckteKopfknoepfe, 'verdeckte Knöpfe der Kopfzeile').toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(breite);
       expect(fehler).toEqual([]);
     });
