@@ -340,6 +340,13 @@ namentlich genannt:
 | `README.md`, Testzahl-Notiz | „(Fallschaden bremst NICHT — gemessen)" |
 | `MASTERDOTO.md` (Testzahl) | „1122/1122" — mit neun neuen Prüfungen eine Untergrenze |
 
+*Nachtrag 2026-11-04 (N-45):* `docs/sprung-regel.md` trägt jetzt einen Nachtrag,
+der §2/§2.4 als überholt kennzeichnet, und seine Fundstellen (§4) sind
+nachgezogen; der Kommentarblock in `tests/weapon-identity.test.js` nennt den
+Luftsprung-Zuschlag. Die README-Notiz „Fallschaden bremst NICHT" steht nicht
+mehr in `README.md` (Abschnitt „**Sprung:**" beschreibt die Bremse), und die
+Testzahlen werden laufend über `npm run check:docs` geprüft.
+
 ## 12. Wie man die Messungen wiederholt
 
 Die Sonden lagen unter `/tmp/fallprobe/` (JavaScript gegen

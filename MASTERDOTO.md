@@ -4782,7 +4782,13 @@ Reihenfolge nach Abhängigkeit. `[x]` heißt: durch Test oder Messung belegt.
 - [x] **Sprung als echte Physik.** Es gibt derzeit keine `jump`-API; die einzige
       Fortbewegung ist ein horizontaler Versatz von 60 px über den Spezialeffekt
       `MOVE`. Fallschaden ist bereits implementiert und wartet auf Nutzung.
-- [x] **Doppelsprung** (zweiter Impuls, einmal je Zug).
+- [x] **Doppelsprung** (Impuls in der Luft). *Richtiggestellt 2026-11-04 (N-45):*
+      Hier stand „zweiter Impuls, einmal je Zug". Die Grenze von zwei Sprüngen je
+      Zug ist seit 2026-09-27 entfallen (`SPRUENGE_UNBEGRENZT` in
+      `src/engine/match.js`); der erste Sprung eines Zuges geht nur vom Boden,
+      jeder Luftsprung erhöht das Aufpralltempo um `luftsprungZuschlag`
+      (`src/shared/config/fallschaden.js`). Siehe `docs/sprung-regel.md`,
+      `docs/fallschaden-bremse.md`.
 - [x] Bodenerkennung (`isGrounded`) („steht auf festem Grund") als Voraussetzung für Sprünge.
 
 ### E. Erfolge, Profile, Soziales
