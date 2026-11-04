@@ -11,6 +11,7 @@
 import { createServer as createHttpServer } from 'node:http';
 import { readFileSync, statSync } from 'node:fs';
 import { leseBauinfo } from './bauinfo.js';
+import { clientAdresse, leseVertrauteProxys } from './clientAdresse.js';
 import { extname, resolve, sep } from 'node:path';
 import { WebSocketServer } from 'ws';
 import { MatchController } from '../engine/match.js';
@@ -1366,9 +1367,12 @@ export class GameServer {
     erlaubteOrigins = leseErlaubteOrigins(process.env.PA_ERLAUBTE_ORIGINS),
     eigenerOrigin = leseErlaubteOrigins(process.env.PA_EIGENER_ORIGIN)?.[0] ?? null,
     bauinfo = leseBauinfo(),
+    vertrauteProxys = leseVertrauteProxys(process.env.PA_VERTRAUTE_PROXYS),
   } = {}) {
     /** Versionskennung des ausgelieferten Builds (DEP-1), gemeldet in `/healthz`. */
     this.bauinfo = bauinfo;
+    /** Proxys, deren `X-Forwarded-For` für das Lobby-Limit je Adresse zählt (`clientAdresse.js`). */
+    this.vertrauteProxys = vertrauteProxys instanceof Set ? vertrauteProxys : leseVertrauteProxys(vertrauteProxys?.join?.(','));
     /**
      * SRV-4: Origin-Prüfung (Lobby-API und WebSocket). `null` (Standard, ohne `PA_ERLAUBTE_ORIGINS`) = wie bisher:
      * CORS spiegelt jeden Origin, der WebSocket nimmt jeden an. Mit Liste: nur diese Origins plus der eigene
@@ -1982,7 +1986,7 @@ export class GameServer {
       if (this.#lobbies.size >= this.maxLobbies) {
         return this.#json(response, 503, this.#fehlerNutzlast('Zu viele Lobbys — bitte später erneut versuchen'));
       }
-      if (!this.#createErlaubt(request.socket?.remoteAddress ?? '?')) {
+      if (!this.#createErlaubt(clientAdresse(request, this.vertrauteProxys))) {
         return this.#json(response, 429, this.#fehlerNutzlast('Zu viele neue Lobbys von dieser Adresse'));
       }
       try {
