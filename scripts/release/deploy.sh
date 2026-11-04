@@ -110,6 +110,11 @@ fi
 
 # --- 5./6. Umschalten, Neustart, Smoke-Test ------------------------------------
 schalte_um "$KENNUNG"
+# Bequeme Wege für die Betriebsdokumente ($PA_BASIS/scripts/betrieb/… in docs/betrieb*.md):
+# einmalig als Symlink auf current/…; ein echtes Verzeichnis (alte git-Ablage) bleibt unberührt.
+for weg in scripts docs deploy; do
+  if [ ! -e "$PA_BASIS/$weg" ] && [ ! -L "$PA_BASIS/$weg" ]; then tu ln -s "current/$weg" "$PA_BASIS/$weg"; fi
+done
 neustart || true
 if smoke "$KENNUNG"; then
   notiere deploy "$VORIGE" "$KENNUNG" ok

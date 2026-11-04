@@ -1,0 +1,24 @@
+# Bauumgebung des Dockerfile klein und frei von Geheimnissen halten (DEP-2).
+# Das Dockerfile kopiert ausdrücklich nur, was es braucht; diese Liste hält
+# zusätzlich große und heikle Dinge aus dem Bau-Kontext heraus.
+.git
+node_modules
+dist
+release
+.pa-state
+test-results
+playwright-report
+blob-report
+coverage
+artifacts
+assets
+uploaded
+docs
+tests
+tools
+**/*.log
+**/.env
+**/.env.*
+deploy/betrieb.env
+**/*.pem
+**/*.key

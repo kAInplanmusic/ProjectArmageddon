@@ -132,6 +132,8 @@ test('deploy.sh: Einführung, automatischer Rückfall, Rollback, Aufräumen', ()
     assert.match(aufrufe, /npm ci --omit=dev --ignore-scripts .*\(in .*\.neu-0\.9\.0-aaaaaaa\)/);
     assert.match(aufrufe, /systemctl restart projectarmageddon\.service/);
     assert.ok(existsSync(join(ordner, 'opt', 'releases', '0.9.0-aaaaaaa', 'node_modules')));
+    assert.equal(readlinkSync(join(ordner, 'opt', 'scripts')), 'current/scripts', 'Betriebspfade der Doku bleiben gültig');
+    assert.ok(existsSync(join(ordner, 'opt', 'scripts', 'betrieb', 'server-start.sh')));
     assert.equal(readdirSync(join(ordner, 'state', 'sicherungen')).filter(f => f.endsWith('.json')).length, 1,
       'vor dem Deploy wird der Spielstand gesichert');
 

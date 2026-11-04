@@ -20,7 +20,7 @@
 
 [Unit]
 Description=ProjectArmageddon Idle-Bremse (prüft jede Minute)
-Documentation=file:/opt/projectarmageddon/docs/betrieb-INSTANZ.md
+Documentation=file:/opt/projectarmageddon/current/docs/betrieb-INSTANZ.md
 
 [Timer]
 # Erst nach dem Anlauf prüfen, dann im Minutentakt. Persistent=nein ist

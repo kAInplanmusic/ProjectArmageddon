@@ -23,7 +23,7 @@
 
 [Unit]
 Description=ProjectArmageddon Idle-Bremse (ein Durchlauf)
-Documentation=file:/opt/projectarmageddon/docs/betrieb-INSTANZ.md
+Documentation=file:/opt/projectarmageddon/current/docs/betrieb-INSTANZ.md
 # Diese Zeile ist die Notbremse GEGEN Fehlbedienung: Die Bremse greift nur auf
 # einem Knoten, der ausdrücklich als gemietet gekennzeichnet wurde. Fehlt der
 # Marker, wird der Durchlauf von systemd übersprungen — und `systemctl status
@@ -34,7 +34,7 @@ ConditionPathExists=/etc/projectarmageddon/ist-gemietet
 [Service]
 Type=oneshot
 EnvironmentFile=-/etc/projectarmageddon/betrieb.env
-ExecStart=/opt/projectarmageddon/scripts/betrieb/idle-watch.sh --once
+ExecStart=/opt/projectarmageddon/current/scripts/betrieb/idle-watch.sh --once
 
 # Der Zustand (letzte Aktivität, letzte Bremse) liegt in /var/lib/projectarmageddon.
 StateDirectory=projectarmageddon
@@ -45,3 +45,11 @@ RuntimeDirectory=projectarmageddon
 # nicht dauerhaft rot färbt. Rot bleibt damit für echte Fehler (11/12).
 SuccessExitStatus=0 10
 Nice=5
+# Härtung, die die Bremse nicht behindert (sie läuft als root: `systemctl stop`, ggf. `poweroff`,
+# Cloud-Abbild über snapshot.sh). Bewusst NICHT: ProtectHome/ProtectSystem=strict — die hcloud-CLI
+# (Weg B) und `poweroff` sind auf einem echten Knoten nicht damit geprüft.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes

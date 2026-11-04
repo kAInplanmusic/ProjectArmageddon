@@ -5,29 +5,36 @@
 #
 # Platzhalter, die beim Aufsetzen ersetzt werden müssen (siehe
 # docs/betrieb-INSTANZ.md, Abschnitt "Offene Punkte"):
-#   /opt/projectarmageddon   Projektwurzel auf dem Knoten
+#   /opt/projectarmageddon   Basis auf dem Knoten (releases/, current -> releases/<kennung>)
 #   pa                       Systembenutzer ohne Anmeldung
 #   /etc/projectarmageddon/betrieb.env   Abschaltparameter (Vorlage: deploy/betrieb.env.example)
 #
-# Einrichten (auf dem KNOTEN, nach dem Mieten):
-#   install -d /opt/projectarmageddon
-#   rsync -a --delete ./ /opt/projectarmageddon/
+# Aufbau (docs/deploy-plan.md, Abschnitt 4): Der Dienst läuft IMMER aus
+# /opt/projectarmageddon/current — einem Symlink, den scripts/release/deploy.sh
+# und rollback.sh atomar umhängen. Ein Neustart nimmt das neue Release auf.
+#
+# Einrichten (auf dem KNOTEN, nach dem Mieten; vollständig in docs/deploy-plan.md Abschnitt 5):
+#   useradd --system --no-create-home --shell /usr/sbin/nologin pa
 #   install -d /etc/projectarmageddon
 #   cp deploy/betrieb.env.example /etc/projectarmageddon/betrieb.env   # Werte eintragen!
 #   touch /etc/projectarmageddon/ist-gemietet    # schaltet die Bremse scharf
-#   cp deploy/systemd/projectarmageddon.service /etc/systemd/system/
+#   cp deploy/systemd/projectarmageddon*.{service,timer} /etc/systemd/system/
 #   systemctl daemon-reload
-#   systemctl enable --now projectarmageddon.service
+#   scripts/release/deploy.sh <paket.tar.gz>     # legt current an und startet neu
+#   systemctl enable projectarmageddon.service
+#   systemctl enable --now projectarmageddon-idle.timer
 #
 # NACHWEIS, dass die Bremse laufen wird (AGENTS.md §5 Punkt 3):
 #   systemctl list-timers projectarmageddon-idle.timer
 #   ls -l /etc/projectarmageddon/ist-gemietet
-#   /opt/projectarmageddon/scripts/betrieb/idle-watch.sh --print-config
+#   /opt/projectarmageddon/current/scripts/betrieb/idle-watch.sh --print-config
+#   systemd-analyze security projectarmageddon.service
 
 [Unit]
 Description=ProjectArmageddon Spielserver (autoritativ)
-Documentation=file:/opt/projectarmageddon/docs/betrieb.md
-Documentation=file:/opt/projectarmageddon/docs/betrieb-INSTANZ.md
+Documentation=file:/opt/projectarmageddon/current/docs/deploy-plan.md
+Documentation=file:/opt/projectarmageddon/current/docs/betrieb.md
+Documentation=file:/opt/projectarmageddon/current/docs/betrieb-INSTANZ.md
 After=network-online.target
 Wants=network-online.target
 
@@ -35,9 +42,9 @@ Wants=network-online.target
 Type=exec
 User=pa
 Group=pa
-WorkingDirectory=/opt/projectarmageddon
+WorkingDirectory=/opt/projectarmageddon/current
 EnvironmentFile=-/etc/projectarmageddon/betrieb.env
-ExecStart=/opt/projectarmageddon/scripts/betrieb/server-start.sh
+ExecStart=/opt/projectarmageddon/current/scripts/betrieb/server-start.sh
 
 # Neustart nach einem Absturz — aber NICHT nach einem geordneten Stopp. Die
 # Idle-Bremse stoppt genau so (`systemctl stop`), und systemd startet einen
@@ -53,7 +60,7 @@ TimeoutStopSec=120
 # Spielstand, Replays, Journal, Programmstand -> /var/lib/projectarmageddon/snapshots,
 # die neuesten PA_SNAPSHOT_KEEP bleiben, ältere werden gelöscht. Das Minuszeichen
 # heißt: ein Fehlschlag der Sicherung blockiert das Stoppen NICHT (er steht im Journal).
-ExecStopPost=-/opt/projectarmageddon/scripts/betrieb/snapshot.sh --grund "Dienst gestoppt (${SERVICE_RESULT})"
+ExecStopPost=-/opt/projectarmageddon/current/scripts/betrieb/snapshot.sh --grund "Dienst gestoppt (${SERVICE_RESULT})"
 # Das Journal des Dienstes darf der Dienstbenutzer für die Sicherung lesen.
 SupplementaryGroups=systemd-journal
 KillMode=mixed
@@ -78,6 +85,15 @@ RuntimeDirectoryPreserve=yes
 # Reverse-Proxy mit TLS davor steht (docs/betrieb.md, Abschnitt 3).
 # Die Bindeadresse kommt aus HOST in /etc/projectarmageddon/betrieb.env.
 Environment=HOST=127.0.0.1
+# Release-Betrieb: dist/ liegt im Paket, gebaut wird auf dem Knoten nie (ohne devDependencies ginge es auch nicht).
+Environment=PA_BUILD=0
+Environment=NODE_ENV=production
+# npm (server-start.sh startet `npm run server`) schreibt Cache und Protokolle; ohne Heimatverzeichnis
+# und unter ProtectSystem=strict braucht es einen beschreibbaren Ort.
+Environment=npm_config_cache=/var/cache/projectarmageddon/npm
+Environment=npm_config_update_notifier=false
+CacheDirectory=projectarmageddon
+CacheDirectoryMode=0700
 
 # Härtung (kostet nichts, hilft gegen die häufigsten Fälle).
 NoNewPrivileges=yes
@@ -105,6 +121,10 @@ LockPersonality=yes
 CapabilityBoundingSet=
 AmbientCapabilities=
 SystemCallArchitectures=native
+# Deploy-Plan 2026-11-04: fremde Prozesse unsichtbar, IPC-Reste beim Stopp weg, kein Schlüsselbund geteilt.
+ProtectProc=invisible
+RemoveIPC=yes
+KeyringMode=private
 # Nur die Standardgruppe; eine strengere Liste (`~@privileged`) könnte tar/git/hcloud der Sicherung töten.
 SystemCallFilter=@system-service
 # Obergrenzen gegen Ressourcenerschöpfung (ein Kern, wenige GB Speicher; bei Bedarf anheben).
