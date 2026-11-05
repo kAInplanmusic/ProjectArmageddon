@@ -107,6 +107,15 @@ const PRUNE_INTERVAL_MS = 5_000;
 class LobbySession {
   /** Wurde das Match-Ende schon gemeldet? Siehe #finish. */
   #finished = false;
+  /**
+   * Läuft gerade ein `stepSimulation` aus der Zeitschleife?
+   *
+   * Dann dürfen die Ereignisse am Match-Ende NICHT hier ausgewertet werden:
+   * `#takt` liefert sie direkt danach an die Clients, und wer sie vorher
+   * abholt, verschluckt „aufgegeben" und „death" (die Clients sähen nur noch
+   * „match_over").
+   */
+  #imTakt = false;
   /** Geh-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleMove`. */
   #gehGrenzen = new Map();
   /** Seil-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleSeil`. */
@@ -534,7 +543,18 @@ class LobbySession {
     while (this.accumulator >= TICK_MS) {
       this.accumulator -= TICK_MS;
       if (this.match.status !== 'playing') break;
-      this.stepSimulation(1);
+      /*
+       * `#imTakt` sagt `stepSimulation`, dass die Ereignisse dieses Schritts
+       * gleich HIER ausgeliefert werden. Ohne die Marke würde sie am
+       * Match-Ende dort schon ausgewertet und aus dem Puffer genommen — die
+       * Clients sähen „match_over", aber nicht mehr „aufgegeben"/„death".
+       */
+      this.#imTakt = true;
+      try {
+        this.stepSimulation(1);
+      } finally {
+        this.#imTakt = false;
+      }
     }
 
     /*
@@ -620,7 +640,7 @@ class LobbySession {
        */
       this.history.push(this.match.world.tickCount, null);
     }
-    if (this.match.status === 'gameover') {
+    if (this.match.status === 'gameover' && !this.#imTakt) {
       this.#statistikAbschliessen();
       this.#finish();
     }
