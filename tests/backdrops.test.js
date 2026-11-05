@@ -96,8 +96,8 @@ test('Schlüssel und Dateinamen sind eindeutig', () => {
   // auf ein Bild, das unter anderem Namen liegt.
   for (const b of ALL_BACKDROPS) {
     const erwartet = b.stimmung
-      ? `stimmung/${b.biomeId}_${b.id.replace(/^stimmung_/, '')}.jpg`
-      : `${b.key.replace('/', '_')}.jpg`;
+      ? `stimmung/${b.biomeId}_${b.id.replace(/^stimmung_/, '')}.webp`
+      : `${b.key.replace('/', '_')}.webp`;
     assert.equal(b.file, erwartet,
       `${b.key}: Dateiname passt nicht zum Schlüssel (${b.file})`);
   }
@@ -201,8 +201,8 @@ test('Es liegt kein Bild ohne Katalogeintrag herum', () => {
   // Verwaiste Dateien blähen das Repository auf und werden nie ausgeliefert.
   const imKatalog = new Set(ALL_BACKDROPS.map(b => b.file));
   const aufPlatte = [
-    ...fs.readdirSync(BILD_DIR).filter(f => f.endsWith('.jpg')),
-    ...fs.readdirSync(path.join(BILD_DIR, 'stimmung')).filter(f => f.endsWith('.jpg')).map(f => `stimmung/${f}`),
+    ...fs.readdirSync(BILD_DIR).filter(f => /\.(webp|jpe?g|png)$/.test(f)),
+    ...fs.readdirSync(path.join(BILD_DIR, 'stimmung')).filter(f => /\.(webp|jpe?g|png)$/.test(f)).map(f => `stimmung/${f}`),
   ];
   const hochKatalog = new Set(ALL_BACKDROPS.filter(b => b.fileHoch).map(b => b.fileHoch));
   for (const f of hochKatalog) imKatalog.add(f);
@@ -213,10 +213,17 @@ test('Es liegt kein Bild ohne Katalogeintrag herum', () => {
 test('Alle Bilder haben das Spielformat und eine vertretbare Größe', () => {
   for (const backdrop of ALL_BACKDROPS) {
     const datei = path.join(BILD_DIR, backdrop.file);
-    const groesse = fs.statSync(datei).size;
-    assert.ok(groesse > 20_000,
-      `${backdrop.file}: verdächtig klein (${groesse} B) — vermutlich kein Bild`);
-    assert.ok(groesse < 500_000,
+    const puffer = fs.readFileSync(datei);
+    const groesse = puffer.length;
+    // Untergrenze relativ zur Bildfläche statt fest 20 000 B (BLD-1, 2026-11-04): WebP packt
+    // dunkle Sternenhimmel auf 13 kB (urban_dunkel 1440x617, vorher als JPG 27,7 kB). Ein
+    // Platzhalter oder abgeschnittenes Bild fällt weiter auf: 0,01 B/Pixel sind zwei Drittel des
+    // kleinsten echten Bildes, dazu prüft `webpGroesse` Signatur und RIFF-Länge.
+    const m = webpGroesse(puffer, backdrop.file);
+    assert.ok(groesse > 5_000 && groesse / (m.breite * m.hoehe) > 0.01,
+      `${backdrop.file}: verdächtig klein (${groesse} B für ${m.breite}x${m.hoehe}) — vermutlich kein Bild`);
+    // Obergrenze mit WebP von 500 kB auf 300 kB verschärft (größtes Bild 231 kB).
+    assert.ok(groesse < 300_000,
       `${backdrop.file}: zu groß für einen Hintergrund (${Math.round(groesse / 1024)} KB)`);
   }
 
@@ -225,35 +232,28 @@ test('Alle Bilder haben das Spielformat und eine vertretbare Größe', () => {
   // Budget mit den 80 Stimmungsbildern von 16 auf 24 MB angehoben (80 Basis ca. 10,5 MB,
   // 80 Stimmungen ca. 8 MB). Geladen wird je Match nur EIN Bild (lazy), die Dauerlast
   // je Spieler bleibt unter 0,5 MB; die Einzelgrenze oben bleibt unverändert.
-  assert.ok(gesamt < 24_000_000,
+  // Mit WebP (BLD-1, 2026-11-04) von 24 auf 16 MB verschärft: gemessen 13,6 MB.
+  assert.ok(gesamt < 16_000_000,
     `Alle Kulissen zusammen sind ${(gesamt / 1024 / 1024).toFixed(1)} MB`);
 });
 
-test('Jedes Bild ist ein JPEG mit 16:9 und der Spielbreite', () => {
-  for (const backdrop of ALL_BACKDROPS.filter(b => !b.stimmung).slice(0, 12)) {
+test('Jedes Bild ist ein WebP mit 16:9 und der Spielbreite', () => {
+  // Seit BLD-1 (2026-11-04) alle 80 Basisbilder, nicht mehr nur die ersten zwölf.
+  for (const backdrop of ALL_BACKDROPS.filter(b => !b.stimmung)) {
     const puffer = fs.readFileSync(path.join(BILD_DIR, backdrop.file));
-    // JPEG beginnt mit FF D8 und endet mit FF D9.
-    assert.equal(puffer[0], 0xff, `${backdrop.file}: kein JPEG-Anfang`);
-    assert.equal(puffer[1], 0xd8, `${backdrop.file}: kein JPEG-Anfang`);
-    assert.equal(puffer[puffer.length - 2], 0xff, `${backdrop.file}: kein JPEG-Ende`);
-    assert.equal(puffer[puffer.length - 1], 0xd9, `${backdrop.file}: kein JPEG-Ende`);
-
-    // Abmessungen aus dem SOF0/SOF2-Segment lesen (ohne Bildbibliothek).
-    const masse = jpegGroesse(puffer);
+    // Abmessungen aus dem RIFF-Kopf lesen (ohne Bildbibliothek); prüft zugleich die Signatur.
+    const masse = webpGroesse(puffer, backdrop.file);
     assert.deepEqual(masse, { breite: 1280, hoehe: 720 },
       `${backdrop.file}: ${masse.breite}x${masse.hoehe} statt 1280x720`);
   }
 });
 
-test('Jede Stimmung ist ein JPEG in brauchbarer Auflösung (beliebiges Format)', () => {
+test('Jede Stimmung ist ein WebP in brauchbarer Auflösung (beliebiges Format)', () => {
   const stimmungen = ALL_BACKDROPS.filter(b => b.stimmung);
   assert.equal(stimmungen.length, BACKDROP_BIOMES.length * 5);
   for (const backdrop of stimmungen) {
     const puffer = fs.readFileSync(path.join(BILD_DIR, backdrop.file));
-    assert.deepEqual([puffer[0], puffer[1]], [0xff, 0xd8], `${backdrop.file}: kein JPEG-Anfang`);
-    assert.deepEqual([puffer[puffer.length - 2], puffer[puffer.length - 1]], [0xff, 0xd9],
-      `${backdrop.file}: kein JPEG-Ende`);
-    const m = jpegGroesse(puffer);
+    const m = webpGroesse(puffer, backdrop.file);
     assert.ok(m.breite >= 640 && m.hoehe >= 600 && Math.max(m.breite, m.hoehe) >= 1024,
       `${backdrop.file}: Auflösung zu klein (${m.breite}x${m.hoehe})`);
     // Das Seitenverhältnis wird vom cover-Zuschnitt aufgefangen, muss aber plausibel sein.
@@ -264,10 +264,10 @@ test('Jede Stimmung ist ein JPEG in brauchbarer Auflösung (beliebiges Format)',
 
 test('Jede Stimmung nennt eine vorhandene Hochkant-Fassung (9:21, cover)', () => {
   for (const b of ALL_BACKDROPS.filter(x => x.stimmung)) {
-    assert.ok(b.fileHoch?.endsWith('_h.jpg'), `${b.key}: fileHoch fehlt`);
+    assert.ok(b.fileHoch?.endsWith('_h.webp'), `${b.key}: fileHoch fehlt`);
     const datei = path.join(BILD_DIR, b.fileHoch);
     assert.ok(fs.existsSync(datei), `${b.fileHoch} fehlt`);
-    const m = jpegGroesse(fs.readFileSync(datei));
+    const m = webpGroesse(fs.readFileSync(datei), b.fileHoch);
     assert.ok(m.hoehe > m.breite * 1.2, `${b.fileHoch}: kein Hochformat (${m.breite}x${m.hoehe})`);
     if (b.id === 'stimmung_ragnarok2') {
       assert.ok(b.fileHoch.includes('_ragnarok_h'), 'ragnarok2 nimmt ragnarok_h');
@@ -283,23 +283,22 @@ test('Die automatische Wahl liefert nie eine Stimmung (bestehende Seeds bleiben 
   }
 });
 
-/** Liest die Bildmaße aus einem JPEG-Puffer. */
-function jpegGroesse(puffer) {
-  let i = 2;
-  while (i < puffer.length) {
-    if (puffer[i] !== 0xff) { i += 1; continue; }
-    const marker = puffer[i + 1];
-    // SOF0..SOF15 außer DHT (c4), JPG (c8), DAC (cc)
-    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
-      return {
-        hoehe: puffer.readUInt16BE(i + 5),
-        breite: puffer.readUInt16BE(i + 7),
-      };
-    }
-    const laenge = puffer.readUInt16BE(i + 2);
-    i += 2 + laenge;
+/**
+ * Liest die Bildmaße aus einem WebP-Puffer (VP8, VP8L, VP8X) und prüft die RIFF-Signatur
+ * samt Längenfeld (ein abgeschnittenes Bild fällt so auf, wie früher das fehlende JPEG-Ende).
+ */
+function webpGroesse(puffer, name) {
+  assert.equal(puffer.toString('ascii', 0, 4), 'RIFF', `${name}: kein RIFF-Kopf`);
+  assert.equal(puffer.toString('ascii', 8, 12), 'WEBP', `${name}: kein WebP`);
+  assert.equal(puffer.readUInt32LE(4) + 8, puffer.length, `${name}: RIFF-Länge passt nicht (abgeschnitten?)`);
+  const art = puffer.toString('ascii', 12, 16);
+  if (art === 'VP8X') return { breite: 1 + puffer.readUIntLE(24, 3), hoehe: 1 + puffer.readUIntLE(27, 3) };
+  if (art === 'VP8L') {
+    const b = puffer.readUInt32LE(21);
+    return { breite: 1 + (b & 0x3fff), hoehe: 1 + ((b >> 14) & 0x3fff) };
   }
-  return { breite: 0, hoehe: 0 };
+  assert.equal(art, 'VP8 ', `${name}: unbekannte WebP-Art ${art}`);
+  return { breite: puffer.readUInt16LE(26) & 0x3fff, hoehe: puffer.readUInt16LE(28) & 0x3fff };
 }
 
 // ------------------------------------------------------------------ Komposition

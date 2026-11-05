@@ -314,7 +314,7 @@ test('Ein gewähltes Bild schlägt die generative Kulisse', async ({ page }) => 
     const r = window.__PA__.game.renderer;
     return { datei: r.backdrop?.file, bildBereit: r.backdropReady, hatKulisse: Boolean(r.scenery) };
   });
-  expect(stand.datei).toBe('noir_rainy_street.jpg');
+  expect(stand.datei).toBe('noir_rainy_street.webp');
   expect(stand.bildBereit).toBe(true);
   // Bei einem Bild darf keine generative Kulisse dazwischenfunken.
   expect(stand.hatKulisse).toBe(false);

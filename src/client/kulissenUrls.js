@@ -5,10 +5,14 @@
  * Liste derselben Dateien. Der Glob steht deshalb hier einmal; die Schlüssel tragen wie
  * von Vite vergeben das Präfix `./assets/backdrops/`.
  *
+ * Format WebP (seit 2026-11-04, BLD-1): gegenüber den früheren JPG rund ein Drittel
+ * weniger Bytes bei SSIM-belegter Gleichwertigkeit, Messung in `docs/ladezeit.md`,
+ * Umwandlung mit `scripts/kulissen-webp.py`.
+ *
  * @module kulissenUrls
  */
 
-export const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.jpg', {
+export const BACKDROP_URLS = import.meta.glob('./assets/backdrops/**/*.webp', {
   eager: true,
   query: '?url',
   import: 'default',

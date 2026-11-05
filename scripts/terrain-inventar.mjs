@@ -40,7 +40,7 @@ gruppe('Effekt-Sheets (eingebaut, WebP)', 'src/client/assets/effekt-sheets');
 gruppe('Comic-Terrain-Kacheln (Stilreferenz)', 'src/client/assets/terrain-vorlagen');
 gruppe('Objekt-Sheets je Biom (SSOT, noch nicht eingebaut)', 'src/client/assets/biom-objekte');
 gruppe('Kulissen der Planeten', 'src/client/assets/planeten-kulisse');
-md += `\n### Kulissen (Hintergründe)\n\nBasis \`src/client/assets/backdrops/\` (${verz('src/client/assets/backdrops').filter(f => f.endsWith('.jpg')).length}), Stimmungen \`backdrops/stimmung/\` (${verz('src/client/assets/backdrops/stimmung').length}, quer und \`_h\` hochkant).\n`;
+md += `\n### Kulissen (Hintergründe)\n\nBasis \`src/client/assets/backdrops/\` (${verz('src/client/assets/backdrops').filter(f => f.endsWith('.webp')).length}), Stimmungen \`backdrops/stimmung/\` (${verz('src/client/assets/backdrops/stimmung').length}, quer und \`_h\` hochkant).\n`;
 md += `\n### Biom-Beispielbilder\n\n\`docs/bilder/biome-realistisch/\` (${verz('docs/bilder/biome-realistisch').length} Dateien: Spielbild \`_spiel\` und fotorealistische Fassung).\n`;
 md += '\n## 5. Fehlt laut SSOT (Aufgabe BS-1)\n\nschlacke, schwefelkruste, salzkruste, kalkstein, moos, alienharz, firn, wolkenstein, magnetgestein, keramik, lavaglas, bimsstein, tempelstein, mauerwerk, rostmetall, tiefseeschlamm, hydrothermal, versteinertes_holz, kolossholz, instabiler_boden, teer, treibsand, myzel, leuchtalgen (Texturen dafür siehe `stoff-texturen-neu`, sobald erzeugt).\n';
 fs.writeFileSync(wurzel + 'docs/terrain-inventar.md', md);
