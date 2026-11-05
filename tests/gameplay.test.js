@@ -4,7 +4,10 @@ import { MatchController, MAP_WIDTH, MAP_HEIGHT } from '../src/engine/match.js';
 import { generateTerrain, surfaceY, TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
 import { WaterField } from '../src/engine/waterField.js';
 import { LootSystem, weaponIdFromIndex, RARITY_WEIGHTS } from '../src/engine/systems/lootSystem.js';
-import { CLASS_DEFINITIONS, CLASS_ARCHETYPES, combatProfile } from '../src/shared/config/classes.js';
+import {
+  CLASS_DEFINITIONS, LEGACY_CLASS_DEFINITIONS, CLASS_ARCHETYPES, combatProfile,
+} from '../src/shared/config/classes.js';
+import { KLASSEN_ALT, KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 import { MATCH_RULES, computeMaelstromDamage } from '../src/shared/config/match.js';
 import { WEAPONS, WEAPONS_BY_ID, getDefaultLoadout, FALLBACK_WEAPON_ID, pickWeaponForRarity } from '../src/shared/config/weapons.js';
 import { SeededRandom } from '../src/shared/prng.js';
@@ -166,28 +169,51 @@ test('Loot spawnt Kisten deterministisch und Pickup wirkt', () => {
  * die Funktionen toter Code waren. Geprüft wird jetzt das Profil, das der Motor
  * tatsächlich liest.
  */
-test('Das Kampfprofil skaliert Klasse und Archetyp nachvollziehbar', () => {
-  const heavy = combatProfile('heavy', 'brawler');
-  const artillery = combatProfile('artillery', 'brawler');
+test('Fassung 3: Das Kampfprofil skaliert nur die Klasse', () => {
+  const nah = combatProfile('nahkampf', null, null, KLASSEN_STANDARD);
+  const okkult = combatProfile('okkultist', null, null, KLASSEN_STANDARD);
 
-  assert.equal(heavy.damageMultiplier, CLASS_DEFINITIONS.heavy.power);
-  assert.equal(artillery.damageMultiplier, CLASS_DEFINITIONS.artillery.power);
+  assert.equal(nah.damageMultiplier, CLASS_DEFINITIONS.nahkampf.power);
+  assert.equal(okkult.damageMultiplier, CLASS_DEFINITIONS.okkultist.power);
+  assert.ok(okkult.damageMultiplier > nah.damageMultiplier, 'Der Okkultist muss stärker schießen');
+  assert.equal(nah.healthMultiplier, CLASS_DEFINITIONS.nahkampf.health,
+    'Leben ist in Fassung 3 der Klassenwert — kein Archetyp-Faktor');
+  assert.ok(okkult.healthMultiplier < nah.healthMultiplier,
+    'Der Okkultist muss zerbrechlicher sein als der Nahkampf');
+
+  // Unbekannte Kennung fällt auf den Rückfallwert (nahkampf), ohne still zu buffen.
+  const unbekannt = combatProfile('unknown', null, null, KLASSEN_STANDARD);
+  assert.equal(unbekannt.classId, 'nahkampf');
+  assert.equal(unbekannt.archetypeId, null);
+  assert.equal(unbekannt.onFallback, true);
+  assert.equal(unbekannt.healthMultiplier, CLASS_DEFINITIONS.nahkampf.health);
+});
+
+test('Fassungen ≤ 2: Das Kampfprofil skaliert Klasse und Archetyp nachvollziehbar', () => {
+  /*
+   * Altreplays: Leben ist das Produkt BEIDER Tabellen, Schaden der Klassenwert,
+   * Tempo der Archetyp-Faktor. Unverändert gegenüber dem Stand vor dem Umbau.
+   */
+  const heavy = combatProfile('heavy', 'brawler', null, KLASSEN_ALT);
+  const artillery = combatProfile('artillery', 'brawler', null, KLASSEN_ALT);
+
+  assert.equal(heavy.damageMultiplier, LEGACY_CLASS_DEFINITIONS.heavy.power);
+  assert.equal(artillery.damageMultiplier, LEGACY_CLASS_DEFINITIONS.artillery.power);
   assert.ok(artillery.damageMultiplier > heavy.damageMultiplier,
     'Artillerie muss stärker schießen');
 
-  // Leben ist das Produkt BEIDER Tabellen.
-  assert.equal(heavy.healthMultiplier, CLASS_DEFINITIONS.heavy.health * CLASS_ARCHETYPES.brawler.health);
-  const occultist = combatProfile('heavy', 'occultist');
+  assert.equal(heavy.healthMultiplier,
+    LEGACY_CLASS_DEFINITIONS.heavy.health * CLASS_ARCHETYPES.brawler.health);
+  const occultist = combatProfile('heavy', 'occultist', null, KLASSEN_ALT);
   assert.ok(occultist.healthMultiplier < heavy.healthMultiplier,
     'Ein Okkultist muss zerbrechlicher sein als ein Brawler');
 
-  // Unbekannte Kennungen fallen auf den Rückfallwert, ohne still zu buffen.
-  const unbekannt = combatProfile('unknown', 'unknown');
+  const unbekannt = combatProfile('unknown', 'unknown', null, KLASSEN_ALT);
   assert.equal(unbekannt.classId, 'scout');
   assert.equal(unbekannt.archetypeId, 'brawler');
   assert.equal(unbekannt.onFallback, true);
   assert.equal(unbekannt.healthMultiplier,
-    CLASS_DEFINITIONS.scout.health * CLASS_ARCHETYPES.brawler.health);
+    LEGACY_CLASS_DEFINITIONS.scout.health * CLASS_ARCHETYPES.brawler.health);
 });
 
 test('Waffenkatalog ist konsistent und spielbar', () => {

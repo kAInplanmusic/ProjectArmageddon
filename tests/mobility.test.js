@@ -1,30 +1,32 @@
 /**
  * Tests: Wirkt die Beweglichkeit der Klasse im MATCH?
  *
- * Diese Datei ist der eigentliche Beweis für die Behebung des Befunds „Der
- * Scout hat keine wirksame Stärke". `counterplay.test.js` prüft die Ableitung,
- * `class-profile.test.js` die Verrechnung — hier wird geprüft, dass die
- * Bewegung wirklich anders ausfällt.
+ * `counterplay.test.js` prüft die Ableitung, `class-profile.test.js` die
+ * Verrechnung — hier wird geprüft, dass die Bewegung wirklich anders ausfällt.
+ * Seit Klassenfassung 3 ist der Nahkampf der beweglichste Charakter
+ * (`speed: 1.2`), der Okkultist der unbeweglichste (`0.8`).
  *
  * Gemessen wird die SPRUNGHÖHE, nicht ein Zwischenwert: Eine Figur, die höher
- * springt, kommt auf Stellungen, die anderen verschlossen bleiben. Das ist die
- * Stärke, um die es geht.
+ * springt, kommt auf Stellungen, die anderen verschlossen bleiben.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { MatchController } from '../src/engine/match.js';
 import { CLASS_IDS, combatProfile } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 
 /**
- * Misst die Sprunghöhe einer Klasse.
+ * Misst die Sprunghöhe einer Klasse in Fassung 3.
  *
  * Die Figur muss dafür am ZUG sein — nur der aktive Spieler kann springen — und
  * vorher landen. Deshalb wird das Match laufen gelassen, bis die gesuchte
  * Klasse dran ist.
  */
 function sprungHoehe(klasseName) {
-  const m = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 3, preset: 'hills' });
+  const m = new MatchController({
+    seed: 4242, teams: 2, playersPerTeam: 3, preset: 'hills', klassen: KLASSEN_STANDARD,
+  });
   m.start();
 
   let schutz = 0;
@@ -55,65 +57,52 @@ function sprungHoehe(klasseName) {
   return null;
 }
 
-test('Der Scout springt höher als Heavy und Artillery', () => {
+test('Der Nahkampf springt höher als Fernkampf und Okkultist', () => {
   /*
-   * DIE Kernaussage der Behebung. Vorher sprang jede Klasse gleich hoch — der
-   * `speed`-Wert existierte nur auf dem Papier.
+   * DIE Kernaussage: `speed` wirkt auf den Absprung. Vor dem Verdrahten sprang
+   * jede Klasse gleich hoch — der Wert existierte nur auf dem Papier.
    */
-  const scout = sprungHoehe('scout');
-  const heavy = sprungHoehe('heavy');
-  const artillery = sprungHoehe('artillery');
+  const nah = sprungHoehe('nahkampf');
+  const fern = sprungHoehe('fernkampf');
+  const okkult = sprungHoehe('okkultist');
 
-  assert.ok(scout && heavy && artillery, 'nicht alle Klassen gemessen');
-  assert.ok(scout.hoehe > heavy.hoehe,
-    `Der Scout muss höher springen als der Heavy (${scout.hoehe.toFixed(1)} px `
-    + `gegen ${heavy.hoehe.toFixed(1)} px)`);
-  assert.ok(scout.hoehe > artillery.hoehe,
-    `Der Scout muss höher springen als die Artillery (${scout.hoehe.toFixed(1)} px `
-    + `gegen ${artillery.hoehe.toFixed(1)} px)`);
+  assert.ok(nah && fern && okkult, 'nicht alle Klassen gemessen');
+  assert.ok(nah.hoehe > fern.hoehe,
+    `Der Nahkampf muss höher springen als der Fernkampf (${nah.hoehe.toFixed(1)} px `
+    + `gegen ${fern.hoehe.toFixed(1)} px)`);
+  assert.ok(nah.hoehe > okkult.hoehe,
+    `Der Nahkampf muss höher springen als der Okkultist (${nah.hoehe.toFixed(1)} px `
+    + `gegen ${okkult.hoehe.toFixed(1)} px)`);
 });
 
 test('Der Sprungunterschied ist spürbar, aber nicht kartensprengend', () => {
   /*
-   * Die Dämpfung (JUMP_SPEED_INFLUENCE_ABOVE) soll zweierlei leisten:
-   *
-   *  - spürbar: Die Stärke muss sich lohnen. Ohne eine Untergrenze wäre die
-   *    Verdrahtung bloß Formsache.
-   *  - nicht kartensprengend: Der Scout darf nicht über das Gelände hinweg
-   *    kommen. Gemessen wird gegen die hills-Amplitude (rund 151 px
-   *    Höhenunterschied) — bleibt der Sprung darunter, ist die Karte intakt.
+   *  - spürbar: Die Stärke muss sich lohnen.
+   *  - nicht kartensprengend: Der Nahkampf darf nicht über das Gelände hinweg
+   *    kommen. Gemessen wird gegen die hills-Amplitude (rund 151 px).
    *
    * Die Schwellen sind bewusst mit Abstand gesetzt und nicht auf die gemessenen
    * Werte gepinnt: Eine kleine Balance-Korrektur soll diesen Test nicht rot
    * machen, eine Verdreifachung der Sprunghöhe schon.
    */
-  const scout = sprungHoehe('scout');
-  const heavy = sprungHoehe('heavy');
+  const nah = sprungHoehe('nahkampf');
+  const okkult = sprungHoehe('okkultist');
 
-  const aufschlag = (scout.hoehe / heavy.hoehe - 1) * 100;
+  const aufschlag = (nah.hoehe / okkult.hoehe - 1) * 100;
   assert.ok(aufschlag >= 10,
-    `Der Aufschlag von ${aufschlag.toFixed(1)} % ist zu klein — die Stärke wäre `
-    + 'nicht spürbar');
+    `Der Aufschlag von ${aufschlag.toFixed(1)} % ist zu klein — die Stärke wäre nicht spürbar`);
   assert.ok(aufschlag <= 80,
-    `Der Aufschlag von ${aufschlag.toFixed(1)} % ist zu groß — der Scout käme über `
-    + 'das Gelände hinweg');
+    `Der Aufschlag von ${aufschlag.toFixed(1)} % ist zu groß — der Nahkampf käme über das Gelände hinweg`);
 
-  // Und die absolute Grenze: unter der hills-Amplitude.
-  assert.ok(scout.hoehe < 151,
-    `Der Scout springt ${scout.hoehe.toFixed(1)} px — über den Höhenunterschied von `
+  assert.ok(nah.hoehe < 151,
+    `Der Nahkampf springt ${nah.hoehe.toFixed(1)} px — über den Höhenunterschied von `
     + 'hills (rund 151 px). Die Karte verlöre ihre Form.');
 });
 
 test('Die Sprunghöhe folgt der Beweglichkeit im Kampfprofil', () => {
-  /*
-   * Die Verbindung zwischen Config und Motor: Die Reihenfolge der Sprunghöhen
-   * muss der Reihenfolge der `mobilityMultiplier` entsprechen. Damit ist
-   * belegt, dass der Motor den Wert aus dem Profil liest — und nicht einen
-   * eigenen, zweiten Wert.
-   */
   const werte = CLASS_IDS.map(k => ({
     klasse: k,
-    beweglichkeit: combatProfile(k, 'brawler').mobilityMultiplier,
+    beweglichkeit: combatProfile(k, null, null, KLASSEN_STANDARD).mobilityMultiplier,
     hoehe: sprungHoehe(k)?.hoehe ?? 0,
   }));
 
@@ -127,25 +116,17 @@ test('Die Sprunghöhe folgt der Beweglichkeit im Kampfprofil', () => {
 });
 
 test('Die Beweglichkeit ist deterministisch', () => {
-  /*
-   * Voraussetzung für reproduzierbare Replays: Die Sprunghöhe darf allein von
-   * der Klasse abhängen, nicht von Zufall oder Zustand. Zweimal gemessen muss
-   * sie gleich sein.
-   */
-  const a = sprungHoehe('scout');
-  const b = sprungHoehe('scout');
+  const a = sprungHoehe('nahkampf');
+  const b = sprungHoehe('nahkampf');
   assert.equal(a.hoehe, b.hoehe,
     'Die Sprunghöhe ist nicht reproduzierbar — der Motor rechnet nicht pur');
 });
 
 test('Ein Match mit dem Sprungverhalten ist reproduzierbar', () => {
-  /*
-   * Der Zustandshash über den ganzen Verlauf: Die Verdrahtung darf die
-   * Reproduzierbarkeit nicht brechen. Zwei identische Matches mit Sprüngen
-   * müssen denselben Hash haben.
-   */
   function laufen() {
-    const m = new MatchController({ seed: 777, teams: 2, playersPerTeam: 2, preset: 'hills' });
+    const m = new MatchController({
+      seed: 777, teams: 2, playersPerTeam: 2, preset: 'hills', klassen: KLASSEN_STANDARD,
+    });
     m.start();
     for (let i = 0; i < 300; i++) {
       // Gelegentlich springen, damit der Faktor in den Verlauf eingeht.

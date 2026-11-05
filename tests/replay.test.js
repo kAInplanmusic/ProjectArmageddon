@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, ReplayPlayer, playReplay, REPLAY_FORMAT_VERSION } from '../src/engine/replay.js';
-import { CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
+import { CLASS_IDS } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 
 /**
  * Führt ein Match mit skriptgesteuerten Eingaben aus und zeichnet sie auf.
@@ -596,16 +597,18 @@ test('Ein Sidegrade im Kopf verändert den Verlauf nachweislich', () => {
 // ------------------------------------------------------- Klassenwahl (loadouts)
 
 /** Führt ein Match MIT Klassenwahl aus und zeichnet es auf. */
-function runRecordedMatchMitLoadouts(loadouts) {
+function runRecordedMatchMitLoadouts(loadouts, klassen) {
   const seed = 5150;
   const match = new MatchController({
     seed, teams: 2, playersPerTeam: 2, turnDurationMs: 3000, maxRounds: 6, loadouts,
+    ...(klassen ? { klassen } : {}),
   });
   match.start();
 
   const recorder = new ReplayRecorder({
     seed, teams: 2, playersPerTeam: 2, preset: 'hills',
     maxRounds: match.maxRounds, turnDurationMs: match.turnDurationMs, loadouts,
+    ...(klassen ? { klassen } : {}),
   });
 
   let shots = 0;
@@ -690,18 +693,18 @@ test('Die Klassenwahl verändert den Verlauf nachweislich', () => {
    * passiert. Eine entkoppelte Kombination (artillery/artillerist) muss ein
    * anderes Match ergeben als die Standardzuteilung.
    */
-  const ohne = runRecordedMatchMitLoadouts(null);
+  const ohne = runRecordedMatchMitLoadouts(null, KLASSEN_STANDARD);
   const mit = runRecordedMatchMitLoadouts([
-    { classId: 'artillery', archetypeId: 'artillerist' },
-    { classId: 'heavy', archetypeId: 'brawler' },
-    { classId: 'scout', archetypeId: 'occultist' },
+    { classId: 'okkultist' },
+    { classId: 'nahkampf' },
+    { classId: 'fernkampf' },
     null,
-  ]);
+  ], KLASSEN_STANDARD);
 
   assert.notEqual(mit.match.stateHash(), ohne.match.stateHash(),
     'die Klassenwahl muss den Matchverlauf verändern — sonst wirkt sie nicht');
 
   // Und die Klassen müssen im Match tatsächlich gesetzt sein.
-  assert.equal(CLASS_IDS[mit.match.players[0].classId], 'artillery');
-  assert.equal(ARCHETYPE_IDS[mit.match.players[0].archetypeId], 'artillerist');
+  assert.equal(CLASS_IDS[mit.match.players[0].classId], 'okkultist');
+  assert.equal(mit.match.players[0].archetypeId, 0);
 });

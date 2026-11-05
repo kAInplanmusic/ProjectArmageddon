@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { MatchController, CLASS_IDS } from '../src/engine/match.js';
+import { LEGACY_CLASS_IDS } from '../src/shared/config/classes.js';
+import { KLASSEN_ALT, KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 import {
   getClassLoadout,
   getClassLoadoutDetail,
+  getKlassenwaffe,
   LOADOUT_ROLES,
   START_TIERS,
   MOVE_SPECIALS,
@@ -184,13 +187,13 @@ test('Die Bewegungsliste deckt sich mit dem Wirkungskatalog', () => {
 test('Das echte Match benutzt die Klassen-Loadouts (Fassung `kit` 1, nur für alte Replays)', () => {
   // Seit dem Start-Kit (kit 2, Standard) sind Waffen nicht mehr klassengebunden — siehe
   // tests/start-kit.test.js. Das Klassenloadout bleibt als Fassung 1 für alte Aufzeichnungen.
-  const match = new MatchController({ seed: 9001, teams: 3, playersPerTeam: 3, kit: KIT_KLASSE });
+  const match = new MatchController({ seed: 9001, teams: 3, playersPerTeam: 3, kit: KIT_KLASSE, klassen: KLASSEN_ALT });
   match.start();
   const state = match.getState();
 
   assert.equal(state.entities.length, 9);
   for (const entity of state.entities) {
-    const klasse = CLASS_IDS[entity.classId];
+    const klasse = LEGACY_CLASS_IDS[entity.classId];
     const erwartet = getClassLoadout(klasse);
     // Die Reihenfolge im Inventar ist die Reihenfolge des Loadouts, dahinter
     // steht die Reservewaffe mit unbegrenzter Munition.
@@ -215,6 +218,31 @@ test('Das echte Match benutzt die Klassen-Loadouts (Fassung `kit` 1, nur für al
   }
   assert.equal(new Set(nachKlasse.values()).size, 3,
     'Klassen teilen sich dasselbe Startinventar');
+});
+
+test('Fassung 3: Startwaffen richten sich nach der Klasse', () => {
+  /*
+   * Vorgabe §6: „Die Startlastouts/Profile richten sich nach der Klasse
+   * (Nahkampf: kurz/robust, Fernkampf: Projektile, Okkultist: Magie/Fläche)."
+   * Jede Figur führt die klassenprägende Waffe; das neutrale Starter-Kit bleibt
+   * als Grundausstattung daneben.
+   */
+  const match = new MatchController({
+    seed: 9002, teams: 3, playersPerTeam: 3, klassen: KLASSEN_STANDARD,
+  });
+  match.start();
+  const state = match.getState();
+
+  const signatur = new Set();
+  for (const entity of state.entities) {
+    const klasse = CLASS_IDS[entity.classId];
+    const waffe = getKlassenwaffe(klasse);
+    assert.ok(waffe, `${klasse}: keine klassenprägende Waffe definiert`);
+    signatur.add(waffe);
+    const waffen = match.inventory.getWeapons(entity.entityId);
+    assert.ok(waffen.includes(waffe), `${klasse}: ${waffe} fehlt im Startinventar`);
+  }
+  assert.equal(signatur.size, 3, 'Die drei Klassen müssen verschiedene Kür-Waffen tragen');
 });
 
 test('Ein Match mit einer Klasse läuft über viele Züge ohne Munitionsnot', () => {

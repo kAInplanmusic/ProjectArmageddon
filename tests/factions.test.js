@@ -205,13 +205,15 @@ test('Jede Fraktion hat Namen, Wahlspruch und Beschreibung', () => {
 
 // ------------------------------------------------------------------ Klassenzuordnung
 
-test('Die Spielklasse folgt aus der Position', () => {
-  assert.deepEqual([...SLOT_CLASSES], ['heavy', 'scout', 'artillery']);
+test('Die Spielklasse folgt aus der Zeile (Fassung 3)', () => {
+  // Seit Klassenfassung 3: melee → nahkampf, ranged → fernkampf, magic → okkultist.
+  assert.deepEqual([...SLOT_CLASSES], ['heavy', 'scout', 'artillery'],
+    'SLOT_CLASSES bleibt als Altzuordnung der Fassungen ≤ 2 erhalten');
+  const erwartet = { melee: 'nahkampf', ranged: 'fernkampf', magic: 'okkultist' };
   for (const c of CHARACTERS) {
-    assert.equal(classOf(c), SLOT_CLASSES[c.slot]);
-    assert.ok(['heavy', 'scout', 'artillery'].includes(classOf(c)));
+    assert.equal(classOf(c), erwartet[c.role], `${c.id}: falsche Klasse`);
   }
-  // Und jede Fraktion deckt alle drei Klassen ab.
+  // Und jede Fraktion deckt alle drei Klassen ab (je drei Einheiten).
   for (const fraktion of FACTIONS) {
     const klassen = new Set(charactersOf(fraktion.id).map(classOf));
     assert.equal(klassen.size, 3, `${fraktion.id}: nur ${klassen.size} Klassen abgedeckt`);

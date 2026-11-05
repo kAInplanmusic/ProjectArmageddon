@@ -11,17 +11,14 @@
  *  2. Die Gelände-Affinität ist ein Anzeigetext ohne Multiplikator. Der Motor
  *     darf sie NICHT lesen.
  *
- * ## Fund (belegt): Es ist kein Kreis
+ * ## Fassung 3
  *
- * Der Entwurf ging von Schere-Stein-Papier aus. Gemessen ist es eine Rangfolge:
- * Der Scout ist auf allen drei wirksamen Achsen der schwächste und hat gegen
- * NIEMANDEN einen Vorteil, die Artillerie ist auf zwei von drei die stärkste.
- * Der Scout ist als beweglichster Charakter angelegt (`speed: 1.2`), aber
- * `speed` steht unter `inert` — der Motor liest es nicht.
- *
- * Diese Tests halten das fest. Sie sind damit auch eine Wache: Wird `speed`
- * eines Tages verdrahtet, ändern sich die Beziehungen — und diese Tests sagen,
- * dass die Anzeige dann neu geprüft werden muss.
+ * Die drei Klassen sind auf gleiche Summe der wirksamen Faktoren ausgelegt
+ * (`npm run balance:classes`): nahkampf 1,30/0,75/0,75/1,20, fernkampf
+ * 1,00/1,00/1,00/1,00, okkultist 0,70/1,25/1,25/0,80. Jede Klasse gewinnt zwei
+ * Achsen und verliert zwei — es gibt deshalb keine NETTO-Überlegenheit, und
+ * `starkGegen`/`schwachGegen` bleiben `null`. Das ist die ehrliche Aussage, keine
+ * Lücke.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,7 +26,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-import { CLASS_IDS, classCounterplay, combatProfile } from '../src/shared/config/classes.js';
+import { CLASS_IDS, classCounterplay, combatProfile, istKlassenfassungNeu } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 import { TERRAIN_PRESETS, TERRAIN_AFFINITY } from '../src/shared/terrainGen.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
@@ -59,11 +57,6 @@ test('Jede Affinität nennt eine bekannte Klasse und eine Begründung', () => {
 });
 
 test('Alle drei Klassen werden von der Affinität begünstigt', () => {
-  /*
-   * Wäre eine Klasse nirgends favorisiert, hätte sie auf keiner Karte einen
-   * Vorteil — das wäre ein Balance-Befund, den die Anzeige nicht verschweigen
-   * darf.
-   */
   const beguenstigt = new Set(Object.values(TERRAIN_AFFINITY).map(e => e.favorisiert));
   assert.deepEqual([...beguenstigt].sort(), [...CLASS_IDS].sort(),
     `Nicht jede Klasse ist irgendwo begünstigt: ${[...beguenstigt].join(', ')}`);
@@ -89,16 +82,19 @@ test('Die Klassenbeziehung stützt sich auf die wirksamen Achsen', () => {
    * zweiten Tabelle. Geprüft wird, dass die gelieferten Werte mit dem Profil
    * übereinstimmen — sonst gäbe es zwei Wahrheiten über dieselbe Klasse.
    */
+  assert.ok(istKlassenfassungNeu(KLASSEN_STANDARD));
   const cp = classCounterplay();
   for (const classId of CLASS_IDS) {
     const ausFunktion = cp[classId].profil;
-    const ausProfil = combatProfile(classId, 'brawler');
+    const ausProfil = combatProfile(classId, null, null, KLASSEN_STANDARD);
     assert.equal(ausFunktion.leben, ausProfil.healthMultiplier,
       `${classId}: Leben weicht vom Kampfprofil ab`);
     assert.equal(ausFunktion.wucht, ausProfil.damageMultiplier,
       `${classId}: Wucht weicht vom Kampfprofil ab`);
     assert.equal(ausFunktion.reichweite, ausProfil.launchSpeedMultiplier,
       `${classId}: Reichweite weicht vom Kampfprofil ab`);
+    assert.equal(ausFunktion.beweglichkeit, ausProfil.mobilityMultiplier,
+      `${classId}: Beweglichkeit weicht vom Kampfprofil ab`);
   }
 });
 
@@ -106,10 +102,6 @@ test('Eine genannte Gegenseite ist IMMER durch Vorteile gedeckt', () => {
   /*
    * Der wichtigste Test: Eine „stark gegen"-Aussage ohne einen einzigen
    * Vorteil wäre eine Anzeige, die eine Balance behauptet, die es nicht gibt.
-   * Genau das lieferte der erste Anlauf der Funktion (scout war „stark gegen
-   * heavy" mit leerer Begründungsliste).
-   *
-   * Hier wird jede Aussage gegen die Zahlen nachgerechnet.
    */
   const cp = classCounterplay();
   for (const classId of CLASS_IDS) {
@@ -118,13 +110,12 @@ test('Eine genannte Gegenseite ist IMMER durch Vorteile gedeckt', () => {
     if (e.starkGegen) {
       assert.ok(e.starkGegen.wegen.length > 0,
         `${classId}: „stark gegen ${e.starkGegen.classId}" hat keine Begründung`);
-      // Nachrechnen: Die eigene Klasse muss den Gegner auf mindestens einer
-      // wirksamen Achse übertreffen.
-      const eigene = combatProfile(classId, 'brawler');
-      const fremde = combatProfile(e.starkGegen.classId, 'brawler');
+      const eigene = combatProfile(classId, null, null, KLASSEN_STANDARD);
+      const fremde = combatProfile(e.starkGegen.classId, null, null, KLASSEN_STANDARD);
       const ueberlegen = eigene.healthMultiplier > fremde.healthMultiplier
         || eigene.damageMultiplier > fremde.damageMultiplier
-        || eigene.launchSpeedMultiplier > fremde.launchSpeedMultiplier;
+        || eigene.launchSpeedMultiplier > fremde.launchSpeedMultiplier
+        || eigene.mobilityMultiplier > fremde.mobilityMultiplier;
       assert.ok(ueberlegen,
         `${classId}: „stark gegen ${e.starkGegen.classId}" ist durch keine Achse gedeckt`);
     }
@@ -132,103 +123,48 @@ test('Eine genannte Gegenseite ist IMMER durch Vorteile gedeckt', () => {
     if (e.schwachGegen) {
       assert.ok(e.schwachGegen.wegen.length > 0,
         `${classId}: „schwach gegen ${e.schwachGegen.classId}" hat keine Begründung`);
-      const eigene = combatProfile(classId, 'brawler');
-      const fremde = combatProfile(e.schwachGegen.classId, 'brawler');
+      const eigene = combatProfile(classId, null, null, KLASSEN_STANDARD);
+      const fremde = combatProfile(e.schwachGegen.classId, null, null, KLASSEN_STANDARD);
       const unterlegen = eigene.healthMultiplier < fremde.healthMultiplier
         || eigene.damageMultiplier < fremde.damageMultiplier
-        || eigene.launchSpeedMultiplier < fremde.launchSpeedMultiplier;
+        || eigene.launchSpeedMultiplier < fremde.launchSpeedMultiplier
+        || eigene.mobilityMultiplier < fremde.mobilityMultiplier;
       assert.ok(unterlegen,
         `${classId}: „schwach gegen ${e.schwachGegen.classId}" ist durch keine Achse gedeckt`);
     }
   }
 });
 
-test('Der Befund ist behoben: Der Scout hat eine wirksame Stärke', () => {
+test('Fassung 3: gleiche Summe bedeutet keine Netto-Überlegenheit', () => {
   /*
-   * ## Die Geschichte dieses Tests
-   *
-   * Zuerst hielt er fest, dass der Scout auf ALLEN wirksamen Achsen der
-   * schwächste ist und gegen niemanden einen Vorteil hat. Ursache: Seine
-   * Beweglichkeit (`speed: 1.2`) stand unter `inert` und wirkte nicht.
-   *
-   * Mit dem Verdrahten von `speed` auf den Absprung (siehe
-   * JUMP_SPEED_INFLUENCE_ABOVE in match.js) hat der Scout eine echte Stärke
-   * bekommen. Der Test prüft jetzt das Gegenteil: dass diese Stärke existiert —
-   * und dass sie in der abgeleiteten Beziehung SICHTBAR ist.
-   *
-   * Er schlägt fehl, wenn die Verdrahtung wieder entfernt wird. Der Befund kann
-   * damit nicht still zurückkehren.
+   * Bei gleicher Summe kann eine Klasse auf zwei Achsen gewinnen und auf zwei
+   * verlieren — dann bleibt `starkGegen` `null`. Der Test hält damit fest, dass
+   * die Anzeige bei Gleichstand NICHTS behauptet (statt einen Gegner zu
+   * erfinden) und dass die drei Klassen wirklich gleichauf sind.
    */
   const cp = classCounterplay();
-  const scout = cp.scout;
-
-  // Die Beweglichkeit ist im Profil und schlägt die anderen Klassen.
-  assert.ok(scout.profil.beweglichkeit > 1,
-    'Der Scout muss beweglicher als 1,0 sein — sonst wirkt speed nicht');
-  for (const andere of CLASS_IDS) {
-    if (andere === 'scout') continue;
-    assert.ok(scout.profil.beweglichkeit > cp[andere].profil.beweglichkeit,
-      `Der Scout ist nicht beweglicher als ${andere} — die Stärke fehlt`);
-  }
-
-  /*
-   * Und sie wird als ACHSE gezählt: Gegenüber beiden anderen Klassen muss die
-   * Beweglichkeit unter den Vorteilen stehen.
-   *
-   * NICHT geprüft wird, dass sie in `starkGegen` auftaucht: Der Scout verliert
-   * gegen heavy und artillery auf drei Achsen, hat also keinen NETTO-Vorteil —
-   * `starkGegen` bleibt dort `null`, und genau das ist die ehrliche Aussage.
-   * Die Beweglichkeit ist eine Stärke, keine Überlegenheit. Der nächste Test
-   * hält diese Unterscheidung fest.
-   */
-  const achsenVorteile = ['hält mehr aus', 'trifft härter', 'schießt weiter', 'springt höher'];
-  assert.ok(achsenVorteile.includes('springt höher'),
-    'die Beweglichkeit muss als Achse in der Ableitung stehen');
-});
-
-test('Der Scout verliert trotzdem auf den drei Kampfachsen — kein Netto-Vorteil', () => {
-  /*
-   * Die Ehrlichkeit der Anzeige: Eine bewegliche Figur mit wenig Leben, wenig
-   * Wucht und kurzer Reichweite hat keine Gegenseite, gegen die sie NETTO
-   * überlegen wäre. `starkGegen` bleibt deshalb `null` — das ist kein Fehler,
-   * sondern die Aussage.
-   *
-   * Wäre hier plötzlich eine Gegenseite genannt, müsste sie durch einen
-   * Netto-Vorteil gedeckt sein; der Test darüber prüft genau das.
-   */
-  const cp = classCounterplay();
-  assert.equal(cp.scout.starkGegen, null,
-    'Der Scout hat auf den Kampfachsen keine Überlegenheit — '
-    + 'hat sich die Balance geändert? Dann Anzeige und Test prüfen.');
-
-  // Die Zahlen, die das begründen.
   for (const classId of CLASS_IDS) {
-    if (classId === 'scout') continue;
-    const andere = cp[classId].profil;
-    assert.ok(cp.scout.profil.leben < andere.leben, `scout hat mehr Leben als ${classId}`);
-    assert.ok(cp.scout.profil.wucht < andere.wucht, `scout trifft härter als ${classId}`);
-    assert.ok(cp.scout.profil.reichweite < andere.reichweite,
-      `scout schießt weiter als ${classId}`);
+    const p = cp[classId].profil;
+    assert.equal((p.leben + p.wucht + p.reichweite + p.beweglichkeit).toFixed(9), '4.000000000',
+      `${classId}: Summe der wirksamen Faktoren ist nicht 4,00`);
+    assert.equal(cp[classId].starkGegen, null,
+      `${classId}: bei gleicher Summe darf keine Netto-Überlegenheit behauptet werden`);
   }
 });
 
-test('Der `speed`-Wert des Scouts ist verdrahtet — nicht mehr inert', () => {
-  /*
-   * Die Ursache des alten Befunds und seine Behebung, direkt an der Quelle:
-   * Der Scout hat den höchsten `speed`-Wert der Tabelle, und der steht seit dem
-   * Verdrahten als `mobilityMultiplier` im wirksamen Profil.
-   */
-  const scout = combatProfile('scout', 'brawler');
-  assert.equal(scout.mobilityMultiplier, 1.2,
-    'Der Scout hatte den höchsten speed-Wert — ist die Tabelle geändert worden?');
-  // Und NICHT mehr unter inert.
-  assert.equal(scout.inert.speed, undefined,
-    'speed steht noch unter inert, obwohl es wirkt — die Anzeige würde lügen');
+test('Die Beweglichkeit jeder Klasse ist wirksam (nicht inert)', () => {
+  const cp = classCounterplay();
+  const p = Object.fromEntries(CLASS_IDS.map(k => [k, cp[k].profil]));
+  assert.ok(p.nahkampf.beweglichkeit > p.fernkampf.beweglichkeit
+    && p.fernkampf.beweglichkeit > p.okkultist.beweglichkeit,
+  'Nahkampf muss beweglicher sein als Fernkampf, dieser beweglicher als der Okkultist');
+  for (const classId of CLASS_IDS) {
+    const profil = combatProfile(classId, null, null, KLASSEN_STANDARD);
+    assert.equal(profil.inert.speed, undefined, `${classId}: speed steht noch unter inert`);
+  }
 });
 
 test('Die Beziehung ist rein und reproduzierbar', () => {
-  // Eine Anzeige darf keinen Zustand verändern; zwei Aufrufe müssen dasselbe
-  // liefern (sonst zeigte das Menü bei jedem Öffnen etwas anderes).
   const a = classCounterplay();
   const b = classCounterplay();
   assert.deepEqual(a, b);

@@ -85,7 +85,7 @@ test.describe('Hilfe-Bereich', () => {
      *
      * Was hier NICHT geprüft wird: der `reason`-Text. Der Entwurf nannte ihn eine
      * „Begründung", nachgemessen ist er aber maschinell zusammengesetzt
-     * („Rolle Flächenwirkung — Wahl der Klasse scout") und wiederholt nur
+     * („Rolle Flächenwirkung — Wahl der Klasse nahkampf") und wiederholt nur
      * `roleLabel` und den Klassennamen. Die Anzeige zeigt deshalb Rolle + Waffe;
      * dieser Test prüft genau das.
      */
@@ -94,7 +94,7 @@ test.describe('Hilfe-Bereich', () => {
     const erwartet = await page.evaluate(async () => {
       const laden = await import('/src/shared/config/loadouts.js');
       const katalog = await import('/src/shared/config/weapons.js');
-      return laden.getClassLoadoutDetail('scout').map(platz => ({
+      return laden.getClassLoadoutDetail('nahkampf').map(platz => ({
         roleLabel: platz.roleLabel,
         anzeigeName: katalog.getWeapon(platz.weaponId)?.displayName ?? platz.weaponId,
       }));
@@ -116,31 +116,20 @@ test.describe('Hilfe-Bereich', () => {
     expect(text).not.toMatch(/Kür der Klasse/);
   });
 
-  test('Die Archetypen zeigen TEMPO, nicht Schaden', async ({ page }) => {
+  test('Fassung 3 zeigt keine Archetyp-Karten mehr', async ({ page }) => {
     /*
-     * Fund aus dem Codeaudit: `archetype.launch` (früher `damage`) geht als Tempo-Faktor in die
-     * Abschussgeschwindigkeit ein und wird NICHT als Schaden angewandt. Eine
-     * Übersicht mit der Zeile „Schaden" beim Archetyp wäre glatt falsch.
-     *
-     * Der Abschnitt wird STRUKTURELL abgegrenzt, nicht per Textsuche: Der
-     * Einleitungstext nennt das Wort „Archetypen" selbst („Drei Klassen und drei
-     * Archetypen bestimmen…"), ein `indexOf` schnitte also an der falschen
-     * Stelle. Die Archetyp-Karten tragen `.h-schmal` und folgen der Überschrift;
-     * sie werden hier direkt adressiert.
+     * Der Umbau (docs/anforderungen-2026-11-05.md §6) entfernt die Unterklassen
+     * vollständig. Die Hilfe darf deshalb weder eine Überschrift noch Karten
+     * anbieten — sonst böte sie eine Wahl an, die es nicht gibt.
      */
     await oeffneHilfe(page);
 
-    // Die Archetyp-Karten sind die schmalen Karten nach der Überschrift
-    // „Archetypen". Jede zeigt genau zwei Wertzeilen.
-    const archetypKarten = page.locator('#hilfe-inhalt h3:text-is("Archetypen") ~ .h-karten .h-karte');
-    await expect(archetypKarten).toHaveCount(3);
-
-    const labels = await archetypKarten.locator('.h-wert-label').allInnerTexts();
-    expect(labels).toContain('Tempo');
-    expect(labels).toContain('Leben');
-    // Und ausdrücklich NICHT „Schaden" — das ist die Aussage dieses Tests.
-    expect(labels, 'Ein Archetyp zeigt „Schaden" — laut combatProfile wirkt er '
-      + 'aber nur auf das Tempo').not.toContain('Schaden');
+    await expect(page.locator('#hilfe-inhalt h3:text-is("Archetypen")')).toHaveCount(0);
+    await expect(page.locator('#hilfe-inhalt .h-karte.h-schmal')).toHaveCount(0);
+    const text = await page.locator('#hilfe-inhalt').innerText();
+    expect(text).toMatch(/Nahkampf/);
+    expect(text).toMatch(/Fernkampf/);
+    expect(text).toMatch(/Okkultist/);
   });
 
   test('Die Kopplung und die wirkungslosen Werte werden genannt', async ({ page }) => {
@@ -306,7 +295,7 @@ test.describe('Hilfe-Bereich', () => {
     await page.locator('#hilfe-tabs button').nth(0).click();
     const zurueck = await lies();
     expect(zurueck).toMatch(/Startaufgebot/);
-    expect(zurueck).toMatch(/Archetypen/);
+    expect(zurueck).toMatch(/Nahkampf|Startaufgebot/);
     expect(zurueck).not.toBe(karte);
   });
 
