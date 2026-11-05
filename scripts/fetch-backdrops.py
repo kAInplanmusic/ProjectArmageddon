@@ -7,9 +7,10 @@ Das Manifest ist eine Liste aus {"key": "biome/variante", "url": "https://..."}.
 
 Aufbereitung:
   - Zuschnitt auf 16:9 und Skalierung auf die Spielgröße (Karte ist 1280x720).
-  - Speichern als JPEG. PNG wäre für Fotos das Mehrfache an Bytes ohne
-    sichtbaren Gewinn; die Kulissen sind reine Hintergrundbilder.
-  - Ergebnis geht nach src/client/assets/backdrops/<biome>_<variante>.jpg
+  - Speichern als WebP (q82, method 6; seit 2026-11-04, BLD-1, vorher JPEG q78).
+    Gleiche Einstellung wie `scripts/kulissen-webp.py`, Messung in docs/ladezeit.md.
+    PNG wäre für Fotos das Mehrfache an Bytes ohne sichtbaren Gewinn.
+  - Ergebnis geht nach src/client/assets/backdrops/<biome>_<variante>.webp
 
 Die Dateinamen folgen dem Katalog in src/shared/config/backdrops.js. Ein
 Abweichen wird gemeldet, damit Katalog und Ablage nicht auseinanderlaufen.
@@ -27,7 +28,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "src" / "client" / "assets" / "backdrops"
 TARGET_W, TARGET_H = 1280, 720
-JPEG_QUALITY = 78
+WEBP_QUALITY = 82
 
 
 def load_catalog_files() -> set[str]:
@@ -48,8 +49,8 @@ def load_catalog_files() -> set[str]:
 
 
 def expected_filename(key: str) -> str:
-    """Dateiname aus dem Kulissenschlüssel: „biome/variante" -> biome_variante.jpg."""
-    return key.replace("/", "_") + ".jpg"
+    """Dateiname aus dem Kulissenschlüssel: „biome/variante" -> biome_variante.webp."""
+    return key.replace("/", "_") + ".webp"
 
 
 def cover_resize(image: Image.Image, width: int, height: int) -> Image.Image:
@@ -114,7 +115,7 @@ def main() -> int:
             bild = fetch(eintrag["url"])
             vorher = bild.size
             bild = cover_resize(bild, TARGET_W, TARGET_H)
-            bild.save(ziel, "JPEG", quality=JPEG_QUALITY, optimize=True, progressive=True)
+            bild.save(ziel, "WEBP", quality=WEBP_QUALITY, method=6)
             groesse = ziel.stat().st_size
             gesamt_bytes += groesse
             fertig += 1

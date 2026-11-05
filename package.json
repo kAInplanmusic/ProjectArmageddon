@@ -45,6 +45,7 @@
     "test:all": "npm run test && npm run test:e2e",
     "lint": "eslint .",
     "checks": "node scripts/checks.mjs",
+    "check:bundle": "node scripts/bundle-gate.mjs --bauen",
     "lint:fix": "eslint . --fix",
     "smoke": "node scripts/smoke-match.mjs",
     "smoke:fast": "node scripts/smoke-fast.mjs",

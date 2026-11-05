@@ -94,7 +94,7 @@ import { KISTE_KANTE } from '../shared/config/kisten.js';
  *
  * `import.meta.glob` statt eines selbstgebauten Pfades: Vite vergibt im Build
  * einen Hash-Namen und legt die Datei unter `/assets/` ab. Ein hart notierter
- * Pfad wie `assets/backdrops/maritime_calm_day.jpg` würde im Build ins Leere
+ * Pfad wie `assets/backdrops/maritime_calm_day.webp` würde im Build ins Leere
  * zeigen — genau der Fehler, an dem die Waffen-Icons schon einmal scheiterten.
  *
  * Der Pfad ist RELATIV ZU DIESER DATEI (`./assets/...`, nicht `../assets/...`):

@@ -53,6 +53,7 @@ const GATES = [
   { skript: 'check:maelstrom', schuetzt: 'Mahlstrom-Abbruch' },
   { skript: 'check:time', schuetzt: 'Matchdauer' },
   { skript: 'check:erreichbarkeit', schuetzt: '30 Partien ohne unerreichbare Figur' },
+  { skript: 'check:bundle', schuetzt: 'Bundle-Größe und Sourcemaps im Produktionsbau' },
 ];
 
 const nurSchnell = process.argv.includes('--schnell');

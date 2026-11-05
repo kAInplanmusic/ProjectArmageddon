@@ -62,6 +62,10 @@ jobs:
 
       # Das Performance-Gate misst, ob das 60-Hz-Budget eingehalten wird.
       # Es schlägt fehl, wenn mehr als 5 % der Ticks über 16,7 ms liegen.
+      # Das Ladebudget (Haupt-Bundle roh/gzip, Startgröße, dist gesamt, keine Sourcemaps;
+      # Grenzen in scripts/bundle-grenzen.json) läuft NICHT hier, sondern als Gate
+      # `check:bundle` im Schritt „Prüfwerkzeuge“ oben (baut selbst, ~6 s). Messwerte und
+      # Lighthouse-Vergleich: docs/ladezeit.md.
       - name: Performance-Budget
         run: npm run perf -- --ticks=12000
 
