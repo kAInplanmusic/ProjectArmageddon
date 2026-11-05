@@ -18,6 +18,7 @@ import { MatchController } from '../src/engine/match.js';
 import { ReplayRecorder, ReplayPlayer } from '../src/engine/replay.js';
 import { trockenerStartX, MIN_START_ABSCHNITT } from '../src/engine/karteStart.js';
 import { stoffHash } from '../src/shared/stoffkarte.js';
+import { WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
 import {
   GELAENDE_KLAR, GELAENDE_OHNE_SCHACHT, GELAENDE_STANDARD, normalisiereGelaende,
 } from '../src/shared/config/gelaende.js';
@@ -148,10 +149,10 @@ function aufzeichnenUndAbspielen(extra) {
 
 test('Alter Replay (Marke 8): Kopf behält die 8, Wiedergabe endet im Goldwert von vor Fassung 9', () => {
   const gold = [
-    [{ gelaende: 8 }, '4913d98d'],
-    [{ gelaende: 8, kartentyp: 'autonom', biom: 'pilzwald' }, '8750e9f2'],
-    [{ gelaende: 8, kartentyp: 'autonom', biom: 'schlackeschmiede' }, '5f83b9d5'],
-    [{ gelaende: 8, kartentyp: 'autonom', biom: 'vulkan' }, 'a2d88c39'],
+    [{ gelaende: 8, waffen: WAFFEN_WIND }, '4913d98d'],
+    [{ gelaende: 8, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'pilzwald' }, '8750e9f2'],
+    [{ gelaende: 8, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'schlackeschmiede' }, '5f83b9d5'],
+    [{ gelaende: 8, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'vulkan' }, 'a2d88c39'],
   ];
   for (const [extra, hash] of gold) {
     const r = aufzeichnenUndAbspielen(extra);

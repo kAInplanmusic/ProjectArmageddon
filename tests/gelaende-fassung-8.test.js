@@ -20,6 +20,7 @@ import { REZEPTE_MATERIAL } from '../src/shared/config/stoff-rezepte-material.js
 import { rezeptFuer } from '../src/shared/config/stoff-rezepte.js';
 import { stoffByKey } from '../src/shared/config/stoffe.js';
 import { WET_LEVEL } from '../src/shared/config/water.js';
+import { WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
 
 test('Marke: Fassung 8 ist gültig, 7 bleibt gültig, Unbekanntes fällt auf den Standard', () => {
   assert.equal(GELAENDE_KLAR, 8);
@@ -155,10 +156,10 @@ function aufzeichnenUndAbspielen(extra) {
 
 test('Alter Replay (Marke 7): Kopf behält die 7, Wiedergabe endet im Goldwert von vor Fassung 8', () => {
   const gold = [
-    [{ gelaende: 7 }, '4913d98d', null],
-    [{ gelaende: 7, kartentyp: 'autonom', biom: 'vulkan' }, 'c49352ec', 'vulkan'],
-    [{ gelaende: 7, kartentyp: 'autonom', biom: 'schlackeschmiede' }, '3ad77510', 'schlackeschmiede'],
-    [{ gelaende: 7, kartentyp: 'autonom', biom: 'planet' }, 'bf3659a9', 'planet_stein'],
+    [{ gelaende: 7, waffen: WAFFEN_WIND }, '4913d98d', null],
+    [{ gelaende: 7, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'vulkan' }, 'c49352ec', 'vulkan'],
+    [{ gelaende: 7, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'schlackeschmiede' }, '3ad77510', 'schlackeschmiede'],
+    [{ gelaende: 7, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'planet' }, 'bf3659a9', 'planet_stein'],
   ];
   for (const [extra, hash, sonder] of gold) {
     const r = aufzeichnenUndAbspielen(extra);
