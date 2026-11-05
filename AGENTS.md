@@ -26,7 +26,7 @@ unverändert weiter.
   bleiben konsistent mit dem Code.
 - E2E: `npx playwright test` (Config setzt die Zugpause auf 0). Betroffene Specs
   immer laufen lassen.
-- `src/engine/match.js` bleibt ≤ 2790 Zeilen (Zeilenbudget-Test; nach der Zerlegung 2638, nur verschärfen).
+- `src/engine/match.js` bleibt ≤ 2790 Zeilen (Zeilenbudget-Test; nach dem Auszug der Kartenmaße 2718, nur verschärfen).
 - Tests werden nie übersprungen, abgeschwächt oder gelöscht, um grün zu werden.
 
 ## §4 Git

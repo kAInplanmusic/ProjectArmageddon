@@ -7172,7 +7172,7 @@ Schlüssel liegen als Umgebungsvariablen der Sitzung (nie in Dateien oder Commit
 
 ### 5. Prüfen: Läufe und Fallen
 
-- Reihenfolge vor jeder Übergabe: `npm test`, `npm run check:docs`, `npm run matrix:check`, eslint, `match.js` ≤ 2790 (aktuell 2638, seit der Zerlegung `docs/zerlegung-match.md`), betroffene E2E mit eigenem `PA_PORT` und `--workers=1`.
+- Reihenfolge vor jeder Übergabe: `npm test`, `npm run check:docs`, `npm run matrix:check`, eslint, `match.js` ≤ 2790 (aktuell 2718, seit dem Auszug der Kartenmaße nach `engine/karte.js`, siehe `docs/zerlegung-match.md`), betroffene E2E mit eigenem `PA_PORT` und `--workers=1`.
 - **Gesamtlauf** (313 Tests, über 50 Minuten): in Blöcken zu je 6 Specs mit fortsetzbarem Skript (Muster: `split` der Specliste, je Block `npx playwright test <specs> --workers=1`, Fortschritt in einer Datei). Hintergrundprozesse sterben bei Worker-Neustarts; deshalb nur fortsetzbare Läufe. Letzter Stand: Block 0–3 durchgelaufen (Fehler: ein Spec für Planeten, behoben; Block 1 mit drei Fehlern, vermutlich Dateiänderung während des Laufs), Block 4–9 offen.
 - **Fallen:** (a) `PA_PORT` setzen, die Konfiguration nimmt dann keinen fremden Server mehr (sonst falsche Zugpause und 403 für Schriften); (b) im Worktree echtes `node_modules`, kein Symlink; (c) Dateien im Arbeitsbaum während eines Laufs nicht ändern (Vite lädt neu); (d) nie `pkill -f`; (e) die Online-Specs nutzen freie Ports (`tests/e2e/helfer/freier-port.mjs`); (f) `profiling.spec` ist nur mit Software-Rasterung aktiv, `prediction-online:263` bedingt übersprungen.
 - Neue Menü-Auswahl liegt hinter „Erweitert" (`#cfg-erweitert`): Specs müssen den Block zuerst öffnen.
