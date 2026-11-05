@@ -557,7 +557,7 @@ export function windFaktorFuerWaffe(waffe, windFassung) {
  *
  * @returns {{x:number,y:number}[]}
  */
-export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon = null) {
+export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon = null, sampleEvery = 3) {
   if (!quelle.isPlayerAlive(playerId)) return [];
   // Die Vorschau muss dieselbe Geschwindigkeit nutzen wie der echte Schuss,
   // sonst zeigt sie eine Bahn, die die Waffe nicht fliegt.
@@ -582,7 +582,12 @@ export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon =
     windFactor: windFaktorFuerWaffe(waffe, quelle.windFassung),
     wind: quelle.world.services.match.wind ?? 0,
     steps,
-    sampleEvery: 3,
+    /*
+     * Fassung 4 (Zielhilfe): Wie dicht die Vorschau abgetastet wird. 3 ist der
+     * alte Wert; ein Zielhilfe-Faktor macht die Bahn feiner oder gröber, ohne
+     * ihre Form zu ändern. Ohne Wirkung bleibt es bei 3.
+     */
+    sampleEvery,
     /*
      * Ohne Startpunkt: `aimPreview` liefert seit jeher die Punkte NACH dem
      * ersten Schritt, und Aufrufer lesen `punkte[0]` als ersten Schritt

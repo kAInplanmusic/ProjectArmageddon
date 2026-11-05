@@ -3025,8 +3025,14 @@ class Game {
     const panel = overlay?.querySelector('.wheel-panel');
     if (!overlay || !canvas) return;
 
-    const index = Math.max(0, GUENTHER_WHEEL.findIndex(o => o.id === payload.outcome));
-    const istHeimdall = payload.outcome === 'heimdall';
+    /*
+     * Fassung 4: Der Ausgang ist ein benannter Perk; das Rad zeigt weiterhin
+     * seine fünf Segmente. `payload.rad` nennt das Segment, auf das gedreht
+     * wird — Fassung 1–3 liefern kein `rad` und drehen wie bisher auf `outcome`.
+     */
+    const radId = payload.rad ?? payload.outcome;
+    const index = Math.max(0, GUENTHER_WHEEL.findIndex(o => o.id === radId));
+    const istHeimdall = radId === 'heimdall';
 
     overlay.hidden = false;
     if (panel) panel.classList.toggle('heimdall', istHeimdall);

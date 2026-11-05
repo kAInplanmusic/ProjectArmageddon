@@ -31,6 +31,8 @@ import {
   GUENTHER_AKTION_IDS,
   GUENTHER_KACK_POSE_TICKS,
   guentherWerte,
+  GUENTHER_PERKS_FASSUNG,
+  waehleGuentherPerk,
 } from '../../shared/config/guenther.js';
 import { pickWeaponForRarity } from '../../shared/config/weapons.js';
 import { KISTE_KANTE } from '../../shared/config/kisten.js';
@@ -88,6 +90,8 @@ export class GuentherSystem {
   #pee = GUENTHER_PEE;
   #poop = GUENTHER_POOP;
   #aktionRng = null;
+  /** Fassung 4: eigener Strom für die Perk-Auswahl (das Rad bleibt unberührt). */
+  #perkRng = null;
   /** Laufende Aktion `{id, gesamt, rest, ziel}` oder null. */
   #aktion = null;
   #aktionTimer = 0;
@@ -103,8 +107,9 @@ export class GuentherSystem {
    * @param {number} options.height - Kartenhöhe
    * @param {number} [options.fassung] - `config.guenther` (1 = nur alte Regeln, 2 = Aktionen)
    * @param {object} [options.aktionRng] - Teilgenerator der Aktionen (Pflicht ab Fassung 2)
+   * @param {object} [options.perkRng] - Teilgenerator der Perk-Auswahl (Fassung 4; sonst `rng`)
    */
-  constructor({ rng, maxRounds = 30, width, height, fassung = GUENTHER_ALT, aktionRng = null }) {
+  constructor({ rng, maxRounds = 30, width, height, fassung = GUENTHER_ALT, aktionRng = null, perkRng = null }) {
     if (!rng || typeof rng.next !== 'function') {
       throw new TypeError('GuentherSystem benötigt einen RNG mit next()');
     }
@@ -113,6 +118,7 @@ export class GuentherSystem {
     this.#pee = guentherWerte(fassung).pee;
     this.#poop = guentherWerte(fassung).poop;
     this.#aktionRng = aktionRng;
+    this.#perkRng = perkRng ?? rng;
     if (fassung >= GUENTHER_AKTIONEN && !aktionRng) throw new TypeError('Günther ab Fassung 2 benötigt aktionRng');
     this.maxRounds = maxRounds;
     this.width = width;
@@ -443,6 +449,22 @@ export class GuentherSystem {
         if (this.#fassung >= GUENTHER_AKTIONEN) this.#kurzPose = { name: 'huepfen', ticks: 50 };
         const ergebnis = radAufloesen(aktiverSpieler);
         melde('guenther_wheel', { playerId: aktiverSpieler, ...ergebnis });
+        /*
+         * Fassung 4: Der Ausgang ist ein benannter Perk. Er bekommt eine eigene
+         * Meldung, damit das HUD Name und Erklärung zeigen kann, ohne die
+         * Rad-Animation zu kennen. Fassung 1–3 melden hier nichts Zusätzliches.
+         */
+        if (ergebnis.perk) {
+          melde('guenther_perk', {
+            playerId: aktiverSpieler,
+            perk: ergebnis.perk.id,
+            name: ergebnis.perk.name,
+            erklaerung: ergebnis.perk.erklaerung,
+            stufe: ergebnis.perk.stufe,
+            amount: ergebnis.amount,
+            weaponId: ergebnis.weaponId,
+          });
+        }
       }
     }
   }
@@ -681,6 +703,16 @@ export class GuentherSystem {
    * auf das feststehende Feld.
    */
   wuerfleAusgang() {
+    /*
+     * Fassung 4: Das Rad würfelt einen benannten Perk. Der Ausgang trägt
+     * zusätzlich `label`/`detail` in der Form des alten Rads — die Anzeige und
+     * das Ereignis bleiben damit gleich aufgebaut. Fassung 1–3 würfeln
+     * unverändert die fünf alten Ausgänge.
+     */
+    if (this.#fassung >= GUENTHER_PERKS_FASSUNG) {
+      const perk = waehleGuentherPerk(this.#perkRng);
+      return { ...perk, label: perk.name, detail: perk.erklaerung, effect: perk.wirkung };
+    }
     const wurf = this.#rng.next() * GUENTHER_WHEEL_TOTAL;
     let summe = 0;
     for (const ausgang of GUENTHER_WHEEL) {

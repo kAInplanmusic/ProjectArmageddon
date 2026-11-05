@@ -29,11 +29,14 @@
 export const COOKIE_ALT = 1;
 export const COOKIE_KATER = 2;
 export const COOKIE_FEINSCHLIFF = 3;
+/** Fassung 4: 30 benannte Mali bei Berührung, siehe unten und `config/cookieMali.js`. */
+export const COOKIE_MALI_FASSUNG = 4;
 /** Fassung NEUER Partien (Server und Client geben sie ausdrücklich mit). */
-export const COOKIE_STANDARD = COOKIE_FEINSCHLIFF;
+export const COOKIE_STANDARD = COOKIE_MALI_FASSUNG;
 
 /** Fehlende oder unbekannte Werte sind `COOKIE_ALT` (siehe `normalisiereGuenther`). */
 export function normalisiereCookie(fassung) {
+  if (fassung === COOKIE_MALI_FASSUNG) return COOKIE_MALI_FASSUNG;
   if (fassung === COOKIE_FEINSCHLIFF) return COOKIE_FEINSCHLIFF;
   return fassung === COOKIE_KATER ? COOKIE_KATER : COOKIE_ALT;
 }
@@ -215,4 +218,58 @@ export function cookieWut(fassung) {
 /** Die Pflegewerte einer Fassung (Simulation und Anzeige lesen hier). */
 export function cookiePflege(fassung) {
   return fassung >= COOKIE_FEINSCHLIFF ? COOKIE_PFLEGE_3 : COOKIE_PFLEGE;
+}
+
+/*
+ * ============================================================================
+ * Fassung 4: 30 benannte Mali (Versionsmarke `config.cookie` = 4)
+ * ============================================================================
+ *
+ * ## Was sich ändert
+ *
+ * Bis Fassung 3 war die Berührung mit Cookie eine gute Sache: Füttern heilt,
+ * Kuscheln heilt. Ab Fassung 4 hängt an der Berührung zusätzlich ein gezogener
+ * Malus aus 30 benannten Ereignissen (`config/cookieMali.js`) — weniger
+ * Zugzeit, eine verlorene Waffe, verpuffte Munition, Wind gegen dich, ein Loch
+ * unter den Füßen und so weiter. Cookie verteilt Schlechtes; das ist seine
+ * Rolle neben Günther.
+ *
+ * ## Warum das eine eigene Fassung ist
+ *
+ * Die Mali greifen in Inventar, Munition, Status, Wind, Zugzeit und Zielhilfe.
+ * Eine Partie aus Fassung 3 liefe damit anders als aufgezeichnet. Deshalb:
+ * Fassung 1–3 unverändert, Fassung 4 nur für neue Partien — die Marke
+ * `config.cookie` steht dafür schon im Replay-Kopf (AGENTS.md §2).
+ *
+ * ## Zugzeit
+ *
+ * Der Malus verkürzt die Zugzeit der BETROFFENEN Figur, nicht des ganzen Zuges
+ * (docs/anforderungen-2026-11-05.md §5). Die Rechnung steht in
+ * `engine/tierZustand.js`; hier steht nur der Faktor.
+ *
+ * ## Warum die Liste ausgelagert ist
+ *
+ * Die 30 Einträge sind Inhaltsdaten. In dieser Datei stünden sie zwischen
+ * Hungeruhr und Wutwerten und würden das Verhalten unlesbar machen.
+ * `config/cookieMali.js` ist die eine Quelle; hier wird sie nur weitergereicht.
+ */
+import {
+  COOKIE_MALI,
+  COOKIE_MALUS_TOTAL,
+  COOKIE_MALUS_IDS,
+  COOKIE_MALUS_STUFEN,
+  waehleCookieMalus,
+} from './cookieMali.js';
+
+export {
+  COOKIE_MALI,
+  COOKIE_MALUS_TOTAL,
+  COOKIE_MALUS_IDS,
+  COOKIE_MALUS_STUFEN,
+  waehleCookieMalus,
+};
+
+/** Die Malus-Liste einer Fassung (ab 4; davor leer, weil es keine gibt). */
+export function cookieMali(fassung) {
+  return fassung >= COOKIE_MALI_FASSUNG ? COOKIE_MALI : [];
 }

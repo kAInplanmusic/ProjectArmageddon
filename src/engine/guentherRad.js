@@ -7,10 +7,11 @@
  * @module guentherRad
  */
 import { LOW_RARITY_WEIGHTS, LEGENDARY_WEIGHTS, GUENTHER_FEINSCHLIFF } from '../shared/config/guenther.js';
+import { wendeTierWirkung } from './tierWirkung.js';
 
 /**
- * @param {{guenther:object, statuses:object, inventory:object, world:object}} q
- * @returns {{outcome:string, label:string, detail:string, effect:string}}
+ * @param {{guenther:object, statuses:object, inventory:object, world:object, tier:object, rng:object}} q
+ * @returns {{outcome:string, label:string, detail:string, effect:string, perk?:object}}
  */
 export function loeseGuentherRad(q, playerId) {
     const ausgang = q.guenther.wuerfleAusgang();
@@ -24,6 +25,22 @@ export function loeseGuentherRad(q, playerId) {
       weaponId: null,
       weaponName: null,
     };
+
+    /*
+     * Fassung 4: Der Ausgang ist ein benannter Perk mit einer Wirkungsart aus
+     * `engine/tierWirkung.js`. Die fünf alten Ausgänge (Fassung 1–3) laufen
+     * unverändert durch den `switch` darunter — sie haben `kind`, kein `art`.
+     */
+    if (ausgang.wirkung) {
+      const bericht = wendeTierWirkung(q, playerId, ausgang.wirkung);
+      ergebnis.effect = ausgang.wirkung.art;
+      ergebnis.amount = bericht.betrag;
+      ergebnis.weaponId = bericht.weaponId ?? null;
+      ergebnis.weaponName = bericht.weaponId ? (ausgang.name ?? null) : null;
+      ergebnis.rad = ausgang.rad ?? null;
+      ergebnis.perk = { id: ausgang.id, name: ausgang.name, erklaerung: ausgang.erklaerung, stufe: ausgang.stufe };
+      return ergebnis;
+    }
 
     switch (wirkung.kind) {
       case 'skip':
