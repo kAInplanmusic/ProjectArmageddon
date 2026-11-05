@@ -128,7 +128,7 @@ export class LobbyManager {
 
   create({
     teams = 2, playersPerTeam = null, unitsPerPlayer = null, preset = 'hills', kartentyp = null,
-    seed = undefined, hostName = 'Host', orientation = 'landscape', sidegrades = null,
+    seed = undefined, hostName = 'Host', hostKontoId = null, orientation = 'landscape', sidegrades = null,
     loadouts = null, fraktionen = null, biom = null, kartenart = null, wiederhergestellt = false,
   } = {}) {
     /*
@@ -332,7 +332,7 @@ export class LobbyManager {
     };
     this.#lobbies.set(id, lobby);
 
-    const host = this.join(id, { name: hostName });
+    const host = this.join(id, { name: hostName, kontoId: hostKontoId });
     /*
      * Der Host-Platz ist RESERVIERT, nicht verbunden (SRV-2).
      *
@@ -448,7 +448,7 @@ export class LobbyManager {
    * (alle Figuren; erst nach dem Matchstart gefüllt): Bei einem Team sind das
    * mehrere, und wer nur `entityId` liest, sähe eine einzige.
    */
-  join(lobbyId, { name = 'Spieler', token = null } = {}) {
+  join(lobbyId, { name = 'Spieler', token = null, kontoId = null } = {}) {
     const lobby = this.get(lobbyId);
     if (!lobby) throw new Error('Lobby nicht gefunden');
     /*
@@ -463,6 +463,9 @@ export class LobbyManager {
     if (token !== null && (typeof token !== 'string' || token.length > TOKEN_MAX_ZEICHEN)) {
       throw new Error('token muss eine Zeichenkette oder null sein');
     }
+    if (kontoId !== null && typeof kontoId !== 'string') {
+      throw new Error('kontoId muss eine Zeichenkette oder null sein');
+    }
 
     // Wiederverbindung: bekannter Token holt ALLE seine Plätze zurück.
     if (token) {
@@ -471,12 +474,29 @@ export class LobbyManager {
         for (const seat of vorhandene) {
           seat.connected = true;
           seat.disconnectedAt = null;
+          // Ein bisheriger Gast-Platz, der jetzt mit Konto fortgesetzt wird,
+          // bekommt die Kontokennung nachgetragen — sonst zählte die Partie
+          // nicht, obwohl der Mensch angemeldet ist.
+          if (kontoId && !seat.kontoId) seat.kontoId = kontoId;
         }
         return this.#antwort(lobby, vorhandene[0], vorhandene, { resumed: true });
       }
     }
 
     if (lobby.status !== LOBBY_STATUS.OPEN) throw new Error('Lobby nimmt keine Spieler mehr auf');
+
+    /*
+     * Ein Konto = ein Platz je Lobby.
+     *
+     * Ohne diese Regel könnte derselbe Mensch mit zwei Tabs beide Teams
+     * besetzen: Die Partie zählte (zwei „angemeldete Menschen" wären es zwar
+     * nicht, aber zwei Plätze mit demselben Konto), und ein Konto könnte gegen
+     * sich selbst Elo sammeln. Der Token-Weg (Wiederverbindung) ist davon nicht
+     * betroffen — er kehrt oben schon zurück.
+     */
+    if (kontoId && lobby.seats.some(seat => seat.kontoId === kontoId)) {
+      throw new Error('Dieses Konto spielt in dieser Lobby bereits');
+    }
 
     const belegteTeams = new Set(lobby.seats.map(seat => seat.teamId));
     let teamId = -1;
@@ -511,6 +531,14 @@ export class LobbyManager {
         connected: true,
         disconnectedAt: null,
         entityId: null,
+        /**
+         * Kontokennung des Menschen an diesem Platz (oder null = Gast).
+         *
+         * Sie entscheidet, ob die Partie in die Rangliste zählt: Nur Plätze mit
+         * Konto zählen, und eine Partie braucht mindestens zwei davon. Sie ist
+         * KEINE Berechtigung — der Platz gehört weiterhin dem Token.
+         */
+        kontoId,
       });
     }
     lobby.seats.push(...seats);
