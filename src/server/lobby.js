@@ -8,7 +8,7 @@
  * @module LobbyManager
  */
 import { bereinigeFraktionen } from '../shared/config/darstellung.js';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';
 import { ORIENTATIONS, TEAM_COLORS } from '../engine/match.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
 import { normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
@@ -77,6 +77,46 @@ export const MAX_PLAYERS_PER_TEAM = 6;
 export const NAME_MAX_ZEICHEN = 64;
 /** Längster erlaubter Token (der Server vergibt UUIDs mit 36 Zeichen). */
 export const TOKEN_MAX_ZEICHEN = 128;
+/**
+ * Länge des Fortsetzungs-Tokens in Zeichen (Hex).
+ *
+ * ## Warum ein ZWEITER Token neben `seat.token`
+ *
+ * `seat.token` ist die Identität eines Beitrags: Mit ihm hängt JEDES Spielkommando
+ * (`handleInput`, `handleJump`, …) an einem Platz, und er lebt so lange wie der
+ * Platz. Der Fortsetzungs-Token (`CONTROL.RESUME`) hat eine andere Aufgabe und
+ * eine andere Lebensdauer: Er ist der SCHLÜSSEL zum Wiedereinstieg nach einem
+ * Neuladen und wird beim Match-Ende bewusst entwertet, ohne die Identität des
+ * Platzes zu zerstören. Zwei Aufgaben, zwei Schlüssel — würde man den
+ * Kommando-Token entwerten, verlöre die laufende Sitzung ihren Bezug; würde man
+ * ihn nie entwerten, bliebe ein einmal gesehener Token für immer gültig.
+ *
+ * 16 zufällige Bytes (`randomBytes`) ergeben 32 Hex-Zeichen = 128 Bit. Das ist
+ * derselbe Zufall wie bei einer UUID, nur in der Form, die der Auftrag für RT-1
+ * nennt. Geraten wird hier nichts: Der Token wird ausschließlich vom Server
+ * erzeugt und verlässt ihn nur im WELCOME an den eigenen Client.
+ */
+export const RESUME_TOKEN_LAENGE = 32;
+const RESUME_TOKEN_MUSTER = /^[0-9a-f]{32}$/;
+
+/**
+ * Erzeugt einen Fortsetzungs-Token (32 Hex-Zeichen, kryptografischer Zufall).
+ *
+ * Bewusst KEIN `Math.random`: Der Token ist ein Zugangsschlüssel zu einem
+ * fremden Spielplatz (AGENTS.md §6); ein vorhersagbarer Zufall wäre eine
+ * Einladung, fremde Sitze zu übernehmen. Die Engine-Regel „kein `Math.random`
+ * in `src/engine` und `src/shared`" (AGENTS.md §2) gilt hier ohnehin nicht —
+ * dieser Token ist Sitzungszustand, kein Spielzustand, und beeinflusst keinen
+ * Replay.
+ */
+export function erzeugeResumeToken() {
+  return randomBytes(RESUME_TOKEN_LAENGE / 2).toString('hex');
+}
+
+/** Ist das ein Token, wie ihn `erzeugeResumeToken` erzeugt? (Formprüfung VOR der Suche) */
+export function istResumeToken(wert) {
+  return typeof wert === 'string' && RESUME_TOKEN_MUSTER.test(wert);
+}
 
 export class LobbyManager {
   #lobbies = new Map();
@@ -459,6 +499,15 @@ export class LobbyManager {
         unitIndex,
         name,
         token: neuerToken,
+        /*
+         * Fortsetzungs-Token (RT-1): je Sitzplatz eigner Zufall, im WELCOME an
+         * den Client. Bewusst je Platz und nicht je Beitrag — der Auftrag nennt
+         * „je Sitzplatz", und ein Platz ist die kleinste Einheit, die der
+         * Server einem Socket zuordnet. Fortgesetzt wird immer der ganze
+         * BEITRITT (alle Plätze mit demselben `token`), weil ein Mensch ein
+         * Team führt; der Token des ersten Platzes genügt dafür als Schlüssel.
+         */
+        resumeToken: erzeugeResumeToken(),
         connected: true,
         disconnectedAt: null,
         entityId: null,
@@ -492,14 +541,92 @@ export class LobbyManager {
     return true;
   }
 
+  /**
+   * Setzt einen BEITRITT über seinen Fortsetzungs-Token fort (RT-1).
+   *
+   * Der Token wird NICHT gegen `seat.token` getauscht: Der Platz behält seine
+   * Identität, der neue Socket wird nur an ihn gebunden. Dadurch ist ein
+   * Fortsetzen für die Spielbefehle ununterscheidbar von einer normalen
+   * Wiederverbindung — der Zug läuft weiter, niemand bekommt einen zweiten Platz.
+   *
+   * Gesucht wird über ALLE Lobbys: Der Client nennt in `CONTROL.RESUME` nur den
+   * Token (die Lobby-ID ist eine Hilfe für die Fehlermeldung, keine Bedingung).
+   * Ein Token, der zu keiner Lobby mehr gehört — abgelaufenes Reconnect-Fenster,
+   * Match-Ende, Serverneustart —, liefert `null`.
+   *
+   * ## Warum die Suche linear ist
+   *
+   * Ein Index `resumeToken -> Platz` wäre ein zweiter Zustand, der bei
+   * `pruneDisconnected`, `restoreWithId` und beim Entwerten mitgepflegt werden
+   * müsste — und genau solche Schattenkopien sind hier schon mehrfach veraltet.
+   * Es gibt wenige Lobbys und wenige Plätze; die Suche kostet nichts Messbares.
+   *
+   * @param {string} resumeToken
+   * @returns {{lobby: object, seat: object, seats: object[]}|null}
+   */
+  resume(resumeToken) {
+    if (!istResumeToken(resumeToken)) return null;
+    for (const lobby of this.#lobbies.values()) {
+      const seat = lobby.seats.find(entry => entry.resumeToken === resumeToken);
+      if (!seat) continue;
+      // Der ganze Beitrag kommt zurück — ein Mensch führt ein Team.
+      const seats = lobby.seats.filter(entry => entry.token === seat.token);
+      if (seats.length === 0) return null;
+      for (const entry of seats) {
+        entry.connected = true;
+        entry.disconnectedAt = null;
+      }
+      return { lobby, seat, seats };
+    }
+    return null;
+  }
+
+  /**
+   * Entwertet alle Fortsetzungs-Token einer Lobby (Match-Ende, Abbruch).
+   *
+   * Der Platz und sein `token` bleiben bestehen: Eine Revanche über den
+   * Kommandopfad (`JOIN_LOBBY` mit Token) ist weiter möglich, aber ein
+   * entschiedenes Match lässt sich nicht mehr „fortsetzen" — es gibt nichts
+   * fortzusetzen. Ohne diese Zeile bliebe der Schlüssel zu einer beendeten
+   * Partie für immer gültig.
+   *
+   * @param {string} lobbyId
+   * @returns {number} Zahl der entwerteten Plätze
+   */
+  entwerteResumeToken(lobbyId) {
+    const lobby = this.get(lobbyId);
+    if (!lobby) return 0;
+    let anzahl = 0;
+    for (const seat of lobby.seats) {
+      if (seat.resumeToken) {
+        seat.resumeToken = null;
+        anzahl += 1;
+      }
+    }
+    return anzahl;
+  }
+
   /** Antwort auf einen Beitritt: alle Plätze und Figuren dieses Menschen. */
   #antwort(lobby, seat, seats, { resumed }) {
+    /*
+     * Der Fortsetzungs-Token verlässt den Server NUR im WELCOME am eigenen
+     * Socket (RT-1) — nicht in der HTTP-Antwort von `create` und nicht in
+     * `describe()`, die beide die Lobby nach außen beschreiben. Deshalb wird er
+     * hier ausdrücklich abgezogen statt mitgespreizt: Wer die Beitrittsantwort
+     * liest, braucht ihn nicht, und ein Token in einer HTTP-Antwort wäre ein
+     * zweiter Weg nach draußen, den niemand mehr überblickt.
+     */
+    const { resumeToken: _resumeToken, ...ohneResumeToken } = seat;
     return {
-      ...seat,
+      ...ohneResumeToken,
       lobbyId: lobby.id,
       resumed,
       // Alle Plätze dieses Beitritts — bei einem Team mehrere.
-      seats: seats.map(entry => ({ ...entry })),
+      seats: seats.map(entry => {
+        const kopie = { ...entry };
+        delete kopie.resumeToken;
+        return kopie;
+      }),
       entityIds: seats.map(entry => entry.entityId).filter(id => id !== null),
     };
   }

@@ -83,6 +83,11 @@ import { KATALOG_ANZEIGE, KATALOG_ZUSTAND, KATALOG_GEDROSSELT } from './ereignis
  *    Zünder im Katalog ist 5 s (`fuseTime`, 150 Waffen geprüft), also 50
  *    Zehntelsekunden von 255. Eine ältere Gegenstelle lehnt den Snapshot ab,
  *    statt ihn falsch zu lesen; genau dafür gibt es diese Zahl.
+ *
+ * RT-1 (Fortsetzen nach Neuladen, 2026-11-05) hat die Zahl NICHT erhöht: Neue
+ * Steuernachrichten (`resume`, `resume_failed`) und das zusätzliche Feld
+ * `resumeToken` im `WELCOME` sind JSON und zusatzfeld-tolerant; kein Byte des
+ * binären Snapshots hat sich geändert. Siehe `CONTROL.RESUME`.
  */
 export const PROTOCOL_VERSION = 9;
 export const MAGIC = [0x50, 0x41]; // 'PA'
@@ -114,7 +119,44 @@ export const CONTROL = Object.freeze({
   SKIP_TURN: 'skip_turn',
   /** Aufgeben (Zugregeln 2): nur der eigene Sitz. */
   SURRENDER: 'surrender',
+  /**
+   * Fortsetzen nach Neuladen (RT-1): `{token}` — der Fortsetzungs-Token aus dem
+   * `WELCOME` (`resumeToken`, 32 Hex-Zeichen).
+   *
+   * Der Client sendet ihn direkt nach dem Verbindungsaufbau (statt
+   * `JOIN_LOBBY`); der Server bindet den neuen Socket an den bestehenden Platz,
+   * ohne einen zweiten zu belegen, und antwortet mit `WELCOME` (`resumed: true`,
+   * erneutem `resumeToken`) sowie sofort einem Vollsnapshot. Der Zug läuft
+   * unberührt weiter.
+   *
+   * Optional darf `lobbyId` mit: Sie ist KEINE Bedingung (der Token identifiziert
+   * den Platz), sondern nur die Angabe, mit der der Server im Ablehnungsfall
+   * „Match beendet" von „unbekannt/abgelaufen" unterscheiden kann.
+   *
+   * WARUM DIE PROTOKOLLVERSION DABEI NICHT STEIGT: `CONTROL`-Nachrichten sind
+   * JSON mit benannten Feldern; ein neuer Typ und ein zusätzliches Feld im
+   * `WELCOME` ändern kein Byte des binären Snapshots. Eine ältere Gegenstelle
+   * verwirft den unbekannten Typ still (Client: `game_event`, Server: „unbekannter
+   * Nachrichtentyp") und liest das zusätzliche Feld nicht — genau das verlangt
+   * AGENTS.md §2 („alte Aufzeichnungen laufen unverändert weiter"). Die
+   * Versionszahl steht für das BINÄRFORMAT (`encodeSnapshot`), nicht für die
+   * Steuernachrichten; ein Hochzählen auf 10 würde jeden v9-Snapshot und jede
+   * v9-Aufzeichnung grundlos ablehnen.
+   */
   RESUME: 'resume',
+  /**
+   * Server -> Client: Das Fortsetzen ging nicht. `{grund, error, errors}` mit
+   * `grund` aus `'unbekannt'` (kein Platz zu diesem Token — abgelaufen, fremd,
+   * nach Neustart verloren), `'beendet'` (das Match dieser Lobby ist entschieden
+   * oder abgebrochen, der Token wurde entwertet) oder `'ungueltig'` (Formfehler).
+   *
+   * Eigene Nachricht statt `ERROR`: Der Client muss hier NICHT nur anzeigen,
+   * sondern entscheiden — bei `'unbekannt'` fällt er auf den normalen Beitritt
+   * zurück (`JOIN_LOBBY` mit dem bekannten Platz-Token), bei `'beendet'` gehört
+   * er ins Menü. Diese Unterscheidung in einem Freitext-Feld zu suchen wäre eine
+   * Regel, die an der Meldung hängt statt am Protokoll.
+   */
+  RESUME_FAILED: 'resume_failed',
   ERROR: 'error',
   PING: 'ping',
   /**

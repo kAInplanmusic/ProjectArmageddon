@@ -13,7 +13,7 @@ import { readFileSync, statSync } from 'node:fs';
 import { extname, resolve, sep } from 'node:path';
 import { WebSocketServer } from 'ws';
 import { MatchController } from '../engine/match.js';
-import { LobbyManager, LOBBY_STATUS } from './lobby.js';
+import { LobbyManager, LOBBY_STATUS, istResumeToken } from './lobby.js';
 import { createLogger } from './logger.js';
 import { SnapshotHistory } from './lagCompensation.js';
 /*
@@ -1825,6 +1825,139 @@ export class GameServer {
   }
 
   /**
+   * Löst die bisherige Platzbindung eines Sockets — EINE Stelle für JOIN und RESUME.
+   *
+   * Ein zweiter Beitritt oder ein Fortsetzen auf demselben Socket darf nicht
+   * zwei Plätze halten (Audit 2026-10-13: der alte Platz blieb „verbunden" und
+   * hielt sein Match am Laufen). Der Aufruf steht deshalb vor jedem neuen Binden.
+   *
+   * FUND (Audit 2026-10-29): `disconnect` lief bedingungslos. Hat der Token
+   * inzwischen einen NEUEREN Socket (Wiederverbindung), trennte der veraltete
+   * Socket mit seinem zweiten JOIN den Platz des aktiven Spielers. Wie im
+   * `close`-Zuhörer darf nur trennen, wem der Token noch gehört.
+   *
+   * Felder setzen statt das Objekt ersetzen: `context` gehört dem Aufrufer
+   * (`#handleConnection`) und wird dort vom `close`-Zuhörer gelesen. Ein
+   * `context = {...}` würde nur den Parameter umbiegen (AU-9a/C-8).
+   */
+  #bisherigenPlatzLoesen(socket, context) {
+    if (!context.lobbyId || !context.token) return;
+    const alt = this.#sessions.get(context.lobbyId);
+    if (!this.#neuerSocketBesitztToken(alt, context.token, socket)) {
+      if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
+      this.#lobbies.disconnect(context.lobbyId, context.token);
+    }
+    context.lobbyId = null;
+    context.token = null;
+  }
+
+  /**
+   * Die Sitzung einer Lobby, notfalls neu — gemeinsame Stelle für JOIN und RESUME.
+   *
+   * Sie entsteht beim ersten Beitritt — aber sie LÄUFT erst, wenn alle Teams von
+   * Menschen besetzt sind. Vorher lief sie sofort, und der Server-Bot spielte die
+   * freien Teams. Das war falsch: **Es gibt keine Bot-KI.** Teams werden
+   * ausschließlich von Menschen gespielt; ein unbesetztes Team ist kein
+   * Bot-Team. Bis der letzte Mensch da ist, wartet die Lobby — die Simulation
+   * läuft nicht, damit niemand ins Leere zieht.
+   *
+   * ============ ENTSCHEIDUNG (Fund W5): Status nachziehen ============
+   *
+   * *Der Befund (gemessen in `tests/server-integration.test.js`):*
+   * Beim Match-Ende löscht die Sitzung sich selbst (`#finish` → `onEmpty`); die
+   * Lobby und ihre Plätze bleiben stehen. Ein späterer Beitritt mit Token findet
+   * keine Sitzung mehr und legt HIER eine neue an — das Match beginnt bei
+   * Runde 1. Die Lobby trug dabei weiter „finished" (= entschieden), WÄHREND in
+   * ihr gespielt wurde: „es ist vorbei" und „es läuft" zugleich. Wer die Lobby
+   * liest, sah eine erledigte Lobby, in der gespielt wird.
+   *
+   * *Die Entscheidung:* Der Status wird beim Wiederanlauf nachgezogen. Die Lobby
+   * ist ein WIEDERSPIEL-Gefäß, kein einmaliges Match. Sie trägt „open", solange
+   * kein Match in ihr unterwegs ist, „running", sobald eines unterwegs ist, und
+   * „finished", sobald ihr Match entschieden und die Sitzung weg ist. Damit ist
+   * der Zustand widerspruchsfrei: „finished" und „es wird gespielt" schließen
+   * sich aus.
+   *
+   * *Warum „running" und nicht „open":* „running" ändert fast nichts —
+   * `LobbyManager.join` lehnt ohnehin alles außer „open" ab, also kommt in die
+   * wiederbelebte Lobby weiterhin kein fremder Client (beim laufenden Match sind
+   * zusätzlich alle Teams besetzt). Genau dieselbe Kennzeichnung trägt eine
+   * Lobby, deren Match per `START_MATCH` gestartet wurde. „open" wäre die
+   * GRÖSSERE Änderung: Es öffnete die Tür für neue Spieler und stellte die Lobby
+   * zurück in den Lobby-Browser (der Client zeigt nur `status === 'open'`) — ein
+   * Eintrag, der beim Klick abgelehnt wird, also eine Sackgasse.
+   *
+   * *„running" meint die MATCHPHASE, nicht die Tick-Schleife:* Auch ein per
+   * `START_MATCH` gestartetes Match steht auf „running", während es auf einen
+   * Wiederverbinder wartet (`session.laeuft` ist dann `false`, siehe den
+   * Socket-`close`-Handler). Ein Status, der die Tick-Schleife abbildet,
+   * flackerte bei jedem Verbindungsabbruch zwischen „open" und „running" — und
+   * ein „open" mitten im Match wäre die nächste Tür, die nicht aufgeht.
+   *
+   * *Die Gegenprobe steht im selben Test:* „finished" bleibt, wo es hingehört
+   * (entschieden, keine Sitzung, niemand da) — und in ein laufendes Match kommt
+   * kein fremder Client.
+   */
+  #sitzungSicherstellen(lobby) {
+    const lobbyId = lobby.id;
+    const vorhanden = this.#sessions.get(lobbyId);
+    if (vorhanden) return vorhanden;
+    const session = new LobbySession(lobby, {
+      onEmpty: id => this.#sitzungBeendet(id),
+      ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
+      metrics: this.metrics,
+      logger: this.logger,
+    });
+    this.#sitzungRegistrieren(lobbyId, session);
+    if (lobby.status === LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId);
+    return session;
+  }
+
+  /**
+   * Das `WELCOME` eines Beitrags — EINE Stelle für JOIN und RESUME.
+   *
+   * Es trägt alles, was der Client zum Aufbau braucht: Seed und Geländefassung
+   * (sonst fiele er auf Fassung 1 zurück und die Karte wiche ab), die Krater vor
+   * dem Beitritt, den Mahlstrom-Einschnitt, alle eigenen Figuren (Matcharten: ein
+   * ganzes Team) — und seit RT-1 den Fortsetzungs-Token.
+   *
+   * Der Token wird aus dem LIVE-Platz gelesen (`lobby.seats`), nicht aus der
+   * Kopie des Beitritts: `#antwort` zieht ihn absichtlich ab, damit er nicht in
+   * der HTTP-Antwort landet; hier ist der einzige Weg nach draußen.
+   */
+  #sendeWillkommen(socket, lobby, session, seat, { resumed }) {
+    const eigeneSeats = lobby.seats.filter(entry => entry.token === seat.token);
+    const liveSeat = eigeneSeats[0] ?? seat;
+    socket.send(controlMessage(CONTROL.WELCOME, {
+      protocol: PROTOCOL_VERSION,
+      lobbyId: lobby.id,
+      seed: session.match.seedManager.baseSeed,
+      preset: lobby.preset,
+      // Der Client baut die Karte aus Seed UND Fassung: ohne diese Felder fiele er auf Fassung 1 zurück (Hash-Abweichung).
+      kartentyp: lobby.kartentyp ?? null,
+      orientation: lobby.orientation ?? 'landscape',
+      ...session.gelaendeFelder(),
+      token: seat.token,
+      /*
+       * RT-1: Der Schlüssel zum Wiedereinstieg. Er kommt bei JEDEM WELCOME mit
+       * (auch beim Fortsetzen selbst), damit der Client ihn nach einem
+       * Neuladen erneut in `sessionStorage` legen kann.
+       */
+      resumeToken: liveSeat.resumeToken ?? null,
+      seatIndex: liveSeat.seatIndex,
+      entityId: eigeneSeats[0]?.entityId ?? seat.entityId,
+      entityIds: eigeneSeats.map(entry => entry.entityId).filter(id => id !== null),
+      unitsPerPlayer: lobby.unitsPerPlayer ?? null,
+      resumed,
+      // Bisherige Krater: Wer später beitritt oder wieder verbindet,
+      // baut das Gelände aus dem Seed und braucht die Löcher dazu.
+      craters: session.match.terrain?.craterLog ?? [],
+      // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
+      inset: session.match.maelstrom?.inset ?? 0,
+    }));
+  }
+
+  /**
    * Die Sitzung hat sich beendet (`onEmpty`): Ergebnis merken, Sitzung entfernen.
    * @param {string} id - Lobby-ID
    */
@@ -1834,6 +1967,19 @@ export class GameServer {
       this.#beendeteMatches.set(id, { winnerTeamId: session.match.winnerTeamId, rounds: session.match.round });
     }
     this.#sessions.delete(id);
+    /*
+     * RT-1: Mit dem Ende ist der Fortsetzungs-Token dieser Lobby wertlos —
+     * es gibt nichts fortzusetzen. Er wird hier entwertet, an der EINEN Stelle,
+     * an der eine Sitzung endet (entschieden oder abgebrochen). Der Platz und
+     * sein Kommando-Token bleiben stehen; eine Revanche über `JOIN_LOBBY` ist
+     * weiter möglich, ein `CONTROL.RESUME` auf das alte Match nicht.
+     *
+     * Ohne diese Zeile bekäme ein Client, der nach dem Ende neu lädt, über
+     * seinen gespeicherten Token ein „fortgesetztes" Match gemeldet, das es
+     * nicht mehr gibt — oder schlimmer: die Sitzung würde hier neu angelegt und
+     * das entschiedene Spiel begänne von vorn, ohne dass jemand das wollte.
+     */
+    this.#lobbies.entwerteResumeToken(id);
   }
 
   /** Neue Sitzung für diese Lobby: ein früheres Ergebnis gilt nicht mehr. */
@@ -2340,27 +2486,8 @@ export class GameServer {
            * wenige Plätze) und macht das Versprechen aus `disconnect` an der
            * Stelle wahr, an der es zählt.
            */
-          // Ein zweiter Beitritt auf demselben Socket löst die alte Zuordnung (Audit 2026-10-13: der alte
-          // Platz blieb sonst „verbunden" und hielt sein Match am Laufen).
-          if (context.lobbyId && context.token) {
-            const alt = this.#sessions.get(context.lobbyId);
-            /*
-             * Fund (Audit 2026-10-29): `disconnect` lief bedingungslos. Hat der Token inzwischen einen
-             * NEUEREN Socket (Wiederverbindung), trennte der veraltete Socket mit seinem zweiten JOIN
-             * den Platz des aktiven Spielers. Wie im `close`-Zuhörer darf nur trennen, wem der Token
-             * noch gehört.
-             */
-            if (!this.#neuerSocketBesitztToken(alt, context.token, socket)) {
-              if (alt?.clients.get(context.token) === socket) alt.detach(context.token);
-              this.#lobbies.disconnect(context.lobbyId, context.token);
-            }
-            // Felder setzen statt das Objekt zu ersetzen: `context` gehoert dem
-            // Aufrufer (#handleConnection) und wird dort vom close-Zuhoerer
-            // gelesen. Ein `context = {...}` wuerde hier nur den Parameter
-            // umbiegen (AU-9a/C-8, beim Ausziehen aufgefallen).
-            context.lobbyId = null;
-            context.token = null;
-          }
+          // Ein zweiter Beitritt auf demselben Socket löst die alte Zuordnung.
+          this.#bisherigenPlatzLoesen(socket, context);
           this.pruneLobbies();
           const lobby = this.#lobbies.get(lobbyId);
           /*
@@ -2387,69 +2514,7 @@ export class GameServer {
           // Verlassen der Lobby oben. Der Aufrufer haelt dasselbe Objekt.
           context.lobbyId = lobbyId;
           context.token = seat.token;
-          let session = this.#sessions.get(lobbyId);
-          if (!session) {
-            /*
-             * Die Sitzung entsteht beim ersten Beitritt — aber sie LÄUFT erst,
-             * wenn alle Teams von Menschen besetzt sind.
-             *
-             * Vorher lief sie sofort, und der Server-Bot spielte die freien
-             * Teams. Das war falsch: **Es gibt keine Bot-KI.** Teams werden
-             * ausschließlich von Menschen gespielt; ein unbesetztes Team ist
-             * kein Bot-Team. Bis der letzte Mensch da ist, wartet die Lobby —
-             * die Simulation läuft nicht, damit niemand ins Leere zieht.
-             */
-            session = new LobbySession(lobby, {
-              onEmpty: id => this.#sitzungBeendet(id),
-              ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
-              metrics: this.metrics,
-              logger: this.logger,
-            });
-            this.#sitzungRegistrieren(lobbyId, session);
-            /*
-             * ============ ENTSCHEIDUNG (Fund W5): Status nachziehen ============
-             *
-             * *Der Befund (gemessen in `tests/server-integration.test.js`):*
-             * Beim Match-Ende löscht die Sitzung sich selbst (`#finish` →
-             * `onEmpty`); die Lobby und ihre Plätze bleiben stehen. Ein
-             * späterer Beitritt mit Token findet keine Sitzung mehr und legt
-             * HIER eine neue an — das Match beginnt bei Runde 1. Die Lobby trug
-             * dabei weiter „finished" (= entschieden), WÄHREND in ihr gespielt
-             * wurde: „es ist vorbei" und „es läuft" zugleich. Wer die Lobby
-             * liest, sah eine erledigte Lobby, in der gespielt wird.
-             *
-             * *Die Entscheidung:* Der Status wird beim Wiederanlauf
-             * nachgezogen. Die Lobby ist ein WIEDERSPIEL-Gefäß, kein einmaliges
-             * Match. Sie trägt „open", solange kein Match in ihr unterwegs ist,
-             * „running", sobald eines unterwegs ist, und „finished", sobald ihr
-             * Match entschieden und die Sitzung weg ist. Damit ist der Zustand
-             * widerspruchsfrei: „finished" und „es wird gespielt" schließen
-             * sich aus.
-             *
-             * *Warum „running" und nicht „open":* „running" ändert fast
-             * nichts — `LobbyManager.join` lehnt ohnehin alles außer „open" ab,
-             * also kommt in die wiederbelebte Lobby weiterhin kein fremder
-             * Client (beim laufenden Match sind zusätzlich alle Teams besetzt).
-             * Genau dieselbe Kennzeichnung trägt eine Lobby, deren Match per
-             * `START_MATCH` gestartet wurde. „open" wäre die GRÖSSERE Änderung:
-             * Es öffnete die Tür für neue Spieler und stellte die Lobby zurück
-             * in den Lobby-Browser (der Client zeigt nur `status === 'open'`) —
-             * ein Eintrag, der beim Klick abgelehnt wird, also eine Sackgasse.
-             *
-             * *„running" meint die MATCHPHASE, nicht die Tick-Schleife:* Auch
-             * ein per `START_MATCH` gestartetes Match steht auf „running",
-             * während es auf einen Wiederverbinder wartet (`session.laeuft` ist
-             * dann `false`, siehe den Socket-`close`-Handler unten). Ein Status,
-             * der die Tick-Schleife abbildet, flackerte bei jedem
-             * Verbindungsabbruch zwischen „open" und „running" — und ein „open"
-             * mitten im Match wäre die nächste Tür, die nicht aufgeht.
-             *
-             * *Die Gegenprobe steht im selben Test:* „finished" bleibt, wo es
-             * hingehört (entschieden, keine Sitzung, niemand da) — und in ein
-             * laufendes Match kommt kein fremder Client.
-             */
-            if (lobby.status === LOBBY_STATUS.FINISHED) this.#lobbies.markRunning(lobbyId);
-          }
+          const session = this.#sitzungSicherstellen(lobby);
           /*
            * ============ ENTSCHEIDUNG: erst starten, DANN anmelden ============
            *
@@ -2494,38 +2559,103 @@ export class GameServer {
           }
           // Die Live-Sitzung hat den Plätzen gerade Entity-IDs zugewiesen.
           // Der Rückgabewert von join() ist eine Kopie und daher veraltet —
-          // gelesen wird aus `lobby.seats`.
+          // das WELCOME liest die Figuren deshalb aus `lobby.seats`
+          // (`#sendeWillkommen`), inklusive aller Figuren dieses Beitrags.
+          this.#sendeWillkommen(socket, lobby, session, seat, { resumed: seat.resumed });
+          break;
+        }
+
+        case CONTROL.RESUME: {
           /*
-           * Alle Figuren dieses Beitrags melden — nicht nur die erste.
+           * ============ RT-1: Fortsetzen nach Neuladen ============
            *
-           * Im Modus der Matcharten gehören demselben Token MEHRERE Figuren
-           * (ein ganzes Team). Mit nur einer `entityId` hielte der Client jede
-           * andere eigene Figur für fremd: „Du bist nicht am Zug", kein
-           * Waffenzugriff, keine Kennzahlen. `entityId` bleibt für ältere
-           * Clients erhalten und nennt die erste Figur.
+           * Der Token ist ein Schlüssel, keine Identität: Er zeigt auf einen
+           * bestehenden Platz, und dieser Platz behält seinen `token`. Der neue
+           * Socket wird nur an ihn gebunden — dieselbe Bindung, die eine
+           * Wiederverbindung über `JOIN_LOBBY` herstellt. Deshalb ist der Zug
+           * danach unberührt: Kein Platz entsteht, keiner fällt weg, und die
+           * Simulation bekommt von diesem Vorgang nichts mit.
+           *
+           * Die Reihenfolge ist dieselbe wie beim Beitritt (Fund Sonde
+           * 2026-09-27): erst die Verwaltungsrunde (damit ein ABGELAUFENES
+           * Reconnect-Fenster den Token wirklich ungültig macht), dann binden,
+           * dann melden. `attach` setzt `lobby_state` ab und verwirft die
+           * Delta-Basis des Tokens (SRV-9); der Vollsnapshot darunter kommt aus
+           * `broadcastSnapshot`, das für einen Empfänger ohne Basis ohnehin
+           * einen Vollsnapshot encoded. Damit rendert der Client sofort weiter,
+           * statt bis zum nächsten 2-s-Vollsnapshot auf einem alten Bild zu
+           * stehen.
            */
-          const eigeneSeats = lobby.seats.filter(entry => entry.token === seat.token);
-          socket.send(controlMessage(CONTROL.WELCOME, {
-            protocol: PROTOCOL_VERSION,
-            lobbyId,
-            seed: session.match.seedManager.baseSeed,
-            preset: lobby.preset,
-            // Der Client baut die Karte aus Seed UND Fassung: ohne diese Felder fiele er auf Fassung 1 zurück (Hash-Abweichung).
-            kartentyp: lobby.kartentyp ?? null,
-            orientation: lobby.orientation ?? 'landscape',
-            ...session.gelaendeFelder(),
-            token: seat.token,
+          this.#bisherigenPlatzLoesen(socket, context);
+          this.pruneLobbies();
+          const treffer = this.#lobbies.resume(message.token);
+          if (!treffer) {
+            /*
+             * Ablehnung mit GRUND — der Client entscheidet danach:
+             * `unbekannt` → normaler Beitritt (mit dem bekannten Platz-Token,
+             * falls vorhanden), `beendet` → Menü, `ungueltig` → Menü.
+             *
+             * Die Unterscheidung „beendet" braucht die Lobby: Der Token selbst
+             * ist nach dem Entwerten nicht mehr zuzuordnen. Deshalb darf der
+             * Client seine `lobbyId` mitschicken; fehlt sie, bleibt es bei
+             * `unbekannt` — die sichere Annahme, denn sie führt nur zum
+             * normalen Beitritt, nicht zu einem neuen Match.
+             */
+            const genannt = typeof message.lobbyId === 'string' ? this.#lobbies.get(message.lobbyId) : null;
+            const beendet = genannt?.status === LOBBY_STATUS.FINISHED
+              || (typeof message.lobbyId === 'string' && this.#beendeteMatches.has(message.lobbyId));
+            const grund = !istResumeToken(message.token)
+              ? 'ungueltig'
+              : (beendet ? 'beendet' : 'unbekannt');
+            const text = grund === 'beendet'
+              ? 'Diese Partie ist beendet — Fortsetzen ist nicht mehr möglich'
+              : (grund === 'ungueltig'
+                ? 'Ungültiger Fortsetzungs-Token'
+                : 'Fortsetzungs-Token unbekannt oder abgelaufen');
+            this.logger.info('resume_abgelehnt', 'Fortsetzen abgelehnt', {
+              grund,
+              lobbyId: message.lobbyId ?? null,
+              // Nur die FORM des Tokens, nie sein Wert.
+              tokenForm: typeof message.token === 'string' ? message.token.length : typeof message.token,
+            });
+            if (socket.readyState === 1) {
+              socket.send(controlMessage(CONTROL.RESUME_FAILED, {
+                grund,
+                ...this.#fehlerNutzlast(text),
+              }));
+            }
+            break;
+          }
+
+          const { lobby, seat } = treffer;
+          context.lobbyId = lobby.id;
+          context.token = seat.token;
+          const session = this.#sitzungSicherstellen(lobby);
+          /*
+           * `#starteMatchFallsVoll` auch hier: Kommt der letzte fehlende Mensch
+           * über RESUME zurück (etwa nach einem Neuladen), muss das Match
+           * starten — genau wie beim Beitritt. Es startet nichts, was nicht
+           * schon vollständig besetzt ist.
+           */
+          const gestartet = this.#starteMatchFallsVoll(lobby.id, session);
+          if (gestartet) {
+            this.logger.info('lobby_complete', 'Alle Teams besetzt — Match startet', {
+              lobbyId: lobby.id,
+              teams: lobby.teams,
+              unitsPerPlayer: lobby.playersPerTeam,
+            });
+          }
+          session.attach(seat.token, socket);
+          this.#sendeWillkommen(socket, lobby, session, seat, { resumed: true });
+          // Sofort ein Zustandstakt: Der Client soll weiterrendern, nicht auf
+          // den nächsten regulären Snapshot warten. `attach` hat die Delta-Basis
+          // dieses Tokens verworfen, also geht ein VOLLsnapshot raus.
+          session.broadcastSnapshot();
+          this.logger.info('resume', 'Sitzung fortgesetzt', {
+            lobbyId: lobby.id,
             seatIndex: seat.seatIndex,
-            entityId: eigeneSeats[0]?.entityId ?? seat.entityId,
-            entityIds: eigeneSeats.map(entry => entry.entityId).filter(id => id !== null),
-            unitsPerPlayer: lobby.unitsPerPlayer ?? null,
-            resumed: seat.resumed,
-            // Bisherige Krater: Wer später beitritt oder wieder verbindet,
-            // baut das Gelände aus dem Seed und braucht die Löcher dazu.
-            craters: session.match.terrain?.craterLog ?? [],
-            // Mahlstrom-Einschnitt (Spalten je Seite), gleiche Begründung.
-            inset: session.match.maelstrom?.inset ?? 0,
-          }));
+            laeuft: session.laeuft,
+          });
           break;
         }
 
