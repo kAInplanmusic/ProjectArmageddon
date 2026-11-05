@@ -33,6 +33,17 @@ const gameServerQuelle = ohneKommentare(
   fs.readFileSync(path.join(ROOT, 'src', 'server', 'gameServer.js'), 'utf8')
 );
 
+/*
+ * Seit der Zerlegung (2026-11-05, Zeilenbudget) liegt die Sitzung EINER Lobby in
+ * `lobbySession.js`. Die Belege unten prüfen Verhalten der Server-Seite, nicht
+ * die Datei, in der es steht — deshalb wird gegen beide Dateien zusammen
+ * geprüft. Die Aussagen selbst bleiben unverändert.
+ */
+const lobbySessionQuelle = ohneKommentare(
+  fs.readFileSync(path.join(ROOT, 'src', 'server', 'lobbySession.js'), 'utf8')
+);
+const serverSeiteQuelle = `${gameServerQuelle}\n${lobbySessionQuelle}`;
+
 const mainQuelle = ohneKommentare(
   fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8')
 );
@@ -377,7 +388,7 @@ test('UX-9: Die Nicht-am-Zug-Ablehnung nennt die Restzugzeit', () => {
    * Restzugzeit aus dem Zustand.
    */
   assert.ok(
-    gameServerQuelle.includes('s Zugzeit)'),
+    serverSeiteQuelle.includes('s Zugzeit)'),
     'Der Server muss die Restzugzeit in die Ablehnung schreiben'
   );
 });
@@ -426,7 +437,7 @@ test('3.6: toPersisted ist keine zweite Fassung von serializeLobby mehr', () => 
    * derselben Persistenzform. toPersisted delegiert jetzt an serializeLobby.
    */
   assert.ok(
-    gameServerQuelle.includes('const voll = serializeLobby(this.lobby, this);'),
+    serverSeiteQuelle.includes('const voll = serializeLobby(this.lobby, this);'),
     'toPersisted muss serializeLobby aufrufen'
   );
 });
