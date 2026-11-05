@@ -1480,6 +1480,8 @@
             <ol id="rangliste" class="rangliste" aria-label="Rangliste"></ol>
             <p id="rangliste-rekorde" class="rangliste-rekorde muted"></p>
           </details>
+          <!-- Versionskennung (DEP-1): Version · Git-Stand · Bauzeit, gesetzt von src/client/bauinfo.js. -->
+          <p id="bauinfo" class="menu-bauinfo"></p>
                     </div>
         </div>
       </section>
@@ -1547,5 +1549,7 @@
   </div>
 
   <script type="module" src="/src/client/main.js"></script>
+  <!-- Versionskennung im Menü-Fuß (DEP-1); eigener Einstieg, damit main.js unberührt bleibt. -->
+  <script type="module" src="/src/client/bauinfo.js"></script>
 </body>
 </html>

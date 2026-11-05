@@ -1,0 +1,65 @@
+# =============================================================================
+#  ProjectArmageddon mit Docker Compose — OPTION (DEP-2), nicht gestartet
+# =============================================================================
+#  Ob Container gewünscht sind, entscheidet der Auftraggeber (docs/deploy-plan.md
+#  Abschnitt 12). Der Hauptweg ist systemd + Release-Paket (Abschnitt 5).
+#
+#  Aufruf auf dem Knoten (aus dem Projektordner):
+#    PA_TAG=0.9.0 docker compose -f deploy/compose.yaml up -d --build
+#  Rollback = voriges Tag:
+#    PA_TAG=<vorige Version> docker compose -f deploy/compose.yaml up -d
+#
+#  KOSTEN-BREMSE (AGENTS.md §5): Ein Container hat keine eigene Abschaltung.
+#  Die Idle-Bremse bleibt der systemd-Timer auf dem HOST. Damit sie den Dienst
+#  stoppen kann, läuft Compose selbst als systemd-Dienst, dessen Name in
+#  PA_SYSTEMD_UNIT steht (Beispiel-Einheit: docs/deploy-plan.md Abschnitt 11).
+#  Ohne diese Einheit und den Nachweis `systemctl list-timers` wird nichts gemietet.
+# =============================================================================
+name: projectarmageddon
+
+services:
+  spiel:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        PA_GIT_SHA: ${PA_GIT_SHA:-unbekannt}
+        SOURCE_DATE_EPOCH: ${SOURCE_DATE_EPOCH:-0}
+    image: projectarmageddon:${PA_TAG:-lokal}
+    restart: on-failure
+    # Nur Loopback: öffentlich ist allein der Reverse-Proxy (deploy/Caddyfile.beispiel).
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - path: /etc/projectarmageddon/betrieb.env
+        required: false
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      PA_STATE_PATH: /data/lobbies.json
+      # Hinter Caddy auf dem Host kommt jede Verbindung über die Docker-Brücke.
+      PA_VERTRAUTE_PROXYS: ${PA_VERTRAUTE_PROXYS:-}
+    volumes:
+      - spielstand:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 120s
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>r.json()).then(j=>process.exit(j.status==='ok'?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          pids: 256
+
+volumes:
+  spielstand:

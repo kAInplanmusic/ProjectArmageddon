@@ -16,6 +16,8 @@
  */
 import { createServer as createHttpServer } from 'node:http';
 import { readFileSync, statSync } from 'node:fs';
+import { leseBauinfo } from './bauinfo.js';
+import { clientAdresse, leseVertrauteProxys } from './clientAdresse.js';
 import { extname, resolve, sep } from 'node:path';
 import { WebSocketServer } from 'ws';
 import { LobbyManager, LOBBY_STATUS, istResumeToken } from './lobby.js';
@@ -133,7 +135,13 @@ export class GameServer {
     zugPauseTicks = null,
     erlaubteOrigins = leseErlaubteOrigins(process.env.PA_ERLAUBTE_ORIGINS),
     eigenerOrigin = leseErlaubteOrigins(process.env.PA_EIGENER_ORIGIN)?.[0] ?? null,
+    bauinfo = leseBauinfo(),
+    vertrauteProxys = leseVertrauteProxys(process.env.PA_VERTRAUTE_PROXYS),
   } = {}) {
+    /** Versionskennung des ausgelieferten Builds (DEP-1), gemeldet in `/healthz`. */
+    this.bauinfo = bauinfo;
+    /** Proxys, deren `X-Forwarded-For` für das Lobby-Limit je Adresse zählt (`clientAdresse.js`). */
+    this.vertrauteProxys = vertrauteProxys instanceof Set ? vertrauteProxys : leseVertrauteProxys(vertrauteProxys?.join?.(','));
     /**
      * SRV-4: Origin-Prüfung (Lobby-API und WebSocket). `null` (Standard, ohne `PA_ERLAUBTE_ORIGINS`) = wie bisher:
      * CORS spiegelt jeden Origin, der WebSocket nimmt jeden an. Mit Liste: nur diese Origins plus der eigene
@@ -1059,6 +1067,8 @@ export class GameServer {
         lobbies: this.#lobbies.size,
         sessions: this.#sessions.size,
         protocol: PROTOCOL_VERSION,
+        version: this.bauinfo.version,
+        build: { gitSha: this.bauinfo.gitSha, bauzeit: this.bauinfo.bauzeit, quelle: this.bauinfo.quelle },
         uptimeMs,
         metrics: {
           ...this.metrics,
@@ -1098,7 +1108,7 @@ export class GameServer {
       if (this.#lobbies.size >= this.maxLobbies) {
         return this.#json(response, 503, this.#fehlerNutzlast('Zu viele Lobbys — bitte später erneut versuchen'));
       }
-      if (!this.#createErlaubt(request.socket?.remoteAddress ?? '?')) {
+      if (!this.#createErlaubt(clientAdresse(request, this.vertrauteProxys))) {
         return this.#json(response, 429, this.#fehlerNutzlast('Zu viele neue Lobbys von dieser Adresse'));
       }
       try {
@@ -1882,6 +1892,15 @@ function createDistHandler(distDir = 'dist') {
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon',
     '.map': 'application/json; charset=utf-8',
+    // Deploy-Plan 2026-11-04: Der Build enthält WebP, MP3, Webfonts und das Manifest; als
+    // `application/octet-stream` (bisher) blockt ein Proxy mit `nosniff` je nach Browser Schrift/Ton.
+    '.webp': 'image/webp',
+    '.mp3': 'audio/mpeg',
+    '.ogg': 'audio/ogg',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.webmanifest': 'application/manifest+json',
+    '.txt': 'text/plain; charset=utf-8',
   };
 
   return (request, response, url) => {

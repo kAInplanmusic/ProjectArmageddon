@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+    # Release-Tags (Konvention: docs/deploy-plan.md Abschnitt 3) bauen zusätzlich das Release-Paket.
+    tags: ['v*']
   pull_request:
     branches: [main]
 
@@ -99,6 +101,50 @@ jobs:
             balance.txt
             balance.json
           retention-days: 30
+
+  # Release-Paket (REL-1/DEP-1): nur bei einem Tag `v*`, nach grünem `test`. Baut den Client
+  # (Git-Stand aus GITHUB_SHA, Bauzeit = Commit-Zeit → reproduzierbar) und legt Archiv und
+  # Prüfsumme als Artefakt ab. Es gibt bewusst KEINEN Deploy-Schritt: Ausrollen auf einen
+  # Knoten ist eine Handlung des Betreibers (AGENTS.md §5, docs/deploy-plan.md Abschnitt 5).
+  release-paket:
+    name: Release-Paket
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tag passt zur Version in package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "Tag $GITHUB_REF_NAME passt nicht zu package.json ($version) — erwartet v$version"
+            exit 1
+          fi
+
+      - name: Bauen und packen
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          npm run build
+          node scripts/release/paket.mjs
+
+      - name: Release-Paket ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.ref_name }}
+          path: |
+            release/*.tar.gz
+            release/*.tar.gz.sha256
+          retention-days: 90
+          if-no-files-found: error
 
   # E2E in vier Teilen (je eigener Runner): Die Suite läuft mit einem Worker (feste Ports der
   # Multiplayer-Tests), am Stück dauert sie zu lange. Playwright teilt die Specs mit `--shard`
