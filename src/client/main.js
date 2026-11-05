@@ -23,6 +23,7 @@ import { KameraSteuerung } from './kameraSteuerung.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { zeigeToast } from './toasts.js';
+import { kontoEinrichten, leseSitzung } from './konto.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
@@ -1679,12 +1680,20 @@ class Game {
     let targetLobby = lobbyId;
     let resolvedSeed = seed;
     let hostToken = null;
+    // Angemeldet? Dann trägt der Host-Platz die Kontokennung und die Partie
+    // kann für die Rangliste zählen (der Server entscheidet das selbst).
+    const kontoSitzung = leseSitzung();
 
     try {
       if (!targetLobby) {
         const response = await fetch(new URL('/api/lobby/create', serverUrl), {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: {
+            'content-type': 'application/json',
+            // Sitzungstoken als Bearer: Nur so weiß der Server, dass dieser
+            // Platz einem Konto gehört.
+            ...(kontoSitzung?.token ? { authorization: `Bearer ${kontoSitzung.token}` } : {}),
+          },
           // Sidegrades gehen als Teil der Match-Konfiguration mit — der Server
           // validiert sie und rechnet autoritativ.
           body: JSON.stringify({
@@ -1724,7 +1733,17 @@ class Game {
       return { ok: false, error: error.message };
     }
 
-    const wsUrl = new URL('/ws', serverUrl).toString().replace(/^http/, 'ws');
+    /*
+     * Das Sitzungstoken reist im WebSocket-Handshake (`?sitzung=…`), weil ein
+     * Browser bei `new WebSocket()` keine eigenen Kopfzeilen setzen kann. Ohne
+     * Token verbindet sich der Client als Gast — kein Fehler.
+     */
+    let wsUrl = new URL('/ws', serverUrl).toString().replace(/^http/, 'ws');
+    if (kontoSitzung?.token) {
+      const mitToken = new URL(wsUrl);
+      mitToken.searchParams.set('sitzung', kontoSitzung.token);
+      wsUrl = mitToken.toString();
+    }
     /*
      * RT-1: Fortsetzen statt neu beitreten.
      *
@@ -4086,6 +4105,8 @@ if (typeof document !== 'undefined') {
     // Loadout-Auswahl je Spielerplatz (Klasse und Archetyp entkoppelt).
     game.fillLoadoutOptions();
     game.fillFraktionOptions();
+    // Konten und Rangliste (Paket C): Formular, Abmelden/Löschen und die Liste.
+    kontoEinrichten();
     document.getElementById('cfg-backdrop-suche')?.addEventListener('input', e => game.filterBackdropOptions(e.target.value));
     document.getElementById('ueberrasch-button')?.addEventListener('click', () => { game.ueberraschMich(); game.startFromMenu(); });
 

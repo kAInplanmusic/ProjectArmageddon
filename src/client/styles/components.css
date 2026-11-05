@@ -129,3 +129,32 @@
   .pa-btn, .pa-toggle__spur, .pa-toggle__spur::after { transition: none; }
   .pa-status[data-status='laedt']::before, .pa-status[data-status='speichert']::before { animation: none; }
 }
+
+/* ------------------------------------------------------- Rangliste (Paket C) */
+/*
+ * Schlichte Liste ohne Rahmenwerk: Platz, Name und Elo in einer Zeile, die
+ * Kennzahlen darunter. Farben kommen ausschliesslich aus den Tokens; die
+ * Abstufung der Plaetze 1-3 nutzt die vorhandenen Akzente.
+ */
+.rangliste { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.rangliste-zeile {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel-2) 55%, transparent);
+}
+.rangliste-zeile[data-platz='1'] { border-color: var(--lime); }
+.rangliste-zeile[data-platz='2'] { border-color: var(--panel-hi); }
+.rangliste-zeile[data-platz='3'] { border-color: var(--orange); }
+.rangliste-name { color: var(--ink-strong); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.rangliste-elo { color: var(--lime); font-variant-numeric: tabular-nums; }
+.rangliste-zahlen { grid-column: 1 / -1; font-size: var(--fs-s); }
+.rangliste-rekorde { font-size: var(--fs-s); line-height: 1.5; }
+.konto-knoepfe { display: flex; gap: 8px; flex-wrap: wrap; }
+.konto-zeile { font-size: var(--fs-s); }
+#konto-status[data-art='fehler'] { color: var(--red); }
+#konto-status[data-art='warnung'] { color: var(--orange); }
+#konto-status[data-art='ok'] { color: var(--lime); }
