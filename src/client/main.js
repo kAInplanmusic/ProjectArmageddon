@@ -24,7 +24,18 @@ import { KameraSteuerung } from './kameraSteuerung.js';
 import { InputController, kraftAusLadung, MIN_KRAFT, MAX_KRAFT } from './input.js';
 import { Hud } from './hud.js';
 import { zeigeToast } from './toasts.js';
-import { kontoEinrichten, leseSitzung } from './konto.js';
+import { leseSitzung, websocketUrlFuer } from './konto.js';
+import { kontoEinrichten } from './kontoMenue.js';
+import { bindeReplayBedienung } from './replayBedienung.js';
+import { bindeProfilSicherung } from './profilSicherung.js';
+import {
+  aktualisiereSitzungsKnopf,
+  behandleResumeFehler,
+  bindeSitzung,
+  fortsetzungsTokens,
+  merkeSitzung,
+  vergesseSitzung as sitzungVergessen,
+} from './sitzung.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
@@ -569,41 +580,21 @@ class Game {
      */
 
     /*
-     * Fortsetzen nach Neuladen (Warteschlange 3.7): Der Token liegt im
-     * sessionStorage und holt denselben Platz zurück.
+     * Fortsetzen nach Neuladen (Warteschlange 3.7 / RT-1): Der Token liegt im
+     * sessionStorage und holt denselben Platz zurück. Verdrahtung, Frist und
+     * Ablage stehen in `sitzung.js`; hier bleibt nur der Startweg.
      */
-    document.getElementById('resume-button')?.addEventListener('click', () => this.#setzeSitzungFort());
-    this.#aktualisiereSitzungsKnopf();
-    /*
-     * RT-1: Nach einem Neuladen (sessionStorage lebt so lange wie der Tab)
-     * laufen lassen, ohne auf einen Klick zu warten. Der Knopf bleibt für den
-     * Fall, dass der Versuch abgelehnt wurde oder die Frist abgelaufen ist.
-     */
-    void this.#versucheAutomatischesFortsetzen();
+    bindeSitzung({
+      dokument: document,
+      starte: sitzung => this.startOnline(sitzung),
+      melde: (text, art) => this.hud.log(text, art),
+    });
 
     /*
-     * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei.
-     *
-     * Der Ablauf ist bewusst der eines Downloads/Uploads und nicht der eines
-     * Formulars: Der Spieler bekommt eine Datei, die er aufbewahren kann. Ohne
-     * diese zwei Knöpfe wäre „Profil liegt im Browser" eine Sackgasse — ein
-     * gelöschter Cache hieße Verlust, und es gäbe keinen Ausweg.
+     * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei —
+     * Export und Import stehen in `profilSicherung.js`.
      */
-    document.getElementById('profil-export')?.addEventListener('click', () => {
-      this.profilSichern();
-    });
-    const importKnopf = document.getElementById('profil-import');
-    const importDatei = document.getElementById('profil-import-datei');
-    importKnopf?.addEventListener('click', () => importDatei?.click());
-    importDatei?.addEventListener('change', () => {
-      const datei = importDatei.files?.[0];
-      if (!datei) return;
-      // Nach der Auswahl zurücksetzen, damit dieselbe Datei erneut wählbar ist.
-      datei.text()
-        .then(text => this.profilLaden(text))
-        .catch(error => this.hud.log(`Sicherung nicht lesbar: ${error.message}`, 'danger'))
-        .finally(() => { importDatei.value = ''; });
-    });
+    bindeProfilSicherung(this, { melde: (text, art) => this.hud.log(text, art) });
 
     this.#zeigeProfil();
     this.#zeigeErfolge();
@@ -762,82 +753,11 @@ class Game {
   }
 
   /**
-   * Die gespeicherte Sitzung dieses Tabs (RT-1) — oder `null`.
-   *
-   * EINE Lesestelle für Speicher, Knopf und Fortsetzen: Der `sessionStorage`
-   * kann fehlen (Sandbox, Datenschutzmodus) oder Inhalt haben, der kein Objekt
-   * ist. Beides darf die Seite nicht werfen lassen — dann gibt es eben nichts
-   * fortzusetzen.
-   *
-   * @returns {{serverUrl?: string, lobbyId?: string, token?: string|null, resumeToken?: string|null, name?: string, zeit?: number}|null}
+   * Entfernt die gespeicherte Sitzung (Verlassen, beendete Partie, kaputter Inhalt).
+   * Ablage und Knopf stehen in `sitzung.js`.
    */
-  #gespeicherteSitzung() {
-    try {
-      const roh = sessionStorage.getItem('pa-sitzung');
-      if (!roh) return null;
-      const daten = JSON.parse(roh);
-      return daten && typeof daten === 'object' ? daten : null;
-    } catch {
-      return null;
-    }
-  }
-
-  /** Blendet den Fortsetzen-Knopf ein, wenn eine Sitzung gespeichert ist. */
-  #aktualisiereSitzungsKnopf() {
-    const knopf = document.getElementById('resume-button');
-    if (!knopf) return;
-    knopf.hidden = this.#gespeicherteSitzung() === null;
-  }
-
-  /** Setzt die letzte Sitzung aus dem sessionStorage fort. */
-  #setzeSitzungFort() {
-    const sitzung = this.#gespeicherteSitzung();
-    if (!sitzung?.serverUrl || !sitzung?.lobbyId) {
-      this.#vergesseSitzung();
-      return;
-    }
-    this.startOnline({
-      serverUrl: sitzung.serverUrl,
-      lobbyId: sitzung.lobbyId,
-      token: sitzung.token ?? null,
-      resumeToken: sitzung.resumeToken ?? null,
-      name: sitzung.name ?? 'Spieler',
-    });
-  }
-
-  /** Entfernt die gespeicherte Sitzung (Verlassen, beendete Partie, kaputter Inhalt). */
   #vergesseSitzung() {
-    try {
-      sessionStorage.removeItem('pa-sitzung');
-    } catch { /* nicht verfügbar */ }
-    this.#aktualisiereSitzungsKnopf();
-  }
-
-  /**
-   * Versucht nach einem NEULADEN sofort weiterzuspielen (RT-1).
-   *
-   * Der `sessionStorage` lebt genau so lange wie der Tab: Steht dort eine
-   * Sitzung, wurde diese Seite neu geladen (oder aus dem Tab-Verlauf geholt)
-   * — nicht neu geöffnet. Genau dafür ist der Fortsetzungs-Token da; ohne
-   * diesen Aufruf müsste der Spieler erst „Letzte Sitzung fortsetzen" klicken,
-   * obwohl er nichts anderes wollte.
-   *
-   * Die Frist ist eine Bremse gegen das Gegenteil: Ein Tab, der Stunden später
-   * aus dem Verlauf kommt, soll nicht ungefragt eine Partie aufnehmen — dort ist
-   * der Platz ohnehin längst verfallen. Scheitert das Fortsetzen, fällt der
-   * Client auf den normalen Beitritt zurück (`NetworkClient`, `resume_failed`)
-   * oder landet im Menü; beides ohne Absturz.
-   *
-   * @returns {boolean} true, wenn ein Versuch gestartet wurde
-   */
-  #versucheAutomatischesFortsetzen() {
-    const sitzung = this.#gespeicherteSitzung();
-    if (!sitzung?.serverUrl || !sitzung?.lobbyId) return false;
-    const alter = Date.now() - (Number(sitzung.zeit) || 0);
-    if (alter > 5 * 60 * 1000) return false;
-    this.hud.log('Neuladen erkannt — Sitzung wird fortgesetzt', 'accent');
-    this.#setzeSitzungFort();
-    return true;
+    sitzungVergessen(document);
   }
 
   /**
@@ -1734,35 +1654,19 @@ class Game {
       return { ok: false, error: error.message };
     }
 
+    // Sitzungstoken im Handshake (`?sitzung=…`) — gebaut in `konto.js`.
+    const wsUrl = websocketUrlFuer(serverUrl);
     /*
-     * Das Sitzungstoken reist im WebSocket-Handshake (`?sitzung=…`), weil ein
-     * Browser bei `new WebSocket()` keine eigenen Kopfzeilen setzen kann. Ohne
-     * Token verbindet sich der Client als Gast — kein Fehler.
+     * RT-1: Fortsetzen statt neu beitreten. Welche Tokens mitgehen, entscheidet
+     * `sitzung.js`: der Fortsetzungs-Token nur für DIESE Lobby auf DIESEM
+     * Server, der Platz-Token daneben als Rückfall.
      */
-    let wsUrl = new URL('/ws', serverUrl).toString().replace(/^http/, 'ws');
-    if (kontoSitzung?.token) {
-      const mitToken = new URL(wsUrl);
-      mitToken.searchParams.set('sitzung', kontoSitzung.token);
-      wsUrl = mitToken.toString();
-    }
-    /*
-     * RT-1: Fortsetzen statt neu beitreten.
-     *
-     * Der Fortsetzungs-Token liegt im `sessionStorage` dieses Tabs. Er wird nur
-     * benutzt, wenn er zu DIESER Lobby auf DIESEM Server gehört — sonst wäre ein
-     * alter Token aus einer anderen Partie ein Versuch, den falschen Platz zu
-     * übernehmen. Der Platz-Token (`token`) bleibt daneben erhalten: Er ist der
-     * Rückfall, wenn der Server den Fortsetzungs-Token nicht mehr kennt.
-     */
-    const gespeicherteSitzung = this.#gespeicherteSitzung();
-    const passtZurSitzung = Boolean(
-      gespeicherteSitzung
-      && gespeicherteSitzung.serverUrl === serverUrl
-      && gespeicherteSitzung.lobbyId === targetLobby,
-    );
-    const fortsetzungsToken = resumeToken
-      ?? (passtZurSitzung ? (gespeicherteSitzung.resumeToken ?? null) : null);
-    const platzToken = token ?? hostToken ?? (passtZurSitzung ? (gespeicherteSitzung.token ?? null) : null);
+    const { fortsetzungsToken, platzToken } = fortsetzungsTokens({
+      serverUrl,
+      lobbyId: targetLobby,
+      token: token ?? hostToken,
+      resumeToken,
+    });
     const client = new NetworkClient({
       url: wsUrl,
       lobbyId: targetLobby,
@@ -1789,24 +1693,17 @@ class Game {
     client.on('joined', payload => {
       beigetreten = true;
       /*
-       * RT-1: Der Sitzplatz-Token UND der Fortsetzungs-Token werden im
-       * `sessionStorage` abgelegt. Der Fortsetzungs-Token holt den Platz nach
-       * einem Neuladen über `CONTROL.RESUME` zurück; der Platz-Token bleibt als
-       * Rückfall (ältere Server, Serverneustart, abgelaufener Schlüssel) und für
-       * die Revanche. `zeit` begrenzt das automatische Fortsetzen beim Laden
-       * (`#versucheAutomatischesFortsetzen`).
+       * RT-1: Platz- und Fortsetzungs-Token im `sessionStorage` dieses Tabs
+       * ablegen. Ablage, Frist und Knopf stehen in `sitzung.js`.
        */
-      try {
-        sessionStorage.setItem('pa-sitzung', JSON.stringify({
-          serverUrl,
-          lobbyId: client.lobbyId,
-          token: payload.token ?? token ?? hostToken ?? null,
-          resumeToken: payload.resumeToken ?? client.resumeToken ?? null,
-          name,
-          zeit: Date.now(),
-        }));
-        this.#aktualisiereSitzungsKnopf();
-      } catch { /* sessionStorage nicht verfügbar — Fortsetzen entfällt still */ }
+      merkeSitzung({
+        serverUrl,
+        lobbyId: client.lobbyId,
+        token: payload.token ?? token ?? hostToken ?? null,
+        resumeToken: payload.resumeToken ?? client.resumeToken ?? null,
+        name,
+      });
+      aktualisiereSitzungsKnopf(document);
       /*
        * Im Modus der Matcharten führt ein Mensch ein ganzes TEAM (3–5 Einheiten).
        * `entityIds` nennt alle; `entityId` bleibt die erste Figur. Beide werden
@@ -1842,18 +1739,11 @@ class Game {
      * fortzusetzen — dann gehört der Spieler ins Menü, und die gespeicherte
      * Sitzung wird vergessen (sonst böte der Knopf sie immer wieder an).
      */
-    client.on('resume_failed', info => {
-      if (info.grund === 'beendet') {
-        this.hud.log('Diese Partie ist beendet — keine Fortsetzung möglich', 'notice');
-        this.#vergesseSitzung();
-        if (this.mode === 'online' && !beigetreten) this.#verlasseMatch();
-        return;
-      }
-      this.hud.log(
-        `Fortsetzen nicht möglich (${info.grund}) — normaler Beitritt`,
-        'warn',
-      );
-    });
+    client.on('resume_failed', info => behandleResumeFehler(info, {
+      melde: (text, art) => this.hud.log(text, art),
+      vergesse: () => this.#vergesseSitzung(),
+      verlasse: () => { if (this.mode === 'online' && !beigetreten) this.#verlasseMatch(); },
+    }));
     // Terrain-Hash: Abgleich der eigenen Karte mit der des Servers (alle ~2 s).
     this.terrainAbweichungOffen = false;
     client.on('terrain_hash', meldung => { this.renderer.feuerOptik?.uebernimmMeldung(meldung.feuer, this.renderer.stoffkarte); this.#pruefeTerrainHash(meldung); }); // Feuer/Lava: EREIGNIS-1
@@ -3621,47 +3511,13 @@ class Game {
   /**
    * Verdrahtet die Replay-Steuerung im Menü.
    *
-   * Die Dateiauswahl liest die Aufzeichnung im Browser (FileReader) — es wird
-   * nichts hochgeladen. Eine Aufzeichnung enthält nur Seed und Eingaben, also
-   * wenige Kilobyte.
+   * Knöpfe, Tempo und Stellenregler stehen in `client/replayBedienung.js`; hier
+   * bleibt nur die Übergabe von Spiel, Statuszeile und Protokoll.
    */
   #wireReplay() {
-    const datei = document.getElementById('replay-file');
-    datei?.addEventListener('change', async () => {
-      const gewaehlt = datei.files?.[0];
-      if (!gewaehlt) return;
-      try {
-        const text = await gewaehlt.text();
-        this.loadReplayDocument(JSON.parse(text));
-        this.#setReplayStatus(`Geladen: ${gewaehlt.name}`);
-      } catch (error) {
-        this.#setReplayStatus(`Konnte die Aufzeichnung nicht lesen: ${error.message}`);
-        this.hud.log(`Replay nicht lesbar: ${error.message}`, 'danger');
-      }
-    });
-
-    document.getElementById('replay-toggle')?.addEventListener('click', () => this.replayAction('toggle'));
-    document.getElementById('replay-restart')?.addEventListener('click', () => this.replayAction('restart'));
-    document.getElementById('replay-back')?.addEventListener('click', () => this.replayAction('step', -60));
-    document.getElementById('replay-forward')?.addEventListener('click', () => this.replayAction('step', 60));
-
-    const tempo = document.getElementById('replay-speed');
-    tempo?.addEventListener('input', () => {
-      this.replaySpeed = Number(tempo.value) || 1;
-      const anzeige = document.getElementById('replay-speed-value');
-      if (anzeige) anzeige.textContent = `${this.replaySpeed}×`;
-      this.#setReplayStatus();
-    });
-
-    /*
-     * Der Stellenregler springt. Das Neuberechnen kostet Rechenzeit, deshalb
-     * passiert es erst beim Loslassen (`change`) und nicht bei jeder Bewegung
-     * (`input`) — sonst würde beim Ziehen hundertmal neu gespult.
-     */
-    document.getElementById('replay-seek')?.addEventListener('change', () => {
-      if (!this.replayPlayer) return;
-      const anteil = Number(document.getElementById('replay-seek').value) / 1000;
-      this.replaySeek(Math.round(anteil * this.replayPlayer.totalTicks));
+    bindeReplayBedienung(this, {
+      setzeStatus: zusatz => this.#setReplayStatus(zusatz),
+      melde: (text, art) => this.hud.log(text, art),
     });
   }
 
