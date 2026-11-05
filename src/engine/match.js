@@ -811,7 +811,7 @@ export class MatchController {
       this.#mali = new MaliRegeln({
         statuses: this.#statuses, events: this.#events, world: this.#world, players: () => this.#players,
         waterLevelAt: (x, y) => this.waterLevelAt(x, y), materialAt: this.materialAt.bind(this),
-        biomId: () => this.biomId, aktiv: () => this.activePlayerId,
+        biomId: () => this.biomId, aktiv: () => this.activePlayerId, klassen: () => this.klassen,
       });
       this.#world.services.damageModifier = (id, betrag, art, schuetze) => this.#mali.schaden(id, betrag, art, schuetze);
       this.#world.services.healModifier = (id, betrag) => this.#mali.heilung(id, betrag);

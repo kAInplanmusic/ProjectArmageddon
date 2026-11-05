@@ -51,7 +51,7 @@ import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { getWaffe, WAFFEN_VORSTRAHL, WAFFEN_SICHT } from '../shared/config/waffen-fassung.js';
 import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
+import { combatProfile, klassenKennung } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { bodenNaheHoehe } from './boden.js';
 import { raycastSegment, simulateFlight } from '../shared/ballistics.js';
@@ -191,7 +191,8 @@ function feuere(quelle, playerId, angle, power, weaponId) {
 
   const player = quelle.players.find(entry => entry.entityId === playerId);
   const profile = combatProfile(
-    CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+    klassenKennung(player?.classId ?? 0, quelle.klassen),
+    player?.archetypeId ?? 0,
     player?.sidegradeId ?? null, quelle.klassen,
   );
   const { x, y, vx, vy } = quelle.launchVector(playerId, angle, power, weapon);
