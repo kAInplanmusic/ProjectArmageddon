@@ -33,7 +33,7 @@ import {
 } from './specials.js';
 import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
-import { getTurnDurationForPlayerCount } from './systems/turnSystem.js';
+import { getTurnDurationForSize } from './systems/turnSystem.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
 import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
@@ -84,84 +84,87 @@ import {
 } from './turret.js';
 
 
-/**
- * Kartenmaße je Ausrichtung.
- *
- * Querformat (16:9) und Hochformat (9:16) haben dieselbe Fläche, nur getauscht.
- * Gleiche Fläche ist Absicht: Die Reichweiten, Sprunghöhen und Wurfweiten der
- * Waffen sind in Kartenpixeln angegeben. Eine deutlich kleinere Hochkantkarte
- * hätte alle Waffen zu weit reichen lassen, eine größere zu kurz.
- */
 /*
- * Die Kartengrößen.
+ * Kartenmaße: sieben FORMATE je Stufe, alle mit derselben Fläche.
  *
- * ## Warum es mehrere gibt
+ * Reichweiten, Sprunghöhen und Wurfweiten sind in Kartenpixeln angegeben. Eine
+ * kleinere Karte ließe alle Waffen zu weit reichen, eine größere zu kurz. Die
+ * Form entscheidet deshalb nur über den ZUSCHNITT: klein 921 600 px, mittel
+ * 3 686 400 px, groß 8 294 400 px (4× bzw. 9×).
  *
- * Die Größe bestimmt, wie viel WELT es gibt — und damit, wie viel man sich
- * bewegen muss. Das ist eine Spielgefühls-Entscheidung, die an der Spielerzahl
- * hängt: Ein Duell auf einer Kriegskarte wäre ein Wettlauf, ein Achterspiel auf
- * einer Duellkarte ein Gedränge.
+ * Die 16:9-Maße (1280×720, 2560×1440, 3840×2160) sind die bisherigen und
+ * bleiben bitgleich — Gelände- und Zustands-Hashes der Goldwert-Tests hängen
+ * daran (AGENTS.md §2). Alle anderen Formate sind neue, ganzzahlige Zuschnitte
+ * derselben Fläche auf ±2 %; die Rechnung steht am Format.
  *
- *     Duell          1280 ×  720     die ganze Karte auf dem Schirm
- *     Kleines Match  2560 × 1440     4× die Fläche
- *     Großes Match   3840 × 2160     9×
- *     Krieg          5120 × 2880    16×
+ * Drahtformat: Int16 mit Faktor 4 = höchstens 8191,75 px. Das breiteste Format
+ * hier ist 6272 px (Krieg, 24:9).
  *
- * ## Warum Vielfache von 1280
- *
- * Die Reichweiten der Waffen sind in Kartenpixeln angegeben (110 bis 1062 px).
- * Auf 1280 px erreicht die mittlere Waffe 40 % der Karte — das ist der
- * Maßstab, auf den die Waffen abgestimmt sind. Vielfache davon halten dieses
- * Verhältnis wenigstens grob: Auf der Kriegskarte erreicht dieselbe Waffe
- * 10 %, man muss also weiter laufen.
- *
- * Wer das Verhältnis erhalten will, muss die Reichweiten skalieren
- * (`scripts/check-map-scale.mjs` zeigt, was das kostet).
- *
- * ## Die Grenze
- *
- * Das Drahtformat überträgt Koordinaten als Int16 mit Faktor 4 — die größte
- * darstellbare Koordinate ist 8192 px. Die Kriegskarte mit 5120 px liegt mit
- * 63 % darunter; 8K wäre das Äußerste (`scripts/check-camera.mjs`).
- *
- * ## Die Fläche bleibt NICHT gleich
- *
- * Ein früherer Kommentar hier begründete gleiche Flächen: „Eine deutlich
- * kleinere Hochkantkarte hätte alle Waffen zu weit reichen lassen." Das gilt
- * weiterhin für die ORIENTIERUNG — Quer- und Hochformat derselben Größe haben
- * dieselbe Fläche. Zwischen den Größenstufen ist die Fläche aber bewusst
- * unterschiedlich: Das ist der Sinn der Stufen.
+ * `krieg` (5120×2880) wird nicht mehr angeboten (Entscheidung 2026-11-05: drei
+ * Stufen), bleibt aber lesbar, damit alte Aufzeichnungen unverändert laufen.
  */
-export const MAP_SIZES = Object.freeze({
-  /* Querformat: 16:9, wie ein Fernseher. */
-  landscape: Object.freeze({
-    klein: Object.freeze({ width: 1280, height: 720 }),
-    mittel: Object.freeze({ width: 2560, height: 1440 }),
-    gross: Object.freeze({ width: 3840, height: 2160 }),
-    krieg: Object.freeze({ width: 5120, height: 2880 }),
-  }),
-  /* Hochformat: dieselbe Fläche wie die jeweilige Querformatstufe, getauscht. */
-  portrait: Object.freeze({
-    klein: Object.freeze({ width: 720, height: 1280 }),
-    mittel: Object.freeze({ width: 1440, height: 2560 }),
-    gross: Object.freeze({ width: 2160, height: 3840 }),
-    krieg: Object.freeze({ width: 2880, height: 5120 }),
-  }),
+const FORMATE = Object.freeze({
+  /* 24:9 (8:3): h = sqrt(A·3/8), w = 8/3·h. 1568×588 = 921 984 (+0,04 %); je Stufe verdoppelt. */
+  '24:9': [[1568, 588], [3136, 1176], [4704, 1764], [6272, 2352]],
+  /* 9:24 (3:8) — dasselbe, hochkant. */
+  '9:24': [[588, 1568], [1176, 3136], [1764, 4704], [2352, 6272]],
+  /* 16:9 — die bisherigen Maße, bitgleich (1280×720 = 921 600, 2560×1440, 3840×2160, 5120×2880). */
+  '16:9': [[1280, 720], [2560, 1440], [3840, 2160], [5120, 2880]],
+  /* 9:16 — die bisherigen Hochformat-Maße, getauscht. */
+  '9:16': [[720, 1280], [1440, 2560], [2160, 3840], [2880, 5120]],
+  /* 4:3: h = sqrt(A·3/4), w = 4/3·h. 1108×831 = 920 748 (−0,09 %); 3328×2496 = 8 306 688 (+0,15 %). */
+  '4:3': [[1108, 831], [2216, 1662], [3328, 2496], [4434, 3326]],
+  /* 3:4 — dasselbe, hochkant. */
+  '3:4': [[831, 1108], [1662, 2216], [2496, 3328], [3326, 4434]],
+  /* 1:1: w = sqrt(A): 960, 1920, 2880, 3840 — alle exakt. */
+  '1:1': [[960, 960], [1920, 1920], [2880, 2880], [3840, 3840]],
 });
 
-/** Die Namen der Größenstufen, klein nach groß. */
-export const MAP_GROESSEN = Object.freeze(['klein', 'mittel', 'gross', 'krieg']);
+/** Die sieben Formate als Seitenverhältnis. */
+export const MAP_FORMATS = Object.freeze(Object.keys(FORMATE));
+/** Vorgabe, wenn keine Form gewählt ist: 16:9 wie bisher. */
+export const MAP_FORMAT_VORGABE = '16:9';
+/** Vorgabestufe, wenn keine Größe gewählt ist. */
+export const MAP_GROESSE_VORGABE = 'mittel';
+/** Die wählbaren Größenstufen, klein nach groß (ohne die Altstufe `krieg`). */
+export const MAP_GROESSEN = Object.freeze(['klein', 'mittel', 'gross']);
+/** Alle Stufen der Tabelle — `krieg` nur noch zum Lesen alter Aufzeichnungen. */
+export const MAP_GROESSEN_ALLE = Object.freeze([...MAP_GROESSEN, 'krieg']);
 
-/** Die Stufe, die einer Spielerzahl zugeordnet ist. */
+/**
+ * Altnamen der Ausrichtung: Eine Aufzeichnung von vor den Formaten trägt
+ * `orientation: 'portrait'` und meint damit 9:16.
+ */
+export const MAP_FORMAT_ALIASE = Object.freeze({ landscape: '16:9', portrait: '9:16' });
+
+const KARTEN = Object.freeze(Object.fromEntries(
+  Object.entries(FORMATE).map(([format, liste]) => [format, Object.freeze(Object.fromEntries(
+    liste.map(([width, height], index) => [MAP_GROESSEN_ALLE[index], Object.freeze({ width, height })]),
+  ))]),
+));
+
+/** Maße je Format und Stufe. `landscape`/`portrait` bleiben als Altnamen lesbar. */
+export const MAP_SIZES = Object.freeze({
+  ...KARTEN,
+  landscape: KARTEN['16:9'],
+  portrait: KARTEN['9:16'],
+});
+
+/** Die wählbare Stufe, die einer Spielerzahl nahegelegt wird (Vorschlag, keine Regel). */
 export function mapGroesseFuerSpieler(spieler) {
   if (spieler <= 2) return 'klein';
   if (spieler <= 8) return 'mittel';
-  if (spieler <= 12) return 'gross';
-  return 'krieg';
+  return 'gross';
 }
 
-/** Ausrichtungen der Karte. */
+/** Ausrichtungen der Karte (Altbegriff; die Form ist die neue Angabe). */
 export const ORIENTATIONS = Object.freeze(['landscape', 'portrait']);
+
+/** Die Ausrichtung zu einem Format — für Anzeige und Altcode (`1:1` gilt als quer). */
+export function ausrichtungFuerFormat(format) {
+  const schluessel = MAP_FORMAT_ALIASE[format] ?? format;
+  return ['9:24', '9:16', '3:4'].includes(schluessel) ? 'portrait' : 'landscape';
+}
 
 /**
  * Querformat als Vorgabe — die Konstanten bleiben für Altcode erhalten.
@@ -169,19 +172,38 @@ export const ORIENTATIONS = Object.freeze(['landscape', 'portrait']);
  * Sie zeigen auf die MITTLERE Stufe, weil das die Vorgabe der Lobby ist
  * (2 Teams × 2 Spieler = 4 Spieler).
  */
-export const MAP_WIDTH = MAP_SIZES.landscape.mittel.width;
-export const MAP_HEIGHT = MAP_SIZES.landscape.mittel.height;
+export const MAP_WIDTH = MAP_SIZES['16:9'].mittel.width;
+export const MAP_HEIGHT = MAP_SIZES['16:9'].mittel.height;
 
 /**
- * Maße einer Ausrichtung und Größe.
+ * Maße eines Formats und einer Größe.
  *
- * Tolerant wie die übrige Konfiguration: Eine unbekannte Größe fällt auf die
- * Vorgabe zurück, statt zu werfen — eine Einstellung aus einer älteren Fassung
- * soll spielbar bleiben.
+ * Der erste Parameter heißt historisch `orientation`; `landscape`/`portrait`
+ * werden auf 16:9/9:16 abgebildet. Tolerant wie die übrige Konfiguration: Eine
+ * unbekannte Form oder Stufe fällt auf die Vorgabe zurück, statt zu werfen —
+ * eine Einstellung aus einer älteren Fassung soll spielbar bleiben.
  */
-export function mapSizeFor(orientation, groesse = 'mittel') {
-  const seite = MAP_SIZES[orientation] ?? MAP_SIZES.landscape;
-  return seite[groesse] ?? seite.mittel;
+export function mapSizeFor(orientation, groesse = MAP_GROESSE_VORGABE) {
+  const schluessel = MAP_FORMAT_ALIASE[orientation] ?? orientation;
+  const seite = MAP_SIZES[schluessel] ?? MAP_SIZES[MAP_FORMAT_VORGABE];
+  return seite[groesse] ?? seite[MAP_GROESSE_VORGABE];
+}
+
+/**
+ * Prüft eine Formangabe tolerant (AGENTS.md §6: der Server vertraut dem Client
+ * nie, aber eine unbekannte Angabe darf kein Match verhindern). Unbekanntes
+ * fällt auf `orientation` und dann auf die Vorgabe 16:9 zurück.
+ */
+export function normalisiereFormat(format, orientation = MAP_FORMAT_VORGABE) {
+  const direkt = MAP_FORMAT_ALIASE[format] ?? format;
+  if (MAP_FORMATS.includes(direkt)) return direkt;
+  const alt = MAP_FORMAT_ALIASE[orientation] ?? orientation;
+  return MAP_FORMATS.includes(alt) ? alt : MAP_FORMAT_VORGABE;
+}
+
+/** Prüft eine Größenstufe tolerant; Unbekanntes wird zur Vorgabe `mittel`. */
+export function normalisiereGroesse(groesse) {
+  return MAP_GROESSEN_ALLE.includes(groesse) ? groesse : MAP_GROESSE_VORGABE;
 }
 export const WATER_SCALE = 4;
 
@@ -573,6 +595,10 @@ export class MatchController {
     turnPauseTicks = 0,
     turnReplayTicks = 0,
     orientation = 'landscape',
+    /** Kartenform (`MAP_FORMATS`, z. B. `'4:3'`) — schlägt `orientation`. */
+    format = null,
+    /** Größenstufe (`MAP_GROESSEN`): klein 30 s, mittel 40 s, groß 50 s Zugzeit. */
+    groesse = MAP_GROESSE_VORGABE,
     /**
      * Grundgesundheit vor dem Klassenfaktor. Teil der KONFIGURATION, wie
      * `preset` — sie steht vor dem Start fest und ändert sich nicht.
@@ -617,6 +643,14 @@ export class MatchController {
       : new MatchSeedManager(seed);
     this.#rng = this.#seedManager.getSubRng('MATCH_BASE');
     /*
+     * Karte zuerst: Form und Stufe bestimmen die Zugzeit (30/40/50 s) — und
+     * die Zugzeit geht in die Valhalla-Schätzung unten ein. Tolerant: eine
+     * unbekannte Form oder Stufe fällt auf die Vorgabe zurück.
+     */
+    this.mapFormat = normalisiereFormat(format, orientation);
+    this.groesse = normalisiereGroesse(groesse);
+    this.orientation = ausrichtungFuerFormat(this.mapFormat);
+    /*
      * Valhalla: RUNDE einmal aus dem Seed gezogen (Entscheidung 2026-10-25:
      * Runde 8–14, bei großen Partien 12–20 — siehe `MATCH_RULES.suddenDeath`).
      * Der Tick wird nur für die Schätzung des Vorzeichens gebraucht; aktiviert
@@ -626,7 +660,7 @@ export class MatchController {
     const valhallaRng = this.#seedManager.getSubRng('VALHALLA');
     const spielerzahl = Math.max(2, teams * playersPerTeam);
     const ticksJeZug = Math.max(1, Math.round(
-      (turnDurationMs ?? getTurnDurationForPlayerCount(spielerzahl)) / 1000 * SIMULATION_HZ,
+      (turnDurationMs ?? getTurnDurationForSize(this.groesse)) / 1000 * SIMULATION_HZ,
     ));
     this.#valhallaRound = Number.isFinite(valhallaRound) && valhallaRound >= 1
       ? Math.floor(valhallaRound)
@@ -635,8 +669,7 @@ export class MatchController {
     // Das Vorzeichen (zwei Raben im Blitz) kommt zufällig 1–60 s vorher — aus demselben Zweig,
     // NACH der ersten Ziehung, damit der Beginn unverändert bleibt.
     this.#valhallaOmen = drawValhallaOmen(valhallaRng, this.#valhallaTick);
-    this.#turnDurationMs = turnDurationMs
-      ?? MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
+    this.#turnDurationMs = turnDurationMs ?? getTurnDurationForSize(this.groesse);
     this.maxRounds = maxRounds;
     this.#turnPauseTicksConfigured = Math.max(0, Math.floor(Number(turnPauseTicks) || 0));
     this.#turnReplayTicksConfigured = Math.max(0, Math.floor(Number(turnReplayTicks) || 0));
@@ -679,10 +712,9 @@ export class MatchController {
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
 
-    // Kartenmaße als Instanzwerte: Quer- und Hochformat unterscheiden sich nur
-    // hier. Alles andere im Motor rechnet mit `this.width`/`this.height`.
-    const masse = mapSizeFor(orientation);
-    this.orientation = MAP_SIZES[orientation] ? orientation : 'landscape';
+    // Kartenmaße als Instanzwerte: Form und Stufe unterscheiden sich nur hier.
+    // Alles andere im Motor rechnet mit `this.width`/`this.height`.
+    const masse = mapSizeFor(this.mapFormat, this.groesse);
     this.width = masse.width;
     this.height = masse.height;
 

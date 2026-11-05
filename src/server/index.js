@@ -12,7 +12,7 @@ export { MatchController, MAP_WIDTH, MAP_HEIGHT } from '../engine/match.js';
 export { World } from '../engine/ecs/world.js';
 export { ComponentStore, COMPONENT_SIGNATURES } from '../engine/ecs/componentStore.js';
 export { EntityManager } from '../engine/ecs/entityManager.js';
-export { TurnSystem, getTurnDurationForPlayerCount } from '../engine/systems/turnSystem.js';
+export { TurnSystem, getTurnDurationForPlayerCount, getTurnDurationForSize } from '../engine/systems/turnSystem.js';
 export { DamageSystem } from '../engine/systems/damageSystem.js';
 export { PhysicsSystem } from '../engine/systems/physicsSystem.js';
 export { ProjectileSystem } from '../engine/systems/projectileSystem.js';
