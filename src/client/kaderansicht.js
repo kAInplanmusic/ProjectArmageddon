@@ -358,9 +358,9 @@ function zeichneKlassen(container) {
   const u = uebersichtFuerHilfe();
 
   container.append(textEl('p',
-    'Drei Klassen und drei Archetypen bestimmen, wie eine Figur schießt und '
-    + 'einsteckt. Gezeigt sind die WIRKSAMEN Werte — also die, die der Motor '
-    + 'tatsächlich liest.', 'h-einleitung'));
+    'Drei Klassen bestimmen, wie eine Figur schießt und einsteckt — Nahkampf, '
+    + 'Fernkampf und Okkultist. Gezeigt sind die WIRKSAMEN Werte, also die, die '
+    + 'der Motor tatsächlich liest.', 'h-einleitung'));
 
   // Maßstab: der größte wirksame Wert über alle Klassen, damit die Balken
   // untereinander vergleichbar sind.
@@ -412,21 +412,28 @@ function zeichneKlassen(container) {
   }
   container.append(raster);
 
-  container.append(textEl('h3', 'Archetypen'));
-  const archetypRaster = document.createElement('div');
-  archetypRaster.className = 'h-karten';
-  for (const archetyp of u.archetypen) {
-    const karte = document.createElement('div');
-    karte.className = 'h-karte h-schmal';
-    karte.append(textEl('h4', archetyp.label));
-    karte.append(textEl('p', archetyp.erklaerung, 'h-erklaerung'));
-    // Nur TEMPO und LEBEN: Der Archetyp wirkt nicht auf den Schaden (siehe
-    // tests/onboarding-hilfe.test.js, „Der Archetyp wirkt als TEMPO").
-    balken(karte, 'Leben', archetyp.wirksam.leben, 1.2);
-    balken(karte, 'Tempo', archetyp.wirksam.tempo, 1.4);
-    archetypRaster.append(karte);
+  /*
+   * Archetypen gibt es nur in den Fassungen ≤ 2. In Fassung 3 ist die Liste
+   * leer — dann entfällt der ganze Abschnitt, statt eine leere Überschrift zu
+   * zeigen.
+   */
+  if (u.archetypen.length > 0) {
+    container.append(textEl('h3', 'Archetypen'));
+    const archetypRaster = document.createElement('div');
+    archetypRaster.className = 'h-karten';
+    for (const archetyp of u.archetypen) {
+      const karte = document.createElement('div');
+      karte.className = 'h-karte h-schmal';
+      karte.append(textEl('h4', archetyp.label));
+      karte.append(textEl('p', archetyp.erklaerung, 'h-erklaerung'));
+      // Nur TEMPO und LEBEN: Der Archetyp wirkt nicht auf den Schaden (siehe
+      // tests/onboarding-hilfe.test.js, „Der Archetyp wirkt als TEMPO").
+      balken(karte, 'Leben', archetyp.wirksam.leben, 1.2);
+      balken(karte, 'Tempo', archetyp.wirksam.tempo, 1.4);
+      archetypRaster.append(karte);
+    }
+    container.append(archetypRaster);
   }
-  container.append(archetypRaster);
 
   /*
    * Die Hinweise stehen ANS ENDE und sind als Hinweis gestaltet, nicht als

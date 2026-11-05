@@ -46,6 +46,7 @@ import {
 } from './figuren.js';
 import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
+import { istKlassenfassungNeu } from '../shared/config/klassen-fassung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
 import { FigurEffekte } from './figurEffekte.js';
 import { PARAMETER, typFuer } from './figurTypen.js';
@@ -1199,7 +1200,7 @@ export class Renderer {
     return f || (this.fraktionJeTeam?.[entity.teamId] ?? null);
   }
 
-  #drawEntities(entities, activePlayerId, aim) {
+  #drawEntities(entities, activePlayerId, aim, klassen) {
     const jetzt = performance.now() / 1000;
     // Sprites werden je Zoom so groß gezeichnet, dass sie auf dem Bildschirm lesbar bleiben (nur Anzeige).
     this.figurSkala = figurSkalaFuer((this.kamera?.zoom ?? 1) * this.cssFaktor);
@@ -1249,7 +1250,15 @@ export class Renderer {
       this.ctx.translate(entity.x + zuck.dx, entity.y + zuck.dy);
 
       const fraktionId = this.fraktionVon(entity);
-      const charakter = fraktionId ? charakterFuer(fraktionId, entity.classId, entity.archetypeId) : null;
+      /*
+       * Fassung 3: `platz` (0..2) wählt deterministisch einen der drei Bögen der
+       * Klasse. Für Fassungen ≤ 2 bleibt der dritte Parameter der Archetyp —
+       * `charakterFuer` entscheidet anhand der Fassung.
+       */
+      const charakter = fraktionId
+        ? charakterFuer(fraktionId, entity.classId,
+          istKlassenfassungNeu(klassen) ? entity.platz : entity.archetypeId, klassen)
+        : null;
       const fig = charakter ? holeFigur(charakter) : null;
       const sk = fig ? S : 1;
       const typ = charakter ? typFuer(charakter.id) : 'humanoid';
@@ -2376,7 +2385,7 @@ export class Renderer {
      */
     this.#drawSpuren();
     zeichneSeil(this.ctx, state.seil, state.entities ?? []); // Seil unter der Figur (`seilZeichnen.js`)
-    this.#drawEntities(state.entities ?? [], state.activePlayerId, aim);
+    this.#drawEntities(state.entities ?? [], state.activePlayerId, aim, state.klassen);
     this.#drawFaelle();
     this.#drawFigurEffekte();
     this.#drawGuenther(state.guenther);
