@@ -68,6 +68,8 @@ import { FeuerSystem } from './systems/feuerSystem.js';
 import { damageTypeId } from './damageTypes.js';
 import { guentherWerte } from '../shared/config/guenther.js';
 import { loeseGuentherRad } from './guentherRad.js';
+import { loeseCookieMalus } from './cookieMalus.js';
+import { TierAnbindung } from './tierAnbindung.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { OberflaechenCache, wasserstandAn, setzeWasserstandAn, flutBereich } from './wasserOberflaeche.js';
 import { wirfWaffe, schrittFliegendeKisten } from './kistenWurf.js';
@@ -525,6 +527,9 @@ export class MatchController {
   #turnElapsed = 0;
   #turnPauseTicksConfigured = 0; #turnPauseTicks = 0; #turnReplayTicksConfigured = 0; #hatteSchuss = false;
   #turnDurationMs;
+  /** Fassung 4: Zugzeit/Zielhilfe je Figur und eigener Strom für Günthers Perks. */
+  #tier = new TierAnbindung(this);
+  #guentherPerkRng = null;
   #round = 1;
   #wind = 0;
   #currentStrength = 0;
@@ -699,6 +704,7 @@ export class MatchController {
      * Systemen sind. Ein zusätzlicher Zug an derselben Quelle würde sonst alle
      * nachfolgenden Zufallswerte verschieben.
      */
+    this.#guentherPerkRng = this.#seedManager.getSubRng('GUENTHER_PERK');
     this.#guenther = new GuentherSystem({
       rng: this.#seedManager.getSubRng('GUENTHER'),
       // Planungshorizont für Günthers Auftritte — NICHT die Rundengrenze (die ist ein
@@ -709,6 +715,7 @@ export class MatchController {
       height: this.height,
       fassung: this.guenther,
       aktionRng: this.guenther >= GUENTHER_AKTIONEN ? this.#seedManager.getSubRng('GUENTHER_AKTION') : null,
+      perkRng: this.#guentherPerkRng,
     });
     if (this.cookie >= COOKIE_KATER) this.#cookie = new CookieSystem({ rng: this.#seedManager.getSubRng('COOKIE'), width: this.width, height: this.height, fassung: this.cookie });
 
@@ -1084,7 +1091,7 @@ export class MatchController {
     this.#checkVictory();
 
     const projectilesActive = this.activeProjectileCount > 0;
-    const zeitUm = this.#turnElapsed >= this.#turnDurationMs;
+    const zeitUm = this.#turnElapsed >= this.#zugzeitMs(this.activePlayerId);
     const ende = this.zug ? this.zug.zugEnde(!projectilesActive, zeitUm) : zeitUm || (this.#hasFired && !projectilesActive);
     if (ende || !this.isPlayerAlive(this.activePlayerId)) {
       this.endTurn();
@@ -1336,7 +1343,10 @@ export class MatchController {
         });
         this.#statuses.addSlow(spielerId, poop.slowFactor, poop.turns);
       },
-      radAufloesen: spielerId => loeseGuentherRad({ fassung: this.guenther, guenther: this.#guenther, statuses: this.#statuses, inventory: this.#inventory, world: this.#world }, spielerId),
+      radAufloesen: spielerId => loeseGuentherRad({
+        fassung: this.guenther, guenther: this.#guenther, statuses: this.#statuses, inventory: this.#inventory,
+        world: this.#world, tier: this.tierHandgriffe, rng: this.#guentherPerkRng,
+      }, spielerId),
       melde: (typ, daten) => this.#events.emit(typ, daten),
     });
   }
@@ -1358,6 +1368,10 @@ export class MatchController {
       ...this.#tierKontext(),
       aktiverSpieler: this.#turnOrder?.length ? this.activePlayerId : null,
       spielerIds: this.#players.filter(p => p.alive).map(p => p.entityId),
+      // Fassung 4: Berührung zieht einen der 30 Mali (`engine/cookieMalus.js`).
+      malusAufloesen: spielerId => loeseCookieMalus({
+        world: this.#world, statuses: this.#statuses, inventory: this.#inventory, tier: this.tierHandgriffe, rng: this.#cookie.rng,
+      }, spielerId),
       melde: (typ, daten) => this.#events.emit(typ, daten),
     });
   }
@@ -2160,8 +2174,26 @@ export class MatchController {
    * Funktion, die die Zielvorschau und die clientseitige Vorhersage benutzen.
    */
   aimPreview(playerId, angle, power, steps = 180, weapon = null) {
-    return aimPreview(this.#schussQuelle(), playerId, angle, power, steps, weapon);
+    // Fassung 4: Zielhilfe skaliert Punkte und Abtastung derselben Bahn.
+    const ziel = this.#tier.zielhilfe(playerId, steps);
+    return aimPreview(this.#schussQuelle(), playerId, angle, power, ziel.steps, weapon, ziel.sampleEvery);
   }
+
+  /** Wendet eine Perk-/Malus-Wirkung an (Fassung 4) — derselbe Weg wie im Spiel. */
+  wendeTierWirkung(playerId, wirkung) {
+    return this.#tier.wende(playerId, wirkung, this.#guentherPerkRng ?? this.#rng);
+  }
+
+  /** Setzt den Wind (Fassung 4); die Dienste der Welt ziehen mit. */
+  windSetzen(wert) {
+    this.#wind = wert;
+    this.#currentStrength = wert * 10;
+    this.#world.services.match.wind = wert;
+    this.#world.services.match.currentStrength = this.#currentStrength;
+    return wert;
+  }
+
+  #zugzeitMs(playerId) { return this.#tier.zugzeitMs(this.#turnDurationMs, playerId); }
 
   /**
    * Freie Sichtlinie für einen Schuss? — delegiert an `engine/shooting.js`.
@@ -2192,6 +2224,7 @@ export class MatchController {
     if (this.#status !== 'playing') return;
     const previous = this.activePlayerId;
     this.#turnElapsed = 0;
+    this.#tier.zugEnde(previous); // Fassung 4: Wirkungen der Figur um einen Zug abbauen
     this.zug?.neuerZug(previous, this.#hasFired);
     this.#hatteSchuss ||= this.#hasFired;
     this.#hasFired = false;
@@ -2587,6 +2620,7 @@ export class MatchController {
    * Funktion in `engine/stateSnapshot.js` gehören zusammen.
    */
   #zustandsQuelle() {
+    const tier = this.#tier.snapshot();
     return {
       // Spielerliste: Stammdaten, Klassenzuordnung, `alive`, Anzeigename.
       players: this.#players,
@@ -2606,8 +2640,10 @@ export class MatchController {
       wind: this.#wind,
       turnElapsedMs: this.#turnElapsed,
       turnPauseMs: this.turnPauseMs,
+      // Fassung 4: nur wenn etwas läuft — der Hash älterer Partien bleibt gleich.
+      ...(Object.keys(tier).length > 0 ? { tier } : {}),
       rueckzugMs: this.zug?.rueckzugMs ?? 0,
-      turnDurationMs: this.#turnDurationMs,
+      turnDurationMs: this.#zugzeitMs(this.activePlayerId),
       activePlayerId: this.activePlayerId,
       winnerTeamId: this.#winnerTeamId,
       // Zustände je Spieler (Schild, eingefroren, Schaden über Zeit, Bonus)
@@ -2698,6 +2734,12 @@ export class MatchController {
   stateHash() {
     return hashState(this.getState());
   }
+
+  /** Handgriffe der Fassung-4-Wirkungen — öffentlich für den Produktionsweg im Test. */
+  get tierHandgriffe() { return this.#tier.handgriffe(); }
+
+  /** Handgriffe der Tier-NPCs auf die Welt (`engine/tierKontext.js`). */
+  get tierKontext() { return this.#tierKontext(); }
 
   get world() { return this.#world; }
   get terrain() { return this.#terrain; }

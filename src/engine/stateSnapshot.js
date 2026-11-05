@@ -57,8 +57,8 @@ import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
  *   `players`, `world`, `waterLevelAt(x, y)`, `inventory`,
  *   `cooldownFor(playerId, weaponId)`, `status`, `round`, `maxRounds`, `wind`,
  *   `turnElapsedMs`, `turnDurationMs`, `activePlayerId`, `winnerTeamId`,
- *   `statuses`, `maelstrom`, `turrets`, `terrainWidth`, `terrainHeight`,
- *   `orientation`, `guenther`, `scenery`
+ *   `statuses`, `tier` (nur Fassung 4), `maelstrom`, `turrets`, `terrainWidth`,
+ *   `terrainHeight`, `orientation`, `guenther`, `scenery`
  * @returns {object} der Ansichtszustand in unveränderter Feldreihenfolge
  */
 export function baueAnsichtszustand(quelle) {
@@ -184,6 +184,12 @@ export function baueAnsichtszustand(quelle) {
     turnPauseMs: quelle.turnPauseMs ?? 0,
     rueckzugMs: quelle.rueckzugMs ?? 0, // Rückzugsfrist nach dem Schuss (Zugregeln 2), nur Anzeige
     turnDurationMs: quelle.turnDurationMs,
+    /*
+     * Fassung 4: laufende Zugzeit-/Zielhilfe-Wirkungen je Figur. Das Feld fehlt,
+     * solange nichts läuft — der Zustands-Hash älterer Partien bleibt damit
+     * unverändert (dieselbe Haltung wie bei `statuses.mali`).
+     */
+    ...(quelle.tier && Object.keys(quelle.tier).length > 0 ? { tier: quelle.tier } : {}),
     activePlayerId: quelle.activePlayerId,
     winnerTeamId: quelle.winnerTeamId,
     /**

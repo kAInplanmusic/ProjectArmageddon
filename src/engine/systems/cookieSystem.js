@@ -15,7 +15,7 @@
  */
 import {
   COOKIE_HUNGER, cookieWut, cookieHunger, COOKIE_SPIELEN, COOKIE_IDENTITY,
-  cookieStufe, cookiePflege, COOKIE_KATER,
+  cookieStufe, cookiePflege, COOKIE_KATER, COOKIE_MALI_FASSUNG,
 } from '../../shared/config/cookie.js';
 
 export class CookieSystem {
@@ -55,10 +55,13 @@ export class CookieSystem {
   #hu;
   /** Wie oft ein Spieler schon mit Cookie gekuschelt hat (Fassung 3: Höchstzahl `kuschelnMax`). */
   #kuschelZahl = new Map();
+  /** Fassung 4: bei Berührung wird zusätzlich ein Malus gezogen. */
+  #fassung = COOKIE_KATER;
 
   constructor({ rng, width, height, fassung = COOKIE_KATER }) {
     if (!rng || typeof rng.next !== 'function') throw new TypeError('CookieSystem benötigt einen RNG mit next()');
     this.#rng = rng;
+    this.#fassung = fassung;
     this.#pf = cookiePflege(fassung);
     this.#wut = cookieWut(fassung);
     this.#hu = cookieHunger(fassung);
@@ -76,6 +79,8 @@ export class CookieSystem {
   get stufe() { return this.#stufe; }
   get pose() { return this.#pose; }
   get position() { return { x: this.#x, y: this.#y }; }
+  /** Der eigene Teilgenerator — die Malus-Wahl (Fassung 4) zieht aus demselben Strom. */
+  get rng() { return this.#rng; }
 
   /** Setzt Cookie an eine Stelle — nur für Messungen und Tests (LOOK-4). */
   setzePosition(x, y) {
@@ -271,6 +276,15 @@ export class CookieSystem {
         this.#fuettere(this.#pf.fuetternHunger, 'hand', kontext, id);
         this.#zwinge('fressen', this.#pf.fressenTicks);
         kontext.heile?.(id, this.#pf.fuetternHeilung);
+        /*
+         * Fassung 4: Wer Cookie anfasst, bekommt einen seiner 30 Mali. Der Wurf
+         * läuft über den eigenen Strom `COOKIE` und damit deterministisch; die
+         * Wirkung selbst wendet `engine/cookieMalus.js` an.
+         */
+        if (this.#fassung >= COOKIE_MALI_FASSUNG && kontext.malusAufloesen) {
+          const malus = kontext.malusAufloesen(id);
+          if (malus) kontext.melde('cookie_malus', { playerId: id, x: this.#x, y: this.#y, ...malus });
+        }
         continue;
       }
       // Kuscheln: still danebenstehen, solange er nicht tobt.
