@@ -40,6 +40,7 @@ import { bindeMusikBedienung } from './musikBedienung.js';
 import { HudEinstellungen } from './hudEinstellungen.js';
 import { Bestaetigung } from './bestaetigung.js';
 import { revancheAblauf } from './revanche.js';
+import { waehleStimmung } from './musikStimmung.js';
 import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
@@ -257,6 +258,12 @@ class Game {
     this.match = null;          // lokale Simulation
     this.network = null;        // Online-Verbindung
     this.mode = 'local';
+    /**
+     * Zuletzt gesetzte Musik-Stimmung (`null` = noch keine). Der Vergleich in
+     * `#setzeMusikStimmung` verhindert Überblendungen ohne echten Wechsel.
+     */
+    this.letzteMusikStimmung = null;
+    this.stimmungsTakt = 0; // Drossel der Lage-Prüfung (AUDIO-1): alle 30 Bilder
     this.accumulator = 0;
     this.lastFrameTime = 0;
     this.running = false;
@@ -428,7 +435,13 @@ class Game {
    */
   #bindeMusik() {
     bindeMusikBedienung(document, this.musik);
-    const stimmung = () => this.musik.setzeStimmung(this.menuOverlay.hidden ? 'match' : 'menu');
+    /*
+     * Zwei Quellen für EINE Stimmung: das `hidden` des Menüs (`menu`/`match` —
+     * deckt jeden Startpfad ab) und die Lage im Match (`intensiv`, AUDIO-1,
+     * gedrosselt im Loop). Beide laufen durch `#setzeMusikStimmung`, sonst
+     * überschriebe der Beobachter die Lage und die Stimmung flackerte.
+     */
+    const stimmung = () => this.#setzeMusikStimmung(this.menuOverlay.hidden ? 'match' : 'menu');
     new MutationObserver(stimmung).observe(this.menuOverlay, { attributes: true, attributeFilter: ['hidden'] });
     stimmung();
     // Autoplay-Regel: Start erst nach einer Geste (Tasten stehen im keydown-Hörer unten).
@@ -445,6 +458,28 @@ class Game {
       this.musik.setzeHymne(FACTIONS.some(f => f.id === wert) ? wert : null);
     });
     document.addEventListener('visibilitychange', () => this.musik.setzeVersteckt(document.hidden));
+  }
+
+  /**
+   * Setzt die Musik-Stimmung — nur bei echter Änderung (zwei Stellen melden
+   * dieselbe Stimmung: Menü-Beobachter und Lage-Prüfung im Loop).
+   */
+  #setzeMusikStimmung(art) {
+    if (this.letzteMusikStimmung === art) return;
+    this.letzteMusikStimmung = art;
+    this.musik?.setzeStimmung(art);
+  }
+
+  /**
+   * AUDIO-1: `intensiv`, solange die Lage es hergibt (Valhalla/Mahlstrom,
+   * letzte zwei Figuren, Team ≤ 25 % Leben), sonst `match`. Die Regel steht in
+   * `musikStimmung.js`; hier wird nur der Anzeigezustand übergeben. Menü und
+   * Replay bleiben unberührt.
+   */
+  #pruefeMusikLage(state) {
+    if (this.mode === 'replay') return;
+    if (!this.menuOverlay || !this.menuOverlay.hidden) return;
+    this.#setzeMusikStimmung(waehleStimmung(state));
   }
 
   /**
@@ -3284,6 +3319,13 @@ class Game {
   #render(dt = 1) {
     const state = this.currentState();
     if (!state) return;
+
+    /*
+     * AUDIO-1: Musik folgt der Lage, gedrosselt (alle 30 Bilder, ~0,5 s) — ein
+     * Wechsel braucht keine Bildgenauigkeit.
+     */
+    this.stimmungsTakt = (this.stimmungsTakt + 1) % 30;
+    if (this.stimmungsTakt === 0) this.#pruefeMusikLage(state);
 
     const playerId = state.activePlayerId;
     const myTurn = this.mode === 'online'
