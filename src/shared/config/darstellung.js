@@ -2,26 +2,40 @@
  * Darstellung: welche Fraktionsfigur eine Spielfigur zeigt.
  *
  * REINE ANZEIGE. Die Wahl ändert weder Spielwerte noch Seed-Ströme noch den
- * Replay-Kopf: Klasse und Archetyp (die Werte) bleiben, wie sie sind; die Figur
- * eines Teams wird allein aus Fraktion + Klasse + Archetyp hergeleitet.
+ * Replay-Kopf: Klasse und (in Altreplays) Archetyp bleiben, wie sie sind; die
+ * Figur eines Teams wird allein aus Fraktion + Klasse [+ Archetyp/Platz]
+ * hergeleitet.
  *
- * Zuordnung (dieselbe Zeilen-/Platzlogik wie `factions.js`):
- *   Archetyp brawler     -> Zeile Nahkampf (melee)
- *   Archetyp artillerist -> Zeile Fernkampf (ranged)
- *   Archetyp occultist   -> Zeile Magie (magic)
- *   Klasse heavy -> Platz 0, scout -> Platz 1, artillery -> Platz 2
+ * Zuordnung seit Klassenfassung 3 (`docs/anforderungen-2026-11-05.md` §6):
+ *   Klasse nahkampf  -> Zeile Nahkampf (melee)
+ *   Klasse fernkampf -> Zeile Fernkampf (ranged)
+ *   Klasse okkultist -> Zeile Magie (magic)
+ *   Der dritte Parameter ist dann der PLATZ (0..2) innerhalb der Zeile und
+ *   wählt deterministisch einen der drei Bögen — kein Zufall.
+ *
+ * Für Fassungen ≤ 2 bleibt die alte Auflösung erhalten (Archetyp bestimmt die
+ * Zeile, `SLOT_CLASSES` den Platz), damit Altreplays dieselben Figuren zeigen.
  *
  * Ohne Fraktion (`null`) bleibt die prozedurale Standardfigur.
  *
  * @module darstellung
  */
 import { FACTIONS, CHARACTERS, COMBAT_ROLES, SLOT_CLASSES } from './factions.js';
-import { CLASS_IDS, ARCHETYPE_IDS } from './classes.js';
+import {
+  CLASS_IDS, LEGACY_CLASS_IDS, ARCHETYPE_IDS, klassenKennung,
+} from './classes.js';
+import { KLASSEN_STANDARD, istKlassenfassungNeu } from './klassen-fassung.js';
 
 const FRAKTIONS_IDS = new Set(FACTIONS.map(f => f.id));
 const ROLLE_JE_ARCHETYP = Object.freeze(Object.fromEntries(
   Object.values(COMBAT_ROLES).map(r => [r.archetype, r.id]),
 ));
+/** Fassung 3: Klasse → Zeile des Bogens (dieselbe Richtung wie `ROLE_CLASSES`). */
+const ROLLE_JE_KLASSE = Object.freeze(Object.fromEntries(
+  CLASS_IDS.map((klasse, i) => [klasse, Object.values(COMBAT_ROLES)[i]?.id]),
+));
+/** Alte Klasse → Platz in der Zeile (Fassungen ≤ 2). */
+const SLOT_JE_KLASSE = Object.freeze(Object.fromEntries(LEGACY_CLASS_IDS.map(id => [id, SLOT_CLASSES.indexOf(id)])));
 
 /** Wahl „Klassisch": die alte, prozedurale Figur ohne Fraktions-Sprite. */
 export const KLASSISCH = 'klassisch';
@@ -114,13 +128,24 @@ for (const c of CHARACTERS) {
  * Der Charakter, den eine Figur der Fraktion zeigt.
  *
  * @param {string|null} fraktionId
- * @param {string|number} classId - Kennung oder Index in `CLASS_IDS`
- * @param {string|number} archetypeId - Kennung oder Index in `ARCHETYPE_IDS`
+ * @param {string|number} classId - Kennung oder Index in der Klassenliste der Fassung
+ * @param {string|number|null} dritter - Fassung 3: PLATZ 0..2 innerhalb der Zeile;
+ *   Fassungen ≤ 2: Archetyp-Kennung oder Index in `ARCHETYPE_IDS`
+ * @param {number} [fassung] - Klassenfassung; Standard ist Fassung 3
  * @returns {object|null} Eintrag aus CHARACTERS oder null
  */
-export function charakterFuer(fraktionId, classId, archetypeId) {
+export function charakterFuer(fraktionId, classId, dritter, fassung = KLASSEN_STANDARD) {
   if (!istFraktion(fraktionId)) return null;
-  const rolle = ROLLE_JE_ARCHETYP[alsKennung(archetypeId, ARCHETYPE_IDS)] ?? 'melee';
-  const slot = Math.max(0, SLOT_CLASSES.indexOf(alsKennung(classId, CLASS_IDS)));
+  const klasse = klassenKennung(classId, fassung);
+
+  if (istKlassenfassungNeu(fassung)) {
+    const rolle = ROLLE_JE_KLASSE[klasse] ?? 'melee';
+    const roh = typeof dritter === 'number' ? dritter : 0;
+    const platz = ((Math.trunc(roh) % 3) + 3) % 3;
+    return INDEX[fraktionId]?.[rolle]?.[platz] ?? null;
+  }
+
+  const rolle = ROLLE_JE_ARCHETYP[alsKennung(dritter, ARCHETYPE_IDS)] ?? 'melee';
+  const slot = Math.max(0, SLOT_JE_KLASSE[klasse] ?? 0);
   return INDEX[fraktionId]?.[rolle]?.[slot] ?? null;
 }

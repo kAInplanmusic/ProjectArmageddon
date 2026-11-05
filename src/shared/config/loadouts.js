@@ -198,6 +198,34 @@ export function getStartWaffen(klasse, kit = KIT_STANDARD, { seed = 0, platz = 0
   return flaeche ? [...basis, flaeche] : basis;
 }
 
+/** Die klassenprägende Startwaffe (Kür) einer Klasse — oder `null`. */
+export function getKlassenwaffe(klasse) {
+  if (!KLASSEN_KRITERIEN[klasse] || !KUER[klasse]) return null;
+  const eintrag = getClassLoadoutDetail(klasse).find(e => e.role === 'kuer');
+  return eintrag?.weaponId ?? null;
+}
+
+/**
+ * Startwaffen der Klassenfassung 3: das neutrale Starter-Kit plus die
+ * klassenprägende Waffe.
+ *
+ * Vorgabe `docs/anforderungen-2026-11-05.md` §6: „Die Startlastouts/Profile
+ * richten sich nach der Klasse (Nahkampf: kurz/robust, Fernkampf: Projektile,
+ * Okkultist: Magie/Fläche)." Das Kit selbst bleibt klassenunabhängig (es sichert
+ * jeder Figur Fläche und Direktschuss); die Kür macht die Klasse sichtbar.
+ * Für Fassungen ≤ 2 bleibt `getStartWaffen` unverändert — Altreplays bitgleich.
+ *
+ * @param {string} klasse
+ * @param {number} kit
+ * @param {{seed?:number, platz?:number}} wo
+ * @returns {string[]}
+ */
+export function getStartWaffenMitKlasse(klasse, kit = KIT_STANDARD, wo = {}) {
+  const basis = getStartWaffen(klasse, kit, wo);
+  const kuer = getKlassenwaffe(klasse);
+  return kuer && !basis.includes(kuer) ? [...basis, kuer] : basis;
+}
+
 /** Rollen eines Klassen-Loadouts, in fester Reihenfolge. */
 export const LOADOUT_ROLES = Object.freeze(['flaeche', 'direkt', 'hitscan', 'kuer']);
 
@@ -266,6 +294,31 @@ const KLASSEN_KRITERIEN = Object.freeze({
     hitscan: Object.freeze([groesste('maxRange'), groesste('damage')]),
     kuer: Object.freeze([groesste('maxRange'), groesste('damage')]),
   }),
+  /*
+   * Fassung 3 (`docs/anforderungen-2026-11-05.md` §6): Nahkampf kurz/robust,
+   * Fernkampf Projektile, Okkultist Magie/Fläche.
+   */
+  nahkampf: Object.freeze({
+    // Kurze Reichweite zuerst, dann Wucht: Er muss heran und hält dafür mehr aus.
+    flaeche: Object.freeze([kleinste('maxRange'), groesste('damage')]),
+    direkt: Object.freeze([kleinste('maxRange'), groesste('damage')]),
+    hitscan: Object.freeze([kleinste('maxRange'), groesste('damage')]),
+    kuer: Object.freeze([kleinste('maxRange'), groesste('damage')]),
+  }),
+  fernkampf: Object.freeze({
+    // Projektile: schnelle, weit tragende Waffen — Mittelfeld der drei Klassen.
+    flaeche: Object.freeze([groesste('maxRange'), groesste('blastRadius'), groesste('damage')]),
+    direkt: Object.freeze([groesste('speedFactor'), groesste('maxRange'), groesste('damage')]),
+    hitscan: Object.freeze([groesste('maxRange'), groesste('damage')]),
+    kuer: Object.freeze([groesste('speedFactor'), groesste('maxRange')]),
+  }),
+  okkultist: Object.freeze({
+    // Magie und Fläche: große Wirkung, zerbrechliche Figur.
+    flaeche: Object.freeze([groesste('blastRadius'), groesste('damage')]),
+    direkt: Object.freeze([groesste('damage'), groesste('maxRange')]),
+    hitscan: Object.freeze([groesste('damage'), groesste('maxRange')]),
+    kuer: Object.freeze([groesste('blastRadius'), groesste('damage')]),
+  }),
 });
 
 /** Die klassenprägende Waffe: Auswahlpool und Begründung. */
@@ -281,6 +334,18 @@ const KUER = Object.freeze({
   artillery: Object.freeze({
     label: 'weittragende Schusswaffe',
     filter: w => w.subcategory === 'guns',
+  }),
+  nahkampf: Object.freeze({
+    label: 'Nahkampfwaffe',
+    filter: w => w.subcategory === 'melee',
+  }),
+  fernkampf: Object.freeze({
+    label: 'Projektilwaffe',
+    filter: w => w.delivery === 'projectile' && w.category === 'ranged',
+  }),
+  okkultist: Object.freeze({
+    label: 'Magiewaffe',
+    filter: w => w.category === 'magic' || w.subcategory === 'elemental',
   }),
 });
 

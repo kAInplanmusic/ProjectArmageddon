@@ -5,15 +5,18 @@
  * Name und Zeile (Klasse); alles Übrige steht hier.
  *
  * Aufbau je Fraktion: drei Zeilen zu drei Charakteren. Die Zeile bestimmt die
- * Kampfweise,und zwar nach dem Symbol auf dem Bogen:
+ * Kampfweise, und zwar nach dem Symbol auf dem Bogen:
  *   Zeile 0 (Schwert) -> Nahkampf
  *   Zeile 1 (Bogen)   -> Fernkampf
  *   Zeile 2 (Stab)    -> Magie
  *
- * Die Position innerhalb der Zeile bestimmt die Spielklasse:
- *   Platz 0 -> heavy (robust, viel Leben)
- *   Platz 1 -> scout (schnell, wenig Leben)
- *   Platz 2 -> artillery (große Reichweite, empfindlich)
+ * Seit Klassenfassung 3 (`docs/anforderungen-2026-11-05.md` §6) ist die Zeile
+ * zugleich die SPIELKLASSE (`classOf`): `melee` → `nahkampf`, `ranged` →
+ * `fernkampf`, `magic` → `okkultist`. Der Platz innerhalb der Zeile (0..2)
+ * wählt den konkreten Bogen (`charakterFuer(fraktion, klasse, platz)`).
+ *
+ * Die alte Spaltenzuordnung (`SLOT_CLASSES`: heavy/scout/artillery) bleibt nur
+ * für die Darstellung von Replays der Fassungen ≤ 2 erhalten (`slotClassOf`).
  *
  * Die Bilder liegen unter src/client/assets/characters/<fraktion>/ und wurden mit
  * scripts/extract_factions.py aus den Bögen geschnitten.
@@ -28,8 +31,21 @@ export const COMBAT_ROLES = Object.freeze({
   magic: Object.freeze({ id: 'magic', label: 'Magie', row: 2, archetype: 'occultist', symbol: 'Stab' }),
 });
 
-/** Spielklassen nach Platz innerhalb einer Zeile. */
+/** Spielklassen nach Platz innerhalb einer Zeile — nur noch für Fassungen ≤ 2. */
 export const SLOT_CLASSES = Object.freeze(['heavy', 'scout', 'artillery']);
+
+/**
+ * Die drei Klassen der Fassung 3, abgeleitet aus der Zeile des Bogens.
+ *
+ * Das ist die Vorgabe aus `docs/anforderungen-2026-11-05.md` §6: `melee` →
+ * `nahkampf`, `ranged` → `fernkampf`, `magic` → `okkultist`. Je Fraktion stehen
+ * damit genau drei Einheiten je Klasse (die drei Plätze der Zeile).
+ */
+export const ROLE_CLASSES = Object.freeze({
+  melee: 'nahkampf',
+  ranged: 'fernkampf',
+  magic: 'okkultist',
+});
 
 /**
  * Die neun Fraktionen.
@@ -856,8 +872,16 @@ export function getCharacter(id) {
   return CHARACTERS.find(c => c.id === id) ?? null;
 }
 
-/** Die Spielklasse eines Charakters, abgeleitet aus seiner Position. */
+/** Die Spielklasse eines Charakters (Fassung 3): abgeleitet aus seiner Zeile. */
 export function classOf(character) {
+  return ROLE_CLASSES[character.role] ?? ROLE_CLASSES.melee;
+}
+
+/**
+ * Die alte Spielklasse aus der Spalte — nur für die Darstellung in Replays der
+ * Fassungen ≤ 2 (`SLOT_CLASSES`).
+ */
+export function slotClassOf(character) {
   return SLOT_CLASSES[character.slot] ?? 'heavy';
 }
 
