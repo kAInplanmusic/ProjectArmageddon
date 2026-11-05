@@ -16,6 +16,7 @@ import { MALI_LEITUNGSMARKE, maskeZuMali } from '../shared/config/schaden.js';
 import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
+import { getTurnDurationForSize } from '../engine/systems/turnSystem.js';
 import { Renderer } from './renderer.js';
 import { Camera, ZOOM_GRENZEN } from './camera.js';
 import { KameraRegie } from './kameraRegie.js';
@@ -2085,7 +2086,8 @@ class Game {
     // beobachteten Wert abgeleitet, damit sie ohne Zusatzfeld korrekt ist.
     const remaining = snapshot.turnRemainingMs ?? 0;
     if (remaining > (this.remoteTurnDurationMs ?? 0)) this.remoteTurnDurationMs = remaining;
-    const turnDurationMs = this.remoteTurnDurationMs || 30_000;
+    // Vorgabe aus derselben Quelle wie Motor und Server (Kartenstufe mittel).
+    const turnDurationMs = this.remoteTurnDurationMs || getTurnDurationForSize('mittel');
 
     // Zustandsmarken kommen jetzt ebenfalls über die Leitung (Protokoll v9):
     // `dotsCount` (Anzahl der Schaden-über-Zeit-Effekte) und `boostMultiplier`.

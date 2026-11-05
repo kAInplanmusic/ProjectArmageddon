@@ -30,7 +30,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { MATCH_RULES } from '../src/shared/config/match.js';
-import { getTurnDurationForPlayerCount } from '../src/engine/systems/turnSystem.js';
+import { getTurnDurationForPlayerCount, getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HIER, '..');
@@ -50,20 +50,17 @@ function quelldateien(verzeichnis) {
   return ergebnis;
 }
 
-test('Die Zugzeit-Konfiguration führt keine Obergrenze mehr', () => {
+test('Die Zugzeit-Konfiguration hängt an der Kartengröße, nicht an der Spielerzahl', () => {
   /*
-   * Eine Zahl, die eine Grenze verspricht, die nie geprüft wird, ist
-   * irreführend. Geprüft wird, dass sie nicht zurückkehrt.
+   * Entscheidung 2026-11-05: klein 30 s, mittel 40 s, groß 50 s. Die alten
+   * Felder nach Spielerzahl (`duelSeconds`, `fourPlayerSeconds`) sind entfallen —
+   * eine Zahl, die die Zugzeit nicht mehr steuert, wäre irreführend.
    */
-  assert.ok(MATCH_RULES.turnTimers, 'turnTimers fehlt');
-
-  for (const stufe of ['duelSeconds', 'fourPlayerSeconds']) {
-    assert.equal(typeof MATCH_RULES.turnTimers[stufe].seconds, 'number',
-      `${stufe}.seconds muss eine Zahl sein`);
-    assert.ok(!('maximum' in MATCH_RULES.turnTimers[stufe]),
-      `${stufe}.maximum ist zurück — es hatte null Lesestellen`);
-    assert.ok(!('minimum' in MATCH_RULES.turnTimers[stufe]),
-      `${stufe}.minimum ist zurück — das Feld heißt jetzt seconds`);
+  assert.deepEqual(Object.keys(MATCH_RULES.turnTimers), ['klein', 'mittel', 'gross']);
+  for (const [stufe, wert] of [['klein', 30], ['mittel', 40], ['gross', 50]]) {
+    assert.equal(MATCH_RULES.turnTimers[stufe].seconds, wert, `${stufe}: falsche Sekundenzahl`);
+    assert.ok(!('minimum' in MATCH_RULES.turnTimers[stufe]), `${stufe}.minimum gehört nicht mehr hierher`);
+    assert.ok(!('maximum' in MATCH_RULES.turnTimers[stufe]), `${stufe}.maximum hatte nie einen Leser`);
   }
 });
 
@@ -71,19 +68,27 @@ test('Die Zugdauer wird tatsächlich aus der Konfiguration gelesen', () => {
   /*
    * Die Gegenprobe zum vorigen Test: Die Werte müssen WIRKEN. Gelesen wird
    * über die öffentliche Funktion, nicht über die Konstante — so wird die
-   * ganze Kette geprüft.
+   * ganze Kette geprüft. Die Spielerzahl darf dabei nichts ändern.
    */
-  assert.equal(getTurnDurationForPlayerCount(2),
-    MATCH_RULES.turnTimers.duelSeconds.seconds * 1000,
-    'Bei 2 Spielern muss die Duell-Zeit gelten');
-  assert.equal(getTurnDurationForPlayerCount(1),
-    MATCH_RULES.turnTimers.duelSeconds.seconds * 1000,
-    'Bei 1 Spieler ebenfalls');
-  assert.equal(getTurnDurationForPlayerCount(4),
-    MATCH_RULES.turnTimers.fourPlayerSeconds.seconds * 1000,
-    'Bei 4 Spielern die Vier-Spieler-Zeit');
-  assert.equal(getTurnDurationForPlayerCount(6), 15_000,
-    'Bei mehr als 4 Spielern gelten 15 Sekunden');
+  for (const stufe of ['klein', 'mittel', 'gross']) {
+    assert.equal(getTurnDurationForSize(stufe), MATCH_RULES.turnTimers[stufe].seconds * 1000,
+      `${stufe}: getTurnDurationForSize liest nicht die Konfiguration`);
+  }
+  assert.equal(getTurnDurationForSize('unbekannt'), 40_000, 'unbekannte Stufe fällt auf mittel');
+  assert.equal(getTurnDurationForSize(undefined), 40_000, 'ohne Angabe gilt mittel');
+  assert.equal(getTurnDurationForSize('krieg'), 50_000, 'Altstufe bekommt die größte Zeit');
+});
+
+test('Der Altpfad nach Spielerzahl bleibt für alte Aufzeichnungen erhalten', () => {
+  /*
+   * Aufzeichnungen von vor dem 2026-11-05 tragen keine `zugzeitFassung` und
+   * werden mit der damaligen Regel gespielt: 30/20/15 s. Der Altpfad darf
+   * deshalb nicht verschwinden (AGENTS.md §2) — er wird aber von keiner neuen
+   * Partie mehr benutzt (`getTurnDurationForSize` ist die Quelle).
+   */
+  assert.equal(getTurnDurationForPlayerCount(2), 30_000);
+  assert.equal(getTurnDurationForPlayerCount(4), 20_000);
+  assert.equal(getTurnDurationForPlayerCount(6), 15_000);
 });
 
 test('`teamSize` steht NICHT mehr in der Konfiguration', () => {

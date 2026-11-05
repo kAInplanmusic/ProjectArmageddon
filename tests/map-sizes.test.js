@@ -1,148 +1,176 @@
 /**
- * Tests: Kartengrößen und Ausrichtungen.
+ * Tests: Kartenformate und Größenstufen (Entscheidung 2026-11-05, Paket A2).
  *
- * ## Was sich geändert hat
+ * Sieben Seitenverhältnisse — 24:9, 9:24, 16:9, 9:16, 4:3, 3:4, 1:1 — jeweils
+ * in drei wählbaren Stufen `klein`/`mittel`/`gross`. Über alle Formate einer
+ * Stufe ist die FLÄCHE gleich (klein 1280×720 = 921 600 px, mittel 2 560×1 440,
+ * groß 3 840×2 160); nur der Zuschnitt ist anders. Das hält die Waffenreichweiten
+ * vergleichbar: Ein Schuss über 40 % der Karte bleibt 40 % der Karte.
  *
- * Die Karte war **immer genau so groß wie der Bildschirm** (1280×720). Jetzt
- * gibt es vier Größenstufen (klein bis Krieg), und eine Kamera zeigt einen
- * Ausschnitt statt der ganzen Karte.
- *
- * Die Struktur hat sich damit geändert: `MAP_SIZES.landscape` ist keine Größe
- * mehr, sondern eine **Tabelle von Stufen**. Die Tests darunter nehmen das an.
- *
- * ## Was gleich geblieben ist
- *
- * Die Beziehung zwischen den Ausrichtungen: Quer- und Hochformat derselben
- * Stufe haben **dieselbe Fläche**. Der Grund steht seit jeher im Code — die
- * Reichweiten sind in Kartenpixeln angegeben und sollen in beiden Ausrichtungen
- * gleich wirken. Dieser Test prüft die Beziehung weiterhin, nur je Stufe.
+ * Die 16:9-Maße müssen die BISHERIGEN bleiben — Gelände- und Zustands-Hashes der
+ * Goldwert-Tests hängen daran. `krieg` bleibt als Altstufe lesbar (alte
+ * Aufzeichnungen), wird aber nicht mehr angeboten.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  MAP_SIZES, MAP_GROESSEN, mapSizeFor, mapGroesseFuerSpieler,
+  MAP_SIZES, MAP_FORMATS, MAP_GROESSEN, MAP_GROESSEN_ALLE, MAP_FORMAT_VORGABE,
+  MAP_GROESSE_VORGABE, MAP_FORMAT_ALIASE, mapSizeFor, mapGroesseFuerSpieler,
+  ausrichtungFuerFormat, normalisiereFormat, normalisiereGroesse,
   MAP_WIDTH, MAP_HEIGHT, ORIENTATIONS,
 } from '../src/engine/match.js';
 
-test('Jede Größenstufe hat in beiden Ausrichtungen dieselbe Fläche', () => {
-  /*
-   * Die Kernbeziehung. Ungleiche Fläche würde die Waffenbalance zwischen
-   * Quer- und Hochformat verschieben — eine Waffe, die quer 40 % der Karte
-   * erreicht, erreichte hoch eine andere Strecke.
-   */
-  for (const stufe of MAP_GROESSEN) {
-    const quer = MAP_SIZES.landscape[stufe];
-    const hoch = MAP_SIZES.portrait[stufe];
-
-    assert.ok(quer && hoch, `Stufe "${stufe}" fehlt in einer Ausrichtung`);
-    assert.equal(quer.width * quer.height, hoch.width * hoch.height,
-      `Stufe "${stufe}": ungleiche Fläche zwischen den Ausrichtungen`);
-    assert.equal(hoch.width, quer.height, `Stufe "${stufe}": Breite/Höhe nicht getauscht`);
-    assert.equal(hoch.height, quer.width, `Stufe "${stufe}": Höhe/Breite nicht getauscht`);
-  }
+/** Die Fläche je Stufe, wie sie in docs/anforderungen-2026-11-05.md steht. */
+const FLAECHEN = Object.freeze({
+  klein: 1280 * 720,
+  mittel: 2560 * 1440,
+  gross: 3840 * 2160,
+  krieg: 5120 * 2880,
 });
 
-test('Die Größenstufen wachsen in beiden Achsen', () => {
-  /*
-   * Eine Stufe, die in einer Achse kleiner wäre als die vorige, wäre keine
-   * Steigerung. Der Sinn der Stufen ist, dass „Krieg" mehr Welt bedeutet als
-   * „klein".
-   */
-  for (const ausrichtung of ORIENTATIONS) {
-    for (let i = 1; i < MAP_GROESSEN.length; i += 1) {
-      const vorher = MAP_SIZES[ausrichtung][MAP_GROESSEN[i - 1]];
-      const jetzt = MAP_SIZES[ausrichtung][MAP_GROESSEN[i]];
-
-      assert.ok(jetzt.width > vorher.width,
-        `${ausrichtung}: "${MAP_GROESSEN[i]}" ist nicht breiter als "${MAP_GROESSEN[i - 1]}"`);
-      assert.ok(jetzt.height > vorher.height,
-        `${ausrichtung}: "${MAP_GROESSEN[i]}" ist nicht höher als "${MAP_GROESSEN[i - 1]}"`);
-    }
-  }
+/** Die bisherigen 16:9-Maße — bitgleich, nicht verhandelbar. */
+const ALT_16_9 = Object.freeze({
+  klein: { width: 1280, height: 720 },
+  mittel: { width: 2560, height: 1440 },
+  gross: { width: 3840, height: 2160 },
+  krieg: { width: 5120, height: 2880 },
 });
 
-test('Das Seitenverhältnis bleibt 16:9 in jeder Stufe', () => {
+test('Es gibt genau die sieben geforderten Formate', () => {
+  assert.deepEqual([...MAP_FORMATS], ['24:9', '9:24', '16:9', '9:16', '4:3', '3:4', '1:1']);
+  assert.equal(MAP_FORMAT_VORGABE, '16:9', 'Vorgabe bleibt das bisherige Querformat');
+});
+
+test('Drei wählbare Stufen; `krieg` nur noch lesbar', () => {
+  assert.deepEqual([...MAP_GROESSEN], ['klein', 'mittel', 'gross']);
+  assert.deepEqual([...MAP_GROESSEN_ALLE], ['klein', 'mittel', 'gross', 'krieg']);
+  assert.equal(MAP_GROESSE_VORGABE, 'mittel');
+});
+
+test('16:9 ist in jeder Stufe bitgleich zu den bisherigen Maßen', () => {
+  for (const stufe of MAP_GROESSEN_ALLE) {
+    assert.deepEqual(MAP_SIZES['16:9'][stufe], ALT_16_9[stufe],
+      `16:9/${stufe} hat sich geändert — alte Goldwert-Hashes würden brechen`);
+  }
+  assert.equal(MAP_WIDTH, 2560);
+  assert.equal(MAP_HEIGHT, 1440);
+});
+
+test('Alle 28 Maße: ganzzahlig, Fläche je Stufe gleich (±2 %), Seitenverhältnis stimmt', () => {
   /*
-   * Damit die Kamera ohne Verzerrung arbeiten kann und die Kulissen (die für
-   * 16:9 erzeugt sind) passen.
+   * Die Kernzusage. Geprüft werden alle Formate × alle Stufen (7 × 4 = 28); die
+   * drei wählbaren Stufen zusätzlich gegen ihren Sollwert. Die Fläche darf um
+   * höchstens 2 % abweichen (ganzzahlige Pixel), das Verhältnis um 1 %.
    */
-  for (const ausrichtung of ORIENTATIONS) {
-    for (const stufe of MAP_GROESSEN) {
-      const { width, height } = MAP_SIZES[ausrichtung][stufe];
+  for (const format of MAP_FORMATS) {
+    const [b, h] = format.split(':').map(Number);
+    const soll = b / h;
+
+    for (const stufe of MAP_GROESSEN_ALLE) {
+      const { width, height } = MAP_SIZES[format][stufe];
+      assert.ok(Number.isInteger(width) && Number.isInteger(height),
+        `${format}/${stufe}: keine ganzzahligen Pixel (${width}×${height})`);
+      assert.ok(width > 0 && height > 0, `${format}/${stufe}: leere Karte`);
+
+      const flaeche = width * height;
+      const abweichung = Math.abs(flaeche - FLAECHEN[stufe]) / FLAECHEN[stufe];
+      assert.ok(abweichung <= 0.02,
+        `${format}/${stufe}: Fläche ${flaeche} weicht ${(abweichung * 100).toFixed(2)} % von ${FLAECHEN[stufe]} ab`);
+
       const verhaeltnis = width / height;
-      const erwartet = ausrichtung === 'landscape' ? 16 / 9 : 9 / 16;
-      assert.ok(Math.abs(verhaeltnis - erwartet) < 0.01,
-        `${ausrichtung}/${stufe}: Seitenverhältnis ${verhaeltnis.toFixed(3)} statt ${erwartet.toFixed(3)}`);
+      assert.ok(Math.abs(verhaeltnis - soll) / soll <= 0.01,
+        `${format}/${stufe}: Seitenverhältnis ${verhaeltnis.toFixed(3)} statt ${soll.toFixed(3)}`);
     }
   }
 });
 
-test('mapSizeFor liefert Maße je Ausrichtung UND Stufe', () => {
-  for (const ausrichtung of ORIENTATIONS) {
-    for (const stufe of MAP_GROESSEN) {
-      assert.deepEqual(mapSizeFor(ausrichtung, stufe), MAP_SIZES[ausrichtung][stufe]);
+test('Quer- und Hochformat sind dieselben Maße, getauscht', () => {
+  const paare = [['24:9', '9:24'], ['16:9', '9:16'], ['4:3', '3:4']];
+  for (const [quer, hoch] of paare) {
+    for (const stufe of MAP_GROESSEN_ALLE) {
+      assert.equal(MAP_SIZES[hoch][stufe].width, MAP_SIZES[quer][stufe].height,
+        `${hoch}/${stufe}: Breite ist nicht die Höhe von ${quer}`);
+      assert.equal(MAP_SIZES[hoch][stufe].height, MAP_SIZES[quer][stufe].width,
+        `${hoch}/${stufe}: Höhe ist nicht die Breite von ${quer}`);
     }
   }
 });
 
-test('mapSizeFor fällt tolerant zurück', () => {
-  /*
-   * Dieselbe Haltung wie in der übrigen Konfiguration: Eine unbekannte
-   * Kennung aus einer älteren Fassung darf ein Match nicht verhindern.
-   */
-  assert.deepEqual(mapSizeFor('schraeg', 'mittel'), MAP_SIZES.landscape.mittel,
-    'unbekannte Ausrichtung fällt auf Querformat');
-  assert.deepEqual(mapSizeFor('landscape', 'riesig'), MAP_SIZES.landscape.mittel,
-    'unbekannte Stufe fällt auf die Vorgabe');
-  assert.deepEqual(mapSizeFor(undefined, undefined), MAP_SIZES.landscape.mittel);
+test('mapSizeFor liefert Maße je Format UND Stufe', () => {
+  for (const format of MAP_FORMATS) {
+    for (const stufe of MAP_GROESSEN_ALLE) {
+      assert.deepEqual(mapSizeFor(format, stufe), MAP_SIZES[format][stufe]);
+    }
+  }
 });
 
-test('Die Spielerzahl bestimmt eine Stufe', () => {
+test('Die Altnamen landscape/portrait zeigen auf 16:9 und 9:16', () => {
+  assert.equal(MAP_FORMAT_ALIASE.landscape, '16:9');
+  assert.equal(MAP_FORMAT_ALIASE.portrait, '9:16');
+  assert.deepEqual(mapSizeFor('landscape', 'mittel'), MAP_SIZES['16:9'].mittel);
+  assert.deepEqual(mapSizeFor('portrait', 'klein'), MAP_SIZES['9:16'].klein);
+  // Alte Aufzeichnungen tragen nur die Ausrichtung — die Maße müssen dieselben sein.
+  assert.deepEqual(mapSizeFor('portrait'), MAP_SIZES['9:16'].mittel);
+});
+
+test('mapSizeFor und die Normalisierer fallen tolerant zurück', () => {
   /*
-   * Die Zuordnung ist ein Vorschlag, keine Regel — die Lobby kann sie
-   * überschreiben. Geprüft wird, dass sie monoton wächst: Mehr Spieler heißt
-   * nie eine kleinere Karte.
+   * Dieselbe Haltung wie in der übrigen Konfiguration: Eine unbekannte Kennung
+   * aus einer älteren Fassung darf ein Match nicht verhindern (AGENTS.md §6).
    */
+  assert.deepEqual(mapSizeFor('schraeg', 'mittel'), MAP_SIZES['16:9'].mittel,
+    'unbekannte Form fällt auf 16:9');
+  assert.deepEqual(mapSizeFor('16:9', 'riesig'), MAP_SIZES['16:9'].mittel,
+    'unbekannte Stufe fällt auf mittel');
+  assert.deepEqual(mapSizeFor(undefined, undefined), MAP_SIZES['16:9'].mittel);
+
+  assert.equal(normalisiereFormat('3:4'), '3:4');
+  assert.equal(normalisiereFormat('schraeg'), '16:9');
+  assert.equal(normalisiereFormat('schraeg', 'portrait'), '9:16', 'die Ausrichtung bleibt der Rückfall');
+  assert.equal(normalisiereGroesse('krieg'), 'krieg', 'Altstufe bleibt lesbar');
+  assert.equal(normalisiereGroesse('riesig'), 'mittel');
+  assert.equal(normalisiereGroesse(undefined), 'mittel');
+});
+
+test('ausrichtungFuerFormat: Hochformate sind hoch, 1:1 gilt als quer', () => {
+  assert.equal(ausrichtungFuerFormat('9:16'), 'portrait');
+  assert.equal(ausrichtungFuerFormat('9:24'), 'portrait');
+  assert.equal(ausrichtungFuerFormat('3:4'), 'portrait');
+  assert.equal(ausrichtungFuerFormat('16:9'), 'landscape');
+  assert.equal(ausrichtungFuerFormat('24:9'), 'landscape');
+  assert.equal(ausrichtungFuerFormat('1:1'), 'landscape');
+  assert.equal(ausrichtungFuerFormat('portrait'), 'portrait', 'Altname');
+  for (const wert of ORIENTATIONS) {
+    assert.ok(ORIENTATIONS.includes(ausrichtungFuerFormat(MAP_FORMAT_ALIASE[wert])), `${wert} liefert keine Ausrichtung`);
+  }
+});
+
+test('Die Spielerzahl schlägt nur noch eine wählbare Stufe vor (nie `krieg`)', () => {
   let vorher = 0;
   for (const spieler of [2, 4, 8, 12, 16]) {
     const stufe = mapGroesseFuerSpieler(spieler);
     const index = MAP_GROESSEN.indexOf(stufe);
-    assert.ok(index >= vorher,
-      `Bei ${spieler} Spielern sinkt die Stufe von ${MAP_GROESSEN[vorher]} auf ${stufe}`);
+    assert.ok(index >= 0, `Bei ${spieler} Spielern kommt die nicht wählbare Stufe ${stufe}`);
+    assert.ok(index >= vorher, `Bei ${spieler} Spielern sinkt die Stufe`);
     vorher = index;
   }
-
   assert.equal(mapGroesseFuerSpieler(2), 'klein');
-  assert.equal(mapGroesseFuerSpieler(16), 'krieg');
-});
-
-test('Die alten Konstanten zeigen auf die Vorgabestufe', () => {
-  /*
-   * Der Server und zahlreiche Tests nutzen `MAP_WIDTH`/`MAP_HEIGHT` weiterhin.
-   * Sie müssen auf eine gültige Stufe zeigen — und die Vorgabe der Lobby ist
-   * 2 Teams × 2 Spieler, also die mittlere Stufe.
-   */
-  assert.equal(MAP_WIDTH, MAP_SIZES.landscape.mittel.width);
-  assert.equal(MAP_HEIGHT, MAP_SIZES.landscape.mittel.height);
-  assert.ok(MAP_WIDTH > 0 && MAP_HEIGHT > 0);
+  assert.equal(mapGroesseFuerSpieler(16), 'gross');
 });
 
 test('Keine Größe überschreitet die Grenze des Drahtformats', () => {
   /*
-   * Koordinaten gehen als Int16 mit Faktor 4 über die Leitung — die größte
-   * darstellbare Koordinate ist 8192 px (siehe `scripts/check-camera.mjs`).
-   * Eine Karte darüber würde abgeschnitten, ohne dass es auffiele.
+   * Koordinaten gehen als Int16 mit Faktor 4 über die Leitung — höchstens
+   * 32767/4 = 8191,75 px. Eine Karte darüber würde abgeschnitten, ohne dass es
+   * auffiele (`shared/protocol.js`, `scripts/check-camera.mjs`).
    */
   const grenze = 32767 / 4;
-
-  for (const ausrichtung of ORIENTATIONS) {
-    for (const stufe of MAP_GROESSEN) {
-      const { width, height } = MAP_SIZES[ausrichtung][stufe];
-      assert.ok(width <= grenze,
-        `${ausrichtung}/${stufe}: Breite ${width} überschreitet ${Math.round(grenze)} px`);
-      assert.ok(height <= grenze,
-        `${ausrichtung}/${stufe}: Höhe ${height} überschreitet ${Math.round(grenze)} px`);
+  for (const format of MAP_FORMATS) {
+    for (const stufe of MAP_GROESSEN_ALLE) {
+      const { width, height } = MAP_SIZES[format][stufe];
+      assert.ok(width <= grenze, `${format}/${stufe}: Breite ${width} > ${Math.round(grenze)} px`);
+      assert.ok(height <= grenze, `${format}/${stufe}: Höhe ${height} > ${Math.round(grenze)} px`);
     }
   }
 });

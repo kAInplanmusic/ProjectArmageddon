@@ -11,7 +11,7 @@ export { EntityManager } from './ecs/entityManager.js';
 export { World } from './ecs/world.js';
 
 // Systeme
-export { TurnSystem, getTurnDurationForPlayerCount } from './systems/turnSystem.js';
+export { TurnSystem, getTurnDurationForPlayerCount, getTurnDurationForSize } from './systems/turnSystem.js';
 export { DamageSystem } from './systems/damageSystem.js';
 export { PhysicsSystem, computeLinearDragPosition } from './systems/physicsSystem.js';
 

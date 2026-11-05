@@ -23,7 +23,7 @@
  *     node scripts/check-match-sizes.mjs
  */
 import { mapGroesseFuerSpieler, mapSizeFor } from '../src/engine/match.js';
-import { MATCH_RULES } from '../src/shared/config/match.js';
+import { getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
 /** Die Matcharten aus dem Auftrag. */
 const ARTEN = [
@@ -126,7 +126,8 @@ console.log('     Überblick. Die Kamera ist gebaut; sie folgt bereits dem aktiv
 console.log('');
 console.log('DIE ZUGZEIT — DER HARTE PUNKT');
 console.log('');
-const zugzeit = MATCH_RULES.turnTimers.fourPlayerSeconds.seconds;
+// Zugzeit der Vorgabestufe mittel (seit 2026-11-05 hängt sie an der Karte).
+const zugzeit = getTurnDurationForSize('mittel') / 1000;
 
 console.log(`  Zugzeit: ${zugzeit} s je Zug`);
 console.log('');

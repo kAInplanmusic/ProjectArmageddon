@@ -35,18 +35,24 @@ export const MATCH_RULES = Object.freeze({
   visualsDimension: '2.5d',
 
   /*
-   * Zugzeiten.
+   * Zugzeiten — nach KARTENGRÖSSE, nicht nach Spielerzahl.
    *
-   * FUND (belegt, User-Flow-Audit): `maximum` hatte NULL Leser — der Motor
-   * liest ausschließlich `.minimum` (match.js:311, turnSystem.js:145,148).
+   * Entscheidung des Auftraggebers (2026-11-05, docs/anforderungen-2026-11-05.md
+   * §3): klein 30 s, mittel 40 s, groß 50 s. Größere Karte = längere Wege = mehr
+   * Bedenkzeit. Die Spielerzahl beeinflusst die Zugzeit NICHT mehr; sie ist
+   * deshalb hier auch nicht mehr abgebildet. Eine ausdrückliche Angabe
+   * `turnDurationMs` schlägt weiterhin alles.
    *
-   * Die Obergrenzen sind deshalb entfernt: Eine Zahl, die eine Grenze
-   * verspricht, die nie geprüft wird, ist irreführend. Die Zugdauer ergibt sich
-   * aus der Spielerzahl; wer sie anheben will, ändert `minimum`.
+   * Gelesen wird ausschließlich über `getTurnDurationForSize`
+   * (`engine/systems/turnSystem.js`) — Lobby, Server, HUD und Replay-Kopf leiten
+   * daraus ab. Die historischen Felder `duelSeconds`/`fourPlayerSeconds` sind
+   * entfallen; die alte Ableitung lebt nur noch als Altpfad für Aufzeichnungen
+   * ohne `zugzeitFassung` (AGENTS.md §2).
    */
   turnTimers: Object.freeze({
-    duelSeconds: Object.freeze({ seconds: 30 }),
-    fourPlayerSeconds: Object.freeze({ seconds: 20 }),
+    klein: Object.freeze({ seconds: 30 }),
+    mittel: Object.freeze({ seconds: 40 }),
+    gross: Object.freeze({ seconds: 50 }),
   }),
   /*
    * Das Match endet, wenn es entschieden ist — nicht nach einer festen Rundenzahl
@@ -132,6 +138,19 @@ export const MATCH_RULES = Object.freeze({
     outOfZoneGrowthFactor: 1.5
   })
 });
+
+/**
+ * Fassung der Zugzeit-Regel (Versionsmarke im Replay-Kopf).
+ *
+ * 1 = Zugzeit aus der Spielerzahl (30 s bei ≤2, 20 s bei 3–4, 15 s ab 5).
+ * 2 = Zugzeit aus der Kartengröße (30/40/50 s, `MATCH_RULES.turnTimers`).
+ *
+ * Neue Aufzeichnungen tragen `zugzeitFassung: 2`. Eine Datei OHNE die Marke
+ * stammt aus der Zeit davor und wird mit der alten Ableitung gespielt — sonst
+ * liefe sie bei gleichem Seed mit anderen Zugwechseln und ein anderem Hash
+ * (AGENTS.md §2).
+ */
+export const ZUGZEIT_FASSUNG = 2;
 
 /**
  * Die Runde, zu der Valhalla beginnt.

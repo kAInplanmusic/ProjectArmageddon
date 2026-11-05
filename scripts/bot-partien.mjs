@@ -21,7 +21,7 @@
  */
 import { MatchController } from '../src/engine/match.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
-import { MATCH_RULES } from '../src/shared/config/match.js';
+import { getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
 const args = Object.fromEntries(process.argv.slice(2).filter(a => a.startsWith('--'))
   .map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true]; }));
@@ -82,7 +82,8 @@ function planeSchuss(match, aktiv, gegner, waffe) {
 }
 
 export function spiele(seed, kit, { teams = TEAMS, proTeam = PRO_TEAM, fehler = FEHLER, waffen = WAFFEN, denkzeit = DENKZEIT, extra = {}, ereignis = null, beiZug = null } = {}) {
-  const zugSek = teams * proTeam === 2 ? MATCH_RULES.turnTimers.duelSeconds.seconds : MATCH_RULES.turnTimers.fourPlayerSeconds.seconds;
+  // Zugzeit hängt seit 2026-11-05 an der Kartenstufe, nicht an der Spielerzahl (hier: Vorgabe mittel).
+  const zugSek = getTurnDurationForSize('mittel') / 1000;
   const zufall = strom(seed ^ 0x5bd1e995);
   const FEHLER = fehler;
   const match = new MatchController({

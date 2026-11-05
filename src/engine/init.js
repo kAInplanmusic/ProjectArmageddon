@@ -5,7 +5,7 @@
 
 import { World } from './ecs/world.js';
 import { COMPONENT_SIGNATURES } from './ecs/componentStore.js';
-import { TurnSystem, getTurnDurationForPlayerCount } from './systems/turnSystem.js';
+import { TurnSystem, getTurnDurationForSize } from './systems/turnSystem.js';
 import { DamageSystem } from './systems/damageSystem.js';
 import { PhysicsSystem } from './systems/physicsSystem.js';
 
@@ -114,10 +114,11 @@ export function registerDefaultComponents(componentStore) {
 }
 
 export function createGameWorld(options = {}) {
-  const { playerCount = 2, turnDuration = null, maxEntities = 10000 } = options;
+  // Zugzeit aus der Kartengröße (2026-11-05); `turnDuration` schlägt sie.
+  const { playerCount = 2, turnDuration = null, mapSize = 'mittel', maxEntities = 10000 } = options;
   const world = new World({ maxEntities });
   registerDefaultComponents(world.componentStore);
-  const turnDurationMs = turnDuration || getTurnDurationForPlayerCount(playerCount);
+  const turnDurationMs = turnDuration || getTurnDurationForSize(mapSize);
   world.registerSystem('turn', new TurnSystem({ playerCount, turnDuration: turnDurationMs }), SYSTEM_PRIORITIES.TURN);
   world.registerSystem('physics', new PhysicsSystem(), SYSTEM_PRIORITIES.PHYSICS);
   world.registerSystem('damage', new DamageSystem(), SYSTEM_PRIORITIES.DAMAGE);

@@ -70,7 +70,7 @@ console.log('-'.repeat(66));
 
 for (const g of GROESSEN) {
   const anteil = px => `${((px / g.width) * 100).toFixed(0)} %`;
-  const marke = g.width === MAP_SIZES.landscape.width ? '  <- heute' : '';
+  const marke = g.width === MAP_SIZES['16:9'].mittel.width ? '  <- heute' : '';
   console.log(
     `${g.name.padEnd(14)}${String(g.width).padStart(9)}`
     + `${anteil(minimum).padStart(11)}${anteil(median).padStart(10)}`
@@ -121,7 +121,7 @@ console.log('DIE ANZEIGE-FRAGE (unabhängig davon)');
 console.log('');
 console.log('  Eine 4K-Karte auf einem Full-HD-Bildschirm passt nicht in voller Größe.');
 console.log('  Ohne Kamera würde sie auf ein Drittel verkleinert: Die Figuren wären');
-console.log(`  ${(MAP_SIZES.landscape.height / 3).toFixed(0)} statt ${MAP_SIZES.landscape.height} Kartenpixel hoch auf dem Schirm.`);
+console.log(`  ${(MAP_SIZES['16:9'].mittel.height / 3).toFixed(0)} statt ${MAP_SIZES['16:9'].mittel.height} Kartenpixel hoch auf dem Schirm.`);
 console.log('');
 console.log('  Deshalb braucht der Weg zu großen Karten eine KAMERA: Der Bildschirm');
 console.log('  zeigt einen Ausschnitt, die Karte ist größer. Das ist eine eigene');

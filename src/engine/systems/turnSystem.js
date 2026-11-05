@@ -140,26 +140,41 @@ export class TurnSystem {
 export default TurnSystem;
 
 /**
- * Zugdauer nach Spielerzahl.
+ * Zugdauer nach KARTENGRÖSSE — die eine Quelle für Lobby, Server, HUD und
+ * Replay-Kopf.
  *
- * FUND (belegt, User-Flow-Audit): Die Konfiguration führte je Zeit ein
- * `minimum` und ein `maximum` — gelesen wurde nur das `minimum`. Die
- * Obergrenzen sind entfernt (siehe `shared/config/match.js`); die Felder heißen
- * jetzt schlicht `seconds`.
+ * Entscheidung des Auftraggebers (2026-11-05): klein 30 s, mittel 40 s, groß
+ * 50 s. Größere Karte = längere Wege = mehr Bedenkzeit. Die Spielerzahl spielt
+ * keine Rolle mehr; `turnDurationMs` einer Partie schlägt diesen Wert weiterhin.
  *
- * Der dritte Zweig (>4 Spieler) steht bewusst als Zahl hier: Die Konfiguration
- * kennt nur zwei Stufen, und 15 Sekunden für große Teams sind eine eigene
- * Entscheidung — sie als dritte Stufe zu führen wäre ehrlicher, ist aber eine
- * Design-Frage.
+ * Eine unbekannte Stufe fällt auf die Vorgabe zurück, wie die übrige
+ * Konfiguration — `krieg` (Altstufe, nur lesbar) bekommt die größte Zeit.
+ *
+ * @param {string} [groesse='mittel']
+ * @returns {number} Millisekunden
+ */
+export function getTurnDurationForSize(groesse = 'mittel') {
+  const stufe = MATCH_RULES.turnTimers[groesse];
+  if (stufe) return stufe.seconds * 1000;
+  if (groesse === 'krieg') return MATCH_RULES.turnTimers.gross.seconds * 1000;
+  return MATCH_RULES.turnTimers.mittel.seconds * 1000;
+}
+
+/**
+ * Zugdauer nach Spielerzahl — ALTPFAD (Zugzeitfassung 1).
+ *
+ * Diese Ableitung gilt nur noch für Aufzeichnungen, deren Kopf KEINE
+ * `zugzeitFassung` trägt (vor 2026-11-05): 30 s bei ≤2 Spielern, 20 s bei 3–4,
+ * fest 15 s ab 5. Für neue Partien ist `getTurnDurationForSize` die Quelle —
+ * die Spielerzahl darf die Zugzeit nicht mehr beeinflussen.
+ *
+ * @param {number} playerCount
+ * @returns {number} Millisekunden
  */
 export function getTurnDurationForPlayerCount(playerCount) {
-  if (playerCount <= 2) {
-    return MATCH_RULES.turnTimers.duelSeconds.seconds * 1000;
-  }
-  if (playerCount <= 4) {
-    return MATCH_RULES.turnTimers.fourPlayerSeconds.seconds * 1000;
-  }
-  return 15000; // 15 Sekunden für größere Teams
+  if (playerCount <= 2) return 30_000;
+  if (playerCount <= 4) return 20_000;
+  return 15_000;
 }
 
 export { COMPONENT_SIGNATURES };

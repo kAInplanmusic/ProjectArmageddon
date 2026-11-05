@@ -27,9 +27,9 @@
  *
  *     node scripts/check-simultaneous.mjs
  */
-import { MATCH_RULES } from '../src/shared/config/match.js';
+import { getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
-const ZUGZEIT = MATCH_RULES.turnTimers.fourPlayerSeconds.seconds;
+const ZUGZEIT = getTurnDurationForSize('mittel') / 1000;
 
 /** Die Matcharten aus dem Auftrag. */
 const ARTEN = [

@@ -28,13 +28,15 @@
  */
 import { MatchController, BASE_HEALTH } from '../src/engine/match.js';
 import { MATCH_RULES } from '../src/shared/config/match.js';
+import { getTurnDurationForSize } from '../src/engine/systems/turnSystem.js';
 
 const args = new Map(process.argv.slice(2).map(a => {
   const [k, v] = a.replace(/^--/, '').split('=');
   return [k, v ?? true];
 }));
 const ANZAHL = Number(args.get('seeds') ?? 4);
-const ZUGZEIT = MATCH_RULES.turnTimers.fourPlayerSeconds.seconds;
+// Zugzeit der Vorgabestufe mittel — seit 2026-11-05 nicht mehr aus der Spielerzahl.
+const ZUGZEIT = getTurnDurationForSize('mittel') / 1000;
 const VALHALLA_MIN = MATCH_RULES.suddenDeath.valhallaMinRound;
 const VALHALLA_MAX = MATCH_RULES.suddenDeath.valhallaMaxRound;
 
