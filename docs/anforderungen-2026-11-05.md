@@ -54,7 +54,7 @@ Diese Datei ergänzt `docs/plan-produktion.md`; die Einzelliste bleibt
 | Größenstufen | Drei wählbare Stufen `klein/mittel/gross`; `krieg` bleibt als Altstufe lesbar (Replays), wird im Menü nicht mehr angeboten. | 30/40/50 s braucht genau drei Stufen. |
 | Formate | Alle sieben als **Seitenverhältnis** einer Fläche: `24:9`, `9:24`, `16:9`, `9:16`, `4:3`, `3:4`, `1:1`. Je Stufe dieselbe **Fläche** (klein 1280×720 = 921 600 px), nur anders geschnitten: 24:9 → 1568×588 (+0,04 %), 4:3 → 1108×831, 1:1 → 960×960. | Gleiche Fläche = gleiche Waffenreichweiten, nur andere Sicht. Alte 16:9-Maße bleiben bitgleich. |
 | Spielerzahl/Modi | 2–6 Spieler, feste Modi: **1v1 (2)**, **2v2 (4)**, **3v3 (6)**, **2v2v2 (6)**, **Jeder gegen jeden (2–6)**. Die Lobby zeigt nur die Modi, die mit der gewählten Spielerzahl gehen. | Wunsch wörtlich; nichts Unmögliches anbieten. |
-| Fraktionsklassen | Die 9 Einheiten je Fraktion werden **3×3** auf Nahkampf/Fernkampf/Magie verteilt; die Klasse bestimmt Startlastout und Profil. Die bisherigen Klassen `scout/heavy/artillery` bleiben als **Archetyp** erhalten (Rolle innerhalb der Klasse), damit alte Replays und Profile weiterlaufen. | Kein Bruch der 81 Figuren; Klassen werden fachlich, Archetyp bleibt Feinheit. |
+| Fraktionsklassen | **Drei Klassen, keine Unterklassen**: `Nahkampf`, `Fernkampf`, `Okkultist`. Jede Fraktion hat **3 Einheiten je Klasse** (9 insgesamt). Die Zuordnung kommt aus den vorhandenen Charakterbögen (`role: melee/ranged/magic`, je 27 über alle 9 Fraktionen — die Daten stimmen bereits). Die bisherigen Klassen `scout/heavy/artillery` und die Archetypen (`brawler/artillerist/occultist`) verschwinden aus dem Spiel; sie bleiben nur als Altfassung (Klassenfassung ≤ 2) lesbar, damit alte Replays bitgleich laufen. Klassenfassung 3 ist der neue Standard. | Wunsch wörtlich: „das waren sie von Tag eins" — die Bögen geben es her, es fehlt nur die Verdrahtung. |
 | Perks/Mali | Günther: **30 benannte Perks** (positiv, teils schräg), Cookie: **30 benannte Mali/Ereignisse** (negativ, teils gemein). Beide als Datenliste mit Wahrscheinlichkeit und Marke (Günther-Fassung 4, Cookie-Fassung 4). | Wunsch wörtlich, und Daten statt Sonderfälle im Code. |
 | Startwaffen | Jede Einheit: die **8 Standardwaffen** (Bazooka `pa_037`, Baseballschläger `pa_001`, Gewehr `pa_056`, Schlag `pa_012` Katana, Perk = Klassen-Perk, Granate `pa_047`, Mine `pa_127`, Ninjaseil) **plus eine** Katalogwaffe aus `common`–`rare` je Einheit, deterministisch aus dem Startkit gezogen. | „1 der 150 von Start an" ohne die Grundausstattung zu entwerten. |
 | Dropdown-Kategorien | Sieben Anzeigekategorien über den acht Katalogkategorien: Nahkampf (`melee`), Fernkampf (`ranged`, `heavy_ranged`), Lenkwaffen (`heavy_ranged` mit Zielsuche/Anflug), Perks (`utility`), Magie (`magic`, `elemental`), Abwehr (Schilde/Bunker), automatische Waffen (`tech` mit Salve/Autoziel). Jede Gruppe bekommt eine Farbe + Schimmer im Menü. | Wunsch wörtlich; Katalog bleibt eine Quelle, Anzeige leitet ab. |
@@ -85,3 +85,49 @@ Reihenfolge (höchstens drei Agenten gleichzeitig, wie `plan-produktion.md` §2)
    Figur** um 20 % (nicht des ganzen Zuges). Der Mali hängt damit an der
    Figur, die ihn bekommen hat, und trifft nicht die Mitspieler.
 
+
+## 6. Klassen-Umbau (Nahkampf / Fernkampf / Okkultist)
+
+**Vorgabe des Auftraggebers (2026-11-05):** „die Klassen sind Nahkampf, Fernkampf
+und Okkultist, das waren sie von Tag eins, keine Unterklassen nichts, Fraktion
+ist in die drei unterteilt mit jeweils drei Einheiten je Klasse."
+
+### Ist-Stand
+
+- `src/shared/config/classes.js`: drei Klassen `scout`, `heavy`, `artillery`
+  plus drei **Archetypen** `brawler`, `artillerist`, `occultist`; `combatProfile`
+  verrechnet Klasse × Archetyp × Sidegrade.
+- `src/shared/config/factions.js`: 81 Charaktere mit `role: melee | ranged |
+  magic` und `slot: 0 | 1 | 2` — **je 27 pro Rolle, je 3 pro Fraktion**. Die
+  Daten erfüllen die Vorgabe bereits; `SLOT_CLASSES = ['heavy','scout',
+  'artillery']` ordnet die Spalten aber anders zu.
+- `entity.classId` reist als **Zahl** im Snapshot (`CLASS_IDS[n]`), die Anzeige
+  löst sie über `charakterFuer(fraktion, classId, archetypeId)` auf.
+
+### Ziel
+
+| Klasse | Kennung | Rolle im Bogen | Einheiten je Fraktion |
+| :-- | :-- | :-- | :-- |
+| Nahkampf | `nahkampf` | `melee` | 3 |
+| Fernkampf | `fernkampf` | `ranged` | 3 |
+| Okkultist | `okkultist` | `magic` | 3 |
+
+- Keine Archetypen mehr im Spiel: `combatProfile` hat nur noch Klasse und
+  Sidegrade; der Archetyp-Faktor ist neutral (1,0).
+- **Klassenfassung 3** ist der Standard. Fassungen 1 und 2 behalten
+  `scout/heavy/artillery` samt Archetypen Bit für Bit (Replay-Kopf entscheidet).
+- `CLASS_IDS` bleibt eine **feste Reihenfolge** (`nahkampf`, `fernkampf`,
+  `okkultist`), damit die Zahl im Snapshot stabil bleibt.
+- Auswahl im Menü und Kader: nur die drei Klassen, keine Archetyp-Auswahl.
+  Die Startlastouts richten sich nach der Klasse (Nahkampf: kurze Reichweite,
+  Fernkampf: Projektile/Hitscan, Okkultist: Magie/Flächen).
+- `charakterFuer(fraktion, klasse, platz)` wählt aus den drei Bögen der Klasse;
+  der Platz entscheidet, welcher der drei (deterministisch, kein Zufall).
+
+### Prüfung
+
+- 9 Fraktionen × 3 Klassen × 3 Einheiten = 81, jede Klasse genau 3 je Fraktion.
+- Profile der drei Klassen sind **ausgeglichen** (gleiche Summe der Faktoren,
+  Siegquote im Balance-Lauf innerhalb der Streuung) — die Balance wird gemessen,
+  nicht behauptet.
+- Alte Replays (Klassenfassung 1 und 2) bitgleich gegen Goldwerte.
