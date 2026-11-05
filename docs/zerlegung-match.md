@@ -15,6 +15,7 @@ Matches bleiben als Einzeiler bestehen.
 | 1 Kisten und Abwerfen | `src/engine/kistenWurf.js` | 3152 | 2937 |
 | 2 Zielwirkungen, Bodenmaterial | `src/engine/zieleffekte.js` | 2937 | 2713 |
 | 3 Oberfläche und Wasser | `src/engine/wasserOberflaeche.js` | 2713 | 2638 |
+| 4 Kartenmaße (2026-11-05) | `src/engine/karte.js` | 2821 | 2718 |
 
 Zeilenbudget (`tests/match-zeilenbudget.test.js`, `tests/shooting.test.js`,
 `tests/zeilenbudget.test.js`, `AGENTS.md`): von 3200 auf **2790** gesenkt (2638 + rund 150 Luft).
@@ -52,6 +53,21 @@ in `tests/zerlegung-aufbau.test.js`: kein `this`, reine Delegatoren, ein Rückga
 `match.js` hat am 2026-11-02 **2689** Zeilen (2638 nach Schritt 3, seitdem Minen, Fässer und
 Abwurf hinzu, −11 durch N-19). Das Zeilenbudget bleibt **2790**: Zeilenzahl + 5 % wären 2823, also
 eine Lockerung; das Budget wird nur verschärft.
+
+## Schritt 4: Kartenmaße in `karte.js` (2026-11-05)
+
+Reine Verschiebung, keine Formel, kein Faktor und kein Maß geändert. Ausgezogen sind
+`FORMATE`, `MAP_SIZES`, `MAP_FORMATS`, `MAP_FORMAT_VORGABE`, `MAP_GROESSE_VORGABE`,
+`MAP_GROESSEN`, `MAP_GROESSEN_ALLE`, `MAP_FORMAT_ALIASE`, `ORIENTATIONS`, `MAP_WIDTH`,
+`MAP_HEIGHT`, `mapSizeFor`, `mapGroesseFuerSpieler`, `ausrichtungFuerFormat`,
+`normalisiereFormat`, `normalisiereGroesse` — samt der Kommentare zu Seitenverhältnissen,
+Flächenrechnung und Drahtformat-Grenze. `match.js` importiert, was es selbst braucht
+(`mapSizeFor`, `normalisiereFormat`, `normalisiereGroesse`, `ausrichtungFuerFormat`,
+`MAP_GROESSE_VORGABE`), und re-exportiert ALLE Namen aus `karte.js`, damit
+`client/terrainPreview.js`, `server/lobby.js`, Tests und Werkzeuge unverändert importieren.
+`karte.js` importiert `match.js` nicht (kein Zyklus). Beleg: `tests/map-sizes.test.js`,
+`tests/replay-hochformat.test.js`, `tests/state-hash.test.js`, `tests/zerstoerung.test.js`
+und die Replay-Kopf-Tests laufen unverändert grün.
 
 ## Was bewusst im Match blieb
 
