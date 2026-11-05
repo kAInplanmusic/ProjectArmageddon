@@ -96,15 +96,20 @@ export function integrateStep({
   drag = PROJECTILE_DRAG,
 } = {}) {
   /*
-   * `gravityScale || 1` und `windFactor === 0 ? 1 : windFactor` sind KEINE
-   * Kosmetik: Der Motor liest diese Felder aus Komponenten
-   * (`world.getComponent(...)`), und ein nicht gesetztes Feld kommt dort als 0
-   * oder `undefined` zurück. Beide Male meint 0 „nicht gesetzt" und bedeutet
-   * Faktor 1. Wer das hier „aufräumt", lässt Geschosse ohne Windfaktor still
-   * geradeaus fliegen.
+   * `gravityScale || 1` ist KEINE Kosmetik: Der Motor liest das Feld aus
+   * Komponenten (`world.getComponent(...)`), und ein nicht gesetztes Feld kommt
+   * dort als 0 oder `undefined` zurück. Beide Male meint 0 „nicht gesetzt" und
+   * bedeutet Faktor 1.
+   *
+   * Beim Wind ist die Konvention seit `config.wind` 2 ANDERS: `undefined`/`null`
+   * heißt „nicht gesetzt" = Faktor 1, eine ausdrückliche 0 heißt WIND FREI
+   * (AERO). Das ist die einzige Art, eine windfeste Waffe (Strahlen, Wasser)
+   * auszudrücken. Fassung 1 setzt den Faktor im Motor immer auf 1, alte
+   * Aufzeichnungen erhalten hier also weiterhin 1 — die 0 kann dort nicht
+   * auftreten (siehe `shooting.js`, `windFassung`).
    */
   const skala = gravityScale || 1;
-  const windFaktor = (windFactor === 0 || windFactor === null || windFactor === undefined) ? 1 : windFactor;
+  const windFaktor = windFactor === undefined || windFactor === null ? 1 : windFactor;
   const neuesVy = (vy + gravity * skala) * drag;
   const neuesVx = (vx + (wind || 0) * windFaktor) * drag;
   return { vx: neuesVx, vy: neuesVy };

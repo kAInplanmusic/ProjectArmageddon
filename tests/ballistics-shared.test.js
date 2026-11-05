@@ -228,10 +228,20 @@ test('Der gemeinsame Schritt hat genau eine Reihenfolge', () => {
   assert.ok(fallend.vy > 0, 'die y-Achse wird von der Gravitation gezogen');
   assert.ok(fallend.vy < 1, 'und ebenfalls gebremst');
 
-  // Ein nicht gesetzter Waffenfaktor (0 oder undefined) bedeutet Faktor 1.
+  /*
+   * AERO-Konvention seit `config.wind` 2: `undefined`/`null` = „nicht gesetzt" =
+   * Faktor 1, eine AUSDRÜCKLICHE 0 = windfrei. Dass die 0 nicht mehr als 1 gilt,
+   * ist die Regel selbst — ohne sie gäbe es keine windfeste Waffe.
+   */
   assert.deepEqual(
     integrateStep({ vx: 1, vy: 1, wind: 0.5, windFactor: 0 }),
+    integrateStep({ vx: 1, vy: 1, wind: 0 }),
+    'Faktor 0 heißt windfrei',
+  );
+  assert.deepEqual(
     integrateStep({ vx: 1, vy: 1, wind: 0.5, windFactor: undefined }),
+    integrateStep({ vx: 1, vy: 1, wind: 0.5, windFactor: 1 }),
+    'nicht gesetzt heißt Faktor 1',
   );
 });
 

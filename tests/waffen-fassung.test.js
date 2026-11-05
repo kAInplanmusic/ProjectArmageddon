@@ -24,6 +24,7 @@ import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
 } from '../src/shared/config/loadouts.js';
 import { KISTEN_ALT } from '../src/shared/config/kisten.js';
+import { WIND_ALT } from '../src/shared/config/wind.js';
 import { BALANCE_KORREKTUREN, BALANCE_KORREKTUREN_3, BALANCE_KORREKTUREN_4, FLUGPROFILE_4, FESTE_ABLEITUNGEN_3, tierForScore } from '../scripts/build-weapon-catalog.mjs';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 import {
@@ -149,7 +150,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, 13); // Waffenfassung 13 (Sichtlinie bis zur ersten Figur); Fassung 12, 11 und 10 bleiben gültig und bitgleich
+  assert.equal(WAFFEN_STANDARD, 14); // Waffenfassung 14 (AERO-Windfaktor, `config.wind` 2); Fassung 13, 12, 11 und 10 bleiben gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
@@ -168,7 +169,7 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(10), WAFFEN_SPREIZUNG);
   assert.equal(normalisiereWaffen(11), 11);
   assert.equal(normalisiereWaffen(12), 12);
-  assert.equal(normalisiereWaffen(13), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(13), 13);
   assert.equal(normalisiereWaffen(14), WAFFEN_STANDARD);
 });
 
@@ -307,9 +308,9 @@ test('Replay-Kopf: Altdatei ohne `waffen` = Fassung 1, neue Aufzeichnung trägt 
 
 test('Altkopf-Aufzeichnung mit Schüssen: Wiedergabe gleicht der Live-Partie in Fassung 1 und in Fassung 2', () => {
   for (const waffen of [WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN]) {
-    const live = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, kit: KIT_FLAECHE, waffen });
+    const live = new MatchController({ seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, kit: KIT_FLAECHE, waffen, wind: WIND_ALT });
     const aufnahme = new ReplayRecorder({
-      seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, kit: KIT_FLAECHE, waffen,
+      seed: 4242, teams: 2, playersPerTeam: 2, preset: 'hills', maxRounds: 5, kit: KIT_FLAECHE, waffen, wind: WIND_ALT,
     });
     live.start();
     let schuesse = 0;
