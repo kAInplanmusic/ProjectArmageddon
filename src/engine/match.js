@@ -59,6 +59,7 @@ import { BodenobjektSystem } from './systems/bodenobjektSystem.js';
 import { trockenerStartX, pruefeKartenErreichbarkeit } from './karteStart.js';
 import { BewegungSystem } from './systems/bewegungSystem.js';
 import { SEIL_ALT, SEIL_NINJA, normalisiereSeil } from '../shared/config/seil.js';
+import { WIND_ALT, WIND_JE_ZUG, MAX_WIND, normalisiereWind } from '../shared/config/wind.js';
 import { SeilSystem } from './seil.js';
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { ZUGREGELN_ALT, ZUGREGELN_RUECKZUG, normalisiereZugregeln } from '../shared/config/zugregeln.js';
@@ -294,7 +295,6 @@ export const HOHECHSTE_KRAFT = 100;
  */
 /** Runden, über die Günthers Auftritte verteilt werden (vorher: die Rundengrenze 30). */
 const GUENTHER_PLANUNGSHORIZONT = 30;
-const MAX_WIND = 0.05;
 
 /** Absprunggeschwindigkeit (px pro Tick), negativ = nach oben. */
 const JUMP_IMPULSE = 9.2;
@@ -528,6 +528,10 @@ export class MatchController {
   #round = 1;
   #wind = 0;
   #currentStrength = 0;
+  /** Windfassung 2: eigener Zufallsstrom für den Wind je Zug (AERO). Fassung 1: `null`, zieht aus `MATCH_BASE`. */
+  #windRng = null;
+  /** Windfassung 2: eigener Strom für Wurf/Abwurf (ENG-1). Fassung 1: `null`, zieht aus `MATCH_BASE`. */
+  #kistenRng = null;
   #status = 'lobby';
   #winnerTeamId = null;
   #hasFired = false;
@@ -604,7 +608,7 @@ export class MatchController {
     zerstoerung = ZERSTOERUNG_STANDARD,
     schaden = SCHADEN_STANDARD, // Schadensfassung (`config/schaden.js`): 2 = Mali je Schadensart, 1 = Altverhalten
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, // Kistenfassung (`config/kisten.js`): 2 = mehr Kisten mit Obergrenze, 1 = Altrate
-    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, // Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
+    guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT, wind = WIND_ALT, // Seil (`config.seil`, 2 = Ninja Rope, `engine/seil.js`); Wind (`config.wind`, 2 = je Zug, Waffenfaktor, Wasser still; AERO/ENG-1); Bodenobjektfassung (`config.bodenobjekte`, 2 = Minen); Klassenfassung (`config.klassen`, 2 = Scout angehoben); Zugregeln (`config.zugregeln`, 2 = Rückzug, Überspringen, Aufgeben); Gehen (`config.bewegung`, 2 = Gehen am Boden); Brand und Lava (`config.feuer`); Tier-NPCs: Günthers Aktionen (`config.guenther`), Cookie (`config.cookie`); fehlend = 1 = Altverhalten
     /** Geländefassung (`config/gelaende.js`): 2 = Sonderbiome + Stoffkarte, 1 = Altverhalten; `biom` ist die Wahl (null = Seed entscheidet). */
     gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
   } = {}) {
@@ -660,6 +664,17 @@ export class MatchController {
     this.bodenobjekte = normalisiereBodenobjekte(bodenobjekte);
     this.seil = normalisiereSeil(seil);
     this.seilSystem = this.seil >= SEIL_NINJA ? new SeilSystem(this, () => this.#hasFired) : null; // Seil (`engine/seil.js`)
+    /*
+     * Windfassung (AERO/ENG-1). Fassung 1 ist der Altstand: Wind je Runde aus
+     * `MATCH_BASE`, Wurf aus demselben Strom, Waffenfaktor 1. Ab Fassung 2 hat
+     * der Wind seinen eigenen Zweig und der Wurf seinen eigenen (`KISTENWURF`).
+     * Die Zweige werden nur GEHOLT, nicht gezogen — Fassung 1 bleibt bitgleich.
+     */
+    this.windFassung = normalisiereWind(wind);
+    if (this.windFassung >= WIND_JE_ZUG) {
+      this.#windRng = this.#seedManager.getSubRng('WIND');
+      this.#kistenRng = this.#seedManager.getSubRng('KISTENWURF');
+    }
     this.zug = this.zugregeln >= ZUGREGELN_RUECKZUG ? new ZugSystem(this, () => this.#hasFired, () => this.endTurn()) : null; // `systems/zugSystem.js`
     Object.assign(this, loeseGelaende(gelaende, biom, this.#seedManager.baseSeed, kartenart)); // gelaende, biomWahl, sonderbiom, kartenart
     this.schaden = normalisiereSchaden(schaden);
@@ -714,6 +729,8 @@ export class MatchController {
         selbstschadenGrenze: this.waffen >= WAFFEN_FAIR ? SELBSTSCHADEN_GRENZE : 0,
         // Waffenfassung 6: eine armierte Zündergranate bleibt am Aufprallpunkt liegen (sinkt nicht mehr).
         zuenderBleibtLiegen: this.waffen >= WAFFEN_ZUENDER,
+        // Windfassung 2 (AERO): Wasser setzt den Windfaktor 0 (`projectileSystem.js`).
+        wasserWindStill: this.windFassung >= WIND_JE_ZUG,
       },
     };
   }
@@ -735,8 +752,16 @@ export class MatchController {
     this.#registerSystems();
     this.#spawnPlayers();
     this.#pruefeErreichbarkeit();
-    this.#world.services.match.wind = this.#rollWind();
-    this.#wind = this.#world.services.match.wind;
+    /*
+     * Windfassung 1 würfelt hier den Wind der ersten Runde; Fassung 2 würfelt
+     * ihn beim Zugbeginn (`#beginTurn`) aus dem eigenen Strom. Der Zweig darf
+     * für Fassung 1 NICHT entfallen: das wäre eine Ziehung weniger und damit
+     * ein anderer Verlauf (AGENTS.md §2).
+     */
+    if (this.windFassung < WIND_JE_ZUG) {
+      this.#wind = this.#rollWind();
+      this.#world.services.match.wind = this.#wind;
+    }
     this.#spawnRoundLoot();
     this.#baueBodenobjekte();
     this.#status = 'playing';
@@ -1470,6 +1495,8 @@ export class MatchController {
     return {
       seil: this.seilSystem, // Seilfassung 2: Waffen vom Seil (außer Nahkampf), der Schuss löst das Seil
       waffenFassung: this.waffen,
+      // AERO: Windfassung für Waffenfaktor und Vorhersage (`shooting.js`).
+      windFassung: this.windFassung,
       klassen: this.klassen,
       world: this.#world,
       terrain: this.#terrain,
@@ -1977,6 +2004,8 @@ export class MatchController {
       inventory: this.#inventory,
       getWeapon,
       rng: this.#rng,
+      // ENG-1: eigener Strom für Wurf/Abwurf ab Windfassung 2; `null` in Fassung 1 (dann `rng`).
+      kistenRng: this.#kistenRng,
       events: this.#events,
       cooldownLoeschen: schluessel => this.#cooldowns.delete(schluessel),
       surfaceYAt: x => this.surfaceYAt(x),
@@ -2213,13 +2242,20 @@ export class MatchController {
       this.#sturmRunden += 1;
     }
     this.#lebendZuRundenbeginn = lebend;
-    const wind = this.#rollWind();
-    this.#wind = wind;
-    this.#currentStrength = wind * 10;
-    this.#world.services.match.wind = wind;
-    this.#world.services.match.currentStrength = this.#currentStrength;
+    /*
+     * Windfassung 1 würfelt je RUNDE (Altstand). Fassung 2 würfelt je ZUG in
+     * `#beginTurn` — hier darf dann NICHT zusätzlich gezogen werden, sonst
+     * verschöbe jede Runde den Windstrom und die Zugfolge hinge am Rundentakt.
+     */
+    if (this.windFassung < WIND_JE_ZUG) {
+      const wind = this.#rollWind();
+      this.#wind = wind;
+      this.#currentStrength = wind * 10;
+      this.#world.services.match.wind = wind;
+      this.#world.services.match.currentStrength = this.#currentStrength;
+    }
     this.#spawnRoundLoot();
-    this.#events.emit('round_start', { round: this.#round, wind });
+    this.#events.emit('round_start', { round: this.#round, wind: this.#wind });
     /*
      * Geschütze feuern am Rundenanfang — nach `round_start`, damit die Anzeige
      * den Rundenwechsel vor den Schüssen sieht.
@@ -2273,6 +2309,20 @@ export class MatchController {
     const entityId = this.#turnOrder[index];
     // Lebensstatus des Spielers, nicht der ECS-Platz (siehe #checkVictory).
     if (!this.isPlayerAlive(entityId)) return;
+
+    /*
+     * AERO: Ab Windfassung 2 wird der Wind JEDEN ZUG neu gewürfelt — aus dem
+     * eigenen Zweig `WIND`, damit die Ziehung keinen anderen Strom verschiebt
+     * und eine Windänderung den Kistenwurf nicht mehr berührt (ENG-1). Fassung 1
+     * behält den Rundenwind aus `#onRoundStart`.
+     */
+    if (this.windFassung >= WIND_JE_ZUG) {
+      const wind = this.#rollWind();
+      this.#wind = wind;
+      this.#currentStrength = wind * 10;
+      this.#world.services.match.wind = wind;
+      this.#world.services.match.currentStrength = this.#currentStrength;
+    }
 
     // Zustände dieses Zuges abrechnen: Schaden über Zeit wirkt, Dauern klingen ab.
     // Die Abrechnung gehört an den ZUGbeginn, nicht in step(): sonst hinge der
@@ -2328,7 +2378,9 @@ export class MatchController {
   }
 
   #rollWind() {
-    return Math.round(this.#rng.nextFloat(-MAX_WIND, MAX_WIND) * 10000) / 10000;
+    // Fassung 2: eigener Strom (AERO); Fassung 1: `MATCH_BASE` wie bisher (bitgleich).
+    const rng = this.#windRng ?? this.#rng;
+    return Math.round(rng.nextFloat(-MAX_WIND, MAX_WIND) * 10000) / 10000;
   }
 
   #checkVictory() {

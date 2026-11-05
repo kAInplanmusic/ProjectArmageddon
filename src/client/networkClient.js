@@ -422,6 +422,8 @@ export class NetworkClient {
             kartenart: message.kartenart,
             zerstoerung: message.zerstoerung,
             klassen: message.klassen,
+            // AERO: Windfassung für die Bahnvorschau (Waffenfaktor); fehlt sie, gilt 1 (alte Partie).
+            windFassung: message.windFassung,
             craters: Array.isArray(message.craters) ? message.craters : [],
             inset: Number(message.inset) || 0,
           });

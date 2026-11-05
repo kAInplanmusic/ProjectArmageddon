@@ -30,6 +30,7 @@ import { BEWEGUNG_ALT, normalisiereBewegung } from '../shared/config/bewegung.js
 import { KLASSEN_ALT, normalisiereKlassen } from '../shared/config/klassen-fassung.js';
 import { BODENOBJEKTE_ALT, normalisiereBodenobjekte } from '../shared/config/bodenobjekte.js';
 import { SEIL_ALT, normalisiereSeil } from '../shared/config/seil.js';
+import { WIND_ALT, normalisiereWind } from '../shared/config/wind.js';
 import { ZUGREGELN_ALT, normalisiereZugregeln } from '../shared/config/zugregeln.js';
 import { GELAENDE_STANDARD, GELAENDE_ALT, normalisiereGelaende, normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { SCHADEN_STANDARD, SCHADEN_ALT, normalisiereSchaden } from '../shared/config/schaden.js';
@@ -76,6 +77,7 @@ export class ReplayRecorder {
     kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT,
+    wind = WIND_ALT,
     erstelltAm = null,
   } = {}) {
     if (!Number.isInteger(seed)) {
@@ -133,6 +135,12 @@ export class ReplayRecorder {
       bodenobjekte: normalisiereBodenobjekte(bodenobjekte),
       /* Seilfassung (`config/seil.js`): Ninja Rope. Eine Datei OHNE das Feld ist `SEIL_ALT` (kein Seil). */
       seil: normalisiereSeil(seil),
+      /* Windfassung (`config/wind.js`, AERO/ENG-1): Wind je Zug, Waffenfaktor, Wasser still.
+       * Eine Datei OHNE das Feld ist `WIND_ALT` (Wind je Runde, Faktor 1, geteilter Strom).
+       * Vorgabe hier ist wie im Motor `WIND_ALT`: Wer Recorder und Match ohne Angabe baut,
+       * bekommt zweimal denselben Altstand. Neue Partien (Server, Client) übergeben ihre
+       * Fassung ausdrücklich — der Server schreibt `this.match.windFassung` in den Kopf. */
+      wind: normalisiereWind(wind),
       // Nur wenn es eine Zugpause gab (sonst bleiben alte und neue Köpfe gleich).
       ...(turnPauseTicks > 0 ? { turnPauseTicks, turnReplayTicks } : {}),
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
@@ -329,7 +337,8 @@ export class ReplayRecorder {
       kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT,
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
       bewegung: parsed.config?.bewegung ?? BEWEGUNG_ALT, zugregeln: parsed.config?.zugregeln ?? ZUGREGELN_ALT, klassen: parsed.config?.klassen ?? KLASSEN_ALT,
-      bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT, seil: parsed.config?.seil ?? SEIL_ALT });
+      bodenobjekte: parsed.config?.bodenobjekte ?? BODENOBJEKTE_ALT, seil: parsed.config?.seil ?? SEIL_ALT,
+      wind: parsed.config?.wind ?? WIND_ALT });
     if (Number.isInteger(parsed.totalTicks)) recorder.finalize(parsed.totalTicks);
     for (const entry of parsed.entries ?? []) recorder.recordInput(entry);
     for (const round of parsed.rounds ?? []) recorder.recordRound(round.round, round.tick);
@@ -429,6 +438,7 @@ export class ReplayPlayer {
       klassen: config.klassen,
       bodenobjekte: config.bodenobjekte,
       seil: config.seil,
+      wind: config.wind,
       ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),

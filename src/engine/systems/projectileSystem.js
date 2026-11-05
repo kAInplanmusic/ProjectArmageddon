@@ -21,6 +21,7 @@ import {
   raycastSegment,
 } from '../../shared/ballistics.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../../shared/config/player.js';
+import { WET_LEVEL } from '../../shared/config/water.js';
 import { stoffSchluesselAmEinschlag } from '../../shared/einschlag.js';
 import { wendeExplosionAn } from '../explosion.js';
 import { wendeStossAn, stossSeite } from '../stoss.js';
@@ -69,6 +70,29 @@ export const HOMING_TURN_PER_TICK = 0.0003;
 
 /** Wie lange ein durchschlagenes Ziel nicht wieder getroffen wird (Ticks). */
 const PIERCE_SCHUTZ_TICKS = 4;
+
+/**
+ * Wirksamer Windfaktor am Ort des Geschosses (AERO).
+ *
+ * Wasser ist ein Medium: Steckt ein Geschoss unter Wasser (Füllstand ab
+ * `WET_LEVEL`), wird es nicht mehr seitlich getrieben — der Faktor ist dort 0.
+ * Das gilt NUR ab Windfassung 2 (`match.wasserWindStill`); alte Aufzeichnungen
+ * fliegen Bit für Bit wie vorher, auch durch Wasser.
+ *
+ * Ausgelagert und exportiert, weil die Regel sonst nur im heißen Pfad läge und
+ * nicht ohne vollen Match prüfbar wäre (`tests/wind.test.js`).
+ *
+ * @param {number|undefined} windFactor - Faktor aus der Projektilkomponente
+ * @param {object} match - `world.services.match`
+ * @param {object|null} wasser - `world.services.water` (Feld mit `levelAtWorld`)
+ * @param {number} x
+ * @param {number} y
+ * @returns {number}
+ */
+export function windFaktorImMedium(windFactor, match, wasser, x, y) {
+  if (!match?.wasserWindStill || !wasser || typeof wasser.levelAtWorld !== 'function') return windFactor;
+  return wasser.levelAtWorld(x, y) >= WET_LEVEL ? 0 : windFactor;
+}
 
 export class ProjectileSystem {
   #gravity;
@@ -163,7 +187,13 @@ export class ProjectileSystem {
 
       const drag = world.getComponent(entityId, 'Projectile', 'drag') || this.#baseDrag;
       const gravityScale = world.getComponent(entityId, 'Projectile', 'gravityScale');
-      const windFactor = world.getComponent(entityId, 'Projectile', 'windFactor');
+      const windFactor = windFaktorImMedium(
+        world.getComponent(entityId, 'Projectile', 'windFactor'),
+        match,
+        services.water ?? null,
+        startX,
+        startY,
+      );
       let lifetime = world.getComponent(entityId, 'Projectile', 'lifetime');
 
       /*

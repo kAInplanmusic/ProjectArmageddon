@@ -54,6 +54,7 @@ import { BEWEGUNG_STANDARD, BEWEGUNG } from '../shared/config/bewegung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
 import { SEIL_STANDARD, SEIL } from '../shared/config/seil.js';
+import { WIND_STANDARD } from '../shared/config/wind.js';
 import { ZUGREGELN_STANDARD, ZUGREGELN } from '../shared/config/zugregeln.js';
 
 /*
@@ -119,7 +120,7 @@ class LobbySession {
    */
   constructor(lobby, {
     onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
-    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD, seil = SEIL_STANDARD,
+    turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD, seil = SEIL_STANDARD, wind = WIND_STANDARD,
   } = {}) {
     this.lobby = lobby;
     // Betriebszähler gehören dem Server, nicht der Sitzung. Die Sitzung erhält
@@ -176,6 +177,7 @@ class LobbySession {
       klassen,
       bodenobjekte,
       seil,
+      wind,
       // Aus der Sicherung, wenn vorhanden: Eine wiederhergestellte Partie spielt mit der Pause, mit der
       // sie aufgezeichnet wurde (Audit 2026-10-13: Wechsel der Umgebungsvariable ließ den Hash abweichen).
       turnPauseTicks: turnPauseTicks ?? ZUGPAUSE_TICKS,
@@ -219,6 +221,7 @@ class LobbySession {
       klassen: this.match.klassen,
       bodenobjekte: this.match.bodenobjekte,
       seil: this.match.seil,
+      wind: this.match.windFassung,
     });
 
     /*
@@ -651,7 +654,7 @@ class LobbySession {
 
   /** Geländefassung, aufgelöstes Biom und Zerstörungsfassung: Der Client baut Karte und Stoffkarte damit nach. */
   gelaendeFelder() {
-    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, kartenart: this.match.kartenart, zerstoerung: this.match.zerstoerung, klassen: this.match.klassen };
+    return { gelaende: this.match.gelaende, biom: this.match.sonderbiom ?? this.match.biomWahl, kartenart: this.match.kartenart, zerstoerung: this.match.zerstoerung, klassen: this.match.klassen, windFassung: this.match.windFassung };
   }
 
   /** Fügt einen Client hinzu und schickt ihm den Startzustand. */
@@ -1668,6 +1671,7 @@ export class GameServer {
               klassen: options.klassen,
               bodenobjekte: options.bodenobjekte,
               seil: options.seil,
+              wind: options.wind,
               metrics: this.metrics,
               logger: this.logger,
             });

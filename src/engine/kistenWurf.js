@@ -19,6 +19,8 @@
  *   inventory                     - `removeWeapon(playerId, weaponId)`
  *   getWeapon(id) -> object|null  - Waffe aus dem Katalog (`config/weapons.js`)
  *   rng                           - der Match-Zufallsstrom (`nextBoolean`, `nextFloat`)
+ *   kistenRng                     - ENG-1: eigener Strom für Wurf/Abwurf (Windfassung 2).
+ *                                   Fehlt er, wird `rng` genutzt (Fassung 1, bitgleich).
  *   events                        - der Ereignisbus (`emit`)
  *   cooldownLoeschen(schluessel)  - entfernt die Nachladezeit `spieler:waffe`
  *   surfaceYAt(x) -> number       - Oberfläche (Terrain)
@@ -149,7 +151,13 @@ export function wirfWaffe(q, playerId, weaponId) {
  * @returns {{vx:number, vy:number}} Anfangsgeschwindigkeit für die Kiste
  */
 export function rolleWurf(q) {
-  const rng = q.rng;
+  /*
+   * ENG-1: Wurf und Wind sind fachlich unabhängig. Seit Windfassung 2 zieht der
+   * Wurf deshalb aus `kistenRng` (eigener Seed-Zweig `KISTENWURF`); eine
+   * Windänderung verschiebt die Kistenlage damit nicht mehr. Fassung 1 übergibt
+   * keinen eigenen Strom und zieht weiter aus `MATCH_BASE` — Bit für Bit.
+   */
+  const rng = q.kistenRng ?? q.rng;
   const richtung = rng.nextBoolean() ? -1 : 1;
   /*
    * Die Weite wird aus der ZIELDISTANZ gerechnet, nicht geschätzt.
