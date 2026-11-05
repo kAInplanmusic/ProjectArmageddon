@@ -39,6 +39,7 @@ import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import { HudEinstellungen } from './hudEinstellungen.js';
 import { Bestaetigung } from './bestaetigung.js';
+import { revancheAblauf } from './revanche.js';
 import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
@@ -492,28 +493,15 @@ class Game {
     this.endSummary = document.getElementById('end-summary');
 
     document.getElementById('start-button')?.addEventListener('click', () => this.startFromMenu());
-    document.getElementById('rematch-button')?.addEventListener('click', () => {
-      /*
-       * REVANCHE = DIESELBE KARTE.
-       *
-       * FUND (belegt, Datenfluss-Audit): Der Knopf öffnete nur wieder das Menü.
-       * Das Seed-Feld ist dort standardmäßig LEER (`placeholder="leer = neue
-       * Karte"`), und ein leerer Seed heißt ein NEUER Zufalls-Seed
-       * (`match.js:564` `MatchSeedManager.createRandom()`). Wer „Revanche"
-       * drückte, spielte also auf einer anderen Karte — obwohl der Knopf nach
-       * einem Neuanlauf auf derselben Karte klingt. Gemessen an zwei Läufen ohne
-       * Seed: baseSeed 3367130477 gegen 1341271627, Zustandshash `98aad2e2`
-       * gegen `e6da56da`.
-       *
-       * Der Wert steht im Feld, nicht in einer zweiten Ablage: So sieht der
-       * Spieler, worauf er als Nächstes spielt, und kann ihn LÖSCHEN, wenn er
-       * wirklich eine neue Karte will. Dieselbe Karte ist die Vorgabe, die neue
-       * bleibt eine bewusste Handlung.
-       */
-      this.#seedFuerRevanche();
-      this.endOverlay.hidden = true;
-      this.menuOverlay.hidden = false;
-    });
+    /*
+     * REVANCHE = NEUES MATCH AUF DERSELBEN KARTE (UI-4).
+     *
+     * FUND (belegt, UX-Abnahme): Der Knopf öffnete nur das Menü — die Partie
+     * lief weiter, `match`/`mode` blieben stehen, und R fragte im Menü nach.
+     * Jetzt räumt `revanche()` auf und startet sofort neu (Seed der Vorpartie).
+     * Online entscheidet der Server: dort bleibt der Weg über das Menü richtig.
+     */
+    document.getElementById('rematch-button')?.addEventListener('click', () => this.revanche());
 
     // Lobby-Browser: manuell über den Button, zusätzlich automatisch beim
     // Aufklappen. Sonst müsste der Nutzer erst laden, ohne zu wissen, dass es
@@ -644,6 +632,26 @@ class Game {
     feld.value = String(seed);
     this.hud.log(`Revanche auf derselben Karte — Seed ${seed}`, 'accent');
     return seed;
+  }
+
+  /**
+   * Revanche: alte Partie aufräumen, sofort ein NEUES Match auf derselben Karte
+   * starten (UI-4). Die Reihenfolge (Seed lesen → aufräumen → starten) steht in
+   * `revanche.js`; hier werden nur die Zugänge übergeben.
+   *
+   * @returns {{ok: boolean, mode?: string, errors?: string[]}}
+   */
+  revanche() {
+    return revancheAblauf({
+      seedLesen: () => this.#seedFuerRevanche(),
+      aufraeumen: () => this.#verlasseMatch(),
+      starten: konfig => this.startMatch(konfig),
+      konfiguration: this.letzteMatchKonfiguration,
+      // Online und Replay: kein lokaler Neustart — der Server entscheidet bzw.
+      // es gibt keine Partie, die neu beginnen könnte.
+      nurMenue: this.mode !== 'local' || Boolean(this.network),
+      log: (text, art) => this.hud.log(text, art),
+    });
   }
 
   /**
@@ -1321,6 +1329,14 @@ class Game {
     seed = undefined, backdropKey = '',
     sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
   } = {}) {
+    /*
+     * Die Konfiguration dieser Partie merken — die Revanche (UI-4) braucht sie.
+     * Sie kommt aus DIESEM Aufruf, nicht aus den Menüfeldern (die können inzwischen
+     * anders stehen). `seed` fehlt bewusst; den liefert `#seedFuerRevanche`.
+     */
+    this.letzteMatchKonfiguration = {
+      teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+    };
     this.#ladeMatchBilder();
     this.network?.disconnect();
     this.network = null;

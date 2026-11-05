@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 
 /*
  * Sieg-Dialog (Redesign 2026-10-14): Siegerzeichen, Siegerzeile in der Teamfarbe, Kennzahlen, zwei Knöpfe —
- * „Revanche“ öffnet das Menü mit demselben Seed, „Zum Menü“ führt zurück ins Hauptmenü.
+ * „Revanche“ startet seit UI-4 ein NEUES Match auf derselben Karte (nicht mehr nur das Menü),
+ * „Zum Menü“ führt zurück ins Hauptmenü.
  */
 async function bisSieg(page) {
   await page.goto('/');
@@ -26,10 +27,23 @@ test('Der Sieg-Dialog zeigt Sieger, Zeichen und beide Knöpfe; „Zum Menü“ f
   await expect(page.locator('#menu-overlay')).toBeVisible();
 });
 
-test('„Revanche“ öffnet das Menü mit demselben Seed (dieselbe Karte)', async ({ page }) => {
+test('„Revanche“ startet ein neues Match auf derselben Karte', async ({ page }) => {
   await bisSieg(page);
   await page.click('#rematch-button');
+
+  // Das Menü bleibt zu, der Sieg-Dialog verschwindet, und ein NEUES Match läuft.
   await expect(page.locator('#end-overlay')).toBeHidden();
-  await expect(page.locator('#menu-overlay')).toBeVisible();
-  await expect(page.locator('#cfg-seed')).toHaveValue('4');
+  await expect(page.locator('#menu-overlay')).toBeHidden();
+  await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing', { timeout: 15_000 });
+
+  // Dieselbe Karte: der Seed der Vorpartie steckt im neuen Match.
+  expect(await page.evaluate(() => window.__PA__.game.match.seedManager.baseSeed)).toBe(4);
+  // Und der Zustand ist sauber: Modus lokal, R fragt nicht ins Leere, der Abbruchknopf ist da.
+  expect(await page.evaluate(() => window.__PA__.game.mode)).toBe('local');
+  await expect(page.locator('#hud-abort')).toBeVisible();
+
+  // Nach der Revanche fragt R nach einem LAUFENDEN Match — nicht nach einem Geist.
+  const laeuft = await page.evaluate(() => (window.__PA__.game.match?.world.tickCount ?? 0));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => window.__PA__.game.match?.world.tickCount ?? 0)).toBeGreaterThan(laeuft);
 });
