@@ -65,7 +65,9 @@ test('Planeten im Menü: Wahl „Planet“ und die sechs Arten starten spielbar,
     expect(befund.himmel).toBe('planet');
     expect(befund.wasser).toBe('void');
     expect(befund.ok).toBe(true);
-    await page.evaluate(() => window.__PA__.game.abortMatch?.());
+    // Aufräumen zwischen zwei Läufen: ohne Rückfrage, damit `evaluate` nicht auf
+    // die Antwort des Overlays wartet (seit UI-3 liefert abortMatch ein Promise).
+    await page.evaluate(() => window.__PA__.game.abortMatch?.({ frage: false }));
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__PA__));
     await page.evaluate(() => window.__PA__.setAutoLoop(false));
