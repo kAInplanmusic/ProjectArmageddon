@@ -38,6 +38,9 @@ import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import { HudEinstellungen } from './hudEinstellungen.js';
+import { Bestaetigung } from './bestaetigung.js';
+import { revancheAblauf } from './revanche.js';
+import { waehleStimmung } from './musikStimmung.js';
 import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
@@ -256,6 +259,12 @@ class Game {
     this.match = null;          // lokale Simulation
     this.network = null;        // Online-Verbindung
     this.mode = 'local';
+    /**
+     * Zuletzt gesetzte Musik-Stimmung (`null` = noch keine). Der Vergleich in
+     * `#setzeMusikStimmung` verhindert Überblendungen ohne echten Wechsel.
+     */
+    this.letzteMusikStimmung = null;
+    this.stimmungsTakt = 0; // Drossel der Lage-Prüfung (AUDIO-1): alle 30 Bilder
     this.accumulator = 0;
     this.lastFrameTime = 0;
     this.running = false;
@@ -427,7 +436,13 @@ class Game {
    */
   #bindeMusik() {
     bindeMusikBedienung(document, this.musik);
-    const stimmung = () => this.musik.setzeStimmung(this.menuOverlay.hidden ? 'match' : 'menu');
+    /*
+     * Zwei Quellen für EINE Stimmung: das `hidden` des Menüs (`menu`/`match` —
+     * deckt jeden Startpfad ab) und die Lage im Match (`intensiv`, AUDIO-1,
+     * gedrosselt im Loop). Beide laufen durch `#setzeMusikStimmung`, sonst
+     * überschriebe der Beobachter die Lage und die Stimmung flackerte.
+     */
+    const stimmung = () => this.#setzeMusikStimmung(this.menuOverlay.hidden ? 'match' : 'menu');
     new MutationObserver(stimmung).observe(this.menuOverlay, { attributes: true, attributeFilter: ['hidden'] });
     stimmung();
     // Autoplay-Regel: Start erst nach einer Geste (Tasten stehen im keydown-Hörer unten).
@@ -444,6 +459,28 @@ class Game {
       this.musik.setzeHymne(FACTIONS.some(f => f.id === wert) ? wert : null);
     });
     document.addEventListener('visibilitychange', () => this.musik.setzeVersteckt(document.hidden));
+  }
+
+  /**
+   * Setzt die Musik-Stimmung — nur bei echter Änderung (zwei Stellen melden
+   * dieselbe Stimmung: Menü-Beobachter und Lage-Prüfung im Loop).
+   */
+  #setzeMusikStimmung(art) {
+    if (this.letzteMusikStimmung === art) return;
+    this.letzteMusikStimmung = art;
+    this.musik?.setzeStimmung(art);
+  }
+
+  /**
+   * AUDIO-1: `intensiv`, solange die Lage es hergibt (Valhalla/Mahlstrom,
+   * letzte zwei Figuren, Team ≤ 25 % Leben), sonst `match`. Die Regel steht in
+   * `musikStimmung.js`; hier wird nur der Anzeigezustand übergeben. Menü und
+   * Replay bleiben unberührt.
+   */
+  #pruefeMusikLage(state) {
+    if (this.mode === 'replay') return;
+    if (!this.menuOverlay || !this.menuOverlay.hidden) return;
+    this.#setzeMusikStimmung(waehleStimmung(state));
   }
 
   /**
@@ -481,6 +518,8 @@ class Game {
      */
     // Einstellungs-Dropdown (Musik, Effekte, Verlassen, Aufgeben) und Dreh-Hinweis (nur Querformat), 2026-11-04.
     this.einstellungen = new HudEinstellungen(document);
+    // Rückfrage-Overlay (UI-3): Ersatz für `globalThis.confirm`, ohne den Loop anzuhalten.
+    this.bestaetigung = new Bestaetigung(document);
     bindeDrehHinweis(document);
     this.abortButton = document.getElementById('hud-abort');
     this.aufgebenButton = document.getElementById('hud-aufgeben');
@@ -490,28 +529,15 @@ class Game {
     this.endSummary = document.getElementById('end-summary');
 
     document.getElementById('start-button')?.addEventListener('click', () => this.startFromMenu());
-    document.getElementById('rematch-button')?.addEventListener('click', () => {
-      /*
-       * REVANCHE = DIESELBE KARTE.
-       *
-       * FUND (belegt, Datenfluss-Audit): Der Knopf öffnete nur wieder das Menü.
-       * Das Seed-Feld ist dort standardmäßig LEER (`placeholder="leer = neue
-       * Karte"`), und ein leerer Seed heißt ein NEUER Zufalls-Seed
-       * (`match.js:564` `MatchSeedManager.createRandom()`). Wer „Revanche"
-       * drückte, spielte also auf einer anderen Karte — obwohl der Knopf nach
-       * einem Neuanlauf auf derselben Karte klingt. Gemessen an zwei Läufen ohne
-       * Seed: baseSeed 3367130477 gegen 1341271627, Zustandshash `98aad2e2`
-       * gegen `e6da56da`.
-       *
-       * Der Wert steht im Feld, nicht in einer zweiten Ablage: So sieht der
-       * Spieler, worauf er als Nächstes spielt, und kann ihn LÖSCHEN, wenn er
-       * wirklich eine neue Karte will. Dieselbe Karte ist die Vorgabe, die neue
-       * bleibt eine bewusste Handlung.
-       */
-      this.#seedFuerRevanche();
-      this.endOverlay.hidden = true;
-      this.menuOverlay.hidden = false;
-    });
+    /*
+     * REVANCHE = NEUES MATCH AUF DERSELBEN KARTE (UI-4).
+     *
+     * FUND (belegt, UX-Abnahme): Der Knopf öffnete nur das Menü — die Partie
+     * lief weiter, `match`/`mode` blieben stehen, und R fragte im Menü nach.
+     * Jetzt räumt `revanche()` auf und startet sofort neu (Seed der Vorpartie).
+     * Online entscheidet der Server: dort bleibt der Weg über das Menü richtig.
+     */
+    document.getElementById('rematch-button')?.addEventListener('click', () => this.revanche());
 
     // Lobby-Browser: manuell über den Button, zusätzlich automatisch beim
     // Aufklappen. Sonst müsste der Nutzer erst laden, ohne zu wissen, dass es
@@ -608,7 +634,7 @@ class Game {
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
       if (isTextEntry(event.target)) return;
       if (event.key === 'r' || event.key === 'R') {
-        this.abortMatch();
+        void this.abortMatch();
       }
     });
 
@@ -620,9 +646,11 @@ class Game {
      * trifft, verliert die Partie. Ein sichtbarer Weg existierte nicht: nur
      * ein Eintrag in der Tastaturliste des Menüs.
      */
-    this.abortButton?.addEventListener('click', () => this.abortMatch());
+    this.abortButton?.addEventListener('click', () => { void this.abortMatch(); });
     this.aufgebenButton?.addEventListener('click', () => {
-      if (this.gibAuf()) this.einstellungen?.schliesse({ fokus: false });
+      // `gibAuf` fragt asynchron nach (Overlay statt confirm); erst nach einem
+      // „Ja" schließt sich das Einstellungs-Dropdown.
+      void this.gibAuf().then(ok => { if (ok) this.einstellungen?.schliesse({ fokus: false }); });
     });
   }
 
@@ -649,6 +677,26 @@ class Game {
   }
 
   /**
+   * Revanche: alte Partie aufräumen, sofort ein NEUES Match auf derselben Karte
+   * starten (UI-4). Die Reihenfolge (Seed lesen → aufräumen → starten) steht in
+   * `revanche.js`; hier werden nur die Zugänge übergeben.
+   *
+   * @returns {{ok: boolean, mode?: string, errors?: string[]}}
+   */
+  revanche() {
+    return revancheAblauf({
+      seedLesen: () => this.#seedFuerRevanche(),
+      aufraeumen: () => this.#verlasseMatch(),
+      starten: konfig => this.startMatch(konfig),
+      konfiguration: this.letzteMatchKonfiguration,
+      // Online und Replay: kein lokaler Neustart — der Server entscheidet bzw.
+      // es gibt keine Partie, die neu beginnen könnte.
+      nurMenue: this.mode !== 'local' || Boolean(this.network),
+      log: (text, art) => this.hud.log(text, art),
+    });
+  }
+
+  /**
    * Verlässt das laufende Match und kehrt ins Menü zurück.
    *
    * Beide Wege (Taste `R` und der HUD-Knopf) laufen hier zusammen — es gibt
@@ -656,25 +704,39 @@ class Game {
    * Fehlgriff sein, und auch ein Klick soll die Partie nicht ohne Rückfrage
    * beenden (UX-4).
    *
+   * Die Rückfrage ist ein eigenes Overlay, KEIN `globalThis.confirm` (UI-3):
+   * Der native Dialog hält den Hauptfaden an (Frame-Loop und Zugzeit stehen).
+   *
    * @param {{frage?: boolean}} [optionen] - `frage: true` verlangt eine
    *   Bestätigung, bevor abgebrochen wird.
-   * @returns {boolean} true, wenn abgebrochen wurde
+   * @returns {Promise<boolean>} true, wenn abgebrochen wurde
    */
-  abortMatch({ frage = true } = {}) {
+  async abortMatch({ frage = true } = {}) {
     // Kein Match, nichts abzubrechen — der Knopf ist dann auch unsichtbar.
-    const laeuft = Boolean(this.match) || this.mode === 'online';
-    if (!laeuft) return false;
+    if (!this.#laeuftMatch()) return false;
+    // Eine schon offene Frage nicht ein zweites Mal stellen (Taste R zweimal).
+    if (this.bestaetigung?.istOffen) return false;
 
-    if (frage && typeof globalThis.confirm === 'function') {
+    if (frage) {
       // Der Text nennt die Folge beim Namen: Das Match geht verloren.
-      const sicher = globalThis.confirm(
-        'Match verlassen? Der Spielstand geht verloren.',
-      );
+      const sicher = await this.bestaetigung.frage({
+        titel: 'Match verlassen?',
+        text: 'Der Spielstand geht verloren.',
+        ja: 'Verlassen',
+        nein: 'Weiterspielen',
+      });
       if (!sicher) return false;
+      // Während die Frage offen war, kann das Match zu Ende gegangen sein.
+      if (!this.#laeuftMatch()) return false;
     }
 
     this.#verlasseMatch();
     return true;
+  }
+
+  /** Läuft gerade ein Match, das man verlassen könnte? */
+  #laeuftMatch() {
+    return Boolean(this.match) || this.mode === 'online';
   }
 
   /** Räumt den Match-Zustand auf und zeigt das Menü. */
@@ -1360,6 +1422,14 @@ class Game {
     seed = undefined, backdropKey = '',
     sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null,
   } = {}) {
+    /*
+     * Die Konfiguration dieser Partie merken — die Revanche (UI-4) braucht sie.
+     * Sie kommt aus DIESEM Aufruf, nicht aus den Menüfeldern (die können inzwischen
+     * anders stehen). `seed` fehlt bewusst; den liefert `#seedFuerRevanche`.
+     */
+    this.letzteMatchKonfiguration = {
+      teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
+    };
     this.#ladeMatchBilder();
     this.network?.disconnect();
     this.network = null;
@@ -2429,10 +2499,26 @@ class Game {
    * Aufgeben (HUD-Knopf „Aufgeben", nur mit Bestätigung): Die eigenen Figuren zählen als besiegt, das Match endet
    * wie sonst. Online gilt es nur für den eigenen Sitz (Token); lokal für das Team der Figur am Zug. Die Taste R
    * bleibt „Match verlassen" und gibt nie still auf.
+   *
+   * Wie beim Verlassen ist die Rückfrage ein Overlay statt `confirm` (UI-3) —
+   * die Antwort kommt als Promise, der Frame-Loop läuft währenddessen weiter.
+   *
+   * @returns {Promise<boolean>} true, wenn aufgegeben wurde
    */
-  gibAuf({ frage = true } = {}) {
+  async gibAuf({ frage = true } = {}) {
     if (this.mode === 'replay' || (!this.match && this.mode !== 'online')) return false;
-    if (frage && typeof globalThis.confirm === 'function' && !globalThis.confirm('Aufgeben? Deine Figuren zählen als besiegt.')) return false;
+    if (this.bestaetigung?.istOffen) return false;
+    if (frage) {
+      const sicher = await this.bestaetigung.frage({
+        titel: 'Aufgeben?',
+        text: 'Deine Figuren zählen als besiegt.',
+        ja: 'Aufgeben',
+        nein: 'Weiterspielen',
+      });
+      if (!sicher) return false;
+      // Nach dem Warten erneut prüfen: Das Match kann inzwischen vorbei sein.
+      if (this.mode === 'replay' || (!this.match && this.mode !== 'online')) return false;
+    }
     if (this.mode === 'online') return this.network?.sendSurrender() === true;
     const zustand = this.match.getState();
     const aktiv = zustand.entities.find(e => e.entityId === zustand.activePlayerId);
@@ -3347,6 +3433,13 @@ class Game {
   #render(dt = 1) {
     const state = this.currentState();
     if (!state) return;
+
+    /*
+     * AUDIO-1: Musik folgt der Lage, gedrosselt (alle 30 Bilder, ~0,5 s) — ein
+     * Wechsel braucht keine Bildgenauigkeit.
+     */
+    this.stimmungsTakt = (this.stimmungsTakt + 1) % 30;
+    if (this.stimmungsTakt === 0) this.#pruefeMusikLage(state);
 
     const playerId = state.activePlayerId;
     const myTurn = this.mode === 'online'

@@ -139,15 +139,21 @@ test('Musik schalten per Tipp im Dropdown; Dropdown bleibt dabei offen', async (
 test('Aufgeben im Dropdown fragt nach: Nein spielt weiter, Ja beendet das Match', async ({ page }) => {
   const fehler = await starte(page);
   await page.locator('#hud-menue-knopf').click();
-  let text = null;
-  page.once('dialog', d => { text = d.message(); d.dismiss(); });
   await page.locator('#hud-aufgeben').click();
-  expect(text).toContain('Aufgeben?');
+  // Seit UI-3 ein eigenes Overlay statt `confirm` — der Frame-Loop läuft weiter.
+  await expect(page.locator('#bestaetigung')).toBeVisible();
+  await expect(page.locator('#bestaetigung-titel')).toContainText('Aufgeben');
+  await page.locator('#bestaetigung-nein').click();
+  await expect(page.locator('#bestaetigung')).toBeHidden();
   expect(await page.evaluate(() => window.__PA__.game.match?.status)).toBe('playing');
-  await expect(page.locator('#hud-menue')).toBeVisible();
 
-  page.once('dialog', d => d.accept());
+  // Der Dialog ist modal und nimmt den Fokus; das Dropdown schließt dabei.
+  // Für den zweiten Versuch wird es erneut geöffnet.
+  await page.locator('#hud-menue-knopf').click();
   await page.locator('#hud-aufgeben').click();
+  await expect(page.locator('#bestaetigung')).toBeVisible();
+  await page.locator('#bestaetigung-ja').click();
+  await expect(page.locator('#bestaetigung')).toBeHidden();
   await expect(page.locator('#hud-menue')).toBeHidden();
   await page.evaluate(() => window.__PA__.setAutoLoop?.(true));
   await expect(page.locator('#end-overlay')).toBeVisible({ timeout: 15_000 });

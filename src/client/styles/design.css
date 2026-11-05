@@ -222,6 +222,22 @@ label { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); }
 #end-overlay h1 .accent, h1 .accent { color: var(--lime); }
 #winner-text { font-family: var(--font-display); font-size: 34px; letter-spacing: 0.06em; color: var(--orange); }
 
+/*
+ * Rückfrage (UI-3): nicht blockierender Dialog im Spielstil.
+ *
+ * Über allem anderen (auch über Menü und Sieg-Dialog): Die Frage gehört zur
+ * laufenden Partie und darf nicht von einem zweiten Overlay verdeckt werden.
+ */
+#bestaetigung { z-index: 30; }
+#bestaetigung .overlay-card { width: min(460px, 90%); padding: 22px 24px; }
+#bestaetigung .pa-dialog__titel { font-size: 26px; margin: 0; }
+#bestaetigung-text { margin: 0; line-height: 1.5; }
+.bestaetigung-knoepfe { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+@media (max-width: 520px) {
+  .bestaetigung-knoepfe { flex-direction: column-reverse; }
+  .bestaetigung-knoepfe .pa-btn { width: 100%; }
+}
+
 #zugpause { border-radius: 6px; clip-path: none; border-color: var(--lime-dim); }
 #zugpause .zugpause-titel { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.1em; color: var(--lime); }
 #zugpause .zugpause-zahl { font-family: var(--font-display); font-size: 64px; color: #fff; text-shadow: 0 0 18px rgba(124, 252, 0, 0.5); }
