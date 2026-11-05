@@ -1150,7 +1150,11 @@ test('Der Sendefilter sitzt hinter consumeEvents — die Simulation sieht ihn ni
     'Der Sendefilter gehört NICHT in den Simulationspfad — er sitzt im Server hinter consumeEvents()');
 
   // Und der Server benutzt ihn auch wirklich (sonst wäre alles oben Theorie).
-  const server = fs.readFileSync(path.join(ROOT, 'src', 'server', 'gameServer.js'), 'utf8');
+  const server = fs.readFileSync(path.join(ROOT, 'src', 'server', 'gameServer.js'), 'utf8')
+    // Seit der Zerlegung (2026-11-05) liegt der Ereigniskanal je Lobby in
+    // `lobbySession.js`; der Beleg darf in beiden Dateien stehen.
+    + '\n'
+    + fs.readFileSync(path.join(ROOT, 'src', 'server', 'lobbySession.js'), 'utf8');
   assert.match(server, /this\.match\.consumeEvents\(\)[\s\S]{0,400}durchlassen\(/,
     'Der Server muss den Filter im Ereigniskanal NACH consumeEvents() anwenden');
   assert.match(server, /if \(!this\.sendefilter\.durchlassen/,
