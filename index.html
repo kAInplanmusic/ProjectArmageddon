@@ -1461,6 +1461,26 @@
           </div>
         </div>
       </section>
+
+      <!--
+        Rückfrage (UI-3): nicht blockierender Ersatz für `window.confirm`.
+        Der native Dialog hält den Hauptfaden an — der Frame-Loop steht, die
+        Zugzeit friert ein. Dieses Overlay liefert die Entscheidung als Promise
+        (src/client/bestaetigung.js), der Loop läuft weiter.
+        `role="alertdialog"`: eine Frage, die eine Antwort verlangt, bevor es
+        weitergeht — passend für „Match verlassen" und „Aufgeben".
+      -->
+      <div id="bestaetigung" class="overlay" hidden role="alertdialog" aria-modal="true"
+           aria-labelledby="bestaetigung-titel" aria-describedby="bestaetigung-text">
+        <div class="overlay-card panel pa-dialog pa-dialog--gefahr">
+          <h2 id="bestaetigung-titel" class="pa-dialog__titel">Sicher?</h2>
+          <p id="bestaetigung-text" class="subtitle">—</p>
+          <div class="bestaetigung-knoepfe">
+            <button id="bestaetigung-nein" type="button" class="secondary pa-btn pa-btn--sekundaer">Abbrechen</button>
+            <button id="bestaetigung-ja" type="button" class="pa-btn pa-btn--gefahr">Ja</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

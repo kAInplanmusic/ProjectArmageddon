@@ -38,6 +38,7 @@ import { bindeTonBedienung } from './soundBedienung.js';
 import { Musik, wiedergabeErlaubt } from './musik.js';
 import { bindeMusikBedienung } from './musikBedienung.js';
 import { HudEinstellungen } from './hudEinstellungen.js';
+import { Bestaetigung } from './bestaetigung.js';
 import { bindeDrehHinweis } from './drehHinweis.js';
 import { bindeGrafikBedienung } from './grafikBedienung.js';
 import MUSIK_MANIFEST from './assets/music/manifest.json';
@@ -480,6 +481,8 @@ class Game {
      */
     // Einstellungs-Dropdown (Musik, Effekte, Verlassen, Aufgeben) und Dreh-Hinweis (nur Querformat), 2026-11-04.
     this.einstellungen = new HudEinstellungen(document);
+    // Rückfrage-Overlay (UI-3): Ersatz für `globalThis.confirm`, ohne den Loop anzuhalten.
+    this.bestaetigung = new Bestaetigung(document);
     bindeDrehHinweis(document);
     this.abortButton = document.getElementById('hud-abort');
     this.aufgebenButton = document.getElementById('hud-aufgeben');
@@ -601,7 +604,7 @@ class Game {
       // getippt wird — sonst beendet ein "r" im Seed- oder Serverfeld das Match.
       if (isTextEntry(event.target)) return;
       if (event.key === 'r' || event.key === 'R') {
-        this.abortMatch();
+        void this.abortMatch();
       }
     });
 
@@ -613,9 +616,11 @@ class Game {
      * trifft, verliert die Partie. Ein sichtbarer Weg existierte nicht: nur
      * ein Eintrag in der Tastaturliste des Menüs.
      */
-    this.abortButton?.addEventListener('click', () => this.abortMatch());
+    this.abortButton?.addEventListener('click', () => { void this.abortMatch(); });
     this.aufgebenButton?.addEventListener('click', () => {
-      if (this.gibAuf()) this.einstellungen?.schliesse({ fokus: false });
+      // `gibAuf` fragt asynchron nach (Overlay statt confirm); erst nach einem
+      // „Ja" schließt sich das Einstellungs-Dropdown.
+      void this.gibAuf().then(ok => { if (ok) this.einstellungen?.schliesse({ fokus: false }); });
     });
   }
 
@@ -649,25 +654,39 @@ class Game {
    * Fehlgriff sein, und auch ein Klick soll die Partie nicht ohne Rückfrage
    * beenden (UX-4).
    *
+   * Die Rückfrage ist ein eigenes Overlay, KEIN `globalThis.confirm` (UI-3):
+   * Der native Dialog hält den Hauptfaden an (Frame-Loop und Zugzeit stehen).
+   *
    * @param {{frage?: boolean}} [optionen] - `frage: true` verlangt eine
    *   Bestätigung, bevor abgebrochen wird.
-   * @returns {boolean} true, wenn abgebrochen wurde
+   * @returns {Promise<boolean>} true, wenn abgebrochen wurde
    */
-  abortMatch({ frage = true } = {}) {
+  async abortMatch({ frage = true } = {}) {
     // Kein Match, nichts abzubrechen — der Knopf ist dann auch unsichtbar.
-    const laeuft = Boolean(this.match) || this.mode === 'online';
-    if (!laeuft) return false;
+    if (!this.#laeuftMatch()) return false;
+    // Eine schon offene Frage nicht ein zweites Mal stellen (Taste R zweimal).
+    if (this.bestaetigung?.istOffen) return false;
 
-    if (frage && typeof globalThis.confirm === 'function') {
+    if (frage) {
       // Der Text nennt die Folge beim Namen: Das Match geht verloren.
-      const sicher = globalThis.confirm(
-        'Match verlassen? Der Spielstand geht verloren.',
-      );
+      const sicher = await this.bestaetigung.frage({
+        titel: 'Match verlassen?',
+        text: 'Der Spielstand geht verloren.',
+        ja: 'Verlassen',
+        nein: 'Weiterspielen',
+      });
       if (!sicher) return false;
+      // Während die Frage offen war, kann das Match zu Ende gegangen sein.
+      if (!this.#laeuftMatch()) return false;
     }
 
     this.#verlasseMatch();
     return true;
+  }
+
+  /** Läuft gerade ein Match, das man verlassen könnte? */
+  #laeuftMatch() {
+    return Boolean(this.match) || this.mode === 'online';
   }
 
   /** Räumt den Match-Zustand auf und zeigt das Menü. */
@@ -2323,10 +2342,26 @@ class Game {
    * Aufgeben (HUD-Knopf „Aufgeben", nur mit Bestätigung): Die eigenen Figuren zählen als besiegt, das Match endet
    * wie sonst. Online gilt es nur für den eigenen Sitz (Token); lokal für das Team der Figur am Zug. Die Taste R
    * bleibt „Match verlassen" und gibt nie still auf.
+   *
+   * Wie beim Verlassen ist die Rückfrage ein Overlay statt `confirm` (UI-3) —
+   * die Antwort kommt als Promise, der Frame-Loop läuft währenddessen weiter.
+   *
+   * @returns {Promise<boolean>} true, wenn aufgegeben wurde
    */
-  gibAuf({ frage = true } = {}) {
+  async gibAuf({ frage = true } = {}) {
     if (this.mode === 'replay' || (!this.match && this.mode !== 'online')) return false;
-    if (frage && typeof globalThis.confirm === 'function' && !globalThis.confirm('Aufgeben? Deine Figuren zählen als besiegt.')) return false;
+    if (this.bestaetigung?.istOffen) return false;
+    if (frage) {
+      const sicher = await this.bestaetigung.frage({
+        titel: 'Aufgeben?',
+        text: 'Deine Figuren zählen als besiegt.',
+        ja: 'Aufgeben',
+        nein: 'Weiterspielen',
+      });
+      if (!sicher) return false;
+      // Nach dem Warten erneut prüfen: Das Match kann inzwischen vorbei sein.
+      if (this.mode === 'replay' || (!this.match && this.mode !== 'online')) return false;
+    }
     if (this.mode === 'online') return this.network?.sendSurrender() === true;
     const zustand = this.match.getState();
     const aktiv = zustand.entities.find(e => e.entityId === zustand.activePlayerId);

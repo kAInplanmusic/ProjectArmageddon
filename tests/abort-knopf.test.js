@@ -136,13 +136,20 @@ test('Der Abbruch fragt nach', () => {
   /*
    * Der Kern des Befunds: Ein Fehlgriff darf keine Partie kosten. Geprüft wird,
    * dass eine Rückfrage existiert und dass ein „Nein" den Abbruch verhindert.
+   *
+   * Seit UI-3 ist die Rückfrage ein eigenes Overlay statt `confirm`: Der native
+   * Dialog hält den Hauptfaden an, der Frame-Loop steht dann und die
+   * Zugzeit-Anzeige friert ein. Der Test hält BEIDES fest — die Frage und den
+   * nicht blockierenden Weg (`await` auf `Bestaetigung#frage`).
    */
   const code = ohneKommentare(main);
   const methode = code.match(/abortMatch\([^)]*\)\s*\{([\s\S]*?)\n  \}/);
 
   assert.ok(methode, 'die Methode `abortMatch` wurde nicht gefunden');
-  assert.match(methode[1], /confirm\(/,
-    'Der Abbruch muss nachfragen');
+  assert.doesNotMatch(methode[1], /confirm\(/,
+    'Der Abbruch darf nicht mehr `confirm` rufen — das blockiert den Loop');
+  assert.match(methode[1], /await this\.bestaetigung\.frage\(/,
+    'Der Abbruch muss den nicht blockierenden Dialog fragen');
   assert.match(methode[1], /return false/,
     'Ein „Nein" muss den Abbruch verhindern (return false)');
 });
@@ -221,6 +228,6 @@ test('Der Abbruch im Menü ist wirkungslos', () => {
   const methode = code.match(/abortMatch\([^)]*\)\s*\{([\s\S]*?)\n  \}/);
   assert.ok(methode, 'die Methode wurde nicht gefunden');
 
-  assert.match(methode[1], /if \(!laeuft\) return false/,
+  assert.match(methode[1], /if \(!this\.#laeuftMatch\(\)\) return false/,
     'Ohne laufendes Match muss `abortMatch` sofort zurückkehren');
 });
