@@ -61,7 +61,7 @@ test('Client: Kurztext für den Menü-Fuß', () => {
 test('index.html hat den Platz für die Kennung im Menü', () => {
   const html = readFileSync(join(WURZEL, 'index.html'), 'utf8');
   assert.match(html, /<p id="bauinfo" class="menu-bauinfo"><\/p>/);
-  assert.match(readFileSync(join(WURZEL, 'src/client/main.js'), 'utf8'), /zeigeBauinfo\(document\)/);
+  assert.match(html, /<script type="module" src="\/src\/client\/bauinfo\.js"><\/script>/);
   assert.match(readFileSync(join(WURZEL, 'vite.config.mjs'), 'utf8'), /fileName: 'version\.json'/);
 });
 

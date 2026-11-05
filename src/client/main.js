@@ -17,7 +17,6 @@ import { isTextEntry } from './dom.js';
 import { haerteAusTreffer } from './gefuehl.js';
 import { MatchController, TEAM_COLORS } from '../engine/match.js';
 import { Renderer } from './renderer.js';
-import { zeigeBauinfo } from './bauinfo.js';
 import { Camera, ZOOM_GRENZEN } from './camera.js';
 import { KameraRegie } from './kameraRegie.js';
 import { KameraSteuerung } from './kameraSteuerung.js';
@@ -459,7 +458,6 @@ class Game {
 
   #bindMenu() {
     this.menuOverlay = document.getElementById('menu-overlay');
-    zeigeBauinfo(document);
     // Solange das Menü offen ist, sind Spielfeld und HUD dahinter nicht bedienbar (Tastatur/Screenreader):
     // `inert` folgt dem `hidden` des Menüs (Audit 2026-10-13: Tab lief durch das Menü ins Spielfeld).
     const menuHinweis = () => {

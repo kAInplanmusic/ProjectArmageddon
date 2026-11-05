@@ -1,5 +1,7 @@
 /**
  * Versionskennung im Client (DEP-1): zeigt Version, Git-Stand und Bauzeit im Menü-Fuß (`#bauinfo`).
+ * Eigener Einstieg in `index.html` (nicht über `main.js`: dessen Zeilennummern sind in
+ * `src/shared/ereigniskatalog.js` als Fundstellen belegt).
  *
  * Die Werte setzt der Build (`vite.config.mjs` → `__PA_BAUINFO__`, Quelle
  * `scripts/release/bauinfo.mjs`). Wer einen Fehler meldet, kann so ablesen, welcher Build lief;
@@ -36,3 +38,7 @@ export function zeigeBauinfo(doc = globalThis.document) {
   el.textContent = bauinfoText();
   el.title = `Build ${BAUINFO.version}, Git ${BAUINFO.gitSha}${BAUINFO.bauzeit ? `, gebaut ${BAUINFO.bauzeit}` : ''}`;
 }
+
+// Eigener Einstieg aus index.html (`<script type="module">`, läuft nach dem Parsen des DOM).
+// In Node (Tests, `npm run validate`) gibt es kein `document` — dann geschieht nichts.
+if (typeof document !== 'undefined') zeigeBauinfo(document);
