@@ -1432,6 +1432,54 @@
               <button id="profil-reset" type="button" class="secondary">Zahlen zurücksetzen</button>
             </div>
           </details>
+          <!--
+            Konten (Paket C, 2026-11-05): Anmelden/Registrieren und die
+            Rangliste. Beides ist bewusst schlicht — ein Formular, eine Liste.
+            Kein Shop, kein Battle-Pass, kein XP.
+
+            Das Passwortfeld ist `type="password"` und hat `autocomplete`
+            gesetzt, damit der Browser das gespeicherte Passwort anbieten darf.
+            Der Sitzungstoken liegt im `sessionStorage` dieses Tabs
+            (`src/client/konto.js`), nicht in einem Cookie.
+          -->
+          <details id="konto-browser">
+            <summary>Anmelden / Registrieren</summary>
+            <form id="konto-form" class="field-row" autocomplete="on">
+              <label>Benutzername
+                <input id="konto-name" type="text" name="benutzername" autocomplete="username"
+                       minlength="3" maxlength="20" placeholder="3–20 Zeichen" required />
+              </label>
+              <label>Passwort
+                <input id="konto-passwort" type="password" name="passwort" autocomplete="current-password"
+                       minlength="8" maxlength="200" placeholder="mindestens 8 Zeichen" required />
+              </label>
+              <div class="field-row konto-knoepfe">
+                <button id="konto-anmelden" type="submit" class="pa-btn pa-btn--primaer pa-btn--sekundaer">Anmelden</button>
+                <button id="konto-registrieren" type="button" class="secondary">Registrieren</button>
+              </div>
+            </form>
+            <div id="konto-angemeldet" hidden>
+              <p class="konto-zeile">Angemeldet als <b id="konto-name-anzeige"></b>. Partien mit einem zweiten
+                angemeldeten Menschen zählen für die Rangliste; Gäste spielen weiter ohne Konto.</p>
+              <div class="field-row">
+                <button id="konto-abmelden" type="button" class="secondary">Abmelden</button>
+                <label>Konto löschen — Passwort
+                  <input id="konto-loeschen-passwort" type="password" autocomplete="current-password" />
+                </label>
+                <button id="konto-loeschen" type="button" class="secondary">Konto samt Daten löschen</button>
+              </div>
+            </div>
+            <p id="konto-status" class="muted" role="status" aria-live="polite"></p>
+          </details>
+          <details id="rangliste-browser">
+            <summary>Rangliste — Elo und Bestwerte</summary>
+            <div class="field-row">
+              <button id="rangliste-laden" type="button" class="secondary">Rangliste laden</button>
+              <span id="rangliste-status" class="muted" role="status" aria-live="polite"></span>
+            </div>
+            <ol id="rangliste" class="rangliste" aria-label="Rangliste"></ol>
+            <p id="rangliste-rekorde" class="rangliste-rekorde muted"></p>
+          </details>
                     </div>
         </div>
       </section>

@@ -184,6 +184,9 @@ export function serializeLobby(lobby, session) {
       unitIndex: seat.unitIndex,
       playerIndex: seat.playerIndex,
       connected: false,
+      // Kontokennung überlebt den Neustart: Sonst zählte eine fortgesetzte
+      // Partie nach einem Serverneustart nicht mehr für die Rangliste.
+      kontoId: seat.kontoId ?? null,
     })),
     // Replay-Kern: Seed + Konfiguration + Eingaben genügen zur Rekonstruktion.
     replay: session?.recorder?.toJSON() ?? null,
@@ -320,6 +323,7 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
       connected: false,
       disconnectedAt: Date.now(),
       entityId: seat.entityId ?? null,
+      kontoId: seat.kontoId ?? null,
       ...(seat.teamId !== undefined ? {
         teamId: seat.teamId, figureIndex: seat.figureIndex, unitIndex: seat.unitIndex, playerIndex: seat.playerIndex,
       } : {}),

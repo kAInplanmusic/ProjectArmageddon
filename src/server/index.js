@@ -28,6 +28,9 @@ export { computeTrajectory, ccdRaycast } from '../engine/physics/ballistics.js';
 // Multiplayer
 export { GameServer, LobbySession, startServer, SIMULATION_HZ, SNAPSHOT_HZ } from './gameServer.js';
 export { LobbyManager, LOBBY_STATUS, MAX_LOBBY_FIGURES } from './lobby.js';
+export { KontoDienst, Bremse, hashePasswort, pruefePasswort } from './konto.js';
+export { oeffneSpeicher, sqliteVerfuegbar } from './kontoSpeicher.js';
+export { ELO_START, ELO_K, erwartungswert, eloAenderung, verbuchePartie, rangliste, bestwerte } from './bestenliste.js';
 export { SnapshotHistory, DEFAULT_HISTORY_MS } from './lagCompensation.js';
 /*
  * Kein `BotController`-Export: Es gibt keine Bot-KI. Teams werden nur von

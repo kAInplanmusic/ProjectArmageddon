@@ -45,8 +45,12 @@ const ZUGPAUSE_TICKS = Math.round(
     : MATCH_RULES.turnPauseSeconds) * SIMULATION_HZ,
 );
 import { ReplayRecorder } from '../engine/replay.js';
+import { MatchStats } from '../shared/stats.js';
 import { TokenBucket, RATE_TRENNEN_NACH } from './rateLimit.js';
 import { PersistenceStore, serializeLobby, restoreLobby } from './persistence.js';
+import { KontoDienst } from './konto.js';
+import { oeffneSpeicher } from './kontoSpeicher.js';
+import { verbuchePartie, rangliste, bestwerte, ranglistenStand, siegquote, kdVerhaeltnis } from './bestenliste.js';
 import { GUENTHER_FASSUNG_STANDARD } from '../shared/config/guenther.js';
 import { COOKIE_STANDARD } from '../shared/config/cookie.js';
 import { FEUER_STANDARD } from '../shared/config/feuer.js';
@@ -118,6 +122,15 @@ const PRUNE_INTERVAL_MS = 5_000;
 class LobbySession {
   /** Wurde das Match-Ende schon gemeldet? Siehe #finish. */
   #finished = false;
+  /**
+   * Läuft gerade ein `stepSimulation` aus der Zeitschleife?
+   *
+   * Dann dürfen die Ereignisse am Match-Ende NICHT hier ausgewertet werden:
+   * `#takt` liefert sie direkt danach an die Clients, und wer sie vorher
+   * abholt, verschluckt „aufgegeben" und „death" (die Clients sähen nur noch
+   * „match_over").
+   */
+  #imTakt = false;
   /** Geh-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleMove`. */
   #gehGrenzen = new Map();
   /** Seil-Nachrichtengrenze je Sitz (Entity-Id), siehe `handleSeil`. */
@@ -134,7 +147,7 @@ class LobbySession {
    * @param {object} [options.logger] - strukturierter Logger (optional)
    */
   constructor(lobby, {
-    onEmpty, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
+    onEmpty, onMatchEnd = null, replayEntries = null, replayTotalTicks = 0, metrics = null, logger = null,
     turnPauseTicks = null, turnReplayTicks = null, kit = undefined, zerstoerung = undefined, waffen = undefined, kisten = undefined, schaden = undefined, gelaende = undefined, guenther = GUENTHER_FASSUNG_STANDARD, cookie = COOKIE_STANDARD, feuer = FEUER_STANDARD, bewegung = BEWEGUNG_STANDARD, zugregeln = ZUGREGELN_STANDARD, klassen = KLASSEN_STANDARD, bodenobjekte = BODENOBJEKTE_STANDARD, seil = SEIL_STANDARD, wind = WIND_STANDARD,
   } = {}) {
     this.lobby = lobby;
@@ -202,6 +215,16 @@ class LobbySession {
       turnReplayTicks: turnReplayTicks ?? (ZUGPAUSE_TICKS > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0),
     });
     this.match.start();
+
+    /**
+     * Spielerkennzahlen dieser Partie — vom SERVER geführt, nicht vom Client
+     * gemeldet (AGENTS.md §6). Sie kommen aus denselben Ereignissen, die auch an
+     * die Clients gehen (`MatchStats`, `src/shared/stats.js`), und sind damit
+     * nicht fälschbar: Was kein Ereignis erzeugt hat, ist nicht passiert.
+     *
+     * Sie sind die Grundlage der Rangliste (`#finish` → `onMatchEnd`).
+     */
+    this.stats = new MatchStats({ teams: this.#teamkarte() });
 
     /** Aufzeichnung für Persistenz und Replay. */
     this.recorder = new ReplayRecorder({
@@ -275,6 +298,7 @@ class LobbySession {
     this.clients = new Map();      // token -> WebSocket
     this.byEntity = new Map();     // entityId -> token
     this.onEmpty = onEmpty;
+    this.onMatchEnd = typeof onMatchEnd === 'function' ? onMatchEnd : null;
     this.accumulator = 0;
     this.snapshotAccumulator = 0;
     /** Letzter an jeden Client gesendeter Zustand (Basis für Delta-Encoding). */
@@ -327,7 +351,7 @@ class LobbySession {
         this.#applyReplayEntry(entry);
       }
       this.match.step();
-      this.match.consumeEvents();
+      this.#statistikFuettern(this.match.consumeEvents());
       guard += 1;
     }
     if (this.match.world.tickCount === limit) {
@@ -423,13 +447,48 @@ class LobbySession {
   }
 
   /**
+   * entityId → teamId für die Auswertung.
+   *
+   * `MatchStats` braucht die Zuordnung, um Eigen- und Teamschaden von
+   * Gegnerschaden zu trennen. Sie wird bei jedem `syncSeats` neu gebaut, weil
+   * die Entity-IDs erst mit dem Matchstart entstehen.
+   */
+  #teamkarte() {
+    const karte = new Map();
+    for (const seat of this.lobby.seats) {
+      if (seat.entityId !== null && seat.entityId !== undefined) karte.set(seat.entityId, seat.teamId);
+    }
+    return karte;
+  }
+
+  /**
    * Bindet neu hinzugekommene Plätze an ihre Spieler-Entity.
    * Muss bei jedem Beitritt laufen: die Entity-IDs entstehen beim Start des
    * Matchs, spätere Plätze haben anfangs keine Zuordnung.
    */
   syncSeats() {
     this.#assignEntityIds();
+    // Die Teamzuordnung der Kennzahlen zieht mit: Ohne diesen Schritt fehlten
+    // Figuren, die erst nach dem Matchstart dazukamen.
+    if (this.stats) this.stats.teams = this.#teamkarte();
     return this;
+  }
+
+  /**
+   * Füttert die Spielerkennzahlen mit den Ereignissen dieses Takts.
+   *
+   * Der Takt kommt mit, weil das Trefferfenster (`MatchStats`) ihn braucht und
+   * kein Ereignis ihn trägt. Ohne diese Zeile bliebe `stats.tick` bei 0 und
+   * jeder Schaden gälte als Treffer.
+   */
+  #statistikFuettern(ereignisse, takt = this.match.world.tickCount) {
+    this.stats.feedAll(ereignisse, takt);
+  }
+
+  /** Holt liegengebliebene Ereignisse nach — vor der Auswertung am Match-Ende. */
+  #statistikAbschliessen() {
+    const takt = this.match.world.tickCount;
+    this.#statistikFuettern(this.match.consumeEvents(), takt);
   }
 
   start() {
@@ -506,7 +565,18 @@ class LobbySession {
     while (this.accumulator >= TICK_MS) {
       this.accumulator -= TICK_MS;
       if (this.match.status !== 'playing') break;
-      this.stepSimulation(1);
+      /*
+       * `#imTakt` sagt `stepSimulation`, dass die Ereignisse dieses Schritts
+       * gleich HIER ausgeliefert werden. Ohne die Marke würde sie am
+       * Match-Ende dort schon ausgewertet und aus dem Puffer genommen — die
+       * Clients sähen „match_over", aber nicht mehr „aufgegeben"/„death".
+       */
+      this.#imTakt = true;
+      try {
+        this.stepSimulation(1);
+      } finally {
+        this.#imTakt = false;
+      }
     }
 
     /*
@@ -527,7 +597,9 @@ class LobbySession {
      * (Abschnitt „SENDEFILTER") und `docs/ereigniskanal-filter.md`.
      */
     const takt = this.match.world.tickCount;
-    for (const event of this.match.consumeEvents()) {
+    const ereignisse = this.match.consumeEvents();
+    this.#statistikFuettern(ereignisse, takt);
+    for (const event of ereignisse) {
       if (!this.sendefilter.durchlassen(event.type, event.payload, takt)) {
         if (this.metrics) this.metrics.controlMessagesSuppressed += 1;
         continue;
@@ -590,7 +662,10 @@ class LobbySession {
        */
       this.history.push(this.match.world.tickCount, null);
     }
-    if (this.match.status === 'gameover') this.#finish();
+    if (this.match.status === 'gameover' && !this.#imTakt) {
+      this.#statistikAbschliessen();
+      this.#finish();
+    }
     /*
      * Kein Rückgabewert mehr (STATE-1/ENG-5): Hier stand `return
      * this.match.getState()` — ein zweiter Zustandsaufbau je Takt (der erste
@@ -636,6 +711,20 @@ class LobbySession {
      */
     if (this.#finished) return;
     this.#finished = true;
+    this.#statistikAbschliessen();
+    // Vor dem Stoppen auswerten: `stop()` beendet nur den Zeitgeber, der Zustand
+    // des Matches bleibt lesbar. Die Auswertung meldet das Ergebnis an den
+    // Kontodienst (Rangliste); Fehler dabei dürfen das Match-Ende nicht kippen.
+    try {
+      this.onMatchEnd?.({
+        lobby: this.lobby,
+        stats: this.stats,
+        winnerTeamId: this.match.winnerTeamId,
+        runden: this.match.round,
+      });
+    } catch (fehler) {
+      this.logger?.error('match_end_auswertung', 'Auswertung der Partie fehlgeschlagen', { error: fehler });
+    }
     this.stop();
     this.lobby && (this.lobby.status = LOBBY_STATUS.FINISHED);
     this.logger?.info('match_over', 'Match entschieden', {
@@ -1375,6 +1464,13 @@ export class GameServer {
    * einer anderen Karte, ohne dass irgendwo etwas auffiel. Siehe `restoreLobby`.
    */
   #restorePruefungen = [];
+  /** Kontodienst (Rangliste, Login) — erst beim ersten Zugriff geöffnet. */
+  #kontenDienst = null;
+  #kontenAus = false;
+  #kontenPfad = '.pa-state/konten.db';
+  #kontenArt = 'auto';
+  /** Meldet eine abgeschlossene Partie an die Rangliste. */
+  #partieAuswerten = null;
 
   constructor({
     lobbyManager = new LobbyManager(),
@@ -1383,6 +1479,10 @@ export class GameServer {
     persistenceIntervalMs = 10_000,
     pruneIntervalMs = PRUNE_INTERVAL_MS,
     logger = null,
+    /* Konten: `undefined` = beim ersten Aufruf öffnen, `null` = abgeschaltet, Objekt = fertiger Dienst (Tests). */
+    konten = undefined,
+    kontenPfad = process.env.PA_KONTEN_PFAD ?? '.pa-state/konten.db',
+    kontenArt = process.env.PA_KONTEN_SPEICHER ?? 'auto',
     maxLobbies = Number(process.env.PA_MAX_LOBBYS) || 500,
     maxLobbyAnlegenProMinute = Number(process.env.PA_LOBBYS_PRO_MINUTE) || 30,
     lobbyLeerTtlMs = Number(process.env.PA_LOBBY_LEER_MS) || 15 * 60_000,
@@ -1454,6 +1554,16 @@ export class GameServer {
     this.persistence = persistence;
     this.persistenceIntervalMs = persistenceIntervalMs;
     this.#persistenceTimer = null;
+    /*
+     * Konten: Der Dienst wird erst beim ersten Aufruf geöffnet. Ein Server, den
+     * niemand nach Konten fragt (Tests, Werkzeuge), legt damit keine Datei an —
+     * und ein fehlendes `node:sqlite` stürzt nicht den Spielbetrieb ab, sondern
+     * nur die Kontorouten (mit klarer Meldung).
+     */
+    this.#kontenDienst = typeof konten === 'object' && konten !== null ? konten : null;
+    this.#kontenAus = konten === null;
+    this.#kontenPfad = kontenPfad;
+    this.#kontenArt = kontenArt;
     /** Intervall der Verwaltungsrunde (Tests setzen es klein). */
     this.pruneIntervalMs = pruneIntervalMs;
     this.#createVerlauf = new Map();
@@ -1535,7 +1645,7 @@ export class GameServer {
         message: fehler?.message ?? String(fehler),
       });
     });
-    this.#wsServer.on('connection', socket => {
+    this.#wsServer.on('connection', (socket, anfrage) => {
       this.metrics.connections += 1;
       // debug: im Betrieb ist jeder Verbindungsaufbau Rauschen, bei der Fehlersuche
       // ist die Reihenfolge von Verbinden und Trennen aber entscheidend.
@@ -1562,7 +1672,7 @@ export class GameServer {
           disconnections: this.metrics.disconnections,
         });
       });
-      this.#handleConnection(socket);
+      this.#handleConnection(socket, anfrage?.paKonto ?? null);
     });
   }
 
@@ -1930,6 +2040,9 @@ export class GameServer {
     if (vorhanden) return vorhanden;
     const session = new LobbySession(lobby, {
       onEmpty: id => this.#sitzungBeendet(id),
+      // Die Auswertung der Partie (Rangliste) läuft beim Match-Ende im Server —
+      // nicht über eine Meldung des Clients.
+      onMatchEnd: daten => this.#partieVerbuchen(daten),
       ...(this.zugPauseTicks !== null ? { turnPauseTicks: this.zugPauseTicks, turnReplayTicks: 0 } : {}),
       metrics: this.metrics,
       logger: this.logger,
@@ -2058,9 +2171,23 @@ export class GameServer {
     sock.on('error', () => sock.destroy());
     const ablehnen = (code, text) => sock.end(`HTTP/1.1 ${code} ${text}\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`);
     let pfad = null;
-    try { pfad = new URL(anfrage.url ?? '/', 'http://localhost').pathname; } catch { /* kaputte URL */ }
+    let url = null;
+    try {
+      url = new URL(anfrage.url ?? '/', 'http://localhost');
+      pfad = url.pathname;
+    } catch { /* kaputte URL */ }
     if (pfad !== '/ws') return ablehnen(400, 'Bad Request');
     if (!this.#originErlaubt(anfrage)) return ablehnen(403, 'Forbidden');
+    /*
+     * Das Sitzungstoken reist im Handshake (`/ws?sitzung=…`), nicht als
+     * Kopfzeile: Ein Browser kann bei `new WebSocket()` keine eigenen Header
+     * setzen. Der Token ist die Kontokennung, NICHT der Platz-Token aus
+     * `JOIN_LOBBY` — beide heißen nur zufällig gleich. Ein unbekannter oder
+     * abgelaufener Token ist kein Fehler: Der Client spielt dann als Gast.
+     */
+    const sitzungToken = url?.searchParams?.get('sitzung') ?? null;
+    const konto = sitzungToken ? this.#holeKonten()?.kontoFuerToken(sitzungToken) ?? null : null;
+    if (konto) anfrage.paKonto = konto;
     this.#wsServer.handleUpgrade(anfrage, sock, kopf, ws => this.#wsServer.emit('connection', ws, anfrage));
   }
 
@@ -2076,6 +2203,185 @@ export class GameServer {
     try { return new URL(origin).host === request.headers.host; } catch { return false; }
   }
 
+  /**
+   * Der Kontodienst — beim ersten Zugriff geöffnet.
+   *
+   * Die späte Öffnung hat zwei Gründe: Ein Server, den niemand nach Konten
+   * fragt (Tests, Werkzeuge, reine Spielinstanz), legt keine Datei an; und ein
+   * fehlendes `node:sqlite` nimmt nur die Kontorouten mit, nicht den
+   * Spielbetrieb.
+   */
+  #holeKonten() {
+    if (this.#kontenAus) return null;
+    if (this.#kontenDienst) return this.#kontenDienst;
+    try {
+      const speicher = oeffneSpeicher({ pfad: this.#kontenPfad, art: this.#kontenArt });
+      this.#kontenDienst = new KontoDienst({ speicher, logger: this.logger });
+      this.logger.info('konten_offen', 'Kontospeicher geöffnet', {
+        art: speicher.art,
+        pfad: speicher.pfad,
+      });
+    } catch (fehler) {
+      this.#kontenAus = true;
+      this.logger.error('konten_fehler', 'Kontospeicher konnte nicht geöffnet werden', {
+        error: fehler?.message ?? String(fehler),
+      });
+      return null;
+    }
+    return this.#kontenDienst;
+  }
+
+  /**
+   * Kontokennung aus dem `Authorization`-Kopf — nur wenn wirklich ein Token
+   * mitkam. Ohne diese Bedingung würde jeder Lobby-Aufruf den Kontospeicher
+   * öffnen, auch wenn niemand angemeldet ist.
+   */
+  #kontoIdAusAnfrage(request) {
+    const token = KontoDienst.tokenAusKopfzeilen(request.headers);
+    if (!token) return null;
+    return this.#holeKonten()?.kontoFuerToken(token)?.id ?? null;
+  }
+
+  /** Öffentliche Sicht auf ein Konto (nie der Passworthash, nie der Token). */
+  #kontoOeffentlich(konto) {
+    return {
+      id: konto.id,
+      name: konto.name,
+      elo: konto.elo,
+      partien: konto.partien,
+      siege: konto.siege,
+      niederlagen: konto.niederlagen,
+      siegquote: siegquote(konto),
+      kills: konto.kills,
+      tode: konto.tode,
+      kd: kdVerhaeltnis(konto),
+      schaden: konto.schaden,
+      schuesse: konto.schuesse,
+    };
+  }
+
+  /**
+   * Verbucht eine abgeschlossene Partie in der Rangliste.
+   *
+   * Der Server sieht das Match selbst; nichts davon kommt vom Client. Ohne
+   * mindestens zwei ANGEMELDETE Menschen verbucht `verbuchePartie` nichts —
+   * Gäste und lokale Partien zählen nicht.
+   */
+  #partieVerbuchen({ lobby, stats }) {
+    const seats = lobby?.seats ?? [];
+    if (!seats.some(seat => seat.kontoId)) return;
+    const dienst = this.#holeKonten();
+    if (!dienst) return;
+    const modus = lobby.modus ?? `${lobby.teams}x${lobby.playersPerTeam}`;
+    const ergebnis = verbuchePartie({
+      speicher: dienst.speicher,
+      seats,
+      stats,
+      lobbyId: lobby.id,
+      modus,
+      jetzt: Date.now(),
+    });
+    if (ergebnis.verbucht) {
+      this.logger.info('rangliste_verbucht', 'Partie in die Rangliste eingetragen', {
+        lobbyId: lobby.id,
+        modus,
+        teilnehmer: ergebnis.ergebnisse.length,
+        ergebnisse: ergebnis.ergebnisse.map(eintrag => ({
+          name: eintrag.name, ergebnis: eintrag.ergebnis, elo: eintrag.eloNachher,
+        })),
+      });
+    } else {
+      this.logger.info('rangliste_uebersprungen', 'Partie zählt nicht für die Rangliste', {
+        lobbyId: lobby.id,
+        grund: ergebnis.grund,
+      });
+    }
+  }
+
+  /**
+   * Die Kontorouten.
+   *
+   * Gibt `null` zurück, wenn der Pfad nicht hierher gehört; sonst
+   * `{status, body}`. Die Antwortformen sind absichtlich schlicht (JSON), damit
+   * der Client ohne Rahmenwerk auskommt.
+   */
+  async #kontoRoute(request, url) {
+    const pfad = url.pathname;
+    const istKonto = pfad === '/api/bestenliste' || pfad === '/api/konto' || pfad.startsWith('/api/konto/');
+    if (!istKonto) return null;
+
+    const dienst = this.#holeKonten();
+    if (!dienst) return { status: 503, body: this.#fehlerNutzlast('Konten sind auf diesem Server nicht verfügbar') };
+
+    const ip = request.socket?.remoteAddress ?? '?';
+    const kopfToken = KontoDienst.tokenAusKopfzeilen(request.headers);
+
+    if (request.method === 'GET' && pfad === '/api/bestenliste') {
+      return {
+        status: 200,
+        body: {
+          eintraege: rangliste(dienst.speicher),
+          bestwerte: bestwerte(dienst.speicher),
+          stand: ranglistenStand(dienst.speicher),
+        },
+      };
+    }
+
+    if (request.method === 'GET' && pfad === '/api/konto') {
+      const konto = dienst.kontoFuerToken(kopfToken);
+      if (!konto) return { status: 401, body: this.#fehlerNutzlast('Nicht angemeldet') };
+      return { status: 200, body: { konto: this.#kontoOeffentlich(konto) } };
+    }
+
+    // Ab hier braucht jede Route einen Body (Registrieren, Anmelden, Löschen).
+    if (!['POST', 'DELETE'].includes(request.method ?? '')) {
+      return { status: 405, body: this.#fehlerNutzlast('Methode nicht erlaubt') };
+    }
+    const gelesen = await this.#readBody(request);
+    if (gelesen.fehler) return { status: 400, body: this.#fehlerNutzlast(gelesen.fehler) };
+    const body = gelesen.wert;
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return { status: 400, body: this.#fehlerNutzlast('Request-Body muss ein JSON-Objekt sein') };
+    }
+
+    if (request.method === 'POST' && pfad === '/api/konto/registrieren') {
+      const antwort = await dienst.registrieren({ name: body.name, passwort: body.passwort, ip });
+      return this.#kontoAntwort(antwort, 201);
+    }
+
+    if (request.method === 'POST' && pfad === '/api/konto/anmelden') {
+      const antwort = await dienst.anmelden({ name: body.name, passwort: body.passwort, ip });
+      return this.#kontoAntwort(antwort);
+    }
+
+    if (request.method === 'POST' && pfad === '/api/konto/abmelden') {
+      dienst.abmelden(kopfToken ?? body.token);
+      return { status: 200, body: { ok: true } };
+    }
+
+    if (request.method === 'DELETE' && pfad === '/api/konto') {
+      const antwort = await dienst.loeschen({ token: kopfToken ?? body.token, passwort: body.passwort });
+      if (!antwort.ok) return this.#kontoAntwort(antwort);
+      return { status: 200, body: { ok: true, geloescht: true } };
+    }
+
+    return { status: 404, body: this.#fehlerNutzlast('Nicht gefunden') };
+  }
+
+  /** Übersetzt eine Dienstantwort in `{status, body}`. */
+  #kontoAntwort(antwort, statusErfolg = 200) {
+    if (!antwort.ok) {
+      return {
+        status: antwort.status ?? 400,
+        body: { ...this.#fehlerNutzlast(antwort.fehler ?? 'Unbekannter Fehler'), code: antwort.code ?? null },
+      };
+    }
+    return {
+      status: statusErfolg,
+      body: { konto: antwort.konto ?? null, token: antwort.token ?? null, laeuftAb: antwort.laeuftAb ?? null },
+    };
+  }
+
   async #handleHttp(request, response) {
     const url = new URL(request.url, 'http://localhost');
 
@@ -2088,8 +2394,8 @@ export class GameServer {
       response.setHeader('Vary', 'Origin');
       return this.#json(response, 403, this.#fehlerNutzlast('Origin nicht erlaubt'));
     }
-    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    response.setHeader('Access-Control-Allow-Headers', 'content-type');
+    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    response.setHeader('Access-Control-Allow-Headers', 'content-type, authorization');
     response.setHeader('Vary', 'Origin');
 
     if (request.method === 'OPTIONS') {
@@ -2182,6 +2488,9 @@ export class GameServer {
           mapSize: typeof body.mapSize === 'string' ? body.mapSize : 'mittel',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',
+          // Ist der Ersteller angemeldet, trägt sein Platz die Kontokennung —
+          // sonst zählte die Partie nicht, obwohl er eingeloggt ist.
+          hostKontoId: this.#kontoIdAusAnfrage(request),
           // Der Manager prüft jede Kennung und setzt Unbekanntes auf null —
           // eine ungültige Angabe darf das Anlegen nicht verhindern.
           sidegrades: Array.isArray(body.sidegrades) ? body.sidegrades : null,
@@ -2212,6 +2521,14 @@ export class GameServer {
         return this.#json(response, 400, this.#fehlerNutzlast(error.message));
       }
     }
+
+    /*
+     * Konten und Rangliste. Die Routen liegen in `#kontoRoute`, damit der
+     * HTTP-Pfad hier nicht um 150 Zeilen wächst; sie antworten nur auf
+     * `/api/konto*` und `/api/bestenliste`.
+     */
+    const kontoAntwort = await this.#kontoRoute(request, url);
+    if (kontoAntwort) return this.#json(response, kontoAntwort.status, kontoAntwort.body);
 
     if (this.serveStatic) {
       const handled = this.serveStatic(request, response, url);
@@ -2363,10 +2680,11 @@ export class GameServer {
     return true;
   }
 
-  #handleConnection(socket) {
+  #handleConnection(socket, konto = null) {
     // Der Aufrufer haelt dieses Objekt; die Nachrichtenstrecke setzt nur seine
     // Felder (`context.lobbyId` / `context.token`), sie ersetzt es nicht.
-    const context = { lobbyId: null, token: null };
+    // `konto` ist die Kontokennung aus dem Handshake (oder null = Gast).
+    const context = { lobbyId: null, token: null, konto };
     // Ohne diesen Zuhörer beendet ein Socket-Fehler (z. B. zu große Nachricht, `maxPayload`) als UNBEHANDELTE
     // Ausnahme den ganzen Prozess. `ws` schließt die Verbindung danach selbst (1009).
     socket.on('error', error => {
@@ -2541,7 +2859,17 @@ export class GameServer {
             // Nur DASS ein Token mitkam, nicht der Token selbst.
             hasToken: Boolean(message.token),
           });
-          const seat = this.#lobbies.join(lobbyId, { name: message.name ?? 'Spieler', token: message.token ?? null });
+          const seat = this.#lobbies.join(lobbyId, {
+            /*
+             * Angemeldet: Der Name kommt aus dem KONTO, nicht aus der
+             * Nachricht. Sonst könnte ein angemeldeter Spieler unter fremdem
+             * Namen in der Lobby stehen — und die Rangliste würde einen Namen
+             * führen, den er nicht besitzt.
+             */
+            name: context.konto?.name ?? message.name ?? 'Spieler',
+            token: message.token ?? null,
+            kontoId: context.konto?.id ?? null,
+          });
           // Felder setzen statt Objekt ersetzen — siehe die Anmerkung beim
           // Verlassen der Lobby oben. Der Aufrufer haelt dasselbe Objekt.
           context.lobbyId = lobbyId;
