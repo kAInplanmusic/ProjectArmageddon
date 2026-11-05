@@ -469,6 +469,10 @@ export class NetworkClient {
             preset: message.preset,
             kartentyp: message.kartentyp,
             orientation: message.orientation,
+            // Form und Stufe (2026-11-05): Ohne sie baute der Client 16:9, während
+            // der Server z. B. 4:3 spielt — zwei verschiedene Karten.
+            mapFormat: message.mapFormat,
+            mapSize: message.mapSize,
             gelaende: message.gelaende,
             biom: message.biom,
             kartenart: message.kartenart,

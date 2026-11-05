@@ -160,7 +160,10 @@ export function serializeLobby(lobby, session) {
     capacity: lobby.capacity,
     preset: lobby.preset,
     orientation: lobby.orientation ?? 'landscape',
-    // Ohne diese Felder entstand nach einem Neustart eine andere Karte/Besetzung (Audit 2026-10-13).
+    // Kartenform und -größe (2026-11-05): Ohne sie käme die Partie nach einem
+    // Neustart auf einer anderen Karte (und mit anderer Zugzeit) hoch.
+    mapFormat: lobby.mapFormat ?? '16:9',
+    mapSize: lobby.mapSize ?? 'mittel',
     kartentyp: lobby.kartentyp ?? null,
     biom: lobby.biom ?? null,
     unitsPerPlayer: lobby.unitsPerPlayer ?? null,
@@ -235,6 +238,8 @@ export function restoreLobby(saved, { lobbyManager, createSession, logger = null
     playersPerTeam: saved.playersPerTeam,
     preset: saved.preset,
     orientation: saved.orientation ?? 'landscape',
+    mapFormat: saved.mapFormat ?? saved.replay?.config?.mapFormat ?? null,
+    mapSize: saved.mapSize ?? saved.replay?.config?.mapSize ?? 'mittel',
     kartentyp: saved.kartentyp ?? saved.replay?.config?.kartentyp ?? null,
     biom: saved.biom ?? saved.replay?.config?.biom ?? null,
     unitsPerPlayer: saved.unitsPerPlayer ?? null,

@@ -18,7 +18,8 @@
  * @module replay
  */
 import { MatchController } from './match.js';
-import { MATCH_RULES } from '../shared/config/match.js';
+import { MATCH_RULES, ZUGZEIT_FASSUNG } from '../shared/config/match.js';
+import { getTurnDurationForPlayerCount } from './systems/turnSystem.js';
 import { KIT_STANDARD, KIT_KLASSE, normalisiereKit } from '../shared/config/loadouts.js';
 import { ZERSTOERUNG_STANDARD, ZERSTOERUNG_ALT, normalisiereZerstoerung } from '../shared/config/zerstoerung.js';
 import { WAFFEN_STANDARD, WAFFEN_ALT, normalisiereWaffen } from '../shared/config/waffen-fassung.js';
@@ -74,7 +75,9 @@ export class ReplayRecorder {
   constructor({
     seed, teams = 2, playersPerTeam = 2, preset = 'hills',
     maxRounds = MATCH_RULES.roundLimitBackstop, turnDurationMs = null, sidegrades = null, loadouts = null, turnPauseTicks = 0, turnReplayTicks = 0,
-    kartentyp = null, orientation = 'landscape', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
+    kartentyp = null, orientation = 'landscape', format = null, groesse = 'mittel', kit = KIT_STANDARD, zerstoerung = ZERSTOERUNG_STANDARD,
+    /** Zugzeitfassung im Kopf: fehlt sie in einer Datei, ist sie 1 (Spielerzahl-Regel, `fromJSON`). */
+    zugzeitFassung = ZUGZEIT_FASSUNG,
     waffen = WAFFEN_STANDARD, kisten = KISTEN_STANDARD, schaden = SCHADEN_STANDARD, gelaende = GELAENDE_STANDARD, biom = null, kartenart = null,
     guenther = GUENTHER_ALT, cookie = COOKIE_ALT, feuer = FEUER_ALT, bewegung = BEWEGUNG_ALT, zugregeln = ZUGREGELN_ALT, klassen = KLASSEN_ALT, bodenobjekte = BODENOBJEKTE_ALT, seil = SEIL_ALT,
     wind = WIND_ALT,
@@ -146,6 +149,16 @@ export class ReplayRecorder {
       // Karte: ohne Kartentyp und Ausrichtung spielte die Wiedergabe eine ANDERE Karte (Audit 2026-10-13).
       ...(kartentyp ? { kartentyp } : {}),
       ...(orientation && orientation !== 'landscape' ? { orientation } : {}),
+      /*
+       * Kartenform und -stufe (Entscheidung 2026-11-05). Nur aufnehmen, wenn sie
+       * von der Vorgabe abweichen — 16:9/mittel ist der Altstand und braucht
+       * kein Feld. Beide zusammen mit `zugzeitFassung` sind nötig, weil die
+       * Stufe seit Fassung 2 die ZUGZEIT bestimmt: Ohne sie spielte eine
+       * Wiedergabe mit 40 s statt 30 s und liefe auseinander.
+       */
+      ...(format && format !== '16:9' ? { mapFormat: format } : {}),
+      ...(groesse && groesse !== 'mittel' ? { mapSize: groesse } : {}),
+      zugzeitFassung: Number(zugzeitFassung) || 1,
       ...(hatSidegrades ? { sidegrades: [...sidegrades] } : {}),
       // Nur aufnehmen, wenn wirklich etwas gewählt wurde — sonst wären alte und
       // neue Aufzeichnungen ohne Grund verschieden.
@@ -333,6 +346,9 @@ export class ReplayRecorder {
      */
     const altRunden = parsed.config?.maxRounds === undefined ? { maxRounds: 30 } : {};
     const recorder = new ReplayRecorder({ seed: parsed.seed, ...parsed.config, ...altRunden, kit: parsed.config?.kit ?? KIT_KLASSE,
+      // Kartenform/-stufe liegen unter `mapFormat`/`mapSize` im Kopf; fehlt die Zugzeitmarke, gilt die alte Regel.
+      format: parsed.config?.mapFormat ?? null, groesse: parsed.config?.mapSize ?? 'mittel',
+      zugzeitFassung: parsed.config?.zugzeitFassung ?? 1,
       zerstoerung: parsed.config?.zerstoerung ?? ZERSTOERUNG_ALT, waffen: parsed.config?.waffen ?? WAFFEN_ALT,
       kisten: parsed.config?.kisten ?? KISTEN_ALT, schaden: parsed.config?.schaden ?? SCHADEN_ALT, gelaende: parsed.config?.gelaende ?? GELAENDE_ALT,
       guenther: parsed.config?.guenther ?? GUENTHER_ALT, cookie: parsed.config?.cookie ?? COOKIE_ALT, feuer: parsed.config?.feuer ?? FEUER_ALT,
@@ -416,6 +432,19 @@ export class ReplayPlayer {
   /** Setzt die Wiedergabe an den Anfang zurück. */
   reset() {
     const config = this.recorder.config;
+    /*
+     * Zugzeit-Fassung (2026-11-05). Neue Köpfe tragen `zugzeitFassung: 2` und
+     * leiten die Zugzeit aus der Kartenstufe ab; `turnDurationMs` steht ohnehin
+     * im Kopf und schlägt alles. Ein Kopf OHNE Marke stammt aus der Zeit der
+     * Spielerzahl-Regel — fehlt dort die Dauer, gilt die alte Ableitung
+     * (`getTurnDurationForPlayerCount`), sonst liefe die Aufzeichnung mit 40 s
+     * statt 20 s und ihr Hash änderte sich (AGENTS.md §2).
+     */
+    const zugzeitFassung = Number(config.zugzeitFassung) || 1;
+    const turnDurationMs = config.turnDurationMs
+      ?? (zugzeitFassung >= ZUGZEIT_FASSUNG
+        ? null
+        : getTurnDurationForPlayerCount(config.teams * config.playersPerTeam));
     this.match = new MatchController({
       seed: this.recorder.seed,
       teams: config.teams,
@@ -439,9 +468,11 @@ export class ReplayPlayer {
       bodenobjekte: config.bodenobjekte,
       seil: config.seil,
       wind: config.wind,
-      ...(config.turnDurationMs ? { turnDurationMs: config.turnDurationMs } : {}),
+      ...(turnDurationMs ? { turnDurationMs } : {}),
       ...(config.kartentyp ? { kartentyp: config.kartentyp } : {}),
       ...(config.orientation ? { orientation: config.orientation } : {}),
+      ...(config.mapFormat ? { format: config.mapFormat } : {}),
+      ...(config.mapSize ? { groesse: config.mapSize } : {}),
       ...(config.turnPauseTicks ? { turnPauseTicks: config.turnPauseTicks, turnReplayTicks: config.turnReplayTicks ?? 0 } : {}),
       /*
        * Sidegrades aus dem Kopf — oder keine.

@@ -57,6 +57,21 @@ import { SEIL_STANDARD, SEIL } from '../shared/config/seil.js';
 import { WIND_STANDARD } from '../shared/config/wind.js';
 import { ZUGREGELN_STANDARD, ZUGREGELN } from '../shared/config/zugregeln.js';
 
+/**
+ * Kartenfelder einer Lobby für Nachrichten an den Client.
+ *
+ * `orientation` bleibt für den Altcode (und alte Clients); `mapFormat`/`mapSize`
+ * sind die Angaben seit 2026-11-05 und bestimmen Maße UND Zugzeit. Eine
+ * gesicherte Lobby von vorher hat die Felder nicht — dann gelten die Vorgaben.
+ */
+function kartenFelder(lobby) {
+  return {
+    orientation: lobby.orientation ?? 'landscape',
+    mapFormat: lobby.mapFormat ?? '16:9',
+    mapSize: lobby.mapSize ?? 'mittel',
+  };
+}
+
 /*
  * Der Simulationstakt kommt aus `src/shared/config/network.js` — dort steht er
  * EINMAL, und der Client liest dieselbe Zahl. Hier stand früher ein eigenes
@@ -151,6 +166,9 @@ class LobbySession {
       // damit alle Teilnehmer dieselbe Karte bekommen.
       kartentyp: lobby.kartentyp ?? null,
       orientation: lobby.orientation ?? 'landscape',
+      // Kartenform und -stufe (2026-11-05): Sie bestimmen Maße und Zugzeit.
+      format: lobby.mapFormat ?? null,
+      groesse: lobby.mapSize ?? 'mittel',
       /*
        * Sidegrades aus der Lobby-Konfiguration. Die Wahl kommt vom Ersteller
        * (`POST /api/lobby/create`) und ist Teil der Match-Konfiguration —
@@ -195,6 +213,10 @@ class LobbySession {
       preset: lobby.preset,
       kartentyp: lobby.kartentyp ?? null,
       orientation: lobby.orientation ?? 'landscape',
+      // Form und Stufe in den Kopf: Ohne sie spielte die Wiedergabe eine andere
+      // Karte — und seit Fassung 2 auch mit einer anderen Zugzeit.
+      format: this.match.mapFormat,
+      groesse: this.match.groesse,
       maxRounds: this.match.maxRounds,
       turnDurationMs: this.match.turnDurationMs,
       turnPauseTicks: this.match.turnPauseTicks,
@@ -672,7 +694,7 @@ class LobbySession {
       seed: this.match.seedManager.baseSeed,
       preset: this.lobby.preset,
       kartentyp: this.lobby.kartentyp ?? null,
-      orientation: this.lobby.orientation ?? 'landscape',
+      ...kartenFelder(this.lobby),
       ...this.gelaendeFelder(),
       entityId: this.lobby.seats.find(seat => seat.token === token)?.entityId ?? null,
       // Alle Figuren dieses Beitrags (Matcharten: ein ganzes Team).
@@ -719,7 +741,7 @@ class LobbySession {
       seed: this.match?.seedManager?.baseSeed ?? null,
       preset: this.lobby.preset,
       kartentyp: this.lobby.kartentyp ?? null,
-      orientation: this.lobby.orientation ?? 'landscape',
+      ...kartenFelder(this.lobby),
       ...this.gelaendeFelder(),
       laeuft: this.laeuft,
       teams: this.lobby.teams,
@@ -1939,7 +1961,7 @@ export class GameServer {
       preset: lobby.preset,
       // Der Client baut die Karte aus Seed UND Fassung: ohne diese Felder fiele er auf Fassung 1 zurück (Hash-Abweichung).
       kartentyp: lobby.kartentyp ?? null,
-      orientation: lobby.orientation ?? 'landscape',
+      ...kartenFelder(lobby),
       ...session.gelaendeFelder(),
       token: seat.token,
       /*
@@ -2154,6 +2176,10 @@ export class GameServer {
           biom: typeof body.biom === 'string' ? body.biom : null,
           kartenart: typeof body.kartenart === 'string' ? body.kartenart : null,
           orientation: body.orientation ?? 'landscape',
+          // Form und Stufe (2026-11-05). Der Lobby-Manager prüft beide tolerant
+          // und setzt Unbekanntes auf die Vorgabe 16:9/mittel.
+          mapFormat: typeof body.mapFormat === 'string' ? body.mapFormat : null,
+          mapSize: typeof body.mapSize === 'string' ? body.mapSize : 'mittel',
           seed: body.seed === undefined || body.seed === '' ? undefined : Number(body.seed),
           hostName: body.name ?? 'Host',
           // Der Manager prüft jede Kennung und setzt Unbekanntes auf null —
@@ -2170,6 +2196,8 @@ export class GameServer {
           preset: created.lobby.preset,
           kartentyp: created.lobby.kartentyp,
           orientation: created.lobby.orientation,
+          mapFormat: created.lobby.mapFormat,
+          mapSize: created.lobby.mapSize,
           seed: created.lobby.seed,
           // Nur die gesetzten, damit das Log nicht mit null-Werten zugestellt wird.
           sidegrades: created.lobby.sidegrades?.filter(Boolean) ?? [],

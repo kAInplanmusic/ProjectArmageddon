@@ -51,6 +51,9 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
     seed: payload.seed ?? rueckfall.seed ?? null,
     preset: payload.preset ?? presetRueckfall,
     orientation: payload.orientation ?? orientationRueckfall,
+    // Form und Stufe seit 2026-11-05 — fehlen sie (älterer Server), gelten 16:9/mittel.
+    mapFormat: payload.mapFormat ?? null,
+    mapSize: payload.mapSize ?? null,
     kartentyp: payload.kartentyp ?? kartentypRueckfall,
     gelaende: payload.gelaende ?? GELAENDE_ALT,
     biom: payload.biom ?? null,
@@ -67,7 +70,8 @@ export function terrainQuelleFuer(payload = {}, rueckfall = {}) {
  * @param {{gelaende?:number, biom?:string|null, zerstoerung?:number|null}} [fassung] - Geländefassung, Biomwahl und Zerstörungsfassung des Servers
  */
 export function buildTerrainForSeed(seed, preset = 'hills', orientation = 'landscape', kartentyp = null, fassung = {}) {
-  const masse = mapSizeFor(orientation);
+  // Form und Stufe des Servers (2026-11-05) schlagen die alte Ausrichtung.
+  const masse = mapSizeFor(fassung.mapFormat ?? orientation, fassung.mapSize ?? 'mittel');
   const manager = new MatchSeedManager(seed);
   /*
    * DERSELBE GENERATOR WIE DER SERVER, wenn eine autonome Karte verlangt ist.

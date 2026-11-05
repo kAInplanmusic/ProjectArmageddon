@@ -9,7 +9,8 @@
  */
 import { bereinigeFraktionen } from '../shared/config/darstellung.js';
 import { randomUUID, randomBytes } from 'node:crypto';
-import { ORIENTATIONS, TEAM_COLORS } from '../engine/match.js';
+import { ORIENTATIONS, TEAM_COLORS, normalisiereFormat, normalisiereGroesse, ausrichtungFuerFormat } from '../engine/match.js';
+import { getTurnDurationForSize } from '../engine/systems/turnSystem.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
 import { normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
 import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
@@ -130,6 +131,8 @@ export class LobbyManager {
     teams = 2, playersPerTeam = null, unitsPerPlayer = null, preset = 'hills', kartentyp = null,
     seed = undefined, hostName = 'Host', orientation = 'landscape', sidegrades = null,
     loadouts = null, fraktionen = null, biom = null, kartenart = null, wiederhergestellt = false,
+    /* Kartenform (`24:9` … `1:1`) und Größe (`klein`/`mittel`/`gross`, `krieg` nur lesbar). */
+    mapFormat = null, mapSize = 'mittel',
   } = {}) {
     /*
      * Grenzen der Teamzahl.
@@ -232,20 +235,39 @@ export class LobbyManager {
     if (capacity > MAX_LOBBY_FIGURES) {
       throw new Error(`Kapazität überschreitet ${MAX_LOBBY_FIGURES} Figuren`);
     }
-    if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);
     /*
-     * Nur Querformat (Entscheidung des Auftraggebers 2026-11-04: „Nimm Hochformat ganz raus").
+     * Kartenform und -größe (Entscheidung 2026-11-05, Paket A2).
      *
-     * Eine NEUE Lobby mit `portrait` wird abgelehnt, nicht still auf Querformat gesetzt: Wie bei
-     * einer unbekannten Ausrichtung wäre ein stiller Ersatz eine andere Karte als bestellt. Die
-     * Engine kennt das Hochformat weiter (`MAP_SIZES.portrait`), damit alte Aufzeichnungen
-     * unverändert laufen (AGENTS.md §2). Ausnahme ist die Wiederherstellung nach einem Neustart
-     * (`persistence.js`, `wiederhergestellt: true`): Das Match lief schon vor der Entscheidung und
-     * darf zu Ende gespielt werden.
+     * Sieben Formate zu drei Stufen; `krieg` bleibt nur zum Lesen alter
+     * Aufzeichnungen. Beide Angaben werden TOLERANT geprüft: Eine unbekannte
+     * Form oder Stufe fällt auf die Vorgabe zurück (16:9/mittel), wie die übrige
+     * Konfiguration — ein Tippfehler darf kein Match verhindern.
+     *
+     * Eine ausdrückliche Form ersetzt die alte Ausrichtung: Sie bestimmt, ob
+     * die Karte hoch oder quer steht. Die Regel „neue Partien nur quer"
+     * (2026-11-04) gilt deshalb nur noch für Lobbys OHNE Formangabe; die
+     * sieben Formate schließen Hochformate ausdrücklich ein.
      */
-    if (orientation !== 'landscape' && !wiederhergestellt) {
-      throw new Error('Hochformat wird nicht mehr angeboten: neue Partien nur im Querformat');
+    const formGewaehlt = typeof mapFormat === 'string' && mapFormat.length > 0;
+    if (!formGewaehlt) {
+      if (!ORIENTATIONS.includes(orientation)) throw new Error(`Unbekannte Ausrichtung: ${orientation}`);
+      /*
+       * Nur Querformat (Entscheidung des Auftraggebers 2026-11-04: „Nimm Hochformat ganz raus").
+       *
+       * Eine NEUE Lobby mit `portrait` wird abgelehnt, nicht still auf Querformat gesetzt: Wie bei
+       * einer unbekannten Ausrichtung wäre ein stiller Ersatz eine andere Karte als bestellt. Die
+       * Engine kennt das Hochformat weiter (`MAP_SIZES['9:16']`), damit alte Aufzeichnungen
+       * unverändert laufen (AGENTS.md §2). Ausnahme ist die Wiederherstellung nach einem Neustart
+       * (`persistence.js`, `wiederhergestellt: true`): Das Match lief schon vor der Entscheidung und
+       * darf zu Ende gespielt werden.
+       */
+      if (orientation !== 'landscape' && !wiederhergestellt) {
+        throw new Error('Hochformat wird nicht mehr angeboten: neue Partien nur im Querformat');
+      }
     }
+    const kartenformat = normalisiereFormat(formGewaehlt ? mapFormat : null, orientation);
+    const kartenGroesse = normalisiereGroesse(mapSize);
+    const ausrichtung = formGewaehlt ? ausrichtungFuerFormat(kartenformat) : orientation;
 
     /*
      * Sidegrades prüfen — aber TOLERANT.
@@ -318,7 +340,13 @@ export class LobbyManager {
       kartenart: normalisiereKartenart(kartenart),
       // Ausrichtung gehört zur Lobby: sie bestimmt die Kartengröße und muss für
       // alle Teilnehmer dieselbe sein.
-      orientation,
+      orientation: ausrichtung,
+      // Kartenform und -stufe (2026-11-05): Sie bestimmen Maße UND Zugzeit.
+      mapFormat: kartenformat,
+      mapSize: kartenGroesse,
+      // Die Zugzeit kommt aus DERSELBEN Quelle wie im Motor (30/40/50 s) —
+      // die Spielerzahl beeinflusst sie nicht mehr.
+      turnDurationMs: getTurnDurationForSize(kartenGroesse),
       // Sidegrades je Spielerplatz — Teil der Match-Konfiguration wie `preset`.
       sidegrades: geprüfteSidegrades,
       // Klassenwahl je Spielerplatz — ebenfalls Konfiguration, kein Zufall.
@@ -392,6 +420,11 @@ export class LobbyManager {
       capacity: lobby.capacity,
       preset: lobby.preset,
       orientation: lobby.orientation,
+      // Form und Stufe samt Zugzeit — die Lobby zeigt damit dieselbe Zahl, die
+      // der Motor durchsetzt (eine Quelle: `getTurnDurationForSize`).
+      mapFormat: lobby.mapFormat ?? '16:9',
+      mapSize: lobby.mapSize ?? 'mittel',
+      turnDurationMs: getTurnDurationForSize(lobby.mapSize),
       // Die Sidegrades gehören in die Beschreibung: Ohne sie sähe der Client
       // nicht, mit welchem Profil die Figuren antreten.
       sidegrades: Array.isArray(lobby.sidegrades) ? [...lobby.sidegrades] : null,
