@@ -11,8 +11,12 @@
  * @module spawnManager
  */
 
-import { CLASS_IDS, ARCHETYPE_IDS, combatProfile } from '../shared/config/classes.js';
-import { getStartWaffen, getStartMunition, KIT_STANDARD } from '../shared/config/loadouts.js';
+import {
+  ARCHETYPE_IDS, combatProfile, istKlassenfassungNeu, klassenIds, klassenKennung,
+} from '../shared/config/classes.js';
+import {
+  getStartWaffen, getStartWaffenMitKlasse, getStartMunition, KIT_STANDARD,
+} from '../shared/config/loadouts.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
 
 /**
@@ -74,9 +78,16 @@ export function erzeugeSpieler(quelle) {
      * Ohne Wahl greift die alte Regel: Ein Match ohne `loadouts` verläuft
      * exakt wie bisher, ebenso ein Replay aus einer älteren Fassung.
      */
-    const wahl = quelle.resolveLoadout(index, quelle.loadouts[index] ?? null);
-    const classId = CLASS_IDS.indexOf(wahl.classId);
-    const archetypeId = ARCHETYPE_IDS.indexOf(wahl.archetypeId);
+    const wahl = quelle.resolveLoadout(index, quelle.loadouts[index] ?? null, quelle.klassen);
+    const neu = istKlassenfassungNeu(quelle.klassen);
+    const ids = klassenIds(quelle.klassen);
+    const classId = ids.indexOf(wahl.classId);
+    const archetypeId = neu ? 0 : ARCHETYPE_IDS.indexOf(wahl.archetypeId);
+    // Platz innerhalb der Zeile (0..2): wählt in Fassung 3 deterministisch einen
+    // der drei Charakterbögen der Klasse (`charakterFuer(fraktion, klasse, platz)`).
+    // Bewusst NICHT `index % 3`: Das wäre derselbe Index wie die Klasse und
+    // zeigte je Klasse immer nur denselben Bogen (die alte Diagonalen-Falle).
+    const klassenPlatz = Math.floor(index / 3) % 3;
 
     const x = Math.round(spacing * (index + 1));
     /*
@@ -106,7 +117,12 @@ export function erzeugeSpieler(quelle) {
     const sidegradeId = quelle.sidegrades[index] ?? null;
     // Leben kommt aus dem gemeinsamen Kampfprofil (classes.js) — nicht aus
     // einer zweiten, hier nachgebauten Multiplikation.
-    const profile = combatProfile(CLASS_IDS[classId], ARCHETYPE_IDS[archetypeId], sidegradeId, quelle.klassen);
+    const profile = combatProfile(
+      klassenKennung(classId, quelle.klassen),
+      neu ? null : ARCHETYPE_IDS[archetypeId],
+      sidegradeId,
+      quelle.klassen,
+    );
     const maxHealth = Math.round(quelle.baseHealth * profile.healthMultiplier);
 
     quelle.world.addComponent(entityId, 'Position', { x: startX, y });
@@ -118,9 +134,14 @@ export function erzeugeSpieler(quelle) {
     quelle.world.addComponent(entityId, 'Input', { angle: 0, power: 0 });
     quelle.world.addComponent(entityId, 'Rotation', { angle: 0 });
 
+    const klasse = klassenKennung(classId, quelle.klassen);
     // Start-Kit: Fassung 1 = Klassenloadout (alte Replays), Fassung 2 = Reserve + zwei
-    // Common-Waffen aus Seed und Platz, Fassung 3 dazu eine schwache Flächenwaffe — klassenunabhängig. `register` legt die Reserve dazu.
-    const startWaffen = getStartWaffen(CLASS_IDS[classId], kit, { seed: quelle.seed, platz: index });
+    // Common-Waffen aus Seed und Platz, Fassung 3 dazu eine schwache Flächenwaffe — klassenunabhängig.
+    // Klassenfassung 3 legt zusätzlich die klassenprägende Waffe dazu (Nahkampf/Fernkampf/Okkultist).
+    // `register` legt die Reserve dazu.
+    const startWaffen = neu
+      ? getStartWaffenMitKlasse(klasse, kit, { seed: quelle.seed, platz: index })
+      : getStartWaffen(klasse, kit, { seed: quelle.seed, platz: index });
     quelle.inventory.register(entityId, startWaffen, { ammoCaps: getStartMunition(kit, startWaffen) });
 
     eintraege.push({
@@ -128,6 +149,8 @@ export function erzeugeSpieler(quelle) {
       teamId,
       classId,
       archetypeId,
+      /** Platz in der Zeile (0..2) — Fassung 3 wählt damit den Charakterbogen. */
+      platz: klassenPlatz,
       /**
        * Der Sidegrade des Spielers (oder null).
        *

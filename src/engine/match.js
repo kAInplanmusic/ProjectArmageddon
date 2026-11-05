@@ -34,7 +34,7 @@ import {
 import { SIMULATION_HZ } from '../shared/config/network.js';
 import { MATCH_RULES, drawValhallaRound, valhallaTickForRound, drawValhallaOmen, computeContractionSteps, computeKnockbackBonusPercent } from '../shared/config/match.js';
 import { getTurnDurationForSize } from './systems/turnSystem.js';
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout } from '../shared/config/classes.js';
+import { combatProfile, CLASS_IDS, ARCHETYPE_IDS, resolveLoadout, klassenKennung } from '../shared/config/classes.js';
 import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_FAIR, WAFFEN_ZUENDER, SELBSTSCHADEN_GRENZE, normalisiereWaffen, getWaffe } from '../shared/config/waffen-fassung.js';
 import { KISTEN_STANDARD, normalisiereKisten } from '../shared/config/kisten.js';
 import { wendeStossAn } from './stoss.js';
@@ -1104,7 +1104,8 @@ export class MatchController {
   #mobilityFactor(playerId) {
     const player = this.#players.find(entry => entry.entityId === playerId);
     const profil = combatProfile(
-      CLASS_IDS[player?.classId ?? 0], ARCHETYPE_IDS[player?.archetypeId ?? 0],
+      klassenKennung(player?.classId ?? 0, this.klassen),
+      player?.archetypeId ?? 0,
       player?.sidegradeId ?? null, this.klassen,
     );
     const abweichung = profil.mobilityMultiplier - 1;
