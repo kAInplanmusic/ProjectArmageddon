@@ -33,6 +33,7 @@
 import { MatchController, MAP_WIDTH, BASE_HEALTH } from '../src/engine/match.js';
 import { WEAPONS } from '../src/shared/config/weapons.js';
 import { CLASS_IDS, combatProfile } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
 
 const args = Object.fromEntries(process.argv.slice(2).filter(a => a.startsWith('--'))
@@ -54,7 +55,7 @@ export const ZU_STARK = 2;
 /** Gesundheit der drei Klassen, genau wie der Motor sie rechnet. */
 export function klassenGesundheit() {
   const out = {};
-  for (const k of CLASS_IDS) out[k] = Math.round(BASE_HEALTH * combatProfile(k).healthMultiplier);
+  for (const k of CLASS_IDS) out[k] = Math.round(BASE_HEALTH * combatProfile(k, null, null, KLASSEN_STANDARD).healthMultiplier);
   return out;
 }
 
