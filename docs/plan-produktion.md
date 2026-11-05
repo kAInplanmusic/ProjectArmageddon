@@ -57,19 +57,24 @@ Leitfrage je Punkt: Was macht Partien flüssiger, spannender, verständlicher?
 Höchstens drei Agenten gleichzeitig (Nutzungslimit). Jede Welle endet mit Merge, Tests und Push nach
 `main`; der Hauptagent prüft CI und trägt den Stand in `docs/TODO-SSOT.md` ein.
 
-**Hinweis 2026-11-05:** Das Wochenlimit der Agenten ist erreicht (zurückgesetzt 2026-11-09, 18 Uhr UTC). Zwischenstände von Welle 0 liegen auf `wip/touch-gross`, `wip/deploy-reife`, `wip/auslieferung` und werden danach fertig geprüft und nach `main` gebracht.
+**Stand 2026-11-05 (Abend):** Welle 0 und die Welle-1-Pakete A, B (GP-4) und D sind nach `main`
+gebracht, geprüft und gepusht. Die Zwischenstände `wip/touch-gross` (schon vorher), `wip/deploy-reife`
+und `wip/auslieferung` sind zusammengeführt; die Branches `merge/deploy-reife` und
+`merge/auslieferung` sind damit erledigt. Offen sind Welle 2 (D-Rest, E-Rest, F) und Welle 3.
 
-**Welle 0 (läuft seit 2026-11-04):** große Touch-Geräte · Deploy-Reife (Deploy-Plan, Version, Paket,
+**Welle 0 (erledigt 2026-11-05):** große Touch-Geräte · Deploy-Reife (Deploy-Plan, Version, Paket,
 Rollback, Sicherung, Dockerfile, Caddy) · Auslieferung (WebP-Kulissen, Bundle-Grenze, Lighthouse).
+Belege: `docs/deploy-plan.md`, `docs/ladezeit.md`, Tests `bauinfo`, `container-dateien`,
+`proxy-adresse`, `release-paket`, `release-skripte`, `systemd-vorlagen`, `backdrops`, `bundle-gate`.
 
 **Welle 1**
-- **A Konten & Rangliste:** Login (Name+PW), SQLite-Speicher, Elo-Rangliste, Online-Kennzahlen im Server, Konto löschen, Admin-Passwort-Skript, RT-1 Fortsetzen nach Neuladen, Asche/Basalt im Online-Stand. Menü: Anmelden/Registrieren, Rangliste.
-- **B Waffenfassung 15 & Balance:** GP-1, GP-2, GP-4 (3–4 Treffer, Fassung 15 `WAFFEN_TEMPO`), N-17, N-18, AERO-Windfaktor (Fassung 14), ENG-1 Zufallsströme, MINEN-1-Regeln; Messung vorher/nachher; Marken nach §2.
+- **A Konten & Rangliste (erledigt 2026-11-05):** Login (Name+PW), Speicher, Elo-Rangliste, Online-Kennzahlen im Server, Konto löschen, Admin-Passwort-Skript, RT-1 Fortsetzen nach Neuladen, Asche/Basalt im Online-Stand. Menü: Anmelden/Registrieren, Rangliste.
+- **B Waffenfassung 15 & Balance:** GP-4 (3–4 Treffer, Fassung 15 `WAFFEN_TEMPO`) **erledigt 2026-11-05** (Beleg `docs/balance-tempo-2026-11-05.md`); AERO-Windfaktor (Fassung 14) und ENG-1 **erledigt**; offen aus B: GP-1, GP-2, N-17, N-18, MINEN-1-Regeln.
 - **C Figuren & Kamera:** FIGUREN-B, KAMERA C1–C6, N-10 Schussbewegungen, N-09 Geschosszellen, Minen-Icon/-Bild, N-04 automatische Sprite-Prüfung.
 
 **Welle 2**
 - **D Gelände & Optik:** GELAENDE-1 (Fassung 10), N-30, N-31, N-32/N-35 prozedural, N-34, ASSETS-1, WETTER-1, KULISSE-1, GRAFIKSTUFE-1, LOOK-3.
-- **E Klang & Klassen:** AUDIO-1, automatische Klangprüfung, Donner nach Entfernung, Mine/Fass-Klang, Hör-Checkliste; Klassenfassung 3 (Scout).
+- **E Klang & Klassen:** Klassenfassung 3 **erledigt 2026-11-05** (Nahkampf/Fernkampf/Okkultist, Standard); offen: AUDIO-1-Rest, automatische Klangprüfung, Donner nach Entfernung, Mine/Fass-Klang, Hör-Checkliste.
 - **F Oberfläche:** UI-REST (Endbildschirm, Rangliste-Ansicht, Home, Lobby-Karten, Spielerliste, Splash, Tokens).
 
 **Welle 3**
