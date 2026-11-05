@@ -195,6 +195,7 @@ Zahl offener Punkte (Zeilen mit ID): siehe Zusammenfassung unten.
 | N-25 | Fahrzeuge/betretbare Gebäude (Worms W.M.D), Level-Editor, kurze Fraktions-Kampagne mit 9 Fraktionen/81 Charakteren | Vorschlag, nachrangig/optional | docs/vergleich-alternativspiele-2026-10-19/vergleich.md | Spiel |
 | N-26 | Mehr NPCs neben Günther/Cookie (Skalierung: "mehr NPCs fehlen"); Verhalten ist Inhalt, nicht Technik | Vorschlag, Status ungeprüft | docs/skalierung.md, docs/recherche/npc-ki.md | Spiel |
 | N-27 | Tiere-Balance: Messwerkzeug `npm run balance:tiere` vorhanden, Fassung 3 gemessen (0 Tiertode in 360 Partien); offen nur Nachmessung nach künftigen Änderungen, nichts als Todo benannt | Status ungeprüft (kein offener Punkt in Quelle) | docs/tiere-balance.md | QA |
+| N-51 | Günther/Cookie (Paket D): 30 benannte Perks (Günther-Fassung 4, `config/guentherPerks.js`) und 30 benannte Mali (Cookie-Fassung 4, `config/cookieMali.js`) wirken im Motor, stehen im HUD-Protokoll und tragen die Marke im Replay-Kopf. Fassungen 1–3 bitgleich. Offen: Nachmessung der Tier-Balance mit Fassung 4 (`npm run balance:tiere`) | erledigt (Code+Tests), Balance-Nachmessung offen | docs/anforderungen-2026-11-05.md §§1.6–1.7, 3, 5; docs/tiere-balance.md | Spiel |
 
 ### Spiel/Grafik/Audio: Terrain, Biome, Spielgefühl, Klang (Audit 2026-10-30)
 
