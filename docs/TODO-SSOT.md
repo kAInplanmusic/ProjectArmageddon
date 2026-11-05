@@ -25,6 +25,7 @@ Regeln: Nichts erfinden. „Status ungeprüft“ heißt: aus einem älteren Beri
 - 2026-11-03: Seil (SEIL-1): ändert die Entscheidung vom 2026-11-02 — der Agent nähert die fehlenden Konstanten selbst an (Recherche, sonst begründete Schätzung, alles als Annäherung dokumentiert und in einer Datei einstellbar), Handhabung wie Worms; der Auftraggeber testet.
 - 2026-11-03: Seil: Standardstufe 5 bleibt; Schwerkraft am Seil bleibt wie bei den Figuren (0,42), nicht das langsamere WA-Zeitmaß.
 - 2026-11-04: Nur Querformat („Hochformat ganz raus, nur quer und fertig“): kein Hochformat in Menü, Lobby und Server; Telefone hochkant zeigen „Bitte Gerät drehen“; alte Hochformat-Replays bleiben abspielbar. Musikschalter und ähnliche selten gebrauchte Knöpfe (Musik, Effekte, Match verlassen, Aufgeben) liegen im ⚙-Einstellungsmenü der Kopfzeile.
+- 2026-11-05: Auftrag „alles bis zur Produktionsreife“; Entscheidungen, die beim Auftraggeber lagen, trifft der Agent nach Spaß/Flow (Liste und Begründung: `docs/plan-produktion.md` Abschnitt 1). Es gibt keine Bots (keine KI-Gegner). Login nur Name + Passwort; dauerhafte Rangliste. Offen beim Auftraggeber nur: Hosting (§5/§7), Bildbudget über 15 USD, Hörabnahme/Playtest.
 
 ## Anhang-Hinweis: Referenzwissen bleibt als Dokument erhalten
 Spezifikationen, Betriebs- und Biom-Dokus, Balance-Daten und alles, was Tests/Skripte per Pfad lesen, bleiben bestehen (Liste am Ende, Abschnitt 5).
