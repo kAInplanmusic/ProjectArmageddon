@@ -221,6 +221,12 @@ archiv_erstellen() {
     if [ "$PA_SNAPSHOT_MIT_ASSETS" = "yes" ]; then ausschluss=(); fi
     git -c "safe.directory=$ROOT" -C "$ROOT" archive HEAD -- src scripts package.json package-lock.json index.html \
         vite.config.mjs public deploy "${ausschluss[@]}" 2>/dev/null | gzip > "$stage/app/quelltext.tar.gz" || true
+  elif [ -f "$ROOT/RELEASE.json" ]; then
+    # Release-Ablage (scripts/release/deploy.sh): kein .git, aber RELEASE.json nennt Version,
+    # Git-Stand und Prüfsummen jeder Datei — damit ist der Programmstand eindeutig.
+    cp "$ROOT/RELEASE.json" "$stage/app/RELEASE.json"
+    rev=$(sed -n 's/.*"gitSha": *"\([^"]*\)".*/\1/p' "$ROOT/RELEASE.json" | head -n1)
+    rev="${rev:-unbekannt}"
   else
     echo "kein git-Arbeitsverzeichnis unter $ROOT — Programmstand nicht erfasst" > "$stage/app/HINWEIS.txt"
   fi

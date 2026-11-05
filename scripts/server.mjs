@@ -91,6 +91,7 @@ try {
   laufend = ergebnis.server;
 
   console.log(`ProjectArmageddon-Server läuft auf http://${host}:${port}`);
+  console.log(`  Version: ${laufend.bauinfo?.version} (Stand ${laufend.bauinfo?.gitSha}, Quelle ${laufend.bauinfo?.quelle})`);
   console.log(`  Wiederhergestellt: ${ergebnis.restored ? 'Zustand geladen' : 'keine gespeicherten Lobbys'}`);
   console.log(`  Persistenz: ${process.env.PA_PERSISTENCE === 'off' ? 'AUS' : statePath}`);
   console.log(`  Beenden mit Strg+C.`);

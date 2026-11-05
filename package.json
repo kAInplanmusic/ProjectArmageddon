@@ -1,6 +1,6 @@
 {
   "name": "projectarmageddon",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "description": "Deterministic 2D artillery tactics prototype for the browser.",
   "type": "module",
   "main": "src/server/index.js",
@@ -61,6 +61,8 @@
     "balance:tiere": "node scripts/tiere-verteilung.mjs",
     "balance:bot": "node scripts/bot-partien.mjs",
     "server": "node scripts/server.mjs",
+    "release:paket": "node scripts/release/paket.mjs",
+    "release:smoke": "node scripts/release/smoke.mjs",
     "replay": "node scripts/replay.mjs",
     "snapshot": "bash scripts/betrieb/snapshot.sh",
     "icons": "python3 scripts/create-weapon-icons.py",

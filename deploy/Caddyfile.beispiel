@@ -1,0 +1,100 @@
+# =============================================================================
+#  Caddy vor ProjectArmageddon — VORLAGE (DEP-3, docs/deploy-plan.md Abschnitt 6)
+# =============================================================================
+#  Nicht installiert, läuft nirgends (AGENTS.md §5). Auf dem Knoten:
+#
+#    install -m 644 deploy/Caddyfile.beispiel /etc/caddy/Caddyfile
+#    # PA_DOMAIN und PA_ACME_EMAIL in /etc/default/caddy (oder Drop-in der Unit) setzen
+#    caddy validate --config /etc/caddy/Caddyfile
+#    systemctl reload caddy
+#
+#  Zielbild: EIN Ursprung (single-origin). Caddy terminiert TLS auf 443 und
+#  reicht ALLES an den Spielserver auf 127.0.0.1:3000 durch — die Oberfläche
+#  (dist/), die Lobby-API (/api) und den WebSocket (/ws). `reverse_proxy`
+#  leitet WebSocket-Upgrades ohne Zusatz weiter.
+#
+#  Platzhalter (Entscheidung des Auftraggebers, nie erfunden):
+#    {$PA_DOMAIN}      z. B. spiel.example — Domain, deren DNS auf den Knoten zeigt
+#    {$PA_ACME_EMAIL}  Kontakt für Let's Encrypt
+#
+#  Passend dazu in /etc/projectarmageddon/betrieb.env:
+#    PA_ERLAUBTE_ORIGINS=https://<PA_DOMAIN>
+#    PA_EIGENER_ORIGIN=https://<PA_DOMAIN>
+#  (sonst nimmt der Server Lobby-API und WebSocket von jedem Origin an).
+# =============================================================================
+
+{
+	email {$PA_ACME_EMAIL}
+	# Kein Admin-Endpunkt nach außen (Vorgabe ist localhost:2019; hier ausdrücklich).
+	admin localhost:2019
+}
+
+{$PA_DOMAIN} {
+	# Kompression für HTML/JS/CSS/JSON. Bilder (webp/jpg/png) und Ton (mp3) sind
+	# schon komprimiert — Caddy überspringt sie anhand des Inhaltstyps nicht von
+	# selbst, deshalb die Liste.
+	encode {
+		zstd
+		gzip 6
+		match {
+			header Content-Type text/*
+			header Content-Type application/json*
+			header Content-Type application/javascript*
+			header Content-Type application/manifest+json*
+			header Content-Type image/svg+xml*
+		}
+	}
+
+	# Sicherheits-Header für die ganze Seite.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		# CSP: ERST NACH EINER PROBE scharf schalten (Report-Only zeigt Verstöße in
+		# der Browser-Konsole, blockiert aber nichts). Der Client lädt alles vom
+		# eigenen Ursprung und verbindet sich per wss:// mit /ws.
+		Content-Security-Policy-Report-Only "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' wss://{$PA_DOMAIN}; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		-Server
+	}
+
+	# Gebaute Dateien mit Inhalts-Hash im Namen dürfen lange im Cache liegen;
+	# index.html und version.json nie (sonst sieht ein Spieler nach einem Deploy
+	# den alten Client gegen den neuen Server).
+	@unveraenderlich path /assets/*
+	header @unveraenderlich Cache-Control "public, max-age=31536000, immutable"
+	@frisch path / /index.html /version.json
+	header @frisch Cache-Control "no-cache"
+
+	# Lobby-API: Körper klein halten (der Server begrenzt ebenfalls, 400 bei Überlauf).
+	@api path /api/*
+	request_body @api {
+		max_size 16KB
+	}
+
+	# Betriebsendpunkt nicht nach außen: /healthz (Zähler, Laufzeit, Version) nur
+	# über 127.0.0.1:3000 auf dem Knoten (Idle-Bremse, Smoke-Test, Überwachung).
+	@intern path /healthz
+	respond @intern 404
+
+	reverse_proxy 127.0.0.1:3000 {
+		# Echte Client-Adresse: Caddy setzt X-Forwarded-For selbst auf die Adresse
+		# des Clients (eingehende Köpfe ignoriert es ohne `trusted_proxies`). Der
+		# Server liest den letzten Eintrag nur mit PA_VERTRAUTE_PROXYS=127.0.0.1,::1
+		# (src/server/clientAdresse.js) — sonst zählte das Lobby-Limit je Adresse
+		# alle Spieler als einen (127.0.0.1).
+		# Lange Partien: WebSocket-Verbindungen nicht nach einer Pauschalzeit kappen;
+		# beim Neuladen der Caddy-Konfiguration offene Verbindungen 5 min halten.
+		stream_close_delay 5m
+	}
+
+	log {
+		output file /var/log/caddy/projectarmageddon.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+		format json
+	}
+}

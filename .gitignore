@@ -29,6 +29,9 @@ artifacts/
 # Server-Zustand (Lobby-Persistenz)
 .pa-state/
 
+# Release-Pakete (scripts/release/paket.mjs)
+/release/
+
 # Editor / OS
 .vite/
 .DS_Store
