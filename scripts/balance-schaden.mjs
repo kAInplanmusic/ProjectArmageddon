@@ -20,8 +20,11 @@ import { WEAPONS } from '../src/shared/config/weapons.js';
 import { KIT_FLAECHE } from '../src/shared/config/loadouts.js';
 import { SCHADEN_ALT, SCHADEN_STATUS } from '../src/shared/config/schaden.js';
 import { buildEffect, elementalEffectFor, SELF_TARGET_KINDS } from '../src/engine/specials.js';
+import { CLASS_IDS } from '../src/shared/config/classes.js';
 
-const KLASSEN = ['scout', 'heavy', 'artillery'];
+const KLASSEN = CLASS_IDS;
+/** Die Klasse mit neutralem Schadensfaktor (1,0) — Bezugswert der DoT-Anteile und der Schütze im Messaufbau. */
+const NEUTRALE_KLASSE = 'fernkampf';
 const SEED = 31337;
 const OPFER_LEBEN = 1000;
 
@@ -30,7 +33,7 @@ function neuesMatch(fassung, opferKlasse = null, extra = {}) {
   probe.start();
   const schuetzeIndex = probe.getState().entities.findIndex(e => e.entityId === probe.activePlayerId);
   const loadouts = opferKlasse
-    ? [0, 1].map(i => ({ classId: i === schuetzeIndex ? 'heavy' : opferKlasse, archetypeId: 'brawler' }))
+    ? [0, 1].map(i => ({ classId: i === schuetzeIndex ? NEUTRALE_KLASSE : opferKlasse, archetypeId: null }))
     : null;
   const match = new MatchController({
     seed: SEED, teams: 2, playersPerTeam: 1, preset: 'open', turnDurationMs: 1_000_000, kit: KIT_FLAECHE, schaden: fassung,
@@ -100,7 +103,7 @@ function messeWaffe(fassung, waffe, klasse) {
 }
 
 function zeitBisKill(fassung, waffe) {
-  const { match, schuetze, opfer } = neuesMatch(fassung, 'heavy');
+  const { match, schuetze, opfer } = neuesMatch(fassung, NEUTRALE_KLASSE);
   for (let runde = 1; runde <= 12; runde += 1) {
     if (match.activePlayerId === schuetze && match.cooldownFor(schuetze, waffe.id) === 0) schiesse(match, schuetze, waffe.id);
     match.consumeEvents();
@@ -113,7 +116,7 @@ function zeitBisKill(fassung, waffe) {
 
 function stapelTest(fassung, id) {
   const waffe = WEAPONS.find(w => w.id === id);
-  const { match, schuetze, opfer } = neuesMatch(fassung, 'heavy');
+  const { match, schuetze, opfer } = neuesMatch(fassung, NEUTRALE_KLASSE);
   match.world.setComponent(opfer, 'Health', 'max', OPFER_LEBEN);
   match.world.setComponent(opfer, 'Health', 'current', OPFER_LEBEN);
   let hoechsterTick = 0;
@@ -149,7 +152,7 @@ export function messeAlles(fassung, { schnell = false } = {}) {
   const arten = [];
   for (const [art, waffen] of [...gruppen.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     const liste = schnell ? waffen.slice(0, 3) : waffen;
-    const werte = { scout: [], heavy: [], artillery: [] };
+    const werte = Object.fromEntries(KLASSEN.map(k => [k, []]));
     const dotAnteil = [];
     const kill = [];
     for (const waffe of liste) {
@@ -157,14 +160,14 @@ export function messeAlles(fassung, { schnell = false } = {}) {
         const r = messeWaffe(fassung, waffe, klasse);
         if (!r || r.direkt + r.dot <= 0) continue;
         werte[klasse].push(r.gesamt);
-        if (klasse === 'heavy') dotAnteil.push(r.gesamt > 0 ? r.dot / r.gesamt : 0);
+        if (klasse === NEUTRALE_KLASSE) dotAnteil.push(r.gesamt > 0 ? r.dot / r.gesamt : 0);
       }
       const k = zeitBisKill(fassung, waffe);
       if (k !== null) kill.push(k);
     }
     const mittel = a => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0);
     arten.push({
-      art, waffen: liste.length, treffer: werte.heavy.length,
+      art, waffen: liste.length, treffer: werte[NEUTRALE_KLASSE].length,
       gesamt3: Object.fromEntries(KLASSEN.map(k => [k, Math.round(mittel(werte[k]) * 10) / 10])),
       dotAnteil: Math.round(mittel(dotAnteil) * 100),
       killZuege: kill.length ? Math.round(mittel(kill) * 10) / 10 : null,
@@ -176,9 +179,9 @@ export function messeAlles(fassung, { schnell = false } = {}) {
 
 function ausgeben(e) {
   console.log(`\nFassung ${e.fassung} — Gesamtschaden über 3 Züge des Opfers (Mittel je Waffe der Art, Leben 1000)\n`);
-  console.log('Art         Waffen Treffer  scout  heavy  artill  DoT%  Kill-Züge');
+  console.log(`Art         Waffen Treffer  ${KLASSEN.map(k => k.slice(0, 6).padStart(6)).join('')}  DoT%  Kill-Züge`);
   for (const a of e.arten) {
-    console.log(`${a.art.padEnd(11)} ${String(a.waffen).padStart(6)} ${String(a.treffer).padStart(6)}  ${String(a.gesamt3.scout).padStart(5)}  ${String(a.gesamt3.heavy).padStart(5)}  ${String(a.gesamt3.artillery).padStart(6)}  ${String(a.dotAnteil).padStart(4)}  ${a.killZuege ?? '-'}`);
+    console.log(`${a.art.padEnd(11)} ${String(a.waffen).padStart(6)} ${String(a.treffer).padStart(6)}  ${KLASSEN.map(k => String(a.gesamt3[k]).padStart(6)).join('')}  ${String(a.dotAnteil).padStart(4)}  ${a.killZuege ?? '-'}`);
   }
   console.log('\nStapel-Exploit (12 Runden Dauerbeschuss mit derselben Waffe)');
   for (const s of e.stapel) console.log(`${s.id} ${s.name.padEnd(18)} höchster Tick ${String(s.hoechsterTick).padStart(5)}  ausgesetzt ${s.ausgesetzt}/${s.zuege} Züge`);

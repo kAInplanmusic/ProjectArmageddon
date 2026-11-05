@@ -77,8 +77,8 @@ function freieLinie(match, dist) {
   return null;
 }
 
-function aufbau(seed, dist, waffe) {
-  const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, schaden: 1, waffen: WAFFEN_FASSUNG });
+function aufbau(seed, dist, waffe, fassung = WAFFEN_FASSUNG) {
+  const match = new MatchController({ seed, teams: 2, playersPerTeam: 1, preset: 'hills', turnDurationMs: 1_000_000, schaden: 1, waffen: fassung });
   match.start();
   const z = match.getState();
   const schuetze = z.entities.find(e => e.entityId === match.activePlayerId);
@@ -107,8 +107,8 @@ function aufbau(seed, dist, waffe) {
   return { match, schuetzeId: schuetze.entityId, zielId: ziel.entityId, dist: linie.dist, zielX: zx, zielY: zy };
 }
 
-function schiesse(seed, dist, waffe, winkel, kraft) {
-  const a = aufbau(seed, dist, waffe);
+function schiesse(seed, dist, waffe, winkel, kraft, fassung = WAFFEN_FASSUNG) {
+  const a = aufbau(seed, dist, waffe, fassung);
   if (!a) return null;
   const { match } = a;
   const r = match.fire(a.schuetzeId, winkel, kraft, waffe.id);
@@ -121,8 +121,8 @@ function schiesse(seed, dist, waffe, winkel, kraft) {
 }
 
 /** Beste Einstellungen (nach Abstand des Einschlags zum Ziel), grob dann fein. */
-function zielloesung(seed, dist, waffe) {
-  const a = aufbau(seed, dist, waffe);
+function zielloesung(seed, dist, waffe, fassung = WAFFEN_FASSUNG) {
+  const a = aufbau(seed, dist, waffe, fassung);
   if (!a) return null;
   const bewerte = (winkel, kraft) => {
     const bahn = a.match.aimPreview(a.schuetzeId, winkel, kraft, 400, waffe);
@@ -152,7 +152,7 @@ function zielloesung(seed, dist, waffe) {
   return { dist: a.dist, kandidaten: fein };
 }
 
-export function messeWaffe(waffe, index) {
+export function messeWaffe(waffe, index, fassung = WAFFEN_FASSUNG) {
   const seed = 4242 + index * 977;
   const effekt = buildEffect(waffe);
   const selbst = effekt !== null && SELF_TARGET_KINDS.has(effekt.kind);
@@ -163,15 +163,15 @@ export function messeWaffe(waffe, index) {
       // Etwas Erhebung probieren: Sichtlinienwaffen werden am Hang bei 0 rad abgelehnt.
       ergebnis = null;
       for (const winkel of HITSCAN_WINKEL) {
-        const r = schiesse(seed, dist, waffe, winkel, 100);
+        const r = schiesse(seed, dist, waffe, winkel, 100, fassung);
         if (r && (!ergebnis || r.schaden > ergebnis.schaden || (!ergebnis.ok && r.ok))) ergebnis = r;
       }
     } else {
-      const l = zielloesung(seed, dist, waffe);
+      const l = zielloesung(seed, dist, waffe, fassung);
       if (!l) continue;
       ergebnis = null;
       for (const c of l.kandidaten) {
-        const r = schiesse(seed, dist, waffe, c.w, c.k);
+        const r = schiesse(seed, dist, waffe, c.w, c.k, fassung);
         if (r && (!ergebnis || r.schaden > ergebnis.schaden)) ergebnis = r;
       }
     }
@@ -260,11 +260,11 @@ function main() {
   console.log('Median je Stufe (Waffen mit Schaden):');
   for (const s of STUFEN) console.log(`  ${s.padEnd(10)} n=${String(stufen[s].anzahl).padStart(2)}  Schaden ${String(stufen[s].medianSchaden).padStart(6)}  Reichweite ${stufen[s].medianReichweite}`);
   if (!args.ausreisser) {
-    console.log('\nid      Stufe     Name                       Kat.         Kat-Sch. Best  Reich. Treffer Mun CD  STK(sc/he/ar)');
+    console.log(`\nid      Stufe     Name                       Kat.         Kat-Sch. Best  Reich. Treffer Mun CD  STK(${CLASS_IDS.map(k => k.slice(0, 3)).join('/')})`);
     for (const e of ergebnisse) {
       if (e.selbstwirkung) continue;
       const k = e.stk;
-      console.log(`${e.id}  ${e.stufe.padEnd(9)} ${e.name.slice(0, 26).padEnd(26)} ${e.kategorie.padEnd(12)} ${String(e.schadenKatalog).padStart(5)} ${String(e.schadenBest).padStart(6)} ${String(e.reichweite).padStart(6)} ${e.trefferquote.toFixed(2).padStart(6)} ${String(e.munition).padStart(3)} ${String(e.abklingzeit).padStart(2)}  ${k.scout}/${k.heavy}/${k.artillery}`);
+      console.log(`${e.id}  ${e.stufe.padEnd(9)} ${e.name.slice(0, 26).padEnd(26)} ${e.kategorie.padEnd(12)} ${String(e.schadenKatalog).padStart(5)} ${String(e.schadenBest).padStart(6)} ${String(e.reichweite).padStart(6)} ${e.trefferquote.toFixed(2).padStart(6)} ${String(e.munition).padStart(3)} ${String(e.abklingzeit).padStart(2)}  ${Object.values(k).join('/')}`);
     }
   }
   console.log(`\nAusreißer (${liste.length}):`);

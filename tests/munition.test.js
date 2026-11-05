@@ -13,7 +13,7 @@ import {
 } from '../src/shared/config/munition.js';
 import { getStartWaffen, KIT_SCHARF } from '../src/shared/config/loadouts.js';
 import { KISTEN_STANDARD, KISTEN_MUNITION } from '../src/shared/config/kisten.js';
-import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_MINE, WAFFEN_SICHT, WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
+import { WAFFEN_STANDARD, WAFFEN_MUNITION, WAFFEN_MINE, WAFFEN_SICHT, WAFFEN_TEMPO, WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
 import { legeKiste, CRATE_TYPES } from '../src/engine/systems/lootSystem.js';
 
 function welt() {
@@ -23,9 +23,9 @@ function welt() {
 
 const ohneStart = () => WEAPONS.filter(w => munitionsKlasse(w) !== Infinity);
 
-test('Standard ist Waffenfassung 14 (AERO-Windfaktor) und Kistenfassung 4; Fassung 12 und 11 bleiben gültig', () => {
-  assert.equal(WAFFEN_STANDARD, WAFFEN_WIND);
-  assert.ok(WAFFEN_MUNITION < WAFFEN_MINE && WAFFEN_MINE < WAFFEN_SICHT && WAFFEN_SICHT < WAFFEN_STANDARD);
+test('Standard ist Waffenfassung 15 (GP-4 Tempo) und Kistenfassung 4; Fassung 14 bis 11 bleiben gültig', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_TEMPO);
+  assert.ok(WAFFEN_MUNITION < WAFFEN_MINE && WAFFEN_MINE < WAFFEN_SICHT && WAFFEN_SICHT < WAFFEN_WIND && WAFFEN_WIND < WAFFEN_STANDARD);
   assert.equal(KISTEN_STANDARD, KISTEN_MUNITION);
 });
 

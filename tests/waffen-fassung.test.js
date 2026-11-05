@@ -14,11 +14,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 
-import { MatchController } from '../src/engine/match.js';
+import { MatchController, BASE_HEALTH } from '../src/engine/match.js';
 import { ReplayRecorder, playReplay } from '../src/engine/replay.js';
 import { WEAPONS, WEAPONS_BY_ID } from '../src/shared/config/weapons.js';
 import {
-  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_VORSTRAHL, WAFFEN_SPREIZUNG, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
+  WAFFEN_ALT, WAFFEN_BALANCE, WAFFEN_KORREKTUR, WAFFEN_FEIN, WAFFEN_FAIR, WAFFEN_ZUENDER, WAFFEN_ZUENDERPLUS, WAFFEN_FEINTUNING, WAFFEN_VORSTRAHL, WAFFEN_SPREIZUNG, WAFFEN_WIND, WAFFEN_TEMPO, WAFFEN_F7_WERTE, WAFFEN_F8_WERTE, WAFFEN_STANDARD, WAFFEN_ALT_WERTE, WAFFEN_F2_WERTE, WAFFEN_F3_WERTE, normalisiereWaffen, getWaffe,
 } from '../src/shared/config/waffen-fassung.js';
 import {
   KIT_FLAECHE, KIT_SCHARF, KIT_STANDARD, getStartWaffen, normalisiereKit, getStartMunition,
@@ -27,6 +27,9 @@ import { KISTEN_ALT } from '../src/shared/config/kisten.js';
 import { WIND_ALT } from '../src/shared/config/wind.js';
 import { BALANCE_KORREKTUREN, BALANCE_KORREKTUREN_3, BALANCE_KORREKTUREN_4, FLUGPROFILE_4, FESTE_ABLEITUNGEN_3, tierForScore } from '../scripts/build-weapon-catalog.mjs';
 import { buildEffect, SELF_TARGET_KINDS } from '../src/engine/specials.js';
+import { CLASS_IDS, combatProfile } from '../src/shared/config/classes.js';
+import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
+import { EIN_TREFFER_GRENZE, WAFFEN_F15_WERTE } from '../src/shared/config/waffen-f15.js';
 import {
   messeWaffe, findeAusreisser, klassenGesundheit, ENTFERNUNGEN, STUFEN, ZU_SCHWACH, ZU_STARK,
 } from '../scripts/waffen-balance.mjs';
@@ -150,7 +153,7 @@ test('Kontaktwaffen sind moderat stärker (+20 bis +30 %), Luftschläge/Quantenb
 });
 
 test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf den Standard', () => {
-  assert.equal(WAFFEN_STANDARD, 14); // Waffenfassung 14 (AERO-Windfaktor, `config.wind` 2); Fassung 13, 12, 11 und 10 bleiben gültig und bitgleich
+  assert.equal(WAFFEN_STANDARD, 15); // Waffenfassung 15 (GP-4 Tempo); 14 (AERO-Windfaktor), 13, 12, 11 und 10 bleiben gültig und bitgleich
   assert.equal(WAFFEN_SPREIZUNG, 10);
   assert.equal(WAFFEN_VORSTRAHL, 9);
   assert.equal(WAFFEN_FEINTUNING, 8);
@@ -170,7 +173,8 @@ test('normalisiereWaffen: bekannte Fassungen bleiben, alles andere fällt auf de
   assert.equal(normalisiereWaffen(11), 11);
   assert.equal(normalisiereWaffen(12), 12);
   assert.equal(normalisiereWaffen(13), 13);
-  assert.equal(normalisiereWaffen(14), WAFFEN_STANDARD);
+  assert.equal(normalisiereWaffen(14), WAFFEN_WIND);
+  assert.equal(normalisiereWaffen(15), WAFFEN_STANDARD);
 });
 
 /** SHA-256 des Katalogs in Fassung 3 (gemessen am Stand 09664fe, vor Fassung 4). */
@@ -265,10 +269,10 @@ test('Fassung 2 und 3: die drei geänderten Waffen wirken wie gemessen, Fassung 
 });
 
 test('Fassung 3: Maschinenpistole über 0,5x Stufenmedian, Energiefaust/Flammenklinge unter 2x, Stufe/Reichweite/Abklingzeit gleich', () => {
-  const m = messeWaffe(WEAPONS_BY_ID.pa_040, 40);
+  const m = messeWaffe(WEAPONS_BY_ID.pa_040, 40, WAFFEN_KORREKTUR);
   assert.ok(m.schadenBest >= 0.5 * 17.5, `MP ${m.schadenBest}`);
   for (const id of ['pa_120', 'pa_137']) {
-    const e = messeWaffe(WEAPONS_BY_ID[id], 40);
+    const e = messeWaffe(WEAPONS_BY_ID[id], 40, WAFFEN_KORREKTUR);
     assert.ok(e.schadenBest <= 2 * 24.3 && e.schadenBest > 1.8 * 24.3, `${id} ${e.schadenBest}`);
   }
   for (const [id, f2] of Object.entries(WAFFEN_F2_WERTE)) {
@@ -426,5 +430,99 @@ test('Fassung 8: sechs Waffen nach den Balance-Auslesen, Fassung 7 und älter un
       assert.deepEqual(neu[feld], wert, `${id}.${feld}`);
       assert.notDeepEqual(alt[feld], wert, `${id}.${feld} in Fassung 7 unverändert`);
     }
+  }
+});
+
+/**
+ * GP-4: Waffenfassung 15 (`WAFFEN_TEMPO`) hebt den Schaden je Katalogkategorie,
+ * damit eine Figur nach 3 bis 4 guten Treffern fällt (Messung:
+ * `docs/balance-tempo-2026-11-05.md`).
+ *
+ * Die drei Zusagen dieser Fassung:
+ *  1. Die Fassungen 1 bis 14 bleiben Bit für Bit gleich (Prüfsumme F14).
+ *  2. Jede Kategorie (außer `ultimate`) hebt ihren Median; nur `damage` ändert sich.
+ *  3. Kein neuer Ein-Treffer-Kill: Keine nicht-ultimative Waffe nimmt einer
+ *     100-LP-Figur mit einem Schuss das Leben, auch nicht beim stärksten
+ *     Klassenschützen.
+ */
+
+/** SHA-256 des Katalogs in Fassung 14 (gemessen am Stand 058ddcf, VOR Fassung 15). */
+const PRUEFSUMME_F14 = 'aa032474f98c211e8f8ad4d4de19f7be926693dc5276fd4a08328dd283d42ac6';
+
+function median(werte) {
+  const s = [...werte].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+test('Fassung 14 bleibt bitgleich: Katalog in Fassung 14 = Stand vor Fassung 15 (Prüfsumme)', () => {
+  const f14 = WEAPONS.map(w => getWaffe(w.id, WAFFEN_WIND));
+  assert.equal(createHash('sha256').update(stabil(f14)).digest('hex'), PRUEFSUMME_F14);
+  assert.notEqual(createHash('sha256').update(stabil(WEAPONS.map(w => getWaffe(w.id, WAFFEN_TEMPO)))).digest('hex'), PRUEFSUMME_F14,
+    'Fassung 15 unterscheidet sich von Fassung 14');
+});
+
+test('Fassung 15 (WAFFEN_TEMPO) ist Standard und holt die langsamen Kategorien ins Zielband', () => {
+  assert.equal(WAFFEN_STANDARD, WAFFEN_TEMPO);
+  assert.equal(WAFFEN_TEMPO, WAFFEN_WIND + 1);
+  assert.equal(normalisiereWaffen(WAFFEN_TEMPO), WAFFEN_TEMPO);
+
+  /*
+   * Die Messung (`docs/balance-tempo-2026-11-05.md`) zeigte vorher: `ranged` 6,5 und
+   * `melee` 5 Schüsse bis Sieg, `heavy_ranged` 4 — die übrigen Kategorien lagen mit
+   * 2 bis 3 Schüssen schon im Band oder darunter. Angehoben werden deshalb genau die
+   * drei langsamen Kategorien; die schnellen bleiben unverändert, weil eine Anhebung
+   * sie in den Ein- bis Zwei-Treffer-Bereich geschoben hätte.
+   */
+  const angehoben = ['melee', 'ranged', 'heavy_ranged'];
+  for (const kategorie of new Set(WEAPONS.map(w => w.category))) {
+    const waffen = WEAPONS.filter(w => w.category === kategorie && w.damage > 0);
+    const vorher = median(waffen.map(w => getWaffe(w.id, WAFFEN_WIND).damage));
+    const nachher = median(waffen.map(w => getWaffe(w.id, WAFFEN_TEMPO).damage));
+    if (angehoben.includes(kategorie)) {
+      assert.ok(nachher > vorher, `${kategorie}: Median ${vorher} -> ${nachher}`);
+    } else {
+      assert.equal(nachher, vorher, `${kategorie}: lag schon im Zielband und bleibt unverändert (${vorher})`);
+    }
+  }
+
+  // Die Schicht ändert ausschließlich den Schaden — Stufe, Reichweite, Abklingzeit,
+  // Magazin, Radius und Windfaktor bleiben, wo sie in Fassung 14 standen.
+  for (const w of WEAPONS) {
+    const alt = getWaffe(w.id, WAFFEN_WIND);
+    const neu = getWaffe(w.id, WAFFEN_TEMPO);
+    for (const feld of Object.keys(neu)) {
+      if (feld === 'damage') continue;
+      assert.deepEqual(neu[feld], alt[feld], `${w.id}.${feld}: nur der Schaden darf sich ändern`);
+    }
+    assert.ok(neu.damage >= alt.damage, `${w.id}: Fassung 15 senkt keinen Schaden (${alt.damage} -> ${neu.damage})`);
+  }
+  assert.equal(Object.keys(WAFFEN_F15_WERTE).length, WEAPONS.filter(w => getWaffe(w.id, WAFFEN_TEMPO).damage !== getWaffe(w.id, WAFFEN_WIND).damage).length);
+});
+
+test('Fassung 15: kein neuer Ein-Treffer-Kill gegen die 100-LP-Fernkämpfer-Figur', () => {
+  const staerksterFaktor = Math.max(...CLASS_IDS.map(k => combatProfile(k, null, null, KLASSEN_STANDARD).damageMultiplier));
+  const fernkampfLeben = Math.round(BASE_HEALTH * combatProfile('fernkampf', null, null, KLASSEN_STANDARD).healthMultiplier);
+  assert.equal(fernkampfLeben, 100, 'Fernkämpfer-Figur hat 100 Leben (Klassenfassung 3)');
+  for (const w of WEAPONS) {
+    if (w.category === 'ultimate') continue; // Ausnahme: treffen schon in Fassung 14 mit einem Schuss, unverändert
+    const treffer = getWaffe(w.id, WAFFEN_TEMPO).damage * staerksterFaktor;
+    assert.ok(treffer < fernkampfLeben, `${w.id}: ein Treffer nimmt ${treffer} von ${fernkampfLeben} Leben`);
+  }
+  assert.ok(EIN_TREFFER_GRENZE * staerksterFaktor < fernkampfLeben, 'Grenze hält auch beim stärksten Schützen');
+});
+
+test('Fassung 15: angehobene Kategorien treffen härter, unveränderte genauso hart wie in Fassung 14', () => {
+  // Je Kategorie eine Waffe mit Schaden am Ziel (keine Selbstwirkung), gemessen wie die Goldwerte oben.
+  for (const id of ['pa_001', 'pa_028', 'pa_047', 'pa_020', 'pa_045']) {
+    const alt = schussAufNachbarn(id, { waffen: WAFFEN_WIND });
+    const neu = schussAufNachbarn(id, { waffen: WAFFEN_TEMPO });
+    assert.ok(neu.verloren > alt.verloren,
+      `${id}: Fassung 15 ${neu.verloren} gegen Fassung 14 ${alt.verloren}`);
+  }
+  for (const id of ['pa_062', 'pa_086']) {
+    const alt = schussAufNachbarn(id, { waffen: WAFFEN_WIND });
+    const neu = schussAufNachbarn(id, { waffen: WAFFEN_TEMPO });
+    assert.equal(neu.verloren, alt.verloren, `${id}: Kategorie lag im Zielband, Treffer bleibt gleich`);
   }
 });

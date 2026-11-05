@@ -23,10 +23,14 @@
  *     Zielgeraden. Bis Fassung 12 prüfte sie die ganze Reichweite: Stand hinter dem Ziel ein Hang, wurde der Schuss als
  *     „Sichtlinie versperrt" abgelehnt, obwohl der Strahl das Ziel davor getroffen hätte (EREIGNIS-1: Zauberpeitsche und
  *     Tesla-Turm maßen deshalb 0 Schaden). Regel im Motor (`hasLineOfSight` in `engine/shooting.js`), keine Katalogwerte.
- *   - `WAFFEN_WIND` (14, Standard, AERO): wie 13, dazu `windFactor` je Waffe (0 bis 2,5; ausdrückliche 0 = windfrei) aus
+ *   - `WAFFEN_WIND` (14, AERO): wie 13, dazu `windFactor` je Waffe (0 bis 2,5; ausdrückliche 0 = windfrei) aus
  *     der Fassungsschicht `WINDFAKTOR_JE_WAFFE` (`config/weapons.js`, erzeugt von
  *     `scripts/build-weapon-catalog.mjs`). Der Motor liest ihn nur mit `config.wind` 2 (`shooting.js`,
  *     `windFaktorFuerWaffe`); Fassungen 1 bis 13 sehen das Feld nicht und bleiben bitgleich.
+ *   - `WAFFEN_TEMPO` (15, Standard, GP-4): wie 14, dazu `WAFFEN_F15_WERTE` (`config/waffen-f15.js`): Schaden je
+ *     Katalogkategorie angehoben, damit eine Figur nach 3 bis 4 Treffern fällt (Median gemessen, siehe
+ *     `docs/balance-tempo-2026-11-05.md`). Der Katalog bleibt unverändert; Fassungen 1 bis 14 lesen die Schicht
+ *     nicht und bleiben bitgleich (Prüfsummen in `tests/waffen-fassung.test.js`).
  *   - `WAFFEN_MINE` (12): wie 11, dazu `WAFFEN_F12_WERTE`: die Impulsbombe (`pa_030`) ist die Mine (Wurf oder Ablegen, bleibt liegen,
  *     sofort scharf; Wirkung in `systems/bodenobjektSystem.js`, nur mit Bodenobjektfassung 2). Katalogzahl und Beutetopf bleiben.
  *   - `WAFFEN_MUNITION` (11): wie 10, dazu vier Munitionsklassen (unendlich, 1, 2, 3 Schuss; `config/munition.js`),
@@ -57,6 +61,7 @@
 import { getWeapon, WINDFAKTOR_JE_WAFFE } from './weapons.js';
 import { WAFFEN_F11_WERTE } from './waffen-f11.js';
 import { WAFFEN_F12_WERTE } from './waffen-f12.js';
+import { WAFFEN_F15_WERTE } from './waffen-f15.js';
 
 export const WAFFEN_ALT = 1;
 export const WAFFEN_BALANCE = 2;
@@ -78,7 +83,14 @@ export const WAFFEN_SICHT = 13;
  * es im Motor nur, wenn `config.wind` mindestens 2 ist (`shooting.js`).
  */
 export const WAFFEN_WIND = 14;
-export const WAFFEN_STANDARD = WAFFEN_WIND;
+/**
+ * Fassung 15 (GP-4 Tempo): Der Schaden je Waffenkategorie ist angehoben, damit
+ * eine Figur nach 3 bis 4 guten Treffern fällt. Die Werte stehen als eigene
+ * Datenschicht `WAFFEN_F15_WERTE` in `config/waffen-f15.js`; der Katalog bleibt
+ * unverändert, die Fassungen 1 bis 14 sehen die Schicht nicht.
+ */
+export const WAFFEN_TEMPO = 15;
+export const WAFFEN_STANDARD = WAFFEN_TEMPO;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -91,7 +103,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND || fassung === WAFFEN_TEMPO ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -380,13 +392,14 @@ function waffeDerFassung(id, fassung) {
     const f10 = fassung >= WAFFEN_SPREIZUNG ? WAFFEN_F10_WERTE[id] : null;
     const f11 = fassung >= WAFFEN_MUNITION ? WAFFEN_F11_WERTE[id] : null;
     const f12 = fassung >= WAFFEN_MINE ? WAFFEN_F12_WERTE[id] : null;
-    if (!f5 && !f7 && !f8 && !f10 && !f11 && !f12) return waffe;
+    const f15 = fassung >= WAFFEN_TEMPO ? WAFFEN_F15_WERTE[id] : null;
+    if (!f5 && !f7 && !f8 && !f10 && !f11 && !f12 && !f15) return waffe;
     const schluessel5 = `${fassung}:${id}`;
     let kopie5 = zwischenspeicher.get(schluessel5);
     if (!kopie5) {
       // `wirkung` der Fassung 11 ergänzt die der Fassung 10 (Weite, Menge, Pause bleiben), ersetzt sie nicht.
       const wirkung = f10?.wirkung && f11?.wirkung ? { wirkung: Object.freeze({ ...f10.wirkung, ...f11.wirkung }) } : {};
-      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...f12, ...wirkung });
+      kopie5 = Object.freeze({ ...waffe, ...f5, ...f7, ...f8, ...f10, ...f11, ...f12, ...wirkung, ...f15 });
       zwischenspeicher.set(schluessel5, kopie5);
     }
     return kopie5;
