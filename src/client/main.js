@@ -26,7 +26,7 @@ import { zeigeToast } from './toasts.js';
 import { WaffenMenue } from './waffenMenue.js';
 import { NetworkClient, CONNECTION_STATE } from './networkClient.js';
 import { applyCraterToTerrain, applyInsetToTerrain, applyLogEntryToTerrain, applySettleToTerrain, applyRemoveToTerrain, applyAddToTerrain, applySlumpToTerrain, bewerteTerrainHash, buildTerrainForSeed, terrainQuelleFuer } from './terrainPreview.js';
-import { getWeapon, orderInventoryBySubcategory } from '../shared/config/weapons.js';
+import { getWeapon, orderInventoryBySubcategory, WINDFAKTOR_JE_WAFFE } from '../shared/config/weapons.js';
 import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { getBackdropNeu } from '../shared/config/backdrops-neu.js';
@@ -55,6 +55,7 @@ import { BEWEGUNG_STANDARD } from '../shared/config/bewegung.js';
 import { SEIL_STANDARD } from '../shared/config/seil.js';
 import { SeilSteuerung } from './seilSteuerung.js';
 import { KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
+import { WIND_STANDARD, WIND_JE_ZUG } from '../shared/config/wind.js';
 import { BODENOBJEKTE_STANDARD } from '../shared/config/bodenobjekte.js';
 import { ZUGREGELN_STANDARD } from '../shared/config/zugregeln.js';
 import { LaufVorhersage } from './laufVorhersage.js';
@@ -1371,7 +1372,7 @@ class Game {
     // immer Querformat (2026-11-04); Hochformat kennt nur noch die Wiedergabe alter Replays.
     this.match = new MatchController({
       seed, teams, playersPerTeam, preset, kartentyp, orientation: 'landscape', sidegrades, loadouts, biom, kartenart,
-      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
+      guenther: GUENTHER_FASSUNG_STANDARD, cookie: COOKIE_STANDARD, feuer: FEUER_STANDARD, bewegung: BEWEGUNG_STANDARD, zugregeln: ZUGREGELN_STANDARD, klassen: KLASSEN_STANDARD, bodenobjekte: BODENOBJEKTE_STANDARD, seil: SEIL_STANDARD, wind: WIND_STANDARD, // neue Partien: Gehen am Boden;: Günthers Aktionen und Cookie
       turnPauseTicks: Math.round(zugpauseSekunden() * SIMULATION_HZ),
       turnReplayTicks: zugpauseSekunden() > 0 ? Math.round(MATCH_RULES.turnReplaySeconds * SIMULATION_HZ) : 0,
     });
@@ -1733,6 +1734,8 @@ class Game {
       );
       // Neue Sitzung beim Server: die Takte zählen von vorn, alte Dedup-Schlüssel gelten nicht mehr.
       if (!payload.resumed) this.ereignisDedup.zuruecksetzen();
+      // AERO: Windfassung der Partie für die Bahnvorschau (fehlt sie: alte Partie, Faktor 1).
+      this.remoteWindFassung = payload.windFassung ?? null;
       if (payload.seed !== null && payload.seed !== undefined) {
         // Die Ausrichtung kommt vom Server (neue Lobbys: immer Querformat; eine wiederhergestellte alte ggf. Hochformat).
         this.#buildRemoteTerrain(terrainQuelleFuer(payload, { preset, kartentyp }));
@@ -2134,6 +2137,8 @@ class Game {
       round: snapshot.round,
       maxRounds: MATCH_RULES.roundLimitBackstop,
       wind: snapshot.wind,
+      // AERO: Fassung für die Vorhersage (Waffenfaktor); `null` = alte Partie.
+      windFassung: this.remoteWindFassung ?? null,
       tick: snapshot.tick,
       turnElapsedMs: Math.max(0, turnDurationMs - remaining),
       rueckzugMs: this.#rueckzugRest(snapshot.activePlayerId),
@@ -2866,6 +2871,14 @@ class Game {
       power,
       speedMultiplier: faktor,
       gravityScale: waffe?.gravityScale ?? 1,
+      /*
+       * AERO: Der Wind der Vorhersage ist der Wind der WAFFE — dieselbe Regel wie
+       * im Motor (`shooting.js`, `windFaktorFuerWaffe`). Die Fassung kommt vom
+       * Server (welcome, `gelaendeFelder`); in einer alten Partie ist sie 1 und
+       * der Faktor bleibt 1, Bit für Bit wie bisher.
+       */
+      windFactor: (zustand.windFassung ?? 1) >= WIND_JE_ZUG && Number.isFinite(WINDFAKTOR_JE_WAFFE[waffe?.id])
+        ? WINDFAKTOR_JE_WAFFE[waffe.id] : 1,
       wind: zustand.wind ?? 0,
       width: breite,
       height: hoehe,

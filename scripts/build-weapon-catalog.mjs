@@ -920,6 +920,44 @@ export function brauchtWurf(weapon) {
     && !(Number.isFinite(weapon.blastRadius) && weapon.blastRadius > 0);
 }
 
+/**
+ * Windfaktor je Waffe (AERO, Waffenfassung 14).
+ *
+ * Der Wind wirkt als Beschleunigung; der Faktor bestimmt, wie stark eine Waffe
+ * ihm folgt. Richtwerte aus `MASTERDOTO.md` Block 2:
+ *
+ *   Raketen/Artillerie 1,6–2,2 · Brand-/Flüssigkeitswaffen 1,3–1,8 ·
+ *   Standardgeschosse 1,0 · Granaten/Bomben 0,5–0,8 · schwere Würfe 0,3–0,6 ·
+ *   Klingen/Äxte 0,2–0,5 · Hitscan/Strahlen 0
+ *
+ * Eine AUSDRÜCKLICHE 0 heißt „windfrei" (Konvention seit `config.wind` 2:
+ * `undefined` = 1, `0` = kein Wind, siehe `integrateStep`). Sie steht bei allen
+ * Hitscan-/Strahlwaffen und beim Wasserwerfer im Katalog. Die Fassungen 1 bis 13
+ * lesen das Feld nicht (`getWaffe` blendet es dort aus).
+ *
+ * Reine Daten, kein Zufall, keine Uhr.
+ */
+export const WINDFAKTOR_JE_WAFFE = Object.freeze({
+  pa_063: 0, // Wasserwerfer: Wasser ist windstill (AERO)
+  pa_075: 2.5, // Tornado: die Windwaffe
+  pa_086: 2.5, // Windkrieger
+});
+
+/** Windfaktor einer Waffe: fester Wert je Kennung, sonst aus Kategorie/Art abgeleitet. */
+export function windFactorFor(weapon) {
+  const fest = WINDFAKTOR_JE_WAFFE[weapon.id];
+  const wert = fest !== undefined ? fest : (() => {
+    if (weapon.delivery !== 'projectile') return 0; // Strahlen/Hitscan: windfrei
+    if (weapon.category === 'melee') return 0.4; // Klingen und Äxte
+    if (weapon.fuseTime > 0) return 0.6; // Granaten und Bomben
+    if (weapon.damageType === 'fire' || weapon.damageType === 'nature') return 1.6; // Brand/Flüssigkeit
+    if (weapon.damageType === 'explosive') return 1.8; // Raketen/Artillerie (Granaten sind oben schon 0,6)
+    if (['energy', 'ice', 'electric', 'astral', 'void', 'dragon', 'holy'].includes(weapon.damageType)) return 1.2;
+    return 1;
+  })();
+  return Number(Math.max(0, Math.min(2.5, wert)).toFixed(2));
+}
+
 /** Geschwindigkeitsfaktor aus den Quelldaten (1 = Normaltempo). */
 export function speedFactorFor(weapon) {
   const roh = weapon.projectileSpeed;
@@ -1067,6 +1105,8 @@ export function deriveCooldown(weapon) {
   if (last < 120) return 2;
   return 3;
 }
+
+const windFaktorMerker = {};
 
 const weapons = raw.weapons.map(entry => {
   const stats = entry.stats ?? {};
@@ -1323,6 +1363,16 @@ const weapons = raw.weapons.map(entry => {
     }
   }
 
+  /*
+   * AERO/Waffenfassung 14: Windfaktor je Waffe. MUSS nach der Wurf-Ableitung
+   * (`fuseTime`, `category`, `delivery`) und nach `damageType` stehen — die
+   * Ableitung liest alle drei. Das Feld steht NICHT am Katalogeintrag, sondern
+   * als Fassungsschicht in `WINDFAKTOR_JE_WAFFE` (unten erzeugt): Alte Fassungen
+   * bleiben dadurch dieselben Objekte (Prüfsummen und Identität in
+   * `tests/waffen-fassung.test.js`).
+   */
+  windFaktorMerker[entry.id] = windFactorFor(weapon);
+
   // Geschwindigkeit aus den Quelldaten wird jetzt tatsächlich wirksam. Steht
   // NACH der Wurf-Ableitung, damit auch der Wurf seinen Faktor bekommt.
   weapon.speedFactor = speedFactorFor(weapon);
@@ -1380,6 +1430,9 @@ if (areaCount === 0) {
 const body = JSON.stringify(weapons, null, 2);
 const indented = body.split('\n').map((line, i) => (i === 0 ? line : `  ${line}`)).join('\n');
 
+/** Windfaktor je Waffe (Waffenfassung 14, AERO) — eigene Fassungsschicht, s. o. */
+const windFaktoren = Object.fromEntries(weapons.map(weapon => [weapon.id, windFaktorMerker[weapon.id]]));
+
 /*
  * ═══════════════════════════════════════════════════════════════════════════
  * AB HIER BEGINNT EIN TEMPLATE-LITERAL — der Text des erzeugten Katalogs.
@@ -1423,6 +1476,14 @@ export const HITSCAN_RANGE_BY_CATEGORY = Object.freeze(
 );
 
 export const WEAPON_CATALOG_VERSION = ${JSON.stringify(raw.version ?? '1.0.0')};
+
+/**
+ * Windfaktor je Waffe (Waffenfassung 14, AERO): 0 bis 2,5. Eine ausdrückliche 0
+ * heißt windfrei (Hitscan/Strahlen, Wasserwerfer). Eigene Fassungsschicht wie
+ * WAFFEN_F5_WERTE: Die Einträge in WEAPONS bleiben unverändert, damit alte
+ * Fassungen bitgleich und dieselben Objekte bleiben.
+ */
+export const WINDFAKTOR_JE_WAFFE = Object.freeze(${JSON.stringify(windFaktoren)});
 
 export const WEAPONS = Object.freeze(
   ${indented}.map(Object.freeze)

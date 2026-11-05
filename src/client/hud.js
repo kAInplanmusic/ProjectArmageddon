@@ -17,6 +17,7 @@ import {
   displayGroupLabel,
 } from '../shared/config/weapons.js';
 import { WATER_STATE, waterStateFor, waterLabel, DROWN_LEVEL } from '../shared/config/water.js';
+import { windSegmente } from '../shared/config/wind.js';
 import { ladungAnteil } from './weaponAnimation.js';
 import { statusTooltip } from '../shared/config/wirkungstexte.js';
 
@@ -243,7 +244,12 @@ export class Hud {
     if (el.round) el.round.textContent = String(state.round);
     if (el.wind) {
       const wind = state.wind ?? 0;
-      el.wind.textContent = `${wind >= 0 ? '→' : '←'} ${Math.abs(wind).toFixed(3)}`;
+      /*
+       * AERO: Segmente statt Zahl. Fünf Stufen und ein Richtungspfeil sagen im
+       * Spiel schneller, „wie stark" der Wind ist als drei Nachkommastellen —
+       * die Zahl bleibt im Zustand für Vorhersage und Werkzeuge erhalten.
+       */
+      el.wind.textContent = windSegmente(wind);
       el.wind.style.color = Math.abs(wind) > 0.03 ? '#ef476f' : '#e8eef5';
     }
     if (el.timer) {

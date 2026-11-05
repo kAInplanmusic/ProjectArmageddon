@@ -50,6 +50,7 @@
 import { validateCommand } from '../shared/validation.js';
 import { getWeapon } from '../shared/config/weapons.js';
 import { getWaffe, WAFFEN_VORSTRAHL, WAFFEN_SICHT } from '../shared/config/waffen-fassung.js';
+import { WIND_JE_ZUG, WIND_FAKTOR_MAX } from '../shared/config/wind.js';
 import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
 import { PLAYER_HALF_HEIGHT, PLAYER_HALF_WIDTH } from '../shared/config/player.js';
 import { bodenNaheHoehe } from './boden.js';
@@ -316,7 +317,8 @@ function feuere(quelle, playerId, angle, power, weaponId) {
     stossGrad: weapon.stossRichtung ?? 0,
     drag: 0.995,
     gravityScale: weapon.gravityScale || 1,
-    windFactor: 1,
+    // AERO: Windfaktor der Waffe — erst ab Windfassung 2 (alte Replays: 1, Bit für Bit).
+    windFactor: windFaktorFuerWaffe(weapon, quelle.windFassung),
     terrainDamage: weapon.terrainDamage,
     bounces: weapon.bounces,
     /*
@@ -525,6 +527,25 @@ export function projectileLifetime(quelle, playerId, angle, power, weapon = null
 }
 
 /**
+ * Windfaktor, mit dem ein Schuss dieser Waffe fliegt (AERO).
+ *
+ * Die Konvention steht in `integrateStep`: `undefined` = 1, ausdrückliche 0 =
+ * windfrei. Bis Windfassung 1 gab es nur Faktor 1 — alte Aufzeichnungen dürfen
+ * deshalb weder den Katalogwert noch die 0 sehen (AGENTS.md §2). Fehlt der Wert
+ * im Katalog, gilt 1 (Standardgeschoss).
+ *
+ * @param {object|null} waffe
+ * @param {number} windFassung - `config.wind` des Matches
+ * @returns {number} 0 bis `WIND_FAKTOR_MAX`
+ */
+export function windFaktorFuerWaffe(waffe, windFassung) {
+  if (!(windFassung >= WIND_JE_ZUG)) return 1;
+  const faktor = waffe?.windFactor;
+  if (!Number.isFinite(faktor)) return 1;
+  return Math.max(0, Math.min(WIND_FAKTOR_MAX, faktor));
+}
+
+/**
  * Zielvorschau: simuliert die Flugbahn mit exakt derselben Physik wie das
  * ProjectileSystem (Gravitation, Wind, Drag) und bricht beim ersten
  * Terraintreffer ab.
@@ -553,6 +574,12 @@ export function aimPreview(quelle, playerId, angle, power, steps = 180, weapon =
     // mit einem anderen Faktor, und ohne ihn zeigte die Vorschau dort eine
     // Bahn, die das Projektil nicht fliegt.
     gravityScale: waffe?.gravityScale ?? 1,
+    /*
+     * AERO: Der Wind der VORSCHAU ist der Wind der Waffe. Ohne den Faktor zeigte
+     * die Bahn bei einer Rakete (1,8) und einem Strahl (0) dieselbe Kurve — und
+     * die Vorhersage wäre genau dort falsch, wo der Wind am meisten ausmacht.
+     */
+    windFactor: windFaktorFuerWaffe(waffe, quelle.windFassung),
     wind: quelle.world.services.match.wind ?? 0,
     steps,
     sampleEvery: 3,

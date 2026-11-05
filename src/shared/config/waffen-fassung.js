@@ -23,6 +23,10 @@
  *     Zielgeraden. Bis Fassung 12 prüfte sie die ganze Reichweite: Stand hinter dem Ziel ein Hang, wurde der Schuss als
  *     „Sichtlinie versperrt" abgelehnt, obwohl der Strahl das Ziel davor getroffen hätte (EREIGNIS-1: Zauberpeitsche und
  *     Tesla-Turm maßen deshalb 0 Schaden). Regel im Motor (`hasLineOfSight` in `engine/shooting.js`), keine Katalogwerte.
+ *   - `WAFFEN_WIND` (14, Standard, AERO): wie 13, dazu `windFactor` je Waffe (0 bis 2,5; ausdrückliche 0 = windfrei) aus
+ *     der Fassungsschicht `WINDFAKTOR_JE_WAFFE` (`config/weapons.js`, erzeugt von
+ *     `scripts/build-weapon-catalog.mjs`). Der Motor liest ihn nur mit `config.wind` 2 (`shooting.js`,
+ *     `windFaktorFuerWaffe`); Fassungen 1 bis 13 sehen das Feld nicht und bleiben bitgleich.
  *   - `WAFFEN_MINE` (12): wie 11, dazu `WAFFEN_F12_WERTE`: die Impulsbombe (`pa_030`) ist die Mine (Wurf oder Ablegen, bleibt liegen,
  *     sofort scharf; Wirkung in `systems/bodenobjektSystem.js`, nur mit Bodenobjektfassung 2). Katalogzahl und Beutetopf bleiben.
  *   - `WAFFEN_MUNITION` (11): wie 10, dazu vier Munitionsklassen (unendlich, 1, 2, 3 Schuss; `config/munition.js`),
@@ -50,7 +54,7 @@
  *
  * @module config/waffen-fassung
  */
-import { getWeapon } from './weapons.js';
+import { getWeapon, WINDFAKTOR_JE_WAFFE } from './weapons.js';
 import { WAFFEN_F11_WERTE } from './waffen-f11.js';
 import { WAFFEN_F12_WERTE } from './waffen-f12.js';
 
@@ -67,7 +71,14 @@ export const WAFFEN_SPREIZUNG = 10;
 export const WAFFEN_MUNITION = 11;
 export const WAFFEN_MINE = 12;
 export const WAFFEN_SICHT = 13;
-export const WAFFEN_STANDARD = WAFFEN_SICHT;
+/**
+ * Fassung 14 (AERO, `config.wind` 2): jede Waffe trägt `windFactor` (0 bis 2,5;
+ * ausdrückliche 0 = windfrei). Der Katalog führt das Feld; die Fassungen 1 bis 13
+ * sehen es NICHT (sie fliegen mit Faktor 1, Bit für Bit wie vorher). Gelesen wird
+ * es im Motor nur, wenn `config.wind` mindestens 2 ist (`shooting.js`).
+ */
+export const WAFFEN_WIND = 14;
+export const WAFFEN_STANDARD = WAFFEN_WIND;
 
 /**
  * Obergrenze des Selbstschadens durch eigene Flächenwirkung ab Fassung 5, als Anteil der
@@ -80,7 +91,7 @@ export const SELBSTSCHADEN_GRENZE = 0.4;
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereKit`). */
 export function normalisiereWaffen(fassung) {
   return fassung === WAFFEN_ALT || fassung === WAFFEN_BALANCE || fassung === WAFFEN_KORREKTUR || fassung === WAFFEN_FEIN
-    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT ? fassung : WAFFEN_STANDARD;
+    || fassung === WAFFEN_FAIR || fassung === WAFFEN_ZUENDER || fassung === WAFFEN_ZUENDERPLUS || fassung === WAFFEN_FEINTUNING || fassung === WAFFEN_VORSTRAHL || fassung === WAFFEN_SPREIZUNG || fassung === WAFFEN_MUNITION || fassung === WAFFEN_MINE || fassung === WAFFEN_SICHT || fassung === WAFFEN_WIND ? fassung : WAFFEN_STANDARD;
 }
 
 /**
@@ -336,6 +347,30 @@ const zwischenspeicher = new Map();
  * @returns {object|null}
  */
 export function getWaffe(id, fassung = WAFFEN_STANDARD) {
+  const waffe = waffeDerFassung(id, fassung);
+  if (!waffe || fassung < WAFFEN_WIND) return waffe;
+  /*
+   * Fassung 14 (AERO): Der Windfaktor kommt aus der Fassungsschicht
+   * `WINDFAKTOR_JE_WAFFE` — die Katalogeinträge selbst bleiben unverändert, damit
+   * die Prüfsummen und die Objekt-Identität der alten Fassungen gelten
+   * (tests/waffen-fassung.test.js). Der Motor liest das Feld erst, wenn
+   * `config.wind` mindestens 2 ist (`shooting.js`, `windFaktorFuerWaffe`).
+   */
+  const faktor = WINDFAKTOR_JE_WAFFE[id];
+  if (faktor === undefined) return waffe;
+  const schluessel = `${fassung}:${id}`;
+  let mitWind = windZwischenspeicher.get(schluessel);
+  if (!mitWind) {
+    mitWind = Object.freeze({ ...waffe, windFactor: faktor });
+    windZwischenspeicher.set(schluessel, mitWind);
+  }
+  return mitWind;
+}
+
+const windZwischenspeicher = new Map();
+
+/** Die Waffe in einer bereits geprüften Fassung (ohne die Windfaktor-Schicht). */
+function waffeDerFassung(id, fassung) {
   const waffe = getWeapon(id);
   if (!waffe) return waffe;
   if (fassung >= WAFFEN_FAIR) {

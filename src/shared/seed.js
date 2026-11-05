@@ -41,6 +41,17 @@ export const SEED_OFFSETS = Object.freeze({
   FEUER: 9_000_000,
   /** Minen (Bodenobjektfassung 2): Auslöseausgang und liegende Minen — eigener Zweig, alle übrigen Ströme bleiben unberührt. */
   BODENOBJEKTE: 10_000_000,
+  /**
+   * Wind (Windfassung 2, AERO): eigener Zweig, damit die Windwürfe je Zug keinen
+   * anderen Zufallsstrom verschieben. Fassung 1 zieht weiter aus `MATCH_BASE`.
+   */
+  WIND: 11_000_000,
+  /**
+   * Wurf und Abwurf von Kisten (ENG-1): eigener Zweig, fachlich unabhängig vom
+   * Wind. Fassung 1 zieht weiter aus `MATCH_BASE`; alte Aufzeichnungen bleiben
+   * dadurch bitgleich.
+   */
+  KISTENWURF: 12_000_000,
 });
 
 /**
