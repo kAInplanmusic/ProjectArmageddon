@@ -52,6 +52,11 @@ export const SEED_OFFSETS = Object.freeze({
    * dadurch bitgleich.
    */
   KISTENWURF: 12_000_000,
+  /**
+   * Günthers Perks (Fassung 4): eigener Zweig für die Auswahl der 30 Gaben und
+   * die Waffe eines Waffen-Perks. Fassung 1–3 ziehen weiter aus `GUENTHER`.
+   */
+  GUENTHER_PERK: 13_000_000,
 });
 
 /**

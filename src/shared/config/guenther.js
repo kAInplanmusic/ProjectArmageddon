@@ -299,8 +299,13 @@ export const GUENTHER_ALT = 1;
 export const GUENTHER_AKTIONEN = 2;
 /** Fassung 3: Feinschliff nach Messung (`scripts/tiere-verteilung.mjs`), siehe unten. */
 export const GUENTHER_FEINSCHLIFF = 3;
+/**
+ * Fassung 4: 30 benannte Perks statt der fünf Radausgänge, siehe unten und
+ * `config/guentherPerks.js`.
+ */
+export const GUENTHER_PERKS_FASSUNG = 4;
 /** Fassung NEUER Partien (Server und Client geben sie ausdrücklich mit). */
-export const GUENTHER_FASSUNG_STANDARD = GUENTHER_FEINSCHLIFF;
+export const GUENTHER_FASSUNG_STANDARD = GUENTHER_PERKS_FASSUNG;
 
 /**
  * Fehlende oder unbekannte Werte sind `GUENTHER_ALT`: Wer die Marke nicht trägt,
@@ -309,6 +314,7 @@ export const GUENTHER_FASSUNG_STANDARD = GUENTHER_FEINSCHLIFF;
  * das alte.)
  */
 export function normalisiereGuenther(fassung) {
+  if (fassung === GUENTHER_PERKS_FASSUNG) return GUENTHER_PERKS_FASSUNG;
   if (fassung === GUENTHER_FEINSCHLIFF) return GUENTHER_FEINSCHLIFF;
   return fassung === GUENTHER_AKTIONEN ? GUENTHER_AKTIONEN : GUENTHER_ALT;
 }
@@ -388,7 +394,7 @@ export const GUENTHER_POOP_3 = Object.freeze({
 /**
  * Die Werte, die Simulation und Anzeige für eine Fassung lesen.
  *
- * @param {number} fassung - normalisierte Fassung (1, 2 oder 3)
+ * @param {number} fassung - normalisierte Fassung (1, 2, 3 oder 4)
  * @returns {{pee:object, poop:object, aktionen:object, radAngriffNichtToedlich:boolean}}
  */
 export function guentherWerte(fassung) {
@@ -400,3 +406,42 @@ export function guentherWerte(fassung) {
     radAngriffNichtToedlich: neu,
   };
 }
+
+/*
+ * ============================================================================
+ * Fassung 4: 30 benannte Perks (Versionsmarke `config.guenther` = 4)
+ * ============================================================================
+ *
+ * ## Was sich ändert
+ *
+ * Bis Fassung 3 war das Glücksrad die ganze Belohnung: fünf Ausgänge, davon drei
+ * mit Aussetzen. Fassung 4 ersetzt den Ausgang durch eine gezogene Gabe aus 30
+ * benannten Perks (`config/guentherPerks.js`) — überwiegend gut, teils schräg,
+ * jeder mit eigener Wirkung im Motor. Das Rad selbst bleibt als Anzeige
+ * bestehen: Jeder Perk nennt ein `rad`-Segment, auf das der Client dreht; so
+ * braucht die Animation keine zweite Geometrie.
+ *
+ * ## Warum das eine eigene Fassung ist
+ *
+ * Die Perks verändern Heilung, Munition, Inventar, Wind, Zugzeit und Zielhilfe.
+ * Eine Partie aus Fassung 3 würde damit anders laufen, als sie aufgezeichnet
+ * wurde. Deshalb: Fassung 1–3 unverändert (dieselben fünf Radausgänge, derselbe
+ * Zufallsstrom), Fassung 4 nur für neue Partien. Der Replay-Kopf trägt die
+ * Marke bereits (`config.guenther`).
+ *
+ * ## Warum die Liste ausgelagert ist
+ *
+ * 30 Einträge mit Name, Erklärung und Wirkparametern sind Inhaltsdaten, kein
+ * Verhalten. In dieser Datei stünde die Liste zwischen Laufwegen und Pinkeluhr
+ * und würde beides unlesbar machen. `config/guentherPerks.js` ist die eine
+ * Quelle; hier wird sie nur weitergereicht, damit Aufrufer weiterhin alles aus
+ * `config/guenther.js` beziehen können.
+ */
+export {
+  GUENTHER_PERKS,
+  GUENTHER_PERK_TOTAL,
+  GUENTHER_PERK_IDS,
+  GUENTHER_PERK_STUFEN,
+  PERK_WAFFEN_GEWICHTE,
+  waehleGuentherPerk,
+} from './guentherPerks.js';
