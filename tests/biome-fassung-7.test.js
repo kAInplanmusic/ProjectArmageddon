@@ -23,6 +23,7 @@ import {
   NEUE_BIOME, BIOM_IDS_FASSUNG_7, SONDERBIOM_IDS_FASSUNG_4, SONDERBIOM_IDS_FASSUNG_7,
 } from '../src/shared/config/biome-neu.js';
 import { BIOME_FASSUNG_7 } from '../src/shared/config/biome-fassung-7.js';
+import { WAFFEN_WIND } from '../src/shared/config/waffen-fassung.js';
 import { REZEPTE_MATERIAL } from '../src/shared/config/stoff-rezepte-material.js';
 import { rezeptFuer } from '../src/shared/config/stoff-rezepte.js';
 import { stoffByKey, STOFF } from '../src/shared/config/stoffe.js';
@@ -300,10 +301,13 @@ function aufzeichnenUndAbspielen(extra) {
 }
 
 test('Alter Replay (Marke 6): Kopf behält die 6, Wiedergabe endet im Goldwert von vor Fassung 7', () => {
+  // Die Goldwerte entstanden, als Waffenfassung 14 (WAFFEN_WIND) der Standard war.
+  // Eine echte Altaufzeichnung trägt ihre Waffenmarke im Kopf; ohne sie würde die
+  // Wiedergabe den heutigen Standard (15, GP-4 Tempo) fahren und andere Zahlen ergeben.
   const gold = [
-    [{ gelaende: 6 }, '4913d98d', null],
-    [{ gelaende: 6, kartentyp: 'autonom', biom: 'vulkan' }, 'c49352ec', 'vulkan'],
-    [{ gelaende: 6, kartentyp: 'autonom', biom: 'planet' }, 'bf3659a9', 'planet_stein'],
+    [{ gelaende: 6, waffen: WAFFEN_WIND }, '4913d98d', null],
+    [{ gelaende: 6, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'vulkan' }, 'c49352ec', 'vulkan'],
+    [{ gelaende: 6, waffen: WAFFEN_WIND, kartentyp: 'autonom', biom: 'planet' }, 'bf3659a9', 'planet_stein'],
   ];
   for (const [extra, hash, sonder] of gold) {
     const r = aufzeichnenUndAbspielen(extra);
