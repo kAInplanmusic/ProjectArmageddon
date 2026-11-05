@@ -40,7 +40,10 @@ import { fileURLToPath } from 'node:url';
 import { protokollKlasse } from '../src/client/hud.js';
 
 const WURZEL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DATEIEN = ['src/client/main.js', 'src/client/seilSteuerung.js'];
+// `sitzung.js` kam mit RT-1 (Fortsetzen nach Neuladen) dazu: Dort steht seit der
+// Zerlegung von `main.js` eine Ablehnung („Fortsetzen nicht möglich"). Der
+// Wächter muss die Datei mitlesen, sonst prüft er die Stelle nicht mehr.
+const DATEIEN = ['src/client/main.js', 'src/client/seilSteuerung.js', 'src/client/sitzung.js'];
 
 /** Die fünf Stellen aus docs/hud-vorrang.md §3 — Textausdruck wörtlich wie im Quelltext. */
 const BENANNTE_STELLEN = [

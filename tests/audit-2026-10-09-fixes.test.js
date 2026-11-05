@@ -457,8 +457,11 @@ test('3.7: Der Sitzplatz-Token überlebt einen Neuladen (Fortsetzen-Knopf)', () 
    * sessionStorage und bietet im Menü „Letzte Sitzung fortsetzen" an.
    */
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  const mainRoh = fs.readFileSync(path.join(ROOT, 'src', 'client', 'main.js'), 'utf8');
+  // Die Sitzungsablage liegt seit der Zerlegung in `sitzung.js` (main.js importiert sie).
+  // Der Schlüssel steht dort EINMAL als Konstante; gespeichert und gelesen wird über sie.
+  const sitzung = fs.readFileSync(path.join(ROOT, 'src', 'client', 'sitzung.js'), 'utf8');
   assert.ok(html.includes('id="resume-button"'), 'Das Menü braucht einen Fortsetzen-Knopf');
-  assert.ok(mainRoh.includes("sessionStorage.setItem('pa-sitzung'"), 'Der Client muss die Sitzung speichern');
-  assert.ok(mainRoh.includes("sessionStorage.getItem('pa-sitzung'"), 'Der Client muss die Sitzung lesen');
+  assert.match(sitzung, /const SCHLUESSEL = 'pa-sitzung';/, 'Der Client muss einen festen Sitzungsschlüssel haben');
+  assert.ok(sitzung.includes('sessionStorage.setItem(SCHLUESSEL'), 'Der Client muss die Sitzung speichern');
+  assert.ok(sitzung.includes('sessionStorage.getItem(SCHLUESSEL'), 'Der Client muss die Sitzung lesen');
 });
