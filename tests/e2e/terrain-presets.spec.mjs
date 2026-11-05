@@ -250,7 +250,7 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
    * den Varianten wählen können. Geprüft wird gegen das echte Markup — ein Biom
    * im Katalog ohne Menüeintrag wäre eine unsichtbare Kulisse.
    *
-   * Der Dateiname muss zum Schlüssel passen (`<biom>_<variante>.jpg`); die
+   * Der Dateiname muss zum Schlüssel passen (`<biom>_<variante>.webp`); die
    * Übereinstimmung ist auch eine Zusage der Projektstruktur und wird vom
    * Unit-Test „Schlüssel und Dateinamen sind eindeutig" verlangt.
    */
@@ -287,7 +287,7 @@ test('Die Biomgruppen der neuen Formen sind im Menü wählbar', async ({ page })
     }
     for (const datei of biom.bilder) {
       expect(datei, `${biom.id}: Variante ohne passenden Dateinamen`)
-        .toMatch(new RegExp(`^(stimmung/)?${biom.id}_[a-z_0-9]*\\.jpg$`));
+        .toMatch(new RegExp(`^(stimmung/)?${biom.id}_[a-z_0-9]*\\.webp$`));
     }
   }
 });
