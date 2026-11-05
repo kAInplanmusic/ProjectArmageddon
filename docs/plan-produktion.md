@@ -21,7 +21,7 @@ Leitfrage je Punkt: Was macht Partien flüssiger, spannender, verständlicher?
 | Speicher (PERSIST-1) | Konten und Rangliste in **SQLite** (`node:sqlite`, falls die Node-Version es trägt, sonst JSON mit atomarem Schreiben und Sperre); Lobbys bleiben wie sie sind. Sicherung über `scripts/betrieb/sichern.sh`. | Konten brauchen sichere, gleichzeitige Schreibzugriffe; keine neue Abhängigkeit nötig. |
 | RT-1 Fortsetzen | **Bauen**: Sitzplatz-Token überlebt Neuladen, `CONTROL.RESUME` holt den Platz zurück. | Ein versehentliches Neuladen darf keine Partie kosten. |
 | Online-Kennzahlen (EREIGNIS-1) | Server zählt Kennzahlen selbst (für Endbildschirm und Rangliste); Asche/Basalt (`karte.ueber`) in den Online-Stand. | Rangliste braucht serverseitige Zahlen; später Beitretende sehen dieselbe Karte. |
-| GP-4 Tempo | **Ziel: eine Figur fällt nach 3–4 guten Treffern** (Median Schüsse bis Sieg pro Figur ≈ 3–4 statt 37 gemessen). Umsetzung als neue Waffenfassung 14 über Schaden je Kategorie, Lebenspunkte bleiben; Sweep belegt Vorher/Nachher. | Kürzere, entscheidende Partien = Flow; Worms-Gefühl. |
+| GP-4 Tempo | **Umgesetzt 2026-11-05 als Waffenfassung 15 (`WAFFEN_TEMPO`)**: Schaden je Kategorie (Nahkampf ×1,5, Fernkampf ×2,0, Lenkwaffen ×1,3), Lebenspunkte unverändert; Median Schüsse bis Sieg Fernkampf 4 → 3, Nahkampf 5 → 4, Okkultist 3 → 2; `ranged` 6,5 → 4, `melee` 5 → 3; kein neuer Ein-Treffer-Kill (Deckel 79). Fassungen 1–14 bitgleich. Messung: `docs/balance-tempo-2026-11-05.md`. | Kürzere, entscheidende Partien = Flow; Worms-Gefühl. |
 | GP-1 (1) | `homing`-Gewicht im Seltenheitswert korrigieren (Superschaf/Phönixschlag nicht mehr fälschlich legendär); Marke in Waffenfassung 14. | Seltenheit soll Stärke widerspiegeln. |
 | GP-1 (2) | Waffen ohne Schaden nach **Nutzwert** einstufen (Werkzeuge mit großer Wirkung = selten). | Beute bleibt spannend. |
 | GP-1 (3) | Zünderwaffen auf Verhältnis ≥ 0,5 heben, gemessen mit Armierung. | Liegenbleibende Bomben sollen sich lohnen. |
@@ -64,7 +64,7 @@ Rollback, Sicherung, Dockerfile, Caddy) · Auslieferung (WebP-Kulissen, Bundle-G
 
 **Welle 1**
 - **A Konten & Rangliste:** Login (Name+PW), SQLite-Speicher, Elo-Rangliste, Online-Kennzahlen im Server, Konto löschen, Admin-Passwort-Skript, RT-1 Fortsetzen nach Neuladen, Asche/Basalt im Online-Stand. Menü: Anmelden/Registrieren, Rangliste.
-- **B Waffenfassung 14 & Balance:** GP-1, GP-2, GP-4 (3–4 Treffer), N-17, N-18, AERO-Windfaktor, ENG-1 Zufallsströme, MINEN-1-Regeln; Sweep vorher/nachher; Marken nach §2.
+- **B Waffenfassung 15 & Balance:** GP-1, GP-2, GP-4 (3–4 Treffer, Fassung 15 `WAFFEN_TEMPO`), N-17, N-18, AERO-Windfaktor (Fassung 14), ENG-1 Zufallsströme, MINEN-1-Regeln; Messung vorher/nachher; Marken nach §2.
 - **C Figuren & Kamera:** FIGUREN-B, KAMERA C1–C6, N-10 Schussbewegungen, N-09 Geschosszellen, Minen-Icon/-Bild, N-04 automatische Sprite-Prüfung.
 
 **Welle 2**
