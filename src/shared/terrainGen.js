@@ -134,35 +134,35 @@ export const TERRAIN_PRESETS = Object.freeze({
  */
 export const TERRAIN_AFFINITY = Object.freeze({
   open: Object.freeze({
-    favorisiert: 'artillery',
+    favorisiert: 'fernkampf',
     begruendung: 'Weite Sichtlinien — die volle Reichweite kommt zum Tragen.',
   }),
   spires: Object.freeze({
-    favorisiert: 'scout',
+    favorisiert: 'okkultist',
     begruendung: 'Höhen und Vertikale — wer klettern kann, wählt die Stellung.',
   }),
   warren: Object.freeze({
-    favorisiert: 'scout',
+    favorisiert: 'nahkampf',
     begruendung: 'Deckung auf kurze Distanz — der Weg zählt mehr als die Wucht.',
   }),
   flooded: Object.freeze({
-    favorisiert: 'scout',
+    favorisiert: 'fernkampf',
     begruendung: 'Viel Wasser — wer sich darin bewegt, erreicht die trockenen Gipfel.',
   }),
   caverns: Object.freeze({
-    favorisiert: 'heavy',
+    favorisiert: 'nahkampf',
     begruendung: 'Enge, gedeckte Räume — wer mehr aushält, gewinnt den Nahkampf.',
   }),
   islands: Object.freeze({
-    favorisiert: 'artillery',
+    favorisiert: 'fernkampf',
     begruendung: 'Weite Distanzen über Wasser — nur der weite Schuss trägt hinüber.',
   }),
   mountains: Object.freeze({
-    favorisiert: 'artillery',
+    favorisiert: 'okkultist',
     begruendung: 'Große Höhenunterschiede — Steilfeuer über den Grat.',
   }),
   hills: Object.freeze({
-    favorisiert: 'heavy',
+    favorisiert: 'nahkampf',
     begruendung: 'Gemischtes Gelände mit Deckung — ausgewogen, mit Vorteil für Zähe.',
   }),
 });

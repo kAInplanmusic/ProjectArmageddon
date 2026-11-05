@@ -115,10 +115,11 @@ test.describe('Counterplay-Anzeige', () => {
         .toMatch(/stark gegen|schwach gegen|keine Klasse mit Vorteil/);
     }
 
-    // Der Scout hat heute keine Gegenseite mit Vorteil — der Grund muss
-    // benannt sein statt zu fehlen.
-    const scoutZeile = texte.find(t => t.includes('schwach gegen heavy'));
-    expect(scoutZeile, 'die Scout-Zeile fehlt').toBeTruthy();
+    // Fassung 3: gleiche Summe der wirksamen Faktoren. Jede Klasse gewinnt und
+    // verliert zwei Achsen — es gibt keine Netto-Überlegenheit. Genau das muss
+    // die Anzeige ausdrücklich sagen, statt eine Gegenseite zu erfinden.
+    expect(texte.some(t => t.includes('keine Klasse mit Vorteil')),
+      'der ausdrückliche Hinweis auf fehlende Netto-Überlegenheit fehlt').toBe(true);
   });
 
   test('Die Counterplay-Anzeige nennt keine Zahlen', async ({ page }) => {

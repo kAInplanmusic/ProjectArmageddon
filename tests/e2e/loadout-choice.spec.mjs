@@ -1,9 +1,9 @@
 /**
  * E2E: Klassenwahl je Spielerplatz im Menü.
  *
- * Die Unit-Tests prüfen Auflösung, Match-Wirkung und Replay. Hier wird geprüft,
- * dass die Auswahl im Browser existiert, aus den Configs stammt und den Start
- * wirklich erreicht.
+ * Seit Klassenfassung 3 (`docs/anforderungen-2026-11-05.md` §6) gibt es drei
+ * Klassen und KEINE Archetyp-Auswahl mehr. Geprüft wird, dass nur die drei
+ * Klassen angeboten werden, aus den Configs stammen und den Start erreichen.
  */
 import { test, expect } from '@playwright/test';
 
@@ -18,36 +18,34 @@ async function oeffneLoadouts(page) {
 }
 
 test.describe('Klassenwahl im Menü', () => {
-  test('Je Spielerplatz gibt es Felder für Klasse und Archetyp', async ({ page }) => {
+  test('Je Spielerplatz gibt es ein Klassenfeld — und kein Archetypfeld', async ({ page }) => {
     /*
      * Die Zahl der Felder folgt „Teams" × „Spieler pro Team". Bei der Vorgabe
-     * (2 × 2) sind es vier Plätze.
+     * (2 × 3) sind es sechs Plätze.
      */
     await oeffneLoadouts(page);
 
-    for (let i = 0; i < 4; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       await expect(page.locator(`#cfg-loadout-klasse-${i}`), `Platz ${i}: Klassenfeld fehlt`)
         .toBeVisible();
-      await expect(page.locator(`#cfg-loadout-archetyp-${i}`), `Platz ${i}: Archetypfeld fehlt`)
-        .toBeVisible();
+      await expect(page.locator(`#cfg-loadout-archetyp-${i}`), `Platz ${i}: Archetypfeld darf es nicht geben`)
+        .toHaveCount(0);
     }
 
     // Die Optionen stammen aus den Configs, nicht aus dem Markup.
     const erwartet = await page.evaluate(async () => {
       const m = await import('/src/shared/config/classes.js');
-      return { klassen: [...m.CLASS_IDS], archetypen: [...m.ARCHETYPE_IDS] };
+      return [...m.CLASS_IDS];
     });
+    expect(erwartet).toEqual(['nahkampf', 'fernkampf', 'okkultist']);
 
     const klassenWerte = await page.locator('#cfg-loadout-klasse-0 option')
       .evaluateAll(opts => opts.map(o => o.value));
-    const archetypWerte = await page.locator('#cfg-loadout-archetyp-0 option')
-      .evaluateAll(opts => opts.map(o => o.value));
 
-    // Der erste Eintrag ist leer = automatisch (die alte Regel).
+    // Der erste Eintrag ist leer = automatisch.
     expect(klassenWerte[0]).toBe('');
-    expect(archetypWerte[0]).toBe('');
-    for (const k of erwartet.klassen) expect(klassenWerte).toContain(k);
-    for (const a of erwartet.archetypen) expect(archetypWerte).toContain(a);
+    for (const k of erwartet) expect(klassenWerte).toContain(k);
+    expect(klassenWerte.length, 'nur die drei Klassen plus „automatisch"').toBe(4);
   });
 
   test('Die Felder richten sich nach Teams und Einheiten je Spieler', async ({ page }) => {
@@ -74,45 +72,34 @@ test.describe('Klassenwahl im Menü', () => {
   });
 
   test('Das Label nennt die Standardzuteilung des Platzes', async ({ page }) => {
-    // Ohne Wahl gilt die alte Regel — das Label zeigt sie, damit man sieht,
-    // was man ändert.
     await oeffneLoadouts(page);
 
     const erwartet = await page.evaluate(async () => {
       const m = await import('/src/shared/config/classes.js');
-      return [0, 1, 2, 3].map(i => {
-        const r = m.resolveLoadout(i);
-        return `${r.classId}/${r.archetypeId}`;
-      });
+      return [0, 1, 2, 3, 4, 5].map(i => m.resolveLoadout(i).classId);
     });
 
     const labels = await page.locator('#loadout-felder label').allInnerTexts();
-    for (const [i, kombi] of erwartet.entries()) {
+    for (const [i, klasse] of erwartet.entries()) {
       /*
        * Beide Seiten kleinschreiben: `innerText` liefert den Text WIE
-       * GERENDERT, und das Menü schreibt Labels per CSS in Großbuchstaben
-       * („PLATZ 1 (SCOUT/BRAWLER)"). Ein direkter Vergleich gegen die
-       * Config-Werte würde an der Darstellung scheitern statt am Inhalt.
+       * GERENDERT, und das Menü schreibt Labels per CSS in Großbuchstaben.
        */
       expect(labels[i].toLowerCase(), `Platz ${i + 1}: Vorgabe fehlt`)
-        .toContain(kombi.toLowerCase());
+        .toContain(klasse.toLowerCase());
     }
   });
 
-  test('Eine gewählte Kombination erreicht das Match', async ({ page }) => {
+  test('Eine gewählte Klasse erreicht das Match', async ({ page }) => {
     /*
      * Der Kern: Was im Menü steht, muss im laufenden Match ankommen — und zwar
-     * als PROFILE, nicht nur als Eintrag. Geprüft wird am LEBEN, weil das eine
-     * Zahl ist, die nur stimmen kann, wenn die Verdrahtung sitzt.
+     * als PROFIL, nicht nur als Eintrag. Geprüft wird am LEBEN.
      */
     await oeffneLoadouts(page);
-
-    // Platz 1 auf artillery/artillerist — vorher unmöglich.
-    await page.selectOption('#cfg-loadout-klasse-0', 'artillery');
-    await page.selectOption('#cfg-loadout-archetyp-0', 'artillerist');
+    await page.selectOption('#cfg-loadout-klasse-0', 'okkultist');
 
     await page.locator('#start-button').click();
-    await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing');
+    await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing', { timeout: 20_000 });
 
     const befund = await page.evaluate(async () => {
       const m = await import('/src/shared/config/classes.js');
@@ -120,39 +107,35 @@ test.describe('Klassenwahl im Menü', () => {
       return {
         plaetze: match.players.map(p => ({
           klasse: m.CLASS_IDS[p.classId],
-          archetyp: m.ARCHETYPE_IDS[p.archetypeId],
+          archetyp: p.archetypeId,
           hp: match.world.getComponent(p.entityId, 'Health', 'max'),
         })),
       };
     });
 
-    expect(befund.plaetze[0].klasse).toBe('artillery');
-    expect(befund.plaetze[0].archetyp).toBe('artillerist');
+    expect(befund.plaetze[0].klasse).toBe('okkultist');
+    expect(befund.plaetze[0].archetyp).toBe(0);
 
-    // Und das Leben muss dem entkoppelten Profil entsprechen, nicht dem der
-    // Standardzuteilung (artillery/occultist hätte weniger Leben).
     const erwartet = await page.evaluate(async () => {
       const m = await import('/src/shared/config/classes.js');
-      return Math.round(100 * m.combatProfile('artillery', 'artillerist').healthMultiplier);
+      const { KLASSEN_STANDARD } = await import('/src/shared/config/klassen-fassung.js');
+      return Math.round(100 * m.combatProfile('okkultist', null, null, KLASSEN_STANDARD).healthMultiplier);
     });
     expect(befund.plaetze[0].hp).toBe(erwartet);
   });
 
-  test('Ohne Wahl bleibt die Standardzuteilung', async ({ page }) => {
-    // Die Abwärtskompatibilität im Browser: Wer nichts wählt, bekommt das
-    // Spiel von vorher.
+  test('Ohne Wahl gilt die Klassenreihenfolge', async ({ page }) => {
+    // Fassung 3 ist der Standard: nahkampf, fernkampf, okkultist.
     await page.goto('/');
     await page.locator('#start-button').click();
-    await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing');
+    await page.waitForFunction(() => window.__PA__?.game?.match?.status === 'playing', { timeout: 20_000 });
 
     const plaetze = await page.evaluate(async () => {
       const m = await import('/src/shared/config/classes.js');
       const match = window.__PA__.game.match;
-      return match.players.map(p => `${m.CLASS_IDS[p.classId]}/${m.ARCHETYPE_IDS[p.archetypeId]}`);
+      return match.players.map(p => m.CLASS_IDS[p.classId]);
     });
 
-    expect(plaetze.slice(0, 3)).toEqual([
-      'scout/brawler', 'heavy/artillerist', 'artillery/occultist',
-    ]);
+    expect(plaetze.slice(0, 3)).toEqual(['nahkampf', 'fernkampf', 'okkultist']);
   });
 });

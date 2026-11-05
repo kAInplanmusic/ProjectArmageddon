@@ -27,25 +27,26 @@ import {
   uebersichtFuerHilfe,
 } from '../src/shared/config/classes.js';
 import { TERRAIN_PRESETS } from '../src/shared/terrainGen.js';
-import { KLASSEN_STANDARD, klassenWerte } from '../src/shared/config/klassen-fassung.js';
+import { KLASSEN_ALT, KLASSEN_STANDARD, klassenWerte } from '../src/shared/config/klassen-fassung.js';
 import { getClassLoadoutDetail } from '../src/shared/config/loadouts.js';
 
-test('Die Übersicht führt jede Klasse und jeden Archetyp', () => {
+test('Die Übersicht führt die drei Klassen — und KEINE Archetypen', () => {
   const u = uebersichtFuerHilfe();
   assert.equal(u.klassen.length, CLASS_IDS.length);
-  assert.equal(u.archetypen.length, ARCHETYPE_IDS.length);
+  assert.equal(u.archetypen.length, 0,
+    'Fassung 3 bietet keine Archetypen mehr an — die Liste muss leer sein');
   assert.deepEqual(u.klassen.map(k => k.id), [...CLASS_IDS]);
-  assert.deepEqual(u.archetypen.map(a => a.id), [...ARCHETYPE_IDS]);
+  assert.deepEqual([...CLASS_IDS], ['nahkampf', 'fernkampf', 'okkultist']);
 });
 
-test('Jede Klasse und jeder Archetyp hat einen Erklärungssatz', () => {
+test('Jede Klasse hat einen Erklärungssatz', () => {
   /*
    * Der Satz ist die Zutat, die im Entwurf gefehlt hat: Er steht bei den WERTEN
    * (classes.js), nicht im Client. Fehlt er, wäre die Übersicht leer — ohne dass
    * etwas fehlschlägt. Deshalb ausdrücklich geprüft.
    */
   const u = uebersichtFuerHilfe();
-  for (const eintrag of [...u.klassen, ...u.archetypen]) {
+  for (const eintrag of u.klassen) {
     assert.equal(typeof eintrag.erklaerung, 'string', `${eintrag.id}: kein Erklärungstext`);
     assert.ok(eintrag.erklaerung.length > 15, `${eintrag.id}: Erklärung zu kurz`);
   }
@@ -53,53 +54,47 @@ test('Jede Klasse und jeder Archetyp hat einen Erklärungssatz', () => {
 
 test('Die wirksamen Zahlen stammen aus den Configs, nicht aus einer zweiten Quelle', () => {
   /*
-   * Der Kern der Architekturentscheidung: Wenn die Anzeige den Faktor 0,7 als
+   * Der Kern der Architekturentscheidung: Wenn die Anzeige den Faktor 0,75 als
    * Prosa nennt, muss dieser Wert bei einer Balance-Änderung mitwandern. Deshalb
    * darf er NUR an einer Stelle stehen. Dieser Test vergleicht die Übersicht
-   * gegen die Rohtabellen — weichen sie ab, gibt es eine zweite Quelle.
+   * gegen die Rohtabelle und gegen `combatProfile()`.
    */
   const u = uebersichtFuerHilfe();
 
   for (const eintrag of u.klassen) {
-    // Die Anzeige zeigt den STANDARD (Klassenfassung 2); die Tabelle liefert Fassung 1, `klassenWerte` legt Fassung 2 darauf.
     const roh = klassenWerte(CLASS_DEFINITIONS, eintrag.id, KLASSEN_STANDARD);
     assert.equal(eintrag.wirksam.leben, roh.health,
       `${eintrag.id}: Leben weicht von CLASS_DEFINITIONS ab`);
     assert.equal(eintrag.wirksam.schaden, roh.power,
       `${eintrag.id}: Schaden weicht von CLASS_DEFINITIONS ab`);
-    // Genau die drei Achsen, die der Motor liest (siehe combatProfile).
-    assert.equal(eintrag.wirksam.schaden, combatProfile(eintrag.id, 'brawler', null, KLASSEN_STANDARD).damageMultiplier,
+    assert.equal(eintrag.wirksam.schaden,
+      combatProfile(eintrag.id, null, null, KLASSEN_STANDARD).damageMultiplier,
       `${eintrag.id}: Schaden weicht von combatProfile ab`);
   }
+});
 
+test('Fassungen ≤ 2 liefern Archetypen weiterhin — für Altreplays', () => {
+  /*
+   * Der Archetyp wirkt in Fassung 3 nicht mehr. Die Hilfe der Altreplays zeigt
+   * ihn aber unverändert (Lebens- und Tempo-Faktor), damit eine alte Aufzeichnung
+   * dieselbe Anzeige behält — und der Schaden bleibt unberührt.
+   */
+  const u = uebersichtFuerHilfe(KLASSEN_ALT);
+  assert.deepEqual(u.archetypen.map(a => a.id), [...ARCHETYPE_IDS]);
   for (const eintrag of u.archetypen) {
     const roh = CLASS_ARCHETYPES[eintrag.id];
     assert.equal(eintrag.wirksam.leben, roh.health,
       `${eintrag.id}: Leben weicht von CLASS_ARCHETYPES ab`);
-  }
-});
-
-test('Der Archetyp wirkt als TEMPO, nicht als Schaden — und die Anzeige nennt es so', () => {
-  /*
-   * Fund aus dem Codeaudit: `archetype.launch` (früher `damage`) geht als
-   * `launchSpeedMultiplier` in die Abschussgeschwindigkeit ein und wird NICHT
-   * als Schadensfaktor angewandt. Eine Übersicht, die ihn unter „Schaden"
-   * aufführte, wäre glatt falsch — und niemand würde es bemerken.
-   */
-  const u = uebersichtFuerHilfe();
-  for (const eintrag of u.archetypen) {
     assert.equal(eintrag.wirksam.schaden, undefined,
       `${eintrag.id}: Ein Archetyp hat keinen Schadensfaktor — Feld darf nicht existieren`);
-    assert.equal(typeof eintrag.wirksam.tempo, 'number',
-      `${eintrag.id}: Tempo-Faktor fehlt`);
-
-    // Gegenprobe über die wirksame Verrechnung: combatProfile arbeitet den
-    // Archetyp in launchSpeedMultiplier ein, in damageMultiplier NICHT.
-    const mit = combatProfile('heavy', eintrag.id);
-    const ohne = combatProfile('heavy', 'brawler');
+    const mit = combatProfile('heavy', eintrag.id, null, KLASSEN_ALT);
+    const ohne = combatProfile('heavy', 'brawler', null, KLASSEN_ALT);
     assert.equal(mit.damageMultiplier, ohne.damageMultiplier,
       `${eintrag.id}: Archetyp darf den Schaden NICHT verändern`);
   }
+  // In Fassung 3 ignoriert combatProfile den Archetyp vollständig.
+  const neu = combatProfile('nahkampf', 'occultist', null, KLASSEN_STANDARD);
+  assert.equal(neu.archetypeId, null);
 });
 
 test('Die Erklärungstexte nennen KEINE Zahlen', () => {
@@ -123,16 +118,18 @@ test('Die Erklärungstexte nennen KEINE Zahlen', () => {
   }
 });
 
-test('Die Kopplung von Klasse und Archetyp wird genannt', () => {
+test('Der Hinweis nennt die drei Klassen ohne Unterklassen', () => {
   /*
-   * Die Übersicht zeigt neun Kombinationen; im Match sind nur drei erreichbar
-   * (`index % 3`, gemessen: scout/brawler, heavy/artillerist,
-   * artillery/occultist). Sie zu verschweigen wäre irreführend — der Entwurf
-   * verlangt den Hinweis ausdrücklich.
+   * Die Übersicht zeigt in Fassung 3 genau drei Klassen. Der Hinweis muss das
+   * sagen — und darf nicht mehr von „neun Kombinationen" sprechen.
    */
   const u = uebersichtFuerHilfe();
-  assert.match(u.kopplungHinweis, /drei/, 'Der Hinweis muss die Zahl der erreichbaren nennen');
-  assert.match(u.kopplungHinweis, /neun/, 'Der Hinweis muss die Zahl der möglichen nennen');
+  assert.match(u.kopplungHinweis, /drei Klassen/i,
+    'Der Hinweis muss die Zahl der Klassen nennen');
+  assert.match(u.kopplungHinweis, /ohne Unterklassen/i,
+    'Der Hinweis muss das Fehlen von Unterklassen nennen');
+  assert.doesNotMatch(u.kopplungHinweis, /neun/,
+    'Der Hinweis spricht noch von neun Kombinationen — die gibt es nicht mehr');
   assert.ok(u.inertHinweis.length > 20, 'Der Hinweis auf wirkungslose Werte fehlt');
 });
 
@@ -210,7 +207,7 @@ test('Der reason des Startaufgebots ist KEINE Begründung, sondern zusammengeset
    * `reason` eines Tages zu einer echten Begründung, schlägt der Test fehl —
    * und die Anzeige kann darauf umgestellt werden.
    */
-  const detail = getClassLoadoutDetail('scout');
+  const detail = getClassLoadoutDetail('nahkampf');
   for (const platz of detail) {
     const erwarteterPlatzhalter = platz.role === 'kuer'
       ? /Kür der Klasse/
@@ -219,17 +216,7 @@ test('Der reason des Startaufgebots ist KEINE Begründung, sondern zusammengeset
       `reason für "${platz.role}" ist nicht mehr das erwartete Muster — `
       + `prüfen, ob es jetzt eine echte Begründung ist (dann Anzeige umstellen): `
       + `"${platz.reason}"`);
-
-    /*
-     * Der Satz nennt den Klassennamen — das ist der Teil, der ihn zu einem
-     * Platzhalter macht (er gilt für jede Klasse gleich).
-     *
-     * NICHT geprüft wird, ob `reason` das `roleLabel` enthält: Beim
-     * `kuer`-Platz heißt die Rolle „Klassenwaffe", der Satz sagt aber
-     * „Bewegungsmittel" (gemessen). Die beiden nutzen unterschiedliche Wörter;
-     * eine Prüfung auf Gleichheit war ein Testfehler, kein Codefehler.
-     */
-    assert.match(platz.reason, /der Klasse scout/,
+    assert.match(platz.reason, /der Klasse nahkampf/,
       `reason nennt die Klasse nicht — Muster geändert?`);
   }
 });

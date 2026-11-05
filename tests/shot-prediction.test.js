@@ -24,7 +24,8 @@ import {
 } from '../src/client/shotPrediction.js';
 import { MatchController } from '../src/engine/match.js';
 import { POWER_TO_SPEED } from '../src/shared/ballistics.js';
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
+import { combatProfile, CLASS_IDS, LEGACY_CLASS_IDS, ARCHETYPE_IDS } from '../src/shared/config/classes.js';
+import { KLASSEN_ALT, KLASSEN_NEU } from '../src/shared/config/klassen-fassung.js';
 import { getWeapon } from '../src/shared/config/weapons.js';
 import { DEFAULT_PROJECTILE_GRAVITY, DEFAULT_PROJECTILE_DRAG } from '../src/engine/systems/projectileSystem.js';
 import { ohneKommentare } from './helfer/ohne-kommentare.js';
@@ -212,21 +213,29 @@ test('Der Geschwindigkeitsfaktor stimmt mit dem Kampfprofil überein', () => {
    * `CLASS_DEFINITIONS[0]` nichts findet und der Rückfall greift. Die Klassen
    * waren damit wirkungslos. Dieser Test hält den Unterschied fest.
    */
-  for (let index = 0; index < CLASS_IDS.length; index++) {
+  for (let index = 0; index < LEGACY_CLASS_IDS.length; index++) {
     for (let aIndex = 0; aIndex < ARCHETYPE_IDS.length; aIndex++) {
-      const erwartet = combatProfile(CLASS_IDS[index], ARCHETYPE_IDS[aIndex]).launchSpeedMultiplier;
+      const erwartet = combatProfile(LEGACY_CLASS_IDS[index], ARCHETYPE_IDS[aIndex], null, KLASSEN_ALT).launchSpeedMultiplier;
       assert.equal(
-        launchSpeedMultiplier({ classId: index, archetypeId: aIndex }),
+        launchSpeedMultiplier({ classId: index, archetypeId: aIndex, klassen: KLASSEN_ALT }),
         erwartet,
         `Index ${index}/${aIndex} sollte ${erwartet} ergeben`,
       );
       // Und die Namensschreibweise führt zum selben Ergebnis.
       assert.equal(
-        launchSpeedMultiplier({ classId: CLASS_IDS[index], archetypeId: ARCHETYPE_IDS[aIndex] }),
+        launchSpeedMultiplier({ classId: LEGACY_CLASS_IDS[index], archetypeId: ARCHETYPE_IDS[aIndex], klassen: KLASSEN_ALT }),
         erwartet,
-        `Name ${CLASS_IDS[index]}/${ARCHETYPE_IDS[aIndex]}`,
+        `Name ${LEGACY_CLASS_IDS[index]}/${ARCHETYPE_IDS[aIndex]}`,
       );
     }
+  }
+
+  // Fassung 3: kein Archetyp, Index bildet auf die drei neuen Klassen ab.
+  for (let index = 0; index < CLASS_IDS.length; index++) {
+    const erwartet = combatProfile(CLASS_IDS[index], null, null, KLASSEN_NEU).launchSpeedMultiplier;
+    assert.equal(launchSpeedMultiplier({ classId: index, klassen: KLASSEN_NEU }), erwartet,
+      `Fassung 3, Index ${index} sollte ${erwartet} ergeben`);
+    assert.equal(launchSpeedMultiplier({ classId: CLASS_IDS[index], klassen: KLASSEN_NEU }), erwartet);
   }
 });
 
@@ -236,15 +245,20 @@ test('Unkonvertierte Indizes liefern unterschiedliche Faktoren je Klasse', () =>
    * bedeutungslos. Dieser Test schlägt fehl, sobald der Rückfall wieder für
    * alle Indizes greift — genau die Regression, die unbemerkt bleiben würde.
    */
-  const faktoren = CLASS_IDS.map((_, index) => launchSpeedMultiplier({ classId: index, archetypeId: 0 }));
+  const faktoren = LEGACY_CLASS_IDS.map((_, index) => launchSpeedMultiplier({ classId: index, archetypeId: 0, klassen: KLASSEN_ALT }));
   const eindeutig = new Set(faktoren);
-  assert.equal(eindeutig.size, CLASS_IDS.length,
+  assert.equal(eindeutig.size, LEGACY_CLASS_IDS.length,
     `Jede Klasse muss einen eigenen Faktor haben, erhalten: ${JSON.stringify(faktoren)}`);
 
   // Konkret: Artillery schießt weiter als Scout.
-  const scout = launchSpeedMultiplier({ classId: 0, archetypeId: 0 });
-  const artillery = launchSpeedMultiplier({ classId: 2, archetypeId: 0 });
+  const scout = launchSpeedMultiplier({ classId: 0, archetypeId: 0, klassen: KLASSEN_ALT });
+  const artillery = launchSpeedMultiplier({ classId: 2, archetypeId: 0, klassen: KLASSEN_ALT });
   assert.ok(artillery > scout, `artillery ${artillery} sollte über scout ${scout} liegen`);
+
+  // Fassung 3: Okkultist schießt weiter als Nahkampf.
+  const nah = launchSpeedMultiplier({ classId: CLASS_IDS.indexOf('nahkampf'), klassen: KLASSEN_NEU });
+  const okkult = launchSpeedMultiplier({ classId: CLASS_IDS.indexOf('okkultist'), klassen: KLASSEN_NEU });
+  assert.ok(okkult > nah, `okkultist ${okkult} sollte über nahkampf ${nah} liegen`);
 });
 
 test('Der Waffenfaktor multipliziert den Geschwindigkeitsfaktor', () => {
@@ -270,22 +284,22 @@ test('Eine schnellere Klasse fliegt messbar weiter — die Vorhersage nutzt den 
    * Die Indizes sind 0 = scout, 1 = heavy, 2 = artillery (Reihenfolge aus
    * `CLASS_IDS`).
    */
-  const scoutIndex = CLASS_IDS.indexOf('scout');
-  const artilleryIndex = CLASS_IDS.indexOf('artillery');
-  assert.ok(scoutIndex >= 0 && artilleryIndex >= 0, 'Klassennamen geändert — Test anpassen');
+  const nahIndex = CLASS_IDS.indexOf('nahkampf');
+  const okkultIndex = CLASS_IDS.indexOf('okkultist');
+  assert.ok(nahIndex >= 0 && okkultIndex >= 0, 'Klassennamen geändert — Test anpassen');
 
-  const artillery = launchSpeedMultiplier({ classId: artilleryIndex, archetypeId: 0 });
-  const scout = launchSpeedMultiplier({ classId: scoutIndex, archetypeId: 0 });
-  assert.ok(artillery > scout, `artillery ${artillery} sollte über scout ${scout} liegen`);
+  const okkult = launchSpeedMultiplier({ classId: okkultIndex, klassen: KLASSEN_NEU });
+  const nah = launchSpeedMultiplier({ classId: nahIndex, klassen: KLASSEN_NEU });
+  assert.ok(okkult > nah, `okkultist ${okkult} sollte über nahkampf ${nah} liegen`);
 
   const gemeinsam = { x: 100, y: 400, angle: 0.7, power: 60, width: 4000, height: 4000 };
-  const bahnArtillery = predictTrajectory({ ...gemeinsam, speedMultiplier: artillery });
-  const bahnScout = predictTrajectory({ ...gemeinsam, speedMultiplier: scout });
+  const bahnOkkult = predictTrajectory({ ...gemeinsam, speedMultiplier: okkult });
+  const bahnNah = predictTrajectory({ ...gemeinsam, speedMultiplier: nah });
 
-  const letzterArtillery = bahnArtillery.points.at(-1);
-  const letzterScout = bahnScout.points.at(-1);
-  assert.ok(letzterArtillery.x > letzterScout.x,
-    `artillery (${letzterArtillery.x.toFixed(1)}) sollte weiter reichen als scout (${letzterScout.x.toFixed(1)})`);
+  const letzterOkkult = bahnOkkult.points.at(-1);
+  const letzterNah = bahnNah.points.at(-1);
+  assert.ok(letzterOkkult.x > letzterNah.x,
+    `okkultist (${letzterOkkult.x.toFixed(1)}) sollte weiter reichen als nahkampf (${letzterNah.x.toFixed(1)})`);
 });
 
 test('Eine echte Waffe aus dem Katalog ergibt eine endliche Bahn', () => {

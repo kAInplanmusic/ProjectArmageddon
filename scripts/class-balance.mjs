@@ -1,32 +1,30 @@
 #!/usr/bin/env node
 /**
- * Zeigt alle neun Klasse/Archetyp-Kombinationen mit ihren Wirkwerten.
- *
- * ## Warum dieses Werkzeug existiert
- *
- * Ein Audit bemerkte: Die Kopplung von Klasse und Archetyp ist aufgehoben (jede
- * Kombination ist wählbar), aber **die Balance der neuen Kombinationen war nie
- * gemessen**. `npm run balance` prüft Waffen, nicht Klassen.
- *
- * Dieses Werkzeug schließt die Lücke: Es listet alle neun Kombinationen mit
- * ihren vier wirksamen Achsen und ordnet sie nach einer Summe.
+ * Misst die Klassen der gewählten Klassenfassung.
  *
  * ## Was die Summe IST und was sie NICHT ist
  *
- * Sie ist ein **grober Indikator**: vier Achsen gleich gewichtet addiert. Sie
- * beweist keine Balance — ein Charakter mit viel Leben und wenig Tempo kann
- * gleich stark sein wie der umgekehrte. Sie zeigt nur, ob eine Kombination auf
+ * Sie ist ein **grober Indikator**: die vier wirksamen Achsen gleich gewichtet
+ * addiert. Sie beweist keine Balance — ein Charakter mit viel Leben und wenig
+ * Tempo kann gleich stark sein wie der umgekehrte. Sie zeigt, ob eine Klasse auf
  * ALLEN Achsen hinterherliegt, und das ist ein Warnsignal.
  *
- * Für einen echten Nachweis braucht es Partien; siehe `npm run balance` für
- * die Waffenseite und `tests/` für die Determinismus-Prüfungen.
+ * Für einen echten Nachweis braucht es Partien; siehe `npm run balance` für die
+ * Waffenseite und `tests/` für die Determinismus-Prüfungen.
+ *
+ * ## Fassungen
+ *
+ *   - Standard (Fassung 3): drei Klassen ohne Archetypen. Ausgeglichen heißt
+ *     hier: die Summe der wirksamen Faktoren ist für alle drei gleich (4,00).
+ *   - `--klassen=1` / `--klassen=2`: die alten neun Klasse/Archetyp-Kombinationen
+ *     der Altreplays.
  *
  * ## Aufruf
  *
- *     node scripts/class-balance.mjs
+ *     node scripts/class-balance.mjs [--klassen=3]
  */
 import {
-  CLASS_IDS, ARCHETYPE_IDS, combatProfile,
+  CLASS_IDS, LEGACY_CLASS_IDS, ARCHETYPE_IDS, combatProfile, istKlassenfassungNeu,
 } from '../src/shared/config/classes.js';
 import { KLASSEN_STANDARD, normalisiereKlassen } from '../src/shared/config/klassen-fassung.js';
 
@@ -41,19 +39,23 @@ const ACHSEN = [
   { id: 'beweglichkeit', feld: 'mobilityMultiplier', label: 'Bewegl.' },
 ];
 
+const neu = istKlassenfassungNeu(KLASSEN);
+const klassen = neu ? CLASS_IDS : LEGACY_CLASS_IDS;
+
 const zeilen = [];
-for (const klasse of CLASS_IDS) {
-  for (const archetyp of ARCHETYPE_IDS) {
+for (const klasse of klassen) {
+  const archetypen = neu ? [null] : ARCHETYPE_IDS;
+  for (const archetyp of archetypen) {
     const p = combatProfile(klasse, archetyp, null, KLASSEN);
     const werte = {};
     for (const achse of ACHSEN) werte[achse.id] = p[achse.feld] ?? 0;
     const summe = ACHSEN.reduce((s, a) => s + werte[a.id], 0);
-    zeilen.push({ kombi: `${klasse}/${archetyp}`, klasse, werte, summe });
+    zeilen.push({ kombi: archetyp ? `${klasse}/${archetyp}` : klasse, klasse, werte, summe });
   }
 }
 zeilen.sort((a, b) => b.summe - a.summe);
 
-console.log('Klasse/Archetyp — alle neun Kombinationen');
+console.log(neu ? 'Klassen — Fassung 3 (keine Archetypen)' : `Klasse/Archetyp — Fassung ${KLASSEN}`);
 console.log('');
 console.log(`${'Kombination'.padEnd(24)}${ACHSEN.map(a => a.label.padStart(9)).join('')}${'Summe'.padStart(9)}`);
 console.log('-'.repeat(24 + ACHSEN.length * 9 + 9));
@@ -101,7 +103,9 @@ if (abstand > 1.15) {
   console.log('  Das ist eine BALANCE-Entscheidung, keine Aufräumarbeit: Ob die Klasse');
   console.log('  angehoben oder ihre Rolle geschärft wird, hängt vom Spielgefühl ab.');
 } else {
-  console.log('Die Klassen liegen nah beieinander — kein auffälliger Abstand.');
+  console.log(neu && max - min < 1e-9
+    ? 'Die drei Klassen sind gleichauf — gleiche Summe der wirksamen Faktoren.'
+    : 'Die Klassen liegen nah beieinander — kein auffälliger Abstand.');
 }
 
 console.log('');

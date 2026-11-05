@@ -78,15 +78,20 @@ test('check-fuses nennt die Flugzeit UND den Zünder', () => {
   assert.match(ausgabe, /Faktor/, 'das Verhältnis fehlt');
 });
 
-test('class-balance nennt alle neun Kombinationen', () => {
+test('class-balance nennt Fassung 3 mit drei Klassen und Fassung 1 mit neun Kombinationen', () => {
   /*
-   * Es gibt 3 Klassen × 3 Archetypen = 9 Kombinationen. Eine Antwort mit
-   * weniger wäre unvollständig — und die Balance-Aussage trüge nicht.
+   * Fassung 3 hat drei Klassen ohne Archetypen; für Altreplays listet
+   * `--klassen=1` weiterhin 3 Klassen × 3 Archetypen = 9 Kombinationen.
    */
-  const ausgabe = fahreAus('class-balance.mjs');
-  const zeilen = ausgabe.split('\n').filter(z => /^\S+\/\S+\s+\d/.test(z));
-  assert.equal(zeilen.length, 9,
-    `Es wurden ${zeilen.length} Kombinationen genannt, erwartet 9`);
+  const neu = fahreAus('class-balance.mjs');
+  const neuZeilen = neu.split('\n').filter(z => /^\S+\s+([\d.]+\s+){4}[\d.]+$/.test(z));
+  assert.equal(neuZeilen.length, 3, `Fassung 3: ${neuZeilen.length} Klassen genannt, erwartet 3`);
+  assert.match(neu, /Fassung 3 \(keine Archetypen\)/);
+  assert.match(neu, /gleiche Summe der wirksamen Faktoren/);
+
+  const alt = fahreAus('class-balance.mjs', ['--klassen=1']);
+  const altZeilen = alt.split('\n').filter(z => /^\S+\/\S+\s+\d/.test(z));
+  assert.equal(altZeilen.length, 9, `Fassung 1: ${altZeilen.length} Kombinationen genannt, erwartet 9`);
 });
 
 test('Jedes Prüfwerkzeug ist über npm erreichbar', () => {

@@ -56,12 +56,12 @@ export class LaufVorhersage {
    * @param {{isSolid:function, breite:number, jetzt:number, snapshotAt:number}} umgebung
    * @returns {{x:number, y:number}}
    */
-  anzeige(figur, { isSolid, breite, jetzt, snapshotAt }) {
+  anzeige(figur, { isSolid, breite, jetzt, snapshotAt, klassen }) {
     let ziel = { x: figur.x, y: figur.y };
     if (this.#richtung !== 0 && isSolid) {
       ziel = extrapoliereGehen({
         isSolid, breite, x: figur.x, y: figur.y, richtung: this.#richtung,
-        tempo: klassenTempo(figur.classId, figur.archetypeId, figur.sidegradeId),
+        tempo: klassenTempo(figur.classId, figur.archetypeId, figur.sidegradeId, klassen),
         takte: Math.max(0, jetzt - snapshotAt) * 0.06,
       });
     }

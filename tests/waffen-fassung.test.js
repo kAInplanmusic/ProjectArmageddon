@@ -369,14 +369,14 @@ test('Start-Kit Fassung 3 bleibt unverändert (Altreplays)', () => {
 });
 
 test('Balance-Werkzeug: Klassengesundheit wie im Motor, Messung deterministisch und Ausreißerregel', () => {
-  assert.deepEqual(klassenGesundheit(), { scout: 96, heavy: 156, artillery: 108 });
+  assert.deepEqual(klassenGesundheit(), { nahkampf: 130, fernkampf: 100, okkultist: 70 });
   assert.ok(ENTFERNUNGEN.length >= 6 && ENTFERNUNGEN[0] <= 60 && ENTFERNUNGEN.at(-1) >= 1200);
   const a = messeWaffe(WEAPONS_BY_ID.pa_040, 40);
   const b = messeWaffe(WEAPONS_BY_ID.pa_040, 40);
   assert.deepEqual(a, b, 'gleiche Eingabe, gleiche Messung');
   assert.ok(a.schadenBest > 0 && a.reichweite > 0 && a.trefferquote > 0);
-  assert.equal(a.stk.heavy >= a.stk.artillery && a.stk.artillery >= a.stk.scout, true, 'mehr Leben, mehr Schüsse');
-  assert.equal(a.zuege.scout, a.stk.scout, 'ohne Abklingzeit sind Züge = Schüsse');
+  assert.equal(a.stk.nahkampf >= a.stk.fernkampf && a.stk.fernkampf >= a.stk.okkultist, true, 'mehr Leben, mehr Schüsse');
+  assert.equal(a.zuege.nahkampf, a.stk.nahkampf, 'ohne Abklingzeit sind Züge = Schüsse');
 
   const tafel = (stufe, schaden, extra = {}) => ({ id: `x${schaden}`, name: 'x', stufe, schadenBest: schaden, selbstwirkung: false, lunte: false, ...extra });
   const { stufen, liste } = findeAusreisser([

@@ -78,6 +78,8 @@ export function baueAnsichtszustand(quelle) {
       teamId: entry.teamId,
       classId: entry.classId,
       archetypeId: entry.archetypeId,
+      /** Platz in der Zeile (0..2) — Fassung 3 wählt damit den Charakterbogen. */
+      platz: entry.platz ?? 0,
       /**
        * Der Sidegrade des Spielers (oder null).
        *

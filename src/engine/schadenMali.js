@@ -24,7 +24,8 @@ import {
 import { WET_LEVEL } from '../shared/config/water.js';
 import { TERRAIN_MATERIAL } from '../shared/config/terrain.js';
 import { PLAYER_HALF_HEIGHT } from '../shared/config/player.js';
-import { CLASS_IDS, ARCHETYPE_IDS } from '../shared/config/classes.js';
+import { ARCHETYPE_IDS, klassenKennung } from '../shared/config/classes.js';
+import { KLASSEN_ALT } from '../shared/config/klassen-fassung.js';
 import { EFFECT_KIND, SPECIAL_DEFAULTS } from './specials.js';
 import { damageTypeId, damageTypeName } from './damageTypes.js';
 
@@ -64,6 +65,11 @@ export class MaliRegeln {
 
   #spieler(id) {
     return this.#q.players().find(p => p.entityId === id) ?? null;
+  }
+
+  /** Klassenfassung des Matches (fehlt sie, gilt die Altfassung). */
+  #klassen() {
+    return this.#q.klassen?.() ?? KLASSEN_ALT;
   }
 
   #lebt(id) {
@@ -179,7 +185,7 @@ export class MaliRegeln {
     }
 
     const spieler = this.#spieler(id);
-    const klasse = CLASS_IDS[spieler?.classId ?? 0];
+    const klasse = klassenKennung(spieler?.classId ?? 0, this.#klassen());
     const archetyp = ARCHETYPE_IDS[spieler?.archetypeId ?? 0];
     const biom = this.#q.biomId();
     const eis = this.#bodenMaterial(id) === TERRAIN_MATERIAL.ICE;
@@ -460,7 +466,10 @@ export class MaliRegeln {
     let danach = betrag * (1 - ruestung);
     if (art !== null) {
       const spieler = this.#spieler(id);
-      danach *= resistenzFaktor(CLASS_IDS[spieler?.classId ?? 0], ARCHETYPE_IDS[spieler?.archetypeId ?? 0], art);
+      danach *= resistenzFaktor(
+        klassenKennung(spieler?.classId ?? 0, this.#klassen()),
+        ARCHETYPE_IDS[spieler?.archetypeId ?? 0], art,
+      );
       if (familieVonArt(art) === 'heilig' && this.hat(id, 'fluch')) danach *= WECHSELWIRKUNG.heiligGegenFluch;
     }
     const anteil = regel?.schild ?? 1;

@@ -13,7 +13,7 @@ import { ORIENTATIONS, TEAM_COLORS, normalisiereFormat, normalisiereGroesse, aus
 import { getTurnDurationForSize } from '../engine/systems/turnSystem.js';
 import { isKnownSidegrade } from '../shared/config/sidegrades.js';
 import { normalisiereBiomWahl, normalisiereKartenart } from '../shared/config/gelaende.js';
-import { CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
+import { CLASS_DEFINITIONS, LEGACY_CLASS_DEFINITIONS, CLASS_ARCHETYPES } from '../shared/config/classes.js';
 
 export const LOBBY_STATUS = Object.freeze({
   OPEN: 'open',
@@ -299,7 +299,8 @@ export class LobbyManager {
     const geprüfteLoadouts = Array.isArray(loadouts)
       ? loadouts.slice(0, capacity).map(eintrag => {
         if (!eintrag || typeof eintrag !== 'object') return null;
-        const klasse = CLASS_DEFINITIONS[eintrag.classId] ? eintrag.classId : null;
+        const klasse = CLASS_DEFINITIONS[eintrag.classId] || LEGACY_CLASS_DEFINITIONS[eintrag.classId]
+          ? eintrag.classId : null;
         const archetyp = CLASS_ARCHETYPES[eintrag.archetypeId] ? eintrag.archetypeId : null;
         if (!klasse && !archetyp) return null;
         return {

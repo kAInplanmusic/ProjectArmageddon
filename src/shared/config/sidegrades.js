@@ -125,9 +125,16 @@ export const SIDEGRADE_IDS = Object.freeze(Object.keys(SIDEGRADES));
  * Listen sind eine ANGEBOTSGrenze, keine Aussage über Stärke.
  */
 export const SIDEGRADE_BY_CLASS = Object.freeze({
+  // Fassungen ≤ 2 (Altreplays)
   scout: Object.freeze(['kompakt', 'praezision']),
   heavy: Object.freeze(['gepanzert', 'schwerlast']),
   artillery: Object.freeze(['schwerlast', 'praezision']),
+  // Fassung 3 — dieselbe Angebotslogik, an der Rolle der Klasse ausgerichtet:
+  // Nahkampf hält und steht, Fernkampf wechselt Stellungen, Okkultist schießt
+  // weit und hart, aber zerbrechlich.
+  nahkampf: Object.freeze(['gepanzert', 'schwerlast']),
+  fernkampf: Object.freeze(['kompakt', 'schwerlast']),
+  okkultist: Object.freeze(['praezision', 'kompakt']),
 });
 
 /**

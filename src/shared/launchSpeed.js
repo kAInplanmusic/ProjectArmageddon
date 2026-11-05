@@ -28,7 +28,7 @@
  * @module launchSpeed
  */
 
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from './config/classes.js';
+import { combatProfile, ARCHETYPE_IDS, klassenKennung, istKlassenfassungNeu } from './config/classes.js';
 import { KLASSEN_ALT } from './config/klassen-fassung.js';
 import { geschwindigkeitsFaktor } from './reichweite.js';
 
@@ -64,8 +64,10 @@ import { geschwindigkeitsFaktor } from './reichweite.js';
 export function launchSpeedMultiplier({
   classId = null, archetypeId = null, weapon = null, sidegradeId = null, kartenbreite = null, klassen = KLASSEN_ALT,
 } = {}) {
-  const klasse = typeof classId === 'number' ? CLASS_IDS[classId] : classId;
-  const archetyp = typeof archetypeId === 'number' ? ARCHETYPE_IDS[archetypeId] : archetypeId;
+  const neu = istKlassenfassungNeu(klassen);
+  const klasse = klassenKennung(classId, klassen);
+  const archetyp = neu ? null
+    : (typeof archetypeId === 'number' ? ARCHETYPE_IDS[archetypeId] : archetypeId);
   // Der Sidegrade geht in dieselbe Verrechnung — nicht als eigene Multiplikation
   // hier, sonst stünde die Regel an zwei Stellen.
   const profil = combatProfile(klasse, archetyp, sidegradeId, klassen);

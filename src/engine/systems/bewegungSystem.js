@@ -16,7 +16,8 @@
  */
 import { PLAYER_HALF_WIDTH, PLAYER_HALF_HEIGHT } from '../../shared/config/player.js';
 import { BEWEGUNG } from '../../shared/config/bewegung.js';
-import { combatProfile, CLASS_IDS, ARCHETYPE_IDS } from '../../shared/config/classes.js';
+import { combatProfile, klassenKennung, istKlassenfassungNeu, ARCHETYPE_IDS } from '../../shared/config/classes.js';
+import { KLASSEN_ALT } from '../../shared/config/klassen-fassung.js';
 
 /**
  * Ein Schritt am Boden — reine Funktion (auch für die Vorhersage im Client).
@@ -65,8 +66,9 @@ export function gehSchritt(terrain, x, y, richtung, tempo, werte = BEWEGUNG) {
  * Klassenfaktor auf das Gehtempo — aus dem Kampfprofil (`mobilityMultiplier`), gedämpft und begrenzt.
  * Reine Funktion, damit der Client sein Tempo für die Vorhersage genauso rechnet.
  */
-export function klassenTempo(classId, archetypeId, sidegradeId = null) {
-  const profil = combatProfile(CLASS_IDS[classId ?? 0], ARCHETYPE_IDS[archetypeId ?? 0], sidegradeId ?? null);
+export function klassenTempo(classId, archetypeId, sidegradeId = null, klassen = KLASSEN_ALT) {
+  const archetyp = istKlassenfassungNeu(klassen) ? null : ARCHETYPE_IDS[archetypeId ?? 0];
+  const profil = combatProfile(klassenKennung(classId, klassen), archetyp, sidegradeId ?? null, klassen);
   return BEWEGUNG.tempo * Math.max(BEWEGUNG.minFaktor, Math.min(BEWEGUNG.maxFaktor,
     1 + (profil.mobilityMultiplier - 1) * BEWEGUNG.klassenEinfluss));
 }
@@ -92,7 +94,7 @@ export class BewegungSystem {
   tempoFuer(playerId) {
     const match = this.#match;
     const spieler = match.players.find(eintrag => eintrag.entityId === playerId);
-    const klasse = klassenTempo(spieler?.classId, spieler?.archetypeId, spieler?.sidegradeId);
+    const klasse = klassenTempo(spieler?.classId, spieler?.archetypeId, spieler?.sidegradeId, match.klassen);
     const langsam = Math.min(match.statuses.slowOf(playerId), match.mali?.langsamFaktor(playerId) ?? 1);
     return klasse * langsam;
   }

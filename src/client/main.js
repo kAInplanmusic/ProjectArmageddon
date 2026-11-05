@@ -975,12 +975,16 @@ class Game {
        * eine eigene Rechnung hier würde bei einer Änderung auseinanderlaufen.
        */
       const vorgabe = resolveLoadout(i);
-      label.textContent = `Platz ${i + 1} (${vorgabe.classId}/${vorgabe.archetypeId})`;
+      label.textContent = `Platz ${i + 1} (${vorgabe.classId})`;
       zeile.append(label);
 
+      /*
+       * Nur die Klasse ist wählbar. Seit Klassenfassung 3 gibt es keine
+       * Archetypen mehr (`docs/anforderungen-2026-11-05.md` §6) — ein zweites
+       * Feld würde eine Wahl anbieten, die nichts mehr ändert.
+       */
       for (const [art, werte, feld] of [
         ['Klasse', CLASS_IDS, 'klasse'],
-        ['Archetyp', ARCHETYPE_IDS, 'archetyp'],
       ]) {
         const auswahl = document.createElement('select');
         auswahl.id = `cfg-loadout-${feld}-${i}`;
@@ -1030,16 +1034,12 @@ class Game {
     const liste = [];
     for (let i = 0; i < plaetze; i += 1) {
       const klasse = document.getElementById(`cfg-loadout-klasse-${i}`)?.value ?? '';
-      const archetyp = document.getElementById(`cfg-loadout-archetyp-${i}`)?.value ?? '';
-      if (klasse === '' && archetyp === '') {
+      if (klasse === '') {
         liste.push(null);
         continue;
       }
-      // Nur die gesetzten Felder übergeben — der Rest fällt auf den Platzwert.
-      liste.push({
-        ...(klasse ? { classId: klasse } : {}),
-        ...(archetyp ? { archetypeId: archetyp } : {}),
-      });
+      // Nur die gesetzte Klasse übergeben — der Rest fällt auf den Platzwert.
+      liste.push({ classId: klasse });
     }
     return liste;
   }
@@ -2106,6 +2106,7 @@ class Game {
       const pos = this.laufVorhersage.anzeige(amZug, {
         isSolid: (x, y) => (x < 0 || x >= terrain.width || y >= terrain.height ? true : y < 0 ? false : Boolean(terrain.bitmap[y * terrain.width + x])),
         breite: terrain.width, jetzt: performance.now(), snapshotAt: this.network.letzterSnapshotMs,
+        klassen: KLASSEN_STANDARD,
       });
       amZug.x = pos.x;
       amZug.y = pos.y;
@@ -3496,7 +3497,8 @@ class Game {
       // Figurenkarte der aktiven Figur (nur bei gewählter Fraktion).
       const aktive = state.entities?.find(e => e.entityId === state.activePlayerId) ?? null;
       const fraktion = aktive ? this.renderer.fraktionVon(aktive) : null;
-      this.figurenKarte.aktualisiere(aktive, fraktion, aktive ? TEAM_COLORS[aktive.teamId % TEAM_COLORS.length] : '');
+      const platz = state.entities?.indexOf(aktive) % 3;
+      this.figurenKarte.aktualisiere(aktive, fraktion, aktive ? TEAM_COLORS[aktive.teamId % TEAM_COLORS.length] : '', { klassen: state.klassen, platz });
     }
     // Bei geschlossenem Menü ein No-op; offen: nur bei Änderung wird etwas angefasst.
     this.waffenMenue.aktualisiere(state.entities?.find(e => e.entityId === state.activePlayerId) ?? null);

@@ -1,27 +1,41 @@
 /**
  * Klassenfassung (`config.klassen` im Replay-Kopf).
  *
- * `balance:classes` (2026-10-28) zeigte den Scout mit allen Archetypen gut ein Viertel hinter
- * Artillery und Heavy (Mittel 3,42 gegen 4,29 und 4,11): Leben, Wucht und Schusstempo lagen
- * zugleich unten. Die Anhebung ändert Werte, die jede Aufzeichnung mit Scout verändern würden.
- * Deshalb gilt wie bei `waffen` und `gelaende`:
+ * Drei Fassungen, alle lesbar:
  *
- *   - `KLASSEN_ALT` (1): die Werte aus `CLASS_DEFINITIONS` in `classes.js`. Eine Aufzeichnung
- *     OHNE `klassen` im Kopf ist `KLASSEN_ALT`; ebenso ein `MatchController` ohne Option.
- *   - `KLASSEN_SCOUT` (2, Standard neuer Partien): Scout mit `power` 0,85 und `health` 0,95;
- *     `speed` bleibt 1,2, er bleibt der Beweglichste, mit der kleinsten Wucht.
+ *   - `KLASSEN_ALT` (1): die alten Klassen `scout`/`heavy`/`artillery` mit den
+ *     Archetypen `brawler`/`artillerist`/`occultist` — Werte aus
+ *     `LEGACY_CLASS_DEFINITIONS` in `classes.js`. Eine Aufzeichnung OHNE
+ *     `klassen` im Kopf ist `KLASSEN_ALT`; ebenso ein `MatchController` ohne
+ *     Option (Altreplays bleiben so bitgleich).
+ *   - `KLASSEN_SCOUT` (2): Fassung 1, aber der Scout mit `power` 0,85 und
+ *     `health` 0,95 (Anhebung vom 2026-10-28). Nur für Altreplays.
+ *   - `KLASSEN_NEU` (3, Standard neuer Partien): DREI Klassen ohne Unterklassen
+ *     — `nahkampf`, `fernkampf`, `okkultist`. Keine Archetypen mehr; der
+ *     Archetyp-Faktor ist neutral 1,0. Siehe `classes.js`.
  *
- * `KLASSEN_F2_WERTE` hält nur die Felder, die Fassung 2 gegenüber Fassung 1 ändert.
+ * `KLASSEN_F2_WERTE` hält nur die Felder, die Fassung 2 gegenüber Fassung 1
+ * ändert. Fassung 3 liest die neue Tabelle in `classes.js` und ignoriert diese
+ * Änderungen, weil dort keine `scout`-Kennung mehr vorkommt.
  *
  * @module config/klassen-fassung
  */
 export const KLASSEN_ALT = 1;
 export const KLASSEN_SCOUT = 2;
-export const KLASSEN_STANDARD = KLASSEN_SCOUT;
+/** Fassung 3: drei Klassen, keine Archetypen (`docs/anforderungen-2026-11-05.md` §6). */
+export const KLASSEN_NEU = 3;
+export const KLASSEN_STANDARD = KLASSEN_NEU;
 
 /** Unbekannte Werte fallen auf den Standard (wie `normalisiereWaffen`); das Fehlen im Replay-Kopf löst `fromJSON` auf ALT auf. */
 export function normalisiereKlassen(fassung) {
-  return fassung === KLASSEN_ALT || fassung === KLASSEN_SCOUT ? fassung : KLASSEN_STANDARD;
+  return fassung === KLASSEN_ALT || fassung === KLASSEN_SCOUT || fassung === KLASSEN_NEU
+    ? fassung
+    : KLASSEN_STANDARD;
+}
+
+/** Ist das eine Fassung mit den drei neuen Klassen (≥ 3)? */
+export function istKlassenfassungNeu(fassung = KLASSEN_STANDARD) {
+  return normalisiereKlassen(fassung) >= KLASSEN_NEU;
 }
 
 /** Felder, die Fassung 2 je Klasse über die Tabelle von Fassung 1 legt. */

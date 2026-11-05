@@ -9,11 +9,15 @@
  */
 import { COMBAT_ROLES } from '../shared/config/factions.js';
 import { charakterFuer } from '../shared/config/darstellung.js';
-import { CLASS_IDS } from '../shared/config/classes.js';
+import { klassenKennung } from '../shared/config/classes.js';
+import { istKlassenfassungNeu, KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
 import { WEAPONS_BY_ID, iconUrlFor } from '../shared/config/weapons.js';
 import { spriteUrl, hdUrl } from './roster.js';
 
-const KLASSEN_NAME = Object.freeze({ heavy: 'Schwer', scout: 'Späher', artillery: 'Artillerie' });
+const KLASSEN_NAME = Object.freeze({
+  heavy: 'Schwer', scout: 'Späher', artillery: 'Artillerie',
+  nahkampf: 'Nahkampf', fernkampf: 'Fernkampf', okkultist: 'Okkultist',
+});
 
 export class FigurenKarte {
   constructor(doc = document) {
@@ -33,11 +37,15 @@ export class FigurenKarte {
    * @param {object|null} entity - die aktive Figur (Ansichtszustand)
    * @param {string|null} fraktionId - Fraktion ihres Teams
    * @param {string} teamFarbe
+   * @param {object} [umgebung] - `{klassen, platz}`: Klassenfassung und Platz in der Zeile
    */
-  aktualisiere(entity, fraktionId, teamFarbe) {
+  aktualisiere(entity, fraktionId, teamFarbe, umgebung = {}) {
     if (!this.wurzel) return;
     const charakter = entity?.alive && fraktionId
-      ? charakterFuer(fraktionId, entity.classId, entity.archetypeId) : null;
+      ? charakterFuer(fraktionId, entity.classId,
+        umgebung.klassen && istKlassenfassungNeu(umgebung.klassen) ? umgebung.platz : entity.archetypeId,
+        umgebung.klassen)
+      : null;
     const z = this.zuletzt;
     if (!charakter) {
       if (z.charakter !== null) { this.wurzel.hidden = true; z.charakter = null; }
@@ -58,7 +66,7 @@ export class FigurenKarte {
       this.name.textContent = charakter.name;
       this.rolle.textContent = COMBAT_ROLES[charakter.role]?.label ?? '';
       this.rolle.dataset.rolle = charakter.role;
-      const klasse = typeof entity.classId === 'number' ? CLASS_IDS[entity.classId] : entity.classId;
+      const klasse = klassenKennung(entity.classId, umgebung.klassen ?? KLASSEN_STANDARD);
       this.klasse.textContent = KLASSEN_NAME[klasse] ?? klasse ?? '';
       z.hp = -1; z.waffe = null;
     }

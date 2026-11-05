@@ -88,9 +88,12 @@ Reihenfolge (höchstens drei Agenten gleichzeitig, wie `plan-produktion.md` §2)
 
 ## 6. Klassen-Umbau (Nahkampf / Fernkampf / Okkultist)
 
+**Status: umgesetzt 2026-11-05** (Klassenfassung 3, `KLASSEN_STANDARD = 3`;
+Altreplays der Fassungen 1/2 bitgleich). Belege stehen unten unter „Umsetzung“.
+
 **Vorgabe des Auftraggebers (2026-11-05):** „die Klassen sind Nahkampf, Fernkampf
 und Okkultist, das waren sie von Tag eins, keine Unterklassen nichts, Fraktion
-ist in die drei unterteilt mit jeweils drei Einheiten je Klasse."
+ist in die drei unterteilt mit jeweils drei Einheiten je Klasse.“
 
 ### Ist-Stand
 
@@ -131,3 +134,26 @@ ist in die drei unterteilt mit jeweils drei Einheiten je Klasse."
   Siegquote im Balance-Lauf innerhalb der Streuung) — die Balance wird gemessen,
   nicht behauptet.
 - Alte Replays (Klassenfassung 1 und 2) bitgleich gegen Goldwerte.
+
+### Umsetzung (2026-11-05)
+
+| Punkt | Umsetzung | Beleg |
+| :-- | :-- | :-- |
+| Drei Klassen | `CLASS_DEFINITIONS` = `nahkampf`, `fernkampf`, `okkultist`; `CLASS_IDS` in dieser Reihenfolge (Snapshot-Index). `scout`/`heavy`/`artillery` stehen nur noch in `LEGACY_CLASS_DEFINITIONS`. | `src/shared/config/classes.js` |
+| Keine Archetypen | `combatProfile()` rechnet ab Fassung 3 nur Klasse × Sidegrade; `archetypeId` ist `null`, Archetyp-Faktor neutral 1,0. Menü/Kader/Hilfe bieten keine Archetyp-Auswahl. | `classes.js`, `client/main.js` (`fillLoadoutOptions`), `client/kaderansicht.js` |
+| Fassung 3 Standard | `KLASSEN_NEU = 3`, `KLASSEN_STANDARD = 3`; `normalisiereKlassen` akzeptiert 1, 2, 3, Unbekanntes fällt auf 3. `MatchController` ohne Option bleibt Fassung 1 (Altreplay). | `klassen-fassung.js`, `engine/match.js` |
+| Zuordnung 81 Bögen | `role melee/ranged/magic` → Klasse; `charakterFuer(fraktion, klasse, platz)` wählt den Bogen über `platz` 0..2, ohne Zufall. Fassungen ≤ 2 behalten Archetyp→Zeile und `SLOT_CLASSES`. | `factions.js` (`ROLE_CLASSES`, `classOf`), `darstellung.js` |
+| Startwaffen je Klasse | `getStartWaffenMitKlasse()` legt die klassenprägende Waffe (Nahkampf: kurze Reichweite/Nahkampf, Fernkampf: Projektil, Okkultist: Magie/Fläche) zum neutralen Starter-Kit. | `config/loadouts.js`, `engine/spawnManager.js` |
+| Balance | `npm run balance:classes` vorher: 3,80–4,36 (Faktor 1,15, neun Kombinationen). Nachher: 4,00 / 4,00 / 4,00 (Faktor 1,00). Werte: nahkampf 1,30/0,75/0,75/1,20 · fernkampf 1,00/1,00/1,00/1,00 · okkultist 0,70/1,25/1,25/0,80 (Leben/Schaden/Tempo/Beweglichkeit). | `scripts/class-balance.mjs`, Ausgabe unten |
+| Replays 1/2 | Gold-Hash `b8bfca73` unverändert; Fassung 3 `fca0dcaf` neu gemessen. | `tests/klassen-fassung.test.js` |
+| Tests | 81-Zuordnung, 3 je Klasse/Fraktion, Standardmarke, Determinismus je Platz, keine Archetyp-Auswahl, Balance-Summe. | `class-profile`, `klassen-fassung`, `darstellung`, `loadout-choice`, `counterplay`, `onboarding-hilfe`, `mobility`, `class-loadout` |
+
+Messausgabe `npm run balance:classes` (Fassung 3):
+
+```
+Kombination                 Leben    Wucht    Tempo  Bewegl.    Summe
+nahkampf                     1.30     0.75     0.75     1.20     4.00
+fernkampf                    1.00     1.00     1.00     1.00     4.00
+okkultist                    0.70     1.25     1.25     0.80     4.00
+Spannweite: 4.00 .. 4.00 (Faktor 1.00)
+```
