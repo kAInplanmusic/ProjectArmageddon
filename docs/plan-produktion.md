@@ -57,6 +57,8 @@ Leitfrage je Punkt: Was macht Partien flüssiger, spannender, verständlicher?
 Höchstens drei Agenten gleichzeitig (Nutzungslimit). Jede Welle endet mit Merge, Tests und Push nach
 `main`; der Hauptagent prüft CI und trägt den Stand in `docs/TODO-SSOT.md` ein.
 
+**Hinweis 2026-11-05:** Das Wochenlimit der Agenten ist erreicht (zurückgesetzt 2026-11-09, 18 Uhr UTC). Zwischenstände von Welle 0 liegen auf `wip/touch-gross`, `wip/deploy-reife`, `wip/auslieferung` und werden danach fertig geprüft und nach `main` gebracht.
+
 **Welle 0 (läuft seit 2026-11-04):** große Touch-Geräte · Deploy-Reife (Deploy-Plan, Version, Paket,
 Rollback, Sicherung, Dockerfile, Caddy) · Auslieferung (WebP-Kulissen, Bundle-Grenze, Lighthouse).
 
@@ -83,6 +85,6 @@ Rollback, Sicherung, Dockerfile, Caddy) · Auslieferung (WebP-Kulissen, Bundle-G
 
 ## 4. Was nur der Auftraggeber tun oder entscheiden kann
 
-1. **Hosting** (AGENTS.md §5/§7, Agent darf nicht): Anbieter, Domain, Preis pro Stunde, Besitzer, Höchstdauer, zweite Frist.
-2. **Bildbudget** über die bisherigen 15 USD (13,76 verbraucht), falls KI-Bilder gewünscht sind statt prozeduraler Lösungen: N-02 Stillbilder, N-32 Texturen, N-35 Kulissen, N-12 Waffen-Animationen.
+1. **Hosting** – beantwortet 2026-11-05: Hetzner, nur IP für Tests, höchstens 1 €/h, Höchstdauer egal, Löschen nach 15 min ohne Spieler (Spielstand vorher außerhalb sichern). Mieten und Starten bleibt beim Auftraggeber (§5).
+2. **Bildbudget** – beantwortet 2026-11-05: +10 €. Verwendung nach Wirkung: N-02 Stillbilder, N-32 Texturen (15 Foto-Texturen im Comic-Stil), dann N-35 Kulissen; N-12 Waffen-Animationen nur, wenn danach noch Budget bleibt. Prozedurale Lösungen bleiben der Rückfall.
 3. **Hörabnahme und Playtest** (kann keine Maschine): Checkliste kommt mit Welle 2/3.
