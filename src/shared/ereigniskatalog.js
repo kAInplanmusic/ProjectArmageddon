@@ -64,6 +64,8 @@ export const EREIGNIS_KATALOG = Object.freeze({
   guenther_poop_hit: { klasse: 'anzeige' },
   guenther_aktion: { klasse: 'anzeige', klang: ['fressen', 'bellen', 'winseln'] },
   guenther_aktion_wirkung: { klasse: 'anzeige', klang: ['kiste', 'bellen', 'schnurren'] },
+  guenther_perk: { klasse: 'anzeige' },
+  cookie_malus: { klasse: 'anzeige' },
   cookie_miau: { klasse: 'anzeige', klang: ['miau_leise', 'miau_laut', 'miau_wut'] },
   cookie_gefuettert: { klasse: 'anzeige', klang: ['fressen'] },
   cookie_kuschelt: { klasse: 'anzeige', klang: ['schnurren'] },

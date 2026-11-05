@@ -14,9 +14,11 @@
 import {
   GUENTHER_AKTION_REGELN, GUENTHER_AKTION_IDS, GUENTHER_WHEEL, GUENTHER_WHEEL_TOTAL, GUENTHER_CONTACT,
   GUENTHER_FASSUNG_STANDARD, GUENTHER_SPAWN, guentherWerte,
+  GUENTHER_PERKS, GUENTHER_PERK_TOTAL, GUENTHER_PERKS_FASSUNG,
 } from '../shared/config/guenther.js';
 import {
   COOKIE_STANDARD, COOKIE_SPIELEN, COOKIE_IDENTITY, cookieHunger, cookiePflege, cookieWut,
+  COOKIE_MALI, COOKIE_MALUS_TOTAL, COOKIE_MALI_FASSUNG,
 } from '../shared/config/cookie.js';
 import { el } from './dom.js';
 
@@ -76,7 +78,19 @@ export function baueTierTabellen(guentherFassung = GUENTHER_FASSUNG_STANDARD, co
     ],
   });
 
-  tabellen.push({
+  /*
+   * Fassung 4 ersetzt die fünf Radausgänge durch 30 benannte Perks. Die Hilfe
+   * zeigt die Liste, die der Motor wirklich würfelt — sonst stünde dort eine
+   * Tabelle, die seit der Marke nicht mehr gilt.
+   */
+  if (guentherFassung >= GUENTHER_PERKS_FASSUNG) {
+    tabellen.push({
+      titel: 'Günthers Perks',
+      kopf: ['Perk', 'Chance', 'Stufe', 'Wirkung'],
+      zeilen: GUENTHER_PERKS.map(p => [p.name, proz(p.weight / GUENTHER_PERK_TOTAL), p.stufe, p.erklaerung]),
+      fuss: 'Das Rad dreht auf das genannte Segment; gewürfelt wird der Perk im Motor, nicht im Browser.',
+    });
+  } else tabellen.push({
     titel: 'Glücksrad',
     kopf: ['Ausgang', 'Chance', 'Wirkung'],
     zeilen: GUENTHER_WHEEL.map(a => {
@@ -90,6 +104,15 @@ export function baueTierTabellen(guentherFassung = GUENTHER_FASSUNG_STANDARD, co
       return [a.label.replace(/^Du /, ''), proz(a.weight / GUENTHER_WHEEL_TOTAL), wirkung];
     }),
   });
+
+  if (cookieFassung >= COOKIE_MALI_FASSUNG) {
+    tabellen.push({
+      titel: `${COOKIE_IDENTITY.name}: Mali`,
+      kopf: ['Malus', 'Chance', 'Stufe', 'Wirkung'],
+      zeilen: COOKIE_MALI.map(m => [m.name, proz(m.weight / COOKIE_MALUS_TOTAL), m.stufe, m.erklaerung]),
+      fuss: 'Den Malus bekommt, wer Cookie beim Füttern berührt — gezogen im Motor aus dem Cookie-Strom.',
+    });
+  }
 
   const hu = cookieHunger(cookieFassung);
   const pf = cookiePflege(cookieFassung);

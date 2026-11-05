@@ -847,6 +847,11 @@ export const EREIGNIS_WIRKUNGEN = {
     k.showGuentherWheel?.(n);
   }),
 
+  /* Fassung 4: Günthers benannter Perk — Name und Erklärung, ohne Zahlen. */
+  guenther_perk: beide((k, n) => {
+    k.hud?.log(`Günthers Perk: ${n.name} — ${n.erklaerung}`, 'good');
+  }),
+
   guenther_pee: beide((k, n) => {
     k.hud?.log(`Günther pinkelt ${k.nameOf?.(n.playerId)} an (−${n.amount})`, 'neutral');
   }),
@@ -886,6 +891,11 @@ export const EREIGNIS_WIRKUNGEN = {
       k.hud?.log(`${k.nameOf?.(n.playerId)} wird am Seil gezogen`, 'neutral');
     }
     if (n.aktion === 'chaos') k.sound?.verarbeite({ type: 'bellen', x: n.x, y: n.y, pegel: 0.8 });
+  }),
+
+  /* Fassung 4: Cookies benannter Malus — Name und Erklärung, ohne Zahlen. */
+  cookie_malus: mitBuehne('cookie_malus', (k, n) => {
+    k.hud?.log(`Cookies Malus: ${n.name} — ${n.erklaerung}`, 'danger');
   }),
 
   cookie_miau: mitBuehne('cookie_miau', (k, n) => {
