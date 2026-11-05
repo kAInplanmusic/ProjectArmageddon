@@ -124,6 +124,17 @@ export class NetworkClient {
   #socket = null;
   #state = CONNECTION_STATE.IDLE;
   #token = null;
+  /**
+   * Fortsetzungs-Token (RT-1): der Schlüssel zum Wiedereinstieg nach einem
+   * Neuladen. Er wird vom Server im `WELCOME` vergeben, im `sessionStorage`
+   * abgelegt (`main.js`) und beim Verbindungsaufbau über `CONTROL.RESUME`
+   * eingelöst — NUR wenn er vorhanden ist; sonst läuft der normale Beitritt.
+   */
+  #resumeToken = null;
+  /** Wartet diese Verbindung gerade auf die Antwort auf `CONTROL.RESUME`? */
+  #resumeErwartet = false;
+  /** Wurde der Rückfall auf `JOIN_LOBBY` für DIESE Verbindung schon versucht? */
+  #resumeRueckfallVersucht = false;
   #lobbyId = null;
   #entityId = null;
   /** Alle eigenen Figuren. Leer, bis der Server sie meldet. */
@@ -141,6 +152,8 @@ export class NetworkClient {
   #lastServerError = null;
   #connectCalls = 0;
   #joinsSent = 0;
+  /** Gesendete Fortsetzungs-Versuche (`CONTROL.RESUME`, RT-1). */
+  #resumesSent = 0;
   /** Empfangene Snapshots insgesamt bzw. davon Vollsnapshots. */
   #snapshotsReceived = 0;
   /** Empfangszeitpunkt des jüngsten Snapshots (für `referenzTick`). */
@@ -161,12 +174,22 @@ export class NetworkClient {
   #pingTimer = null;
   #pingIntervalMs;
 
-  constructor({ url, lobbyId, token = null, playerName = 'Spieler', seed = null, preset = 'hills', teams = 2, playersPerTeam = 2 } = {}) {
+  constructor({
+    url, lobbyId, token = null, resumeToken = null, playerName = 'Spieler',
+    seed = null, preset = 'hills', teams = 2, playersPerTeam = 2,
+  } = {}) {
     this.#url = url;
     this.#lobbyId = lobbyId ?? null;
     // Ein bereits reservierter Platz (z. B. aus der Lobby-Erstellung) wird per
     // Token fortgesetzt, statt einen zusätzlichen Platz zu belegen.
     this.#token = token ?? null;
+    /*
+     * RT-1: Kennt der Client einen Fortsetzungs-Token, sendet er beim
+     * Verbindungsaufbau `CONTROL.RESUME` statt `JOIN_LOBBY`. Der Token ersetzt
+     * den Platz-Token NICHT: Er ist nur der Schlüssel zum Wiedereinstieg, die
+     * Identität des Platzes bleibt `token`.
+     */
+    this.#resumeToken = typeof resumeToken === 'string' && resumeToken.length > 0 ? resumeToken : null;
     this.playerName = playerName;
     this.seed = seed;
     this.preset = preset;
@@ -213,6 +236,8 @@ export class NetworkClient {
 
   get state() { return this.#state; }
   get token() { return this.#token; }
+  /** Fortsetzungs-Token (RT-1) — `null`, solange der Server keinen vergeben hat. */
+  get resumeToken() { return this.#resumeToken; }
   get entityId() { return this.#entityId; }
   /**
    * Alle eigenen Figuren.
@@ -242,6 +267,7 @@ export class NetworkClient {
     return {
       connectCalls: this.#connectCalls,
       joinsSent: this.#joinsSent,
+      resumesSent: this.#resumesSent,
       snapshotsReceived: this.#snapshotsReceived,
       fullSnapshots: this.#fullSnapshots,
       /*
@@ -286,7 +312,24 @@ export class NetworkClient {
 
     socket.addEventListener('open', () => {
       this.#attempt = 0;
+      this.#resumeRueckfallVersucht = false;
       socket.send(controlMessage(CONTROL.HELLO));
+      if (this.#resumeToken) {
+        /*
+         * RT-1: Erst der Fortsetzungs-Versuch — OHNE `JOIN_LOBBY` daneben.
+         * Beides gleichzeitig wäre eine Doppelbelegung denkbar: Der Beitritt
+         * könnte einen zweiten Platz nehmen, während das Fortsetzen den alten
+         * bindet. Der Rückfall passiert erst, wenn der Server ablehnt.
+         */
+        this.#resumeErwartet = true;
+        this.#resumesSent += 1;
+        socket.send(controlMessage(CONTROL.RESUME, {
+          token: this.#resumeToken,
+          // Nur für die Unterscheidung „beendet" vs. „unbekannt" beim Server.
+          ...(this.#lobbyId ? { lobbyId: this.#lobbyId } : {}),
+        }));
+        return;
+      }
       this.#joinsSent += 1;
       socket.send(controlMessage(CONTROL.JOIN_LOBBY, {
         lobbyId: this.#lobbyId,
@@ -393,6 +436,14 @@ export class NetworkClient {
       case CONTROL.WELCOME:
         if (message.token) {
           this.#token = message.token;
+          /*
+           * RT-1: Der Fortsetzungs-Token kommt mit JEDEM WELCOME — auch beim
+           * Fortsetzen selbst. Er wird hier übernommen, damit der Aufrufer ihn
+           * ablegen kann; ohne diese Zeile wäre er nach einem Neuladen wieder
+           * weg (genau der Zustand, den RT-1 behebt).
+           */
+          if (typeof message.resumeToken === 'string') this.#resumeToken = message.resumeToken;
+          this.#resumeErwartet = false;
           this.#lobbyId = message.lobbyId ?? this.#lobbyId;
           this.#entityId = message.entityId ?? null;
           /*
@@ -412,6 +463,7 @@ export class NetworkClient {
             entityIds: this.entityIds,
             seatIndex: message.seatIndex,
             resumed: message.resumed,
+            resumeToken: this.#resumeToken,
             seed: this.#seed,
             // Karte aus Seed UND Fassung bauen (sonst fällt der Client auf Fassung 1 zurück).
             preset: message.preset,
@@ -454,6 +506,54 @@ export class NetworkClient {
       case CONTROL.TERRAIN_STATE:
         this.#emit('terrain_state', message);
         break;
+
+      case CONTROL.RESUME_FAILED: {
+        /*
+         * RT-1: Das Fortsetzen ging nicht. Der Client entscheidet — und zwar
+         * NACH Protokollgrund, nicht nach Meldungstext:
+         *
+         *  - `beendet`: Das Match ist vorbei, es gibt nichts fortzusetzen. Kein
+         *    Beitritt — er würde in einer entschiedenen Lobby entweder abgelehnt
+         *    oder (über den Platz-Token) eine Revanche beginnen, die niemand
+         *    verlangt hat. `main.js` geht ins Menü.
+         *  - `unbekannt` / `ungueltig`: Der Schlüssel ist wertlos (abgelaufen,
+         *    Serverneustart, fremd, Formfehler). Jetzt gilt der NORMALE Weg:
+         *    `JOIN_LOBBY` mit dem bekannten Platz-Token, falls einer da ist —
+         *    damit kommt der Mensch in seinen Platz zurück, statt einen zweiten
+         *    zu belegen. Ohne Platz-Token belegt er einen freien Platz.
+         *
+         * Der Rückfall läuft GENAU EINMAL je Verbindung (`#resumeRueckfallVersucht`):
+         * Eine Ablehnung des Beitritts meldet der Server als `ERROR`, und der
+         * Aufrufer fährt fort wie bei jedem abgelehnten Beitritt.
+         */
+        const grund = message.grund ?? 'unbekannt';
+        // Nur eine Antwort auf UNSERE Anfrage zählt; ein streunendes
+        // `resume_failed` darf keinen Beitritt auslösen.
+        const angefordert = this.#resumeErwartet;
+        this.#resumeErwartet = false;
+        // Der Token ist in jedem Fall verbraucht — ein Wiederholen wäre sinnlos.
+        this.#resumeToken = null;
+        this.#emit('resume_failed', {
+          grund,
+          error: message.errors?.[0] ?? message.error ?? null,
+        });
+        if (
+          angefordert
+          && grund !== 'beendet'
+          && !this.#resumeRueckfallVersucht
+          && this.#socket
+          && this.#socket.readyState === 1
+        ) {
+          this.#resumeRueckfallVersucht = true;
+          this.#joinsSent += 1;
+          this.#socket.send(controlMessage(CONTROL.JOIN_LOBBY, {
+            lobbyId: this.#lobbyId,
+            name: this.playerName,
+            token: this.#token,
+          }));
+        }
+        break;
+      }
 
       case CONTROL.ERROR:
         this.#lastServerError = message.errors?.[0] ?? message.error ?? 'Unbekannter Serverfehler';

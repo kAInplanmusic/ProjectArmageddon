@@ -545,6 +545,12 @@ class Game {
      */
     document.getElementById('resume-button')?.addEventListener('click', () => this.#setzeSitzungFort());
     this.#aktualisiereSitzungsKnopf();
+    /*
+     * RT-1: Nach einem Neuladen (sessionStorage lebt so lange wie der Tab)
+     * laufen lassen, ohne auf einen Klick zu warten. Der Knopf bleibt für den
+     * Fall, dass der Versuch abgelehnt wurde oder die Frist abgelaufen ist.
+     */
+    void this.#versucheAutomatischesFortsetzen();
 
     /*
      * Profilsicherung (Entscheidung 2026-09-20): kein Konto, aber eine Datei.
@@ -682,40 +688,91 @@ class Game {
     this.endOverlay.hidden = true;
     this.menuOverlay.hidden = false;
     this.#zeigeAbbruch(false);
-    // Wer bewusst verlässt, braucht keine Fortsetzen-Sitzung mehr (3.7).
+    // Wer bewusst verlässt, braucht keine Fortsetzen-Sitzung mehr (3.7/RT-1).
+    // Das ist die CLIENT-Seite der Entwertung: Auf der Leitung sieht ein
+    // bewusstes Verlassen wie eine Trennung aus, und die darf der Server nicht
+    // entwerten (sonst wäre ein Neuladen nicht fortzusetzen). Bis das
+    // Reconnect-Fenster abläuft, bleibt der Platz reserviert.
+    this.#vergesseSitzung();
+  }
+
+  /**
+   * Die gespeicherte Sitzung dieses Tabs (RT-1) — oder `null`.
+   *
+   * EINE Lesestelle für Speicher, Knopf und Fortsetzen: Der `sessionStorage`
+   * kann fehlen (Sandbox, Datenschutzmodus) oder Inhalt haben, der kein Objekt
+   * ist. Beides darf die Seite nicht werfen lassen — dann gibt es eben nichts
+   * fortzusetzen.
+   *
+   * @returns {{serverUrl?: string, lobbyId?: string, token?: string|null, resumeToken?: string|null, name?: string, zeit?: number}|null}
+   */
+  #gespeicherteSitzung() {
     try {
-      sessionStorage.removeItem('pa-sitzung');
-    } catch { /* nicht verfügbar */ }
-    this.#aktualisiereSitzungsKnopf();
+      const roh = sessionStorage.getItem('pa-sitzung');
+      if (!roh) return null;
+      const daten = JSON.parse(roh);
+      return daten && typeof daten === 'object' ? daten : null;
+    } catch {
+      return null;
+    }
   }
 
   /** Blendet den Fortsetzen-Knopf ein, wenn eine Sitzung gespeichert ist. */
   #aktualisiereSitzungsKnopf() {
     const knopf = document.getElementById('resume-button');
     if (!knopf) return;
-    try {
-      knopf.hidden = !sessionStorage.getItem('pa-sitzung');
-    } catch {
-      knopf.hidden = true;
-    }
+    knopf.hidden = this.#gespeicherteSitzung() === null;
   }
 
   /** Setzt die letzte Sitzung aus dem sessionStorage fort. */
   #setzeSitzungFort() {
-    try {
-      const roh = sessionStorage.getItem('pa-sitzung');
-      if (!roh) return;
-      const sitzung = JSON.parse(roh);
-      this.startOnline({
-        serverUrl: sitzung.serverUrl,
-        lobbyId: sitzung.lobbyId,
-        token: sitzung.token,
-        name: sitzung.name ?? 'Spieler',
-      });
-    } catch {
-      try { sessionStorage.removeItem('pa-sitzung'); } catch { /* still */ }
-      this.#aktualisiereSitzungsKnopf();
+    const sitzung = this.#gespeicherteSitzung();
+    if (!sitzung?.serverUrl || !sitzung?.lobbyId) {
+      this.#vergesseSitzung();
+      return;
     }
+    this.startOnline({
+      serverUrl: sitzung.serverUrl,
+      lobbyId: sitzung.lobbyId,
+      token: sitzung.token ?? null,
+      resumeToken: sitzung.resumeToken ?? null,
+      name: sitzung.name ?? 'Spieler',
+    });
+  }
+
+  /** Entfernt die gespeicherte Sitzung (Verlassen, beendete Partie, kaputter Inhalt). */
+  #vergesseSitzung() {
+    try {
+      sessionStorage.removeItem('pa-sitzung');
+    } catch { /* nicht verfügbar */ }
+    this.#aktualisiereSitzungsKnopf();
+  }
+
+  /**
+   * Versucht nach einem NEULADEN sofort weiterzuspielen (RT-1).
+   *
+   * Der `sessionStorage` lebt genau so lange wie der Tab: Steht dort eine
+   * Sitzung, wurde diese Seite neu geladen (oder aus dem Tab-Verlauf geholt)
+   * — nicht neu geöffnet. Genau dafür ist der Fortsetzungs-Token da; ohne
+   * diesen Aufruf müsste der Spieler erst „Letzte Sitzung fortsetzen" klicken,
+   * obwohl er nichts anderes wollte.
+   *
+   * Die Frist ist eine Bremse gegen das Gegenteil: Ein Tab, der Stunden später
+   * aus dem Verlauf kommt, soll nicht ungefragt eine Partie aufnehmen — dort ist
+   * der Platz ohnehin längst verfallen. Scheitert das Fortsetzen, fällt der
+   * Client auf den normalen Beitritt zurück (`NetworkClient`, `resume_failed`)
+   * oder landet im Menü; beides ohne Absturz.
+   *
+   * @returns {boolean} true, wenn ein Versuch gestartet wurde
+   */
+  #versucheAutomatischesFortsetzen() {
+    const sitzung = this.#gespeicherteSitzung();
+    if (!sitzung?.serverUrl || !sitzung?.lobbyId) return false;
+    const alter = Date.now() - (Number(sitzung.zeit) || 0);
+    if (alter > 5 * 60 * 1000) return false;
+    this.hud.log('Neuladen erkannt — Sitzung wird fortgesetzt', 'accent');
+    this.#setzeSitzungFort();
+    return true;
   }
 
   /**
@@ -1519,6 +1576,7 @@ class Game {
     serverUrl, lobbyId = '', teams = 2, playersPerTeam = 2, unitsPerPlayer = null,
     preset = 'hills', kartentyp = null, seed = undefined, name = 'Spieler', backdropKey = '',
     sidegrades = null, loadouts = null, fraktionen = null, biom = null, kartenart = null, token = null,
+    resumeToken = null,
   } = {}) {
     this.#ladeMatchBilder();
     this.gewaehlteKulisse = backdropKey;
@@ -1596,10 +1654,29 @@ class Game {
     }
 
     const wsUrl = new URL('/ws', serverUrl).toString().replace(/^http/, 'ws');
+    /*
+     * RT-1: Fortsetzen statt neu beitreten.
+     *
+     * Der Fortsetzungs-Token liegt im `sessionStorage` dieses Tabs. Er wird nur
+     * benutzt, wenn er zu DIESER Lobby auf DIESEM Server gehört — sonst wäre ein
+     * alter Token aus einer anderen Partie ein Versuch, den falschen Platz zu
+     * übernehmen. Der Platz-Token (`token`) bleibt daneben erhalten: Er ist der
+     * Rückfall, wenn der Server den Fortsetzungs-Token nicht mehr kennt.
+     */
+    const gespeicherteSitzung = this.#gespeicherteSitzung();
+    const passtZurSitzung = Boolean(
+      gespeicherteSitzung
+      && gespeicherteSitzung.serverUrl === serverUrl
+      && gespeicherteSitzung.lobbyId === targetLobby,
+    );
+    const fortsetzungsToken = resumeToken
+      ?? (passtZurSitzung ? (gespeicherteSitzung.resumeToken ?? null) : null);
+    const platzToken = token ?? hostToken ?? (passtZurSitzung ? (gespeicherteSitzung.token ?? null) : null);
     const client = new NetworkClient({
       url: wsUrl,
       lobbyId: targetLobby,
-      token: token ?? hostToken,
+      token: platzToken,
+      resumeToken: fortsetzungsToken,
       playerName: name,
       seed: resolvedSeed,
       preset,
@@ -1621,16 +1698,21 @@ class Game {
     client.on('joined', payload => {
       beigetreten = true;
       /*
-       * Warteschlange 3.7: Der Sitzplatz-Token lebte nur im Tab. Er wird jetzt
-       * im sessionStorage abgelegt, damit „Letzte Sitzung fortsetzen" nach
-       * einem Neuladen denselben Platz zurückholt (JOIN_LOBBY mit Token).
+       * RT-1: Der Sitzplatz-Token UND der Fortsetzungs-Token werden im
+       * `sessionStorage` abgelegt. Der Fortsetzungs-Token holt den Platz nach
+       * einem Neuladen über `CONTROL.RESUME` zurück; der Platz-Token bleibt als
+       * Rückfall (ältere Server, Serverneustart, abgelaufener Schlüssel) und für
+       * die Revanche. `zeit` begrenzt das automatische Fortsetzen beim Laden
+       * (`#versucheAutomatischesFortsetzen`).
        */
       try {
         sessionStorage.setItem('pa-sitzung', JSON.stringify({
           serverUrl,
           lobbyId: client.lobbyId,
           token: payload.token ?? token ?? hostToken ?? null,
+          resumeToken: payload.resumeToken ?? client.resumeToken ?? null,
           name,
+          zeit: Date.now(),
         }));
         this.#aktualisiereSitzungsKnopf();
       } catch { /* sessionStorage nicht verfügbar — Fortsetzen entfällt still */ }
@@ -1645,7 +1727,7 @@ class Game {
         : (payload.entityId === null || payload.entityId === undefined ? [] : [payload.entityId]);
       this.eigenerSpielerId = this.eigeneSpielerIds[0] ?? null;
       this.hud.log(
-        `Lobby ${client.lobbyId} — Platz ${payload.seatIndex + 1}`
+        `${payload.resumed ? 'Sitzung fortgesetzt — ' : ''}Lobby ${client.lobbyId} — Platz ${payload.seatIndex + 1}`
         + (this.eigeneSpielerIds.length > 1 ? ` (${this.eigeneSpielerIds.length} Einheiten)` : ''),
         'accent',
       );
@@ -1659,6 +1741,25 @@ class Game {
         // Mahlstrom-Einschnitt, der vor dem Beitritt entstanden ist.
         this.#wendeEinschnittAn(payload.inset);
       }
+    });
+    /*
+     * RT-1: Das Fortsetzen wurde abgelehnt. Der `NetworkClient` fällt bei
+     * `unbekannt`/`ungueltig` selbst auf den normalen Beitritt zurück (mit dem
+     * Platz-Token); hier bleibt nur die Meldung. Bei `beendet` gibt es nichts
+     * fortzusetzen — dann gehört der Spieler ins Menü, und die gespeicherte
+     * Sitzung wird vergessen (sonst böte der Knopf sie immer wieder an).
+     */
+    client.on('resume_failed', info => {
+      if (info.grund === 'beendet') {
+        this.hud.log('Diese Partie ist beendet — keine Fortsetzung möglich', 'notice');
+        this.#vergesseSitzung();
+        if (this.mode === 'online' && !beigetreten) this.#verlasseMatch();
+        return;
+      }
+      this.hud.log(
+        `Fortsetzen nicht möglich (${info.grund}) — normaler Beitritt`,
+        'warn',
+      );
     });
     // Terrain-Hash: Abgleich der eigenen Karte mit der des Servers (alle ~2 s).
     this.terrainAbweichungOffen = false;
