@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "endpoint": "fal-ai/qwen-image-edit-2511/lora",
+  "parameters": {
+    "image_size": {
+      "width": 1024,
+      "height": 1024
+    },
+    "num_inference_steps": 28,
+    "guidance_scale": 4.5,
+    "num_images": 1,
+    "enable_safety_checker": true,
+    "output_format": "png",
+    "acceleration": "none",
+    "loras": []
+  },
+  "pilot": [
+    "captain-sven",
+    "recon-luchs-01",
+    "heavy-battery-moerser-bot",
+    "cosmic-meditate",
+    "chrome-code-shifter",
+    "buffer-flow-swarm"
+  ],
+  "seeds": [
+    81001,
+    81002
+  ],
+  "stages": {
+    "baseline": {
+      "steps": 28,
+      "guidance": 4.5
+    },
+    "quality": {
+      "steps": 40,
+      "guidance": 4.5
+    }
+  },
+  "corrections": {
+    "anatomy": "Correct only the anatomy to match the original identity reference. Restore every required limb, head and tail. Preserve all other approved features.",
+    "palette": "Correct only the faction colors. Retain the approved anatomy, pose, silhouette, materials and lighting.",
+    "equipment": "Remove only detachable weapons and floating visual effects. Preserve permanent body parts, prostheses, armor and equipment attachment points.",
+    "pose": "Correct only limb articulation to match the pose guide. Keep identity, camera, character scale and ground level unchanged.",
+    "silhouette": "Restore the approved head, torso and appendage silhouette. Do not replace the species or mechanical construction.",
+    "cleanup": "Remove detached artifacts and unintended background marks. Preserve the character outline and small genuine appendages."
+  }
+}

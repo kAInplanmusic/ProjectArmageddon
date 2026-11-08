@@ -1,0 +1,25 @@
+{
+  "note": "Kontrollierter Aufruf derselben Explosionsfunktion mit echten Spawnparametern; kein vollständiger Kollisionsspieltest.",
+  "actual": {
+    "weaponId": "pa_040",
+    "declaredRadius": 0,
+    "spawnedRadius": 24,
+    "usedRadius": 24,
+    "distance": 10,
+    "hitTarget": null,
+    "before": 104,
+    "after": 88.56500244140625,
+    "loss": 15.43499755859375
+  },
+  "controlRadiusZero": {
+    "weaponId": "pa_040",
+    "declaredRadius": 0,
+    "spawnedRadius": 24,
+    "usedRadius": 0,
+    "distance": 10,
+    "hitTarget": null,
+    "before": 104,
+    "after": 104,
+    "loss": 0
+  }
+}

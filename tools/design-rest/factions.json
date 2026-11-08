@@ -1,0 +1,119 @@
+{
+  "xeno": {
+    "name": "Die Säurebrut",
+    "style": "sharp dark biopunk comic illustration",
+    "colorDescription": "violet chitin and acid-green accents",
+    "palette": [
+      "#6b2d8f",
+      "#c026d3",
+      "#4ade80"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "rodentia": {
+    "name": "Zahnrad-Garde",
+    "style": "gritty detailed adventure comic",
+    "colorDescription": "crimson armor, steel, brown fur",
+    "palette": [
+      "#b91c1c",
+      "#d4d4d8",
+      "#8b5a2b"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "pirates": {
+    "name": "Goldküsten-Korsaren",
+    "style": "expressive adult pirate adventure comic",
+    "colorDescription": "black cloth and gold metal",
+    "palette": [
+      "#111111",
+      "#d4af37",
+      "#6b5b3e"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "machina": {
+    "name": "Stahl-Protokoll",
+    "style": "crisp stylized metallic science-fiction illustration",
+    "colorDescription": "steel-blue and cyan emission",
+    "palette": [
+      "#1e293b",
+      "#22d3ee",
+      "#94a3b8"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "undead": {
+    "name": "Giftgrüne Legion",
+    "style": "ragged gothic horror comic",
+    "colorDescription": "bone, dark cloth, yellow-green spectral accents",
+    "palette": [
+      "#84cc16",
+      "#4ade80",
+      "#1c1917"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "shinobi": {
+    "name": "Klingen des Windes",
+    "style": "precise ink-inspired manga illustration",
+    "colorDescription": "ivory, charcoal, muted steel",
+    "palette": [
+      "#e5e5e5",
+      "#0a0a0a",
+      "#737373"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "beasts": {
+    "name": "Rudel der Urkräfte",
+    "style": "expressive illustrated elemental fantasy creatures",
+    "colorDescription": "ember orange, warm gold, basalt",
+    "palette": [
+      "#ea580c",
+      "#facc15",
+      "#78350f"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "pixel": {
+    "name": "Die Acht-Bit-Brut",
+    "style": "deliberate crisp angular pixel and voxel-inspired art; nearest-neighbor final treatment; no smooth painterly blur",
+    "colorDescription": "lavender and dark violet; green code accents secondary",
+    "palette": [
+      "#a78bfa",
+      "#4338ca",
+      "#22c55e"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  },
+  "datacult": {
+    "name": "Der Datenkult",
+    "style": "cold graphic cyber-cult illustration with clear circuitry",
+    "colorDescription": "signal green, silver and black",
+    "palette": [
+      "#166534",
+      "#22c55e",
+      "#cbd5e1"
+    ],
+    "styleReference": null,
+    "styleApproved": false,
+    "loras": []
+  }
+}

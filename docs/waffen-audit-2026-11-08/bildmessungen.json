@@ -1,0 +1,9542 @@
+{
+  "pa_001": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "1a07dd26be33c2619ff701533b2120494a76277cab5ffe9c64c6ade42d45c249",
+    "held": {
+      "bbox": [
+        6,
+        50,
+        121,
+        77
+      ],
+      "hash": "b193c420ac997c3d5e6ea7ed1c48152a55302290500685cbb5313a3cf129a516",
+      "coverage": 0.14349365234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        50,
+        121,
+        77
+      ],
+      "hash": "f6c35fcb5a460d09a2196f31271063b9f5721fcdafa35c53b96f78f5263f121d",
+      "coverage": 0.14349365234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        12,
+        6,
+        116,
+        121
+      ],
+      "hash": "7a18e37faff4a4b2a99f8988d3ff01df6476ca29eacea05944533bacabf679cc",
+      "coverage": 0.209228515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        12,
+        30,
+        19
+      ],
+      "hash": "17dd0b9541923c1f0b372c9bc1a8f6faebe05f42090ec76b472b8accf7540a9e",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_002": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "aa8f8ad295b51b6048da405365d23b3ca1f53acc03950e1fb98af186f9949dae",
+    "held": {
+      "bbox": [
+        6,
+        28,
+        121,
+        99
+      ],
+      "hash": "080cd527d05be4bba9082d13288de3a2dd6920651ae52ce9a7601e0c58072312",
+      "coverage": 0.31170654296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        28,
+        121,
+        99
+      ],
+      "hash": "7cd9da04e609eab90f5279d4d2a2e27b7860a86435e9daec293d8cadb7f99560",
+      "coverage": 0.31170654296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        30,
+        6,
+        98,
+        121
+      ],
+      "hash": "c2427260b5b99403318384c8e06c126a69aed7cb578861f00cb4635b78176f08",
+      "coverage": 0.30487060546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        7,
+        30,
+        25
+      ],
+      "hash": "ae0e1ffec07a4e7004541519d6f01fe1c2e4f6f2e54e8a95bd84cd32f4017c91",
+      "coverage": 0.357421875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_003": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "d7d98088abebabadf7145236de6917ddda618dc22b7ff57c2dbdf6248e70066a",
+    "held": {
+      "bbox": [
+        6,
+        44,
+        121,
+        84
+      ],
+      "hash": "489994cb5ef5d38482dbcceea9e6e19725978c1b93a710294f6248769a82a6bc",
+      "coverage": 0.1153564453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        44,
+        121,
+        84
+      ],
+      "hash": "9facc2a6a20760e805e853f2a6366f4e814031cf09697d54790beb57dc05e26d",
+      "coverage": 0.1153564453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        10,
+        6,
+        118,
+        121
+      ],
+      "hash": "61aa5d08bec05d281d2a3edd981d237c63bfc4a4e533ed06b9b01d5686a877c9",
+      "coverage": 0.18603515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        11,
+        30,
+        21
+      ],
+      "hash": "fe93e02cca8ba1e487298cb3fd4bc0145a52d033c373bafd1034fa6df51acc0b",
+      "coverage": 0.1552734375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_004": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "d97d49f167d686461871a1dc0ec889d3c27e9fcd05c5a056a2129f4f95858dc5",
+    "held": {
+      "bbox": [
+        6,
+        41,
+        121,
+        86
+      ],
+      "hash": "081fe462de7cabdc77df0de0659841ada265a56ea695c86c0bd29441ca1de0b2",
+      "coverage": 0.1053466796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        41,
+        121,
+        86
+      ],
+      "hash": "ee97e3a60cb60b4dc3aceaf2d5af9fbac3ffcabdcd44fd2b49aa3d8d7715cc92",
+      "coverage": 0.1053466796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "b1bce8914ec42c87bd5353dbf4c97bde2312900d17ddce6eb6736fab84b7a717",
+      "coverage": 0.1724853515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        30,
+        22
+      ],
+      "hash": "336ca0ce4afbbab9751cb74ec47edd5bf740fe13c53368427539b4d96f1d967c",
+      "coverage": 0.15234375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_005": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "7f8b877f52d30b589432368a085d4f8fd04aff1b53059524ffbc9d94f0999797",
+    "held": {
+      "bbox": [
+        6,
+        37,
+        121,
+        90
+      ],
+      "hash": "07d9e53ad871657725389ce992d415af747998c787479a18cc6c23800caf3df2",
+      "coverage": 0.14935302734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        37,
+        121,
+        90
+      ],
+      "hash": "420aad2673cf73505aad27d970b449dcd034334f6a3de4d1b27b408f7d80e9d1",
+      "coverage": 0.14935302734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "67fffb64d7fb78203d712f0dea18115ccb45fcbbabde23066a538daa6f2c8b2c",
+      "coverage": 0.24176025390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        9,
+        30,
+        23
+      ],
+      "hash": "d11e024aa3d566318e4b5ca9aebbabef451a2436facf20bb4eb39f6b769d2487",
+      "coverage": 0.1884765625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_006": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "c2c3d7cb8459013edf2306a1674ec8f7f7128a0407b9d10d46099cd397f0fef6",
+    "held": {
+      "bbox": [
+        6,
+        43,
+        121,
+        85
+      ],
+      "hash": "7539916f933f797e0b2248cc93d01d25142ae5fa6d45c6ac18f2ad42bc1ed6b3",
+      "coverage": 0.16571044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        43,
+        121,
+        85
+      ],
+      "hash": "9bbd8e1125bd09da8e2e87ef807e50d168e387e6597f788d5b2deb4160630371",
+      "coverage": 0.16571044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "e8dacb70af8ef8ff7961f069fa79d542728dafd2e214fe08c24e1e19a3119336",
+      "coverage": 0.2652587890625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        30,
+        21
+      ],
+      "hash": "434399b7a025ef9b05fd738aec8eb38927ef81cdb715f269d333eec302601f56",
+      "coverage": 0.1982421875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_007": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "fc6ec243af79b9e40c39f0617dca7dc64eb975cd76b50526223f44f51eec21d5",
+    "held": {
+      "bbox": [
+        6,
+        41,
+        121,
+        86
+      ],
+      "hash": "5401d296feb601bf555949b3796d09fd7ad856cc8ae89bb802c1c40c222848c9",
+      "coverage": 0.132568359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        41,
+        121,
+        86
+      ],
+      "hash": "a6678be86920b6d1814fdcf7f1cd3781b3b2ad799f986f3aa4efc598efde9086",
+      "coverage": 0.132568359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "9bc20acf5ba604e13eb55043b6f8eb6d73cf0a3c5f7b62e673245f223a26131b",
+      "coverage": 0.2203369140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        30,
+        22
+      ],
+      "hash": "d5bebadb70d84372dbd1e66686a304c176b75ab8ff7d37a6cf0816c71e06ab37",
+      "coverage": 0.166015625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_008": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "488e39e7b94c834bd525722da1020b902817d5fccdc1212ea9595a8c0ae0bc3d",
+    "held": {
+      "bbox": [
+        6,
+        27,
+        121,
+        100
+      ],
+      "hash": "1c6bf5f71f19cc188d052a3ef15c297db68ef560640ed67d490925dd74406c6a",
+      "coverage": 0.22607421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        27,
+        121,
+        100
+      ],
+      "hash": "23d3ccdad8c7c0ce637638c117eff98b2051a141fe6d0b253395494821448b80",
+      "coverage": 0.22607421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "74c9ffcff81e7b51286c48a5674edabbc16be85cba812972bd3da0edb28be285",
+      "coverage": 0.2879638671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        6,
+        30,
+        25
+      ],
+      "hash": "eb013e6fb6836c3b9693d5708e304a205f1d141fc874eaa92c4779c650da6689",
+      "coverage": 0.271484375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_009": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "bce8c9e4069bbc54e24d3e643b843a2ac5f03bb45f4e08a72854b4c972945c3b",
+    "held": {
+      "bbox": [
+        6,
+        23,
+        121,
+        105
+      ],
+      "hash": "5624e267a9d1cd757cb9a7334f4c000270d00064d17b522b50ebf6aacedfb66b",
+      "coverage": 0.13616943359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        23,
+        121,
+        105
+      ],
+      "hash": "36ab98a90518860d3c71de450a11f1ee25af2ab52d6306342e0af63a0b3fd058",
+      "coverage": 0.13616943359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "098aa3ca26e0c185f2ba6c03e351a37c4aab0cb32fa686efdf44a9696e5a32bd",
+      "coverage": 0.17828369140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        5,
+        30,
+        26
+      ],
+      "hash": "40d5a323ba90513a63d2c300f3da819b06ed7a574bdde34cf4eb2271f497cffc",
+      "coverage": 0.17578125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_010": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "427a5cb31703b93ccd4cfc9231459b6ed37f2a42cd46374a6d8b53c6fb8456cd",
+    "held": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "816679b32b07add414714a3cc6e987724cda5df385d8a78f76fe96625f968115",
+      "coverage": 0.26104736328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "8723132ca6f0b533ec1de07d5ba95ffaf5fbd661e87163d8f44164fac4a176b4",
+      "coverage": 0.26104736328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        22,
+        121,
+        106
+      ],
+      "hash": "5c7611b1cce858d8e7cf0f40c8ad195f1957b745d590dd3c8532bcaf5d1c683f",
+      "coverage": 0.30487060546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        6,
+        30,
+        25
+      ],
+      "hash": "0fbbc4abd8ee774e751e4ed63a252f2412fe9942cb4267e4e38381d69bbe88ee",
+      "coverage": 0.291015625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_011": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6c4a5e1f2ca99d34160d709d71ed9090a9569db42c41a9cae9cc0bfef8d3c0ac",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "f71d213a10f7a08e760cad54e6f0d6830ee688add6c20c413a40621a001fbc2f",
+      "coverage": 0.332275390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "63cc91b635b779dc5581969c43c405095b6ea102b64a860554c02876c696d2d9",
+      "coverage": 0.332275390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "7c8ef8374d8c2ac3ad7e12d0a4cf75f84c84561c8ac07a6d4d7381b97af42985",
+      "coverage": 0.3343505859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        1,
+        30,
+        30
+      ],
+      "hash": "7ec7ad604363b1b63f6a20f8ce0f4663b79581451c842b7221ebd0c412ef51fa",
+      "coverage": 0.4033203125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_012": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "f1bd509d03e58ceb059f5c98cf37736dabb69b5f44332c7a6fa8a6c9b097574a",
+    "held": {
+      "bbox": [
+        6,
+        47,
+        121,
+        80
+      ],
+      "hash": "f66a313cee96cced3efe033c3c68997eff5283d6a7b196de53e1d9971fbeea55",
+      "coverage": 0.10687255859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        47,
+        121,
+        80
+      ],
+      "hash": "a021bd52904feccf9a3fa89588d9d4e7589126c0d662f902ff8a07bc8b36a8d4",
+      "coverage": 0.10687255859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "08e5f46679ed4fcbab00ef539068b5b7227775aeefb125f033a5ec59f2844b00",
+      "coverage": 0.1884765625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        12,
+        30,
+        20
+      ],
+      "hash": "e6ae1cb9535e7e627cf9c7750e385b1da3ec2f788591afd61a3d10f002d3de42",
+      "coverage": 0.138671875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_013": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "a1690da27bdb0550f931fba722ca2bdf54d8e002b5f17d069e4b49ba92b9eeaf",
+    "held": {
+      "bbox": [
+        6,
+        51,
+        121,
+        77
+      ],
+      "hash": "138eeeeb05fdca017e87ade4fd3fae5ffdc5dd39b8ca22e363e4c587301adbe7",
+      "coverage": 0.1082763671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        51,
+        121,
+        77
+      ],
+      "hash": "67f45e860695bff69dbee4919523704a7af8d0d04c6c36b4ff28408e96e36268",
+      "coverage": 0.1082763671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        15,
+        121,
+        113
+      ],
+      "hash": "b775055f98bc7011e20c5c2348d31e08b0e3c14f8521d748f209f8742377874e",
+      "coverage": 0.1693115234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        12,
+        30,
+        19
+      ],
+      "hash": "8c0dc0b0fc46e65d2176f1cbb359e5b4e19e8fd235fefc47b928e327fdf9fbba",
+      "coverage": 0.1474609375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_014": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "12ae03937dacb97228a11afff4af8cb5554779851dc15c05fbc9504d2c8a03b0",
+    "held": {
+      "bbox": [
+        6,
+        37,
+        121,
+        91
+      ],
+      "hash": "6dfd479c10b55f1b82f3c9d851808c8f119e3c0e20a217774d9eab7c287453df",
+      "coverage": 0.14080810546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        37,
+        121,
+        91
+      ],
+      "hash": "d0944cf854413a28221b22b6b4ef21158952d8f63c05fcaf1de813306fe0ce19",
+      "coverage": 0.14080810546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        37,
+        121,
+        91
+      ],
+      "hash": "8678aafb6717119f2031f19cd149dffaea9124b076ce2588a6d135b6012915ea",
+      "coverage": 0.14044189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        9,
+        30,
+        23
+      ],
+      "hash": "8c0829261044b34921d6ae77977b32dbbe250877ea4bde06471a7be3956a93fd",
+      "coverage": 0.169921875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_015": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "feebc5dad70b351358e8caca193e4b55a413b3ee695d1e540f651b34a594cd6e",
+    "held": {
+      "bbox": [
+        6,
+        44,
+        121,
+        84
+      ],
+      "hash": "f39fc732edda6038a4fc13a79778ec936b2da7d22664d1381508b0990bedce67",
+      "coverage": 0.1005859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        44,
+        121,
+        84
+      ],
+      "hash": "40f8980258da4661967241a94412f34961226afad76539349778a57ad6fc6dbd",
+      "coverage": 0.1005859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "de1e2d5872f02966ff53d6a05e5c148d3bfe459df65563066863c12a9afdcd7c",
+      "coverage": 0.18359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        11,
+        30,
+        21
+      ],
+      "hash": "451fd6b017fab373082b49db9eeef2b999318be2b01ceff4164347df58a13ad8",
+      "coverage": 0.1220703125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_016": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "8749d2c2f40393def771a1d01d73a16382baa400aca030964ceb2f26b495544c",
+    "held": {
+      "bbox": [
+        6,
+        44,
+        121,
+        83
+      ],
+      "hash": "61ed5a06c0fb347a2105c79c16bfb915eb08e3f12040a181dc396a52bd323461",
+      "coverage": 0.07781982421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        44,
+        121,
+        83
+      ],
+      "hash": "22b808ea9a66231cc156217a0f35d9361b25da669bb136650977c6f2d3e65b70",
+      "coverage": 0.07781982421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "d2062698e4395178fc1dc7b2809845b60612dda016ee0abb427c81732818ed73",
+      "coverage": 0.151123046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        11,
+        30,
+        21
+      ],
+      "hash": "1d957081f0350deb535bb1a02ddfcd3b77f7befaab4d4c72d408dcfb54c666f4",
+      "coverage": 0.109375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_017": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2d503c5c3b0c8a470c55459a9b6936ece3307d99875232b0b00189002cd282fb",
+    "held": {
+      "bbox": [
+        6,
+        51,
+        121,
+        76
+      ],
+      "hash": "5bfb415870710fe507926ac38acd1adb4c9df7fec5061a0c74133e259fc2ee1e",
+      "coverage": 0.13787841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        51,
+        121,
+        76
+      ],
+      "hash": "aeb91016253cf45c6b1d7b42880559030964d1f765dedfc6dcbe7e16297cbdc5",
+      "coverage": 0.13787841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        11,
+        121,
+        117
+      ],
+      "hash": "8b91d8380d8a770b68e6ba2527233a220a21a65020623607feadf91855137c82",
+      "coverage": 0.2281494140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        13,
+        30,
+        19
+      ],
+      "hash": "357412c972ba1d3900eeafd5fe42bb68c5e52369756e787eea7618c1002cd882",
+      "coverage": 0.150390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_018": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "441c2d905ea6be67d2ff2625bd9e5fba64ee2ba9203a36ed8a5c63c0f8d9ba8d",
+    "held": {
+      "bbox": [
+        6,
+        50,
+        121,
+        77
+      ],
+      "hash": "402f85647ffdc1809975c32bcbf18f0b56409a360a6a513b762fb3cef15ae0e5",
+      "coverage": 0.12908935546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        50,
+        121,
+        77
+      ],
+      "hash": "59c2a331dd8e1b5b4e52b192789eecf787a04cf503d67d9e221de5aaa2ae41d6",
+      "coverage": 0.12908935546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "a0ad980cf52c868616971dd5d63f6842946e817a200384adf47bf17f22b98835",
+      "coverage": 0.24139404296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        12,
+        30,
+        19
+      ],
+      "hash": "3d973bfb695f83c9bcb6eeacc03a0934e208210006b0a5d2f8a47ce0deac885b",
+      "coverage": 0.162109375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_019": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "7c698e2bfa39ff02a8e5d12241be3bd10b794fe310c3cea490b40b740f9c036d",
+    "held": {
+      "bbox": [
+        6,
+        32,
+        121,
+        96
+      ],
+      "hash": "3afa39f830af2372a8c9355dd8a98c9482645cb48b0620b49e9d0b75b2a1d3b9",
+      "coverage": 0.19012451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        32,
+        121,
+        96
+      ],
+      "hash": "fe468ba6485d1f47f8a017d0a56effa1b5669c5e8bfac438ce7db840081ccb28",
+      "coverage": 0.19012451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "e2fa51e3faf71ebc2107f8d5cfc248ad5d538d0e2b4688b894e0298d0a7377fa",
+      "coverage": 0.26812744140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        8,
+        30,
+        24
+      ],
+      "hash": "0c9c365e9e609d458cbaaee3bbcdd1dc2343d4d5ebc17cd2141fc39831902867",
+      "coverage": 0.2197265625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_020": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "fcc449058931b66524564d256d78c3ce090b7170fb1642b14e8f340d269b2fbb",
+    "held": {
+      "bbox": [
+        9,
+        6,
+        118,
+        121
+      ],
+      "hash": "5c1e4e6e7abe64e99181585a2c43d134344aa72173a33dbe2353cdf2280a302b",
+      "coverage": 0.2593994140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        9,
+        6,
+        118,
+        121
+      ],
+      "hash": "88de161e8fe35d081ae3ccb4149047959c9712448ed78bedc4673316538fcbf3",
+      "coverage": 0.2593994140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        9,
+        6,
+        118,
+        121
+      ],
+      "hash": "a9565efabea3b6bb8e5bcaca85ef0d2c2b8ebee41bb66b7ebf90b21192e40f8c",
+      "coverage": 0.259765625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        2,
+        1,
+        30,
+        30
+      ],
+      "hash": "57e3031f82428ada26c3d3f315e6825d5809227871560a2c18a3847437bfe8a8",
+      "coverage": 0.326171875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_021": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "22e0710c34261efaab9079e0304acf016bd4cd5d49977d1a90e21f25c820abf8",
+    "held": {
+      "bbox": [
+        6,
+        49,
+        121,
+        78
+      ],
+      "hash": "22aad2e6bf0b6abd13b110fbfb3126fd3136588e8be536eed4ae056377951202",
+      "coverage": 0.12847900390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        49,
+        121,
+        78
+      ],
+      "hash": "c477736ee97393cd4ff71538c2dff1764adea4c865f7d2f03c78ce8bdfd13fc2",
+      "coverage": 0.12847900390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "2fa86f0c4dd60924e3f08742afd3846ec971623241395b442d16c285f2e47598",
+      "coverage": 0.2059326171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        12,
+        30,
+        19
+      ],
+      "hash": "9a0a8766434e649c837cb3c5286dfd42720397c5bd3547878525e5b33b719a3d",
+      "coverage": 0.1494140625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_022": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "bfd3bd61ddddaa66929d09f93c2fcbea51fca0e9dd9fe740b2b177bce27e71b7",
+    "held": {
+      "bbox": [
+        6,
+        23,
+        121,
+        104
+      ],
+      "hash": "fd0091dd5178ef78be2b310edca36666e1a76da9233376e726e29d9311fa88fd",
+      "coverage": 0.3458251953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        23,
+        121,
+        104
+      ],
+      "hash": "f8934a1528a5aa6d46dbf8061b32124515e5e1343da25c43c7f6324e2b69f7e4",
+      "coverage": 0.3458251953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        23,
+        121,
+        104
+      ],
+      "hash": "d2ebaba800717d3995ba6d8e4585d5ab93bd7f39bb20603d2e70da8d9f9bf4ff",
+      "coverage": 0.34429931640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "0ff6249f5ed28bb60a68fcc1118e82bb9f62db08667166b3c342f98d0d70a6bb",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_023": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "74d39315cc1aae177e7536187a9d518f948769e26a8788f0cf7addadfdad3f96",
+    "held": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "61b117149c016c652649a6f4944283ca8b18fbf1558aa7e0965bd0173086c194",
+      "coverage": 0.41796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "1f224fcdf8ef749c69c967c6f52d369cfe6f99521ef50d5d35452c7b95ff9d37",
+      "coverage": 0.41796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        15,
+        6,
+        113,
+        121
+      ],
+      "hash": "aa14f454941ec71640e3042879f50188623beb6c162726af9563a21456ca034e",
+      "coverage": 0.444580078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        6,
+        30,
+        26
+      ],
+      "hash": "8ff77e3fbcffd608715f212e426fadb4acfbbf0c04083ddd980c7942ef15c8d9",
+      "coverage": 0.451171875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_024": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "714d48b09089c7af56444a5921fb0ba4205fd0a342068405b3fa6fd275985329",
+    "held": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "a02cf6aa70de7e3661250b1c3ea7ebad7561841bb1c2347a26893c11c14921ae",
+      "coverage": 0.33795166015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "bf768d074f763f3712cf49e899e5e2e02b37f227a823c41ece38412107534ea8",
+      "coverage": 0.33795166015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        26,
+        6,
+        102,
+        121
+      ],
+      "hash": "2adde59f88431180db20d77809bcb3bebed55583d5e7f7495f094f583795dace",
+      "coverage": 0.34149169921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        6,
+        30,
+        25
+      ],
+      "hash": "0d0257f2fede99927f0588e7b945b6a1568015fa5529a3450eaa6ed40c55b028",
+      "coverage": 0.3681640625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_025": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "76ff149b4a5f6fb13675247fc9990b4694d07ac746191b5d90febb2d5c4c1a70",
+    "held": {
+      "bbox": [
+        6,
+        35,
+        121,
+        92
+      ],
+      "hash": "4e41fdda6eaeabff85b7abcddc2de6976464f3723114cf33b595b3105dadcebd",
+      "coverage": 0.3447265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        35,
+        121,
+        92
+      ],
+      "hash": "ca7f46d1beb304b88728abcb339a65746b0f6f779ce4778478630dc4c209f555",
+      "coverage": 0.3447265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "8595cbc7063ec652c1e21b4eae8d937afbc321c6ba8bfdeee1418e1da3da4291",
+      "coverage": 0.419677734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        8,
+        30,
+        23
+      ],
+      "hash": "adc0ee5097c6d1c20630142b18e38b2ec06f828f026828bac8170866701ce831",
+      "coverage": 0.388671875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_026": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "f5863de39e7fdd894599f0c17ca13e0f430190c9fe46da6dc0404da9896dbef1",
+    "held": {
+      "bbox": [
+        6,
+        30,
+        121,
+        98
+      ],
+      "hash": "1ddf8c7ced053ba78b41c48703281886aa8a82d6f4788119227f89021d911735",
+      "coverage": 0.23382568359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        30,
+        121,
+        98
+      ],
+      "hash": "8db84c34a8eb036c21691aaaa122ed382e089820b62d2629b96258031f4e2f3c",
+      "coverage": 0.23382568359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        14,
+        6,
+        113,
+        121
+      ],
+      "hash": "a3f0f89430fa949071fa4e04787652afd7628336b7c3456490357b2e864747b6",
+      "coverage": 0.278564453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        7,
+        30,
+        24
+      ],
+      "hash": "91eda05afb3b6b95eacb2caaff1f283abd300158414a19d1459fc8f04dffb52f",
+      "coverage": 0.2802734375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_027": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "9f3dec81cecb4da2e7f7b7f89511fcff9a14e3a2ac63edef43e949c11122e2f2",
+    "held": {
+      "bbox": [
+        6,
+        44,
+        121,
+        84
+      ],
+      "hash": "22703db4120777ce24a613676f7dcb8f0b295185126a4969eefc2a322a18c5c7",
+      "coverage": 0.139404296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        44,
+        121,
+        84
+      ],
+      "hash": "a999103c23c9eb6e8365545c3e5db1bd446fc3aa7e12c886c9463a87fb24c4d1",
+      "coverage": 0.139404296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        23,
+        6,
+        104,
+        121
+      ],
+      "hash": "8faec88d29165242d1094230c53b39debb7662349f75249046f9b2433828187a",
+      "coverage": 0.192626953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        11,
+        30,
+        21
+      ],
+      "hash": "da8478186d6098ee3bf27af1f798ac9a2c96b31f16b036726bf52f22528962a7",
+      "coverage": 0.1640625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_028": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "1e33481cc649c8ef9b6cba52a24f1527228f19748ec3ad43e44d715c66ad6a38",
+    "held": {
+      "bbox": [
+        6,
+        34,
+        121,
+        94
+      ],
+      "hash": "a30de7bf485a8e26ecd112ed8d4fa453a2f29d2f9fd23585fc6da7d7732a98ec",
+      "coverage": 0.20269775390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        34,
+        121,
+        94
+      ],
+      "hash": "192363a98666b488a188d3b4187c061bd96ad53e2cc634e597b18f5b0672450a",
+      "coverage": 0.20269775390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        9,
+        6,
+        119,
+        121
+      ],
+      "hash": "802be7ff682cc8ba23431a09822b62b8047b195a1486d21a8f0b9f9031abe6d3",
+      "coverage": 0.32452392578125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        8,
+        30,
+        23
+      ],
+      "hash": "7190551fb63769d3238be29bb0c352434b29f09c52a23e4edda7c05ce1b21564",
+      "coverage": 0.2314453125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_029": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "3f91159e58bb9ab1db550b0f29dfee7649a1bc12053bbd6127e3edb939b68209",
+    "held": {
+      "bbox": [
+        6,
+        32,
+        121,
+        96
+      ],
+      "hash": "e5eb4d8b095f4754d506b0a32a9d18ac55795069fd0d631c1c216fc493be66dd",
+      "coverage": 0.20855712890625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        32,
+        121,
+        96
+      ],
+      "hash": "f9a35590777b5adf27845eaee565bf2b0263c4f1e89fce7131e7db038e4e6118",
+      "coverage": 0.20855712890625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        14,
+        6,
+        114,
+        121
+      ],
+      "hash": "718fd80d11561c05ba639f8da281c0d7410a240ab64300f663d6d9fa4535db58",
+      "coverage": 0.2464599609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        8,
+        30,
+        24
+      ],
+      "hash": "3d49122a84f32738d8b110028176181062bba3da8afcd0824bca170c7dc4f212",
+      "coverage": 0.2333984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_030": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6bf5d2c4a7599b14d88702d376848d6004d3dd30b8681e6fe9a73fdbfda6e012",
+    "held": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "738f609fc4ee8199b47f0ecfbe040d94a08f7edb9d0311ca68f899b565350dbd",
+      "coverage": 0.5294189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "49f697c44de835fd15d889412a53ac0e10bb0ee230cf647f5dfcc7e4875cc3c7",
+      "coverage": 0.5294189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "eed3cd94a200b82a2fd1ce9a71c9ea6deb134cf705fcf014a5eeb0ca744e602c",
+      "coverage": 0.53009033203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        2,
+        30,
+        29
+      ],
+      "hash": "d7b43b6683c26da837f1e81cf3ffb863a54b0089ea92d01d21119cff8a4624a0",
+      "coverage": 0.595703125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_031": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "20b7c90a62c9e21a335887433f4a814b5b2fb8105a60640a5f778e28437c8003",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "45171feb708f6131a64a9f27cc6c4dcc1c8bfdeefa9c56d3edf56f64df6ec9f3",
+      "coverage": 0.53961181640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "0a9703d75756d139a863fb53f56d3c9d1910ca3d08544ad810849865ec5fa147",
+      "coverage": 0.53961181640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "e18bbbd0376a6faa11a6227da31a0bf70d75352156a4e54abdfe6e1588d25460",
+      "coverage": 0.5384521484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        1,
+        30,
+        30
+      ],
+      "hash": "bee8df73070119486fad611ceba135518ae5e079389f622b1c5c419360f81bde",
+      "coverage": 0.6103515625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_032": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "21a56780f3a1f3e3f5b4a31520d4c7d8f2cbfda187a06e061bb0f4cd230fb7c8",
+    "held": {
+      "bbox": [
+        6,
+        21,
+        121,
+        107
+      ],
+      "hash": "6aea7d76e41c1a74618f9dbd7aebc904deb03df22f735f64f7186e710d8c3540",
+      "coverage": 0.4046630859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        21,
+        121,
+        107
+      ],
+      "hash": "4889131e70312ea9d72ef1f64412982392d83d1529f430b6eac01c52e0389e3f",
+      "coverage": 0.4046630859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        18,
+        6,
+        109,
+        121
+      ],
+      "hash": "a9de296d278ee55b35ca42d1ef0b74279fd2547b4205a3f177310d2c3dd94f99",
+      "coverage": 0.42315673828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_033": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "01d91fe94f98567e3cea8af7a387fe295cc9f4ffdc22e387237076b7c95f02c0",
+    "held": {
+      "bbox": [
+        6,
+        45,
+        121,
+        82
+      ],
+      "hash": "cc332cbae8d56da96951131e3dbfa89f17a04802d820a35a93c1d40141676de5",
+      "coverage": 0.1318359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        45,
+        121,
+        82
+      ],
+      "hash": "ef8273b986bdc92c1b568feddcc1dffd2fbf774cc875bd644b9d8cb5c50f973b",
+      "coverage": 0.1318359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        20,
+        6,
+        108,
+        121
+      ],
+      "hash": "15ac5547ccacf56a5ab98269ca85c42b36c58e2dd7387624533fb2a26407b281",
+      "coverage": 0.18115234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "61a6ecf5a931281fbe954d2b72b643c27babd7c74df7d6c68311caf9a45865f1",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_034": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "3228baba89d8d9a7baaea1ac3e83c73b823d70e5f8fcce540d16b52ca36b4bf1",
+    "held": {
+      "bbox": [
+        6,
+        48,
+        121,
+        79
+      ],
+      "hash": "7120f188078fea07b38dba8ec7df0f2f0e903bde9686e46159c1b7f1fbf5af50",
+      "coverage": 0.13580322265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        48,
+        121,
+        79
+      ],
+      "hash": "f1816d4d3f0932b4ba68b335fc310af21c4a61a793bd28ac854f1a001833b83d",
+      "coverage": 0.13580322265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        19,
+        121,
+        109
+      ],
+      "hash": "474ec3cb35e647aaaee276b55dcf71b9860dccabede1efbc8f64524f3751687f",
+      "coverage": 0.2122802734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "02fd1727043971c1e35fe7fc25f893a0f12b253f2f1af8fab6e8c3a8880104c1",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_035": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2b0c57e7fcfef64e3e14b189e3655f502312f09a211ee258a06fd14f242143ab",
+    "held": {
+      "bbox": [
+        6,
+        10,
+        121,
+        117
+      ],
+      "hash": "5f691446d5cdde26e7235edf82db453b97cef28fed4377ba8ffa7ad946886a27",
+      "coverage": 0.46087646484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        10,
+        121,
+        117
+      ],
+      "hash": "6324497eb1f2afa85119f0b43f66c0805583507e60195d48bff678d7fe4c2a05",
+      "coverage": 0.46087646484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        10,
+        121,
+        117
+      ],
+      "hash": "fbfd0788a850a2d5971ecfef8856c44da021b0219494d02fba26dcf972bcf91e",
+      "coverage": 0.45703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "57852d9637fd9e3cbccd079d98554e1126e4640fe3f022010381f10c082b98d9",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_036": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "9f01af018f3d77c8eb2c659c8f8c960ff4a08f698e4593899c5567e1285a9974",
+    "held": {
+      "bbox": [
+        6,
+        31,
+        121,
+        96
+      ],
+      "hash": "8f5e7abb4198c7b026c2e735a4af9fd72fff6aacd0e7ab51c58f92f5d39253ee",
+      "coverage": 0.25439453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        31,
+        121,
+        96
+      ],
+      "hash": "72c3366196b0ef3383236a7a366f3e9c1d76e583c43d12785127a87c2bbd9b5e",
+      "coverage": 0.25439453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "c5e75c635038e98783f2f030e251cab410dc0d3cb75ed303f36953aa75dddc65",
+      "coverage": 0.30975341796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_037": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "9b7c0aa4f2b49b3c63589baa3cd4b2112b184ed0429bfa4dd7ff288a371bdf24",
+    "held": {
+      "bbox": [
+        6,
+        34,
+        121,
+        93
+      ],
+      "hash": "b9cdf7ebcb84aec4c2f036318f3038a897000ef4a4689c1b8b16ae096056934a",
+      "coverage": 0.2017822265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        34,
+        121,
+        93
+      ],
+      "hash": "84cd0daecebda03549cc083f8e53e61a13141590b5f0e608491c8f2f32d5f2a9",
+      "coverage": 0.2017822265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        29,
+        121,
+        98
+      ],
+      "hash": "5b9f1abf4f2b8160c47ebc41d94d9927ec078694829fb5d5baf0aaa3be15f7e8",
+      "coverage": 0.24591064453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_038": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "863870f7de8dd5f0f6dc2f28d4532204cebfa207ccc61a02956df84feed47bde",
+    "held": {
+      "bbox": [
+        6,
+        28,
+        121,
+        100
+      ],
+      "hash": "d3c776cc2d289ce658881659ee481c67098df0bf82997c7e41e833cf0d0a80c1",
+      "coverage": 0.2398681640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        28,
+        121,
+        100
+      ],
+      "hash": "2439402c2173497e080aed6c33b8dc81b1580dade9641702ad6a14c2424704d9",
+      "coverage": 0.2398681640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "de8b9e48c2409bbcc0fc2c9f0d2384e444f33c249af46de1d41437a5db7ba912",
+      "coverage": 0.403564453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        7,
+        30,
+        25
+      ],
+      "hash": "db2a7580b2155bb30347f4a4fcbfa063ee74496e5c8205eea2e9fcee39aded1a",
+      "coverage": 0.2705078125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_039": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2aececa9a67be168fa1016b7377e63533592960e7886b1be3360284d7c7b46da",
+    "held": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "e1addc2fb31872b3ca322fd167b89a338d7fadb2997bf234c2a8025492accdae",
+      "coverage": 0.444091796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "0009c53811cd3c383001956b7f50d7255d9054a30a29aa540e52969f95754c81",
+      "coverage": 0.444091796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "c6fc95884eb2e123938b5192d1941a12695e7c1d5016447df961762a0fade46b",
+      "coverage": 0.4425048828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        5,
+        6,
+        29,
+        26
+      ],
+      "hash": "2825cd300bd45fd19a2df0fef4d940c9eca5ecf1cb3dbb554c7ff9fe6c7b441f",
+      "coverage": 0.2265625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_040": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "24b33077d5163a6d2326ed284c9814df41caa6158dd28d2ea2d6d3aa901064a3",
+    "held": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "8d0f97a97fce9312e77789d1f4588a375170ff8cfb7b5b4661297a36716a090e",
+      "coverage": 0.268798828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "f475922e429f4dce14c0bf09a210af50be9e44b8c08a2055594b494501b882de",
+      "coverage": 0.268798828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        14,
+        121,
+        114
+      ],
+      "hash": "13b074411e1cabcf8a38112b7cd8dc82935a6ca66de695ba1e371d51bd7f5ea4",
+      "coverage": 0.31695556640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        32,
+        22
+      ],
+      "hash": "b832adfe22ca7adc79c6eed35adfd78fda1b4028c3ba05a111b07fba6c22ca6b",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_041": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2f24ebae74a8a9a9ae15cf1e514ca2ce4503b9fab4dafb494bda5533bf8c308f",
+    "held": {
+      "bbox": [
+        6,
+        30,
+        121,
+        98
+      ],
+      "hash": "fef192b0ef0f7416758b586df97a001aec50782edac4099358bb17975aabd1bd",
+      "coverage": 0.212646484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        30,
+        121,
+        98
+      ],
+      "hash": "08f2b5f307e9eb676d60a11c070212078891c51868f8cf3b33e1df620a887a6c",
+      "coverage": 0.212646484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "b5212fa79be7fedeed6d3cc5e6e78625bb5f96be4cdddb37966cf175403fdb13",
+      "coverage": 0.32208251953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_042": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "96b0407cfd486b6a24b21ce0b7f5d713d2149f6cb8422a924780af1ed658b41d",
+    "held": {
+      "bbox": [
+        6,
+        8,
+        121,
+        119
+      ],
+      "hash": "0cf88647fb474881f9f2e87961a06f3c81c77f143ad1da7705c04772abc0dcaf",
+      "coverage": 0.408935546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        8,
+        121,
+        119
+      ],
+      "hash": "eb405161d4804dd9d88733091e3470059264740a9f982d0682bad1261686721b",
+      "coverage": 0.408935546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        119
+      ],
+      "hash": "2aba0fdfe476c71a3e7f2a2280966866e4e9bc66efbddf80a7bbf928592bfaee",
+      "coverage": 0.41064453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_043": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "77d814dc9247656217edee651f6a0827de13829a3291eea18fbe7d58708f5611",
+    "held": {
+      "bbox": [
+        10,
+        6,
+        118,
+        121
+      ],
+      "hash": "0b436c2b1a1c23edd7ab79ca63a1b8587d6ddb6ebe6a815c5038e8269005652e",
+      "coverage": 0.59625244140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        10,
+        6,
+        118,
+        121
+      ],
+      "hash": "e45a4a74f8b87b5c19bd7433a352812950e92687aa23b914ecd352bd98182baf",
+      "coverage": 0.59625244140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        10,
+        6,
+        118,
+        121
+      ],
+      "hash": "304897386ed6d81e5bbc5d2c438a5a2a45385bfd4e21327a826fe534ab5f1d8c",
+      "coverage": 0.59832763671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        5,
+        6,
+        29,
+        26
+      ],
+      "hash": "2825cd300bd45fd19a2df0fef4d940c9eca5ecf1cb3dbb554c7ff9fe6c7b441f",
+      "coverage": 0.2265625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_044": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2ef8261198040e5f6ce1e595421a6245f9e678cbb1baeb7283bba7301c5eb1d6",
+    "held": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "6ba54d2b3a33a454236b0f1164f68b0bb628a8f0463152ca77e3e2165190841d",
+      "coverage": 0.46014404296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "ad6ef469919631b0a5b0ab22eb80f04e6f59d652cdd0ade1d83605c0736afe0d",
+      "coverage": 0.46014404296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "905b55a318ddd4f52fa5b75abeedb20db118d65c29acec684a2e183cc183d3fe",
+      "coverage": 0.46142578125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        6,
+        32,
+        27
+      ],
+      "hash": "abdb0b08ff9a7e9033e1e7d6ed66713a6f8957f3d028ffd806b56a510fb881ad",
+      "coverage": 0.3115234375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_045": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "b62b963a16bc40b571135350a9bd7725d089f9d0dacf42b4c6ce8bcb174623d2",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "8e3a183fa81b11862d7eb08568f8b3bd6bae924399f8540de1664f05cfbe3f72",
+      "coverage": 0.41314697265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "3e376146e845c8777f9582ecc217b038fdb27b45d5e70db6e661a57e734a741c",
+      "coverage": 0.41314697265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "391eeb2d0a08ebee79c165f9205e248330ac28d1423208f31ffb714a1af0b035",
+      "coverage": 0.412841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_046": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "1e63f6d8419d6e819856083de6e374d5b8df812752175709c64ee59e9fb3e5bd",
+    "held": {
+      "bbox": [
+        22,
+        6,
+        105,
+        121
+      ],
+      "hash": "f59abc30fec7d818f52b30d4c918ae856128fb69118fb6d2de140133108f7f7e",
+      "coverage": 0.448486328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        22,
+        6,
+        105,
+        121
+      ],
+      "hash": "439074ba7d6820cb2a6d7f077ad8fccf605ea0a185d1aa6604e38d043d893cf3",
+      "coverage": 0.448486328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        22,
+        6,
+        105,
+        121
+      ],
+      "hash": "9539e54887138ecb1eb0684923f7b7d13e2f570856707dda0ad26af176f07aca",
+      "coverage": 0.44921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        5,
+        1,
+        26,
+        30
+      ],
+      "hash": "79d57687ff16242aba344aca4e8d2469abaaec34afbd5495dd316598ca8d89bb",
+      "coverage": 0.484375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_047": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "4e7517139607a86e83a751dc5d274204af67f9855d61901731281353d83b0830",
+    "held": {
+      "bbox": [
+        14,
+        6,
+        113,
+        121
+      ],
+      "hash": "194899cef86ee9159f62a32b35da76bb488427e8c45e80925977ba2590c72b80",
+      "coverage": 0.4793701171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        14,
+        6,
+        113,
+        121
+      ],
+      "hash": "66cdf95409e17328852588e42c74b4a1b8cf781fbbefdc665e0efd5d916edee9",
+      "coverage": 0.4793701171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        14,
+        6,
+        113,
+        121
+      ],
+      "hash": "99063f19259b88838d5b95efcb78037e9403ca8e4cca0c785c21cc462db5a982",
+      "coverage": 0.481689453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        3,
+        1,
+        28,
+        30
+      ],
+      "hash": "94afabac4f7b3ea44d15c95ff868476c321f47d427f7b3c6108b44303c3d1b12",
+      "coverage": 0.5244140625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_048": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "87abc994f2a38502a1ee3b4cc9181feda44744921627bd06325b35a79d381af9",
+    "held": {
+      "bbox": [
+        6,
+        35,
+        121,
+        92
+      ],
+      "hash": "eccc8f2be42307e221621314dd4da3b41a646091aa780f04a28c46c0c9fa3867",
+      "coverage": 0.2200927734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        35,
+        121,
+        92
+      ],
+      "hash": "79510bd7ec47b4b38df83ecff88535d0022cdacbfd97dffa00367b57e59fe7a1",
+      "coverage": 0.2200927734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "d8d20337b1fe591ec514b1839407321aed67cb9445adbd3a7f9ea031077c3d56",
+      "coverage": 0.3739013671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        8,
+        30,
+        23
+      ],
+      "hash": "291ee6e47f5c010bf5d9da6fb5318d499c91583be8fb16c70a07d41086e36a04",
+      "coverage": 0.26171875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_049": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "5c742739c4c31bf6c0d1d9b72dc62460e7782edd711c8864f6dcc56aec595c83",
+    "held": {
+      "bbox": [
+        6,
+        40,
+        121,
+        88
+      ],
+      "hash": "b31426e95c3629eb32b01b70b7df14adfbe5d9e2ecf6ee366dac40d65bcfec5f",
+      "coverage": 0.1837158203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        40,
+        121,
+        88
+      ],
+      "hash": "7feacfe2ccefda6394b2b3ad867c6cb74ab8e4c3c99d06eae08279ee9e062ddb",
+      "coverage": 0.1837158203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "0e95d4c1043cea86626966d7301b2182bcf337eeafd90d2650e6c4cf06858fbe",
+      "coverage": 0.31268310546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        30,
+        22
+      ],
+      "hash": "e6141cccd9a66e8531fe48fe2e3fb20b1ff2985f24352d55215ff46541fe707e",
+      "coverage": 0.20703125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_050": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "68cf8209531586525fff647e05ee5c905fc5866a7d6e856fe49c72737ecbeee2",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "940b7c114e368211928e383d5dff39ec8263324bc4cdaaef7369ba0a1ea4736d",
+      "coverage": 0.39044189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "35674224acbf934ddf1c000b7ca794d9ee01b7c859fc64dbf3b89d7d2cac51ca",
+      "coverage": 0.39044189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "e1c22d4221b2699ae24333a38323767fc2b0e4d57a2ff7afcff87d93d67bed0c",
+      "coverage": 0.39190673828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        1,
+        30,
+        30
+      ],
+      "hash": "2b50db7ad0da138f5df6e8286972e25db92b59f2827d84da3b7e8cbc3d7e062c",
+      "coverage": 0.4384765625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_051": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6fcb0d3840f5853e1e69be4bef3c2d4d43555205781db343cbe50c0f71613be4",
+    "held": {
+      "bbox": [
+        6,
+        33,
+        121,
+        95
+      ],
+      "hash": "1f5baa1214e9c2d8c6e0c4e0186923e537b91338e46a26c2d6c89fff4e0e939a",
+      "coverage": 0.28009033203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        33,
+        121,
+        95
+      ],
+      "hash": "4e8c6afbc5cf9c52cb97fc19c1d183b54a521897f3d96b6327fa7b4552c6e741",
+      "coverage": 0.28009033203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        10,
+        121,
+        118
+      ],
+      "hash": "6dc746ea25f4a0d27f20c2e087774821f8c2137f7b1f35b77dd65694321c27be",
+      "coverage": 0.35772705078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        8,
+        30,
+        24
+      ],
+      "hash": "aab34a5144b945a13d57e6e684e8cf6fbe074c01da7658282c6f447213fe68d9",
+      "coverage": 0.3173828125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_052": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "ee2d2e48bdd20cc4417cf59a9fddb8462ba5b1a4cc5c0fa8b85275e9b7f31ba7",
+    "held": {
+      "bbox": [
+        6,
+        41,
+        121,
+        87
+      ],
+      "hash": "e56f2163ce03e8667aeb09200f020687871e823dae78bc38fc11de89fa30a545",
+      "coverage": 0.19219970703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        41,
+        121,
+        87
+      ],
+      "hash": "1c3bd58c2793bf7fc5d35c040bee35e14cbd7f85e5dbdf572541f0ae810f3249",
+      "coverage": 0.19219970703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        16,
+        6,
+        112,
+        121
+      ],
+      "hash": "fedc1f0d06c2de6611b3a3813adb60ab44d54039abfe9176a60c9f4e64a6e758",
+      "coverage": 0.2779541015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        30,
+        22
+      ],
+      "hash": "262eec12efd033506b7462aa2128a076d8c52ccf7dde4bf997e2f6bd4f3ac369",
+      "coverage": 0.2294921875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_053": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6bae22aa66a3b63f0dd1827a100aeffc7a9726db474af9517ef5bc807d665661",
+    "held": {
+      "bbox": [
+        23,
+        6,
+        104,
+        121
+      ],
+      "hash": "903174fef6959876a10e3b3a22a4bc92379457a689bd676dc4447620e840b3e7",
+      "coverage": 0.38690185546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        23,
+        6,
+        104,
+        121
+      ],
+      "hash": "dad5514a80fc46d0e3f3a459f9e380ba77bdc82543aad85bbf120e914337eb67",
+      "coverage": 0.38690185546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        23,
+        6,
+        104,
+        121
+      ],
+      "hash": "638a4c3a38006a437b7502ee1d976eed38a4e8753e473e4dccc22f3adf69b417",
+      "coverage": 0.3875732421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        5,
+        1,
+        26,
+        30
+      ],
+      "hash": "066db5f6a9abe0a4002d7108cc2def9a29df8f05e1cec1b6d20641018a79c218",
+      "coverage": 0.4541015625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_054": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "443a0639cc796e11018f51e70f07bb844532a18c8921fc1f7c97fae0ba9a8e96",
+    "held": {
+      "bbox": [
+        6,
+        46,
+        121,
+        82
+      ],
+      "hash": "db07bd0ca4c25dff74c9ab0b9b930b0f1d8c1b4aea624722cff5a7928795fcff",
+      "coverage": 0.1602783203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        46,
+        121,
+        82
+      ],
+      "hash": "a10574813b56f724a8ff045f6f2e212bec61be4f665751d4875974b01277329b",
+      "coverage": 0.1602783203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "8721a1f3e3194ca847c80c4442898968f3863f1e872ccdcfce443ee16e248e9b",
+      "coverage": 0.24261474609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        32,
+        22
+      ],
+      "hash": "b832adfe22ca7adc79c6eed35adfd78fda1b4028c3ba05a111b07fba6c22ca6b",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_055": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6eb97a332d8ebdecab82173872d342cd9f8bbf447b66d24bea3eaaadae35c6b8",
+    "held": {
+      "bbox": [
+        6,
+        35,
+        121,
+        92
+      ],
+      "hash": "401e05f4d9db7f4c483bda7997684d50c3f394cc36b7143e54b25d38c1e14d7b",
+      "coverage": 0.1512451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        35,
+        121,
+        92
+      ],
+      "hash": "1859fd24721ba2877fb0b6293e03478f22c02b8c5237b37610c8e0649b1b6463",
+      "coverage": 0.1512451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        16,
+        121,
+        111
+      ],
+      "hash": "55e980b3da261aa209e6421b0aa7a9adcfdabcf6dfbc416d39df13c65b827768",
+      "coverage": 0.2254638671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        32,
+        22
+      ],
+      "hash": "b832adfe22ca7adc79c6eed35adfd78fda1b4028c3ba05a111b07fba6c22ca6b",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_056": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "0a2cdbb3a6bb7b81dc788936d25b20e3d86bf13ad13cd4163c5dd80a7cfb520f",
+    "held": {
+      "bbox": [
+        6,
+        43,
+        121,
+        84
+      ],
+      "hash": "ed3b021abca7d81068a33915bb76bfc1e103abeb58b963417a2b34e8d5af1683",
+      "coverage": 0.1103515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        43,
+        121,
+        84
+      ],
+      "hash": "c57595b923b6c44c4be43b352d42873abcdad39dbea8dad4008c450b1034a08f",
+      "coverage": 0.1103515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        44,
+        121,
+        83
+      ],
+      "hash": "da3e73644d2068fb7a7c5bad3252c106e42b742d68d88973a2315f568af514e8",
+      "coverage": 0.115966796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        32,
+        22
+      ],
+      "hash": "b832adfe22ca7adc79c6eed35adfd78fda1b4028c3ba05a111b07fba6c22ca6b",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_057": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "09b61635c42e958b133210f8cee53edfa067b6f688997a13c89b24d338b0e25c",
+    "held": {
+      "bbox": [
+        6,
+        34,
+        121,
+        94
+      ],
+      "hash": "bb9a44a553e4d95268274a69963db2559a67577f23a077a7386d74e28566ac7c",
+      "coverage": 0.23260498046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        34,
+        121,
+        94
+      ],
+      "hash": "dc3a3223491b666ec21f74c7d0bc2598b20a3c78541d8d5188b5d758e6d444ae",
+      "coverage": 0.23260498046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        20,
+        121,
+        108
+      ],
+      "hash": "811ee9678805136161bcb299d041849e34a22ac8646c934c8dc534e357b34fad",
+      "coverage": 0.30950927734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        32,
+        22
+      ],
+      "hash": "b832adfe22ca7adc79c6eed35adfd78fda1b4028c3ba05a111b07fba6c22ca6b",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_058": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6585524b0048a6f9f51d96b84eb630fdafbc3e7338d3ed43c89ce45497acab29",
+    "held": {
+      "bbox": [
+        6,
+        43,
+        121,
+        84
+      ],
+      "hash": "915fb9efa99e0224dff0146fd59d680088c3ec8eb845b9c29d3871c8d814f192",
+      "coverage": 0.129150390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        43,
+        121,
+        84
+      ],
+      "hash": "2409e9401c2ecb266f68e0268eb0e1f6f4069ef2086461824093e2ad391a1eff",
+      "coverage": 0.129150390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        11,
+        6,
+        117,
+        121
+      ],
+      "hash": "69f9e36de773e1608d0c8bce8b510a949edc691a4d0dc559767716b8390b1275",
+      "coverage": 0.21783447265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        9,
+        32,
+        24
+      ],
+      "hash": "0c4492387420b8d66ca44a5bdd67129929693f191221589875a7ddbbf4d82fb3",
+      "coverage": 0.12109375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_059": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "b7d73f7320dc3e22b2c52ba7924e86931a3ee93ac167626d3845f8905c2364a3",
+    "held": {
+      "bbox": [
+        6,
+        17,
+        121,
+        111
+      ],
+      "hash": "650a39c100da5a00ff17dc5b140adee4fa118ffc28ad902b8df1f80ba1e9782c",
+      "coverage": 0.2196044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        17,
+        121,
+        111
+      ],
+      "hash": "97356f1a9a70289497ad40912a0cb55e76fd7dcb8de92bea1f4b38a569cabdac",
+      "coverage": 0.2196044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "fa6f2aee5cff76d9a1a469fe2b717f886ce92e3cf5ccde86d58c1d2032145087",
+      "coverage": 0.3446044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        9,
+        32,
+        24
+      ],
+      "hash": "0c4492387420b8d66ca44a5bdd67129929693f191221589875a7ddbbf4d82fb3",
+      "coverage": 0.12109375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_060": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "51557a25cbb1320e6db47240eaac1008235caeae4133b2c8a9656d4708f30857",
+    "held": {
+      "bbox": [
+        6,
+        15,
+        121,
+        113
+      ],
+      "hash": "93de8ac4c65e0579963345ed8225f987472fd6ef9ab1b620aa1db1ab1c67d9f8",
+      "coverage": 0.4295654296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        15,
+        121,
+        113
+      ],
+      "hash": "d86bb719e3fb2f204fac7dfa9a75dd6ee34ee91839539f0e5a7487076831fe55",
+      "coverage": 0.4295654296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        12,
+        121,
+        115
+      ],
+      "hash": "f97ca85d9ba0a4c5528ba4aed78ef0db2ab6e8bcab6c902c9560d48996c0266f",
+      "coverage": 0.4483642578125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        10,
+        32,
+        22
+      ],
+      "hash": "b832adfe22ca7adc79c6eed35adfd78fda1b4028c3ba05a111b07fba6c22ca6b",
+      "coverage": 0.1708984375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_061": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "ec5652f836cd52cd83c0ddaad66895f6fcfd7df46cf991cde76ba854809b74b8",
+    "held": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "53af1c88d8073d9c3aa8cf2b72e189b183c69886132a55b4d31b049f39332ef3",
+      "coverage": 0.44366455078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "0b8c715a68a43fdfd1eb64d2e69bf4b75a085c5558049188dab5493618eb4a59",
+      "coverage": 0.44366455078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "c404c2a71ffba422c41484b4aa6171e66af4c87c7bdde391a310cccf444e2304",
+      "coverage": 0.4398193359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        6,
+        32,
+        27
+      ],
+      "hash": "abdb0b08ff9a7e9033e1e7d6ed66713a6f8957f3d028ffd806b56a510fb881ad",
+      "coverage": 0.3115234375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_062": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "e11050117b3986a74e42449a2983538e9a148adbcca663e0d46137b608aa75d0",
+    "held": {
+      "bbox": [
+        6,
+        30,
+        121,
+        97
+      ],
+      "hash": "465ebffc880587610b9160d619efd0814adcfb123113260b679456c735894547",
+      "coverage": 0.26837158203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        30,
+        121,
+        97
+      ],
+      "hash": "f9637785a59eed71619b8072c41baebc05eec774538f99cfaba49239c3552c0e",
+      "coverage": 0.26837158203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        10,
+        121,
+        117
+      ],
+      "hash": "2bb6ee69aa425096633543e981428661f45342a7f700b077100af1c688954e4f",
+      "coverage": 0.32366943359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        6,
+        32,
+        27
+      ],
+      "hash": "abdb0b08ff9a7e9033e1e7d6ed66713a6f8957f3d028ffd806b56a510fb881ad",
+      "coverage": 0.3115234375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_063": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "ec659cecacc39232fa3a0fefefac3bbd8cb5f3c496f52bbda188a4c628829050",
+    "held": {
+      "bbox": [
+        6,
+        20,
+        121,
+        107
+      ],
+      "hash": "86a2229ee78cf212e21d3c89536501e8a8c46d0d36258f85f87d5110a734f02b",
+      "coverage": 0.34869384765625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        20,
+        121,
+        107
+      ],
+      "hash": "37be83d0b80efa41388da635d4dd6aaa672c136a30c9d634886a78d98f61a6c7",
+      "coverage": 0.34869384765625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        20,
+        121,
+        107
+      ],
+      "hash": "c7055188fefa45d236f8d2c50b236d4f7285ecb4fa2fd400b7e249baf75cf593",
+      "coverage": 0.3504638671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        7,
+        32,
+        26
+      ],
+      "hash": "f58382559086e19dbd81e37e6ae465f27238e5af61cf1375f5a28c2fe8bd48f8",
+      "coverage": 0.26171875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_064": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6e3c9d2a95f0ee3362ff399dc8ca5e9c48120534b06ab01ef1f5beb0bdc0dfb0",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "f0abf962fa35bde2e04aad8c850072e482ca340bc291fcbfcb660d2d5986c53e",
+      "coverage": 0.5535888671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "51df707b7e1243ebeb1b02c5afe515c1f06b06e3bbe809c09aac761635e3f2ec",
+      "coverage": 0.5535888671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "217593cd0b03878a460898cf7aa3eb7cfbd347b2c5a8a33440ad26b449d42652",
+      "coverage": 0.55413818359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        3,
+        5,
+        31,
+        28
+      ],
+      "hash": "8167fc09205c71f9d86cfa22430b09ac7109f5a142335b6dbb53b3fcbbf848b8",
+      "coverage": 0.328125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_065": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "a4e9786dbdb470a4ca41a31e12d7b895fa6a47f648914b46892c553346393f3d",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "ec1b15d4e090207480ddcd9b3684c106488f871e7820e9f23d408c37fe2b7ed1",
+      "coverage": 0.62762451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "8db8cff2b163d731f0ff7faabf5de18fc1022e318ad430f512c9f7c529de2c69",
+      "coverage": 0.62762451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "14c9143fbfe882c9231ced56c618ce122d78a985ea3ff6ada8b501d43c261055",
+      "coverage": 0.6263427734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        1,
+        30,
+        30
+      ],
+      "hash": "1c4ea054f654b996d4fbd5be5fffb02b457ebf67e872e5e6586090dc130847b0",
+      "coverage": 0.666015625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_066": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "94acf82d931282f50f48c6f4b1ad687c7f4819d8470447d53dc35408f6c67ebe",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "146c97537307a6c8637b497e645a7bb7ecfdc3efc819a3a1d50c0bf20cd0a3d8",
+      "coverage": 0.49298095703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "363fa63c512169386d53fe3e54aa641bfcdebac991b1b38aaa60a190273cca89",
+      "coverage": 0.49298095703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "658753ff3b35092b3088b106566cd5d811bc7c970160ad78bd5fded22213a1c8",
+      "coverage": 0.49566650390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        5,
+        6,
+        29,
+        26
+      ],
+      "hash": "2825cd300bd45fd19a2df0fef4d940c9eca5ecf1cb3dbb554c7ff9fe6c7b441f",
+      "coverage": 0.2265625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_067": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "0729d7a1a7c099af1e2d2e355344e0c4901254c240bebfdbec0a275b497d7bbc",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "3c9b77914f51445179c229f33257eec1c86b77b0f4279a453f4bee383483ee5d",
+      "coverage": 0.5208740234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "37fccbec7fc39ebffc0510f804d59843066f6474afa7ea2bf99726f25a955d44",
+      "coverage": 0.5208740234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "d527259d7af8e2140d776f32d562cae8518620d13b5c7b214a93650aec50fb5d",
+      "coverage": 0.51861572265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        3,
+        5,
+        29,
+        27
+      ],
+      "hash": "7441c753222f280b0da2554ce9dde5c1b247f6f77aa82b4ffb965a32f17f7870",
+      "coverage": 0.2783203125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_068": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "5ce0458149cd6e9b910ca28d0fabfb6c259281872655f9ecff769eafc967e5ff",
+    "held": {
+      "bbox": [
+        6,
+        30,
+        121,
+        97
+      ],
+      "hash": "741e31572d93841361c017829becdc61a3d7d3c8ac805c62e90dee6d03866aff",
+      "coverage": 0.302734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        30,
+        121,
+        97
+      ],
+      "hash": "8840a851b3f87c00a7580a9c351b81db5ed3d8999ab59aacf049028654b423e2",
+      "coverage": 0.302734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        24,
+        121,
+        104
+      ],
+      "hash": "bf9045b58148fb2ce29e31fd92203873a2d268f6050268a44f7cb7f32f1b45c1",
+      "coverage": 0.3685302734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "48a6fb09da6fcf2b8292058220b8e41f0b676cd1629eb2f3d92552de484e2801",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_069": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "b13b03e3af2e70d61ca1b702d916ea38bad57e89c7a46f745f251c809651d534",
+    "held": {
+      "bbox": [
+        6,
+        37,
+        121,
+        90
+      ],
+      "hash": "449c85c78fb5c7cb7241bb8cf83ded89221fa0a174bc3d94af68e0127cea51c7",
+      "coverage": 0.19769287109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        37,
+        121,
+        90
+      ],
+      "hash": "897ec97dcaa6ecc571fc24c5a9f42e2b02c306c3142f10ff6d8860164d8dcc26",
+      "coverage": 0.19769287109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        19,
+        121,
+        109
+      ],
+      "hash": "69d79239bf0cdbf7a48e2837c457f238830afd4d4ca62ba672a5535681bfb67d",
+      "coverage": 0.28021240234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        5,
+        32,
+        28
+      ],
+      "hash": "00fbb75e005e2eb170cae855d413300edbd22093f7dece03edf69d8bc98fae68",
+      "coverage": 0.25390625,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_070": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "88fb99947ae8f24358a65fc06fc1d161337e363d9493482082d9a644bcce95af",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "5319ab40aee5ed1987aec6e4976aae9f420ba1776a95f42596e83a0a358af863",
+      "coverage": 0.67279052734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "91d36c22965568ec9ad4dd1fa666ff99e7086b335f6d73ca2e3c8df9bf7353aa",
+      "coverage": 0.67279052734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "7add8c8daba115db4be0df2c51660eeb728e1ba9f037ef9790a0aa4b55ca3de0",
+      "coverage": 0.67266845703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        3,
+        5,
+        29,
+        27
+      ],
+      "hash": "7441c753222f280b0da2554ce9dde5c1b247f6f77aa82b4ffb965a32f17f7870",
+      "coverage": 0.2783203125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_071": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "61f245d7a8cc0c4a8c31f98673285251ea31582cf6fc4024fdcde7caec7421a8",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "cf44493ae329bd03e0f35ab9ca845c325f46dbdf1df72dbbb267e9ff9c02f91b",
+      "coverage": 0.580078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "f1c75b5df6df9dced599301dd4acbbfb8d2e1afb0224ee3a87fc8108c2bb6543",
+      "coverage": 0.580078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "883a9a7d012d29ec2a82d546599775a1629d43f1765d4f060bdc1f94f70d1b65",
+      "coverage": 0.79156494140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        7,
+        32,
+        26
+      ],
+      "hash": "fa6dd7f4e8a1b666ef30811a88fe986520217fa57c6b6f220835a1606e6befad",
+      "coverage": 0.2314453125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_072": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "80afed0b46e14b82877630c1f4eb8fce9274adaf8b82e5891ded197226a52019",
+    "held": {
+      "bbox": [
+        9,
+        6,
+        119,
+        121
+      ],
+      "hash": "797def4c223b3d30303dcffd28414625823286f46ada9318daeec806aa33abea",
+      "coverage": 0.60736083984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        9,
+        6,
+        119,
+        121
+      ],
+      "hash": "65a2cce910282b5b257f3520c6a58e7fbe2bb949818326568eaeb180191b1600",
+      "coverage": 0.60736083984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        9,
+        6,
+        119,
+        121
+      ],
+      "hash": "670cbc3850247da40331042ed1082b2a74a22707a3bbd207b6f3b7b75d733dac",
+      "coverage": 0.61151123046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        6,
+        32,
+        27
+      ],
+      "hash": "abdb0b08ff9a7e9033e1e7d6ed66713a6f8957f3d028ffd806b56a510fb881ad",
+      "coverage": 0.3115234375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_073": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "440784ac75ab0157f98f6ac8a77d7c3c61fbfbb82919f911c37e78a63cc2246b",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "8a7076bcbd40d1e03d8f96a1b636a013014fe71f6abd45654cbf023fbe66da09",
+      "coverage": 0.6522216796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "474efe633371dbd6e2367b54763a7e57bcb087d998b5d54809afa1dc43b8f3f5",
+      "coverage": 0.6522216796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "36ab909613799243888efb817942d9659c5cef42c6e42f289b30d3806cf7704d",
+      "coverage": 0.7479248046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        3,
+        5,
+        29,
+        27
+      ],
+      "hash": "7441c753222f280b0da2554ce9dde5c1b247f6f77aa82b4ffb965a32f17f7870",
+      "coverage": 0.2783203125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_074": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "f354a9dbc4189035bf93ba3ddbf0353cf73a9df60c86dfcb039ea62aff154daa",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "0dc1ad3f07278848b77b9f063f069d7e95d9c083c9b59cf6048507197ce878a6",
+      "coverage": 0.64752197265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "f788b382136089aba3a60d8adc5bbaf748bb6340c554734cff4e9462c617f8a5",
+      "coverage": 0.64752197265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "c4dbce67232377d438ca3a84da640ff3e8be9af3d554b01845ec5f0674784a63",
+      "coverage": 0.7188720703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "36b05f41f2172cbc1020f36e597a404e6be065ba0d4de2047568e4bcb21103d2",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_075": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "fcb0ae39f3efd5c3da9a1b8e3c2e93d5ad3289b04a15dfb07d226b6bb351f636",
+    "held": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "5c98af486c6e43ffe534743e28cb734b177479a0a75bf6552841b9be45eec3f4",
+      "coverage": 0.5677490234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "729635599139657155c08444281e9a1095276dfbadb19db8a092186288429bce",
+      "coverage": 0.5677490234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "8febb42c04458dd69935916c8a525e59a0ffa36e3b34f8f472d5344c83c8be47",
+      "coverage": 0.56707763671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "70b4f7564e419cdbb16ac24ca9bc2e827012853d83a4262c6f409d967ea532f0",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_076": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "073ac35fc0dd483bde20bc7c84f48e3ff6b0227f4ff111bb0f0d57e9f3e947f0",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "9985d822979a178a11898ccb4693001c849e894142296998f003761b115ba906",
+      "coverage": 0.6668701171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "a45ce2003ae7668888249b066057ac3d2d4a24b284675f126e243b68489b66a6",
+      "coverage": 0.6668701171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "f92e627f3395fa34a24df733e12bd2b2a09f38c370b0474311014582e64b53ae",
+      "coverage": 0.79901123046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "c6aa82270c1fec953a7cdde6ca3d2575e6c51c4900018921e08ade1c6c23a08c",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_077": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "7ba08c1830f64151f0798331a50f61d684fdd25a97f7c638b54c6e9a843cec08",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "9b34dfe0d072f14570c1db5ec513047f34d12fbff578ecbcd188b9da7b4f29c1",
+      "coverage": 0.63714599609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "9d16bc78991224fa7dd3269441d64ecbe4a8b4563f414a86f6c230000e33b9f6",
+      "coverage": 0.63714599609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "12de7e400763b036dc97aa2c349623f4b8ed4bb0ad407de355e4e7ffccf9ea95",
+      "coverage": 0.63848876953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "d06235f3ad2faf52d76057daf2028e709e051e8ebc39e356f5defcd692e89145",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_078": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "848861372e81ba2bddf878b20cf46d72f8e19356611f52d2c8f80350a3871dd1",
+    "held": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "314c178eccb9470c2833b8d92729dfe1e5953c1b1558f6c4f77d5945b1b17e8f",
+      "coverage": 0.30450439453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "c2d7ffc6877b418bb6b2f92bc29852cab7d7e9e3f26f62685076800959670fdb",
+      "coverage": 0.30450439453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "3af204ab3854b02d7fd1b302e2cafc57950dd211752b9f29e0e4061b3bf50719",
+      "coverage": 0.30560302734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "a028c721b3b4c14b4508384af50ec53719e7cc0e8fcacfa74c5f8c3380b5153f",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_079": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "289b8fbaeff696194af8b3f7751ef3dc0dca830c21cef59b3a5aa0e234f69958",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "78a96fb85174ed383384676132d93d1853b7b6c496db8afe90e00381a08f47d0",
+      "coverage": 0.63427734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "6c71048c3324ec7897a7c4396ef243390169422687b1b48861bab453f255c374",
+      "coverage": 0.63427734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "a6a8387803804b7768d45aed69182dd2ad127df0b6366b51aa9eea2a236f5783",
+      "coverage": 0.6375732421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "c2f4f25d8118a306e563164a5c21bc8691fa204eb263fea65369d5d243214cee",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_080": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "00ff8d51eb9235279876952186aafe3d6bafa486eca5e04ade57d10508dd1ebf",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "5fa827fedf55e91d1d2115822167709e7a185b4c0b0b9b642ed1b7fa38f6e594",
+      "coverage": 0.6732177734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "a726847edf5bf176797e28956a045a811a78eba580f37c5cba1aa6e5c8e24647",
+      "coverage": 0.6732177734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "176f10f26c11a192ffe4f0818791f976773c070c3c59098ab3af2bb47fbdf28d",
+      "coverage": 0.7412109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "39bbb8c9a7e662156722ce40e7bf6f20a52fdfc4886c04742046a59ba5af6ddd",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_081": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "dc00f1efa5b5ce9e96c722c9b5c3ef16d095f601776f2967bb164583e18b3153",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "5bc92fe6ea8b037a0c049ef1682e51715a5c648ad8b5ad1a868729ac1269658e",
+      "coverage": 0.63250732421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "d5a1469f5c5fdca29b9e7cfd45377efdd043d8afcc34627e8ce1078399e6e9fb",
+      "coverage": 0.63250732421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "53a90e7f498c47bea8e7434d224a1db14a6a4ddf55471459d91a3d70fedc406f",
+      "coverage": 0.70037841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_082": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "39a9347c2a8eaf13a791e47766c75e3b610b3b6fc14fbba26e25409b2813ffb1",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "83d656a7b6ea2f0da290c82fd3ae8ec43efa68bb16f6a118baf547f23d371431",
+      "coverage": 0.56024169921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "c3a4b216ed93b018e7db93b1fe4910233ac34ea61d45314fcb7003be011724b4",
+      "coverage": 0.56024169921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "58f7c2f4e50583679082174a14bf8952b4b0012419d4d6d42aeeeddaf8e42757",
+      "coverage": 0.5594482421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "173573476cd709f895398342cef4a6c0366beb6f920320ae0855522d4180da1f",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_083": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "ec427369fc1fb6289243ba751d8a188310a6167c4d9f3960f58590780685bc34",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "db63b4d2ef90a38b9f7d06a7da949a0d58449965a8d4bdeb84234f434cb23132",
+      "coverage": 0.63787841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "40d19287e0a81089c0584dd48dab83b961b133b6d21fa2ceccb3803200e09ba0",
+      "coverage": 0.63787841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "831ec959b738503e223cbe49aed814ea7322fa1aed7d52ac68949c64f9a02039",
+      "coverage": 0.6416015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_084": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "a0672b2090a4d2a3c7f4fe479931c386792928487b751bb1769f15b0e1537d87",
+    "held": {
+      "bbox": [
+        22,
+        6,
+        105,
+        121
+      ],
+      "hash": "e66cfb7287eac06b940dd4f2ed974d0f904b820fe3705081c70d3b986b7960c6",
+      "coverage": 0.4036865234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        22,
+        6,
+        105,
+        121
+      ],
+      "hash": "4ea9b8e29e69b3cd8a6cc3dccaa59f098bed01a74d2d00d7841399a2e2fa4338",
+      "coverage": 0.4036865234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        22,
+        6,
+        105,
+        121
+      ],
+      "hash": "48f38a4ae73b1f0512aaf701c85c56ff057136d0dd17c814846a5becfa94cd3d",
+      "coverage": 0.40521240234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_085": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "89aa5a39fd8cf38f1591eaab50f8fd0424d3b4010a4deb3270bc3969bd7f9eda",
+    "held": {
+      "bbox": [
+        17,
+        6,
+        110,
+        121
+      ],
+      "hash": "ab53eb1a69487b46297b5ac6a69a184f720defb0483e32a13fb02c51c89bf00e",
+      "coverage": 0.376220703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        17,
+        6,
+        110,
+        121
+      ],
+      "hash": "113027cee7c3cdd7774d4b59f174901c3dcb93bd29e2a7a9c6ac5bff5581ac59",
+      "coverage": 0.376220703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        17,
+        6,
+        110,
+        121
+      ],
+      "hash": "122e51e93e1d0fcacff2c941f7d2c3da19b0b4df7ce5f4279f314155b7576325",
+      "coverage": 0.37554931640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_086": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "8c3e7d0562c099c737cf665cb615e8d1d4d7eb972061b4e70e7cf2191ffd4b22",
+    "held": {
+      "bbox": [
+        9,
+        6,
+        118,
+        121
+      ],
+      "hash": "e6f973ccb8340e7b33f495d2b73b29a4858a54ab715201e29ea4822d3e4a975f",
+      "coverage": 0.4774169921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        9,
+        6,
+        118,
+        121
+      ],
+      "hash": "d05d9399bb03779c87dfbc04e2ec6c557f92772a5de315db018df6aa97039a11",
+      "coverage": 0.4774169921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "0f62fed265c2170033bef2bc21b5c590d6c398d07191fcf2d0b161d6fc2466be",
+      "coverage": 0.71795654296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_087": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "05832d975978dc8c705e53e85197bf98523b1750521a2b8969b851b54df4e79d",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "66f55510ca267af3039996e5302ff7501b7b5b2f643c07e08f3ad71d97aaaa9b",
+      "coverage": 0.6571044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "5569f4a0f2b3f2a7d71b1d2b96daa6a6be6f47dc95d8425c2aea9ebe4fac48d8",
+      "coverage": 0.6571044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "24e43b7c4a3e546dd953c6a75f80b22a343fe57caef1ee16d321f307dd19bb10",
+      "coverage": 0.76055908203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_088": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "a6352581d994a0f52875791c444652f35f69df1caa23630d24c095cbedc1a7c3",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "9c9eaa00c50aa245b9e17e65f57b3363219aab35b0a1a21a25dc82425681a02b",
+      "coverage": 0.62896728515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "df770d53754e1a48e77d358abf4e737e1747f10cdd0aada34e2c3a65c943d8ad",
+      "coverage": 0.62896728515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "7287588f6b689af74826d2ae888da5017f2fd1ee745227241d7f211ba8ef6ec1",
+      "coverage": 0.62774658203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_089": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "e27ddb8b4e6647bccf079fde21ec841e9d2c145861e112bf4107d3a2a4e2deb4",
+    "held": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "df7659492a5ecf692f4c2411bfd79897fc70cfb52b827337aeb79a295bda368f",
+      "coverage": 0.54119873046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "424f53e4ebb5ab0c7560503babc1c01502fbe9d70139659bff6245406c572f52",
+      "coverage": 0.54119873046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "de3d38c19affc8b16b64e38c3ff1172fc0fc363a7e2c215db8a16cf313a9e475",
+      "coverage": 0.53863525390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_090": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "0cdf269922c3cd1b97ca6363b8cef65bd5afa3c4d092d85b692f62fe11ad4c31",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "93c1ef8dc5538e2204d217df02fad8e07302c3185d46254d10fb5a3515c9328b",
+      "coverage": 0.624755859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "a87af9b7d3408d8db4438aa30dd3b217952bef60d7ad96644bf910d57f8ac078",
+      "coverage": 0.624755859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "aaddc27f74e06d0a42856bee67d0c1de944dcf8ee8b189c6cf45bbea3ac12057",
+      "coverage": 0.6231689453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_091": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "46f00a58d9f93bded00e9512feef03531aff27bd090148ef500f185cec4863e5",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "9dc8b5a80d77a348ec4a25f6f69d3b7c012a7b26b62eac5384a040d5f2e95fde",
+      "coverage": 0.63201904296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "bde3f13f066fb01d6911fd3470ed69197ca948fe4ef814cc522da899027f371c",
+      "coverage": 0.63201904296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "c17beb8a038cae30b65538c8f77bd3bb041acc66db508c93b71b662435cf3467",
+      "coverage": 0.62896728515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_092": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "0b0b8fbbf70e4d784704ea402897b2070085d91e99c341070d7833ea4a71f89f",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "4977c5d48375829d26527a97a119b12565b754ff3d71839438969d8e2964895b",
+      "coverage": 0.6697998046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "4f1799fd66fc9c29dc2803f32585a17c0a8e6e0109406018b6043089eb4b8084",
+      "coverage": 0.6697998046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "bea0f5cceb47ef935ccef0465794ab7b56ca6db84ac580db247b60898b28d331",
+      "coverage": 0.79754638671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_093": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "7556766690876171fc3e574699fc5ebd10fd6727754cfa685c1fad96472db028",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "6d074f658a3dee77b7037c1dd975984c2dbd05ab09b3c78be721d8f3016d8e9f",
+      "coverage": 0.67071533203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "30ac0e3698b9cc6cc62ff93b8ba1250382a894a119abdc02d1250e49c600958b",
+      "coverage": 0.67071533203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "2e6efcd7cbbd9ef1315d13ffe6973bdad57a28b23d9a0f907dc8c6722b7e97a8",
+      "coverage": 0.805419921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_094": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "e63a08e521d8c908a6ce7a53ca50e9409d5f75cc9e83415dce2f7873dc918c4d",
+    "held": {
+      "bbox": [
+        6,
+        47,
+        121,
+        81
+      ],
+      "hash": "75a1d9681fa55651256bed85c8b55d921cef96dedfee232d2555eeb646712694",
+      "coverage": 0.12249755859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        47,
+        121,
+        81
+      ],
+      "hash": "c10636fd3d780796d07df0aaeae1d4e28034e1c64c45efddefb0b7c1bd78b390",
+      "coverage": 0.12249755859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "3f9d4c46bf9b40f9be25649f6178d41f369c45fbca5e59eb48962eaf08b08e21",
+      "coverage": 0.21392822265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_095": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "9bed64c399615467652e9cb10946ca272ad3b9466d6eac833b9301a921007296",
+    "held": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "d1569a21c1c4caa23c4d161aa301fbe7b340214c2583263c2bd41da54853522b",
+      "coverage": 0.3216552734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "0a427fd2e5afbad76216402b37ea354904b8bee9261933f1cb13d87c2e3d2b7d",
+      "coverage": 0.3216552734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "34a3aa25f6ed7fca35b71348487c26cfb80b9cd283f4960a008769cc2c7955eb",
+      "coverage": 0.31988525390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_096": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "1fe2d468cb44475b35c79106866699dc6a42bd83390b797d307d516fe2c29932",
+    "held": {
+      "bbox": [
+        6,
+        28,
+        121,
+        99
+      ],
+      "hash": "53d2f9526a75dc0e86f9b49e54447b23dce84a1e539229a946704b6bad420f86",
+      "coverage": 0.36566162109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        28,
+        121,
+        99
+      ],
+      "hash": "28e98514572003393a265c89b3b75cd69af3bd8c93f748d04e4b0b565c68c9f9",
+      "coverage": 0.36566162109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        28,
+        6,
+        100,
+        121
+      ],
+      "hash": "d2d441924c6ce4a4caec25e9d686815d8aa3d693547790644211a706e9dbaad1",
+      "coverage": 0.372802734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_097": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "f045fc1ed92f1f9fc58266fab35370e64da2d287e2c4424062ac5fc5daa75927",
+    "held": {
+      "bbox": [
+        6,
+        25,
+        121,
+        103
+      ],
+      "hash": "3a02379136ddf450bceaa2de00439f76bff9d7bd2681d8091036d7ec328a368c",
+      "coverage": 0.26055908203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        25,
+        121,
+        103
+      ],
+      "hash": "f34b977faf9a99218375bca7275d2c01b835909838a3baaaaf589f88eba940e9",
+      "coverage": 0.26055908203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "044f7de63d18023bcebf8fd3866e79a42392ebf3d12dd38ecaaed37a3765829d",
+      "coverage": 0.30670166015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_098": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "c7f17d5684e58dbabdaf48ad866e4e9508967300d0301f845c67e6a881c51109",
+    "held": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "93d9a054fd6800a2594271c0885538b95664fae8a38eb9d5e702c3e0ce7566ba",
+      "coverage": 0.36865234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        26,
+        121,
+        101
+      ],
+      "hash": "223e86b2c4cd23dd56850170e5045ee9d92112d6d73cb653770e429495ab99a0",
+      "coverage": 0.36865234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        22,
+        6,
+        106,
+        121
+      ],
+      "hash": "a6e2f9b3afd2c44db0e944275b4c5f6f52705e6ffcd9eda31741d46df0fad6b8",
+      "coverage": 0.3916015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_099": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "5dec9e558dc5602d8e575ff3a9095df7460c9f7895de79baee0950a186f03e38",
+    "held": {
+      "bbox": [
+        6,
+        22,
+        121,
+        105
+      ],
+      "hash": "ae1106dae4aa16024406e5e4a3d107812bea03200094f6f8da2bbf30261f7bef",
+      "coverage": 0.42938232421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        22,
+        121,
+        105
+      ],
+      "hash": "4ab4028b54e1f8cc839835a396c5e2d7b99b2860413dcb2164c18fa33fa70bd0",
+      "coverage": 0.42938232421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        16,
+        6,
+        111,
+        121
+      ],
+      "hash": "8aa71180c81a806a5dfa0be117b9752634f2443e0c84208327112b50172fc19d",
+      "coverage": 0.4268798828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_100": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "e8a6d42b5a9d822930832202197210bd730a331f06a800cc8f17c5b08c3b8549",
+    "held": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "89537b603afb1ee31999f2add20c7b60039044eda872dc9a8d89eee6044f1d8b",
+      "coverage": 0.56378173828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "58eefdb923599bddf4cca34de34eae576a47ab03ba62ad51ebdfdf9475e7a0f7",
+      "coverage": 0.56378173828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "31fdfcc8bde6e061ff136547938e3e5acb8964121986792dea0bcfdf4164ef0b",
+      "coverage": 0.5660400390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_101": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "e9cd6b645deecfd0421ac277a1301c6a02e85fc21d76fbefb30a6cf6141c1b48",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "6feea67eab608921b44c79a01aa976331882468b05bcb9369014ce4cb8bc4cc8",
+      "coverage": 0.48211669921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "d5109602006825452cf34a0aef0d3ab62fe543f7ea301253508f161e6a843262",
+      "coverage": 0.48211669921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "d7eb2f92dd86959b0a8c2ff409f6f05e324b0a4cf474112aabd3038e52757eda",
+      "coverage": 0.48223876953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_102": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "169809078915d7c051f8e24c066809aa3563b57077a1c0f05202e0be45489aa9",
+    "held": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "4c2c2a04034cc032663859a8f8832697cf4d354fdb197eb043499f947a3c6657",
+      "coverage": 0.51397705078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "5df7ac3df36ea928932893362c36ed4e38cac072b1e33bf75d922a52d81a2b02",
+      "coverage": 0.51397705078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        11,
+        6,
+        116,
+        121
+      ],
+      "hash": "7fb4423ca03e7e0277d950ee28b648c0940baf3fef11885d41ae583debe74898",
+      "coverage": 0.51129150390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_103": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "27df875f664acb1295c17cecf4138b824ca956d805abb13eb46cc8bc01ec569a",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "4f7f1cf9d46263dc5fa93878e00f7adb56a665550640e1befc56721314812a3f",
+      "coverage": 0.50140380859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        119,
+        121
+      ],
+      "hash": "19f9b7435ef7fa83282bf590fd821804ea4faac3627cf20538fd1a27db3f93ed",
+      "coverage": 0.50140380859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        9,
+        6,
+        118,
+        121
+      ],
+      "hash": "4f705cba56ff1891680d458b8aae6ada67c493e1782965acdbc5312d4b2b97c1",
+      "coverage": 0.66290283203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_104": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "c87aff779d8f1fe0434b71dc6017ff34be111903e45a57290c5c8bb3d3dc3f40",
+    "held": {
+      "bbox": [
+        6,
+        30,
+        121,
+        97
+      ],
+      "hash": "7e6f70e3f16746e79427eb0a9de17619a6d965feb93c6b592eef8aedefb5fb74",
+      "coverage": 0.31732177734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        30,
+        121,
+        97
+      ],
+      "hash": "45b1ddfda7b496f53bd3dd74281e743d6b5b579cf7b5a33476b92bdb9744e5ed",
+      "coverage": 0.31732177734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        11,
+        120,
+        116
+      ],
+      "hash": "01f7999d0b6b02c18d573e8574789b89cde778591e91c7fbe7bace64b1c41875",
+      "coverage": 0.37188720703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "2ea264a4ecc8e6e4c292e1d7aa8970bc866365a790495ff26fc9b25ba7a60e7a",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_105": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "9b2946ed3082a4e15568019ec933efc3fb756de3b810d3940e37228c922894a4",
+    "held": {
+      "bbox": [
+        6,
+        10,
+        121,
+        118
+      ],
+      "hash": "04ec179bafb6470f9f6408e6ba7e5fa3a69d17b618d238255b3d7eaf7c9ff1fb",
+      "coverage": 0.5482177734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        10,
+        121,
+        118
+      ],
+      "hash": "fe0d13e31ca338f7556196de5f14fdf4bb7df0959ea733dcaee93d04f8e30eca",
+      "coverage": 0.5482177734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "20fc4ed8c25efdd343cc0c7d52703db3e7493b9ece1adda61ca5802720b23047",
+      "coverage": 0.677978515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "84464009b0d1c5496739bd77159313f40a78a0f51940bf3d2505a3a74b1fcb5d",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_106": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "83d6da29d01c28d7e6503a5326595309361f91c3ee7ea753af32831a1a6e2ad5",
+    "held": {
+      "bbox": [
+        20,
+        6,
+        108,
+        121
+      ],
+      "hash": "140e272ea3f3adbbcf027700a558c4cb3a6e42a4a110496aece4217ab7ffcb4b",
+      "coverage": 0.40057373046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        20,
+        6,
+        108,
+        121
+      ],
+      "hash": "188d7195755d167cd846e4dc8f282143fb8df6dafa14115f8ab490fd2b7f02a8",
+      "coverage": 0.40057373046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        20,
+        6,
+        108,
+        121
+      ],
+      "hash": "74b8a7caeb56abeba47f3c1f3c9826ecd7e4729003731de27b03339afe038730",
+      "coverage": 0.4039306640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_107": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "01be625a34e62d73b9ef0addbfb953a50a5df391b17dec2336e57dddd2d1bff9",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "304705178f3872be33a86132d6b32a9cddac5edbe75fcc1d11934c087c82b71f",
+      "coverage": 0.71893310546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "4e3af5c00c0754ce392515fc0a849dad3c24e82504440f561d0d179966136a98",
+      "coverage": 0.71893310546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "cd0dc6cd6cf11deddb082c3f1984de19f9f38145d6e5aa83c12cd76c66ab4129",
+      "coverage": 0.774169921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_108": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "34b37a8f7cca7c0dcfef8ddc84c8fb735f3da7a0443aaed386ea0a8d65317f84",
+    "held": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "b7993af40b6d76fdf0ee66c3ab590a3f7e0ae33d73a98794b7b612857ade0a7d",
+      "coverage": 0.50390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "bfc1b4b9d1197b4617dd998496b2b2f19c66fcadbf0c8c0d372f54b36a0daae9",
+      "coverage": 0.50390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "3ad1a188977aa6f51a4603a1e7d3258df79f20883981e4d739bd56a05bc2cc9c",
+      "coverage": 0.5001220703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_109": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "5b609decf66e7bdfd18acd8ab116988727db678641b01c90335db3e315d9d75f",
+    "held": {
+      "bbox": [
+        15,
+        6,
+        112,
+        121
+      ],
+      "hash": "0d1d4534c3e268cb41a5b8b0e09bff5f1861460434dcc311744e39d010ed767e",
+      "coverage": 0.40606689453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        15,
+        6,
+        112,
+        121
+      ],
+      "hash": "fc6888371420080101aab9cbfa2eea8c2b43c8887cdfbb2a36264b0f7d1bf626",
+      "coverage": 0.40606689453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        15,
+        6,
+        112,
+        121
+      ],
+      "hash": "57d869e49fcdf69437b6df270f0ac54ba3320b8105bc89615b965f763b1f2850",
+      "coverage": 0.3995361328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_110": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "8942f31bdb471c45cf17ca07cde60ffa494ab696e3809ff2aa1f56edff1c0bc0",
+    "held": {
+      "bbox": [
+        13,
+        6,
+        114,
+        121
+      ],
+      "hash": "e4bc9fbcac994d72faa946133aeb8583e3ca0b6ea59eca2ea491c8b913c90c40",
+      "coverage": 0.48260498046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        13,
+        6,
+        114,
+        121
+      ],
+      "hash": "d6c14069c21fd3a4e6dac5d94ee8c48d1be0a92cfe440fe4b745b2e89ee3d692",
+      "coverage": 0.48260498046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        13,
+        6,
+        114,
+        121
+      ],
+      "hash": "595763bca98f91efe602e280b16f8a8782021d5b85507c1a7071c6e3000b6a66",
+      "coverage": 0.48406982421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_111": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "73d207243c241753ac8928eb9bf361dae7f80757d94edaee1579b736b7c54db8",
+    "held": {
+      "bbox": [
+        6,
+        9,
+        121,
+        119
+      ],
+      "hash": "5f642db0fda3ac9f7be81cdc84f5bbf8eac4d98fa22dd5fa74b091999bde05b6",
+      "coverage": 0.46722412109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        9,
+        121,
+        119
+      ],
+      "hash": "713eab8b6aece0f72f954b1003a19d66b7599ec6473990babb9e8839b17fffe8",
+      "coverage": 0.46722412109375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        9,
+        121,
+        119
+      ],
+      "hash": "c2ec976678a0185c7bc930006e21d4c115bd038806ce044ee7d9553d58196a40",
+      "coverage": 0.46820068359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_112": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "5a11afbac8ca22034f34c0f66430c8ed7c30bb613f289ad3b37d68be542e9d51",
+    "held": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "8ce7fc9fc589ec046f167624d65790db516c677dc6789a772bc8d3a8b04c579b",
+      "coverage": 0.4212646484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "0b2f013c0e82c7ab47f1a20a8d1b21b08f120d3e2aac06bfc8dfd8b26ba7164f",
+      "coverage": 0.4212646484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "58708ad23d4390ac73633d5f14b6306d1ceaa7aa9a04cabf920f1accced5db3b",
+      "coverage": 0.4256591796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_113": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "4ddff279a3c82da9b65e573e01a120ebb30e44ab1e4c4e23dcf5a8a5af486fe9",
+    "held": {
+      "bbox": [
+        6,
+        22,
+        121,
+        105
+      ],
+      "hash": "3f50eb799a09319abd13e1397acf2ec54429dae2e05878ef299bb4f85ff53156",
+      "coverage": 0.319580078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        22,
+        121,
+        105
+      ],
+      "hash": "6d12b0455f125dcda3f569ec36f2f6ba8bfec0d3683b97ec3dcc976e6add13fd",
+      "coverage": 0.319580078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        20,
+        121,
+        107
+      ],
+      "hash": "39fe35eedd620a1f00a4cfc3fc6bf3bb571cf36b08874e745d1c98ca01c77ba8",
+      "coverage": 0.39190673828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_114": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "be8896b6562ea28944a358ecc47f14ac8b71a23d0b7880235b36d4fd6ac00fba",
+    "held": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "01a1ea50b9d8e2bdf97d5cbcd3d76837662f8140d1df9b89345ad24b09a32bc6",
+      "coverage": 0.366943359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "ad1460affa6539528ac8f68cc4e9f5209ff58d9057123ccdcdb6e587278bee6b",
+      "coverage": 0.366943359375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        19,
+        6,
+        109,
+        121
+      ],
+      "hash": "38589c25ecb3970a221e0e3bdc3505d4fb7a548ae265356f183f69e37dcac832",
+      "coverage": 0.36553955078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_115": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "f49733503fc3d4674eb153e9730cb9bdbf6d657bdc5db11184708046435f61fa",
+    "held": {
+      "bbox": [
+        29,
+        6,
+        99,
+        121
+      ],
+      "hash": "7c6343d3c73242190308bdf3c9f402bbd771bdf8349ccf893bb3fa6aecca140d",
+      "coverage": 0.23724365234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        29,
+        6,
+        99,
+        121
+      ],
+      "hash": "f060f130bc544a3dc3df423d86d91d46f289c8d63434cb557d29a986c7d446ef",
+      "coverage": 0.23724365234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        29,
+        6,
+        99,
+        121
+      ],
+      "hash": "754b93d70b6362c4a0508dc69afa73c8525be091bea1fb8c09cde8b233249ad0",
+      "coverage": 0.23760986328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_116": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "75d105bcb4a3e93d604d0d10c957e21129f1e27e4d391144e9b77ad33cfc5adf",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "419fc1e6716f52ac9cf5dbb953651cb0337652967015240257c407ece3355a5c",
+      "coverage": 0.54901123046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "0c3fef3ad7062bdd334f8e619df72998b991aae843813a874052a1f61b82504a",
+      "coverage": 0.54901123046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "ddc97db66f071f9f6c4ce839883dc47e8521df6d116a6a6b6292f03f3618291d",
+      "coverage": 0.790771484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_117": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "eb8ede5d1541508f18d598647c10b276464387fadb9b2e6595c3f093f8bd1a73",
+    "held": {
+      "bbox": [
+        6,
+        30,
+        121,
+        98
+      ],
+      "hash": "f4b5f3fe865c0447191bcae8c34b69f1b49b197c6efe3a644158f053ec396ba5",
+      "coverage": 0.339599609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        30,
+        121,
+        98
+      ],
+      "hash": "153a38cef39f67e295c67165326ef45c54c495818bebb361c1491602b7889c6a",
+      "coverage": 0.339599609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        17,
+        6,
+        110,
+        121
+      ],
+      "hash": "a754a0c8fc70afd4ae8f7fdce412af5127aac9a4ffe14762814a9ce812ed0c0c",
+      "coverage": 0.38201904296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_118": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "7cdb3452ed9af1e6fa53aaadfedc4945778de31e55c0657d71df303e3ceb0d4f",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "a23935f3eab542af5b8ce7989b6d9811fdb56f4e3613b18eae0f7ae81d5bba45",
+      "coverage": 0.7996826171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "a1555761ad7d861108196ab2d3bdd9b67dc21af7f633ec23d1f71bef2a703d24",
+      "coverage": 0.7996826171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "7f970712f2ca03b293d28f5a5204c72e8fce18c1ef14168702d3cb434e98e375",
+      "coverage": 0.799560546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_119": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "688ce38f3f6e54df11aa7d1149c7ec48f9df59affdbb90c0e3372c5858436058",
+    "held": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "d372be882374f743ab3604f6c90e22cceb58e1e7aa9b85033b7da945ed39b3f2",
+      "coverage": 0.5631103515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "15bdb58f2ab119c06e19a009774a52c7f75b259bd044386e208463e1b0a0c7db",
+      "coverage": 0.5631103515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        9,
+        121,
+        118
+      ],
+      "hash": "fe4e736f5b32230ac99d24c133fdf6d05e4267f373fd0450b53c245e593ca291",
+      "coverage": 0.56304931640625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_120": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "44fa27d207a2aab4f7098621e42096f1c8d77601ed28a4f42362871fa1b7b62c",
+    "held": {
+      "bbox": [
+        6,
+        11,
+        121,
+        117
+      ],
+      "hash": "fbc72e2e012b34acf390cef22acc369c28b227e26619b9a768b1914a2e51b9ca",
+      "coverage": 0.4716796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        11,
+        121,
+        117
+      ],
+      "hash": "d93e8e07f5f83cab7111d2dbf9d3b43132a10159104995b4607999998f211e61",
+      "coverage": 0.4716796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        11,
+        121,
+        117
+      ],
+      "hash": "4c13122990ad042579a8aab5280229ae6dd17619734eee2c7e64bde51c2da459",
+      "coverage": 0.47174072265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_121": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "db22b65fdf2b9c4cd2441faa4c23314e87bfe80cbab0e4a5c19ebf707603f0ff",
+    "held": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "9a1ec051dee42fbe0fb66c68426871f6d04e1a555855d14a625e5f0bc4c5b92f",
+      "coverage": 0.2896728515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        24,
+        121,
+        103
+      ],
+      "hash": "6e3ff3a778de694253d892c2c59a4c66cd495aa9cdf2507bf2fd410233a64aa9",
+      "coverage": 0.2896728515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "2bfb4d8de120e64c8b03d9f1f90bf6a3a6117604c950d234ccf86e3add6b915a",
+      "coverage": 0.437255859375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_122": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "058f13a67b0de9c4e1e3686b554420fb26f16f05d21b16ae3296e882d33fd0f1",
+    "held": {
+      "bbox": [
+        6,
+        13,
+        121,
+        115
+      ],
+      "hash": "67c0d6c75f630b8e859396bab29bafc368fdaf8eeaf0217f652865b1a3af863e",
+      "coverage": 0.52734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        13,
+        121,
+        115
+      ],
+      "hash": "525e4699896f718dd4ff52cc82780d603042358869f6343c77a92ca175474601",
+      "coverage": 0.52734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        13,
+        121,
+        115
+      ],
+      "hash": "d5cb16bf32c802bfc15259973fc0d20033cc7b0ada1f412ff46042a6aac216a4",
+      "coverage": 0.52978515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_123": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "46ee024e851d3fa60319ac2525d4f6386e9ccae0c368c0342e1f13853320f36b",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "714d9f7357488ca617a3a699066d2fe2ae02fc7e5b1ebbb766fb6ccd36786311",
+      "coverage": 0.55877685546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "a4cef867c23b2bb1851abf2e290af682fab1edea7ac7d425266c83ec3dd9b19e",
+      "coverage": 0.55877685546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        120
+      ],
+      "hash": "7be8db30a29eacb96f701d0a2a05c099a6f8e94b22fb5c86ac0d93d6f85a9ca6",
+      "coverage": 0.5584716796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_124": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "975ea7a8cfb5b5555cafae6cbb4700690a75825d94ac54aae2dca44d28058f38",
+    "held": {
+      "bbox": [
+        15,
+        6,
+        113,
+        121
+      ],
+      "hash": "22cc5968e25f940265ff828146225b4fc2d0b24fdbd5a21dc189d762a045a4ab",
+      "coverage": 0.38787841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        15,
+        6,
+        113,
+        121
+      ],
+      "hash": "c0e8829eaec2f5489083b3a2871663fad95d6b53dcc17fa35abbdac1aaa26acb",
+      "coverage": 0.38787841796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        15,
+        6,
+        113,
+        121
+      ],
+      "hash": "f16122d096ac04bd40682482ad3b9d3246852570aa6b23e6c925011eb325c29e",
+      "coverage": 0.38800048828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "045dacd631b3c9a54693e9c82aa87d7b704393172f128a602a011e89ad54410c",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_125": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "b7024f827b92be317ac2720551d429569094e30ed01f9a9cdad2f18c913ab08a",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "06dcf2f700cff0e035e9495e850ed92c1ff8ac23cf654a33202dc2623fb8f1d4",
+      "coverage": 0.5623779296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "3794587651027dcd517c6e53c80e661e52f57ab5f1b49ccb66c20d9c3c1c206f",
+      "coverage": 0.5623779296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "0026258e75158463ca89e37c9f0ec6fa28b1cc03dd2842f5b8ca46eac0b52eff",
+      "coverage": 0.56170654296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_126": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "409ae5603c1ad2a4b1d352d77eec0b3e33db0e78019152725ff66c6147cc20b6",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "179f6a28be84e22616d0b09d7eaf296de2f23a5ed5f17861b38a492697e03ca9",
+      "coverage": 0.47247314453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "0c479b7059acaf0493dd2a77d3160045026a66d5ee27e3f181840b85449086a6",
+      "coverage": 0.47247314453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "977082cc3cc516cce9d6c369de724c15fb4d014a9612f743ff230ba030e402a6",
+      "coverage": 0.4727783203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_127": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "b207bfd4e6792bab351ff6f4ada4dfa830730045ba94623a2a113cc27b8c2d2a",
+    "held": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "cae4263789f246c709f097108a37a8666c6447077e73f822939e44f21660a26b",
+      "coverage": 0.4542236328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "81153745fd3bec5b906770b8d016e6dfd752cf70d40ad77e0d13c66c92fbac4e",
+      "coverage": 0.4542236328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "0fd192ba3ac29b20a9cb1bb93f34719dfa8ca0954c0fbb31037cd57c08808922",
+      "coverage": 0.45294189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_128": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "fd3cb962c83509269afad01c35082bbf7c309ae8202dcb88fca0c6466c518af4",
+    "held": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "6375734c1a5cc080528b887502afa37b800bc42f9ec488f76e94a843f9e83f2f",
+      "coverage": 0.42852783203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "ac9cf2f8f0cf86f738c95fa793b2d84065cf03c019750392399a1bce082a71db",
+      "coverage": 0.42852783203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "6d1d4e46cb3acaff2e47b8ff492127ad0935c311d20cfde2fd304e34c0165fb6",
+      "coverage": 0.4267578125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_129": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "6de85b89300fe3e8eabff17818cc15b29ec123c822de2336dd9e3ed0b16e5454",
+    "held": {
+      "bbox": [
+        35,
+        6,
+        92,
+        121
+      ],
+      "hash": "d1fed71798841a3a28be2fa8d8157aa87f4bbe05d2899197ad6e7124785797fa",
+      "coverage": 0.25469970703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        35,
+        6,
+        92,
+        121
+      ],
+      "hash": "2749ac261f0f3879c979ebd0c5b8c1e974c3d128b5f9ab151e68688b6ae09094",
+      "coverage": 0.25469970703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        35,
+        6,
+        92,
+        121
+      ],
+      "hash": "0368698aadd7588b623b9c5b36c6089d66d7387c398d30a26d3577d8890e3af2",
+      "coverage": 0.2535400390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_130": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "ff38c2cba88e74cc33fc13d43300ffe2183b89eef819f0884ce77b0878b31ce2",
+    "held": {
+      "bbox": [
+        6,
+        14,
+        121,
+        113
+      ],
+      "hash": "fa8c51302f8266cb430bbb79f76633dfae9c688492fdfa0f6a20c53a833883bc",
+      "coverage": 0.4405517578125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        14,
+        121,
+        113
+      ],
+      "hash": "14b4b450388e96f78f01cc5955aed5230a30017f976a1045cbb5e67e6625e5c4",
+      "coverage": 0.4405517578125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        14,
+        121,
+        113
+      ],
+      "hash": "7c0d563985afbc3a9d5a8a30a6ee315206e61a6f746f4c6a2361741c2aa43e88",
+      "coverage": 0.43975830078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_131": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "074d56eafa2fe410836fe7ddbce6b34d8176e2323215588538c4fc2e3334c02f",
+    "held": {
+      "bbox": [
+        6,
+        32,
+        121,
+        96
+      ],
+      "hash": "2b9f3702fae2be02d5b92d7d578b87172a00494e659cdf46af8c05c635e5d366",
+      "coverage": 0.348388671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        32,
+        121,
+        96
+      ],
+      "hash": "40ba6af7c2b03739d7302ef194e3d324057ccbe2fc75225b39bf7fe633f71b16",
+      "coverage": 0.348388671875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        19,
+        121,
+        108
+      ],
+      "hash": "bf7bc56b8beeee303930df659ca983875956e09f137bd160d1d49f5b45baa349",
+      "coverage": 0.37451171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_132": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "a000263b9ab5051ae49c86fe30f158405e7467945f26c3fc830976899c837c17",
+    "held": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "c43da544e5f022d656d5911cfe2ab7d5cf52c7045d3db6e18cbab96fbe4c956e",
+      "coverage": 0.33563232421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "625beb0c4e5e2c271d6f3a1b7c89c44e55b9b66bf2103d84aa0ca376b1767238",
+      "coverage": 0.33563232421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        27,
+        6,
+        101,
+        121
+      ],
+      "hash": "de19700f011006e9482c4472b37332e8da15bf2b0986d341e3793213187dbd63",
+      "coverage": 0.333984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_133": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "54aa5cb15fca7a3994a9770bdc2ff1a5f14d6a19d975e7d136454f5ed165dd90",
+    "held": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "7b070929e32da331372ca8f6248d3185ad8d95318cbc15304586c8d2cfaa9c5c",
+      "coverage": 0.5294189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "b572fa283c5d1af5a236595b74a2cac70ed2b75e795b822f497daf298f6736ac",
+      "coverage": 0.5294189453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        8,
+        121,
+        120
+      ],
+      "hash": "9fecc4f3e483d645dd88573e3643524e0badbf659cea458fba6a09ed9722cb09",
+      "coverage": 0.52655029296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        1,
+        1,
+        30,
+        30
+      ],
+      "hash": "f50c67b7d0cf10a92d0e056d35dcc8786b4376542a2f5f025a045e1adc445121",
+      "coverage": 0.599609375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_134": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "90aa36abcfc8c37443a3320c779e30debaeedc66d9e8b6498d125fbd7e01f1e5",
+    "held": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "14cfe8367d4dd64209a3f088de888eaf4a5f37d8f2d63d77a7e6094987a1292c",
+      "coverage": 0.5684814453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "bffde4f61e367d649db810ad6d5fec6b9ea08bb5fda1ae15f5471c1380f0b19c",
+      "coverage": 0.5684814453125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        10,
+        6,
+        117,
+        121
+      ],
+      "hash": "b81b03686eb93143ac840b07739447ab3be793c297564bef9b1c2de771bb1926",
+      "coverage": 0.66015625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_135": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "5e908cb7128858ab76e56a56a0b60945dbed60e9968f34d5af3f269f5413229b",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "5e81e196724647d5662ff6ccd7c88d6074bc7145ac2797d5aaab7ca24e8c20fa",
+      "coverage": 0.455322265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "c3fdbcd83ed7d5a48662483a35e6a7872441d242fa6afe64f74b87496a1308f5",
+      "coverage": 0.455322265625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "ab034924f7dd80c3e7d9c8ed89b8875bdd05e67b5a6f2fcbf488f33554af7b9d",
+      "coverage": 0.80169677734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_136": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "efc467bbeb5073c11b9a1d3531a6ca1afb9c2eebb80aa23bf7c6afaa49422e70",
+    "held": {
+      "bbox": [
+        6,
+        28,
+        121,
+        99
+      ],
+      "hash": "c4b5e52c2436aa40602ae7e18e474e593e8c0fb2701bef5c3cdcc3222d0ec7cb",
+      "coverage": 0.3392333984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        28,
+        121,
+        99
+      ],
+      "hash": "6ca9746ec5b033e08faf3803c795b636bc09a505ec1dbc2ba5ea9b896f7e3d4f",
+      "coverage": 0.3392333984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        12,
+        121,
+        116
+      ],
+      "hash": "385bcf54cda2f5f512488cbecc7fa007e4ed3cdddd40798845a2898028f53a16",
+      "coverage": 0.458740234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_137": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "146c86ca6997cd08459c352fa7fb8944669b72998569c88f916ed21525d49445",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "aba04f00a4d757c59b0090ccb4d76f3dc9c08a9180c85e5a2e67d01c005ef533",
+      "coverage": 0.56719970703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "47e9e36fded42772f312ca3230776c48be690b15900839665d48510457026dc5",
+      "coverage": 0.56719970703125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "8c3d5f2fe68e8874a0e9c61814b1d430ccb73482f685b555393534f7efa67bae",
+      "coverage": 0.56573486328125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_138": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2404680fa977741fc041f39841dde9b17c94965a50241589ab25fc8d92925382",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "15248755801bd7f1fefb74a6ac681b8a751333204bdc535a29145f191a64fcd3",
+      "coverage": 0.4422607421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "1c2436d0ae4ea614bf2a4f7f2a350d4c478ecd44c5c2eecec5af8ae5da99267e",
+      "coverage": 0.4422607421875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "7f64ca83306bdf3832ba539aaffc1dc5d50699bdfe539fe44e4531b8fa10421d",
+      "coverage": 0.444091796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_139": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "618a3c95e05085a77065a84bb999532d8a3727115266ad4384f33a3754a2e12a",
+    "held": {
+      "bbox": [
+        6,
+        13,
+        121,
+        114
+      ],
+      "hash": "9a390a777b50ec138aed5b0901426436b32baddb5553eee0763f8da8c469436f",
+      "coverage": 0.46502685546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        13,
+        121,
+        114
+      ],
+      "hash": "d29f958447ee89225092e3f8ae23ddf473da70db9e6b1bfd6c1439ca98d784a6",
+      "coverage": 0.46502685546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "8624dbbb847a5f181ed19f42502ddafeddfe44b84e70b4cb5e5c89a840636ab3",
+      "coverage": 0.6114501953125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_140": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "1ecdeef51a52e214bf7324f27b432c930c21eda794b2f0ed9685a558390e6c8f",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "21bf284e7381b07cf9ac5d8eb078b878694b9e523434af4d715193b0a244da74",
+      "coverage": 0.6363525390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "cd5c37c987e09cdbce21d46e225f9c24e2c8cc35ce1329bd7605d1db5fdd58b1",
+      "coverage": 0.6363525390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "18b470f51a52644d4b55a8dec43522a4cd0affb725107bc616df8436472a8ebb",
+      "coverage": 0.63446044921875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "3ef2bd5dc6d67e9de95d6373a9d456f649f74977eec76616b637293594b03f8a",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_141": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "2ac601530eff98e32663110019cddf9044c84b38509ce7cf40befbb2f5a02ee7",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "7437c21f6a115448e660663fa81b22704cd0a7317d90bf736d53dfb7294840a0",
+      "coverage": 0.6337890625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "237f11338e11e40a8d21716ee8e454dd11fedd5f6035a6b721be3e3abd4ea404",
+      "coverage": 0.6337890625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "0f9897fc73943a4646552431d53dbff11f207f8f5c2de7b42f0341699093f2e3",
+      "coverage": 0.79315185546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "257e3af4c262c4b2e23efbb34fccc8adcc814802ccbea1e0ef8a79adcb545321",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_142": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "b934b02e847be0d305275a4e35bd04ab07d47c86685b21de8852421c95052d3b",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "2a49d56d611a40e6baccb94d9ed00f71932987fc0bca219e4ecc4c41f793d43d",
+      "coverage": 0.59625244140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "3d14f48fb1e99e7fd75301a77f7a452f251ddb8052e8d437bf6506afb776b4d6",
+      "coverage": 0.59625244140625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "a6a935a89504ed36d14a8e4f1725711136493e05f5b16e470112c05abc01e932",
+      "coverage": 0.79217529296875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "f4c61e7513e7965a74e938122bb91f5e639924aeed9e1437e2c39d3a16d8fb16",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_143": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "e7ac0208d66b0a974864637bfd3afb4da3c39fa6f271982d6ffa7a80fc3cef24",
+    "held": {
+      "bbox": [
+        17,
+        6,
+        111,
+        121
+      ],
+      "hash": "c6d57d97acad3d12267178092f95776ec8ee6f1adf4c56f46211e98f76e173a5",
+      "coverage": 0.49407958984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        17,
+        6,
+        111,
+        121
+      ],
+      "hash": "e24183019d748f28e5e0ea2829bc9c887113a813e3382067899d96dcf2ae78c2",
+      "coverage": 0.49407958984375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        17,
+        6,
+        111,
+        121
+      ],
+      "hash": "d6719d8b452669b8ec2cc59cba51d0f8a72bb2f5fbc8eceba8db156dc97234aa",
+      "coverage": 0.493408203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "083680e1822f8f9367e70fb04a310622623af93a7570182bc5a2e7ab87b1b8f9",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_144": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "221a8835febd2326cb87b9e345ad9d125ef98fba69c97c8141d1bb3790617545",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "5d656943101d58d5040a10e45607ce475c698f0faf5376a2d71599b6ed9ca7ec",
+      "coverage": 0.58074951171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "08504abf5101b7b53a44733ad256c127a7b51a57ac6c63d3977c63991ec97583",
+      "coverage": 0.58074951171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "dc8a9d4f8734c05704709e0af099182619dfc59e82085d31d4ee737c72d71e3a",
+      "coverage": 0.79034423828125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "fc154de6bd8f181bfee3ea52ffd1a3345222a117f2d1a11b2b134160257b4d94",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_145": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "42fc63fc3f5fd55813ef55428a914c7283aa6828dad9ed1c95790121efdb5cce",
+    "held": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "1035dea35da4afad5ef711355184fe230baa1ae927649db0f7a63079830ebec2",
+      "coverage": 0.53741455078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        7,
+        121,
+        121
+      ],
+      "hash": "2d75caaf39f3f24b68bc96c0c897fff61e20ae04a143789132e1336dd802278d",
+      "coverage": 0.53741455078125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        9,
+        6,
+        119,
+        121
+      ],
+      "hash": "4ff7af8f55c7e0b8033c707be7ed19fbb7585a7d582cf1e16b90d092afa933c6",
+      "coverage": 0.7694091796875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        3,
+        5,
+        31,
+        28
+      ],
+      "hash": "8167fc09205c71f9d86cfa22430b09ac7109f5a142335b6dbb53b3fcbbf848b8",
+      "coverage": 0.328125,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_146": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "bdebf6dae6db0edbe1dc9662aa79c10f35aadd7e8ecbb68fa3e301c8ba51f47f",
+    "held": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "a591a56a3a84725c1dfe20b268d1e4c10d84a641ae6adc762a3f60b132930951",
+      "coverage": 0.44036865234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        7,
+        6,
+        120,
+        121
+      ],
+      "hash": "2ee2105168434adce90fb43913983469c97c0a7e7353be905ea944470421a145",
+      "coverage": 0.44036865234375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        7,
+        6,
+        121,
+        121
+      ],
+      "hash": "b6bdcc2cbee28ca264f9d602bdc054ee233f98b360649f0fc18a9882f8c48e80",
+      "coverage": 0.79949951171875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "fe2c3f20e65fc47f9ef6a1356cbf6d02b53f536932a84e98104acd96085bdf7f",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_147": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "97df85e2c243f1e92b2bdf1d2f1a0895f1138401585752f69d32d51bf8c14985",
+    "held": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "39b082e97523efd1d8f393e9336ae7f4d02ea3228eb6b6d77e18494187c1a070",
+      "coverage": 0.59466552734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "ba44fb150d867a54f152481aa5f6e12bd6e15a00f346979fa5833ebe7504462b",
+      "coverage": 0.59466552734375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        6,
+        6,
+        121,
+        121
+      ],
+      "hash": "0490481240bec1620bf3f80d9688c63bb77d7b4322376c11006c71cd9dffa99d",
+      "coverage": 0.80682373046875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        6,
+        32,
+        27
+      ],
+      "hash": "abdb0b08ff9a7e9033e1e7d6ed66713a6f8957f3d028ffd806b56a510fb881ad",
+      "coverage": 0.3115234375,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_148": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "61d4ed98d8b4603cdf91f8f342d27b16d7ca84a76155d33033af971c4268a96b",
+    "held": {
+      "bbox": [
+        19,
+        7,
+        108,
+        121
+      ],
+      "hash": "8905b42402551ab300ea4f7ef2b77c17a88fc197fdfeda47cb65387feba09565",
+      "coverage": 0.4381103515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        19,
+        7,
+        108,
+        121
+      ],
+      "hash": "b2da216ff947d2b4a9f014eb3cb1e2f4b63577054089614cd3f45fae61f0cef6",
+      "coverage": 0.4381103515625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        19,
+        7,
+        108,
+        121
+      ],
+      "hash": "2338ffc5d25262f6d3afd4bad2e1a826f73d13e8c10f15ed20a4719ca491ba39",
+      "coverage": 0.4368896484375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "99afd9d40543a2c73d0a49ef658fcf93c3fcbc9c1c71609255188b31e86f7040",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_149": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "f34f2f5bf5f369e1d8617ce3afa4089bc9ec15e41cb6dfe6d2e6c3ec1ceb3f4c",
+    "held": {
+      "bbox": [
+        10,
+        6,
+        118,
+        121
+      ],
+      "hash": "bac93e573e2627e47ccab03f0fd6894872b9c4d0534e5324e97c1ad615eff0fc",
+      "coverage": 0.457275390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        10,
+        6,
+        118,
+        121
+      ],
+      "hash": "97a191e639430c99150d2fe8ec6767c9f3be67676e34d34e8b8b47c202d9263a",
+      "coverage": 0.457275390625,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        8,
+        6,
+        120,
+        121
+      ],
+      "hash": "21e1a6a27859bd59016605f5ea1a69a3b29c1207300d91658ad8dfd9de171b6f",
+      "coverage": 0.78399658203125,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "86bcd8e8d6142feb5a37e02b138a8f0834f2b312627d64d9c3ecec6f9823c1eb",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  },
+  "pa_150": {
+    "iconSize": [
+      64,
+      64
+    ],
+    "iconHash": "9bee7ae0534c3c0947eba79ba4f34b6183749cbd4af6db9f59d2fbe98dcd9d89",
+    "held": {
+      "bbox": [
+        14,
+        6,
+        113,
+        121
+      ],
+      "hash": "fef90041164cded6e99376a8af064adace1b8d8289fcbdfaa316359cc85bbdb0",
+      "coverage": 0.5980224609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "silhouette": {
+      "bbox": [
+        14,
+        6,
+        113,
+        121
+      ],
+      "hash": "aa043d39d4b2b6e56946f21313f6615d344a38aee750de0ebbc56f3ffa765c43",
+      "coverage": 0.5980224609375,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "icon": {
+      "bbox": [
+        13,
+        6,
+        114,
+        121
+      ],
+      "hash": "c900c2cfd9cf9d87320b37acea38d162baa5c37b73692dcc31b37dbd914bd7b6",
+      "coverage": 0.6268310546875,
+      "size": [
+        128,
+        128
+      ],
+      "validRegion": true
+    },
+    "projectile": {
+      "bbox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "hash": "8d39e32680b0ceb508ab43a985e866fb1d66dd4c26cc55df430e60f85fbf7a43",
+      "coverage": 0.71875,
+      "size": [
+        32,
+        32
+      ],
+      "validRegion": true
+    },
+    "iconExists": true,
+    "sourceExists": true
+  }
+}

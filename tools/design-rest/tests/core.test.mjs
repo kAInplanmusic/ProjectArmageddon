@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { TYPES, frameDescription, buildPrompt, selectCharacters, validateBudget, assertQueueUrl, submitOnce } from '../core.mjs';
+const chars=JSON.parse(fs.readFileSync(new URL('../characters.json',import.meta.url)));
+const factions=JSON.parse(fs.readFileSync(new URL('../factions.json',import.meta.url)));
+const config=JSON.parse(fs.readFileSync(new URL('../config.json',import.meta.url)));
+test('81 eindeutige Figuren, alle neun Fraktionen und gültige Morphologien',()=>{assert.equal(Object.keys(chars).length,81);for(const c of Object.values(chars)){assert.ok(factions[c.faction]);assert.ok(TYPES.includes(c.morphology));}assert.equal(Object.keys(factions).length,9)});
+test('Pilot umfasst sechs verschiedene Körperformen',()=>{const selected=selectCharacters(chars,'pilot',config.pilot);assert.equal(new Set(selected.map(c=>c.morphology)).size,6);assert.equal(selectCharacters(chars,'all',config.pilot).length,81);assert.equal(selectCharacters(chars,'xeno',config.pilot).length,9)});
+test('Unbekannte Auswahl und ungültige Phasen werden abgelehnt',()=>{assert.throws(()=>selectCharacters(chars,'fehlt',[]));assert.throws(()=>frameDescription('quadruped','walk',8));assert.throws(()=>frameDescription('human','walk',0))});
+test('Fahrzeugprompt verbietet Beine, enthält Referenzrollen und Identität',()=>{const c=chars['heavy-battery-moerser-bot'];const p=buildPrompt(c,factions.machina,'walk',2,['identity','pose only']);assert.match(p,/Never generate legs/);assert.match(p,/pose only/);assert.match(p,/exactly two continuous tracks/)});
+test('Budget reserviert alle geplanten Requests und lehnt Überschreitung ab',()=>{assert.equal(validateBudget(6,.1,6,.6),.6000000000000001);assert.throws(()=>validateBudget(7,.1,6,1));assert.throws(()=>validateBudget(6,.1,6,.5));assert.throws(()=>validateBudget(6,NaN,6,1))});
+test('Queue-URLs dürfen Schlüssel nur an fal senden',()=>{assert.equal(assertQueueUrl('https://queue.fal.run/a'), 'https://queue.fal.run/a');for(const u of ['http://queue.fal.run/a','https://queue.fal.run.evil.test/a','https://user@queue.fal.run/a'])assert.throws(()=>assertQueueUrl(u))});
+test('Reservierung wird vor POST gespeichert; zweiter Submit ist verboten',async()=>{const r={state:'planned'};const events=[];const response={request_id:'r1',status_url:'https://queue.fal.run/s',response_url:'https://queue.fal.run/r',cancel_url:'https://queue.fal.run/c'};await submitOnce(r,async()=>{events.push('POST');return response},async()=>{events.push(r.state)});assert.deepEqual(events,['reserved','POST','submitted']);await assert.rejects(()=>submitOnce(r,()=>{throw Error('unerlaubt')},async()=>{}));assert.equal(r.requestId,'r1')});
+test('Mehrdeutiger POST wird nicht erneut gesendet',async()=>{const r={state:'planned'};let n=0;await assert.rejects(()=>submitOnce(r,async()=>{n++;throw Error('Timeout')},async()=>{}));assert.equal(r.state,'uncertain');await assert.rejects(()=>submitOnce(r,async()=>{n++},async()=>{}));assert.equal(n,1)});

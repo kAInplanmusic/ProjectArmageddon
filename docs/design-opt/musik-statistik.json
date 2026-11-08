@@ -1,0 +1,65 @@
+{
+  "beasts": {
+    "dauer": 33.384,
+    "bytes": 423321,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "datacult": {
+    "dauer": 72.024,
+    "bytes": 989860,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "machina": {
+    "dauer": 72.048,
+    "bytes": 1018399,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "pirates": {
+    "dauer": 30.12,
+    "bytes": 425959,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "pixel": {
+    "dauer": 22.056,
+    "bytes": 310370,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "rodentia": {
+    "dauer": 76.968,
+    "bytes": 1107046,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "shinobi": {
+    "dauer": 48.144,
+    "bytes": 679470,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "undead": {
+    "dauer": 74.808,
+    "bytes": 902500,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  },
+  "xeno": {
+    "dauer": 72.216,
+    "bytes": 1024300,
+    "codec": "mp3",
+    "samplerate": "48000",
+    "kanaele": 2
+  }
+}

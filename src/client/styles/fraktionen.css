@@ -1,0 +1,26 @@
+/* Fraktionsschriften lokal, nur lateinische Zeichen und je ein Schnitt. */
+@import '@fontsource/rajdhani/latin-600.css';
+@import '@fontsource/cinzel/latin-600.css';
+@import '@fontsource/pirata-one/latin-400.css';
+@import '@fontsource/orbitron/latin-600.css';
+@import '@fontsource/creepster/latin-400.css';
+@import '@fontsource/reggae-one/latin-400.css';
+@import '@fontsource/rye/latin-400.css';
+@import '@fontsource/press-start-2p/latin-400.css';
+@import '@fontsource/share-tech-mono/latin-400.css';
+
+#roster-info .fraktions-banner {
+  position: relative; min-height: 112px; box-sizing: border-box;
+  padding: 20px 38px 20px 205px; background: #10141c;
+  background-image: var(--fraktions-banner); background-size: 960px 180px; background-position: left center; background-repeat: no-repeat;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+}
+.fraktions-banner b { font-family: var(--fraktions-schrift), sans-serif; color: var(--fraktions-farbe); font-size: clamp(16px, 3vw, 26px); line-height: 1.5; overflow-wrap: anywhere; }
+.fraktions-banner span { color: #e0e5ed; font-size: 13px; }
+.fraktions-bio { padding: 12px 0; line-height: 1.55; }
+#roster-tabs .pa-tab { border-bottom: 3px solid var(--fraktions-farbe); }
+#roster-tabs .pa-tab img { width: 26px; height: 26px; vertical-align: middle; margin-right: 7px; }
+.fraktions-legende { font-size: 12px; color: #bdc7d4; line-height: 1.5; }
+@media (max-width: 600px) {
+  #roster-info .fraktions-banner { min-height: 128px; padding: 16px 25px 16px 135px; background-size: 640px 120px; }
+}

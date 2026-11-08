@@ -1,0 +1,3101 @@
+[
+  {
+    "id": "pa_001",
+    "name": "Baseballschläger",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_002",
+    "name": "Feuerfaust",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_003",
+    "name": "Hakenklinge",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_004",
+    "name": "Piratenhaken",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_005",
+    "name": "Morgenstern",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_006",
+    "name": "Schaufel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_007",
+    "name": "Tonfa",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_008",
+    "name": "Kriegshammer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_009",
+    "name": "Eispickel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_010",
+    "name": "Kettensäge",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_011",
+    "name": "Zwillingskatanas",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_012",
+    "name": "Katana",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_013",
+    "name": "Mehrzweckmesser",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_014",
+    "name": "Taschenmesser",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_015",
+    "name": "Runenschwert",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_016",
+    "name": "Rapier",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_017",
+    "name": "Kampfmesser",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_018",
+    "name": "Energieschwert",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_019",
+    "name": "Doppelaxt",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_020",
+    "name": "Kriegssense",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_021",
+    "name": "Krummsäbel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_022",
+    "name": "Plasmawerfer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_023",
+    "name": "Boxhandschuhe",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_024",
+    "name": "Mittelfinger",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_025",
+    "name": "Handtuch",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_026",
+    "name": "Pressluftbohrer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_027",
+    "name": "Fackel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_028",
+    "name": "Kaktusbombe",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 48,
+    "spawnRadius": 48,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_029",
+    "name": "Pömpel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 30,
+    "spawnRadius": 30,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_030",
+    "name": "Impulsbombe",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 52,
+    "spawnRadius": 52,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_031",
+    "name": "Kraftfaust",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_032",
+    "name": "Raketenrucksack",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 100,
+        "dy": 5
+      },
+      "element": {
+        "element": "fire",
+        "spur": "weg",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_033",
+    "name": "Zauberstab",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_034",
+    "name": "Zauberbolzen",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_035",
+    "name": "Energieball",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 34,
+    "spawnRadius": 34,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_036",
+    "name": "Raketenhandschuh",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_037",
+    "name": "Raketenwerfer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 46,
+    "spawnRadius": 46,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_038",
+    "name": "Rakete",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 38,
+    "spawnRadius": 38,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_039",
+    "name": "Feldmörser",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 45,
+    "spawnRadius": 45,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_040",
+    "name": "Maschinenpistole",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_041",
+    "name": "Salvengeber",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 16,
+    "spawnRadius": 16,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_042",
+    "name": "Feuerwerkssalve",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_043",
+    "name": "Kampfgeschütz",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_044",
+    "name": "Phönixschlag",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 55,
+    "spawnRadius": 55,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_045",
+    "name": "Raketensalve",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_046",
+    "name": "Splittergranate",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 42,
+    "spawnRadius": 42,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_047",
+    "name": "Handgranate",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_048",
+    "name": "Bananengranate",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 40,
+    "spawnRadius": 40,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_049",
+    "name": "Bumerang",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_050",
+    "name": "Doppelkopfaxt",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_051",
+    "name": "Wurfklingen",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_052",
+    "name": "Molotowcocktail",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 42,
+    "spawnRadius": 42,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_053",
+    "name": "Roboterbombe",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 45,
+    "spawnRadius": 45,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_054",
+    "name": "Schrotflinte",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_055",
+    "name": "Fernbüchse",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_056",
+    "name": "Präzisionsgewehr",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_057",
+    "name": "Revolver",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_058",
+    "name": "Kampfbogen",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_059",
+    "name": "Armbrust",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_060",
+    "name": "Gatlingkanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_061",
+    "name": "Feuerdämon",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 44,
+    "spawnRadius": 44,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_062",
+    "name": "Flammenwerfer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_063",
+    "name": "Wasserwerfer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_064",
+    "name": "Katapult",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 48,
+    "spawnRadius": 48,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_065",
+    "name": "Meteorbrocken",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 50,
+    "spawnRadius": 50,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_066",
+    "name": "Haubitze",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 48,
+    "spawnRadius": 48,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_067",
+    "name": "Säurekanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 38,
+    "spawnRadius": 38,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_068",
+    "name": "Plasmagewehr",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_069",
+    "name": "Raketenkanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 40,
+    "spawnRadius": 40,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_070",
+    "name": "Giftwolke",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 58,
+    "spawnRadius": 58,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_071",
+    "name": "Eisschlag",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 35,
+    "spawnRadius": 35,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_072",
+    "name": "Feuerball",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 34,
+    "spawnRadius": 34,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_073",
+    "name": "Tentakelgift",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 44,
+    "spawnRadius": 44,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_074",
+    "name": "Verderbnissiegel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 46,
+    "spawnRadius": 46,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_075",
+    "name": "Tornado",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 60,
+    "spawnRadius": 60,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_076",
+    "name": "Portalring",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 60,
+        "dy": 8
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_077",
+    "name": "Schwarzes Loch",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 72,
+    "spawnRadius": 72,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_078",
+    "name": "Voodoopuppe",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_079",
+    "name": "Kosmisches Portal",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 60,
+        "dy": 8
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_080",
+    "name": "Psionischer Tentakel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 52,
+    "spawnRadius": 52,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_081",
+    "name": "Zauberbuch der Leere",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_082",
+    "name": "Goldene Zauberrolle",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_083",
+    "name": "Goldene Hand",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_084",
+    "name": "Glutelixier",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "damage_boost",
+      "multiplier": 1.7
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_085",
+    "name": "Feuermagier",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "random",
+      "randomKind": "damage_boost",
+      "multiplier": 1.5
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_086",
+    "name": "Windkrieger",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_087",
+    "name": "Dimensionssprung",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 80,
+        "dy": 7
+      },
+      "element": {
+        "element": "electric",
+        "spur": "ziel",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_088",
+    "name": "Dimensionsriss",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 165,
+        "dy": -4
+      },
+      "element": {
+        "element": "electric",
+        "spur": "ziel",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_089",
+    "name": "Zauberstiefel",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 40,
+        "dy": 9
+      },
+      "element": {
+        "element": "fire",
+        "spur": "weg",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_090",
+    "name": "Giftpilz",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_091",
+    "name": "Astralkugel",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_092",
+    "name": "Heilzauber",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "heal",
+      "healed": 0,
+      "amount": 40
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_093",
+    "name": "Funkenschild",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "shield",
+      "shield": 40,
+      "amount": 40
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_094",
+    "name": "Heilspritze",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "heal",
+      "healed": 0,
+      "amount": 70
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_095",
+    "name": "Sturmelixier",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "damage_boost",
+      "multiplier": 1.3
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_096",
+    "name": "Mutationselixier",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "random",
+      "randomKind": "heal",
+      "healed": 0,
+      "amount": 35
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_097",
+    "name": "Traumfänger",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_098",
+    "name": "Lavaelixier",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_099",
+    "name": "Frostsanduhr",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "damage_boost",
+      "multiplier": 1.2
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_100",
+    "name": "Blitzwürfel",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "random",
+      "randomKind": "damage_boost",
+      "multiplier": 1.5
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_101",
+    "name": "Eisschild",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "shield",
+      "shield": 55,
+      "amount": 55
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_102",
+    "name": "Gedankensturm",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_103",
+    "name": "Verderbniskelch",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_104",
+    "name": "Quantengewehr",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_105",
+    "name": "Frostrolle",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "random",
+      "randomKind": "shield",
+      "shield": 53,
+      "amount": 53
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_106",
+    "name": "Sonnenamulett",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_107",
+    "name": "Allsehendes Auge",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "reveal",
+      "revealedTurns": 2
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_108",
+    "name": "Zauberpeitsche",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_109",
+    "name": "Giftbaum",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "damage_boost",
+      "multiplier": 1.15
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_110",
+    "name": "Dimensionskugel",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 110,
+        "dy": 4
+      },
+      "element": {
+        "element": "ice",
+        "spur": "ziel",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_111",
+    "name": "Enterhaken",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 45,
+        "dy": 9
+      },
+      "element": {
+        "element": "electric",
+        "spur": "ziel",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_112",
+    "name": "Düsenrucksack",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 70,
+        "dy": 7
+      },
+      "element": {
+        "element": "fire",
+        "spur": "start",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_113",
+    "name": "Bohrkanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_114",
+    "name": "Gleitschirm",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 160,
+        "dy": -3
+      },
+      "element": {
+        "element": "ice",
+        "spur": "ziel",
+        "getroffen": []
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_115",
+    "name": "Wächterstatue",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "heal",
+      "healed": 0,
+      "amount": 35
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_116",
+    "name": "Blutritual",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "heal",
+      "healed": 0,
+      "amount": 60
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_117",
+    "name": "Ananasbombe",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 45,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_118",
+    "name": "Feuerwesen",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 42,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_119",
+    "name": "Munitionskiste",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "ammo",
+      "restored": 2
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_120",
+    "name": "Energiefaust",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_121",
+    "name": "Raketenfaust",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_122",
+    "name": "Endlosschleife",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "ammo",
+      "restored": 3
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_123",
+    "name": "Magnetkanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_124",
+    "name": "Wachgeschütz",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "turret",
+      "turretId": 1,
+      "x": 200,
+      "y": 721,
+      "rounds": 3
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "turret_deployed",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_125",
+    "name": "Nachschubkiste",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "ammo",
+      "restored": 3
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_126",
+    "name": "Bunker",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "armor",
+      "reduction": 0.35
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_127",
+    "name": "Mine",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "mine",
+      "mineId": null,
+      "reason": "keine Mine gelegt: kein Platz oder kein Minensystem"
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_128",
+    "name": "Hologrammportal",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 90,
+        "dy": 6
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_129",
+    "name": "Tesla-Turm",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_130",
+    "name": "Tarnnetz",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "armor",
+      "reduction": 0.2
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_131",
+    "name": "Schlauchboot",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "move",
+      "moved": {
+        "dx": 50,
+        "dy": 9
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_132",
+    "name": "Alte Dame",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_133",
+    "name": "Fliegendes Superschaf",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 40,
+    "spawnRadius": 40,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_134",
+    "name": "Luftangriff",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_135",
+    "name": "Meteorregen",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_136",
+    "name": "Bohrkopfrakete",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_137",
+    "name": "Flammenklinge",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_138",
+    "name": "Arkanhammer",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_139",
+    "name": "Höllenkanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "hitscan",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_140",
+    "name": "Quantenkanone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_141",
+    "name": "Astralkrieger",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "turret",
+      "turretId": 1,
+      "x": 200,
+      "y": 721,
+      "rounds": 3
+    },
+    "projectileId": null,
+    "declaredRadius": 55,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "turret_deployed",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_142",
+    "name": "Leerenritter",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_143",
+    "name": "Astralross",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "mount",
+      "moved": {
+        "dx": 140,
+        "dy": 0
+      }
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_144",
+    "name": "Kosmische Wassermelone",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 70,
+    "spawnRadius": 70,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_145",
+    "name": "Erdspalter",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 75,
+    "spawnRadius": 75,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_146",
+    "name": "Giftige Weltenflasche",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 65,
+    "spawnRadius": 65,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_147",
+    "name": "Weltendrache",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 80,
+    "spawnRadius": 80,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_148",
+    "name": "Feuerschild",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "shield",
+      "shield": 75,
+      "amount": 75
+    },
+    "projectileId": null,
+    "declaredRadius": 60,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_149",
+    "name": "Goldene Reliktkugel",
+    "ok": true,
+    "errors": [],
+    "special": {
+      "kind": "damage_boost",
+      "multiplier": 1.5
+    },
+    "projectileId": null,
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "projectileCount": 0,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "special_effect",
+      "weapon_cooldown",
+      "turn_end",
+      "turn_start"
+    ],
+    "mineCount": 0
+  },
+  {
+    "id": "pa_150",
+    "name": "Kosmischer Kern",
+    "ok": true,
+    "errors": [],
+    "special": null,
+    "projectileId": 5,
+    "declaredRadius": 90,
+    "spawnRadius": 90,
+    "projectileCount": 1,
+    "eventTypes": [
+      "round_crates",
+      "turn_start",
+      "shot",
+      "projectile_spawn",
+      "weapon_cooldown"
+    ],
+    "mineCount": 0
+  }
+]
