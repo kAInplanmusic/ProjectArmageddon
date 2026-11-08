@@ -1,0 +1,3 @@
+# Umfang dieses Werkzeugs
+
+Die Anweisungen in docs/DesignRest/README.md gehören zum beauftragten Produktionsverfahren. Keine kostenpflichtigen Modell-/Trainingsaufrufe allein zum Testen der Anleitung. Ein tatsächlich autorisierter Lauf nutzt das dafür freigegebene Budget; keine erneute Nutzerbestätigung für bereits autorisierte Einzelschritte erfinden. Keine Secrets in Dateien oder Logs. Default ist offline planen. Vor Skalierung die visuelle Pilotabnahme durchführen. Unklare POSTs niemals automatisch wiederholen. Figurenanatomie und Pose wirklich ansehen, nicht nur Farbstatistiken. Keine eigenständige Änderung der Spielmechanik. Main bleibt außerhalb dieses Auftrags.
