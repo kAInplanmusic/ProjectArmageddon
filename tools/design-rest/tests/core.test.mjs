@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { TYPES, frameDescription, buildPrompt, selectCharacters, validateBudget, assertQueueUrl, submitOnce } from '../core.mjs';
+import { TYPES, frameDescription, buildPrompt, selectCharacters, validateBudget, assertQueueUrl, submitOnce, resolveModel } from '../core.mjs';
 const chars=JSON.parse(fs.readFileSync(new URL('../characters.json',import.meta.url)));
 const factions=JSON.parse(fs.readFileSync(new URL('../factions.json',import.meta.url)));
 const config=JSON.parse(fs.readFileSync(new URL('../config.json',import.meta.url)));
@@ -13,3 +13,4 @@ test('Budget reserviert alle geplanten Requests und lehnt Überschreitung ab',()
 test('Queue-URLs dürfen Schlüssel nur an fal senden',()=>{assert.equal(assertQueueUrl('https://queue.fal.run/a'), 'https://queue.fal.run/a');for(const u of ['http://queue.fal.run/a','https://queue.fal.run.evil.test/a','https://user@queue.fal.run/a'])assert.throws(()=>assertQueueUrl(u))});
 test('Reservierung wird vor POST gespeichert; zweiter Submit ist verboten',async()=>{const r={state:'planned'};const events=[];const response={request_id:'r1',status_url:'https://queue.fal.run/s',response_url:'https://queue.fal.run/r',cancel_url:'https://queue.fal.run/c'};await submitOnce(r,async()=>{events.push('POST');return response},async()=>{events.push(r.state)});assert.deepEqual(events,['reserved','POST','submitted']);await assert.rejects(()=>submitOnce(r,()=>{throw Error('unerlaubt')},async()=>{}));assert.equal(r.requestId,'r1')});
 test('Mehrdeutiger POST wird nicht erneut gesendet',async()=>{const r={state:'planned'};let n=0;await assert.rejects(()=>submitOnce(r,async()=>{n++;throw Error('Timeout')},async()=>{}));assert.equal(r.state,'uncertain');await assert.rejects(()=>submitOnce(r,async()=>{n++},async()=>{}));assert.equal(n,1)});
+test('Modellauflösung liefert qwen und nano mit getrennten Schemata',()=>{const q=resolveModel(config,'qwen');assert.equal(q.endpoint,config.endpoint);assert.equal(q.kind,'qwen');const n=resolveModel(config,'nano');assert.equal(n.endpoint,'fal-ai/nano-banana/edit');assert.equal(n.kind,'nano');assert.equal(n.parameters.aspect_ratio,'1:1');assert.equal(n.parameters.num_inference_steps,undefined);assert.throws(()=>resolveModel(config,'fehlt'))});

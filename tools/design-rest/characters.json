@@ -277,11 +277,20 @@
     "sprite": "00_captain-sven.png",
     "morphology": "biped",
     "identity": "grey beard, black tricorn, gold trim, one hook prosthesis; sword/key separate",
-    "reference": "src/client/assets/characters-hd/pirates/00_captain-sven.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/pirates/00_captain-sven.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/captain-sven/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/captain-sven/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/captain-sven/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/captain-sven/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/captain-sven/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/captain-sven/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/captain-sven/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/captain-sven/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "swashbuckler-piet": {
@@ -412,11 +421,20 @@
     "sprite": "00_chassis-endo-t8.png",
     "morphology": "biped",
     "identity": "mechanical skull, steel-blue armor, cyan eyes; no human skin",
-    "reference": "src/client/assets/characters-hd/machina/00_chassis-endo-t8.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/00_chassis-endo-t8.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/chassis-endo-t8/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/chassis-endo-t8/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/chassis-endo-t8/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/chassis-endo-t8/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/chassis-endo-t8/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/chassis-endo-t8/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/chassis-endo-t8/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/chassis-endo-t8/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "slasher-cyber-jax": {
@@ -427,11 +445,20 @@
     "sprite": "01_slasher-cyber-jax.png",
     "morphology": "biped",
     "identity": "slender robot, closed cyan visor, blue armor",
-    "reference": "src/client/assets/characters-hd/machina/01_slasher-cyber-jax.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/01_slasher-cyber-jax.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/slasher-cyber-jax/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/slasher-cyber-jax/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/slasher-cyber-jax/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/slasher-cyber-jax/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/slasher-cyber-jax/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/slasher-cyber-jax/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/slasher-cyber-jax/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/slasher-cyber-jax/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "hydra-titan-mech": {
@@ -442,11 +469,20 @@
     "sprite": "02_hydra-titan-mech.png",
     "morphology": "biped",
     "identity": "broad heavy mech, shoulder missile pods, no exposed human face",
-    "reference": "src/client/assets/characters-hd/machina/02_hydra-titan-mech.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/02_hydra-titan-mech.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/hydra-titan-mech/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/hydra-titan-mech/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/hydra-titan-mech/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/hydra-titan-mech/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/hydra-titan-mech/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/hydra-titan-mech/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/hydra-titan-mech/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/hydra-titan-mech/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "recon-luchs-01": {
@@ -457,11 +493,20 @@
     "sprite": "10_recon-luchs-01.png",
     "morphology": "quadruped",
     "identity": "mechanical lynx, exactly four legs, pointed ears, segmented tail, cyan lights",
-    "reference": "src/client/assets/characters-hd/machina/10_recon-luchs-01.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/10_recon-luchs-01.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/recon-luchs-01/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/recon-luchs-01/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/recon-luchs-01/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/recon-luchs-01/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/recon-luchs-01/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/recon-luchs-01/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/recon-luchs-01/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/recon-luchs-01/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "heavy-battery-moerser-bot": {
@@ -472,11 +517,20 @@
     "sprite": "11_heavy-battery-moerser-bot.png",
     "morphology": "tracked",
     "identity": "tracked mortar vehicle, exactly two continuous tracks, zero legs, articulated mortar barrel",
-    "reference": "src/client/assets/characters-hd/machina/11_heavy-battery-moerser-bot.png",
-    "referenceApproved": false,
+    "reference": "docs/DesignRest/canonical/machina/11_heavy-battery-moerser-bot.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/heavy-battery-moerser-bot/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "ordnance-rail-viper": {
@@ -487,11 +541,20 @@
     "sprite": "12_ordnance-rail-viper.png",
     "morphology": "serpentine",
     "identity": "mechanical railgun serpent, continuous segmented snake body, zero legs",
-    "reference": "src/client/assets/characters-hd/machina/12_ordnance-rail-viper.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/12_ordnance-rail-viper.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/ordnance-rail-viper/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/ordnance-rail-viper/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/ordnance-rail-viper/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/ordnance-rail-viper/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/ordnance-rail-viper/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/ordnance-rail-viper/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/ordnance-rail-viper/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/ordnance-rail-viper/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "grid-drifter-datastream": {
@@ -502,11 +565,20 @@
     "sprite": "20_grid-drifter-datastream.png",
     "morphology": "hover",
     "identity": "floating data apparition, top hat, cyan data tail, zero legs",
-    "reference": "src/client/assets/characters-hd/machina/20_grid-drifter-datastream.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/20_grid-drifter-datastream.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/grid-drifter-datastream/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/grid-drifter-datastream/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/grid-drifter-datastream/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/grid-drifter-datastream/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/grid-drifter-datastream/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/grid-drifter-datastream/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/grid-drifter-datastream/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/grid-drifter-datastream/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "proxy-glitch-hack": {
@@ -517,11 +589,20 @@
     "sprite": "21_proxy-glitch-hack.png",
     "morphology": "biped",
     "identity": "small antenna robot, cyan display eyes, tool pack",
-    "reference": "src/client/assets/characters-hd/machina/21_proxy-glitch-hack.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/21_proxy-glitch-hack.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/proxy-glitch-hack/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/proxy-glitch-hack/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/proxy-glitch-hack/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/proxy-glitch-hack/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/proxy-glitch-hack/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/proxy-glitch-hack/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/proxy-glitch-hack/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/proxy-glitch-hack/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "overlord-kernel-panic": {
@@ -532,11 +613,20 @@
     "sprite": "22_overlord-kernel-panic.png",
     "morphology": "hover",
     "identity": "closed machine face under hood, cyan robe circuitry, no human skin",
-    "reference": "src/client/assets/characters-hd/machina/22_overlord-kernel-panic.png",
-    "referenceApproved": false,
+    "reference": "src/client/assets/characters-side/machina/22_overlord-kernel-panic.png",
+    "referenceApproved": true,
     "approvedCounts": {},
     "equipmentMode": "separate",
-    "guides": {},
+    "guides": {
+      "walk:0": "artifacts/design-rest/guides/overlord-kernel-panic/walk-0-sheet.png",
+      "walk:1": "artifacts/design-rest/guides/overlord-kernel-panic/walk-1-sheet.png",
+      "walk:2": "artifacts/design-rest/guides/overlord-kernel-panic/walk-2-sheet.png",
+      "walk:3": "artifacts/design-rest/guides/overlord-kernel-panic/walk-3-sheet.png",
+      "walk:4": "artifacts/design-rest/guides/overlord-kernel-panic/walk-4-sheet.png",
+      "walk:5": "artifacts/design-rest/guides/overlord-kernel-panic/walk-5-sheet.png",
+      "walk:6": "artifacts/design-rest/guides/overlord-kernel-panic/walk-6-sheet.png",
+      "walk:7": "artifacts/design-rest/guides/overlord-kernel-panic/walk-7-sheet.png"
+    },
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
   },
   "bone-racker-karl": {
@@ -922,9 +1012,12 @@
     "sprite": "21_cosmic-meditate.png",
     "morphology": "hover",
     "identity": "blue multi-armed floating meditator, crossed legs; preserve approved arm count",
-    "reference": "src/client/assets/characters-hd/beasts/21_cosmic-meditate.png",
+    "reference": "src/client/assets/characters-side/beasts/21_cosmic-meditate.png",
     "referenceApproved": false,
-    "approvedCounts": {},
+    "approvedCounts": {
+      "arms": 6,
+      "legs": 2
+    },
     "equipmentMode": "separate",
     "guides": {},
     "notes": "Vor Produktionslauf Referenz visuell mit Originalbogen vergleichen. Arm-, Kopf- und Schwanzzahl bei mehrgliedrigen Figuren explizit in approvedCounts eintragen."
@@ -1117,7 +1210,7 @@
     "sprite": "02_chrome-code-shifter.png",
     "morphology": "serpentine",
     "identity": "green segmented metal snake, zero limbs",
-    "reference": "src/client/assets/characters-hd/datacult/02_chrome-code-shifter.png",
+    "reference": "src/client/assets/characters-side/datacult/02_chrome-code-shifter.png",
     "referenceApproved": false,
     "approvedCounts": {},
     "equipmentMode": "separate",
@@ -1177,7 +1270,7 @@
     "sprite": "20_buffer-flow-swarm.png",
     "morphology": "swarm",
     "identity": "swarm of multiple small flying network insects; never a single giant insect",
-    "reference": "src/client/assets/characters-hd/datacult/20_buffer-flow-swarm.png",
+    "reference": "src/client/assets/characters-side/datacult/20_buffer-flow-swarm.png",
     "referenceApproved": false,
     "approvedCounts": {},
     "equipmentMode": "separate",
