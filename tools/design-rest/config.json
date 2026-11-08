@@ -8,6 +8,7 @@
     },
     "num_inference_steps": 28,
     "guidance_scale": 4.5,
+    "negative_prompt": "human face on non-human, humanoid body on animal or machine, extra or missing limbs, legs on a tracked vehicle, single giant insect instead of a swarm, firing weapon, muzzle flash, energy beam, flame, smoke, ground shadow, scenery, extra characters, loose floating props, text, letters, watermark, cropped body, transparency checkerboard",
     "num_images": 1,
     "enable_safety_checker": true,
     "output_format": "png",
