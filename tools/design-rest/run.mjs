@@ -4,7 +4,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sha256, buildPrompt, selectCharacters, validateBudget, assertQueueUrl, submitOnce } from './core.mjs';
+import { sha256, buildPrompt, selectCharacters, validateBudget, assertQueueUrl, submitOnce, resolveModel } from './core.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');
 const args = process.argv.slice(2);
@@ -26,6 +26,7 @@ async function reference(p, label) {
 }
 async function createPlan() {
   const animation = value('animation', 'reference');
+  const model = resolveModel(config, value('model', 'qwen'));
   const stage = value('stage', 'baseline'); if (!config.stages[stage]) throw new Error('Unbekannte Stufe');
   const framesArg = value('frames', animation === 'reference' ? '0' : '0,2,5,7');
   const frames = framesArg === 'all' ? [0,1,2,3,4,5,6,7] : framesArg.split(',').map(Number);
@@ -47,12 +48,14 @@ async function createPlan() {
       if (guide) refs.push(await reference(guide, 'pose and articulation guide ONLY, ignore its species, materials and colors'));
       if (faction.styleReference && refs.length < 3) refs.push(await reference(faction.styleReference, 'approved faction style ONLY; do not copy its anatomy'));
       if (refs.length > 3) throw new Error('Maximal drei Referenzen in diesem Workflow');
-      const input = { ...config.parameters, num_inference_steps: config.stages[stage].steps, guidance_scale: config.stages[stage].guidance, seed, loras: faction.loras };
-      input.prompt = buildPrompt(c, faction, animation, frame, refs.map(r => r.label), config.corrections[correctionName]);
+      const input = model.kind === 'qwen'
+        ? { ...model.parameters, num_inference_steps: config.stages[stage].steps, guidance_scale: config.stages[stage].guidance, seed, loras: faction.loras }
+        : { ...model.parameters, seed };
+      input.prompt = buildPrompt(c, faction, animation, frame, refs.map(r => r.label), config.corrections[correctionName], Boolean(guide));
       jobs.push({ id: `${c.id}-${animation}-${frame}-s${seed}-r${revision}`, character: c.id, faction: c.faction, animation, frame, revision, references: refs, referenceApproved: c.referenceApproved, styleApproved: faction.styleApproved, poseGuide: Boolean(guide), requiresCounts: /approved (arm|tail) count/.test(c.identity), approvedCounts: c.approvedCounts, input });
     }
   }
-  const plan = { schemaVersion: 1, endpoint: config.endpoint, createdAt: new Date().toISOString(), sourceBase: 'design-opt / 98ddf90c4682b75e63f92c01071027f67bbd1d00', stage, jobs };
+  const plan = { schemaVersion: 1, endpoint: model.endpoint, model: model.name, createdAt: new Date().toISOString(), sourceBase: 'design-opt / 98ddf90c4682b75e63f92c01071027f67bbd1d00', stage, jobs };
   try { await fs.access(planPath); throw new Error('Plan existiert bereits; anderen --plan Pfad verwenden'); } catch(e) { if(e.code !== 'ENOENT') throw e; }
   await atomic(planPath, plan);
   console.log(JSON.stringify({ plan: planPath, requests: jobs.length, paidRequests: 0, example: jobs[0]?.input.prompt }, null, 2));
@@ -62,6 +65,14 @@ async function api(url, init = {}) {
   const response = await fetch(assertQueueUrl(url), { ...init, headers: { Authorization: `Key ${key}`, 'Content-Type': 'application/json' }, redirect: 'error', signal: AbortSignal.timeout(60000) });
   if (!response.ok) throw new Error(`fal HTTP ${response.status}; keine automatische POST-Wiederholung`);
   return response.json();
+}
+async function apiGet(url, attempts = 5) {
+  let last;
+  for (let i = 1; i <= attempts; i++) {
+    try { return await api(url); }
+    catch (error) { last = error; if (i < attempts) await sleep(1500 * i); }
+  }
+  throw last;
 }
 async function makeInput(job) {
   const images = [];
@@ -87,7 +98,8 @@ async function downloadImage(url, file) {
 }
 async function run() {
   const planBytes = await fs.readFile(planPath); const plan = JSON.parse(planBytes);
-  if (plan.schemaVersion !== 1 || plan.endpoint !== config.endpoint || !Array.isArray(plan.jobs)) throw new Error('Unbekannter Plan');
+  const allowedEndpoints = [config.endpoint, ...Object.values(config.altModels ?? {}).map(m => m.endpoint)];
+  if (plan.schemaVersion !== 1 || !allowedEndpoints.includes(plan.endpoint) || !Array.isArray(plan.jobs)) throw new Error('Unbekannter Plan');
   if (plan.jobs.some(j => j.input.num_images !== 1 || j.input.output_format !== 'png')) throw new Error('Nur eine PNG-Ausgabe je Job erlaubt');
   const ceiling = Number(value('request-ceiling-usd', '0'));
   const maxRequests = Number(value('max-requests', '0')); const maxUsd = Number(value('max-usd','0'));
@@ -98,7 +110,7 @@ async function run() {
     if (job.animation !== 'reference' && !job.referenceApproved) throw new Error(`Referenz nicht freigegeben: ${job.character}`);
     if (job.animation !== 'reference' && !has('allow-unguided') && !job.poseGuide) throw new Error(`Posenvorlage fehlt: ${job.id}; --allow-unguided nur für Diagnose`);
     if (job.requiresCounts && !Object.keys(job.approvedCounts).length) throw new Error(`Gliedmaßenzahl zuerst festlegen: ${job.character}`);
-    if (job.input.loras.length && !job.styleApproved) throw new Error('Stil-LoRA erst nach Stilabnahme verwenden');
+    if (job.input.loras?.length && !job.styleApproved) throw new Error('Stil-LoRA erst nach Stilabnahme verwenden');
     await makeInput(job);
   }
   await fs.mkdir(runDir, { recursive: true });
@@ -120,10 +132,10 @@ async function run() {
       }
       const deadline = Date.now()+Number(value('wait-seconds','600'))*1000;
       while (Date.now() < deadline) {
-        const status = await api(record.statusUrl);
+        const status = await apiGet(record.statusUrl);
         if (status.status === 'COMPLETED') {
           if (status.error) { record.state='failed'; record.errorType=status.error_type ?? 'provider_error'; await persist(); break; }
-          const result = await api(record.responseUrl);
+          const result = await apiGet(record.responseUrl);
           if (!result.images?.[0]?.url || result.images.length !== 1) throw new Error('Keine eindeutige Bildausgabe; kein erneuter POST');
           const file = path.join(runDir, `${job.id}.png`);
           record.output = await downloadImage(result.images[0].url, file);

@@ -119,21 +119,30 @@ export function frameDescription(type, animation, frame) {
   if (animation === 'emotion') return `${EMOTIONS[frame]}. Express through the existing anatomy, posture or display indicators. ${MOTION[type]} For equipment change show the body gesture only; do not generate a random weapon.`;
   throw new Error(`Unbekannte Animation: ${animation}`);
 }
-export function buildPrompt(character, faction, animation, frame, referenceLabels, correction = '') {
+export function buildPrompt(character, faction, animation, frame, referenceLabels, correction = '', hasPoseGuide = false) {
   const identityCounts = JSON.stringify(character.approvedCounts);
+  const framed = hasPoseGuide && animation === 'walk'
+    ? `Match the pose and articulation of the pose guide exactly. ${MOTION[character.morphology]} Keep the character in place, not moving across the canvas.`
+    : frameDescription(character.morphology, animation, frame);
   return [
     'Create ONE production 2D game animation frame, using the provided references.',
     ...referenceLabels.map((label, i) => `Reference image ${i + 1}: ${label}.`),
     `Character: ${character.name}. Fixed identity: ${character.identity}. Approved explicit counts: ${identityCounts}.`,
     `Faction visual direction: ${faction.style}. Palette intent: ${faction.colorDescription}; target swatches ${faction.palette.join(', ')}. Keep identity before changing style.`,
-    frameDescription(character.morphology, animation, frame),
+    framed,
     'Strict right-facing orthographic side view. Fixed camera, no perspective changes. Preserve approved head shape, proportions and materials.',
-    'Canonical 1024x1024 canvas: ground contact / hover anchor at y=960; center anchor x=512. Preserve the same approved scale for every frame. Keep at least 32 pixels clear margin.',
-    'Keep only equipment that belongs to the approved design attached to the body. Do not place loose weapons, keys or props beside the character. Keep prostheses, biological claws, armor and permanent mechanical attachments. Do not erase permanent body parts.',
-    'Plain uniform neutral background suitable for later segmentation. Do not imitate a transparency checkerboard. No ground shadow, scenery, letters, grids, motion blur, water splashes or extra characters.',
+    'Square 1024x1024 composition, feet or hover anchor on one consistent ground level near the lower edge, at least 32 pixels clear margin. Keep the same approved scale in every frame.',
+    'Omit detachable hand-held weapons and loose props; the game renders weapons separately. Keep prostheses, biological claws, permanent armor and body-mounted mechanical parts. Do not erase permanent body parts.',
+    'Flat uniform mid-grey background, identical in every frame. No gradient, vignette, ground line, horizon line, text, shadow, scenery, letters, grids, motion blur, water splashes or extra characters.',
     'Crisp small-scale readable silhouette, consistent top-left key light. Output only one complete character frame.',
     correction ? `TARGETED CORRECTION: ${correction}` : '',
   ].filter(Boolean).join('\n');
+}
+export function resolveModel(config, name = 'qwen') {
+  if (name === 'qwen') return { name, kind: 'qwen', endpoint: config.endpoint, parameters: config.parameters };
+  const model = config.altModels?.[name];
+  if (!model) throw new Error(`Unbekanntes Modell: ${name}`);
+  return { name, kind: model.kind ?? name, endpoint: model.endpoint, parameters: model.parameters };
 }
 export function selectCharacters(characters, selection, pilot) {
   const all = Object.values(characters);
