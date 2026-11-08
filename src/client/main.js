@@ -385,11 +385,11 @@ class Game {
         if (ereignis.button !== 0) return;
         ereignis.preventDefault();
         feuerKnopf.setPointerCapture?.(ereignis.pointerId);
-        this.input.ladenStarten();
+        this.input.ladenStarten(ereignis.pointerId);
       });
       const loslassen = () => this.input.ladenLoslassen();
-      feuerKnopf.addEventListener('pointerup', loslassen);
-      feuerKnopf.addEventListener('pointercancel', () => { if (this.input.isCharging) this.input.ladenLoslassen(); });
+      // Pointer-Up und -Cancel laufen zentral im InputController, auch bei Pointer-Capture.
+      // Das Loslassen eines zweiten Fingers (z. B. auf Gehen) darf die Ladung nicht beenden.
       feuerKnopf.addEventListener('keydown', ereignis => {
         if ((ereignis.key === 'Enter' || ereignis.key === ' ') && !ereignis.repeat) { ereignis.preventDefault(); ereignis.stopPropagation(); this.input.ladenStarten(); }
       });
@@ -1131,7 +1131,7 @@ class Game {
       return { ok: true, count: 0 };
     }
 
-    if (status) status.textContent = `${offen.length} offene Lobby(s)`;
+    if (status) status.textContent = `${offen.length} offene ${offen.length === 1 ? 'Lobby' : 'Lobbys'}`;
     list.replaceChildren(...offen.map(lobby => {
       const item = document.createElement('li');
       item.className = 'lobby-karte pa-karte';
@@ -1178,16 +1178,16 @@ class Game {
       platzZeile.append(felder, el('span', 'lk-zahl', `${belegt} Plätze`));
 
       // Bereit-Status: die Lobby ist offen, voll oder wartet auf Mitspieler.
-      const stand = voll ? 'Voll' : belegtZahl === 0 ? 'Leer — du startest' : `Wartet auf ${plaetze - belegtZahl}`;
+      const stand = voll ? 'Voll' : belegtZahl === 0 ? 'Alle Plätze frei' : `Wartet auf ${plaetze - belegtZahl}`;
       const zusatz = belegtZahl > 0 && verbunden < belegtZahl ? ` · ${belegtZahl - verbunden} getrennt` : '';
       const statusChip = el('span', `chip chip-status is-${item.dataset.zustand}`, stand + zusatz);
 
       const join = document.createElement('button');
       join.type = 'button';
       join.className = 'lk-beitreten';
-      join.textContent = voll ? 'Voll' : 'Beitreten';
+      join.textContent = voll ? 'Voll' : 'Auswählen';
       join.disabled = voll;
-      join.setAttribute('aria-label', `${voll ? 'Voll' : 'Beitreten'}: Lobby ${lobby.id}, ${belegt} Plätze`);
+      join.setAttribute('aria-label', `${voll ? 'Voll' : 'Auswählen'}: Lobby ${lobby.id}, ${belegt} Plätze`);
       join.addEventListener('click', () => {
         const lobbyInput = document.getElementById('cfg-lobby');
         if (lobbyInput) lobbyInput.value = lobby.id;
@@ -3154,8 +3154,9 @@ class Game {
       : TEAM_COLORS[winnerTeamId % TEAM_COLORS.length];
     this.endSummary.textContent = this.mode === 'online'
       ? `Online-Match — Lobby ${this.network?.lobbyId ?? '-'}, ${this.network?.latencyMs ?? 0} ms`
-      : `${this.match.round} Runden, ${this.match.world.tickCount} Simulationsticks, Seed ${this.match.seedManager.baseSeed}`;
+      : `Karte mit Seed ${this.match.seedManager.baseSeed}`;
     this.endOverlay.hidden = false;
+    this.winnerText.focus({ preventScroll: true });
 
     /*
      * Kennzahlen verbuchen und anzeigen.
@@ -3219,7 +3220,7 @@ class Game {
     // Die Tabelle aller Spieler steht daneben — sie zeigt, wer was beigetragen hat.
     const tabelle = document.getElementById('match-tabelle');
     if (tabelle) {
-      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Treffer', 'Kills'];
+      const kopf = ['Spieler', 'Schaden', 'Schüsse', 'Trefferquote', 'Kills'];
       // Jede EIGENE Figur ist „du" — im Modus der Matcharten sind das mehrere.
       const zeilenAlle = figuren.map(f => [
         `P${f.playerId}${this.eigeneSpielerIds.includes(f.playerId) ? ' (du)' : ''}`,
@@ -3233,6 +3234,7 @@ class Game {
       kopfZeile.append(...kopf.map(t => {
         const th = document.createElement('th');
         th.textContent = t;
+        th.scope = 'col';
         return th;
       }));
       thead.append(kopfZeile);

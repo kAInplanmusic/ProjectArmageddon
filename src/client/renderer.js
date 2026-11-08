@@ -2361,12 +2361,12 @@ export class Renderer {
     this.#drawBlastPreview(aimPreview, blastRadius);
     // Kackhaufen liegen auf dem Boden, Günther darüber.
     this.#drawPoopPiles(state.guenther?.haufen ?? []);
-    this.#drawCrates(state.crates ?? []);
     /*
      * Geschütze VOR den Kisten zeichnen: Lägen beide übereinander, wäre die
      * Kiste (die man aufheben kann) wichtiger als das Geschütz.
      */
     this.#drawTurrets(state.turrets ?? []);
+    this.#drawCrates(state.crates ?? []);
     this.#drawMinen(state.bodenobjekte ?? []);
     this.#drawAimPreview(aimPreview);
     /*

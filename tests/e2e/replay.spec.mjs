@@ -213,3 +213,11 @@ test('Die Aufzeichnung ist klein — sie enthält nur Eingaben', async ({ page }
   await replayLaden(page, dokument);
   expect((await page.evaluate(() => window.__PA__.replay())).totalTicks).toBe(totalTicks);
 });
+
+test('Gültiges JSON ohne Replay-Inhalt behält die Fehlermeldung', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#replay-file').setInputFiles({
+    name: 'fremd.json', mimeType: 'application/json', buffer: Buffer.from('{}'),
+  });
+  await expect(page.locator('#replay-status')).toContainText('Ungültige Aufzeichnung');
+});
