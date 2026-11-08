@@ -44,7 +44,7 @@ import { CLASS_IDS, ARCHETYPE_IDS } from '../engine/match.js';
 import { pickBackdrop, getBackdrop, BACKDROP_BIOMES } from '../shared/config/backdrops.js';
 import { getBackdropNeu } from '../shared/config/backdrops-neu.js';
 import { biomFuerCharakter, kulisseFuerBiom } from '../shared/biomwahl.js';
-import { SONDER_KULISSEN, sonderKulisseFuer } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
+import { SONDER_KULISSEN, sonderKulisseFuer, motivFamilieFuerArt } from './sonderKulissen.js'; import { ZEITEN, WETTER_WAHL, normalisiereWahl } from './stimmung.js';
 import { SoundMixer, tonSpeicher } from './soundMixer.js';
 import { tonErlaubt } from './klangProfile.js';
 import { bindeTonBedienung } from './soundBedienung.js';
@@ -1944,9 +1944,9 @@ class Game {
      */
     this.#applyKartengroesse(terrain.width, terrain.height);
     // Vorgabe 'automatisch': auch online das gemalte Bild passend zum Kartencharakter (Sonderbiome bleiben generativ).
-    if (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter) {
+    if (this.gewaehlteKulisse?.includes('/') || (this.gewaehlteKulisse === 'automatisch' && (!terrain.sonderbiom || SONDER_KULISSEN[terrain.sonderbiom]) && terrain.charakter)) {
       this.renderer.setScenery(null);
-      this.#applyBackdrop(seed, preset, 'automatisch', terrain.charakter, terrain.sonderbiom ?? null);
+      this.#applyBackdrop(seed, preset, this.gewaehlteKulisse, terrain.charakter, terrain.sonderbiom ?? null);
     } else {
       this.setSceneryFromSeed(seed, preset, terrain.sonderbiom);
     }
@@ -3076,7 +3076,7 @@ class Game {
     let kulisse = null;
     if (auswahl) {
       const [biomId, variantenId] = String(auswahl).split('/');
-      kulisse = getBackdrop(biomId, variantenId);
+      kulisse = getBackdrop(biomId, variantenId) ?? getBackdropNeu(biomId, variantenId);
       if (!kulisse) this.hud.log(`Kulisse „${auswahl}" unbekannt — nehme automatisch`, 'neutral');
     }
     /*
@@ -3094,11 +3094,11 @@ class Game {
      */
     // Sonderbiome (Schrott, Riff, Kristallhöhle, ...) haben passende gemalte Bilder (`sonderKulissen.js`).
     if (!kulisse && sonder && SONDER_KULISSEN[sonder] && !gewaehlt?.includes?.('/')) {
-      const [b, v] = String(sonderKulisseFuer(sonder, seed)).split('/');
+      const [b, v] = String(sonderKulisseFuer(sonder, seed, charakter?.kartenart)).split('/');
       kulisse = getBackdrop(b, v) ?? getBackdropNeu(b, v);
     }
     if (!kulisse && charakter) {
-      const biomId = biomFuerCharakter(charakter);
+      const biomId = motivFamilieFuerArt(charakter.kartenart) ?? biomFuerCharakter(charakter);
       const biom = BACKDROP_BIOMES.find(b => b.id === biomId);
       kulisse = kulisseFuerBiom({ seed, biome: biom });
     }
