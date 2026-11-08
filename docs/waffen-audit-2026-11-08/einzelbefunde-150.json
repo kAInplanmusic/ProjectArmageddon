@@ -1,0 +1,2817 @@
+[
+  {
+    "id": "pa_001",
+    "name": "Baseballschläger",
+    "baseName": "Baseballschläger",
+    "category": "melee",
+    "description": "Wuchtiger Schlag auf kurze Distanz mit hohem Schaden.",
+    "effect": null,
+    "visualNote": "Baseballschläger klar erkennbar. Im Hand-Sprite liegt der Griffmarker am dicken Schlagkopf und die Wirkspitze am Griffende: semantisch verkehrt ausgerichtet.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_002",
+    "name": "Feuerfaust",
+    "baseName": "Feuerfaust",
+    "category": "melee",
+    "description": "Brennender Faustschlag auf kurze Distanz, der den Gegner in Brand setzt.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "fire",
+      "damagePerTurn": 9,
+      "turns": 3
+    },
+    "visualNote": "Feuerfaust gut lesbar, aber Glut und Flammen sind fest eingebrannt. Faust/Handgelenk als Körper-/Ausrüstungsrolle festlegen; Icon berührt mehrfach den Rand.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_003",
+    "name": "Hakenklinge",
+    "baseName": "Hakenklinge",
+    "category": "melee",
+    "description": "Kurzer Hieb mit dem Haken, der den getroffenen Gegner ein kurzes Stück heranzieht.",
+    "effect": {
+      "kind": "pull",
+      "distance": 60
+    },
+    "visualNote": "Hakenklinge mit klarer Form. Griffmarker liegt am Haken, der Stiel zeigt zur Wirkspitze: Handanker und Angriffsrichtung korrigieren.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_004",
+    "name": "Piratenhaken",
+    "baseName": "Piratenhaken",
+    "category": "melee",
+    "description": "Eiserner Haken, der den getroffenen Gegner weit heranzieht, mit Nachladezeit.",
+    "effect": {
+      "kind": "pull",
+      "distance": 150
+    },
+    "visualNote": "Piratenhaken gut individualisiert. Anker sitzt nahe dem Haken statt am unteren Griff; Richtung und Zuganimation auf tatsächlichen Hakenkontakt abstimmen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_005",
+    "name": "Morgenstern",
+    "baseName": "Morgenstern",
+    "category": "melee",
+    "description": "Schwere Stachelkugel für harte Treffer auf kurze Distanz, danach folgt eine Nachladezeit.",
+    "effect": null,
+    "visualNote": "Morgenstern klarer Kopf und Schaft. Griff-/Spitzenverteilung wirkt plausibel; kleine Stacheln im 24/40-Pixel-Icon vereinfachen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_006",
+    "name": "Schaufel",
+    "baseName": "Schaufel",
+    "category": "melee",
+    "description": "Handliche Schaufel für einen Schlag auf kurze Distanz, der auch das Gelände aufreißt.",
+    "effect": null,
+    "visualNote": "Schaufel gut erkennbar und im Hand-Sprite passend ausgerichtet. Materialflächen und Blattkante in kleinen Icons bewahren; aktuelle generische Wurfbewegung bleibt eine Designentscheidung.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_007",
+    "name": "Tonfa",
+    "baseName": "Tonfa",
+    "category": "melee",
+    "description": "Handliche Schlagwaffe für Treffer auf kurze Distanz.",
+    "effect": null,
+    "visualNote": "Tonfa erkennbar. Der seitliche eigentliche Griff wird vom geometrischen Anker nicht getroffen; gezielten Griffpunkt statt Hauptachsen-Endpunkt setzen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_008",
+    "name": "Kriegshammer",
+    "baseName": "Kriegshammer",
+    "category": "melee",
+    "description": "Schwerer Hammer, der den getroffenen Gegner betäubt.",
+    "effect": {
+      "kind": "freeze",
+      "turns": 1
+    },
+    "visualNote": "Kriegshammer visuell klar, funktional Betäubung. Eigenen Schlag-/Betäubungsimpuls zeigen statt nur generischem Wurfobjekt.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_009",
+    "name": "Eispickel",
+    "baseName": "Eispickel",
+    "category": "melee",
+    "description": "Eisiger Hieb, der den getroffenen Gegner einfriert.",
+    "effect": {
+      "kind": "freeze",
+      "turns": 1
+    },
+    "visualNote": "Eispickel im Hand-Sprite links mit Hakenkopf, rechts mit Griffende. Griffmarker sitzt kopfnah: Kopf und Griff semantisch ausrichten.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_010",
+    "name": "Kettensäge",
+    "baseName": "Kettensäge",
+    "category": "melee",
+    "description": "Wuchtige Säge für harte Treffer auf kurze Distanz, danach folgt eine Nachladezeit.",
+    "effect": null,
+    "visualNote": "Kettensäge klar erkennbar. Feste statische Kette wirkt leblos; Kettenbewegung, Vibrationsprofil und vorderen Kettenkontakt getrennt animieren.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_011",
+    "name": "Zwillingskatanas",
+    "baseName": "Zwillingskatanas",
+    "category": "melee",
+    "description": "Zwei Klingen für schnelle Hiebe auf kurze bis mittlere Distanz.",
+    "effect": null,
+    "visualNote": "Zwillingskatanas als gekreuztes Icon gut, als gehaltene Waffe unklar. Beide Schwerter getrennt oder eine bewusste Doppelwaffenpose verankern.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_012",
+    "name": "Katana",
+    "baseName": "Katana",
+    "category": "melee",
+    "description": "Schlanke Klinge mit weitem, flachem Wurf.",
+    "effect": null,
+    "visualNote": "Katana im Hand-Sprite mit Klinge nach links und Heft nach rechts; Anker vertauschen. Menü-Icon enthält zusätzlich einen sichtbaren quadratischen Rand/Hintergrundrest.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_013",
+    "name": "Mehrzweckmesser",
+    "baseName": "Mehrzweckmesser",
+    "category": "melee",
+    "description": "Vielseitiges Messer für einen sauberen Treffer auf kurze Distanz.",
+    "effect": null,
+    "visualNote": "Mehrzweckmesser klarer Griff und Klinge; Hand-Sprite plausibel. Gegen Kampfmesser stärker über Sägezahnprofil und Griffsilhouette unterscheiden.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_014",
+    "name": "Taschenmesser",
+    "baseName": "Taschenmesser",
+    "category": "melee",
+    "description": "Kleines Klappmesser, das flach und weit fliegt.",
+    "effect": null,
+    "visualNote": "Taschenmesser gut lesbar und eigenständig. Die aufgeklappte Form muss in Hand und Wurf konsistent bleiben; keine zusätzliche Nahkampfmechanik aus dem Namen ableiten.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_015",
+    "name": "Runenschwert",
+    "baseName": "Runenschwert",
+    "category": "melee",
+    "description": "Schwert mit Runen, dessen Hieb als arkaner Schaden wirkt.",
+    "effect": null,
+    "visualNote": "Runenschwert hübsch, aber Klinge im Hand-Sprite links und Griff rechts. Griff-/Wirkspitze korrigieren; Runenglühen als eigenen Effekt führen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_016",
+    "name": "Rapier",
+    "baseName": "Rapier",
+    "category": "melee",
+    "description": "Dünner Degen mit flachem, schnellem Stich auf mittlere Distanz.",
+    "effect": null,
+    "visualNote": "Rapier im Hand-Sprite rückwärts zum Ziel. Feine Spitze/Parierstange vereinfachen und echten Heftanker setzen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_017",
+    "name": "Kampfmesser",
+    "baseName": "Kampfmesser",
+    "category": "melee",
+    "description": "Robustes Messer für harte Treffer auf kurze Distanz.",
+    "effect": null,
+    "visualNote": "Kampfmesser klarer Umriss und grundsätzlich passende Ausrichtung. Die Differenz zu Mehrzweckmesser über Klingenform/Animation stärken.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_018",
+    "name": "Energieschwert",
+    "baseName": "Energieschwert",
+    "category": "melee",
+    "description": "Klinge aus gebündelter Energie, die ein Ziel durchschlägt und Schilde schwächt.",
+    "effect": null,
+    "visualNote": "Energieschwert im Hand-Sprite mit leuchtender Klinge links und Griff rechts. Drehen/spiegeln und Energieglühen unabhängig vom Körper-Sprite behandeln.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_019",
+    "name": "Doppelaxt",
+    "baseName": "Doppelaxt",
+    "category": "melee",
+    "description": "Schwere Wurfaxt, die nach dem Aufprall mehrfach abprallt.",
+    "effect": null,
+    "visualNote": "Doppelaxt gut erkennbar. Griffanker am Schaft plausibel; die asymmetrischen Köpfe nicht durch geometrische Streckung verfälschen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_020",
+    "name": "Kriegssense",
+    "baseName": "Kriegssense",
+    "category": "melee",
+    "description": "Lange Sense für einen kräftigen Hieb auf kurze Distanz.",
+    "effect": null,
+    "visualNote": "Kriegssense bleibt kompakte diagonale Gesamtform statt sauberer Seitenwaffe. Spezifischen Schaftgriff und Sensenbogen vorsehen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_021",
+    "name": "Krummsäbel",
+    "baseName": "Krummsäbel",
+    "category": "melee",
+    "description": "Gebogener Säbel, der nach dem Aufprall mehrfach abprallt.",
+    "effect": null,
+    "visualNote": "Krummsäbel gut erkennbar, Griff links und Klinge rechts plausibel. Klinge/Parierstange im kleineren HUD-Kontext scharf halten.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 0,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_022",
+    "name": "Plasmawerfer",
+    "baseName": "Plasmawerfer",
+    "category": "ranged",
+    "description": "Schießt Plasmaschüsse in gerader Linie, trifft weit und braucht freie Sicht.",
+    "effect": null,
+    "visualNote": "Plasmawerfer visuell stark. Fest eingebrannter Mündungsblitz sollte separater Effekt sein; generisches gelbes Plasmaprojektil schwächt die cyanfarbene Identität.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_023",
+    "name": "Boxhandschuhe",
+    "baseName": "Boxhandschuhe",
+    "category": "ranged",
+    "description": "Boxhandschuhe, die den getroffenen Gegner mit gewaltigem Rückstoß davonschleudern.",
+    "effect": null,
+    "visualNote": "Boxhandschuhe werden als einzelner nach rechts gedrehter Handschuh angezeigt; Schlagfläche liegt links, Marker zur Manschette rechts. Körper-/Faustrolle und Richtung korrigieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_024",
+    "name": "Mittelfinger",
+    "baseName": "Mittelfinger",
+    "category": "ranged",
+    "description": "Eine unmissverständliche Geste, die flach und weit zum Gegner fliegt.",
+    "effect": null,
+    "visualNote": "Mittelfinger ist ein starkes schwarzhumoriges Icon. Der Hand-Sprite zeigt seitlich statt aufrecht; festlegen, ob Handgeste oder geworfenes Objekt gemeint ist.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_025",
+    "name": "Handtuch",
+    "baseName": "Handtuch",
+    "category": "ranged",
+    "description": "Zusammengerolltes Handtuch, das auf mittlere Distanz klatscht.",
+    "effect": null,
+    "visualNote": "Handtuch gut wiedererkennbar und witzig. Als Wurfobjekt plausibel; weiche Peitschen-/Schlagbewegung würde mehr Charakter liefern.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_026",
+    "name": "Pressluftbohrer",
+    "baseName": "Pressluftbohrer",
+    "category": "ranged",
+    "description": "Dröhnender Bohrer, der auf mittlere Distanz tief ins Gelände reißt.",
+    "effect": null,
+    "visualNote": "Pressluftbohrer klarer Entwurf, aber mit eingebrannten Bodensplittern. Griff und Bohrspitze prüfen, Splitter als Kontakteffekt auslagern.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_027",
+    "name": "Fackel",
+    "baseName": "Fackel",
+    "category": "ranged",
+    "description": "Brennende Fackel, die den Gegner in Brand setzt.",
+    "effect": null,
+    "visualNote": "Fackel klar lesbar. Feuer nicht in starres Handbild einbacken; Flamme und Rauch unabhängig animieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_028",
+    "name": "Kaktusbombe",
+    "baseName": "Kaktusbombe",
+    "category": "ranged",
+    "description": "Stachelige Bombe, die nach kurzer Verzögerung im Umkreis zündet.",
+    "effect": null,
+    "visualNote": "Kaktusbombe gute ungewöhnliche Silhouette. Spitze/Blüte/Lunte im kleinen Icon separieren, Explosion von eventuell erwarteter Stachelstreuung unterscheiden.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 48,
+    "spawnRadius": 48,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_029",
+    "name": "Pömpel",
+    "baseName": "Pömpel",
+    "category": "ranged",
+    "description": "Wurfgerät mit Zünder, das nach kurzer Verzögerung im Umkreis wirkt.",
+    "effect": null,
+    "visualNote": "Pömpel gut erkennbar. Beschreibung ist ein generisches verzögertes Wurfgerät; Klebeverhalten darf aus special=sticky nicht als implementiert versprochen werden.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 30,
+    "spawnRadius": 30,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_030",
+    "name": "Impulsbombe",
+    "baseName": "Impulsbombe",
+    "category": "ranged",
+    "description": "Elektrische Bombe, die nach kurzer Verzögerung im Umkreis zündet und Schock auslöst.",
+    "effect": null,
+    "visualNote": "Impulsbombe technisch klar. Nicht mit der tatsächlichen Mine pa_127 verwechseln; Form/Farbe im Menü stärker unterscheiden.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 52,
+    "spawnRadius": 52,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_031",
+    "name": "Kraftfaust",
+    "baseName": "Kraftfaust",
+    "category": "ranged",
+    "description": "Gepanzerte Faust, die mit Energie zuschlägt und Schilde schwächt.",
+    "effect": null,
+    "visualNote": "Kraftfaust zeigt zwei Fäuste im Icon, aber nur ein generisches geworfenes Gesamtmotiv. Eine eindeutige aktive Faust oder eine bewusste Doppelfaustpose definieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_032",
+    "name": "Raketenrucksack",
+    "baseName": "Raketenrucksack",
+    "category": "ranged",
+    "description": "Raketenstoß, der den Schützen weit versetzt, eine Feuerspur auf dem Weg hinterlässt und danach Pause braucht.",
+    "effect": {
+      "kind": "move",
+      "distance": 100,
+      "element": "fire",
+      "spur": "weg",
+      "radius": 30
+    },
+    "visualNote": "Raketenrucksack im Atlas horizontal; der Renderer besitzt bereits eine Hinterkörper-Korrektur. Position in Bewegung im Spiel prüfen. Das Animationsblatt zeigt einen fremden blauen Flugkörper statt des grünen Rucksacks: nicht integrieren.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_033",
+    "name": "Zauberstab",
+    "baseName": "Zauberstab",
+    "category": "ranged",
+    "description": "Geworfener Stab voller arkaner Kraft, der den Gegner zurückstößt.",
+    "effect": null,
+    "visualNote": "Zauberstab ist lesbar, Mündungsanker an Kristallspitze plausibel. Gegen Zauberbolzen durch Stabschaft und anderes Flugmotiv unterscheiden.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_034",
+    "name": "Zauberbolzen",
+    "baseName": "Zauberbolzen",
+    "category": "ranged",
+    "description": "Schneller Zauberbolzen, der flach und weit fliegt.",
+    "effect": null,
+    "visualNote": "Zauberbolzen zeigt im Hand-Sprite die Spitze links, Anker rechts am Schaftende. Richtungszuordnung und Projektilkopf prüfen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_035",
+    "name": "Energieball",
+    "baseName": "Energieball",
+    "category": "ranged",
+    "description": "Kugel aus Energie, die beim Aufprall im Umkreis explodiert.",
+    "effect": null,
+    "visualNote": "Energieball als leuchtende Kugel gut lesbar. Eigene Blitzstruktur im Flug erhalten statt austauschbarem Orb; Lichtintensität bei kleinster Darstellung reduzieren.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 34,
+    "spawnRadius": 34,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_036",
+    "name": "Raketenhandschuh",
+    "baseName": "Raketenhandschuh",
+    "category": "ranged",
+    "description": "Handschuh mit Raketenantrieb für einen wuchtigen Treffer mit Sprengkraft.",
+    "effect": null,
+    "visualNote": "Raketenhandschuh erkennbar, Handanker unter dem Werfer prüfen. Die feste Schussflamme aus dem Ruhe-Sprite entfernen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_037",
+    "name": "Raketenwerfer",
+    "baseName": "Raketenwerfer",
+    "category": "ranged",
+    "description": "Schwere Rakete mit großem Explosionsradius, aber wenig Munition.",
+    "effect": null,
+    "visualNote": "Raketenwerfer gute Silhouette und richtige Hauptrichtung. Eingebackene Flammen/Rakete vom leeren Werfer trennen; generisches Flugprojektil nur als Basis.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 46,
+    "spawnRadius": 46,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_038",
+    "name": "Rakete",
+    "baseName": "Rakete",
+    "category": "ranged",
+    "description": "Rakete, die beim Aufprall im Umkreis explodiert.",
+    "effect": null,
+    "visualNote": "Rakete im Hand-Sprite mit rundem Kopf links und Triebwerksflamme rechts; Flugrichtung laut Manifest rechts. Kopf-/Triebwerksachse ist verkehrt. Das separate Animationsblatt ist näher am Original, aber nicht eingebunden.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 38,
+    "spawnRadius": 38,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_039",
+    "name": "Feldmörser",
+    "baseName": "Feldmörser",
+    "category": "ranged",
+    "description": "Mörser, dessen Granate von oben auf den Zielpunkt niedergeht.",
+    "effect": null,
+    "visualNote": "Feldmörser als stehendes Gerät gut, als getragenes Motiv ungewöhnlich. Eigenen Aufstellanker und Rohrmündung definieren.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 45,
+    "spawnRadius": 45,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_040",
+    "name": "Maschinenpistole",
+    "baseName": "Maschinenpistole",
+    "category": "ranged",
+    "description": "Schnelle Schüsse mit viel Munition für kurze bis mittlere Distanz.",
+    "effect": null,
+    "visualNote": "Maschinenpistole zeigt im Hand-Sprite den Lauf nach links, Mündungsmarker nach rechts auf das hintere Ende. Semantische Spiegelung/Anker korrigieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_041",
+    "name": "Salvengeber",
+    "baseName": "Salvengeber",
+    "category": "heavy_ranged",
+    "description": "Kleine Raketen in schneller Folge mit kleinem Explosionsradius.",
+    "effect": null,
+    "visualNote": "Salvengeber besitzt klares Rohr und vorn sitzende Ladung. Mechanisch wird nicht allein wegen des Namens eine echte Mehrfachsalve erzeugt; Rückstoß und Anzahl sichtbar mit Mechanik abgleichen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 16,
+    "spawnRadius": 16,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_042",
+    "name": "Feuerwerkssalve",
+    "baseName": "Feuerwerkssalve",
+    "category": "heavy_ranged",
+    "description": "Feuerwerksraketen mit hohem Schaden, wenig Munition und langer Nachladezeit.",
+    "effect": null,
+    "visualNote": "Feuerwerkssalve als Icon farbenfroh, in kleiner Größe unruhig. Mehrfachraketenmotiv nicht mit einem einzelnen generischen Raketenprojektil gleichsetzen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_043",
+    "name": "Kampfgeschütz",
+    "baseName": "Kampfgeschütz",
+    "category": "heavy_ranged",
+    "description": "Schweres Geschütz mit weiter Schussbahn und wenig Munition.",
+    "effect": null,
+    "visualNote": "Kampfgeschütz zeigt einen Soldaten im befestigten Sitz statt eine isolierte Waffe. Maschinenkörper, Bediener und Aufstell-/Handrolle trennen; aktuelle Funktion ist kein aufgestelltes Wachgeschütz.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_044",
+    "name": "Phönixschlag",
+    "baseName": "Phönixschlag",
+    "category": "heavy_ranged",
+    "description": "Feuervogel, der sein Ziel verfolgt und im Umkreis in Flammen aufgeht.",
+    "effect": null,
+    "visualNote": "Phönixschlag hat eigene Flügel-/Feueridentität, das Animationsblatt bleibt überwiegend referenznah. Flugbild derzeit generischer Feuerdiamant; erst nach Bewegungsprüfung passende Phönixanimation anbinden.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 55,
+    "spawnRadius": 55,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_045",
+    "name": "Raketensalve",
+    "baseName": "Raketensalve",
+    "category": "heavy_ranged",
+    "description": "Rakete mit hohem Schaden, aber wenig Munition und langer Nachladezeit.",
+    "effect": null,
+    "visualNote": "Raketensalve zeigt drei Raketen im Icon, aber ein Standardprojektil im Atlas. Reale Salvenmechanik oder rein symbolische Darstellung ausdrücklich unterscheiden.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_046",
+    "name": "Splittergranate",
+    "baseName": "Splittergranate",
+    "category": "heavy_ranged",
+    "description": "Granate mit Zünder, die im Umkreis explodiert und Splitterlöcher ins Gelände reißt.",
+    "effect": null,
+    "visualNote": "Splittergranate gut erkennbar. Streu-Gruppenmarker suggeriert Splitterprojektile, während der geprüfte Schuss nur ein Projektil erzeugt; Effektvertrag prüfen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W10: Cluster-Marker ohne nachgewiesene Split-Mechanik"
+    ],
+    "declaredRadius": 42,
+    "spawnRadius": 42,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_047",
+    "name": "Handgranate",
+    "baseName": "Handgranate",
+    "category": "heavy_ranged",
+    "description": "Wurfgranate mit Zünder, die nach dem ersten Aufprall liegen bleibt, bevor sie zündet.",
+    "effect": null,
+    "visualNote": "Handgranate klare rote Silhouette. Trotz ausgewiesenem Radius 0 wird aktuell Radius 24 gespawnt; beim Asset nicht durch optische Explosion eine widersprüchliche Mechanik kaschieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_048",
+    "name": "Bananengranate",
+    "baseName": "Bananengranate",
+    "category": "heavy_ranged",
+    "description": "Bananenförmige Granate, die nach dem Aufprall mit Verzögerung zündet.",
+    "effect": null,
+    "visualNote": "Bananengranate witzig und lesbar. Handbild zeigt Körper links/Lunte rechts; kein gerichteter Lauf nötig. Das Animationsblatt ist überwiegend passend, echte Splittermechanik jedoch nicht allein durch banana_split belegt.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen",
+      "W10: Cluster-Marker ohne nachgewiesene Split-Mechanik"
+    ],
+    "declaredRadius": 40,
+    "spawnRadius": 40,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_049",
+    "name": "Bumerang",
+    "baseName": "Bumerang",
+    "category": "heavy_ranged",
+    "description": "Gebogenes Wurfholz für einen Treffer auf mittlere Distanz.",
+    "effect": null,
+    "visualNote": "Bumerang hat passende Grundform; Animationsblatt wird dagegen zu einem fliegenden Insekt/Raketentier. Keine gezielte Rückkehrlogik im geprüften Motorpfad gefunden; Rückkehr als Designwunsch behandeln.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_050",
+    "name": "Doppelkopfaxt",
+    "baseName": "Doppelkopfaxt",
+    "category": "heavy_ranged",
+    "description": "Schwere Wurfaxt mit zwei Köpfen und hohem Schaden.",
+    "effect": null,
+    "visualNote": "Doppelkopfaxt hat deutlichen weißen Hintergrund im Menü-Icon; freistellen. Handanker auf dem Axtkopf statt auf dem unteren Schaft wirkt falsch.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_051",
+    "name": "Wurfklingen",
+    "baseName": "Wurfklingen",
+    "category": "heavy_ranged",
+    "description": "Flache Wurfklingen, die schnell und weit fliegen.",
+    "effect": null,
+    "visualNote": "Wurfklingen im Hand-Sprite zeigen Spitzen links und Griffwicklungen rechts; Achse ist zum Ziel verkehrt. Bündel und einzelne fliegende Klinge getrennt aufbereiten.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_052",
+    "name": "Molotowcocktail",
+    "baseName": "Molotowcocktail",
+    "category": "heavy_ranged",
+    "description": "Brandflasche, die nach kurzer Verzögerung zündet und im Umkreis in Brand setzt.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "fire",
+      "damagePerTurn": 16,
+      "turns": 3
+    },
+    "visualNote": "Molotowcocktail klar. Flasche, Stofflunte und Flamme trennen; Flamme nicht als vermeintliche feste Mündung benutzen.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 42,
+    "spawnRadius": 42,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_053",
+    "name": "Roboterbombe",
+    "baseName": "Roboterbombe",
+    "category": "heavy_ranged",
+    "description": "Bombe in Form eines kleinen Roboters, die nach kurzer Verzögerung explodiert.",
+    "effect": null,
+    "visualNote": "Roboterbombe starke Figurensilhouette. Animationsblatt reduziert das Modell auf einen anderen kastenförmigen Roboter; Referenzkopf, Körper und Antennen erhalten.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 45,
+    "spawnRadius": 45,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_054",
+    "name": "Schrotflinte",
+    "baseName": "Schrotflinte",
+    "category": "heavy_ranged",
+    "description": "Wuchtiger Schuss auf mittlere Distanz mit anschließender Nachladezeit.",
+    "effect": null,
+    "visualNote": "Schrotflinte erkennbar; Menü-Icon trägt eine große Hintergrundfläche. Spread-/Streumarker bedeutet im aktuellen Erstschuss noch keine verifizierte Pelletwolke.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert",
+      "W10: Cluster-Marker ohne nachgewiesene Split-Mechanik"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_055",
+    "name": "Fernbüchse",
+    "baseName": "Fernbüchse",
+    "category": "heavy_ranged",
+    "description": "Präzise Büchse, die ein Ziel durchschlägt, weit reicht und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Fernbüchse im Hand-Sprite mit Lauf links und hinterem Schaft rechts, Mündungsmarker hinten: Richtung und Griff korrigieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_056",
+    "name": "Präzisionsgewehr",
+    "baseName": "Präzisionsgewehr",
+    "category": "heavy_ranged",
+    "description": "Einzelner, harter Schuss auf große Distanz mit sehr wenig Munition.",
+    "effect": null,
+    "visualNote": "Präzisionsgewehr gut erkennbar, aber sehr dünn. Schaftgriff statt geometrischem Linkspunkt verankern; Fernbüchse durch eigene Optik/Schusscharakter unterscheiden.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_057",
+    "name": "Revolver",
+    "baseName": "Revolver",
+    "category": "heavy_ranged",
+    "description": "Handfeuerwaffe für gezielte Schüsse, die freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Revolver klare Form und plausibler Lauf nach rechts. Geometrischer Griffpunkt liegt zu hoch nahe Trommel statt am tatsächlichen Griff: kontrollieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_058",
+    "name": "Kampfbogen",
+    "baseName": "Kampfbogen",
+    "category": "heavy_ranged",
+    "description": "Bogen für gezielte Pfeile, der freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Kampfbogen schöne Form, aber Schussachse/Sehnenmitte braucht semantische Abnahme. Pfeil separat aus Sehnenkontakt starten lassen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_059",
+    "name": "Armbrust",
+    "baseName": "Armbrust",
+    "category": "heavy_ranged",
+    "description": "Armbrust mit harten Bolzen, die ein Ziel durchschlagen und freie Sicht brauchen.",
+    "effect": null,
+    "visualNote": "Armbrust im Hand-Sprite räumlich schräg und nicht rein seitlich. Bolzenrinne, Griff und Auslass gezielt markieren.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_060",
+    "name": "Gatlingkanone",
+    "baseName": "Gatlingkanone",
+    "category": "heavy_ranged",
+    "description": "Drehlaufgeschütz mit großer Reichweite.",
+    "effect": null,
+    "visualNote": "Gatlingkanone klarer Mehrlaufkopf. Laufrotation und echte Schussfolge sollten zusammenpassen; statischer Mehrlaufkopf allein erzeugt keine Schnellfeuermechanik.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_061",
+    "name": "Feuerdämon",
+    "baseName": "Feuerdämon",
+    "category": "elemental",
+    "description": "Feuerdämon, der im Umkreis wütet und in Brand setzt.",
+    "effect": null,
+    "visualNote": "Feuerdämon wird als gehaltenes Wesen gezeichnet. Animationsblatt zeigt überwiegend denselben Dämon mit einzelnen starken Farbwechseln; Begleiter-/Beschwörungsrolle bewusst festlegen.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 44,
+    "spawnRadius": 44,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_062",
+    "name": "Flammenwerfer",
+    "baseName": "Flammenwerfer",
+    "category": "elemental",
+    "description": "Feuerstrahl auf mittlere Distanz, der den Gegner in Brand setzt.",
+    "effect": null,
+    "visualNote": "Flammenwerfer gut erkennbar, jedoch Flamme fest eingebrannt. Feuerstrahl, Brennstatus und tatsächliche zeitliche Schusswirkung sind getrennte Aufgaben.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_063",
+    "name": "Wasserwerfer",
+    "baseName": "Wasserwerfer",
+    "category": "elemental",
+    "description": "Wasserstoß, der den Gegner wegdrückt und nass macht.",
+    "effect": {
+      "kind": "water_push",
+      "distance": 120,
+      "raise": 0.4
+    },
+    "visualNote": "Wasserwerfer richtige Richtung und klare Farbkennung. Der Tank-/Griffanker wirkt am hinteren Tank; echte Handposition kontrollieren. Versteckten Radius 24 beachten.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_064",
+    "name": "Katapult",
+    "baseName": "Katapult",
+    "category": "elemental",
+    "description": "Schleudert einen schweren Brocken, der im großen Umkreis einschlägt.",
+    "effect": null,
+    "visualNote": "Katapult als komplettes Objekt samt Felsen und Figur zu detailliert für ein Hand-Sprite. Aufstellobjekt/Bediener/Stein trennen.",
+    "flags": [],
+    "declaredRadius": 48,
+    "spawnRadius": 48,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_065",
+    "name": "Meteorbrocken",
+    "baseName": "Meteorbrocken",
+    "category": "elemental",
+    "description": "Brocken, der von oben einschlägt und das Gelände aufreißt.",
+    "effect": null,
+    "visualNote": "Meteorbrocken als Stein erkennbar; animierter gelber Schweif ist stark vereinfacht und wirkt angeklebt. Rotation/Glut als kontrollierte Effekte statt Formwechsel.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 50,
+    "spawnRadius": 50,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_066",
+    "name": "Haubitze",
+    "baseName": "Haubitze",
+    "category": "elemental",
+    "description": "Schwere Artillerie, deren Granate von oben auf den Zielpunkt niedergeht.",
+    "effect": null,
+    "visualNote": "Haubitze samt Standfuß ist nachvollziehbar; Menü-Icon trägt weißen Hintergrund. Rohrmündung ist oben rechts, Handmarker am Aufbau unten: Aufstellrolle definieren.",
+    "flags": [],
+    "declaredRadius": 48,
+    "spawnRadius": 48,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_067",
+    "name": "Säurekanone",
+    "baseName": "Säurekanone",
+    "category": "elemental",
+    "description": "Verschießt Säure, die im Umkreis die Rüstung zersetzt.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 14,
+      "turns": 3
+    },
+    "visualNote": "Säurekanone als Kettenfahrzeug gut, als Handgerät schwer zu lesen. Säurewolke separat animieren; eigenes grünes Tropfenprojektil von Gift unterscheiden.",
+    "flags": [],
+    "declaredRadius": 38,
+    "spawnRadius": 38,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_068",
+    "name": "Plasmagewehr",
+    "baseName": "Plasmagewehr",
+    "category": "elemental",
+    "description": "Gewehr mit Plasmaladung, die ein Ziel durchschlägt und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Plasmagewehr zeigt Lauf links, Mündungsmarker rechts hinten. Hand-Sprite horizontal richtig ausrichten; feste blaue Strahlen entfernen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_069",
+    "name": "Raketenkanone",
+    "baseName": "Raketenkanone",
+    "category": "elemental",
+    "description": "Kanone für Raketen mit großem Radius und hoher Wirkung.",
+    "effect": null,
+    "visualNote": "Raketenkanone zeigt im Hand-Sprite Spitze rechts und Waffe links grundsätzlich plausibel. Handpunkt liegt am hinteren Rohr statt am unteren Griff; feste Rakete/Schussflamme trennen.",
+    "flags": [],
+    "declaredRadius": 40,
+    "spawnRadius": 40,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_070",
+    "name": "Giftwolke",
+    "baseName": "Giftwolke",
+    "category": "elemental",
+    "description": "Giftwolke, die nach kurzer Verzögerung aufgeht und im Umkreis vergiftet.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 23,
+      "turns": 3
+    },
+    "visualNote": "Giftwolke ist im Menü ein gerahmtes Symbol, in der Hand bleibt ein deutliches Rahmenstück erhalten. Symbol und frei schwebende Wolke als verschiedene Assets führen.",
+    "flags": [],
+    "declaredRadius": 58,
+    "spawnRadius": 58,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_071",
+    "name": "Eisschlag",
+    "baseName": "Eisschlag",
+    "category": "elemental",
+    "description": "Eisbrocken, der im Umkreis einschlägt, den Gegner verlangsamt und beim zweiten Treffer betäubt.",
+    "effect": {
+      "kind": "freeze",
+      "turns": 1
+    },
+    "visualNote": "Eisschlag hat gutes kantiges Eisprofil. Geschoss ist nur generischer Eisdiamant; Eisbruch und Wirbel getrennt darstellen.",
+    "flags": [],
+    "declaredRadius": 35,
+    "spawnRadius": 35,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_072",
+    "name": "Feuerball",
+    "baseName": "Feuerball",
+    "category": "elemental",
+    "description": "Feuerball, der im Umkreis explodiert und in Brand setzt.",
+    "effect": null,
+    "visualNote": "Feuerball trägt in der Hand noch einen quadratischen Bildrahmen. Frei stehenden Feuerkern extrahieren statt das UI-Bild als Waffe zu verwenden.",
+    "flags": [],
+    "declaredRadius": 34,
+    "spawnRadius": 34,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_073",
+    "name": "Tentakelgift",
+    "baseName": "Tentakelgift",
+    "category": "elemental",
+    "description": "Giftiges Tentakel, das nach kurzer Verzögerung im Umkreis vergiftet.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 28,
+      "turns": 3
+    },
+    "visualNote": "Tentakelgift als vielarmiges Giftmotiv erkennbar, das Animationsblatt wird zu einem zweibeinigen Dinosaurier. Vollständig neu referenzführen oder nicht verwenden.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 44,
+    "spawnRadius": 44,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_074",
+    "name": "Verderbnissiegel",
+    "baseName": "Verderbnissiegel",
+    "category": "elemental",
+    "description": "Dunkles Siegel, das im Umkreis Schaden anrichtet und verflucht.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 10,
+      "turns": 3
+    },
+    "visualNote": "Verderbnissiegel gut als UI-Symbol. Handmotiv braucht klare Glyphen-/Orbkonvention, damit es nicht wie ein tragbares Bildschild wirkt.",
+    "flags": [
+      "W02: Schadenswert gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 46,
+    "spawnRadius": 46,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_075",
+    "name": "Tornado",
+    "baseName": "Tornado",
+    "category": "elemental",
+    "description": "Wirbelsturm, der Gegner im Umkreis zum Schützen heranzieht.",
+    "effect": {
+      "kind": "pull",
+      "distance": 90
+    },
+    "visualNote": "Tornado im Menü mit weißem Hintergrund und Restplatte. Wirbel als räumlichen Effekt statt statisches aufrechtes Handobjekt vorsehen.",
+    "flags": [],
+    "declaredRadius": 60,
+    "spawnRadius": 60,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_076",
+    "name": "Portalring",
+    "baseName": "Portalring",
+    "category": "elemental",
+    "description": "Ring, durch den der Schütze an einen anderen Ort springt.",
+    "effect": {
+      "kind": "move",
+      "distance": 60
+    },
+    "visualNote": "Portalring hat eigenständige Form, aber mehrere Rahmenteile bleiben im Handmotiv. Bewegungswirkung und Orbdarstellung klar trennen.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_077",
+    "name": "Schwarzes Loch",
+    "baseName": "Schwarzes Loch",
+    "category": "elemental",
+    "description": "Kollabierender Punkt, der Gegner anzieht und mit schwerem Schaden zerreißt.",
+    "effect": {
+      "kind": "pull",
+      "distance": 90
+    },
+    "visualNote": "Schwarzes Loch sehr gut lesbar. Ruhiges Zentrum erhalten und nur Rand/Verzerrung animieren; nicht mit beliebigem violettem Zauberorb verwechseln.",
+    "flags": [],
+    "declaredRadius": 72,
+    "spawnRadius": 72,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_078",
+    "name": "Voodoopuppe",
+    "baseName": "Voodoopuppe",
+    "category": "elemental",
+    "description": "Puppe mit dunkler Kraft, die den Gegner verflucht.",
+    "effect": null,
+    "visualNote": "Voodoopuppe einprägsam. linked_damage ist im aktuellen buildEffect kein eigenständiger Effekt; Fluch entsteht über andere Schadens-/Maluspfade, keine Kopplungsmechanik behaupten.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_079",
+    "name": "Kosmisches Portal",
+    "baseName": "Kosmisches Portal",
+    "category": "elemental",
+    "description": "Kosmisches Tor, durch das der Schütze an einen anderen Ort springt.",
+    "effect": {
+      "kind": "move",
+      "distance": 60
+    },
+    "visualNote": "Kosmisches Portal visuell komplex und mit kleiner Mittelfigur. Für 24/40 Pixel stark vereinfachen; vom Dimensionsring über klare Kontur unterscheiden.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_080",
+    "name": "Psionischer Tentakel",
+    "baseName": "Psionischer Tentakel",
+    "category": "elemental",
+    "description": "Geistiger Griff, der Gegner im Umkreis zum Schützen heranzieht.",
+    "effect": {
+      "kind": "pull",
+      "distance": 90
+    },
+    "visualNote": "Psionischer Tentakel zeigt zusätzlich eine menschliche Hand im Motiv. Angeborenes Wesen, Beschwörung und Ausrüstungsgegenstand gestalterisch festlegen; Handbild nicht doppelt am Figurenarm zeichnen.",
+    "flags": [],
+    "declaredRadius": 52,
+    "spawnRadius": 52,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_081",
+    "name": "Zauberbuch der Leere",
+    "baseName": "Zauberbuch der Leere",
+    "category": "magic",
+    "description": "Zauberbuch, das die Leere entfesselt: Schaden am getroffenen Gegner und anhaltender Schaden über Zeit.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 8,
+      "turns": 3
+    },
+    "visualNote": "Zauberbuch der Leere zeigt überwiegend ornamentiertes Siegel statt aufgeschlagenem Buch. Buchform oder ehrlicheren Siegelnamen erwägen; aktuelle IDs beibehalten.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_082",
+    "name": "Goldene Zauberrolle",
+    "baseName": "Goldene Zauberrolle",
+    "category": "magic",
+    "description": "Rolle, die einen goldenen Zauberbolzen entsendet und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Goldene Zauberrolle zeigt im Bild einen goldenen Stab mit Münzen, keine eindeutig erkennbare Rolle. Name und Motiv abgleichen; weißer UI-Hintergrund verstärkt die Unruhe.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_083",
+    "name": "Goldene Hand",
+    "baseName": "Goldene Hand",
+    "category": "magic",
+    "description": "Goldene Hand, die das Ziel unmittelbar mit arkaner Kraft trifft.",
+    "effect": null,
+    "visualNote": "Goldene Hand als goldene Faust gut lesbar. Kontur von Feuerfaust/Kraftfaust durch klare Material- und Gestenform absetzen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_084",
+    "name": "Glutelixier",
+    "baseName": "Glutelixier",
+    "category": "magic",
+    "description": "Glutroter Trank, der den eigenen Schaden kurz stark verstärkt und Treffer in Brand setzt.",
+    "effect": {
+      "kind": "damage_boost",
+      "multiplier": 1.7,
+      "turns": 2,
+      "element": "fire"
+    },
+    "visualNote": "Glutelixier starkes Flaschenmotiv. Aktuelle Wirkung Feuerverstärkung, Grundkatalog astral: Renderer-/UI-Datenversion beachten, nicht alte Magiefarben übernehmen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_085",
+    "name": "Feuermagier",
+    "baseName": "Feuermagier",
+    "category": "magic",
+    "description": "Feuerzauber mit zufälliger Wirkung aus dem Angriffspool: Brandverstärkung, Rüstung oder Munition.",
+    "effect": {
+      "kind": "random",
+      "pool": [
+        "damage_boost",
+        "armor",
+        "ammo"
+      ],
+      "element": "fire"
+    },
+    "visualNote": "Feuermagier als komplette Figur im Hand-Sprite kann mit Spielfiguren verwechselt werden. Besser Beschwörungssymbol oder separates Effektwesen; aktuelle Feuerwirkung aus Versionsschicht übernehmen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_086",
+    "name": "Windkrieger",
+    "baseName": "Windkrieger",
+    "category": "magic",
+    "description": "Krieger im Wirbelwind, der den getroffenen Gegner zum Schützen heranzieht.",
+    "effect": {
+      "kind": "pull",
+      "distance": 90
+    },
+    "visualNote": "Windkrieger als kleiner Krieger unter Wirbel. Hintergrundreste im Icon/Handmotiv; Beschwörungsrolle und tatsächlicher Zieheffekt verständlich darstellen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_087",
+    "name": "Dimensionssprung",
+    "baseName": "Dimensionssprung",
+    "category": "magic",
+    "description": "Sprung durch die Dimension; beim Aufprall zuckt am Zielpunkt ein Blitz.",
+    "effect": {
+      "kind": "move",
+      "distance": 80,
+      "element": "electric",
+      "spur": "ziel",
+      "radius": 36
+    },
+    "visualNote": "Dimensionssprung als quadratischer Raumring gut erkennbar. Aktuell elektrische Zusatzwirkung: Versionsdaten in Effektdarstellung übernehmen; Name im Vergleich zu Dimensionsriss begrifflich schärfen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_088",
+    "name": "Dimensionsriss",
+    "baseName": "Dimensionsriss",
+    "category": "magic",
+    "description": "Riss in der Dimension für den weitesten Sprung; am Zielpunkt entlädt sich ein Schock.",
+    "effect": {
+      "kind": "move",
+      "distance": 165,
+      "element": "electric",
+      "spur": "ziel",
+      "radius": 52
+    },
+    "visualNote": "Dimensionsriss als runder Raumring ähnelt Dimensionssprung sehr stark. Durch Rissform, Farbe oder Bewegung unterscheidbar machen; keine andere Grundmechanik bloß aus dem Namen ableiten.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_089",
+    "name": "Zauberstiefel",
+    "baseName": "Zauberstiefel",
+    "category": "magic",
+    "description": "Verzauberte Stiefel für einen kleinen Sprung mit Feuerspur, dafür jeden Zug.",
+    "effect": {
+      "kind": "move",
+      "distance": 40,
+      "element": "fire",
+      "spur": "weg",
+      "radius": 22
+    },
+    "visualNote": "Zauberstiefel ein gutes Bewegungsicon, aber Restlinien vom Bildrahmen bleiben. Stiefel nicht wie ein gerahmtes Schild vor den Spieler halten.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_090",
+    "name": "Giftpilz",
+    "baseName": "Giftpilz",
+    "category": "magic",
+    "description": "Giftiger Pilz, der den getroffenen Gegner vergiftet.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 25,
+      "turns": 3
+    },
+    "visualNote": "Giftpilz klarer individueller Entwurf. Feinste Fäden bei kleinen Icons vereinfachen; Giftfläche als gesonderten Bodeneffekt ausgeben.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_091",
+    "name": "Astralkugel",
+    "baseName": "Astralkugel",
+    "category": "magic",
+    "description": "Kugel aus Astralenergie, die den getroffenen Gegner unmittelbar trifft.",
+    "effect": null,
+    "visualNote": "Astralkugel dekorativ, ähnelt vielen Kreisglyphen. Eigenen Kern-/Ringumriss und charakteristische Flug-/Strahlbewegung definieren.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_092",
+    "name": "Heilzauber",
+    "baseName": "Heilzauber",
+    "category": "magic",
+    "description": "Heilt den Schützen ein wenig, wärmt ihn vom Frost frei und ist jeden Zug nutzbar.",
+    "effect": {
+      "kind": "heal",
+      "amount": 40,
+      "reinigt": [
+        "frost"
+      ]
+    },
+    "visualNote": "Heilzauber als grün-goldenes Siegel lesbar. Menüdetail nennt weiterhin Schaden als Zahl, obwohl die Selbstwirkung heilt; Heilwert und Reinigung separat anzeigen.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_093",
+    "name": "Funkenschild",
+    "baseName": "Funkenschild",
+    "category": "magic",
+    "description": "Schild unter Strom: Wer es trifft, wird geschockt.",
+    "effect": {
+      "kind": "shield",
+      "amount": 40,
+      "gegen": "electric"
+    },
+    "visualNote": "Funkenschild zeigt im Original einen goldblauen Engel, die aktuelle Wirkung ist elektrisch. Schildsilhouette in der UI klarer zeigen; Bildfarbe nicht als heilige Wirkung missverstehen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_094",
+    "name": "Heilspritze",
+    "baseName": "Heilspritze",
+    "category": "magic",
+    "description": "Spritze, die den Schützen kräftig heilt, löst einen Schock und braucht danach Pause.",
+    "effect": {
+      "kind": "heal",
+      "amount": 70,
+      "reinigt": [
+        "schock"
+      ]
+    },
+    "visualNote": "Heilspritze eindeutig, aber Icon enthält Schatten-/Hintergrundlinie unter der Spritze. Heilwert und Reinigung statt allgemeinem DMG anzeigen.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_095",
+    "name": "Sturmelixier",
+    "baseName": "Sturmelixier",
+    "category": "magic",
+    "description": "Geladenes Elixier, das den eigenen Schaden für zwei Züge verstärkt und Treffer schockt.",
+    "effect": {
+      "kind": "damage_boost",
+      "multiplier": 1.3,
+      "turns": 3,
+      "element": "electric"
+    },
+    "visualNote": "Sturmelixier wird im Hand-Sprite liegend gezeichnet. Für Trinken/Anwenden aufrechte Flaschenpose statt Waffenmündung verwenden; elektrische Wirkung aus aktueller Fassung lesen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_096",
+    "name": "Mutationselixier",
+    "baseName": "Mutationselixier",
+    "category": "magic",
+    "description": "Elixier mit zufälliger Wirkung aus dem Giftpool: Heilung, Sprung oder Giftverstärkung.",
+    "effect": {
+      "kind": "random",
+      "pool": [
+        "heal",
+        "move",
+        "damage_boost"
+      ],
+      "element": "poison"
+    },
+    "visualNote": "Mutationselixier hat gute Flaschenform, ebenfalls horizontal als Schusswaffe gedreht. Anwenden-/Trinkenpose und sichtbare Gift-/Zufallswirkung getrennt darstellen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_097",
+    "name": "Traumfänger",
+    "baseName": "Traumfänger",
+    "category": "magic",
+    "description": "Fängt den Gegner im Traum und lässt ihn einen Zug aussetzen.",
+    "effect": {
+      "kind": "freeze",
+      "turns": 1
+    },
+    "visualNote": "Traumfänger wird wie ein horizontaler Stab gedreht. Eigene Hänge-/Schwingpose und Schlafsymbol wären verständlicher als generischer Waffenanker.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_098",
+    "name": "Lavaelixier",
+    "baseName": "Lavaelixier",
+    "category": "magic",
+    "description": "Flüssige Lava, die den getroffenen Gegner in Brand setzt und Schaden über Zeit anrichtet.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "fire",
+      "damagePerTurn": 23,
+      "turns": 3
+    },
+    "visualNote": "Lavaelixier klare grobe Flasche. Im Handbild seitlich ausgerichtet; Flaschen-/Anwendungsrolle statt Lauf/Mündung verwenden.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_099",
+    "name": "Frostsanduhr",
+    "baseName": "Frostsanduhr",
+    "category": "magic",
+    "description": "Sanduhr aus Eis, die den eigenen Schaden mehrere Züge lang leicht verstärkt und mit Frost bremst.",
+    "effect": {
+      "kind": "damage_boost",
+      "multiplier": 1.2,
+      "turns": 4,
+      "element": "ice"
+    },
+    "visualNote": "Frostsanduhr gutes Zeit-/Eismotiv. Horizontale Ausrichtung erschwert Lesen; aufrechte Glyphenpose und tatsächlichen Frost-Buff statt behaupteter Zeitmanipulation zeigen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_100",
+    "name": "Blitzwürfel",
+    "baseName": "Blitzwürfel",
+    "category": "magic",
+    "description": "Würfel mit zufälliger Wirkung aus dem Tempopool: Schockverstärkung, Sprung oder Munition.",
+    "effect": {
+      "kind": "random",
+      "pool": [
+        "damage_boost",
+        "move",
+        "ammo"
+      ],
+      "element": "electric"
+    },
+    "visualNote": "Blitzwürfel klarer Würfel mit leuchtenden Kanten. Im Detail zu viel Neon; Zufalls-/Blitzfunktion durch Symbol und Kurztext statt nur Farbigkeit unterscheiden.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_101",
+    "name": "Eisschild",
+    "baseName": "Eisschild",
+    "category": "magic",
+    "description": "Dickes Schild aus Eis: Wer es trifft, wird mit Frost gebremst.",
+    "effect": {
+      "kind": "shield",
+      "amount": 55,
+      "gegen": "ice"
+    },
+    "visualNote": "Eisschild gut erkennbar, trägt aber Sockel-/Rahmenreste in Icon und Handbild. Schildrolle ohne Bodenplatte; Schutzwert und Reaktion auf Angreifer anzeigen.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_102",
+    "name": "Gedankensturm",
+    "baseName": "Gedankensturm",
+    "category": "magic",
+    "description": "Mentaler Sturm, der dem getroffenen Gegner unmittelbar Schaden anrichtet.",
+    "effect": null,
+    "visualNote": "Gedankensturm schönes Auge/Tentakelmotiv. In kleinsten Größen visuell überladen; zentrale Augenform priorisieren.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_103",
+    "name": "Verderbniskelch",
+    "baseName": "Verderbniskelch",
+    "category": "magic",
+    "description": "Kelch, dessen Verderbnis dem getroffenen Gegner Schaden über Zeit anrichtet und ihn verflucht.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 15,
+      "turns": 3
+    },
+    "visualNote": "Verderbniskelch im Handmotiv mit Rahmenteilen. Kelch als echtes Objekt extrahieren; dunkle Aura separat animieren.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_104",
+    "name": "Quantengewehr",
+    "baseName": "Quantengewehr",
+    "category": "magic",
+    "description": "Gewehr mit Energiestrahl, der ein Ziel durchschlägt und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Quantengewehr bleibt räumlich gedreht, Mündungsrichtung nicht sauber zur Hauptachse. Griff/Lauf nach manueller Abnahme festlegen und feste Quanteneffekte abtrennen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_105",
+    "name": "Frostrolle",
+    "baseName": "Frostrolle",
+    "category": "magic",
+    "description": "Rolle mit zufälligem Eiszauber aus dem Schutzpool: Eisschild, Heilung oder Rüstung.",
+    "effect": {
+      "kind": "random",
+      "pool": [
+        "shield",
+        "heal",
+        "armor"
+      ],
+      "element": "ice"
+    },
+    "visualNote": "Frostrolle klarer Schriftrollenentwurf, aber Rahmenreste verbleiben. Symbol/UI-Rolle von der in der Hand entrollten Rolle trennen; aktuelle Eiswirkung lesen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_106",
+    "name": "Sonnenamulett",
+    "baseName": "Sonnenamulett",
+    "category": "magic",
+    "description": "Amulett, das Sonnenlicht bündelt, den Gegner in Brand setzt und Verfluchte härter trifft.",
+    "effect": null,
+    "visualNote": "Sonnenamulett hat klare Sonnenform. Im kleinsten Icon Ornamente reduzieren; Eigenidentität gegenüber Goldener Reliktkugel erhalten.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_107",
+    "name": "Allsehendes Auge",
+    "baseName": "Allsehendes Auge",
+    "category": "magic",
+    "description": "Späht das Feld aus: Der Schütze gilt für einige Züge als aufgedeckt.",
+    "effect": {
+      "kind": "reveal",
+      "turns": 2
+    },
+    "visualNote": "Allsehendes Auge visuell passend zur Aufdeckung, mit deutlich erhaltenen Rahmenresten. UI-Symbol und schwebender Aufklärungseffekt getrennt aufbereiten.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_108",
+    "name": "Zauberpeitsche",
+    "baseName": "Zauberpeitsche",
+    "category": "magic",
+    "description": "Peitsche aus arkaner Kraft, die unmittelbar trifft und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Zauberpeitsche zeigt ein aufgerolltes Seil, kaum lesbare aktive Spitze. Gehaltenen Griff, ausgezogene Peitsche und magischen Strahl als getrennte Zustände darstellen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_109",
+    "name": "Giftbaum",
+    "baseName": "Giftbaum",
+    "category": "magic",
+    "description": "Giftiger Baum, der den eigenen Schaden lange, aber schwach verstärkt und Treffer vergiftet.",
+    "effect": {
+      "kind": "damage_boost",
+      "multiplier": 1.15,
+      "turns": 5,
+      "element": "poison"
+    },
+    "visualNote": "Giftbaum als vollständiger Baum kann Landschaft statt Waffe suggerieren. Buff-/Beschwörungsrolle erklären und Boden-/Pflanzenteile vom Handmotiv trennen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_110",
+    "name": "Dimensionskugel",
+    "baseName": "Dimensionskugel",
+    "category": "magic",
+    "description": "Kugel, die den Schützen durch die Dimension versetzt; am Landepunkt gefriert der Boden.",
+    "effect": {
+      "kind": "move",
+      "distance": 110,
+      "element": "ice",
+      "spur": "ziel",
+      "radius": 40
+    },
+    "visualNote": "Dimensionskugel ist im Spiel Eisbewegung. Motiv mit Portaltechnik ist brauchbar, doch aktuelle Elementfarbe und UI-Nutzen aus Versionsdaten ableiten.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_111",
+    "name": "Enterhaken",
+    "baseName": "Enterhaken",
+    "category": "utility",
+    "description": "Haken, mit dem sich der Schütze ein Stück versetzt; beim Einschlag schockt er alle am Zielpunkt.",
+    "effect": {
+      "kind": "move",
+      "distance": 45,
+      "element": "electric",
+      "spur": "ziel",
+      "radius": 30
+    },
+    "visualNote": "Enterhaken-Icon zeigt überwiegend ein Seilknäuel mit Karabiner. Hakenkopf als Hauptsilhouette ergänzen; vom separaten Ninja-Seil-Werkzeug unterscheiden.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_112",
+    "name": "Düsenrucksack",
+    "baseName": "Düsenrucksack",
+    "category": "utility",
+    "description": "Düsenantrieb, der den Schützen ein mittleres Stück versetzt; das Abgas setzt am Startpunkt alles in Brand.",
+    "effect": {
+      "kind": "move",
+      "distance": 70,
+      "element": "fire",
+      "spur": "start",
+      "radius": 36
+    },
+    "visualNote": "Düsenrucksack ist eindeutig; der Renderer besitzt bereits eine Rücken-Korrektur. Das Animationsblatt zeigt ein fremdes geflügeltes Fluggerät und ist exakt identisch mit Gleitschirm: nicht verwenden.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_113",
+    "name": "Bohrkanone",
+    "baseName": "Bohrkanone",
+    "category": "utility",
+    "description": "Bohrstrahl von der Seite, der einen Tunnel durchs Gelände gräbt.",
+    "effect": {
+      "kind": "drill",
+      "entryRadius": 30,
+      "radius": 14,
+      "steps": 12
+    },
+    "visualNote": "Bohrkanone guter Bohrkopf. Gehaltene Richtung plausibel; Griffpunkt und Tunnelanfang kontrollieren, klar von Bohrkopfrakete unterscheiden.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_114",
+    "name": "Gleitschirm",
+    "baseName": "Gleitschirm",
+    "category": "utility",
+    "description": "Schirm, der den Schützen am weitesten versetzt; am Landepunkt gefriert der Boden, mit Nachladezeit.",
+    "effect": {
+      "kind": "move",
+      "distance": 160,
+      "element": "ice",
+      "spur": "ziel",
+      "radius": 56
+    },
+    "visualNote": "Gleitschirm als Schirm lesbar. Animationsblatt ist bytegleich zum Düsenrucksack und zeigt keinen Schirm; neues Referenzblatt nötig.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_115",
+    "name": "Wächterstatue",
+    "baseName": "Wächterstatue",
+    "category": "utility",
+    "description": "Statue, die den Schützen heilt.",
+    "effect": {
+      "kind": "heal",
+      "amount": 35
+    },
+    "visualNote": "Wächterstatue als Giraffenstatue eigenständig und humorvoll. Aktuelle Funktion ist Heilung; Wirkung oder Bezeichnung verständlich verbinden. Animation referenznah, aber wenig echte Bewegung.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_116",
+    "name": "Blutritual",
+    "baseName": "Blutritual",
+    "category": "utility",
+    "description": "Dunkles Ritual, das den Schützen heilt.",
+    "effect": {
+      "kind": "heal",
+      "amount": 60
+    },
+    "visualNote": "Blutritual als gerahmtes Handsymbol, Handbild bereits besser freigestellt. Tatsächliche Heilung kenntlich machen, keine ungeprüfte Opfer-/Lebensdiebstahlmechanik versprechen.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_117",
+    "name": "Ananasbombe",
+    "baseName": "Ananasbombe",
+    "category": "utility",
+    "description": "Ananasförmige Granate, die das getroffene Ziel unmittelbar sprengt.",
+    "effect": null,
+    "visualNote": "Ananasbombe gute ausgefallene Granatensilhouette. Richtungs-/Handrolle für Wurfobjekt prüfen; der special-Name fragmentation ist kein Nachweis realer Splittergeschosse.",
+    "flags": [],
+    "declaredRadius": 45,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_118",
+    "name": "Feuerwesen",
+    "baseName": "Feuerwesen",
+    "category": "utility",
+    "description": "Feuerwesen, das den getroffenen Gegner in Brand setzt.",
+    "effect": null,
+    "visualNote": "Feuerwesen wirkt als vollständiger Kämpfer mit Bodenplatte. Menü-Icon mit weißem Resthintergrund; Animationsblatt verändert Material und Körperform stark.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 42,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_119",
+    "name": "Munitionskiste",
+    "baseName": "Munitionskiste",
+    "category": "utility",
+    "description": "Kiste, die die Munition des Schützen auffüllt.",
+    "effect": {
+      "kind": "ammo",
+      "amount": 2
+    },
+    "visualNote": "Munitionskiste als geöffnete Kiste gut erkennbar. Als Selbstwirkung Gegenstand/Anwendungsanimation vorsehen; große Detailfülle im HUD reduzieren.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_120",
+    "name": "Energiefaust",
+    "baseName": "Energiefaust",
+    "category": "utility",
+    "description": "Energiestoß, der unmittelbar trifft, Schilde schwächt und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Energiefaust gut lesbar und individuell. Handmotiv zeigt Faust links, der Wirkmarker liegt rechts am Anbau: Angriffsseite semantisch prüfen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_121",
+    "name": "Raketenfaust",
+    "baseName": "Raketenfaust",
+    "category": "tech",
+    "description": "Faustschlag mit Raketenantrieb, der das getroffene Ziel unmittelbar trifft.",
+    "effect": null,
+    "visualNote": "Raketenfaust mit Clownsgesicht einprägsam. Handbild zeigt Boxkopf links und Feder rechts, Wirkmarker am Federende: Kraft-/Kontaktpunkt verkehrt. Animation erhält Motiv, aber Achse prüfen.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_122",
+    "name": "Endlosschleife",
+    "baseName": "Endlosschleife",
+    "category": "tech",
+    "description": "Zeitschleife, die die Munition des Schützen auffüllt.",
+    "effect": {
+      "kind": "ammo",
+      "amount": 3
+    },
+    "visualNote": "Endlosschleife als Unendlichkeitszeichen klar. Animationsblatt verwandelt es überwiegend in ein rosa geflügeltes Wesen; eigene Glyphenanimation nötig. Mechanisch Munition, keine Zeitrücksetzung.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_123",
+    "name": "Magnetkanone",
+    "baseName": "Magnetkanone",
+    "category": "tech",
+    "description": "Magnet, der den getroffenen Gegner zum Schützen heranzieht.",
+    "effect": {
+      "kind": "pull",
+      "distance": 90
+    },
+    "visualNote": "Magnetkanone zeigt einen Hufeisenmagneten. Pole und Zugrichtung als Funktionspunkte definieren; nicht generischen Mündungsanker an der rechten Außenkante benutzen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_124",
+    "name": "Wachgeschütz",
+    "baseName": "Wachgeschütz",
+    "category": "tech",
+    "description": "Stellt ein Geschütz auf, das in den folgenden Runden von selbst feuert.",
+    "effect": {
+      "kind": "turret",
+      "damage": 23,
+      "range": 797,
+      "turns": 3
+    },
+    "visualNote": "Wachgeschütz guter Turm auf Standfuß. Nicht als gehaltene Miniatur vor dem Körper inszenieren; Aufstellobjekt und Schussanimation trennen. Mechanischer Turret-Effekt vorhanden.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_125",
+    "name": "Nachschubkiste",
+    "baseName": "Nachschubkiste",
+    "category": "tech",
+    "description": "Abwurf, der die Munition des Schützen auffüllt.",
+    "effect": {
+      "kind": "ammo",
+      "amount": 4
+    },
+    "visualNote": "Nachschubkiste wirkt wie ein orangefarbener Container mit Moos. Vom Munitionsbehälter und Bunker im kleinen Icon über klare Silhouette trennen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_126",
+    "name": "Bunker",
+    "baseName": "Bunker",
+    "category": "tech",
+    "description": "Bunker, der den erlittenen Schaden mindert.",
+    "effect": {
+      "kind": "armor",
+      "reduction": 0.35
+    },
+    "visualNote": "Bunker als gepanzerter Bau gut. Aktuell Rüstungswirkung auf den Schützen, kein begehbarer Bau; passende Schutzanimation oder Begriffserklärung nötig.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_127",
+    "name": "Mine",
+    "baseName": "Teleportplattform",
+    "category": "tech",
+    "description": "Wird vor die Füße gelegt oder weiter geworfen, bleibt liegen und ist sofort scharf. Wer sie berührt, löst sie aus, auch du. Selten ein Blindgänger, selten doppelt stark.",
+    "effect": {
+      "kind": "mine"
+    },
+    "visualNote": "Aktuell Mine, bis Waffenfassung 11 Teleportplattform. Altes Bild kann bewusst wiederverwendet werden, aber Menüzeile/Atlasname/Detail nutzen unterschiedliche Datenstände. Name und Text fassungsabhängig konsistent ausgeben.",
+    "flags": [
+      "W02/W03: Grundname anders als aktuelle Fassung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_128",
+    "name": "Hologrammportal",
+    "baseName": "Hologrammportal",
+    "category": "tech",
+    "description": "Hologramm, durch das der Schütze an einen anderen Ort springt.",
+    "effect": {
+      "kind": "move",
+      "distance": 90
+    },
+    "visualNote": "Hologrammportal klar als Plattform mit Figur. Das aktuelle Handbild enthält ein fremdes Menschensilhouettenmotiv; beim Anwenden als Welt-/Teleporteffekt statt Ausrüstung halten.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_129",
+    "name": "Tesla-Turm",
+    "baseName": "Tesla-Turm",
+    "category": "tech",
+    "description": "Blitz, der auf nahe Gegner überspringt und freie Sicht braucht.",
+    "effect": {
+      "kind": "chain",
+      "range": 240,
+      "jumps": 2,
+      "falloff": 0.6
+    },
+    "visualNote": "Tesla-Turm gute elektrische Silhouette. Tatsächlich Kettenblitz; eigenes Turmobjekt wird dadurch nicht automatisch aufgestellt. Nutzung als Gerät oder beschworene Säule klar zeigen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_130",
+    "name": "Tarnnetz",
+    "baseName": "Tarnnetz",
+    "category": "tech",
+    "description": "Tarnnetz, das den erlittenen Schaden mindert.",
+    "effect": {
+      "kind": "armor",
+      "reduction": 0.2
+    },
+    "visualNote": "Tarnnetz wirkt im Spiel als Rüstungsreduktion. Das ist korrekt im Text beschrieben; Transparenz/Unsichtbarkeit wäre dagegen eine neue Mechanik. Netzauflage statt fliegendem Netzblock.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_131",
+    "name": "Schlauchboot",
+    "baseName": "Schlauchboot",
+    "category": "tech",
+    "description": "Schlauchboot für eine Fahrt, die den Schützen ein Stück versetzt.",
+    "effect": {
+      "kind": "move",
+      "distance": 50
+    },
+    "visualNote": "Schlauchboot gut lesbar, aber als horizontales Handobjekt statt Wasserfahrzeug gezeichnet. Eigenbewegung/Beschwörungsrolle bildlich verständlich machen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_132",
+    "name": "Alte Dame",
+    "baseName": "Alte Dame",
+    "category": "tech",
+    "description": "Erstaunlich schlagkräftige Dame, deren Hieb auch auf große Distanz trifft.",
+    "effect": null,
+    "visualNote": "Alte Dame im Icon charakterstark. Animationsblatt verwandelt sie ab Frame 1 in ein geflügeltes Wesen; Identität vollständig neu absichern.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_133",
+    "name": "Fliegendes Superschaf",
+    "baseName": "Fliegendes Superschaf",
+    "category": "tech",
+    "description": "Lenkbares Schaf, das sein Ziel verfolgt, im Umkreis explodiert und in Brand setzt.",
+    "effect": null,
+    "visualNote": "Fliegendes Superschaf gut wiedererkennbar; vorhandene Animation eher referenznah. Flügel-/Körperkontinuität und tatsächliche Zielsuche in Bewegung prüfen.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 40,
+    "spawnRadius": 40,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_134",
+    "name": "Luftangriff",
+    "baseName": "Luftangriff",
+    "category": "tech",
+    "description": "Bomber, die von oben auf den Zielpunkt niedergehen.",
+    "effect": null,
+    "visualNote": "Luftangriff als UI-Schlagmarke passend; Handmotiv enthält abgeschnittene Flugzeuge. Animationsblatt zeigt generische braune Flugkörper statt der gesamten Luftangriffsszene: bewusst auf Geschossrolle beschränken.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_135",
+    "name": "Meteorregen",
+    "baseName": "Meteorregen",
+    "category": "tech",
+    "description": "Meteore, die von oben auf den Zielpunkt niedergehen.",
+    "effect": null,
+    "visualNote": "Meteorregen als Symbol verständlich. Animationsblatt wechselt Meteorgestalt/Leuchtkern; für einzelne Meteorprojektile kontrolliert nutzbar, aber kein Nachweis mehrerer Einschläge.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_136",
+    "name": "Bohrkopfrakete",
+    "baseName": "Bohrkopfrakete",
+    "category": "tech",
+    "description": "Rakete mit Bohrkopf, die das getroffene Ziel unmittelbar trifft.",
+    "effect": null,
+    "visualNote": "Bohrkopfrakete im Handbild mit Bohrkopf links und Wirkmarker am rechten Heck. Korrekte Vorwärtsachse festlegen; eigener animierter Schweif statt mitgezeichneter Rauchfahne.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_137",
+    "name": "Flammenklinge",
+    "baseName": "Flammenklinge",
+    "category": "tech",
+    "description": "Klinge aus Feuer, die unmittelbar trifft und in Brand setzt.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "fire",
+      "damagePerTurn": 15,
+      "turns": 3
+    },
+    "visualNote": "Flammenklinge bleibt eine gerahmte Waffenplakette im Handbild. Klinge/Griff extrahieren, Feuer als eigenen Effekt führen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_138",
+    "name": "Arkanhammer",
+    "baseName": "Arkanhammer",
+    "category": "tech",
+    "description": "Hammer aus arkaner Kraft, der unmittelbar einschlägt und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Arkanhammer mit sichtbarem Rahmen und weißem Menü-Icon-Hintergrund. Das eigentliche Hammerobjekt freistellen und einen Griffanker am Stiel setzen.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_139",
+    "name": "Höllenkanone",
+    "baseName": "Höllenkanone",
+    "category": "tech",
+    "description": "Kanone, deren Feuerstrahl von der Seite einschlägt und in Brand setzt.",
+    "effect": null,
+    "visualNote": "Höllenkanone als komplexe Maschine gut, im Handbild schwerer Kopf links und Wirkmarker rechts. Laufmündung von Verzierung unterscheiden; eingebrannte Glut reduzieren.",
+    "flags": [],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_140",
+    "name": "Quantenkanone",
+    "baseName": "Quantenkanone",
+    "category": "tech",
+    "description": "Energieschuss, der ein Ziel durchschlägt und freie Sicht braucht.",
+    "effect": null,
+    "visualNote": "Quantenkanone als großer kantiger Lauf gut, Handbild wirkt frontal mit rechter Wirkmarke am Anbau. Saubere Seitenansicht mit eindeutigem Auslass erzeugen.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_141",
+    "name": "Astralkrieger",
+    "baseName": "Astralkrieger",
+    "category": "ultimate",
+    "description": "Beschworener Krieger, der den Standort bewacht und in den folgenden Runden selbst feuert.",
+    "effect": {
+      "kind": "turret",
+      "damage": 35,
+      "range": 424,
+      "turns": 3
+    },
+    "visualNote": "Astralkrieger hat ein gutes beschworenes Rittermotiv; Animationsblatt zeigt völlig fremde einfache blaue Humanoide. Keine automatische Integration. Mechanisch ein aufgestellter Wächter, kein normaler Flugzauber.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 55,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_142",
+    "name": "Leerenritter",
+    "baseName": "Leerenritter",
+    "category": "ultimate",
+    "description": "Ritter der Leere, der Gegner zum Schützen heranzieht und verflucht.",
+    "effect": {
+      "kind": "pull",
+      "distance": 90
+    },
+    "visualNote": "Leerenritter starkes dunkles Rittermotiv. Animationsblatt wird zu einem anderen cartoonhaften blauen Zauberer. Vor Neuherstellung nicht aktivieren; aktuelle Zugwirkung und Darstellung getrennt erklären.",
+    "flags": [
+      "W01: Radius 0→24 beim Spawn",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": 24,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_143",
+    "name": "Astralross",
+    "baseName": "Astralross",
+    "category": "ultimate",
+    "description": "Astralross, das den Schützen weit trägt.",
+    "effect": {
+      "kind": "mount",
+      "distance": 140
+    },
+    "visualNote": "Astralross als gepanzertes Pferd lesbar. Animationsblatt enthält stark ausgewaschene Körper und wechselnde Form. Reittier-/Statuswirkung statt generischem Orb in der Hand verständlich zeigen.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_144",
+    "name": "Kosmische Wassermelone",
+    "baseName": "Kosmische Wassermelone",
+    "category": "ultimate",
+    "description": "Riesige Frucht, die nach Verzögerung explodiert und in Stücke zerspringt.",
+    "effect": null,
+    "visualNote": "Kosmische Wassermelone einprägsam. Animationsblatt zeigt fremde geflügelte Tiere statt der Melone. Kleine Menüversion enthält deutlichen Hintergrundrest; eigenes Fruchtprojektil empfohlen.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 70,
+    "spawnRadius": 70,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_145",
+    "name": "Erdspalter",
+    "baseName": "Erdspalter",
+    "category": "ultimate",
+    "description": "Spaltet die Erde und reißt einen gewaltigen Krater.",
+    "effect": null,
+    "visualNote": "Erdspalter im Handmotiv teilweise aus der Zelle angeschnitten; Menü-Icon berührt den Rand stark. Bodenriss als Welt-/Einschlageffekt statt gehaltenem Bildmotiv ausarbeiten.",
+    "flags": [],
+    "declaredRadius": 75,
+    "spawnRadius": 75,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_146",
+    "name": "Giftige Weltenflasche",
+    "baseName": "Giftige Weltenflasche",
+    "category": "ultimate",
+    "description": "Flasche voll Weltengift, die im großen Umkreis vergiftet.",
+    "effect": {
+      "kind": "damage_over_time",
+      "element": "poison",
+      "damagePerTurn": 40,
+      "turns": 3
+    },
+    "visualNote": "Giftige Weltenflasche im Icon stark beschädigt/fleckig freigestellt, Umriss berührt viele Kanten. Handbild schief mit enthaltenem Boden: Flasche, Gift und Sockel sauber trennen.",
+    "flags": [],
+    "declaredRadius": 65,
+    "spawnRadius": 65,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_147",
+    "name": "Weltendrache",
+    "baseName": "Weltendrache",
+    "category": "ultimate",
+    "description": "Beschworener Drache, dessen Feuer im großen Umkreis sengt und in Brand setzt.",
+    "effect": null,
+    "visualNote": "Weltendrache im Menüicon mit weißen Fragmenten. Animationsblatt wird zu einem einfachen rosa geflügelten Schwein; Originaldrache muss verbindliche Referenz bleiben.",
+    "flags": [
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen"
+    ],
+    "declaredRadius": 80,
+    "spawnRadius": 80,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_148",
+    "name": "Feuerschild",
+    "baseName": "Feuerschild",
+    "category": "ultimate",
+    "description": "Schild aus Glut um den Eigenen: Wer es trifft, geht selbst in Flammen auf.",
+    "effect": {
+      "kind": "shield",
+      "amount": 75,
+      "gegen": "fire"
+    },
+    "visualNote": "Feuerschild: Menü-Icon zeigt alten goldblauen Engelswächter, Hand-Sprite einen orangefarbenen Schild, Animationsblatt ein fremdes blaues Tier. Alle drei Rollen auf aktuelles Schildmotiv abstimmen.",
+    "flags": [
+      "W19: Schadensart gegenüber Grundkatalog geändert",
+      "W05/W11: Animationsdatei vorhanden, im Produkt nicht geladen",
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 60,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": true,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_149",
+    "name": "Goldene Reliktkugel",
+    "baseName": "Goldene Reliktkugel",
+    "category": "ultimate",
+    "description": "Relikt, das den eigenen Schaden verstärkt.",
+    "effect": {
+      "kind": "damage_boost",
+      "multiplier": 1.5
+    },
+    "visualNote": "Goldene Reliktkugel hat einen ornamental starken Umriss; Menüicon mit weißem Resthintergrund. Tatsächliche Verstärkung statt Schadenszahl erklären; Effektglühen separat.",
+    "flags": [
+      "W09/W14: positive Kennzahl trotz Selbstwirkung"
+    ],
+    "declaredRadius": 0,
+    "spawnRadius": null,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  },
+  {
+    "id": "pa_150",
+    "name": "Kosmischer Kern",
+    "baseName": "Kosmischer Kern",
+    "category": "ultimate",
+    "description": "Kern eines Sterns, der gewaltige Zerstörung im großen Umkreis auslöst.",
+    "effect": null,
+    "visualNote": "Kosmischer Kern als Gesamtmotiv sehr detailliert. Menüicon mit weißen Resten und hoher Motivdichte; Kernform als klaren Schwerpunkt erhalten, Nebensymbole reduzieren.",
+    "flags": [],
+    "declaredRadius": 90,
+    "spawnRadius": 90,
+    "firstActionOk": true,
+    "animationPresent": false,
+    "animationLoaded": false
+  }
+]
