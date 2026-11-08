@@ -27,6 +27,8 @@ import { zeichneTiere } from './hilfeTiere.js';
 import { zeichneWirkungen } from './hilfeWirkungen.js';
 import { zeichneZerstoerungsTabelle, zeichneFeuerRegeln } from './hilfeZerstoerung.js';
 import { factionsWithSprites, spriteCount, hdUrl } from './roster.js';
+import { fraktionsIdentitaet } from './fraktionsIdentitaet.js';
+import './styles/fraktionen.css';
 
 // ------------------------------------------------------------------ Kaderansicht
 
@@ -91,13 +93,26 @@ export function buildRosterView() {
     }
 
     info.replaceChildren();
+    const identitaet = fraktionsIdentitaet(fraktion.id);
     const kopf = document.createElement('div');
+    kopf.className = 'fraktions-banner';
+    if (identitaet) {
+      kopf.style.setProperty('--fraktions-farbe', identitaet.farbe);
+      kopf.style.setProperty('--fraktions-schrift', `'${identitaet.schrift}'`);
+      kopf.style.setProperty('--fraktions-banner', `url("${identitaet.banner}")`);
+    }
     const stark = document.createElement('b');
     stark.textContent = fraktion.name;
-    kopf.append(stark, document.createTextNode(` — ${fraktion.motto}`));
+    const motto = document.createElement('span');
+    motto.textContent = fraktion.motto;
+    kopf.append(stark, motto);
     const beschreibung = document.createElement('div');
+    beschreibung.className = 'fraktions-bio';
     beschreibung.textContent = fraktion.description;
-    info.append(kopf, beschreibung);
+    const legende = document.createElement('p');
+    legende.className = 'fraktions-legende';
+    legende.textContent = 'Die Biografien erzählen die Geschichte der Figuren. Die Spielwerte bestimmt ihre Klasse; die Ausrüstung wählst du im Match.';
+    info.append(kopf, beschreibung, legende);
 
     liste.replaceChildren(...fraktion.characters.map(c => {
       const li = document.createElement('li');
@@ -133,12 +148,12 @@ export function buildRosterView() {
       starkName.textContent = c.name;
       const klein = document.createElement('span');
       klein.className = 'r-role';
-      klein.textContent = ` ${COMBAT_ROLES[c.role]?.label ?? c.role} · ${classOf(c)}`;
+      klein.textContent = ` · ${{ nahkampf: 'Nahkampf', fernkampf: 'Fernkampf', okkultist: 'Okkultist' }[classOf(c)] ?? COMBAT_ROLES[c.role]?.label ?? c.role}`;
       name.append(starkName, klein);
 
       const waffe = document.createElement('div');
       waffe.className = 'r-waffe';
-      waffe.textContent = `${c.superWeapon.name}: ${c.superWeapon.description}`;
+      waffe.textContent = `Signaturwaffe der Geschichte – ${c.superWeapon.name}: ${c.superWeapon.description}`;
 
       const bio = document.createElement('div');
       bio.className = 'r-bio';
@@ -146,7 +161,7 @@ export function buildRosterView() {
 
       const profil = document.createElement('div');
       profil.className = 'r-prof';
-      profil.textContent = `+ ${c.strengths.join(' · ')}  |  − ${c.weaknesses.join(' · ')}`;
+      profil.textContent = `Charakterprofil: + ${c.strengths.join(' · ')}  |  − ${c.weaknesses.join(' · ')}`;
 
       text.append(name, waffe, bio, profil);
 
@@ -194,7 +209,16 @@ export function buildRosterView() {
     const knopf = document.createElement('button');
     knopf.type = 'button';
     knopf.className = 'pa-tab';
-    knopf.textContent = fraktion.name;
+    const identitaet = fraktionsIdentitaet(fraktion.id);
+    if (identitaet) {
+      knopf.style.setProperty('--fraktions-farbe', identitaet.farbe);
+      const zeichen = document.createElement('img');
+      zeichen.src = identitaet.emblem;
+      zeichen.alt = '';
+      zeichen.loading = 'lazy';
+      knopf.append(zeichen);
+    }
+    knopf.append(document.createTextNode(fraktion.name));
     knopf.dataset.fraktion = fraktion.id;
     knopf.setAttribute('role', 'tab');
     knopf.addEventListener('click', () => {
