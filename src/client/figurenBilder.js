@@ -40,81 +40,27 @@ export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
  * `spriteUrl()` liefert die fertige URL, `ladeBild` holt sie wie zuvor.
  */
 /*
- * A5/ENG-12: Alle Globs werden erst beim ersten Zugriff ausgewertet. `node --test`
- * kennt `import.meta.glob` nicht; der try/catch liefert dort leere Tabellen, statt
- * den Import des Renderers zu verhindern. Im Vite-Build bleibt jeder Glob unverändert.
+ * Adressen und Manifeste liegen in `figurenDaten.js` und kommen mit EINEM `import()`
+ * beim ersten Figurenbild (siehe dort für die Messung). Das Startbündel enthält
+ * davon nichts mehr.
+ *
+ * A5/ENG-12 gilt weiter: `node --test` kennt `import.meta.glob` nicht. Der Import
+ * schlägt dort fehl; der Fang liefert leere Tabellen, statt den Import des Renderers
+ * zu verhindern.
  */
-let seiten = null;
-let manifest = null;
-let blattManifest = null;
-let blattBilder = null;
-let emotionBilder = null;
-let emotionManifest = null;
+const LEERE_DATEN = Object.freeze({
+  seiten: {}, manifest: {}, blattManifest: {}, blattBilder: {}, emotionBilder: {}, emotionManifest: {},
+});
+let datenLadung = null;
 
-function seitenTabelle() {
-  if (seiten === null) {
-    try {
-      seiten = import.meta.glob('./assets/characters-side/*/*.png', { query: '?url', import: 'default' });
-    } catch {
-      seiten = {};
-    }
-  }
-  return seiten;
-}
-
-function manifestTabelle() {
-  if (manifest === null) {
-    try {
-      manifest = import.meta.glob('./assets/characters-side/manifest.json', { eager: true, import: 'default' });
-    } catch {
-      manifest = {};
-    }
-  }
-  return manifest;
-}
-
-function blattManifestTabelle() {
-  if (blattManifest === null) {
-    try {
-      blattManifest = import.meta.glob('./assets/sprite-sheets/manifest.json', { eager: true, import: 'default' });
-    } catch {
-      blattManifest = {};
-    }
-  }
-  return blattManifest;
-}
-
-function blattBilderTabelle() {
-  if (blattBilder === null) {
-    try {
-      blattBilder = import.meta.glob('./assets/sprite-sheets/*/*__{walk,aktion}.webp', { query: '?url', import: 'default' });
-    } catch {
-      blattBilder = {};
-    }
-  }
-  return blattBilder;
-}
-
-function emotionBilderTabelle() {
-  if (emotionBilder === null) {
-    try {
-      emotionBilder = import.meta.glob('./assets/sprite-sheets-emotion/*/*.webp', { query: '?url', import: 'default' });
-    } catch {
-      emotionBilder = {};
-    }
-  }
-  return emotionBilder;
-}
-
-function emotionManifestTabelle() {
-  if (emotionManifest === null) {
-    try {
-      emotionManifest = import.meta.glob('./assets/sprite-sheets-emotion/manifest.json', { eager: true, import: 'default' });
-    } catch {
-      emotionManifest = {};
-    }
-  }
-  return emotionManifest;
+/**
+ * Die Figurendaten, einmal geladen und danach aus dem Speicher.
+ *
+ * @returns {Promise<typeof LEERE_DATEN>}
+ */
+function ladeDaten() {
+  datenLadung ??= import('./figurenDaten.js').catch(() => LEERE_DATEN);
+  return datenLadung;
 }
 
 const STANDARD_ANKER = Object.freeze({ fussY: KOLLISIONSANKER.fussY, muendungX: 0.9, muendungY: 0.45 });
@@ -130,8 +76,8 @@ const STANDARD_ANKER = Object.freeze({ fussY: KOLLISIONSANKER.fussY, muendungX: 
  * anderen Trefferfläche aus, obwohl die Kollision für alle 81 gleich ist.
  * Der Mündungsanker ist keine Kollision und darf je Figur abweichen.
  */
-function ankerAusManifest(fraktion, datei) {
-  const m = Object.values(manifestTabelle())[0];
+function ankerAusManifest(daten, fraktion, datei) {
+  const m = Object.values(daten.manifest)[0];
   const e = m?.figures?.[`${fraktion}/${datei}`];
   const anker = e?.anker ?? {};
   return {
@@ -147,25 +93,26 @@ const bildCache = new Map();
 async function lade(eintraege, charakter) {
   const datei = charakter.sprite;
   try {
-    const seitenLader = seitenTabelle()[`./assets/characters-side/${charakter.faction}/${charakter.sprite}`];
+    const daten = await ladeDaten();
+    const seitenUrl = daten.seiten[`./assets/characters-side/${charakter.faction}/${charakter.sprite}`];
     // Porträt-URL kommt eager aus roster.js (siehe Kommentar bei `bilderTabelle` oben).
-    const portraitUrl = seitenLader ? null : spriteUrl(charakter);
-    if (!seitenLader && !portraitUrl) { eintraege.set(datei, 'fehlt'); return; }
-    const img = await ladeBild(seitenLader ? await seitenLader() : portraitUrl);
+    const portraitUrl = seitenUrl ? null : spriteUrl(charakter);
+    if (!seitenUrl && !portraitUrl) { eintraege.set(datei, 'fehlt'); return; }
+    const img = await ladeBild(seitenUrl ?? portraitUrl);
     const fig = {
       quelle: img,
       stufen: new Array(STUFEN.length).fill(null),
       bild: null,
       hell: null,
-      seite: Boolean(seitenLader),
+      seite: Boolean(seitenUrl),
       blatt: null,
-      anker: seitenLader ? ankerAusManifest(charakter.faction, charakter.sprite) : STANDARD_ANKER,
+      anker: seitenUrl ? ankerAusManifest(daten, charakter.faction, charakter.sprite) : STANDARD_ANKER,
     };
     const std = stufeBauen(fig, CACHE_KANTE);
     fig.stufen[STUFEN.indexOf(CACHE_KANTE)] = std;
     fig.bild = std.bild; fig.hell = std.hell;
     eintraege.set(datei, fig);
-    ladeBlatt(fig, charakter);
+    ladeBlatt(fig, charakter, daten);
   } catch {
     eintraege.set(datei, 'fehlt');
   }
@@ -183,27 +130,27 @@ async function lade(eintraege, charakter) {
  * nur angefasst, wenn das Manifest eine Hocke-Zelle ausdrücklich freigegeben hat. Ohne Freigabe
  * entsteht kein Request — eine tote Datei wird so nicht als Animation ausgegeben (Audit A05).
  */
-async function ladeBlatt(fig, charakter) {
+async function ladeBlatt(fig, charakter, daten) {
   try {
-    const m = Object.values(blattManifestTabelle())[0];
+    const m = Object.values(daten.blattManifest)[0];
     const e = m?.figuren?.[`${charakter.faction}/${charakter.sprite.replace(/\.png$/, '')}`];
     if (!e) return;
     const freigabe = freigabeFuer(charakter, e);
     fig.freigabe = freigabe;
     const zustandZelle = zustandHockeZelle(e);
-    const urls = [blattBilderTabelle()[`./assets/sprite-sheets/${e.walk}`], blattBilderTabelle()[`./assets/sprite-sheets/${e.aktion}`]];
-    if (zustandZelle !== null) urls.push(blattBilderTabelle()[`./assets/sprite-sheets/${e.zustand}`]);
-    const [walk, aktion, zustand] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
+    const urls = [daten.blattBilder[`./assets/sprite-sheets/${e.walk}`], daten.blattBilder[`./assets/sprite-sheets/${e.aktion}`]];
+    if (zustandZelle !== null) urls.push(daten.blattBilder[`./assets/sprite-sheets/${e.zustand}`]);
+    const [walk, aktion, zustand] = await Promise.all(urls.map(async (url) => (url ? ladeBild(url).catch(() => null) : null)));
     const blatt = blattBauen({ ...e, gehen: freigabe.gehen ?? undefined, rollen: freigabe.rollen }, walk, aktion, undefined, zustand ?? null);
     if (blatt.walk || blatt.idle) fig.blatt = blatt;
     // Nur Figuren mit SICHTgeprüfter Freigabe im Manifest bekommen Emotionen; die
     // Farbnäherung (`gueltig`) allein ist kein Identitätsnachweis.
     const name = charakter.sprite.replace(/\.png$/, '');
-    const pruefung = Object.values(emotionManifestTabelle())[0]?.figuren?.[`${charakter.faction}/${name}`];
-    const emotion = emotionBilderTabelle()[`./assets/sprite-sheets-emotion/${charakter.faction}/${name}__emotion.webp`];
+    const pruefung = Object.values(daten.emotionManifest)[0]?.figuren?.[`${charakter.faction}/${name}`];
+    const emotion = daten.emotionBilder[`./assets/sprite-sheets-emotion/${charakter.faction}/${name}__emotion.webp`];
     const zellen = emotionFreigabe(pruefung);
     if (fig.blatt && emotion && zellen) {
-      void emotion().then(ladeBild).then((bild) => { fig.blatt.emotion = emotionBauen(bild, undefined, zellen); }).catch(() => {});
+      void ladeBild(emotion).then((bild) => { fig.blatt.emotion = emotionBauen(bild, undefined, zellen); }).catch(() => {});
     }
   } catch {
     fig.blatt = null;

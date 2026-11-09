@@ -1,12 +1,12 @@
 {
-  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 auf bg/ag-a9-build (BUILD-1): haupt 1304711/363261, start 1403143/386177, dist 122466487, Sourcemaps 0, Sourcemapping-URLs 0. Gegenüber dem Stand aus der Integration der zehn Vorarbeiter-Branches (haupt 1294305/360613, start 1392658/383498, dist 99064202) ist das Wachstum gemessen und begründet: BAL-10 bis BAL-13 bringen Waffenrollen und -manifests in den Startpfad (+10,9 KiB haupt roh, davon ~7,7 KiB waffen-rollen.js), DesignRest a1bb346 liefert 144 Figuren-Zustands-Sheets (der größte Posten der +23,4 MiB dist). Gleichzeitig senken BUILD-1-Maßnahmen die Werte: Modul-Preload-Polyfill aus (−528 B roh / −336 B gzip im Einstieg) und 22 Stofftexturen von JPG auf WebP q82 (−300 kB, SSIM 0,9718; zwei Sonderfälle bleiben JPG, weil ihre Nahtprüfung sonst über 4,5 läge). Die neuen Grenzen liegen ~0,6 % über den Messwerten; sie sind kein Ziel, nur die Regressionsschwelle. Senken jederzeit, Anheben nur mit neuen Messwerten und Begründung. Messwerte und Verlauf: docs/ladezeit.md.",
+  "_hinweis": "Grenzen für scripts/bundle-gate.mjs (Bytes; gzip Stufe 9). Gemessen 2026-11-09 nach dem Umbau des Startpfads (LADEZEIT, tests/ladezeit-nach-bedarf.test.js): haupt 1204317/356027, start 1314450/379364, dist 122444493 in 1034 Dateien, Sourcemaps 0, sourceMappingURL-Verweise 0. Davor (nach dem Merge der Branches bg/ag-a1 bis a10): haupt 1323113/369396, start 1433246/392733, dist in 1437 Dateien — das Gate war rot. Der Umbau zieht die Figuren-Manifeste und die Adresstabellen der Figurenbilder in zwei nachgeladene Bausteine (figurenDaten.js, figurenHdDaten.js): −118,8 kB roh / −13,4 kB gzip im Hauptbündel, 403 Zwergdateien weniger. Die Grenzen liegen rund 0,5 % über dem Messwert; sie werden nur verschärft, nie ohne gemessene Begründung angehoben.",
   "haupt": {
-    "roh": 1312000,
-    "gzip": 365500
+    "roh": 1210000,
+    "gzip": 358000
   },
   "start": {
-    "roh": 1411000,
-    "gzip": 388000
+    "roh": 1320000,
+    "gzip": 381500
   },
   "dist": {
     "roh": 123000000
