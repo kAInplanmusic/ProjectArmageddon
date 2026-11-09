@@ -5768,7 +5768,7 @@
   },
   "pa_081": {
    "id": "pa_081",
-   "name": "Zauberbuch der Leere",
+   "name": "Siegel der Leere",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",
@@ -5829,7 +5829,7 @@
   },
   "pa_082": {
    "id": "pa_082",
-   "name": "Goldene Zauberrolle",
+   "name": "Goldener Münzstab",
    "category": "magic",
    "subcategory": "elemental",
    "rarity": "uncommon",

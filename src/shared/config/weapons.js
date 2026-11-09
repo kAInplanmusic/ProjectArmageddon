@@ -3824,8 +3824,8 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_081",
       "index": 81,
-      "displayName": "Zauberbuch der Leere",
-      "description": "Zauberbuch, das die Leere entfesselt: Schaden am getroffenen Gegner und anhaltender Schaden über Zeit.",
+      "displayName": "Siegel der Leere",
+      "description": "Siegel, das die Leere entfesselt: Schaden am getroffenen Gegner und anhaltender Schaden über Zeit.",
       "internalName": "zauberbuch_der_leere",
       "category": "magic",
       "subcategory": "elemental",
@@ -3871,8 +3871,8 @@ export const WEAPONS = Object.freeze(
     {
       "id": "pa_082",
       "index": 82,
-      "displayName": "Goldene Zauberrolle",
-      "description": "Rolle, die einen goldenen Zauberbolzen entsendet und freie Sicht braucht.",
+      "displayName": "Goldener Münzstab",
+      "description": "Goldener Stab mit Münzen, der einen Zauberbolzen entsendet und freie Sicht braucht.",
       "internalName": "goldene_zauberrolle",
       "category": "magic",
       "subcategory": "elemental",
