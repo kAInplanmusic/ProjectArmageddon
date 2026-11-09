@@ -10,12 +10,13 @@
 import { maliMarken } from '../shared/config/schaden.js';
 import { TEAM_COLORS } from '../engine/match.js';
 import {
-  getWeapon,
   iconUrlFor,
   orderInventoryBySubcategory,
   displayGroupFor,
   displayGroupLabel,
 } from '../shared/config/weapons.js';
+import { getWaffe, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
+import { wirkungsKennzahl, waffenRolle, istSelbstwirkung } from './waffenSicht.js';
 import { WATER_STATE, waterStateFor, waterLabel, DROWN_LEVEL } from '../shared/config/water.js';
 import { windSegmente } from '../shared/config/wind.js';
 import { ladungAnteil } from './weaponAnimation.js';
@@ -183,8 +184,10 @@ export class Hud {
   #weaponSignature = '';
   /** Zuletzt angesagter aktiver Spieler — für die Zugwechsel-Meldung. */
   #lastActiveId = null;
+  /** Waffenfassung der laufenden Partie; fehlt sie (Online-Vorlauf), gilt der Standard. */
+  #getFassung;
 
-  constructor(documentRef = document) {
+  constructor(documentRef = document, { getFassung = () => WAFFEN_STANDARD } = {}) {
     /*
      * Das übergebene Dokument gilt ÜBERALL.
      *
@@ -197,6 +200,7 @@ export class Hud {
      * alles aus EINER Quelle.
      */
     this.#document = documentRef;
+    this.#getFassung = getFassung;
     this.#elements = {
       round: documentRef.getElementById('hud-round'),
       wind: documentRef.getElementById('hud-wind'),
@@ -306,7 +310,7 @@ export class Hud {
 
     // Flächenwirkung der gewählten Waffe: hilft beim Einschätzen des Splash-Radius.
     if (el.blast) {
-      const weapon = active?.activeWeaponId ? getWeapon(active.activeWeaponId) : null;
+      const weapon = active?.activeWeaponId ? getWaffe(active.activeWeaponId, this.#getFassung()) : null;
       const radius = weapon?.blastRadius ?? 0;
       el.blast.textContent = radius > 0 ? `⌀ ${Math.round(radius)}` : '— direkt —';
       el.blast.style.color = radius > 0 ? '#f4a261' : '#8ba0b4';
@@ -444,13 +448,16 @@ export class Hud {
 
     const active = state.entities.find(entity => entity.entityId === state.activePlayerId);
     const weapons = active?.inventory ?? [];
+    // W02/W19: Die Leiste zeigt dieselbe Partiefassung wie Menü und Motor;
+    // alte Replays behalten ihren Katalogwert (z. B. pa_040 21 statt 42).
+    const fassung = this.#getFassung();
     // Munition gehört in die Signatur: sonst aktualisiert sich die Anzeige
     // erst beim Zugwechsel statt direkt nach einem Schuss.
     const ammoKey = weapons.map(id => `${id}=${active?.ammo?.[id] ?? 0}`).join(',');
     // Nachladezeiten gehören in die Signatur: sonst bliebe die Anzeige stehen,
     // obwohl eine Waffe wieder bereit ist.
     const cdKey = weapons.map(id => `${id}=${active?.cooldowns?.[id] ?? 0}`).join(',');
-    const signature = `${state.activePlayerId}:${weapons.join(',')}:${active?.activeWeaponId ?? ''}:${ammoKey}:${cdKey}`;
+    const signature = `${fassung}:${state.activePlayerId}:${weapons.join(',')}:${active?.activeWeaponId ?? ''}:${ammoKey}:${cdKey}`;
     if (this.#weaponSignature === signature) return;
     this.#weaponSignature = signature;
 
@@ -502,7 +509,7 @@ export class Hud {
         gruppeVon.set(id, gruppe);
         gruppen.push(gruppe);
       }
-      gruppe.eintraege.push({ weaponId, index, weapon: getWeapon(weaponId) });
+      gruppe.eintraege.push({ weaponId, index, weapon: getWaffe(weaponId, fassung) });
     }
 
     const kinder = [];
@@ -595,9 +602,14 @@ export class Hud {
     const meta = this.#document.createElement('span');
     const ammo = active?.ammo?.[weaponId];
     const restCooldown = active?.cooldowns?.[weaponId] ?? 0;
+    // W09: Selbstwirkungen nennen Heilwert/Schild/Verstärkung/Bewegung/Mine,
+    // nicht den positiven Katalogschaden. Angriffe bleiben bei „DMG“.
+    const rolle = waffenRolle(weapon);
+    const kennzahl = rolle === 'weltobjekt' || istSelbstwirkung(weapon) ? wirkungsKennzahl(weapon) : null;
+    const beschriftung = kennzahl ?? `${weapon?.damage ?? 0} DMG`;
     meta.textContent = ammo === 'unbegrenzt'
-      ? `${weapon?.damage ?? 0} DMG · ∞`
-      : `${weapon?.damage ?? 0} DMG · ${ammo ?? 0}`;
+      ? `${beschriftung} · ∞`
+      : `${beschriftung} · ${ammo ?? 0}`;
     meta.style.color = '#8ba0b4';
 
     item.append(label, meta);

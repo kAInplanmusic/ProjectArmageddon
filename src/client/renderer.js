@@ -56,7 +56,8 @@ import {
   parameterFuerWaffe, waffenPose, neuePose, neueZeiten, handPunkt, figurHand,
   GeschossLagen, geschossDarstellung, geschossWinkel, zeichneGruppenmarke,
 } from './waffenAnimation.js';
-import { WEAPONS_BY_ID } from '../shared/config/weapons.js'; import { getWaffe } from '../shared/config/waffen-fassung.js';
+import { getWaffe, normalisiereWaffen, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
+import { waffenRolle } from './waffenSicht.js';
 import { FigurPosen, fallPose, NEIGUNG_MAX } from './figurAnimation.js';
 import { baueGelaendeEbene, zeichneKraterRand, bodenArt } from './gelaendeStil.js'; import { anzahlStoffTexturen } from './stoffTexturen.js';
 import {
@@ -117,6 +118,13 @@ export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    /**
+     * Waffenfassung der laufenden Partie (W02/W03/W19). Menü, HUD und
+     * Renderer lesen damit dieselben Namen, Werte und Schadensarten; alte
+     * Replays behalten ihre Fassung, neue Partien laufen im Standard.
+     * Gesetzt von `main.js` (`setzeWaffenFassung`), Vorgabe ist der Standard.
+     */
+    this.waffenFassung = WAFFEN_STANDARD;
     this.width = canvas.width;
     this.height = canvas.height;
     this.terrainLayer = null;
@@ -273,6 +281,27 @@ export class Renderer {
 
 
   /**
+   * Setzt die Waffenfassung der Partie (aus `match.waffen`). Unbekannte Werte
+   * fallen wie im Motor auf den Standard; `null` setzt ebenfalls den Standard.
+   *
+   * @param {number|undefined|null} fassung
+   */
+  setzeWaffenFassung(fassung) {
+    this.waffenFassung = fassung === null || fassung === undefined ? WAFFEN_STANDARD : normalisiereWaffen(fassung);
+  }
+
+  /**
+   * Die Waffe in der Fassung dieser Partie — EIN Datenpfad für gehaltene
+   * Waffe, Geschoss, Mündungsfeuer und Schadensart-Farbe (W02/W19).
+   *
+   * @param {string|null|undefined} id
+   * @returns {object|null}
+   */
+  waffe(id) {
+    return id ? getWaffe(id, this.waffenFassung) : null;
+  }
+
+  /**
    * Setzt die generative Kulisse (Himmel, Wasser, Ambiente, Landmarken).
    *
    * Sie hat Vorrang vor einem Hintergrundbild: Die generative Kulisse passt sich
@@ -403,7 +432,7 @@ export class Renderer {
    */
   addBeam(fromX, fromY, toX, toY, optionen = {}) {
     // Art des Strahls nach der Waffe (`waffenOptik.strahlArt`); der Laser trägt ihre Blitzfarbe (Sprite-Manifest).
-    const waffe = optionen.waffeId ? WEAPONS_BY_ID[optionen.waffeId] : null;
+    const waffe = this.waffe(optionen.waffeId ? optionen.waffeId : null);
     const farbe = waffe ? holeWaffenSprite(waffe)?.flashColor : null;
     this.effects.push(erzeugeStrahl(fromX, fromY, toX, toY, { ...optionen, art: strahlArt(waffe), ...(farbe ? { color: farbe } : null) }));
   }
@@ -520,7 +549,7 @@ export class Renderer {
     const befund = findeTreffer(this.letzteWerte, state?.entities ?? []);
     this.letzteWerte = befund.zustand;
     this.letzteTreffer = befund.treffer;
-    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) || vorhergesagterStoss(this.juengsteSchuesse.at(-1)), stossStaerke: vorhergesagteStaerke(this.juengsteSchuesse.at(-1)) }));
+    for (const treffer of befund.treffer) this.trefferMarken.push(trefferMarke({ ...treffer, stoss: stossRichtung(treffer, this.einschlaege) || vorhergesagterStoss(this.juengsteSchuesse.at(-1), this.waffenFassung), stossStaerke: vorhergesagteStaerke(this.juengsteSchuesse.at(-1), this.waffenFassung) }));
     for (const e of this.einschlaege) e.rest -= 1; this.juengsteSchuesse = this.juengsteSchuesse.filter(x => (x.rest -= 1) > 0);
     this.einschlaege = this.einschlaege.filter(e => e.rest > 0);
     const zahlen = findeZahlen(this.zahlenWerte, state?.entities ?? [], this.schadensArten);
@@ -1299,6 +1328,8 @@ export class Renderer {
       const treffer = marke && marke.life > 0.66 ? (marke.life - 0.66) * 3 : 0;
       // Zeichnet die Figur eine Waffe aus dem Atlas, bringt diese ihren eigenen Mündungsblitz mit.
       let spriteWaffe = false;
+      /** Rolle der aktiven Waffe (W07): Selbst/Weltobjekt bekommen kein Mündungsfeuer am Handpunkt. */
+      let rollenWert = null;
       // Charakter-Sprite, wenn die Figur eine Fraktion hat und das Bild bereit ist
       // (sonst die prozedurale Figur).
       if (fig) {
@@ -1310,10 +1341,20 @@ export class Renderer {
         const par = PARAMETER[typ];
         const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
         // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
-        const waffe = entity.activeWeaponId ? WEAPONS_BY_ID[entity.activeWeaponId] : null;
+        const waffe = this.waffe(entity.activeWeaponId);
         const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
-        const ikone = waffe && !waffenSprite ? holeWaffenIkone(waffe) : null;
-        const waffenPar = waffenSprite ? parameterFuerWaffe(waffe, waffenSprite) : null;
+        /*
+         * W07: Nicht jede aktive Waffe wird gehalten. Beschwörungen,
+         * Aufstellobjekte und Selbstanwendungen haben ihre eigene Darstellung
+         * (Weltobjekt, Aura); Rucksäcke liegen am Rücken. Nur `hand` und
+         * `geschoss` bekommen Arm und Faust.
+         */
+        const rolle = waffe ? waffenRolle(waffe, undefined, waffenSprite) : 'ui';
+        rollenWert = rolle;
+        const gehalten = rolle === 'hand' || rolle === 'geschoss';
+        const getragen = gehalten || rolle === 'ruecken';
+        const ikone = waffe && !waffenSprite && gehalten ? holeWaffenIkone(waffe) : null;
+        const waffenPar = waffenSprite && getragen ? parameterFuerWaffe(waffe, waffenSprite) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss, stossStaerke: marke?.stossStaerke,
           feuer: feuerLeben, params: par, typ, blatt: fig.blatt,
@@ -1333,12 +1374,12 @@ export class Renderer {
             this.figurEffekte.blasen(entity.x, wy + 2, 2);
           }
         }
-        const hinterKoerper = waffenPar?.lage === 'hinter';
+        const hinterKoerper = getragen && waffenPar?.lage === 'hinter';
         if (hinterKoerper) {
           spriteWaffe = true;
           this.ctx.save();
           this.#waffeFolgtKoerper(pose);
-          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig);
+          this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig, rolle);
           this.ctx.restore();
         }
         zeichneFigurSprite(this.ctx, fig, {
@@ -1348,9 +1389,9 @@ export class Renderer {
         // Die Waffe folgt dem Körper (Hangneigung, Neigung, Hüpfen), behält aber den echten Zielwinkel.
         this.#waffeFolgtKoerper(pose);
         if (waffenSprite) {
-          if (!hinterKoerper) {
+          if (getragen && !hinterKoerper) {
             spriteWaffe = true;
-            this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig);
+            this.#zeichneWaffeSprite(entity, waffe, waffenSprite, angle, jetzt, treffer, feuerLeben, color, charakter, fig, rolle);
           }
         } else if (ikone) {
           this.waffenStat.ikone += 1;
@@ -1361,16 +1402,17 @@ export class Renderer {
             laenge: ROHR_LAENGE,
             schwung: nahkampf && !this.reducedMotion ? Math.sin(feuerLeben * Math.PI) * 1.1 : 0,
           });
-          // Selbstwirkung oder Nahkampf ohne Geschoss: kurzer Aura-Ring beim Einsatz.
-          if (feuerLeben > 0 && !this.reducedMotion && (nahkampf || waffe.damage === 0)) {
-            zeichneAuraRing(this.ctx, color, feuerLeben);
-          }
-        } else {
+        } else if (!waffe || gehalten) {
           this.ctx.save();
           this.ctx.translate(0, FIGUR_HOCH);
           this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
           zeichneRohr(this.ctx, rohrParam);
           this.ctx.restore();
+        }
+        // Selbstwirkung oder Nahkampf: kurzer Aura-Ring beim Einsatz, einmal an
+        // der Figur — unabhängig davon, ob ein Handbild gezeichnet wurde.
+        if (feuerLeben > 0 && !this.reducedMotion && (rolle === 'selbst' || waffe?.category === 'melee')) {
+          zeichneAuraRing(this.ctx, color, feuerLeben);
         }
         this.ctx.restore();
       } else {
@@ -1385,11 +1427,11 @@ export class Renderer {
       // Das Feuer liegt in WELTachsen (die Geometrie rechnet in Weltachsen) —
       // es wird deshalb NACH dem Zurücksetzen der Drehung gezeichnet.
       // Mündungsfeuer nach der Waffe (`waffenOptik.muendungsStil`): Bildfolge, Blitzform oder keins; ohne Bild der Kegel.
-      if (muendung) {
+      if (muendung && rollenWert !== 'selbst' && rollenWert !== 'weltobjekt') {
         const f2 = muendungsfeuer(angle, feuerLeben, { reducedMotion: this.reducedMotion });
         zeichneMuendungsfeuer(this.ctx, this.sheets, {
           x: entity.x + f2.offsetX * sk, y: entity.y + FUSS_ABSTAND + (HAND_HOEHE - FUSS_ABSTAND) * sk + f2.offsetY * sk, winkel: angle,
-          leben: feuerLeben, skala: sk, feuer: f2, farbe: muendung.farbe, spriteWaffe, waffe: WEAPONS_BY_ID[entity.activeWeaponId] ?? null,
+          leben: feuerLeben, skala: sk, feuer: f2, farbe: muendung.farbe, spriteWaffe, waffe: this.waffe(entity.activeWeaponId),
         });
       }
 
@@ -1409,9 +1451,8 @@ export class Renderer {
     this.ctx.translate(pose.dx + hh * Math.sin(r), pose.dy - hh * (pose.sy - 1) + hh * (1 - Math.cos(r)));
   }
 
-  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, feuerLeben, color, charakter, fig) {
+  #zeichneWaffeSprite(entity, waffe, sp, angle, jetzt, treffer, _feuerLeben, _color, charakter, fig, rolle = 'hand') {
     const ws = this.#waffenState(entity.entityId);
-    const selbst = waffe.damage === 0;
     if (ws.waffeId !== waffe.id || ws.par === null) {
       // Wechsel: Die neue Waffe schwingt von unten ein (nicht beim allerersten Bild der Figur).
       if (ws.waffeId !== '' && ws.waffeId !== waffe.id) ws.zieh = jetzt;
@@ -1427,14 +1468,18 @@ export class Renderer {
     zt.treffer = treffer;
     const pose = waffenPose(par, zt, this.reducedMotion, this.waffenPoseTmp);
     const hand = figurHand(charakter?.id);
-    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp, hand);
+    /*
+     * W07: Ein Rucksack/Gleitschirm liegt am Rücken — dieselbe Halterung wie
+     * bei Tieren und Fahrzeugen (`aufbau`), nicht Arm und Faust. Die bewussten
+     * Rückenkorrekturen (`KORREKTUREN.pa_032/112/114`, `lage: 'hinter'`)
+     * bleiben unverändert.
+     */
+    const tragend = rolle === 'ruecken' ? { ...hand, aufbau: true } : hand;
+    handPunkt(par, Math.cos(angle), SPRITE_HOEHE, FUSS_ABSTAND, this.handTmp, tragend);
     zeichneWaffeSprite(this.ctx, sp, par, pose, {
-      winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y, figur: hand, handFarbe: fig ? handFarbeFuer(fig, hand) : null,
+      winkel: angle, handX: this.handTmp.x, handY: this.handTmp.y, figur: tragend, handFarbe: fig ? handFarbeFuer(fig, tragend) : null,
       zeit: jetzt, reduziert: this.reducedMotion,
     });
-    if (feuerLeben > 0 && !this.reducedMotion && (waffe.category === 'melee' || selbst)) {
-      zeichneAuraRing(this.ctx, color, feuerLeben);
-    }
     this.waffenStat.sprite += 1;
     let d = this.waffenDiagnose.get(entity.entityId);
     if (!d) { d = {}; this.waffenDiagnose.set(entity.entityId, d); }
@@ -1667,7 +1712,7 @@ export class Renderer {
       const besitzer = entities.find(e => e.entityId === lage.owner);
       lage.waffeId = besitzer?.activeWeaponId ?? '';
     }
-    const waffe = lage.waffeId ? WEAPONS_BY_ID[lage.waffeId] : null;
+    const waffe = this.waffe(lage.waffeId);
     const sp = waffe ? holeWaffenSprite(waffe) : null;
     if (sp?.projektil) {
       lage.sp = sp;
@@ -1685,7 +1730,7 @@ export class Renderer {
       const sp = lage ? this.#geschossSprite(lage, entities) : null;
       if (sp) {
         // Schweif in der Blitzfarbe, dann das Sprite in Flugrichtung (Wurfdinge drehen sich zusätzlich).
-        lage.schweif ??= schweifArt(sp.projektilInfo?.art, WEAPONS_BY_ID[lage.waffeId]);
+        lage.schweif ??= schweifArt(sp.projektilInfo?.art, this.waffe(lage.waffeId));
         zeichneFamilienSchweif(this.ctx, lage.ring, lage.schweif, sp.flashColor, lage.dar.groesse * 0.32, jetzt, this.reducedMotion);
         const w = geschossWinkel(lage.flug, lage.dar, jetzt - lage.t0, this.reducedMotion);
         zeichneGeschossSprite(this.ctx, sp, projectile.x, projectile.y, w, lage.dar.groesse);
@@ -1695,7 +1740,7 @@ export class Renderer {
         this.waffenStat.geschossSprites += 1;
       } else {
         // Ohne Waffen-Sprite: Leuchtgeschoss-Komet (Farbe nach Schadensart) hinter dem Glutkern.
-        const art = getWaffe(lage?.waffeId)?.damageType ?? WEAPONS_BY_ID[lage?.waffeId]?.damageType;
+        const art = this.waffe(lage?.waffeId)?.damageType ?? 'physical';
         this.sheets.zeichneKomet(this.ctx, LEUCHT_FARBE[art] ?? 'gelb', projectile.x, projectile.y, lage?.flug ?? 0, 34);
         zeichneGeschoss(this.ctx, projectile.x, projectile.y);
       }

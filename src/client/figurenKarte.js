@@ -11,7 +11,8 @@ import { COMBAT_ROLES } from '../shared/config/factions.js';
 import { charakterFuer } from '../shared/config/darstellung.js';
 import { klassenKennung } from '../shared/config/classes.js';
 import { istKlassenfassungNeu, KLASSEN_STANDARD } from '../shared/config/klassen-fassung.js';
-import { WEAPONS_BY_ID, iconUrlFor } from '../shared/config/weapons.js';
+import { iconUrlFor } from '../shared/config/weapons.js';
+import { getWaffe, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
 import { spriteUrl, hdUrl } from './roster.js';
 
 const KLASSEN_NAME = Object.freeze({
@@ -79,9 +80,12 @@ export class FigurenKarte {
       if (this.balken) this.balken.style.transform = `scaleX(${max > 0 ? Math.min(1, hp / max) : 0})`;
     }
     const w = entity.activeWeaponId ?? null;
-    if (w !== z.waffe) {
+    const fassung = umgebung.waffen ?? WAFFEN_STANDARD;
+    if (w !== z.waffe || fassung !== z.waffenFassung) {
       z.waffe = w;
-      const waffe = w ? WEAPONS_BY_ID[w] : null;
+      z.waffenFassung = fassung;
+      // W03: Auch die Figurenkarte nennt pa_127 ab Fassung 12 „Mine“.
+      const waffe = w ? getWaffe(w, fassung) : null;
       this.waffe.textContent = waffe?.displayName ?? '';
       const url = waffe ? iconUrlFor(waffe) : null;
       if (this.waffeIcon) {

@@ -33,7 +33,7 @@
  * @module client/ereignisse
  */
 import { MALUS } from '../shared/config/schaden.js';
-import { getWeapon } from '../shared/config/weapons.js';
+import { getWaffe, WAFFEN_STANDARD } from '../shared/config/waffen-fassung.js';
 import { materialAusEreignis, stoffSchluesselAmEinschlag, klassifiziereSchadensklang } from '../shared/einschlag.js';
 import { damageTypeName } from '../engine/damageTypes.js';
 import { familieVonArt, FAMILIEN_FARBEN } from './waffenOptik.js';
@@ -42,6 +42,15 @@ import { familieVonArt, FAMILIEN_FARBEN } from './waffenOptik.js';
 function blitzFarben(art) {
   const familie = familieVonArt(art);
   return familie === 'explosiv' ? null : FAMILIEN_FARBEN[familie];
+}
+
+/**
+ * Anzeigename einer Waffe in der Fassung der Partie (W03). Im Log darf
+ * `pa_127` ab Fassung 12 nicht weiter „Teleportplattform“ heißen; online fehlt
+ * der lokale Match, dort gilt der Standard.
+ */
+function waffenName(kontext, weaponId) {
+  return getWaffe(weaponId, kontext?.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? weaponId;
 }
 
 /**
@@ -1003,7 +1012,7 @@ export const EREIGNIS_WIRKUNGEN = {
    */
   weapon_dropped: {
     online: (k, n) => {
-      const name = getWeapon(n.weaponId)?.displayName ?? n.weaponId;
+      const name = waffenName(k, n.weaponId);
       const vorrat = n.ammo < 0 ? '∞' : n.ammo;
       k.hud?.log(`${k.nameOf?.(n.playerId)} wirft ${name} ab (${vorrat} Munition)`, 'accent');
     },
@@ -1041,8 +1050,8 @@ export const EREIGNIS_WIRKUNGEN = {
       const who = k.match?.players?.find(player => player.entityId === n.playerId);
       const reward = n.reward;
       const text = reward?.kind === 'weapon'
-        ? `${who?.label ?? 'Spieler'} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
-        : reward?.kind === 'ammo' ? `${who?.label ?? 'Spieler'} füllt ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'} um ${reward.amount} Munition`
+        ? `${who?.label ?? 'Spieler'} findet ${getWaffe(reward.weaponId, k.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? 'eine Waffe'}`
+        : reward?.kind === 'ammo' ? `${who?.label ?? 'Spieler'} füllt ${getWaffe(reward.weaponId, k.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? 'eine Waffe'} um ${reward.amount} Munition`
         : reward?.kind === 'heal' ? `${who?.label ?? 'Spieler'} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who?.label ?? 'Spieler'} löst eine Sprengfalle aus`
         : `${who?.label ?? 'Spieler'} öffnet eine leere Kiste`;
@@ -1057,8 +1066,8 @@ export const EREIGNIS_WIRKUNGEN = {
       const who = k.nameOf?.(n.playerId);
       const reward = n.reward;
       const text = reward?.kind === 'weapon'
-        ? `${who} findet ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'}`
-        : reward?.kind === 'ammo' ? `${who} füllt ${getWeapon(reward.weaponId)?.displayName ?? 'eine Waffe'} um ${reward.amount} Munition`
+        ? `${who} findet ${getWaffe(reward.weaponId, k.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? 'eine Waffe'}`
+        : reward?.kind === 'ammo' ? `${who} füllt ${getWaffe(reward.weaponId, k.match?.waffen ?? WAFFEN_STANDARD)?.displayName ?? 'eine Waffe'} um ${reward.amount} Munition`
         : reward?.kind === 'heal' ? `${who} heilt ${reward.amount} HP`
         : reward?.kind === 'trap' ? `${who} löst eine Sprengfalle aus`
         : `${who} öffnet eine leere Kiste`;
