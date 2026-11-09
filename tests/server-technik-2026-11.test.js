@@ -281,10 +281,12 @@ test('REPLAY-1: Recorder-Vorgabe für maxRounds folgt dem Motor, Altdateien ohne
 // ------------------------------------------------------------------ WERKZEUG-1
 
 test('WERKZEUG-1: audit_bericht überschreibt keine getrackte Datei ohne ausdrückliche Freigabe', () => {
-  const ziel = path.join(ROOT, 'docs', 'audit-tief.md');
-  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/audit-tief.md ist getrackt');
+  // `docs/audit-tief.md` wurde mit dem Doku-Umbau (5181f82) gelöscht; der Test
+  // prüft die Sperre, nicht diese eine Datei — deshalb ein weiterhin getracktes Dokument.
+  const ziel = path.join(ROOT, 'docs', 'betrieb.md');
+  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/betrieb.md ist getrackt');
   const vorher = fs.readFileSync(ziel, 'utf8');
-  assert.throws(() => schreibeBericht('docs/audit-tief.md', {}), /getrackte Datei/);
+  assert.throws(() => schreibeBericht('docs/betrieb.md', {}), /getrackte Datei/);
   assert.equal(fs.readFileSync(ziel, 'utf8'), vorher, 'die Datei ist unverändert');
 
   assert.equal(BERICHT_STANDARDPFAD.startsWith('artifacts/'), true, 'Vorgabe liegt unter artifacts/ (gitignored)');

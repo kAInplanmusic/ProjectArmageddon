@@ -29,6 +29,7 @@ Die Skripte dazu liegen in `scripts/betrieb/`:
 | `scripts/betrieb/token-setzen.sh` | legt das Hetzner-Token nur im Arbeitsspeicher des Servers ab (nie auf der Platte) |
 | `scripts/betrieb/snapshot.sh` | Sicherung bei jedem Stopp (Archiv, optional Hetzner-Abbild); behält die neuesten 3 — `docs/betrieb.md` Abschnitt 8 |
 | `scripts/betrieb/sichern.sh` / `wiederherstellen.sh` | nur der Spielstand (`PA_STATE_PATH`): atomar sichern mit Aufbewahrung (Vorgabe 10) und zurückspielen — `docs/deploy-plan.md` Abschnitt 9 |
+| `scripts/betrieb/pflichtfelder.mjs` | prüft die 15 Pflichtangaben in `docs/betrieb-INSTANZ.md` (Rückgabe 0 = vollständig, 3 = noch `LÜCKE`, 1 = Strukturfehler); prüft auch, dass `betrieb.env.example` jeden genannten `PA_*`-Schalter kennt |
 
 Release und Rückweg in `scripts/release/` (`docs/deploy-plan.md` Abschnitte 3–8):
 
@@ -49,18 +50,25 @@ scripts/betrieb/server-start.sh --print-config
 scripts/betrieb/idle-watch.sh --print-config
 scripts/betrieb/snapshot.sh --print-config
 bash -n scripts/betrieb/snapshot.sh
+node scripts/betrieb/pflichtfelder.mjs            # 3 = noch offene Pflichtangaben (erwartet)
 node scripts/release/paket.mjs --trocken          # was ins Release-Paket käme
 scripts/release/deploy.sh --trocken <paket.tar.gz> # zeigt jeden Schritt, ändert nichts
-node --test tests/release-skripte.test.js tests/release-paket.test.js tests/container-dateien.test.js tests/systemd-vorlagen.test.js
+node --test tests/release-skripte.test.js tests/release-paket.test.js tests/container-dateien.test.js tests/systemd-vorlagen.test.js tests/betrieb-vorlage.test.js
 ```
 
 ## Bevor irgendetwas gemietet wird
 
 AGENTS.md §5 verlangt drei Dinge, **vor** der Miete:
 
-1. Eintrag in `docs/betrieb-INSTANZ.md` (Name, Zweck, Preis pro Stunde, Besitzer)
+1. Eintrag in `docs/betrieb-INSTANZ.md` (Name, Zweck, Preis pro Stunde, Besitzer) —
+   vollständig sind die 15 Felder `PFLICHT-01` bis `PFLICHT-15`, inklusive
+   Bildpreis je GB/Monat; `node scripts/betrieb/pflichtfelder.mjs` sagt, was fehlt
 2. eine Abschaltung, die ohne Zutun greift (die Idle-Bremse hier)
 3. den **Nachweis**, dass sie läuft — die *Ausgabe* von `systemctl list-timers`
    auf dem Knoten, eingetragen in `docs/betrieb-INSTANZ.md`
+
+Löschen und Neuerstellen aus dem Abbild, die Kopie des Archivs nach außen und
+der Bildpreis sind **Betreiber-Schritte**, keine Automaten:
+`docs/betrieb-INSTANZ.md`, Abschnitte 6–8.
 
 Die Belegbefehle stehen in `docs/betrieb-INSTANZ.md`, Abschnitt „Nachweis".
