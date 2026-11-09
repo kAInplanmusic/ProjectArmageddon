@@ -50,6 +50,9 @@ const ZELLE_GEFUELLT_PROZENT = 0.6;
 const SPLITTER_MIN_PX = 24;
 /** So viele Fragmente je Zelle gelten als normal (Figur + evtl. Waffe/Schatten). */
 const FRAGMENTE_NORMAL = 3;
+// Absichtlich dasselbe Blatt in zwei Fraktionen: pixel/00_nullpointer-exception
+// (Anzeigename Hexfang) und datacult/00_nullpointer-exception (Nullpointer-Kultist).
+const NAMEN_TEILBAR = new Set(['00_nullpointer-exception']);
 
 const args = new Set(process.argv.slice(2));
 const NUR_JSON = args.has('--json');
@@ -310,7 +313,7 @@ async function pruefeFiguren(zellenMessen) {
   }
 
   for (const [kurz, orte] of namensIndex) {
-    if (orte.length > 1) {
+    if (orte.length > 1 && !NAMEN_TEILBAR.has(kurz)) {
       befund('namensdublette', `Figurenname ${kurz} in ${orte.length} Fraktionen`, orte.join(' · '));
     }
   }
