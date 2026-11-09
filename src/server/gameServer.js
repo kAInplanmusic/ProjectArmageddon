@@ -33,6 +33,7 @@ import {
   PROTOCOL_VERSION,
   controlMessage,
   parseControlMessage,
+  pruefeProtokollversion,
 } from '../shared/protocol.js';
 import { INPUT_LIMITS } from '../shared/validation.js';
 import { SIMULATION_HZ } from '../shared/config/network.js';
@@ -201,6 +202,13 @@ export class GameServer {
       controlMessagesSuppressed: 0,
       // Nachrichten, die die Mengenbegrenzung je Verbindung verworfen hat.
       messagesRateLimited: 0,
+      /*
+       * Steuernachrichten mit abweichender Protokollversion (SRV-11). Ohne
+       * diese Zahl wäre „Client und Server passen nicht zusammen" im Betrieb
+       * nicht von einem Netzproblem zu unterscheiden: Die Snapshots werden
+       * verworfen, die JSON-Befehle kämen aber weiter an.
+       */
+      protocolMismatches: 0,
     };
     /** Optionale Persistenz: null deaktiviert das Speichern vollständig. */
     this.persistence = persistence;
@@ -1470,6 +1478,29 @@ export class GameServer {
     const message = parseControlMessage(raw);
     if (!message) {
       this.#fehlerSenden(socket, 'Ungültige Nachricht');
+      return;
+    }
+
+    /*
+     * Version der Steuernachricht prüfen (SRV-11).
+     *
+     * Das `v`-Feld war bisher nur Beiwerk: Der Server las es nie. Ein Client
+     * mit anderer Fassung bekam damit widersprüchliches Verhalten — seine
+     * Binär-Snapshots wurden wegen der Version abgelehnt, seine JSON-Befehle
+     * aber ausgeführt. Die Prüfung steht VOR dem `switch`, weil sie für jeden
+     * Typ gilt. Fehlt `v` (ältere Werkzeuge, Aufzeichnungen), bleibt die
+     * Nachricht gültig; nur eine ausdrücklich ANDERE Zahl wird abgewiesen.
+     */
+    const version = pruefeProtokollversion(message.v);
+    if (version) {
+      this.metrics.protocolMismatches += 1;
+      this.logger.warn('protocol_mismatch', 'Steuernachricht mit abweichender Protokollversion abgewiesen', {
+        messageType: message.t,
+        gemeldet: version.gemeldet,
+        erwartet: version.erwartet,
+        lobbyId: context.lobbyId,
+      });
+      this.#fehlerSenden(socket, version.text);
       return;
     }
 

@@ -20,11 +20,12 @@
  *   [22]     Kistenanzahl (ab v5)
  *   [23]     Geschützanzahl (ab v6)
  *   [24]     Kackhaufenzahl (ab v7)
- *   ab [25]  je Spieler 15 Byte:
+ *   ab [25]  je Spieler PLAYER_STRIDE = 17 Byte:
  *     id Uint16, team Uint8, alive Uint8,
  *     x Int16 (0.25 px), y Int16 (0.25 px), health Int16 (0.1 HP),
  *     turnFlag Uint8 (1 = am Zug), dirty Uint8 (Bitfeld, siehe DIRTY),
- *     shield Uint8, frozenTurns Uint8, waterLevel Uint8 (Wasserstand 0..255)
+ *     shield Uint8, frozenTurns Uint8, waterLevel Uint8 (Wasserstand 0..255),
+ *     dotsCount Uint8, boostMultiplier Uint8 (Zehntel-Faktor, ab v9)
  *   danach je Projektil 7 Byte: id Uint16, x Int16, y Int16 (0.25 px),
  *     Zünderrest Uint8 (Zehntelsekunden, ab v8)
  *   danach je Kiste 8 Byte (ab v5): id, x, y, Art, Seltenheit
@@ -41,8 +42,14 @@
  *
  * Delta-Encoding: Im `dirty`-Byte markiert der Server, welche Felder sich seit
  * dem letzten an diesen Client gesendeten Snapshot geändert haben. Der Client
- * behält für nicht markierte Felder seine vorherigen Werte. Das spart bei
- * ruhigen Ticks einen Großteil der Nutzlast.
+ * behält für nicht markierte Felder seine vorherigen Werte. Die FELDER werden
+ * dadurch nicht neu berechnet, aber die BYTES bleiben im Puffer: Jeder Spieler
+ * belegt immer PLAYER_STRIDE, unverändert oder nicht. Ein Delta spart deshalb
+ * KEINE Nutzlast — gemessen und festgehalten in
+ * `tests/snapshot-size.test.js` („Ein Delta-Snapshot ist GENAU SO GROSS wie ein
+ * Vollsnapshot"). Wer Bytes sparen will, muss Spieler weglassen; das bräuchte
+ * ein neues Zählfeld bzw. eine neue Protokollversion und ist bewusst NICHT
+ * gebaut, weil v9-Aufzeichnungen und ältere Gegenstellen weiterlaufen müssen.
  *
  * @module protocol
  */
@@ -559,6 +566,14 @@ export function encodeSnapshot(state, { turnRemainingMs = 0, previous = null } =
 /**
  * Dekodiert einen Snapshot. Gibt bei ungültigem Puffer null zurück.
  *
+ * „Ungültig" heißt: kein Datenpuffer, zu kurz für den Kopf, falsche Kennung
+ * oder falsche Protokollversion — und ein ABGESCHNITTENER SPIELERABSCHNITT:
+ * Ohne vollständige Figurenliste wäre der Takt nicht darstellbar (siehe
+ * Begründung im Rumpf). Ein Abschnitt HINTER den Spielern darf fehlen; dann
+ * kommt das Teilergebnis mit `truncated: true` und `truncatedSections`
+ * zurück, statt still Bruchstücke zu liefern. Die Funktion wirft in keinem
+ * Fall — auch nicht bei einem beliebig abgeschnittenen Puffer.
+ *
  * @param {ArrayBuffer|Uint8Array|Buffer|DataView} input
  * @param {Map<number, object>} [previous] - vorheriger Client-Zustand; fehlende
  *   Felder werden daraus übernommen (Delta-Encoding).
@@ -591,10 +606,31 @@ export function decodeSnapshot(input, previous = null) {
 
   let offset = HEADER_SIZE;
   const entities = [];
+  /*
+   * Abgeschnittene Abschnitte werden GEZÄHLT, nicht verschwiegen (SRV-11).
+   *
+   * FUND (belegt, Datenfluss-Audit): Der Kommentar hier versprach eine Prüfung,
+   * die es nicht gab. Der Spielerabschnitt gab bei zu kurzem Puffer stumm
+   * `null` zurück, Kisten/Geschütze brachen still ab, und NIEMAND erfuhr, dass
+   * der Takt unvollständig war — die Anzeige zeigte weniger Figuren, als
+   * übertragen wurden, ohne einen Hinweis. Jetzt steht der Befund im Ergebnis
+   * (`truncated` + `truncatedSections`), und der Client zählt ihn.
+   *
+   * WARUM DER SPIELERABSCHNITT WEITERHIN `null` LIEFERT: Ohne vollständige
+   * Figurenliste wären Positionen und Teams nicht zuzuordnen; ein halber Satz
+   * Figuren würde als „Spieler verschwunden" gezeichnet. Das ist kein
+   * Teilergebnis, sondern ein unbrauchbarer Takt — und der Client verwirft ihn
+   * sichtbar (`snapshot_rejected`). Die übrigen Abschnitte sind dagegen
+   * unabhängig: Was vollständig ankommt, ist brauchbar.
+   */
+  const truncatedSections = [];
+  if (playerCount * PLAYER_STRIDE > view.byteLength - offset) {
+    return null;
+  }
+
   // Rohwerte für den nächsten Delta-Vergleich: exakt das, was übertragen wurde.
   const nextPrevious = new Map();
   for (let i = 0; i < playerCount; i++) {
-    if (offset + PLAYER_STRIDE > view.byteLength) return null;
     const entityId = view.getUint16(offset, true);
     const dirty = view.getUint8(offset + 11);
     const aliveRaw = view.getUint8(offset + 3) === 1;
@@ -647,8 +683,18 @@ export function decodeSnapshot(input, previous = null) {
   }
 
   const projectiles = [];
-  for (let i = 0; i < projectileCount; i++) {
-    if (offset + PROJECTILE_STRIDE > view.byteLength) break;
+  /*
+   * Platz vorab rechnen statt Byte für Byte zu prüfen: `min(count, platz)`
+   * macht aus einem abgeschnittenen Abschnitt einen GEZÄHLTEN Teilerfolg. Die
+   * restlichen Bytes eines unvollständigen Abschnitts werden NICHT als Anfang
+   * des nächsten gelesen — sonst entstünden aus Projektilbytes scheinbar
+   * Kisten an falschen Stellen.
+   */
+  const projectileSpace = Math.max(0, Math.floor((view.byteLength - offset) / PROJECTILE_STRIDE));
+  if (projectileSpace < projectileCount) {
+    truncatedSections.push({ section: 'projectiles', expected: projectileCount, read: projectileSpace });
+  }
+  for (let i = 0; i < Math.min(projectileCount, projectileSpace); i++) {
     projectiles.push({
       entityId: view.getUint16(offset, true),
       x: view.getInt16(offset + 2, true) / COORD_SCALE,
@@ -662,6 +708,8 @@ export function decodeSnapshot(input, previous = null) {
     });
     offset += PROJECTILE_STRIDE;
   }
+  /* Nach einem abgeschnittenen Abschnitt ist keine spätere Grenze verlässlich. */
+  let restLesbar = truncatedSections.length === 0;
 
   /*
    * Kisten stehen NACH den Projektilen — die Reihenfolge muss zu encodeSnapshot
@@ -669,19 +717,22 @@ export function decodeSnapshot(input, previous = null) {
    * unsichtbar wären: `onlineViewState` im Client konnte sie nicht erfinden.
    */
   const crates = [];
-  for (let i = 0; i < crateCount; i++) {
-    // Ein abgeschnittener Puffer beendet die Schleife, statt zu werfen: Ein
-    // halber Snapshot ist besser als ein Absturz, und die Prüfung darüber
-    // erkennt ihn ohnehin.
-    if (offset + CRATE_STRIDE > view.byteLength) break;
-    crates.push({
-      entityId: view.getUint16(offset, true),
-      x: view.getInt16(offset + 2, true) / COORD_SCALE,
-      y: view.getInt16(offset + 4, true) / COORD_SCALE,
-      crateType: view.getUint8(offset + 6),
-      rarity: view.getUint8(offset + 7),
-    });
-    offset += CRATE_STRIDE;
+  if (restLesbar) {
+    const crateSpace = Math.max(0, Math.floor((view.byteLength - offset) / CRATE_STRIDE));
+    if (crateSpace < crateCount) {
+      truncatedSections.push({ section: 'crates', expected: crateCount, read: crateSpace });
+      restLesbar = false;
+    }
+    for (let i = 0; i < Math.min(crateCount, crateSpace); i++) {
+      crates.push({
+        entityId: view.getUint16(offset, true),
+        x: view.getInt16(offset + 2, true) / COORD_SCALE,
+        y: view.getInt16(offset + 4, true) / COORD_SCALE,
+        crateType: view.getUint8(offset + 6),
+        rarity: view.getUint8(offset + 7),
+      });
+      offset += CRATE_STRIDE;
+    }
   }
 
   /*
@@ -690,16 +741,22 @@ export function decodeSnapshot(input, previous = null) {
    * online unsichtbar, und sein Besitzer hätte einen unsichtbaren Angreifer.
    */
   const turrets = [];
-  for (let i = 0; i < turretCount; i++) {
-    if (offset + TURRET_STRIDE > view.byteLength) break;
-    turrets.push({
-      entityId: view.getUint16(offset, true),
-      x: view.getInt16(offset + 2, true) / COORD_SCALE,
-      y: view.getInt16(offset + 4, true) / COORD_SCALE,
-      teamId: view.getUint8(offset + 6),
-      roundsLeft: view.getUint8(offset + 7),
-    });
-    offset += TURRET_STRIDE;
+  if (restLesbar) {
+    const turretSpace = Math.max(0, Math.floor((view.byteLength - offset) / TURRET_STRIDE));
+    if (turretSpace < turretCount) {
+      truncatedSections.push({ section: 'turrets', expected: turretCount, read: turretSpace });
+      restLesbar = false;
+    }
+    for (let i = 0; i < Math.min(turretCount, turretSpace); i++) {
+      turrets.push({
+        entityId: view.getUint16(offset, true),
+        x: view.getInt16(offset + 2, true) / COORD_SCALE,
+        y: view.getInt16(offset + 4, true) / COORD_SCALE,
+        teamId: view.getUint8(offset + 6),
+        roundsLeft: view.getUint8(offset + 7),
+      });
+      offset += TURRET_STRIDE;
+    }
   }
 
   /*
@@ -715,7 +772,7 @@ export function decodeSnapshot(input, previous = null) {
    * besser als ein Absturz.
    */
   const guenther = { aktiv: false, x: 0, y: 0, richtung: 1, haufen: [] };
-  if (offset + GUENTHER_STRIDE <= view.byteLength) {
+  if (restLesbar && offset + GUENTHER_STRIDE <= view.byteLength) {
     guenther.x = view.getInt16(offset, true) / COORD_SCALE;
     guenther.y = view.getInt16(offset + 2, true) / COORD_SCALE;
     guenther.richtung = view.getInt8(offset + 4);
@@ -725,19 +782,33 @@ export function decodeSnapshot(input, previous = null) {
     if (pose) guenther.pose = pose;
     offset += GUENTHER_STRIDE;
 
-    for (let i = 0; i < Math.min(poopCount, MAX_WIRE_POOPS); i++) {
-      if (offset + GUENTHER_POOP_STRIDE > view.byteLength) break;
+    const poopAnzahl = Math.min(poopCount, MAX_WIRE_POOPS);
+    const poopSpace = Math.max(0, Math.floor((view.byteLength - offset) / GUENTHER_POOP_STRIDE));
+    if (poopSpace < poopAnzahl) {
+      truncatedSections.push({ section: 'poops', expected: poopAnzahl, read: poopSpace });
+      restLesbar = false;
+    }
+    for (let i = 0; i < Math.min(poopAnzahl, poopSpace); i++) {
       guenther.haufen.push({
         x: view.getInt16(offset, true) / COORD_SCALE,
         y: view.getInt16(offset + 2, true) / COORD_SCALE,
       });
       offset += GUENTHER_POOP_STRIDE;
     }
+  } else if (restLesbar) {
+    // Der Günther-Block ist PFLICHT (sechs Bytes, auch inaktiv). Fehlt er,
+    // wurde der Puffer abgeschnitten — nicht „kein Günther".
+    truncatedSections.push({
+      section: 'guenther',
+      expected: GUENTHER_STRIDE,
+      read: Math.max(0, view.byteLength - offset),
+    });
+    restLesbar = false;
   }
 
   // Cookie: nur vorhanden, wenn der Sender ihn mitgeschickt hat (Bytes übrig).
   let cookie = null;
-  if (offset + COOKIE_STRIDE <= view.byteLength) {
+  if (restLesbar && offset + COOKIE_STRIDE <= view.byteLength) {
     const flags = view.getUint8(offset + 5);
     cookie = {
       x: view.getInt16(offset, true) / COORD_SCALE,
@@ -747,11 +818,28 @@ export function decodeSnapshot(input, previous = null) {
       pose: COOKIE_POSEN[((flags >> GUENTHER_FLAG.POSE_SHIFT) & GUENTHER_FLAG.POSE_MASK) - 1] ?? 'schlafen',
       hunger: view.getUint8(offset + 6),
     };
+  } else if (restLesbar && offset < view.byteLength) {
+    // 1–6 übrige Bytes sind ein angefangener Cookie-Block, kein vollständiger:
+    // Ein gültiger Sender schreibt entweder alle sieben Bytes oder keines.
+    truncatedSections.push({
+      section: 'cookie',
+      expected: COOKIE_STRIDE,
+      read: view.byteLength - offset,
+    });
   }
 
   return {
     version: PROTOCOL_VERSION,
     isFull,
+    /*
+     * `truncated` ist bei einem vollständigen Takt `false` und sonst `true`;
+     * `truncatedSections` nennt je betroffenem Abschnitt, wie viele Einträge
+     * angekündigt waren und wie viele tatsächlich im Puffer standen. Beides ist
+     * ZUSÄTZLICH — ältere Leser ignorieren die Felder, und ein vollständiger
+     * Takt behält exakt seine bisherige Form.
+     */
+    truncated: truncatedSections.length > 0,
+    ...(truncatedSections.length > 0 ? { truncatedSections } : {}),
     tick,
     round,
     wind,
@@ -770,6 +858,48 @@ export function decodeSnapshot(input, previous = null) {
 /** Erzeugt eine JSON-Steuernachricht mit Protokollversion. */
 export function controlMessage(type, payload = {}) {
   return JSON.stringify({ v: PROTOCOL_VERSION, t: type, ...payload });
+}
+
+/**
+ * Vergleicht eine gemeldete Protokollversion mit `PROTOCOL_VERSION` (SRV-11).
+ *
+ * FUND (belegt, Datenfluss-Audit): Das `v`-Feld eingehender Steuernachrichten
+ * wurde vom Server GELESEN, aber nie geprüft; `WELCOME.protocol` wurde vom
+ * Client nur in `hello` durchgereicht. Eine abweichende Gegenstelle erlebte
+ * damit den schlimmsten Fall: Der binäre Snapshot wird wegen der Version
+ * abgelehnt (schwarzes Bild), die JSON-Steuernachrichten laufen aber weiter —
+ * der Fehler sieht wie ein Netzproblem aus, obwohl die Ursache eine andere
+ * Programmfassung ist.
+ *
+ * Regeln, bewusst ADDITIV:
+ *  - Fehlt die Angabe, gilt sie als „nicht gemeldet" und wird AKZEPTIERT.
+ *    Ältere Aufzeichnungen und Werkzeuge schicken kein `v`; sie dürfen nicht
+ *    plötzlich abgewiesen werden.
+ *  - Steht dort eine andere Zahl, wird die Nachricht abgelehnt — mit beiden
+ *    Zahlen im Text, damit die Ursache sofort dasteht.
+ *
+ * Die Funktion ist rein: Server und Client nutzen dieselbe Regel, statt sie
+ * zweimal zu formulieren.
+ *
+ * @param {unknown} gemeldet - der Wert aus `v` bzw. `protocol`
+ * @returns {null|{gemeldet: number|string, erwartet: number, text: string}}
+ */
+export function pruefeProtokollversion(gemeldet) {
+  if (gemeldet === undefined || gemeldet === null) return null;
+  const zahl = Number(gemeldet);
+  if (Number.isFinite(zahl) && zahl === PROTOCOL_VERSION) return null;
+  if (!Number.isFinite(zahl)) {
+    return {
+      gemeldet: typeof gemeldet === 'string' ? gemeldet : String(gemeldet),
+      erwartet: PROTOCOL_VERSION,
+      text: `Ungültige Protokollversion (${String(gemeldet)}) statt ${PROTOCOL_VERSION}`,
+    };
+  }
+  return {
+    gemeldet: zahl,
+    erwartet: PROTOCOL_VERSION,
+    text: `Protokollversion ${zahl} statt ${PROTOCOL_VERSION} — Server und Client müssen denselben Stand haben`,
+  };
 }
 
 /* ---------------------------------------------------------------------------
