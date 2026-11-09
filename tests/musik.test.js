@@ -357,6 +357,7 @@ test('Hymne: defekte Datei fällt still auf die Menümusik zurück; vor Freigabe
 
 test('Hymne: Lautstärke läuft über die Musik-Steuerung (kein eigener Pegel in main.js)', () => {
   const quelle = readFileSync(resolve(import.meta.dirname, '../src/client/main.js'), 'utf8');
-  assert.ok(quelle.includes('setzeHymne'));
+  // `waehleHymne` ist der Gesten-Weg und ruft intern `setzeHymne` (A14).
+  assert.match(quelle, /\.(setze|waehle)Hymne\(/);
   assert.ok(!/new Audio\(/.test(quelle), 'Hymnen laufen über Musik, nicht über ein eigenes Audio');
 });

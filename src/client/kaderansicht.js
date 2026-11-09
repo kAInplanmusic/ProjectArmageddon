@@ -41,8 +41,21 @@ import './styles/fraktionen.css';
  * Die Bilder kommen aus `roster.js`. Fehlt eines, erscheint an seiner Stelle ein
  * Platzhalter statt eines stillen Ausfalls — bei 81 Dateien bliebe ein fehlendes
  * sonst unbemerkt.
+ *
+ * ## Hymnen (A14)
+ *
+ * Der Reiterwechsel ist eine Fraktionswahl im Menü und reicht sie deshalb an die
+ * Hymnensteuerung weiter (`hymneWaehlen`). Die Steuerung selbst entscheidet, ob
+ * überblendet wird: Ein Klick auf den bereits gewählten Reiter setzt keine neue
+ * Wiedergabe fort, und bei „Musik aus" bleibt es still. Der Kader ist reine
+ * Anzeige — er ändert NICHT die Fraktion für das Match; das tut weiterhin nur
+ * das Fraktionsfeld im Menü.
+ *
+ * @param {object} [optionen]
+ * @param {(id: string) => void} [optionen.hymneWaehlen] - meldet die gewählte
+ *   Fraktions-ID an die Hymnensteuerung (`Musik.waehleHymne`)
  */
-export function buildRosterView() {
+export function buildRosterView({ hymneWaehlen = null } = {}) {
   const reiter = document.getElementById('roster-tabs');
   const liste = document.getElementById('roster-list');
   const info = document.getElementById('roster-info');
@@ -224,6 +237,8 @@ export function buildRosterView() {
     knopf.addEventListener('click', () => {
       gewaehlt = fraktion.id;
       zeichnen();
+      // Erst nach dem Zeichnen: Der Reiter ist die Geste, die Hymne folgt der Wahl.
+      hymneWaehlen?.(fraktion.id);
     });
     reiter.append(knopf);
   }
