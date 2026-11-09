@@ -13,6 +13,8 @@
  * @module figurSheets
  */
 
+import { identitaetsRegeln } from '../shared/config/factions.js';
+
 export const ZELLE = 256;
 export const SPALTEN = 4;
 const ZEILEN = 2;
@@ -45,6 +47,115 @@ function blattMassOk(bild) {
   const b = bild?.naturalWidth || bild?.width;
   const h = bild?.naturalHeight || bild?.height;
   return b === BLATT_B && h === BLATT_H;
+}
+
+// ------------------------------------------------------- Identitätsfreigabe (A03)
+
+/**
+ * Rollen, deren Frame die Identität einer Figur zeigt und damit verrät, wenn
+ * der Generator einen Menschen daraus gemacht hat: Treffer und Niedergestreckt.
+ * Sie werden nur genutzt, wenn die Figur ohnehin ein Menschengesicht hat oder
+ * eine SICHTprüfung sie freigegeben hat.
+ */
+export const IDENTITAETSKRITISCHE_ROLLEN = Object.freeze(['treffer', 'tod']);
+
+/** Freigabestufen eines Manifests — `geprueft` setzt immer eine Sichtprüfung voraus. */
+export const FREIGABE_STUFEN = Object.freeze(['geprueft', 'ungeprueft', 'gesperrt']);
+
+/** Nur eine Sichtprüfung gilt als Nachweis — Farbabstand, Alpha-Bounding-Box oder Dateiexistenz nicht. */
+function sichtgeprueft(identitaet) {
+  return identitaet?.grundlage === 'sichtpruefung';
+}
+
+/**
+ * Filtert die Rollen eines Manifesteintrags gegen die Identitätsregeln der
+ * Figur und gegen die Freigabe im Manifest (A03).
+ *
+ * Regeln, in dieser Reihenfolge:
+ *  1. `identitaet.freigabe === 'gesperrt'` → keine Rolle.
+ *  2. Zellen in `identitaet.gesperrteZellen` sind gesperrt — sowohl die der
+ *     Figur (`CHARACTERS`, sofort gültig) als auch die des Manifesteintrags.
+ *     Ein Gehzyklus, der eine gesperrte Zelle enthält, entfällt ganz (acht
+ *     Frames oder keiner).
+ *  3. `identitaet.rollen[rolle] === false` (oder `{frei:false}`) sperrt die
+ *     Rolle; `true` (oder `{frei:true}`) gibt sie frei — aber nur mit
+ *     `grundlage: 'sichtpruefung'`. Eine Freigabe „per Farbähnlichkeit" zählt
+ *     nicht.
+ *  4. Treffer/Niedergestreckt nur bei menschlichem Gesicht oder Sichtprüfung.
+ *  5. Hocke nur bei Zweibeinern; der Beinenzyklus (`walk`) nur, wenn der
+ *     Bauplan ihn zulässt (`gehzyklus`) oder die Sichtprüfung ihn freigibt.
+ *
+ * Was übrig bleibt, ist im Blatt nutzbar; was wegfällt, lässt `waehleRolle`
+ * auf `null` fallen — dann zeichnet der Renderer das Seitenbild mit der
+ * prozeduralen Animation. Kein Frame wird durch einen ähnlich aussehenden
+ * ersetzt.
+ *
+ * @param {object} charakter - Eintrag aus `CHARACTERS` (Morphologie + Identität)
+ * @param {object|null} eintrag - Eintrag aus `sprite-sheets/manifest.json`
+ * @returns {{gehen: number[]|null, rollen: object, freigabe: string, grund: string, gesperrt: number[]}}
+ */
+export function freigabeFuer(charakter, eintrag) {
+  const regeln = identitaetsRegeln(charakter);
+  const id = eintrag?.identitaet ?? {};
+  const gesperrt = [...new Set([
+    ...regeln.gesperrteZellen,
+    ...(Array.isArray(id.gesperrteZellen) ? id.gesperrteZellen : []),
+  ].filter(zelleOk))];
+  const rollenWahl = id.rollen && typeof id.rollen === 'object' ? id.rollen : {};
+  const aus = {
+    gehen: null,
+    rollen: {},
+    freigabe: id.freigabe === 'gesperrt' ? 'gesperrt' : (sichtgeprueft(id) ? 'geprueft' : 'ungeprueft'),
+    grund: id.grund && typeof id.grund === 'string' ? id.grund : 'keine Freigabe im Manifest',
+    gesperrt,
+  };
+  if (aus.freigabe === 'gesperrt') return aus;
+
+  const gesperrtSet = new Set(gesperrt);
+  const freiFlag = (wahl) => (wahl === true || wahl?.frei === true ? true : (wahl === false || wahl?.frei === false ? false : null));
+  const freiGegeben = (rolle) => freiFlag(rolle === 'walk' ? (id.walk ?? rollenWahl.walk) : rollenWahl[rolle]) === true
+    && sichtgeprueft(id);
+
+  // Gehzyklus: acht Frames oder keiner.
+  const gehen = Array.isArray(eintrag?.gehen) ? eintrag.gehen : null;
+  if (gehen && gehen.length === 8 && gehen.every(zelleOk) && !gehen.some(z => gesperrtSet.has(z))
+    && (regeln.gehzyklus || freiGegeben('walk'))) {
+    aus.gehen = [...gehen];
+  }
+
+  for (const [rolle, wert] of Object.entries(eintrag?.rollen ?? {})) {
+    if (freiFlag(rollenWahl[rolle]) === false) continue;
+    if (rolle === 'hocke' && regeln.beine !== 2) continue;
+    if (IDENTITAETSKRITISCHE_ROLLEN.includes(rolle) && !regeln.gesicht.menschlich && !freiGegeben(rolle)) continue;
+    if (rolle === 'idle') {
+      if (!Array.isArray(wert) || wert.length !== 2 || !wert.every(zelleOk) || wert.some(z => gesperrtSet.has(z))) continue;
+      aus.rollen.idle = [...wert];
+      continue;
+    }
+    if (!zelleOk(wert) || gesperrtSet.has(wert)) continue;
+    aus.rollen[rolle] = wert;
+  }
+  return aus;
+}
+
+/**
+ * Emotionszellen, die gezeigt werden dürfen, oder `null`.
+ *
+ * Die bisherige Zulassung `gueltig` stammt aus einem Farbabstandsvergleich
+ * (`emotion-pruefen.py`) und belegt weder Identität noch Pose — genau der
+ * Einwand aus A03. Sie bleibt deshalb nur eine Vormaske; ohne Sichtprüfung im
+ * Manifest werden keine Emotionsframes gebaut.
+ *
+ * @param {object|null} pruefung - Eintrag aus `sprite-sheets-emotion/manifest.json`
+ * @returns {number[]|null}
+ */
+export function emotionFreigabe(pruefung) {
+  const id = pruefung?.identitaet;
+  if (!sichtgeprueft(id) || id?.freigabe === 'gesperrt') return null;
+  const zellen = Array.isArray(id.zellen) ? id.zellen.filter(zelleOk) : [];
+  const maske = Array.isArray(pruefung?.gueltig) ? pruefung.gueltig : null;
+  const erlaubt = maske ? zellen.filter(z => maske.includes(z)) : zellen;
+  return erlaubt.length > 0 ? erlaubt : null;
 }
 
 const zelleOk = i => Number.isInteger(i) && i >= 0 && i < SPALTEN * ZEILEN;
@@ -155,6 +266,7 @@ export function frameFuer(blatt, rolle, zyklus, schalter) {
   if (!blatt || !rolle) return null;
   switch (rolle) {
     case 'walk': {
+      if (!Array.isArray(blatt.walk) || blatt.walk.length === 0) return null;
       const z = zyklus - Math.floor(zyklus);
       return blatt.walk[Math.min(7, Math.floor(z * 8))];
     }
