@@ -13,18 +13,18 @@
  * „Warte auf Mitspieler: 2/2 Teams besetzt" (`main.js`, Handler für
  * `lobby_state`). Der Test hält die REIHENFOLGE fest, nicht den Text.
  *
- * BEFUND 2 (belegt, OFFEN): Beim Trennen geht an den verbliebenen Spieler KEINE
- * Meldung. Gemessen: In 1,5 s kamen nur Anzeige-Ereignisse (`landed`) und
- * Snapshots. Die Tatsache ist dem Server bekannt — die Lobby-Ansicht führt
- * `connected: 1` und beim Platz `connected: false` — sie geht aber nur über die
- * HTTP-Liste heraus, nie über den WebSocket. Der Client kann die Trennung
- * deshalb nicht anzeigen; im Kader steht der Gegner unverändert als Spieler.
+ * BEFUND 2 (B-9 erledigt, B-9a OFFEN): Beim Trennen ging ursprünglich KEINE
+ * Meldung an den verbliebenen Spieler (gemessen: in 1,5 s nur Anzeige-Ereignisse
+ * und Snapshots). Seit B-9 sendet der Server nach dem `disconnect` einen
+ * aktualisierten `lobby_state` über den vorhandenen Kanal — der Verbliebene
+ * sieht die geänderte Zahl `besetzteTeams`. Was weiterhin FEHLT (B-9a), ist ein
+ * Merkmal JE PLATZ: `lobby_state` nennt nur die Zahl, nicht wer getrennt ist,
+ * und der Client wertet den Zustand mitten im Match nicht als Verbindungsanzeige
+ * aus. Ein solches Merkmal braucht Protokoll- und Client-Änderung (siehe
+ * `docs/TODO.md`, B-9a; Messung in `tests/server-kontrollfluss-a4.test.js`).
  *
- * `tests/server-trennung-ohne-meldung` (dritter Test unten) hält diesen Zustand
- * fest. Er ist ein ZUSTANDS-PIN, kein Wunsch: Sobald der Server die Trennung
- * meldet (neue Steuernachricht + Client-Zweig, beides außerhalb dieser Datei),
- * muss der Test umgestellt werden — gesucht wird dann nicht mehr nach der
- * Abwesenheit, sondern nach der Meldung selbst (`spuren` im Test).
+ * `tests/server-beitritt-und-trennung.test.js` (dritter Test unten) hält den
+ * heutigen Zustand fest: Der Broadcast kommt an, das Platzmerkmal nicht.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -103,7 +103,7 @@ test('Der erste Beitretende bekommt den Wartehinweis, der letzte die Bestätigun
   }
 });
 
-test('ZUSTANDS-PIN: Beim Trennen geht keine Meldung an den verbliebenen Spieler', async () => {
+test('B-9: Beim Trennen kommt ein aktualisierter lobby_state an (B-9a: ohne Platzmerkmal)', async () => {
   const { server, url, wsUrl } = await starteServer();
   try {
     const erstellt = await erstelleLobby(url, { teams: 2, seed: 777, name: 'Host' });

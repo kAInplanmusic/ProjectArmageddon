@@ -307,7 +307,7 @@ test('WERKZEUG-1: audit_bericht überschreibt keine getrackte Datei ohne ausdrü
   assert.equal(BERICHT_STANDARDPFAD.startsWith('artifacts/'), true, 'Vorgabe liegt unter artifacts/ (gitignored)');
   assert.equal(istGetrackt(path.join(ROOT, BERICHT_STANDARDPFAD)), false);
   const paket = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert.doesNotMatch(paket.scripts['audit:bericht'], /docs\/audit-tief\.md/);
+  assert.doesNotMatch(paket.scripts['audit:bericht'], /docs\/TODO\.md/);
 });
 
 // ------------------------------------------------------------------ HTTP-1
