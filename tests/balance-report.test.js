@@ -65,7 +65,7 @@ test('Der Bericht misst den aktuellen Spielvertrag, nicht den Grundkatalog', asy
   const report = await bericht('--only=pa_127');
   const zeile = report.staerkste[0] ?? report.schwaechste[0];
   assert.ok(zeile, 'Keine Messzeile für pa_127');
-  assert.equal(report.konfiguration.waffenfassung, 16);
+  assert.equal(report.konfiguration.waffenfassung, 17);
   assert.equal(report.konfiguration.klassenfassung, 3);
   assert.deepEqual(report.konfiguration.klassenLeben, { nahkampf: 130, fernkampf: 100, okkultist: 70 });
   assert.equal(zeile.name, 'Mine', 'pa_127 trägt noch den alten Plattformnamen');

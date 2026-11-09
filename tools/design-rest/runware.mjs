@@ -165,7 +165,7 @@ const pending = jobs.filter(job => {
 });
 
 async function runJob(job) {
-  const { id: jobId, character, frame, estimatedUsd: _estimated, ...task } = job;
+  const { id: _jobId, character: _character, frame: _frame, estimatedUsd: _estimated, ...task } = job;
   const taskUUID = randomUUID();
   const body = [{ taskType: 'imageInference', taskUUID, ...task }];
   const response = await fetch('https://api.runware.ai/v1', {
