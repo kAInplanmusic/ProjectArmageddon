@@ -2,6 +2,35 @@
 
 Stand: 08.11.2026. Geprüfte Ausgangsbasis: main, Commit 8882aeb35aa064201170a63d9e4c9d6aaca3fbaf (05.11.2026). Repository: https://github.com/kAInplanmusic/ProjectArmageddon
 
+## Umsetzungsstand 09.11.2026 (Text und Anzeige)
+
+Umgesetzt und geprüft sind die redaktionellen und anzeigeseitigen Punkte; die
+Bild- und Animationsarbeit der Muss-Punkte bleibt offen.
+
+- **A07** Anzeigenamen bereinigt: „Nullpointer Exception“ (Pixel) heißt jetzt
+  „Hexfang“, die Arbeitsnamen „Unit A/B“ sind ersetzt (Cinderbyte, Emberfork,
+  Arcspine, Glyphveil, Bastion-09, Cipher Voss, Archon Overflow). Kennungen und
+  Bilddateien sind unverändert; die Zuordnung samt altem Namen steht in
+  `UMBENANNT` (`src/shared/config/factions.js`).
+- **A08** Geschichte und Mechanik getrennt: ein Hinweissatz
+  (`CHARAKTER_PROFIL_HINWEIS`) an einer Stelle, als „Erzähltes Profil
+  (Geschichte, keine Spielwerte)“ angezeigt; Fähigkeitsbehauptungen im
+  Möglichkeits-Modus wurden erzählerisch umgeschrieben.
+- **A09** Fraktionsfarbe und Teamfarbe getrennt: Teamring/Marke/Emblem-Regel in
+  `src/client/teamFarben.js`; Namensschild und HUD-Karte tragen die
+  Eigentümer-Marke „T1/T2“, das Emblem zeigt die Fraktion.
+- **A11** Embleme in Fraktionsauswahl, Ladebild und Ergebnisanzeige angebunden;
+  Lesbarkeit bei 24 px wird im Test aus der Strichstärke gerechnet.
+- **A13** Doppelte Ränge aus den Namen entfernt (Vanguard Rix, Volley Spark,
+  Ninjutsu Goemon); die im Audit genannten Eigenheiten (Akkordeon,
+  Sprengbrille, abnehmbarer Arm, Schaufel) stehen jetzt im Anzeigetext.
+- **A16** Klassenzeichen (Klinge, Projektilvisier, Ritualzeichen) in Kader,
+  Hilfe und HUD — formbasiert, ohne Farbe.
+
+Die Einzelnotizen unten beschreiben weiterhin den Stand vom 08.11.2026; die
+dortigen Namensvorschläge sind mit dem Redaktionslauf vom 09.11.2026
+übernommen.
+
 ## Ergebnis
 
 Die gewünschte Verbindung aus fotorealistischer Landschaft, düsterem zerstörbarem Comicgelände und ausdrucksstarken Fraktionsfiguren passt zur vorhandenen Architektur. Ein Engine-Neubau ist dafür nicht nötig. Der größte Aufwand steckt in verlässlichen Charakteranimationen und besseren Originalbildern. Die vorhandenen Dateien sind zahlenmäßig vollständig, aber nicht durchgängig identitäts- oder stiltreu.
