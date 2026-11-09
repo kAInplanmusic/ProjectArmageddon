@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
  */
 const tokens = readFileSync(new URL('../src/client/styles/tokens.css', import.meta.url), 'utf8');
 const design = readFileSync(new URL('../src/client/styles/design.css', import.meta.url), 'utf8');
+const basis = readFileSync(new URL('../src/client/styles/basis.css', import.meta.url), 'utf8');
 
 function token(name) {
   const m = tokens.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`));
@@ -46,4 +47,9 @@ test('design.css definiert keine eigene Palette mehr (nur tokens.css)', () => {
   assert.ok(!/^:root\s*\{/m.test(design), ':root gehört nach tokens.css');
   assert.match(design, /@import '\.\/tokens\.css'/);
   assert.ok(!/#7cfc00/i.test(design), 'Limette nur über var(--lime)');
+});
+
+test('basis.css (aus index.html) hat keine eigene Palette mehr', () => {
+  assert.ok(!/^:root\s*\{/m.test(basis), ':root gehört nach tokens.css');
+  assert.ok(!/#[0-9a-fA-F]{6}\b/.test(basis), 'keine Sechs-Stellen-Farbwerte in der Grundschicht');
 });
