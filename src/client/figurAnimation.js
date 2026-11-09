@@ -32,6 +32,37 @@ const TREFFER_DAUER = 0.4;
 const TREFFER_FRAME_DAUER = 0.32;
 const ZUG_DAUER = 0.7;
 
+/**
+ * Ersatz, wenn das Aktionsblatt keine Hocke-Zelle hat (Audit A06). Fehlende Rolle
+ * bleibt ein sichtbarer Fallback: es wird **keine** fremde Zelle (Jubel, Winken,
+ * Zwischenschritt) als Hocke ausgegeben. Statt der menschlichen Kniebeuge bekommt
+ * jede Morphologie ihre eigene, plausible Ersatzbewegung:
+ *
+ * - `menschlich`: Zweibeiner beugen die Knie (bisheriges Verhalten).
+ * - `absenken`: Fahrzeug und Schweber senken den Körper bzw. das Rohr; kein Hocken.
+ * - `daempfen`: Tier, Schwarm und Wesen (Tentakel, Schlund) federn gedämpft ab, ohne Kniebeuge.
+ */
+export const HOCKE_ERSATZ = Object.freeze({
+  humanoid: 'menschlich',
+  wesen: 'daempfen',
+  tier: 'daempfen',
+  schwarm: 'daempfen',
+  fahrzeug: 'absenken',
+  schweber: 'absenken',
+});
+
+/**
+ * Hocke-Art einer Figur: `'blatt'` mit eigenem Frame, sonst der Ersatz der Morphologie.
+ *
+ * @param {string} typ - Figurtyp aus `figurTypen.js`
+ * @param {boolean} hatBlattHocke - liegt ein Hocke-Frame aus dem Blatt vor?
+ * @returns {'blatt'|'menschlich'|'absenken'|'daempfen'}
+ */
+export function hockeErsatz(typ, hatBlattHocke) {
+  if (hatBlattHocke) return 'blatt';
+  return HOCKE_ERSATZ[typ] ?? 'menschlich';
+}
+
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const ausOut = u => 1 - (1 - u) * (1 - u) * (1 - u);
 
@@ -60,7 +91,7 @@ function neuerZustand(x, y, jetzt) {
     x, y, t: jetzt, vx: 0, vy: 0, vyVorher: 0, vyMax: 0, faellt: false, lande: 0, phase: 0, blick: 1,
     landeDauer: 0.22, absprungT: 99, inLuft: false,
     schussT: 99, feuerVorher: 0, trefferVorher: 0, hitT: 99, hitDir: 1, hitHaerte: 0.5, hitStaerke: 0,
-    modi: 0, rolle: null, frame: null,
+    modi: 0, rolle: null, frame: null, hockeArt: null,
     aktivVorher: false, zugT: 99, kipp: 0, neig: 0, zielBlick: 0, drehT: 99,
     hpVerz: -1, hpLetzt: -1, hpHalt: 0, ergebnisT: 0,
     pose: { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, flash: 0, tint: 0, neigung: 0, zug: 0, hpVerz: 1 },
@@ -93,7 +124,8 @@ export class FigurPosen {
       z = neuerZustand(entity.x, entity.y, jetzt);
       this.zustaende.set(entity.entityId, z);
     }
-    const par = opt.params ?? PARAMETER.humanoid;
+    const typ = opt.typ ?? 'humanoid';
+    const par = opt.params ?? PARAMETER[typ];
     const id = entity.entityId;
     const p = z.pose;
     const dt = jetzt - z.t;
@@ -159,6 +191,9 @@ export class FigurPosen {
     p.dx = 0; p.dy = 0; p.sx = 1; p.sy = 1; p.rot = 0; p.tint = 0; p.zug = 0;
     z.modi = 0; z.rolle = null; z.frame = null; z.emotion = null;
     const blatt = opt.blatt ?? null;
+    // Hocke-Ersatz je Morphologie: nur ein echter Blatt-Frame gilt als Hocke (A06).
+    const hocke = hockeErsatz(typ, Boolean(blatt?.hocke));
+    z.hockeArt = hocke;
     p.flash = clamp(opt.treffer ?? 0, 0, 1);
 
     if (opt.reduziert) return p;
@@ -178,8 +213,15 @@ export class FigurPosen {
       }
       p.rot = clamp(z.vx / 900, -0.25, 0.25) * (par.sprungStreck > 0.05 ? 1 : 0.6);
       if (z.absprungT < 0.1 && par.sprungHocke > 0) {
-        const h = Math.sin(Math.PI * z.absprungT / 0.1) * par.sprungHocke * (blatt?.hocke ? 0.3 : 1);
-        p.sy -= h; p.sx += h * 0.8;
+        const u = Math.sin(Math.PI * z.absprungT / 0.1);
+        if (hocke === 'absenken') {
+          // Fahrzeug/Schweber: Absenken statt Kniebeuge, kein breiterer Stand.
+          p.dy += par.sprungHocke * 6 * u;
+          p.sy -= par.sprungHocke * 0.2 * u;
+        } else {
+          const h = u * par.sprungHocke * (hocke === 'blatt' ? 0.3 : hocke === 'daempfen' ? 0.45 : 1);
+          p.sy -= h; p.sx += h * 0.8;
+        }
       }
     } else if (lauf) {
       // Mit Gehzyklus im Blatt tragen die Frames Beinarbeit und Wippen; die Prozedur bleibt nur als Hauch.
@@ -195,8 +237,15 @@ export class FigurPosen {
       p.dx += Math.sin(ph * TWO_PI * par.atemHz * 0.5) * par.atemWiegen;
     }
     if (z.lande > 0) {
-      const s = z.lande * z.lande * par.landeStauch * (z.landeStaerke ?? 1) * (blatt?.hocke ? 0.3 : 1);
-      p.sy *= 1 - s; p.sx *= 1 + s * 0.8;
+      const s0 = z.lande * z.lande * par.landeStauch * (z.landeStaerke ?? 1);
+      if (hocke === 'absenken') {
+        // Absenken/Rohrsenkung: der Körper geht kurz nach unten, ohne menschliche Stauchung.
+        p.dy += s0 * 9;
+        p.sy *= 1 - s0 * 0.15;
+      } else {
+        const s = s0 * (hocke === 'blatt' ? 0.3 : hocke === 'daempfen' ? 0.5 : 1);
+        p.sy *= 1 - s; p.sx *= 1 + s * 0.8;
+      }
     }
 
     // Typische Eigenbewegung je Typ.

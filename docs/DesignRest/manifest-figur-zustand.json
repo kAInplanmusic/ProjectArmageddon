@@ -1,0 +1,1112 @@
+{
+ "version": 1,
+ "stand": "2026-11-09",
+ "zweck": "Vorschlag für src/client/assets/sprite-sheets/manifest.json zu Audit A04, A05 und A06. Nicht automatisch übernehmen: die Datei ist die geprüfte Vorlage, das Manifest bleibt unverändert.",
+ "regelA04": "Körper unbewaffnet, Ausrüstung separat am Anker; nur angeborene (Krallen, Mäuler, Tentakel) und fest montierte Teile (Armkanone, Mörserrohr, Kettenlauf) bleiben Körper. waffe=true unterdrückt das zusätzliche Waffen-Sprite.",
+ "regelA05": "zustand bleibt Quellmaterial. Ein hockeQuelle-Eintrag wird nur übernommen, wenn geprueft=true gesetzt ist; erst dann lädt figurenBilder das Zustand-Sheet.",
+ "regelA06": "Fehlende Hocke bleibt ein sichtbarer Fallback (Seitenbild + Prozedur). Fahrzeug/Schweber: absenken, Tier/Schwarm/Wesen: daempfen, Zweibeiner: menschlich. Keine fremde Zelle als Hocke.",
+ "ankerBedarf": {
+  "vorhanden": [
+   "hand",
+   "halterung",
+   "muendung (je Waffe, nicht je Figur)"
+  ],
+  "neu": [
+   {
+    "anker": "maul",
+    "fuer": [
+     "flame-jaws",
+     "plasma-maw-zorg"
+    ],
+    "grund": "Schlund-/Atemwaffe braucht einen figurnahen Mündungspunkt"
+   },
+   {
+    "anker": "ruecken",
+    "fuer": [
+     "quantum-qubit-knight",
+     "ordnance-rail-viper"
+    ],
+    "grund": "Schild bzw. Pfeilköcher sitzen nicht in der Hand"
+   },
+   {
+    "anker": "schwebe",
+    "fuer": [
+     "sonic-blossom",
+     "drone-theta",
+     "cosmic-meditate",
+     "ethereo",
+     "banshee-beatrice",
+     "phantom-mal-a",
+     "harbinger-zeta",
+     "grid-drifter-datastream"
+    ],
+    "grund": "Schwebewesen ohne Hand: Requisit braucht einen Orbit-/Schwebepunkt"
+   },
+   {
+    "anker": "muendungJeFigur",
+    "fuer": [
+     "hydra-titan-mech",
+     "heavy-battery-moerser-bot",
+     "nullpointer-exception-cult"
+    ],
+    "grund": "Körperwaffe feuert aus einem festen Punkt; der Mündungsblitz sitzt derzeit nur am Waffen-Sprite"
+   }
+  ]
+ },
+ "fehlendeHocke": [
+  "beasts/10_flame-jaws",
+  "beasts/22_sonic-blossom",
+  "datacult/20_buffer-flow-swarm",
+  "machina/11_heavy-battery-moerser-bot",
+  "machina/20_grid-drifter-datastream",
+  "machina/22_overlord-kernel-panic",
+  "pirates/20_voodoo-witch-morgana",
+  "pixel/02_pyrofox-b",
+  "pixel/12_shieldmon",
+  "pixel/20_phantomal-a",
+  "pixel/22_arcanus-b",
+  "rodentia/00_commander-chewk",
+  "rodentia/02_vanguard-captain-rix",
+  "rodentia/10_sharpshooter-quill",
+  "rodentia/12_volley-captain-spark",
+  "rodentia/20_alchemage-nibble",
+  "rodentia/22_grand-conduit-vex",
+  "shinobi/11_rauch-meister-genzi",
+  "undead/11_pitcher-igor",
+  "xeno/01_stalker-predax",
+  "xeno/11_desintegrator-kael",
+  "xeno/20_harbinger-zeta"
+ ],
+ "figuren": {
+  "beasts/00_pikamon": {
+   "id": "pikamon",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/01_shrew-quakes": {
+   "id": "shrew-quakes",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/02_storm-talon": {
+   "id": "storm-talon",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/10_flame-jaws": {
+   "id": "flame-jaws",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "angeboren",
+    "was": "Flammschlund und Krallen",
+    "anker": "maul",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "daempfen",
+    "zustandZelle0": {
+     "befund": "tiefe Vierbeinerhaltung, keine Wasserspritzer",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "zustand zeigt vierbeinige Haltung, das Aktionsblatt eine aufrechte; Anatomie weicht ab"
+    }
+   }
+  },
+  "beasts/11_ember-tails": {
+   "id": "ember-tails",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/12_magma-plate": {
+   "id": "magma-plate",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/20_decay-spawn": {
+   "id": "decay-spawn",
+   "typ": "wesen",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/21_cosmic-meditate": {
+   "id": "cosmic-meditate",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "beasts/22_sonic-blossom": {
+   "id": "sonic-blossom",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "angeboren",
+    "was": "Blütenkörper und Ranken",
+    "anker": "schwebe",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "absenken",
+    "zustandZelle0": {
+     "befund": "kniende Blütenfigur",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "Schwebewesen ohne Standlinie; Zelle nicht als Hocke belegt"
+    }
+   }
+  },
+  "datacult/00_nullpointer-exception": {
+   "id": "nullpointer-exception-cult",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "montiert",
+    "was": "Kanonenarm",
+    "anker": "halterung",
+    "waffe": true
+   }
+  },
+  "datacult/01_datapath-replicant": {
+   "id": "datapath-replicant",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "datacult/02_chrome-code-shifter": {
+   "id": "chrome-code-shifter",
+   "typ": "wesen",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "datacult/10_quantum-qubit-knight": {
+   "id": "quantum-qubit-knight",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "Schild am Rücken, Energieklinge in der Hand",
+    "anker": "ruecken",
+    "waffe": false
+   }
+  },
+  "datacult/11_synapse-streamer": {
+   "id": "synapse-streamer",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "datacult/12_arcology-agent": {
+   "id": "arcology-agent",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "datacult/20_buffer-flow-swarm": {
+   "id": "buffer-flow-swarm",
+   "typ": "schwarm",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "daempfen",
+    "zustandZelle0": {
+     "befund": "Insektenschwarm dicht über dem Boden",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "Schwarm ohne Gliedmaßen; Hocken ist keine sinnvolle Rolle"
+    }
+   }
+  },
+  "datacult/21_hyper-link-hound": {
+   "id": "hyper-link-hound",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "datacult/22_ethereo": {
+   "id": "ethereo",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "machina/00_chassis-endo-t8": {
+   "id": "chassis-endo-t8",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "machina/01_slasher-cyber-jax": {
+   "id": "slasher-cyber-jax",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "machina/02_hydra-titan-mech": {
+   "id": "hydra-titan-mech",
+   "typ": "fahrzeug",
+   "ausruestung": {
+    "art": "montiert",
+    "was": "Armkanone",
+    "anker": "halterung",
+    "waffe": true
+   }
+  },
+  "machina/10_recon-luchs-01": {
+   "id": "recon-luchs-01",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "machina/11_heavy-battery-moerser-bot": {
+   "id": "heavy-battery-moerser-bot",
+   "typ": "fahrzeug",
+   "ausruestung": {
+    "art": "montiert",
+    "was": "Mörserrohr auf Kettenfahrwerk",
+    "anker": "halterung",
+    "waffe": true
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "absenken",
+    "zustandZelle0": {
+     "befund": "Kettenfahrwerk tief, keine Wasserspritzer",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "kein Hocken möglich; Absenken und Rohrsenkung sind die richtige Ersatzbewegung"
+    }
+   }
+  },
+  "machina/12_ordnance-rail-viper": {
+   "id": "ordnance-rail-viper",
+   "typ": "fahrzeug",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "machina/20_grid-drifter-datastream": {
+   "id": "grid-drifter-datastream",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "absenken",
+    "zustandZelle0": {
+     "befund": "kniende Schwebeform",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "Schweber; Zelle zeigt keine Absenkhaltung, Identität der Beine unklar"
+    }
+   }
+  },
+  "machina/21_proxy-glitch-hack": {
+   "id": "proxy-glitch-hack",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "machina/22_overlord-kernel-panic": {
+   "id": "overlord-kernel-panic",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehende Robe",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose vorhanden"
+    }
+   }
+  },
+  "pirates/00_captain-sven": {
+   "id": "captain-sven",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/01_swashbuckler-piet": {
+   "id": "swashbuckler-piet",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/02_iron-hook-harry": {
+   "id": "iron-hook-harry",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "montiert",
+    "was": "Hakenprothese statt Hand",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/10_cannoneer-klaus": {
+   "id": "cannoneer-klaus",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/11_sniper-marie": {
+   "id": "sniper-marie",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/12_bombard-billy": {
+   "id": "bombard-billy",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/20_voodoo-witch-morgana": {
+   "id": "voodoo-witch-morgana",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "kniende Hexe mit Hut und Robe",
+     "kandidat": true,
+     "geprueft": false,
+     "grund": "Kauerpose brauchbar; Freigabe erst nach Einzelbildabnahme gegen die Seitenansicht"
+    }
+   }
+  },
+  "pirates/21_storm-schamane-hooky": {
+   "id": "storm-schamane-hooky",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pirates/22_chanteyman-drake": {
+   "id": "chanteyman-drake",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pixel/00_nullpointer-exception": {
+   "id": "nullpointer-exception",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pixel/01_pyrofox-a": {
+   "id": "pyrofox-a",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pixel/02_pyrofox-b": {
+   "id": "pyrofox-b",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "daempfen",
+    "zustandZelle0": {
+     "befund": "Fuchs tief am Boden",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "zustand ohne Hose und Rüstungsteile der Seitenansicht; Identität weicht ab"
+    }
+   }
+  },
+  "pixel/10_arcershorn-a": {
+   "id": "arcershorn-a",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pixel/11_pyrowand-a": {
+   "id": "pyrowand-a",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pixel/12_shieldmon": {
+   "id": "shieldmon",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "daempfen",
+    "zustandZelle0": {
+     "befund": "gepanzertes Tier stehend",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose; Panzerplatten decken die Beinstellung zusätzlich"
+    }
+   }
+  },
+  "pixel/20_phantomal-a": {
+   "id": "phantom-mal-a",
+   "typ": "wesen",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "daempfen",
+    "zustandZelle0": {
+     "befund": "Tentakelwesen",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Beine; Dämpfen statt Hocken"
+    }
+   }
+  },
+  "pixel/21_arcanus-a": {
+   "id": "arcanus-a",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "pixel/22_arcanus-b": {
+   "id": "arcanus-b",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehender Krieger",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "rodentia/00_commander-chewk": {
+   "id": "commander-chewk",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "Kauerpose mit Hand am Boden",
+     "kandidat": true,
+     "geprueft": false,
+     "grund": "Pose brauchbar; Stiefel und Rüstungsdetails weichen von der Seitenansicht ab"
+    }
+   }
+  },
+  "rodentia/01_berzerker-fang": {
+   "id": "berzerker-fang",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "rodentia/02_vanguard-captain-rix": {
+   "id": "vanguard-captain-rix",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehend",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "rodentia/10_sharpshooter-quill": {
+   "id": "sharpshooter-quill",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehend",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "rodentia/11_grenadier-skitter": {
+   "id": "grenadier-skitter",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "rodentia/12_volley-captain-spark": {
+   "id": "volley-captain-spark",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehend",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "rodentia/20_alchemage-nibble": {
+   "id": "alchemage-nibble",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehend, Arme ausgestellt",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "rodentia/21_technomancer-squeak": {
+   "id": "technomancer-squeak",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "rodentia/22_grand-conduit-vex": {
+   "id": "grand-conduit-vex",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehend in Robe",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "shinobi/00_shred-katana-hanzmon": {
+   "id": "shred-katana-hanzmon",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/01_kunoichi-wind-flapper": {
+   "id": "kunoichi-wind-flapper",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/02_tetsubo-oni-brute": {
+   "id": "tetsubo-oni-brute",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/10_dazzler-werner": {
+   "id": "dazzler-werner",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/11_rauch-meister-genzi": {
+   "id": "rauch-meister-genzi",
+   "typ": "fahrzeug",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "absenken",
+    "zustandZelle0": {
+     "befund": "Kettenfahrzeug mit Dampfwolke",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "Fahrzeug; Absenken statt Hocken, Dampf ist eingebrannt"
+    }
+   }
+  },
+  "shinobi/12_blowpipe-koga": {
+   "id": "blowpipe-koga",
+   "typ": "wesen",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/20_ninjutsu-master-goemon": {
+   "id": "ninjutsu-master-goemon",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/21_talisman-sorcerer-jun": {
+   "id": "talisman-sorcerer-jun",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "shinobi/22_vixen-kitsune": {
+   "id": "vixen-kitsune",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/00_bone-racker-karl": {
+   "id": "bone-racker-karl",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/01_grave-zombie-kauer": {
+   "id": "grave-zombie-kauer",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/02_grim-reaper-silas": {
+   "id": "grim-reaper-silas",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/10_archer-mortis": {
+   "id": "archer-mortis",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/11_pitcher-igor": {
+   "id": "pitcher-igor",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "geducktes Skelett, Hände am Boden",
+     "kandidat": true,
+     "geprueft": false,
+     "grund": "Pose und Identität passen; Freigabe erst nach Einzelbildabnahme"
+    }
+   }
+  },
+  "undead/12_vessel-plague-skull": {
+   "id": "vessel-plague-skull",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/20_lich-king-alistair": {
+   "id": "lich-king-alistair",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/21_scribe-necro-silas": {
+   "id": "scribe-necro-silas",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "undead/22_banshee-beatrice": {
+   "id": "banshee-beatrice",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "xeno/00_sgt-acid-xeno": {
+   "id": "sgt-acid-xeno",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "angeboren",
+    "was": "Säurespitzen und Chitinpanzer",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "xeno/01_stalker-predax": {
+   "id": "stalker-predax",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "angeboren",
+    "was": "Unterarmklingen",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "geduckte Jägerhaltung",
+     "kandidat": true,
+     "geprueft": false,
+     "grund": "Pose passend; Klingen müssen in der Zelle sichtbar bleiben"
+    }
+   }
+  },
+  "xeno/02_vortex-grabber": {
+   "id": "vortex-grabber",
+   "typ": "wesen",
+   "ausruestung": {
+    "art": "angeboren",
+    "was": "Greiftentakel",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "xeno/10_drone-theta": {
+   "id": "drone-theta",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "xeno/11_desintegrator-kael": {
+   "id": "desintegrator-kael",
+   "typ": "humanoid",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "menschlich",
+    "zustandZelle0": {
+     "befund": "stehend, Umhang",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "keine Kauerpose"
+    }
+   }
+  },
+  "xeno/12_plasma-maw-zorg": {
+   "id": "plasma-maw-zorg",
+   "typ": "tier",
+   "ausruestung": {
+    "art": "angeboren",
+    "was": "Plasmamaul",
+    "anker": "maul",
+    "waffe": false
+   }
+  },
+  "xeno/20_harbinger-zeta": {
+   "id": "harbinger-zeta",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   },
+   "hocke": {
+    "imAktionsblatt": false,
+    "ersatz": "absenken",
+    "zustandZelle0": {
+     "befund": "tief schwebend",
+     "kandidat": false,
+     "geprueft": false,
+     "grund": "Schweber; keine Standlinie, Absenken statt Hocken"
+    }
+   }
+  },
+  "xeno/21_dark-matter-witch": {
+   "id": "dark-matter-witch",
+   "typ": "schweber",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  },
+  "xeno/22_null-entity-quark": {
+   "id": "null-entity-quark",
+   "typ": "wesen",
+   "ausruestung": {
+    "art": "getrennt",
+    "was": "gehaltene Waffe",
+    "anker": "hand",
+    "waffe": false
+   }
+  }
+ }
+}

@@ -21,7 +21,7 @@ import { iconUrlFor } from '../shared/config/weapons.js';
 import { KOLLISIONSANKER } from '../shared/config/factions.js';
 import { spriteUrl } from './roster.js';
 import { CACHE_KANTE, STUFEN, stufeBauen } from './figurStufen.js';
-import { blattBauen, emotionBauen, emotionFreigabe, freigabeFuer } from './figurSheets.js';
+import { blattBauen, emotionBauen, emotionFreigabe, freigabeFuer, zustandHockeZelle } from './figurSheets.js';
 import { ladeBild } from './dom.js';
 
 export { STUFEN, stufeFuer, tonung, verkleinere } from './figurStufen.js';
@@ -110,6 +110,10 @@ async function lade(eintraege, charakter) {
  * Die Rollen laufen durch `freigabeFuer`: Frames ohne Identitätsfreigabe oder mit
  * einem Bauplan, den die Figur nicht hat (Beinenzyklus am Kettenfahrzeug), werden
  * gar nicht erst gebaut. `fig.freigabe` hält das Ergebnis für Prüfwerkzeuge fest.
+ *
+ * `__zustand.webp` ist Quellmaterial (Anatomieabweichungen, eingebrannte Wasserspritzer) und wird
+ * nur angefasst, wenn das Manifest eine Hocke-Zelle ausdrücklich freigegeben hat. Ohne Freigabe
+ * entsteht kein Request — eine tote Datei wird so nicht als Animation ausgegeben (Audit A05).
  */
 async function ladeBlatt(fig, charakter) {
   try {
@@ -118,9 +122,11 @@ async function ladeBlatt(fig, charakter) {
     if (!e) return;
     const freigabe = freigabeFuer(charakter, e);
     fig.freigabe = freigabe;
+    const zustandZelle = zustandHockeZelle(e);
     const urls = [BLATT_BILDER[`./assets/sprite-sheets/${e.walk}`], BLATT_BILDER[`./assets/sprite-sheets/${e.aktion}`]];
-    const [walk, aktion] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
-    const blatt = blattBauen({ ...e, gehen: freigabe.gehen ?? undefined, rollen: freigabe.rollen }, walk, aktion);
+    if (zustandZelle !== null) urls.push(BLATT_BILDER[`./assets/sprite-sheets/${e.zustand}`]);
+    const [walk, aktion, zustand] = await Promise.all(urls.map(async (l) => (l ? ladeBild(await l()).catch(() => null) : null)));
+    const blatt = blattBauen({ ...e, gehen: freigabe.gehen ?? undefined, rollen: freigabe.rollen }, walk, aktion, undefined, zustand ?? null);
     if (blatt.walk || blatt.idle) fig.blatt = blatt;
     // Nur Figuren mit SICHTgeprüfter Freigabe im Manifest bekommen Emotionen; die
     // Farbnäherung (`gueltig`) allein ist kein Identitätsnachweis.

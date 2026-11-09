@@ -8,8 +8,10 @@
  * dass es jemand merkte. Dieses Skript macht dieselben Messungen ausführbar.
  *
  * GEMESSEN wird (nicht geschätzt):
- *   1. Vollständigkeit: 9 Fraktionen × 9 Figuren × 3 Blätter (aktion/walk/zustand),
- *      jedes Blatt 1024×512, Raster 4 Spalten × 2 Zeilen à 256 px, jede Zelle gefüllt.
+ *   1. Vollständigkeit: 9 Fraktionen × 9 Figuren × 2 Animationsblätter (aktion/walk) plus
+ *      je ein Zustand-Sheet als Quellmaterial; jedes Blatt 1024×512, Raster 4 Spalten ×
+ *      2 Zeilen à 256 px, jede Zelle gefüllt. Zustand-Zellen sind keine Spielanimation
+ *      (Anatomieabweichungen, eingebrannte Wasserspritzer), siehe Audit A05.
  *   2. Rand: Zählt Zellen, in denen Deckung die Zellkante berührt — eine Figur, die
  *      am Rand abgeschnitten ist, verliert dort Gliedmaßen.
  *   3. Fragmente: Zusammenhängende Deckungsflächen je Zelle. Viele kleine Splitter

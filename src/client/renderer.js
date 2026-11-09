@@ -48,6 +48,7 @@ import { bereichInKarte } from './sichtbereich.js';
 import { charakterFuer, KLASSISCH } from '../shared/config/darstellung.js';
 import { istKlassenfassungNeu } from '../shared/config/klassen-fassung.js';
 import { holeFigur, holeWaffenIkone } from './figurenBilder.js';
+import { ausruestungFuer, waffeAmKoerper } from './figurAusruestung.js';
 import { FigurEffekte } from './figurEffekte.js';
 import { PARAMETER, typFuer } from './figurTypen.js';
 import { FACTIONS } from '../shared/config/factions.js';
@@ -1342,19 +1343,24 @@ export class Renderer {
         const fussWelt = entity.y + zuck.dy + FUSS_ABSTAND;
         // Gehaltene Waffe: ihr Sprite am Zielstrahl (je nach Lage vor oder hinter dem Körper); ohne Sprite die Ikone.
         const waffe = this.waffe(entity.activeWeaponId);
-        const waffenSprite = waffe ? holeWaffenSprite(waffe) : null;
+        const waffenSpriteAlle = waffe ? holeWaffenSprite(waffe) : null;
+        // Fest montierte Körperwaffen (Armkanone, Mörserrohr) werden nicht ein zweites Mal gezeichnet (A04).
+        const koerperWaffe = Boolean(waffe) && waffeAmKoerper(charakter?.id);
+        // Sprite bleibt für die Waffenparameter (Rückstoß, Ausfallschritt) geladen, wird aber
+        // nicht gezeichnet, wenn der Körper die Waffe schon trägt.
+        const waffenSprite = koerperWaffe ? null : waffenSpriteAlle;
         /*
          * W07: Nicht jede aktive Waffe wird gehalten. Beschwörungen,
          * Aufstellobjekte und Selbstanwendungen haben ihre eigene Darstellung
          * (Weltobjekt, Aura); Rucksäcke liegen am Rücken. Nur `hand` und
          * `geschoss` bekommen Arm und Faust.
          */
-        const rolle = waffe ? waffenRolle(waffe, undefined, waffenSprite) : 'ui';
+        const rolle = koerperWaffe ? 'koerper' : (waffe ? waffenRolle(waffe, undefined, waffenSprite) : 'ui');
         rollenWert = rolle;
         const gehalten = rolle === 'hand' || rolle === 'geschoss';
         const getragen = gehalten || rolle === 'ruecken';
-        const ikone = waffe && !waffenSprite && gehalten ? holeWaffenIkone(waffe) : null;
-        const waffenPar = waffenSprite && getragen ? parameterFuerWaffe(waffe, waffenSprite) : null;
+        const ikone = waffe && !koerperWaffe && !waffenSprite && gehalten ? holeWaffenIkone(waffe) : null;
+        const waffenPar = waffenSpriteAlle && getragen ? parameterFuerWaffe(waffe, waffenSpriteAlle) : null;
         const pose = this.figurPosen.pose(entity, jetzt, {
           reduziert: this.reducedMotion, treffer, haerte: marke?.haerte, rueck: -rueck, winkel: angle, aktiv: isActive, stoss: marke?.stoss, stossStaerke: marke?.stossStaerke,
           feuer: feuerLeben, params: par, typ, blatt: fig.blatt,
@@ -1365,6 +1371,7 @@ export class Renderer {
         });
         const zs = this.figurPosen.zustand(entity.entityId);
         zs.fig = fig; zs.team = color; zs.winkel = angle; zs.nass = entity.waterLevel ?? 0; zs.typ = typ;
+        zs.ausruestung = ausruestungFuer(charakter?.id).art;
         // Wasserlinie an der Figur (lokale Höhe im Figurrahmen) und Blasen beim Waten.
         let wasserY;
         if ((entity.waterLevel ?? 0) > 0.03) {
@@ -1374,7 +1381,7 @@ export class Renderer {
             this.figurEffekte.blasen(entity.x, wy + 2, 2);
           }
         }
-        const hinterKoerper = getragen && waffenPar?.lage === 'hinter';
+        const hinterKoerper = !koerperWaffe && getragen && waffenPar?.lage === 'hinter';
         if (hinterKoerper) {
           spriteWaffe = true;
           this.ctx.save();
@@ -1406,7 +1413,7 @@ export class Renderer {
           this.ctx.save();
           this.ctx.translate(0, FIGUR_HOCH);
           this.ctx.scale(FIGUR_SKALA, FIGUR_SKALA);
-          zeichneRohr(this.ctx, rohrParam);
+          if (!koerperWaffe) zeichneRohr(this.ctx, rohrParam);
           this.ctx.restore();
         }
         // Selbstwirkung oder Nahkampf: kurzer Aura-Ring beim Einsatz, einmal an
