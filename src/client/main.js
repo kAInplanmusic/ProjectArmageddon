@@ -119,6 +119,7 @@ import {
   emblem,
 } from '../shared/achievements.js';
 import { buildRosterView, buildHilfeView, beschreibeWert } from './kaderansicht.js';
+import { fraktionsEmblem, starteLadebild, zeigeSiegerFraktion } from './fraktionsAnzeige.js';
 import { wirkungLabel } from '../shared/config/wirkungstexte.js';
 
 /** Schlüssel des Profils im lokalen Speicher des Browsers. */
@@ -178,8 +179,8 @@ const PLANETEN_KULISSE_URLEN = Object.fromEntries(
 );
 
 class Game {
-  /** LADEZEIT: Stofftexturen und Effekt-Sheets sind angestoßen (einmal; siehe `#ladeMatchBilder`). */
-  #matchBilderAngestossen = false;
+  /** LADEZEIT: Lauf von Stofftexturen und Effekt-Sheets (einmal; siehe `#ladeMatchBilder`). */
+  #matchBilderLauf = null;
 
   constructor() {
     planetenBilder.setzeUrls(PLANETEN_KULISSE_URLEN);
@@ -949,7 +950,7 @@ class Game {
         auswahl.append(o);
       }
       auswahl.value = alt[t] ?? '';
-      zeile.append(label, auswahl);
+      zeile.append(label, auswahl, fraktionsEmblem(auswahl)); // Emblem neben der Auswahl (A11)
       behaelter.append(zeile);
     }
   }
@@ -1334,16 +1335,16 @@ class Game {
   }
 
   /**
-   * LADEZEIT: Bilder, die erst das Match braucht — rund 90 Stofftexturen (~7 MB, je Bild Dekodieren plus
-   * Pixel auslesen im Hauptfaden) und die Effekt-Sheets (~1,2 MB). Vorher luden sie im Konstruktor, also
-   * gleichzeitig mit dem Menü, das dabei schon bedienbar sein sollte. Jetzt: im Leerlauf nach dem
-   * Menüaufbau oder beim Matchstart, je nachdem, was zuerst kommt. Reine Darstellung.
+   * LADEZEIT: Bilder, die erst das Match braucht — rund 90 Stofftexturen (~7 MB) und die Effekt-Sheets
+   * (~1,2 MB). Sie luden früher im Konstruktor, gleichzeitig mit dem Menü. Jetzt im Leerlauf nach dem
+   * Menüaufbau oder beim Matchstart. Reine Darstellung; das Versprechen trägt das Ladebild (A11).
    */
   #ladeMatchBilder() {
-    if (this.#matchBilderAngestossen) return;
-    this.#matchBilderAngestossen = true;
-    void ladeStoffTexturen(STOFF_TEXTUR_URLEN).then(() => this.renderer.faerbeNachTexturen()); // ggf. nachfärben
+    if (!this.#matchBilderLauf) {
+      this.#matchBilderLauf = ladeStoffTexturen(STOFF_TEXTUR_URLEN).then(() => this.renderer.faerbeNachTexturen()).catch(() => 0); // ggf. nachfärben
+    }
     this.renderer.sheets.vorladen();
+    return this.#matchBilderLauf;
   }
 
   startMatch({
@@ -1356,10 +1357,10 @@ class Game {
      * Sie kommt aus DIESEM Aufruf, nicht aus den Menüfeldern (die können inzwischen
      * anders stehen). `seed` fehlt bewusst; den liefert `#seedFuerRevanche`.
      */
+    const ladeBereit = this.#ladeMatchBilder();
     this.letzteMatchKonfiguration = {
       teams, playersPerTeam, preset, kartentyp, backdropKey, sidegrades, loadouts, fraktionen, biom, kartenart,
     };
-    this.#ladeMatchBilder();
     this.network?.disconnect();
     this.network = null;
     this.#setzeZugpauseZurueck();
@@ -1380,6 +1381,8 @@ class Game {
     this.renderer.setzeWaffenFassung(this.match.waffen);
     // Darstellung: Fraktion je Team (nur Anzeige, wirkt nicht auf den Motor).
     this.renderer.fraktionJeTeam = loeseFraktionen(fraktionen, teams, this.match.seedManager.baseSeed);
+    starteLadebild(document, this.renderer.fraktionJeTeam, ladeBereit); // Ladebild (A11)
+
     // Kulisse ZUERST: sie bestimmt die Bodenfarbe, und das Gelände wird mit
     // dieser Farbe gezeichnet. In umgekehrter Reihenfolge trüge die frische
     // Karte noch die Bodenfarbe der vorigen Kulisse.
@@ -3161,6 +3164,7 @@ class Game {
     this.winnerText.style.color = winnerTeamId === null || winnerTeamId === undefined
       ? '#e8eef5'
       : TEAM_COLORS[winnerTeamId % TEAM_COLORS.length];
+    zeigeSiegerFraktion(document, this.renderer?.fraktionJeTeam, winnerTeamId);
     this.endSummary.textContent = this.mode === 'online'
       ? `Online-Match — Lobby ${this.network?.lobbyId ?? '-'}, ${this.network?.latencyMs ?? 0} ms`
       : `${this.match.round} Runden, ${this.match.world.tickCount} Simulationsticks, Seed ${this.match.seedManager.baseSeed}`;

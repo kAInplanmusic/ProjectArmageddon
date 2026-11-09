@@ -649,11 +649,17 @@ function balkenFarbe(anteil) {
  * Verzögerungsleiste (weicher Abbau). Statussymbole (Gift/Brand, Verstärkung)
  * sitzen rechts neben der Pille. Heller Text, Kontrast über 12:1.
  *
+ * A09: Das Schild trägt ZWEI Aussagen getrennt — die Eigentümer-Marke („T1“)
+ * und den Rahmen/Punkt in der Teamfarbe für den Besitz, den Zierring in der
+ * Fraktionsfarbe für die Fraktion. Zwei Spieler derselben Fraktion bleiben
+ * dadurch auch dann unterscheidbar, wenn sie denselben Anzeigenamen führen.
+ *
  * @param {CanvasRenderingContext2D} ctx - in Kartenkoordinaten
- * @param {object} [extra] - `verz` (Verzögerungsanteil), `akzent` (Fraktionsfarbe), `gift` (Anzahl), `boost` (Faktor), `zeit` (s)
+ * @param {object} [extra] - `verz` (Verzögerungsanteil), `akzent` (Fraktionsfarbe), `teamMarke` (z. B. „T1"), `gift` (Anzahl), `boost` (Faktor), `zeit` (s)
  */
 export function zeichneNamensschild(ctx, x, anker, label, anteil, teamFarbe, aktiv, s = 1, platz = null, extra = null) {
-  const text = String(label ?? '').slice(0, 12);
+  const marke = extra?.teamMarke ? `${extra.teamMarke} · ` : '';
+  const text = `${marke}${String(label ?? '').slice(0, 12)}`;
   const gift = extra?.gift > 0;
   const boost = extra?.boost > 1.001;
   const mali = extra?.mali ?? [];

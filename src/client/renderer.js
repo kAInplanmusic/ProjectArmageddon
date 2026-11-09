@@ -10,6 +10,7 @@
  */
 import { WATER_SCALE } from '../engine/match.js';
 import { TEAM_COLORS } from '../engine/match.js';
+import { teamMarke } from './teamFarben.js';
 import { paletteFor, DEFAULT_TERRAIN_PALETTE } from '../shared/config/backdrops.js';
 import { GUENTHER_IDENTITY } from '../shared/config/guenther.js';
 import { cookieStufe, COOKIE_HUNGER } from '../shared/config/cookie.js';
@@ -1633,6 +1634,7 @@ export class Renderer {
       {
         verz: spriteSkala ? (this.figurPosen.zustand(entity.entityId)?.pose.hpVerz ?? ratio) : ratio,
         akzent: fraktion ? this.akzentJeFraktion.get(fraktion) : null,
+        teamMarke: teamMarke(entity.teamId),
         gift: (entity.dotsCount ?? 0) < MALI_LEITUNGSMARKE ? (entity.dotsCount ?? 0) : 0,
         mali: (entity.dotsCount ?? 0) >= MALI_LEITUNGSMARKE ? maliMarken({ mali: maskeZuMali(entity.dotsCount & ~MALI_LEITUNGSMARKE) }) : [],
         boost: entity.boostMultiplier ?? 1,

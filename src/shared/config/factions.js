@@ -106,6 +106,57 @@ export const MORPHOLOGIEN = Object.freeze({
 });
 
 /**
+ * Trennlinie zwischen Geschichte und Spielmechanik (Audit A08).
+ *
+ * Die Texte je Figur stammen aus einer Fassung mit individuellen Rollen. Im
+ * Match wirken aber ausschließlich das Klassenprofil (`classes.js`), die
+ * gewählte Ausrüstung und die Sidegrades. Individuelle Fähigkeiten — Tarnen,
+ * Heranziehen, Schwarmsehen und was die Biografien sonst erzählen — sind NICHT
+ * simuliert. Dieser Satz steht deshalb als eine Quelle hier und wird in der
+ * Anzeige verwendet, statt an jeder Stelle neu formuliert zu werden.
+ */
+export const CHARAKTER_PROFIL_HINWEIS = 'Biografie, Signaturwaffe, Stärken und Schwächen '
+  + 'erzählen die Geschichte der Figur. Im Match wirken ausschließlich ihre Klasse '
+  + '(Leben, Schaden, Bewegung) und die gewählte Ausrüstung. Individuelle Fähigkeiten '
+  + 'aus diesen Texten sind nicht simuliert.';
+
+/**
+ * Redaktionell geänderte Anzeigenamen (Audit A07/A13).
+ *
+ * Kennung und Bilddatei bleiben stabil — nur der Anzeigename weicht ab. Der
+ * Eintrag hält fest, wie die Figur vorher hieß, damit Replays, Notizen und
+ * Bilddateien weiter zuordenbar sind. Der Test `figuren-redaktion` verlangt den
+ * Eintrag für jeden Namen, der nicht mehr zum Dateistamm passt.
+ */
+export const UMBENANNT = Object.freeze({
+  'nullpointer-exception': Object.freeze({
+    vorher: 'Nullpointer Exception',
+    grund: 'Doppelname mit dem Datenkult-Roboter; der Kultname bleibt fachlich passend',
+  }),
+  'pyrofox-a': Object.freeze({ vorher: 'Pyrofox (Unit A)', grund: 'Arbeitsname „Unit A“' }),
+  'pyrofox-b': Object.freeze({ vorher: 'Pyrofox (Unit B)', grund: 'Arbeitsname „Unit B“' }),
+  'arcershorn-a': Object.freeze({ vorher: 'Arcershorn (Unit A)', grund: 'Arbeitsname „Unit A“' }),
+  'pyrowand-a': Object.freeze({ vorher: 'Pyrowand (Unit A)', grund: 'Arbeitsname „Unit A“' }),
+  shieldmon: Object.freeze({ vorher: 'Shieldmon', grund: 'Kunstname ohne Persönlichkeit' }),
+  'arcanus-a': Object.freeze({ vorher: 'Arcanus (Unit A)', grund: 'Arbeitsname „Unit A“' }),
+  'arcanus-b': Object.freeze({ vorher: 'Arcanus (Unit B)', grund: 'Arbeitsname „Unit B“' }),
+  pikamon: Object.freeze({ vorher: 'Pikamon', grund: 'Anlehnung an eine fremde Marke' }),
+  'berzerker-fang': Object.freeze({ vorher: 'Berzerker Fang', grund: 'Schreibfehler im Bogennamen' }),
+  'vanguard-captain-rix': Object.freeze({
+    vorher: 'Vanguard Captain Rix',
+    grund: 'Doppelter Rang im Namen (Vanguard + Captain)',
+  }),
+  'volley-captain-spark': Object.freeze({
+    vorher: 'Volley Captain Spark',
+    grund: 'Doppelter Rang im Namen (Volley + Captain)',
+  }),
+  'ninjutsu-master-goemon': Object.freeze({
+    vorher: 'Ninjutsu Master Goemon',
+    grund: 'Titel und Rang nebeneinander; „Meister“ stand nur im Rangwort',
+  }),
+});
+
+/**
  * Das Gesicht bestimmt, welche Identitätsregeln zusätzlich gelten.
  *
  * Nur `menschlich` erlaubt ein Menschengesicht und einen menschlichen Leichnam.
@@ -308,7 +359,10 @@ export const FACTIONS = Object.freeze([
  * `sprite` ist die Datei unter src/client/assets/characters/<fraktion>/.
  *
  * Die Namen stammen von den Bögen (dort in Großbuchstaben gesetzt); hier stehen
- * sie in üblicher Schreibweise.
+ * sie in üblicher Schreibweise. Seit dem Redaktionslauf 2026-11-09 (Audit A07)
+ * sind Anzeigename und Arbeitsname getrennt: Kennung und Bilddatei bleiben
+ * unverändert, der Anzeigename darf redaktionell abweichen. Welche Figuren
+ * betroffen sind und wie sie vorher hießen, steht in `UMBENANNT`.
  */
 export const CHARACTERS = Object.freeze([
   // ---------------------------------------------------------------- Säurebrut
@@ -334,8 +388,8 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'alien', merkmale: ['schlanker Stachel-Jäger', 'Doppelklingen', 'Alienkopf'] },
     superWeapon: { name: 'Zwillingsklingen', description: 'Zwei kurze Energieklingen, die im Takt summen und dadurch schwer zu orten sind.' },
     bio: 'Predax jagt nicht, um zu töten, sondern um zu sehen, wie der Gegner sich verhält. Wer ihn überlebt, wird beim zweiten Mal anders angegangen.',
-    strengths: ['Sehr schnell, auch über unebenes Gelände', 'Kann sich kurz unsichtbar machen'],
-    weaknesses: ['Wenig Leben — ein Volltreffer genügt', 'Nach dem Tarnen ist die Energie eine Weile aufgebraucht'],
+    strengths: ['Sehr schnell, auch über unebenes Gelände', 'Verschwindet im Getümmel; die Brut schwört, er sei dann kurz unsichtbar'],
+    weaknesses: ['Wenig Leben — ein Volltreffer genügt', 'Nach dem Tarnen dauert es, bis er wieder auftaucht'],
   },
   {
     id: 'vortex-grabber', name: 'Vortex Grabber', faction: 'xeno', role: 'melee', slot: 2,
@@ -344,8 +398,8 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'verhuellt', merkmale: ['massiger Rumpf', 'verhülltes Gesicht', 'zwei Greifarme'] },
     superWeapon: { name: 'Wirbelarme', description: 'Zwei Tentakel, die einen Gegner heranziehen statt ihn wegzustoßen.' },
     bio: 'Die Brut setzt ihn dort ein, wo Deckung das Problem ist. Er holt Gegner aus Stellungen, die sonst unerreichbar wären.',
-    strengths: ['Zieht Ziele aus der Deckung', 'Hohe Reichweite für einen Nahkämpfer'],
-    weaknesses: ['Kann nur ein Ziel gleichzeitig halten', 'Sehr unbeweglich, während er zieht'],
+    strengths: ['Holt Gegner aus der Deckung — so sagt es die Brut', 'Hohe Reichweite für einen Nahkämpfer'],
+    weaknesses: ['Hält immer nur ein Ziel im Griff', 'Sehr unbeweglich, während er zieht'],
   },
   {
     id: 'drone-theta', name: 'Drone Theta', faction: 'xeno', role: 'ranged', slot: 0,
@@ -354,7 +408,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'alien', merkmale: ['schwebende Tentakeldrohne', 'Sensorauge', 'keine Beine'] },
     superWeapon: { name: 'Auge des Schwarms', description: 'Ein Projektil, das über dem Feld schwebt und den Einschlag von oben herab führt.' },
     bio: 'Theta ist weniger eine Einheit als ein Sinnesorgan: Was sie sieht, sieht der Schwarm. Ihre Angriffe sind entsprechend präzise und entsprechend gleichförmig.',
-    strengths: ['Trifft auch über Deckungen hinweg', 'Gleichmäßiger, gut vorhersehbarer Schaden'],
+    strengths: ['Ihr Blick reicht über Deckungen hinweg', 'Gleichmäßiger, gut vorhersehbarer Schuss'],
     weaknesses: ['Vollständig darauf angewiesen, zu sehen', 'Wenig Leben für eine Fernkampfeinheit'],
   },
   {
@@ -404,7 +458,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'alien', merkmale: ['gezackte Leerenentität', 'schwebende Fragmente', 'kein menschlicher Leichnam'] },
     superWeapon: { name: 'Leerstellenkristall', description: 'Ein Kristall, der einen Bereich des Feldes für kurze Zeit aus der Welt entfernt.' },
     bio: 'Quark ist nicht ganz da. Seine Umrisse flackern, und wo er steht, misst das Gelände gelegentlich falsch.',
-    strengths: ['Kann Gelände zeitweise ausblenden', 'Ignoriert Deckung vollständig'],
+    strengths: ['Blendet Gelände zeitweise aus, heißt es', 'Lässt Deckung für seine Wirkung keine Rolle spielen'],
     weaknesses: ['Zerbrechlich — ein Treffer genügt meist', 'Wirkung endet unabhängig vom Willen des Trägers'],
   },
 
@@ -415,12 +469,12 @@ export const CHARACTERS = Object.freeze([
     morphologie: 'biped',
     identitaet: { gesicht: 'tier', merkmale: ['Hamsterbacken', 'rote Brustplatten', 'Doppelschaufel'] },
     superWeapon: { name: 'Schaufel der Garde', description: 'Ein Grabewerkzeug, das im Nahkampf erstaunlich gut mithält.' },
-    bio: 'Chewk hat den Bergbau organisiert und führt ihn weiter — nur die Richtung hat gewechselt. Er befiehlt in Schichten und rechnet in Ladungen.',
-    strengths: ['Sehr robust, führt die Reihe persönlich an', 'Kann sich durch Gelände graben'],
+    bio: 'Chewk hat den Bergbau organisiert und führt ihn weiter — nur die Richtung hat gewechselt. Er befiehlt in Schichten, rechnet in Ladungen und trägt seine Doppelschaufel selbst im Gefecht.',
+    strengths: ['Sehr robust, führt die Reihe persönlich an', 'Gräbt sich durch Gelände, wenn der Weg zu weit ist'],
     weaknesses: ['Langsam, auch in der Entscheidung', 'Keine Fernkampfmöglichkeit'],
   },
   {
-    id: 'berzerker-fang', name: 'Berzerker Fang', faction: 'rodentia', role: 'melee', slot: 1,
+    id: 'berzerker-fang', name: 'Berserker Fang', faction: 'rodentia', role: 'melee', slot: 1,
     sprite: '01_berzerker-fang.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'tier', merkmale: ['dunkle Berserkerratte', 'zwei Äxte', 'peitschender Schwanz'] },
@@ -430,7 +484,7 @@ export const CHARACTERS = Object.freeze([
     weaknesses: ['Keine Verteidigung — er nimmt jeden Gegenschlag', 'Verlässt Deckung freiwillig'],
   },
   {
-    id: 'vanguard-captain-rix', name: 'Vanguard Captain Rix', faction: 'rodentia', role: 'melee', slot: 2,
+    id: 'vanguard-captain-rix', name: 'Vanguard Rix', faction: 'rodentia', role: 'melee', slot: 2,
     sprite: '02_vanguard-captain-rix.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'tier', merkmale: ['gestreifter Nager', 'Zahnrad-Schild', 'roter Teamakzent'] },
@@ -460,7 +514,7 @@ export const CHARACTERS = Object.freeze([
     weaknesses: ['Zünder verrät die Absicht', 'Gefährdet eigene Truppen'],
   },
   {
-    id: 'volley-captain-spark', name: 'Volley Captain Spark', faction: 'rodentia', role: 'ranged', slot: 2,
+    id: 'volley-captain-spark', name: 'Volley Spark', faction: 'rodentia', role: 'ranged', slot: 2,
     sprite: '12_volley-captain-spark.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'tier', merkmale: ['kräftiger Nager', 'Gatling', 'Körpermasse'] },
@@ -518,7 +572,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'menschlich', merkmale: ['schlanke Linie', 'Hut', 'Doppelsäbel'] },
     superWeapon: { name: 'Säbel und Pistole', description: 'Erst Schuss, dann Klinge — in dieser Reihenfolge, immer.' },
     bio: 'Piet ist der Meinung, dass ein Kampf ein Handwerk ist und ein schlecht ausgeführter Kampf eine Beleidigung. Er übt auf Deck, auch wenn niemand zusieht.',
-    strengths: ['Schnell und wendig', 'Kann zwischen Nah- und Fernkampf wechseln'],
+    strengths: ['Schnell und wendig', 'Wechselt zwischen Schuss und Klinge — erst Pistole, dann Säbel'],
     weaknesses: ['Mittelmäßig in beidem', 'Wenig Leben'],
   },
   {
@@ -548,7 +602,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'menschlich', merkmale: ['Hutprofil', 'langes Goldgewehr', 'konstantes Gesicht'] },
     superWeapon: { name: 'Langes Gewehr', description: 'Eine vergoldete Büchse mit gezogenem Lauf und großer Reichweite.' },
     bio: 'Marie heuerte an, um Kanonen zu übernehmen, und übernahm stattdessen alles, was weiter reicht. Sie rechnet den Wind im Kopf.',
-    strengths: ['Sehr präzise auf weite Entfernung', 'Ignoriert leichte Deckung'],
+    strengths: ['Sehr präzise auf weite Entfernung', 'Schießt durch leichte Deckung hindurch'],
     weaknesses: ['Wenig Schaden gegen gepanzerte Ziele', 'Sehr wenig Leben'],
   },
   {
@@ -557,7 +611,7 @@ export const CHARACTERS = Object.freeze([
     morphologie: 'biped',
     identitaet: { gesicht: 'menschlich', merkmale: ['Grinsen', 'grüne Brille', 'Bombengurt'] },
     superWeapon: { name: 'Bombergewehr', description: 'Ein Werfgerät mit zwei Bomben, die sich gegenseitig auslösen.' },
-    bio: 'Billy lacht während des Gefechts, was die Korsaren beunruhigend finden, aber ungünstig für den Gegner. Er wirft immer zwei, weil eine zu leicht danebengeht.',
+    bio: 'Hinter der grünen Sprengbrille lacht Billy während des Gefechts, was die Korsaren beunruhigend finden, aber ungünstig für den Gegner. Er wirft immer zwei, weil eine zu leicht danebengeht.',
     strengths: ['Zwei Einschläge je Handlung', 'Großer Radius'],
     weaknesses: ['Sehr gefährlich für eigene Truppen', 'Zünder schwer zu takten'],
   },
@@ -568,7 +622,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'menschlich', merkmale: ['Maske', 'violett-goldene Robe', 'Schädelstab'] },
     superWeapon: { name: 'Schädelstab', description: 'Ein Stab mit Schädel und Flammenhand, der Verletzungen überträgt.' },
     bio: 'Morgana fährt mit, seit das Abkommen gilt, und niemand weiß, was sie davon hat. Sie rechnet mit jedem Hafen ab und notiert Beträge in einem Buch, das niemand lesen kann.',
-    strengths: ['Überträgt Schaden auf den Gegner', 'Kann Verbündete heilen'],
+    strengths: ['Überträgt Schaden auf den Gegner', 'Heilt Verbündete — so erzählt man es in den Häfen'],
     weaknesses: ['Kurze Reichweite', 'Wirkung braucht Zeit'],
   },
   {
@@ -587,7 +641,7 @@ export const CHARACTERS = Object.freeze([
     morphologie: 'biped',
     identitaet: { gesicht: 'menschlich', merkmale: ['Akkordeon', 'Schulterpuppe'] },
     superWeapon: { name: 'Quetschkommode', description: 'Ein Instrument, dessen Melodien Geschosse begleiten und lenken.' },
-    bio: 'Drake hält die Korsaren bei Stimme und bei Laune. Sein Seelied wirkt nachweislich: Wer mitsingt, schießt besser.',
+    bio: 'Drake hält die Korsaren bei Stimme und bei Laune. Sein Akkordeon ist älter als das Abkommen; wer mitsingt, trifft nach eigener Auskunft besser.',
     strengths: ['Lenkt Geschosse nachträglich', 'Stärkt die ganze Mannschaft'],
     weaknesses: ['Selbst praktisch wehrlos', 'Wirkung endet, wenn er getroffen wird'],
   },
@@ -722,7 +776,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'skelett', merkmale: ['grüner Knochenstil', 'Bogen', 'dunkle Lederrüstung'] },
     superWeapon: { name: 'Seelenbogen', description: 'Ein Bogen, dessen Pfeile leuchten und durch leichte Deckung hindurchgehen.' },
     bio: 'Mortis war Bogenschütze in einer Belagerung, die drei Jahre dauerte. Er hat nie aufgehört, auf die Mauer zu zielen.',
-    strengths: ['Präzise auf große Entfernung', 'Pfeile ignorieren leichte Deckung'],
+    strengths: ['Präzise auf große Entfernung', 'Dessen Pfeile gehen durch leichte Deckung'],
     weaknesses: ['Wenig Schaden', 'Braucht freie Sicht'],
   },
   {
@@ -731,7 +785,7 @@ export const CHARACTERS = Object.freeze([
     morphologie: 'biped',
     identitaet: { gesicht: 'skelett', merkmale: ['abnehmbarer Arm', 'Seuchenkrug'] },
     superWeapon: { name: 'Seuchenkrug', description: 'Ein Krug, der einen Strahl Gift versprüht und den Boden verseucht.' },
-    bio: 'Igor schenkt gern aus. Die Legion hat lange gebraucht, um zu begreifen, dass der Krug nie leer wird und der Inhalt nie gut ist.',
+    bio: 'Igor schenkt gern aus. Sein Arm lässt sich mitsamt Krug abnehmen und wird nach jedem Wurf wieder angesetzt. Die Legion hat lange gebraucht, um zu begreifen, dass der Krug nie leer wird und der Inhalt nie gut ist.',
     strengths: ['Verseucht Gelände dauerhaft', 'Schaden über Zeit'],
     weaknesses: ['Geringer Direktschaden', 'Trifft auch Verbündete'],
   },
@@ -772,7 +826,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'geist', merkmale: ['wehende Haarmasse', 'transparenter Saum', 'schwebend'] },
     superWeapon: { name: 'Todesklage', description: 'Ein Schrei, der Wände durchdringt und Gegner zusammenbrechen lässt.' },
     bio: 'Beatrice war die Erste, die fiel, und die Einzige, die darum bat, zurückzukommen. Was zurückkam, warnte vor dem eigenen Ende — dreimal, an drei Küsten.',
-    strengths: ['Ignoriert Deckung vollständig', 'Hoher Flächenschaden'],
+    strengths: ['Dringt durch jede Deckung', 'Hoher Flächenschaden'],
     weaknesses: ['Sehr zerbrechlich', 'Wirkung trifft auch Verbündete'],
   },
 
@@ -794,7 +848,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'menschlich', merkmale: ['weiße Haare', 'Kettenklinge', 'offene Beinpose'] },
     superWeapon: { name: 'Kettenklinge', description: 'Eine Sichel an langer Kette, die aus der Bewegung heraus trifft.' },
     bio: 'Wind-Flapper kämpft nur in Bewegung. Sie hat noch nie aus einer Stellung heraus angegriffen und hält das für eine Unsitte.',
-    strengths: ['Sehr schnell und schwer zu treffen', 'Kann über Gräben springen'],
+    strengths: ['Sehr schnell und schwer zu treffen', 'Springt über Gräben, ohne anzuhalten'],
     weaknesses: ['Wenig Leben', 'Kurze Reichweite'],
   },
   {
@@ -838,7 +892,7 @@ export const CHARACTERS = Object.freeze([
     weaknesses: ['Geringer direkter Schaden', 'Wirkung braucht Geduld'],
   },
   {
-    id: 'ninjutsu-master-goemon', name: 'Ninjutsu Master Goemon', faction: 'shinobi', role: 'magic', slot: 0,
+    id: 'ninjutsu-master-goemon', name: 'Ninjutsu Goemon', faction: 'shinobi', role: 'magic', slot: 0,
     sprite: '20_ninjutsu-master-goemon.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'maske', merkmale: ['Maske', 'Kapuze', 'Elementarstab'] },
@@ -870,12 +924,12 @@ export const CHARACTERS = Object.freeze([
 
   // --------------------------------------------------------- Rudel der Urkräfte
   {
-    id: 'pikamon', name: 'Pikamon', faction: 'beasts', role: 'melee', slot: 0,
+    id: 'pikamon', name: 'Voltclaw', faction: 'beasts', role: 'melee', slot: 0,
     sprite: '00_pikamon.png',
     morphologie: 'quadruped',
     identitaet: { gesicht: 'tier', merkmale: ['elektrisches Vierbein', 'Schwanz', 'Wangenentladung'] },
     superWeapon: { name: 'Blitzschlag', description: 'Eine Entladung aus den Wangen, die im Umkreis alles niederschlägt.' },
-    bio: 'Pikamon ist der Erste des Rudels und der Einzige, der sich an einen Namen erinnert. Es ist unklar, ob es ein Wesen oder eine Wetterlage ist.',
+    bio: 'Voltclaw ist der Erste des Rudels und der Einzige, der sich an einen Namen erinnert. Es ist unklar, ob es ein Wesen oder eine Wetterlage ist.',
     strengths: ['Hoher Schaden im Umkreis', 'Robust für ein Rudeltier'],
     weaknesses: ['Entlädt sich auch an Verbündeten', 'Braucht Gegner in Reichweite'],
   },
@@ -896,7 +950,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'tier', merkmale: ['Flügelkranz', 'Krallenstand', 'Gefiederform'] },
     superWeapon: { name: 'Sturmkralle', description: 'Krallen, zwischen denen sich Entladungen aufbauen und beim Stoß entladen.' },
     bio: 'Storm-Talon fliegt über dem Rudel und greift nur an, wenn sich eine Front gebildet hat. Es wird selten allein gesehen und nie zweimal am selben Ort.',
-    strengths: ['Kann fliegen und über Deckung angreifen', 'Hoher Einzelschaden'],
+    strengths: ['Greift aus der Luft über die Deckung hinweg an', 'Hoher Einzelschaden'],
     weaknesses: ['Sehr wenig Leben', 'Lange Pausen zwischen den Stößen'],
   },
   {
@@ -956,13 +1010,13 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'pflanze', merkmale: ['Blütenblätter', 'feste Rankenanzahl', 'kein Beinlauf'] },
     superWeapon: { name: 'Klangblüte', description: 'Ein Ton, der sich wie eine Welle ausbreitet und alles darin erfasst.' },
     bio: 'Sonic-Blossom singt, wenn es angreift. Das Rudel hält das für eine Drohung; es ist eine Einladung, sich zu entfernen.',
-    strengths: ['Sehr großer Wirkungsradius', 'Ignoriert Deckung'],
+    strengths: ['Sehr großer Wirkungsradius', 'Dringt durch Deckung'],
     weaknesses: ['Trifft auch Verbündete', 'Sehr zerbrechlich'],
   },
 
   // ----------------------------------------------------------- Acht-Bit-Brut
   {
-    id: 'nullpointer-exception', name: 'Nullpointer Exception', faction: 'pixel', role: 'melee', slot: 0,
+    id: 'nullpointer-exception', name: 'Hexfang', faction: 'pixel', role: 'melee', slot: 0,
     sprite: '00_nullpointer-exception.png',
     morphologie: 'quadruped',
     identitaet: { gesicht: 'tier', merkmale: ['polygonales Raubtier', 'harte Rasterkanten', 'Vierbeiner'] },
@@ -972,57 +1026,57 @@ export const CHARACTERS = Object.freeze([
     weaknesses: ['Reagiert schlecht auf Veränderungen', 'Kurze Reichweite'],
   },
   {
-    id: 'pyrofox-a', name: 'Pyrofox (Unit A)', faction: 'pixel', role: 'melee', slot: 1,
+    id: 'pyrofox-a', name: 'Cinderbyte', faction: 'pixel', role: 'melee', slot: 1,
     sprite: '01_pyrofox-a.png',
     morphologie: 'quadruped',
     identitaet: { gesicht: 'tier', merkmale: ['Fuchs', 'Datenschweife', 'Rasterkanten'] },
     superWeapon: { name: 'Zündschweif', description: 'Ein Schwanz aus Flammen, der bei jedem Schritt ein Stück Welt mitnimmt.' },
-    bio: 'Die beiden Pyrofox-Einheiten sind identisch erzeugt und haben sich seither unterschiedlich entwickelt. A ist der schnellere von beiden.',
+    bio: 'Cinderbyte und Emberfork wurden identisch erzeugt und haben sich seither unterschiedlich entwickelt. Cinderbyte ist der schnellere von beiden.',
     strengths: ['Sehr wendig', 'Setzt Gelände in Brand'],
     weaknesses: ['Wenig Leben', 'Keine Fernwirkung'],
   },
   {
-    id: 'pyrofox-b', name: 'Pyrofox (Unit B)', faction: 'pixel', role: 'melee', slot: 2,
+    id: 'pyrofox-b', name: 'Emberfork', faction: 'pixel', role: 'melee', slot: 2,
     sprite: '02_pyrofox-b.png',
     morphologie: 'quadruped',
     identitaet: { gesicht: 'tier', merkmale: ['größerer Fuchs', 'Panzerplatten', 'mehrere Datenschweife'] },
     superWeapon: { name: 'Panzerflamme', description: 'Ein Feuerstoß aus einer eingebauten Panzerplatte, der erst hinterher sichtbar wird.' },
-    bio: 'B bekam die zusätzlichen Panzerplatten, die für A zu schwer waren. Die Brut hält das für eine Persönlichkeitsentscheidung.',
-    strengths: ['Deutlich robuster als Unit A', 'Hoher Schaden auf kurzer Distanz'],
-    weaknesses: ['Langsamer als A', 'Sehr kurze Reichweite'],
+    bio: 'Emberfork bekam die zusätzlichen Panzerplatten, die für Cinderbyte zu schwer waren. Die Brut hält das für eine Persönlichkeitsentscheidung.',
+    strengths: ['Deutlich robuster als Cinderbyte', 'Hoher Schaden auf kurzer Distanz'],
+    weaknesses: ['Langsamer als Cinderbyte', 'Sehr kurze Reichweite'],
   },
   {
-    id: 'arcershorn-a', name: 'Arcershorn (Unit A)', faction: 'pixel', role: 'ranged', slot: 0,
+    id: 'arcershorn-a', name: 'Arcspine', faction: 'pixel', role: 'ranged', slot: 0,
     sprite: '10_arcershorn-a.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'tier', merkmale: ['Bogendrache', 'Feuerschweif', 'Bogenführung', 'Pixelraster'] },
     superWeapon: { name: 'Saurierbogen', description: 'Ein Bogen, dessen Pfeile aus dem eigenen Schweif bestehen und neu nachwachsen.' },
-    bio: 'Arcershorn sieht aus wie ein Echsenwesen und benutzt einen Bogen, den die Brut nicht herstellt. Sie hat ihn mit dem Wesen gefunden.',
+    bio: 'Arcspine sieht aus wie ein Echsenwesen und benutzt einen Bogen, den die Brut nicht herstellt. Die Brut hat ihn mit dem Wesen gefunden.',
     strengths: ['Robuste Fernkampfeinheit', 'Munition wird nicht knapp'],
     weaknesses: ['Ungenau — schießt ohne Visier', 'Langsam — schwerer Stand'],
   },
   {
-    id: 'pyrowand-a', name: 'Pyrowand (Unit A)', faction: 'pixel', role: 'ranged', slot: 1,
+    id: 'pyrowand-a', name: 'Glyphveil', faction: 'pixel', role: 'ranged', slot: 1,
     sprite: '11_pyrowand-a.png',
     morphologie: 'quadruped',
     identitaet: { gesicht: 'tier', merkmale: ['türkiser Stabfuchs', 'Stab', 'digitale Linien'] },
     superWeapon: { name: 'Flammenrute', description: 'Ein Stab, dessen grünes Feuer eigenständig zu brennen beginnt.' },
-    bio: 'Pyrowand trägt Feuer, das nicht wie Feuer aussieht. Die Brut kann nicht sagen, ob das ein Fehler in der Darstellung oder eine Waffe ist.',
+    bio: 'Glyphveil trägt Feuer, das nicht wie Feuer aussieht. Die Brut kann nicht sagen, ob das ein Fehler in der Darstellung oder eine Waffe ist.',
     strengths: ['Gute Reichweite', 'Schaden über Zeit'],
     weaknesses: ['Geringer Direktschaden', 'Wenig Leben'],
   },
   {
-    id: 'shieldmon', name: 'Shieldmon', faction: 'pixel', role: 'ranged', slot: 2,
+    id: 'shieldmon', name: 'Bastion-09', faction: 'pixel', role: 'ranged', slot: 2,
     sprite: '12_shieldmon.png',
     morphologie: 'quadruped',
     identitaet: { gesicht: 'tier', merkmale: ['Igel', 'Leiterplattenpanzer', 'Vierbein'] },
     superWeapon: { name: 'Kantenschild', description: 'Ein rechteckiges Schild, das Treffer sammelt und gerichtet zurückwirft.' },
-    bio: 'Shieldmon ist die einzige Einheit der Brut, die einen Rückzug überlebt hat. Sie hat beschlossen, ab jetzt vorne zu stehen.',
+    bio: 'Bastion-09 ist die einzige Einheit der Brut, die einen Rückzug überlebt hat. Sie hat beschlossen, ab jetzt vorne zu stehen.',
     strengths: ['Fängt Treffer für das Team ab', 'Wirft Schaden zurück'],
     weaknesses: ['Sehr langsamer eigener Angriff', 'Niedriger Grundschaden'],
   },
   {
-    id: 'phantom-mal-a', name: 'Phantomal (Unit A)', faction: 'pixel', role: 'magic', slot: 0,
+    id: 'phantom-mal-a', name: 'Phantomal', faction: 'pixel', role: 'magic', slot: 0,
     sprite: '20_phantomal-a.png',
     morphologie: 'hover',
     identitaet: { gesicht: 'alien', merkmale: ['Tentakelmasse', 'mehrere Augen', 'kantige Zerfallseffekte'] },
@@ -1032,22 +1086,22 @@ export const CHARACTERS = Object.freeze([
     weaknesses: ['Sehr langsamer Angriff', 'Wenig Leben'],
   },
   {
-    id: 'arcanus-a', name: 'Arcanus (Unit A)', faction: 'pixel', role: 'magic', slot: 1,
+    id: 'arcanus-a', name: 'Cipher Voss', faction: 'pixel', role: 'magic', slot: 1,
     sprite: '21_arcanus-a.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'verhuellt', merkmale: ['Maske', 'zwei Ringstäbe', 'grüne Rasterglitches'] },
     superWeapon: { name: 'Grünkugel', description: 'Eine Kugel, die beim Aufprall ein Feld grüner Energie hinterlässt.' },
-    bio: 'Arcanus ist die erste Figur der Brut, die sich selbst als Figur erkennt. Sie nutzt das, um Gegner einzuschätzen, nicht um sich zu erklären.',
+    bio: 'Cipher Voss ist die erste Figur der Brut, die sich selbst als Figur erkennt. Sie nutzt das, um Gegner einzuschätzen, nicht um sich zu erklären.',
     strengths: ['Hoher Flächenschaden', 'Setzt Gelände unter Energie'],
     weaknesses: ['Zerbrechlich — geringe Lebenspunkte', 'Lange Aufladezeit'],
   },
   {
-    id: 'arcanus-b', name: 'Arcanus (Unit B)', faction: 'pixel', role: 'magic', slot: 2,
+    id: 'arcanus-b', name: 'Archon Overflow', faction: 'pixel', role: 'magic', slot: 2,
     sprite: '22_arcanus-b.png',
     morphologie: 'biped',
     identitaet: { gesicht: 'verhuellt', merkmale: ['mehrere Arme', 'Krone', 'Orbitalkugeln'] },
     superWeapon: { name: 'Vielarmkranz', description: 'Mehrere Arme, die gleichzeitig je eine Kugel führen.' },
-    bio: 'Unit B hat zusätzliche Arme und eine Krone, die niemand vergeben hat. Die Brut folgt ihr, ohne dass sie es angeordnet hätte.',
+    bio: 'Archon Overflow hat zusätzliche Arme und eine Krone, die niemand vergeben hat. Die Brut folgt ihr, ohne dass sie es angeordnet hätte.',
     strengths: ['Mehrfachangriffe in einem Zug', 'Höchster Magieschaden der Brut'],
     weaknesses: ['Sehr langsam', 'Braucht freie Sicht auf mehrere Ziele'],
   },
@@ -1120,7 +1174,7 @@ export const CHARACTERS = Object.freeze([
     identitaet: { gesicht: 'schwarm', merkmale: ['viele kleine Flieger', 'Schwarmkerne', 'kein Einzelinsekt'] },
     superWeapon: { name: 'Schwarmsignal', description: 'Ein Schwarm kleiner Flieger, der ein Gebiet gleichzeitig abdeckt.' },
     bio: 'Der Schwarm ist kein Wesen, sondern eine Vereinbarung zwischen vielen. Der Kult zählt ihn als einen Charakter, weil er gemeinsam handelt.',
-    strengths: ['Deckt große Flächen ab', 'Kann sich teilen'],
+    strengths: ['Deckt große Flächen ab', 'Teilt sich, wenn es eng wird'],
     weaknesses: ['Einzeln bedeutungslos', 'Verliert Wirkung bei Verlusten'],
   },
   {
@@ -1150,7 +1204,10 @@ export const CHARACTERS = Object.freeze([
  *
  * Seit 2026-11-03 leer: Die Datacult-Figur, früher wie die Pixel-Figur
  * „Nullpointer Exception“, heißt jetzt „Nullpointer-Kultist“ (Entscheidung des
- * Auftraggebers). Die Liste bleibt, damit ein Test neue Dubletten auffängt.
+ * Auftraggebers). Seit dem Redaktionslauf 2026-11-09 (Audit A07) ist auch der
+ * Pixel-Rahmen umbenannt („Hexfang“); die Dublette ist damit auf beiden Seiten
+ * aufgelöst. Die Liste bleibt, damit ein Test neue Dubletten auffängt — der
+ * Test prüft inzwischen den gesamten Katalog, nicht nur je Fraktion.
  */
 export const NAMING_CONFLICTS = Object.freeze([]);
 

@@ -9,6 +9,7 @@ import {
   COMBAT_ROLES,
   SLOT_CLASSES,
   NAMING_CONFLICTS,
+  UMBENANNT,
   getFaction,
   getCharacter,
   charactersOf,
@@ -79,11 +80,23 @@ test('Innerhalb einer Fraktion ist jeder Name einmalig', () => {
   }
 });
 
-test('Die Namen entsprechen den Bilddateien', () => {
-  // Der Kurzname steckt im Dateinamen (siehe scripts/namen.py). Wichen sie
-  // voneinander ab, zeigte das Bild den falschen Charakter.
+test('Die Namen entsprechen den Bilddateien — oder sind als Umbenennung erfasst', () => {
+  /*
+   * Der Kurzname steckt im Dateinamen (siehe scripts/namen.py). Wichen sie
+   * voneinander ab, zeigte das Bild den falschen Charakter.
+   *
+   * Seit dem Redaktionslauf 2026-11-09 (Audit A07) ist der Anzeigename
+   * ausdrücklich vom Arbeitsnamen getrennt: Kennung und Bilddatei bleiben
+   * stabil, der Anzeigename darf redaktionell abweichen. Damit die Prüfung
+   * nicht stumpf wird, gilt jetzt: Ein abweichender Anzeigename muss in
+   * `UMBENANNT` stehen. (Eine Prüfung „Kennung = Dateistamm“ gibt es bewusst
+   * nicht — der Datenkult teilt sich die Bilddatei mit der Pixel-Figur, und
+   * `phantom-mal-a` zeigt auf `20_phantomal-a.png`; beides ist historisch und
+   * steht in Replays.)
+   */
   for (const c of CHARACTERS) {
     const rumpf = c.sprite.replace(/^\d\d_/, '').replace(/\.png$/, '');
+
     const ausName = c.name
       .toLowerCase()
       .replace(/ö/g, 'oe').replace(/ä/g, 'ae').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
@@ -94,7 +107,8 @@ test('Die Namen entsprechen den Bilddateien', () => {
     const passt = rumpf === ausName
       || ausName.startsWith(rumpf.split('-')[0])
       || rumpf.startsWith(ausName.split('-')[0]);
-    assert.ok(passt, `${c.id}: Name „${c.name}" passt nicht zur Datei „${c.sprite}"`);
+    assert.ok(passt || UMBENANNT[c.id],
+      `${c.id}: Name „${c.name}“ passt nicht zur Datei „${c.sprite}“ und ist nicht in UMBENANNT erfasst`);
   }
 });
 

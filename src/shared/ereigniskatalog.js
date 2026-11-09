@@ -37,7 +37,7 @@
 export const EREIGNIS_KATALOG = Object.freeze({
   landed: { klasse: 'anzeige', drossel: 'boden', klang: ['landed'] },
   jumped: { klasse: 'anzeige' },
-  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:2160 (crates) → src/client/renderer.js:2364 (#drawCrates)' } },
+  crate_landed: { klasse: 'anzeige', drossel: 'boden', stumm: 'lokaler Zweig hat einen Fall; online übernimmt es die Kistenliste', einzweig: { zweig: 'lokal', entweder: 'online kommen die Kisten aus dem Snapshot und werden gezeichnet: src/client/main.js:2163 (crates) → src/client/renderer.js:2366 (#drawCrates)' } },
   projectile_impact: { klasse: 'anzeige', anim: ['addFlash'] },
   projectile_expired: { klasse: 'anzeige', stumm: 'ein verfallenes Geschoss ist kein Ereignis für den Spieler, es hat nichts getroffen' },
   projectile_pierced: { klasse: 'anzeige', anim: ['addFlash'] },
@@ -128,7 +128,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   valhalla_omen: { klasse: 'zustand', klang: ['valhalla_omen'], anim: ['startValhallaOmen'] },
   water_pushed: { klasse: 'zustand', stumm: 'der Wasserstand am Ziel ist die sichtbare Wirkung' },
   weapon_cooldown: { klasse: 'zustand', stumm: 'die Waffenliste zeigt den Nachladezustand' },
-  weapon_dropped: { klasse: 'zustand', einzweig: { zweig: 'online', entweder: 'lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition, Listenaktualisierung) — src/client/main.js:1545 (match.dropWeapon), src/client/main.js:1552 (hud.log) und src/client/main.js:1564 (hud.update) —, es braucht deshalb keinen Tabellenzweig. ONLINE gibt es diesen lokalen Erfolgspfad nicht: der Server führt den Abwurf aus und schickt das Ereignis; ohne den `online:`-Zweig fiele es stumm weg.' } },
+  weapon_dropped: { klasse: 'zustand', einzweig: { zweig: 'online', entweder: 'lokal meldet `Main#dropWeapon` das Ergebnis direkt im Log (Name, Munition, Listenaktualisierung) — src/client/main.js:1548 (match.dropWeapon), src/client/main.js:1555 (hud.log) und src/client/main.js:1567 (hud.update) —, es braucht deshalb keinen Tabellenzweig. ONLINE gibt es diesen lokalen Erfolgspfad nicht: der Server führt den Abwurf aus und schickt das Ereignis; ohne den `online:`-Zweig fiele es stumm weg.' } },
 });
 
 /** Alle Arten einer Klasse in Katalogreihenfolge. */
