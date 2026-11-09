@@ -20,8 +20,9 @@ def main() -> None:
         raise SystemExit("Aufruf: guides-aus-sheet.py <figuren-id> <walk|aktion|zustand|emotion>")
     character_id, animation = sys.argv[1], sys.argv[2]
     character = CHARACTERS[character_id]
+    datei_animation = "aktion" if animation == "action" else animation
     sheet_path = ROOT / "src/client/assets/sprite-sheets" / character["faction"] / (
-        character["sprite"].replace(".png", "") + f"__{animation}.webp"
+        character["sprite"].replace(".png", "") + f"__{datei_animation}.webp"
     )
     sheet = Image.open(sheet_path).convert("RGBA")
     if sheet.size != (1024, 512):
