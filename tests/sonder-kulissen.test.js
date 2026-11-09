@@ -35,3 +35,15 @@ test('Die Wahl folgt dem Seed und nutzt über viele Seeds alle Bilder eines Biom
     assert.equal(gesehen.size, liste.length, `${biom}: nicht alle Bilder kommen vor`);
   }
 });
+
+test('Beide Höhlenformen haben für jedes gemalte Sonderbiom einen gültigen Höhlenblick', () => {
+  const katalog = new Set([...ALL_BACKDROPS, ...BACKDROPS_NEU].map(b => b.key));
+  for (const biom of Object.keys(SONDER_KULISSEN)) {
+    for (const art of ['hoehle', 'hoehleInsel']) {
+      const key = sonderKulisseFuer(biom, 42, art);
+      assert.ok(key.endsWith('hoehle') && katalog.has(key), biom);
+    }
+  }
+  assert.equal(sonderKulisseFuer('vulkan', 42, 'insel'), 'island/volcano');
+  assert.equal(sonderKulisseFuer('planet', 42, 'hoehle'), null);
+});
