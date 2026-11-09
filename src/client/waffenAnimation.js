@@ -29,6 +29,8 @@
 
 import { TYP_JE_CHARAKTER, PARAMETER as TYP_PARAMETER } from './figurTypen.js';
 import { glatt01 } from './mathe.js';
+import { buildEffect, SELF_TARGET_KINDS } from '../engine/specials.js';
+import { charakterDerWaffe } from '../shared/config/zerstoerung.js';
 
 /** Die acht Katalogkategorien (`src/shared/config/weapons.js`). */
 export { KATEGORIEN } from '../shared/config/waffenKategorien.js';
@@ -215,7 +217,7 @@ const parameterCache = new Map();
  *
  * @param {string} kat - Katalogkategorie
  * @param {string} [waffeId]
- * @param {boolean} [selbst] - wirkt auf den Anwender (Schaden 0)
+ * @param {boolean} [selbst] - wirkt auf den Anwender (`SELF_TARGET_KINDS`, nicht `damage === 0`)
  * @param {string} [form] - Form des Sprites laut Manifest (`kachel`, `objekt`, `kompakt`)
  * @param {boolean} [wurf] - die Waffe wird geworfen (Geschoss `ding` oder mit Zünder/Abprallern)
  * @param {string} [kachelModus] - `motiv` oder `orb` bei Kachel-Waffen
@@ -239,15 +241,32 @@ export function waffenParameter(kat, waffeId = '', selbst = false, form = '', wu
 }
 
 /**
- * Der Parametersatz für eine Katalogwaffe samt ihrem Sprite-Eintrag: Selbstwirkung
- * (Schaden 0), Form des Sprites und Wurfwaffe (Geschoss `ding` oder Zünder) fließen ein.
+ * Wirkt die Waffe auf den Anwender? Dieselbe Quelle wie der Motor
+ * (`buildEffect` + `SELF_TARGET_KINDS`), nicht `damage === 0`.
  *
- * @param {{id:string, category:string, damage?:number, fuseTime?:number}} waffe
+ * 23 Selbstwirkungen tragen im Katalog einen positiven Schadenswert; mit der
+ * alten Nullprüfung bekamen sie die Schusspose einer Angriffswaffe (W14).
+ *
+ * @param {object|null|undefined} waffe
+ * @returns {boolean}
+ */
+export function istSelbstwirkung(waffe) {
+  const effekt = buildEffect(waffe);
+  return Boolean(effekt && SELF_TARGET_KINDS.has(effekt.kind));
+}
+
+/**
+ * Der Parametersatz für eine Katalogwaffe samt ihrem Sprite-Eintrag: Selbstwirkung
+ * (nach `buildEffect`, nicht nach `damage`), Form des Sprites und Wurfwaffe
+ * (Geschoss `ding` oder Zünder) fließen ein. Bewusste Posenkorrekturen aus
+ * `KORREKTUREN` bleiben die letzte Schicht und gelten unverändert.
+ *
+ * @param {{id:string, category:string, damage?:number, special?:string, fuseTime?:number}} waffe
  * @param {{form?:string, projektilInfo?:{art?:string}|null}|null} sp
  */
 export function parameterFuerWaffe(waffe, sp) {
   return waffenParameter(
-    waffe.category, waffe.id, waffe.damage === 0, sp?.form ?? '',
+    waffe.category, waffe.id, istSelbstwirkung(waffe), sp?.form ?? '',
     sp?.projektilInfo?.art === 'ding' || (waffe.fuseTime ?? 0) > 0, sp?.kachel ?? '',
   );
 }
@@ -530,7 +549,14 @@ const SPIN_GRANATE = 8;
  * gewöhnliches Geschoss, das beim Aufprall wirkt. Reine Anzeige: Motor, Hash und Replays bleiben unberührt.
  */
 export const GESCHOSS_GRUPPEN = Object.freeze({
-  cluster: Object.freeze({ farbe: '#fbbf24', name: 'Streu' }),
+  /**
+   * W10: KEINE „Streu“-Marke mehr. `fragmentation`, `banana_split` und
+   * `spread_shot` erzeugen im Motor kein zusätzliches Projektil; implementiert
+   * ist die Splitterstreuung im GELÄNDE (`charakterDerWaffe` →
+   * `splitter`, `config/zerstoerung.js`). Die Marke heißt deshalb nach dieser
+   * Mechanik und wird nur aus ihr vergeben — nicht aus dem Spezialnamen.
+   */
+  splitter: Object.freeze({ farbe: '#fbbf24', name: 'Geländesplitter' }),
   lenk: Object.freeze({ farbe: '#f472b6', name: 'Lenk' }),
   teleport: Object.freeze({ farbe: '#a78bfa', name: 'Teleport' }),
   abpraller: Object.freeze({ farbe: '#34d399', name: 'Abpraller' }),
@@ -540,7 +566,8 @@ export const GESCHOSS_GRUPPEN = Object.freeze({
 /** Gruppe eines Geschosses aus den Katalogwerten (keine zweite Tabelle); `null` für gewöhnliche. */
 export function geschossGruppe(waffe) {
   if (!waffe || waffe.delivery === 'hitscan') return null;
-  if (waffe.special === 'fragmentation' || waffe.special === 'banana_split' || waffe.special === 'spread_shot') return 'cluster';
+  // Die Splitter-Marke folgt der tatsächlich implementierten Geländewirkung.
+  if (charakterDerWaffe(waffe) === 'splitter') return 'splitter';
   if ((waffe.homing ?? 0) > 0) return 'lenk';
   if (/teleport|portal/.test(waffe.special ?? '')) return 'teleport';
   if ((waffe.bounces ?? 0) > 0) return 'abpraller';
@@ -559,7 +586,7 @@ export function zeichneGruppenmarke(ctx, gruppe, x, y, alter, reduziert = false)
   ctx.lineWidth = 1.5;
   ctx.globalAlpha = 0.9;
   ctx.beginPath();
-  if (gruppe === 'cluster') {
+  if (gruppe === 'splitter') {
     for (let i = 0; i < 3; i += 1) { const a = (i / 3) * Math.PI * 2 - Math.PI / 2; ctx.moveTo(x + Math.cos(a) * r + 2, y + Math.sin(a) * r); ctx.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, 2, 0, Math.PI * 2); }
     ctx.fill();
   } else if (gruppe === 'lenk') {
