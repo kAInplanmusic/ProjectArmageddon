@@ -28,6 +28,8 @@ Geprüfter Vorschlag und Belege: [Waffenbalancing-Bericht](waffenbalance-2026-11
 | BAL-16 | P1 | Namen und Bildversprechen gegen tatsächlich vorhandene Mechanik abgleichen | Cluster-/Schrot-/Salvenmarkierung nur für belegte Mechanik oder eindeutig anders benannt. Pa_127 hat Mine in Name, Icon und Weltobjekt; Zauberrolle/Buch identisch erkennbar. Zielsuche, Multihit und Beschwörung durch echte Ereignisse belegt. |
 | BAL-17 | P2 | Karten-, Fraktions- und Partienabdeckung staffeln | Nicht ausgeführte Zellen explizit offen. Volles 150×5×7×20×3-Seed-Kreuzprodukt umfasst bereits 315000 Aufbauten; keine Vollabdeckung aus wenigen Beispielen behaupten. Winrates erst mit Stichprobenumfang, Seedliste und Unsicherheit veröffentlichen. |
 
+BAL-07-Stand 2026-11-09: umgesetzt auf `bg/bal-07` — Menü, HUD, Beschreibung, Figurenkarte, Schussklang und Renderer lesen `match.waffen`; `tests/waffen-anzeige-fassung.test.js` belegt 16 Fälle (pa_127 F11/F12, pa_040 21/42, Heilung/Schild/Bewegung F9 gegen F10). Zeile bleibt bis zum Merge stehen.
+
 ## INT-2026-11-09 — Abnahmen des Integrationsbranches
 
 | ID | Arbeit | Konkrete Abnahme |
