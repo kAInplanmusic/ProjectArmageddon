@@ -18,11 +18,13 @@ Ohne diese Einträge in `docs/betrieb-INSTANZ.md` wird nicht gestartet:
 
 | Pflicht | Wo | Stand |
 |---|---|---|
-| Name, Zweck, Instanztyp, Besitzer | Abschnitt 1 | **LÜCKE**, Auftraggeber |
-| Preis pro Stunde (aus dem Angebot, nicht geschätzt) | Abschnitt 1 | **LÜCKE** |
-| Höchstdauer und Worst Case = Preis/h × Höchstdauer | Abschnitt 2 | **LÜCKE** |
-| Zweite, unabhängige Frist **außerhalb** des Knotens | Abschnitt 2 | **LÜCKE** (z. B. Termin beim Anbieter oder Erinnerung auf deinem Rechner) |
-| Preis des Abbilds je GB und Monat (offener Punkt (e)) | Abschnitt 2 | **LÜCKE** |
+| Name, Zweck, Instanztyp, Besitzer (`PFLICHT-01`–`05`) | Abschnitt 1 | **LÜCKE**, Auftraggeber |
+| Preis pro Stunde (aus dem Angebot, nicht geschätzt, `PFLICHT-04`) | Abschnitt 1 | **LÜCKE** |
+| Höchstdauer und Worst Case = Preis/h × Höchstdauer (`PFLICHT-06`) | Abschnitt 1 | **LÜCKE** |
+| Zweite, unabhängige Frist **außerhalb** des Knotens (`PFLICHT-13`) | Abschnitt 1 | **LÜCKE** (z. B. Termin beim Anbieter oder Erinnerung auf deinem Rechner) |
+| Preis des Abbilds je GB und Monat, offener Punkt (e) (`PFLICHT-15`) | Abschnitt 1 + 8 | **LÜCKE** |
+
+Prüfbar: `node scripts/betrieb/pflichtfelder.mjs` (Rückgabe 3 = noch offen).
 
 Nur zur Orientierung, ohne Preise zu nennen: Ein Hetzner-Server wird auch
 ausgeschaltet weiter abgerechnet, bis er **gelöscht** ist (`docs/betrieb.md` §8).
