@@ -86,7 +86,7 @@ export const EREIGNIS_KATALOG = Object.freeze({
   malus_beendet: { klasse: 'zustand' },
   malus_leitung: { klasse: 'zustand' },
   drowning: { klasse: 'zustand', drossel: 'zustand', stumm: 'kein Zweig; gedrosselt, weil der Wert im Snapshot nachgerechnet redundant ist (Messreihen in docs/ereignis-info-gehalt.md)' },
-  entity_in_water: { klasse: 'zustand', drossel: 'zustand', stumm: 'Wasserstand steht als Marke am Spielernamen (seit 2026-09-27 gedrosselt: im Snapshot redundant)' },
+  entity_in_water: { klasse: 'zustand', drossel: 'zustand', stumm: 'Wasserstand steht als Marke am Spielernamen; der Client nutzt die Art seit KAMERA C4 zusätzlich für den Übergang ins Untergetaucht-Sein (Wasser-Sturz-Kamera), ohne sie anzuzeigen' },
   fall_damage: { klasse: 'zustand', klang: ['aufprall'] },
   frozen: { klasse: 'zustand', klang: ['einfrieren'] },
   heal: { klasse: 'zustand', klang: ['heilung'] },

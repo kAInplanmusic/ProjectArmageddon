@@ -897,6 +897,9 @@
           <span class="tier-blase"></span>
         </div>
       </div>
+      <!-- Kettenanzeige (KAMERA C5): ab zwei Gliedern in einem Schuss (Figur, Mine, Fass).
+           Die Texte setzt src/client/kameraEffekteBedienung.js; aria-live meldet sie auch vorlesend. -->
+      <div id="kamera-kette" class="kamera-kette" role="status" aria-live="polite" hidden></div>
       <section id="hud" aria-label="Spiel-HUD">
         <div id="hud-top">
           <div class="stat panel">
@@ -968,6 +971,33 @@
                 <span class="label">Match</span>
                 <span class="value">aufgeben</span>
               </button>
+              <!--
+                Kameraeffekte (KAMERA C6): Beben in vier Stufen, dazu die drei
+                Darstellungs-Effekte zum Abschalten. Der Bebenknopf schaltet
+                durch, statt ein `select` zu öffnen — die Pfeiltasten gehören im
+                Dropdown der Navigation (src/client/hudEinstellungen.js).
+                Bedienung und Speicher: src/client/kameraEffekteBedienung.js.
+              -->
+              <div class="kamera-effekte" role="group" aria-label="Kameraeffekte">
+                <span class="kamera-effekte-titel" aria-hidden="true">Kameraeffekte</span>
+                <button type="button" id="kamera-beben" class="kamera-effekt" data-kamera-beben data-stufe="normal"
+                        aria-label="Kamerabeben: Normal. Nächste Stufe: Stark"
+                        title="Kamerabeben: Aus, Leicht, Normal, Stark">
+                  <span aria-hidden="true">&#12336;</span> <span data-kamera-beben-text>Beben: Normal</span>
+                </button>
+                <button type="button" class="kamera-effekt" data-kamera-effekt="knapp" aria-pressed="true"
+                        title="Knapp-vorbei-Zoom: kurzer Zoom, wenn ein Geschoss eine Figur fast trifft">
+                  <span aria-hidden="true">&#9678;</span> <span>Knapp vorbei: an</span>
+                </button>
+                <button type="button" class="kamera-effekt" data-kamera-effekt="wasser" aria-pressed="true"
+                        title="Wasser-Sturz: kurzer Blick auf eine Figur, die unter Wasser geht">
+                  <span aria-hidden="true">&#8779;</span> <span>Wasser-Sturz: an</span>
+                </button>
+                <button type="button" class="kamera-effekt" data-kamera-effekt="ketten" aria-pressed="true"
+                        title="Kettenzähler: zeigt, wie viele Ziele ein Schuss nacheinander erwischt">
+                  <span aria-hidden="true">&#8734;</span> <span>Kettenzähler: an</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

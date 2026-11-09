@@ -54,6 +54,7 @@
  */
 
 import { begrenze01 } from './mathe.js';
+import { kameraEffekte } from './kameraEffekte.js';
 
 /* ======================================================================
  * 1. Treffer erkennen
@@ -325,8 +326,15 @@ export function altereRuck(ruck, dt = 1) {
 export function ruckVersatz(ruck, { bild = 0, reducedMotion = false } = {}) {
   if (!ruck || reducedMotion) return { x: 0, y: 0 };
   const anteil = begrenze01(ruck.life);
+  /*
+   * KAMERA C1: Die Bebenstufe aus dem Kameramenü gilt auch hier. `aus` schaltet
+   * das Erdbeben-Zittern mit ab, `leicht` halbiert es, `stark` verstärkt mittlere
+   * Beben. Die Lesbarkeitsgrenze `RUCK_MAX` bleibt in JEDER Stufe bestehen —
+   * ein stärkerer Ausschlag soll das Zielkreuz nicht unter dem Auge wegziehen.
+   */
+  const faktor = Number.isFinite(kameraEffekte.bebenFaktor) ? kameraEffekte.bebenFaktor : 1;
   // Schneller abbauend als linear: Der Einschlag ist hart, das Nachlassen auch.
-  const amplitude = RUCK_MAX * (ruck.skala ?? 1) * (1 - Math.sqrt(1 - anteil));
+  const amplitude = Math.min(RUCK_MAX, RUCK_MAX * (ruck.skala ?? 1) * faktor * (1 - Math.sqrt(1 - anteil)));
   return {
     x: amplitude * Math.cos(bild * 2.4),
     y: amplitude * Math.sin(bild * 3.7) * 0.6,

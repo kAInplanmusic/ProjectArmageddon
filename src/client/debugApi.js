@@ -15,6 +15,7 @@
  */
 import { MAP_WIDTH, MAP_HEIGHT, WATER_SCALE } from '../engine/match.js';
 import { ruckVersatz } from './gefuehl.js';
+import { kameraEffekte } from './kameraEffekte.js';
 import { FIXED_TIMESTEP } from '../shared/zeit.js';
 import { WEAPONS, getWeapon } from '../shared/config/weapons.js';
 import { buildEffect } from '../engine/specials.js';
@@ -108,6 +109,12 @@ export function exposeDebugApi(game) {
       } : null),
       /** Aktueller Bildruck (Erdbeben, Aufprall, Krater) in Bildschirmpixeln. */
       ruck: () => ruckVersatz(game.renderer.ruck, { bild: game.renderer.time, reducedMotion: game.renderer.reducedMotion }),
+      /** Kameraeffekte: Einstellungen, Bebenstärke und Kettenzähler (KAMERA C1-C6). */
+      kameraEffekte: () => ({
+        ...kameraEffekte.stand,
+        bebenFaktor: kameraEffekte.bebenFaktor,
+        kette: kameraEffekte.kette,
+      }),
       /** Erdbeben-Optik wie das Ereignis `terrain_quake` (nur Anzeige; für Tests lokal auslösbar). */
       beben: nutzlast => game.renderer.bebenOptik(nutzlast),
       /** Risse und Geröllzellen nach Einschlägen (Zähler und die letzten Zellen). */
