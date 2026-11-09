@@ -437,8 +437,10 @@ class Game {
     this.#bindeMusik();
     this.#bindeTon();
     // Grafikstufe (Lite/Ultra): Gerätewahl, gilt für alle Renderer-Grenzen (`this.grafik.grenzen`).
-    this.grafik = bindeGrafikBedienung(document, (g) => { this.grafik = g; this.renderer.partikelDichte = g.grenzen.partikelDichte; });
+    this.grafik = bindeGrafikBedienung(document, (g) => { this.grafik = g; this.renderer.partikelDichte = g.grenzen.partikelDichte; this.renderer.leistung = g; });
     this.renderer.partikelDichte = this.grafik.grenzen.partikelDichte;
+    // Die Kulissenwahl (A18) nutzt dieselbe Gerätemessung, ohne sie erneut durchzuführen.
+    this.renderer.leistung = this.grafik;
     this.#exposeDebugApi();
   }
 

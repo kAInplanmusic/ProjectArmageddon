@@ -404,26 +404,25 @@ test('Das Lade-Muster im Renderer trifft die Bilder wirklich', () => {
     `Das Muster findet ${gefunden.length} Bilder, der Katalog kennt ${ALL_BACKDROPS.length}`);
 });
 
-test('Der Renderer bildet den Nachschlage-Schlüssel wie Vite ihn vergibt', () => {
+test('Die URL-Auflösung bildet die Vite-Schlüssel aller Kulissen-Ordner', () => {
   // Vite vergibt die Schlüssel MIT dem Präfix aus dem Muster (also
   // „./assets/backdrops/..."). Ein anderer Schlüssel beim Nachschlagen trifft
-  // nichts und der Hintergrund bleibt leer.
-  const globQuelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'kulissenUrls.js'), 'utf8');
-  const rendererQuelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
-  const globMuster = /import\.meta\.glob\(\s*'([^']+)'/.exec(globQuelle)[1].replace('/**/', '/');
-  const praefix = globMuster.slice(0, globMuster.lastIndexOf('/') + 1);
-
-  const nachschlagen = /BACKDROP_URLS\[`([^`]+)`\]/.exec(rendererQuelle);
-  assert.ok(nachschlagen, 'Kein Nachschlagen der Kulissen-URL gefunden');
-  const schluesselMuster = nachschlagen[1];
-  assert.ok(schluesselMuster.startsWith(praefix),
-    `Nachgeschlagen wird „${schluesselMuster}", Vite vergibt aber „${praefix}..."`);
-
-  // Und der Schlüssel muss den Dateinamen enthalten.
-  for (const backdrop of ALL_BACKDROPS.slice(0, 3)) {
-    const schluessel = schluesselMuster.replace('${backdrop.file}', backdrop.file);
-    assert.equal(schluessel, `${praefix}${backdrop.file}`);
+  // nichts und der Hintergrund bleibt leer. Seit A18 liegt das Nachschlagen
+  // gebündelt in `kulissenUrls.js`; der Renderer fragt nur noch `kulissenUrl`.
+  const quelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'kulissenUrls.js'), 'utf8');
+  const globs = [...quelle.matchAll(/import\.meta\.glob\(\s*'([^']+)'/g)]
+    .map(m => m[1].replace('/**/', '/'));
+  assert.ok(globs.length >= 2, 'Kulissen-Globs fehlen');
+  for (const glob of globs) {
+    const praefix = glob.slice(0, glob.lastIndexOf('/') + 1);
+    assert.ok(quelle.includes(`\`${praefix}\${`),
+      `Für das Muster „${glob}" fehlt das Nachschlagen mit Präfix „${praefix}"`);
   }
+
+  const rendererQuelle = fs.readFileSync(path.join(ROOT, 'src', 'client', 'renderer.js'), 'utf8');
+  assert.match(rendererQuelle, /\bkulissenUrl\b/, 'Der Renderer muss die zentrale Auflösung nutzen');
+  assert.doesNotMatch(rendererQuelle, /BACKDROP_URLS/,
+    'Der Renderer darf keine eigene Schlüsselbildung mehr haben');
 });
 
 
