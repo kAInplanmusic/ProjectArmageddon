@@ -1,0 +1,7427 @@
+{
+  "ticket": "BAL-12",
+  "titel": "Reale Treffer- und Kollisionsmatrix",
+  "sourceCommit": "efe0899897bc26d8379cda9bd689ff66f4942215",
+  "versions": {
+    "waffen": 17,
+    "klassen": 3,
+    "schaden": 2,
+    "wind": 2,
+    "bodenobjekte": 5,
+    "kisten": 0
+  },
+  "seed": 31337,
+  "kartenbreite": 2560,
+  "zielLebenspunkte": 1000,
+  "rollenEntfernung": {
+    "melee": 30,
+    "ranged": 250,
+    "heavy_ranged": 600,
+    "elemental": 250,
+    "magic": 250,
+    "utility": 250,
+    "tech": 250,
+    "ultimate": 600
+  },
+  "method": "Echter fire()/step()-Pfad je Waffe: beide Figuren auf y=100 im freien Luftraum, Ziel 1000 LP, keine Kisten. Angriff: Rollenentfernung (Kategorie), Vorschau-Zielung bzw. Steilfeuer-Winkelgitter; Nachweis nur über hitscan/projectile_impact/projectile_pierced/fuse_armed aus dem abgegebenen Schuss. Selbstwirkung: echte Startposition auf dem Boden, positiver Nutzwert. Ein kontrollierter wendeExplosionAn-Aufruf ist kein Kollisionsfall und wird getrennt ausgewiesen. Keine Trefferquote, keine Winrate, keine Aussage über Bewegung/Deckung der Partie.",
+  "waffen": [
+    {
+      "id": "pa_001",
+      "name": "Baseballschläger",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 147,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.8200000000000001,
+        "angleAnzeige": 0.82,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 12,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 428.652,
+          "y": 90.468,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 53,
+          "zielVerlust": 53,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 947
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_002",
+      "name": "Feuerfaust",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 169,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.845,
+          "y": 93.389,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 51,
+          "zielVerlust": 58,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 942
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_003",
+      "name": "Hakenklinge",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 196,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.712,
+          "y": 94.728,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 45,
+          "zielVerlust": 45,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 955
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_004",
+      "name": "Piratenhaken",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 211,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.752,
+          "y": 94.283,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 36,
+          "zielVerlust": 36,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 964
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_005",
+      "name": "Morgenstern",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 147,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 4,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.538,
+          "y": 94.969,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 75,
+          "zielVerlust": 75,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 925
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_006",
+      "name": "Schaufel",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 240,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 3,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.134,
+          "y": 94.154,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 38,
+          "zielVerlust": 38,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 962
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_007",
+      "name": "Tonfa",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 224,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.737,
+          "y": 93.857,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 42,
+          "zielVerlust": 42,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 958
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_008",
+      "name": "Kriegshammer",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 147,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 4,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.289,
+          "y": 94.74,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68,
+          "zielVerlust": 68,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 932
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_009",
+      "name": "Eispickel",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 240,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 3,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.134,
+          "y": 94.154,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 56,
+          "zielVerlust": 56,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 944
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_010",
+      "name": "Kettensäge",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 224,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.737,
+          "y": 93.857,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 78,
+          "zielVerlust": 78,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 922
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_011",
+      "name": "Zwillingskatanas",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 311,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 1.3399999999999999,
+        "angleAnzeige": 1.34,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 27,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 428.36,
+          "y": 90.718,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 38,
+          "zielVerlust": 38,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 962
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_012",
+      "name": "Katana",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 305,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 1.4,
+        "angleAnzeige": 1.4,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 33,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 428.412,
+          "y": 90.639,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 48,
+          "zielVerlust": 48,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_013",
+      "name": "Mehrzweckmesser",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 240,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 3,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.134,
+          "y": 94.154,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 42,
+          "zielVerlust": 42,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 958
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_014",
+      "name": "Taschenmesser",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 328,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 30,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 11,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.505,
+          "y": 92.749,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 53,
+          "zielVerlust": 53,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 947
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_015",
+      "name": "Runenschwert",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 276,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 40,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 13,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 432.745,
+          "y": 90.406,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 47,
+          "zielVerlust": 47,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 953
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_016",
+      "name": "Rapier",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 328,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 30,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 11,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.505,
+          "y": 92.749,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 41,
+          "zielVerlust": 41,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 959
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_017",
+      "name": "Kampfmesser",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 240,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 3,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.134,
+          "y": 94.154,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 51,
+          "zielVerlust": 51,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 949
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_018",
+      "name": "Energieschwert",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 196,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 67,
+        "kollision": {
+          "art": "projectile_pierced",
+          "x": 423.712,
+          "y": 94.728,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 63,
+          "zielVerlust": 63,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 937
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "damage",
+          "projectile_pierced",
+          "terrain_destroyed",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_019",
+      "name": "Doppelaxt",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 149,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.14,
+        "angleAnzeige": 0.14,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 3,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.058,
+          "y": 94.221,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 39,
+          "zielVerlust": 39,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 961
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_020",
+      "name": "Kriegssense",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 203,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 0.33999999999999997,
+        "angleAnzeige": 0.34,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 423.278,
+          "y": 94.118,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 50,
+          "zielVerlust": 50,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 950
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_021",
+      "name": "Krummsäbel",
+      "art": "angriff",
+      "category": "melee",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 30,
+      "reichweite": 313,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 30,
+        "angle": 1.3399999999999999,
+        "angleAnzeige": 1.34,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 30,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 428.3,
+          "y": 90.859,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 44,
+          "zielVerlust": 44,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 956
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_022",
+      "name": "Plasmawerfer",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1133,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.12000000000000001,
+        "angleAnzeige": 0.12,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 12,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 628.13,
+          "y": 90.748,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68,
+          "zielVerlust": 68,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 932
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_023",
+      "name": "Boxhandschuhe",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 38,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 631.841,
+          "y": 85.472,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 40,
+          "zielVerlust": 40,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 960
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_024",
+      "name": "Mittelfinger",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 993,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.26,
+        "angleAnzeige": 0.26,
+        "power": 70,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 20,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 628.419,
+          "y": 91.779,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 48,
+          "zielVerlust": 48,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_025",
+      "name": "Handtuch",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 433,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 20,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 631.386,
+          "y": 85.311,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 62,
+          "zielVerlust": 62,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 938
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_026",
+      "name": "Pressluftbohrer",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 38,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 631.841,
+          "y": 85.472,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 72,
+          "zielVerlust": 72,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 928
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_027",
+      "name": "Fackel",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 585,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.24,
+        "angleAnzeige": 0.24,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 17,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 628.992,
+          "y": 89.883,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 46,
+          "zielVerlust": 52,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 948
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_028",
+      "name": "Kaktusbombe",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 48,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 180
+        },
+        "ticks": 180,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 643.73,
+          "y": 93.947,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 64.656,
+          "zielVerlust": 72.656,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 927.344
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_029",
+      "name": "Pömpel",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 30,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 120
+        },
+        "ticks": 120,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 643.73,
+          "y": 93.947,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 45.408,
+          "zielVerlust": 45.408,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 954.592
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_030",
+      "name": "Impulsbombe",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 52,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 180
+        },
+        "ticks": 180,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 643.73,
+          "y": 93.947,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 65.76,
+          "zielVerlust": 65.76,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 934.24
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_031",
+      "name": "Kraftfaust",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 38,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 630.866,
+          "y": 86.592,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 79,
+          "zielVerlust": 79,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 921
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_032",
+      "name": "Raketenrucksack",
+      "art": "selbst",
+      "category": "ranged",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 100.08,
+          "dx": 100,
+          "dy": 4
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 953,
+          "y": 715,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_033",
+      "name": "Zauberstab",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 647,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.24,
+        "angleAnzeige": 0.24,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 19,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 627.401,
+          "y": 94.854,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 42,
+          "zielVerlust": 42,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 958
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_034",
+      "name": "Zauberbolzen",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1041,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.26,
+        "angleAnzeige": 0.26,
+        "power": 70,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 20,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 628.839,
+          "y": 88.97,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 56,
+          "zielVerlust": 56,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 944
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_035",
+      "name": "Energieball",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 34,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 40,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.586,
+          "y": 100.772,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 63.99,
+          "zielVerlust": 63.99,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 936.01
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_036",
+      "name": "Raketenhandschuh",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 657,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.26,
+        "angleAnzeige": 0.26,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 20,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 629.221,
+          "y": 89.98,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 62,
+          "zielVerlust": 62,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 938
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_037",
+      "name": "Raketenwerfer",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 597,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.3,
+        "angleAnzeige": 0.3,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 46,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 22,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.814,
+          "y": 91.912,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 61.512,
+          "zielVerlust": 61.512,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 938.488
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_038",
+      "name": "Rakete",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 900,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.5,
+        "angleAnzeige": 0.5,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 38,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 31,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 647.204,
+          "y": 90.457,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 58.327,
+          "zielVerlust": 58.327,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 941.673
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_039",
+      "name": "Feldmörser",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "sky",
+      "rollenDistanz": 250,
+      "reichweite": 316,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.02,
+        "angleAnzeige": 0.02,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 643.951,
+          "y": 0,
+          "blastRadius": 45,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.418,
+          "y": 90.499,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 58.709,
+          "zielVerlust": 58.709,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 941.291
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_040",
+      "name": "Maschinenpistole",
+      "art": "angriff",
+      "category": "ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1172,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.21999999999999997,
+        "angleAnzeige": 0.22,
+        "power": 70,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 17,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 628.675,
+          "y": 90.83,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 42,
+          "zielVerlust": 42,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 958
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_041",
+      "name": "Salvengeber",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1225,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 16,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 37,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 993.546,
+          "y": 102.955,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 34.492,
+          "zielVerlust": 34.492,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 965.508
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_042",
+      "name": "Feuerwerkssalve",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 405,
+      "reichweite": 476,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 286,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 27,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 665.596,
+          "y": 88.998,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 75,
+          "zielVerlust": 75,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 925
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_043",
+      "name": "Kampfgeschütz",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1081,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 36,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 984.076,
+          "y": 83.055,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 65,
+          "zielVerlust": 65,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 935
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_044",
+      "name": "Phönixschlag",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 90,
+        "angle": 0.16000000000000003,
+        "angleAnzeige": 0.16,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 55,
+          "trefferRadius": 0,
+          "homing": 35,
+          "fuseTicks": 0
+        },
+        "ticks": 9,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 483.251,
+          "y": 99.751,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 69.299,
+          "zielVerlust": 83.299,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 916.701
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 4
+    },
+    {
+      "id": "pa_045",
+      "name": "Raketensalve",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 899,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 42,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 977.594,
+          "y": 107.004,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 73,
+          "zielVerlust": 73,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 927
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_046",
+      "name": "Splittergranate",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 42,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 180
+        },
+        "ticks": 180,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 850.606,
+          "y": 90.178,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 42.009,
+          "zielVerlust": 42.009,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 957.991
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_047",
+      "name": "Handgranate",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 355,
+      "reichweite": 417,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 355,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 120
+        },
+        "ticks": 120,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 744.314,
+          "y": 78.918,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 0,
+          "zielVerlust": 0,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 1000
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_048",
+      "name": "Bananengranate",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 40,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 180
+        },
+        "ticks": 180,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 850.606,
+          "y": 90.178,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 45.119,
+          "zielVerlust": 45.119,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 954.881
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_049",
+      "name": "Bumerang",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 785,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.52,
+        "angleAnzeige": 0.52,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 47,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 985.888,
+          "y": 81.755,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 39,
+          "zielVerlust": 39,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 961
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_050",
+      "name": "Doppelkopfaxt",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 326,
+      "reichweite": 384,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 326,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 39,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 709.678,
+          "y": 84.117,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 77,
+          "zielVerlust": 77,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 923
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_051",
+      "name": "Wurfklingen",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1224,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 37,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 977.315,
+          "y": 92.919,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68,
+          "zielVerlust": 68,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 932
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_052",
+      "name": "Molotowcocktail",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 42,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 120
+        },
+        "ticks": 120,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 850.606,
+          "y": 90.178,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 35.898,
+          "zielVerlust": 48.898,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 951.102
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_053",
+      "name": "Roboterbombe",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 45,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 180
+        },
+        "ticks": 180,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 850.606,
+          "y": 90.178,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 53.009,
+          "zielVerlust": 53.009,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 946.991
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_054",
+      "name": "Schrotflinte",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 996,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.33999999999999997,
+        "angleAnzeige": 0.34,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 37,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 979.536,
+          "y": 88.44,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 57,
+          "zielVerlust": 57,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 943
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_055",
+      "name": "Fernbüchse",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1375,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.27999999999999997,
+        "angleAnzeige": 0.28,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 87,
+        "kollision": {
+          "art": "projectile_pierced",
+          "x": 977.779,
+          "y": 91.06,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 55,
+          "zielVerlust": 55,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 945
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "damage",
+          "projectile_pierced",
+          "terrain_destroyed",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_056",
+      "name": "Präzisionsgewehr",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1416,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.27999999999999997,
+        "angleAnzeige": 0.28,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 32,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 981.969,
+          "y": 85.345,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 72,
+          "zielVerlust": 72,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 928
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_057",
+      "name": "Revolver",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1225,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.33999999999999997,
+        "angleAnzeige": 0.34,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 36,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 981.423,
+          "y": 84.978,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 49,
+          "zielVerlust": 49,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 951
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_058",
+      "name": "Kampfbogen",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 795,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 477,
+        "angle": 0.32,
+        "angleAnzeige": 0.32,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 31,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 853.405,
+          "y": 96.74,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 55,
+          "zielVerlust": 55,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 945
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_059",
+      "name": "Armbrust",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 584,
+      "reichweite": 687,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 584,
+        "angle": 0.56,
+        "angleAnzeige": 0.56,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 64,
+        "kollision": {
+          "art": "projectile_pierced",
+          "x": 961.826,
+          "y": 109.093,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 53,
+          "zielVerlust": 53,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 947
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "damage",
+          "projectile_pierced",
+          "terrain_destroyed",
+          "explosion"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_060",
+      "name": "Gatlingkanone",
+      "art": "angriff",
+      "category": "heavy_ranged",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 1319,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.24,
+        "angleAnzeige": 0.24,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 30,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 980.543,
+          "y": 86.978,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 44,
+          "zielVerlust": 44,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 956
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_061",
+      "name": "Feuerdämon",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 44,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 41,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.592,
+          "y": 106.224,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 46.224,
+          "zielVerlust": 61.224,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 938.776
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_062",
+      "name": "Flammenwerfer",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 38,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 629.628,
+          "y": 89.411,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 48,
+          "zielVerlust": 60,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 940
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_063",
+      "name": "Wasserwerfer",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.78,
+        "angleAnzeige": 0.78,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 38,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 637.038,
+          "y": 80.684,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 32,
+          "zielVerlust": 32,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 968
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_064",
+      "name": "Katapult",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 629,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.27999999999999997,
+        "angleAnzeige": 0.28,
+        "power": 90,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 48,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 19,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.446,
+          "y": 92.719,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 54.122,
+          "zielVerlust": 54.122,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 945.878
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_065",
+      "name": "Meteorbrocken",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "sky",
+      "rollenDistanz": 250,
+      "reichweite": 559,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.02,
+        "angleAnzeige": 0.02,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 643.951,
+          "y": 0,
+          "blastRadius": 50,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.665,
+          "y": 90.015,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 56.499,
+          "zielVerlust": 56.499,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 943.501
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_066",
+      "name": "Haubitze",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "sky",
+      "rollenDistanz": 250,
+      "reichweite": 617,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.02,
+        "angleAnzeige": 0.02,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 643.951,
+          "y": 0,
+          "blastRadius": 48,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 6,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.418,
+          "y": 90.907,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 42.904,
+          "zielVerlust": 42.904,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 957.096
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_067",
+      "name": "Säurekanone",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 38,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 40,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.24,
+          "y": 98.305,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 28.581,
+          "zielVerlust": 42.581,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 957.419
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_068",
+      "name": "Plasmagewehr",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1279,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.3,
+        "angleAnzeige": 0.3,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 80,
+        "kollision": {
+          "art": "projectile_pierced",
+          "x": 630.75,
+          "y": 86.253,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 46,
+          "zielVerlust": 46,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 954
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "damage",
+          "projectile_pierced",
+          "terrain_destroyed",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_069",
+      "name": "Raketenkanone",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 40,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 41,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.449,
+          "y": 109.012,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 40.402,
+          "zielVerlust": 40.402,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 959.598
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_070",
+      "name": "Giftwolke",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 58,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 60
+        },
+        "ticks": 60,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 643.73,
+          "y": 93.947,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 15.295,
+          "zielVerlust": 33.295,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 966.705
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_071",
+      "name": "Eisschlag",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 35,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 40,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.586,
+          "y": 100.772,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 44.848,
+          "zielVerlust": 44.848,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 955.152
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_072",
+      "name": "Feuerball",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 34,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 41,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.592,
+          "y": 106.224,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 35.388,
+          "zielVerlust": 47.388,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952.612
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_073",
+      "name": "Tentakelgift",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 44,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 120
+        },
+        "ticks": 120,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 643.73,
+          "y": 93.947,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 25.662,
+          "zielVerlust": 43.662,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 956.338
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_074",
+      "name": "Verderbnissiegel",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 46,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 40,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.24,
+          "y": 98.305,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 28.849,
+          "zielVerlust": 35.849,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 964.151
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_075",
+      "name": "Tornado",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.16000000000000003,
+        "angleAnzeige": 0.16,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 60,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 17,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.798,
+          "y": 98.495,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 40.213,
+          "zielVerlust": 40.213,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 959.787
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_076",
+      "name": "Portalring",
+      "art": "selbst",
+      "category": "elemental",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 60.671,
+          "dx": 60,
+          "dy": 9
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 913,
+          "y": 720,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_077",
+      "name": "Schwarzes Loch",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.74,
+        "angleAnzeige": 0.74,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 72,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 40,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.586,
+          "y": 100.772,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68.271,
+          "zielVerlust": 68.271,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 931.729
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_078",
+      "name": "Voodoopuppe",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 38,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 631.841,
+          "y": 85.472,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 45,
+          "zielVerlust": 45,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 955
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_079",
+      "name": "Kosmisches Portal",
+      "art": "selbst",
+      "category": "elemental",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 60.671,
+          "dx": 60,
+          "dy": 9
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 913,
+          "y": 720,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_080",
+      "name": "Psionischer Tentakel",
+      "art": "angriff",
+      "category": "elemental",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.76,
+        "angleAnzeige": 0.76,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 52,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 40,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 643.24,
+          "y": 98.305,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 38.103,
+          "zielVerlust": 38.103,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 961.897
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_081",
+      "name": "Siegel der Leere",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 848,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 55,
+          "zielVerlust": 61,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 939
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_082",
+      "name": "Goldener Münzstab",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 959,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.46,
+        "angleAnzeige": 0.46,
+        "power": 60,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 26,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 634.884,
+          "y": 81.8,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 44,
+          "zielVerlust": 44,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 956
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_083",
+      "name": "Goldene Hand",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 709,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 46,
+          "zielVerlust": 46,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 954
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_084",
+      "name": "Glutelixier",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "damage_boost",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "damage_boost",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schadensbonus",
+          "wert": 1.7
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_085",
+      "name": "Feuermagier",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "random",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "random",
+        "projectileId": null,
+        "nutzen": {
+          "art": "zufall",
+          "wert": 3,
+          "randomKind": "ammo",
+          "unter": {
+            "art": "munition",
+            "wert": 3
+          }
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 40
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 5,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_086",
+      "name": "Windkrieger",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 647,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 42,
+          "zielVerlust": 42,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 958
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_087",
+      "name": "Dimensionssprung",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 80.306,
+          "dx": 80,
+          "dy": 7
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 933,
+          "y": 718,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_088",
+      "name": "Dimensionsriss",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 165.048,
+          "dx": 165,
+          "dy": -4
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 1018,
+          "y": 707,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_089",
+      "name": "Zauberstiefel",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 41.231,
+          "dx": 40,
+          "dy": 10
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 893,
+          "y": 721,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_090",
+      "name": "Giftpilz",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 416,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 18,
+          "zielVerlust": 36,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 964
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_091",
+      "name": "Astralkugel",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 893,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 58,
+          "zielVerlust": 58,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 942
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_092",
+      "name": "Heilzauber",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "heal",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "heal",
+        "projectileId": null,
+        "nutzen": {
+          "art": "heilung",
+          "wert": 40
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 80
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_093",
+      "name": "Funkenschild",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "shield",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "shield",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schild",
+          "wert": 40
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_094",
+      "name": "Heilspritze",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "heal",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "heal",
+        "projectileId": null,
+        "nutzen": {
+          "art": "heilung",
+          "wert": 60
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_095",
+      "name": "Sturmelixier",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "damage_boost",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "damage_boost",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schadensbonus",
+          "wert": 1.3
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_096",
+      "name": "Mutationselixier",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "random",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "random",
+        "projectileId": null,
+        "nutzen": {
+          "art": "zufall",
+          "wert": 1.5,
+          "randomKind": "damage_boost",
+          "unter": {
+            "art": "schadensbonus",
+            "wert": 1.5
+          }
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 40
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_097",
+      "name": "Traumfänger",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 585,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 30,
+          "zielVerlust": 30,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 970
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_098",
+      "name": "Lavaelixier",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 771,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 50,
+          "zielVerlust": 66,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 934
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_099",
+      "name": "Frostsanduhr",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "damage_boost",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "damage_boost",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schadensbonus",
+          "wert": 1.2
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_100",
+      "name": "Blitzwürfel",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "random",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "random",
+        "projectileId": null,
+        "nutzen": {
+          "art": "zufall",
+          "wert": 3,
+          "randomKind": "ammo",
+          "unter": {
+            "art": "munition",
+            "wert": 3
+          }
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 40
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 5,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_101",
+      "name": "Eisschild",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "shield",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "shield",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schild",
+          "wert": 55
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_102",
+      "name": "Gedankensturm",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 801,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 52,
+          "zielVerlust": 52,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 948
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_103",
+      "name": "Verderbniskelch",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 463,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 30,
+          "zielVerlust": 40,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 960
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_104",
+      "name": "Quantengewehr",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1375,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 79,
+        "kollision": {
+          "art": "projectile_pierced",
+          "x": 626.749,
+          "y": 94.094,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 45,
+          "zielVerlust": 45,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 955
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "damage",
+          "projectile_pierced",
+          "terrain_destroyed",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_105",
+      "name": "Frostrolle",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "random",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "random",
+        "projectileId": null,
+        "nutzen": {
+          "art": "zufall",
+          "wert": 0.3,
+          "randomKind": "armor",
+          "unter": {
+            "art": "ruestung",
+            "wert": 0.3
+          }
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 40
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_106",
+      "name": "Sonnenamulett",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 585,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 38,
+          "zielVerlust": 48,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_107",
+      "name": "Allsehendes Auge",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "reveal",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "reveal",
+        "projectileId": null,
+        "nutzen": {
+          "art": "aufklaerung",
+          "wert": 2
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_108",
+      "name": "Zauberpeitsche",
+      "art": "angriff",
+      "category": "magic",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 493,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 32,
+          "zielVerlust": 32,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 968
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_109",
+      "name": "Giftbaum",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "damage_boost",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "damage_boost",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schadensbonus",
+          "wert": 1.15
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_110",
+      "name": "Dimensionskugel",
+      "art": "selbst",
+      "category": "magic",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 110.041,
+          "dx": 110,
+          "dy": 3
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 963,
+          "y": 714,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_111",
+      "name": "Enterhaken",
+      "art": "selbst",
+      "category": "utility",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 46.098,
+          "dx": 45,
+          "dy": 10
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 898,
+          "y": 721,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_112",
+      "name": "Düsenrucksack",
+      "art": "selbst",
+      "category": "utility",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 70.456,
+          "dx": 70,
+          "dy": 8
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 923,
+          "y": 719,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_113",
+      "name": "Bohrkanone",
+      "art": "angriff",
+      "category": "utility",
+      "delivery": "hitscan",
+      "strikeStyle": "flank",
+      "rollenDistanz": 250,
+      "reichweite": 373,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 30,
+          "zielVerlust": 30,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 970
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_114",
+      "name": "Gleitschirm",
+      "art": "selbst",
+      "category": "utility",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 160.028,
+          "dx": 160,
+          "dy": -3
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 1013,
+          "y": 708,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_115",
+      "name": "Wächterstatue",
+      "art": "selbst",
+      "category": "utility",
+      "kind": "heal",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "heal",
+        "projectileId": null,
+        "nutzen": {
+          "art": "heilung",
+          "wert": 35
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 75
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_116",
+      "name": "Blutritual",
+      "art": "selbst",
+      "category": "utility",
+      "kind": "heal",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "heal",
+        "projectileId": null,
+        "nutzen": {
+          "art": "heilung",
+          "wert": 60
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 40
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_117",
+      "name": "Ananasbombe",
+      "art": "angriff",
+      "category": "utility",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 597,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 48,
+          "zielVerlust": 48,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_118",
+      "name": "Feuerwesen",
+      "art": "angriff",
+      "category": "utility",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 572,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 46,
+          "zielVerlust": 62,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 938
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_119",
+      "name": "Munitionskiste",
+      "art": "selbst",
+      "category": "utility",
+      "kind": "ammo",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "ammo",
+        "projectileId": null,
+        "nutzen": {
+          "art": "munition",
+          "wert": 2
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 4,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_120",
+      "name": "Energiefaust",
+      "art": "angriff",
+      "category": "utility",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 597,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 48,
+          "zielVerlust": 48,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_121",
+      "name": "Raketenfaust",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1031,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 58,
+          "zielVerlust": 58,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 942
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_122",
+      "name": "Endlosschleife",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "ammo",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "ammo",
+        "projectileId": null,
+        "nutzen": {
+          "art": "munition",
+          "wert": 3
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 5,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_123",
+      "name": "Magnetkanone",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 711,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 40,
+          "zielVerlust": 40,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 960
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_124",
+      "name": "Wachgeschütz",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "turret",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "turret",
+        "projectileId": null,
+        "nutzen": {
+          "art": "geschuetz",
+          "wert": 3,
+          "turretId": 1
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "turret_deployed",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_125",
+      "name": "Nachschubkiste",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "ammo",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "ammo",
+        "projectileId": null,
+        "nutzen": {
+          "art": "munition",
+          "wert": 3
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 5,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_126",
+      "name": "Bunker",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "armor",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "armor",
+        "projectileId": null,
+        "nutzen": {
+          "art": "ruestung",
+          "wert": 0.35
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_127",
+      "name": "Mine",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "mine",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "mine",
+        "projectileId": null,
+        "nutzen": {
+          "art": "mine",
+          "wert": 1,
+          "mineId": 3,
+          "mineArt": "abgeworfen"
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "mine_placed",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_128",
+      "name": "Hologrammportal",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 90.2,
+          "dx": 90,
+          "dy": 6
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 943,
+          "y": 717,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_129",
+      "name": "Tesla-Turm",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 853,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 48,
+          "zielVerlust": 48,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 952
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_130",
+      "name": "Tarnnetz",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "armor",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "armor",
+        "projectileId": null,
+        "nutzen": {
+          "art": "ruestung",
+          "wert": 0.2
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_131",
+      "name": "Schlauchboot",
+      "art": "selbst",
+      "category": "tech",
+      "kind": "move",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "move",
+        "projectileId": null,
+        "nutzen": {
+          "art": "bewegung",
+          "wert": 50.99,
+          "dx": 50,
+          "dy": 10
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 903,
+          "y": 721,
+          "hp": 100
+        },
+        "munitionVorher": 3,
+        "munitionNachher": 2,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_132",
+      "name": "Alte Dame",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 977,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 55,
+          "zielVerlust": 55,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 945
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_133",
+      "name": "Fliegendes Superschaf",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 248,
+      "reichweite": 292,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 175,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 40,
+          "trefferRadius": 0,
+          "homing": 70,
+          "fuseTicks": 0
+        },
+        "ticks": 20,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 568.366,
+          "y": 108.924,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 43.321,
+          "zielVerlust": 53.321,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 946.679
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_134",
+      "name": "Luftangriff",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "sky",
+      "rollenDistanz": 250,
+      "reichweite": 1103,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 62,
+          "zielVerlust": 62,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 938
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_135",
+      "name": "Meteorregen",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "sky",
+      "rollenDistanz": 250,
+      "reichweite": 1209,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68,
+          "zielVerlust": 68,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 932
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_136",
+      "name": "Bohrkopfrakete",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1137,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 64,
+          "zielVerlust": 64,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 936
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_137",
+      "name": "Flammenklinge",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 587,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 33,
+          "zielVerlust": 45,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 955
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_138",
+      "name": "Arkanhammer",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1209,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68,
+          "zielVerlust": 68,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 932
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_139",
+      "name": "Höllenkanone",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "hitscan",
+      "strikeStyle": "flank",
+      "rollenDistanz": 250,
+      "reichweite": 1209,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0,
+        "angleAnzeige": 0,
+        "power": 100,
+        "route": "strahl",
+        "spawn": null,
+        "ticks": 0,
+        "kollision": {
+          "art": "hitscan",
+          "x": 643,
+          "y": 95,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 68,
+          "zielVerlust": 84,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 916
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "damage",
+          "hitscan"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_140",
+      "name": "Quantenkanone",
+      "art": "angriff",
+      "category": "tech",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 250,
+      "reichweite": 1416,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 250,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 50,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 79,
+        "kollision": {
+          "art": "projectile_pierced",
+          "x": 627.785,
+          "y": 90.931,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 47,
+          "zielVerlust": 47,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 953
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "damage",
+          "projectile_pierced",
+          "terrain_destroyed",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_141",
+      "name": "Astralkrieger",
+      "art": "selbst",
+      "category": "ultimate",
+      "kind": "turret",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "turret",
+        "projectileId": null,
+        "nutzen": {
+          "art": "geschuetz",
+          "wert": 3,
+          "turretId": 1
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 1,
+        "munitionNachher": 0,
+        "ereignisArten": [
+          "shot",
+          "turret_deployed",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_142",
+      "name": "Leerenritter",
+      "art": "angriff",
+      "category": "ultimate",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.52,
+        "angleAnzeige": 0.52,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 0,
+          "trefferRadius": 24,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 48,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 976.542,
+          "y": 98.569,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 82,
+          "zielVerlust": 82,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 918
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_143",
+      "name": "Astralross",
+      "art": "selbst",
+      "category": "ultimate",
+      "kind": "mount",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "mount",
+        "projectileId": null,
+        "nutzen": {
+          "art": "reittier",
+          "wert": 140.004,
+          "dx": 140,
+          "dy": -1
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 993,
+          "y": 710,
+          "hp": 100
+        },
+        "munitionVorher": 2,
+        "munitionNachher": 1,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_144",
+      "name": "Kosmische Wassermelone",
+      "art": "angriff",
+      "category": "ultimate",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 70,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 300
+        },
+        "ticks": 300,
+        "kollision": {
+          "art": "fuse_armed",
+          "x": 850.606,
+          "y": 90.178,
+          "target": 2,
+          "imFreien": true
+        },
+        "schaden": {
+          "ereignisse": 72.953,
+          "zielVerlust": 72.953,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 927.047
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "fuse_armed",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "fuse_expired"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_145",
+      "name": "Erdspalter",
+      "art": "angriff",
+      "category": "ultimate",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.52,
+        "angleAnzeige": 0.52,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 75,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 50,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 993.738,
+          "y": 108.912,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 81.204,
+          "zielVerlust": 81.204,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 918.796
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_146",
+      "name": "Giftige Weltenflasche",
+      "art": "angriff",
+      "category": "ultimate",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": true,
+      "probe": {
+        "distance": 600,
+        "angle": 0.52,
+        "angleAnzeige": 0.52,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 65,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 50,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 993.738,
+          "y": 108.912,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 45.784,
+          "zielVerlust": 63.784,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 936.216
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 1
+    },
+    {
+      "id": "pa_147",
+      "name": "Weltendrache",
+      "art": "angriff",
+      "category": "ultimate",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 80,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 33,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 846.142,
+          "y": 90.178,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 85.704,
+          "zielVerlust": 101.704,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 898.296
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    },
+    {
+      "id": "pa_148",
+      "name": "Feuerschild",
+      "art": "selbst",
+      "category": "ultimate",
+      "kind": "shield",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "shield",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schild",
+          "wert": 75
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 1,
+        "munitionNachher": 0,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_149",
+      "name": "Goldene Reliktkugel",
+      "art": "selbst",
+      "category": "ultimate",
+      "kind": "damage_boost",
+      "rollenDistanz": null,
+      "probe": {
+        "ok": true,
+        "errors": [],
+        "route": "selbst",
+        "kind": "damage_boost",
+        "projectileId": null,
+        "nutzen": {
+          "art": "schadensbonus",
+          "wert": 1.5
+        },
+        "vorher": {
+          "x": 853,
+          "y": 711,
+          "hp": 100
+        },
+        "nachher": {
+          "x": 853,
+          "y": 713,
+          "hp": 100
+        },
+        "munitionVorher": 2,
+        "munitionNachher": 1,
+        "ereignisArten": [
+          "shot",
+          "special_effect",
+          "weapon_cooldown",
+          "turn_end",
+          "turn_start",
+          "landed"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      }
+    },
+    {
+      "id": "pa_150",
+      "name": "Kosmischer Kern",
+      "art": "angriff",
+      "category": "ultimate",
+      "delivery": "projectile",
+      "strikeStyle": "self",
+      "rollenDistanz": 600,
+      "reichweite": 753,
+      "rollenDistanzErreicht": false,
+      "probe": {
+        "distance": 452,
+        "angle": 0.36,
+        "angleAnzeige": 0.36,
+        "power": 100,
+        "route": "projektil",
+        "spawn": {
+          "x": 400,
+          "y": 95,
+          "blastRadius": 90,
+          "trefferRadius": 0,
+          "homing": 0,
+          "fuseTicks": 0
+        },
+        "ticks": 33,
+        "kollision": {
+          "art": "projectile_impact",
+          "x": 846.142,
+          "y": 90.178,
+          "target": 2
+        },
+        "schaden": {
+          "ereignisse": 96.022,
+          "zielVerlust": 96.022,
+          "selbstVerlust": 0,
+          "zielLP": {
+            "vorher": 1000,
+            "nachher": 903.978
+          }
+        },
+        "ereignisArten": [
+          "shot",
+          "projectile_spawn",
+          "terrain_destroyed",
+          "damage",
+          "explosion",
+          "projectile_impact"
+        ],
+        "quelle": "fire+step",
+        "kontrollierteExplosion": false
+      },
+      "versuche": 2
+    }
+  ],
+  "summary": {
+    "waffen": 150,
+    "angriff": 112,
+    "selbst": 38,
+    "angriffMitKollision": 112,
+    "angriffMitSchaden": 111,
+    "angriffNurKollision": [
+      {
+        "id": "pa_047",
+        "name": "Handgranate",
+        "art": "fuse_armed",
+        "begruendung": "Zünderwaffe: Kollision belegt, Schaden 0 — offene Entscheidung GP-1 (Radius 0 vs. Art)"
+      }
+    ],
+    "selbstMitNutzen": 38,
+    "rollenDistanzErreicht": 101
+  },
+  "kontrollfall": {
+    "schaden": 40,
+    "kollisionsEreignisse": 0,
+    "ereignisArten": [
+      "terrain_destroyed",
+      "damage"
+    ],
+    "zaehltAlsKollision": false,
+    "begruendung": "Direkter Aufruf von wendeExplosionAn erzeugt kein hitscan/projectile_impact/projectile_pierced/fuse_armed"
+  },
+  "kontrolle": {
+    "wiederholterSchussIdentisch": true,
+    "pa_040": {
+      "ereignisse": 42,
+      "zielVerlust": 42,
+      "selbstVerlust": 0,
+      "zielLP": {
+        "vorher": 1000,
+        "nachher": 958
+      }
+    }
+  },
+  "szenarien": {
+    "zweiZiele": {
+      "durchschlag": {
+        "erstes": 41.25,
+        "zweites": 41.25
+      },
+      "normal": {
+        "erstes": 31.5,
+        "zweites": 0
+      }
+    },
+    "wanddeckung": {
+      "wand": {
+        "x": 650,
+        "y": 40,
+        "breite": 5,
+        "hoehe": 121
+      },
+      "abgelehnt": true,
+      "grund": "Tesla-Turm verlangt freie Sicht zum Ziel — die Sichtlinie ist versperrt",
+      "schaden": 0
+    },
+    "randtreffer": {
+      "kartenbreite": 2560,
+      "zielX": 2520,
+      "ok": true,
+      "trefferX": 2513,
+      "schaden": 48
+    },
+    "zielsuche": {
+      "homing": 70,
+      "ok": true,
+      "takte": 15,
+      "kollision": "projectile_impact",
+      "schaden": 52.547
+    },
+    "durchschlag": {
+      "hinweis": "Zwei-Ziele-Fall oben: pa_055 durchschlägt, pa_040 nicht; Einzeltrefferzahlen stehen dort."
+    },
+    "zuender": {
+      "hinweis": "Armierung, Zündort und Mindestschaden der elf Zünderwaffen sind in tests/zuender-armierung.test.js belegt; hier nicht dupliziert."
+    },
+    "seil": {
+      "hinweis": "Schuss vom Seil löst das Seil: tests/seil.test.js („Waffe vom Seil“)."
+    },
+    "wasser": {
+      "hinweis": "Kein Wasserfall in der Luftzielmatrix; offen für BAL-17 (Kartenabdeckung)."
+    }
+  }
+}
