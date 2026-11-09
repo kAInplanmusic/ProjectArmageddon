@@ -471,10 +471,11 @@ class Game {
      * Fraktionshymne: Wählt der Spieler im Menü eine Fraktion an, spielt deren
      * Hymne; „Automatisch/Klassisch" oder das Verlassen des Menüs beenden sie.
      * Ein delegierter Hörer, weil `fillFraktionOptions` die Felder neu baut.
+     * Die Kaderreiter melden ihre Wahl über denselben Weg (A14, `buildRosterView`).
      */
     document.getElementById('fraktion-felder')?.addEventListener('change', event => {
       const wert = event.target?.value ?? '';
-      this.musik.setzeHymne(FACTIONS.some(f => f.id === wert) ? wert : null);
+      void this.musik.waehleHymne(FACTIONS.some(f => f.id === wert) ? wert : null);
     });
     document.addEventListener('visibilitychange', () => this.musik.setzeVersteckt(document.hidden));
   }
@@ -3977,8 +3978,8 @@ class Game {
 }
 
 const game = new Game();
-// Kader- und Hilfeansicht einmalig aufbauen (eigenes Modul, siehe kaderansicht.js).
-buildRosterView();
+// Kader- und Hilfeansicht einmalig aufbauen; der Reiter wählt die Menü-Hymne (A14).
+buildRosterView({ hymneWaehlen: id => { void game.musik?.waehleHymne(id); } });
 buildHilfeView();
 // Kulissenauswahl füllen, sobald das DOM steht. Der Katalog ist die einzige
 // Quelle; die Liste im HTML bleibt bewusst leer.

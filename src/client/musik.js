@@ -20,7 +20,9 @@
  *
  *  - **Autoplay:** Der Start passiert erst in `freigeben()`, und das wird aus
  *    einer Nutzergeste gerufen (Taste, Klick, Tippen) — gemeinsam mit der
- *    Freigabe des Mischers. Davor ist alles Zustand, kein Ton.
+ *    Freigabe des Mischers. Davor ist alles Zustand, kein Ton. Die Anwahl einer
+ *    Fraktion im Menü (Feld oder Kaderreiter) geht über `waehleHymne()` und ist
+ *    selbst die Geste.
  *  - **Stimmung:** `menu` oder `match`. Beim Wechsel wird zu einem Stück der
  *    neuen Stimmung übergeblendet (2 s). Im Match mischt die Wiedergabe ohne
  *    direkte Wiederholung (`musikListe.js`).
@@ -43,8 +45,12 @@ import { pruefeManifest, stueckeFuer, waehleNaechstes, hymnenStueck } from './mu
 
 const MUSIK_SCHLUESSEL = 'pa.musik.v1';
 const STANDARD_LAUTSTAERKE = 0.35;
-/** Dauer der Überblendung in Sekunden. */
-const UEBERBLENDUNG_S = 2;
+/**
+ * Dauer der Überblendung in Sekunden (A14: 1–2 s). Gilt für Stimmungs- und
+ * Hymnenwechsel; ein Hymnenwechsel klingt damit wie ein Stückwechsel, nicht wie
+ * ein Neustart.
+ */
+export const UEBERBLENDUNG_S = 2;
 /** Ducken: Faktor (0,5 = −6 dB), Haltezeit und Rückkehr in Sekunden. */
 export const DUCK_FAKTOR = 0.5;
 const DUCK_HALTEN_S = 0.4;
@@ -62,6 +68,17 @@ export function wiedergabeErlaubt({ suche = '', webdriver = false } = {}) {
   if (wert === '0' || wert === 'aus') return false;
   if (wert === '1' || wert === 'an') return true;
   return !webdriver;
+}
+
+/**
+ * Ist der Fehler nur ein abgebrochener Abspielversuch? `play()` wird abgelehnt,
+ * wenn während des Ladens pausiert, stummgeschaltet oder die Quelle gewechselt
+ * wird (`AbortError`) oder wenn der Browser die Wiedergabe verweigert
+ * (`NotAllowedError`). Beides ist KEIN Dateifehler — die Datei würde sonst
+ * stillschweigend verworfen, nur weil jemand im falschen Moment pausiert hat.
+ */
+function istAbbruch(fehler) {
+  return fehler?.name === 'AbortError' || fehler?.name === 'NotAllowedError';
 }
 
 /** Speicher mit try/catch — ohne localStorage läuft alles weiter. */
@@ -100,6 +117,7 @@ export class Musik {
   #aktuellerSlot = -1;
   #bus = null;
   #gestartet = false;
+  #freigabe = null;
   #versteckt = false;
   #aufgegeben = false;
   #fehlversuche = 0;
@@ -254,13 +272,42 @@ export class Musik {
   }
 
   /**
+   * Wahl aus dem Menü (Fraktionsfeld ODER Kaderreiter): Hymne setzen und die
+   * Wiedergabe aus DERSELBEN Nutzergeste freigeben. Dieselbe Fraktion erneut
+   * anzuklicken startet nichts neu (`setzeHymne` erkennt die gleiche Wahl);
+   * bei „Musik aus" bleibt es still und setzt beim Einschalten fort.
+   * @param {string|null} id - Fraktions-ID, `null` = zurück zur Menümusik
+   * @returns {Promise<boolean>} ob die Wiedergabe jetzt bereitsteht
+   */
+  waehleHymne(id) {
+    this.setzeHymne(id);
+    return this.freigeben();
+  }
+
+  /**
    * Gibt die Wiedergabe frei. Muss aus einer Nutzergeste gerufen werden
    * (Taste/Klick/Tippen); mehrfaches Rufen ist unschädlich.
+   *
+   * Mehrfaches Rufen ist nicht nur unschädlich, es ist die Regel: Ein Klick
+   * läuft durch mehrere Hörer (`pointerup`, `click`) und seit A14 zusätzlich
+   * durch die Fraktionswahl. Ohne Sperre sähe jeder Aufruf `#gestartet === false`
+   * (es wird erst nach `await starte()` gesetzt), baute seinen eigenen Bus und
+   * startete ein eigenes Stück — die Hymne liefe mehrfach übereinander. Die
+   * laufende Freigabe wird deshalb geteilt.
    * @returns {Promise<boolean>} ob die Musik jetzt bereitsteht
    */
-  async freigeben() {
-    if (!this.#aktiv) return false;
-    if (this.#gestartet) return true;
+  freigeben() {
+    if (!this.#aktiv) return Promise.resolve(false);
+    if (this.#gestartet) return Promise.resolve(true);
+    if (!this.#freigabe) {
+      this.#freigabe = this.#freigebenJetzt()
+        .catch(() => false)
+        .finally(() => { this.#freigabe = null; });
+    }
+    return this.#freigabe;
+  }
+
+  async #freigebenJetzt() {
     try {
       const ok = await this.#mischer?.starte?.();
       const anschluss = ok ? this.#mischer.musikAnschluss?.() : null;
@@ -389,7 +436,8 @@ export class Musik {
 
     const spiel = slot.el.play();
     if (spiel && typeof spiel.catch === 'function') {
-      spiel.catch(() => {
+      spiel.catch(fehler => {
+        if (istAbbruch(fehler)) return;
         if (slot.belegung === belegung && this.#slots[this.#aktuellerSlot] === slot) {
           this.#beiFehler(index);
         }
@@ -471,15 +519,26 @@ export class Musik {
     }
   }
 
+  /**
+   * Passt das laufende Stück noch zum Wunsch? Eine gewählte Hymne verdrängt die
+   * Menümusik auch dann, wenn die Musik nur pausiert war (A14: Wahl bei „Musik
+   * aus", Fortsetzung beim Einschalten).
+   */
+  #passtZumWunsch(stueck) {
+    if (!stueck) return false;
+    if (this.#hymne && this.#stimmung === 'menu') return stueck.hymne === this.#hymne;
+    if (stueck.hymne) return false;
+    return stueckeFuer(this.#manifest, this.#stimmung).some(s => s.id === stueck.id);
+  }
+
   #setzeFort() {
     const slot = this.#slots[this.#aktuellerSlot];
-    const passt = slot?.stueck
-      && (slot.stueck.hymne ? slot.stueck.hymne === this.#hymne : true)
-      && (slot.stueck.hymne || stueckeFuer(this.#manifest, this.#stimmung).some(s => s.id === slot.stueck.id));
-    if (!passt) { this.#spieleNaechstes(); return; }
+    if (!this.#passtZumWunsch(slot?.stueck)) { this.#spieleNaechstes(); return; }
     slot.belegung += 1;
     const p = slot.el.play();
-    if (p && typeof p.catch === 'function') p.catch(() => this.#beiFehler(this.#aktuellerSlot));
+    if (p && typeof p.catch === 'function') {
+      p.catch(fehler => { if (!istAbbruch(fehler)) this.#beiFehler(this.#aktuellerSlot); });
+    }
     this.#rampe(slot.gain.gain, 1, 0.4);
     this.#melde();
   }
