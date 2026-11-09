@@ -36,6 +36,7 @@ BAL-07-Stand 2026-11-09: umgesetzt auf `bg/bal-07` — Menü, HUD, Beschreibung,
 BAL-10-Stand 2026-11-09 (`bg/bal-10`): 26 Blätter pixelbasiert je acht Frames abgenommen; 0 produktfreigegeben, pa_065 datenabgenommen, 25 abgelehnt. Manifest v3 mit `pruefung`/`sperrgruende`, Lader weist manipulierte Freigabelisten ab; Beleg [ANIM-ABNAHME](waffen-audit-2026-11-08/ANIM-ABNAHME.md), Tests `tests/waffen-anim-abnahme.test.js` (6/6) und `tests/waffen-anim-gating.test.js` (8/8).
 BAL-11-Stand 2026-11-09: umgesetzt auf `bg/bal-11` — alle 150 IDs haben eine Rolle und einen Wirkpfad in `src/shared/config/waffen-rollen.js` (109 Hand, 3 Rücken, 12 Aufstellobjekt, 5 Beschwörung, 21 Symbol); Manifest und Anzeige lesen dieselben Werte, Erklärung in [ROLLEN.md](waffen-audit-2026-11-08/ROLLEN.md). 96 Geschossbilder sind ausdrücklich 87 Projektilpfade plus 9 Begleitbilder; `tests/waffen-rollen.test.js` prüft 150 Rollen, die Spezialfälle und die Bildtrennung.
 BAL-13-Stand 2026-11-09: auf `bg/bal-13` mit echten 70/100/130 LP gemessen — 22 Fälle in `tests/status-oekonomie.test.js`, Beleg [BAL-13-ABNAHME](waffenbalance-2026-11-09/BAL-13-ABNAHME.md).
+BAL-09 offen (2026-11-09): Werkzeug `tools/waffen-freistellung.py` und Entscheidungsliste `tools/waffen-freistellung.json` liegen im Worktree `bg/bal-09`, aber ohne Test und ohne angewandten Lauf (scipy fehlt im System-Python). Nicht gemergt; Waffenatlanten unverändert.
 
 ## INT-2026-11-09 — Abnahmen des Integrationsbranches
 

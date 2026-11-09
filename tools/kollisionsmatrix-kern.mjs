@@ -23,7 +23,7 @@
  * @module kollisionsmatrix-kern
  */
 import { MatchController } from '../src/engine/match.js';
-import { getWaffe, WAFFEN_STANDARD } from '../src/shared/config/waffen-fassung.js';
+import { WAFFEN_STANDARD } from '../src/shared/config/waffen-fassung.js';
 import { KLASSEN_STANDARD } from '../src/shared/config/klassen-fassung.js';
 import { SCHADEN_STANDARD } from '../src/shared/config/schaden.js';
 import { BODENOBJEKTE_STANDARD } from '../src/shared/config/bodenobjekte.js';
@@ -238,7 +238,7 @@ export function nutzwert(payload) {
  * vollen LP verpufft; Munition wird durch den Schuss selbst verbraucht.
  */
 export function selbstProbe(weapon) {
-  const { m, shooter, target } = pruefstand(weapon.id, { frei: false });
+  const { m, shooter } = pruefstand(weapon.id, { frei: false });
   const effekt = buildEffect(weapon);
   if (effekt && (effekt.kind === 'heal' || effekt.kind === 'random')) {
     const max = m.world.getComponent(shooter, 'Health', 'max') ?? 100;

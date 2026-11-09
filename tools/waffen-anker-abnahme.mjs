@@ -447,7 +447,7 @@ async function zeichneBlatt({ waffenIds, titel }) {
       const lx = ((sp.mx - par.griff) * k) * pose.skala;
       const ly = (sp.my * k) * pose.skala;
       const cd = Math.cos(-pose.drehung - ar); const sd = Math.sin(-pose.drehung - ar);
-      let mx = lx * cd - ly * sd + pose.vor;
+      const mx = lx * cd - ly * sd + pose.vor;
       let my = lx * sd + ly * cd - pose.hoch;
       if (links) my = -my;
       // Zielstrahl-Winkel: Canvas dreht um -winkel, also lautet die Strahlrichtung -winkel.
