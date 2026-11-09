@@ -54,7 +54,11 @@ ausdrücklich ab.
   bleibt für das Reconnect-Fenster (`LobbyManager`, 30 s) reserviert; innerhalb
   dieser Zeit holt `RESUME` ihn zurück. Danach lässt `pruneDisconnected` den
   Platz verfallen — mit ihm den `resumeToken`, der dann als `unbekannt`
-  abgelehnt wird.
+  abgelehnt wird. Ob ein NEUER Mensch den freien Platz übernehmen kann, hängt am
+  Lobby-Status: nur eine Lobby in `open` (Wartephase) nimmt ihn auf; ein
+  laufendes Match (`running`) lehnt ihn ab. Das ist der offene Punkt RT-2,
+  gemessen in `tests/server-kontrollfluss-a4.test.js` und beschrieben in
+  `docs/kontrollfluss-start-und-wiederverbindung.md`.
 - **Bewusstes Verlassen** („Match verlassen" im ⚙-Menü, `R`): Der Client löscht
   die gespeicherte Sitzung (`#vergesseSitzung`). Serverseitig sieht ein
   bewusstes Schließen wie eine Trennung aus — es gibt keine `LEAVE`-Nachricht

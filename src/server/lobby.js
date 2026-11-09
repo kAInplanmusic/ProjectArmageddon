@@ -702,8 +702,15 @@ export class LobbyManager {
    *
    * Für seine Züge springt NIEMAND ein: Es gibt keine Bot-KI. Bis er
    * wiederkommt, läuft sein Zug über die Zugzeit ab. Nach dem Reconnect-Fenster
-   * verfällt sein Team (`pruneDisconnected`) und die Lobby nimmt wieder einen
-   * Menschen auf.
+   * verfällt sein Team (`pruneDisconnected`).
+   *
+   * Ob ein NEUER Mensch den freien Platz danach übernehmen kann, hängt am
+   * Lobby-Status — und ist NICHT in jedem Fall wahr (RT-2, gemessen in
+   * `tests/server-kontrollfluss-a4.test.js`): Nur eine Lobby in `open`
+   * (Wartephase) nimmt wieder einen auf. Ein Match, das per `START_MATCH` oder
+   * durch den letzten Beitritt gestartet wurde, steht auf `running`;
+   * `join` lehnt dann jeden ohne passenden Token ab. Der Platz ist frei, die
+   * Tür bleibt zu — die Entscheidung darüber liegt beim Auftraggeber (RT-2).
    */
   disconnect(lobbyId, token) {
     const lobby = this.get(lobbyId);

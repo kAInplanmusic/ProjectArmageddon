@@ -281,16 +281,22 @@ test('REPLAY-1: Recorder-Vorgabe für maxRounds folgt dem Motor, Altdateien ohne
 // ------------------------------------------------------------------ WERKZEUG-1
 
 test('WERKZEUG-1: audit_bericht überschreibt keine getrackte Datei ohne ausdrückliche Freigabe', () => {
-  const ziel = path.join(ROOT, 'docs', 'audit-tief.md');
-  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/audit-tief.md ist getrackt');
+  /*
+   * Das Prüfziel ist eine GETRACKTE Datei. Die frühere Wahl `docs/audit-tief.md`
+   * gibt es seit dem Doku-Schnitt (5181f82) nicht mehr; eine gelöschte Datei ist
+   * kein gültiger Testaufbau. `docs/TODO.md` ist die heutige, dauerhaft
+   * getrackte Liste und erfüllt denselben Zweck.
+   */
+  const ziel = path.join(ROOT, 'docs', 'TODO.md');
+  assert.equal(istGetrackt(ziel), true, 'Testaufbau: docs/TODO.md ist getrackt');
   const vorher = fs.readFileSync(ziel, 'utf8');
-  assert.throws(() => schreibeBericht('docs/audit-tief.md', {}), /getrackte Datei/);
+  assert.throws(() => schreibeBericht('docs/TODO.md', {}), /getrackte Datei/);
   assert.equal(fs.readFileSync(ziel, 'utf8'), vorher, 'die Datei ist unverändert');
 
   assert.equal(BERICHT_STANDARDPFAD.startsWith('artifacts/'), true, 'Vorgabe liegt unter artifacts/ (gitignored)');
   assert.equal(istGetrackt(path.join(ROOT, BERICHT_STANDARDPFAD)), false);
   const paket = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert.doesNotMatch(paket.scripts['audit:bericht'], /docs\/audit-tief\.md/);
+  assert.doesNotMatch(paket.scripts['audit:bericht'], /docs\/TODO\.md/);
 });
 
 // ------------------------------------------------------------------ HTTP-1
