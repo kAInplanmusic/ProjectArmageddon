@@ -187,10 +187,14 @@ export class ComponentStore {
   /**
    * Holt alle Entities mit einer bestimmten Signatur.
    * @param {number} signature - Geforderte Signatur-Flags
+   * @param {number[]} [ziel] - optionaler Puffer, der geleert und gefüllt wird.
+   *   Der Simulationsschritt reicht je System einen eigenen Puffer herein, damit
+   *   nicht bei jedem Tick eine neue Liste entsteht (A5/ENG-6).
    * @returns {number[]} Entity-IDs
    */
-  getEntitiesBySignature(signature) {
-    const result = [];
+  getEntitiesBySignature(signature, ziel = []) {
+    const result = ziel;
+    result.length = 0;
     for (const [entityId, sig] of this.#entitySignatures) {
       if ((sig & signature) === signature) {
         result.push(entityId);

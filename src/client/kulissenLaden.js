@@ -1,5 +1,5 @@
 import { paletteFor } from '../shared/config/backdrops.js';
-import { BACKDROP_URLS, kulissenUrl, kulissenUrlNeu, panoramaUrls } from './kulissenUrls.js';
+import { kulissenUrl, panoramaUrls } from './kulissenUrls.js';
 import { KulissenBildspeicher, waehleKulissenBreite } from './kulissenQuelle.js';
 
 /**
@@ -24,7 +24,7 @@ export function ladeKulisse(ziel, backdrop, { onError } = {}) {
 
   if (backdrop.foto) {
     const quellen = panoramaUrls(backdrop.foto);
-    const url = BACKDROP_URLS[`./assets/backdrops/${backdrop.file}`] ?? kulissenUrlNeu(backdrop.file);
+    const url = kulissenUrl(backdrop.file);
     if (url) quellen.push(url);
     if (!quellen.length) {
       ziel.backdrop = null;

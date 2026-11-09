@@ -333,7 +333,10 @@ test('Der Nachschlage-Schlüssel entspricht dem, den Vite vergibt', () => {
   // Fester Ordneranteil des Musters, ohne Sternchen.
   const fest = globMuster.slice(0, globMuster.indexOf('*'));
 
-  const treffer = /BILDER\[`([^`]+)`\]/.exec(quelle);
+  // A5/ENG-12: Der Glob und das Nachschlagen liegen jetzt in `bilderTabelle()`,
+  // damit der Import ohne Vite (node --test) nicht scheitert. Der Schlüssel selbst
+  // ist unverändert; geprüft wird weiter gegen das Glob-Muster.
+  const treffer = /bilderTabelle\(\)\[`([^`]+)`\]/.exec(quelle);
   assert.ok(treffer, 'Kein Nachschlagen der Bild-URL gefunden');
   const vorlage = treffer[1];
 

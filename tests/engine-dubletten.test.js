@@ -46,9 +46,16 @@ test('ENG-3: Kistenmaße als Namen, keine Literale 14/12 an den Ablagestellen', 
 });
 
 test('ENG-3: der Renderer führt keine eigene Seltenheitsfarbliste', () => {
+  // A5/ENG-12: Die Kistenlogik liegt jetzt in `rendererLogik.js`, damit sie ohne
+  // Canvas/`import.meta.glob` prüfbar ist. Die Zusage bleibt dieselbe: EINE Farbe
+  // aus `config/loot.js`, keine zweite Liste — nur an ihrem neuen Ort geprüft.
   const quelle = lies('src/client/renderer.js');
   assert.doesNotMatch(quelle, /RARITY_COLORS|CRATE_COLORS/, 'eine eigene Farbliste ist zurück');
-  assert.match(quelle, /LOOT_DROP_RULES\.rarityColors\[RARITY_IDS\[/, 'Farbe nicht aus config/loot.js');
+  assert.match(quelle, /import \{ kistenFarbe, kistenMarke \} from '\.\/rendererLogik\.js';/,
+    'Renderer nutzt nicht die gemeinsame Kistenlogik');
+  const logik = lies('src/client/rendererLogik.js');
+  assert.doesNotMatch(logik, /RARITY_COLORS|CRATE_COLORS/, 'eine eigene Farbliste ist zurück');
+  assert.match(logik, /LOOT_DROP_RULES\.rarityColors\[RARITY_IDS\[/, 'Farbe nicht aus config/loot.js');
   assert.match(quelle, /const size = KISTE_KANTE;/, 'Kistenkante nicht aus config/kisten.js');
 });
 

@@ -15,6 +15,13 @@ export class World {
   #entityManager;
   #systems = [];
   #systemsByName = new Map();
+  /**
+   * ENG-7: Die Prioritätsliste wird erst sortiert, wenn sie gebraucht wird.
+   * Vorher sortierte `registerSystem` bei JEDER Anmeldung neu (neun Systeme,
+   * also neun Sortierungen für eine Reihenfolge). Die Reihenfolge selbst bleibt
+   * gleich: stabil sortiert nach Priorität, bei Gleichstand Registrierungsfolge.
+   */
+  #systemsSortiert = true;
   #lastDeltaTime = 0;
   #fixedTimestep;
   #accumulator = 0;
@@ -58,11 +65,23 @@ export class World {
       name,
       system,
       priority,
-      signature: system.signature || 0
+      signature: system.signature || 0,
+      /**
+       * Eigener Entity-Puffer je System (ENG-6). Der Tick füllt ihn neu, statt
+       * bei jedem System und jedem Tick zwei Arrays (`getEntities...` und
+       * `filter`) anzulegen. Ein System darf den Puffer nur während `update`
+       * lesen — kein System behält die Liste.
+       */
+      puffer: [],
     });
+    this.#systemsSortiert = false;
+  }
 
-    // Sortiere nach Priorität (höher = früher)
+  /** Sortiert die Systemliste nach Priorität, höher zuerst (stabil). */
+  #sortiereSysteme() {
+    if (this.#systemsSortiert) return;
     this.#systems.sort((a, b) => b.priority - a.priority);
+    this.#systemsSortiert = true;
   }
 
   /**
@@ -156,10 +175,11 @@ export class World {
   /**
    * Holt alle Entities mit einer bestimmten Signatur.
    * @param {number} signature
+   * @param {number[]} [ziel] - optionaler Puffer (siehe `ComponentStore`)
    * @returns {number[]}
    */
-  getEntitiesBySignature(signature) {
-    return this.#componentStore.getEntitiesBySignature(signature);
+  getEntitiesBySignature(signature, ziel) {
+    return this.#componentStore.getEntitiesBySignature(signature, ziel);
   }
 
   /**
@@ -178,19 +198,28 @@ export class World {
    * @param {number} [dt] - Delta-Zeit in ms (wird ignoriert, da Fixed-Timestep)
    */
   step(_dt = this.#fixedTimestep) {
+    this.#sortiereSysteme();
     for (const entry of this.#systems) {
-      const { system, signature } = entry;
+      const { system, signature, puffer } = entry;
 
-      // Hole Entities, die zur System-Signatur passen
-      const entities = signature
-        ? this.#componentStore.getEntitiesBySignature(signature)
-        : this.#entityManager.getAllEntities();
+      /*
+       * ENG-6: EINE Liste je System, jeden Tick neu gefüllt. Vorher entstanden
+       * hier zwei Wegwerf-Arrays pro System und Tick (Signaturabfrage plus
+       * `.filter` auf aktiv). Inhalt und Reihenfolge sind unverändert.
+       */
+      if (signature) this.#componentStore.getEntitiesBySignature(signature, puffer);
+      else this.#entityManager.getAllEntities(puffer);
 
-      // Nur aktive Entities
-      const activeEntities = entities.filter(id => this.#entityManager.isActive(id));
+      // Nur aktive Entities, in derselben Reihenfolge, ohne zweites Array.
+      let anzahl = 0;
+      for (let i = 0; i < puffer.length; i += 1) {
+        const id = puffer[i];
+        if (this.#entityManager.isActive(id)) puffer[anzahl++] = id;
+      }
+      puffer.length = anzahl;
 
-      if (activeEntities.length > 0) {
-        system.update(this, activeEntities, this.#fixedTimestep);
+      if (anzahl > 0) {
+        system.update(this, puffer, this.#fixedTimestep);
       }
     }
 
